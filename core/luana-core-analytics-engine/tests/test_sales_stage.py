@@ -5,8 +5,6 @@ import uuid
 from datetime import date
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-
 from luana_core_analytics_engine.domain.period_config import DateRange
 
 TENANT_ID = uuid.UUID("11111111-1111-1111-1111-111111111111")
@@ -95,7 +93,9 @@ class TestSalesStageServiceCacheHit:
 
 class TestSalesStageServiceCacheMiss:
     def _patch_shopify(self):
-        return patch("luana_core_analytics_engine.application.services.stage_services.sales_stage.OfficialMetricsRepository")
+        return patch(
+            "luana_core_analytics_engine.application.services.stage_services.sales_stage.OfficialMetricsRepository"
+        )  # noqa: E501
 
     def _patch_cost(self):
         return patch("luana_core_analytics_engine.application.services.stage_services.sales_stage.StageCostService")
@@ -226,7 +226,6 @@ class TestBuildSalesBottlenecks:
 
     def test_high_cac_critical(self):
         from luana_core_analytics_engine.application.services.stage_services.sales_stage import (
-            HIGH_CAC_CRITICAL_RATIO,
             _build_sales_bottlenecks,
         )
 

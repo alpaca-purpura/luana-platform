@@ -6,7 +6,6 @@ Pure Python tests: no DB, no async, no mocking required.
 from datetime import date, datetime, time, timezone
 
 import pytest
-
 from luana_core_analytics_engine.domain.period_config import DateRange, TenantPeriodConfig
 
 

@@ -3,9 +3,7 @@ PeriodMetricsRepository, and OfficialMetricsRepository — uncovered methods."""
 
 import uuid
 from datetime import date, datetime, timezone
-from unittest.mock import MagicMock, call
-
-import pytest
+from unittest.mock import MagicMock
 
 TENANT_ID = uuid.uuid4()
 

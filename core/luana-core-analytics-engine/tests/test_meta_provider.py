@@ -9,7 +9,6 @@ from uuid import uuid4
 
 import httpx
 import pytest
-
 from luana_core_analytics_engine.infrastructure.providers.meta_provider import MetaProvider
 
 TENANT_ID = uuid4()

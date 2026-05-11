@@ -152,6 +152,8 @@ class StageOverviewService:
         """
         from uuid import UUID
 
+        from luana_core_platform.domain.datetime_utils import utc_today
+
         from luana_core_analytics_engine.application.services.stage_services.adoption_stage import (
             AdoptionStageService,
         )
@@ -177,7 +179,6 @@ class StageOverviewService:
             SalesStageService,
         )
         from luana_core_analytics_engine.domain.period_config import TenantPeriodConfig
-        from luana_core_platform.domain.datetime_utils import utc_today
 
         _stage_services: dict[str, type] = {
             "attraction": AttractionStageService,

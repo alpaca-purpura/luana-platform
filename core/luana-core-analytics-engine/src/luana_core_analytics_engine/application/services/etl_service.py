@@ -17,6 +17,10 @@ from uuid import UUID
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+    from luana_core_crm.application.services.customer_service import CustomerService
+    from luana_core_offer.infrastructure.repositories.external_product_mapping_repository import (  # type: ignore[import-not-found]  # noqa: F401  # Story 5 deferred
+        ExternalProductMappingRepository,
+    )
     from sqlalchemy.orm import Session
 
     from luana_core_analytics_engine.domain.period_config import TenantPeriodConfig
@@ -29,11 +33,8 @@ if TYPE_CHECKING:
         BaseMetricsProvider,
         ExtractedMetric,
     )
-    from luana_core_crm.application.services.customer_service import CustomerService
-    from luana_core_offer.infrastructure.repositories.external_product_mapping_repository import (  # type: ignore[import-not-found]  # noqa: F401  # Story 5 deferred
-        ExternalProductMappingRepository,
-    )
 
+from luana_core_platform.domain.datetime_utils import utc_today
 from sqlalchemy import select
 
 from luana_core_analytics_engine.application.config import ETLConfig
@@ -65,7 +66,6 @@ from luana_core_analytics_engine.infrastructure.repositories.official_metrics_re
 from luana_core_analytics_engine.infrastructure.repositories.staging_repository import (
     StagingMetricsRepository,
 )
-from luana_core_platform.domain.datetime_utils import utc_today
 
 logger = logging.getLogger(__name__)
 
@@ -188,8 +188,9 @@ class ETLService:
 
     def _get_period_config(self, tenant_id: UUID) -> TenantPeriodConfig:
         """Resolve TenantPeriodConfig from the tenant's DB columns."""
-        from luana_core_analytics_engine.domain.period_config import TenantPeriodConfig
         from luana_core_iam.infrastructure.models.tenant_model import TenantModel
+
+        from luana_core_analytics_engine.domain.period_config import TenantPeriodConfig
 
         stmt = select(TenantModel).where(TenantModel.id == tenant_id)
         tenant = self.db.execute(stmt).scalar_one_or_none()
@@ -250,10 +251,10 @@ class ETLService:
         # DDD exception (intentional): ETL must query active connections to know
         # which providers to run. The connection record IS the provider credentials
         # and config — this dependency is real, not accidental coupling.
-        from luana_core_platform.core.database import SessionLocal
         from luana_core_connections.application.services.connection_port_impl import (
             ConnectionPortImpl,
         )
+        from luana_core_platform.core.database import SessionLocal
 
         db = SessionLocal()
         try:
@@ -728,11 +729,10 @@ class ETLService:
         mapping_repo: ExternalProductMappingRepository,
     ) -> tuple[int, int]:
         """Process completed orders into journey_events + SaleModel. Returns (orders_processed, sales_created)."""
-        from sqlalchemy import func as sa_func
-        from sqlalchemy import select as sa_select
-
         from luana_core_platform.domain.enums import SaleStage, SaleStatus
         from luana_core_platform.infrastructure.models.crm import JourneyEventModel, SaleModel
+        from sqlalchemy import func as sa_func
+        from sqlalchemy import select as sa_select
 
         orders_processed = 0
         sales_created = 0
@@ -897,10 +897,9 @@ class ETLService:
         customer_svc: CustomerService,
     ) -> int:
         """Process abandoned checkouts into journey_events. Returns checkouts_processed."""
+        from luana_core_platform.infrastructure.models.crm import JourneyEventModel
         from sqlalchemy import func as sa_func
         from sqlalchemy import select as sa_select
-
-        from luana_core_platform.infrastructure.models.crm import JourneyEventModel
 
         checkouts_processed = 0
 

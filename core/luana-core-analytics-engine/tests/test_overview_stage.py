@@ -4,8 +4,6 @@ import asyncio
 import uuid
 from unittest.mock import AsyncMock, MagicMock
 
-import pytest
-
 TENANT_ID = str(uuid.UUID("11111111-1111-1111-1111-111111111111"))
 
 

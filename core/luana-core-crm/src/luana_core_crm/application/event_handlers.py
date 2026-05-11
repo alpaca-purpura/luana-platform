@@ -17,6 +17,7 @@ def handle_sale_completed_event(event: DomainEvent) -> None:
     """Handle sale_completed events by transitioning the customer's lifecycle."""
     try:
         from luana_core_platform.core.database import SessionLocal
+
         from luana_core_crm.application.services.lifecycle_service import (
             LifecycleService,
         )
@@ -42,6 +43,7 @@ def handle_churn_event(event: DomainEvent) -> None:
     """Handle churn_detected events by setting lifecycle_stage=CHURNED."""
     try:
         from luana_core_platform.core.database import SessionLocal
+
         from luana_core_crm.application.services.lifecycle_service import (
             LifecycleService,
         )
@@ -92,9 +94,9 @@ def _handle_appointment_event(event: DomainEvent, journey_event_name: str) -> No
     try:
         from uuid import UUID
 
+        from luana_core_platform.core.database import SessionLocal
         from sqlalchemy import select
 
-        from luana_core_platform.core.database import SessionLocal
         from luana_core_crm.application.services.lifecycle_service import (
             LifecycleService,
         )

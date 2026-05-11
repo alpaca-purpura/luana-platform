@@ -14,7 +14,6 @@ Meta to return a single aggregate row that got stamped to end_date.
 from datetime import date
 
 import pytest
-
 from luana_core_analytics_engine.infrastructure.providers.meta_provider import (
     MetaProvider,
     PeriodAggregateError,

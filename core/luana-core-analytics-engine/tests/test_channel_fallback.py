@@ -11,7 +11,6 @@ import uuid
 from unittest.mock import AsyncMock
 
 import pytest
-
 from luana_core_analytics_engine.application.services.channel_registry import (
     ChannelRegistry,
     get_stage_channels,

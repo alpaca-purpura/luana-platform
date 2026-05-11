@@ -2,11 +2,11 @@
 
 import uuid
 
+from luana_core_platform.core.base_repository import BaseRepository
+from luana_core_platform.core.context import get_tenant_id
 from sqlalchemy import desc, func, or_, select
 from sqlalchemy.orm import joinedload
 
-from luana_core_platform.core.base_repository import BaseRepository
-from luana_core_platform.core.context import get_tenant_id
 from luana_core_crm.domain.lead import Lead
 from luana_core_crm.infrastructure.models.customer_model import (
     CustomerProfileModel as CustomerProfile,

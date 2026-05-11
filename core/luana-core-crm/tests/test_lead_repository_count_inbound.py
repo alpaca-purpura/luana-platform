@@ -7,7 +7,6 @@ from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING
 
 import pytest
-
 from luana_core_crm.infrastructure.repositories.lead_repository import LeadRepository
 from luana_core_platform.infrastructure.models.crm import LeadModel
 

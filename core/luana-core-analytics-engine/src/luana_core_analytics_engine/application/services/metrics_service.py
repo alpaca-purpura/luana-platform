@@ -13,6 +13,13 @@ from __future__ import annotations
 from datetime import date, datetime
 from typing import TYPE_CHECKING, Any
 
+from luana_core_platform.domain.enums import LifecycleStage
+from luana_core_platform.links.ports.crm_repos import (
+    get_customer_repository,
+    get_journey_event_repository,
+    get_lead_metrics_repository,
+)
+
 from luana_core_analytics_engine.application.dto.summary_dto import (
     BowtiesSummaryDTO,
     StageSummaryKpiDTO,
@@ -21,12 +28,6 @@ from luana_core_analytics_engine.application.dto.timeseries_dto import (
     ChannelInfoDTO,
     StageTimeSeriesDTO,
     TimeSeriesPointDTO,
-)
-from luana_core_platform.domain.enums import LifecycleStage
-from luana_core_platform.links.ports.crm_repos import (
-    get_customer_repository,
-    get_journey_event_repository,
-    get_lead_metrics_repository,
 )
 
 if TYPE_CHECKING:

@@ -4,10 +4,12 @@ import json
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from luana_core_iam.api.dependencies import get_current_user
+from luana_core_iam.domain.user import User
+from luana_core_platform.core.database import get_db
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from luana_core_platform.core.database import get_db
 from luana_core_analytics_engine.application.dto.campaign_dto import (
     AdDTO,
     AdPerformanceListDTO,
@@ -23,8 +25,6 @@ from luana_core_analytics_engine.application.services.ad_performance_service imp
 from luana_core_analytics_engine.application.services.campaign_service import (
     CampaignService,
 )
-from luana_core_iam.api.dependencies import get_current_user
-from luana_core_iam.domain.user import User
 
 
 class CampaignSyncResponse(BaseModel):

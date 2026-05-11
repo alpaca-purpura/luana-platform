@@ -5,9 +5,7 @@ CRM-04: Identity resolution — returns existing or creates new with lead_source
 """
 
 import uuid
-from unittest.mock import MagicMock, patch
-
-import pytest
+from unittest.mock import MagicMock
 
 from luana_core_crm.application.services.identity_service import IdentityService
 from luana_core_crm.domain.enums import IdentityType

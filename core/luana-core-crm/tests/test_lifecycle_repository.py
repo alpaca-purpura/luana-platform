@@ -7,9 +7,6 @@ CRM-05: Transition retrieval — ordered by occurred_at desc, limit, tenant isol
 import uuid
 from datetime import datetime, timedelta, timezone
 
-import pytest
-from sqlalchemy.orm import Session
-
 from luana_core_crm.domain.enums import LifecycleStage
 from luana_core_crm.infrastructure.models.customer_model import CustomerProfileModel
 from luana_core_crm.infrastructure.models.lifecycle_transition_model import (
@@ -18,6 +15,7 @@ from luana_core_crm.infrastructure.models.lifecycle_transition_model import (
 from luana_core_crm.infrastructure.repositories.lifecycle_repository import (
     LifecycleRepository,
 )
+from sqlalchemy.orm import Session
 
 SAMPLE_TENANT_ID = uuid.UUID("00000000-0000-0000-0000-000000000001")
 OTHER_TENANT_ID = uuid.UUID("bbbb0000-0000-0000-0000-000000000002")

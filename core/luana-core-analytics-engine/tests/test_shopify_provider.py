@@ -6,7 +6,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import httpx
 import pytest
-
 from luana_core_analytics_engine.infrastructure.providers.shopify_provider import (
     ShopifyProvider,
 )

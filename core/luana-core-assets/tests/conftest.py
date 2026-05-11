@@ -77,12 +77,14 @@ class MockJSONB(TypeDecorator):
         if value is None:
             return None
         import json
+
         return json.dumps(value)
 
     def process_result_value(self, value, dialect):
         if value is None:
             return None
         import json
+
         try:
             return json.loads(value)
         except Exception:  # noqa: BLE001

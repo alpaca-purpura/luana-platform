@@ -4,10 +4,10 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
+from luana_core_platform.domain.base_entity import BaseEntity
 from pydantic import Field
 
 from luana_core_crm.domain.enums import PaymentMethod, SaleStage, SaleStatus
-from luana_core_platform.domain.base_entity import BaseEntity
 
 
 class Sale(BaseEntity):

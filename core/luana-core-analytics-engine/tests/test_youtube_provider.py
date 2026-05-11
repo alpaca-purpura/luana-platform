@@ -8,7 +8,6 @@ from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
 import pytest
-
 from luana_core_analytics_engine.infrastructure.providers.youtube_provider import (
     YouTubeProvider,
 )

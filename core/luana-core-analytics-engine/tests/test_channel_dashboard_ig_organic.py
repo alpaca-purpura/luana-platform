@@ -3,7 +3,6 @@
 from unittest.mock import MagicMock
 
 import pytest
-
 from luana_core_analytics_engine.application.services.channel_dashboard_service import (
     _CHANNEL_CONFIGS,
     ChannelDashboardService,

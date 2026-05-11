@@ -5,8 +5,6 @@ import uuid
 from datetime import date
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-
 from luana_core_analytics_engine.domain.period_config import DateRange
 
 TENANT_ID = uuid.UUID("11111111-1111-1111-1111-111111111111")
@@ -64,7 +62,9 @@ class TestCaptureStageServiceCacheMiss:
         return patch("luana_core_analytics_engine.application.services.stage_services.capture_stage.CaptureCostService")
 
     def _patch_capture_repo(self):
-        return patch("luana_core_analytics_engine.application.services.stage_services.capture_stage.CaptureMetricsRepository")
+        return patch(
+            "luana_core_analytics_engine.application.services.stage_services.capture_stage.CaptureMetricsRepository"
+        )  # noqa: E501
 
     def _patch_official_repo(self):
         return patch(

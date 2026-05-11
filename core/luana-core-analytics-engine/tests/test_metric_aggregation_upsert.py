@@ -9,7 +9,6 @@ from datetime import date
 from unittest.mock import MagicMock
 
 import pytest
-
 from luana_core_analytics_engine.infrastructure.repositories.metric_aggregation_repository import (
     MetricAggregationRepository,
 )

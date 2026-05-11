@@ -8,16 +8,12 @@ import uuid
 from unittest.mock import patch
 
 import pytest
-from sqlalchemy import select
-from sqlalchemy.orm import Session
-
 from luana_core_crm.domain.enums import LifecycleStage
 from luana_core_crm.domain.lead import Lead, UserProfile
 from luana_core_crm.infrastructure.models.customer_model import CustomerProfileModel
 from luana_core_crm.infrastructure.models.lead_model import LeadModel
-from luana_core_crm.infrastructure.models.lifecycle_transition_model import (
-    LifecycleTransitionModel,
-)
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 # ---------------------------------------------------------------------------
 # Helpers

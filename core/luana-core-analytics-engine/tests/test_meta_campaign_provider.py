@@ -4,7 +4,6 @@ from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
 import pytest
-
 from luana_core_analytics_engine.infrastructure.providers.meta_campaign_provider import (
     MetaCampaignProvider,
 )

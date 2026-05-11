@@ -2,9 +2,8 @@
 
 import asyncio
 import uuid
-from collections import OrderedDict
-from datetime import date, timedelta
-from unittest.mock import AsyncMock, MagicMock
+from datetime import date
+from unittest.mock import MagicMock
 
 TENANT_ID = uuid.UUID("11111111-1111-1111-1111-111111111111")
 

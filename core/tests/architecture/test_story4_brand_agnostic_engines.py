@@ -39,7 +39,7 @@ def _get_py_files(pkg_name: str):
 
 def test_no_brand_conditional():
     """No 'if brand ==' pattern in Story 4 source files."""
-    pattern = re.compile(r'if\s+brand\s*==')
+    pattern = re.compile(r"if\s+brand\s*==")
     violations = []
     for pkg_name in STORY4_PACKAGES:
         for path in _get_py_files(pkg_name):
@@ -47,13 +47,9 @@ def test_no_brand_conditional():
             for lineno, line in enumerate(text.splitlines(), 1):
                 if pattern.search(line):
                     violations.append(
-                        f"{pkg_name}/{path.relative_to(CORE_DIR / pkg_name / 'src')}:{lineno}: "
-                        f"{line.strip()}"
+                        f"{pkg_name}/{path.relative_to(CORE_DIR / pkg_name / 'src')}:{lineno}: {line.strip()}"
                     )
-    assert not violations, (
-        "Story 4 packages must be brand-agnostic. Found 'if brand ==' in:\n"
-        + "\n".join(violations)
-    )
+    assert not violations, "Story 4 packages must be brand-agnostic. Found 'if brand ==' in:\n" + "\n".join(violations)
 
 
 def test_no_hardcoded_clerk_app_ids():
@@ -61,7 +57,7 @@ def test_no_hardcoded_clerk_app_ids():
 
     Clerk app IDs start with 'app_' followed by >=10 alphanumeric chars.
     """
-    pattern = re.compile(r'\bapp_[A-Za-z0-9]{10,}\b')
+    pattern = re.compile(r"\bapp_[A-Za-z0-9]{10,}\b")
     violations = []
     for pkg_name in STORY4_PACKAGES:
         for path in _get_py_files(pkg_name):
@@ -72,13 +68,9 @@ def test_no_hardcoded_clerk_app_ids():
                     continue
                 if pattern.search(line):
                     violations.append(
-                        f"{pkg_name}/{path.relative_to(CORE_DIR / pkg_name / 'src')}:{lineno}: "
-                        f"{line.strip()}"
+                        f"{pkg_name}/{path.relative_to(CORE_DIR / pkg_name / 'src')}:{lineno}: {line.strip()}"
                     )
-    assert not violations, (
-        "Story 4 packages must have no hardcoded Clerk app IDs. Found in:\n"
-        + "\n".join(violations)
-    )
+    assert not violations, "Story 4 packages must have no hardcoded Clerk app IDs. Found in:\n" + "\n".join(violations)
 
 
 def test_no_brand_slug_in_logic():
@@ -89,9 +81,7 @@ def test_no_brand_slug_in_logic():
     if/elif/match statements or as function arguments in brand-routing calls.
     """
     # Match 'if ... nicolify' or 'elif ... vitalia' style logic branches
-    slug_in_conditional = re.compile(
-        r'\b(if|elif)\b[^#\n]*\b(' + '|'.join(BRAND_SLUGS) + r')\b'
-    )
+    slug_in_conditional = re.compile(r"\b(if|elif)\b[^#\n]*\b(" + "|".join(BRAND_SLUGS) + r")\b")
     violations = []
     for pkg_name in STORY4_PACKAGES:
         for path in _get_py_files(pkg_name):
@@ -102,10 +92,8 @@ def test_no_brand_slug_in_logic():
                     continue
                 if slug_in_conditional.search(line):
                     violations.append(
-                        f"{pkg_name}/{path.relative_to(CORE_DIR / pkg_name / 'src')}:{lineno}: "
-                        f"{line.strip()}"
+                        f"{pkg_name}/{path.relative_to(CORE_DIR / pkg_name / 'src')}:{lineno}: {line.strip()}"
                     )
     assert not violations, (
-        "Story 4 packages must not branch on brand slug. Found brand-conditional logic in:\n"
-        + "\n".join(violations)
+        "Story 4 packages must not branch on brand slug. Found brand-conditional logic in:\n" + "\n".join(violations)
     )

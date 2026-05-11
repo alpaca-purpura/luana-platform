@@ -368,7 +368,9 @@ class TestETLServiceRunPeriodExtraction:
             patch(
                 "luana_core_analytics_engine.infrastructure.repositories.period_metrics_repository.PeriodMetricsRepository"
             ) as MockPeriodRepo,
-            patch("luana_core_analytics_engine.infrastructure.etl.period_pipeline.PeriodExtractionPipeline") as MockPipeline,
+            patch(
+                "luana_core_analytics_engine.infrastructure.etl.period_pipeline.PeriodExtractionPipeline"
+            ) as MockPipeline,  # noqa: E501
         ):
             mock_period_repo = MagicMock()
             mock_period_repo.get_existing_periods.return_value = set()
@@ -443,7 +445,9 @@ class TestETLServiceTryPeriodExtraction:
         mock_run_repo = MagicMock()
 
         # Lazy import — patch at source module
-        with patch("luana_core_analytics_engine.infrastructure.etl.period_pipeline.PeriodExtractionPipeline") as MockPipeline:
+        with patch(
+            "luana_core_analytics_engine.infrastructure.etl.period_pipeline.PeriodExtractionPipeline"
+        ) as MockPipeline:  # noqa: E501
             _run(svc._try_period_extraction(TENANT_ID, "meta", date(2026, 3, 1), date(2026, 3, 14), mock_run_repo))
             MockPipeline.assert_not_called()
 
@@ -462,7 +466,9 @@ class TestETLServiceTryPeriodExtraction:
             patch(
                 "luana_core_analytics_engine.infrastructure.repositories.period_metrics_repository.PeriodMetricsRepository"
             ),
-            patch("luana_core_analytics_engine.infrastructure.etl.period_pipeline.PeriodExtractionPipeline") as MockPipeline,
+            patch(
+                "luana_core_analytics_engine.infrastructure.etl.period_pipeline.PeriodExtractionPipeline"
+            ) as MockPipeline,  # noqa: E501
         ):
             mock_pipeline_instance = AsyncMock()
             MockPipeline.return_value = mock_pipeline_instance
@@ -849,7 +855,9 @@ class TestETLServiceRunSyncAll:
                 "luana_core_analytics_engine.application.services.etl_service.PROVIDER_REGISTRY",
                 {"meta": MagicMock()},
             ),
-            patch("luana_core_analytics_engine.application.services.etl_service.ExtractionRunRepository") as MockRunRepo,
+            patch(
+                "luana_core_analytics_engine.application.services.etl_service.ExtractionRunRepository"
+            ) as MockRunRepo,  # noqa: E501
         ):
             MockRunRepo.return_value.get_latest.return_value = recent_run
 
@@ -872,7 +880,9 @@ class TestETLServiceRunSyncAll:
                 "luana_core_analytics_engine.application.services.etl_service.PROVIDER_REGISTRY",
                 {"meta": MagicMock()},
             ),
-            patch("luana_core_analytics_engine.application.services.etl_service.ExtractionRunRepository") as MockRunRepo,
+            patch(
+                "luana_core_analytics_engine.application.services.etl_service.ExtractionRunRepository"
+            ) as MockRunRepo,  # noqa: E501
         ):
             # No cooldown (no recent run)
             MockRunRepo.return_value.get_latest.return_value = None

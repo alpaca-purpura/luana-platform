@@ -18,9 +18,9 @@ def _make_user():
 
 
 def _make_campaigns_app():
-    from luana_core_platform.core.database import get_db
     from luana_core_analytics_engine.api.campaigns import router
     from luana_core_iam.api.dependencies import get_current_user
+    from luana_core_platform.core.database import get_db
 
     db = MagicMock()
     app = FastAPI()
@@ -31,9 +31,9 @@ def _make_campaigns_app():
 
 
 def _make_email_app():
-    from luana_core_platform.core.database import get_db
     from luana_core_analytics_engine.api.email_metrics import router
     from luana_core_iam.api.dependencies import get_current_user
+    from luana_core_platform.core.database import get_db
 
     db = MagicMock()
     app = FastAPI()

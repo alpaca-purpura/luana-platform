@@ -8,7 +8,6 @@ import uuid
 from datetime import datetime, timezone
 
 import pytest
-
 from luana_core_platform.domain.enums import LifecycleStage
 
 # ---------------------------------------------------------------------------
@@ -134,9 +133,8 @@ class TestContactListItem:
         assert item.country is None
 
     def test_extra_fields_forbidden(self):
-        from pydantic import ValidationError
-
         from luana_core_crm.api.dto.contacts import ContactListItem
+        from pydantic import ValidationError
 
         data = _make_contact_list_data(extra_field="should fail")
 
@@ -144,9 +142,8 @@ class TestContactListItem:
             ContactListItem(**data)
 
     def test_missing_required_field_raises(self):
-        from pydantic import ValidationError
-
         from luana_core_crm.api.dto.contacts import ContactListItem
+        from pydantic import ValidationError
 
         data = _make_contact_list_data()
         del data["id"]
@@ -212,9 +209,8 @@ class TestContactIdentity:
         assert identity.verification_status == "verified"
 
     def test_extra_fields_forbidden(self):
-        from pydantic import ValidationError
-
         from luana_core_crm.api.dto.contacts import ContactIdentity
+        from pydantic import ValidationError
 
         with pytest.raises(ValidationError):
             ContactIdentity(
@@ -227,9 +223,8 @@ class TestContactIdentity:
             )
 
     def test_missing_required_field_raises(self):
-        from pydantic import ValidationError
-
         from luana_core_crm.api.dto.contacts import ContactIdentity
+        from pydantic import ValidationError
 
         with pytest.raises(ValidationError):
             ContactIdentity(
@@ -309,9 +304,8 @@ class TestContactDetail:
         assert detail.is_blacklisted is None
 
     def test_extra_fields_forbidden(self):
-        from pydantic import ValidationError
-
         from luana_core_crm.api.dto.contacts import ContactDetail
+        from pydantic import ValidationError
 
         data = _make_contact_detail_data(extra="nope")
 
@@ -361,9 +355,8 @@ class TestDeferredEndpointResponse:
         assert resp.canonical_path == "/api/v1/crm/contacts/advanced-search"
 
     def test_extra_fields_forbidden(self):
-        from pydantic import ValidationError
-
         from luana_core_crm.api.dto.contacts import DeferredEndpointResponse
+        from pydantic import ValidationError
 
         with pytest.raises(ValidationError):
             DeferredEndpointResponse(
@@ -375,9 +368,8 @@ class TestDeferredEndpointResponse:
             )
 
     def test_missing_required_field_raises(self):
-        from pydantic import ValidationError
-
         from luana_core_crm.api.dto.contacts import DeferredEndpointResponse
+        from pydantic import ValidationError
 
         with pytest.raises(ValidationError):
             DeferredEndpointResponse(
@@ -434,9 +426,8 @@ class TestFilterFieldMeta:
         assert meta.description is None
 
     def test_extra_fields_forbidden(self):
-        from pydantic import ValidationError
-
         from luana_core_crm.api.dto.contacts import FilterFieldMeta
+        from pydantic import ValidationError
 
         with pytest.raises(ValidationError):
             FilterFieldMeta(
@@ -477,9 +468,8 @@ class TestFilterSchemaResponse:
         assert resp.fields == []
 
     def test_extra_fields_forbidden(self):
-        from pydantic import ValidationError
-
         from luana_core_crm.api.dto.contacts import FilterSchemaResponse
+        from pydantic import ValidationError
 
         with pytest.raises(ValidationError):
             FilterSchemaResponse(version="1.0", fields=[], extra="nope")
@@ -535,17 +525,15 @@ class TestContactFilterParams:
         assert params.score_max == 90
 
     def test_score_min_below_zero_raises(self):
-        from pydantic import ValidationError
-
         from luana_core_crm.api.dto.contact_filters import ContactFilterParams
+        from pydantic import ValidationError
 
         with pytest.raises(ValidationError):
             ContactFilterParams(score_min=-1)
 
     def test_score_max_above_100_raises(self):
-        from pydantic import ValidationError
-
         from luana_core_crm.api.dto.contact_filters import ContactFilterParams
+        from pydantic import ValidationError
 
         with pytest.raises(ValidationError):
             ContactFilterParams(score_max=101)
@@ -629,17 +617,15 @@ class TestContactFilterParams:
         assert len(params.q) == 120
 
     def test_search_query_exceeds_max_length_raises(self):
-        from pydantic import ValidationError
-
         from luana_core_crm.api.dto.contact_filters import ContactFilterParams
+        from pydantic import ValidationError
 
         with pytest.raises(ValidationError):
             ContactFilterParams(q="a" * 121)
 
     def test_extra_fields_forbidden(self):
-        from pydantic import ValidationError
-
         from luana_core_crm.api.dto.contact_filters import ContactFilterParams
+        from pydantic import ValidationError
 
         with pytest.raises(ValidationError):
             ContactFilterParams(q="test", extra_field="nope")

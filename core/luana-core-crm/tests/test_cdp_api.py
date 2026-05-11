@@ -7,14 +7,14 @@ from __future__ import annotations
 
 import uuid
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from httpx import ASGITransport, AsyncClient
-
 from luana_core_crm.domain.customer import CustomerProfile
 
 from tests.conftest import create_crm_test_app
+
 _app = create_crm_test_app()
 
 # ---------------------------------------------------------------------------

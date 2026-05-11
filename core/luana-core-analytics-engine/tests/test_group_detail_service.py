@@ -7,7 +7,6 @@ and edge cases (cache miss, unknown group).
 from unittest.mock import AsyncMock
 
 import pytest
-
 from luana_core_analytics_engine.application.services.stage_services.group_detail import (
     GroupDetailService,
 )

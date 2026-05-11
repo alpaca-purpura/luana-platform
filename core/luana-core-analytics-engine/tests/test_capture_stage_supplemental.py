@@ -5,8 +5,6 @@ import uuid
 from datetime import date
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-
 TENANT_ID = uuid.uuid4()
 
 
@@ -378,7 +376,9 @@ class TestBuildCaptureChannelDtoProviders:
         svc, _db = _make_svc()
         svc._supplement_manychat_metrics = MagicMock()
 
-        with patch("luana_core_analytics_engine.application.services.stage_services.capture_stage.OfficialMetricsRepository"):
+        with patch(
+            "luana_core_analytics_engine.application.services.stage_services.capture_stage.OfficialMetricsRepository"
+        ):  # noqa: E501
             result = svc._build_capture_channel_dto(
                 self._ch("manychat"), TENANT_ID, {}, {}, {}, 100, date(2026, 3, 1), date(2026, 3, 31)
             )
@@ -390,11 +390,11 @@ class TestBuildCaptureChannelDtoProviders:
         """Line 323: email_marketing branch in _build_capture_channel_dto."""
         svc, _db = _make_svc()
 
-        from luana_core_analytics_engine.application.dto.attraction_dto import MetricValueDTO
-
         svc._supplement_mailerlite_metrics = MagicMock(return_value=[])
 
-        with patch("luana_core_analytics_engine.application.services.stage_services.capture_stage.OfficialMetricsRepository"):
+        with patch(
+            "luana_core_analytics_engine.application.services.stage_services.capture_stage.OfficialMetricsRepository"
+        ):  # noqa: E501
             svc._build_capture_channel_dto(
                 self._ch("email_marketing"), TENANT_ID, {}, {}, {}, 100, date(2026, 3, 1), date(2026, 3, 31)
             )

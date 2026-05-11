@@ -58,12 +58,6 @@ class TestRegisterEventHandlers:
 
     def test_handlers_are_callable(self):
         from luana_core_crm.application.event_handlers import (
-            handle_appointment_booked,
-            handle_appointment_completed,
-            handle_appointment_no_show,
-            handle_churn_event,
-            handle_lead_captured_event,
-            handle_sale_completed_event,
             register_event_handlers,
         )
 

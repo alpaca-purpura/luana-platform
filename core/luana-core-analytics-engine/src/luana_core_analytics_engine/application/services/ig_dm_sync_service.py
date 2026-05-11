@@ -15,10 +15,6 @@ from uuid import UUID
 
 import httpx
 import structlog
-from sqlalchemy import func, select
-from sqlalchemy.orm import Session
-
-from luana_core_analytics_engine.domain.ports import ConnectionPort
 from luana_core_platform.domain.enums import IdentityType
 from luana_core_platform.domain.events import CHANNEL_TYPE_TO_CAPTURE_SLUG
 from luana_core_platform.infrastructure.models.crm import JourneyEventModel
@@ -27,6 +23,10 @@ from luana_core_platform.links.ports.crm_repos import (
     get_ig_profile_enricher,
     get_journey_event_repository,
 )
+from sqlalchemy import func, select
+from sqlalchemy.orm import Session
+
+from luana_core_analytics_engine.domain.ports import ConnectionPort
 
 logger = structlog.get_logger()
 

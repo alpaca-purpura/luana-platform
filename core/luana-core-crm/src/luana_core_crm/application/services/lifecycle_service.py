@@ -17,6 +17,7 @@ from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID
 
+from luana_core_platform.domain.events import DomainEvent
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -29,7 +30,6 @@ from luana_core_crm.infrastructure.models.customer_model import (
 from luana_core_crm.infrastructure.repositories.lifecycle_repository import (
     LifecycleRepository,
 )
-from luana_core_platform.domain.events import DomainEvent
 
 logger = logging.getLogger(__name__)
 

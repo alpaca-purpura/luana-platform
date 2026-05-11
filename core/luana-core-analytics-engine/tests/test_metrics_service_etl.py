@@ -14,7 +14,6 @@ from datetime import date, datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-
 from luana_core_analytics_engine.application.dto.attraction_dto import (
     AttractionDetailDTO,
 )

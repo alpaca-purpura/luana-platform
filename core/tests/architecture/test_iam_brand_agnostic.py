@@ -23,17 +23,14 @@ def _all_py_files():
 
 def test_no_brand_conditional():
     """No 'if brand ==' pattern in iam source."""
-    pattern = re.compile(r'if\s+brand\s*==')
+    pattern = re.compile(r"if\s+brand\s*==")
     violations = []
     for path in _all_py_files():
         text = path.read_text(encoding="utf-8")
         for lineno, line in enumerate(text.splitlines(), 1):
             if pattern.search(line):
                 violations.append(f"{path.relative_to(IAM_SRC)}:{lineno}: {line.strip()}")
-    assert not violations, (
-        "luana-core-iam must be brand-agnostic. Found 'if brand ==' in:\n"
-        + "\n".join(violations)
-    )
+    assert not violations, "luana-core-iam must be brand-agnostic. Found 'if brand ==' in:\n" + "\n".join(violations)
 
 
 def test_no_hardcoded_clerk_app_ids():
@@ -43,7 +40,7 @@ def test_no_hardcoded_clerk_app_ids():
     They appear in URLs like clerk.app_xxx.accounts.dev or as string literals.
     """
     # Pattern: 'app_' followed by >=10 alphanumeric chars (Clerk app ID format)
-    pattern = re.compile(r'\bapp_[A-Za-z0-9]{10,}\b')
+    pattern = re.compile(r"\bapp_[A-Za-z0-9]{10,}\b")
     violations = []
     for path in _all_py_files():
         text = path.read_text(encoding="utf-8")
@@ -54,10 +51,7 @@ def test_no_hardcoded_clerk_app_ids():
                 continue
             if pattern.search(line):
                 violations.append(f"{path.relative_to(IAM_SRC)}:{lineno}: {line.strip()}")
-    assert not violations, (
-        "luana-core-iam must have no hardcoded Clerk app IDs. Found in:\n"
-        + "\n".join(violations)
-    )
+    assert not violations, "luana-core-iam must have no hardcoded Clerk app IDs. Found in:\n" + "\n".join(violations)
 
 
 def test_clerk_service_reads_from_settings():
@@ -69,7 +63,7 @@ def test_clerk_service_reads_from_settings():
         text = path.read_text(encoding="utf-8")
         # Should reference settings.* or os.environ, NOT literal key strings
         # Hardcoded secret keys start with sk_live_ or sk_test_ + >=20 chars
-        hardcoded_secret = re.compile(r'\b(sk_live_|sk_test_)[A-Za-z0-9]{20,}\b')
+        hardcoded_secret = re.compile(r"\b(sk_live_|sk_test_)[A-Za-z0-9]{20,}\b")
         violations = []
         for lineno, line in enumerate(text.splitlines(), 1):
             stripped = line.lstrip()
@@ -77,7 +71,4 @@ def test_clerk_service_reads_from_settings():
                 continue
             if hardcoded_secret.search(line):
                 violations.append(f"{path.name}:{lineno}: {line.strip()}")
-        assert not violations, (
-            "luana-core-iam Clerk code must not hardcode secret keys:\n"
-            + "\n".join(violations)
-        )
+        assert not violations, "luana-core-iam Clerk code must not hardcode secret keys:\n" + "\n".join(violations)

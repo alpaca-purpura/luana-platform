@@ -3,8 +3,6 @@
 from datetime import date
 from unittest.mock import MagicMock
 
-import pytest
-
 from luana_core_analytics_engine.domain.metric_resolver import (
     MetricResolver,
     _extract_multiplier,
@@ -34,7 +32,6 @@ class TestExtractMultiplier:
 class TestGetFormulaComponents:
     def _derived_defn_short(self):
         from luana_core_analytics_engine.domain.enums import AggregationType
-        from luana_core_analytics_engine.domain.metric_catalog import MetricDefinition
 
         defn = MagicMock()
         defn.aggregation = AggregationType.DERIVED

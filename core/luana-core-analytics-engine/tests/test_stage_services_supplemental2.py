@@ -17,7 +17,6 @@ def _run(coro):
 
 class TestEnrichWithDerivedMetrics:
     def _enrich(self, metrics, repo=None):
-        from luana_core_analytics_engine.application.dto.attraction_dto import MetricValueDTO
         from luana_core_analytics_engine.application.services.stage_services.attraction_stage import (
             _enrich_with_derived_metrics,
         )
@@ -83,7 +82,7 @@ class TestEnrichWithDerivedMetrics:
         assert "cpm" not in names
 
 
-import pytest
+import pytest  # noqa: E402
 
 # ─── attraction_stage _classify_error (line 126 = fallback) ──────────────────
 
@@ -243,7 +242,9 @@ class TestNurtureGetMetricsFlow:
         channel_split = {"connected": [], "available": []}
 
         with (
-            patch("luana_core_analytics_engine.application.services.stage_services.nurture_stage.ChannelRegistry") as MockReg,
+            patch(
+                "luana_core_analytics_engine.application.services.stage_services.nurture_stage.ChannelRegistry"
+            ) as MockReg,  # noqa: E501
             patch(
                 "luana_core_analytics_engine.application.services.stage_services.nurture_stage.OfficialMetricsRepository"
             ) as MockOfficialRepo,
@@ -305,7 +306,9 @@ class TestNurtureGetMetricsFlow:
         }
 
         with (
-            patch("luana_core_analytics_engine.application.services.stage_services.nurture_stage.ChannelRegistry") as MockReg,
+            patch(
+                "luana_core_analytics_engine.application.services.stage_services.nurture_stage.ChannelRegistry"
+            ) as MockReg,  # noqa: E501
             patch(
                 "luana_core_analytics_engine.application.services.stage_services.nurture_stage.OfficialMetricsRepository"
             ) as MockOfficialRepo,

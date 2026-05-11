@@ -11,7 +11,6 @@ import uuid
 from unittest.mock import AsyncMock
 
 import pytest
-
 from luana_core_analytics_engine.application.dto.group_detail_dto import GroupDetailDTO
 from luana_core_analytics_engine.application.services.stage_services.group_detail import (
     GroupDetailService,

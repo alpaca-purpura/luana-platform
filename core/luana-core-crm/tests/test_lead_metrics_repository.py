@@ -19,18 +19,16 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime, timezone
-from unittest.mock import patch
 from uuid import UUID, uuid4
 
 import pytest
-from sqlalchemy.orm import Session
-
 from luana_core_crm.domain.lead import Lead
 from luana_core_crm.infrastructure.models.customer_model import CustomerProfileModel
 from luana_core_crm.infrastructure.models.lead_model import LeadModel
 from luana_core_crm.infrastructure.repositories.lead_metrics_repository import (
     LeadRepository,
 )
+from sqlalchemy.orm import Session
 
 TENANT_ID = uuid.UUID("11110000-0000-0000-0000-000000000001")
 NOW = datetime.now(timezone.utc)

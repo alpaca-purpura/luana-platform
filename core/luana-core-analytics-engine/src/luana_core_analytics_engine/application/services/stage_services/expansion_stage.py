@@ -7,6 +7,7 @@ renewal/upsell/churn grouping, bottleneck detection.
 from datetime import UTC
 from uuid import UUID
 
+from luana_core_platform.domain.currency import convert_to_usd
 from sqlalchemy.orm import Session
 
 from luana_core_analytics_engine.application.dto.capture_dto import MiniFunnelDTO
@@ -20,7 +21,6 @@ from luana_core_analytics_engine.application.dto.opportunity_dto import Bottlene
 from luana_core_analytics_engine.domain.period_config import DateRange
 from luana_core_analytics_engine.domain.ports import ConnectionPort, OfferReadPort
 from luana_core_analytics_engine.infrastructure.cache.metrics_cache import MetricsCache
-from luana_core_platform.domain.currency import convert_to_usd
 
 
 def _build_expansion_offers(

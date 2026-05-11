@@ -8,11 +8,9 @@ import uuid
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from sqlalchemy import select
+from luana_core_crm.infrastructure.models.referral_code_model import ReferralCodeModel
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
-
-from luana_core_crm.infrastructure.models.referral_code_model import ReferralCodeModel
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -329,7 +327,6 @@ class TestExtractShopifyCodes:
     @pytest.mark.asyncio
     async def test_network_error_returns_empty(self, db: Session, tenant_id):
         import httpx
-
         from luana_core_crm.application.services.referral_service import ReferralService
 
         mock_client = AsyncMock()

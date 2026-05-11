@@ -8,15 +8,14 @@ import uuid
 from datetime import datetime, timedelta, timezone
 
 import pytest
-from sqlalchemy import select
-from sqlalchemy.orm import Session
-
 from luana_core_crm.domain.enums import LifecycleStage
 from luana_core_crm.infrastructure.models.customer_model import CustomerProfileModel
 from luana_core_crm.infrastructure.models.nps_models import (
     NpsResponseModel,
     NpsSurveyModel,
 )
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 # ---------------------------------------------------------------------------
 # Helpers

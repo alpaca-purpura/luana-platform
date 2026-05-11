@@ -7,7 +7,6 @@ POST /api/v1/crm/referrals/generate.
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
 from typing import Any
 from unittest.mock import MagicMock, patch
 
@@ -15,6 +14,7 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from tests.conftest import create_crm_test_app
+
 _app = create_crm_test_app()
 
 # ---------------------------------------------------------------------------

@@ -7,16 +7,15 @@ CRM-07: list_lead_ids_matching (count + capped list), count_leads_matching, tena
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
 from collections.abc import AsyncGenerator
+from datetime import datetime, timezone
 
 import pytest
-from sqlalchemy import ColumnElement, true
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
-
 from luana_core_platform.domain.base_entity import Base
 from luana_core_platform.infrastructure.models.crm import LeadModel
+from sqlalchemy import true
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
 
 TENANT_A = uuid.UUID("00000000-0000-0000-0000-000000000001")
 TENANT_B = uuid.UUID("bbbb0000-0000-0000-0000-000000000002")

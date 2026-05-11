@@ -12,10 +12,10 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from httpx import ASGITransport, AsyncClient
-
 from luana_core_crm.domain.enums import SaleStage, SaleStatus
 
 from tests.conftest import create_crm_test_app
+
 _app = create_crm_test_app()
 
 # ---------------------------------------------------------------------------

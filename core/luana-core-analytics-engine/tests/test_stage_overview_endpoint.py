@@ -8,7 +8,6 @@ import uuid
 from unittest.mock import AsyncMock
 
 import pytest
-
 from luana_core_analytics_engine.application.dto.stage_overview_dto import (
     StageOverviewDTO,
 )
@@ -461,7 +460,6 @@ class TestEndpointWiring:
     def test_get_invalid_stage_overview_returns_422(self):
         """FunnelStage enum rejects invalid stage values."""
         import pytest as pt
-
         from luana_core_analytics_engine.api.metrics import FunnelStage
 
         with pt.raises(ValueError):

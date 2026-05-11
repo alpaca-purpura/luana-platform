@@ -27,24 +27,24 @@ STORY4_PACKAGES = [
 
 # Modules that will be lifted in Stories 5..14 — Story 4 must not reference them
 FORWARD_MODULE_PATTERNS = [
-    r'\bluana_core_brand\b',
-    r'\bluana_core_offer\b',
-    r'\bluana_core_copilot\b',
-    r'\bluana_core_sales_agent\b',
-    r'\bluana_core_campaigns\b',
-    r'\bluana_core_scheduling\b',
-    r'\bluana_core_advertising\b',
-    r'\bluana_core_social_media\b',
+    r"\bluana_core_brand\b",
+    r"\bluana_core_offer\b",
+    r"\bluana_core_copilot\b",
+    r"\bluana_core_sales_agent\b",
+    r"\bluana_core_campaigns\b",
+    r"\bluana_core_scheduling\b",
+    r"\bluana_core_advertising\b",
+    r"\bluana_core_social_media\b",
 ]
 
 # AISALESHT source path imports must also be absent
-AISALESHT_PATTERN = re.compile(r'\bfrom src\.modules\.\b|\bimport src\.modules\.\b')
+AISALESHT_PATTERN = re.compile(r"\bfrom src\.modules\.\b|\bimport src\.modules\.\b")
 FORWARD_COMPILED = [re.compile(p) for p in FORWARD_MODULE_PATTERNS]
 
 # Lines that contain a documented deferral comment are exempt.
 # Pattern: "# Story N deferred" or "# type: ignore[import-not-found]" used for
 # known forward imports that will resolve when future stories lift.
-DEFERRAL_EXEMPTION = re.compile(r'#\s*Story\s+\d+\s+deferred|#\s*type:\s*ignore\[import-not-found\]')
+DEFERRAL_EXEMPTION = re.compile(r"#\s*Story\s+\d+\s+deferred|#\s*type:\s*ignore\[import-not-found\]")
 
 
 def _get_py_files(pkg_name: str):
@@ -74,13 +74,11 @@ def test_no_forward_module_imports():
                 for compiled_pat in FORWARD_COMPILED:
                     if compiled_pat.search(line):
                         violations.append(
-                            f"{pkg_name}/{path.relative_to(CORE_DIR / pkg_name / 'src')}:{lineno}: "
-                            f"{line.strip()}"
+                            f"{pkg_name}/{path.relative_to(CORE_DIR / pkg_name / 'src')}:{lineno}: {line.strip()}"
                         )
 
     assert not violations, (
-        "Story 4 packages must not import future-story modules. "
-        "Found forward imports:\n" + "\n".join(violations)
+        "Story 4 packages must not import future-story modules. Found forward imports:\n" + "\n".join(violations)
     )
 
 
@@ -98,8 +96,7 @@ def test_no_aisalesht_src_imports():
 
                 if AISALESHT_PATTERN.search(line):
                     violations.append(
-                        f"{pkg_name}/{path.relative_to(CORE_DIR / pkg_name / 'src')}:{lineno}: "
-                        f"{line.strip()}"
+                        f"{pkg_name}/{path.relative_to(CORE_DIR / pkg_name / 'src')}:{lineno}: {line.strip()}"
                     )
 
     assert not violations, (

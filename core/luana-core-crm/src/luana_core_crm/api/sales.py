@@ -5,18 +5,18 @@ from typing import Annotated, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
+from luana_core_iam.api.dependencies import get_current_user
+from luana_core_iam.domain.user import User
+from luana_core_platform.core.database import get_db
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
 from sqlalchemy import text as sa_text
 from sqlalchemy.orm import Session
 
-from luana_core_platform.core.database import get_db
 from luana_core_crm.application.services.sale_service import SaleService
 from luana_core_crm.domain.enums import PaymentMethod, SaleStage, SaleStatus
 from luana_core_crm.infrastructure.models.customer_model import CustomerProfileModel
 from luana_core_crm.infrastructure.repositories.sale_repository import SaleRepository
-from luana_core_iam.api.dependencies import get_current_user
-from luana_core_iam.domain.user import User
 
 router = APIRouter(tags=["Sales"])
 

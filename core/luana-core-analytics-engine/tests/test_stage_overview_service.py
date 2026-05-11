@@ -7,7 +7,6 @@ to validate channel extraction, header KPI selection, and group building.
 from unittest.mock import AsyncMock
 
 import pytest
-
 from luana_core_analytics_engine.application.services.stage_services.overview_stage import (
     StageOverviewService,
 )

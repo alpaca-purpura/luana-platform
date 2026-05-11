@@ -8,6 +8,7 @@ from collections import defaultdict
 from datetime import UTC
 from uuid import UUID
 
+from luana_core_platform.domain.currency import convert_to_usd
 from sqlalchemy.orm import Session
 
 from luana_core_analytics_engine.application.dto.capture_dto import MiniFunnelDTO
@@ -35,7 +36,6 @@ from luana_core_analytics_engine.infrastructure.cache.metrics_cache import Metri
 from luana_core_analytics_engine.infrastructure.repositories.official_metrics_repository import (
     OfficialMetricsRepository,
 )
-from luana_core_platform.domain.currency import convert_to_usd
 
 _STAGE_KEY_MAP: dict[str, str] = {
     "CONVERSION": "adquisicion",

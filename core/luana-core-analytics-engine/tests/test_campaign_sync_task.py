@@ -5,7 +5,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
 import pytest
-
 from luana_core_platform.domain.ports import ConnectionCredentials
 
 # Skip tests that patch luana_core_connections if it isn't installed yet (T-5 deferred).

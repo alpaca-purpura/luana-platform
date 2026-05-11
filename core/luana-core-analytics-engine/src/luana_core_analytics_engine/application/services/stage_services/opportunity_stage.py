@@ -7,6 +7,7 @@ checkout/meeting/payment_link events, bottleneck detection.
 from datetime import UTC
 from uuid import UUID
 
+from luana_core_platform.domain.currency import FALLBACK_CURRENCY
 from sqlalchemy.orm import Session
 
 from luana_core_analytics_engine.application.dto.attraction_dto import (
@@ -40,7 +41,6 @@ from luana_core_analytics_engine.infrastructure.cache.metrics_cache import Metri
 from luana_core_analytics_engine.infrastructure.repositories.official_metrics_repository import (
     OfficialMetricsRepository,
 )
-from luana_core_platform.domain.currency import FALLBACK_CURRENCY
 
 
 class OpportunityStageService:

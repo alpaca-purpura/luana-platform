@@ -11,6 +11,7 @@ from datetime import date, timedelta
 from typing import TYPE_CHECKING
 
 import structlog
+from luana_core_platform.domain.datetime_utils import utc_today
 from pydantic import ValidationError
 from sqlalchemy import String, cast, func, select
 
@@ -51,7 +52,6 @@ from luana_core_analytics_engine.infrastructure.models.official_metrics_model im
 from luana_core_analytics_engine.infrastructure.repositories.official_metrics_repository import (
     OfficialMetricsRepository,
 )
-from luana_core_platform.domain.datetime_utils import utc_today
 
 if TYPE_CHECKING:
     from uuid import UUID

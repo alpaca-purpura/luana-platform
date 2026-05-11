@@ -8,7 +8,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
 import pytest
-
 from luana_core_analytics_engine.infrastructure.providers.google_analytics_provider import (
     GoogleAnalyticsProvider,
 )

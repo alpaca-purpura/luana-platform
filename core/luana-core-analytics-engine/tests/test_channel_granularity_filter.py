@@ -15,7 +15,6 @@ from datetime import date
 from uuid import UUID
 
 import pytest
-
 from luana_core_analytics_engine.infrastructure.models.official_metrics_model import (
     OfficialMetricModel,
 )

@@ -8,9 +8,6 @@ CUSTOMER decay paused, backward transitions on threshold crossing.
 import uuid
 from datetime import datetime, timedelta, timezone
 
-from sqlalchemy import select
-from sqlalchemy.orm import Session
-
 from luana_core_crm.application.services.inactivity_service import InactivityService
 from luana_core_crm.domain.enums import LifecycleStage
 from luana_core_crm.domain.scoring import DECAY_CONFIG, INACTIVITY_CONFIG
@@ -20,6 +17,8 @@ from luana_core_crm.infrastructure.models.customer_model import (
 from luana_core_crm.infrastructure.models.lifecycle_transition_model import (
     LifecycleTransitionModel,
 )
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 SAMPLE_TENANT_ID = uuid.UUID("00000000-0000-0000-0000-000000000001")
 

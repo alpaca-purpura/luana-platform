@@ -10,7 +10,6 @@ Covers:
 from datetime import date
 
 import pytest
-
 from luana_core_analytics_engine.domain.metric_resolver import MetricResolver
 
 # ── Helpers ──────────────────────────────────────────────────────────────────

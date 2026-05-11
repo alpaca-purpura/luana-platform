@@ -12,11 +12,11 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, HTTPException
+from luana_core_platform.core.database import get_db
 from pydantic import BaseModel
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from luana_core_platform.core.database import get_db
 from luana_core_analytics_engine.domain.enums import ExtractionStatus
 from luana_core_analytics_engine.infrastructure.models.extraction_run_model import (
     ExtractionRunModel,
@@ -194,7 +194,6 @@ async def retry_extraction(
     # Enqueue the retry job via ARQ
     try:
         from arq.connections import RedisSettings, create_pool
-
         from luana_core_platform.core.config import settings
 
         pool = await create_pool(RedisSettings.from_dsn(settings.REDIS_URL))

@@ -1,7 +1,7 @@
 """Supplemental tests for StagingMetricsRepository — covering uncovered branches."""
 
 import uuid
-from datetime import UTC, date, datetime, timedelta
+from datetime import date
 from unittest.mock import MagicMock
 
 TENANT_ID = uuid.UUID("11111111-1111-1111-1111-111111111111")

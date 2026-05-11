@@ -74,12 +74,14 @@ class _MockJSONB(TypeDecorator):
         if value is None:
             return None
         import json
+
         return json.dumps(value)
 
     def process_result_value(self, value, dialect):
         if value is None:
             return None
         import json
+
         return json.loads(value)
 
 
@@ -110,6 +112,7 @@ class _MockUUID(TypeDecorator):
         if value is None:
             return None
         import uuid
+
         if self.as_uuid:
             if isinstance(value, uuid.UUID):
                 return value
@@ -122,13 +125,11 @@ postgresql.JSONB = _MockJSONB  # type: ignore[assignment]
 postgresql.UUID = _MockUUID  # type: ignore[assignment]
 
 # Import models AFTER patching
-import sqlalchemy as _sa  # noqa: E402
-
-from luana_core_iam.infrastructure.models.tenant_model import TenantModel  # noqa: E402
-from luana_core_platform.domain.base_entity import Base  # noqa: E402
-
 # Import landing models to register with Base metadata
 import luana_core_landing.infrastructure.models.landing_model  # noqa: E402, F401
+import sqlalchemy as _sa  # noqa: E402
+from luana_core_iam.infrastructure.models.tenant_model import TenantModel  # noqa: E402
+from luana_core_platform.domain.base_entity import Base  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Cross-module stub models for SQLite test isolation
@@ -136,6 +137,7 @@ import luana_core_landing.infrastructure.models.landing_model  # noqa: E402, F40
 # The stub registers in Base.metadata so FK resolution works in SQLite.
 # ---------------------------------------------------------------------------
 if "products" not in Base.metadata.tables:
+
     class _ProductStub(Base):  # type: ignore[misc]
         """Stub for offer.ProductModel (Story 5 lift). FK target only.
 
@@ -215,7 +217,6 @@ def db(db_engine):
 
 
 import uuid  # noqa: E402
-
 
 SAMPLE_TENANT_ID = uuid.UUID("aaaa0000-0000-0000-0000-000000000001")
 OTHER_TENANT_ID = uuid.UUID("bbbb0000-0000-0000-0000-000000000002")

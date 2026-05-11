@@ -3,9 +3,11 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
+from luana_core_iam.api.dependencies import get_current_user
+from luana_core_iam.domain.user import User
+from luana_core_platform.core.database import get_db
 from sqlalchemy.orm import Session
 
-from luana_core_platform.core.database import get_db
 from luana_core_analytics_engine.application.dto.email_dashboard_dto import (
     EmailAudienceResponseDTO,
     EmailAutomationsResponseDTO,
@@ -17,8 +19,6 @@ from luana_core_analytics_engine.application.dto.email_dashboard_dto import (
 from luana_core_analytics_engine.application.services.email_dashboard_service import (
     EmailDashboardService,
 )
-from luana_core_iam.api.dependencies import get_current_user
-from luana_core_iam.domain.user import User
 
 router = APIRouter(prefix="/email", tags=["email-dashboard"])
 

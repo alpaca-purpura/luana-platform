@@ -10,8 +10,6 @@ from datetime import datetime, timezone
 from unittest.mock import patch
 
 import pytest
-from sqlalchemy.orm import Session
-
 from luana_core_crm.domain.customer import CustomerIdentity, CustomerProfile
 from luana_core_crm.domain.enums import IdentityType, LifecycleStage
 from luana_core_crm.infrastructure.models.customer_model import (
@@ -19,6 +17,7 @@ from luana_core_crm.infrastructure.models.customer_model import (
     CustomerProfileModel,
     JourneyEventModel,
 )
+from sqlalchemy.orm import Session
 
 # ---------------------------------------------------------------------------
 # Helpers

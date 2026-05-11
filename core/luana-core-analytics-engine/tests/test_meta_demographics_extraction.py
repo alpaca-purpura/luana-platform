@@ -14,7 +14,6 @@ from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
 import pytest
-
 from luana_core_analytics_engine.application.services.channel_dashboard_service import (
     ChannelDashboardService,
 )

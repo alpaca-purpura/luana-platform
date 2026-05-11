@@ -5,6 +5,7 @@ from datetime import timedelta
 from typing import TYPE_CHECKING
 from uuid import UUID
 
+from luana_core_platform.domain.datetime_utils import utc_today
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -15,7 +16,6 @@ from luana_core_analytics_engine.application.dto.campaign_dto import (
     CampaignOverviewDTO,
     RecommendationDTO,
 )
-from luana_core_platform.domain.datetime_utils import utc_today
 
 if TYPE_CHECKING:
     from luana_core_analytics_engine.application.dto.campaign_dto import (
@@ -556,6 +556,13 @@ class CampaignService:
 
     async def _sync_campaigns_inline(self, tenant_id: UUID) -> dict:
         """Execute campaign sync synchronously (inline, no worker needed)."""
+        # DDD exception (intentional): campaign sync genuinely needs to know which
+        # ad connections (Meta, Google Ads) are active — the connection IS the
+        # provider config. No factory abstraction makes sense here.
+        from luana_core_connections.application.services.connection_port_impl import (
+            ConnectionPortImpl,
+        )
+
         from luana_core_analytics_engine.infrastructure.providers.meta_campaign_provider import (
             MetaCampaignProvider,
         )
@@ -564,13 +571,6 @@ class CampaignService:
         )
         from luana_core_analytics_engine.infrastructure.sync.campaign_sync_pipeline import (
             CampaignSyncPipeline,
-        )
-
-        # DDD exception (intentional): campaign sync genuinely needs to know which
-        # ad connections (Meta, Google Ads) are active — the connection IS the
-        # provider config. No factory abstraction makes sense here.
-        from luana_core_connections.application.services.connection_port_impl import (
-            ConnectionPortImpl,
         )
 
         connection_port = ConnectionPortImpl(self._db)
@@ -592,7 +592,6 @@ class CampaignService:
     async def _enqueue_campaign_sync_arq(self, tenant_id: UUID) -> dict:
         """Fallback: enqueue a campaign sync job via ARQ."""
         from arq.connections import ArqRedis, RedisSettings, create_pool
-
         from luana_core_platform.core.config import settings as app_settings
 
         redis_settings = RedisSettings.from_dsn(app_settings.REDIS_URL)

@@ -15,6 +15,7 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from tests.conftest import create_crm_test_app
+
 _app = create_crm_test_app()
 
 # ---------------------------------------------------------------------------

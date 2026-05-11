@@ -6,10 +6,10 @@ from typing import Annotated, TypeVar
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
+from luana_core_platform.core.database import get_db, redis_client
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from luana_core_platform.core.database import get_db, redis_client
 from luana_core_analytics_engine.api.email_metrics import router as email_router
 from luana_core_analytics_engine.application.config import ETLConfig
 from luana_core_analytics_engine.application.dto.adoption_dto import AdoptionDetailDTO
@@ -59,6 +59,7 @@ except ImportError:
     ConnectionPortImpl = None  # type: ignore[assignment,misc]  # noqa: N816  # T-5 deferred — installed after connections lift
 from luana_core_iam.api.dependencies import get_current_user
 from luana_core_iam.domain.user import User
+
 try:
     from luana_core_offer.application.services.offer_read_port_impl import (  # type: ignore[import-not-found]
         OfferReadPortImpl,
@@ -233,10 +234,9 @@ _VALID_PERIODS = {"last_30_days", "weekly", "monthly", "quarterly"}
 
 def _resolve_date_range(period: str, tenant_id: UUID, db: Session) -> DateRange:
     """Resolve period string to DateRange using tenant's period config."""
-    from sqlalchemy import select as sa_select
-
     from luana_core_iam.infrastructure.models.tenant_model import TenantModel
     from luana_core_platform.domain.datetime_utils import utc_today
+    from sqlalchemy import select as sa_select
 
     tenant = db.execute(
         sa_select(TenantModel).where(TenantModel.id == tenant_id),
@@ -887,14 +887,14 @@ async def get_channel_dashboard(
             detail=f"Invalid period: {period}. Use 7d, 30d, or 90d.",
         )
 
-    from luana_core_analytics_engine.application.services.channel_dashboard_service import (
-        ChannelDashboardService,
-    )
-
     # DDD exception (intentional): api/ composition root — BrandReadPortImpl injected
     # lazily here because ChannelDashboardService needs brand data for display config.
     from luana_core_brand.application.services.brand_read_port_impl import (  # type: ignore[import-not-found]  # noqa: PLC0415  # Story 5 deferred
         BrandReadPortImpl,
+    )
+
+    from luana_core_analytics_engine.application.services.channel_dashboard_service import (
+        ChannelDashboardService,
     )
 
     brand_port = BrandReadPortImpl(db)
@@ -1115,9 +1115,8 @@ async def get_period_config(
     user: Annotated[User, Depends(get_current_user)],
 ) -> TenantPeriodConfigDTO:
     """Get the tenant's period configuration."""
-    from sqlalchemy import select as sa_select
-
     from luana_core_iam.infrastructure.models.tenant_model import TenantModel
+    from sqlalchemy import select as sa_select
 
     tenant = db.execute(
         sa_select(TenantModel).where(TenantModel.id == user.tenant_id),
@@ -1143,10 +1142,9 @@ async def update_period_config(
 
     Changes affect future aggregation calculations and period boundary detection.
     """
+    from luana_core_iam.infrastructure.models.tenant_model import TenantModel
     from sqlalchemy import select as sa_select
     from sqlalchemy import update as sa_update
-
-    from luana_core_iam.infrastructure.models.tenant_model import TenantModel
 
     tenant = db.execute(
         sa_select(TenantModel).where(TenantModel.id == user.tenant_id),

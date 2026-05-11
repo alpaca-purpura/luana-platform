@@ -13,7 +13,6 @@ from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from luana_core_analytics_engine.domain.exceptions import (
     ConnectionRevokedError,
     TokenRefreshError,

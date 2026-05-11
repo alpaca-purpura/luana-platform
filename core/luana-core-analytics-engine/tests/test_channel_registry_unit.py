@@ -8,7 +8,6 @@ import uuid
 from unittest.mock import AsyncMock
 
 import pytest
-
 from luana_core_analytics_engine.application.services.channel_registry import (
     STAGE_CHANNEL_MAP,
     ChannelRegistry,

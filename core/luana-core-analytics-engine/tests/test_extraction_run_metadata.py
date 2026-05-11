@@ -10,11 +10,10 @@ from datetime import date
 from uuid import uuid4
 
 import pytest
-from sqlalchemy.orm import Session
-
 from luana_core_analytics_engine.infrastructure.repositories.extraction_run_repository import (
     ExtractionRunRepository,
 )
+from sqlalchemy.orm import Session
 
 
 class TestExtractionRunMetadata:
@@ -66,13 +65,9 @@ class TestExtractionRunMetadata:
 @pytest.fixture
 def db():
     """In-memory SQLite session scoped to the analytics models."""
+    from luana_core_platform.domain.base_entity import Base
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
-
-    from luana_core_analytics_engine.infrastructure.models.extraction_run_model import (
-        ExtractionRunModel,
-    )
-    from luana_core_platform.domain.base_entity import Base
 
     engine = create_engine("sqlite:///:memory:")
     Base.metadata.create_all(engine)

@@ -2,10 +2,7 @@
 
 import asyncio
 import uuid
-from datetime import date
 from unittest.mock import AsyncMock, MagicMock, patch
-
-import pytest
 
 TENANT_ID = uuid.UUID("11111111-1111-1111-1111-111111111111")
 
@@ -22,9 +19,15 @@ def _make_svc(cache=None):
     db.execute.return_value.all.return_value = []
 
     with (
-        patch("luana_core_analytics_engine.application.services.metrics_service.get_journey_event_repository") as MockJourney,
-        patch("luana_core_analytics_engine.application.services.metrics_service.get_customer_repository") as MockCustomer,
-        patch("luana_core_analytics_engine.application.services.metrics_service.get_lead_metrics_repository") as MockLead,
+        patch(
+            "luana_core_analytics_engine.application.services.metrics_service.get_journey_event_repository"
+        ) as MockJourney,  # noqa: E501
+        patch(
+            "luana_core_analytics_engine.application.services.metrics_service.get_customer_repository"
+        ) as MockCustomer,  # noqa: E501
+        patch(
+            "luana_core_analytics_engine.application.services.metrics_service.get_lead_metrics_repository"
+        ) as MockLead,  # noqa: E501
     ):
         journey_repo = MagicMock()
         journey_repo.get_unique_visitors.return_value = 0

@@ -8,7 +8,6 @@ import uuid
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-
 from luana_core_analytics_engine.application.services.campaign_service import CampaignService
 
 

@@ -125,15 +125,13 @@ class MockUUID(TypeDecorator):
 postgresql.JSONB = MockJSONB
 postgresql.UUID = MockUUID
 
-from luana_core_platform.domain.base_entity import Base
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
+import sqlalchemy as _sa
 
 # Import IAM models first (CRM models have FK to 'tenants')
 from luana_core_iam.infrastructure.models.tenant_model import TenantModel  # noqa: F401
 from luana_core_iam.infrastructure.models.user_model import UserModel  # noqa: F401
 from luana_core_iam.infrastructure.models.user_tenant_model import UserTenantModel  # noqa: F401
+from luana_core_platform.domain.base_entity import Base
 
 # ---------------------------------------------------------------------------
 # Cross-module stub models for SQLite test isolation
@@ -142,11 +140,13 @@ from luana_core_iam.infrastructure.models.user_tenant_model import UserTenantMod
 # Stubs satisfy SQLAlchemy mapper + FK resolution without pulling forward imports.
 # ---------------------------------------------------------------------------
 from luana_core_platform.domain.base_entity import Base as _Base
-import sqlalchemy as _sa
-from sqlalchemy.orm import relationship as _rel
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 
 # Only register stubs if tables not already registered
 if "products" not in _Base.metadata.tables:
+
     class ProductModel(_Base):  # type: ignore[misc]
         """Stub for offer.ProductModel (Story 5 lift). FK target only."""
 
@@ -154,7 +154,9 @@ if "products" not in _Base.metadata.tables:
         id = _sa.Column(MockUUID(as_uuid=True), primary_key=True)
         tenant_id = _sa.Column(MockUUID(as_uuid=True), nullable=True)
 
+
 if "messages" not in _Base.metadata.tables:
+
     class MessageModel(_Base):  # type: ignore[misc]
         """Stub for sales_agent.MessageModel (Story 7 lift). FK target only."""
 
@@ -162,7 +164,9 @@ if "messages" not in _Base.metadata.tables:
         id = _sa.Column(MockUUID(as_uuid=True), primary_key=True)
         lead_id = _sa.Column(MockUUID(as_uuid=True), _sa.ForeignKey("leads.id"), nullable=True)
 
+
 if "appointments" not in _Base.metadata.tables:
+
     class AppointmentModel(_Base):  # type: ignore[misc]
         """Stub for scheduling.AppointmentModel (future lift). FK target only."""
 
@@ -170,7 +174,9 @@ if "appointments" not in _Base.metadata.tables:
         id = _sa.Column(MockUUID(as_uuid=True), primary_key=True)
         lead_id = _sa.Column(MockUUID(as_uuid=True), _sa.ForeignKey("leads.id"), nullable=True)
 
+
 # Import ALL CRM models so SA can create their tables
+from luana_core_crm.domain.enums import LifecycleStage
 from luana_core_platform.infrastructure.models.crm import (  # noqa: F401
     CustomerIdentityModel,
     CustomerProfileModel,
@@ -182,16 +188,6 @@ from luana_core_platform.infrastructure.models.crm import (  # noqa: F401
     ReferralCodeModel,
     SaleModel,
 )
-
-from luana_core_crm.domain.enums import LifecycleStage
-from luana_core_crm.infrastructure.models.customer_model import (
-    CustomerProfileModel,
-    JourneyEventModel,
-)
-from luana_core_crm.infrastructure.models.lifecycle_transition_model import (
-    LifecycleTransitionModel,
-)
-
 
 # ---------------------------------------------------------------------------
 # SQLite in-memory DB fixtures (mirrors luana-core-iam/tests/conftest.py pattern)
@@ -221,6 +217,7 @@ def db(db_engine):
     session.close()
     transaction.rollback()
     connection.close()
+
 
 SAMPLE_TENANT_ID = uuid.UUID("00000000-0000-0000-0000-000000000001")
 OTHER_TENANT_ID = uuid.UUID("00000000-0000-0000-0000-000000000002")

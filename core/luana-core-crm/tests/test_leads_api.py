@@ -6,7 +6,6 @@ CRM-15: GET /api/v1/crm/leads/search, GET /api/v1/crm/leads/{lead_id}.
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
 from typing import Any
 from unittest.mock import MagicMock, patch
 
@@ -14,6 +13,7 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from tests.conftest import create_crm_test_app
+
 _app = create_crm_test_app()
 
 # ---------------------------------------------------------------------------
@@ -214,8 +214,8 @@ class TestGetLead:
     @pytest.mark.asyncio
     async def test_get_lead_tenant_isolation(self, client: AsyncClient) -> None:
         """Lead belongs to different tenant → 404."""
-        from luana_core_platform.core.database import get_db
         from luana_core_iam.api.dependencies import get_current_user
+        from luana_core_platform.core.database import get_db
 
         mock_session = _make_mock_session()
         mock_lead = _make_lead_domain(tenant_id=OTHER_TENANT_ID)

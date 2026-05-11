@@ -7,6 +7,8 @@ reading from per-stage Redis caches with fallback to DB queries.
 from datetime import UTC
 from uuid import UUID
 
+from luana_core_platform.domain.enums import LifecycleStage
+from luana_core_platform.links.ports.crm_repos import get_customer_repository, get_lead_metrics_repository
 from sqlalchemy.orm import Session
 
 from luana_core_analytics_engine.application.dto.summary_dto import (
@@ -15,8 +17,6 @@ from luana_core_analytics_engine.application.dto.summary_dto import (
 )
 from luana_core_analytics_engine.domain.ports import ConnectionPort, OfferReadPort
 from luana_core_analytics_engine.infrastructure.cache.metrics_cache import MetricsCache
-from luana_core_platform.domain.enums import LifecycleStage
-from luana_core_platform.links.ports.crm_repos import get_customer_repository, get_lead_metrics_repository
 
 
 class SummaryStageService:

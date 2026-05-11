@@ -4,8 +4,6 @@ import asyncio
 import uuid
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-
 TENANT_ID = uuid.UUID("11111111-1111-1111-1111-111111111111")
 
 
@@ -267,7 +265,6 @@ class TestSyncHappyPath:
 class TestGetPageAccessToken:
     def test_http_200_returns_token(self):
         svc, _, _ = _make_svc()
-        import httpx
 
         mock_response = MagicMock()
         mock_response.status_code = 200

@@ -132,9 +132,8 @@ class TestExtractedMetric:
         assert metric.extra == {}
 
     def test_rejects_missing_required(self):
-        from pydantic import ValidationError
-
         from luana_core_analytics_engine.infrastructure.providers.base import ExtractedMetric
+        from pydantic import ValidationError
 
         with pytest.raises(ValidationError):
             ExtractedMetric(

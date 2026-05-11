@@ -92,8 +92,7 @@ def test_extraction_contract_contains_provider_summary() -> None:
     _run_generator()
     content = _OUTPUT.read_text(encoding="utf-8")
     assert "## Provider summary" in content, (
-        "extraction-contract.md missing '## Provider summary' section — "
-        "generator may have failed silently."
+        "extraction-contract.md missing '## Provider summary' section — generator may have failed silently."
     )
 
 

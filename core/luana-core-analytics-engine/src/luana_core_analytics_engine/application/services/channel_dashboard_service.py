@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 from datetime import date, timedelta
 from typing import TYPE_CHECKING
 
+from luana_core_platform.domain.datetime_utils import utc_today
 from sqlalchemy import text
 
 from luana_core_analytics_engine.application.dto.channel_dashboard_dto import (
@@ -36,14 +37,12 @@ from luana_core_analytics_engine.infrastructure.repositories.official_metrics_re
 from luana_core_analytics_engine.infrastructure.repositories.period_metrics_repository import (
     PeriodMetricsRepository,
 )
-from luana_core_platform.domain.datetime_utils import utc_today
 
 if TYPE_CHECKING:
     from uuid import UUID
 
-    from sqlalchemy.orm import Session
-
     from luana_core_platform.domain.ports import BrandReadPort
+    from sqlalchemy.orm import Session
 
 import structlog
 

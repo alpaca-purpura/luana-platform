@@ -8,11 +8,9 @@ profile_pic, follower_count, follows_business and updates CustomerProfile traits
 import uuid
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-from sqlalchemy.orm import Session
-
 from luana_core_crm.domain.enums import LifecycleStage
 from luana_core_crm.infrastructure.models.customer_model import CustomerProfileModel
+from sqlalchemy.orm import Session
 
 # ---------------------------------------------------------------------------
 # Helpers
