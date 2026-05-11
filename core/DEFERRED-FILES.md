@@ -49,6 +49,51 @@ Story 3 (`luana-iam-tenancy-content`) lifted 6 packages. Two subfolders depend o
 
 These will lift in Story 6 alongside `luana-core-copilot`.
 
+## Story 4 deferrals
+
+Story 4 (`luana-crm-analytics-landing-connections`) lifted 4 packages. Nine files
+are deferred to later stories.
+
+### Deferred to Story 6 (copilot lift)
+
+These subfolders import `src.modules.copilot.domain.ports` — deferred when their
+consumer (`luana-core-copilot`) lifts.
+
+| Source (AISALESHT) | Target package | Reason |
+|---|---|---|
+| `backend/src/modules/crm/copilot_provider/__init__.py` | `luana-core-crm` | Imports `src.modules.copilot.domain.ports` |
+| `backend/src/modules/crm/copilot_provider/provider.py` | `luana-core-crm` | Imports `src.modules.copilot.domain.ports` |
+| `backend/src/modules/analytics/copilot_provider/__init__.py` | `luana-core-analytics-engine` | Imports `src.modules.copilot.domain.ports` |
+| `backend/src/modules/analytics/copilot_provider/provider.py` | `luana-core-analytics-engine` | Imports `src.modules.copilot.domain.ports` |
+| `backend/src/modules/landing/copilot_provider/__init__.py` | `luana-core-landing` | Imports `src.modules.copilot.domain.ports` |
+| `backend/src/modules/landing/copilot_provider/provider.py` | `luana-core-landing` | Imports `src.modules.copilot.domain.ports` |
+| `backend/src/modules/connections/copilot_provider/__init__.py` | `luana-core-connections` | Imports `src.modules.copilot.domain.ports` |
+| `backend/src/modules/connections/copilot_provider/provider.py` | `luana-core-connections` | Imports `src.modules.copilot.domain.ports` |
+
+### Deferred to Story 7 (ChatOrchestrator composition root)
+
+The connections `api/dependencies/__init__.py` wires `ChatOrchestrator` as the
+concrete `MessageHandlerPort` implementation — not available until `luana-core-copilot`
+and `luana-core-sales-agent` both lift.
+
+| Source (AISALESHT) | Target package | Reason |
+|---|---|---|
+| `backend/src/modules/connections/api/dependencies/__init__.py` (real wiring) | `luana-core-connections` | Requires `ChatOrchestrator` from Story 7 (sales_agent lift) |
+
+Note: A `NotImplementedError` stub is in place at the same path in `luana-core-connections`
+to keep the package import-compatible until Story 7 completes.
+
+### Deferred to Story 8 (campaigns lift — forward coupling)
+
+Two CRM files and their test forward-couple to `src.modules.campaigns.*` which
+lifts in Story 8.
+
+| Source (AISALESHT) | Target package | Reason |
+|---|---|---|
+| `backend/src/modules/crm/application/services/contact_query_service.py` | `luana-core-crm` | Imports `src.modules.campaigns.*` |
+| `backend/src/modules/crm/api/contacts.py` | `luana-core-crm` | Imports `contact_query_service` (forward couple) |
+| `backend/tests/modules/crm/test_contacts_api.py` | `luana-core-crm` | Tests above API endpoint |
+
 ## Lift rule
 
 All deferred files follow the lift-verbatim constraint: when they are lifted,
