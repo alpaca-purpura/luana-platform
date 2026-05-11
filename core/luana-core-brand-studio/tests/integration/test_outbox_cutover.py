@@ -21,11 +21,11 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
-from luana_core_platform.core.config import settings
-from luana_core_platform.domain.events import DomainEvent
 from luana_core_events.outbox.application.event_bus_adapter import (
     EventBusAdapter,
 )
+from luana_core_platform.core.config import settings
+from luana_core_platform.domain.events import DomainEvent
 
 
 def _make_brand_event() -> DomainEvent:
@@ -68,7 +68,7 @@ class TestBrandOutboxCutoverFlagOn:
         with (
             patch.object(EventBusAdapter, "_is_outbox_enabled", return_value=True),
             patch(
-                "luana_core_platform.domain_events.outbox.application.event_bus_adapter.EventBusAdapter._get_outbox",
+                "luana_core_events.outbox.application.event_bus_adapter.EventBusAdapter._get_outbox",
                 return_value=mock_outbox,
             ),
         ):

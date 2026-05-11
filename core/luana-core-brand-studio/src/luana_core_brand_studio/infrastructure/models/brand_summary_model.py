@@ -10,11 +10,10 @@ copilot stays a pure consumer.
 # [COPILOT-BRAND-SUMMARY-F3] -> docs/domains/copilot/redesign-2026-04/phases/F3-brand-summary-lighthouse.md
 """
 
+from luana_core_platform.domain.base_entity import Base
 from sqlalchemy import CheckConstraint, Column, DateTime, Integer, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
-
-from luana_core_platform.domain.base_entity import Base
 
 
 class BrandSummaryModel(Base):

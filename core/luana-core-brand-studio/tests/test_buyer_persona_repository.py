@@ -2,8 +2,6 @@
 
 import uuid
 
-from sqlalchemy.orm import Session
-
 from luana_core_brand_studio.domain.buyer_persona import BuyerPersona
 from luana_core_brand_studio.infrastructure.models.buyer_persona_model import (
     BuyerPersonaModel,
@@ -11,7 +9,11 @@ from luana_core_brand_studio.infrastructure.models.buyer_persona_model import (
 from luana_core_brand_studio.infrastructure.repositories.buyer_persona_repository import (
     BuyerPersonaRepository,
 )
-from tests.modules.conftest import TENANT_A, TENANT_B, USER_A
+from sqlalchemy.orm import Session
+
+TENANT_A = uuid.UUID("aaaa0000-0000-0000-0000-000000000001")
+TENANT_B = uuid.UUID("bbbb0000-0000-0000-0000-000000000002")
+USER_A = uuid.UUID("cccc0000-0000-0000-0000-000000000001")
 
 
 def _make_persona(

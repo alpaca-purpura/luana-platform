@@ -9,7 +9,6 @@ next-token predictors and negative phrasing primes the forbidden token. Pairs
 from __future__ import annotations
 
 import pytest
-
 from luana_core_brand_studio.domain.personality import (
     PERSONALITY_PRESETS,
     DimensionContract,

@@ -3,7 +3,6 @@
 import json
 
 import pytest
-
 from luana_core_brand_studio.infrastructure.parsers.base import detect_and_parse
 from luana_core_brand_studio.infrastructure.parsers.instagram_parser import (
     InstagramParser,

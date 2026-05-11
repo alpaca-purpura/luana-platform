@@ -11,7 +11,9 @@ if TYPE_CHECKING:
 from luana_core_brand_studio.infrastructure.repositories.personality_repository import (
     PersonalityProfileRepository,
 )
-from tests.modules.conftest import TENANT_A, TENANT_B
+
+TENANT_A = uuid.UUID("aaaa0000-0000-0000-0000-000000000001")
+TENANT_B = uuid.UUID("bbbb0000-0000-0000-0000-000000000002")
 
 # ---------------------------------------------------------------------------
 # Helpers

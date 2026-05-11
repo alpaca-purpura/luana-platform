@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 import uuid
-from unittest.mock import AsyncMock, MagicMock, call, patch
+from unittest.mock import MagicMock
 
 import pytest
-
 from luana_core_brand_studio.infrastructure.qdrant.style_anchor_store import (
     COLLECTION_NAME,
     StyleAnchorStore,

@@ -3,7 +3,6 @@
 import uuid
 
 import pytest
-
 from luana_core_brand_studio.domain import BrandIdentity, BrandSettings
 from luana_core_brand_studio.infrastructure.repositories.brand_repository import (
     BrandRepository,

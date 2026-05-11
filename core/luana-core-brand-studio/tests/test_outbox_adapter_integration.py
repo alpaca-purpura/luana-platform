@@ -15,7 +15,6 @@ from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
 import pytest
-
 from luana_core_events.outbox.application.event_bus_adapter import (
     EventBusAdapter,
 )
@@ -104,7 +103,7 @@ class TestBrandOutboxAdapterFlagOff:
         monkeypatch.setattr to assert the flag-off branch contract.
         """
         monkeypatch.setattr(
-            "luana_core_platform.domain_events.outbox.application.event_bus_adapter.settings",
+            "luana_core_events.outbox.application.event_bus_adapter.settings",
             MagicMock(USE_OUTBOX_PATTERN_BRAND=False, USE_OUTBOX_PATTERN_DEFAULT=False),
         )
         result = EventBusAdapter._is_outbox_enabled("brand")
@@ -114,7 +113,7 @@ class TestBrandOutboxAdapterFlagOff:
         """Verify flag OFF via monkeypatch.setattr on settings (pydantic-settings
         loads env at startup; setenv after import does not propagate)."""
         monkeypatch.setattr(
-            "luana_core_platform.domain_events.outbox.application.event_bus_adapter.settings",
+            "luana_core_events.outbox.application.event_bus_adapter.settings",
             MagicMock(USE_OUTBOX_PATTERN_BRAND=False, USE_OUTBOX_PATTERN_DEFAULT=False),
         )
         result = EventBusAdapter._is_outbox_enabled("brand")
@@ -139,7 +138,7 @@ class TestBrandOutboxAdapterFlagOn:
         with (
             patch.object(EventBusAdapter, "_is_outbox_enabled", return_value=True),
             patch(
-                "luana_core_platform.domain_events.outbox.application.event_bus_adapter._is_async_session",
+                "luana_core_events.outbox.application.event_bus_adapter._is_async_session",
                 return_value=False,
             ),
         ):
@@ -193,7 +192,7 @@ class TestBrandOutboxAdapterFlagOn:
         with (
             patch.object(EventBusAdapter, "_is_outbox_enabled", return_value=True),
             patch(
-                "luana_core_platform.domain_events.outbox.application.event_bus_adapter._is_async_session",
+                "luana_core_events.outbox.application.event_bus_adapter._is_async_session",
                 return_value=False,
             ),
         ):
@@ -218,7 +217,7 @@ class TestBrandOutboxAdapterFlagOn:
         with (
             patch.object(EventBusAdapter, "_is_outbox_enabled", return_value=True),
             patch(
-                "luana_core_platform.domain_events.outbox.application.event_bus_adapter._is_async_session",
+                "luana_core_events.outbox.application.event_bus_adapter._is_async_session",
                 return_value=False,
             ),
         ):

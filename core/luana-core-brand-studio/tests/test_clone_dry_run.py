@@ -11,7 +11,6 @@ Research-backed thresholds (Persona-L CHI 2025; PersonaLLM NAACL 2024;
 from __future__ import annotations
 
 import pytest
-
 from luana_core_brand_studio.application.services.personality_service import PersonalityService
 
 

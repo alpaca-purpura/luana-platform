@@ -11,10 +11,11 @@ from sqlalchemy import select
 if TYPE_CHECKING:
     from sqlalchemy.orm import Session
 
+from luana_core_platform.domain.datetime_utils import utc_now
+
 from luana_core_brand_studio.infrastructure.models.personality_model import (
     PersonalityProfileModel,
 )
-from luana_core_platform.domain.datetime_utils import utc_now
 
 logger = structlog.get_logger()
 

@@ -5,10 +5,9 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING
 
-from sqlalchemy import select
-
 from luana_core_iam.infrastructure.models.tenant_model import TenantModel
 from luana_core_platform.domain.ports import BrandReadPort
+from sqlalchemy import select
 
 if TYPE_CHECKING:
     from uuid import UUID

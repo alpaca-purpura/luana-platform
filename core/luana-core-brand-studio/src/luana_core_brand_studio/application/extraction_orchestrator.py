@@ -12,6 +12,10 @@ import time
 from typing import TYPE_CHECKING, Literal
 
 import structlog
+from luana_core_extraction.base_orchestrator import (
+    BaseExtractionOrchestrator,
+)
+from luana_core_platform.application.progress_emitter import emit_progress
 from pydantic import BaseModel, Field
 
 from luana_core_brand_studio.domain import (
@@ -28,10 +32,6 @@ from luana_core_brand_studio.domain import (
     CommunicationAssets,
     KeyFigure,
 )
-from luana_core_platform.application.extraction.base_orchestrator import (
-    BaseExtractionOrchestrator,
-)
-from luana_core_platform.application.progress_emitter import emit_progress
 
 if TYPE_CHECKING:
     from collections.abc import Callable

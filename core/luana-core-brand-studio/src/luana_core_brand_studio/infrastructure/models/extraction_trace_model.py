@@ -2,11 +2,10 @@
 
 import uuid
 
+from luana_core_platform.domain.base_entity import Base
 from sqlalchemy import Column, DateTime, Float, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.sql import func
-
-from luana_core_platform.domain.base_entity import Base
 
 
 class BrandExtractionTrace(Base):

@@ -11,9 +11,8 @@ Migration 052 backfills the data; migration 053 strips the stale JSONB key.
 
 from typing import Any
 
-from pydantic import ConfigDict, Field
-
 from luana_core_platform.domain.base_entity import BaseEntity
+from pydantic import ConfigDict, Field
 
 
 class BrandVisuals(BaseEntity):

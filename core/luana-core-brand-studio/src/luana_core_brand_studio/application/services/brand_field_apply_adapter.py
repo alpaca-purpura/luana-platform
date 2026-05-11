@@ -15,12 +15,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 import structlog
+from luana_core_platform.links.ports.brand import BrandFieldApplyPort
 
 from luana_core_brand_studio.domain import BrandSettings
 from luana_core_brand_studio.infrastructure.repositories.brand_repository import (
     BrandRepository,
 )
-from luana_core_platform.links.ports.brand import BrandFieldApplyPort
 
 if TYPE_CHECKING:
     from uuid import UUID

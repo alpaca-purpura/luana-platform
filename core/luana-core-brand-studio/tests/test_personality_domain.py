@@ -1,11 +1,9 @@
 """Tests for PersonalityProfile domain models — DimensionContract, Compiler, Presets, find_nearest_preset."""
 
 import pytest
-
 from luana_core_brand_studio.domain.personality import (
     PERSONALITY_PRESETS,
     DimensionContract,
-    DimensionLevel,
     LinguisticPatterns,
     PersonalityCompiler,
     PersonalityDimensions,

@@ -12,9 +12,6 @@ The 9 visual fields (primary_color, accent_color, etc.) were NOT in BrandIdentit
 already — verified by reading the source. No action needed for them.
 """
 
-import pytest
-from pydantic import ValidationError
-
 from luana_core_brand_studio.domain import BrandSettings
 
 
@@ -51,7 +48,6 @@ class TestBrandPersonalityNew:
 
     def test_brand_personality_importable(self):
         """BrandPersonality is importable from brand domain."""
-        from luana_core_brand_studio.domain import BrandPersonality
 
     def test_brand_personality_has_core_values(self):
         from luana_core_brand_studio.domain import BrandPersonality

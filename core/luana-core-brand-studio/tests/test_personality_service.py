@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import uuid
 from typing import TYPE_CHECKING
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -12,7 +12,8 @@ if TYPE_CHECKING:
     from sqlalchemy.orm import Session
 
 from luana_core_brand_studio.application.services.personality_service import PersonalityService
-from tests.modules.conftest import TENANT_A
+
+TENANT_A = uuid.UUID("aaaa0000-0000-0000-0000-000000000001")
 
 TENANT_B = uuid.UUID("bbbb0000-0000-0000-0000-000000000002")
 

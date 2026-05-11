@@ -6,6 +6,10 @@ from typing import TYPE_CHECKING
 from uuid import UUID  # noqa: TC003 — UUID used in runtime signatures, not type-checking only
 
 import structlog
+from luana_core_events.outbox.application.event_bus_adapter import (
+    adapter_bus as EventBus,  # noqa: N812
+)
+from luana_core_platform.domain.events import PersonalityProfileUpdatedEvent
 
 from luana_core_brand_studio.domain.personality import (
     _NEGATIVE_THRESHOLD,
@@ -19,10 +23,6 @@ from luana_core_brand_studio.domain.personality import (
 )
 from luana_core_brand_studio.infrastructure.repositories.personality_repository import (
     PersonalityProfileRepository,
-)
-from luana_core_platform.domain.events import PersonalityProfileUpdatedEvent
-from luana_core_events.outbox.application.event_bus_adapter import (
-    adapter_bus as EventBus,  # noqa: N812
 )
 
 if TYPE_CHECKING:
@@ -711,8 +711,8 @@ class PersonalityService:
         # Build LLM caller using LLMFactory (best-effort, may return None on failure)
         llm_caller = None
         try:
+            from luana_core_llm.factory import LLMFactory
             from luana_core_platform.core.enums import ModelRole
-            from luana_core_platform.infrastructure.llm.factory import LLMFactory
 
             llm_service = LLMFactory.get_service()
 

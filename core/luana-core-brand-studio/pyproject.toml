@@ -14,6 +14,8 @@ dependencies = [
     "luana-core-platform",
     "luana-core-iam",
     "luana-core-events",
+    "luana-core-llm",
+    "luana-core-extraction",
 ]
 
 [build-system]

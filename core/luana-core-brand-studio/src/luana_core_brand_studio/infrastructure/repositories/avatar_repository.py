@@ -2,12 +2,12 @@
 
 from uuid import UUID
 
+from luana_core_platform.domain.datetime_utils import utc_now
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from luana_core_brand_studio.domain import Avatar
 from luana_core_brand_studio.infrastructure.models.avatar_model import AvatarModel
-from luana_core_platform.domain.datetime_utils import utc_now
 
 
 class AvatarRepository:

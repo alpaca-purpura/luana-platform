@@ -4,7 +4,6 @@ from uuid import uuid4
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-
 from luana_core_brand_studio.api.extraction import router
 from luana_core_iam.api.dependencies import get_current_user, get_db
 

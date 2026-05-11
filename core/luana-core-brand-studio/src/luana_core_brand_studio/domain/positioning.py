@@ -2,9 +2,8 @@
 
 import uuid
 
-from pydantic import ConfigDict, Field
-
 from luana_core_platform.domain.base_entity import BaseEntity
+from pydantic import ConfigDict, Field
 
 from .strategy import BrandCompetitor
 

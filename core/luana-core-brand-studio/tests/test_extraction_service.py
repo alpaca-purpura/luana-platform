@@ -1,7 +1,6 @@
 """Tests for BrandExtractionService -- crawling, parsing, merging with mocked LLM."""
 
 import pytest
-
 from luana_core_brand_studio.application.extraction_service import (
     _HIGH_KEYWORDS,
     _SKIP_PATTERNS,

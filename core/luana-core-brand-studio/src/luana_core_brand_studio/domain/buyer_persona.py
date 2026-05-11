@@ -5,9 +5,8 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import Field
-
 from luana_core_platform.domain.base_entity import BaseEntity
+from pydantic import Field
 
 
 class BuyerPersona(BaseEntity):

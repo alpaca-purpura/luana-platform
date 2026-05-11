@@ -9,9 +9,7 @@ from __future__ import annotations
 from uuid import uuid4
 
 import pytest
-
 from luana_core_brand_studio.application.services.personality_service import PersonalityService
-from luana_core_brand_studio.domain.personality import PERSONALITY_PRESETS
 from luana_core_brand_studio.infrastructure.repositories.personality_repository import (
     PersonalityProfileRepository,
 )

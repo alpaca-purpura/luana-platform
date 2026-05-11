@@ -36,12 +36,13 @@ See ``docs/refactors/field-contract-platform/DESIGN.md`` and
 
 from __future__ import annotations
 
-from luana_core_brand_studio.domain.buyer_persona import BuyerPersona
 from luana_core_platform.domain.field_contract import FieldContractOverride as Override
 from luana_core_platform.domain.field_contract import (
     derive_contracts_from_pydantic,
     register_module_contracts,
 )
+
+from luana_core_brand_studio.domain.buyer_persona import BuyerPersona
 
 # ---------------------------------------------------------------------------
 # Dict sub-keys — JSONB containers exposed via declared sub-keys

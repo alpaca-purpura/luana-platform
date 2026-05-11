@@ -6,7 +6,6 @@ that the contract defines MUST appear verbatim in the compiled system_instructio
 """
 
 import pytest
-
 from luana_core_brand_studio.domain.personality import (
     PERSONALITY_PRESETS,
     DimensionContract,

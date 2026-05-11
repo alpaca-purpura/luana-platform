@@ -25,7 +25,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID
 
 import pytest
-
 from luana_core_brand_studio.application.extraction_orchestrator import (
     BrandAuthorityExtraction,
     BrandPeopleContactExtraction,

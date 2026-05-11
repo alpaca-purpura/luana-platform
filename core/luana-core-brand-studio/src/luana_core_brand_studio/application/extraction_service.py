@@ -31,7 +31,13 @@ if TYPE_CHECKING:
 
 import traceback
 
+from luana_core_platform.application.ai_action_service import (
+    AIActionPolicy,
+    AIActionService,
+    AIModelPolicy,
+)
 from luana_core_platform.core.enums import ModelRole
+from luana_core_platform.infrastructure.prompts.base import prompt_loader
 
 # Import crawler functions/class
 from luana_core_brand_studio.application.extraction_crawler import (
@@ -70,12 +76,6 @@ from luana_core_brand_studio.domain import (
 from luana_core_brand_studio.infrastructure.repositories.brand_repository import (
     BrandRepository,
 )
-from luana_core_platform.application.ai_action_service import (
-    AIActionPolicy,
-    AIActionService,
-    AIModelPolicy,
-)
-from luana_core_platform.infrastructure.prompts.base import prompt_loader
 
 # Backward-compat alias
 _summarize_settings = summarize_settings

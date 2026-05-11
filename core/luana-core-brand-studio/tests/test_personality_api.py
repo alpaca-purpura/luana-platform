@@ -4,17 +4,18 @@ from __future__ import annotations
 
 import uuid
 from typing import TYPE_CHECKING
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-
 from luana_core_brand_studio.api.personality import router
-from luana_core_brand_studio.infrastructure.models.personality_model import PersonalityProfileModel
 from luana_core_iam.api.dependencies import get_current_user, get_db
 from luana_core_iam.domain.user import User
-from tests.modules.conftest import TENANT_A, TENANT_B, USER_A
+
+TENANT_A = uuid.UUID("aaaa0000-0000-0000-0000-000000000001")
+TENANT_B = uuid.UUID("bbbb0000-0000-0000-0000-000000000002")
+USER_A = uuid.UUID("cccc0000-0000-0000-0000-000000000001")
 
 if TYPE_CHECKING:
     from sqlalchemy.orm import Session
