@@ -1,10 +1,31 @@
 [tool.uv.workspace]
-members = ["core", "nicolify", "vitalia", "comunify", "lupulo"]
+members = [
+    "core",
+    "core/luana-core-platform",
+    "core/luana-core-llm",
+    "core/luana-core-channels",
+    "core/luana-core-idempotency",
+    "core/luana-core-observability",
+    "core/luana-core-events",
+    "core/luana-core-extraction",
+    "core/luana-core-compliance",
+    "core/luana-core-billing",
+    "nicolify",
+    "vitalia",
+    "comunify",
+    "lupulo",
+]
 
 [tool.uv.sources]
-# Future internal deps go here, e.g.:
-# nicolify-app = { workspace = true }
-# luana-core = { workspace = true }
+luana-core-platform = { workspace = true }
+luana-core-llm = { workspace = true }
+luana-core-channels = { workspace = true }
+luana-core-idempotency = { workspace = true }
+luana-core-observability = { workspace = true }
+luana-core-events = { workspace = true }
+luana-core-extraction = { workspace = true }
+luana-core-compliance = { workspace = true }
+luana-core-billing = { workspace = true }
 
 [tool.ruff]
 line-length = 120

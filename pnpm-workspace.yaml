@@ -1,5 +1,6 @@
 packages:
   - core
+  - core/@luana/*
   - nicolify
   - vitalia
   - comunify
