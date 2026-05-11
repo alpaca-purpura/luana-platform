@@ -18,6 +18,11 @@ members = [
     "core/luana-core-commercial-calendar",
     "core/luana-core-social-proof",
     "core/luana-core-assets",
+    # Story 4 packages (NEW)
+    "core/luana-core-crm",
+    "core/luana-core-analytics-engine",
+    "core/luana-core-landing",
+    "core/luana-core-connections",
     # Brand apps
     "nicolify",
     "vitalia",
@@ -43,6 +48,11 @@ luana-core-tenant-domains = { workspace = true }
 luana-core-commercial-calendar = { workspace = true }
 luana-core-social-proof = { workspace = true }
 luana-core-assets = { workspace = true }
+# Story 4 (NEW)
+luana-core-crm = { workspace = true }
+luana-core-analytics-engine = { workspace = true }
+luana-core-landing = { workspace = true }
+luana-core-connections = { workspace = true }
 
 [tool.ruff]
 line-length = 120
