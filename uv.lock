@@ -22,6 +22,7 @@ members = [
     "luana-core-extraction",
     "luana-core-iam",
     "luana-core-idempotency",
+    "luana-core-landing",
     "luana-core-llm",
     "luana-core-observability",
     "luana-core-platform",
@@ -1754,6 +1755,31 @@ requires-dist = [
     { name = "luana-core-platform" },
     { name = "pydantic", specifier = ">=2.0" },
     { name = "redis", specifier = ">=5.0" },
+    { name = "structlog", specifier = ">=24.0" },
+]
+
+[[package]]
+name = "luana-core-landing"
+version = "0.0.1a0"
+source = { editable = "core/luana-core-landing" }
+dependencies = [
+    { name = "fastapi" },
+    { name = "luana-core-extraction" },
+    { name = "luana-core-iam" },
+    { name = "luana-core-platform" },
+    { name = "pydantic" },
+    { name = "sqlalchemy" },
+    { name = "structlog" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastapi", specifier = ">=0.115" },
+    { name = "luana-core-extraction" },
+    { name = "luana-core-iam" },
+    { name = "luana-core-platform" },
+    { name = "pydantic", specifier = ">=2.0" },
+    { name = "sqlalchemy", specifier = ">=2.0" },
     { name = "structlog", specifier = ">=24.0" },
 ]
 
