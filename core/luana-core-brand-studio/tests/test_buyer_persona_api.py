@@ -11,7 +11,9 @@ from luana_core_brand_studio.api.buyer_personas import router
 from luana_core_iam.api.dependencies import get_current_user, get_db
 from luana_core_iam.domain.user import User
 
-from tests.conftest import TENANT_A, TENANT_B, USER_A
+TENANT_A = uuid.UUID("aaaa0000-0000-0000-0000-000000000001")
+TENANT_B = uuid.UUID("bbbb0000-0000-0000-0000-000000000002")
+USER_A = uuid.UUID("cccc0000-0000-0000-0000-000000000001")
 
 if TYPE_CHECKING:
     from sqlalchemy.orm import Session
