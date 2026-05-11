@@ -31,7 +31,6 @@ if TYPE_CHECKING:
     from uuid import UUID
 
     from sqlalchemy.orm import Session
-
     from src.modules.social_proof.application.services.social_proof_resolver import (
         ResolvedSocialProof,
     )

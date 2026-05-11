@@ -8,13 +8,11 @@ from __future__ import annotations
 from decimal import Decimal
 
 import pytest
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
-
 from luana_core_billing.domain.plan import PlanConfig
-from luana_core_billing.infrastructure.models.plan_config_model import PlanConfigModel
 from luana_core_billing.infrastructure.plan_repository_impl import SQLAPlanRepository
 from luana_core_platform.domain.base_entity import Base
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
 
 pytestmark = pytest.mark.asyncio
 

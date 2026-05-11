@@ -5,7 +5,6 @@ from unittest.mock import MagicMock
 from uuid import uuid4
 
 import pytest
-
 from luana_core_platform.domain.events import DomainEvent, EventBus
 
 

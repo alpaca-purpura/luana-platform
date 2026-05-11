@@ -1,4 +1,5 @@
 """Test conftest for luana-core-billing."""
+
 import os
 import sys
 from unittest.mock import MagicMock
@@ -47,11 +48,12 @@ if "psutil" not in sys.modules:
     sys.modules["psutil"] = MagicMock()
 
 import uuid
+
 import pytest
 from sqlalchemy import create_engine
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
-from sqlalchemy.dialects import postgresql
 from sqlalchemy.types import CHAR, Text, TypeDecorator
 
 _ORIGINAL_POSTGRESQL_JSONB = postgresql.JSONB
@@ -61,19 +63,24 @@ _ORIGINAL_POSTGRESQL_UUID = postgresql.UUID
 class MockJSONB(TypeDecorator):
     impl = Text
     cache_ok = True
+
     def load_dialect_impl(self, dialect):
         if dialect.name == "postgresql":
             return dialect.type_descriptor(_ORIGINAL_POSTGRESQL_JSONB())
         return dialect.type_descriptor(Text())
+
     def process_bind_param(self, value, dialect):
         if value is None:
             return None
         import json
+
         return json.dumps(value)
+
     def process_result_value(self, value, dialect):
         if value is None:
             return None
         import json
+
         try:
             return json.loads(value)
         except Exception:
@@ -83,17 +90,21 @@ class MockJSONB(TypeDecorator):
 class MockUUID(TypeDecorator):
     impl = CHAR(36)
     cache_ok = True
+
     def __init__(self, as_uuid=True):
         self.as_uuid = as_uuid
         super().__init__()
+
     def load_dialect_impl(self, dialect):
         if dialect.name == "postgresql":
             return dialect.type_descriptor(_ORIGINAL_POSTGRESQL_UUID(as_uuid=self.as_uuid))
         return dialect.type_descriptor(CHAR(36))
+
     def process_bind_param(self, value, dialect):
         if value is None:
             return None
         return str(value)
+
     def process_result_value(self, value, dialect):
         if value is None:
             return None
@@ -108,11 +119,11 @@ postgresql.JSONB = MockJSONB
 postgresql.UUID = MockUUID
 
 import sqlalchemy as _sa
-from luana_core_platform.domain.base_entity import Base
+from luana_core_billing.infrastructure.models.mv_refresh_log_model import MVRefreshLogModel  # noqa: F401
 from luana_core_billing.infrastructure.models.plan_config_model import PlanConfigModel  # noqa: F401
 from luana_core_billing.infrastructure.models.tenant_subscription_model import TenantSubscriptionModel  # noqa: F401
-from luana_core_billing.infrastructure.models.mv_refresh_log_model import MVRefreshLogModel  # noqa: F401
 from luana_core_observability.persistence.models.pricing_snapshot_model import ModelPricingSnapshotModel  # noqa: F401
+from luana_core_platform.domain.base_entity import Base
 
 # Stub tables referenced by billing FKs that live in modules not yet lifted
 _STUB_TABLES = ["tenants"]
@@ -121,14 +132,13 @@ for _stub in _STUB_TABLES:
         _sa.Table(_stub, Base.metadata, _sa.Column("id", _sa.Text, primary_key=True))
 
 _BILLING_TABLE_NAMES = [
-    "plan_configs", "tenant_subscriptions", "mv_refresh_logs",
-    "model_pricing_snapshots", "tenants",
+    "plan_configs",
+    "tenant_subscriptions",
+    "mv_refresh_logs",
+    "model_pricing_snapshots",
+    "tenants",
 ]
-_BILLING_TABLES = [
-    Base.metadata.tables[t]
-    for t in _BILLING_TABLE_NAMES
-    if t in Base.metadata.tables
-]
+_BILLING_TABLES = [Base.metadata.tables[t] for t in _BILLING_TABLE_NAMES if t in Base.metadata.tables]
 
 
 @pytest.fixture(scope="session")

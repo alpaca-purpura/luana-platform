@@ -1,4 +1,5 @@
 """Test conftest for luana-core-events."""
+
 import os
 import sys
 from unittest.mock import MagicMock
@@ -47,11 +48,12 @@ if "psutil" not in sys.modules:
     sys.modules["psutil"] = MagicMock()
 
 import uuid
+
 import pytest
 from sqlalchemy import create_engine
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
-from sqlalchemy.dialects import postgresql
 from sqlalchemy.types import CHAR, Text, TypeDecorator
 
 _ORIGINAL_POSTGRESQL_JSONB = postgresql.JSONB
@@ -61,19 +63,24 @@ _ORIGINAL_POSTGRESQL_UUID = postgresql.UUID
 class MockJSONB(TypeDecorator):
     impl = Text
     cache_ok = True
+
     def load_dialect_impl(self, dialect):
         if dialect.name == "postgresql":
             return dialect.type_descriptor(_ORIGINAL_POSTGRESQL_JSONB())
         return dialect.type_descriptor(Text())
+
     def process_bind_param(self, value, dialect):
         if value is None:
             return None
         import json
+
         return json.dumps(value)
+
     def process_result_value(self, value, dialect):
         if value is None:
             return None
         import json
+
         try:
             return json.loads(value)
         except Exception:
@@ -83,17 +90,21 @@ class MockJSONB(TypeDecorator):
 class MockUUID(TypeDecorator):
     impl = CHAR(36)
     cache_ok = True
+
     def __init__(self, as_uuid=True):
         self.as_uuid = as_uuid
         super().__init__()
+
     def load_dialect_impl(self, dialect):
         if dialect.name == "postgresql":
             return dialect.type_descriptor(_ORIGINAL_POSTGRESQL_UUID(as_uuid=self.as_uuid))
         return dialect.type_descriptor(CHAR(36))
+
     def process_bind_param(self, value, dialect):
         if value is None:
             return None
         return str(value)
+
     def process_result_value(self, value, dialect):
         if value is None:
             return None

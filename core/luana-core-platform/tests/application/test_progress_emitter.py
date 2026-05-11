@@ -9,12 +9,11 @@ without caring which is which.
 
 from __future__ import annotations
 
-from pydantic import BaseModel
-
 from luana_core_platform.application.progress_emitter import (
     emit_progress,
     fields_from_model,
 )
+from pydantic import BaseModel
 
 
 class TestEmitProgressBackwardsCompat:

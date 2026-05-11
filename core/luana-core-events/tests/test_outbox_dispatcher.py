@@ -6,9 +6,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
 import pytest
-
 from luana_core_events.outbox.domain.event import DomainEvent
-from luana_core_events.outbox.domain.outbox_entry import OutboxEntry, OutboxStatus
+from luana_core_events.outbox.domain.outbox_entry import OutboxEntry
 from luana_core_events.outbox.infrastructure.dispatcher import _entry_to_event, dispatch_outbox
 
 

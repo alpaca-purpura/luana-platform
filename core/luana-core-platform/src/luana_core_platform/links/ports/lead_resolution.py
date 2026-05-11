@@ -26,7 +26,6 @@ def find_or_create_lead(
     Lazy-imports Lead from CRM domain.
     """
     from sqlalchemy import select
-
     from src.modules.crm.domain.lead import Lead
 
     email = lead_data.get("email")
@@ -60,7 +59,6 @@ def verify_lead_exists(db: Session, tenant_id: UUID, lead_id: str) -> bool:
     Returns True if found, False otherwise.
     """
     from sqlalchemy import select
-
     from src.modules.crm.domain.lead import Lead
 
     stmt = select(Lead.id).where(
@@ -81,7 +79,6 @@ def get_lead_names(db: Session, lead_ids: list[UUID]) -> dict:
 
     from sqlalchemy import select
     from sqlalchemy.orm import joinedload
-
     from src.modules.crm.infrastructure.models.lead_model import LeadModel
 
     leads_stmt = select(LeadModel).options(joinedload(LeadModel.customer)).where(LeadModel.id.in_(lead_ids))

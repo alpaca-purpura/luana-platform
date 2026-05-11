@@ -22,7 +22,6 @@ from __future__ import annotations
 
 from langchain_core.language_models import BaseChatModel
 from langchain_openai import ChatOpenAI
-
 from luana_core_llm.providers._chat_model_resolver import (
     ChatBuildContext,
     ChatModelSpec,

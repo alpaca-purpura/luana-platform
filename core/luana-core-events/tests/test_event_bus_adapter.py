@@ -5,14 +5,13 @@ Tests verify backwards-compatibility (flag OFF) and outbox routing (flag ON).
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
 import pytest
-
-from luana_core_platform.domain.events import EventBus as LegacyEventBus
 from luana_core_events.outbox.application.event_bus_adapter import EventBusAdapter
 from luana_core_events.outbox.domain.event import DomainEvent
+from luana_core_platform.domain.events import EventBus as LegacyEventBus
 
 
 @pytest.fixture(autouse=True)

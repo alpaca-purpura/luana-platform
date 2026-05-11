@@ -10,9 +10,6 @@ from decimal import Decimal
 from uuid import uuid4
 
 import pytest
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
-
 from luana_core_billing.domain.plan import PlanConfig
 from luana_core_billing.domain.subscription import TenantSubscription
 from luana_core_billing.infrastructure.plan_repository_impl import SQLAPlanRepository
@@ -20,6 +17,8 @@ from luana_core_billing.infrastructure.subscription_repository_impl import (
     SQLASubscriptionRepository,
 )
 from luana_core_platform.domain.base_entity import Base
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
 
 pytestmark = pytest.mark.asyncio
 

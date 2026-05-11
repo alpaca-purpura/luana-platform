@@ -8,7 +8,7 @@ The helpers freeze :func:`datetime.now` and :func:`time.monotonic` so the
 captured snapshot is byte-equal across runs. Refactor preserves
 behavior ⇔ snapshot diff = 0.
 
-# [SALES-AGENT-CALLBACK-SNAPSHOT-S11A] -> docs/domains/sales-agent/redesign-2026-04/phases/S11-shared-lift-orchestrator-decomp.md
+# [SALES-AGENT-CALLBACK-SNAPSHOT-S11A]  # noqa: E501
 """
 
 from __future__ import annotations

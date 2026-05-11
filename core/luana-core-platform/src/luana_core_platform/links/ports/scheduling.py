@@ -103,7 +103,6 @@ def lookup_booking_link_by_token(db: Session, token: str) -> object | None:
     models directly.
     """
     from sqlalchemy import select
-
     from src.modules.scheduling.infrastructure.models.booking_link import BookingLink
 
     stmt = select(
@@ -129,7 +128,6 @@ def lookup_latest_appointment_for_lead(
     DDD boundaries.
     """
     from sqlalchemy import select
-
     from src.modules.scheduling.infrastructure.models.appointment_model import (
         AppointmentModel,
     )

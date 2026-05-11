@@ -78,12 +78,14 @@ class MockJSONB(TypeDecorator):
         if value is None:
             return None
         import json
+
         return json.dumps(value)
 
     def process_result_value(self, value, dialect):
         if value is None:
             return None
         import json
+
         try:
             return json.loads(value)
         except Exception:  # noqa: BLE001
@@ -155,6 +157,7 @@ def db(db_engine):
 @pytest.fixture(autouse=True)
 def _force_prompt_source_file(monkeypatch):
     """Force PROMPT_SOURCE=file for every test."""
-    from luana_core_platform.core.enums import PromptSource
     from luana_core_platform.core.config import settings
+    from luana_core_platform.core.enums import PromptSource
+
     monkeypatch.setattr(settings, "PROMPT_SOURCE", PromptSource.FILE)

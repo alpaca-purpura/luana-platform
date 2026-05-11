@@ -1,7 +1,6 @@
 """Tests for shared currency module — single source of truth for currencies."""
 
 import pytest
-
 from luana_core_platform.domain.currency import (
     EXCHANGE_RATES_TO_USD,
     SUPPORTED_CURRENCIES,

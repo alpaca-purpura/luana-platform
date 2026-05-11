@@ -27,9 +27,9 @@ import os
 from typing import TYPE_CHECKING, Any
 
 import structlog
+from luana_core_platform.core.database import SessionLocal
 from sqlalchemy import text
 
-from luana_core_platform.core.database import SessionLocal
 from luana_core_observability.registry import (
     AgentObservabilitySpec,
     agent_observability_registry,

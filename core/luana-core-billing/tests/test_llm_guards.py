@@ -12,14 +12,12 @@ PR-6 / PI-1 S2 Sub-A.
 
 from __future__ import annotations
 
-import asyncio
 from decimal import Decimal
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock, patch
-from uuid import UUID, uuid4
+from unittest.mock import AsyncMock, MagicMock
+from uuid import uuid4
 
 import pytest
-
 from luana_core_billing.application.exceptions import BudgetExceeded
 from luana_core_billing.application.llm_guards import (
     BudgetGuardingChatModel,
@@ -110,7 +108,6 @@ class TestBudgetGuardingChatModelAinvoke:
     @pytest.mark.asyncio
     async def test_soft_warn_delegates_and_logs(self, caplog: Any) -> None:
         """Soft warn allowed → inner called, structlog warning emitted."""
-        import structlog
 
         inner = MagicMock()
         inner.ainvoke = AsyncMock(return_value="ok")

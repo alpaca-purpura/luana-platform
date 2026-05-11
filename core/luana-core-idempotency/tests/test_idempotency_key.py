@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import pytest
-
 from luana_core_idempotency.domain.key import IdempotencyKey
 
 

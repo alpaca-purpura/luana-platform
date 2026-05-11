@@ -6,7 +6,6 @@ import asyncio
 from uuid import uuid4
 
 import pytest
-
 from luana_core_platform.application.brand_summary_event_handlers import (
     _build_job_id,
     _enqueue_regen,

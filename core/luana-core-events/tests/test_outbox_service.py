@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
 import pytest
-
 from luana_core_events.outbox.application.outbox_service import OutboxService
 from luana_core_events.outbox.domain.event import DomainEvent
 

@@ -18,8 +18,6 @@ import time
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-
-from luana_core_platform.core.enums import AIProvider, ModelRole
 from luana_core_llm.application.config_service import (
     CACHE_INVALIDATE_LLM_ROLE_BINDING_CHANNEL,
     LLMConfigService,
@@ -28,6 +26,7 @@ from luana_core_llm.application.config_service import (
     reset_llm_config_service,
 )
 from luana_core_llm.domain.resolved import ResolvedModel
+from luana_core_platform.core.enums import AIProvider, ModelRole
 
 
 @pytest.fixture(autouse=True)

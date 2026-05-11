@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import pytest
-
 from luana_core_compliance.domain.check_result import CheckResult
 
 

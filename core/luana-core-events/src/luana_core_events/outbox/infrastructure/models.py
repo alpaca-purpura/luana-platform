@@ -9,12 +9,11 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
+from luana_core_platform.domain.base_entity import Base
 from sqlalchemy import DateTime, Index, Integer, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column
-
-from luana_core_platform.domain.base_entity import Base
 
 
 class DomainEventOutboxModel(Base):

@@ -40,6 +40,7 @@ if TYPE_CHECKING:
 
 from luana_core_platform.core.config import settings
 from luana_core_platform.core.enums import ModelRole
+
 from luana_core_llm.base import BaseLLMService
 from luana_core_llm.providers._chat_model_resolver import (
     DEFAULT_OPENAI_SPEC,

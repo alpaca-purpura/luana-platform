@@ -28,6 +28,7 @@ if TYPE_CHECKING:
     from luana_core_observability.persistence.models.pricing_snapshot_model import (
         ModelPricingSnapshotModel,
     )
+
     from luana_core_billing.infrastructure.pricing_snapshot_repo_async import (
         PricingSnapshotRepoAsync,
     )

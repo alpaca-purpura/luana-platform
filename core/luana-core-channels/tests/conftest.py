@@ -1,4 +1,5 @@
 """Test conftest for luana-core-channels — sets mandatory env vars."""
+
 import os
 import sys
 from unittest.mock import MagicMock

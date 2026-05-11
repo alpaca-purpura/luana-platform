@@ -25,7 +25,6 @@ class TestBaseAgentCallbackHandlerAbstract:
 
     def test_subclasses_langchain_base_callback_handler(self) -> None:
         from langchain_core.callbacks import BaseCallbackHandler
-
         from luana_core_observability.recording.base_callback_handler import (
             BaseAgentCallbackHandler,
         )

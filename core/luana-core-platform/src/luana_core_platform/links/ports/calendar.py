@@ -23,7 +23,6 @@ def get_channel_credentials(db: Session, tenant_id: UUID, channel_type: str) -> 
     Lazy-imports ChannelConnectionModel from connections.
     """
     from sqlalchemy import select
-
     from src.modules.connections.infrastructure.models.channel_connection_model import (
         ChannelConnectionModel,
     )
@@ -50,7 +49,6 @@ def get_channel_connection_data(
     Returns (credentials, config) tuple if an active connection exists, else None.
     """
     from sqlalchemy import select
-
     from src.modules.connections.infrastructure.models.channel_connection_model import (
         ChannelConnectionModel,
     )

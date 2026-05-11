@@ -9,7 +9,6 @@ home cross-agent. Adds Telegram MarkdownV2 escape coverage.
 from __future__ import annotations
 
 import pytest
-
 from luana_core_channels.format import (
     escape_markdown_v2,
     reset_registry_for_tests,

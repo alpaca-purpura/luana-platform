@@ -3,7 +3,6 @@
 from datetime import UTC, datetime
 
 import pytest
-
 from luana_core_platform.domain.datetime_utils import (
     ensure_utc,
     is_valid_timezone,

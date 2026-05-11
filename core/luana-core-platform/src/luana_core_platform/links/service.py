@@ -9,8 +9,8 @@ from typing import Any
 import structlog
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-
 from src.modules.iam.domain.tenant import Tenant
+
 from luana_core_platform.domain.datetime_utils import utc_now
 from luana_core_platform.links.models import ShareableLink
 

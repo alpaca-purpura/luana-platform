@@ -10,7 +10,6 @@ WhatsApp" — útil para forzar `format_for_channel` en pipelines.
 from __future__ import annotations
 
 import pytest
-
 from luana_core_channels.intent_detector import (
     ChannelIntent,
     detect_channel_in_user_msg,

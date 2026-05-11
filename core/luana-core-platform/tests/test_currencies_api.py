@@ -9,7 +9,6 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-
 from luana_core_platform.api.currencies import router
 from luana_core_platform.domain.currency_catalog import CURRENCY_CATALOG
 

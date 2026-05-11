@@ -12,9 +12,8 @@ from __future__ import annotations
 from decimal import Decimal
 
 import pytest
-from pydantic import ValidationError
-
 from luana_core_billing.domain.plan import PlanConfig
+from pydantic import ValidationError
 
 
 def _basic_plan(**overrides) -> PlanConfig:

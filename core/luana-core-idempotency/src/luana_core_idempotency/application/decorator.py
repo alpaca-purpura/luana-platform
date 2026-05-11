@@ -130,6 +130,7 @@ def idempotent(
 def _default_store_factory() -> IdempotencyStore:
     """Default factory — uses the global Redis client from core.database."""
     from luana_core_platform.core.database import redis_client
+
     from luana_core_idempotency.infrastructure.redis_store import RedisIdempotencyStore
 
     return RedisIdempotencyStore(redis_client)

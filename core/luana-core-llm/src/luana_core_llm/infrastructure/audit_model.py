@@ -18,13 +18,12 @@ import uuid
 from datetime import datetime
 from typing import Any
 
+from luana_core_platform.domain.base_entity import Base
+from luana_core_platform.domain.datetime_utils import utc_now
 from sqlalchemy import DateTime, Index, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column
-
-from luana_core_platform.domain.base_entity import Base
-from luana_core_platform.domain.datetime_utils import utc_now
 
 
 class LLMConfigAuditModel(Base):

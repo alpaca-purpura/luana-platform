@@ -10,11 +10,10 @@ shared/domain_events/* and outside tests/*.
 from __future__ import annotations
 
 import warnings
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
-
 from luana_core_platform.domain.events import DomainEvent, EventBus
 
 

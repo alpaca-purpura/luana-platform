@@ -17,12 +17,11 @@ from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
-
-from luana_core_platform.core.enums import ModelRole
 from luana_core_llm.application.config_service import (
     LLMConfigService,
     reset_llm_config_service,
 )
+from luana_core_platform.core.enums import ModelRole
 
 
 @pytest.fixture(autouse=True)

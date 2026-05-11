@@ -27,9 +27,7 @@ from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from luana_core_platform.core.enums import ModelRole
-
 
 # ---------------------------------------------------------------------------
 # Shared fixtures
@@ -194,7 +192,6 @@ def test_system_prompt_converted_to_langchain_system_message(
     → Gemini API. Behavior is identical via LiteLLM Proxy.
     """
     from langchain_core.messages import SystemMessage
-
     from luana_core_llm.providers.litellm import LiteLLMService
 
     svc = LiteLLMService()
@@ -313,7 +310,6 @@ def test_vision_multipart_message_passes_through_as_human_message(
     The legacy GeminiService did the same via LangChain's HumanMessage.
     """
     from langchain_core.messages import HumanMessage
-
     from luana_core_llm.providers.litellm import LiteLLMService
 
     svc = LiteLLMService()
@@ -398,7 +394,6 @@ def test_streaming_via_get_client_returns_langchain_model(
     AIMessageChunk.content — identical to any other provider.
     """
     from langchain_openai import ChatOpenAI
-
     from luana_core_llm.providers.litellm import LiteLLMService
 
     svc = LiteLLMService()

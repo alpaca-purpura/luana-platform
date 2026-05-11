@@ -1,4 +1,5 @@
 """Test conftest for luana-core-compliance."""
+
 import os
 import sys
 from unittest.mock import MagicMock
@@ -43,11 +44,12 @@ for mod_name in ("passlib", "passlib.context", "passlib.hash"):
         sys.modules[mod_name] = MagicMock()
 
 import uuid
+
 import pytest
 from sqlalchemy import create_engine
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
-from sqlalchemy.dialects import postgresql
 from sqlalchemy.types import CHAR, Text, TypeDecorator
 
 _ORIGINAL_POSTGRESQL_JSONB = postgresql.JSONB
@@ -57,19 +59,24 @@ _ORIGINAL_POSTGRESQL_UUID = postgresql.UUID
 class MockJSONB(TypeDecorator):
     impl = Text
     cache_ok = True
+
     def load_dialect_impl(self, dialect):
         if dialect.name == "postgresql":
             return dialect.type_descriptor(_ORIGINAL_POSTGRESQL_JSONB())
         return dialect.type_descriptor(Text())
+
     def process_bind_param(self, value, dialect):
         if value is None:
             return None
         import json
+
         return json.dumps(value)
+
     def process_result_value(self, value, dialect):
         if value is None:
             return None
         import json
+
         try:
             return json.loads(value)
         except Exception:
@@ -79,17 +86,21 @@ class MockJSONB(TypeDecorator):
 class MockUUID(TypeDecorator):
     impl = CHAR(36)
     cache_ok = True
+
     def __init__(self, as_uuid=True):
         self.as_uuid = as_uuid
         super().__init__()
+
     def load_dialect_impl(self, dialect):
         if dialect.name == "postgresql":
             return dialect.type_descriptor(_ORIGINAL_POSTGRESQL_UUID(as_uuid=self.as_uuid))
         return dialect.type_descriptor(CHAR(36))
+
     def process_bind_param(self, value, dialect):
         if value is None:
             return None
         return str(value)
+
     def process_result_value(self, value, dialect):
         if value is None:
             return None
@@ -104,9 +115,9 @@ postgresql.JSONB = MockJSONB
 postgresql.UUID = MockUUID
 
 import sqlalchemy as _sa
-from luana_core_platform.domain.base_entity import Base
 from luana_core_compliance.infrastructure.models.channel_blacklist_model import ChannelBlacklistModel  # noqa: F401
 from luana_core_compliance.infrastructure.models.lead_opt_in_model import LeadOptInModel  # noqa: F401
+from luana_core_platform.domain.base_entity import Base
 
 # Compliance models FK to leads/tenants which live in modules not yet lifted.
 # Register stub tables so SQLAlchemy can resolve FK chains in SQLite tests.

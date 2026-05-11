@@ -28,9 +28,9 @@ import time
 from typing import TYPE_CHECKING, Any
 
 import structlog
-
 from luana_core_platform.core.config import settings
 from luana_core_platform.core.enums import AIProvider, ModelRole
+
 from luana_core_llm.domain.resolved import ResolvedModel
 
 if TYPE_CHECKING:

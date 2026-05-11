@@ -26,7 +26,6 @@ def get_recent_manychat_subscriber_ids(
     """Return distinct ManyChat subscriber IDs from recent journey_events."""
     from sqlalchemy import func as sa_func
     from sqlalchemy import select
-
     from src.modules.crm.infrastructure.models.customer_model import JourneyEventModel
 
     stmt = (
@@ -57,7 +56,6 @@ def enrich_customer_with_manychat_data(
 
     from sqlalchemy import select
     from sqlalchemy.orm.attributes import flag_modified
-
     from src.modules.crm.infrastructure.models.customer_model import CustomerProfileModel
 
     email = mc_data.get("email")
@@ -100,7 +98,6 @@ def sync_mailerlite_email_activities(
     Returns number of new events created.
     """
     from sqlalchemy import and_, select
-
     from src.modules.crm.application.services.lifecycle_service import LifecycleService
     from src.modules.crm.infrastructure.models.customer_model import (
         CustomerProfileModel,
@@ -120,7 +117,7 @@ def sync_mailerlite_email_activities(
                 and_(
                     CustomerProfileModel.tenant_id == tenant_id,
                     CustomerProfileModel.primary_email == email,
-                    CustomerProfileModel.is_inactive == False,
+                    ~CustomerProfileModel.is_inactive,
                 ),
             ),
         ).scalar_one_or_none()

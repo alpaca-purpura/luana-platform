@@ -135,7 +135,6 @@ def get_active_connections_by_type(db: Session, channel_type: str) -> list:
     Lazy-imports ChannelConnectionModel from connections.
     """
     from sqlalchemy import and_, select
-
     from src.modules.connections.infrastructure.models.channel_connection_model import (
         ChannelConnectionModel,
     )
@@ -144,7 +143,7 @@ def get_active_connections_by_type(db: Session, channel_type: str) -> list:
         select(ChannelConnectionModel).where(
             and_(
                 ChannelConnectionModel.channel_type == channel_type,
-                ChannelConnectionModel.is_active == True,
+                ChannelConnectionModel.is_active,
             ),
         ),
     )

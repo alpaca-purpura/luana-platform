@@ -1,4 +1,5 @@
 """Test conftest for luana-core-extraction."""
+
 import os
 import sys
 from unittest.mock import MagicMock

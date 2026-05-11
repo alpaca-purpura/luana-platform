@@ -11,11 +11,10 @@ import asyncio
 from typing import Any
 
 import pytest
-from pydantic import BaseModel
-
 from luana_core_extraction.base_orchestrator import (
     BaseExtractionOrchestrator,
 )
+from pydantic import BaseModel
 
 
 class _FakeTrace:

@@ -22,9 +22,8 @@ from uuid import UUID
 from sqlalchemy import case, func, select
 
 if TYPE_CHECKING:
-    from sqlalchemy.orm import Session
-
     from luana_core_platform.domain.base_entity import Base
+    from sqlalchemy.orm import Session
 
 
 # ── DTOs ────────────────────────────────────────────────────────────────

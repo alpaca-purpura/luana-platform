@@ -22,8 +22,8 @@ from typing import Any
 
 import httpx
 import structlog
-
 from luana_core_platform.core.database import SessionLocal
+
 from luana_core_observability.pricing.litellm_sync import sync_pricing
 
 logger = structlog.get_logger()

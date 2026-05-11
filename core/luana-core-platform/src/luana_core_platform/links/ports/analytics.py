@@ -59,7 +59,6 @@ def get_provider_data_range(
     from datetime import date
 
     from sqlalchemy import func, select
-
     from src.modules.analytics.infrastructure.models.official_metrics_model import (
         OfficialMetricModel,
     )

@@ -18,6 +18,7 @@ router, so existing callsites get per-role routing transparently.
 from typing import Any
 
 from luana_core_platform.core.enums import AIProvider, ModelRole
+
 from luana_core_llm.base import BaseLLMService
 
 _LEGACY_MODEL_TYPE_MAP: dict[str, ModelRole] = {

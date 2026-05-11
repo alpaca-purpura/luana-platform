@@ -18,8 +18,6 @@ from datetime import datetime
 from enum import StrEnum
 from uuid import UUID
 
-from pydantic import BaseModel, Field, HttpUrl
-
 from luana_core_platform.domain.field_contract import (
     FieldContract,
     FieldStatus,
@@ -35,6 +33,7 @@ from luana_core_platform.domain.field_contract import (
 from luana_core_platform.domain.field_contract import (
     FieldContractOverride as Override,
 )
+from pydantic import BaseModel, Field, HttpUrl
 
 _SYNTHETIC_MODULES: tuple[str, ...] = (
     "test_module_fixture",

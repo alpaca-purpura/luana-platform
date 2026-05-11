@@ -9,7 +9,6 @@ pero apuntando al nuevo home cross-agent. Sales_agent y copilot consumen ambos.
 from __future__ import annotations
 
 import pytest
-
 from luana_core_channels.format import (
     CHANNEL_FORMATS,
     SUPPORTED_CHANNELS,

@@ -8,17 +8,13 @@ PR-6 / PI-1 S2 Sub-A.
 
 from __future__ import annotations
 
-import datetime as dt
-from decimal import Decimal
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-
 from luana_core_billing.application.pricing_cache import (
     invalidate_pricing_cache,
     resolve_pricing_cached,
 )
-
 
 # ---------------------------------------------------------------------------
 # PricingSnapshotRepoAsync — unit tests with AsyncMock
@@ -76,7 +72,6 @@ class TestPricingSnapshotRepoAsync:
         from luana_core_billing.infrastructure.pricing_snapshot_repo_async import (
             PricingSnapshotRepoAsync,
         )
-        from sqlalchemy import select
 
         calls = []
 

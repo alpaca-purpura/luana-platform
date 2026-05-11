@@ -6,18 +6,14 @@ Tests use in-memory SQLite via SQLAOptInRepository (PM Q2 DB-backed).
 from __future__ import annotations
 
 import datetime as dt
-import uuid as uuid_mod
 from uuid import UUID, uuid4
 
 import pytest
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
-
 from luana_core_compliance.domain.policies.opt_in_policy import OptInPolicy
-from luana_core_compliance.infrastructure.models.channel_blacklist_model import ChannelBlacklistModel
-from luana_core_compliance.infrastructure.models.lead_opt_in_model import LeadOptInModel
 from luana_core_compliance.infrastructure.opt_in_repository_impl import SQLAOptInRepository
 from luana_core_platform.domain.base_entity import Base
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
 
 pytestmark = pytest.mark.asyncio
 

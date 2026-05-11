@@ -10,8 +10,8 @@ from __future__ import annotations
 from typing import Any
 
 import structlog
-
 from luana_core_platform.core.database import SessionLocal
+
 from luana_core_observability.application.cost_alert_service import (
     check_cost_alerts,
 )

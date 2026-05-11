@@ -1,4 +1,5 @@
 """Test conftest for luana-core-idempotency."""
+
 import os
 import sys
 from unittest.mock import MagicMock

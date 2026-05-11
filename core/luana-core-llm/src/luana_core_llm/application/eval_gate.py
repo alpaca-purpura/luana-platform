@@ -27,7 +27,6 @@ from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 import structlog
-
 from luana_core_platform.core.enums import AIProvider, ModelRole
 from luana_core_platform.domain.datetime_utils import utc_now
 

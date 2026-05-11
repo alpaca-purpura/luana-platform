@@ -7,11 +7,10 @@ Tests that don't require an active Postgres connection. Integration tests
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
 import pytest
-
 from luana_core_events.outbox.domain.event import DomainEvent
 from luana_core_events.outbox.domain.outbox_entry import OutboxEntry, OutboxStatus
 from luana_core_events.outbox.infrastructure.repository import OutboxRepositoryImpl

@@ -5,7 +5,6 @@ from __future__ import annotations
 from decimal import Decimal
 
 import pytest
-
 from luana_core_billing.domain.budget_decision import BudgetDecision
 
 

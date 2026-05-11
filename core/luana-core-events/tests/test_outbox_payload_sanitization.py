@@ -13,7 +13,6 @@ from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
 import pytest
-
 from luana_core_events.outbox.domain.outbox_entry import OutboxEntry, OutboxStatus
 from luana_core_events.outbox.infrastructure.repository import OutboxRepositoryImpl
 

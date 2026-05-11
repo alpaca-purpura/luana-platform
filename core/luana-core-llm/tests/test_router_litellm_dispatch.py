@@ -12,7 +12,6 @@ Contract: §16 of S3 PR-2 CONTRACT.md (singleton dispatch invariant).
 from __future__ import annotations
 
 import pytest
-
 from luana_core_platform.core.enums import ModelRole
 
 

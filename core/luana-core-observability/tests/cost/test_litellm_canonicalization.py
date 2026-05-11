@@ -20,7 +20,7 @@ TDD RED-first per `.claude/rules/tdd-mandatory.md`.
 from __future__ import annotations
 
 import time
-from datetime import UTC, datetime
+from datetime import datetime
 from decimal import Decimal
 from types import SimpleNamespace
 from typing import TYPE_CHECKING, Any
@@ -446,7 +446,6 @@ def test_bootstrap_registers_cost_recorder_callback() -> None:
     callback is process-wide regardless of entry point.
     """
     import litellm
-
     from luana_core_observability.recording.cost_recorder import (
         CostRecorderCustomLogger,
         register_cost_recorder,

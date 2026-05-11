@@ -15,10 +15,10 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 import structlog
+from luana_core_observability.recording.sanitization import sanitize_payload
 from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
-from luana_core_observability.recording.sanitization import sanitize_payload
 from luana_core_events.outbox.domain.outbox_entry import (
     OutboxEntry,
     OutboxStatus,

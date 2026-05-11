@@ -21,14 +21,12 @@ from types import SimpleNamespace
 from typing import TYPE_CHECKING, Any
 
 import pytest
-
 from luana_core_observability.recording.base_callback_handler import (
     BaseAgentCallbackHandler,
 )
 
 if TYPE_CHECKING:
-    from datetime import datetime
-    from uuid import UUID
+    pass
 
 
 # ── Helpers tests (pure functions on the base) ──────────────────────────

@@ -5,11 +5,10 @@ Verifies short-circuit behavior: first FAIL terminates chain.
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, call
+from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import pytest
-
 from luana_core_compliance.application.compliance_service import ComplianceService
 from luana_core_compliance.domain.check_result import CheckResult
 

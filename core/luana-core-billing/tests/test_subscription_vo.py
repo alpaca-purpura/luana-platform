@@ -6,9 +6,8 @@ import datetime as dt
 from uuid import uuid4
 
 import pytest
-from pydantic import ValidationError
-
 from luana_core_billing.domain.subscription import TenantSubscription
+from pydantic import ValidationError
 
 
 def _now() -> dt.datetime:

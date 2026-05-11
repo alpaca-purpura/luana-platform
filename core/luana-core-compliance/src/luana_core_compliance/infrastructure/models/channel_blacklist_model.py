@@ -9,12 +9,11 @@ import datetime as dt
 import uuid as uuid_mod
 from uuid import UUID
 
+from luana_core_platform.domain.base_entity import Base
 from sqlalchemy import DateTime, Index, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
-
-from luana_core_platform.domain.base_entity import Base
 
 
 class ChannelBlacklistModel(Base):

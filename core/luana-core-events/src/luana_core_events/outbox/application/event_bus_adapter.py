@@ -34,7 +34,6 @@ from functools import cache
 from typing import TYPE_CHECKING, Any
 
 import structlog
-
 from luana_core_platform.core.config import settings
 
 if TYPE_CHECKING:

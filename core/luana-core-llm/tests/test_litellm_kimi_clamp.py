@@ -12,7 +12,6 @@ from __future__ import annotations
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from luana_core_platform.core.enums import ModelRole
 
 
@@ -46,8 +45,8 @@ def test_kimi_k2_temp_explicit_clamped_to_0_6(_settings_kimi_agent: None) -> Non
     → HTTP 400 ``only 0.6 is allowed for this model`` (production silent fail).
     """
     from luana_core_llm.providers.litellm import (
-        LiteLLMService,
         _K2_REQUIRED_TEMPERATURE,
+        LiteLLMService,
     )
 
     svc = LiteLLMService()
@@ -64,8 +63,8 @@ def test_kimi_k2_temp_explicit_clamped_to_0_6(_settings_kimi_agent: None) -> Non
 def test_kimi_k2_temp_already_0_6_no_clamp_log(_settings_kimi_agent: None) -> None:
     """When temp=0.6 (already correct) → no warning logged, passthrough unchanged."""
     from luana_core_llm.providers.litellm import (
-        LiteLLMService,
         _K2_REQUIRED_TEMPERATURE,
+        LiteLLMService,
     )
 
     svc = LiteLLMService()
@@ -109,8 +108,8 @@ def test_kimi_k2_temp_none_uses_default_no_clamp(_settings_kimi_agent: None) -> 
     since 0.7 != 0.6 for kimi/kimi-k2.6).
     """
     from luana_core_llm.providers.litellm import (
-        LiteLLMService,
         _K2_REQUIRED_TEMPERATURE,
+        LiteLLMService,
     )
 
     svc = LiteLLMService()

@@ -41,7 +41,6 @@ from typing import Any
 import pytest
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AIMessage
-
 from luana_core_llm.providers._response_validation import (
     ReasoningBudgetExhaustedError,
     detect_reasoning_budget_exhaustion,
@@ -192,7 +191,6 @@ class TestReasoningReserveInjection:
 
     def test_non_reasoning_spec_unchanged(self) -> None:
         from langchain_openai import ChatOpenAI
-
         from luana_core_llm.providers._chat_model_resolver import (
             ChatModelSpec,
             build_chat_openai,
@@ -213,7 +211,6 @@ class TestReasoningReserveInjection:
 
     def test_reasoning_spec_adds_reserve(self) -> None:
         from langchain_openai import ChatOpenAI
-
         from luana_core_llm.providers._chat_model_resolver import (
             ChatModelSpec,
             build_chat_openai,
@@ -237,7 +234,6 @@ class TestReasoningReserveInjection:
         """Caller override is authoritative even on reasoning specs —
         operators escape-hatch when they have measured the right cap."""
         from langchain_openai import ChatOpenAI
-
         from luana_core_llm.providers._chat_model_resolver import (
             ChatModelSpec,
             build_chat_openai,
@@ -262,7 +258,6 @@ class TestReasoningReserveInjection:
         canonical key to the wire-name without breaking providers that
         do not surface the concept (e.g. DeepSeek today)."""
         from langchain_openai import ChatOpenAI
-
         from luana_core_llm.providers._chat_model_resolver import (
             ChatModelSpec,
             build_chat_openai,
@@ -287,7 +282,6 @@ class TestReasoningReserveInjection:
         canonical key silently — passing ``reasoning_effort`` to a
         provider that doesn't accept it would 400."""
         from langchain_openai import ChatOpenAI
-
         from luana_core_llm.providers._chat_model_resolver import (
             ChatModelSpec,
             build_chat_openai,
@@ -309,7 +303,6 @@ class TestReasoningReserveInjection:
 
     def test_idempotent_with_spec(self) -> None:
         from langchain_openai import ChatOpenAI
-
         from luana_core_llm.providers._chat_model_resolver import (
             ChatModelSpec,
             build_chat_openai,

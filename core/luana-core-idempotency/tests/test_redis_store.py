@@ -6,7 +6,6 @@ from unittest.mock import MagicMock
 from uuid import uuid4
 
 import pytest
-
 from luana_core_idempotency.domain.key import IdempotencyKey
 from luana_core_idempotency.infrastructure.redis_store import RedisIdempotencyStore
 

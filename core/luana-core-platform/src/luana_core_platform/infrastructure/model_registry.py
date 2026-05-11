@@ -16,6 +16,19 @@ the first DB session triggers ``configure_mappers()``.
 """
 
 # --- Advertising ---
+# --- LLM config registry (PI-2 S4 PR-1) ---
+from luana_core_llm.infrastructure.audit_model import (
+    LLMConfigAuditModel,  # noqa: F401
+)
+from luana_core_llm.infrastructure.role_binding_model import (
+    LLMRoleBindingModel,  # noqa: F401
+)
+from luana_core_observability.persistence.models.pricing_snapshot_model import (
+    ModelPricingSnapshotModel,  # noqa: F401
+)
+from luana_core_observability.persistence.models.tenant_billing_config_model import (
+    TenantBillingConfigModel,  # noqa: F401
+)
 from src.modules.advertising.infrastructure.models.ad_campaign_template_model import (
     AdCampaignTemplateModel,  # noqa: F401
 )
@@ -103,18 +116,4 @@ from src.modules.scheduling.infrastructure.models.booking_link import (
 # --- Domains ---
 from src.modules.tenant_domains.infrastructure.models.tenant_domain_model import (
     TenantDomainModel,  # noqa: F401
-)
-from luana_core_observability.persistence.models.pricing_snapshot_model import (
-    ModelPricingSnapshotModel,  # noqa: F401
-)
-from luana_core_observability.persistence.models.tenant_billing_config_model import (
-    TenantBillingConfigModel,  # noqa: F401
-)
-
-# --- LLM config registry (PI-2 S4 PR-1) ---
-from luana_core_llm.infrastructure.audit_model import (
-    LLMConfigAuditModel,  # noqa: F401
-)
-from luana_core_llm.infrastructure.role_binding_model import (
-    LLMRoleBindingModel,  # noqa: F401
 )

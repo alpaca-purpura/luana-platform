@@ -27,7 +27,6 @@ from decimal import Decimal
 from typing import TYPE_CHECKING, Any
 
 import structlog
-
 from luana_core_observability.cost.calculator import (
     _INPUT_TIER_KEY,
     _OUTPUT_TIER_KEY,

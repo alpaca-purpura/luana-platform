@@ -10,7 +10,6 @@ from __future__ import annotations
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from luana_core_platform.core.enums import ModelRole
 
 
@@ -41,7 +40,6 @@ def test_litellm_service_get_client_targets_litellm_base_url(
 ) -> None:
     """get_client returns a ChatOpenAI instance pointing at LITELLM_BASE_URL."""
     from langchain_openai import ChatOpenAI
-
     from luana_core_llm.providers.litellm import LiteLLMService
 
     svc = LiteLLMService()

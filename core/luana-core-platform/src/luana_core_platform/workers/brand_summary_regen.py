@@ -128,7 +128,7 @@ def regen_brand_summary_sync(
     """
     import json
 
-    from luana_core_platform.core.enums import ModelRole
+    from luana_core_llm.factory import LLMFactory
     from src.modules.brand.infrastructure.repositories.brand_repository import (
         BrandRepository,
     )
@@ -136,7 +136,8 @@ def regen_brand_summary_sync(
         BrandSummaryRepository,
     )
     from src.modules.copilot.infrastructure.prompts.base import prompt_loader
-    from luana_core_llm.factory import LLMFactory
+
+    from luana_core_platform.core.enums import ModelRole
 
     settings = BrandRepository(db).get_settings(tenant_id)  # type: ignore[arg-type]
     brand_dump = settings.model_dump(mode="json", exclude_none=True)

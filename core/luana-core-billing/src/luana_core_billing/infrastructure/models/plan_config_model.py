@@ -10,12 +10,11 @@ from __future__ import annotations
 import datetime as dt
 from decimal import Decimal
 
+from luana_core_platform.domain.base_entity import Base
 from sqlalchemy import Boolean, CheckConstraint, DateTime, Integer, Numeric, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
-
-from luana_core_platform.domain.base_entity import Base
 
 
 class PlanConfigModel(Base):

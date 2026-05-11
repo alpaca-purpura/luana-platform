@@ -10,10 +10,9 @@ rendering instead of raising.
 
 from unittest.mock import patch
 
-from sqlalchemy.exc import OperationalError
-
 from luana_core_platform.core.config import PromptSource, settings
 from luana_core_platform.infrastructure.prompts.base import PromptLoader
+from sqlalchemy.exc import OperationalError
 
 
 def test_get_from_db_catches_operational_error_and_returns_none(monkeypatch):

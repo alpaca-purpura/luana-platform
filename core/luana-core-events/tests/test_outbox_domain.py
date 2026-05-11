@@ -5,10 +5,7 @@ RED-first per TDD-mandatory rule. Tests written before implementation.
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
-from uuid import UUID, uuid4
-
-import pytest
+from uuid import uuid4
 
 from luana_core_events.outbox.domain.event import DomainEvent
 from luana_core_events.outbox.domain.outbox_entry import OutboxEntry, OutboxStatus

@@ -8,13 +8,12 @@ from __future__ import annotations
 import datetime as dt
 from uuid import UUID
 
+from luana_core_platform.domain.base_entity import Base
 from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
-
-from luana_core_platform.domain.base_entity import Base
 
 
 class TenantSubscriptionModel(Base):
