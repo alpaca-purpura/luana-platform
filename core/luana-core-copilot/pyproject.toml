@@ -1,0 +1,48 @@
+[project]
+name = "luana-core-copilot"
+version = "0.0.6-alpha"
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic>=2.0",
+    "sqlalchemy>=2.0",
+    "fastapi>=0.115",
+    "structlog>=24.0",
+    "httpx>=0.27",
+    "langgraph>=0.2",              # StateGraph + checkpointers
+    "langchain-core>=0.3",
+    "langchain-openai>=0.2",       # for OpenAI-protocol providers
+    "deepagents>=0.5.3",           # subagent harness
+    "qdrant-client>=1.10",         # marketing_kb_store
+    "arq>=0.26",                   # workers/telegram_worker
+    "jinja2>=3.1",                 # prompts templates
+    "tiktoken>=0.7",               # token counter
+    "trafilatura>=1.12",           # web crawl
+    "litellm>=1.40",
+    "luana-core-platform",
+    "luana-core-iam",
+    "luana-core-observability",
+    "luana-core-llm",
+    "luana-core-channels",
+    "luana-core-events",
+    "luana-core-idempotency",
+    "luana-core-billing",
+    "luana-core-extraction",
+    "luana-core-brand-studio",
+    "luana-core-offer-studio",
+    "luana-core-assets",
+    "luana-core-crm",
+    "luana-core-analytics-engine",
+    "luana-core-landing",
+    "luana-core-connections",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/luana_core_copilot"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+asyncio_mode = "auto"
