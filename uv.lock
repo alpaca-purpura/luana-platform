@@ -27,6 +27,7 @@ members = [
     "luana-core-landing",
     "luana-core-llm",
     "luana-core-observability",
+    "luana-core-offer-studio",
     "luana-core-platform",
     "luana-core-social-proof",
     "luana-core-tenant-domains",
@@ -1935,6 +1936,41 @@ requires-dist = [
     { name = "luana-core-channels" },
     { name = "luana-core-platform" },
     { name = "pydantic", specifier = ">=2.0" },
+    { name = "sqlalchemy", specifier = ">=2.0" },
+    { name = "structlog", specifier = ">=24.0" },
+]
+
+[[package]]
+name = "luana-core-offer-studio"
+version = "0.0.1a0"
+source = { editable = "core/luana-core-offer-studio" }
+dependencies = [
+    { name = "fastapi" },
+    { name = "httpx" },
+    { name = "luana-core-brand-studio" },
+    { name = "luana-core-events" },
+    { name = "luana-core-extraction" },
+    { name = "luana-core-iam" },
+    { name = "luana-core-llm" },
+    { name = "luana-core-platform" },
+    { name = "pydantic" },
+    { name = "qdrant-client" },
+    { name = "sqlalchemy" },
+    { name = "structlog" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastapi", specifier = ">=0.115" },
+    { name = "httpx", specifier = ">=0.27" },
+    { name = "luana-core-brand-studio" },
+    { name = "luana-core-events" },
+    { name = "luana-core-extraction" },
+    { name = "luana-core-iam" },
+    { name = "luana-core-llm" },
+    { name = "luana-core-platform" },
+    { name = "pydantic", specifier = ">=2.0" },
+    { name = "qdrant-client", specifier = ">=1.10" },
     { name = "sqlalchemy", specifier = ">=2.0" },
     { name = "structlog", specifier = ">=24.0" },
 ]
