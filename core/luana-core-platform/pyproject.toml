@@ -25,6 +25,7 @@ dependencies = [
     "asyncpg>=0.29",
     # cyclic workspace dep
     "luana-core-llm",
+    "passlib>=1.7.4",
 ]
 
 [build-system]
