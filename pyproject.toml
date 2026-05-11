@@ -67,10 +67,14 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "**/tests/conftest.py" = ["E402"]  # env vars must be set before module imports
+"**/scripts/*.py" = ["E402", "E501"]  # scripts manipulate sys.path and may have long docstrings
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 addopts = "-x -q --tb=short --import-mode=importlib"
+markers = [
+    "arch: architecture fitness tests (determinism, invariants, boundary checks)",
+]
 
 [dependency-groups]
 dev = [
