@@ -21,6 +21,8 @@ dependencies = [
     "playwright>=1.44",
     "beautifulsoup4>=4.12",
     "fastapi>=0.111",
+    "psycopg2-binary>=2.9",
+    "asyncpg>=0.29",
     # cyclic workspace dep
     "luana-core-llm",
 ]
