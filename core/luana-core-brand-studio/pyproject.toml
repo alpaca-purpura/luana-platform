@@ -13,6 +13,7 @@ dependencies = [
     "qdrant-client>=1.10",         # style_anchor_store
     "luana-core-platform",
     "luana-core-iam",
+    "luana-core-events",
 ]
 
 [build-system]
