@@ -7,6 +7,7 @@ members = [
     "luana-comunify",
     "luana-core",
     "luana-core-channels",
+    "luana-core-idempotency",
     "luana-core-llm",
     "luana-core-platform",
     "luana-lupulo",
@@ -1184,6 +1185,25 @@ dependencies = [
 requires-dist = [
     { name = "luana-core-platform" },
     { name = "pydantic", specifier = ">=2.0" },
+    { name = "structlog", specifier = ">=24.0" },
+]
+
+[[package]]
+name = "luana-core-idempotency"
+version = "0.0.1a0"
+source = { editable = "core/luana-core-idempotency" }
+dependencies = [
+    { name = "luana-core-platform" },
+    { name = "pydantic" },
+    { name = "redis" },
+    { name = "structlog" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "luana-core-platform" },
+    { name = "pydantic", specifier = ">=2.0" },
+    { name = "redis", specifier = ">=5.0" },
     { name = "structlog", specifier = ">=24.0" },
 ]
 
