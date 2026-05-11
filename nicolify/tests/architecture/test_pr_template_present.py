@@ -29,33 +29,27 @@ def test_pr_template_has_que_cambia():
     """PR template has '## Qué cambia' section."""
     content = PR_TEMPLATE_PATH.read_text()
     assert "## Qué cambia" in content, (
-        "PR template is missing '## Qué cambia' section. "
-        "This section is required per anti-island gate #3."
+        "PR template is missing '## Qué cambia' section. This section is required per anti-island gate #3."
     )
 
 
 def test_pr_template_has_por_que():
     """PR template has '## Por qué' section."""
     content = PR_TEMPLATE_PATH.read_text()
-    assert "## Por qué" in content, (
-        "PR template is missing '## Por qué' section."
-    )
+    assert "## Por qué" in content, "PR template is missing '## Por qué' section."
 
 
 def test_pr_template_has_modulos_tocados():
     """PR template has '## Módulos tocados' section."""
     content = PR_TEMPLATE_PATH.read_text()
-    assert "## Módulos tocados" in content, (
-        "PR template is missing '## Módulos tocados' section."
-    )
+    assert "## Módulos tocados" in content, "PR template is missing '## Módulos tocados' section."
 
 
 def test_pr_template_has_adr_ref():
     """PR template has '## ADR ref' section."""
     content = PR_TEMPLATE_PATH.read_text()
     assert "## ADR ref" in content, (
-        "PR template is missing '## ADR ref' section. "
-        "This is required to enforce ADR-before-PR for core/** changes."
+        "PR template is missing '## ADR ref' section. This is required to enforce ADR-before-PR for core/** changes."
     )
 
 
@@ -63,6 +57,5 @@ def test_pr_template_has_outcome_story_ref():
     """PR template has '## Outcome / story ref' section."""
     content = PR_TEMPLATE_PATH.read_text()
     assert "## Outcome / story ref" in content, (
-        "PR template is missing '## Outcome / story ref' section. "
-        "This is required to maintain /pm SSoT discipline."
+        "PR template is missing '## Outcome / story ref' section. This is required to maintain /pm SSoT discipline."
     )

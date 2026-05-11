@@ -69,8 +69,7 @@ def test_claude_dir_exists_as_copy():
     )
     rules_in_claude = CLAUDE_DIR / "rules"
     assert rules_in_claude.exists(), (
-        f".claude/rules not found at {rules_in_claude}. "
-        ".claude/ must mirror .claude-shared/ content."
+        f".claude/rules not found at {rules_in_claude}. .claude/ must mirror .claude-shared/ content."
     )
 
 
@@ -78,6 +77,5 @@ def test_key_rule_exists_parallel_safety():
     """`.claude-shared/rules/parallel-safety.md` exists (smoke check for rule content)."""
     parallel_safety = CLAUDE_SHARED / "rules" / "parallel-safety.md"
     assert parallel_safety.is_file(), (
-        f"parallel-safety.md not found at {parallel_safety}. "
-        "Critical rule should have been lifted from AISALESHT."
+        f"parallel-safety.md not found at {parallel_safety}. Critical rule should have been lifted from AISALESHT."
     )

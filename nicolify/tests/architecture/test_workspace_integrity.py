@@ -25,8 +25,7 @@ def test_pyproject_workspace_members_resolve():
     for member in members:
         member_path = REPO_ROOT / member
         assert member_path.is_dir(), (
-            f"Workspace member '{member}' declared in pyproject.toml "
-            f"does not resolve to a directory at {member_path}"
+            f"Workspace member '{member}' declared in pyproject.toml does not resolve to a directory at {member_path}"
         )
 
 
@@ -57,6 +56,4 @@ def test_all_expected_subfolders_present():
         sub_path = REPO_ROOT / sub
         assert sub_path.is_dir(), f"Expected subfolder '{sub}' not found at {sub_path}"
         readme = sub_path / "README.md"
-        assert readme.is_file() and readme.stat().st_size > 0, (
-            f"README.md missing or empty in subfolder '{sub}'"
-        )
+        assert readme.is_file() and readme.stat().st_size > 0, f"README.md missing or empty in subfolder '{sub}'"
