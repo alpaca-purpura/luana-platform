@@ -42,11 +42,19 @@ def test_pnpm_workspace_members_resolve():
     assert len(packages) > 0, "No packages declared in pnpm-workspace.yaml"
 
     for pkg in packages:
-        pkg_path = REPO_ROOT / pkg
-        assert pkg_path.is_dir(), (
-            f"pnpm workspace package '{pkg}' declared in pnpm-workspace.yaml "
-            f"does not resolve to a directory at {pkg_path}"
-        )
+        if "*" in pkg or "?" in pkg:
+            # Glob pattern — verify at least one directory matches
+            matches = list(REPO_ROOT.glob(pkg))
+            assert any(m.is_dir() for m in matches), (
+                f"pnpm workspace glob '{pkg}' declared in pnpm-workspace.yaml "
+                f"does not match any directories under {REPO_ROOT}"
+            )
+        else:
+            pkg_path = REPO_ROOT / pkg
+            assert pkg_path.is_dir(), (
+                f"pnpm workspace package '{pkg}' declared in pnpm-workspace.yaml "
+                f"does not resolve to a directory at {pkg_path}"
+            )
 
 
 def test_all_expected_subfolders_present():
