@@ -11,15 +11,15 @@ from uuid import UUID
 
 import structlog
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Response, UploadFile
+from luana_core_iam.api.dependencies import get_current_user
+from luana_core_iam.domain.user import User
+from luana_core_platform.core.database import get_db
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
-from luana_core_platform.core.database import get_db
 from luana_core_brand_studio.application.services.personality_service import PersonalityService
 from luana_core_brand_studio.domain.personality import PERSONALITY_PRESETS
 from luana_core_brand_studio.infrastructure.repositories.personality_repository import PersonalityProfileRepository
-from luana_core_iam.api.dependencies import get_current_user
-from luana_core_iam.domain.user import User
 
 logger = structlog.get_logger()
 

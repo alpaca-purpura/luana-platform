@@ -7,10 +7,14 @@ from uuid import UUID, uuid4
 
 import structlog
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
+from luana_core_iam.api.dependencies import get_current_user, get_db
+from luana_core_iam.domain.user import User
+from luana_core_platform.core.database import redis_client
+from luana_core_platform.domain.extraction_jobs import ExtractionJob
+from luana_core_platform.infrastructure.files.file_parsing_service import FileParsingService
 from sqlalchemy import desc, select
 from sqlalchemy.orm import Session
 
-from luana_core_platform.core.database import redis_client
 from luana_core_brand_studio.api.dto.extraction import (
     BrandVisualsResponse,
     ExtractFullBrandResponse,
@@ -23,10 +27,6 @@ from luana_core_brand_studio.application.extraction_service import BrandExtracti
 from luana_core_brand_studio.infrastructure.models.extraction_trace_model import (
     BrandExtractionTrace,
 )
-from luana_core_iam.api.dependencies import get_current_user, get_db
-from luana_core_iam.domain.user import User
-from luana_core_platform.domain.extraction_jobs import ExtractionJob
-from luana_core_platform.infrastructure.files.file_parsing_service import FileParsingService
 
 logger = structlog.get_logger()
 router = APIRouter()

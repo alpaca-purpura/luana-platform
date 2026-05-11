@@ -193,14 +193,15 @@ async def run_brand_extraction(
         logger.warning("Could not create trace collector: %s", exc)
 
     try:
+        from luana_core_platform.application.field_diff import (
+            diff_filled_by_section,
+        )
+
         from luana_core_brand_studio.application.extraction_service import (
             BrandExtractionService,
         )
         from luana_core_brand_studio.infrastructure.repositories.brand_repository import (
             BrandRepository,
-        )
-        from luana_core_platform.application.field_diff import (
-            diff_filled_by_section,
         )
 
         on_progress(5, "Iniciando análisis...")

@@ -94,6 +94,53 @@ lifts in Story 8.
 | `backend/src/modules/crm/api/contacts.py` | `luana-core-crm` | Imports `contact_query_service` (forward couple) |
 | `backend/tests/modules/crm/test_contacts_api.py` | `luana-core-crm` | Tests above API endpoint |
 
+## Story 5 deferrals (2026-05-11)
+
+Story 5 (`luana-brand-offer-studios`) lifted 2 packages (brand-studio +
+offer-studio). The following files are deferred to later stories per 03-arch.md §9.6.
+
+### Defer to Story 6 (copilot lift)
+
+`copilot_provider/` subfolders import `src.modules.copilot.domain.{ports, workflow}`
+— deferred when their consumer (`luana-core-copilot`) lifts.
+
+| Source (AISALESHT) | Target package | Reason |
+|---|---|---|
+| `backend/src/modules/brand/copilot_provider/*` (8 files) | `luana-core-brand-studio` | Imports `src.modules.copilot.domain.{ports, workflow}` |
+| `backend/src/modules/offer/copilot_provider/*` (5 files) | `luana-core-offer-studio` | Imports `src.modules.copilot.domain.{ports, workflow}` |
+| `backend/src/modules/offer/api/offer_ai.py` | `luana-core-offer-studio` | Imports `src.modules.copilot.application.services.offer_psychology_service` |
+| `backend/tests/modules/brand/test_brand_context_injector.py` | `luana-core-brand-studio` | Imports copilot ports |
+| `backend/tests/modules/brand/test_buyer_persona_fields_dropped_regression.py` | `luana-core-brand-studio` | Imports copilot |
+| `backend/tests/modules/brand/test_worker_emits_summary_and_pills.py` | `luana-core-brand-studio` | Imports copilot |
+| `backend/tests/modules/offer/test_offer_data_access_provider.py` | `luana-core-offer-studio` | Tests `copilot_provider/provider.py` |
+
+### Defer to Story 8 (campaigns / advertising lift)
+
+`counts.py` + `campaigns.py` import `src.modules.advertising.*` — deferred to
+Story 8 (campaigns/advertising lift).
+
+| Source (AISALESHT) | Target package | Reason |
+|---|---|---|
+| `backend/src/modules/offer/api/counts.py` | `luana-core-offer-studio` | Imports `src.modules.advertising.application.services.offer_campaigns_read_adapter` |
+| `backend/src/modules/offer/api/campaigns.py` | `luana-core-offer-studio` | Idem |
+
+Note: `test_offer_ai_endpoint.py` was lifted but contains `@pytest.mark.skip`
+decorators referencing the deferred `offer_ai.py` routes. Similar pattern for
+`test_counts_api.py` + `test_campaigns_api.py` (module-level `pytest.skip` at
+import time, deferred Story 8).
+
+### Reserved (design decisions, NOT existing AISALESHT code)
+
+These are NEW abstractions/data per outcome §7 ADR-001 and outcome §11 voice
+cloning roadmap — they do NOT exist in AISALESHT today and will be introduced
+in future stories.
+
+| Reserved item | Future story | Notes |
+|---|---|---|
+| `BrandVoicePort` Protocol | Story 7 (sales_agent / copilot lift) | Consumer-side intro; impl in core-brand-studio wired then. Story 5 forbids new abstractions (§7.3) — verbatim placement of existing `PersonalityCompiler` only |
+| `voice_cloning` BrandConfig flag | Stories 11-13 (per-brand vertical bootstrap) | Per-brand value at vertical bootstrap; BrandConfig schema itself in Story 8/9 |
+| Voice cloning pipeline (LLM-distillation from chat samples) | Stories 11-13 | NEW code, does NOT exist in AISALESHT today |
+
 ## Lift rule
 
 All deferred files follow the lift-verbatim constraint: when they are lifted,
