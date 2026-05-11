@@ -26,6 +26,8 @@ members = [
     # Story 5 packages (NEW)
     "core/luana-core-brand-studio",
     "core/luana-core-offer-studio",
+    # Story 6 packages (NEW)
+    "core/luana-core-copilot",
     # Brand apps
     "nicolify",
     "vitalia",
@@ -59,6 +61,8 @@ luana-core-connections = { workspace = true }
 # Story 5 (NEW)
 luana-core-brand-studio = { workspace = true }
 luana-core-offer-studio = { workspace = true }
+# Story 6 (NEW)
+luana-core-copilot = { workspace = true }
 
 [tool.ruff]
 line-length = 120
