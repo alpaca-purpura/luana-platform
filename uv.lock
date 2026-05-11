@@ -9,6 +9,7 @@ members = [
     "luana-core-channels",
     "luana-core-idempotency",
     "luana-core-llm",
+    "luana-core-observability",
     "luana-core-platform",
     "luana-lupulo",
     "luana-vitalia",
@@ -1231,6 +1232,31 @@ requires-dist = [
     { name = "litellm", specifier = ">=1.40" },
     { name = "luana-core-platform" },
     { name = "openai", specifier = ">=1.0" },
+    { name = "pydantic", specifier = ">=2.0" },
+    { name = "sqlalchemy", specifier = ">=2.0" },
+    { name = "structlog", specifier = ">=24.0" },
+]
+
+[[package]]
+name = "luana-core-observability"
+version = "0.0.1a0"
+source = { editable = "core/luana-core-observability" }
+dependencies = [
+    { name = "httpx" },
+    { name = "litellm" },
+    { name = "luana-core-channels" },
+    { name = "luana-core-platform" },
+    { name = "pydantic" },
+    { name = "sqlalchemy" },
+    { name = "structlog" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "httpx", specifier = ">=0.27" },
+    { name = "litellm", specifier = ">=1.40" },
+    { name = "luana-core-channels" },
+    { name = "luana-core-platform" },
     { name = "pydantic", specifier = ">=2.0" },
     { name = "sqlalchemy", specifier = ">=2.0" },
     { name = "structlog", specifier = ">=24.0" },
