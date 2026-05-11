@@ -221,11 +221,10 @@ class TestDeleteEvent:
         assert not any(e.id == created.id for e in results)
 
     def test_soft_delete_preserves_row_in_db(self, db, tenant_id):
-        from sqlalchemy import select
-
         from luana_core_commercial_calendar.infrastructure.models.calendar_event_model import (
             CalendarEventModel,
         )
+        from sqlalchemy import select
 
         repo = CalendarEventRepository(db)
         evt = _make_event(name="Soft Delete Target")

@@ -6,8 +6,6 @@ import uuid
 from datetime import UTC, datetime
 
 import pytest
-from pydantic import ValidationError
-
 from luana_core_social_proof.domain.authority_item import AuthorityItem
 from luana_core_social_proof.domain.enums import (
     AuthorityType,
@@ -18,6 +16,7 @@ from luana_core_social_proof.domain.enums import (
 from luana_core_social_proof.domain.placement import Placement
 from luana_core_social_proof.domain.team_member import TeamMember
 from luana_core_social_proof.domain.testimonial import Testimonial
+from pydantic import ValidationError
 
 
 @pytest.fixture

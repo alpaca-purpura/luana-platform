@@ -160,10 +160,9 @@ class TestAuthRouterEndpoints:
     def _make_app(self, db_session, token_payload: dict):
         from fastapi import FastAPI
         from fastapi.testclient import TestClient
-
-        from luana_core_platform.core.database import get_db
         from luana_core_iam.api.routers.auth_router import router
         from luana_core_iam.application.auth import verify_clerk_token
+        from luana_core_platform.core.database import get_db
 
         app = FastAPI()
         app.include_router(router, prefix="/users")

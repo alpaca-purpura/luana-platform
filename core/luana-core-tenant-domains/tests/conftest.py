@@ -123,11 +123,10 @@ postgresql.JSONB = MockJSONB
 postgresql.UUID = MockUUID
 
 # --- DB fixtures ---
+from luana_core_platform.domain.base_entity import Base
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
-
-from luana_core_platform.domain.base_entity import Base
 
 # Canonical tenant IDs for these tests.
 TENANT_ID = uuid.UUID("a1a10000-0000-0000-0000-000000000001")

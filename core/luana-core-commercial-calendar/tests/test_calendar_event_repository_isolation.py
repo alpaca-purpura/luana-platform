@@ -9,12 +9,11 @@ Proves at the repository level that:
 import uuid
 from datetime import date
 
-from sqlalchemy.orm import Session
-
 from luana_core_commercial_calendar.domain.calendar_event import CalendarEvent
 from luana_core_commercial_calendar.infrastructure.repositories.calendar_event_repository import (
     CalendarEventRepository,
 )
+from sqlalchemy.orm import Session
 
 TENANT_A = uuid.UUID("aaaa0000-0000-0000-0000-000000000001")
 TENANT_B = uuid.UUID("bbbb0000-0000-0000-0000-000000000002")

@@ -5,6 +5,8 @@ from __future__ import annotations
 import uuid
 from typing import TYPE_CHECKING
 
+from luana_core_platform.domain.events import EventBus
+
 from luana_core_social_proof.domain.authority_item import AuthorityItem
 from luana_core_social_proof.domain.events import (
     AuthorityItemCreated,
@@ -14,7 +16,6 @@ from luana_core_social_proof.domain.events import (
 from luana_core_social_proof.infrastructure.repositories.authority_item_repository import (
     AuthorityItemRepository,
 )
-from luana_core_platform.domain.events import EventBus
 
 if TYPE_CHECKING:
     from uuid import UUID

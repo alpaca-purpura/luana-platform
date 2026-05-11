@@ -76,10 +76,10 @@ class TestUserTenantRepository:
         tenant_id,
     ):
         """Links to inactive tenants must be excluded."""
+        from luana_core_iam.infrastructure.models.tenant_model import TenantModel as _TenantModel
         from luana_core_iam.infrastructure.models.user_tenant_model import (
             UserTenantModel,
         )
-        from luana_core_iam.infrastructure.models.tenant_model import TenantModel as _TenantModel
 
         inactive_tenant = _TenantModel(
             id=tenant_id,

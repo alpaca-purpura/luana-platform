@@ -15,15 +15,15 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
+from luana_core_platform.domain.expert_business_type import (
+    EXPERT_BUSINESS_TYPE_CATALOG,
+    ExpertBusinessType,
+)
 from pydantic import BaseModel, ConfigDict, Field
 
 from luana_core_tenant_profile.domain.tenant_profile import (
     BUSINESS_TYPES_MAX,
     BUSINESS_TYPES_MIN,
-)
-from luana_core_platform.domain.expert_business_type import (
-    EXPERT_BUSINESS_TYPE_CATALOG,
-    ExpertBusinessType,
 )
 
 # Type alias — slug strings that correspond to ExpertBusinessType values.

@@ -14,9 +14,11 @@ from fastapi import (
     Query,
     UploadFile,
 )
+from luana_core_iam.api.dependencies import get_current_user
+from luana_core_iam.domain.user import User
+from luana_core_platform.core.database import get_db
 from sqlalchemy.orm import Session
 
-from luana_core_platform.core.database import get_db
 from luana_core_assets.application.assets_service import AssetsService
 from luana_core_assets.domain.enums import DEFAULT_SCOPE_FOR_PURPOSE
 from luana_core_assets.domain.schemas import AssetDto, PromoteAssetRequest
@@ -26,8 +28,6 @@ from luana_core_assets.infrastructure.repositories.asset_link_repository import 
 from luana_core_assets.infrastructure.repositories.asset_repository import (
     AssetRepository,
 )
-from luana_core_iam.api.dependencies import get_current_user
-from luana_core_iam.domain.user import User
 
 logger = structlog.get_logger()
 router = APIRouter()

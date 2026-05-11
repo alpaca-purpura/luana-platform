@@ -5,10 +5,10 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
+from luana_core_platform.domain.base_entity import BaseEntity
 from pydantic import model_validator
 
 from luana_core_social_proof.domain.enums import SourceTable, SurfaceType
-from luana_core_platform.domain.base_entity import BaseEntity
 
 _SURFACES_REQUIRING_REF_ID: frozenset[SurfaceType] = frozenset(
     {

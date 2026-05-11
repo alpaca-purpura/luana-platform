@@ -14,14 +14,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import structlog
+from luana_core_platform.domain.datetime_utils import utc_now
+from luana_core_platform.infrastructure.files.file_parsing_service import FileParsingService
 
 from luana_core_assets.domain.enums import AssetType, ExtractionStatus
 from luana_core_assets.infrastructure.repositories.asset_repository import (
     AssetRepository,
 )
 from luana_core_assets.infrastructure.storage import get_storage_strategy
-from luana_core_platform.domain.datetime_utils import utc_now
-from luana_core_platform.infrastructure.files.file_parsing_service import FileParsingService
 
 if TYPE_CHECKING:
     from uuid import UUID

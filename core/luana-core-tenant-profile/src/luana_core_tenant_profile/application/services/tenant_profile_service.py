@@ -18,9 +18,10 @@ import structlog
 if TYPE_CHECKING:
     from uuid import UUID
 
+    from luana_core_platform.domain.expert_business_type import ExpertBusinessType
+
     from luana_core_tenant_profile.domain.repository import TenantProfileRepository
     from luana_core_tenant_profile.domain.tenant_profile import TenantProfile
-    from luana_core_platform.domain.expert_business_type import ExpertBusinessType
 
 logger = structlog.get_logger()
 

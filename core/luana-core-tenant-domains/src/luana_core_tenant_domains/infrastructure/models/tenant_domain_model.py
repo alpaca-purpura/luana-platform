@@ -2,11 +2,10 @@
 
 import uuid
 
+from luana_core_platform.domain.base_entity import Base
 from sqlalchemy import Boolean, Column, DateTime, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
-
-from luana_core_platform.domain.base_entity import Base
 
 
 class TenantDomainModel(Base):

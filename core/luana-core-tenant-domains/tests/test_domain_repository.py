@@ -3,7 +3,6 @@
 import uuid
 
 import pytest
-
 from luana_core_tenant_domains.domain.domain_entity import (
     DomainStatus,
     DomainType,

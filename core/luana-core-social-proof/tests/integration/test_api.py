@@ -11,13 +11,13 @@ from typing import TYPE_CHECKING
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-
 from luana_core_iam.api.dependencies import get_current_user, get_db
 from luana_core_iam.domain.user import User
 from luana_core_social_proof.api.authority import router as authority_router
 from luana_core_social_proof.api.placements import router as placements_router
 from luana_core_social_proof.api.team_members import router as team_router
 from luana_core_social_proof.api.testimonials import router as testimonials_router
+
 TENANT_A = uuid.UUID("aaaa0000-0000-0000-0000-000000000001")
 TENANT_B = uuid.UUID("bbbb0000-0000-0000-0000-000000000002")
 USER_A = uuid.UUID("cccc0000-0000-0000-0000-000000000001")

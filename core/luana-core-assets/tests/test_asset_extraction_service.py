@@ -10,7 +10,7 @@ Guarantees:
 from __future__ import annotations
 
 import uuid
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from luana_core_assets.domain.enums import (
     AssetScope,

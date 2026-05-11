@@ -122,11 +122,10 @@ postgresql.JSONB = MockJSONB
 postgresql.UUID = MockUUID
 
 # --- DB fixtures ---
+from luana_core_platform.domain.base_entity import Base
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
-
-from luana_core_platform.domain.base_entity import Base
 
 # Canonical tenant IDs for these tests.
 TENANT_ID = uuid.UUID("a1a10000-0000-0000-0000-000000000001")
@@ -136,10 +135,12 @@ OTHER_TENANT_ID = uuid.UUID("b2b20000-0000-0000-0000-000000000002")
 @pytest.fixture(scope="session")
 def db_engine():
     # Register IAM models first (commercial_calendar FK → tenants)
+    from luana_core_commercial_calendar.infrastructure.models.calendar_event_model import (
+        CalendarEventModel,  # noqa: F401
+    )
     from luana_core_iam.infrastructure.models.tenant_model import TenantModel  # noqa: F401
     from luana_core_iam.infrastructure.models.user_model import UserModel  # noqa: F401
     from luana_core_iam.infrastructure.models.user_tenant_model import UserTenantModel  # noqa: F401
-    from luana_core_commercial_calendar.infrastructure.models.calendar_event_model import CalendarEventModel  # noqa: F401
 
     engine = create_engine(
         "sqlite:///:memory:",

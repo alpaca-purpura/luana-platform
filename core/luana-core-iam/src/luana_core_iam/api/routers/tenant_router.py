@@ -3,9 +3,9 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
+from luana_core_platform.core.database import get_db
 from sqlalchemy.orm import Session
 
-from luana_core_platform.core.database import get_db
 from luana_core_iam.application.services.tenant_service import TenantService
 from luana_core_iam.domain.tenant import Tenant
 

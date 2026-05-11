@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import structlog
+from luana_core_platform.domain.datetime_utils import utc_now
 from pydantic import ValidationError
 from sqlalchemy import select
 
@@ -12,7 +13,6 @@ from luana_core_social_proof.domain.placement import Placement
 from luana_core_social_proof.infrastructure.models.placement_model import (
     PlacementModel,
 )
-from luana_core_platform.domain.datetime_utils import utc_now
 
 if TYPE_CHECKING:
     from uuid import UUID

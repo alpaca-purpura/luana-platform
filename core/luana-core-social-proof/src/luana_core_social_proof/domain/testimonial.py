@@ -5,10 +5,10 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
+from luana_core_platform.domain.base_entity import BaseEntity
 from pydantic import Field
 
 from luana_core_social_proof.domain.enums import TestimonialMediaType
-from luana_core_platform.domain.base_entity import BaseEntity
 
 
 class Testimonial(BaseEntity):

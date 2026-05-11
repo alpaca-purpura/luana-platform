@@ -2,14 +2,13 @@
 
 import uuid
 
-from sqlalchemy import select
-
 from luana_core_assets.domain.entity import Asset
 from luana_core_assets.domain.enums import AssetStatus, AssetType, StorageProvider
 from luana_core_assets.infrastructure.models.asset_model import AssetModel
 from luana_core_assets.infrastructure.repositories.asset_repository import (
     AssetRepository,
 )
+from sqlalchemy import select
 
 
 def _make_asset(tenant_id: uuid.UUID, **kwargs) -> Asset:

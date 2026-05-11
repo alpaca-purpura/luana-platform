@@ -8,9 +8,10 @@ from uuid import UUID
 
 import structlog
 from fastapi import BackgroundTasks
+from luana_core_platform.core.config import settings
+from luana_core_platform.domain.datetime_utils import utc_now
 from sqlalchemy.orm import Session
 
-from luana_core_platform.core.config import settings
 from luana_core_assets.application.asset_extraction_service import (
     AssetExtractionService,
 )
@@ -29,7 +30,6 @@ from luana_core_assets.infrastructure.repositories.asset_repository import (
     AssetRepository,
 )
 from luana_core_assets.infrastructure.storage import get_storage_strategy
-from luana_core_platform.domain.datetime_utils import utc_now
 
 logger = structlog.get_logger()
 

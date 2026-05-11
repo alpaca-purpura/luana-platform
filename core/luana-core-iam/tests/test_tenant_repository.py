@@ -3,7 +3,6 @@
 import uuid
 
 import pytest
-
 from luana_core_iam.domain.tenant import Tenant
 from luana_core_iam.infrastructure.repositories.tenant_repository import (
     TenantRepository,

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import uuid
 
+from luana_core_platform.domain.base_entity import Base
 from sqlalchemy import (
     Boolean,
     Column,
@@ -15,8 +16,6 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.sql import func
-
-from luana_core_platform.domain.base_entity import Base
 
 
 class AuthorityItemModel(Base):

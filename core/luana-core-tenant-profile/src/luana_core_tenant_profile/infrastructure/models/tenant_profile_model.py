@@ -25,11 +25,10 @@ from __future__ import annotations
 
 import uuid
 
+from luana_core_platform.domain.base_entity import Base
 from sqlalchemy import JSON, Column, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import ARRAY, UUID
 from sqlalchemy.sql import func
-
-from luana_core_platform.domain.base_entity import Base
 
 
 class TenantProfileModel(Base):

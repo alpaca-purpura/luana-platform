@@ -6,12 +6,12 @@ phrased to fail loudly if the repository ever leaks cross-tenant data.
 
 from __future__ import annotations
 
+import uuid
 from datetime import timedelta
 
-from luana_core_tenant_profile.domain.tenant_profile import RATE_LIMIT_WINDOW, TenantProfile
 from luana_core_platform.domain.datetime_utils import utc_now
-import uuid
 from luana_core_platform.domain.expert_business_type import ExpertBusinessType
+from luana_core_tenant_profile.domain.tenant_profile import RATE_LIMIT_WINDOW, TenantProfile
 
 TENANT_ID = uuid.UUID("a1a10000-0000-0000-0000-000000000001")
 OTHER_TENANT_ID = uuid.UUID("b2b20000-0000-0000-0000-000000000002")

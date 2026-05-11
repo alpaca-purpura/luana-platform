@@ -12,8 +12,6 @@ via raw JSON will have those keys silently ignored by Pydantic v2
 import uuid
 
 import pytest
-from pydantic import ValidationError
-
 from luana_core_iam.domain.tenant import (
     AISettings,
     GeneralSettings,
@@ -25,6 +23,7 @@ from luana_core_iam.domain.tenant import (
 )
 from luana_core_iam.domain.tracking_config import TrackingConfig
 from luana_core_iam.domain.user import SystemUserProfile, TeamMemberCreate, User
+from pydantic import ValidationError
 
 
 class TestTenant:

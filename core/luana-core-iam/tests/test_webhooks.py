@@ -5,9 +5,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-
-from luana_core_platform.core.database import get_db
 from luana_core_iam.api.webhooks import router
+from luana_core_platform.core.database import get_db
 
 _VALID_HEADERS = {
     "svix-id": "msg_123",

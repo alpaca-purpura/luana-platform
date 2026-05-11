@@ -3,7 +3,6 @@
 import uuid
 
 import pytest
-
 from luana_core_iam.domain.user import User
 from luana_core_iam.infrastructure.repositories.user_repository import UserRepository
 

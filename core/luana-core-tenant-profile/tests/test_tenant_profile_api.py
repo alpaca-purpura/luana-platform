@@ -12,17 +12,16 @@ from datetime import timedelta
 from uuid import uuid4
 
 import pytest
-from fastapi.testclient import TestClient
-
 from fastapi import FastAPI
-from luana_core_tenant_profile.api.router import router as tenant_profile_router
+from fastapi.testclient import TestClient
+from luana_core_platform.domain.datetime_utils import utc_now
+from luana_core_platform.domain.expert_business_type import ExpertBusinessType
 from luana_core_tenant_profile.api.business_types_catalog import router as catalog_router
+from luana_core_tenant_profile.api.router import router as tenant_profile_router
 from luana_core_tenant_profile.domain.tenant_profile import RATE_LIMIT_WINDOW, TenantProfile
 from luana_core_tenant_profile.infrastructure.repositories.tenant_profile_repository import (
     SqlTenantProfileRepository,
 )
-from luana_core_platform.domain.datetime_utils import utc_now
-from luana_core_platform.domain.expert_business_type import ExpertBusinessType
 
 TYPE_A = ExpertBusinessType.ACADEMIA_INFOPRODUCTOR
 TYPE_B = ExpertBusinessType.AGENCIA_FREELANCE

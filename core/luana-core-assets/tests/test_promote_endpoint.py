@@ -23,14 +23,13 @@ from uuid import uuid4
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-
-from luana_core_platform.core.database import get_db
 from luana_core_assets.api.router import router
 from luana_core_assets.domain.enums import (
     AssetPurpose,
     AssetScope,
 )
 from luana_core_iam.api.dependencies import get_current_user
+from luana_core_platform.core.database import get_db
 
 
 def _build_client(tenant_id, user_id=None):

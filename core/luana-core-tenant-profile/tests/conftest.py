@@ -122,11 +122,9 @@ postgresql.JSONB = MockJSONB
 postgresql.UUID = MockUUID
 
 # --- DB fixtures ---
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
-
 from luana_core_platform.domain.base_entity import Base
+from luana_core_platform.domain.datetime_utils import utc_now
+from luana_core_platform.domain.expert_business_type import ExpertBusinessType
 from luana_core_tenant_profile.domain.tenant_profile import (
     RATE_LIMIT_WINDOW,
     TenantProfile,
@@ -134,8 +132,9 @@ from luana_core_tenant_profile.domain.tenant_profile import (
 from luana_core_tenant_profile.infrastructure.repositories.tenant_profile_repository import (
     SqlTenantProfileRepository,
 )
-from luana_core_platform.domain.datetime_utils import utc_now
-from luana_core_platform.domain.expert_business_type import ExpertBusinessType
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 
 # Canonical tenant IDs for these tests (complementary to modules/conftest.py).
 TENANT_ID = uuid.UUID("a1a10000-0000-0000-0000-000000000001")

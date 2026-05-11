@@ -10,11 +10,10 @@ See ``.claude/rules/`` and the asset-lifecycle design doc.
 
 import uuid
 
+from luana_core_platform.domain.base_entity import Base
 from sqlalchemy import Column, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
-
-from luana_core_platform.domain.base_entity import Base
 
 
 class AssetLinkModel(Base):

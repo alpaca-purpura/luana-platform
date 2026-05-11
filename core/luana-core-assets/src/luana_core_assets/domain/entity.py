@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
+from luana_core_platform.domain.base_entity import BaseEntity
 from pydantic import Field
 
 from luana_core_assets.domain.enums import (
@@ -14,7 +15,6 @@ from luana_core_assets.domain.enums import (
     ExtractionStatus,
     StorageProvider,
 )
-from luana_core_platform.domain.base_entity import BaseEntity
 
 
 class Asset(BaseEntity):

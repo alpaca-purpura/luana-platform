@@ -7,7 +7,6 @@ import json
 
 import httpx
 import structlog
-
 from luana_core_platform.core.config import settings
 
 logger = structlog.get_logger()

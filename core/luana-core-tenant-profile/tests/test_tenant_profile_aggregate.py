@@ -10,7 +10,8 @@ import uuid
 from datetime import timedelta
 
 import pytest
-
+from luana_core_platform.domain.datetime_utils import utc_now
+from luana_core_platform.domain.expert_business_type import ExpertBusinessType
 from luana_core_tenant_profile.domain.events import (
     BusinessTypesChanged,
     TenantProfileInitialized,
@@ -22,8 +23,6 @@ from luana_core_tenant_profile.domain.tenant_profile import (
     RATE_LIMIT_WINDOW,
     TenantProfile,
 )
-from luana_core_platform.domain.datetime_utils import utc_now
-from luana_core_platform.domain.expert_business_type import ExpertBusinessType
 
 # Convenient aliases
 TYPE_A = ExpertBusinessType.ACADEMIA_INFOPRODUCTOR

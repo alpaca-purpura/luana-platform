@@ -19,9 +19,9 @@ from uuid import UUID
 
 import structlog
 from fastapi import APIRouter, Depends, Header, HTTPException, status
+from luana_core_platform.core.database import get_db
 from sqlalchemy.orm import Session
 
-from luana_core_platform.core.database import get_db
 from luana_core_tenant_profile.api.dtos import (
     TenantProfileResponse,
     UpdateTenantProfileRequest,

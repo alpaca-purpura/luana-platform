@@ -3,11 +3,8 @@
 import uuid
 from unittest.mock import MagicMock, patch
 
-import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-
-from luana_core_platform.core.database import get_db
 from luana_core_iam.api.dependencies import (
     _resolve_email_from_clerk_api,
     _resolve_name,
@@ -20,6 +17,7 @@ from luana_core_iam.api.dependencies import (
 from luana_core_iam.application.auth import verify_clerk_token
 from luana_core_iam.domain.user import User
 from luana_core_iam.infrastructure.models.user_model import UserModel
+from luana_core_platform.core.database import get_db
 
 # ---------------------------------------------------------------------------
 # Helper: minimal FastAPI app for HTTP-level tests
@@ -28,7 +26,6 @@ from luana_core_iam.infrastructure.models.user_model import UserModel
 
 def _make_app(db_session, token_payload: dict):
     """Build a test app with `get_current_user` dep exercised end-to-end."""
-    from fastapi import APIRouter
 
     from luana_core_iam.api.routers.auth_router import router as auth_router
 
@@ -286,7 +283,6 @@ class TestGetCurrentUser:
 class TestGetCurrentTenantId:
     def test_returns_tenant_id_string(self, db, seed_user_tenant_link, user_id, tenant_id):
         from fastapi import APIRouter
-
         from luana_core_iam.infrastructure.repositories.user_repository import UserRepository
 
         repo = UserRepository(db)

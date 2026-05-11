@@ -6,9 +6,9 @@ from typing import BinaryIO
 from uuid import UUID
 
 from fastapi import BackgroundTasks
+from luana_core_platform.core.config import settings  # Ensure this exists or use relative import
 from sqlalchemy.orm import Session
 
-from luana_core_platform.core.config import settings  # Ensure this exists or use relative import
 from luana_core_assets.domain.entity import GalleryImage
 from luana_core_assets.infrastructure.repositories.gallery_repository import (
     GalleryRepository,

@@ -16,6 +16,8 @@ from datetime import UTC
 from typing import TYPE_CHECKING
 
 import structlog
+from luana_core_platform.domain.datetime_utils import utc_now
+from luana_core_platform.domain.expert_business_type import ExpertBusinessType
 from sqlalchemy import select
 
 from luana_core_tenant_profile.domain.repository import TenantProfileRepository
@@ -23,8 +25,6 @@ from luana_core_tenant_profile.domain.tenant_profile import TenantProfile
 from luana_core_tenant_profile.infrastructure.models.tenant_profile_model import (
     TenantProfileModel,
 )
-from luana_core_platform.domain.datetime_utils import utc_now
-from luana_core_platform.domain.expert_business_type import ExpertBusinessType
 
 if TYPE_CHECKING:
     from datetime import datetime

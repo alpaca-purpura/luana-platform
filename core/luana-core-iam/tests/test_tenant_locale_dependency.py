@@ -2,10 +2,9 @@
 
 import uuid
 
-from sqlalchemy.orm import Session
-
 from luana_core_iam.infrastructure.models.tenant_model import TenantModel
 from luana_core_platform.domain.locale import TenantLocale
+from sqlalchemy.orm import Session
 
 
 class TestGetTenantLocale:

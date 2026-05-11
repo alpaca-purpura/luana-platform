@@ -105,11 +105,10 @@ class TestDeleteIsSoft:
         assert all(e.id != event_id for e in events)
 
         # But row still exists in DB (soft deleted)
-        from sqlalchemy import select
-
         from luana_core_commercial_calendar.infrastructure.models.calendar_event_model import (
             CalendarEventModel,
         )
+        from sqlalchemy import select
 
         stmt = select(CalendarEventModel).where(CalendarEventModel.id == event_id)
         row = db.execute(stmt).scalar_one_or_none()

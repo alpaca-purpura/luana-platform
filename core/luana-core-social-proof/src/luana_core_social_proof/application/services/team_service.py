@@ -5,6 +5,8 @@ from __future__ import annotations
 import uuid
 from typing import TYPE_CHECKING
 
+from luana_core_platform.domain.events import EventBus
+
 from luana_core_social_proof.domain.events import (
     TeamMemberCreated,
     TeamMemberSoftDeleted,
@@ -14,7 +16,6 @@ from luana_core_social_proof.domain.team_member import TeamMember
 from luana_core_social_proof.infrastructure.repositories.team_member_repository import (
     TeamMemberRepository,
 )
-from luana_core_platform.domain.events import EventBus
 
 if TYPE_CHECKING:
     from uuid import UUID

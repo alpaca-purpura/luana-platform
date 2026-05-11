@@ -4,10 +4,10 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
+from luana_core_platform.domain.base_entity import BaseEntity
 from pydantic import Field, model_validator
 
 from luana_core_assets.domain.enums import AssetPurpose, AssetScope
-from luana_core_platform.domain.base_entity import BaseEntity
 
 # Purposes whose ``scope`` is ``deliverable`` — they *must* carry an entity
 # link when promoted, otherwise the asset has no consumer and the

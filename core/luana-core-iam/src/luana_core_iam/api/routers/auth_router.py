@@ -3,9 +3,9 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
+from luana_core_platform.core.database import get_db
 from sqlalchemy.orm import Session
 
-from luana_core_platform.core.database import get_db
 from luana_core_iam.api.dependencies import get_user_from_token
 from luana_core_iam.api.dto.users import TenantSchema
 from luana_core_iam.application.services.user_service import UserService

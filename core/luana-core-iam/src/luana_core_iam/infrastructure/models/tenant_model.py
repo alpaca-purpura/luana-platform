@@ -2,13 +2,12 @@
 
 import uuid
 
+from luana_core_platform.domain.base_entity import Base
+from luana_core_platform.domain.currency import FALLBACK_CURRENCY
 from sqlalchemy import Boolean, Column, DateTime, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-
-from luana_core_platform.domain.base_entity import Base
-from luana_core_platform.domain.currency import FALLBACK_CURRENCY
 
 
 class TenantModel(Base):
