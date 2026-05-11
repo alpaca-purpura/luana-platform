@@ -23,6 +23,9 @@ members = [
     "core/luana-core-analytics-engine",
     "core/luana-core-landing",
     "core/luana-core-connections",
+    # Story 5 packages (NEW)
+    "core/luana-core-brand-studio",
+    "core/luana-core-offer-studio",
     # Brand apps
     "nicolify",
     "vitalia",
@@ -53,6 +56,9 @@ luana-core-crm = { workspace = true }
 luana-core-analytics-engine = { workspace = true }
 luana-core-landing = { workspace = true }
 luana-core-connections = { workspace = true }
+# Story 5 (NEW)
+luana-core-brand-studio = { workspace = true }
+luana-core-offer-studio = { workspace = true }
 
 [tool.ruff]
 line-length = 120
