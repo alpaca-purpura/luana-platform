@@ -11,6 +11,7 @@ dependencies = [
     "langgraph>=0.2",              # StateGraph + checkpointers
     "langchain-core>=0.3",
     "langchain-openai>=0.2",       # for OpenAI-protocol providers
+    "langchain-text-splitters>=0.3", # contextual_chunker service
     "deepagents>=0.5.3",           # subagent harness
     "qdrant-client>=1.10",         # marketing_kb_store
     "arq>=0.26",                   # workers/telegram_worker
