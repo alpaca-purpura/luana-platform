@@ -17,6 +17,7 @@ members = [
     "luana-core-channels",
     "luana-core-commercial-calendar",
     "luana-core-compliance",
+    "luana-core-connections",
     "luana-core-crm",
     "luana-core-events",
     "luana-core-extraction",
@@ -1638,6 +1639,33 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "luana-core-platform" },
+    { name = "pydantic", specifier = ">=2.0" },
+    { name = "sqlalchemy", specifier = ">=2.0" },
+    { name = "structlog", specifier = ">=24.0" },
+]
+
+[[package]]
+name = "luana-core-connections"
+version = "0.0.1a0"
+source = { editable = "core/luana-core-connections" }
+dependencies = [
+    { name = "fastapi" },
+    { name = "httpx" },
+    { name = "luana-core-analytics-engine" },
+    { name = "luana-core-iam" },
+    { name = "luana-core-platform" },
+    { name = "pydantic" },
+    { name = "sqlalchemy" },
+    { name = "structlog" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastapi", specifier = ">=0.115" },
+    { name = "httpx", specifier = ">=0.27" },
+    { name = "luana-core-analytics-engine" },
+    { name = "luana-core-iam" },
     { name = "luana-core-platform" },
     { name = "pydantic", specifier = ">=2.0" },
     { name = "sqlalchemy", specifier = ">=2.0" },
