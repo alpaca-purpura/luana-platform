@@ -19,7 +19,6 @@ from typing import Any
 from uuid import uuid4
 
 import pytest
-
 from luana_core_offer_studio.application.services.offer_completion_service import (
     _compute_section_depth,
     _sections_for,

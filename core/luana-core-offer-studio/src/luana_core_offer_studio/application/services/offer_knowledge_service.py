@@ -15,6 +15,7 @@ from io import BytesIO
 from typing import TYPE_CHECKING
 
 import structlog
+from luana_core_platform.domain.datetime_utils import utc_now
 
 from luana_core_offer_studio.domain.enums import (
     KnowledgeSourceStatus,
@@ -26,7 +27,6 @@ from luana_core_offer_studio.domain.events import (
 )
 from luana_core_offer_studio.domain.exceptions import KnowledgeSourceNotFoundError
 from luana_core_offer_studio.domain.knowledge_source import KnowledgeSource
-from luana_core_platform.domain.datetime_utils import utc_now
 
 if TYPE_CHECKING:
     from uuid import UUID

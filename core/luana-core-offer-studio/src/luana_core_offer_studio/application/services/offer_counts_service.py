@@ -13,17 +13,17 @@ from datetime import timedelta
 from typing import TYPE_CHECKING
 
 import structlog
-
 from luana_core_platform.domain.datetime_utils import utc_now
 
 if TYPE_CHECKING:
     from uuid import UUID
 
+    from luana_core_platform.links.ports.advertising import AdvertisingReadPort
+
     from luana_core_offer_studio.application.ports import (
         IKnowledgeSourceRepository,
         IOfferAssetRepository,
     )
-    from luana_core_platform.links.ports.advertising import AdvertisingReadPort
 
 
 logger = structlog.get_logger(__name__)

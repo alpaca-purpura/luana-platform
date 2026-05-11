@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from luana_core_platform.domain.datetime_utils import utc_now
 from sqlalchemy import func, or_, select
 
 from luana_core_offer_studio.application.ports import IKnowledgeSourceRepository
@@ -20,7 +21,6 @@ from luana_core_offer_studio.domain.knowledge_source import KnowledgeSource
 from luana_core_offer_studio.infrastructure.models.knowledge_source_model import (
     KnowledgeSourceModel,
 )
-from luana_core_platform.domain.datetime_utils import utc_now
 
 if TYPE_CHECKING:
     from uuid import UUID

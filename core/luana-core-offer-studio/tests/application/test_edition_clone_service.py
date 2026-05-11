@@ -14,7 +14,6 @@ from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any
 
 import pytest
-
 from luana_core_offer_studio.application.edition_clone_service import (
     CloneStrategy,
     EditionCloneService,
@@ -25,12 +24,10 @@ from luana_core_offer_studio.domain.assets import OfferAsset
 from luana_core_offer_studio.domain.enums import AssetSource, AssetStatus, AssetType
 from luana_core_offer_studio.domain.launch_edition import LaunchEditionCreate
 from luana_core_offer_studio.domain.offer import PricingStructure
-from luana_core_offer_studio.infrastructure.models.launch_edition_model import (
-    LaunchEditionModel,
-)
 from luana_core_offer_studio.infrastructure.repositories.offer_asset_repository import (
     OfferAssetRepository,
 )
+
 from tests.conftest import create_product_model
 
 if TYPE_CHECKING:

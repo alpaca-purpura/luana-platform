@@ -52,8 +52,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from luana_core_offer_studio.domain.enums import OfferValueLevel
 from luana_core_platform.domain.expert_business_type import ExpertBusinessType
+
+from luana_core_offer_studio.domain.enums import OfferValueLevel
 
 
 @dataclass(frozen=True, slots=True)

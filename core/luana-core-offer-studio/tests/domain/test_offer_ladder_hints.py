@@ -10,7 +10,6 @@ Covers:
 from __future__ import annotations
 
 import pytest
-
 from luana_core_offer_studio.domain.enums import OfferValueLevel
 from luana_core_offer_studio.domain.offer_ladder_hints import (
     OFFER_LADDER_HINTS,

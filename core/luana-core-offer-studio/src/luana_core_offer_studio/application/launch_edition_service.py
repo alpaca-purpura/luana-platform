@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from luana_core_platform.domain.datetime_utils import utc_now
+
 from luana_core_offer_studio.domain.archetype_catalog import get_capabilities
 from luana_core_offer_studio.domain.launch_edition import (
     EditionStatus,
@@ -18,7 +20,6 @@ from luana_core_offer_studio.infrastructure.repositories.launch_edition_reposito
 from luana_core_offer_studio.infrastructure.repositories.offer_repository import (
     OfferRepository,
 )
-from luana_core_platform.domain.datetime_utils import utc_now
 
 if TYPE_CHECKING:
     from datetime import datetime

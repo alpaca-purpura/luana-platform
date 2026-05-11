@@ -26,6 +26,7 @@ from luana_core_offer_studio.domain.enums import AssetSource, AssetStatus, Asset
 from luana_core_offer_studio.infrastructure.repositories.offer_asset_repository import (
     OfferAssetRepository,
 )
+
 from tests.conftest import create_product_model
 
 if TYPE_CHECKING:

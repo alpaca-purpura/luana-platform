@@ -7,7 +7,6 @@ well-defined capability record, and that the current product rules hold.
 from __future__ import annotations
 
 import pytest
-
 from luana_core_offer_studio.domain.archetype_catalog import (
     ARCHETYPE_CATALOG,
     ArchetypeCapabilities,

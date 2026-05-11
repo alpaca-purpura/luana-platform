@@ -29,11 +29,11 @@ from enum import StrEnum
 from typing import Any
 from uuid import UUID
 
+from luana_core_platform.domain.base_entity import BaseEntity
 from pydantic import Field, model_validator
 
 from luana_core_offer_studio.domain.enums import VariantStructure
 from luana_core_offer_studio.domain.offer import PricingStructure
-from luana_core_platform.domain.base_entity import BaseEntity
 
 
 class EditionStatus(StrEnum):

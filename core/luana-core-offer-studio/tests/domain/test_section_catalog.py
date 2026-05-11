@@ -14,7 +14,6 @@ Related:
 from __future__ import annotations
 
 import pytest
-
 from luana_core_offer_studio.domain.section_catalog import (
     SECTION_CATALOG,
     SectionKey,

@@ -6,7 +6,6 @@ from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
 import pytest
-
 from luana_core_offer_studio.domain.launch_edition import (
     EditionStatus,
     EditionVisibility,

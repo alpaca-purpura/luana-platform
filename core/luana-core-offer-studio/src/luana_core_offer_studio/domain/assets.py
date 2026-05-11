@@ -10,10 +10,10 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID, uuid4
 
+from luana_core_platform.domain.base_entity import BaseEntity
 from pydantic import Field
 
 from luana_core_offer_studio.domain.enums import AssetSource, AssetStatus, AssetType
-from luana_core_platform.domain.base_entity import BaseEntity
 
 
 class OfferAsset(BaseEntity):

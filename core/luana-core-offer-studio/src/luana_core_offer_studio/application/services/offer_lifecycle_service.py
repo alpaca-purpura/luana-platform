@@ -16,6 +16,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import structlog
+from luana_core_platform.domain.datetime_utils import utc_now
 
 from luana_core_offer_studio.domain.enums import OfferStatus
 from luana_core_offer_studio.domain.events import OfferStatusChanged
@@ -24,7 +25,6 @@ from luana_core_offer_studio.domain.lifecycle import (
     LIFECYCLE_TRANSITIONS,
     OfferLifecycleStatus,
 )
-from luana_core_platform.domain.datetime_utils import utc_now
 
 if TYPE_CHECKING:
     from uuid import UUID

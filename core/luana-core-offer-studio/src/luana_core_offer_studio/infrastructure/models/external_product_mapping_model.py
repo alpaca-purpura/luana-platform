@@ -6,11 +6,10 @@ Offer IDs so webhooks and ETL can resolve which Offer a sale belongs to.
 
 import uuid
 
+from luana_core_platform.domain.base_entity import Base
 from sqlalchemy import Column, DateTime, ForeignKey, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.sql import func
-
-from luana_core_platform.domain.base_entity import Base
 
 
 class ExternalProductMappingModel(Base):

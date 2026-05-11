@@ -6,7 +6,6 @@ from unittest.mock import MagicMock
 from uuid import uuid4
 
 import pytest
-
 from luana_core_offer_studio.application.services.offer_knowledge_service import (
     OfferKnowledgeService,
 )

@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
 import structlog
+from luana_core_platform.domain.datetime_utils import utc_now
 
 from luana_core_offer_studio.domain.events import (
     LandingGenerationRequested,
@@ -28,7 +29,6 @@ from luana_core_offer_studio.domain.events import (
     LandingUnpublished,
 )
 from luana_core_offer_studio.domain.exceptions import LandingNotReadyError
-from luana_core_platform.domain.datetime_utils import utc_now
 
 if TYPE_CHECKING:
     from uuid import UUID

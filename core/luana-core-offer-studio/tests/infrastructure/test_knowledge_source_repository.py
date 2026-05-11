@@ -16,6 +16,7 @@ from luana_core_offer_studio.domain.knowledge_source import KnowledgeSource
 from luana_core_offer_studio.infrastructure.repositories.knowledge_source_repository import (
     KnowledgeSourceRepository,
 )
+
 from tests.conftest import create_product_model
 
 if TYPE_CHECKING:

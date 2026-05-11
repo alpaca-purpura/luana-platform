@@ -7,10 +7,8 @@ to translate Offer entity field paths into FE section slugs.
 from __future__ import annotations
 
 import pytest
-
 from luana_core_offer_studio.domain.enums import OfferArchetype
 from luana_core_offer_studio.domain.extraction_section_map import (
-    _DETAILS_BY_ARCHETYPE,
     BACKEND_WAVE_TO_FE_SLUGS,
     FE_SECTION_SLUGS,
     fields_to_fe_sections,

@@ -13,12 +13,11 @@ import uuid
 from datetime import datetime
 from typing import Any
 
+from luana_core_platform.domain.base_entity import Base
 from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
-
-from luana_core_platform.domain.base_entity import Base
 
 
 class OfferAssetModel(Base):

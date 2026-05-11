@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
+from luana_core_platform.domain.datetime_utils import utc_now
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -20,7 +21,6 @@ from luana_core_offer_studio.infrastructure.repositories.enum_normalizer import 
     normalize_status,
     normalize_value_level,
 )
-from luana_core_platform.domain.datetime_utils import utc_now
 
 
 class OfferRepository:

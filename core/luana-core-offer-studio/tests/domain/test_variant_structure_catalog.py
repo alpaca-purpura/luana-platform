@@ -14,7 +14,6 @@ Related:
 from __future__ import annotations
 
 import pytest
-
 from luana_core_offer_studio.domain.enums import VariantStructure
 from luana_core_offer_studio.domain.variant_structure_catalog import (
     VARIANT_STRUCTURE_CATALOG,

@@ -11,6 +11,7 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID, uuid4
 
+from luana_core_platform.domain.base_entity import BaseEntity
 from pydantic import Field
 
 from luana_core_offer_studio.domain.enums import (
@@ -18,7 +19,6 @@ from luana_core_offer_studio.domain.enums import (
     KnowledgeSourceStatus,
 )
 from luana_core_offer_studio.domain.lifecycle import OfferLifecycleStatus
-from luana_core_platform.domain.base_entity import BaseEntity
 
 
 class DomainEvent(BaseEntity):

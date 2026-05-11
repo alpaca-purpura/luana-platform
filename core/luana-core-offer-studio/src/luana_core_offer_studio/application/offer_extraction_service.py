@@ -22,7 +22,15 @@ if TYPE_CHECKING:
     from pydantic import BaseModel
     from sqlalchemy.orm import Session
 
+from luana_core_platform.application.ai_action_service import (
+    AIActionPolicy,
+    AIActionService,
+    AIModelPolicy,
+)
 from luana_core_platform.core.enums import ModelRole
+from luana_core_platform.infrastructure.prompts.base import prompt_loader
+from luana_core_platform.infrastructure.web.crawler import truncate_at_page_boundary
+
 from luana_core_offer_studio.domain.offer import (
     OfferClosingUpdate,
     OfferDetailsUpdate,
@@ -32,13 +40,6 @@ from luana_core_offer_studio.domain.offer import (
     OfferStrategyUpdate,
     OfferValueStackUpdate,
 )
-from luana_core_platform.application.ai_action_service import (
-    AIActionPolicy,
-    AIActionService,
-    AIModelPolicy,
-)
-from luana_core_platform.infrastructure.prompts.base import prompt_loader
-from luana_core_platform.infrastructure.web.crawler import truncate_at_page_boundary
 
 logger = structlog.get_logger()
 

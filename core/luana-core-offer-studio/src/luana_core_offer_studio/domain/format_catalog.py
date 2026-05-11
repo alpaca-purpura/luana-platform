@@ -30,8 +30,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from luana_core_offer_studio.domain.enums import OfferArchetype, OfferDeliveryModel
 from luana_core_platform.domain.expert_business_type import ExpertBusinessType
+
+from luana_core_offer_studio.domain.enums import OfferArchetype, OfferDeliveryModel
 
 _ALL_TYPES_PRIMARY: dict[ExpertBusinessType, float] = dict.fromkeys(ExpertBusinessType, 1.0)
 

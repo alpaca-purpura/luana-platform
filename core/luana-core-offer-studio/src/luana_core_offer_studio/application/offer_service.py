@@ -4,6 +4,7 @@ from typing import Any
 from uuid import UUID
 
 from fastapi import HTTPException
+from luana_core_platform.domain.enums import FinancialCapacity
 from sqlalchemy.orm import Session
 
 from luana_core_offer_studio.domain.archetype_catalog import get_capabilities
@@ -29,7 +30,6 @@ from luana_core_offer_studio.infrastructure.repositories.launch_edition_reposito
 from luana_core_offer_studio.infrastructure.repositories.offer_repository import (
     OfferRepository,
 )
-from luana_core_platform.domain.enums import FinancialCapacity
 
 
 class OfferService:

@@ -6,6 +6,8 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
+from luana_core_platform.domain.base_entity import BaseEntity
+from luana_core_platform.domain.enums import AvatarPersona, FinancialCapacity
 from pydantic import Field, computed_field, model_validator
 
 from luana_core_offer_studio.domain.archetype_catalog import get_capabilities
@@ -29,8 +31,6 @@ from luana_core_offer_studio.domain.enums import (
     PaymentPlanType,
     PrerequisiteType,
 )
-from luana_core_platform.domain.base_entity import BaseEntity
-from luana_core_platform.domain.enums import AvatarPersona, FinancialCapacity
 
 # --- ARCHETYPE → DETAILS MAPPING ---
 ARCHETYPE_TO_DETAILS_MAPPING: dict[OfferArchetype, type[BaseEntity]] = {

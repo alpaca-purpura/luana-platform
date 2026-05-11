@@ -12,9 +12,6 @@ refs: docs/contracts/offer-narrative-fields-CONTRACT.md §7 + §13.3
 
 from __future__ import annotations
 
-import pytest
-from pydantic import ValidationError
-
 from luana_core_offer_studio.application.extraction_schemas import (
     ClosingWaveOutput,
     ObjectionItem,

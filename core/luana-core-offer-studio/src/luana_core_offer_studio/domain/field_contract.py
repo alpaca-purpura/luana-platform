@@ -33,8 +33,6 @@ See ``docs/refactors/field-contract-platform/DESIGN.md``.
 
 from __future__ import annotations
 
-from luana_core_offer_studio.domain.enums import OfferArchetype
-from luana_core_offer_studio.domain.offer import Offer
 from luana_core_platform.domain.field_contract import (
     FieldContract,
     FieldContractRegistrySnapshot,
@@ -45,6 +43,9 @@ from luana_core_platform.domain.field_contract import (
 )
 from luana_core_platform.domain.field_contract import FieldContractOverride as Override
 from luana_core_platform.domain.field_contract import fields_by_section as _shared_fields_by_section
+
+from luana_core_offer_studio.domain.enums import OfferArchetype
+from luana_core_offer_studio.domain.offer import Offer
 
 # ---------------------------------------------------------------------------
 # Ignore paths — system fields not user-facing

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from luana_core_platform.domain.datetime_utils import utc_now
 from sqlalchemy import and_, func, or_, select
 
 from luana_core_offer_studio.application.ports import IOfferAssetRepository
@@ -19,7 +20,6 @@ from luana_core_offer_studio.domain.enums import (
     AssetType,
 )
 from luana_core_offer_studio.infrastructure.models.offer_asset_model import OfferAssetModel
-from luana_core_platform.domain.datetime_utils import utc_now
 
 if TYPE_CHECKING:
     from uuid import UUID
