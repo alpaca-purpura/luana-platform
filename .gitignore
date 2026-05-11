@@ -1,0 +1,86 @@
+# --- Global / Root ---
+# Quality reports
+.jscpd-report/
+report/
+
+# Environments (Secrets)
+.env
+.env.prod
+.env.dev
+.env.example
+*.env
+*.env.prod
+*.env.dev
+*.env.example
+
+# OS & System
+.DS_Store
+Thumbs.db
+.Desktop
+.VolumeIcon.icns
+._*
+
+# IDEs & Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- Python ---
+**/__pycache__/
+*.py[cod]
+*$py.class
+build/
+dist/
+*.egg-info/
+
+# Virtual Environments
+venv/
+.venv/
+env/
+
+# Testing & Coverage
+.coverage
+.coverage.*
+coverage.json
+htmlcov/
+.pytest_cache/
+
+# --- Node.js / pnpm ---
+node_modules/
+.next/
+out/
+.turbo/
+*.tsbuildinfo
+.eslintcache
+storybook-static/
+
+# --- Infrastructure & Data ---
+data/
+postgres_data/
+tmp/
+temp/
+
+# --- Claude Code ---
+.claude/worktrees/
+.claude/scheduled_tasks.lock
+CLAUDE.local.md
+
+# --- Turborepo ---
+.turbo/
+
+# --- Playwright ---
+test-results/
+playwright-report/
+playwright/.clerk/
+blob-report/

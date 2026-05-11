@@ -1,0 +1,15 @@
+[tool.uv.workspace]
+members = ["core", "nicolify", "vitalia", "comunify", "lupulo"]
+
+[tool.uv.sources]
+# Future internal deps go here, e.g.:
+# nicolify-app = { workspace = true }
+# luana-core = { workspace = true }
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = []
