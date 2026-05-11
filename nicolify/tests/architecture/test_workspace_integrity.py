@@ -4,9 +4,8 @@ Validates that all uv + pnpm workspace members declared in root config files
 resolve to actual directories in the monorepo.
 """
 
-from pathlib import Path
-
 import tomllib
+from pathlib import Path
 
 # Repo root is 2 levels up from nicolify/tests/architecture/
 REPO_ROOT = Path(__file__).parent.parent.parent.parent

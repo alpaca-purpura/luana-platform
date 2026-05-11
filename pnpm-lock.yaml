@@ -12,6 +12,16 @@ importers:
         specifier: ^2.3.0
         version: 2.9.12
 
+  comunify: {}
+
+  core: {}
+
+  lupulo: {}
+
+  nicolify: {}
+
+  vitalia: {}
+
 packages:
 
   '@turbo/darwin-64@2.9.12':
