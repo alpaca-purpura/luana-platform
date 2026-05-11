@@ -195,17 +195,20 @@ class LeadModel(Base):
 
     # Tenant Link
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=True)
-    tenant = relationship("TenantModel", back_populates="leads")
+    # NOTE: back_populates omitted — TenantModel.leads relationship is deferred
+    # until Story 4 TenantModel update. Uses foreign_keys for FK resolution only.
+    tenant = relationship("TenantModel", foreign_keys=[tenant_id])
 
-    # Relationships
+    # Relationships — back_populates omitted for cross-module models
+    # (MessageModel from sales_agent, AppointmentModel from scheduling — lifted later)
     messages = relationship(
         "MessageModel",
-        back_populates="lead",
+        foreign_keys="MessageModel.lead_id",
         cascade="all, delete-orphan",
     )
     appointments = relationship(
         "AppointmentModel",
-        back_populates="lead",
+        foreign_keys="AppointmentModel.lead_id",
         cascade="all, delete-orphan",
     )
 
