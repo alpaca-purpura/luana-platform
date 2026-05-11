@@ -6,7 +6,11 @@ requires-python = ">=3.12"
 members = [
     "luana-comunify",
     "luana-core",
+    "luana-core-billing",
     "luana-core-channels",
+    "luana-core-compliance",
+    "luana-core-events",
+    "luana-core-extraction",
     "luana-core-idempotency",
     "luana-core-llm",
     "luana-core-observability",
@@ -18,6 +22,7 @@ members = [
 
 [manifest.dependency-groups]
 dev = [
+    { name = "aiosqlite", specifier = ">=0.19" },
     { name = "pytest", specifier = ">=8.0" },
     { name = "pytest-asyncio", specifier = ">=0.23" },
     { name = "ruff", specifier = ">=0.15.12" },
@@ -140,6 +145,15 @@ wheels = [
 ]
 
 [[package]]
+name = "aiosqlite"
+version = "0.22.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/4e/8a/64761f4005f17809769d23e518d915db74e6310474e733e3593cfc854ef1/aiosqlite-0.22.1.tar.gz", hash = "sha256:043e0bd78d32888c0a9ca90fc788b38796843360c855a7262a532813133a0650", size = 14821, upload-time = "2025-12-23T19:25:43.997Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/00/b7/e3bf5133d697a08128598c8d0abc5e16377b51465a33756de24fa7dee953/aiosqlite-0.22.1-py3-none-any.whl", hash = "sha256:21c002eb13823fad740196c5a2e9d8e62f6243bd9e7e4a1f87fb5e44ecb4fceb", size = 17405, upload-time = "2025-12-23T19:25:42.139Z" },
+]
+
+[[package]]
 name = "alembic"
 version = "1.18.4"
 source = { registry = "https://pypi.org/simple" }
@@ -257,6 +271,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/c3/b0/1c6a16426d389813b48d95e26898aff79abbde42ad353958ad95cc8c9b21/beautifulsoup4-4.14.3.tar.gz", hash = "sha256:6292b1c5186d356bba669ef9f7f051757099565ad9ada5dd630bd9de5fa7fb86", size = 627737, upload-time = "2025-11-30T15:08:26.084Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/1a/39/47f9197bdd44df24d67ac8893641e16f386c984a0619ef2ee4c51fbbc019/beautifulsoup4-4.14.3-py3-none-any.whl", hash = "sha256:0918bfe44902e6ad8d57732ba310582e98da931428d231a5ecb9e7c703a735bb", size = 107721, upload-time = "2025-11-30T15:08:24.087Z" },
+]
+
+[[package]]
+name = "cachetools"
+version = "7.1.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ff/e2/85f227594656000ff4d8adadae91a21f536d4a84c6c716a86bd6685874be/cachetools-7.1.1.tar.gz", hash = "sha256:27bdf856d68fd3c71c26c01b5edc312124ed427524d1ddb31aa2b7746fe20d4b", size = 40202, upload-time = "2026-05-03T20:00:29.391Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/bf/0f/f897abe4ea0a8c408ae65c8c83bffab4936ad65d6032d4fb4cd35bbdc3ee/cachetools-7.1.1-py3-none-any.whl", hash = "sha256:0335cd7a0952d2b22327441fb0628139e234c565559eeb91a8a4ac7551c5353d", size = 16775, upload-time = "2026-05-03T20:00:27.857Z" },
 ]
 
 [[package]]
@@ -1173,6 +1196,33 @@ version = "0.0.1a0"
 source = { editable = "core" }
 
 [[package]]
+name = "luana-core-billing"
+version = "0.0.1a0"
+source = { editable = "core/luana-core-billing" }
+dependencies = [
+    { name = "cachetools" },
+    { name = "luana-core-llm" },
+    { name = "luana-core-observability" },
+    { name = "luana-core-platform" },
+    { name = "pydantic" },
+    { name = "redis" },
+    { name = "sqlalchemy" },
+    { name = "structlog" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "cachetools", specifier = ">=5.0" },
+    { name = "luana-core-llm" },
+    { name = "luana-core-observability" },
+    { name = "luana-core-platform" },
+    { name = "pydantic", specifier = ">=2.0" },
+    { name = "redis", specifier = ">=5.0" },
+    { name = "sqlalchemy", specifier = ">=2.0" },
+    { name = "structlog", specifier = ">=24.0" },
+]
+
+[[package]]
 name = "luana-core-channels"
 version = "0.0.1a0"
 source = { editable = "core/luana-core-channels" }
@@ -1184,6 +1234,67 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "luana-core-platform" },
+    { name = "pydantic", specifier = ">=2.0" },
+    { name = "structlog", specifier = ">=24.0" },
+]
+
+[[package]]
+name = "luana-core-compliance"
+version = "0.0.1a0"
+source = { editable = "core/luana-core-compliance" }
+dependencies = [
+    { name = "luana-core-platform" },
+    { name = "pydantic" },
+    { name = "sqlalchemy" },
+    { name = "structlog" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "luana-core-platform" },
+    { name = "pydantic", specifier = ">=2.0" },
+    { name = "sqlalchemy", specifier = ">=2.0" },
+    { name = "structlog", specifier = ">=24.0" },
+]
+
+[[package]]
+name = "luana-core-events"
+version = "0.0.1a0"
+source = { editable = "core/luana-core-events" }
+dependencies = [
+    { name = "luana-core-observability" },
+    { name = "luana-core-platform" },
+    { name = "pydantic" },
+    { name = "redis" },
+    { name = "sqlalchemy" },
+    { name = "structlog" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "luana-core-observability" },
+    { name = "luana-core-platform" },
+    { name = "pydantic", specifier = ">=2.0" },
+    { name = "redis", specifier = ">=5.0" },
+    { name = "sqlalchemy", specifier = ">=2.0" },
+    { name = "structlog", specifier = ">=24.0" },
+]
+
+[[package]]
+name = "luana-core-extraction"
+version = "0.0.1a0"
+source = { editable = "core/luana-core-extraction" }
+dependencies = [
+    { name = "luana-core-llm" },
+    { name = "luana-core-platform" },
+    { name = "pydantic" },
+    { name = "structlog" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "luana-core-llm" },
     { name = "luana-core-platform" },
     { name = "pydantic", specifier = ">=2.0" },
     { name = "structlog", specifier = ">=24.0" },

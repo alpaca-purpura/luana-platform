@@ -37,7 +37,7 @@ ignore = []
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
-addopts = "-x -q --tb=short"
+addopts = "-x -q --tb=short --import-mode=importlib"
 
 [dependency-groups]
 dev = [

@@ -101,11 +101,8 @@ class TestWebCrawlerClass:
 
         assert BrandCrawler is WebCrawler
 
-    def test_brand_module_reexport(self):
-        """Brand module re-export still works."""
-        from src.modules.brand.application.extraction_crawler import BrandCrawler
-
-        assert BrandCrawler is WebCrawler
+    # test_brand_module_reexport deferred to Story 3 (brand module lift)
+    # from src.modules.brand.application.extraction_crawler import BrandCrawler
 
 
 class TestConstants:
