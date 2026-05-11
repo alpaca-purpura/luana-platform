@@ -6,6 +6,7 @@ requires-python = ">=3.12"
 members = [
     "luana-comunify",
     "luana-core",
+    "luana-core-channels",
     "luana-core-llm",
     "luana-core-platform",
     "luana-lupulo",
@@ -1168,6 +1169,23 @@ source = { editable = "comunify" }
 name = "luana-core"
 version = "0.0.1a0"
 source = { editable = "core" }
+
+[[package]]
+name = "luana-core-channels"
+version = "0.0.1a0"
+source = { editable = "core/luana-core-channels" }
+dependencies = [
+    { name = "luana-core-platform" },
+    { name = "pydantic" },
+    { name = "structlog" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "luana-core-platform" },
+    { name = "pydantic", specifier = ">=2.0" },
+    { name = "structlog", specifier = ">=24.0" },
+]
 
 [[package]]
 name = "luana-core-llm"
