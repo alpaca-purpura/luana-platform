@@ -32,7 +32,7 @@ def _sqlite_engine() -> object:
         connect_args={"check_same_thread": False},
     )
     # Import all models to register them
-    import src.shared.infrastructure.model_registry
+    import luana_core_platform.infrastructure.model_registry
 
     Base.metadata.create_all(engine)
     return engine

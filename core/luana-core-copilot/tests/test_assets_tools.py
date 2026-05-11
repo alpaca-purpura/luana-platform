@@ -12,6 +12,8 @@ from uuid import uuid4
 
 import pytest
 
+pytest.skip("T-15 deferred — depends on assets module copilot_provider lift (T-16 UNLIFT)", allow_module_level=True)
+
 
 def _make_mock_asset(
     asset_id=None,

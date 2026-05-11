@@ -13,6 +13,8 @@ from pathlib import Path
 
 import pytest
 
+pytest.skip("T-15 deferred to T-16 UNLIFT (Stories 2-5 copilot_provider/ subfolders not yet lifted — luana_core_brand_studio.copilot_provider / luana_core_offer_studio.copilot_provider / etc.)", allow_module_level=True)
+
 
 class TestNoDataResponseRefactor:
     def test_no_data_response_returns_empty_suggestions_and_next_step_hint(self) -> None:

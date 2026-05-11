@@ -10,6 +10,15 @@ from typing import TYPE_CHECKING, Any
 
 import pytest
 
+# T-15 lift: this integration test depends on luana_core_crm.copilot_provider and
+# luana_core_offer_studio.copilot_provider + tests.modules.offer.conftest fixtures,
+# both deferred to T-16 UNLIFT (Stories 2-5 copilot_provider/ subfolders). Skip
+# entire module until T-16 lands. Use pytest.importorskip pattern via collect_ignore.
+pytest.skip(
+    "Deferred to T-16 UNLIFT (luana_core_crm/luana_core_offer_studio copilot_provider/ subfolders + offer conftest fixtures)",
+    allow_module_level=True,
+)
+
 from luana_core_platform.core.context import set_tenant_id
 from luana_core_copilot.application.data_access import (
     ConversationDataAccessProvider,
