@@ -47,3 +47,17 @@ os.environ.setdefault("DASHSCOPE_API_KEY", "ci-dummy-key")
 for mod_name in ("passlib", "passlib.context", "passlib.hash"):
     if mod_name not in sys.modules:
         sys.modules[mod_name] = MagicMock()
+
+
+# --- prime_cost_bridge (T-13 PI-12 S1 D-T1bis-3 bridge-priming utility) ---
+# Lifted from /home/chris/AISALESHT/backend/tests/conftest.py:420.
+# Test helpers call this to simulate LiteLLM CustomLogger pre-stashing cost in
+# the shared TTL cache so BaseAgentCallbackHandler._persist_llm_call() can
+# retrieve cost_usd > 0 during on_llm_end (when LangChain mocks bypass proxy).
+def prime_cost_bridge(call_id, cost):  # noqa: ANN001
+    """Pre-stash cost in the module-level TTL cache for LangChain-mocked tests."""
+    from decimal import Decimal as _Decimal
+
+    from luana_core_observability.recording.cost_recorder import _stash
+
+    _stash(call_id, _Decimal(str(cost)) if not isinstance(cost, _Decimal) else cost)
