@@ -67,6 +67,10 @@ ALLOWLISTED_STUBS: dict[str, set[str]] = {
     "luana-core-landing/tests/conftest.py": {
         "_ProductStub",  # Story 8 catalog/product lift (landing's local prefix)
     },
+    "luana-core-campaigns/tests/conftest.py": {
+        "MessageModel",  # Story 8 T-9..T-13 — MessageModel not lifted to campaigns (Story 7 owns sales_agent); deferred
+        "AppointmentModel",  # Story 8 scheduling lift (Story 8 campaigns lift preserves stub)
+    },
 }
 
 # Pattern: `class <CapName>(_Base)` or `class <CapName>(Base)` declarations.

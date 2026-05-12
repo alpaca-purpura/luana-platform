@@ -70,6 +70,7 @@ data/
 postgres_data/
 tmp/
 temp/
+static/uploads/
 
 # --- Claude Code ---
 .claude/worktrees/
