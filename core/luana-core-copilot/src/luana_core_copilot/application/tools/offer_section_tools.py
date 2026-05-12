@@ -143,8 +143,13 @@ def _offer_preset_flags(db: object, tenant_id: object, offer_id: str | None) -> 
 
 
 def _event_types(db: object, tenant_id: object) -> list:
-    """Return list[EventType] for *tenant_id* via scheduling EventTypeService."""
-    from luana_core_scheduling.application.services.event_type_service import (
+    """Return list[EventType] for *tenant_id* via scheduling EventTypeService.
+
+    Note: scheduling is Story 8 territory. The lazy import resolves once
+    luana-core-scheduling is lifted; until then this function is unreachable
+    at runtime (callers gated by section presence). Deferral exempt below.
+    """
+    from luana_core_scheduling.application.services.event_type_service import (  # type: ignore[import-not-found]
         EventTypeService,
     )
 
