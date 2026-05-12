@@ -22,6 +22,7 @@ members = [
     "luana-core-copilot",
     "luana-core-crm",
     "luana-core-events",
+    "luana-core-extension-sdk",
     "luana-core-extraction",
     "luana-core-iam",
     "luana-core-idempotency",
@@ -2117,6 +2118,11 @@ requires-dist = [
     { name = "sqlalchemy", specifier = ">=2.0" },
     { name = "structlog", specifier = ">=24.0" },
 ]
+
+[[package]]
+name = "luana-core-extension-sdk"
+version = "0.0.8a0"
+source = { editable = "core/luana-core-extension-sdk" }
 
 [[package]]
 name = "luana-core-extraction"
