@@ -318,3 +318,28 @@ def tenant_id() -> uuid.UUID:
 @pytest.fixture
 def lead_id() -> uuid.UUID:
     return uuid.uuid4()
+
+
+# ---------------------------------------------------------------------------
+# Test app factory — replaces `from src.main import app` in API test files
+# ---------------------------------------------------------------------------
+
+
+def _make_campaigns_test_app():
+    """Create a minimal FastAPI test app with campaigns routers mounted.
+
+    Replaces the AISALESHT `from src.main import app` pattern used in api tests.
+    Mounts all three campaigns routers under /api/v1 matching production prefix.
+    Per backend-ddd.md: redirect_slashes=False mandatory.
+    """
+    from fastapi import FastAPI
+
+    from luana_core_campaigns.api.routers.campaigns_router import router as campaigns_router
+    from luana_core_campaigns.api.routers.segments_router import router as segments_router
+    from luana_core_campaigns.api.routers.templates_router import router as templates_router
+
+    _app = FastAPI(redirect_slashes=False)
+    _app.include_router(campaigns_router, prefix="/api/v1")
+    _app.include_router(segments_router, prefix="/api/v1")
+    _app.include_router(templates_router, prefix="/api/v1")
+    return _app
