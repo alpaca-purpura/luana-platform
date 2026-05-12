@@ -7,7 +7,6 @@ from __future__ import annotations
 
 def test_brand_context_frozen():
     """BrandContext must be immutable (frozen=True dataclass)."""
-    from dataclasses import fields
 
     from luana_core_extension_sdk.brand_context import BrandContext
 
