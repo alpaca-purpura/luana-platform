@@ -30,6 +30,7 @@ members = [
     "luana-core-observability",
     "luana-core-offer-studio",
     "luana-core-platform",
+    "luana-core-sales-agent",
     "luana-core-social-proof",
     "luana-core-tenant-domains",
     "luana-core-tenant-profile",
@@ -2314,6 +2315,69 @@ requires-dist = [
     { name = "sentry-sdk", specifier = ">=2.0" },
     { name = "sqlalchemy", specifier = ">=2.0" },
     { name = "structlog", specifier = ">=24.0" },
+]
+
+[[package]]
+name = "luana-core-sales-agent"
+version = "0.0.7a0"
+source = { editable = "core/luana-core-sales-agent" }
+dependencies = [
+    { name = "arq" },
+    { name = "fastapi" },
+    { name = "httpx" },
+    { name = "jinja2" },
+    { name = "langchain-core" },
+    { name = "langchain-openai" },
+    { name = "langgraph" },
+    { name = "litellm" },
+    { name = "luana-core-billing" },
+    { name = "luana-core-brand-studio" },
+    { name = "luana-core-channels" },
+    { name = "luana-core-compliance" },
+    { name = "luana-core-copilot" },
+    { name = "luana-core-crm" },
+    { name = "luana-core-events" },
+    { name = "luana-core-extraction" },
+    { name = "luana-core-iam" },
+    { name = "luana-core-idempotency" },
+    { name = "luana-core-llm" },
+    { name = "luana-core-observability" },
+    { name = "luana-core-offer-studio" },
+    { name = "luana-core-platform" },
+    { name = "pydantic" },
+    { name = "sqlalchemy" },
+    { name = "structlog" },
+    { name = "tiktoken" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "arq", specifier = ">=0.26" },
+    { name = "fastapi", specifier = ">=0.115" },
+    { name = "httpx", specifier = ">=0.27" },
+    { name = "jinja2", specifier = ">=3.1" },
+    { name = "langchain-core", specifier = ">=0.3" },
+    { name = "langchain-openai", specifier = ">=0.2" },
+    { name = "langgraph", specifier = ">=0.2" },
+    { name = "litellm", specifier = ">=1.40" },
+    { name = "luana-core-billing" },
+    { name = "luana-core-brand-studio" },
+    { name = "luana-core-channels" },
+    { name = "luana-core-compliance" },
+    { name = "luana-core-copilot" },
+    { name = "luana-core-crm" },
+    { name = "luana-core-events" },
+    { name = "luana-core-extraction" },
+    { name = "luana-core-iam" },
+    { name = "luana-core-idempotency" },
+    { name = "luana-core-llm" },
+    { name = "luana-core-observability" },
+    { name = "luana-core-offer-studio" },
+    { name = "luana-core-platform" },
+    { name = "pydantic", specifier = ">=2.0" },
+    { name = "sqlalchemy", specifier = ">=2.0" },
+    { name = "structlog", specifier = ">=24.0" },
+    { name = "tiktoken", specifier = ">=0.7" },
 ]
 
 [[package]]
