@@ -60,3 +60,7 @@ asyncio_mode = "auto"
 # (deliberate AISALESHT pattern in tools.py to break circular deps
 # between sales agents subgraph and tools/{payment,scheduling}/registry).
 "src/luana_core_sales_agent/application/agents/sales/tools.py" = ["E402"]
+# Story 7 T-10 — forward-reference re-export aliases below class definitions
+# (deliberate AISALESHT pattern in payment/providers.py to expose
+# PaymentWebhookEvent type for tests via canonical webhook_providers.py).
+"src/luana_core_sales_agent/application/tools/payment/providers.py" = ["E402"]
