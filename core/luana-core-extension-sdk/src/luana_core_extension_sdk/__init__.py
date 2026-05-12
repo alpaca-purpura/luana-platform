@@ -43,14 +43,13 @@ from luana_core_extension_sdk.protocols import (
     GuardrailCheck,
     SignupHandler,
 )
-
-# ExtensionPointRegistry exported after T-5 implements it
-# from luana_core_extension_sdk.extension_points import ExtensionPointRegistry
+from luana_core_extension_sdk.extension_points import ExtensionPointRegistry
 
 __version__ = "0.0.8-alpha"
 
 __all__ = [
     "BrandContext",
+    "ExtensionPointRegistry",
     # Exceptions
     "ExtensionSDKError",
     "DuplicateRegistrationError",
