@@ -1,6 +1,6 @@
 # Extension Points del SDK de Luana
 
-> **Versión:** v0.1.0 (alpha) · **Fecha:** 2026-05-12 · **Owner:** luana-core-extension-sdk
+> **Versión:** v0.1.0 (production-grade alpha) · **Fecha:** 2026-05-12 · **Owner:** luana-core-extension-sdk
 
 Este documento describe los 18 puntos de extensión (EP) formalizados del SDK de Luana,
 las políticas transversales (CC-1..CC-5), ejemplos por vertical y la receta completa
