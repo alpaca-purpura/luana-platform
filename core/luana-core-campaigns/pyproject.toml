@@ -17,6 +17,9 @@ dependencies = [
     "luana-core-idempotency",
     "luana-core-channels",
     "luana-core-events",
+    "luana-core-billing",              # TYPE_CHECKING + lazy imports (budget_guard, rate_limiter)
+    "luana-core-compliance",           # TYPE_CHECKING + lazy imports (compliance_service)
+    "luana-core-sales-agent",          # lazy import in external/sales_agent_adapter.py
 ]
 
 [build-system]
