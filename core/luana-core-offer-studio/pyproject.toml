@@ -15,6 +15,7 @@ dependencies = [
     "luana-core-llm",
     "luana-core-extraction",
     "luana-core-brand-studio",
+    "luana-core-copilot",          # Story 6 T-16 — copilot_provider/ + offer_ai.py unlift requires copilot ports + services
 ]
 
 [build-system]

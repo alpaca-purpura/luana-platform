@@ -9,6 +9,7 @@ dependencies = [
     "structlog>=24.0",
     "luana-core-platform",
     "luana-core-iam",
+    "luana-core-copilot",          # Story 6 T-16 — copilot_provider/ unlift requires copilot ports
 ]
 
 [build-system]

@@ -1740,6 +1740,7 @@ dependencies = [
     { name = "google-api-python-client" },
     { name = "google-auth-oauthlib" },
     { name = "httpx" },
+    { name = "luana-core-copilot" },
     { name = "luana-core-iam" },
     { name = "luana-core-platform" },
     { name = "pydantic" },
@@ -1757,6 +1758,7 @@ requires-dist = [
     { name = "google-api-python-client", specifier = ">=2.118.0" },
     { name = "google-auth-oauthlib", specifier = ">=1.2.0" },
     { name = "httpx", specifier = ">=0.27" },
+    { name = "luana-core-copilot" },
     { name = "luana-core-iam" },
     { name = "luana-core-platform" },
     { name = "pydantic", specifier = ">=2.0" },
@@ -1830,6 +1832,7 @@ dependencies = [
     { name = "httpx" },
     { name = "langchain-core" },
     { name = "langgraph" },
+    { name = "luana-core-copilot" },
     { name = "luana-core-events" },
     { name = "luana-core-extraction" },
     { name = "luana-core-iam" },
@@ -1847,6 +1850,7 @@ requires-dist = [
     { name = "httpx", specifier = ">=0.27" },
     { name = "langchain-core", specifier = ">=0.3" },
     { name = "langgraph", specifier = ">=0.2" },
+    { name = "luana-core-copilot" },
     { name = "luana-core-events" },
     { name = "luana-core-extraction" },
     { name = "luana-core-iam" },
@@ -1881,6 +1885,7 @@ version = "0.0.1a0"
 source = { editable = "core/luana-core-commercial-calendar" }
 dependencies = [
     { name = "fastapi" },
+    { name = "luana-core-copilot" },
     { name = "luana-core-iam" },
     { name = "luana-core-platform" },
     { name = "pydantic" },
@@ -1891,6 +1896,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "fastapi", specifier = ">=0.115" },
+    { name = "luana-core-copilot" },
     { name = "luana-core-iam" },
     { name = "luana-core-platform" },
     { name = "pydantic", specifier = ">=2.0" },
@@ -1925,6 +1931,7 @@ dependencies = [
     { name = "fastapi" },
     { name = "httpx" },
     { name = "luana-core-analytics-engine" },
+    { name = "luana-core-copilot" },
     { name = "luana-core-iam" },
     { name = "luana-core-platform" },
     { name = "pydantic" },
@@ -1937,6 +1944,7 @@ requires-dist = [
     { name = "fastapi", specifier = ">=0.115" },
     { name = "httpx", specifier = ">=0.27" },
     { name = "luana-core-analytics-engine" },
+    { name = "luana-core-copilot" },
     { name = "luana-core-iam" },
     { name = "luana-core-platform" },
     { name = "pydantic", specifier = ">=2.0" },
@@ -2025,6 +2033,7 @@ version = "0.0.1a0"
 source = { editable = "core/luana-core-crm" }
 dependencies = [
     { name = "fastapi" },
+    { name = "luana-core-copilot" },
     { name = "luana-core-iam" },
     { name = "luana-core-platform" },
     { name = "pydantic" },
@@ -2035,6 +2044,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "fastapi", specifier = ">=0.115" },
+    { name = "luana-core-copilot" },
     { name = "luana-core-iam" },
     { name = "luana-core-platform" },
     { name = "pydantic", specifier = ">=2.0" },
@@ -2139,6 +2149,7 @@ version = "0.0.1a0"
 source = { editable = "core/luana-core-landing" }
 dependencies = [
     { name = "fastapi" },
+    { name = "luana-core-copilot" },
     { name = "luana-core-extraction" },
     { name = "luana-core-iam" },
     { name = "luana-core-platform" },
@@ -2150,6 +2161,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "fastapi", specifier = ">=0.115" },
+    { name = "luana-core-copilot" },
     { name = "luana-core-extraction" },
     { name = "luana-core-iam" },
     { name = "luana-core-platform" },
@@ -2220,6 +2232,7 @@ dependencies = [
     { name = "fastapi" },
     { name = "httpx" },
     { name = "luana-core-brand-studio" },
+    { name = "luana-core-copilot" },
     { name = "luana-core-events" },
     { name = "luana-core-extraction" },
     { name = "luana-core-iam" },
@@ -2236,6 +2249,7 @@ requires-dist = [
     { name = "fastapi", specifier = ">=0.115" },
     { name = "httpx", specifier = ">=0.27" },
     { name = "luana-core-brand-studio" },
+    { name = "luana-core-copilot" },
     { name = "luana-core-events" },
     { name = "luana-core-extraction" },
     { name = "luana-core-iam" },
@@ -2308,6 +2322,7 @@ version = "0.0.1a0"
 source = { editable = "core/luana-core-social-proof" }
 dependencies = [
     { name = "fastapi" },
+    { name = "luana-core-copilot" },
     { name = "luana-core-iam" },
     { name = "luana-core-platform" },
     { name = "pydantic" },
@@ -2318,6 +2333,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "fastapi", specifier = ">=0.115" },
+    { name = "luana-core-copilot" },
     { name = "luana-core-iam" },
     { name = "luana-core-platform" },
     { name = "pydantic", specifier = ">=2.0" },

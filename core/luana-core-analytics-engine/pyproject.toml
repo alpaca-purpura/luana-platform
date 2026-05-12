@@ -12,6 +12,7 @@ dependencies = [
     "redis>=5.0",
     "luana-core-platform",
     "luana-core-iam",
+    "luana-core-copilot",          # Story 6 T-16 — copilot_provider/ unlift requires copilot ports
     "google-auth-oauthlib>=1.2.0",
     "google-api-python-client>=2.118.0",
     "google-analytics-data>=0.20.0",

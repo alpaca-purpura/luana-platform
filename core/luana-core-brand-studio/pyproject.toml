@@ -16,6 +16,7 @@ dependencies = [
     "luana-core-events",
     "luana-core-llm",
     "luana-core-extraction",
+    "luana-core-copilot",          # Story 6 T-16 — copilot_provider/ unlift requires domain.ports + workflow
 ]
 
 [build-system]
