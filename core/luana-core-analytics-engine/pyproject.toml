@@ -19,6 +19,9 @@ dependencies = [
     "facebook-business>=22.0",
 ]
 
+[project.entry-points."nicolify.copilot_providers"]
+analytics = "luana_core_analytics_engine.copilot_provider:provider"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
