@@ -56,3 +56,7 @@ asyncio_mode = "auto"
     "E501",    # long mock patch targets / fixture strings / anchor docs
     "E741",    # `l` in comprehensions over `labels` lists is idiomatic
 ]
+# Story 7 T-9 — forward-reference imports below function definitions
+# (deliberate AISALESHT pattern in tools.py to break circular deps
+# between sales agents subgraph and tools/{payment,scheduling}/registry).
+"src/luana_core_sales_agent/application/agents/sales/tools.py" = ["E402"]
