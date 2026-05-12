@@ -82,7 +82,9 @@ def test_large_document_is_hinted_not_inlined(
     mock_extract_cls.return_value.ensure_extracted.return_value = asset
 
     block = {"type": "document", "asset_id": str(asset.id), "filename": "brief.pdf"}
-    rendered = _render_attachment_context([block], tenant_id=uuid.uuid4(), db=MagicMock())
+    rendered = _render_attachment_context(
+        [block], tenant_id=uuid.uuid4(), db=MagicMock()
+    )
 
     assert big_text not in rendered  # not inlined
     assert summary in rendered  # hinted
@@ -108,7 +110,9 @@ def test_pending_extraction_emits_hint_and_triggers_extraction(
     mock_extract_cls.return_value.ensure_extracted.return_value = extracted
 
     block = {"type": "document", "asset_id": str(pending.id), "filename": "x.pdf"}
-    rendered = _render_attachment_context([block], tenant_id=uuid.uuid4(), db=MagicMock())
+    rendered = _render_attachment_context(
+        [block], tenant_id=uuid.uuid4(), db=MagicMock()
+    )
 
     mock_extract_cls.return_value.ensure_extracted.assert_called_once()
     assert "Texto recién parseado." in rendered or "read_document" in rendered.lower()
@@ -124,7 +128,9 @@ def test_missing_asset_returns_empty(
     mock_repo_cls.return_value.get_by_id.return_value = None
 
     block = {"type": "document", "asset_id": str(uuid.uuid4()), "filename": "x.pdf"}
-    rendered = _render_attachment_context([block], tenant_id=uuid.uuid4(), db=MagicMock())
+    rendered = _render_attachment_context(
+        [block], tenant_id=uuid.uuid4(), db=MagicMock()
+    )
     assert rendered == ""
 
 

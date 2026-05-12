@@ -5,12 +5,10 @@ Property-based tests with Hypothesis to verify FSM invariants.
 
 from __future__ import annotations
 
-import pytest
-from hypothesis import given, settings, strategies as st
-
-from luana_core_campaigns.domain.campaign import Campaign, _FSM_TRANSITIONS
+from hypothesis import given, settings
+from hypothesis import strategies as st
+from luana_core_campaigns.domain.campaign import _FSM_TRANSITIONS, Campaign
 from luana_core_campaigns.domain.enums import CampaignStatus
-
 
 TERMINAL_STATES = frozenset({CampaignStatus.COMPLETED, CampaignStatus.CANCELED})
 ALL_STATUSES = list(CampaignStatus)

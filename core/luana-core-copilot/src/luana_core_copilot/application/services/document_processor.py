@@ -263,7 +263,9 @@ class DocumentProcessor:
 
         # Skip fields that already have a non-empty value in the existing mapa.
         fields_skipped = sum(1 for k in raw_delta if _has_value(existing_mapa.get(k)))
-        filtered_delta = {k: v for k, v in raw_delta.items() if not _has_value(existing_mapa.get(k))}
+        filtered_delta = {
+            k: v for k, v in raw_delta.items() if not _has_value(existing_mapa.get(k))
+        }
         fields_extracted = len(filtered_delta)
 
         summary_parts = [
@@ -307,5 +309,9 @@ def _format_existing_for_prompt(existing_mapa: dict[str, Any]) -> str:
     """Render the existing mapa as a compact string for the prompt context."""
     if not existing_mapa:
         return ""
-    parts = [f"- {key}: {value!r}" for key, value in existing_mapa.items() if _has_value(value)]
+    parts = [
+        f"- {key}: {value!r}"
+        for key, value in existing_mapa.items()
+        if _has_value(value)
+    ]
     return "\n".join(parts)

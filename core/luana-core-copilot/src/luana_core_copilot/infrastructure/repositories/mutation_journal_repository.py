@@ -156,7 +156,11 @@ class MutationJournalRepository:
         if message_id is not None:
             conditions.append(MutationJournalModel.message_id == message_id)
 
-        stmt = select(MutationJournalModel).where(*conditions).order_by(MutationJournalModel.applied_at.asc())
+        stmt = (
+            select(MutationJournalModel)
+            .where(*conditions)
+            .order_by(MutationJournalModel.applied_at.asc())
+        )
         return list(self.db.execute(stmt).scalars().all())
 
     def mark_reverted(

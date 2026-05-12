@@ -23,7 +23,9 @@ def _make_provider(provider_id: str, routes: tuple[str, ...] = ()):
         def applies_to_routes(self) -> tuple[str, ...]:
             return routes
 
-        def get_suggestions(self, ctx: SuggestionContext, *, max_per_provider: int = 5) -> list[Suggestion]:
+        def get_suggestions(
+            self, ctx: SuggestionContext, *, max_per_provider: int = 5
+        ) -> list[Suggestion]:
             return []
 
     return _Stub()
@@ -60,7 +62,9 @@ class TestEngineRegistration:
         from luana_core_copilot.application.suggestions.engine import SuggestionEngine
 
         engine = SuggestionEngine()
-        suggestions, breakdown, latency_ms = engine.get_suggestions(_ctx("offer-studio"))
+        suggestions, breakdown, latency_ms = engine.get_suggestions(
+            _ctx("offer-studio")
+        )
         assert suggestions == []
         assert breakdown == {}
         assert latency_ms >= 0

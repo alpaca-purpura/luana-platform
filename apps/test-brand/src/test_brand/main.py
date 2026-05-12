@@ -8,12 +8,13 @@ Lifespan:
 3. registry.close() — CC-3 lock; subsequent register raises RegistrationClosedError
 4. app.state.registry — make available for request handlers
 """
+
 from contextlib import asynccontextmanager
 from typing import Any
 
 from fastapi import FastAPI
-
 from luana_core_extension_sdk import ExtensionPointRegistry
+
 from test_brand.extensions import register_all
 
 

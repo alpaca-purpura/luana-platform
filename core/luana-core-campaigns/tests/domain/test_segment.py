@@ -6,12 +6,10 @@ import datetime as dt
 from uuid import uuid4
 
 import pytest
-from pydantic import ValidationError
-
 from luana_core_campaigns.domain.enums import SegmentType
 from luana_core_campaigns.domain.segment import Segment, SegmentSnapshot
 from luana_core_campaigns.domain.segment_filter import PredefinedSegmentFilter
-
+from pydantic import ValidationError
 
 NOW = dt.datetime.now(dt.timezone.utc)
 EMPTY_FILTER = PredefinedSegmentFilter()

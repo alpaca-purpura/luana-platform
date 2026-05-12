@@ -18,7 +18,9 @@ from fastapi.testclient import TestClient
 from luana_core_iam.api.dependencies import get_current_user, get_tenant_context
 
 
-def _build_client(tenant_id: UUID, user_id: UUID | None = None) -> tuple[TestClient, UUID]:
+def _build_client(
+    tenant_id: UUID, user_id: UUID | None = None
+) -> tuple[TestClient, UUID]:
     """Build TestClient with mocked auth dependencies for suggestions router."""
     from luana_core_copilot.api.suggestions import router
 
@@ -58,7 +60,9 @@ class TestSuggestionsHappyPath:
         ]
 
         with (
-            patch("luana_core_copilot.api.suggestions.get_default_engine") as mock_engine_fn,
+            patch(
+                "luana_core_copilot.api.suggestions.get_default_engine"
+            ) as mock_engine_fn,
             patch("luana_core_copilot.api.suggestions.EventBus"),
         ):
             mock_engine = MagicMock()
@@ -83,7 +87,9 @@ class TestSuggestionsHappyPath:
         client, _uid = _build_client(tenant_id)
 
         with (
-            patch("luana_core_copilot.api.suggestions.get_default_engine") as mock_engine_fn,
+            patch(
+                "luana_core_copilot.api.suggestions.get_default_engine"
+            ) as mock_engine_fn,
             patch("luana_core_copilot.api.suggestions.EventBus"),
         ):
             mock_engine = MagicMock()
@@ -107,12 +113,16 @@ class TestSuggestionsHappyPath:
         client, _uid = _build_client(tenant_id)
 
         with (
-            patch("luana_core_copilot.api.suggestions.get_default_engine") as mock_engine_fn,
+            patch(
+                "luana_core_copilot.api.suggestions.get_default_engine"
+            ) as mock_engine_fn,
             patch("luana_core_copilot.api.suggestions.EventBus"),
             patch("luana_core_copilot.api.suggestions.logger") as mock_logger,
         ):
             mock_engine = MagicMock()
-            mock_engine.get_suggestions.side_effect = RuntimeError("DB connection failed")
+            mock_engine.get_suggestions.side_effect = RuntimeError(
+                "DB connection failed"
+            )
             mock_engine_fn.return_value = mock_engine
 
             resp = client.post(
@@ -176,7 +186,9 @@ class TestSuggestionsObservability:
         client, _uid = _build_client(tenant_id)
 
         with (
-            patch("luana_core_copilot.api.suggestions.get_default_engine") as mock_engine_fn,
+            patch(
+                "luana_core_copilot.api.suggestions.get_default_engine"
+            ) as mock_engine_fn,
             patch("luana_core_copilot.api.suggestions.EventBus") as mock_bus,
         ):
             mock_engine = MagicMock()
@@ -214,7 +226,9 @@ class TestSuggestionsObservability:
         )
 
         with (
-            patch("luana_core_copilot.api.suggestions.get_default_engine") as mock_engine_fn,
+            patch(
+                "luana_core_copilot.api.suggestions.get_default_engine"
+            ) as mock_engine_fn,
             patch("luana_core_copilot.api.suggestions.EventBus"),
         ):
             mock_engine = MagicMock()
@@ -248,4 +262,6 @@ class TestSuggestionsObservability:
                         found_response_model = True
                         break
 
-        assert found_response_model, "response_model= not declared in suggestions router"
+        assert found_response_model, (
+            "response_model= not declared in suggestions router"
+        )

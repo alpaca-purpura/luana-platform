@@ -45,7 +45,9 @@ def _make_provider(pid, routes, suggestions_or_exc):
         def applies_to_routes(self):
             return routes
 
-        def get_suggestions(self, ctx: SuggestionContext, *, max_per_provider=5) -> list[Suggestion]:
+        def get_suggestions(
+            self, ctx: SuggestionContext, *, max_per_provider=5
+        ) -> list[Suggestion]:
             if isinstance(suggestions_or_exc, Exception):
                 raise suggestions_or_exc
             return suggestions_or_exc[:max_per_provider]
@@ -102,7 +104,9 @@ class TestEngineScoreRanking:
             def applies_to_routes(self):
                 return ()
 
-            def get_suggestions(self, ctx: SuggestionContext, *, max_per_provider=5) -> list[Suggestion]:
+            def get_suggestions(
+                self, ctx: SuggestionContext, *, max_per_provider=5
+            ) -> list[Suggestion]:
                 call_args["max_per_provider"] = max_per_provider
                 return suggestions[:max_per_provider]
 
@@ -165,7 +169,9 @@ class TestEngineScoreRanking:
         from luana_core_copilot.application.suggestions.engine import SuggestionEngine
 
         engine = SuggestionEngine(max_total=10)
-        engine.register(_make_provider("a", (), _make_suggestions(("A1", 0.9), ("A2", 0.8))))
+        engine.register(
+            _make_provider("a", (), _make_suggestions(("A1", 0.9), ("A2", 0.8)))
+        )
         engine.register(
             _make_provider(
                 "b",
@@ -213,8 +219,17 @@ class TestProviderPriority:
             def applies_to_routes(self):
                 return ()
 
-            def get_suggestions(self, ctx: SuggestionContext, *, max_per_provider=5) -> list[Suggestion]:
-                return [Suggestion(label=self._label, prompt=self._label, confidence=0.5, source_module=self._pid)]
+            def get_suggestions(
+                self, ctx: SuggestionContext, *, max_per_provider=5
+            ) -> list[Suggestion]:
+                return [
+                    Suggestion(
+                        label=self._label,
+                        prompt=self._label,
+                        confidence=0.5,
+                        source_module=self._pid,
+                    )
+                ]
 
         # Register low-priority first, high-priority second
         engine.register(_PriorityProvider("low", 0, "Low priority"))

@@ -175,10 +175,14 @@ class SalesAgentObservabilityContext(BaseObservabilityContext):
                 func.coalesce(func.sum(SalesAgentLlmCallModel.output_tokens), 0).label(
                     "output_tokens",
                 ),
-                func.coalesce(func.sum(SalesAgentLlmCallModel.cached_read_tokens), 0).label(
+                func.coalesce(
+                    func.sum(SalesAgentLlmCallModel.cached_read_tokens), 0
+                ).label(
                     "cached_read_tokens",
                 ),
-                func.coalesce(func.sum(SalesAgentLlmCallModel.cost_usd), 0).label("cost_usd"),
+                func.coalesce(func.sum(SalesAgentLlmCallModel.cost_usd), 0).label(
+                    "cost_usd"
+                ),
             ).where(
                 SalesAgentLlmCallModel.tenant_id == self.tenant_id,
                 SalesAgentLlmCallModel.turn_id == self.turn_id,
@@ -224,7 +228,9 @@ class SalesAgentObservabilityContext(BaseObservabilityContext):
         agent-specific fields. Streamlit sales reports read those
         columns directly (per ``sales-agent-expert`` skill).
         """
-        del totals  # interface contract — kept for future symmetry with copilot subclass
+        del (
+            totals
+        )  # interface contract — kept for future symmetry with copilot subclass
         return {}
 
 

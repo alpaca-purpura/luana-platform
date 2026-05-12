@@ -53,11 +53,7 @@ def test_sdk_has_no_uv_workspace_sources() -> None:
     uv_sources: dict = data.get("tool", {}).get("uv", {}).get("sources", {})
 
     # Filter out self-references and dev tools
-    workspace_sources = {
-        k: v
-        for k, v in uv_sources.items()
-        if isinstance(v, dict) and v.get("workspace") is True
-    }
+    workspace_sources = {k: v for k, v in uv_sources.items() if isinstance(v, dict) and v.get("workspace") is True}
 
     assert not workspace_sources, (
         f"luana-core-extension-sdk has workspace source dependencies: {workspace_sources}\n\n"

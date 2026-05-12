@@ -53,7 +53,9 @@ def mock_arq_pool(monkeypatch: pytest.MonkeyPatch) -> MagicMock:
 
 
 class TestExtractFromUrlBrand:
-    async def test_dispatches_full_initial_extraction(self, mock_arq_pool: MagicMock) -> None:
+    async def test_dispatches_full_initial_extraction(
+        self, mock_arq_pool: MagicMock
+    ) -> None:
         result = await extract_from_url.ainvoke(
             {
                 "module": "brand",
@@ -77,7 +79,9 @@ class TestExtractFromUrlBrand:
         assert call_args.kwargs["url"] == "https://visionarias.lat"
         assert call_args.kwargs["mode"] == "initial"
 
-    async def test_dispatches_update_with_instructions(self, mock_arq_pool: MagicMock) -> None:
+    async def test_dispatches_update_with_instructions(
+        self, mock_arq_pool: MagicMock
+    ) -> None:
         result = await extract_from_url.ainvoke(
             {
                 "module": "brand",
@@ -93,7 +97,9 @@ class TestExtractFromUrlBrand:
         call_kwargs = mock_arq_pool.enqueue_job.await_args.kwargs
         assert call_kwargs["update_instructions"] == "Solo completa los campos vacíos."
 
-    async def test_visuals_scope_is_brand_only_ok(self, mock_arq_pool: MagicMock) -> None:
+    async def test_visuals_scope_is_brand_only_ok(
+        self, mock_arq_pool: MagicMock
+    ) -> None:
         result = await extract_from_url.ainvoke(
             {
                 "module": "brand",
@@ -142,7 +148,9 @@ class TestExtractFromUrlOffer:
         assert call_args.kwargs["offer_id"] == str(OFFER_ID)
         assert call_args.kwargs["mode"] == "update"
 
-    async def test_visuals_scope_rejected_for_offer(self, mock_arq_pool: MagicMock) -> None:
+    async def test_visuals_scope_rejected_for_offer(
+        self, mock_arq_pool: MagicMock
+    ) -> None:
         result = await extract_from_url.ainvoke(
             {
                 "module": "offer",
@@ -172,7 +180,9 @@ class TestValidation:
         assert parsed["status"] == "error"
         mock_arq_pool.enqueue_job.assert_not_awaited()
 
-    async def test_missing_arq_pool_returns_error(self, monkeypatch: pytest.MonkeyPatch) -> None:
+    async def test_missing_arq_pool_returns_error(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         monkeypatch.setattr(
             "luana_core_copilot.application.tools.extraction_tools.get_arq_pool",
             lambda: None,
@@ -189,7 +199,9 @@ class TestValidation:
         assert parsed["status"] == "error"
 
     @pytest.mark.parametrize("bad_url", ["", "  ", "not-a-url", "ftp://foo"])
-    async def test_rejects_invalid_url(self, mock_arq_pool: MagicMock, bad_url: str) -> None:
+    async def test_rejects_invalid_url(
+        self, mock_arq_pool: MagicMock, bad_url: str
+    ) -> None:
         result = await extract_from_url.ainvoke(
             {
                 "module": "brand",

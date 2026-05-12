@@ -9,9 +9,8 @@ from __future__ import annotations
 import datetime as dt
 
 import pytest
-from hypothesis import given, settings, strategies as st
-from pydantic import ValidationError
-
+from hypothesis import given, settings
+from hypothesis import strategies as st
 from luana_core_campaigns.domain.enums import SegmentFilterCombinator
 from luana_core_campaigns.domain.segment_filter import (
     DateRange,
@@ -19,7 +18,7 @@ from luana_core_campaigns.domain.segment_filter import (
     ScoreRange,
     TagsFilter,
 )
-
+from pydantic import ValidationError
 
 NOW = dt.datetime.now(dt.timezone.utc)
 

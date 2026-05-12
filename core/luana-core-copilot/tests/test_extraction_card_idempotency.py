@@ -44,7 +44,9 @@ class TestEmitSectionCompletePillIdempotency:
             patch(
                 "luana_core_copilot.infrastructure.repositories.conversation_repository.ConversationRepository.append_messages"
             ) as mock_append,
-            patch("luana_core_copilot.application.extraction_card_flow.EventBus") as mock_bus,
+            patch(
+                "luana_core_copilot.application.extraction_card_flow.EventBus"
+            ) as mock_bus,
         ):
             mock_append.return_value = None
             mock_bus.publish.return_value = None
@@ -113,7 +115,9 @@ class TestEmitSectionCompletePillIdempotency:
             patch(
                 "luana_core_copilot.infrastructure.repositories.conversation_repository.ConversationRepository.append_messages"
             ) as mock_append,
-            patch("luana_core_copilot.application.extraction_card_flow.EventBus") as mock_bus,
+            patch(
+                "luana_core_copilot.application.extraction_card_flow.EventBus"
+            ) as mock_bus,
         ):
             mock_append.return_value = None
             mock_bus.publish.return_value = None
@@ -198,7 +202,9 @@ class TestEmitExtractionSummaryCardIdempotency:
             patch(
                 "luana_core_copilot.infrastructure.repositories.conversation_repository.ConversationRepository.append_messages"
             ) as mock_append,
-            patch("luana_core_copilot.application.extraction_card_flow.EventBus") as mock_bus,
+            patch(
+                "luana_core_copilot.application.extraction_card_flow.EventBus"
+            ) as mock_bus,
         ):
             mock_append.return_value = None
             mock_bus.publish.return_value = None

@@ -6,11 +6,9 @@ import datetime as dt
 from uuid import uuid4
 
 import pytest
-from pydantic import ValidationError
-
 from luana_core_campaigns.domain.campaign_step import CampaignStep
 from luana_core_campaigns.domain.enums import StepType
-
+from pydantic import ValidationError
 
 NOW = dt.datetime.now(dt.timezone.utc)
 

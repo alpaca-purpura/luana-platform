@@ -138,7 +138,9 @@ class TestChannelIntentURLFalsePositive:
     )
     def test_url_is_not_intent(self, msg: str) -> None:
         intent = detect_channel_intent(msg)
-        assert intent is None, f"AC7 false positive — msg {msg!r} returned intent {intent!r}"
+        assert intent is None, (
+            f"AC7 false positive — msg {msg!r} returned intent {intent!r}"
+        )
 
     def test_url_plus_channel_intent_in_same_msg_detects_intent(self) -> None:
         # Mixed: URL mentions whatsapp.com but the user also asks for WA copy.

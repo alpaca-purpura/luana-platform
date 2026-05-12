@@ -25,6 +25,8 @@ from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 import structlog
+from luana_core_idempotency.application.decorator import idempotent
+from luana_core_platform.domain.datetime_utils import utc_now
 from pydantic import BaseModel, ConfigDict, Field
 
 from luana_core_campaigns.application.services._event_bridge import to_domain_event
@@ -32,10 +34,9 @@ from luana_core_campaigns.domain.audit_log import AuditEventType
 from luana_core_campaigns.domain.campaign import Campaign
 from luana_core_campaigns.domain.enums import CampaignStatus, TaskStatus
 from luana_core_campaigns.domain.events import CampaignLaunched, CampaignTasksGenerated
-from luana_core_platform.domain.datetime_utils import utc_now
-from luana_core_idempotency.application.decorator import idempotent
 
 if TYPE_CHECKING:
+    from luana_core_events.outbox.application.outbox_service import OutboxService
     from sqlalchemy.ext.asyncio import AsyncSession
 
     from luana_core_campaigns.application.services.audit_log_service import AuditLogService
@@ -47,7 +48,6 @@ if TYPE_CHECKING:
         CampaignStepRepository,
         CampaignTaskRepository,
     )
-    from luana_core_events.outbox.application.outbox_service import OutboxService
 
 logger = structlog.get_logger(__name__)
 

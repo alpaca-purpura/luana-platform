@@ -88,6 +88,5 @@ def test_ts_package_count_is_7() -> None:
     """V-NF-1: exactly 7 TS workspace members under core/@luana/."""
     ts_pkgs = sorted(p.name for p in _TS_PACKAGES_DIR.iterdir() if p.is_dir())
     assert len(ts_pkgs) == _EXPECTED_TS_COUNT, (
-        f"Expected {_EXPECTED_TS_COUNT} TS packages under core/@luana/, got {len(ts_pkgs)}.\n"
-        f"Found: {ts_pkgs}"
+        f"Expected {_EXPECTED_TS_COUNT} TS packages under core/@luana/, got {len(ts_pkgs)}.\nFound: {ts_pkgs}"
     )

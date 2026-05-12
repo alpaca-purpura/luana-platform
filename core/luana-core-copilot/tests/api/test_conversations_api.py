@@ -38,7 +38,9 @@ class TestListConversations:
         tenant_id = uuid4()
         client, _uid, _mock_db = _build_client(tenant_id)
 
-        with patch("luana_core_copilot.api.conversations.ConversationRepository") as mock_repo_cls:
+        with patch(
+            "luana_core_copilot.api.conversations.ConversationRepository"
+        ) as mock_repo_cls:
             mock_repo = MagicMock()
             mock_repo.list_paginated.return_value = {"items": [], "next_cursor": None}
             mock_repo_cls.return_value = mock_repo
@@ -60,7 +62,9 @@ class TestListConversations:
         client, _uid, _mock_db = _build_client(tenant_id)
         conv_id = uuid4()
 
-        with patch("luana_core_copilot.api.conversations.ConversationRepository") as mock_repo_cls:
+        with patch(
+            "luana_core_copilot.api.conversations.ConversationRepository"
+        ) as mock_repo_cls:
             mock_repo = MagicMock()
             mock_conv = MagicMock()
             mock_conv.id = conv_id
@@ -98,7 +102,9 @@ class TestCreateConversation:
         client, _uid, _mock_db = _build_client(tenant_id)
         new_id = uuid4()
 
-        with patch("luana_core_copilot.api.conversations.ConversationRepository") as mock_repo_cls:
+        with patch(
+            "luana_core_copilot.api.conversations.ConversationRepository"
+        ) as mock_repo_cls:
             mock_repo = MagicMock()
             mock_conv = MagicMock()
             mock_conv.id = new_id
@@ -132,7 +138,9 @@ class TestPatchConversation:
         client, _uid, _mock_db = _build_client(tenant_id)
         conv_id = uuid4()
 
-        with patch("luana_core_copilot.api.conversations.ConversationRepository") as mock_repo_cls:
+        with patch(
+            "luana_core_copilot.api.conversations.ConversationRepository"
+        ) as mock_repo_cls:
             mock_repo = MagicMock()
             mock_conv = MagicMock()
             mock_conv.id = conv_id
@@ -160,7 +168,9 @@ class TestPatchConversation:
         tenant_id = uuid4()
         client, _uid, _mock_db = _build_client(tenant_id)
 
-        with patch("luana_core_copilot.api.conversations.ConversationRepository") as mock_repo_cls:
+        with patch(
+            "luana_core_copilot.api.conversations.ConversationRepository"
+        ) as mock_repo_cls:
             mock_repo = MagicMock()
             mock_repo.get_by_id.return_value = None
             mock_repo_cls.return_value = mock_repo
@@ -183,7 +193,9 @@ class TestDeleteConversation:
         client, _uid, _mock_db = _build_client(tenant_id)
         conv_id = uuid4()
 
-        with patch("luana_core_copilot.api.conversations.ConversationRepository") as mock_repo_cls:
+        with patch(
+            "luana_core_copilot.api.conversations.ConversationRepository"
+        ) as mock_repo_cls:
             mock_repo = MagicMock()
             mock_conv = MagicMock()
             mock_conv.archived_at = None
@@ -202,7 +214,9 @@ class TestDeleteConversation:
         tenant_id = uuid4()
         client, _uid, _mock_db = _build_client(tenant_id)
 
-        with patch("luana_core_copilot.api.conversations.ConversationRepository") as mock_repo_cls:
+        with patch(
+            "luana_core_copilot.api.conversations.ConversationRepository"
+        ) as mock_repo_cls:
             mock_repo = MagicMock()
             mock_repo.archive.return_value = None
             mock_repo_cls.return_value = mock_repo
@@ -225,8 +239,12 @@ class TestRevertConversation:
         conv_id = uuid4()
 
         with (
-            patch("luana_core_copilot.api.conversations.ConversationRepository") as mock_repo_cls,
-            patch("luana_core_copilot.api.conversations.MutationJournalRepository") as mock_journal_cls,
+            patch(
+                "luana_core_copilot.api.conversations.ConversationRepository"
+            ) as mock_repo_cls,
+            patch(
+                "luana_core_copilot.api.conversations.MutationJournalRepository"
+            ) as mock_journal_cls,
         ):
             mock_conv = MagicMock()
             mock_conv.id = conv_id
@@ -254,7 +272,9 @@ class TestRevertConversation:
         tenant_id = uuid4()
         client, _uid, _mock_db = _build_client(tenant_id)
 
-        with patch("luana_core_copilot.api.conversations.ConversationRepository") as mock_repo_cls:
+        with patch(
+            "luana_core_copilot.api.conversations.ConversationRepository"
+        ) as mock_repo_cls:
             mock_repo = MagicMock()
             mock_repo.get_by_id.return_value = None
             mock_repo_cls.return_value = mock_repo
@@ -279,7 +299,9 @@ class TestGetConversationDetail:
         msg_id_1 = uuid4()
         msg_id_2 = uuid4()
 
-        with patch("luana_core_copilot.api.conversations.ConversationRepository") as mock_repo_cls:
+        with patch(
+            "luana_core_copilot.api.conversations.ConversationRepository"
+        ) as mock_repo_cls:
             mock_repo = MagicMock()
             mock_conv = MagicMock()
             mock_conv.id = conv_id
@@ -330,7 +352,9 @@ class TestGetConversationDetail:
         client, _uid, _mock_db = _build_client(tenant_id)
         conv_id = uuid4()
 
-        with patch("luana_core_copilot.api.conversations.ConversationRepository") as mock_repo_cls:
+        with patch(
+            "luana_core_copilot.api.conversations.ConversationRepository"
+        ) as mock_repo_cls:
             mock_repo = MagicMock()
             mock_conv = MagicMock()
             mock_conv.id = conv_id
@@ -367,7 +391,9 @@ class TestGetConversationDetail:
         client, _uid, _mock_db = _build_client(tenant_id)
         conv_id = uuid4()
 
-        with patch("luana_core_copilot.api.conversations.ConversationRepository") as mock_repo_cls:
+        with patch(
+            "luana_core_copilot.api.conversations.ConversationRepository"
+        ) as mock_repo_cls:
             mock_repo = MagicMock()
             mock_conv = MagicMock()
             mock_conv.id = conv_id
@@ -396,7 +422,9 @@ class TestGetConversationDetail:
         tenant_id = uuid4()
         client, _uid, _mock_db = _build_client(tenant_id)
 
-        with patch("luana_core_copilot.api.conversations.ConversationRepository") as mock_repo_cls:
+        with patch(
+            "luana_core_copilot.api.conversations.ConversationRepository"
+        ) as mock_repo_cls:
             mock_repo = MagicMock()
             mock_repo.get_by_id.return_value = None
             mock_repo_cls.return_value = mock_repo
@@ -419,7 +447,9 @@ class TestGetConversationDetail:
         client, _uid, _mock_db = _build_client(tenant_id)
         conv_id = uuid4()
 
-        with patch("luana_core_copilot.api.conversations.ConversationRepository") as mock_repo_cls:
+        with patch(
+            "luana_core_copilot.api.conversations.ConversationRepository"
+        ) as mock_repo_cls:
             mock_repo = MagicMock()
             mock_conv = MagicMock()
             mock_conv.id = conv_id
@@ -475,7 +505,9 @@ class TestGetConversationDetail:
         client, _uid, _mock_db = _build_client(tenant_id)
         conv_id = uuid4()
 
-        with patch("luana_core_copilot.api.conversations.ConversationRepository") as mock_repo_cls:
+        with patch(
+            "luana_core_copilot.api.conversations.ConversationRepository"
+        ) as mock_repo_cls:
             mock_repo = MagicMock()
             mock_conv = MagicMock()
             mock_conv.id = conv_id
@@ -529,7 +561,9 @@ class TestGetConversationDetail:
             # para verificar ownership enforcement.
             captured["user_id"] = user_id
 
-        with patch("luana_core_copilot.api.conversations.ConversationRepository") as mock_repo_cls:
+        with patch(
+            "luana_core_copilot.api.conversations.ConversationRepository"
+        ) as mock_repo_cls:
             mock_repo = MagicMock()
             mock_repo.get_by_id.side_effect = fake_get_by_id
             mock_repo_cls.return_value = mock_repo

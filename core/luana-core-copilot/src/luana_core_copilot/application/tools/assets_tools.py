@@ -64,10 +64,19 @@ def _asset_to_ref(asset: object) -> dict:
     """
     # Works with both domain entity and ORM model via duck typing
     kind_raw = getattr(asset, "type", "IMAGE")
-    kind_map = {"IMAGE": "image", "AUDIO": "audio", "VIDEO": "video", "DOCUMENT": "document"}
+    kind_map = {
+        "IMAGE": "image",
+        "AUDIO": "audio",
+        "VIDEO": "video",
+        "DOCUMENT": "document",
+    }
     kind = kind_map.get(str(kind_raw).upper(), "document")
 
-    description = getattr(asset, "user_description", None) or getattr(asset, "ai_description", None) or ""
+    description = (
+        getattr(asset, "user_description", None)
+        or getattr(asset, "ai_description", None)
+        or ""
+    )
 
     return {
         "asset_id": str(asset.id),
@@ -216,7 +225,9 @@ def get_asset(asset_id: str) -> str:
 
         if not asset:
             # Return "not_found" for both true 404 and cross-tenant (avoid leaking existence)
-            logger.info("get_asset_not_found", tenant_id=str(tenant_id), asset_id=asset_id)
+            logger.info(
+                "get_asset_not_found", tenant_id=str(tenant_id), asset_id=asset_id
+            )
             return json.dumps({"error": "not_found"})
 
         result = _asset_to_ref(asset)

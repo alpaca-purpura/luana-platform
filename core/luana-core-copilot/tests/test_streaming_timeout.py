@@ -141,7 +141,9 @@ class TestStreamingTimeout:
         """Default timeout should be 60 seconds."""
         assert COPILOT_STREAM_TIMEOUT_SECONDS == 60
 
-    @pytest.mark.parametrize("env_value,expected", [("30", 30), ("120", 120), ("10", 10)])
+    @pytest.mark.parametrize(
+        "env_value,expected", [("30", 30), ("120", 120), ("10", 10)]
+    )
     def test_timeout_configurable_via_env(
         self,
         env_value: str,
@@ -162,7 +164,9 @@ class TestStreamingTimeout:
         # Restore default
         importlib.reload(chat_mod)
 
-    async def test_timeout_emits_error_event(self, orchestrator: CopilotOrchestrator) -> None:
+    async def test_timeout_emits_error_event(
+        self, orchestrator: CopilotOrchestrator
+    ) -> None:
         """When LLM streaming times out, an SSE error event must be emitted."""
         with (
             patch(
@@ -225,7 +229,11 @@ class TestStreamingTimeout:
             events = await _collect_sse_events(orchestrator)
             parsed = _parse_sse_events(events)
             # F8 §5.4 — block_delta is the canonical render path now.
-            partial_chunks = [e["data"]["delta"]["markdown"] for e in parsed if e["event"] == "block_delta"]
+            partial_chunks = [
+                e["data"]["delta"]["markdown"]
+                for e in parsed
+                if e["event"] == "block_delta"
+            ]
 
             # Partial chunks should be preserved
             assert len(partial_chunks) >= 1

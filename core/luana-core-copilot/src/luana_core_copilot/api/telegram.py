@@ -205,7 +205,9 @@ async def unlink_telegram(
     db: Annotated[AsyncSession, Depends(get_copilot_async_session)],
 ) -> UnlinkResponse:
     """Soft delete current Telegram link (set ``revoked_at``)."""
-    revoked_count = await revoke_chat_link(db, tenant_id=user.tenant_id, user_id=user.id)
+    revoked_count = await revoke_chat_link(
+        db, tenant_id=user.tenant_id, user_id=user.id
+    )
     _LOGGER.info(
         "copilot_telegram_link_unbound",
         tenant_id=str(user.tenant_id),

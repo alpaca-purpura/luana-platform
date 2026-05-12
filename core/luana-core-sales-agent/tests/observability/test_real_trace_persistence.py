@@ -96,7 +96,9 @@ class TestRealTracePersistence:
 
         ctx = _make_context(real_db, channel_type="telegram")
 
-        async with ctx.observe_turn(message="hola", route="sales_agent", attachments=[]):
+        async with ctx.observe_turn(
+            message="hola", route="sales_agent", attachments=[]
+        ):
             # No graph call — just exercise the bracket lifecycle.
             pass
 
@@ -129,11 +131,17 @@ class TestRealTracePersistence:
         )
 
         ctx = _make_context(real_db)
-        async with ctx.observe_turn(message="hola", route="sales_agent", attachments=[]):
+        async with ctx.observe_turn(
+            message="hola", route="sales_agent", attachments=[]
+        ):
             pass
         real_db.flush()
 
-        end_row = real_db.query(SalesAgentTraceEventModel).filter_by(turn_id=ctx.turn_id, event_type="turn_end").one()
+        end_row = (
+            real_db.query(SalesAgentTraceEventModel)
+            .filter_by(turn_id=ctx.turn_id, event_type="turn_end")
+            .one()
+        )
         assert end_row.status == "ok"
 
     @pytest.mark.asyncio
@@ -161,7 +169,9 @@ class TestRealTracePersistence:
 
         ctx = _make_context(real_db)
 
-        async with ctx.observe_turn(message="hola", route="sales_agent", attachments=[]):
+        async with ctx.observe_turn(
+            message="hola", route="sales_agent", attachments=[]
+        ):
             real_db.add(
                 SalesAgentLlmCallModel(
                     tenant_id=ctx.tenant_id,
@@ -195,7 +205,11 @@ class TestRealTracePersistence:
             real_db.flush()
         real_db.flush()
 
-        bracket_rows = real_db.query(SalesAgentTraceEventModel).filter_by(turn_id=ctx.turn_id).all()
+        bracket_rows = (
+            real_db.query(SalesAgentTraceEventModel)
+            .filter_by(turn_id=ctx.turn_id)
+            .all()
+        )
         assert len(bracket_rows) >= 2  # turn_start + turn_end
 
         end_row = next(r for r in bracket_rows if r.event_type == "turn_end")

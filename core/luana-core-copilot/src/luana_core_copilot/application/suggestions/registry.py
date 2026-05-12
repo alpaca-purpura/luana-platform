@@ -14,7 +14,9 @@ from typing import TYPE_CHECKING
 from luana_core_copilot.application.suggestions.engine import SuggestionEngine
 
 if TYPE_CHECKING:
-    from luana_core_copilot.application.suggestions.providers.base import SuggestionProvider
+    from luana_core_copilot.application.suggestions.providers.base import (
+        SuggestionProvider,
+    )
 
 # Container to hold the process-wide engine (avoids ``global`` statement).
 _state: dict[str, SuggestionEngine | None] = {"engine": None}

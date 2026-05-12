@@ -78,11 +78,21 @@ class MeetingEntry:
             event_slug=raw.get("event_slug", ""),
             expires_at=_parse_iso(raw["expires_at"]),
             status=MeetingEntryStatus(raw.get("status", "link_created")),
-            appointment_id=UUID(raw["appointment_id"]) if raw.get("appointment_id") else None,
-            scheduled_at=_parse_iso(raw["scheduled_at"]) if raw.get("scheduled_at") else None,
-            reminder_24h_sent_at=_parse_iso(raw["reminder_24h_sent_at"]) if raw.get("reminder_24h_sent_at") else None,
-            reminder_1h_sent_at=_parse_iso(raw["reminder_1h_sent_at"]) if raw.get("reminder_1h_sent_at") else None,
-            postcheck_sent_at=_parse_iso(raw["postcheck_sent_at"]) if raw.get("postcheck_sent_at") else None,
+            appointment_id=UUID(raw["appointment_id"])
+            if raw.get("appointment_id")
+            else None,
+            scheduled_at=_parse_iso(raw["scheduled_at"])
+            if raw.get("scheduled_at")
+            else None,
+            reminder_24h_sent_at=_parse_iso(raw["reminder_24h_sent_at"])
+            if raw.get("reminder_24h_sent_at")
+            else None,
+            reminder_1h_sent_at=_parse_iso(raw["reminder_1h_sent_at"])
+            if raw.get("reminder_1h_sent_at")
+            else None,
+            postcheck_sent_at=_parse_iso(raw["postcheck_sent_at"])
+            if raw.get("postcheck_sent_at")
+            else None,
             created_at=_parse_iso(raw.get("created_at", raw["expires_at"])),
             provider_id=raw.get("provider_id", "internal"),
         )
@@ -95,10 +105,18 @@ class MeetingEntry:
             "expires_at": self.expires_at.isoformat(),
             "status": self.status.value,
             "appointment_id": str(self.appointment_id) if self.appointment_id else None,
-            "scheduled_at": self.scheduled_at.isoformat() if self.scheduled_at else None,
-            "reminder_24h_sent_at": self.reminder_24h_sent_at.isoformat() if self.reminder_24h_sent_at else None,
-            "reminder_1h_sent_at": self.reminder_1h_sent_at.isoformat() if self.reminder_1h_sent_at else None,
-            "postcheck_sent_at": self.postcheck_sent_at.isoformat() if self.postcheck_sent_at else None,
+            "scheduled_at": self.scheduled_at.isoformat()
+            if self.scheduled_at
+            else None,
+            "reminder_24h_sent_at": self.reminder_24h_sent_at.isoformat()
+            if self.reminder_24h_sent_at
+            else None,
+            "reminder_1h_sent_at": self.reminder_1h_sent_at.isoformat()
+            if self.reminder_1h_sent_at
+            else None,
+            "postcheck_sent_at": self.postcheck_sent_at.isoformat()
+            if self.postcheck_sent_at
+            else None,
             "created_at": self.created_at.isoformat(),
             "provider_id": self.provider_id,
         }

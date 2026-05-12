@@ -122,7 +122,9 @@ class BrandSuggestionProvider:
                 suggestions.append(
                     Suggestion(
                         label="Empieza por tu marca",
-                        prompt=("Ayúdame a configurar la identidad de mi marca: nombre, tagline e industria."),
+                        prompt=(
+                            "Ayúdame a configurar la identidad de mi marca: nombre, tagline e industria."
+                        ),
                         confidence=0.90,
                         category=SuggestionCategory.ACTION,
                         source_module="brand",
@@ -130,11 +132,15 @@ class BrandSuggestionProvider:
                 )
 
             # Rule 2 — UVP missing (only if identity exists)
-            if identity.get("brand_name") and not positioning.get("unique_value_proposition"):
+            if identity.get("brand_name") and not positioning.get(
+                "unique_value_proposition"
+            ):
                 suggestions.append(
                     Suggestion(
                         label="Define tu propuesta única",
-                        prompt=("Ayúdame a redactar mi propuesta única de valor usando el framework Brand Love Key."),
+                        prompt=(
+                            "Ayúdame a redactar mi propuesta única de valor usando el framework Brand Love Key."
+                        ),
                         confidence=0.85,
                         category=SuggestionCategory.ACTION,
                         source_module="brand",
@@ -142,11 +148,15 @@ class BrandSuggestionProvider:
                 )
 
             # Rule 3 — narrative missing (only if UVP exists)
-            if positioning.get("unique_value_proposition") and not narrative.get("one_liner"):
+            if positioning.get("unique_value_proposition") and not narrative.get(
+                "one_liner"
+            ):
                 suggestions.append(
                     Suggestion(
                         label="Construye tu narrativa StoryBrand",
-                        prompt=("Guíame para armar mi narrativa StoryBrand (hero, problem, guide, plan, CTA)."),
+                        prompt=(
+                            "Guíame para armar mi narrativa StoryBrand (hero, problem, guide, plan, CTA)."
+                        ),
                         confidence=0.82,
                         category=SuggestionCategory.ACTION,
                         source_module="brand",
@@ -158,7 +168,9 @@ class BrandSuggestionProvider:
                 suggestions.append(
                     Suggestion(
                         label="Elige tu arquetipo de marca",
-                        prompt=("Ayúdame a elegir el arquetipo Jung que mejor refleja mi marca y por qué."),
+                        prompt=(
+                            "Ayúdame a elegir el arquetipo Jung que mejor refleja mi marca y por qué."
+                        ),
                         confidence=0.78,
                         category=SuggestionCategory.CLARIFY,
                         source_module="brand",
@@ -184,7 +196,9 @@ class BrandSuggestionProvider:
                 suggestions.append(
                     Suggestion(
                         label="Crea tu buyer persona principal",
-                        prompt=("Ayúdame a definir mi buyer persona principal (demographics, pain points, deseos)."),
+                        prompt=(
+                            "Ayúdame a definir mi buyer persona principal (demographics, pain points, deseos)."
+                        ),
                         confidence=0.75,
                         category=SuggestionCategory.ACTION,
                         source_module="brand",
@@ -196,7 +210,9 @@ class BrandSuggestionProvider:
                 suggestions.append(
                     Suggestion(
                         label="Activa el modo guiado de marca",
-                        prompt=("Quiero un recorrido guiado para completar mi marca paso a paso."),
+                        prompt=(
+                            "Quiero un recorrido guiado para completar mi marca paso a paso."
+                        ),
                         confidence=0.70,
                         category=SuggestionCategory.NAV,
                         source_module="brand",

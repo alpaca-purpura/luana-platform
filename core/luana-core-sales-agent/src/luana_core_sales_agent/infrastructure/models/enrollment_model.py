@@ -48,7 +48,9 @@ class EnrollmentModel(Base):
     contact_id = Column(UUID(as_uuid=True), nullable=False)
     conversation_id = Column(UUID(as_uuid=True), nullable=True)
 
-    status = Column(String(32), nullable=False, default="intent", server_default="intent")
+    status = Column(
+        String(32), nullable=False, default="intent", server_default="intent"
+    )
 
     pricing_tier_label = Column(String(64), nullable=True)
     pricing_amount = Column(Float, nullable=True)

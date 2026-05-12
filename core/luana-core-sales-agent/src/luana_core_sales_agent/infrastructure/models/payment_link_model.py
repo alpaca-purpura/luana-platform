@@ -29,7 +29,9 @@ class PaymentLinkModel(Base):
     amount = Column(Numeric(12, 2), nullable=False)
     currency = Column(String(3), nullable=False)
     status = Column(String(50), nullable=False, default="pending")
-    metadata_ = Column("metadata", JSONB, nullable=False, default=dict, server_default="{}")
+    metadata_ = Column(
+        "metadata", JSONB, nullable=False, default=dict, server_default="{}"
+    )
     created_at = Column(
         DateTime(timezone=True),
         nullable=False,

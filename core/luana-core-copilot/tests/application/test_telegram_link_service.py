@@ -23,7 +23,9 @@ from luana_core_copilot.application.services.telegram_link_service import (
 
 def test_generate_link_token_returns_three_values() -> None:
     """Token generator returns (plaintext, hash, expires_at)."""
-    plaintext, token_hash, expires_at = generate_link_token(tenant_id=uuid4(), user_id=uuid4())
+    plaintext, token_hash, expires_at = generate_link_token(
+        tenant_id=uuid4(), user_id=uuid4()
+    )
     assert isinstance(plaintext, str) and len(plaintext) > 20
     assert isinstance(token_hash, str) and len(token_hash) == 64  # SHA256 hex
     assert isinstance(expires_at, datetime)

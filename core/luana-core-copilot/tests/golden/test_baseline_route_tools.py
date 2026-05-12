@@ -54,7 +54,9 @@ def test_route_tool_selection_matches_baseline() -> None:
     # the contract under test rather than fight the reload ordering.
     snapshot = {
         (route or "<none>"): sorted(
-            name for name in (_tool_name(t) for t in get_tools_for_route(route)) if not name.startswith("_tp")
+            name
+            for name in (_tool_name(t) for t in get_tools_for_route(route))
+            if not name.startswith("_tp")
         )
         for route in CANONICAL_ROUTES
     }

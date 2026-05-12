@@ -259,18 +259,25 @@ def test_legacy_read_emits_sampled_warning() -> None:
 
     with capture_logs() as cap:
         for _ in range(200):
-            decode_message({"role": "user", "content": "legacy message"}, conversation_id=conv_id)
+            decode_message(
+                {"role": "user", "content": "legacy message"}, conversation_id=conv_id
+            )
 
     # Filter to only our specific warning event
     warnings = [
         entry
         for entry in cap
-        if entry.get("event") == "copilot_message_legacy_v1_read" and entry.get("log_level") == "warning"
+        if entry.get("event") == "copilot_message_legacy_v1_read"
+        and entry.get("log_level") == "warning"
     ]
     # Sample rate 1/100 → 200 legacy reads → exactly 2 warnings (count=1 and count=101)
-    assert len(warnings) == 2, f"Expected 2 sampled warnings for 200 v1 reads (rate 1/100), got {len(warnings)}"
+    assert len(warnings) == 2, (
+        f"Expected 2 sampled warnings for 200 v1 reads (rate 1/100), got {len(warnings)}"
+    )
     # Verify no PII in log: content should NOT appear in any warning
     for w in warnings:
-        assert "legacy message" not in str(w), "PII (content) must not appear in warning log"
+        assert "legacy message" not in str(w), (
+            "PII (content) must not appear in warning log"
+        )
         assert "conversation_id" in w
         assert "sampled_count" in w

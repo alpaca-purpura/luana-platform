@@ -113,10 +113,14 @@ class TestFactoryTemperatureOverride:
         ``temperature`` al valor exigido por el server (TP4-B4 + TP5-B8) —
         comportamiento correcto pero oculta el wire que este test cuida.
         """
-        client = LLMFactory.get_service().get_client(ModelRole.REASONING, temperature=0.6)
+        client = LLMFactory.get_service().get_client(
+            ModelRole.REASONING, temperature=0.6
+        )
         # ChatOpenAI expone temperature como atributo serializable.
         config = client.model_dump()
-        assert config.get("temperature") == 0.6, f"Expected temperature=0.6, got {config.get('temperature')}"
+        assert config.get("temperature") == 0.6, (
+            f"Expected temperature=0.6, got {config.get('temperature')}"
+        )
 
     def test_temperature_cache_segregates_instances(self) -> None:
         """Cache key incluye temperature — distintos overrides → distintas instancias.
@@ -129,8 +133,12 @@ class TestFactoryTemperatureOverride:
         client_a = service.get_client(ModelRole.REASONING, temperature=0.6)
         client_b = service.get_client(ModelRole.REASONING, temperature=0.2)
         client_a2 = service.get_client(ModelRole.REASONING, temperature=0.6)
-        assert client_a is not client_b, "Distinta temperature debe dar instancia distinta"
-        assert client_a is client_a2, "Misma temperature debe re-usar instancia cacheada"
+        assert client_a is not client_b, (
+            "Distinta temperature debe dar instancia distinta"
+        )
+        assert client_a is client_a2, (
+            "Misma temperature debe re-usar instancia cacheada"
+        )
 
     def test_kimi_k2_temperature_clamped_for_agent_role(self) -> None:
         """``ModelRole.AGENT`` resuelve Kimi K2.6 y debe clampear cualquier

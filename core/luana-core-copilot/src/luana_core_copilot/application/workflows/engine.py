@@ -160,7 +160,9 @@ class WorkflowEngine:
     # ── Internals ───────────────────────────────────────────────────────────
 
     @staticmethod
-    def _validate_initial(workflow: Workflow, data: Mapping[str, Any]) -> dict[str, Any]:
+    def _validate_initial(
+        workflow: Workflow, data: Mapping[str, Any]
+    ) -> dict[str, Any]:
         try:
             instance = workflow.state_schema.model_validate(dict(data))
         except Exception as exc:

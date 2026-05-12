@@ -22,7 +22,9 @@ TENANT_X = uuid.UUID("c0debabe-0000-4000-8000-000000000001")
 USER_X = uuid.UUID("c0debabe-1111-4000-8000-000000000001")
 
 
-def _make_conv(*, updated_at: datetime, archived: bool = False) -> CopilotConversationModel:
+def _make_conv(
+    *, updated_at: datetime, archived: bool = False
+) -> CopilotConversationModel:
     conv = CopilotConversationModel(
         id=uuid.uuid4(),
         tenant_id=TENANT_X,
@@ -45,7 +47,9 @@ def access(db: Session) -> ConversationDataAccessProvider:
     return ConversationDataAccessProvider(db_factory=lambda: db)
 
 
-def test_supports_conversation_count_only(access: ConversationDataAccessProvider) -> None:
+def test_supports_conversation_count_only(
+    access: ConversationDataAccessProvider,
+) -> None:
     assert access.supports("conversation_count") is True
     assert access.supports("offer_lookup") is False
 

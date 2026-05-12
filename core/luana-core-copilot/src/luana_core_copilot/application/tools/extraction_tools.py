@@ -95,7 +95,11 @@ from uuid import UUID, uuid4
 import structlog
 from langchain_core.tools import tool
 from luana_core_platform.core.arq_pool import get_arq_pool
-from luana_core_platform.core.context import get_conversation_id, get_tenant_id, get_user_id
+from luana_core_platform.core.context import (
+    get_conversation_id,
+    get_tenant_id,
+    get_user_id,
+)
 from luana_core_platform.core.database import redis_client
 from luana_core_platform.domain.extraction_jobs import ExtractionJob
 

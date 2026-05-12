@@ -10,7 +10,9 @@ from sqlalchemy import select
 if TYPE_CHECKING:
     from uuid import UUID
 
-    from luana_core_offer_studio.infrastructure.models.product_model import ProductModel as Product
+    from luana_core_offer_studio.infrastructure.models.product_model import (
+        ProductModel as Product,
+    )
     from sqlalchemy.orm import Session
 
 
@@ -24,7 +26,11 @@ class BusinessRepository:
     def get_current_launch_product(self) -> tuple[Product | None, str | None]:
         """Retrieve current launch product."""
         product_cls = get_product_model_class()
-        product = self.db.execute(select(product_cls).where(product_cls.status == "active")).scalars().first()
+        product = (
+            self.db.execute(select(product_cls).where(product_cls.status == "active"))
+            .scalars()
+            .first()
+        )
         if product:
             return product, "evergreen"
         return None, None

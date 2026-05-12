@@ -35,7 +35,9 @@ class _DemoState(BaseModel):
 # ── Handlers used by tests (referenced via dotted path) ─────────────────────
 
 
-async def handler_set_score(data: dict[str, Any], context: dict[str, Any]) -> NodeOutput:
+async def handler_set_score(
+    data: dict[str, Any], context: dict[str, Any]
+) -> NodeOutput:
     _ = context
     return NodeOutput(data_patch={"score": data.get("score", 0) + 5})
 
@@ -77,7 +79,11 @@ def _linear_workflow() -> Workflow:
         description_es="Linear demo",
         trigger=WorkflowTrigger.USER_INTENT,
         nodes=(
-            WorkflowNode(id="set_score", handler_ref=f"{_PREFIX}:handler_set_score", next="finish"),
+            WorkflowNode(
+                id="set_score",
+                handler_ref=f"{_PREFIX}:handler_set_score",
+                next="finish",
+            ),
             WorkflowNode(id="finish", handler_ref=f"{_PREFIX}:handler_finish"),
         ),
         state_schema=_DemoState,
@@ -248,7 +254,13 @@ class TestWorkflowEngineRun:
             domain="brand",
             description_es="Loop",
             trigger=WorkflowTrigger.USER_INTENT,
-            nodes=(WorkflowNode(id="set_score", handler_ref=f"{_PREFIX}:handler_set_score", next="set_score"),),
+            nodes=(
+                WorkflowNode(
+                    id="set_score",
+                    handler_ref=f"{_PREFIX}:handler_set_score",
+                    next="set_score",
+                ),
+            ),
             state_schema=_DemoState,
             ui_progress_kind="plan_card",
         )
@@ -260,7 +272,9 @@ class TestWorkflowEngineIsComplete:
     def test_is_complete_true_when_state_complete(self) -> None:
         engine = WorkflowEngine()
         wf = _linear_workflow()
-        state = WorkflowExecutionState(workflow_id="wf_linear", current_node="finish", is_complete=True)
+        state = WorkflowExecutionState(
+            workflow_id="wf_linear", current_node="finish", is_complete=True
+        )
         assert engine.is_complete(wf, state) is True
 
     def test_is_complete_false_otherwise(self) -> None:

@@ -14,7 +14,6 @@ Allowlisted slugs (Story 8 v0.1.0): nicolify, vitalia, comunify, lupulo, test-br
 from __future__ import annotations
 
 import pytest
-
 from luana_core_extension_sdk import ExtensionPointRegistry
 from luana_core_extension_sdk.exceptions import NamespaceViolationError
 from luana_core_extension_sdk.models import SidebarRouteDef
@@ -30,11 +29,11 @@ def _fresh_registry() -> ExtensionPointRegistry:
 _VALID_BRAND_SLUGS = ["nicolify", "vitalia", "comunify", "lupulo", "test-brand"]
 
 _INVALID_NAMES = [
-    "smoke_route",              # bare name — no prefix
-    "unknown-brand.smoke",      # unregistered brand slug
-    "VITALIA.smoke",            # wrong case (should be lowercase)
-    "vitalia-extra.smoke",      # slug not in allowlist
-    ".smoke_route",             # empty prefix
+    "smoke_route",  # bare name — no prefix
+    "unknown-brand.smoke",  # unregistered brand slug
+    "VITALIA.smoke",  # wrong case (should be lowercase)
+    "vitalia-extra.smoke",  # slug not in allowlist
+    ".smoke_route",  # empty prefix
 ]
 
 
@@ -42,9 +41,7 @@ def test_bare_name_raises_namespace_violation() -> None:
     """CC-4: bare name without brand slug prefix raises NamespaceViolationError."""
     registry = _fresh_registry()
     with pytest.raises(NamespaceViolationError):
-        registry.sidebar_routes_register(
-            SidebarRouteDef(slug="no_prefix", label="No prefix", icon="x", order=1)
-        )
+        registry.sidebar_routes_register(SidebarRouteDef(slug="no_prefix", label="No prefix", icon="x", order=1))
 
 
 def test_unknown_brand_slug_raises_namespace_violation() -> None:
@@ -85,6 +82,4 @@ def test_invalid_names_raise_namespace_violation(invalid_name: str) -> None:
     """CC-4: invalid names (bare, wrong slug, wrong case) raise NamespaceViolationError."""
     registry = _fresh_registry()
     with pytest.raises(NamespaceViolationError, match="namespace"):
-        registry.sidebar_routes_register(
-            SidebarRouteDef(slug=invalid_name, label="X", icon="x", order=1)
-        )
+        registry.sidebar_routes_register(SidebarRouteDef(slug=invalid_name, label="X", icon="x", order=1))

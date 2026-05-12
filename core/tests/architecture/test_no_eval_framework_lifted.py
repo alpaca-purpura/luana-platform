@@ -64,8 +64,7 @@ def test_no_agentic_evals_tests_in_sales_agent():
             py_files = list(forbidden_path.rglob("*.py"))
             if py_files:
                 violations.append(
-                    f"{forbidden_path.relative_to(CORE_DIR)} "
-                    f"({len(py_files)} .py files)",
+                    f"{forbidden_path.relative_to(CORE_DIR)} ({len(py_files)} .py files)",
                 )
 
     assert not violations, (

@@ -20,14 +20,7 @@ from pathlib import Path
 
 CORE_DIR = Path(__file__).parents[2]
 
-CANONICAL_PATH = (
-    CORE_DIR
-    / "luana-core-brand-studio"
-    / "src"
-    / "luana_core_brand_studio"
-    / "domain"
-    / "personality.py"
-)
+CANONICAL_PATH = CORE_DIR / "luana-core-brand-studio" / "src" / "luana_core_brand_studio" / "domain" / "personality.py"
 
 CLASS_PATTERN = re.compile(r"^\s*class\s+PersonalityCompiler\b")
 
@@ -116,6 +109,5 @@ def test_no_mirror_personality_compiler_workspace_wide():
 
     assert not violations, (
         "PersonalityCompiler MUST NOT be mirrored outside brand-studio/domain/personality.py "
-        "(ADR-001 §2.4 SSoT cement Stories 5+6+7). Found duplicate(s):\n"
-        + "\n".join(violations)
+        "(ADR-001 §2.4 SSoT cement Stories 5+6+7). Found duplicate(s):\n" + "\n".join(violations)
     )

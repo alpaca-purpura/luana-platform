@@ -136,7 +136,9 @@ class TestBuildUpdatesListValidation:
             "pain_points": "Su mayor dolor es sentir que no tiene tiempo",  # string — invalid
             "name": "María Creadora",
         }
-        updates = BuyerPersonaPersister._build_updates(mapa_global, ["pain_points", "name"])
+        updates = BuyerPersonaPersister._build_updates(
+            mapa_global, ["pain_points", "name"]
+        )
 
         # Scalar 'name' accepted; list field 'pain_points' must be dropped
         assert "name" in updates
@@ -150,7 +152,9 @@ class TestBuildUpdatesListValidation:
         updates = BuyerPersonaPersister._build_updates(mapa_global, ["pain_points"])
 
         assert "pain_points" in updates
-        assert updates["pain_points"] == [{"description": "No time", "intensity": "high"}]
+        assert updates["pain_points"] == [
+            {"description": "No time", "intensity": "high"}
+        ]
 
     def test_rejects_non_dict_for_dict_field(self) -> None:
         """If a plain 'demographics' key gets a non-dict value, it must be dropped."""

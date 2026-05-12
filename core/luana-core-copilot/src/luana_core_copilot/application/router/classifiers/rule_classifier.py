@@ -45,7 +45,9 @@ class RuleClassifier:
                 continue
             if rule.max_tools is not None and req.available_tool_count > rule.max_tools:
                 continue
-            if rule.required_keywords and not all(kw.lower() in msg.lower() for kw in rule.required_keywords):
+            if rule.required_keywords and not all(
+                kw.lower() in msg.lower() for kw in rule.required_keywords
+            ):
                 continue
             return RoutingDecision(
                 role=rule.role,

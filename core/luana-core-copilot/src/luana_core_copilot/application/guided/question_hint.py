@@ -61,7 +61,9 @@ def build_question_hint(
     if contract is None:
         return None
 
-    question_es = contract.human_question_es or contract.label_es or _humanize(contract.path)
+    question_es = (
+        contract.human_question_es or contract.label_es or _humanize(contract.path)
+    )
 
     payload: dict[str, Any] = {
         "path": contract.path,

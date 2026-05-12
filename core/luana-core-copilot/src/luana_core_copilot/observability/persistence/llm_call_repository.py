@@ -42,7 +42,9 @@ class LlmCallRepository:
         self.db.add(row)
         return row
 
-    def find_by_turn(self, *, tenant_id: UUID, turn_id: UUID) -> list[CopilotLlmCallModel]:
+    def find_by_turn(
+        self, *, tenant_id: UUID, turn_id: UUID
+    ) -> list[CopilotLlmCallModel]:
         """Return every LLM call recorded for a turn under one tenant."""
         stmt = (
             select(CopilotLlmCallModel)

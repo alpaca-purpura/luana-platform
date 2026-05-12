@@ -423,7 +423,9 @@ class TestSendMessage:
         assert result["mode"] == "direct"
         assert result["content"] == "Hello from owner"
 
-        msg = db.query(MessageModel).filter(MessageModel.id == result["message_id"]).one()
+        msg = (
+            db.query(MessageModel).filter(MessageModel.id == result["message_id"]).one()
+        )
         assert msg.role == "assistant"
         assert msg.sender_source == "human_direct"
 
@@ -443,7 +445,9 @@ class TestSendMessage:
         assert result is not None
         assert result["mode"] == "instruction"
 
-        msg = db.query(MessageModel).filter(MessageModel.id == result["message_id"]).one()
+        msg = (
+            db.query(MessageModel).filter(MessageModel.id == result["message_id"]).one()
+        )
         assert msg.role == "system"
         assert msg.sender_source == "human_instruction"
         assert "INSTRUCCION DEL OPERADOR" in msg.content
@@ -459,7 +463,9 @@ class TestSendMessage:
         result = svc.send_message(TENANT_A, lead.id, "Hi there", mode="direct")
 
         assert result is not None
-        msg = db.query(MessageModel).filter(MessageModel.id == result["message_id"]).one()
+        msg = (
+            db.query(MessageModel).filter(MessageModel.id == result["message_id"]).one()
+        )
         assert msg.channel is None
 
 

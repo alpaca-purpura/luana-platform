@@ -86,7 +86,9 @@ def _kb_to_citations(parsed: object) -> list[dict] | None:
             {
                 "id": str(uuid4()),
                 "type": "citation",
-                "source": str(item.get("source") or item.get("metadata", {}).get("title") or ""),
+                "source": str(
+                    item.get("source") or item.get("metadata", {}).get("title") or ""
+                ),
                 "snippet": str(item.get("snippet") or item.get("content") or "")[:500],
                 "score": item.get("score"),
                 "url": item.get("url") or item.get("metadata", {}).get("url"),

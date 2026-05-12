@@ -16,47 +16,47 @@ import inspect
 
 from luana_core_extension_sdk import ExtensionPointRegistry
 
-_EXPECTED_REGISTER_METHODS = frozenset({
-    # EP-1..EP-5 (executable)
-    "field_override",
-    "offer_preset_pack_register",
-    "sales_agent_tool_register",
-    "copilot_workflow_register",
-    "scheduling_booking_policy_register",
-    # EP-6..EP-18 (signature-only)
-    "sidebar_routes_register",
-    "extractor_register",
-    "channel_adapter_register",
-    "metric_register",
-    "landing_template_register",
-    "campaign_template_register",
-    "asset_template_register",
-    "sales_agent_guardrail_register",
-    "copilot_kb_pack_register",
-    "crm_lifecycle_stage_register",
-    "iam_signup_handler",
-    "tenant_plan_tier_register",
-    "onboarding_wizard_steps_register",
-})
+_EXPECTED_REGISTER_METHODS = frozenset(
+    {
+        # EP-1..EP-5 (executable)
+        "field_override",
+        "offer_preset_pack_register",
+        "sales_agent_tool_register",
+        "copilot_workflow_register",
+        "scheduling_booking_policy_register",
+        # EP-6..EP-18 (signature-only)
+        "sidebar_routes_register",
+        "extractor_register",
+        "channel_adapter_register",
+        "metric_register",
+        "landing_template_register",
+        "campaign_template_register",
+        "asset_template_register",
+        "sales_agent_guardrail_register",
+        "copilot_kb_pack_register",
+        "crm_lifecycle_stage_register",
+        "iam_signup_handler",
+        "tenant_plan_tier_register",
+        "onboarding_wizard_steps_register",
+    }
+)
 
 # Utility methods that return registered data (EP-1..EP-5 readable surface)
-_EXPECTED_READ_METHODS = frozenset({
-    "resolve_field_override",
-    "list_offer_preset_packs",
-    "get_sales_agent_tool",
-    "get_copilot_workflow",
-    "get_booking_policy",
-    "get_sidebar_routes",
-})
+_EXPECTED_READ_METHODS = frozenset(
+    {
+        "resolve_field_override",
+        "list_offer_preset_packs",
+        "get_sales_agent_tool",
+        "get_copilot_workflow",
+        "get_booking_policy",
+        "get_sidebar_routes",
+    }
+)
 
 
 def _public_methods(cls: type) -> set[str]:
     """Return set of public method names (not dunder, not private)."""
-    return {
-        name
-        for name, member in inspect.getmembers(cls, predicate=inspect.isfunction)
-        if not name.startswith("_")
-    }
+    return {name for name, member in inspect.getmembers(cls, predicate=inspect.isfunction) if not name.startswith("_")}
 
 
 def test_registry_has_all_18_register_methods() -> None:
@@ -76,8 +76,7 @@ def test_registry_has_read_methods_for_ep1_ep5() -> None:
 
     missing = _EXPECTED_READ_METHODS - methods
     assert not missing, (
-        f"Missing read helpers: {sorted(missing)}\n"
-        "Read helpers (resolve_*, list_*, get_*) must exist for EP-1..EP-5."
+        f"Missing read helpers: {sorted(missing)}\nRead helpers (resolve_*, list_*, get_*) must exist for EP-1..EP-5."
     )
 
 

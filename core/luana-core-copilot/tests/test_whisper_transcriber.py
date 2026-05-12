@@ -7,7 +7,9 @@ from luana_core_copilot.infrastructure.voice.whisper_transcriber import (
     WhisperTranscriber,
 )
 
-_WHISPER_PATCH = "luana_core_copilot.infrastructure.voice.whisper_transcriber.openai_client"
+_WHISPER_PATCH = (
+    "luana_core_copilot.infrastructure.voice.whisper_transcriber.openai_client"
+)
 
 
 @pytest.mark.asyncio

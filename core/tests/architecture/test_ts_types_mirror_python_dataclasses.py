@@ -101,8 +101,7 @@ def test_ts_mirrors_match_python_fields() -> None:
 
         if not actual_ts_fields:
             violations.append(
-                f"  {ts_name}: interface not found in TS models.ts\n"
-                f"    Expected fields: {sorted(expected_ts_fields)}"
+                f"  {ts_name}: interface not found in TS models.ts\n    Expected fields: {sorted(expected_ts_fields)}"
             )
             continue
 

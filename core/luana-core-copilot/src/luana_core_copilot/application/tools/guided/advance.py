@@ -32,7 +32,9 @@ logger = structlog.get_logger()
 
 
 @tool
-def advance_guided_block(block_id: str, persisted_fields: list[str] | None = None) -> str:
+def advance_guided_block(
+    block_id: str, persisted_fields: list[str] | None = None
+) -> str:
     """Cierra el bloque actual del modo guiado y avanza al siguiente.
 
     Llamarlo SOLO cuando el usuario confirmó el checkpoint del bloque.

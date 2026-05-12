@@ -46,13 +46,14 @@ _template_cache = SimpleTTLCache(max_entries=1024)
 
 def _get_plan_service() -> object:
     """Lazy factory for PlanService with async repos."""
-    from luana_core_platform.core.database import redis_client
-    from luana_core_campaigns.api._async_session import _AsyncSessionLocal
     from luana_core_billing.application.plan_service import PlanService
     from luana_core_billing.infrastructure.plan_repository_impl import SQLAPlanRepository
     from luana_core_billing.infrastructure.subscription_repository_impl import (
         SQLASubscriptionRepository,
     )
+    from luana_core_platform.core.database import redis_client
+
+    from luana_core_campaigns.api._async_session import _AsyncSessionLocal
 
     async_session = _AsyncSessionLocal()
 
@@ -94,11 +95,12 @@ async def get_segment_service(
     session: Annotated[AsyncSession, Depends(get_campaigns_async_session)],
 ) -> SegmentService:
     """FastAPI dependency that builds a SegmentService for a request."""
-    from luana_core_campaigns.application.segment_filter_evaluator import (
-        SegmentFilterEvaluator,
-    )
     from luana_core_platform.modules.crm.application.services.lead_query_service import (
         LeadQueryServiceImpl,
+    )
+
+    from luana_core_campaigns.application.segment_filter_evaluator import (
+        SegmentFilterEvaluator,
     )
 
     return SegmentService(
@@ -127,13 +129,14 @@ async def get_campaign_stats_service(
     session: Annotated[AsyncSession, Depends(get_campaigns_async_session)],
 ) -> object:
     """FastAPI dependency que construye CampaignStatsService para una request."""
+    from luana_core_platform.domain.locale import TenantLocale
+
     from luana_core_campaigns.application.services.campaign_stats_service import (
         CampaignStatsService,
     )
     from luana_core_campaigns.infrastructure.repositories.campaign_task_repository_impl import (
         CampaignTaskRepositoryImpl,
     )
-    from luana_core_platform.domain.locale import TenantLocale
 
     async def _get_locale(tenant_id: object) -> TenantLocale:
         """Resuelve TenantLocale de forma async (Lee config_json del TenantModel)."""
@@ -180,7 +183,6 @@ async def _arq_pool_provider() -> object:
     try:
         from arq import create_pool
         from arq.connections import RedisSettings
-
         from luana_core_platform.core.config import settings as app_settings
 
         return await create_pool(RedisSettings.from_dsn(app_settings.REDIS_URL))
@@ -194,15 +196,16 @@ async def get_campaign_orchestrator(
     session: Annotated[AsyncSession, Depends(get_campaigns_async_session)],
 ) -> object:
     """FastAPI dependency that builds a CampaignOrchestrator for a request."""
+    from luana_core_platform.modules.crm.application.services.lead_query_service import (
+        LeadQueryServiceImpl,
+    )
+
     from luana_core_campaigns.application.segment_filter_evaluator import (
         SegmentFilterEvaluator,
     )
     from luana_core_campaigns.application.services.orchestrator import CampaignOrchestrator
     from luana_core_campaigns.infrastructure.repositories.campaign_task_repository_impl import (
         CampaignTaskRepositoryImpl,
-    )
-    from luana_core_platform.modules.crm.application.services.lead_query_service import (
-        LeadQueryServiceImpl,
     )
 
     return CampaignOrchestrator(

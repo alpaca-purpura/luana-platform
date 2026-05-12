@@ -74,8 +74,12 @@ class CopilotLimitsResolver:
             voice_rpm=voice_rpm,
             voice_window_seconds=60,
             media_max_bytes=media_max_bytes,
-            voice_rpm_is_override=bool(override and override.voice_rpm_override is not None),
-            media_max_bytes_is_override=bool(override and override.media_max_bytes_override is not None),
+            voice_rpm_is_override=bool(
+                override and override.voice_rpm_override is not None
+            ),
+            media_max_bytes_is_override=bool(
+                override and override.media_max_bytes_override is not None
+            ),
         )
 
     def get_effective_sync(self, tenant_id: UUID) -> EffectiveLimits:
@@ -105,6 +109,10 @@ class CopilotLimitsResolver:
             voice_rpm=voice_rpm,
             voice_window_seconds=60,
             media_max_bytes=media_max_bytes,
-            voice_rpm_is_override=bool(override and override.voice_rpm_override is not None),
-            media_max_bytes_is_override=bool(override and override.media_max_bytes_override is not None),
+            voice_rpm_is_override=bool(
+                override and override.voice_rpm_override is not None
+            ),
+            media_max_bytes_is_override=bool(
+                override and override.media_max_bytes_override is not None
+            ),
         )

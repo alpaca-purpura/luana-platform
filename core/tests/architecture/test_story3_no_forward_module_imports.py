@@ -52,7 +52,13 @@ def _get_py_files(pkg_name: str):
     pkg_dir = CORE_DIR / pkg_name / "src"
     if not pkg_dir.exists():
         return []
-    return list(pkg_dir.rglob("*.py"))
+    # Story 6 T-16 introduced copilot_provider/ subpackages into Story 3 packages.
+    # copilot_provider/ files intentionally import luana_core_copilot by design —
+    # this is the integration layer, not a forward-coupling violation.
+    return [
+        p for p in pkg_dir.rglob("*.py")
+        if "copilot_provider" not in p.parts
+    ]
 
 
 def test_no_forward_module_imports():

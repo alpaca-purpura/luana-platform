@@ -21,10 +21,10 @@ SQLite compat note:
 PR-5 PI-1 S2.
 """
 
+# ruff: noqa: E402 — model imports must come after pytestmark assignment (SQLite schema creation ordering)
 from __future__ import annotations
 
 import datetime as dt
-import json
 from contextlib import asynccontextmanager
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
@@ -41,9 +41,7 @@ from luana_core_campaigns.infrastructure.models.campaign_audit_model import Camp
 from luana_core_campaigns.infrastructure.models.campaign_model import CampaignModel
 from luana_core_campaigns.infrastructure.models.campaign_step_model import CampaignStepModel
 from luana_core_campaigns.infrastructure.models.campaign_task_model import CampaignTaskModel
-from luana_core_campaigns.infrastructure.models.segment_model import SegmentModel
 from luana_core_platform.domain.base_entity import Base
-
 
 # ── Engine + session factory ──────────────────────────────────────────────────
 
@@ -302,8 +300,8 @@ async def test_e2e_execution_task_idempotent_already_sent(session_factory) -> No
         await session.commit()
 
     import httpx
-    from luana_core_campaigns.infrastructure.channels.telegram import TelegramChannelRouter
     from luana_core_campaigns.infrastructure.channels.registry import ChannelRouterRegistry
+    from luana_core_campaigns.infrastructure.channels.telegram import TelegramChannelRouter
 
     mock_httpx_client = AsyncMock(spec=httpx.AsyncClient)
     mock_httpx_client.post = AsyncMock()

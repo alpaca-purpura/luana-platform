@@ -158,7 +158,9 @@ def _get_behavior_summary(tenant_id: UUID, user_id: UUID) -> str:
         # Messages
         msgs = summary.get("message_sent", 0)
         if msgs:
-            activity = "muy activo" if msgs > 30 else "activo" if msgs > 10 else "moderado"
+            activity = (
+                "muy activo" if msgs > 30 else "activo" if msgs > 10 else "moderado"
+            )
             lines.append(f"- Mensajes enviados: {msgs} (usuario {activity})")
 
         # Copilot opens — friction map for this user
@@ -169,7 +171,11 @@ def _get_behavior_summary(tenant_id: UUID, user_id: UUID) -> str:
         # RAG searches
         ks = repo.get_knowledge_search_stats(tenant_id, user_id, days=30)
         if ks["search_count"]:
-            scope_info = f" (scope preferido: {ks['most_queried_scope']})" if ks["most_queried_scope"] else ""
+            scope_info = (
+                f" (scope preferido: {ks['most_queried_scope']})"
+                if ks["most_queried_scope"]
+                else ""
+            )
             lines.append(
                 f"- Busquedas en knowledge base: {ks['search_count']}{scope_info}",
             )
@@ -225,12 +231,20 @@ def _compute_field_completion(
             # Pass entity_id when the read_fn signature accepts it (offers,
             # personas); brand's read_fn takes only tenant_id.
             try:
-                data = desc.read_fn(repo, tenant_id, entity_id) if entity_id else desc.read_fn(repo, tenant_id)
+                data = (
+                    desc.read_fn(repo, tenant_id, entity_id)
+                    if entity_id
+                    else desc.read_fn(repo, tenant_id)
+                )
             except TypeError:
                 data = desc.read_fn(repo, tenant_id)
             if data is None:
                 return [], paths
-            payload = data.model_dump(mode="json") if hasattr(data, "model_dump") else dict(data)
+            payload = (
+                data.model_dump(mode="json")
+                if hasattr(data, "model_dump")
+                else dict(data)
+            )
         finally:
             db.close()
     except Exception:  # noqa: BLE001 — orchestrator resilience
@@ -558,7 +572,9 @@ def _safe_render(template_name: str, **kwargs: object) -> str:
     try:
         return prompt_loader.render(template_name, **kwargs)
     except Exception as e:  # noqa: BLE001 — orchestrator resilience
-        logger.warning("system_prompt_template_failed", template=template_name, error=str(e))
+        logger.warning(
+            "system_prompt_template_failed", template=template_name, error=str(e)
+        )
         return ""
 
 
@@ -901,7 +917,8 @@ def _build_modules_list_fragment() -> str:
     """Compose the MODULES_LIST slot from the live module registry."""
     registry = get_module_registry()
     modules = [
-        {"label": d.label, "route_prefix": d.route_prefix, "description": d.description} for d in registry.values()
+        {"label": d.label, "route_prefix": d.route_prefix, "description": d.description}
+        for d in registry.values()
     ]
     return _safe_render("copilot_system_modules", modules=modules)
 
@@ -969,15 +986,21 @@ def build_system_prompt(state: CopilotState) -> str:
     fragments = {
         # ── Cacheable prefix (≥1024 tokens by design) ─────────────────
         PromptFragment.STATIC_IDENTITY: _build_static_identity_fragment(),
-        PromptFragment.STATIC_TOOLS_HINT: _build_static_tools_hint_fragment(active_tools),
+        PromptFragment.STATIC_TOOLS_HINT: _build_static_tools_hint_fragment(
+            active_tools
+        ),
         PromptFragment.MARKETING_KB_HINT: _build_marketing_kb_hint_fragment(),
         # PI-5 PR-2 — empty when channel != "telegram"; preserves web cache prefix bytes.
-        PromptFragment.TELEGRAM_CHANNEL_CONTEXT: _build_telegram_channel_context_fragment(state),
+        PromptFragment.TELEGRAM_CHANNEL_CONTEXT: _build_telegram_channel_context_fragment(
+            state
+        ),
         PromptFragment.LIGHTHOUSE: lighthouse,
         PromptFragment.EDITABLE_CATALOG: _build_editable_catalog_fragment(),
         PromptFragment.MODULES_LIST: _build_modules_list_fragment(),
         # ── Volatile tail ─────────────────────────────────────────────
-        PromptFragment.STUDIO_SNAPSHOT: _build_studio_snapshot_fragment(state, tenant_id),
+        PromptFragment.STUDIO_SNAPSHOT: _build_studio_snapshot_fragment(
+            state, tenant_id
+        ),
         PromptFragment.WORKFLOW_STATE: _build_workflow_state_fragment(
             current_route=current_route,
             selected_fields=safe_selected_fields,

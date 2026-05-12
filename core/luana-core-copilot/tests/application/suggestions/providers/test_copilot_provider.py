@@ -44,17 +44,30 @@ def _mock_module_registry(route_prefixes: list[str] | None = None) -> dict:
     """Return a mock module registry dict."""
     from luana_core_copilot.domain.module_registry import ModuleDescriptor
 
-    prefixes = route_prefixes or ["brand-studio", "offer-studio", "sales", "growth-studio"]
-    return {prefix: MagicMock(spec=ModuleDescriptor, route_prefix=prefix) for prefix in prefixes}
+    prefixes = route_prefixes or [
+        "brand-studio",
+        "offer-studio",
+        "sales",
+        "growth-studio",
+    ]
+    return {
+        prefix: MagicMock(spec=ModuleDescriptor, route_prefix=prefix)
+        for prefix in prefixes
+    }
 
 
-def _mock_brand_port(brand_data: dict | None = None, personality_present: bool = True) -> MagicMock:
+def _mock_brand_port(
+    brand_data: dict | None = None, personality_present: bool = True
+) -> MagicMock:
     from luana_core_platform.links.ports.brand import BrandKnowledgeDTO
 
     port = MagicMock()
     port.get_brand_knowledge.return_value = BrandKnowledgeDTO(
         brand_data=brand_data
-        or {"identity": {"brand_name": "ACME"}, "positioning": {"unique_value_proposition": "UVP"}},
+        or {
+            "identity": {"brand_name": "ACME"},
+            "positioning": {"unique_value_proposition": "UVP"},
+        },
         avatars=[],
         personality_profile={"id": str(uuid4())} if personality_present else None,
     )
@@ -147,12 +160,16 @@ class TestCopilotProviderRules:
             ),
         ):
             p = CopilotSuggestionProvider()
-            chips = p.get_suggestions(_ctx(conversation_id=conv_id, recent_message_ids=(), route="brand-studio"))
+            chips = p.get_suggestions(
+                _ctx(
+                    conversation_id=conv_id, recent_message_ids=(), route="brand-studio"
+                )
+            )
 
         labels = [c.label for c in chips]
-        assert any("retoma" in l.lower() or "conversación" in l.lower() for l in labels), (
-            f"Expected resume chip in {labels}"
-        )
+        assert any(
+            "retoma" in l.lower() or "conversación" in l.lower() for l in labels
+        ), f"Expected resume chip in {labels}"
 
     def test_copilot_provider_no_route_emits_explore_chip(self) -> None:
         """current_route=None → 'Explorar capacidades' chip."""
@@ -183,12 +200,14 @@ class TestCopilotProviderRules:
         ):
             p = CopilotSuggestionProvider()
             # has conv but no route
-            chips = p.get_suggestions(_ctx(conversation_id=uuid4(), recent_message_ids=(uuid4(),), route=None))
+            chips = p.get_suggestions(
+                _ctx(conversation_id=uuid4(), recent_message_ids=(uuid4(),), route=None)
+            )
 
         labels = [c.label for c in chips]
-        assert any("explorar" in l.lower() or "capacidades" in l.lower() for l in labels), (
-            f"Expected explore chip in {labels}"
-        )
+        assert any(
+            "explorar" in l.lower() or "capacidades" in l.lower() for l in labels
+        ), f"Expected explore chip in {labels}"
 
     def test_copilot_provider_unknown_route_emits_navigate_back_chip(self) -> None:
         """route=unknown-x + registry no match → 'Volver' chip."""
@@ -196,7 +215,9 @@ class TestCopilotProviderRules:
             CopilotSuggestionProvider,
         )
 
-        registry = _mock_module_registry(route_prefixes=["brand-studio", "offer-studio"])
+        registry = _mock_module_registry(
+            route_prefixes=["brand-studio", "offer-studio"]
+        )
         brand_port = _mock_brand_port()
         offer_repo = _mock_offer_repo(offer_count=1)
         with (
@@ -219,7 +240,11 @@ class TestCopilotProviderRules:
         ):
             p = CopilotSuggestionProvider()
             chips = p.get_suggestions(
-                _ctx(conversation_id=uuid4(), recent_message_ids=(uuid4(),), route="unknown-feature-xyz")
+                _ctx(
+                    conversation_id=uuid4(),
+                    recent_message_ids=(uuid4(),),
+                    route="unknown-feature-xyz",
+                )
             )
 
         labels = [c.label for c in chips]
@@ -258,13 +283,18 @@ class TestCopilotProviderRules:
             p = CopilotSuggestionProvider()
             # Has conv with messages, has known route
             chips = p.get_suggestions(
-                _ctx(conversation_id=uuid4(), recent_message_ids=(uuid4(),), route="brand-studio")
+                _ctx(
+                    conversation_id=uuid4(),
+                    recent_message_ids=(uuid4(),),
+                    route="brand-studio",
+                )
             )
 
         labels = [c.label for c in chips]
-        assert any("setup" in l.lower() or "completa" in l.lower() or "configura" in l.lower() for l in labels), (
-            f"Expected onboarding chip in {labels}"
-        )
+        assert any(
+            "setup" in l.lower() or "completa" in l.lower() or "configura" in l.lower()
+            for l in labels
+        ), f"Expected onboarding chip in {labels}"
 
     def test_copilot_provider_exception_returns_empty_list(self) -> None:
         """Exception in any internal call → returns []."""
@@ -325,7 +355,12 @@ class TestCopilotProviderRules:
         ):
             p = CopilotSuggestionProvider()
             p.get_suggestions(
-                _ctx(tenant_id=tenant_a, conversation_id=uuid4(), recent_message_ids=(uuid4(),), route="brand-studio")
+                _ctx(
+                    tenant_id=tenant_a,
+                    conversation_id=uuid4(),
+                    recent_message_ids=(uuid4(),),
+                    route="brand-studio",
+                )
             )
 
         # Offer repo should be called with tenant_a
@@ -365,4 +400,6 @@ class TestCopilotProviderSpanishNeutro:
 
         for chip in chips:
             assert not _VOSEO_RE.search(chip.label), f"Voseo in label: {chip.label!r}"
-            assert not _VOSEO_RE.search(chip.prompt), f"Voseo in prompt: {chip.prompt!r}"
+            assert not _VOSEO_RE.search(chip.prompt), (
+                f"Voseo in prompt: {chip.prompt!r}"
+            )

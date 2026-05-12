@@ -23,7 +23,10 @@ class TestEstimateTokens:
     def test_estimate_is_positive_for_real_content(self) -> None:
         # For typical prose content (not highly compressible), the estimate
         # must be strictly positive and less than the raw character count.
-        text = "Hello world, this is a typical copilot conversation message about branding. " * 5
+        text = (
+            "Hello world, this is a typical copilot conversation message about branding. "
+            * 5
+        )
         result = _estimate_tokens(text)
         assert 0 < result < len(text)
 
@@ -41,7 +44,10 @@ class TestEstimateTokens:
 
     def test_mixed_content_stays_within_range(self) -> None:
         # Mixed prose + JSON-like content typical of LLM conversations
-        text = '{"brand_name": "Nicolify", "headline": "The best AI platform for creators"} ' * 20
+        text = (
+            '{"brand_name": "Nicolify", "headline": "The best AI platform for creators"} '
+            * 20
+        )
         result = _estimate_tokens(text)
         # Sanity check: must be positive and less than raw char count
         assert 0 < result < len(text)
@@ -62,7 +68,10 @@ class TestTruncateHistory:
 
     # Prose-like content that tokenises ~1 token per 4-5 chars, avoiding
     # highly compressible repeated chars that tiktoken encodes in bulk tokens.
-    _LONG_CONTENT = "The brand is a unique platform for creators who want to grow their audience. " * 30
+    _LONG_CONTENT = (
+        "The brand is a unique platform for creators who want to grow their audience. "
+        * 30
+    )
 
     def test_long_history_truncated(self) -> None:
         # Each message uses prose-like content (~600 tokens), 20 turns = 40 msgs x 600 = 24000 tokens
@@ -184,7 +193,9 @@ class TestSanitizeToolCalls:
     def test_complete_tool_call_chain_preserved(self) -> None:
         msgs = [
             HumanMessage(content="Use a tool"),
-            AIMessage(content="", tool_calls=[{"id": "tc1", "name": "tool", "args": {}}]),
+            AIMessage(
+                content="", tool_calls=[{"id": "tc1", "name": "tool", "args": {}}]
+            ),
             ToolMessage(content="result", tool_call_id="tc1"),
             AIMessage(content="Done"),
         ]
@@ -195,11 +206,16 @@ class TestSanitizeToolCalls:
         """AIMessage with tool_calls at end of history (no ToolMessage follows) is dropped."""
         msgs = [
             HumanMessage(content="Hi"),
-            AIMessage(content="", tool_calls=[{"id": "tc1", "name": "tool", "args": {}}]),
+            AIMessage(
+                content="", tool_calls=[{"id": "tc1", "name": "tool", "args": {}}]
+            ),
         ]
         result = sanitize_tool_calls(msgs)
         # The orphaned AIMessage should be removed
-        assert all(not (isinstance(m, AIMessage) and getattr(m, "tool_calls", None)) for m in result)
+        assert all(
+            not (isinstance(m, AIMessage) and getattr(m, "tool_calls", None))
+            for m in result
+        )
         assert len(result) == 1  # Only the HumanMessage remains
 
     def test_partial_tool_messages_removed(self) -> None:
@@ -219,24 +235,38 @@ class TestSanitizeToolCalls:
         ]
         result = sanitize_tool_calls(msgs)
         # The orphaned AIMessage(tool_calls) and partial ToolMessage should be removed
-        ai_with_calls = [m for m in result if isinstance(m, AIMessage) and getattr(m, "tool_calls", None)]
+        ai_with_calls = [
+            m
+            for m in result
+            if isinstance(m, AIMessage) and getattr(m, "tool_calls", None)
+        ]
         assert len(ai_with_calls) == 0
         # The final AIMessage("Continued") should still be there
-        assert any(isinstance(m, AIMessage) and m.content == "Continued" for m in result)
+        assert any(
+            isinstance(m, AIMessage) and m.content == "Continued" for m in result
+        )
 
     def test_multiple_orphans_all_removed(self) -> None:
         """Multiple orphaned tool_calls sequences are all removed."""
         msgs = [
             HumanMessage(content="First"),
-            AIMessage(content="", tool_calls=[{"id": "tc1", "name": "tool", "args": {}}]),
+            AIMessage(
+                content="", tool_calls=[{"id": "tc1", "name": "tool", "args": {}}]
+            ),
             # No ToolMessage for tc1
             HumanMessage(content="Second"),
-            AIMessage(content="", tool_calls=[{"id": "tc2", "name": "tool", "args": {}}]),
+            AIMessage(
+                content="", tool_calls=[{"id": "tc2", "name": "tool", "args": {}}]
+            ),
             # No ToolMessage for tc2
             AIMessage(content="Final"),
         ]
         result = sanitize_tool_calls(msgs)
-        ai_with_calls = [m for m in result if isinstance(m, AIMessage) and getattr(m, "tool_calls", None)]
+        ai_with_calls = [
+            m
+            for m in result
+            if isinstance(m, AIMessage) and getattr(m, "tool_calls", None)
+        ]
         assert len(ai_with_calls) == 0
         # Human messages and Final should remain
         assert any(isinstance(m, AIMessage) and m.content == "Final" for m in result)

@@ -24,7 +24,9 @@ class _StubLLM:
         self.last_messages: list[Any] = []
         self.last_config: dict | None = None
 
-    def invoke(self, messages: list[Any], *, config: dict | None = None) -> _StubResponse:
+    def invoke(
+        self, messages: list[Any], *, config: dict | None = None
+    ) -> _StubResponse:
         self.last_messages = messages
         self.last_config = config
         return _StubResponse(content=self.text)

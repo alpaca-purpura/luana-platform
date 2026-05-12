@@ -26,7 +26,9 @@ class _StubLLM:
         self.last_messages: list[Any] = []
         self.last_config: dict | None = None
 
-    def invoke(self, messages: list[Any], *, config: dict | None = None) -> _StubResponse:
+    def invoke(
+        self, messages: list[Any], *, config: dict | None = None
+    ) -> _StubResponse:
         self.last_messages = messages
         self.last_config = config
         return _StubResponse(content=json.dumps(self.payload))
@@ -118,7 +120,9 @@ async def test_classify_handles_garbled_llm_output() -> None:
     """Non-JSON / partial output → unknown intent, not exception."""
 
     class _GarbledLLM:
-        def invoke(self, messages: list[Any], *, config: dict | None = None) -> _StubResponse:
+        def invoke(
+            self, messages: list[Any], *, config: dict | None = None
+        ) -> _StubResponse:
             return _StubResponse(content="Sure, here is some text without json.")
 
     result = await classify_intent("dummy", llm=_GarbledLLM())

@@ -34,7 +34,9 @@ def _restore_offer_registry():
 
 def _replace_path_status(path: str, status: FieldStatus) -> None:
     contracts = get_module_contracts("offer")
-    mutated = tuple(replace(c, status=status) if c.path == path else c for c in contracts)
+    mutated = tuple(
+        replace(c, status=status) if c.path == path else c for c in contracts
+    )
     register_module_contracts("offer", mutated)
 
 

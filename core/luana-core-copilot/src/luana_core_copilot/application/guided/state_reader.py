@@ -76,7 +76,9 @@ def _read_brand(db: Session, tenant_id: UUID) -> dict[str, Any] | None:
     return settings.model_dump(mode="json")
 
 
-def _read_offer(db: Session, tenant_id: UUID, entity_id: str | None) -> dict[str, Any] | None:
+def _read_offer(
+    db: Session, tenant_id: UUID, entity_id: str | None
+) -> dict[str, Any] | None:
     if not entity_id:
         return None
     from luana_core_offer_studio.infrastructure.repositories.offer_repository import (
@@ -95,7 +97,9 @@ def _read_offer(db: Session, tenant_id: UUID, entity_id: str | None) -> dict[str
     return offer.model_dump(mode="json")
 
 
-def _read_buyer_persona(db: Session, tenant_id: UUID, entity_id: str | None) -> dict[str, Any] | None:
+def _read_buyer_persona(
+    db: Session, tenant_id: UUID, entity_id: str | None
+) -> dict[str, Any] | None:
     if not entity_id:
         return None
     from luana_core_brand_studio.infrastructure.repositories.buyer_persona_repository import (

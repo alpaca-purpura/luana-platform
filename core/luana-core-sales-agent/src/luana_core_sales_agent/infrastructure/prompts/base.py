@@ -60,7 +60,11 @@ class PromptLoader:
 
         db = SessionLocal()
         try:
-            tenant = db.execute(select(Tenant).where(Tenant.id == tenant_id)).scalars().first()
+            tenant = (
+                db.execute(select(Tenant).where(Tenant.id == tenant_id))
+                .scalars()
+                .first()
+            )
             config = tenant.config_json if tenant and tenant.config_json else {}
             self._tenant_config_cache[tenant_id] = config
         except (KeyError, ValueError, AttributeError) as e:
@@ -122,7 +126,9 @@ class PromptLoader:
         finally:
             db.close()
 
-    def _update_cache(self, key: str, tenant_id: UUID | None, prompt: PromptVersion) -> None:
+    def _update_cache(
+        self, key: str, tenant_id: UUID | None, prompt: PromptVersion
+    ) -> None:
         self._cache[(key, tenant_id)] = {
             "content": prompt.content,
             "version": prompt.version,

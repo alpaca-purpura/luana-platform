@@ -141,8 +141,14 @@ def build_system_prompt(dimensions: Sequence[str]) -> str:
         msg = f"Unknown judge dimensions: {unknown!r}"
         raise ValueError(msg)
 
-    rubric_lines = "\n".join(f"{idx}. {_DIMENSION_RUBRICS[dim]}" for idx, dim in enumerate(sorted_dims, start=1))
-    json_lines = ",\n  ".join(f'"{dim}": {{"score": <1-5>, "reason": "evidencia ≤80 chars"}}' for dim in sorted_dims)
+    rubric_lines = "\n".join(
+        f"{idx}. {_DIMENSION_RUBRICS[dim]}"
+        for idx, dim in enumerate(sorted_dims, start=1)
+    )
+    json_lines = ",\n  ".join(
+        f'"{dim}": {{"score": <1-5>, "reason": "evidencia ≤80 chars"}}'
+        for dim in sorted_dims
+    )
     json_shape = "{\n  " + json_lines + "\n}"
 
     brand_rule = (
@@ -245,7 +251,9 @@ class CopilotJudge:
             raise ValueError(msg)
         self._llm = llm
         self.threshold = threshold
-        self.dimensions: tuple[str, ...] = tuple(dimensions) if dimensions is not None else CANONICAL_DIMENSIONS
+        self.dimensions: tuple[str, ...] = (
+            tuple(dimensions) if dimensions is not None else CANONICAL_DIMENSIONS
+        )
 
     def _resolve_llm(self) -> object:
         if self._llm is not None:
@@ -282,7 +290,9 @@ class CopilotJudge:
             if brand_summary
             else "BRAND_SUMMARY: (no disponible — usa score neutral 3)"
         )
-        context_block = f"\nCONTEXT:\n{_truncate(context, MAX_BRAND_CHARS)}" if context else ""
+        context_block = (
+            f"\nCONTEXT:\n{_truncate(context, MAX_BRAND_CHARS)}" if context else ""
+        )
 
         user_payload = (
             f"{brand_block}{context_block}\n\n"
@@ -351,7 +361,9 @@ class CopilotJudge:
                     metadata={"error": f"invalid_score:{dim}"},
                 )
             reason = entry.get("reason")
-            reason_str = reason.strip() if isinstance(reason, str) and reason.strip() else "—"
+            reason_str = (
+                reason.strip() if isinstance(reason, str) and reason.strip() else "—"
+            )
             dim_scores.append(DimensionScore(name=dim, score=score, reason=reason_str))
 
         avg = sum(d.score for d in dim_scores) / len(dim_scores)
@@ -368,7 +380,11 @@ class CopilotJudge:
     def _model_name(self) -> str:
         if self._llm is None:
             return "nano"
-        return getattr(self._llm, "model", None) or getattr(self._llm, "model_name", None) or "nano"
+        return (
+            getattr(self._llm, "model", None)
+            or getattr(self._llm, "model_name", None)
+            or "nano"
+        )
 
     @staticmethod
     def _extract_response_id(response: object) -> str | None:
@@ -393,7 +409,10 @@ class CopilotJudge:
         metadata: dict[str, Any],
     ) -> JudgeResult:
         return JudgeResult(
-            dimensions=tuple(DimensionScore(name=dim, score=0.0, reason="judge_failed") for dim in self.dimensions),
+            dimensions=tuple(
+                DimensionScore(name=dim, score=0.0, reason="judge_failed")
+                for dim in self.dimensions
+            ),
             avg_score=0.0,
             passes_threshold=False,
             judge_model=judge_model,

@@ -17,9 +17,17 @@ from pathlib import Path
 
 import pytest
 
-pytest.skip("T-15 deferred — alembic migrations 075/076/077 (copilot_observability_rebuild + billing_cycle + daily_llm_cost MV) not yet ported to luana-platform/alembic/versions/ — T-21 finalization or post-Story-6 territory", allow_module_level=True)
+pytest.skip(
+    "T-15 deferred — alembic migrations 075/076/077 (copilot_observability_rebuild + billing_cycle + daily_llm_cost MV) not yet ported to luana-platform/alembic/versions/ — T-21 finalization or post-Story-6 territory",
+    allow_module_level=True,
+)
 
-MIGRATION_FILE = Path(__file__).resolve().parents[4] / "alembic" / "versions" / "075_copilot_observability_rebuild.py"
+MIGRATION_FILE = (
+    Path(__file__).resolve().parents[4]
+    / "alembic"
+    / "versions"
+    / "075_copilot_observability_rebuild.py"
+)
 
 
 def _migration_source() -> str:
@@ -35,7 +43,10 @@ class TestMigrationFileExists:
     def test_revision_id_and_down_revision(self) -> None:
         src = _migration_source()
         assert 'revision: str = "075_copilot_observability_rebuild"' in src
-        assert 'down_revision: str | None = "074_mutation_journal_natural_key_idempotent"' in src
+        assert (
+            'down_revision: str | None = "074_mutation_journal_natural_key_idempotent"'
+            in src
+        )
 
 
 class TestCopilotLlmCallTable:
@@ -117,7 +128,9 @@ class TestCopilotLlmCallTable:
             "ix_llm_call_tenant_model_day",
             "ix_llm_call_errors",
         ):
-            assert f"CREATE INDEX IF NOT EXISTS {idx}" in src, f"Missing idempotent index declaration: {idx}"
+            assert f"CREATE INDEX IF NOT EXISTS {idx}" in src, (
+                f"Missing idempotent index declaration: {idx}"
+            )
         # Partial index on errors must filter status='error'
         assert re.search(
             r"ix_llm_call_errors[\s\S]+WHERE status\s*=\s*'error'",

@@ -47,9 +47,7 @@ _LINK_BOUND_RESPONSE = (
     "Pregúntame cualquier cosa de tu negocio o déjame encargos para procesar."
 )
 
-_LINK_INVALID_RESPONSE = (
-    "Ese enlace ya no es válido (expiró o fue usado).\n\nGenera uno nuevo desde tu cuenta:\n{onboarding_url}"
-)
+_LINK_INVALID_RESPONSE = "Ese enlace ya no es válido (expiró o fue usado).\n\nGenera uno nuevo desde tu cuenta:\n{onboarding_url}"
 
 
 async def process_copilot_telegram_turn(  # noqa: C901, PLR0911, PLR0912, PLR0915 — top-level turn coordinator (chat lookup → onboarding gate → orchestrator → format → send); breaking it apart fragments error semantics; PR-2 PI-5 cementado
@@ -91,7 +89,9 @@ async def process_copilot_telegram_turn(  # noqa: C901, PLR0911, PLR0912, PLR091
 
     try:
         async with copilot_async_session_factory() as db:
-            link = await resolve_chat_id_to_tenant_user(db, channel_user_id=chat_id, channel_type="telegram")
+            link = await resolve_chat_id_to_tenant_user(
+                db, channel_user_id=chat_id, channel_type="telegram"
+            )
 
             # ── /start TOKEN flow (onboarding) ────────────────────────
             if text.startswith("/start "):
@@ -186,7 +186,9 @@ async def process_copilot_telegram_turn(  # noqa: C901, PLR0911, PLR0912, PLR091
                 )
                 await bot.send_message(
                     chat_id=chat_id,
-                    text=("No pude recuperar tu conversación en este momento. Probá de nuevo en un minuto."),
+                    text=(
+                        "No pude recuperar tu conversación en este momento. Probá de nuevo en un minuto."
+                    ),
                 )
                 return
 
@@ -214,7 +216,9 @@ async def process_copilot_telegram_turn(  # noqa: C901, PLR0911, PLR0912, PLR091
                 )
                 await bot.send_message(
                     chat_id=chat_id,
-                    text=("Estoy tardando más de lo normal. Intentá de nuevo en un momento."),
+                    text=(
+                        "Estoy tardando más de lo normal. Intentá de nuevo en un momento."
+                    ),
                 )
                 return
             except Exception as exc:  # noqa: BLE001 — orchestrator resilience
@@ -241,7 +245,10 @@ async def process_copilot_telegram_turn(  # noqa: C901, PLR0911, PLR0912, PLR091
                 # invoke_text fallback already emitted a friendly message
                 # via _user_facing_error_message; keep it as-is so the
                 # user sees something.
-                text_to_send = result.response_text or "No pude generar una respuesta. Probá reformular tu pregunta."
+                text_to_send = (
+                    result.response_text
+                    or "No pude generar una respuesta. Probá reformular tu pregunta."
+                )
 
             # 4) Bot send — escape_markdown_v2 happens inside
             #    CopilotTelegramBot.send_message (PR-1).

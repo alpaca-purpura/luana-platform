@@ -19,9 +19,8 @@ from luana_core_campaigns.domain.enums import TaskStatus
 from luana_core_campaigns.domain.repositories import CampaignRepository, CampaignTaskRepository
 
 if TYPE_CHECKING:
-    from sqlalchemy.ext.asyncio import AsyncSession
-
     from luana_core_platform.domain.locale import TenantLocale
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = structlog.get_logger(__name__)
 

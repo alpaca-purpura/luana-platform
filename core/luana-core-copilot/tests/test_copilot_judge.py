@@ -20,14 +20,18 @@ from luana_core_copilot.application.observability.judge import (
 class _StubLLM:
     """Captures the last invocation + returns a configurable response."""
 
-    def __init__(self, payload: dict[str, Any] | str, *, response_id: str = "resp_test"):
+    def __init__(
+        self, payload: dict[str, Any] | str, *, response_id: str = "resp_test"
+    ):
         self.payload = payload
         self.response_id = response_id
         self.last_messages = None
 
     def invoke(self, messages):
         self.last_messages = messages
-        content = self.payload if isinstance(self.payload, str) else json.dumps(self.payload)
+        content = (
+            self.payload if isinstance(self.payload, str) else json.dumps(self.payload)
+        )
         return AIMessage(content=content, response_metadata={"id": self.response_id})
 
 

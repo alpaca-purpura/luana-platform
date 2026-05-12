@@ -184,7 +184,12 @@ class TestRoutingDecided:
 
 class TestEventConstants:
     def test_event_names_are_unique_and_namespaced(self) -> None:
-        names = {EVENT_TURN_STARTED, EVENT_TURN_ENDED, EVENT_CARD_EMITTED, EVENT_ROUTING_DECIDED}
+        names = {
+            EVENT_TURN_STARTED,
+            EVENT_TURN_ENDED,
+            EVENT_CARD_EMITTED,
+            EVENT_ROUTING_DECIDED,
+        }
         assert len(names) == 4
         for name in names:
             assert name.startswith("copilot_")

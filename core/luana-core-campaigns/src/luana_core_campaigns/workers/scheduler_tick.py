@@ -157,6 +157,14 @@ async def _build_orchestrator_standalone() -> CampaignOrchestrator:
     (correct path). Workers need standalone composition root — same cross-module
     import as api/_service_factories.py, justified in KNOWN_CROSS_MODULE_IMPORTS.
     """
+    from luana_core_events.outbox.application.outbox_service import OutboxService
+    from luana_core_events.outbox.infrastructure.repository import (
+        OutboxRepositoryImpl,
+    )
+    from luana_core_platform.modules.crm.application.services.lead_query_service import (
+        LeadQueryServiceImpl,
+    )
+
     from luana_core_campaigns.application.segment_filter_evaluator import (
         SegmentFilterEvaluator,
     )
@@ -181,13 +189,6 @@ async def _build_orchestrator_standalone() -> CampaignOrchestrator:
     )
     from luana_core_campaigns.infrastructure.repositories.segment_snapshot_repository_impl import (
         SegmentSnapshotRepositoryImpl,
-    )
-    from luana_core_platform.modules.crm.application.services.lead_query_service import (
-        LeadQueryServiceImpl,
-    )
-    from luana_core_events.outbox.application.outbox_service import OutboxService
-    from luana_core_events.outbox.infrastructure.repository import (
-        OutboxRepositoryImpl,
     )
 
     _cache = SimpleTTLCache(max_entries=256)
@@ -216,7 +217,6 @@ async def _arq_pool_provider_fn() -> object:
     try:
         from arq import create_pool
         from arq.connections import RedisSettings
-
         from luana_core_platform.core.config import settings as app_settings
 
         return await create_pool(RedisSettings.from_dsn(app_settings.REDIS_URL))
@@ -249,7 +249,6 @@ async def _phase_b_claim_and_enqueue(session: AsyncSession, now: dt.datetime, ct
         try:
             from arq import create_pool
             from arq.connections import RedisSettings
-
             from luana_core_platform.core.config import settings as app_settings
 
             arq_pool = await create_pool(RedisSettings.from_dsn(app_settings.REDIS_URL))

@@ -113,7 +113,9 @@ class TestBrandProviderRules:
             "identity": {"brand_name": "ACME"},
             "positioning": {},
         }
-        port = _mock_port(brand_data=brand_data, persona_count=1, personality_present=True)
+        port = _mock_port(
+            brand_data=brand_data, persona_count=1, personality_present=True
+        )
         with (
             patch(
                 "luana_core_copilot.application.suggestions.providers.brand.SessionLocal",
@@ -142,7 +144,9 @@ class TestBrandProviderRules:
             "narrative": {"one_liner": "One liner here"},
             "brand_personality": {},
         }
-        port = _mock_port(brand_data=brand_data, persona_count=1, personality_present=True)
+        port = _mock_port(
+            brand_data=brand_data, persona_count=1, personality_present=True
+        )
         with (
             patch(
                 "luana_core_copilot.application.suggestions.providers.brand.SessionLocal",
@@ -269,7 +273,9 @@ class TestBrandProviderRules:
         )
 
         tenant_a = uuid4()
-        port = _mock_port(brand_data=_full_brand_data(), persona_count=1, personality_present=True)
+        port = _mock_port(
+            brand_data=_full_brand_data(), persona_count=1, personality_present=True
+        )
         with (
             patch(
                 "luana_core_copilot.application.suggestions.providers.brand.SessionLocal",
@@ -311,4 +317,6 @@ class TestBrandProviderSpanishNeutro:
 
         for chip in chips:
             assert not _VOSEO_RE.search(chip.label), f"Voseo in label: {chip.label!r}"
-            assert not _VOSEO_RE.search(chip.prompt), f"Voseo in prompt: {chip.prompt!r}"
+            assert not _VOSEO_RE.search(chip.prompt), (
+                f"Voseo in prompt: {chip.prompt!r}"
+            )

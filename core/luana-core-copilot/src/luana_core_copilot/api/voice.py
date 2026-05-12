@@ -71,7 +71,9 @@ async def _get_voice_limits(
 
 # ── Legacy endpoint (410 Gone — deprecated in PI-2 S1 PR-1 BE side) ─────────
 
-_DEPRECATION_NOTICE = "Migrar a /voice/upload-and-transcribe - endpoint legacy sera eliminado en S2"
+_DEPRECATION_NOTICE = (
+    "Migrar a /voice/upload-and-transcribe - endpoint legacy sera eliminado en S2"
+)
 
 
 @router.post("/transcribe")
@@ -104,7 +106,9 @@ async def transcribe_audio(
     summary="Subir audio y transcribir de forma atómica",
 )
 async def voice_upload_and_transcribe(
-    file: Annotated[UploadFile, File(description="Archivo de audio (webm, mp3, wav, ogg, mp4).")],
+    file: Annotated[
+        UploadFile, File(description="Archivo de audio (webm, mp3, wav, ogg, mp4).")
+    ],
     background_tasks: BackgroundTasks,
     current_user: Annotated[object, Depends(get_current_user)],
     db: Annotated[Session, Depends(get_db)],

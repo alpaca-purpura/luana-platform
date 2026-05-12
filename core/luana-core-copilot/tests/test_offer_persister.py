@@ -339,7 +339,9 @@ class TestOfferPersisterQueryCount:
         with patch.object(persister, "repo") as mock_repo:
             mock_repo.get_by_id.return_value = offer
             mock_repo.update.return_value = offer
-            persister.persist(tenant_id, {"headline_promise": "New"}, ["headline_promise"], offer_id)
+            persister.persist(
+                tenant_id, {"headline_promise": "New"}, ["headline_promise"], offer_id
+            )
 
         mock_repo.get_by_id.assert_called_once_with(offer_id, tenant_id)
 
@@ -354,9 +356,15 @@ class TestOfferPersisterQueryCount:
             id=offer_id,
             tenant_id=tenant_id,
             pricing_options=[
-                PricingStructure(label="A", plan_type=PaymentPlanType.ONE_TIME, total_amount=100.0),
-                PricingStructure(label="B", plan_type=PaymentPlanType.ONE_TIME, total_amount=200.0),
-                PricingStructure(label="C", plan_type=PaymentPlanType.ONE_TIME, total_amount=300.0),
+                PricingStructure(
+                    label="A", plan_type=PaymentPlanType.ONE_TIME, total_amount=100.0
+                ),
+                PricingStructure(
+                    label="B", plan_type=PaymentPlanType.ONE_TIME, total_amount=200.0
+                ),
+                PricingStructure(
+                    label="C", plan_type=PaymentPlanType.ONE_TIME, total_amount=300.0
+                ),
             ],
             deliverables=[
                 DeliverableItem(
@@ -368,7 +376,13 @@ class TestOfferPersisterQueryCount:
                 for i in range(5)
             ],
             objections=[
-                ObjectionItem(type="price", trigger_phrases=["caro"], strategy="ROI", rebuttal="Vale") for _ in range(3)
+                ObjectionItem(
+                    type="price",
+                    trigger_phrases=["caro"],
+                    strategy="ROI",
+                    rebuttal="Vale",
+                )
+                for _ in range(3)
             ],
         )
 

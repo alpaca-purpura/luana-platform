@@ -149,7 +149,11 @@ def _process_checkpoint(
 
         if new_status == MeetingEntryStatus.EXPIRED:
             expired_added += 1
-        elif new_status == MeetingEntryStatus.MISSED and status.appointment_id and status.scheduled_at:
+        elif (
+            new_status == MeetingEntryStatus.MISSED
+            and status.appointment_id
+            and status.scheduled_at
+        ):
             missed_added += 1
             EventBus.publish(
                 BookingMissedEvent.create(

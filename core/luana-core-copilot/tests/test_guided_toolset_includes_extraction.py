@@ -39,9 +39,13 @@ class TestGuidedModeIncludesExtractionTools:
         from luana_core_copilot.application.tools.registry import TOOL_GROUPS
 
         for t in TOOL_GROUPS.get("mutation", []):
-            assert t.name not in names, f"mutation tool leaked into guided mode: {t.name!r}"
+            assert t.name not in names, (
+                f"mutation tool leaked into guided mode: {t.name!r}"
+            )
         for t in TOOL_GROUPS.get("analytics", []):
-            assert t.name not in names, f"analytics tool leaked into guided mode: {t.name!r}"
+            assert t.name not in names, (
+                f"analytics tool leaked into guided mode: {t.name!r}"
+            )
 
     def test_guided_mode_still_exposes_guided_tools(self) -> None:
         """Guard against accidentally dropping the guided group when adding extraction."""

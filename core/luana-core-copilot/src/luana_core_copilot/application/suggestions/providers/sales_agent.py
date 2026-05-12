@@ -28,7 +28,9 @@ if TYPE_CHECKING:
 import structlog
 from luana_core_platform.core.database import SessionLocal
 from luana_core_platform.links.ports.brand import create_brand_data_port
-from luana_core_platform.links.ports.sales_agent import create_sales_agent_observability_port
+from luana_core_platform.links.ports.sales_agent import (
+    create_sales_agent_observability_port,
+)
 
 from luana_core_copilot.domain.suggestion import (
     Suggestion,
@@ -104,7 +106,9 @@ class SalesAgentSuggestionProvider:
                 suggestions.append(
                     Suggestion(
                         label="Sin leads esta semana",
-                        prompt=("No tengo leads nuevos esta semana. ¿Cómo puedo activar canales de captación?"),
+                        prompt=(
+                            "No tengo leads nuevos esta semana. ¿Cómo puedo activar canales de captación?"
+                        ),
                         confidence=0.88,
                         category=SuggestionCategory.ACTION,
                         source_module="sales_agent",
@@ -113,7 +117,9 @@ class SalesAgentSuggestionProvider:
 
             # Rule 2 — no active conversations in 24h but old leads exist (>30d)
             active_24h = self._safe_int(
-                lambda: sa_port.count_active_conversations_since(ctx.tenant_id, one_day_ago),
+                lambda: sa_port.count_active_conversations_since(
+                    ctx.tenant_id, one_day_ago
+                ),
                 context="count_active_24h",
             )
             leads_30d = self._safe_int(
@@ -124,7 +130,9 @@ class SalesAgentSuggestionProvider:
                 suggestions.append(
                     Suggestion(
                         label="Reactiva conversaciones inactivas",
-                        prompt=("Tengo leads sin actividad reciente. Ayúdame a definir una secuencia de reactivación."),
+                        prompt=(
+                            "Tengo leads sin actividad reciente. Ayúdame a definir una secuencia de reactivación."
+                        ),
                         confidence=0.85,
                         category=SuggestionCategory.ACTION,
                         source_module="sales_agent",
@@ -133,7 +141,9 @@ class SalesAgentSuggestionProvider:
 
             # Rule 3 — no active personality profile (voice not configured)
             personality_present = self._safe_bool(
-                lambda: brand_port.get_active_personality_profile_present(ctx.tenant_id),
+                lambda: brand_port.get_active_personality_profile_present(
+                    ctx.tenant_id
+                ),
                 context="personality_profile_check",
             )
             if not personality_present:
@@ -193,7 +203,9 @@ class SalesAgentSuggestionProvider:
                 for enrollment in waitlist_enrollments[:10]:  # cap for performance
                     try:
                         offer_id = _UUID(enrollment.offer_id)  # type: ignore[attr-defined]
-                        active = sa_port.has_active_edition_for_offer(ctx.tenant_id, offer_id)
+                        active = sa_port.has_active_edition_for_offer(
+                            ctx.tenant_id, offer_id
+                        )
                         if not active:
                             has_unmet_waitlist = True
                             break

@@ -93,7 +93,9 @@ class TestBillingCycleService:
         assert start == dt.date(2026, 3, 25)
         assert end == dt.date(2026, 4, 25)
 
-    def test_resolve_currency_returns_tenant_currency_when_config_present(self, db) -> None:
+    def test_resolve_currency_returns_tenant_currency_when_config_present(
+        self, db
+    ) -> None:
         from luana_core_observability.reporting.billing_cycle_service import (
             BillingCycleService,
         )

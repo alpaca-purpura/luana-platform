@@ -11,11 +11,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import structlog
+from luana_core_observability.recording.sanitization import sanitize_payload
 from sqlalchemy import delete, select
 
 from luana_core_campaigns.domain.audit_log import AuditEventType, AuditLogEvent, AuditLogRepository
 from luana_core_campaigns.infrastructure.models.campaign_audit_model import CampaignAuditModel
-from luana_core_observability.recording.sanitization import sanitize_payload
 
 if TYPE_CHECKING:
     import datetime as dt

@@ -23,7 +23,15 @@ from typing import Annotated, Literal
 from uuid import UUID
 
 import structlog
-from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, UploadFile
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    File,
+    Form,
+    HTTPException,
+    UploadFile,
+)
 from luana_core_assets.application.assets_service import AssetsService
 from luana_core_iam.api.dependencies import get_current_user
 from luana_core_platform.core.config import settings
@@ -137,18 +145,25 @@ def _validate_mime(mime: str, kind: str) -> None:
     summary="Subir archivo multimedia para el copilot",
 )
 async def upload_media(
-    file: Annotated[UploadFile, File(description="Archivo a subir (imagen, audio, video o documento).")],
+    file: Annotated[
+        UploadFile,
+        File(description="Archivo a subir (imagen, audio, video o documento)."),
+    ],
     background_tasks: BackgroundTasks,
     current_user: Annotated[object, Depends(get_current_user)],
     db: Annotated[Session, Depends(get_db)],
     limits: Annotated[EffectiveLimits, Depends(_get_media_limits)],
     kind: Annotated[
         str | None,
-        Form(description="Tipo de archivo: image, audio, video, document. Opcional — se infiere del MIME."),
+        Form(
+            description="Tipo de archivo: image, audio, video, document. Opcional — se infiere del MIME."
+        ),
     ] = None,
     description: Annotated[
         str | None,
-        Form(description="Descripción del archivo (≤240 chars). Se pasa al servicio de assets."),
+        Form(
+            description="Descripción del archivo (≤240 chars). Se pasa al servicio de assets."
+        ),
     ] = None,
 ) -> MediaUploadResponse:
     """Subir un archivo multimedia y obtener la referencia de asset para el chat.
@@ -204,7 +219,9 @@ async def upload_media(
 
     mime = (file.content_type or "").strip()
     if not mime:
-        raise HTTPException(status_code=415, detail="No se pudo determinar el tipo de archivo.")
+        raise HTTPException(
+            status_code=415, detail="No se pudo determinar el tipo de archivo."
+        )
 
     inferred_kind = _infer_kind(mime, kind)
     if not inferred_kind:

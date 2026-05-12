@@ -66,7 +66,9 @@ def build_deep_link_url(plaintext_token: str) -> str:
 
     Reference: https://core.telegram.org/bots/features#deep-linking
     """
-    return f"https://t.me/{settings.COPILOT_TELEGRAM_BOT_USERNAME}?start={plaintext_token}"
+    return (
+        f"https://t.me/{settings.COPILOT_TELEGRAM_BOT_USERNAME}?start={plaintext_token}"
+    )
 
 
 # ── DB operations (AsyncSession) ───────────────────────────────────────────

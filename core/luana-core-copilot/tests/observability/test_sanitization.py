@@ -15,7 +15,9 @@ class TestRedactString:
         )
 
         # Local-part keeps the first letter; domain stays intact for context.
-        assert redact_string("contacto: juan@ejemplo.com") == "contacto: j***@ejemplo.com"
+        assert (
+            redact_string("contacto: juan@ejemplo.com") == "contacto: j***@ejemplo.com"
+        )
 
     def test_multiple_emails_in_same_string(self) -> None:
         from luana_core_observability.recording.sanitization import (

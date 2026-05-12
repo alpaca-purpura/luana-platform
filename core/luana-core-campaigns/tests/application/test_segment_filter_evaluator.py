@@ -14,7 +14,6 @@ import datetime as dt
 from uuid import uuid4
 
 import pytest
-
 from luana_core_campaigns.application.segment_filter_evaluator import SegmentFilterEvaluator
 from luana_core_campaigns.domain.enums import SegmentFilterCombinator
 from luana_core_campaigns.domain.segment_filter import (

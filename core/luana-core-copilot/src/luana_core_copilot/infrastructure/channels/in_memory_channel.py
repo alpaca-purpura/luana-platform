@@ -10,7 +10,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from luana_core_platform.links.ports.conversational_channel import ConversationalChannelPort
+from luana_core_platform.links.ports.conversational_channel import (
+    ConversationalChannelPort,
+)
 
 if TYPE_CHECKING:
     from luana_core_platform.domain.field_contract import FieldContract
@@ -33,7 +35,9 @@ class InMemoryConversationalChannel(ConversationalChannelPort):
         """Initialize instance."""
         self.outbound: list[tuple[FieldContract, dict[str, Any]]] = []
 
-    async def ask(self, contract: FieldContract, *, context: dict[str, Any] | None = None) -> None:
+    async def ask(
+        self, contract: FieldContract, *, context: dict[str, Any] | None = None
+    ) -> None:
         """Capture ``contract`` + ``context`` (or ``{}``) in order."""
         self.outbound.append((contract, dict(context or {})))
 

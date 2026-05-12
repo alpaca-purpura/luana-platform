@@ -25,9 +25,9 @@ def test_aisalesht_path_env_or_default() -> None:
     """V-NF-4: AISALESHT path is resolvable (env override or default /home/chris/AISALESHT)."""
     if not _AISALESHT_ROOT.exists():
         import pytest
+
         pytest.skip(
-            f"AISALESHT not available at {_AISALESHT_ROOT}. "
-            "Set AISALESHT_PATH env var to override. Skipping V-NF-4."
+            f"AISALESHT not available at {_AISALESHT_ROOT}. Set AISALESHT_PATH env var to override. Skipping V-NF-4."
         )
 
 
@@ -35,15 +35,14 @@ def test_aisalesht_campaigns_directory_exists() -> None:
     """V-NF-4: AISALESHT campaigns module still exists (not deleted by Story 8)."""
     if not _AISALESHT_ROOT.exists():
         import pytest
+
         pytest.skip(f"AISALESHT not available at {_AISALESHT_ROOT}")
 
     assert _CAMPAIGNS_MODULE.exists(), (
         f"AISALESHT campaigns module missing at {_CAMPAIGNS_MODULE}.\n"
         "Story 8 must NOT delete or rename the AISALESHT source."
     )
-    assert _CAMPAIGNS_MODULE.is_dir(), (
-        f"Expected directory at {_CAMPAIGNS_MODULE}, found file."
-    )
+    assert _CAMPAIGNS_MODULE.is_dir(), f"Expected directory at {_CAMPAIGNS_MODULE}, found file."
 
 
 def test_luana_core_campaigns_separate_from_aisalesht() -> None:
@@ -54,17 +53,13 @@ def test_luana_core_campaigns_separate_from_aisalesht() -> None:
     """
     campaigns_pkg = LUANA_ROOT / "core" / "luana-core-campaigns"
     assert campaigns_pkg.exists(), (
-        "core/luana-core-campaigns package missing in luana-platform. "
-        "Story 8 T-9..T-13 must have created it."
+        "core/luana-core-campaigns package missing in luana-platform. Story 8 T-9..T-13 must have created it."
     )
 
     src_dir = campaigns_pkg / "src"
     assert src_dir.exists(), (
-        f"core/luana-core-campaigns/src/ missing. "
-        "Package must follow src-layout (src/luana_core_campaigns/)."
+        "core/luana-core-campaigns/src/ missing. Package must follow src-layout (src/luana_core_campaigns/)."
     )
 
     # Must not be a symlink into AISALESHT
-    assert not campaigns_pkg.is_symlink(), (
-        "core/luana-core-campaigns is a symlink — must be an independent package."
-    )
+    assert not campaigns_pkg.is_symlink(), "core/luana-core-campaigns is a symlink — must be an independent package."

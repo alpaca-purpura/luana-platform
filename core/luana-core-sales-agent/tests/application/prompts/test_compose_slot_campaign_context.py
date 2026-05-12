@@ -110,7 +110,9 @@ class TestSlot7EmittedOutbound:
         idx_campaign = prompt.find("# Contexto de campaña")
         assert idx_channel >= 0, "channel_format_hint should be present"
         assert idx_campaign >= 0, "campaign_context should be present"
-        assert idx_channel < idx_campaign, "slot 6 channel must come BEFORE slot 7 campaign"
+        assert idx_channel < idx_campaign, (
+            "slot 6 channel must come BEFORE slot 7 campaign"
+        )
 
     def test_slot_7_pre_cache_boundary(self) -> None:
         """Slot 7 cacheable → must come BEFORE CACHE_BOUNDARY_MARKER."""
@@ -123,7 +125,9 @@ class TestSlot7EmittedOutbound:
         idx_boundary = prompt.find(CACHE_BOUNDARY_MARKER)
         assert idx_campaign >= 0
         assert idx_boundary >= 0
-        assert idx_campaign < idx_boundary, "campaign_context cacheable goes BEFORE boundary"
+        assert idx_campaign < idx_boundary, (
+            "campaign_context cacheable goes BEFORE boundary"
+        )
 
 
 class TestCachePrefixInvariance:
@@ -152,8 +156,12 @@ class TestCachePrefixInvariance:
             campaign_id=uuid4(),
         )
 
-        prompt_inbound = build_specialist_system_prompt(state_inbound, SpecialistRole.QUALIFIER)
-        prompt_outbound = build_specialist_system_prompt(state_outbound, SpecialistRole.QUALIFIER)
+        prompt_inbound = build_specialist_system_prompt(
+            state_inbound, SpecialistRole.QUALIFIER
+        )
+        prompt_outbound = build_specialist_system_prompt(
+            state_outbound, SpecialistRole.QUALIFIER
+        )
 
         # Slice prefix: from start to "# Contexto de campaña" in outbound,
         # equivalent slice in inbound (which ends before boundary marker).
@@ -161,7 +169,11 @@ class TestCachePrefixInvariance:
         prefix_outbound = prompt_outbound[:idx_campaign_out].rstrip()
         # Inbound has no slot 7 → prefix ends at boundary marker
         idx_boundary_in = prompt_inbound.find(CACHE_BOUNDARY_MARKER)
-        prefix_inbound = prompt_inbound[:idx_boundary_in].rstrip() if idx_boundary_in >= 0 else prompt_inbound.rstrip()
+        prefix_inbound = (
+            prompt_inbound[:idx_boundary_in].rstrip()
+            if idx_boundary_in >= 0
+            else prompt_inbound.rstrip()
+        )
 
         # Slots 1-6 must be byte-equal
         assert prefix_inbound == prefix_outbound, (

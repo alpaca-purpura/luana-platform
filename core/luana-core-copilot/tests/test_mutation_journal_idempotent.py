@@ -28,7 +28,9 @@ def conversation_id():
 class TestUpsertIdempotent:
     """upsert_idempotent() — same natural key returns existing active row."""
 
-    def test_first_call_inserts_new_row(self, repo, db, tenant_id, conversation_id) -> None:
+    def test_first_call_inserts_new_row(
+        self, repo, db, tenant_id, conversation_id
+    ) -> None:
         msg_id = uuid4()
         row, status = repo.upsert_idempotent(
             tenant_id=tenant_id,
@@ -47,7 +49,9 @@ class TestUpsertIdempotent:
         assert row.new_value == "Visionarias"
         assert status == "applied"
 
-    def test_repeat_call_returns_existing_row(self, repo, db, tenant_id, conversation_id) -> None:
+    def test_repeat_call_returns_existing_row(
+        self, repo, db, tenant_id, conversation_id
+    ) -> None:
         """Same (tenant, conv, message, field_path) twice → 1 row, 2nd call status=existing."""
         msg_id = uuid4()
         first, status_first = repo.upsert_idempotent(
@@ -84,7 +88,9 @@ class TestUpsertIdempotent:
         )
         assert len(rows) == 1
 
-    def test_reverted_row_does_not_block_new_insert(self, repo, db, tenant_id, conversation_id) -> None:
+    def test_reverted_row_does_not_block_new_insert(
+        self, repo, db, tenant_id, conversation_id
+    ) -> None:
         """If a prior row was reverted, a fresh apply re-inserts (active row check)."""
         msg_id = uuid4()
         first, _status = repo.upsert_idempotent(
@@ -117,7 +123,9 @@ class TestUpsertIdempotent:
         assert second.id != first.id
         assert status_second == "applied"
 
-    def test_different_field_path_inserts_new_row(self, repo, db, tenant_id, conversation_id) -> None:
+    def test_different_field_path_inserts_new_row(
+        self, repo, db, tenant_id, conversation_id
+    ) -> None:
         """Different field_path = different natural key = new row."""
         msg_id = uuid4()
         row_a, _ = repo.upsert_idempotent(

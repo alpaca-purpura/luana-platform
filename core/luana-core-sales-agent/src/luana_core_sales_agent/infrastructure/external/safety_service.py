@@ -76,7 +76,9 @@ class SafetyLayerService:
                         )
 
                 except re.error:
-                    logger.exception("Invalid regex pattern for rule", rule_id=str(rule.id))
+                    logger.exception(
+                        "Invalid regex pattern for rule", rule_id=str(rule.id)
+                    )
                     continue
 
             # --- PHASE 2: SYSTEM GUARDRAILS (Hardcoded criticals) ---

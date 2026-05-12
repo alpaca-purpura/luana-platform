@@ -14,7 +14,9 @@ from uuid import UUID
 TENANT_ID = UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
 
 _GET_TENANT_ID = "luana_core_copilot.application.tools.analytics_tools.get_tenant_id"
-_CALL_STAGE_OV = "luana_core_copilot.application.tools.analytics_tools._call_stage_overview"
+_CALL_STAGE_OV = (
+    "luana_core_copilot.application.tools.analytics_tools._call_stage_overview"
+)
 
 
 def _make_stage_overview(**kwargs) -> MagicMock:

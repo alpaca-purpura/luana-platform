@@ -29,7 +29,9 @@ def user_id():
     return uuid4()
 
 
-def _make_conv(db, *, tenant_id, user_id, title: str | None = None) -> CopilotConversationModel:
+def _make_conv(
+    db, *, tenant_id, user_id, title: str | None = None
+) -> CopilotConversationModel:
     """Helper: create and flush a conversation row."""
     conv = CopilotConversationModel(
         id=uuid4(),
@@ -52,7 +54,9 @@ class TestListPaginated:
         assert page["items"] == []
         assert page["next_cursor"] is None
 
-    def test_returns_conversations_for_tenant_user(self, repo, db, tenant_id, user_id) -> None:
+    def test_returns_conversations_for_tenant_user(
+        self, repo, db, tenant_id, user_id
+    ) -> None:
         """Conversations are returned for correct tenant+user."""
         _make_conv(db, tenant_id=tenant_id, user_id=user_id, title="Chat A")
         _make_conv(db, tenant_id=tenant_id, user_id=user_id, title="Chat B")
@@ -77,17 +81,23 @@ class TestListPaginated:
         repo.archive(conversation_id=conv.id, tenant_id=tenant_id, user_id=user_id)
         db.commit()
 
-        page = repo.list_paginated(tenant_id=tenant_id, user_id=user_id, include_archived=False)
+        page = repo.list_paginated(
+            tenant_id=tenant_id, user_id=user_id, include_archived=False
+        )
         assert page["items"] == []
 
-    def test_includes_archived_when_requested(self, repo, db, tenant_id, user_id) -> None:
+    def test_includes_archived_when_requested(
+        self, repo, db, tenant_id, user_id
+    ) -> None:
         """Archived conversations appear when include_archived=True."""
         conv = _make_conv(db, tenant_id=tenant_id, user_id=user_id)
         db.commit()
         repo.archive(conversation_id=conv.id, tenant_id=tenant_id, user_id=user_id)
         db.commit()
 
-        page = repo.list_paginated(tenant_id=tenant_id, user_id=user_id, include_archived=True)
+        page = repo.list_paginated(
+            tenant_id=tenant_id, user_id=user_id, include_archived=True
+        )
         assert len(page["items"]) == 1
 
     def test_respects_limit(self, repo, db, tenant_id, user_id) -> None:
@@ -99,7 +109,9 @@ class TestListPaginated:
         page = repo.list_paginated(tenant_id=tenant_id, user_id=user_id, limit=3)
         assert len(page["items"]) <= 3
 
-    def test_returns_next_cursor_when_more_results(self, repo, db, tenant_id, user_id) -> None:
+    def test_returns_next_cursor_when_more_results(
+        self, repo, db, tenant_id, user_id
+    ) -> None:
         """next_cursor is set when more items exist."""
         for _ in range(4):
             _make_conv(db, tenant_id=tenant_id, user_id=user_id)
@@ -108,7 +120,9 @@ class TestListPaginated:
         page = repo.list_paginated(tenant_id=tenant_id, user_id=user_id, limit=2)
         assert page["next_cursor"] is not None
 
-    def test_no_next_cursor_when_all_fetched(self, repo, db, tenant_id, user_id) -> None:
+    def test_no_next_cursor_when_all_fetched(
+        self, repo, db, tenant_id, user_id
+    ) -> None:
         """next_cursor is None when all items fit in one page."""
         _make_conv(db, tenant_id=tenant_id, user_id=user_id)
         db.commit()
@@ -125,18 +139,24 @@ class TestArchive:
         conv = _make_conv(db, tenant_id=tenant_id, user_id=user_id)
         db.commit()
 
-        result = repo.archive(conversation_id=conv.id, tenant_id=tenant_id, user_id=user_id)
+        result = repo.archive(
+            conversation_id=conv.id, tenant_id=tenant_id, user_id=user_id
+        )
         db.commit()
 
         assert result is not None
         assert result.archived_at is not None
 
-    def test_archive_wrong_tenant_returns_none(self, repo, db, tenant_id, user_id) -> None:
+    def test_archive_wrong_tenant_returns_none(
+        self, repo, db, tenant_id, user_id
+    ) -> None:
         """archive() on wrong tenant returns None (no cross-tenant mutation)."""
         conv = _make_conv(db, tenant_id=tenant_id, user_id=user_id)
         db.commit()
 
-        result = repo.archive(conversation_id=conv.id, tenant_id=uuid4(), user_id=user_id)
+        result = repo.archive(
+            conversation_id=conv.id, tenant_id=uuid4(), user_id=user_id
+        )
         assert result is None
 
     def test_row_still_exists_after_archive(self, repo, db, tenant_id, user_id) -> None:
@@ -152,7 +172,9 @@ class TestArchive:
         )
         from sqlalchemy import select
 
-        stmt = select(CopilotConversationModel).where(CopilotConversationModel.id == conv.id)
+        stmt = select(CopilotConversationModel).where(
+            CopilotConversationModel.id == conv.id
+        )
         row = db.execute(stmt).scalars().first()
         assert row is not None
         assert row.archived_at is not None
@@ -177,7 +199,9 @@ class TestUpdateSummary:
         db.refresh(conv)
         assert conv.summary == "Resumen de prueba"
 
-    def test_update_summary_wrong_tenant_no_op(self, repo, db, tenant_id, user_id) -> None:
+    def test_update_summary_wrong_tenant_no_op(
+        self, repo, db, tenant_id, user_id
+    ) -> None:
         """update_summary() is a no-op for wrong tenant."""
         conv = _make_conv(db, tenant_id=tenant_id, user_id=user_id)
         db.commit()
@@ -202,7 +226,9 @@ class TestIncrementMessageCount:
         conv = _make_conv(db, tenant_id=tenant_id, user_id=user_id)
         db.commit()
 
-        repo.increment_message_count(conversation_id=conv.id, tenant_id=tenant_id, delta=2)
+        repo.increment_message_count(
+            conversation_id=conv.id, tenant_id=tenant_id, delta=2
+        )
         db.commit()
 
         db.refresh(conv)
@@ -213,8 +239,12 @@ class TestIncrementMessageCount:
         conv = _make_conv(db, tenant_id=tenant_id, user_id=user_id)
         db.commit()
 
-        repo.increment_message_count(conversation_id=conv.id, tenant_id=tenant_id, delta=1)
-        repo.increment_message_count(conversation_id=conv.id, tenant_id=tenant_id, delta=1)
+        repo.increment_message_count(
+            conversation_id=conv.id, tenant_id=tenant_id, delta=1
+        )
+        repo.increment_message_count(
+            conversation_id=conv.id, tenant_id=tenant_id, delta=1
+        )
         db.commit()
 
         db.refresh(conv)

@@ -27,7 +27,11 @@ async def check_is_complete(text: str, tenant: TenantModel | None = None) -> boo
 
     try:
         # Use tenant-specific LLM service if available, otherwise fall back to global
-        llm_service = LLMFactory.get_service_for_tenant(tenant) if tenant else LLMFactory.get_service()
+        llm_service = (
+            LLMFactory.get_service_for_tenant(tenant)
+            if tenant
+            else LLMFactory.get_service()
+        )
         llm = llm_service.get_client(ModelRole.FAST)
 
         sys_prompt = prompt_loader.render("message_completeness")

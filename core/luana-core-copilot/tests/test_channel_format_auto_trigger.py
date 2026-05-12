@@ -102,7 +102,9 @@ class TestSystemPromptHintInjection:
             ("para Telegram dame el resumen", "telegram", "Telegram"),
         ],
     )
-    def test_prompt_includes_channel_hint(self, msg: str, channel_id: str, label: str) -> None:
+    def test_prompt_includes_channel_hint(
+        self, msg: str, channel_id: str, label: str
+    ) -> None:
         state = _state_with_message(msg)
         prompt = _build_combined_system_prompt(state)
         assert "format_for_channel" in prompt

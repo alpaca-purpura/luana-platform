@@ -49,7 +49,9 @@ class CopilotConversationModel(Base):
     message_count = Column(Integer, nullable=False, default=0, server_default="0")
     total_tokens = Column(Integer, nullable=False, default=0, server_default="0")
     last_tier_used = Column(String, nullable=True)
-    title_auto_generated = Column(Boolean, nullable=False, default=False, server_default="false")
+    title_auto_generated = Column(
+        Boolean, nullable=False, default=False, server_default="false"
+    )
     archived_at = Column(DateTime(timezone=True), nullable=True)
     procedure_id = Column(UUID(as_uuid=True), nullable=True)
     procedure_state = Column(JSONB, nullable=True)

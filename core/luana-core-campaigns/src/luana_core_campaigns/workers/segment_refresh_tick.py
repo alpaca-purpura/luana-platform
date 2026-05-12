@@ -189,6 +189,10 @@ def _build_segment_service_standalone() -> SegmentService:
     (correct path). Workers need standalone composition root — same cross-module
     import as api/_service_factories.py, justified in KNOWN_CROSS_MODULE_IMPORTS.
     """
+    from luana_core_events.outbox.application.outbox_service import OutboxService
+    from luana_core_events.outbox.infrastructure.repository import OutboxRepositoryImpl
+    from luana_core_platform.modules.crm.application.services.lead_query_service import LeadQueryServiceImpl
+
     from luana_core_campaigns.application.segment_filter_evaluator import SegmentFilterEvaluator
     from luana_core_campaigns.application.services.cache import SimpleTTLCache
     from luana_core_campaigns.application.services.segment_service import SegmentService
@@ -198,9 +202,6 @@ def _build_segment_service_standalone() -> SegmentService:
     from luana_core_campaigns.infrastructure.repositories.segment_snapshot_repository_impl import (
         SegmentSnapshotRepositoryImpl,
     )
-    from luana_core_platform.modules.crm.application.services.lead_query_service import LeadQueryServiceImpl
-    from luana_core_events.outbox.application.outbox_service import OutboxService
-    from luana_core_events.outbox.infrastructure.repository import OutboxRepositoryImpl
 
     return SegmentService(
         repo=SegmentRepositoryImpl(),

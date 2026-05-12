@@ -62,7 +62,9 @@ class BuyerPersonaPersister:
         Returns the persona UUID, or None if entity_id was given but not found.
         """
         if entity_id is not None:
-            return self._update_existing(tenant_id, entity_id, mapa_global, fields_to_persist)
+            return self._update_existing(
+                tenant_id, entity_id, mapa_global, fields_to_persist
+            )
         return self._create_new(tenant_id, mapa_global, fields_to_persist)
 
     def load_existing(self, tenant_id: UUID, entity_id: UUID) -> dict:

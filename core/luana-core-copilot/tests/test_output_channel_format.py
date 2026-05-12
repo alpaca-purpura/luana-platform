@@ -61,7 +61,9 @@ def test_every_channel_has_required_metadata(channel_id: str) -> None:
     assert fmt.label_es and fmt.label_es.strip(), "label_es must be populated"
     assert fmt.max_chars > 0, "max_chars must be positive"
     assert fmt.line_break_style, "line_break_style must be populated"
-    assert fmt.structure_hint and fmt.structure_hint.strip(), "structure_hint must be populated"
+    assert fmt.structure_hint and fmt.structure_hint.strip(), (
+        "structure_hint must be populated"
+    )
 
 
 def test_sms_disallows_emoji_and_markdown() -> None:

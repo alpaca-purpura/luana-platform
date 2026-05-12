@@ -101,7 +101,10 @@ class TestFetchUrlImpl:
         out = await _fetch_url_impl(url="https://x.com", why="")
         payload = json.loads(out)
         assert payload["status"] == "error"
-        assert "conversación" in payload["message"].lower() or "conversation" in payload["message"].lower()
+        assert (
+            "conversación" in payload["message"].lower()
+            or "conversation" in payload["message"].lower()
+        )
 
     @pytest.mark.asyncio
     async def test_invalid_url_returns_error(

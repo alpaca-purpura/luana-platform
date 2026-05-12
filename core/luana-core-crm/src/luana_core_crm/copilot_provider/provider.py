@@ -7,6 +7,7 @@ from luana_core_copilot.domain.ports import (
     DataAccessProvider,
     ModuleData,
 )
+
 from luana_core_crm.copilot_provider.data_access import CrmDataAccessProvider
 
 

@@ -45,7 +45,15 @@ class TestWriteTodosToPlanCard:
 
     def test_supports_active_form_camel_case(self) -> None:
         block = _write_todos_to_plan_card(
-            {"todos": [{"content": "Compilar", "status": "in_progress", "activeForm": "Compilando"}]},
+            {
+                "todos": [
+                    {
+                        "content": "Compilar",
+                        "status": "in_progress",
+                        "activeForm": "Compilando",
+                    }
+                ]
+            },
         )
         assert block is not None
         assert block["payload"]["todos"][0]["active_form"] == "Compilando"

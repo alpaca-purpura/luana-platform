@@ -28,7 +28,9 @@ def conversation_id():
 class TestMutationJournalInsert:
     """insert() stores journal entries correctly."""
 
-    def test_insert_returns_row_with_id(self, repo, db, tenant_id, conversation_id) -> None:
+    def test_insert_returns_row_with_id(
+        self, repo, db, tenant_id, conversation_id
+    ) -> None:
         """insert() returns a model row with an auto-generated id."""
         row = repo.insert(
             tenant_id=tenant_id,
@@ -48,7 +50,9 @@ class TestMutationJournalInsert:
         assert row.field_path == "value_proposition"
         assert row.reverted_at is None
 
-    def test_insert_stores_old_and_new_value(self, repo, db, tenant_id, conversation_id) -> None:
+    def test_insert_stores_old_and_new_value(
+        self, repo, db, tenant_id, conversation_id
+    ) -> None:
         """old_value and new_value are preserved as JSONB."""
         entity_id = uuid4()
         row = repo.insert(
@@ -70,7 +74,9 @@ class TestMutationJournalInsert:
 class TestFetchByConversation:
     """fetch_by_conversation() retrieves entries for a conversation."""
 
-    def test_returns_entries_for_conversation(self, repo, db, tenant_id, conversation_id) -> None:
+    def test_returns_entries_for_conversation(
+        self, repo, db, tenant_id, conversation_id
+    ) -> None:
         """Entries for the conversation are returned."""
         repo.insert(
             tenant_id=tenant_id,
@@ -84,11 +90,15 @@ class TestFetchByConversation:
         )
         db.commit()
 
-        rows = repo.fetch_by_conversation(tenant_id=tenant_id, conversation_id=conversation_id)
+        rows = repo.fetch_by_conversation(
+            tenant_id=tenant_id, conversation_id=conversation_id
+        )
         assert len(rows) == 1
         assert rows[0].field_path == "name"
 
-    def test_excludes_other_conversation(self, repo, db, tenant_id, conversation_id) -> None:
+    def test_excludes_other_conversation(
+        self, repo, db, tenant_id, conversation_id
+    ) -> None:
         """Entries from another conversation are not returned."""
         other_conv = uuid4()
         repo.insert(
@@ -103,7 +113,9 @@ class TestFetchByConversation:
         )
         db.commit()
 
-        rows = repo.fetch_by_conversation(tenant_id=tenant_id, conversation_id=conversation_id)
+        rows = repo.fetch_by_conversation(
+            tenant_id=tenant_id, conversation_id=conversation_id
+        )
         assert rows == []
 
     def test_excludes_other_tenant(self, repo, db, tenant_id, conversation_id) -> None:
@@ -121,14 +133,18 @@ class TestFetchByConversation:
         )
         db.commit()
 
-        rows = repo.fetch_by_conversation(tenant_id=tenant_id, conversation_id=conversation_id)
+        rows = repo.fetch_by_conversation(
+            tenant_id=tenant_id, conversation_id=conversation_id
+        )
         assert rows == []
 
 
 class TestMarkReverted:
     """mark_reverted() sets reverted_at on specified entries."""
 
-    def test_mark_reverted_sets_timestamp(self, repo, db, tenant_id, conversation_id) -> None:
+    def test_mark_reverted_sets_timestamp(
+        self, repo, db, tenant_id, conversation_id
+    ) -> None:
         """mark_reverted() populates reverted_at."""
         row = repo.insert(
             tenant_id=tenant_id,
@@ -148,7 +164,9 @@ class TestMarkReverted:
         db.refresh(row)
         assert row.reverted_at is not None
 
-    def test_mark_reverted_only_affects_specified_ids(self, repo, db, tenant_id, conversation_id) -> None:
+    def test_mark_reverted_only_affects_specified_ids(
+        self, repo, db, tenant_id, conversation_id
+    ) -> None:
         """Only specified IDs are reverted; others remain un-reverted."""
         row_a = repo.insert(
             tenant_id=tenant_id,
@@ -180,7 +198,9 @@ class TestMarkReverted:
         assert row_a.reverted_at is not None
         assert row_b.reverted_at is None
 
-    def test_mark_reverted_wrong_tenant_no_op(self, repo, db, tenant_id, conversation_id) -> None:
+    def test_mark_reverted_wrong_tenant_no_op(
+        self, repo, db, tenant_id, conversation_id
+    ) -> None:
         """Wrong tenant cannot revert another tenant's entries."""
         row = repo.insert(
             tenant_id=tenant_id,

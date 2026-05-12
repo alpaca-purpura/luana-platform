@@ -4,6 +4,7 @@ PR-5 Sub-C: replaces stub-only test from PR-4.
 Tests: 200 + tasks_generated, 404 unknown/cross-tenant, 409 invalid state, 422 steps/segment.
 """
 
+# ruff: noqa: E402 — singleton _campaigns_test_app must be created before imports to avoid circular import
 from __future__ import annotations
 
 import datetime as dt
@@ -14,6 +15,7 @@ from uuid import UUID, uuid4
 import pytest
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
+
 from tests.api._test_helpers import _make_campaigns_test_app
 
 # Module-level singleton — mirrors src.main.app singleton from AISALESHT.
@@ -22,15 +24,11 @@ _campaigns_test_app: FastAPI = _make_campaigns_test_app()
 from luana_core_campaigns.application.dtos.campaign_dtos import (
     CampaignResponse,
 )
-from luana_core_campaigns.application.services.campaign_service import (
-    CampaignNotFoundError,
-)
 from luana_core_campaigns.application.services.orchestrator import (
     OrchestratorCampaignNotFoundError,
     OrchestratorCampaignNotLaunchableError,
     OrchestratorLaunchResult,
     OrchestratorMissingStepsError,
-    OrchestratorSegmentEmptyError,
 )
 from luana_core_campaigns.domain.enums import CampaignStatus, CampaignType
 
@@ -131,11 +129,11 @@ class TestCampaignLaunchReal:
     async def test_launch_returns_200_with_tasks_generated(self, client: AsyncClient) -> None:
         """Happy path: orchestrator returns result → 200 with tasks_generated."""
         app = _campaigns_test_app
+        from luana_core_campaigns.api._dependencies import get_campaigns_async_session
         from luana_core_campaigns.api._service_factories import (
             get_campaign_orchestrator,
             get_campaign_service,
         )
-        from luana_core_campaigns.api._dependencies import get_campaigns_async_session
 
         mock_orch = AsyncMock()
         mock_orch.launch = AsyncMock(return_value=_launch_result(tasks_generated=3))
@@ -166,11 +164,11 @@ class TestCampaignLaunchReal:
     async def test_launch_unknown_campaign_returns_404(self, client: AsyncClient) -> None:
         """Orchestrator raises NotFound → 404."""
         app = _campaigns_test_app
+        from luana_core_campaigns.api._dependencies import get_campaigns_async_session
         from luana_core_campaigns.api._service_factories import (
             get_campaign_orchestrator,
             get_campaign_service,
         )
-        from luana_core_campaigns.api._dependencies import get_campaigns_async_session
 
         mock_orch = AsyncMock()
         mock_orch.launch = AsyncMock(side_effect=OrchestratorCampaignNotFoundError("Campaign not found"))
@@ -195,11 +193,11 @@ class TestCampaignLaunchReal:
     async def test_launch_cross_tenant_returns_404(self, client: AsyncClient) -> None:
         """Cross-tenant campaign → NotFound → 404 (tenant isolation)."""
         app = _campaigns_test_app
+        from luana_core_campaigns.api._dependencies import get_campaigns_async_session
         from luana_core_campaigns.api._service_factories import (
             get_campaign_orchestrator,
             get_campaign_service,
         )
-        from luana_core_campaigns.api._dependencies import get_campaigns_async_session
 
         mock_orch = AsyncMock()
         mock_orch.launch = AsyncMock(side_effect=OrchestratorCampaignNotFoundError("not found for tenant"))
@@ -223,11 +221,11 @@ class TestCampaignLaunchReal:
     async def test_launch_invalid_state_returns_409(self, client: AsyncClient) -> None:
         """Campaign not in launchable state → 409."""
         app = _campaigns_test_app
+        from luana_core_campaigns.api._dependencies import get_campaigns_async_session
         from luana_core_campaigns.api._service_factories import (
             get_campaign_orchestrator,
             get_campaign_service,
         )
-        from luana_core_campaigns.api._dependencies import get_campaigns_async_session
 
         mock_orch = AsyncMock()
         mock_orch.launch = AsyncMock(side_effect=OrchestratorCampaignNotLaunchableError("already completed"))
@@ -251,11 +249,11 @@ class TestCampaignLaunchReal:
     async def test_launch_missing_steps_returns_422(self, client: AsyncClient) -> None:
         """No root steps → 422."""
         app = _campaigns_test_app
+        from luana_core_campaigns.api._dependencies import get_campaigns_async_session
         from luana_core_campaigns.api._service_factories import (
             get_campaign_orchestrator,
             get_campaign_service,
         )
-        from luana_core_campaigns.api._dependencies import get_campaigns_async_session
 
         mock_orch = AsyncMock()
         mock_orch.launch = AsyncMock(side_effect=OrchestratorMissingStepsError("no root steps"))
@@ -279,11 +277,11 @@ class TestCampaignLaunchReal:
     async def test_launch_idempotent_relaunch_returns_200(self, client: AsyncClient) -> None:
         """Idempotent re-launch (already RUNNING) returns 200 with tasks_generated=0."""
         app = _campaigns_test_app
+        from luana_core_campaigns.api._dependencies import get_campaigns_async_session
         from luana_core_campaigns.api._service_factories import (
             get_campaign_orchestrator,
             get_campaign_service,
         )
-        from luana_core_campaigns.api._dependencies import get_campaigns_async_session
 
         mock_orch = AsyncMock()
         mock_orch.launch = AsyncMock(
@@ -314,11 +312,11 @@ class TestCampaignLaunchReal:
     async def test_launch_response_model_enforced(self, client: AsyncClient) -> None:
         """Response is serialized via CampaignLaunchResponse (response_model enforcement)."""
         app = _campaigns_test_app
+        from luana_core_campaigns.api._dependencies import get_campaigns_async_session
         from luana_core_campaigns.api._service_factories import (
             get_campaign_orchestrator,
             get_campaign_service,
         )
-        from luana_core_campaigns.api._dependencies import get_campaigns_async_session
 
         mock_orch = AsyncMock()
         mock_orch.launch = AsyncMock(return_value=_launch_result())

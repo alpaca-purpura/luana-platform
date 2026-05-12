@@ -16,9 +16,15 @@ TENANT_ID = UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
 PII_FIELDS = {"email", "phone", "address", "mobile", "telephone", "ssn"}
 
 _GET_TENANT_ID = "luana_core_copilot.application.tools.analytics_tools.get_tenant_id"
-_CALL_STAGE_OV = "luana_core_copilot.application.tools.analytics_tools._call_stage_overview"
-_CALL_CHANNEL = "luana_core_copilot.application.tools.analytics_tools._call_channel_dashboard"
-_GET_GUARD = "luana_core_copilot.application.tools.analytics_tools._get_etl_refresh_guard"
+_CALL_STAGE_OV = (
+    "luana_core_copilot.application.tools.analytics_tools._call_stage_overview"
+)
+_CALL_CHANNEL = (
+    "luana_core_copilot.application.tools.analytics_tools._call_channel_dashboard"
+)
+_GET_GUARD = (
+    "luana_core_copilot.application.tools.analytics_tools._get_etl_refresh_guard"
+)
 _CALL_ETL = "luana_core_copilot.application.tools.analytics_tools._call_etl_refresh"
 
 

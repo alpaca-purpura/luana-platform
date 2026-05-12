@@ -78,7 +78,9 @@ async def get_suggestions(
     engine = get_default_engine()
     try:
         # D-3: engine es sync — asyncio.to_thread evita bloquear event loop
-        suggestions, breakdown, latency_ms = await asyncio.to_thread(engine.get_suggestions, ctx)
+        suggestions, breakdown, latency_ms = await asyncio.to_thread(
+            engine.get_suggestions, ctx
+        )
     except Exception as exc:  # noqa: BLE001 — best-effort (D-10)
         logger.warning(
             "suggestions_engine_failed",

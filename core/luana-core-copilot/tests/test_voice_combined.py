@@ -26,7 +26,9 @@ def _build_voice_app() -> tuple[FastAPI, MagicMock]:
 
     app.include_router(router, prefix="/api/v1/copilot/voice")
     app.dependency_overrides[get_tenant_context] = lambda: tenant_id
-    app.dependency_overrides[get_current_user] = lambda: SimpleNamespace(id=uuid4(), tenant_id=tenant_id)
+    app.dependency_overrides[get_current_user] = lambda: SimpleNamespace(
+        id=uuid4(), tenant_id=tenant_id
+    )
     app.dependency_overrides[get_db] = lambda: mock_db
 
     return app, mock_db
@@ -142,7 +144,9 @@ def test_legacy_transcribe_endpoint_still_works() -> None:
     tenant_id = uuid4()
     app.include_router(router, prefix="/api/v1/copilot/voice")
     app.dependency_overrides[get_tenant_context] = lambda: tenant_id
-    app.dependency_overrides[get_current_user] = lambda: SimpleNamespace(id=uuid4(), tenant_id=tenant_id)
+    app.dependency_overrides[get_current_user] = lambda: SimpleNamespace(
+        id=uuid4(), tenant_id=tenant_id
+    )
     app.dependency_overrides[get_db] = MagicMock
 
     client = TestClient(app, raise_server_exceptions=True)

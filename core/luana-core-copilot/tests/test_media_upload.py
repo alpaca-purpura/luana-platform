@@ -128,7 +128,9 @@ def test_upload_without_file_returns_422() -> None:
     tenant_id = uuid4()
     app.include_router(router, prefix="/api/v1/copilot")
     app.dependency_overrides[get_tenant_context] = lambda: tenant_id
-    app.dependency_overrides[get_current_user] = lambda: SimpleNamespace(id=uuid4(), tenant_id=tenant_id)
+    app.dependency_overrides[get_current_user] = lambda: SimpleNamespace(
+        id=uuid4(), tenant_id=tenant_id
+    )
     app.dependency_overrides[get_db] = _fresh_db_mock
 
     client = TestClient(app)
@@ -179,7 +181,9 @@ def test_upload_passes_tenant_id_to_service(mock_assets_cls: MagicMock) -> None:
     app = FastAPI()
     app.include_router(router, prefix="/api/v1/copilot")
     app.dependency_overrides[get_tenant_context] = lambda: expected_tenant_id
-    app.dependency_overrides[get_current_user] = lambda: SimpleNamespace(id=uuid4(), tenant_id=expected_tenant_id)
+    app.dependency_overrides[get_current_user] = lambda: SimpleNamespace(
+        id=uuid4(), tenant_id=expected_tenant_id
+    )
     app.dependency_overrides[get_db] = _fresh_db_mock
 
     client = TestClient(app, raise_server_exceptions=True)

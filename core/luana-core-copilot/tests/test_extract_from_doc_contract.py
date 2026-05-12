@@ -74,11 +74,15 @@ class TestExtractFromDocImport:
             extract_from_doc,
         )
 
-        assert hasattr(extract_from_doc, "ainvoke"), "extract_from_doc must be a LangChain tool with ainvoke"
+        assert hasattr(extract_from_doc, "ainvoke"), (
+            "extract_from_doc must be a LangChain tool with ainvoke"
+        )
 
 
 class TestExtractFromDocShape:
-    async def test_dispatched_has_source_kind_doc(self, mock_arq_and_redis: MagicMock) -> None:
+    async def test_dispatched_has_source_kind_doc(
+        self, mock_arq_and_redis: MagicMock
+    ) -> None:
         """source_kind must be 'doc' for this tool."""
         from luana_core_copilot.application.tools.extract_from_doc import (
             extract_from_doc,
@@ -94,7 +98,9 @@ class TestExtractFromDocShape:
             assert parsed.get("source_kind") == "doc"
             assert parsed.get("source_ref") == ASSET_ID
 
-    async def test_dispatched_has_required_keys(self, mock_arq_and_redis: MagicMock) -> None:
+    async def test_dispatched_has_required_keys(
+        self, mock_arq_and_redis: MagicMock
+    ) -> None:
         """All contract keys must be present on dispatched response."""
         from luana_core_copilot.application.tools.extract_from_doc import (
             extract_from_doc,
@@ -135,7 +141,9 @@ class TestExtractFromDocShape:
 
 
 class TestExtractFromDocValidation:
-    async def test_visuals_scope_not_accepted(self, mock_arq_and_redis: MagicMock) -> None:
+    async def test_visuals_scope_not_accepted(
+        self, mock_arq_and_redis: MagicMock
+    ) -> None:
         """scope='visuals' must be rejected — docs can't extract visual elements.
 
         LangChain validates the Literal at tool invocation time and raises a
@@ -157,7 +165,9 @@ class TestExtractFromDocValidation:
         assert "scope" in err_str
         assert "visuals" in err_str or "full" in err_str
 
-    async def test_missing_asset_id_returns_error(self, mock_arq_and_redis: MagicMock) -> None:
+    async def test_missing_asset_id_returns_error(
+        self, mock_arq_and_redis: MagicMock
+    ) -> None:
         """asset_id is required."""
         from luana_core_copilot.application.tools.extract_from_doc import (
             extract_from_doc,
@@ -173,7 +183,9 @@ class TestExtractFromDocValidation:
             # Acceptable: schema validation rejects it before the tool runs
             pass
 
-    async def test_no_tenant_context_returns_error(self, mock_arq_and_redis: MagicMock) -> None:
+    async def test_no_tenant_context_returns_error(
+        self, mock_arq_and_redis: MagicMock
+    ) -> None:
         """Missing tenant context must return error (never crash)."""
         set_tenant_id(None)
         from luana_core_copilot.application.tools.extract_from_doc import (

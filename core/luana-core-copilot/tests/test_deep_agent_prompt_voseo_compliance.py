@@ -181,7 +181,9 @@ def test_url_analyzer_subagent_description_has_no_voseo() -> None:
     when the deepagents router decides to delegate. Must be neutro."""
     description = url_analyzer_module.URL_ANALYZER_SUBAGENT["description"]
     found = _scan_voseo(description)
-    assert not found, f"URL_ANALYZER_SUBAGENT description contains voseo: {sorted(set(found))}."
+    assert not found, (
+        f"URL_ANALYZER_SUBAGENT description contains voseo: {sorted(set(found))}."
+    )
 
 
 def test_deep_agent_suffix_has_subagent_delegation_rules() -> None:
@@ -202,7 +204,11 @@ def test_deep_agent_suffix_has_subagent_delegation_rules() -> None:
     assert "no leas la misma data" in suffix or "lecturas paralelas" in suffix, (
         "Falta la regla anti-doble-lectura — el modelo invoca task + tools del parent en paralelo y duplica costo."
     )
-    assert "no re-escrib" in suffix or "no re-redact" in suffix or "sin re-redact" in suffix, (
+    assert (
+        "no re-escrib" in suffix
+        or "no re-redact" in suffix
+        or "sin re-redact" in suffix
+    ), (
         "Falta la regla anti-re-resumen — el modelo re-frasea el ToolMessage "
         "del sub-agente y duplica el contenido en pantalla."
     )

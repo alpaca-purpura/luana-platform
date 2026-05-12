@@ -77,7 +77,11 @@ class TestRegisterSubscribers:
             CopilotTraceEventModel,
         )
 
-        rows = db.query(CopilotTraceEventModel).filter_by(tenant_id=tenant, event_type="card_emitted").all()
+        rows = (
+            db.query(CopilotTraceEventModel)
+            .filter_by(tenant_id=tenant, event_type="card_emitted")
+            .all()
+        )
         assert len(rows) == 1
         assert rows[0].name == "extraction_summary"
 

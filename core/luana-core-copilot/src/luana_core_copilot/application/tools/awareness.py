@@ -15,7 +15,10 @@ from luana_core_platform.core.database import SessionLocal
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from luana_core_copilot.domain.module_registry import ModuleDescriptor, get_module_registry
+from luana_core_copilot.domain.module_registry import (
+    ModuleDescriptor,
+    get_module_registry,
+)
 from luana_core_copilot.domain.schema_introspection import (
     check_section_completion,
     format_completion_markdown,
@@ -25,7 +28,9 @@ from luana_core_copilot.domain.schema_introspection import (
 logger = structlog.get_logger()
 
 
-def _check_introspectable_module(db: Session, tenant_id: UUID, descriptor: ModuleDescriptor) -> dict:
+def _check_introspectable_module(
+    db: Session, tenant_id: UUID, descriptor: ModuleDescriptor
+) -> dict:
     """Check completion for a module that has a Pydantic model_class."""
     try:
         repo = descriptor.repo_factory(db)

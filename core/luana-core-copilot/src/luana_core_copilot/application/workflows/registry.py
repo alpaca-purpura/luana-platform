@@ -64,9 +64,7 @@ def collect_workflows(
 
         for wf in workflows:
             if wf.id in registry:
-                msg = (
-                    f"Duplicate workflow id {wf.id!r}: registered twice — first provider, second provider {module_id!r}"
-                )
+                msg = f"Duplicate workflow id {wf.id!r}: registered twice — first provider, second provider {module_id!r}"
                 raise WorkflowRegistryError(msg)
             registry[wf.id] = wf
 

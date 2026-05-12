@@ -27,7 +27,11 @@ def _build_persistable_fields() -> set[str]:
     Returns a flat ``set[str]``; polymorphic paths shared across
     archetypes (e.g. ``specific_details.start_date``) appear once.
     """
-    return {c.path for c in OFFER_FIELD_CONTRACTS if c.can_propose and c.status == FieldStatus.ACTIVE}
+    return {
+        c.path
+        for c in OFFER_FIELD_CONTRACTS
+        if c.can_propose and c.status == FieldStatus.ACTIVE
+    }
 
 
 # All Offer fields the interview / copilot can write to.

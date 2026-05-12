@@ -287,7 +287,11 @@ def _coerce_event_uuids(
     if event.tenant_id is None:
         return None
     try:
-        tenant = event.tenant_id if isinstance(event.tenant_id, UUID) else UUID(str(event.tenant_id))
+        tenant = (
+            event.tenant_id
+            if isinstance(event.tenant_id, UUID)
+            else UUID(str(event.tenant_id))
+        )
         conv = UUID(conversation_id_raw)
     except (TypeError, ValueError):
         return None
@@ -375,7 +379,9 @@ def handle_job_completed(event: DomainEvent) -> None:
                 source_ref=str(event.payload.get("source_ref", "")),
                 duration_seconds=int(event.payload.get("duration_seconds", 0)),
                 filled_fields=list(event.payload.get("filled_fields", [])),
-                filled_fields_by_section=dict(event.payload.get("filled_fields_by_section", {})),
+                filled_fields_by_section=dict(
+                    event.payload.get("filled_fields_by_section", {})
+                ),
                 sections_completed=list(event.payload.get("sections_completed", [])),
                 primary_cta_route=event.payload.get("primary_cta_route"),
                 entity_id=event.payload.get("entity_id"),

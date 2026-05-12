@@ -36,8 +36,11 @@ class TestToolRegistryIntegrity:
                 )
             else:
                 seen.setdefault(name, (group_name, obj_id))
-        assert not collisions, "Tool name collisions with divergent objects:\n" + "\n".join(
-            collisions,
+        assert not collisions, (
+            "Tool name collisions with divergent objects:\n"
+            + "\n".join(
+                collisions,
+            )
         )
 
     def test_register_tool_groups_enforces_uniqueness(self) -> None:

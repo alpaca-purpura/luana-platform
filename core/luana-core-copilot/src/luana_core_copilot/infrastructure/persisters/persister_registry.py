@@ -23,7 +23,9 @@ def get_persister(
     db: Session,
 ) -> BrandPersister | BuyerPersonaPersister | OfferPersister:
     """Get the appropriate persister for a domain."""
-    registry: dict[str, type[BrandPersister | BuyerPersonaPersister | OfferPersister]] = {
+    registry: dict[
+        str, type[BrandPersister | BuyerPersonaPersister | OfferPersister]
+    ] = {
         "brand": BrandPersister,
         "buyer_persona": BuyerPersonaPersister,
         "offer": OfferPersister,

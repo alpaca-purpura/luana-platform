@@ -27,7 +27,9 @@ class _StubLLM:
 
 class TestBuildDefaultRouter:
     def test_chain_has_rule_then_llm_in_order(self) -> None:
-        router = build_default_router(llm=_StubLLM('{"role":"fast","confidence":0.9,"reason":""}'))
+        router = build_default_router(
+            llm=_StubLLM('{"role":"fast","confidence":0.9,"reason":""}')
+        )
 
         assert isinstance(router, ModelRouter)
         # Access the private tuple — invariant test, intentional
@@ -63,12 +65,16 @@ class TestBuildDefaultRouter:
 
     def test_llm_consulted_when_rule_defers(self) -> None:
         router = build_default_router(
-            llm=_StubLLM('{"role":"reasoning","confidence":0.85,"reason":"compare_clean"}'),
+            llm=_StubLLM(
+                '{"role":"reasoning","confidence":0.85,"reason":"compare_clean"}'
+            ),
         )
 
         # Message that does NOT match any DEFAULT_ROUTING_POLICY rule.
         decision = router.select(
-            RoutingRequest(user_msg="che pongamos esto bien claro mejor pensarlo dos veces"),
+            RoutingRequest(
+                user_msg="che pongamos esto bien claro mejor pensarlo dos veces"
+            ),
         )
 
         assert decision.classifier_used == ClassifierType.LLM

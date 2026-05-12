@@ -45,7 +45,9 @@ def _build_voice_client(voice_rpm: int = 6) -> TestClient:
 
     app.dependency_overrides[get_current_user] = lambda: mock_user
     app.dependency_overrides[get_db] = _get_mock_db
-    app.dependency_overrides[_get_voice_limits] = lambda: _make_limits(voice_rpm=voice_rpm)
+    app.dependency_overrides[_get_voice_limits] = lambda: _make_limits(
+        voice_rpm=voice_rpm
+    )
 
     return TestClient(app, raise_server_exceptions=False)
 
@@ -63,11 +65,15 @@ def test_upload_transcribe_passes_under_limit(
 
     mock_instance = MagicMock()
     mock_instance.transcribe = AsyncMock(
-        return_value=TranscriptionResult(text="hola", language="es", duration_seconds=1.0)
+        return_value=TranscriptionResult(
+            text="hola", language="es", duration_seconds=1.0
+        )
     )
     mock_transcriber_cls.return_value = mock_instance
 
-    fake_asset = SimpleNamespace(id=uuid4(), public_url="https://cdn.example.com/audio.webm")
+    fake_asset = SimpleNamespace(
+        id=uuid4(), public_url="https://cdn.example.com/audio.webm"
+    )
     mock_assets_cls.return_value.upload_asset.return_value = fake_asset
 
     client = _build_voice_client(voice_rpm=6)

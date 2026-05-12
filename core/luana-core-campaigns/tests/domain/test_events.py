@@ -9,8 +9,6 @@ from __future__ import annotations
 import datetime as dt
 from uuid import uuid4
 
-import pytest
-
 from luana_core_campaigns.domain.events import (
     CampaignCanceled,
     CampaignCompleted,
@@ -27,7 +25,6 @@ from luana_core_campaigns.domain.events import (
     SegmentCreated,
     SegmentSnapshotted,
 )
-
 
 NOW = dt.datetime.now(dt.timezone.utc)
 

@@ -15,7 +15,10 @@ from dataclasses import dataclass
 
 import pytest
 
-pytest.skip("T-15 deferred to T-16 UNLIFT (Stories 2-5 copilot_provider/ subfolders not yet lifted — luana_core_brand_studio.copilot_provider / luana_core_offer_studio.copilot_provider / etc.)", allow_module_level=True)
+pytest.skip(
+    "T-15 deferred to T-16 UNLIFT (Stories 2-5 copilot_provider/ subfolders not yet lifted — luana_core_brand_studio.copilot_provider / luana_core_offer_studio.copilot_provider / etc.)",
+    allow_module_level=True,
+)
 from typing import TYPE_CHECKING, Any
 from unittest.mock import patch
 
@@ -111,7 +114,11 @@ class TestEntryPointsScan:
             def load(self) -> _FakeProvider:
                 return external
 
-        with patch.object(discovery_mod, "_scan_entry_points", return_value={"external_plugin": external}):
+        with patch.object(
+            discovery_mod,
+            "_scan_entry_points",
+            return_value={"external_plugin": external},
+        ):
             discovery_mod.reset_discovery()
             registry = discovery_mod.discover_providers()
             assert "external_plugin" in registry
@@ -122,8 +129,12 @@ class TestEntryPointsScan:
         entry_p = _FakeProvider(_module_id="brand", _label="EntryPointBrand")
 
         with (
-            patch.object(discovery_mod, "_scan_convention", return_value={"brand": convention_p}),
-            patch.object(discovery_mod, "_scan_entry_points", return_value={"brand": entry_p}),
+            patch.object(
+                discovery_mod, "_scan_convention", return_value={"brand": convention_p}
+            ),
+            patch.object(
+                discovery_mod, "_scan_entry_points", return_value={"brand": entry_p}
+            ),
         ):
             discovery_mod.reset_discovery()
             registry = discovery_mod.discover_providers()

@@ -150,9 +150,8 @@ def _resolve_tenant_locale(tenant_id: UUID, *, db: Session | None = None) -> obj
         return result
 
     try:
-        from sqlalchemy import select
-
         from luana_core_iam.infrastructure.models.tenant_model import TenantModel
+        from sqlalchemy import select
 
         row = db.execute(select(TenantModel).where(TenantModel.id == tenant_id)).scalar_one_or_none()
 

@@ -36,7 +36,12 @@ class _FakeStore:
         limit: int = 5,
     ) -> list[dict[str, Any]]:
         self.calls.append(
-            {"query": query, "domain": domain, "methodology": methodology, "limit": limit},
+            {
+                "query": query,
+                "domain": domain,
+                "methodology": methodology,
+                "limit": limit,
+            },
         )
         if self.raise_on_search is not None:
             raise self.raise_on_search

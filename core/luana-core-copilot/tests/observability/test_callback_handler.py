@@ -50,9 +50,13 @@ def _pricing_snapshot():
     return snap
 
 
-def _make_handler(db, *, pricing_snapshot=None, fx_rate=Decimal(1), fx_source="passthrough"):
+def _make_handler(
+    db, *, pricing_snapshot=None, fx_rate=Decimal(1), fx_source="passthrough"
+):
     """Build a handler with mocked pricing/FX resolvers and the test session."""
-    from luana_core_copilot.observability.persistence.llm_call_repository import LlmCallRepository
+    from luana_core_copilot.observability.persistence.llm_call_repository import (
+        LlmCallRepository,
+    )
     from luana_core_copilot.observability.persistence.trace_event_repository import (
         TraceEventRepository,
     )
@@ -83,7 +87,9 @@ def _make_handler(db, *, pricing_snapshot=None, fx_rate=Decimal(1), fx_source="p
     )
 
 
-def _ai_message_with_usage(*, model_name="gpt-4o-2024-11-20", litellm_call_id: str | None = None):
+def _ai_message_with_usage(
+    *, model_name="gpt-4o-2024-11-20", litellm_call_id: str | None = None
+):
     response_metadata: dict = {"model_name": model_name, "id": "resp-001"}
     if litellm_call_id is not None:
         response_metadata["litellm_call_id"] = litellm_call_id
@@ -140,13 +146,21 @@ class TestChatModelLifecycle:
             metadata={"ls_provider": "openai", "ls_model_name": "openai/gpt-4o"},
         )
         response = LLMResult(
-            generations=[[ChatGeneration(message=_ai_message_with_usage(litellm_call_id="resp-001"))]],
+            generations=[
+                [
+                    ChatGeneration(
+                        message=_ai_message_with_usage(litellm_call_id="resp-001")
+                    )
+                ]
+            ],
             llm_output=None,
         )
         handler.on_llm_end(response, run_id=run_id)
         db.flush()
 
-        rows = db.query(CopilotLlmCallModel).filter_by(tenant_id=handler.tenant_id).all()
+        rows = (
+            db.query(CopilotLlmCallModel).filter_by(tenant_id=handler.tenant_id).all()
+        )
         assert len(rows) == 1
         row = rows[0]
         assert row.input_tokens == 1000
@@ -189,7 +203,9 @@ class TestChatModelLifecycle:
         handler.on_llm_error(error=RuntimeError("rate limited"), run_id=run_id)
         db.flush()
 
-        rows = db.query(CopilotLlmCallModel).filter_by(tenant_id=handler.tenant_id).all()
+        rows = (
+            db.query(CopilotLlmCallModel).filter_by(tenant_id=handler.tenant_id).all()
+        )
         assert len(rows) == 1
         assert rows[0].status == "error"
         assert rows[0].error_type == "RuntimeError"
@@ -211,7 +227,11 @@ class TestToolLifecycle:
         handler.on_tool_end(output="ok", run_id=run_id)
         db.flush()
 
-        rows = db.query(CopilotTraceEventModel).filter_by(tenant_id=handler.tenant_id, event_type="tool_call").all()
+        rows = (
+            db.query(CopilotTraceEventModel)
+            .filter_by(tenant_id=handler.tenant_id, event_type="tool_call")
+            .all()
+        )
         assert len(rows) == 1
         assert rows[0].name == "search_brand"
         assert rows[0].duration_ms is not None
@@ -232,7 +252,11 @@ class TestToolLifecycle:
         handler.on_tool_error(error=ValueError("bad arg"), run_id=run_id)
         db.flush()
 
-        rows = db.query(CopilotTraceEventModel).filter_by(tenant_id=handler.tenant_id, event_type="tool_call").all()
+        rows = (
+            db.query(CopilotTraceEventModel)
+            .filter_by(tenant_id=handler.tenant_id, event_type="tool_call")
+            .all()
+        )
         assert len(rows) == 1
         assert rows[0].status == "error"
 

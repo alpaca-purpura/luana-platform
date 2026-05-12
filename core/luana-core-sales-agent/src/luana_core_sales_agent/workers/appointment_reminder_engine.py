@@ -215,7 +215,9 @@ def _render_reminder(
     lead_data = cp.lead_data or {}
     lead_name = lead_data.get("lead_name") or lead_data.get("name") or ""
     offer_name = lead_data.get("active_product_name") or ""
-    scheduled_at_local = _format_local(entry.scheduled_at, lead_data.get("tenant_timezone", "UTC"))
+    scheduled_at_local = _format_local(
+        entry.scheduled_at, lead_data.get("tenant_timezone", "UTC")
+    )
     meeting_link = lead_data.get("meeting_link") or ""
 
     prompt = prompt_loader.render(
@@ -229,7 +231,11 @@ def _render_reminder(
         was_attended=(entry.status == MeetingEntryStatus.COMPLETED),
     )
 
-    role = LLM_ROLE_BY_SITE[f"appointment_reminder_{kind}" if kind != "postcheck" else "appointment_postcheck"]
+    role = LLM_ROLE_BY_SITE[
+        f"appointment_reminder_{kind}"
+        if kind != "postcheck"
+        else "appointment_postcheck"
+    ]
 
     return (
         LLMFactory.get_service()

@@ -134,7 +134,9 @@ def _slugify(raw: str, fallback_domain: str) -> str:
     candidate = (raw or "").strip().lower()
     candidate = _SLUG_RE.sub("-", candidate).strip("-")
     if not candidate:
-        candidate = _SLUG_RE.sub("-", fallback_domain.lower()).strip("-") or "inspiracion"
+        candidate = (
+            _SLUG_RE.sub("-", fallback_domain.lower()).strip("-") or "inspiracion"
+        )
     return candidate[:80]
 
 

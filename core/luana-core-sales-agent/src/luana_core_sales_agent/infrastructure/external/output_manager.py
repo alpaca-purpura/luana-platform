@@ -142,7 +142,11 @@ class OutputManager:
             try:
                 parsed = json.loads(cleaned)
                 if isinstance(parsed, list):
-                    chunks = [str(item).strip() for item in parsed if item and str(item).strip()]
+                    chunks = [
+                        str(item).strip()
+                        for item in parsed
+                        if item and str(item).strip()
+                    ]
             except json.JSONDecodeError:
                 chunks = None
 
@@ -198,7 +202,9 @@ class OutputManager:
             # Sentence-end markers: index reported by rfind is the start of
             # the substring; piece must end ONE char after the punctuation
             # so the ``.`` / ``!`` / ``?`` stays attached.
-            sentence_marker = max((window.rfind(s), len(s)) for s in (". ", "! ", "? ", "…", "\n"))
+            sentence_marker = max(
+                (window.rfind(s), len(s)) for s in (". ", "! ", "? ", "…", "\n")
+            )
             sent_idx, sent_len = sentence_marker
             if sent_idx > 0 and sent_idx >= cap // 2:
                 split_at = sent_idx + (sent_len - 1) if sent_len > 1 else sent_idx + 1
@@ -216,7 +222,9 @@ class OutputManager:
         return pieces
 
     @classmethod
-    def _calculate_typing_time(cls, text: str, channel_type: str | None = None) -> float:
+    def _calculate_typing_time(
+        cls, text: str, channel_type: str | None = None
+    ) -> float:
         """Calculate typing delay based on CPM and Jitter.
 
         Formula: (Chars / CPM) * 60 * Jitter

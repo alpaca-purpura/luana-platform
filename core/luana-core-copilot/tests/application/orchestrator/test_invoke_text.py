@@ -67,7 +67,11 @@ async def _run_invoke_text(
             yield ""
 
     async def fake_stream_raises(state, acc, msg_id, user_msg):
-        raise RuntimeError("boom") if side_effect is None else (_ for _ in ()).throw(side_effect)
+        raise (
+            RuntimeError("boom")
+            if side_effect is None
+            else (_ for _ in ()).throw(side_effect)
+        )
         if False:
             yield ""
 
@@ -82,7 +86,9 @@ async def _run_invoke_text(
         patch.object(orchestrator, "_prepare_conversation", prepare_mock),
         patch.object(orchestrator, "_run_graph_stream", side_effect=stream_target),
         patch.object(orchestrator, "_persist_messages", MagicMock()),
-        patch.object(orchestrator, "_build_observability_context", return_value=obs_mock),
+        patch.object(
+            orchestrator, "_build_observability_context", return_value=obs_mock
+        ),
     ):
         result = await orchestrator.invoke_text(
             user_id=user_id,

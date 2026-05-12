@@ -11,7 +11,9 @@ from luana_core_platform.domain.field_contract import (
     FieldStatus,
     FieldType,
 )
-from luana_core_platform.links.ports.conversational_channel import ConversationalChannelPort
+from luana_core_platform.links.ports.conversational_channel import (
+    ConversationalChannelPort,
+)
 
 
 def _contract(path: str, *, question: str | None = None) -> FieldContract:

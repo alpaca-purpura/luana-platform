@@ -58,7 +58,9 @@ def test_register_subscribes_card_and_routing_events(fake_repo_factory) -> None:
     assert not handlers.get(EVENT_TURN_STARTED), (
         "turn_started must NOT have a subscriber — observe_turn writes it directly"
     )
-    assert not handlers.get(EVENT_TURN_ENDED), "turn_ended must NOT have a subscriber — observe_turn writes it directly"
+    assert not handlers.get(EVENT_TURN_ENDED), (
+        "turn_ended must NOT have a subscriber — observe_turn writes it directly"
+    )
 
 
 def test_register_is_idempotent(fake_repo_factory) -> None:
@@ -124,7 +126,9 @@ def test_register_does_not_persist_turn_events(fake_repo_factory) -> None:
     EventBus.publish(ended, session=None)
 
     repo = fake_repo_factory.return_value
-    assert repo.add.call_count == 0, "subscribers must not write turn_start/turn_end — observe_turn does it"
+    assert repo.add.call_count == 0, (
+        "subscribers must not write turn_start/turn_end — observe_turn does it"
+    )
 
 
 def test_register_persists_routing_decided(fake_repo_factory) -> None:

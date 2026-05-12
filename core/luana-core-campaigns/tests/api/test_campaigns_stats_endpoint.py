@@ -9,7 +9,7 @@ TDD RED phase.
 from __future__ import annotations
 
 import uuid
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
@@ -275,9 +275,7 @@ def test_stats_endpoint_declared_in_router() -> None:
     from pathlib import Path
 
     # luana-platform package layout: parents[2] = core/luana-core-campaigns
-    router_path = (
-        Path(__file__).parents[2] / "src" / "luana_core_campaigns" / "api" / "routers" / "campaigns_router.py"
-    )
+    router_path = Path(__file__).parents[2] / "src" / "luana_core_campaigns" / "api" / "routers" / "campaigns_router.py"
     src = router_path.read_text(encoding="utf-8")
     assert "stats" in src, "El router debe tener un endpoint /stats"
     assert "CampaignStatsResponse" in src, "El endpoint debe declarar response_model=CampaignStatsResponse"
@@ -288,9 +286,7 @@ def test_stats_endpoint_declares_response_model() -> None:
     from pathlib import Path
 
     # luana-platform package layout: parents[2] = core/luana-core-campaigns
-    router_path = (
-        Path(__file__).parents[2] / "src" / "luana_core_campaigns" / "api" / "routers" / "campaigns_router.py"
-    )
+    router_path = Path(__file__).parents[2] / "src" / "luana_core_campaigns" / "api" / "routers" / "campaigns_router.py"
     src = router_path.read_text(encoding="utf-8")
     assert "response_model=CampaignStatsResponse" in src, (
         "PR-8: endpoint stats DEBE declarar response_model=CampaignStatsResponse"

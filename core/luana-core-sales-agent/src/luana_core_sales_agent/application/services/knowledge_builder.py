@@ -20,7 +20,10 @@ from luana_core_sales_agent.application.services.offer_prompt_renderer import (
 from luana_core_sales_agent.application.services.semantic_router import SemanticRouter
 from luana_core_sales_agent.infrastructure.prompts.base import prompt_loader
 from luana_core_platform.links.ports.brand import BrandDataPort, create_brand_data_port
-from luana_core_platform.links.ports.offer import get_offer_repository, get_offer_type_preset
+from luana_core_platform.links.ports.offer import (
+    get_offer_repository,
+    get_offer_type_preset,
+)
 from luana_core_platform.links.ports.social_proof import resolve_sales_agent_context
 
 logger = logging.getLogger(__name__)
@@ -77,7 +80,11 @@ class TenantKnowledgeBuilder:
 
             # Filter active offers only for the agent's knowledge
             active_offers = [o for o in offers if o.status.value in ("active", "draft")]
-            offers_data = [o.model_dump(mode="json") for o in active_offers] if active_offers else []
+            offers_data = (
+                [o.model_dump(mode="json") for o in active_offers]
+                if active_offers
+                else []
+            )
             # Strip top-level paths whose FieldContract status is not ACTIVE
             # (deprecated / removed). This is the lifecycle gate for the
             # sales-agent prompt: a field marked DEPRECATED in

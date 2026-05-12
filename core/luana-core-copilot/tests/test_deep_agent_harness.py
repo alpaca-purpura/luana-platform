@@ -131,7 +131,10 @@ class TestSystemPromptInjection:
         content = (
             sys_msg.content
             if isinstance(sys_msg.content, str)
-            else "".join(blk.get("text", "") if isinstance(blk, dict) else str(blk) for blk in sys_msg.content)
+            else "".join(
+                blk.get("text", "") if isinstance(blk, dict) else str(blk)
+                for blk in sys_msg.content
+            )
         )
         # Nicolify branding from build_system_prompt or fallback string.
         assert "Nicolify" in content or "Copilot" in content

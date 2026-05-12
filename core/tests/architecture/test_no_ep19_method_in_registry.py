@@ -15,7 +15,6 @@ import inspect
 
 from luana_core_extension_sdk import ExtensionPointRegistry
 
-
 _FORBIDDEN_METHOD_PATTERNS = [
     "vertical_agent_register",
     "vertical_agent",
@@ -27,17 +26,9 @@ _FORBIDDEN_METHOD_PATTERNS = [
 
 def test_no_ep19_method_on_registry() -> None:
     """V-AG-no-ep19: registry has zero methods matching vertical_agent|ep19|ep_19."""
-    all_methods = [
-        name
-        for name, _ in inspect.getmembers(ExtensionPointRegistry)
-        if not name.startswith("__")
-    ]
+    all_methods = [name for name, _ in inspect.getmembers(ExtensionPointRegistry) if not name.startswith("__")]
 
-    violations = [
-        method
-        for method in all_methods
-        if any(pat in method.lower() for pat in _FORBIDDEN_METHOD_PATTERNS)
-    ]
+    violations = [method for method in all_methods if any(pat in method.lower() for pat in _FORBIDDEN_METHOD_PATTERNS)]
 
     assert not violations, (
         "ExtensionPointRegistry contains forbidden EP-19 / vertical_agent method(s).\n\n"

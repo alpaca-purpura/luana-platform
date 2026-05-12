@@ -75,7 +75,9 @@ async def payment_webhook(
     """Generic inbound entry-point for any payment provider webhook."""
     provider_cls = webhook_provider_for(provider)
     if provider_cls is None:
-        raise HTTPException(status_code=404, detail=f"Unknown payment provider: {provider}")
+        raise HTTPException(
+            status_code=404, detail=f"Unknown payment provider: {provider}"
+        )
 
     body = await request.body()
     headers = {k.lower(): v for k, v in request.headers.items()}

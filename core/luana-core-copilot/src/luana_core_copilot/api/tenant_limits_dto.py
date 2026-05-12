@@ -67,7 +67,15 @@ class EffectiveLimitsResponse(BaseModel):
 
     tenant_id: UUID
     voice_rpm: int = Field(description="Requests/min efectivos para voice upload.")
-    voice_window_seconds: int = Field(default=60, description="Ventana sliding window en segundos.")
-    media_max_bytes: int = Field(description="Tamaño máximo efectivo en bytes para uploads.")
-    voice_rpm_is_override: bool = Field(description="True si proviene de override DB; False si es env default.")
-    media_max_bytes_is_override: bool = Field(description="True si proviene de override DB; False si es env default.")
+    voice_window_seconds: int = Field(
+        default=60, description="Ventana sliding window en segundos."
+    )
+    media_max_bytes: int = Field(
+        description="Tamaño máximo efectivo en bytes para uploads."
+    )
+    voice_rpm_is_override: bool = Field(
+        description="True si proviene de override DB; False si es env default."
+    )
+    media_max_bytes_is_override: bool = Field(
+        description="True si proviene de override DB; False si es env default."
+    )

@@ -309,6 +309,70 @@ precedent V-F-x-2 waiver:
   `scripts.seed_metrics` which does not exist as installable module —
   Story 4 tech debt.
 
+## Story 8 deferrals (2026-05-12) + INTRODUCED + ALLOWLISTED STUBS
+
+Story 8 luana-campaigns-extension-sdk lifted `backend/src/modules/campaigns/`
+into `core/luana-core-campaigns/` and formalized the extension SDK in
+`core/luana-core-extension-sdk/` over 18 tickets (T-1..T-18).
+
+### INTRODUCED Story 8
+
+| Surface | Path | Notes |
+|---|---|---|
+| `luana-core-campaigns` package | `core/luana-core-campaigns/` | Full campaigns engine: domain + infrastructure + application + api + workers + observability (446 tests) |
+| `luana-core-extension-sdk` package | `core/luana-core-extension-sdk/` | 18 EP contracts: EP-1..5 executable, EP-6..18 signatures-only, CC-1..5 cross-cutting policies |
+| `apps/test-brand` smoke app | `apps/test-brand/` | Vertical brand FastAPI app with 18 register_all handlers + 10 smoke scenarios |
+| `@luana/extension-sdk` TS package | `core/@luana/extension-sdk/` | TypeScript mirror of Python SDK types |
+| `docs/extension-points.md` | `docs/extension-points.md` | §1-§5 extension points reference + vertical-agent-recipe (Vitalia treatment-agent) |
+| 12 arch fitness tests | `core/tests/architecture/test_*_story8.py` + related | V-NF-3/4 + V-AG-1..7 + V-D-2/3 cemented |
+
+### ALLOWLISTED STUBS (Story 8 carried over from Story 7)
+
+Per Story 8 checkpoint `allowlisted_stubs_for_story_8` — these stubs remain
+in conftest.py files and are NOT removed in Story 8. They defer to later stories:
+
+| Stub | Location | Defer to |
+|---|---|---|
+| `AppointmentModel` stub | `core/luana-core-campaigns/tests/conftest.py` + others | Scheduling module lift (Story TBD per DAG) |
+| `ProductModel` / `_ProductStub` | Multiple conftest.py files | Catalog/product module lift |
+
+These stubs are explicitly allowlisted in `core/tests/architecture/
+test_no_residual_test_stubs_post_story_6.py` (Story 8 arch fitness — ratchet
+allowlist shrinks only when scheduling/catalog surfaces lift).
+
+### NEW Story 8 deferrals — scheduling concrete provider runtime
+
+Per Story 7 carry-over: `luana_core_scheduling` package NOT lifted in Story 8.
+The campaigns worker `run_campaign_scheduler_tick` operates on scheduling
+appointments via `AppointmentModel` stub pattern (SQLite-compatible conftest.py).
+Real scheduling lift deferred to standalone Story per DAG.
+
+| Surface | Reason | Defer to |
+|---|---|---|
+| `luana_core_scheduling` package | Not in Story 8 scope (campaigns-extension-sdk focused on campaigns engine + EP SDK) | Dedicated scheduling lift story |
+| `AppointmentModel` real SQLA model | Lives in scheduling territory | Scheduling lift story |
+
+### NEW Story 8 deferrals — offer advertising counts/campaigns → Story 9+
+
+| Source (AISALESHT) | Target package | Reason |
+|---|---|---|
+| `backend/src/modules/offer/api/counts.py` | `luana-core-offer-studio` | Imports advertising module (not yet lifted) |
+| `backend/src/modules/offer/api/campaigns.py` | `luana-core-offer-studio` | Idem |
+
+Per Story 5 carry-over documentation — unchanged in Story 8.
+
+### Pre-existing territory (Stories 3-7 carry-over)
+
+- Arch fitness tests for stories 3+4+5 forward import checks now
+  correctly allowlist `copilot_provider/` integration directories (added
+  Story 8 T-18 ratchet fix — pre-existing failure from Story 6 T-16).
+- §3 protected surfaces hash-stable snapshot updated for ruff format
+  (4 files: closer_studio.py + output_manager.py + enrollment_model.py +
+  follow_up_engine.py — whitespace only, no semantic change to §3 surfaces).
+- Story 4 `test_story4_no_forward_module_imports.py` updated to also
+  allowlist `connections/api/dependencies/__init__.py` (Story 7 T-16
+  composition root — intentional DI wiring, not forward-coupling).
+
 ## Lift rule
 
 All deferred files follow the lift-verbatim constraint: when they are lifted,

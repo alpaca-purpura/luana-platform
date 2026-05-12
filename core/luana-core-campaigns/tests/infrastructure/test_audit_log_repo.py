@@ -12,14 +12,13 @@ import datetime as dt
 from uuid import uuid4
 
 import pytest
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
-
 from luana_core_campaigns.domain.audit_log import AuditEventType, AuditLogEvent
 from luana_core_campaigns.infrastructure.repositories.audit_log_repo_impl import (
     AuditLogRepositoryImpl,
 )
 from luana_core_platform.domain.base_entity import Base
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
 
 # ── Async SQLite in-memory engine ─────────────────────────────────────────────
 
@@ -28,7 +27,6 @@ from luana_core_platform.domain.base_entity import Base
 async def async_engine():
     """Async SQLite in-memory engine with all campaign models registered."""
     # Ensure CampaignAuditModel is registered
-    from luana_core_campaigns.infrastructure.models.campaign_audit_model import CampaignAuditModel
 
     engine = create_async_engine("sqlite+aiosqlite:///:memory:", echo=False)
     async with engine.begin() as conn:

@@ -6,7 +6,10 @@ from unittest.mock import MagicMock
 
 import pytest
 
-pytest.skip("T-15 deferred — luana_core_platform.workers.settings not yet lifted from AISALESHT shared/workers/. Story 1/2 territory or T-21 finalize.", allow_module_level=True)
+pytest.skip(
+    "T-15 deferred — luana_core_platform.workers.settings not yet lifted from AISALESHT shared/workers/. Story 1/2 territory or T-21 finalize.",
+    allow_module_level=True,
+)
 
 
 class TestAggregateRefreshTask:
@@ -39,8 +42,14 @@ class TestAggregateRefreshTask:
         result = await aggregate_refresh_task.refresh_daily_cost_mv({})
 
         joined = " ".join(executed)
-        assert "REFRESH MATERIALIZED VIEW CONCURRENTLY mv_daily_llm_cost_per_tenant" in joined
-        assert "REFRESH MATERIALIZED VIEW CONCURRENTLY mv_daily_llm_cost_per_tenant_v2" in joined
+        assert (
+            "REFRESH MATERIALIZED VIEW CONCURRENTLY mv_daily_llm_cost_per_tenant"
+            in joined
+        )
+        assert (
+            "REFRESH MATERIALIZED VIEW CONCURRENTLY mv_daily_llm_cost_per_tenant_v2"
+            in joined
+        )
         # Each successful refresh commits independently.
         assert executed.count("__commit__") == 2
         assert "__close__" in executed
@@ -121,7 +130,10 @@ class TestSchedulerRegistration:
         from luana_core_observability.workers.aggregate_refresh_task import (
             refresh_daily_cost_mv,
         )
-        from luana_core_platform.workers.settings import SchedulerSettings, WorkerSettings
+        from luana_core_platform.workers.settings import (
+            SchedulerSettings,
+            WorkerSettings,
+        )
 
         assert refresh_daily_cost_mv in WorkerSettings.functions
         assert refresh_daily_cost_mv in SchedulerSettings.functions
@@ -133,5 +145,7 @@ class TestSchedulerRegistration:
         from luana_core_platform.workers.settings import SchedulerSettings
 
         # The arq Cron object stores its callable on ``coroutine``.
-        scheduled_callables = [getattr(job, "coroutine", None) for job in SchedulerSettings.cron_jobs]
+        scheduled_callables = [
+            getattr(job, "coroutine", None) for job in SchedulerSettings.cron_jobs
+        ]
         assert refresh_daily_cost_mv in scheduled_callables

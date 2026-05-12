@@ -145,11 +145,7 @@ def test_allowlisted_stubs_still_present():
         for expected in sorted(expected_classes):
             if expected not in found_classes:
                 missing.append(
-                    f"{rel_path}: class {expected}(_Base) NOT FOUND — "
-                    "remove allowlist entry (lift may have happened)",
+                    f"{rel_path}: class {expected}(_Base) NOT FOUND — remove allowlist entry (lift may have happened)",
                 )
 
-    assert not missing, (
-        "V-AG-4 allowlist drift detected — stubs claimed but missing:\n"
-        + "\n".join(missing)
-    )
+    assert not missing, "V-AG-4 allowlist drift detected — stubs claimed but missing:\n" + "\n".join(missing)

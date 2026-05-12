@@ -20,7 +20,6 @@ from __future__ import annotations
 import inspect
 import json
 import os
-import sys
 from dataclasses import fields, is_dataclass
 from pathlib import Path
 from typing import Any
@@ -133,19 +132,18 @@ def module_snapshot(mod: Any) -> dict[str, Any]:
 
 def main() -> None:
     # Tools registry
+    # Suggestions registry
+    from luana_core_copilot.application.suggestions import registry as sug_reg
     from luana_core_copilot.application.tools import registry as tools_reg
 
     # Workflows registry
     from luana_core_copilot.application.workflows import registry as wf_reg
 
-    # Module registry
-    from luana_core_copilot.domain import module_registry as mod_reg
-
     # Extraction domain registry
     from luana_core_copilot.domain import extraction_domain_registry as ext_reg
 
-    # Suggestions registry
-    from luana_core_copilot.application.suggestions import registry as sug_reg
+    # Module registry
+    from luana_core_copilot.domain import module_registry as mod_reg
 
     snapshot = {
         "schema_version": 1,

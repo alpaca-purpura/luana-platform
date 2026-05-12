@@ -10,7 +10,10 @@ from uuid import UUID
 from luana_core_platform.core.database import SessionLocal
 from sqlalchemy.orm import Session
 
-from luana_core_copilot.domain.module_registry import ModuleDescriptor, get_module_registry
+from luana_core_copilot.domain.module_registry import (
+    ModuleDescriptor,
+    get_module_registry,
+)
 from luana_core_copilot.domain.schema_introspection import (
     check_section_completion,
     get_model_sections,
@@ -56,7 +59,10 @@ class Procedure:
         db = SessionLocal()
         try:
             registry = get_module_registry()
-            return {step.step_id: self._is_step_complete(step, tenant_id, db, registry) for step in self.steps}
+            return {
+                step.step_id: self._is_step_complete(step, tenant_id, db, registry)
+                for step in self.steps
+            }
         finally:
             db.close()
 

@@ -52,7 +52,9 @@ if TYPE_CHECKING:
     from luana_core_observability.cost.fx_resolver import FXResolver
     from luana_core_observability.pricing.resolver import PricingResolver
 
-    from luana_core_copilot.observability.persistence.llm_call_repository import LlmCallRepository
+    from luana_core_copilot.observability.persistence.llm_call_repository import (
+        LlmCallRepository,
+    )
     from luana_core_copilot.observability.persistence.trace_event_repository import (
         TraceEventRepository,
     )
@@ -151,7 +153,9 @@ class CopilotObservabilityContext(BaseObservabilityContext):
                 status=status,
             )
         except Exception as exc:  # noqa: BLE001 — best-effort
-            logger.warning("obs_add_trace_event_failed", event_type=event_type, error=str(exc))
+            logger.warning(
+                "obs_add_trace_event_failed", event_type=event_type, error=str(exc)
+            )
 
     def _aggregate_totals(self) -> dict[str, Any]:
         """Sum the copilot_llm_call rows for this turn.
@@ -166,14 +170,20 @@ class CopilotObservabilityContext(BaseObservabilityContext):
                 session.flush()
             stmt = select(
                 func.count().label("count"),
-                func.coalesce(func.sum(CopilotLlmCallModel.input_tokens), 0).label("input_tokens"),
+                func.coalesce(func.sum(CopilotLlmCallModel.input_tokens), 0).label(
+                    "input_tokens"
+                ),
                 func.coalesce(func.sum(CopilotLlmCallModel.output_tokens), 0).label(
                     "output_tokens",
                 ),
-                func.coalesce(func.sum(CopilotLlmCallModel.cached_read_tokens), 0).label(
+                func.coalesce(
+                    func.sum(CopilotLlmCallModel.cached_read_tokens), 0
+                ).label(
                     "cached_read_tokens",
                 ),
-                func.coalesce(func.sum(CopilotLlmCallModel.cost_usd), 0).label("cost_usd"),
+                func.coalesce(func.sum(CopilotLlmCallModel.cost_usd), 0).label(
+                    "cost_usd"
+                ),
             ).where(
                 CopilotLlmCallModel.tenant_id == self.tenant_id,
                 CopilotLlmCallModel.turn_id == self.turn_id,

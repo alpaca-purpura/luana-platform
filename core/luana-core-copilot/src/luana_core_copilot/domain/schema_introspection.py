@@ -106,7 +106,8 @@ def get_model_sections(model_class: type[BaseModel]) -> dict[str, SectionInfo]:
             # Nested model = section with sub-fields
             sub_fields = list(inner_type.model_fields.keys())
             field_descs = {
-                fname: finfo.description or _humanize(fname) for fname, finfo in inner_type.model_fields.items()
+                fname: finfo.description or _humanize(fname)
+                for fname, finfo in inner_type.model_fields.items()
             }
             sections[name] = SectionInfo(
                 name=name,
@@ -122,7 +123,8 @@ def get_model_sections(model_class: type[BaseModel]) -> dict[str, SectionInfo]:
             item_type = get_args(inner_type)[0]
             sub_fields = list(item_type.model_fields.keys())
             field_descs = {
-                fname: finfo.description or _humanize(fname) for fname, finfo in item_type.model_fields.items()
+                fname: finfo.description or _humanize(fname)
+                for fname, finfo in item_type.model_fields.items()
             }
             sections[name] = SectionInfo(
                 name=name,
@@ -270,7 +272,11 @@ def _build_offer_paths() -> set[str]:
         get_module_contracts,
     )
 
-    return {c.path for c in get_module_contracts("offer") if c.can_propose and c.status == FieldStatus.ACTIVE}
+    return {
+        c.path
+        for c in get_module_contracts("offer")
+        if c.can_propose and c.status == FieldStatus.ACTIVE
+    }
 
 
 def _build_buyer_persona_paths() -> set[str]:
@@ -427,5 +433,7 @@ def format_all_editable_catalogs_markdown() -> str:
     Used by the system-prompt builder so the LLM sees the whole editable
     surface in one place. Blocks are separated by a blank line.
     """
-    blocks = [format_editable_field_catalog_markdown(d) for d in get_registered_domains()]
+    blocks = [
+        format_editable_field_catalog_markdown(d) for d in get_registered_domains()
+    ]
     return "\n\n".join(b for b in blocks if b)

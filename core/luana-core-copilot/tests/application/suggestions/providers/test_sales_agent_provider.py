@@ -68,7 +68,9 @@ def _mock_sa_port(
                         id=str(uuid4()),
                         offer_id=str(uuid4()),
                         status=status,
-                        created_at_iso=item.get("created_at_iso", "2024-01-01T00:00:00"),
+                        created_at_iso=item.get(
+                            "created_at_iso", "2024-01-01T00:00:00"
+                        ),
                         edition_id=None,
                     )
                 )
@@ -139,7 +141,9 @@ class TestSalesAgentProviderRules:
             f"Expected 'Sin leads' chip in {labels}"
         )
 
-    def test_sales_provider_inactive_24h_with_old_leads_emits_reactivation_chip(self) -> None:
+    def test_sales_provider_inactive_24h_with_old_leads_emits_reactivation_chip(
+        self,
+    ) -> None:
         """active_24h=0 + leads_30d>0 → reactivation chip."""
         from luana_core_copilot.application.suggestions.providers.sales_agent import (
             SalesAgentSuggestionProvider,
@@ -195,7 +199,9 @@ class TestSalesAgentProviderRules:
             chips = p.get_suggestions(_ctx())
 
         labels = [c.label for c in chips]
-        assert any("voz" in l.lower() for l in labels), f"Expected voice chip in {labels}"
+        assert any("voz" in l.lower() for l in labels), (
+            f"Expected voice chip in {labels}"
+        )
 
     def test_sales_provider_pending_payments_emits_chip(self) -> None:
         """PAYMENT_PENDING enrollments >24h old → cobros chip."""
@@ -211,7 +217,9 @@ class TestSalesAgentProviderRules:
                 {"created_at_iso": old_date},
             ]
         }
-        sa_port = _mock_sa_port(leads_7d=5, leads_30d=10, active_24h=2, enrollments_by_status=enrollments)
+        sa_port = _mock_sa_port(
+            leads_7d=5, leads_30d=10, active_24h=2, enrollments_by_status=enrollments
+        )
         brand_port = _mock_brand_port(personality_present=True)
         with (
             patch(
@@ -231,9 +239,10 @@ class TestSalesAgentProviderRules:
             chips = p.get_suggestions(_ctx())
 
         labels = [c.label for c in chips]
-        assert any("cobro" in l.lower() or "pago" in l.lower() or "pendiente" in l.lower() for l in labels), (
-            f"Expected cobros chip in {labels}"
-        )
+        assert any(
+            "cobro" in l.lower() or "pago" in l.lower() or "pendiente" in l.lower()
+            for l in labels
+        ), f"Expected cobros chip in {labels}"
 
     def test_sales_provider_waitlist_no_active_edition_emits_chip(self) -> None:
         """Waitlist enrollments + no active edition → lista espera chip."""
@@ -246,7 +255,9 @@ class TestSalesAgentProviderRules:
                 {"created_at_iso": "2024-01-01T00:00:00"},
             ]
         }
-        sa_port = _mock_sa_port(leads_7d=5, leads_30d=10, active_24h=2, enrollments_by_status=enrollments)
+        sa_port = _mock_sa_port(
+            leads_7d=5, leads_30d=10, active_24h=2, enrollments_by_status=enrollments
+        )
         sa_port.has_active_edition_for_offer.return_value = False
         brand_port = _mock_brand_port(personality_present=True)
         with (
@@ -267,9 +278,10 @@ class TestSalesAgentProviderRules:
             chips = p.get_suggestions(_ctx())
 
         labels = [c.label for c in chips]
-        assert any("espera" in l.lower() or "waitlist" in l.lower() or "edición" in l.lower() for l in labels), (
-            f"Expected waitlist chip in {labels}"
-        )
+        assert any(
+            "espera" in l.lower() or "waitlist" in l.lower() or "edición" in l.lower()
+            for l in labels
+        ), f"Expected waitlist chip in {labels}"
 
     def test_sales_provider_port_exception_degrades_gracefully(self) -> None:
         """SA port raises → _safe_* wrappers return safe defaults (0 leads → rule-1 chip).
@@ -285,9 +297,15 @@ class TestSalesAgentProviderRules:
 
         sa_port = MagicMock()
         sa_port.count_leads_since.side_effect = RuntimeError("Connection failed")
-        sa_port.count_active_conversations_since.side_effect = RuntimeError("Connection failed")
-        sa_port.list_enrollments_by_status.side_effect = RuntimeError("Connection failed")
-        sa_port.has_active_edition_for_offer.side_effect = RuntimeError("Connection failed")
+        sa_port.count_active_conversations_since.side_effect = RuntimeError(
+            "Connection failed"
+        )
+        sa_port.list_enrollments_by_status.side_effect = RuntimeError(
+            "Connection failed"
+        )
+        sa_port.has_active_edition_for_offer.side_effect = RuntimeError(
+            "Connection failed"
+        )
         brand_port = _mock_brand_port()
         with (
             patch(
@@ -373,4 +391,6 @@ class TestSalesAgentProviderSpanishNeutro:
 
         for chip in chips:
             assert not _VOSEO_RE.search(chip.label), f"Voseo in label: {chip.label!r}"
-            assert not _VOSEO_RE.search(chip.prompt), f"Voseo in prompt: {chip.prompt!r}"
+            assert not _VOSEO_RE.search(chip.prompt), (
+                f"Voseo in prompt: {chip.prompt!r}"
+            )

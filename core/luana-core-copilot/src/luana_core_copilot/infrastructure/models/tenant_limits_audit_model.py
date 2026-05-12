@@ -45,7 +45,9 @@ class CopilotTenantLimitsAuditModel(Base):  # type: ignore[misc]
     )
     voice_rpm_before: Mapped[int | None] = mapped_column(Integer, nullable=True)
     voice_rpm_after: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    media_max_bytes_before: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    media_max_bytes_before: Mapped[int | None] = mapped_column(
+        BigInteger, nullable=True
+    )
     media_max_bytes_after: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     changed_by_user_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True),

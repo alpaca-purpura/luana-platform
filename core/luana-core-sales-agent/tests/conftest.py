@@ -108,7 +108,9 @@ class MockUUID(TypeDecorator):
 
     def load_dialect_impl(self, dialect):
         if dialect.name == "postgresql":
-            return dialect.type_descriptor(_ORIGINAL_POSTGRESQL_UUID(as_uuid=self.as_uuid))
+            return dialect.type_descriptor(
+                _ORIGINAL_POSTGRESQL_UUID(as_uuid=self.as_uuid)
+            )
         return dialect.type_descriptor(CHAR(36))
 
     def process_bind_param(self, value, dialect):
@@ -190,7 +192,9 @@ if "appointments" not in _Base.metadata.tables:
 
         __tablename__ = "appointments"
         id = _sa.Column(MockUUID(as_uuid=True), primary_key=True)
-        lead_id = _sa.Column(MockUUID(as_uuid=True), _sa.ForeignKey("leads.id"), nullable=True)
+        lead_id = _sa.Column(
+            MockUUID(as_uuid=True), _sa.ForeignKey("leads.id"), nullable=True
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -363,7 +367,9 @@ def _do_singleton_reset() -> None:
 
     # sales_agent (Story 7 — soft)
     try:
-        from luana_core_sales_agent.application.orchestrator.chat import ChatOrchestrator
+        from luana_core_sales_agent.application.orchestrator.chat import (
+            ChatOrchestrator,
+        )
 
         if ChatOrchestrator._instance is not None and hasattr(
             ChatOrchestrator._instance, "buffer_service"
@@ -374,7 +380,9 @@ def _do_singleton_reset() -> None:
         pass
 
     try:
-        from luana_core_sales_agent.application.services.semantic_router import SemanticRouter
+        from luana_core_sales_agent.application.services.semantic_router import (
+            SemanticRouter,
+        )
 
         SemanticRouter._instance = None
     except (ImportError, AttributeError):

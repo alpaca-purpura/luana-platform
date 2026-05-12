@@ -94,7 +94,9 @@ MINIMAL_IDENTITY_CONTEXT: dict[str, Any] = {
 }
 
 
-def _make_brand_knowledge(brand_data: dict, personality_data: dict | None = None) -> Any:
+def _make_brand_knowledge(
+    brand_data: dict, personality_data: dict | None = None
+) -> Any:
     """Build a real BrandKnowledgeDTO."""
     from luana_core_platform.links.ports.brand import BrandKnowledgeDTO
 
@@ -119,11 +121,15 @@ def _patched_builder(brand_knowledge: Any) -> Any:
         patch(
             "luana_core_sales_agent.application.services.knowledge_builder.get_offer_repository",
         ),
-        patch("luana_core_sales_agent.application.services.knowledge_builder.SemanticRouter"),
+        patch(
+            "luana_core_sales_agent.application.services.knowledge_builder.SemanticRouter"
+        ),
     ]
     for p in patches:
         started = p.start()
-        if hasattr(started, "return_value") and hasattr(started.return_value, "get_all_by_tenant"):
+        if hasattr(started, "return_value") and hasattr(
+            started.return_value, "get_all_by_tenant"
+        ):
             started.return_value.get_all_by_tenant.return_value = []
 
     from luana_core_sales_agent.application.services.knowledge_builder import (
@@ -175,7 +181,10 @@ class TestAgentIdentitySlot4HasNoVoice:
     def test_build_identity_does_not_include_voice_tone_fallback(self) -> None:
         """Without a PersonalityProfile, slot 4 still has no voice block."""
         brand_data = {
-            "identity": {"brand_name": "Acme", "voice_tone": "Very warm and professional"},
+            "identity": {
+                "brand_name": "Acme",
+                "voice_tone": "Very warm and professional",
+            },
             "strategy": {},
             "story": {},
             "team": [],
@@ -221,7 +230,10 @@ class TestBrandVoiceSlot5:
     def test_falls_back_to_voice_tone_when_no_profile(self) -> None:
         """No profile → legacy voice_tone wrapped in 'Tu Voz y Tono' header."""
         brand_data = {
-            "identity": {"brand_name": "Acme", "voice_tone": "Very warm and professional"},
+            "identity": {
+                "brand_name": "Acme",
+                "voice_tone": "Very warm and professional",
+            },
         }
         knowledge = _make_brand_knowledge(brand_data, None)
         builder, patches = _patched_builder(knowledge)
@@ -246,7 +258,9 @@ class TestBrandVoiceSlot5:
 
         assert voice is None
 
-    def test_falls_back_to_voice_tone_when_profile_system_instruction_is_none(self) -> None:
+    def test_falls_back_to_voice_tone_when_profile_system_instruction_is_none(
+        self,
+    ) -> None:
         """Profile exists but its system_instruction is None → use voice_tone."""
         brand_data = {
             "identity": {"brand_name": "Acme", "voice_tone": "Casual and fun"},
@@ -271,7 +285,9 @@ class TestBrandVoiceSlot5:
 class TestAgentIdentityTemplatePostS7:
     """Template renders WHO+WHAT only after the S7 slot split."""
 
-    def test_template_does_not_render_personality_instruction(self, jinja_env: Environment) -> None:
+    def test_template_does_not_render_personality_instruction(
+        self, jinja_env: Environment
+    ) -> None:
         """The personality_instruction block was moved to slot 5; template ignores the kwarg."""
         ctx = {
             **MINIMAL_IDENTITY_CONTEXT,
@@ -283,7 +299,9 @@ class TestAgentIdentityTemplatePostS7:
         assert PERSONALITY_SYSTEM_INSTRUCTION not in result
         assert "TestBrand" in result
 
-    def test_template_does_not_render_voice_tone_fallback(self, jinja_env: Environment) -> None:
+    def test_template_does_not_render_voice_tone_fallback(
+        self, jinja_env: Environment
+    ) -> None:
         """Legacy voice_tone fallback was removed from agent_identity.j2."""
         ctx = {**MINIMAL_IDENTITY_CONTEXT, "personality_instruction": None}
         template = jinja_env.get_template("agent_identity.j2")
@@ -292,7 +310,9 @@ class TestAgentIdentityTemplatePostS7:
         assert "Tu Voz y Tono" not in result
         assert "Professional and warm" not in result
 
-    def test_template_does_not_render_style_anchors(self, jinja_env: Environment) -> None:
+    def test_template_does_not_render_style_anchors(
+        self, jinja_env: Environment
+    ) -> None:
         """Style anchors block was removed from slot 4 (would break cache prefix)."""
         anchors = [
             {
@@ -311,7 +331,9 @@ class TestAgentIdentityTemplatePostS7:
 
         assert "EJEMPLOS DE CÓMO RESPONDES" not in result
 
-    def test_template_still_backward_compatible_without_new_keys(self, jinja_env: Environment) -> None:
+    def test_template_still_backward_compatible_without_new_keys(
+        self, jinja_env: Environment
+    ) -> None:
         """Template renders without error when context misses optional keys."""
         template = jinja_env.get_template("agent_identity.j2")
         result = template.render(**MINIMAL_IDENTITY_CONTEXT)

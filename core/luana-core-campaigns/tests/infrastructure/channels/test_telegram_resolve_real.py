@@ -16,9 +16,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
 import pytest
-
 from luana_core_campaigns.infrastructure.channels.telegram import TelegramChannelRouter
-
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 

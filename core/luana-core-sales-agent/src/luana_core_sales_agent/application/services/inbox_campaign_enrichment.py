@@ -15,7 +15,10 @@ if TYPE_CHECKING:
 
     from sqlalchemy.ext.asyncio import AsyncSession
 
-    from luana_core_sales_agent.api.dto.closer_studio import ConversationDetail, ConversationListItem
+    from luana_core_sales_agent.api.dto.closer_studio import (
+        ConversationDetail,
+        ConversationListItem,
+    )
     from luana_core_platform.links.ports.campaigns import CampaignsLookupPort
 
 logger = structlog.get_logger(__name__)

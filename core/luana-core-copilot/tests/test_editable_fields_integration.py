@@ -12,7 +12,10 @@ import json
 
 import pytest
 
-pytest.skip("T-15 deferred to T-16 UNLIFT (Stories 2-5 copilot_provider/ subfolders not yet lifted — luana_core_brand_studio.copilot_provider / luana_core_offer_studio.copilot_provider / etc.)", allow_module_level=True)
+pytest.skip(
+    "T-15 deferred to T-16 UNLIFT (Stories 2-5 copilot_provider/ subfolders not yet lifted — luana_core_brand_studio.copilot_provider / luana_core_offer_studio.copilot_provider / etc.)",
+    allow_module_level=True,
+)
 
 
 class TestEditableFieldsPort:
@@ -63,7 +66,9 @@ class TestEditableFieldsPort:
         assert get_catalog("nonexistent_domain") == ()
 
     def test_get_registered_domains_includes_brand_and_offer(self) -> None:
-        from luana_core_platform.links.ports.editable_fields import get_registered_domains
+        from luana_core_platform.links.ports.editable_fields import (
+            get_registered_domains,
+        )
 
         domains = get_registered_domains()
         assert "brand" in domains

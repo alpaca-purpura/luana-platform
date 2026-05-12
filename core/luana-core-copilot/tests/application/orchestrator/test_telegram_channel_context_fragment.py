@@ -109,7 +109,9 @@ def test_fragment_byte_identical_across_tenants() -> None:
         "client_context": {"channel": "telegram", "tenant_id": "tenant-b"},
         "tenant_id": "tenant-b",
     }
-    assert _build_telegram_channel_context_fragment(state_a) == _build_telegram_channel_context_fragment(state_b)
+    assert _build_telegram_channel_context_fragment(
+        state_a
+    ) == _build_telegram_channel_context_fragment(state_b)
 
 
 # ── Slot registration ───────────────────────────────────────────────────
@@ -123,7 +125,9 @@ def test_telegram_channel_context_in_cacheable_fragments() -> None:
     assert PromptFragment.TELEGRAM_CHANNEL_CONTEXT in CACHEABLE_FRAGMENTS
 
 
-def test_telegram_channel_context_position_after_marketing_kb_hint_before_lighthouse() -> None:
+def test_telegram_channel_context_position_after_marketing_kb_hint_before_lighthouse() -> (
+    None
+):
     """Slot ordering preserves F10 anchor + lighthouse positions."""
     cacheable = list(CACHEABLE_FRAGMENTS)
     idx_kb = cacheable.index(PromptFragment.MARKETING_KB_HINT)

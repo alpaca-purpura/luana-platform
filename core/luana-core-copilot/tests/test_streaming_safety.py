@@ -243,7 +243,9 @@ class TestGraphRecursionErrorHandling:
             # Spanish neutro user-facing message — never raw exception text.
             msg = error_events[0]["data"]["message"].lower()
             assert "recursion" not in msg  # internal detail must not leak
-            assert "error" in msg or "intenta" in msg or "limite" in msg or "límite" in msg
+            assert (
+                "error" in msg or "intenta" in msg or "limite" in msg or "límite" in msg
+            )
 
 
 # ── Tests — partial persistence on error (Fix 4) ────────────────────
@@ -343,7 +345,11 @@ class TestPartialPersistenceOnError:
         # ToolMessage before the failure. Pre-fix: empty list.
         msgs = captured["messages"]
         assert len(msgs) >= 1, f"expected partial messages preserved, got {msgs!r}"
-        tool_msgs = [m for m in msgs if isinstance(m, ToolMessage) or getattr(m, "type", "") == "tool"]
+        tool_msgs = [
+            m
+            for m in msgs
+            if isinstance(m, ToolMessage) or getattr(m, "type", "") == "tool"
+        ]
         assert tool_msgs, "expected the read_document ToolMessage to survive"
         # The user message text must reach persistence too — losing it
         # leaves the conversation looking blank on refresh.
@@ -432,8 +438,12 @@ class TestToolCallDedupWiring:
             captured_acc_messages: list = []
             real_handler = orchestrator._handle_tool_end_v2  # type: ignore[attr-defined]
 
-            def _spy_handler(event, accumulated_messages, last_tool_call_ids, acc, msg_id):  # type: ignore[no-untyped-def]
-                result = real_handler(event, accumulated_messages, last_tool_call_ids, acc, msg_id)
+            def _spy_handler(
+                event, accumulated_messages, last_tool_call_ids, acc, msg_id
+            ):  # type: ignore[no-untyped-def]
+                result = real_handler(
+                    event, accumulated_messages, last_tool_call_ids, acc, msg_id
+                )
                 # Snapshot AFTER the handler ran so the dedup wrap, if any,
                 # is visible.
                 captured_acc_messages.append(list(accumulated_messages))
@@ -451,7 +461,9 @@ class TestToolCallDedupWiring:
             assert captured_acc_messages, "tool_end handler never ran"
             final = captured_acc_messages[-1]
             tool_messages = [m for m in final if isinstance(m, ToolMessage)]
-            assert len(tool_messages) >= 3, f"expected ≥3 tool msgs, got {len(tool_messages)}"
+            assert len(tool_messages) >= 3, (
+                f"expected ≥3 tool msgs, got {len(tool_messages)}"
+            )
             third = tool_messages[2]
             assert "GUARD ANTI-LOOP" in third.content
             assert "get_module_data" in third.content
@@ -518,11 +530,18 @@ class TestToolCallDedupWiring:
 
             # Loop must be aborted with a user-facing SSE error.
             assert "error" in event_types
-            error_msg = next(e["data"]["message"] for e in parsed if e["event"] == "error").lower()
+            error_msg = next(
+                e["data"]["message"] for e in parsed if e["event"] == "error"
+            ).lower()
             # Internal mechanism must not leak; user sees a friendly message.
             assert "tool_call_loop" not in error_msg
             assert "guard" not in error_msg
-            assert "intenta" in error_msg or "error" in error_msg or "limite" in error_msg or "límite" in error_msg
+            assert (
+                "intenta" in error_msg
+                or "error" in error_msg
+                or "limite" in error_msg
+                or "límite" in error_msg
+            )
 
 
 # Required to silence unused-import lint when running file standalone.

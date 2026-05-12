@@ -78,7 +78,9 @@ def test_media_upload_returns_valid_asset_id(
     mock_assets_cls.return_value.upload_asset.return_value = fake_asset
 
     # Real SQLite session (not MagicMock)
-    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
+    engine = create_engine(
+        "sqlite:///:memory:", connect_args={"check_same_thread": False}
+    )
     real_session = Session(engine)
 
     app = FastAPI()
@@ -126,10 +128,14 @@ def test_media_upload_response_no_password_or_secrets(
     """Media upload response does not leak sensitive fields (PII check)."""
     mock_rate_limit.return_value = None
 
-    fake_asset = SimpleNamespace(id=uuid4(), public_url="https://cdn.example.com/img.png")
+    fake_asset = SimpleNamespace(
+        id=uuid4(), public_url="https://cdn.example.com/img.png"
+    )
     mock_assets_cls.return_value.upload_asset.return_value = fake_asset
 
-    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
+    engine = create_engine(
+        "sqlite:///:memory:", connect_args={"check_same_thread": False}
+    )
     real_session = Session(engine)
 
     app = FastAPI()

@@ -27,7 +27,9 @@ def tenant_user() -> tuple:
     return uuid4(), uuid4()
 
 
-def _create_conv(repo: ConversationRepository, tenant_id, user_id, *, title: str = "wf-test"):
+def _create_conv(
+    repo: ConversationRepository, tenant_id, user_id, *, title: str = "wf-test"
+):
     return repo.create(
         conversation_id=uuid4(),
         tenant_id=tenant_id,
@@ -119,7 +121,10 @@ class TestWorkflowStatePersistence:
         tenant_id, user_id = tenant_user
         conv = _create_conv(repo, tenant_id, user_id)
         db.commit()
-        assert repo.get_workflow_state(conversation_id=conv.id, tenant_id=tenant_id) is None
+        assert (
+            repo.get_workflow_state(conversation_id=conv.id, tenant_id=tenant_id)
+            is None
+        )
 
     def test_clear_workflow_state(
         self,
@@ -141,4 +146,7 @@ class TestWorkflowStatePersistence:
             workflow_state=None,
         )
         db.commit()
-        assert repo.get_workflow_state(conversation_id=conv.id, tenant_id=tenant_id) is None
+        assert (
+            repo.get_workflow_state(conversation_id=conv.id, tenant_id=tenant_id)
+            is None
+        )

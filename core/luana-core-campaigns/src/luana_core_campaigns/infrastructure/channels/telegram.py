@@ -26,6 +26,7 @@ from typing import TYPE_CHECKING, Any
 
 import httpx
 import structlog
+from luana_core_platform.links.ports.crm_repos import get_lead_telegram_id_async
 
 from luana_core_campaigns.domain.channel_router import ChannelRouter, ChannelSendResult
 from luana_core_campaigns.infrastructure.channels.errors import (
@@ -43,17 +44,15 @@ from luana_core_campaigns.infrastructure.resilience.circuit_breaker import (
     CircuitBreaker,
     CircuitBreakerConfig,
 )
-from luana_core_platform.links.ports.crm_repos import get_lead_telegram_id_async
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
     from uuid import UUID
 
-    from sqlalchemy.ext.asyncio import AsyncSession
-
     from luana_core_billing.application.rate_limiter import OutboundRateLimiter
     from luana_core_compliance.application.compliance_service import ComplianceService
     from luana_core_idempotency.application.service import IdempotencyService
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = structlog.get_logger(__name__)
 

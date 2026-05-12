@@ -18,17 +18,19 @@ import dataclasses
 
 from luana_core_extension_sdk import BrandContext
 
-_EXPECTED_FIELDS = frozenset({
-    "tenant_id",
-    "brand_slug",
-    "plan_tier",
-    "locale",
-    "feature_flags",
-    "tenant_profile_id",
-    "vertical_kind",
-    "compliance_flags",
-    "pii_policy",
-})
+_EXPECTED_FIELDS = frozenset(
+    {
+        "tenant_id",
+        "brand_slug",
+        "plan_tier",
+        "locale",
+        "feature_flags",
+        "tenant_profile_id",
+        "vertical_kind",
+        "compliance_flags",
+        "pii_policy",
+    }
+)
 
 _EXPECTED_FIELD_COUNT = 9
 
@@ -50,7 +52,7 @@ _PII_FIELD_PATTERNS = {
     "account_number",
     "card_number",
     "iban",
-    "name",       # person name — PII
+    "name",  # person name — PII
     "first_name",
     "last_name",
     "full_name",
@@ -60,8 +62,7 @@ _PII_FIELD_PATTERNS = {
 def test_brand_context_is_dataclass() -> None:
     """V-F-sdk-5: BrandContext must be a dataclass."""
     assert dataclasses.is_dataclass(BrandContext), (
-        "BrandContext is not a dataclass.\n"
-        "Must use @dataclass(frozen=True, slots=True, kw_only=True)."
+        "BrandContext is not a dataclass.\nMust use @dataclass(frozen=True, slots=True, kw_only=True)."
     )
 
 

@@ -35,45 +35,29 @@ def test_brand_voice_port_exposes_compile_system_instruction():
         "BrandVoicePort MUST expose `compile_system_instruction` (D-T3 §2.4)."
     )
     method = BrandVoicePort.compile_system_instruction
-    assert inspect.iscoroutinefunction(method), (
-        "compile_system_instruction MUST be async."
-    )
+    assert inspect.iscoroutinefunction(method), "compile_system_instruction MUST be async."
     sig = inspect.signature(method)
     params = list(sig.parameters.keys())
     # self + tenant_id
-    assert "tenant_id" in params, (
-        "compile_system_instruction MUST accept `tenant_id` parameter."
-    )
+    assert "tenant_id" in params, "compile_system_instruction MUST accept `tenant_id` parameter."
     hints = get_type_hints(method)
     assert hints.get("tenant_id") is UUID, (
         f"compile_system_instruction `tenant_id` must be UUID, got {hints.get('tenant_id')}."
     )
-    assert hints.get("return") is str, (
-        f"compile_system_instruction return type must be str, got {hints.get('return')}."
-    )
+    assert hints.get("return") is str, f"compile_system_instruction return type must be str, got {hints.get('return')}."
 
 
 def test_brand_voice_port_exposes_get_voice_metadata():
     """get_voice_metadata must be async + accept tenant_id: UUID + return dict."""
-    assert hasattr(BrandVoicePort, "get_voice_metadata"), (
-        "BrandVoicePort MUST expose `get_voice_metadata` (D-T3 §2.4)."
-    )
+    assert hasattr(BrandVoicePort, "get_voice_metadata"), "BrandVoicePort MUST expose `get_voice_metadata` (D-T3 §2.4)."
     method = BrandVoicePort.get_voice_metadata
-    assert inspect.iscoroutinefunction(method), (
-        "get_voice_metadata MUST be async."
-    )
+    assert inspect.iscoroutinefunction(method), "get_voice_metadata MUST be async."
     sig = inspect.signature(method)
     params = list(sig.parameters.keys())
-    assert "tenant_id" in params, (
-        "get_voice_metadata MUST accept `tenant_id` parameter."
-    )
+    assert "tenant_id" in params, "get_voice_metadata MUST accept `tenant_id` parameter."
     hints = get_type_hints(method)
-    assert hints.get("tenant_id") is UUID, (
-        f"get_voice_metadata `tenant_id` must be UUID, got {hints.get('tenant_id')}."
-    )
-    assert hints.get("return") is dict, (
-        f"get_voice_metadata return type must be dict, got {hints.get('return')}."
-    )
+    assert hints.get("tenant_id") is UUID, f"get_voice_metadata `tenant_id` must be UUID, got {hints.get('tenant_id')}."
+    assert hints.get("return") is dict, f"get_voice_metadata return type must be dict, got {hints.get('return')}."
 
 
 def test_brand_voice_port_surface_frozen():
@@ -93,9 +77,7 @@ def test_brand_voice_port_surface_frozen():
     extra = public_methods - expected
     missing = expected - public_methods
 
-    assert not missing, (
-        f"BrandVoicePort missing required methods: {missing} (D-T3 §2.4)."
-    )
+    assert not missing, f"BrandVoicePort missing required methods: {missing} (D-T3 §2.4)."
     assert not extra, (
         f"BrandVoicePort surface DRIFT — extra methods detected: {extra}. "
         "Surface FROZEN per Story 7 §6 halt #2. Adding methods requires "

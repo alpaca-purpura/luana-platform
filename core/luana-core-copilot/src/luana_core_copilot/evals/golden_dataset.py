@@ -89,7 +89,9 @@ def _load_jsonl(path: Path) -> list[dict]:  # type: ignore[type-arg]
     return records
 
 
-def load_classifier_goldens(filename: str = "nano_routing.jsonl") -> list[ClassifierGolden]:
+def load_classifier_goldens(
+    filename: str = "nano_routing.jsonl",
+) -> list[ClassifierGolden]:
     """Load classifier goldens from ``goldens/classifier/<filename>``."""
     path = _GOLDENS_DIR / "classifier" / filename
     if not path.exists():

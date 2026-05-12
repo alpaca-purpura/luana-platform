@@ -90,7 +90,9 @@ def _build_response(
             "content": "",
             "summary": asset.extracted_summary,
             "status": asset.extraction_status,
-            "note": ("El documento no tiene texto extraído. Pide al usuario re-subirlo o usar un formato soportado."),
+            "note": (
+                "El documento no tiene texto extraído. Pide al usuario re-subirlo o usar un formato soportado."
+            ),
         }
 
     if query:

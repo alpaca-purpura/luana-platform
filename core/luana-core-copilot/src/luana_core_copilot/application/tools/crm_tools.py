@@ -62,7 +62,8 @@ def get_lead_summary(temperature: str | None = None, limit: int = 10) -> str:
             lines.append(f"  - {temp}: {cnt}")
 
         lines.append(
-            f"\n### Top {len(rows)} Leads" + (f" ({temperature})" if temperature else ""),
+            f"\n### Top {len(rows)} Leads"
+            + (f" ({temperature})" if temperature else ""),
         )
 
         for r in rows:

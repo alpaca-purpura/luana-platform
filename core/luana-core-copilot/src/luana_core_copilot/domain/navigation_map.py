@@ -135,7 +135,14 @@ NAVIGATION_MAP: list[AppPage] = [
         label="Equipo",
         module="brand",
         description="Personas clave, voceros y liderazgo de la marca",
-        keywords=["equipo", "team", "personas clave", "key figures", "liderazgo", "voceros"],
+        keywords=[
+            "equipo",
+            "team",
+            "personas clave",
+            "key figures",
+            "liderazgo",
+            "voceros",
+        ],
         sections=[],
     ),
     AppPage(
@@ -143,7 +150,14 @@ NAVIGATION_MAP: list[AppPage] = [
         label="Autoridad",
         module="brand",
         description="Prensa, certificaciones, premios, partnerships",
-        keywords=["autoridad", "authority", "prensa", "premios", "certificaciones", "partnerships"],
+        keywords=[
+            "autoridad",
+            "authority",
+            "prensa",
+            "premios",
+            "certificaciones",
+            "partnerships",
+        ],
         sections=[],
     ),
     AppPage(
@@ -151,7 +165,13 @@ NAVIGATION_MAP: list[AppPage] = [
         label="Testimonios",
         module="brand",
         description="Prueba social y casos de éxito de clientes reales",
-        keywords=["testimonios", "testimonials", "prueba social", "casos de éxito", "social proof"],
+        keywords=[
+            "testimonios",
+            "testimonials",
+            "prueba social",
+            "casos de éxito",
+            "social proof",
+        ],
         sections=[],
     ),
     AppPage(
@@ -197,7 +217,14 @@ NAVIGATION_MAP: list[AppPage] = [
         label="Contacto",
         module="brand",
         description="Información pública de contacto y redes sociales",
-        keywords=["contacto", "contact", "email", "teléfono", "redes sociales", "social"],
+        keywords=[
+            "contacto",
+            "contact",
+            "email",
+            "teléfono",
+            "redes sociales",
+            "social",
+        ],
         sections=[],
     ),
     AppPage(

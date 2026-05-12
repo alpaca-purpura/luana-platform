@@ -8,13 +8,10 @@ FSM transitions (schedule/launch/pause/resume/complete/cancel), step CRUD.
 from __future__ import annotations
 
 import datetime as dt
-from decimal import Decimal
-from typing import Any
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 from uuid import UUID, uuid4
 
 import pytest
-
 from luana_core_campaigns.application.dtos.campaign_dtos import (
     CampaignCreate,
     CampaignUpdate,
@@ -31,7 +28,6 @@ from luana_core_campaigns.application.services.campaign_service import (
     CampaignNotFoundError,
     CampaignPlanLimitExceededError,
     CampaignService,
-    CampaignServiceError,
 )
 from luana_core_campaigns.domain.campaign import Campaign
 from luana_core_campaigns.domain.campaign_step import CampaignStep

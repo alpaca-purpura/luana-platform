@@ -45,7 +45,9 @@ from luana_core_channels.format import get_channel_format
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
-    from luana_core_brand_studio.application.ports.brand_voice_port import BrandVoicePort
+    from luana_core_brand_studio.application.ports.brand_voice_port import (
+        BrandVoicePort,
+    )
     from luana_core_sales_agent.application.orchestrator.state import AgentState
 
 
@@ -91,7 +93,9 @@ VOLATILE_FRAGMENTS: tuple[PromptFragment, ...] = (
     PromptFragment.TOOL_REQUEST_FORMAT,
 )
 
-PROMPT_FRAGMENT_ORDER: tuple[PromptFragment, ...] = CACHEABLE_FRAGMENTS + VOLATILE_FRAGMENTS
+PROMPT_FRAGMENT_ORDER: tuple[PromptFragment, ...] = (
+    CACHEABLE_FRAGMENTS + VOLATILE_FRAGMENTS
+)
 
 CACHE_BOUNDARY_MARKER: str = "\n\n<!-- ==== CACHE BOUNDARY (S3) ==== -->\n\n"
 """Inserted between the cacheable prefix and the volatile tail. Renders as
@@ -122,7 +126,11 @@ def compose_system_prompt(fragments: Mapping[PromptFragment, str]) -> str:
     if not cache_parts:
         return _FRAGMENT_SEPARATOR.join(volatile_parts)
 
-    return _FRAGMENT_SEPARATOR.join(cache_parts) + CACHE_BOUNDARY_MARKER + _FRAGMENT_SEPARATOR.join(volatile_parts)
+    return (
+        _FRAGMENT_SEPARATOR.join(cache_parts)
+        + CACHE_BOUNDARY_MARKER
+        + _FRAGMENT_SEPARATOR.join(volatile_parts)
+    )
 
 
 def _take(
@@ -248,9 +256,13 @@ def _lead_signals(state: AgentState) -> str:
 
     parts: list[str] = ["# Señales acumuladas"]
     if qual:
-        parts.append(f"- Calificación recopilada: {json.dumps(qual, ensure_ascii=False, sort_keys=True)}")
+        parts.append(
+            f"- Calificación recopilada: {json.dumps(qual, ensure_ascii=False, sort_keys=True)}"
+        )
     if signals:
-        parts.append(f"- Señales de compra ({len(signals)}): {json.dumps(signals, ensure_ascii=False, sort_keys=True)}")
+        parts.append(
+            f"- Señales de compra ({len(signals)}): {json.dumps(signals, ensure_ascii=False, sort_keys=True)}"
+        )
     if objections:
         unresolved = [o for o in objections if not o.get("resolved")]
         parts.append(
@@ -268,11 +280,15 @@ def _session_continuity(state: AgentState) -> str:
         if gap < 6:
             parts.append("  - **NO saludes**: continúa directo donde quedaron.")
         elif gap < 24:
-            parts.append('  - Saludo breve: "¡Hola de nuevo!" + referencia breve a lo que quedó.')
+            parts.append(
+                '  - Saludo breve: "¡Hola de nuevo!" + referencia breve a lo que quedó.'
+            )
         elif gap < 168:
             parts.append("  - Saludo cálido + mención breve de en qué quedaron.")
         else:
-            parts.append("  - Re-contacto: saludo + recordatorio de quién eres + cómo le va.")
+            parts.append(
+                "  - Re-contacto: saludo + recordatorio de quién eres + cómo le va."
+            )
 
     summary = state.get("last_session_summary")
     if summary:
@@ -459,7 +475,11 @@ async def compose_prompt(
 
     # Resolve specialist role enum (accept str or enum for callers passing
     # current_specialist directly from SalesAgentState).
-    role = specialist if isinstance(specialist, SpecialistRole) else SpecialistRole(str(specialist))
+    role = (
+        specialist
+        if isinstance(specialist, SpecialistRole)
+        else SpecialistRole(str(specialist))
+    )
 
     return build_specialist_system_prompt(state, role)
 

@@ -69,9 +69,21 @@ class TestPlanCardPayload:
         payload = {
             "type": "plan_card",
             "todos": [
-                {"content": "Auditar identidad", "status": "in_progress", "active_form": ""},
-                {"content": "Revisar storytelling", "status": "pending", "active_form": ""},
-                {"content": "Sintetizar hallazgos", "status": "completed", "active_form": ""},
+                {
+                    "content": "Auditar identidad",
+                    "status": "in_progress",
+                    "active_form": "",
+                },
+                {
+                    "content": "Revisar storytelling",
+                    "status": "pending",
+                    "active_form": "",
+                },
+                {
+                    "content": "Sintetizar hallazgos",
+                    "status": "completed",
+                    "active_form": "",
+                },
             ],
         }
         model = PlanCardPayload.model_validate(payload)

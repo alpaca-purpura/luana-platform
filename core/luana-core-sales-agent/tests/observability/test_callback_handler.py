@@ -253,7 +253,11 @@ class TestOnToolEnd:
         handler.on_tool_end(output={"link": "https://mpago.la/abc"}, run_id=run_id)
 
         # tool_call event mirrored in trace
-        calls = [c for c in trace_repo_stub.add.call_args_list if c.kwargs.get("event_type") == "tool_call"]
+        calls = [
+            c
+            for c in trace_repo_stub.add.call_args_list
+            if c.kwargs.get("event_type") == "tool_call"
+        ]
         assert len(calls) == 1
         kwargs = calls[0].kwargs
         assert kwargs["name"] == "create_payment_link"
@@ -274,7 +278,11 @@ class TestOnToolEnd:
         )
         handler.on_tool_end(output="ok", run_id=run_id)
 
-        calls = [c for c in trace_repo_stub.add.call_args_list if c.kwargs.get("event_type") == "tool_call"]
+        calls = [
+            c
+            for c in trace_repo_stub.add.call_args_list
+            if c.kwargs.get("event_type") == "tool_call"
+        ]
         assert len(calls) == 1
         # Payload (data dict) must NOT carry raw email.
         data = calls[0].kwargs["data"]
@@ -294,7 +302,11 @@ class TestOnChainEvents:
             inputs={},
             run_id=run_id,
         )
-        calls = [c for c in trace_repo_stub.add.call_args_list if c.kwargs.get("event_type") == "node_enter"]
+        calls = [
+            c
+            for c in trace_repo_stub.add.call_args_list
+            if c.kwargs.get("event_type") == "node_enter"
+        ]
         assert len(calls) == 1
         assert calls[0].kwargs["name"] == "qualifier"
         assert calls[0].kwargs["lead_id"] == handler.lead_id
@@ -307,7 +319,11 @@ class TestOnChainEvents:
         run_id = uuid4()
         handler.on_chain_start(serialized={"name": "closer"}, inputs={}, run_id=run_id)
         handler.on_chain_end(outputs={}, run_id=run_id)
-        calls = [c for c in trace_repo_stub.add.call_args_list if c.kwargs.get("event_type") == "node_exit"]
+        calls = [
+            c
+            for c in trace_repo_stub.add.call_args_list
+            if c.kwargs.get("event_type") == "node_exit"
+        ]
         assert len(calls) == 1
         assert calls[0].kwargs["name"] == "closer"
 

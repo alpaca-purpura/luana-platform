@@ -16,16 +16,14 @@ from __future__ import annotations
 
 from typing import Any
 from unittest.mock import AsyncMock
-from uuid import UUID, uuid4
+from uuid import UUID
 
 import pytest
-
 from luana_core_campaigns.domain.channel_router import ChannelRouter, ChannelSendResult
 from luana_core_campaigns.infrastructure.channels.registry import (
     ChannelRouterRegistry,
     register_default_channels,
 )
-
 
 # ── Stub ChannelRouter impl for tests ─────────────────────────────────────────
 

@@ -122,7 +122,9 @@ class TestPolicyMatrix:
             ),
         ],
     )
-    def test_matrix_returns_expected_policy(self, event: dict, expected: StreamPolicy) -> None:
+    def test_matrix_returns_expected_policy(
+        self, event: dict, expected: StreamPolicy
+    ) -> None:
         assert policy_for(event) is expected
 
     def test_unknown_kind_defaults_to_drop(self) -> None:

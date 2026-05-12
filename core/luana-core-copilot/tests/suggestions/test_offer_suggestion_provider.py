@@ -115,7 +115,10 @@ class TestOfferSuggestionProviderHeuristics:
             results = provider.get_suggestions(ctx)
 
         labels = [s.label.lower() for s in results]
-        assert any("pricing" in l or "precio" in l or "nivel" in l or "tier" in l for l in labels)
+        assert any(
+            "pricing" in l or "precio" in l or "nivel" in l or "tier" in l
+            for l in labels
+        )
 
     def test_recurring_billing_flag_yields_subscription_chip(self) -> None:
         from luana_core_copilot.application.suggestions.providers.offer import (
@@ -140,7 +143,13 @@ class TestOfferSuggestionProviderHeuristics:
             results = provider.get_suggestions(ctx)
 
         labels = [s.label.lower() for s in results]
-        assert any("recurrente" in l or "suscripcion" in l or "suscripción" in l or "facturación" in l for l in labels)
+        assert any(
+            "recurrente" in l
+            or "suscripcion" in l
+            or "suscripción" in l
+            or "facturación" in l
+            for l in labels
+        )
 
     def test_lead_magnet_without_core_yields_link_chip(self) -> None:
         reader = _mock_reader(lead_without_core=True)

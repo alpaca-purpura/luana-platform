@@ -82,9 +82,8 @@ def test_no_mirror_observability_functions():
                         "luana_core_observability, not redeclared.",
                     )
 
-    assert not violations, (
-        "V-AG-6 D-T6 cement violation: mirror sanitization function detected.\n"
-        + "\n".join(violations)
+    assert not violations, "V-AG-6 D-T6 cement violation: mirror sanitization function detected.\n" + "\n".join(
+        violations
     )
 
 

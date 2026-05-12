@@ -11,10 +11,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import structlog
+from luana_core_platform.domain.datetime_utils import utc_now
 from sqlalchemy import func, select, text, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
-
-from luana_core_platform.domain.datetime_utils import utc_now
 
 if TYPE_CHECKING:
     import datetime as dt

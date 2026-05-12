@@ -35,12 +35,12 @@ import structlog
 if TYPE_CHECKING:
     from collections.abc import Generator
 
+    from luana_core_billing.application.budget_guard import BudgetGuard
     from sqlalchemy.ext.asyncio import AsyncSession
     from sqlalchemy.orm import Session
 
     from luana_core_campaigns.domain.campaign_step import CampaignStep
     from luana_core_campaigns.domain.campaign_task import CampaignTask
-    from luana_core_billing.application.budget_guard import BudgetGuard
 
 logger = structlog.get_logger(__name__)
 
@@ -140,10 +140,11 @@ class SalesAgentAdapter:
         )
 
         # Lazy imports — keep DDD boundary clean (campaigns does NOT top-level import sales_agent)
-        from luana_core_campaigns.infrastructure.channels.registry import ChannelRouterRegistry
         from luana_core_sales_agent.application.orchestrator.outbound_orchestrator import (
             OutboundOrchestrator,
         )
+
+        from luana_core_campaigns.infrastructure.channels.registry import ChannelRouterRegistry
 
         registry = ChannelRouterRegistry()
         channel_router = registry.get(channel_type)

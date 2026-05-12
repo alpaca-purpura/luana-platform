@@ -165,9 +165,6 @@ from luana_core_iam.infrastructure.models.tenant_model import TenantModel  # noq
 from luana_core_iam.infrastructure.models.user_model import UserModel  # noqa: F401
 from luana_core_iam.infrastructure.models.user_tenant_model import UserTenantModel  # noqa: F401
 from luana_core_platform.domain.base_entity import Base  # noqa: E402
-from sqlalchemy import create_engine  # noqa: E402
-from sqlalchemy.orm import sessionmaker  # noqa: E402
-from sqlalchemy.pool import StaticPool  # noqa: E402
 
 # Story 7 T-16: Register real sales_agent.MessageModel BEFORE stub guard runs.
 # T-16 resolves Stories 4+6 deferral — connections api/dependencies now wires
@@ -176,6 +173,9 @@ from sqlalchemy.pool import StaticPool  # noqa: E402
 from luana_core_sales_agent.infrastructure.models.message_model import (  # noqa: F401, E402
     MessageModel,
 )
+from sqlalchemy import create_engine  # noqa: E402
+from sqlalchemy.orm import sessionmaker  # noqa: E402
+from sqlalchemy.pool import StaticPool  # noqa: E402
 
 if "products" not in Base.metadata.tables:
 

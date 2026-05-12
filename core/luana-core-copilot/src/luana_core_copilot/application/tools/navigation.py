@@ -42,7 +42,8 @@ def navigate_to_page(page_keyword: str, section_id: str | None = None) -> dict:
             "page_label": target.label,
             "section_id": section_id,
         },
-        "message": f"Navegando a {target.label}" + (f" > {section_id}" if section_id else ""),
+        "message": f"Navegando a {target.label}"
+        + (f" > {section_id}" if section_id else ""),
     }
 
     # Validate section if provided
@@ -111,7 +112,11 @@ def list_app_pages() -> str:
     """
     lines = []
     for page in get_all_pages():
-        sections_str = ", ".join(s.label for s in page.sections) if page.sections else "(sin secciones)"
+        sections_str = (
+            ", ".join(s.label for s in page.sections)
+            if page.sections
+            else "(sin secciones)"
+        )
         lines.append(f"• {page.label} [{page.module}] — {sections_str}")
     return "\n".join(lines)
 
@@ -149,7 +154,9 @@ def navigate_to_channel(
     if stage not in VALID_STAGES:
         return {
             "success": False,
-            "message": (f"Stage '{stage}' no es válido. Opciones: {', '.join(sorted(VALID_STAGES))}"),
+            "message": (
+                f"Stage '{stage}' no es válido. Opciones: {', '.join(sorted(VALID_STAGES))}"
+            ),
         }
 
     # Build the route template — {tenantId} placeholder is resolved by the frontend

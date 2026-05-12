@@ -65,6 +65,4 @@ class CopilotLlmCallModel(Base):
 
     def __repr__(self) -> str:
         """Return a debug-friendly summary of the call."""
-        return (
-            f"<CopilotLlmCall id={self.id} provider={self.provider} model={self.model_responded} status={self.status}>"
-        )
+        return f"<CopilotLlmCall id={self.id} provider={self.provider} model={self.model_responded} status={self.status}>"

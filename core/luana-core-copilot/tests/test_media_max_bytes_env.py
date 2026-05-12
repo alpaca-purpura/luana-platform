@@ -18,7 +18,9 @@ from luana_core_copilot.application.services.limits_resolver import EffectiveLim
 from luana_core_iam.api.dependencies import get_current_user, get_db
 
 
-def _make_effective_limits(media_max_bytes: int, is_override: bool = False) -> EffectiveLimits:
+def _make_effective_limits(
+    media_max_bytes: int, is_override: bool = False
+) -> EffectiveLimits:
     return EffectiveLimits(
         tenant_id=uuid4(),
         voice_rpm=6,
@@ -76,7 +78,9 @@ def test_upload_30mb_passes_with_50mb_override(
     """Upload 30 MB passes when tenant override is 50 MB (despite env=10 MB)."""
     mock_rate_limit.return_value = None
 
-    fake_asset = SimpleNamespace(id=uuid4(), public_url="https://cdn.example.com/doc.pdf")
+    fake_asset = SimpleNamespace(
+        id=uuid4(), public_url="https://cdn.example.com/doc.pdf"
+    )
     mock_assets_cls.return_value.upload_asset.return_value = fake_asset
 
     thirty_mb = 30 * 1024 * 1024
@@ -126,7 +130,9 @@ def test_media_rate_limit_hit_returns_429(mock_rate_limit: MagicMock) -> None:
 
 
 @patch("luana_core_copilot.api.media.check_rate_limit")
-def test_media_and_voice_rate_limit_buckets_are_independent(mock_rate_limit: MagicMock) -> None:
+def test_media_and_voice_rate_limit_buckets_are_independent(
+    mock_rate_limit: MagicMock,
+) -> None:
     """Media upload uses scope 'copilot-media-upload', not 'copilot-voice'."""
     mock_rate_limit.return_value = None
 

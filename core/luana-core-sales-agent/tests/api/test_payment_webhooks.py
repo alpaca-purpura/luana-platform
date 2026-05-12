@@ -32,7 +32,9 @@ class FakePaymentWebhookProvider:
 
     provider_id = "fakepay"
 
-    def verify_signature(self, body: bytes, headers: dict[str, str], secret: str) -> bool:
+    def verify_signature(
+        self, body: bytes, headers: dict[str, str], secret: str
+    ) -> bool:
         sig = headers.get("x-fakepay-signature", "")
         expected = hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()
         return hmac.compare_digest(sig, expected)
@@ -47,7 +49,9 @@ class FakePaymentWebhookProvider:
             provider_id=self.provider_id,
             event_type=PaymentWebhookEventType(payload["event_type"]),
             occurred_at=dt.datetime.fromisoformat(payload["occurred_at"]),
-            tenant_id=uuid.UUID(payload["tenant_id"]) if payload.get("tenant_id") else None,
+            tenant_id=uuid.UUID(payload["tenant_id"])
+            if payload.get("tenant_id")
+            else None,
             lead_id=uuid.UUID(payload["lead_id"]) if payload.get("lead_id") else None,
             external_payment_id=payload.get("payment_id"),
             payment_status=payload.get("status", "paid"),
@@ -140,8 +144,12 @@ def test_replay_returns_duplicate(client, db) -> None:
     body, sig = _signed_body(payload)
     headers = {"content-type": "application/json", "x-fakepay-signature": sig}
 
-    first = client.post("/api/v1/sales-agent/webhooks/payment/fakepay", content=body, headers=headers)
-    second = client.post("/api/v1/sales-agent/webhooks/payment/fakepay", content=body, headers=headers)
+    first = client.post(
+        "/api/v1/sales-agent/webhooks/payment/fakepay", content=body, headers=headers
+    )
+    second = client.post(
+        "/api/v1/sales-agent/webhooks/payment/fakepay", content=body, headers=headers
+    )
 
     assert first.status_code == 200
     assert second.status_code == 200

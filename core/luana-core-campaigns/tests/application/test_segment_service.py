@@ -11,7 +11,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
 import pytest
-
 from luana_core_campaigns.application.dtos.segment_dtos import (
     SegmentCreate,
     SegmentUpdate,

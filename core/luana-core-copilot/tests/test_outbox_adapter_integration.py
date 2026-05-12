@@ -58,7 +58,9 @@ class TestCopilotOutboxAdapterFlagOff:
         with (
             patch(
                 "luana_core_platform.domain.events.EventBus.publish",
-                side_effect=lambda event, session=None: legacy_called.append(event.event_name),
+                side_effect=lambda event, session=None: legacy_called.append(
+                    event.event_name
+                ),
             ),
             patch.object(EventBusAdapter, "_is_outbox_enabled", return_value=False),
         ):
@@ -80,7 +82,9 @@ class TestCopilotOutboxAdapterFlagOff:
         with (
             patch(
                 "luana_core_platform.domain.events.EventBus.publish",
-                side_effect=lambda event, session=None: legacy_called.append(event.event_name),
+                side_effect=lambda event, session=None: legacy_called.append(
+                    event.event_name
+                ),
             ),
             patch.object(EventBusAdapter, "_is_outbox_enabled", return_value=False),
         ):
@@ -92,7 +96,9 @@ class TestCopilotOutboxAdapterFlagOff:
         assert len(legacy_called) == 1
         assert legacy_called[0] == "copilot_routing_decided"
 
-    def test_flag_off_is_default_for_copilot_module(self, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_flag_off_is_default_for_copilot_module(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Verify flag OFF path returns False when settings flag is False.
 
         Production default is True (config.py); test forces False via
@@ -100,7 +106,9 @@ class TestCopilotOutboxAdapterFlagOff:
         """
         monkeypatch.setattr(
             "luana_core_events.outbox.application.event_bus_adapter.settings",
-            MagicMock(USE_OUTBOX_PATTERN_COPILOT=False, USE_OUTBOX_PATTERN_DEFAULT=False),
+            MagicMock(
+                USE_OUTBOX_PATTERN_COPILOT=False, USE_OUTBOX_PATTERN_DEFAULT=False
+            ),
         )
         result = EventBusAdapter._is_outbox_enabled("copilot")
         assert result is False
@@ -110,7 +118,9 @@ class TestCopilotOutboxAdapterFlagOff:
         loads env at startup; setenv after import does not propagate)."""
         monkeypatch.setattr(
             "luana_core_events.outbox.application.event_bus_adapter.settings",
-            MagicMock(USE_OUTBOX_PATTERN_COPILOT=False, USE_OUTBOX_PATTERN_DEFAULT=False),
+            MagicMock(
+                USE_OUTBOX_PATTERN_COPILOT=False, USE_OUTBOX_PATTERN_DEFAULT=False
+            ),
         )
         result = EventBusAdapter._is_outbox_enabled("copilot")
         assert result is False
@@ -119,7 +129,9 @@ class TestCopilotOutboxAdapterFlagOff:
 class TestCopilotOutboxAdapterFlagOn:
     """Flag ON (USE_OUTBOX_PATTERN_COPILOT=True) via monkeypatch."""
 
-    def test_flag_on_via_monkeypatch_enqueues_outbox(self, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_flag_on_via_monkeypatch_enqueues_outbox(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Flag ON + sync session → outbox.enqueue_sync called for copilot event.
 
         Post-F1-fix: no module= kwarg — adapter infers from call stack.
@@ -147,7 +159,9 @@ class TestCopilotOutboxAdapterFlagOn:
             idempotency_key=None,
         )
 
-    def test_flag_on_no_session_falls_back_to_legacy(self, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_flag_on_no_session_falls_back_to_legacy(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Flag ON + session=None → warn + legacy fallback for copilot event.
 
         Post-F1-fix: no module= kwarg — adapter infers from call stack.
@@ -158,7 +172,9 @@ class TestCopilotOutboxAdapterFlagOn:
         with (
             patch(
                 "luana_core_platform.domain.events.EventBus.publish",
-                side_effect=lambda event, session=None: legacy_called.append(event.event_name),
+                side_effect=lambda event, session=None: legacy_called.append(
+                    event.event_name
+                ),
             ),
             patch.object(EventBusAdapter, "_is_outbox_enabled", return_value=True),
         ):
@@ -171,7 +187,9 @@ class TestCopilotOutboxAdapterFlagOn:
         assert len(legacy_called) == 1
         assert legacy_called[0] == "copilot_routing_decided"
 
-    def test_flag_on_outbox_failure_swallowed(self, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_flag_on_outbox_failure_swallowed(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Outbox enqueue failure must not propagate — best-effort contract.
 
         Post-F1-fix: no module= kwarg — adapter infers from call stack.
@@ -247,11 +265,15 @@ class TestDomainSubscribersRegistration:
         register_subscribers(repo_factory=lambda: mock_repo)
         from luana_core_copilot.domain.events import EVENT_CARD_EMITTED
 
-        handlers_after_first = len(getattr(LegacyEventBus, "_handlers", {}).get(EVENT_CARD_EMITTED, []))
+        handlers_after_first = len(
+            getattr(LegacyEventBus, "_handlers", {}).get(EVENT_CARD_EMITTED, [])
+        )
 
         register_subscribers(repo_factory=lambda: mock_repo)
 
-        handlers_after_second = len(getattr(LegacyEventBus, "_handlers", {}).get(EVENT_CARD_EMITTED, []))
+        handlers_after_second = len(
+            getattr(LegacyEventBus, "_handlers", {}).get(EVENT_CARD_EMITTED, [])
+        )
 
         assert handlers_after_second == handlers_after_first, (
             "register_subscribers is not idempotent — duplicate handlers registered"

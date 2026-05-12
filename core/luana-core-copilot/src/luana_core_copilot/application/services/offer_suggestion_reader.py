@@ -49,7 +49,9 @@ class OfferSuggestionReader:
             raw = repo.get_all_by_tenant(self._tenant_id)  # type: ignore[attr-defined]
             return [
                 OfferRowVO(
-                    id=UUID(str(getattr(o, "id", "00000000-0000-0000-0000-000000000000"))),
+                    id=UUID(
+                        str(getattr(o, "id", "00000000-0000-0000-0000-000000000000"))
+                    ),
                     preset_id=getattr(o, "preset_id", None),
                 )
                 for o in raw
@@ -67,7 +69,10 @@ class OfferSuggestionReader:
         if offer_id is None:
             return []
         try:
-            from luana_core_platform.links.ports.offer import get_offer_repository, get_offer_type_preset
+            from luana_core_platform.links.ports.offer import (
+                get_offer_repository,
+                get_offer_type_preset,
+            )
 
             repo = get_offer_repository(self._db)
             offers = repo.get_all_by_tenant(self._tenant_id)  # type: ignore[attr-defined]
@@ -96,7 +101,10 @@ class OfferSuggestionReader:
         Heuristic: any offer with ``is_lead_magnet`` flag + no offer without it.
         """
         try:
-            from luana_core_platform.links.ports.offer import get_offer_repository, get_offer_type_preset
+            from luana_core_platform.links.ports.offer import (
+                get_offer_repository,
+                get_offer_type_preset,
+            )
 
             repo = get_offer_repository(self._db)
             offers = repo.get_all_by_tenant(self._tenant_id)  # type: ignore[attr-defined]
@@ -104,7 +112,11 @@ class OfferSuggestionReader:
             has_core = False
             for o in offers:
                 preset = get_offer_type_preset(getattr(o, "preset_id", None))
-                flags = [f.value for f in getattr(preset, "default_flags", ())] if preset else []
+                flags = (
+                    [f.value for f in getattr(preset, "default_flags", ())]
+                    if preset
+                    else []
+                )
                 if "is_lead_magnet" in flags:
                     has_lead_magnet = True
                 else:

@@ -11,10 +11,9 @@ from __future__ import annotations
 
 import datetime as dt
 import uuid
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-
 from luana_core_campaigns.domain.enums import TaskStatus
 
 TENANT_A = uuid.UUID("aaaa0000-0000-0000-0000-000000000001")
@@ -60,7 +59,6 @@ def test_repository_abc_has_count_responded_leads() -> None:
 @pytest.mark.asyncio
 async def test_find_recent_for_lead_happy_path() -> None:
     """find_recent_for_lead retorna la task más reciente SENT dentro de la ventana."""
-    from luana_core_campaigns.domain.campaign_task import CampaignTask
     from luana_core_campaigns.infrastructure.repositories.campaign_task_repository_impl import (
         CampaignTaskRepositoryImpl,
     )
@@ -142,7 +140,6 @@ async def test_find_recent_for_lead_miss_returns_none() -> None:
 @pytest.mark.asyncio
 async def test_find_recent_for_leads_batch_returns_hit_only_map() -> None:
     """find_recent_for_leads retorna solo los leads con hit (sin Miss)."""
-    from luana_core_campaigns.domain.campaign_task import CampaignTask
     from luana_core_campaigns.infrastructure.repositories.campaign_task_repository_impl import (
         CampaignTaskRepositoryImpl,
     )

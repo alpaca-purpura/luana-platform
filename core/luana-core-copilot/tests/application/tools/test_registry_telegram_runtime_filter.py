@@ -37,7 +37,9 @@ def test_telegram_excludes_navigation_group() -> None:
     nav_tool_names = {t.name for t in TOOL_GROUPS.get("navigation", [])}
     assert nav_tool_names, "fixture invariant — navigation group must have tools"
 
-    telegram_tools = _names(get_tools_for_context(_route_ctx("brand-studio"), channel="telegram"))
+    telegram_tools = _names(
+        get_tools_for_context(_route_ctx("brand-studio"), channel="telegram")
+    )
     assert telegram_tools.isdisjoint(nav_tool_names), (
         f"navigation tools leaked into Telegram toolset: {telegram_tools & nav_tool_names}"
     )
@@ -47,7 +49,9 @@ def test_telegram_excludes_guided_group() -> None:
     guided_tool_names = {t.name for t in TOOL_GROUPS.get("guided", [])}
     assert guided_tool_names, "fixture invariant — guided group must have tools"
 
-    telegram_tools = _names(get_tools_for_context(_route_ctx("brand-studio"), channel="telegram"))
+    telegram_tools = _names(
+        get_tools_for_context(_route_ctx("brand-studio"), channel="telegram")
+    )
     assert telegram_tools.isdisjoint(guided_tool_names), (
         f"guided tools leaked into Telegram toolset: {telegram_tools & guided_tool_names}"
     )
@@ -57,7 +61,9 @@ def test_telegram_excludes_landing_group() -> None:
     landing_tool_names = {t.name for t in TOOL_GROUPS.get("landing", [])}
     assert landing_tool_names, "fixture invariant — landing group must have tools"
 
-    telegram_tools = _names(get_tools_for_context(_route_ctx("landing"), channel="telegram"))
+    telegram_tools = _names(
+        get_tools_for_context(_route_ctx("landing"), channel="telegram")
+    )
     assert telegram_tools.isdisjoint(landing_tool_names), (
         f"landing tools leaked into Telegram toolset: {telegram_tools & landing_tool_names}"
     )
@@ -67,7 +73,9 @@ def test_telegram_excludes_offer_section_group() -> None:
     section_tool_names = {t.name for t in TOOL_GROUPS.get("offer_section", [])}
     assert section_tool_names, "fixture invariant — offer_section group must have tools"
 
-    telegram_tools = _names(get_tools_for_context(_route_ctx("offer-studio"), channel="telegram"))
+    telegram_tools = _names(
+        get_tools_for_context(_route_ctx("offer-studio"), channel="telegram")
+    )
     assert telegram_tools.isdisjoint(section_tool_names), (
         f"offer_section tools leaked into Telegram toolset: {telegram_tools & section_tool_names}"
     )
@@ -83,21 +91,33 @@ def test_telegram_includes_awareness_analytics_crm() -> None:
     crm_names = {t.name for t in TOOL_GROUPS.get("crm", [])}
 
     # awareness lives in growth-studio + brand-studio routes
-    growth_tools = _names(get_tools_for_context(_route_ctx("growth-studio"), channel="telegram"))
+    growth_tools = _names(
+        get_tools_for_context(_route_ctx("growth-studio"), channel="telegram")
+    )
     assert awareness_names.issubset(growth_tools), (
         f"awareness missing from Telegram (growth-studio): {awareness_names - growth_tools}"
     )
     assert analytics_names.issubset(growth_tools), (
         f"analytics missing from Telegram (growth-studio): {analytics_names - growth_tools}"
     )
-    assert crm_names.issubset(growth_tools), f"crm missing from Telegram (growth-studio): {crm_names - growth_tools}"
+    assert crm_names.issubset(growth_tools), (
+        f"crm missing from Telegram (growth-studio): {crm_names - growth_tools}"
+    )
 
 
 def test_telegram_includes_always_available_data_groups() -> None:
     """``data_query``, ``channel_format``, ``url_context``, ``document``,
     ``shared_tools`` are ALWAYS_AVAILABLE_GROUPS — must reach Telegram."""
-    expected = ["data_query", "channel_format", "url_context", "document", "shared_tools"]
-    telegram_tools = _names(get_tools_for_context(_route_ctx("brand-studio"), channel="telegram"))
+    expected = [
+        "data_query",
+        "channel_format",
+        "url_context",
+        "document",
+        "shared_tools",
+    ]
+    telegram_tools = _names(
+        get_tools_for_context(_route_ctx("brand-studio"), channel="telegram")
+    )
     for group in expected:
         group_names = {t.name for t in TOOL_GROUPS.get(group, [])}
         assert group_names, f"fixture invariant — group {group!r} must have tools"
@@ -111,7 +131,9 @@ def test_telegram_includes_knowledge_search() -> None:
     knowledge_names = {t.name for t in TOOL_GROUPS.get("knowledge", [])}
     assert knowledge_names, "fixture invariant — knowledge group must have tools"
 
-    telegram_tools = _names(get_tools_for_context(_route_ctx("brand-studio"), channel="telegram"))
+    telegram_tools = _names(
+        get_tools_for_context(_route_ctx("brand-studio"), channel="telegram")
+    )
     assert knowledge_names.issubset(telegram_tools), (
         f"knowledge tools missing from Telegram: {knowledge_names - telegram_tools}"
     )
@@ -122,7 +144,9 @@ def test_telegram_includes_offer_ladder_query() -> None:
     ladder_names = {t.name for t in TOOL_GROUPS.get("offer_ladder", [])}
     assert ladder_names, "fixture invariant — offer_ladder group must have tools"
 
-    telegram_tools = _names(get_tools_for_context(_route_ctx("offer-studio"), channel="telegram"))
+    telegram_tools = _names(
+        get_tools_for_context(_route_ctx("offer-studio"), channel="telegram")
+    )
     assert ladder_names.issubset(telegram_tools), (
         f"offer_ladder tools missing from Telegram: {ladder_names - telegram_tools}"
     )
@@ -133,7 +157,9 @@ def test_telegram_includes_extraction() -> None:
     extraction_names = {t.name for t in TOOL_GROUPS.get("extraction", [])}
     assert extraction_names, "fixture invariant — extraction group must have tools"
 
-    telegram_tools = _names(get_tools_for_context(_route_ctx("brand-studio"), channel="telegram"))
+    telegram_tools = _names(
+        get_tools_for_context(_route_ctx("brand-studio"), channel="telegram")
+    )
     assert extraction_names.issubset(telegram_tools), (
         f"extraction tools missing from Telegram: {extraction_names - telegram_tools}"
     )
@@ -145,13 +171,17 @@ def test_telegram_includes_extraction() -> None:
 def test_web_baseline_includes_navigation() -> None:
     nav_names = {t.name for t in TOOL_GROUPS.get("navigation", [])}
     web_tools = _names(get_tools_for_context(_route_ctx("brand-studio"), channel="web"))
-    assert nav_names.issubset(web_tools), f"navigation MUST be on web baseline: missing {nav_names - web_tools}"
+    assert nav_names.issubset(web_tools), (
+        f"navigation MUST be on web baseline: missing {nav_names - web_tools}"
+    )
 
 
 def test_web_baseline_includes_guided() -> None:
     guided_names = {t.name for t in TOOL_GROUPS.get("guided", [])}
     web_tools = _names(get_tools_for_context(_route_ctx("brand-studio"), channel="web"))
-    assert guided_names.issubset(web_tools), f"guided MUST be on web baseline: missing {guided_names - web_tools}"
+    assert guided_names.issubset(web_tools), (
+        f"guided MUST be on web baseline: missing {guided_names - web_tools}"
+    )
 
 
 def test_web_baseline_includes_landing_on_landing_route() -> None:

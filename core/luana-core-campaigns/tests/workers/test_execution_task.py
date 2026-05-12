@@ -29,9 +29,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
 import pytest
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from luana_core_campaigns.domain.enums import TaskStatus
 from luana_core_campaigns.infrastructure.channels.errors import (
     ChannelComplianceBlocked,
     ChannelFatalError,
@@ -41,6 +38,7 @@ from luana_core_campaigns.infrastructure.channels.errors import (
 )
 from luana_core_campaigns.infrastructure.resilience.errors import CircuitBreakerOpenError
 from luana_core_campaigns.workers.execution_task import run_campaign_execution_task
+from sqlalchemy.ext.asyncio import AsyncSession
 
 pytestmark = pytest.mark.asyncio
 

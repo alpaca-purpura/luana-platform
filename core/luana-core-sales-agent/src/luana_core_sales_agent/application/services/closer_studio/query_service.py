@@ -23,7 +23,10 @@ from luana_core_sales_agent.infrastructure.models.agent_state_checkpoint_model i
     AgentStateCheckpointModel,
 )
 from luana_core_sales_agent.infrastructure.models.message_model import MessageModel
-from luana_core_platform.infrastructure.models.crm import CustomerProfileModel, LeadModel
+from luana_core_platform.infrastructure.models.crm import (
+    CustomerProfileModel,
+    LeadModel,
+)
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -136,9 +139,13 @@ class ConversationQueryService:
                     "display_name": resolve_display_name(lead),
                     "channel": checkpoint.channel_type if checkpoint else None,
                     "temperature": lead.temperature,
-                    "lead_score": checkpoint.lead_score if checkpoint else (lead.intent_score or 0),
+                    "lead_score": checkpoint.lead_score
+                    if checkpoint
+                    else (lead.intent_score or 0),
                     "handler_mode": checkpoint.handler_mode if checkpoint else "human",
-                    "funnel_stage": checkpoint.current_stage if checkpoint else "rapport",
+                    "funnel_stage": checkpoint.current_stage
+                    if checkpoint
+                    else "rapport",
                     "pipeline_stage": resolve_lifecycle_stage(lead),
                     "last_message_preview": preview,
                     "last_message_at": last_msg_at,
@@ -191,7 +198,9 @@ class ConversationQueryService:
         if before:
             msg_stmt = msg_stmt.where(MessageModel.created_at < before)
 
-        msg_stmt = msg_stmt.order_by(MessageModel.created_at.desc()).limit(message_limit)
+        msg_stmt = msg_stmt.order_by(MessageModel.created_at.desc()).limit(
+            message_limit
+        )
         messages_raw = self.db.execute(msg_stmt).scalars().all()
 
         total_msgs = (
@@ -233,7 +242,9 @@ class ConversationQueryService:
             "pipeline_stage": resolve_lifecycle_stage(lead),
             "paused_at": checkpoint.paused_at if checkpoint else None,
             "unread_count": 0,
-            "qualification_answers": checkpoint.qualification_answers if checkpoint else None,
+            "qualification_answers": checkpoint.qualification_answers
+            if checkpoint
+            else None,
             "buying_signals": checkpoint.buying_signals if checkpoint else [],
             "lead_data": checkpoint.lead_data if checkpoint else None,
             "customer_profile_id": lead.customer_id,

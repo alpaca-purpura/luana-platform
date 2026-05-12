@@ -89,7 +89,9 @@ async def test_linked_happy_path_invokes_orchestrator_and_sends_response() -> No
 
     with (
         sf_patch,
-        patch.object(worker_mod, "resolve_chat_id_to_tenant_user", AsyncMock(return_value=link)),
+        patch.object(
+            worker_mod, "resolve_chat_id_to_tenant_user", AsyncMock(return_value=link)
+        ),
         patch.object(worker_mod, "touch_last_seen", AsyncMock()),
         patch.object(worker_mod, "CopilotTelegramBot", return_value=bot_instance),
         patch.object(worker_mod, "ConversationRepository", return_value=conv_repo_mock),
@@ -139,7 +141,9 @@ async def test_unlinked_chat_sends_cta_and_skips_orchestrator() -> None:
 
     with (
         sf_patch,
-        patch.object(worker_mod, "resolve_chat_id_to_tenant_user", AsyncMock(return_value=None)),
+        patch.object(
+            worker_mod, "resolve_chat_id_to_tenant_user", AsyncMock(return_value=None)
+        ),
         patch.object(worker_mod, "CopilotTelegramBot", return_value=bot_instance),
         patch.object(worker_mod, "CopilotOrchestrator", return_value=orchestrator_mock),
     ):
@@ -185,8 +189,12 @@ async def test_start_token_consumes_and_confirms_link() -> None:
         sf_patch,
         # On the /start TOKEN path the worker calls resolve first; return None
         # (chat_id not yet linked) so the /start branch fires.
-        patch.object(worker_mod, "resolve_chat_id_to_tenant_user", AsyncMock(return_value=None)),
-        patch.object(worker_mod, "consume_link_token", AsyncMock(return_value=new_link)),
+        patch.object(
+            worker_mod, "resolve_chat_id_to_tenant_user", AsyncMock(return_value=None)
+        ),
+        patch.object(
+            worker_mod, "consume_link_token", AsyncMock(return_value=new_link)
+        ),
         patch.object(worker_mod, "CopilotTelegramBot", return_value=bot_instance),
         patch.object(worker_mod, "CopilotOrchestrator", return_value=orchestrator_mock),
     ):

@@ -14,7 +14,10 @@ from __future__ import annotations
 
 import structlog
 from langchain_core.tools import tool
-from luana_core_platform.links.ports.editable_fields import get_paths_for, get_registered_domains
+from luana_core_platform.links.ports.editable_fields import (
+    get_paths_for,
+    get_registered_domains,
+)
 
 logger = structlog.get_logger()
 
@@ -114,7 +117,12 @@ def propose_field_updates(updates: list[dict]) -> dict:
         "ui_action": {
             "type": "proposal",
             "updates": [
-                {"field_id": u["field_id"], "new_value": u["new_value"], "reason": u["reason"]} for u in validated
+                {
+                    "field_id": u["field_id"],
+                    "new_value": u["new_value"],
+                    "reason": u["reason"],
+                }
+                for u in validated
             ],
         },
         "rejected": rejected,

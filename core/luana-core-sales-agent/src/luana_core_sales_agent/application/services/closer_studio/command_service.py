@@ -208,7 +208,9 @@ class ConversationCommandService:
             .all()
         )
 
-        msg_summary = "\n".join(f"[{m.role}] {m.content[:200]}" for m in reversed(messages))
+        msg_summary = "\n".join(
+            f"[{m.role}] {m.content[:200]}" for m in reversed(messages)
+        )
 
         diagnosis = {
             "lead_score": checkpoint.lead_score,
@@ -268,7 +270,9 @@ class ConversationCommandService:
             return "Warm lead with moderate interest. Consider a personalized nudge or product demo offer."
         if stage == "rapport" and (checkpoint.turn_count or 0) > 5:
             return "Stuck in rapport stage despite multiple turns. Try a direct question about their needs."
-        return "Low engagement. Consider a value-first reactivation message or disqualify."
+        return (
+            "Low engagement. Consider a value-first reactivation message or disqualify."
+        )
 
 
 __all__ = ["ConversationCommandService"]

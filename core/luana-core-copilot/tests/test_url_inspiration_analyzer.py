@@ -41,12 +41,16 @@ class TestParseLlmOutput:
         assert out.slug == "y"
 
     def test_clamps_score_above_one(self) -> None:
-        raw = '{"slug":"x","summary":"t","brand_relevance_score": 5, "sub_elements": {}}'
+        raw = (
+            '{"slug":"x","summary":"t","brand_relevance_score": 5, "sub_elements": {}}'
+        )
         out = parse_llm_output(raw, fallback_domain="x.com")
         assert out.brand_relevance_score == 1.0
 
     def test_clamps_score_below_zero(self) -> None:
-        raw = '{"slug":"x","summary":"t","brand_relevance_score": -1, "sub_elements": {}}'
+        raw = (
+            '{"slug":"x","summary":"t","brand_relevance_score": -1, "sub_elements": {}}'
+        )
         out = parse_llm_output(raw, fallback_domain="x.com")
         assert out.brand_relevance_score == 0.0
 

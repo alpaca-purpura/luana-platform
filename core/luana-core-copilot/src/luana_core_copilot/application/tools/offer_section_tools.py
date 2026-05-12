@@ -43,7 +43,9 @@ def _engine_suggestions_for_context(
     try:
         from uuid import UUID
 
-        from luana_core_copilot.application.suggestions.registry import get_default_engine
+        from luana_core_copilot.application.suggestions.registry import (
+            get_default_engine,
+        )
         from luana_core_copilot.domain.suggestion import SuggestionContext
 
         tid = UUID(str(tenant_id)) if not isinstance(tenant_id, UUID) else tenant_id
@@ -122,16 +124,23 @@ def _avatars(db: object, tenant_id: object) -> list:
     return AvatarRepository(db).get_by_tenant(tenant_id)  # type: ignore[arg-type]
 
 
-def _offer_preset_flags(db: object, tenant_id: object, offer_id: str | None) -> list[str]:
+def _offer_preset_flags(
+    db: object, tenant_id: object, offer_id: str | None
+) -> list[str]:
     """Return the preset flags (list[str]) for the current offer, or []."""
     if not offer_id:
         return []
-    from luana_core_platform.links.ports.offer import get_offer_repository, get_offer_type_preset
+    from luana_core_platform.links.ports.offer import (
+        get_offer_repository,
+        get_offer_type_preset,
+    )
 
     repo = get_offer_repository(db)  # type: ignore[arg-type]
     # OfferRepository.get_all_by_tenant returns list of offer dicts/objects
     offers = repo.get_all_by_tenant(tenant_id)  # type: ignore[arg-type]
-    target = next((o for o in offers if str(getattr(o, "id", "")) == str(offer_id)), None)
+    target = next(
+        (o for o in offers if str(getattr(o, "id", "")) == str(offer_id)), None
+    )
     if target is None:
         return []
     preset_id = getattr(target, "preset_id", None)
@@ -253,7 +262,9 @@ def adapt_from_brand_identity() -> str:
         # Build contextual hints from brand metadata + engine suggestions (Q1 expansion)
         brand_hints: list[str] = []
         if tagline:
-            brand_hints.append(f"Tagline de marca disponible para usar en el titulo: '{tagline}'")
+            brand_hints.append(
+                f"Tagline de marca disponible para usar en el titulo: '{tagline}'"
+            )
 
         # Prefer active personality profile's system_instruction over legacy voice_tone (soft migration)
         active_personality = _active_personality(db, tenant_id)
@@ -263,17 +274,23 @@ def adapt_from_brand_identity() -> str:
                 "para nombrar y posicionar tu oferta."
             )
         elif voice_tone:
-            brand_hints.append(f"Tono de voz de marca: {voice_tone}. Úsalo para nombrar tu oferta.")
+            brand_hints.append(
+                f"Tono de voz de marca: {voice_tone}. Úsalo para nombrar tu oferta."
+            )
 
         if not brand_hints:
             brand_hints.append("Adapta el nombre de marca como base para tu oferta.")
 
         # Supplement with engine suggestions (route-aware, tenant-scoped)
-        engine_hints = _engine_suggestions_for_context(tenant_id, current_route="offer-studio", max_hints=2)
+        engine_hints = _engine_suggestions_for_context(
+            tenant_id, current_route="offer-studio", max_hints=2
+        )
         suggestions = brand_hints + [h for h in engine_hints if h not in brand_hints]
 
         logger.info("adapt_from_brand_identity_ok", tenant_id=str(tenant_id))
-        return _ok_response("identity", draft_fields, suggestions, 0.8, [f"brand:{brand_name}"])
+        return _ok_response(
+            "identity", draft_fields, suggestions, 0.8, [f"brand:{brand_name}"]
+        )
     finally:
         db.close()
 
@@ -318,7 +335,11 @@ def adapt_from_brand_narrative() -> str:
         hero_desire = hero.desire if hero else ""
         guide_empathy = guide.empathy_statement if guide else ""
         if outcome:
-            outcome_result = getattr(outcome, "transformation", None) or getattr(outcome, "before", None) or ""
+            outcome_result = (
+                getattr(outcome, "transformation", None)
+                or getattr(outcome, "before", None)
+                or ""
+            )
         else:
             outcome_result = ""
 
@@ -351,12 +372,16 @@ def adapt_from_brand_narrative() -> str:
             if hint not in variants:
                 variants.append(hint)
         while len(variants) < 3:
-            variants.append("Edita esta variante basándote en la transformación que ofrece tu programa.")
+            variants.append(
+                "Edita esta variante basándote en la transformación que ofrece tu programa."
+            )
 
         draft_fields = {"headline_promise": variants[0]}
 
         logger.info("adapt_from_brand_narrative_ok", tenant_id=str(tenant_id))
-        return _ok_response("promise", draft_fields, variants[:3], 0.75, ["brand:narrative"])
+        return _ok_response(
+            "promise", draft_fields, variants[:3], 0.75, ["brand:narrative"]
+        )
     finally:
         db.close()
 
@@ -427,30 +452,49 @@ def validate_preset_coherence(current_promise: str = "", offer_id: str = "") -> 
         issues: list[str] = []
 
         if not current_promise.strip():
-            issues.append("La promesa está vacía — define una antes de validar coherencia.")
+            issues.append(
+                "La promesa está vacía — define una antes de validar coherencia."
+            )
         else:
             p_lower = current_promise.lower()
             if "high_ticket" in flags and not any(
-                w in p_lower for w in ["transformacion", "resultado", "premium", "exclusivo", "inversion"]
+                w in p_lower
+                for w in [
+                    "transformacion",
+                    "resultado",
+                    "premium",
+                    "exclusivo",
+                    "inversion",
+                ]
             ):
                 issues.append(
                     "El preset es HIGH_TICKET pero la promesa no comunica valor premium. "
                     'Incluye palabras como "transformación", "resultado" o "exclusivo".'
                 )
-            if "is_lead_magnet" in flags and any(w in p_lower for w in ["pago", "inversión", "precio"]):
+            if "is_lead_magnet" in flags and any(
+                w in p_lower for w in ["pago", "inversión", "precio"]
+            ):
                 issues.append(
                     "El preset es LEAD_MAGNET (gratuito) pero la promesa menciona pago o inversión. "
                     "Reformula para reflejar el valor gratuito."
                 )
-            if "recurring_billing" in flags and "mes" not in p_lower and "acceso" not in p_lower:
+            if (
+                "recurring_billing" in flags
+                and "mes" not in p_lower
+                and "acceso" not in p_lower
+            ):
                 issues.append(
                     'El preset tiene RECURRING_BILLING. Considera incluir "acceso mensual" o "comunidad" en la promesa.'
                 )
 
         if not issues:
-            issues.append("La promesa parece coherente con los flags del preset seleccionado.")
+            issues.append(
+                "La promesa parece coherente con los flags del preset seleccionado."
+            )
 
-        logger.info("validate_preset_coherence_ok", tenant_id=str(tenant_id), flags=flags)
+        logger.info(
+            "validate_preset_coherence_ok", tenant_id=str(tenant_id), flags=flags
+        )
         return _ok_response("promise", {}, issues, 0.65 if len(issues) > 1 else 0.9)
     finally:
         db.close()
@@ -507,7 +551,11 @@ def reuse_brand_buyer_personas() -> str:
             if icp:
                 draft_fields["target_audience_description"] = icp
 
-        logger.info("reuse_brand_buyer_personas_ok", tenant_id=str(tenant_id), count=len(avatars))
+        logger.info(
+            "reuse_brand_buyer_personas_ok",
+            tenant_id=str(tenant_id),
+            count=len(avatars),
+        )
         return _ok_response("audience", draft_fields, suggestions, 0.8)
     finally:
         db.close()
@@ -561,15 +609,27 @@ def inherit_brand_methodology() -> str:
             draft_fields["methodology_description"] = description
         if pillars:
             draft_fields["methodology_pillars"] = [
-                {"name": getattr(p, "name", str(p)), "description": getattr(p, "description", "")} for p in pillars
+                {
+                    "name": getattr(p, "name", str(p)),
+                    "description": getattr(p, "description", ""),
+                }
+                for p in pillars
             ]
 
-        suggestions = [f"Metodología de marca: {name}" if name else "Metodología sin nombre definido"]
+        suggestions = [
+            f"Metodología de marca: {name}"
+            if name
+            else "Metodología sin nombre definido"
+        ]
         if pillars:
-            suggestions.append(f"{len(pillars)} pilar(es) disponibles para adaptar a esta oferta.")
+            suggestions.append(
+                f"{len(pillars)} pilar(es) disponibles para adaptar a esta oferta."
+            )
 
         logger.info("inherit_brand_methodology_ok", tenant_id=str(tenant_id))
-        return _ok_response("methodology", draft_fields, suggestions, 0.8, ["brand:strategy"])
+        return _ok_response(
+            "methodology", draft_fields, suggestions, 0.8, ["brand:strategy"]
+        )
     finally:
         db.close()
 
@@ -615,7 +675,11 @@ def high_ticket_tiering_template(offer_id: str = "") -> str:
                 "tier": "Básico",
                 "price_anchor": "Desde $997",
                 "description": "Acceso al programa principal + materiales",
-                "features": ["Acceso vitalicio al contenido", "Comunidad privada", "Soporte por email"],
+                "features": [
+                    "Acceso vitalicio al contenido",
+                    "Comunidad privada",
+                    "Soporte por email",
+                ],
             },
             {
                 "tier": "Premium",
@@ -741,7 +805,9 @@ def detect_currency_mismatch(offer_id: str = "") -> str:
 
         stmt = select(TenantModel).where(TenantModel.id == tenant_id)
         tenant_row = db.execute(stmt).scalars().first()  # type: ignore[attr-defined]
-        tenant_currency = getattr(tenant_row, "default_currency", None) if tenant_row else None
+        tenant_currency = (
+            getattr(tenant_row, "default_currency", None) if tenant_row else None
+        )
 
         # Get offer currency if offer_id provided
         offer_currency = None
@@ -750,7 +816,9 @@ def detect_currency_mismatch(offer_id: str = "") -> str:
 
             repo = get_offer_repository(db)  # type: ignore[arg-type]
             offers = repo.get_all_by_tenant(tenant_id)  # type: ignore[arg-type]
-            target = next((o for o in offers if str(getattr(o, "id", "")) == str(offer_id)), None)
+            target = next(
+                (o for o in offers if str(getattr(o, "id", "")) == str(offer_id)), None
+            )
             offer_currency = getattr(target, "currency", None) if target else None
 
         issues: list[str] = []
@@ -764,8 +832,12 @@ def detect_currency_mismatch(offer_id: str = "") -> str:
                 f"Verifica que esta diferencia sea intencional (ej: oferta en USD para mercado internacional)."
             )
         if not issues:
-            currency_display = offer_currency or tenant_currency or "sin moneda definida"
-            issues.append(f"No hay discrepancias de moneda detectadas. Moneda activa: {currency_display}.")
+            currency_display = (
+                offer_currency or tenant_currency or "sin moneda definida"
+            )
+            issues.append(
+                f"No hay discrepancias de moneda detectadas. Moneda activa: {currency_display}."
+            )
 
         confidence = 0.5 if not tenant_currency else (0.6 if len(issues) > 1 else 0.95)
         logger.info("detect_currency_mismatch_ok", tenant_id=str(tenant_id))
@@ -811,7 +883,11 @@ def import_scheduling_event_type(event_type_id: str = "") -> str:
         target = None
         if event_type_id:
             target = next(
-                (et for et in event_types if str(getattr(et, "id", "")) == str(event_type_id)),
+                (
+                    et
+                    for et in event_types
+                    if str(getattr(et, "id", "")) == str(event_type_id)
+                ),
                 None,
             )
             if not target:
@@ -822,13 +898,18 @@ def import_scheduling_event_type(event_type_id: str = "") -> str:
                 )
         else:
             # Default to first non-hidden event type
-            target = next((et for et in event_types if not getattr(et, "is_hidden", False)), event_types[0])
+            target = next(
+                (et for et in event_types if not getattr(et, "is_hidden", False)),
+                event_types[0],
+            )
 
         duration = getattr(target, "duration", 30)
         slug = getattr(target, "slug", "")
         title = getattr(target, "title", "")
         booking_config = getattr(target, "booking_config", None)
-        max_per_day = getattr(booking_config, "max_per_day", None) if booking_config else None
+        max_per_day = (
+            getattr(booking_config, "max_per_day", None) if booking_config else None
+        )
 
         draft_fields: dict = {
             "scheduling_event_type_id": str(getattr(target, "id", "")),
@@ -844,12 +925,20 @@ def import_scheduling_event_type(event_type_id: str = "") -> str:
         ]
         if max_per_day:
             suggestions.append(f"Capacidad máxima por día: {max_per_day} sesiones.")
-        available_names = [getattr(et, "title", "") for et in event_types if not getattr(et, "is_hidden", False)]
+        available_names = [
+            getattr(et, "title", "")
+            for et in event_types
+            if not getattr(et, "is_hidden", False)
+        ]
         if len(available_names) > 1:
-            suggestions.append(f"Otros tipos disponibles: {', '.join(available_names[1:3])}.")
+            suggestions.append(
+                f"Otros tipos disponibles: {', '.join(available_names[1:3])}."
+            )
 
         logger.info(
-            "import_scheduling_event_type_ok", tenant_id=str(tenant_id), event_type_id=str(getattr(target, "id", ""))
+            "import_scheduling_event_type_ok",
+            tenant_id=str(tenant_id),
+            event_type_id=str(getattr(target, "id", "")),
         )
         return _ok_response("schedule", draft_fields, suggestions, 0.9)
     finally:
@@ -883,14 +972,22 @@ def detect_hybrid_split(location_data: str = "") -> str:
         )
 
     data_lower = location_data.lower()
-    hybrid_keywords = ["híbrido", "hibrido", "online y presencial", "virtual y presencial", "remoto y presencial"]
+    hybrid_keywords = [
+        "híbrido",
+        "hibrido",
+        "online y presencial",
+        "virtual y presencial",
+        "remoto y presencial",
+    ]
     is_hybrid = any(kw in data_lower for kw in hybrid_keywords)
 
     if not is_hybrid:
         return _ok_response(
             "location",
             {},
-            ["No se detectó modalidad híbrida en los datos de ubicación proporcionados."],
+            [
+                "No se detectó modalidad híbrida en los datos de ubicación proporcionados."
+            ],
             0.8,
         )
 
@@ -964,7 +1061,9 @@ def import_from_brand_vault() -> str:
                 {
                     "author_name": getattr(t, "author_name", ""),
                     "author_role": getattr(t, "author_role", ""),
-                    "content": getattr(t, "content", "") or getattr(t, "quote", "") or "",
+                    "content": getattr(t, "content", "")
+                    or getattr(t, "quote", "")
+                    or "",
                     "rating": getattr(t, "rating", 5),
                     "source": "brand_vault",
                 }
@@ -973,8 +1072,18 @@ def import_from_brand_vault() -> str:
         }
 
         suggestions = items
-        logger.info("import_from_brand_vault_ok", tenant_id=str(tenant_id), count=len(testimonials))
-        return _ok_response("testimonials", draft_fields, suggestions, 0.9, ["social_proof:testimonials"])
+        logger.info(
+            "import_from_brand_vault_ok",
+            tenant_id=str(tenant_id),
+            count=len(testimonials),
+        )
+        return _ok_response(
+            "testimonials",
+            draft_fields,
+            suggestions,
+            0.9,
+            ["social_proof:testimonials"],
+        )
     finally:
         db.close()
 
@@ -985,7 +1094,9 @@ def import_from_brand_vault() -> str:
 
 
 @tool
-def suggest_missing_objections(offer_id: str = "", existing_objections: str = "") -> str:
+def suggest_missing_objections(
+    offer_id: str = "", existing_objections: str = ""
+) -> str:
     """Sugerir objeciones comunes que faltan en la sección de testimonios.
 
     Sección: testimonials.
@@ -1019,28 +1130,41 @@ def suggest_missing_objections(offer_id: str = "", existing_objections: str = ""
 
         # Add flag-specific objections
         if "high_ticket" in flags:
-            all_objections.append(("inversion_alta", "¿Cómo sé que vale la inversión de alto valor?"))
+            all_objections.append(
+                ("inversion_alta", "¿Cómo sé que vale la inversión de alto valor?")
+            )
         if "recurring_billing" in flags:
-            all_objections.append(("compromiso_mensual", "¿Puedo cancelar cuando quiera?"))
+            all_objections.append(
+                ("compromiso_mensual", "¿Puedo cancelar cuando quiera?")
+            )
         if "is_lead_magnet" in flags:
-            all_objections.append(("valor_gratuito", "¿Qué tan bueno puede ser si es gratis?"))
+            all_objections.append(
+                ("valor_gratuito", "¿Qué tan bueno puede ser si es gratis?")
+            )
 
         missing = [
             text
             for key, text in all_objections
-            if key not in covered and not any(word in covered for word in key.split("_"))
+            if key not in covered
+            and not any(word in covered for word in key.split("_"))
         ]
 
         if not missing:
             return _ok_response(
                 "testimonials",
                 {},
-                ["Todas las objeciones principales parecen estar cubiertas. ¡Excelente trabajo!"],
+                [
+                    "Todas las objeciones principales parecen estar cubiertas. ¡Excelente trabajo!"
+                ],
                 0.85,
             )
 
         suggestions = ["Objeciones aún sin testimonio que las responda:", *missing]
-        logger.info("suggest_missing_objections_ok", tenant_id=str(tenant_id), missing_count=len(missing))
+        logger.info(
+            "suggest_missing_objections_ok",
+            tenant_id=str(tenant_id),
+            missing_count=len(missing),
+        )
         return _ok_response("testimonials", {}, suggestions, 0.8)
     finally:
         db.close()
@@ -1074,8 +1198,14 @@ def generate_from_preset_flags(offer_id: str = "") -> str:
         flags = _offer_preset_flags(db, tenant_id, offer_id or None)
 
         base_faqs = [
-            {"q": "¿Para quién es este programa?", "a": "Es ideal para [describe tu perfil de cliente ideal]."},
-            {"q": "¿Qué resultados puedo esperar?", "a": "Al completar el programa, lograrás [resultado principal]."},
+            {
+                "q": "¿Para quién es este programa?",
+                "a": "Es ideal para [describe tu perfil de cliente ideal].",
+            },
+            {
+                "q": "¿Qué resultados puedo esperar?",
+                "a": "Al completar el programa, lograrás [resultado principal].",
+            },
             {
                 "q": "¿Cuánto tiempo requiere por semana?",
                 "a": "Recomendamos dedicar [X horas] semanales para aprovechar al máximo.",
@@ -1113,7 +1243,10 @@ def generate_from_preset_flags(offer_id: str = "") -> str:
             )
         if "is_lead_magnet" in flags:
             flag_faqs.append(
-                {"q": "¿Es realmente gratuito?", "a": "Sí, completamente. Solo necesitas registrarte con tu correo."}
+                {
+                    "q": "¿Es realmente gratuito?",
+                    "a": "Sí, completamente. Solo necesitas registrarte con tu correo.",
+                }
             )
         if "requires_start_date" in flags:
             flag_faqs.append(
@@ -1126,11 +1259,17 @@ def generate_from_preset_flags(offer_id: str = "") -> str:
         all_faqs = base_faqs + flag_faqs
         draft_fields = {"faqs": all_faqs[:8]}
 
-        suggestions = [f"Se generaron {len(all_faqs[:8])} FAQs basadas en el preset y sus flags."]
+        suggestions = [
+            f"Se generaron {len(all_faqs[:8])} FAQs basadas en el preset y sus flags."
+        ]
         if flags:
             suggestions.append(f"Flags activos: {', '.join(flags)}.")
 
-        logger.info("generate_from_preset_flags_ok", tenant_id=str(tenant_id), faq_count=len(all_faqs[:8]))
+        logger.info(
+            "generate_from_preset_flags_ok",
+            tenant_id=str(tenant_id),
+            faq_count=len(all_faqs[:8]),
+        )
         return _ok_response("faq", draft_fields, suggestions, 0.8)
     finally:
         db.close()
@@ -1192,7 +1331,17 @@ def pull_sales_agent_common_questions() -> str:
             sentences = summary.split(".")
             for sentence in sentences:
                 s = sentence.strip()
-                if any(q in s.lower() for q in ["precio", "costo", "duración", "cuándo", "cómo funciona", "garantía"]):
+                if any(
+                    q in s.lower()
+                    for q in [
+                        "precio",
+                        "costo",
+                        "duración",
+                        "cuándo",
+                        "cómo funciona",
+                        "garantía",
+                    ]
+                ):
                     if s not in common_themes and len(s) > 10:
                         common_themes.append(s[:120])
                     if len(common_themes) >= 5:
@@ -1208,7 +1357,10 @@ def pull_sales_agent_common_questions() -> str:
             )
 
         faq_candidates = [
-            {"q": f"Pregunta frecuente detectada: {theme}", "a": "[Añade tu respuesta aquí]"}
+            {
+                "q": f"Pregunta frecuente detectada: {theme}",
+                "a": "[Añade tu respuesta aquí]",
+            }
             for theme in common_themes[:5]
         ]
         draft_fields = {"faq_candidates": faq_candidates}
@@ -1217,7 +1369,11 @@ def pull_sales_agent_common_questions() -> str:
             "Edita las preguntas para hacerlas más claras y añade respuestas completas.",
         ]
 
-        logger.info("pull_sales_agent_common_questions_ok", tenant_id=str(tenant_id), themes=len(common_themes))
+        logger.info(
+            "pull_sales_agent_common_questions_ok",
+            tenant_id=str(tenant_id),
+            themes=len(common_themes),
+        )
         return _ok_response("faq", draft_fields, suggestions, 0.65)
     finally:
         db.close()
@@ -1258,7 +1414,9 @@ def assemble_from_brand_authority() -> str:
 
         value_stack_items = []
         for item in authority_items[:8]:
-            entity_name = getattr(item, "entity_name", "") or getattr(item, "title", "") or ""
+            entity_name = (
+                getattr(item, "entity_name", "") or getattr(item, "title", "") or ""
+            )
             item_type = getattr(item, "type", "") or ""
             context = getattr(item, "context", "") or ""
 
@@ -1275,7 +1433,9 @@ def assemble_from_brand_authority() -> str:
                 {
                     "title": label,
                     "type": type_label,
-                    "description": context[:200] if context else f"{type_label}: {label}",
+                    "description": context[:200]
+                    if context
+                    else f"{type_label}: {label}",
                     "source": "brand_authority_vault",
                 }
             )
@@ -1287,8 +1447,18 @@ def assemble_from_brand_authority() -> str:
             "Añade logos o imágenes de respaldo para aumentar la credibilidad visual.",
         ]
 
-        logger.info("assemble_from_brand_authority_ok", tenant_id=str(tenant_id), count=len(value_stack_items))
-        return _ok_response("value_stack", draft_fields, suggestions, 0.85, ["social_proof:authority_items"])
+        logger.info(
+            "assemble_from_brand_authority_ok",
+            tenant_id=str(tenant_id),
+            count=len(value_stack_items),
+        )
+        return _ok_response(
+            "value_stack",
+            draft_fields,
+            suggestions,
+            0.85,
+            ["social_proof:authority_items"],
+        )
     finally:
         db.close()
 
@@ -1343,7 +1513,8 @@ def reuse_brand_team() -> str:
                     "name": getattr(m, "name", "") or getattr(m, "display_name", ""),
                     "role": getattr(m, "role", "") or getattr(m, "job_title", ""),
                     "bio": getattr(m, "bio", "") or "",
-                    "headshot_url": getattr(m, "avatar_url", None) or getattr(m, "headshot_url", None),
+                    "headshot_url": getattr(m, "avatar_url", None)
+                    or getattr(m, "headshot_url", None),
                     "source": "social_proof_team",
                 }
             )
@@ -1361,11 +1532,23 @@ def reuse_brand_team() -> str:
             f"{len(combined)} miembro(s) del equipo disponibles como instructores.",
         ]
         if len(combined) > 6:
-            suggestions.append(f"Mostrando los primeros 6. Tienes {len(combined)} en total.")
-        suggestions.append("Selecciona solo los instructores relevantes para esta oferta específica.")
+            suggestions.append(
+                f"Mostrando los primeros 6. Tienes {len(combined)} en total."
+            )
+        suggestions.append(
+            "Selecciona solo los instructores relevantes para esta oferta específica."
+        )
 
-        logger.info("reuse_brand_team_ok", tenant_id=str(tenant_id), count=len(combined))
-        return _ok_response("instructors", draft_fields, suggestions, 0.9, ["social_proof:team_members", "brand:team"])
+        logger.info(
+            "reuse_brand_team_ok", tenant_id=str(tenant_id), count=len(combined)
+        )
+        return _ok_response(
+            "instructors",
+            draft_fields,
+            suggestions,
+            0.9,
+            ["social_proof:team_members", "brand:team"],
+        )
     finally:
         db.close()
 
@@ -1413,7 +1596,9 @@ def structure_objections(raw_text: str) -> str:
 
     # Local schema for LLM structured output (not exported — tool-private)
     class _ObjectionItemOut(BaseModel):
-        type: str = Field(description="Categoria de la objecion. Valores: price, time, trust, partner, fit, custom.")
+        type: str = Field(
+            description="Categoria de la objecion. Valores: price, time, trust, partner, fit, custom."
+        )
         rebuttal: str = Field(
             description=(
                 "Guion de respuesta del agente de ventas."
@@ -1429,7 +1614,9 @@ def structure_objections(raw_text: str) -> str:
         )
         trigger_phrases: list[str] = Field(
             default_factory=list,
-            description=("Frases textuales que el prospecto diria. 2-4 frases como habla una persona real."),
+            description=(
+                "Frases textuales que el prospecto diria. 2-4 frases como habla una persona real."
+            ),
         )
 
     class _StructureObjectionsOutput(BaseModel):

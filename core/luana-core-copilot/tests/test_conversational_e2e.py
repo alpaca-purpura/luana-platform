@@ -199,7 +199,9 @@ async def test_two_channel_adapters_produce_same_sequence() -> None:
     chat_paths = await _run_loop(chat_channel)
 
     assert web_paths == chat_paths
-    assert [c.path for c, _ in web_channel.outbound] == [c.path for c, _ in chat_channel.outbound]
+    assert [c.path for c, _ in web_channel.outbound] == [
+        c.path for c, _ in chat_channel.outbound
+    ]
 
 
 @pytest.mark.asyncio

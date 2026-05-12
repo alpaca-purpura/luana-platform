@@ -23,7 +23,9 @@ from luana_core_sales_agent.application.prompts.compose import (
 
 # Approximation: 1 token ≈ 4 chars (per OpenAI tokenizer rule of thumb).
 # Test threshold uses char count to avoid tiktoken dependency in test path.
-MIN_CACHE_PREFIX_CHARS = 1024 * 3  # conservative — assumes ≥1024 tokens at 3 chars/token.
+MIN_CACHE_PREFIX_CHARS = (
+    1024 * 3
+)  # conservative — assumes ≥1024 tokens at 3 chars/token.
 
 
 def _realistic_state(**overrides: Any) -> dict[str, Any]:
@@ -222,7 +224,9 @@ class TestSpecialistRoleAffectsPlaybookSlot:
 
     def test_product_expert_has_distinct_playbook(self) -> None:
         q = build_specialist_system_prompt(_realistic_state(), SpecialistRole.QUALIFIER)
-        p = build_specialist_system_prompt(_realistic_state(), SpecialistRole.PRODUCT_EXPERT)
+        p = build_specialist_system_prompt(
+            _realistic_state(), SpecialistRole.PRODUCT_EXPERT
+        )
         assert q != p
 
 

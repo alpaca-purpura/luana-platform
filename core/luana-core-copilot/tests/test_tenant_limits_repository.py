@@ -156,7 +156,9 @@ class TestSyncRepositoryUpsert:
 
         # Model was updated in-place + audit row added
         assert existing_model.voice_rpm_override == 10
-        assert session.add.call_count == 1  # only audit row (existing was updated in-place)
+        assert (
+            session.add.call_count == 1
+        )  # only audit row (existing was updated in-place)
         assert session.flush.called
 
 

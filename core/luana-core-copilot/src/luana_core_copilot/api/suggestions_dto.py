@@ -52,10 +52,14 @@ class SuggestionDTO(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
-    label: str = Field(max_length=60, description="Texto visible (Spanish neutro LatAm).")
+    label: str = Field(
+        max_length=60, description="Texto visible (Spanish neutro LatAm)."
+    )
     prompt: str = Field(description="Texto que se inserta en el composer al click.")
     confidence: float = Field(ge=0.0, le=1.0, description="Heurístico 0..1 (D-7).")
-    category: str = Field(description="Mirror StrEnum SuggestionCategory: 'followup'|'action'|'clarify'|'nav'.")
+    category: str = Field(
+        description="Mirror StrEnum SuggestionCategory: 'followup'|'action'|'clarify'|'nav'."
+    )
     source_module: str = Field(
         max_length=50,
         description=(
@@ -78,7 +82,9 @@ class SuggestionsResponse(BaseModel):
         default_factory=dict,
         description="provider_id -> count (telemetría agregada, NOT per-chip).",
     )
-    latency_ms: int = Field(ge=0, description="Engine latency medido (excluye HTTP overhead).")
+    latency_ms: int = Field(
+        ge=0, description="Engine latency medido (excluye HTTP overhead)."
+    )
 
 
 class SuggestionAcceptRequest(BaseModel):
@@ -114,7 +120,9 @@ class SuggestionAcceptResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-    ok: bool = Field(description="True si event publicó al bus. False = warning interno; FE ignora.")
+    ok: bool = Field(
+        description="True si event publicó al bus. False = warning interno; FE ignora."
+    )
 
 
 __all__ = [

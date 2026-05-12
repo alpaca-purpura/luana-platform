@@ -44,7 +44,9 @@ def _make(repo, *, tenant_id, conversation_id, slug, url=None, why="", score=0.7
 
 class TestUpsert:
     def test_first_call_inserts(self, repo, db, tenant_id, conversation_id) -> None:
-        row = _make(repo, tenant_id=tenant_id, conversation_id=conversation_id, slug="comp1")
+        row = _make(
+            repo, tenant_id=tenant_id, conversation_id=conversation_id, slug="comp1"
+        )
         db.commit()
         assert row.id is not None
         assert row.slug == "comp1"
@@ -57,7 +59,9 @@ class TestUpsert:
         tenant_id,
         conversation_id,
     ) -> None:
-        first = _make(repo, tenant_id=tenant_id, conversation_id=conversation_id, slug="x")
+        first = _make(
+            repo, tenant_id=tenant_id, conversation_id=conversation_id, slug="x"
+        )
         db.commit()
         second = repo.upsert(
             tenant_id=tenant_id,
@@ -85,8 +89,18 @@ class TestTenantIsolation:
         tenant_b = uuid4()
         _make(repo, tenant_id=tenant_a, conversation_id=conversation_id, slug="x")
         db.commit()
-        assert repo.get_by_slug(tenant_id=tenant_a, conversation_id=conversation_id, slug="x") is not None
-        assert repo.get_by_slug(tenant_id=tenant_b, conversation_id=conversation_id, slug="x") is None
+        assert (
+            repo.get_by_slug(
+                tenant_id=tenant_a, conversation_id=conversation_id, slug="x"
+            )
+            is not None
+        )
+        assert (
+            repo.get_by_slug(
+                tenant_id=tenant_b, conversation_id=conversation_id, slug="x"
+            )
+            is None
+        )
 
     def test_list_isolated_per_conversation(self, repo, db, tenant_id) -> None:
         conv_a = uuid4()

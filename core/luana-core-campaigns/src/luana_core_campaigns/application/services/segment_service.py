@@ -14,6 +14,8 @@ from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 import structlog
+from luana_core_platform.domain.datetime_utils import utc_now
+from luana_core_platform.infrastructure.models.crm import LeadModel
 from sqlalchemy import select
 
 from luana_core_campaigns.application.services._event_bridge import to_domain_event
@@ -21,10 +23,9 @@ from luana_core_campaigns.domain.enums import SegmentType
 from luana_core_campaigns.domain.events import SegmentCreated, SegmentSnapshotted
 from luana_core_campaigns.domain.segment import Segment, SegmentSnapshot
 from luana_core_campaigns.domain.segment_filter import PredefinedSegmentFilter
-from luana_core_platform.domain.datetime_utils import utc_now
-from luana_core_platform.infrastructure.models.crm import LeadModel
 
 if TYPE_CHECKING:
+    from luana_core_events.outbox.application.outbox_service import OutboxService
     from sqlalchemy.ext.asyncio import AsyncSession
 
     from luana_core_campaigns.application.dtos.pagination import PaginatedResponse
@@ -42,7 +43,6 @@ if TYPE_CHECKING:
         SegmentRepository,
         SegmentSnapshotRepository,
     )
-    from luana_core_events.outbox.application.outbox_service import OutboxService
 
 logger = structlog.get_logger(__name__)
 

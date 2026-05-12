@@ -245,7 +245,10 @@ class TestActiveJobsEndpointHappyPath:
             "progress": 55,
             "stage": "Analizando secciones...",
             "filled_fields": ["headline_promise", "value_level"],
-            "filled_fields_by_section": {"identity": ["headline_promise"], "strategy": ["value_level"]},
+            "filled_fields_by_section": {
+                "identity": ["headline_promise"],
+                "strategy": ["value_level"],
+            },
             "sections_touched": ["identity", "strategy"],
             "sections_completed": ["identity"],
             "finished_at": None,

@@ -244,7 +244,9 @@ async def extract_from_doc(
         )
 
         if get_extraction_config(domain) is None:
-            return _err(f"El módulo '{module}' no tiene template de extracción de documentos.")
+            return _err(
+                f"El módulo '{module}' no tiene template de extracción de documentos."
+            )
 
         db = SessionLocal()
         try:
@@ -254,7 +256,13 @@ async def extract_from_doc(
                 redis_client.setex(
                     progress_key,
                     3600,
-                    json.dumps({"status": "failed", "progress": 0, "error": "Asset no encontrado."}),
+                    json.dumps(
+                        {
+                            "status": "failed",
+                            "progress": 0,
+                            "error": "Asset no encontrado.",
+                        }
+                    ),
                 )
                 return _err(f"No se encontró el asset {asset_id}.", asset_id=asset_id)
 
@@ -263,7 +271,13 @@ async def extract_from_doc(
                 redis_client.setex(
                     progress_key,
                     3600,
-                    json.dumps({"status": "failed", "progress": 0, "error": "Documento sin texto extraído."}),
+                    json.dumps(
+                        {
+                            "status": "failed",
+                            "progress": 0,
+                            "error": "Documento sin texto extraído.",
+                        }
+                    ),
                 )
                 return _err(
                     f"El documento '{asset.filename}' aún no tiene texto extraído. "
@@ -309,7 +323,9 @@ async def extract_from_doc(
                 sec = parts[0] if len(parts) > 1 else "__root__"
                 filled_by_section.setdefault(sec, []).append(fp)
 
-            sections_completed = list(filled_by_section.keys()) if filled_by_section else []
+            sections_completed = (
+                list(filled_by_section.keys()) if filled_by_section else []
+            )
 
             # Mark completed
             finished_at = datetime.now(UTC).isoformat()
@@ -370,7 +386,9 @@ async def extract_from_doc(
         "brand": f"/api/v1/brand/extract-full-brand/status/{job_id}",
         "offer": f"/api/v1/offer/extract-full-offer/status/{job_id}",
     }
-    poll_endpoint = poll_endpoint_map.get(module, f"/api/v1/brand/extract-full-brand/status/{job_id}")
+    poll_endpoint = poll_endpoint_map.get(
+        module, f"/api/v1/brand/extract-full-brand/status/{job_id}"
+    )
 
     # Store in canonical key format too (for backwards compat status lookup)
     legacy_key = f"{module}_extract:{tenant_str}:{job_id}"
@@ -390,7 +408,9 @@ async def extract_from_doc(
         mode=mode,
     )
 
-    friendly = "Extraje los campos del documento. Revisa el resumen para ver qué se completó."
+    friendly = (
+        "Extraje los campos del documento. Revisa el resumen para ver qué se completó."
+    )
 
     return json.dumps(
         {

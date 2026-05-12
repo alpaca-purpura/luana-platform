@@ -18,7 +18,9 @@ from pydantic import ValidationError
 TENANT_ID = UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
 
 _GET_TENANT_ID = "luana_core_copilot.application.tools.analytics_tools.get_tenant_id"
-_GET_GUARD = "luana_core_copilot.application.tools.analytics_tools._get_etl_refresh_guard"
+_GET_GUARD = (
+    "luana_core_copilot.application.tools.analytics_tools._get_etl_refresh_guard"
+)
 _CALL_ETL = "luana_core_copilot.application.tools.analytics_tools._call_etl_refresh"
 
 
@@ -42,9 +44,14 @@ class TestTriggerEtlRefreshHappy:
         with (
             patch(_GET_TENANT_ID, return_value=TENANT_ID),
             patch(_GET_GUARD, return_value=mock_guard),
-            patch(_CALL_ETL, new=AsyncMock(return_value={"status": "ok", "run_id": "run-123"})),
+            patch(
+                _CALL_ETL,
+                new=AsyncMock(return_value={"status": "ok", "run_id": "run-123"}),
+            ),
         ):
-            result = trigger_etl_refresh.invoke({"channel": "meta-ads", "confirmed": False})
+            result = trigger_etl_refresh.invoke(
+                {"channel": "meta-ads", "confirmed": False}
+            )
 
         parsed = json.loads(result)
         assert parsed.get("status") in ("queued", "ok")
@@ -65,7 +72,10 @@ class TestTriggerEtlRefreshHappy:
         with (
             patch(_GET_TENANT_ID, return_value=TENANT_ID),
             patch(_GET_GUARD, return_value=mock_guard),
-            patch(_CALL_ETL, new=AsyncMock(return_value={"status": "ok", "run_id": "run-456"})),
+            patch(
+                _CALL_ETL,
+                new=AsyncMock(return_value={"status": "ok", "run_id": "run-456"}),
+            ),
         ):
             result = trigger_etl_refresh.invoke({"channel": "meta-ads"})
 
@@ -133,7 +143,9 @@ class TestTriggerEtlRefreshConfirmFlow:
             patch(_GET_TENANT_ID, return_value=TENANT_ID),
             patch(_GET_GUARD, return_value=mock_guard),
         ):
-            result = trigger_etl_refresh.invoke({"channel": "meta-ads", "confirmed": False})
+            result = trigger_etl_refresh.invoke(
+                {"channel": "meta-ads", "confirmed": False}
+            )
 
         parsed = json.loads(result)
         assert parsed.get("status") == "requires_confirmation"
@@ -155,9 +167,14 @@ class TestTriggerEtlRefreshConfirmFlow:
         with (
             patch(_GET_TENANT_ID, return_value=TENANT_ID),
             patch(_GET_GUARD, return_value=mock_guard),
-            patch(_CALL_ETL, new=AsyncMock(return_value={"status": "ok", "run_id": "run-789"})),
+            patch(
+                _CALL_ETL,
+                new=AsyncMock(return_value={"status": "ok", "run_id": "run-789"}),
+            ),
         ):
-            result = trigger_etl_refresh.invoke({"channel": "meta-ads", "confirmed": True})
+            result = trigger_etl_refresh.invoke(
+                {"channel": "meta-ads", "confirmed": True}
+            )
 
         # Guard was called with confirmed=True
         mock_guard.check.assert_called_once_with(TENANT_ID, "meta-ads", confirmed=True)

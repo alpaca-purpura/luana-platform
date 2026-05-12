@@ -22,7 +22,10 @@ from pathlib import Path
 
 import pytest
 
-pytest.skip("T-15 deferred — luana_core_platform.workers.settings not yet lifted from AISALESHT shared/workers/. Story 1/2 territory or T-21 finalize.", allow_module_level=True)
+pytest.skip(
+    "T-15 deferred — luana_core_platform.workers.settings not yet lifted from AISALESHT shared/workers/. Story 1/2 territory or T-21 finalize.",
+    allow_module_level=True,
+)
 
 BACKEND_SRC = Path(__file__).resolve().parents[4] / "src"
 CHAT_PY = BACKEND_SRC / "modules/copilot/application/orchestrator/chat.py"
@@ -71,8 +74,9 @@ class TestLegacySymbolsAbsent:
             text = py.read_text()
             if LEGACY_PATTERN.search(text):
                 offenders.append(str(py.relative_to(BACKEND_SRC)))
-        assert not offenders, "Legacy observability symbols still present in backend/src:\n" + "\n".join(
-            sorted(offenders)
+        assert not offenders, (
+            "Legacy observability symbols still present in backend/src:\n"
+            + "\n".join(sorted(offenders))
         )
 
 
@@ -82,8 +86,12 @@ class TestLegacySymbolsAbsent:
 class TestChatHotPathImportsNewModule:
     def test_imports_observability_context(self) -> None:
         text = CHAT_PY.read_text()
-        assert "ObservabilityContext" in text, "chat.py must import ObservabilityContext from copilot.observability"
-        assert "from luana_core_copilot.observability" in text, "chat.py must use the new observability module"
+        assert "ObservabilityContext" in text, (
+            "chat.py must import ObservabilityContext from copilot.observability"
+        )
+        assert "from luana_core_copilot.observability" in text, (
+            "chat.py must use the new observability module"
+        )
 
     def test_imports_domain_events(self) -> None:
         text = CHAT_PY.read_text()
@@ -107,7 +115,9 @@ class TestChatHotPathImportsNewModule:
 
     def test_passes_callback_handler_via_runnable_config(self) -> None:
         text = CHAT_PY.read_text()
-        assert "langchain_config" in text, "chat.py must pass obs.langchain_config() to graph.astream_events"
+        assert "langchain_config" in text, (
+            "chat.py must pass obs.langchain_config() to graph.astream_events"
+        )
 
 
 # ── 4. extraction_card_flow publishes CardEmitted ─────────────────────
@@ -122,4 +132,6 @@ class TestExtractionCardFlowPublishesEvent:
 
     def test_extraction_card_flow_does_not_import_trace_recorder(self) -> None:
         text = EXTRACTION_PY.read_text()
-        assert "trace_recorder" not in text, "extraction_card_flow.py must not import trace_recorder anymore"
+        assert "trace_recorder" not in text, (
+            "extraction_card_flow.py must not import trace_recorder anymore"
+        )

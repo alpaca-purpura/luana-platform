@@ -55,7 +55,9 @@ def _pricing_snapshot():
 
 
 def _make_handler(db):
-    from luana_core_copilot.observability.persistence.llm_call_repository import LlmCallRepository
+    from luana_core_copilot.observability.persistence.llm_call_repository import (
+        LlmCallRepository,
+    )
     from luana_core_copilot.observability.persistence.trace_event_repository import (
         TraceEventRepository,
     )
@@ -152,11 +154,15 @@ class TestUsageFallbacksFromResponseMetadata:
         )
         _drive_turn(
             handler,
-            response=LLMResult(generations=[[ChatGeneration(message=msg)]], llm_output=None),
+            response=LLMResult(
+                generations=[[ChatGeneration(message=msg)]], llm_output=None
+            ),
         )
         db.flush()
 
-        rows = db.query(CopilotLlmCallModel).filter_by(tenant_id=handler.tenant_id).all()
+        rows = (
+            db.query(CopilotLlmCallModel).filter_by(tenant_id=handler.tenant_id).all()
+        )
         assert len(rows) == 1
         assert rows[0].input_tokens == 4277
         assert rows[0].output_tokens == 239
@@ -236,7 +242,9 @@ class TestZeroTokensRemainsLastResort:
         msg = _ai_message_no_usage(response_metadata={"model_name": "kimi-k2.6"})
         _drive_turn(
             handler,
-            response=LLMResult(generations=[[ChatGeneration(message=msg)]], llm_output=None),
+            response=LLMResult(
+                generations=[[ChatGeneration(message=msg)]], llm_output=None
+            ),
         )
         db.flush()
 

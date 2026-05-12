@@ -9,7 +9,10 @@ from __future__ import annotations
 
 import pytest
 
-pytest.skip("T-15 deferred to T-16 UNLIFT (Stories 2-5 copilot_provider/ subfolders not yet lifted — luana_core_brand_studio.copilot_provider / luana_core_offer_studio.copilot_provider / etc.)", allow_module_level=True)
+pytest.skip(
+    "T-15 deferred to T-16 UNLIFT (Stories 2-5 copilot_provider/ subfolders not yet lifted — luana_core_brand_studio.copilot_provider / luana_core_offer_studio.copilot_provider / etc.)",
+    allow_module_level=True,
+)
 
 from typing import TYPE_CHECKING
 
@@ -67,7 +70,9 @@ class _StubWorkflowProvider:
 
 
 class _StubProvider(BaseCopilotProvider):
-    def __init__(self, module_id_value: str, workflows_value: Sequence[Workflow]) -> None:
+    def __init__(
+        self, module_id_value: str, workflows_value: Sequence[Workflow]
+    ) -> None:
         self._module_id = module_id_value
         self._workflows = workflows_value
 
@@ -203,7 +208,9 @@ class TestRealProviderIntegration:
             for node in wf.nodes:
                 module_path, _, attr = node.handler_ref.partition(":")
                 mod = importlib.import_module(module_path)
-                assert hasattr(mod, attr), f"{wf.id}/{node.id}: {node.handler_ref} missing"
+                assert hasattr(mod, attr), (
+                    f"{wf.id}/{node.id}: {node.handler_ref} missing"
+                )
 
     def test_offer_workflow_node_handlers_resolvable(self) -> None:
         import importlib
@@ -216,4 +223,6 @@ class TestRealProviderIntegration:
             for node in wf.nodes:
                 module_path, _, attr = node.handler_ref.partition(":")
                 mod = importlib.import_module(module_path)
-                assert hasattr(mod, attr), f"{wf.id}/{node.id}: {node.handler_ref} missing"
+                assert hasattr(mod, attr), (
+                    f"{wf.id}/{node.id}: {node.handler_ref} missing"
+                )

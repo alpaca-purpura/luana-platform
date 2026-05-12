@@ -135,9 +135,15 @@ class WorkflowMetricRepository:
                 completed_count=row.completed_count,
                 abandoned_count=row.abandoned_count,
                 avg_turns_to_completion=row.avg_turns_to_completion,
-                accept_rate=float(row.accept_rate) if row.accept_rate is not None else None,
+                accept_rate=float(row.accept_rate)
+                if row.accept_rate is not None
+                else None,
                 abandon_node=row.abandon_node,
-                judge_avg_score=(float(row.judge_avg_score) if row.judge_avg_score is not None else None),
+                judge_avg_score=(
+                    float(row.judge_avg_score)
+                    if row.judge_avg_score is not None
+                    else None
+                ),
                 judge_sample_size=row.judge_sample_size,
                 extra_metadata=row.extra_metadata,
             )

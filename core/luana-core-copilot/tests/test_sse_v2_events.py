@@ -142,7 +142,9 @@ class TestEmitTextChunkV2:
 
         block_ids: list[str] = []
         for chunk in ["A", "B", "C"]:
-            async for sse in CopilotOrchestrator._emit_text_chunk_v2(acc, msg_id, chunk):
+            async for sse in CopilotOrchestrator._emit_text_chunk_v2(
+                acc, msg_id, chunk
+            ):
                 parsed = _parse_sse(sse)
                 if "block_id" in parsed["data"]:
                     block_ids.append(parsed["data"]["block_id"])
@@ -158,7 +160,9 @@ class TestToolResultToBlock:
 
     def test_search_knowledge_base_returns_citation_blocks(self) -> None:
         """search_knowledge_base output → list of CitationBlock dicts."""
-        from luana_core_copilot.application.orchestrator.chat import _tool_result_to_block
+        from luana_core_copilot.application.orchestrator.chat import (
+            _tool_result_to_block,
+        )
 
         result_json = json.dumps(
             [
@@ -183,7 +187,9 @@ class TestToolResultToBlock:
         """search_assets with image asset → ImageBlock."""
         from uuid import uuid4
 
-        from luana_core_copilot.application.orchestrator.chat import _tool_result_to_block
+        from luana_core_copilot.application.orchestrator.chat import (
+            _tool_result_to_block,
+        )
 
         asset_id = str(uuid4())
         result_json = json.dumps(
@@ -209,7 +215,9 @@ class TestToolResultToBlock:
         """get_asset with audio asset → AudioBlock."""
         from uuid import uuid4
 
-        from luana_core_copilot.application.orchestrator.chat import _tool_result_to_block
+        from luana_core_copilot.application.orchestrator.chat import (
+            _tool_result_to_block,
+        )
 
         asset_id = str(uuid4())
         result_json = json.dumps(
@@ -234,7 +242,9 @@ class TestToolResultToBlock:
         """get_asset with document asset → DocumentBlock."""
         from uuid import uuid4
 
-        from luana_core_copilot.application.orchestrator.chat import _tool_result_to_block
+        from luana_core_copilot.application.orchestrator.chat import (
+            _tool_result_to_block,
+        )
 
         asset_id = str(uuid4())
         result_json = json.dumps(
@@ -258,7 +268,9 @@ class TestToolResultToBlock:
         """get_asset with video asset → VideoBlock."""
         from uuid import uuid4
 
-        from luana_core_copilot.application.orchestrator.chat import _tool_result_to_block
+        from luana_core_copilot.application.orchestrator.chat import (
+            _tool_result_to_block,
+        )
 
         asset_id = str(uuid4())
         result_json = json.dumps(
@@ -279,28 +291,36 @@ class TestToolResultToBlock:
 
     def test_unknown_tool_returns_none(self) -> None:
         """Tools not mapped to blocks return None (emit only legacy tool_result)."""
-        from luana_core_copilot.application.orchestrator.chat import _tool_result_to_block
+        from luana_core_copilot.application.orchestrator.chat import (
+            _tool_result_to_block,
+        )
 
         blocks = _tool_result_to_block("analyze_offer_ladder", '{"result": "ok"}')
         assert blocks is None
 
     def test_invalid_json_returns_none(self) -> None:
         """Malformed JSON from tool → None (safe fallback, no crash)."""
-        from luana_core_copilot.application.orchestrator.chat import _tool_result_to_block
+        from luana_core_copilot.application.orchestrator.chat import (
+            _tool_result_to_block,
+        )
 
         blocks = _tool_result_to_block("search_knowledge_base", "not-json")
         assert blocks is None
 
     def test_empty_list_returns_empty_list(self) -> None:
         """search_knowledge_base returning empty list → empty list (not None)."""
-        from luana_core_copilot.application.orchestrator.chat import _tool_result_to_block
+        from luana_core_copilot.application.orchestrator.chat import (
+            _tool_result_to_block,
+        )
 
         blocks = _tool_result_to_block("search_knowledge_base", "[]")
         assert blocks == []
 
     def test_search_assets_not_found_error_returns_none(self) -> None:
         """search_assets error response → None."""
-        from luana_core_copilot.application.orchestrator.chat import _tool_result_to_block
+        from luana_core_copilot.application.orchestrator.chat import (
+            _tool_result_to_block,
+        )
 
         blocks = _tool_result_to_block("search_assets", '{"error": "not_found"}')
         assert blocks is None
@@ -316,7 +336,9 @@ class TestHandleToolEndV2BlockAppend:
     def orch(self) -> CopilotOrchestrator:
         return _make_orchestrator()
 
-    def test_search_knowledge_base_emits_block_append_citation(self, orch: CopilotOrchestrator) -> None:
+    def test_search_knowledge_base_emits_block_append_citation(
+        self, orch: CopilotOrchestrator
+    ) -> None:
         """search_knowledge_base tool result → block_append with CitationBlock."""
         from uuid import uuid4
 
@@ -351,12 +373,16 @@ class TestHandleToolEndV2BlockAppend:
         assert "block_append" in event_types
 
         # The block_append must carry a CitationBlock
-        append_frames = [_parse_sse(f) for f in frames if _parse_sse(f)["event"] == "block_append"]
+        append_frames = [
+            _parse_sse(f) for f in frames if _parse_sse(f)["event"] == "block_append"
+        ]
         assert len(append_frames) == 1
         block = append_frames[0]["data"]["block"]
         assert block["type"] == "citation"
 
-    def test_search_assets_image_emits_block_append_image(self, orch: CopilotOrchestrator) -> None:
+    def test_search_assets_image_emits_block_append_image(
+        self, orch: CopilotOrchestrator
+    ) -> None:
         """search_assets (image) → block_append with ImageBlock."""
         from uuid import uuid4
 
@@ -388,7 +414,9 @@ class TestHandleToolEndV2BlockAppend:
         event_types = [_parse_sse(f)["event"] for f in frames]
         assert "block_append" in event_types
 
-        append_frame = next(_parse_sse(f) for f in frames if _parse_sse(f)["event"] == "block_append")
+        append_frame = next(
+            _parse_sse(f) for f in frames if _parse_sse(f)["event"] == "block_append"
+        )
         assert append_frame["data"]["block"]["type"] == "image"
         assert append_frame["data"]["block"]["asset_id"] == asset_id
 
@@ -419,7 +447,9 @@ class TestHandleToolEndV2BlockAppend:
     # equivalent invariants live in
     # ``tests/modules/copilot/observability/test_callback_handler.py``.
 
-    def test_block_append_added_to_accumulator_emitted_blocks(self, orch: CopilotOrchestrator) -> None:
+    def test_block_append_added_to_accumulator_emitted_blocks(
+        self, orch: CopilotOrchestrator
+    ) -> None:
         """block_append blocks are added to acc.emitted_blocks for message_end."""
         from uuid import uuid4
 
@@ -458,7 +488,9 @@ class TestUiActionToCardBlock:
     def orch(self) -> CopilotOrchestrator:
         return _make_orchestrator()
 
-    def test_ui_action_proposal_emits_block_append_card(self, orch: CopilotOrchestrator) -> None:
+    def test_ui_action_proposal_emits_block_append_card(
+        self, orch: CopilotOrchestrator
+    ) -> None:
         """ui_action with type='proposal' → block_append with CardBlock(card_kind='proposal')."""
         from uuid import uuid4
 
@@ -483,13 +515,17 @@ class TestUiActionToCardBlock:
         assert "ui_action" in event_types  # legacy still fires
         assert "block_append" in event_types  # v2 fires too
 
-        card_frame = next(_parse_sse(f) for f in frames if _parse_sse(f)["event"] == "block_append")
+        card_frame = next(
+            _parse_sse(f) for f in frames if _parse_sse(f)["event"] == "block_append"
+        )
         block = card_frame["data"]["block"]
         assert block["type"] == "card"
         assert block["card_kind"] == "proposal"
         assert block["payload"] == ui_payload
 
-    def test_ui_action_clarify_emits_card_block(self, orch: CopilotOrchestrator) -> None:
+    def test_ui_action_clarify_emits_card_block(
+        self, orch: CopilotOrchestrator
+    ) -> None:
         """ui_action clarify → CardBlock with card_kind='clarify'."""
         from uuid import uuid4
 
@@ -507,7 +543,9 @@ class TestUiActionToCardBlock:
         result = orch._handle_tool_end_v2(event, [], {}, acc, msg_id)
 
         frames = [f + "\n\n" for f in result.split("\n\n") if f.strip()]
-        card_frames = [_parse_sse(f) for f in frames if _parse_sse(f)["event"] == "block_append"]
+        card_frames = [
+            _parse_sse(f) for f in frames if _parse_sse(f)["event"] == "block_append"
+        ]
         assert len(card_frames) == 1
         assert card_frames[0]["data"]["block"]["card_kind"] == "clarify"
 
@@ -521,7 +559,9 @@ async def _run_stream_chat(
 ) -> list[dict[str, Any]]:
     """Drive stream_chat using a fake async generator for the deep-agent graph."""
 
-    async def fake_graph_stream(state: dict, *, version: str = "v2", config: dict | None = None):
+    async def fake_graph_stream(
+        state: dict, *, version: str = "v2", config: dict | None = None
+    ):
         for ev in graph_events:
             yield ev
 
@@ -575,19 +615,27 @@ class TestStreamChatV2EventOrdering:
 
         assert "message_start" in event_types
         assert "block_start" in event_types
-        idx_message_start = next(i for i, e in enumerate(events) if e["event"] == "message_start")
-        idx_block_start = next(i for i, e in enumerate(events) if e["event"] == "block_start")
+        idx_message_start = next(
+            i for i, e in enumerate(events) if e["event"] == "message_start"
+        )
+        idx_block_start = next(
+            i for i, e in enumerate(events) if e["event"] == "block_start"
+        )
         assert idx_message_start < idx_block_start
 
     @pytest.mark.asyncio
     async def test_text_streaming_emits_only_v2(self) -> None:
         """F8 §5.4 — text streaming emits ONLY block_delta. ``text_chunk`` is gone."""
         orch = _make_orchestrator()
-        events = await _run_stream_chat(orch, _make_text_stream_events(["Hola", " mundo"]))
+        events = await _run_stream_chat(
+            orch, _make_text_stream_events(["Hola", " mundo"])
+        )
         event_types = [e["event"] for e in events]
 
         assert "block_delta" in event_types, "v2 block_delta must always be emitted"
-        assert "text_chunk" not in event_types, "Legacy text_chunk SSE was removed in F8 §5.4 — it must not be emitted"
+        assert "text_chunk" not in event_types, (
+            "Legacy text_chunk SSE was removed in F8 §5.4 — it must not be emitted"
+        )
 
     @pytest.mark.asyncio
     async def test_message_end_contains_final_blocks(self) -> None:
@@ -614,8 +662,12 @@ class TestStreamChatV2EventOrdering:
 
         assert "block_end" in event_types
         assert "message_end" in event_types
-        idx_block_end = max(i for i, e in enumerate(events) if e["event"] == "block_end")
-        idx_message_end = next(i for i, e in enumerate(events) if e["event"] == "message_end")
+        idx_block_end = max(
+            i for i, e in enumerate(events) if e["event"] == "block_end"
+        )
+        idx_message_end = next(
+            i for i, e in enumerate(events) if e["event"] == "message_end"
+        )
         assert idx_block_end < idx_message_end
 
     @pytest.mark.asyncio

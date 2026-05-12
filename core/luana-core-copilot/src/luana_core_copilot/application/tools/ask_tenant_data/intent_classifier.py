@@ -178,7 +178,9 @@ async def classify_intent(
     kind = _coerce_kind(parsed.get("kind"))
     return IntentResult(
         kind=kind,
-        name_query=_coerce_optional_str(parsed.get("name_query")) if kind == "offer_lookup" else None,
+        name_query=_coerce_optional_str(parsed.get("name_query"))
+        if kind == "offer_lookup"
+        else None,
         period_phrase=_coerce_optional_str(parsed.get("period_phrase")),
         channel=_coerce_optional_str(parsed.get("channel")),
         raw_question=question,

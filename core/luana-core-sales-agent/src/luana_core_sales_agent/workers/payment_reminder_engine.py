@@ -72,7 +72,9 @@ def _remind_one(db, link: PaymentLinkModel) -> None:  # noqa: ANN001
     state_svc = PaymentStateService(db)
 
     # Check if reminder already sent via JSONB state
-    existing = state_svc.find_pending_link(link.tenant_id, link.lead_id, link.external_id)
+    existing = state_svc.find_pending_link(
+        link.tenant_id, link.lead_id, link.external_id
+    )
     if existing and existing.reminder_sent_at is not None:
         return
 

@@ -65,8 +65,7 @@ def _check_pyproject_no_publish(path: Path) -> list[str]:
     hatch = data.get("tool", {}).get("hatch", {})
     if "publish" in hatch:
         violations.append(
-            f"{path.relative_to(ROOT)}: has [tool.hatch.publish] section — "
-            "publishing deferred to Story 9"
+            f"{path.relative_to(ROOT)}: has [tool.hatch.publish] section — publishing deferred to Story 9"
         )
 
     return violations
@@ -78,10 +77,7 @@ def _check_package_json_no_publish(path: Path) -> list[str]:
     data = json.loads(path.read_text())
 
     if "publishConfig" in data:
-        violations.append(
-            f"{path.relative_to(ROOT)}: has 'publishConfig' — "
-            "publishing deferred to Story 9"
-        )
+        violations.append(f"{path.relative_to(ROOT)}: has 'publishConfig' — publishing deferred to Story 9")
 
     # 'private: true' is REQUIRED to prevent accidental npm publish
     if not data.get("private", False):

@@ -12,10 +12,16 @@ from unittest.mock import MagicMock
 from uuid import uuid4
 
 from luana_core_copilot.application.suggestions.engine import SuggestionEngine
-from luana_core_copilot.domain.suggestion import Suggestion, SuggestionCategory, SuggestionContext
+from luana_core_copilot.domain.suggestion import (
+    Suggestion,
+    SuggestionCategory,
+    SuggestionContext,
+)
 
 
-def _ctx(route: str | None = None, tenant_id=None, conversation_id=None, recent_messages=()):
+def _ctx(
+    route: str | None = None, tenant_id=None, conversation_id=None, recent_messages=()
+):
     return SuggestionContext(
         tenant_id=tenant_id or uuid4(),
         user_id=None,
@@ -151,4 +157,6 @@ class TestEngineWith4Providers:
         chips, _, _ = engine.get_suggestions(_ctx(route="brand-studio"))
 
         # High priority (brand=10) should rank before copilot (=5) on tied confidence
-        assert chips[0].label == "High priority chip", f"Expected high-priority chip first, got {chips[0].label!r}"
+        assert chips[0].label == "High priority chip", (
+            f"Expected high-priority chip first, got {chips[0].label!r}"
+        )

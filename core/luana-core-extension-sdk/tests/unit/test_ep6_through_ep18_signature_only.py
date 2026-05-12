@@ -5,12 +5,11 @@ Per 06-tickets.yaml T-7 scenarios B6-B18:
 - 13 test_ep{n}_dispatch_raises_not_implemented tests (semantic dispatch raises NotImplementedError)
 - Additional cross-cutting assertions per V-F-sdk-1 + V-F-sdk-3 + V-F-sdk-4
 """
+
 from __future__ import annotations
 
 import pytest
-
 from luana_core_extension_sdk.exceptions import (
-    DuplicateRegistrationError,
     NamespaceViolationError,
     RegistrationClosedError,
 )
@@ -31,7 +30,6 @@ from luana_core_extension_sdk.models import (
     SidebarRouteDef,
     WizardStepDef,
 )
-
 
 # ─── B6: EP-6 sidebar_routes_register ────────────────────────────────
 

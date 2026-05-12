@@ -60,9 +60,13 @@ class TestVoseoAutocorrect:
             ("Mirá", "Mira"),
         ],
     )
-    def test_capitalized_voseo_preserves_case(self, voseo_cap: str, neutro_cap: str) -> None:
+    def test_capitalized_voseo_preserves_case(
+        self, voseo_cap: str, neutro_cap: str
+    ) -> None:
         out = correct_voseo_in_text(f"{voseo_cap} mi sugerencia.")
-        assert out.startswith(neutro_cap), f"expected case-preserved replacement, got {out!r}"
+        assert out.startswith(neutro_cap), (
+            f"expected case-preserved replacement, got {out!r}"
+        )
 
     def test_idempotent(self) -> None:
         text = "Si quieres ayuda, dime. Tienes opciones."

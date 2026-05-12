@@ -12,7 +12,6 @@ from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
 import pytest
-
 from luana_core_campaigns.application.services.audit_log_service import AuditLogService
 from luana_core_campaigns.domain.audit_log import AuditEventType
 

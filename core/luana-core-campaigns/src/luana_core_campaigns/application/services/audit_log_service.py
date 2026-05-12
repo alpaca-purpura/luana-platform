@@ -12,9 +12,9 @@ from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 import structlog
+from luana_core_platform.domain.datetime_utils import utc_now
 
 from luana_core_campaigns.domain.audit_log import AuditEventType, AuditLogEvent
-from luana_core_platform.domain.datetime_utils import utc_now
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession

@@ -64,17 +64,23 @@ class TestDefaultRoutingPolicy:
 
     def test_has_heavy_rules(self) -> None:
         """At least one rule targets HEAVY tier."""
-        heavy_rules = [r for r in DEFAULT_ROUTING_POLICY.rules if r.role == ModelRole.AGENT]
+        heavy_rules = [
+            r for r in DEFAULT_ROUTING_POLICY.rules if r.role == ModelRole.AGENT
+        ]
         assert len(heavy_rules) >= 1
 
     def test_has_reasoning_rules(self) -> None:
         """At least one rule targets REASONING tier."""
-        reasoning_rules = [r for r in DEFAULT_ROUTING_POLICY.rules if r.role == ModelRole.REASONING]
+        reasoning_rules = [
+            r for r in DEFAULT_ROUTING_POLICY.rules if r.role == ModelRole.REASONING
+        ]
         assert len(reasoning_rules) >= 1
 
     def test_has_nano_rule(self) -> None:
         """At least one rule targets NANO tier."""
-        nano_rules = [r for r in DEFAULT_ROUTING_POLICY.rules if r.role == ModelRole.NANO]
+        nano_rules = [
+            r for r in DEFAULT_ROUTING_POLICY.rules if r.role == ModelRole.NANO
+        ]
         assert len(nano_rules) >= 1
 
     def test_short_msg_no_tools_nano_rule_exists(self) -> None:
@@ -86,7 +92,9 @@ class TestDefaultRoutingPolicy:
         priorities still win when intent demands more capability.
         """
         nano_short = [
-            r for r in DEFAULT_ROUTING_POLICY.rules if r.role == ModelRole.NANO and r.max_msg_length is not None
+            r
+            for r in DEFAULT_ROUTING_POLICY.rules
+            if r.role == ModelRole.NANO and r.max_msg_length is not None
         ]
         assert len(nano_short) >= 1
         rule = nano_short[0]

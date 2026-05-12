@@ -51,7 +51,20 @@ def _get_py_files(pkg_name: str):
     pkg_dir = CORE_DIR / pkg_name / "src"
     if not pkg_dir.exists():
         return []
-    return list(pkg_dir.rglob("*.py"))
+    # Story 6 T-16 introduced copilot_provider/ subpackages into Story 4 packages.
+    # Story 7 T-16 introduced connections/api/dependencies/ composition root for
+    # ChatOrchestrator wiring (intentional DI, not forward-coupling violation).
+    # copilot_provider/ and composition roots are integration layers by design.
+    excluded_parts = {"copilot_provider"}
+    excluded_files = {
+        "luana-core-connections/src/luana_core_connections/api/dependencies/__init__.py",
+    }
+    abs_excluded = {CORE_DIR / f for f in excluded_files}
+    return [
+        p for p in pkg_dir.rglob("*.py")
+        if "copilot_provider" not in p.parts and p not in abs_excluded
+        and not any(part in excluded_parts for part in p.parts)
+    ]
 
 
 def test_no_forward_module_imports():

@@ -73,19 +73,25 @@ class TestDocumentToolAlwaysPresent:
     """read_document must be available on every route — uploads happen anywhere."""
 
     def test_read_document_in_brand_studio(self) -> None:
-        from luana_core_copilot.application.tools.registry import get_tool_names_for_route
+        from luana_core_copilot.application.tools.registry import (
+            get_tool_names_for_route,
+        )
 
         names = get_tool_names_for_route("/tenant/brand-studio")
         assert "read_document" in names
 
     def test_read_document_in_growth_studio(self) -> None:
-        from luana_core_copilot.application.tools.registry import get_tool_names_for_route
+        from luana_core_copilot.application.tools.registry import (
+            get_tool_names_for_route,
+        )
 
         names = get_tool_names_for_route("/tenant/growth-studio/metrics")
         assert "read_document" in names
 
     def test_read_document_on_fallback_route(self) -> None:
-        from luana_core_copilot.application.tools.registry import get_tool_names_for_route
+        from luana_core_copilot.application.tools.registry import (
+            get_tool_names_for_route,
+        )
 
         names = get_tool_names_for_route(None)
         assert "read_document" in names
@@ -143,7 +149,9 @@ class TestProviderRouteMerging:
         import luana_core_copilot.application.discovery as disc
         import luana_core_copilot.application.tools.registry as reg
 
-        monkeypatch.setattr(disc, "discover_providers", lambda: {provider.module_id: provider})
+        monkeypatch.setattr(
+            disc, "discover_providers", lambda: {provider.module_id: provider}
+        )
         importlib.reload(reg)
         return reg
 
@@ -154,7 +162,9 @@ class TestProviderRouteMerging:
         provider, synth_tool = self._synth_provider()
         reg = self._patch_discovery_with(monkeypatch, provider)
 
-        assert "_tp10_synth_group" in reg.TOOL_GROUPS, "tool_groups merge already worked pre-fix"
+        assert "_tp10_synth_group" in reg.TOOL_GROUPS, (
+            "tool_groups merge already worked pre-fix"
+        )
         # The architectural fix: routes() must extend ROUTE_TOOL_MAP['*'].
         assert "_tp10_synth_group" in reg.ROUTE_TOOL_MAP["*"], (
             "ROUTE_TOOL_MAP['*'] does not include provider-declared group"
@@ -194,7 +204,11 @@ class TestProviderRouteMerging:
                 return "Growth Synth"
 
             def routes(self):
-                return (ProviderRoute(prefix="growth-studio", groups=("_tp10_growth_group",)),)
+                return (
+                    ProviderRoute(
+                        prefix="growth-studio", groups=("_tp10_growth_group",)
+                    ),
+                )
 
             def tool_provider(self):
                 return _GrowthToolProvider()
@@ -206,11 +220,15 @@ class TestProviderRouteMerging:
         # Wildcard fallback NOT polluted:
         assert "_tp10_growth_group" not in reg.ROUTE_TOOL_MAP["*"]
 
-        growth_names = [t.name for t in reg.get_tools_for_route("/tenant/growth-studio/metrics")]
+        growth_names = [
+            t.name for t in reg.get_tools_for_route("/tenant/growth-studio/metrics")
+        ]
         assert "_tp10_growth_tool" in growth_names
 
         # Other route does not see the group:
-        brand_names = [t.name for t in reg.get_tools_for_route("/tenant/brand-studio/identity")]
+        brand_names = [
+            t.name for t in reg.get_tools_for_route("/tenant/brand-studio/identity")
+        ]
         assert "_tp10_growth_tool" not in brand_names
 
     def test_provider_routes_dedup_on_existing_group(self, monkeypatch):
@@ -240,4 +258,6 @@ class TestProviderRouteMerging:
 
         reg = self._patch_discovery_with(monkeypatch, _NavExtender())
         groups_for_brand = reg.ROUTE_TOOL_MAP["brand-studio"]
-        assert groups_for_brand.count("navigation") == 1, f"Duplicate: {groups_for_brand}"
+        assert groups_for_brand.count("navigation") == 1, (
+            f"Duplicate: {groups_for_brand}"
+        )

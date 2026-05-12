@@ -13,11 +13,11 @@ C5a override mode restricted: EP-1 with mode='override' raises ValueError
 C5b override mode permitted: EP-17 + EP-18 accept mode='override'
 E1  BrandContext is frozen + 9 fields verified + no PII field names
 """
+
 import dataclasses
 from uuid import uuid4
 
 import pytest
-
 from luana_core_extension_sdk import (
     BrandContext,
     ExtensionPointRegistry,
@@ -33,7 +33,6 @@ from luana_core_extension_sdk.exceptions import (
     RegistrationClosedError,
 )
 from test_brand.extensions import register_all
-
 
 # ─── helpers ──────────────────────────────────────────────────────────────────
 

@@ -21,11 +21,15 @@ from luana_core_channels.format_for_channel import format_for_channel
 
 from luana_core_copilot.application.tools.analytics_tools import ANALYTICS_TOOLS
 from luana_core_copilot.application.tools.ask_tenant_data import ask_tenant_data
-from luana_core_copilot.application.tools.assets_tools import ASSETS_TOOLS  # [COPILOT-OUTBOUND-ASSETS]
+from luana_core_copilot.application.tools.assets_tools import (
+    ASSETS_TOOLS,
+)  # [COPILOT-OUTBOUND-ASSETS]
 from luana_core_copilot.application.tools.awareness import AWARENESS_TOOLS
 from luana_core_copilot.application.tools.connections_tools import CONNECTIONS_TOOLS
 from luana_core_copilot.application.tools.crm_tools import CRM_TOOLS
-from luana_core_copilot.application.tools.document_tools import DOCUMENT_TOOLS  # [COPILOT-READ-DOCUMENT]
+from luana_core_copilot.application.tools.document_tools import (
+    DOCUMENT_TOOLS,
+)  # [COPILOT-READ-DOCUMENT]
 from luana_core_copilot.application.tools.extraction_tools import EXTRACTION_TOOLS
 from luana_core_copilot.application.tools.fetch_url import fetch_url
 from luana_core_copilot.application.tools.guided import GUIDED_TOOLS
@@ -131,7 +135,9 @@ def _build_tool_groups() -> dict[str, list]:
     # runs once per process and tolerates being called repeatedly (lru_cache).
     from luana_core_copilot.application.discovery import discover_providers
 
-    merged: dict[str, list] = {name: list(tools) for name, tools in _BASE_TOOL_GROUPS.items()}
+    merged: dict[str, list] = {
+        name: list(tools) for name, tools in _BASE_TOOL_GROUPS.items()
+    }
 
     for provider in discover_providers().values():
         tp = provider.tool_provider()
@@ -268,7 +274,9 @@ def _build_route_tool_map() -> dict[str, list[str]]:
     # cached and tolerates being called repeatedly.
     from luana_core_copilot.application.discovery import discover_providers
 
-    merged: dict[str, list[str]] = {prefix: list(groups) for prefix, groups in _BASE_ROUTE_TOOL_MAP.items()}
+    merged: dict[str, list[str]] = {
+        prefix: list(groups) for prefix, groups in _BASE_ROUTE_TOOL_MAP.items()
+    }
 
     for provider in discover_providers().values():
         for route in provider.routes():
@@ -359,7 +367,9 @@ class ToolGroupMeta:
     """
 
     name: str
-    available_channels: frozenset[str] = field(default_factory=lambda: frozenset({"web", "telegram", "whatsapp"}))
+    available_channels: frozenset[str] = field(
+        default_factory=lambda: frozenset({"web", "telegram", "whatsapp"})
+    )
 
 
 # SSoT explicit overrides for groups that are NOT available on Telegram.
@@ -368,7 +378,9 @@ TOOL_GROUP_META: Final[dict[str, ToolGroupMeta]] = {
     "navigation": ToolGroupMeta("navigation", available_channels=frozenset({"web"})),
     "guided": ToolGroupMeta("guided", available_channels=frozenset({"web"})),
     "landing": ToolGroupMeta("landing", available_channels=frozenset({"web"})),
-    "offer_section": ToolGroupMeta("offer_section", available_channels=frozenset({"web"})),
+    "offer_section": ToolGroupMeta(
+        "offer_section", available_channels=frozenset({"web"})
+    ),
     # All other groups inherit default = {"web", "telegram", "whatsapp"}
 }
 
@@ -395,7 +407,9 @@ def _collect_groups(group_names: tuple[str, ...]) -> list:
     return tools
 
 
-def _filter_groups_by_channel(group_names: tuple[str, ...], channel: str) -> tuple[str, ...]:
+def _filter_groups_by_channel(
+    group_names: tuple[str, ...], channel: str
+) -> tuple[str, ...]:
     """Drop groups whose meta excludes ``channel`` (D-PI5-023)."""
     return tuple(g for g in group_names if is_group_available_in_channel(g, channel))
 

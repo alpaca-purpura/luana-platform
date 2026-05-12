@@ -17,7 +17,9 @@ from pydantic import ValidationError
 TENANT_ID = UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
 
 _GET_TENANT_ID = "luana_core_copilot.application.tools.analytics_tools.get_tenant_id"
-_CALL_CHANNEL = "luana_core_copilot.application.tools.analytics_tools._call_channel_dashboard"
+_CALL_CHANNEL = (
+    "luana_core_copilot.application.tools.analytics_tools._call_channel_dashboard"
+)
 
 
 def _make_channel_dashboard(**kwargs) -> MagicMock:
@@ -79,7 +81,9 @@ class TestGetChannelOverviewHappy:
             ):
                 result = get_channel_overview.invoke({"channel": channel_slug})
                 parsed = json.loads(result)
-                assert "error" not in parsed, f"Channel {channel_slug} raised error: {parsed}"
+                assert "error" not in parsed, (
+                    f"Channel {channel_slug} raised error: {parsed}"
+                )
 
 
 class TestGetChannelOverviewValidation:

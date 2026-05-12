@@ -333,7 +333,6 @@ def _make_campaigns_test_app():
     Per backend-ddd.md: redirect_slashes=False mandatory.
     """
     from fastapi import FastAPI
-
     from luana_core_campaigns.api.routers.campaigns_router import router as campaigns_router
     from luana_core_campaigns.api.routers.segments_router import router as segments_router
     from luana_core_campaigns.api.routers.templates_router import router as templates_router

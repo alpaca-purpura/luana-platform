@@ -153,7 +153,11 @@ async def get_conversation(
         if msg.role not in ("user", "assistant"):
             continue
 
-        blocks_out = [b.model_dump(mode="json", exclude_none=True) for b in msg.blocks] if msg.blocks else None
+        blocks_out = (
+            [b.model_dump(mode="json", exclude_none=True) for b in msg.blocks]
+            if msg.blocks
+            else None
+        )
         # Defensive filter: skip placeholder assistant rows that never got
         # content and carry no renderable block. These are residues from
         # aborted/failed streams — rendering them would draw an empty "…"
@@ -337,7 +341,10 @@ async def apply_mutations(
             )
             for a in result.applied
         ],
-        rejected=[RejectedMutationDTO(field_id=r.field_id, reason=r.reason) for r in result.rejected],
+        rejected=[
+            RejectedMutationDTO(field_id=r.field_id, reason=r.reason)
+            for r in result.rejected
+        ],
     )
 
 

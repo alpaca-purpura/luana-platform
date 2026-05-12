@@ -12,7 +12,10 @@ import json
 import pytest
 from luana_core_copilot.application.tools.guided.extract import extract_structured
 
-pytest.skip("T-15 deferred to T-16 UNLIFT (Stories 2-5 copilot_provider/ subfolders not yet lifted — luana_core_brand_studio.copilot_provider / luana_core_offer_studio.copilot_provider / etc.)", allow_module_level=True)
+pytest.skip(
+    "T-15 deferred to T-16 UNLIFT (Stories 2-5 copilot_provider/ subfolders not yet lifted — luana_core_brand_studio.copilot_provider / luana_core_offer_studio.copilot_provider / etc.)",
+    allow_module_level=True,
+)
 
 
 class TestExtractStructuredGlobal:
@@ -21,13 +24,21 @@ class TestExtractStructuredGlobal:
             {
                 "domain": "brand",
                 "extractions": [
-                    {"field_path": "identity.brand_name", "value": "Mi Marca", "confidence": 0.9},
+                    {
+                        "field_path": "identity.brand_name",
+                        "value": "Mi Marca",
+                        "confidence": 0.9,
+                    },
                     {
                         "field_path": "positioning.competitive_environment",
                         "value": "mercado competitivo",
                         "confidence": 0.85,
                     },
-                    {"field_path": "story.origin_story", "value": "Empezamos en 2020", "confidence": 0.95},
+                    {
+                        "field_path": "story.origin_story",
+                        "value": "Empezamos en 2020",
+                        "confidence": 0.95,
+                    },
                 ],
             },
         )
@@ -42,7 +53,11 @@ class TestExtractStructuredGlobal:
             {
                 "domain": "brand",
                 "extractions": [
-                    {"field_path": "identity.brand_name", "value": "Maybe", "confidence": 0.6},
+                    {
+                        "field_path": "identity.brand_name",
+                        "value": "Maybe",
+                        "confidence": 0.6,
+                    },
                 ],
             },
         )
@@ -66,8 +81,16 @@ class TestExtractStructuredGlobal:
             {
                 "domain": "brand",
                 "extractions": [
-                    {"field_path": "identity.brand_name", "value": "OK", "confidence": 1.0},
-                    {"field_path": "completely.invalid.path", "value": "NOPE", "confidence": 1.0},
+                    {
+                        "field_path": "identity.brand_name",
+                        "value": "OK",
+                        "confidence": 1.0,
+                    },
+                    {
+                        "field_path": "completely.invalid.path",
+                        "value": "NOPE",
+                        "confidence": 1.0,
+                    },
                 ],
             },
         )

@@ -151,8 +151,9 @@ def truncate_history(
             if preview:
                 topics.append(preview)
 
-    summary_text = "Previous conversation summary (older messages truncated for context):\n" + "\n".join(
-        f"- {t}" for t in topics[:10]
+    summary_text = (
+        "Previous conversation summary (older messages truncated for context):\n"
+        + "\n".join(f"- {t}" for t in topics[:10])
     )
 
     truncated = [SystemMessage(content=summary_text), *recent_messages]

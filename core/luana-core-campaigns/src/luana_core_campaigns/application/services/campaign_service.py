@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Any
 from uuid import UUID, uuid4
 
 import structlog
+from luana_core_platform.domain.datetime_utils import utc_now
 
 from luana_core_campaigns.application.services._event_bridge import to_domain_event
 from luana_core_campaigns.domain.campaign import Campaign
@@ -28,11 +29,11 @@ from luana_core_campaigns.domain.events import (
     CampaignStepAdded,
     CampaignStepUpdated,
 )
-from luana_core_platform.domain.datetime_utils import utc_now
 
 if TYPE_CHECKING:
+    from luana_core_billing.application.plan_service import PlanService
+    from luana_core_events.outbox.application.outbox_service import OutboxService
     from sqlalchemy.ext.asyncio import AsyncSession
-    from luana_core_campaigns.domain.dtos import CampaignResponse
 
     from luana_core_campaigns.application.dtos.campaign_dtos import (
         CampaignCreate,
@@ -45,13 +46,12 @@ if TYPE_CHECKING:
     )
     from luana_core_campaigns.application.dtos.pagination import PaginatedResponse
     from luana_core_campaigns.application.services.cache import CacheBackend
+    from luana_core_campaigns.domain.dtos import CampaignResponse
     from luana_core_campaigns.domain.repositories import (
         CampaignRepository,
         CampaignStepRepository,
         SegmentRepository,
     )
-    from luana_core_billing.application.plan_service import PlanService
-    from luana_core_events.outbox.application.outbox_service import OutboxService
 
 logger = structlog.get_logger(__name__)
 

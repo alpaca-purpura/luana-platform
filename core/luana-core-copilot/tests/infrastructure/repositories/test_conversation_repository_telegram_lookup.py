@@ -98,7 +98,9 @@ def test_get_or_create_by_channel_isolates_across_tenants(db) -> None:
     )
     db.commit()
 
-    assert conv_a.id != conv_b.id, "cross-tenant SAME chat_id must create distinct conversations"
+    assert conv_a.id != conv_b.id, (
+        "cross-tenant SAME chat_id must create distinct conversations"
+    )
     assert conv_a.tenant_id == tenant_a
     assert conv_b.tenant_id == tenant_b
 
@@ -167,5 +169,7 @@ def test_get_or_create_by_channel_soft_deleted_row_creates_new(db) -> None:
     )
     db.commit()
 
-    assert second.id != first_id, "soft-deleted row must NOT be returned — new row required"
+    assert second.id != first_id, (
+        "soft-deleted row must NOT be returned — new row required"
+    )
     assert second.deleted_at is None

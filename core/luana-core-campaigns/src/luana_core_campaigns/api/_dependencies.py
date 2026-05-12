@@ -9,9 +9,8 @@ from __future__ import annotations
 
 from collections.abc import AsyncGenerator
 
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-
 from luana_core_platform.core.config import settings
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 # ── Async engine (asyncpg) ────────────────────────────────────────────────────
 # Build a postgresql+asyncpg URL from the sync settings URL.

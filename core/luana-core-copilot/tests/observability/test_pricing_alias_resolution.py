@@ -67,7 +67,9 @@ class TestAliasResolutionFallsThroughOnInternalMiss:
 
         repo = MagicMock()
         repo.find_active.side_effect = lambda *, provider, model: (
-            upstream if (provider, model) == ("moonshot", "moonshot/kimi-k2.6") else None
+            upstream
+            if (provider, model) == ("moonshot", "moonshot/kimi-k2.6")
+            else None
         )
         repo.find_at.return_value = None
 

@@ -148,7 +148,9 @@ async def _call_etl_refresh(
     Returns a dict with at minimum ``{"status": "...", "run_id": "..."}``.
     """
     from luana_core_analytics_engine.application.services.etl_service import ETLService
-    from luana_core_analytics_engine.infrastructure.cache.metrics_cache import MetricsCache
+    from luana_core_analytics_engine.infrastructure.cache.metrics_cache import (
+        MetricsCache,
+    )
     from luana_core_analytics_engine.infrastructure.providers.connection_port_impl import (
         ConnectionPortImpl,
     )
@@ -161,7 +163,9 @@ async def _call_etl_refresh(
     db = SessionLocal()
     try:
         connection_port = ConnectionPortImpl(db)
-        cache = MetricsCache(redis_client=None)  # best-effort; fail-open per graceful-degradation
+        cache = MetricsCache(
+            redis_client=None
+        )  # best-effort; fail-open per graceful-degradation
         etl = ETLService(db, connection_port=connection_port, cache=cache)
         run = await etl.run_extraction(tenant_id, provider_name)  # type: ignore[arg-type]
         if run is None:
@@ -213,7 +217,9 @@ def get_stage_metrics(
     """
     tenant_id = get_tenant_id()
     if not tenant_id:
-        return json.dumps({"error": "no_tenant", "mensaje": "No se pudo determinar el tenant."})
+        return json.dumps(
+            {"error": "no_tenant", "mensaje": "No se pudo determinar el tenant."}
+        )
 
     api_stage = STAGE_SLUG_MAP.get(stage, stage)
     api_period = PERIOD_MAP.get(period, "last_30_days")
@@ -223,7 +229,11 @@ def get_stage_metrics(
 
         header_kpis = getattr(overview, "header_kpis", {}) or {}
         if isinstance(header_kpis, dict):
-            kpis_list = [{"slug": name, "value": value} for name, value in header_kpis.items() if value is not None]
+            kpis_list = [
+                {"slug": name, "value": value}
+                for name, value in header_kpis.items()
+                if value is not None
+            ]
         else:
             kpis_list = [
                 {
@@ -245,7 +255,9 @@ def get_stage_metrics(
         channels_data = [
             {
                 "channel": getattr(ch, "slug", str(ch)),
-                "value": getattr(ch.headline_kpi, "value", None) if getattr(ch, "headline_kpi", None) else None,
+                "value": getattr(ch.headline_kpi, "value", None)
+                if getattr(ch, "headline_kpi", None)
+                else None,
             }
             for ch in channel_list
         ]
@@ -285,7 +297,12 @@ def get_stage_metrics(
             stage=stage,
             error=str(exc),
         )
-        return json.dumps({"error": "service_error", "mensaje": "No se pudieron obtener las métricas."})
+        return json.dumps(
+            {
+                "error": "service_error",
+                "mensaje": "No se pudieron obtener las métricas.",
+            }
+        )
 
 
 @tool(args_schema=ChannelOverviewParams)
@@ -306,7 +323,9 @@ def get_channel_overview(channel: str) -> str:
     """
     tenant_id = get_tenant_id()
     if not tenant_id:
-        return json.dumps({"error": "no_tenant", "mensaje": "No se pudo determinar el tenant."})
+        return json.dumps(
+            {"error": "no_tenant", "mensaje": "No se pudo determinar el tenant."}
+        )
 
     try:
         dashboard = _run_async(_call_channel_dashboard(tenant_id, channel))
@@ -350,7 +369,12 @@ def get_channel_overview(channel: str) -> str:
             channel=channel,
             error=str(exc),
         )
-        return json.dumps({"error": "service_error", "mensaje": "No se pudo obtener el dashboard del canal."})
+        return json.dumps(
+            {
+                "error": "service_error",
+                "mensaje": "No se pudo obtener el dashboard del canal.",
+            }
+        )
 
 
 @tool(args_schema=TriggerEtlRefreshParams)
@@ -374,11 +398,16 @@ def trigger_etl_refresh(channel: str, confirmed: bool = False) -> str:
     """
     tenant_id = get_tenant_id()
     if not tenant_id:
-        return json.dumps({"error": "no_tenant", "mensaje": "No se pudo determinar el tenant."})
+        return json.dumps(
+            {"error": "no_tenant", "mensaje": "No se pudo determinar el tenant."}
+        )
 
     try:
         guard = _get_etl_refresh_guard()
-        decision = cast("GuardDecision", _run_async(guard.check(tenant_id, channel, confirmed=confirmed)))
+        decision = cast(
+            "GuardDecision",
+            _run_async(guard.check(tenant_id, channel, confirmed=confirmed)),
+        )
 
         if not decision.allowed:
             if decision.requires_confirmation:
@@ -406,7 +435,9 @@ def trigger_etl_refresh(channel: str, confirmed: bool = False) -> str:
                 }
             )
 
-        result = cast("dict[str, Any]", _run_async(_call_etl_refresh(tenant_id, channel)))
+        result = cast(
+            "dict[str, Any]", _run_async(_call_etl_refresh(tenant_id, channel))
+        )
 
         logger.info(
             "analytics_tool_etl_refresh_queued",
@@ -433,7 +464,12 @@ def trigger_etl_refresh(channel: str, confirmed: bool = False) -> str:
             channel=channel,
             error=str(exc),
         )
-        return json.dumps({"error": "service_error", "mensaje": "No se pudo iniciar la extracción ETL."})
+        return json.dumps(
+            {
+                "error": "service_error",
+                "mensaje": "No se pudo iniciar la extracción ETL.",
+            }
+        )
 
 
 ANALYTICS_TOOLS = [get_stage_metrics, get_channel_overview, trigger_etl_refresh]

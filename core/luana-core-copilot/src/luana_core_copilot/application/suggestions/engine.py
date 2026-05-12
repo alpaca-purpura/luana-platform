@@ -18,7 +18,9 @@ import structlog
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from luana_core_copilot.application.suggestions.providers.base import SuggestionProvider
+    from luana_core_copilot.application.suggestions.providers.base import (
+        SuggestionProvider,
+    )
     from luana_core_copilot.domain.suggestion import Suggestion, SuggestionContext
 
 logger = structlog.get_logger()
@@ -48,7 +50,9 @@ class SuggestionEngine:
         Mirrors ``orchestrator/block_adapters.py::register_block_handler``
         ValueError-on-conflict pattern: same id + different instance = bug.
         """
-        existing = next((p for p in self._providers if p.provider_id == provider.provider_id), None)
+        existing = next(
+            (p for p in self._providers if p.provider_id == provider.provider_id), None
+        )
         if existing is provider:
             return
         if existing is not None:
@@ -75,14 +79,18 @@ class SuggestionEngine:
 
         for provider in self._providers:
             if provider.applies_to_routes and ctx.current_route is not None:
-                if not any(ctx.current_route.startswith(p) for p in provider.applies_to_routes):
+                if not any(
+                    ctx.current_route.startswith(p) for p in provider.applies_to_routes
+                ):
                     continue
             elif provider.applies_to_routes and ctx.current_route is None:
                 # applies_to_routes set but no route provided — skip
                 continue
 
             try:
-                items = provider.get_suggestions(ctx, max_per_provider=self._max_per_provider)
+                items = provider.get_suggestions(
+                    ctx, max_per_provider=self._max_per_provider
+                )
             except Exception as exc:  # noqa: BLE001 — best-effort; never break caller
                 logger.warning(
                     "suggestion_provider_failed",

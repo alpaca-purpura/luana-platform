@@ -73,7 +73,9 @@ def _make_message(session, tenant_id, user_id, created_at):
 
 
 def _make_enrollment(session, tenant_id, offer_id, status, created_at, edition_id=None):
-    from luana_core_sales_agent.infrastructure.models.enrollment_model import EnrollmentModel
+    from luana_core_sales_agent.infrastructure.models.enrollment_model import (
+        EnrollmentModel,
+    )
 
     enrollment = EnrollmentModel(
         id=uuid.uuid4(),
@@ -102,13 +104,17 @@ class TestCountLeadsSince:
         # tenant_a: 2 recent messages (distinct users) + 1 old
         _make_message(db_session, _TENANT_A, user_a1, _RECENT)
         _make_message(db_session, _TENANT_A, user_a2, _RECENT)
-        _make_message(db_session, _TENANT_A, user_a1, _OLD)  # same user, old — not counted
+        _make_message(
+            db_session, _TENANT_A, user_a1, _OLD
+        )  # same user, old — not counted
         # tenant_b: 1 recent — should not affect tenant_a count
         _make_message(db_session, _TENANT_B, user_b, _RECENT)
         db_session.flush()
 
         adapter = SalesAgentObservabilityAdapter(db_session)
-        count = adapter.count_leads_since(_TENANT_A, since=_RECENT - timedelta(minutes=1))
+        count = adapter.count_leads_since(
+            _TENANT_A, since=_RECENT - timedelta(minutes=1)
+        )
 
         assert count == 2, f"Expected 2 distinct leads for tenant_a, got {count}"
 
@@ -123,7 +129,9 @@ class TestCountLeadsSince:
         db_session.flush()
 
         adapter = SalesAgentObservabilityAdapter(db_session)
-        count = adapter.count_leads_since(_TENANT_A, since=_RECENT - timedelta(minutes=1))
+        count = adapter.count_leads_since(
+            _TENANT_A, since=_RECENT - timedelta(minutes=1)
+        )
         assert count == 0
 
 
@@ -142,7 +150,9 @@ class TestListEnrollmentsByStatus:
         db_session.flush()
 
         adapter = SalesAgentObservabilityAdapter(db_session)
-        results = adapter.list_enrollments_by_status(_TENANT_A, statuses=("payment_pending",))
+        results = adapter.list_enrollments_by_status(
+            _TENANT_A, statuses=("payment_pending",)
+        )
 
         assert len(results) == 1
         assert results[0].status == "payment_pending"
@@ -167,7 +177,9 @@ class TestAdapterProtocol:
         from luana_core_sales_agent.application.services.observability_adapter import (
             SalesAgentObservabilityAdapter,
         )
-        from luana_core_platform.links.ports.sales_agent import SalesAgentObservabilityPort
+        from luana_core_platform.links.ports.sales_agent import (
+            SalesAgentObservabilityPort,
+        )
 
         adapter = SalesAgentObservabilityAdapter(MagicMock(spec=Session))
         assert isinstance(adapter, SalesAgentObservabilityPort)

@@ -3,7 +3,10 @@
 import pytest
 from luana_core_copilot.domain.schema_introspection import validate_field_path
 
-pytest.skip("T-15 deferred to T-16 UNLIFT (Stories 2-5 copilot_provider/ subfolders not yet lifted — luana_core_brand_studio.copilot_provider / luana_core_offer_studio.copilot_provider / etc.)", allow_module_level=True)
+pytest.skip(
+    "T-15 deferred to T-16 UNLIFT (Stories 2-5 copilot_provider/ subfolders not yet lifted — luana_core_brand_studio.copilot_provider / luana_core_offer_studio.copilot_provider / etc.)",
+    allow_module_level=True,
+)
 
 
 class TestValidateFieldPath:
@@ -93,9 +96,13 @@ class TestValidateFieldPath:
 
     def test_buyer_persona_dict_prefix_fallback(self) -> None:
         """Any demographics.* path is accepted even if not pre-registered."""
-        assert validate_field_path("buyer_persona", "demographics.marital_status") is True
+        assert (
+            validate_field_path("buyer_persona", "demographics.marital_status") is True
+        )
         assert validate_field_path("buyer_persona", "psychographics.hobbies") is True
-        assert validate_field_path("buyer_persona", "buyer_journey.post_purchase") is True
+        assert (
+            validate_field_path("buyer_persona", "buyer_journey.post_purchase") is True
+        )
 
     def test_buyer_persona_list_fields(self) -> None:
         assert validate_field_path("buyer_persona", "pain_points") is True
@@ -111,7 +118,10 @@ class TestValidateFieldPath:
         assert validate_field_path("buyer_persona", "tagline") is True
 
     def test_buyer_persona_rejects_garbage(self) -> None:
-        assert validate_field_path("buyer_persona", "nonexistent_section.fake_field") is False
+        assert (
+            validate_field_path("buyer_persona", "nonexistent_section.fake_field")
+            is False
+        )
         assert validate_field_path("buyer_persona", "totally_fake") is False
         assert validate_field_path("buyer_persona", "") is False
         assert validate_field_path("buyer_persona", "id") is False

@@ -72,7 +72,9 @@ def _make_ai(extracted: dict) -> MagicMock:
 @pytest.fixture(autouse=True)
 def _stub_prompt_loader():
     """Stub prompt_loader.render so tests don't need real Jinja templates on disk."""
-    with patch("luana_core_copilot.application.services.document_processor.prompt_loader") as loader:
+    with patch(
+        "luana_core_copilot.application.services.document_processor.prompt_loader"
+    ) as loader:
         loader.render.return_value = "rendered prompt"
         yield loader
 

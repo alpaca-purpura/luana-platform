@@ -18,7 +18,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
 import pytest
-
 from luana_core_campaigns.domain.campaign_step import CampaignStep
 from luana_core_campaigns.domain.campaign_task import CampaignTask
 from luana_core_campaigns.domain.enums import StepType, TaskStatus
@@ -26,7 +25,6 @@ from luana_core_campaigns.infrastructure.external.sales_agent_adapter import (
     SalesAgentAdapter,
     SalesAgentDispatchResult,
 )
-
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 

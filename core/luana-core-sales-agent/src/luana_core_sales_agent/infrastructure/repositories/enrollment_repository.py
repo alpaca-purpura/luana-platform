@@ -47,7 +47,11 @@ class EnrollmentRepository:
             pricing_tier_label=model.pricing_tier_label,
             pricing_amount=model.pricing_amount,
             currency=model.currency,
-            payment_provider=(PaymentProvider(model.payment_provider) if model.payment_provider else None),
+            payment_provider=(
+                PaymentProvider(model.payment_provider)
+                if model.payment_provider
+                else None
+            ),
             payment_transaction_id=model.payment_transaction_id,
             payment_link_url=model.payment_link_url,
             paid_at=model.paid_at,
@@ -76,7 +80,11 @@ class EnrollmentRepository:
             pricing_tier_label=enrollment.pricing_tier_label,
             pricing_amount=enrollment.pricing_amount,
             currency=enrollment.currency,
-            payment_provider=(enrollment.payment_provider.value if enrollment.payment_provider else None),
+            payment_provider=(
+                enrollment.payment_provider.value
+                if enrollment.payment_provider
+                else None
+            ),
             payment_transaction_id=enrollment.payment_transaction_id,
             payment_link_url=enrollment.payment_link_url,
             paid_at=enrollment.paid_at,

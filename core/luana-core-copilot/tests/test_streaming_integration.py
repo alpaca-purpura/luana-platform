@@ -62,7 +62,9 @@ def _make_orchestrator() -> CopilotOrchestrator:
     return orch
 
 
-async def _collect(orch: CopilotOrchestrator, msg: str = "Hola") -> list[dict[str, Any]]:
+async def _collect(
+    orch: CopilotOrchestrator, msg: str = "Hola"
+) -> list[dict[str, Any]]:
     """Drive stream_chat to completion and return all parsed SSE events."""
     raw_events: list[str] = [
         frame
@@ -152,7 +154,11 @@ class TestSSEEventWireFormat:
         events = [
             SSEEvent(
                 event="block_delta",
-                data={"message_id": "m", "block_id": "b", "delta": {"markdown": "test"}},
+                data={
+                    "message_id": "m",
+                    "block_id": "b",
+                    "delta": {"markdown": "test"},
+                },
             ),
             SSEEvent(event="done", data={"conversation_id": "x"}),
             SSEEvent(event="error", data={"message": "err"}),
@@ -160,7 +166,9 @@ class TestSSEEventWireFormat:
         ]
         for ev in events:
             raw = ev.to_sse()
-            data_line = next(line for line in raw.split("\n") if line.startswith("data: "))
+            data_line = next(
+                line for line in raw.split("\n") if line.startswith("data: ")
+            )
             # Must not raise
             json.loads(data_line[len("data: ") :])
 
@@ -190,7 +198,9 @@ class TestProcessStreamEvent:
     def orch(self) -> CopilotOrchestrator:
         return _make_orchestrator()
 
-    def test_text_chunk_event_returns_content_only(self, orch: CopilotOrchestrator) -> None:
+    def test_text_chunk_event_returns_content_only(
+        self, orch: CopilotOrchestrator
+    ) -> None:
         """F8 §5.4 — ``on_chat_model_stream`` no longer emits a top-level
         SSE frame. The text content is returned for the caller to feed
         the v2 ``block_delta`` lifecycle in ``_emit_text_chunk_v2``."""
@@ -213,7 +223,9 @@ class TestProcessStreamEvent:
         assert sse is None
         assert text is None
 
-    def test_on_chat_model_stream_with_internal_tag_is_dropped(self, orch: CopilotOrchestrator) -> None:
+    def test_on_chat_model_stream_with_internal_tag_is_dropped(
+        self, orch: CopilotOrchestrator
+    ) -> None:
         """TP3 B1 — analyzer/synthesizer/intent_classifier tools invoke
         the LLM internally and tag those calls with ``copilot:internal``.
         The orchestrator MUST drop ``on_chat_model_stream`` events that
@@ -237,7 +249,9 @@ class TestProcessStreamEvent:
         assert sse is None
         assert text is None
 
-    def test_serialize_messages_drops_zombie_assistant_artifact(self, orch: CopilotOrchestrator) -> None:
+    def test_serialize_messages_drops_zombie_assistant_artifact(
+        self, orch: CopilotOrchestrator
+    ) -> None:
         """TP3 B4 — sanitizer-leftover AIMessages (e.g. content='}') with
         no tool_calls slot between an assistant tool_call and its tool
         response. On the NEXT turn OpenAI rejects the conversation with
@@ -252,7 +266,9 @@ class TestProcessStreamEvent:
 
         ai_with_call = AIMessage(
             content="",
-            tool_calls=[{"id": "call_1", "name": "fetch_url", "args": {"url": "https://x"}}],
+            tool_calls=[
+                {"id": "call_1", "name": "fetch_url", "args": {"url": "https://x"}}
+            ],
         )
         zombie = AIMessage(content="}")
         tool_msg = ToolMessage(
@@ -273,7 +289,9 @@ class TestProcessStreamEvent:
         assert result[0]["tool_calls"][0]["id"] == "call_1"
         assert result[1]["tool_call_id"] == "call_1"
 
-    def test_serialize_messages_keeps_meaningful_short_assistant(self, orch: CopilotOrchestrator) -> None:
+    def test_serialize_messages_keeps_meaningful_short_assistant(
+        self, orch: CopilotOrchestrator
+    ) -> None:
         """Short legitimate assistant replies (e.g. '¡OK!') must NOT be
         dropped — only stray 1-char artifacts."""
         from luana_core_copilot.application.orchestrator.chat import (
@@ -286,7 +304,9 @@ class TestProcessStreamEvent:
         assert len(result) == 1
         assert result[0]["content"] == "¡OK!"
 
-    def test_parse_tool_payload_unwraps_tool_message(self, orch: CopilotOrchestrator) -> None:
+    def test_parse_tool_payload_unwraps_tool_message(
+        self, orch: CopilotOrchestrator
+    ) -> None:
         """TP3 B3 — graph tool outputs travel as ``ToolMessage``. The
         payload parser MUST unwrap the JSON inside ``ToolMessage.content``
         so cards reach the FE; pre-fix the parser only handled str/dict."""
@@ -303,7 +323,9 @@ class TestProcessStreamEvent:
         assert parsed is not None
         assert parsed["ui_action"]["type"] == "inspiration_saved"
 
-    def test_parse_tool_payload_returns_none_on_garbled_content(self, orch: CopilotOrchestrator) -> None:
+    def test_parse_tool_payload_returns_none_on_garbled_content(
+        self, orch: CopilotOrchestrator
+    ) -> None:
         from luana_core_copilot.application.orchestrator.chat import (
             _parse_tool_payload,
         )
@@ -311,7 +333,9 @@ class TestProcessStreamEvent:
         msg = ToolMessage(content="not json", name="x", tool_call_id="y")
         assert _parse_tool_payload(msg) is None
 
-    def test_inspiration_saved_action_wraps_to_card_block(self, orch: CopilotOrchestrator) -> None:
+    def test_inspiration_saved_action_wraps_to_card_block(
+        self, orch: CopilotOrchestrator
+    ) -> None:
         """TP3 B2 — fetch_url emits ui_action.type='inspiration_saved'; the
         orchestrator MUST wrap it as a typed ``CardBlock`` so block_append
         + ``card_emitted`` trace fire. Pre-fix the type was unmapped and
@@ -336,7 +360,9 @@ class TestProcessStreamEvent:
         assert block["card_kind"] == "inspiration_saved"
         assert block["payload"]["slug"] == "mujeres-coraje"
 
-    def test_memory_pinned_action_wraps_to_card_block(self, orch: CopilotOrchestrator) -> None:
+    def test_memory_pinned_action_wraps_to_card_block(
+        self, orch: CopilotOrchestrator
+    ) -> None:
         """TP3 B2 — pin_to_memory emits ui_action.type='memory_pinned'."""
         from luana_core_copilot.application.orchestrator.chat import (
             _ui_action_to_card_block,
@@ -352,7 +378,9 @@ class TestProcessStreamEvent:
         assert block["card_kind"] == "memory_pinned"
         assert block["payload"]["slug"] == "mujeres-coraje"
 
-    def test_on_chat_model_stream_with_internal_tag_in_metadata_is_dropped(self, orch: CopilotOrchestrator) -> None:
+    def test_on_chat_model_stream_with_internal_tag_in_metadata_is_dropped(
+        self, orch: CopilotOrchestrator
+    ) -> None:
         """Metadata fallback — some tracers stamp the tag on
         ``metadata.tags`` instead of the top-level ``tags`` field.
         Either source is enough to drop the event."""
@@ -369,7 +397,9 @@ class TestProcessStreamEvent:
         assert sse is None
         assert text is None
 
-    def test_on_chat_model_end_accumulates_message(self, orch: CopilotOrchestrator) -> None:
+    def test_on_chat_model_end_accumulates_message(
+        self, orch: CopilotOrchestrator
+    ) -> None:
         ai_msg = AIMessage(content="Respuesta completa")
         event = {"event": "on_chat_model_end", "data": {"output": ai_msg}}
         accumulated: list = []
@@ -381,7 +411,9 @@ class TestProcessStreamEvent:
         assert len(accumulated) == 1
         assert accumulated[0] is ai_msg
 
-    def test_on_tool_start_emits_tool_start_event(self, orch: CopilotOrchestrator) -> None:
+    def test_on_tool_start_emits_tool_start_event(
+        self, orch: CopilotOrchestrator
+    ) -> None:
         event = {
             "event": "on_tool_start",
             "name": "analyze_offer_ladder",
@@ -404,7 +436,9 @@ class TestProcessStreamEvent:
         assert sse is None
         assert text is None
 
-    def test_on_tool_end_emits_tool_result_event(self, orch: CopilotOrchestrator) -> None:
+    def test_on_tool_end_emits_tool_result_event(
+        self, orch: CopilotOrchestrator
+    ) -> None:
         event = {
             "event": "on_tool_end",
             "name": "analyze_offer_ladder",
@@ -419,7 +453,9 @@ class TestProcessStreamEvent:
         assert parsed["event"] == "tool_result"
         assert parsed["data"]["tool"] == "analyze_offer_ladder"
 
-    def test_on_tool_end_with_ui_action_emits_extra_event(self, orch: CopilotOrchestrator) -> None:
+    def test_on_tool_end_with_ui_action_emits_extra_event(
+        self, orch: CopilotOrchestrator
+    ) -> None:
         """When tool output JSON contains 'ui_action', an extra ui_action SSE is emitted."""
         ui_payload = {"type": "navigate", "route": "/brand"}
         tool_output = json.dumps({"result": "ok", "ui_action": ui_payload})
@@ -438,7 +474,9 @@ class TestProcessStreamEvent:
         parsed_second = _parse_sse(frames[1])
         assert parsed_second["event"] == "ui_action"
 
-    def test_handle_tool_end_extracts_toolmessage_from_command(self, orch: CopilotOrchestrator) -> None:
+    def test_handle_tool_end_extracts_toolmessage_from_command(
+        self, orch: CopilotOrchestrator
+    ) -> None:
         """deepagents ``task`` tool envuelve el resultado del sub-agente en
         ``Command(update={"messages": [ToolMessage(...)]})`` (ver
         ``deepagents/middleware/subagents.py::_return_command_with_state_update``).
@@ -473,7 +511,9 @@ class TestProcessStreamEvent:
         assert msg.content == "reporte del sub-agente"
         assert msg.tool_call_id == "task:0"
 
-    def test_handle_tool_end_command_without_messages_drops_silently(self, orch: CopilotOrchestrator) -> None:
+    def test_handle_tool_end_command_without_messages_drops_silently(
+        self, orch: CopilotOrchestrator
+    ) -> None:
         """Si el ``Command`` actualiza otro slice del state (todos, files, …)
         sin ``messages`` key, no hay nada que appendear — pero tampoco
         debe crashear."""
@@ -488,7 +528,9 @@ class TestProcessStreamEvent:
         assert sse is not None
         assert accumulated == []
 
-    def test_handle_tool_end_command_with_empty_messages_drops(self, orch: CopilotOrchestrator) -> None:
+    def test_handle_tool_end_command_with_empty_messages_drops(
+        self, orch: CopilotOrchestrator
+    ) -> None:
         from langgraph.types import Command
 
         cmd = Command(update={"messages": []})
@@ -498,7 +540,9 @@ class TestProcessStreamEvent:
         orch._handle_tool_end(event, accumulated, {})
         assert accumulated == []
 
-    def test_tool_result_truncated_at_4000_chars(self, orch: CopilotOrchestrator) -> None:
+    def test_tool_result_truncated_at_4000_chars(
+        self, orch: CopilotOrchestrator
+    ) -> None:
         """Tool results longer than 4000 chars are truncated in the SSE event.
 
         Cap raised from 500 → 4000 to fit full AsyncToolJob dispatch payloads
@@ -599,10 +643,16 @@ class TestStreamChatEventSequence:
             }
 
         events = await self._run_with_mock_graph(orch, fake_stream)
-        chunks = [e["data"]["delta"]["markdown"] for e in events if e["event"] == "block_delta"]
+        chunks = [
+            e["data"]["delta"]["markdown"]
+            for e in events
+            if e["event"] == "block_delta"
+        ]
         assert "".join(chunks) == "Hola mundo desde Nicolify"
 
-    async def test_tool_call_produces_tool_events(self, orch: CopilotOrchestrator) -> None:
+    async def test_tool_call_produces_tool_events(
+        self, orch: CopilotOrchestrator
+    ) -> None:
         """Tool calls must produce tool_start and tool_result SSE events."""
 
         async def fake_stream(state, *, version="v2", config=None):
@@ -646,7 +696,9 @@ class TestStreamChatEventSequence:
         # Stream must still terminate with done
         assert "done" in event_types
 
-    async def test_done_event_carries_conversation_id(self, orch: CopilotOrchestrator) -> None:
+    async def test_done_event_carries_conversation_id(
+        self, orch: CopilotOrchestrator
+    ) -> None:
         """The final done event must carry the conversation_id."""
 
         async def fake_stream(state, *, version="v2", config=None):
@@ -661,7 +713,9 @@ class TestStreamChatEventSequence:
         assert len(done_events) == 1
         assert "conversation_id" in done_events[0]["data"]
 
-    async def test_empty_graph_still_emits_done(self, orch: CopilotOrchestrator) -> None:
+    async def test_empty_graph_still_emits_done(
+        self, orch: CopilotOrchestrator
+    ) -> None:
         """An empty graph response (no events) still terminates properly."""
 
         async def fake_empty_stream(state, *, version="v2", config=None):
@@ -675,7 +729,9 @@ class TestStreamChatEventSequence:
         assert "done" in event_types
         assert "error" not in event_types
 
-    async def test_status_streaming_emitted_before_chunks(self, orch: CopilotOrchestrator) -> None:
+    async def test_status_streaming_emitted_before_chunks(
+        self, orch: CopilotOrchestrator
+    ) -> None:
         """status:streaming must be emitted before any block_delta events."""
 
         async def fake_stream(state, *, version="v2", config=None):
@@ -716,7 +772,9 @@ class TestSerialiseRoundTrip:
         orch = _make_orchestrator()
         ai_msg = AIMessage(
             content="Voy a analizar tu escalera.",
-            tool_calls=[{"id": "tc-1", "name": "analyze_offer_ladder", "args": {"q": "test"}}],
+            tool_calls=[
+                {"id": "tc-1", "name": "analyze_offer_ladder", "args": {"q": "test"}}
+            ],
         )
         serialised = orch._serialize_messages([ai_msg])
         deserialised = orch._deserialize_messages(serialised)

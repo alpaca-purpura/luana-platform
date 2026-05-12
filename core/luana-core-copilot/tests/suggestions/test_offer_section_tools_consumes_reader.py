@@ -15,13 +15,19 @@ def _make_session():
     """Return a fake session that satisfies the tools' pattern."""
     session = MagicMock()
     session.execute = MagicMock(
-        return_value=MagicMock(scalars=MagicMock(return_value=MagicMock(first=MagicMock(return_value=None))))
+        return_value=MagicMock(
+            scalars=MagicMock(
+                return_value=MagicMock(first=MagicMock(return_value=None))
+            )
+        )
     )
     return session
 
 
 class TestOfferSectionToolsContractPreserved:
-    def test_validate_preset_coherence_still_returns_json_with_suggestions(self) -> None:
+    def test_validate_preset_coherence_still_returns_json_with_suggestions(
+        self,
+    ) -> None:
         """validate_preset_coherence must return JSON with 'suggestions' key."""
         import json
 
@@ -30,19 +36,30 @@ class TestOfferSectionToolsContractPreserved:
         )
 
         with (
-            patch("luana_core_copilot.application.tools.offer_section_tools.get_tenant_id", return_value=uuid4()),
             patch(
-                "luana_core_copilot.application.tools.offer_section_tools.SessionLocal", return_value=_make_session()
+                "luana_core_copilot.application.tools.offer_section_tools.get_tenant_id",
+                return_value=uuid4(),
             ),
-            patch("luana_core_copilot.application.tools.offer_section_tools._offer_preset_flags", return_value=[]),
+            patch(
+                "luana_core_copilot.application.tools.offer_section_tools.SessionLocal",
+                return_value=_make_session(),
+            ),
+            patch(
+                "luana_core_copilot.application.tools.offer_section_tools._offer_preset_flags",
+                return_value=[],
+            ),
         ):
-            result = validate_preset_coherence.invoke({"current_promise": "Mi promesa clara", "offer_id": ""})
+            result = validate_preset_coherence.invoke(
+                {"current_promise": "Mi promesa clara", "offer_id": ""}
+            )
 
         data = json.loads(result)
         assert "suggestions" in data
         assert isinstance(data["suggestions"], list)
 
-    def test_high_ticket_tiering_template_still_returns_json_with_draft_fields(self) -> None:
+    def test_high_ticket_tiering_template_still_returns_json_with_draft_fields(
+        self,
+    ) -> None:
         """high_ticket_tiering_template must return JSON with 'draft_fields' key."""
         import json
 
@@ -51,9 +68,13 @@ class TestOfferSectionToolsContractPreserved:
         )
 
         with (
-            patch("luana_core_copilot.application.tools.offer_section_tools.get_tenant_id", return_value=uuid4()),
             patch(
-                "luana_core_copilot.application.tools.offer_section_tools.SessionLocal", return_value=_make_session()
+                "luana_core_copilot.application.tools.offer_section_tools.get_tenant_id",
+                return_value=uuid4(),
+            ),
+            patch(
+                "luana_core_copilot.application.tools.offer_section_tools.SessionLocal",
+                return_value=_make_session(),
             ),
             patch(
                 "luana_core_copilot.application.tools.offer_section_tools._offer_preset_flags",
@@ -75,9 +96,13 @@ class TestOfferSectionToolsContractPreserved:
         )
 
         with (
-            patch("luana_core_copilot.application.tools.offer_section_tools.get_tenant_id", return_value=uuid4()),
             patch(
-                "luana_core_copilot.application.tools.offer_section_tools.SessionLocal", return_value=_make_session()
+                "luana_core_copilot.application.tools.offer_section_tools.get_tenant_id",
+                return_value=uuid4(),
+            ),
+            patch(
+                "luana_core_copilot.application.tools.offer_section_tools.SessionLocal",
+                return_value=_make_session(),
             ),
             patch(
                 "luana_core_copilot.application.tools.offer_section_tools._offer_preset_flags",

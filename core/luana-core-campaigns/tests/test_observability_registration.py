@@ -7,10 +7,12 @@ has_lead_id=True and correct table names.
 
 from __future__ import annotations
 
+# Bootstrap must be imported for side-effect registration to happen
+import luana_core_campaigns.observability  # noqa: F401
+
 
 def test_campaigns_observability_bootstrap_registers_campaign() -> None:
     """Importing bootstrap must register agent_kind='campaign' in registry."""
-    import luana_core_platform.infrastructure.agent_observability_bootstrap
     from luana_core_observability.registry import agent_observability_registry
 
     kinds = [spec.agent_kind for spec in agent_observability_registry()]
@@ -19,7 +21,6 @@ def test_campaigns_observability_bootstrap_registers_campaign() -> None:
 
 def test_campaigns_spec_has_lead_id_true() -> None:
     """Campaign spec must declare has_lead_id=True (per-lead telemetry)."""
-    import luana_core_platform.infrastructure.agent_observability_bootstrap
     from luana_core_observability.registry import get_spec
 
     spec = get_spec("campaign")
@@ -28,7 +29,6 @@ def test_campaigns_spec_has_lead_id_true() -> None:
 
 def test_campaigns_spec_trace_event_table() -> None:
     """Trace event table must be 'campaign_trace_event'."""
-    import luana_core_platform.infrastructure.agent_observability_bootstrap
     from luana_core_observability.registry import get_spec
 
     spec = get_spec("campaign")
@@ -37,7 +37,6 @@ def test_campaigns_spec_trace_event_table() -> None:
 
 def test_campaigns_spec_llm_call_table() -> None:
     """LLM call table must be 'campaign_llm_call'."""
-    import luana_core_platform.infrastructure.agent_observability_bootstrap
     from luana_core_observability.registry import get_spec
 
     spec = get_spec("campaign")
@@ -46,7 +45,6 @@ def test_campaigns_spec_llm_call_table() -> None:
 
 def test_campaigns_spec_retention_env_vars() -> None:
     """Retention env var names must match config.py declarations."""
-    import luana_core_platform.infrastructure.agent_observability_bootstrap
     from luana_core_observability.registry import get_spec
 
     spec = get_spec("campaign")
@@ -56,7 +54,6 @@ def test_campaigns_spec_retention_env_vars() -> None:
 
 def test_campaigns_spec_retention_defaults() -> None:
     """PR-1 sets shorter retention (30d trace, 90d llm_call) for placeholder."""
-    import luana_core_platform.infrastructure.agent_observability_bootstrap
     from luana_core_observability.registry import get_spec
 
     spec = get_spec("campaign")

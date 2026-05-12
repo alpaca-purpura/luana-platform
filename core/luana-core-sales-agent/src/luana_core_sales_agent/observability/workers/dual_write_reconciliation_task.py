@@ -73,7 +73,10 @@ def reconcile_per_tenant(db: Session, *, since: datetime) -> dict[str, dict]:
         .group_by(AgentTrace.tenant_id)
     )
     new_stmt = (
-        select(SalesAgentTraceEventModel.tenant_id, func.count(SalesAgentTraceEventModel.id))
+        select(
+            SalesAgentTraceEventModel.tenant_id,
+            func.count(SalesAgentTraceEventModel.id),
+        )
         .where(SalesAgentTraceEventModel.created_at >= since)
         .group_by(SalesAgentTraceEventModel.tenant_id)
     )
@@ -136,7 +139,9 @@ async def run_sales_agent_dual_write_reconcile(ctx: dict) -> None:
         try:
             db.close()
         except Exception as exc:  # noqa: BLE001
-            logger.warning("sales_agent_dual_write_reconcile_close_failed", error=str(exc))
+            logger.warning(
+                "sales_agent_dual_write_reconcile_close_failed", error=str(exc)
+            )
 
 
 __all__ = [

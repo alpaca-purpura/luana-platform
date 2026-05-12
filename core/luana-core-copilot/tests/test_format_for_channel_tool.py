@@ -41,12 +41,16 @@ def test_chat_passes_through_markdown_and_emoji() -> None:
 
 
 def test_whatsapp_strips_standard_markdown() -> None:
-    text = "**Promo activa** — visita [la página](https://nico.lat) para ver _detalles_."
+    text = (
+        "**Promo activa** — visita [la página](https://nico.lat) para ver _detalles_."
+    )
     result = format_for_channel_impl(content=text, channel_id="whatsapp")
     assert result["channel"] == "whatsapp"
     assert "**" not in result["content"]
     assert "[la página](" not in result["content"]
-    assert "https://nico.lat" in result["content"], "URLs should be preserved as plain text"
+    assert "https://nico.lat" in result["content"], (
+        "URLs should be preserved as plain text"
+    )
     assert "markdown_stripped" in result["warnings"]
 
 
@@ -126,7 +130,9 @@ def test_provider_registered_channel_works() -> None:
 async def test_tool_callable_returns_json_string() -> None:
     """The LangChain ``@tool`` wrapper exposes the impl. Ensure the callable
     interface is reachable and returns parseable JSON."""
-    raw = await format_for_channel.ainvoke({"content": "**hola**", "channel_id": "whatsapp"})
+    raw = await format_for_channel.ainvoke(
+        {"content": "**hola**", "channel_id": "whatsapp"}
+    )
     payload = json.loads(raw)
     assert payload["channel"] == "whatsapp"
     assert "warnings" in payload

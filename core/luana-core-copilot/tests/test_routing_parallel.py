@@ -62,7 +62,9 @@ def routing_events() -> list:
     EventBus.clear()
 
 
-def _state(*, current_route: str | None = "/dashboard", guided_mode: bool = False) -> dict:
+def _state(
+    *, current_route: str | None = "/dashboard", guided_mode: bool = False
+) -> dict:
     return {
         "client_context": {
             "current_route": current_route,
@@ -196,10 +198,14 @@ class TestRecordRoutingDecisionAsync:
         concurrent_elapsed = time.monotonic() - concurrent_start
         # Tolerance: the asyncio.sleep should resolve in ~50ms, not be
         # delayed by the routing task's blocking work.
-        assert concurrent_elapsed < 0.2, f"Event loop appears blocked: 50ms sleep took {concurrent_elapsed:.3f}s"
+        assert concurrent_elapsed < 0.2, (
+            f"Event loop appears blocked: 50ms sleep took {concurrent_elapsed:.3f}s"
+        )
 
         # The routing task should still be in flight (router.select sleeps 1.0s).
-        assert not routing.done(), "Routing task finished too fast — was the LLM call offloaded?"
+        assert not routing.done(), (
+            "Routing task finished too fast — was the LLM call offloaded?"
+        )
 
         await routing
         total = time.monotonic() - started

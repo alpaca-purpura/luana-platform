@@ -28,7 +28,11 @@ class TestClarifyShared:
                     {
                         "field_path": "extraction.scope",
                         "issue": "¿Extraer todo o solo la sección actual?",
-                        "options": ["Todo initial", "Completar faltantes", "Solo sección actual"],
+                        "options": [
+                            "Todo initial",
+                            "Completar faltantes",
+                            "Solo sección actual",
+                        ],
                     },
                 ],
             },
@@ -43,7 +47,10 @@ class TestClarifyShared:
         ]
 
     def test_caps_at_four_items(self) -> None:
-        items = [{"field_path": f"f{i}", "issue": f"i{i}", "options": ["a", "b"]} for i in range(6)]
+        items = [
+            {"field_path": f"f{i}", "issue": f"i{i}", "options": ["a", "b"]}
+            for i in range(6)
+        ]
         result = clarify.invoke({"items": items})
         parsed = json.loads(result)
         assert len(parsed["ui_action"]["clarify_items"]) == MAX_CLARIFY_ITEMS

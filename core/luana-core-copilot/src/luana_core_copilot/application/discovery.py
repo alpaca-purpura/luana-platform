@@ -63,7 +63,9 @@ def _scan_convention() -> dict[str, CopilotProvider]:
         # luana-platform: src.modules does not exist; providers come via entry-points.
         # AISALESHT: src.modules is the filesystem root, missing = real bug.
         # Demote to debug-level to avoid noisy traceback in luana-platform context.
-        _LOGGER.debug("copilot.discovery.convention_root_missing", package=_CONVENTION_PACKAGE)
+        _LOGGER.debug(
+            "copilot.discovery.convention_root_missing", package=_CONVENTION_PACKAGE
+        )
         return registry
 
     candidate_modules: set[str] = set()

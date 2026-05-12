@@ -155,7 +155,9 @@ def _render_document_block(
 
     asset = repo.get_by_id(asset_uuid, tenant_id=tenant_id)
     if not asset:
-        logger.warning("copilot_chat_attachment_asset_missing", asset_id=str(asset_uuid))
+        logger.warning(
+            "copilot_chat_attachment_asset_missing", asset_id=str(asset_uuid)
+        )
         return None
 
     # Trigger extraction if pending — idempotent.
@@ -204,7 +206,9 @@ def _render_attachment_context(
     for block in blocks:
         btype = block.get("type")
         if btype == "document":
-            rendered = _render_document_block(block, repo=repo, db=db, tenant_id=tenant_id)
+            rendered = _render_document_block(
+                block, repo=repo, db=db, tenant_id=tenant_id
+            )
             if rendered:
                 sections.append(rendered)
         elif btype == "audio":
@@ -215,7 +219,12 @@ def _render_attachment_context(
                 else "[Audio adjunto sin transcripción disponible.]"
             )
         elif btype == "image":
-            alt = block.get("alt") or block.get("filename") or block.get("url") or "imagen"
+            alt = (
+                block.get("alt")
+                or block.get("filename")
+                or block.get("url")
+                or "imagen"
+            )
             sections.append(f"[Imagen adjunta: {alt}]")
         elif btype == "video":
             ref = block.get("filename") or block.get("url") or "video"
@@ -309,7 +318,9 @@ _USER_FACING_ERROR_MESSAGES: dict[str, str] = {
         "vuelve a enviar tu mensaje — los cambios que ya se hayan propuesto en "
         "el chat siguen visibles."
     ),
-    "stream_error": ("Hubo un problema procesando tu mensaje. Intenta de nuevo en unos segundos."),
+    "stream_error": (
+        "Hubo un problema procesando tu mensaje. Intenta de nuevo en unos segundos."
+    ),
 }
 
 
@@ -338,7 +349,9 @@ def _user_facing_error_message(error_kind: str) -> str:
     Unknown kinds fall back to the generic ``stream_error`` copy so the
     user always gets something actionable.
     """
-    return _USER_FACING_ERROR_MESSAGES.get(error_kind, _USER_FACING_ERROR_MESSAGES["stream_error"])
+    return _USER_FACING_ERROR_MESSAGES.get(
+        error_kind, _USER_FACING_ERROR_MESSAGES["stream_error"]
+    )
 
 
 def _extract_tool_message(
@@ -459,7 +472,9 @@ def _write_todos_to_plan_card(tool_input: object) -> dict | None:
             {
                 "content": content,
                 "status": status,
-                "active_form": str(item.get("activeForm") or item.get("active_form") or "").strip(),
+                "active_form": str(
+                    item.get("activeForm") or item.get("active_form") or ""
+                ).strip(),
             },
         )
     if not normalized:
@@ -667,7 +682,10 @@ class CopilotOrchestrator:
             }
         return {
             "current_route": context.current_route,
-            "selected_fields": [f.model_dump() if hasattr(f, "model_dump") else f for f in context.selected_fields],
+            "selected_fields": [
+                f.model_dump() if hasattr(f, "model_dump") else f
+                for f in context.selected_fields
+            ],
             "form_data": context.form_data,
             "locale": context.locale,
         }
@@ -798,10 +816,16 @@ class CopilotOrchestrator:
             history_messages,
             channel=effective_channel,
         )
-        attachment_context = _render_attachment_context(blocks, tenant_id=tenant_id, db=self.db)
+        attachment_context = _render_attachment_context(
+            blocks, tenant_id=tenant_id, db=self.db
+        )
         user_content = message
         if attachment_context:
-            user_content = f"{message.strip()}\n\n{attachment_context}" if message.strip() else attachment_context
+            user_content = (
+                f"{message.strip()}\n\n{attachment_context}"
+                if message.strip()
+                else attachment_context
+            )
         state["messages"] = [*history_messages, HumanMessage(content=user_content)]
         return conv_id, conv_uuid, existing_conv, state
 
@@ -858,13 +882,16 @@ class CopilotOrchestrator:
             builder = ContextWindowBuilder.for_channel(channel)
             # Convert LangChain history → LLMMessage value objects.
             llm_history = [
-                LLMMessage(role=_role_of(m), content=str(getattr(m, "content", ""))) for m in history_messages
+                LLMMessage(role=_role_of(m), content=str(getattr(m, "content", "")))
+                for m in history_messages
             ]
             # Pre-instantiate the channel-aware summarizer so the wiring
             # is exercised in tests. Execution lands in S5 (rolling
             # summary persistence). Bind to a local var so `mypy --strict`
             # doesn't flag the unused factory call.
-            _summarizer = RollingSummarizer.for_channel(channel)  # wiring symmetry, S5 follow-up
+            _summarizer = RollingSummarizer.for_channel(
+                channel
+            )  # wiring symmetry, S5 follow-up
             del _summarizer  # explicit discard — execution lands in S5
             window, _tokens = builder.build(
                 summary=None,
@@ -875,7 +902,9 @@ class CopilotOrchestrator:
             # (we re-add the real user message in _prepare_conversation).
             if window and window[-1].role == "user" and window[-1].content == "":
                 window = window[:-1]
-            kept_count = len(window) - (1 if window and window[0].name == "rolling_summary" else 0)
+            kept_count = len(window) - (
+                1 if window and window[0].name == "rolling_summary" else 0
+            )
             kept_count = max(kept_count, 0)
             # Slice the original BaseMessage list to the same tail length so
             # we preserve message identity (additional_kwargs, tool_call_id…).
@@ -926,7 +955,9 @@ class CopilotOrchestrator:
             )
             chosen_router = router if router is not None else _get_default_router()
             decision = chosen_router.select(request)
-            confidence = float(decision.confidence) if decision.confidence is not None else None
+            confidence = (
+                float(decision.confidence) if decision.confidence is not None else None
+            )
             RoutingLogRepository(self.db).insert(
                 tenant_id=tenant_id,
                 conversation_id=conversation_id,
@@ -1005,7 +1036,9 @@ class CopilotOrchestrator:
             )
             chosen_router = router if router is not None else _get_default_router()
             decision = await asyncio.to_thread(chosen_router.select, request)
-            confidence = float(decision.confidence) if decision.confidence is not None else None
+            confidence = (
+                float(decision.confidence) if decision.confidence is not None else None
+            )
             RoutingLogRepository(self.db).insert(
                 tenant_id=tenant_id,
                 conversation_id=conversation_id,
@@ -1109,7 +1142,8 @@ class CopilotOrchestrator:
 
         async with obs.observe_turn(
             message=message,
-            route=state.get("client_context", {}).get("current_route") or "/copilot/chat",
+            route=state.get("client_context", {}).get("current_route")
+            or "/copilot/chat",
             attachments=blocks or [],
         ):
             try:
@@ -1229,7 +1263,8 @@ class CopilotOrchestrator:
 
         async with obs.observe_turn(
             message=message,
-            route=state.get("client_context", {}).get("current_route") or "/copilot/chat",
+            route=state.get("client_context", {}).get("current_route")
+            or "/copilot/chat",
             attachments=[],
         ):
             try:
@@ -1334,7 +1369,9 @@ class CopilotOrchestrator:
         if msg_id is None:
             msg_id = str(uuid4())
         streaming_started_at = _utc_now()
-        graph_config: dict[str, Any] = acc.obs.langchain_config() if acc.obs is not None else {}
+        graph_config: dict[str, Any] = (
+            acc.obs.langchain_config() if acc.obs is not None else {}
+        )
 
         try:
             yield SSEEvent(event="status", data={"state": "streaming"}).to_sse()
@@ -1382,7 +1419,9 @@ class CopilotOrchestrator:
                     )
                     if text_chunk:
                         acc.full_response += text_chunk
-                        async for block_sse in self._emit_text_chunk_v2(acc, msg_id, text_chunk):
+                        async for block_sse in self._emit_text_chunk_v2(
+                            acc, msg_id, text_chunk
+                        ):
                             yield block_sse
                     if sse:
                         yield sse
@@ -1424,7 +1463,9 @@ class CopilotOrchestrator:
             if acc.obs is not None:
                 acc.obs.set_turn_error(
                     error_kind="tool_call_loop",
-                    error_message=(f"{loop_exc.tool_name} called {loop_exc.repeat_count}x with identical args"),
+                    error_message=(
+                        f"{loop_exc.tool_name} called {loop_exc.repeat_count}x with identical args"
+                    ),
                 )
             yield SSEEvent(
                 event="error",
@@ -1477,7 +1518,9 @@ class CopilotOrchestrator:
         # FE's final render stay clean, even if streamed deltas briefly
         # flashed the JSON on the client.
         if acc.text_block_id is not None:
-            sanitized_markdown = sanitize_assistant_text(acc.text_block_markdown, user_msg=user_msg)
+            sanitized_markdown = sanitize_assistant_text(
+                acc.text_block_markdown, user_msg=user_msg
+            )
             acc.text_block_markdown = sanitized_markdown
             acc.full_response = sanitized_markdown
             final_text_block: dict = {
@@ -1742,7 +1785,9 @@ class CopilotOrchestrator:
         dedup_verdict = acc.dedup_tracker.observe(tool_name, tool_input)
 
         # Step 1 — emit tool_result + ui_action via the legacy-format handler.
-        result_sse = self._handle_tool_end(event, accumulated_messages, last_tool_call_ids)
+        result_sse = self._handle_tool_end(
+            event, accumulated_messages, last_tool_call_ids
+        )
 
         # Anti-loop directive injection (WARN tier). The handler above
         # already appended a ToolMessage to ``accumulated_messages``;
@@ -1755,7 +1800,9 @@ class CopilotOrchestrator:
                 last.content = augment_tool_message_for_warn(
                     tool_name=tool_name,
                     tool_args=tool_input,
-                    original_content=last.content if isinstance(last.content, str) else None,
+                    original_content=last.content
+                    if isinstance(last.content, str)
+                    else None,
                 )
                 logger.warning(
                     "copilot_tool_call_dedup_warn",
@@ -1799,7 +1846,9 @@ class CopilotOrchestrator:
                             conversation_id=acc.obs.conversation_id,
                             card_kind=card_block.get("card_kind") or "card",
                             source_tool=tool_name,
-                            payload_keys=list(action.keys()) if isinstance(action, dict) else [],
+                            payload_keys=list(action.keys())
+                            if isinstance(action, dict)
+                            else [],
                         ),
                         session=None,
                     )
@@ -1884,7 +1933,9 @@ class CopilotOrchestrator:
         self.db.commit()
         self._cache_history(conv_id, tenant_id, new_messages)
 
-    def _load_history(self, conv_id: str, tenant_id: UUID, conv_model: CopilotConversationModel) -> list:
+    def _load_history(
+        self, conv_id: str, tenant_id: UUID, conv_model: CopilotConversationModel
+    ) -> list:
         """Load conversation history, preferring Redis cache."""
         # Try Redis first
         redis_key = f"{REDIS_CONV_PREFIX}{conv_id}"
@@ -1960,7 +2011,11 @@ class CopilotOrchestrator:
         deduped: list[dict] = []
         for idx, block in enumerate(emitted_blocks):
             kind = block.get("card_kind")
-            if block.get("type") == "card" and kind in last_index_by_kind and last_index_by_kind[kind] != idx:
+            if (
+                block.get("type") == "card"
+                and kind in last_index_by_kind
+                and last_index_by_kind[kind] != idx
+            ):
                 continue
             deduped.append(block)
         return deduped
@@ -2044,7 +2099,8 @@ class CopilotOrchestrator:
                 d: dict = {**base, "role": "assistant", "content": msg.content}
                 if msg.tool_calls:
                     d["tool_calls"] = [
-                        {"id": tc["id"], "name": tc["name"], "args": tc["args"]} for tc in msg.tool_calls
+                        {"id": tc["id"], "name": tc["name"], "args": tc["args"]}
+                        for tc in msg.tool_calls
                     ]
                 result.append(d)
             elif isinstance(msg, ToolMessage):

@@ -166,7 +166,9 @@ class MutationApplyService:
                 rejected.append(
                     RejectedMutation(
                         field_id=str(field_id),
-                        reason=(f"'{field_id}' no está en el catálogo editable. Revisa el field_id propuesto."),
+                        reason=(
+                            f"'{field_id}' no está en el catálogo editable. Revisa el field_id propuesto."
+                        ),
                     ),
                 )
                 continue

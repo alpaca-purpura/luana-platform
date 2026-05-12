@@ -30,7 +30,13 @@ def test_offer_ladder_tools_registered() -> None:
 
 def test_group_by_level_all_empty() -> None:
     groups = _group_by_level([])
-    assert set(groups.keys()) == {"lead_magnet", "activacion", "transformacion", "maximizacion", "corporativo"}
+    assert set(groups.keys()) == {
+        "lead_magnet",
+        "activacion",
+        "transformacion",
+        "maximizacion",
+        "corporativo",
+    }
     for offers in groups.values():
         assert offers == []
 
@@ -139,7 +145,11 @@ def test_fetch_brand_context_returns_none_on_error() -> None:
 
 def test_fetch_brand_context_returns_dict_when_found() -> None:
     mock_db = MagicMock()
-    mock_row = {"niche": "Fitness", "industry": "Salud", "target_audience": "Hombres 30+"}
+    mock_row = {
+        "niche": "Fitness",
+        "industry": "Salud",
+        "target_audience": "Hombres 30+",
+    }
     mock_db.execute.return_value.mappings.return_value.first.return_value = mock_row
     result = _fetch_brand_context(mock_db, "some-tenant-id")
     assert result == mock_row
@@ -191,7 +201,10 @@ def test_fetch_offers_returns_list_when_found() -> None:
 
 def test_analyze_offer_ladder_returns_error_when_no_tenant() -> None:
     """If get_tenant_id returns None, tool returns an error string — no DB hit."""
-    with patch("luana_core_copilot.application.tools.offer_ladder_tools.get_tenant_id", return_value=None):
+    with patch(
+        "luana_core_copilot.application.tools.offer_ladder_tools.get_tenant_id",
+        return_value=None,
+    ):
         result = analyze_offer_ladder.invoke({})
     assert "Error" in result or "error" in result.lower()
 
@@ -204,8 +217,14 @@ def test_analyze_offer_ladder_session_closed_on_success() -> None:
     mock_session.execute.return_value.mappings.return_value.all.return_value = []
 
     with (
-        patch("luana_core_copilot.application.tools.offer_ladder_tools.get_tenant_id", return_value="t-123"),
-        patch("luana_core_copilot.application.tools.offer_ladder_tools.SessionLocal", return_value=mock_session),
+        patch(
+            "luana_core_copilot.application.tools.offer_ladder_tools.get_tenant_id",
+            return_value="t-123",
+        ),
+        patch(
+            "luana_core_copilot.application.tools.offer_ladder_tools.SessionLocal",
+            return_value=mock_session,
+        ),
     ):
         result = analyze_offer_ladder.invoke({})
 
@@ -220,8 +239,14 @@ def test_analyze_offer_ladder_session_closed_on_db_error() -> None:
     mock_session.execute.side_effect = ValueError("connection lost")
 
     with (
-        patch("luana_core_copilot.application.tools.offer_ladder_tools.get_tenant_id", return_value="t-123"),
-        patch("luana_core_copilot.application.tools.offer_ladder_tools.SessionLocal", return_value=mock_session),
+        patch(
+            "luana_core_copilot.application.tools.offer_ladder_tools.get_tenant_id",
+            return_value="t-123",
+        ),
+        patch(
+            "luana_core_copilot.application.tools.offer_ladder_tools.SessionLocal",
+            return_value=mock_session,
+        ),
     ):
         result = analyze_offer_ladder.invoke({})
 
@@ -238,8 +263,14 @@ def test_analyze_offer_ladder_returns_markdown_with_gaps() -> None:
     mock_session.execute.return_value.mappings.return_value.all.return_value = []
 
     with (
-        patch("luana_core_copilot.application.tools.offer_ladder_tools.get_tenant_id", return_value="t-123"),
-        patch("luana_core_copilot.application.tools.offer_ladder_tools.SessionLocal", return_value=mock_session),
+        patch(
+            "luana_core_copilot.application.tools.offer_ladder_tools.get_tenant_id",
+            return_value="t-123",
+        ),
+        patch(
+            "luana_core_copilot.application.tools.offer_ladder_tools.SessionLocal",
+            return_value=mock_session,
+        ),
     ):
         result = analyze_offer_ladder.invoke({})
 

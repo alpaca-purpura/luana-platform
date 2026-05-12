@@ -114,7 +114,9 @@ def test_kb_chunk_embed_text_no_breadcrumb_returns_content_only() -> None:
     assert chunk.embed_text() == chunk.content
 
 
-def test_ensure_collection_creates_with_correct_dim(in_memory_store: MarketingKbStore) -> None:
+def test_ensure_collection_creates_with_correct_dim(
+    in_memory_store: MarketingKbStore,
+) -> None:
     in_memory_store.ensure_collection()
     info = in_memory_store._get_client().get_collection(MARKETING_KB_COLLECTION)
     assert info is not None
@@ -131,7 +133,9 @@ def test_upsert_chunks_idempotent(in_memory_store: MarketingKbStore) -> None:
     assert info.points_count == 3
 
 
-def test_search_returns_methodology_for_citation(in_memory_store: MarketingKbStore) -> None:
+def test_search_returns_methodology_for_citation(
+    in_memory_store: MarketingKbStore,
+) -> None:
     chunks = [
         _sample_chunk(chunk_index=0, methodology="hormozi"),
         _sample_chunk(
@@ -194,7 +198,9 @@ def test_search_rejects_invalid_filters(in_memory_store: MarketingKbStore) -> No
         in_memory_store.search("x", methodology="not_a_method")
 
 
-def test_search_empty_query_returns_no_results(in_memory_store: MarketingKbStore) -> None:
+def test_search_empty_query_returns_no_results(
+    in_memory_store: MarketingKbStore,
+) -> None:
     assert in_memory_store.search("   ") == []
 
 

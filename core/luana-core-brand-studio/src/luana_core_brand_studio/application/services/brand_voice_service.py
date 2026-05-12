@@ -166,9 +166,7 @@ class BrandVoiceService:
         if model is None:
             return self._empty_metadata()
 
-        last_compiled_at: datetime | None = (
-            getattr(model, "updated_at", None) or getattr(model, "created_at", None)
-        )
+        last_compiled_at: datetime | None = getattr(model, "updated_at", None) or getattr(model, "created_at", None)
         dimensions_summary = dict(model.dimensions or {})
 
         return {

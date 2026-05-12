@@ -231,7 +231,9 @@ def test_tie_break_by_section_then_priority_then_path() -> None:
     result = next_question(_MODULE, {})
     assert result is not None
     assert result.section == "alpha"
-    assert result.path == "bbb", "alpha section wins; within priority tie path lex order"
+    assert result.path == "bbb", (
+        "alpha section wins; within priority tie path lex order"
+    )
 
 
 def test_section_filter_restricts_candidates() -> None:

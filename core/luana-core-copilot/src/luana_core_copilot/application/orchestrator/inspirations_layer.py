@@ -81,7 +81,9 @@ def build_inspirations_layer(state: dict) -> str:
 
     try:
         conversation_id = (
-            conversation_id_raw if isinstance(conversation_id_raw, UUID) else UUID(str(conversation_id_raw))
+            conversation_id_raw
+            if isinstance(conversation_id_raw, UUID)
+            else UUID(str(conversation_id_raw))
         )
     except (TypeError, ValueError):
         return ""

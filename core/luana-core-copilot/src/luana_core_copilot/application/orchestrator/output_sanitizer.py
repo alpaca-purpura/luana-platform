@@ -146,7 +146,9 @@ def _restore_case(template: str, replacement: str) -> str:
 
 
 _VOSEO_RE = re.compile(
-    r"\b(" + "|".join(re.escape(k) for k in sorted(_VOSEO_TO_NEUTRO, key=len, reverse=True)) + r")\b",
+    r"\b("
+    + "|".join(re.escape(k) for k in sorted(_VOSEO_TO_NEUTRO, key=len, reverse=True))
+    + r")\b",
     re.IGNORECASE,
 )
 

@@ -19,16 +19,10 @@ from luana_core_extension_sdk import ExtensionPointRegistry
 def test_no_unregister_methods_on_registry_class() -> None:
     """V-AG-cc5-no-unregister: ExtensionPointRegistry class has zero unregister_* methods."""
     all_members = inspect.getmembers(ExtensionPointRegistry)
-    unregister_methods = [
-        name
-        for name, member in all_members
-        if name.startswith("unregister_") and callable(member)
-    ]
+    unregister_methods = [name for name, member in all_members if name.startswith("unregister_") and callable(member)]
 
     assert not unregister_methods, (
-        "ExtensionPointRegistry has unregister_* method(s): "
-        + str(unregister_methods)
-        + "\n\n"
+        "ExtensionPointRegistry has unregister_* method(s): " + str(unregister_methods) + "\n\n"
         "CC-5 immutability: extensions registered at startup cannot be removed.\n"
         "To add unregister support requires:\n"
         "  1. Re-evaluate CC-3 (startup-only lock) + CC-5 (immutable post-startup)\n"

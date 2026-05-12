@@ -90,7 +90,9 @@ class EvalRunner:
 
             scores: list[float] = []
             for i, golden in enumerate(goldens):
-                predicted = predicted_tiers[i] if predicted_tiers else golden.expected_tier
+                predicted = (
+                    predicted_tiers[i] if predicted_tiers else golden.expected_tier
+                )
                 s = scorer.score(predicted, golden.expected_tier)
                 scores.append(s)
 
@@ -125,13 +127,19 @@ class EvalRunner:
             goldens = load_all_summarizer_goldens()
             report.total_goldens = len(goldens)
 
-            if predicted_summaries is not None and len(predicted_summaries) != len(goldens):
+            if predicted_summaries is not None and len(predicted_summaries) != len(
+                goldens
+            ):
                 msg = f"predicted_summaries length ({len(predicted_summaries)}) must match goldens ({len(goldens)})"
                 raise ValueError(msg)
 
             scores: list[float] = []
             for i, golden in enumerate(goldens):
-                predicted = predicted_summaries[i] if predicted_summaries else golden.reference_summary
+                predicted = (
+                    predicted_summaries[i]
+                    if predicted_summaries
+                    else golden.reference_summary
+                )
                 s = scorer.score(predicted, golden.reference_summary)
                 scores.append(s)
 

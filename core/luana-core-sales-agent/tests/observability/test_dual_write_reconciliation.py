@@ -56,7 +56,9 @@ class TestReconcileFunction:
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
-        from luana_core_sales_agent.observability.workers import dual_write_reconciliation_task as mod
+        from luana_core_sales_agent.observability.workers import (
+            dual_write_reconciliation_task as mod,
+        )
 
         tenant_id = uuid4()
         legacy_result = MagicMock()
@@ -67,7 +69,9 @@ class TestReconcileFunction:
         db = MagicMock()
         db.execute.side_effect = [legacy_result, new_result]
 
-        out = mod.reconcile_per_tenant(db, since=datetime.now(tz=UTC) - timedelta(hours=1))
+        out = mod.reconcile_per_tenant(
+            db, since=datetime.now(tz=UTC) - timedelta(hours=1)
+        )
         key = str(tenant_id)
         assert out[key]["legacy_count"] == 100
         assert out[key]["new_count"] == 100
@@ -78,7 +82,9 @@ class TestReconcileFunction:
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
-        from luana_core_sales_agent.observability.workers import dual_write_reconciliation_task as mod
+        from luana_core_sales_agent.observability.workers import (
+            dual_write_reconciliation_task as mod,
+        )
 
         tenant_id = uuid4()
         legacy_result = MagicMock()
@@ -89,7 +95,9 @@ class TestReconcileFunction:
         db = MagicMock()
         db.execute.side_effect = [legacy_result, new_result]
 
-        out = mod.reconcile_per_tenant(db, since=datetime.now(tz=UTC) - timedelta(hours=1))
+        out = mod.reconcile_per_tenant(
+            db, since=datetime.now(tz=UTC) - timedelta(hours=1)
+        )
         key = str(tenant_id)
         assert out[key]["delta_pct"] == 50.0
         assert out[key]["drift_alert"] is True
@@ -98,7 +106,9 @@ class TestReconcileFunction:
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
-        from luana_core_sales_agent.observability.workers import dual_write_reconciliation_task as mod
+        from luana_core_sales_agent.observability.workers import (
+            dual_write_reconciliation_task as mod,
+        )
 
         new_only = uuid4()
         legacy_result = MagicMock()
@@ -109,7 +119,9 @@ class TestReconcileFunction:
         db = MagicMock()
         db.execute.side_effect = [legacy_result, new_result]
 
-        out = mod.reconcile_per_tenant(db, since=datetime.now(tz=UTC) - timedelta(hours=1))
+        out = mod.reconcile_per_tenant(
+            db, since=datetime.now(tz=UTC) - timedelta(hours=1)
+        )
         key = str(new_only)
         assert out[key]["legacy_count"] == 0
         assert out[key]["new_count"] == 50

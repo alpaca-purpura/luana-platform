@@ -15,7 +15,10 @@ from luana_core_copilot.application.orchestrator.graph import _tool_message_cont
 
 class TestToolMessageContent:
     def test_plain_string_is_returned_untouched(self) -> None:
-        assert _tool_message_content("Tool returned plain text") == "Tool returned plain text"
+        assert (
+            _tool_message_content("Tool returned plain text")
+            == "Tool returned plain text"
+        )
 
     def test_json_without_llm_content_returns_raw_string(self) -> None:
         payload = json.dumps({"text": "ok", "ui_action": {"type": "noop"}})

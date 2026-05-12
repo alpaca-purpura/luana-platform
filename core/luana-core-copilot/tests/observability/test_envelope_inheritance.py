@@ -43,7 +43,9 @@ def _build_ctx(db):
     from luana_core_copilot.observability.persistence.trace_event_repository import (
         TraceEventRepository,
     )
-    from luana_core_copilot.observability.recording.turn_envelope import ObservabilityContext
+    from luana_core_copilot.observability.recording.turn_envelope import (
+        ObservabilityContext,
+    )
 
     pricing_resolver = MagicMock()
     fx_resolver = MagicMock()
@@ -119,7 +121,9 @@ class TestLifecycleParity:
         )
 
         ctx = _build_ctx(db)
-        async with ctx.observe_turn(message="hola", route="/copilot/chat", attachments=[]):
+        async with ctx.observe_turn(
+            message="hola", route="/copilot/chat", attachments=[]
+        ):
             pass
         db.flush()
 

@@ -95,6 +95,10 @@ class TestFXResolver:
         client.get.return_value = _frankfurter_response({"MXN": 17.45})
 
         resolver = FXResolver(http_client_factory=lambda: client)
-        resolver.resolve(currency_code="MXN", at_ts=dt.datetime(2026, 4, 26, 9, 0, tzinfo=dt.UTC))
-        resolver.resolve(currency_code="MXN", at_ts=dt.datetime(2026, 4, 26, 22, 0, tzinfo=dt.UTC))
+        resolver.resolve(
+            currency_code="MXN", at_ts=dt.datetime(2026, 4, 26, 9, 0, tzinfo=dt.UTC)
+        )
+        resolver.resolve(
+            currency_code="MXN", at_ts=dt.datetime(2026, 4, 26, 22, 0, tzinfo=dt.UTC)
+        )
         assert client.get.call_count == 1

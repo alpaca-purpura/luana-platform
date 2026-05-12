@@ -109,7 +109,9 @@ def _format_tenant_context(tenant_profile: dict[str, Any] | None) -> str | None:
         "default_currency",
         "timezone",
     )
-    lines.extend(f"- {key}: {tenant_profile[key]}" for key in keys if tenant_profile.get(key))
+    lines.extend(
+        f"- {key}: {tenant_profile[key]}" for key in keys if tenant_profile.get(key)
+    )
     return "\n".join(lines) if lines else None
 
 

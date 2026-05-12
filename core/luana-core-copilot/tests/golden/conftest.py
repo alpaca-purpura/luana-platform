@@ -60,7 +60,9 @@ def assert_matches_golden(name: str, actual: Any) -> None:
     """
     SNAPSHOTS_DIR.mkdir(parents=True, exist_ok=True)
     path = SNAPSHOTS_DIR / f"{name}.json"
-    serialised = json.dumps(_normalise(actual), indent=2, sort_keys=True, ensure_ascii=False)
+    serialised = json.dumps(
+        _normalise(actual), indent=2, sort_keys=True, ensure_ascii=False
+    )
 
     if os.environ.get("UPDATE_GOLDEN") == "1" or not path.exists():
         path.write_text(serialised + "\n", encoding="utf-8")

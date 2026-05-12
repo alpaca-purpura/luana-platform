@@ -35,7 +35,9 @@ import trafilatura
 logger = structlog.get_logger()
 
 
-_USER_AGENT = "Mozilla/5.0 (compatible; NicolifyCopilot/1.0; +https://nicolify.com/copilot-bot)"
+_USER_AGENT = (
+    "Mozilla/5.0 (compatible; NicolifyCopilot/1.0; +https://nicolify.com/copilot-bot)"
+)
 _FETCH_TIMEOUT_S = 15.0
 _FETCH_RETRIES = 1
 _OG_IMAGE_RE = re.compile(

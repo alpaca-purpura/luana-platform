@@ -6,7 +6,6 @@ pattern from AISALESHT in luana-platform context.
 
 from __future__ import annotations
 
-import pytest
 from fastapi import FastAPI
 
 

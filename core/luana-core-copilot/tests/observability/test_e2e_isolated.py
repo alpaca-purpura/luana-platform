@@ -53,11 +53,15 @@ def _pricing_snapshot():
 
 def _build_context(db):
     """Wire the new envelope to an in-memory SQLite session + mocked resolvers."""
-    from luana_core_copilot.observability.persistence.llm_call_repository import LlmCallRepository
+    from luana_core_copilot.observability.persistence.llm_call_repository import (
+        LlmCallRepository,
+    )
     from luana_core_copilot.observability.persistence.trace_event_repository import (
         TraceEventRepository,
     )
-    from luana_core_copilot.observability.recording.turn_envelope import ObservabilityContext
+    from luana_core_copilot.observability.recording.turn_envelope import (
+        ObservabilityContext,
+    )
     from luana_core_observability.pricing.resolver import PricingResult
 
     pricing_resolver = MagicMock()
@@ -169,20 +173,36 @@ async def test_full_turn_records_llm_call_and_trace_events(db) -> None:
     db.flush()
 
     # Exactly 1 turn_start + 1 turn_end row.
-    starts = db.query(CopilotTraceEventModel).filter_by(tenant_id=ctx.tenant_id, event_type="turn_start").all()
-    ends = db.query(CopilotTraceEventModel).filter_by(tenant_id=ctx.tenant_id, event_type="turn_end").all()
+    starts = (
+        db.query(CopilotTraceEventModel)
+        .filter_by(tenant_id=ctx.tenant_id, event_type="turn_start")
+        .all()
+    )
+    ends = (
+        db.query(CopilotTraceEventModel)
+        .filter_by(tenant_id=ctx.tenant_id, event_type="turn_end")
+        .all()
+    )
     assert len(starts) == 1
     assert len(ends) == 1
 
     # 1 row in copilot_llm_call with cost > 0.
-    llm_calls = db.query(CopilotLlmCallModel).filter_by(tenant_id=ctx.tenant_id, turn_id=ctx.turn_id).all()
+    llm_calls = (
+        db.query(CopilotLlmCallModel)
+        .filter_by(tenant_id=ctx.tenant_id, turn_id=ctx.turn_id)
+        .all()
+    )
     assert len(llm_calls) == 1
     assert llm_calls[0].cost_usd > 0
     assert llm_calls[0].input_tokens == 1000
     assert llm_calls[0].output_tokens == 500
 
     # 1 mirrored trace_event row with event_type='llm_call'.
-    llm_traces = db.query(CopilotTraceEventModel).filter_by(tenant_id=ctx.tenant_id, event_type="llm_call").all()
+    llm_traces = (
+        db.query(CopilotTraceEventModel)
+        .filter_by(tenant_id=ctx.tenant_id, event_type="llm_call")
+        .all()
+    )
     assert len(llm_traces) == 1
     assert "openai" in llm_traces[0].name
 

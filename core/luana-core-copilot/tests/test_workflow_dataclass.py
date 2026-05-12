@@ -23,11 +23,15 @@ class _StubState(BaseModel):
     name: str = ""
 
 
-def _node(node_id: str, *, handler_ref: str = "src.x:y", next_id: str | None = None) -> WorkflowNode:
+def _node(
+    node_id: str, *, handler_ref: str = "src.x:y", next_id: str | None = None
+) -> WorkflowNode:
     return WorkflowNode(id=node_id, handler_ref=handler_ref, next=next_id)
 
 
-def _workflow(workflow_id: str = "wf_demo", *, nodes: list[WorkflowNode] | None = None) -> Workflow:
+def _workflow(
+    workflow_id: str = "wf_demo", *, nodes: list[WorkflowNode] | None = None
+) -> Workflow:
     nodes = nodes or [_node("a", next_id="b"), _node("b")]
     return Workflow(
         id=workflow_id,

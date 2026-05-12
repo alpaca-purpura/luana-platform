@@ -38,7 +38,9 @@ async def test_web_research_returns_results() -> None:
         mock_service.search = AsyncMock(return_value=mock_results)
         mock_cls.return_value = mock_service
 
-        result = await web_research.ainvoke({"query": "coaching pricing", "max_results": 3})
+        result = await web_research.ainvoke(
+            {"query": "coaching pricing", "max_results": 3}
+        )
         parsed = json.loads(result)
 
         assert "results" in parsed
@@ -49,7 +51,9 @@ async def test_web_research_returns_results() -> None:
         assert parsed["results"][0]["relevance"] == 0.9
 
         mock_cls.assert_called_once()
-        mock_service.search.assert_called_once_with(query="coaching pricing", max_results=3)
+        mock_service.search.assert_called_once_with(
+            query="coaching pricing", max_results=3
+        )
 
 
 @pytest.mark.asyncio
@@ -61,7 +65,9 @@ async def test_web_research_empty_results() -> None:
         mock_service.search = AsyncMock(return_value=[])
         mock_cls.return_value = mock_service
 
-        result = await web_research.ainvoke({"query": "nonexistent topic", "max_results": 5})
+        result = await web_research.ainvoke(
+            {"query": "nonexistent topic", "max_results": 5}
+        )
         parsed = json.loads(result)
         assert parsed["results"] == []
 

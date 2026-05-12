@@ -77,7 +77,9 @@ def build_sales_agent_callback_handler(
         trace_repo = SalesAgentTraceEventRepository(db)
         # Resolver factory keeps it session-agnostic — fresh repo per call,
         # bound to the same orchestrator session.
-        pricing_resolver = PricingResolver(repo_factory=lambda: PricingSnapshotRepository(db))
+        pricing_resolver = PricingResolver(
+            repo_factory=lambda: PricingSnapshotRepository(db)
+        )
         # Bug #8 fix (PR-2 PI-1.1): ``FXResolver()`` no-arg crashed on
         # construct (dataclass missing required ``http_client_factory``)
         # → ``except`` block returned ``None`` → handler never wired →
@@ -141,7 +143,9 @@ def build_sales_agent_observability_context(
         billing_repo = TenantBillingConfigRepository(db)
         llm_call_repo = SalesAgentLlmCallRepository(db)
         trace_repo = SalesAgentTraceEventRepository(db)
-        pricing_resolver = PricingResolver(repo_factory=lambda: PricingSnapshotRepository(db))
+        pricing_resolver = PricingResolver(
+            repo_factory=lambda: PricingSnapshotRepository(db)
+        )
         fx_resolver = FXResolver.default()
         billing_cfg = billing_repo.get(tenant_id=tenant_id)
         tenant_currency = billing_cfg.billing_currency if billing_cfg else "USD"

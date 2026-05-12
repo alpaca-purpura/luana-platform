@@ -140,7 +140,9 @@ def test_read_document_missing_asset_returns_error(
 
 
 @patch("luana_core_copilot.application.tools.document_tools.get_tenant_id")
-def test_read_document_without_tenant_returns_error(mock_get_tenant_id: MagicMock) -> None:
+def test_read_document_without_tenant_returns_error(
+    mock_get_tenant_id: MagicMock,
+) -> None:
     """No tenant context → structured error."""
     from luana_core_copilot.application.tools.document_tools import read_document
 

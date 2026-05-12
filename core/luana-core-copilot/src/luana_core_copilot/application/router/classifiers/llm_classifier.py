@@ -160,7 +160,9 @@ class LLMClassifier:
         try:
             response = llm.invoke(messages)  # type: ignore[attr-defined]
         except Exception:
-            logger.exception("llm_classifier_invoke_failed", msg_preview=req.user_msg[:120])
+            logger.exception(
+                "llm_classifier_invoke_failed", msg_preview=req.user_msg[:120]
+            )
             return None
 
         text = getattr(response, "content", None) or str(response)
@@ -178,7 +180,9 @@ class LLMClassifier:
             logger.info("llm_classifier_invalid_json", raw=blob[:200])
             return None
 
-        role_value = parsed.get("role") or parsed.get("tier")  # backward-compat: legacy key
+        role_value = parsed.get("role") or parsed.get(
+            "tier"
+        )  # backward-compat: legacy key
         role = _VALID_ROLES.get(role_value) if isinstance(role_value, str) else None
         if role is None:
             logger.info("llm_classifier_unknown_role", role=role_value)
@@ -195,7 +199,9 @@ class LLMClassifier:
             return None
 
         reason = parsed.get("reason")
-        reason_str = reason if isinstance(reason, str) and reason.strip() else "llm_inferred"
+        reason_str = (
+            reason if isinstance(reason, str) and reason.strip() else "llm_inferred"
+        )
 
         return RoutingDecision(
             role=role,

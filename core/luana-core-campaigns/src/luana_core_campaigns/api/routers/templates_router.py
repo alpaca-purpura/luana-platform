@@ -11,6 +11,8 @@ from uuid import UUID
 
 import structlog
 from fastapi import APIRouter, Depends, Header, HTTPException, status
+from luana_core_iam.api.dependencies import get_current_user
+from luana_core_iam.domain.user import User
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from luana_core_campaigns.api._dependencies import get_campaigns_async_session
@@ -24,8 +26,6 @@ from luana_core_campaigns.application.services.campaign_template_service import 
     CampaignTemplateNotFoundError,
     CampaignTemplateService,
 )
-from luana_core_iam.api.dependencies import get_current_user
-from luana_core_iam.domain.user import User
 
 logger = structlog.get_logger(__name__)
 

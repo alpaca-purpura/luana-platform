@@ -51,7 +51,10 @@ class TestValidateUrl:
 
 class TestStripQueryFragment:
     def test_preserves_path(self) -> None:
-        assert tc.strip_query_and_fragment("https://x.com/blog/post?utm=1#h") == "https://x.com/blog/post"
+        assert (
+            tc.strip_query_and_fragment("https://x.com/blog/post?utm=1#h")
+            == "https://x.com/blog/post"
+        )
 
     def test_no_query_no_change(self) -> None:
         assert tc.strip_query_and_fragment("https://x.com/y") == "https://x.com/y"

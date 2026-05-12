@@ -73,8 +73,12 @@ class PaymentEntry:
             amount=float(raw.get("amount", 0.0)),
             currency=raw.get("currency", "USD"),
             status=PaymentEntryStatus(raw.get("status", "link_created")),
-            created_at=_parse_iso(raw.get("created_at", dt.datetime.now(dt.UTC).isoformat())),
-            reminder_sent_at=_parse_iso(raw["reminder_sent_at"]) if raw.get("reminder_sent_at") else None,
+            created_at=_parse_iso(
+                raw.get("created_at", dt.datetime.now(dt.UTC).isoformat())
+            ),
+            reminder_sent_at=_parse_iso(raw["reminder_sent_at"])
+            if raw.get("reminder_sent_at")
+            else None,
         )
 
     def to_jsonb(self) -> dict[str, Any]:
@@ -88,7 +92,9 @@ class PaymentEntry:
             "currency": self.currency,
             "status": self.status.value,
             "created_at": self.created_at.isoformat(),
-            "reminder_sent_at": self.reminder_sent_at.isoformat() if self.reminder_sent_at else None,
+            "reminder_sent_at": self.reminder_sent_at.isoformat()
+            if self.reminder_sent_at
+            else None,
         }
 
 

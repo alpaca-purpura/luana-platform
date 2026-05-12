@@ -37,11 +37,15 @@ def db(db_engine):
 
 def _build_context(db):
     """Helper that wires the new envelope to an in-memory SQLite session."""
-    from luana_core_copilot.observability.persistence.llm_call_repository import LlmCallRepository
+    from luana_core_copilot.observability.persistence.llm_call_repository import (
+        LlmCallRepository,
+    )
     from luana_core_copilot.observability.persistence.trace_event_repository import (
         TraceEventRepository,
     )
-    from luana_core_copilot.observability.recording.turn_envelope import ObservabilityContext
+    from luana_core_copilot.observability.recording.turn_envelope import (
+        ObservabilityContext,
+    )
 
     pricing_resolver = MagicMock()
     fx_resolver = MagicMock()
@@ -87,7 +91,11 @@ class TestEnvelopeLifecycle:
             attachments=[],
         ):
             db.flush()
-            row = db.query(CopilotTraceEventModel).filter_by(turn_id=ctx.turn_id, event_type="turn_start").one()
+            row = (
+                db.query(CopilotTraceEventModel)
+                .filter_by(turn_id=ctx.turn_id, event_type="turn_start")
+                .one()
+            )
             assert row.status == "ok"
             assert row.name == "/copilot/chat"
 
@@ -101,7 +109,9 @@ class TestEnvelopeLifecycle:
         )
 
         ctx = _build_context(db)
-        async with ctx.observe_turn(message="hola", route="/copilot/chat", attachments=[]):
+        async with ctx.observe_turn(
+            message="hola", route="/copilot/chat", attachments=[]
+        ):
             # Simulate two LLM calls landing during the turn.
             for i in range(2):
                 db.add(
@@ -135,7 +145,11 @@ class TestEnvelopeLifecycle:
             db.flush()
         db.flush()
 
-        end_row = db.query(CopilotTraceEventModel).filter_by(turn_id=ctx.turn_id, event_type="turn_end").one()
+        end_row = (
+            db.query(CopilotTraceEventModel)
+            .filter_by(turn_id=ctx.turn_id, event_type="turn_end")
+            .one()
+        )
         # Totals are computed from copilot_llm_call rows.
         assert end_row.data["llm_call_count"] == 2
         assert end_row.data["total_input_tokens"] == 300
@@ -144,24 +158,34 @@ class TestEnvelopeLifecycle:
         assert Decimal(end_row.data["total_cost_usd"]) == Decimal("0.003")
 
     @pytest.mark.asyncio
-    async def test_aexit_writes_turn_end_with_error_status_on_exception(self, db) -> None:
+    async def test_aexit_writes_turn_end_with_error_status_on_exception(
+        self, db
+    ) -> None:
         from luana_core_copilot.infrastructure.models.trace_event_model import (
             CopilotTraceEventModel,
         )
 
         ctx = _build_context(db)
         with pytest.raises(RuntimeError):
-            async with ctx.observe_turn(message="hola", route="/copilot/chat", attachments=[]):
+            async with ctx.observe_turn(
+                message="hola", route="/copilot/chat", attachments=[]
+            ):
                 msg = "boom"
                 raise RuntimeError(msg)
         db.flush()
 
-        end_row = db.query(CopilotTraceEventModel).filter_by(turn_id=ctx.turn_id, event_type="turn_end").one()
+        end_row = (
+            db.query(CopilotTraceEventModel)
+            .filter_by(turn_id=ctx.turn_id, event_type="turn_end")
+            .one()
+        )
         assert end_row.status == "error"
         assert "RuntimeError" in end_row.data.get("error_type", "")
 
     @pytest.mark.asyncio
-    async def test_set_turn_error_marks_status_when_exception_swallowed(self, db) -> None:
+    async def test_set_turn_error_marks_status_when_exception_swallowed(
+        self, db
+    ) -> None:
         """Fix 5 — the orchestrator catches stream exceptions internally
         (TimeoutError, ToolCallLoopDetected, generic Exception) so the
         envelope sees no exception and marks the turn ``status='ok'``.
@@ -191,7 +215,11 @@ class TestEnvelopeLifecycle:
             )
         db.flush()
 
-        end_row = db.query(CopilotTraceEventModel).filter_by(turn_id=ctx.turn_id, event_type="turn_end").one()
+        end_row = (
+            db.query(CopilotTraceEventModel)
+            .filter_by(turn_id=ctx.turn_id, event_type="turn_end")
+            .one()
+        )
         assert end_row.status == "error"
         assert end_row.data.get("error_kind") == "graph_recursion"
         # Error message must reach the trace so debugging does not require
@@ -215,6 +243,10 @@ class TestEnvelopeLifecycle:
             ctx.set_turn_error(error_kind="tool_call_loop")
         db.flush()
 
-        end_row = db.query(CopilotTraceEventModel).filter_by(turn_id=ctx.turn_id, event_type="turn_end").one()
+        end_row = (
+            db.query(CopilotTraceEventModel)
+            .filter_by(turn_id=ctx.turn_id, event_type="turn_end")
+            .one()
+        )
         assert end_row.status == "error"
         assert end_row.data.get("error_kind") == "tool_call_loop"

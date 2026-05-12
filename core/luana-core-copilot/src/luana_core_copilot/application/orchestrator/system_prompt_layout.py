@@ -78,7 +78,9 @@ VOLATILE_FRAGMENTS: tuple[PromptFragment, ...] = (
     PromptFragment.INSPIRATIONS,
 )
 
-PROMPT_FRAGMENT_ORDER: tuple[PromptFragment, ...] = CACHEABLE_FRAGMENTS + VOLATILE_FRAGMENTS
+PROMPT_FRAGMENT_ORDER: tuple[PromptFragment, ...] = (
+    CACHEABLE_FRAGMENTS + VOLATILE_FRAGMENTS
+)
 
 CACHE_BOUNDARY_MARKER: str = "\n\n<!-- ==== CACHE BOUNDARY (F8) ==== -->\n\n"
 """Inserted between the cacheable prefix and the volatile tail. Renders as
@@ -110,7 +112,11 @@ def compose_system_prompt(fragments: Mapping[PromptFragment, str]) -> str:
     if not cache_parts:
         return _FRAGMENT_SEPARATOR.join(volatile_parts)
 
-    return _FRAGMENT_SEPARATOR.join(cache_parts) + CACHE_BOUNDARY_MARKER + _FRAGMENT_SEPARATOR.join(volatile_parts)
+    return (
+        _FRAGMENT_SEPARATOR.join(cache_parts)
+        + CACHE_BOUNDARY_MARKER
+        + _FRAGMENT_SEPARATOR.join(volatile_parts)
+    )
 
 
 def _take(

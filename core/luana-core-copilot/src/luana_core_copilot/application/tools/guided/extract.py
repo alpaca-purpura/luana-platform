@@ -229,7 +229,9 @@ def extract_document_to_fields(  # noqa: PLR0911 — each return is a distinct t
             )
 
         section_names = sorted({k.split(".", 1)[0] for k in delta})
-        sections_hint = ", ".join(section_names) if section_names else "varias secciones"
+        sections_hint = (
+            ", ".join(section_names) if section_names else "varias secciones"
+        )
 
         # ``new_value`` carries the raw Python value (str / list / dict /
         # number). Pydantic ``ApplyMutationUpdate.new_value: object | None``
@@ -278,7 +280,9 @@ def extract_document_to_fields(  # noqa: PLR0911 — each return is a distinct t
             default=str,
         )
     except Exception as exc:
-        logger.exception("extract_document_to_fields_failed", asset_id=asset_id, domain=domain)
+        logger.exception(
+            "extract_document_to_fields_failed", asset_id=asset_id, domain=domain
+        )
         return _recovery_card(
             f"Hubo un problema procesando el documento: {exc}",
             "extraction_failed",

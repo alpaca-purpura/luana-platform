@@ -276,7 +276,9 @@ class MarketingKbStore:
                 ),
             )
 
-        search_filter = models.Filter(must=filter_conditions) if filter_conditions else None
+        search_filter = (
+            models.Filter(must=filter_conditions) if filter_conditions else None
+        )
 
         try:
             response = client.query_points(
@@ -326,7 +328,9 @@ class MarketingKbStore:
                     for cond in filter_conditions
                 ],
             }
-        headers = {"api-key": settings.QDRANT_API_KEY} if settings.QDRANT_API_KEY else {}
+        headers = (
+            {"api-key": settings.QDRANT_API_KEY} if settings.QDRANT_API_KEY else {}
+        )
         url = f"{settings.QDRANT_URL.rstrip('/')}/collections/{self.COLLECTION}/points/search"
         resp = httpx.post(url, json=body, headers=headers, timeout=30.0)
         resp.raise_for_status()

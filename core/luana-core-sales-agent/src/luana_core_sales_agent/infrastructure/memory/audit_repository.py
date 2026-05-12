@@ -33,7 +33,10 @@ class AuditRepository(EpisodicMemoryStore):
         # Return last N messages in ascending order (oldest to newest) for context
         msgs = (
             self.db.execute(
-                select(Message).where(Message.user_id == user_id).order_by(Message.created_at.desc()).limit(limit),
+                select(Message)
+                .where(Message.user_id == user_id)
+                .order_by(Message.created_at.desc())
+                .limit(limit),
             )
             .scalars()
             .all()
@@ -64,7 +67,9 @@ class AuditRepository(EpisodicMemoryStore):
         """Retrieve last message."""
         return (
             self.db.execute(
-                select(Message).where(Message.user_id == user_id).order_by(Message.created_at.desc()),
+                select(Message)
+                .where(Message.user_id == user_id)
+                .order_by(Message.created_at.desc()),
             )
             .scalars()
             .first()
@@ -175,11 +180,15 @@ class AuditRepository(EpisodicMemoryStore):
         )
         # Event-sourced tables (S1).
         self.db.execute(
-            text("DELETE FROM sales_agent_trace_event WHERE lead_id = :lid AND tenant_id = :tid"),
+            text(
+                "DELETE FROM sales_agent_trace_event WHERE lead_id = :lid AND tenant_id = :tid"
+            ),
             {"lid": lead_uuid, "tid": str(tenant_id)},
         )
         self.db.execute(
-            text("DELETE FROM sales_agent_llm_call WHERE lead_id = :lid AND tenant_id = :tid"),
+            text(
+                "DELETE FROM sales_agent_llm_call WHERE lead_id = :lid AND tenant_id = :tid"
+            ),
             {"lid": lead_uuid, "tid": str(tenant_id)},
         )
         self.db.execute(
@@ -272,7 +281,9 @@ class AuditRepository(EpisodicMemoryStore):
                 first = calls[0]
                 llm_summary = {
                     "model": first.model_responded,
-                    "total_tokens": int((first.input_tokens or 0) + (first.output_tokens or 0)),
+                    "total_tokens": int(
+                        (first.input_tokens or 0) + (first.output_tokens or 0)
+                    ),
                     "prompt_template": e.name or "unknown",
                 }
             out.append(
@@ -318,11 +329,16 @@ class AuditRepository(EpisodicMemoryStore):
         row = self.db.execute(stmt).scalars().first()
         return dict(row.data) if row and row.data else None
 
-    def get_full_timeline(self, lead_id: str, tenant_id: str, limit: int = 50) -> list[dict[str, Any]]:
+    def get_full_timeline(
+        self, lead_id: str, tenant_id: str, limit: int = 50
+    ) -> list[dict[str, Any]]:
         """Retrieve full timeline."""
         messages = (
             self.db.execute(
-                select(Message).where(Message.user_id == lead_id).order_by(Message.created_at.desc()).limit(limit),
+                select(Message)
+                .where(Message.user_id == lead_id)
+                .order_by(Message.created_at.desc())
+                .limit(limit),
             )
             .scalars()
             .all()
@@ -355,7 +371,8 @@ class AuditRepository(EpisodicMemoryStore):
             llm_summary = None
             if t.llm_logs:
                 total_tokens = sum(
-                    (log_entry.tokens_input or 0) + (log_entry.tokens_output or 0) for log_entry in t.llm_logs
+                    (log_entry.tokens_input or 0) + (log_entry.tokens_output or 0)
+                    for log_entry in t.llm_logs
                 )
                 first_log = t.llm_logs[0]
                 llm_summary = {
@@ -382,11 +399,19 @@ class AuditRepository(EpisodicMemoryStore):
 
     def get_trace_details(self, trace_id: str, tenant_id: str) -> dict[str, Any] | None:
         """Retrieve trace details."""
-        trace = self.db.execute(select(AgentTrace).where(AgentTrace.id == trace_id)).scalars().first()
+        trace = (
+            self.db.execute(select(AgentTrace).where(AgentTrace.id == trace_id))
+            .scalars()
+            .first()
+        )
         if not trace:
             return None
 
-        logs = self.db.execute(select(LLMLog).where(LLMLog.trace_id == trace_id)).scalars().all()
+        logs = (
+            self.db.execute(select(LLMLog).where(LLMLog.trace_id == trace_id))
+            .scalars()
+            .all()
+        )
 
         return {
             "trace": {

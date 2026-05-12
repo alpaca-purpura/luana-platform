@@ -56,7 +56,9 @@ class TestSuggestionShownSubscriber:
             session.flush()
 
             rows = (
-                session.query(CopilotTraceEventModel).filter_by(tenant_id=tenant, event_type="suggestion_shown").all()
+                session.query(CopilotTraceEventModel)
+                .filter_by(tenant_id=tenant, event_type="suggestion_shown")
+                .all()
             )
             assert len(rows) >= 1
             row = rows[0]

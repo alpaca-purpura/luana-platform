@@ -18,7 +18,9 @@ TENANT_ID = UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
 
 # Patch paths: where names are used (not where defined)
 _GET_TENANT_ID = "luana_core_copilot.application.tools.analytics_tools.get_tenant_id"
-_CALL_STAGE_OV = "luana_core_copilot.application.tools.analytics_tools._call_stage_overview"
+_CALL_STAGE_OV = (
+    "luana_core_copilot.application.tools.analytics_tools._call_stage_overview"
+)
 
 
 def _make_stage_overview(**kwargs) -> MagicMock:
@@ -58,7 +60,9 @@ class TestGetStageMetricsHappy:
             patch(_GET_TENANT_ID, return_value=TENANT_ID),
             patch(_CALL_STAGE_OV, new=_async_mock(overview)),
         ):
-            result = get_stage_metrics.invoke({"stage": "atraccion-captura", "period": "30d"})
+            result = get_stage_metrics.invoke(
+                {"stage": "atraccion-captura", "period": "30d"}
+            )
 
         parsed = json.loads(result)
         assert "stage_name" in parsed
@@ -77,7 +81,9 @@ class TestGetStageMetricsHappy:
             patch(_GET_TENANT_ID, return_value=TENANT_ID),
             patch(_CALL_STAGE_OV, new=_async_mock(overview)),
         ):
-            result = get_stage_metrics.invoke({"stage": "atraccion-captura", "period": "30d"})
+            result = get_stage_metrics.invoke(
+                {"stage": "atraccion-captura", "period": "30d"}
+            )
 
         parsed = json.loads(result)
         assert parsed["stage_name"] == "attraction"
@@ -105,7 +111,9 @@ class TestGetStageMetricsHappy:
             ):
                 result = get_stage_metrics.invoke({"stage": stage_slug})
                 parsed = json.loads(result)
-                assert "error" not in parsed, f"Stage {stage_slug} raised error: {parsed}"
+                assert "error" not in parsed, (
+                    f"Stage {stage_slug} raised error: {parsed}"
+                )
 
     def test_invalid_stage_slug_rejected_at_schema_level(self) -> None:
         """Invalid stage slug is rejected by Pydantic Literal at schema validation."""

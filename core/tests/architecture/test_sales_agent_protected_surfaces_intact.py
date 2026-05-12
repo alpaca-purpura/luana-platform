@@ -30,13 +30,7 @@ from pathlib import Path
 
 CORE_DIR = Path(__file__).parents[2]
 SALES_AGENT_SRC = CORE_DIR / "luana-core-sales-agent" / "src" / "luana_core_sales_agent"
-SNAPSHOT_PATH = (
-    CORE_DIR
-    / "tests"
-    / "architecture"
-    / "_snapshots"
-    / "sales_agent_protected_surfaces_v1.json"
-)
+SNAPSHOT_PATH = CORE_DIR / "tests" / "architecture" / "_snapshots" / "sales_agent_protected_surfaces_v1.json"
 
 
 def _load_snapshot() -> dict[str, str]:
@@ -52,8 +46,7 @@ def _sha256(path: Path) -> str:
 def test_snapshot_file_exists():
     """Snapshot JSON file must exist (Story 7 T-18 captured)."""
     assert SNAPSHOT_PATH.exists(), (
-        f"§3 protected surfaces snapshot missing: {SNAPSHOT_PATH}. "
-        "Captured during Story 7 T-18 lift moment."
+        f"§3 protected surfaces snapshot missing: {SNAPSHOT_PATH}. Captured during Story 7 T-18 lift moment."
     )
 
 
@@ -79,10 +72,7 @@ def test_protected_surfaces_hash_stable():
                 f"{relative_path}: expected {expected_hash[:16]}..., got {actual_hash[:16]}...",
             )
 
-    assert not missing, (
-        "§3 protected surface FILE(S) MISSING (hash-stable invariant broken):\n"
-        + "\n".join(missing)
-    )
+    assert not missing, "§3 protected surface FILE(S) MISSING (hash-stable invariant broken):\n" + "\n".join(missing)
 
     assert not violations, (
         "V-AG-8 violation: §3 protected surfaces HASH DRIFT detected.\n"
@@ -97,6 +87,5 @@ def test_protected_surfaces_coverage_complete():
     expected_count = 13
     actual = _load_snapshot()
     assert len(actual) == expected_count, (
-        f"Snapshot expected to cover {expected_count} §3 files, "
-        f"got {len(actual)}. Update T-18 doc if scope changed."
+        f"Snapshot expected to cover {expected_count} §3 files, got {len(actual)}. Update T-18 doc if scope changed."
     )

@@ -13,18 +13,25 @@ from pathlib import Path
 
 import pytest
 
-pytest.skip("T-15 deferred to T-16 UNLIFT (Stories 2-5 copilot_provider/ subfolders not yet lifted — luana_core_brand_studio.copilot_provider / luana_core_offer_studio.copilot_provider / etc.)", allow_module_level=True)
+pytest.skip(
+    "T-15 deferred to T-16 UNLIFT (Stories 2-5 copilot_provider/ subfolders not yet lifted — luana_core_brand_studio.copilot_provider / luana_core_offer_studio.copilot_provider / etc.)",
+    allow_module_level=True,
+)
 
 
 class TestNoDataResponseRefactor:
-    def test_no_data_response_returns_empty_suggestions_and_next_step_hint(self) -> None:
+    def test_no_data_response_returns_empty_suggestions_and_next_step_hint(
+        self,
+    ) -> None:
         """_no_data_response produces: suggestions=[], next_step_hint=hint."""
         from luana_core_copilot.application.tools.offer_section_tools import (
             _no_data_response,
         )
 
         result = json.loads(_no_data_response("identity", "Completa primero la marca"))
-        assert result["suggestions"] == [], f"Expected empty suggestions list, got: {result['suggestions']!r}"
+        assert result["suggestions"] == [], (
+            f"Expected empty suggestions list, got: {result['suggestions']!r}"
+        )
         assert result["next_step_hint"] == "Completa primero la marca", (
             f"Expected next_step_hint to carry the hint, got: {result.get('next_step_hint')!r}"
         )
@@ -54,7 +61,9 @@ class TestNoDataResponseRefactor:
 class TestOkResponseRefactor:
     def test_ok_response_includes_optional_next_step_hint(self) -> None:
         """_ok_response accepts next_step_hint keyword and includes it in output."""
-        from luana_core_copilot.application.tools.offer_section_tools import _ok_response
+        from luana_core_copilot.application.tools.offer_section_tools import (
+            _ok_response,
+        )
 
         result = json.loads(
             _ok_response(
@@ -71,12 +80,18 @@ class TestOkResponseRefactor:
 
     def test_ok_response_next_step_hint_defaults_to_none(self) -> None:
         """_ok_response without next_step_hint still works (backwards compat)."""
-        from luana_core_copilot.application.tools.offer_section_tools import _ok_response
+        from luana_core_copilot.application.tools.offer_section_tools import (
+            _ok_response,
+        )
 
-        result = json.loads(_ok_response("identity", {"brand_name": "ACME"}, ["chip"], 0.9))
+        result = json.loads(
+            _ok_response("identity", {"brand_name": "ACME"}, ["chip"], 0.9)
+        )
         # next_step_hint is either absent or None — not required
         hint_val = result.get("next_step_hint")
-        assert hint_val is None or hint_val == "", f"Expected next_step_hint to be None or absent, got {hint_val!r}"
+        assert hint_val is None or hint_val == "", (
+            f"Expected next_step_hint to be None or absent, got {hint_val!r}"
+        )
 
 
 class TestGrepNoStaticSuggestionsHintLiteral:
@@ -102,6 +117,10 @@ class TestGrepNoStaticSuggestionsHintLiteral:
             OFFER_SECTION_TOOLS,
         )
 
-        assert len(OFFER_SECTION_TOOLS) >= 1, "OFFER_SECTION_TOOLS is empty post-refactor"
+        assert len(OFFER_SECTION_TOOLS) >= 1, (
+            "OFFER_SECTION_TOOLS is empty post-refactor"
+        )
         for tool in OFFER_SECTION_TOOLS:
-            assert hasattr(tool, "name"), f"Tool {tool!r} missing .name (not a LangChain tool)"
+            assert hasattr(tool, "name"), (
+                f"Tool {tool!r} missing .name (not a LangChain tool)"
+            )

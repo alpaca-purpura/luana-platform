@@ -106,7 +106,9 @@ class TestSuggestionsIntegration:
 
             client = TestClient(app)
 
-            with patch("luana_core_copilot.api.suggestions.get_default_engine") as mock_fn:
+            with patch(
+                "luana_core_copilot.api.suggestions.get_default_engine"
+            ) as mock_fn:
                 mock_engine = MagicMock()
                 mock_engine.get_suggestions.return_value = ([chip], {"offer": 1}, 5)
                 mock_fn.return_value = mock_engine

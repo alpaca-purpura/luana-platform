@@ -18,7 +18,9 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     from luana_core_sales_agent.application.orchestrator.state import AgentState
-    from luana_core_sales_agent.infrastructure.models.agent_trace_model import AgentTrace
+    from luana_core_sales_agent.infrastructure.models.agent_trace_model import (
+        AgentTrace,
+    )
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +66,9 @@ def _build_output_snapshot(result_state: dict) -> dict:
 def _setup_trace(
     node_name: str,
     state: dict,
-) -> tuple[float, Any, AuditRepository, AgentTrace | None, contextvars.Token[str | None]]:
+) -> tuple[
+    float, Any, AuditRepository, AgentTrace | None, contextvars.Token[str | None]
+]:
     """Create initial trace and set context variable. Returns trace context tuple."""
     start_time = time.time()
     db = SessionLocal()

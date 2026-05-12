@@ -6,7 +6,10 @@ import datetime as dt
 
 import pytest
 
-pytest.skip("T-15 deferred — luana_core_platform.workers.settings not yet lifted from AISALESHT shared/workers/. Story 1/2 territory or T-21 finalize.", allow_module_level=True)
+pytest.skip(
+    "T-15 deferred — luana_core_platform.workers.settings not yet lifted from AISALESHT shared/workers/. Story 1/2 territory or T-21 finalize.",
+    allow_module_level=True,
+)
 
 
 class TestRetentionTaskRunner:
@@ -104,7 +107,9 @@ class TestRetentionTaskRunner:
 
         # Extract cutoffs by table name rather than relying on order.
         def _cutoff_for(table: str) -> dt.datetime:
-            hit = next((p["cutoff"] for stmt, p in captured_stmts if table in stmt), None)
+            hit = next(
+                (p["cutoff"] for stmt, p in captured_stmts if table in stmt), None
+            )
             assert hit is not None, f"No execute() call found for table {table}"
             return hit
 
@@ -190,7 +195,10 @@ class TestSchedulerRegistration:
         from luana_core_observability.workers.retention_task import (
             purge_expired_trace_rows,
         )
-        from luana_core_platform.workers.settings import SchedulerSettings, WorkerSettings
+        from luana_core_platform.workers.settings import (
+            SchedulerSettings,
+            WorkerSettings,
+        )
 
         assert purge_expired_trace_rows in WorkerSettings.functions
         assert purge_expired_trace_rows in SchedulerSettings.functions

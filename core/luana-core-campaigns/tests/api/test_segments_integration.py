@@ -9,16 +9,17 @@ All repos and outbox_service are still mocked (no Postgres required). Only the
 SegmentService itself is REAL — so the router ↔ service kwarg contract is exercised.
 """
 
+# ruff: noqa: E402 — singleton _campaigns_test_app must be created before imports to avoid circular import
 from __future__ import annotations
 
 import datetime as dt
-from typing import Any
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
 from uuid import UUID, uuid4
 
 import pytest
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
+
 from tests.api._test_helpers import _make_campaigns_test_app
 
 # Module-level singleton — mirrors src.main.app singleton from AISALESHT.
@@ -26,7 +27,6 @@ _campaigns_test_app: FastAPI = _make_campaigns_test_app()
 
 from luana_core_campaigns.application.services.cache import SimpleTTLCache
 from luana_core_campaigns.application.services.segment_service import (
-    SegmentNotFoundError,
     SegmentService,
 )
 from luana_core_campaigns.domain.enums import SegmentType
@@ -138,8 +138,9 @@ class TestResolveContractRouterToService:
     @pytest.mark.asyncio
     async def test_resolve_router_builds_dto_from_service_tuple(self, client: AsyncClient) -> None:
         """Router calls svc.resolve() with correct kwargs and builds SegmentResolveResponse."""
-        from luana_core_campaigns.api._service_factories import get_segment_service
         from luana_core_campaigns.api._dependencies import get_campaigns_async_session
+        from luana_core_campaigns.api._service_factories import get_segment_service
+
         app = _campaigns_test_app
 
         lead_ids_returned = [uuid4(), uuid4(), uuid4()]
@@ -178,8 +179,9 @@ class TestResolveContractRouterToService:
     @pytest.mark.asyncio
     async def test_resolve_router_not_found_returns_404(self, client: AsyncClient) -> None:
         """Not found segment → real service raises SegmentNotFoundError → router maps to 404."""
-        from luana_core_campaigns.api._service_factories import get_segment_service
         from luana_core_campaigns.api._dependencies import get_campaigns_async_session
+        from luana_core_campaigns.api._service_factories import get_segment_service
+
         app = _campaigns_test_app
 
         repo_mock = AsyncMock()
@@ -213,8 +215,9 @@ class TestEstimateSizeContractRouterToService:
     @pytest.mark.asyncio
     async def test_estimate_size_router_builds_dto_from_service_tuple(self, client: AsyncClient) -> None:
         """Router calls svc.estimate_size() correctly and builds SegmentEstimateSizeResponse."""
-        from luana_core_campaigns.api._service_factories import get_segment_service
         from luana_core_campaigns.api._dependencies import get_campaigns_async_session
+        from luana_core_campaigns.api._service_factories import get_segment_service
+
         app = _campaigns_test_app
 
         repo_mock = AsyncMock()

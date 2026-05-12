@@ -98,7 +98,9 @@ class SalesAgentObservabilityAdapter(SalesAgentObservabilityPort):
         try:
             repo = get_launch_edition_repository(self._db)
             editions = repo.list_by_offer(offer_id, tenant_id=tenant_id)  # type: ignore[attr-defined]
-            return any(getattr(e, "status", "") not in ("cancelled", "draft") for e in editions)
+            return any(
+                getattr(e, "status", "") not in ("cancelled", "draft") for e in editions
+            )
         except (AttributeError, TypeError):
             # If list_by_offer doesn't accept tenant_id kwarg, fall back gracefully
             try:

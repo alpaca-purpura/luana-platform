@@ -30,7 +30,10 @@ import pytest
 from luana_core_copilot.domain.field_paths_hint import build_field_paths_hint
 from luana_core_platform.infrastructure.prompts.base import prompt_loader
 
-pytest.skip("T-15 deferred to T-16 UNLIFT (Stories 2-5 copilot_provider/ subfolders not yet lifted — luana_core_brand_studio.copilot_provider / luana_core_offer_studio.copilot_provider / etc.)", allow_module_level=True)
+pytest.skip(
+    "T-15 deferred to T-16 UNLIFT (Stories 2-5 copilot_provider/ subfolders not yet lifted — luana_core_brand_studio.copilot_provider / luana_core_offer_studio.copilot_provider / etc.)",
+    allow_module_level=True,
+)
 
 
 def _render() -> str:
@@ -73,7 +76,10 @@ class TestExtractionTemplateCategoryCues:
     def test_purchase_triggers_have_explicit_cue(self) -> None:
         rendered = _render().lower()
         assert "purchase_triggers" in rendered
-        assert any(cue in rendered for cue in ("gatillo", "trigger", "decide comprar", "decisión"))
+        assert any(
+            cue in rendered
+            for cue in ("gatillo", "trigger", "decide comprar", "decisión")
+        )
 
 
 class TestExtractionTemplateSubKeyGuidance:
@@ -82,7 +88,9 @@ class TestExtractionTemplateSubKeyGuidance:
     def test_mentions_dynamic_sub_keys_explicitly(self) -> None:
         rendered = _render()
         for root in ("demographics", "psychographics", "buyer_journey"):
-            assert f"{root}." in rendered, f"Sub-key root '{root}.*' missing — model will not infer dynamic sub-keys."
+            assert f"{root}." in rendered, (
+                f"Sub-key root '{root}.*' missing — model will not infer dynamic sub-keys."
+            )
 
     def test_encourages_partial_evidence_for_sub_keys(self) -> None:
         rendered = _render().lower()
@@ -120,4 +128,6 @@ class TestExtractionTemplateLatamSpanish:
             "andá ",
         )
         for pattern in forbidden:
-            assert pattern not in rendered, f"Voseo pattern '{pattern.strip()}' leaked into prompt."
+            assert pattern not in rendered, (
+                f"Voseo pattern '{pattern.strip()}' leaked into prompt."
+            )

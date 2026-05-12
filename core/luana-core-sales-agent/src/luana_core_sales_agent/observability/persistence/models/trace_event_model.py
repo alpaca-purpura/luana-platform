@@ -37,7 +37,9 @@ class SalesAgentTraceEventModel(Base):
     duration_ms = Column(Integer, nullable=True)
     status = Column(String(16), nullable=False, default="ok")
 
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
 
     def __repr__(self) -> str:
         """Return a debug-friendly summary."""

@@ -89,7 +89,9 @@ class TestSubagentChatModelEnd:
         assert len(accumulated) == 1
         assert accumulated[0] is ai
 
-    def test_subagent_event_via_langgraph_path_also_dropped(self, orch: CopilotOrchestrator) -> None:
+    def test_subagent_event_via_langgraph_path_also_dropped(
+        self, orch: CopilotOrchestrator
+    ) -> None:
         """Cuando ``langgraph_checkpoint_ns`` falta pero ``langgraph_path``
         revela el ``task`` en el camino, también drop. Defensa frente al
         issue #6330 de langgraph (metadata propagation incompleta)."""
@@ -174,7 +176,10 @@ class TestEndToEndSubagentTurn:
             content="Voy a revisar tu Brand Studio…",
             tool_calls=[
                 {"id": "task:0", "name": "task", "args": {}},
-                *[{"id": f"gmd:{i}", "name": "get_module_data", "args": {}} for i in range(8)],
+                *[
+                    {"id": f"gmd:{i}", "name": "get_module_data", "args": {}}
+                    for i in range(8)
+                ],
             ],
         )
         orch._process_stream_event(
@@ -263,7 +268,9 @@ class TestEndToEndSubagentTurn:
         ai_messages = [m for m in accumulated if isinstance(m, AIMessage)]
         tool_messages = [m for m in accumulated if isinstance(m, ToolMessage)]
 
-        assert len(ai_messages) == 2, "Parent inicial + parent final. NUNCA AIMessage del sub-agente."
+        assert len(ai_messages) == 2, (
+            "Parent inicial + parent final. NUNCA AIMessage del sub-agente."
+        )
         assert ai_messages[0] is parent_initial
         assert ai_messages[1] is parent_final
 

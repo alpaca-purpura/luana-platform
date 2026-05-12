@@ -27,7 +27,9 @@ from luana_core_llm.factory import LLMFactory
 logger = logging.getLogger(__name__)
 
 
-def _mark_exhausted(cp: AgentStateCheckpointModel, now: datetime, follow_ups_sent: int) -> None:
+def _mark_exhausted(
+    cp: AgentStateCheckpointModel, now: datetime, follow_ups_sent: int
+) -> None:
     """Mark a checkpoint as follow-up exhausted (frozen)."""
     cp.frozen_reason = "follow_up_exhausted"
     cp.frozen_at = now
@@ -63,7 +65,9 @@ def _generate_nudge_text(cp: AgentStateCheckpointModel, follow_ups_sent: int) ->
     """Generate the follow-up nudge message via LLM."""
     session_summary = (cp.lead_data or {}).get("session_summary", "")
     offer_name = (
-        cp.lead_data["active_product_name"] if cp.lead_data and cp.lead_data.get("active_product_name") else None
+        cp.lead_data["active_product_name"]
+        if cp.lead_data and cp.lead_data.get("active_product_name")
+        else None
     )
 
     nudge_prompt = prompt_loader.render(
@@ -157,7 +161,9 @@ def _should_skip_checkpoint(cp: AgentStateCheckpointModel, now: datetime) -> boo
     return now.weekday() >= 5
 
 
-async def _process_single_checkpoint(db: Session, cp: AgentStateCheckpointModel, now: datetime) -> bool:
+async def _process_single_checkpoint(
+    db: Session, cp: AgentStateCheckpointModel, now: datetime
+) -> bool:
     """Process a single checkpoint for follow-up. Returns True if a nudge was sent."""
     if _should_skip_checkpoint(cp, now):
         return False

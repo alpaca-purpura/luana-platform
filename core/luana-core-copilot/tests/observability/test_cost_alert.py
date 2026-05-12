@@ -10,7 +10,10 @@ from uuid import UUID, uuid4
 import pytest
 from sqlalchemy.orm import sessionmaker
 
-pytest.skip("T-15 deferred — luana_core_platform.workers.settings not yet lifted from AISALESHT shared/workers/. Story 1/2 territory or T-21 finalize.", allow_module_level=True)
+pytest.skip(
+    "T-15 deferred — luana_core_platform.workers.settings not yet lifted from AISALESHT shared/workers/. Story 1/2 territory or T-21 finalize.",
+    allow_module_level=True,
+)
 
 
 @pytest.fixture
@@ -79,7 +82,9 @@ def _seed_call(db, tenant_id: UUID, cost_usd: Decimal, started_at: dt.datetime) 
 
 
 class TestCostAlertCheck:
-    def test_emits_alert_when_cycle_cost_exceeds_threshold(self, db, monkeypatch) -> None:
+    def test_emits_alert_when_cycle_cost_exceeds_threshold(
+        self, db, monkeypatch
+    ) -> None:
         """Tenant with threshold $1.00 + $5.00 cycle cost → alert emitted."""
         from luana_core_observability.application import cost_alert_service
 
@@ -109,7 +114,9 @@ class TestCostAlertCheck:
         assert any(w["event"] == "cost_alert_threshold_exceeded" for w in warnings)
         # The captured warning carries the tenant id, the threshold and the
         # actual cost so the alert is actionable from a log search.
-        alert = next(w for w in warnings if w["event"] == "cost_alert_threshold_exceeded")
+        alert = next(
+            w for w in warnings if w["event"] == "cost_alert_threshold_exceeded"
+        )
         assert str(tenant_id) in str(alert.get("tenant_id"))
         assert Decimal(str(alert["cost_usd"])) >= Decimal("5.0000000000")
         assert Decimal(str(alert["threshold_usd"])) == Decimal("1.00")
@@ -158,7 +165,12 @@ class TestCostAlertCheck:
             cost_alert_threshold_usd=None,
         )
         db.flush()
-        _seed_call(db, tenant_id, Decimal("1.0000000000"), dt.datetime(2026, 4, 26, tzinfo=dt.UTC))
+        _seed_call(
+            db,
+            tenant_id,
+            Decimal("1.0000000000"),
+            dt.datetime(2026, 4, 26, tzinfo=dt.UTC),
+        )
 
         result = cost_alert_service.check_cost_alerts(db)
         assert result["tenants_checked"] == 0
@@ -169,7 +181,10 @@ class TestSchedulerRegistration:
         from luana_core_observability.workers.cost_alert_task import (
             run_cost_alerts,
         )
-        from luana_core_platform.workers.settings import SchedulerSettings, WorkerSettings
+        from luana_core_platform.workers.settings import (
+            SchedulerSettings,
+            WorkerSettings,
+        )
 
         assert run_cost_alerts in WorkerSettings.functions
         assert run_cost_alerts in SchedulerSettings.functions

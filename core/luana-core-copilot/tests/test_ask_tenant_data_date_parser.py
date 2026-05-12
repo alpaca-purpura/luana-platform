@@ -85,15 +85,27 @@ def test_mes_pasado() -> None:
 
 def test_ultimos_n_dias() -> None:
     since, until = parse_period("últimos 7 días", now=NOW)
-    expected_since = (NOW - timedelta(days=7)).replace(hour=0, minute=0, second=0, microsecond=0)
-    assert _between(since, expected_since - timedelta(seconds=2), expected_since + timedelta(seconds=2))
+    expected_since = (NOW - timedelta(days=7)).replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+    assert _between(
+        since,
+        expected_since - timedelta(seconds=2),
+        expected_since + timedelta(seconds=2),
+    )
     assert until.date() == NOW.date()
 
 
 def test_ultimos_n_dias_sin_tilde() -> None:
     since, _ = parse_period("ultimos 30 dias", now=NOW)
-    expected_since = (NOW - timedelta(days=30)).replace(hour=0, minute=0, second=0, microsecond=0)
-    assert _between(since, expected_since - timedelta(seconds=2), expected_since + timedelta(seconds=2))
+    expected_since = (NOW - timedelta(days=30)).replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+    assert _between(
+        since,
+        expected_since - timedelta(seconds=2),
+        expected_since + timedelta(seconds=2),
+    )
 
 
 @pytest.mark.parametrize(
@@ -113,8 +125,14 @@ def test_ultimos_n_dias_tolerates_leading_article(phrase: str) -> None:
     collapses to a 7-day window (TP4 S4.3a evidenced 8 instead of 15).
     """
     since, _ = parse_period(phrase, now=NOW)
-    expected_since = (NOW - timedelta(days=30)).replace(hour=0, minute=0, second=0, microsecond=0)
-    assert _between(since, expected_since - timedelta(seconds=2), expected_since + timedelta(seconds=2))
+    expected_since = (NOW - timedelta(days=30)).replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+    assert _between(
+        since,
+        expected_since - timedelta(seconds=2),
+        expected_since + timedelta(seconds=2),
+    )
 
 
 def test_q1_2026() -> None:

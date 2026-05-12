@@ -12,7 +12,9 @@ from decimal import Decimal
 from unittest.mock import MagicMock
 
 
-def _snapshot(*, input_cost="0.0000025", output_cost="0.000010", cache_read="0.00000125"):
+def _snapshot(
+    *, input_cost="0.0000025", output_cost="0.000010", cache_read="0.00000125"
+):
     snap = MagicMock()
     snap.input_cost_per_token = Decimal(input_cost)
     snap.output_cost_per_token = Decimal(output_cost)

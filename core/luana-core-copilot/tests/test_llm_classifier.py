@@ -140,7 +140,10 @@ class TestLLMClassifierReturnsNone:
 
 class TestLLMClassifierDefaultsAndContract:
     def test_default_threshold_is_seven_tenths(self) -> None:
-        classifier = LLMClassifier(DEFAULT_ROUTING_POLICY, llm=_StubLLM('{"role":"fast","confidence":0.7,"reason":""}'))
+        classifier = LLMClassifier(
+            DEFAULT_ROUTING_POLICY,
+            llm=_StubLLM('{"role":"fast","confidence":0.7,"reason":""}'),
+        )
 
         assert classifier.threshold == pytest.approx(0.7)
 
@@ -157,7 +160,9 @@ class TestLLMClassifierDefaultsAndContract:
         class CapturingLLM:
             def invoke(self, messages: list) -> AIMessage:
                 captured.append(messages)
-                return AIMessage(content='{"role":"fast","confidence":0.9,"reason":"ok"}')
+                return AIMessage(
+                    content='{"role":"fast","confidence":0.9,"reason":"ok"}'
+                )
 
         classifier = LLMClassifier(DEFAULT_ROUTING_POLICY, llm=CapturingLLM())
         classifier.classify(_request("revisá mi landing"))

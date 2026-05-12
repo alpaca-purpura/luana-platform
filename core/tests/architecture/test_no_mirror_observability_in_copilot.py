@@ -79,9 +79,8 @@ def test_no_mirror_observability_functions():
                         "luana_core_observability, not redeclared.",
                     )
 
-    assert not violations, (
-        "V-AG-5 D-T6 cement violation: mirror sanitization function detected.\n"
-        + "\n".join(violations)
+    assert not violations, "V-AG-5 D-T6 cement violation: mirror sanitization function detected.\n" + "\n".join(
+        violations
     )
 
 
@@ -142,6 +141,5 @@ def test_observability_context_subclasses_base():
         "(D-T6 anti-mirror cement)."
     )
     assert has_subclass, (
-        "Copilot turn_envelope.py MUST declare a class subclassing "
-        "BaseObservabilityContext (D-T6 anti-mirror cement)."
+        "Copilot turn_envelope.py MUST declare a class subclassing BaseObservabilityContext (D-T6 anti-mirror cement)."
     )

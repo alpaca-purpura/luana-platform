@@ -35,7 +35,9 @@ def other_user_id():
 class TestConversationOwnershipCheck:
     """C2: Verify user_id ownership prevents cross-user access."""
 
-    def test_get_by_id_filters_by_user_id(self, repo, db, tenant_id, user_id, other_user_id):
+    def test_get_by_id_filters_by_user_id(
+        self, repo, db, tenant_id, user_id, other_user_id
+    ):
         """get_by_id must return None when user_id doesn't match."""
         conv = repo.create(
             conversation_id=uuid4(),
@@ -66,7 +68,9 @@ class TestConversationOwnershipCheck:
         found = repo.get_by_id(conv.id, wrong_tenant, user_id)
         assert found is None
 
-    def test_append_messages_respects_ownership(self, repo, db, tenant_id, user_id, other_user_id):
+    def test_append_messages_respects_ownership(
+        self, repo, db, tenant_id, user_id, other_user_id
+    ):
         """append_messages must not modify another user's conversation."""
         conv = repo.create(
             conversation_id=uuid4(),
@@ -110,7 +114,9 @@ class TestConversationOwnershipCheck:
         assert len(updated.messages) == 1
         assert updated.messages[0]["content"] == "hello"
 
-    def test_update_title_respects_ownership(self, repo, db, tenant_id, user_id, other_user_id):
+    def test_update_title_respects_ownership(
+        self, repo, db, tenant_id, user_id, other_user_id
+    ):
         """update_title must not modify another user's conversation."""
         conv = repo.create(
             conversation_id=uuid4(),
@@ -159,7 +165,11 @@ class TestConversationExpiry:
         assert conv.expires_at is not None
         # SQLite loses timezone info, so compare as naive UTC
         expected = datetime.now(UTC).replace(tzinfo=None) + timedelta(days=90)
-        expires_naive = conv.expires_at.replace(tzinfo=None) if conv.expires_at.tzinfo else conv.expires_at
+        expires_naive = (
+            conv.expires_at.replace(tzinfo=None)
+            if conv.expires_at.tzinfo
+            else conv.expires_at
+        )
         # Allow 5-second tolerance for test execution time
         assert abs((expires_naive - expected).total_seconds()) < 5
 
@@ -238,7 +248,9 @@ class TestConversationExpiry:
 class TestAdminMethodsNoUserFilter:
     """Admin methods (list_by_tenant, list_all_paginated, etc.) should NOT require user_id."""
 
-    def test_list_by_tenant_returns_all_users(self, repo, db, tenant_id, user_id, other_user_id):
+    def test_list_by_tenant_returns_all_users(
+        self, repo, db, tenant_id, user_id, other_user_id
+    ):
         """list_by_tenant shows conversations from all users in the tenant."""
         repo.create(conversation_id=uuid4(), tenant_id=tenant_id, user_id=user_id)
         repo.create(conversation_id=uuid4(), tenant_id=tenant_id, user_id=other_user_id)

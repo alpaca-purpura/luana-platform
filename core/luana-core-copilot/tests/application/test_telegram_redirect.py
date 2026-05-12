@@ -36,6 +36,8 @@ def test_template_uses_spanish_neutro_tuteo() -> None:
     text = TELEGRAM_TOOL_UNAVAILABLE_TEMPLATE.lower()
     forbidden_voseo = ["tenés", "querés", "podés", "andá", "fijate", "elegí"]
     for term in forbidden_voseo:
-        assert term not in text, f"Template contains voseo '{term}' — must use tuteo (LatAm neutral)"
+        assert term not in text, (
+            f"Template contains voseo '{term}' — must use tuteo (LatAm neutral)"
+        )
     # Tuteo markers expected
     assert "tienes" in text or "quieres" in text or "prefieres" in text

@@ -167,7 +167,9 @@ class TestVolatileNeverLeaksIntoCacheable:
     """Changing volatile state must not change cacheable bytes."""
 
     def _cacheable_only(self, fragments: dict[PromptFragment, str]) -> str:
-        return compose_system_prompt({k: v for k, v in fragments.items() if k in CACHEABLE_FRAGMENTS})
+        return compose_system_prompt(
+            {k: v for k, v in fragments.items() if k in CACHEABLE_FRAGMENTS}
+        )
 
     def test_cacheable_prefix_stable_across_volatile_changes(self) -> None:
         cache_payload = {

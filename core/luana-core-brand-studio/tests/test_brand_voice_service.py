@@ -78,9 +78,7 @@ class TestProtocolConformance:
         """Per Story 7 §2.5 — port surface FROZEN at compile_system_instruction + get_voice_metadata."""
         # Discover public Protocol methods.
         public_methods = {
-            name
-            for name in dir(BrandVoicePort)
-            if not name.startswith("_") and callable(getattr(BrandVoicePort, name))
+            name for name in dir(BrandVoicePort) if not name.startswith("_") and callable(getattr(BrandVoicePort, name))
         }
         assert public_methods == {"compile_system_instruction", "get_voice_metadata"}, (
             f"D-T3 surface drift detected — port has {public_methods}; expected exactly "
@@ -104,9 +102,7 @@ class TestCompileSystemInstruction:
     """compile_system_instruction returns cached ORM value, recompiles, or falls back to empty."""
 
     @pytest.mark.asyncio
-    async def test_returns_cached_system_instruction_when_present(
-        self, db: Session, seed_tenant
-    ) -> None:
+    async def test_returns_cached_system_instruction_when_present(self, db: Session, seed_tenant) -> None:
         """When PersonalityProfileModel.system_instruction is populated, return it directly."""
         repo = PersonalityProfileRepository(db)
         cached_instruction = "## BLOQUE 1 — CACHED VOICE\nWarm energetic tone\n"
@@ -155,9 +151,7 @@ class TestCompileSystemInstruction:
         assert "😊" in result or "frequent" in result
 
     @pytest.mark.asyncio
-    async def test_returns_empty_string_when_no_active_profile(
-        self, db: Session, seed_tenant
-    ) -> None:
+    async def test_returns_empty_string_when_no_active_profile(self, db: Session, seed_tenant) -> None:
         """When tenant has no active PersonalityProfile, return '' (consumer falls back to default voice)."""
         repo = PersonalityProfileRepository(db)
         # No profile created for TENANT_A.
@@ -168,9 +162,7 @@ class TestCompileSystemInstruction:
         assert result == ""
 
     @pytest.mark.asyncio
-    async def test_returns_empty_when_profile_inactive(
-        self, db: Session, seed_tenant
-    ) -> None:
+    async def test_returns_empty_when_profile_inactive(self, db: Session, seed_tenant) -> None:
         """Inactive profile (is_active=False) should NOT be returned by get_active."""
         repo = PersonalityProfileRepository(db)
         # Create profile but do NOT activate it.
@@ -201,9 +193,7 @@ class TestGetVoiceMetadata:
     """get_voice_metadata returns populated dict or empty default."""
 
     @pytest.mark.asyncio
-    async def test_returns_populated_metadata_when_profile_active(
-        self, db: Session, seed_tenant
-    ) -> None:
+    async def test_returns_populated_metadata_when_profile_active(self, db: Session, seed_tenant) -> None:
         """When active profile exists, return version + last_compiled_at + dimensions_summary."""
         repo = PersonalityProfileRepository(db)
         model = repo.create(
@@ -237,9 +227,7 @@ class TestGetVoiceMetadata:
         assert "last_compiled_at" in meta
 
     @pytest.mark.asyncio
-    async def test_returns_empty_default_when_no_active_profile(
-        self, db: Session, seed_tenant
-    ) -> None:
+    async def test_returns_empty_default_when_no_active_profile(self, db: Session, seed_tenant) -> None:
         """When tenant has no active profile, return empty default schema."""
         repo = PersonalityProfileRepository(db)
         service = BrandVoiceService(repo=repo)
@@ -262,9 +250,7 @@ class TestTenantIsolation:
     """Service MUST honor tenant_id boundary — no cross-tenant leaks."""
 
     @pytest.mark.asyncio
-    async def test_compile_does_not_leak_across_tenants(
-        self, db: Session, seed_tenant, seed_other_tenant
-    ) -> None:
+    async def test_compile_does_not_leak_across_tenants(self, db: Session, seed_tenant, seed_other_tenant) -> None:
         """Profile for TENANT_A MUST NOT surface for TENANT_B's compile call."""
         repo = PersonalityProfileRepository(db)
         model_a = repo.create(
@@ -288,9 +274,7 @@ class TestTenantIsolation:
         assert result_b == ""  # TENANT_B has no profile
 
     @pytest.mark.asyncio
-    async def test_metadata_does_not_leak_across_tenants(
-        self, db: Session, seed_tenant, seed_other_tenant
-    ) -> None:
+    async def test_metadata_does_not_leak_across_tenants(self, db: Session, seed_tenant, seed_other_tenant) -> None:
         """Metadata for TENANT_A MUST NOT surface for TENANT_B."""
         repo = PersonalityProfileRepository(db)
         model_a = repo.create(

@@ -20,9 +20,6 @@ from contextlib import asynccontextmanager
 from uuid import uuid4
 
 import pytest
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
-
 from luana_core_campaigns.domain.audit_log import AuditEventType, AuditLogEvent
 from luana_core_campaigns.infrastructure.repositories.audit_log_repo_impl import (
     AuditLogRepositoryImpl,
@@ -33,6 +30,8 @@ from luana_core_campaigns.workers.audit_retention_task import (
     purge_old_campaigns_audit,
 )
 from luana_core_platform.domain.base_entity import Base
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
 
 pytestmark = pytest.mark.asyncio
 
@@ -44,7 +43,6 @@ pytestmark = pytest.mark.asyncio
 async def async_engine():
     """Module-scoped async SQLite engine with audit + campaign models registered."""
     # Ensure models are loaded into metadata
-    from luana_core_campaigns.infrastructure.models.campaign_audit_model import CampaignAuditModel
 
     engine = create_async_engine("sqlite+aiosqlite:///:memory:", echo=False)
     async with engine.begin() as conn:
@@ -128,8 +126,8 @@ async def test_rows_older_than_retention_are_deleted(async_engine) -> None:
     assert result["deleted"] >= 1
 
     # Verify fresh row still exists
-    from sqlalchemy import select
     from luana_core_campaigns.infrastructure.models.campaign_audit_model import CampaignAuditModel
+    from sqlalchemy import select
 
     async with factory() as session:
         stmt = select(CampaignAuditModel).where(CampaignAuditModel.id == fresh_evt.id)
@@ -160,8 +158,8 @@ async def test_rows_within_retention_are_preserved(async_engine) -> None:
         await purge_old_campaigns_audit(ctx)
 
     # recent row still present
-    from sqlalchemy import select
     from luana_core_campaigns.infrastructure.models.campaign_audit_model import CampaignAuditModel
+    from sqlalchemy import select
 
     async with factory() as session:
         stmt = select(CampaignAuditModel).where(CampaignAuditModel.id == recent_evt.id)

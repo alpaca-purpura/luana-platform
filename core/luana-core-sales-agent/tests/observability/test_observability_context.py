@@ -119,7 +119,9 @@ class TestPersistsAgentSpecificFields:
         lead_id = uuid4()
         ctx = _build_ctx(db, lead_id=lead_id, channel_type="telegram")
 
-        async with ctx.observe_turn(message="hola", route="sales_agent", attachments=[]):
+        async with ctx.observe_turn(
+            message="hola", route="sales_agent", attachments=[]
+        ):
             pass
         db.flush()
 
@@ -213,11 +215,18 @@ class TestObserveTurnLifecycle:
         )
 
         ctx = _build_ctx(db)
-        async with ctx.observe_turn(message="hola", route="sales_agent", attachments=[]):
+        async with ctx.observe_turn(
+            message="hola", route="sales_agent", attachments=[]
+        ):
             pass
         db.flush()
 
-        events = {r.event_type for r in db.query(SalesAgentTraceEventModel).filter_by(turn_id=ctx.turn_id).all()}
+        events = {
+            r.event_type
+            for r in db.query(SalesAgentTraceEventModel)
+            .filter_by(turn_id=ctx.turn_id)
+            .all()
+        }
         assert "turn_start" in events
         assert "turn_end" in events
 
@@ -229,11 +238,17 @@ class TestObserveTurnLifecycle:
 
         ctx = _build_ctx(db)
         with pytest.raises(RuntimeError):
-            async with ctx.observe_turn(message="hola", route="sales_agent", attachments=[]):
+            async with ctx.observe_turn(
+                message="hola", route="sales_agent", attachments=[]
+            ):
                 msg = "boom"
                 raise RuntimeError(msg)
         db.flush()
 
-        end_row = db.query(SalesAgentTraceEventModel).filter_by(turn_id=ctx.turn_id, event_type="turn_end").one()
+        end_row = (
+            db.query(SalesAgentTraceEventModel)
+            .filter_by(turn_id=ctx.turn_id, event_type="turn_end")
+            .one()
+        )
         assert end_row.status == "error"
         assert "RuntimeError" in (end_row.data or {}).get("error_type", "")

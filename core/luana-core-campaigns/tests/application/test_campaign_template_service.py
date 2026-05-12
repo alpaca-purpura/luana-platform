@@ -8,11 +8,10 @@ from __future__ import annotations
 
 import datetime as dt
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock
 from uuid import UUID, uuid4
 
 import pytest
-
 from luana_core_campaigns.application.dtos.campaign_template_dtos import (
     CampaignCreateFromTemplate,
 )

@@ -12,7 +12,10 @@ from uuid import uuid4
 
 import pytest
 
-pytest.skip("T-15 deferred — depends on assets module copilot_provider lift (T-16 UNLIFT)", allow_module_level=True)
+pytest.skip(
+    "T-15 deferred — depends on assets module copilot_provider lift (T-16 UNLIFT)",
+    allow_module_level=True,
+)
 
 
 def _make_mock_asset(
@@ -110,7 +113,9 @@ def test_search_assets_filters_by_kind(
     assert mock_search_query.call_count == 1
     call_kwargs = mock_search_query.call_args
     # Verify kind was passed (positional or keyword)
-    passed_kind = call_kwargs.kwargs.get("kind") or (call_kwargs.args[3] if len(call_kwargs.args) > 3 else None)
+    passed_kind = call_kwargs.kwargs.get("kind") or (
+        call_kwargs.args[3] if len(call_kwargs.args) > 3 else None
+    )
     assert passed_kind == "image"
 
 

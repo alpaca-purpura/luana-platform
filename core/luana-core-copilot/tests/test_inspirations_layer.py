@@ -18,7 +18,10 @@ from uuid import uuid4
 
 import pytest
 
-pytest.skip("T-15 deferred to T-16 UNLIFT (Stories 2-5 copilot_provider/ subfolders not yet lifted — luana_core_brand_studio.copilot_provider / luana_core_offer_studio.copilot_provider / etc.)", allow_module_level=True)
+pytest.skip(
+    "T-15 deferred to T-16 UNLIFT (Stories 2-5 copilot_provider/ subfolders not yet lifted — luana_core_brand_studio.copilot_provider / luana_core_offer_studio.copilot_provider / etc.)",
+    allow_module_level=True,
+)
 
 from luana_core_copilot.application.orchestrator.inspirations_layer import (
     build_inspirations_layer,
@@ -205,7 +208,9 @@ class TestSystemPromptOrder:
         )
         db.commit()
 
-        monkeypatch.setattr("luana_core_platform.core.database.SessionLocal", lambda: db)
+        monkeypatch.setattr(
+            "luana_core_platform.core.database.SessionLocal", lambda: db
+        )
         monkeypatch.setattr(db, "close", lambda: None)
 
         state = {
@@ -256,7 +261,9 @@ class TestSystemPromptOrder:
         repo = CopilotInspirationRepository(db)
         _seed(repo, tenant_id=tenant_id, conversation_id=conversation_id, slug="x")
         db.commit()
-        monkeypatch.setattr("luana_core_platform.core.database.SessionLocal", lambda: db)
+        monkeypatch.setattr(
+            "luana_core_platform.core.database.SessionLocal", lambda: db
+        )
         monkeypatch.setattr(db, "close", lambda: None)
 
         state = {
@@ -293,7 +300,9 @@ class TestSystemPromptOrder:
         conversation_id,
     ) -> None:
         # No seed.
-        monkeypatch.setattr("luana_core_platform.core.database.SessionLocal", lambda: db)
+        monkeypatch.setattr(
+            "luana_core_platform.core.database.SessionLocal", lambda: db
+        )
         monkeypatch.setattr(db, "close", lambda: None)
         state = {
             "tenant_id": tenant_id,

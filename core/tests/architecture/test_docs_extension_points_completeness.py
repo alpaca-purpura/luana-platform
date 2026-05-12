@@ -27,8 +27,7 @@ def _check(text: str, pattern: str) -> bool:
 def test_docs_file_exists() -> None:
     """V-F-docs-1: docs/extension-points.md must exist."""
     assert DOCS_FILE.exists(), (
-        f"docs/extension-points.md not found at {DOCS_FILE}.\n"
-        "Story 8 T-16 must create this file."
+        f"docs/extension-points.md not found at {DOCS_FILE}.\nStory 8 T-16 must create this file."
     )
 
 
@@ -36,8 +35,7 @@ def test_docs_has_section_1_header() -> None:
     """V-F-docs-1: docs contains §1 (## 1 header) — CC-1..CC-5 section."""
     text = DOCS_FILE.read_text(encoding="utf-8")
     assert _check(text, r"^## 1"), (
-        "docs/extension-points.md missing §1 (## 1 header).\n"
-        "§1 must describe CC-1..CC-5 cross-cutting policies."
+        "docs/extension-points.md missing §1 (## 1 header).\n§1 must describe CC-1..CC-5 cross-cutting policies."
     )
 
 

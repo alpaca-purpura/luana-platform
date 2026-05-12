@@ -40,15 +40,23 @@ class TestSystemStaticTemplateForbidsVoseo:
         # Look for canonical phrases used in the regla 11 doc
         # so the AGENT cannot misread ``tuteas`` as Argentine voseo.
         assert "neutro" in rendered.lower(), "system prompt must mention 'neutro'"
-        assert "voseo" in rendered.lower(), "system prompt must mention 'voseo' (forbidden)"
+        assert "voseo" in rendered.lower(), (
+            "system prompt must mention 'voseo' (forbidden)"
+        )
 
     def test_static_template_lists_canonical_neutro_examples(self) -> None:
         rendered = _render("copilot_system_static")
         # At least one canonical pair tú/tienes/puedes vs vos/tenés/podés
         # must appear so the model has a concrete contrast to anchor on.
-        canonical_neutro = re.search(r"\b(tú|tienes|puedes|quieres)\b", rendered, re.IGNORECASE)
-        canonical_voseo = re.search(r"\b(vos|tenés|podés|querés)\b", rendered, re.IGNORECASE)
-        assert canonical_neutro is not None, "system prompt must show a neutro example (tú / tienes / puedes / quieres)"
+        canonical_neutro = re.search(
+            r"\b(tú|tienes|puedes|quieres)\b", rendered, re.IGNORECASE
+        )
+        canonical_voseo = re.search(
+            r"\b(vos|tenés|podés|querés)\b", rendered, re.IGNORECASE
+        )
+        assert canonical_neutro is not None, (
+            "system prompt must show a neutro example (tú / tienes / puedes / quieres)"
+        )
         assert canonical_voseo is not None, (
             "system prompt must contrast with a voseo example (vos / tenés / podés / querés) so "
             "the model recognises what to avoid"
@@ -59,13 +67,25 @@ class TestSystemStaticTemplateForbidsVoseo:
         rendered = _render("copilot_system_static")
         # Strip lines that contain the explicit prohibition contrast
         # (those legitimately list voseo terms as forbidden examples).
-        prohibition_markers = ("evita", "no usar", "no uses", "prohibido", "no:", "incorrecto", "✗")
+        prohibition_markers = (
+            "evita",
+            "no usar",
+            "no uses",
+            "prohibido",
+            "no:",
+            "incorrecto",
+            "✗",
+        )
         body_lines = [
-            line for line in rendered.splitlines() if not any(marker in line.lower() for marker in prohibition_markers)
+            line
+            for line in rendered.splitlines()
+            if not any(marker in line.lower() for marker in prohibition_markers)
         ]
         body = "\n".join(body_lines)
         match = _VOSEO_RE.search(body)
-        assert match is None, f"system prompt body contains voseo outside a prohibition contrast: {match.group()!r}"
+        assert match is None, (
+            f"system prompt body contains voseo outside a prohibition contrast: {match.group()!r}"
+        )
 
 
 class TestToolsHintAdvertisesChannelFormatter:
@@ -78,11 +98,14 @@ class TestToolsHintAdvertisesChannelFormatter:
             "copilot_system_tools_hint",
             available_tools=["format_for_channel", "get_module_data"],
         )
-        assert "format_for_channel" in rendered, "tools hint must name the channel formatter"
-        # Must explain when to use it so the AGENT picks it up on its own.
-        assert any(keyword in rendered.lower() for keyword in ("whatsapp", "sms", "canal", "email")), (
-            "tools hint must mention at least one canonical channel keyword"
+        assert "format_for_channel" in rendered, (
+            "tools hint must name the channel formatter"
         )
+        # Must explain when to use it so the AGENT picks it up on its own.
+        assert any(
+            keyword in rendered.lower()
+            for keyword in ("whatsapp", "sms", "canal", "email")
+        ), "tools hint must mention at least one canonical channel keyword"
 
 
 class TestSynthesizerFallbackStringsAreNeutro:
@@ -92,7 +115,9 @@ class TestSynthesizerFallbackStringsAreNeutro:
     def test_unknown_intent_reply_has_no_voseo(self, channel: str) -> None:
         text = _unknown_intent_reply(channel)
         match = _VOSEO_RE.search(text)
-        assert match is None, f"unknown_intent_reply({channel!r}) contains voseo: {match.group()!r}"
+        assert match is None, (
+            f"unknown_intent_reply({channel!r}) contains voseo: {match.group()!r}"
+        )
 
     @pytest.mark.parametrize("channel", ["chat", "whatsapp", "email", "sms"])
     def test_empty_window_reply_has_no_voseo(self, channel: str) -> None:
@@ -101,4 +126,6 @@ class TestSynthesizerFallbackStringsAreNeutro:
         plan = DataQueryPlan(kind="lead_count", filters={})
         text = _empty_window_reply(plan, channel)
         match = _VOSEO_RE.search(text)
-        assert match is None, f"empty_window_reply({channel!r}) contains voseo: {match.group()!r}"
+        assert match is None, (
+            f"empty_window_reply({channel!r}) contains voseo: {match.group()!r}"
+        )

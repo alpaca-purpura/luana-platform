@@ -52,7 +52,9 @@ Reglas de redacción:
 """
 
 
-def _format_payload(plan: DataQueryPlan, result: DataQueryResult, flags: dict[str, Any]) -> str:
+def _format_payload(
+    plan: DataQueryPlan, result: DataQueryResult, flags: dict[str, Any]
+) -> str:
     parts: list[str] = [
         f"plan.kind: {plan.kind}",
         f"plan.filters: {dict(plan.filters)}",

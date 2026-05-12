@@ -286,7 +286,9 @@ def test_message_block_discriminated_union_text() -> None:
     from pydantic import TypeAdapter
 
     adapter = TypeAdapter(MessageBlock)
-    block = adapter.validate_python({"type": "text", "id": str(uuid4()), "markdown": "hi"})
+    block = adapter.validate_python(
+        {"type": "text", "id": str(uuid4()), "markdown": "hi"}
+    )
     assert isinstance(block, TextBlock)
 
 

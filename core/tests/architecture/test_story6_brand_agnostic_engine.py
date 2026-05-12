@@ -77,9 +77,8 @@ def test_no_brand_conditional():
                             f"{lineno}: {line.strip()}",
                         )
 
-    assert not violations, (
-        "Story 6 packages must be brand-agnostic. "
-        "Found brand-conditional in:\n" + "\n".join(violations)
+    assert not violations, "Story 6 packages must be brand-agnostic. Found brand-conditional in:\n" + "\n".join(
+        violations
     )
 
 
@@ -121,10 +120,7 @@ def test_no_hardcoded_clerk_app_ids():
                         f"{lineno}: {line.strip()}",
                     )
 
-    assert not violations, (
-        "Story 6 packages must have no hardcoded Clerk app IDs. "
-        "Found in:\n" + "\n".join(violations)
-    )
+    assert not violations, "Story 6 packages must have no hardcoded Clerk app IDs. Found in:\n" + "\n".join(violations)
 
 
 def test_no_hardcoded_secrets():
@@ -146,7 +142,4 @@ def test_no_hardcoded_secrets():
                         f"{lineno}: {line.strip()}",
                     )
 
-    assert not violations, (
-        "Story 6 packages must not contain hardcoded secrets. "
-        "Found in:\n" + "\n".join(violations)
-    )
+    assert not violations, "Story 6 packages must not contain hardcoded secrets. Found in:\n" + "\n".join(violations)

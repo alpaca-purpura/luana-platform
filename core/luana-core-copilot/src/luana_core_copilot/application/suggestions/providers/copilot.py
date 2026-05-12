@@ -90,7 +90,9 @@ class CopilotSuggestionProvider:
                 suggestions.append(
                     Suggestion(
                         label="Empieza tu primer chat con el copiloto",
-                        prompt=("Hola, soy nuevo aquí. ¿Qué puedes hacer por mi negocio?"),
+                        prompt=(
+                            "Hola, soy nuevo aquí. ¿Qué puedes hacer por mi negocio?"
+                        ),
                         confidence=0.65,
                         category=SuggestionCategory.ACTION,
                         source_module="copilot",
@@ -102,7 +104,9 @@ class CopilotSuggestionProvider:
                 suggestions.append(
                     Suggestion(
                         label="Retoma tu conversación",
-                        prompt=("Continuemos donde lo dejamos. ¿Cuál era el siguiente paso?"),
+                        prompt=(
+                            "Continuemos donde lo dejamos. ¿Cuál era el siguiente paso?"
+                        ),
                         confidence=0.62,
                         category=SuggestionCategory.ACTION,
                         source_module="copilot",
@@ -122,7 +126,9 @@ class CopilotSuggestionProvider:
                 )
 
             # Rule 4 — route exists but is not recognized in registry
-            elif ctx.current_route and not any(ctx.current_route.startswith(key) for key in module_registry):
+            elif ctx.current_route and not any(
+                ctx.current_route.startswith(key) for key in module_registry
+            ):
                 suggestions.append(
                     Suggestion(
                         label="Vuelve a un módulo conocido",
@@ -141,7 +147,9 @@ class CopilotSuggestionProvider:
                 suggestions.append(
                     Suggestion(
                         label="Completa tu setup inicial",
-                        prompt=("Guíame paso a paso para configurar mi marca, mi primera oferta y mi sales agent."),
+                        prompt=(
+                            "Guíame paso a paso para configurar mi marca, mi primera oferta y mi sales agent."
+                        ),
                         confidence=0.56,
                         category=SuggestionCategory.ACTION,
                         source_module="copilot",

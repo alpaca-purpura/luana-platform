@@ -78,10 +78,17 @@ class TestTenantIsolation:
             content="A",
         )
         db.commit()
-        assert repo.get(tenant_id=tenant_a, user_id=user_id, path="/memories/x.md") is not None
-        assert repo.get(tenant_id=tenant_b, user_id=user_id, path="/memories/x.md") is None
+        assert (
+            repo.get(tenant_id=tenant_a, user_id=user_id, path="/memories/x.md")
+            is not None
+        )
+        assert (
+            repo.get(tenant_id=tenant_b, user_id=user_id, path="/memories/x.md") is None
+        )
 
-    def test_list_for_user_filters_by_prefix(self, repo, db, tenant_id, user_id) -> None:
+    def test_list_for_user_filters_by_prefix(
+        self, repo, db, tenant_id, user_id
+    ) -> None:
         repo.upsert(
             tenant_id=tenant_id,
             user_id=user_id,
@@ -119,8 +126,19 @@ class TestDelete:
             content="m",
         )
         db.commit()
-        assert repo.delete(tenant_id=tenant_id, user_id=user_id, path="/memories/x.md") is True
-        assert repo.get(tenant_id=tenant_id, user_id=user_id, path="/memories/x.md") is None
+        assert (
+            repo.delete(tenant_id=tenant_id, user_id=user_id, path="/memories/x.md")
+            is True
+        )
+        assert (
+            repo.get(tenant_id=tenant_id, user_id=user_id, path="/memories/x.md")
+            is None
+        )
 
-    def test_delete_returns_false_when_row_missing(self, repo, tenant_id, user_id) -> None:
-        assert repo.delete(tenant_id=tenant_id, user_id=user_id, path="/missing.md") is False
+    def test_delete_returns_false_when_row_missing(
+        self, repo, tenant_id, user_id
+    ) -> None:
+        assert (
+            repo.delete(tenant_id=tenant_id, user_id=user_id, path="/missing.md")
+            is False
+        )

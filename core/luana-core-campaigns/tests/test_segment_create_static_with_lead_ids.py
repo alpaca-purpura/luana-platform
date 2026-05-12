@@ -14,18 +14,12 @@ Casos cubiertos:
 
 from __future__ import annotations
 
-import uuid
 from collections.abc import AsyncGenerator
 from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock
 from uuid import UUID, uuid4
 
 import pytest
-from pydantic import ValidationError
-from sqlalchemy import select, text
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
-
 from luana_core_campaigns.application.dtos.segment_dtos import SegmentCreate, SegmentResponse
 from luana_core_campaigns.application.services.segment_service import (
     SegmentLeadOwnershipError,
@@ -42,6 +36,10 @@ from luana_core_campaigns.infrastructure.repositories.segment_snapshot_repositor
 )
 from luana_core_platform.domain.base_entity import Base
 from luana_core_platform.infrastructure.models.crm import LeadModel
+from pydantic import ValidationError
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
 
 # ── Constantes ─────────────────────────────────────────────────────────────────
 
@@ -325,7 +323,7 @@ async def test_segment_resolve_static_respects_limit(db_session: AsyncSession) -
     dto = SegmentCreate(
         name="Segmento truncate test",
         segment_type=SegmentType.STATIC,
-        lead_ids=[l.id for l in leads],
+        lead_ids=[lead.id for lead in leads],
     )
     segment = await svc.create(tenant_id=TENANT_A, dto=dto, session=db_session)
     await db_session.flush()

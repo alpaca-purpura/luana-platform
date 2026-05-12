@@ -72,7 +72,9 @@ class TestCopilotOutboxCutoverFlagOn:
         with (
             patch(
                 "luana_core_platform.domain.events.EventBus.publish",
-                side_effect=lambda event, session=None: legacy_called.append(event.event_name),
+                side_effect=lambda event, session=None: legacy_called.append(
+                    event.event_name
+                ),
             ),
             patch.object(EventBusAdapter, "_is_outbox_enabled", return_value=True),
         ):
@@ -91,7 +93,9 @@ class TestCopilotOutboxCutoverFlagOn:
         with (
             patch(
                 "luana_core_platform.domain.events.EventBus.publish",
-                side_effect=lambda event, session=None: legacy_called.append(event.event_name),
+                side_effect=lambda event, session=None: legacy_called.append(
+                    event.event_name
+                ),
             ),
             patch.object(EventBusAdapter, "_is_outbox_enabled", return_value=False),
         ):

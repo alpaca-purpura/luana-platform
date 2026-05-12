@@ -28,7 +28,11 @@ from luana_core_platform.core.database import SessionLocal
 from luana_core_copilot.application.services.offer_suggestion_reader import (
     OfferSuggestionReader,
 )
-from luana_core_copilot.domain.suggestion import Suggestion, SuggestionCategory, SuggestionContext
+from luana_core_copilot.domain.suggestion import (
+    Suggestion,
+    SuggestionCategory,
+    SuggestionContext,
+)
 
 logger = structlog.get_logger()
 

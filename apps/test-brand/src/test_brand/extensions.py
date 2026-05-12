@@ -4,6 +4,7 @@ Per 05-guidelines.md §1.10 verbatim.
 
 All names MUST start with 'test-brand.' prefix per CC-4 namespace enforcement.
 """
+
 from typing import Optional
 
 from luana_core_extension_sdk import (
@@ -39,6 +40,7 @@ def register_all(registry: ExtensionPointRegistry) -> None:
 
     All names MUST start with 'test-brand.' prefix per CC-4.
     """
+
     # ── EP-1 executable: field_override ──────────────────────────────────
     def _override_handler(field: FieldDef, ctx: BrandContext) -> Optional[FieldOverride]:
         if field.name == "field_x" and ctx.brand_slug == "test-brand":

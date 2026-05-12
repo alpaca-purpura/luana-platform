@@ -8,14 +8,12 @@ Tests: re-launch within TTL → no duplicate tasks/events.
 from __future__ import annotations
 
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 from uuid import UUID, uuid4
 
 import pytest
-
 from luana_core_campaigns.application.services.orchestrator import (
     CampaignOrchestrator,
-    OrchestratorLaunchResult,
 )
 from luana_core_campaigns.domain.campaign import Campaign
 from luana_core_campaigns.domain.campaign_step import CampaignStep

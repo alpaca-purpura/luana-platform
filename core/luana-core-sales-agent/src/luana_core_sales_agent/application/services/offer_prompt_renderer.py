@@ -39,7 +39,9 @@ def _inactive_offer_paths() -> frozenset[str]:
     contract status independently.
     """
     return frozenset(
-        c.path for c in get_module_contracts("offer") if c.status != FieldStatus.ACTIVE and "." not in c.path
+        c.path
+        for c in get_module_contracts("offer")
+        if c.status != FieldStatus.ACTIVE and "." not in c.path
     )
 
 

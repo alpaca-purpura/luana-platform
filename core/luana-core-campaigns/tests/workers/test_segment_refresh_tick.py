@@ -16,14 +16,12 @@ from __future__ import annotations
 
 import datetime as dt
 from contextlib import asynccontextmanager
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 from uuid import uuid4
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 import pytest
-
 from luana_core_campaigns.workers.segment_refresh_tick import run_segment_refresh_tick
+from sqlalchemy.ext.asyncio import AsyncSession
 
 pytestmark = pytest.mark.asyncio
 

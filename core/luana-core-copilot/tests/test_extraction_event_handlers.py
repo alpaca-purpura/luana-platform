@@ -165,7 +165,10 @@ class TestHandlerResiliency:
         )
 
         with (
-            patch("luana_core_platform.core.database.SessionLocal", side_effect=RuntimeError("DB down")),
+            patch(
+                "luana_core_platform.core.database.SessionLocal",
+                side_effect=RuntimeError("DB down"),
+            ),
         ):
             # Must not raise
             handle_section_completed(event)
@@ -190,7 +193,10 @@ class TestHandlerResiliency:
         )
 
         with (
-            patch("luana_core_platform.core.database.SessionLocal", side_effect=RuntimeError("DB down")),
+            patch(
+                "luana_core_platform.core.database.SessionLocal",
+                side_effect=RuntimeError("DB down"),
+            ),
         ):
             # Must not raise
             handle_job_completed(event)
@@ -216,7 +222,9 @@ class TestHandlerSkipsWhenNoConversation:
         )
 
         db_mock = MagicMock()
-        with patch("luana_core_platform.core.database.SessionLocal", return_value=db_mock):
+        with patch(
+            "luana_core_platform.core.database.SessionLocal", return_value=db_mock
+        ):
             handle_section_completed(event)
 
         # SessionLocal should NOT be called — we exit before opening a session
@@ -242,7 +250,9 @@ class TestHandlerSkipsWhenNoConversation:
         )
 
         db_mock = MagicMock()
-        with patch("luana_core_platform.core.database.SessionLocal", return_value=db_mock):
+        with patch(
+            "luana_core_platform.core.database.SessionLocal", return_value=db_mock
+        ):
             handle_job_completed(event)
 
         db_mock.close.assert_not_called()
@@ -305,7 +315,9 @@ class TestEmitterFunctions:
         appended_messages: list[dict] = []
         conv_repo_mock = MagicMock()
         conv_repo_mock.append_messages = MagicMock(
-            side_effect=lambda conv_id, tenant_id, msgs, **kw: appended_messages.extend(msgs)
+            side_effect=lambda conv_id, tenant_id, msgs, **kw: appended_messages.extend(
+                msgs
+            )
         )
 
         with (
@@ -340,7 +352,9 @@ class TestEmitterFunctions:
         appended_messages: list[dict] = []
         conv_repo_mock = MagicMock()
         conv_repo_mock.append_messages = MagicMock(
-            side_effect=lambda conv_id, tenant_id, msgs, **kw: appended_messages.extend(msgs)
+            side_effect=lambda conv_id, tenant_id, msgs, **kw: appended_messages.extend(
+                msgs
+            )
         )
 
         unique_job_id = str(uuid.uuid4())
@@ -380,7 +394,9 @@ class TestEmitterFunctions:
         appended_messages: list[dict] = []
         conv_repo_mock = MagicMock()
         conv_repo_mock.append_messages = MagicMock(
-            side_effect=lambda *a, **kw: appended_messages.extend(a[2] if len(a) > 2 else [])
+            side_effect=lambda *a, **kw: appended_messages.extend(
+                a[2] if len(a) > 2 else []
+            )
         )
 
         with (

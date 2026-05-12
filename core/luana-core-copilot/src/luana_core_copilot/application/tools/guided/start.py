@@ -53,7 +53,9 @@ def start_guided_setup(domain: str, entity_id: str | None = None) -> str:
     if not blocks:
         return json.dumps(
             {
-                "text": (f"No hay bloques configurados para '{domain}'. Revisa el catálogo editable-fields."),
+                "text": (
+                    f"No hay bloques configurados para '{domain}'. Revisa el catálogo editable-fields."
+                ),
                 "error": "empty_flow",
             },
         )

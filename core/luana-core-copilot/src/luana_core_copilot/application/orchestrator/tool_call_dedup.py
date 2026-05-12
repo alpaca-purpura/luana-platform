@@ -213,7 +213,9 @@ def _summarise_args(args: object) -> str:
         if not args:
             return "(sin args)"
         try:
-            return json.dumps(args, sort_keys=True, default=str, ensure_ascii=False)[:200]
+            return json.dumps(args, sort_keys=True, default=str, ensure_ascii=False)[
+                :200
+            ]
         except TypeError:
             return str(sorted(args.items()))[:200]
     return str(args)[:200]

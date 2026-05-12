@@ -85,7 +85,9 @@ def _base_identity_context(**identity_overrides: Any) -> dict[str, Any]:
 def _make_brand_knowledge(brand_data: dict) -> MagicMock:
     from luana_core_platform.links.ports.brand import BrandKnowledgeDTO
 
-    return BrandKnowledgeDTO(brand_data=brand_data, avatars=[], personality_profile=None)
+    return BrandKnowledgeDTO(
+        brand_data=brand_data, avatars=[], personality_profile=None
+    )
 
 
 # ─── Knowledge builder flag derivation ────────────────────────────────────────
@@ -105,7 +107,9 @@ class TestKnowledgeBuilderLegalFlags:
             "testimonials": [],
         }
         mock_brand_port = MagicMock()
-        mock_brand_port.get_brand_knowledge.return_value = _make_brand_knowledge(brand_data)
+        mock_brand_port.get_brand_knowledge.return_value = _make_brand_knowledge(
+            brand_data
+        )
         mock_db = MagicMock()
 
         with (

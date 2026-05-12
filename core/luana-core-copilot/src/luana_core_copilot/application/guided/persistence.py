@@ -51,7 +51,9 @@ def read_state(
         ).scalar()
         return load_guided_state(row if isinstance(row, dict) else None)
     except Exception as exc:  # noqa: BLE001 — orchestrator resilience
-        logger.warning("guided_state_read_failed", conv_id=conversation_id, error=str(exc))
+        logger.warning(
+            "guided_state_read_failed", conv_id=conversation_id, error=str(exc)
+        )
         return None
     finally:
         db.close()
@@ -95,7 +97,9 @@ def write_state(
         db.commit()
     except Exception as exc:  # noqa: BLE001 — orchestrator resilience
         db.rollback()
-        logger.warning("guided_state_write_failed", conv_id=conversation_id, error=str(exc))
+        logger.warning(
+            "guided_state_write_failed", conv_id=conversation_id, error=str(exc)
+        )
     finally:
         db.close()
 

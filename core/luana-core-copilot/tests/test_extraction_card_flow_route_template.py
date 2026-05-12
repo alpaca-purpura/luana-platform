@@ -23,7 +23,9 @@ class TestNavPillRouteTemplate:
         """Build a mock ConversationRepository that collects appended messages."""
         appended: list[dict] = []
         repo = MagicMock()
-        repo.append_messages = MagicMock(side_effect=lambda conv_id, tid, msgs, **kw: appended.extend(msgs))
+        repo.append_messages = MagicMock(
+            side_effect=lambda conv_id, tid, msgs, **kw: appended.extend(msgs)
+        )
         return appended, repo
 
     def test_uses_nav_route_template_for_offer(self) -> None:
@@ -31,7 +33,9 @@ class TestNavPillRouteTemplate:
         from luana_core_copilot.application.extraction_card_flow import (
             emit_section_complete_pill,
         )
-        from luana_core_offer_studio.application.extraction_routes import NAV_ROUTE_TEMPLATE
+        from luana_core_offer_studio.application.extraction_routes import (
+            NAV_ROUTE_TEMPLATE,
+        )
 
         appended, repo_mock = self._make_appender()
         with (
@@ -60,14 +64,22 @@ class TestNavPillRouteTemplate:
 
         # Route must contain offer_id (not brand-studio)
         assert OFFER_ID in route, f"offer_id not in route: {route}"
-        assert "offer-studio" in route, f"route does not contain 'offer-studio': {route}"
-        assert "brand-studio" not in route, f"route incorrectly contains 'brand-studio': {route}"
+        assert "offer-studio" in route, (
+            f"route does not contain 'offer-studio': {route}"
+        )
+        assert "brand-studio" not in route, (
+            f"route incorrectly contains 'brand-studio': {route}"
+        )
         # Section slug must be substituted
         assert "identity" in route, f"section_slug 'identity' not in route: {route}"
         # tenantId placeholder must remain for FE to substitute
-        assert "{tenantId}" in route, f"tenantId placeholder missing from route: {route}"
+        assert "{tenantId}" in route, (
+            f"tenantId placeholder missing from route: {route}"
+        )
         # entityId placeholder must be replaced
-        assert "{entityId}" not in route, f"entityId placeholder still in route: {route}"
+        assert "{entityId}" not in route, (
+            f"entityId placeholder still in route: {route}"
+        )
 
     def test_legacy_fallback_when_no_template(self) -> None:
         """When nav_route_template is None, falls back to module-slug route (backward compat)."""
@@ -104,7 +116,9 @@ class TestNavPillRouteTemplate:
 
     def test_brand_route_template(self) -> None:
         """Brand nav_route_template produces brand-studio URL without entityId."""
-        from luana_core_brand_studio.application.extraction_routes import NAV_ROUTE_TEMPLATE as BRAND_TPL
+        from luana_core_brand_studio.application.extraction_routes import (
+            NAV_ROUTE_TEMPLATE as BRAND_TPL,
+        )
         from luana_core_copilot.application.extraction_card_flow import (
             emit_section_complete_pill,
         )
@@ -145,7 +159,9 @@ class TestSummaryCardNoBrandStudioFallback:
     def _make_appender(self) -> tuple[list[dict], MagicMock]:
         appended: list[dict] = []
         repo = MagicMock()
-        repo.append_messages = MagicMock(side_effect=lambda conv_id, tid, msgs, **kw: appended.extend(msgs))
+        repo.append_messages = MagicMock(
+            side_effect=lambda conv_id, tid, msgs, **kw: appended.extend(msgs)
+        )
         return appended, repo
 
     def test_summary_card_with_no_cta_emits_none(self) -> None:
@@ -190,7 +206,9 @@ class TestSummaryCardNoBrandStudioFallback:
         from luana_core_copilot.application.extraction_card_flow import (
             emit_extraction_summary_card,
         )
-        from luana_core_offer_studio.application.extraction_routes import primary_cta_route
+        from luana_core_offer_studio.application.extraction_routes import (
+            primary_cta_route,
+        )
 
         offer_id = str(uuid.uuid4())
         cta = primary_cta_route(offer_id, ["identity"])

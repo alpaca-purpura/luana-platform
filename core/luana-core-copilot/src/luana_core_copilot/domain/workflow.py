@@ -161,7 +161,9 @@ class WorkflowExecutionState(BaseModel):
         return self.model_dump(mode="json")
 
     @classmethod
-    def from_jsonb_dict(cls, payload: Mapping[str, Any] | None) -> WorkflowExecutionState | None:
+    def from_jsonb_dict(
+        cls, payload: Mapping[str, Any] | None
+    ) -> WorkflowExecutionState | None:
         """Hydrate from a JSONB payload, returning ``None`` on missing/invalid input."""
         if not payload or not isinstance(payload, Mapping):
             return None

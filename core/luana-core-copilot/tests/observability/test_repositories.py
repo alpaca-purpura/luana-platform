@@ -92,9 +92,21 @@ class TestLlmCallRepository:
 
         repo = LlmCallRepository(db)
         tenant = uuid4()
-        repo.add(**_make_llm_call_kwargs(tenant, started_at=dt.datetime(2026, 4, 25, 10, 0, tzinfo=dt.UTC)))
-        repo.add(**_make_llm_call_kwargs(tenant, started_at=dt.datetime(2026, 4, 26, 10, 0, tzinfo=dt.UTC)))
-        repo.add(**_make_llm_call_kwargs(tenant, started_at=dt.datetime(2026, 4, 27, 10, 0, tzinfo=dt.UTC)))
+        repo.add(
+            **_make_llm_call_kwargs(
+                tenant, started_at=dt.datetime(2026, 4, 25, 10, 0, tzinfo=dt.UTC)
+            )
+        )
+        repo.add(
+            **_make_llm_call_kwargs(
+                tenant, started_at=dt.datetime(2026, 4, 26, 10, 0, tzinfo=dt.UTC)
+            )
+        )
+        repo.add(
+            **_make_llm_call_kwargs(
+                tenant, started_at=dt.datetime(2026, 4, 27, 10, 0, tzinfo=dt.UTC)
+            )
+        )
         db.flush()
 
         rows = repo.find_by_tenant_range(
@@ -143,7 +155,9 @@ class TestLlmCallRepository:
 # ── PricingSnapshotRepository ────────────────────────────────────────────
 
 
-def _make_pricing_kwargs(provider="openai", model="gpt-4o", *, valid_from=None, valid_to=None):
+def _make_pricing_kwargs(
+    provider="openai", model="gpt-4o", *, valid_from=None, valid_to=None
+):
     return {
         "provider": provider,
         "model": model,

@@ -72,8 +72,7 @@ def test_no_forward_module_imports():
                         )
 
     assert not violations, (
-        "luana-core-copilot must not import future-story modules. "
-        "Found forward imports:\n" + "\n".join(violations)
+        "luana-core-copilot must not import future-story modules. Found forward imports:\n" + "\n".join(violations)
     )
 
 

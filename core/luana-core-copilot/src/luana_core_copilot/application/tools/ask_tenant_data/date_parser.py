@@ -47,7 +47,11 @@ _SPANISH_MONTHS: dict[str, int] = {
 
 
 def _strip_accents(text: str) -> str:
-    return "".join(ch for ch in unicodedata.normalize("NFKD", text) if not unicodedata.combining(ch))
+    return "".join(
+        ch
+        for ch in unicodedata.normalize("NFKD", text)
+        if not unicodedata.combining(ch)
+    )
 
 
 def _normalise(phrase: str) -> str:
@@ -139,7 +143,9 @@ def parse_period(  # noqa: C901, PLR0911, PLR0912 — intentional flat case tabl
     # "últimos N días" / "ultimos N dias" — tolerate Spanish leading article
     # ("los/las/el/la") because the LLM intent_classifier preserves them
     # verbatim from the user's phrasing (TP4-B1).
-    last_n_days = re.match(r"^(?:l(?:os|as)\s+|el\s+|la\s+)?ultim[oa]s?\s+(\d+)\s+d(ias?|ays?)$", norm)
+    last_n_days = re.match(
+        r"^(?:l(?:os|as)\s+|el\s+|la\s+)?ultim[oa]s?\s+(\d+)\s+d(ias?|ays?)$", norm
+    )
     if last_n_days:
         n = int(last_n_days.group(1))
         since = _start_of_day(anchor - timedelta(days=n))

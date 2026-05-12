@@ -45,7 +45,9 @@ from luana_core_copilot.observability.persistence.models.llm_call_model import (
 from luana_core_copilot.observability.recording.domain_subscribers import (
     register_subscribers,
 )
-from luana_core_copilot.observability.recording.turn_envelope import ObservabilityContext
+from luana_core_copilot.observability.recording.turn_envelope import (
+    ObservabilityContext,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Callable

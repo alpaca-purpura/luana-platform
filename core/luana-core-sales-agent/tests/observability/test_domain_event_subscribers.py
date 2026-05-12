@@ -40,7 +40,9 @@ def captured_repo_calls(monkeypatch: pytest.MonkeyPatch) -> list[dict]:
 
 class TestLeadQualifiedSubscriber:
     @pytest.mark.asyncio
-    async def test_persists_domain_event_row(self, captured_repo_calls: list[dict]) -> None:
+    async def test_persists_domain_event_row(
+        self, captured_repo_calls: list[dict]
+    ) -> None:
         from luana_core_sales_agent.domain.events import LeadQualifiedEvent
         from luana_core_sales_agent.observability.domain_events.subscribers import (
             on_lead_qualified,
@@ -73,7 +75,9 @@ class TestLeadQualifiedSubscriber:
 
 class TestToolLoopDetectedSubscriber:
     @pytest.mark.asyncio
-    async def test_persists_with_error_status(self, captured_repo_calls: list[dict]) -> None:
+    async def test_persists_with_error_status(
+        self, captured_repo_calls: list[dict]
+    ) -> None:
         from luana_core_sales_agent.domain.events import ToolLoopDetectedEvent
         from luana_core_sales_agent.observability.domain_events.subscribers import (
             on_tool_loop_detected,

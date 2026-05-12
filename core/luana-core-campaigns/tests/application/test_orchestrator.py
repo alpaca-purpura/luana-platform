@@ -6,19 +6,16 @@ Tests: happy path, segment empty, atomic rollback, tenant isolation.
 
 from __future__ import annotations
 
-import datetime as dt
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock
 from uuid import UUID, uuid4
 
 import pytest
-
 from luana_core_campaigns.application.services.orchestrator import (
     CampaignOrchestrator,
     OrchestratorCampaignNotFoundError,
     OrchestratorCampaignNotLaunchableError,
     OrchestratorMissingStepsError,
-    OrchestratorSegmentEmptyError,
 )
 from luana_core_campaigns.domain.campaign import Campaign
 from luana_core_campaigns.domain.campaign_step import CampaignStep

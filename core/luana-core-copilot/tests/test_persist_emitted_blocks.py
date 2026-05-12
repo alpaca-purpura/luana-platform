@@ -36,13 +36,28 @@ class TestAttachBlocksToLastAssistant:
         """AI → Tool → AI: only the final AIMessage carries the blocks."""
         serialized = [
             {"role": "user", "content": "extrae"},
-            {"role": "assistant", "content": "", "tool_calls": [{"id": "t1", "name": "clarify", "args": {}}]},
-            {"role": "tool", "content": "{...}", "tool_call_id": "t1", "name": "clarify"},
+            {
+                "role": "assistant",
+                "content": "",
+                "tool_calls": [{"id": "t1", "name": "clarify", "args": {}}],
+            },
+            {
+                "role": "tool",
+                "content": "{...}",
+                "tool_call_id": "t1",
+                "name": "clarify",
+            },
             {"role": "assistant", "content": "Noté algo que quiero aclarar."},
         ]
         blocks = [
             {"id": "t", "type": "text", "markdown": "Noté algo..."},
-            {"id": "c", "type": "card", "card_kind": "clarify", "payload": {"clarify_items": []}, "status": "pending"},
+            {
+                "id": "c",
+                "type": "card",
+                "card_kind": "clarify",
+                "payload": {"clarify_items": []},
+                "status": "pending",
+            },
         ]
 
         CopilotOrchestrator._attach_blocks_to_last_assistant(serialized, blocks)
@@ -212,7 +227,9 @@ class TestDedupeEmittedBlocks:
                 "id": f"p{i}",
                 "type": "card",
                 "card_kind": "plan_card",
-                "payload": {"todos": [{"status": "completed" if i == 2 else "in_progress"}]},
+                "payload": {
+                    "todos": [{"status": "completed" if i == 2 else "in_progress"}]
+                },
             }
             for i in range(3)
         ]
@@ -229,7 +246,9 @@ class TestDedupeEmittedBlocks:
 
         args, _ = orch.conv_repo.append_messages.call_args
         _, _, new_messages = args
-        plan_blocks = [b for b in new_messages[-1]["blocks"] if b.get("card_kind") == "plan_card"]
+        plan_blocks = [
+            b for b in new_messages[-1]["blocks"] if b.get("card_kind") == "plan_card"
+        ]
         assert len(plan_blocks) == 1
         assert plan_blocks[0]["id"] == "p2"
 

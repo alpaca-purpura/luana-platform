@@ -17,7 +17,9 @@ class TestClientContextDTO:
         assert dto.locale == "es"
 
     def test_client_context_with_selected_fields(self) -> None:
-        fields = [{"field_id": "uvp", "field_label": "Propuesta", "field_value": "hola"}]
+        fields = [
+            {"field_id": "uvp", "field_label": "Propuesta", "field_value": "hola"}
+        ]
         dto = ClientContextDTO(
             current_route="/brand-studio",
             selected_fields=fields,

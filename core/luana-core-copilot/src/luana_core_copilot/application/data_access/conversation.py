@@ -84,8 +84,12 @@ class ConversationDataAccessProvider:
                 metadata={
                     "count": count,
                     "kind": "conversation_count",
-                    "since": since.isoformat() if hasattr(since, "isoformat") else str(since),
-                    "until": until.isoformat() if hasattr(until, "isoformat") else str(until),
+                    "since": since.isoformat()
+                    if hasattr(since, "isoformat")
+                    else str(since),
+                    "until": until.isoformat()
+                    if hasattr(until, "isoformat")
+                    else str(until),
                 },
             )
         finally:
