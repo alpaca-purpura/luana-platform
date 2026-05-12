@@ -156,11 +156,23 @@ from sqlalchemy.pool import StaticPool  # noqa: E402
 # Without stubs, SA mapper config fails with InvalidRequestError.
 # ---------------------------------------------------------------------------
 
-# T-11 (Story 7 batch 4) — MessageModel lifted in T-5 batch 2. Eager-import the
-# real model so the stub guard below skips stub creation, preventing the
+# T-11/T-12 (Story 7 batch 4) — MessageModel lifted in T-5 batch 2. Eager-import
+# the real model so the stub guard below skips stub creation, preventing the
 # "Table 'messages' is already defined" collision when _do_singleton_reset
-# transitively imports the orchestrator chain. AppointmentModel stub remains
-# until Story 8 scheduling lift completes (per D-T2 evaluation).
+# triggers the orchestrator chain (chat → conversation_pipeline → graph →
+# agents/sales → tracing → audit_repository → message_model).
+#
+# Known pre-existing tech debt (NOT introduced by Story 7): luana-core-platform
+# CRM's LeadModel.messages relationship declares `foreign_keys="MessageModel.lead_id"`
+# but the real MessageModel uses `user_id` Column (with `lead_id` as @property alias
+# for AISALESHT back-compat). The previous stub masked this by providing a real
+# `lead_id` Column. Now that the real model is imported, tests touching the
+# LeadModel.messages relationship (e.g., test_closer_studio_service.py) fail
+# with "Class MessageModel does not have a mapped column named 'lead_id'".
+# Proper fix: align luana-core-platform CRM relationship to AISALESHT pattern
+# (back_populates without foreign_keys hint, since MessageModel.lead specifies
+# foreign_keys=[user_id]). Scoped to luana-core-platform Story 4 follow-up,
+# NOT Story 7. AppointmentModel stub remains until Story 8 scheduling lift.
 import luana_core_sales_agent.infrastructure.models.message_model  # noqa: E402, F401
 
 if "messages" not in _Base.metadata.tables:
@@ -170,8 +182,7 @@ if "messages" not in _Base.metadata.tables:
 
         Real model now lives in luana_core_sales_agent.infrastructure.models.message_model
         (T-5 batch 2 lift). The eager import above populates _Base.metadata so this
-        fallback stub is skipped. Kept for forward-compatibility if real module is
-        ever removed without conftest update.
+        fallback stub is skipped. Kept for forward-compatibility.
         """
 
         __tablename__ = "messages"
