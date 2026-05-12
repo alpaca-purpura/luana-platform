@@ -1,26 +1,24 @@
-"""Connections API dependencies — composition root stub.
+"""Connections API dependencies — cross-module DI wiring.
 
-Deferred to Story 7 (ChatOrchestrator composition root wiring).
-Story 4 lift provides import-compatible stub only.
+Centralizes imports of concrete adapters from other modules so that
+individual endpoint files depend only on shared port ABCs.
 
-DEFERRED: Real wiring in Story 7 will inject ChatOrchestrator
-as the concrete MessageHandlerPort implementation. Until then,
-this module exports a stub that raises NotImplementedError at
-call time (not import time), allowing tests that mock this
-dependency to work normally.
+Lift origin: backend/src/modules/connections/api/dependencies/__init__.py
+Story 7 T-16: resolves Stories 4+6 deferral — both luana_core_copilot AND
+luana_core_sales_agent now exist in luana-platform, enabling real
+ChatOrchestrator wiring.
 """
 
-# downstream-regression-na: stub deferred to Story 7 — no cross-consumers yet
+# DDD exception (intentional): this file IS the composition root for connections.
+# Its sole job is to wire ChatOrchestrator as the concrete MessageHandlerPort
+# implementation. The import of sales_agent here is correct DI wiring.
+from luana_core_sales_agent.application.orchestrator.chat import ChatOrchestrator
+from luana_core_platform.links.ports.message_handler import MessageHandlerPort
+
+# Singleton — ChatOrchestrator is stateless (no DB session in __init__).
+_message_handler: MessageHandlerPort = ChatOrchestrator()
 
 
-def get_message_handler():
-    """Return the message handler dependency.
-
-    STUB — deferred to Story 7 (ChatOrchestrator composition root).
-    Production callers must override this via DI before use.
-    Tests should mock this function directly.
-    """
-    raise NotImplementedError(
-        "get_message_handler is deferred to Story 7 — "
-        "ChatOrchestrator composition root wiring not yet available in luana-platform."
-    )
+def get_message_handler() -> MessageHandlerPort:
+    """Return the message handler (ChatOrchestrator) singleton."""
+    return _message_handler

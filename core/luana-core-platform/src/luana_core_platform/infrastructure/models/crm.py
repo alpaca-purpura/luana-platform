@@ -199,11 +199,16 @@ class LeadModel(Base):
     # until Story 4 TenantModel update. Uses foreign_keys for FK resolution only.
     tenant = relationship("TenantModel", foreign_keys=[tenant_id])
 
-    # Relationships — back_populates omitted for cross-module models
-    # (MessageModel from sales_agent, AppointmentModel from scheduling — lifted later)
+    # Relationships
+    # Story 7 T-16: MessageModel now lifted real (Story 7); pre-T-16 used
+    # foreign_keys="MessageModel.lead_id" stub-target which doesn't exist on
+    # real model (real col is `user_id`, `lead_id` is a Python @property).
+    # Restored back_populates="lead" pattern matching AISALESHT
+    # shared/infrastructure/models/crm.py:201 LeadModel.messages SSoT.
+    # AppointmentModel remains stub-targeted (Story 8 lift pending).
     messages = relationship(
         "MessageModel",
-        foreign_keys="MessageModel.lead_id",
+        back_populates="lead",
         cascade="all, delete-orphan",
     )
     appointments = relationship(

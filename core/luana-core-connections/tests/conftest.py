@@ -151,9 +151,12 @@ _db_types.EncryptedJSON.impl = MockJSONB  # type: ignore[assignment]
 # Import models AFTER patching dialects
 # ---------------------------------------------------------------------------
 # Cross-module stub models for SQLite test isolation
-# Story 4 connections tests need stubs for: MessageModel, AppointmentModel, ProductModel
-# These live in sales_agent/scheduling/offer modules (not yet in luana-platform).
-# Stubs satisfy SQLAlchemy mapper + FK resolution without pulling forward imports.
+# Story 4 connections tests need stubs for: AppointmentModel, ProductModel.
+# Story 7 T-16: MessageModel STUB REMOVED — sales_agent.MessageModel now real
+# (lifted from luana_core_sales_agent), imported BEFORE stub guard runs so the
+# real model registers first in Base.metadata. ChatOrchestrator wiring requires
+# real model. Stubs satisfy SQLAlchemy mapper + FK resolution for remaining
+# deferred lifts (scheduling.AppointmentModel = Story 8; offer.ProductModel).
 # ---------------------------------------------------------------------------
 import sqlalchemy as _sa  # noqa: E402
 
@@ -166,6 +169,14 @@ from sqlalchemy import create_engine  # noqa: E402
 from sqlalchemy.orm import sessionmaker  # noqa: E402
 from sqlalchemy.pool import StaticPool  # noqa: E402
 
+# Story 7 T-16: Register real sales_agent.MessageModel BEFORE stub guard runs.
+# T-16 resolves Stories 4+6 deferral — connections api/dependencies now wires
+# real ChatOrchestrator → transitively imports sales_agent models. The real
+# MessageModel claims 'messages' in Base.metadata; stub guard below skips.
+from luana_core_sales_agent.infrastructure.models.message_model import (  # noqa: F401, E402
+    MessageModel,
+)
+
 if "products" not in Base.metadata.tables:
 
     class ProductModel(Base):  # type: ignore[misc]
@@ -174,16 +185,6 @@ if "products" not in Base.metadata.tables:
         __tablename__ = "products"
         id = _sa.Column(MockUUID(as_uuid=True), primary_key=True)
         tenant_id = _sa.Column(MockUUID(as_uuid=True), nullable=True)
-
-
-if "messages" not in Base.metadata.tables:
-
-    class MessageModel(Base):  # type: ignore[misc]
-        """Stub for sales_agent.MessageModel (future lift). FK target only."""
-
-        __tablename__ = "messages"
-        id = _sa.Column(MockUUID(as_uuid=True), primary_key=True)
-        lead_id = _sa.Column(MockUUID(as_uuid=True), _sa.ForeignKey("leads.id"), nullable=True)
 
 
 if "appointments" not in Base.metadata.tables:
