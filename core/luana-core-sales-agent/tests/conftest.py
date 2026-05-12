@@ -155,14 +155,23 @@ from sqlalchemy.pool import StaticPool  # noqa: E402
 # -> "MessageModel" and LeadModel.appointments -> "AppointmentModel".
 # Without stubs, SA mapper config fails with InvalidRequestError.
 # ---------------------------------------------------------------------------
+
+# T-11 (Story 7 batch 4) — MessageModel lifted in T-5 batch 2. Eager-import the
+# real model so the stub guard below skips stub creation, preventing the
+# "Table 'messages' is already defined" collision when _do_singleton_reset
+# transitively imports the orchestrator chain. AppointmentModel stub remains
+# until Story 8 scheduling lift completes (per D-T2 evaluation).
+import luana_core_sales_agent.infrastructure.models.message_model  # noqa: E402, F401
+
 if "messages" not in _Base.metadata.tables:
 
     class MessageModel(_Base):  # type: ignore[misc]
         """Stub for sales_agent.MessageModel (Story 7 lift).
 
-        Real model will be lifted in Story 7. T-17 (D-T2 cleanup) will replace this
-        stub with `from luana_core_copilot.persistence.models.message_model import MessageModel`
-        once T-16 unlift establishes the model in luana_core_copilot.
+        Real model now lives in luana_core_sales_agent.infrastructure.models.message_model
+        (T-5 batch 2 lift). The eager import above populates _Base.metadata so this
+        fallback stub is skipped. Kept for forward-compatibility if real module is
+        ever removed without conftest update.
         """
 
         __tablename__ = "messages"
