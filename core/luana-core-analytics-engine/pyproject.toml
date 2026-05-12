@@ -1,6 +1,6 @@
 [project]
 name = "luana-core-analytics-engine"
-version = "0.0.1-alpha"
+version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
     "pydantic>=2.0",

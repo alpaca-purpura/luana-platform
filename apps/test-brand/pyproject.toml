@@ -1,6 +1,6 @@
 [project]
 name = "test-brand"
-version = "0.0.8-alpha"
+version = "0.1.0"
 requires-python = ">=3.12"
 description = "Test brand app — SDK smoke validation. NOT a deployable product."
 dependencies = [

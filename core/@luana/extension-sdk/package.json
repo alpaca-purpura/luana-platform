@@ -1,7 +1,7 @@
 {
   "name": "@luana/extension-sdk",
-  "version": "0.0.8-alpha",
-  "description": "Luana extension SDK — TypeScript type mirror (EP-6/EP-10/EP-18 FE surface)",
+  "version": "0.1.0",
+  "description": "Luana extension SDK \u2014 TypeScript type mirror (EP-6/EP-10/EP-18 FE surface)",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "exports": {
@@ -15,5 +15,8 @@
   },
   "devDependencies": {
     "typescript": "^5.0.0"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
   }
 }

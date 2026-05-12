@@ -1,6 +1,6 @@
 [project]
 name = "luana-core-extension-sdk"
-version = "0.0.8-alpha"
+version = "0.1.0"
 requires-python = ">=3.12"
 description = "Luana extension SDK — 18 extension points formalized contract"
 dependencies = []       # ZERO workspace deps — pure contract layer
