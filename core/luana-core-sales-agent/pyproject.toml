@@ -32,6 +32,9 @@ dependencies = [
     "luana-core-copilot",          # for copilot_provider/provider.py subclass (T-15)
 ]
 
+[project.entry-points."nicolify.copilot_providers"]
+sales_agent = "luana_core_sales_agent.copilot_provider:provider"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
