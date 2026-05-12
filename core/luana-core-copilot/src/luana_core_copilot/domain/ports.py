@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
 from uuid import UUID
 
 from luana_core_platform.core.enums import ModelRole
+
 from luana_core_copilot.domain.procedure_state import ProcedureState
 
 if TYPE_CHECKING:

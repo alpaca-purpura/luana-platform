@@ -29,14 +29,13 @@ from uuid import UUID
 
 import structlog
 from langchain_core.tools import tool
-from sqlalchemy import or_, select
-
-from luana_core_platform.core.context import get_tenant_id
-from luana_core_platform.core.database import SessionLocal
 from luana_core_assets.infrastructure.models.asset_model import AssetModel
 from luana_core_assets.infrastructure.repositories.asset_repository import (
     AssetRepository,
 )
+from luana_core_platform.core.context import get_tenant_id
+from luana_core_platform.core.database import SessionLocal
+from sqlalchemy import or_, select
 
 if TYPE_CHECKING:
     from sqlalchemy.orm import Session

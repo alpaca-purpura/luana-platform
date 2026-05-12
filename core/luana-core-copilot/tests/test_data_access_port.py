@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import pytest
-
 from luana_core_copilot.domain.ports import (
     BaseCopilotProvider,
     DataAccessProvider,

@@ -4,9 +4,9 @@ from datetime import UTC, datetime, timedelta
 
 import sentry_sdk
 import structlog
+from luana_core_platform.core.database import SessionLocal
 from sentry_sdk.crons import MonitorStatus, capture_checkin
 
-from luana_core_platform.core.database import SessionLocal
 from luana_core_copilot.infrastructure.repositories.event_repository import (
     CopilotEventRepository,
 )

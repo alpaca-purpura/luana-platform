@@ -11,8 +11,6 @@ from __future__ import annotations
 from typing import Any
 
 import pytest
-from pydantic import BaseModel
-
 from luana_core_copilot.application.workflows.engine import (
     WorkflowEngine,
     WorkflowExecutionError,
@@ -24,6 +22,7 @@ from luana_core_copilot.domain.workflow import (
     WorkflowNode,
     WorkflowTrigger,
 )
+from pydantic import BaseModel
 
 
 class _DemoState(BaseModel):

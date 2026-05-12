@@ -16,13 +16,11 @@ PR-6 Sub-C / PI-1 S2.
 
 from __future__ import annotations
 
-import asyncio
 from decimal import Decimal
 from typing import Any
 from uuid import UUID
 
 import pytest
-
 from luana_core_billing.application.exceptions import BudgetExceeded
 from luana_core_billing.application.llm_guards import BudgetGuardingChatModel
 from luana_core_billing.domain.budget_decision import BudgetDecision
@@ -311,13 +309,13 @@ class TestBuildDeepAgentGraphBudgetGuardWiring:
         """
         from unittest.mock import MagicMock, patch
 
+        from luana_core_billing.application.llm_guards import BudgetGuardingChatModel
         from luana_core_copilot.application.orchestrator.deep_agent import (
             build_deep_agent_graph,
         )
         from luana_core_copilot.application.orchestrator.state import (
             create_initial_copilot_state,
         )
-        from luana_core_billing.application.llm_guards import BudgetGuardingChatModel
 
         inner_llm = _StubInnerChatModel()
         mock_graph = MagicMock()

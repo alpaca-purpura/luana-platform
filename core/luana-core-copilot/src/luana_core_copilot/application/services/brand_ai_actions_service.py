@@ -10,11 +10,10 @@ if TYPE_CHECKING:
     from collections.abc import Callable
     from uuid import UUID
 
-    from sqlalchemy.orm import Session
-
     from luana_core_brand_studio.application.extraction_trace import ExtractionTraceCollector
     from luana_core_brand_studio.domain.aggregates import BrandSettings
     from luana_core_brand_studio.domain.identity import BrandVisuals
+    from sqlalchemy.orm import Session
 
 
 class CopilotBrandAIActionsService:

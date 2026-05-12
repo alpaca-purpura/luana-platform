@@ -11,6 +11,7 @@ from datetime import datetime
 from uuid import UUID
 
 from luana_core_platform.core.enums import ModelRole
+
 from luana_core_copilot.domain.routing_policy import ClassifierType
 
 

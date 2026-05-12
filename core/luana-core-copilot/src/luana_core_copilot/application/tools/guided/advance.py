@@ -17,9 +17,9 @@ import json
 
 import structlog
 from langchain_core.tools import tool
-
 from luana_core_platform.core.context import get_conversation_id, get_tenant_id
 from luana_core_platform.core.database import SessionLocal
+
 from luana_core_copilot.application.guided.block_generator import (
     build_blocks,
     next_block_after,

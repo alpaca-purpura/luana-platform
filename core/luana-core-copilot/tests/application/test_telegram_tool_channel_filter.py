@@ -6,7 +6,6 @@ Covers D-PI5-023..025: web-only groups filter when channel != "web".
 from __future__ import annotations
 
 from luana_core_copilot.application.tools.registry import (
-    TOOL_GROUP_META,
     ToolGroupMeta,
     is_group_available_in_channel,
 )
@@ -53,6 +52,7 @@ def test_tool_group_meta_immutable() -> None:
     """ToolGroupMeta is frozen — cannot mutate post-creation."""
     meta = ToolGroupMeta("test_group", available_channels=frozenset({"web"}))
     import dataclasses
+
     import pytest
 
     with pytest.raises(dataclasses.FrozenInstanceError):

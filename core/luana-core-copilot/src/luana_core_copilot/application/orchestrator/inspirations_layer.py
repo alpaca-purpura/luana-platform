@@ -88,6 +88,7 @@ def build_inspirations_layer(state: dict) -> str:
 
     try:
         from luana_core_platform.core.database import SessionLocal
+
         from luana_core_copilot.infrastructure.repositories.inspiration_repository import (
             CopilotInspirationRepository,
         )

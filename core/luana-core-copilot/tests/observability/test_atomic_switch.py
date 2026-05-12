@@ -21,6 +21,7 @@ import re
 from pathlib import Path
 
 import pytest
+
 pytest.skip("T-15 deferred — luana_core_platform.workers.settings not yet lifted from AISALESHT shared/workers/. Story 1/2 territory or T-21 finalize.", allow_module_level=True)
 
 BACKEND_SRC = Path(__file__).resolve().parents[4] / "src"

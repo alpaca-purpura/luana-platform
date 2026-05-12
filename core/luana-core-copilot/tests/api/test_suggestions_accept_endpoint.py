@@ -9,13 +9,11 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from types import SimpleNamespace
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 from uuid import UUID, uuid4
 
-import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-
 from luana_core_iam.api.dependencies import get_current_user, get_tenant_context
 
 

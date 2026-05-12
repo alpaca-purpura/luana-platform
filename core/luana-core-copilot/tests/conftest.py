@@ -140,15 +140,13 @@ except (ImportError, AttributeError):
 # ---------------------------------------------------------------------------
 # Imports AFTER patching dialects
 # ---------------------------------------------------------------------------
+import pytest  # noqa: E402
 import sqlalchemy as _sa  # noqa: E402
+from luana_core_platform.domain.base_entity import Base  # noqa: E402
+from luana_core_platform.domain.base_entity import Base as _Base  # noqa: E402
 from sqlalchemy import create_engine  # noqa: E402
 from sqlalchemy.orm import sessionmaker  # noqa: E402
 from sqlalchemy.pool import StaticPool  # noqa: E402
-
-import pytest  # noqa: E402
-
-from luana_core_platform.domain.base_entity import Base  # noqa: E402
-from luana_core_platform.domain.base_entity import Base as _Base  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Cross-module stub models for SQLite test isolation

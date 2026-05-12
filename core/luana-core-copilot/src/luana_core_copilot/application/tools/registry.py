@@ -17,6 +17,8 @@ Web-only groups: ``navigation``, ``guided``, ``landing``,
 from dataclasses import dataclass, field
 from typing import Final
 
+from luana_core_channels.format_for_channel import format_for_channel
+
 from luana_core_copilot.application.tools.analytics_tools import ANALYTICS_TOOLS
 from luana_core_copilot.application.tools.ask_tenant_data import ask_tenant_data
 from luana_core_copilot.application.tools.assets_tools import ASSETS_TOOLS  # [COPILOT-OUTBOUND-ASSETS]
@@ -38,7 +40,6 @@ from luana_core_copilot.application.tools.pin_to_memory import pin_to_memory
 from luana_core_copilot.application.tools.procedure_tools import PROCEDURE_TOOLS
 from luana_core_copilot.application.tools.sales_agent_tools import SALES_AGENT_TOOLS
 from luana_core_copilot.application.tools.shared_tools import SHARED_TOOLS
-from luana_core_channels.format_for_channel import format_for_channel
 
 
 class ToolNameCollisionError(RuntimeError):

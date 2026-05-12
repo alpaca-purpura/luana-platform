@@ -17,9 +17,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import structlog
+from luana_core_platform.core.database import SessionLocal
 from sqlalchemy import text
 
-from luana_core_platform.core.database import SessionLocal
 from luana_core_copilot.application.extraction.active_job_state import (
     ActiveExtractionJob,
     load_active_job,

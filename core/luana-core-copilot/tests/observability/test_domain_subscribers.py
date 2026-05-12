@@ -12,9 +12,8 @@ from unittest.mock import MagicMock
 from uuid import uuid4
 
 import pytest
-from sqlalchemy.orm import sessionmaker
-
 from luana_core_platform.domain.events import DomainEvent, EventBus
+from sqlalchemy.orm import sessionmaker
 
 
 @pytest.fixture

@@ -22,8 +22,8 @@ from dataclasses import dataclass
 
 import structlog
 from langchain_core.messages import HumanMessage, SystemMessage
-
 from luana_core_platform.core.enums import ModelRole
+
 from luana_core_copilot.application.orchestrator.stream_filters import (
     INTERNAL_LLM_CONFIG,
 )

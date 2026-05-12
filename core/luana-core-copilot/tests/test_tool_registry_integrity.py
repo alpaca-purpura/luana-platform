@@ -43,7 +43,6 @@ class TestToolRegistryIntegrity:
     def test_register_tool_groups_enforces_uniqueness(self) -> None:
         """`register_tool_groups` raises on divergent same-name collisions."""
         from langchain_core.tools import tool as lc_tool
-
         from luana_core_copilot.application.tools.registry import (
             ToolNameCollisionError,
             _register_tool_groups,
@@ -67,7 +66,6 @@ class TestToolRegistryIntegrity:
     def test_register_tool_groups_allows_reexport(self) -> None:
         """Re-exporting the *same* tool object across groups is fine."""
         from langchain_core.tools import tool as lc_tool
-
         from luana_core_copilot.application.tools.registry import (
             _register_tool_groups,
         )

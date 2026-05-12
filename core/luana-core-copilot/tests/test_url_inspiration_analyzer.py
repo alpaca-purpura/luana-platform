@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import pytest
-
 from luana_core_copilot.application.tools.url_inspiration_analyzer import (
     InspirationAnalysis,
     analyze,

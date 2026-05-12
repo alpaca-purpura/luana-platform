@@ -287,8 +287,6 @@ def test_assets_tools_list_exported() -> None:
     """ASSETS_TOOLS list must contain the two tool functions."""
     from luana_core_copilot.application.tools.assets_tools import (
         ASSETS_TOOLS,
-        get_asset,
-        search_assets,
     )
 
     tool_names = {t.name for t in ASSETS_TOOLS}

@@ -45,9 +45,8 @@ from uuid import uuid4
 import pytest
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import HumanMessage
-
-from luana_core_platform.core.enums import ModelRole
 from luana_core_llm.factory import LLMFactory
+from luana_core_platform.core.enums import ModelRole
 
 
 @pytest.fixture
@@ -154,7 +153,6 @@ class TestDeepAgentGraphWithFactoryLLM:
     def test_compiles_without_typeerror(self, base_state) -> None:
         """Repro directo del bug TP1-pre: llm=None → crash en deepagents.resolve_model."""
         from langgraph.graph.state import CompiledStateGraph
-
         from luana_core_copilot.application.orchestrator.deep_agent import (
             build_deep_agent_graph,
         )

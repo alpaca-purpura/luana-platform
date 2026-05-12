@@ -36,9 +36,8 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field
-
 from luana_core_platform.domain.datetime_utils import utc_now
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class WorkflowTrigger(StrEnum):

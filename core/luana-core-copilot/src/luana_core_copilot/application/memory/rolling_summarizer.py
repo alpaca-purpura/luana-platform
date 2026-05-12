@@ -14,7 +14,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from langchain_core.messages import HumanMessage, SystemMessage
-
 from luana_core_platform.core.enums import ModelRole
 
 if TYPE_CHECKING:

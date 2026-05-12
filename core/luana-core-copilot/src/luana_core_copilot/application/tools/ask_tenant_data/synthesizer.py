@@ -20,12 +20,11 @@ from typing import TYPE_CHECKING, Any
 
 import structlog
 from langchain_core.messages import HumanMessage, SystemMessage
-
-from luana_core_platform.core.enums import ModelRole
 from luana_core_channels.format import (
     SUPPORTED_CHANNELS,
     get_channel_format,
 )
+from luana_core_platform.core.enums import ModelRole
 
 if TYPE_CHECKING:
     from luana_core_copilot.domain.ports import DataQueryPlan, DataQueryResult

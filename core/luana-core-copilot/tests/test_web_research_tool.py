@@ -8,7 +8,6 @@ import json
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-
 from luana_core_copilot.application.tools.shared_tools.web_research import (
     web_research,
 )

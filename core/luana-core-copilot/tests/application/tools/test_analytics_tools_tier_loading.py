@@ -11,8 +11,6 @@ import json
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID
 
-import pytest
-
 TENANT_ID = UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
 
 _GET_TENANT_ID = "luana_core_copilot.application.tools.analytics_tools.get_tenant_id"

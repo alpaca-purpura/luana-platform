@@ -24,15 +24,14 @@ from uuid import uuid4
 
 import pytest
 from langchain_core.messages import HumanMessage
-
+from luana_core_channels.intent_detector import (
+    detect_channel_intent,
+)
 from luana_core_copilot.application.orchestrator.deep_agent import (
     _build_combined_system_prompt,
 )
 from luana_core_copilot.application.orchestrator.state import (
     create_initial_copilot_state,
-)
-from luana_core_channels.intent_detector import (
-    detect_channel_intent,
 )
 
 

@@ -2,12 +2,9 @@
 
 from __future__ import annotations
 
-import base64
-import json
 from uuid import uuid4
 
 import pytest
-
 from luana_core_copilot.infrastructure.models.conversation_model import (
     CopilotConversationModel,
 )
@@ -150,11 +147,10 @@ class TestArchive:
         db.commit()
 
         # Even with deleted_at check disabled (raw query)
-        from sqlalchemy import select
-
         from luana_core_copilot.infrastructure.models.conversation_model import (
             CopilotConversationModel,
         )
+        from sqlalchemy import select
 
         stmt = select(CopilotConversationModel).where(CopilotConversationModel.id == conv.id)
         row = db.execute(stmt).scalars().first()

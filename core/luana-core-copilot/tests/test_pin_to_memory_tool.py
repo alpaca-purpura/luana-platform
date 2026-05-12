@@ -6,12 +6,6 @@ import json
 from uuid import uuid4
 
 import pytest
-
-from luana_core_platform.core.context import (
-    set_conversation_id,
-    set_tenant_id,
-    set_user_id,
-)
 from luana_core_copilot.application.tools.pin_to_memory import (
     _pin_to_memory_impl,
 )
@@ -20,6 +14,11 @@ from luana_core_copilot.infrastructure.repositories.inspiration_repository impor
 )
 from luana_core_copilot.infrastructure.repositories.pinned_memory_repository import (
     CopilotPinnedMemoryRepository,
+)
+from luana_core_platform.core.context import (
+    set_conversation_id,
+    set_tenant_id,
+    set_user_id,
 )
 
 

@@ -5,7 +5,6 @@ from __future__ import annotations
 import uuid
 
 import pytest
-
 from luana_core_copilot.application.tools.ask_tenant_data.executor import (
     NoAccessorError,
     execute_plan,

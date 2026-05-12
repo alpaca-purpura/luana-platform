@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import pytest
-
 from luana_core_copilot.infrastructure.channels.in_memory_channel import (
     InMemoryConversationalChannel,
 )

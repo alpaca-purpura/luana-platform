@@ -24,7 +24,6 @@ from uuid import UUID, uuid4
 
 import structlog
 from langchain_core.tools import tool
-
 from luana_core_platform.core.context import get_conversation_id, get_tenant_id
 from luana_core_platform.core.database import redis_client
 
@@ -231,17 +230,18 @@ async def extract_from_doc(
     # This uses the same pipeline as extract_document_to_fields but returns the
     # unified AsyncToolJob shape for frontend consistency.
     try:
-        from luana_core_platform.core.database import SessionLocal
         from luana_core_assets.infrastructure.repositories.asset_repository import (
             AssetRepository,
         )
+        from luana_core_platform.application.ai_action_service import AIActionService
+        from luana_core_platform.core.database import SessionLocal
+
         from luana_core_copilot.application.services.document_processor import (
             DocumentProcessor,
         )
         from luana_core_copilot.domain.extraction_domain_registry import (
             get_extraction_config,
         )
-        from luana_core_platform.application.ai_action_service import AIActionService
 
         if get_extraction_config(domain) is None:
             return _err(f"El módulo '{module}' no tiene template de extracción de documentos.")
@@ -428,12 +428,12 @@ def _publish_completion_events(
     if not conversation_id:
         return
     try:
+        from luana_core_events.outbox.application.event_bus_adapter import (
+            adapter_bus as EventBus,  # noqa: N812
+        )
         from luana_core_platform.domain.events import (
             ExtractionJobCompletedEvent,
             ExtractionSectionCompletedEvent,
-        )
-        from luana_core_events.outbox.application.event_bus_adapter import (
-            adapter_bus as EventBus,  # noqa: N812
         )
 
         started_dt = datetime.fromisoformat(started_at)

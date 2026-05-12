@@ -12,7 +12,6 @@ from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 import pytest
-
 from luana_core_copilot.domain.ports import (
     ContextInjector,
     CopilotProvider,

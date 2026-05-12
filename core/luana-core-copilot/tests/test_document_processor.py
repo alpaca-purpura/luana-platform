@@ -16,7 +16,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
 import pytest
-
 from luana_core_copilot.application.services.document_processor import (
     DocumentProcessingResult,
     DocumentProcessor,

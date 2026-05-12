@@ -7,10 +7,8 @@ Integration tests with real DB are in test_media_db_roundtrip.py.
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 from uuid import uuid4
-
-import pytest
 
 from luana_core_copilot.domain.tenant_limits import CopilotTenantLimits
 from luana_core_copilot.infrastructure.models.tenant_limits_model import (

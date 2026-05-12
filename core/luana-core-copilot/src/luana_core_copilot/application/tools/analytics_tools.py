@@ -24,8 +24,8 @@ from typing import TYPE_CHECKING, Any, cast
 
 import structlog
 from langchain_core.tools import tool
-
 from luana_core_platform.core.context import get_tenant_id
+
 from luana_core_copilot.application.tools._analytics_inputs import (
     ChannelOverviewParams,
     StageFilterParams,
@@ -75,10 +75,10 @@ async def _call_stage_overview(
     Isolated as a top-level async function so tests can patch it cleanly
     without instantiating real Redis / DB dependencies.
     """
-    from luana_core_platform.core.database import SessionLocal
     from luana_core_analytics_engine.application.services.stage_services.overview_stage import (
         StageOverviewService,
     )
+    from luana_core_platform.core.database import SessionLocal
 
     db = SessionLocal()
     try:
@@ -96,10 +96,10 @@ async def _call_channel_dashboard(
 
     Isolated as a top-level async function so tests can patch it cleanly.
     """
-    from luana_core_platform.core.database import SessionLocal
     from luana_core_analytics_engine.application.services.channel_dashboard_service import (
         ChannelDashboardService,
     )
+    from luana_core_platform.core.database import SessionLocal
 
     db = SessionLocal()
     try:
@@ -147,13 +147,12 @@ async def _call_etl_refresh(
     Isolated as a top-level async function so tests can patch it cleanly.
     Returns a dict with at minimum ``{"status": "...", "run_id": "..."}``.
     """
+    from luana_core_analytics_engine.application.services.etl_service import ETLService
+    from luana_core_analytics_engine.infrastructure.cache.metrics_cache import MetricsCache
     from luana_core_analytics_engine.infrastructure.providers.connection_port_impl import (
         ConnectionPortImpl,
     )
-
     from luana_core_platform.core.database import SessionLocal
-    from luana_core_analytics_engine.application.services.etl_service import ETLService
-    from luana_core_analytics_engine.infrastructure.cache.metrics_cache import MetricsCache
 
     provider_name = _SLUG_TO_PROVIDER.get(channel_slug)
     if not provider_name:

@@ -103,7 +103,6 @@ class TestProviderRouteMerging:
 
     def _synth_provider(self):
         from langchain_core.tools import tool
-
         from luana_core_copilot.domain.ports import (
             BaseCopilotProvider,
             ProviderRoute,
@@ -168,7 +167,6 @@ class TestProviderRouteMerging:
         extends the growth-studio route entry without touching the wildcard.
         """
         from langchain_core.tools import tool
-
         from luana_core_copilot.domain.ports import (
             BaseCopilotProvider,
             ProviderRoute,

@@ -26,15 +26,15 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
 import structlog
-
 from luana_core_platform.core.database import SessionLocal
+from luana_core_platform.links.ports.brand import create_brand_data_port
+from luana_core_platform.links.ports.sales_agent import create_sales_agent_observability_port
+
 from luana_core_copilot.domain.suggestion import (
     Suggestion,
     SuggestionCategory,
     SuggestionContext,
 )
-from luana_core_platform.links.ports.brand import create_brand_data_port
-from luana_core_platform.links.ports.sales_agent import create_sales_agent_observability_port
 
 logger = structlog.get_logger()
 

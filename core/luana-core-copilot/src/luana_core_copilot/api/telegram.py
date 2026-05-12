@@ -23,10 +23,13 @@ if TYPE_CHECKING:
     from uuid import UUID
 else:
     from uuid import UUID  # runtime — used in Query annotation
-from sqlalchemy.ext.asyncio import AsyncSession
-
+from luana_core_iam.api.dependencies import get_current_user
+from luana_core_iam.domain.user import User
+from luana_core_observability.recording.sanitization import sanitize_payload
 from luana_core_platform.core.arq_pool import get_arq_pool
 from luana_core_platform.core.config import settings
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from luana_core_copilot.api._dependencies import get_copilot_async_session
 from luana_core_copilot.api.telegram_dto import (
     LinkStatusResponse,
@@ -43,9 +46,6 @@ from luana_core_copilot.application.services.telegram_link_service import (
     generate_link_token,
     revoke_chat_link,
 )
-from luana_core_iam.api.dependencies import get_current_user
-from luana_core_iam.domain.user import User
-from luana_core_observability.recording.sanitization import sanitize_payload
 
 router = APIRouter(prefix="/api/v1/copilot/telegram", tags=["copilot-telegram"])
 _LOGGER = structlog.get_logger(__name__)

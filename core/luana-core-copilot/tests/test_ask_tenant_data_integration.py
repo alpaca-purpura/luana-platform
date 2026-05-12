@@ -19,7 +19,6 @@ pytest.skip(
     allow_module_level=True,
 )
 
-from luana_core_platform.core.context import set_tenant_id
 from luana_core_copilot.application.data_access import (
     ConversationDataAccessProvider,
 )
@@ -32,7 +31,9 @@ from luana_core_copilot.infrastructure.models.conversation_model import (
 )
 from luana_core_crm.copilot_provider.data_access import CrmDataAccessProvider
 from luana_core_offer_studio.copilot_provider.data_access import OfferDataAccessProvider
+from luana_core_platform.core.context import set_tenant_id
 from luana_core_platform.infrastructure.models.crm import LeadModel
+
 from tests.modules.offer.conftest import create_product_model
 
 if TYPE_CHECKING:

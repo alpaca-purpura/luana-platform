@@ -9,8 +9,6 @@ in F-pos; F6 ships the declarative skeleton + 2 pilots).
 from __future__ import annotations
 
 import pytest
-from pydantic import BaseModel, ValidationError
-
 from luana_core_copilot.domain.workflow import (
     NodeOutput,
     Workflow,
@@ -18,6 +16,7 @@ from luana_core_copilot.domain.workflow import (
     WorkflowNode,
     WorkflowTrigger,
 )
+from pydantic import BaseModel, ValidationError
 
 
 class _StubState(BaseModel):

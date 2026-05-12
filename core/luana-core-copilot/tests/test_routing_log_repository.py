@@ -5,8 +5,6 @@ from __future__ import annotations
 from uuid import uuid4
 
 import pytest
-
-from luana_core_copilot.infrastructure.models.routing_log_model import RoutingLogModel
 from luana_core_copilot.infrastructure.repositories.routing_log_repository import (
     RoutingLogRepository,
 )

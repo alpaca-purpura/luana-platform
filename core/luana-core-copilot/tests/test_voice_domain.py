@@ -1,7 +1,6 @@
 """Tests for the voice domain ports."""
 
 import pytest
-
 from luana_core_copilot.domain.voice import (
     TranscriptionResult,
 )

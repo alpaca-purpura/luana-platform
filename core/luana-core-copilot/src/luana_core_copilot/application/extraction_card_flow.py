@@ -24,13 +24,13 @@ from __future__ import annotations
 from uuid import UUID, uuid4
 
 import structlog
-
 from luana_core_platform.core.database import redis_client
+from luana_core_platform.domain.events import DomainEvent, EventBus
+
 from luana_core_copilot.domain.events import CardEmitted
 from luana_core_copilot.infrastructure.repositories.conversation_repository import (
     ConversationRepository,
 )
-from luana_core_platform.domain.events import DomainEvent, EventBus
 
 logger = structlog.get_logger(__name__)
 
@@ -360,6 +360,7 @@ def handle_job_completed(event: DomainEvent) -> None:
 
     try:
         from luana_core_platform.core.database import SessionLocal
+
         from luana_core_copilot.application.extraction.active_job_persistence import (
             write_active_job,
         )

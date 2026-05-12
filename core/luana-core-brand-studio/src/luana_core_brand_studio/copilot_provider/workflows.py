@@ -18,13 +18,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from pydantic import BaseModel, ConfigDict, Field
-
 from luana_core_copilot.domain.workflow import (
     Workflow,
     WorkflowNode,
     WorkflowTrigger,
 )
+from pydantic import BaseModel, ConfigDict, Field
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

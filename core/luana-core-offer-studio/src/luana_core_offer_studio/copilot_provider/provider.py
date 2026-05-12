@@ -10,6 +10,7 @@ from luana_core_copilot.domain.ports import (
     ModuleData,
     WorkflowProvider,
 )
+
 from luana_core_offer_studio.copilot_provider.data_access import OfferDataAccessProvider
 from luana_core_offer_studio.copilot_provider.workflows import OfferWorkflowProvider
 

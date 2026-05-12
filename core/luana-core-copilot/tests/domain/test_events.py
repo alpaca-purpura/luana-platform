@@ -11,7 +11,6 @@ from decimal import Decimal
 from uuid import uuid4
 
 import pytest
-
 from luana_core_copilot.domain.events import (
     EVENT_CARD_EMITTED,
     EVENT_ROUTING_DECIDED,

@@ -15,7 +15,6 @@ from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
 import pytest
-
 from luana_core_events.outbox.application.event_bus_adapter import (
     EventBusAdapter,
 )

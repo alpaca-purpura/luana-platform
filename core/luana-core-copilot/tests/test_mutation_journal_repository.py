@@ -5,7 +5,6 @@ from __future__ import annotations
 from uuid import uuid4
 
 import pytest
-
 from luana_core_copilot.infrastructure.repositories.mutation_journal_repository import (
     MutationJournalRepository,
 )

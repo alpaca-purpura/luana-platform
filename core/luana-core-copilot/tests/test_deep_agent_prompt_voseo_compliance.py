@@ -18,7 +18,6 @@ from __future__ import annotations
 import re
 
 import pytest
-
 from luana_core_copilot.application.orchestrator import deep_agent
 from luana_core_copilot.application.orchestrator.subagents import (
     url_analyzer as url_analyzer_module,

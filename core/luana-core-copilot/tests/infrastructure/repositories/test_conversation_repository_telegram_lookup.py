@@ -21,7 +21,6 @@ from luana_core_copilot.infrastructure.repositories.conversation_repository impo
     ConversationRepository,
 )
 
-
 # ── Idempotency ─────────────────────────────────────────────────────────
 
 

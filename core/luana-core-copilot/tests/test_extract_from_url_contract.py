@@ -24,12 +24,11 @@ import uuid
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-
-from luana_core_platform.core.context import set_tenant_id
 from luana_core_copilot.application.tools.extraction_tools import (
     EXTRACTION_TOOLS,
     extract_from_url,
 )
+from luana_core_platform.core.context import set_tenant_id
 
 TENANT_ID = uuid.UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
 OFFER_ID = uuid.UUID("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")

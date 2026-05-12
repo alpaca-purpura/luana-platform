@@ -10,7 +10,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 import structlog
-
 from luana_core_platform.links.ports.brand import create_brand_field_apply_port
 
 if TYPE_CHECKING:

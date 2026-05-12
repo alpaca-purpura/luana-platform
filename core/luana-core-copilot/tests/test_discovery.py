@@ -11,18 +11,15 @@ shadowed by an installed plugin with the same ``module_id``.
 
 from __future__ import annotations
 
-import importlib
-import sys
-from collections.abc import Mapping
 from dataclasses import dataclass
 
 import pytest
+
 pytest.skip("T-15 deferred to T-16 UNLIFT (Stories 2-5 copilot_provider/ subfolders not yet lifted — luana_core_brand_studio.copilot_provider / luana_core_offer_studio.copilot_provider / etc.)", allow_module_level=True)
 from typing import TYPE_CHECKING, Any
 from unittest.mock import patch
 
 import pytest
-
 from luana_core_copilot.application import discovery as discovery_mod
 from luana_core_copilot.domain.ports import (
     CopilotProvider,

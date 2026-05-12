@@ -11,8 +11,6 @@ from __future__ import annotations
 from unittest.mock import MagicMock
 from uuid import uuid4
 
-import pytest
-
 from luana_core_copilot.application.suggestions.engine import SuggestionEngine
 from luana_core_copilot.domain.suggestion import Suggestion, SuggestionCategory, SuggestionContext
 

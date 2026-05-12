@@ -7,7 +7,6 @@ para no leak-ear events de subagentes ni de tools internos.
 from __future__ import annotations
 
 import pytest
-
 from luana_core_copilot.application.orchestrator.stream_filters import (
     INTERNAL_LLM_TAG,
 )

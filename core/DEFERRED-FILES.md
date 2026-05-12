@@ -141,6 +141,89 @@ in future stories.
 | `voice_cloning` BrandConfig flag | Stories 11-13 (per-brand vertical bootstrap) | Per-brand value at vertical bootstrap; BrandConfig schema itself in Story 8/9 |
 | Voice cloning pipeline (LLM-distillation from chat samples) | Stories 11-13 | NEW code, does NOT exist in AISALESHT today |
 
+## Story 6 deferrals (2026-05-11) + unlifts
+
+### UNLIFTED Story 6 (previously deferred Stories 2-5 — 30 files)
+
+T-16 (commit `ca3cd18`) lifted these `copilot_provider/` subfolders + cross-coupling
+tests + `offer_ai.py` from their host packages now that `luana_core_copilot.domain.ports`
+exists. All discoverable via `nicolify.copilot_providers` entry-points (T-20 wiring
+across 8 pyproject.toml files).
+
+| Source (AISALESHT) | Target package | Count |
+|---|---|---|
+| `backend/src/modules/commercial_calendar/copilot_provider/*` (Story 3 defer) | `luana-core-commercial-calendar` | 2 |
+| `backend/src/modules/social_proof/copilot_provider/*` (Story 3 defer) | `luana-core-social-proof` | 2 |
+| `backend/src/modules/crm/copilot_provider/*` (Story 4 defer) | `luana-core-crm` | 2 |
+| `backend/src/modules/analytics/copilot_provider/*` (Story 4 defer) | `luana-core-analytics-engine` | 2 |
+| `backend/src/modules/landing/copilot_provider/*` (Story 4 defer) | `luana-core-landing` | 2 |
+| `backend/src/modules/connections/copilot_provider/*` (Story 4 defer) | `luana-core-connections` | 2 |
+| `backend/src/modules/brand/copilot_provider/*` (Story 5 defer) | `luana-core-brand-studio` | 8 |
+| `backend/src/modules/offer/copilot_provider/*` (Story 5 defer) | `luana-core-offer-studio` | 5 |
+| `backend/src/modules/offer/api/offer_ai.py` (Story 5 defer) | `luana-core-offer-studio` | 1 |
+| Cross-coupling tests (Story 5 defer — 3 brand + 1 offer) | various | 4 |
+
+Total: **30 files unlifted** in T-16. Validates D-T1 frozen registry contracts (V-AG-3
+snapshot) — these 8 packages' providers consume `ToolRegistry` / `WorkflowRegistry` /
+`ExtractorRegistry` / `ModuleRegistry` / `SuggestionRegistry` public APIs unchanged.
+
+### NEW Story 6 deferrals
+
+#### Defer to Story 7 (sales_agent lift)
+
+Per T-17 R26 deferral (`docs/product/stories/luana-copilot-engine/T-17-impl-log.md`):
+the architect spec for T-17 ("MessageModel stub cleanup") was premise-mismatched —
+`MessageModel` lives in **sales_agent territory** (per `.claude/skills/sales-agent-expert`
+§3 forbidden-touch list), NOT copilot. Story 7 sales_agent lift will:
+1. Create `luana_core_sales_agent.persistence.models.message_model`
+2. Replace MessageModel stubs in offer-studio + copilot + crm + connections conftest.py
+   with real `luana_core_sales_agent` imports
+
+| Source (AISALESHT) | Target package | Reason |
+|---|---|---|
+| `backend/src/modules/sales_agent/infrastructure/models/message_model.py` | `luana-core-sales-agent` | Native sales_agent SQLA model — Story 7 lift |
+| MessageModel stubs in 4 conftest.py files | (consumer modules) | Replaced by real import post Story 7 |
+| `connections/api/dependencies/__init__.py` real `ChatOrchestrator` wiring | `luana-core-connections` | Requires `luana_core_sales_agent.MessageHandlerPort` impl |
+| `_event_types()` lazy import in `application/tools/offer_section_tools.py` | `luana-core-copilot` | Type-ignored until `luana_core_scheduling` lifts |
+
+#### Defer to Story 8 (scheduling lift — campaigns-extension-sdk batch)
+
+| Source (AISALESHT) | Target package | Reason |
+|---|---|---|
+| AppointmentModel stubs in 4 conftest.py files | (consumer modules) | Scheduling module lifts in Story 8 |
+| ProductModel / `_ProductStub` stubs in 4 conftest.py files | (consumer modules) | Catalog/product module lifts in Story 8 |
+
+#### Defer to Story 10 (nicolify shell migration)
+
+Streamlit admin pages stay in AISALESHT until nicolify shell migrates as the
+SaaS host application:
+
+| Source (AISALESHT) | Target | Notes |
+|---|---|---|
+| `backend/src/admin/pages/trazas.py` | nicolify shell (Story 10) | Copilot trace event admin |
+| `backend/src/admin/pages/copilot-routing.py` | nicolify shell (Story 10) | F8 routing log viewer |
+| `backend/src/admin/pages/costo-copilot.py` | nicolify shell (Story 10) | Cost dashboard |
+| `backend/src/admin/pages/copilot-limits.py` | nicolify shell (Story 10) | Per-tenant limits admin |
+| `backend/src/admin/pages/copilot-quality.py` | nicolify shell (Story 10) | F9 weekly judge report |
+| `backend/src/admin/pages/marketing-kb.py` | nicolify shell (Story 10) | F10 KB curation UI |
+| `backend/src/admin/pages/brand-summaries.py` | nicolify shell (Story 10) | F3 lighthouse viewer |
+| `backend/src/admin/app.py` + `modules/` + `pages/__init__.py` | nicolify shell (Story 10) | Streamlit registry shell |
+
+### Reserved (NEW abstractions, NOT existing AISALESHT code)
+
+| Reserved item | Future story | Notes |
+|---|---|---|
+| EP-1..EP-5 Extension SDK formalization | Story 8 | Story 6 freezes registries per D-T1; Story 8 wraps as formal SDK without changing internals |
+| BrandVoicePort introduction | Story 7 (D-T3) | Story 6 does NOT introduce; Story 7 architect handles consumer-side wiring |
+
+### Pre-existing Story 5 territory (V-F-x-2 conftest collision workspace constraint)
+
+Documented for completeness — not Story 6's responsibility:
+
+- Some Story 5 conftest.py fixtures collide across brand-studio + offer-studio
+  workspace test collection. Pre-existing constraint flagged Story 5; Story 6
+  inherits without action.
+
 ## Lift rule
 
 All deferred files follow the lift-verbatim constraint: when they are lifted,

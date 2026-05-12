@@ -9,7 +9,6 @@ from dataclasses import dataclass
 from uuid import UUID
 
 import structlog
-
 from luana_core_platform.core.config import settings
 
 logger = structlog.get_logger(__name__)

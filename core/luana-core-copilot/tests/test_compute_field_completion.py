@@ -13,7 +13,6 @@ from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from luana_core_copilot.application.orchestrator.graph import (
     _compute_field_completion,
     _compute_pending_field_paths,

@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from typing import Any
 
 import pytest
-
 from luana_core_copilot.application.tools.ask_tenant_data.intent_classifier import (
     IntentResult,
     classify_intent,

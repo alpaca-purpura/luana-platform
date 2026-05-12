@@ -18,7 +18,6 @@ from __future__ import annotations
 from typing import Any
 
 import pytest
-
 from luana_core_copilot.application.orchestrator.conversational_questioning import (
     next_question,
 )

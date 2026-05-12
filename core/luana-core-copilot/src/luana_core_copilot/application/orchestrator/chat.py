@@ -28,15 +28,21 @@ from uuid import UUID, uuid4
 
 import structlog
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
-
-from luana_core_platform.core.context import set_conversation_id
-from luana_core_platform.core.database import redis_client
 from luana_core_assets.application.asset_extraction_service import (
     AssetExtractionService,
 )
 from luana_core_assets.infrastructure.repositories.asset_repository import (
     AssetRepository,
 )
+from luana_core_channels.intent_detector import (
+    detect_channel_intent,
+)
+from luana_core_events.outbox.application.event_bus_adapter import (
+    adapter_bus as EventBus,  # noqa: N812
+)
+from luana_core_platform.core.context import set_conversation_id
+from luana_core_platform.core.database import redis_client
+
 from luana_core_copilot.api.dto import ClientContextDTO, SSEEvent
 from luana_core_copilot.application.extraction.active_job_state import load_active_job
 from luana_core_copilot.application.guided.state import load_guided_state
@@ -72,12 +78,6 @@ from luana_core_copilot.infrastructure.repositories.routing_log_repository impor
     RoutingLogRepository,
 )
 from luana_core_copilot.observability import ObservabilityContext
-from luana_core_channels.intent_detector import (
-    detect_channel_intent,
-)
-from luana_core_events.outbox.application.event_bus_adapter import (
-    adapter_bus as EventBus,  # noqa: N812
-)
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
@@ -611,12 +611,6 @@ class CopilotOrchestrator:
         ``ObservabilityContext`` whose callback handler the graph stream
         consumes via ``obs.langchain_config()``.
         """
-        from luana_core_copilot.observability.persistence.llm_call_repository import (
-            LlmCallRepository,
-        )
-        from luana_core_copilot.observability.persistence.trace_event_repository import (
-            TraceEventRepository,
-        )
         from luana_core_observability.cost.fx_resolver import FXResolver
         from luana_core_observability.persistence.pricing_snapshot_repository import (
             PricingSnapshotRepository,
@@ -625,6 +619,13 @@ class CopilotOrchestrator:
             TenantBillingConfigRepository,
         )
         from luana_core_observability.pricing.resolver import PricingResolver
+
+        from luana_core_copilot.observability.persistence.llm_call_repository import (
+            LlmCallRepository,
+        )
+        from luana_core_copilot.observability.persistence.trace_event_repository import (
+            TraceEventRepository,
+        )
 
         billing_repo = TenantBillingConfigRepository(self.db)
         currency = "USD"

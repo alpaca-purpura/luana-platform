@@ -22,7 +22,6 @@ from uuid import UUID
 
 import structlog
 from langchain_core.tools import tool
-
 from luana_core_platform.core.context import get_conversation_id, get_tenant_id, get_user_id
 
 if TYPE_CHECKING:

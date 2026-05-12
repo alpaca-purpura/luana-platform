@@ -9,8 +9,6 @@ from __future__ import annotations
 from uuid import uuid4
 
 import pytest
-from pydantic import ValidationError
-
 from luana_core_copilot.domain.message_blocks import (
     BLOCK_TYPES,
     AudioBlock,
@@ -26,6 +24,7 @@ from luana_core_copilot.domain.message_blocks import (
     ToolResultBlock,
     VideoBlock,
 )
+from pydantic import ValidationError
 
 # ── BLOCK_TYPES tuple ─────────────────────────────────────────────────
 

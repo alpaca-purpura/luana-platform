@@ -12,7 +12,6 @@ from uuid import uuid4
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-
 from luana_core_copilot.domain.voice import TranscriptionResult
 from luana_core_iam.api.dependencies import get_current_user, get_db, get_tenant_context
 

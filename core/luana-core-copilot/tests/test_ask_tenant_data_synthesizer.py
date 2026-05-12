@@ -6,7 +6,6 @@ from dataclasses import dataclass
 from typing import Any
 
 import pytest
-
 from luana_core_copilot.application.tools.ask_tenant_data.synthesizer import (
     SUPPORTED_OUTPUT_CHANNELS,
     synthesize_answer,

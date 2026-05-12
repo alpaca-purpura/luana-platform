@@ -9,7 +9,6 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 import pytest
-
 from luana_core_copilot.domain.tenant_limits import CopilotTenantLimits
 
 

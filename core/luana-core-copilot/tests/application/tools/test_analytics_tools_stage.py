@@ -8,7 +8,6 @@ Tests:
 
 from __future__ import annotations
 
-import asyncio
 import json
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID
@@ -110,11 +109,10 @@ class TestGetStageMetricsHappy:
 
     def test_invalid_stage_slug_rejected_at_schema_level(self) -> None:
         """Invalid stage slug is rejected by Pydantic Literal at schema validation."""
-        from pydantic import ValidationError
-
         from luana_core_copilot.application.tools._analytics_inputs import (
             StageFilterParams,
         )
+        from pydantic import ValidationError
 
         with pytest.raises(ValidationError):
             StageFilterParams(stage="invalid-stage")
@@ -156,11 +154,10 @@ class TestGetStageMetricsTenantIsolation:
 
     def test_tenant_not_in_pydantic_schema(self) -> None:
         """StageFilterParams schema does not allow tenant_id field."""
-        from pydantic import ValidationError
-
         from luana_core_copilot.application.tools._analytics_inputs import (
             StageFilterParams,
         )
+        from pydantic import ValidationError
 
         # extra="forbid" should reject tenant_id
         with pytest.raises((ValidationError, TypeError)):

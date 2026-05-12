@@ -21,7 +21,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
 import pytest
-
 from luana_core_copilot.api.dto import ClientContextDTO
 from luana_core_copilot.application.orchestrator.chat import CopilotOrchestrator
 from luana_core_copilot.application.orchestrator.invoke_result import (

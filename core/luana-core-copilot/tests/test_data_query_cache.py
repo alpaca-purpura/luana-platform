@@ -6,7 +6,6 @@ import uuid
 from typing import Any
 
 import pytest
-
 from luana_core_copilot.infrastructure.cache.data_query_cache import (
     DataQueryCache,
     make_cache_key,

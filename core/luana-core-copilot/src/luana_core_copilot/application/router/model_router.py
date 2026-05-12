@@ -7,9 +7,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Literal
 
+from luana_core_platform.core.enums import ModelRole
 from pydantic import BaseModel, ConfigDict, Field
 
-from luana_core_platform.core.enums import ModelRole
 from luana_core_copilot.domain.routing_policy import (
     ClassifierType,
     RoutingDecision,

@@ -5,7 +5,6 @@ from __future__ import annotations
 from uuid import uuid4
 
 import pytest
-
 from luana_core_copilot.infrastructure.repositories.pinned_memory_repository import (
     CopilotPinnedMemoryRepository,
 )

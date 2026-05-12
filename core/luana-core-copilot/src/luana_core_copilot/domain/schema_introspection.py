@@ -15,13 +15,12 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import get_args, get_origin
 
-from pydantic import BaseModel
-
 from luana_core_platform.links.ports.editable_fields import (
     FieldSpec,
     get_catalog,
     get_registered_domains,
 )
+from pydantic import BaseModel
 
 
 @dataclass

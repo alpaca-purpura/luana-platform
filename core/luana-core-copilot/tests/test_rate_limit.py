@@ -9,15 +9,14 @@ from uuid import uuid4
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-
+from luana_core_copilot.api.chat import router
+from luana_core_iam.api.dependencies import get_current_user
 from luana_core_platform.core.database import get_db
 from luana_core_platform.core.rate_limit import (
     DEFAULT_MAX_REQUESTS,
     RateLimitExceeded,
     check_rate_limit,
 )
-from luana_core_copilot.api.chat import router
-from luana_core_iam.api.dependencies import get_current_user
 
 # ---------------------------------------------------------------------------
 # Unit tests for the rate limiter itself

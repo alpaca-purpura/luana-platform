@@ -6,7 +6,6 @@ import asyncio
 from uuid import UUID, uuid4
 
 import pytest
-
 from luana_core_brand_studio.copilot_provider.context_inject import (
     BrandContextInjector,
     _route_in_allowlist,

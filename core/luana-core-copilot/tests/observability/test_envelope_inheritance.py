@@ -78,6 +78,8 @@ class TestInheritanceContract:
         from luana_core_copilot.observability import ObservabilityContext as PublicAlias
         from luana_core_copilot.observability.recording.turn_envelope import (
             CopilotObservabilityContext,
+        )
+        from luana_core_copilot.observability.recording.turn_envelope import (
             ObservabilityContext as ModuleAlias,
         )
 

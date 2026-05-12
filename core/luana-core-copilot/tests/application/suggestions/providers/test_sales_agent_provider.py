@@ -9,11 +9,8 @@ PR-2-pure-expansion-providers / PI-2 S2.
 from __future__ import annotations
 
 import re
-from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
-
-import pytest
 
 _VOSEO_RE = re.compile(
     r"\b(sos|tenés|podés|querés|sabés|hacés|venís|decís|mirá|dejá|poné|usá|hacé|"

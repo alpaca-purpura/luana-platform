@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import httpx
 import pytest
-
 from luana_core_copilot.infrastructure.web import trafilatura_client as tc
 
 # ── Validation ───────────────────────────────────────────────────────────

@@ -14,10 +14,9 @@ All tests use mocked ConversationRepository and Redis — no real DB required.
 from __future__ import annotations
 
 import uuid
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
-
 from luana_core_platform.domain.events import (
     EventBus,
     ExtractionJobCompletedEvent,

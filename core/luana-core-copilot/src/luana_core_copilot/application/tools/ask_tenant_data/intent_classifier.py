@@ -21,7 +21,6 @@ from typing import Any
 
 import structlog
 from langchain_core.messages import HumanMessage, SystemMessage
-
 from luana_core_platform.core.enums import ModelRole
 
 logger = structlog.get_logger()

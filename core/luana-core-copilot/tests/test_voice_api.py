@@ -12,7 +12,6 @@ from uuid import UUID, uuid4
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-
 from luana_core_copilot.api.voice import router
 from luana_core_iam.api.dependencies import (
     get_current_user,

@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import structlog
 from langchain_core.tools import tool
-
 from luana_core_platform.links.ports.editable_fields import get_paths_for, get_registered_domains
 
 logger = structlog.get_logger()

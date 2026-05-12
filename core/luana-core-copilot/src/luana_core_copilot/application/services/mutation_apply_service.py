@@ -32,13 +32,13 @@ from typing import Any
 from uuid import UUID
 
 import structlog
-
-from luana_core_copilot.infrastructure.repositories.mutation_journal_repository import (
-    MutationJournalRepository,
-)
 from luana_core_platform.links.ports.editable_fields import (
     get_paths_for,
     get_registered_domains,
+)
+
+from luana_core_copilot.infrastructure.repositories.mutation_journal_repository import (
+    MutationJournalRepository,
 )
 
 logger = structlog.get_logger()

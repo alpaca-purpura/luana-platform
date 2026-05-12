@@ -20,6 +20,7 @@ import re
 from uuid import UUID
 
 import structlog
+from luana_core_platform.links.ports.editable_fields import get_catalog
 
 from luana_core_copilot.application.orchestrator.state import CopilotState
 from luana_core_copilot.domain.module_registry import get_module_registry
@@ -27,7 +28,6 @@ from luana_core_copilot.infrastructure.prompts.base import prompt_loader
 from luana_core_copilot.infrastructure.prompts.sanitizer import (
     sanitize_selected_fields,
 )
-from luana_core_platform.links.ports.editable_fields import get_catalog
 
 logger = structlog.get_logger()
 
@@ -41,9 +41,9 @@ def _get_completion_snapshot(tenant_id: UUID) -> str:
     Uses the awareness tool logic directly (not via tool invocation)
     to avoid a tool call just for the system prompt.
     """
+    from luana_core_platform.core.database import SessionLocal
     from sqlalchemy import text
 
-    from luana_core_platform.core.database import SessionLocal
     from luana_core_copilot.domain.schema_introspection import (
         check_section_completion,
         format_completion_markdown,
@@ -119,6 +119,7 @@ def _get_completion_snapshot(tenant_id: UUID) -> str:
 def _get_behavior_summary(tenant_id: UUID, user_id: UUID) -> str:
     """Build a user behavior summary from copilot events for the system prompt."""
     from luana_core_platform.core.database import SessionLocal
+
     from luana_core_copilot.infrastructure.repositories.event_repository import (
         CopilotEventRepository,
     )

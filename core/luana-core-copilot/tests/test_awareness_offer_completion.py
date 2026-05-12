@@ -19,9 +19,8 @@ from __future__ import annotations
 from uuid import uuid4
 
 import pytest
-from sqlalchemy import text
-
 from luana_core_copilot.application.tools.awareness import _check_offer_completion
+from sqlalchemy import text
 
 
 @pytest.fixture

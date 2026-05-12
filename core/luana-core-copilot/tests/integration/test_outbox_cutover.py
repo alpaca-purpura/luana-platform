@@ -18,11 +18,10 @@ import contextlib
 from unittest.mock import MagicMock, patch
 
 import pytest
-
-from luana_core_platform.domain.events import DomainEvent
 from luana_core_events.outbox.application.event_bus_adapter import (
     EventBusAdapter,
 )
+from luana_core_platform.domain.events import DomainEvent
 
 
 def _make_copilot_event() -> DomainEvent:

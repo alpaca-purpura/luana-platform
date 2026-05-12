@@ -12,8 +12,6 @@ import json
 import uuid
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from luana_core_copilot.application.tools.offer_section_tools import (
     OFFER_SECTION_TOOLS,
     adapt_from_brand_identity,

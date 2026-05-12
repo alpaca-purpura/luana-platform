@@ -80,7 +80,6 @@ class TestHarnessConstruction:
 
     def test_returns_compiled_graph_with_messages_input(self, base_state) -> None:
         from langgraph.graph.state import CompiledStateGraph
-
         from luana_core_copilot.application.orchestrator.deep_agent import (
             build_deep_agent_graph,
         )

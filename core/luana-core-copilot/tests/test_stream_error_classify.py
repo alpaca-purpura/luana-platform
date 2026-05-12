@@ -13,7 +13,6 @@ Conv real reproductora: 2026-04-27 18:48:32 turn_end status='error'
 from __future__ import annotations
 
 import pytest
-
 from luana_core_copilot.application.orchestrator.chat import (
     _classify_stream_error,
     _user_facing_error_message,

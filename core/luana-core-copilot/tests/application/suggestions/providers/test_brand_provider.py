@@ -12,8 +12,6 @@ import re
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
-import pytest
-
 # Voseo regex — canonical (from brand_summary_regen.py)
 _VOSEO_RE = re.compile(
     r"\b(sos|tenés|podés|querés|sabés|hacés|venís|decís|mirá|dejá|poné|usá|hacé|"

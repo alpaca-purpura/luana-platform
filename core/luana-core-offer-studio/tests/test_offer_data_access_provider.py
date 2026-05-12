@@ -2,14 +2,13 @@
 
 from __future__ import annotations
 
-import uuid
 from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING
 
 import pytest
-
 from luana_core_copilot.domain.ports import DataQueryPlan
 from luana_core_offer_studio.copilot_provider.data_access import OfferDataAccessProvider
+
 from tests.conftest import TENANT_A, create_product_model
 
 if TYPE_CHECKING:

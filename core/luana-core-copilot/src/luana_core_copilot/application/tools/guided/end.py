@@ -5,8 +5,8 @@ from __future__ import annotations
 import json
 
 from langchain_core.tools import tool
-
 from luana_core_platform.core.context import get_conversation_id, get_tenant_id
+
 from luana_core_copilot.application.guided.persistence import read_state, write_state
 
 

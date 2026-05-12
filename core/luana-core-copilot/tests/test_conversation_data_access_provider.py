@@ -7,7 +7,6 @@ from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING
 
 import pytest
-
 from luana_core_copilot.application.data_access.conversation import (
     ConversationDataAccessProvider,
 )

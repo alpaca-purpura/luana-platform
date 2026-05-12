@@ -11,7 +11,6 @@ payloads are best-effort — we degrade gracefully).
 from __future__ import annotations
 
 import pytest
-
 from luana_core_copilot.domain.card_payloads import (
     CARD_PAYLOAD_MODELS,
     ClarifyCardPayload,
@@ -81,9 +80,8 @@ class TestPlanCardPayload:
         assert model.todos[2].status == "completed"
 
     def test_missing_todos_rejected(self) -> None:
-        from pydantic import ValidationError
-
         from luana_core_copilot.domain.card_payloads import PlanCardPayload
+        from pydantic import ValidationError
 
         with pytest.raises(ValidationError):
             PlanCardPayload.model_validate({"type": "plan_card"})

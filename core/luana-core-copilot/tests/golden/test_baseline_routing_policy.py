@@ -11,6 +11,7 @@ assignment under shipping traffic.
 from __future__ import annotations
 
 from luana_core_copilot.domain.routing_policy import DEFAULT_ROUTING_POLICY
+
 from tests.golden.conftest import assert_matches_golden
 
 

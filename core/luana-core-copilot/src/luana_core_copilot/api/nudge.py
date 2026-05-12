@@ -10,10 +10,10 @@ from uuid import UUID
 
 import structlog
 from fastapi import APIRouter, Query
-from sqlalchemy.orm import Session
-
 from luana_core_platform.core.context import get_tenant_id
 from luana_core_platform.core.database import SessionLocal
+from sqlalchemy.orm import Session
+
 from luana_core_copilot.api.dto import NudgeContextResponse
 from luana_core_copilot.domain.module_registry import ModuleDescriptor, get_module_registry
 from luana_core_copilot.domain.schema_introspection import (

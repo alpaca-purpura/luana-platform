@@ -13,7 +13,6 @@ from uuid import uuid4
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-
 from luana_core_iam.api.dependencies import get_current_user, get_tenant_context
 
 
@@ -62,8 +61,6 @@ class TestSuggestionsIntegration:
         from types import SimpleNamespace
         from unittest.mock import MagicMock, patch
 
-        from sqlalchemy.orm import sessionmaker
-
         from luana_core_copilot.api.suggestions import router
         from luana_core_copilot.application.suggestions.registry import _reset_for_tests
         from luana_core_copilot.domain.suggestion import Suggestion, SuggestionCategory
@@ -77,6 +74,7 @@ class TestSuggestionsIntegration:
             register_subscribers,
         )
         from luana_core_platform.domain.events import EventBus
+        from sqlalchemy.orm import sessionmaker
 
         EventBus.clear()
         conn = db_engine.connect()
@@ -139,8 +137,6 @@ class TestSuggestionsIntegration:
         """POST /accept → copilot_trace_event suggestion_accepted row written."""
         from datetime import datetime, timezone
 
-        from sqlalchemy.orm import sessionmaker
-
         from luana_core_copilot.api.suggestions import router
         from luana_core_copilot.infrastructure.models.trace_event_model import (
             CopilotTraceEventModel,
@@ -152,6 +148,7 @@ class TestSuggestionsIntegration:
             register_subscribers,
         )
         from luana_core_platform.domain.events import EventBus
+        from sqlalchemy.orm import sessionmaker
 
         EventBus.clear()
         conn = db_engine.connect()

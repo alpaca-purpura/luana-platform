@@ -170,11 +170,10 @@ class TestTriggerEtlRefreshValidation:
 
     def test_invalid_channel_rejected_at_schema_level(self) -> None:
         """Invalid channel slug → Pydantic ValidationError at schema level (before tool body)."""
-        from pydantic import ValidationError
-
         from luana_core_copilot.application.tools._analytics_inputs import (
             TriggerEtlRefreshParams,
         )
+        from pydantic import ValidationError
 
         with pytest.raises(ValidationError):
             TriggerEtlRefreshParams(channel="invalid-channel")

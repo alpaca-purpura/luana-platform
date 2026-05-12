@@ -11,9 +11,7 @@ Covers:
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
-from uuid import UUID, uuid4
-
-import pytest
+from uuid import uuid4
 
 from luana_core_copilot.application.services.telegram_link_service import (
     _mask_chat_id,

@@ -11,7 +11,6 @@ import json
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID
 
-
 import pytest
 from pydantic import ValidationError
 
@@ -88,11 +87,10 @@ class TestGetChannelOverviewValidation:
 
     def test_invalid_channel_slug_rejected_at_schema_level(self) -> None:
         """Invalid slug → Pydantic ValidationError at schema level (before tool body)."""
-        from pydantic import ValidationError
-
         from luana_core_copilot.application.tools._analytics_inputs import (
             ChannelOverviewParams,
         )
+        from pydantic import ValidationError
 
         with pytest.raises(ValidationError):
             ChannelOverviewParams(channel="fake-channel")

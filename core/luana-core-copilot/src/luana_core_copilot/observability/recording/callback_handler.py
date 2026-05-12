@@ -33,14 +33,15 @@ from dataclasses import dataclass
 from typing import Any
 from uuid import UUID
 
+from luana_core_observability.recording.base_callback_handler import (
+    BaseAgentCallbackHandler,
+)
+
 from luana_core_copilot.observability.persistence.llm_call_repository import (
     LlmCallRepository,
 )
 from luana_core_copilot.observability.persistence.trace_event_repository import (
     TraceEventRepository,
-)
-from luana_core_observability.recording.base_callback_handler import (
-    BaseAgentCallbackHandler,
 )
 
 

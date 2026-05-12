@@ -4,7 +4,6 @@ from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
 import pytest
-
 from luana_core_brand_studio.domain.aggregates import BrandSettings
 from luana_core_copilot.infrastructure.persisters.brand_persister import BrandPersister
 from luana_core_copilot.infrastructure.persisters.persister_registry import (

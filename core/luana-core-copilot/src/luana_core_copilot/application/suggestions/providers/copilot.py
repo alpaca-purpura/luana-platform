@@ -21,16 +21,16 @@ Relies only on:
 from __future__ import annotations
 
 import structlog
-
 from luana_core_platform.core.database import SessionLocal
+from luana_core_platform.links.ports.brand import create_brand_data_port
+from luana_core_platform.links.ports.offer import get_offer_repository
+
 from luana_core_copilot.domain.module_registry import get_module_registry
 from luana_core_copilot.domain.suggestion import (
     Suggestion,
     SuggestionCategory,
     SuggestionContext,
 )
-from luana_core_platform.links.ports.brand import create_brand_data_port
-from luana_core_platform.links.ports.offer import get_offer_repository
 
 logger = structlog.get_logger()
 

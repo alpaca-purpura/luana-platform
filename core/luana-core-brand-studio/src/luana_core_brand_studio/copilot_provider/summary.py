@@ -26,6 +26,7 @@ class BrandSummaryProvider:
     async def summary(self, *, tenant_id: UUID) -> str | None:
         """Return the persisted brand summary for ``tenant_id`` or ``None``."""
         from luana_core_platform.core.database import SessionLocal
+
         from luana_core_brand_studio.infrastructure.repositories.brand_summary_repository import (
             BrandSummaryRepository,
         )

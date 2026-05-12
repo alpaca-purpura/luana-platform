@@ -23,8 +23,8 @@ Confidence scoring (deterministic, in [0,1]):
 from __future__ import annotations
 
 import structlog
-
 from luana_core_platform.core.database import SessionLocal
+
 from luana_core_copilot.application.services.offer_suggestion_reader import (
     OfferSuggestionReader,
 )

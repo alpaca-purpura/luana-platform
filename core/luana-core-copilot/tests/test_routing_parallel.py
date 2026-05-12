@@ -24,14 +24,11 @@ from __future__ import annotations
 import asyncio
 import time
 from typing import TYPE_CHECKING
-from unittest.mock import MagicMock
 from uuid import uuid4
 
 import pytest
-
 from luana_core_copilot.application.orchestrator.chat import CopilotOrchestrator
 from luana_core_copilot.domain.events import EVENT_ROUTING_DECIDED
-from luana_core_platform.core.enums import ModelRole
 from luana_core_copilot.domain.routing_policy import (
     ClassifierType,
     RoutingDecision,
@@ -40,6 +37,7 @@ from luana_core_copilot.infrastructure.models.routing_log_model import RoutingLo
 from luana_core_copilot.infrastructure.repositories.routing_log_repository import (
     RoutingLogRepository,
 )
+from luana_core_platform.core.enums import ModelRole
 from luana_core_platform.domain.events import EventBus
 
 if TYPE_CHECKING:

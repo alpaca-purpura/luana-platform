@@ -20,7 +20,6 @@ final block but before SSE ``block_end``.
 from __future__ import annotations
 
 import pytest
-
 from luana_core_copilot.application.orchestrator.output_sanitizer import (
     correct_voseo_in_text,
     detect_channel_in_user_msg,

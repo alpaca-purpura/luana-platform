@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING, Any
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from luana_core_copilot.api.dto import SSEEvent
 from luana_core_copilot.application.orchestrator.chat import (
     COPILOT_STREAM_TIMEOUT_SECONDS,

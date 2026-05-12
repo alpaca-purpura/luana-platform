@@ -15,9 +15,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import structlog
+from luana_core_platform.core.database import SessionLocal
 from sqlalchemy import text
 
-from luana_core_platform.core.database import SessionLocal
 from luana_core_copilot.application.guided.state import (
     GuidedState,
     load_guided_state,

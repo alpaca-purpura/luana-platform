@@ -20,7 +20,6 @@ from __future__ import annotations
 
 import structlog
 from langchain_core.tools import tool
-
 from luana_core_platform.core.context import get_tenant_id
 from luana_core_platform.core.database import SessionLocal
 
@@ -737,9 +736,8 @@ def detect_currency_mismatch(offer_id: str = "") -> str:
     db = SessionLocal()
     try:
         # Get tenant currency from IAM tenant model
-        from sqlalchemy import select
-
         from luana_core_iam.infrastructure.models.tenant_model import TenantModel
+        from sqlalchemy import select
 
         stmt = select(TenantModel).where(TenantModel.id == tenant_id)
         tenant_row = db.execute(stmt).scalars().first()  # type: ignore[attr-defined]
@@ -1396,13 +1394,12 @@ def structure_objections(raw_text: str) -> str:
     """
     import json
 
-    from pydantic import BaseModel, Field
-
     from luana_core_platform.application.ai_action_service import (
         AIActionPolicy,
         AIActionService,
         AIModelPolicy,
     )
+    from pydantic import BaseModel, Field
 
     tenant_id = get_tenant_id()
     if not tenant_id:

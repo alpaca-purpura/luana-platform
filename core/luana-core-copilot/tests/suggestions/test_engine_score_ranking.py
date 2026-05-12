@@ -7,8 +7,6 @@ from __future__ import annotations
 
 from uuid import uuid4
 
-import pytest
-
 
 def _ctx(route: str | None = "offer-studio"):
     from luana_core_copilot.domain.suggestion import SuggestionContext
@@ -32,7 +30,7 @@ def _make_suggestions(*labels_and_confidences):
 
 
 def _make_provider(pid, routes, suggestions_or_exc):
-    from luana_core_copilot.domain.suggestion import SuggestionContext, Suggestion
+    from luana_core_copilot.domain.suggestion import Suggestion, SuggestionContext
 
     class _Stub:
         @property
@@ -89,7 +87,7 @@ class TestEngineScoreRanking:
 
         call_args = {}
 
-        from luana_core_copilot.domain.suggestion import SuggestionContext, Suggestion
+        from luana_core_copilot.domain.suggestion import Suggestion, SuggestionContext
 
         class _CountingProvider:
             @property

@@ -21,7 +21,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from langchain_core.messages import AIMessage, ToolMessage
-
 from luana_core_copilot.api.dto import SSEEvent
 from luana_core_copilot.application.orchestrator.chat import CopilotOrchestrator
 

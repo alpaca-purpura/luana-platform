@@ -27,7 +27,6 @@ from typing import TYPE_CHECKING, Any
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from luana_core_copilot.application.orchestrator.chat import (
     COPILOT_RECURSION_LIMIT,
     CopilotOrchestrator,

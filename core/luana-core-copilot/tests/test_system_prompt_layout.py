@@ -6,7 +6,6 @@
 from __future__ import annotations
 
 import pytest
-
 from luana_core_copilot.application.orchestrator.system_prompt_layout import (
     CACHE_BOUNDARY_MARKER,
     CACHEABLE_FRAGMENTS,

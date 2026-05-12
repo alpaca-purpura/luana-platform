@@ -4,7 +4,6 @@ from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 import pytest
-
 from luana_core_copilot.infrastructure.models.conversation_model import (
     CopilotConversationModel,
 )

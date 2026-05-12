@@ -10,18 +10,17 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import Session, sessionmaker
-
 from luana_core_copilot.api.media import _get_media_limits, router
 from luana_core_copilot.application.services.limits_resolver import EffectiveLimits
 from luana_core_iam.api.dependencies import get_current_user, get_db
 from luana_core_platform.domain.base_entity import Base
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, sessionmaker
 
 
 @pytest.fixture(scope="session")
@@ -32,7 +31,6 @@ def _sqlite_engine() -> object:
         connect_args={"check_same_thread": False},
     )
     # Import all models to register them
-    import luana_core_platform.infrastructure.model_registry
 
     Base.metadata.create_all(engine)
     return engine

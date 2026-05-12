@@ -17,7 +17,6 @@ from unittest.mock import AsyncMock, patch
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-
 from luana_core_copilot.api.telegram import router
 
 _VALID_SECRET = "test-webhook-secret-token-fixture"

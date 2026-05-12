@@ -5,7 +5,6 @@ from __future__ import annotations
 from datetime import date, datetime, timezone
 
 import pytest
-
 from luana_core_copilot.application.tools.ask_tenant_data.intent_classifier import (
     IntentResult,
 )

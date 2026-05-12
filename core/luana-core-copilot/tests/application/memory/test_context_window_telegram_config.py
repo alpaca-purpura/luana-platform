@@ -7,7 +7,6 @@ web because Telegram sessions are intermittent).
 from __future__ import annotations
 
 import pytest
-
 from luana_core_copilot.domain.context_window import (
     DEFAULT_CONTEXT_WINDOW_CONFIG,
     TELEGRAM_CONTEXT_WINDOW_CONFIG,

@@ -9,14 +9,13 @@ from __future__ import annotations
 from typing import Any
 
 import pytest
-from qdrant_client import QdrantClient
-
 from luana_core_copilot.infrastructure.qdrant.marketing_kb_store import (
     MARKETING_KB_COLLECTION,
     MARKETING_KB_VECTOR_SIZE,
     KbChunk,
     MarketingKbStore,
 )
+from qdrant_client import QdrantClient
 
 
 class _StubEmbedder:

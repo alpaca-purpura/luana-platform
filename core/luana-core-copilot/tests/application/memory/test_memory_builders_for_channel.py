@@ -17,7 +17,6 @@ from luana_core_copilot.domain.context_window import (
     TELEGRAM_CONTEXT_WINDOW_CONFIG,
 )
 
-
 # ── ContextWindowBuilder.for_channel ────────────────────────────────────
 
 

@@ -9,8 +9,7 @@ from unittest.mock import MagicMock
 from uuid import uuid4
 
 import pytest
-
-from luana_core_platform.domain.events import DomainEvent, EventBus
+from luana_core_platform.domain.events import EventBus
 
 
 @pytest.fixture(autouse=True)
@@ -24,18 +23,17 @@ def _isolated_event_bus():
 class TestSuggestionShownSubscriber:
     def test_suggestion_shown_event_persists_trace_row(self, db_engine) -> None:
         """Publish SuggestionShown → row in copilot_trace_event."""
-        from sqlalchemy.orm import sessionmaker
-
         from luana_core_copilot.domain.events import SuggestionShown
+        from luana_core_copilot.infrastructure.models.trace_event_model import (
+            CopilotTraceEventModel,
+        )
         from luana_core_copilot.observability.persistence.trace_event_repository import (
             TraceEventRepository,
         )
         from luana_core_copilot.observability.recording.domain_subscribers import (
             register_subscribers,
         )
-        from luana_core_copilot.infrastructure.models.trace_event_model import (
-            CopilotTraceEventModel,
-        )
+        from sqlalchemy.orm import sessionmaker
 
         conn = db_engine.connect()
         txn = conn.begin()
@@ -70,18 +68,17 @@ class TestSuggestionShownSubscriber:
 
     def test_suggestion_accepted_event_persists_trace_row(self, db_engine) -> None:
         """Publish SuggestionAccepted → row in copilot_trace_event."""
-        from sqlalchemy.orm import sessionmaker
-
         from luana_core_copilot.domain.events import SuggestionAccepted
+        from luana_core_copilot.infrastructure.models.trace_event_model import (
+            CopilotTraceEventModel,
+        )
         from luana_core_copilot.observability.persistence.trace_event_repository import (
             TraceEventRepository,
         )
         from luana_core_copilot.observability.recording.domain_subscribers import (
             register_subscribers,
         )
-        from luana_core_copilot.infrastructure.models.trace_event_model import (
-            CopilotTraceEventModel,
-        )
+        from sqlalchemy.orm import sessionmaker
 
         conn = db_engine.connect()
         txn = conn.begin()

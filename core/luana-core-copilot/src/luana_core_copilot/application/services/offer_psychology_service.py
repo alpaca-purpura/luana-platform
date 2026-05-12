@@ -2,13 +2,9 @@
 
 from uuid import UUID
 
-from sqlalchemy.orm import Session
-
-from luana_core_platform.core.enums import ModelRole
 from luana_core_brand_studio.infrastructure.repositories.avatar_repository import (
     AvatarRepository,
 )
-from luana_core_copilot.infrastructure.prompts.base import prompt_loader
 from luana_core_offer_studio.application.ports import PsychologyGeneratorPort
 from luana_core_offer_studio.domain.offer_ai_schemas import (
     PsychologyGenerationRequest,
@@ -19,6 +15,10 @@ from luana_core_platform.application.ai_action_service import (
     AIActionService,
     AIModelPolicy,
 )
+from luana_core_platform.core.enums import ModelRole
+from sqlalchemy.orm import Session
+
+from luana_core_copilot.infrastructure.prompts.base import prompt_loader
 
 
 class CopilotOfferPsychologyService(PsychologyGeneratorPort):

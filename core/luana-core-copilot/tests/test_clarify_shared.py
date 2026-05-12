@@ -11,7 +11,6 @@ from __future__ import annotations
 import json
 
 import pytest
-
 from luana_core_copilot.application.tools.shared_tools.clarify import (
     MAX_CLARIFY_ITEMS,
     clarify,

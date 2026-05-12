@@ -16,8 +16,8 @@ from typing import TYPE_CHECKING, Any
 
 import structlog
 from langchain_core.tools import tool
-
 from luana_core_platform.core.context import get_tenant_id
+
 from luana_core_copilot.application.data_access import (
     ConversationDataAccessProvider,
 )

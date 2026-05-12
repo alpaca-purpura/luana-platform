@@ -45,8 +45,9 @@ from typing import TYPE_CHECKING
 
 import structlog
 from deepagents import create_deep_agent
-
+from luana_core_llm.factory import LLMFactory
 from luana_core_platform.core.enums import ModelRole
+
 from luana_core_copilot.application.orchestrator.graph import build_system_prompt
 from luana_core_copilot.application.orchestrator.subagents import (
     AUDIT_INSPECTOR_SUBAGENT,
@@ -54,7 +55,6 @@ from luana_core_copilot.application.orchestrator.subagents import (
     URL_ANALYZER_SUBAGENT,
 )
 from luana_core_copilot.application.tools.registry import get_tools_for_context
-from luana_core_llm.factory import LLMFactory
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -62,9 +62,9 @@ if TYPE_CHECKING:
     from langchain_core.language_models import BaseChatModel
     from langchain_core.tools import BaseTool
     from langgraph.graph.state import CompiledStateGraph
+    from luana_core_billing.application.budget_guard import BudgetGuard
 
     from luana_core_copilot.application.orchestrator.state import CopilotState
-    from luana_core_billing.application.budget_guard import BudgetGuard
 
 logger = structlog.get_logger()
 

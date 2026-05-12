@@ -7,11 +7,6 @@ the static ``ModuleData`` record into a single object discoverable via the
 
 from __future__ import annotations
 
-from luana_core_brand_studio.copilot_provider.context_inject import BrandContextInjector
-from luana_core_brand_studio.copilot_provider.module_data import build_brand_module_data
-from luana_core_brand_studio.copilot_provider.summary import BrandSummaryProvider
-from luana_core_brand_studio.copilot_provider.tools import BrandToolProvider
-from luana_core_brand_studio.copilot_provider.workflows import BrandWorkflowProvider
 from luana_core_copilot.domain.ports import (
     BaseCopilotProvider,
     ContextInjector,
@@ -20,6 +15,12 @@ from luana_core_copilot.domain.ports import (
     ToolProvider,
     WorkflowProvider,
 )
+
+from luana_core_brand_studio.copilot_provider.context_inject import BrandContextInjector
+from luana_core_brand_studio.copilot_provider.module_data import build_brand_module_data
+from luana_core_brand_studio.copilot_provider.summary import BrandSummaryProvider
+from luana_core_brand_studio.copilot_provider.tools import BrandToolProvider
+from luana_core_brand_studio.copilot_provider.workflows import BrandWorkflowProvider
 
 
 class BrandCopilotProvider(BaseCopilotProvider):

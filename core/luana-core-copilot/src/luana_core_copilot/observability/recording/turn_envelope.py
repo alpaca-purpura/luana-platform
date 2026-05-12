@@ -35,6 +35,10 @@ from typing import TYPE_CHECKING, Any
 from uuid import UUID, uuid4
 
 import structlog
+from luana_core_observability.recording.turn_envelope import (
+    BaseObservabilityContext,
+    _empty_totals,
+)
 from sqlalchemy import func, select
 
 from luana_core_copilot.observability.persistence.models.llm_call_model import (
@@ -43,18 +47,15 @@ from luana_core_copilot.observability.persistence.models.llm_call_model import (
 from luana_core_copilot.observability.recording.callback_handler import (
     ObservabilityCallbackHandler,
 )
-from luana_core_observability.recording.turn_envelope import (
-    BaseObservabilityContext,
-    _empty_totals,
-)
 
 if TYPE_CHECKING:
+    from luana_core_observability.cost.fx_resolver import FXResolver
+    from luana_core_observability.pricing.resolver import PricingResolver
+
     from luana_core_copilot.observability.persistence.llm_call_repository import LlmCallRepository
     from luana_core_copilot.observability.persistence.trace_event_repository import (
         TraceEventRepository,
     )
-    from luana_core_observability.cost.fx_resolver import FXResolver
-    from luana_core_observability.pricing.resolver import PricingResolver
 
 logger = structlog.get_logger()
 

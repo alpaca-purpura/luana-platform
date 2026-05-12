@@ -21,17 +21,17 @@ from typing import TYPE_CHECKING
 from uuid import UUID
 
 import structlog
+from luana_core_events.outbox.application.event_bus_adapter import (
+    adapter_bus as EventBus,  # noqa: N812
+)
+from luana_core_observability.recording.sanitization import sanitize_payload, truncate
+from luana_core_platform.domain.events import DomainEvent  # noqa: TC001 — used in runtime handler signatures
 
 from luana_core_copilot.domain.events import (
     EVENT_CARD_EMITTED,
     EVENT_ROUTING_DECIDED,
     EVENT_SUGGESTION_ACCEPTED,
     EVENT_SUGGESTION_SHOWN,
-)
-from luana_core_observability.recording.sanitization import sanitize_payload, truncate
-from luana_core_platform.domain.events import DomainEvent  # noqa: TC001 — used in runtime handler signatures
-from luana_core_events.outbox.application.event_bus_adapter import (
-    adapter_bus as EventBus,  # noqa: N812
 )
 
 if TYPE_CHECKING:

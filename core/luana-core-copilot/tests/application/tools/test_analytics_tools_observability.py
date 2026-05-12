@@ -12,8 +12,6 @@ import json
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID
 
-import pytest
-
 TENANT_ID = UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
 PII_FIELDS = {"email", "phone", "address", "mobile", "telephone", "ssn"}
 

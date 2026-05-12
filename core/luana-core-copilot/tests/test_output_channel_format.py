@@ -10,7 +10,6 @@ The registry replaces F5's tiny ``_CHANNEL_HINTS`` dict and is consumed by:
 from __future__ import annotations
 
 import pytest
-
 from luana_core_channels.format import (
     CHANNEL_FORMATS,
     SUPPORTED_CHANNELS,

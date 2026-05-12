@@ -3,7 +3,6 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-
 from luana_core_copilot.infrastructure.voice.whisper_transcriber import (
     WhisperTranscriber,
 )

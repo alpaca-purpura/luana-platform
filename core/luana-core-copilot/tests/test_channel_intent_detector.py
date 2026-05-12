@@ -13,7 +13,6 @@ against URLs (``whatsapp.com``, ``https://wa.me/...``).
 from __future__ import annotations
 
 import pytest
-
 from luana_core_channels.intent_detector import (
     ChannelIntent,
     detect_channel_intent,

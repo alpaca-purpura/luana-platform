@@ -18,7 +18,6 @@ from __future__ import annotations
 import re
 
 import pytest
-
 from luana_core_copilot.application.tools.ask_tenant_data.synthesizer import (
     _empty_window_reply,
     _unknown_intent_reply,

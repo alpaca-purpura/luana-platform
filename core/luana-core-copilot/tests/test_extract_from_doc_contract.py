@@ -14,10 +14,9 @@ from __future__ import annotations
 
 import json
 import uuid
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-
 from luana_core_platform.core.context import set_tenant_id
 
 TENANT_ID = uuid.UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
@@ -143,12 +142,11 @@ class TestExtractFromDocValidation:
         pydantic ValidationError before the tool body runs. The error message
         must clearly mention the allowed literals so the LLM can correct itself.
         """
-        from pydantic import ValidationError
-        from pydantic_core import ValidationError as CoreValidationError
-
         from luana_core_copilot.application.tools.extract_from_doc import (
             extract_from_doc,
         )
+        from pydantic import ValidationError
+        from pydantic_core import ValidationError as CoreValidationError
 
         with pytest.raises((ValidationError, CoreValidationError)) as excinfo:
             await extract_from_doc.ainvoke(

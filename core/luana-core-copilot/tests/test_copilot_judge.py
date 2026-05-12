@@ -10,7 +10,6 @@ from typing import Any
 
 import pytest
 from langchain_core.messages import AIMessage
-
 from luana_core_copilot.application.observability.judge import (
     CANONICAL_DIMENSIONS,
     DEFAULT_THRESHOLD,

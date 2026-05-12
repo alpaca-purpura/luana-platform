@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from langchain_core.messages import AIMessage
-
 from luana_core_copilot.application.router import (
     LLMClassifier,
     ModelRouter,
@@ -11,11 +10,11 @@ from luana_core_copilot.application.router import (
     RuleClassifier,
     build_default_router,
 )
-from luana_core_platform.core.enums import ModelRole
 from luana_core_copilot.domain.routing_policy import (
     DEFAULT_ROUTING_POLICY,
     ClassifierType,
 )
+from luana_core_platform.core.enums import ModelRole
 
 
 class _StubLLM:

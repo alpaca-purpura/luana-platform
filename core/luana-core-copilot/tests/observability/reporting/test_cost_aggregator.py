@@ -15,11 +15,10 @@ from decimal import Decimal
 from uuid import UUID, uuid4
 
 import pytest
-from sqlalchemy.orm import sessionmaker
-
 from luana_core_copilot.observability.persistence.models.llm_call_model import (
     CopilotLlmCallModel,
 )
+from sqlalchemy.orm import sessionmaker
 
 
 @pytest.fixture

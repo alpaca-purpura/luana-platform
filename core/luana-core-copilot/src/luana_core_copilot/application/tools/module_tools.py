@@ -11,9 +11,9 @@ from uuid import UUID
 
 import structlog
 from langchain_core.tools import tool
-
 from luana_core_platform.core.context import get_tenant_id
 from luana_core_platform.core.database import SessionLocal
+
 from luana_core_copilot.domain.module_registry import ModuleDescriptor, get_module_registry
 from luana_core_copilot.domain.schema_introspection import (
     get_model_sections,

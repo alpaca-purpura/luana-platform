@@ -9,9 +9,9 @@ from __future__ import annotations
 
 import json
 
+import pytest
 from luana_core_copilot.application.tools.guided.extract import extract_structured
 
-import pytest
 pytest.skip("T-15 deferred to T-16 UNLIFT (Stories 2-5 copilot_provider/ subfolders not yet lifted — luana_core_brand_studio.copilot_provider / luana_core_offer_studio.copilot_provider / etc.)", allow_module_level=True)
 
 

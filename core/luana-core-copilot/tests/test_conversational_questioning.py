@@ -10,7 +10,6 @@ stays clean for the rest of the suite (no cross-domain duplicates).
 from __future__ import annotations
 
 import pytest
-
 from luana_core_copilot.application.orchestrator.conversational_questioning import (
     _gate_satisfied,
     _get_path,

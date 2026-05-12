@@ -29,8 +29,8 @@ from uuid import UUID
 
 import structlog
 from langchain_core.tools import tool
-
 from luana_core_platform.core.context import get_conversation_id, get_tenant_id
+
 from luana_core_copilot.application.tools.url_inspiration_analyzer import (
     InspirationAnalysis,
     analyze,

@@ -343,7 +343,6 @@ class TestActiveJobsEndpointError:
     async def test_returns_404_when_conversation_not_found(self) -> None:
         """Returns 404 when the conversation doesn't exist or isn't owned by user."""
         from fastapi import HTTPException
-
         from luana_core_copilot.api.conversations import get_active_jobs
 
         repo_mock = MagicMock()
@@ -369,7 +368,6 @@ class TestActiveJobsEndpointError:
     async def test_returns_401_when_no_tenant(self) -> None:
         """Returns 401 when tenant_id is None."""
         from fastapi import HTTPException
-
         from luana_core_copilot.api.conversations import get_active_jobs
 
         user_mock = _make_user_mock()

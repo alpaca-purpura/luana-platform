@@ -16,7 +16,6 @@ from __future__ import annotations
 from unittest.mock import MagicMock
 
 from langchain_core.messages import AIMessage, HumanMessage
-
 from luana_core_copilot.application.orchestrator.chat import CopilotOrchestrator
 
 

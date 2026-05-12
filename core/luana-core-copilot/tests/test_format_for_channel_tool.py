@@ -14,7 +14,6 @@ from __future__ import annotations
 import json
 
 import pytest
-
 from luana_core_channels.format import (
     ChannelFormat,
     register_channel,

@@ -9,6 +9,7 @@ import re
 from typing import TYPE_CHECKING
 
 from luana_core_platform.core.enums import ModelRole
+
 from luana_core_copilot.domain.routing_policy import (
     ClassifierType,
     RoutingDecision,
