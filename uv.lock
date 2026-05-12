@@ -15,6 +15,7 @@ members = [
     "luana-core-assets",
     "luana-core-billing",
     "luana-core-brand-studio",
+    "luana-core-campaigns",
     "luana-core-channels",
     "luana-core-commercial-calendar",
     "luana-core-compliance",
@@ -1902,6 +1903,43 @@ requires-dist = [
     { name = "luana-core-platform" },
     { name = "pydantic", specifier = ">=2.0" },
     { name = "qdrant-client", specifier = ">=1.10" },
+    { name = "sqlalchemy", specifier = ">=2.0" },
+    { name = "structlog", specifier = ">=24.0" },
+]
+
+[[package]]
+name = "luana-core-campaigns"
+version = "0.0.8a0"
+source = { editable = "core/luana-core-campaigns" }
+dependencies = [
+    { name = "arq" },
+    { name = "cachetools" },
+    { name = "fastapi" },
+    { name = "httpx" },
+    { name = "luana-core-channels" },
+    { name = "luana-core-events" },
+    { name = "luana-core-iam" },
+    { name = "luana-core-idempotency" },
+    { name = "luana-core-observability" },
+    { name = "luana-core-platform" },
+    { name = "pydantic" },
+    { name = "sqlalchemy" },
+    { name = "structlog" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "arq", specifier = ">=0.26" },
+    { name = "cachetools", specifier = ">=5.0" },
+    { name = "fastapi", specifier = ">=0.115" },
+    { name = "httpx", specifier = ">=0.27" },
+    { name = "luana-core-channels" },
+    { name = "luana-core-events" },
+    { name = "luana-core-iam" },
+    { name = "luana-core-idempotency" },
+    { name = "luana-core-observability" },
+    { name = "luana-core-platform" },
+    { name = "pydantic", specifier = ">=2.0" },
     { name = "sqlalchemy", specifier = ">=2.0" },
     { name = "structlog", specifier = ">=24.0" },
 ]
