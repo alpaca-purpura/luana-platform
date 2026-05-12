@@ -149,26 +149,17 @@ from sqlalchemy.orm import sessionmaker  # noqa: E402
 from sqlalchemy.pool import StaticPool  # noqa: E402
 
 # ---------------------------------------------------------------------------
-# Cross-module stub models for SQLite test isolation
-# Story 7 sales_agent + Story 8 scheduling not yet lifted. The shared CRM
-# luana_core_platform.infrastructure.models.crm declares LeadModel.messages
+# Cross-module FK targets for SQLite test isolation
+# Shared CRM luana_core_platform.infrastructure.models.crm declares LeadModel.messages
 # -> "MessageModel" and LeadModel.appointments -> "AppointmentModel".
-# Without stubs, SA mapper config fails with InvalidRequestError.
+# Story 7 D-T2 cement (2026-05-12): MessageModel real-lift complete in
+# luana_core_sales_agent.infrastructure.models.message_model — eager-import below
+# registers real model so subsequent stub guard skips it (mirrors connections T-16).
+# AppointmentModel stub stays until Story 8 scheduling lift.
 # ---------------------------------------------------------------------------
-if "messages" not in _Base.metadata.tables:
-
-    class MessageModel(_Base):  # type: ignore[misc]
-        """Stub for sales_agent.MessageModel (Story 7 lift).
-
-        Real model will be lifted in Story 7. T-17 (D-T2 cleanup) will replace this
-        stub with `from luana_core_copilot.persistence.models.message_model import MessageModel`
-        once T-16 unlift establishes the model in luana_core_copilot.
-        """
-
-        __tablename__ = "messages"
-        id = _sa.Column(MockUUID(as_uuid=True), primary_key=True)
-        lead_id = _sa.Column(MockUUID(as_uuid=True), _sa.ForeignKey("leads.id"), nullable=True)
-
+from luana_core_sales_agent.infrastructure.models.message_model import (  # noqa: F401, E402
+    MessageModel,  # Story 7 D-T2 cement — real model (T-5 batch 2 lift), claims 'messages' table
+)
 
 if "appointments" not in _Base.metadata.tables:
 

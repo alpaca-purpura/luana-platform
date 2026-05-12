@@ -134,12 +134,17 @@ from luana_core_iam.infrastructure.models.user_tenant_model import UserTenantMod
 from luana_core_platform.domain.base_entity import Base
 
 # ---------------------------------------------------------------------------
-# Cross-module stub models for SQLite test isolation
-# Story 4 CRM tests need stubs for: ProductModel, MessageModel, AppointmentModel
-# These live in offer/sales_agent/scheduling modules (not yet in luana-platform).
-# Stubs satisfy SQLAlchemy mapper + FK resolution without pulling forward imports.
+# Cross-module FK targets for SQLite test isolation
+# Story 4 CRM tests need FK resolution for: ProductModel, MessageModel, AppointmentModel.
+# Story 7 D-T2 cement (2026-05-12): MessageModel real-lift complete — eager-import
+# real model so subsequent stub guard skips it (mirrors connections T-16 pattern).
+# ProductModel stub stays until Story 8 catalog lift.
+# AppointmentModel stub stays until Story 8 scheduling lift.
 # ---------------------------------------------------------------------------
 from luana_core_platform.domain.base_entity import Base as _Base
+from luana_core_sales_agent.infrastructure.models.message_model import (  # noqa: F401
+    MessageModel,  # Story 7 D-T2 cement — real model (T-5 batch 2 lift), claims 'messages' table
+)
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
@@ -153,16 +158,6 @@ if "products" not in _Base.metadata.tables:
         __tablename__ = "products"
         id = _sa.Column(MockUUID(as_uuid=True), primary_key=True)
         tenant_id = _sa.Column(MockUUID(as_uuid=True), nullable=True)
-
-
-if "messages" not in _Base.metadata.tables:
-
-    class MessageModel(_Base):  # type: ignore[misc]
-        """Stub for sales_agent.MessageModel (Story 7 lift). FK target only."""
-
-        __tablename__ = "messages"
-        id = _sa.Column(MockUUID(as_uuid=True), primary_key=True)
-        lead_id = _sa.Column(MockUUID(as_uuid=True), _sa.ForeignKey("leads.id"), nullable=True)
 
 
 if "appointments" not in _Base.metadata.tables:

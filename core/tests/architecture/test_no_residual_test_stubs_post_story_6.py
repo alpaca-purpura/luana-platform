@@ -5,18 +5,23 @@ Per 03-arch.md §7.4 + D-T2 cement, ADJUSTED for T-17 R26 deferral.
 **T-17 R26 deferral context (2026-05-11):** T-17 architect spec premise was
 that MessageModel lives in luana-core-copilot post-Story-6 lift. Reproduction
 found MessageModel actually lives in `sales_agent` module which is Story 7
-territory. T-17 deferred MessageModel stub cleanup to Story 7. Until Story 7
-lifts sales_agent.MessageModel, the stub in offer-studio/conftest.py
-**MUST stay verbatim** as cross-module FK target.
+territory. T-17 deferred MessageModel stub cleanup to Story 7.
 
-**T-20 V-AG-4 effective contract:**
-- AppointmentModel stub in offer-studio conftest.py → ALLOWLISTED (Story 8 deferral)
-- MessageModel stub in offer-studio conftest.py → ALLOWLISTED (Story 7 deferral)
-- ZERO new cross-module stubs introduced post-Story-6 (only these two preserved)
+**Story 7 D-T2 cement (2026-05-12):** sales_agent.MessageModel lifted in T-5
+batch 2 → conftest stubs replaced with real eager imports in 4 conftests
+(offer-studio + crm + copilot + sales-agent). MessageModel allowlist entries
+REMOVED. Only AppointmentModel + ProductModel allowlists remain (Story 8
+scheduling + catalog deferrals).
 
-Auditor / future architect: bump V-AG-4 contract scope when Story 7 lifts
-sales_agent (MessageModel allowlist comes off) and Story 8 lifts scheduling
-(AppointmentModel allowlist comes off).
+**V-AG-4 effective contract (post Story 7):**
+- AppointmentModel stubs in offer-studio/copilot/crm/connections conftests → ALLOWLISTED (Story 8 deferral)
+- ProductModel stubs in crm/brand-studio/connections conftests → ALLOWLISTED (Story 8 catalog deferral)
+- _ProductStub in landing conftest → ALLOWLISTED (Story 8 catalog deferral)
+- ZERO MessageModel stubs (cement: Story 7 D-T2 closed)
+
+Auditor / future architect: bump V-AG-4 contract scope when Story 8 lifts
+scheduling (AppointmentModel allowlist comes off) and catalog (ProductModel
+allowlist comes off).
 
 V-AG-4 validator.
 """
@@ -40,11 +45,9 @@ CORE_DIR = Path(__file__).parents[2]
 # Cross-Story stub inventory (origin: Story 6 T-20 audit, 2026-05-11):
 ALLOWLISTED_STUBS: dict[str, set[str]] = {
     "luana-core-offer-studio/tests/conftest.py": {
-        "MessageModel",  # Story 7 sales_agent lift (T-17 R26 deferral)
         "AppointmentModel",  # Story 8 scheduling lift
     },
     "luana-core-copilot/tests/conftest.py": {
-        "MessageModel",  # Story 7 sales_agent lift (T-15 baseline preserves)
         "AppointmentModel",  # Story 8 scheduling lift (T-15 baseline preserves)
     },
     "luana-core-brand-studio/tests/conftest.py": {
@@ -52,13 +55,14 @@ ALLOWLISTED_STUBS: dict[str, set[str]] = {
     },
     "luana-core-crm/tests/conftest.py": {
         "ProductModel",  # Story 8 catalog/product lift
-        "MessageModel",  # Story 7 sales_agent lift
         "AppointmentModel",  # Story 8 scheduling lift
     },
     "luana-core-connections/tests/conftest.py": {
         "ProductModel",  # Story 8 catalog/product lift
-        "MessageModel",  # Story 7 sales_agent lift
         "AppointmentModel",  # Story 8 scheduling lift
+    },
+    "luana-core-sales-agent/tests/conftest.py": {
+        "AppointmentModel",  # Story 8 scheduling lift (Story 7 baseline preserves)
     },
     "luana-core-landing/tests/conftest.py": {
         "_ProductStub",  # Story 8 catalog/product lift (landing's local prefix)

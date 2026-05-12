@@ -175,20 +175,10 @@ from sqlalchemy.pool import StaticPool  # noqa: E402
 # NOT Story 7. AppointmentModel stub remains until Story 8 scheduling lift.
 import luana_core_sales_agent.infrastructure.models.message_model  # noqa: E402, F401
 
-if "messages" not in _Base.metadata.tables:
-
-    class MessageModel(_Base):  # type: ignore[misc]
-        """Stub for sales_agent.MessageModel (Story 7 lift).
-
-        Real model now lives in luana_core_sales_agent.infrastructure.models.message_model
-        (T-5 batch 2 lift). The eager import above populates _Base.metadata so this
-        fallback stub is skipped. Kept for forward-compatibility.
-        """
-
-        __tablename__ = "messages"
-        id = _sa.Column(MockUUID(as_uuid=True), primary_key=True)
-        lead_id = _sa.Column(MockUUID(as_uuid=True), _sa.ForeignKey("leads.id"), nullable=True)
-
+# Story 7 D-T2 cement (2026-05-12): MessageModel stub removed — real model
+# eager-imported above claims 'messages' table in _Base.metadata. Defensive
+# stub block dropped; if real import fails, ImportError propagates (V-AG-4
+# catches regression). AppointmentModel stub stays until Story 8 scheduling lift.
 
 if "appointments" not in _Base.metadata.tables:
 

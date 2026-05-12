@@ -124,39 +124,28 @@ _db_types.EncryptedJSON.impl = MockJSONB  # type: ignore[assignment]
 import sqlalchemy as _sa  # noqa: E402
 
 # ---------------------------------------------------------------------------
-# Cross-module stub models for SQLite test isolation
+# Cross-module FK targets for SQLite test isolation
 # Story 5 offer-studio tests trigger SQLA mapper resolution on ProductModel.
 # The shared CRM crm.py (luana_core_platform.infrastructure.models.crm) declares
 # LeadModel.messages -> "MessageModel" and LeadModel.appointments -> "AppointmentModel".
-# Those models live in sales_agent / scheduling modules (Story 6/7 lifts — NOT yet lifted).
-# Without stubs, SA mapper config fails with InvalidRequestError on first ProductModel
-# instantiation. Pattern adapted from luana-core-crm/tests/conftest.py (Story 4 baseline).
+# Story 7 D-T2 cement (2026-05-12): MessageModel real-lift complete in
+# luana_core_sales_agent.infrastructure.models.message_model — eager-import below
+# registers real model so subsequent stub guard skips it (mirrors connections T-16).
+# AppointmentModel stub stays until Story 8 scheduling lift.
 # ---------------------------------------------------------------------------
 # Register IAM models first (offer-studio FK -> tenants/users)
 from luana_core_iam.infrastructure.models.tenant_model import TenantModel  # noqa: F401, E402
 from luana_core_iam.infrastructure.models.user_model import UserModel  # noqa: F401, E402
 from luana_core_platform.domain.base_entity import Base  # noqa: E402
 from luana_core_platform.domain.base_entity import Base as _Base  # noqa: E402
+from luana_core_sales_agent.infrastructure.models.message_model import (  # noqa: F401, E402
+    MessageModel,  # Story 7 D-T2 cement — real model (T-5 batch 2 lift), claims 'messages' table
+)
 from sqlalchemy import create_engine  # noqa: E402
 from sqlalchemy.orm import Session, sessionmaker  # noqa: E402
 from sqlalchemy.pool import StaticPool  # noqa: E402
 
 # Cross-module stubs: only register if not already in registry (idempotent)
-if "messages" not in _Base.metadata.tables:
-
-    class MessageModel(_Base):  # type: ignore[misc]
-        """Stub for sales_agent.MessageModel (Story 7 lift). FK target only.
-
-        Production model lives in src.modules.sales_agent.infrastructure.models.message_model.
-        This stub satisfies SQLA mapper resolution for LeadModel.messages relationship
-        declared in shared crm.py without forward-importing Story 7 code.
-        """
-
-        __tablename__ = "messages"
-        id = _sa.Column(MockUUID(as_uuid=True), primary_key=True)
-        lead_id = _sa.Column(MockUUID(as_uuid=True), _sa.ForeignKey("leads.id"), nullable=True)
-
-
 if "appointments" not in _Base.metadata.tables:
 
     class AppointmentModel(_Base):  # type: ignore[misc]
