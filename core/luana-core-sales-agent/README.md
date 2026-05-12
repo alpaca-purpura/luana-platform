@@ -13,15 +13,20 @@ chunking, enrollment_*, webhook adapters, tool_call_dedup).
 ## Lift origin
 
 - AISALESHT path: `backend/src/modules/sales_agent/`
-- Lift commit batch: Story 7 (T-4 through T-15 — see story checkpoint for
-  exact SHAs once batches complete)
+- Lift commit batches: Story 7 batches 1-6 (T-1..T-19):
+  - Batch 1 T-1 583bbcf workspace · T-2 1ebbb02 skeleton · T-3 fe8dd42 D-T3 BrandVoicePort
+  - Batch 2 T-4 09740e3 domain · T-5 20857d9 infra models · T-6 400cbb3 infra repos · T-7 153b262 infra external + ws_manager
+  - Batch 3 T-8 4129ce9 orchestrator · T-9 c57aa3d agents/sales · T-10 c2fbae1 tools
+  - Batch 4 T-11 042db79 quality+prompts D-T3 compose · T-12 6f52ace services
+  - Batch 5 T-13 18bea75 api+workers · T-14 84c3377 observability D-T6 · T-15 c82a3f2 copilot_provider
+  - Batch 6 T-16 6625646 connections wiring · T-18 9d497d6 8 arch fitness · T-19 finalize
 - Lift mode: verbatim with mechanical `sed` import rewrites (per
   `05-guidelines.md §1.4`). NO logic refactor on protected surfaces.
 
-## Key exports (filled in once lift completes — T-15 onward)
+## Key exports
 
-- `SalesAgentState` (TypedDict — from `application/orchestrator/state.py`)
-- `build_sales_agent_graph` (LangGraph compile entry from
+- `AgentState` (TypedDict — from `application/orchestrator/state.py`)
+- `agent_app` (LangGraph compiled supervisor from
   `application/orchestrator/graph.py`)
 - `compose_prompt(specialist, state, voice_port, …)` (slot architecture
   6-block layout — slot 5 BRAND_VOICE wired via `BrandVoicePort` per
@@ -100,6 +105,26 @@ The hexagonal boundary means this package NEVER imports
 `PersonalityCompiler` directly (arch fitness V-AG-3 enforces). The voice
 compiler SSoT stays in `luana_core_brand_studio.domain.personality`
 (Story 5 placement — arch fitness V-AG-7 regression Story 5).
+
+## Unlifted this Story (Stories 4+6 deferral resolved)
+
+Story 7 T-16 replaced the `NotImplementedError` stub in
+`luana-core-connections/api/dependencies/__init__.py` with real
+`ChatOrchestrator` wiring. Both `luana_core_copilot` and
+`luana_core_sales_agent` now exist in the workspace, enabling the
+composition root deferred by Story 4.
+
+As part of T-16:
+
+- `connections/tests/conftest.py`: stub `MessageModel` registration
+  REMOVED. Real `from luana_core_sales_agent.infrastructure.models
+  .message_model import MessageModel` registered FIRST so subsequent
+  stub guards skip. `AppointmentModel` + `ProductModel` stubs remain
+  (deferred to Story 8 + future offer lift).
+- `luana_core_platform.infrastructure.models.crm.LeadModel.messages`:
+  `foreign_keys="MessageModel.lead_id"` (stub-target, did not exist on
+  real model — real col is `user_id` with `lead_id` @property)
+  REPLACED with `back_populates="lead"` matching AISALESHT SSoT.
 
 ## Resilience invariants
 

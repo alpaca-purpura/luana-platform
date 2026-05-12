@@ -224,6 +224,91 @@ Documented for completeness — not Story 6's responsibility:
   workspace test collection. Pre-existing constraint flagged Story 5; Story 6
   inherits without action.
 
+## Story 7 deferrals (2026-05-12) + INTRODUCED + UNLIFTED
+
+Story 7 luana-sales-agent-engine closed lift of `backend/src/modules/
+sales_agent/` into `core/luana-core-sales-agent/` over 19 tickets
+(T-1..T-19). Net workspace delta documented here.
+
+### INTRODUCED Story 7 (D-T3 ADR-001 §2.4)
+
+| Surface | Path | Notes |
+|---|---|---|
+| `BrandVoicePort` Protocol | `core/luana-core-brand-studio/src/luana_core_brand_studio/application/ports/brand_voice_port.py` | Hexagonal port wrapping voice compiler. 2 async methods FROZEN per arch fitness V-AG-4 |
+| `BrandVoiceService` adapter | `core/luana-core-brand-studio/src/luana_core_brand_studio/application/services/brand_voice_service.py` | Concrete impl binding to `domain.personality.PersonalityCompiler` (Story 5 SSoT) |
+| `BrandVoicePort` tests | `core/luana-core-brand-studio/tests/application/ports/test_brand_voice_port.py` | Protocol conformance |
+| `BrandVoiceService` tests | `core/luana-core-brand-studio/tests/application/services/test_brand_voice_service.py` | Adapter behavior |
+
+Cross-package consumers (`luana-core-sales-agent`) consume via DI — NEVER
+import `PersonalityCompiler` directly. Arch fitness V-AG-3 enforces.
+
+### UNLIFTED Story 7
+
+| Surface | Notes |
+|---|---|
+| `connections/api/dependencies/__init__.py` real `ChatOrchestrator` wiring | Stories 4+6 deferral RESOLVED in T-16. `NotImplementedError` stub replaced with `_message_handler = ChatOrchestrator()` singleton |
+| `connections/tests/conftest.py` MessageModel stub | REMOVED — replaced with real `from luana_core_sales_agent...message_model import MessageModel` registered FIRST so stub guard skips |
+| `luana_core_platform.infrastructure.models.crm.LeadModel.messages` relationship | `foreign_keys="MessageModel.lead_id"` (stub-target, did not exist on real model — `lead_id` is a Python @property; real FK column is `user_id`) REPLACED with `back_populates="lead"` matching AISALESHT SSoT |
+
+### NEW Story 7 deferrals — eval framework → Luana v0.2.0
+
+Per outcome §2 OQ1 + Session 3 ratificación 2. Story E voice fidelity CI
+gate WAIVED. Eval framework lifts in v0.2.0 NOT v0.1.0.
+
+| Source (AISALESHT) | Reason | Defer to |
+|---|---|---|
+| `backend/src/modules/sales_agent/observability/eval_simulator/` (entire subfolder) | Eval simulator runtime — cost-bucket separation tables consumed | Luana v0.2.0 |
+| `backend/tests/agentic_evals/sales_agent/` (entire tree) | Simulator smoke + concurrency + schema regression + termination registry + grader runtime + adversarial + personas + goldens | Luana v0.2.0 |
+| MAJ-EVAL grader cost-bucket tables: `eval_simulator_llm_call`, `eval_simulator_trace_event`, `eval_simulator_grade`, `eval_simulator_grade_cache`, `eval_synthetic_tenants` | Cost-bucket separation rationale — production cost stays clean | Luana v0.2.0 |
+| Story E `sales-agent-voice-fidelity-grader-runtime` story | Voice fidelity grader runtime + CI gate | Luana v0.2.0 |
+| Adversarial jailbreak suite (Story I) | Eval prompt-injection defense gate | Luana v0.2.0 |
+| Personas catalog `docs/specs/personas/archetype-aware/*.yaml` | 15 archetype-aware personas dataset infra | Luana v0.2.0 |
+| Goldens dataset infra `backend/tests/agentic_evals/sales_agent/goldens/` | 15-cell coverage matrix (5 tenants × 3 persona_kinds) | Luana v0.2.0 |
+
+Arch fitness V-AG-5 (`test_no_eval_framework_lifted.py`) defensive cement
+against accidental partial lift attempts.
+
+### NEW Story 7 deferrals — scheduling concrete provider runtime → Story 8
+
+| Surface | Reason | Defer to |
+|---|---|---|
+| `luana_core_scheduling` package (concrete provider runtime) | NOT lifted yet — `application/tools/scheduling/providers.py` lifts with deferred-import pattern preserved (per 03-arch.md §9.2). Runtime fails on scheduler tool invocation in Luana standalone UNTIL Story 8 lifts | Story 8 (campaigns-extension-sdk + scheduling) |
+
+Arch fitness V-AG-2 (`test_story7_no_forward_module_imports.py`) allows
+TYPE_CHECKING / function-local imports of `luana_core_scheduling` —
+top-level imports flagged as violation.
+
+### NEW Story 7 deferrals — Streamlit admin pages → Story 10
+
+| Source (AISALESHT) | Target | Notes |
+|---|---|---|
+| `backend/src/admin/pages/sales-routing.py` | nicolify shell (Story 10) | Routing log viewer |
+| `backend/src/admin/pages/sales-agent-quality.py` | nicolify shell (Story 10) | Judge weekly report |
+| `backend/src/admin/pages/costo-agentes.py` | nicolify shell (Story 10) | Cross-agent cost dashboard |
+| `backend/src/admin/pages/llm-virtual-keys.py` | nicolify shell (Story 10) | LiteLLM key admin |
+| `backend/src/admin/pages/llm-models.py` | nicolify shell (Story 10) | Model registry admin |
+
+### Reserved (NEW abstractions, NOT existing AISALESHT code) — Story 7
+
+| Reserved item | Future story | Notes |
+|---|---|---|
+| `voice_cloning` BrandConfig field | Stories 11-13 (vertical bootstrap) | Per-brand voice cloning toggle. Not in Story 7 scope |
+| Eval framework formalization | Luana v0.2.0 | Cost-bucket separation tables + MAJ-EVAL + personas + goldens + Story E voice fidelity gate |
+
+### Pre-existing Story 4/5 territory (V-F-x-2 waiver continued)
+
+Documented for completeness — Story 7 inherits per outcome §7.2 + Story 6
+precedent V-F-x-2 waiver:
+
+- Some `conftest.py` "Plugin already registered" collisions across Story 4
+  + Story 5 + Story 6 packages when running aggregate `uv run pytest core/`.
+  Per-package `uv run pytest core/<pkg>/tests/` is the canonical execution
+  unit. Pre-existing constraint flagged Story 4; Stories 5+6+7 inherit
+  without action.
+- `core/luana-core-analytics-engine/tests/test_seed_metrics.py` imports
+  `scripts.seed_metrics` which does not exist as installable module —
+  Story 4 tech debt.
+
 ## Lift rule
 
 All deferred files follow the lift-verbatim constraint: when they are lifted,

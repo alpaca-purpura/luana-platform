@@ -12,7 +12,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 
 import pytest
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from luana_core_platform.domain.base_entity import Base
@@ -25,9 +25,13 @@ def sa_engine():
         "sqlite:///:memory:",
         connect_args={"check_same_thread": False},
     )
-    # Import models to register in Base.metadata
-    from luana_core_sales_agent.infrastructure.models.enrollment_model import EnrollmentModel
-    from luana_core_sales_agent.infrastructure.models.message_model import MessageModel
+    # Import models to register in Base.metadata (side-effect imports — F401 allowed)
+    from luana_core_sales_agent.infrastructure.models.enrollment_model import (  # noqa: F401
+        EnrollmentModel,
+    )
+    from luana_core_sales_agent.infrastructure.models.message_model import (  # noqa: F401
+        MessageModel,
+    )
 
     Base.metadata.create_all(engine)
     return engine

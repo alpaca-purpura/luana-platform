@@ -17,9 +17,7 @@ ADR-001 §2.4 + Story 5 §9.4 deferral resolution + Story 7 §6 halt criterion.
 
 from __future__ import annotations
 
-import asyncio
 import inspect
-from unittest.mock import AsyncMock
 from uuid import UUID, uuid4
 
 import pytest
