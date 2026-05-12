@@ -30,6 +30,10 @@ members = [
     "core/luana-core-copilot",
     # Story 7 packages (NEW)
     "core/luana-core-sales-agent",
+    # Story 8 (NEW — 3 packages)
+    "core/luana-core-campaigns",            # campaigns — alphabetical (before sales-agent in full list)
+    "core/luana-core-extension-sdk",        # extension-sdk — alphabetical after sales-agent
+    "apps/test-brand",                      # test-brand — after core/ block
     # Brand apps
     "nicolify",
     "vitalia",
@@ -67,6 +71,10 @@ luana-core-offer-studio = { workspace = true }
 luana-core-copilot = { workspace = true }
 # Story 7 (NEW)
 luana-core-sales-agent = { workspace = true }
+# Story 8 (NEW)
+luana-core-campaigns = { workspace = true }
+luana-core-extension-sdk = { workspace = true }
+test-brand = { workspace = true }
 
 [tool.ruff]
 line-length = 120
