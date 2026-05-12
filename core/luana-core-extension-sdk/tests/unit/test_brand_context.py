@@ -2,6 +2,7 @@
 
 TDD: these tests are written FIRST (RED phase before brand_context.py exists).
 """
+
 from __future__ import annotations
 
 

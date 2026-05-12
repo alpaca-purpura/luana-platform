@@ -5,6 +5,7 @@
 - EP-6..EP-18 backlog: SIGNATURE-ONLY (registry stores; dispatch raises NotImplementedError)
 - Cross-cutting policies CC-1..CC-5: runtime enforcement
 """
+
 from __future__ import annotations
 
 from luana_core_extension_sdk.brand_context import BrandContext
@@ -14,6 +15,7 @@ from luana_core_extension_sdk.exceptions import (
     NamespaceViolationError,
     RegistrationClosedError,
 )
+from luana_core_extension_sdk.extension_points import ExtensionPointRegistry
 from luana_core_extension_sdk.models import (
     AssetTemplateDef,
     BookingPolicy,
@@ -43,7 +45,6 @@ from luana_core_extension_sdk.protocols import (
     GuardrailCheck,
     SignupHandler,
 )
-from luana_core_extension_sdk.extension_points import ExtensionPointRegistry
 
 __version__ = "0.0.8-alpha"
 

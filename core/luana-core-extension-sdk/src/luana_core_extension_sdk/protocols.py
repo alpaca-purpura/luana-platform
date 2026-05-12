@@ -3,6 +3,7 @@
 3 Protocols: FieldOverrideHandler, SignupHandler, GuardrailCheck.
 All @runtime_checkable per §1.3 step 5 verbatim.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional, Protocol, runtime_checkable

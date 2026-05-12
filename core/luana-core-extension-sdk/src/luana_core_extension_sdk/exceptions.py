@@ -1,4 +1,5 @@
 """SDK exception hierarchy — 3 exception types per §1.3 step 2."""
+
 from __future__ import annotations
 
 

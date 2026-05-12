@@ -6,6 +6,7 @@ fields MUST continue working when new optional fields are appended.
 
 NO PII fields — safe to log. tenant_id + tenant_profile_id are opaque UUIDs.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass

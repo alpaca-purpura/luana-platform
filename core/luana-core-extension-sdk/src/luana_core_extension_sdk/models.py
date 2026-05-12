@@ -2,6 +2,7 @@
 
 All models: @dataclass(frozen=True, slots=True, kw_only=True) per §1.4 canonical pattern.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field

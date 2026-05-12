@@ -2,6 +2,7 @@
 
 TDD: these tests written FIRST (RED phase before exceptions.py exists).
 """
+
 from __future__ import annotations
 
 

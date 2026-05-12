@@ -2,6 +2,7 @@
 
 TDD: these tests written FIRST (RED phase before models.py exists).
 """
+
 from __future__ import annotations
 
 import dataclasses
