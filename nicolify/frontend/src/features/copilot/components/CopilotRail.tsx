@@ -1,0 +1,170 @@
+"use client";
+
+import { MessageSquareText, Plus, Sparkles, X } from "lucide-react";
+import { forwardRef } from "react";
+
+import { Button } from "@luana/ui-kit";
+import { Separator } from "@luana/ui-kit";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@luana/ui-kit";
+import { cn } from "@/lib/utils";
+
+import { useConversationList } from "../hooks/use-conversation-list";
+import { useCreateConversation } from "../hooks/use-create-conversation";
+import { useCopilotStore } from "../store/copilot-store";
+
+type CopilotRailProps = React.HTMLAttributes<HTMLDivElement>;
+
+function getInitials(title: string | null): string {
+  if (!title) return "?";
+  const words = title.trim().split(/\s+/);
+  if (words.length === 1) return title.slice(0, 2).toUpperCase();
+  return (words[0][0] + words[1][0]).toUpperCase();
+}
+
+/**
+ * Always-visible 60px right-edge rail.
+ * Contains: state toggle(s), new conversation button, and (when collapsed)
+ * up to 6 conversation avatars + "más" link.
+ *
+ * Rail is HIDDEN in "full" state — its controls migrate to the history
+ * panel header. Sidebar renders rail only in collapsed and rail states.
+ */
+export const CopilotRail = forwardRef<HTMLDivElement, CopilotRailProps>(
+  ({ className, ...props }, ref) => {
+    const sidebarState = useCopilotStore((s) => s.sidebarState);
+    const setSidebarState = useCopilotStore((s) => s.setSidebarState);
+    const conversationId = useCopilotStore((s) => s.conversationId);
+
+    const { mutate: createConversation } = useCreateConversation();
+    const { data } = useConversationList({ limit: 6 });
+    const topConversations = data?.pages[0]?.items.slice(0, 6) ?? [];
+
+    return (
+      <TooltipProvider delayDuration={200}>
+        <div
+          ref={ref}
+          className={cn(
+            "flex h-full w-[60px] flex-col items-center gap-2 border-l border-border bg-background px-2 py-3",
+            className,
+          )}
+          {...props}
+        >
+          {/* Collapsed → open chat (primary brand action) */}
+          {sidebarState === "collapsed" && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setSidebarState("rail")}
+                  aria-label="Abrir chat"
+                  className="h-10 w-10 rounded-xl bg-brand text-brand-foreground shadow-md hover:bg-brand/90 hover:text-brand-foreground"
+                >
+                  <Sparkles className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="left">Abrir chat</TooltipContent>
+            </Tooltip>
+          )}
+
+          {/* Rail state → show history + close */}
+          {sidebarState === "rail" && (
+            <>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setSidebarState("full")}
+                    aria-label="Ver historial"
+                    className="h-9 w-9"
+                  >
+                    <MessageSquareText className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="left">Ver historial</TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setSidebarState("collapsed")}
+                    aria-label="Cerrar chat"
+                    className="h-9 w-9"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="left">Cerrar chat</TooltipContent>
+              </Tooltip>
+            </>
+          )}
+
+          <Separator />
+
+          {/* New conversation — visible in both states */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => createConversation()}
+                aria-label="Nueva conversación"
+                className="h-9 w-9"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="left">Nueva conversación</TooltipContent>
+          </Tooltip>
+
+          {/* Recent conversation avatars — collapsed state only */}
+          {sidebarState === "collapsed" && topConversations.length > 0 && (
+            <div className="mt-1 flex flex-col items-center gap-1.5">
+              {topConversations.map((conv) => {
+                const isActive = conv.id === conversationId;
+                return (
+                  <Tooltip key={conv.id}>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          useCopilotStore.getState().setConversationId(conv.id);
+                          setSidebarState("rail");
+                        }}
+                        aria-label={conv.title ?? "Conversación"}
+                        className={cn(
+                          "flex h-9 w-9 items-center justify-center rounded-full text-[10px] font-semibold transition-shadow",
+                          isActive
+                            ? "border-2 border-brand bg-brand/15 text-brand"
+                            : "border border-border bg-muted/40 text-muted-foreground hover:bg-muted",
+                        )}
+                      >
+                        {getInitials(conv.title)}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="left">
+                      {conv.title ?? "Nueva conversación"}
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              })}
+
+              <button
+                type="button"
+                onClick={() => setSidebarState("full")}
+                aria-label="Ver todas las conversaciones"
+                className="mt-0.5 text-[10px] text-muted-foreground hover:text-foreground"
+              >
+                más
+              </button>
+            </div>
+          )}
+        </div>
+      </TooltipProvider>
+    );
+  },
+);
+CopilotRail.displayName = "CopilotRail";

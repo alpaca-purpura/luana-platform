@@ -2,6 +2,7 @@ packages:
   - core
   - core/@luana/*
   - nicolify
+  - nicolify/frontend
   - vitalia
   - comunify
   - lupulo

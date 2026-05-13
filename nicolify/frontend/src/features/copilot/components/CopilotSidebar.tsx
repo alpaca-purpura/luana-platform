@@ -1,0 +1,182 @@
+"use client";
+
+import { memo, useEffect } from "react";
+
+import { Z_INDEX_CLASSES } from "@luana/design-tokens/z-index";
+import { cn } from "@/lib/utils";
+
+import { useCopilotNavigator } from "../hooks/use-copilot-navigator";
+import { useCreateConversation } from "../hooks/use-create-conversation";
+import { useRouteTracker } from "../hooks/use-route-tracker";
+import { COPILOT_WIDTHS } from "../lib/copilot-shell-widths";
+import { loadPersistedSidebarState, useCopilotStore } from "../store/copilot-store";
+
+import { useShellMutexContext } from "@/components/shared/layout/ShellMutexContext";
+
+import { CopilotChatPanel } from "./CopilotChatPanel";
+import { CopilotHistoryPanel } from "./CopilotHistoryPanel";
+import { CopilotRail } from "./CopilotRail";
+
+// ── Component ────────────────────────────────────────────────────────
+
+/**
+ * Root copilot sidebar container.
+ * Uses a CSS grid with 3 columns: history | chat | rail.
+ * State-driven column widths, animated via CSS transitions.
+ * Persists sidebarState to localStorage.
+ */
+export const CopilotSidebar = memo(function CopilotSidebar() {
+  useRouteTracker();
+  useCopilotNavigator();
+
+  const sidebarState = useCopilotStore((s) => s.sidebarState);
+  const setSidebarState = useCopilotStore((s) => s.setSidebarState);
+  const cycleSidebarState = useCopilotStore((s) => s.cycleSidebarState);
+
+  // T-4: Consume shell mutex to dispatch closePanel on backdrop click / Esc.
+  // When undefined (e.g., isolated test renders), falls back to setSidebarState directly.
+  const shellMutex = useShellMutexContext();
+
+  const { mutate: createConversation } = useCreateConversation();
+
+  // Restore persisted state on mount
+  useEffect(() => {
+    const persisted = loadPersistedSidebarState();
+    setSidebarState(persisted);
+  }, [setSidebarState]);
+
+  // Keyboard shortcuts (document-level, skip if focus in input/textarea)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const inInput =
+        target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable;
+
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === "k") {
+          e.preventDefault();
+          document.getElementById("copilot-input")?.focus();
+        }
+        return;
+      }
+
+      if (inInput) return;
+
+      switch (e.key) {
+        case "Escape":
+          // T-4: Esc closes copilot via mutex (mobile drawer pattern).
+          // Dispatch closePanel so mutex can enforce policy (e.g., notify other panels).
+          // Falls back to setSidebarState('collapsed') when outside shell context.
+          if (shellMutex) {
+            shellMutex.closePanel();
+          }
+          setSidebarState("collapsed");
+          break;
+        case "C":
+          setSidebarState("collapsed");
+          break;
+        case "R":
+          setSidebarState("rail");
+          break;
+        case "F":
+          setSidebarState("full");
+          break;
+        case "N":
+          createConversation();
+          break;
+        default:
+          break;
+      }
+
+      void cycleSidebarState; // available for future use
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [setSidebarState, cycleSidebarState, createConversation, shellMutex]);
+
+  // CSS variable values per state — 2-column grid: [chat][rail]
+  // "full" state: history panel is rendered inside the chat column (overlay-like) or
+  // the grid expands: history (280px) + chat (400px) without a 3rd rail column when full.
+  // Spec §1: collapsed=[0, 60px], rail=[400px, 60px], full=[400px, 280px]
+  // In "full" state the rail is hidden (controls migrate to history panel header).
+  const chatW = sidebarState === "collapsed" ? "0px" : `${COPILOT_WIDTHS.chat}px`;
+  const railOrHistoryW =
+    sidebarState === "full" ? `${COPILOT_WIDTHS.rail}px` : `${COPILOT_WIDTHS.collapsed}px`;
+
+  const isExpanded = sidebarState !== "collapsed";
+
+  return (
+    <>
+      {/* Live region for a11y announcements */}
+      <span
+        role="status"
+        aria-live="polite"
+        className="sr-only"
+        aria-label={
+          sidebarState === "collapsed"
+            ? "Copilot cerrado"
+            : sidebarState === "rail"
+              ? "Copilot abierto"
+              : "Copilot con historial"
+        }
+      />
+
+      {/* Mobile backdrop */}
+      {/* T-4: Backdrop click dispatches shellMutex.closePanel() so the mutex policy */}
+      {/* can react (e.g., re-open sidebar if mutex policy allows). */}
+      {/* T-6: backdrop z-index via Z_INDEX_CLASSES.COPILOT_BACKDROP (z-[50]) */}
+      {isExpanded && (
+        <div
+          className={cn(
+            "fixed inset-0 bg-black/40 backdrop-blur-sm md:hidden",
+            Z_INDEX_CLASSES.COPILOT_BACKDROP,
+          )}
+          aria-hidden="true"
+          onClick={() => {
+            // Dispatch to mutex first (allows policy to react), then collapse copilot.
+            shellMutex?.closePanel();
+            setSidebarState("collapsed");
+          }}
+        />
+      )}
+
+      {/* Sidebar root — CSS grid */}
+      <aside
+        data-testid="copilot-sidebar"
+        aria-expanded={isExpanded}
+        aria-label="Panel copilot"
+        className={cn(
+          "flex-shrink-0 h-full overflow-hidden",
+          "transition-[grid-template-columns] duration-[220ms]",
+          // Mobile: fixed overlay when open
+          // T-6: z-index via Z_INDEX_CLASSES.COPILOT_DRAWER (z-[60]) — no hardcoded z-NN
+          "max-md:fixed max-md:inset-y-0 max-md:right-0",
+          `max-md:${Z_INDEX_CLASSES.COPILOT_DRAWER}`,
+          isExpanded ? "max-md:translate-x-0" : "max-md:translate-x-full",
+          "max-md:transition-transform max-md:duration-300",
+        )}
+        style={{
+          display: "grid",
+          gridTemplateColumns: `${chatW} ${railOrHistoryW}`,
+          // `minmax(0, 1fr)` clamps the grid row to the aside's h-full. Without it,
+          // long conversations grow the row to content height, pushing the composer
+          // below the viewport where it cannot be reached.
+          gridTemplateRows: "minmax(0, 1fr)",
+          transition: "grid-template-columns 220ms cubic-bezier(.2,.8,.2,1)",
+        }}
+      >
+        {/* Chat panel — visible in rail and full states */}
+        {sidebarState !== "collapsed" ? (
+          <CopilotChatPanel />
+        ) : (
+          <div style={{ width: chatW, overflow: "hidden" }} aria-hidden="true" />
+        )}
+
+        {/* Second column: Rail (collapsed/rail) or History panel (full) */}
+        {sidebarState === "full" ? <CopilotHistoryPanel /> : <CopilotRail />}
+      </aside>
+    </>
+  );
+});
+CopilotSidebar.displayName = "CopilotSidebar";

@@ -1,0 +1,49 @@
+"use client";
+
+import { useRouter, useParams } from "next/navigation";
+import { memo } from "react";
+
+import { useCopilotStore } from "../../store/copilot-store";
+
+interface InterviewCompleteCardProps {
+  healthScore: number;
+  redirect: string;
+}
+
+const DOMAIN_LABELS: Record<string, string> = {
+  "/brand-studio": "Brand Studio",
+  "/offer-studio": "Offer Studio",
+};
+
+export const InterviewCompleteCard = memo(function InterviewCompleteCard({
+  healthScore,
+  redirect,
+}: InterviewCompleteCardProps) {
+  const router = useRouter();
+  const params = useParams();
+  const tenantId = params.tenantId as string;
+  const setSidebarState = useCopilotStore((s) => s.setSidebarState);
+  const clearSession = useCopilotStore((s) => s.clearSession);
+
+  const label = DOMAIN_LABELS[redirect] ?? "el editor";
+
+  const handleClick = () => {
+    clearSession();
+    setSidebarState("rail");
+    router.push(`/${tenantId}${redirect}`);
+  };
+
+  return (
+    <div className="animate-in slide-in-from-bottom-2 fade-in duration-300 rounded-xl border border-green-500 bg-green-900/20 p-4 text-center">
+      <div className="text-2xl font-bold text-green-500">{healthScore}%</div>
+      <div className="mt-1 text-xs text-green-400">¡Tu perfil está completo!</div>
+      <button
+        onClick={handleClick}
+        className="mt-3 rounded-md bg-green-600 px-4 py-2 text-xs font-medium text-white transition-transform duration-150 active:scale-95 hover:bg-green-700"
+      >
+        Ver {label} →
+      </button>
+    </div>
+  );
+});
+InterviewCompleteCard.displayName = "InterviewCompleteCard";
