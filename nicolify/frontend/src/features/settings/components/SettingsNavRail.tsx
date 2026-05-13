@@ -6,7 +6,7 @@ import { useParams, usePathname } from "next/navigation";
 import { useMemo } from "react";
 
 import { FinderColumn } from "@/components/form-runtime/FinderColumn";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import {
   SETTINGS_GROUP_LABELS,

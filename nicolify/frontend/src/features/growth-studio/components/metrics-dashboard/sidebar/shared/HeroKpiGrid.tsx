@@ -5,7 +5,7 @@ import { memo } from "react";
 import { Area, AreaChart } from "recharts";
 
 import { ChartContainer } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { formatMetricValue } from "../../../../utils/format-metric-value";
 import { BenchmarkBadge } from "../../channel-widgets/BenchmarkBadge";

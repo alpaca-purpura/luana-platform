@@ -4,7 +4,7 @@ import { Check, Circle, Loader2 } from "lucide-react";
 import { forwardRef } from "react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type { PlanCardData, PlanCardTodo } from "../types/message-blocks";
 

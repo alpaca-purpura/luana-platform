@@ -4,7 +4,7 @@ import { HelpCircle } from "lucide-react";
 
 import { Label } from "@luana/ui-kit";
 import { Popover, PopoverContent, PopoverTrigger } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type { FieldSchema } from "@/lib/form-runtime/schema";
 

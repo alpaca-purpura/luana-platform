@@ -6,7 +6,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@luana/ui-kit";
-import { formatMoney } from "@/lib/format-money";
+import { formatMoney } from "@luana/format";
 
 import { ChannelRow } from "./ChannelRow";
 

@@ -27,7 +27,7 @@ import {
 import { useArchetypeDisplay } from "@/features/offer-studio/hooks/use-archetype-display";
 import { OfferArchetype, OfferStatus } from "@/features/offer-studio/types";
 import { useTenantLocale } from "@/features/tenant/context/tenant-locale-context";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type { Offer } from "@/features/offer-studio/types";
 

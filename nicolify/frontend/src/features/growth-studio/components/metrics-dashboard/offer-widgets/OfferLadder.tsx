@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import React from "react";
 
-import { formatMoney } from "@/lib/format-money";
+import { formatMoney } from "@luana/format";
 
 import type { RevenueGroupData, OfferSaleData, MetricClickData } from "../../../types/metrics";
 

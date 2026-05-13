@@ -3,7 +3,7 @@
 import { AlertTriangle, Bot, User } from "lucide-react";
 
 import { useTenantLocale } from "@/features/tenant/context/tenant-locale-context";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { formatDistanceToNow } from "../../utils/format";
 
@@ -66,7 +66,7 @@ export function ConversationItem({ conversation: c, isSelected, onSelect }: Conv
         <div className="relative shrink-0">
           {c.avatar_url ? (
             // eslint-disable-next-line @next/next/no-img-element -- avatar URL is tenant-controlled; next/image requires known domains config
-            <img src={c.avatar_url} alt="" className="h-10 w-10 rounded-full object-cover" />
+            (<img src={c.avatar_url} alt="" className="h-10 w-10 rounded-full object-cover" />)
           ) : (
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
               {initials}

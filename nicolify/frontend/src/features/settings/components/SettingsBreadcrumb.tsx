@@ -4,7 +4,7 @@ import { ChevronRight } from "lucide-react";
 import { useParams, usePathname } from "next/navigation";
 import { useMemo } from "react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { getSettingsSectionLabel } from "../lib/section-catalog";
 

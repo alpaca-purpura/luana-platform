@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { FieldContextPanel } from "./FieldContextPanel";
 import { FieldDetail } from "./FieldDetail";

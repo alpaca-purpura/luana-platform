@@ -4,7 +4,7 @@ import { AlertTriangle } from "lucide-react";
 import React from "react";
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { getChannelIcon, getChannelColor } from "../../../lib/channel-icons";
 

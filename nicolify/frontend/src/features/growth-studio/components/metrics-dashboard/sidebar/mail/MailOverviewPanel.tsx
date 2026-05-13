@@ -10,8 +10,8 @@ import {
   DetailPanelClose,
 } from "@luana/ui-kit";
 import { useTenantLocale } from "@/features/tenant/context/tenant-locale-context";
-import { formatTenantDateTime } from "@/lib/format-date";
-import { cn } from "@/lib/utils";
+import { formatTenantDateTime } from "@luana/format";
+import { cn } from "@luana/format";
 
 import { useMailDashboard } from "../../../../hooks/use-mail-dashboard";
 import { useSyncChannel } from "../../../../hooks/use-sync-channel";

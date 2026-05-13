@@ -26,9 +26,9 @@ import { Separator } from "@luana/ui-kit";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@luana/ui-kit";
 import { useTenantLocale } from "@/features/tenant/context/tenant-locale-context";
 import { connectionsApi, type ChannelInfoResponse } from "@/lib/api/connections";
-import { formatTenantDate } from "@/lib/format-date";
-import { formatMoney } from "@/lib/format-money";
-import { cn } from "@/lib/utils";
+import { formatTenantDate } from "@luana/format";
+import { formatMoney } from "@luana/format";
+import { cn } from "@luana/format";
 
 import { useSyncChannel } from "../../../hooks/use-sync-channel";
 import { getChannelIcon, getChannelColor } from "../../../lib/channel-icons";

@@ -5,7 +5,7 @@ import { CalendarIcon, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { toZonedTime, fromZonedTime } from "date-fns-tz";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 import { Button } from "@luana/ui-kit";
 import { Calendar } from "@luana/ui-kit";
 import { Popover, PopoverContent, PopoverTrigger } from "@luana/ui-kit";

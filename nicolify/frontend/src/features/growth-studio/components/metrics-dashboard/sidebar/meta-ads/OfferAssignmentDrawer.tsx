@@ -18,7 +18,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import {
   useApplySuggestions,

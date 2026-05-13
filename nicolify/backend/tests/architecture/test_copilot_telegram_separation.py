@@ -77,16 +77,34 @@ def test_copilot_telegram_no_per_tenant_token_lookup() -> None:
 
 
 def test_copilot_channel_links_no_cross_module_fk() -> None:
-    """copilot_channel_links migration MUST NOT have FK referencing
+    """copilot_channel_links table MUST NOT have FK referencing
     sales_agent_* tables (D-PI5-005 separación física).
+
+    T-10 consolidated 131 migrations into 001_initial_snapshot.py — individual migration
+    files (including 120_pi5_pr1_copilot_telegram_foundation.py) are deleted.
+    This test now verifies the invariant via the consolidated snapshot.
 
     Cero shared state between copilot and sales_agent — schemas are
     independent. Sales_agent has its own future telegram bot in a
     distinct PI.
+
+    # [STORY-10-T-15] — migrated from 120_pi5_pr1_copilot_telegram_foundation.py to 001_initial_snapshot.py
     """
-    migration = ALEMBIC_ROOT / "120_pi5_pr1_copilot_telegram_foundation.py"
-    assert migration.exists(), f"Migration {migration} missing — PI-5 PR-1 not deployed"
-    text = migration.read_text()
+    snapshot = ALEMBIC_ROOT / "001_initial_snapshot.py"
+    assert snapshot.exists(), (
+        f"001_initial_snapshot.py missing at {snapshot} — T-10 consolidation required."
+    )
+    text = snapshot.read_text()
+
+    # Extract only the copilot_channel_links table definition section
+    # Find the block between CREATE TABLE ... copilot_channel_links and the next CREATE TABLE
+    import re as _re
+    table_match = _re.search(
+        r"CREATE TABLE IF NOT EXISTS public\.copilot_channel_links\s*\(.*?\);",
+        text,
+        _re.DOTALL | _re.IGNORECASE,
+    )
+    table_text = table_match.group(0) if table_match else ""
 
     # Forbidden: FOREIGN KEY / REFERENCES targeting sales_agent.* or connections.*
     forbidden_fk_patterns = [
@@ -97,7 +115,8 @@ def test_copilot_channel_links_no_cross_module_fk() -> None:
     ]
     for pattern in forbidden_fk_patterns:
         assert not re.search(pattern, text, re.IGNORECASE), (
-            f"Migration contains forbidden FK pattern '{pattern}' — D-PI5-005 separación física"
+            f"Snapshot contains forbidden FK pattern '{pattern}' in copilot_channel_links — "
+            f"D-PI5-005 separación física"
         )
 
 

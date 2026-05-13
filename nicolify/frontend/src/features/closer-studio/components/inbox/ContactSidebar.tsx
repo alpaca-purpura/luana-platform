@@ -4,7 +4,7 @@ import { X, ExternalLink } from "lucide-react";
 
 import { Button } from "@luana/ui-kit";
 import { ScoreRing } from "@/features/sales/components/atoms/ScoreRing";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { useConversationDetail } from "../../hooks/use-conversation-detail";
 import { useCloserStore } from "../../store/closer-store";

@@ -4,7 +4,7 @@ import Link from "next/link";
 
 import { badgeVariants } from "@luana/ui-kit";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 /** Maximum characters to show in the badge label before truncating. */
 const MAX_NAME_LENGTH = 30;

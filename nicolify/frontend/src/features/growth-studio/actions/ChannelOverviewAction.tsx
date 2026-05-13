@@ -6,7 +6,7 @@
 "use client";
 
 import { useTenantLocale } from "@/features/tenant/context/tenant-locale-context";
-import { formatMoney } from "@/lib/format-money";
+import { formatMoney } from "@luana/format";
 import type { ActionComponentProps } from "@/lib/form-runtime/actions/registry";
 
 // ─── Payload types ────────────────────────────────────────────────────────────

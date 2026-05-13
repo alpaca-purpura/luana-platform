@@ -3,7 +3,7 @@
 import React from "react";
 
 import { Badge } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { getSummaryMetrics } from "../../../lib/channel-display-registry";
 import { useMetricCatalog } from "../../../hooks/use-metric-catalog";

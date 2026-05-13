@@ -9,7 +9,7 @@ import {
   getDimensionLevelName,
   type PersonalityDimensions,
 } from "@/features/brand-studio/types/personality";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { DimensionsForm } from "./DimensionsForm";
 

@@ -5,7 +5,7 @@ import { useState } from "react";
 
 import { Button } from "@luana/ui-kit";
 import { Card } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { ArrayAddButton } from "./array-add-button";
 import { ArrayDragHandle } from "./array-drag-handle";

@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type { ReactNode } from "react";
 

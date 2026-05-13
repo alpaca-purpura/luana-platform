@@ -4,7 +4,7 @@ import { Copy, Trash2 } from "lucide-react";
 
 import { Button } from "@luana/ui-kit";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 interface ArrayItemActionsProps {
   onDuplicate: () => void;

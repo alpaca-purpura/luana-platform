@@ -2,7 +2,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@luana
 import { useValueLevelCatalog } from "@/features/offer-studio/hooks/use-value-level-catalog";
 import { resolveIconByName } from "@/features/offer-studio/lib/icon-name-resolver";
 import { OfferValueLevel } from "@/features/offer-studio/types";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 interface LadderProgressBarProps {
   filledGroups: Set<OfferValueLevel>;

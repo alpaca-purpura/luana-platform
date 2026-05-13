@@ -12,7 +12,7 @@ import { Input } from "@luana/ui-kit";
 import { ScrollArea } from "@luana/ui-kit";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@luana/ui-kit";
 import { useAuditLeads } from "@/features/audit/hooks/use-audit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 interface LeadListProps {
   selectedLeadId: string | null;

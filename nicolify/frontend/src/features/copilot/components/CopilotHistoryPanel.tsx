@@ -15,7 +15,7 @@ import { ScrollArea } from "@luana/ui-kit";
 import { Skeleton } from "@luana/ui-kit";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@luana/ui-kit";
 import { Z_INDEX_CLASSES } from "@luana/design-tokens/z-index";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { useConversationGroups } from "../hooks/use-conversation-groups";
 import { useConversationList } from "../hooks/use-conversation-list";

@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type { TableBlock as TableBlockType } from "../../types/message-blocks";
 

@@ -10,8 +10,8 @@ import {
   DetailPanelClose,
 } from "@luana/ui-kit";
 import { useTenantLocale } from "@/features/tenant/context/tenant-locale-context";
-import { formatMoney } from "@/lib/format-money";
-import { cn } from "@/lib/utils";
+import { formatMoney } from "@luana/format";
+import { cn } from "@luana/format";
 
 import { useCampaignPerformance } from "../../../../api/campaigns-api";
 import { useChannelDashboard } from "../../../../hooks/use-channel-dashboard";

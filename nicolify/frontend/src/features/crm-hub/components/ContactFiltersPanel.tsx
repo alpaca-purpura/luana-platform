@@ -18,7 +18,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@luana/ui-kit";
 import { ScrollArea } from "@luana/ui-kit";
 import { Separator } from "@luana/ui-kit";
 import { Slider } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { lifecycleStageSchema } from "../types";
 

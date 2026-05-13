@@ -12,9 +12,9 @@ import {
   type ChartConfig,
 } from "@luana/ui-kit";
 import { useTenantLocale } from "@/features/tenant/context/tenant-locale-context";
-import { formatTenantDate } from "@/lib/format-date";
+import { formatTenantDate } from "@luana/format";
 
-import { getChannelColor } from "@/lib/constants/channel-colors";
+import { getChannelColor } from "@luana/format";
 
 import type { StageTimeSeries } from "../../../types/metrics";
 

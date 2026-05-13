@@ -1,7 +1,7 @@
 import { useAuth } from "@clerk/nextjs";
 import { useQuery } from "@tanstack/react-query";
 
-import { camelizeKeys } from "@/lib/case-conversion";
+import { camelizeKeys } from "@luana/format";
 import { config } from "@/lib/config";
 import { fetchClient } from "@/lib/http-client";
 

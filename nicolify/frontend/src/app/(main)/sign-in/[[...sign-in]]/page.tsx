@@ -2,7 +2,7 @@
 
 import { SignIn } from "@clerk/nextjs";
 
-import { useIsMounted } from "@/hooks/use-is-mounted";
+import { useIsMounted } from "@luana/hooks";
 
 /**
  * Sign-in page.

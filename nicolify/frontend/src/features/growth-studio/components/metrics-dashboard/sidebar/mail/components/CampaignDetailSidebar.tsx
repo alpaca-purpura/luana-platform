@@ -10,7 +10,7 @@ import {
   DetailPanelClose,
 } from "@luana/ui-kit";
 import { Separator } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import {
   AUTOMATION_METRIC_INFO,

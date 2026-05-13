@@ -7,7 +7,7 @@ import { Badge } from "@luana/ui-kit";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@luana/ui-kit";
 import { resolveIconByName } from "@/features/offer-studio/lib/icon-name-resolver";
 import { OfferValueLevel } from "@/features/offer-studio/types";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type {
   ExpertBusinessType,

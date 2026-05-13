@@ -3,7 +3,7 @@
 import { useAuth } from "@clerk/nextjs";
 import { useQuery } from "@tanstack/react-query";
 
-import { useIsMounted } from "@/hooks/use-is-mounted";
+import { useIsMounted } from "@luana/hooks";
 import { fetchClient } from "@/lib/http-client";
 
 import type { ContactDetail } from "../types";

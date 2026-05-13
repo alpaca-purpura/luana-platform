@@ -8,7 +8,7 @@ import { Button } from "@luana/ui-kit";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@luana/ui-kit";
 import { Textarea } from "@luana/ui-kit";
 import { useSimulatePersonality } from "@/features/brand-studio/api/personality";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 const QUICK_CONTEXTS = [
   { label: "Saludo", message: "Hola, ¿cómo estás?" },

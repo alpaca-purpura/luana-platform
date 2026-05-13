@@ -3,7 +3,7 @@
 import { X } from "lucide-react";
 import { useEffect } from "react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { NotificationCard } from "./NotificationCard";
 

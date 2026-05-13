@@ -5,7 +5,7 @@ import { useState } from "react";
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@luana/ui-kit";
 import { useTenantLocale } from "@/features/tenant/context/tenant-locale-context";
-import { formatMoney } from "@/lib/format-money";
+import { formatMoney } from "@luana/format";
 
 import { METRIC_LABELS } from "../../../lib/metric-labels";
 

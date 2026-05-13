@@ -17,9 +17,9 @@ import { Button } from "@luana/ui-kit";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@luana/ui-kit";
 import { useIgnoredNotices } from "@/features/growth-studio/hooks/use-ignored-notices";
 import { useTenantLocale } from "@/features/tenant/context/tenant-locale-context";
-import { formatTenantDate, formatTenantDateTime } from "@/lib/format-date";
-import { formatMoney } from "@/lib/format-money";
-import { cn } from "@/lib/utils";
+import { formatTenantDate, formatTenantDateTime } from "@luana/format";
+import { formatMoney } from "@luana/format";
+import { cn } from "@luana/format";
 
 import { useAssociations } from "../../../../../api/offer-association-api";
 import { archetypeEmoji } from "../../../../../types/offer-association";

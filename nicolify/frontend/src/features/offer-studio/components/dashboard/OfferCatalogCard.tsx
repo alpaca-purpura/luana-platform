@@ -45,8 +45,8 @@ import {
   OfferValueLevel,
 } from "@/features/offer-studio/types";
 import { useTenantLocale } from "@/features/tenant/context/tenant-locale-context";
-import { formatMoney } from "@/lib/format-money";
-import { cn } from "@/lib/utils";
+import { formatMoney } from "@luana/format";
+import { cn } from "@luana/format";
 
 import type { Offer } from "@/features/offer-studio/types";
 

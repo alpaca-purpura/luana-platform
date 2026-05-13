@@ -40,7 +40,7 @@ import { Switch } from "@luana/ui-kit";
 import { availabilityApi } from "@/lib/api/availability";
 import { eventTypesApi, EventTypeUpdate } from "@/lib/api/event-types";
 import { settingsApi } from "@/lib/api/settings";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { EventTypeSidebar } from "./EventTypeForm";
 import { GenerateLinkModal } from "./GenerateLinkModal";

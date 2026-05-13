@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@luana/ui-kit";
 import { useTenants } from "@/features/settings/hooks/use-tenants";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type { TenantProfile } from "@/lib/api/settings";
 

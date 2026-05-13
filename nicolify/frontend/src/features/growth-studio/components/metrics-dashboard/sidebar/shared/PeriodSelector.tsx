@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type { MetaAdsPeriod } from "../../../../types/metrics";
 

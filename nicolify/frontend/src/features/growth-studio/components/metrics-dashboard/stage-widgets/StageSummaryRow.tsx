@@ -4,8 +4,8 @@ import { usePathname } from "next/navigation";
 import { memo, useCallback, useMemo } from "react";
 
 import { useNavigation } from "@/components/shared/navigation";
-import { useCopilotOffset } from "@/hooks/use-copilot-offset";
-import { cn } from "@/lib/utils";
+import { useCopilotOffset } from "@luana/hooks";
+import { cn } from "@luana/format";
 
 import { STAGE_TO_SLUG } from "../context/GrowthStudioContext";
 

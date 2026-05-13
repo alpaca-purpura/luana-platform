@@ -2,7 +2,7 @@
 
 import { X } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 export interface ReplyRef {
   messageId: string;

@@ -4,7 +4,7 @@ import { Inbox, KanbanSquare, Snowflake, Wifi, WifiOff } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 import { NavLink } from "@/components/shared/navigation";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { useCloserWebSocket } from "../hooks/use-closer-ws";
 import { useKPIs } from "../hooks/use-kpis";

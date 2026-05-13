@@ -12,7 +12,7 @@ import {
   type FieldValues,
 } from "react-hook-form";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 import { Label } from "@luana/ui-kit";
 
 const Form = FormProvider;

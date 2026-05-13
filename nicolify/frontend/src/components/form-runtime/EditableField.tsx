@@ -2,7 +2,7 @@
 
 import { useActiveField } from "@/lib/form-runtime/hooks";
 import { getNestedPath } from "@/lib/form-runtime/utils";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { FieldLabelWithHelp } from "./FieldLabelWithHelp";
 import { FieldRenderer } from "./FieldRenderer";

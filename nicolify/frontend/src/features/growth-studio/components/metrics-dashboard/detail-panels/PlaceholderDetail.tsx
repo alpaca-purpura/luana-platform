@@ -1,7 +1,7 @@
 "use client";
 
 import { Badge } from "@luana/ui-kit";
-import { formatMoney } from "@/lib/format-money";
+import { formatMoney } from "@luana/format";
 
 import type { StageSummary } from "../../../types/metrics";
 

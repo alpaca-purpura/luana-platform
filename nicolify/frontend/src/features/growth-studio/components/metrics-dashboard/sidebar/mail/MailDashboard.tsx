@@ -8,8 +8,8 @@ import { toast } from "sonner";
 
 import { Button } from "@luana/ui-kit";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@luana/ui-kit";
-import { useCopilotOffset } from "@/hooks/use-copilot-offset";
-import { cn } from "@/lib/utils";
+import { useCopilotOffset } from "@luana/hooks";
+import { cn } from "@luana/format";
 
 import { useConnectionHealth } from "../../../../hooks/use-connection-health";
 import { useHashScroll } from "../../../../hooks/use-hash-scroll";

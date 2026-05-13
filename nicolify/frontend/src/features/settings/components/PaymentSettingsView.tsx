@@ -26,7 +26,7 @@ import { Input } from "@luana/ui-kit";
 import { Label } from "@luana/ui-kit";
 import { Switch } from "@luana/ui-kit";
 import { Tabs, TabsList, TabsTrigger } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type { PaymentGatewayConfig as ConfigType } from "@/features/sales/types/sales-studio";
 

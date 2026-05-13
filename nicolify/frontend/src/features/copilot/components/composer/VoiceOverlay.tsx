@@ -4,7 +4,7 @@ import { Check, Loader2, X } from "lucide-react";
 import { forwardRef } from "react";
 
 import { Button } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { VoiceWaveform } from "./VoiceWaveform";
 

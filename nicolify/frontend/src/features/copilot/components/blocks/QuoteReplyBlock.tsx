@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type { QuoteReplyBlock as QuoteReplyBlockType } from "../../types/message-blocks";
 

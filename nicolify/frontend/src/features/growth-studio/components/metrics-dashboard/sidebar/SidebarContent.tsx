@@ -18,8 +18,8 @@ import { Button } from "@luana/ui-kit";
 import { Card, CardContent } from "@luana/ui-kit";
 import { Separator } from "@luana/ui-kit";
 import { useTenantLocale } from "@/features/tenant/context/tenant-locale-context";
-import { formatTenantDate } from "@/lib/format-date";
-import { formatMoney } from "@/lib/format-money";
+import { formatTenantDate } from "@luana/format";
+import { formatMoney } from "@luana/format";
 
 import { getOfferProductsDetail } from "../../../api/product-mapping-api";
 import { getChannelColor, getChannelIcon } from "../../../lib/channel-icons";

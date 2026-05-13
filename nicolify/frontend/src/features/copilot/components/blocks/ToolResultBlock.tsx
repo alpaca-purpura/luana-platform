@@ -4,7 +4,7 @@ import { AlertCircle, Wrench } from "lucide-react";
 import { useState } from "react";
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type { ToolResultBlock as ToolResultBlockType } from "../../types/message-blocks";
 

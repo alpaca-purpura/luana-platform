@@ -1,7 +1,7 @@
 "use client";
 
 import { BusinessTypesChipBar } from "@/features/tenant-profile/components/BusinessTypesChipBar";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 interface TenantContextBarProps {
   className?: string;

@@ -3,7 +3,7 @@
 import { Input } from "@luana/ui-kit";
 import { Label } from "@luana/ui-kit";
 import { Switch } from "@luana/ui-kit";
-import { formatMoney } from "@/lib/format-money";
+import { formatMoney } from "@luana/format";
 
 import type { PricingStructure } from "../../types";
 

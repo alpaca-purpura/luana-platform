@@ -4,7 +4,7 @@ import { Sparkles } from "lucide-react";
 
 import { Badge } from "@luana/ui-kit";
 import { useOfferTypePresetCatalogAll } from "@/features/offer-studio/hooks/use-offer-type-preset-catalog";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 interface PresetBadgeProps {
   /** ``preset_id`` persisted on the Offer. Null/undefined → renders nothing. */

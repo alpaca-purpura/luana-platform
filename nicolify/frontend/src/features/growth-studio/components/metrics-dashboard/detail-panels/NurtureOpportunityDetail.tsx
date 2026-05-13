@@ -21,8 +21,8 @@ import React, { useState, useMemo, useCallback } from "react";
 import { BrandIcon } from "@luana/ui-kit";
 import { Button } from "@luana/ui-kit";
 import { useTenantLocale } from "@/features/tenant/context/tenant-locale-context";
-import { formatTenantTime } from "@/lib/format-date";
-import { formatMoney } from "@/lib/format-money";
+import { formatTenantTime } from "@luana/format";
+import { formatMoney } from "@luana/format";
 
 import { useNurtureDetail, useOpportunityDetail } from "../../../hooks/use-stage-detail";
 import { classifyChannel } from "../../../lib/classify-channel";

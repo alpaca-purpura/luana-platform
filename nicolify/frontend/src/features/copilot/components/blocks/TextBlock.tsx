@@ -4,7 +4,7 @@ import ReactMarkdown from "react-markdown";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import remarkGfm from "remark-gfm";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type { TextBlock as TextBlockType } from "../../types/message-blocks";
 

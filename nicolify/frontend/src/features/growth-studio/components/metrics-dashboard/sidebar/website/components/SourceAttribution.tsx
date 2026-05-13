@@ -1,7 +1,7 @@
 "use client";
 
 import { Popover, PopoverContent, PopoverTrigger } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 interface AlternativeSource {
   source: "meta_pixel" | "shopify" | string;

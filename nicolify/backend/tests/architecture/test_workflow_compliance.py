@@ -125,16 +125,30 @@ def test_application_workflows_imports_no_business_module() -> None:
 
 
 def test_migration_071_idempotent_and_preserves_procedure_state() -> None:
-    """Migration must use ``ADD COLUMN IF NOT EXISTS`` and NOT drop
-    ``procedure_state`` (cutover keeps both columns until F-pos)."""
+    """Consolidated snapshot must include both workflow_state and procedure_state columns.
 
-    assert _MIGRATION_071.is_file(), "Migration 071_copilot_workflow_state.py missing"
-    text = _MIGRATION_071.read_text(encoding="utf-8")
-    assert "ADD COLUMN IF NOT EXISTS workflow_state" in text, "Migration must idempotently add workflow_state"
-    assert "DROP COLUMN procedure_state" not in text.upper(), (
-        "F6 must preserve procedure_state during coexistencia — drop deferred to F-pos"
+    T-10 consolidated 131 migrations into 001_initial_snapshot.py — individual migration
+    files (including 071_copilot_workflow_state.py) are deleted. This test now verifies
+    the invariant via the snapshot: both columns must coexist (F6 cutover preservation).
+
+    Original contract: migration added workflow_state without dropping procedure_state.
+    Post-consolidation: snapshot must include both columns in the copilot_conversations table.
+
+    # [STORY-10-T-15] — migrated from 071_copilot_workflow_state.py to 001_initial_snapshot.py
+    """
+    snapshot = _BACKEND_ROOT / "alembic" / "versions" / "001_initial_snapshot.py"
+    assert snapshot.is_file(), (
+        "001_initial_snapshot.py missing — T-10 consolidation required. "
+        "Run T-10 before this test."
     )
-    # Backfill from procedure_state expected for live conversations.
-    assert "workflow_state = procedure_state" in text or "workflow_state=procedure_state" in text, (
-        "Migration must backfill workflow_state from existing procedure_state rows"
+    text = snapshot.read_text(encoding="utf-8")
+
+    # Both columns must coexist in the copilot_conversations table definition
+    assert "workflow_state" in text, (
+        "001_initial_snapshot.py must include workflow_state column "
+        "(copilot_conversations table — F6 coexistencia)"
+    )
+    assert "procedure_state" in text, (
+        "001_initial_snapshot.py must include procedure_state column "
+        "(copilot_conversations table — F6 must NOT drop during cutover)"
     )

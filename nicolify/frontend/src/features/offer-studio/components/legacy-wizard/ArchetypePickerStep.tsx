@@ -3,7 +3,7 @@
 import { CalendarDays, Layers, Package, RefreshCw, Wrench } from "lucide-react";
 
 import { OfferArchetype } from "@/features/offer-studio/types";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type { LucideIcon } from "lucide-react";
 

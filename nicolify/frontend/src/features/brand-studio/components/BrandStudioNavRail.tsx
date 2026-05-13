@@ -8,7 +8,7 @@ import { createElement } from "react";
 import { FinderColumn } from "@/components/form-runtime/FinderColumn";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@luana/ui-kit";
 import { useSectionStatus } from "@/features/copilot/hooks/use-section-status";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { useBrandSectionCatalog } from "../hooks/use-brand-section-catalog";
 import { resolveBrandIconByName } from "../lib/icon-name-resolver";

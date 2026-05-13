@@ -1,4 +1,4 @@
-import { formatTenantDate, formatTenantTime } from "@/lib/format-date";
+import { formatTenantDate, formatTenantTime } from "@luana/format";
 
 /**
  * Return a human-readable relative time string like "hace 3m", "hace 2h", "hace 1d".

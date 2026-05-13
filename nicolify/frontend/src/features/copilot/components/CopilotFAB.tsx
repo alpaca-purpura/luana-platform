@@ -5,9 +5,9 @@ import { MessageCircle } from "lucide-react";
 import { useShellMutexContext } from "@/components/shared/layout/ShellMutexContext";
 import { Button } from "@luana/ui-kit";
 import { useCopilotStore } from "@/features/copilot/store/copilot-store";
-import { useViewport } from "@/hooks/use-viewport";
+import { useViewport } from "@luana/hooks";
 import { Z_INDEX_CLASSES } from "@luana/design-tokens/z-index";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 /**
  * Floating Action Button to reopen the Copilot sidebar on mobile.

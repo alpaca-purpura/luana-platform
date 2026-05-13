@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 interface EditableAreaProps {
   value: string;

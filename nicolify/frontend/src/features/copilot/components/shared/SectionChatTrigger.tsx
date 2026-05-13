@@ -5,7 +5,7 @@ import { forwardRef, useCallback } from "react";
 
 import { Button } from "@luana/ui-kit";
 import { useCopilotStore } from "@/features/copilot/store/copilot-store";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 interface SectionChatTriggerProps extends Omit<
   React.ButtonHTMLAttributes<HTMLButtonElement>,

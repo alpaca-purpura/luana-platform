@@ -4,7 +4,7 @@ import React, { createContext, useContext } from "react";
 import { Badge } from "@luana/ui-kit";
 import { Button } from "@luana/ui-kit";
 import { useLandingTheme } from "@/features/offer-studio/components/landing/context/LandingThemeContext";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 // --- Context ---
 type HeroLayout = "centered" | "split" | "background" | "vsl" | "urgency" | "quiz";

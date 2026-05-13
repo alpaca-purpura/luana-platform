@@ -6,7 +6,7 @@ import { useCallback, type KeyboardEvent } from "react";
 import { Badge } from "@luana/ui-kit";
 import { Card, CardContent } from "@luana/ui-kit";
 import { Progress } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type { BuyerPersona } from "@/lib/api/buyer-persona";
 

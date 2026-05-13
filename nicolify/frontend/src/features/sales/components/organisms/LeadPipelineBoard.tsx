@@ -1,5 +1,5 @@
 import { ScrollArea, ScrollBar } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { LeadCard } from "../molecules/LeadCard";
 

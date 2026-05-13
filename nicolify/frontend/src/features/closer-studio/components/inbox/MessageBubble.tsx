@@ -3,7 +3,7 @@
 import { Bot, User, Target, Info } from "lucide-react";
 
 import { useTenantLocale } from "@/features/tenant/context/tenant-locale-context";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { formatMessageTime } from "../../utils/format";
 

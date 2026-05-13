@@ -3,7 +3,7 @@
 import { memo, useEffect } from "react";
 
 import { Z_INDEX_CLASSES } from "@luana/design-tokens/z-index";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { useCopilotNavigator } from "../hooks/use-copilot-navigator";
 import { useCreateConversation } from "../hooks/use-create-conversation";

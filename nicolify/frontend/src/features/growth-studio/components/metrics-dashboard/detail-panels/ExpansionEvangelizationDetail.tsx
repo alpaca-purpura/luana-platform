@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import React, { useState, useMemo, useCallback } from "react";
 
-import { formatMoney } from "@/lib/format-money";
+import { formatMoney } from "@luana/format";
 
 import { useExpansionDetail, useEvangelizationDetail } from "../../../hooks/use-stage-detail";
 import { DetailError } from "../ui/DetailError";

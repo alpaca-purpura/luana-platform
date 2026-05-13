@@ -5,8 +5,8 @@ import { useEffect, useRef } from "react";
 
 import { Button } from "@luana/ui-kit";
 import { useTenantLocale } from "@/features/tenant/context/tenant-locale-context";
-import { formatTenantTime } from "@/lib/format-date";
-import { cn } from "@/lib/utils";
+import { formatTenantTime } from "@luana/format";
+import { cn } from "@luana/format";
 
 import { useConversationActions } from "../../hooks/use-conversation-actions";
 import { useConversationDetail } from "../../hooks/use-conversation-detail";

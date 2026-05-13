@@ -4,7 +4,7 @@ import { useDraggable } from "@dnd-kit/core";
 import { Bot, User } from "lucide-react";
 
 import { useTenantLocale } from "@/features/tenant/context/tenant-locale-context";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { formatDistanceToNow } from "../../utils/format";
 

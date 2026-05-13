@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type { VideoBlock as VideoBlockType } from "../../types/message-blocks";
 

@@ -2,7 +2,7 @@
 
 import { AlertTriangle, TrendingDown, TrendingUp } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type { FrequencyAlert, MetricKpiData } from "../../../../types/metrics";
 

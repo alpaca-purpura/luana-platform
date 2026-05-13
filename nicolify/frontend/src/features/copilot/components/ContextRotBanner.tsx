@@ -3,7 +3,7 @@
 import { X } from "lucide-react";
 import { forwardRef } from "react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { useCreateConversation } from "../hooks/use-create-conversation";
 import { useCopilotStore } from "../store/copilot-store";

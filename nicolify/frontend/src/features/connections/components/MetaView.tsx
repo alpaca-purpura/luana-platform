@@ -52,7 +52,7 @@ import {
   toggleMetaAsset,
 } from "@/features/connections/api/meta-assets-api";
 import { connectionsApi } from "@/lib/api/connections";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type { MetaAssetsResponse } from "@/features/connections/api/meta-assets-api";
 import type { MetaStatusResponse } from "@/lib/api/connections";

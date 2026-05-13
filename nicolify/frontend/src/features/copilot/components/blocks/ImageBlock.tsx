@@ -5,7 +5,7 @@ import { useState } from "react";
 
 import { Dialog, DialogContent, DialogTitle } from "@luana/ui-kit";
 import { Skeleton } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type { ImageBlock as ImageBlockType } from "../../types/message-blocks";
 

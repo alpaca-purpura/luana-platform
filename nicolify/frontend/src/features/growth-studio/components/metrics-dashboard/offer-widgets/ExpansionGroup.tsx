@@ -1,6 +1,6 @@
 "use client";
 
-import { formatDualCurrency } from "@/lib/format-money";
+import { formatDualCurrency } from "@luana/format";
 
 import { ExpansionOfferRow } from "./ExpansionOfferRow";
 

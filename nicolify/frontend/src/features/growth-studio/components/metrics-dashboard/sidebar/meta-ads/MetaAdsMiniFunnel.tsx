@@ -24,7 +24,7 @@
 import { ArrowDown, HelpCircle, Inbox } from "lucide-react";
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { RESUMEN_TOOLTIPS } from "./copy/tooltips";
 

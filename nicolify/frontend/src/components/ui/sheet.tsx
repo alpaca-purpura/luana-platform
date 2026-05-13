@@ -5,8 +5,8 @@ import * as SheetPrimitive from "@radix-ui/react-dialog";
 import { cva, type VariantProps } from "class-variance-authority";
 import { X } from "lucide-react";
 
-import { cn } from "@/lib/utils";
-import { useCopilotOffset } from "@/hooks/use-copilot-offset";
+import { cn } from "@luana/format";
+import { useCopilotOffset } from "@luana/hooks";
 import { Z_INDEX_CLASSES } from "@luana/design-tokens/z-index";
 
 const Sheet = SheetPrimitive.Root;

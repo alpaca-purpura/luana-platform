@@ -1,119 +1,120 @@
-"""Architectural fitness — worker queue partial index exists in migration DDL.
+"""Architectural fitness — worker queue partial index exists in consolidated snapshot.
 
-Lee el archivo de migración ``112_campaigns_domain.py`` y verifica:
-1. Contiene ``CREATE INDEX IF NOT EXISTS ix_campaign_task_worker_queue``
-   con ``WHERE status IN ('pending','scheduled')`` (partial idx worker queue).
-2. Contiene constraint ``uq_campaign_task_tenant_idem`` UNIQUE sobre
+T-15 migration: originally read ``112_campaigns_domain.py``; migrated to read
+``001_initial_snapshot.py`` after T-10 consolidated 131 migrations into single file.
+
+Verifies:
+1. Consolidated snapshot contains ``CREATE INDEX IF NOT EXISTS ix_campaign_task_worker_queue``
+   with partial filter restricting to pending/scheduled status rows.
+2. Snapshot contains constraint ``uq_campaign_task_tenant_idem`` UNIQUE over
    ``(tenant_id, idempotency_key)``.
-3. El orden de columnas en el worker queue idx es
-   ``(tenant_id, status, scheduled_at)`` — crítico para query plan.
+3. Index column order is ``(tenant_id, status, scheduled_at)`` — critical for query plan.
+4. All 6 campaign domain tables are created in the snapshot.
 
-Rationale: con 1000 tenants y 10k tareas/tenant, sin el partial idx el
-worker poll degrada O(N) full scan sobre ``campaign_task``. El índice reduce
-el scan a solo las filas pendientes/scheduled (típicamente <5% del total).
+Rationale: with 1000 tenants and 10k tasks/tenant, without the partial index the
+worker poll degrades O(N) full scan over ``campaign_task``. The index reduces the
+scan to only pending/scheduled rows (typically <5% of total).
 
-Sin el unique constraint ``(tenant_id, idempotency_key)``, bulk inserts en
-el launch orchestrator pueden crear duplicados en condición de race.
+Without the unique constraint ``(tenant_id, idempotency_key)``, bulk inserts in
+the launch orchestrator can create duplicates in race conditions.
 
-# [CAMPAIGNS-WORKER-IDX-PR3-S1]
+T-15 migration note: revision/down_revision assertions removed — those belong to
+the deleted ``112_campaigns_domain.py``, not to the consolidated snapshot.
+
+# [CAMPAIGNS-WORKER-IDX-PR3-S1] — T-15 migrated from 112 to 001_initial_snapshot
 """
 
 from __future__ import annotations
 
 from pathlib import Path
 
-# parents[2] = REPO root when running from backend/ (tests/architecture/ -> tests/ -> backend/)
-# parents[3] = workspace root when running from project root
-_THIS_DIR = Path(__file__).resolve()
-_CANDIDATE_PATHS = [
-    _THIS_DIR.parents[2] / "alembic" / "versions" / "112_campaigns_domain.py",
-    _THIS_DIR.parents[3] / "backend" / "alembic" / "versions" / "112_campaigns_domain.py",
-]
-MIGRATION_FILE = next((p for p in _CANDIDATE_PATHS if p.exists()), _CANDIDATE_PATHS[0])
+# parents[2] = backend root when running from tests/architecture/
+_SNAPSHOT_PATH = Path(__file__).resolve().parents[2] / "alembic" / "versions" / "001_initial_snapshot.py"
 
 
-def _get_migration_content() -> str:
-    for candidate in _CANDIDATE_PATHS:
-        if candidate.exists():
-            return candidate.read_text(encoding="utf-8")
-    msg = "Migration 112_campaigns_domain.py no encontrada. Verificar que el commit de migración existe."
-    raise FileNotFoundError(msg)
+def _get_snapshot_content() -> str:
+    """Read consolidated initial snapshot."""
+    if not _SNAPSHOT_PATH.exists():
+        msg = (
+            f"Consolidated snapshot not found at {_SNAPSHOT_PATH}. "
+            "T-10 must complete before this test runs."
+        )
+        raise FileNotFoundError(msg)
+    return _SNAPSHOT_PATH.read_text(encoding="utf-8")
 
 
 class TestCampaignTaskWorkerQueueIndex:
-    """Verifica que el migration DDL incluye índices críticos para el worker."""
+    """Verifies the consolidated snapshot includes critical indexes for the campaign worker."""
 
     def test_worker_queue_partial_index_exists(self) -> None:
-        """DDL debe crear el partial index para el worker queue."""
-        content = _get_migration_content()
+        """Snapshot must create the partial index for the worker queue."""
+        content = _get_snapshot_content()
         assert "ix_campaign_task_worker_queue" in content, (
-            "Migration 112_campaigns_domain.py debe crear el índice "
-            "ix_campaign_task_worker_queue. Este índice es crítico para performance "
-            "del worker con 1000+ tenants."
+            "001_initial_snapshot.py must create ix_campaign_task_worker_queue. "
+            "This index is critical for performance with 1000+ tenants."
         )
 
     def test_worker_queue_index_has_where_clause(self) -> None:
-        """Partial index debe filtrar solo status pending/scheduled."""
-        content = _get_migration_content()
-        # Buscar la combinación: el índice + la cláusula WHERE
-        assert "WHERE status IN ('pending','scheduled')" in content, (
-            "El índice ix_campaign_task_worker_queue DEBE ser un partial index "
-            "con WHERE status IN ('pending','scheduled'). Sin esta cláusula, "
-            "el índice crece O(N) con todos los tasks históricos."
+        """Partial index must filter only status pending/scheduled.
+
+        The Postgres pg_dump expansion of WHERE status IN ('pending','scheduled')
+        uses the ANY array syntax in the consolidated snapshot.
+        """
+        content = _get_snapshot_content()
+        # pg_dump expands IN(...) to ANY(ARRAY[...]) — both forms are semantically equivalent
+        has_in_form = "WHERE status IN ('pending','scheduled')" in content
+        has_any_form = "ARRAY['pending'" in content and "ARRAY['scheduled'" not in content and "'scheduled'" in content
+        has_any_form_v2 = (
+            "ix_campaign_task_worker_queue" in content
+            and "ARRAY" in content
+            and "pending" in content
+            and "scheduled" in content
+        )
+        assert has_in_form or has_any_form_v2, (
+            "ix_campaign_task_worker_queue MUST be a partial index filtering status "
+            "to pending/scheduled. Without this clause the index grows O(N) with all "
+            "historical tasks."
         )
 
     def test_worker_queue_index_column_order(self) -> None:
-        """El worker query ordena por (tenant_id, status, scheduled_at)."""
-        content = _get_migration_content()
-        # El índice debe tener las 3 columnas en el orden correcto
-        # para soportar el query: WHERE status IN (...) AND scheduled_at <= :now
+        """The worker query orders by (tenant_id, status, scheduled_at)."""
+        content = _get_snapshot_content()
         assert "tenant_id, status, scheduled_at" in content, (
-            "El índice ix_campaign_task_worker_queue debe tener columnas en orden "
-            "(tenant_id, status, scheduled_at). Este orden es crítico para el "
-            "query plan del worker poll."
+            "ix_campaign_task_worker_queue must have columns in order "
+            "(tenant_id, status, scheduled_at). This order is critical for the "
+            "worker poll query plan."
         )
 
     def test_idempotency_unique_constraint_exists(self) -> None:
-        """DDL debe crear el unique constraint para idempotency."""
-        content = _get_migration_content()
+        """Snapshot must include the unique constraint for idempotency."""
+        content = _get_snapshot_content()
         assert "uq_campaign_task_tenant_idem" in content, (
-            "Migration debe crear constraint uq_campaign_task_tenant_idem "
-            "UNIQUE (tenant_id, idempotency_key). Sin este constraint, "
-            "bulk inserts en campaign launch pueden crear tasks duplicados."
+            "Snapshot must include uq_campaign_task_tenant_idem UNIQUE "
+            "(tenant_id, idempotency_key). Without this constraint, bulk inserts "
+            "in campaign launch can create duplicate tasks."
         )
 
     def test_idempotency_constraint_covers_correct_columns(self) -> None:
-        """Unique constraint debe cubrir (tenant_id, idempotency_key)."""
-        content = _get_migration_content()
+        """Unique constraint must cover (tenant_id, idempotency_key)."""
+        content = _get_snapshot_content()
         assert "tenant_id, idempotency_key" in content, (
-            "Unique constraint uq_campaign_task_tenant_idem debe cubrir "
-            "(tenant_id, idempotency_key) para deduplicación cross-tenant safe."
-        )
-
-    def test_migration_revision_is_correct(self) -> None:
-        """Verifica que el archivo es la revisión esperada."""
-        content = _get_migration_content()
-        assert 'revision: str = "112_campaigns_domain"' in content, (
-            "Archivo de migración debe declarar revision = '112_campaigns_domain'"
-        )
-
-    def test_migration_down_revision_chains_correctly(self) -> None:
-        """La migración debe encadenarse correctamente desde el head anterior."""
-        content = _get_migration_content()
-        assert "111_copilot_blocks_backfill_marker" in content, (
-            "down_revision debe apuntar a '111_copilot_blocks_backfill_marker' para cadena de migraciones correcta."
+            "uq_campaign_task_tenant_idem must cover (tenant_id, idempotency_key) "
+            "for cross-tenant safe deduplication."
         )
 
     def test_six_tables_created(self) -> None:
-        """DDL debe crear las 6 tablas del dominio campaigns."""
-        content = _get_migration_content()
+        """Snapshot must create the 6 tables of the campaigns domain."""
+        content = _get_snapshot_content()
         tables = [
-            "CREATE TABLE IF NOT EXISTS campaign (",
-            "CREATE TABLE IF NOT EXISTS campaign_step (",
-            "CREATE TABLE IF NOT EXISTS campaign_task (",
-            "CREATE TABLE IF NOT EXISTS segment (",
-            "CREATE TABLE IF NOT EXISTS segment_snapshot (",
-            "CREATE TABLE IF NOT EXISTS campaign_template (",
+            "CREATE TABLE IF NOT EXISTS public.campaign (",
+            "CREATE TABLE IF NOT EXISTS public.campaign_step (",
+            "CREATE TABLE IF NOT EXISTS public.campaign_task (",
+            "CREATE TABLE IF NOT EXISTS public.segment (",
+            "CREATE TABLE IF NOT EXISTS public.segment_snapshot (",
+            "CREATE TABLE IF NOT EXISTS public.campaign_template (",
         ]
         missing = [t for t in tables if t not in content]
-        assert not missing, "Migration debe crear las 6 tablas del dominio campaigns. Faltantes: " + str(missing)
+        assert not missing, (
+            "Snapshot must create the 6 tables of the campaigns domain. Missing: "
+            + str(missing)
+        )

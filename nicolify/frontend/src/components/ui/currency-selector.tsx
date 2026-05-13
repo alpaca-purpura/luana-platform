@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 import { Button } from "@luana/ui-kit";
 import {
   Command,
@@ -14,7 +14,7 @@ import {
   CommandList,
 } from "@luana/ui-kit";
 import { Popover, PopoverContent, PopoverTrigger } from "@luana/ui-kit";
-import { CURRENCIES, Currency } from "@/lib/constants/currencies";
+import { CURRENCIES, Currency } from "@luana/format";
 
 interface CurrencySelectorProps {
   value: string;

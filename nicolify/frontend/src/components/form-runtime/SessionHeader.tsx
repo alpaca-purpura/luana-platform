@@ -4,7 +4,7 @@ import { Undo2 } from "lucide-react";
 
 import { Badge } from "@luana/ui-kit";
 import { Button } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { useFormRuntime } from "./FormRuntimeContext";
 

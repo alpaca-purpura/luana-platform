@@ -26,7 +26,7 @@ import { ScrollArea } from "@luana/ui-kit";
 import { Separator } from "@luana/ui-kit";
 import { Textarea } from "@luana/ui-kit";
 import { publicApi } from "@/lib/api/public";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type { LinkResolveResponse } from "@/lib/api/public";
 

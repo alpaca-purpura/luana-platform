@@ -6,7 +6,7 @@ import { memo, useCallback, useEffect, useRef, useState } from "react";
 
 import { Button } from "@luana/ui-kit";
 import { Z_INDEX_CLASSES } from "@luana/design-tokens/z-index";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { useConversationDetail } from "../hooks/use-conversation-detail";
 import { useCopilotChat } from "../hooks/use-copilot-chat";

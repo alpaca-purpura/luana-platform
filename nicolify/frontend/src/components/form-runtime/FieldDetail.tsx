@@ -6,7 +6,7 @@ import { useEffect, useRef } from "react";
 
 import { Button } from "@luana/ui-kit";
 import { inferFieldLayout, layoutToColSpanClass } from "@/lib/form-runtime/schema";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { AutosaveBanner } from "./AutosaveBanner";
 import { EditableField } from "./EditableField";

@@ -4,8 +4,8 @@ import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 
-import { cn } from "@/lib/utils";
-import { useCopilotOffset } from "@/hooks/use-copilot-offset";
+import { cn } from "@luana/format";
+import { useCopilotOffset } from "@luana/hooks";
 import { Z_INDEX_CLASSES } from "@luana/design-tokens/z-index";
 
 const Dialog = DialogPrimitive.Root;

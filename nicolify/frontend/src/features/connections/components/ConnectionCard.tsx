@@ -8,7 +8,7 @@ import { BrandIcon } from "@luana/ui-kit";
 import { Card, CardContent } from "@luana/ui-kit";
 import { type ProviderDefinition } from "@/features/connections/config/provider-registry";
 import { type ProviderStatus } from "@/features/connections/hooks/use-all-connections-status";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 interface ConnectionCardProps {
   provider: ProviderDefinition;

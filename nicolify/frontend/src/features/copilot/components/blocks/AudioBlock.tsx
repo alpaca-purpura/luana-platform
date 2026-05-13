@@ -4,7 +4,7 @@ import { Mic, Pause, Play } from "lucide-react";
 import { useRef, useState } from "react";
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type { AudioBlock as AudioBlockType } from "../../types/message-blocks";
 

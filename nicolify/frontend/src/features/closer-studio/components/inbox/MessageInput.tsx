@@ -5,7 +5,7 @@ import { useState } from "react";
 
 import { Button } from "@luana/ui-kit";
 import { Textarea } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { useConversationActions } from "../../hooks/use-conversation-actions";
 

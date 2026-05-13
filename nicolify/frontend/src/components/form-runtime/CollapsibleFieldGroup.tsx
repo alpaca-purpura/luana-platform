@@ -4,7 +4,7 @@ import { ChevronDown } from "lucide-react";
 import { useState, type ReactNode } from "react";
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type { FieldSchema } from "@/lib/form-runtime/schema";
 

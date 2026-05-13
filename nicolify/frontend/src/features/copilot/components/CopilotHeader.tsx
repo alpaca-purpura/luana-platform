@@ -3,7 +3,7 @@
 import { PanelRightClose, RotateCcw, Sparkles } from "lucide-react";
 
 import { Button } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { useCopilotStore } from "../store/copilot-store";
 

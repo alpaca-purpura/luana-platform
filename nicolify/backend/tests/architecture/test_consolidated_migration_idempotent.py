@@ -112,8 +112,15 @@ def test_snapshot_ddl_is_idempotent():
             sql_upper,
         )
         for obj_type, obj_name in create_matches:
-            # Ensure IF NOT EXISTS is present
-            if "IF NOT EXISTS" not in sql_upper:
+            # Ensure IF NOT EXISTS is present OR the DO $$ BEGIN...EXCEPTION WHEN duplicate_object pattern
+            # The DO block pattern: DO $$ BEGIN CREATE TYPE ... EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+            # This is the canonical idempotent pattern for enums per backend-migrations.md
+            is_do_block_idempotent = (
+                obj_type == "TYPE"
+                and "DO" in sql_upper
+                and "EXCEPTION WHEN DUPLICATE_OBJECT" in sql_upper
+            )
+            if "IF NOT EXISTS" not in sql_upper and not is_do_block_idempotent:
                 violations.append(f"  Line {lineno}: CREATE {obj_type} {obj_name!r} missing IF NOT EXISTS")
 
         # Check for non-idempotent ADD COLUMN

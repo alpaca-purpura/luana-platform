@@ -3,7 +3,7 @@
 import { Check, Loader2, Wrench } from "lucide-react";
 import { memo } from "react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { useAsyncToolJob } from "../../hooks/use-async-tool-job";
 import { humanizeToolName } from "../../utils/tool-labels";

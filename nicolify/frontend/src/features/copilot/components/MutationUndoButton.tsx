@@ -15,7 +15,7 @@ import {
   AlertDialogTrigger,
 } from "@luana/ui-kit";
 import { Button } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { useRevertMutations } from "../hooks/use-revert-mutations";
 

@@ -127,5 +127,5 @@ export function getChannelIcon(channelSlug: string): ChannelIconComponent {
 }
 
 // ─── Color Mapping ─────────────────────────────────────────────────────────────
-// Canonical colors live in @/lib/constants/channel-colors.ts
-export { getChannelColor } from "@/lib/constants/channel-colors";
+// Canonical colors live in @luana/format (lifted from @/lib/constants/channel-colors.ts — T-8.bis D1)
+export { getChannelColor } from "@luana/format";

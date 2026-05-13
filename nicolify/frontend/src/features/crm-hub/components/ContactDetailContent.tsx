@@ -2,7 +2,7 @@ import * as React from "react";
 
 import { Separator } from "@luana/ui-kit";
 import { Skeleton } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { IdentityList } from "./IdentityList";
 import { LifecycleStageChip } from "./LifecycleStageChip";

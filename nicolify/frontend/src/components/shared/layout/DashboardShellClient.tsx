@@ -9,7 +9,7 @@ import { CopilotFAB } from "@/features/copilot/components/CopilotFAB";
 import { CopilotSidebar } from "@/features/copilot/components/CopilotSidebar";
 import { NotificationCenter } from "@/features/notifications/components/NotificationCenter";
 import { useShellMutex } from "@/hooks/use-shell-mutex";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 interface DashboardShellClientProps {
   tenantId: string;

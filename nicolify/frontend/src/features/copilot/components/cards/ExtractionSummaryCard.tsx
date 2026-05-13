@@ -5,7 +5,7 @@ import { memo } from "react";
 
 import { useBrandSectionLabelResolver } from "@/features/brand-studio/hooks/use-brand-section-catalog";
 import { useSectionLabelResolver as useOfferSectionLabelResolver } from "@/features/offer-studio/hooks/use-section-catalog";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { useCopilotNavigator } from "../../hooks/use-copilot-navigator";
 

@@ -14,7 +14,7 @@ import {
 } from "@luana/ui-kit";
 import { Input } from "@luana/ui-kit";
 import { Label } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { useCreateDomain, useGetDomainInstructions, useVerifyDomain } from "../hooks/use-domains";
 import { isDomainConflict } from "../types";

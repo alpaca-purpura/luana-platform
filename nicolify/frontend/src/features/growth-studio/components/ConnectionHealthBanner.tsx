@@ -4,7 +4,7 @@ import { AlertCircle, AlertTriangle, Info } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 type HealthStatus = "healthy" | "expiring_soon" | "expired" | "not_connected";
 

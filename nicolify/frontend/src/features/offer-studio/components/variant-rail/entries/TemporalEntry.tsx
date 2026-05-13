@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { EditionStatus, EditionVisibility } from "../../../types";
 

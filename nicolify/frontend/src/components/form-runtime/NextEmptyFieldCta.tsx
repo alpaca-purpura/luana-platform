@@ -4,7 +4,7 @@ import { ArrowRight, Check } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { useFormRuntime } from "./FormRuntimeContext";
 

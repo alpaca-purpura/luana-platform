@@ -3,7 +3,7 @@
 import { AlertTriangle, Check, Sparkles } from "lucide-react";
 import { useCallback, useMemo, useRef } from "react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { archetypeEmoji } from "../../../../types/offer-association";
 

@@ -5,7 +5,7 @@ import { createElement, forwardRef } from "react";
 
 import { Card } from "@luana/ui-kit";
 import { resolveIconByName } from "@/features/offer-studio/lib/icon-name-resolver";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type { BusinessTypeMetadataDTO } from "../types/tenant-profile";
 

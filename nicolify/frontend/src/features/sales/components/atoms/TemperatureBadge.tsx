@@ -1,5 +1,5 @@
 import { Badge } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type { LeadTemperature } from "../../types";
 

@@ -4,7 +4,7 @@ import { X } from "lucide-react";
 import { useState } from "react";
 
 import { Badge } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { useCopilotStore } from "../../store/copilot-store";
 

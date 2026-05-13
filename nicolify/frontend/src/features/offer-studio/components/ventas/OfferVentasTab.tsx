@@ -5,7 +5,7 @@ import { useMemo } from "react";
 import { Button } from "@luana/ui-kit";
 import { useEnrollments } from "@/features/closer-studio/hooks/use-enrollments";
 import { EnrollmentStatus, type Enrollment } from "@/features/closer-studio/types/enrollment";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 export interface OfferVentasTabProps {
   offerId: string;

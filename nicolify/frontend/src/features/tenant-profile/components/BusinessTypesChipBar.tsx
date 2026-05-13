@@ -6,7 +6,7 @@ import { useParams } from "next/navigation";
 
 import { Badge } from "@luana/ui-kit";
 import { resolveIconByName } from "@/features/offer-studio/lib/icon-name-resolver";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { useBusinessTypesCatalog } from "../hooks/use-business-types-catalog";
 import { useTenantProfile } from "../hooks/use-tenant-profile";

@@ -1,7 +1,7 @@
 "use client";
 
-import { formatMoney } from "@/lib/format-money";
-import { cn } from "@/lib/utils";
+import { formatMoney } from "@luana/format";
+import { cn } from "@luana/format";
 
 import {
   STATUS_LABELS,

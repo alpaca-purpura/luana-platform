@@ -1,8 +1,8 @@
 "use client";
 
 import { Card, CardContent } from "@luana/ui-kit";
-import { formatMoney } from "@/lib/format-money";
-import { cn } from "@/lib/utils";
+import { formatMoney } from "@luana/format";
+import { cn } from "@luana/format";
 
 import { OfferAssignmentDropdown } from "./OfferAssignmentDropdown";
 

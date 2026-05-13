@@ -4,7 +4,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X, Loader2 } from "lucide-react";
 import { Suspense, useRef, useEffect, useState } from "react";
 
-import { useCopilotOffset } from "@/hooks/use-copilot-offset";
+import { useCopilotOffset } from "@luana/hooks";
 
 import {
   AlertDialog,

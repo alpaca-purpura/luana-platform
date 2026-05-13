@@ -1,0 +1,67 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Testing
+.pytest_cache/
+.coverage
+coverage.json
+htmlcov/
+report/
+*.json.bak
+
+# Type checking
+.mypy_cache/
+.ruff_cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Build artifacts
+*.pyc
+
+# T-15 Cat 2 note:
+# The following test files are NOT excluded via .gitignore (they are part of the
+# repo), but ARE excluded from pytest collection via pyproject.toml
+# collect_ignore_glob. These tests reference AISALESHT REPO_ROOT paths that are
+# not present in luana-platform/nicolify/. They belong to AISALESHT tooling and
+# should only run from /home/chris/AISALESHT/backend/.
+#
+# Excluded test paths (see pyproject.toml [tool.pytest.ini_options]):
+# - tests/scripts/test_generate_backlog.py
+# - tests/scripts/test_reconcile_capabilities.py
+# - tests/scripts/test_validate_session_close.py
+# - tests/scripts/test_pre_commit_hook.py
+# - tests/scripts/test_skill_sales_agent_audit.py
+# - tests/scripts/test_extract_baseline_metrics.py
+# - tests/scripts/test_emit_process_metric.py
+# - tests/architecture/test_be_fe_schema_alignment_growth_studio.py
+#
+# Per T-15 spec: Story 14 or later migration will physically move these tests
+# to AISALESHT-side scripts location.

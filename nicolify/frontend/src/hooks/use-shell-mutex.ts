@@ -5,7 +5,7 @@ import { useStore } from "zustand";
 
 import { useSidebar } from "@/components/shared/layout/SidebarContext";
 import { useCopilotStore } from "@/features/copilot/store/copilot-store";
-import { useViewport } from "@/hooks/use-viewport";
+import { useViewport } from "@luana/hooks";
 import {
   createShellMutexStore,
   type ActivePanel,

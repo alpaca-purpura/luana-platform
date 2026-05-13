@@ -36,8 +36,8 @@ import {
   useCopilotOffset,
   COPILOT_OPEN_WIDTH,
   COPILOT_RAIL_WIDTH,
-} from "@/hooks/use-copilot-offset";
-import { useViewport } from "@/hooks/use-viewport";
+} from "@luana/hooks";
+import { useViewport } from "@luana/hooks";
 
 const mockUseCopilotStore = vi.mocked(useCopilotStore);
 const mockUseViewport = vi.mocked(useViewport);

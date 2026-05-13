@@ -2,7 +2,7 @@
 
 import { TrendingDown, TrendingUp, Users } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type { MetricKpiData } from "../../../../types/metrics";
 

@@ -36,7 +36,7 @@ import {
 } from "@luana/ui-kit";
 import { Switch } from "@luana/ui-kit";
 import { TimeRange, availabilityApi } from "@/lib/api/availability";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type { AvailabilitySchedule, WeeklySchedule, DaySchedule } from "@/lib/api/availability";
 

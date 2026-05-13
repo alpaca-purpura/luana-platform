@@ -21,7 +21,7 @@ import {
   FormMessage,
 } from "@luana/ui-kit";
 import { settingsApi } from "@/lib/api/settings";
-import { DEFAULT_CURRENCY } from "@/lib/constants/currencies";
+import { DEFAULT_CURRENCY } from "@luana/format";
 
 const formSchema = z.object({
   default_currency: z.string().min(3, "Select a currency"),

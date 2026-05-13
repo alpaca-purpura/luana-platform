@@ -14,8 +14,8 @@ import {
 } from "@luana/ui-kit";
 import { useTraceDetails } from "@/features/audit/hooks/use-audit";
 import { useTenantLocale } from "@/features/tenant/context/tenant-locale-context";
-import { formatTenantTime } from "@/lib/format-date";
-import { cn } from "@/lib/utils";
+import { formatTenantTime } from "@luana/format";
+import { cn } from "@luana/format";
 
 import { getNodeIcon, getNodeColor } from "./NodeIcons";
 

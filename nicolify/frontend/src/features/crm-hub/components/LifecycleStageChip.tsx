@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import { Badge } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type { LifecycleStage } from "../types";
 

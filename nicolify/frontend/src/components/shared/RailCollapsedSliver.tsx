@@ -2,7 +2,7 @@
 
 import { ChevronRight } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 export interface RailCollapsedSliverProps {
   /** Vertical label shown in the sliver. Ej: "Variantes (3)", "Secciones". */

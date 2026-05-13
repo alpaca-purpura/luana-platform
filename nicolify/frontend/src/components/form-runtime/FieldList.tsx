@@ -3,7 +3,7 @@
 import { ChevronRight } from "lucide-react";
 
 import { useActiveField } from "@/lib/form-runtime/hooks";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { CompletionDot, type CompletionState } from "./CompletionDot";
 import { useFormRuntime } from "./FormRuntimeContext";

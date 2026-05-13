@@ -5,7 +5,7 @@
 
 import { useCallback, useReducer } from "react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { useMediaUpload } from "../../hooks/use-media-upload";
 import { useVoiceRecorder } from "../../hooks/use-voice-recorder";

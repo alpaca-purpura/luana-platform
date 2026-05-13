@@ -4,7 +4,7 @@
 // Wires accept mutation onClick (PR-1 PI-2 S2).
 
 import { Button } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { useSuggestionAccept } from "../../hooks/use-suggestion-accept";
 import { useSuggestions } from "../../hooks/use-suggestions";

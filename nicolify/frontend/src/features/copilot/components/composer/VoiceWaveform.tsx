@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 // Number of bars rendered. Higher = denser visual, more CPU per frame.
 const BAR_COUNT = 40;

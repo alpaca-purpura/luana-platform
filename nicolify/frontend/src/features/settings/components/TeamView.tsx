@@ -37,7 +37,7 @@ import {
 } from "@luana/ui-kit";
 import { useTenantLocale } from "@/features/tenant/context/tenant-locale-context";
 import { settingsApi } from "@/lib/api/settings";
-import { formatTenantDate } from "@/lib/format-date";
+import { formatTenantDate } from "@luana/format";
 
 import type { TeamMember } from "@/lib/api/settings";
 

@@ -1,7 +1,7 @@
 import { useAuth } from "@clerk/nextjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { camelizeKeys, snakeifyKeys } from "@/lib/case-conversion";
+import { camelizeKeys, snakeifyKeys } from "@luana/format";
 import { config } from "@/lib/config";
 import { fetchClient } from "@/lib/http-client";
 

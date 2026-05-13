@@ -3,8 +3,8 @@
 import { type ReactNode, type HTMLAttributes, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useCopilotOffset } from "@/hooks/use-copilot-offset";
+import { cn } from "@luana/format";
+import { useCopilotOffset } from "@luana/hooks";
 
 // ── Constants ────────────────────────────────────────────────────────
 const ANIMATION_MS = 300;

@@ -4,8 +4,8 @@ import { Badge } from "@luana/ui-kit";
 import { Card } from "@luana/ui-kit";
 import { Skeleton } from "@luana/ui-kit";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@luana/ui-kit";
-import { formatMoney } from "@/lib/format-money";
-import { cn } from "@/lib/utils";
+import { formatMoney } from "@luana/format";
+import { cn } from "@luana/format";
 
 import type { StageSummary } from "../../../types/metrics";
 

@@ -5,7 +5,7 @@ import { useRouter, usePathname, useParams } from "next/navigation";
 import { useCallback, useState } from "react";
 
 import { Input } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { useConversations } from "../../hooks/use-conversations";
 import { useCloserStore } from "../../store/closer-store";

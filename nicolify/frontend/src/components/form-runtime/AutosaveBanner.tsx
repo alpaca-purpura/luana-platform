@@ -4,7 +4,7 @@ import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Button } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 export type AutosaveStatus = "idle" | "saving" | "saved" | "error";
 

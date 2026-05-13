@@ -1,7 +1,7 @@
 import { MessageCircle, Phone, Mail, MoreHorizontal } from "lucide-react";
 
 import { Card, CardContent, CardFooter, CardHeader } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { ActionIcon } from "../atoms/ActionIcon";
 import { LeadAvatar } from "../atoms/LeadAvatar";

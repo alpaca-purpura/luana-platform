@@ -1,7 +1,7 @@
 import { Mail, Phone, MessageCircle, Instagram, Star, CheckCircle, Clock } from "lucide-react";
 import * as React from "react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type { ContactIdentity } from "../types";
 

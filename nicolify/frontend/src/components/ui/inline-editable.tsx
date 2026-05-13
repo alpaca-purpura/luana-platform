@@ -3,7 +3,7 @@
 import { forwardRef } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type { InputHTMLAttributes } from "react";
 import type { TextareaAutosizeProps } from "react-textarea-autosize";

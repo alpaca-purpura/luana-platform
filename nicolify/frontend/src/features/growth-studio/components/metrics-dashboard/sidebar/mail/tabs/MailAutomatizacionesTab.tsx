@@ -4,7 +4,7 @@ import { Bot, ChevronRight, Loader2 } from "lucide-react";
 import React, { useMemo, useState } from "react";
 
 import { Button } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { useMailAutomations } from "../../../../../hooks/use-mail-dashboard";
 import { computeHealthScore } from "../../../../../utils/automation-health";

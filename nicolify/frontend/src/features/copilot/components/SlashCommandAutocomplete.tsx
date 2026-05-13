@@ -11,7 +11,7 @@ import {
 } from "@luana/ui-kit";
 import { Popover, PopoverContent, PopoverTrigger } from "@luana/ui-kit";
 import { Skeleton } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { useSlashCommands } from "../hooks/use-slash-commands";
 

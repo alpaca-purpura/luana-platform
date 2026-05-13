@@ -10,7 +10,7 @@ import { reportCopilotEvent } from "@/features/copilot/api/copilot-api";
 import { useCopilotChat } from "@/features/copilot/hooks/use-copilot-chat";
 import { canStartGuided, promptFor, routeFor } from "@/features/copilot/lib/guided-prompts";
 import { useCopilotStore } from "@/features/copilot/store/copilot-store";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 interface GuidedSetupButtonProps extends Omit<
   React.ButtonHTMLAttributes<HTMLButtonElement>,

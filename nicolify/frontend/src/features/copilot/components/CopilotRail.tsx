@@ -6,7 +6,7 @@ import { forwardRef } from "react";
 import { Button } from "@luana/ui-kit";
 import { Separator } from "@luana/ui-kit";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { useConversationList } from "../hooks/use-conversation-list";
 import { useCreateConversation } from "../hooks/use-create-conversation";

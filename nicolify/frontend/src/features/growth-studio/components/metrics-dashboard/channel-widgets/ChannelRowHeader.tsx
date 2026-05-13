@@ -4,8 +4,8 @@ import React from "react";
 
 import { Badge } from "@luana/ui-kit";
 import { useTenantLocale } from "@/features/tenant/context/tenant-locale-context";
-import { formatTenantDate } from "@/lib/format-date";
-import { cn } from "@/lib/utils";
+import { formatTenantDate } from "@luana/format";
+import { cn } from "@luana/format";
 
 import { getChannelIcon } from "../../../lib/channel-icons";
 

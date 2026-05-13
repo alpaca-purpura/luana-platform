@@ -1,4 +1,4 @@
-import { formatMoney } from "@/lib/format-money";
+import { formatMoney } from "@luana/format";
 
 /**
  * Unified metric value formatter for Growth Studio.

@@ -23,7 +23,7 @@ import { ScrollArea, ScrollBar } from "@luana/ui-kit";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@luana/ui-kit";
 import { clearLeadHistory } from "@/features/audit/api";
 import { useLeadTimeline } from "@/features/audit/hooks/use-audit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { ContextPanel } from "./ContextPanel";
 import { NodeDetailsPanel } from "./NodeDetailsPanel";

@@ -12,7 +12,7 @@ import {
 } from "@luana/ui-kit";
 import { Separator } from "@luana/ui-kit";
 import { useTenantLocale } from "@/features/tenant/context/tenant-locale-context";
-import { formatTenantDateTime } from "@/lib/format-date";
+import { formatTenantDateTime } from "@luana/format";
 
 import type { MetricClickData } from "../../../types/metrics";
 import type { ReactNode } from "react";

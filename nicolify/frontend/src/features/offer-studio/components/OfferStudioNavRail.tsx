@@ -9,7 +9,7 @@ import { FinderColumn } from "@/components/form-runtime";
 import { RailCollapsedSliver } from "@/components/shared/RailCollapsedSliver";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@luana/ui-kit";
 import { useSectionStatus } from "@/features/copilot/hooks/use-section-status";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { useArchetypeCatalog } from "../hooks/use-archetype-catalog";
 import { useOffer } from "../hooks/use-offer";

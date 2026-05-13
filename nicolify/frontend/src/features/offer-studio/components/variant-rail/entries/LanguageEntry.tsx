@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { TONE_CLASSES_IDLE, TONE_CLASSES_SELECTED, TONE_TITLE_CLASSES } from "./entry-shared";
 

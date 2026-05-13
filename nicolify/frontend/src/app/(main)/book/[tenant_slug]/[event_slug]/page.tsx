@@ -36,7 +36,7 @@ import { Input } from "@luana/ui-kit";
 import { Label } from "@luana/ui-kit";
 import { Textarea } from "@luana/ui-kit";
 import { publicApi } from "@/lib/api/public";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type { EventTypeResolveResponse, BookingLinkResolveResponse } from "@/lib/api/public";
 

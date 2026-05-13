@@ -3,7 +3,7 @@
 import { Info, Loader2, Users } from "lucide-react";
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { useDemographics } from "../../../../../api/campaigns-api";
 import { ChartSection } from "../../shared/ChartSection";

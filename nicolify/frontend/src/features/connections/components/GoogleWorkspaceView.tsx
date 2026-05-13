@@ -44,7 +44,7 @@ import { PropertyPicker } from "@/features/connections/components/PropertyPicker
 import { useGoogleOAuthListener } from "@/features/connections/hooks/use-google-oauth-listener";
 import { openOAuthPopup } from "@/features/connections/utils/open-oauth-popup";
 import { connectionsApi } from "@/lib/api/connections";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type {
   GA4Property,

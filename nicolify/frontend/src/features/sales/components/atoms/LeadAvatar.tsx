@@ -1,5 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 interface LeadAvatarProps {
   src?: string;

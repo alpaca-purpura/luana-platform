@@ -25,7 +25,7 @@ import { ChevronLeft, Plus } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useMemo } from "react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { getVariantNoun, getVariantNounPlural } from "../../lib/variant-structure-catalog";
 import { buildEditionSwitchHref } from "../edition-route";

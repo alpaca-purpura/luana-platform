@@ -3,7 +3,7 @@
 import { Sparkles } from "lucide-react";
 import { memo } from "react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { BlockDispatcher } from "../blocks/BlockDispatcher";
 
@@ -49,7 +49,6 @@ export const AssistantMessageV2 = memo(function AssistantMessageV2({
       <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900/40">
         <Sparkles className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" aria-hidden="true" />
       </div>
-
       {/* Content */}
       <div className="relative max-w-[85%] space-y-2 flex-1">
         {message.toolCalls && message.toolCalls.length > 0 && (
@@ -73,7 +72,7 @@ export const AssistantMessageV2 = memo(function AssistantMessageV2({
             <TypingIndicator />
           ) : message.blocks && message.blocks.length > 0 ? (
             /* V2 path: render blocks[] */
-            <div className="space-y-2">
+            (<div className="space-y-2">
               {message.blocks.map((block, idx) => (
                 <BlockDispatcher
                   key={block.id}
@@ -84,15 +83,15 @@ export const AssistantMessageV2 = memo(function AssistantMessageV2({
                   isStreaming={isStreaming && idx === (message.blocks?.length ?? 0) - 1}
                 />
               ))}
-            </div>
+            </div>)
           ) : (
             /* Legacy path: plain content */
-            <div className="whitespace-pre-wrap break-words">
+            (<div className="whitespace-pre-wrap break-words">
               {message.content}
               {isStreaming && message.content && (
                 <span className="ml-0.5 inline-block h-4 w-0.5 animate-pulse bg-purple-500" />
               )}
-            </div>
+            </div>)
           )}
         </div>
       </div>

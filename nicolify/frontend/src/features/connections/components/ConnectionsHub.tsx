@@ -9,7 +9,7 @@ import { Input } from "@luana/ui-kit";
 import { Skeleton } from "@luana/ui-kit";
 import { PROVIDER_REGISTRY, getAllTags } from "@/features/connections/config/provider-registry";
 import { useAllConnectionsStatus } from "@/features/connections/hooks/use-all-connections-status";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { ConnectionCard } from "./ConnectionCard";
 

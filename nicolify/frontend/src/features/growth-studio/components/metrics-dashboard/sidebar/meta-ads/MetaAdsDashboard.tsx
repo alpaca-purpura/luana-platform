@@ -7,11 +7,11 @@ import { createPortal } from "react-dom";
 
 import { Button } from "@luana/ui-kit";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@luana/ui-kit";
-import { useCopilotOffset } from "@/hooks/use-copilot-offset";
+import { useCopilotOffset } from "@luana/hooks";
 import { useMetaAdsNotices } from "@/features/growth-studio/hooks/use-meta-ads-notices";
 import { useTenantLocale } from "@/features/tenant/context/tenant-locale-context";
-import { formatTenantDateTime } from "@/lib/format-date";
-import { cn } from "@/lib/utils";
+import { formatTenantDateTime } from "@luana/format";
+import { cn } from "@luana/format";
 
 import { useCampaignPerformance } from "../../../../api/campaigns-api";
 import { useAssociations, useMetaHealthCheck } from "../../../../api/offer-association-api";

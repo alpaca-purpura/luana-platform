@@ -28,7 +28,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@luana/ui-kit";
 import { clearLeadHistory } from "@/features/audit/api";
 import { useLeadDetails, useTraceDetails } from "@/features/audit/hooks/use-audit";
 import { useTenantLocale } from "@/features/tenant/context/tenant-locale-context";
-import { formatTenantDate } from "@/lib/format-date";
+import { formatTenantDate } from "@luana/format";
 
 interface ContextPanelProps {
   leadId: string | null;

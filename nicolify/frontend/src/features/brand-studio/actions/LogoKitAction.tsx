@@ -6,7 +6,7 @@ import { useCallback, useMemo } from "react";
 
 import { Card } from "@luana/ui-kit";
 import { config } from "@/lib/config";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { SingleImagePicker } from "./SingleImagePickerAction";
 

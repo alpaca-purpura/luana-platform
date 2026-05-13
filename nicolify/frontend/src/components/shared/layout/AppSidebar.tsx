@@ -35,7 +35,7 @@ import { Sheet, SheetClose, SheetContent, SheetTrigger, SheetTitle } from "@luan
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@luana/ui-kit";
 import { useUserProfile } from "@/features/settings/hooks/use-profile";
 import { Z_INDEX_CLASSES } from "@luana/design-tokens/z-index";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { useShellMutexContext } from "./ShellMutexContext";
 import { useSidebar } from "./SidebarContext";

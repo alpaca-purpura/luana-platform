@@ -6,7 +6,7 @@ import { useState } from "react";
 import { Button } from "@luana/ui-kit";
 import { Input } from "@luana/ui-kit";
 import { useTenantLocale } from "@/features/tenant/context/tenant-locale-context";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { useConversationActions } from "../../hooks/use-conversation-actions";
 import { formatDistanceToNow } from "../../utils/format";

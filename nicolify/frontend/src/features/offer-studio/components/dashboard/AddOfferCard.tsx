@@ -1,6 +1,6 @@
 import { Plus } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type { OfferValueLevel } from "@/features/offer-studio/types";
 

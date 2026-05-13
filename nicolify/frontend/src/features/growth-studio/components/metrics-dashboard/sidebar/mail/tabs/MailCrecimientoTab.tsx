@@ -15,7 +15,7 @@ import {
 
 import { MetricInfoPopover } from "@/components/shared/MetricInfoPopover";
 import { ChartContainer } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { useMailGrowth } from "../../../../../hooks/use-mail-dashboard";
 import { formatMetricValue } from "../../../../../utils/format-metric-value";

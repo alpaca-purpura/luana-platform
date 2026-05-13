@@ -3,7 +3,7 @@
 import { ChevronDown, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { useFormRuntime } from "./FormRuntimeContext";
 

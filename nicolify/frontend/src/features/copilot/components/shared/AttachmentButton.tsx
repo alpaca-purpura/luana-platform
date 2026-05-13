@@ -4,7 +4,7 @@ import { Paperclip } from "lucide-react";
 import { forwardRef, useRef } from "react";
 
 import { Button } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 interface AttachmentButtonProps extends Omit<
   React.ButtonHTMLAttributes<HTMLButtonElement>,

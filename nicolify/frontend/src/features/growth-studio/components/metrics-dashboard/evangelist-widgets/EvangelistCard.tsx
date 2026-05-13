@@ -1,7 +1,7 @@
 "use client";
 
 import { Badge } from "@luana/ui-kit";
-import { formatDualCurrency } from "@/lib/format-money";
+import { formatDualCurrency } from "@luana/format";
 
 import type { EvangelistData } from "../../../types/metrics";
 

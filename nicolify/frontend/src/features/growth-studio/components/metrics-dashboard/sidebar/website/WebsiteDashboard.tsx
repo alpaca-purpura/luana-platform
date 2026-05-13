@@ -7,8 +7,8 @@ import { createPortal } from "react-dom";
 
 import { Button } from "@luana/ui-kit";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@luana/ui-kit";
-import { useCopilotOffset } from "@/hooks/use-copilot-offset";
-import { cn } from "@/lib/utils";
+import { useCopilotOffset } from "@luana/hooks";
+import { cn } from "@luana/format";
 
 import { useChannelDashboard } from "../../../../hooks/use-channel-dashboard";
 import { useHashScroll } from "../../../../hooks/use-hash-scroll";

@@ -4,7 +4,7 @@ import { Loader2 } from "lucide-react";
 import Link, { type LinkProps } from "next/link";
 import { forwardRef, type AnchorHTMLAttributes } from "react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { useNavigation } from "./NavigationContext";
 

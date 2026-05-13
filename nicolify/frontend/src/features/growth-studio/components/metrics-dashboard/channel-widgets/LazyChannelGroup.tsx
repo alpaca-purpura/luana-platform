@@ -8,7 +8,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { useGroupDetail } from "../../../hooks/use-group-detail";
 import { useIntersectionObserver } from "../../../hooks/use-intersection-observer";

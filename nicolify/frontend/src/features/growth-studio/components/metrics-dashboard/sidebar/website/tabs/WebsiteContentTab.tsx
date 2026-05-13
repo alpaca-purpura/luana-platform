@@ -2,7 +2,7 @@
 
 import { Loader2 } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { ChartInfoTooltip } from "../../shared/ChartInfoTooltip";
 import { ChartSection } from "../../shared/ChartSection";

@@ -5,7 +5,7 @@ import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip as RechartsToolti
 
 import { MetricInfoPopover } from "@/components/shared/MetricInfoPopover";
 import { ChartContainer } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { useMailAudience } from "../../../../../hooks/use-mail-dashboard";
 import { ChartInfoTooltip } from "../../shared/ChartInfoTooltip";

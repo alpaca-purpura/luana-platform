@@ -3,7 +3,7 @@
 import { CheckCircle2, HelpCircle } from "lucide-react";
 import { memo } from "react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 interface ClarifyItem {
   fieldPath: string;

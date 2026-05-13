@@ -32,7 +32,7 @@ import {
 import { Badge } from "@luana/ui-kit";
 import { Button } from "@luana/ui-kit";
 import { Card, CardContent, CardHeader, CardTitle } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 // --- TYPES (Simplified for Playground) ---
 

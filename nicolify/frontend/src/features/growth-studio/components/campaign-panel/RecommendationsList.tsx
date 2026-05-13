@@ -4,7 +4,7 @@ import { ExternalLink } from "lucide-react";
 
 import { Badge } from "@luana/ui-kit";
 import { Button } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type { Recommendation } from "../../types/campaigns";
 

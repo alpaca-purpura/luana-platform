@@ -7,7 +7,7 @@ import { useState } from "react";
 
 import { Badge } from "@luana/ui-kit";
 import { Card, CardContent } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { fetchCampaignAdSets } from "../../api/campaigns-api";
 

@@ -4,7 +4,7 @@ import { Loader2 } from "lucide-react";
 import { Cell, Pie, PieChart, Tooltip as RechartsTooltip } from "recharts";
 
 import { ChartContainer } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import { ChartInfoTooltip } from "../../shared/ChartInfoTooltip";
 import { ChartSection } from "../../shared/ChartSection";

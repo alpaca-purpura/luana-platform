@@ -4,7 +4,7 @@ import { AlertCircle, Check, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Button } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type { AutoSaveState } from "@/lib/form-runtime/hooks";
 

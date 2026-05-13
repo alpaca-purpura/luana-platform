@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@luana/ui-kit";
 import { Input } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type { AssetSortKey } from "../../types/assets";
 import type { OfferAssetSource, OfferAssetType } from "../../types/enums";

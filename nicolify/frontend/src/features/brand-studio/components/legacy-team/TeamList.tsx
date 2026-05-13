@@ -15,7 +15,7 @@ import { Button } from "@luana/ui-kit";
 import { Card, CardContent } from "@luana/ui-kit";
 import { validateTeamMember } from "@/features/brand-studio/utils/brand-validation";
 import { config } from "@/lib/config";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type { KeyFigure } from "@/features/brand-studio/types";
 

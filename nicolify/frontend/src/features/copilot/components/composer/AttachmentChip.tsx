@@ -4,7 +4,7 @@ import { FileText, FileVideo, FileAudio, Image, File, X, AlertCircle } from "luc
 import { forwardRef } from "react";
 
 import { Progress } from "@luana/ui-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 // ── Types ────────────────────────────────────────────────────────────
 

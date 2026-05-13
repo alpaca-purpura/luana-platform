@@ -15,7 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@luana/ui-kit";
 import { Textarea } from "@luana/ui-kit";
 import { assetsApi } from "@/lib/api/assets";
 import { config } from "@/lib/config";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format";
 
 import type { ActionComponentProps } from "@/lib/form-runtime/actions";
 
