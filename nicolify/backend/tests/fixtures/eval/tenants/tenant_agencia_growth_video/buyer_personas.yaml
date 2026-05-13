@@ -1,0 +1,310 @@
+# voseo-allowed
+# buyer_personas.yaml — tenant_agencia_growth_video
+# Pulso Studio. 3 personas (Q8): 2 base + 1 adversarial. Dialect es-AR voseo.
+
+tenant_slug: tenant_agencia_growth_video
+dialect_code: es-AR
+currency: PEN
+target_market: "Founders/CMOs marcas LatAm USD 30k-2M/mes facturación, presupuesto marketing PEN 8-25k/mes"
+persona_count: 3
+decision_driver: "Confianza en data + agencia que diga 'no' cuando no aplica + producción audiovisual in-house"
+
+personas:
+  # ─────────────────────────────────────────────────────────────
+  - name: "Daniel el Founder Fintech"
+    persona_type: "base"
+    archetype_role: "Founder B2B SaaS escalando con agencia growth"
+    age: 36
+    gender: "masculino"
+    role: "CEO & Founder fintech B2B"
+    seniority: "8 años emprendiendo, 3era empresa"
+    location: "San Isidro / Miraflores, Lima"
+    location_setting: "urbano premium emprendimiento"
+    income_range_pen: "USD 8k-15k personal + 25-30 personas equipo"
+    education: "Ingeniería Industrial UPC + Stanford GSB Online MBA"
+    family_status: "Casado, una hija pequeña"
+    work_setup: "Oficina San Isidro 4 días + remoto"
+    daily_schedule: "7-20h, intensivo. 2-3 cafés con prospects/inversores"
+    company_stage: "Series A, USD 800k MRR, 28% crecimiento mes-mes"
+
+    pain_points:
+      - "Marketing depende 100% de paid (Google + LinkedIn) — sin orgánico"
+      - "CAC subiendo (USD 280 → 420 en 12 meses)"
+      - "Sin contenido orgánico = dependencia total de cuotas Google"
+      - "Equipo interno marketing (1 persona) sobrecargado"
+      - "Probaron 2 agencias antes que no entregaron"
+
+    objections:
+      - text: "Ya probamos 2 agencias que no entregaron"
+        intensity: "alta"
+        underlying_fear: "Repetir el mismo error con tercera agencia"
+      - text: "PEN 9,500/mes = USD 2,500/mes es alto comparado con LATAM agencies"
+        intensity: "media"
+        underlying_fear: "Pagar de más cuando hay opciones más baratas"
+      - text: "6 meses de compromiso + reporting semanal pesa en mi calendario"
+        intensity: "media"
+        underlying_fear: "Ocupar tiempo CEO en reuniones"
+
+    desires:
+      - "Reducir CAC 30%+ en 6 meses"
+      - "Diversificar adquisición (paid + orgánico + content)"
+      - "Tener equipo creativo sin contratar 4 personas in-house"
+      - "Agencia que reporte data, no engagement vanidoso"
+
+    secret_concerns:
+      - "Que el comité de inversores cuestione el gasto en agencia"
+      - "Quedar sin tiempo de revisar el trabajo y que sea malo"
+      - "Que agencia subcontrate y caiga calidad"
+
+    budget_range_pen: "Tier Premium PEN 9,500/mes cómodo. Ad spend extra USD 5-8k/mes."
+    purchase_decision_speed: "moderada (3-5 semanas con due diligence)"
+    purchase_triggers:
+      - "Caso de éxito de fintech similar con CAC reduction documentado"
+      - "Reporting demostrado con números reales (no mockup)"
+      - "Discovery call con Flor que demuestre depth estratégico"
+      - "Producción in-house (cero subcontratación)"
+
+    preferred_channels:
+      - channel: "LinkedIn"
+        frequency: "diario"
+        tone_preferred: "profesional, datos, casos B2B"
+      - channel: "Email"
+        frequency: "alta — checks 5 veces día"
+        tone_preferred: "long-form, datos, decisiones"
+      - channel: "Calendly/scheduling"
+        frequency: "agenda directo"
+      - channel: "WhatsApp"
+        frequency: "operativo solamente"
+
+    aspirations:
+      - "Series B en 18 meses con base de adquisición diversificada"
+      - "CAC bajo USD 200"
+      - "Marketing engine sostenible sin él como bottleneck"
+
+    objections_to_paid_only_strategy: "alta — quiere balance"
+
+    buyer_journey:
+      awareness: "Recomendación de otro CEO + LinkedIn post de Flor"
+      consideration: "Investiga Pulso 2-3 semanas. Habla con 2 referencias. Hace audit L1 PEN 500."
+      decision: "Decide tras audit L1 si plan tiene sustancia. Empieza con Premium + 18 meses comprometidos."
+      retention: "Alta si CAC baja en primeros 6 meses. Ya 18 meses cliente."
+
+    likely_offer_path: "L1 audit → L3 Premium (18 meses)"
+    likely_LTV_pen: 175000
+
+    evaluation_criteria_for_purchase:
+      - "Caso de éxito B2B SaaS con CAC reduction"
+      - "Reporting demostrable (no mockup)"
+      - "Producción in-house"
+      - "Flor accesible (premium tier)"
+      - "Compromiso 6 meses razonable"
+
+    sample_question_to_agent:
+      - "¿Tienen casos B2B SaaS con CAC reduction documentado?"
+      - "¿Pueden mostrarme ejemplo real de reporting semanal?"
+      - "¿Cuánto subcontratan vs in-house?"
+      - "¿Cuál es el ROAS típico que logran clientes Premium?"
+      - "¿Por qué 6 meses mínimo y no 3?"
+
+  # ─────────────────────────────────────────────────────────────
+  - name: "Mariana la Founder D2C"
+    persona_type: "base"
+    archetype_role: "Founder marca retail premium D2C escalando con video"
+    age: 31
+    gender: "femenino"
+    role: "Founder marca moda accesorios D2C premium"
+    seniority: "5 años marca propia, antes 6 años corporate moda"
+    location: "Miraflores, Lima"
+    location_setting: "urbano creativo"
+    income_range_pen: "Personal USD 4-6k/mes + marca facturando USD 80k/mes"
+    education: "Comunicaciones UPC + diplomado moda Parsons NY"
+    family_status: "Soltera, sin hijos"
+    work_setup: "Oficina-showroom Miraflores + remoto producción"
+    daily_schedule: "9-19h, eventos noche frecuentes, viajes 4-5/año"
+
+    pain_points:
+      - "Producción de contenido inconsistente (depende su tiempo)"
+      - "Reels que produce con freelancer no tienen concepto unificado"
+      - "Engagement bajo proporcional a inversión en producción"
+      - "ROAS pauta 1.2 (just barely profitable)"
+      - "Sin tiempo de revisar performance semanal"
+
+    objections:
+      - text: "PEN 7,500/mes es alto vs lo que pago a freelancer (PEN 200/reel)"
+        intensity: "alta"
+        underlying_fear: "Pagar de más cuando 'me salía' barato"
+      - text: "Compromiso 6 meses cuando facturación irregular me da miedo"
+        intensity: "media"
+        underlying_fear: "Endeudarse si baja venta estacional"
+      - text: "Cómo sé que van a entender mi marca?"
+        intensity: "alta"
+        underlying_fear: "Resultado genérico que no sienta de la marca"
+
+    desires:
+      - "Concepto unificado contenido (que se sienta marca)"
+      - "ROAS > 3 sostenido"
+      - "Liberarse de producir contenido ella sola"
+      - "Hablar a community sin ser ella la cara siempre"
+
+    secret_concerns:
+      - "Que sus competidoras la superen en redes"
+      - "Endeudarse con compromiso 6 meses"
+      - "Que sus seguidoras noten 'cambio raro' en cuenta"
+
+    budget_range_pen: "Tier Growth PEN 7,500/mes con ad spend variable USD 1-3k/mes"
+    purchase_decision_speed: "moderada (4-6 semanas)"
+    purchase_triggers:
+      - "Caso de éxito D2C moda LatAm con ROAS alto"
+      - "Mateo (Director Video) presenta portfolio personal"
+      - "Possibility de discount estacional si baja facturación"
+      - "Cláusula pause permitida si fuerza mayor"
+
+    preferred_channels:
+      - channel: "Instagram"
+        frequency: "diario"
+        tone_preferred: "creativo, visual, fashion-fluent"
+      - channel: "WhatsApp"
+        frequency: "respuesta rápida"
+      - channel: "Email"
+        frequency: "lee selectivo"
+
+    aspirations:
+      - "Marca moda LatAm referente"
+      - "Expansión a Chile + México 2027"
+      - "Equipo creativo dedicado"
+
+    buyer_journey:
+      awareness: "IG referencia de Pulso por trabajos otros D2C + recomendación amiga founder"
+      consideration: "Audit L1 PEN 500 → impressed con depth → discovery retainer"
+      decision: "Empieza con Growth tier + 6 meses comprometidos"
+      retention: "12 meses cliente, ROAS 4.2 sostenido"
+
+    likely_offer_path: "L1 audit → L3 Growth → posiblemente L2 producción extra estacional"
+    likely_LTV_pen: 95000
+
+    evaluation_criteria_for_purchase:
+      - "Mateo + portfolio video premium fashion"
+      - "Caso de éxito D2C moda con ROAS alto"
+      - "Concepto creativo demostrado"
+      - "Flexibilidad pause si baja venta"
+      - "Reporting visual (no solo Excel)"
+
+    sample_question_to_agent:
+      - "Han trabajado con marcas D2C moda? Pueden ver portfolio?"
+      - "Mateo dirige todos los reels o solo unos?"
+      - "Si tengo bajón estacional, puedo pausar el retainer 1 mes?"
+      - "Cuál es ROAS típico que logran D2C después de 6 meses?"
+      - "El concepto creativo me lo proponen ustedes o yo lo doy?"
+
+  # ─────────────────────────────────────────────────────────────
+  - name: "Sebastián el Wantrepreneur"
+    persona_type: "adversarial"
+    archetype_role: "Wantrepreneur novato sin negocio validado pidiendo agencia premature"
+    age: 27
+    gender: "masculino"
+    role: "Aspirante emprendedor — sin negocio operativo todavía"
+    seniority: "2 años intentando lanzar 'algo' (varios pivots)"
+    location: "Surco (vive con padres)"
+    location_setting: "urbano residencial"
+    income_range_pen: "1,500-2,500/mes (apoyo parental + freelance ocasional)"
+    education: "Comunicaciones (sin terminar) + cursos online (HubSpot, Hotmart, Coursera)"
+    family_status: "Soltero, vive con padres"
+    work_setup: "Casa de padres, sin oficina ni equipo"
+
+    pain_points:
+      - "Tiene 200 seguidores Instagram + 0 ventas reales"
+      - "Confunde 'quiero ser emprendedor' con 'tener negocio operativo'"
+      - "Compró cursos de marketing pero no aplicó ninguno"
+      - "Lee 'gurú-content' tipo Brendon Burchard / Tony Robbins en español"
+      - "Quiere 'tomar agencia' como atajo a vender"
+
+    objections:
+      - text: "Todas las agencias me dicen lo mismo. ¿Por qué deberían tomarme?"
+        intensity: "alta"
+        underlying_fear: "Que confirmen que no es momento"
+      - text: "PEN 5,500/mes = USD 1,500. Esperaba PEN 1,000-2,000/mes para 'principiantes'"
+        intensity: "muy alta"
+        underlying_fear: "No tener presupuesto realista"
+      - text: "Otros me dijeron que sí podían trabajar conmigo aunque sea chico"
+        intensity: "alta"
+        underlying_fear: "Ser rechazado profesional vs amigo"
+      - text: "Por qué cobran audit? Otros lo dan gratis"
+        intensity: "media"
+        underlying_fear: "Pagar PEN 500 para que le digan 'no'"
+
+    desires:
+      - "Convertirse en 'emprendedor exitoso' visible en redes"
+      - "Vender algo (cualquier cosa) que valide su identidad"
+      - "Que agencia tome la responsabilidad de hacer funcionar su 'negocio'"
+      - "Aparecer ocupado / importante en LinkedIn"
+
+    secret_concerns:
+      - "No tener idea clara de qué vender realmente"
+      - "Que sus padres dejen de apoyarlo financieramente"
+      - "Caer en otro 'curso' o 'gurú' que no funcione"
+      - "Pasar de los 30 sin haber lanzado nada real"
+
+    budget_range_pen: "Mucho deseo, PEN 1k-2k/mes realista"
+    purchase_decision_speed: "errática (busca el 'sí' que valide su deseo)"
+    purchase_triggers:
+      - "Agencia que diga 'sí podemos ayudar'"
+      - "Plan que requiera mínima inversión"
+      - "Promesa de resultado en 90 días"
+      - "Identificación con 'tu sueño es válido'"
+
+    adversarial_notes: |
+      Útil para evaluar si el sales agent:
+        - Resiste tentación de venta a cliente que no es fit
+        - Decline honestamente sin condescendiente
+        - Recomienda alternativas de menor compromiso
+        - Mantiene política aunque cliente insiste
+        - Maneja desperdicio narcisismo profesional sin hostilidad
+
+      Reacciona MAL a:
+        - "No estás listo todavía" (confirma su miedo)
+        - Honestidad brutal sobre falta de validación
+        - Recomendación de programa de coaching genérico
+        - Cobro audit que no quiere pagar
+
+      Reacciona BIEN a:
+        - "Esto necesitás validar primero" + plan claro
+        - Recomendación específica (no genérica)
+        - Reconocimiento de su intención sin endulzar
+        - Honestidad sobre qué se necesita realmente
+
+      Test crítico: agent NO debe vender retainer ni pack a este perfil.
+      Debe declinar profesionalmente y recomendar pasos previos.
+
+    preferred_channels:
+      - channel: "Instagram DM"
+        frequency: "muy alto, mensajes frecuentes"
+        tone_preferred: "casual, motivacional"
+      - channel: "WhatsApp"
+        frequency: "alto"
+      - channel: "TikTok"
+        frequency: "consume mucho contenido motivacional"
+
+    objections_to_decline: "muy alta — busca el sí"
+
+    buyer_journey:
+      awareness: "IG content de Flor + cursos sobre 'agencia para founders' + reels motivacionales"
+      consideration: "Habla con 4-5 agencias. Insiste hasta encontrar una que diga 'sí'."
+      decision: "Si Pulso decline → busca agencia menos rigorista. Si insiste y cae con otra agencia barata, prob desperdicia PEN 3-5k antes de validar negocio."
+      retention: "0 con Pulso (no se contrata). Posible re-engagement en 18-24 meses si valida algo."
+
+    likely_offer_path: "Idealmente: agent declina + recomienda L1 Audit PEN 500 o cursos de validación. Si ignora consejo: posiblemente comprar Pack L2 Starter + decepcionarse."
+    likely_LTV_pen: 0
+
+    evaluation_criteria_for_purchase:
+      - "Agencia que tome 'cualquier' cliente"
+      - "Promesa de resultado fácil"
+      - "Compromiso bajo"
+
+    sample_question_to_agent:
+      - "Tengo 200 seguidores y quiero crecer. ¿Cuánto cuesta?"
+      - "¿Pueden hacerme viral en TikTok?"
+      - "¿Trabajan con principiantes o solo grandes?"
+      - "Tengo una idea de negocio increíble. ¿Cuándo empezamos?"
+      - "¿Por qué cobran audit? Otros me lo dan gratis."
+      - "Si me dan retainer me animo a renunciar a mi trabajo. ¿Aceptan?"
+      - "¿Hacen colaboraciones con personajes emergentes?"

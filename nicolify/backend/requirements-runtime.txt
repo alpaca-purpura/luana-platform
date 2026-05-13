@@ -1,0 +1,66 @@
+fastapi==0.135.1
+uvicorn==0.34.0
+pydantic>=2.10.0
+pydantic-settings>=2.10.1
+langchain==1.2.15
+langchain-openai==1.1.11
+langchain-core==1.3.2
+langchain-anthropic==1.4.1
+langchain-deepseek==1.0.1
+langgraph==1.1.9
+langgraph-prebuilt==1.0.11
+deepagents==0.5.3
+wcmatch==10.1
+qdrant-client>=1.13.3
+redis==5.0.1
+psycopg2-binary==2.9.9
+asyncpg>=0.29.0
+httpx>=0.26.0
+python-dotenv>=1.1.1,<2.0.0
+requests>=2.32.5
+sqlalchemy==2.0.27
+greenlet==3.0.3
+jinja2>=3.1.6
+langchain-google-genai==4.2.1
+langchain-community==0.4.1
+streamlit>=1.31.0
+numpy<2.0
+fastembed>=0.2.0
+flashrank>=0.2.0
+pypdf>=4.0.0
+langchain-experimental==0.4.1
+langchain-text-splitters==1.1.1
+structlog>=24.1.0
+python-multipart>=0.0.9
+pyjwt>=2.12.0
+cryptography>=46.0.7
+gunicorn>=23.0.0
+google-auth-oauthlib>=1.2.0
+google-api-python-client>=2.118.0
+google-analytics-data>=0.20.0
+email-validator>=2.1.0
+alembic>=1.13.1
+beautifulsoup4>=4.12.3
+python-docx>=0.8.11
+svix>=1.1.1
+passlib[bcrypt]>=1.7.4
+facebook-business>=22.0,<26.0
+boto3>=1.34.0
+arq==0.27.0
+sentry-sdk>=1.40.0
+pillow>=12.1.1
+protobuf>=5.29.6
+pyasn1>=0.6.3
+wheel>=0.46.2
+jaraco.context>=6.1.0
+tiktoken>=0.7.0
+python-frontmatter>=1.1.0
+trafilatura>=2.0.0,<3.0.0
+dateparser>=1.4.0,<2.0.0
+# PI-12 S1 sales-agent-litellm-canonicalization T-1: Python SDK utilities
+# (litellm.get_llm_provider for canonical provider derive, CustomLogger for
+# kwargs["response_cost"] capture). Runtime LLM dispatch is still proxy-mode
+# via langchain-openai → LiteLLM Proxy (visionarias_litellm:4000); this
+# package is consumed in-process for observability only. Pin <1.83 because
+# 1.83+ pins openai==2.24.0 which conflicts with langchain-openai==1.1.11.
+litellm>=1.50.0,<1.83

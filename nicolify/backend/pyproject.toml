@@ -1,0 +1,514 @@
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests", "src/tests"]
+asyncio_mode = "auto"
+addopts = "-m 'not verify' --randomly-seed=last --timeout=30"
+markers = [
+    "integration: live integration tests requiring external credentials",
+    "verify: data reliability verification tests requiring real DB data",
+    "eval: agentic eval suite — requires --run-evals flag (real LLM cost ~$0.005/run)",
+    "no_eval: opt-out of auto-eval-marking in tests/agentic_evals/sales_agent/ (runs on default CI)",
+]
+
+[tool.coverage.run]
+source = ["src/modules", "src/shared"]
+omit = [
+    "*/models/*",
+    "*/migrations/*",
+    "*/__init__.py",
+    "*/workers/*",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true
+fail_under = 43
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.",
+    "@abstractmethod",
+]
+
+[tool.ruff]
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+]
+
+# Industry standard for FastAPI projects (was 88, raised in Wave 5).
+line-length = 120
+indent-width = 4
+
+# Assume Python 3.11
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+    # --- Core ---
+    "E4", "E7", "E9", "F",  # pycodestyle errors + pyflakes
+    "W",                       # pycodestyle warnings (trailing whitespace, etc.)
+    "I",                       # isort: orden de imports
+    "UP",                      # pyupgrade: Python 3.11+ patterns
+    # --- Bugs & Security ---
+    "B",                       # flake8-bugbear: bugs comunes
+    "S",                       # flake8-bandit: seguridad
+    "C901",                    # Complejidad ciclomática
+    "PERF",                    # perflint: anti-patrones de performance
+    "DTZ",                     # flake8-datetimez: timezone awareness
+    # --- Code Quality ---
+    "SIM",                     # flake8-simplify
+    "PIE",                     # flake8-pie: unnecessary code
+    "RET",                     # flake8-return: simplificar returns
+    "RSE",                     # flake8-raise: raise style
+    "C4",                      # flake8-comprehensions
+    "FURB",                    # refurb: modernizations
+    "FLY",                     # flynt: f-string conversions
+    # --- Style & Naming ---
+    "N",                       # pep8-naming
+    "A",                       # flake8-builtins: shadow builtins
+    "ISC",                     # flake8-implicit-str-concat
+    "T20",                     # flake8-print: detectar print()
+    "LOG",                     # flake8-logging
+    "ERA",                     # eradicate: commented-out code
+    "PGH",                     # pygrep-hooks
+    # --- Testing ---
+    "PT",                      # flake8-pytest-style
+    # --- Type Safety ---
+    "TCH",                     # flake8-type-checking: imports behind TYPE_CHECKING
+    # --- Pylint subset ---
+    "PL",                      # pylint rules (PLC, PLE, PLR, PLW)
+    # --- Ruff-specific ---
+    "RUF",                     # ruff-specific rules
+    # --- Arguments & Patterns ---
+    "ARG",                     # flake8-unused-arguments
+    "FBT",                     # flake8-boolean-trap
+    "EM",                      # flake8-errmsg: exception messages
+    # --- Structure ---
+    "INP",                     # implicit namespace package: require __init__.py
+    # --- Wave 4: zero-effort wins (0 violations) ---
+    "YTT",                     # flake8-2020: sys.version checks
+    "ASYNC",                   # flake8-async: async patterns
+    "FA",                      # flake8-future-annotations
+    "ICN",                     # flake8-import-conventions
+    "Q",                       # flake8-quotes
+    "SLOT",                    # flake8-slots
+    "TID",                     # flake8-tidy-imports
+    "INT",                     # flake8-gettext
+    "T10",                     # flake8-debugger
+    "EXE",                     # flake8-executable
+    # --- Wave 5 ---
+    "E501",                    # line-too-long (line-length=120)
+    "FAST",                    # fastapi: Annotated dependencies
+    "ANN",                     # type annotations (src/ only, tests exempt)
+    "D",                       # pydocstyle: docstrings (src/ only, Google convention)
+    # --- Wave 4: fix + activate ---
+    "NPY",                     # numpy deprecated APIs
+    "PYI",                     # stub file / typing best practices
+    "PTH",                     # flake8-use-pathlib
+    "TD",                      # flake8-todos: TODO format
+    "FIX",                     # flake8-fixme: flag remaining TODOs
+    "G",                       # flake8-logging-format
+    "TRY",                     # tryceratops: exception patterns
+    "BLE",                     # flake8-blind-except
+]
+ignore = [
+    # === Permanent ignores — false positives for FastAPI/DDD/Spanish stack ===
+    "B008",     # Function calls in defaults — FastAPI Depends/Header/Query. 652 usos.
+    "RET504",   # Unnecessary var before return — readability preference
+    "UP017",    # datetime.UTC alias — prefer explicit timezone.utc
+    "PLR2004",  # Magic values in comparisons — too noisy, low value. 194 usos.
+    "PLR0913",  # Too many function arguments — FastAPI/DDD constructors. 145 usos.
+    "PLC0415",  # import not at top — conditional imports avoid circulars. 383 usos.
+    "ARG001",   # Unused function argument — FastAPI deps, interface contracts. 45 usos.
+    "ARG002",   # Unused method argument — interface implementations. 80 usos.
+    "RUF001",   # Ambiguous unicode — Spanish text in prompts is intentional. 37 usos.
+    "RUF012",   # Mutable ClassVar — Pydantic models handle this differently. 44 usos.
+    "FBT001",   # Boolean positional arg — common in services. 61 usos.
+    "FBT002",   # Boolean default value — common pattern. 33 usos.
+    "PT028",    # Pytest fixture default — false positive on FastAPI test_* with Depends()
+    # === Format conflicts ===
+    "ISC001",   # Implicit string concat — conflicts with ruff format
+    "COM812",   # Trailing comma — conflicts with ruff format
+    # === Bandit security false positives (OAuth/connection/Docker config) ===
+    "S105",     # Hardcoded password string — OAUTHLIB_RELAX_TOKEN_SCOPE, credential enums
+    "S106",     # Hardcoded password func arg — OAuth/API credential fields
+    "S107",     # Hardcoded password default — credential config patterns
+    "S108",     # Hardcoded temp file — /tmp paths in Docker config
+    "S104",     # Hardcoded bind-all-interfaces — Docker dev server uses 0.0.0.0
+    "S110",     # try-except-pass — intentional resilience in orchestrators
+    "S311",     # Non-cryptographic random — request IDs, not security
+    "S324",     # Insecure hash — MD5 for cache keys, not security
+    "S608",     # SQL injection — false positive on GAQL (Google Ads Query Language)
+    "S701",     # Jinja2 autoescape — intentionally disabled for prompt templates
+    # === SQLAlchemy patterns (== True/False/None required for SQL generation) ===
+    "E712",     # True/False comparison — Model.col == True generates WHERE col = TRUE
+    "E711",     # None comparison — Model.col == None generates WHERE col IS NULL
+    # === Import order (sys.path manipulation, conditional loading) ===
+    "E402",     # Module import not at top — sys.path + conditional imports
+    # === Tryceratops — too opinionated for enforcement ===
+    "TRY300",   # try-consider-else — reduces readability in our patterns
+    # === Docstrings — Pydantic nested classes ===
+    "D106",     # undocumented nested class — Pydantic Config, Meta classes
+    # === Progressive adoption: fix gradually, remove from ignore ===
+    # B904, SIM105, EM101, EM102, ERA001, PERF401, T201 — ENFORCED (2026-04-12)
+    # DTZ003, DTZ006, DTZ007, PERF203, N818, N811, N814, N815, RUF002, PLW0603, PLW2901, PLC0206, UP042 — ENFORCED (2026-04-13)
+    # FBT003, N806, A002, DTZ011 — ENFORCED (2026-04-13)
+    # N801, N802, PLR0911, PLR0912, PLR0915 — ENFORCED (Wave 3, 2026-04-13)
+    # RUF013, DTZ005 — ENFORCED (Wave 4, 2026-04-13): 42 + 7 fixes
+]
+
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+    "S101",    # assert in tests is standard
+    "ARG",     # unused args common in fixtures/parametrize
+    "PT",      # pytest style — legacy tests have mixed patterns
+    "PLR2004", # magic values in test assertions are fine
+    "T201",    # print() in tests is acceptable for debugging output
+    "N806",    # MockClient = MagicMock(...) is standard test pattern
+    "DTZ011",  # date.today() in test fixtures is acceptable
+    "PLR0912", # complex test helper functions are acceptable
+    "F401",    # side-effect imports for model registration in conftest
+    "ANN",     # type annotations not required in tests
+    "D",       # docstrings not required in tests
+    "E501",    # long string fixtures / mock patch targets are acceptable in tests
+    "PERF401", # loop-based appends clearer than comprehensions in test setup
+    "FBT003",  # boolean positional args in mocks/decorators are idiomatic
+    "C901",    # arch tests parse AST — natural complexity. Refactor candidates tracked separately.
+    "TC001",   # inline imports inside test functions are valid isolation pattern
+    "TC002",   # same — third-party inline test imports
+    "TC003",   # same — stdlib inline test imports
+    "RUF059",  # unpacked variable in test assertions is fine
+    "E741",    # ambiguous variable names acceptable in test assertions
+    "I001",    # import sort inside function bodies is acceptable in tests
+]
+"src/tests/**/*.py" = [
+    "S101", "ARG", "PT", "PLR2004", "T201", "N806", "DTZ011", "PLR0912",
+    "INP001",  # src/tests/ is a testpath, not a package — __init__.py conflicts with tests/
+    "ANN",     # type annotations not required in tests
+    "D",       # docstrings not required in tests
+]
+"src/main.py" = [
+    "INP001",  # src/ is a namespace package (no __init__.py); pre-commit hook --stdin-filename can't traverse to verify, false-positive on staged main.py edits
+]
+"src/scripts/**/*.py" = [
+    "T201",    # CLI scripts legitimately use print() for output
+    "PLR0912", # one-shot migration scripts — not worth refactoring
+    "PLR0915", # one-shot migration scripts — not worth refactoring
+]
+"src/modules/copilot/application/tools/offer_section_tools.py" = [
+    "E501",    # long FAQ/example template strings are intentional (user-facing text)
+    "PERF401", # loop-based appends clearer than list comprehensions for ordered conditionals
+    "FBT003",  # keyword-only enforcement not applicable to LangChain @tool wrappers
+]
+"src/modules/{brand,offer}/workers/tasks.py" = [
+    "C901",    # orchestrator async workers combine DB, tracing, Redis progress, service call, and EventBus publishing — inherent cross-cutting complexity (see FLOW-SPEC §3.3/3.4)
+    "PLR0912", # "
+    "PLR0915", # "
+]
+"src/modules/copilot/application/tools/extract_from_doc.py" = [
+    "C901",    # LangChain @tool adapters validate many Literal/scope combos before dispatching to an ARQ worker; branching reads as flat guard clauses — same rationale as Streamlit pages and orchestrator workers
+    "PLR0911", # "
+    "PLR0912", # "
+    "PLR0915", # "
+]
+# --- C901 ratchet at max-complexity=12. Refactor candidates — shrink only. ---
+"src/modules/connections/infrastructure/marketing_connectors/mailerlite.py" = ["C901"]  # get_recent_campaign_activity (13)
+"src/modules/copilot/application/discovery.py" = ["C901"]  # _scan_convention (13)
+"src/modules/copilot/application/orchestrator/chat.py" = ["C901"]  # _run_graph_stream (15)
+"src/modules/offer/api/product_mappings.py" = ["C901"]  # create_product_mapping (13)
+"src/modules/scheduling/application/services/availability_service.py" = ["C901"]  # get_available_slots (13)
+"src/modules/campaigns/application/**/*.py" = [
+    "TC001", "TC002", "TC003",  # runtime imports for SQLA expressions + Pydantic models
+    "ANN401",   # cache.py + _event_bridge.py use Any for duck-typed Protocol boundaries — intentional until S2 wires concrete Redis client
+    "RUF002",   # × symbol in docstring is intentional math notation (scalability comment)
+]
+"src/modules/campaigns/application/segment_filter_evaluator.py" = [
+    "TC001", "TC002", "TC003",  # runtime SQLA expression imports
+    "C901",    # multi-field filter dispatch is inherently branchy — linear guard clauses
+    "PLR0912", # "
+    "PLR0915", # "
+]
+"scripts/**/*.py" = [
+    "INP001",  # scripts/ is a CLI folder, not a package
+    "T201",    # CLI scripts legitimately use print() for output
+    "PLR0912",
+    "PLR0915",
+    "E402",    # sys.path manipulation precedes imports by design
+    "ANN",     # one-shot scripts don't need annotations
+    "D",       # script-level docstrings only
+    "S608",    # parameterised SQL is fine in admin scripts
+    "S603",    # one-shot scripts call known internal binaries
+    "S607",    # idem — relative path to internal binary OK
+    "ASYNC240", # one-shot async scripts use pathlib for results dump (not in hot path)
+    "PLW2901", # loop-var rebind for line.strip() is the canonical pattern
+    "F541",    # f-prefix on tagged debug lines is fine
+    "UP041",   # alias TimeoutError tuple readable enough in scripts
+    "TRY003",  # short scripts can raise inline messages
+    "B007",    # for-loop label kept as documentation
+    "C901",    # async runners can be slightly long
+    "EM102",   # raise f"…" readable in scripts
+    "PERF102", # iterating .items() to keep label intent explicit
+    "RUF002",  # multiplication sign × in docstring is intentional
+    "PTH",     # legacy scripts use os.path — not worth refactoring (added PR-1)
+    "BLE001",  # broad Exception catches acceptable in one-shot migration scripts
+    "G004",    # f-string logging acceptable in one-shot scripts
+    "E501",    # long SQL strings in migration scripts are intentional
+    "F401",    # unused imports common in scripts with optional deps
+    "RUF100",  # unused noqa directives in legacy scripts — not worth cleaning
+    "F841",    # unused local variables in scripts
+    "ERA001",  # commented-out code acceptable in one-shot scripts
+    "DTZ",     # timezone-naive datetime acceptable in one-shot scripts
+    "N806",    # variable naming conventions not enforced in scripts
+    "TRY400",  # LOGGER.error + raise pattern acceptable in scripts
+    "PERF401", # loop-based appends acceptable in scripts
+    "E741",    # ambiguous variable names acceptable in scripts
+    "F841",    # unused variables in scripts (local intermediate)
+    "EM101",   # raw string in exception acceptable in scripts
+    "SIM108",  # ternary style not enforced in scripts
+    "FURB110", # replace ternary pattern not enforced in scripts
+    "F821",    # undefined names (may be from dynamic path setup)
+]
+"src/modules/brand/tests/**/*.py" = [
+    "S101", "ARG", "PT", "PLR2004", "T201", "ANN", "D",
+]
+"src/modules/*/copilot_provider/**/*.py" = [
+    # CopilotProvider implementations override property/method overrides from
+    # BaseCopilotProvider (which carries the docstrings). Re-stating the same
+    # docstring on every concrete override is busywork — D102 / D105 / D106.
+    "D102", "D105", "D106",
+]
+"src/admin/**/*.py" = [
+    "C901",     # too complex — Streamlit pages are monolithic by design
+    "PLR0911",  # too many return statements — Streamlit pages
+    "PLR0912",  # too many branches — Streamlit pages
+    "PLR0915",  # too many statements — Streamlit pages
+    "SIM102",   # collapsible if — Streamlit nested conditionals clearer separate
+    "SIM117",   # multiple with — Streamlit col/container nesting is idiomatic
+    "N999",     # filename = URL slug; kebab-case (e.g. brand-summaries.py) is required
+]
+"alembic/versions/*.py" = [
+    "INP001",  # alembic/versions/ is not a package — no __init__.py by convention
+    "D103",    # upgrade()/downgrade() don't need docstrings in migrations
+    "D415",    # migration file docstrings follow alembic template (no trailing punctuation)
+]
+"src/modules/*/api/**/*.py" = [
+    "TC001",   # FastAPI DI needs runtime types (Annotated[X, Depends(...)]); TYPE_CHECKING breaks get_type_hints
+    "TC002",   # same — third-party types used at runtime by FastAPI
+    "TC003",   # same — stdlib types (UUID, datetime) used at runtime by FastAPI
+]
+# shared/billing and shared/compliance — new PR-2 modules.
+# TC001/TC002/TC003: ABC domain repos and infra implementations need runtime imports
+# for type-checked method signatures even with `from __future__ import annotations`.
+# ANN401: duck-typed readers (messages_reader, lead_country_reader, cost_reader, redis_client)
+# are intentional Protocol boundaries — Any is the documented approach until consumers exist.
+"src/shared/billing/**/*.py" = [
+    "TC001", "TC002", "TC003",  # ABC/infra runtime imports
+    "ANN401",   # duck-typed readers — intentional (S2 wires concrete types)
+    "TRY400",   # logger.error acceptable for fail-open path (budget guard)
+    "TRY003",   # inline exception messages in domain layer are fine
+    "EM102",    # f-string in exception messages — domain layer
+    "SIM105",   # contextlib.suppress not appropriate in async Redis loop
+    "PLR1714",  # multiple comparisons OK in domain service merge loop
+    "C901",     # plan_service.subscribe_cache_invalidations — async pub/sub is inherently complex
+]
+"src/shared/compliance/**/*.py" = [
+    "TC001", "TC002", "TC003",  # ABC/infra runtime imports
+    "ANN401",   # duck-typed readers — intentional (S2 wires concrete types)
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.mccabe]
+max-complexity = 12  # Wave 5: lowered 15→12 (industry standard: 10). tests/architecture/ exempt via per-file-ignore.
+
+[tool.ruff.lint.flake8-type-checking]
+# Classes whose annotations are evaluated at runtime (Pydantic, SA 2.0).
+# Imports used by their fields MUST stay at module level, not in TYPE_CHECKING.
+runtime-evaluated-base-classes = [
+    "pydantic.BaseModel",
+    "src.shared.domain.base_entity.BaseEntity",
+    "src.shared.domain.base_entity.Base",
+    "sqlalchemy.orm.DeclarativeBase",
+]
+runtime-evaluated-decorators = [
+    "pydantic.validate_call",
+    "dataclasses.dataclass",
+]
+
+[tool.ruff.format]
+# Like Black, use double quotes for strings.
+quote-style = "double"
+
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
+
+# Like Black, respect magic trailing commas.
+skip-magic-trailing-comma = false
+
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"
+
+[tool.interrogate]
+ignore-init-method = true
+ignore-init-module = true
+ignore-magic = true
+ignore-private = true
+fail-under = 85  # Wave 5: 0→85. Current actual ~92.6%. Block regression.
+exclude = ["tests", "alembic", "scripts", "admin"]
+color = true
+
+# ============================================================
+# mypy — static type checking. Wave 5 (2026-04-28).
+# Scope: domain layers (modules + shared). Strict mode + ratchet allowlist.
+# Goal: every domain/ file passes strict. Allowlist below shrinks only.
+# ============================================================
+[tool.mypy]
+explicit_package_bases = true
+namespace_packages = true
+follow_imports = "silent"
+ignore_missing_imports = true
+strict = true
+python_version = "3.11"
+exclude = [
+    "alembic/",
+    "scripts/",
+    "src/scripts/",
+    "tests/",
+    "src/tests/",
+]
+
+# --- Ratchet allowlist: domain files that don't yet pass `strict`. ---
+# Each block disables the specific error codes currently failing in that file.
+# When you fix a file: remove its override block. Skill /test-backend enforces.
+# Promote module to fully strict by removing all its file overrides.
+
+[[tool.mypy.overrides]]
+module = "src.shared.domain.events"
+disable_error_code = ["type-arg", "no-any-return", "comparison-overlap", "unused-ignore"]
+
+[[tool.mypy.overrides]]
+module = "src.shared.domain.field_contract"
+disable_error_code = ["type-arg", "no-any-return", "comparison-overlap"]
+
+[[tool.mypy.overrides]]
+module = "src.shared.domain.messages"
+disable_error_code = ["type-arg", "comparison-overlap"]
+
+[[tool.mypy.overrides]]
+module = "src.shared.domain.ports"
+disable_error_code = ["type-arg"]
+
+[[tool.mypy.overrides]]
+module = "src.modules.sales_agent.domain.memory.repository"
+disable_error_code = ["type-arg"]
+
+[[tool.mypy.overrides]]
+module = "src.modules.brand.domain.buyer_persona"
+disable_error_code = ["type-arg", "comparison-overlap"]
+
+[[tool.mypy.overrides]]
+module = "src.modules.brand.domain.personality"
+disable_error_code = ["type-arg", "attr-defined"]
+
+[[tool.mypy.overrides]]
+module = "src.modules.copilot.domain.message"
+disable_error_code = ["type-arg"]
+
+[[tool.mypy.overrides]]
+module = "src.modules.copilot.domain.message_blocks"
+disable_error_code = ["type-arg"]
+
+[[tool.mypy.overrides]]
+module = "src.modules.copilot.domain.module_registry"
+disable_error_code = ["type-arg", "attr-defined"]
+
+[[tool.mypy.overrides]]
+module = "src.modules.copilot.domain.schema_introspection"
+disable_error_code = ["no-any-return", "attr-defined", "arg-type", "type-arg"]
+
+[[tool.mypy.overrides]]
+module = "src.modules.offer.domain.offer"
+disable_error_code = ["type-arg", "prop-decorator"]
+
+[[tool.mypy.overrides]]
+module = "src.modules.analytics.domain.extraction_contract"
+disable_error_code = ["type-arg", "arg-type"]
+
+[[tool.mypy.overrides]]
+module = "src.modules.analytics.domain.period_config"
+disable_error_code = ["comparison-overlap", "type-arg"]
+
+[[tool.mypy.overrides]]
+module = "src.modules.crm.domain.customer"
+disable_error_code = ["type-arg", "comparison-overlap", "attr-defined"]
+
+[[tool.mypy.overrides]]
+module = "src.modules.crm.domain.lead"
+disable_error_code = ["type-arg", "attr-defined", "arg-type"]
+
+[[tool.mypy.overrides]]
+module = "src.modules.crm.domain.sale"
+disable_error_code = ["type-arg", "prop-decorator", "attr-defined"]
+
+# --- PR-1: outbox infrastructure model (Base subclass — project-wide pattern) ---
+[[tool.mypy.overrides]]
+module = "src.shared.domain_events.outbox.infrastructure.models"
+disable_error_code = ["misc"]
+
+# --- PI-2 S4 PR-1: LLM config infra SA models (Base subclass + generic JSONB dicts) ---
+[[tool.mypy.overrides]]
+module = "src.shared.infrastructure.llm.infrastructure.role_binding_model"
+disable_error_code = ["misc"]
+
+[[tool.mypy.overrides]]
+module = "src.shared.infrastructure.llm.infrastructure.audit_model"
+disable_error_code = ["misc"]
+
+# --- PR-3: campaigns module (Base subclass + generic dicts JSONB — domain layer) ---
+[[tool.mypy.overrides]]
+module = "src.modules.campaigns.*"
+disable_error_code = ["misc", "type-arg"]
+
+# --- PI-12 Story B: eval_simulator observability models (Base subclass — schema mirror) ---
+[[tool.mypy.overrides]]
+module = "src.modules.sales_agent.observability.eval_simulator.*"
+disable_error_code = ["misc", "type-arg"]
+
+# --- Third-party libs without stubs ---
+[[tool.mypy.overrides]]
+module = ["sqlalchemy.*", "langchain.*", "langchain_core.*", "langchain_openai.*", "langgraph.*", "deepagents.*", "deepeval.*", "qdrant_client.*", "structlog.*", "arq.*", "redis.*"]
+ignore_missing_imports = true

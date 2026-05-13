@@ -1,0 +1,42 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.env
+.env.*
+!.env.test
+venv/
+.venv/
+env/
+
+# Docker
+docker-compose.yml
+Dockerfile
+.dockerignore
+
+# IDEs
+.vscode/
+.idea/
+.trae/
+
+# Local/Temp
+scripts/temp/
+*.log
+
+# Data Volumes (CRITICAL: Prevents permission errors during build)
+data/
+# ...except the curated marketing KB corpus the seed scripts and the
+# RAG goldens (test_seed_marketing_kb) read at build/runtime.
+!data/marketing_kb/
+postgres_data/
+qdrant_data/
+redis_data/
+
+# Frontend (Not needed for Backend Python context)
+frontend/
+node_modules/
