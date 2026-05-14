@@ -1,0 +1,1 @@
+"""Comunify webhook infrastructure adapters."""

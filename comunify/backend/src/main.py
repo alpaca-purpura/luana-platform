@@ -17,6 +17,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 
 from src.modules.comunify.api.routes import offer_router, router as comunify_router
+from src.modules.comunify.api.webhook_routes import webhook_router
 
 # redirect_slashes=False is MANDATORY — Default True → 307 POST → Next.js drops body (DDD rule).
 app = FastAPI(
@@ -31,3 +32,5 @@ app = FastAPI(
 app.include_router(comunify_router)
 # offer_router: /api/v1/offers/* (per 03-arch-be.md § 6.4 — no /comunify prefix)
 app.include_router(offer_router)
+# webhook_router: /api/v1/comunify/webhooks/* (T-be-9 — unauthenticated by Clerk, HMAC only)
+app.include_router(webhook_router)
