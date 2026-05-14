@@ -2,7 +2,12 @@
 name = "luana-vitalia"
 version = "0.1.0"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "fastapi>=0.115",
+    "python-multipart>=0.0.20",
+    "starlette>=0.46",
+    "structlog>=25.1",
+]
 
 [build-system]
 requires = ["hatchling"]
