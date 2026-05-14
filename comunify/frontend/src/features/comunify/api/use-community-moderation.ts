@@ -3,29 +3,32 @@
 import { useAuth } from "@clerk/nextjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { comunifyFetch } from "@/lib/fetch-client";
+import { useTenantId } from "@/lib/use-tenant-id";
 import type { CommunityPost, ModerationAction } from "../types/community.types";
 import { comunifyQueryKeys } from "./query-keys";
 
 export function useCommunityModerationInbox() {
-  const { getToken, userId, isLoaded } = useAuth();
+  const { getToken, isLoaded } = useAuth();
+  const tenantId = useTenantId();
 
   return useQuery({
     queryKey: comunifyQueryKeys.community.moderationInbox(),
     queryFn: async () => {
       const token = await getToken();
-      if (!token || !userId) throw new Error("No autenticado");
+      if (!token || !tenantId) throw new Error("No autenticado");
       return comunifyFetch<CommunityPost[]>(
         "/api/v1/comunify/community/moderation/inbox",
-        { token, tenantId: userId }
+        { token, tenantId }
       );
     },
-    enabled: isLoaded && !!userId,
+    enabled: isLoaded && !!tenantId,
     refetchInterval: 30_000,
   });
 }
 
 export function useModerationAction() {
-  const { getToken, userId } = useAuth();
+  const { getToken } = useAuth();
+  const tenantId = useTenantId();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -39,12 +42,12 @@ export function useModerationAction() {
       reason?: string;
     }) => {
       const token = await getToken();
-      if (!token || !userId) throw new Error("No autenticado");
+      if (!token || !tenantId) throw new Error("No autenticado");
       return comunifyFetch<{ success: boolean }>(
         `/api/v1/comunify/community/moderation/${postId}/action`,
         {
           token,
-          tenantId: userId,
+          tenantId,
           method: "POST",
           body: JSON.stringify({ action, reason }),
         }

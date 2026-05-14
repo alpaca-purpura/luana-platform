@@ -3,60 +3,64 @@
 import { useAuth } from "@clerk/nextjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { comunifyFetch } from "@/lib/fetch-client";
+import { useTenantId } from "@/lib/use-tenant-id";
 import type { Subscription, SubscriptionMetrics } from "../types/subscription.types";
 import type { SubscriptionCancelInput } from "../schemas/subscription-cancel-schema";
 import { comunifyQueryKeys } from "./query-keys";
 
 export function useSubscriptionList(filters: { status?: string } = {}) {
-  const { getToken, userId, isLoaded } = useAuth();
+  const { getToken, isLoaded } = useAuth();
+  const tenantId = useTenantId();
 
   return useQuery({
     queryKey: comunifyQueryKeys.subscriptions.list(filters),
     queryFn: async () => {
       const token = await getToken();
-      if (!token || !userId) throw new Error("No autenticado");
+      if (!token || !tenantId) throw new Error("No autenticado");
       const params = new URLSearchParams();
       if (filters.status) params.set("status", filters.status);
       const qs = params.toString();
       return comunifyFetch<Subscription[]>(
         `/api/v1/comunify/subscriptions${qs ? `?${qs}` : ""}`,
-        { token, tenantId: userId }
+        { token, tenantId }
       );
     },
-    enabled: isLoaded && !!userId,
+    enabled: isLoaded && !!tenantId,
   });
 }
 
 export function useSubscriptionMetrics() {
-  const { getToken, userId, isLoaded } = useAuth();
+  const { getToken, isLoaded } = useAuth();
+  const tenantId = useTenantId();
 
   return useQuery({
     queryKey: comunifyQueryKeys.subscriptions.metrics(),
     queryFn: async () => {
       const token = await getToken();
-      if (!token || !userId) throw new Error("No autenticado");
+      if (!token || !tenantId) throw new Error("No autenticado");
       return comunifyFetch<SubscriptionMetrics>(
         "/api/v1/comunify/subscriptions/metrics",
-        { token, tenantId: userId }
+        { token, tenantId }
       );
     },
-    enabled: isLoaded && !!userId,
+    enabled: isLoaded && !!tenantId,
   });
 }
 
 export function useSubscriptionCancel(subscriptionId: string) {
-  const { getToken, userId } = useAuth();
+  const { getToken } = useAuth();
+  const tenantId = useTenantId();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (payload: SubscriptionCancelInput) => {
       const token = await getToken();
-      if (!token || !userId) throw new Error("No autenticado");
+      if (!token || !tenantId) throw new Error("No autenticado");
       return comunifyFetch<{ success: boolean }>(
         `/api/v1/comunify/subscriptions/${subscriptionId}/cancel`,
         {
           token,
-          tenantId: userId,
+          tenantId,
           method: "POST",
           body: JSON.stringify(payload),
         }
@@ -69,15 +73,16 @@ export function useSubscriptionCancel(subscriptionId: string) {
 }
 
 export function useSubscriptionResendPaymentLink() {
-  const { getToken, userId } = useAuth();
+  const { getToken } = useAuth();
+  const tenantId = useTenantId();
 
   return useMutation({
     mutationFn: async (subscriptionId: string) => {
       const token = await getToken();
-      if (!token || !userId) throw new Error("No autenticado");
+      if (!token || !tenantId) throw new Error("No autenticado");
       return comunifyFetch<{ success: boolean }>(
         `/api/v1/comunify/subscriptions/${subscriptionId}/resend-payment-link`,
-        { token, tenantId: userId, method: "POST" }
+        { token, tenantId, method: "POST" }
       );
     },
   });

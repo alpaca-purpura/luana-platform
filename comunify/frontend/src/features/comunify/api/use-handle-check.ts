@@ -3,23 +3,25 @@
 import { useAuth } from "@clerk/nextjs";
 import { useQuery } from "@tanstack/react-query";
 import { comunifyFetch } from "@/lib/fetch-client";
+import { useTenantId } from "@/lib/use-tenant-id";
 import type { HandleCheckResult } from "../types/comunify.types";
 import { comunifyQueryKeys } from "./query-keys";
 
 export function useHandleCheck(handle: string) {
-  const { getToken, userId, isLoaded } = useAuth();
+  const { getToken, isLoaded } = useAuth();
+  const tenantId = useTenantId();
 
   return useQuery({
     queryKey: comunifyQueryKeys.onboarding.handleCheck(handle),
     queryFn: async () => {
       const token = await getToken();
-      if (!token || !userId) throw new Error("No autenticado");
+      if (!token || !tenantId) throw new Error("No autenticado");
       return comunifyFetch<HandleCheckResult>(
         `/api/v1/comunify/onboarding/handle-check?handle=${encodeURIComponent(handle)}`,
-        { token, tenantId: userId }
+        { token, tenantId }
       );
     },
-    enabled: isLoaded && !!userId && handle.length >= 3,
+    enabled: isLoaded && !!tenantId && handle.length >= 3,
     staleTime: 30_000,
   });
 }

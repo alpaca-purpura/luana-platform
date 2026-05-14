@@ -3,6 +3,7 @@
 import { useAuth } from "@clerk/nextjs";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { comunifyFetch } from "@/lib/fetch-client";
+import { useTenantId } from "@/lib/use-tenant-id";
 import { comunifyQueryKeys } from "./query-keys";
 
 interface KickDistillationResult {
@@ -12,16 +13,17 @@ interface KickDistillationResult {
 }
 
 export function useVoiceDistillationKick() {
-  const { getToken, userId } = useAuth();
+  const { getToken } = useAuth();
+  const tenantId = useTenantId();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async () => {
       const token = await getToken();
-      if (!token || !userId) throw new Error("No autenticado");
+      if (!token || !tenantId) throw new Error("No autenticado");
       return comunifyFetch<KickDistillationResult>(
         "/api/v1/comunify/voice/distillation/kick",
-        { token, tenantId: userId, method: "POST" }
+        { token, tenantId, method: "POST" }
       );
     },
     onSuccess: (data) => {

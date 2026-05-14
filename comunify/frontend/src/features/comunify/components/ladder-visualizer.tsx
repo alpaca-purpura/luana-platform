@@ -36,7 +36,7 @@ function OfferCard({ offer, level }: { offer: LadderOffer; level: (typeof LEVEL_
       <p className="font-semibold leading-tight">{offer.title}</p>
       {offer.price !== null && offer.price !== undefined && (
         <p className="mt-1 text-sm font-medium">
-          {offer.price === 0 ? "Gratis" : `$${offer.price}`}
+          {offer.price === 0 ? "Gratis" : `${offer.currency ?? "$"}${offer.price}`}
         </p>
       )}
     </div>

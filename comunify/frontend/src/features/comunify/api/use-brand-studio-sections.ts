@@ -3,28 +3,31 @@
 import { useAuth } from "@clerk/nextjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { comunifyFetch } from "@/lib/fetch-client";
+import { useTenantId } from "@/lib/use-tenant-id";
 import type { BrandStudioSection } from "../types/comunify.types";
 import { comunifyQueryKeys } from "./query-keys";
 
 export function useBrandStudioSections() {
-  const { getToken, userId, isLoaded } = useAuth();
+  const { getToken, isLoaded } = useAuth();
+  const tenantId = useTenantId();
 
   return useQuery({
     queryKey: comunifyQueryKeys.brandStudio.sections(),
     queryFn: async () => {
       const token = await getToken();
-      if (!token || !userId) throw new Error("No autenticado");
+      if (!token || !tenantId) throw new Error("No autenticado");
       return comunifyFetch<BrandStudioSection[]>(
         "/api/v1/comunify/brand-studio/sections",
-        { token, tenantId: userId }
+        { token, tenantId }
       );
     },
-    enabled: isLoaded && !!userId,
+    enabled: isLoaded && !!tenantId,
   });
 }
 
 export function useBrandStudioSectionPatch() {
-  const { getToken, userId } = useAuth();
+  const { getToken } = useAuth();
+  const tenantId = useTenantId();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -36,12 +39,12 @@ export function useBrandStudioSectionPatch() {
       data: Record<string, unknown>;
     }) => {
       const token = await getToken();
-      if (!token || !userId) throw new Error("No autenticado");
+      if (!token || !tenantId) throw new Error("No autenticado");
       return comunifyFetch<BrandStudioSection>(
         `/api/v1/comunify/brand-studio/sections/${sectionSlug}`,
         {
           token,
-          tenantId: userId,
+          tenantId,
           method: "PATCH",
           body: JSON.stringify(data),
         }

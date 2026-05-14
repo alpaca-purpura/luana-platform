@@ -3,6 +3,7 @@
 import { useAuth } from "@clerk/nextjs";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { comunifyFetch } from "@/lib/fetch-client";
+import { useTenantId } from "@/lib/use-tenant-id";
 import type { Subscription } from "../types/subscription.types";
 import { comunifyQueryKeys } from "./query-keys";
 
@@ -38,18 +39,19 @@ export function useSubscribe() {
 }
 
 export function useSubscriptionDetail(subscriptionId: string) {
-  const { getToken, userId, isLoaded } = useAuth();
+  const { getToken, isLoaded } = useAuth();
+  const tenantId = useTenantId();
 
   return useQuery({
     queryKey: comunifyQueryKeys.subscriptions.detail(subscriptionId),
     queryFn: async () => {
       const token = await getToken();
-      if (!token || !userId) throw new Error("No autenticado");
+      if (!token || !tenantId) throw new Error("No autenticado");
       return comunifyFetch<Subscription>(
         `/api/v1/comunify/subscriptions/${subscriptionId}`,
-        { token, tenantId: userId }
+        { token, tenantId }
       );
     },
-    enabled: isLoaded && !!userId && !!subscriptionId,
+    enabled: isLoaded && !!tenantId && !!subscriptionId,
   });
 }

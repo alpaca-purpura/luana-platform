@@ -3,18 +3,20 @@
 import { useAuth } from "@clerk/nextjs";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { comunifyFetch } from "@/lib/fetch-client";
+import { useTenantId } from "@/lib/use-tenant-id";
 import type { ComplianceAuditEvent } from "../types/community.types";
 import type { AuditFilterInput } from "../schemas/audit-filter-schema";
 import { comunifyQueryKeys } from "./query-keys";
 
 export function useCommunityAuditEvents(filters: Partial<AuditFilterInput> = {}) {
-  const { getToken, userId, isLoaded } = useAuth();
+  const { getToken, isLoaded } = useAuth();
+  const tenantId = useTenantId();
 
   return useQuery({
     queryKey: comunifyQueryKeys.audit.events(filters),
     queryFn: async () => {
       const token = await getToken();
-      if (!token || !userId) throw new Error("No autenticado");
+      if (!token || !tenantId) throw new Error("No autenticado");
       const params = new URLSearchParams();
       if (filters.event_type) params.set("event_type", filters.event_type);
       if (filters.from_date) params.set("from_date", filters.from_date);
@@ -23,20 +25,21 @@ export function useCommunityAuditEvents(filters: Partial<AuditFilterInput> = {})
       params.set("page_size", String(filters.page_size ?? 25));
       return comunifyFetch<{ items: ComplianceAuditEvent[]; total: number }>(
         `/api/v1/comunify/community/audit/events?${params.toString()}`,
-        { token, tenantId: userId }
+        { token, tenantId }
       );
     },
-    enabled: isLoaded && !!userId,
+    enabled: isLoaded && !!tenantId,
   });
 }
 
 export function useCommunityAuditExportCsv() {
-  const { getToken, userId } = useAuth();
+  const { getToken } = useAuth();
+  const tenantId = useTenantId();
 
   return useMutation({
     mutationFn: async (filters: Partial<AuditFilterInput>) => {
       const token = await getToken();
-      if (!token || !userId) throw new Error("No autenticado");
+      if (!token || !tenantId) throw new Error("No autenticado");
       const params = new URLSearchParams();
       if (filters.event_type) params.set("event_type", filters.event_type);
       if (filters.from_date) params.set("from_date", filters.from_date);
@@ -47,7 +50,7 @@ export function useCommunityAuditExportCsv() {
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            "X-Tenant-ID": userId,
+            "X-Tenant-ID": tenantId,
           },
           signal: AbortSignal.timeout(30_000),
         }

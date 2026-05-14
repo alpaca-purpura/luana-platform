@@ -3,6 +3,7 @@
 import { useAuth } from "@clerk/nextjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { comunifyFetch } from "@/lib/fetch-client";
+import { useTenantId } from "@/lib/use-tenant-id";
 import type { AuthorityVault } from "../types/authority-vault.types";
 import type {
   AuthorityCredentialInput,
@@ -12,35 +13,37 @@ import type {
 import { comunifyQueryKeys } from "./query-keys";
 
 export function useAuthorityVault() {
-  const { getToken, userId, isLoaded } = useAuth();
+  const { getToken, isLoaded } = useAuth();
+  const tenantId = useTenantId();
 
   return useQuery({
     queryKey: comunifyQueryKeys.authorityVault.all(),
     queryFn: async () => {
       const token = await getToken();
-      if (!token || !userId) throw new Error("No autenticado");
+      if (!token || !tenantId) throw new Error("No autenticado");
       return comunifyFetch<AuthorityVault>(
         "/api/v1/comunify/authority-vault",
-        { token, tenantId: userId }
+        { token, tenantId }
       );
     },
-    enabled: isLoaded && !!userId,
+    enabled: isLoaded && !!tenantId,
   });
 }
 
 export function useAuthorityCredentialAdd() {
-  const { getToken, userId } = useAuth();
+  const { getToken } = useAuth();
+  const tenantId = useTenantId();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (payload: AuthorityCredentialInput) => {
       const token = await getToken();
-      if (!token || !userId) throw new Error("No autenticado");
+      if (!token || !tenantId) throw new Error("No autenticado");
       return comunifyFetch<{ id: string }>(
         "/api/v1/comunify/authority-vault/credentials",
         {
           token,
-          tenantId: userId,
+          tenantId,
           method: "POST",
           body: JSON.stringify(payload),
         }
@@ -53,18 +56,19 @@ export function useAuthorityCredentialAdd() {
 }
 
 export function useAuthorityCaseStudyAdd() {
-  const { getToken, userId } = useAuth();
+  const { getToken } = useAuth();
+  const tenantId = useTenantId();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (payload: AuthorityCaseStudyInput) => {
       const token = await getToken();
-      if (!token || !userId) throw new Error("No autenticado");
+      if (!token || !tenantId) throw new Error("No autenticado");
       return comunifyFetch<{ id: string }>(
         "/api/v1/comunify/authority-vault/case-studies",
         {
           token,
-          tenantId: userId,
+          tenantId,
           method: "POST",
           body: JSON.stringify(payload),
         }
@@ -77,18 +81,19 @@ export function useAuthorityCaseStudyAdd() {
 }
 
 export function useAuthorityPressMentionAdd() {
-  const { getToken, userId } = useAuth();
+  const { getToken } = useAuth();
+  const tenantId = useTenantId();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (payload: AuthorityPressMentionInput) => {
       const token = await getToken();
-      if (!token || !userId) throw new Error("No autenticado");
+      if (!token || !tenantId) throw new Error("No autenticado");
       return comunifyFetch<{ id: string }>(
         "/api/v1/comunify/authority-vault/press-mentions",
         {
           token,
-          tenantId: userId,
+          tenantId,
           method: "POST",
           body: JSON.stringify(payload),
         }
