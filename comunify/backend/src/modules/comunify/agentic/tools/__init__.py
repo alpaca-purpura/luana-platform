@@ -13,6 +13,13 @@ Anti-duplication note (`.claude/rules/anti-duplication.md`):
     with lazy-import fallback (matches `compliance_event_service.py` pattern).
 """
 
+from src.modules.comunify.agentic.tools.link_to_community import (
+    CommunityAccessAuditedV1,
+    LinkToCommunityInputV1,
+    LinkToCommunityOutputV1,
+    MissingHMACSecretError,
+    link_to_community,
+)
 from src.modules.comunify.agentic.tools.qualify_for_cohort import (
     ForbiddenToolContextError,
     LeadQualifiedV1,
@@ -22,6 +29,13 @@ from src.modules.comunify.agentic.tools.qualify_for_cohort import (
 )
 
 __all__ = [
+    # T-tools-2 — link_to_community
+    "CommunityAccessAuditedV1",
+    "LinkToCommunityInputV1",
+    "LinkToCommunityOutputV1",
+    "MissingHMACSecretError",
+    "link_to_community",
+    # T-tools-1 — qualify_for_cohort
     "ForbiddenToolContextError",
     "LeadQualifiedV1",
     "QualifyForCohortInputV1",
