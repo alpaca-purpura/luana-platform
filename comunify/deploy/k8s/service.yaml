@@ -1,0 +1,42 @@
+---
+# Comunify — Kubernetes Services (Story 12 T-deploy-1)
+# ClusterIP services for internal cluster communication.
+# External access via Cloudflare Tunnel (see cloudflared/config.yml).
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: comunify-backend
+  namespace: luana-platform
+  labels:
+    app: comunify
+    component: backend
+spec:
+  selector:
+    app: comunify
+    component: backend
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8000
+      targetPort: 8000
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: comunify-frontend
+  namespace: luana-platform
+  labels:
+    app: comunify
+    component: frontend
+spec:
+  selector:
+    app: comunify
+    component: frontend
+  ports:
+    - name: http
+      protocol: TCP
+      port: 3000
+      targetPort: 3000
+  type: ClusterIP

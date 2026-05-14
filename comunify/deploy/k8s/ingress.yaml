@@ -1,0 +1,65 @@
+---
+# Comunify — Kubernetes Ingress (Story 12 T-deploy-1)
+#
+# Traffic flow:
+#   Internet → Cloudflare Tunnel → cloudflared pod (ClusterIP) → Ingress → Services
+#
+# This Ingress handles in-cluster routing from cloudflared to the backend/frontend pods.
+# TLS terminates at Cloudflare edge (no cert-manager needed).
+#
+# Domains (update in DNS-RECORDS.md before applying):
+#   comunify.lat          → frontend (Next.js)
+#   api.comunify.lat      → backend (FastAPI)
+#   widget.comunify.lat   → widget embed endpoint (frontend /widget/* routes)
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: comunify-ingress
+  namespace: luana-platform
+  annotations:
+    # Cloudflare Tunnel handles TLS — no need for SSL redirect inside cluster
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    # Increased body size for audio uploads (voice cloning guide § Upload)
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    # Timeouts for LLM streaming responses
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "120"
+  labels:
+    app: comunify
+spec:
+  ingressClassName: nginx
+  rules:
+    # API backend
+    - host: api.comunify.lat
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: comunify-backend
+                port:
+                  number: 8000
+    # Widget embed (served from frontend /widget/* route)
+    - host: widget.comunify.lat
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: comunify-frontend
+                port:
+                  number: 3000
+    # Main app
+    - host: comunify.lat
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: comunify-frontend
+                port:
+                  number: 3000
