@@ -10,7 +10,7 @@ import uuid
 from datetime import datetime, timezone
 
 import structlog
-from sqlalchemy import select, update
+from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.modules.comunify.infrastructure.models.cohort_broadcast_model import (
@@ -71,6 +71,33 @@ class CohortBroadcastRepository:
             broadcast_id=str(broadcast.id),
             tenant_id=str(self._tenant_id),
         )
+
+    async def count_sent_today(self, *, tenant_id: uuid.UUID) -> int:
+        """Count broadcasts dispatched today (UTC) for the given tenant.
+
+        Counts rows with status IN ('sent', 'partial') and sent_at >= midnight UTC today.
+        Used for WhatsApp daily rate-limit pre-flight in CohortBroadcastService.
+
+        Args:
+            tenant_id: Tenant scope. Must match this repo's _tenant_id.
+
+        Returns:
+            Number of messages dispatched today (0 if none).
+        """
+        today_utc_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+        stmt = (
+            select(func.count())
+            .select_from(ComunifyCohortBroadcastModel)
+            .where(
+                ComunifyCohortBroadcastModel.tenant_id == tenant_id,
+                ComunifyCohortBroadcastModel.status.in_(["sent", "partial"]),
+                ComunifyCohortBroadcastModel.sent_at >= today_utc_start,
+                ComunifyCohortBroadcastModel.deleted_at.is_(None),
+            )
+        )
+        result = await self._session.execute(stmt)
+        count: int = result.scalar_one()
+        return count
 
     async def soft_delete(self, broadcast_id: uuid.UUID) -> bool:
         """Soft-delete a broadcast. Returns True if found and updated."""
