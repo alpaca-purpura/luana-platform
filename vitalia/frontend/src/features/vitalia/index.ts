@@ -1,3 +1,21 @@
+// Components — T-fe-5 dashboard Client Components
+export { TreatmentFollowupDashboardClient } from "./components/treatment-followup-dashboard-client";
+export type { TreatmentFollowupDashboardClientProps, TreatmentDashboardStatus } from "./components/treatment-followup-dashboard-client";
+export { TreatmentListTable } from "./components/treatment-list-table";
+export type { TreatmentListTableProps } from "./components/treatment-list-table";
+export { PatientListTable } from "./components/patient-list-table";
+export type { PatientListTableProps } from "./components/patient-list-table";
+export { PatientDetailPanel } from "./components/patient-detail-panel";
+export type { PatientDetailPanelProps } from "./components/patient-detail-panel";
+export { PatientMedicalPdfUpload } from "./components/patient-medical-pdf-upload";
+export type { PatientMedicalPdfUploadProps } from "./components/patient-medical-pdf-upload";
+export { AppointmentsCalendarClient } from "./components/appointments-calendar-client";
+export type { AppointmentsCalendarClientProps } from "./components/appointments-calendar-client";
+export { CompliancePageClient, generateCsvBlob } from "./components/compliance-page-client";
+export type { CompliancePageClientProps } from "./components/compliance-page-client";
+export { ComplianceEventRow, getSeverityBadgeVariant } from "./components/compliance-event-row";
+export type { ComplianceEventRowProps, SeverityBadgeVariant } from "./components/compliance-event-row";
+
 // Components — T-fe-4 interactive Client Components
 export { OnboardingStep1Client } from "./components/onboarding-step-1-client";
 export type { OnboardingStep1ClientProps } from "./components/onboarding-step-1-client";
