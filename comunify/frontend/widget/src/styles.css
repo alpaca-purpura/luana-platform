@@ -1,0 +1,132 @@
+/* Comunify subscription widget — embedded iframe styles */
+/* TODO T-widget-1 polish post-merge: full Tailwind integration */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #111827;
+  background: transparent;
+}
+
+.widget-root {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.widget-step {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.widget-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.widget-subtitle {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.widget-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.15s ease;
+}
+
+.widget-btn-primary {
+  background-color: #4f46e5;
+  color: #ffffff;
+}
+
+.widget-btn-primary:hover {
+  background-color: #4338ca;
+}
+
+.widget-btn-secondary {
+  background-color: transparent;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.widget-btn-secondary:hover {
+  background-color: #f9fafb;
+}
+
+.widget-plan-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.widget-plan-card:hover,
+.widget-plan-card[aria-selected="true"] {
+  border-color: #4f46e5;
+  background-color: #eef2ff;
+}
+
+.widget-plan-name {
+  font-weight: 600;
+  font-size: 0.9375rem;
+}
+
+.widget-plan-price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #4f46e5;
+}
+
+.widget-success-icon {
+  font-size: 3rem;
+  text-align: center;
+}
+
+.widget-error {
+  color: #dc2626;
+  font-size: 0.875rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    color: #f9fafb;
+    background: transparent;
+  }
+
+  .widget-plan-card {
+    border-color: #374151;
+  }
+
+  .widget-plan-card:hover,
+  .widget-plan-card[aria-selected="true"] {
+    border-color: #818cf8;
+    background-color: #1e1b4b;
+  }
+
+  .widget-subtitle {
+    color: #9ca3af;
+  }
+}
