@@ -1,0 +1,185 @@
+/**
+ * Architecture test — V-A2: vitalia UI strings must not contain voseo verbs.
+ *
+ * Scans microcopy.ts (SSoT for all user-facing strings) for voseo patterns.
+ * Per .claude/rules/spanish-text.md: Spanish neutro LatAm, tuteo only.
+ * Exception: sales_agent output (not in scope for vitalia microcopy).
+ *
+ * @see docs/product/stories/luana-vitalia-bootstrap/01-spec.md § 8
+ */
+import { describe, it, expect } from "vitest";
+import { readFileSync } from "fs";
+import { resolve } from "path";
+
+// Voseo verb patterns (comprehensive — per spanish-text.md rule)
+const VOSEO_PATTERNS = [
+  /\btenés\b/i,
+  /\bpodés\b/i,
+  /\bhacés\b/i,
+  /\bmirá\b/i,
+  /\bdejá\b/i,
+  /\bponé\b/i,
+  /\busá\b/i,
+  /\bhacé\b/i,
+  /\belegí\b/i,
+  /\bseleccioná\b/i,
+  /\barrancá\b/i,
+  /\bempezá\b/i,
+  /\bagregá\b/i,
+  /\bconfigurá\b/i,
+  /\brevisá\b/i,
+  /\beschribí\b/i,
+  /\bguardá\b/i,
+  /\bsubí\b/i,
+  /\babrí\b/i,
+  /\bvolvé\b/i,
+  /\bcambiá\b/i,
+  /\bofrecés\b/i,
+  /\bcobrás\b/i,
+  /\bejecutás\b/i,
+  /\bactivás\b/i,
+  /\bdesactivás\b/i,
+  /\blinkeá\b/i,
+  /\bdespublicala\b/i,
+  /\breactivá\b/i,
+  /\bcancelala\b/i,
+  /\bvalidá\b/i,
+  /\bconsiderá\b/i,
+  /\bformulala\b/i,
+  /\bmarcá\b/i,
+  /\brefirís\b/i,
+  /\batendés\b/i,
+  /\bintegrás\b/i,
+  /\blistá\b/i,
+  /\bprobá\b/i,
+  /\bmostrá\b/i,
+  /\bcompartí\b/i,
+  /\bcontá\b/i,
+  /\bexplicá\b/i,
+  /\bfijate\b/i,
+  /\bacordate\b/i,
+  /\bquerés\b/i,
+  /\bsabés\b/i,
+  /\bdecís\b/i,
+  /\bvenís\b/i,
+];
+
+// Files that must be free of voseo (SSoT user-facing strings)
+const UI_STRING_FILES = [
+  "src/features/vitalia/config/microcopy.ts",
+];
+
+// Files scan includes components that render user-facing text
+const COMPONENT_FILES = [
+  "src/features/vitalia/components/clinic-type-picker.tsx",
+  "src/features/vitalia/components/medical-services-offer-wizard-steps.tsx",
+  "src/features/vitalia/components/treatment-timeline.tsx",
+  "src/features/vitalia/components/consent-signature-modal.tsx",
+  "src/features/vitalia/components/compliance-stats-cards.tsx",
+  "src/features/vitalia/components/doctor-avatar-picker.tsx",
+  "src/features/vitalia/components/medical-disclaimer-banner.tsx",
+];
+
+const ROOT = resolve(__dirname, "../../..");
+
+/**
+ * Extract string literals from TypeScript/TSX source.
+ * Uses simple regex — sufficient for catching voseo in string values.
+ */
+function extractStringLiterals(source: string): string[] {
+  const strings: string[] = [];
+  // Match single-quoted, double-quoted, and template literal strings
+  const singleQuoted = source.matchAll(/'([^'\\]|\\.)*'/g);
+  const doubleQuoted = source.matchAll(/"([^"\\]|\\.)*"/g);
+  const templateLiterals = source.matchAll(/`([^`\\]|\\.)*`/g);
+
+  for (const match of singleQuoted) strings.push(match[0]);
+  for (const match of doubleQuoted) strings.push(match[0]);
+  for (const match of templateLiterals) strings.push(match[0]);
+
+  return strings;
+}
+
+/**
+ * Check if a string literal contains voseo patterns.
+ * Ignores: comments, import paths, JSX attributes not containing Spanish text.
+ */
+function findVoseoInStrings(strings: string[]): { string: string; pattern: string }[] {
+  const violations: { string: string; pattern: string }[] = [];
+
+  for (const str of strings) {
+    // Skip import paths and URLs
+    if (str.startsWith("'@/") || str.startsWith('"@/') || str.includes("http")) continue;
+    // Skip short strings unlikely to be user-facing
+    if (str.length < 4) continue;
+
+    for (const pattern of VOSEO_PATTERNS) {
+      if (pattern.test(str)) {
+        violations.push({ string: str.slice(0, 80), pattern: pattern.source });
+        break; // One violation per string is enough
+      }
+    }
+  }
+
+  return violations;
+}
+
+describe("Vitalia UI strings — no voseo (A2)", () => {
+  describe("microcopy.ts SSoT", () => {
+    it("microcopy.ts contains no voseo verbs in string values", () => {
+      for (const relPath of UI_STRING_FILES) {
+        const absPath = resolve(ROOT, relPath);
+        const source = readFileSync(absPath, "utf-8");
+        const strings = extractStringLiterals(source);
+        const violations = findVoseoInStrings(strings);
+
+        expect(violations, `Voseo found in ${relPath}:\n${JSON.stringify(violations, null, 2)}`).toHaveLength(0);
+      }
+    });
+  });
+
+  describe("Component source files", () => {
+    for (const relPath of COMPONENT_FILES) {
+      it(`${relPath.split("/").pop()} contains no voseo verbs`, () => {
+        const absPath = resolve(ROOT, relPath);
+        const source = readFileSync(absPath, "utf-8");
+        const strings = extractStringLiterals(source);
+        const violations = findVoseoInStrings(strings);
+
+        expect(violations, `Voseo found in ${relPath}:\n${JSON.stringify(violations, null, 2)}`).toHaveLength(0);
+      });
+    }
+  });
+
+  describe("Microcopy structure — spec § 8 alignment", () => {
+    it("has all 6 top-level microcopy namespaces", async () => {
+      const mc = await import("@/features/vitalia/config/microcopy");
+      expect(mc.MICROCOPY_ONBOARDING).toBeDefined();
+      expect(mc.MICROCOPY_BRAND_STUDIO).toBeDefined();
+      expect(mc.MICROCOPY_OFFER_WIZARD).toBeDefined();
+      expect(mc.MICROCOPY_BOOKING).toBeDefined();
+      expect(mc.MICROCOPY_TREATMENT).toBeDefined();
+      expect(mc.MICROCOPY_COMPLIANCE).toBeDefined();
+    });
+
+    it("MICROCOPY_ONBOARDING.clinicTypes has exactly 4 types", async () => {
+      const { MICROCOPY_ONBOARDING } = await import("@/features/vitalia/config/microcopy");
+      expect(Object.keys(MICROCOPY_ONBOARDING.clinicTypes)).toHaveLength(4);
+    });
+
+    it("MICROCOPY_COMPLIANCE.eventTypes has exactly 6 event types", async () => {
+      const { MICROCOPY_COMPLIANCE } = await import("@/features/vitalia/config/microcopy");
+      expect(Object.keys(MICROCOPY_COMPLIANCE.eventTypes)).toHaveLength(6);
+    });
+
+    it("MICROCOPY_OFFER_WIZARD.steps has exactly 5 step labels", async () => {
+      const { MICROCOPY_OFFER_WIZARD } = await import("@/features/vitalia/config/microcopy");
+      expect(Object.keys(MICROCOPY_OFFER_WIZARD.steps)).toHaveLength(5);
+    });
+
+    it("MICROCOPY_TREATMENT.milestones has exactly 4 milestones", async () => {
+      const { MICROCOPY_TREATMENT } = await import("@/features/vitalia/config/microcopy");
+      expect(Object.keys(MICROCOPY_TREATMENT.milestones)).toHaveLength(4);
+    });
+  });
+});

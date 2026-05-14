@@ -1,3 +1,30 @@
+// Components
+export { ClinicTypePicker } from "./components/clinic-type-picker";
+export type { ClinicTypePickerProps } from "./components/clinic-type-picker";
+export { MedicalServicesOfferWizardSteps, OFFER_WIZARD_STEPS } from "./components/medical-services-offer-wizard-steps";
+export type { MedicalServicesOfferWizardStepsProps, WizardStep } from "./components/medical-services-offer-wizard-steps";
+export { TreatmentTimeline } from "./components/treatment-timeline";
+export type { TreatmentTimelineProps, TreatmentMilestone, MilestoneName } from "./components/treatment-timeline";
+export { ConsentSignatureModal } from "./components/consent-signature-modal";
+export type { ConsentSignatureModalProps } from "./components/consent-signature-modal";
+export { ComplianceStatsCards } from "./components/compliance-stats-cards";
+export type { ComplianceStatsCardsProps } from "./components/compliance-stats-cards";
+export { DoctorAvatarPicker } from "./components/doctor-avatar-picker";
+export type { DoctorAvatarPickerProps, DoctorOption } from "./components/doctor-avatar-picker";
+export { MedicalDisclaimerBanner } from "./components/medical-disclaimer-banner";
+export type { MedicalDisclaimerBannerProps, DisclaimerContext } from "./components/medical-disclaimer-banner";
+
+// Microcopy SSoT
+export {
+  MICROCOPY_ONBOARDING,
+  MICROCOPY_BRAND_STUDIO,
+  MICROCOPY_OFFER_WIZARD,
+  MICROCOPY_BOOKING,
+  MICROCOPY_TREATMENT,
+  MICROCOPY_COMPLIANCE,
+  MICROCOPY_DISCLAIMER,
+} from "./config/microcopy";
+
 // Types
 export type { ClinicType, Country, PlanTierSlug, CreateClinicProfileResponse, OnboardingStatusResponse, SubscribeResponse, OfferPresetResponse } from "./types/vitalia.types";
 export type { PlanTierItem, PlanTierListResponse } from "./types/plan-tier.types";
