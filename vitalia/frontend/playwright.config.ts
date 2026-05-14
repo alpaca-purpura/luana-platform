@@ -12,9 +12,44 @@ export default defineConfig({
     trace: "on-first-retry",
   },
   projects: [
+    // Smoke project — all *.smoke.spec.ts on Desktop Chrome
     {
       name: "smoke",
       testMatch: /.*\.smoke\.spec\.ts/,
+      use: { ...devices["Desktop Chrome"] },
+    },
+    // Responsive projects — spec §9 breakpoints
+    // mobile: < 768px
+    {
+      name: "mobile",
+      testMatch: /.*\/responsive\/.*\.smoke\.spec\.ts/,
+      use: {
+        ...devices["iPhone 13"],
+        viewport: { width: 375, height: 812 },
+      },
+    },
+    // tablet: 768-1024px
+    {
+      name: "tablet",
+      testMatch: /.*\/responsive\/.*\.smoke\.spec\.ts/,
+      use: {
+        ...devices["iPad (gen 7)"],
+        viewport: { width: 768, height: 1024 },
+      },
+    },
+    // desktop: > 1024px (already covered by smoke, explicit for responsive suite)
+    {
+      name: "desktop",
+      testMatch: /.*\/responsive\/.*\.smoke\.spec\.ts/,
+      use: {
+        ...devices["Desktop Chrome"],
+        viewport: { width: 1440, height: 900 },
+      },
+    },
+    // A11y project — axe-core scans
+    {
+      name: "a11y",
+      testMatch: /.*\/a11y\/.*\.smoke\.spec\.ts/,
       use: { ...devices["Desktop Chrome"] },
     },
   ],
