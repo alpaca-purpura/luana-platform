@@ -64,12 +64,20 @@ _POSTGRES_UP = _is_postgres_available()
 
 
 def pytest_collection_modifyitems(items):  # noqa: ANN001
-    """Auto-skip integration tests when Postgres is down."""
+    """Auto-skip integration tests when Postgres is down.
+
+    Only skips tests with explicit @pytest.mark.integration decorator.
+    Tests in this directory that use httpx ASGITransport (webhook tests,
+    adapter unit-style tests) are NOT skipped — they don't need Postgres.
+    Directory-level keyword 'integration' is intentionally NOT used as skip
+    trigger to avoid blanket-skipping ASGI-only tests (T-be-8 webhook receivers).
+    """
     if _POSTGRES_UP:
         return
     skip_mark = pytest.mark.skip(reason="Postgres unavailable (POSTGRES_DSN not reachable)")
     for item in items:
-        if "integration" in item.keywords:
+        # Use get_closest_marker to check EXPLICIT marker only — not directory keyword.
+        if item.get_closest_marker("integration") is not None:
             item.add_marker(skip_mark)
 
 
