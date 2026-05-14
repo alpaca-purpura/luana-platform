@@ -1,4 +1,16 @@
-// Components
+// Components — T-fe-4 interactive Client Components
+export { OnboardingStep1Client } from "./components/onboarding-step-1-client";
+export type { OnboardingStep1ClientProps } from "./components/onboarding-step-1-client";
+export { OnboardingStep2Client } from "./components/onboarding-step-2-client";
+export type { OnboardingStep2ClientProps } from "./components/onboarding-step-2-client";
+export { OnboardingStep3Client } from "./components/onboarding-step-3-client";
+export type { OnboardingStep3ClientProps } from "./components/onboarding-step-3-client";
+export { BrandStudioSectionClient, AUTOSAVE_DEBOUNCE_MS } from "./components/brand-studio-section-client";
+export type { BrandStudioSectionClientProps } from "./components/brand-studio-section-client";
+export { OfferWizardClient } from "./components/offer-wizard-client";
+export type { OfferWizardClientProps } from "./components/offer-wizard-client";
+
+// Components — T-fe-3 base components
 export { ClinicTypePicker } from "./components/clinic-type-picker";
 export type { ClinicTypePickerProps } from "./components/clinic-type-picker";
 export { MedicalServicesOfferWizardSteps, OFFER_WIZARD_STEPS } from "./components/medical-services-offer-wizard-steps";
@@ -52,6 +64,12 @@ export { startFollowupSchema } from "./schemas/treatment-schema";
 export type { StartFollowupInput } from "./schemas/treatment-schema";
 export { rescheduleBookingSchema } from "./schemas/appointment-schema";
 export type { RescheduleBookingInput } from "./schemas/appointment-schema";
+
+// API hooks — T-fe-4 brand studio hooks
+export { useBrandStudioSections } from "./api/use-brand-studio-sections";
+export type { BrandStudioSection, BrandStudioSectionsResponse } from "./api/use-brand-studio-sections";
+export { useBrandStudioSectionPatch } from "./api/use-brand-studio-section-patch";
+export type { PatchBrandStudioSectionPayload } from "./api/use-brand-studio-section-patch";
 
 // API hooks
 export { vitaliaQueryKeys } from "./api/query-keys";

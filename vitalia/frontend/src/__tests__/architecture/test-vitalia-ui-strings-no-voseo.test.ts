@@ -78,6 +78,12 @@ const COMPONENT_FILES = [
   "src/features/vitalia/components/compliance-stats-cards.tsx",
   "src/features/vitalia/components/doctor-avatar-picker.tsx",
   "src/features/vitalia/components/medical-disclaimer-banner.tsx",
+  // T-fe-4 interactive Client Components
+  "src/features/vitalia/components/onboarding-step-1-client.tsx",
+  "src/features/vitalia/components/onboarding-step-2-client.tsx",
+  "src/features/vitalia/components/onboarding-step-3-client.tsx",
+  "src/features/vitalia/components/brand-studio-section-client.tsx",
+  "src/features/vitalia/components/offer-wizard-client.tsx",
 ];
 
 const ROOT = resolve(__dirname, "../../..");

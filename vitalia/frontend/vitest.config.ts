@@ -5,7 +5,7 @@ export default defineConfig({
   test: {
     environment: "happy-dom",
     globals: true,
-    exclude: ["e2e/**", "node_modules/**"],
+    exclude: ["e2e/**", "node_modules/**", "widget/**"],
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
