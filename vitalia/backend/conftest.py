@@ -9,6 +9,7 @@ added for luana_core_platform):
   * luana_core_platform        — Base (ORM declarative_base) + locale VO
   * luana_core_extension_sdk   — ExtensionPointRegistry + ToolDef + … (Story 9)
   * luana_core_observability   — sanitize_payload + BaseTraceEventRepoProtocol
+  * luana_core_channels        — payment.MercadoPagoAdapter base (T-payment-1)
 """
 
 from __future__ import annotations
@@ -20,6 +21,7 @@ _WORKSPACE_SRC_PATHS = (
     "/home/chris/luana-platform/core/luana-core-platform/src",
     "/home/chris/luana-platform/core/luana-core-extension-sdk/src",
     "/home/chris/luana-platform/core/luana-core-observability/src",
+    "/home/chris/luana-platform/core/luana-core-channels/src",
 )
 for _src in _WORKSPACE_SRC_PATHS:
     if _src not in sys.path:
