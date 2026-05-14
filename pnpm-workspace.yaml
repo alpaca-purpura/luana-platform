@@ -4,5 +4,6 @@ packages:
   - nicolify
   - nicolify/frontend
   - vitalia
+  - vitalia/frontend
   - comunify
   - lupulo
