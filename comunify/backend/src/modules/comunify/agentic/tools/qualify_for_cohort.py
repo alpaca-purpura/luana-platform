@@ -131,23 +131,10 @@ _PHONE_RE = re.compile(r"(?:\+?\d[\s\-\(\)]?){7,}\d")
 
 
 # ─── Exceptions ────────────────────────────────────────────────────────────
-
-
-class ForbiddenToolContextError(Exception):
-    """Raised when tool is invoked in a context that forbids it.
-
-    Per 03-arch-agentic.md § 4.5 FORBIDDEN_TOOLS_BY_CONTEXT mapping:
-      community_engagement_workflow → subscriber already enrolled.
-      subscriber_support → member support flow, not lead qualification.
-    """
-
-    def __init__(self, context: str) -> None:
-        self.context = context
-        super().__init__(
-            f"qualify_for_cohort is forbidden in context '{context}' "
-            "(03-arch-agentic.md § 4.5 FORBIDDEN_TOOLS_BY_CONTEXT)"
-        )
-
+# Lifted to `_exceptions.py` at N=3 detection (T-tools-3 trigger) per
+# `.claude/rules/anti-duplication.md` cardinal. Re-exported here to preserve
+# the public API surface (test imports + `tools/__init__.py` re-exports).
+from src.modules.comunify.agentic.tools._exceptions import ForbiddenToolContextError  # noqa: E402
 
 # ─── Pydantic schemas (V1 — frozen, schema_version cement) ─────────────────
 
