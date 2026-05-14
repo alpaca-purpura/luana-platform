@@ -16,6 +16,10 @@ pythonpath = ["."]
 testpaths = ["tests"]
 asyncio_mode = "auto"
 addopts = "-x -q --tb=short"
+markers = [
+    "integration: requires live Postgres instance (skipped when DB unavailable)",
+    "verify: data reliability layer verification tests",
+]
 
 [tool.ruff]
 line-length = 120
