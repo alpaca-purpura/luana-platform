@@ -1,18 +1,26 @@
 """Root conftest.py for vitalia backend tests.
 
-Adds luana_core_platform source to sys.path so ORM models can import Base
-without requiring a full workspace install (cyclic deps prevent pip install).
+Adds luana workspace packages' source to sys.path so ORM models, the
+Extension SDK, and observability primitives can import without requiring
+a full workspace install (cyclic deps prevent pip install).
+
+Layers (Story 11 T-tools-1 extension — same pattern as T-be-1 originally
+added for luana_core_platform):
+  * luana_core_platform        — Base (ORM declarative_base) + locale VO
+  * luana_core_extension_sdk   — ExtensionPointRegistry + ToolDef + … (Story 9)
+  * luana_core_observability   — sanitize_payload + BaseTraceEventRepoProtocol
 """
 
 from __future__ import annotations
 
 import sys
 
-# luana_core_platform is a workspace package — not published to PyPI.
-# Insert its src/ into sys.path so `from luana_core_platform.domain.base_entity import Base`
-# resolves correctly in native-dev (non-Docker) test runs.
-_CORE_PLATFORM_SRC = (
-    "/home/chris/luana-platform/core/luana-core-platform/src"
+# All workspace packages — not published to PyPI; cyclic deps prevent pip install.
+_WORKSPACE_SRC_PATHS = (
+    "/home/chris/luana-platform/core/luana-core-platform/src",
+    "/home/chris/luana-platform/core/luana-core-extension-sdk/src",
+    "/home/chris/luana-platform/core/luana-core-observability/src",
 )
-if _CORE_PLATFORM_SRC not in sys.path:
-    sys.path.insert(0, _CORE_PLATFORM_SRC)
+for _src in _WORKSPACE_SRC_PATHS:
+    if _src not in sys.path:
+        sys.path.insert(0, _src)
