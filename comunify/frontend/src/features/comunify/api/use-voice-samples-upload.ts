@@ -2,21 +2,23 @@
 
 import { useAuth } from "@clerk/nextjs";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTenantId } from "@/lib/use-tenant-id";
 import { comunifyQueryKeys } from "./query-keys";
 
 export function useVoiceSamplesUpload() {
-  const { getToken, userId } = useAuth();
+  const { getToken } = useAuth();
+  const tenantId = useTenantId();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (formData: FormData) => {
       const token = await getToken();
-      if (!token || !userId) throw new Error("No autenticado");
+      if (!token || !tenantId) throw new Error("No autenticado");
       const response = await fetch("/api/v1/comunify/voice/samples/upload", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
-          "X-Tenant-ID": userId,
+          "X-Tenant-ID": tenantId,
         },
         body: formData,
         signal: AbortSignal.timeout(60_000),
