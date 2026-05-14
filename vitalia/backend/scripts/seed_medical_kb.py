@@ -123,8 +123,21 @@ class KbChunkRecord:
 
     The ``chunk_id`` is the stable human-readable identifier used to declare
     boundary chunks in ``manifest.yaml`` (e.g. ``boundary_refer_out_general``,
-    ``crisis_line_AR``). The Qdrant point id is a UUIDv5 derived from
+    ``crisis_line_AR``, ``disclaimer_psychiatric_prescription_only``). The
+    Qdrant point id is a UUIDv5 derived from
     ``{pack_id}::{source_doc}::{chunk_id}`` so re-runs are idempotent.
+
+    ``triggers`` (T-kb-3 extension): which manifest trigger group activates
+    forced retrieval for this chunk. Possible values:
+
+      * ``""`` (empty) — non-boundary chunk, retrieved by similarity only.
+      * ``"crisis_keywords"`` — boundary fired by crisis_keywords scan
+        (psychology + psychiatry packs share this).
+      * ``"medication_keywords"`` — boundary fired by medication_keywords
+        scan (psychiatry pack only — disclaimer chunk).
+
+    Stored in payload so ``_fetch_forced_boundary_hits`` can filter by
+    trigger type and surface the right chunk for the right input.
     """
 
     chunk_id: str  # human-readable, matches ## H2 anchor
@@ -134,6 +147,7 @@ class KbChunkRecord:
     point_id: str  # UUIDv5 string used as Qdrant point id
     topic_tags: tuple[str, ...] = ()
     forced_retrieval: bool = False
+    triggers: str = ""  # "crisis_keywords" | "medication_keywords" | "" (none)
     applies_to_countries: tuple[str, ...] = ()  # empty = all
     tenant_id: str | None = None
 
@@ -146,6 +160,7 @@ class KbChunkRecord:
             "text": self.text,
             "topic_tags": list(self.topic_tags),
             "forced_retrieval": self.forced_retrieval,
+            "triggers": self.triggers,
             "applies_to_countries": list(self.applies_to_countries),
             "tenant_id": self.tenant_id,
         }
@@ -213,6 +228,10 @@ def load_chunks_from_pack(pack_dir: Path) -> list[KbChunkRecord]:
             applies = boundary_meta.get("applies_to_countries", [])
             # Wildcard "*" → empty tuple → match all
             applies_tuple: tuple[str, ...] = tuple(c for c in applies if c != "*") if applies else ()
+            # T-kb-3: which trigger group activates this boundary chunk.
+            # Falls back to "" (no trigger) for non-boundary chunks; psychology
+            # boundaries default to "crisis_keywords" implicitly.
+            triggers_field: str = str(boundary_meta.get("triggers", "")) if boundary_meta else ""
             records.append(
                 KbChunkRecord(
                     chunk_id=chunk_id,
@@ -222,6 +241,7 @@ def load_chunks_from_pack(pack_dir: Path) -> list[KbChunkRecord]:
                     point_id=_stable_point_id(pack_id, md_path.name, chunk_id),
                     topic_tags=(),
                     forced_retrieval=bool(boundary_meta.get("forced_retrieval", False)),
+                    triggers=triggers_field,
                     applies_to_countries=applies_tuple,
                     tenant_id=None,  # brand-scope generic content
                 ),
@@ -283,6 +303,13 @@ class VitaliaMedicalKbStore:
         self._manifest = manifest or {}
         self._crisis_keywords_lower: tuple[str, ...] = tuple(
             kw.lower() for kw in self._manifest.get("crisis_keywords", [])
+        )
+        # T-kb-3: medication query detection (psychiatry pack only — psychology
+        # pack omits medication_keywords, so this list is empty there and
+        # `_detect_medication_query` returns False, preserving psychology
+        # behaviour byte-for-byte).
+        self._medication_keywords_lower: tuple[str, ...] = tuple(
+            kw.lower() for kw in self._manifest.get("medication_keywords", [])
         )
 
     # ── lazy wiring ─────────────────────────────────────────────────────────
@@ -356,6 +383,33 @@ class VitaliaMedicalKbStore:
         q_low = query.lower()
         return any(kw in q_low for kw in self._crisis_keywords_lower)
 
+    def _detect_medication_query(self, query: str) -> bool:
+        """Return True if any medication keyword appears in query.
+
+        Whole-word check ensures short tokens like ``"litio"`` don't match
+        unrelated longer words (e.g. ``"electrolitio"``). Multi-word
+        keywords like ``"acido valproico"`` use substring containment with
+        word boundaries on each side so they still match in normal phrasing.
+
+        T-kb-3 contract — psychiatry pack only. Empty manifest.medication_keywords
+        → returns False unconditionally (so psychology pack semantics
+        unchanged).
+        """
+        if not self._medication_keywords_lower:
+            return False
+        q_low = query.lower()
+        # Whole-word boundary check: "word characters" surrounded by
+        # non-word chars (start/end of string OR Spanish punctuation).
+        # Avoids false positives like "litio" matching "monolítico".
+        import re as _re
+
+        for kw in self._medication_keywords_lower:
+            # Spaces in keyword → multi-word — substring match with boundaries
+            pattern = r"(?<![\wáéíóúñü])" + _re.escape(kw) + r"(?![\wáéíóúñü])"
+            if _re.search(pattern, q_low):
+                return True
+        return False
+
     def search(
         self,
         *,
@@ -363,7 +417,20 @@ class VitaliaMedicalKbStore:
         tenant_country: str | None = None,
         limit: int = 5,
     ) -> list[dict[str, Any]]:
-        """Cosine search + boundary chunk forced retrieval on crisis input.
+        """Cosine search + boundary chunk forced retrieval on safety triggers.
+
+        T-kb-3 (2026-05-14): added medication-keyword forced retrieval path
+        for psychiatry pack. Order of priority for forced chunks:
+
+          1. ``triggers="medication_keywords"`` — disclaimer chunks (forced
+             top when patient input mentions any medication keyword).
+          2. ``triggers="crisis_keywords"`` — crisis lines (forced top when
+             patient input contains a crisis keyword).
+          3. Routine cosine results.
+
+        When BOTH medication keyword AND crisis keyword present in the same
+        input, BOTH groups of forced chunks are returned (medication first,
+        then crisis lines, then routine). Dedup by point_id.
 
         Args:
             query: patient input text.
@@ -371,12 +438,12 @@ class VitaliaMedicalKbStore:
                 to route per-country crisis_line chunks. Unknown country →
                 only ``boundary_refer_out_general`` injected as fallback.
             limit: max routine results returned. Boundary chunks are added
-                ON TOP and may exceed limit slightly when crisis triggered
+                ON TOP and may exceed limit slightly when triggered
                 (intentional — safety beats limit invariance).
 
-        Returns: list of dicts ``{point_id, score, payload}``. When crisis
-        triggered, top-1 is always a boundary chunk (forced before any
-        similarity-based result).
+        Returns: list of dicts ``{point_id, score, payload}``. When forced
+        retrieval triggered, top-1 is always a boundary chunk (medication
+        disclaimer takes precedence over crisis line if both fired).
         """
         if not query.strip():
             return []
@@ -384,6 +451,7 @@ class VitaliaMedicalKbStore:
         client = self._get_client()
         embedder = self._get_embedder()
 
+        is_medication = self._detect_medication_query(query)
         is_crisis = self._detect_crisis(query)
 
         # ── 1. Routine cosine search ──────────────────────────────────────
@@ -410,15 +478,28 @@ class VitaliaMedicalKbStore:
             for p in routine_points
         ]
 
-        # ── 2. Forced retrieval for boundary chunks on crisis ─────────────
-        forced_hits: list[_SearchHit] = []
+        # ── 2. Forced retrieval for boundary chunks ──────────────────────
+        # Order: medication first (priority 1), then crisis (priority 2).
+        # When both fire, medication disclaimer is top-1.
+        forced_medication: list[_SearchHit] = []
+        forced_crisis: list[_SearchHit] = []
+        if is_medication:
+            forced_medication = self._fetch_forced_boundary_hits(
+                client,
+                tenant_country,
+                triggers_filter="medication_keywords",
+            )
         if is_crisis:
-            forced_hits = self._fetch_forced_boundary_hits(client, tenant_country)
+            forced_crisis = self._fetch_forced_boundary_hits(
+                client,
+                tenant_country,
+                triggers_filter="crisis_keywords",
+            )
 
-        # ── 3. Merge — forced first, then routine; dedupe by point_id ────
+        # ── 3. Merge — medication forced > crisis forced > routine ────────
         seen: set[str] = set()
         merged: list[_SearchHit] = []
-        for h in forced_hits + routine_hits:
+        for h in forced_medication + forced_crisis + routine_hits:
             if h.point_id in seen:
                 continue
             seen.add(h.point_id)
@@ -437,6 +518,7 @@ class VitaliaMedicalKbStore:
         self,
         client: Any,
         tenant_country: str | None,
+        triggers_filter: str | None = None,
     ) -> list[_SearchHit]:
         """Scroll the collection (with payload filter) for boundary chunks.
 
@@ -444,6 +526,12 @@ class VitaliaMedicalKbStore:
         is empty or contains "*"). Per-country crisis_line chunks are
         included when their applies_to_countries matches tenant_country.
         Other countries' lines are excluded.
+
+        T-kb-3: ``triggers_filter`` narrows results to chunks whose payload
+        ``triggers`` field matches (e.g. ``"medication_keywords"`` for
+        psychiatry disclaimer, ``"crisis_keywords"`` for self-harm lines).
+        When None (legacy default), returns all forced_retrieval chunks
+        (preserves psychology pack pre-T-kb-3 semantics).
 
         Uses payload filter ``forced_retrieval=True`` so we don't scroll the
         full collection (~200 points) just to find ~7 boundary chunks. Falls
@@ -487,6 +575,24 @@ class VitaliaMedicalKbStore:
             payload = p.payload or {}
             if not payload.get("forced_retrieval"):
                 continue
+            # T-kb-3: optional filter by trigger group. Backwards-compatible
+            # when triggers_filter=None (returns ALL forced chunks regardless
+            # of trigger). Psychology pack chunks have triggers="" or
+            # "crisis_keywords" — when caller asks for "crisis_keywords"
+            # explicitly, we accept BOTH "" (legacy chunks pre-T-kb-3) AND
+            # "crisis_keywords" (new chunks). When caller asks for
+            # "medication_keywords", we ONLY accept "medication_keywords".
+            if triggers_filter is not None:
+                chunk_triggers: str = str(payload.get("triggers", ""))
+                if triggers_filter == "crisis_keywords":
+                    # Backward-compat: accept legacy chunks with no triggers
+                    # field as crisis (they were psychology boundary chunks).
+                    if chunk_triggers not in ("", "crisis_keywords"):
+                        continue
+                else:
+                    # Strict: medication chunks must opt-in explicitly.
+                    if chunk_triggers != triggers_filter:
+                        continue
             applies = payload.get("applies_to_countries") or []
             if not applies:
                 # Generic boundary — always include
