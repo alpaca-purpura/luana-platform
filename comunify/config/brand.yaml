@@ -1,0 +1,147 @@
+# comunify/config/brand.yaml
+# BrandConfig declarative — Story 12 luana-comunify-bootstrap T-config-1
+# Decisions honored: D7 (creator_economy compliance NOT hipaa_lite), D8 (voice_cloning=true),
+#                    D9 (spanish neutro tuteo), D11 (authority_vault required), D12 (multi_account defer),
+#                    D13 (third_party_community_bridge defer), D15 (post-distillation sample deletion),
+#                    D16 (doxxing detection regex+cross-ref), D17 (pre_moderation_new_members=3),
+#                    D18 (dunning 4-state machine), D19 (ladder 4-level + conversion projections)
+# Source: 03-arch-be.md § 10 — canonical schema reference
+
+brand_slug: comunify
+brand_name: "Comunify"
+brand_description: "Vertical creator-economy brand app for LatAm coaches, course creators and content creators"
+brand_segment: creator_economy_vertical
+compliance_level: creator_economy           # D7 — creator_economy NOT hipaa_lite (vs Vitalia)
+voice_cloning_enabled: true                 # D8 — Q7=A full pipeline 50+ chats
+multi_language_ui: false                    # D9 — Spanish neutro LatAm only (tuteo)
+
+features:
+  brand_studio_full: true                   # 10 sections enabled (vs Vitalia 4)
+  offer_studio_coaching: true
+  offer_ladder_visualizer: true             # NEW vs Vitalia — 4-level explicit ladder
+  community_engagement_workflow: true       # NEW — CommunityEngagementWorkflow
+  cohort_enrollment_workflow: true          # NEW — CohortEnrollmentWorkflow
+  sales_agent_vertical_creator: true
+  copilot_creator_extractors: true
+  authority_vault_full: true               # NEW required section
+  voice_cloning_pipeline: true             # Q7=A — full distillation pipeline ON
+  recurring_subscriptions: true            # NEW monthly memberships + cohort installments
+  community_moderation: true               # NEW spam/nsfw/doxxing classifier
+  discord_circle_bridge: false             # Q3=B defer 12.bis
+  live_streaming: false                    # defer 12.bis
+  gamification: false                      # defer 12.bis
+  leaderboard: false                       # defer 12.bis
+  multi_account_creator_switcher: false    # Q2=B defer 12.bis
+
+brand_studio:
+  enabled_sections:
+    - identity
+    - story
+    - narrative
+    - voice
+    - buyer_persona
+    - authority_vault
+    - team
+    - testimonials
+    - communication_assets
+    - contact
+  required:
+    - authority_vault                       # D11 — required per BrandConfig override
+  buyer_persona:
+    min_count: 3                            # multi-persona mandatory (vs Vitalia default)
+
+offer_studio:
+  preset_pack: coaching_offers_v1
+  default_offer_type: coaching_program
+
+ladder:
+  levels:
+    - lead_magnet
+    - tripwire
+    - core
+    - premium
+  conversion_projections_baseline:
+    lead_magnet_to_tripwire: 0.08
+    tripwire_to_core: 0.12
+    core_to_premium: 0.06
+
+subscriptions:
+  enabled: true
+  plan_tiers:
+    creator:
+      price_usd_monthly: 29
+      max_cohorts: 1
+      max_subscribers: 100
+      features:
+        - brand_studio_full
+        - offer_studio_coaching
+        - offer_ladder_visualizer
+        - sales_agent_vertical_creator
+        - community_engagement_workflow
+    pro:
+      price_usd_monthly: 99
+      max_cohorts: 3
+      max_subscribers: 500
+      features:
+        - all_creator_features
+        - voice_cloning_pipeline
+        - multi_cohort
+        - recurring_subscriptions
+        - cohort_enrollment_workflow
+    agency:
+      price_usd_monthly: 299
+      max_cohorts: 10
+      max_subscribers: 5000
+      features:
+        - all_pro_features
+        - team_seats
+        - advanced_analytics
+        - multi_brand_management
+
+community_safety:
+  pre_moderation_new_members: true          # D17 — first 3 posts require approval
+  pre_moderation_post_count: 3
+  spam_score_threshold: 0.85
+  nsfw_score_threshold: 0.85
+  doxxing_detection_enabled: true           # D16 — regex + cross-ref cohort_members
+  auto_approve_engagement_score_min: 80
+  auto_reject_spam_score_min: 0.95
+  auto_delete_nsfw_score_min: 0.85
+
+payment_gateways:
+  primary: mercadopago                      # Q6=B — primary LatAm
+  fallback: stripe_connect                  # Q6=B — US/EU subscribers
+  recurring: tokenized_recurring            # subscriptions + cohort installments
+
+kb_packs:
+  - creator_economy_kb_v1
+
+agentic_tools:
+  - qualify_for_cohort
+  - link_to_community
+  - nurture_via_authority_content
+  - book_discovery_call
+
+extractors:
+  - OfferLadderAdvisor
+  - AuthorityVaultExtractor
+
+workflows:
+  - CommunityEngagementWorkflow
+  - CohortEnrollmentWorkflow
+
+guardrails:
+  - no_spam
+  - no_nsfw
+  - no_doxxing
+  - prompt_injection_block
+
+sales_agent:
+  default_personality_archetype: empathic_creator
+  voice_per_tenant: true
+  voice_cloning_pipeline: true              # D8 — ON for creator vertical
+  channels:
+    - whatsapp_business
+    - manychat_instagram
+    - email_async
+    - web_chat
