@@ -1,6 +1,8 @@
 # AGENTS.md
 
-**Nicolify** — Multitenant AaaS marketing/sales automation. FastAPI async + Next.js 16 FSD + Clerk + Postgres/Qdrant. Modular Monolith DDD + Docker-First.
+**Luana platform** (multimarca, post reorg 2026-05-15) — Engine compartido `core/luana-core-*` (26 paquetes) + 10 brand verticals consumidoras. Multitenant AaaS marketing/sales automation. FastAPI async + Next.js 16 FSD + Clerk + Postgres/Qdrant. Modular Monolith DDD + Docker-First.
+
+**Nota:** AGENTS.md mantiene defaults heredados de la era single-brand Nicolify. Para topología multimarca + skills /pm split + filosofía pointer-first, ver `CLAUDE.md` (overlay project-specific) + `docs/portfolio/PORTFOLIO.md` (vista master 11 universos).
 
 ## Agent Rules <!-- tessl-managed -->
 
@@ -63,15 +65,20 @@ Single branch = `development`. `main` = prod only. No feature branches, no workt
 | E2E live verification | `chrome-devtools-verify` |
 | Social content creation | `content-hunter` |
 | ManyChat integration | `manychat-expert` |
-| PM/SSoT functional | `pm` skill (SSoT: `docs/product/BACKLOG.md` + `docs/product/{outcomes,stories,ideas-pool.yaml}`; vocabulario v4 = 10 estados — ver `CLAUDE.md` § Vocabulary) |
-| User story (UI std) — Gherkin + wireframes inline | `po-ux` skill (NEW fusión `/po` + `/ux-ui`) |
+| PM master orquestador (cross-portfolio 11 universos) | `pm` skill (SSoT: `docs/portfolio/PORTFOLIO.md` — pointer-first, drill-down on demand) |
+| PM core (Luana — promotion gate, semver, EPs) | `pm-luana` skill (SSoT: `docs/promotion-protocol/` + `docs/core-modules/`) |
+| PM brand-specific (×4: nicolify, vitalia, comunify, lupulo + 6 templates pendientes) | `pm-{brand}` skill (SSoT: `{brand}/docs/product/`) |
+| Bootstrap brand nueva (saasora, inmoflow, retailly, fixia, guestly, fitflow) | `_pm-brand-template` scaffold |
+| User story (UI std) — Gherkin + wireframes inline | `po-ux` skill (fusión `/po` + `/ux-ui`) |
 | User story (service-only) — Gherkin pure | `po` skill |
 | Agentic conversational flow | `ux-agentico` skill |
 | Architecture + ready package (validators + guidelines + tickets) | `architect` skill |
 | Autonomous build (Conv 2) | `dev-team` skill |
 | Code review (Conv 3) | `auditor` skill |
-| Backlog freshness (R33) | `scripts/generate_backlog.py` (auto via pre-commit hook Section 6) |
-| Capability reconciliation (R32) | `scripts/reconcile_capabilities.py` |
+| Portfolio freshness (cross-brand 11 universos) | `make portfolio` → `scripts/generate_portfolio.py` |
+| Promotion candidates scan (brand→core lift) | `make scan-promotables` → `scripts/scan_promotables.py` |
+| Backlog freshness (per-brand legacy) | `scripts/generate_backlog.py` (per brand) |
+| Capability reconciliation (R32 per-brand) | `scripts/reconcile_capabilities.py` (per brand) |
 
 ## Quality Gates
 

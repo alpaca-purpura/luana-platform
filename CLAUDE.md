@@ -34,7 +34,9 @@ luana-platform/                                  ← monorepo (pnpm + uv workspa
 └── scripts/                                     ← framework scripts (generate_backlog, reconcile_capabilities, validators, etc.)
 ```
 
-**Migración mid-flight (2026-05-09 → in progress).** Plan target: `docs/architecture/luana-platform/01-core-audit.md` (Draft v0.1, owner Chris+Opus). Core packages ya extraídos como `luana-core-*` (Story 5+). Brand apps consumen via `luana_core_*` Python imports + `@luana/*` TS imports. Stories 11-12 ya shipped (vitalia + comunify); lupulo placeholder; **6 marcas nuevas (SaaSora, InmoFlow, Retailly, Fixia, Guestly, FitFlow) pendientes bootstrap** — patrón replicable de Story 11 (vitalia T-extensions-1 cement) o Story 12 (comunify pattern).
+**Migración status (2026-05-15 post-reorg multimarca).** Plan target: `docs/architecture/luana-platform/01-core-audit.md`. Audit purge: `docs/architecture/luana-platform/02-core-purge-audit.md`. Core packages ya extraídos como `luana-core-*` (Story 5+). Brand apps consumen via `luana_core_*` Python imports + `@luana/*` TS imports. Stories 11-12 shipped (vitalia + comunify); lupulo placeholder; **6 marcas nuevas (SaaSora, InmoFlow, Retailly, Fixia, Guestly, FitFlow) pendientes bootstrap** — usar `_pm-brand-template/` workflow.
+
+**Topología docs federada (post reorg 2026-05-15):** SSoT distribuido — `docs/` raíz contiene transversales (Luana core), cada `{brand}/docs/` contiene SSoT autónomo del brand. Vista master en `docs/portfolio/PORTFOLIO.md` (auto-gen). Skills `/pm` split en master lite + `/pm-luana` (core) + `/pm-{brand}` (×4 + 6 templates). Promotion gate brand→core en `docs/promotion-protocol/`.
 
 ## Workspace tooling
 
@@ -48,17 +50,34 @@ luana-platform/                                  ← monorepo (pnpm + uv workspa
 
 ## Spec-Driven Development (SDD Level 3) — paradigma actual
 
-SSoT funcional vive en `docs/{product,process,specs}/`. Vocabulario v4 (post pm-redesign 2026-05-06).
+SSoT funcional federado (post reorg multimarca 2026-05-15). Vocabulario v4 (post pm-redesign 2026-05-06).
+
+### Core (Luana — `docs/`)
 
 | Carpeta | Significado | Owner |
 |---|---|---|
-| `docs/product/` | SSoT vivo del producto. `BACKLOG.{yaml,md}` (auto-gen), `ideas-pool.yaml`, `outcomes/`, `stories/{id}/`, `capabilities/{module}/`, `modules/`. | `/pm` |
-| `docs/product/legacy/snapshot-2026-05-09/` | Snapshot frozen pre-multibrand-migration. Read-only, ver `README.md` del dir | `/pm` (read-only) |
-| `docs/process/` | Reglas transversales: ticket-states, checkpoint-protocol, parallel-sessions, learnings, pm-redesign, migration-plan, gap-reports. | `/pm` |
-| `docs/specs/` | Templates + Rubrics + Personas (reusable cross-stories). | varios |
-| `docs/architecture/` | ADR + multibrand carve-out plan (`luana-platform/01-core-audit.md`) | `/architect` |
-| `docs/domains/` | Per-module SSoT (snapshot pre-migration, single-brand perspective) | `/pm` (referencia) |
-| `docs/archive/{year}/` | Stories `done` snapshot inmutable + legacy PIs preservados. | `/pm` (read-only) |
+| `docs/portfolio/` | Vista master 11 universos (auto-gen via `make portfolio`). 1-pagers per universo | `/pm` (master) |
+| `docs/promotion-protocol/` | Workflow brand→core lift gate + proposals + scan-{date}.yaml | `/pm-luana` |
+| `docs/core-modules/` | Contracts públicos de los 26 paquetes `luana-core-*` | `/pm-luana` |
+| `docs/product/` | Outcomes platform (cross-brand) + capabilities core (cuando se pueblen) | `/pm-luana` |
+| `docs/process/` | Reglas transversales: ticket-states, checkpoint-protocol, parallel-sessions, learnings, pm-redesign | `/pm-luana` |
+| `docs/specs/` | Templates + Rubrics + Personas (reusable cross-brands) | varios |
+| `docs/architecture/` | ADR platform + carve-out plan + purge audit | `/architect` + `/pm-luana` |
+| `docs/domains/` | DEPRECATED legacy single-brand snapshot (read-only) | — |
+| `docs/archive/{year}/` | Stories `done` snapshot inmutable + snapshot-pre-multibrand-pm-redesign | `/pm` (read-only) |
+
+### Per-brand (`{brand}/docs/` + `{brand}/.claude/`)
+
+| Carpeta | Significado | Owner |
+|---|---|---|
+| `{brand}/docs/product/{outcomes,stories,capabilities,modules}/` | SSoT funcional brand | `/pm-{brand}` |
+| `{brand}/docs/product/{BACKLOG,checkpoint}.md` | Auto-gen + state global brand | `/pm-{brand}` |
+| `{brand}/docs/domains/` | Tools/workflows/extractors registrados via Extension SDK | `/pm-{brand}` |
+| `{brand}/docs/learnings/` | Insights brand-local (`promotable: candidate\|yes\|no`) | `/pm-{brand}` |
+| `{brand}/docs/architecture/` | ADRs locales brand | `/pm-{brand}` |
+| `{brand}/.claude/rules/` | Rules overlay brand-specific (extiende `.claude/` raíz) | `/pm-{brand}` |
+| `{brand}/.claude/skills/` | Skills overlay brand-specific (raro, mayoría globales) | `/pm-{brand}` |
+| `{brand}/config/brand.yaml` | Feature flags + opt-in core packages | `/pm-{brand}` |
 
 ### Vocabulary (10 estados macro unificados cross-nivel idea/outcome/story/capability)
 
@@ -136,9 +155,14 @@ Conv 3 — REVIEW + MERGE     (Chris triggers /auditor + /pm merge)
 
 ### Skills ejes
 
+> **PM split (post reorg multimarca 2026-05-15):** 3 niveles — master lite + core PM + per-brand PMs. Pointer-first (carga ~3-5k tokens en bootstrap, drill-down on demand).
+
 | Skill | Modelo | Rol |
 |---|---|---|
-| `/pm` | Opus 4.7 | Director orquesta. Owner BACKLOG.{yaml,md}, ideas-pool, outcomes/, capabilities/, modules/, learnings.md. Ratifica merges. NO redacta specs/diseño/arq/código. |
+| `/pm` | Opus 4.7 | **Master lite orquestador.** Carga `docs/portfolio/PORTFOLIO.md`. Decide qué skill `/pm-X` invocar. NO maneja BACKLOGs per-brand directamente. |
+| `/pm-luana` | Opus 4.7 | **Core PM.** Owner promotion gate brand→core, semver core packages, EPs, outcomes platform. Carga `docs/promotion-protocol/README.md` + `docs/core-modules/README.md`. |
+| `/pm-{brand}` (×4: nicolify, vitalia, comunify, lupulo) | Opus 4.7 | **Brand PM.** Hereda paradigm v4. Owner `{brand}/docs/product/`, learnings, architecture, domains. Promotion candidates ping `/pm-luana`. |
+| `_pm-brand-template` | (no auto-load) | Scaffold para bootstrap brands futuras (saasora, inmoflow, retailly, fixia, guestly, fitflow). |
 | `/po-ux` | Opus 4.7 | UI standard stories (CRUD/list/detail/form/dashboard). Produce 01-spec.md con Gherkin + wireframes inline. |
 | `/po` | Opus 4.7 | Service-stories only (no UI). Spec gherkin AI-resistant. |
 | `/ux-agentico` | Opus 4.7 | Agentic-story design. State machine + slot architecture + voice constraints. Produce 02-design-agentic.md. |
@@ -147,24 +171,39 @@ Conv 3 — REVIEW + MERGE     (Chris triggers /auditor + /pm merge)
 | `/auditor` | Opus 4.7 | Conv 3. Spawna auditor-{be,fe,agentic}. CHECKPOINTS.md C1-C5. Verdict APPROVED/CHANGES_REQUESTED/ESCALATED. |
 | `/commit-push` | Haiku 4.5 | Stage + commit + push delegation pattern. Orchestrator (Opus) prepara plan, Haiku ejecuta git workflow con guardrails verbatim. |
 
+### Filosofía pointer-first (cementada universalmente)
+
+> *"Memoria, índices y skills lite cargan punteros, no contenido. El detalle vive en SSoT donde nace y se carga on-demand."*
+
+Aplicada a: MEMORY.md, memorias individuales, master /pm, per-brand PMs, portfolio, promotion proposals. Beneficio: master /pm escala lineal con cantidad de brands sin degradar contexto.
+
 **Hard rule (R23):** AGENTIC tickets con `production_code: true` (luana_core_copilot/luana_core_sales_agent runtime + brand vertical extensions tocando esos cores) → Opus 4.7 SIEMPRE. opencode/Sonnet ban absoluto. AGENTIC tickets con `production_code: false` (tests/docs sobre agentic) → Sonnet OK.
 
-### Resume protocol
-
-`BACKLOG.md` es SSoT visible — UN read da estado completo:
+### Resume protocol (post reorg multimarca 2026-05-15)
 
 ```bash
 git status --short && git branch --show-current && git log --oneline -3
-cat docs/product/BACKLOG.md     # Roadmap + Mermaid kanban + Caps snapshot
+cat docs/portfolio/PORTFOLIO.md     # Vista master 11 universos (auto-gen via make portfolio)
 ```
 
-Para drill-down a story específica:
+Drill-down según contexto:
 
 ```bash
-cat docs/product/stories/{story-id}/checkpoint.md
+# Brand específica:
+cat {brand}/docs/product/checkpoint.md
+cat {brand}/docs/product/BACKLOG.md
+
+# Core (Luana):
+cat docs/promotion-protocol/README.md
+ls docs/promotion-protocol/proposals/
+cat docs/architecture/luana-platform/01-core-audit.md
+cat docs/architecture/luana-platform/02-core-purge-audit.md
+
+# Story específica brand:
+cat {brand}/docs/product/stories/{story-id}/checkpoint.md
 ```
 
-Schema checkpoint: `docs/process/checkpoint-protocol.md`. Detalle paradigma + waves: `docs/process/pm-redesign-2026-05.md`. Plan multibrand: `docs/architecture/luana-platform/01-core-audit.md`.
+Schema checkpoint: `docs/process/checkpoint-protocol.md`. Paradigma v4: `docs/process/pm-redesign-2026-05.md`. Promotion workflow: `docs/promotion-protocol/README.md`.
 
 ### Anti-telephone-game (subagent return contract)
 
@@ -200,7 +239,7 @@ NUNCA inline >500 tokens de artifact body. Caller lee file on demand.
 
 | Brand | Vertical | Cliente objetivo | Diferenciación core | Estado |
 |---|---|---|---|---|
-| **Nicolify** | Agencias y Servicios B2B | Agencias marketing, software boutique, consultoras | CRM ciclo largo · portal cliente · propuestas/contratos · horas facturables | ✅ shipped (caso canónico) |
+| **Nicolify** | Agencias y Servicios B2B | Agencias marketing, software boutique, consultoras | CRM ciclo largo · portal cliente · propuestas/contratos · horas facturables | ✅ shipped |
 | **Vitalia** | Salud y Bienestar | Clínicas médicas, dentales, estéticas | Reservas prepagadas · historial médico · HIPAA-lite · seguimiento post-tratamiento | ✅ shipped (Story 11) |
 | **Comunify** | Creator Economy + Educación | Coaches, creadores contenido, infoproductores | Escalera valor · bóveda autoridad · motor comunidad · embudos venta | ✅ shipped (Story 12) + WIP recovery |
 | **Lupulo Labs** | Gastronomía | Restaurantes, bares, cafeterías | Reservas mesa · pedidos digitales · integración KDS vía agentes IA | 🟡 placeholder (Story 13 pendiente) |
@@ -224,7 +263,7 @@ NUNCA inline >500 tokens de artifact body. Caller lee file on demand.
 
 | # | Trigger | File |
 |---|---|---|
-| 1 | Anti-hallucination | leer `docs/domains/INDEX.md` antes coding (snapshot, single-brand perspective) |
+| 1 | Anti-hallucination | leer `docs/portfolio/PORTFOLIO.md` (cross-brand) o `{brand}/docs/product/checkpoint.md` (brand-specific) antes coding. Legacy snapshot single-brand: `docs/archive/2026/snapshot-pre-multibrand-pm-redesign/` (read-only) |
 | 2 | Tenant isolation | `.claude/rules/tenant-isolation.md` |
 | 3 | BE DDD | `.claude/rules/backend-ddd.md` |
 | 4 | FE FSD | `.claude/rules/frontend-fsd.md` |
@@ -254,7 +293,10 @@ NUNCA inline >500 tokens de artifact body. Caller lee file on demand.
 | FE quality/form-runtime | `frontend-expert` / `brand-expert` | `rules/{frontend-quality,form-runtime-array}.md` |
 | Streamlit admin | `backend-expert` | `rules/admin-panel.md` |
 | E2E Playwright + Clerk auth + smoke tests | `playwright-expert` | `rules/e2e-testing.md` |
-| PM/SSoT funcional | `pm` skill | `docs/product/BACKLOG.md` + `docs/product/{outcomes,stories,ideas-pool.yaml}` |
+| PM master orquestador | `/pm` skill | `docs/portfolio/PORTFOLIO.md` + drill-down on demand |
+| PM core (Luana) — promotion gate, semver, EPs | `/pm-luana` skill | `docs/promotion-protocol/` + `docs/core-modules/` + `docs/architecture/luana-platform/` |
+| PM brand-specific (×4 + 6 templates pendientes) | `/pm-{brand}` skill | `{brand}/docs/product/` + `{brand}/docs/{learnings,architecture,domains}/` |
+| Bootstrap brand nueva | `_pm-brand-template/` | scaffold workflow + `{brand}/{backend,frontend,config,deploy,docs,.claude}/` |
 | BE config flag flips (`core/config.py` defaults) | (none — `pm` skill ratification) | `rules/anti-default-flip-audit.md` |
 | User story redacción (UI std) | `po-ux` skill | `docs/specs/templates/01-spec-template.md` |
 | User story redacción (service-only) | `po` skill | `docs/specs/templates/01-spec-template.md` |
@@ -264,9 +306,12 @@ NUNCA inline >500 tokens de artifact body. Caller lee file on demand.
 | Code review (Conv 3) | `auditor` skill | `docs/specs/templates/T-review-template.md` |
 | Process metrics emission | `dev-team` + `auditor` | `scripts/emit_process_metric.py` + `docs/process/metrics/README.md` |
 | Hot-fix ticket origen handoff doc | `dev-team` + `po` | `.claude/rules/hotfix-repro-mandatory.md` |
-| Backlog freshness | `pm` skill bootstrap + pre-commit hook Section 6 | `scripts/generate_backlog.py` |
-| Capability reconciliation | `pm` skill | `scripts/reconcile_capabilities.py` |
-| Multibrand carve-out (extracción a luana-core) | `architect` skill | `docs/architecture/luana-platform/01-core-audit.md` |
+| Backlog freshness | `/pm-{brand}` skill | `scripts/generate_backlog.py` (legacy, per-brand) |
+| Portfolio freshness (cross-brand) | `/pm` master | `scripts/generate_portfolio.py` + `make portfolio` |
+| Promotion candidates scan | `/pm-luana` | `scripts/scan_promotables.py` + `make scan-promotables` |
+| Capability reconciliation | `/pm-{brand}` skill | `scripts/reconcile_capabilities.py` (legacy, per-brand) |
+| Multibrand carve-out (extracción a luana-core) | `/architect` + `/pm-luana` | `docs/architecture/luana-platform/01-core-audit.md` + `02-core-purge-audit.md` |
+| Promotion proposal brand→core | `/pm-luana` skill | `docs/promotion-protocol/README.md` + `template-proposal.md` |
 
 ## Vision
 
