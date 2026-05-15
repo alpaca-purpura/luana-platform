@@ -25,24 +25,31 @@ Acelerar dev cross-brand. Cada brand aporta aprendizaje → core captura abstrac
 |---|---|---|
 | Engine packages | [`core/luana-core-*`](../../core/) | 26 paquetes Python + TS publicables |
 | Extension SDK | `core/luana-core-extension-sdk/` | EP-1..EP-18 contracts |
-| Cross-cutting concerns | [`docs/core-modules/`](../core-modules/) | 22 transversales (tenant isolation, locale, observability, etc.) |
+| Cross-cutting concerns | [`docs/core-modules/`](../core-modules/) | 22 transversales |
 | Promotion protocol | [`docs/promotion-protocol/`](../promotion-protocol/) | brand→core lift gate |
 
-## State
+## Promotion proposals (live)
 
-- **26 packages extraídos** (avance Sem 1-3 del plan original adelantado)
-- **3 brands consumidoras shipped** (Nicolify, Vitalia, Comunify)
-- **1 placeholder** (Lupulo)
-- **6 pendientes bootstrap** (SaaSora, InmoFlow, Retailly, Fixia, Guestly, FitFlow)
+- Proposed: 0
+- Under review: 0
+- Accepted (lift programado): 0
+- Migrated (cerrados OK): 0
+- Rejected (archive): 0
+
+## State portfolio
+
+- 26 packages extraídos
+- 4 brands consumidoras (3 shipped: Nicolify, Vitalia, Comunify + 1 placeholder: Lupulo)
+- 6 pendientes bootstrap (SaaSora, InmoFlow, Retailly, Fixia, Guestly, FitFlow)
 
 ## Ownership
 
-- `/pm-luana` (skill) — owner promotion gate, semver, breaking changes
+- `/pm-luana` (skill) — owner promotion gate, semver, breaking changes, EPs
 - `/pm` (master) — orquesta visibility cross-portfolio
 
-## Próximas acciones
+## Drill-down
 
-Drill-down en SSoT vivo:
-- Roadmap: `docs/product/outcomes/` (cuando se pueblen)
-- Promotion candidates abiertas: `docs/promotion-protocol/proposals/`
+- Roadmap platform: `docs/product/outcomes/`
+- Promotion candidates: `docs/promotion-protocol/proposals/`
 - Plan multibrand original: `docs/architecture/luana-platform/01-core-audit.md`
+- Purge audit: `docs/architecture/luana-platform/02-core-purge-audit.md`

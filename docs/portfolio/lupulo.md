@@ -26,7 +26,7 @@ Restaurantes, bares, cafeterías
 
 ## Diferenciación core
 
-Reservas mesa · pedidos digitales · integración KDS vía agentes IA
+Reservas mesa · pedidos digitales · integración KDS via agentes IA
 
 ## Estado
 

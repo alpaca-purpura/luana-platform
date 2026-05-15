@@ -17,7 +17,7 @@ BRANDS := nicolify
 # Story 12 will append: BRANDS += comunify
 # Story 13 will append: BRANDS += lupulo
 
-.PHONY: ci-parity $(BRANDS:%=ci-parity-%) help
+.PHONY: ci-parity $(BRANDS:%=ci-parity-%) portfolio portfolio-check scan-promotables help
 
 help:
 	@echo "luana-platform Makefile targets:"
@@ -25,6 +25,10 @@ help:
 	@echo "  make ci-parity              Run CI parity sweep ALL brands ($(BRANDS))"
 	@echo "  make ci-parity-nicolify     Run CI parity sweep Nicolify only"
 	@echo "  make ci-parity-BRAND        Run CI parity sweep for specific brand"
+	@echo ""
+	@echo "  make portfolio              Regen docs/portfolio/ (11 universos)"
+	@echo "  make portfolio-check        Check portfolio fresh (exit 1 if stale)"
+	@echo "  make scan-promotables       Scan brand learnings for cross-brand patterns"
 	@echo ""
 	@echo "Brands enabled: $(BRANDS)"
 
@@ -53,3 +57,15 @@ ci-parity-fe:
 	@for brand in $(BRANDS); do \
 		bash scripts/ci-parity.sh --brand=$$brand --skip-be; \
 	done
+
+# ════════════════════════════════════════════════════════════════
+# Portfolio + promotion scan (multibrand SSoT auto-gen)
+# ════════════════════════════════════════════════════════════════
+portfolio:
+	python3 scripts/generate_portfolio.py
+
+portfolio-check:
+	python3 scripts/generate_portfolio.py --check
+
+scan-promotables:
+	python3 scripts/scan_promotables.py

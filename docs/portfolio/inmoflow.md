@@ -1,0 +1,58 @@
+---
+slug: inmoflow
+kind: brand
+status: pending-bootstrap
+vertical: "Real Estate"
+last_updated: 2026-05-15
+ssot_live:
+  - inmoflow/docs/product/
+  - inmoflow/docs/domains/
+  - inmoflow/docs/learnings/
+  - inmoflow/docs/architecture/
+owner: /pm-inmoflow
+---
+
+# Inmoflow — Real Estate
+
+> 1-pager pointer. Detalle vivo en `inmoflow/docs/`.
+
+## Vertical
+
+Real Estate
+
+## Cliente objetivo
+
+Brokers, agencias inmobiliarias
+
+## Diferenciación core
+
+Integración portales · mapas interactivos · lead routing por zona · calculadoras financieras
+
+## Estado
+
+`pending-bootstrap`
+
+## Surfaces
+
+| Tipo | Path |
+|---|---|
+| Backlog | [inmoflow/docs/product/BACKLOG.md](../../inmoflow/docs/product/BACKLOG.md) |
+| Outcomes | [inmoflow/docs/product/outcomes/](../../inmoflow/docs/product/outcomes/) |
+| Stories | [inmoflow/docs/product/stories/](../../inmoflow/docs/product/stories/) |
+| Capabilities | [inmoflow/docs/product/capabilities/](../../inmoflow/docs/product/capabilities/) |
+| Modules | [inmoflow/docs/product/modules/](../../inmoflow/docs/product/modules/) |
+| Domains | [inmoflow/docs/domains/](../../inmoflow/docs/domains/) |
+| Learnings | [inmoflow/docs/learnings/](../../inmoflow/docs/learnings/) |
+| Architecture (ADRs locales) | [inmoflow/docs/architecture/](../../inmoflow/docs/architecture/) |
+| Brand config | [inmoflow/config/](../../inmoflow/config/) |
+| Code BE | [inmoflow/backend/](../../inmoflow/backend/) |
+| Code FE | [inmoflow/frontend/](../../inmoflow/frontend/) |
+
+## Ownership
+
+- `/pm-inmoflow` (skill) — owner backlog, outcomes, stories
+- `/pm` (master) — visibility cross-portfolio
+
+## Drill-down
+
+`cat inmoflow/docs/product/checkpoint.md` para state actual.

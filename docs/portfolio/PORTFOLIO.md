@@ -11,49 +11,47 @@
 
 ## Núcleo
 
-| Slug | Tipo | 1-pager | SSoT live |
-|---|---|---|---|
-| luana | core (engine) | [docs/portfolio/luana.md](./luana.md) | [docs/product/](../product/) + [docs/core-modules/](../core-modules/) |
+| Slug | Tipo | Estado | 1-pager | SSoT live |
+|---|---|---|---|---|
+| luana | core | 🟢 active | [docs/portfolio/luana.md](./luana.md) | [docs/product/](../product/) + [docs/core-modules/](../core-modules/) |
 
 ## Brands shipped
 
-| Slug | Vertical | Estado | 1-pager | SSoT live |
+| Slug | Vertical | Estado actual | 1-pager | SSoT live |
 |---|---|---|---|---|
-| nicolify | Agencias + Servicios B2B | shipped | [nicolify.md](./nicolify.md) | [nicolify/docs/product/](../../nicolify/docs/product/) |
-| vitalia | Salud + Bienestar | shipped (Story 11) | [vitalia.md](./vitalia.md) | [vitalia/docs/product/](../../vitalia/docs/product/) |
-| comunify | Creator Economy + Educación | shipped (Story 12) + WIP | [comunify.md](./comunify.md) | [comunify/docs/product/](../../comunify/docs/product/) |
+| nicolify | Agencias + Servicios B2B | ✅ shipped | [nicolify.md](./nicolify.md) | [nicolify/docs/product/](../../nicolify/docs/product/) |
+| vitalia | Salud + Bienestar | ✅ shipped | [vitalia.md](./vitalia.md) | [vitalia/docs/product/](../../vitalia/docs/product/) |
+| comunify | Creator Economy + Educación | ✅ shipped | [comunify.md](./comunify.md) | [comunify/docs/product/](../../comunify/docs/product/) |
 
 ## Brands placeholder
 
-| Slug | Vertical | Estado | 1-pager | SSoT live |
+| Slug | Vertical | Estado actual | 1-pager | SSoT live |
 |---|---|---|---|---|
-| lupulo | Gastronomía | placeholder | [lupulo.md](./lupulo.md) | [lupulo/docs/product/](../../lupulo/docs/product/) |
+| lupulo | Gastronomía | 🟡 placeholder | [lupulo.md](./lupulo.md) | [lupulo/docs/product/](../../lupulo/docs/product/) |
 
 ## Brands pendientes bootstrap
 
 | Slug | Vertical | Estado | Bootstrap target |
 |---|---|---|---|
-| saasora | SaaS + Productos Digitales | pendiente | template `_pm-brand-template/` |
-| inmoflow | Real Estate | pendiente | template |
-| retailly | E-commerce / D2C | pendiente | template |
-| fixia | Servicios Hogar + Oficios | pendiente | template |
-| guestly | Turismo + Hotelería | pendiente | template |
-| fitflow | Fitness + Deporte | pendiente | template |
+| saasora | SaaS + Productos Digitales | ⏳ pending | template `_pm-brand-template/` |
+| inmoflow | Real Estate | ⏳ pending | template `_pm-brand-template/` |
+| retailly | E-commerce / D2C | ⏳ pending | template `_pm-brand-template/` |
+| fixia | Servicios Hogar + Oficios | ⏳ pending | template `_pm-brand-template/` |
+| guestly | Turismo + Hotelería | ⏳ pending | template `_pm-brand-template/` |
+| fitflow | Fitness + Deporte | ⏳ pending | template `_pm-brand-template/` |
 
 ---
 
-## Cross-brand outcomes activos
-
-> Outcomes que tocan core + N brands. Cada brand consumidora tiene su propio outcome de adopción.
-
-_(none — populate via /pm cuando arranquemos primer outcome cross-brand)_
-
-## Promotion proposals abiertas
+## Promotion proposals
 
 > Patrones brand candidatos a lift a luana-core. Lifecycle: proposed → under_review → accepted/rejected → migrated.
 
-_(none — ver [docs/promotion-protocol/proposals/](../promotion-protocol/proposals/) cuando haya candidates)_
+- **Open:** 0 (proposed: 0, under_review: 0, accepted: 0)
+- **Migrated:** 0
+- **Rejected (archive):** 0
+
+Ver [docs/promotion-protocol/proposals/](../promotion-protocol/proposals/).
 
 ---
 
-**Última regen:** placeholder (manual). Auto-regen via `make portfolio` (F5 deliverable).
+**Última regen:** 2026-05-15 (auto via `make portfolio`).
