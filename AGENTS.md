@@ -2,7 +2,7 @@
 
 **Luana platform** (multimarca, post reorg 2026-05-15) — Engine compartido `core/luana-core-*` (26 paquetes) + 10 brand verticals consumidoras. Multitenant AaaS marketing/sales automation. FastAPI async + Next.js 16 FSD + Clerk + Postgres/Qdrant. Modular Monolith DDD + Docker-First.
 
-**Nota:** AGENTS.md mantiene defaults heredados de la era single-brand Nicolify. Para topología multimarca + skills /pm split + filosofía pointer-first, ver `CLAUDE.md` (overlay project-specific) + `docs/portfolio/PORTFOLIO.md` (vista master 11 universos).
+**Nota:** AGENTS.md mantiene defaults heredados de la era single-brand Nicolify. Para topología multimarca + skill `/pm-luana` unificado (Modo Portfolio + Modo Core Engineering) + filosofía pointer-first, ver `CLAUDE.md` (overlay project-specific) + `docs/portfolio/PORTFOLIO.md` (vista master 11 universos).
 
 ## Agent Rules <!-- tessl-managed -->
 
@@ -65,8 +65,7 @@ Single branch = `development`. `main` = prod only. No feature branches, no workt
 | E2E live verification | `chrome-devtools-verify` |
 | Social content creation | `content-hunter` |
 | ManyChat integration | `manychat-expert` |
-| PM master orquestador (cross-portfolio 11 universos) | `pm` skill (SSoT: `docs/portfolio/PORTFOLIO.md` — pointer-first, drill-down on demand) |
-| PM core (Luana — promotion gate, semver, EPs) | `pm-luana` skill (SSoT: `docs/promotion-protocol/` + `docs/core-modules/`) |
+| PM Luana unificado (cross-portfolio 11 universos + core engineering, promotion gate, semver, EPs) | `pm-luana` skill, alias `/pm` (SSoT: `docs/portfolio/PORTFOLIO.md` + `docs/promotion-protocol/` + `docs/core-modules/` — pointer-first, drill-down on demand) |
 | PM brand-specific (×4: nicolify, vitalia, comunify, lupulo + 6 templates pendientes) | `pm-{brand}` skill (SSoT: `{brand}/docs/product/`) |
 | Bootstrap brand nueva (saasora, inmoflow, retailly, fixia, guestly, fitflow) | `_pm-brand-template` scaffold |
 | User story (UI std) — Gherkin + wireframes inline | `po-ux` skill (fusión `/po` + `/ux-ui`) |

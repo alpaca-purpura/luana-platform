@@ -36,7 +36,7 @@ luana-platform/                                  ← monorepo (pnpm + uv workspa
 
 **Migración status (2026-05-15 post-reorg multimarca).** Plan target: `docs/architecture/luana-platform/01-core-audit.md`. Audit purge: `docs/architecture/luana-platform/02-core-purge-audit.md`. Core packages ya extraídos como `luana-core-*` (Story 5+). Brand apps consumen via `luana_core_*` Python imports + `@luana/*` TS imports. Stories 11-12 shipped (vitalia + comunify); lupulo placeholder; **6 marcas nuevas (SaaSora, InmoFlow, Retailly, Fixia, Guestly, FitFlow) pendientes bootstrap** — usar `_pm-brand-template/` workflow.
 
-**Topología docs federada (post reorg 2026-05-15):** SSoT distribuido — `docs/` raíz contiene transversales (Luana core), cada `{brand}/docs/` contiene SSoT autónomo del brand. Vista master en `docs/portfolio/PORTFOLIO.md` (auto-gen). Skills `/pm` split en master lite + `/pm-luana` (core) + `/pm-{brand}` (×4 + 6 templates). Promotion gate brand→core en `docs/promotion-protocol/`.
+**Topología docs federada (post reorg 2026-05-15):** SSoT distribuido — `docs/` raíz contiene transversales (Luana core), cada `{brand}/docs/` contiene SSoT autónomo del brand. Vista master en `docs/portfolio/PORTFOLIO.md` (auto-gen). Skills `/pm` unificado en `/pm-luana` (Modo Portfolio + Modo Core Engineering) + `/pm-{brand}` (×4 + 6 templates). `/pm` queda como alias retro-compat. Promotion gate brand→core en `docs/promotion-protocol/`.
 
 ## Workspace tooling
 
@@ -56,15 +56,15 @@ SSoT funcional federado (post reorg multimarca 2026-05-15). Vocabulario v4 (post
 
 | Carpeta | Significado | Owner |
 |---|---|---|
-| `docs/portfolio/` | Vista master 11 universos (auto-gen via `make portfolio`). 1-pagers per universo | `/pm` (master) |
-| `docs/promotion-protocol/` | Workflow brand→core lift gate + proposals + scan-{date}.yaml | `/pm-luana` |
-| `docs/core-modules/` | Contracts públicos de los 26 paquetes `luana-core-*` | `/pm-luana` |
-| `docs/product/` | Outcomes platform (cross-brand) + capabilities core (cuando se pueblen) | `/pm-luana` |
+| `docs/portfolio/` | Vista master 11 universos (auto-gen via `make portfolio`). 1-pagers per universo | `/pm-luana` (Modo Portfolio) |
+| `docs/promotion-protocol/` | Workflow brand→core lift gate + proposals + scan-{date}.yaml | `/pm-luana` (Modo Core) |
+| `docs/core-modules/` | Contracts públicos de los 26 paquetes `luana-core-*` | `/pm-luana` (Modo Core) |
+| `docs/product/` | Outcomes platform (cross-brand) + capabilities core (cuando se pueblen) | `/pm-luana` (Modo Core) |
 | `docs/process/` | Reglas transversales: ticket-states, checkpoint-protocol, parallel-sessions, learnings, pm-redesign | `/pm-luana` |
 | `docs/specs/` | Templates + Rubrics + Personas (reusable cross-brands) | varios |
 | `docs/architecture/` | ADR platform + carve-out plan + purge audit | `/architect` + `/pm-luana` |
 | `docs/domains/` | DEPRECATED legacy single-brand snapshot (read-only) | — |
-| `docs/archive/{year}/` | Stories `done` snapshot inmutable + snapshot-pre-multibrand-pm-redesign | `/pm` (read-only) |
+| `docs/archive/{year}/` | Stories `done` snapshot inmutable + snapshot-pre-multibrand-pm-redesign | `/pm-luana` (read-only) |
 
 ### Per-brand (`{brand}/docs/` + `{brand}/.claude/`)
 
@@ -85,14 +85,14 @@ Detalle completo: `docs/process/pm-redesign-2026-05.md` § Punto 4.
 
 | # | Estado | Significado | Trigger entry | Owner | WIP cap |
 |---|---|---|---|---|---|
-| 1 | `idea` | Spark + research opcional (`00-research.md`). Puede nunca implementarse | Chris tira | Chris + `/pm` | ∞ |
-| 2 | `refining` | Decompose stories + drafts spec/UX/agentic. Loop iterativo Chris | Chris dice "refinemos {x}" | `/pm` + `/po-ux`/`/po`/`/ux-agentico` | ≤ 3 |
-| 3 | `refined` | Spec + UX/diseño ratificados Chris. Listo para architects | Chris ratifica | `/pm` cierra | ≤ 5 |
+| 1 | `idea` | Spark + research opcional (`00-research.md`). Puede nunca implementarse | Chris tira | Chris + `/pm-luana` o `/pm-{brand}` | ∞ |
+| 2 | `refining` | Decompose stories + drafts spec/UX/agentic. Loop iterativo Chris | Chris dice "refinemos {x}" | `/pm-luana` o `/pm-{brand}` + `/po-ux`/`/po`/`/ux-agentico` | ≤ 3 |
+| 3 | `refined` | Spec + UX/diseño ratificados Chris. Listo para architects | Chris ratifica | `/pm-luana` o `/pm-{brand}` cierra | ≤ 5 |
 | 4 | `ready` | Paquete autocontenido completo (`03-arch` + `04-validators` + `05-guidelines` + `06-tickets`) | `/architect` cierra | `/architect` Opus | ≤ 5 |
 | 5 | `developing` | Autonomous build activo iterando vs validators | `/dev-team` picks | opencode/Sonnet (Opus si agentic prod) | ≤ 3 |
 | 6 | `developed` | Validators GREEN. Build cerrado, awaiting QA | `/dev-team` cierra | `/dev-team` | ≤ 10 |
 | 7 | `reviewing` | Auditor QA en curso (Opus C1-C3 + Sonnet tests) | Chris triggers manual | `/auditor` | ≤ 2 |
-| 8 | `done` | Auditor APPROVED + merge + capability promovida + docs | auditor APPROVED → `/pm` merge | `/pm` | rolling 90d |
+| 8 | `done` | Auditor APPROVED + merge + capability promovida + docs | auditor APPROVED → `/pm-luana` o `/pm-{brand}` merge | `/pm-luana` o `/pm-{brand}` | rolling 90d |
 | 9 | `parked` | De-prioritized, NO abandonado | manual | Chris | ∞ |
 | 10 | `dropped` | Won't do (terminal) | manual | Chris | ∞ |
 
@@ -119,7 +119,7 @@ Tickets flat dentro: `T-{n}-impl-log.md`, `T-{n}-result.md`, `T-{n}-review.md`. 
 ### Flujo extremo-a-extremo (3 conversaciones)
 
 ```
-Conv 1 — DISCOVERY + READY  (Chris + /pm + /po-ux + /architect)
+Conv 1 — DISCOVERY + READY  (Chris + /pm-luana + /po-ux + /architect)
   → idea (ideas-pool.yaml + opcional 00-research.md)
   → [Chris "refinemos"] → refining (/po-ux | /po | /ux-agentico drafts 01-spec + 02-design-*)
   → [Chris ratifica] → refined
@@ -133,11 +133,11 @@ Conv 2 — AUTONOMOUS BUILD   (opencode + Sonnet iterando contra validators)
   → on GREEN: state=developing→developed
   → on cap reached: state=developing→blocked, escalate Chris
 
-Conv 3 — REVIEW + MERGE     (Chris triggers /auditor + /pm merge)
+Conv 3 — REVIEW + MERGE     (Chris triggers /auditor + /pm-luana o /pm-{brand} merge)
   → state=developed → reviewing (manual por Chris)
   → /auditor spawna auditor-{be,fe,agentic}
   → CHECKPOINTS.md C1-C5 grid: Code | Spec | Architecture | Cross-cutting | Trace
-  → APPROVED → /pm aplica merge → scenarios migran a capability → story archive a docs/archive/{year}/
+  → APPROVED → /pm-luana o /pm-{brand} aplica merge → scenarios migran a capability → story archive a docs/archive/{year}/
   → state=reviewing→done
 ```
 
@@ -155,12 +155,11 @@ Conv 3 — REVIEW + MERGE     (Chris triggers /auditor + /pm merge)
 
 ### Skills ejes
 
-> **PM split (post reorg multimarca 2026-05-15):** 3 niveles — master lite + core PM + per-brand PMs. Pointer-first (carga ~3-5k tokens en bootstrap, drill-down on demand).
+> **PM unificado (post fusión 2026-05-15 ratificada):** 2 niveles — PM Luana unificado (Modo Portfolio + Modo Core Engineering en un solo skill) + per-brand PMs. Pointer-first (carga ~5k tokens en bootstrap, drill-down on demand). Anti-creep rules dentro del skill protegen jurisdicción.
 
 | Skill | Modelo | Rol |
 |---|---|---|
-| `/pm` | Opus 4.7 | **Master lite orquestador.** Carga `docs/portfolio/PORTFOLIO.md`. Decide qué skill `/pm-X` invocar. NO maneja BACKLOGs per-brand directamente. |
-| `/pm-luana` | Opus 4.7 | **Core PM.** Owner promotion gate brand→core, semver core packages, EPs, outcomes platform. Carga `docs/promotion-protocol/README.md` + `docs/core-modules/README.md`. |
+| `/pm-luana` (alias `/pm`) | Opus 4.7 | **PM unificado.** Cubre Modo Portfolio (panorama cross-brand, routing) + Modo Core Engineering (promotion gate brand→core, semver core packages, EPs, outcomes platform). Carga `docs/portfolio/PORTFOLIO.md` + `docs/promotion-protocol/README.md` + `docs/core-modules/README.md`. NO edita `{brand}/docs/`. |
 | `/pm-{brand}` (×4: nicolify, vitalia, comunify, lupulo) | Opus 4.7 | **Brand PM.** Hereda paradigm v4. Owner `{brand}/docs/product/`, learnings, architecture, domains. Promotion candidates ping `/pm-luana`. |
 | `_pm-brand-template` | (no auto-load) | Scaffold para bootstrap brands futuras (saasora, inmoflow, retailly, fixia, guestly, fitflow). |
 | `/po-ux` | Opus 4.7 | UI standard stories (CRUD/list/detail/form/dashboard). Produce 01-spec.md con Gherkin + wireframes inline. |
@@ -175,7 +174,7 @@ Conv 3 — REVIEW + MERGE     (Chris triggers /auditor + /pm merge)
 
 > *"Memoria, índices y skills lite cargan punteros, no contenido. El detalle vive en SSoT donde nace y se carga on-demand."*
 
-Aplicada a: MEMORY.md, memorias individuales, master /pm, per-brand PMs, portfolio, promotion proposals. Beneficio: master /pm escala lineal con cantidad de brands sin degradar contexto.
+Aplicada a: MEMORY.md, memorias individuales, /pm-luana unificado, per-brand PMs, portfolio, promotion proposals. Beneficio: PM Luana escala lineal con cantidad de brands sin degradar contexto.
 
 **Hard rule (R23):** AGENTIC tickets con `production_code: true` (luana_core_copilot/luana_core_sales_agent runtime + brand vertical extensions tocando esos cores) → Opus 4.7 SIEMPRE. opencode/Sonnet ban absoluto. AGENTIC tickets con `production_code: false` (tests/docs sobre agentic) → Sonnet OK.
 
@@ -284,6 +283,7 @@ NUNCA inline >500 tokens de artifact body. Caller lee file on demand.
 
 | Tocas | Skill | Stub |
 |---|---|---|
+| Vista portfolio / cross-brand / core / promotion gate | `/pm-luana` skill (alias `/pm`) | `docs/portfolio/PORTFOLIO.md` + `docs/promotion-protocol/` + `docs/core-modules/` |
 | `core/luana-core-copilot/` o `{brand}/backend/src/modules/{brand}/copilot/` | `copilot-expert` | `rules/copilot-{resilience,observability}.md` |
 | `core/luana-core-sales-agent/` o `{brand}/backend/src/modules/{brand}/sales_agent/` | `sales-agent-expert` | `rules/sales-agent-brand-voice.md` |
 | `core/luana-core-offer-studio/` catalogs | `offer-expert` / `offer-type-preset-expert` | `rules/offer-catalogs.md` |
@@ -293,11 +293,9 @@ NUNCA inline >500 tokens de artifact body. Caller lee file on demand.
 | FE quality/form-runtime | `frontend-expert` / `brand-expert` | `rules/{frontend-quality,form-runtime-array}.md` |
 | Streamlit admin | `backend-expert` | `rules/admin-panel.md` |
 | E2E Playwright + Clerk auth + smoke tests | `playwright-expert` | `rules/e2e-testing.md` |
-| PM master orquestador | `/pm` skill | `docs/portfolio/PORTFOLIO.md` + drill-down on demand |
-| PM core (Luana) — promotion gate, semver, EPs | `/pm-luana` skill | `docs/promotion-protocol/` + `docs/core-modules/` + `docs/architecture/luana-platform/` |
 | PM brand-specific (×4 + 6 templates pendientes) | `/pm-{brand}` skill | `{brand}/docs/product/` + `{brand}/docs/{learnings,architecture,domains}/` |
 | Bootstrap brand nueva | `_pm-brand-template/` | scaffold workflow + `{brand}/{backend,frontend,config,deploy,docs,.claude}/` |
-| BE config flag flips (`core/config.py` defaults) | (none — `pm` skill ratification) | `rules/anti-default-flip-audit.md` |
+| BE config flag flips (`core/config.py` defaults) | (none — `/pm-luana` ratification) | `rules/anti-default-flip-audit.md` |
 | User story redacción (UI std) | `po-ux` skill | `docs/specs/templates/01-spec-template.md` |
 | User story redacción (service-only) | `po` skill | `docs/specs/templates/01-spec-template.md` |
 | Conversational flow design | `ux-agentico` skill | `docs/specs/templates/02-design-agentic-template.md` |
@@ -307,15 +305,15 @@ NUNCA inline >500 tokens de artifact body. Caller lee file on demand.
 | Process metrics emission | `dev-team` + `auditor` | `scripts/emit_process_metric.py` + `docs/process/metrics/README.md` |
 | Hot-fix ticket origen handoff doc | `dev-team` + `po` | `.claude/rules/hotfix-repro-mandatory.md` |
 | Backlog freshness | `/pm-{brand}` skill | `scripts/generate_backlog.py` (legacy, per-brand) |
-| Portfolio freshness (cross-brand) | `/pm` master | `scripts/generate_portfolio.py` + `make portfolio` |
-| Promotion candidates scan | `/pm-luana` | `scripts/scan_promotables.py` + `make scan-promotables` |
+| Portfolio freshness (cross-brand) | `/pm-luana` (Modo Portfolio) | `scripts/generate_portfolio.py` + `make portfolio` |
+| Promotion candidates scan | `/pm-luana` (Modo Core) | `scripts/scan_promotables.py` + `make scan-promotables` |
 | Capability reconciliation | `/pm-{brand}` skill | `scripts/reconcile_capabilities.py` (legacy, per-brand) |
 | Multibrand carve-out (extracción a luana-core) | `/architect` + `/pm-luana` | `docs/architecture/luana-platform/01-core-audit.md` + `02-core-purge-audit.md` |
 | Promotion proposal brand→core | `/pm-luana` skill | `docs/promotion-protocol/README.md` + `template-proposal.md` |
 
 ## Vision
 
-`docs/product/vision.md` (snapshot legacy hasta /pm regenerar live). Glossary: `docs/product/glossary.md`. Story-map backbone: `docs/product/story-map/backbone.md`. Plan multibrand: `docs/architecture/luana-platform/01-core-audit.md` + ADR-001.
+`docs/product/vision.md` (snapshot legacy hasta /pm-luana regenerar live). Glossary: `docs/product/glossary.md`. Story-map backbone: `docs/product/story-map/backbone.md`. Plan multibrand: `docs/architecture/luana-platform/01-core-audit.md` + ADR-001.
 
 ## Workspace bootstrap (fresh clone)
 

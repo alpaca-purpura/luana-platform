@@ -107,6 +107,5 @@ con placeholders reemplazados...)
 ## Referencias
 
 - `.claude/skills/pm-nicolify/SKILL.md` — ejemplo concreto template aplicado
-- `.claude/skills/pm/SKILL.md` — master orquestador (debe conocer al brand nuevo después bootstrap)
-- `.claude/skills/pm-luana/SKILL.md` — core PM (no se afecta directamente por brand bootstrap, pero promotion candidates futuros del brand nuevo llegarán acá)
+- `.claude/skills/pm-luana/SKILL.md` — PM Luana unificado (Modo Portfolio reconoce el brand nuevo después bootstrap + Modo Core recibe futuras promotion candidates del brand). Alias `/pm` apunta acá.
 - `docs/architecture/luana-platform/01-core-audit.md` — plan multibrand original con catálogo 10 brands
