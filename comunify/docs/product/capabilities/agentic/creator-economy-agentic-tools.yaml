@@ -1,0 +1,57 @@
+---
+capability_id: comunify-creator-economy-agentic-tools
+module: agentic
+slug: creator-economy-agentic-tools
+status: live
+date_introduced: 2026-05-14
+story_introduced: luana-comunify-bootstrap
+package_version: 0.1.0
+package_path: comunify/backend/src/modules/comunify/agentic/tools
+license: proprietary
+---
+
+# comunify-creator-economy-agentic-tools
+
+4 tools brand-extension del sales_agent comunify, registrados via Extension SDK EP-3 `sales_agent_tool_register` con namespace `comunify.*` (CC-4 enforcement):
+
+1. **`qualify_for_cohort`** — qualify lead vs cohort criteria, returns fit + recommended ladder tier
+2. **`link_to_community`** — generate signed invite URL (HMAC) o resend / suggest path / verify access
+3. **`nurture_via_authority_content`** — match authority_vault content a lead intent (pricing_guilt / imposter_syndrome / scaling_overload / etc.)
+4. **`book_discovery_call`** — EXTENDS `@luana/core/scheduling` con `appointment_type=discovery_call` (Q4=A reuse)
+
+## Surface
+
+### Backend (`comunify/backend/src/modules/comunify/agentic/tools/`)
+
+- **Tool handlers:** un archivo Python per tool implementando contract `(input_schema, handler callable)`
+- **Idempotency:** `book_discovery_call` y `link_to_community` 60-300s window keyed on (action, lead_id, target_slot/cohort_id)
+- **Tool groups:** qualification·cohort · community·invite · authority·nurture · scheduling·discovery_call
+
+### Tests (`comunify/backend/tests/agentic_evals/tools/`)
+
+- Tool contract: input_schema validation + handler return shape
+- Idempotency: duplicate call within window → existing result returned
+- 4-tool smoke per persona (Anabella AR / Trini CL / Pablo MX)
+
+## Test coverage
+
+- T-tools-1..4 results: 4 tools registered + smoke tests PASS
+- Agentic eval (subset 55 evals): tool invocation success rate per persona
+- Voice cloning compatibility: tool responses respect tenant compiled voice (slot 5)
+
+## Dependencies
+
+- luana-core-extension-sdk (EP-3 `sales_agent_tool_register`)
+- luana-core-sales-agent (engine tool dispatch + Pydantic input_schema validation)
+- luana-core-idempotency (`book_discovery_call` + `link_to_community` idempotency keys)
+- luana-core-scheduling (`book_discovery_call` extends core appointment booking)
+- comunify-authority-vault (`nurture_via_authority_content` matches against AuthorityProfile)
+- comunify-cohort-management (`qualify_for_cohort` reads cohort capacity)
+
+## Scenarios live
+
+- Lead conversa con sales_agent → tool dispatch `qualify_for_cohort` → fit_score + recommended_tier
+- Qualified lead → emite `LeadQualified` event → `cohort_enrollment_workflow` triggered (EP-4)
+- Member enrolled → `link_to_community` generates HMAC-signed invite URL
+- Lead pregunta credenciales → `nurture_via_authority_content` retorna case_study match
+- Lead pide call → `book_discovery_call` extends @luana/core/scheduling con appointment_type=discovery_call

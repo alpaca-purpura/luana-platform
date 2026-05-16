@@ -1,0 +1,49 @@
+---
+capability_id: comunify-community-engagement-workflow
+module: copilot
+slug: community-engagement-workflow
+status: live
+date_introduced: 2026-05-14
+story_introduced: luana-comunify-bootstrap
+package_version: 0.1.0
+package_path: comunify/backend/src/modules/comunify/copilot/workflows
+license: proprietary
+---
+
+# comunify-community-engagement-workflow
+
+LangGraph 2.0 state machine de 6 nodos para detección de member drift + re-engagement + escalation manual al creator. Cron tick 9am tenant-TZ-aware. RedisSaver checkpointer cross-brand (engine). Triggered por evento `comunify.member.drift_detected`. Registered vía Extension SDK EP-4 `copilot_workflow_register`.
+
+## Surface
+
+### Backend (`comunify/backend/src/modules/comunify/copilot/workflows/`)
+
+- **WorkflowDef registration:** `extensions.py` EP-4 → `WorkflowDef(name="comunify.community_engagement_workflow", trigger_event="comunify.member.drift_detected")`
+- **LangGraph StateGraph:** definición de 6 nodos (drift_signal_capture → analyze_engagement → segment_member → choose_outreach → send_outreach → mark_engaged_or_escalate)
+- **Cron trigger:** tenant-TZ-aware 9am local → checks `last_active_at` threshold per member
+
+### Tests (`comunify/backend/tests/agentic_evals/workflows/`)
+
+- Workflow smoke: state transitions + checkpoint persistence
+- Drift detection logic: 7d/14d/30d thresholds per cohort type
+
+## Test coverage
+
+- T-workflows-1 result: LangGraph StateGraph 6-node + RedisSaver checkpointer PASS
+- Agentic eval coverage en `tests/agentic_evals/workflows/` (subset 55 agentic_evals total)
+
+## Dependencies
+
+- luana-core-extension-sdk (EP-4 `copilot_workflow_register`)
+- luana-core-copilot (engine LangGraph orchestration + RedisSaver checkpointer)
+- luana-core-events (trigger event consumption via outbox)
+- LangGraph 2.0 (StateGraph + RedisSaver persistence)
+- luana-core-platform (tenant TZ resolution para cron tick)
+
+## Scenarios live
+
+- Member sin actividad 14 días → DriftDetected event → workflow start
+- Analyze engagement → segment (active/at_risk/dormant) → choose outreach (DM nurture / email re-engage / creator alert)
+- Outreach sent → wait 48h → if no response → escalate to creator manual
+- Tenant-TZ-aware: cron 9am hora local (no UTC) — Argentina 9am ARS, México 9am MXT
+- Cross-cohort: workflow opera per (tenant_id, cohort_id) — dual filter D17

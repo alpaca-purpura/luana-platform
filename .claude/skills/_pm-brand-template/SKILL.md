@@ -104,6 +104,42 @@ con placeholders reemplazados...)
 5. /dev-team autonomous build
 6. /auditor + /pm-{slug} merge
 
+## ★ Capability inventory post-merge (MANDATORIO)
+
+> Origen: proposal `2026-05-16-capability-inventory-enforcement` (gap detectado en vitalia Story 11).
+
+Cuando una story brand transiciona a `status: live` / `done` y la brand pasa a
+`status: shipped` en su `checkpoint.md`, `/pm-{slug}` MUST ejecutar el paso 2 del
+capability promotion (R32) ANTES de cerrar la sesión:
+
+1. Para cada feature shipped en la story → escribir `{slug}/docs/product/capabilities/{module}/{cap}.yaml`
+2. Frontmatter mínimo: `capability_id, module, slug, status: live, date_introduced,
+   story_introduced, package_version, package_path, license`
+3. Cuerpo: surfaces (config, backend, frontend, tests, docs) + KPIs si aplica + dependencies cross-package
+
+### Verification gate
+
+Pre-commit hook + CI deben correr:
+
+```bash
+.venv/bin/python scripts/reconcile_capabilities.py --require-capabilities-exist --brand {slug}
+```
+
+Exit 1 si brand `status: shipped` tiene `capabilities/` vacía. NO hay auto-fix —
+requires manual inventory por `/pm-{slug}`.
+
+Ejemplo verde: vitalia (16 caps en 13 módulos, 2026-05-16 recovery).
+Ejemplos rojos (al 2026-05-16): nicolify, comunify — pendientes inventory recovery.
+
+### Anti-pattern
+
+Mergear story con `status: live` sin actualizar `capabilities/` = brand SSoT funcional
+desincronizada del código. "¿Qué tenemos?" no se contesta leyendo docs sino
+inspeccionando código + rules + archive. Toda regen futura del portfolio + audits
++ promotion candidate detection operan ciegos.
+
+Ver también: `vitalia/docs/learnings/2026-05-16-capabilities-inventory-gap.md`.
+
 ## Referencias
 
 - `.claude/skills/pm-nicolify/SKILL.md` — ejemplo concreto template aplicado

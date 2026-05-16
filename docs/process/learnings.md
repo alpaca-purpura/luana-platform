@@ -888,3 +888,48 @@ action remains deferred).
 - Story 14 `luana-brand-voice-elevation`
 
 10/14 outcome stories done. Outcome `luana-platform-migration` 71% complete.
+
+---
+
+## 2026-05-16 — Capability inventory enforcement (cross-brand learn)
+
+**Contexto:** Vitalia Story 11 (`luana-vitalia-bootstrap`) mergeó 2026-05-15
+shipping 16 capabilities reales (76 endpoints + 25 FE hooks + 21 components +
+86 BE tests + 24 E2E smokes + 3 KB packs) pero NO ejecutó el paso 2 del
+capability promotion (R32): escribir `{brand}/docs/product/capabilities/{module}/{cap}.yaml`.
+
+El BACKLOG vitalia quedó vacío y la SSoT funcional desincronizada del código
+por 1 día. Detectado 2026-05-16 cuando Chris preguntó vía `/pm-vitalia`
+"qué funcionalidades tenemos". Recovery manual completado mismo día (commit
+`02fa415`) leyendo código vivo + archive `docs/archive/2026/snapshot-pre-multibrand-pm-redesign/capabilities/vitalia/` + diff vs aspirational rule.
+
+**Decisión:** abrir promotion proposal `2026-05-16-capability-inventory-enforcement`,
+estado=accepted upfront (Chris APPROVED scope S). Extender
+`scripts/reconcile_capabilities.py` con flag opt-in `--require-capabilities-exist`
+que verifica brands `status: shipped` tengan ≥1 capability YAML.
+
+**Cross-brand findings:** correr el script extendido cross-brand reveló mismo
+gap en nicolify + comunify (Story 12 mergeó pre-reorg sin paso 2 también).
+Vitalia (16 caps) y lupulo (placeholder) pasan el gate.
+
+**Implementación:**
+1. `scripts/reconcile_capabilities.py` — flag `--require-capabilities-exist` con
+   función `check_capability_coverage()` + dataclass `CapCoverageGap`. Opt-in,
+   backward-compatible.
+2. `_pm-brand-template/SKILL.md` — agregado sección "★ Capability inventory
+   post-merge (MANDATORIO)" con pre-commit gate explícito. Brands futuras
+   (saasora/inmoflow/retailly/fixia/guestly/fitflow) heredan el enforcement.
+3. Vitalia learning marcado `promotable: yes` + link a proposal.
+
+**Anti-pattern:** mergear story `status: live` sin actualizar `capabilities/` =
+brand SSoT funcional desincronizada del código. Toda regen portfolio + audits +
+promotion candidate detection operan ciegos.
+
+**Próximos pasos:** ejecutar inventory recovery comunify (esta sesión, B3) +
+inventory recovery nicolify (futuro, post carve-out audit B2).
+
+**Cross-references:**
+- Origen: [vitalia/docs/learnings/2026-05-16-capabilities-inventory-gap.md](../../vitalia/docs/learnings/2026-05-16-capabilities-inventory-gap.md)
+- Proposal: [docs/promotion-protocol/proposals/2026-05-16-capability-inventory-enforcement.md](../promotion-protocol/proposals/2026-05-16-capability-inventory-enforcement.md)
+- Script: `scripts/reconcile_capabilities.py`
+- Template: `.claude/skills/_pm-brand-template/SKILL.md`

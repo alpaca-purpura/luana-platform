@@ -1,0 +1,54 @@
+---
+capability_id: comunify-creator-public-landing
+module: public_landing
+slug: creator-public-landing
+status: live
+date_introduced: 2026-05-14
+story_introduced: luana-comunify-bootstrap
+package_version: 0.1.0
+package_path: comunify/frontend/src/app/public/[creator-handle]
+license: proprietary
+---
+
+# comunify-creator-public-landing
+
+Página pública del creator (subscribe / discover cohort). Template `creator_landing_hero` registrado vía Extension SDK EP-10 `landing_template_register` con vertical_hint=`creator_economy`. Sections: hero_creator_with_avatar + authority_vault_strip + ladder_visualizer_public + cohort_preview_cards + testimonials_with_photo + subscription_widget_embed + discovery_call_cta. Subscription widget embeddable (iframe + canonical, Q5=B both).
+
+## Surface
+
+### Frontend (`comunify/frontend/src/`)
+
+- **Ruta pública:** `src/app/public/[creator-handle]/page.tsx` — dynamic route por creator handle
+- **Widget embed bundle:** `comunify/frontend/widget/` — UMD subscription widget bundle (iframe + canonical)
+
+### Backend (`comunify/backend/src/modules/comunify/`)
+
+- **EP-10 registration en `extensions.py`:** `LandingTemplateDef(template_id="comunify.creator_landing_hero", vertical_hint="creator_economy", sections_schema={...})`
+
+### Tests
+
+- E2E smoke: `comunify/frontend/e2e/` public landing renders for fixture creators (Anabella/Trini/Pablo)
+
+## Test coverage
+
+- Template registration + sections_schema valid
+- E2E: page renders for `[creator-handle]` route + subscription widget loads
+- Cross-tenant: public landing scoped per creator_handle → tenant_id resolution
+
+## Dependencies
+
+- luana-core-extension-sdk (EP-10 `landing_template_register`)
+- luana-core-landing (engine template renderer + sections composer)
+- luana-core-brand-studio (authority_vault_strip + testimonials_with_photo)
+- luana-core-tenant-domains (creator_handle → tenant_id resolution)
+- comunify-authority-vault (authority_vault_strip section)
+- comunify-offer-ladder-advisor (ladder_visualizer_public section)
+- comunify-recurring-subscriptions-dunning (subscription_widget_embed)
+
+## Scenarios live
+
+- Visitor accede `comunify.com/anabella` → renders Anabella's public landing
+- Sections enriched from brand_studio + offers + authority_vault data
+- Subscription widget loads → checkout flow via Stripe Connect / MercadoPago
+- Discovery call CTA → `book_discovery_call` tool dispatched (post lead capture)
+- Embeddable: terceros embeben iframe widget en sus sitios (creators con marca propia)

@@ -2,7 +2,9 @@
 brand: vitalia
 date: 2026-05-16
 slug: capabilities-inventory-gap
-promotable: candidate
+promotable: yes
+promotion_proposal: docs/promotion-protocol/proposals/2026-05-16-capability-inventory-enforcement.md
+promotion_state: accepted
 applies_to_other_brands_potentially: [nicolify, comunify, lupulo, vitalia]
 target_core_package: scripts/ (process tooling, no core engine package)
 ---

@@ -1,0 +1,58 @@
+---
+capability_id: comunify-coaching-offers-preset
+module: offer_studio
+slug: coaching-offers-preset
+status: live
+date_introduced: 2026-05-14
+story_introduced: luana-comunify-bootstrap
+package_version: 0.1.0
+package_path: comunify/frontend/src/app/(dashboard)/offers
+license: proprietary
+---
+
+# comunify-coaching-offers-preset
+
+Preset pack `coaching_offers_v1` registrado vía Extension SDK EP-2 en `extensions.py`. Wizard de creación de oferta multi-paso adaptado a verticales creator-economy: lead_magnet (free), tripwire (low-ticket), core (cohort/curso), premium (mentoring/agency). Modelo ladder 4-level explícito declarado en `brand.yaml::ladder`.
+
+## Surface
+
+### Config (`comunify/config/brand.yaml`)
+
+```yaml
+offer_studio:
+  preset_pack: coaching_offers_v1
+  default_offer_type: coaching_program
+ladder:
+  levels: [lead_magnet, tripwire, core, premium]
+  conversion_projections_baseline:
+    lead_magnet_to_tripwire: 0.08
+    tripwire_to_core: 0.12
+    core_to_premium: 0.06
+```
+
+### Backend (`comunify/backend/src/modules/comunify/`)
+
+- **Extension SDK registration:** `extensions.py::register_all()` EP-2 → `PresetPack(name="comunify.coaching_offers_v1", applies_to_brand="comunify", presets=())`
+- Preset content real lands en story dedicada offer-studio Coaching (futuro)
+
+### Frontend (`comunify/frontend/src/`)
+
+- **Rutas dashboard:**
+  - `src/app/(dashboard)/offers/page.tsx` — listado coaching offers
+- **Ladder visualizer:** ver capability `comunify-offer-ladder-advisor` (companion FE)
+
+## Test coverage
+
+- Arch fitness: `test_extensions_registry_brand_smoke.py` — EP-2 registration verified
+- Smoke: PresetPack mounted, applies_to_brand=comunify
+
+## Dependencies
+
+- luana-core-extension-sdk (EP-2 `offer_preset_pack_register`)
+- luana-core-offer-studio (preset catalog DAG: archetype × value_level × format × biz_type)
+
+## Scenarios live
+
+- Creator inicia wizard offer → preset_pack `coaching_offers_v1` filtra archetypes válidos creator-economy
+- 4-level ladder visualizer consume preset → muestra gap heatmap (entry/mid/flagship/premium)
+- Currency LATAM-aware: USD/MXN/ARS/CLP price anchors per tier

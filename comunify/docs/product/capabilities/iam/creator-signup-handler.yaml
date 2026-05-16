@@ -1,0 +1,47 @@
+---
+capability_id: comunify-creator-signup-handler
+module: iam
+slug: creator-signup-handler
+status: live
+date_introduced: 2026-05-14
+story_introduced: luana-comunify-bootstrap
+package_version: 0.1.0
+package_path: comunify/backend/src/modules/comunify
+license: proprietary
+---
+
+# comunify-creator-signup-handler
+
+Handler IAM brand-extension para signup de creator-economy: **auto-approve** (status=`approved` directo en Clerk webhook completion). Distintivo vs Vitalia que usa `pending_review` (D7 — creator-economy lighter compliance, no regulatory authority validation needed vs medical clinic). Registered vía Extension SDK EP-16 `iam_signup_handler`.
+
+## Surface
+
+### Backend (`comunify/backend/src/modules/comunify/`)
+
+- **EP-16 handler en `extensions.py`:** `_comunify_creator_signup(clerk_user, ctx) → SignupResult(status="approved", metadata={"compliance_level": "creator_economy", "voice_cloning_pipeline_required": True, "default_plan_tier": "comunify.creator"})`
+- **Webhook listener:** Clerk webhook `user.created` → ejecuta signup handler → tenant provisioning
+
+### Tests
+
+- Signup smoke: Clerk webhook → SignupResult.status=approved
+- Metadata: voice_cloning_pipeline_required=true (D8 ON) → onboarding step 2 prompts samples upload
+- Default plan tier: comunify.creator (tier override EP-17)
+
+## Test coverage
+
+- T-iam-1 (subset) result: creator signup auto-approve PASS
+- Diferencia D7 cement: vs Vitalia clinic_signup pending_review (regulatory auth check)
+
+## Dependencies
+
+- luana-core-extension-sdk (EP-16 `iam_signup_handler` + EP-17 plan tier override)
+- luana-core-iam (tenant provisioning + Clerk webhook handling)
+- Clerk (signup auth provider + webhook signature validation)
+- comunify-creator-onboarding-4step (post-signup wizard flow)
+
+## Scenarios live
+
+- Creator signs up via Clerk → `user.created` webhook → `_comunify_creator_signup(...)` ejecuta
+- SignupResult.status=approved → tenant fila creada + plan_tier inicial `comunify.creator` ($29/mes)
+- Onboarding wizard prompt: voice_cloning_pipeline_required=true → step 2 samples upload visible
+- D7 vs Vitalia: comunify approved auto, vitalia pending_review (regulatory check medical)

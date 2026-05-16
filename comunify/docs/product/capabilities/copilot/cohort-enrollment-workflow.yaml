@@ -1,0 +1,53 @@
+---
+capability_id: comunify-cohort-enrollment-workflow
+module: copilot
+slug: cohort-enrollment-workflow
+status: live
+date_introduced: 2026-05-14
+story_introduced: luana-comunify-bootstrap
+package_version: 0.1.0
+package_path: comunify/backend/src/modules/comunify/copilot/workflows
+license: proprietary
+---
+
+# comunify-cohort-enrollment-workflow
+
+LangGraph 2.0 state machine de 7 nodos para lifecycle lead → enrolled: qualification → discovery_call → terms → payment_pending → enrolled, con branches payment_expired y dunning_state. **DunningWorkflow embedded** (4-state machine separado: active → past_due → suspended → cancelled per D19). RedisSaver checkpointer. Triggered por evento `comunify.lead.qualified`. Registered vía Extension SDK EP-4.
+
+## Surface
+
+### Backend (`comunify/backend/src/modules/comunify/copilot/workflows/`)
+
+- **WorkflowDef registration:** `extensions.py` EP-4 → `WorkflowDef(name="comunify.cohort_enrollment_workflow", trigger_event="comunify.lead.qualified")`
+- **LangGraph StateGraph 7-node:** qualification_summary → schedule_discovery → present_terms → await_payment → enrolled_branch | payment_expired_branch | dunning_branch
+- **DunningWorkflow embedded:** 4-state nested workflow (active → past_due → suspended → cancelled) per D19 — handles failed payment retries
+- **Companion campaign:** `cohort_enrollment_payment_followup` (EP-11) — WhatsApp drip 24h + 48h reminders pre-dunning
+
+### Tests (`comunify/backend/tests/agentic_evals/workflows/`)
+
+- Cohort enrollment smoke + payment_pending branch + dunning embedded transitions
+- Cohort capacity advisory_lock check (vía EP-5 BookingPolicy)
+
+## Test coverage
+
+- T-workflows-2 result: LangGraph 7-node + Dunning embedded 4-state + payment branches PASS
+- Idempotency keys: webhook payment events deduped (5-min window)
+- Capacity check: double-enrollment race → 409 Conflict via PG advisory_xact_lock
+
+## Dependencies
+
+- luana-core-extension-sdk (EP-4 workflow + EP-5 BookingPolicy + EP-11 campaign + EP-15 lifecycle stage)
+- luana-core-copilot (LangGraph + RedisSaver)
+- luana-core-idempotency (payment webhook idempotency)
+- luana-core-payments / comunify payment adapters (MercadoPago + Stripe Connect + TokenizedRecurring)
+- luana-core-scheduling (DiscoveryCall booking via `book_discovery_call` tool)
+- comunify-recurring-subscriptions-dunning (DunningWorkflow embedded)
+
+## Scenarios live
+
+- Lead qualifies via `qualify_for_cohort` tool → LeadQualified event → workflow start
+- Discovery call scheduled vía `book_discovery_call` tool → @luana/core/scheduling
+- Terms presented + payment intent created (MP or Stripe) → wait
+- Payment success → enrolled → cohort capacity decremented → welcome_packet PDF sent (EP-12 asset)
+- Payment fail → DunningWorkflow embedded → 3 retries → past_due → suspended → cancelled (4-state per D19)
+- Payment expired (24h+48h reminders) → payment_expired_branch → cohort spot liberado

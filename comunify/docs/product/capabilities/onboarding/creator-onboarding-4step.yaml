@@ -1,0 +1,50 @@
+---
+capability_id: comunify-creator-onboarding-4step
+module: onboarding
+slug: creator-onboarding-4step
+status: live
+date_introduced: 2026-05-14
+story_introduced: luana-comunify-bootstrap
+package_version: 0.1.0
+package_path: comunify/frontend/src/app/onboarding
+license: proprietary
+---
+
+# comunify-creator-onboarding-4step
+
+Onboarding wizard 4-step para creadores: niche picker → voice samples uploader → Stripe Connect setup → ladder seed. Voice cloning samples upload (paso 2) es **distintivo Comunify Story 12 D8=ON** (Vitalia OFF). Registered vía Extension SDK EP-18 `onboarding_wizard_steps_register` con `mode=override` (Comunify reemplaza wizard core defaults).
+
+## Surface
+
+### Frontend (`comunify/frontend/src/app/onboarding/`)
+
+- `step-1/page.tsx` — niche picker (creator vertical + nicho específico)
+- `step-2/page.tsx` — voice samples uploader (50+ chats → CompiledVoice v2 distillation)
+- `step-3/page.tsx` — Stripe Connect onboarding (recurring subscriptions setup)
+- `step-4/page.tsx` — ladder seed (initial offer ladder 4-level structure)
+
+### Backend (`comunify/backend/src/modules/comunify/`)
+
+- **EP-18 registration en `extensions.py`:** 2 steps cementados con `mode="override"`:
+  - `comunify.creator_niche_picker` (component_ref=`ComunifyCreatorNichePicker`, skippable=false)
+  - `comunify.voice_samples_uploader` (component_ref=`ComunifyVoiceSamplesUploader`, skippable=true — D8 recommended pero no blocking, prereqs=[creator_niche_picker], post_action_event=`comunify.voice_cloning.samples_uploaded`)
+
+## Test coverage
+
+- E2E smoke: `comunify/backend/tests/e2e/test_onboarding_*.py` flow completion
+- Voice samples upload → `samples_uploaded` event → VoiceDistillationOrchestrator triggered
+- D9 chrome UI tuteo (NOT voseo per spec § 17 Q1=B)
+
+## Dependencies
+
+- luana-core-extension-sdk (EP-18 `onboarding_wizard_steps_register` con mode=override CC-2)
+- luana-core-iam (Clerk webhook signup → SignupResult `approved` per `_comunify_creator_signup`)
+- comunify-voice-cloning-pipeline (samples_uploaded → distillation trigger)
+
+## Scenarios live
+
+- Creator sign-up via Clerk → SignupResult approved (D7 lighter compliance, no regulatory check)
+- Step 1 niche picker → creator selecciona nicho coaching/education/content
+- Step 2 voice samples uploader → 50+ chats subidos → VoiceDistillationOrchestrator runs 4-wave
+- Step 3 Stripe Connect → tokenized recurring habilitado para subscriptions + cohorts
+- Step 4 ladder seed → 4-level offer ladder estructura inicial creada (lead_magnet placeholder + core slot)
