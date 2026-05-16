@@ -263,7 +263,7 @@ class TestOrmRoundTripMinimal:
 
     def test_eval_simulator_grade_model_importable(self) -> None:
         """EvalSimulatorGradeModel must be importable from models package."""
-        from src.modules.sales_agent.observability.eval_simulator.persistence.models import (
+        from luana_core_sales_agent.observability.eval_simulator.persistence.models import (
             EvalSimulatorGradeModel,
         )
 
@@ -271,7 +271,7 @@ class TestOrmRoundTripMinimal:
 
     def test_eval_simulator_grade_cache_model_importable(self) -> None:
         """EvalSimulatorGradeCacheModel must be importable from models package."""
-        from src.modules.sales_agent.observability.eval_simulator.persistence.models import (
+        from luana_core_sales_agent.observability.eval_simulator.persistence.models import (
             EvalSimulatorGradeCacheModel,
         )
 
@@ -279,7 +279,7 @@ class TestOrmRoundTripMinimal:
 
     def test_grade_model_has_composite_pk_columns(self) -> None:
         """EvalSimulatorGradeModel must expose simulation_id, turn_n, rubric_id columns."""
-        from src.modules.sales_agent.observability.eval_simulator.persistence.models import (
+        from luana_core_sales_agent.observability.eval_simulator.persistence.models import (
             EvalSimulatorGradeModel,
         )
 
@@ -296,7 +296,7 @@ class TestOrmRoundTripMinimal:
 
     def test_grade_cache_model_has_expected_columns(self) -> None:
         """EvalSimulatorGradeCacheModel must expose cache_key, payload, hashes."""
-        from src.modules.sales_agent.observability.eval_simulator.persistence.models import (
+        from luana_core_sales_agent.observability.eval_simulator.persistence.models import (
             EvalSimulatorGradeCacheModel,
         )
 
@@ -311,7 +311,7 @@ class TestOrmRoundTripMinimal:
 
     def test_models_package_exports_both_new_models(self) -> None:
         """__init__.py must export EvalSimulatorGradeModel + EvalSimulatorGradeCacheModel."""
-        from src.modules.sales_agent.observability.eval_simulator.persistence import models as m
+        from luana_core_sales_agent.observability.eval_simulator.persistence import models as m
 
         assert hasattr(m, "EvalSimulatorGradeModel")
         assert hasattr(m, "EvalSimulatorGradeCacheModel")
@@ -320,7 +320,7 @@ class TestOrmRoundTripMinimal:
 
     def test_grade_model_has_pk_constraint_named(self) -> None:
         """eval_simulator_grade must have named PK constraint (migration 127 mirror)."""
-        from src.modules.sales_agent.observability.eval_simulator.persistence.models import (
+        from luana_core_sales_agent.observability.eval_simulator.persistence.models import (
             EvalSimulatorGradeModel,
         )
 

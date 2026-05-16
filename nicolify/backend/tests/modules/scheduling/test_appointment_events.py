@@ -8,8 +8,8 @@ and EventBus subscription registration.
 import uuid
 from unittest.mock import MagicMock, patch
 
-import src.modules.crm.infrastructure.models.customer_model
-import src.modules.crm.infrastructure.models.lead_model
+import luana_core_crm.infrastructure.models.customer_model
+import luana_core_crm.infrastructure.models.lead_model
 
 # Pre-import models to register them with SQLAlchemy mapper
 # (prevents lazy relationship resolution errors in tests)
@@ -18,14 +18,14 @@ from luana_core_platform.domain.events import DomainEvent, EventBus
 
 try:
     import luana_core_connections.infrastructure.models.channel_connection_model
-    import src.modules.sales_agent.infrastructure.models.message_model
+    import luana_core_sales_agent.infrastructure.models.message_model
 except ImportError:
     pass
-import src.modules.crm.infrastructure.models.lifecycle_transition_model
+import luana_core_crm.infrastructure.models.lifecycle_transition_model
 import src.modules.scheduling.infrastructure.models.appointment_model
 
 try:
-    import src.modules.crm.infrastructure.models.sale_model
+    import luana_core_crm.infrastructure.models.sale_model
     import luana_core_offer_studio.infrastructure.models.product_model
 except ImportError:
     pass

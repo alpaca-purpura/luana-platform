@@ -136,7 +136,7 @@ def _query_eval_simulator_llm_call_rows(
     Filters via ``eval_metadata->>'simulation_id'`` jsonb. Returns the raw
     rows so tests can probe per-row shape (cost_usd, agent_kind, tenant_id).
     """
-    from src.modules.sales_agent.observability.eval_simulator.persistence.models.eval_simulator_llm_call import (
+    from luana_core_sales_agent.observability.eval_simulator.persistence.models.eval_simulator_llm_call import (
         EvalSimulatorLlmCallModel,
     )
 
@@ -154,7 +154,7 @@ def _query_eval_simulator_trace_event_rows(
 
     Filters via ``eval_metadata->>'simulation_id'`` jsonb.
     """
-    from src.modules.sales_agent.observability.eval_simulator.persistence.models.eval_simulator_trace_event import (
+    from luana_core_sales_agent.observability.eval_simulator.persistence.models.eval_simulator_trace_event import (
         EvalSimulatorTraceEventModel,
     )
 

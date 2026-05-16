@@ -35,7 +35,7 @@ from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.modules.sales_agent.observability.eval_simulator.persistence.models.eval_simulator_grade_cache import (
+from luana_core_sales_agent.observability.eval_simulator.persistence.models.eval_simulator_grade_cache import (
     EvalSimulatorGradeCacheModel,
 )
 from tests.agentic_evals.sales_agent.grader.result import MajEvalScore

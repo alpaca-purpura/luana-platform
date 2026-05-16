@@ -155,11 +155,11 @@ from sqlalchemy import text
 import src.shared.infrastructure.agent_observability_bootstrap
 import src.shared.infrastructure.model_registry  # noqa: F401
 from src.modules.advertising.api import routes as advertising_routes
-from src.modules.crm.api import contacts as crm_contacts  # Nicolify-local: not yet lifted to luana_core_crm
-from luana_core_offer_studio.api import (
-    campaigns as offer_campaigns,
+from luana_core_crm.api import contacts as crm_contacts  # Nicolify-local: not yet lifted to luana_core_crm
+from src.edges import (
+    offer_campaigns,
 )  # Nicolify-local: not yet lifted to luana_core_offer_studio
-from luana_core_offer_studio.api import counts as offer_counts  # Nicolify-local: not yet lifted to luana_core_offer_studio
+from src.edges import offer_counts  # Nicolify-local: not yet lifted to luana_core_offer_studio
 from src.modules.scheduling.api import agenda as sched_agenda
 
 # 8. Scheduling

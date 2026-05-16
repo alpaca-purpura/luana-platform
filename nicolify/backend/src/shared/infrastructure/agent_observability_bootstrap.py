@@ -28,6 +28,6 @@ from luana_core_campaigns import observability as _campaigns_observability  # no
 from luana_core_copilot import observability as _copilot_observability  # noqa: F401
 from luana_core_sales_agent import observability as _sales_agent_observability  # noqa: F401
 
-from src.modules.sales_agent.observability.eval_simulator import (
+from luana_core_sales_agent.observability.eval_simulator import (
     spec as _eval_simulator_observability,  # noqa: F401  # eval_simulator deferred to Luana v0.2.0 — stays Nicolify-local
 )

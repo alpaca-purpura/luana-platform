@@ -65,7 +65,7 @@ def mock_arq_pool(monkeypatch: pytest.MonkeyPatch) -> MagicMock:
 
     # extract_from_doc may not exist yet — patch lazily after import
     try:
-        import src.modules.copilot.application.tools.extract_from_doc as _efd
+        import luana_core_copilot.application.tools.extract_from_doc as _efd
 
         monkeypatch.setattr(_efd, "get_arq_pool", lambda: pool)
         monkeypatch.setattr(_efd, "redis_client", redis_mock)

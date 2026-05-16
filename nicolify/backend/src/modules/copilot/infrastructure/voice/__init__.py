@@ -1,1 +1,0 @@
-"""Copilot voice package."""

@@ -404,18 +404,18 @@ class TestR5SchemaMirrorException:
     def test_llm_call_model_does_not_import_sales_agent_domain(self) -> None:
         """LlmCallModel does not import from sales_agent domain (R5 boundary)."""
         src = _read(EVAL_SIMULATOR_LLM_CALL_MODEL)
-        assert "from src.modules.sales_agent.domain" not in src, (
+        assert "from luana_core_sales_agent.domain" not in src, (
             "eval_simulator_llm_call model must NOT import from sales_agent.domain "
             "(R5 schema-mirror exception: persistence/models/ only, not domain)."
         )
-        assert "from src.modules.sales_agent.application" not in src, (
+        assert "from luana_core_sales_agent.application" not in src, (
             "eval_simulator_llm_call model must NOT import from sales_agent.application."
         )
 
     def test_trace_event_model_does_not_import_sales_agent_domain(self) -> None:
         """TraceEventModel does not import from sales_agent domain (R5 boundary)."""
         src = _read(EVAL_SIMULATOR_TRACE_EVENT_MODEL)
-        assert "from src.modules.sales_agent.domain" not in src, (
+        assert "from luana_core_sales_agent.domain" not in src, (
             "eval_simulator_trace_event model must NOT import from sales_agent.domain."
         )
 

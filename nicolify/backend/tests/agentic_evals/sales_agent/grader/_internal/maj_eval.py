@@ -65,7 +65,7 @@ from typing import TYPE_CHECKING, Any, Final
 import structlog
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
-from src.modules.sales_agent.observability.eval_simulator.persistence.models.eval_simulator_grade import (
+from luana_core_sales_agent.observability.eval_simulator.persistence.models.eval_simulator_grade import (
     EvalSimulatorGradeModel,
 )
 from luana_core_observability.recording.sanitization import sanitize_payload

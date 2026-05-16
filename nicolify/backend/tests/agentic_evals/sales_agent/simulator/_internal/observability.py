@@ -75,10 +75,10 @@ import structlog
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from src.modules.sales_agent.observability.eval_simulator.persistence.models.eval_simulator_llm_call import (
+from luana_core_sales_agent.observability.eval_simulator.persistence.models.eval_simulator_llm_call import (
     EvalSimulatorLlmCallModel,
 )
-from src.modules.sales_agent.observability.eval_simulator.persistence.models.eval_simulator_trace_event import (
+from luana_core_sales_agent.observability.eval_simulator.persistence.models.eval_simulator_trace_event import (
     EvalSimulatorTraceEventModel,
 )
 from luana_core_observability.cost.fx_resolver import FXResolver

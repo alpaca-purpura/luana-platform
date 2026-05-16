@@ -31,7 +31,7 @@ The gate parses every ``*.py`` file under the grader subtree and verifies:
 3. **The grader writes to ``eval_simulator_llm_call``** — verified
    indirectly: at least one grader file references
    ``eval_simulator_llm_call`` or imports from
-   ``src.modules.sales_agent.observability.eval_simulator.persistence``
+   ``luana_core_sales_agent.observability.eval_simulator.persistence``
    (the canonical write path via observability subclass + cost_recorder).
 
 Pattern precedent: ``test_simulator_writes_eval_kind_tag.py`` (Story B
@@ -80,7 +80,7 @@ _CANONICAL_EVAL_WRITE_INDICATORS: frozenset[str] = frozenset(
     {
         "eval_simulator_llm_call",
         "EvalSimulatorLlmCallModel",
-        "src.modules.sales_agent.observability.eval_simulator.persistence",
+        "luana_core_sales_agent.observability.eval_simulator.persistence",
     },
 )
 

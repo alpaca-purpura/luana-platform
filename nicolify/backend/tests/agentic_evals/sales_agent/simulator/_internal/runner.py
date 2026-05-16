@@ -231,7 +231,7 @@ def _compute_cost_summary(
         # Lazy imports — avoid hard import at module load so the
         # agentic_evals subtree can be collected without forcing the
         # production sales_agent module to import-resolve at test collection.
-        from src.modules.sales_agent.observability.eval_simulator.persistence.models.eval_simulator_llm_call import (
+        from luana_core_sales_agent.observability.eval_simulator.persistence.models.eval_simulator_llm_call import (
             EvalSimulatorLlmCallModel,
         )
         from luana_core_sales_agent.observability.persistence.models.llm_call_model import (

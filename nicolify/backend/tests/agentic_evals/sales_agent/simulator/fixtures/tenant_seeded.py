@@ -110,7 +110,7 @@ def _upsert_lookup(
     Si existe con ``deleted_at`` seteado, restaura a ``None`` (idempotencia teardown).
     Si no existe, inserta.
     """
-    from src.modules.sales_agent.observability.eval_simulator.persistence.models.eval_synthetic_tenants import (
+    from luana_core_sales_agent.observability.eval_simulator.persistence.models.eval_synthetic_tenants import (
         EvalSyntheticTenantModel,
     )
 
@@ -555,7 +555,7 @@ def _soft_delete_lookup(db: Session, tenant_id: UUID) -> None:
     aquí — quedan para facilitar debug post-run. Las queries de Streamlit
     prod filtran via ``eval_synthetic_tenants.deleted_at IS NULL``.
     """
-    from src.modules.sales_agent.observability.eval_simulator.persistence.models.eval_synthetic_tenants import (
+    from luana_core_sales_agent.observability.eval_simulator.persistence.models.eval_synthetic_tenants import (
         EvalSyntheticTenantModel,
     )
 

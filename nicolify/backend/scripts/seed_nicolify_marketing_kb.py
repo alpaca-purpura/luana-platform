@@ -29,11 +29,11 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 
-from src.modules.copilot.application.services.contextual_chunker import (
+from luana_core_copilot.application.services.contextual_chunker import (
     ChunkingMeta,
     chunk_markdown,
 )
-from src.modules.copilot.infrastructure.qdrant.marketing_kb_store import (
+from luana_core_copilot.infrastructure.qdrant.marketing_kb_store import (
     ALLOWED_CATEGORIES,
     ALLOWED_DOMAINS,
     ALLOWED_METHODOLOGIES,

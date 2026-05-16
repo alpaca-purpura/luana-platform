@@ -62,7 +62,7 @@ from sqlalchemy.orm import Session  # noqa: TC002
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from src.core.database import SessionLocal
-from src.modules.copilot.infrastructure.repositories.message_codec import (
+from luana_core_copilot.infrastructure.repositories.message_codec import (
     decode_message,
     encode_message,
 )

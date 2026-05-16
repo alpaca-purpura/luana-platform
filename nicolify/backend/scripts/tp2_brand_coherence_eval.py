@@ -161,7 +161,7 @@ def _judge(brand_summary: str, results: list[dict[str, str]]) -> list[dict[str, 
 
     configure_mappers()
 
-    from src.modules.copilot.application.observability.judge import CopilotJudge
+    from luana_core_copilot.application.observability.judge import CopilotJudge
 
     judge = CopilotJudge(threshold=4.0)
     out: list[dict[str, object]] = []

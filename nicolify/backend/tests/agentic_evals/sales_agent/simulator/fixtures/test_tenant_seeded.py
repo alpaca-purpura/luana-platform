@@ -149,7 +149,7 @@ def test_seeds_and_returns_uuid5(_db_session) -> None:  # type: ignore[no-untype
     )
     from luana_core_iam.infrastructure.models.tenant_model import TenantModel
     from luana_core_offer_studio.infrastructure.models.product_model import ProductModel
-    from src.modules.sales_agent.observability.eval_simulator.persistence.models.eval_synthetic_tenants import (
+    from luana_core_sales_agent.observability.eval_simulator.persistence.models.eval_synthetic_tenants import (
         EvalSyntheticTenantModel,
     )
     from tests.agentic_evals.sales_agent.simulator.fixtures.tenant_seeded import (
@@ -254,7 +254,7 @@ def test_teardown_soft_delete_idempotent(_db_session) -> None:  # type: ignore[n
     """
     _skip_if_no_postgres()
 
-    from src.modules.sales_agent.observability.eval_simulator.persistence.models.eval_synthetic_tenants import (
+    from luana_core_sales_agent.observability.eval_simulator.persistence.models.eval_synthetic_tenants import (
         EvalSyntheticTenantModel,
     )
     from tests.agentic_evals.sales_agent.simulator.fixtures.tenant_seeded import (
@@ -333,7 +333,7 @@ def test_cross_tenant_isolation(_db_session) -> None:  # type: ignore[no-untyped
     _skip_if_no_postgres()
 
     from luana_core_offer_studio.infrastructure.models.product_model import ProductModel
-    from src.modules.sales_agent.observability.eval_simulator.persistence.models.eval_synthetic_tenants import (
+    from luana_core_sales_agent.observability.eval_simulator.persistence.models.eval_synthetic_tenants import (
         EvalSyntheticTenantModel,
     )
     from tests.agentic_evals.sales_agent.simulator.fixtures.tenant_seeded import (
@@ -436,7 +436,7 @@ def test_seed_eval_tenant_invalid_slug_no_db_write(_db_session) -> None:  # type
         seed_eval_tenant(db, invalid_slug)
 
     # Verificar que no hay rows con el slug inválido.
-    from src.modules.sales_agent.observability.eval_simulator.persistence.models.eval_synthetic_tenants import (
+    from luana_core_sales_agent.observability.eval_simulator.persistence.models.eval_synthetic_tenants import (
         EvalSyntheticTenantModel,
     )
 
@@ -466,7 +466,7 @@ def test_seed_is_idempotent_on_rerun(_db_session) -> None:  # type: ignore[no-un
     """
     _skip_if_no_postgres()
 
-    from src.modules.sales_agent.observability.eval_simulator.persistence.models.eval_synthetic_tenants import (
+    from luana_core_sales_agent.observability.eval_simulator.persistence.models.eval_synthetic_tenants import (
         EvalSyntheticTenantModel,
     )
     from tests.agentic_evals.sales_agent.simulator.fixtures.tenant_seeded import (

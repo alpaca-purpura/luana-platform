@@ -1,1 +1,0 @@
-"""Copilot infrastructure models package."""
