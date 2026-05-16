@@ -171,10 +171,30 @@ brand vertical genuino.
 | Fase | Acción | Estado | Owner |
 |---|---|---|---|
 | 1 | Audit + verdict matrix (este doc) | ✅ done 2026-05-16 | /pm-luana + /pm-nicolify |
-| 2 | Ratificación verdicts por Chris | ⏳ pending | Chris |
-| 3 | Abrir promotion proposals #1-#7 individuales | ⏳ pending post-ratify | /pm-luana |
-| 4 | Ejecutar lifts/drops (Conv 2 dev-team) | ⏳ pending per proposal | /dev-team |
-| 5 | Stories nicolify N1-N5 (brand-vertical) | ⏳ pending post-purge | /pm-nicolify |
+| 2 | Ratificación verdicts por Chris | ✅ done 2026-05-16 | Chris |
+| 3 | Abrir promotion proposals #1-#7 individuales | ✅ ejecutadas como Waves 1-4 (commits 3b02db2, 627ff93, 880c7b4) + Commits A-D layout multibrand purge (d3113fa, d296fc7, a26b97d, este commit) | /pm-luana |
+| 4 | Ejecutar lifts/drops | ✅ done 2026-05-16 (autonomous lift /pm-luana — patrón anterior) | /pm-luana |
+| 5 | Stories nicolify N1-N5 (brand-vertical) | ⏳ pending post-purge — handoff `/pm-nicolify` cuando se prioricen | /pm-nicolify |
+
+### Estado final `nicolify/backend/src/` (post Commits A-D)
+
+```
+nicolify/backend/src/
+├── main.py                                    # FastAPI entry (100% engine consumer)
+└── modules/
+    └── nicolify/                               # único brand namespace
+        ├── admin/                              # Streamlit admin panel (ex src/admin)
+        ├── advertising/                        # Brand-vertical agencias B2B (paid media)
+        ├── edges/                              # Edge routes (ex src/edges)
+        ├── persistence/                        # SQLA mapper wiring (ex src/shared/infrastructure)
+        └── workers/                            # ARQ workers + scheduler (ex src/workers)
+```
+
+**Verificación zero duplicación core:**
+- 0 paths `src/{shared,admin,edges,workers,scripts,tests}/` legacy
+- 100% main.py imports = `luana_core_*` (engine) o `src.modules.nicolify.*` (brand-vertical)
+- 0 cross-brand imports (`from nicolify` en vitalia/comunify/lupulo/core = 0 hits)
+- 0 cross-codebase mirrors detectados
 
 ## Anti-patterns observados (a corregir)
 
@@ -185,11 +205,15 @@ brand vertical genuino.
 
 ## Próximo paso inmediato
 
-Esperando ratificación de Chris sobre verdict matrix. Una vez ratificado:
+**Carve-out nicolify ✅ COMPLETO 2026-05-16.** Nicolify está listo como brand-vertical autocontenida.
 
-1. `/pm-luana` abre proposal #1 (`purge-nicolify-duplicate-modules`) splitada en 3 tiers
-2. `/pm-luana` abre proposal #2 (`lift-eval-simulator-to-core-sales-agent`) en paralelo (independiente)
-3. `/pm-luana` abre proposal #3 (`drop-nicolify-advertising-social_media`) como warm-up trivial
+Próximas acciones (handoff `/pm-nicolify`):
+
+1. Fix `factory-boy` dep missing en `nicolify/backend/pyproject.toml` (bloquea pytest collect)
+2. Capability inventory recovery — populate `nicolify/docs/product/capabilities/` desde código vivo
+3. Stories N1-N5 brand-vertical genuinas (billable_hours, proposals, contracts, client_portal, crm_enterprise) cuando se prioricen
+
+**Próxima brand prioritaria:** Vitalia (handoff `/pm-vitalia`).
 
 ## Referencias
 

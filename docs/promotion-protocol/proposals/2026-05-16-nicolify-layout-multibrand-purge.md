@@ -1,12 +1,12 @@
 ---
 proposal_id: 2026-05-16-nicolify-layout-multibrand-purge
-state: accepted
+state: migrated
 opened_date: 2026-05-16
 opened_by: /pm-luana
 ratified_by: Chris (autonomous delegation — "cierre completo nicolify antes de vitalia")
 ratified_date: 2026-05-16
-migrated_date: pending
-migrated_pr: pending-commit-this-session
+migrated_date: 2026-05-16
+migrated_pr: Commits A-D (d3113fa, d296fc7, a26b97d, this commit)
 
 # Origen
 origin_learnings:
@@ -121,7 +121,29 @@ Sin embargo, **establece pattern de referencia para brands futuras (saasora, inm
 
 - 2026-05-16: opened by /pm-luana
 - 2026-05-16: state proposed → accepted (Chris APPROVED autonomous, layout-only)
-- 2026-05-16: lift execution starts...
+- 2026-05-16: lift executed via 4 incremental commits:
+  * Commit A (`d3113fa`): edges + workers → modules/nicolify/{edges,workers}/ (5 files moved, 4 importers updated)
+  * Commit B (`d296fc7`): admin → modules/nicolify/admin/ (51 files moved, 65+ refs sed-replaced cross-codebase)
+  * Commit C (`a26b97d`): model_registry → modules/nicolify/persistence/ (1 file moved, 12 importers updated) + src/shared/ purged + 9 arch tests stale refs cleaned
+  * Commit D (this): src/scripts/ archived to nicolify/docs/archive/2026/migrate-scripts/ + src/tests/test_telegram_flow.py relocated → tests/integration/ + ADR-003 § Tabla resumen acciones marked done
+- 2026-05-16: state accepted → migrated
+
+### Estado final verificado
+
+```
+nicolify/backend/src/
+├── main.py                        # FastAPI (100% engine consumers)
+└── modules/nicolify/
+    ├── admin/                     # Streamlit panel
+    ├── advertising/               # Brand-vertical agencias B2B
+    ├── edges/                     # Edge routes
+    ├── persistence/               # SQLA mapper wiring
+    └── workers/                   # ARQ workers
+```
+
+- 0 paths legacy single-brand (`src/{shared,admin,edges,workers,scripts,tests}/`)
+- 0 cross-brand imports (verified `grep -rn 'from nicolify' vitalia/ comunify/ lupulo/ core/` = 0 hits)
+- 0 duplication con core (per ADR-003 Wave 1-4 ya cerrado)
 
 ## 7. Cross-references
 
