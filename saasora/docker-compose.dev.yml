@@ -1,0 +1,84 @@
+# saasora/docker-compose.dev.yml
+# Brand-specific services para SaaSora (SaaS y Productos Digitales).
+# Siempre se usa combinado con el compose raiz:
+#   docker compose -f docker-compose.dev.yml -f saasora/docker-compose.dev.yml up -d
+# O mas facil: make dev-saasora
+# SSoT puertos/DB/etc: saasora/config/brand.yaml::infra
+#
+# NOTA: saasora/backend usa placeholder (Story TBD pendiente).
+# El compose file funciona correctamente con el placeholder.
+#
+# bootstrap brand topology — 2026-05-15
+# Decisions: D2, D4 (backend placeholder), D5, D6
+
+name: luana-dev  # mismo name que raiz para compartir network/volumes
+
+services:
+  saasora_backend_dev:
+    build:
+      context: .  # contexto = raiz monorepo
+      dockerfile: saasora/backend/Dockerfile
+      target: dev
+    restart: unless-stopped
+    env_file:
+      - path: saasora/.env.dev  # gitignored; copiado desde saasora/.env.dev.template
+        required: false  # compose config --quiet pasa aunque el archivo no exista aun
+    environment:
+      DATABASE_URL: "postgresql+asyncpg://postgres:password@luana_postgres_dev:5432/saasora_dev"
+      REDIS_URL: "redis://luana_redis_dev:6379/4"
+      QDRANT_HOST: "luana_qdrant_dev"
+      QDRANT_COLLECTION_PREFIX: "saasora_"
+      PORT: "8005"
+    volumes:
+      - ./saasora/backend/src:/workspace/saasora/backend/src:rw  # bind mount src placeholder
+    ports:
+      - "127.0.0.1:8005:8005"
+    networks:
+      - luana_dev_net
+    depends_on:
+      luana_postgres_dev:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  saasora_frontend_dev:
+    build:
+      context: .
+      dockerfile: saasora/frontend/Dockerfile
+      target: dev
+    restart: unless-stopped
+    env_file:
+      - path: saasora/.env.dev
+        required: false
+    environment:
+      PORT: "3005"
+      NEXT_PUBLIC_API_URL: "http://127.0.0.1:8005"
+    volumes:
+      - ./saasora/frontend/src:/app/saasora/frontend/src:rw
+    ports:
+      - "127.0.0.1:3005:3005"
+    networks:
+      - luana_dev_net
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  saasora_cloudflared_dev:
+    image: cloudflare/cloudflared:latest
+    profiles: [tunnel]  # opt-in: make dev-saasora-tunnel
+    restart: unless-stopped
+    env_file:
+      - path: saasora/.env.dev  # debe contener TUNNEL_TOKEN
+        required: false
+    command: tunnel run saasora-dev
+    networks:
+      - luana_dev_net
+
+volumes:
+  saasora_backend_venv:
+    name: saasora_backend_venv
+
+# NOTA: network luana_dev_net es definida en el compose raiz (docker-compose.dev.yml).

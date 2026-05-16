@@ -1,0 +1,25 @@
+---
+# saasora/deploy/k8s/service.yaml
+# PLACEHOLDER — Service minimo para SaaSora.
+# Ver deployment.yaml para contexto del estado placeholder.
+#
+# Arch ref: bootstrap brand topology — 2026-05-15
+apiVersion: v1
+kind: Service
+metadata:
+  name: saasora-backend
+  namespace: saasora
+  labels:
+    app.kubernetes.io/name: saasora
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: luana-platform
+    app.kubernetes.io/managed-by: kubectl
+spec:
+  selector:
+    app: saasora-app
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: http
+  type: ClusterIP

@@ -1,0 +1,82 @@
+---
+# saasora/deploy/k8s/deployment.yaml
+# PLACEHOLDER — SaaSora no tiene backend operativo aún.
+# replicas: 0 — no arranca pods reales hasta Story TBD (saasora backend).
+#
+# Este manifest existe para que _deploy-brand.yml no falle con
+# "no manifests found" si se dispara un release/saasora-vX.Y.Z prematuro.
+#
+# Cuando Story TBD (bootstrap pendiente) se implemente:
+#   1. Actualizar replicas a 2
+#   2. Agregar configmap.yaml, service.yaml e ingress.yaml definitivos
+#   3. Crear namespace y imagePullSecrets: kubectl create namespace saasora
+#   4. Crear secret docker-registry ghcr-creds en namespace saasora
+#
+# Arch ref: bootstrap brand topology — 2026-05-15
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: saasora-app
+  namespace: saasora
+  labels:
+    app.kubernetes.io/name: saasora
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: luana-platform
+    app.kubernetes.io/version: "0.0.1"
+    app.kubernetes.io/managed-by: kubectl
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: saasora-app
+  template:
+    metadata:
+      labels:
+        app: saasora-app
+        app.kubernetes.io/name: saasora
+        app.kubernetes.io/component: backend
+        app.kubernetes.io/version: "0.0.1"
+    spec:
+      containers:
+        - name: saasora-backend
+          image: ghcr.io/alpacapurpura/saasora-backend:0.0.1
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "50m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 3
+            timeoutSeconds: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      imagePullSecrets:
+        - name: ghcr-creds

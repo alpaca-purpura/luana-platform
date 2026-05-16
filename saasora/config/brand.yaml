@@ -1,0 +1,40 @@
+# saasora/config/brand.yaml
+# BrandConfig declarativa para SaaSora (saas).
+# Decision D6: puertos cementados (saasora=8005/3005)
+# NOTA: saasora es placeholder (Story TBD pendiente). Esta config es minima.
+#
+# bootstrap brand topology — 2026-05-15
+# SSoT infra metadata por entorno. Auto-indexado en docs/portfolio/INFRA-MATRIX.md via make infra-matrix.
+
+brand_slug: saasora
+brand_name: "SaaSora"
+brand_description: "Vertical SaaS y Productos Digitales brand app — onboarding automatizado, subscripciones recurrentes y dashboards Churn/MRR"
+brand_segment: saas
+compliance_level: standard
+voice_cloning_enabled: false
+multi_language_ui: false
+
+features:
+  brand_studio_basic: true
+  subscription_management: false    # Story TBD pendiente
+  churn_mrr_dashboards: false        # Story TBD pendiente
+  changelog_versioning: false        # Story TBD pendiente
+
+# SSoT infra metadata por entorno.
+# Auto-indexado en docs/portfolio/INFRA-MATRIX.md via make infra-matrix.
+infra:
+  dev:
+    backend_port: 8005
+    frontend_port: 3005
+    database_name: saasora_dev
+    redis_db: 4
+    qdrant_collection_prefix: saasora_
+    domain: saasora-dev.nicolify.com
+    cloudflared_tunnel: saasora-dev
+  staging:
+    domain: saasora-test.nicolify.com
+    server: tbd-staging-cluster
+  prod:
+    domain: app.saasora.com
+    server: tbd
+    cloudflared_tunnel: saasora-prod
