@@ -26,7 +26,7 @@ from sqlalchemy.orm import Session
 # DDD exception (intentional): api/ composition root — offer counts endpoint
 # aggregates advertising stats alongside offer KPIs. Cross-module read at the
 # API layer is correct orchestration, not accidental coupling.
-from src.modules.advertising.application.services.offer_campaigns_read_adapter import (
+from src.modules.nicolify.advertising.application.services.offer_campaigns_read_adapter import (
     OfferCampaignsReadAdapter,
 )
 

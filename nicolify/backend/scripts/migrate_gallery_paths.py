@@ -5,7 +5,7 @@ import structlog
 from sqlalchemy.orm import Session
 from src.modules.gallery.domain.entity import GalleryImage
 
-from src.core.database import SessionLocal
+from luana_core_platform.core.database import SessionLocal
 from luana_core_offer_studio.domain.offer_gallery import OfferGalleryImage
 
 logger = structlog.get_logger()

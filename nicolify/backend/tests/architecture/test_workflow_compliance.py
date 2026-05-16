@@ -108,7 +108,7 @@ def test_application_workflows_imports_no_business_module() -> None:
         "luana_core_commercial_calendar.",
         "luana_core_tenant_profile.",
         "luana_core_tenant_domains.",
-        "src.modules.advertising.",
+        "src.modules.nicolify.advertising.",
         "src.modules.social_media.",
     )
 

@@ -60,7 +60,7 @@ from luana_core_sales_agent.infrastructure.models.message_model import (  # noqa
 )
 from sqlalchemy import text
 
-from src.modules.scheduling.infrastructure.models.appointment_model import (  # noqa: F401
+from luana_core_scheduling.infrastructure.models.appointment_model import (  # noqa: F401
     AppointmentModel,
 )
 

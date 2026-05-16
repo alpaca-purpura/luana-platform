@@ -9,7 +9,7 @@ luana_core_*.infrastructure.models imports — but until that lift completes
 without forcing every model package to be importable.
 
 If autogenerate is needed in a future ticket, restore target_metadata via:
-    from src.shared.domain.base_entity import Base
+    from luana_core_platform.domain.base_entity import Base
     # ... model imports ...
     target_metadata = Base.metadata
 """

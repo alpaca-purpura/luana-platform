@@ -69,7 +69,7 @@ def test_litellm_proxy_routing_only() -> None:
     source = source_path.read_text(encoding="utf-8")
 
     # Required: LiteLLM Proxy canonical import present.
-    assert "from src.shared.infrastructure.llm.providers.litellm import" in source, (
+    assert "from luana_core_llm.providers.litellm import" in source, (
         "judge_registry.py MUST import LiteLLMService from luana_core_llm.providers.litellm (D-AG-17 cement)"
     )
 

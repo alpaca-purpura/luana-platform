@@ -107,10 +107,10 @@ from luana_core_sales_agent.infrastructure.models.message_model import (
 # --- Scheduling (pending lift to core/luana-core-scheduling per ADR-003 Proposal #4) ---
 # Currently lives at nicolify/backend/src/modules/scheduling/. Brand model_registry
 # imports these locally. Remove this block when luana-core-scheduling package exists.
-from src.modules.scheduling.infrastructure.models.appointment_model import (
+from luana_core_scheduling.infrastructure.models.appointment_model import (
     AppointmentModel,  # noqa: F401
 )
-from src.modules.scheduling.infrastructure.models.booking_link import (
+from luana_core_scheduling.infrastructure.models.booking_link import (
     BookingLink,  # noqa: F401
 )
 

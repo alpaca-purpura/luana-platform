@@ -26,9 +26,9 @@ from sqlalchemy import select
 # Bootstrap mappers + import path early so this script works the same
 # way as the worker.
 import src.shared.infrastructure.model_registry  # noqa: F401
-from src.core.database import SessionLocal
+from luana_core_platform.core.database import SessionLocal
 from luana_core_iam.infrastructure.models.tenant_model import TenantModel
-from src.shared.workers.brand_summary_regen import regen_brand_summary_sync
+from luana_core_platform.workers.brand_summary_regen import regen_brand_summary_sync
 
 logger = logging.getLogger("backfill_brand_summaries")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")

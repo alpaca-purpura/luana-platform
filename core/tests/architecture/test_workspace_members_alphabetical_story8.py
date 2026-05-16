@@ -29,7 +29,7 @@ _BRAND_TS_APPS = frozenset({"nicolify", "vitalia", "comunify", "lupulo"})
 _ROOT_META = frozenset({"core"})
 _EXCLUDE = _BRAND_TS_APPS | _ROOT_META
 
-_EXPECTED_COUNT = 26
+_EXPECTED_COUNT = 27  # post 2026-05-16 carve-out: +1 luana-core-scheduling (ADR-003 Proposal #4)
 _EXPECTED_TS_COUNT = 7
 _TS_PACKAGES_DIR = ROOT / "core" / "@luana"
 
@@ -41,14 +41,17 @@ def _python_members() -> list[str]:
     return [m for m in members if m not in _EXCLUDE]
 
 
-def test_python_member_count_is_26() -> None:
-    """V-NF-1: exactly 26 Python workspace members post-Story-8."""
+def test_python_member_count_is_27() -> None:
+    """V-NF-1: exactly 27 Python workspace members post 2026-05-16 carve-out.
+
+    Story 8 baseline was 26. ADR-003 Proposal #4 (scheduling lift) added
+    luana-core-scheduling = 27 total.
+    """
     members = _python_members()
     assert len(members) == _EXPECTED_COUNT, (
         f"Expected {_EXPECTED_COUNT} Python workspace members, got {len(members)}.\n"
         f"Current members: {members}\n\n"
-        "Story 8 baseline: 26 = Story-7 baseline 23 + 3 NEW "
-        "(luana-core-campaigns, luana-core-extension-sdk, apps/test-brand)."
+        "2026-05-16 baseline: 27 = Story-8 baseline 26 + 1 NEW (luana-core-scheduling)."
     )
 
 

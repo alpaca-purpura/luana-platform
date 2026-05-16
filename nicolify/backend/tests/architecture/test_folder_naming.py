@@ -46,6 +46,11 @@ KNOWN_STRUCTURE_EXCEPTIONS: dict[str, set[str]] = {
     # campaigns: PI-1 S0 foundation — observability spec only (Sub-C PR-1).
     # Full DDD layers (domain/infra/app/api) added in PI-1 S1 (PR-2 campaigns core).
     "campaigns": set(),
+    # Brand-vertical namespace wrapper (post-multibrand-reorg 2026-05-15 carve-out).
+    # `modules/nicolify/` is NOT a DDD module — it's a brand-vertical container holding
+    # nicolify-specific modules (e.g., `modules/nicolify/advertising/`). Per multibrand
+    # layout: `{brand}/backend/src/modules/{brand}/{module}/`.
+    "nicolify": set(),
 }
 
 # Files at module root that are allowed (e.g., __init__.py)

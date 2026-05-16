@@ -37,8 +37,8 @@ import structlog
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session
 
-from src.core.config import settings
-from src.core.database import redis_client
+from luana_core_platform.core.config import settings
+from luana_core_platform.core.database import redis_client
 from luana_core_analytics_engine.application.services.etl_service import ETLService
 from luana_core_analytics_engine.infrastructure.cache.metrics_cache import MetricsCache
 from luana_core_analytics_engine.infrastructure.providers.meta_provider import (

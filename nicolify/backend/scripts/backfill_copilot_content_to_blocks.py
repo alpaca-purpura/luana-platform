@@ -61,12 +61,12 @@ from sqlalchemy.orm import Session  # noqa: TC002
 # Repo root on sys.path so ``src.*`` imports work when invoked directly.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from src.core.database import SessionLocal
+from luana_core_platform.core.database import SessionLocal
 from luana_core_copilot.infrastructure.repositories.message_codec import (
     decode_message,
     encode_message,
 )
-from src.shared.domain.datetime_utils import utc_now
+from luana_core_platform.domain.datetime_utils import utc_now
 
 logger = structlog.get_logger(__name__)
 
@@ -615,7 +615,7 @@ def main() -> None:
     """CLI entry point."""
     args = _parse_args()
 
-    from src.core.config import settings
+    from luana_core_platform.core.config import settings
 
     _check_prod_guard(settings.database_url, args.confirm_prod)
 

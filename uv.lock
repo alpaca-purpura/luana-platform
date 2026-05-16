@@ -33,6 +33,7 @@ members = [
     "luana-core-offer-studio",
     "luana-core-platform",
     "luana-core-sales-agent",
+    "luana-core-scheduling",
     "luana-core-social-proof",
     "luana-core-tenant-domains",
     "luana-core-tenant-profile",
@@ -2499,6 +2500,31 @@ requires-dist = [
     { name = "sqlalchemy", specifier = ">=2.0" },
     { name = "structlog", specifier = ">=24.0" },
     { name = "tiktoken", specifier = ">=0.7" },
+]
+
+[[package]]
+name = "luana-core-scheduling"
+version = "0.1.0"
+source = { editable = "core/luana-core-scheduling" }
+dependencies = [
+    { name = "fastapi" },
+    { name = "luana-core-events" },
+    { name = "luana-core-iam" },
+    { name = "luana-core-platform" },
+    { name = "pydantic" },
+    { name = "sqlalchemy" },
+    { name = "structlog" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastapi", specifier = ">=0.115" },
+    { name = "luana-core-events" },
+    { name = "luana-core-iam" },
+    { name = "luana-core-platform" },
+    { name = "pydantic", specifier = ">=2.0" },
+    { name = "sqlalchemy", specifier = ">=2.0" },
+    { name = "structlog", specifier = ">=24.0" },
 ]
 
 [[package]]

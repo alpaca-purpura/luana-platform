@@ -152,19 +152,19 @@ from luana_core_tenant_profile.api import router as tenant_profile_router
 from sqlalchemy import text
 
 # --- Bootstrap all models so SQLAlchemy mapper resolves cross-module relationships ---
-import src.shared.infrastructure.agent_observability_bootstrap
+import luana_core_platform.infrastructure.agent_observability_bootstrap
 import src.shared.infrastructure.model_registry  # noqa: F401
-from src.modules.advertising.api import routes as advertising_routes
+from src.modules.nicolify.advertising.api import routes as advertising_routes
 from luana_core_crm.api import contacts as crm_contacts  # Nicolify-local: not yet lifted to luana_core_crm
 from src.edges import (
     offer_campaigns,
 )  # Nicolify-local: not yet lifted to luana_core_offer_studio
 from src.edges import offer_counts  # Nicolify-local: not yet lifted to luana_core_offer_studio
-from src.modules.scheduling.api import agenda as sched_agenda
+from luana_core_scheduling.api import agenda as sched_agenda
 
 # 8. Scheduling
-from src.modules.scheduling.api import event_types as sched_types
-from src.modules.scheduling.api import public_links as sched_public
+from luana_core_scheduling.api import event_types as sched_types
+from luana_core_scheduling.api import public_links as sched_public
 
 init_sentry("api")
 

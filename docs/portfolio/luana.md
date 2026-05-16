@@ -33,7 +33,7 @@ Acelerar dev cross-brand. Cada brand aporta aprendizaje → core captura abstrac
 - Proposed: 0
 - Under review: 0
 - Accepted (lift programado): 0
-- Migrated (cerrados OK): 1
+- Migrated (cerrados OK): 3
 - Rejected (archive): 0
 
 ## State portfolio

@@ -30,7 +30,7 @@ if _backend_root not in sys.path:
 if "/app" not in sys.path:
     sys.path.insert(0, "/app")
 
-from src.core.database import SessionLocal
+from luana_core_platform.core.database import SessionLocal
 from luana_core_analytics_engine.application.services.channel_registry import (
     PROVIDER_TO_CHANNEL_TYPES,
     STAGE_CHANNEL_MAP,

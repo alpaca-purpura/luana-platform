@@ -12,7 +12,7 @@ from src.modules.marketing.domain.enums import IdentityType
 from src.modules.marketing.infrastructure.models.customer_model import CustomerIdentityModel as CustomerIdentity
 from src.modules.marketing.infrastructure.models.customer_model import CustomerProfileModel as CustomerProfile
 
-from src.core.database import engine
+from luana_core_platform.core.database import engine
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

@@ -48,7 +48,7 @@ def _make_appointment_model(
     hours_from_now: int = 1,
 ):
     """Crea un AppointmentModel en la DB de test."""
-    from src.modules.scheduling.infrastructure.models.appointment_model import AppointmentModel
+    from luana_core_scheduling.infrastructure.models.appointment_model import AppointmentModel
 
     now = datetime.now(UTC)
     return AppointmentModel(
@@ -128,9 +128,9 @@ class TestGetAgenda:
     @pytest.mark.asyncio
     async def test_returns_appointments_today_range(self, async_client: AsyncClient):
         """range=today retorna citas del día actual — repo mockeado (SQLite tz-aware issue)."""
-        from src.modules.scheduling.domain.appointment import Appointment
-        from src.modules.scheduling.domain.enums import AppointmentStatus
-        from src.modules.scheduling.infrastructure.repositories.appointment_repository import AppointmentRepository
+        from luana_core_scheduling.domain.appointment import Appointment
+        from luana_core_scheduling.domain.enums import AppointmentStatus
+        from luana_core_scheduling.infrastructure.repositories.appointment_repository import AppointmentRepository
 
         now = datetime.now(UTC)
         appt_id = uuid.uuid4()
@@ -161,9 +161,9 @@ class TestGetAgenda:
     @pytest.mark.asyncio
     async def test_returns_appointments_week_range(self, async_client: AsyncClient):
         """range=week retorna citas de los próximos 7 días — repo mockeado."""
-        from src.modules.scheduling.domain.appointment import Appointment
-        from src.modules.scheduling.domain.enums import AppointmentStatus
-        from src.modules.scheduling.infrastructure.repositories.appointment_repository import AppointmentRepository
+        from luana_core_scheduling.domain.appointment import Appointment
+        from luana_core_scheduling.domain.enums import AppointmentStatus
+        from luana_core_scheduling.infrastructure.repositories.appointment_repository import AppointmentRepository
 
         now = datetime.now(UTC)
         appt_id = uuid.uuid4()
@@ -219,9 +219,9 @@ class TestGetAgenda:
     @pytest.mark.asyncio
     async def test_enriches_lead_name_when_lead_id_present(self, async_client: AsyncClient):
         """Lead name se enriquece via get_lead_names cuando hay lead_id — repo mockeado."""
-        from src.modules.scheduling.domain.appointment import Appointment
-        from src.modules.scheduling.domain.enums import AppointmentStatus
-        from src.modules.scheduling.infrastructure.repositories.appointment_repository import AppointmentRepository
+        from luana_core_scheduling.domain.appointment import Appointment
+        from luana_core_scheduling.domain.enums import AppointmentStatus
+        from luana_core_scheduling.infrastructure.repositories.appointment_repository import AppointmentRepository
 
         now = datetime.now(UTC)
         lead_id = uuid.uuid4()
@@ -251,9 +251,9 @@ class TestGetAgenda:
     @pytest.mark.asyncio
     async def test_lead_name_defaults_unknown_when_not_in_map(self, async_client: AsyncClient):
         """Cuando lead_id no está en map, lead_name = 'Unknown Lead' — repo mockeado."""
-        from src.modules.scheduling.domain.appointment import Appointment
-        from src.modules.scheduling.domain.enums import AppointmentStatus
-        from src.modules.scheduling.infrastructure.repositories.appointment_repository import AppointmentRepository
+        from luana_core_scheduling.domain.appointment import Appointment
+        from luana_core_scheduling.domain.enums import AppointmentStatus
+        from luana_core_scheduling.infrastructure.repositories.appointment_repository import AppointmentRepository
 
         now = datetime.now(UTC)
         lead_id = uuid.uuid4()
@@ -282,9 +282,9 @@ class TestGetAgenda:
     @pytest.mark.asyncio
     async def test_no_lead_id_skips_enrichment(self, async_client: AsyncClient):
         """Cuando appointment no tiene lead_id, get_lead_names no se llama — repo mockeado."""
-        from src.modules.scheduling.domain.appointment import Appointment
-        from src.modules.scheduling.domain.enums import AppointmentStatus
-        from src.modules.scheduling.infrastructure.repositories.appointment_repository import AppointmentRepository
+        from luana_core_scheduling.domain.appointment import Appointment
+        from luana_core_scheduling.domain.enums import AppointmentStatus
+        from luana_core_scheduling.infrastructure.repositories.appointment_repository import AppointmentRepository
 
         now = datetime.now(UTC)
         mock_appt = Appointment(
@@ -420,7 +420,7 @@ class TestPublishAppointmentEvent:
 
     def test_skips_publish_when_no_lead_id(self):
         """Si lead_id es None, no se publica evento."""
-        from src.modules.scheduling.api.agenda import _publish_appointment_event
+        from luana_core_scheduling.api.agenda import _publish_appointment_event
 
         mock_db = MagicMock()
         with patch("luana_core_platform.domain.events.EventBus.publish") as mock_bus:
@@ -435,7 +435,7 @@ class TestPublishAppointmentEvent:
 
     def test_publishes_event_when_lead_id_present(self):
         """Cuando lead_id existe, publica AppointmentEvent via EventBus."""
-        from src.modules.scheduling.api.agenda import _publish_appointment_event
+        from luana_core_scheduling.api.agenda import _publish_appointment_event
 
         mock_db = MagicMock()
         lead_id = uuid.uuid4()

@@ -22,7 +22,7 @@ try:
 except ImportError:
     pass
 import luana_core_crm.infrastructure.models.lifecycle_transition_model
-import src.modules.scheduling.infrastructure.models.appointment_model
+import luana_core_scheduling.infrastructure.models.appointment_model
 
 try:
     import luana_core_crm.infrastructure.models.sale_model

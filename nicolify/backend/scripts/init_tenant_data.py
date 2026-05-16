@@ -9,7 +9,7 @@ sys.path.append(os.path.join(os.getcwd(), "backend"))
 
 from src.services.db.models.tenant import Tenant
 
-from src.core.config import settings
+from luana_core_platform.core.config import settings
 
 
 def init_tenant_data():

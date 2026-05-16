@@ -41,7 +41,7 @@ BACKEND_ROOT = Path(__file__).resolve().parent.parent
 if str(BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(BACKEND_ROOT))
 
-from src.core.database import SessionLocal
+from luana_core_platform.core.database import SessionLocal
 from luana_core_landing.application.landing_content_builders import _resolve_content
 from luana_core_landing.application.landing_service import LandingService
 from luana_core_landing.domain.content import LandingPageConfig

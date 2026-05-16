@@ -54,11 +54,11 @@ from luana_core_sales_agent.workers.verify_pending_payments import (
 )
 from luana_core_tenant_domains.workers.tasks import poll_domain_verification
 
-import src.shared.infrastructure.agent_observability_bootstrap
+import luana_core_platform.infrastructure.agent_observability_bootstrap
 import src.shared.infrastructure.model_registry  # noqa: F401  — must be top-level for ARQ workers
-from src.shared.workers.copilot_quality_eval import weekly_copilot_quality_eval
-from src.shared.workers.copilot_rag_eval import weekly_copilot_rag_eval
-from src.shared.workers.sales_agent_quality_eval import weekly_sales_agent_quality_eval
+from luana_core_copilot.workers.copilot_quality_eval import weekly_copilot_quality_eval
+from luana_core_copilot.workers.copilot_rag_eval import weekly_copilot_rag_eval
+from luana_core_sales_agent.workers.sales_agent_quality_eval import weekly_sales_agent_quality_eval
 
 
 class WorkerSettings:

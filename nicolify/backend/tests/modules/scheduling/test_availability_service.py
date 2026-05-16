@@ -14,10 +14,10 @@ import uuid
 
 import pytest
 
-from src.modules.scheduling.application.services.availability_service import (
+from luana_core_scheduling.application.services.availability_service import (
     AvailabilityService,
 )
-from src.modules.scheduling.domain.availability_schema import (
+from luana_core_scheduling.domain.availability_schema import (
     AvailabilitySchedule,
     DaySchedule,
     ScheduleUpdate,

@@ -25,6 +25,7 @@ members = [
     "core/luana-core-offer-studio",
     "core/luana-core-platform",
     "core/luana-core-sales-agent",
+    "core/luana-core-scheduling",
     "core/luana-core-social-proof",
     "core/luana-core-tenant-domains",
     "core/luana-core-tenant-profile",
@@ -65,6 +66,7 @@ luana-core-offer-studio = { workspace = true }
 luana-core-copilot = { workspace = true }
 # Story 7 (NEW)
 luana-core-sales-agent = { workspace = true }
+luana-core-scheduling = { workspace = true }
 # Story 8 (NEW)
 luana-core-campaigns = { workspace = true }
 luana-core-extension-sdk = { workspace = true }

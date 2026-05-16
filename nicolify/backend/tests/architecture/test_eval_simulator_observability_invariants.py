@@ -428,7 +428,7 @@ class TestR5SchemaMirrorException:
         """
         src = _read(EVAL_SIMULATOR_LLM_CALL_MODEL)
         assert (
-            "from src.shared.domain.base_entity import Base" in src
+            "from luana_core_platform.domain.base_entity import Base" in src
             or "from luana_core_platform.domain.base_entity import Base" in src
         ), (
             "eval_simulator_llm_call model must import Base from shared.domain.base_entity "

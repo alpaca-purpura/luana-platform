@@ -8,10 +8,10 @@ from datetime import datetime, timedelta, timezone
 
 from sqlalchemy.orm import Session
 
-from src.modules.scheduling.infrastructure.models.appointment_model import (
+from luana_core_scheduling.infrastructure.models.appointment_model import (
     AppointmentModel,
 )
-from src.modules.scheduling.infrastructure.repositories.appointment_repository import (
+from luana_core_scheduling.infrastructure.repositories.appointment_repository import (
     AppointmentRepository,
 )
 

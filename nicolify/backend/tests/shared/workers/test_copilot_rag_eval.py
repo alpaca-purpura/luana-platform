@@ -19,7 +19,7 @@ from luana_core_copilot.application.observability.rag_goldens import (
 from luana_core_copilot.infrastructure.repositories.workflow_metric_repository import (
     WorkflowMetricRepository,
 )
-from src.shared.workers.copilot_rag_eval import (
+from luana_core_copilot.workers.copilot_rag_eval import (
     RAG_SENTINEL_TENANT,
     RAG_WORKFLOW_ID,
     run_weekly_rag_eval,

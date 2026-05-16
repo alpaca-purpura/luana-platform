@@ -33,7 +33,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from sqlalchemy import text
 from sqlalchemy.orm import Session  # noqa: TC002 — needed at runtime for type annotation
 
-from src.core.database import SessionLocal
+from luana_core_platform.core.database import SessionLocal
 from luana_core_offer_studio.domain.archetype_catalog import get_capabilities
 from luana_core_offer_studio.domain.enums import OfferArchetype
 

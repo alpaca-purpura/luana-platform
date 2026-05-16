@@ -21,7 +21,7 @@ from sqlalchemy.orm import Session
 # DDD exception (intentional): api/ composition root — this endpoint surfaces
 # campaign performance data from the advertising module as part of the offer view.
 # Cross-module read at the API layer is correct orchestration.
-from src.modules.advertising.application.services.offer_campaigns_read_adapter import (
+from src.modules.nicolify.advertising.application.services.offer_campaigns_read_adapter import (
     OfferCampaignsReadAdapter,
 )
 

@@ -73,7 +73,7 @@ class TenantFactory(factory.Factory):
         from luana_core_sales_agent.infrastructure.models.message_model import (
             MessageModel,
         )
-        from src.modules.scheduling.infrastructure.models.appointment_model import (
+        from luana_core_scheduling.infrastructure.models.appointment_model import (
             AppointmentModel,
         )
 

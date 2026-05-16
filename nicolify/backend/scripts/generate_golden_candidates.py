@@ -486,7 +486,7 @@ async def _main_async(
     # Se importa lazily para no forzar conexión DB cuando se skippe.
     db_session: Session | None = None
     try:
-        from src.core.database import SessionLocal  # noqa: PLC0415 — lazy import (no DB at module-level)
+        from luana_core_platform.core.database import SessionLocal  # noqa: PLC0415 — lazy import (no DB at module-level)
 
         _s = SessionLocal()
         # Probe de conexión — si Postgres no está disponible, log y continuar sin sesión

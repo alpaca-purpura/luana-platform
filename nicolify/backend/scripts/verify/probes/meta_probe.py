@@ -23,7 +23,7 @@ import httpx
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 
 from scripts.verify.probes.base_probe import ProbeReport, ProbeResult
-from src.core.config import settings
+from luana_core_platform.core.config import settings
 
 # ---------------------------------------------------------------------------
 # Constants

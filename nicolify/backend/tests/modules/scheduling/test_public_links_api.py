@@ -82,7 +82,7 @@ class TestResolveBookingLink:
 
     def test_returns_404_for_expired_link(self, client: TestClient, db):
         """Token válido pero expirado retorna 404 y actualiza status a EXPIRED."""
-        from src.modules.scheduling.infrastructure.models.booking_link import BookingLink
+        from luana_core_scheduling.infrastructure.models.booking_link import BookingLink
 
         token = "expired-token-001"
         link = BookingLink(
@@ -102,7 +102,7 @@ class TestResolveBookingLink:
 
     def test_returns_200_for_valid_active_link(self, client: TestClient, db):
         """Token activo no expirado retorna 200 con datos del link."""
-        from src.modules.scheduling.infrastructure.models.booking_link import BookingLink
+        from luana_core_scheduling.infrastructure.models.booking_link import BookingLink
 
         token = "valid-token-001"
         link = BookingLink(
@@ -197,7 +197,7 @@ class TestGetPublicSlots:
     def test_returns_slots_for_valid_link(self, client: TestClient, db):
         """Link válido de tipo booking → retorna slots."""
         from luana_core_platform.links.service import LinkService
-        from src.modules.scheduling.application.services.availability_service import AvailabilityService
+        from luana_core_scheduling.application.services.availability_service import AvailabilityService
 
         mock_link = MagicMock()
         mock_link.target_type = "booking"
@@ -251,8 +251,8 @@ class TestResolveEventTypeById:
 
     def test_returns_200_for_valid_event_type(self, client: TestClient, db):
         """Tenant existe + event_type con ese slug → 200."""
-        from src.modules.scheduling.application.services.event_type_service import EventTypeService
-        from src.modules.scheduling.domain.event_type_schema import EventType
+        from luana_core_scheduling.application.services.event_type_service import EventTypeService
+        from luana_core_scheduling.domain.event_type_schema import EventType
 
         mock_et = EventType(
             id=str(uuid.uuid4()),
@@ -303,8 +303,8 @@ class TestResolveEventTypeBySlug:
     @pytest.mark.skip(reason=_BUG_SELECT_TENANT)
     def test_returns_200_for_valid_event_type(self, client: TestClient, db):
         """Tenant slug existe + event_type con ese slug → 200."""
-        from src.modules.scheduling.application.services.event_type_service import EventTypeService
-        from src.modules.scheduling.domain.event_type_schema import EventType
+        from luana_core_scheduling.application.services.event_type_service import EventTypeService
+        from luana_core_scheduling.domain.event_type_schema import EventType
 
         mock_et = EventType(
             id=str(uuid.uuid4()),
@@ -348,9 +348,9 @@ class TestGetEventTypeSlots:
     @pytest.mark.skip(reason=_BUG_SELECT_TENANT)
     def test_returns_slots_for_valid_event(self, client: TestClient, db):
         """Tenant + event_type válidos → retorna slots (vacíos sin Google Calendar)."""
-        from src.modules.scheduling.application.services.event_type_service import EventTypeService
-        from src.modules.scheduling.application.services.availability_service import AvailabilityService
-        from src.modules.scheduling.domain.event_type_schema import EventType
+        from luana_core_scheduling.application.services.event_type_service import EventTypeService
+        from luana_core_scheduling.application.services.availability_service import AvailabilityService
+        from luana_core_scheduling.domain.event_type_schema import EventType
 
         mock_et = EventType(
             id=str(uuid.uuid4()),
@@ -407,9 +407,9 @@ class TestBookEventType:
     @pytest.mark.skip(reason=_BUG_SELECT_TENANT)
     def test_returns_200_with_mocked_booking(self, client: TestClient, db):
         """Booking exitoso con calendar mocked → 200."""
-        from src.modules.scheduling.application.services.event_type_service import EventTypeService
-        from src.modules.scheduling.application.services.availability_service import AvailabilityService
-        from src.modules.scheduling.domain.event_type_schema import EventType
+        from luana_core_scheduling.application.services.event_type_service import EventTypeService
+        from luana_core_scheduling.application.services.availability_service import AvailabilityService
+        from luana_core_scheduling.domain.event_type_schema import EventType
 
         mock_et = EventType(
             id=str(uuid.uuid4()),
@@ -482,7 +482,7 @@ class TestPublicBookMeeting:
 
     def test_returns_200_with_mocked_booking(self, client: TestClient):
         from luana_core_platform.links.service import LinkService
-        from src.modules.scheduling.application.services.availability_service import AvailabilityService
+        from luana_core_scheduling.application.services.availability_service import AvailabilityService
 
         mock_link = MagicMock()
         mock_link.target_type = "booking"

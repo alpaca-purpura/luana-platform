@@ -257,7 +257,7 @@ class TestEventBusAdapterPublishWithInferredModule:
 
     def test_is_outbox_enabled_with_inferred_module_routes_correctly(self) -> None:
         """_is_outbox_enabled('sales_agent') respects USE_OUTBOX_PATTERN_SALES_AGENT."""
-        import src.shared.domain_events.outbox.application.event_bus_adapter as _mod
+        import luana_core_events.outbox.application.event_bus_adapter as _mod
 
         original = _mod.settings.USE_OUTBOX_PATTERN_SALES_AGENT
         try:
@@ -269,7 +269,7 @@ class TestEventBusAdapterPublishWithInferredModule:
 
     def test_is_outbox_enabled_none_uses_default(self) -> None:
         """_is_outbox_enabled(None) reads USE_OUTBOX_PATTERN_DEFAULT."""
-        import src.shared.domain_events.outbox.application.event_bus_adapter as _mod
+        import luana_core_events.outbox.application.event_bus_adapter as _mod
 
         original = _mod.settings.USE_OUTBOX_PATTERN_DEFAULT
         try:

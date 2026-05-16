@@ -106,7 +106,7 @@ postgresql.UUID = MockUUID
 # crashea con ``InvalidRequestError`` (ej. ``LeadModel`` →
 # ``AppointmentModel``). Patrón canónico exigido en ``main.py`` y
 # ``admin/app.py``.
-import src.shared.infrastructure.agent_observability_bootstrap
+import luana_core_platform.infrastructure.agent_observability_bootstrap
 import src.shared.infrastructure.model_registry
 
 # --- Fixtures ---
@@ -286,10 +286,10 @@ def db_engine():
         from luana_core_sales_agent.observability.persistence.models.trace_event_model import (
             SalesAgentTraceEventModel,
         )
-        from src.modules.scheduling.infrastructure.models.appointment_model import (
+        from luana_core_scheduling.infrastructure.models.appointment_model import (
             AppointmentModel,
         )
-        from src.modules.scheduling.infrastructure.models.booking_link import (
+        from luana_core_scheduling.infrastructure.models.booking_link import (
             BookingLink,
         )
         from luana_core_social_proof.infrastructure.models import (

@@ -104,17 +104,17 @@ from luana_core_tenant_domains.infrastructure.models.tenant_domain_model import 
     TenantDomainModel,  # noqa: F401
 )
 
-from src.modules.advertising.infrastructure.models.ad_campaign_template_model import (
+from src.modules.nicolify.advertising.infrastructure.models.ad_campaign_template_model import (
     AdCampaignTemplateModel,  # noqa: F401
 )
-from src.modules.advertising.infrastructure.models.ad_offer_association_model import (
+from src.modules.nicolify.advertising.infrastructure.models.ad_offer_association_model import (
     AdOfferAssociationModel,  # noqa: F401
 )
 
 # --- Scheduling ---
-from src.modules.scheduling.infrastructure.models.appointment_model import (
+from luana_core_scheduling.infrastructure.models.appointment_model import (
     AppointmentModel,  # noqa: F401
 )
-from src.modules.scheduling.infrastructure.models.booking_link import (
+from luana_core_scheduling.infrastructure.models.booking_link import (
     BookingLink,  # noqa: F401
 )

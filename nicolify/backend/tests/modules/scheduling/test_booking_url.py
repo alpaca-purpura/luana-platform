@@ -21,7 +21,7 @@ def _make_domain_lookup(hostname: str | None = None) -> MagicMock:
 
 def test_returns_custom_domain_when_active_primary_exists():
     """Returns https://<hostname> for a primary active domain."""
-    from src.modules.scheduling.application.booking_url import get_booking_base_url
+    from luana_core_scheduling.application.booking_url import get_booking_base_url
 
     lookup = _make_domain_lookup("booking.mystore.com")
     result = get_booking_base_url(TENANT_ID, lookup)
@@ -31,7 +31,7 @@ def test_returns_custom_domain_when_active_primary_exists():
 
 def test_falls_back_to_dashboard_domain_when_no_custom_domain():
     """Returns DASHBOARD_DOMAIN when the tenant has no domains."""
-    from src.modules.scheduling.application.booking_url import get_booking_base_url
+    from luana_core_scheduling.application.booking_url import get_booking_base_url
 
     lookup = _make_domain_lookup(None)
 
@@ -44,7 +44,7 @@ def test_falls_back_to_dashboard_domain_when_no_custom_domain():
 
 def test_accepts_string_tenant_id():
     """Accepts a string tenant_id and converts it to UUID internally."""
-    from src.modules.scheduling.application.booking_url import get_booking_base_url
+    from luana_core_scheduling.application.booking_url import get_booking_base_url
 
     lookup = _make_domain_lookup(None)
 

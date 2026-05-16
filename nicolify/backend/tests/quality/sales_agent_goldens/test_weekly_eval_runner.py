@@ -25,7 +25,7 @@ from luana_core_sales_agent.application.quality.judge import SalesAgentJudge
 from luana_core_sales_agent.infrastructure.models.workflow_metric_model import (
     SalesAgentWorkflowMetricModel,
 )
-from src.shared.workers.sales_agent_quality_eval import (
+from luana_core_sales_agent.workers.sales_agent_quality_eval import (
     DRIFT_THRESHOLD,
     SENTINEL_TENANT_ID,
     run_weekly_quality_eval,

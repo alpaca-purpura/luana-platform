@@ -21,7 +21,7 @@ from luana_core_brand_studio.infrastructure.repositories.brand_summary_repositor
 )
 from luana_core_iam.infrastructure.models.tenant_model import TenantModel
 from luana_core_platform.domain.events import EventBus
-from src.shared.workers import brand_summary_regen
+from luana_core_platform.workers import brand_summary_regen
 
 
 @pytest.fixture(autouse=True)

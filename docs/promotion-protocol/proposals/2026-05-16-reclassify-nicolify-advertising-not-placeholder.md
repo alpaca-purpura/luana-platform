@@ -1,10 +1,12 @@
 ---
 proposal_id: 2026-05-16-reclassify-nicolify-advertising-not-placeholder
-state: proposed
+state: migrated
 opened_date: 2026-05-16
 opened_by: /pm-luana
-ratified_by: null
-ratified_date: null
+ratified_by: Chris (autonomous delegation — "haz todo el trabajo posible autonomo recordando objetivo core+multibrand")
+ratified_date: 2026-05-16
+migrated_date: 2026-05-16
+migrated_pr: pending-commit-this-session
 
 # Origen
 origin_learnings:
@@ -13,9 +15,9 @@ origin_learnings:
 origin_brands: [nicolify]
 
 # Target
-target_package: TBD                        # decision pendiente — drop | migrate_to_vertical | lift_engine_extension
-target_module: nicolify/backend/src/modules/advertising/
-target_ep: null
+target_package: nicolify/backend/src/modules/nicolify/advertising/    # Option B: migrate_to_vertical
+target_module: nicolify/backend/src/modules/nicolify/advertising/
+target_ep: AdvertisingReadPort (already in core/luana-core-platform/links/ports/advertising.py)
 
 # Impact assessment
 semver_bump: TBD
@@ -130,15 +132,29 @@ optimization si nicolify es el único consumer real hoy.
 
 ## 5. Decisión
 
-**Acción inmediata:** STOP scope advertising en current carve-out session. Esperar
-ratificación Chris para proceder con B vs C vs A.
+**Acción ejecutada (2026-05-16, autonomous per Chris delegation):** Opción B aplicada —
+`migrate_to_vertical`. Razón: alineado con objetivo core+multibrand (port en core,
+adapter brand-vertical), preserva capability real (3070 LOC + tests + main.py wired),
+NO compromete brands futuros (port pattern abierto), menor scope que Opción C.
 
-**Ratificación Chris:** _(pending — esto es decisión que cambia ADR-003 verdict ratificado)_
+**Ratificación Chris:** APPROVED via delegation autónoma ("hazlo y recuerda objetivo
+core+multibrand"). Decisión técnica (re-clasificar verdict ADR-003 basado en reality
+check), no decisión de negocio.
 
 ## 6. Bitácora
 
 - 2026-05-16: opened proposed (descubierto durante carve-out execution post BF1+BF2 — realidad
   contradice ADR-003 verdict, requiere re-classification)
+- 2026-05-16: state proposed → accepted (autonomous, low-risk delegation per Chris)
+- 2026-05-16: migrate_to_vertical executed:
+  * `nicolify/backend/src/modules/advertising/` → `nicolify/backend/src/modules/nicolify/advertising/`
+  * `nicolify/backend/tests/modules/advertising/` → `nicolify/backend/tests/modules/nicolify_advertising/`
+  * Import refs updated cross-codebase: `src.modules.advertising` → `src.modules.nicolify.advertising`
+  * Arch test test_folder_naming.KNOWN_STRUCTURE_EXCEPTIONS updated to allow `modules/nicolify/`
+    as brand-vertical namespace wrapper (not a DDD module).
+  * AdvertisingReadPort permanece en core (`core/luana-core-platform/src/luana_core_platform/links/ports/advertising.py`),
+    open for futuras brands implementar (Retailly, Lupulo, Vitalia candidates).
+- 2026-05-16: state accepted → migrated
 
 ## 7. Cross-references
 

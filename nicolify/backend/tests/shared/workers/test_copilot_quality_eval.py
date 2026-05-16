@@ -20,7 +20,7 @@ from luana_core_copilot.infrastructure.repositories.workflow_metric_repository i
     WorkflowMetricRepository,
 )
 from luana_core_platform.domain.datetime_utils import utc_now
-from src.shared.workers.copilot_quality_eval import (
+from luana_core_copilot.workers.copilot_quality_eval import (
     NO_WORKFLOW_BUCKET,
     run_weekly_quality_eval,
 )

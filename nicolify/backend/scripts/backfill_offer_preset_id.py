@@ -55,13 +55,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from sqlalchemy import text
 from sqlalchemy.orm import Session  # noqa: TC002
 
-from src.core.database import SessionLocal
+from luana_core_platform.core.database import SessionLocal
 from luana_core_offer_studio.domain.enums import OfferArchetype
 from luana_core_offer_studio.domain.offer_type_preset_catalog import (
     OFFER_TYPE_PRESET_CATALOG,
     OfferTypePreset,
 )
-from src.shared.domain.expert_business_type import ExpertBusinessType
+from luana_core_platform.domain.expert_business_type import ExpertBusinessType
 
 
 @dataclass(frozen=True, slots=True)

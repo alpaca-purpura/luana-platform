@@ -23,7 +23,7 @@ from uuid import uuid4
 
 import pytest
 
-import src.shared.domain_events.outbox.application.event_bus_adapter as _adapter_mod
+import luana_core_events.outbox.application.event_bus_adapter as _adapter_mod
 from luana_core_events.outbox.application.event_bus_adapter import (
     EventBusAdapter,
     _reset_module_inference_cache,

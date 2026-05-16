@@ -38,7 +38,7 @@ def create_scheduling_port(db: Session, tenant_id: UUID) -> SchedulingPort | Non
     Returns None if the import fails (scheduling module not loaded).
     """
     try:
-        from src.modules.scheduling.application.services.availability_service import (
+        from luana_core_scheduling.application.services.availability_service import (
             AvailabilityService,
         )
 
@@ -49,7 +49,7 @@ def create_scheduling_port(db: Session, tenant_id: UUID) -> SchedulingPort | Non
 
 def get_availability_service(db: Session, tenant_id: UUID) -> object:
     """Create an AvailabilityService instance. Lazy-imports from scheduling."""
-    from src.modules.scheduling.application.services.availability_service import (
+    from luana_core_scheduling.application.services.availability_service import (
         AvailabilityService,
     )
 
@@ -58,7 +58,7 @@ def get_availability_service(db: Session, tenant_id: UUID) -> object:
 
 def get_booking_base_url(tenant_id: UUID, domain_lookup: object) -> str:
     """Return booking base URL for a tenant. Lazy-imports from scheduling."""
-    from src.modules.scheduling.application.booking_url import (
+    from luana_core_scheduling.application.booking_url import (
         get_booking_base_url as _impl,
     )
 
@@ -79,7 +79,7 @@ def create_personalized_booking_link(
 
     Lazy-imports BookingLink from scheduling.
     """
-    from src.modules.scheduling.infrastructure.models.booking_link import BookingLink
+    from luana_core_scheduling.infrastructure.models.booking_link import BookingLink
 
     _ = tenant_id  # BookingLink table has no tenant_id column; reserved for parity
     link = BookingLink(
@@ -103,7 +103,7 @@ def lookup_booking_link_by_token(db: Session, token: str) -> object | None:
     models directly.
     """
     from sqlalchemy import select
-    from src.modules.scheduling.infrastructure.models.booking_link import BookingLink
+    from luana_core_scheduling.infrastructure.models.booking_link import BookingLink
 
     stmt = select(
         BookingLink.status,
@@ -128,7 +128,7 @@ def lookup_latest_appointment_for_lead(
     DDD boundaries.
     """
     from sqlalchemy import select
-    from src.modules.scheduling.infrastructure.models.appointment_model import (
+    from luana_core_scheduling.infrastructure.models.appointment_model import (
         AppointmentModel,
     )
 
@@ -164,10 +164,10 @@ def list_event_type_slots(
     """
     import datetime as dt
 
-    from src.modules.scheduling.application.services.availability_service import (
+    from luana_core_scheduling.application.services.availability_service import (
         AvailabilityService,
     )
-    from src.modules.scheduling.application.services.event_type_service import (
+    from luana_core_scheduling.application.services.event_type_service import (
         EventTypeService,
     )
 

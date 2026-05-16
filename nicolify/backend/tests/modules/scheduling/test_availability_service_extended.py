@@ -20,17 +20,17 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.modules.scheduling.application.services.availability_service import (
+from luana_core_scheduling.application.services.availability_service import (
     AvailabilityService,
 )
-from src.modules.scheduling.domain.availability_schema import (
+from luana_core_scheduling.domain.availability_schema import (
     AvailabilitySchedule,
     DaySchedule,
     ScheduleUpdate,
     TimeRange,
     WeeklySchedule,
 )
-from src.modules.scheduling.domain.event_type_schema import EventType
+from luana_core_scheduling.domain.event_type_schema import EventType
 
 TENANT_ID = uuid.UUID("aaaa0000-0000-0000-0000-000000000001")
 TENANT_ID_2 = uuid.UUID("aaaa0000-0000-0000-0000-000000000002")
