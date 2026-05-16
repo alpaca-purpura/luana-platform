@@ -2,11 +2,13 @@
 story_id: S-CICD-DEPLOY
 outcome: infra-dev-multibrand
 parent_sub_outcome: cicd-multibrand-deploy
-state: developed
-phase: AWAITING_AUDIT
-last_artifact: T-9-impl-log.md
-last_modified: 2026-05-15T12:00:00Z
-next_action: "/auditor — Conv 3. Auditor QA: C1 (Code) + C3 (Architecture) + C5 (Cross-cutting). Validators: 16/16 GREEN."
+state: done
+phase: DONE
+last_artifact: docs/product/outcomes/infra-dev-multibrand-CHECKPOINTS.md
+last_modified: 2026-05-15T13:00:00Z
+next_action: "Outcome cerrado. Capabilities promovidas. Story archivable post rolling 90d."
+verdict: APPROVED (post-fix 3 bugs comunify deployment.yaml)
+audit_review: docs/product/stories/S-CICD-DEPLOY/REVIEW.md
 ratified_by_chris: true
 spawned_at: 2026-05-15T00:00:00Z
 spawned_by: /pm-luana

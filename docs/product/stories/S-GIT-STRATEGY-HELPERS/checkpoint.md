@@ -2,11 +2,13 @@
 story_id: S-GIT-STRATEGY-HELPERS
 outcome: infra-dev-multibrand
 parent_sub_outcome: git-strategy-revised
-state: developed
-phase: BUILD_DONE
-last_artifact: T-13-impl-log.md
-last_modified: 2026-05-15T12:00:00Z
-next_action: "/auditor toma la story para review (Conv 3)"
+state: done
+phase: DONE
+last_artifact: docs/product/outcomes/infra-dev-multibrand-CHECKPOINTS.md
+last_modified: 2026-05-15T13:00:00Z
+next_action: "Outcome cerrado. Capabilities promovidas. Story archivable post rolling 90d."
+verdict: APPROVED_WITH_NOTE (2 findings menores documentados, no-bloqueantes)
+audit_review: docs/product/stories/S-GIT-STRATEGY-HELPERS/REVIEW.md
 ratified_by_chris: true
 spawned_at: 2026-05-15T00:00:00Z
 spawned_by: /pm-luana

@@ -4,8 +4,8 @@
 # Vertical: Creator Economy (coaches/nutritionists/productivity)
 # Tenants: anabella-coaching-ar, trini-nutrition-cl, pablo-productividad-mx
 #
-# Wire CI/CD (S-CICD-DEPLOY T-5):
-#   _deploy-brand.yml ejecuta `kubectl set image deployment/comunify-backend ...`
+# Wire CI/CD (S-CICD-DEPLOY T-5 + audit fixes):
+#   _deploy-brand.yml ejecuta `kubectl set image deployment/comunify-app ...`
 #   con el tag de version extraido del branch release/comunify-vX.Y.Z.
 #   Secrets: viven en GitHub Environment 'comunify-prod' (KUBECONFIG, GHCR_TOKEN).
 #   Para staging: GitHub Environment 'comunify-staging'.
@@ -27,8 +27,8 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: comunify-backend
-  namespace: luana-platform
+  name: comunify-app
+  namespace: comunify
   labels:
     app: comunify
     component: backend
@@ -111,13 +111,13 @@ spec:
             timeoutSeconds: 5
             failureThreshold: 3
       imagePullSecrets:
-        - name: ghcr-credentials
+        - name: ghcr-creds
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: comunify-frontend
-  namespace: luana-platform
+  namespace: comunify
   labels:
     app: comunify
     component: frontend
@@ -176,4 +176,4 @@ spec:
             periodSeconds: 10
             timeoutSeconds: 5
       imagePullSecrets:
-        - name: ghcr-credentials
+        - name: ghcr-creds

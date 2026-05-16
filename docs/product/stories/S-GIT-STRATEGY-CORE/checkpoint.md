@@ -2,11 +2,13 @@
 story_id: S-GIT-STRATEGY-CORE
 outcome: infra-dev-multibrand
 parent_sub_outcome: git-strategy-revised
-state: developed
-phase: BUILD_DONE
-last_artifact: docs/product/stories/S-GIT-STRATEGY-CORE/checkpoint.md
-last_modified: 2026-05-15T12:00:00Z
-next_action: "/auditor C1-C5"
+state: done
+phase: DONE
+last_artifact: docs/product/outcomes/infra-dev-multibrand-CHECKPOINTS.md
+last_modified: 2026-05-15T13:00:00Z
+next_action: "Outcome cerrado. Capabilities promovidas. Story archivable a docs/archive/2026/ post rolling 90d."
+verdict: APPROVED
+audit_review: docs/product/stories/S-GIT-STRATEGY-CORE/REVIEW.md
 ratified_by_chris: true
 spawned_at: 2026-05-15T00:00:00Z
 spawned_by: /pm-luana

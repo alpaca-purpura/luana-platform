@@ -2,11 +2,13 @@
 story_id: S-DOCKER-DEV-MULTIBRAND
 outcome: infra-dev-multibrand
 parent_sub_outcome: docker-dev-multibrand
-state: developed
-phase: DEVELOPED
-last_artifact: T-10-impl-log.md
-last_modified: 2026-05-15T14:00:00Z
-next_action: "/auditor toma story para review (Conv 3). C1-C5 grid: compose files, infra scripts, Makefile, brand.yaml, pre-commit hook Section 10."
+state: done
+phase: DONE
+last_artifact: docs/product/outcomes/infra-dev-multibrand-CHECKPOINTS.md
+last_modified: 2026-05-15T13:00:00Z
+next_action: "Outcome cerrado. Capabilities promovidas. Story archivable post rolling 90d."
+verdict: APPROVED
+audit_review: docs/product/stories/S-DOCKER-DEV-MULTIBRAND/REVIEW.md
 ratified_by_chris: true
 spawned_at: 2026-05-15T00:00:00Z
 spawned_by: /pm-luana
