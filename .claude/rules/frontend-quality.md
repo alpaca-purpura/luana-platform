@@ -1,15 +1,30 @@
 ---
-globs: "frontend/**/*.{ts,tsx,mjs,mts}"
+globs: "**/frontend/**/*.{ts,tsx,mjs,mts}"
 description: Stub — invoca frontend-expert skill
 ---
 
 # Frontend Quality
 
-- ESLint 0 errors. Config `frontend/eslint.config.mjs`. 60+ rules. Plugins: sonarjs, boundaries, react-perf, prettier.
+- ESLint 0 errors. Config `{brand}/frontend/eslint.config.mjs`. 60+ rules. Plugins: sonarjs, boundaries, react-perf, prettier.
 - TypeScript strict, 0 errors.
-- Vitest 1063+ tests, 20% coverage threshold (actual ~25%).
-- 10 architecture fitness tests `src/__tests__/architecture/`. Ratchet allowlists shrink only.
+- Vitest tests + 20% coverage threshold per-brand.
+- Architecture fitness tests `{brand}/frontend/src/__tests__/architecture/`. Ratchet allowlists shrink only.
+
+```bash
+WS=$(git rev-parse --show-toplevel)
+
+# Per brand:
+cd ${WS}/{brand}/frontend && npx tsc --noEmit
+cd ${WS}/{brand}/frontend && npx eslint src/ --cache
+cd ${WS}/{brand}/frontend && npx vitest run --coverage
+```
 
 Detalle (rules error/warn, per-file overrides, jscpd/knip/madge, FSD boundaries, arch tests list) en `frontend-expert` skill → `references/frontend-quality.md`.
 
 **No-skip:** disable ESLint rule sin justification comment. `// eslint-disable-next-line` solo con explanation. Many violations → refactor, not disable.
+
+## Multibrand awareness (post reorg 2026-05-15)
+
+- Cada brand tiene su `{brand}/frontend/` independiente (nicolify, vitalia, comunify, lupulo).
+- Shared TS packages: `core/luana-core-*/` (TS) via `@luana/*` imports — modificar requiere `/pm-luana` promotion gate.
+- Brands futuras (saasora, inmoflow, retailly, fixia, guestly, fitflow) heredan estos gates al bootstrap.

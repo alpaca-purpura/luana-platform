@@ -39,8 +39,14 @@ Hot-fix ticket es cualquier ticket con AL MENOS UNA de estas señales:
 citado en el handoff doc. Captura output verbatim:
 
 ```bash
-# Per handoff doc T-1.bis:
-cd backend && .venv/bin/pytest <repro test paths> -v --tb=short
+WS=$(git rev-parse --show-toplevel)
+
+# Per brand (ejemplo nicolify — adaptar al brand citado en handoff):
+cd ${WS}/{brand}/backend && ${WS}/.venv/bin/pytest <repro test paths> -v --tb=short
+
+# Si bug vive en engine compartido (core/luana-core-*/):
+cd ${WS}/core/luana-core-{pkg} && ${WS}/.venv/bin/pytest <repro test paths> -v --tb=short
+
 # Output FAIL → confirma symptom existe
 # Output PASS → handoff doc desactualizado, escalate
 ```
@@ -68,7 +74,8 @@ Ticket entry en `04-tickets.yaml` MUST incluir:
 ```yaml
 repro_verified: true                                  # R26 — hotfix repro confirmed
 repro_evidence:
-  command: "cd backend && .venv/bin/pytest tests/X/test_y.py::test_z -v"
+  brand: "nicolify"                                   # brand donde se reprodujo (o "core/luana-core-<pkg>" si engine)
+  command: "cd ${WS}/nicolify/backend && ${WS}/.venv/bin/pytest tests/X/test_y.py::test_z -v"
   output: |
     AssertionError: '>' not supported between NoneType and int
     at line 153 of test_y.py
@@ -148,3 +155,9 @@ redirigió a tests/conftest.py + 2 test files migration.
 - `.claude/skills/dev-team/SKILL.md` Step 0.5 (R26 enforcement)
 - `.claude/skills/po/SKILL.md` Step "Reproducción local" (R26 enforcement)
 - `docs/specs/templates/04-tickets-template.yaml` § repro_verified
+
+## Multibrand awareness (post reorg 2026-05-15)
+
+- Hot-fix brand-specific → reproducir en `{brand}/backend/` o `{brand}/frontend/` solamente.
+- Hot-fix engine (`core/luana-core-*/`) → reproducir en core package + **al menos una brand consumer activa** para validar ripple (impacto cross-brand).
+- Ticket `repro_evidence.brand` field obligatorio para distinguir scope.
