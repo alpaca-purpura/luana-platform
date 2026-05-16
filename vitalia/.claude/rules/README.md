@@ -1,10 +1,14 @@
-# Vitalia — rules overlay
+# Vitalia brand overlay — rules
 
-Rules brand-specific que extienden `.claude/rules/` core (raíz del workspace).
+Extiende `.claude/rules/` raíz Luana con rules brand-specific vitalia (Salud + Bienestar — clínicas médicas/dentales/estéticas, HIPAA-lite).
 
 **Patrón overlay:**
 - Cardinales (tenant-isolation, DDD, TDD, git-safety, anti-duplication, spanish-text universal, parallel-safety) viven en `.claude/rules/` raíz y aplican a todos los brands.
-- Brand-specific (ej. HIPAA-lite vitalia, creator-economy patterns comunify) viven aquí.
-- Cuando trabajés en `vitalia/` workdir, ambos sets aplican.
+- Brand-specific viven aquí y se cargan cuando trabajés en `vitalia/` workdir.
+- Ambos sets aplican simultáneamente cuando edites archivos bajo `vitalia/`.
 
-**Naming:** `{topic}.md` (ej. `hipaa-lite.md`, `creator-economy-funnels.md`).
+| Rule | Descripción |
+|---|---|
+| `hipaa-lite.md` | Salvaguardas defensivas PHI: dual filter tenant+clinic, audit log obligatorio, encryption at-rest+in-transit, retention 10y, RBAC strict roles médicos, sanitization en traces, voice patterns sales_agent para canales no-encriptados |
+
+**Naming:** `{topic}.md` (ej. `hipaa-lite.md`).
