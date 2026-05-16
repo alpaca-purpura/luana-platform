@@ -1,0 +1,41 @@
+# retailly/config/brand.yaml
+# BrandConfig declarativa para Retailly (ecommerce).
+# Decision D6: puertos cementados (retailly=8007/3007)
+# NOTA: retailly es placeholder (Story TBD pendiente). Esta config es minima.
+#
+# bootstrap brand topology — 2026-05-15
+# SSoT infra metadata por entorno. Auto-indexado en docs/portfolio/INFRA-MATRIX.md via make infra-matrix.
+
+brand_slug: retailly
+brand_name: "Retailly"
+brand_description: "Vertical E-commerce / D2C brand app — catálogos sincronizados con Shopify/WooCommerce, cart recovery y cross-selling automático"
+brand_segment: ecommerce
+compliance_level: pci-light
+voice_cloning_enabled: false
+multi_language_ui: false
+
+features:
+  brand_studio_basic: true
+  shopify_woocommerce_sync: false  # Story TBD
+  cart_recovery_flow: false        # Story TBD
+  cross_selling_checkout: false    # Story TBD
+  logistics_carrier_sync: false    # Story TBD
+
+# SSoT infra metadata por entorno.
+# Auto-indexado en docs/portfolio/INFRA-MATRIX.md via make infra-matrix.
+infra:
+  dev:
+    backend_port: 8007
+    frontend_port: 3007
+    database_name: retailly_dev
+    redis_db: 6
+    qdrant_collection_prefix: retailly_
+    domain: retailly-dev.nicolify.com
+    cloudflared_tunnel: retailly-dev
+  staging:
+    domain: retailly-test.nicolify.com
+    server: tbd-staging-cluster
+  prod:
+    domain: app.retailly.com
+    server: tbd
+    cloudflared_tunnel: retailly-prod
