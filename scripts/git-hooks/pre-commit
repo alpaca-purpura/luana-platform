@@ -197,21 +197,48 @@ EOF
 fi
 
 # ─────────────────────────────────────────────────────────────────
-# 3. Ruff check (full ruleset) on staged backend/*.py
+# 3. Ruff check + format on staged Python — MULTIBRAND-AWARE
+# (refactor 2026-05-15 post multibrand reorg: cubre todos los workspace
+# members — backend/ legacy + {brand}/backend/ + core/luana-core-*/.)
 # ─────────────────────────────────────────────────────────────────
+#
+# Regex captura cualquier Python en workspace member backend o core:
+#   - backend/                  (legacy single-target, mantenido por backcompat)
+#   - {brand}/backend/          (vitalia, nicolify, comunify, lupulo, + futuras)
+#   - core/luana-core-{pkg}/    (26 packages engine compartido)
+#
+# Venv canónico: ${REPO_ROOT}/.venv/bin/ruff (uv workspace root, instala TODOS
+# los members en editable mode — un solo venv compartido). Fallback al venv
+# legacy backend/.venv/ si root venv ausente (compat con setups antiguos).
+#
+# Ruff auto-descubre el pyproject.toml correcto (cada workspace member tiene
+# el suyo) subiendo directorios desde el archivo. No requiere pushd manual.
 
-STAGED_BACKEND_PY_REPO=$(echo "${STAGED_PY}" | grep -E '^backend/' || true)
+STAGED_BACKEND_PY_REPO=$(echo "${STAGED_PY}" \
+  | grep -E '^(backend|[a-z][a-z0-9_-]*/backend|core/luana-core-[a-z][a-z0-9-]*)/' \
+  || true)
 
 if [ -n "${STAGED_BACKEND_PY_REPO}" ]; then
-  if [ ! -x "${REPO_ROOT}/backend/.venv/bin/ruff" ]; then
+  # Resolver venv canónico
+  if [ -x "${REPO_ROOT}/.venv/bin/ruff" ]; then
+    RUFF="${REPO_ROOT}/.venv/bin/ruff"
+  elif [ -x "${REPO_ROOT}/backend/.venv/bin/ruff" ]; then
+    RUFF="${REPO_ROOT}/backend/.venv/bin/ruff"
+    printf "\033[33m"
+    echo "WARNING: usando legacy backend/.venv/bin/ruff — recomendado migrar a root .venv via 'uv sync'."
+    printf "\033[0m"
+  else
+    RUFF=""
+  fi
+
+  if [ -z "${RUFF}" ]; then
     printf "\033[33m"
     echo "─────────────────────────────────────────────────────────────"
-    echo "WARNING: backend/.venv/bin/ruff not found — skipping ruff checks."
-    echo "  Run: cd backend && python -m venv .venv && .venv/bin/pip install -r requirements-dev.txt"
+    echo "WARNING: ruff not found en .venv/bin/ ni backend/.venv/bin/ — skipping ruff checks."
+    echo "  Run: uv sync   (instala todos los workspace members + dev deps en .venv root)"
     echo "─────────────────────────────────────────────────────────────"
     printf "\033[0m"
   else
-    RUFF="${REPO_ROOT}/backend/.venv/bin/ruff"
     RUFF_FAIL_FILES=""
     FORMAT_FAIL_FILES=""
 
@@ -220,23 +247,23 @@ if [ -n "${STAGED_BACKEND_PY_REPO}" ]; then
     # silent-pass bug where pre-commit hook accepted broken staged content if
     # working tree was clean.
     #
-    # IMPORTANT: cd into `backend/` so that ruff finds `pyproject.toml` (which
-    # has line-length=120) AND so that `--stdin-filename src/...` resolves the
-    # __init__.py chain correctly for INP001 namespace-package detection.
-    pushd "${REPO_ROOT}/backend" >/dev/null
+    # Multibrand: cd al workspace root (no a backend/) — ruff auto-descubre el
+    # pyproject.toml correcto desde --stdin-filename. Cada workspace member
+    # (backend/, {brand}/backend/, core/luana-core-X/) tiene su propio
+    # pyproject.toml con line-length=120 + reglas heredadas.
+    pushd "${REPO_ROOT}" >/dev/null
     while IFS= read -r FILE; do
       [ -z "${FILE}" ] && continue
-      RELATIVE="${FILE#backend/}"
 
-      # Ruff check (full ruleset incl. F632)
+      # --stdin-filename con path relativo al REPO_ROOT permite a ruff
+      # descubrir el pyproject.toml correcto del workspace member.
       if ! git -C "${REPO_ROOT}" show ":${FILE}" 2>/dev/null \
-          | "${RUFF}" check --no-cache --quiet --stdin-filename "${RELATIVE}" - >/dev/null 2>&1; then
+          | "${RUFF}" check --no-cache --quiet --stdin-filename "${FILE}" - >/dev/null 2>&1; then
         RUFF_FAIL_FILES+="${FILE} "
       fi
 
-      # Ruff format check
       if ! git -C "${REPO_ROOT}" show ":${FILE}" 2>/dev/null \
-          | "${RUFF}" format --check --quiet --stdin-filename "${RELATIVE}" - >/dev/null 2>&1; then
+          | "${RUFF}" format --check --quiet --stdin-filename "${FILE}" - >/dev/null 2>&1; then
         FORMAT_FAIL_FILES+="${FILE} "
       fi
     done <<< "${STAGED_BACKEND_PY_REPO}"
@@ -246,18 +273,18 @@ if [ -n "${STAGED_BACKEND_PY_REPO}" ]; then
       printf "\033[31m"
       cat <<EOF
 ─────────────────────────────────────────────────────────────
-PRE-COMMIT BLOCKED: ruff check failures on STAGED content
+PRE-COMMIT BLOCKED: ruff check failures on STAGED content (multibrand)
 ─────────────────────────────────────────────────────────────
 Files with ruff violations in staged content:
 ${RUFF_FAIL_FILES}
 
-Re-run with details:
-  cd backend && .venv/bin/ruff check --no-cache ${RUFF_FAIL_FILES}
+Re-run con detalles (paths absolutos, ruff descubre pyproject.toml del workspace member):
+  ${RUFF} check --no-cache ${RUFF_FAIL_FILES}
 
 Fix:
-  cd backend && .venv/bin/ruff check --fix ${RUFF_FAIL_FILES}
+  ${RUFF} check --fix ${RUFF_FAIL_FILES}
 
-Then \`git add\` again to re-stage fixed content. NEVER use --no-verify.
+Después \`git add\` para re-stage. NEVER use --no-verify.
 ─────────────────────────────────────────────────────────────
 EOF
       printf "\033[0m"
@@ -268,15 +295,15 @@ EOF
       printf "\033[31m"
       cat <<EOF
 ─────────────────────────────────────────────────────────────
-PRE-COMMIT BLOCKED: ruff format violations on STAGED content
+PRE-COMMIT BLOCKED: ruff format violations on STAGED content (multibrand)
 ─────────────────────────────────────────────────────────────
-Files with format violations in staged content:
+Files con format violations en staged content:
 ${FORMAT_FAIL_FILES}
 
 Fix:
-  cd backend && .venv/bin/ruff format ${FORMAT_FAIL_FILES}
+  ${RUFF} format ${FORMAT_FAIL_FILES}
 
-Then \`git add\` again to re-stage fixed content. NEVER use --no-verify.
+Después \`git add\` para re-stage. NEVER use --no-verify.
 ─────────────────────────────────────────────────────────────
 EOF
       printf "\033[0m"
@@ -286,20 +313,34 @@ EOF
 fi
 
 # ─────────────────────────────────────────────────────────────────
-# 4. R3 SSoT freshness gate (origen C1 2026-05-05 R21)
+# 4. R3 SSoT freshness gate (origen C1 2026-05-05 R21) — MULTIBRAND-AWARE
+# (refactor 2026-05-15 post multibrand reorg: cubre shared/ legacy +
+# per-brand shared raro + engine packages core/luana-core-*)
 # Gate: FULL only (wip/* branches skip — WIP files may not yet have SSoT entry)
 # ─────────────────────────────────────────────────────────────────
-# New file under backend/src/shared/ MUST appear in the inventory tabla of
-# .claude/rules/auditor-downstream-regression.md, OR carry magic comment
-# `# downstream-regression-na: <reason>` within first 20 lines.
+# New file under shared cross-consumer surface MUST appear in the inventory
+# tabla of .claude/rules/auditor-downstream-regression.md, OR carry magic
+# comment `# downstream-regression-na: <reason>` within first 20 lines.
 #
-# Detects status A (added) AND R (renamed-into) — both create new shared/
-# surface that needs SSoT entry.
+# Surfaces detectadas (multibrand):
+#   - backend/src/shared/                       (legacy single-target backcompat)
+#   - {brand}/backend/src/shared/               (per-brand shared raro)
+#   - core/luana-core-*/src/luana_core_*/       (engine packages — afecta TODAS
+#                                                las brands consumidoras)
+#
+# Lookup en tabla SSoT:
+#   - Engine file core/luana-core-X/src/luana_core_X/Y/Z.py → lookup exact path
+#     y dirname/
+#   - Per-brand shared {brand}/backend/src/shared/Y.py → lookup shared/Y.py
+#     (convención tabla strips brand prefix)
+#   - Legacy backend/src/shared/Y.py → lookup shared/Y.py
+#
+# Detects status A (added) AND R (renamed-into).
 
 if [ "${GATE_LEVEL}" = "full" ]; then
 
 NEW_SHARED_FILES=$(git diff --cached --name-only --diff-filter=AR 2>/dev/null \
-  | grep -E '^backend/src/shared/.+\.py$' \
+  | grep -E '^(backend/src/shared|[a-z][a-z0-9_-]*/backend/src/shared|core/luana-core-[a-z][a-z0-9-]*/src/luana_core_[a-z0-9_]+)/.+\.py$' \
   | grep -vE '(__pycache__/|\.venv/|migrations/versions/|tests/)' \
   || true)
 
@@ -317,9 +358,25 @@ if [ -n "${NEW_SHARED_FILES}" ]; then
     while IFS= read -r FILE; do
       [ -z "${FILE}" ] && continue
 
-      # Strip 'backend/src/' prefix to match tabla SSoT path convention
-      # (which uses e.g. `shared/agent_observability/cost/cost_recorder.py`).
-      LOOKUP_PATH="${FILE#backend/src/}"
+      # Compute lookup paths según tipo de surface multibrand.
+      # Engine packages (core/luana-core-X/src/luana_core_X/Y/Z.py) → lookup full path.
+      # Per-brand shared ({brand}/backend/src/shared/Y.py) → strip prefix, lookup shared/Y.py.
+      # Legacy (backend/src/shared/Y.py) → strip prefix, lookup shared/Y.py.
+      case "${FILE}" in
+        core/luana-core-*/src/luana_core_*/*)
+          LOOKUP_PATH="${FILE}"
+          ;;
+        */backend/src/shared/*)
+          # Strip up to and including 'backend/src/' (works for legacy y per-brand)
+          LOOKUP_PATH="${FILE##*backend/src/}"
+          ;;
+        backend/src/shared/*)
+          LOOKUP_PATH="${FILE#backend/src/}"
+          ;;
+        *)
+          LOOKUP_PATH="${FILE}"
+          ;;
+      esac
       LOOKUP_DIR="$(dirname "${LOOKUP_PATH}")/"
 
       # Check tabla — either exact path OR parent directory listed
@@ -344,12 +401,16 @@ if [ -n "${NEW_SHARED_FILES}" ]; then
       printf "\033[31m"
       cat <<EOF
 ─────────────────────────────────────────────────────────────
-PRE-COMMIT BLOCKED: R3 SSoT freshness gate (downstream-regression)
+PRE-COMMIT BLOCKED: R3 SSoT freshness gate (downstream-regression — multibrand)
 ─────────────────────────────────────────────────────────────
-You're adding new file(s) under backend/src/shared/ that are NOT listed
-in the downstream-regression SSoT tabla. Auditors rely on that tabla to
-spawn cross-surface tests (.claude/rules/auditor-downstream-regression.md
-caso D4 origen).
+You're adding new file(s) under a shared cross-consumer surface that are
+NOT listed in the downstream-regression SSoT tabla. Surfaces cubiertas:
+  - backend/src/shared/ (legacy)
+  - {brand}/backend/src/shared/ (per-brand shared raro)
+  - core/luana-core-*/src/luana_core_*/ (engine — afecta TODAS las brands)
+
+Auditors rely on that tabla to spawn cross-surface tests
+(.claude/rules/auditor-downstream-regression.md caso D4 origen).
 
 Files missing from tabla:
 ${MISSING_FILES}
@@ -382,33 +443,61 @@ fi
 fi  # end GATE_LEVEL=full guard (section 4)
 
 # ─────────────────────────────────────────────────────────────────
-# 5. R32 capability ↔ story status freshness (origen 2026-05-05)
+# 5. R32 capability ↔ story status freshness (origen 2026-05-05) — MULTIBRAND
+# (refactor 2026-05-15 post multibrand reorg)
 # Gate: FULL only (wip/* branches skip — capability reconciliation may
 # produce false positives on in-progress stories)
 # ─────────────────────────────────────────────────────────────────
-# Capability YAML at docs/product/capabilities/{m}/{c}.yaml carries derived
-# fields (status, stories_live, stories_planned, stories_total) that MUST
-# stay synced with referenced stories under docs/product/stories/{m}/{s}.yaml.
+# Capability YAML at {brand}/docs/product/capabilities/{m}/{c}.yaml (per-brand)
+# o docs/product/capabilities/{m}/{c}.yaml (platform/legacy) carries derived
+# fields (status, stories_live, stories_planned, stories_total) que MUST stay
+# synced con stories referenced.
 #
-# Trigger: any staged change touching docs/product/{capabilities,stories}/.
-# Action: invoke reconciler --check; block on drift with hint to run fix mode.
+# Trigger: any staged change touching:
+#   - docs/product/{capabilities,stories}/             (platform/legacy)
+#   - {brand}/docs/product/{capabilities,stories}/     (per-brand)
+#
+# Action por trigger:
+#   - Path raíz docs/product/... → reconciler sin flag (legacy behavior).
+#   - Path {brand}/docs/product/... → reconciler con `--brand {brand}` si soporta.
+#
+# TODO multibrand: scripts/reconcile_capabilities.py NO soporta --brand flag
+# todavía (verified 2026-05-15 — solo acepta --check + --repo). Cuando per-brand
+# path detectado, hook actualmente warning + TODO en lugar de invoke. Ticket
+# pendiente: agregar `--brand {slug}` flag al reconciler que filtre paths.
 
 if [ "${GATE_LEVEL}" = "full" ]; then
 
 PRODUCT_TOUCHED=$(git diff --cached --name-only --diff-filter=ACMR 2>/dev/null \
-  | grep -E '^docs/product/(capabilities|stories)/' \
+  | grep -E '^(docs/product|[a-z][a-z0-9_-]*/docs/product)/(capabilities|stories)/' \
   || true)
 
 if [ -n "${PRODUCT_TOUCHED}" ]; then
   RECONCILER="${REPO_ROOT}/scripts/reconcile_capabilities.py"
-  VENV_PY="${REPO_ROOT}/backend/.venv/bin/python"
+  # Prefer root venv (uv workspace), fallback legacy backend venv
+  if [ -x "${REPO_ROOT}/.venv/bin/python" ]; then
+    VENV_PY="${REPO_ROOT}/.venv/bin/python"
+  elif [ -x "${REPO_ROOT}/backend/.venv/bin/python" ]; then
+    VENV_PY="${REPO_ROOT}/backend/.venv/bin/python"
+  else
+    VENV_PY=""
+  fi
 
-  if [ -x "${VENV_PY}" ] && [ -f "${RECONCILER}" ]; then
-    if ! "${VENV_PY}" "${RECONCILER}" --check >/tmp/reconcile-out.txt 2>&1; then
-      printf "\033[31m"
-      cat <<EOF
+  # Detectar si hay paths per-brand vs raíz para invocar correctamente.
+  BRAND_PATHS_TOUCHED=$(echo "${PRODUCT_TOUCHED}" \
+    | grep -E '^[a-z][a-z0-9_-]*/docs/product/' \
+    | cut -d/ -f1 | sort -u || true)
+  ROOT_PATHS_TOUCHED=$(echo "${PRODUCT_TOUCHED}" \
+    | grep -E '^docs/product/' || true)
+
+  if [ -n "${VENV_PY}" ] && [ -f "${RECONCILER}" ]; then
+    # Caso 1: paths raíz docs/product/ → invocar reconciler legacy (sin --brand).
+    if [ -n "${ROOT_PATHS_TOUCHED}" ]; then
+      if ! "${VENV_PY}" "${RECONCILER}" --check >/tmp/reconcile-out.txt 2>&1; then
+        printf "\033[31m"
+        cat <<EOF
 ─────────────────────────────────────────────────────────────
-PRE-COMMIT BLOCKED: R32 capability status drift
+PRE-COMMIT BLOCKED: R32 capability status drift (platform/legacy)
 ─────────────────────────────────────────────────────────────
 You're staging changes under docs/product/{capabilities,stories}/ but the
 capability YAML derived fields (status, stories_live, stories_planned,
@@ -425,8 +514,26 @@ Resolution:
 NEVER use --no-verify.
 ─────────────────────────────────────────────────────────────
 EOF
+        printf "\033[0m"
+        exit 1
+      fi
+    fi
+
+    # Caso 2: paths per-brand → TODO --brand flag pendiente en reconciler.
+    if [ -n "${BRAND_PATHS_TOUCHED}" ]; then
+      printf "\033[33m"
+      cat <<EOF
+─────────────────────────────────────────────────────────────
+WARNING: R32 reconciler per-brand pendiente (multibrand TODO)
+─────────────────────────────────────────────────────────────
+Brands tocadas: ${BRAND_PATHS_TOUCHED}
+scripts/reconcile_capabilities.py NO soporta --brand flag todavía.
+Cuando se agregue, este bloque invocará:
+  python scripts/reconcile_capabilities.py --check --brand {brand}
+para cada brand. Por ahora SOLO warning (no block).
+─────────────────────────────────────────────────────────────
+EOF
       printf "\033[0m"
-      exit 1
     fi
   else
     printf "\033[33m"
@@ -438,46 +545,95 @@ fi
 fi  # end GATE_LEVEL=full guard (section 5)
 
 # ─────────────────────────────────────────────────────────────────
-# 6. R33 BACKLOG.yaml + BACKLOG.md freshness (origen 2026-05-05)
+# 6. R33 BACKLOG.yaml + BACKLOG.md freshness (origen 2026-05-05) — MULTIBRAND
+# (refactor 2026-05-15 post multibrand reorg)
 # Gate: FULL only (wip/* branches skip — backlog regen during WIP commits
 # adds noise; regen happens at squash-merge to main)
 # ─────────────────────────────────────────────────────────────────
-# BACKLOG.yaml + BACKLOG.md are auto-generated by scripts/generate_backlog.py
-# from sources (ideas-pool.yaml, outcomes/, stories/, capabilities/, modules/,
-# active projects). They MUST stay fresh — drift means downstream consumers
-# (visualizer, /pm bootstrap) get stale view.
+# BACKLOG.{yaml,md} auto-generated por scripts/generate_backlog.py desde
+# sources (ideas-pool.yaml, outcomes/, stories/, capabilities/, modules/).
+# Cross-brand portfolio cement: docs/portfolio/PORTFOLIO.md via
+# scripts/generate_portfolio.py.
 #
-# Trigger: any staged change touching backlog source paths.
-# Action: invoke generator --check; if drift, regen + auto-stage.
+# Trigger: any staged change touching backlog source paths:
+#   - docs/product/(ideas-pool.yaml|outcomes/|stories/|capabilities/|modules/)
+#                                                        (platform/legacy)
+#   - {brand}/docs/product/(ideas-pool.yaml|outcomes/|stories/|capabilities/|modules/)
+#                                                        (per-brand)
+#   - docs/projects/active/+/checkpoint.md               (legacy projects)
+#
+# Action por trigger:
+#   - Path raíz docs/product/... → invocar generator legacy (regen platform
+#     BACKLOG + auto-stage). Considerar también `make portfolio` para
+#     PORTFOLIO.md cross-brand (manual hoy, futuro auto-stage).
+#   - Path {brand}/docs/product/... → TODO --brand flag pendiente en generator;
+#     por ahora warning + nota TODO.
 #
 # Note: pm-nico/pis/active/ removed Wave 2 (2026-05-06) — generator returns []
-# defensively if path absent. Path NOT included in trigger regex anymore.
+# defensively. Path NOT included in trigger regex anymore.
 
 if [ "${GATE_LEVEL}" = "full" ]; then
 
 BACKLOG_SOURCES_TOUCHED=$(git diff --cached --name-only --diff-filter=ACMRD 2>/dev/null \
-  | grep -E '^docs/(product/(ideas-pool\.yaml|outcomes/|stories/|capabilities/|modules/)|projects/active/.+/checkpoint\.md)' \
+  | grep -E '^(docs/(product/(ideas-pool\.yaml|outcomes/|stories/|capabilities/|modules/)|projects/active/.+/checkpoint\.md)|[a-z][a-z0-9_-]*/docs/product/(ideas-pool\.yaml|outcomes/|stories/|capabilities/|modules/))' \
   || true)
 
 if [ -n "${BACKLOG_SOURCES_TOUCHED}" ]; then
   GENERATOR="${REPO_ROOT}/scripts/generate_backlog.py"
-  VENV_PY="${REPO_ROOT}/backend/.venv/bin/python"
+  # Prefer root venv (uv workspace), fallback legacy backend venv
+  if [ -x "${REPO_ROOT}/.venv/bin/python" ]; then
+    VENV_PY="${REPO_ROOT}/.venv/bin/python"
+  elif [ -x "${REPO_ROOT}/backend/.venv/bin/python" ]; then
+    VENV_PY="${REPO_ROOT}/backend/.venv/bin/python"
+  else
+    VENV_PY=""
+  fi
 
-  if [ -x "${VENV_PY}" ] && [ -f "${GENERATOR}" ]; then
-    if ! "${VENV_PY}" "${GENERATOR}" --check >/tmp/backlog-check.txt 2>&1; then
-      # Drift detected — regenerate + auto-stage to make commit clean
-      "${VENV_PY}" "${GENERATOR}" >/tmp/backlog-regen.txt 2>&1 || true
-      git add docs/product/BACKLOG.yaml docs/product/BACKLOG.md 2>/dev/null || true
-      printf "\033[33m"
-      cat <<EOF
+  # Detectar brands tocadas vs paths raíz.
+  BRAND_BACKLOG_TOUCHED=$(echo "${BACKLOG_SOURCES_TOUCHED}" \
+    | grep -E '^[a-z][a-z0-9_-]*/docs/product/' \
+    | cut -d/ -f1 | sort -u || true)
+  ROOT_BACKLOG_TOUCHED=$(echo "${BACKLOG_SOURCES_TOUCHED}" \
+    | grep -E '^docs/' || true)
+
+  if [ -n "${VENV_PY}" ] && [ -f "${GENERATOR}" ]; then
+    # Caso 1: paths raíz docs/product/ → invocar generator legacy.
+    if [ -n "${ROOT_BACKLOG_TOUCHED}" ]; then
+      if ! "${VENV_PY}" "${GENERATOR}" --check >/tmp/backlog-check.txt 2>&1; then
+        # Drift detected — regenerate + auto-stage
+        "${VENV_PY}" "${GENERATOR}" >/tmp/backlog-regen.txt 2>&1 || true
+        git add docs/product/BACKLOG.yaml docs/product/BACKLOG.md 2>/dev/null || true
+        printf "\033[33m"
+        cat <<EOF
 ─────────────────────────────────────────────────────────────
-R33 BACKLOG auto-regenerated
+R33 BACKLOG auto-regenerated (platform/legacy)
 ─────────────────────────────────────────────────────────────
 Sources changed → docs/product/BACKLOG.{yaml,md} regenerated and re-staged.
 Inspect the diff before pushing if surprised.
 
 Generator output:
 $(tail -10 /tmp/backlog-regen.txt)
+─────────────────────────────────────────────────────────────
+EOF
+        printf "\033[0m"
+      fi
+    fi
+
+    # Caso 2: paths per-brand → TODO --brand flag pendiente en generator.
+    if [ -n "${BRAND_BACKLOG_TOUCHED}" ]; then
+      printf "\033[33m"
+      cat <<EOF
+─────────────────────────────────────────────────────────────
+WARNING: R33 backlog generator per-brand pendiente (multibrand TODO)
+─────────────────────────────────────────────────────────────
+Brands tocadas: ${BRAND_BACKLOG_TOUCHED}
+scripts/generate_backlog.py NO soporta --brand flag todavía.
+Cuando se agregue, este bloque invocará:
+  python scripts/generate_backlog.py --brand {brand}
+  git add {brand}/docs/product/BACKLOG.{yaml,md}
+para cada brand. Y considerar:
+  make portfolio   # regenera docs/portfolio/PORTFOLIO.md cross-brand
+Por ahora SOLO warning (no block, no auto-stage per-brand).
 ─────────────────────────────────────────────────────────────
 EOF
       printf "\033[0m"
@@ -509,8 +665,11 @@ fi  # end GATE_LEVEL=full guard (section 6)
 
 if [ "${GATE_LEVEL}" = "full" ]; then
 
+# Multibrand: capturar checkpoints en docs/ raíz (platform/legacy) + per-brand
+# {brand}/docs/product/stories/{story}/checkpoint.md. Validación v4 states es
+# universal cross-brand (mismo paradigma 10 estados).
 CHECKPOINT_FILES_STAGED=$(git diff --cached --name-only --diff-filter=ACMR 2>/dev/null \
-  | grep -E '^docs/(product/stories/[^/]+/checkpoint\.md|projects/active/.+/checkpoint\.md)$' \
+  | grep -E '^(docs/(product/stories/[^/]+/checkpoint\.md|projects/active/.+/checkpoint\.md)|[a-z][a-z0-9_-]*/docs/product/stories/[^/]+/checkpoint\.md)$' \
   || true)
 
 if [ -n "${CHECKPOINT_FILES_STAGED}" ]; then
@@ -573,49 +732,97 @@ fi  # end GATE_LEVEL=full guard (section 7)
 
 # ─────────────────────────────────────────────────────────────────
 # 8. PII scan on staged eval seed YAMLs (origen T-2 eval-foundation-tenant-seed-data)
+# (refactor 2026-05-15 post multibrand reorg — per-brand seed dirs)
 # Gate: FULL only (wip/* branches skip — PII scan is a final-commit quality gate)
 # ─────────────────────────────────────────────────────────────────
-# Activates ONLY if there are YAML files staged under
-# backend/tests/fixtures/eval/tenants/. Runs scan_seed_pii.py against
-# the full tenants directory (not just the diff) to catch PII introduced
-# by any change — including modifications to previously clean files.
+# Activates si hay YAML files staged en:
+#   - backend/tests/fixtures/eval/tenants/            (legacy single-target)
+#   - {brand}/backend/tests/fixtures/eval/tenants/    (per-brand)
+#
+# Para cada path detectado se invoca scan_seed_pii.py contra el directorio
+# completo correspondiente (no solo el diff), para catch PII en archivos
+# que cambiaron previamente clean.
+#
+# Scanner path: backend/scripts/scan_seed_pii.py (legacy). TODO multibrand:
+# scanner aún no migrado a core/luana-core-extraction/scripts/ — si falta,
+# hook warning + skip. Verificar futura migración engine.
 #
 # Scanner exit codes: 0=clean, 1=PII detected, 2=error.
-# On exit 1: commit is blocked with actionable hint.
-# On exit 2: commit is blocked with error detail from stderr.
-#
-# Bypass: NEVER use --no-verify. If scanner flags a legitimate value
-# (e.g., a real public URL or synthetic placeholder), add it to
-# backend/tests/fixtures/eval/tenants/.eval-whitelist with justification.
+# Bypass: NEVER use --no-verify. Whitelist por brand:
+#   {brand_or_root}/backend/tests/fixtures/eval/tenants/.eval-whitelist
 
 if [ "${GATE_LEVEL}" = "full" ]; then
 
-STAGED_SEED_YAMLS=$(git diff --cached --name-only --diff-filter=ACM 2>/dev/null | grep -E '^backend/tests/fixtures/eval/tenants/.*\.yaml$' || true)
-SCANNER_PY="${REPO_ROOT}/backend/scripts/scan_seed_pii.py"
-SEED_TENANTS_DIR="${REPO_ROOT}/backend/tests/fixtures/eval/tenants"
+STAGED_SEED_YAMLS=$(git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+  | grep -E '^([a-z][a-z0-9_-]*/)?backend/tests/fixtures/eval/tenants/.*\.yaml$' \
+  || true)
 
-if [ -n "${STAGED_SEED_YAMLS}" ] && [ -f "${SCANNER_PY}" ]; then
-  VENV_PY="${REPO_ROOT}/backend/.venv/bin/python"
-  if [ ! -x "${VENV_PY}" ]; then
+if [ -n "${STAGED_SEED_YAMLS}" ]; then
+  # Prefer root venv (uv workspace), fallback legacy backend venv
+  if [ -x "${REPO_ROOT}/.venv/bin/python" ]; then
+    VENV_PY="${REPO_ROOT}/.venv/bin/python"
+  elif [ -x "${REPO_ROOT}/backend/.venv/bin/python" ]; then
+    VENV_PY="${REPO_ROOT}/backend/.venv/bin/python"
+  else
+    VENV_PY=""
+  fi
+
+  # Resolver scanner: legacy primero, futuro engine como TODO.
+  # TODO multibrand: si scanner migra a core/luana-core-extraction/scripts/
+  # scan_seed_pii.py, agregar aquí como primera opción.
+  if [ -f "${REPO_ROOT}/backend/scripts/scan_seed_pii.py" ]; then
+    SCANNER_PY="${REPO_ROOT}/backend/scripts/scan_seed_pii.py"
+  else
+    SCANNER_PY=""
+  fi
+
+  if [ -z "${VENV_PY}" ]; then
     printf "\033[33m"
-    echo "WARNING: backend venv not found — skipping PII scan (Section 8)."
+    echo "WARNING: venv not found (.venv ni backend/.venv) — skipping PII scan (Section 8)."
+    printf "\033[0m"
+  elif [ -z "${SCANNER_PY}" ]; then
+    printf "\033[33m"
+    echo "WARNING: scan_seed_pii.py not found en backend/scripts/ — skipping PII scan (Section 8)."
+    echo "  TODO multibrand: verificar si migró a core/luana-core-extraction/scripts/"
     printf "\033[0m"
   else
-    if ! "${VENV_PY}" "${SCANNER_PY}" "${SEED_TENANTS_DIR}" 2>/tmp/pii-scan-err.txt; then
+    # Derivar dirs a scanear desde paths staged (uno por brand + legacy raíz).
+    SEED_DIRS_TO_SCAN=$(echo "${STAGED_SEED_YAMLS}" \
+      | sed -E 's|(.*backend/tests/fixtures/eval/tenants)/.*|\1|' \
+      | sort -u)
+
+    SCAN_FAILED=0
+    SCAN_ERROR_OUTPUT=""
+    while IFS= read -r SEED_DIR; do
+      [ -z "${SEED_DIR}" ] && continue
+      if [ ! -d "${REPO_ROOT}/${SEED_DIR}" ]; then
+        continue
+      fi
+      if ! "${VENV_PY}" "${SCANNER_PY}" "${REPO_ROOT}/${SEED_DIR}" 2>/tmp/pii-scan-err.txt; then
+        SCAN_FAILED=1
+        SCAN_ERROR_OUTPUT+="── ${SEED_DIR}/ ──"$'\n'
+        SCAN_ERROR_OUTPUT+="$(cat /tmp/pii-scan-err.txt 2>/dev/null || true)"$'\n\n'
+      fi
+    done <<< "${SEED_DIRS_TO_SCAN}"
+
+    if [ "${SCAN_FAILED}" -eq 1 ]; then
       printf "\033[31m"
       cat <<EOF
 ─────────────────────────────────────────────────────────────
-PRE-COMMIT BLOCKED: PII detected in seed/ — commit blocked.
+PRE-COMMIT BLOCKED: PII detected in seed/ — commit blocked (multibrand).
 ─────────────────────────────────────────────────────────────
-See backend/tests/fixtures/eval/tenants/.eval-whitelist.
+Dirs scanned:
+${SEED_DIRS_TO_SCAN}
 
-$(cat /tmp/pii-scan-err.txt 2>/dev/null || true)
+Errors:
+${SCAN_ERROR_OUTPUT}
 
 Resolution:
-  1. Replace real PII with synthetic equivalents (e.g., +99 0 1234 5678 for phones,
+  1. Replace real PII con synthetic equivalents (e.g., +99 0 1234 5678 for phones,
      user@example.com for emails, fake ID numbers).
-  2. If the flagged value is a legitimate public reference, add it to
-     backend/tests/fixtures/eval/tenants/.eval-whitelist with justification.
+  2. Si el flagged value es legitimate public reference, agregar a
+     {brand_or_root}/backend/tests/fixtures/eval/tenants/.eval-whitelist
+     con justificación.
 
 NEVER use --no-verify (.claude/rules/git-safety.md prohibits).
 ─────────────────────────────────────────────────────────────
@@ -630,51 +837,101 @@ fi  # end GATE_LEVEL=full guard (section 8)
 
 # ─────────────────────────────────────────────────────────────────
 # 9. PII scan on staged goldens YAMLs (Story D — synthetic-first ground truth)
+# (refactor 2026-05-15 post multibrand reorg — per-brand goldens dirs)
 # Gate: FULL only (wip/* branches skip — PII scan is a final-commit quality gate)
 # ─────────────────────────────────────────────────────────────────
-# Activates ONLY if YAMLs are staged under
-# backend/tests/agentic_evals/sales_agent/goldens/. Runs scan_goldens_pii.py
-# against the full goldens directory to catch drift in unchanged files.
+# Activates si hay YAMLs staged en:
+#   - backend/tests/agentic_evals/sales_agent/goldens/          (legacy)
+#   - {brand}/backend/tests/agentic_evals/sales_agent/goldens/  (per-brand)
+#
+# Para cada path detectado se invoca scan_goldens_pii.py contra el
+# directorio completo correspondiente.
 #
 # Strict block — NO whitelist (spec D10). Synthetic-first invariant:
 # all PII in goldens is a bug, no legitimate exceptions.
 #
+# Scanner path: backend/scripts/scan_goldens_pii.py (legacy). TODO multibrand:
+# si scanner migra a core/luana-core-sales-agent/scripts/ o similar, agregar
+# como primera opción.
+#
 # Scanner exit codes: 0=clean, 1=PII detected, 2=error.
-# Bypass: NEVER use --no-verify. Replace real PII with synthetic equivalents
-# OR delete the offending golden + regenerate via generate_golden_candidates.py.
+# Bypass: NEVER use --no-verify.
 
 if [ "${GATE_LEVEL}" = "full" ]; then
 
 STAGED_GOLDEN_YAMLS=$(git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
-  | grep -E '^backend/tests/agentic_evals/sales_agent/goldens/.*\.yaml$' || true)
-GOLDEN_SCANNER_PY="${REPO_ROOT}/backend/scripts/scan_goldens_pii.py"
-GOLDENS_DIR="${REPO_ROOT}/backend/tests/agentic_evals/sales_agent/goldens"
+  | grep -E '^([a-z][a-z0-9_-]*/)?backend/tests/agentic_evals/sales_agent/goldens/.*\.yaml$' \
+  || true)
 
-if [ -n "${STAGED_GOLDEN_YAMLS}" ] && [ -f "${GOLDEN_SCANNER_PY}" ]; then
-  VENV_PY="${REPO_ROOT}/backend/.venv/bin/python"
-  if [ ! -x "${VENV_PY}" ]; then
+if [ -n "${STAGED_GOLDEN_YAMLS}" ]; then
+  # Prefer root venv (uv workspace), fallback legacy backend venv
+  if [ -x "${REPO_ROOT}/.venv/bin/python" ]; then
+    VENV_PY="${REPO_ROOT}/.venv/bin/python"
+  elif [ -x "${REPO_ROOT}/backend/.venv/bin/python" ]; then
+    VENV_PY="${REPO_ROOT}/backend/.venv/bin/python"
+  else
+    VENV_PY=""
+  fi
+
+  # Resolver scanner: legacy primero, futuro engine como TODO.
+  # TODO multibrand: si scanner migra a core/luana-core-sales-agent/scripts/
+  # scan_goldens_pii.py, agregar aquí como primera opción.
+  if [ -f "${REPO_ROOT}/backend/scripts/scan_goldens_pii.py" ]; then
+    GOLDEN_SCANNER_PY="${REPO_ROOT}/backend/scripts/scan_goldens_pii.py"
+  else
+    GOLDEN_SCANNER_PY=""
+  fi
+
+  if [ -z "${VENV_PY}" ]; then
     printf "\033[33m"
-    echo "WARNING: backend venv not found — skipping PII goldens scan (Section 9)."
+    echo "WARNING: venv not found (.venv ni backend/.venv) — skipping PII goldens scan (Section 9)."
+    printf "\033[0m"
+  elif [ -z "${GOLDEN_SCANNER_PY}" ]; then
+    printf "\033[33m"
+    echo "WARNING: scan_goldens_pii.py not found en backend/scripts/ — skipping (Section 9)."
+    echo "  TODO multibrand: verificar si migró a core/luana-core-sales-agent/scripts/"
     printf "\033[0m"
   else
-    if ! "${VENV_PY}" "${GOLDEN_SCANNER_PY}" "${GOLDENS_DIR}" 2>/tmp/pii-goldens-err.txt; then
+    # Derivar dirs a scanear desde paths staged (uno por brand + legacy raíz).
+    GOLDENS_DIRS_TO_SCAN=$(echo "${STAGED_GOLDEN_YAMLS}" \
+      | sed -E 's|(.*backend/tests/agentic_evals/sales_agent/goldens)/.*|\1|' \
+      | sort -u)
+
+    GOLDEN_SCAN_FAILED=0
+    GOLDEN_ERROR_OUTPUT=""
+    while IFS= read -r GOLDENS_DIR; do
+      [ -z "${GOLDENS_DIR}" ] && continue
+      if [ ! -d "${REPO_ROOT}/${GOLDENS_DIR}" ]; then
+        continue
+      fi
+      if ! "${VENV_PY}" "${GOLDEN_SCANNER_PY}" "${REPO_ROOT}/${GOLDENS_DIR}" 2>/tmp/pii-goldens-err.txt; then
+        GOLDEN_SCAN_FAILED=1
+        GOLDEN_ERROR_OUTPUT+="── ${GOLDENS_DIR}/ ──"$'\n'
+        GOLDEN_ERROR_OUTPUT+="$(cat /tmp/pii-goldens-err.txt 2>/dev/null || true)"$'\n\n'
+      fi
+    done <<< "${GOLDENS_DIRS_TO_SCAN}"
+
+    if [ "${GOLDEN_SCAN_FAILED}" -eq 1 ]; then
       printf "\033[31m"
       cat <<EOF
 ─────────────────────────────────────────────────────────────
-PRE-COMMIT BLOCKED: PII detected in goldens/ — strict block.
+PRE-COMMIT BLOCKED: PII detected in goldens/ — strict block (multibrand).
 ─────────────────────────────────────────────────────────────
 Synthetic-first invariant: zero PII en golden YAMLs (spec D10).
 NO whitelist disponible para goldens.
 
-$(cat /tmp/pii-goldens-err.txt 2>/dev/null || true)
+Dirs scanned:
+${GOLDENS_DIRS_TO_SCAN}
+
+Errors:
+${GOLDEN_ERROR_OUTPUT}
 
 Resolución:
   1. Reemplaza PII real con equivalentes sintéticos (nombres como
      "Cliente Ejemplo", teléfono "+99 0 1234 5678", email "usuario@example.com").
-  2. O elimina el golden y regénéralo con:
-     python backend/scripts/generate_golden_candidates.py \\
-       --tenant <slug> --persona-kind <kind> \\
-       --output-dir _artifacts/goldens_generation/<run_id>/
+  2. O elimina el golden y regénéralo con generate_golden_candidates.py
+     (path scoped a {brand}/backend/scripts/ o root backend/scripts/ según
+     dónde viva el script para esa brand).
 
 NEVER use --no-verify (.claude/rules/git-safety.md prohibits).
 ─────────────────────────────────────────────────────────────
@@ -701,6 +958,14 @@ fi  # end GATE_LEVEL=full guard (section 9)
 # Sin este hook, un cambio de puerto en brand.yaml quedaria desincronizado
 # con el INFRA-MATRIX.md hasta que alguien corriera make infra-matrix manualmente.
 
+# TODO multibrand: cuando se bootstrappean las 6 brands pendientes
+# (saasora/inmoflow/retailly/fixia/guestly/fitflow), agregar al regex.
+# Considerar leer brands dinámicamente del filesystem:
+#   BRANDS=$(ls "${REPO_ROOT}" | grep -E '^[a-z]+$' \
+#     | while read d; do [ -f "${REPO_ROOT}/${d}/config/brand.yaml" ] && echo "${d}"; done \
+#     | paste -sd'|' -)
+#   CHANGED_BRAND_YAML=$(... | grep -E "^(${BRANDS})/config/brand\.yaml$")
+# Por ahora hardcoded 4 brands activas (vitalia, nicolify, comunify, lupulo).
 CHANGED_BRAND_YAML=$(git diff --cached --name-only 2>/dev/null \
   | grep -E '^(nicolify|vitalia|comunify|lupulo)/config/brand\.yaml$' \
   || true)
