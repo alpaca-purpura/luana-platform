@@ -1,0 +1,49 @@
+---
+capability_id: vitalia-booking-widget-embed
+module: booking
+slug: booking-widget-embed
+status: live
+date_introduced: 2026-05-15
+story_introduced: luana-vitalia-bootstrap
+package_version: 0.1.0
+package_path: vitalia/frontend/widget
+license: proprietary
+---
+
+# vitalia-booking-widget-embed
+
+Widget UMD-bundled embebible en sitios externos de clínicas vía `<script>` + iframe + postMessage. Permite a clínicas con sitio propio (WordPress, Wix, custom) ofrecer booking sin redirigir al portal. Origin validator + 8 edge cases (wildcard, subdomain, port, scheme).
+
+## Surface
+
+- **Bundle UMD** (`vitalia/frontend/widget/`):
+  - `widget-entry.tsx` — entry React
+  - `components/` — booking UI components
+  - `lib/postmessage-protocol.ts` — parent↔iframe protocol
+  - `styles.css` — Tailwind compiled
+  - `vite.config.ts` — bundle UMD ~594 KB + CSS + sourcemap
+- **package.json**: `@luana/vitalia-booking-widget` v0.1.0 (privado)
+- **Origin validator**: 8 edge cases tested per `tests/integration/booking-widget-flow.test.tsx`
+- **Documentación de integración**: `vitalia/docs/domains/booking-widget-embed.md`
+
+## Test coverage
+
+- `vitalia/frontend/widget/tests/integration/booking-widget-flow.test.tsx`
+
+## Dependencies
+
+- `vitalia/frontend` (React Query hooks + Zod schemas comparten esquemas)
+- `luana-core-platform` (tenant_id vía fetchClient inyectado)
+
+## Scenarios live
+
+- Clínica embebe `<script src="widget.umd.js">` + `<div id="vitalia-booking">` en su sitio
+- Widget carga en iframe → postMessage handshake con parent
+- Paciente reserva turno dentro del widget → API call con tenant_id auto-inyectado
+- Origin validator rechaza embeds no autorizados
+- Widget responsive en mobile + desktop
+
+## Referencias
+
+- Doc integración: `vitalia/docs/domains/booking-widget-embed.md`
+- Archive: `docs/archive/2026/snapshot-pre-multibrand-pm-redesign/capabilities/vitalia/booking-widget-embed.yaml`

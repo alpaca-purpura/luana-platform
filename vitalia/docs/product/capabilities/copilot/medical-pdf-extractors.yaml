@@ -1,0 +1,52 @@
+---
+capability_id: vitalia-medical-pdf-extractors
+module: copilot
+slug: medical-pdf-extractors
+status: live
+date_introduced: 2026-05-15
+story_introduced: luana-vitalia-bootstrap
+package_version: 0.1.0
+package_path: vitalia/backend/src/modules/vitalia/copilot/extractors
+license: proprietary
+---
+
+# vitalia-medical-pdf-extractors
+
+2 PDF extractors 4-wave vision-based heredados de `BaseExtractionOrchestrator` (engine `core/luana-core-extraction`). Registrados vía Extension SDK EP-7.
+
+## Surface
+
+### Extractors (`vitalia/backend/src/modules/vitalia/copilot/extractors/`)
+
+- **`medical_kb_extractor.py::MedicalKBExtractor`** — 4-wave vision-based para PDFs médicos genéricos
+- **`dental_history_extractor.py::DentalHistoryExtractor`** — 4-wave + FDI dental notation (numeración internacional ISO 3950)
+- **`_schemas.py`** — Pydantic schemas para output estructurado
+- **`_prompts/`** — prompts per-wave
+
+### Config (`vitalia/config/brand.yaml`)
+
+```yaml
+extractors: [MedicalKBExtractor, DentalHistoryExtractor]
+```
+
+## Test coverage
+
+- Arch fitness: `vitalia/backend/tests/architecture/test_extraction_orchestrator_inheritance.py` — ambos subclass `BaseExtractionOrchestrator` (no mirror)
+- Integration cubierta indirectamente vía `patient-medical-pdf-upload` flow
+
+## Dependencies
+
+- `core/luana-core-extraction.application.base_orchestrator.BaseExtractionOrchestrator` (EXTEND, no mirror)
+- `core/luana-core-llm` (router LLM con vision capability)
+- `core/luana-core-extension-sdk` EP-7 (ExtractorDef registration)
+
+## Scenarios live
+
+- Doctor sube PDF historial médico → MedicalKBExtractor 4-wave produce output estructurado
+- Dentista sube historial dental → DentalHistoryExtractor extrae FDI notation per pieza dental
+- Wave 1: vision extraction → Wave 2: cleanup → Wave 3: normalization → Wave 4: validation
+- Output persistido en `medical_history_model` con `extractor_version` para reextract en updates
+
+## Referencias
+
+- Archive: `docs/archive/2026/snapshot-pre-multibrand-pm-redesign/capabilities/vitalia/medical-kb-rag.yaml` (subset extractors)

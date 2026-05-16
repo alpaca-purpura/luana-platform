@@ -1,0 +1,58 @@
+---
+capability_id: vitalia-patient-records-medical-history
+module: patients
+slug: patient-records-medical-history
+status: live
+date_introduced: 2026-05-15
+story_introduced: luana-vitalia-bootstrap
+package_version: 0.1.0
+package_path: vitalia/backend/src/modules/vitalia + vitalia/frontend/src/app/(dashboard)/patients
+license: proprietary
+---
+
+# vitalia-patient-records-medical-history
+
+CRUD de pacientes + upload de PDF historial médico → extracción 4-wave vision-based (vía `MedicalKBExtractor`) → estructura `medical_history_model`. PII masking obligatorio en response models (phone_masked, email_masked, name_last_initial).
+
+## Surface
+
+### Backend (`vitalia/backend/src/modules/vitalia/`)
+
+- **`infrastructure/models/medical_history_model.py`** + **`infrastructure/repositories/patient_medical_history_repository.py`**
+- **API endpoints** (`api/routes.py`):
+  - `GET /api/v1/vitalia/patients` — listado paginado
+  - `GET /api/v1/vitalia/patients/{id}` — detalle (PII masked en response_model)
+  - `POST /api/v1/vitalia/patients/{id}/upload-medical-pdf` — upload + dispara extractor wave-based
+
+### Frontend (`vitalia/frontend/`)
+
+- **Rutas dashboard**:
+  - `src/app/(dashboard)/patients/page.tsx` — listado
+  - `src/app/(dashboard)/patients/[id]/page.tsx` — detalle + historial
+- **Componentes** (`features/vitalia/components/`):
+  - `patient-list-table.tsx`
+  - `patient-detail-panel.tsx`
+  - `patient-medical-pdf-upload.tsx`
+- **Schemas + hooks**: `schemas/patient-schema.ts`, `api/use-patients.ts`, `api/use-patient.ts`, `api/use-patient-upload-pdf.ts`
+
+## Test coverage
+
+- Integration cubierta dentro de e2e flows (booking + onboarding incluyen creación de paciente)
+- Component tests (listado/detalle vía smoke E2E)
+- Arch fitness: `tests/architecture/test_vitalia_no_query_without_tenant_filter.py`
+- PII smoke: `vitalia/backend/tests/agentic_evals/smoke/smoke_pii_detection.py`
+
+## Dependencies
+
+- `core/luana-core-platform` (SA base + tenant isolation)
+- `core/luana-core-llm` (LLM router para extraction)
+- `vitalia.copilot.extractors.medical_kb_extractor`
+- `vitalia.application.services.pii_scanner_service` (validación pre-persistencia)
+
+## Scenarios live
+
+- Doctor abre `/patients` → ve lista filtrada por tenant_id (cross-tenant isolation enforced)
+- Doctor crea paciente nuevo → PiiScanner valida no haya PHI en campos free-text
+- Doctor sube PDF historial → MedicalKBExtractor 4-wave produce estructura → guardada en `medical_history_model`
+- Response DTOs muestran teléfono masked (`+54***1234`), nombre con last_initial
+- Acceso a registro paciente → ComplianceEvent registrado en `medical_audit_log`

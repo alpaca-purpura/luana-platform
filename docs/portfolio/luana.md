@@ -2,7 +2,7 @@
 slug: luana
 kind: core
 status: active
-last_updated: 2026-05-15
+last_updated: 2026-05-16
 ssot_live:
   - docs/product/
   - docs/core-modules/

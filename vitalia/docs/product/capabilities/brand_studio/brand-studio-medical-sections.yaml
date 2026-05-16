@@ -1,0 +1,57 @@
+---
+capability_id: vitalia-brand-studio-medical-sections
+module: brand_studio
+slug: brand-studio-medical-sections
+status: live
+date_introduced: 2026-05-15
+story_introduced: luana-vitalia-bootstrap
+package_version: 0.1.0
+package_path: vitalia/frontend/src/app/(dashboard)/brand-studio
+license: proprietary
+---
+
+# vitalia-brand-studio-medical-sections
+
+Brand Studio simplificado para clínicas: solo 4 secciones habilitadas (identity, contact, team, testimonials). Las 8 secciones marketing-driven (story, strategy, positioning, narrative, personality, communication, authority_vault) están desactivadas por config — clínicas no necesitan StoryBrand ni Jung archetypes.
+
+## Surface
+
+### Config (`vitalia/config/brand.yaml`)
+
+```yaml
+brand_studio:
+  enabled_sections: [identity, contact, team, testimonials]
+  disabled_sections: [story, strategy, positioning, narrative, personality, communication, authority_vault]
+```
+
+### Frontend (`vitalia/frontend/`)
+
+- **`src/app/(dashboard)/brand-studio/page.tsx`** — index secciones habilitadas
+- **`src/app/(dashboard)/brand-studio/[section]/page.tsx`** — sección dinámica con autosave
+- **`features/vitalia/components/brand-studio-section-client.tsx`** — client component con form-runtime + RHF + Zod
+- **Schemas**: `schemas/clinic-profile-schema.ts`
+- **Hooks**: `api/use-brand-studio-sections.ts`, `api/use-brand-studio-section-patch.ts`
+
+### Backend
+
+- Consume `core/luana-core-brand-studio/` (engine) vía Extension SDK EP-1 field overrides registrado en `extensions.py`
+
+## Test coverage
+
+- `vitalia/frontend/tests/integration/brand-studio-autosave.test.ts` — autosave on-change
+- E2E smoke: `vitalia/frontend/e2e/specs/vitalia/brand-studio-dental.smoke.spec.ts`, `brand-studio-psych.smoke.spec.ts`, `brand-studio-sanare.smoke.spec.ts`
+
+## Dependencies
+
+- `core/luana-core-brand-studio` (engine — fields/sections registry)
+- `luana-core-extension-sdk` EP-1 (FieldOverride registration)
+- `core/luana-core-platform` (form-runtime engine)
+
+## Scenarios live
+
+- Clínica dental edita `/brand-studio/identity` → guarda nombre, logo, slug
+- Edita `/brand-studio/contact` → teléfono, email, dirección, mapa
+- Edita `/brand-studio/team` → agrega doctores con avatares
+- Edita `/brand-studio/testimonials` → reseñas verificables
+- Intentar acceder `/brand-studio/positioning` → 404 (sección disabled)
+- Autosave dispara on-change sin botón "Guardar"

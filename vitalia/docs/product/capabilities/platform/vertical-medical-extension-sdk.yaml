@@ -1,0 +1,48 @@
+---
+capability_id: vitalia-vertical-medical-extension-sdk
+module: platform
+slug: vertical-medical-extension-sdk
+status: live
+date_introduced: 2026-05-15
+story_introduced: luana-vitalia-bootstrap
+package_version: 0.1.0
+package_path: vitalia/backend/src/modules/vitalia
+license: proprietary
+---
+
+# vitalia-vertical-medical-extension-sdk
+
+Vertical-medical brand extension montada sobre `core/luana-core-extension-sdk` vía un solo `register_all(registry)` en `vitalia/backend/src/modules/vitalia/extensions.py`. Cumple EP-1..EP-18 + namespace `vitalia.*` por CC-4. Primer consumidor productivo de la Extension SDK frozen (Story 9).
+
+## Surface
+
+- **`extensions.py register_all(registry)`** — monta BrandContext + tools + extractors + workflows + guardrails + KB packs + offer presets + slot 4 MEDICAL_SAFETY_RAILS + payment adapters
+- **`vitalia/config/brand.yaml`** — declarative config: identity, compliance_level=hipaa_lite (D7), voice_cloning=false (D8), spanish neutro tuteo (D9), enabled_sections brand-studio (4/12), preset_pack=medical_services_v1, plan_tiers (solo_doctor 49 USD / clinic 199 USD / multi_site 599 USD), 3 KB packs, 4 agentic tools, 4 guardrails, infra ports (BE 8002 / FE 3002)
+- **18/18 extension points filled** — verificado en `tests/unit/test_extensions_register_all.py`
+
+## Test coverage
+
+- `vitalia/backend/tests/unit/test_extensions_register_all.py` — register_all completo EP-1..EP-18
+- `vitalia/backend/tests/unit/test_models_import.py` — todos los SA models importables
+- Arch fitness: `vitalia/backend/tests/architecture/test_vitalia_no_query_without_tenant_filter.py` — tenant isolation
+- Arch fitness: `vitalia/backend/tests/architecture/test_extraction_orchestrator_inheritance.py` — extractors subclass BaseExtractionOrchestrator (no mirror)
+
+## Dependencies
+
+- `luana-core-extension-sdk` (EP registry + adapters + BrandContext)
+- `luana-core-platform` (base + events)
+- `luana-core-iam` (tenant context)
+
+## Scenarios live
+
+- `vitalia/config/brand.yaml` valida contra Extension SDK schema
+- `register_all(registry)` completa sin `ExtensionPointError`
+- Extensions visibles vía `ExtensionPointRegistry` public API
+- BrandContext 9-field frozen dataclass + namespace `vitalia.` allowlist enforced
+
+## Referencias
+
+- Mount point: `vitalia/backend/src/modules/vitalia/extensions.py`
+- Config: `vitalia/config/brand.yaml`
+- Pattern reference: `apps/test-brand/src/test_brand/extensions.py` (Story 8 cement)
+- Archive: `docs/archive/2026/snapshot-pre-multibrand-pm-redesign/capabilities/vitalia/vertical-medical-extension-sdk.yaml`

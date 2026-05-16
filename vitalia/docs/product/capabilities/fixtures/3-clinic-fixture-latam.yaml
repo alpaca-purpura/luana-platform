@@ -1,0 +1,56 @@
+---
+capability_id: vitalia-3-clinic-fixture-latam
+module: fixtures
+slug: 3-clinic-fixture-latam
+status: live
+date_introduced: 2026-05-15
+story_introduced: luana-vitalia-bootstrap
+package_version: 0.1.0
+package_path: vitalia/frontend/e2e/fixtures
+license: proprietary
+---
+
+# vitalia-3-clinic-fixture-latam
+
+3 fixtures research-driven LATAM para pilot tenants y E2E tests: dental Argentina + psicología Chile + wellness México. Cubre brand identity + offer ladder + payment configs + KB packs + doctor profiles + sample appointments.
+
+## Surface
+
+### E2E fixtures (`vitalia/frontend/e2e/fixtures/`)
+
+- **`aurora-dental-ar.fixture.ts`** — Aurora Dental, Buenos Aires (AR · ARS · MercadoPago · FDI dental notation · KB dental)
+- **`mindful-psych-cl.fixture.ts`** — Mindful Psicología, Santiago (CL · CLP · Stripe Connect · crisis boundary · KB psychology)
+- **`sanare-latam-mx.fixture.ts`** — Sanaré Wellness, Ciudad de México (MX · MXN · MercadoPago + tokenized recurring · subscription wellness)
+
+### Backend seeder
+
+- (Pendiente migración del seeder `seed_fixture_clinics.py` post-reorg — actualmente fixtures viven solo FE-side para E2E)
+
+## Test coverage
+
+Las fixtures son consumidas por la mayoría de E2E smoke specs:
+
+- `onboarding-dental-aurora.smoke.spec.ts`, `onboarding-psych-mindful.smoke.spec.ts`, `onboarding-psych-sanare.smoke.spec.ts`
+- `booking-deposit-aurora.smoke.spec.ts`, `booking-prepaid-sanare.smoke.spec.ts`, `booking-full-prepay-mindful.smoke.spec.ts`
+- `brand-studio-dental.smoke.spec.ts`, `brand-studio-psych.smoke.spec.ts`, `brand-studio-sanare.smoke.spec.ts`
+- `treatment-followup-aurora.smoke.spec.ts`, `treatment-followup-mindful.smoke.spec.ts`, `treatment-followup-sanare.smoke.spec.ts`
+- `offer-wizard-implant.smoke.spec.ts`, `offer-wizard-packages.smoke.spec.ts`, `offer-wizard-individual-session.smoke.spec.ts`
+- `consent-flow-implant.smoke.spec.ts`, `cross-tenant-isolation.smoke.spec.ts`
+
+## Dependencies
+
+- `vitalia.application.services.*` (Onboarding + Booking + PrepaidPayment + TreatmentFollowup)
+- `vitalia.copilot.kb.*` (3 KB packs)
+- `core/luana-core-iam` (tenant provisioning)
+
+## Scenarios live
+
+- Aurora Dental demo: paciente reserva → MercadoPago → consult dental KB
+- Mindful Psicología demo: sesión psico → patrón de crisis detectado → safe redirect
+- Sanaré Wellness demo: suscripción wellness program → tokenized recurring + secuencia follow-up
+- Spanish neutro respetado en fixtures (no voseo en chrome UI)
+- Cada fixture cubre vertical distinto (dental, mental health, wellness)
+
+## Referencias
+
+- Archive: `docs/archive/2026/snapshot-pre-multibrand-pm-redesign/capabilities/vitalia/3-clinic-fixture-latam.yaml`

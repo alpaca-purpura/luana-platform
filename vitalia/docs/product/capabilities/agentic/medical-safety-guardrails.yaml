@@ -1,0 +1,66 @@
+---
+capability_id: vitalia-medical-safety-guardrails
+module: agentic
+slug: medical-safety-guardrails
+status: live
+date_introduced: 2026-05-15
+story_introduced: luana-vitalia-bootstrap
+package_version: 0.1.0
+package_path: vitalia/backend/src/modules/vitalia/agentic/guardrails
+license: proprietary
+---
+
+# vitalia-medical-safety-guardrails
+
+4 guardrails input+output que enforzan boundaries médicos críticos: no diagnosis, no prescription, disclaimer required, prompt_injection_block reuse. Registrados vía Extension SDK EP-13. Slot 4 `MEDICAL_SAFETY_RAILS` reservado en cache prefix.
+
+## Surface (`vitalia/backend/src/modules/vitalia/agentic/guardrails/`)
+
+- **`medical_safety_no_diagnosis.py`** — input+output guardrail; bloquea LLM de ofrecer diagnósticos médicos
+- **`medical_safety_no_prescription.py`** — bloquea LLM de prescribir medicamentos/dosis
+- **`medical_disclaimer_required.py`** — enforza presencia de disclaimer cuando se discuten tratamientos
+- **`prompt_injection_block_reuse.py`** — registra `prompt_injection_block` de Story E sales-agent (EXTEND, no mirror por R10 anti-duplication)
+
+### Config (`vitalia/config/brand.yaml`)
+
+```yaml
+guardrails:
+  - medical_safety_no_diagnosis
+  - medical_safety_no_prescription
+  - medical_disclaimer_required
+  - prompt_injection_block
+```
+
+### Slot 4 MEDICAL_SAFETY_RAILS
+
+Reservado en prompt cache architecture (D5 ratificado). Prompt MD se compone vía `agentic/prompts/compose.py`.
+
+## Test coverage
+
+- `vitalia/backend/tests/architecture/test_vitalia_slot_4_safety_markers_present.py`
+- `vitalia/backend/tests/architecture/test_vitalia_no_pii_in_cacheable_slots.py`
+- `vitalia/backend/tests/architecture/test_vitalia_rubric_md_v1_schema.py`
+- `vitalia/backend/tests/architecture/test_vitalia_cost_bucket_invariant.py`
+- `vitalia/backend/tests/architecture/test_vitalia_personas_yaml_completeness.py`
+- `vitalia/backend/tests/agentic_evals/smoke/smoke_hipaa_disclaimer.py`
+- `vitalia/backend/tests/agentic_evals/smoke/smoke_prompt_injection.py`
+- `vitalia/backend/tests/agentic_evals/smoke/smoke_pii_detection.py`
+- E2E smoke: `compliance-prompt-injection.smoke.spec.ts`, `compliance-hipaa-disclaimer.smoke.spec.ts`
+
+## Dependencies
+
+- `core/luana-core-sales-agent` (BaseGuardrail Story E sandbox markers — EXTEND no mirror)
+- `core/luana-core-extension-sdk` EP-13 (GuardrailDef registration)
+- `core/luana-core-events` (eventos de guard hits para observability)
+
+## Scenarios live
+
+- LLM intenta diagnóstico médico → bloqueado + safe fallback ("consulte con doctor")
+- LLM intenta prescripción → bloqueado + redirect a consulta presencial
+- LLM discute tratamiento sin disclaimer → output guard appendea disclaimer obligatorio
+- Intento de prompt injection (jailbreak escenario 4) → bloqueado vía Story E sandbox markers
+- Cada guard hit emite evento → registrado en trace + dashboard compliance
+
+## Referencias
+
+- Archive: `docs/archive/2026/snapshot-pre-multibrand-pm-redesign/capabilities/vitalia/medical-safety-guardrails.yaml`

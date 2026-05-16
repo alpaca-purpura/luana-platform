@@ -54,4 +54,4 @@ Ver [docs/promotion-protocol/proposals/](../promotion-protocol/proposals/).
 
 ---
 
-**Última regen:** 2026-05-15 (auto via `make portfolio`).
+**Última regen:** 2026-05-16 (auto via `make portfolio`).

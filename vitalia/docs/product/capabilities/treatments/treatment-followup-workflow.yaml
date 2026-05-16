@@ -1,0 +1,77 @@
+---
+capability_id: vitalia-treatment-followup-workflow
+module: treatments
+slug: treatment-followup-workflow
+status: live
+date_introduced: 2026-05-15
+story_introduced: luana-vitalia-bootstrap
+package_version: 0.1.0
+package_path: vitalia/backend/src/modules/vitalia/copilot/workflows + vitalia/frontend/src/app/(dashboard)/treatments
+license: proprietary
+---
+
+# vitalia-treatment-followup-workflow
+
+LangGraph 2.0 `TreatmentFollowupWorkflow` orquesta seguimientos médicos multi-step cron-driven. Timeline visual del tratamiento por paciente + dashboard de follow-ups activos. Soporta handoff manual a doctor + release.
+
+## Surface
+
+### Backend (`vitalia/backend/src/modules/vitalia/`)
+
+- **`copilot/workflows/treatment_followup_workflow.py`** — LangGraph 2.0 + RedisSaver-ready
+- **`copilot/workflows/cron_handler.py`** — integración con `core/luana-core-scheduling` cron_worker
+- **`copilot/workflows/module_registry_entry_helpers.py`**
+- **`application/services/treatment_followup_service.py`**
+- **`infrastructure/models/treatment_followup_model.py`** + **`adherence_record_model.py`**
+- **`infrastructure/repositories/treatment_followup_repository.py`**
+- **API endpoints**:
+  - `GET /api/v1/vitalia/treatments` — listado
+  - `GET /api/v1/vitalia/treatments/{id}` — detalle
+  - `GET /api/v1/vitalia/treatments/{id}/followup` — snapshot del workflow
+  - `POST /api/v1/vitalia/treatments/{id}/start-followup` — arranca workflow
+  - `POST /api/v1/vitalia/treatments/{id}/manual-handoff` — pausa workflow, asigna a doctor
+  - `POST /api/v1/vitalia/treatments/{id}/release-handoff` — re-activa workflow
+
+### Frontend (`vitalia/frontend/`)
+
+- **Rutas dashboard**:
+  - `src/app/(dashboard)/treatments/page.tsx` — listado
+  - `src/app/(dashboard)/treatments/[id]/page.tsx` — detalle + timeline
+  - `src/app/(dashboard)/treatments/[id]/followup/page.tsx` — dashboard de follow-up activo
+- **Componentes** (`features/vitalia/components/`):
+  - `treatment-list-table.tsx`
+  - `treatment-timeline.tsx`
+  - `treatment-followup-dashboard-client.tsx`
+- **Schemas + hooks**: `schemas/treatment-schema.ts`, `schemas/handoff-schema.ts`, `api/use-treatments.ts`, `api/use-treatment.ts`, `api/use-treatment-create.ts`, `api/use-treatment-snapshot.ts`, `api/use-treatment-followup-start.ts`
+
+### Workflow steps (LangGraph nodes)
+
+1. Verifica prepaid balance (`prepaid_payment_check` tool) → si bajo, prompt top-up
+2. Requesta consentimiento próximo procedimiento (`medical_consent_request` tool) → paciente firma
+3. Detecta necesidad de reschedule (`appointment_reschedule_with_doctor` tool) → busca slot + notifica
+4. Loop check seguimiento (`treatment_followup_check` tool, 7 acciones: status, vitals, adherence, side-effects, satisfaction, next-steps, escalation)
+
+## Test coverage
+
+- `vitalia/backend/tests/agentic_evals/tools/test_treatment_followup_check.py`
+- `vitalia/backend/tests/agentic_evals/cost_budget/test_cost_budget_followup_turn.py`
+- `vitalia/frontend/tests/unit/features/vitalia/components/treatment-timeline.test.ts`
+- `vitalia/frontend/tests/unit/features/vitalia/components/treatment-followup-dashboard-client.test.tsx`
+- E2E smoke: `treatment-followup-sanare.smoke.spec.ts`, `treatment-followup-mindful.smoke.spec.ts`, `treatment-followup-aurora.smoke.spec.ts`
+
+## Dependencies
+
+- `core/luana-core-platform` (LangGraph 2.0 base + RedisSaver)
+- `core/luana-core-scheduling` (cron_worker + calendar EXTEND)
+- `core/luana-core-llm` (LLM router para tool reasoning)
+- `vitalia.agentic.tools.*` (4 tools consumidos por workflow)
+
+## Scenarios live
+
+- Cron dispara secuencia de follow-up para plan de tratamiento activo
+- Workflow checa pago prepaid → si bajo, prompt al paciente para top-up
+- Workflow requesta consentimiento → paciente firma vía consent_signature_modal
+- Workflow detecta reschedule needed → busca slot doctor → notifica ambas partes
+- Doctor toma handoff manual → workflow pausa → conversación humana
+- Doctor libera handoff → workflow resume desde checkpoint
+- Follow-up check loop cubre 7 acciones (status, vitals, adherence, side-effects, satisfaction, next steps, escalation)

@@ -1,0 +1,42 @@
+---
+capability_id: vitalia-public-clinic-landing
+module: public_landing
+slug: public-clinic-landing
+status: live
+date_introduced: 2026-05-15
+story_introduced: luana-vitalia-bootstrap
+package_version: 0.1.0
+package_path: vitalia/frontend/src/app/public
+license: proprietary
+---
+
+# vitalia-public-clinic-landing
+
+Landing page pública (sin auth) por clínica con slug propio. Renderiza identity + team + testimonials + ofertas activas + CTA de booking. Página dedicada `/public/{slug}/booking` para reserva embeddable o standalone.
+
+## Surface (`vitalia/frontend/src/app/public/`)
+
+- **`[clinic-slug]/page.tsx`** — landing pública (server component, sin auth)
+- **`[clinic-slug]/booking/page.tsx`** — flujo de booking público
+
+### Backend
+
+- Consume mismas APIs `/api/v1/vitalia/bookings/*` pero con autenticación pública por `clinic_slug` (sin Clerk session — tenant_id resuelto desde slug)
+
+## Test coverage
+
+- E2E smoke: cubierto indirectamente por `booking-prepaid-sanare.smoke.spec.ts`, `booking-deposit-aurora.smoke.spec.ts`, `booking-full-prepay-mindful.smoke.spec.ts` (estos flows arrancan desde landing pública)
+
+## Dependencies
+
+- `core/luana-core-iam` (resolución `clinic_slug → tenant_id` sin Clerk session)
+- `core/luana-core-brand-studio` (engine — render sections identity/team/testimonials)
+- `vitalia.application.services.booking_service`
+
+## Scenarios live
+
+- Paciente busca clínica → llega a `vitalia.com/public/aurora-dental-ba`
+- Ve identity + team + testimonials + ofertas activas
+- Click "Reservar turno" → flow `/public/aurora-dental-ba/booking`
+- Reserva sin necesidad de cuenta → MercadoPago redirect → confirmación email
+- Alternativa: clínica embebe widget UMD (ver capability `booking-widget-embed`)

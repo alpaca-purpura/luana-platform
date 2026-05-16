@@ -3,7 +3,7 @@ slug: inmoflow
 kind: brand
 status: placeholder
 vertical: "Real Estate"
-last_updated: 2026-05-15
+last_updated: 2026-05-16
 ssot_live:
   - inmoflow/docs/product/
   - inmoflow/docs/domains/

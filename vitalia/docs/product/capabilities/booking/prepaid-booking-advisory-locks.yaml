@@ -1,0 +1,73 @@
+---
+capability_id: vitalia-prepaid-booking-advisory-locks
+module: booking
+slug: prepaid-booking-advisory-locks
+status: live
+date_introduced: 2026-05-15
+story_introduced: luana-vitalia-bootstrap
+package_version: 0.1.0
+package_path: vitalia/backend/src/modules/vitalia + vitalia/frontend/src/app/(dashboard)
+license: proprietary
+---
+
+# vitalia-prepaid-booking-advisory-locks
+
+Motor de reservas prepagadas con `Postgres advisory_locks` para prevenir double-booking de slots de doctores. Depósito por defecto 30% (configurable per-oferta). Soporta confirmación de pago, firma de consentimiento, cancelación, reagendamiento.
+
+## Surface
+
+### Backend (`vitalia/backend/src/modules/vitalia/`)
+
+- **`application/services/booking_service.py`** — orquesta booking + advisory_lock + payment_intent
+- **`application/services/prepaid_payment_service.py`** — gestiona balance prepaid + quota deduction
+- **`infrastructure/advisory_locks.py`** — helper Postgres `pg_advisory_xact_lock(doctor_id, slot_ts)`
+- **`infrastructure/models/booking_model.py`** + **`payment_intent_model.py`** + **`payment_schedule_model.py`**
+- **`infrastructure/repositories/booking_repository.py`** + **`payment_intent_repository.py`**
+- **API endpoints** (`api/routes.py`):
+  - `GET /api/v1/vitalia/bookings/available-slots` — slots disponibles por doctor/fecha
+  - `POST /api/v1/vitalia/bookings` — crea booking
+  - `GET /api/v1/vitalia/bookings` — listado
+  - `POST /api/v1/vitalia/bookings/{id}/confirm-payment`
+  - `POST /api/v1/vitalia/bookings/{id}/consent-sign`
+  - `POST /api/v1/vitalia/bookings/{id}/cancel`
+  - `POST /api/v1/vitalia/bookings/{id}/reschedule`
+
+### Frontend (`vitalia/frontend/`)
+
+- **Rutas dashboard**:
+  - `src/app/(dashboard)/appointments/page.tsx` — calendario
+  - `src/app/(dashboard)/bookings/page.tsx` — listado
+  - `src/app/(dashboard)/bookings/[id]/page.tsx` — detalle
+- **Componentes**: `features/vitalia/components/appointments-calendar-client.tsx`, `consent-signature-modal.tsx`
+- **Schemas + hooks**: `schemas/booking-schema.ts`, `schemas/appointment-schema.ts`, `schemas/consent-schema.ts`, `api/use-booking-*.ts` (availability, create, cancel, reschedule, get, list)
+
+### Config
+
+- `booking.requires_consent_when_offer_marks: true`
+- `booking.default_deposit_percent: 30`
+- `booking.default_currency_per_country: {AR:ARS, CL:CLP, MX:MXN, CO:COP, PE:PEN, BR:BRL, US:USD}`
+
+## Test coverage
+
+- `vitalia/backend/tests/integration/test_advisory_locks.py`
+- `vitalia/backend/tests/integration/test_booking_service_advisory_lock.py`
+- `vitalia/backend/tests/integration/test_booking_repository.py`
+- `vitalia/backend/tests/e2e/test_booking_prepaid_dental_e2e.py`
+- `vitalia/backend/tests/e2e/test_slot_race_double_booking_e2e.py` — race condition
+- E2E smoke: `booking-prepaid-sanare.smoke.spec.ts`, `booking-deposit-aurora.smoke.spec.ts`, `booking-full-prepay-mindful.smoke.spec.ts`, `consent-flow-implant.smoke.spec.ts`
+
+## Dependencies
+
+- `luana-core-platform` (advisory_locks helpers + base SQLA)
+- `vitalia/backend/payment/*` (MercadoPago / Stripe Connect / tokenized recurring)
+- `luana-core-iam` (tenant_id required en todas las queries)
+
+## Scenarios live
+
+- Paciente abre slots → ve disponibilidad por doctor + fecha
+- Reserva slot → BookingService toma advisory_lock → previene double-booking
+- Crea payment_intent (30% depósito) → redirect a gateway
+- Webhook payment confirmed → booking activa
+- Si oferta requiere consentimiento → consent-signature-modal antes de confirmar
+- Cancela booking → refund automático + advisory_lock released
+- Reagendar → busca nuevo slot + libera anterior atomicamente
