@@ -13,7 +13,7 @@ from unittest.mock import MagicMock, patch
 
 def test_llm_virtual_keys_module_imports_cleanly() -> None:
     """Module loads without side effects."""
-    import src.admin.modules.llm_virtual_keys as mod
+    import src.modules.nicolify.admin.modules.llm_virtual_keys as mod
 
     assert hasattr(mod, "render_llm_virtual_keys")
     assert callable(mod.render_llm_virtual_keys)
@@ -33,7 +33,7 @@ def test_llm_virtual_keys_page_wrapper_thin() -> None:
 
 def test_llm_virtual_keys_registered_in_admin_app() -> None:
     """PageSpec llm-virtual-keys registered in PAGE_SPECS tuple."""
-    from src.admin.app import PAGE_SPECS
+    from src.modules.nicolify.admin.app import PAGE_SPECS
 
     slugs = {spec.slug for spec in PAGE_SPECS}
     assert "llm-virtual-keys" in slugs
@@ -41,7 +41,7 @@ def test_llm_virtual_keys_registered_in_admin_app() -> None:
 
 def test_llm_virtual_keys_fetch_returns_empty_on_error() -> None:
     """Fetch helper returns [] when proxy unreachable (graceful degradation)."""
-    from src.admin.modules.llm_virtual_keys import _fetch_virtual_keys
+    from src.modules.nicolify.admin.modules.llm_virtual_keys import _fetch_virtual_keys
 
     with patch("httpx.get", side_effect=Exception("connection refused")):
         result = _fetch_virtual_keys()
@@ -50,7 +50,7 @@ def test_llm_virtual_keys_fetch_returns_empty_on_error() -> None:
 
 def test_llm_virtual_keys_fetch_extracts_keys_field() -> None:
     """Fetch helper extracts list from LiteLLM /key/list response shape."""
-    from src.admin.modules.llm_virtual_keys import _fetch_virtual_keys
+    from src.modules.nicolify.admin.modules.llm_virtual_keys import _fetch_virtual_keys
 
     sample_response = MagicMock()
     sample_response.status_code = 200
@@ -69,7 +69,7 @@ def test_llm_virtual_keys_fetch_extracts_keys_field() -> None:
 
 def test_fmt_budget_handles_none() -> None:
     """_fmt_budget(None) returns 'Sin límite'."""
-    from src.admin.modules.llm_virtual_keys import _fmt_budget
+    from src.modules.nicolify.admin.modules.llm_virtual_keys import _fmt_budget
 
     assert _fmt_budget(None) == "Sin límite"
     assert _fmt_budget(10.5) == "USD 10.5000"
@@ -77,6 +77,6 @@ def test_fmt_budget_handles_none() -> None:
 
 def test_fmt_date_handles_none() -> None:
     """_fmt_date(None) returns em-dash."""
-    from src.admin.modules.llm_virtual_keys import _fmt_date
+    from src.modules.nicolify.admin.modules.llm_virtual_keys import _fmt_date
 
     assert _fmt_date(None) == "—"

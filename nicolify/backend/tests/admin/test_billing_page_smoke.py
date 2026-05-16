@@ -22,14 +22,14 @@ from pathlib import Path
 
 def test_billing_module_exposes_render_function() -> None:
     """billing.py must expose render_billing_admin()."""
-    billing = importlib.import_module("src.admin.modules.billing")
-    assert hasattr(billing, "render_billing_admin"), "src/admin/modules/billing.py must expose render_billing_admin()"
+    billing = importlib.import_module("src.modules.nicolify.admin.modules.billing")
+    assert hasattr(billing, "render_billing_admin"), "src/modules/nicolify/admin/modules/billing.py must expose render_billing_admin()"
     assert callable(billing.render_billing_admin)
 
 
 def test_billing_module_render_is_not_async() -> None:
     """render_billing_admin must be a plain sync function (Streamlit requires sync)."""
-    billing = importlib.import_module("src.admin.modules.billing")
+    billing = importlib.import_module("src.modules.nicolify.admin.modules.billing")
     assert not inspect.iscoroutinefunction(billing.render_billing_admin), (
         "render_billing_admin() must be sync — Streamlit does not support async render functions."
     )
@@ -43,10 +43,10 @@ def test_planes_billing_page_file_exists() -> None:
 
 def test_planes_billing_registered_in_app() -> None:
     """planes-billing slug must be in PAGE_SPECS."""
-    from src.admin.app import PAGE_SPECS
+    from src.modules.nicolify.admin.app import PAGE_SPECS
 
     slugs = [s.slug for s in PAGE_SPECS]
-    assert "planes-billing" in slugs, "PageSpec with slug='planes-billing' not found in PAGE_SPECS in src/admin/app.py"
+    assert "planes-billing" in slugs, "PageSpec with slug='planes-billing' not found in PAGE_SPECS in src/modules/nicolify/admin/app.py"
 
 
 def test_billing_module_does_not_import_other_admin_modules() -> None:
@@ -60,7 +60,7 @@ def test_billing_module_does_not_import_other_admin_modules() -> None:
         if (
             isinstance(node, ast.ImportFrom)
             and node.module
-            and node.module.startswith("src.admin.modules.")
+            and node.module.startswith("src.modules.nicolify.admin.modules.")
             and not node.module.endswith("_shared")
         ):
             offenders.append(node.module)

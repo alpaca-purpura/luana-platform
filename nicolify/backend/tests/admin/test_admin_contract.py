@@ -1,7 +1,7 @@
 """Contract tests for the admin panel.
 
-These tests guard the wiring between `src/admin/app.py`, `src/admin/pages/`
-and `src/admin/modules/`. They catch the most common regression pattern: a
+These tests guard the wiring between `src/modules/nicolify/admin/app.py`, `src/modules/nicolify/admin/pages/`
+and `src/modules/nicolify/admin/modules/`. They catch the most common regression pattern: a
 new option in one layer missing from the other, or a renamed render
 function that silently breaks a page. They run in `/test-backend` so any
 external module refactor must keep the admin panel contract intact.
@@ -15,7 +15,7 @@ from pathlib import Path
 
 import pytest
 
-from src.admin.app import PAGE_SPECS, PageSpec
+from src.modules.nicolify.admin.app import PAGE_SPECS, PageSpec
 
 ADMIN_ROOT = Path(__file__).resolve().parents[2] / "src" / "admin"
 PAGES_DIR = ADMIN_ROOT / "pages"
@@ -66,7 +66,7 @@ def test_every_page_file_is_registered() -> None:
     orphaned = _discovered_page_files() - registered
     assert not orphaned, (
         f"Page files not registered in PAGE_SPECS: {sorted(orphaned)}. "
-        "Add a PageSpec in src/admin/app.py or delete the file."
+        "Add a PageSpec in src/modules/nicolify/admin/app.py or delete the file."
     )
 
 
@@ -116,7 +116,7 @@ def test_build_pages_does_not_raise() -> None:
     """Detect navigation-level regressions (bad kwargs, missing st.Page attrs)."""
     from streamlit.navigation.page import StreamlitPage
 
-    from src.admin.app import _build_pages
+    from src.modules.nicolify.admin.app import _build_pages
 
     pages = _build_pages()
     assert len(pages) == len(PAGE_SPECS)
@@ -143,11 +143,11 @@ def test_modules_do_not_import_other_admin_modules(module_path: Path) -> None:
         if (
             isinstance(node, ast.ImportFrom)
             and node.module
-            and node.module.startswith("src.admin.modules.")
+            and node.module.startswith("src.modules.nicolify.admin.modules.")
             and not node.module.endswith("_shared")
         ):
             offenders.append(node.module)
     assert not offenders, (
         f"{module_path.name} imports from other admin modules: {offenders}. "
-        "Shared helpers belong in src/admin/modules/_shared.py."
+        "Shared helpers belong in src/modules/nicolify/admin/modules/_shared.py."
     )

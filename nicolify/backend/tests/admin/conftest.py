@@ -119,15 +119,15 @@ def _mock_admin_dependencies(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
 
     # 5) Pre-cached tenant list + adoption funnel used by `_shared`.
     monkeypatch.setattr(
-        "src.admin.modules._shared.get_tenant_options",
+        "src.modules.nicolify.admin.modules._shared.get_tenant_options",
         list,
     )
     monkeypatch.setattr(
-        "src.admin.modules._shared.get_all_tenants_summary",
+        "src.modules.nicolify.admin.modules._shared.get_all_tenants_summary",
         list,
     )
     monkeypatch.setattr(
-        "src.admin.modules._shared.get_adoption_funnel",
+        "src.modules.nicolify.admin.modules._shared.get_adoption_funnel",
         lambda: {
             "total_tenants": 0,
             "has_brand": 0,
@@ -138,7 +138,7 @@ def _mock_admin_dependencies(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
         },
     )
     monkeypatch.setattr(
-        "src.admin.modules._shared.get_tenant_name",
+        "src.modules.nicolify.admin.modules._shared.get_tenant_name",
         lambda _tenant_id: "—",
     )
 
@@ -151,12 +151,12 @@ def _mock_admin_dependencies(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
     def _fake_selector(key: str, allow_all: bool = True) -> _uuid.UUID | None:
         return None if allow_all else _fake_tenant
 
-    monkeypatch.setattr("src.admin.modules._shared.render_tenant_selector", _fake_selector)
+    monkeypatch.setattr("src.modules.nicolify.admin.modules._shared.render_tenant_selector", _fake_selector)
 
     # 7) Module-local tenant fetchers — users.py and tenants.py each have their
     # own `get_tenants()` helper that hits the ORM directly (SA 1.x). Force
     # empty so their render functions hit the "no tenants" empty-state path.
-    monkeypatch.setattr("src.admin.modules.users.get_tenants", list)
-    monkeypatch.setattr("src.admin.modules.tenants.get_tenants", list)
+    monkeypatch.setattr("src.modules.nicolify.admin.modules.users.get_tenants", list)
+    monkeypatch.setattr("src.modules.nicolify.admin.modules.tenants.get_tenants", list)
 
     yield

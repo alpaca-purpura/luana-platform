@@ -15,7 +15,7 @@ from pathlib import Path
 import pytest
 from streamlit.testing.v1 import AppTest
 
-from src.admin.app import PAGE_SPECS, PageSpec
+from src.modules.nicolify.admin.app import PAGE_SPECS, PageSpec
 
 PAGES_DIR = Path(__file__).resolve().parents[2] / "src" / "admin" / "pages"
 

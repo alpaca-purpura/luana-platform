@@ -18,7 +18,7 @@ def test_copilot_limits_renders_without_crash(monkeypatch: pytest.MonkeyPatch) -
     DB and Streamlit are mocked via autouse fixture in conftest.py.
     This test exercises the real render code path.
     """
-    from src.admin.modules.copilot_limits import render_copilot_limits_view
+    from src.modules.nicolify.admin.modules.copilot_limits import render_copilot_limits_view
 
     # _mock_admin_dependencies autouse fixture (conftest.py) stubs:
     # - SessionLocal → stub session (returns empty results)
@@ -31,8 +31,8 @@ def test_copilot_limits_module_has_render_function() -> None:
     """Verify the module exposes render_copilot_limits_view (contract test)."""
     import importlib
 
-    mod = importlib.import_module("src.admin.modules.copilot_limits")
+    mod = importlib.import_module("src.modules.nicolify.admin.modules.copilot_limits")
     assert hasattr(mod, "render_copilot_limits_view"), (
-        "src/admin/modules/copilot_limits.py must expose render_copilot_limits_view()"
+        "src/modules/nicolify/admin/modules/copilot_limits.py must expose render_copilot_limits_view()"
     )
     assert callable(mod.render_copilot_limits_view)

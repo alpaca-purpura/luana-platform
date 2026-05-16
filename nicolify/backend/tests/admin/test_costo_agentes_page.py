@@ -7,7 +7,7 @@ import pytest
 
 class TestCostoAgentesPage:
     def test_module_exposes_render_function(self) -> None:
-        from src.admin.modules.costo_agentes import render_costo_agentes
+        from src.modules.nicolify.admin.modules.costo_agentes import render_costo_agentes
 
         assert callable(render_costo_agentes)
 
@@ -23,14 +23,14 @@ class TestCostoAgentesPage:
         assert "select(" not in body
 
     def test_page_registered_in_app(self) -> None:
-        from src.admin.app import PAGE_SPECS
+        from src.modules.nicolify.admin.app import PAGE_SPECS
 
         slugs = [spec.slug for spec in PAGE_SPECS]
         assert "costo-agentes" in slugs
 
     def test_uses_cross_agent_aggregator(self, monkeypatch) -> None:
         """The module imports CrossAgentCostAggregator (registry-based)."""
-        from src.admin.modules import costo_agentes
+        from src.modules.nicolify.admin.modules import costo_agentes
 
         assert hasattr(costo_agentes, "CrossAgentCostAggregator")
 
@@ -38,7 +38,7 @@ class TestCostoAgentesPage:
         """Streamlit AppTest renders the page headless without exceptions."""
         from streamlit.testing.v1 import AppTest
 
-        page_path = "src/admin/pages/costo-agentes.py"
+        page_path = "src/modules/nicolify/admin/pages/costo-agentes.py"
         at = AppTest.from_file(page_path)
         at.run()
         assert not at.exception, f"page raised: {at.exception}"
@@ -58,12 +58,12 @@ class TestCrossAgentRegistryWiring:
 
 class TestSharedHelpers:
     def test_render_agent_kind_selector_exposed(self) -> None:
-        from src.admin.modules._shared import render_agent_kind_selector
+        from src.modules.nicolify.admin.modules._shared import render_agent_kind_selector
 
         assert callable(render_agent_kind_selector)
 
     def test_render_dual_read_banner_exposed(self) -> None:
-        from src.admin.modules._shared import render_dual_read_banner
+        from src.modules.nicolify.admin.modules._shared import render_dual_read_banner
 
         assert callable(render_dual_read_banner)
 

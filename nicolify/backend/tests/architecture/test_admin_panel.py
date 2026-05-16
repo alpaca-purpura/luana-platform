@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from src.admin.app import PAGE_SPECS
+from src.modules.nicolify.admin.app import PAGE_SPECS
 
 ADMIN_ROOT = Path(__file__).resolve().parents[2] / "src" / "admin"
 PAGES_DIR = ADMIN_ROOT / "pages"
@@ -21,7 +21,7 @@ def test_admin_pages_match_registry() -> None:
     page_files = {p.stem for p in PAGES_DIR.glob("*.py") if p.name != "__init__.py"}
     registered = {s.slug for s in PAGE_SPECS}
     assert page_files == registered, (
-        "src/admin/pages/ drifted from PAGE_SPECS. "
+        "src/modules/nicolify/admin/pages/ drifted from PAGE_SPECS. "
         f"Only in pages/: {sorted(page_files - registered)}. "
         f"Only in registry: {sorted(registered - page_files)}."
     )
