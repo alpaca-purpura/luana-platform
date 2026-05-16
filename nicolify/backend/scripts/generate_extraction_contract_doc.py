@@ -155,7 +155,7 @@ def _render_worker_schedule() -> str:
     out = [
         "## Worker schedule reference",
         "",
-        "Source: `backend/src/workers/settings.py`. The contract test verifies that the function names referenced here still exist.",
+        "Source: `backend/src/modules/nicolify/workers/settings.py`. The contract test verifies that the function names referenced here still exist.",
         "",
         "| Task | Schedule |",
         "|---|---|",

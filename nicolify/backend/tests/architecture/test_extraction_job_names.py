@@ -8,7 +8,7 @@ a clear error. This test makes the mismatch fail at CI instead of in prod.
 from __future__ import annotations
 
 from luana_core_platform.domain.extraction_jobs import ExtractionJob
-from src.workers.settings import WorkerSettings
+from src.modules.nicolify.workers.settings import WorkerSettings
 
 
 def test_every_extraction_job_enum_is_registered_worker_function() -> None:

@@ -1,7 +1,7 @@
 """Architectural fitness — PR-5 ARQ workers registered in WorkerSettings + SchedulerSettings.
 
 AST scan:
-  1. Parses backend/src/workers/settings.py.
+  1. Parses backend/src/modules/nicolify/workers/settings.py.
   2. Finds ClassDef WorkerSettings → assignment to 'functions' (list).
      Verifies every REQUIRED_FUNCTIONS name appears as Name.id in the list.
   3. Finds ClassDef SchedulerSettings → assignment to 'cron_jobs' (list).
@@ -18,7 +18,7 @@ from __future__ import annotations
 import ast
 import pathlib
 
-_SETTINGS_PATH = pathlib.Path("src/workers/settings.py")
+_SETTINGS_PATH = pathlib.Path("src/modules/nicolify/workers/settings.py")
 
 REQUIRED_FUNCTIONS: frozenset[str] = frozenset(
     {
@@ -83,7 +83,7 @@ class TestCampaignWorkersRegistered:
     """PR-5 ARQ workers must appear in WorkerSettings.functions + SchedulerSettings cron_jobs."""
 
     def test_settings_file_exists(self) -> None:
-        """backend/src/workers/settings.py exists."""
+        """backend/src/modules/nicolify/workers/settings.py exists."""
         assert _SETTINGS_PATH.exists(), f"workers/settings.py not found at {_SETTINGS_PATH}."
 
     def test_worker_settings_has_required_functions(self) -> None:

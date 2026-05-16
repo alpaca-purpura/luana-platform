@@ -159,7 +159,7 @@ def test_drift_detection_silent_when_score_stable(db):
 
 def test_cron_registered_in_worker_settings():
     """Smoke check — el cron está registrado en SchedulerSettings.cron_jobs."""
-    from src.workers.settings import SchedulerSettings
+    from src.modules.nicolify.workers.settings import SchedulerSettings
 
     cron_funcs = []
     for cron_job in SchedulerSettings.cron_jobs:
@@ -171,7 +171,7 @@ def test_cron_registered_in_worker_settings():
 
 def test_function_registered_in_worker_settings():
     """Smoke check — el task está en WorkerSettings.functions."""
-    from src.workers.settings import SchedulerSettings, WorkerSettings
+    from src.modules.nicolify.workers.settings import SchedulerSettings, WorkerSettings
 
     worker_funcs = {getattr(f, "__name__", repr(f)) for f in WorkerSettings.functions}
     scheduler_funcs = {getattr(f, "__name__", repr(f)) for f in SchedulerSettings.functions}
