@@ -25,7 +25,7 @@ from sqlalchemy import select
 
 # Bootstrap mappers + import path early so this script works the same
 # way as the worker.
-import src.shared.infrastructure.model_registry  # noqa: F401
+import src.modules.nicolify.persistence.model_registry  # noqa: F401
 from luana_core_platform.core.database import SessionLocal
 from luana_core_iam.infrastructure.models.tenant_model import TenantModel
 from luana_core_platform.workers.brand_summary_regen import regen_brand_summary_sync

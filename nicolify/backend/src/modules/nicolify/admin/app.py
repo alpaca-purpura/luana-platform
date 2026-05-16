@@ -24,7 +24,7 @@ sys.path.append(str((Path(__file__).parent / "../..").resolve()))
 
 # Bootstrap all SQLAlchemy mappers once so cross-module relationships resolve.
 import luana_core_platform.infrastructure.agent_observability_bootstrap
-import src.shared.infrastructure.model_registry  # noqa: F401
+import src.modules.nicolify.persistence.model_registry  # noqa: F401
 
 # --- PAGE CONFIG (must run before any other st.* call) ---
 st.set_page_config(

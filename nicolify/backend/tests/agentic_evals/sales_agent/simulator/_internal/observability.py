@@ -40,19 +40,19 @@ Anti-duplication §0 — REUSE inventory
 
 Reused verbatim from ``shared/agent_observability/`` (NO mirror):
 
-* :class:`~src.shared.agent_observability.recording.turn_envelope.BaseObservabilityContext`
+* :class:`~luana_core_observability.recording.turn_envelope.BaseObservabilityContext`
   — full lifecycle (``observe_turn`` / ``_write_turn_*`` / ``set_turn_*`` /
   ``langchain_config`` / ``_commit_session``). Subclass overrides 3 abstract hooks:
   ``_add_trace_event`` / ``_aggregate_totals`` / ``_legacy_compat_keys_or_empty``.
-* :class:`~src.shared.agent_observability.recording.base_callback_handler.BaseAgentCallbackHandler`
+* :class:`~luana_core_observability.recording.base_callback_handler.BaseAgentCallbackHandler`
   — 8 LangChain callbacks + ``_persist_llm_call`` Template Method skeleton
   (sanitize → resolve pricing → calculate cost → persist). Subclass overrides
   2 abstract persisters: ``_persist_llm_call_row`` / ``_persist_trace_event_row``.
-* :func:`~src.shared.agent_observability.recording.sanitization.sanitize_payload`
+* :func:`~luana_core_observability.recording.sanitization.sanitize_payload`
   — applied verbatim by the inherited ``_write_turn_*`` and Template Method paths.
-* :class:`~src.shared.agent_observability.cost.fx_resolver.FXResolver` — reused
+* :class:`~luana_core_observability.cost.fx_resolver.FXResolver` — reused
   via ``FXResolver.default()`` factory (encapsulates ``httpx.Client(timeout=10)``).
-* :class:`~src.shared.agent_observability.pricing.resolver.PricingResolver` — reused.
+* :class:`~luana_core_observability.pricing.resolver.PricingResolver` — reused.
 
 Origin: PI-12 Story B eval-foundation-simulator-homologation T-5 (2026-05-07).
 
@@ -164,7 +164,7 @@ def _assert_eval_metadata_complete(metadata: dict[str, Any]) -> None:
 class EvalSimulatorLlmCallRepository:
     """Persist ``eval_simulator_llm_call`` rows. Caller controls commit.
 
-    Satisfies :class:`~src.shared.agent_observability.persistence.base_llm_call_repo.BaseLLMCallRepoProtocol`
+    Satisfies :class:`~luana_core_observability.persistence.base_llm_call_repo.BaseLLMCallRepoProtocol`
     via structural typing — sync ``Session`` (matches the in-process
     ``agent_app.ainvoke`` invocation pattern from T-7).
     """
@@ -188,7 +188,7 @@ class EvalSimulatorLlmCallRepository:
 class EvalSimulatorTraceEventRepository:
     """Persist ``eval_simulator_trace_event`` rows.
 
-    Satisfies :class:`~src.shared.agent_observability.persistence.base_trace_event_repo.BaseTraceEventRepoProtocol`
+    Satisfies :class:`~luana_core_observability.persistence.base_trace_event_repo.BaseTraceEventRepoProtocol`
     via structural typing.
     """
 

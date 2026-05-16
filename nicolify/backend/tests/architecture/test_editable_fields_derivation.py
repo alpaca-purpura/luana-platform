@@ -1,6 +1,6 @@
 """Anti-regression: editable_fields port deriva idéntico al projection esperado.
 
-Post-Fase-08 the shared port :mod:`src.shared.links.ports.editable_fields`
+Post-Fase-08 the shared port :mod:`luana_core_platform.links.ports.editable_fields`
 deriva ``get_catalog(domain)`` desde ``get_module_contracts(domain)`` con
 filtros ``can_propose=True`` + ``status=ACTIVE`` y dedupe por ``path``.
 

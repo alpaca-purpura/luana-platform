@@ -111,7 +111,6 @@ def test_domain_layer_has_no_framework_or_outer_layer_imports() -> None:
 
 ALLOWED_EXTERNAL_MODULES = {
     "luana_core_platform.core",
-    "src.shared",
     "luana_core_iam",
 }
 

@@ -34,7 +34,6 @@ _MIGRATION_071 = _BACKEND_ROOT / "alembic" / "versions" / "071_copilot_workflow_
 # Allow infrastructure that is intrinsic to the engine (own copilot/, shared base helpers).
 _ALLOWED_IMPORT_PREFIXES = (
     "luana_core_copilot.",
-    "src.shared.",
     "luana_core_platform.core.",
 )
 

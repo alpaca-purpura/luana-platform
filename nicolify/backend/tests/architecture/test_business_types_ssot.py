@@ -3,7 +3,7 @@
 After the 2026-04-20 mudanza, the ONLY module allowed to declare a persistent
 ``business_types`` field (dataclass, Pydantic model, or SQLAlchemy column) is
 ``tenant_profile``. Everything else MUST access the field via the port at
-``src.shared.links.ports.tenant_profile``.
+``luana_core_platform.links.ports.tenant_profile``.
 
 What this test does NOT flag (intentionally):
 - API query parameters annotated as ``business_types: list[ExpertBusinessType]``
@@ -87,7 +87,7 @@ def test_business_types_declared_only_in_tenant_profile() -> None:
         "Forbidden 'business_types' field declarations outside tenant_profile:\n"
         + "\n".join(f"  - {v}" for v in violations)
         + "\n\nAccess the field via the port "
-        "(src.shared.links.ports.tenant_profile) instead."
+        "(luana_core_platform.links.ports.tenant_profile) instead."
     )
 
 

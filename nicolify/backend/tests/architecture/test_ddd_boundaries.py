@@ -88,11 +88,10 @@ _PROVIDER_CONTRACT_IMPORTS: frozenset[str] = frozenset(
         # mirrors the ports.py inversion knot — copilot owns the abstraction,
         # modules supply the concretion.
         "luana_core_copilot.domain.workflow",
-        # F7 + S5 — channel formatter registry. Post-S5 (2026-04-28) el SSoT
-        # vive en ``src.shared.agent_observability.channels.format``. Providers
-        # que registran canales custom importan ``ChannelFormat`` +
-        # ``register_channel`` directo desde shared. Sales sweep S6 borró los
-        # shims copilot — la entrada actual apunta al SSoT real.
+        # F7 + S5 — channel formatter registry. Post multibrand reorg el SSoT
+        # vive en ``luana_core_channels.format``. Providers que registran
+        # canales custom importan ``ChannelFormat`` + ``register_channel``
+        # directo desde el engine package.
         "luana_core_channels.format",
     }
 )
@@ -147,7 +146,7 @@ def test_no_new_cross_module_imports():
         "NEW cross-module imports detected (DDD boundary violation).\n"
         "These imports were NOT in the allowlist.\n\n"
         "Options:\n"
-        "  1. Refactor: move shared types to src/shared/ or use domain events\n"
+        "  1. Refactor: move shared types to core/luana-core-*/ (engine lift via promotion gate) or use domain events\n"
         "  2. If truly necessary, add to KNOWN_CROSS_MODULE_IMPORTS in this file\n"
         "     (requires code review justification)\n\n"
         "Violations:\n" + "\n".join(f"  - {v}" for v in violations)

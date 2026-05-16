@@ -11,7 +11,7 @@ Static AST scan strategy
 Scan ``grader/_internal/maj_eval.py`` for:
 
 1. An ``import`` statement bringing ``sanitize_payload`` into scope from
-   ``src.shared.agent_observability.recording.sanitization`` (or alias).
+   ``luana_core_observability.recording.sanitization`` (or alias).
 2. A ``Call`` node referencing ``sanitize_payload`` somewhere inside the body
    of ``grade_transcript_maj_eval``.
 
@@ -87,7 +87,7 @@ def test_maj_eval_imports_sanitize_payload() -> None:
     tree = ast.parse(source)
     assert _imports_sanitize_payload(tree), (
         f"{_MAJ_EVAL_PATH} MUST import `sanitize_payload` from "
-        f"src.shared.agent_observability.recording.sanitization (D10 cement)."
+        f"luana_core_observability.recording.sanitization (D10 cement)."
     )
 
 

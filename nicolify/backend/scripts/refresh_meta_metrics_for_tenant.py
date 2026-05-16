@@ -48,7 +48,7 @@ from luana_core_analytics_engine.infrastructure.providers.meta_provider import (
 from luana_core_connections.application.services.connection_port_impl import (
     ConnectionPortImpl,
 )
-from src.shared.infrastructure import (
+from src.modules.nicolify.persistence import (
     model_registry,  # noqa: F401  load all SQLAlchemy mappers
 )
 

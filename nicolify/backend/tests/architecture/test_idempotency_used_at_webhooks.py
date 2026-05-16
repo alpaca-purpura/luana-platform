@@ -3,7 +3,7 @@
 Policy (Sub-F PR-1):
   Every ``@router.post("...webhook...")`` endpoint that receives **external**
   (untrusted, potentially-retried) HTTP traffic MUST be decorated with
-  ``@idempotent`` from ``src.shared.idempotency.application.decorator``.
+  ``@idempotent`` from ``luana_core_idempotency.application.decorator``.
 
 Rationale:
   External providers (Meta, Clerk, WhatsApp, ManyChat, Shopify, payment/

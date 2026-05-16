@@ -33,10 +33,10 @@ Anti-duplication §0
 
 REUSE shared abstractions verbatim:
 
-* :class:`~src.shared.infrastructure.llm.providers.litellm.LiteLLMService`
+* :class:`~src.modules.nicolify.persistence.llm.providers.litellm.LiteLLMService`
   — canonical async dispatch via ``LangChain ainvoke`` (Story B post T-4
   cement; legacy adapters deleted PI-12 S1 T-4).
-* :func:`~src.shared.agent_observability.recording.cost_recorder.pop_cost`
+* :func:`~luana_core_observability.recording.cost_recorder.pop_cost`
   — cost extraction bridge (handled by Story B callback handler, exposed
   here for type clarity).
 

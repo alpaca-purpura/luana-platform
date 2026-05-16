@@ -13,7 +13,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import uuid
 
-import src.shared.infrastructure.model_registry  # noqa: F401
+import src.modules.nicolify.persistence.model_registry  # noqa: F401
 from luana_core_platform.core.database import SessionLocal
 from luana_core_commercial_calendar.domain.calendar_event import CalendarEvent
 from luana_core_commercial_calendar.domain.enums import EventCategory

@@ -42,7 +42,7 @@ from luana_core_analytics_engine.infrastructure.cache.metrics_cache import (
 from luana_core_connections.application.services.connection_port_impl import (
     ConnectionPortImpl,
 )
-from src.shared.infrastructure import model_registry  # noqa: F401
+from src.modules.nicolify.persistence import model_registry  # noqa: F401
 
 
 def _resolve_tenant_id(args_tid: str | None) -> str | None:

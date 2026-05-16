@@ -153,7 +153,7 @@ from sqlalchemy import text
 
 # --- Bootstrap all models so SQLAlchemy mapper resolves cross-module relationships ---
 import luana_core_platform.infrastructure.agent_observability_bootstrap
-import src.shared.infrastructure.model_registry  # noqa: F401
+import src.modules.nicolify.persistence.model_registry  # noqa: F401
 from src.modules.nicolify.advertising.api import routes as advertising_routes
 from luana_core_crm.api import contacts as crm_contacts  # Nicolify-local: not yet lifted to luana_core_crm
 from src.modules.nicolify.edges import (

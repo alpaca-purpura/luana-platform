@@ -47,7 +47,7 @@ from luana_core_landing.application.landing_service import LandingService
 from luana_core_landing.domain.content import LandingPageConfig
 from luana_core_offer_studio.infrastructure.repositories.offer_repository import OfferRepository
 from luana_core_sales_agent.application.services.knowledge_builder import TenantKnowledgeBuilder
-from src.shared.infrastructure import model_registry  # noqa: F401 — registers all SQLA models
+from src.modules.nicolify.persistence import model_registry  # noqa: F401 — registers all SQLA models
 
 TENANT_ID = UUID("1fd1562b-2101-410a-870c-dc2f7e27b355")
 OFFER_ID = UUID("a96403b5-c1db-4b31-97aa-cb18d08ad9f9")

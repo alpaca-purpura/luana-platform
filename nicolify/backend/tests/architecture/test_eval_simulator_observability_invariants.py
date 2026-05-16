@@ -423,7 +423,7 @@ class TestR5SchemaMirrorException:
         """LlmCallModel imports Base from shared.domain.base_entity (correct DDD layer).
 
         Post-luana-nicolify migration: Base may come from luana_core_platform.domain.base_entity
-        (P6 unified singleton) or legacy src.shared.domain.base_entity re-export stub.
+        (P6 unified singleton) or legacy luana_core_platform.domain.base_entity re-export stub.
         Both are valid during the Story 10 migration window.
         """
         src = _read(EVAL_SIMULATOR_LLM_CALL_MODEL)

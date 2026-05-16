@@ -13,12 +13,10 @@ SRC_ROOT = pathlib.Path(__file__).parent.parent.parent / "src"
 
 # Allowed file paths that may UPDATE/DELETE payment_grant_audit
 # (empty = no code should ever update it outside retention)
-_ALLOWED_AUDIT_MUTATORS: frozenset[str] = frozenset(
-    {
-        # Retention worker may delete expired rows
-        "src/shared/agent_observability/workers/retention_task.py",
-    }
-)
+# Post multibrand reorg: retention_task lives in engine package
+# `core/luana-core-observability/src/luana_core_observability/workers/retention_task.py`
+# — no longer scanned by this brand-local arch test (out of SRC_ROOT).
+_ALLOWED_AUDIT_MUTATORS: frozenset[str] = frozenset()
 
 _AUDIT_TABLE = "payment_grant_audit"
 

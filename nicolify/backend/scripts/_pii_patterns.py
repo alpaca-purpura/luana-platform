@@ -22,9 +22,9 @@ enforces that BOTH consumers import from this module (DRY invariant).
 
 # downstream-regression-na: scripts/_pii_patterns.py is consumed by
 # backend/scripts/scan_seed_pii.py + backend/scripts/scan_goldens_pii.py
-# (both in backend/scripts/, not under backend/src/shared/). The downstream
+# (both in backend/scripts/, not under backend/src/modules/). The downstream
 # regression guard in auditor-downstream-regression.md only covers
-# backend/src/shared/ surfaces; scripts/ is out of scope.
+# backend/src/modules/ surfaces; scripts/ is out of scope.
 
 from __future__ import annotations
 

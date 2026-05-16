@@ -107,7 +107,7 @@ postgresql.UUID = MockUUID
 # ``AppointmentModel``). Patrón canónico exigido en ``main.py`` y
 # ``admin/app.py``.
 import luana_core_platform.infrastructure.agent_observability_bootstrap
-import src.shared.infrastructure.model_registry
+import src.modules.nicolify.persistence.model_registry
 
 # --- Fixtures ---
 

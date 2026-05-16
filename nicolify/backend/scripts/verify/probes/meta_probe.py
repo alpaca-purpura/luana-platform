@@ -121,7 +121,7 @@ def get_credentials_from_db(
     from luana_core_connections.infrastructure.models.channel_connection_model import (
         ChannelConnectionModel,
     )
-    from src.shared.infrastructure import model_registry  # noqa: F401
+    from src.modules.nicolify.persistence import model_registry  # noqa: F401
 
     db_url = settings.DATABASE_URL
     engine = create_engine(db_url)
