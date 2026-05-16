@@ -27,7 +27,7 @@ Strategy — deterministic citation contract verifier (no LLM required):
   Threshold: 0.90 per V-AE-13 (9 out of 10 citation assertions must pass).
 
 Run:
-    cd /home/chris/luana-platform/vitalia/backend && uv run pytest \
+    cd $WS/vitalia/backend && uv run pytest \
         tests/agentic_evals/grader/test_no_hallucination.py -v
 """
 

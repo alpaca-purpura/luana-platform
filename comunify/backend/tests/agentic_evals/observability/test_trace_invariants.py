@@ -9,7 +9,7 @@ Strategy — in-memory fake recorder (no real DB):
   without requiring a real Postgres connection.
 
 Run:
-    cd /home/chris/luana-platform/comunify/backend && uv run pytest \
+    cd $WS/comunify/backend && uv run pytest \
         tests/agentic_evals/observability/test_trace_invariants.py -v
 """
 

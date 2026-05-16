@@ -9,7 +9,7 @@ Validates the A4 weight=0.15 contribution to final score:
   - voice_correct=False: A4=0.4 → contribution 0.06 (reduced by 0.09)
 
 Run:
-    cd /home/chris/luana-platform/comunify/backend && uv run pytest \
+    cd $WS/comunify/backend && uv run pytest \
         tests/agentic_evals/grader/test_voice_fidelity_per_fixture.py -v
 """
 

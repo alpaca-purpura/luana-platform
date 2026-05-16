@@ -16,16 +16,18 @@ from pathlib import Path
 
 import pytest
 
-# Expected path of the consolidated alembic snapshot (created in T-10)
-# Search in both AISALESHT and post-migration luana-platform locations
-_AISALESHT_SNAPSHOT = Path("/home/chris/AISALESHT/backend/alembic/versions/001_initial_snapshot.py")
-_NICOLIFY_SNAPSHOT = (
-    Path.home() / "luana-platform" / "nicolify" / "backend" / "alembic" / "versions" / "001_initial_snapshot.py"
-)
+# Expected path of the consolidated alembic snapshot (created in T-10).
+# Post-multibrand-reorg 2026-05-15: snapshot lives only in nicolify/backend.
+# Legacy AISALESHT museum (env var AISALESHT_PATH) included for archaeological
+# parity if present; clean dev machines without museum still pass via nicolify path.
+import os
+_WORKSPACE_ROOT: Path = next(p for p in Path(__file__).resolve().parents if (p / "AGENTS.md").is_file())
+_AISALESHT_SNAPSHOT = Path(os.environ.get("AISALESHT_PATH", "/home/chalreme/Documentos/ap_sales_agent")) / "backend" / "alembic" / "versions" / "001_initial_snapshot.py"
+_NICOLIFY_SNAPSHOT = _WORKSPACE_ROOT / "nicolify" / "backend" / "alembic" / "versions" / "001_initial_snapshot.py"
 
-# Use whichever exists
+# Use whichever exists (prefer nicolify post-reorg)
 _SNAPSHOT_PATH = (
-    _AISALESHT_SNAPSHOT if _AISALESHT_SNAPSHOT.exists() else _NICOLIFY_SNAPSHOT if _NICOLIFY_SNAPSHOT.exists() else None
+    _NICOLIFY_SNAPSHOT if _NICOLIFY_SNAPSHOT.exists() else _AISALESHT_SNAPSHOT if _AISALESHT_SNAPSHOT.exists() else None
 )
 
 _SNAPSHOT_PRESENT = _SNAPSHOT_PATH is not None

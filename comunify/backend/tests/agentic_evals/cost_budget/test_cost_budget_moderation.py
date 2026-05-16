@@ -4,7 +4,7 @@ Moderation turns should be fast and cheap — guardrail check + minimal response
 No lengthy generation needed: just block + redirect to moderator or policy message.
 
 Run:
-    cd /home/chris/luana-platform/comunify/backend && uv run pytest \
+    cd $WS/comunify/backend && uv run pytest \
         tests/agentic_evals/cost_budget/test_cost_budget_moderation.py -v
 """
 

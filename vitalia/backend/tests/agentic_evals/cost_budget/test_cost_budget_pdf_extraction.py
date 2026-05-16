@@ -44,7 +44,7 @@ Strategy — deterministic 4-wave cost model (no live LLM calls):
   keeping total within the $0.15/$0.18 ceiling.
 
 Run:
-    cd /home/chris/luana-platform/vitalia/backend && uv run pytest \
+    cd $WS/vitalia/backend && uv run pytest \
         tests/agentic_evals/cost_budget/test_cost_budget_pdf_extraction.py -v
 """
 

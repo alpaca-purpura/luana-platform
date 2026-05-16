@@ -5,7 +5,7 @@ copilot registries at lift moment. Story 8 EP-1..EP-5 (Extension SDK
 formalization) is the next allowed bump occasion.
 
 Usage:
-    cd /home/chris/luana-platform && uv run python \\
+    cd $WS && uv run python \\
         core/tests/architecture/_snapshots/_generate_copilot_registry_snapshot.py
 
 Output: ``core/tests/architecture/_snapshots/copilot_registry_v1.json``

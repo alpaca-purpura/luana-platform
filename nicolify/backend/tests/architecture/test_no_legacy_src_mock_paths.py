@@ -18,10 +18,15 @@ from pathlib import Path
 
 import pytest
 
-# Paths: check both current AISALESHT (for pre-rewrite baseline verification)
-# and post-migration luana-platform/nicolify (for post-rewrite gate)
-AISALESHT_TESTS = Path("/home/chris/AISALESHT/backend/tests")
-NICOLIFY_TESTS = Path.home() / "luana-platform" / "nicolify" / "backend" / "tests"
+# Paths: check both legacy AISALESHT museum (for pre-rewrite baseline verification —
+# Story 10 historical context, may not exist on dev machines) and post-multibrand-reorg
+# luana-platform/nicolify (for post-rewrite gate). Workspace root resolved dynamically
+# via AGENTS.md marker (PEP 420 namespace-safe across brands).
+import os
+
+AISALESHT_TESTS = Path(os.environ.get("AISALESHT_PATH", "/home/chalreme/Documentos/ap_sales_agent")) / "backend" / "tests"
+_WORKSPACE_ROOT: Path = next(p for p in Path(__file__).resolve().parents if (p / "AGENTS.md").is_file())
+NICOLIFY_TESTS = _WORKSPACE_ROOT / "nicolify" / "backend" / "tests"
 
 _NICOLIFY_TESTS_PRESENT = NICOLIFY_TESTS.exists()
 

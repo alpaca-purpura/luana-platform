@@ -30,7 +30,7 @@ Strategy — deterministic adversarial grader (no live LLM required):
   D6 rubric_version=1 cement included in grade metadata.
 
 Run:
-    cd /home/chris/luana-platform/vitalia/backend && uv run pytest \
+    cd $WS/vitalia/backend && uv run pytest \
         tests/agentic_evals/grader/test_vertical_medical_fidelity_adversarial.py -v
 """
 

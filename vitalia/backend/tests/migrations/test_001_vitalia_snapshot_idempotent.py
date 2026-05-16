@@ -36,9 +36,12 @@ VITALIA_EXPECTED_TABLES = [
     "vitalia_plan_tier_configs",
 ]
 
-MIGRATION_FILE = (
-    "/home/chris/luana-platform/vitalia/backend/alembic/versions/"
-    "001_vitalia_initial_snapshot.py"
+from pathlib import Path
+
+_WORKSPACE_ROOT: Path = next(p for p in Path(__file__).resolve().parents if (p / "AGENTS.md").is_file())
+MIGRATION_FILE = str(
+    _WORKSPACE_ROOT / "vitalia" / "backend" / "alembic" / "versions"
+    / "001_vitalia_initial_snapshot.py"
 )
 
 
@@ -243,7 +246,7 @@ def test_upgrade_head_twice_idempotent() -> None:
     """A1: upgrade head twice without error."""
     import subprocess
 
-    backend_dir = "/home/chris/luana-platform/vitalia/backend"
+    backend_dir = str(_WORKSPACE_ROOT / "vitalia" / "backend")
     venv_alembic = f"{backend_dir}/.venv/bin/alembic"
 
     result1 = subprocess.run(
@@ -276,7 +279,7 @@ def test_downgrade_then_upgrade() -> None:
     """A2: downgrade -1 then upgrade head succeeds."""
     import subprocess
 
-    backend_dir = "/home/chris/luana-platform/vitalia/backend"
+    backend_dir = str(_WORKSPACE_ROOT / "vitalia" / "backend")
     venv_alembic = f"{backend_dir}/.venv/bin/alembic"
 
     result_down = subprocess.run(

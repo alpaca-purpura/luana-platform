@@ -52,7 +52,7 @@ Strategy — deterministic cost model (no live LLM calls):
     Budget ceiling: $0.08 USD (2x safety margin)
 
 Run:
-    cd /home/chris/luana-platform/vitalia/backend && uv run pytest \
+    cd $WS/vitalia/backend && uv run pytest \
         tests/agentic_evals/cost_budget/test_cost_budget_booking_conversation.py -v
 """
 

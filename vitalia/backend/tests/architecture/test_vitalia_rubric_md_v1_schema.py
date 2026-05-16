@@ -48,8 +48,8 @@ pytestmark = pytest.mark.no_eval
 # Path resolution
 # ---------------------------------------------------------------------------
 
-_AISALESHT_ROOT: Path = Path("/home/chris/AISALESHT")
-_RUBRICS_DIR: Path = _AISALESHT_ROOT / "docs" / "specs" / "rubrics"
+_WORKSPACE_ROOT: Path = next(p for p in Path(__file__).resolve().parents if (p / "AGENTS.md").is_file())
+_RUBRICS_DIR: Path = _WORKSPACE_ROOT / "docs" / "specs" / "rubrics"
 _VITALIA_RUBRIC_PATH: Path = _RUBRICS_DIR / "vertical-medical-fidelity.md"
 
 # ---------------------------------------------------------------------------

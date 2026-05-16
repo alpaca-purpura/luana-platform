@@ -27,7 +27,7 @@ Strategy — deterministic invariant checkers (no live DB required):
     I7. purpose field from allowed Literal set
 
 Run:
-    cd /home/chris/luana-platform/vitalia/backend && uv run pytest \
+    cd $WS/vitalia/backend && uv run pytest \
         tests/agentic_evals/observability/test_trace_invariants.py -v
 """
 

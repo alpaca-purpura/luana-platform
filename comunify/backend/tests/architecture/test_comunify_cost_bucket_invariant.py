@@ -28,7 +28,8 @@ pytestmark = pytest.mark.no_eval
 # Path resolution
 # ---------------------------------------------------------------------------
 
-_COMUNIFY_BACKEND: Path = Path("/home/chris/luana-platform/comunify/backend")
+_WORKSPACE_ROOT: Path = next(p for p in Path(__file__).resolve().parents if (p / "AGENTS.md").is_file())
+_COMUNIFY_BACKEND: Path = _WORKSPACE_ROOT / "comunify" / "backend"
 _GRADER_INTERNAL: Path = _COMUNIFY_BACKEND / "tests" / "agentic_evals" / "grader" / "_internal"
 _MAJ_EVAL_PATH: Path = _GRADER_INTERNAL / "maj_eval_comunify.py"
 

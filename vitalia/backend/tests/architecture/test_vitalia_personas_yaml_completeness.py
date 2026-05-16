@@ -49,12 +49,12 @@ pytestmark = pytest.mark.no_eval
 # Path resolution
 # ---------------------------------------------------------------------------
 
-# parents[2] = vitalia/backend/
-# parents[3] = vitalia/
-# parents[4] = luana-platform/
-# AISALESHT lives at /home/chris/AISALESHT (sibling directory).
-_AISALESHT_ROOT: Path = Path("/home/chris/AISALESHT")
-_PERSONAS_ROOT: Path = _AISALESHT_ROOT / "docs" / "specs" / "personas"
+# Workspace root resolved by AGENTS.md marker (multibrand-safe — works from
+# any test depth without hardcoded `parents[N]`). Post-reorg 2026-05-15, the
+# personas catalog lives at workspace root `docs/specs/personas/` (lifted
+# from legacy AISALESHT sibling layout).
+_WORKSPACE_ROOT: Path = next(p for p in Path(__file__).resolve().parents if (p / "AGENTS.md").is_file())
+_PERSONAS_ROOT: Path = _WORKSPACE_ROOT / "docs" / "specs" / "personas"
 _ARCHETYPE_AWARE_DIR: Path = _PERSONAS_ROOT / "archetype-aware"
 
 # ---------------------------------------------------------------------------

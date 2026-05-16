@@ -7,7 +7,7 @@ Pattern: extends T-voice-4 cost_budget_voice_distillation.py with
 full pipeline cost model covering all 4 waves.
 
 Run:
-    cd /home/chris/luana-platform/comunify/backend && uv run pytest \
+    cd $WS/comunify/backend && uv run pytest \
         tests/agentic_evals/cost_budget/test_cost_budget_voice_distillation_full.py -v
 """
 

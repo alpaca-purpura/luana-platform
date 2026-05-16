@@ -12,7 +12,7 @@ Strategy — synthetic cost model (no real LLM):
   Assert total cost stays below budget.
 
 Run:
-    cd /home/chris/luana-platform/comunify/backend && uv run pytest \
+    cd $WS/comunify/backend && uv run pytest \
         tests/agentic_evals/cost_budget/test_cost_budget_lead_qualification.py -v
 """
 

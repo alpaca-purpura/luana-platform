@@ -29,7 +29,7 @@ Strategy — skip-tolerant synthetic grader (no live LLM required):
   metadata so cache invalidation works downstream (Story E D16 pattern).
 
 Run:
-    cd /home/chris/luana-platform/vitalia/backend && uv run pytest \
+    cd $WS/vitalia/backend && uv run pytest \
         tests/agentic_evals/grader/test_vertical_medical_fidelity_happy.py -v
 """
 

@@ -10,7 +10,7 @@ Covers:
   - DQ2: sandbox markers enforcement
 
 Run:
-    cd /home/chris/luana-platform/comunify/backend && uv run pytest \
+    cd $WS/comunify/backend && uv run pytest \
         tests/agentic_evals/grader/test_vertical_creator_economy_fidelity_adversarial.py -v
 """
 

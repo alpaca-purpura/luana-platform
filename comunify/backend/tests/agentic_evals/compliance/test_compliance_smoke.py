@@ -13,7 +13,7 @@ Strategy: reuse MAJ-EVAL grader deterministic patterns as compliance oracle.
 No real LLM calls — tests check the detection logic, not an actual LLM response.
 
 Run:
-    cd /home/chris/luana-platform/comunify/backend && uv run pytest \
+    cd $WS/comunify/backend && uv run pytest \
         tests/agentic_evals/compliance/test_compliance_smoke.py -v
 """
 

@@ -5,7 +5,7 @@ context (member history snippet + emotional context). Budget is higher than
 pure lead qualification but still constrained.
 
 Run:
-    cd /home/chris/luana-platform/comunify/backend && uv run pytest \
+    cd $WS/comunify/backend && uv run pytest \
         tests/agentic_evals/cost_budget/test_cost_budget_drift_reengagement.py -v
 """
 

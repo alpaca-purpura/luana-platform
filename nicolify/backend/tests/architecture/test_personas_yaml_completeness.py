@@ -40,11 +40,11 @@ pytestmark = pytest.mark.no_eval
 # Path resolution
 # ---------------------------------------------------------------------------
 
-# parents[2] = backend/
-# parents[3] = repo root
-_BACKEND_ROOT: Path = Path(__file__).resolve().parents[2]
-_REPO_ROOT: Path = _BACKEND_ROOT.parent
-_PERSONAS_ROOT: Path = _REPO_ROOT / "docs" / "specs" / "personas"
+# Post-multibrand-reorg 2026-05-15: workspace root contains `docs/specs/personas/`
+# (shared cross-brand catalog). Resolve via AGENTS.md marker — works from any
+# test depth and doesn't assume layout (nicolify/ vs nicolify/backend/).
+_WORKSPACE_ROOT: Path = next(p for p in Path(__file__).resolve().parents if (p / "AGENTS.md").is_file())
+_PERSONAS_ROOT: Path = _WORKSPACE_ROOT / "docs" / "specs" / "personas"
 _ARCHETYPE_AWARE_DIR: Path = _PERSONAS_ROOT / "archetype-aware"
 _LEGACY_DIR: Path = _PERSONAS_ROOT / "_legacy"
 

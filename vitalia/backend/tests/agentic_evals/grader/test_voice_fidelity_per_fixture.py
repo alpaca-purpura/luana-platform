@@ -29,7 +29,7 @@ Strategy — deterministic voice pattern detector (no LLM judge required):
     4. Voice mismatch (voseo for Mindful) → score < 0.80 (negative test)
 
 Run:
-    cd /home/chris/luana-platform/vitalia/backend && uv run pytest \
+    cd $WS/vitalia/backend && uv run pytest \
         tests/agentic_evals/grader/test_voice_fidelity_per_fixture.py -v
 """
 

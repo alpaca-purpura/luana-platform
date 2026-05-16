@@ -21,7 +21,7 @@ query isolation) — those require live services. The unit-level contract
 (cache key isolation, tenant_id param enforcement) is asserted inline.
 
 Run:
-    cd /home/chris/luana-platform/vitalia/backend && uv run pytest \
+    cd $WS/vitalia/backend && uv run pytest \
         tests/agentic_evals/smoke/smoke_cross_tenant.py -v
 """
 

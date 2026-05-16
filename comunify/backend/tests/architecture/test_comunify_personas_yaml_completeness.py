@@ -43,8 +43,8 @@ pytestmark = pytest.mark.no_eval
 # Path resolution
 # ---------------------------------------------------------------------------
 
-_AISALESHT_ROOT: Path = Path("/home/chris/AISALESHT")
-_PERSONAS_DIR: Path = _AISALESHT_ROOT / "docs" / "specs" / "personas" / "archetype-aware"
+_WORKSPACE_ROOT: Path = next(p for p in Path(__file__).resolve().parents if (p / "AGENTS.md").is_file())
+_PERSONAS_DIR: Path = _WORKSPACE_ROOT / "docs" / "specs" / "personas" / "archetype-aware"
 
 # ---------------------------------------------------------------------------
 # Required personas spec

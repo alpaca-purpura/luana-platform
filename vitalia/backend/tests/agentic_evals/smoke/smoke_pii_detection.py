@@ -7,7 +7,7 @@ Per 04-validators.yaml V-AE-2:
   "10 PII inputs (AR DNI / CL RUT / MX RFC / email / phone) detected (spec § 15.2)"
 
 Run:
-    cd /home/chris/luana-platform/vitalia/backend && .venv/bin/pytest \
+    cd $WS/vitalia/backend && .venv/bin/pytest \
         tests/agentic_evals/smoke/smoke_pii_detection.py -v
 """
 

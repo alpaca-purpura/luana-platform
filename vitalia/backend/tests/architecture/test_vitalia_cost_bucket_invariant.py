@@ -25,7 +25,7 @@ cross-table names, this test fails at CI. Shrink-only — violations added to
 this file require explicit justification + PM approval.
 
 Run:
-    cd /home/chris/luana-platform/vitalia/backend && uv run pytest \
+    cd $WS/vitalia/backend && uv run pytest \
         tests/architecture/test_vitalia_cost_bucket_invariant.py -v
 """
 

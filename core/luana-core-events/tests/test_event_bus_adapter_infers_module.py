@@ -39,17 +39,17 @@ class TestModuleNameFromFile:
 
     def test_sales_agent_unix_path(self) -> None:
         """Extracts 'sales_agent' from a Unix-style source path."""
-        path = "/home/chris/AISALESHT/backend/src/modules/sales_agent/domain/events.py"
+        path = "/legacy/aisalesht/backend/src/modules/sales_agent/domain/events.py"
         assert _module_name_from_file(path) == "sales_agent"
 
     def test_copilot_unix_path(self) -> None:
         """Extracts 'copilot' from a copilot module path."""
-        path = "/home/chris/AISALESHT/backend/src/modules/copilot/application/orchestrator/chat.py"
+        path = "/legacy/aisalesht/backend/src/modules/copilot/application/orchestrator/chat.py"
         assert _module_name_from_file(path) == "copilot"
 
     def test_brand_unix_path(self) -> None:
         """Extracts 'brand' from a brand module path."""
-        path = "/home/chris/AISALESHT/backend/src/modules/brand/workers/tasks.py"
+        path = "/legacy/aisalesht/backend/src/modules/brand/workers/tasks.py"
         assert _module_name_from_file(path) == "brand"
 
     def test_analytics_unix_path(self) -> None:
@@ -64,7 +64,7 @@ class TestModuleNameFromFile:
 
     def test_outside_modules_returns_none(self) -> None:
         """Returns None for frames outside src/modules/."""
-        path = "/home/chris/AISALESHT/backend/src/shared/domain/events.py"
+        path = "/legacy/aisalesht/backend/src/shared/domain/events.py"
         assert _module_name_from_file(path) is None
 
     def test_stdlib_frame_returns_none(self) -> None:
@@ -74,7 +74,7 @@ class TestModuleNameFromFile:
 
     def test_tests_directory_returns_none(self) -> None:
         """Returns None for test-file frames (not in src/modules/)."""
-        path = "/home/chris/AISALESHT/backend/tests/shared/domain_events/test_foo.py"
+        path = "/legacy/aisalesht/backend/tests/shared/domain_events/test_foo.py"
         assert _module_name_from_file(path) is None
 
     def test_empty_string_returns_none(self) -> None:

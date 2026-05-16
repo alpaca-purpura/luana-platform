@@ -20,7 +20,7 @@ Conversation flows tested (spec § 15.4):
   5. Medical condition explanation
 
 Run:
-    cd /home/chris/luana-platform/vitalia/backend && uv run pytest \
+    cd $WS/vitalia/backend && uv run pytest \
         tests/agentic_evals/smoke/smoke_hipaa_disclaimer.py -v
 """
 

@@ -28,7 +28,7 @@ Strategy — deterministic cost model per turn (no live LLM calls):
     Total: ~$0.009-$0.015 USD << $0.025 ceiling
 
 Run:
-    cd /home/chris/luana-platform/vitalia/backend && uv run pytest \
+    cd $WS/vitalia/backend && uv run pytest \
         tests/agentic_evals/cost_budget/test_cost_budget_followup_turn.py -v
 """
 

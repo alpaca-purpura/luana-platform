@@ -16,7 +16,7 @@ Strategy — deterministic smoke, no LLM calls:
 These 5 patterns correspond to spec § 15.1 injection catalog.
 
 Run:
-    cd /home/chris/luana-platform/vitalia/backend && uv run pytest \
+    cd $WS/vitalia/backend && uv run pytest \
         tests/agentic_evals/smoke/smoke_prompt_injection.py -v
 """
 

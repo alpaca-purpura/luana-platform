@@ -17,7 +17,7 @@ These are NOT part of the rubric formula directly, but tie into A1
 module exercises the grader's A1/A2 sensitivity to hallucinated content.
 
 Run:
-    cd /home/chris/luana-platform/comunify/backend && uv run pytest \
+    cd $WS/comunify/backend && uv run pytest \
         tests/agentic_evals/grader/test_no_hallucination.py -v
 """
 

@@ -20,7 +20,7 @@ Strategy — skip-tolerant synthetic grader (no live LLM required):
     * A3 (vulnerable disclosure) is tested separately in adversarial suite.
 
 Run:
-    cd /home/chris/luana-platform/comunify/backend && uv run pytest \
+    cd $WS/comunify/backend && uv run pytest \
         tests/agentic_evals/grader/test_vertical_creator_economy_fidelity_happy.py -v
 """
 
