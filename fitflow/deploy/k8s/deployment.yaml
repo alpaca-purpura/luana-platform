@@ -1,0 +1,84 @@
+# fitflow/deploy/k8s/deployment.yaml
+# Placeholder K8s manifest — FitFlow (Fitness + Deporte vertical)
+# replicas: 0 — no workload real hasta S-FITFLOW-BOOTSTRAP (Story TBD).
+# bootstrap brand topology — 2026-05-15
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fitflow-backend
+  namespace: luana
+  labels:
+    app: fitflow-backend
+    brand: fitflow
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: fitflow-backend
+  template:
+    metadata:
+      labels:
+        app: fitflow-backend
+        brand: fitflow
+    spec:
+      containers:
+        - name: fitflow-backend
+          image: ghcr.io/luana-platform/fitflow-backend:latest
+          ports:
+            - containerPort: 8010
+          env:
+            - name: PORT
+              value: "8010"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8010
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8010
+            initialDelaySeconds: 10
+            periodSeconds: 10
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fitflow-frontend
+  namespace: luana
+  labels:
+    app: fitflow-frontend
+    brand: fitflow
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: fitflow-frontend
+  template:
+    metadata:
+      labels:
+        app: fitflow-frontend
+        brand: fitflow
+    spec:
+      containers:
+        - name: fitflow-frontend
+          image: ghcr.io/luana-platform/fitflow-frontend:latest
+          ports:
+            - containerPort: 3010
+          env:
+            - name: PORT
+              value: "3010"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3010
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3010
+            initialDelaySeconds: 10
+            periodSeconds: 10

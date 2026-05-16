@@ -1,0 +1,41 @@
+# fitflow/config/brand.yaml
+# BrandConfig declarativa para FitFlow (fitness).
+# Decision D6: puertos cementados (fitflow=8010/3010)
+# NOTA: fitflow es placeholder (Story TBD pendiente). Esta config es minima.
+#
+# bootstrap brand topology — 2026-05-15
+# SSoT infra metadata por entorno. Auto-indexado en docs/portfolio/INFRA-MATRIX.md via make infra-matrix.
+
+brand_slug: fitflow
+brand_name: "FitFlow"
+brand_description: "Vertical Fitness + Deporte brand app — facturación recurrente membresías, control aforo, calendario clases, waivers digitales"
+brand_segment: fitness
+compliance_level: standard
+voice_cloning_enabled: false
+multi_language_ui: false
+
+features:
+  brand_studio_basic: true
+  recurring_memberships: false    # Story TBD
+  capacity_control: false         # Story TBD
+  class_calendar: false           # Story TBD
+  digital_waivers: false          # Story TBD
+
+# SSoT infra metadata por entorno.
+# Auto-indexado en docs/portfolio/INFRA-MATRIX.md via make infra-matrix.
+infra:
+  dev:
+    backend_port: 8010
+    frontend_port: 3010
+    database_name: fitflow_dev
+    redis_db: 9
+    qdrant_collection_prefix: fitflow_
+    domain: fitflow-dev.nicolify.com
+    cloudflared_tunnel: fitflow-dev
+  staging:
+    domain: fitflow-test.nicolify.com
+    server: tbd-staging-cluster
+  prod:
+    domain: app.fitflow.com
+    server: tbd
+    cloudflared_tunnel: fitflow-prod

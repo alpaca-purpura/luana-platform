@@ -1,0 +1,59 @@
+# fitflow/docker-compose.dev.yml
+# Dev stack — FitFlow (Fitness + Deporte vertical)
+# Port: BE=8010 / FE=3010 (D6 port allocation)
+# bootstrap brand topology — 2026-05-15
+
+services:
+  fitflow_backend_dev:
+    build:
+      context: ../
+      dockerfile: fitflow/backend/Dockerfile
+      target: dev
+    container_name: luana-fitflow-backend-dev
+    volumes:
+      - ./backend/src:/workspace/fitflow/backend/src:ro
+    env_file:
+      - .env.dev
+    ports:
+      - "127.0.0.1:8010:8010"
+    depends_on:
+      - postgres_shared
+      - redis_dev
+    networks:
+      - luana_dev_net
+    restart: unless-stopped
+
+  fitflow_frontend_dev:
+    build:
+      context: ../
+      dockerfile: fitflow/frontend/Dockerfile
+      target: dev
+    container_name: luana-fitflow-frontend-dev
+    volumes:
+      - ./frontend/src:/app/fitflow/frontend/src:ro
+    env_file:
+      - .env.dev
+    ports:
+      - "127.0.0.1:3010:3010"
+    networks:
+      - luana_dev_net
+    restart: unless-stopped
+
+  fitflow_cloudflared_dev:
+    image: cloudflare/cloudflared:latest
+    container_name: luana-fitflow-cloudflared-dev
+    command: tunnel --no-autoupdate run
+    env_file:
+      - .env.dev
+    networks:
+      - luana_dev_net
+    profiles:
+      - tunnel
+    restart: unless-stopped
+
+networks:
+  luana_dev_net:
+    external: true
+
+# postgres_shared y redis_dev son servicios externos definidos en docker-compose.dev.yml raíz
+# Levantar con: make dev-fitflow
