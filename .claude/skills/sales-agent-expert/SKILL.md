@@ -16,7 +16,7 @@ Observability + cost + pricing + channel-format + callback-handler + FX + tenant
 ANTES de crear archivo nuevo en `modules/sales_agent/observability/recording/<X>.py` o `modules/sales_agent/observability/<subsystem>/<X>.py`:
 
 1. Consultá inventario canónico: `cat .claude/rules/anti-duplication.md` — buscá tu subsystem en tabla
-2. Grep cross-codebase: `find /home/chris/AISALESHT/backend/src -name "<basename>.py"` + `grep -rn "class <ClassName>" backend/src/shared/ backend/src/modules/`
+2. Grep cross-codebase: `find $(git rev-parse --show-toplevel)/backend/src -name "<basename>.py"` + `grep -rn "class <ClassName>" backend/src/shared/ backend/src/modules/`
 3. Si match en `modules/copilot/<same-path>` o `shared/<subsystem>` → STOP, escalate `/pm`. Tres opciones:
    - **EXTEND**: heredar desde shared base
    - **LIFT-TO-SHARED**: subir abstracción a shared, después sales_agent + copilot consumen

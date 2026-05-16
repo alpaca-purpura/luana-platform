@@ -7,7 +7,7 @@ This is the DEFINITIVE frontend verification command. All steps must pass before
 
 ### Step 1: Verify tools
 ```bash
-cd /home/chris/AISALESHT/frontend && npx tsc --version && npx vitest --version
+cd $(git rev-parse --show-toplevel)/frontend && npx tsc --version && npx vitest --version
 ```
 If missing: `npm ci`
 
@@ -17,13 +17,13 @@ If missing: `npm ci`
 
 ### Step 2: TypeScript strict (tsc)
 ```bash
-cd /home/chris/AISALESHT/frontend && npx tsc --noEmit
+cd $(git rev-parse --show-toplevel)/frontend && npx tsc --noEmit
 ```
 Must produce 0 errors. `strict: true` in tsconfig.
 
 ### Step 3: ESLint (60+ rules, 0 errors)
 ```bash
-cd /home/chris/AISALESHT/frontend && ./node_modules/.bin/eslint src/ --cache --cache-location .eslintcache
+cd $(git rev-parse --show-toplevel)/frontend && ./node_modules/.bin/eslint src/ --cache --cache-location .eslintcache
 ```
 **0 errors required.** Warnings are tracked but don't block.
 After config changes: `rm -f .eslintcache` first.
@@ -67,7 +67,7 @@ print(f'  TOTAL: {total}')
 
 ### Step 4: Unit tests with coverage (Vitest)
 ```bash
-cd /home/chris/AISALESHT/frontend && npx vitest run --coverage
+cd $(git rev-parse --show-toplevel)/frontend && npx vitest run --coverage
 ```
 Coverage thresholds: **all 20%** (statements, branches, functions, lines).
 Current: ~25%/21%/22%/25%. Test count: ~1063.
@@ -78,7 +78,7 @@ Current: ~25%/21%/22%/25%. Test count: ~1063.
 
 ### Step 5: Code duplication (jscpd)
 ```bash
-cd /home/chris/AISALESHT && npx jscpd frontend/src/ --threshold 5 --reporters console
+cd $(git rev-parse --show-toplevel) && npx jscpd frontend/src/ --threshold 5 --reporters console
 ```
 Baseline: 4.52% (338 clones). TSX is highest at 5.29%.
 If >5% total: **WARNING** — new duplication introduced.
@@ -86,7 +86,7 @@ If >8%: **CRITICAL** — must refactor before shipping.
 
 ### Step 6: Dead code (knip)
 ```bash
-cd /home/chris/AISALESHT/frontend && npx knip 2>&1 | head -60
+cd $(git rev-parse --show-toplevel)/frontend && npx knip 2>&1 | head -60
 ```
 Config: `knip.config.ts`. Reports unused files, exports, dependencies.
 ⚠️ Known false positives: barrel spreads, Next.js routes, some devDeps.
@@ -94,13 +94,13 @@ Focus on: new unused files (not pre-existing), unused exports you just created.
 
 ### Step 7: Circular imports (madge)
 ```bash
-cd /home/chris/AISALESHT/frontend && npx madge --circular src/ --extensions ts,tsx
+cd $(git rev-parse --show-toplevel)/frontend && npx madge --circular src/ --extensions ts,tsx
 ```
 Known: 2 cycles in offer-studio. Any NEW cycles: flag as WARNING.
 
 ### Step 8: Security audit (npm audit)
 ```bash
-cd /home/chris/AISALESHT/frontend && npm audit --audit-level=high
+cd $(git rev-parse --show-toplevel)/frontend && npm audit --audit-level=high
 ```
 Reports HIGH and CRITICAL vulnerabilities in npm dependencies.
 

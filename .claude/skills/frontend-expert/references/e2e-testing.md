@@ -35,7 +35,7 @@ Invoke the **`playwright-expert`** skill. It auto-loads on any of:
 ## Quick reference (kept here for cross-link compatibility)
 
 ```bash
-bash /home/chris/AISALESHT/scripts/e2e-preflight.sh    # always first
+bash $(git rev-parse --show-toplevel)/scripts/e2e-preflight.sh    # always first
 cd frontend && npm run test:e2e:smoke                  # happy path
 cd frontend && npm run test:e2e:fresh                  # auth roto / "siempre falla"
 cd frontend && npm run test:e2e:auth                   # solo regenerar storageState

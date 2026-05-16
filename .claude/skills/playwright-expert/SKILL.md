@@ -77,7 +77,7 @@ Run **in this exact order**. Skip steps and you waste 20 minutes.
    └─ "Browser closed / Target closed"                   → Crash OOM (E2E inside Docker — FORBIDDEN)
 
 2. Run preflight (3s, catches 80%):
-   bash /home/chris/AISALESHT/scripts/e2e-preflight.sh
+   bash $(git rev-parse --show-toplevel)/scripts/e2e-preflight.sh
 
 3. Tail the failing trace:
    cd frontend && npx playwright show-report --host 0.0.0.0
@@ -118,7 +118,7 @@ cd frontend && npx playwright test --project=regression
 cd frontend && npx playwright test --project=verify   # AI-driven, 10min/test
 
 # ─── preflight (run before every Playwright invocation) ───────────
-bash /home/chris/AISALESHT/scripts/e2e-preflight.sh
+bash $(git rev-parse --show-toplevel)/scripts/e2e-preflight.sh
 ```
 
 **Always set `E2E_BASE_URL`** if you don't want Playwright to spawn its own `next dev`:

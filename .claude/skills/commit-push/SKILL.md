@@ -65,7 +65,7 @@ Agent({
 You are a git workflow worker. Perform commit + push for Nicolify project.
 
 ## Working directory
-/home/chris/AISALESHT (current branch: development)
+$(git rev-parse --show-toplevel) (current branch: development)
 
 ## Critical safety rules (HARD — origen .claude/rules/git-haiku-delegation.md)
 - NEVER `git add .` / `git add -A` / `git add -u` — parallel sessions WIP en tree

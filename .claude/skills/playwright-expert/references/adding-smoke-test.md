@@ -53,7 +53,7 @@ POMs live in `frontend/e2e/pages/`. Pattern: one POM per page (or per closely re
 **Decision:** does a POM already cover this page?
 
 ```bash
-ls /home/chris/AISALESHT/frontend/e2e/pages/
+ls $(git rev-parse --show-toplevel)/frontend/e2e/pages/
 ```
 
 - **If yes:** open it. Add a method for the new interaction. Skip to Step 3.
@@ -139,7 +139,7 @@ test.describe('<Feature> smoke', () => {
 Before running the test, confirm preflight is green:
 
 ```bash
-bash /home/chris/AISALESHT/scripts/e2e-preflight.sh
+bash $(git rev-parse --show-toplevel)/scripts/e2e-preflight.sh
 ```
 
 Outputs you want to see:
@@ -157,7 +157,7 @@ If any line says FAIL, fix it before continuing. The preflight messages tell you
 Run JUST your new test, with the browser visible, so you can see exactly what happens:
 
 ```bash
-cd /home/chris/AISALESHT/frontend
+cd $(git rev-parse --show-toplevel)/frontend
 E2E_BASE_URL=http://localhost:3000 npx playwright test \
   e2e/specs/smoke/<feature-name>.smoke.spec.ts \
   --project=smoke --headed
@@ -184,7 +184,7 @@ E2E_BASE_URL=http://localhost:3000 npx playwright test \
 Just because your test passes in isolation does not mean it passes in parallel with 13 others. Other tests share the same Clerk session, possibly the same tenant data, possibly the same mock state.
 
 ```bash
-cd /home/chris/AISALESHT/frontend
+cd $(git rev-parse --show-toplevel)/frontend
 E2E_BASE_URL=http://localhost:3000 npx playwright test --project=smoke
 ```
 

@@ -171,7 +171,7 @@ Format: `YYYY-MM-DD.N` where N increments per same-day bump.
 ### 4. Run the arch tests
 
 ```bash
-cd /home/chris/AISALESHT/backend && .venv/bin/pytest \
+cd $(git rev-parse --show-toplevel)/backend && .venv/bin/pytest \
   tests/architecture/test_offer_type_preset_catalog_completeness.py -x -q
 ```
 

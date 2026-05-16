@@ -7,7 +7,7 @@ This is the DEFINITIVE backend verification command. ALL 12 steps must pass befo
 
 ### Step 1: Verify tools
 ```bash
-cd /home/chris/AISALESHT/backend && .venv/bin/ruff --version && .venv/bin/pytest --version && .venv/bin/mypy --version && .venv/bin/interrogate --version
+cd $(git rev-parse --show-toplevel)/backend && .venv/bin/ruff --version && .venv/bin/pytest --version && .venv/bin/mypy --version && .venv/bin/interrogate --version
 ```
 If missing: `.venv/bin/pip install -r requirements-dev.txt`
 
@@ -24,19 +24,19 @@ Both up → run steps 7/8/9. Either down → SKIP 7/8/9 with WARNING (not a fail
 
 ### Step 3: Lint (ruff check, 40+ rule families)
 ```bash
-cd /home/chris/AISALESHT/backend && .venv/bin/ruff check src/ tests/ --no-cache
+cd $(git rev-parse --show-toplevel)/backend && .venv/bin/ruff check src/ tests/ --no-cache
 ```
 Must be `All checks passed!`. Includes McCabe `max-complexity = 12`. If fails: fix violations. Use `--fix` only if user approves.
 
 ### Step 4: Format check (ruff format)
 ```bash
-cd /home/chris/AISALESHT/backend && .venv/bin/ruff format --check src/ tests/
+cd $(git rev-parse --show-toplevel)/backend && .venv/bin/ruff format --check src/ tests/
 ```
 Must show 0 files to reformat. If fails: `.venv/bin/ruff format src/ tests/`.
 
 ### Step 5: Static type check (mypy strict on domain layer)
 ```bash
-cd /home/chris/AISALESHT/backend && .venv/bin/mypy \
+cd $(git rev-parse --show-toplevel)/backend && .venv/bin/mypy \
     -p src.shared.domain \
     -p src.modules.iam.domain \
     -p src.modules.sales_agent.domain \
@@ -51,7 +51,7 @@ Must report `Success: no issues found`. New domain errors = fix or add to overri
 
 ### Step 6: Architecture fitness tests (78 gates)
 ```bash
-cd /home/chris/AISALESHT/backend && .venv/bin/pytest tests/architecture/ -v --override-ini="addopts="
+cd $(git rev-parse --show-toplevel)/backend && .venv/bin/pytest tests/architecture/ -v --override-ini="addopts="
 ```
 Enforces: DDD boundaries, API contracts (`response_model=`), no hard deletes, SA 2.0 syntax, currency from source,
 ETL contract sync, master data (UTC + ISO 4217), Meta invariants, snake_case naming, DDD folder structure,
@@ -64,14 +64,14 @@ admin panel registry parity, copilot subagent isolation, sales-agent prompts. AL
 
 ### Step 7: Unit + coverage (modules + shared, 43% min)
 ```bash
-cd /home/chris/AISALESHT/backend && .venv/bin/pytest --cov=src/modules --cov=src/shared --cov-report=term-missing -q --tb=short
+cd $(git rev-parse --show-toplevel)/backend && .venv/bin/pytest --cov=src/modules --cov=src/shared --cov-report=term-missing -q --tb=short
 ```
 Threshold: **43%** (`fail_under` in `pyproject.toml`). NO `-x` — full universe of failures reported.
 Random order (pytest-randomly) + 30s timeout (pytest-timeout). All tests pass + coverage ≥ 43%.
 
 ### Step 8: Verify-marker tests — data reliability Layers 1/2 (IF Postgres up)
 ```bash
-cd /home/chris/AISALESHT/backend && .venv/bin/pytest -m verify --override-ini="addopts=" -v
+cd $(git rev-parse --show-toplevel)/backend && .venv/bin/pytest -m verify --override-ini="addopts=" -v
 ```
 Skip with WARNING if Postgres down (Step 2 = `POSTGRES_UP=0`).
 Validates: provider source vs official_metrics (Layer 1), official_metrics vs DTOs (Layer 2).
@@ -79,13 +79,13 @@ See `.claude/rules/data-reliability.md`. Failure = data pipeline regression — 
 
 ### Step 9: Integration-marker tests (IF Postgres up)
 ```bash
-cd /home/chris/AISALESHT/backend && .venv/bin/pytest -m integration --override-ini="addopts=" -v
+cd $(git rev-parse --show-toplevel)/backend && .venv/bin/pytest -m integration --override-ini="addopts=" -v
 ```
 Skip with WARNING if Postgres down. Live integration tests (real DB, OAuth flows, providers).
 
 ### Step 10: Migration idempotency on schema clone (IF Postgres up)
 ```bash
-cd /home/chris/AISALESHT/backend && bash scripts/verify_migration_idempotency.sh
+cd $(git rev-parse --show-toplevel)/backend && bash scripts/verify_migration_idempotency.sh
 ```
 Wraps the 5-step protocol from `.claude/rules/backend-migrations.md`:
 create `migration_test` DB → dump schema → stamp head → re-run `alembic upgrade head` (must be no-op).
@@ -97,20 +97,20 @@ Skip with WARNING if Postgres or brain container down. Failure = non-idempotent 
 
 ### Step 11: Code duplication (jscpd, threshold 5%)
 ```bash
-cd /home/chris/AISALESHT && npx jscpd backend/src/ --threshold 5 --reporters console
+cd $(git rev-parse --show-toplevel) && npx jscpd backend/src/ --threshold 5 --reporters console
 ```
 Baseline: 2.94% (322 clones). Threshold 5% blocks regression with margin. Failure → refactor duplicates before commit.
 
 ### Step 12: Docstring coverage (interrogate, fail-under 85)
 ```bash
-cd /home/chris/AISALESHT/backend && .venv/bin/interrogate -vv src/modules/ src/shared/
+cd $(git rev-parse --show-toplevel)/backend && .venv/bin/interrogate -vv src/modules/ src/shared/
 ```
 Threshold: **85%** (declared in `[tool.interrogate]`). Current actual ~92.6%.
 Failure = new public API without docstrings. Add Google-style docstring or refactor.
 
 ### Step 13: Security audit (CVE allowlist wrapper)
 ```bash
-cd /home/chris/AISALESHT/backend && bash scripts/audit_security.sh
+cd $(git rev-parse --show-toplevel)/backend && bash scripts/audit_security.sh
 ```
 Runs `pip-audit --strict` with explicit allowlist of 14 documented CVEs (no fix available or accepted risk).
 ANY new CVE outside allowlist = exit 1 = blocker. Fix: upgrade package OR add ID to allowlist with justification.

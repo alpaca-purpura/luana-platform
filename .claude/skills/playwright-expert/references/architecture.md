@@ -136,7 +136,7 @@ The Node process running Playwright is **separate** from the Next.js process run
 
 ```
                           ┌──────────────────────────┐
-                          │   /home/chris/AISALESHT  │
+                          │   $(git rev-parse --show-toplevel)  │
                           │   /.env  (single source) │
                           └────────────┬─────────────┘
                                        │
@@ -174,7 +174,7 @@ Misconfigured? `playwright.config.ts` throws BEFORE the first test runs:
 
 ```
 Error: [playwright.config] Missing required env vars for Clerk E2E setup:
-  E2E_CLERK_USER_EMAIL, E2E_TENANT_ID. Check /home/chris/AISALESHT/.env.
+  E2E_CLERK_USER_EMAIL, E2E_TENANT_ID. Check $(git rev-parse --show-toplevel)/.env.
 ```
 
 This is intentional and expensive to remove — it has saved hours of "why doesn't auth work" debugging.
