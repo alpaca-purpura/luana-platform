@@ -59,7 +59,7 @@ class TestModuleNameFromFile:
         assert _module_name_from_file(path) == "analytics"
 
     def test_windows_style_path(self) -> None:
-        """Extracts module name from a Windows-style path (WSL2 compat)."""
+        """Extracts module name from a Windows-style path (legacy compat)."""
         path = r"C:\Users\chris\AISALESHT\backend\src\modules\sales_agent\workers\verify.py"
         assert _module_name_from_file(path) == "sales_agent"
 

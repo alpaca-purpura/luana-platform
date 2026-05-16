@@ -3,7 +3,7 @@
 #
 # Why this exists
 # ===============
-# ``/test-all`` runs natively in WSL for fast iteration (CLAUDE.md rule #2).
+# ``/test-all`` runs natively in Linux for fast iteration (CLAUDE.md rule #2).
 # Native runs differ from CI in three ways that have produced 5+ failed
 # deploys (lessons preserved post-T-10/T-14 cutover):
 #

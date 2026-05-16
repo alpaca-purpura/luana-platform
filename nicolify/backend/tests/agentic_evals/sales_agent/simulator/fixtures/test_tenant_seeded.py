@@ -117,7 +117,7 @@ def _db_session():  # type: ignore[return]  # pytest generator fixture
 
 
 def _skip_if_no_postgres() -> None:
-    """Saltar test si Postgres no está disponible desde WSL nativo."""
+    """Saltar test si Postgres no está disponible desde Linux (host)."""
     try:
         from luana_core_platform.core.database import SessionLocal
 
@@ -126,7 +126,7 @@ def _skip_if_no_postgres() -> None:
         db.close()
     except Exception as exc:  # noqa: BLE001 — broad except para skip
         pytest.skip(
-            f"Postgres no disponible desde WSL nativo. Verifica que el contenedor esté corriendo. Detalle: {exc}",
+            f"Postgres no disponible desde Linux (host). Verifica que el contenedor esté corriendo. Detalle: {exc}",
         )
 
 

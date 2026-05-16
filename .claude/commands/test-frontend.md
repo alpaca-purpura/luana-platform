@@ -1,4 +1,4 @@
-Run frontend quality gates + functional tests + health checks natively in WSL.
+Run frontend quality gates + functional tests + health checks natively in Linux (host).
 This is the DEFINITIVE frontend verification command. All steps must pass before committing.
 
 **CRITICAL:** All tools run from `frontend/`. NEVER use `docker exec` for lint/tests/tsc.

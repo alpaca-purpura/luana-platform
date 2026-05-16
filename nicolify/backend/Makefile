@@ -4,7 +4,7 @@
 # operaciones que viven exclusivamente en backend/, sin necesidad de
 # subir al Makefile root (que orquesta Docker + frontend + cross-stack).
 #
-# Native-first (`AGENTS.md`): todos los targets ejecutan en WSL contra
+# Native-first (`AGENTS.md`): todos los targets ejecutan en Linux (host) contra
 # `backend/.venv/bin/...`. Nunca `docker exec`.
 #
 # Convivencia con root Makefile: el root continua siendo SSoT para

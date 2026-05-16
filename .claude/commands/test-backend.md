@@ -1,4 +1,4 @@
-Run backend quality gates + functional tests + health checks natively in WSL.
+Run backend quality gates + functional tests + health checks natively in Linux (host).
 This is the DEFINITIVE backend verification command. ALL 12 steps must pass before committing.
 
 **CRITICAL:** All tools run from `backend/.venv/bin/`. NEVER use `docker exec` for lint/tests/type-check.

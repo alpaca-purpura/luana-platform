@@ -19,7 +19,7 @@ State: done
 2. Workflow 2: Integrar a main (squash-merge)
 3. Workflow 3: Deploy a produccion (release branch)
 4. Workflow 4: Cleanup de sesion terminada (cleanup-session.sh)
-5. Recovery patterns (WSL crash / TTL 30d / non-fast-forward / worktree dirty)
+5. Recovery patterns (crash sistema / TTL 30d / non-fast-forward / worktree dirty)
 6. Anti-patterns prohibidos
 7. Referencias
 
@@ -37,4 +37,4 @@ State: done
 - D4: MEMORY entry pointer-first — 1 linea index + archivo dedicado (no inline detalle)
 - R7: formato cheatsheet one-liner por workflow (bloques bash comentados, no prosa)
 - R8: linea index exacta como especificada en 05-guidelines.md
-- recovery patterns cubiertos: WSL crash / TTL 30d / non-fast-forward / dirty worktree
+- recovery patterns cubiertos: crash sistema / TTL 30d / non-fast-forward / dirty worktree

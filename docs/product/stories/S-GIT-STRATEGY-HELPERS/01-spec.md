@@ -155,7 +155,7 @@ Esta story entrega las herramientas operacionales y la documentacion necesaria p
 ## Decisions
 
 **D1 — Helper scripts pattern (bash puro, no Python)**
-Los scripts usan bash puro con `set -euo pipefail` y sanitizacion de inputs via regex `^[a-zA-Z0-9_-]+$`. Se descarto Python para evitar dependencia de venv activation en contextos de sesion nueva. Bash disponible universalmente en WSL2.
+Los scripts usan bash puro con `set -euo pipefail` y sanitizacion de inputs via regex `^[a-zA-Z0-9_-]+$`. Se descarto Python para evitar dependencia de venv activation en contextos de sesion nueva. Bash disponible universalmente en Linux.
 
 **D2 — Location canonica `scripts/git/`**
 Los helpers viven en `scripts/git/` (no en `Makefile` targets ni en `.claude/scripts/`) porque son scripts operacionales del workflow git, no herramientas del proceso de CI o del skill system. Consistente con `scripts/git-hooks/` ya existente.

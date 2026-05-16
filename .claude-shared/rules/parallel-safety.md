@@ -1,6 +1,6 @@
 # Parallel Safety (OBLIGATORIO)
 
-Chris multi-instancia Claude Code WSL. Mismo workdir+branch (`development`)+filesystem. Cada sesión commitea SU trabajo.
+Chris multi-instancia Claude Code en Linux. Mismo workdir+branch (`development`)+filesystem. Cada sesión commitea SU trabajo.
 
 ## Branches
 `development` única. `main` solo prod. NUNCA feature branches/worktrees/release/hotfix.

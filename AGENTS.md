@@ -24,7 +24,7 @@
 
 ## Native-First (mandatory)
 
-**NEVER** run lint/tests/type-check inside Docker. Always native WSL:
+**NEVER** run lint/tests/type-check inside Docker. Always native Linux (host):
 - BE: `cd backend && .venv/bin/{ruff,pytest,pip-audit}` (venv 3.12)
 - FE: `cd frontend && npx {tsc,eslint,vitest,playwright}`
 - Docker only for: runtime (`make dev`), migrations (`docker exec visionarias_brain_dev alembic`), and `make ci-parity`.

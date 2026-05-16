@@ -70,10 +70,10 @@ git log --oneline -20  # verificar que todos los commits están en main
 
 ---
 
-## Fase 2.5: E2E Smoke (Nativo en WSL)
+## Fase 2.5: E2E Smoke (Nativo en Linux)
 
 **Objetivo:** Correr la suite smoke de Playwright localmente antes de pushear a main.
-Se ejecuta NATIVAMENTE en WSL (no Docker — Docker crashea la laptop).
+Se ejecuta NATIVAMENTE en Linux (no Docker — Docker puede causar OOM).
 
 ### 2.5.1 Requisitos
 - Dev containers corriendo: `docker compose up -d`

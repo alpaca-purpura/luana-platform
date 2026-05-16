@@ -8,7 +8,7 @@ from .base import BaseEvolutionApi
 
 
 class EvolutionApiV1(BaseEvolutionApi):
-    """Strategy for Evolution API v1.x (Stable for WSL2/Dev)."""
+    """Strategy for Evolution API v1.x (Stable para dev local)."""
 
     async def create_instance(self, token: str) -> dict[str, Any]:
         """Create instance."""

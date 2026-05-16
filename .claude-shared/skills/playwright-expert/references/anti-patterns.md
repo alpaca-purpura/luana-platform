@@ -324,9 +324,9 @@ function assertVisible(locator: Locator) { /* custom logic */ }
 
 ### F1. `make e2e` / `make e2e-smoke` locally
 
-**Why bad:** runs Playwright inside Docker on WSL2. Empirically crashes within 5 min (OOM).
+**Why bad:** runs Playwright inside Docker localmente. Puede crashear por OOM dentro de 5 min.
 
-**Fix:** native WSL: `npm run test:e2e:smoke`. CI uses Docker — that's fine because Linux runners.
+**Fix:** native Linux: `npm run test:e2e:smoke`. CI usa Docker — eso está ok porque runners de Linux.
 
 ### F2. Playwright spawning its own `next dev`
 

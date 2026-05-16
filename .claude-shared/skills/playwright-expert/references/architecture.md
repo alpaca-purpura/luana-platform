@@ -260,9 +260,9 @@ Locally, you do NOT need any of this — your dev container is already up. `npm 
 
 ## 10. Why we do not run E2E inside Docker locally
 
-Empirically: WSL2 + Docker + Chromium = OOM crash within 5 minutes. Chris has reproduced this multiple times across two laptops. The `make e2e*` targets exist for legacy reasons — they are scheduled for removal but until then **do not invoke them**. Use `npm run test:e2e:*` from the host.
+Empirically: Docker + Chromium en local puede crashear por OOM dentro de 5 minutos. Chris lo ha reproducido múltiples veces. Los `make e2e*` targets existen por razones legacy — están pendientes de remoción pero hasta entonces **no los invokes**. Usa `npm run test:e2e:*` desde el host.
 
-CI is fine because (a) the runner has 16 GB and (b) Docker on Linux is not WSL2.
+CI es fine porque el runner tiene 16 GB y Docker en Linux no tiene las limitaciones de Docker local.
 
 ## 11. The 4-hour freshness window — why this number
 

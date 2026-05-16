@@ -5,7 +5,7 @@ description: "Seguridad multi-sesion paralela Claude Code — triple-branch + wo
 
 # Parallel Safety (OBLIGATORIO)
 
-Chris opera 2-3 sesiones Claude Code en paralelo en WSL2. Cada sesion usa su propio worktree fisico dedicado
+Chris opera 2-3 sesiones Claude Code en paralelo en Linux (Mint). Cada sesion usa su propio worktree fisico dedicado
 con branch `wip/*` dedicado. No hay "mismo workdir+branch" — ese patron es legacy y fue el origen de colisiones.
 
 ## Triple-branch en paralelo

@@ -124,7 +124,7 @@ def visionarias_tenant_session() -> Any:  # generator yields dict, but mypy gets
             )
             pytest.skip(
                 f"No se pudo consultar la DB para Visionarias ({tenant_id}). "
-                f"Verifica que Postgres esté accesible desde WSL nativo. "
+                f"Verifica que Postgres esté accesible desde Linux (host). "
                 f"Detalle: {exc}",
             )
         if tenant_row is None:

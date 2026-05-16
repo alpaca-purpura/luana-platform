@@ -146,7 +146,7 @@ in `docs/domains/offer-studio/architecture.md`.
 
 ---
 
-## Verification commands (native WSL)
+## Verification commands (native Linux)
 
 ```bash
 # Backend

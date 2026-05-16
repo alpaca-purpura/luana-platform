@@ -14,7 +14,7 @@ Cuándo: nueva UI feature, bug fix interaction, nav/auth flow change. NO: BE-onl
 cd /home/chris/AISALESHT && bash scripts/e2e-preflight.sh
 ```
 
-**Execution NATIVE WSL** (NUNCA Docker — `make e2e*` crashea WSL2 OOM):
+**Execution NATIVE Linux (host)** (NUNCA Docker — `make e2e*` puede causar OOM en Docker local):
 ```bash
 cd frontend && E2E_BASE_URL=http://localhost:3000 npx playwright test --project=smoke
 # o más fácil:

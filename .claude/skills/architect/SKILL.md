@@ -405,7 +405,7 @@ Antes de cerrar story como ready:
 
 - [ ] `03-arch.md` consolidado escrito (con secciones inline por surface, O archivos separados `03-arch-{be,fe,agentic}.md` si orchestrator decidió split por complejidad)
 - [ ] `04-validators.yaml` cubre TODOS scenarios del `01-spec.md` (gate hard)
-- [ ] `04-validators.yaml` cada validator tiene cmd ejecutable native WSL (no Docker para tests)
+- [ ] `04-validators.yaml` cada validator tiene cmd ejecutable native Linux (host) (no Docker para tests)
 - [ ] `05-guidelines.md` lista patterns required + forbidden + files in scope
 - [ ] `06-tickets.yaml` cada ticket: `production_code` flag set, `owner_eligibility` coherente, `acceptance.validator_ids` mapea a 04-validators.yaml ids
 - [ ] Dependencies son DAG (no ciclos)

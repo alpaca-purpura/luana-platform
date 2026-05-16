@@ -62,7 +62,7 @@ class TestGraderDeterministicScores:
 
         TestGraderDeterministicScores only validates local (deterministic) scores.
         LLMFactory.get_service() raises to prevent network timeouts on envs without
-        the litellm proxy (native WSL, CI).
+        the litellm proxy (native Linux, CI).
         PI-11 PR-1: regression fix — singleton reset made LLMFactory re-initialise
         every test causing 30s network timeout instead of warm-singleton skip.
         """

@@ -1,7 +1,7 @@
 Run FULL quality suite (backend + frontend + migrations) natively.
 This is the DEFINITIVE pre-commit/pre-deploy verification. Mirrors CI quality-gates.
 
-**CRITICAL:** All tools run natively in WSL. NEVER `docker exec` for lint/tests.
+**CRITICAL:** All tools run natively in Linux (host). NEVER `docker exec` for lint/tests.
 Docker ONLY for: migrations test (Step 11).
 
 **E2E:** NOT part of `/test-all`. Run separately with `/test-frontend` or the

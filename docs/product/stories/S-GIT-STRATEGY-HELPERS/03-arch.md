@@ -300,7 +300,7 @@ Formato cheatsheet — cada workflow como bloque de comandos con comentarios.
 3. **Workflow release a produccion** (release/{brand}-vX.Y.Z desde main → prod)
 4. **Workflow cleanup** (cleanup-session.sh + branch lifecycle)
 5. **Recovery patterns:**
-   - WSL crash → `git stash list` + `git worktree list` + recovery desde wip/* pusheado
+   - Crash del sistema → `git stash list` + `git worktree list` + recovery desde wip/* pusheado
    - Branch wip/* TTL 30d (cron cleanup) → merge importante ANTES de 30d
    - Push falla non-fast-forward → STOP, escala Chris (no git pull)
    - Worktree dirty accidental → commit en wip/* o stash, luego cleanup

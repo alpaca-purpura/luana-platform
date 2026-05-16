@@ -10,7 +10,7 @@ why_now: |
   Política git heredada de single-brand Nicolify ("solo development, main = prod auto") en
   contradicción con uso real (commits a main). Chris corre 2-3 sesiones Claude paralelas — pattern
   legacy de "filesystem compartido sin worktrees" pone en riesgo WIP no-commiteado al pisarse
-  branches. Ambiente "volátil" (WSL crashea, cambio máquina) requiere safety net push frecuente.
+  branches. Ambiente "volátil" (sistema crashea, cambio máquina) requiere safety net push frecuente.
 estimated_effort: 18-22h (split en 2 stories)
 stories:
   - S-GIT-STRATEGY-CORE       # rules + workflows + hook

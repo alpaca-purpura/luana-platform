@@ -41,6 +41,6 @@ cd frontend && npm run test:e2e:fresh                  # auth roto / "siempre fa
 cd frontend && npm run test:e2e:auth                   # solo regenerar storageState
 ```
 
-NEVER `make e2e*` (Docker, crashea WSL2). Always native.
+NEVER `make e2e*` (Docker, puede causar OOM). Always native.
 
 For everything else → `playwright-expert` skill.

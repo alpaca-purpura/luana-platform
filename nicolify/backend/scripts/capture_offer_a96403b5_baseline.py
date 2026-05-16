@@ -11,7 +11,7 @@ with three payloads:
    computed via the same resolver that ``landing_service.generate_landing_for_offer``
    uses, **without** persisting to ``landing_pages``.
 
-Run NATIVE WSL (not Docker):
+Run NATIVE Linux (not Docker):
 
     docker exec -w /app visionarias_brain_dev python scripts/capture_offer_a96403b5_baseline.py
 

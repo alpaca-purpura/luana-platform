@@ -4,7 +4,7 @@ Verifies the tool emits ``suggested_question`` when the helper returns
 a hint, and degrades silently otherwise.
 
 The persistence and core context dependencies are stubbed so the test
-runs natively in WSL without a database.
+runs natively en Linux sin una base de datos.
 """
 
 from __future__ import annotations

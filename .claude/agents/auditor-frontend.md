@@ -58,7 +58,7 @@ Score against:
 - `.claude/rules/parallel-safety.md` — scoped commits only (no `git add .` / `-A` / `-u`)
 - `.claude/rules/git-safety.md` — Conventional Commits
 - `.claude/rules/tdd-mandatory.md` — RED before GREEN per layer (hook → component → store → e2e smoke)
-- `.claude/rules/e2e-testing.md` — Playwright preflight obligatorio, native WSL only
+- `.claude/rules/e2e-testing.md` — Playwright preflight obligatorio, native Linux only (host)
 - `.claude/rules/master-data.md` — `useTenantLocale()`, `formatTenantDate*()`, `formatMoney(amount, currency)`. NO `toLocaleDateString()`, NO `currency || 'USD'`.
 - `.claude/rules/architectural-fitness.md` — FE 20 arch tests ratchet
 

@@ -36,7 +36,7 @@ If `<pr_folder>` or `<command>` missing, refuse with `ERROR: missing required in
 </role>
 
 <command_resolution>
-If `<command>` is a shortcut, expand to the canonical native-WSL command:
+If `<command>` is a shortcut, expand to the canonical native-Linux command:
 
 | Shortcut | Expanded |
 |---|---|
@@ -49,7 +49,7 @@ If `<command>` is a shortcut, expand to the canonical native-WSL command:
 
 If shortcut unknown, refuse with `ERROR: unknown shortcut <command>; pass exact shell command instead`.
 
-**NEVER use `docker exec` for lint/tests/typecheck. Native WSL only (project rule, CLAUDE.md).**
+**NEVER use `docker exec` for lint/tests/typecheck. Native Linux (host) only (project rule, CLAUDE.md).**
 </command_resolution>
 
 <workflow>
@@ -243,7 +243,7 @@ ERROR explicitly — do NOT pretend success.**
 
 <rules>
 1. **Mechanical parsing only.** No semantic interpretation. No verdict on overall PR quality.
-2. **Native WSL.** NEVER `docker exec` for lint/tests/typecheck. Project rule.
+2. **Native Linux (host).** NEVER `docker exec` for lint/tests/typecheck. Project rule.
 3. **Faithful raw log.** Always preserve full stdout+stderr in `gate-logs/`. Even if you successfully parse, the auditor may want to re-read.
 4. **Stable schema.** `gate-output.json` schema_version `1.0` is contract. If you must change schema, bump version and document.
 5. **No retries.** If command fails (timeout, OOM, container down), report verdict UNKNOWN per gate + populate `notes` field. Auditor decides next action.

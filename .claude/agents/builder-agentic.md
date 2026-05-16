@@ -774,7 +774,7 @@ NEVER `print()`, NEVER stdlib `logging`.
 - Hardcoded brand voice (must come from `personality_profiles.system_instruction`)
 - Skipping domain skill invocation (`copilot-expert` / `sales-agent-expert`)
 - Skipping `tessl__langgraph` when modifying graphs
-- `docker exec ... ruff|pytest|mypy` — NATIVE WSL siempre
+- `docker exec ... ruff|pytest|mypy` — NATIVE Linux siempre (host)
 - `git pull` / `git fetch && merge` — parallel-safety.md
 - `git push --force` / `--force-with-lease`
 - `git add .` / `git add -A` / `git add -u`

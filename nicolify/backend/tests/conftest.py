@@ -129,7 +129,7 @@ def _force_prompt_source_file(monkeypatch):
 def _stub_copilot_observability_context(monkeypatch, request):
     """Stub ``ObservabilityContext`` so the orchestrator hot-path tests
     don't burn 30s of Postgres DNS retries trying to construct the real
-    repos in a native WSL pytest run.
+    repos in a native Linux (host) pytest run.
 
     Tests under ``tests/modules/copilot/observability/`` need the real
     context to assert persistence, so this fixture skips itself for that

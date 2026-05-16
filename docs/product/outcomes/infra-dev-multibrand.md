@@ -37,7 +37,7 @@ estimated_total_effort: 30-40h (3 sesiones /dev-team)
 
 | Ambiente | Source | Dominio | Cuándo |
 |---|---|---|---|
-| **Local dev** | WSL2 + `make dev-{brand}` + cloudflared opt-in | `{brand}-dev.nicolify.com` | Tests integraciones OAuth/Clerk/webhooks |
+| **Local dev** | Linux (Mint) + `make dev-{brand}` + cloudflared opt-in | `{brand}-dev.nicolify.com` | Tests integraciones OAuth/Clerk/webhooks |
 | **Staging (marcha blanca)** | auto-deploy de `main` a cluster/VPS staging shared (infra futura) | `{brand}-test.nicolify.com` | Validación pre-prod con dominio público |
 | **Producción** | auto-deploy de `release/{brand}-vX.Y.Z` a servidor brand-específico | `app.{brand}.com` (vitalialat.com, nicolify.com, etc.) | Live para usuarios reales |
 
@@ -68,7 +68,7 @@ S-GIT-STRATEGY-CORE  (foundational — primero)
 - **selective-cicd-deploy:** push a `release/{brand}-vX.Y.Z` deploya solo esa brand a su servidor producción.
 - **staging-auto-deploy:** push a `main` auto-deploya a staging `{brand}-test.nicolify.com` para marcha blanca.
 - **safe-parallel-sessions:** 2-3 sesiones Claude paralelas en worktrees dedicados sin riesgo de pisarse.
-- **wip-safety-net:** push a `wip/{slug}` autosave continuo, recovery garantizado en caso de crash WSL/cambio máquina.
+- **wip-safety-net:** push a `wip/{slug}` autosave continuo, recovery garantizado en caso de crash del sistema / cambio máquina.
 - **infra-matrix-auto:** `make infra-matrix` regenera tabla cross-brand de puertos/dominios/DBs desde SSoT distribuido.
 - **changelog-publico-per-brand:** `{brand}/CHANGELOG-PUBLIC.md` Keep-a-Changelog format auto-extracted a release notes.
 

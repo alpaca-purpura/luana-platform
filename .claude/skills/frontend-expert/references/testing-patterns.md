@@ -181,7 +181,7 @@ Para detalles completos, ver `.claude/rules/e2e-testing.md`.
 - Smoke tests: `frontend/e2e/specs/smoke/` — rutas críticas, taggeados `@smoke`
 - Regression tests: `frontend/e2e/specs/regression/{domain}/` — flujos completos por dominio
 
-### Ejecución (nativo en WSL, NUNCA Docker)
+### Ejecución (nativo en Linux, NUNCA Docker)
 ```bash
 # Smoke (~2 min)
 cd frontend && npx playwright test --project=smoke

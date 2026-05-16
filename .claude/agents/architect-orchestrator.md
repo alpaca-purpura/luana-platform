@@ -468,7 +468,7 @@ Si CONTRACT NO flipea defaults: marcar `[x] No aplica — CONTRACT no flipea def
 - **Master data** — `DateTime(timezone=True)`, store UTC, display via `useTenantLocale()` / `formatTenantDate*()`
 - **Spanish neutro LatAm** — UI strings, schemas, prompts (exception: sales_agent output respects tenant voice)
 - **PII** — `response_model=` allowlist, mask/remove/justify fields per `.tessl/.../pii-sanitisation.md`
-- **Native-first dev** — lint/tests run native WSL, never `docker exec ruff/pytest/tsc/vitest`
+- **Native-first dev** — lint/tests run native Linux (host), never `docker exec ruff/pytest/tsc/vitest`
 
 ## 12. Architecture Fitness Impact
 - Which gates run against this change (list test files)

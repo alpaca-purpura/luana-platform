@@ -91,7 +91,7 @@ cat docs/projects/active/PI-{N}/sprints/S{n}/stories/{id}/checkpoint.md
 
 ## Crash recovery (R27 2026-05-05)
 
-WSL2 hangs / computer crashes / network blip pueden interrumpir mid-pipeline.
+System hangs / computer crashes / network blip pueden interrumpir mid-pipeline.
 Para que recovery sea trivial, cada agent + orchestrator MUST:
 
 ### Subagent contract (write artifacts EARLY)
@@ -174,6 +174,6 @@ a downstream (R3) → escala scope a full suite si hay tiempo.
 Empezar siempre por ticket-scoped. Solo escalas si red flag (memory
 test pollution, unrelated cascade fail).
 
-Origen R27: PI-12 T-1.bis 2026-05-05 — WSL2 crash mid-pytest pero commits
+Origen R27: PI-12 T-1.bis 2026-05-05 — system crash mid-pytest pero commits
 ya pushed → state recovery <2min via git log + scoped re-run. Lección:
 commits pequeños + push frecuente = zero pérdida.

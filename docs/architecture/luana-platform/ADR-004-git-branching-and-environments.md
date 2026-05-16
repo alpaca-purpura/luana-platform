@@ -36,10 +36,10 @@ Desde la reorg multimarca 2026-05-15, el contexto cambio radicalmente:
    (`release/{brand}-vX.Y.Z`) — imposible con una sola branch.
 
 2. **2-3 sesiones Claude paralelas (patron actual):** Chris opera multiples sesiones
-   Claude Code en WSL2 simultaneamente para distintas stories/tickets. Con el patron
+   Claude Code en Linux (Mint) simultaneamente para distintas stories/tickets. Con el patron
    legacy (mismo workdir + branch), una sesion puede sobreescribir el WIP de la otra.
 
-3. **WSL crash recovery:** la volatilidad del entorno (WSL crash, cambio de maquina)
+3. **System crash recovery:** la volatilidad del entorno (crash del sistema, cambio de maquina)
    requiere un mecanismo de autosave push frecuente sin contaminar `main`.
 
 4. **Diagnosis del ban historico de worktrees:** el problema reportado ("perdi una semana")
@@ -138,7 +138,7 @@ clone), rompe el workspace uv+pnpm (hay que reinstalar deps por cada clone), y n
 mecanismo de sincronizacion automatica entre clones.
 
 **Rechazada porque:** overhead operacional prohibitivo para el patron de uso de Chris
-(2-3 sesiones en WSL2 con ~100GB disponible, 90% usado por repos existentes).
+(2-3 sesiones en Linux Mint con ~100GB disponible, 90% usado por repos existentes).
 
 ### Alternativa D — Git stash como mecanismo de aislamiento
 
@@ -155,7 +155,7 @@ hay autosave automatico, stashes pueden perderse en garbage collection).
 
 - **Paralelismo seguro garantizado:** git bloquea colision de WIP por construccion.
   Sin disciplina manual requerida entre sesiones.
-- **WSL crash recovery:** push a `wip/*` frecuente (M11) garantiza recovery de WIP
+- **System crash recovery:** push a `wip/*` frecuente (M11) garantiza recovery de WIP
   ante crash del entorno.
 - **CI/CD diferenciado por branch:** `wip/*` usa gates ligeros (iteracion rapida);
   main usa gates completos (calidad); `release/*` triggerea deploy brand-especifico.

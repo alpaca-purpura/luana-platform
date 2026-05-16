@@ -68,7 +68,7 @@ git branch -d wip/A-docker                  # borrar branch local (opcional)
 
 ## Recovery patterns
 
-### WSL crash durante sesion activa
+### Crash del sistema durante sesion activa
 
 ```bash
 # Verificar estado del repositorio

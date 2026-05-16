@@ -1,7 +1,9 @@
 ---
 name: chrome-devtools-verify
-description: "Live verification of frontend changes in dev-app.nicolify.com using Chrome DevTools MCP from WSL2. Use when: verifying a frontend bug fix, reproducing a user-reported UI bug step-by-step, checking real-time SSE/polling behavior, validating card/form interactions, inspecting DOM or console or network live, or any task where 'me lo muestres en el navegador' would be cheaper than guessing. Triggers: 'verifica en el navegador', 'prueba con chrome-devtools', 'reproduce el bug en vivo', 'abrí el navegador', 'chrome-devtools-mcp', 'live test', 'verify UI fix'."
+description: "[DEPRECATED 2026-05-15 — diseñado para WSL2+Windows bridge, NO aplica en Linux Mint nativo, requiere reescritura]. Live verification of frontend changes in dev-app.nicolify.com using Chrome DevTools MCP. Use when: verifying a frontend bug fix, reproducing a user-reported UI bug step-by-step, checking real-time SSE/polling behavior, validating card/form interactions, inspecting DOM or console or network live, or any task where 'me lo muestres en el navegador' would be cheaper than guessing. Triggers: 'verifica en el navegador', 'prueba con chrome-devtools', 'reproduce el bug en vivo', 'abrí el navegador', 'chrome-devtools-mcp', 'live test', 'verify UI fix'."
 ---
+
+> ⚠️ **DEPRECATED 2026-05-15:** este skill está diseñado para WSL2 + Windows host bridge. Chris ahora opera en Linux Mint nativo donde Chrome corre directo y este bridge NO aplica. Mantener como referencia histórica hasta reescribir. NO seguir las instrucciones WSL2 specific abajo en Linux Mint.
 
 # Chrome DevTools MCP — Live Frontend Verification
 

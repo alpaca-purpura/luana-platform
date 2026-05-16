@@ -142,7 +142,7 @@ function violationMessage(sectionKey: string, field: FieldSchema): string {
 // In Docker test images (CI quality-gates + local ci-parity) the FE container
 // only ships ``frontend/`` — the BE fixture lives in ``backend/tests/...`` and
 // is not in the build context. Skip the cross-stack assertion in that
-// environment; the same test runs natively in WSL where both folders exist,
+// environment; the same test runs natively en Linux donde ambas carpetas existen,
 // so coverage is preserved.
 const FIXTURE_AVAILABLE = existsSync(BACKEND_FIXTURE);
 

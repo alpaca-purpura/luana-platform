@@ -5,7 +5,7 @@ and verify that all expected ``CREATE TABLE``, ``CREATE INDEX`` and
 generated columns are declared. Real-DB validation lives in the manual
 smoke step (``alembic upgrade head`` against the dev container).
 
-Why source-parsing: tests must run native WSL without docker, and the
+Why source-parsing: tests must run natively en Linux sin docker, and the
 SQL touches Postgres-specific features (``GENERATED ALWAYS AS ... STORED``,
 ``UUID``, partial unique indexes) that SQLite cannot exercise.
 """

@@ -833,7 +833,7 @@ class TestTenantLocaleTimezoneThroughService:
         )
         # Seed at "today in Lima" because the service resolves the period
         # window in the tenant's timezone. ``date.today()`` returns the
-        # date in the *runner's* local TZ — fine on dev WSL (UTC-5..-3)
+        # date in the *runner's* local TZ — fine on dev Linux (UTC-5..-3)
         # but in CI on UTC it can land a day ahead, putting the metric
         # outside the 7-day Lima window. Using ``America/Lima`` keeps
         # the seed inside the window the service is about to query

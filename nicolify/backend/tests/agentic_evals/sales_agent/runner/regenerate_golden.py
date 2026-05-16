@@ -283,7 +283,7 @@ def main(argv: list[str] | None = None) -> int:
     except Exception as exc:  # noqa: BLE001 — CLI top-level catch
         sys.stderr.write(
             f"[regenerate_golden] Error al consultar la DB para tenant_id={tenant_id}: {exc}. "
-            f"Verifica que Postgres este corriendo y accesible desde WSL nativo.\n",
+            f"Verifica que Postgres esté corriendo y accesible desde Linux (host).\n",
         )
         return 1
 

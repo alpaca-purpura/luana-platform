@@ -1,7 +1,7 @@
 # Parallel Sessions Protocol (M1-M8)
 
 > Migra de `.claude/rules/parallel-safety.md`. Owner: `/pm`.
-> Chris corre múltiples Claude Code WSL con mismo workdir + branch `development`.
+> Chris corre múltiples Claude Code en Linux (Mint) con mismo workdir + branch `development`.
 > Cada sesión commitea SU trabajo.
 
 ## Contexto

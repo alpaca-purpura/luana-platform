@@ -183,7 +183,7 @@ tickets:
       guidelines: "05-guidelines.md"
     deliverables:
       - "REWRITE .claude/rules/parallel-safety.md — de 62 líneas legacy a ~120 líneas con triple-branch"
-      - "Intro: Chris opera 2-3 sesiones Claude Code en paralelo en WSL2. Cada sesión SU worktree. NO mismo workdir+branch."
+      - "Intro: Chris opera 2-3 sesiones Claude Code en paralelo en Linux (Mint). Cada sesión SU worktree. NO mismo workdir+branch."
       - "Sección 'Triple-branch en paralelo': política actualizada (wip/* per sesión + merge a main cuando listo)"
       - "Sección 'Worktrees requeridos' (reemplaza 'WORKTREES PROHIBIDOS'): patrón obligatorio + why it works (git blocks duplicate branch in two worktrees)"
       - "Reglas M1-M8: PRESERVAR con cambios mínimos necesarios. M1 actualizar: 'tocan branches wip/* DISTINTOS' en lugar de 'módulos distintos'."

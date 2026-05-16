@@ -67,7 +67,7 @@ tickets:
     state: draft
     owner_eligibility:
       qwen_opencode: false
-      # Nota: qwen no tiene suficiente contexto de git worktrees + WSL2 patterns.
+      # Nota: qwen no tiene suficiente contexto de git worktrees + Linux dev patterns.
       # Sonnet es suficiente para bash scripting con spec detallada.
       claude_sonnet: true
       claude_opus_required: false
@@ -257,7 +257,7 @@ tickets:
       # Workflow diario de ejemplo completo en outcome doc §"Ejemplo workflow diario"
       existing_memory_md: "/home/chalreme/.claude/projects/-home-chalreme-Proyectos-luana-platform/memory/MEMORY.md"
     deliverables:
-      - "NEW docs/process/git-workflow-multibrand.md — Runbook cheatsheet con: (1) workflow sesion nueva one-liners comentados, (2) workflow merge wip→main, (3) workflow release a produccion, (4) workflow cleanup sesion, (5) recovery patterns (WSL crash / branch TTL 30d / push non-fast-forward / worktree dirty), (6) anti-patterns prohibidos (copia de outcome doc). Formato: bloques bash comentados, NO prosa larga."
+      - "NEW docs/process/git-workflow-multibrand.md — Runbook cheatsheet con: (1) workflow sesion nueva one-liners comentados, (2) workflow merge wip→main, (3) workflow release a produccion, (4) workflow cleanup sesion, (5) recovery patterns (crash sistema / branch TTL 30d / push non-fast-forward / worktree dirty), (6) anti-patterns prohibidos (copia de outcome doc). Formato: bloques bash comentados, NO prosa larga."
       - "NEW memory/git-workflow-multibrand.md — MEMORY detail file con estado implementado + politica triple-branch resumida + ubicacion helper scripts + ubicacion docs + rules actualizadas"
       - "MODIFY memory/MEMORY.md — agregar en seccion '## Workspace operacional' la linea: '- [Git workflow multibrand](git-workflow-multibrand.md) — triple-branch + worktrees, scripts new-session/cleanup-session, ADR-004'"
     out_of_scope:
