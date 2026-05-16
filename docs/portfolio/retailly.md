@@ -1,7 +1,7 @@
 ---
 slug: retailly
 kind: brand
-status: pending-bootstrap
+status: placeholder
 vertical: "E-commerce / D2C"
 last_updated: 2026-05-15
 ssot_live:
@@ -30,7 +30,7 @@ Catálogos dinámicos · cart recovery · integración logística · cross-selli
 
 ## Estado
 
-`pending-bootstrap`
+`placeholder`
 
 ## Surfaces
 

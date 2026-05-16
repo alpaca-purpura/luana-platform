@@ -1,7 +1,7 @@
 ---
 slug: inmoflow
 kind: brand
-status: pending-bootstrap
+status: placeholder
 vertical: "Real Estate"
 last_updated: 2026-05-15
 ssot_live:
@@ -30,7 +30,7 @@ Integración portales · mapas interactivos · lead routing por zona · calculad
 
 ## Estado
 
-`pending-bootstrap`
+`placeholder`
 
 ## Surfaces
 

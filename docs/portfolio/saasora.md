@@ -1,7 +1,7 @@
 ---
 slug: saasora
 kind: brand
-status: pending-bootstrap
+status: placeholder
 vertical: "SaaS + Productos Digitales"
 last_updated: 2026-05-15
 ssot_live:
@@ -30,7 +30,7 @@ Onboarding automatizado · subscripciones Stripe · dashboards Churn/MRR · chan
 
 ## Estado
 
-`pending-bootstrap`
+`placeholder`
 
 ## Surfaces
 
