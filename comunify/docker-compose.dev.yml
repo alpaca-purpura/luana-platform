@@ -1,0 +1,92 @@
+# comunify/docker-compose.dev.yml
+# Brand-specific services para Comunify (creator economy y educacion).
+# Siempre se usa combinado con el compose raiz:
+#   docker compose -f docker-compose.dev.yml -f comunify/docker-compose.dev.yml up -d
+# O mas facil: make dev-comunify
+# SSoT puertos/DB/etc: comunify/config/brand.yaml::infra
+#
+# S-DOCKER-DEV-MULTIBRAND T-2 — 2026-05-15
+# Decisions: D2, D4, D5, D6
+
+name: luana-dev  # mismo name que raiz para compartir network/volumes
+
+services:
+  comunify_backend_dev:
+    build:
+      context: .  # contexto = raiz monorepo (accede a core/ y comunify/backend/)
+      dockerfile: comunify/backend/Dockerfile
+      target: dev
+    restart: unless-stopped
+    env_file:
+      - path: comunify/.env.dev  # gitignored; copiado desde comunify/.env.dev.template
+        required: false  # compose config --quiet pasa aunque el archivo no exista aun
+    environment:
+      DATABASE_URL: "postgresql+asyncpg://postgres:password@luana_postgres_dev:5432/comunify_dev"
+      REDIS_URL: "redis://luana_redis_dev:6379/2"
+      QDRANT_HOST: "luana_qdrant_dev"
+      QDRANT_COLLECTION_PREFIX: "comunify_"
+      PORT: "8003"
+    volumes:
+      - .:/workspace:rw  # bind mount monorepo completo (hot-reload)
+      - comunify_backend_venv:/workspace/comunify/backend/.venv  # protege .venv container
+    ports:
+      - "127.0.0.1:8003:8003"
+    networks:
+      - luana_dev_net
+    depends_on:
+      luana_postgres_dev:
+        condition: service_healthy
+    command: >
+      uv run uvicorn src.main:app
+      --host 0.0.0.0
+      --port 8003
+      --reload
+      --reload-dir /workspace/comunify/backend/src
+      --reload-dir /workspace/core
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  comunify_frontend_dev:
+    build:
+      context: .
+      dockerfile: comunify/frontend/Dockerfile
+      target: dev
+    restart: unless-stopped
+    env_file:
+      - path: comunify/.env.dev
+        required: false
+    environment:
+      PORT: "3003"
+      NEXT_PUBLIC_API_URL: "http://127.0.0.1:8003"
+    volumes:
+      - ./comunify/frontend:/app:rw
+      - comunify_frontend_node_modules:/app/node_modules  # anonymous volume
+    ports:
+      - "127.0.0.1:3003:3003"
+    networks:
+      - luana_dev_net
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  comunify_cloudflared_dev:
+    image: cloudflare/cloudflared:latest
+    profiles: [tunnel]  # opt-in: make dev-comunify-tunnel
+    restart: unless-stopped
+    env_file:
+      - path: comunify/.env.dev  # debe contener TUNNEL_TOKEN
+        required: false
+    command: tunnel run comunify-dev
+    networks:
+      - luana_dev_net
+
+volumes:
+  comunify_backend_venv:
+    name: comunify_backend_venv
+  comunify_frontend_node_modules:
+    name: comunify_frontend_node_modules
+
+# NOTA: network luana_dev_net es definida en el compose raiz (docker-compose.dev.yml).

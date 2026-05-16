@@ -2,22 +2,25 @@
 story_id: S-DOCKER-DEV-MULTIBRAND
 outcome: infra-dev-multibrand
 parent_sub_outcome: docker-dev-multibrand
-state: ready
-phase: READY
-last_artifact: 06-tickets.yaml
-last_modified: 2026-05-15T00:00:00Z
-next_action: "/dev-team toma 06-tickets.yaml y ejecuta T-1..T-10 en orden de dependencias (T-1+T-4+T-7 paralelos primero)"
+state: developed
+phase: DEVELOPED
+last_artifact: T-10-impl-log.md
+last_modified: 2026-05-15T14:00:00Z
+next_action: "/auditor toma story para review (Conv 3). C1-C5 grid: compose files, infra scripts, Makefile, brand.yaml, pre-commit hook Section 10."
 ratified_by_chris: true
 spawned_at: 2026-05-15T00:00:00Z
 spawned_by: /pm-luana
 completed_by: /architect
+built_by: /dev-team (Claude Sonnet)
 parallel_safe: true
 blocked_reason: null
-blocked_by: [S-GIT-STRATEGY-CORE]
-blocking_note: "S-GIT-STRATEGY-CORE es foundational (git rules + worktrees). Esta story puede empezar en parallel pero dev-team debe tener los git rules nuevos activos para usar worktrees. Los artefactos ready están listos ya."
+blocked_by: []
+blocking_note: null
 audit_iterations: 0
 estimated_hours: 14-16
 tickets_count: 10
+tickets_done: 10
+validators_pass: 13
 ready_package:
   spec: "01-spec.md"
   arch: "03-arch.md"
@@ -28,9 +31,9 @@ ready_package:
 
 # S-DOCKER-DEV-MULTIBRAND — Docker dev local multimarca brand-autocontenida
 
-> Sub-story de [docker-dev-multibrand](../../outcomes/docker-dev-multibrand.md). State: **ready**.
+> Sub-story de [docker-dev-multibrand](../../outcomes/docker-dev-multibrand.md). State: **developed**.
 >
-> 10 tickets autocontenidos. /dev-team puede tomar directamente desde T-1.
+> 10/10 tickets done. Validators non-functional GREEN. Integration tests stub creado (requieren Docker corriendo para run completo).
 
 ## Ready package (estado actual)
 
@@ -80,3 +83,4 @@ Fase 4: T-8 (depende T-3) → T-9 (depende T-8) → T-10 (depende T-9)
 
 - 2026-05-15 — /pm-luana creó folder + checkpoint.md (state=refining)
 - 2026-05-15 — /po + /architect producen ready package completo (01-spec + 03-arch + 04-validators + 05-guidelines + 06-tickets). State: refining → **ready**.
+- 2026-05-15 — /dev-team (Claude Sonnet) ejecuta T-1..T-10. 10/10 tickets done. Validators non-functional GREEN (shellcheck×2, compose config×4, yaml parse×5, gitignore×5, pytest 13/13, make dry-run×6, T-10 acceptance criteria×4). State: ready → developing → **developed**.

@@ -85,3 +85,29 @@ test-results/
 playwright-report/
 playwright/.clerk/
 blob-report/
+
+# --- Brand env files (secretos — NO commitear nunca) ---
+# S-DOCKER-DEV-MULTIBRAND T-7 — 2026-05-15
+# Templates (.env.dev.template, .env.prod.template) SI se commitean.
+# Los .env.dev y .env.prod reales NUNCA.
+nicolify/.env.dev
+nicolify/.env.prod
+vitalia/.env.dev
+vitalia/.env.prod
+comunify/.env.dev
+comunify/.env.prod
+lupulo/.env.dev
+lupulo/.env.prod
+# Futuros (6 brands pendientes bootstrap)
+saasora/.env.dev
+saasora/.env.prod
+inmoflow/.env.dev
+inmoflow/.env.prod
+retailly/.env.dev
+retailly/.env.prod
+fixia/.env.dev
+fixia/.env.prod
+guestly/.env.dev
+guestly/.env.prod
+fitflow/.env.dev
+fitflow/.env.prod

@@ -1,0 +1,43 @@
+# nicolify/config/brand.yaml
+# BrandConfig declarative para Nicolify (agencias y servicios B2B).
+# Decision D6: puertos cementados (nicolify=8001/3001)
+#
+# S-DOCKER-DEV-MULTIBRAND T-3 — 2026-05-15
+# SSoT infra metadata por entorno. Auto-indexado en docs/portfolio/INFRA-MATRIX.md via make infra-matrix.
+
+brand_slug: nicolify
+brand_name: "Nicolify"
+brand_description: "Vertical B2B brand app for LatAm agencies, software boutiques and consultancies"
+brand_segment: agencies_b2b
+compliance_level: standard
+voice_cloning_enabled: false
+multi_language_ui: false
+
+features:
+  brand_studio_full: true
+  offer_studio_b2b: true
+  crm_long_cycle: true
+  client_portal: true
+  proposals_contracts: true
+  billable_hours: true
+  sales_agent_vertical_b2b: true
+  copilot_b2b_extractors: true
+
+# SSoT infra metadata por entorno.
+# Auto-indexado en docs/portfolio/INFRA-MATRIX.md via make infra-matrix.
+infra:
+  dev:
+    backend_port: 8001
+    frontend_port: 3001
+    database_name: nicolify_dev
+    redis_db: 0
+    qdrant_collection_prefix: nicolify_
+    domain: nicolify-dev.nicolify.com
+    cloudflared_tunnel: nicolify-dev
+  staging:
+    domain: nicolify-test.nicolify.com
+    server: tbd-staging-cluster
+  prod:
+    domain: app.nicolify.com
+    server: tbd
+    cloudflared_tunnel: nicolify-prod

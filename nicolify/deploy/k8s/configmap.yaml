@@ -1,0 +1,44 @@
+---
+# nicolify/deploy/k8s/configmap.yaml
+# Valores no sensibles para el backend de Nicolify.
+# Secretos (POSTGRES_PASSWORD, CLERK_SECRET_KEY, etc.) viven en el GitHub Environment
+# 'nicolify-prod' o 'nicolify-staging' — nunca aquí.
+#
+# Wire: _deploy-brand.yml ejecuta `kubectl apply -f nicolify/deploy/k8s/` que incluye este ConfigMap.
+# Para staging: los mismos manifests aplican con namespace 'nicolify' en el cluster de staging.
+#
+# Arch ref: S-CICD-DEPLOY 03-arch.md § nicolify/deploy/k8s/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nicolify-config
+  namespace: nicolify
+  labels:
+    app.kubernetes.io/name: nicolify
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: luana-platform
+    app.kubernetes.io/managed-by: kubectl
+data:
+  # ── Aplicación ─────────────────────────────────────────────────────────────
+  APP_ENV: "production"
+  LOG_LEVEL: "INFO"
+
+  # ── Base de datos (campos no sensibles) ────────────────────────────────────
+  POSTGRES_HOST: "postgres-nicolify"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "nicolify_prod"
+  POSTGRES_USER: "nicolify_app"
+
+  # ── Redis ───────────────────────────────────────────────────────────────────
+  REDIS_HOST: "redis-nicolify"
+  REDIS_PORT: "6379"
+  REDIS_DB: "0"
+
+  # ── Dominio y CORS ─────────────────────────────────────────────────────────
+  NICOLIFY_APP_DOMAIN: "app.nicolify.com"
+  NICOLIFY_API_BASE_URL: "https://app.nicolify.com/api/v1"
+  CORS_ALLOWED_ORIGINS: "https://app.nicolify.com"
+
+  # ── Identificación del brand ────────────────────────────────────────────────
+  NICOLIFY_BRAND_SLUG: "nicolify"
+  NICOLIFY_COMPLIANCE_LEVEL: "standard"

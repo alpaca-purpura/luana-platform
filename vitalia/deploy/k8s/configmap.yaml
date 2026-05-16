@@ -1,10 +1,14 @@
 ---
 # vitalia/deploy/k8s/configmap.yaml
-# Non-sensitive configuration for the Vitalia application.
-# Sensitive values live in secrets.template.yaml — NEVER commit real secrets here.
+# Valores no sensibles para la aplicacion Vitalia.
+# Secretos sensibles viven en secrets.template.yaml — NUNCA commitear valores reales aqui.
+#
+# Wire CI/CD (S-CICD-DEPLOY T-5):
+#   _deploy-brand.yml aplica este ConfigMap via kubectl apply antes del rolling update.
+#   Secrets: viven en GitHub Environment 'vitalia-prod' o 'vitalia-staging'.
 #
 # Arch ref: 03-arch.md § 5.3 (K8s deploy — Chris UI gate Q4=B)
-# T-deploy-1 scope: /dev-team generates manifests; Chris provisions cluster + DNS.
+# T-deploy-1 scope: /dev-team genera manifests; Chris provisiona cluster + DNS.
 apiVersion: v1
 kind: ConfigMap
 metadata:

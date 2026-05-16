@@ -1,0 +1,84 @@
+# lupulo/docker-compose.dev.yml
+# Brand-specific services para Lupulo Labs (gastronomia).
+# Siempre se usa combinado con el compose raiz:
+#   docker compose -f docker-compose.dev.yml -f lupulo/docker-compose.dev.yml up -d
+# O mas facil: make dev-lupulo
+# SSoT puertos/DB/etc: lupulo/config/brand.yaml::infra
+#
+# NOTA: lupulo/backend usa placeholder (Story 13 pendiente).
+# El compose file funciona correctamente con el placeholder.
+#
+# S-DOCKER-DEV-MULTIBRAND T-2 — 2026-05-15
+# Decisions: D2, D4 (backend placeholder), D5, D6
+
+name: luana-dev  # mismo name que raiz para compartir network/volumes
+
+services:
+  lupulo_backend_dev:
+    build:
+      context: .  # contexto = raiz monorepo
+      dockerfile: lupulo/backend/Dockerfile
+      target: dev
+    restart: unless-stopped
+    env_file:
+      - path: lupulo/.env.dev  # gitignored; copiado desde lupulo/.env.dev.template
+        required: false  # compose config --quiet pasa aunque el archivo no exista aun
+    environment:
+      DATABASE_URL: "postgresql+asyncpg://postgres:password@luana_postgres_dev:5432/lupulo_dev"
+      REDIS_URL: "redis://luana_redis_dev:6379/3"
+      QDRANT_HOST: "luana_qdrant_dev"
+      QDRANT_COLLECTION_PREFIX: "lupulo_"
+      PORT: "8004"
+    volumes:
+      - ./lupulo/backend/src:/workspace/lupulo/backend/src:rw  # bind mount src placeholder
+    ports:
+      - "127.0.0.1:8004:8004"
+    networks:
+      - luana_dev_net
+    depends_on:
+      luana_postgres_dev:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  lupulo_frontend_dev:
+    build:
+      context: .
+      dockerfile: lupulo/frontend/Dockerfile
+      target: dev
+    restart: unless-stopped
+    env_file:
+      - path: lupulo/.env.dev
+        required: false
+    environment:
+      PORT: "3004"
+      NEXT_PUBLIC_API_URL: "http://127.0.0.1:8004"
+    volumes:
+      - ./lupulo/frontend/src:/app/lupulo/frontend/src:rw
+    ports:
+      - "127.0.0.1:3004:3004"
+    networks:
+      - luana_dev_net
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  lupulo_cloudflared_dev:
+    image: cloudflare/cloudflared:latest
+    profiles: [tunnel]  # opt-in: make dev-lupulo-tunnel
+    restart: unless-stopped
+    env_file:
+      - path: lupulo/.env.dev  # debe contener TUNNEL_TOKEN
+        required: false
+    command: tunnel run lupulo-dev
+    networks:
+      - luana_dev_net
+
+volumes:
+  lupulo_backend_venv:
+    name: lupulo_backend_venv
+
+# NOTA: network luana_dev_net es definida en el compose raiz (docker-compose.dev.yml).

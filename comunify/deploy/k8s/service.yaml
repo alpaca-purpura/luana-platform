@@ -1,7 +1,11 @@
 ---
+# comunify/deploy/k8s/service.yaml
 # Comunify — Kubernetes Services (Story 12 T-deploy-1)
 # ClusterIP services for internal cluster communication.
 # External access via Cloudflare Tunnel (see cloudflared/config.yml).
+#
+# Wire CI/CD (S-CICD-DEPLOY T-5): _deploy-brand.yml aplica este Service
+# via kubectl apply. Labels canonicas agregadas para consistencia con la plataforma.
 
 apiVersion: v1
 kind: Service
@@ -11,6 +15,10 @@ metadata:
   labels:
     app: comunify
     component: backend
+    app.kubernetes.io/name: comunify
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: luana-platform
+    app.kubernetes.io/managed-by: kubectl
 spec:
   selector:
     app: comunify
@@ -30,6 +38,10 @@ metadata:
   labels:
     app: comunify
     component: frontend
+    app.kubernetes.io/name: comunify
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/part-of: luana-platform
+    app.kubernetes.io/managed-by: kubectl
 spec:
   selector:
     app: comunify

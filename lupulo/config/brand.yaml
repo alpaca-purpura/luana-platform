@@ -1,0 +1,40 @@
+# lupulo/config/brand.yaml
+# BrandConfig declarative para Lupulo Labs (gastronomia).
+# Decision D6: puertos cementados (lupulo=8004/3004)
+# NOTA: lupulo es placeholder (Story 13 pendiente). Esta config es minima.
+#
+# S-DOCKER-DEV-MULTIBRAND T-3 — 2026-05-15
+# SSoT infra metadata por entorno. Auto-indexado en docs/portfolio/INFRA-MATRIX.md via make infra-matrix.
+
+brand_slug: lupulo
+brand_name: "Lupulo Labs"
+brand_description: "Vertical gastronomia brand app — reservas de mesa, pedidos digitales, integracion KDS"
+brand_segment: gastronomia
+compliance_level: standard
+voice_cloning_enabled: false
+multi_language_ui: false
+
+features:
+  brand_studio_basic: true
+  table_reservations: false    # Story 13 pendiente
+  digital_orders: false        # Story 13 pendiente
+  kds_integration: false       # Story 13 pendiente
+
+# SSoT infra metadata por entorno.
+# Auto-indexado en docs/portfolio/INFRA-MATRIX.md via make infra-matrix.
+infra:
+  dev:
+    backend_port: 8004
+    frontend_port: 3004
+    database_name: lupulo_dev
+    redis_db: 3
+    qdrant_collection_prefix: lupulo_
+    domain: lupulo-dev.nicolify.com
+    cloudflared_tunnel: lupulo-dev
+  staging:
+    domain: lupulo-test.nicolify.com
+    server: tbd-staging-cluster
+  prod:
+    domain: app.lupulo.com
+    server: tbd
+    cloudflared_tunnel: lupulo-prod

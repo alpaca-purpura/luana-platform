@@ -687,4 +687,60 @@ fi
 
 fi  # end GATE_LEVEL=full guard (section 9)
 
+# ─────────────────────────────────────────────────────────────────
+# 10. INFRA-MATRIX auto-freshness (S-DOCKER-DEV-MULTIBRAND T-9 — 2026-05-15)
+# Gate: ALL branches (infra matrix freshness is always valuable)
+# ─────────────────────────────────────────────────────────────────
+# Si se edita cualquier {brand}/config/brand.yaml de las 4 brands activas,
+# regenerar INFRA-MATRIX.md y agregarlo al commit automaticamente.
+#
+# Patron "metadata-en-su-lugar + auto-gen index":
+#   SSoT: {brand}/config/brand.yaml::infra
+#   Index: docs/portfolio/INFRA-MATRIX.md (auto-generado)
+#
+# Sin este hook, un cambio de puerto en brand.yaml quedaria desincronizado
+# con el INFRA-MATRIX.md hasta que alguien corriera make infra-matrix manualmente.
+
+CHANGED_BRAND_YAML=$(git diff --cached --name-only 2>/dev/null \
+  | grep -E '^(nicolify|vitalia|comunify|lupulo)/config/brand\.yaml$' \
+  || true)
+
+if [ -n "${CHANGED_BRAND_YAML}" ]; then
+  echo "[pre-commit] brand.yaml editado — regenerando INFRA-MATRIX.md..."
+  INFRA_SCRIPT="${REPO_ROOT}/scripts/generate_infra_matrix.py"
+  VENV_PY_ROOT="${REPO_ROOT}/.venv/bin/python"
+
+  if [ ! -f "${INFRA_SCRIPT}" ]; then
+    printf "\033[33m"
+    echo "WARNING: scripts/generate_infra_matrix.py not found — skipping INFRA-MATRIX regen."
+    printf "\033[0m"
+  elif [ ! -x "${VENV_PY_ROOT}" ]; then
+    printf "\033[33m"
+    echo "WARNING: .venv/bin/python not found — skipping INFRA-MATRIX regen (Section 10)."
+    printf "\033[0m"
+  else
+    if "${VENV_PY_ROOT}" "${INFRA_SCRIPT}" 2>/tmp/infra-matrix-err.txt; then
+      git add "${REPO_ROOT}/docs/portfolio/INFRA-MATRIX.md" 2>/dev/null || true
+      echo "[pre-commit] INFRA-MATRIX.md regenerado y agregado al commit."
+    else
+      printf "\033[31m"
+      cat <<EOF
+─────────────────────────────────────────────────────────────
+PRE-COMMIT BLOCKED: generate_infra_matrix.py fallo (Section 10).
+─────────────────────────────────────────────────────────────
+$(cat /tmp/infra-matrix-err.txt 2>/dev/null || true)
+
+Resolucion:
+  .venv/bin/python scripts/generate_infra_matrix.py
+  # Corrige el error y vuelve a git add + commit.
+
+NEVER use --no-verify.
+─────────────────────────────────────────────────────────────
+EOF
+      printf "\033[0m"
+      exit 1
+    fi
+  fi
+fi
+
 exit 0

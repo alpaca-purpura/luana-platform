@@ -121,3 +121,23 @@ sales_agent:
     - manychat_instagram
     - email_async
     - web_chat
+
+# S-DOCKER-DEV-MULTIBRAND T-3 — 2026-05-15
+# SSoT infra metadata por entorno. Auto-indexado en docs/portfolio/INFRA-MATRIX.md via make infra-matrix.
+# Decision D6: puertos cementados (vitalia=8002/3002)
+infra:
+  dev:
+    backend_port: 8002
+    frontend_port: 3002
+    database_name: vitalia_dev
+    redis_db: 1
+    qdrant_collection_prefix: vitalia_
+    domain: vitalia-dev.nicolify.com
+    cloudflared_tunnel: vitalia-dev
+  staging:
+    domain: vitalia-test.nicolify.com
+    server: tbd-staging-cluster
+  prod:
+    domain: app.vitalialat.com
+    server: tbd
+    cloudflared_tunnel: vitalia-prod

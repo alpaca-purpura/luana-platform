@@ -1,5 +1,7 @@
 ---
+# comunify/deploy/k8s/ingress.yaml
 # Comunify — Kubernetes Ingress (Story 12 T-deploy-1)
+# Wire CI/CD (S-CICD-DEPLOY T-5): _deploy-brand.yml aplica este Ingress via kubectl apply.
 #
 # Traffic flow:
 #   Internet → Cloudflare Tunnel → cloudflared pod (ClusterIP) → Ingress → Services

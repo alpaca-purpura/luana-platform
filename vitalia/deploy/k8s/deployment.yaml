@@ -3,16 +3,22 @@
 # Vitalia backend FastAPI application Deployment.
 # Cloud-provider agnostic (DigitalOcean / Hetzner / AWS per arch § 5.3).
 #
-# Chris UI gate Q4=B:
-#   - Container image must be built + pushed to registry BEFORE applying.
-#   - Cluster provisioned by Chris via cloud dashboard.
-#   - GHCR namespace: ghcr.io/alpacapurpura/vitalia-backend (future Story 11.bis).
-#     During Story 11 build phase: use local build tag or DockerHub interim.
+# Wire CI/CD (S-CICD-DEPLOY):
+#   _deploy-brand.yml ejecuta `kubectl set image deployment/vitalia-app vitalia-backend=...`
+#   con el tag de version extraido del branch release/vitalia-vX.Y.Z.
+#   Secrets: viven en GitHub Environment 'vitalia-prod' (KUBECONFIG, GHCR_TOKEN).
+#   Para staging: GitHub Environment 'vitalia-staging'.
+#
+# Requisitos previos (Chris ejecuta una vez por cluster):
+#   kubectl create namespace vitalia
+#   kubectl create secret docker-registry ghcr-creds \
+#     --docker-server=ghcr.io --docker-username=alpacapurpura \
+#     --docker-password=<GITHUB_PAT> -n vitalia
 #
 # Apply: kubectl apply -f vitalia/deploy/k8s/ -n vitalia
 # Dry-run: kubectl apply --dry-run=client -f vitalia/deploy/k8s/
 #
-# Arch ref: 03-arch.md § 5.3 · T-deploy-1
+# Arch ref: 03-arch.md § 5.3 · T-deploy-1 · S-CICD-DEPLOY T-5
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -180,12 +186,11 @@ spec:
               drop:
                 - ALL
 
-      # ── Image pull secrets (if using private GHCR) ───────────────────
-      # Chris must create: kubectl create secret docker-registry ghcr-creds \
-      #   --docker-server=ghcr.io --docker-username=alpacapurpura \
-      #   --docker-password=<GITHUB_PAT> -n vitalia
-      # imagePullSecrets:
-      #   - name: ghcr-creds
+      # ── Image pull secrets para GHCR privado ────────────────────────
+      # ghcr-creds: creado por Chris con kubectl create secret docker-registry
+      # (ver docs/process/github-environments-setup.md § Paso 5)
+      imagePullSecrets:
+        - name: ghcr-creds
 
       restartPolicy: Always
       terminationGracePeriodSeconds: 30

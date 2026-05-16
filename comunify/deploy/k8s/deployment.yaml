@@ -1,18 +1,28 @@
 ---
+# comunify/deploy/k8s/deployment.yaml
 # Comunify — Kubernetes Deployment (Story 12 T-deploy-1)
 # Vertical: Creator Economy (coaches/nutritionists/productivity)
 # Tenants: anabella-coaching-ar, trini-nutrition-cl, pablo-productividad-mx
 #
-# Apply:
-#   kubectl apply -f deploy/k8s/deployment.yaml
+# Wire CI/CD (S-CICD-DEPLOY T-5):
+#   _deploy-brand.yml ejecuta `kubectl set image deployment/comunify-backend ...`
+#   con el tag de version extraido del branch release/comunify-vX.Y.Z.
+#   Secrets: viven en GitHub Environment 'comunify-prod' (KUBECONFIG, GHCR_TOKEN).
+#   Para staging: GitHub Environment 'comunify-staging'.
 #
-# Secrets required (create before applying):
+# Apply:
+#   kubectl apply -f comunify/deploy/k8s/ -n comunify
+# Dry-run:
+#   kubectl apply --dry-run=client -f comunify/deploy/k8s/
+#
+# Secrets requeridos (crear antes de aplicar por primera vez):
 #   kubectl create secret generic comunify-secrets \
 #     --from-literal=ANTHROPIC_API_KEY=<key> \
 #     --from-literal=DATABASE_URL=<postgres-dsn> \
 #     --from-literal=REDIS_URL=<redis-url> \
 #     --from-literal=CLERK_SECRET_KEY=<key> \
-#     --from-literal=CLERK_PUBLISHABLE_KEY=<key>
+#     --from-literal=CLERK_PUBLISHABLE_KEY=<key> \
+#     -n comunify
 
 apiVersion: apps/v1
 kind: Deployment

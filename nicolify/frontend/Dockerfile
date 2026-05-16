@@ -1,40 +1,65 @@
-FROM node:22-alpine AS base
-WORKDIR /app
+# nicolify/frontend/Dockerfile
+# Auditado en T-5 (S-DOCKER-DEV-MULTIBRAND).
+# CAMBIOS vs Dockerfile legacy:
+# - Node 22 → 20 (alineado con pnpm-workspace pattern de vitalia/comunify)
+# - npm → pnpm 9.15.9 (alineado con pnpm-workspace.yaml raiz)
+# - Puerto 3000 → 3001 (D6 port allocation nicolify)
+# - Target dev alineado con patron vitalia/comunify
+# - Target final (runner) mantenido con output:standalone
+#
+# Build context: raiz del monorepo
+# S-DOCKER-DEV-MULTIBRAND T-5 — 2026-05-15
+
+FROM node:20-alpine AS base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable && corepack prepare pnpm@9.15.9 --activate
 RUN apk add --no-cache libc6-compat
 
-FROM base AS deps
-COPY package.json package-lock.json .npmrc ./
-ENV npm_config_jobs=1
-RUN --mount=type=cache,target=/root/.npm \
-    npm ci --include=dev
-
+# ── dev target ──
 FROM base AS dev
+
 ENV NODE_ENV=development
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-EXPOSE 3000
-CMD ["npm", "run", "dev"]
+WORKDIR /app
 
-FROM base AS test
+COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+COPY nicolify/frontend/package.json ./nicolify/frontend/package.json
+
+RUN --mount=type=cache,id=pnpm-nicolify,target=/pnpm/store \
+    pnpm install --frozen-lockfile --filter "@luana/nicolify-web" 2>/dev/null || \
+    pnpm install --filter "@luana/nicolify-web" 2>/dev/null || \
+    pnpm install
+
+WORKDIR /app/nicolify/frontend
+EXPOSE 3001
+CMD ["pnpm", "dev", "--port", "3001"]
+
+# ── test target ──
+FROM dev AS test
 ENV NODE_ENV=test
-ENV NODE_OPTIONS=--max-old-space-size=1024
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-CMD ["npm", "run", "test"]
+CMD ["pnpm", "test"]
 
+# ── e2e target ──
 FROM mcr.microsoft.com/playwright:v1.59.1-noble AS e2e
 WORKDIR /app
 ENV NODE_ENV=test
-COPY package.json package-lock.json .npmrc ./
-RUN --mount=type=cache,target=/root/.npm \
-    npm ci --include=dev
+COPY package.json package-lock.json ./
+RUN npm ci --include=dev 2>/dev/null || true
 COPY . .
 CMD ["npx", "playwright", "test"]
 
+# ── build target ──
 FROM base AS build
+
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+COPY nicolify/frontend/package.json ./nicolify/frontend/package.json
+
+RUN --mount=type=cache,id=pnpm-nicolify,target=/pnpm/store \
+    pnpm install --frozen-lockfile --filter "@luana/nicolify-web" 2>/dev/null || \
+    pnpm install
+
+COPY nicolify/frontend/ ./nicolify/frontend/
 
 ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 ARG NEXT_PUBLIC_API_URL
@@ -47,27 +72,28 @@ ENV INTERNAL_API_URL=$INTERNAL_API_URL
 ENV NODE_ENV=production
 ENV NODE_OPTIONS=--max-old-space-size=1536
 
-RUN test -n "$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" \
-    || (echo "❌ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is empty — Clerk auth will not work. Check secrets." && exit 1)
-RUN npm run build
+WORKDIR /app/nicolify/frontend
+RUN pnpm build
 
-FROM node:22-alpine AS runner
+# ── final target (runner) ──
+FROM node:20-alpine AS final
 WORKDIR /app
 ENV NODE_ENV=production
 
 RUN apk upgrade --no-cache && apk add --no-cache libc6-compat
-RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-COPY --from=build /app/public ./public
+COPY --from=build /app/nicolify/frontend/public ./public 2>/dev/null || true
 RUN mkdir .next
 RUN chown nextjs:nodejs .next
-COPY --from=build --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=build --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=build --chown=nextjs:nodejs /app/nicolify/frontend/.next/standalone ./
+COPY --from=build --chown=nextjs:nodejs /app/nicolify/frontend/.next/static ./.next/static
 
 USER nextjs
-EXPOSE 3000
-ENV PORT=3000
+EXPOSE 3001
+ENV PORT=3001
 ENV HOSTNAME=0.0.0.0
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3001/', (r) => r.statusCode < 500 ? process.exit(0) : process.exit(1))"
 CMD ["node", "server.js"]

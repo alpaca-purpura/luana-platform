@@ -2,11 +2,11 @@
 story_id: S-GIT-STRATEGY-HELPERS
 outcome: infra-dev-multibrand
 parent_sub_outcome: git-strategy-revised
-state: ready
-phase: ARCH_DONE
-last_artifact: 06-tickets.yaml
-last_modified: 2026-05-15T00:00:00Z
-next_action: "/dev-team toma T-10 primero (helper scripts + bash tests), luego T-11+T-12 en paralelo, luego T-13"
+state: developed
+phase: BUILD_DONE
+last_artifact: T-13-impl-log.md
+last_modified: 2026-05-15T12:00:00Z
+next_action: "/auditor toma la story para review (Conv 3)"
 ratified_by_chris: true
 spawned_at: 2026-05-15T00:00:00Z
 spawned_by: /pm-luana

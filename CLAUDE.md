@@ -258,6 +258,34 @@ NUNCA inline >500 tokens de artifact body. Caller lee file on demand.
 6. Frontend en `{brand}/frontend/` (Next.js 16 + FSD-Lite)
 7. Deploy K8s manifests en `{brand}/deploy/`
 
+## Git Workflow
+
+**Triple-branch policy** (post multibrand reorg 2026-05-15 — ADR-004):
+
+| Branch | Rol | CI/CD |
+|---|---|---|
+| `wip/{slug}` | Autosave por sesion paralela. TTL 30d (cron cleanup). | `ci-wip.yml` (light gates) |
+| `main` | Integracion estable + staging auto-deploy. | `ci.yml` (full) + `cd-staging.yml` |
+| `release/{brand}-vX.Y.Z` | Produccion brand-especifica. Desde main validado. | `cd-prod.yml` |
+
+**Worktrees por sesion paralela** (ban historico revocado en ADR-004 2026-05-15):
+
+```bash
+# Sesion nueva: worktree dedicado
+scripts/git/new-session.sh A-docker    # crea ../luana-A-docker + branch wip/A-docker
+cd ../luana-A-docker
+
+# Terminar sesion
+cd /home/chalreme/Proyectos/luana-platform
+scripts/git/cleanup-session.sh A-docker  # push final + remove worktree
+```
+
+**Forbidden**: `git pull`, `git fetch && merge`, `git push --force`, `git revert` (sin aprobacion), `git add .` / `git add -A`, `git commit --no-verify`. Push non-fast-forward → STOP, reportar. No `git pull`.
+
+**Required**: `git add <path>` por nombre exacto. M11: nunca >30 min sin push con cambios significativos en worktree activo.
+
+Detail: `.claude/rules/git-safety.md` (full policy) + `.claude/rules/parallel-safety.md` (multi-sesion) + `docs/architecture/luana-platform/ADR-004-git-branching-and-environments.md` (rationale).
+
 ## Critical Rules (auto-loaded)
 
 | # | Trigger | File |
@@ -327,14 +355,32 @@ nvm install 20 && corepack enable && corepack prepare pnpm@9.15.9 --activate    
 uv sync          # Python workspace (todos los luana-core-* + brand backends editables)
 pnpm install     # TS workspace (todos los frontends + cores TS)
 
-# 3. Docker dev stack
-docker compose -f docker-compose.dev.yml up -d   # postgres on 127.0.0.1:5435
+# 3. Instalar git hooks
+make install-hooks   # symlinks scripts/git-hooks/pre-commit → .git/hooks/pre-commit
 
-# 4. Verify
+# 4. Docker dev stack — por brand (S-DOCKER-DEV-MULTIBRAND — 2026-05-15)
+cp vitalia/.env.dev.template vitalia/.env.dev   # rellena con valores reales
+make dev-vitalia      # levanta postgres (shared) + vitalia backend + frontend
+# O para development en nicolify (brand principal):
+cp nicolify/.env.dev.template nicolify/.env.dev
+make dev-nicolify     # postgres + nicolify backend (8001) + frontend (3001)
+# O todas las brands simultaneamente:
+make dev-all
+
+# Targets disponibles: make dev-{brand}, make dev-{brand}-tunnel, make dev-all,
+#                      make dev-down-{brand}, make dev-clean-{brand}
+# Port allocation: nicolify=8001/3001, vitalia=8002/3002, comunify=8003/3003, lupulo=8004/3004
+# Postgres compartido: 127.0.0.1:5435
+
+# 5. Verify
 .venv/bin/python -c "import luana_core_extension_sdk, luana_core_platform; print('OK')"
-cd comunify/backend && /home/.../.venv/bin/pytest tests/ --override-ini="addopts=" -q   # subset
+curl http://127.0.0.1:8002/health   # vitalia backend (si make dev-vitalia esta corriendo)
 ```
 
 User must be in `docker` group (`sudo usermod -aG docker $USER` + re-login).
+
+**Runbook completo:** `docs/process/docker-dev-multibrand.md` (quick start, targets, hot-reload, troubleshooting, agregar nueva brand).
+**ADR:** `docs/architecture/luana-platform/ADR-003-docker-dev-multibrand.md` (decisiones D1-D6).
+**Infra matrix:** `docs/portfolio/INFRA-MATRIX.md` (auto-gen via `make infra-matrix`).
 
 @AGENTS.md

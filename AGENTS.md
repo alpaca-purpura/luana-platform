@@ -41,13 +41,31 @@
 
 ## Git Workflow
 
-Single branch = `development`. `main` = prod only. No feature branches, no worktrees, no `git pull`.
+**Triple-branch policy** (post multibrand reorg 2026-05-15 — ADR-004):
 
-**Forbidden**: `git pull`, `git fetch && merge`, `git checkout -b`, `git worktree add`, `git push --force`, `git revert` (without approval), `git add .` / `git add -A`, `git commit --no-verify`.
+| Branch | Rol | CI/CD |
+|---|---|---|
+| `wip/{slug}` | Autosave por sesion paralela. TTL 30d (cron cleanup). | `ci-wip.yml` (light gates) |
+| `main` | Integracion estable + staging auto-deploy. | `ci.yml` (full) + `cd-staging.yml` |
+| `release/{brand}-vX.Y.Z` | Produccion brand-especifica. Desde main validado. | `cd-prod.yml` |
 
-**Required**: Work on `development`. `git add <path>` by exact file name. If `git push origin development` fails (non-fast-forward) → STOP, report. No `git pull`.
+**Worktrees por sesion paralela** (ban historico revocado en ADR-004):
 
-**Multi-session shared filesystem**: same branch, same workdir. Touch files from other sessions only for extend/append (never replace/delete). If changes would conflict → STOP.
+```bash
+# Sesion nueva: worktree dedicado
+scripts/git/new-session.sh A-docker   # crea ../luana-A-docker + branch wip/A-docker
+cd ../luana-A-docker
+
+# Terminar sesion
+cd /home/chalreme/Proyectos/luana-platform
+scripts/git/cleanup-session.sh A-docker  # push final + remove worktree
+```
+
+**Forbidden**: `git pull`, `git fetch && merge`, `git push --force`, `git revert` (without approval), `git add .` / `git add -A`, `git commit --no-verify`. Push non-fast-forward → STOP, report. No `git pull`.
+
+**Required**: `git add <path>` by exact file name. M11: nunca >30 min sin push con cambios significativos.
+
+Detail: `.claude/rules/git-safety.md` + `.claude/rules/parallel-safety.md` + `docs/architecture/luana-platform/ADR-004-git-branching-and-environments.md`.
 
 ## Skills (load when touching these modules)
 

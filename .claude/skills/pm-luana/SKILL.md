@@ -196,6 +196,47 @@ Cuando lift involucra flag side-effect, aplicar `.claude/rules/anti-default-flip
 
 ---
 
+## Pattern: metadata-en-su-lugar + auto-gen index
+
+> Codificado en S-DOCKER-DEV-MULTIBRAND (2026-05-15). Referencia implementada: `docs/portfolio/INFRA-MATRIX.md`.
+
+La forma canónica de gestionar metadata de infra (y cualquier metadata que varía por brand) en luana-platform es:
+
+1. **SSoT por instancia** — el detalle vive en el archivo más cercano al objeto que describe (`{brand}/config/brand.yaml::infra`, `{brand}/docs/product/capabilities/`, etc.)
+2. **Auto-gen index** — un script genera una vista consolidada desde los SSoT individuales (`docs/portfolio/INFRA-MATRIX.md`, `CAPABILITIES-MATRIX.md` futuro, etc.)
+3. **Auto-freshness** — un trigger automatiza la regeneración cuando el SSoT cambia (pre-commit hook, make target, etc.)
+
+### Tabla de generalización
+
+| Caso | SSoT (instancia) | Index (consolidado) | Trigger | Estado |
+|---|---|---|---|---|
+| Infra (puertos, dominios, DBs) | `{brand}/config/brand.yaml::infra` | `docs/portfolio/INFRA-MATRIX.md` | pre-commit Section 10 + `make infra-matrix` | ✅ implementado |
+| Capabilities shipped | `{brand}/docs/product/capabilities/` | `CAPABILITIES-MATRIX.md` (futuro) | pre-commit Section 5 (R32) | ⏳ pendiente |
+| Integraciones activas | `{brand}/config/brand.yaml::integrations` | `INTEGRATIONS-MATRIX.md` (futuro) | futuro | ⏳ pendiente |
+| Versiones packages core | `core/luana-core-*/pyproject.toml::version` | `docs/core-modules/README.md::versions` | `make core-modules` | ⏳ pendiente |
+
+### Comandos de referencia (caso implementado: infra)
+
+```bash
+make infra-matrix          # regenera docs/portfolio/INFRA-MATRIX.md desde brand.yaml × 4 brands
+make install-hooks         # instala pre-commit hook (Section 10 auto-regen INFRA-MATRIX cuando brand.yaml staged)
+cat docs/portfolio/INFRA-MATRIX.md   # vista consolidada ports/DBs/domains
+```
+
+### Cuándo aplicar este pattern (guía /pm-luana)
+
+- Metadata nueva que varía por brand → ponerla en `{brand}/config/brand.yaml` (nueva subsección), NO inline en docs transversales
+- Vista cross-brand → agregar script auto-gen + make target + sección a INFRA-MATRIX (o crear nuevo *-MATRIX)
+- Freshness → agregar detection en pre-commit (modelo: Section 10) para SSoT nuevo
+
+### Archivos clave
+
+- `scripts/generate_infra_matrix.py` — referencia canónica de cómo leer brand.yaml + generar markdown
+- `docs/portfolio/INFRA-MATRIX.md` — primer index auto-gen (caso infra)
+- `scripts/git-hooks/pre-commit` Section 10 — auto-freshness trigger
+
+---
+
 ## Anti-creep rules (CRÍTICAS — protección post-fusión)
 
 Este skill cubre dos modos pero su jurisdicción NO se expande. Reglas duras:

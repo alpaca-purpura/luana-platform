@@ -1,0 +1,39 @@
+---
+# nicolify/deploy/k8s/ingress.yaml
+# Ingress nginx con TLS para Nicolify.
+# TLS gestionado por cert-manager con Let's Encrypt.
+#
+# Requisitos previos:
+#   - nginx ingress controller instalado en el cluster
+#   - cert-manager instalado con ClusterIssuer 'letsencrypt-prod'
+#
+# Arch ref: S-CICD-DEPLOY 03-arch.md § nicolify/deploy/k8s/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nicolify-ingress
+  namespace: nicolify
+  labels:
+    app.kubernetes.io/name: nicolify
+    app.kubernetes.io/part-of: luana-platform
+    app.kubernetes.io/managed-by: kubectl
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - app.nicolify.com
+      secretName: nicolify-tls
+  rules:
+    - host: app.nicolify.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: nicolify-backend
+                port:
+                  name: http

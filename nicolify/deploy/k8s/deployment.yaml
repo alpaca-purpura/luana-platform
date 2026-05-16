@@ -1,0 +1,150 @@
+---
+# nicolify/deploy/k8s/deployment.yaml
+# Deployment del backend FastAPI de Nicolify.
+#
+# Wire: _deploy-brand.yml actualiza la imagen via `kubectl set image deployment/nicolify-app ...`
+# con el tag de versión extraído del branch release/nicolify-vX.Y.Z.
+#
+# Requisitos previos (Chris ejecuta una vez por cluster):
+#   kubectl create namespace nicolify
+#   kubectl create secret docker-registry ghcr-creds \
+#     --docker-server=ghcr.io \
+#     --docker-username=alpacapurpura \
+#     --docker-password=<GITHUB_PAT> \
+#     -n nicolify
+#
+# Secrets: GitHub Environment 'nicolify-prod' o 'nicolify-staging'
+# (KUBECONFIG, GHCR_TOKEN, etc.) — nunca hardcodeados aquí.
+#
+# Arch ref: S-CICD-DEPLOY 03-arch.md § nicolify/deploy/k8s/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nicolify-app
+  namespace: nicolify
+  labels:
+    app.kubernetes.io/name: nicolify
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: luana-platform
+    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/managed-by: kubectl
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nicolify-app
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: nicolify-app
+        app.kubernetes.io/name: nicolify
+        app.kubernetes.io/component: backend
+        app.kubernetes.io/version: "0.1.0"
+    spec:
+      # Security context — ejecución como usuario no-root
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+
+      # Pull secrets para GHCR privado
+      imagePullSecrets:
+        - name: ghcr-creds
+
+      containers:
+        - name: nicolify-backend
+          # _deploy-brand.yml actualiza esta imagen via kubectl set image
+          image: ghcr.io/alpacapurpura/nicolify-backend:0.1.0
+          imagePullPolicy: Always
+
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+
+          # ── Variables de entorno: no sensibles desde ConfigMap ──────────
+          envFrom:
+            - configMapRef:
+                name: nicolify-config
+
+          # ── Variables de entorno: secretos desde Secret ─────────────────
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: nicolify-secrets
+                  key: POSTGRES_PASSWORD
+            - name: NICOLIFY_CLERK_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: nicolify-secrets
+                  key: NICOLIFY_CLERK_SECRET_KEY
+            - name: NICOLIFY_CLERK_WEBHOOK_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: nicolify-secrets
+                  key: NICOLIFY_CLERK_WEBHOOK_SECRET
+            - name: NICOLIFY_STRIPE_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: nicolify-secrets
+                  key: NICOLIFY_STRIPE_SECRET_KEY
+            - name: NICOLIFY_STRIPE_WEBHOOK_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: nicolify-secrets
+                  key: NICOLIFY_STRIPE_WEBHOOK_SECRET
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: nicolify-secrets
+                  key: ANTHROPIC_API_KEY
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: nicolify-secrets
+                  key: REDIS_PASSWORD
+
+          # ── Health checks ────────────────────────────────────────────────
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
+            timeoutSeconds: 5
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 3
+            timeoutSeconds: 3
+
+          # ── Recursos ────────────────────────────────────────────────────
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+
+          # ── Security context por contenedor ─────────────────────────────
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30

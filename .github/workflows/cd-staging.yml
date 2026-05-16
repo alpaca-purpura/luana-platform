@@ -1,63 +1,103 @@
-name: CD (Staging)
+name: "CD — Staging multibrand (auto)"
 
-# Auto-deploy to staging environment on push to main.
-# Runs after ci.yml completes (both triggered by same push event).
-# Placeholder mode: if STAGING_HOST secret is not configured, logs a notice
-# and exits cleanly. Activate by setting STAGING_HOST + STAGING_SSH_KEY
-# secrets in the GitHub repo Settings > Environments > staging.
+# Auto-deploy a staging en push a main.
+# Detecta por brand cuales tienen cambios (dorny/paths-filter) y
+# dispara el workflow reutilizable _deploy-brand.yml solo para las marcas afectadas.
+#
+# Objetivo de tiempo total: < 8 minutos (paralelo entre brands sin cambios = skip inmediato).
+#
+# Nota sobre lupulo: no tiene backend operativo aun (Story 13 pendiente).
+# El job de staging para lupulo esta explicitamente omitido hasta Story 13.
+#
+# Trigger: SOLO push a main. NO se dispara en branches de produccion.
+# Ref: S-CICD-DEPLOY 01-spec.md § Scenario 2 (happy-staging-auto-deploy)
+#
+# Arch ref: S-CICD-DEPLOY 03-arch.md § cd-staging.yml
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
-# Minimum permissions — least-privilege (supply chain safety)
+# Permisos minimos globales
 permissions:
   contents: read
 
 jobs:
-  deploy-staging:
-    name: deploy-staging
+  detect-brand-changes:
+    name: "Detectar cambios por brand"
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    # GitHub Environment — configure optional required reviewers in repo Settings > Environments > staging
-    environment: staging
+    timeout-minutes: 5
+    outputs:
+      nicolify: ${{ steps.filter.outputs.nicolify }}
+      vitalia: ${{ steps.filter.outputs.vitalia }}
+      comunify: ${{ steps.filter.outputs.comunify }}
+      lupulo: ${{ steps.filter.outputs.lupulo }}
+
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Check staging server configuration
-        id: check-config
-        env:
-          STAGING_HOST: ${{ secrets.STAGING_HOST }}
-        run: |
-          if [ -z "${STAGING_HOST}" ]; then
-            echo "configured=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "configured=true" >> "$GITHUB_OUTPUT"
-          fi
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            nicolify:
+              - 'nicolify/**'
+              - 'core/**'
+            vitalia:
+              - 'vitalia/**'
+              - 'core/**'
+            comunify:
+              - 'comunify/**'
+              - 'core/**'
+            lupulo:
+              - 'lupulo/**'
+              - 'core/**'
 
-      - name: Deploy to staging (placeholder mode)
-        if: steps.check-config.outputs.configured == 'false'
-        run: |
-          echo "::notice::Staging server not configured. Set STAGING_HOST + STAGING_SSH_KEY secrets in GitHub repo Settings > Environments > staging to activate auto-deploy."
-          echo "Staging deploy skipped — placeholder mode."
-          echo "Push to main recorded at: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          echo "Commit: ${GITHUB_SHA}"
+  deploy-nicolify-staging:
+    name: "Staging nicolify"
+    needs: detect-brand-changes
+    if: needs.detect-brand-changes.outputs.nicolify == 'true'
+    uses: ./.github/workflows/_deploy-brand.yml
+    with:
+      brand: nicolify
+      version: ${{ github.sha }}
+      environment: nicolify-staging
+    secrets: inherit
 
-      - name: Deploy to staging
-        if: steps.check-config.outputs.configured == 'true'
-        env:
-          STAGING_HOST: ${{ secrets.STAGING_HOST }}
-          STAGING_SSH_KEY: ${{ secrets.STAGING_SSH_KEY }}
-        run: |
-          # Activate when STAGING_HOST + STAGING_SSH_KEY are configured.
-          # S-CICD-DEPLOY will implement the full deploy script.
-          bash scripts/deploy/deploy-staging.sh
+  deploy-vitalia-staging:
+    name: "Staging vitalia"
+    needs: detect-brand-changes
+    if: needs.detect-brand-changes.outputs.vitalia == 'true'
+    uses: ./.github/workflows/_deploy-brand.yml
+    with:
+      brand: vitalia
+      version: ${{ github.sha }}
+      environment: vitalia-staging
+    secrets: inherit
 
-      - name: Staging health check
-        if: steps.check-config.outputs.configured == 'true'
-        env:
-          STAGING_HOST: ${{ secrets.STAGING_HOST }}
-        run: |
-          # Health check endpoints for all configured brands on staging.
-          # S-CICD-DEPLOY will implement the full health check script.
-          bash scripts/deploy/health-check-staging.sh
+  deploy-comunify-staging:
+    name: "Staging comunify"
+    needs: detect-brand-changes
+    if: needs.detect-brand-changes.outputs.comunify == 'true'
+    uses: ./.github/workflows/_deploy-brand.yml
+    with:
+      brand: comunify
+      version: ${{ github.sha }}
+      environment: comunify-staging
+    secrets: inherit
+
+  # lupulo-staging: omitido hasta Story 13 (lupulo no tiene backend aun)
+  # Cuando Story 13 se implemente, agregar:
+  # deploy-lupulo-staging:
+  #   name: "Staging lupulo"
+  #   needs: detect-brand-changes
+  #   if: needs.detect-brand-changes.outputs.lupulo == 'true'
+  #   uses: ./.github/workflows/_deploy-brand.yml
+  #   with:
+  #     brand: lupulo
+  #     version: ${{ github.sha }}
+  #     environment: lupulo-staging
+  #   secrets: inherit

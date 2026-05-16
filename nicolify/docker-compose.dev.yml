@@ -1,0 +1,93 @@
+# nicolify/docker-compose.dev.yml
+# Brand-specific services para Nicolify (agencias y servicios B2B).
+# Siempre se usa combinado con el compose raiz:
+#   docker compose -f docker-compose.dev.yml -f nicolify/docker-compose.dev.yml up -d
+# O mas facil: make dev-nicolify
+# SSoT puertos/DB/etc: nicolify/config/brand.yaml::infra
+#
+# S-DOCKER-DEV-MULTIBRAND T-2 — 2026-05-15
+# Decisions: D2 (brand-autocontenida), D4 (hot-reload bind mount), D5 (cloudflared opt-in), D6 (ports)
+
+name: luana-dev  # mismo name que raiz para compartir network/volumes
+
+services:
+  nicolify_backend_dev:
+    build:
+      context: .  # contexto = raiz monorepo (accede a core/ y nicolify/backend/)
+      dockerfile: nicolify/backend/Dockerfile
+      target: dev
+    restart: unless-stopped
+    env_file:
+      - path: nicolify/.env.dev  # gitignored; copiado desde nicolify/.env.dev.template
+        required: false  # compose config --quiet pasa aunque el archivo no exista aun
+    environment:
+      DATABASE_URL: "postgresql+asyncpg://postgres:password@luana_postgres_dev:5432/nicolify_dev"
+      REDIS_URL: "redis://luana_redis_dev:6379/0"
+      QDRANT_HOST: "luana_qdrant_dev"
+      QDRANT_COLLECTION_PREFIX: "nicolify_"
+      PORT: "8001"
+    volumes:
+      - .:/workspace:rw  # bind mount monorepo completo (hot-reload)
+      - nicolify_backend_venv:/workspace/nicolify/backend/.venv  # protege .venv container
+    ports:
+      - "127.0.0.1:8001:8001"
+    networks:
+      - luana_dev_net
+    depends_on:
+      luana_postgres_dev:
+        condition: service_healthy
+    command: >
+      uv run uvicorn src.main:app
+      --host 0.0.0.0
+      --port 8001
+      --reload
+      --reload-dir /workspace/nicolify/backend/src
+      --reload-dir /workspace/core
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  nicolify_frontend_dev:
+    build:
+      context: .
+      dockerfile: nicolify/frontend/Dockerfile
+      target: dev
+    restart: unless-stopped
+    env_file:
+      - path: nicolify/.env.dev
+        required: false
+    environment:
+      PORT: "3001"
+      NEXT_PUBLIC_API_URL: "http://127.0.0.1:8001"
+    volumes:
+      - ./nicolify/frontend:/app:rw
+      - nicolify_frontend_node_modules:/app/node_modules  # anonymous volume
+    ports:
+      - "127.0.0.1:3001:3001"
+    networks:
+      - luana_dev_net
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  nicolify_cloudflared_dev:
+    image: cloudflare/cloudflared:latest
+    profiles: [tunnel]  # opt-in: make dev-nicolify-tunnel
+    restart: unless-stopped
+    env_file:
+      - path: nicolify/.env.dev  # debe contener TUNNEL_TOKEN
+        required: false
+    command: tunnel run nicolify-dev
+    networks:
+      - luana_dev_net
+
+volumes:
+  nicolify_backend_venv:
+    name: nicolify_backend_venv
+  nicolify_frontend_node_modules:
+    name: nicolify_frontend_node_modules
+
+# NOTA: network luana_dev_net es definida en el compose raiz (docker-compose.dev.yml).
+# El name: luana-dev compartido permite que los compose files compartan la misma network.
