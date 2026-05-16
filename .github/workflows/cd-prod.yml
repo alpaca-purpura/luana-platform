@@ -1,0 +1,138 @@
+name: CD (Production)
+
+# Production deploy triggered by push to release/{brand}-vX.Y.Z branches.
+# Flow:
+#   1. parse-release: Extract brand + version from branch name via regex.
+#   2. detect-brand-changes: Use dorny/paths-filter to confirm brand has changes.
+#   3. deploy-brand-prod: Deploy brand-specific to production (placeholder mode
+#      until PROD_HOST + PROD_SSH_KEY configured in GitHub Environment prod-{brand}).
+#
+# NOTE: The reusable workflow _deploy-brand.yml (S-CICD-DEPLOY T-2) will replace
+# the direct script invocation in deploy-brand-prod when available.
+#
+# Branch naming convention: release/{brand}-vX.Y.Z
+# Examples: release/vitalia-v0.3.0, release/nicolify-v1.2.0
+
+on:
+  push:
+    branches:
+      - 'release/**'
+
+# Minimum permissions — least-privilege (supply chain safety)
+permissions:
+  contents: read
+
+jobs:
+  parse-release:
+    name: parse-release-branch
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      brand: ${{ steps.parse.outputs.brand }}
+      version: ${{ steps.parse.outputs.version }}
+    steps:
+      - name: Parse brand and version from release branch name
+        id: parse
+        run: |
+          BRANCH="${GITHUB_REF#refs/heads/}"
+          echo "Release branch: ${BRANCH}"
+          # Regex: release/{brand}-vX.Y.Z
+          # Brand: lowercase alphanumeric + hyphens (e.g. vitalia, nicolify, lupulo-labs)
+          if [[ ! "${BRANCH}" =~ ^release/([a-z0-9-]+)-v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+            echo "::error::Branch '${BRANCH}' does not match required pattern: release/{brand}-vX.Y.Z"
+            echo "::error::Examples: release/vitalia-v0.3.0, release/nicolify-v1.2.0"
+            exit 1
+          fi
+          BRAND="${BASH_REMATCH[1]}"
+          VERSION="${BASH_REMATCH[2]}"
+          echo "Parsed brand=${BRAND} version=${VERSION}"
+          echo "brand=${BRAND}" >> "$GITHUB_OUTPUT"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+  detect-brand-changes:
+    name: detect-brand-changes
+    needs: parse-release
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      brand_changed: ${{ steps.filter.outputs[needs.parse-release.outputs.brand] }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Detect which brand paths changed
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          # Static filter for all known brands + core.
+          # Add new brands as rows when bootstrapped (S-GIT-STRATEGY-HELPERS T-10
+          # helper script reminds to update this filter when adding a brand).
+          filters: |
+            nicolify:
+              - 'nicolify/**'
+            vitalia:
+              - 'vitalia/**'
+            comunify:
+              - 'comunify/**'
+            lupulo:
+              - 'lupulo/**'
+            core:
+              - 'core/**'
+            saasora:
+              - 'saasora/**'
+            inmoflow:
+              - 'inmoflow/**'
+            retailly:
+              - 'retailly/**'
+            fixia:
+              - 'fixia/**'
+            guestly:
+              - 'guestly/**'
+            fitflow:
+              - 'fitflow/**'
+
+  deploy-brand-prod:
+    name: deploy-brand-${{ needs.parse-release.outputs.brand }}
+    needs: [parse-release, detect-brand-changes]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # GitHub Environment per brand — allows manual approval gate pre-deploy.
+    # Configure required reviewers in repo Settings > Environments > prod-{brand}.
+    environment: prod-${{ needs.parse-release.outputs.brand }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check production server configuration
+        id: check-config
+        env:
+          PROD_HOST: ${{ secrets.PROD_HOST }}
+        run: |
+          if [ -z "${PROD_HOST}" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Deploy brand to production (placeholder mode)
+        if: steps.check-config.outputs.configured == 'false'
+        env:
+          BRAND: ${{ needs.parse-release.outputs.brand }}
+          VERSION: ${{ needs.parse-release.outputs.version }}
+        run: |
+          echo "::notice::Production server for ${BRAND} not configured. Set PROD_HOST + PROD_SSH_KEY in GitHub repo Settings > Environments > prod-${BRAND} to activate auto-deploy."
+          echo "Production deploy skipped — placeholder mode."
+          echo "Brand: ${BRAND} | Version: ${VERSION} | Commit: ${GITHUB_SHA}"
+
+      - name: Deploy brand to production
+        if: steps.check-config.outputs.configured == 'true'
+        env:
+          BRAND: ${{ needs.parse-release.outputs.brand }}
+          VERSION: ${{ needs.parse-release.outputs.version }}
+          PROD_HOST: ${{ secrets.PROD_HOST }}
+          PROD_SSH_KEY: ${{ secrets.PROD_SSH_KEY }}
+        run: |
+          # TODO(S-CICD-DEPLOY): Replace with reusable workflow _deploy-brand.yml
+          # when S-CICD-DEPLOY T-2 is implemented:
+          #   uses: ./.github/workflows/_deploy-brand.yml
+          # Until then, invoke deploy script directly.
+          bash scripts/deploy/deploy-brand-prod.sh "${BRAND}" "${VERSION}"

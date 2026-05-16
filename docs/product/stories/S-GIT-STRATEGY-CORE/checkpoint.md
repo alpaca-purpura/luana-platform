@@ -2,11 +2,11 @@
 story_id: S-GIT-STRATEGY-CORE
 outcome: infra-dev-multibrand
 parent_sub_outcome: git-strategy-revised
-state: ready
-phase: ARCH_DONE
-last_artifact: 06-tickets.yaml
-last_modified: 2026-05-15T00:01:00Z
-next_action: "/dev-team toma 06-tickets.yaml, empezar T-9 (TDD hook bash) luego T-4 (ci.yml rewrite)"
+state: developed
+phase: BUILD_DONE
+last_artifact: docs/product/stories/S-GIT-STRATEGY-CORE/checkpoint.md
+last_modified: 2026-05-15T12:00:00Z
+next_action: "/auditor C1-C5"
 ratified_by_chris: true
 spawned_at: 2026-05-15T00:00:00Z
 spawned_by: /pm-luana
@@ -43,3 +43,4 @@ tickets_count: 9
 
 - 2026-05-15 — /pm-luana creó folder + checkpoint.md (state=refining, foundational story)
 - 2026-05-15 — /po+/architect produjeron 5 artefactos canónicos v4: 01-spec.md (6 scenarios Gherkin AI-resistant) + 03-arch.md (surface INFRA unificada, 4 skeletons YAML, pseudocódigo hook) + 04-validators.yaml (7 non_functional + 9 functional validators) + 05-guidelines.md (patterns required/forbidden + files in scope) + 06-tickets.yaml (9 tickets T-1..T-9 con acceptance criteria). state=refining → ready.
+- 2026-05-15 — /dev-team (Sonnet) implementó 9/9 tickets en orden T-9→T-4→T-5→T-6→T-7→T-8→T-1→T-2→T-3. TDD: 12 bash tests escritos RED antes refactor hook (T-9). 16/16 validators PASS (actionlint + shellcheck + markdownlint + permissions + pinned-actions + release-preserved + 6 functional + 3 cross-file integrity). state=ready → developing → developed.

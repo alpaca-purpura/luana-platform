@@ -1,61 +1,116 @@
+---
+globs: "**/*"
+description: "Seguridad multi-sesion paralela Claude Code — triple-branch + worktrees requeridos (post 2026-05-15)"
+---
+
 # Parallel Safety (OBLIGATORIO)
 
-Chris multi-instancia Claude Code WSL. Mismo workdir+branch (`development`)+filesystem. Cada sesión commitea SU trabajo.
+Chris opera 2-3 sesiones Claude Code en paralelo en WSL2. Cada sesion usa su propio worktree fisico dedicado
+con branch `wip/*` dedicado. No hay "mismo workdir+branch" — ese patron es legacy y fue el origen de colisiones.
 
-## Branches
-`development` única. `main` solo prod. NUNCA feature branches/worktrees/release/hotfix.
+## Triple-branch en paralelo
 
-## Worktrees PROHIBIDOS
-Chris perdió 1 semana previa. Sesiones paralelas = mismo workdir mismo branch.
+Cada sesion paralela:
+
+1. Crea su worktree dedicado: `git worktree add ../luana-{slug} wip/{slug}-{desc}`
+2. Trabaja y commitea frecuentemente en su branch `wip/{slug}-{desc}`
+3. Pushea a origin su wip/* branch (autosave + ci-wip.yml light gates)
+4. Hace squash-merge a `main` cuando el trabajo esta listo
+
+Ver `.claude/rules/git-safety.md` para la triple-branch policy completa.
+
+## Worktrees requeridos por sesion
+
+El patron obligatorio para sesiones paralelas es worktree + branch wip/* dedicado:
+
+```bash
+# Cada sesion nueva: worktree aislado fisicamente
+git worktree add ../luana-{slug} wip/{slug}-{desc}
+
+# Git bloquea automaticamente que dos worktrees tengan el mismo branch.
+# La colision de WIP es imposible por diseno del sistema de archivos.
+```
+
+Por que funciona: git impide que dos worktrees compartan un branch activo. Si la sesion B intenta
+checkout del mismo branch que la sesion A tiene abierto, git retorna error. Sin disciplina humana requerida.
+
+El ban historico de worktrees (2024-2026) fue revocado en 2026-05-15 (D2 S-GIT-STRATEGY-CORE).
+El problema original era worktrees sin branch dedicado — no la tecnologia en si.
 
 ## NO PULL
-**`git pull` PROHIBIDO sin excepción.** No inicio, no antes commit, no cierre.
 
-Razón: dos sesiones paralelas pull → desincronizan vs in-memory; conflicts sobreescriben WIP otra. Filesystem compartido ya da sync.
+**`git pull` PROHIBIDO sin excepcion.** No al inicio, no antes de commit, no al cierre.
 
-Push falla non-fast-forward → STOP, reportar Chris.
+Con triple-branch + worktrees, cada sesion tiene su espacio aislado. `git pull` no es necesario
+para sincronizacion y puede sobreescribir WIP de otra sesion.
+
+Push falla non-fast-forward → STOP, reportar Chris. NO hacer git pull.
 
 ## NO FORCE PUSH
-`git push --force`/`--force-with-lease` PROHIBIDO. Reescribe historia.
 
-## NO REVERT sin aprobación
-`git revert` puede sobreescribir trabajo paralelo. Solo aprobación explícita Chris.
+`git push --force` / `--force-with-lease` PROHIBIDO. Reescribe historia compartida.
 
-## Inicio conversación
-`git status --short && git branch --show-current && git log --oneline -3`.
-- `development` limpio → proceder.
-- `main` limpio → checkout `development`.
-- Otra rama → switch `development`.
-- Tree sucio archivos propios → PARAR: reportar, ofrecer commit/stash/descartar.
-- Tree sucio archivos AJENOS → proceder NO TOCAR esos. Reportar lista.
+## NO REVERT sin aprobacion
 
-## Scope commits
-Stage por nombre solo archivos esta sesión. PROHIBIDO `git add .|-A|-u`. Status muestra ajenos → intactos+reportar. Pre-commit hooks native — `--no-verify` PROHIBIDO.
+`git revert` puede sobreescribir trabajo paralelo. Solo con aprobacion explicita de Chris.
 
-## Reglas M1-M8
+## Reglas M1-M11
 
 | # | Regla |
 |---|---|
-| M1 | Sesiones paralelas tocan stories DE MÓDULOS DISTINTOS por default. Cross-módulo OK con M8 |
-| M2 | `docs/process/learnings.md` + `docs/product/BACKLOG.md` (auto-gen) + `MEMORY.md` SOLO `/pm`. Builders nunca |
-| M3 | Tests/CI/Docker SECUENCIAL. Una sesión a la vez `/test-all`/`/dev-up`/`make ci-parity`. Container/port collision invisible hasta crash |
-| M4 | Claim by commit: `/pm` cambia `state: building` en checkpoint.md + commit/push inmediato |
-| M5 | NO pull. NO force push. NO revert sin aprobación. Push falla → STOP |
-| M6 | Bootstrap PM pregunta `¿en qué outcome/story?` antes proceder (legacy: `¿en qué PI?` solo aplica a PI-12 last-legacy) |
-| M7 | Subagentes paths PRIMARIOS story + read all + "extend, no destroy" ajenos. PM prefija story-id completo en prompts |
-| M8 | Tocar archivos otra sesión OK si: (a) entendés leyendo, (b) extend/append no replace, (c) rompe → STOP escalate Chris. Filosofía Chris (2026-04-29) |
+| M1 | Sesiones paralelas usan branches `wip/*` DISTINTOS. Dos sesiones NO comparten branch activo (git lo bloquea). |
+| M2 | `docs/process/learnings.md` + `docs/product/BACKLOG.md` (auto-gen) + `MEMORY.md` SOLO `/pm`. Builders nunca. |
+| M3 | Tests/CI/Docker SECUENCIAL. Una sesion a la vez `/test-all`/`/dev-up`/`make ci-parity`. Container/port collision invisible hasta crash. |
+| M4 | Claim by commit: `/pm` cambia `state: developing` en checkpoint.md + commit/push inmediato al branch wip/*. |
+| M5 | NO pull. NO force push. NO revert sin aprobacion. Push falla → STOP. |
+| M6 | Bootstrap PM pregunta `en que outcome/story?` antes proceder. |
+| M7 | Subagentes paths PRIMARIOS story + read all + "extend, no destroy" ajenos. PM prefija story-id completo en prompts. |
+| M8 | Tocar archivos otra sesion OK si: (a) entiendes leyendo, (b) extend/append no replace, (c) rompe → STOP escalate Chris. |
+| M9 | Agent tool sub-agents dentro de sesion pueden usar worktree isolation efimero para tareas de build aisladas. Cleanup del worktree efimero es responsabilidad del agente que lo crea. |
+| M10 | branches `wip/*` son autosave. Push frecuente (M11) garantiza recovery ante crash de sesion. NO guardar WIP solo en stash por mas de 30 minutos. |
+| M11 | NUNCA pasar >30 minutos sin push si hay cambios significativos en worktree activo. El push activa `ci-wip.yml` (light gates) como checkpoint de calidad. |
 
 Detalle: `docs/process/parallel-sessions-protocol.md`.
 
-## Cierre
+## Inicio de conversacion (branch check)
 
-"eso es todo"/"gracias"/"cierra":
+```bash
+git status --short && git branch --show-current && git log --oneline -3
+```
+
+- Branch `wip/*` limpio en worktree dedicado → proceder.
+- Branch `main` limpio → OK para squash-merges o commits directos de docs.
+- Branch desconocido (legacy `development`, otros) → crear worktree `wip/*` nuevo.
+- Tree sucio archivos propios → commit a `wip/*` branch o stash si es context-switch corto.
+- Tree sucio archivos AJENOS (otra sesion) → NO tocar esos archivos. Reportar lista.
+
+## Scope commits
+
+Stage por nombre exacto solo archivos de esta sesion. PROHIBIDO `git add .` / `-A` / `-u`.
+Status muestra archivos ajenos → dejarlos intactos y reportar. Pre-commit hooks native — `--no-verify` PROHIBIDO.
+
+## Cierre de sesion
+
+Cuando user dice "eso es todo" / "gracias" / "cierra":
+
 1. `git status --short`
-2. Cambios propios → stage nombre + conventional commit + reportar hash
+2. Cambios propios → stage por nombre + conventional commit + push a `wip/*` branch + reportar hash
 3. Archivos ajenos → reportar intactos
 4. Stashes → reportar
-5. WIP roto → `git stash push -m "WIP: ..."`
+5. WIP roto → `git stash push -m "WIP: {slug}"` + reportar
 
 ## Prohibido
 
-`git pull` (cualquier forma) · `fetch && merge` · `push --force`/`--force-with-lease` · `revert` sin aprobación · `reset --hard` sin aprobación · `add .`/`-A`/`-u` · `commit --no-verify` · feature branches/worktrees · checkout fuera `development`/`main` · tree sucio ajeno tocado · cierre sin commit/reporte · push `origin main` sin aprobación · builders editando `learnings.md`/`BACKLOG.md`/`MEMORY.md` · tests/Docker dos sesiones simul.
+- `git pull` (cualquier forma)
+- `git fetch && merge`
+- `git push --force` / `--force-with-lease`
+- `git revert` sin aprobacion
+- `git reset --hard` sin aprobacion
+- `git add .` / `-A` / `-u`
+- `git commit --no-verify`
+- Dos sesiones en el mismo branch activo (git bloquea, pero nunca intentarlo)
+- Cierre sin commit/reporte de estado
+- Push `origin main` sin squash-merge consciente
+- Builders editando `learnings.md` / `BACKLOG.md` / `MEMORY.md`
+- Tests/Docker dos sesiones simultaneas (M3)
+- Worktree sin branch `wip/*` dedicado (patron incorrecto — git no bloquea colision en ese caso)

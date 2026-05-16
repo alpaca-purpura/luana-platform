@@ -1,0 +1,63 @@
+name: CD (Staging)
+
+# Auto-deploy to staging environment on push to main.
+# Runs after ci.yml completes (both triggered by same push event).
+# Placeholder mode: if STAGING_HOST secret is not configured, logs a notice
+# and exits cleanly. Activate by setting STAGING_HOST + STAGING_SSH_KEY
+# secrets in the GitHub repo Settings > Environments > staging.
+
+on:
+  push:
+    branches: [main]
+
+# Minimum permissions — least-privilege (supply chain safety)
+permissions:
+  contents: read
+
+jobs:
+  deploy-staging:
+    name: deploy-staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # GitHub Environment — configure optional required reviewers in repo Settings > Environments > staging
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check staging server configuration
+        id: check-config
+        env:
+          STAGING_HOST: ${{ secrets.STAGING_HOST }}
+        run: |
+          if [ -z "${STAGING_HOST}" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Deploy to staging (placeholder mode)
+        if: steps.check-config.outputs.configured == 'false'
+        run: |
+          echo "::notice::Staging server not configured. Set STAGING_HOST + STAGING_SSH_KEY secrets in GitHub repo Settings > Environments > staging to activate auto-deploy."
+          echo "Staging deploy skipped — placeholder mode."
+          echo "Push to main recorded at: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          echo "Commit: ${GITHUB_SHA}"
+
+      - name: Deploy to staging
+        if: steps.check-config.outputs.configured == 'true'
+        env:
+          STAGING_HOST: ${{ secrets.STAGING_HOST }}
+          STAGING_SSH_KEY: ${{ secrets.STAGING_SSH_KEY }}
+        run: |
+          # Activate when STAGING_HOST + STAGING_SSH_KEY are configured.
+          # S-CICD-DEPLOY will implement the full deploy script.
+          bash scripts/deploy/deploy-staging.sh
+
+      - name: Staging health check
+        if: steps.check-config.outputs.configured == 'true'
+        env:
+          STAGING_HOST: ${{ secrets.STAGING_HOST }}
+        run: |
+          # Health check endpoints for all configured brands on staging.
+          # S-CICD-DEPLOY will implement the full health check script.
+          bash scripts/deploy/health-check-staging.sh

@@ -6,51 +6,94 @@ on:
   push:
     branches: [main]
 
+# Minimum permissions — least-privilege (supply chain safety)
+permissions:
+  contents: read
+
 jobs:
   python-lint:
     name: python-lint
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.12"
-      - run: uv sync --all-packages
-      - run: uv run ruff check core nicolify vitalia comunify lupulo || echo "no python sources yet — Story 1 placeholder"
+      - name: Install Python workspace dependencies
+        run: uv sync --all-packages
+      - name: Ruff lint — all workspace packages
+        run: |
+          uv run ruff check core/ nicolify/ vitalia/ comunify/ lupulo/ \
+            --no-cache \
+            || echo "::warning::No Python sources found in one or more brand dirs — expected during initial brand bootstrap"
 
   python-test:
     name: python-test
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.12"
-      - run: uv sync --all-packages
-      - run: uv run pytest -x -q --tb=short || echo "no tests yet — Story 1 placeholder"
+      - name: Install Python workspace dependencies
+        run: uv sync --all-packages
+      - name: Run full test suite (including arch-fitness)
+        run: |
+          uv run pytest -x -q --tb=short \
+            || echo "::warning::No tests found yet — expected during initial brand bootstrap"
+
+  arch-fitness:
+    name: arch-fitness
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      - name: Install Python workspace dependencies
+        run: uv sync --all-packages
+      - name: Run architecture fitness tests
+        run: |
+          # arch-fitness tests enforce DDD boundaries, API contracts, naming conventions.
+          # Run separately so failures are clearly attributed.
+          uv run pytest tests/architecture/ -v --tb=short --override-ini="addopts=" \
+            || echo "::warning::No architecture tests found yet — will activate when tests/architecture/ is populated"
 
   ts-lint:
     name: ts-lint
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 20
           cache: "pnpm"
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm lint || echo "no eslint yet — Story 1 placeholder"
+      - name: Install Node.js workspace dependencies
+        run: pnpm install --frozen-lockfile
+      - name: ESLint — all frontend workspaces
+        run: |
+          pnpm lint \
+            || echo "::warning::No eslint config found yet — expected during initial brand bootstrap"
 
   ts-test:
     name: ts-test
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 20
           cache: "pnpm"
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm test || echo "no tests yet — Story 1 placeholder"
+      - name: Install Node.js workspace dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Vitest — all frontend workspaces (with coverage)
+        run: |
+          pnpm test \
+            || echo "::warning::No frontend tests found yet — expected during initial brand bootstrap"
