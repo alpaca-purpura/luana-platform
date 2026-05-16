@@ -933,3 +933,59 @@ inventory recovery nicolify (futuro, post carve-out audit B2).
 - Proposal: [docs/promotion-protocol/proposals/2026-05-16-capability-inventory-enforcement.md](../promotion-protocol/proposals/2026-05-16-capability-inventory-enforcement.md)
 - Script: `scripts/reconcile_capabilities.py`
 - Template: `.claude/skills/_pm-brand-template/SKILL.md`
+
+---
+
+## 2026-05-16 — Audit `/home/chalreme/Documentos/ap_sales_agent/` vs `luana-platform/` (post-reorg pérdida check)
+
+**Contexto:** Chris pidió verificar si la migración multimarca (`ap_sales_agent/` monolito → `luana-platform/` con engine + 4 brand verticals) perdió código. Audit cruzado 2026-05-16.
+
+**Hallazgos principales:**
+
+1. **No es scaffold — nicolify es trasplante byte-exacto del monolito.** Counts idénticos por subdir: admin 51, core 12, modules 1043, shared 186, tests 1, workers 2, scripts 3. Frontend 1413 == 1413 archivos. Confirma audit `03-nicolify-carve-out-audit.md` (12 de 18 módulos duplicados de core/luana-core-*).
+
+2. **core/luana-core-* es extracción + refactor light** (no pérdida — duplicación documentada). Deltas típicos +5-15 archivos en core vs nicolify (nuevos models, ports, brand_voice_service en brand-studio).
+
+3. **Pérdidas reales detectadas (3 items):**
+   - **6 migration tests** (`backend/tests/migrations/test_{116,117,118,119,125,t3}.py`) — buscados en TODO luana-platform incluyendo archive: MISSING ANYWHERE
+   - **shopify_app/** ENTERO (348K código propio, sin contar node_modules) — sub-app Shopify integration
+   - **client_simulator/** ENTERO (280K, LangGraph customer simulator + SQLite) — herramienta calidad agentic
+
+4. **Cambios de patrón (no pérdida, evolución):**
+   - `infrastructure/cloudflare/worker.js` (router unified) → `{brand}/deploy/cloudflared/config.yml` per-brand
+   - 52M docs original → 21M actual (13M en archive snapshot). ~31M diff probablemente PR-folder artifacts del workflow SDD viejo. NO auditado en detalle.
+
+**Re-descubrimiento crítico — 6 migration tests son obsoletos por design:**
+
+Story 10 T-10 (2026-05-14) consolidó las 131 migrations originales en `001_initial_snapshot.py` (single idempotent snapshot generated from `pg_dump --schema-only`). Las migrations target de los 6 tests **ya no existen como archivos sueltos** — están dentro del snapshot. Los tests hacen `importlib.util.spec_from_file_location("alembic/versions/116_*.py")` — path target no existe post-collapse.
+
+Análisis de rescue parcial mostró que:
+- test_116 (CREATE DATABASE separate DB) — deploy concern, no schema
+- test_117 + test_119-schema-parts + test_125 — re-writable como schema regression contra snapshot
+- test_118 (seeds INSERT) — snapshot solo es DDL, seeds quedaron afuera
+- test_t3 (UPDATEs deepseek/kimi/dashscope) — snapshot ya tiene state post-repair
+
+**Decisión Chris 2026-05-16:** skip rescue completo. Los 6 tests cumplieron su función histórica pre-collapse; re-escribir contra snapshot pierde mucha de su semántica original. Si en futuro se quiere schema regression coverage, escribir nuevo `test_snapshot_schema_regression.py` consolidado (~45 min trabajo).
+
+**Acciones ejecutadas:**
+
+1. ✅ **`client_simulator/` rescatado** → `apps/client-simulator/` con pattern engine + scenarios per-brand:
+   - Engine cross-brand (LangGraph + customer node + agent bridge + termination)
+   - Stubs `{brand}/backend/tests/agentic_evals/simulator/scenarios/README.md` × 3 brands (vitalia, comunify, nicolify)
+   - `.env` borrado (tenía secrets reales OpenAI + webhook)
+   - pyproject renombrado `nicolify-client-simulator` → `luana-client-simulator` v0.2.0
+   - **Integración stack multimarca pendiente** (M ~3-5 días, story futura)
+
+2. 📋 **shopify_app/ defer** → documentado en `docs/architecture/luana-platform/04-pending-migrations.md`. Decisión: rescatar cuando aparezca primer cliente (Retailly más probable candidato).
+
+3. 📋 **6 migration tests skip** → documentado en mismo doc § 1 con análisis re-write parcial considerado.
+
+**Anti-pattern documentado:** "snapshot collapse de migrations" deja huérfanos los tests que cargaban migration files individuales por path. Si se hace consolidación similar en el futuro, **migrar o documentar los tests afectados ANTES del collapse**, no después.
+
+**Decisión arquitectónica clave:** `/home/chalreme/Documentos/ap_sales_agent/` se mantiene como **museo referencial read-only externo al repo** hasta que todo lo útil esté migrado o defer-documented. Prohibido editar — cualquier rescue pasa por `04-pending-migrations.md`.
+
+**Cross-references:**
+- Audit doc: [docs/architecture/luana-platform/04-pending-migrations.md](../architecture/luana-platform/04-pending-migrations.md)
+- Nicolify carve-out: [docs/architecture/luana-platform/03-nicolify-carve-out-audit.md](../architecture/luana-platform/03-nicolify-carve-out-audit.md)
+- Snapshot: `nicolify/backend/alembic/versions/001_initial_snapshot.py` (131 migrations consolidadas)
+- Engine recovered: `apps/client-simulator/`
