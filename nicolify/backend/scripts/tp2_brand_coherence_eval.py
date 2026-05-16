@@ -203,7 +203,7 @@ def _load_brand_summary() -> str:
     from sqlalchemy import select
 
     from src.core.database import SessionLocal
-    from src.modules.brand.infrastructure.models.brand_summary_model import (
+    from luana_core_brand_studio.infrastructure.models.brand_summary_model import (
         BrandSummaryModel,
     )
 

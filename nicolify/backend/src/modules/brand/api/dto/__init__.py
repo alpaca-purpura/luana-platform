@@ -1,1 +1,0 @@
-"""Brand API DTO package."""

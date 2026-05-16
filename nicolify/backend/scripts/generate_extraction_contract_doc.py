@@ -17,7 +17,7 @@ _BACKEND_ROOT = Path(__file__).resolve().parents[1]
 if str(_BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(_BACKEND_ROOT))
 
-from src.modules.analytics.domain.extraction_contract import (
+from luana_core_analytics_engine.domain.extraction_contract import (
     CHANNEL_TYPE_TO_PROVIDERS,
     EXTRACTION_CONTRACTS,
     STORAGE_TABLES_DOC,

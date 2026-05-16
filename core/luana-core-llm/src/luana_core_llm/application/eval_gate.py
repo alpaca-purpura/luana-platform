@@ -152,7 +152,7 @@ class LLMEvalGateRunner:
     @staticmethod
     async def _run_eval_in_thread(use_kind: str, threshold: float) -> dict[str, object]:
         """Invoke sync EvalRunner via asyncio.to_thread (no event loop block)."""
-        from src.modules.copilot.evals.runner import EvalRunner
+        from luana_core_copilot.evals.runner import EvalRunner
 
         def _sync() -> dict[str, object]:
             if use_kind == "classifier":

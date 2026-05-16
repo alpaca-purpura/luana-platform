@@ -17,7 +17,7 @@ import luana_core_iam.infrastructure.models.tenant_model  # model deleted from A
 from luana_core_platform.domain.events import DomainEvent, EventBus
 
 try:
-    import src.modules.connections.infrastructure.models.channel_connection_model
+    import luana_core_connections.infrastructure.models.channel_connection_model
     import src.modules.sales_agent.infrastructure.models.message_model
 except ImportError:
     pass
@@ -26,7 +26,7 @@ import src.modules.scheduling.infrastructure.models.appointment_model
 
 try:
     import src.modules.crm.infrastructure.models.sale_model
-    import src.modules.offer.infrastructure.models.product_model
+    import luana_core_offer_studio.infrastructure.models.product_model
 except ImportError:
     pass
 

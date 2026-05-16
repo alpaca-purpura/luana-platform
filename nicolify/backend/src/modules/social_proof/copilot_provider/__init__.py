@@ -1,9 +1,0 @@
-"""Social proof module — copilot provider entry point. F1 shim."""
-
-from __future__ import annotations
-
-from luana_core_social_proof.copilot_provider.provider import SocialProofCopilotProvider
-
-provider: SocialProofCopilotProvider = SocialProofCopilotProvider()
-
-__all__ = ("SocialProofCopilotProvider", "provider")

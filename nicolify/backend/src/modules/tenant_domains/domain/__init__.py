@@ -1,1 +1,0 @@
-"""Tenant domains domain package."""

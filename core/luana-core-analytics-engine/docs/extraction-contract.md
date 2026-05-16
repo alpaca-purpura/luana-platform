@@ -102,7 +102,7 @@ Source: worker settings. The contract test verifies that the function names refe
 ## `crm_internal` — CRM Internal (cold contact metrics from journey_events)
 
 **Status:** 🔴 broken  
-**Code:** `src.modules.analytics.infrastructure.providers.crm_internal_provider.CRMInternalProvider`  
+**Code:** `luana_core_analytics_engine.infrastructure.providers.crm_internal_provider.CRMInternalProvider`  
 **Auth:** internal via Reads our own DB via credentials['db_session']  
 **Required credentials:** `db_session`  
 **Serves channel_types:** _none_  
@@ -139,7 +139,7 @@ Counts of outbound contact attempts and responses from journey_events with event
 ## `google_ads` — Google Ads + YouTube Ads
 
 **Status:** 🟢 production  
-**Code:** `src.modules.analytics.infrastructure.providers.google_ads_provider.GoogleAdsProvider`  
+**Code:** `luana_core_analytics_engine.infrastructure.providers.google_ads_provider.GoogleAdsProvider`  
 **Auth:** oauth2_with_refresh via Google OAuth (Google Ads scope) + developer token  
 **Required credentials:** `client_id`, `client_secret`, `refresh_token`, `customer_id`, `developer_token`  
 **Serves channel_types:** `google_ads`  
@@ -372,7 +372,7 @@ Best-effort: filters base GAQL query rows by campaign name containing 'remarketi
 ## `google_analytics` — Google Analytics 4
 
 **Status:** 🔴 broken  
-**Code:** `src.modules.analytics.infrastructure.providers.google_analytics_provider.GoogleAnalyticsProvider`  
+**Code:** `luana_core_analytics_engine.infrastructure.providers.google_analytics_provider.GoogleAnalyticsProvider`  
 **Auth:** oauth2_with_refresh via Google OAuth (Analytics Data API scope)  
 **Required credentials:** `client_id`, `client_secret`, `refresh_token`, `token`, `property_id`  
 **Serves channel_types:** `google_analytics`  
@@ -447,7 +447,7 @@ Sessions referred by AI search engines: perplexity.ai, chatgpt.com, claude.ai, c
 ## `mailerlite` — MailerLite (email marketing — multi-stage)
 
 **Status:** 🟢 production  
-**Code:** `src.modules.analytics.infrastructure.providers.mailerlite_provider.MailerLiteProvider`  
+**Code:** `luana_core_analytics_engine.infrastructure.providers.mailerlite_provider.MailerLiteProvider`  
 **Auth:** api_key via MailerLite API key (Bearer token)  
 **Required credentials:** `api_key`  
 **Serves channel_types:** `mailerlite`, `mailchimp`, `activecampaign`  
@@ -565,7 +565,7 @@ Referral / evangelization campaigns
 ## `manychat` — Manychat (webhook-fed pass-through)
 
 **Status:** ⚪ pass-through  
-**Code:** `src.modules.analytics.infrastructure.providers.manychat_provider.ManyChatProvider`  
+**Code:** `luana_core_analytics_engine.infrastructure.providers.manychat_provider.ManyChatProvider`  
 **Auth:** internal via None — data arrives via webhooks  
 **Required credentials:** _none_  
 **Serves channel_types:** `manychat`  
@@ -894,7 +894,7 @@ _No metrics emitted directly — populated via webhooks or downstream._
 ## `meta` — Meta (Facebook + Instagram + Meta Ads)
 
 **Status:** 🟡 partial  
-**Code:** `src.modules.analytics.infrastructure.providers.meta_provider.MetaProvider`  
+**Code:** `luana_core_analytics_engine.infrastructure.providers.meta_provider.MetaProvider`  
 **Auth:** long_lived_token via Meta Graph API (system user token)  
 **Required credentials:** `access_token`, `ads_account_id`, `instagram_business_account_id`, `page_id`  
 **Serves channel_types:** `meta`, `facebook_page`, `instagram_account`, `meta_ads_account`  
@@ -1018,7 +1018,7 @@ Facebook page organic reach + engagement. NOTE: not currently populated for Visi
 ## `meta_pixel` — Meta Pixel (server-side conversion tracking)
 
 **Status:** 🟡 partial  
-**Code:** `src.modules.analytics.infrastructure.providers.meta_pixel_provider.MetaPixelProvider`  
+**Code:** `luana_core_analytics_engine.infrastructure.providers.meta_pixel_provider.MetaPixelProvider`  
 **Auth:** long_lived_token via Meta Marketing API (pixel scope)  
 **Required credentials:** `asset_id`, `access_token`  
 **Serves channel_types:** `meta_pixel`  
@@ -1058,7 +1058,7 @@ Pixel event counts aggregated to a single day per call. Note: this provider curr
 ## `search_console` — Google Search Console
 
 **Status:** 🔴 broken  
-**Code:** `src.modules.analytics.infrastructure.providers.search_console_provider.SearchConsoleProvider`  
+**Code:** `luana_core_analytics_engine.infrastructure.providers.search_console_provider.SearchConsoleProvider`  
 **Auth:** oauth2_with_refresh via Google OAuth (Search Console scope, shares creds with GA)  
 **Required credentials:** `client_id`, `client_secret`, `refresh_token`, `site_url`  
 **Serves channel_types:** `search_console`  
@@ -1099,7 +1099,7 @@ Aggregate impressions/clicks + top 20 query JSON snapshot
 ## `shopify` — Shopify (orders + checkouts)
 
 **Status:** 🟢 production  
-**Code:** `src.modules.analytics.infrastructure.providers.shopify_provider.ShopifyProvider`  
+**Code:** `luana_core_analytics_engine.infrastructure.providers.shopify_provider.ShopifyProvider`  
 **Auth:** shopify_admin_token via Shopify Admin API token  
 **Required credentials:** `access_token`, `shop_domain`, `shop_currency`  
 **Serves channel_types:** `shopify`  
@@ -1169,7 +1169,7 @@ _None._
 ## `tiktok` — TikTok (organic + ads)
 
 **Status:** 🟢 production  
-**Code:** `src.modules.analytics.infrastructure.providers.tiktok_provider.TikTokProvider`  
+**Code:** `luana_core_analytics_engine.infrastructure.providers.tiktok_provider.TikTokProvider`  
 **Auth:** oauth2_with_refresh via TikTok Business OAuth  
 **Required credentials:** `access_token`, `advertiser_id`  
 **Serves channel_types:** `tiktok`, `tiktok_ads`  
@@ -1229,7 +1229,7 @@ Best-effort retargeting: filters ads report by campaign name containing 'retarge
 ## `youtube` — YouTube Analytics
 
 **Status:** 🟢 production  
-**Code:** `src.modules.analytics.infrastructure.providers.youtube_provider.YouTubeProvider`  
+**Code:** `luana_core_analytics_engine.infrastructure.providers.youtube_provider.YouTubeProvider`  
 **Auth:** oauth2_with_refresh via Google OAuth (YouTube Analytics scope)  
 **Required credentials:** `client_id`, `client_secret`, `refresh_token`, `token`  
 **Serves channel_types:** `youtube`, `youtube_analytics`  

@@ -1,7 +1,7 @@
 """CRM SQLAlchemy ORM models — shared across bounded contexts.
 
 These models live here so that analytics, sales_agent, and other modules
-can JOIN against CRM tables without importing from src.modules.crm.*,
+can JOIN against CRM tables without importing from luana_core_crm.*,
 which would violate DDD boundaries.
 
 The src.modules.crm.infrastructure.models.* files re-export from here

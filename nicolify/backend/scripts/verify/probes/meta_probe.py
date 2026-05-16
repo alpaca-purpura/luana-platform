@@ -118,7 +118,7 @@ def get_credentials_from_db(
     from sqlalchemy import create_engine, select
     from sqlalchemy.orm import Session
 
-    from src.modules.connections.infrastructure.models.channel_connection_model import (
+    from luana_core_connections.infrastructure.models.channel_connection_model import (
         ChannelConnectionModel,
     )
     from src.shared.infrastructure import model_registry  # noqa: F401

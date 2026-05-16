@@ -102,7 +102,7 @@ class TestWebCrawlerClass:
         assert BrandCrawler is WebCrawler
 
     # test_brand_module_reexport deferred to Story 3 (brand module lift)
-    # from src.modules.brand.application.extraction_crawler import BrandCrawler
+    # from luana_core_brand_studio.application.extraction_crawler import BrandCrawler
 
 
 class TestConstants:

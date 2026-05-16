@@ -74,29 +74,29 @@ def test_module_registry_built_only_from_providers() -> None:
         assert descriptor.route_prefix == data.route_prefix
 
 
-def test_all_registered_modules_have_copilot_provider_dir() -> None:
-    """Every module surfaced through ``MODULE_REGISTRY`` ships a ``copilot_provider/``."""
+def test_all_registered_modules_have_copilot_provider() -> None:
+    """Every module surfaced through ``MODULE_REGISTRY`` exposes a discoverable provider.
 
-    for module_id in get_module_registry():
-        provider_dir = _MODULES_BASE / module_id / "copilot_provider"
-        assert provider_dir.is_dir(), f"{module_id!r} must expose {provider_dir.as_posix()}/."
-        init_file = provider_dir / "__init__.py"
-        assert init_file.is_file(), f"{module_id!r} provider missing __init__.py."
-
-
-def test_brand_provider_is_deep_migrated() -> None:
-    """F1 pilot: brand provider owns its ``module_data`` builder.
-
-    Verifies the brand-specific lazy loaders left ``copilot/`` and now live in
-    ``backend/src/modules/brand/copilot_provider/module_data.py``.
+    Post-multibrand-reorg 2026-05-15: providers may live in `core/luana-core-*/` engine
+    packages (canonical for cross-brand modules) or in `{brand}/backend/src/modules/{brand}/`
+    (brand-vertical overlays). We verify the provider OBJECT exists and is registered, not
+    its filesystem location (which varies post-carve-out).
     """
+    import inspect
 
-    brand_module_data = _MODULES_BASE / "brand" / "copilot_provider" / "module_data.py"
-    assert brand_module_data.is_file(), "Brand provider must own its module_data builder after F1 pilot migration."
-    text = brand_module_data.read_text(encoding="utf-8")
-    assert "BrandRepository" in text
-    assert "BrandSettings" in text
-    assert "build_brand_module_data" in text
+    providers = discover_providers()
+    for module_id in get_module_registry():
+        provider = providers.get(module_id)
+        assert provider is not None, (
+            f"Module {module_id!r} is in registry but has no discoverable provider. "
+            "Check entry_points in `core/luana-core-*/pyproject.toml` "
+            "or `nicolify/backend/src/modules/*/copilot_provider/`."
+        )
+        # Verify the provider's source file is loadable (not stale import)
+        source_file = inspect.getfile(provider.__class__)
+        assert Path(source_file).is_file(), (
+            f"Provider for {module_id!r} resolved to {source_file} which doesn't exist."
+        )
 
 
 def test_health_check_reports_healthy_after_load() -> None:

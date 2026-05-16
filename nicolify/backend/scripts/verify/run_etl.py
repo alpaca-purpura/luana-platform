@@ -33,13 +33,13 @@ from sqlalchemy.orm import Session
 
 from src.core.config import settings
 from src.core.database import redis_client
-from src.modules.analytics.application.services.etl_service import (
+from luana_core_analytics_engine.application.services.etl_service import (
     ETLService,
 )
-from src.modules.analytics.infrastructure.cache.metrics_cache import (
+from luana_core_analytics_engine.infrastructure.cache.metrics_cache import (
     MetricsCache,
 )
-from src.modules.connections.application.services.connection_port_impl import (
+from luana_core_connections.application.services.connection_port_impl import (
     ConnectionPortImpl,
 )
 from src.shared.infrastructure import model_registry  # noqa: F401

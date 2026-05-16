@@ -1,1 +1,0 @@
-"""Brand infrastructure package."""

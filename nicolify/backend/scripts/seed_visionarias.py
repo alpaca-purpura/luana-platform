@@ -9,7 +9,7 @@ from src.core.domain.lead_enums import AvatarPersona, FinancialCapacity, LeadTem
 from src.services.db.models.business import JourneyProgress, Product
 from src.services.db.models.lead import Lead
 
-from src.modules.offer.domain.enums import OfferDeliveryModel as DeliveryModel
+from luana_core_offer_studio.domain.enums import OfferDeliveryModel as DeliveryModel
 
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:password@localhost:5432/visionarias_logs")
 

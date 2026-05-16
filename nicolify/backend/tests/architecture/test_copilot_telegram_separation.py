@@ -134,8 +134,8 @@ def test_copilot_telegram_module_does_not_import_connections() -> None:
         COPILOT_ROOT / "application" / "services" / "telegram_link_service.py",
     ]
     forbidden_imports = [
-        "from src.modules.connections",
-        "import src.modules.connections",
+        "from luana_core_connections",
+        "import luana_core_connections",
         "from src.modules.sales_agent",
         "import src.modules.sales_agent",
     ]

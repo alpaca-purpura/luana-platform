@@ -57,17 +57,17 @@ SETUP_BRAND_MINIMAL = Workflow(
     nodes=(
         WorkflowNode(
             id="probe_brand",
-            handler_ref="src.modules.brand.copilot_provider.workflow_handlers:probe_brand",
+            handler_ref="luana_core_brand_studio.copilot_provider.workflow_handlers:probe_brand",
             next="ask_next_section",
         ),
         WorkflowNode(
             id="ask_next_section",
-            handler_ref="src.modules.brand.copilot_provider.workflow_handlers:ask_next_section",
+            handler_ref="luana_core_brand_studio.copilot_provider.workflow_handlers:ask_next_section",
             next="finalize_summary",
         ),
         WorkflowNode(
             id="finalize_summary",
-            handler_ref="src.modules.brand.copilot_provider.workflow_handlers:finalize_summary",
+            handler_ref="luana_core_brand_studio.copilot_provider.workflow_handlers:finalize_summary",
         ),
     ),
     state_schema=BrandSetupState,

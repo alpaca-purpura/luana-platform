@@ -1,1 +1,0 @@
-"""Commercial calendar domain package."""

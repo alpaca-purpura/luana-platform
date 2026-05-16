@@ -10,7 +10,7 @@ from src.services.database import SessionLocal
 from src.services.db.models.business import Product
 from src.services.db.models.tenant import Tenant
 
-from src.modules.offer.domain.enums import GuaranteeType, OfferDeliveryModel, OfferValueLevel
+from luana_core_offer_studio.domain.enums import GuaranteeType, OfferDeliveryModel, OfferValueLevel
 
 # Setup Logging
 logging.basicConfig(level=logging.INFO)

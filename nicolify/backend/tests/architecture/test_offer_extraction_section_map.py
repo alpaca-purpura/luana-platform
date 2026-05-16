@@ -226,7 +226,7 @@ class TestLegacyDictRemoved:
         Use ``fields_to_fe_sections()`` or
         ``shared.domain.field_contract.fields_by_section()`` instead.
         """
-        import src.modules.offer.domain.extraction_section_map as mod
+        import luana_core_offer_studio.domain.extraction_section_map as mod
 
         assert not hasattr(mod, "OFFER_FIELDS_BY_FE_SECTION"), (
             "OFFER_FIELDS_BY_FE_SECTION reappeared in extraction_section_map.py. "

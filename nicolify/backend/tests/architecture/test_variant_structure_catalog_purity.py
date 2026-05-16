@@ -69,14 +69,14 @@ def test_no_outbound_catalog_imports() -> None:
 
     Triggering conditions (all illegal):
 
-    - ``from src.modules.offer.domain.archetype_catalog import ...``
-    - ``import src.modules.offer.domain.section_catalog``
-    - ``from src.modules.offer.domain.format_catalog import ...``
+    - ``from luana_core_offer_studio.domain.archetype_catalog import ...``
+    - ``import luana_core_offer_studio.domain.section_catalog``
+    - ``from luana_core_offer_studio.domain.format_catalog import ...``
     - ``from src.shared.domain.expert_business_type import ...``
 
     Allowed neighbours:
 
-    - ``from src.modules.offer.domain.enums import VariantStructure``
+    - ``from luana_core_offer_studio.domain.enums import VariantStructure``
     - anything from the standard library.
     """
     source = CATALOG_PATH.read_text(encoding="utf-8")

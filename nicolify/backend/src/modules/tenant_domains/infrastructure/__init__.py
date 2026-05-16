@@ -1,1 +1,0 @@
-"""Tenant domains infrastructure package."""

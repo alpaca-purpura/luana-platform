@@ -31,18 +31,18 @@ if "/app" not in sys.path:
     sys.path.insert(0, "/app")
 
 from src.core.database import SessionLocal
-from src.modules.analytics.application.services.channel_registry import (
+from luana_core_analytics_engine.application.services.channel_registry import (
     PROVIDER_TO_CHANNEL_TYPES,
     STAGE_CHANNEL_MAP,
     ChannelRegistry,
 )
-from src.modules.analytics.infrastructure.providers.registry import (
+from luana_core_analytics_engine.infrastructure.providers.registry import (
     get_provider,
 )
-from src.modules.analytics.infrastructure.repositories.official_metrics_repository import (
+from luana_core_analytics_engine.infrastructure.repositories.official_metrics_repository import (
     OfficialMetricsRepository,
 )
-from src.modules.connections.application.services.connection_port_impl import (
+from luana_core_connections.application.services.connection_port_impl import (
     ConnectionPortImpl,
 )
 

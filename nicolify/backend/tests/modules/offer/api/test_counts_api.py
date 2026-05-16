@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from luana_core_platform.core.database import get_db
 from luana_core_iam.api.dependencies import get_current_user
 from luana_core_iam.domain.user import User
-from src.modules.offer.api.counts import router
+from luana_core_offer_studio.api.counts import router
 from tests.modules.offer.conftest import create_product_model
 
 

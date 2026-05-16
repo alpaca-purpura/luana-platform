@@ -20,7 +20,7 @@ from luana_core_platform.domain.field_contract import (
 )
 
 # Triggers offer FieldContract registration on first import.
-import src.modules.offer.domain.field_contract  # noqa: F401
+import luana_core_offer_studio.domain.field_contract  # noqa: F401
 
 # All 21 FE section slugs from section-catalog.ts — used in arch tests.
 FE_SECTION_SLUGS: frozenset[str] = frozenset(

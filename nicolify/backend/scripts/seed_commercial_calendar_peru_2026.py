@@ -15,9 +15,9 @@ import uuid
 
 import src.shared.infrastructure.model_registry  # noqa: F401
 from src.core.database import SessionLocal
-from src.modules.commercial_calendar.domain.calendar_event import CalendarEvent
-from src.modules.commercial_calendar.domain.enums import EventCategory
-from src.modules.commercial_calendar.infrastructure.repositories.calendar_event_repository import (
+from luana_core_commercial_calendar.domain.calendar_event import CalendarEvent
+from luana_core_commercial_calendar.domain.enums import EventCategory
+from luana_core_commercial_calendar.infrastructure.repositories.calendar_event_repository import (
     CalendarEventRepository,
 )
 

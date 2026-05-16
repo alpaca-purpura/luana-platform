@@ -27,7 +27,7 @@ from sqlalchemy import select
 # way as the worker.
 import src.shared.infrastructure.model_registry  # noqa: F401
 from src.core.database import SessionLocal
-from src.modules.iam.infrastructure.models.tenant_model import TenantModel
+from luana_core_iam.infrastructure.models.tenant_model import TenantModel
 from src.shared.workers.brand_summary_regen import regen_brand_summary_sync
 
 logger = logging.getLogger("backfill_brand_summaries")

@@ -23,7 +23,7 @@ def get_channel_credentials(db: Session, tenant_id: UUID, channel_type: str) -> 
     Lazy-imports ChannelConnectionModel from connections.
     """
     from sqlalchemy import select
-    from src.modules.connections.infrastructure.models.channel_connection_model import (
+    from luana_core_connections.infrastructure.models.channel_connection_model import (
         ChannelConnectionModel,
     )
 
@@ -49,7 +49,7 @@ def get_channel_connection_data(
     Returns (credentials, config) tuple if an active connection exists, else None.
     """
     from sqlalchemy import select
-    from src.modules.connections.infrastructure.models.channel_connection_model import (
+    from luana_core_connections.infrastructure.models.channel_connection_model import (
         ChannelConnectionModel,
     )
 
@@ -70,7 +70,7 @@ def create_calendar_adapter(credentials_data: dict) -> object:
 
     Lazy-imports from connections infrastructure.
     """
-    from src.modules.connections.infrastructure.channels.google_calendar import (
+    from luana_core_connections.infrastructure.channels.google_calendar import (
         GoogleCalendarAdapter,
     )
 
@@ -82,6 +82,6 @@ def create_gmail_adapter(credentials_data: dict) -> object:
 
     Lazy-imports from connections infrastructure.
     """
-    from src.modules.connections.infrastructure.channels.gmail import GmailAdapter
+    from luana_core_connections.infrastructure.channels.gmail import GmailAdapter
 
     return GmailAdapter(credentials_data=credentials_data)

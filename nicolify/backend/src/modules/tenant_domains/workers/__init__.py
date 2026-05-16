@@ -1,1 +1,0 @@
-"""Tenant domains workers package."""

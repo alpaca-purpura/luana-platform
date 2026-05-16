@@ -1,1 +1,0 @@
-"""Brand repositories package."""

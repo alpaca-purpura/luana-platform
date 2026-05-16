@@ -56,8 +56,8 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session  # noqa: TC002
 
 from src.core.database import SessionLocal
-from src.modules.offer.domain.enums import OfferArchetype
-from src.modules.offer.domain.offer_type_preset_catalog import (
+from luana_core_offer_studio.domain.enums import OfferArchetype
+from luana_core_offer_studio.domain.offer_type_preset_catalog import (
     OFFER_TYPE_PRESET_CATALOG,
     OfferTypePreset,
 )

@@ -1,1 +1,0 @@
-"""Landing module package."""

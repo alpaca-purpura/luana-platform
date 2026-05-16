@@ -42,10 +42,10 @@ if str(BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(BACKEND_ROOT))
 
 from src.core.database import SessionLocal
-from src.modules.landing.application.landing_content_builders import _resolve_content
-from src.modules.landing.application.landing_service import LandingService
-from src.modules.landing.domain.content import LandingPageConfig
-from src.modules.offer.infrastructure.repositories.offer_repository import OfferRepository
+from luana_core_landing.application.landing_content_builders import _resolve_content
+from luana_core_landing.application.landing_service import LandingService
+from luana_core_landing.domain.content import LandingPageConfig
+from luana_core_offer_studio.infrastructure.repositories.offer_repository import OfferRepository
 from src.modules.sales_agent.application.services.knowledge_builder import TenantKnowledgeBuilder
 from src.shared.infrastructure import model_registry  # noqa: F401 — registers all SQLA models
 
