@@ -21,9 +21,20 @@ from pathlib import Path
 
 import yaml  # pyyaml — disponible en venv raiz
 
-BRANDS = ["nicolify", "vitalia", "comunify", "lupulo"]
 REPO_ROOT = Path(__file__).parent.parent
 OUTPUT = REPO_ROOT / "docs" / "portfolio" / "INFRA-MATRIX.md"
+
+
+def _discover_brands() -> list[str]:
+    """Auto-discover brand slugs by globbing {brand}/config/brand.yaml.
+
+    Devuelve lista ordenada alfabeticamente. Cualquier directorio raiz con
+    config/brand.yaml es considerado brand (incluye placeholders bootstrap).
+    """
+    return sorted(p.parent.parent.name for p in REPO_ROOT.glob("*/config/brand.yaml"))
+
+
+BRANDS = _discover_brands()
 
 HEADER = "<!-- AUTO-GENERATED via make infra-matrix — DO NOT EDIT MANUALLY -->\n"
 
