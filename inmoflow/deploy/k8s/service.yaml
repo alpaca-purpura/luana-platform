@@ -1,0 +1,25 @@
+---
+# inmoflow/deploy/k8s/service.yaml
+# PLACEHOLDER — Service minimo para InmoFlow.
+# Ver deployment.yaml para contexto del estado placeholder.
+#
+# Arch ref: bootstrap brand topology — 2026-05-15
+apiVersion: v1
+kind: Service
+metadata:
+  name: inmoflow-backend
+  namespace: inmoflow
+  labels:
+    app.kubernetes.io/name: inmoflow
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: luana-platform
+    app.kubernetes.io/managed-by: kubectl
+spec:
+  selector:
+    app: inmoflow-app
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: http
+  type: ClusterIP

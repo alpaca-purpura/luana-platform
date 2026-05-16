@@ -1,0 +1,40 @@
+# inmoflow/config/brand.yaml
+# BrandConfig declarativa para InmoFlow (real_estate).
+# Decision D6: puertos cementados (inmoflow=8006/3006)
+# NOTA: inmoflow es placeholder (Story TBD pendiente). Esta config es minima.
+#
+# bootstrap brand topology — 2026-05-15
+# SSoT infra metadata por entorno. Auto-indexado en docs/portfolio/INFRA-MATRIX.md via make infra-matrix.
+
+brand_slug: inmoflow
+brand_name: "InmoFlow"
+brand_description: "Vertical Real Estate (Inmobiliaria) brand app — sync portales inmobiliarios, lead routing geográfico y calculadoras hipotecarias"
+brand_segment: real_estate
+compliance_level: standard
+voice_cloning_enabled: false
+multi_language_ui: false
+
+features:
+  brand_studio_basic: true
+  portales_sync: false        # MercadoLibre/ZonaProp/Idealista — Story TBD
+  geo_lead_routing: false      # Story TBD
+  financial_calculators: false # Story TBD
+
+# SSoT infra metadata por entorno.
+# Auto-indexado en docs/portfolio/INFRA-MATRIX.md via make infra-matrix.
+infra:
+  dev:
+    backend_port: 8006
+    frontend_port: 3006
+    database_name: inmoflow_dev
+    redis_db: 5
+    qdrant_collection_prefix: inmoflow_
+    domain: inmoflow-dev.nicolify.com
+    cloudflared_tunnel: inmoflow-dev
+  staging:
+    domain: inmoflow-test.nicolify.com
+    server: tbd-staging-cluster
+  prod:
+    domain: app.inmoflow.com
+    server: tbd
+    cloudflared_tunnel: inmoflow-prod

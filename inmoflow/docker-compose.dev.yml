@@ -1,0 +1,84 @@
+# inmoflow/docker-compose.dev.yml
+# Brand-specific services para InmoFlow (Real Estate (Inmobiliaria)).
+# Siempre se usa combinado con el compose raiz:
+#   docker compose -f docker-compose.dev.yml -f inmoflow/docker-compose.dev.yml up -d
+# O mas facil: make dev-inmoflow
+# SSoT puertos/DB/etc: inmoflow/config/brand.yaml::infra
+#
+# NOTA: inmoflow/backend usa placeholder (Story TBD pendiente).
+# El compose file funciona correctamente con el placeholder.
+#
+# bootstrap brand topology — 2026-05-15
+# Decisions: D2, D4 (backend placeholder), D5, D6
+
+name: luana-dev  # mismo name que raiz para compartir network/volumes
+
+services:
+  inmoflow_backend_dev:
+    build:
+      context: .  # contexto = raiz monorepo
+      dockerfile: inmoflow/backend/Dockerfile
+      target: dev
+    restart: unless-stopped
+    env_file:
+      - path: inmoflow/.env.dev  # gitignored; copiado desde inmoflow/.env.dev.template
+        required: false  # compose config --quiet pasa aunque el archivo no exista aun
+    environment:
+      DATABASE_URL: "postgresql+asyncpg://postgres:password@luana_postgres_dev:5432/inmoflow_dev"
+      REDIS_URL: "redis://luana_redis_dev:6379/5"
+      QDRANT_HOST: "luana_qdrant_dev"
+      QDRANT_COLLECTION_PREFIX: "inmoflow_"
+      PORT: "8006"
+    volumes:
+      - ./inmoflow/backend/src:/workspace/inmoflow/backend/src:rw  # bind mount src placeholder
+    ports:
+      - "127.0.0.1:8006:8006"
+    networks:
+      - luana_dev_net
+    depends_on:
+      luana_postgres_dev:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  inmoflow_frontend_dev:
+    build:
+      context: .
+      dockerfile: inmoflow/frontend/Dockerfile
+      target: dev
+    restart: unless-stopped
+    env_file:
+      - path: inmoflow/.env.dev
+        required: false
+    environment:
+      PORT: "3006"
+      NEXT_PUBLIC_API_URL: "http://127.0.0.1:8006"
+    volumes:
+      - ./inmoflow/frontend/src:/app/inmoflow/frontend/src:rw
+    ports:
+      - "127.0.0.1:3006:3006"
+    networks:
+      - luana_dev_net
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  inmoflow_cloudflared_dev:
+    image: cloudflare/cloudflared:latest
+    profiles: [tunnel]  # opt-in: make dev-inmoflow-tunnel
+    restart: unless-stopped
+    env_file:
+      - path: inmoflow/.env.dev  # debe contener TUNNEL_TOKEN
+        required: false
+    command: tunnel run inmoflow-dev
+    networks:
+      - luana_dev_net
+
+volumes:
+  inmoflow_backend_venv:
+    name: inmoflow_backend_venv
+
+# NOTA: network luana_dev_net es definida en el compose raiz (docker-compose.dev.yml).
