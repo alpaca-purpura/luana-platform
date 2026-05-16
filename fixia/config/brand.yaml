@@ -1,0 +1,40 @@
+# fixia/config/brand.yaml
+# BrandConfig declarativa para Fixia (field_services).
+# Decision D6: puertos cementados (fixia=8008/3008)
+# NOTA: fixia es placeholder (Story TBD pendiente). Esta config es minima.
+#
+# bootstrap brand topology — 2026-05-15
+# SSoT infra metadata por entorno. Auto-indexado en docs/portfolio/INFRA-MATRIX.md via make infra-matrix.
+
+brand_slug: fixia
+brand_name: "Fixia"
+brand_description: "Vertical Servicios Hogar + Oficios brand app — técnicos en campo con cotización on-site mobile y reseñas locales SEO"
+brand_segment: field_services
+compliance_level: standard
+voice_cloning_enabled: false
+multi_language_ui: false
+
+features:
+  brand_studio_basic: true
+  field_technician_dispatch: false  # Story TBD
+  on_site_quotation: false          # Story TBD
+  local_seo_reviews: false          # Story TBD
+
+# SSoT infra metadata por entorno.
+# Auto-indexado en docs/portfolio/INFRA-MATRIX.md via make infra-matrix.
+infra:
+  dev:
+    backend_port: 8008
+    frontend_port: 3008
+    database_name: fixia_dev
+    redis_db: 7
+    qdrant_collection_prefix: fixia_
+    domain: fixia-dev.nicolify.com
+    cloudflared_tunnel: fixia-dev
+  staging:
+    domain: fixia-test.nicolify.com
+    server: tbd-staging-cluster
+  prod:
+    domain: app.fixia.com
+    server: tbd
+    cloudflared_tunnel: fixia-prod

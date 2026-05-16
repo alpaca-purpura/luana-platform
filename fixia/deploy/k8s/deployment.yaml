@@ -1,0 +1,84 @@
+# fixia/deploy/k8s/deployment.yaml
+# Placeholder K8s manifest — Fixia (Servicios Hogar + Oficios vertical)
+# replicas: 0 — no workload real hasta S-FIXIA-BOOTSTRAP (Story TBD).
+# bootstrap brand topology — 2026-05-15
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fixia-backend
+  namespace: luana
+  labels:
+    app: fixia-backend
+    brand: fixia
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: fixia-backend
+  template:
+    metadata:
+      labels:
+        app: fixia-backend
+        brand: fixia
+    spec:
+      containers:
+        - name: fixia-backend
+          image: ghcr.io/luana-platform/fixia-backend:latest
+          ports:
+            - containerPort: 8008
+          env:
+            - name: PORT
+              value: "8008"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8008
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8008
+            initialDelaySeconds: 10
+            periodSeconds: 10
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fixia-frontend
+  namespace: luana
+  labels:
+    app: fixia-frontend
+    brand: fixia
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: fixia-frontend
+  template:
+    metadata:
+      labels:
+        app: fixia-frontend
+        brand: fixia
+    spec:
+      containers:
+        - name: fixia-frontend
+          image: ghcr.io/luana-platform/fixia-frontend:latest
+          ports:
+            - containerPort: 3008
+          env:
+            - name: PORT
+              value: "3008"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3008
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3008
+            initialDelaySeconds: 10
+            periodSeconds: 10
