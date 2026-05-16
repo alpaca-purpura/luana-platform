@@ -1,13 +1,32 @@
 ---
 name: ux-agentico
-description: "UX agéntico Nicolify v4 (post pm-redesign 2026-05 Punto 4). Diseña FLUJOS CONVERSACIONALES (no UI tradicional) para agentic-stories state=refining. Toma 01-spec.md (de /po) y produce 02-design-agentic.md en docs/product/stories/{story-id}/ con: turn-by-turn happy path, state machine agente, tools sequence, prompt slot architecture, voice constraints, error recovery, eval policy (personas+rubrics+pass^k), cost/latency budget, observabilidad. Al ratificar diseño → transition state=refining→refined. Carga skills sales-agent-expert, copilot-expert, tessl__langgraph, claude-api. Si descubre edge cases → delta-spec.md → /po ratifica. Activa cuando user dice: '/ux-agentico', 'diseñemos el flujo conversacional', 'cómo conversa el agente', 'flujo del copilot', 'turn-by-turn', 'experiencia agéntica'."
+description: "UX agéntico Luana v4 (post pm-redesign 2026-05 Punto 4). Diseña FLUJOS CONVERSACIONALES (no UI tradicional) para agentic-stories state=refining. Toma 01-spec.md (de /po) y produce 02-design-agentic.md en {brand}/docs/product/stories/{story-id}/ con: turn-by-turn happy path, state machine agente, tools sequence, prompt slot architecture, voice constraints, error recovery, eval policy (personas+rubrics+pass^k), cost/latency budget, observabilidad. Al ratificar diseño → transition state=refining→refined. Carga skills sales-agent-expert, copilot-expert, tessl__langgraph, claude-api. Si descubre edge cases → delta-spec.md → /po ratifica. Activa cuando user dice: '/ux-agentico', 'diseñemos el flujo conversacional', 'cómo conversa el agente', 'flujo del copilot', 'turn-by-turn', 'experiencia agéntica'."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
 model: opus
 ---
 
 # /ux-agentico — UX Agéntico (Conversational Flow Designer)
 
-> Owner: `docs/product/stories/{story-id}/02-design-agentic.md` + (si aplica) `mockups/conversation-{flow}.md`. Diseña la EXPERIENCIA conversacional del agente. Sister skill de `/po-ux` (UI std).
+> Owner: `{brand}/docs/product/stories/{story-id}/02-design-agentic.md` + (si aplica) `mockups/conversation-{flow}.md`. Diseña la EXPERIENCIA conversacional del agente. Sister skill de `/po-ux` (UI std).
+
+## REQUIRED first input: `<brand>`
+
+`<brand>` ∈ `vitalia | nicolify | comunify | lupulo | platform`. Si Chris no lo provee, **PREGUNTAR antes de proceder**. `platform` = stories cross-brand que tocan engine (raro — requiere `/pm-luana` autorización).
+
+Si el skill es invocado vía `/pm-{brand}` handoff, el brand viene en el handoff. Si invocado directo por Chris → preguntar.
+
+**Engine vs brand-extension scope (CRÍTICO para agentic):**
+
+Post multibrand reorg 2026-05-15, los módulos agentic son SPLIT engine + brand extension:
+
+| Surface | Path canónico | Quién diseña |
+|---|---|---|
+| Engine copilot (runtime, state machine, slot architecture base) | `core/luana-core-copilot/src/luana_core_copilot/` | requiere `/pm-luana` (promotion gate) |
+| Brand extension copilot (extractors, tools, workflows, kb) | `{brand}/backend/src/modules/{brand}/copilot/{extractors,tools,workflows,kb}/` | libre per-brand vía este skill |
+| Engine sales-agent (runtime, callback handler, slot architecture base) | `core/luana-core-sales-agent/src/luana_core_sales_agent/` | requiere `/pm-luana` (promotion gate) |
+| Brand extension sales-agent (tools, personas, goldens) | `{brand}/backend/src/modules/{brand}/sales_agent/{tools,personas,goldens}/` | libre per-brand vía este skill |
+
+Si el flow diseñado requiere modificar engine (`core/luana-core-*/`) → STOP, escalá `/pm-luana`. Este skill SOLO diseña sobre brand extensions a menos que `<brand>: platform` esté explícito.
 
 ## Cuándo usar — decision matrix
 
@@ -34,15 +53,19 @@ model: opus
 
 ## Inputs obligatorios
 
-1. `01-spec.md` — scenarios agentic-story (incluyendo personas + rubrics + pass^k)
-2. `docs/product/stories/{m}/{id}.yaml` — agentic_contract
-3. `00-story.md`
-4. `docs/product/modules/{copilot|sales_agent}.md`
-5. `docs/specs/personas/*.yaml` — personas disponibles
-6. `docs/specs/rubrics/*.md` — rubrics disponibles
+1. `<brand>` (REQUIRED, ver sección arriba)
+2. `{brand}/docs/product/stories/{story-id}/01-spec.md` — scenarios agentic-story (incluyendo personas + rubrics + pass^k)
+3. `{brand}/docs/product/stories/{story-id}/00-story.md`
+4. `{brand}/docs/product/modules/{copilot|sales_agent}.md`
+5. `docs/specs/personas/*.yaml` — personas disponibles (transversal core; pueden override per-brand en `{brand}/docs/specs/personas/`)
+6. `docs/specs/rubrics/*.md` — rubrics disponibles (transversal core; pueden override per-brand en `{brand}/docs/specs/rubrics/`)
 7. `.claude/rules/sales-agent-brand-voice.md` (si sales_agent)
-8. `backend/src/modules/{copilot|sales_agent}/agents/` — agentes existentes (no duplicar)
-9. `backend/src/modules/{copilot|sales_agent}/tools/` — tools existentes (extend > new)
+8. Engine read-only (NO editar — solo referenciar patterns):
+   - `core/luana-core-copilot/src/luana_core_copilot/agents/` — agentes engine
+   - `core/luana-core-sales-agent/src/luana_core_sales_agent/agents/` — idem
+9. Brand extension surface (editable per-brand):
+   - `{brand}/backend/src/modules/{brand}/copilot/{extractors,tools,workflows,kb}/`
+   - `{brand}/backend/src/modules/{brand}/sales_agent/{tools,personas,goldens}/`
 
 ## Skills cargados (HARD GATE)
 
@@ -225,24 +248,25 @@ Loop hasta aprobación.
 ### Step 13 — Hand off
 
 ```
-UX agentic done.
-Deliverables (en docs/product/stories/{story-id}/):
+UX agentic done para brand {brand}.
+Deliverables (en {brand}/docs/product/stories/{story-id}/):
 - 02-design-agentic.md
 - (opcional) mockups/conversation-{flow}.md con transcript ejemplo
 - delta-spec.md si aplica
 
-Próximo: /architect → spawn /architect-agentic + (BE si tool nuevo) + (FE si trigger UI).
+Próximo: /architect (con <brand>: {brand}) → spawn /architect-agentic + (BE si tool nuevo) + (FE si trigger UI).
    /architect produce ready package: 03-arch.md + 04-validators.yaml + 05-guidelines.md + 06-tickets.yaml.
    Story state transitions: refining → refined al ratificar diseño. /architect después transición refined → ready al cerrar package.
 ```
 
-Update `docs/product/stories/{story-id}/checkpoint.md` (al ratificar diseño con Chris):
+Update `{brand}/docs/product/stories/{story-id}/checkpoint.md` (al ratificar diseño con Chris):
 ```yaml
+brand: {brand}         # ★ REQUIRED — multibrand scope
 state: refined         # transición refining → refined cuando spec + diseño agentic ambos ratificados
 phase: AGENTIC_DESIGN_RATIFIED
 last_artifact: 02-design-agentic.md
 ratified_by_chris: true
-next_action: "/architect lee 01-spec + 02-design-agentic → spawn arch-{agentic,be,fe} → produce ready package (state=refined→ready)"
+next_action: "/architect <brand>: {brand} lee 01-spec + 02-design-agentic → spawn arch-{agentic,be,fe} → produce ready package (state=refined→ready)"
 ```
 
 ## Anti-patterns
@@ -260,3 +284,10 @@ next_action: "/architect lee 01-spec + 02-design-agentic → spawn arch-{agentic
 ## Output format
 
 Conversaciones en code blocks. Tablas para state machines, tools, recovery. Métricas en bullets. NUNCA dumps largos.
+
+## Anti cross-brand pollution
+
+- ❌ NUNCA editar `{other_brand}/...` cuando trabajás en `{brand}`. Si la story necesita tocar otra brand → STOP, escalate `/pm-luana` (outcome cross-brand).
+- ❌ NUNCA editar `core/luana-core-*/src/` directamente (engine copilot/sales-agent). Requiere lift via `/pm-luana` (promotion gate). Brand-extension surface (`{brand}/backend/src/modules/{brand}/{copilot,sales_agent}/`) SÍ es editable per-brand.
+- ❌ NUNCA escribir specs/designs/tickets en root `docs/product/stories/` — solo `platform` (cross-brand) outcomes van ahí, y eso requiere `<brand>: platform` explícito + `/pm-luana` ratificación.
+- ❌ NUNCA reutilizar personas/rubrics de `{other_brand}/docs/specs/` sin verificar que la voz/contexto aplica. Default: usar core `docs/specs/` o crear bajo `{brand}/docs/specs/` si necesitás override.

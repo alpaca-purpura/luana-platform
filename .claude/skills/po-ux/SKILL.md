@@ -7,7 +7,13 @@ model: opus
 
 # /po-ux — Product Owner + UX Designer (UI Standard)
 
-> Owner: `01-spec.md` UNIFICADO (Gherkin + wireframes + estados visuales + microcopy + graders) + opcional `mockups/*.html`. Fusión `/po` + `/ux-ui` para UI standard donde design system constrained (Tailwind + Shadcn + FSD-Lite) hace separar spec/design ceremonia inútil.
+> Owner: `01-spec.md` UNIFICADO en `{brand}/docs/product/stories/{story-id}/` (Gherkin + wireframes + estados visuales + microcopy + graders) + opcional `mockups/*.html`. Fusión `/po` + `/ux-ui` para UI standard donde design system constrained (Tailwind + Shadcn + FSD-Lite) hace separar spec/design ceremonia inútil.
+
+## REQUIRED first input: `<brand>`
+
+`<brand>` ∈ `vitalia | nicolify | comunify | lupulo | platform`. Si Chris no lo provee, **PREGUNTAR antes de proceder**. `platform` = stories UI cross-brand que tocan engine (raro — requiere `/pm-luana` autorización).
+
+Si invocado vía `/pm-{brand}` handoff, el brand viene en el handoff. Si invocado directo por Chris → preguntar primero.
 
 ## Cuándo usar — decision matrix
 
@@ -20,20 +26,23 @@ model: opus
 | **UI disruptiva/novel** (paradigma visual nuevo, no Shadcn pattern) | `/ux-disruptivo` 7-fase Design Thinking → luego `/po` formaliza spec |
 | **Cross-feature navigation audit** | `/ux-flow-architect` → outputs UI-SPEC para `/po-ux` formalizar |
 
-**Justificación fusión:** UI std en Nicolify usa Tailwind tokens + Shadcn primitives + FSD-Lite — design system constrained. Separar `01-spec.md` (PO) y `02-design-ui.md` (UX) producía 2 docs con 60% solapamiento (microcopy duplicado, estados duplicados, scenarios verificando estados visuales separados de Gherkin). Wave 3 redesign 2026-05 fusiona ambos.
+**Justificación fusión:** UI std en Luana brands usa Tailwind tokens + Shadcn primitives + FSD-Lite — design system constrained. Separar `01-spec.md` (PO) y `02-design-ui.md` (UX) producía 2 docs con 60% solapamiento (microcopy duplicado, estados duplicados, scenarios verificando estados visuales separados de Gherkin). Wave 3 redesign 2026-05 fusiona ambos.
 
 ## Inputs obligatorios
 
-1. Story creada por `/pm` con state=`refining` en `docs/product/stories/{story-id}/checkpoint.md` (idea ya pasó por trigger Chris "refinemos")
-2. `docs/product/modules/{m}.md` — estado funcional módulo
-3. `docs/product/capabilities/{m}/` — capabilities existentes (no duplicar)
-4. `docs/specs/templates/01-spec-template.md` — template
-5. `frontend/src/components/ui/` — Shadcn primitives DISPONIBLES
-6. `frontend/src/features/{m}/` — patterns reales del módulo
-7. `tailwind.config.*` / `globals.css` — design tokens proyecto
-8. Domain skill correspondiente (cargar según módulo):
+1. `<brand>` (REQUIRED, ver sección arriba)
+2. Story creada por `/pm-{brand}` con state=`refining` en `{brand}/docs/product/stories/{story-id}/checkpoint.md` (idea ya pasó por trigger Chris "refinemos")
+3. `{brand}/docs/product/modules/{m}.md` — estado funcional módulo per-brand
+4. `{brand}/docs/product/capabilities/{m}/` — capabilities existentes per-brand (no duplicar)
+5. `docs/specs/templates/01-spec-template.md` — template (transversal core, reusable cross-brand)
+6. UI primitives + patterns brand-scoped:
+   - `{brand}/frontend/src/components/ui/` — Shadcn primitives DISPONIBLES (per-brand; pueden eventualmente lift a core)
+   - `{brand}/frontend/src/components/shared/` — componentes compartidos cross-feature dentro del brand
+   - `{brand}/frontend/src/features/{m}/` — patterns reales del módulo per-brand
+   - `{brand}/frontend/tailwind.config.*` / `globals.css` — design tokens brand (cada brand puede tener tokens propios)
+7. Domain skill correspondiente (cargar según módulo):
    - `brand-expert`, `offer-expert`, `metrics-expert`, `copilot-expert`, etc.
-9. `frontend-expert` skill — FSD-Lite + Shadcn + Tailwind tokens (HARD GATE)
+8. `frontend-expert` skill — FSD-Lite + Shadcn + Tailwind tokens (HARD GATE)
 
 ## Skills cargados (HARD GATE antes de redactar)
 
@@ -78,14 +87,16 @@ Elegí + respondeme; mando batch 2 (estados visuales)."
 ### Step 1 — Bootstrap
 
 ```bash
-cat docs/product/BACKLOG.md                          # ver estado overall
-cat docs/product/ideas-pool.yaml                     # buscar idea origen
-cat docs/product/modules/{m}.md                      # estado funcional
-ls docs/product/stories/                             # stories existentes (no duplicar)
-ls docs/product/capabilities/{m}/                    # capabilities live
+WS=$(git rev-parse --show-toplevel)
+BRAND={brand}                                                  # vitalia | nicolify | comunify | lupulo | platform
+cat ${WS}/${BRAND}/docs/product/BACKLOG.md                     # ver estado overall brand
+cat ${WS}/${BRAND}/docs/product/ideas-pool.yaml                # buscar idea origen
+cat ${WS}/${BRAND}/docs/product/modules/{m}.md                 # estado funcional per-brand
+ls ${WS}/${BRAND}/docs/product/stories/                        # stories existentes (no duplicar)
+ls ${WS}/${BRAND}/docs/product/capabilities/{m}/               # capabilities live per-brand
 ```
 
-Si no hay idea origen → escala `/pm`. NO redactes spec sin contexto outcome.
+Si no hay idea origen → escala `/pm-{brand}`. NO redactes spec sin contexto outcome.
 
 ### Step 2 — Cargar domain skill
 
@@ -97,7 +108,17 @@ Si esta story es hot-fix (originada en handoff doc/incident/regression), aplica 
 
 ### Step 3 — Redactar 01-spec.md UNIFICADO
 
-Crear `docs/product/stories/{story-id}/01-spec.md` con TODAS estas secciones (no separar en design.md):
+Crear `{brand}/docs/product/stories/{story-id}/01-spec.md` con TODAS estas secciones (no separar en design.md):
+
+**Frontmatter brand-aware obligatorio:**
+```yaml
+---
+story_id: {story-id}
+brand: {brand}                # ★ REQUIRED — multibrand scope
+type: ui-story
+state: refining
+---
+```
 
 #### § Context
 
@@ -124,7 +145,7 @@ Cada scenario tiene:
 - `graders:` (cómo se verifica):
 
 ```yaml
-- { type: e2e, path: "frontend/e2e/regression/{m}-{story}.spec.ts" }
+- { type: e2e, path: "{brand}/frontend/e2e/regression/{m}-{story}.spec.ts" }
 - { type: state_check, target: db, query: "...", expect: "..." }
 - { type: visual_state, screen: "form-error", element: "input[name=email]", expect: "border-destructive" }
 ```
@@ -150,7 +171,7 @@ UNO de los siguientes (no requiere los tres):
 ```
 
 **Opción B — HTML mockup** (cuando UI compleja o Chris pide preview):
-- Path: `docs/product/stories/{story-id}/mockups/{screen}.html`
+- Path: `{brand}/docs/product/stories/{story-id}/mockups/{screen}.html`
 - Stack: Tailwind CDN + Shadcn equivalents + Lucide icons
 - Datos realistas LATAM (no Lorem ipsum)
 - Spanish neutro LatAm
@@ -160,7 +181,8 @@ UNO de los siguientes (no requiere los tres):
 
 Comando para servir HTML local:
 ```bash
-cd docs/product/stories/{story-id}/mockups && python3 -m http.server 8888
+WS=$(git rev-parse --show-toplevel)
+cd ${WS}/{brand}/docs/product/stories/{story-id}/mockups && python3 -m http.server 8888
 ```
 
 #### § Estados visuales
@@ -177,15 +199,15 @@ Tabla por screen:
 
 #### § Componentes (reutilizar > inventar)
 
-Tabla:
+Tabla (todos los paths brand-scoped):
 
 | Componente | Path repo | Reutilizado vs nuevo |
 |---|---|---|
-| `Button` | `components/ui/button.tsx` | reuse |
-| `DataTable` | `components/shared/data-table.tsx` | reuse |
-| `OfferCard` | `features/offer/components/offer-card.tsx` | NEW (no existe equivalente) |
+| `Button` | `{brand}/frontend/src/components/ui/button.tsx` | reuse |
+| `DataTable` | `{brand}/frontend/src/components/shared/data-table.tsx` | reuse |
+| `OfferCard` | `{brand}/frontend/src/features/offer/components/offer-card.tsx` | NEW (no existe equivalente) |
 
-Si proponés NEW componente → justificá por qué no existe equivalente. `frontend-expert` skill cargado debería bloquear duplication.
+Si proponés NEW componente → justificá por qué no existe equivalente. `frontend-expert` skill cargado debería bloquear duplication. **Cross-brand reuse:** si pattern aparece ≥2 brands → escalá `/pm-luana` (promotion candidate a `core/luana-core-ui/` futuro).
 
 #### § Data flow (conceptual, no técnico — `/architect-fe` lo concreta)
 
@@ -237,14 +259,15 @@ events:
 
 #### § Brand voice
 
-Si la pantalla muestra texto user-facing (no chrome UI puro), citar `personality_profiles.system_instruction` per tenant (sales_agent SSoT). Para Nicolify chrome (sidebar, settings) → Spanish neutro estándar, no per-tenant voice.
+Si la pantalla muestra texto user-facing (no chrome UI puro), citar `personality_profiles.system_instruction` per tenant (sales_agent SSoT). Para `{brand}` chrome UI (sidebar, settings) → Spanish neutro estándar, no per-tenant voice.
 
 ### Step 4 — Iterar con Chris (loop)
 
 Output al user/PM:
 ```
-Spec draft v1 escrito en docs/product/stories/{story-id}/01-spec.md.
+Spec draft v1 escrito en {brand}/docs/product/stories/{story-id}/01-spec.md.
 
+Brand: {brand}
 Scenarios: happy + negative + edge + adversarial (4/4).
 Wireframe: ASCII (o HTML local en http://localhost:8888 si servido).
 Componentes: 3 reutilizados, 1 nuevo (OfferCard — justificación inline).
@@ -266,9 +289,9 @@ Chris responde → editás 01-spec.md (no rebuild from scratch — Edit incremen
 Una vez ratificado:
 
 ```
-Spec ratificada v{N}. Ratified_by_chris: true.
+Spec ratificada v{N} para brand {brand}. Ratified_by_chris: true.
 
-Próximo: /architect lee 01-spec.md → spawn /architect-{be,fe} en paralelo →
+Próximo: /architect <brand>: {brand} lee 01-spec.md → spawn /architect-{be,fe} en paralelo →
 produce ready package (03-arch.md + 04-validators.yaml + 05-guidelines.md + 06-tickets.yaml).
 
 Story state: refining → refined (transition al ratificar). /architect después transición refined → ready al cerrar package.
@@ -276,14 +299,15 @@ Story state: refining → refined (transition al ratificar). /architect después
 ¿Invoco /architect ahora (single-shot) o lo haces tú?
 ```
 
-Update `checkpoint.md`:
+Update `{brand}/docs/product/stories/{story-id}/checkpoint.md`:
 ```yaml
+brand: {brand}         # ★ REQUIRED — multibrand scope
 state: refined
 phase: SPEC_RATIFIED
 last_artifact: 01-spec.md
 last_modified: 2026-05-06T...
 ratified_by_chris: true
-next_action: "/architect lee 01-spec.md → produce ready package (state=refined → ready)"
+next_action: "/architect <brand>: {brand} lee 01-spec.md → produce ready package (state=refined → ready)"
 ```
 
 ## Scope expansion durante diseño
@@ -291,8 +315,8 @@ next_action: "/architect lee 01-spec.md → produce ready package (state=refined
 Si durante mockup/iteración descubrís edge case que el outcome no contemplaba:
 
 - **Pequeño** (1 estado UI extra, 1 microcopy faltante) → agregar inline + bumpear `po_ux_version` en frontmatter spec.md
-- **Medio** (scenario nuevo necesario, refactoring scope) → STOP, escala `/pm`: "scope crece, requiere ratificar outcome"
-- **Grande** (story se vuelve épica, > 5d trabajo) → STOP, `/pm` decompose en N stories
+- **Medio** (scenario nuevo necesario, refactoring scope) → STOP, escala `/pm-{brand}`: "scope crece, requiere ratificar outcome"
+- **Grande** (story se vuelve épica, > 5d trabajo) → STOP, `/pm-{brand}` decompose en N stories
 
 ## Anti-patterns
 
@@ -310,6 +334,14 @@ Si durante mockup/iteración descubrís edge case que el outcome no contemplaba:
 - ❌ Usar `/po-ux` para service-only → use `/po` standalone
 - ❌ Rebuilds from scratch en cada iter → Edit incremental
 - ❌ Producir `02-design-ui.md` separado (legacy paradigma — fusión es el punto del skill)
+- ❌ Inferir el brand del contexto si Chris no lo dijo — PREGUNTAR primero
+
+## Anti cross-brand pollution
+
+- ❌ NUNCA editar `{other_brand}/...` cuando trabajás en `{brand}`. Si la story necesita tocar otra brand → STOP, escalate `/pm-luana` (outcome cross-brand).
+- ❌ NUNCA editar `core/luana-core-*/src/` directamente. Requiere lift via `/pm-luana` (promotion gate). Si el patrón UI aparece ≥2 brands → escalá como promotion candidate.
+- ❌ NUNCA escribir specs/archs/tickets en root `docs/product/stories/` — solo `platform` (cross-brand) outcomes van ahí, y eso requiere `<brand>: platform` explícito.
+- ❌ NUNCA referenciar `frontend/src/` sin el prefix `{brand}/` — post reorg 2026-05-15 no existe root `frontend/`.
 
 ## Output format
 

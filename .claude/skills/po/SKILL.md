@@ -1,14 +1,20 @@
 <!-- voseo-allowed: internal skill documentation, not user-facing -->
 ---
 name: po
-description: "Product Owner Nicolify v4 (post pm-redesign 2026-05 Punto 4). SCOPE: service-stories only (BE endpoint sin UI, sin agentic) o agentic-stories spec (que después /ux-agentico diseña flow). Para UI std (CRUD/list/form/dashboard) → use /po-ux fusión. Toma 1 user story state=refining → produce 01-spec.md ratificada por Chris + transition checkpoint state=refining→refined. Spec ejecutable Gherkin AI-resistant — incluye OBLIGATORIO scenarios happy + negative + edge + adversarial. Loop iterativo. Activa cuando user dice: '/po', 'definamos esta historia (service)', 'spec service', 'criterios de aceptación service-only', 'spec agentic'."
+description: "Product Owner Luana v4 (post pm-redesign 2026-05 Punto 4). SCOPE: service-stories only (BE endpoint sin UI, sin agentic) o agentic-stories spec (que después /ux-agentico diseña flow). Para UI std (CRUD/list/form/dashboard) → use /po-ux fusión. Toma 1 user story state=refining → produce 01-spec.md ratificada por Chris + transition checkpoint state=refining→refined. Spec ejecutable Gherkin AI-resistant — incluye OBLIGATORIO scenarios happy + negative + edge + adversarial. Loop iterativo. Activa cuando user dice: '/po', 'definamos esta historia (service)', 'spec service', 'criterios de aceptación service-only', 'spec agentic'."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
 model: opus
 ---
 
 # /po — Product Owner (Spec ejecutable, service-stories + agentic-stories)
 
-> Owner: `01-spec.md` en `docs/product/stories/{story-id}/`. Para UI std → use `/po-ux` (fusión). Para agentic → escribís spec acá, después `/ux-agentico` diseña flow conversacional. Para service-only → spec acá, skip UX.
+> Owner: `01-spec.md` en `{brand}/docs/product/stories/{story-id}/`. Para UI std → use `/po-ux` (fusión). Para agentic → escribís spec acá, después `/ux-agentico` diseña flow conversacional. Para service-only → spec acá, skip UX.
+
+## REQUIRED first input: `<brand>`
+
+`<brand>` ∈ `vitalia | nicolify | comunify | lupulo | platform`. Si Chris no lo provee, **PREGUNTAR antes de proceder**. `platform` = stories cross-brand que tocan engine (raro — requiere `/pm-luana` autorización).
+
+Si invocado vía `/pm-{brand}` handoff, el brand viene en el handoff. Si invocado directo por Chris → preguntar primero.
 
 ## Scope decision
 
@@ -22,18 +28,19 @@ model: opus
 
 ## Inputs obligatorios
 
-1. Outcome de Chris/`/pm` con story en state=`refining` (idea ya pasó por trigger Chris "refinemos")
-2. `docs/product/stories/{story-id}/checkpoint.md` (creado por `/pm` con state=refining)
-3. (opcional) `docs/product/stories/{story-id}/00-story.md` — si `/pm` ya escribió brief
-4. `docs/product/modules/{m}.md` — estado funcional módulo
-5. `docs/product/capabilities/{m}/` — capabilities existentes (no duplicar)
-6. `docs/specs/templates/01-spec-template.md` — template
-7. Domain skill correspondiente (cargar según módulo):
-   - `brand-expert` para `modules/brand`
-   - `offer-expert` o `offer-type-preset-expert` para `modules/offer`
-   - `copilot-expert` para `modules/copilot`
-   - `sales-agent-expert` para `modules/sales_agent`
-   - `metrics-expert` para `modules/analytics`
+1. `<brand>` (REQUIRED, ver sección arriba)
+2. Outcome de Chris/`/pm-{brand}` o `/pm-luana` con story en state=`refining` (idea ya pasó por trigger Chris "refinemos")
+3. `{brand}/docs/product/stories/{story-id}/checkpoint.md` (creado por `/pm-{brand}` con state=refining)
+4. (opcional) `{brand}/docs/product/stories/{story-id}/00-story.md` — si `/pm-{brand}` ya escribió brief
+5. `{brand}/docs/product/modules/{m}.md` — estado funcional módulo per-brand
+6. `{brand}/docs/product/capabilities/{m}/` — capabilities existentes per-brand (no duplicar)
+7. `docs/specs/templates/01-spec-template.md` — template (transversal core, reusable cross-brand)
+8. Domain skill correspondiente (cargar según módulo):
+   - `brand-expert` para `modules/brand` (engine: `core/luana-core-brand-studio/`)
+   - `offer-expert` o `offer-type-preset-expert` para `modules/offer` (engine: `core/luana-core-offer-studio/`)
+   - `copilot-expert` para `modules/copilot` (engine: `core/luana-core-copilot/` + brand-extension `{brand}/backend/src/modules/{brand}/copilot/`)
+   - `sales-agent-expert` para `modules/sales_agent` (engine: `core/luana-core-sales-agent/` + brand-extension `{brand}/backend/src/modules/{brand}/sales_agent/`)
+   - `metrics-expert` para `modules/analytics` (engine: `core/luana-core-analytics-engine/`)
    - `manychat-expert` para `modules/connections` ManyChat
 
 ## Communication style — batched questions (G6 enforcement)
@@ -72,13 +79,15 @@ Respondeme y mando batch 2 (edge cases)."
 ### Step 1 — Bootstrap
 
 ```bash
-cat docs/product/BACKLOG.md                           # estado overall
-cat docs/product/stories/{story-id}/checkpoint.md     # state=refining requerido
-cat docs/product/ideas-pool.yaml | grep -A5 {idea}    # contexto idea origen
-ls docs/product/capabilities/{m}/                     # caps existentes (no duplicar)
+WS=$(git rev-parse --show-toplevel)
+BRAND={brand}                                                  # vitalia | nicolify | comunify | lupulo | platform
+cat ${WS}/${BRAND}/docs/product/BACKLOG.md                     # estado overall brand
+cat ${WS}/${BRAND}/docs/product/stories/{story-id}/checkpoint.md  # state=refining requerido
+cat ${WS}/${BRAND}/docs/product/ideas-pool.yaml | grep -A5 {idea} # contexto idea origen
+ls ${WS}/${BRAND}/docs/product/capabilities/{m}/               # caps existentes (no duplicar)
 ```
 
-Si checkpoint state ≠ `refining` → STOP. Si state=`idea`, escala `/pm` para transition idea→refining. Si state=`refined` o avanzado, story ya pasó por `/po`.
+Si checkpoint state ≠ `refining` → STOP. Si state=`idea`, escala `/pm-{brand}` para transition idea→refining. Si state=`refined` o avanzado, story ya pasó por `/po`.
 
 ### Step 2 — Cargar domain skill
 
@@ -92,9 +101,10 @@ Si esta story es hot-fix (originada en handoff doc, incident report, auditor
 escalation, "bug en producción", "regression"), ANTES de redactar
 `01-spec.md` MUST reproducir el bug localmente y validar el diagnóstico:
 
-1. Ejecutar repro test/comando del handoff doc:
+1. Ejecutar repro test/comando del handoff doc (paths brand-scoped):
    ```bash
-   cd backend && .venv/bin/pytest <repro paths> -v --tb=short
+   WS=$(git rev-parse --show-toplevel)
+   cd ${WS}/{brand}/backend && ${WS}/.venv/bin/pytest <repro paths> -v --tb=short
    ```
 
 2. Comparar symptom vs root cause del handoff:
@@ -106,7 +116,7 @@ escalation, "bug en producción", "regression"), ANTES de redactar
    ```yaml
    hotfix_metadata:
      repro_verified: true
-     repro_command: "cd backend && .venv/bin/pytest ..."
+     repro_command: "cd ${WS}/{brand}/backend && ${WS}/.venv/bin/pytest ..."
      diagnosis_validates_handoff: <true|false>
      diagnosis_correction: "<if false: real root cause>"
    ```
@@ -116,7 +126,17 @@ sin repro_verified field. `/dev-team` refuses build. Defense in depth.
 
 ### Step 3 — Redactar spec — primer draft
 
-Escribir `docs/product/stories/{story-id}/01-spec.md` siguiendo template. Críticos:
+Escribir `{brand}/docs/product/stories/{story-id}/01-spec.md` siguiendo template. Críticos:
+
+**Frontmatter brand-aware obligatorio:**
+```yaml
+---
+story_id: {story-id}
+brand: {brand}                # ★ REQUIRED — multibrand scope
+type: service-story | agentic-story
+state: refining
+---
+```
 
 **Scenarios mínimos (4 obligatorios):**
 
@@ -137,10 +157,10 @@ Si falta UNO → /po **rechaza spec, no procede**.
 
 #### service-story graders
 ```yaml
-- { type: contract_test, path: "backend/tests/modules/{m}/test_{story}.py" }
+- { type: contract_test, path: "{brand}/backend/tests/modules/{brand}/{m}/test_{story}.py" }
 - { type: state_check, target: db, query: "..." }
 - { type: state_check, target: events_outbox, expect: "1 event of type X" }
-- { type: integration, path: "backend/tests/integration/test_{m}_{flow}.py" }
+- { type: integration, path: "{brand}/backend/tests/integration/test_{m}_{flow}.py" }
 ```
 
 #### agentic-story graders (más rico)
@@ -181,7 +201,8 @@ trial_policy:
 
 Output al user/PM:
 ```
-Spec draft v1 escrito en docs/product/stories/{story-id}/01-spec.md.
+Spec draft v1 escrito en {brand}/docs/product/stories/{story-id}/01-spec.md.
+Brand: {brand}
 Scenarios: happy + negative + edge + adversarial (4/4).
 Open questions:
 - [Q1]
@@ -207,7 +228,7 @@ Próximo paso según type:
 ¿Invoco el siguiente skill ahora (single-shot) o lo haces tú manualmente?
 ```
 
-Si Chris dice "single-shot" → invocar `/ux-agentico` o `/architect` como Skill tool en mismo session.
+Si Chris dice "single-shot" → invocar `/ux-agentico` o `/architect` como Skill tool en mismo session, **propagando `<brand>: {brand}` como input REQUIRED**.
 
 ### Step 7 — Update checkpoint (transition refining → refined)
 
@@ -217,19 +238,21 @@ Si Chris dice "single-shot" → invocar `/ux-agentico` o `/architect` como Skill
 
 ```yaml
 # Service-story (transition al ratificar):
+brand: {brand}         # ★ REQUIRED — multibrand scope
 state: refined
 phase: SPEC_RATIFIED
 last_artifact: 01-spec.md
 last_modified: 2026-05-06T...
 ratified_by_chris: true
-next_action: "/architect orchestrator → produce ready package (03-arch + 04-validators + 05-guidelines + 06-tickets)"
+next_action: "/architect <brand>: {brand} → produce ready package (03-arch + 04-validators + 05-guidelines + 06-tickets)"
 
 # Agentic-story (mantener refining hasta diseño):
+brand: {brand}
 state: refining
 phase: SPEC_RATIFIED_AWAITING_DESIGN
 last_artifact: 01-spec.md
 last_modified: 2026-05-06T...
-next_action: "/ux-agentico → produce 02-design-agentic.md (state=refining → refined al ratificar diseño)"
+next_action: "/ux-agentico <brand>: {brand} → produce 02-design-agentic.md (state=refining → refined al ratificar diseño)"
 ```
 
 ## UX delta loop
@@ -250,6 +273,14 @@ Si `/ux-agentico` (después que tu spec ratificó) descubre edge case nuevo dura
 - ❌ Hardcodear scenarios cuando expert skill define invariantes — leélo primero
 - ❌ Usar `/po` para UI std stories → use `/po-ux` (fusión más eficiente, evita design.md separado)
 - ❌ Editar paths legacy `docs/archive/2026/legacy-pis/PI-N/...` → snapshot inmutable, NO modificar
+- ❌ Redactar spec en root `docs/product/stories/` — only `<brand>: platform` cross-brand outcomes van ahí (requiere `/pm-luana` ratificación)
+
+## Anti cross-brand pollution
+
+- ❌ NUNCA editar `{other_brand}/...` cuando trabajás en `{brand}`. Si la story necesita tocar otra brand → STOP, escalate `/pm-luana` (outcome cross-brand).
+- ❌ NUNCA editar `core/luana-core-*/src/` directamente. Requiere lift via `/pm-luana` (promotion gate).
+- ❌ NUNCA escribir specs/archs/tickets en root `docs/product/stories/` — solo `platform` (cross-brand) outcomes van ahí, y eso requiere `<brand>: platform` explícito.
+- ❌ NUNCA inferir el brand del contexto si Chris no lo dijo — PREGUNTAR primero.
 
 ## Output format
 

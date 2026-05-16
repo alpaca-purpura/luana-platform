@@ -1,22 +1,39 @@
 ---
 name: architect
-description: "Architect orchestrator Nicolify v4 (post pm-redesign 2026-05 Punto 4). Lee 01-spec.md (de /po-ux o /po) + 02-design-agentic.md (si agentic) en stories state=refined. Decide qué surfaces toca (BE/FE/agentic). Spawna `architect-orchestrator` (single agent type, full-stack) que internamente carga las skills `architect-be` + `architect-fe` + `architect-agentic` según surface — produce 03-arch.md consolidado + 03-arch-{be,fe,agentic}.md por surface en una sola pasada. Reúne y produce el READY PACKAGE: 03-arch.md (consolidado) + 04-validators.yaml (★CRITICAL — pytest/playwright/shell commands must_pass:true ejecutables, 4 categories: non_functional/functional/visual/agentic_eval) + 05-guidelines.md (patterns required/forbidden + files in scope) + 06-tickets.yaml (work units atómicos). Cierra story state refined → ready. Activa cuando user dice: '/architect', 'diseñemos la arq', 'tickets', 'qué tickets salen', 'arquitectura técnica', 'cómo lo construimos técnicamente', 'cerrá el ready package'."
+description: "Architect orchestrator Luana v4 (post pm-redesign 2026-05 Punto 4). Lee 01-spec.md (de /po-ux o /po) + 02-design-agentic.md (si agentic) en stories state=refined. Decide qué surfaces toca (BE/FE/agentic). Spawna `architect-orchestrator` (single agent type, full-stack) que internamente carga las skills `architect-be` + `architect-fe` + `architect-agentic` según surface — produce 03-arch.md consolidado + 03-arch-{be,fe,agentic}.md por surface en una sola pasada. Reúne y produce el READY PACKAGE: 03-arch.md (consolidado) + 04-validators.yaml (★CRITICAL — pytest/playwright/shell commands must_pass:true ejecutables, 4 categories: non_functional/functional/visual/agentic_eval) + 05-guidelines.md (patterns required/forbidden + files in scope) + 06-tickets.yaml (work units atómicos). Cierra story state refined → ready. Activa cuando user dice: '/architect', 'diseñemos la arq', 'tickets', 'qué tickets salen', 'arquitectura técnica', 'cómo lo construimos técnicamente', 'cerrá el ready package'."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
 model: opus
 ---
 
 # /architect — Architect Orchestrator (Conv 1 cierre — produce ready package)
 
-> Owner: `docs/product/stories/{story-id}/03-arch.md` + `04-validators.yaml` + `05-guidelines.md` + `06-tickets.yaml`. Cuando los 4 cerrados → state=`refined → ready`. Conv 2 (autonomous build) puede arrancar.
+> Owner: `{brand}/docs/product/stories/{story-id}/03-arch.md` + `04-validators.yaml` + `05-guidelines.md` + `06-tickets.yaml`. Cuando los 4 cerrados → state=`refined → ready`. Conv 2 (autonomous build) puede arrancar.
+
+## REQUIRED first input: `<brand>`
+
+`<brand>` ∈ `vitalia | nicolify | comunify | lupulo | platform`. Si Chris no lo provee, **PREGUNTAR antes de proceder**. `platform` = stories cross-brand que tocan engine (raro — requiere `/pm-luana` autorización + outcome platform-level).
+
+Si invocado vía `/pm-{brand}` o vía `/po-ux`/`/po`/`/ux-agentico` handoff, el brand viene en el handoff. Si invocado directo por Chris → preguntar primero.
+
+**Cross-package surface scope (CRÍTICO):**
+
+| Surface | Path canónico | Editable per-story |
+|---|---|---|
+| Brand backend modules | `{brand}/backend/src/modules/{brand}/{m}/` | ✅ libre per-brand |
+| Brand frontend features | `{brand}/frontend/src/features/{m}/` | ✅ libre per-brand |
+| Brand tests | `{brand}/backend/tests/` + `{brand}/frontend/src/**/*.test.ts` + `{brand}/frontend/e2e/` | ✅ libre per-brand |
+| Engine core packages | `core/luana-core-*/src/luana_core_*/` | ⛔ requiere lift via `/pm-luana` (promotion gate) — NO se edita en story brand-específica |
+| Brand-extension agentic | `{brand}/backend/src/modules/{brand}/{copilot,sales_agent}/{tools,extractors,workflows,personas,goldens,kb}/` | ✅ libre per-brand |
 
 ## Inputs obligatorios
 
-1. `01-spec.md` — ratificada por Chris (de `/po-ux` para UI std, `/po` para service/agentic)
-2. `02-design-agentic.md` — si agentic-story o mixed
-3. `docs/product/stories/{story-id}/checkpoint.md` — state=refined requerido (spec + diseño UX/agentic ratificados por Chris)
-4. `docs/product/modules/{m}.md` — estado funcional
-5. `docs/domains/INDEX.md` — routing técnico
-6. `.claude/rules/anti-duplication.md` — inventario shared abstractions
+1. `<brand>` (REQUIRED, ver sección arriba)
+2. `{brand}/docs/product/stories/{story-id}/01-spec.md` — ratificada por Chris (de `/po-ux` para UI std, `/po` para service/agentic)
+3. `{brand}/docs/product/stories/{story-id}/02-design-agentic.md` — si agentic-story o mixed
+4. `{brand}/docs/product/stories/{story-id}/checkpoint.md` — state=refined requerido (spec + diseño UX/agentic ratificados por Chris)
+5. `{brand}/docs/product/modules/{m}.md` — estado funcional per-brand
+6. `{brand}/docs/domains/INDEX.md` o `docs/core-modules/README.md` — routing técnico per-brand vs engine
+7. `.claude/rules/anti-duplication.md` — inventario shared abstractions cross-brand
 
 ## Workflow
 
@@ -42,25 +59,26 @@ Tabla decisión:
 >
 > **Histórico:** intentos previos de spawnar `architect-be` / `architect-fe` / `architect-agentic` como agent types separados fallaron — esos types nunca se registraron en `.claude/agents/`. Solo existe `architect-orchestrator.md`.
 
-Spawn:
+Spawn (REQUIRED: pasá `<brand>: {brand}` como input al sub-agent):
 
 ```
 Agent({
-  description: "Architect Story {id} {scope}",
+  description: "Architect Story {brand}/{id} {scope}",
   subagent_type: "architect-orchestrator",
-  prompt: "<pr_folder>: docs/product/stories/{id}/
+  prompt: "<brand>: {brand}                          # ★ REQUIRED — multibrand scope
+           <pr_folder>: {brand}/docs/product/stories/{id}/
            story_type: {ui-story|service-story|agentic-story}
            surfaces: {BE | FE | AGENTIC | combinaciones}
            mode: SINGLE-SHOT FULL-STACK
 
            PRIORITY READ:
-           1. checkpoint.md (state=refined required)
-           2. 01-spec.md ratificada por Chris
-           3. 02-design-agentic.md si agentic-story
-           4. 00-story.md / delta-spec.md si existen
-           5. docs/product/outcomes/{outcome-id}.md
-           6. docs/product/modules/{m}.md
-           7. Stories archivadas relacionadas (predecesores)
+           1. {brand}/docs/product/stories/{id}/checkpoint.md (state=refined required)
+           2. {brand}/docs/product/stories/{id}/01-spec.md ratificada por Chris
+           3. {brand}/docs/product/stories/{id}/02-design-agentic.md si agentic-story
+           4. {brand}/docs/product/stories/{id}/00-story.md / delta-spec.md si existen
+           5. {brand}/docs/product/outcomes/{outcome-id}.md
+           6. {brand}/docs/product/modules/{m}.md
+           7. Stories archivadas relacionadas (predecesores) en {brand}/docs/archive/
 
            LOAD SKILLS contextualmente según surface:
            - BE: backend-expert + tessl__fastapi + tessl__pytest-api-testing
@@ -68,7 +86,7 @@ Agent({
            - AGENTIC: sales-agent-expert / copilot-expert + tessl__langgraph + claude-api
            - Cross-cutting: tessl__graceful-degradation + domain skills (brand/offer/preset/metrics)
 
-           DELIVERABLES (4-5 files):
+           DELIVERABLES (4-5 files, todos bajo {brand}/docs/product/stories/{id}/):
            1. 03-arch.md (consolidado, secciones por surface)
            2. 03-arch-{be,fe,agentic}.md per surface tocado (opcional, si arch es complejo per-surface)
            3. 04-validators.yaml (4 categories, scenario_coverage 100%, must_pass:true)
@@ -76,16 +94,18 @@ Agent({
            5. 06-tickets.yaml (atomic, R23 marked AGENTIC, owner_eligibility, DAG)
 
            CRITICAL CONSTRAINTS:
-           - Cross-module audit anti-duplication.md (no mirror shared abstractions)
+           - Cross-module audit anti-duplication.md (no mirror shared abstractions cross-brand)
            - R23: AGENTIC tickets production_code:true → claude_opus_required:true
            - AGENTIC tickets SEPARADOS de BE/FE (R23 enforcement)
            - Tickets > 10 → split story
            - Each ticket: acceptance.validator_ids + DAG
            - Hot-fix: repro_verified field si aplica (R26)
+           - Engine boundaries: NUNCA proponer tickets que editen `core/luana-core-*/src/` directamente. Si scope requiere editar engine → escalá `/pm-luana` (promotion gate) ANTES de cerrar package.
+           - Brand-extension agentic: `{brand}/backend/src/modules/{brand}/{copilot,sales_agent}/{tools,extractors,workflows,personas,goldens,kb}/` SÍ es editable.
 
            After writing all files, transition checkpoint.md state: refined → ready.
 
-           LAST LINE: done -> docs/product/stories/{id}/06-tickets.yaml"
+           LAST LINE: done -> {brand}/docs/product/stories/{id}/06-tickets.yaml"
 })
 ```
 
@@ -100,7 +120,9 @@ Antes de cerrar el package, validar que el orchestrator respetó `.claude/rules/
 - Channel format / intent detector → shared
 - Extraction orchestrator → subclass `BaseExtractionOrchestrator`
 
-Si orchestrator propone NEW cuando shared existe ≥80% → escala `/pm`: "orchestrator propone NEW para subsystem Y, pero shared tiene Z. Decidir EXTEND vs NEW."
+Si orchestrator propone NEW cuando shared existe ≥80% → escala `/pm-luana` (engine surface) o `/pm-{brand}` (brand-extension surface): "orchestrator propone NEW para subsystem Y, pero shared tiene Z. Decidir EXTEND vs NEW."
+
+**Cross-brand mirror check:** si la abstracción propuesta ya vive en `{other_brand}/...`, escalá `/pm-luana` como promotion candidate (brand→core lift) en lugar de mirror por-brand.
 
 ### Step 4 — Validar 03-arch.md producido por orchestrator
 
@@ -141,32 +163,34 @@ Reglas:
 - Cobertura completa de scenarios del 01-spec.md (mapping explícito)
 - Iteration policy define cap + on_fail behavior
 
-Template:
+Template (paths brand-scoped; workspace root parametrizado via `${WS}` o `cd {brand}/...`):
 
 ```yaml
-# docs/product/stories/{story-id}/04-validators.yaml
+# {brand}/docs/product/stories/{story-id}/04-validators.yaml
 # v4 schema: 4 categories — non_functional / functional / visual / agentic_eval
+# NOTE: validator cmds usan paths relativos al workspace root. `${WS}` o `git rev-parse --show-toplevel`
+# debe ser resuelto por gate-runner antes de ejecutar.
 
 validators:
   # ─── NON-FUNCTIONAL (lint, arch fitness, type-check, format) ───
   - id: be_arch_fitness
     category: non_functional
     type: pytest
-    cmd: "cd backend && .venv/bin/pytest tests/architecture/ -x -q --override-ini='addopts='"
+    cmd: "cd {brand}/backend && ../../.venv/bin/pytest tests/architecture/ -x -q --override-ini='addopts='"
     must_pass: true
     timeout_sec: 120
 
   - id: be_lint
     category: non_functional
     type: shell
-    cmd: "cd backend && .venv/bin/ruff check src/modules/{m}/ tests/modules/{m}/ --no-cache && .venv/bin/ruff format --check src/modules/{m}/ tests/modules/{m}/"
+    cmd: "cd {brand}/backend && ../../.venv/bin/ruff check src/modules/{brand}/{m}/ tests/modules/{brand}/{m}/ --no-cache && ../../.venv/bin/ruff format --check src/modules/{brand}/{m}/ tests/modules/{brand}/{m}/"
     must_pass: true
     timeout_sec: 30
 
   - id: fe_typecheck
     category: non_functional
     type: shell
-    cmd: "cd frontend && npx tsc --noEmit"
+    cmd: "cd {brand}/frontend && npx tsc --noEmit"
     must_pass: true
     timeout_sec: 90
 
@@ -174,21 +198,21 @@ validators:
   - id: be_unit_create_endpoint
     category: functional
     type: pytest
-    cmd: "cd backend && .venv/bin/pytest tests/modules/{m}/test_create.py -v --tb=short"
+    cmd: "cd {brand}/backend && ../../.venv/bin/pytest tests/modules/{brand}/{m}/test_create.py -v --tb=short"
     must_pass: true
     timeout_sec: 60
 
   - id: fe_unit
     category: functional
     type: shell
-    cmd: "cd frontend && npx vitest run src/features/{m}/"
+    cmd: "cd {brand}/frontend && npx vitest run src/features/{m}/"
     must_pass: true
     timeout_sec: 60
 
   - id: e2e_happy
     category: functional
     type: playwright
-    cmd: "cd frontend && E2E_BASE_URL=http://localhost:3000 npx playwright test --project=smoke e2e/regression/{m}-{story}.spec.ts"
+    cmd: "cd {brand}/frontend && E2E_BASE_URL=http://localhost:300X npx playwright test --project=smoke e2e/regression/{m}-{story}.spec.ts"
     must_pass: true
     timeout_sec: 180
 
@@ -196,7 +220,7 @@ validators:
   - id: visual_fidelity
     category: visual
     type: playwright
-    cmd: "cd frontend && npx playwright test e2e/visual/{story}.spec.ts --update-snapshots=false"
+    cmd: "cd {brand}/frontend && npx playwright test e2e/visual/{story}.spec.ts --update-snapshots=false"
     capture: screenshots
     must_pass: true
     timeout_sec: 240
@@ -204,16 +228,17 @@ validators:
   - id: responsive_breakpoints
     category: visual
     type: playwright
-    cmd: "cd frontend && npx playwright test e2e/visual/{story}-responsive.spec.ts --project=mobile,tablet,desktop"
+    cmd: "cd {brand}/frontend && npx playwright test e2e/visual/{story}-responsive.spec.ts --project=mobile,tablet,desktop"
     must_pass: true
     timeout_sec: 240
 
   # ─── AGENTIC EVAL (pass^k, rubrics, trajectory, cost/latency budgets) ───
-  # Solo si story toca modules/copilot o modules/sales_agent runtime
+  # Solo si story toca {brand}/backend/src/modules/{brand}/{copilot,sales_agent}/ brand-extension surface
+  # (engine `core/luana-core-{copilot,sales-agent}/` requiere /pm-luana — NO se edita en story brand)
   - id: agentic_pass_k
     category: agentic_eval
     type: shell
-    cmd: "cd backend && .venv/bin/python scripts/run_agent_evals.py --story={story-id} --personas=A,B,C"
+    cmd: "cd {brand}/backend && ../../.venv/bin/python scripts/run_agent_evals.py --story={story-id} --personas=A,B,C"
     rubrics: [voice-fidelity, goal-completion, tool-call-accuracy]
     pass_k:
       trials: 3
@@ -225,14 +250,14 @@ validators:
   - id: agentic_trajectory
     category: agentic_eval
     type: shell
-    cmd: "cd backend && .venv/bin/python scripts/run_trajectory_eval.py --expected=docs/specs/trajectories/{story-id}.yaml"
+    cmd: "cd {brand}/backend && ../../.venv/bin/python scripts/run_trajectory_eval.py --expected={brand}/docs/specs/trajectories/{story-id}.yaml"
     must_pass: true
     timeout_sec: 300
 
   - id: agentic_cost_budget
     category: agentic_eval
     type: shell
-    cmd: "cd backend && .venv/bin/python scripts/check_cost_budget.py --story={story-id}"
+    cmd: "cd {brand}/backend && ../../.venv/bin/python scripts/check_cost_budget.py --story={story-id}"
     threshold: { cost_usd_max: 0.50, tokens_max: 6000, latency_p95_max: 8.0 }
     must_pass: true
     timeout_sec: 60
@@ -293,25 +318,25 @@ Template:
 - Default exports (excepto Next.js pages)
 - Hex colors hardcoded en components/styles
 
-## Files in scope (Sonnet edits ONLY these)
-- backend/src/modules/{m}/api/routes.py
-- backend/src/modules/{m}/application/services/...
-- backend/src/modules/{m}/domain/...
-- backend/src/modules/{m}/infrastructure/...
-- backend/alembic/versions/{timestamp}_{slug}.py (NEW migration)
-- backend/tests/modules/{m}/test_{name}.py
-- frontend/src/features/{m}/...
-- frontend/src/app/{m}/page.tsx
-- frontend/e2e/regression/{m}-{story}.spec.ts
+## Files in scope (Sonnet edits ONLY these — todos brand-scoped bajo {brand}/)
+- {brand}/backend/src/modules/{brand}/{m}/api/routes.py
+- {brand}/backend/src/modules/{brand}/{m}/application/services/...
+- {brand}/backend/src/modules/{brand}/{m}/domain/...
+- {brand}/backend/src/modules/{brand}/{m}/infrastructure/...
+- {brand}/backend/alembic/versions/{timestamp}_{slug}.py (NEW migration brand-scoped)
+- {brand}/backend/tests/modules/{brand}/{m}/test_{name}.py
+- {brand}/frontend/src/features/{m}/...
+- {brand}/frontend/src/app/{m}/page.tsx
+- {brand}/frontend/e2e/regression/{m}-{story}.spec.ts
 
-## Files Sonnet NEVER touches (escalate to Chris)
-- backend/src/shared/** (architect must explicitly grant via separate ticket)
-- backend/src/modules/copilot/** (if not agentic story; even then, only via builder-agentic)
-- backend/src/modules/sales_agent/** (idem)
-- backend/src/core/config.py (default flag flips require R31 anti-default-flip-audit)
-- frontend/src/components/ui/** (Shadcn primitives — extend via wrappers, no edit)
-- frontend/src/lib/api/fetchClient.ts (cross-cutting — escalate)
-- .claude/** (skill/rule edits — manual only)
+## Files Sonnet NEVER touches (escalate to Chris / /pm-luana)
+- core/luana-core-*/src/luana_core_*/** (engine — requires lift via /pm-luana promotion gate; NUNCA en story brand-específica)
+- {brand}/backend/src/modules/{brand}/{copilot,sales_agent}/** runtime (agentic — solo via builder-agentic Opus; brand-extension surface OK con R23 check)
+- {other_brand}/** (cross-brand edit — escalate /pm-luana outcome platform)
+- {brand}/backend/src/core/config.py (default flag flips require R31 anti-default-flip-audit)
+- {brand}/frontend/src/components/ui/** (Shadcn primitives per-brand — extend via wrappers, no edit; cross-brand reuse = promotion candidate /pm-luana)
+- {brand}/frontend/src/lib/api/fetchClient.ts (cross-cutting per-brand — escalate)
+- .claude/** y {brand}/.claude/** (skill/rule edits — manual only)
 
 ## Reference docs (load before coding)
 - skill `backend-expert` (DDD patterns, arch fitness, currency, master-data)
@@ -393,7 +418,7 @@ T-1 (BE endpoint, owner: opencode/sonnet):
 ```yaml
 repro_verified: true
 repro_evidence:
-  command: "cd backend && .venv/bin/pytest <paths> -v"
+  command: "cd {brand}/backend && ../../.venv/bin/pytest <paths brand-scoped> -v"
   output: |
     <verbatim error/traceback first 5-10 lines>
   diagnosis_validates_handoff: <true|false>
@@ -415,22 +440,23 @@ Antes de cerrar story como ready:
 
 ### Step 9 — Transition state + Hand off
 
-Update `docs/product/stories/{story-id}/checkpoint.md`:
+Update `{brand}/docs/product/stories/{story-id}/checkpoint.md`:
 
 ```yaml
-state: ready          # ★ TRANSITION ★ validated → ready
+brand: {brand}        # ★ REQUIRED — multibrand scope
+state: ready          # ★ TRANSITION ★ refined → ready
 phase: READY_PACKAGE_CLOSED
 last_artifact: 06-tickets.yaml
 last_modified: 2026-05-06T...
-next_action: "/dev-team starts Conv 2 autonomous build (toma T-1 first, iterate vs 04-validators.yaml)"
+next_action: "/dev-team <brand>: {brand} starts Conv 2 autonomous build (toma T-1 first, iterate vs 04-validators.yaml)"
 ```
 
 Output:
 
 ```
-Ready package cerrado para story {id}.
+Ready package cerrado para story {brand}/{id}.
 
-Artifacts:
+Artifacts (en {brand}/docs/product/stories/{id}/):
 - 03-arch.md (consolidado, secciones por surface inline)
 - 03-arch-{be,fe,agentic}.md OPCIONAL (orchestrator decide si arch es complejo per-surface)
 - 04-validators.yaml ({N} validators, scenario coverage 4/4)
@@ -447,7 +473,7 @@ Dependencies: T-2 depends T-1; T-3 depends T-2.
 Story state: refined → ready.
 WIP cap check: ready (was N) now N+1 / cap 5.
 
-Próximo: Conv 2 (autonomous build). /dev-team toma T-1 (state: ready → developing).
+Próximo: Conv 2 (autonomous build). /dev-team <brand>: {brand} toma T-1 (state: ready → developing).
 ```
 
 ## Anti-patterns
@@ -462,9 +488,18 @@ Próximo: Conv 2 (autonomous build). /dev-team toma T-1 (state: ready → develo
 - ❌ **Intentar spawnar `architect-be` / `architect-fe` / `architect-agentic` como agent types** — NO existen en `.claude/agents/`. Solo `architect-orchestrator` existe. Las skills `architect-{be,fe,agentic}/SKILL.md` son instruction docs (cargadas contextualmente por orchestrator), no agent types spawnable.
 - ❌ Aprobar tu propio ready package sin verificar 03-arch.md coherencia cross-surface
 - ❌ Asignar Opus a tickets BE/FE non-agentic (cost waste)
-- ❌ Editar paths legacy `docs/archive/2026/legacy-pis/PI-N/...` (snapshot inmutable)
+- ❌ Editar paths legacy `docs/archive/2026/legacy-pis/PI-N/...` o `docs/archive/2026/snapshot-pre-multibrand-pm-redesign/` (snapshot inmutable)
 - ❌ Cerrar state=ready con WIP cap=5 ya alcanzado (escalate Chris primero)
 - ❌ `05-guidelines.md` con "be careful" / "follow best practices" (vago — usa patterns concretos)
+- ❌ Inferir el brand del contexto si Chris no lo dijo — PREGUNTAR primero
+
+## Anti cross-brand pollution
+
+- ❌ NUNCA generar tickets que editen `{other_brand}/...` cuando trabajás en `{brand}`. Si la story necesita tocar otra brand → STOP, escalate `/pm-luana` (outcome cross-brand).
+- ❌ NUNCA generar tickets que editen `core/luana-core-*/src/` directamente. Requiere lift via `/pm-luana` (promotion gate) — propuesta en `docs/promotion-protocol/proposals/` ANTES de cerrar package.
+- ❌ NUNCA escribir specs/archs/tickets en root `docs/product/stories/` — solo `<brand>: platform` (cross-brand) outcomes van ahí, y eso requiere autorización explícita `/pm-luana`.
+- ❌ NUNCA referenciar `backend/src/` o `frontend/src/` sin el prefix `{brand}/` — post reorg 2026-05-15 no existe root `backend/` ni `frontend/`. Solo `core/luana-core-*/src/luana_core_*/` (engine) y `{brand}/backend/src/` (brand).
+- ❌ NUNCA hardcodear paths absolutos `/home/chris/AISALESHT/...` o `/home/chalreme/Proyectos/luana-platform/...` — usar `${WS}` resuelto via `git rev-parse --show-toplevel`.
 
 ## Output format
 
