@@ -1,0 +1,314 @@
+# 04-validators.yaml — S-DOCKER-DEV-MULTIBRAND
+# Story: Docker dev local multimarca brand-autocontenida
+# Owner: /architect
+# Schema: v4
+#
+# CRITICAL: cada validator tiene must_pass: true.
+# /dev-team itera contra estos validators hasta GREEN.
+# /auditor verifica cada uno GREEN antes APPROVED.
+#
+# Categorías aplicables para esta story:
+#   - non_functional: shellcheck, yamllint, pytest scripts
+#   - functional: integration tests (compose up/down, curl health, DB isolation, hot-reload, infra-matrix)
+#   - visual: NO APLICA (story de infra, sin UI)
+#   - agentic_eval: NO APLICA (sin módulos copilot/sales_agent)
+
+story_id: S-DOCKER-DEV-MULTIBRAND
+schema_version: v4
+
+validators:
+  # ═══════════════════════════════════════════════════════════════
+  # NON-FUNCTIONAL — calidad de scripts e infra files
+  # ═══════════════════════════════════════════════════════════════
+
+  - id: shellcheck_postgres_init
+    category: non_functional
+    type: shell
+    cmd: "shellcheck scripts/postgres-init/01-create-databases.sh"
+    must_pass: true
+    timeout_sec: 15
+    description: >
+      Shellcheck en el script de init postgres. Detecta errores de bash
+      (quoting, set -euo pipefail, unbound variables, etc.)
+
+  - id: shellcheck_postgres_init_test
+    category: non_functional
+    type: shell
+    cmd: "shellcheck scripts/tests/test_postgres_init.sh"
+    must_pass: true
+    timeout_sec: 15
+    description: "Shellcheck en el test script bash de idempotencia."
+
+  - id: yamllint_compose_root
+    category: non_functional
+    type: shell
+    cmd: "yamllint -d '{extends: default, rules: {line-length: {max: 120}}}' docker-compose.dev.yml"
+    must_pass: true
+    timeout_sec: 15
+    description: "YAML válido en compose raíz (postgres + qdrant + redis profiles)."
+
+  - id: yamllint_compose_nicolify
+    category: non_functional
+    type: shell
+    cmd: "yamllint -d '{extends: default, rules: {line-length: {max: 120}}}' nicolify/docker-compose.dev.yml"
+    must_pass: true
+    timeout_sec: 15
+    description: "YAML válido en compose brand nicolify."
+
+  - id: yamllint_compose_vitalia
+    category: non_functional
+    type: shell
+    cmd: "yamllint -d '{extends: default, rules: {line-length: {max: 120}}}' vitalia/docker-compose.dev.yml"
+    must_pass: true
+    timeout_sec: 15
+    description: "YAML válido en compose brand vitalia."
+
+  - id: yamllint_compose_comunify
+    category: non_functional
+    type: shell
+    cmd: "yamllint -d '{extends: default, rules: {line-length: {max: 120}}}' comunify/docker-compose.dev.yml"
+    must_pass: true
+    timeout_sec: 15
+    description: "YAML válido en compose brand comunify."
+
+  - id: yamllint_compose_lupulo
+    category: non_functional
+    type: shell
+    cmd: "yamllint -d '{extends: default, rules: {line-length: {max: 120}}}' lupulo/docker-compose.dev.yml"
+    must_pass: true
+    timeout_sec: 15
+    description: "YAML válido en compose brand lupulo."
+
+  - id: compose_config_validate_nicolify
+    category: non_functional
+    type: shell
+    cmd: "docker compose -f docker-compose.dev.yml -f nicolify/docker-compose.dev.yml config --quiet"
+    must_pass: true
+    timeout_sec: 30
+    description: >
+      docker compose config valida que el compose merge de raíz + nicolify
+      parsea sin error (detecta referencias inválidas, variables no resueltas, etc.)
+
+  - id: compose_config_validate_vitalia
+    category: non_functional
+    type: shell
+    cmd: "docker compose -f docker-compose.dev.yml -f vitalia/docker-compose.dev.yml config --quiet"
+    must_pass: true
+    timeout_sec: 30
+    description: "Validate compose merge raíz + vitalia."
+
+  - id: compose_config_validate_comunify
+    category: non_functional
+    type: shell
+    cmd: "docker compose -f docker-compose.dev.yml -f comunify/docker-compose.dev.yml config --quiet"
+    must_pass: true
+    timeout_sec: 30
+    description: "Validate compose merge raíz + comunify."
+
+  - id: compose_config_validate_lupulo
+    category: non_functional
+    type: shell
+    cmd: "docker compose -f docker-compose.dev.yml -f lupulo/docker-compose.dev.yml config --quiet"
+    must_pass: true
+    timeout_sec: 30
+    description: "Validate compose merge raíz + lupulo."
+
+  - id: gitignore_env_files
+    category: non_functional
+    type: shell
+    cmd: >
+      git check-ignore -q vitalia/.env.dev &&
+      git check-ignore -q vitalia/.env.prod &&
+      git check-ignore -q comunify/.env.dev &&
+      git check-ignore -q nicolify/.env.dev &&
+      git check-ignore -q lupulo/.env.dev
+    must_pass: true
+    timeout_sec: 10
+    description: >
+      Verifica que los .env.dev y .env.prod de cada brand están en .gitignore
+      (git check-ignore retorna 0 si el archivo sería ignorado).
+
+  - id: pytest_infra_matrix_unit
+    category: non_functional
+    type: pytest
+    cmd: ".venv/bin/pytest tests/scripts/test_generate_infra_matrix.py -v --override-ini='addopts='"
+    must_pass: true
+    timeout_sec: 30
+    description: >
+      Tests unitarios de generate_infra_matrix.py: golden snapshot, missing
+      infra section, output file created, header present, all brands present.
+
+  # ═══════════════════════════════════════════════════════════════
+  # FUNCTIONAL — Gherkin scenarios (de 01-spec.md)
+  # Requieren Docker corriendo. Marcados @pytest.mark.integration.
+  # Corren en CI con flag --run-integration o via make test-integration.
+  # ═══════════════════════════════════════════════════════════════
+
+  - id: scenario_happy_dev_vitalia
+    category: functional
+    type: pytest
+    cmd: ".venv/bin/pytest tests/scripts/test_docker_dev_integration.py::test_happy_dev_vitalia -v --override-ini='addopts=' -m integration"
+    must_pass: true
+    timeout_sec: 180
+    scenario_id: happy-dev-vitalia
+    description: >
+      Scenario 1: make dev-vitalia → postgres healthy + vitalia_dev DB existe
+      + curl http://127.0.0.1:8002/health == 200 + frontend en 3002 responde
+      + cold start completo <90s + make dev-down-vitalia cleanup limpio.
+
+  - id: scenario_happy_dev_vitalia_tunnel
+    category: functional
+    type: pytest
+    cmd: ".venv/bin/pytest tests/scripts/test_docker_dev_integration.py::test_tunnel_profile_up -v --override-ini='addopts=' -m integration"
+    must_pass: true
+    timeout_sec: 120
+    scenario_id: happy-dev-vitalia-tunnel
+    description: >
+      Scenario 2: make dev-vitalia-tunnel → vitalia_cloudflared_dev up
+      + log muestra "Registered tunnel connection" dentro de 60s.
+
+  - id: scenario_negative_db_mismatch_idempotent
+    category: functional
+    type: pytest
+    cmd: ".venv/bin/pytest tests/scripts/test_docker_dev_integration.py::test_init_script_idempotent -v --override-ini='addopts=' -m integration"
+    must_pass: true
+    timeout_sec: 60
+    scenario_id: negative-db-mismatch-idempotent
+    description: >
+      Scenario 3: postgres-init script ejecutado 2x con DB existente →
+      exit code 0, DB intacta, no DROP, mensaje "already exists" en output.
+
+  - id: scenario_edge_2brands_parallel
+    category: functional
+    type: pytest
+    cmd: ".venv/bin/pytest tests/scripts/test_docker_dev_integration.py::test_two_brands_parallel -v --override-ini='addopts=' -m integration"
+    must_pass: true
+    timeout_sec: 300
+    scenario_id: edge-2brands-parallel-no-port-collision
+    description: >
+      Scenario 4: make dev-vitalia + make dev-comunify simultáneamente →
+      curl 8002 y 8003 ambos 200 + make dev-down-vitalia no toca comunify.
+
+  - id: scenario_edge_hot_reload
+    category: functional
+    type: pytest
+    cmd: ".venv/bin/pytest tests/scripts/test_docker_dev_integration.py::test_hot_reload_core_change -v --override-ini='addopts=' -m integration"
+    must_pass: true
+    timeout_sec: 60
+    scenario_id: edge-hot-reload-core-change
+    description: >
+      Scenario 5: touch core file → uvicorn reload event en log <2s
+      → health endpoint 200 post-reload.
+
+  - id: scenario_adversarial_db_isolation
+    category: functional
+    type: pytest
+    cmd: ".venv/bin/pytest tests/scripts/test_docker_dev_integration.py::test_db_isolation_after_drop -v --override-ini='addopts=' -m integration"
+    must_pass: true
+    timeout_sec: 120
+    scenario_id: adversarial-db-isolation-drop
+    description: >
+      Scenario 6: DROP vitalia_dev → comunify_dev intacta + comunify_backend_dev
+      sigue respondiendo 200 + nicolify_dev y lupulo_dev intactas.
+
+  - id: scenario_happy_infra_matrix
+    category: functional
+    type: pytest
+    cmd: ".venv/bin/pytest tests/scripts/test_generate_infra_matrix.py -v --override-ini='addopts='"
+    must_pass: true
+    timeout_sec: 30
+    scenario_id: happy-infra-matrix-generation
+    description: >
+      Scenario 7: generate_infra_matrix.py corre → INFRA-MATRIX.md creado
+      con header AUTO-GENERATED + tabla 4 brands + valores correctos desde brand.yaml.
+      Golden snapshot pasa sin diff.
+
+  - id: bash_test_postgres_init_idempotency
+    category: functional
+    type: shell
+    cmd: "bash scripts/tests/test_postgres_init.sh"
+    must_pass: true
+    timeout_sec: 60
+    scenario_id: negative-db-mismatch-idempotent
+    description: >
+      Bash test directo del script postgres-init: primera ejecución crea DB,
+      segunda ejecución no falla ni destruye datos.
+      Requiere postgres corriendo en 127.0.0.1:5435.
+
+  - id: makefile_phony_targets
+    category: functional
+    type: shell
+    cmd: >
+      make -n dev-vitalia &&
+      make -n dev-vitalia-tunnel &&
+      make -n dev-all &&
+      make -n dev-down-vitalia &&
+      make -n dev-clean-vitalia &&
+      make -n infra-matrix
+    must_pass: true
+    timeout_sec: 15
+    description: >
+      Verifica que los targets del Makefile existen y tienen recipe (make -n = dry-run).
+      No ejecuta Docker — solo valida que el Makefile parsea correctamente.
+
+# ═══════════════════════════════════════════════════════════════
+# VISUAL — NO APLICA
+# Story de infra pura. Sin UI, sin componentes React.
+# ═══════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════
+# AGENTIC EVAL — NO APLICA
+# Story no toca modules/copilot ni modules/sales_agent.
+# ═══════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════
+# Scenario coverage matrix
+# ═══════════════════════════════════════════════════════════════
+
+scenario_coverage:
+  - scenario_id: happy-dev-vitalia
+    validators: [scenario_happy_dev_vitalia]
+  - scenario_id: happy-dev-vitalia-tunnel
+    validators: [scenario_happy_dev_vitalia_tunnel]
+  - scenario_id: negative-db-mismatch-idempotent
+    validators: [scenario_negative_db_mismatch_idempotent, bash_test_postgres_init_idempotency]
+  - scenario_id: edge-2brands-parallel-no-port-collision
+    validators: [scenario_edge_2brands_parallel]
+  - scenario_id: edge-hot-reload-core-change
+    validators: [scenario_edge_hot_reload]
+  - scenario_id: adversarial-db-isolation-drop
+    validators: [scenario_adversarial_db_isolation]
+  - scenario_id: happy-infra-matrix-generation
+    validators: [scenario_happy_infra_matrix, pytest_infra_matrix_unit]
+
+# ═══════════════════════════════════════════════════════════════
+# Non-functional coverage
+# ═══════════════════════════════════════════════════════════════
+
+non_functional_coverage:
+  - concern: shellcheck scripts bash
+    validators: [shellcheck_postgres_init, shellcheck_postgres_init_test]
+  - concern: YAML válido todos los compose files
+    validators: [yamllint_compose_root, yamllint_compose_nicolify, yamllint_compose_vitalia, yamllint_compose_comunify, yamllint_compose_lupulo]
+  - concern: docker compose config válido per brand
+    validators: [compose_config_validate_nicolify, compose_config_validate_vitalia, compose_config_validate_comunify, compose_config_validate_lupulo]
+  - concern: .env files en .gitignore
+    validators: [gitignore_env_files]
+  - concern: generate_infra_matrix.py unit tests
+    validators: [pytest_infra_matrix_unit]
+  - concern: Makefile targets existen
+    validators: [makefile_phony_targets]
+
+# ═══════════════════════════════════════════════════════════════
+# Iteration policy
+# ═══════════════════════════════════════════════════════════════
+
+iteration:
+  max_iterations: 10
+  on_fail: "fix targeted file based on validator output, re-run failing validator only"
+  on_all_pass: "set state=developing→developed, append iteration_log to T-{n}-impl-log.md"
+  on_cap_reached: "set state=developing→blocked, escalate to Chris with last error trace"
+  integration_note: >
+    Los validators marcados como integration (scenario_happy_dev_vitalia, etc.)
+    requieren Docker corriendo. /dev-team debe correr estos en el entorno local
+    con Docker activo. En CI son opcionales gate (smoke CI environment con Docker DinD).

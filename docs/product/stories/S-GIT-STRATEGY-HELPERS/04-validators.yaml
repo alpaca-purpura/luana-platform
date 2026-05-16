@@ -1,0 +1,263 @@
+# 04-validators.yaml — S-GIT-STRATEGY-HELPERS
+#
+# Owner: /architect
+# Schema: v4
+# Story: helper scripts bash (new-session.sh + cleanup-session.sh) +
+#        docs (ADR-004 + runbook + MEMORY) + CLAUDE.md/AGENTS.md update
+#
+# Surface: INFRA — bash scripts + markdown docs.
+# NO aplica: visual, agentic_eval, be/fe lint/typecheck (no Python/TS tocados).
+#
+# /dev-team itera contra estos validators en bucle hasta GREEN o cap_reached.
+# /auditor verifica cada uno fue corrido + GREEN antes APPROVED.
+
+story_id: S-GIT-STRATEGY-HELPERS
+schema_version: v4
+
+validators:
+
+  # ═══════════════════════════════════════════════════════════════
+  # NON-FUNCTIONAL — code quality (shellcheck, markdownlint)
+  # ═══════════════════════════════════════════════════════════════
+
+  - id: shellcheck_scripts
+    category: non_functional
+    type: shell
+    cmd: "shellcheck scripts/git/new-session.sh scripts/git/cleanup-session.sh"
+    must_pass: true
+    timeout_sec: 30
+    description: "Shellcheck 0 errores + 0 warnings en ambos helper scripts"
+
+  - id: shellcheck_tests
+    category: non_functional
+    type: shell
+    cmd: "shellcheck scripts/tests/test_new_session.sh scripts/tests/test_cleanup_session.sh"
+    must_pass: true
+    timeout_sec: 30
+    description: "Shellcheck 0 errores en archivos de test bash"
+
+  - id: markdownlint_adr004
+    category: non_functional
+    type: shell
+    cmd: "markdownlint docs/architecture/luana-platform/ADR-004-git-branching-and-environments.md"
+    must_pass: true
+    timeout_sec: 30
+    description: "Markdownlint 0 errores en ADR-004"
+
+  - id: markdownlint_runbook
+    category: non_functional
+    type: shell
+    cmd: "markdownlint docs/process/git-workflow-multibrand.md"
+    must_pass: true
+    timeout_sec: 30
+    description: "Markdownlint 0 errores en runbook git-workflow-multibrand.md"
+
+  - id: markdownlint_memory
+    category: non_functional
+    type: shell
+    cmd: "markdownlint memory/git-workflow-multibrand.md"
+    must_pass: true
+    timeout_sec: 30
+    description: "Markdownlint 0 errores en MEMORY detail file"
+
+  - id: scripts_executable
+    category: non_functional
+    type: shell
+    cmd: "test -x scripts/git/new-session.sh && test -x scripts/git/cleanup-session.sh"
+    must_pass: true
+    timeout_sec: 10
+    description: "Ambos scripts tienen permiso de ejecucion (chmod +x)"
+
+  # ═══════════════════════════════════════════════════════════════
+  # FUNCTIONAL — scenarios del 01-spec.md (bash unit tests)
+  # ═══════════════════════════════════════════════════════════════
+
+  - id: scenario_happy_new_session
+    category: functional
+    type: shell
+    cmd: "bash scripts/tests/test_new_session.sh test_happy_new_session"
+    must_pass: true
+    timeout_sec: 60
+    scenario_id: happy-new-session
+    description: "new-session.sh crea worktree + branch wip/* + exit 0 < 5s"
+
+  - id: scenario_happy_cleanup_session
+    category: functional
+    type: shell
+    cmd: "bash scripts/tests/test_cleanup_session.sh test_happy_cleanup_session"
+    must_pass: true
+    timeout_sec: 60
+    scenario_id: happy-cleanup-session
+    description: "cleanup-session.sh push + worktree remove + exit 0 < 10s"
+
+  - id: scenario_negative_duplicate_slug
+    category: functional
+    type: shell
+    cmd: "bash scripts/tests/test_new_session.sh test_negative_duplicate_slug"
+    must_pass: true
+    timeout_sec: 30
+    scenario_id: negative-duplicate-slug
+    description: "new-session.sh con branch existente → exit 1 + mensaje ::error::"
+
+  - id: scenario_edge_uncommitted_changes
+    category: functional
+    type: shell
+    cmd: "bash scripts/tests/test_cleanup_session.sh test_edge_uncommitted_changes"
+    must_pass: true
+    timeout_sec: 30
+    scenario_id: edge-uncommitted-changes
+    description: "cleanup-session.sh con dirty tree → exit 2 + worktree intacto"
+
+  - id: scenario_adversarial_path_traversal_new
+    category: functional
+    type: shell
+    cmd: "bash scripts/tests/test_new_session.sh test_adversarial_path_traversal"
+    must_pass: true
+    timeout_sec: 30
+    scenario_id: adversarial-path-traversal
+    description: "new-session.sh con SLUG='../../etc/passwd' → exit 1 + ::error::Invalid slug"
+
+  - id: scenario_adversarial_path_traversal_cleanup
+    category: functional
+    type: shell
+    cmd: "bash scripts/tests/test_cleanup_session.sh test_adversarial_path_traversal"
+    must_pass: true
+    timeout_sec: 30
+    scenario_id: adversarial-path-traversal
+    description: "cleanup-session.sh con SLUG='../../etc/passwd' → exit 1 + ::error::Invalid slug"
+
+  - id: scenario_all_new_session_tests
+    category: functional
+    type: shell
+    cmd: "bash scripts/tests/test_new_session.sh"
+    must_pass: true
+    timeout_sec: 120
+    description: "Suite completa test_new_session.sh — todos los scenarios (7)"
+
+  - id: scenario_all_cleanup_session_tests
+    category: functional
+    type: shell
+    cmd: "bash scripts/tests/test_cleanup_session.sh"
+    must_pass: true
+    timeout_sec: 120
+    description: "Suite completa test_cleanup_session.sh — todos los scenarios (4)"
+
+  # ═══════════════════════════════════════════════════════════════
+  # FUNCTIONAL — coherencia docs (verificacion contenido minimo)
+  # ═══════════════════════════════════════════════════════════════
+
+  - id: claude_md_triple_branch_mention
+    category: functional
+    type: shell
+    cmd: "grep -q 'wip/' CLAUDE.md && grep -q 'release/' CLAUDE.md && grep -q 'worktree' CLAUDE.md"
+    must_pass: true
+    timeout_sec: 10
+    description: "CLAUDE.md menciona triple-branch (wip/ + release/) + worktrees — politica legacy reemplazada"
+
+  - id: agents_md_triple_branch_mention
+    category: functional
+    type: shell
+    cmd: "grep -q 'wip/' AGENTS.md && grep -q 'release/' AGENTS.md && grep -q 'worktree' AGENTS.md"
+    must_pass: true
+    timeout_sec: 10
+    description: "AGENTS.md menciona triple-branch (wip/ + release/) + worktrees — politica legacy reemplazada"
+
+  - id: claude_md_no_solo_development
+    category: functional
+    type: shell
+    cmd: "! grep -q 'Single branch = .development' CLAUDE.md"
+    must_pass: true
+    timeout_sec: 10
+    description: "CLAUDE.md ya no dice 'Single branch = development' (politica legacy eliminada)"
+
+  - id: agents_md_no_solo_development
+    category: functional
+    type: shell
+    cmd: "! grep -q 'Single branch = .development' AGENTS.md"
+    must_pass: true
+    timeout_sec: 10
+    description: "AGENTS.md ya no dice 'Single branch = development' (politica legacy eliminada)"
+
+  - id: adr004_status_accepted
+    category: functional
+    type: shell
+    cmd: "grep -qi 'Status.*ACCEPTED\\|ACCEPTED' docs/architecture/luana-platform/ADR-004-git-branching-and-environments.md"
+    must_pass: true
+    timeout_sec: 10
+    description: "ADR-004 tiene Status: ACCEPTED"
+
+  - id: adr004_worktree_reversion
+    category: functional
+    type: shell
+    cmd: "grep -qi 'worktree' docs/architecture/luana-platform/ADR-004-git-branching-and-environments.md"
+    must_pass: true
+    timeout_sec: 10
+    description: "ADR-004 menciona worktrees (es el tema central)"
+
+  - id: memory_entry_pointer
+    category: functional
+    type: shell
+    cmd: "grep -q 'git-workflow-multibrand' /home/chalreme/.claude/projects/-home-chalreme-Proyectos-luana-platform/memory/MEMORY.md"
+    must_pass: true
+    timeout_sec: 10
+    description: "MEMORY.md index contiene pointer a git-workflow-multibrand"
+
+  - id: new_session_shebang_pipefail
+    category: functional
+    type: shell
+    cmd: "head -2 scripts/git/new-session.sh | grep -q 'set -euo pipefail'"
+    must_pass: true
+    timeout_sec: 10
+    description: "new-session.sh tiene set -euo pipefail en las primeras lineas"
+
+  - id: cleanup_session_shebang_pipefail
+    category: functional
+    type: shell
+    cmd: "head -2 scripts/git/cleanup-session.sh | grep -q 'set -euo pipefail'"
+    must_pass: true
+    timeout_sec: 10
+    description: "cleanup-session.sh tiene set -euo pipefail en las primeras lineas"
+
+  - id: slug_sanitization_regex_present
+    category: functional
+    type: shell
+    cmd: "grep -q 'a-zA-Z0-9_-' scripts/git/new-session.sh && grep -q 'a-zA-Z0-9_-' scripts/git/cleanup-session.sh"
+    must_pass: true
+    timeout_sec: 10
+    description: "Ambos scripts contienen la regex de sanitizacion de slug"
+
+# ═══════════════════════════════════════════════════════════════
+# VISUAL — NO APLICA (story es infra tooling + docs, sin UI)
+# ═══════════════════════════════════════════════════════════════
+# visual: null
+
+# ═══════════════════════════════════════════════════════════════
+# AGENTIC EVAL — NO APLICA (sin runtime LLM ni agent workflow)
+# ═══════════════════════════════════════════════════════════════
+# agentic_eval: null
+
+# ═══════════════════════════════════════════════════════════════
+# Scenario coverage matrix
+# ═══════════════════════════════════════════════════════════════
+
+scenario_coverage:
+  - scenario_id: happy-new-session
+    validators: [scenario_happy_new_session, scenario_all_new_session_tests, shellcheck_scripts]
+  - scenario_id: happy-cleanup-session
+    validators: [scenario_happy_cleanup_session, scenario_all_cleanup_session_tests, shellcheck_scripts]
+  - scenario_id: negative-duplicate-slug
+    validators: [scenario_negative_duplicate_slug, scenario_all_new_session_tests]
+  - scenario_id: edge-uncommitted-changes
+    validators: [scenario_edge_uncommitted_changes, scenario_all_cleanup_session_tests]
+  - scenario_id: adversarial-path-traversal
+    validators: [scenario_adversarial_path_traversal_new, scenario_adversarial_path_traversal_cleanup]
+
+# ═══════════════════════════════════════════════════════════════
+# Iteration policy
+# ═══════════════════════════════════════════════════════════════
+
+iteration:
+  max_iterations: 10
+  on_fail: "fix targeted file based on test output, re-run failing validator only"
+  on_all_pass: "set state=developing→developed, append iteration_log to T-{n}-impl-log.md"
+  on_cap_reached: "set state=developing→blocked, escalate to Chris with last error trace"

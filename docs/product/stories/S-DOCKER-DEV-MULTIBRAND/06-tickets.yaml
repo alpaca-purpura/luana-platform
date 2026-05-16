@@ -1,0 +1,732 @@
+# 06-tickets.yaml — S-DOCKER-DEV-MULTIBRAND
+# Story: Docker dev local multimarca brand-autocontenida
+# Owner: /architect
+# Generated: 2026-05-15
+# Total tickets: 10
+# Estimated hours: 14-16h
+
+story_id: S-DOCKER-DEV-MULTIBRAND
+outcome: docker-dev-multibrand
+outcome_platform: infra-dev-multibrand
+generated_at: 2026-05-15T00:00:00Z
+generated_by: /architect
+total_tickets: 10
+estimated_total_hours: 15
+
+# ── Resumen pila (orden de ejecución) ───────────────────────────
+summary:
+  - id: T-1
+    title: "Rewrite docker-compose.dev.yml raíz + script postgres-init idempotente"
+    surface: INFRA
+    owner_pool: [claude-sonnet, qwen-opencode]
+    state: draft
+    blocks: [T-2, T-6]
+    parallel_with: [T-7]
+
+  - id: T-2
+    title: "Crear {brand}/docker-compose.dev.yml × 4 (nicolify, vitalia, comunify, lupulo)"
+    surface: INFRA
+    owner_pool: [claude-sonnet, qwen-opencode]
+    state: draft
+    blocked_by: [T-1]
+    blocks: [T-3, T-6]
+
+  - id: T-3
+    title: "Agregar sección infra: a {brand}/config/brand.yaml × 4"
+    surface: INFRA
+    owner_pool: [claude-sonnet, qwen-opencode]
+    state: draft
+    blocked_by: [T-2]
+    blocks: [T-8]
+
+  - id: T-4
+    title: "Crear Dockerfiles faltantes: vitalia/{backend,frontend} + comunify/{backend,frontend} + lupulo/{backend,frontend}"
+    surface: INFRA
+    owner_pool: [claude-sonnet, qwen-opencode]
+    state: draft
+    blocks: [T-5]
+    parallel_with: [T-1, T-7]
+
+  - id: T-5
+    title: "Audit + ajuste nicolify/{backend,frontend}/Dockerfile para uv editable bind-mount"
+    surface: INFRA
+    owner_pool: [claude-sonnet, qwen-opencode]
+    state: draft
+    blocked_by: [T-4]
+    note: "Post T-4 para consistency audit"
+
+  - id: T-6
+    title: "Makefile raíz con targets dev-{brand}, dev-{brand}-tunnel, dev-all, dev-down, dev-clean, infra-matrix"
+    surface: INFRA
+    owner_pool: [claude-sonnet, qwen-opencode]
+    state: draft
+    blocked_by: [T-1, T-2]
+
+  - id: T-7
+    title: ".env.dev.template + .env.prod.template × 4 brands + .gitignore update"
+    surface: INFRA
+    owner_pool: [claude-sonnet, qwen-opencode]
+    state: draft
+    parallel_with: [T-1, T-4]
+    note: "Sin dependencias — puede correr en paralelo con T-1 y T-4"
+
+  - id: T-8
+    title: "scripts/generate_infra_matrix.py + target make infra-matrix → docs/portfolio/INFRA-MATRIX.md"
+    surface: INFRA
+    owner_pool: [claude-sonnet, qwen-opencode]
+    state: draft
+    blocked_by: [T-3]
+    blocks: [T-9]
+
+  - id: T-9
+    title: "Pre-commit hook Section 10 — regenera INFRA-MATRIX.md cuando se edita brand.yaml"
+    surface: INFRA
+    owner_pool: [claude-sonnet, qwen-opencode]
+    state: draft
+    blocked_by: [T-8]
+    blocks: [T-10]
+
+  - id: T-10
+    title: "Runbook + ADR-003 + CLAUDE.md update + /pm-luana SKILL.md update"
+    surface: DOCS
+    owner_pool: [claude-sonnet, qwen-opencode]
+    state: draft
+    blocked_by: [T-9]
+    note: "Último — docs de cierre post-implementación"
+
+# ── Detalle tickets ─────────────────────────────────────────────
+
+tickets:
+
+  - id: T-1
+    title: "Rewrite docker-compose.dev.yml raíz + script postgres-init idempotente"
+    type: infra
+    surface: INFRA
+    production_code: true
+    state: draft
+    owner_eligibility:
+      qwen_opencode: true
+      claude_sonnet: true
+      claude_opus_required: false
+    priority: 1
+    estimate_hours: 2
+    decisions_applicable: [D1, D3]
+    # D1: 1 postgres shared + N databases via init script
+    # D3: Qdrant + Redis opt-in profiles
+    inputs:
+      spec: "./01-spec.md"
+      arch_doc: "./03-arch.md#sección-A-compose-raíz"
+      arch_doc_postgres_init: "./03-arch.md#sección-B-postgres-init"
+      guidelines: "./05-guidelines.md"
+      rules:
+        - ".claude/rules/git-safety.md"
+      domain_skills:
+        - "backend-expert"
+    deliverables:
+      - "REWRITE docker-compose.dev.yml (raíz) — servicios: luana_postgres_dev + luana_qdrant_dev (profile=vector) + luana_redis_dev (profile=cache). Network: luana_dev_net. name: luana-dev. Volume mount postgres-init."
+      - "NEW scripts/postgres-init/01-create-databases.sh — bash idempotente, crea databases nicolify_dev/vitalia_dev/comunify_dev/lupulo_dev. set -euo pipefail. SELECT+CREATE condicional."
+      - "NEW scripts/postgres-init/ directorio"
+      - "NEW tests/scripts/ directorio"
+      - "NEW tests/scripts/test_generate_infra_matrix.py — placeholder vacío (se completa en T-8)"
+      - "NEW tests/scripts/test_docker_dev_integration.py — tests de integración stub (se completan en T-6 + validaciones finales)"
+      - "NEW scripts/tests/test_postgres_init.sh — bash test de idempotencia del init script"
+    out_of_scope:
+      - "{brand}/docker-compose.dev.yml (es T-2)"
+      - "Makefile (es T-6)"
+      - "Dockerfiles brand (es T-4)"
+    acceptance:
+      - id: A1
+        description: "yamllint docker-compose.dev.yml pasa sin errores"
+        verifier:
+          type: shell
+          cmd: "yamllint -d '{extends: default, rules: {line-length: {max: 120}}}' docker-compose.dev.yml"
+      - id: A2
+        description: "shellcheck scripts/postgres-init/01-create-databases.sh pasa sin errores"
+        verifier:
+          type: shell
+          cmd: "shellcheck scripts/postgres-init/01-create-databases.sh"
+      - id: A3
+        description: "postgres compose define profiles: qdrant (profile=vector) y redis (profile=cache)"
+        verifier:
+          type: shell
+          cmd: "grep -c 'profiles:' docker-compose.dev.yml | grep -E '^2$'"
+      - id: A4
+        description: "postgres init script es idempotente — bash test pasa (requiere Docker corriendo)"
+        verifier:
+          type: shell
+          cmd: "bash scripts/tests/test_postgres_init.sh"
+      - id: A5
+        description: "postgres compose NO tiene container_name fijo"
+        verifier:
+          type: shell
+          cmd: "! grep -q 'container_name:' docker-compose.dev.yml"
+      - id: A6
+        description: "compose raíz usa name: luana-dev"
+        verifier:
+          type: shell
+          cmd: "head -3 docker-compose.dev.yml | grep -q 'name: luana-dev'"
+    quality_gates:
+      - "shellcheck_postgres_init pasa"
+      - "yamllint_compose_root pasa"
+      - "compose_config_validate (sin brand) pasa: docker compose -f docker-compose.dev.yml config --quiet"
+    depends_on: []
+    blocks: ["T-2", "T-6"]
+    transitions:
+      - state: draft
+        at: "2026-05-15T00:00:00Z"
+        by: /architect
+
+  - id: T-2
+    title: "Crear {brand}/docker-compose.dev.yml × 4 (nicolify, vitalia, comunify, lupulo)"
+    type: infra
+    surface: INFRA
+    production_code: true
+    state: draft
+    owner_eligibility:
+      qwen_opencode: true
+      claude_sonnet: true
+      claude_opus_required: false
+    priority: 1
+    estimate_hours: 2
+    decisions_applicable: [D2, D4, D5, D6]
+    # D2: Brand-autocontenida — {brand}/docker-compose.dev.yml per brand
+    # D4: Hot-reload monorepo via bind mount + anonymous volume .venv
+    # D5: Cloudflared tunnel opt-in profile per brand
+    # D6: Port allocation cementada
+    inputs:
+      spec: "./01-spec.md"
+      arch_doc: "./03-arch.md#sección-C-brand-compose"
+      guidelines: "./05-guidelines.md"
+      rules:
+        - ".claude/rules/git-safety.md"
+        - ".claude/rules/anti-duplication.md"
+    deliverables:
+      - "NEW nicolify/docker-compose.dev.yml — backend (8001) + frontend (3001) + cloudflared (profile=tunnel). name: luana-dev. network: luana_dev_net. volumes bind mount + anonymous."
+      - "NEW vitalia/docker-compose.dev.yml — backend (8002) + frontend (3002) + cloudflared (profile=tunnel). env_file: vitalia/.env.dev."
+      - "NEW comunify/docker-compose.dev.yml — backend (8003) + frontend (3003) + cloudflared (profile=tunnel). env_file: comunify/.env.dev."
+      - "NEW lupulo/docker-compose.dev.yml — backend (8004) + frontend (3004) + cloudflared (profile=tunnel). env_file: lupulo/.env.dev."
+    out_of_scope:
+      - "Dockerfiles backend/frontend (es T-4)"
+      - ".env.dev.template (es T-7)"
+      - "Makefile (es T-6)"
+    acceptance:
+      - id: A1
+        description: "yamllint pasa para los 4 compose files de brand"
+        verifier:
+          type: shell
+          cmd: "for brand in nicolify vitalia comunify lupulo; do yamllint -d '{extends: default, rules: {line-length: {max: 120}}}' ${brand}/docker-compose.dev.yml; done"
+      - id: A2
+        description: "docker compose config merge raíz+vitalia parsea sin error"
+        verifier:
+          type: shell
+          cmd: "docker compose -f docker-compose.dev.yml -f vitalia/docker-compose.dev.yml config --quiet"
+      - id: A3
+        description: "docker compose config merge raíz+comunify parsea sin error"
+        verifier:
+          type: shell
+          cmd: "docker compose -f docker-compose.dev.yml -f comunify/docker-compose.dev.yml config --quiet"
+      - id: A4
+        description: "Ningún compose file de brand define servicios postgres/qdrant/redis (están en raíz)"
+        verifier:
+          type: shell
+          cmd: "! grep -rq 'image: postgres' nicolify/docker-compose.dev.yml vitalia/docker-compose.dev.yml comunify/docker-compose.dev.yml lupulo/docker-compose.dev.yml"
+      - id: A5
+        description: "Los 4 compose files tienen cloudflared con profile: [tunnel]"
+        verifier:
+          type: shell
+          cmd: "for brand in nicolify vitalia comunify lupulo; do grep -q 'tunnel' ${brand}/docker-compose.dev.yml || exit 1; done"
+    quality_gates:
+      - "yamllint_compose_nicolify/vitalia/comunify/lupulo todos pasan"
+      - "compose_config_validate para las 4 brands pasa"
+    depends_on: ["T-1"]
+    blocks: ["T-3", "T-6"]
+    transitions:
+      - state: draft
+        at: "2026-05-15T00:00:00Z"
+        by: /architect
+
+  - id: T-3
+    title: "Agregar sección infra: a {brand}/config/brand.yaml × 4"
+    type: infra
+    surface: INFRA
+    production_code: true
+    state: draft
+    owner_eligibility:
+      qwen_opencode: true
+      claude_sonnet: true
+      claude_opus_required: false
+    priority: 1
+    estimate_hours: 1.5
+    decisions_applicable: [D6]
+    # D6: Port allocation cementada — los valores en brand.yaml deben matchear la tabla del outcome
+    inputs:
+      spec: "./01-spec.md"
+      arch_doc: "./03-arch.md#sección-D-brand-yaml-infra"
+      guidelines: "./05-guidelines.md#schema-fijo-infra"
+      outcome_ref: "docs/product/outcomes/docker-dev-multibrand.md#port-allocation"
+    deliverables:
+      - "MODIFY nicolify/config/brand.yaml — agregar sección infra: (crear brand.yaml si no existe para nicolify)"
+      - "MODIFY vitalia/config/brand.yaml — agregar sección infra: al final del archivo existente (preservar todo el contenido anterior)"
+      - "MODIFY comunify/config/brand.yaml — agregar sección infra: al final del archivo existente (preservar todo el contenido anterior)"
+      - "MODIFY lupulo/config/brand.yaml — agregar sección infra: (crear si no existe)"
+    out_of_scope:
+      - "Cualquier modificación a otras secciones del brand.yaml (features, booking, plan_tiers, etc.)"
+      - "generate_infra_matrix.py (es T-8)"
+    acceptance:
+      - id: A1
+        description: "vitalia/config/brand.yaml contiene infra.dev.backend_port: 8002"
+        verifier:
+          type: shell
+          cmd: ".venv/bin/python -c \"import yaml; d=yaml.safe_load(open('vitalia/config/brand.yaml')); assert d['infra']['dev']['backend_port'] == 8002\""
+      - id: A2
+        description: "comunify/config/brand.yaml contiene infra.dev.database_name: comunify_dev"
+        verifier:
+          type: shell
+          cmd: ".venv/bin/python -c \"import yaml; d=yaml.safe_load(open('comunify/config/brand.yaml')); assert d['infra']['dev']['database_name'] == 'comunify_dev'\""
+      - id: A3
+        description: "Las 4 brands tienen todos los campos requeridos en infra.dev"
+        verifier:
+          type: shell
+          cmd: ".venv/bin/python -c \"import yaml; brands=['nicolify','vitalia','comunify','lupulo']; fields=['backend_port','frontend_port','database_name','redis_db','qdrant_collection_prefix','domain']; [all(f in yaml.safe_load(open(f'{b}/config/brand.yaml'))['infra']['dev'] for f in fields) for b in brands]\""
+      - id: A4
+        description: "vitalia/config/brand.yaml preserva contenido anterior (brand_slug, features, etc. intactos)"
+        verifier:
+          type: shell
+          cmd: ".venv/bin/python -c \"import yaml; d=yaml.safe_load(open('vitalia/config/brand.yaml')); assert d['brand_slug'] == 'vitalia' and 'features' in d\""
+    quality_gates:
+      - "yamllint pasa en los 4 brand.yaml modificados"
+    depends_on: ["T-2"]
+    blocks: ["T-8"]
+    transitions:
+      - state: draft
+        at: "2026-05-15T00:00:00Z"
+        by: /architect
+
+  - id: T-4
+    title: "Crear Dockerfiles faltantes: vitalia/{backend,frontend} + comunify/{backend,frontend} + lupulo/{backend,frontend}"
+    type: infra
+    surface: INFRA
+    production_code: true
+    state: draft
+    owner_eligibility:
+      qwen_opencode: true
+      claude_sonnet: true
+      claude_opus_required: false
+    priority: 1
+    estimate_hours: 3
+    decisions_applicable: [D4]
+    # D4: Hot-reload monorepo via bind mount + anonymous volume .venv + uv editable workspace
+    inputs:
+      spec: "./01-spec.md"
+      arch_doc: "./03-arch.md#sección-E-backend-dockerfile"
+      arch_doc_frontend: "./03-arch.md#sección-F-frontend-dockerfile"
+      guidelines: "./05-guidelines.md"
+      existing_pattern_ref: "nicolify/backend/Dockerfile"
+      rules:
+        - ".claude/rules/anti-duplication.md"
+      domain_skills:
+        - "backend-expert"
+    deliverables:
+      - "NEW vitalia/backend/Dockerfile — targets: dev (hot-reload uv) + final (prod). Build context: monorepo root. uv sync --frozen. Puerto 8002."
+      - "NEW vitalia/frontend/Dockerfile — targets: dev (pnpm dev) + builder + final (Next.js standalone). Puerto 3002."
+      - "NEW comunify/backend/Dockerfile — idem vitalia pattern. Puerto 8003."
+      - "NEW comunify/frontend/Dockerfile — idem vitalia pattern. Puerto 3003."
+      - "NEW lupulo/backend/Dockerfile — placeholder mínimo con FastAPI + /health endpoint. Puerto 8004."
+      - "NEW lupulo/frontend/Dockerfile — placeholder mínimo con Next.js dev. Puerto 3004."
+      - "NEW lupulo/backend/src/main_placeholder.py — FastAPI app mínima con /health route (placeholder para que el Dockerfile buildee)"
+      - "NEW lupulo/frontend/src/ — estructura mínima Next.js si no existe (o ajustar Dockerfile a estructura existente)"
+    out_of_scope:
+      - "nicolify/{backend,frontend}/Dockerfile (es T-5)"
+      - "Código de aplicación real de vitalia/comunify/lupulo (solo Dockerfiles)"
+    acceptance:
+      - id: A1
+        description: "docker build vitalia/backend/Dockerfile --target dev completa sin error"
+        verifier:
+          type: shell
+          cmd: "DOCKER_BUILDKIT=1 docker build -f vitalia/backend/Dockerfile --target dev . -t vitalia-backend-dev:test --no-cache 2>&1 | tail -5 | grep -i 'successfully built'"
+      - id: A2
+        description: "docker build comunify/backend/Dockerfile --target dev completa sin error"
+        verifier:
+          type: shell
+          cmd: "DOCKER_BUILDKIT=1 docker build -f comunify/backend/Dockerfile --target dev . -t comunify-backend-dev:test --no-cache 2>&1 | tail -5 | grep -i 'successfully built'"
+      - id: A3
+        description: "docker build lupulo/backend/Dockerfile --target dev completa sin error (con placeholder)"
+        verifier:
+          type: shell
+          cmd: "DOCKER_BUILDKIT=1 docker build -f lupulo/backend/Dockerfile --target dev . -t lupulo-backend-dev:test --no-cache 2>&1 | tail -5 | grep -i 'successfully built'"
+      - id: A4
+        description: "Ningún Dockerfile usa pip install -r requirements.txt (patrón uv)"
+        verifier:
+          type: shell
+          cmd: "! grep -rq 'pip install -r' vitalia/backend/Dockerfile vitalia/frontend/Dockerfile comunify/backend/Dockerfile comunify/frontend/Dockerfile lupulo/backend/Dockerfile"
+      - id: A5
+        description: "Todos los Dockerfiles backend tienen HEALTHCHECK en target final"
+        verifier:
+          type: shell
+          cmd: "for f in vitalia/backend/Dockerfile comunify/backend/Dockerfile lupulo/backend/Dockerfile; do grep -q 'HEALTHCHECK' $f || exit 1; done"
+    quality_gates:
+      - "docker build --target dev pasa para las 6 imágenes (build context = monorepo root)"
+      - "docker build --target final pasa para las 6 imágenes"
+    depends_on: []
+    blocks: ["T-5"]
+    transitions:
+      - state: draft
+        at: "2026-05-15T00:00:00Z"
+        by: /architect
+
+  - id: T-5
+    title: "Audit + ajuste nicolify/{backend,frontend}/Dockerfile para uv editable bind-mount"
+    type: infra
+    surface: INFRA
+    production_code: true
+    state: draft
+    owner_eligibility:
+      qwen_opencode: true
+      claude_sonnet: true
+      claude_opus_required: false
+    priority: 2
+    estimate_hours: 1
+    decisions_applicable: [D4]
+    # D4: Hot-reload monorepo via bind mount — el Dockerfile de nicolify/backend (legacy pip) necesita target dev
+    inputs:
+      spec: "./01-spec.md"
+      arch_doc: "./03-arch.md#sección-G-nicolify-audit"
+      current_nicolify_dockerfile: "nicolify/backend/Dockerfile"
+      guidelines: "./05-guidelines.md"
+    deliverables:
+      - "MODIFY nicolify/backend/Dockerfile — agregar target dev con hot-reload (uvicorn --reload), uv-compatible (o documentar por qué legacy pip es suficiente). Mantener target final funcional."
+      - "MODIFY nicolify/frontend/Dockerfile — audit y ajustar si necesario para consistencia con patrón vitalia/comunify/lupulo."
+      - "T-5-result.md — documento con findings del audit: cambios aplicados, justificación, riesgos detectados."
+    out_of_scope:
+      - "Código de aplicación nicolify"
+      - "Tests de nicolify"
+    acceptance:
+      - id: A1
+        description: "docker build nicolify/backend/Dockerfile --target dev completa sin error"
+        verifier:
+          type: shell
+          cmd: "DOCKER_BUILDKIT=1 docker build -f nicolify/backend/Dockerfile --target dev . -t nicolify-backend-dev:test 2>&1 | tail -5 | grep -i 'successfully built'"
+      - id: A2
+        description: "docker build nicolify/backend/Dockerfile --target final completa sin error (regresión)"
+        verifier:
+          type: shell
+          cmd: "DOCKER_BUILDKIT=1 docker build -f nicolify/backend/Dockerfile --target final . -t nicolify-backend-final:test 2>&1 | tail -5 | grep -i 'successfully built'"
+      - id: A3
+        description: "T-5-result.md creado con findings del audit"
+        verifier:
+          type: shell
+          cmd: "test -f docs/product/stories/S-DOCKER-DEV-MULTIBRAND/T-5-result.md"
+    quality_gates:
+      - "docker build --target dev y --target final pasan para nicolify (no regresión)"
+    depends_on: ["T-4"]
+    blocks: []
+    transitions:
+      - state: draft
+        at: "2026-05-15T00:00:00Z"
+        by: /architect
+
+  - id: T-6
+    title: "Makefile raíz con targets dev-{brand}, dev-{brand}-tunnel, dev-all, dev-down, dev-clean, infra-matrix"
+    type: infra
+    surface: INFRA
+    production_code: true
+    state: draft
+    owner_eligibility:
+      qwen_opencode: true
+      claude_sonnet: true
+      claude_opus_required: false
+    priority: 1
+    estimate_hours: 1.5
+    decisions_applicable: [D2, D6]
+    # D2: Brand-autocontenida — Makefile compone raíz + brand compose files
+    # D6: Port allocation — targets usan los composes correctos (port-correcto per brand)
+    inputs:
+      spec: "./01-spec.md"
+      arch_doc: "./03-arch.md#sección-H-makefile"
+      guidelines: "./05-guidelines.md#makefile-patterns"
+    deliverables:
+      - "NEW Makefile (raíz del monorepo) — targets: dev-{brand} × 4, dev-{brand}-tunnel × 4, dev-all, dev-all-vector, dev-all-cache, dev-down-{brand} × 4, dev-down-all, dev-clean-{brand} × 4, dev-clean-all, infra-matrix, portfolio, scan-promotables, ci-parity, test-backend, test-frontend. .PHONY declarados. COMPOSE_BASE variable."
+    out_of_scope:
+      - "targets CI/CD (scope de S-CICD-DEPLOY)"
+      - "targets de migration alembic (pertenecen a cada brand)"
+    acceptance:
+      - id: A1
+        description: "make -n dev-vitalia retorna el comando docker compose sin error"
+        verifier:
+          type: shell
+          cmd: "make -n dev-vitalia"
+      - id: A2
+        description: "make -n dev-vitalia-tunnel incluye --profile tunnel"
+        verifier:
+          type: shell
+          cmd: "make -n dev-vitalia-tunnel | grep -q 'profile tunnel'"
+      - id: A3
+        description: "make -n dev-all incluye los 4 brands compose files"
+        verifier:
+          type: shell
+          cmd: "make -n dev-all | grep -qE 'nicolify.*vitalia.*comunify.*lupulo|nicolify' "
+      - id: A4
+        description: "make -n dev-down-vitalia no incluye otros brands"
+        verifier:
+          type: shell
+          cmd: "make -n dev-down-vitalia | grep -vq 'comunify'"
+      - id: A5
+        description: "todos los targets listados están en .PHONY"
+        verifier:
+          type: shell
+          cmd: "make -n dev-vitalia dev-vitalia-tunnel dev-all dev-down-vitalia dev-clean-vitalia infra-matrix 2>&1 | grep -v 'Nothing to be done'"
+      - id: A6
+        description: "make -n infra-matrix incluye generate_infra_matrix.py"
+        verifier:
+          type: shell
+          cmd: "make -n infra-matrix | grep -q 'generate_infra_matrix'"
+    quality_gates:
+      - "makefile_phony_targets validator pasa"
+    depends_on: ["T-1", "T-2"]
+    blocks: []
+    transitions:
+      - state: draft
+        at: "2026-05-15T00:00:00Z"
+        by: /architect
+
+  - id: T-7
+    title: ".env.dev.template + .env.prod.template × 4 brands + .gitignore update"
+    type: infra
+    surface: INFRA
+    production_code: true
+    state: draft
+    owner_eligibility:
+      qwen_opencode: true
+      claude_sonnet: true
+      claude_opus_required: false
+    priority: 1
+    estimate_hours: 0.5
+    decisions_applicable: []
+    inputs:
+      spec: "./01-spec.md"
+      arch_doc: "./03-arch.md#sección-I-env-templates"
+      arch_doc_gitignore: "./03-arch.md#sección-J-gitignore"
+      guidelines: "./05-guidelines.md"
+    deliverables:
+      - "NEW nicolify/.env.dev.template — variables: CLERK keys, DATABASE_URL, REDIS_URL, QDRANT config, BRAND_SLUG, ENVIRONMENT, LLM keys, TUNNEL_TOKEN, Next.js vars. Valores REPLACE_ME."
+      - "NEW nicolify/.env.prod.template — idem, con ENVIRONMENT=production."
+      - "NEW vitalia/.env.dev.template — idem pattern, DATABASE_URL → vitalia_dev, REDIS_URL → /1, PORT → 8002."
+      - "NEW vitalia/.env.prod.template"
+      - "NEW comunify/.env.dev.template — idem, vitalia_dev → comunify_dev, /1 → /2, 8002 → 8003."
+      - "NEW comunify/.env.prod.template"
+      - "NEW lupulo/.env.dev.template — idem, comunify_dev → lupulo_dev, /2 → /3, 8003 → 8004."
+      - "NEW lupulo/.env.prod.template"
+      - "MODIFY .gitignore (raíz) — agregar patrones {brand}/.env.dev y {brand}/.env.prod para los 10 brands (4 actuales + 6 futuros)."
+    out_of_scope:
+      - "Valores reales de secrets (templates son REPLACE_ME)"
+    acceptance:
+      - id: A1
+        description: "Los 8 templates existen"
+        verifier:
+          type: shell
+          cmd: "for brand in nicolify vitalia comunify lupulo; do test -f ${brand}/.env.dev.template && test -f ${brand}/.env.prod.template; done"
+      - id: A2
+        description: ".gitignore excluye vitalia/.env.dev"
+        verifier:
+          type: shell
+          cmd: "git check-ignore -q vitalia/.env.dev"
+      - id: A3
+        description: ".gitignore excluye comunify/.env.prod"
+        verifier:
+          type: shell
+          cmd: "git check-ignore -q comunify/.env.prod"
+      - id: A4
+        description: "Los templates NO contienen secrets reales (solo REPLACE_ME)"
+        verifier:
+          type: shell
+          cmd: "! grep -rE 'sk-[A-Za-z0-9]{48}|pk_live_' nicolify/.env.dev.template vitalia/.env.dev.template comunify/.env.dev.template lupulo/.env.dev.template"
+      - id: A5
+        description: "gitignore_env_files validator pasa (5 brands verificadas)"
+        verifier:
+          type: shell
+          cmd: "git check-ignore -q vitalia/.env.dev && git check-ignore -q vitalia/.env.prod && git check-ignore -q comunify/.env.dev && git check-ignore -q nicolify/.env.dev && git check-ignore -q lupulo/.env.dev"
+    quality_gates:
+      - "gitignore_env_files validator pasa"
+    depends_on: []
+    blocks: []
+    transitions:
+      - state: draft
+        at: "2026-05-15T00:00:00Z"
+        by: /architect
+
+  - id: T-8
+    title: "scripts/generate_infra_matrix.py + target make infra-matrix → docs/portfolio/INFRA-MATRIX.md"
+    type: infra
+    surface: INFRA
+    production_code: true
+    state: draft
+    owner_eligibility:
+      qwen_opencode: true
+      claude_sonnet: true
+      claude_opus_required: false
+    priority: 1
+    estimate_hours: 1.5
+    decisions_applicable: []
+    # Pattern canónico "metadata-en-su-lugar + auto-gen index" ratificado en outcome
+    inputs:
+      spec: "./01-spec.md#scenario-7-happy-infra-matrix-generation"
+      arch_doc: "./03-arch.md#sección-K-generate-infra-matrix"
+      guidelines: "./05-guidelines.md#infra-matrix-solo-auto-generado"
+      outcome_ref: "docs/product/outcomes/docker-dev-multibrand.md#pattern-canónico"
+    deliverables:
+      - "NEW scripts/generate_infra_matrix.py — lee {brand}/config/brand.yaml::infra de las 4 brands, genera tabla markdown, escribe docs/portfolio/INFRA-MATRIX.md con header AUTO-GENERATED. exit code 0 + mensaje 'N brands updated'."
+      - "NEW docs/portfolio/INFRA-MATRIX.md — primera versión auto-generada con datos reales de los 4 brand.yaml (requires T-3 done)."
+      - "MODIFY tests/scripts/test_generate_infra_matrix.py — implementar tests completos: test_golden_snapshot, test_missing_infra_section, test_output_file_created, test_header_present, test_all_brands_present."
+    out_of_scope:
+      - "Pre-commit hook (es T-9)"
+      - "make infra-matrix target en Makefile (el target ya existe en T-6 — solo verificar que llama al script correcto)"
+    acceptance:
+      - id: A1
+        description: "python scripts/generate_infra_matrix.py completa sin error y crea/actualiza docs/portfolio/INFRA-MATRIX.md"
+        verifier:
+          type: shell
+          cmd: ".venv/bin/python scripts/generate_infra_matrix.py && test -f docs/portfolio/INFRA-MATRIX.md"
+      - id: A2
+        description: "INFRA-MATRIX.md línea 1 contiene AUTO-GENERATED"
+        verifier:
+          type: shell
+          cmd: "head -1 docs/portfolio/INFRA-MATRIX.md | grep -q 'AUTO-GENERATED'"
+      - id: A3
+        description: "INFRA-MATRIX.md contiene las 4 brands"
+        verifier:
+          type: shell
+          cmd: "grep -qE 'vitalia|comunify|nicolify|lupulo' docs/portfolio/INFRA-MATRIX.md"
+      - id: A4
+        description: "INFRA-MATRIX.md contiene puerto 8002 para vitalia"
+        verifier:
+          type: shell
+          cmd: "grep -q '8002' docs/portfolio/INFRA-MATRIX.md"
+      - id: A5
+        description: "pytest tests/scripts/test_generate_infra_matrix.py pasa (todos los tests)"
+        verifier:
+          type: pytest
+          cmd: ".venv/bin/pytest tests/scripts/test_generate_infra_matrix.py -v --override-ini='addopts='"
+      - id: A6
+        description: "make infra-matrix (target del Makefile de T-6) ejecuta el script correctamente"
+        verifier:
+          type: shell
+          cmd: "make infra-matrix 2>&1 | grep -q 'brands'"
+    quality_gates:
+      - "pytest_infra_matrix_unit pasa (golden snapshot + 4 unit tests)"
+      - "scenario_happy_infra_matrix validator pasa"
+    depends_on: ["T-3"]
+    blocks: ["T-9"]
+    transitions:
+      - state: draft
+        at: "2026-05-15T00:00:00Z"
+        by: /architect
+
+  - id: T-9
+    title: "Pre-commit hook Section 10 — regenera INFRA-MATRIX.md cuando se edita {brand}/config/brand.yaml"
+    type: infra
+    surface: INFRA
+    production_code: true
+    state: draft
+    owner_eligibility:
+      qwen_opencode: true
+      claude_sonnet: true
+      claude_opus_required: false
+    priority: 2
+    estimate_hours: 1
+    decisions_applicable: []
+    # Pattern "auto-freshness" — cualquier cambio a brand.yaml regenera el índice automáticamente
+    inputs:
+      spec: "./01-spec.md"
+      arch_doc: "./03-arch.md#sección-M-pre-commit-hook"
+      guidelines: "./05-guidelines.md"
+      existing_hook: "scripts/git-hooks/pre-commit"
+    deliverables:
+      - "MODIFY scripts/git-hooks/pre-commit — agregar Section 10 al final: detecta cambios staged en {brand}/config/brand.yaml (via git diff --cached), corre generate_infra_matrix.py, hace git add docs/portfolio/INFRA-MATRIX.md."
+      - "MODIFY tests/scripts/test_generate_infra_matrix.py — agregar test_pre_commit_triggers_regen: simula git diff --cached con brand.yaml → verifica que INFRA-MATRIX.md sería regenerado."
+    out_of_scope:
+      - "Otras secciones del pre-commit hook (no modificar Sections 1-9 salvo ajuste mínimo necesario)"
+    acceptance:
+      - id: A1
+        description: "shellcheck scripts/git-hooks/pre-commit pasa sin errores tras la modificación"
+        verifier:
+          type: shell
+          cmd: "shellcheck scripts/git-hooks/pre-commit"
+      - id: A2
+        description: "El hook detecta brand.yaml en staged files (mock test sin git real)"
+        verifier:
+          type: pytest
+          cmd: ".venv/bin/pytest tests/scripts/test_generate_infra_matrix.py::test_pre_commit_triggers_regen -v --override-ini='addopts='"
+      - id: A3
+        description: "El hook contiene el string 'Section 10' como comentario de sección"
+        verifier:
+          type: shell
+          cmd: "grep -q 'Section 10' scripts/git-hooks/pre-commit"
+      - id: A4
+        description: "El hook contiene generate_infra_matrix.py como comando"
+        verifier:
+          type: shell
+          cmd: "grep -q 'generate_infra_matrix' scripts/git-hooks/pre-commit"
+    quality_gates:
+      - "shellcheck en el hook completo pasa"
+    depends_on: ["T-8"]
+    blocks: ["T-10"]
+    transitions:
+      - state: draft
+        at: "2026-05-15T00:00:00Z"
+        by: /architect
+
+  - id: T-10
+    title: "Runbook + ADR-003 + CLAUDE.md workspace bootstrap update + /pm-luana SKILL.md update"
+    type: docs
+    surface: DOCS
+    production_code: false
+    state: draft
+    owner_eligibility:
+      qwen_opencode: true
+      claude_sonnet: true
+      claude_opus_required: false
+    priority: 3
+    estimate_hours: 1
+    decisions_applicable: []
+    inputs:
+      spec: "./01-spec.md"
+      arch_doc: "./03-arch.md"
+      outcome_ref: "docs/product/outcomes/docker-dev-multibrand.md"
+    deliverables:
+      - "NEW docs/process/docker-dev-multibrand.md — runbook con: quick start (make dev-vitalia), qué hace cada Makefile target, cómo hacer hot-reload funcionar, cómo agregar nueva brand al sistema, troubleshooting top 5 errores, notas sobre build context."
+      - "NEW docs/architecture/luana-platform/ADR-003-docker-dev-multibrand.md — ADR con: contexto, decisiones D1-D6, alternativas consideradas, consecuencias, fecha ratificación."
+      - "MODIFY CLAUDE.md — workspace bootstrap section: reemplazar comando 'docker compose -f docker-compose.dev.yml up -d' por 'make dev-nicolify' (o brand específica), agregar descripción del Makefile targets disponibles."
+      - "MODIFY .claude/skills/pm-luana/SKILL.md — agregar sección permanente '## Pattern: metadata-en-su-lugar + auto-gen index' con tabla de generalización (infra→capabilities→integrations→versions) y referencia al INFRA-MATRIX como caso implementado."
+    out_of_scope:
+      - "Código (solo docs y config)"
+      - "Modificar MEMORY.md (owner: /pm-luana en sesión dedicada)"
+    acceptance:
+      - id: A1
+        description: "docs/process/docker-dev-multibrand.md existe y contiene sección 'Quick start'"
+        verifier:
+          type: shell
+          cmd: "test -f docs/process/docker-dev-multibrand.md && grep -q 'Quick start' docs/process/docker-dev-multibrand.md"
+      - id: A2
+        description: "ADR-003 existe con fecha 2026-05-15"
+        verifier:
+          type: shell
+          cmd: "test -f docs/architecture/luana-platform/ADR-003-docker-dev-multibrand.md && grep -q '2026-05-15' docs/architecture/luana-platform/ADR-003-docker-dev-multibrand.md"
+      - id: A3
+        description: "CLAUDE.md workspace bootstrap menciona make dev-{brand} (no el comando docker compose legacy)"
+        verifier:
+          type: shell
+          cmd: "grep -q 'make dev-' CLAUDE.md"
+      - id: A4
+        description: "/pm-luana SKILL.md contiene 'metadata-en-su-lugar'"
+        verifier:
+          type: shell
+          cmd: "grep -rq 'metadata-en-su-lugar' .claude/skills/pm-luana/"
+    quality_gates:
+      - "Los 4 acceptance criteria pasan"
+      - "yamllint en los archivos YAML nuevos/modificados (no aplica a MD)"
+    depends_on: ["T-9"]
+    blocks: []
+    transitions:
+      - state: draft
+        at: "2026-05-15T00:00:00Z"
+        by: /architect
