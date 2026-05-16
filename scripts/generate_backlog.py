@@ -2,32 +2,41 @@
 """Generate BACKLOG.yaml + BACKLOG.md from product/process sources (Wave 1).
 
 Single SSoT pipeline replacing manual maintenance of multiple files.
-Reads (during transition both old and new paradigms):
+Reads from a base path (= ``repo`` for root/platform, ``repo/{brand}`` for
+brand-scoped post multibrand reorg 2026-05-15):
 
   Sources (new paradigm)
   ----------------------
-    docs/product/ideas-pool.yaml          → ideas + validated entries
-    docs/product/outcomes/*.md            → outcomes (epics)
-    docs/product/stories/{id}/checkpoint.md  → active stories with state (NEW flat layout)
-    docs/product/capabilities/{m}/*.yaml  → capability rollups (R32 reconciled)
-    docs/product/modules/*.md             → module-level metadata
+    {base}/docs/product/ideas-pool.yaml          → ideas + validated entries
+    {base}/docs/product/outcomes/*.md            → outcomes (epics)
+    {base}/docs/product/stories/{id}/checkpoint.md  → active stories with state (NEW flat layout)
+    {base}/docs/product/capabilities/{m}/*.yaml  → capability rollups (R32 reconciled)
+    {base}/docs/product/modules/*.md             → module-level metadata
 
-  Sources (legacy — read during transition)
-  -----------------------------------------
+  Sources (legacy — read ONLY for root scope, NEVER per-brand)
+  ------------------------------------------------------------
     docs/projects/active/PI-*/checkpoint.md                     → legacy active PIs (PI-12+ paradigm)
     docs/projects/active/PI-*/sprints/*/stories/*/checkpoint.md → legacy active stories
     docs/pm-nico/pis/active/*/PI.md                             → legacy pm-nico PIs (folder removed Wave 2 — read returns []  as guard)
 
   Outputs
   -------
-    docs/product/BACKLOG.yaml  → SSoT machine-readable (for tooling)
-    docs/product/BACKLOG.md    → human view: roadmap section + Mermaid kanban + caps snapshot
+    {base}/docs/product/BACKLOG.yaml       → SSoT machine-readable (for tooling)
+    {base}/docs/product/BACKLOG.md         → human view: roadmap + Mermaid kanban + caps snapshot
+    {base}/docs/product/BACKLOG-TLDR.md    → compressed TLDR view
 
 Run:
-  python scripts/generate_backlog.py [--check] [--repo PATH]
+  python scripts/generate_backlog.py [--check] [--brand SLUG | --all-brands] [--repo PATH]
 
-  --check   : exit 1 if regenerated content differs from on-disk (CI / hook gate)
-  --repo P  : repo root, default = script's parent
+  --check       : exit 1 if regenerated content differs from on-disk (CI / hook gate)
+  --brand SLUG  : scope to {repo}/{brand}/docs/product/ (e.g. --brand vitalia)
+  --all-brands  : iterate root + every brand with config/brand.yaml
+  --repo P      : repo root, default = script's parent
+
+Origen
+======
+Process improvement R33 (2026-05-05). Multibrand expansion 2026-05-15 (post
+audit aislamiento brand): per-brand backlog generation con base path scoping.
 """
 
 # ruff: noqa: PERF401
@@ -431,14 +440,40 @@ def read_capability_rollup(repo: Path) -> list[CapRollup]:
 # ─── Aggregation ──────────────────────────────────────────────────────
 
 
-def aggregate(repo: Path) -> dict[str, Any]:
-    """Walk all sources, return unified backlog dict."""
-    ideas = read_ideas_pool(repo)
-    outcomes = read_outcomes(repo)
-    stories_new = read_active_stories_new(repo)
-    stories_legacy = read_legacy_active_stories(repo)
-    pis_legacy = read_legacy_pm_nico_pis(repo)
-    caps = read_capability_rollup(repo)
+def discover_brands(repo: Path) -> list[str]:
+    """Return sorted list of brand slugs (dirs with ``config/brand.yaml``).
+
+    Post multibrand reorg 2026-05-15: each brand vertical lives under
+    ``{repo}/{brand}/`` with its own ``config/brand.yaml`` marker.
+    """
+    brands: list[str] = []
+    for cfg in sorted(repo.glob("*/config/brand.yaml")):
+        brands.append(cfg.parent.parent.name)
+    return brands
+
+
+def aggregate(repo: Path, *, brand: str | None = None) -> dict[str, Any]:
+    """Walk all sources for a given scope, return unified backlog dict.
+
+    Scope resolution:
+      * ``brand=None``      → root ``{repo}/docs/product/`` (legacy + platform cross-brand)
+      * ``brand="vitalia"`` → ``{repo}/vitalia/docs/product/`` (skips legacy readers)
+    """
+    base = repo / brand if brand else repo
+
+    ideas = read_ideas_pool(base)
+    outcomes = read_outcomes(base)
+    stories_new = read_active_stories_new(base)
+    caps = read_capability_rollup(base)
+
+    # Legacy readers only make sense in root scope (single-brand pre-reorg state).
+    # Per-brand scopes never had docs/projects/ or docs/pm-nico/.
+    if brand is None:
+        stories_legacy = read_legacy_active_stories(repo)
+        pis_legacy = read_legacy_pm_nico_pis(repo)
+    else:
+        stories_legacy = []
+        pis_legacy = []
 
     items = ideas + outcomes + stories_new + stories_legacy + pis_legacy
 
@@ -808,6 +843,54 @@ def render_tldr(backlog: dict[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _normalize(text: str) -> str:
+    """Strip volatile generated_at timestamp for drift comparison."""
+    text = re.sub(r"generated_at: '[^']*'", "generated_at: '<NORMALIZED>'", text)
+    text = re.sub(r"# Generated at: [^\n]*", "# Generated at: <NORMALIZED>", text)
+    text = re.sub(r"> Generated at: `[^`]*`", "> Generated at: `<NORMALIZED>`", text)
+    return text
+
+
+def _process_scope(repo: Path, brand: str | None, *, check_only: bool) -> tuple[bool, list[str]]:
+    """Generate (or check) BACKLOG for one scope. Returns (drift, warnings)."""
+    base = repo / brand if brand else repo
+    base_docs = base / "docs" / "product"
+
+    # Skip if scope has no docs/product/ (brand bootstrapped but not yet documented)
+    if not base_docs.exists():
+        return False, []
+
+    backlog = aggregate(repo, brand=brand)
+    new_yaml = render_yaml(backlog)
+    new_md = render_md(backlog)
+    new_tldr = render_tldr(backlog)
+
+    yaml_path = base_docs / "BACKLOG.yaml"
+    md_path = base_docs / "BACKLOG.md"
+    tldr_path = base_docs / "BACKLOG-TLDR.md"
+
+    drift = False
+    for path, content in [(yaml_path, new_yaml), (md_path, new_md), (tldr_path, new_tldr)]:
+        on_disk = path.read_text(encoding="utf-8") if path.exists() else ""
+        if _normalize(on_disk) != _normalize(content):
+            drift = True
+            if check_only:
+                scope_label = brand if brand else "root"
+                print(f"DRIFT [{scope_label}]: {path.relative_to(repo)}")  # noqa: T201
+
+    if not check_only and drift:
+        yaml_path.write_text(new_yaml, encoding="utf-8")
+        md_path.write_text(new_md, encoding="utf-8")
+        tldr_path.write_text(new_tldr, encoding="utf-8")
+        scope_label = brand if brand else "root"
+        print(  # noqa: T201
+            f"Wrote [{scope_label}] {yaml_path.relative_to(repo)} + "
+            f"{md_path.relative_to(repo)} + {tldr_path.relative_to(repo)}"
+        )
+
+    return drift, backlog.get("warnings", [])
+
+
 def main() -> int:
     """CLI entrypoint."""
     parser = argparse.ArgumentParser(description=__doc__)
@@ -818,50 +901,53 @@ def main() -> int:
         default=Path(__file__).resolve().parents[1],
         help="Repo root. Default: script's parent.",
     )
+    scope = parser.add_mutually_exclusive_group()
+    scope.add_argument(
+        "--brand",
+        type=str,
+        default=None,
+        help="Brand slug to scope generation (e.g. vitalia, nicolify). "
+        "Reads {repo}/{brand}/docs/product/. Default: root docs/product/ (legacy/platform).",
+    )
+    scope.add_argument(
+        "--all-brands",
+        action="store_true",
+        help="Iterate root + every brand vertical (dirs with config/brand.yaml). "
+        "Regenerates each scope's BACKLOG.{yaml,md,TLDR.md} independently.",
+    )
     args = parser.parse_args()
 
-    backlog = aggregate(args.repo)
-    new_yaml = render_yaml(backlog)
-    new_md = render_md(backlog)
-    new_tldr = render_tldr(backlog)
+    # Build list of scopes to process
+    scopes: list[str | None] = []
+    if args.all_brands:
+        scopes.append(None)  # root
+        scopes.extend(discover_brands(args.repo))
+    elif args.brand:
+        scopes.append(args.brand)
+    else:
+        scopes.append(None)
 
-    yaml_path = args.repo / "docs" / "product" / "BACKLOG.yaml"
-    md_path = args.repo / "docs" / "product" / "BACKLOG.md"
-    tldr_path = args.repo / "docs" / "product" / "BACKLOG-TLDR.md"
-
-    def _normalize(text: str) -> str:
-        """Strip volatile generated_at timestamp for drift comparison."""
-        # Both YAML and MD embed generated_at; replace with placeholder
-        text = re.sub(r"generated_at: '[^']*'", "generated_at: '<NORMALIZED>'", text)
-        text = re.sub(r"# Generated at: [^\n]*", "# Generated at: <NORMALIZED>", text)
-        text = re.sub(r"> Generated at: `[^`]*`", "> Generated at: `<NORMALIZED>`", text)
-        return text
-
-    drift = False
-    for path, content in [(yaml_path, new_yaml), (md_path, new_md), (tldr_path, new_tldr)]:
-        on_disk = path.read_text(encoding="utf-8") if path.exists() else ""
-        if _normalize(on_disk) != _normalize(content):
-            drift = True
-            if args.check:
-                print(f"DRIFT: {path.relative_to(args.repo)}")  # noqa: T201
+    any_drift = False
+    all_warnings: list[tuple[str, str]] = []
+    for brand_arg in scopes:
+        drift, warnings = _process_scope(args.repo, brand_arg, check_only=args.check)
+        any_drift = any_drift or drift
+        scope_label = brand_arg if brand_arg else "root"
+        for w in warnings:
+            all_warnings.append((scope_label, w))
 
     if args.check:
-        if drift:
+        if any_drift:
             print("\nRun without --check to regenerate.")  # noqa: T201
             return 1
-        print("OK — BACKLOG.yaml + BACKLOG.md + BACKLOG-TLDR.md fresh.")  # noqa: T201
+        scope_desc = ", ".join(b if b else "root" for b in scopes)
+        print(f"OK — BACKLOG.{{yaml,md,TLDR.md}} fresh. Scope: {scope_desc}.")  # noqa: T201
         return 0
 
-    yaml_path.write_text(new_yaml, encoding="utf-8")
-    md_path.write_text(new_md, encoding="utf-8")
-    tldr_path.write_text(new_tldr, encoding="utf-8")
-    print(  # noqa: T201
-        f"Wrote {yaml_path.relative_to(args.repo)} + {md_path.relative_to(args.repo)} + {tldr_path.relative_to(args.repo)}"
-    )
-    if backlog["warnings"]:
-        print(f"WARNINGS ({len(backlog['warnings'])}):")  # noqa: T201
-        for w in backlog["warnings"]:
-            print(f"  - {w}")  # noqa: T201
+    if all_warnings:
+        print(f"WARNINGS ({len(all_warnings)}):")  # noqa: T201
+        for scope_label, w in all_warnings:
+            print(f"  - [{scope_label}] {w}")  # noqa: T201
     return 0
 
 

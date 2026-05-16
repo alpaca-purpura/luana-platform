@@ -1,27 +1,38 @@
 #!/usr/bin/env python3
 """Reconcile capability YAML status fields from story YAML status (R32).
 
-Capability files at ``docs/product/capabilities/{module}/{cap}.yaml`` declare
+Capability files at ``{base}/docs/product/capabilities/{module}/{cap}.yaml`` declare
 ``status``, ``stories_live``, ``stories_planned``, ``stories_total`` in their
 frontmatter. These MUST be a deterministic function of the referenced
-``story_ids`` (each pointing at ``docs/product/stories/{module}/{story_id}.yaml``).
+``story_ids`` (each pointing at ``{base}/docs/product/stories/{module}/{story_id}.yaml``).
 
-Without enforcement, ``/pm`` updates the capability manually at merge time and
-drift is invisible — readers (auditors, eval runners, dashboards) get stale
+Where ``{base}`` is either:
+  * ``{repo_root}/`` (legacy single-brand or platform-wide capabilities) — default
+  * ``{repo_root}/{brand}/`` (brand-scoped capabilities post multibrand reorg 2026-05-15)
+  * ``{repo_root}/{brand}/`` iterated for all brands (when ``--all-brands``)
+
+Without enforcement, ``/pm-{brand}`` updates the capability manually at merge time
+and drift is invisible — readers (auditors, eval runners, dashboards) get stale
 overview data.
 
 This script reads every capability YAML, looks up each referenced story,
 recomputes the four derived fields, and either:
 
-  * ``--check``  → exits 1 if any drift; prints details. Used by pre-commit hook.
-  * (default)    → rewrites drifted capability files in place using regex on
-                   the frontmatter (preserves comments / key order / blank lines).
+  * ``--check``     → exits 1 if any drift; prints details. Used by pre-commit hook.
+  * (default)       → rewrites drifted capability files in place using regex on
+                      the frontmatter (preserves comments / key order / blank lines).
 
-Run via ``python scripts/reconcile_capabilities.py [--check] [--repo PATH]``.
+Scope flags (mutually exclusive):
+  * (default)       → root ``docs/product/`` (legacy / platform cross-brand)
+  * ``--brand X``   → ``X/docs/product/`` only (e.g. ``--brand vitalia``)
+  * ``--all-brands``→ iterate every dir with ``{brand}/config/brand.yaml`` + root
+
+Run via ``python scripts/reconcile_capabilities.py [--check] [--brand SLUG | --all-brands] [--repo PATH]``.
 
 Origen
 ======
-Process improvement R32 (2026-05-05). Replaces manual ``/pm`` recalc step in
+Process improvement R32 (2026-05-05). Multibrand expansion 2026-05-15 (post
+audit aislamiento brand). Replaces manual ``/pm-{brand}`` recalc step in
 SDD merge phase with deterministic gate.
 """
 
@@ -121,14 +132,37 @@ def replace_frontmatter_field(text: str, key: str, value: object) -> str:
     return re.sub(pattern, replacement, text, count=1, flags=re.MULTILINE)
 
 
-def reconcile(repo: Path, *, check_only: bool) -> tuple[int, list[CapDrift]]:
-    """Walk capabilities, detect drift, optionally rewrite. Returns (exit_code, drifts)."""
-    caps_dir = repo / "docs" / "product" / "capabilities"
-    stories_dir = repo / "docs" / "product" / "stories"
+def discover_brands(repo: Path) -> list[str]:
+    """Return sorted list of brand slugs (dirs containing ``config/brand.yaml``).
+
+    Post multibrand reorg 2026-05-15: each brand vertical lives under
+    ``{repo}/{brand}/`` with its own ``config/brand.yaml`` marker. Used by
+    ``--all-brands`` to iterate all active verticals.
+    """
+    brands: list[str] = []
+    for cfg in sorted(repo.glob("*/config/brand.yaml")):
+        brand = cfg.parent.parent.name
+        brands.append(brand)
+    return brands
+
+
+def reconcile(repo: Path, *, check_only: bool, brand: str | None = None) -> tuple[int, list[CapDrift]]:
+    """Walk capabilities for a given scope, detect drift, optionally rewrite.
+
+    Scope resolution:
+      * ``brand=None`` → root ``{repo}/docs/product/`` (legacy / platform cross-brand)
+      * ``brand="vitalia"`` → ``{repo}/vitalia/docs/product/``
+
+    Returns (exit_code, drifts).
+    """
+    base = repo / brand if brand else repo
+    caps_dir = base / "docs" / "product" / "capabilities"
+    stories_dir = base / "docs" / "product" / "stories"
 
     if not caps_dir.exists():
-        sys.stderr.write(f"ERROR: {caps_dir} does not exist\n")
-        return 2, []
+        # Empty scope (no capabilities yet for this brand, or root post-multibrand
+        # reorg where capabilities migrated to {brand}/) is NOT an error — just skip.
+        return 0, []
 
     drifts: list[CapDrift] = []
 
@@ -196,22 +230,52 @@ def main() -> int:
         "--repo",
         type=Path,
         default=Path(__file__).resolve().parents[1],
-        help="Repo root containing docs/product/. Defaults to script's parent.",
+        help="Repo root containing docs/product/ (and brand verticals). Defaults to script's parent.",
+    )
+    scope = parser.add_mutually_exclusive_group()
+    scope.add_argument(
+        "--brand",
+        type=str,
+        default=None,
+        help="Brand slug to scope reconciliation (e.g. vitalia, nicolify). "
+        "Reads {repo}/{brand}/docs/product/. Default: root docs/product/ (legacy/platform).",
+    )
+    scope.add_argument(
+        "--all-brands",
+        action="store_true",
+        help="Iterate root + every brand vertical (dirs with config/brand.yaml). "
+        "Aggregates drifts across all scopes.",
     )
     args = parser.parse_args()
 
-    err, drifts = reconcile(args.repo, check_only=args.check)
-    if err:
-        return err
+    # Build list of (label, brand_arg) tuples to process
+    scopes: list[tuple[str, str | None]] = []
+    if args.all_brands:
+        scopes.append(("root (platform)", None))
+        for b in discover_brands(args.repo):
+            scopes.append((b, b))
+    elif args.brand:
+        scopes.append((args.brand, args.brand))
+    else:
+        scopes.append(("root (platform)", None))
 
-    if not drifts:
-        print("OK — all capabilities consistent with stories.")  # noqa: T201
+    all_drifts: list[tuple[str, CapDrift]] = []
+    for label, brand_arg in scopes:
+        err, drifts = reconcile(args.repo, check_only=args.check, brand=brand_arg)
+        if err:
+            return err
+        for d in drifts:
+            all_drifts.append((label, d))
+
+    if not all_drifts:
+        scope_desc = ", ".join(label for label, _ in scopes)
+        print(f"OK — all capabilities consistent with stories. Scope: {scope_desc}.")  # noqa: T201
         return 0
 
-    print(f"DRIFT detected in {len(drifts)} capability file(s):")  # noqa: T201
-    for d in drifts:
+    print(f"DRIFT detected in {len(all_drifts)} capability file(s):")  # noqa: T201
+    for label, d in all_drifts:
         rel = d.path.relative_to(args.repo)
-        print(f"\n  {rel}")  # noqa: T201
+        print(f"\n  [{label}] {rel}")  # noqa: T201
         for key, (actual, expected) in d.diffs.items():
             print(f"    {key}: actual={actual!r} → expected={expected!r}")  # noqa: T201
         if d.missing_stories:
@@ -221,7 +285,7 @@ def main() -> int:
         print("\nRun without --check to fix in place.")  # noqa: T201
         return 1
 
-    print(f"\nFixed {len(drifts)} file(s).")  # noqa: T201
+    print(f"\nFixed {len(all_drifts)} file(s).")  # noqa: T201
     return 0
 
 
