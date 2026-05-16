@@ -1,0 +1,41 @@
+# guestly/config/brand.yaml
+# BrandConfig declarativa para Guestly (hospitality).
+# Decision D6: puertos cementados (guestly=8009/3009)
+# NOTA: guestly es placeholder (Story TBD pendiente). Esta config es minima.
+#
+# bootstrap brand topology — 2026-05-15
+# SSoT infra metadata por entorno. Auto-indexado en docs/portfolio/INFRA-MATRIX.md via make infra-matrix.
+
+brand_slug: guestly
+brand_name: "Guestly"
+brand_description: "Vertical Turismo + Hotelería brand app — motor de reservas por temporada, sync OTAs (Airbnb/Booking), guest experience automatizado"
+brand_segment: hospitality
+compliance_level: standard
+voice_cloning_enabled: false
+multi_language_ui: true
+
+features:
+  brand_studio_basic: true
+  seasonal_booking_engine: false  # Story TBD
+  ota_sync_airbnb: false          # Story TBD
+  ota_sync_booking: false         # Story TBD
+  guest_experience_automation: false  # Story TBD
+
+# SSoT infra metadata por entorno.
+# Auto-indexado en docs/portfolio/INFRA-MATRIX.md via make infra-matrix.
+infra:
+  dev:
+    backend_port: 8009
+    frontend_port: 3009
+    database_name: guestly_dev
+    redis_db: 8
+    qdrant_collection_prefix: guestly_
+    domain: guestly-dev.nicolify.com
+    cloudflared_tunnel: guestly-dev
+  staging:
+    domain: guestly-test.nicolify.com
+    server: tbd-staging-cluster
+  prod:
+    domain: app.guestly.com
+    server: tbd
+    cloudflared_tunnel: guestly-prod

@@ -1,0 +1,59 @@
+# guestly/docker-compose.dev.yml
+# Dev stack — Guestly (Turismo + Hotelería vertical)
+# Port: BE=8009 / FE=3009 (D6 port allocation)
+# bootstrap brand topology — 2026-05-15
+
+services:
+  guestly_backend_dev:
+    build:
+      context: ../
+      dockerfile: guestly/backend/Dockerfile
+      target: dev
+    container_name: luana-guestly-backend-dev
+    volumes:
+      - ./backend/src:/workspace/guestly/backend/src:ro
+    env_file:
+      - .env.dev
+    ports:
+      - "127.0.0.1:8009:8009"
+    depends_on:
+      - postgres_shared
+      - redis_dev
+    networks:
+      - luana_dev_net
+    restart: unless-stopped
+
+  guestly_frontend_dev:
+    build:
+      context: ../
+      dockerfile: guestly/frontend/Dockerfile
+      target: dev
+    container_name: luana-guestly-frontend-dev
+    volumes:
+      - ./frontend/src:/app/guestly/frontend/src:ro
+    env_file:
+      - .env.dev
+    ports:
+      - "127.0.0.1:3009:3009"
+    networks:
+      - luana_dev_net
+    restart: unless-stopped
+
+  guestly_cloudflared_dev:
+    image: cloudflare/cloudflared:latest
+    container_name: luana-guestly-cloudflared-dev
+    command: tunnel --no-autoupdate run
+    env_file:
+      - .env.dev
+    networks:
+      - luana_dev_net
+    profiles:
+      - tunnel
+    restart: unless-stopped
+
+networks:
+  luana_dev_net:
+    external: true
+
+# postgres_shared y redis_dev son servicios externos definidos en docker-compose.dev.yml raíz
+# Levantar con: make dev-guestly

@@ -1,0 +1,84 @@
+# guestly/deploy/k8s/deployment.yaml
+# Placeholder K8s manifest — Guestly (Turismo + Hotelería vertical)
+# replicas: 0 — no workload real hasta S-GUESTLY-BOOTSTRAP (Story TBD).
+# bootstrap brand topology — 2026-05-15
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: guestly-backend
+  namespace: luana
+  labels:
+    app: guestly-backend
+    brand: guestly
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: guestly-backend
+  template:
+    metadata:
+      labels:
+        app: guestly-backend
+        brand: guestly
+    spec:
+      containers:
+        - name: guestly-backend
+          image: ghcr.io/luana-platform/guestly-backend:latest
+          ports:
+            - containerPort: 8009
+          env:
+            - name: PORT
+              value: "8009"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8009
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8009
+            initialDelaySeconds: 10
+            periodSeconds: 10
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: guestly-frontend
+  namespace: luana
+  labels:
+    app: guestly-frontend
+    brand: guestly
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: guestly-frontend
+  template:
+    metadata:
+      labels:
+        app: guestly-frontend
+        brand: guestly
+    spec:
+      containers:
+        - name: guestly-frontend
+          image: ghcr.io/luana-platform/guestly-frontend:latest
+          ports:
+            - containerPort: 3009
+          env:
+            - name: PORT
+              value: "3009"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3009
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3009
+            initialDelaySeconds: 10
+            periodSeconds: 10

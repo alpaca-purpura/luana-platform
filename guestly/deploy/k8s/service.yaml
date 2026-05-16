@@ -1,0 +1,37 @@
+# guestly/deploy/k8s/service.yaml
+# Placeholder K8s service manifest — Guestly
+# bootstrap brand topology — 2026-05-15
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: guestly-backend
+  namespace: luana
+  labels:
+    app: guestly-backend
+    brand: guestly
+spec:
+  type: ClusterIP
+  selector:
+    app: guestly-backend
+  ports:
+    - name: http
+      port: 8009
+      targetPort: 8009
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: guestly-frontend
+  namespace: luana
+  labels:
+    app: guestly-frontend
+    brand: guestly
+spec:
+  type: ClusterIP
+  selector:
+    app: guestly-frontend
+  ports:
+    - name: http
+      port: 3009
+      targetPort: 3009
