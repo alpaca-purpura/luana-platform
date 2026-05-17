@@ -1,0 +1,39 @@
+# nicolify/deploy/cloudflared/dev-config.yml
+# Locally-managed Cloudflare Tunnel config for dev environment.
+# Used by service `nicolify_cloudflared_dev` (profile=tunnel) — opt-in via `make dev-nicolify-tunnel`.
+#
+# Path-based ingress: /api/* → backend, rest → frontend (same subdomain).
+# Cero CORS, cookies y Clerk session compartidas — todo en dev-app.nicolify.com.
+
+tunnel: be33b8dd-5218-46d2-b8b5-1ee65f2dee8e
+credentials-file: /etc/cloudflared/dev-tunnel.json
+
+# Ingress rules — evaluadas en orden, primer match wins. Última regla es fallback obligatorio.
+ingress:
+  # 1) API requests (FastAPI) — path prefix /api
+  - hostname: dev-app.nicolify.com
+    path: ^/api/.*
+    service: http://nicolify_backend_dev:8001
+    originRequest:
+      connectTimeout: 30s     # tolera LLM agentic calls largos
+      tlsTimeout: 10s
+      noTLSVerify: true       # plain HTTP dentro luana_dev_net
+      # Pasa headers de proxy correctos — FastAPI debe trust X-Forwarded-Proto
+      # disableChunkedEncoding queda en false (default) para WebSockets
+
+  # 2) Frontend (Next.js dev server, HMR via WebSocket)
+  - hostname: dev-app.nicolify.com
+    service: http://nicolify_frontend_dev:3001
+    originRequest:
+      connectTimeout: 10s
+      tlsTimeout: 10s
+      noTLSVerify: true
+
+  # 3) Fallback obligatorio
+  - service: http_status:404
+
+# Metrics endpoint (Prometheus scraping, opcional)
+metrics: 0.0.0.0:2000
+
+# Logging
+loglevel: info

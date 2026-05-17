@@ -7,11 +7,18 @@ report/
 .env
 .env.prod
 .env.dev
+.env.local
+.env.dev.local
 .env.example
 *.env
 *.env.prod
 *.env.dev
+*.env.local
+*.env.dev.local
 *.env.example
+
+# Cloudflare tunnel credentials (per brand, gitignored)
+**/deploy/cloudflared/.credentials/
 
 # OS & System
 .DS_Store

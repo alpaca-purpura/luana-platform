@@ -1,0 +1,33 @@
+# comunify/deploy/cloudflared/dev-config.yml
+# Locally-managed Cloudflare Tunnel config for dev environment.
+# Used by service `comunify_cloudflared_dev` (profile=tunnel) — opt-in via `make dev-comunify-tunnel`.
+#
+# Path-based ingress: /api/* → backend, rest → frontend (same subdomain).
+# Dominio: dev-app.comunifyagents.com.
+
+tunnel: 999f4a24-e932-4ee0-abb4-844efeb94aaa
+credentials-file: /etc/cloudflared/dev-tunnel.json
+
+ingress:
+  # 1) API requests (FastAPI) — path prefix /api
+  - hostname: dev-app.comunifyagents.com
+    path: ^/api/.*
+    service: http://comunify_backend_dev:8003
+    originRequest:
+      connectTimeout: 30s
+      tlsTimeout: 10s
+      noTLSVerify: true
+
+  # 2) Frontend (Next.js dev server, HMR via WebSocket)
+  - hostname: dev-app.comunifyagents.com
+    service: http://comunify_frontend_dev:3003
+    originRequest:
+      connectTimeout: 10s
+      tlsTimeout: 10s
+      noTLSVerify: true
+
+  # 3) Fallback obligatorio
+  - service: http_status:404
+
+metrics: 0.0.0.0:2000
+loglevel: info
