@@ -1,0 +1,205 @@
+# docs/product/BACKLOG.yaml — auto-generated SSoT machine-readable
+# DO NOT EDIT MANUALLY — modify source artifacts instead.
+# Regenerate: python scripts/generate_backlog.py
+# Generated at: 2026-05-17T08:22:51+00:00
+
+generated_at: '2026-05-17T08:22:51+00:00'
+brand: vitalia
+caps:
+  refining_max: 3
+  refined_max: 5
+  ready_max: 5
+  developing_max: 3
+  developed_max: 10
+  reviewing_max: 2
+  idea_stale_days: 90
+  refining_stale_days: 60
+  refined_stale_days: 30
+  done_rolling_days: 90
+warnings: []
+stale_ideas: []
+stale_refining: []
+stale_refined: []
+buckets:
+  idea:
+  - id: vitalia-copilot-tools-impl
+    kind: story
+    state: idea
+    title: vitalia-copilot-tools-impl
+    tags: []
+    last_touched: 2026-05-17
+    extra:
+      outcome: vitalia-mvp-ui-foundation
+      phase: SPAWNED
+      next_action: Prioritizar 4 tools T-tools-1..4 (Valeria copilot). Decidir cuáles son MVP (onboarding Brand Studio wizard)
+        vs Slice 2 (configuradores avanzados). Spawn refining cuando Slice 1 spec ratificada.
+      blocked_by: null
+      priority_override: null
+      audit_iterations: 0
+  - id: vitalia-payment-adapter-mvp
+    kind: story
+    state: idea
+    title: vitalia-payment-adapter-mvp
+    tags: []
+    last_touched: 2026-05-17
+    extra:
+      outcome: vitalia-mvp-ui-foundation
+      phase: SPAWNED
+      next_action: Spawn refining cuando Slice 1 entre developing — booking prepaid 30% diferenciador MUST requiere ≥1 gateway
+        wired. Decidir cuál (MercadoPago LATAM principal candidate, Stripe alternativo, Culqi Perú).
+      blocked_by: null
+      priority_override: null
+      audit_iterations: 0
+  - id: vitalia-pricing-decision
+    kind: story
+    state: idea
+    title: vitalia-pricing-decision
+    tags: []
+    last_touched: 2026-05-17
+    extra:
+      outcome: vitalia-mvp-ui-foundation
+      phase: SPAWNED
+      next_action: Chris dispara sesión dedicada para definir tier model + precios concretos USD. Análisis competitivo de
+        pricing en vitalia/docs/product/stories/vitalia-ux-discovery/01-spec.md § Matriz comparativa funcional (Rendu CLP
+        $40-250k, Doctocliq USD $19+, BotClín no público). Cuando ratificado → update vitalia/config/brand.yaml::plan_tiers
+        + cleanup TBDs en specs.
+      blocked_by: null
+      priority_override: null
+      audit_iterations: 0
+  refining:
+  - id: dev-environment-multibrand
+    kind: outcome
+    state: refining
+    title: dev-environment-multibrand
+    tags: []
+    last_touched: 2026-05-17
+    extra:
+      story_ids:
+      - vitalia-dev-stack-functional
+      why_now: 'Story 11 (luana-vitalia-bootstrap) shipped código vitalia completo 2026-05-15 pero
+
+        la stack dev local nunca se validó end-to-end. Sin ambiente dev operativo no se
+
+        pueden iterar features vitalia (Story 11.bis HIPAA hardening, multi-site UI,
+
+        insurance integration, etc.). Bloquea TODO desarrollo brand-specific.'
+      why_next: null
+      target_end: null
+      priority: HIGH
+      success_metrics: []
+  - id: vitalia-mvp-ui-foundation
+    kind: outcome
+    state: refining
+    title: vitalia-mvp-ui-foundation
+    tags: []
+    last_touched: null
+    extra:
+      story_ids: []
+      why_now: null
+      why_next: null
+      target_end: null
+      priority: high
+      success_metrics: []
+  - id: vitalia-ux-discovery
+    kind: story
+    state: refining
+    title: vitalia-ux-discovery
+    tags: []
+    last_touched: 2026-05-17
+    extra:
+      outcome: vitalia-mvp-ui-foundation
+      phase: SPEC_V0_RATIFIED
+      next_action: 'Producir v1 ACOTADO a Slice 1 (5 rutas P1: Inbox+Pipeline+Agenda+Fidelización+Marketing). Secciones a
+        agregar: wireframes (ASCII o HTML mockup) + Gherkin scenarios 4-por-flow-crítico + estados visuales + microcopy Spanish
+        neutro + componentes mapping nicolify→vitalia. Slice 2 (rutas P2) queda planned outcome, no spec v1. Precios TBD (postergado,
+        no bloqueante Slice 1). Chris dispara /po-ux cuando esté listo.'
+      blocked_by: null
+      priority_override: null
+      audit_iterations: 0
+  refined: []
+  ready: []
+  developing: []
+  developed: []
+  reviewing: []
+  done: []
+  parked: []
+  dropped: []
+capabilities:
+- module: agentic
+  live: 2
+  in_progress: 0
+  planned: 0
+  deprecated: 0
+  total: 2
+- module: booking
+  live: 2
+  in_progress: 0
+  planned: 0
+  deprecated: 0
+  total: 2
+- module: brand_studio
+  live: 1
+  in_progress: 0
+  planned: 0
+  deprecated: 0
+  total: 1
+- module: compliance
+  live: 1
+  in_progress: 0
+  planned: 0
+  deprecated: 0
+  total: 1
+- module: copilot
+  live: 2
+  in_progress: 0
+  planned: 0
+  deprecated: 0
+  total: 2
+- module: fixtures
+  live: 1
+  in_progress: 0
+  planned: 0
+  deprecated: 0
+  total: 1
+- module: offer_studio
+  live: 1
+  in_progress: 0
+  planned: 0
+  deprecated: 0
+  total: 1
+- module: onboarding
+  live: 1
+  in_progress: 0
+  planned: 0
+  deprecated: 0
+  total: 1
+- module: patients
+  live: 1
+  in_progress: 0
+  planned: 0
+  deprecated: 0
+  total: 1
+- module: payment
+  live: 1
+  in_progress: 0
+  planned: 0
+  deprecated: 0
+  total: 1
+- module: platform
+  live: 1
+  in_progress: 0
+  planned: 0
+  deprecated: 0
+  total: 1
+- module: public_landing
+  live: 1
+  in_progress: 0
+  planned: 0
+  deprecated: 0
+  total: 1
+- module: treatments
+  live: 1
+  in_progress: 0
+  planned: 0
+  deprecated: 0
+  total: 1

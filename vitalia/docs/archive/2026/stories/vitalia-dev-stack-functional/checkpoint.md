@@ -1,12 +1,13 @@
 ---
 story_id: vitalia-dev-stack-functional
 outcome: dev-environment-multibrand
-state: refining
-phase: PO_SPEC
-last_artifact: 01-spec.md
-last_modified: 2026-05-17T12:00:00Z
-next_action: "Aplicar fixes issues 1-8 (handoff /architect+/dev-team o builder-backend directo si scope quirúrgico) → re-validar stack → transition refining→refined"
-ratified_by_chris: false
+state: done
+phase: ARCHIVED
+last_artifact: 07-merge.md
+last_modified: 2026-05-17T17:00:00Z
+next_action: "Archived. Receta extensible documentada en 07-merge.md § 'Recetas no rompibles' para retomar bootstrap nicolify/comunify/lupulo."
+ratified_by_chris: true
+ratified_at: 2026-05-17T17:00:00Z
 spawned_at: 2026-05-17T01:50:00Z
 spawned_by: claude-direct
 parallel_safe: true
@@ -16,6 +17,12 @@ hotfix_metadata:
   repro_verified: true
   repro_command: "make dev-vitalia-tunnel && docker logs luana-dev-vitalia_frontend_dev-1"
   diagnosis_validates_handoff: true
+closure:
+  state_transition: refining → done (skip refined/ready/developing/developed/reviewing — hotfix con repro_verified shipped + smoke green)
+  shipped_commits: [e7dc4a0, 930df59]
+  capability_yaml_written: false  # infra/bootstrap, no surface user-facing
+  adr_written: false               # receta prescriptiva mecánica, no tradeoff estructural
+  archived_to: vitalia/docs/archive/2026/stories/vitalia-dev-stack-functional/
 ---
 
 # vitalia-dev-stack-functional — checkpoint
@@ -101,3 +108,17 @@ docker logs luana-dev-vitalia_backend_dev-1
   - Verificaciones positivas: 4 containers UP healthy (uptime 35-60min), FE 200, BE OpenAPI 200, tunnel CF 200, tenant isolation OK (`/api/v1/vitalia/treatments` → 422 missing X-Tenant-ID), Postgres lista `vitalia_dev`+`nicolify_dev`+`comunify_dev`+`lupulo_dev`.
   - Outcome brand-local `vitalia/docs/product/outcomes/dev-environment-multibrand.md` creado (resuelve gap `active_outcomes` huérfano en `vitalia/docs/product/checkpoint.md`). Consume outcome platform `docs/product/outcomes/dev-stack-cross-brand-fixes.md` para gaps cross-brand.
   - Scope ampliado de 6 → 8 issues. Si Chris ratifica scope quirúrgico (issues 7+8 son hot-fix con `repro_verified: true` ya) → handoff directo `builder-backend` per `.claude/rules/hotfix-repro-mandatory.md`. Si Chris prefiere full ready package → handoff `/architect` para 03-arch + 04-validators + 06-tickets antes de implementación.
+
+- 2026-05-17T17:00: **CIERRE refining → done** (sesión /pm-vitalia). Chris ratificó scope cerrado tras smoke verification live:
+  - `curl 127.0.0.1:8002/health → 200 {"status":"ok","brand":"vitalia","version":"0.1.0"}` (issue 7)
+  - `curl 127.0.0.1:3002/sign-in → 200` (issues 1, 5, 6)
+  - `alembic_version.version_num = 001_vitalia` (issues 4, 8)
+  - 12 public tables en `vitalia_dev` (issue 3)
+  - 3 containers `luana-dev-vitalia_*` up 4-5h estables (issues 1, 2)
+  - Tunnel CF 4 conns + routing /api → BE, / → FE OK
+
+  Skip cadena refined/ready/developing/developed/reviewing (work shipped en commits `e7dc4a0` + `930df59` + sesión 03:50 bitácora previa).
+
+  07-merge.md escrito con receta no rompible 12 pasos para extender a nicolify/comunify/lupulo. No capability YAML (infra/bootstrap, no surface user-facing). No ADR (receta prescriptiva mecánica, no tradeoff estructural).
+
+  Story archived a `vitalia/docs/archive/2026/stories/vitalia-dev-stack-functional/`. Outcome brand-local `dev-environment-multibrand` permanece active hasta replicar receta cross-brand (gaps en outcome platform `docs/product/outcomes/dev-stack-cross-brand-fixes.md`).

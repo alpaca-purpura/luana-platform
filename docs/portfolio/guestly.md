@@ -3,7 +3,7 @@ slug: guestly
 kind: brand
 status: pending-bootstrap
 vertical: "Turismo + Hotelería"
-last_updated: 2026-05-16
+last_updated: 2026-05-17
 ssot_live:
   - guestly/docs/product/
   - guestly/docs/domains/

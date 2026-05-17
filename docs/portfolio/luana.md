@@ -2,7 +2,7 @@
 slug: luana
 kind: core
 status: active
-last_updated: 2026-05-16
+last_updated: 2026-05-17
 ssot_live:
   - docs/product/
   - docs/core-modules/
@@ -33,7 +33,7 @@ Acelerar dev cross-brand. Cada brand aporta aprendizaje → core captura abstrac
 - Proposed: 0
 - Under review: 0
 - Accepted (lift programado): 0
-- Migrated (cerrados OK): 3
+- Migrated (cerrados OK): 4
 - Rejected (archive): 0
 
 ## State portfolio
