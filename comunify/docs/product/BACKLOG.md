@@ -1,52 +1,72 @@
-<!-- AUTO-GENERATED por scripts/generate_portfolio.py — NO editar a mano -->
-<!-- Para regenerar: make portfolio -->
+# Comunify Backlog (auto-generated)
 
-# Comunify — Backlog
+> Generated at: `2026-05-17T19:28:17+00:00`
+> DO NOT EDIT MANUALLY — modify source artifacts.
+> Regenerate: `python scripts/generate_backlog.py`
 
-```yaml
-slug: comunify
-vertical: "Creator Economy + Educación"
-status: shipped
-ssot_owner: /pm-comunify
-last_regen: placeholder (manual)
-```
+## 📊 Roadmap view (filtered + curated)
 
-## 💡 Ideas
+### 💡 Ideas (1)
+- comunify-design-system-cement `[story]`
 
-_(none — append via /pm-comunify "idea {x}")_
+### 🔬 Refining (1 total · 1 cap-eligible / cap 3)
+- **comunify-dev-stack-functional** — outcome `dev-stack-cross-brand-fixes` [SPEC_DRAFT]
 
-## 🔬 Refinando (cap 3)
+### ✅ Refined — listo para arquitectos (0 / cap 5)
+- _(none)_
 
-_(none)_
+### 📦 Ready for development (0 / cap 5)
+- _(none)_
 
-## ✅ Refinadas (cap 5)
+### 🔨 Developing (0 / cap 3)
+- _(none)_
 
-_(none)_
+### 🧪 Developed — esperando QA (0 / cap 10)
+- _(none)_
 
-## 📦 Ready (cap 5)
+### 🔍 Reviewing (0 / cap 2)
+- _(none in review)_
 
-_(none)_
+### Recently shipped (last 90d, 0 items)
+- _(none recent)_
 
-## 🔨 Developing (cap 3)
-
-_(none)_
-
-## 🧪 Developed (cap 2)
-
-_(none)_
-
-## 🔍 Reviewing (cap 2)
-
-_(none)_
-
-## 🚢 Shipped (rolling 90d)
-
-_(populate al primer merge)_
-
-## 🅿 Parked / 🛑 Dropped
-
-_(none)_
+### Parked (0) · Dropped (0)
 
 ---
 
-**Drill-down:** ver `comunify/docs/product/stories/{id}/checkpoint.md` per story.
+## 🔄 Operational view (Mermaid kanban)
+
+```mermaid
+kanban
+  💡 Ideas (1)
+    comunify-design-system-cement[comunify-design-system-cement]
+  🔬 Refining (1 / cap 3)
+    comunify-dev-stack-functional[comunify-dev-stack-functional]
+  ✅ Refined (0 / cap 5)
+  📦 Ready (0 / cap 5)
+  🔨 Developing (0 / cap 3)
+  🧪 Developed (0 / cap 10)
+  🔍 Reviewing (0 / cap 2)
+  ✅ Done (0 / 90d rolling)
+  🅿 Parked (0)
+```
+
+---
+
+## 📈 Capabilities snapshot
+
+| module | live | in-progress | planned | deprecated | total |
+|---|---|---|---|---|---|
+| agentic | 3 | 0 | 0 | 0 | 3 |
+| brand_studio | 2 | 0 | 0 | 0 | 2 |
+| cohorts | 1 | 0 | 0 | 0 | 1 |
+| copilot | 3 | 0 | 0 | 0 | 3 |
+| fixtures | 1 | 0 | 0 | 0 | 1 |
+| iam | 1 | 0 | 0 | 0 | 1 |
+| offer_studio | 2 | 0 | 0 | 0 | 2 |
+| onboarding | 1 | 0 | 0 | 0 | 1 |
+| payment | 1 | 0 | 0 | 0 | 1 |
+| platform | 1 | 0 | 0 | 0 | 1 |
+| public_landing | 1 | 0 | 0 | 0 | 1 |
+| **TOTAL** | **17** | **0** | **0** | **0** | **17** |
+

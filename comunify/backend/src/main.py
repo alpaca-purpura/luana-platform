@@ -15,6 +15,7 @@ Arch tests verify:
 from __future__ import annotations
 
 from fastapi import FastAPI
+from pydantic import BaseModel
 
 from src.modules.comunify.api.routes import offer_router, router as comunify_router
 from src.modules.comunify.api.webhook_routes import webhook_router
@@ -28,6 +29,21 @@ app = FastAPI(
     version="0.1.0",
     redirect_slashes=False,
 )
+
+
+class HealthResponse(BaseModel):
+    """Health-check response (cementado en comunify-dev-stack-functional bug 7 — espejo vitalia)."""
+
+    status: str
+    brand: str
+    version: str
+
+
+@app.get("/health", response_model=HealthResponse)
+async def health() -> HealthResponse:
+    """Liveness probe — used by Docker healthcheck + tunnel verification."""
+    return HealthResponse(status="ok", brand="comunify", version="0.1.0")
+
 
 app.include_router(comunify_router)
 # offer_router: /api/v1/offers/* (per 03-arch-be.md § 6.4 — no /comunify prefix)

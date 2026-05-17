@@ -23,14 +23,22 @@ from sqlalchemy import engine_from_config, pool
 # access to the values within the .ini file in use.
 config = context.config
 
-# Build DB URL from POSTGRES_* env vars.
-db_url = (
-    f"postgresql://{os.environ.get('POSTGRES_USER', 'postgres')}"
-    f":{os.environ.get('POSTGRES_PASSWORD', 'password')}"
-    f"@{os.environ.get('POSTGRES_HOST', 'localhost')}"
-    f":{os.environ.get('POSTGRES_PORT', '5432')}"
-    f"/{os.environ.get('POSTGRES_DB', 'comunify_dev')}"
-)
+# DB URL priority (cementado en vitalia-dev-stack-functional 07-merge.md paso 8 +
+# comunify-dev-stack-functional bug 8 replicado):
+#   1. DATABASE_URL env (compose SSoT) — asyncpg→psycopg2 swap para alembic sync driver
+#   2. POSTGRES_* env vars (legacy local dev pattern)
+#   3. Default localhost (last-resort, fallará en container)
+database_url_env = os.environ.get("DATABASE_URL", "")
+if database_url_env:
+    db_url = database_url_env.replace("postgresql+asyncpg://", "postgresql+psycopg2://")
+else:
+    db_url = (
+        f"postgresql://{os.environ.get('POSTGRES_USER', 'postgres')}"
+        f":{os.environ.get('POSTGRES_PASSWORD', 'password')}"
+        f"@{os.environ.get('POSTGRES_HOST', 'localhost')}"
+        f":{os.environ.get('POSTGRES_PORT', '5432')}"
+        f"/{os.environ.get('POSTGRES_DB', 'comunify_dev')}"
+    )
 config.set_main_option("sqlalchemy.url", db_url)
 
 # Interpret the config file for Python logging.

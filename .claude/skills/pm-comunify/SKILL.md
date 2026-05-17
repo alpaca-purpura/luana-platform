@@ -182,5 +182,18 @@ NUNCA dumps largos. Pointer-first. Si necesitás más detalle escribilo a archiv
 - `docs/promotion-protocol/README.md` — workflow brand→core
 - `.claude/skills/pm/SKILL.md` — master orquestador
 - `.claude/skills/pm-luana/SKILL.md` — core PM
-- `comunify/.claude/rules/` — rules brand-specific (overlay)
-- `comunify/config/brand.yaml` — feature flags + opt-in core packages
+- `comunify/.claude/rules/creator-funnels.md` — overlay defensivo CONDICIONAL para creator
+  economy (funnel ladder integrity, motor comunidad, voice cloning, authority vault).
+  Evaluá scope al refinar story:
+    - **Aplica full set** (dual filter tenant+cohort, ladder integrity validator, voice
+      cloning consent stored, attribution+consent obligatorio en vault, moderation pipeline
+      async): story toca cohorts/community/vault/voice_profile/funnel surfaces.
+    - **Aplica subset baseline** (tenant-isolation raíz + spanish_neutro tuteo + sales-agent
+      voice respeta tenant): story toca solo brand_studio/offer_studio sin tocar community
+      o voice.
+    - **NO aplica** (solo tenant-isolation raíz basta): story toca infra/tooling/dev-stack
+      sin tocar surfaces creator economy específicas.
+- `comunify/.claude/rules/README.md` — index overlay rules brand
+- `comunify/config/brand.yaml` — feature flags + opt-in core packages + `compliance_level:
+  creator_economy` (D7 — NOT hipaa_lite vs Vitalia: OK auto-approve signup + community
+  moderation rails + voice_cloning_enabled=true + offer_ladder_visualizer 4 niveles)

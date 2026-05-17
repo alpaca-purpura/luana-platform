@@ -2,9 +2,16 @@
 slug: dev-stack-cross-brand-fixes
 kind: outcome-platform
 owner: /pm-luana
-state: idea
+state: refining
 created: 2026-05-16
-priority: MEDIUM
+last_updated: 2026-05-17
+priority: HIGH                                  # bumped: bloquea bootstrap comunify+nicolify+lupulo
+consumer_brands:
+  vitalia: shipped                              # vitalia-dev-stack-functional cerrada 2026-05-17 (receta 12 pasos cementada)
+  nicolify: pending                             # nicolify-dev-stack-functional NO abierta (Issue B + workaround bind-mount in-place)
+  comunify: pending                             # comunify-dev-stack-functional ABIERTA 2026-05-17 state=refining (replica receta vitalia)
+  lupulo: deferred                              # placeholder, bootstrap brand pendiente
+canonical_recipe: vitalia/docs/archive/2026/stories/vitalia-dev-stack-functional/07-merge.md  # 12 pasos no rompibles
 why_now: |
   Tras configurar Clerk en las 3 brands activas (vitalia/nicolify/comunify) el 2026-05-16,
   descubiertos 4 bugs cross-brand en el dev compose multibrand bootstrap S-DOCKER-DEV-MULTIBRAND.
@@ -25,7 +32,10 @@ origen:
     - "nicolify/docker-compose.dev.yml (memory 1G→2G; core/ bind-mount for @luana/*)"
 
 consumer_stories:
-  - vitalia/docs/product/stories/vitalia-dev-stack-functional/  # state=refining, scope brand → puede generalizarse a platform
+  - vitalia/docs/archive/2026/stories/vitalia-dev-stack-functional/  # state=done 2026-05-17, receta canónica cementada
+  - comunify/docs/product/stories/comunify-dev-stack-functional/     # state=refining 2026-05-17, replica receta vitalia
+  # - nicolify/docs/product/stories/nicolify-dev-stack-functional/   # TODO abrir cuando se priorice
+  # - lupulo/docs/product/stories/lupulo-dev-stack-functional/       # TODO abrir cuando brand bootstrap
 
 estimated_effort: 6-10h
 ---
@@ -154,13 +164,19 @@ Si vitalia/comunify futuras adoptan `@luana/*` deps (ahora no las usan), hereda 
 
 ---
 
-## Decisión Chris (ratificación pending)
+## Decisión Chris ratificada 2026-05-17
 
-Outcome state=`idea`. Decisiones pendientes:
+Outcome promovido state=`idea`→`refining` por `/pm-luana` con autorización Chris en sesión
+auditoría harness comunify. Decisiones:
 
-- [ ] **Priorizar issue A** (HIGH — bloquea testing backend-dependent flows) — pasar a `refining` con story brand-agnostic en `docs/product/stories/{slug}/`?
-- [ ] **Priorizar issue B** (MEDIUM — workaround in-place pero rompe CI) — story separada o agrupada con A?
-- [ ] **Vincular con story existente** `vitalia/docs/product/stories/vitalia-dev-stack-functional/` (state=refining, scope brand) — generalizar a platform o mantener brand-specific?
+- [x] **Priorización HIGH** (bumped from MEDIUM) — bloquea bootstrap dev stack comunify+nicolify+lupulo
+- [x] **Patrón story per-brand** (no story brand-agnostic) — cada brand abre `{brand}-dev-stack-functional` y replica receta vitalia 12 pasos. Razón: Dockerfile + compose + pyproject diff per-brand (puertos, names, deps específicos)
+- [x] **Receta canónica = vitalia 07-merge.md** — 12 pasos no rompibles ya cementados, ejecución mecánica
+- [x] **comunify-dev-stack-functional abierta 2026-05-17** state=refining — primer consumer post-receta
+- [ ] nicolify-dev-stack-functional defer (workaround bind-mount in-place mantiene operación)
+- [ ] lupulo-dev-stack-functional defer (brand bootstrap pendiente)
+
+Outcome cierra cuando ≥3 brands consumer hayan replicado receta (vitalia ✅ + comunify + 1 más).
 
 ## Referencias
 
