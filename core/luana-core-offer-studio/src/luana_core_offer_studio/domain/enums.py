@@ -332,3 +332,35 @@ def get_enum_options(
             item.update(metadata[e.value])
         options.append(item)
     return options
+
+
+class MaintenanceScheduleEnum(StrEnum):
+    """Maintenance cadence for offers requiring periodic re-engagement.
+
+    Added 2026-05-17 via promotion proposal
+    ``docs/promotion-protocol/proposals/2026-05-17-offer-studio-multi-session-maintenance.md``.
+
+    Drives brand cron jobs that detect tenants whose offers have lapsed their
+    maintenance window (e.g. dental cleanings every 6 months = BIANNUAL,
+    yearly check-ups = ANNUAL, gym membership renewal monthly = MONTHLY).
+    Used by Vitalia fidelización adherence Slice 1 and other brand verticals
+    with periodic re-engagement workflows (Fitflow memberships, Fixia home
+    services, Saasora subscriptions, Retailly replenishment, Guestly annual
+    loyalty trips).
+
+    Values:
+        NONE: One-shot offer; no periodic maintenance expected.
+        MONTHLY: ~30 day cadence.
+        QUARTERLY: ~90 day cadence.
+        BIANNUAL: ~180 day cadence.
+        ANNUAL: ~365 day cadence.
+        CUSTOM: Brand-specific cadence; consumers MUST also persist
+            ``maintenance_custom_days`` (int) when ``maintenance_schedule == CUSTOM``.
+    """
+
+    NONE = "NONE"
+    MONTHLY = "MONTHLY"
+    QUARTERLY = "QUARTERLY"
+    BIANNUAL = "BIANNUAL"
+    ANNUAL = "ANNUAL"
+    CUSTOM = "CUSTOM"

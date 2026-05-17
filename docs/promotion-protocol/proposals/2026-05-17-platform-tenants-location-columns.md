@@ -1,10 +1,12 @@
 ---
 proposal_id: 2026-05-17-platform-tenants-location-columns
-state: draft
+state: migrated
 opened_date: 2026-05-17
 opened_by: /pm-luana
-ratified_by: null
-ratified_date: null
+ratified_by: Chris
+ratified_date: 2026-05-17
+migrated_date: 2026-05-17
+migrated_commit: pending  # set post-commit Fase A
 
 # Origen
 origin_learnings: []  # cementado durante /architect ux-discovery 2026-05-17, no learning pre-existente
@@ -193,6 +195,14 @@ def upgrade():
 ## 6. Bitácora
 
 - 2026-05-17: opened by /pm-luana request /pm-vitalia post /architect ready package vitalia-ux-discovery (detect engine modify obligatorio T-be-migration-014). State: draft.
+- 2026-05-17 (sesión /pm-vitalia close-slice-1): Chris ratified APPROVED. State: draft → accepted.
+- 2026-05-17 (sesión idem): engine modify executed by orchestrator (main Claude context post lift gate):
+  - Added `TenantLocationContract` Protocol to `core/luana-core-platform/src/luana_core_platform/links/ports/tenant_profile.py` (`is_onboarded` bool + `location_country` ISO3166-1 alpha-2 + `location_city` + `timezone` IANA).
+  - Bumped `core/luana-core-platform/pyproject.toml::version` 0.1.0 → 0.2.0.
+  - Created `core/luana-core-platform/tests/links/test_tenant_location_contract.py` (11 tests: Protocol shape + 8 ISO country code parametrize + non-conforming fail). All PASS.
+  - Created `core/luana-core-platform/CHANGELOG.md` (Keep-a-Changelog format, 0.2.0 entry + 0.1.0 initial).
+  - Gate-runner R3 downstream: engine full regression PASS (888 tests + 12 skipped) + vitalia arch fitness PASS (166 tests). Nicolify/Comunify R3 blocked by pre-existing `/home/chris/` hardcoded paths debt (orthogonal, NOT regression).
+- State: accepted → migrated.
 
 ## 7. Cross-references
 

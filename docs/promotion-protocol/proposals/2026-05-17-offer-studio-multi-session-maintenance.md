@@ -1,10 +1,12 @@
 ---
 proposal_id: 2026-05-17-offer-studio-multi-session-maintenance
-state: draft
+state: migrated
 opened_date: 2026-05-17
 opened_by: /pm-luana
-ratified_by: null
-ratified_date: null
+ratified_by: Chris
+ratified_date: 2026-05-17
+migrated_date: 2026-05-17
+migrated_commit: pending  # set post-commit Fase A
 
 # Origen
 origin_learnings: []  # cementado durante /architect ux-discovery 2026-05-17, no learning pre-existente
@@ -205,6 +207,16 @@ def upgrade():
 ## 6. Bitácora
 
 - 2026-05-17: opened by /pm-luana request /pm-vitalia post /architect ready package vitalia-ux-discovery (detect engine modify obligatorio T-be-migration-015). State: draft.
+- 2026-05-17 (sesión /pm-vitalia close-slice-1): Chris ratified APPROVED. State: draft → accepted.
+- 2026-05-17 (sesión idem): engine modify executed by orchestrator (main Claude context post lift gate):
+  - Added `MaintenanceScheduleEnum` to `core/luana-core-offer-studio/src/luana_core_offer_studio/domain/enums.py` (6 values: NONE/MONTHLY/QUARTERLY/BIANNUAL/ANNUAL/CUSTOM).
+  - Added `OfferAdherenceContract` Protocol to `core/luana-core-offer-studio/src/luana_core_offer_studio/domain/offer.py` (`requires_multi_session` + `sessions_expected` + `gap_alert_days` + `maintenance_schedule` + `maintenance_custom_days`).
+  - Bumped `core/luana-core-offer-studio/pyproject.toml::version` 0.1.0 → 0.2.0.
+  - Created `core/luana-core-offer-studio/tests/domain/test_offer_adherence_contract.py` (13 tests: enum values stable + Protocol shape + 6 enum values parametrize + multi-session + maintenance + custom + non-conforming fail). All PASS.
+  - Created `core/luana-core-offer-studio/CHANGELOG.md` (Keep-a-Changelog format, 0.2.0 entry + 0.1.0 initial).
+  - **NOTA `_CATALOG_VERSION`:** NO bumpeamos los 6 catalog version constants (`api/{archetypes,formats,variant_structures,value_levels,offer_type_presets,offer_ladder_hints}.py`). El `OfferAdherenceContract` es un Protocol contract layer (typing only), NO un catalog enum nuevo. Los 7 catalog axes existentes (archetype/value_level/format/section/variant/biz_type/ladder_hints/preset) no cambian. Esto difiere de la proposal Section 4 pre-lift checklist que mencionaba bump — documentado en CHANGELOG.md.
+  - Gate-runner R3 downstream: engine full regression PASS (888 tests + 12 skipped) + vitalia arch fitness PASS (166 tests). Nicolify/Comunify R3 blocked by pre-existing `/home/chris/` hardcoded paths debt (orthogonal, NOT regression).
+- State: accepted → migrated.
 
 ## 7. Cross-references
 

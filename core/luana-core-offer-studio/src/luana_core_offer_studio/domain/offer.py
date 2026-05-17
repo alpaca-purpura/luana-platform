@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
+from typing import Any, Protocol, runtime_checkable
 from uuid import UUID
 
 from luana_core_platform.domain.base_entity import BaseEntity
@@ -23,6 +23,7 @@ from luana_core_offer_studio.domain.enums import (
     AccessDuration,
     DeliverableFormat,
     GuaranteeType,
+    MaintenanceScheduleEnum,
     OfferArchetype,
     OfferDeliveryModel,
     OfferStatus,
@@ -31,6 +32,59 @@ from luana_core_offer_studio.domain.enums import (
     PaymentPlanType,
     PrerequisiteType,
 )
+
+
+@runtime_checkable
+class OfferAdherenceContract(Protocol):
+    """Columns brand ``offers`` tables MUST implement to enable adherence flows.
+
+    Added 2026-05-17 via promotion proposal
+    ``docs/promotion-protocol/proposals/2026-05-17-offer-studio-multi-session-maintenance.md``.
+
+    Brand consumers add these columns via local Alembic migrations using
+    idempotent ``ADD COLUMN IF NOT EXISTS`` + ``CREATE TYPE IF NOT EXISTS`` for
+    the PostgreSQL enum. All fields are nullable or default-safe (``NONE`` /
+    ``False``) so existing offers remain valid without backfill.
+
+    Drives:
+        - Vitalia Slice 1 fidelización adherencia (4 re-engagement patterns:
+          multi-session incomplete + medical follow-up + periodic maintenance +
+          prolonged absence).
+        - Vitalia Slice 1 agenda Capa 2 sheet showing ``sessions_completed /
+          sessions_expected`` per appointment when ``requires_multi_session``.
+        - Cross-brand re-engagement cron jobs (``multi_session_gap_sweep``,
+          ``maintenance_due_sweep``).
+
+    Fields:
+        requires_multi_session: True if the offer needs ≥2 sessions (e.g.
+            orthodontics, hair removal course, dental implants). Default False.
+        sessions_expected: Total sessions expected (e.g. 4 for hair removal,
+            12 for orthodontics). MUST be ``>= 1`` when ``requires_multi_session``
+            is True; ``None`` otherwise. Brand consumers MUST enforce via
+            check constraint at DB level.
+        gap_alert_days: Max gap (days) between sessions before cron detects
+            abandonment. Typical: 14-30 dental, 60-90 ortho. ``None`` disables
+            cron alerts for this offer.
+        maintenance_schedule: Periodic cadence enum (NONE/MONTHLY/QUARTERLY/
+            BIANNUAL/ANNUAL/CUSTOM). Default NONE.
+        maintenance_custom_days: Required (>= 1) when ``maintenance_schedule ==
+            CUSTOM``; MUST be ``None`` otherwise. Brand consumers MUST enforce
+            via check constraint at DB level.
+
+    Note:
+        This is a typing :class:`Protocol`, not a SQLAlchemy model. Each brand
+        implements the columns in its own ``offers`` table via Alembic
+        migrations. Cross-brand mirror prohibited (per
+        ``.claude/rules/anti-duplication.md`` § lift shared rule) — this
+        contract IS the lift.
+    """
+
+    requires_multi_session: bool
+    sessions_expected: int | None
+    gap_alert_days: int | None
+    maintenance_schedule: MaintenanceScheduleEnum
+    maintenance_custom_days: int | None
+
 
 # --- ARCHETYPE → DETAILS MAPPING ---
 ARCHETYPE_TO_DETAILS_MAPPING: dict[OfferArchetype, type[BaseEntity]] = {
