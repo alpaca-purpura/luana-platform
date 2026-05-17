@@ -6,7 +6,7 @@ opened_by: /pm-luana
 ratified_by: Chris
 ratified_date: 2026-05-17
 migrated_date: 2026-05-17
-migrated_commit: pending  # set post-commit Fase A
+migrated_commit: 5ca61019bb03c7304c30fbb5a4b7196ecc3fc27c
 
 # Origen
 origin_learnings: []  # cementado durante /architect ux-discovery 2026-05-17, no learning pre-existente
