@@ -1,13 +1,14 @@
 ---
 story_id: vitalia-fiscal-emission-pe
 outcome: vitalia-mvp-ui-foundation
-state: idea
-phase: SPAWNED
+state: refining
+phase: AWAITING_PO_DRAFT
 last_artifact: checkpoint.md
 last_modified: 2026-05-17
-next_action: "Hand off `/po vitalia-fiscal-emission-pe` para refining (service-story, no UI dedicada Slice 1 más allá del toggle inline en /agenda sheet cobro — UI completa `/configuracion/facturacion-pe` defer Slice 2). Producir 01-spec.md con scope cementado abajo + 4 Gherkin scenarios + Capa 2 trigger flow + retry queue policy + secrets vault design + CDR archive policy + ratify Chris → state refining→refined."
+next_action: "/po vitalia-fiscal-emission-pe — produce 01-spec.md service-story (sin UI dedicada Slice 1 más allá toggle inline /agenda sheet cobro — UI completa /configuracion/facturacion-pe defer Slice 2). Inputs cementados: scope completo abajo (~80 LOC) + 4 Gherkin scenarios cementados + Capa 2 trigger flow + retry queue policy 8-step exponential backoff + secrets vault design pgcrypto KEK rotada anualmente + CDR archive policy 10y retention. Open questions Chris remaining: (1) Aceptamos Nubefact único PSE/OSE Slice 1 ó multi-provider Strategy pattern (Tefacturo+Facturak) desde MVP? (2) Boleta + Factura ambos Slice 1 ó solo Boleta (factura defer Slice 2)? (3) Dead-letter post 72h alerta solo admin ó también notification Adrián a operador (con copy humano contable)? (4) Setup admin-only Slice 1 vía seed/script aceptable ó requerimos UI mínima emergency? Validate scope cementado con Chris en G6 batched clarification (≤4 batches) → state refining→refined."
 ratified_by_chris: false
 spawned_at: 2026-05-17
+transitioned_at: 2026-05-17
 spawned_by: /pm-vitalia
 parallel_safe: true
 blocked_reason: "Bloqueante Capa 2 fiscal del flow cobranza /agenda cementado Batch 4 (Perú tenants no pueden emitir boletas electrónicas SUNAT-compliant sin esto)."

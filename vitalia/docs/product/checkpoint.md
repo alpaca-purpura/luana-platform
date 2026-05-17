@@ -3,12 +3,13 @@ brand: vitalia
 vertical: "Salud + Bienestar"
 status: shipped
 last_updated: 2026-05-17
+slice_1_status: kicked-off  # Fase 0 + Fase A done; Fase B refining in progress 3 side stories awaiting Chris ratification
 active_outcomes:
   - dev-environment-multibrand     # receta vitalia shipped, cross-brand replicación pendiente nicolify/comunify/lupulo
   - vitalia-mvp-ui-foundation      # outcome maestro Slice 1/2/3 FE Vitalia MVP
 active_stories:
   - vitalia-ux-discovery                   # state: ready (READY_PACKAGE_CLOSED_AND_SPLIT) — /architect produjo package 2026-05-17 · split aceptado Chris en 7 sub-stories
-  - vitalia-slice-1-infra-cross-cutting    # state: ready (no blockers, ARRANCA aquí /dev-team)
+  - vitalia-slice-1-infra-cross-cutting    # state: ready (no blockers post Fase A promotion lift, ARRANCA aquí /dev-team)
   - vitalia-slice-1-onboarding-wizard      # state: refined (blocked by infra + copilot-tools-impl)
   - vitalia-slice-1-inbox                  # state: refined (blocked by infra)
   - vitalia-slice-1-pipeline               # state: refined (blocked by infra + payment-adapter-mvp + copilot-tools-impl)
@@ -16,12 +17,12 @@ active_stories:
   - vitalia-slice-1-fidelizacion           # state: refined (blocked by infra)
   - vitalia-slice-1-marketing              # state: refined (blocked by infra + copilot-tools-impl)
   - vitalia-pricing-decision               # state: idea (spawned 2026-05-17, decisión Chris postergada)
-  - vitalia-payment-adapter-mvp            # state: idea (spawned 2026-05-17, bloqueante Slice 1 funcional end-to-end · Mercado Pago Slice 1 cementado)
-  - vitalia-copilot-tools-impl             # state: idea (spawned 2026-05-17, bloqueante onboarding Valeria wizard + Lucas recommendation engine · 4 tools T-tools-1..4)
-  - vitalia-fiscal-emission-pe             # state: idea (spawned 2026-05-17, hijo Batch 4 ux-discovery · Nubefact PE adapter + Capa 2 fiscal flow /agenda)
-pending_promotion_proposals:               # /pm-luana DEBE redactar drafts ANTES de /dev-team picks T-be-migration-014/T-be-migration-015
-  - docs/promotion-protocol/proposals/2026-05-17-platform-tenants-location-columns.md
-  - docs/promotion-protocol/proposals/2026-05-17-offer-studio-multi-session-maintenance.md
+  - vitalia-payment-adapter-mvp            # state: refining (transitioned 2026-05-17 sesión close-slice-1, awaiting /po draft)
+  - vitalia-copilot-tools-impl             # state: refining (transitioned 2026-05-17, awaiting /po + /ux-agentico DUAL draft)
+  - vitalia-fiscal-emission-pe             # state: refining (transitioned 2026-05-17, awaiting /po draft)
+ratified_promotion_proposals:              # APPROVED + migrated 2026-05-17 (commit 5ca6101) — unblocks T-be-migration-014/T-be-migration-015
+  - docs/promotion-protocol/proposals/2026-05-17-platform-tenants-location-columns.md      # state: migrated (luana-core-platform 0.1.0→0.2.0)
+  - docs/promotion-protocol/proposals/2026-05-17-offer-studio-multi-session-maintenance.md # state: migrated (luana-core-offer-studio 0.1.0→0.2.0)
 recently_done:
   - vitalia-dev-stack-functional   # 2026-05-17T17:00 cerrada refining→done · receta 12 pasos en archive/2026/stories/vitalia-dev-stack-functional/07-merge.md
 ssot_owner: /pm-vitalia
@@ -63,3 +64,11 @@ Story 11 (`luana-vitalia-bootstrap`, mergeada 2026-05-15) shipped **16 capabilit
 - 2026-05-17 (ronda 3 refining): pre-handoff `/po-ux` v1, sesión `/pm-vitalia` con Chris ratificó (a) 5 decisiones de scope v1 (wizard Valeria stub Slice 1 + fidelización solo NPS + HTML mockup separado + side stories paralelas + 5+3 estados visuales agentic), (b) research independiente UX agentic layout patterns (`vitalia/docs/product/stories/vitalia-ux-discovery/00-research-chat-layout.md` · 436 LOC · 13 productos + 30+ fuentes), (c) **Propuesta C — Wizard-First Asymmetric** ratificada como layout v1 (chat-LEFT 50/50 split SOLO en wizard onboarding + chat-RIGHT rail 72-80px en operación diaria), (d) URL como SSoT con nuqs + Next.js 16 parallel routes + chat dispatch router.push cementado como decisión técnica v1. Story checkpoint actualizado con v1_scope_decisions completas. Next: `/po-ux` produce 01-spec.md v1 acotado a Slice 1 con inputs cementados.
 - **2026-05-17 v1 CIERRE vitalia-ux-discovery**: 7/7 batches ratificados Chris (layout shells · /inbox · /pipeline · /agenda · /fidelización · /marketing · wizard onboarding). State refining→refined cementado. §Slice 1 cut + §Components mapping consolidado + §Handoff /architect (12 open questions) producidos. 6 mockups HTML clickable. 4 diferenciadores MUST visible MVP. 8 ejes diferenciación vs competencia. Side stories paralelas Slice 1 cementadas: vitalia-payment-adapter-mvp · vitalia-copilot-tools-impl · vitalia-fiscal-emission-pe (NEW · spawned 2026-05-17 hijo Batch 4 Capa 2 fiscal Nubefact PE).
 - **2026-05-17 ready-package-slice-1 sesión arranque**: `/pm-vitalia` creó story `vitalia-fiscal-emission-pe` state=idea (faltante per §Slice 1 cut + Handoff /architect del spec principal). Active stories suma 5. Próximo: 3 side stories refining state idea→refining→refined (handoff `/po` para fiscal-pe + payment-adapter-mvp service-stories · handoff `/po` + `/ux-agentico` para copilot-tools-impl agentic-story). Cuando 4 stories en state=refined → `/architect` spawn paralelos produce ready packages → `/dev-team` autonomous build.
+- **2026-05-17 sesión `/pm-vitalia close-slice-1` (este momento)**: Chris ratificó 4 Q&A (proposals APPROVED + side stories refining paralelo + R23 default cost-routing 48 Sonnet+8 Opus + WIP cap relax 7-10). Branch wip/vitalia-slice-1-shipping creado desde main. Ejecutado:
+  - **Fase 0 (commit 18c8db1)**: checkpoint base committed (53 files +16048 LOC) — 9 stories vitalia + ready package /architect Opus 4.7 + 2 promotion proposals + portfolio regen + outcome maestro + design-system.md. Comunify/nicolify/tooling files dejados intactos sesiones paralelas.
+  - **Fase A (commits 5ca6101 + 6272a8a)**: promotion proposals lift engine modify executed. `luana-core-platform` 0.1.0→0.2.0 (TenantLocationContract Protocol + 11 tests + CHANGELOG). `luana-core-offer-studio` 0.1.0→0.2.0 (MaintenanceScheduleEnum + OfferAdherenceContract Protocol + 13 tests + CHANGELOG). Proposals state draft→accepted→migrated. R3 downstream verification: 1078 tests PASS (24 contract + 888 engine regression + 166 vitalia arch fitness). Nicolify/Comunify R3 BLOCKED por pre-existing `/home/chris/` hardcoded paths debt (orthogonal, no regresión). Lupulo placeholder. Unblocks T-be-migration-014/T-be-migration-015 sub-tasks vitalia-slice-1-infra-cross-cutting.
+  - **Fase B kick-off (no commit aún, requires Chris ratification per story)**: 3 side stories transitioned state idea→refining. Checkpoints actualizados con `next_action` cementado + open questions explícitas para cada story:
+    - `vitalia-payment-adapter-mvp` — 4 open questions Chris (gateway primario MercadoPago vs multi · 6 Gherkin scenarios · webhook HMAC + idempotency · auto-cancel timing)
+    - `vitalia-fiscal-emission-pe` — 4 open questions Chris (Nubefact único vs multi-PSE · Boleta+Factura vs solo Boleta · dead-letter alerta scope · setup UI vs script Slice 1)
+    - `vitalia-copilot-tools-impl` — 4 open questions Chris (Adrián 5 tools vs subset · Lucas cron-only vs chat-invokable · eval goldens hardcoded vs plugin · Tessl skills loadout)
+  - **Plan honesto restante**: Fase B refining requiere Chris in-chat para ratify 3 specs (G6 batched ≤4 rounds each story). Fases C-F (ready packages + autonomous build + auditor + merge) son días/semanas wall clock (estimated_dev_weeks suma ~13-17 semanas). Esta sesión cementó la cadena (worktree + engine lift + Fase B kick-off); el cierre Slice 1 production-ready se ejecuta en sesiones subsiguientes.
