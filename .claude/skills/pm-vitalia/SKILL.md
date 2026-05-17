@@ -98,6 +98,32 @@ Cuando aplicás `07-merge.md` para una story brand:
 7. **Si learning tiene `promotable: candidate|yes` → ping `/pm-luana` para evaluación lift a core**
 8. Update outcome story_ids (mark story done)
 
+## ★ Capability inventory post-merge (MANDATORIO)
+
+> Origen: proposal `docs/promotion-protocol/proposals/2026-05-16-capability-inventory-enforcement.md` (gap detectado en vitalia Story 11 — ver `vitalia/docs/learnings/2026-05-16-capabilities-inventory-gap.md`).
+
+Cuando una story brand transiciona a `status: live` / `done` y/o la brand pasa a `status: shipped` en su `checkpoint.md`, `/pm-vitalia` MUST ejecutar el paso 2 del capability promotion ANTES de cerrar la sesión:
+
+1. Para cada feature shipped en la story → escribir `vitalia/docs/product/capabilities/{module}/{cap}.yaml`
+2. Frontmatter mínimo: `capability_id, module, slug, status: live, date_introduced, story_introduced, package_version, package_path, license`
+3. Cuerpo: surfaces (config, backend, frontend, tests, docs) + KPIs si aplica + dependencies cross-package
+
+### Verification gate
+
+Pre-commit hook + CI corren:
+
+```bash
+.venv/bin/python scripts/reconcile_capabilities.py --require-capabilities-exist --brand vitalia
+```
+
+Exit 1 si brand `status: shipped` tiene `capabilities/` vacía. NO hay auto-fix — requires manual inventory por `/pm-vitalia`.
+
+Estado vitalia al 2026-05-17: ✅ 16 caps en 13 módulos (recovery 2026-05-16 desde código vivo + archived YAMLs).
+
+### Anti-pattern
+
+Mergear story con `status: live` sin actualizar `capabilities/` = brand SSoT funcional desincronizada del código. "¿Qué tenemos?" no se contesta leyendo docs sino inspeccionando código + rules + archive. Toda regen futura del portfolio + audits + promotion candidate detection operan ciegos.
+
 ## Promotion handoff a /pm-luana
 
 Cuando un learning brand tiene potencial cross-brand:
@@ -158,5 +184,12 @@ NUNCA dumps largos. Pointer-first. Si necesitás más detalle escribilo a archiv
 - `docs/promotion-protocol/README.md` — workflow brand→core
 - `.claude/skills/pm/SKILL.md` — master orquestador
 - `.claude/skills/pm-luana/SKILL.md` — core PM
-- `vitalia/.claude/rules/` — rules brand-specific (overlay)
-- `vitalia/config/brand.yaml` — feature flags + opt-in core packages
+- `vitalia/.claude/rules/hipaa-lite.md` — overlay defensivo CONDICIONAL para datos sensibles paciente.
+  NO es claim de compliance HIPAA US (sin BAA / sin certificación) — es framework de referencia para
+  baseline defensiva. Evaluá scope al refinar story:
+    - **Aplica full set** (dual filter tenant+clinic, audit log sync, encryption pgcrypto, retention 10y, RBAC PHI strict, channel guards): tenant US con paciente US, o cliente declara alcance HIPAA explícito, o medicina core (psiquiatría / endocrinología / oncología) con records sensibles.
+    - **Aplica subset baseline** (tenant-isolation raíz + audit log + encryption at-rest + RBAC roles): default LatAm dental / belleza / estética / wellness — datos sensibles pero NO PHI US-HIPAA.
+    - **Aplica regs locales** del país del paciente (Ley 25.326 AR / 1581 CO / 19.628 CL / 29733 PE / LGPD BR): cross-jurisdiction (cliente PE atendido en clínica AR/CL/MX) — jurisdicción paciente prevalece para datos personales.
+    - **NO aplica** (solo tenant-isolation raíz basta): story toca únicamente `appointment_*`/`booking_*` sin tocar `patient_*`/`medical_*`/`treatment_*`.
+- `vitalia/.claude/rules/README.md` — index overlay rules brand
+- `vitalia/config/brand.yaml` — feature flags + opt-in core packages + `compliance_level: hipaa_lite` (interpretar como framework de referencia, no como claim de certificación)

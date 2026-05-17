@@ -26,9 +26,16 @@ services:
       QDRANT_HOST: "luana_qdrant_dev"
       QDRANT_COLLECTION_PREFIX: "vitalia_"
       PORT: "8002"
+      # uv run desde /workspace/vitalia/backend (subproject sin workspace member) crearía
+      # su propio .venv local. Forzamos el venv workspace root donde sí están las deps
+      # runtime (uvicorn, sqlalchemy, asyncpg, alembic, luana_core_*).
+      UV_PROJECT_ENVIRONMENT: "/workspace/.venv"
     volumes:
       - .:/workspace:rw  # bind mount monorepo completo (hot-reload)
-      - vitalia_backend_venv:/workspace/vitalia/backend/.venv  # protege .venv container
+      # Named volume protege el venv del container en la ruta donde el Dockerfile lo crea
+      # (workspace root, NO en {brand}/backend/.venv). Docker populates the empty named volume
+      # from the image's /workspace/.venv on first start (built-in init behavior).
+      - vitalia_backend_venv:/workspace/.venv
     ports:
       - "127.0.0.1:8002:8002"
     networks:
@@ -37,14 +44,16 @@ services:
       luana_postgres_dev:
         condition: service_healthy
     command: >
+      sh -c "cd /workspace/vitalia/backend &&
+      uv run alembic upgrade head &&
       uv run uvicorn src.main:app
       --host 0.0.0.0
       --port 8002
       --proxy-headers
-      --forwarded-allow-ips *
+      --forwarded-allow-ips '*'
       --reload
       --reload-dir /workspace/vitalia/backend/src
-      --reload-dir /workspace/core
+      --reload-dir /workspace/core"
     deploy:
       resources:
         limits:
@@ -63,8 +72,12 @@ services:
       PORT: "3002"
       NEXT_PUBLIC_API_URL: "http://127.0.0.1:8002"
     volumes:
-      - ./vitalia/frontend:/app:rw
-      - vitalia_frontend_node_modules:/app/node_modules  # anonymous volume
+      # Bind mount al path donde el Dockerfile pone WORKDIR + pnpm install (/app/vitalia/frontend),
+      # NO en /app raíz (eso sobrescribiría /app/node_modules + /app/pnpm-workspace.yaml del image).
+      - ./vitalia/frontend:/app/vitalia/frontend:rw
+      # Anonymous volume enmascara node_modules del host (con symlinks pnpm host-only)
+      # exponiendo los node_modules del image (pnpm install --filter "@luana/vitalia-web").
+      - /app/vitalia/frontend/node_modules
     ports:
       - "127.0.0.1:3002:3002"
     networks:
@@ -93,7 +106,7 @@ services:
 volumes:
   vitalia_backend_venv:
     name: vitalia_backend_venv
-  vitalia_frontend_node_modules:
-    name: vitalia_frontend_node_modules
+  # vitalia_frontend_node_modules: removido (reemplazado por anonymous volume en el servicio,
+  # ver vitalia_frontend_dev.volumes — Docker maneja el lifecycle automáticamente)
 
 # NOTA: network luana_dev_net es definida en el compose raiz (docker-compose.dev.yml).

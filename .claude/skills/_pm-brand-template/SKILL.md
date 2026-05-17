@@ -128,8 +128,11 @@ Pre-commit hook + CI deben correr:
 Exit 1 si brand `status: shipped` tiene `capabilities/` vacía. NO hay auto-fix —
 requires manual inventory por `/pm-{slug}`.
 
-Ejemplo verde: vitalia (16 caps en 13 módulos, 2026-05-16 recovery).
-Ejemplos rojos (al 2026-05-16): nicolify, comunify — pendientes inventory recovery.
+Estado al 2026-05-17 (post backport sección a los 4 pm-{brand}):
+- ✅ vitalia (16 caps en 13 módulos, recovery 2026-05-16)
+- ✅ comunify (17 caps en 11 módulos)
+- 🔴 nicolify (0 caps pese a ser brand `production`) — inventory recovery story TBD por `/pm-nicolify`
+- 🟡 lupulo (placeholder pre-shipped — gate no enforce hasta Story 13)
 
 ### Anti-pattern
 

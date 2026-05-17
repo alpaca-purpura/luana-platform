@@ -8,6 +8,10 @@ dependencies = [
     "starlette>=0.46",
     "structlog>=25.1",
 ]
+# NOTA: las deps runtime completas (uvicorn, sqlalchemy, asyncpg, luana_core_*)
+# viven en vitalia/pyproject.toml (workspace-visible stub). Este subproyecto
+# vitalia/backend/ no está listado como workspace member — su pyproject NO se
+# usa para resolver deps del image dev. Ver outcome dev-stack-cross-brand-fixes.
 
 [build-system]
 requires = ["hatchling"]

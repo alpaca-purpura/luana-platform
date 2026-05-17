@@ -14,6 +14,7 @@ Arch tests verify:
 from __future__ import annotations
 
 from fastapi import FastAPI
+from pydantic import BaseModel
 
 from src.modules.vitalia.api.routes import router as vitalia_router
 from src.modules.vitalia.api.webhook_routes import webhook_router
@@ -33,3 +34,17 @@ app = FastAPI(
 app.include_router(vitalia_router)
 # T-be-8: 5 webhook receivers (Stripe + MercadoPago + Clerk + WhatsApp + ManyChat)
 app.include_router(webhook_router)
+
+
+class HealthResponse(BaseModel):
+    """Liveness probe response DTO."""
+
+    status: str
+    brand: str
+    version: str
+
+
+@app.get("/health", response_model=HealthResponse, tags=["meta"])
+async def health() -> HealthResponse:
+    """Liveness probe — used by Docker HEALTHCHECK + smoke checks."""
+    return HealthResponse(status="ok", brand="vitalia", version=app.version)

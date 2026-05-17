@@ -4,8 +4,8 @@ outcome: dev-environment-multibrand
 state: refining
 phase: PO_SPEC
 last_artifact: 01-spec.md
-last_modified: 2026-05-17T01:50:00Z
-next_action: "Chris ratifica spec + responde preguntas open → invocar /architect"
+last_modified: 2026-05-17T12:00:00Z
+next_action: "Aplicar fixes issues 1-8 (handoff /architect+/dev-team o builder-backend directo si scope quirúrgico) → re-validar stack → transition refining→refined"
 ratified_by_chris: false
 spawned_at: 2026-05-17T01:50:00Z
 spawned_by: claude-direct
@@ -51,6 +51,8 @@ docker logs luana-dev-vitalia_backend_dev-1
 | 4 | Migrations no aplicadas en first start | Backend no corre `alembic upgrade head` al startup | `vitalia/backend/Dockerfile` o entrypoint |
 | 5 | Clerk authorized origin | `dev-app.vitalialat.com` no está en allowed list del tenant Clerk vitalia | Manual dashboard Clerk |
 | 6 | `.env.dev` placeholders | `pk_test_REPLACE_ME`, `sk_test_REPLACE_ME`, `OPENAI_API_KEY=sk-REPLACE_ME` | Manual user (gitignored, no commit) |
+| 7 | `/health` endpoint 404 | Endpoint no registrado en FastAPI app. 4 paths probados sin éxito: `/health`, `/api/health`, `/api/v1/health`, `/api/v1/vitalia/health`. Rompe smoke check CLAUDE.md (`curl http://127.0.0.1:8002/health`) + healthcheck Docker | `vitalia/backend/src/main.py` |
+| 8 | `alembic.ini` DB URL localhost | `alembic current` desde container falla con `localhost:5432 connection refused` (default psycopg2). `alembic.ini` apunta a localhost en lugar de `luana_postgres_dev`. Migrations NO auto-aplicadas en startup → issue #4 sigue abierto pese a DB `vitalia_dev` existir | `vitalia/backend/alembic.ini` (env DATABASE_URL o `postgresql://...@luana_postgres_dev:5432/vitalia_dev`) + entrypoint Docker auto-upgrade |
 
 ## Out of scope (no tocar este story)
 
@@ -64,3 +66,38 @@ docker logs luana-dev-vitalia_backend_dev-1
 
 - 2026-05-17 01:50: story creada por chalreme + claude directo post smoke-test tunnel
 - 2026-05-17 01:50: spec en `01-spec.md`, state=refining → esperar ratificación Chris
+- 2026-05-17 03:50: **STACK OPERATIVA END-TO-END** (sesión Chris + Claude /pm-luana modo Portfolio)
+  - Frontend ✅ HTTP 200 `https://dev-app.vitalialat.com/sign-in` con Clerk widget (moral-gator-27)
+  - Backend ✅ Uvicorn running 0.0.0.0:8002, OpenAPI 60KB sirviendo, 15 rutas registradas
+  - Tunnel ✅ 4 conns CF edges, routing /api → backend, / → frontend
+  - Tenant isolation ✅ verificado: `/api/v1/vitalia/treatments` retorna 422 missing X-Tenant-ID
+  - Mem healthy: BE 10%/1G, FE 68%/1G — sin OOM
+
+  **Receta aplicada (extender a nicolify/comunify cuando se retomen):**
+
+  1. `.env.dev` con Clerk values + `CLERK_ISSUER` (faltaba en template) + URLs sign-in/up
+  2. Compose volumes:
+     - `vitalia_backend_venv:/workspace/.venv` (no `:/workspace/vitalia/backend/.venv`)
+     - `./vitalia/frontend:/app/vitalia/frontend:rw` (no `:/app`)
+     - `/app/vitalia/frontend/node_modules` anonymous (mask host symlinks pnpm)
+  3. Compose env: `UV_PROJECT_ENVIRONMENT=/workspace/.venv` (force uv usar venv workspace root)
+  4. Dockerfile backend: COPY `vitalia/pyproject.toml` además de `vitalia/backend/pyproject.toml` (workspace-visible stub con deps runtime)
+  5. Dockerfile backend: `RUN uv sync --no-dev --package luana-vitalia` (no `--frozen` que fallaba silencioso 0.3s)
+  6. `vitalia/pyproject.toml`: agregar deps runtime (uvicorn, sqlalchemy, asyncpg, alembic, luana_core_*)
+  7. Borrar stale `vitalia/backend/.venv` host (root-owned de uv sync previo, vía container con bind mount RW)
+  8. Volume `vitalia_backend_venv` drop+recreate post Dockerfile change
+
+  **Gaps no resueltos pero documentados en `docs/product/outcomes/dev-stack-cross-brand-fixes.md`:**
+  - Issue B: nicolify FE Dockerfile no COPY `core/@luana/*` (workaround bind-mount, rompe CI build prod)
+  - Issue A: gap uvicorn era cross-brand (vitalia fixed, nicolify+comunify defer)
+  - vitalia/backend/ no es workspace member (subproyecto aislado) — solución estructural diferida
+  - vitalia/pyproject.toml hatch build target ahora `bypass-selection = true` (vitalia/src/ no existe)
+
+  state=refining → próximo paso: Chris ratifica spec + considerar promover este story a outcome platform (cross-brand) o cerrarlo brand-specific con receta cementada.
+
+- 2026-05-17 mañana: **Diagnóstico /pm-luana** sobre stack live descubre 2 gaps no documentados en bitácora previa → sumados como issues 7+8:
+  - Issue 7: `/health` endpoint 404 confirmado en 4 paths candidatos (`/health`, `/api/health`, `/api/v1/health`, `/api/v1/vitalia/health`). OpenAPI confirma 20 endpoints vitalia registrados pero ningún health. Surface fix: `vitalia/backend/src/main.py`.
+  - Issue 8: `alembic current` desde `luana-dev-vitalia_backend_dev-1` falla con `psycopg2.OperationalError: connection to server at "localhost" (::1), port 5432 failed: Connection refused`. `alembic.ini` apunta a localhost cuando debería usar `postgresql://...@luana_postgres_dev:5432/vitalia_dev` o env `DATABASE_URL`. Migrations NO auto-aplican en startup → issue #4 original sigue abierto pese a DB `vitalia_dev` confirmada existente (verificación `\l` en postgres lista las 4 DBs brand).
+  - Verificaciones positivas: 4 containers UP healthy (uptime 35-60min), FE 200, BE OpenAPI 200, tunnel CF 200, tenant isolation OK (`/api/v1/vitalia/treatments` → 422 missing X-Tenant-ID), Postgres lista `vitalia_dev`+`nicolify_dev`+`comunify_dev`+`lupulo_dev`.
+  - Outcome brand-local `vitalia/docs/product/outcomes/dev-environment-multibrand.md` creado (resuelve gap `active_outcomes` huérfano en `vitalia/docs/product/checkpoint.md`). Consume outcome platform `docs/product/outcomes/dev-stack-cross-brand-fixes.md` para gaps cross-brand.
+  - Scope ampliado de 6 → 8 issues. Si Chris ratifica scope quirúrgico (issues 7+8 son hot-fix con `repro_verified: true` ya) → handoff directo `builder-backend` per `.claude/rules/hotfix-repro-mandatory.md`. Si Chris prefiere full ready package → handoff `/architect` para 03-arch + 04-validators + 06-tickets antes de implementación.

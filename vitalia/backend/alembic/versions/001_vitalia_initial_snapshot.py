@@ -532,39 +532,49 @@ def upgrade() -> None:
     # ─────────────────────────────────────────────────────────────────────────
     # Seed plan tier catalog (idempotent via ON CONFLICT DO NOTHING)
     # ─────────────────────────────────────────────────────────────────────────
-    # Seed plan tiers as separate idempotent upserts to avoid long lines
-    op.execute("""
-        INSERT INTO vitalia_plan_tier_configs
-            (plan_tier_slug, display_name, price_usd_monthly,
-             included_user_count, max_doctors, features_enabled)
-        VALUES ('solo_doctor', 'Solo Doctor', 49.00, 1, 1,
-                '{"brand_studio_simplified":true,"offer_studio_medical":true,
-                  "booking_prepaid":true,"sales_agent_vertical_medical":true
-                 }'::jsonb)
-        ON CONFLICT (plan_tier_slug) DO NOTHING;
-    """)
-    op.execute("""
-        INSERT INTO vitalia_plan_tier_configs
-            (plan_tier_slug, display_name, price_usd_monthly,
-             included_user_count, max_doctors, features_enabled)
-        VALUES ('clinic', 'Clinic', 199.00, 10, 10,
-                '{"brand_studio_simplified":true,"offer_studio_medical":true,
-                  "booking_prepaid":true,"sales_agent_vertical_medical":true,
-                  "copilot_medical_extractors":true,
-                  "treatment_followup_workflow":true
-                 }'::jsonb)
-        ON CONFLICT (plan_tier_slug) DO NOTHING;
-    """)
-    op.execute("""
-        INSERT INTO vitalia_plan_tier_configs
-            (plan_tier_slug, display_name, price_usd_monthly,
-             included_user_count, max_doctors, features_enabled)
-        VALUES ('multi_site', 'Multi Site', 599.00, 50, 50,
-                '{"all_clinic_features":true,"multi_site_backend":true,
-                  "multi_currency":true
-                 }'::jsonb)
-        ON CONFLICT (plan_tier_slug) DO NOTHING;
-    """)
+    # Seed plan tiers as separate idempotent upserts to avoid long lines.
+    # Use jsonb_build_object() to avoid `:true` being parsed as a SQLAlchemy
+    # named bind parameter when op.execute() wraps the string in text().
+    op.execute(
+        "INSERT INTO vitalia_plan_tier_configs"
+        " (plan_tier_slug, display_name, price_usd_monthly,"
+        "  included_user_count, max_doctors, features_enabled)"
+        " VALUES ('solo_doctor', 'Solo Doctor', 49.00, 1, 1,"
+        "  jsonb_build_object("
+        "   'brand_studio_simplified', true,"
+        "   'offer_studio_medical', true,"
+        "   'booking_prepaid', true,"
+        "   'sales_agent_vertical_medical', true"
+        "  ))"
+        " ON CONFLICT (plan_tier_slug) DO NOTHING"
+    )
+    op.execute(
+        "INSERT INTO vitalia_plan_tier_configs"
+        " (plan_tier_slug, display_name, price_usd_monthly,"
+        "  included_user_count, max_doctors, features_enabled)"
+        " VALUES ('clinic', 'Clinic', 199.00, 10, 10,"
+        "  jsonb_build_object("
+        "   'brand_studio_simplified', true,"
+        "   'offer_studio_medical', true,"
+        "   'booking_prepaid', true,"
+        "   'sales_agent_vertical_medical', true,"
+        "   'copilot_medical_extractors', true,"
+        "   'treatment_followup_workflow', true"
+        "  ))"
+        " ON CONFLICT (plan_tier_slug) DO NOTHING"
+    )
+    op.execute(
+        "INSERT INTO vitalia_plan_tier_configs"
+        " (plan_tier_slug, display_name, price_usd_monthly,"
+        "  included_user_count, max_doctors, features_enabled)"
+        " VALUES ('multi_site', 'Multi Site', 599.00, 50, 50,"
+        "  jsonb_build_object("
+        "   'all_clinic_features', true,"
+        "   'multi_site_backend', true,"
+        "   'multi_currency', true"
+        "  ))"
+        " ON CONFLICT (plan_tier_slug) DO NOTHING"
+    )
 
 
 def downgrade() -> None:

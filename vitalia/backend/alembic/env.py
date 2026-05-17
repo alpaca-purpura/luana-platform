@@ -16,21 +16,32 @@ from __future__ import annotations
 import os
 from logging.config import fileConfig
 
-from alembic import context
 from sqlalchemy import engine_from_config, pool
+
+from alembic import context
 
 # This is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 
-# Build DB URL from POSTGRES_* env vars.
-db_url = (
-    f"postgresql://{os.environ.get('POSTGRES_USER', 'postgres')}"
-    f":{os.environ.get('POSTGRES_PASSWORD', 'password')}"
-    f"@{os.environ.get('POSTGRES_HOST', 'localhost')}"
-    f":{os.environ.get('POSTGRES_PORT', '5432')}"
-    f"/{os.environ.get('POSTGRES_DB', 'vitalia_dev')}"
-)
+# Priorizar DATABASE_URL (SSoT canónica del compose). Convertir asyncpg→psycopg2
+# porque alembic usa driver sync. Fallback a POSTGRES_* env vars para compat dev local sin Docker.
+_database_url = os.environ.get("DATABASE_URL")
+if _database_url:
+    # asyncpg → psycopg2 (alembic es sync)
+    db_url = (
+        _database_url
+        .replace("postgresql+asyncpg://", "postgresql://")
+        .replace("postgresql+psycopg://", "postgresql://")
+    )
+else:
+    db_url = (
+        f"postgresql://{os.environ.get('POSTGRES_USER', 'postgres')}"
+        f":{os.environ.get('POSTGRES_PASSWORD', 'password')}"
+        f"@{os.environ.get('POSTGRES_HOST', 'localhost')}"
+        f":{os.environ.get('POSTGRES_PORT', '5432')}"
+        f"/{os.environ.get('POSTGRES_DB', 'vitalia_dev')}"
+    )
 config.set_main_option("sqlalchemy.url", db_url)
 
 # Interpret the config file for Python logging.

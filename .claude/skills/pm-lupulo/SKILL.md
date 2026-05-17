@@ -98,6 +98,30 @@ Cuando aplicás `07-merge.md` para una story brand:
 7. **Si learning tiene `promotable: candidate|yes` → ping `/pm-luana` para evaluación lift a core**
 8. Update outcome story_ids (mark story done)
 
+## ★ Capability inventory post-merge (MANDATORIO)
+
+> Origen: proposal `docs/promotion-protocol/proposals/2026-05-16-capability-inventory-enforcement.md` (gap detectado en vitalia Story 11 — ver `vitalia/docs/learnings/2026-05-16-capabilities-inventory-gap.md`).
+
+Cuando una story brand transiciona a `status: live` / `done` y/o la brand pasa a `status: shipped`, `/pm-lupulo` MUST ejecutar el paso 2 del capability promotion ANTES de cerrar la sesión:
+
+1. Para cada feature shipped → escribir `lupulo/docs/product/capabilities/{module}/{cap}.yaml`
+2. Frontmatter mínimo: `capability_id, module, slug, status: live, date_introduced, story_introduced, package_version, package_path, license`
+3. Cuerpo: surfaces (config, backend, frontend, tests, docs) + KPIs si aplica + dependencies cross-package
+
+### Verification gate
+
+```bash
+.venv/bin/python scripts/reconcile_capabilities.py --require-capabilities-exist --brand lupulo
+```
+
+Exit 1 si brand `status: shipped` tiene `capabilities/` vacía. NO hay auto-fix.
+
+Estado lupulo al 2026-05-17: 🟡 placeholder (status pre-shipped, Story 13 pendiente) — gate no enforce hasta primera story shipped.
+
+### Anti-pattern
+
+Mergear story con `status: live` sin actualizar `capabilities/` = brand SSoT funcional desincronizada del código.
+
 ## Promotion handoff a /pm-luana
 
 Cuando un learning brand tiene potencial cross-brand:

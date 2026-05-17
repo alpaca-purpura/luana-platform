@@ -30,9 +30,16 @@ FROM base AS dev
 # El .venv es protegido por named volume en compose file.
 COPY pyproject.toml uv.lock ./
 COPY core/ ./core/
+# vitalia/pyproject.toml = workspace member (declara deps runtime backend incl. uvicorn).
+# vitalia/backend/pyproject.toml = subproyecto aislado (mantained por separado, mismo nombre).
+COPY vitalia/pyproject.toml ./vitalia/pyproject.toml
 COPY vitalia/backend/pyproject.toml ./vitalia/backend/pyproject.toml
 
-RUN uv sync --frozen --no-dev 2>/dev/null || uv sync --no-dev
+# `uv sync` con --frozen falla silenciosa cuando un workspace member referenciado en
+# lockfile no está físicamente presente en el filesystem del image build context.
+# Sin --frozen, uv regenera el lock y procede. Sin --no-dev se evita instalar dev deps.
+# El `--package luana-vitalia` filtra al package que importa runtime deps backend.
+RUN uv sync --no-dev --package luana-vitalia 2>&1
 
 WORKDIR /workspace/vitalia/backend
 
