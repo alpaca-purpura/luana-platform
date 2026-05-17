@@ -2,9 +2,11 @@
 brand: vitalia
 vertical: "Salud + Bienestar"
 status: shipped
-last_updated: 2026-05-16
-active_outcomes: []
-active_stories: []
+last_updated: 2026-05-17
+active_outcomes:
+  - dev-environment-multibrand
+active_stories:
+  - vitalia-dev-stack-functional   # state: refining (spec writeup, awaiting Chris ratification)
 ssot_owner: /pm-vitalia
 ---
 
@@ -31,3 +33,4 @@ Story 11 (`luana-vitalia-bootstrap`, mergeada 2026-05-15) shipped **16 capabilit
 
 - 2026-05-15: brand topology bootstrap (F0 reorg multimarca) — Story 11 `luana-vitalia-bootstrap` shipped
 - 2026-05-16: capability inventory recovery — 16 caps YAMLs escritas en `vitalia/docs/product/capabilities/` desde código vivo + archived YAMLs + Story 11 spec. Gap del paso 2 del capability promotion al merge (ver learning `vitalia/docs/learnings/2026-05-16-capabilities-inventory-gap.md`, promotable: candidate)
+- 2026-05-17: dev tunnel chain montado (commit `e7dc4a0`) + smoke test capa transporte verde. Story `vitalia-dev-stack-functional` abierta state=refining para resolver bugs bootstrap FE+BE descubiertos al levantar stack completa (FE `next: not found` por named volume shadow, BE `.venv` corrupto, DB `vitalia_dev` no auto-creada, alembic no auto-upgrade en first start)

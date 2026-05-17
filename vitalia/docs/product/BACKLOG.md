@@ -17,7 +17,7 @@ _(none — append via /pm-vitalia "idea {x}")_
 
 ## 🔬 Refinando (cap 3)
 
-_(none)_
+- **vitalia-dev-stack-functional** (2026-05-17) — Fix bootstrap bugs Story 11 + completar dev tunnel end-to-end. Goal: `make dev-vitalia-tunnel` → `https://dev-app.vitalialat.com/` responde 200 con Clerk login operativo. Ver `stories/vitalia-dev-stack-functional/`.
 
 ## ✅ Refinadas (cap 5)
 
