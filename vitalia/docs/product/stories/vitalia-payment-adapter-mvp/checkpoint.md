@@ -2,7 +2,7 @@
 story_id: vitalia-payment-adapter-mvp
 outcome: vitalia-mvp-ui-foundation
 state: refining
-phase: AWAITING_PO_DRAFT
+phase: AWAITING_PO_DRAFT_DEFERRED_NEXT_SESSION  # Chris 2026-05-17: defer a otra entrega
 last_artifact: checkpoint.md
 last_modified: 2026-05-17
 next_action: "/po vitalia-payment-adapter-mvp — produce 01-spec.md service-story con: (1) Decisión cementada del gateway primario MVP. Recomendación architect 03-arch-be.md § Payment Provider Adapter: MercadoPago Slice 1 (LATAM principal, cobertura AR/PE/MX/CO/CL/BR), Stripe Slice 2+ (US/EU tenants), Culqi opcional Slice 2 (PE-only fallback). (2) 6 Gherkin scenarios: checkout link generation + paciente paga + webhook confirma + auto-cancel 24h sin pago + auto-cancel 72h pago parcial + reembolso 100% pre-confirma. (3) Webhook HMAC signature + timestamp window 5min validation (per hipaa-lite.md encryption in transit). (4) Idempotency keys per booking_id (cron sweeper detecta dups). (5) Flow integración con sales_agent Adrián tool `send_payment_link`. (6) Open questions Chris: aceptamos solo MercadoPago Slice 1 ó wiring multi-gateway Strategy pattern desde MVP?"

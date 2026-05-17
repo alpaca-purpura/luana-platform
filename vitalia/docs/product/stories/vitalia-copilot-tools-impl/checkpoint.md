@@ -2,8 +2,8 @@
 story_id: vitalia-copilot-tools-impl
 outcome: vitalia-mvp-ui-foundation
 state: refining
-phase: AWAITING_PO_UX_AGENTIC_DRAFT
-last_artifact: checkpoint.md
+phase: UX_AGENTIC_DRAFT_V1_AWAITING_CHRIS_RATIFY
+last_artifact: 02-design-agentic.md
 last_modified: 2026-05-17
 next_action: "AGENTIC story DUAL handoff: (1) /po vitalia-copilot-tools-impl — produce 01-spec.md service Gherkin con tool contracts cementados desde 03-arch-agentic.md § 4 (3 actors: Valeria 4 tools + Adrián 5 tools + Lucas 3 tools = 12 tools total Slice 1). (2) /ux-agentico vitalia-copilot-tools-impl — produce 02-design-agentic.md con LangGraph state machine supervisor + deepagents subagent isolation per actor + 5-slot prompt cache architecture (Slot 5 BRAND_VOICE cache stable per personality_profiles.system_instruction NO inject tenant_name mid-block) + voice constraints medical guardrails Slot 4 NEW Slice 1 + eval policy 12 personas × 3 trials pass_k≥0.5 per actor + cost/latency budget per role (Kimi reasoning Lucas + Claude Haiku Adrián + DeepSeek wizard Valeria) + observabilidad (copilot_trace_event + copilot_llm_call + cost recorder canonical via core/luana-core-observability). Open questions Chris: (a) ¿Adrián tools 5 ó subset MVP Slice 1 (recommend send_payment_link + reschedule + screening + dejamos retract+template Slice 2)? (b) ¿Lucas cron-triggered ONLY Slice 1 ó también chat-invokable? (c) ¿Eval goldens 12 personas iniciales hardcoded ó plugin EP-tessl__eval/goldens registry desde MVP? (d) ¿Tessl skills load (langgraph + deepagents + graceful-degradation) cargadas desde repo principal ó offline-only build?"
 ratified_by_chris: false
