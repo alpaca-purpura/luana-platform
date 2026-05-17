@@ -18,7 +18,7 @@ active_stories:
   - vitalia-slice-1-marketing              # state: refined (blocked by infra + copilot-tools-impl)
   - vitalia-pricing-decision               # state: idea (spawned 2026-05-17, decisión Chris postergada)
   - vitalia-payment-adapter-mvp            # state: refining (transitioned 2026-05-17 sesión close-slice-1, awaiting /po draft)
-  - vitalia-copilot-tools-impl             # state: refining (transitioned 2026-05-17, awaiting /po + /ux-agentico DUAL draft)
+  - vitalia-copilot-tools-impl             # state: refined (★ /ux-agentico v1.0 RATIFIED 2026-05-17 single G6 batched round — 11 tools Slice 1 cementado, awaiting /architect ready package)
   - vitalia-fiscal-emission-pe             # state: refining (transitioned 2026-05-17, awaiting /po draft)
 ratified_promotion_proposals:              # APPROVED + migrated 2026-05-17 (commit 5ca6101) — unblocks T-be-migration-014/T-be-migration-015
   - docs/promotion-protocol/proposals/2026-05-17-platform-tenants-location-columns.md      # state: migrated (luana-core-platform 0.1.0→0.2.0)
@@ -72,3 +72,7 @@ Story 11 (`luana-vitalia-bootstrap`, mergeada 2026-05-15) shipped **16 capabilit
     - `vitalia-fiscal-emission-pe` — 4 open questions Chris (Nubefact único vs multi-PSE · Boleta+Factura vs solo Boleta · dead-letter alerta scope · setup UI vs script Slice 1)
     - `vitalia-copilot-tools-impl` — 4 open questions Chris (Adrián 5 tools vs subset · Lucas cron-only vs chat-invokable · eval goldens hardcoded vs plugin · Tessl skills loadout)
   - **Plan honesto restante**: Fase B refining requiere Chris in-chat para ratify 3 specs (G6 batched ≤4 rounds each story). Fases C-F (ready packages + autonomous build + auditor + merge) son días/semanas wall clock (estimated_dev_weeks suma ~13-17 semanas). Esta sesión cementó la cadena (worktree + engine lift + Fase B kick-off); el cierre Slice 1 production-ready se ejecuta en sesiones subsiguientes.
+- **2026-05-17 sesión idem · Fase B parcial cierre** (Chris pidió saltar refining payment + fiscal, solo `/ux-agentico` para copilot-tools-impl):
+  - `vitalia-copilot-tools-impl` state refining→**refined** ✓ — `/ux-agentico` produjo 02-design-agentic.md (939 LOC v1.0). 7 questions ratify Chris single G6 batched round (Q1-Q4 + D1-D3, all recommended defaults aceptados). Surface efectivo: 11 tools Slice 1 (4 Valeria + 3 Adrián subset MVP + 3 Lucas cron-only). Slot 4 MEDICAL_SAFETY_RAILS NEW Slice 1 cementado inline. Lucas cron TZ-aware aprovecha Fase A lift. Anti-patterns 20+ prohibidos explícitos. Eval policy 12 goldens Adrián + 4 wizard goldens. Next: `/architect vitalia-copilot-tools-impl` produce ready package.
+  - `vitalia-payment-adapter-mvp` checkpoint phase: AWAITING_PO_DRAFT_DEFERRED_NEXT_SESSION (state=refining permanece, defer Chris).
+  - `vitalia-fiscal-emission-pe` checkpoint phase: AWAITING_PO_DRAFT_DEFERRED_NEXT_SESSION (state=refining permanece, defer Chris).

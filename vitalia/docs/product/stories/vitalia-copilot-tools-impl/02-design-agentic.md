@@ -1,11 +1,12 @@
 # vitalia-copilot-tools-impl — Agentic conversational design
 
 > **Brand:** vitalia
-> **Story type:** agentic (3 actors × 12 tools total Slice 1)
+> **Story type:** agentic (3 actors × 12 tools total Slice 1 cementado · post Q1 default subset MVP → **11 tools Slice 1**: 4 Valeria + 3 Adrián subset + Lucas en cron-only mode con 3 tools)
 > **Parent spec context:** `../vitalia-ux-discovery/01-spec.md § Batch 7 wizard onboarding agentic` + `../vitalia-ux-discovery/03-arch-agentic.md § 4 tools + § 5 prompt cache slots`
 > **Skill author:** /ux-agentico v4
 > **Skills loaded:** copilot-expert · sales-agent-expert · claude-api (prompt caching) · tessl__langgraph (supervisor topology referenced in arch) · tessl__deepagents (SubAgentMiddleware referenced) · tessl__graceful-degradation (external tool wrappers referenced)
 > **State target:** refining → refined al ratificar Chris
+> **Status:** ★ **v1.0 RATIFIED 2026-05-17 Chris** ★ (7 questions Q1-Q4 + D1-D3 ratified in single G6 batched round, recommended defaults aceptados all 7).
 
 ## 0. Scope + open questions Chris
 
@@ -19,16 +20,19 @@
 | **Adrián** (sales_agent closer) | `vitalia/backend/src/modules/vitalia/sales_agent/tools/` | 5 (send_template_confirmation · send_payment_link · reschedule_appointment · retract_last_message · screening_questions) | WhatsApp/Telegram outbound (no UI propia, opera vía canales) |
 | **Lucas** (growth setter) | `vitalia/backend/src/modules/vitalia/agentic/lucas/tools/` | 3 (compute_stage_recommendation · compute_attribution_matrix · compute_referrals_leaderboard) | Cron-triggered (no chat directo Slice 1) + cards inline en /marketing + /pipeline |
 
-### 0.2 Open questions Chris (pre-refining→refined gate)
+### 0.2 Open questions Chris — RATIFIED 2026-05-17 (single G6 batched round, all defaults accepted)
 
-| # | Question | Recommended default (puede aceptar batched) | Rationale |
+| # | Question | RATIFIED answer | Implication |
 |---|---|---|---|
-| Q1 | ¿Adrián 5 tools ó subset MVP Slice 1? | **Subset MVP:** send_payment_link + reschedule_appointment + screening_questions (3 críticos). Defer Slice 2: send_template_confirmation (engine ya cubre cierto envío templates default) + retract_last_message (UI undo 5min Inbox cementado Batch 2 cubre sin tool — UndoToast frontend timer suficiente Slice 1). | Reduce surface 5→3 → menos goldens + tests + observability writes + cost = más rápido shippear Slice 1. send_template + retract son nice-to-have agentic-driven, no diferenciadores MUST. |
-| Q2 | ¿Lucas cron-only Slice 1 ó también chat-invokable? | **Cron-only Slice 1.** Operador NO invoca Lucas vía chat (Valeria es la única chat-invokable). Lucas runs daily via cron + persist `lucas_recommendations` table + cards aparecen en /marketing + /pipeline. Chat-invokable Lucas defer Slice 3 ("preguntale a Lucas qué hacer con campaña X"). | Simplicidad MVP: cron-only = no UI dispatch + no router + no Lucas conversation history. Cards inline /marketing ya cubren UX. Chat-invokable agrega complexidad routing supervisor sin caso de uso claro Slice 1. |
-| Q3 | ¿Eval goldens 12 personas hardcoded YAML ó plugin EP-tessl__eval/goldens registry desde MVP? | **Hardcoded YAML Slice 1** (`vitalia/backend/tests/agentic_evals/sales_agent/goldens/{vertical}/*.yaml` + `.../copilot/wizard_goldens/*.yaml`). Plugin EP-tessl__eval/goldens registry defer Slice 2 cuando 2do brand opta-in evals (Comunify probable). | Plugin registry sin segundo consumer = over-engineering anti-pattern. YAML stable + grep-friendly + git-diffable. Migrar a plugin más adelante cuando incentivo cross-brand emerja. |
-| Q4 | ¿Tessl skills (langgraph + deepagents + graceful-degradation) load desde repo principal ó offline-only build? | **Repo principal** (Tessl context loaded via `mcp__tessl__query_library_docs` MCP en CI + builder-agentic context). Offline-only build defer si Tessl MCP unreliable. | Tessl MCP es load-time SSoT canónica → patterns siempre current. Offline-only = riesgo drift docs vs prod LangGraph/deepagents versions. Si Tessl MCP cae en CI → fallback offline copy `.tessl/tiles/` cached. |
+| Q1 | ¿Adrián 5 tools ó subset MVP Slice 1? | ✅ **Subset MVP Slice 1** — `send_payment_link` + `reschedule_appointment` + `screening_questions` (3 tools). | `send_template_confirmation` (engine default templates cubre) + `retract_last_message` (UI undo 5min Inbox cementado Batch 2) DEFER Slice 2. Reduce surface 5→3 = menos goldens + tests + observability writes + cost. |
+| Q2 | ¿Lucas cron-only Slice 1 ó también chat-invokable? | ✅ **Cron-only Slice 1.** Lucas runs daily 06:00 tenant TZ → `lucas_recommendations` table → cards inline /marketing + /pipeline. | Chat-invokable Lucas DEFER Slice 3 ("preguntale a Lucas qué hacer con campaña X"). Simplicidad MVP: no routing supervisor multi-actor + no Lucas conversation history. |
+| Q3 | ¿Eval goldens 12 personas hardcoded YAML ó plugin EP-tessl__eval/goldens registry desde MVP? | ✅ **Hardcoded YAML Slice 1** (`vitalia/backend/tests/agentic_evals/sales_agent/goldens/{vertical}/*.yaml` + `.../copilot/wizard_goldens/*.yaml`). | Plugin EP-tessl__eval/goldens registry DEFER Slice 2 cuando 2do brand opta-in evals (Comunify probable). Avoid over-engineering single-consumer abstraction. |
+| Q4 | ¿Tessl skills (langgraph + deepagents + graceful-degradation) load desde repo principal ó offline-only build? | ✅ **Repo principal** (Tessl context loaded via `mcp__tessl__query_library_docs` MCP en CI + builder-agentic spawn context). | Fallback offline copy `.tessl/tiles/` cached si MCP cae. Tessl MCP es load-time SSoT canónica → patterns siempre current. |
+| D1 | Slot 4 MEDICAL_SAFETY_RAILS NEW Slice 1 — ¿solo arch+design ratify o escribir delta-spec.md para /po vitalia-ux-discovery? | ✅ **Solo arch+design ratify.** No delta-spec needed. Decisión cardinal (Vitalia salud → guardrails) ya cementada en `hipaa-lite.md` + `brand.yaml`. Slot 4 content vive correctamente en arch + design. | Sin extra round Chris con /po. Builder-agentic implementa per arch + this design. |
+| D2 | Lucas cron TZ-aware via `TenantLocationContract.timezone` (Fase A lift)? | ✅ **OK Lucas cron TZ-aware.** Cron daily 06:00 LOCAL tenant TZ. | Aprovecha Fase A engine modify (commit 5ca6101). Mejor UX (operador Lima ve cards 06:00 PE local). Hard dep en Fase A es OK porque Fase A migrated. |
+| D3 | Naming `screening Lucas` (spec Batch 7) vs `screening_questions` Adrián tool — clarify docs o escribir delta-spec? | ✅ **Clarify docs sin delta-spec.** `screening_questions` belongs to Adrián (sales_agent). Lucas es analytics cron-only. Naming corregido inline en este 02-design. | Spec original menciones "screening Lucas" eran impreciso. /architect ready package documentará naming canonical sin delta-spec. |
 
-Chris ratificará en batched G6 round (≤4 preguntas, 1 sub-round). Defaults son recommended por `/ux-agentico` post-análisis. Si Chris dice OK a los 4 → state refining→refined directo.
+★ **Design v1.0 RATIFIED — state refining → refined.** Próximo: `/architect vitalia-copilot-tools-impl` Opus 4.7 produce ready package (03-arch + 04-validators + 05-guidelines + 06-tickets).
 
 ### 0.3 Engine boundary cardinal
 
@@ -891,15 +895,17 @@ Per `sales-agent-expert::§Anti-patterns` + `copilot-resilience.md` + `.claude/r
 
 ---
 
-## 5. Delta-spec.md candidates (review pre-handoff)
+## 5. Delta-spec.md — NO escritos (Chris ratify resolved D1-D3 inline)
 
-Si durante diseño descubrimos edge cases o slots faltantes vs parent 01-spec.md Batch 7, escribimos delta + escala `/po vitalia-ux-discovery` para ratify. **Identificados durante este draft:**
+Los 3 candidates identificados durante el draft fueron resueltos por Chris en mismo batched round que Q1-Q4 (single G6 round 2026-05-17):
 
-| # | Discovery | Action |
+| # | Discovery | Resolution |
 |---|---|---|
-| D1 | Slot 4 MEDICAL_SAFETY_RAILS NEW Slice 1 no estaba mencionado en Batch 7 spec original (solo cementado en 03-arch-agentic.md) | Verificar Chris durante ratificación esta story — si OK, no delta needed (arch ratifica). Si Chris quiere ver spec MEDICAL_SAFETY_RAILS Slot 4 content explícito → escribir delta-spec.md. |
-| D2 | Lucas cron schedule `tenants.timezone`-aware aprovecha Fase A lift (TenantLocationContract). Antes era hardcoded UTC. | Verificar Chris OK con TZ-aware default. |
-| D3 | Adrián vertical-conditional screening_questions cementado en `screening_questions_by_vertical.yaml` (SSoT path) — pero spec Batch 7 menciona "screening clínico Lucas NEW" — vertical mismatch (screening es Adrián tool, no Lucas tool). | Aclarar con Chris durante ratificación: screening tool belongs to Adrián sales_agent (not Lucas growth setter). Lucas hace `compute_stage_recommendation` cron, NO screening. Si Chris OK → no delta, naming aclaration en docs. |
+| D1 | Slot 4 MEDICAL_SAFETY_RAILS NEW Slice 1 no estaba mencionado en Batch 7 spec original | ✅ Chris ratified: solo arch+design ratify, NO delta-spec.md (decisión cardinal Vitalia=salud→guardrails ya cementada en hipaa-lite.md + brand.yaml). Builder-agentic implementa per arch + this design. |
+| D2 | Lucas cron schedule TZ-aware via `tenants.timezone` (Fase A lift) | ✅ Chris ratified: OK Lucas cron TZ-aware aprovecha Fase A engine modify (commit 5ca6101). Operador local TZ. |
+| D3 | Naming `screening Lucas` (spec Batch 7) vs `screening_questions` Adrián tool | ✅ Chris ratified: clarify docs sin delta-spec. `screening_questions` belongs to Adrián (sales_agent). Lucas es analytics cron-only. /architect ready package documentará naming canonical. |
+
+NO delta-spec.md escrito (zero extra rounds Chris con /po-ux-discovery, story refinement cerrado clean).
 
 ---
 
@@ -936,4 +942,5 @@ Próximo: `/architect vitalia-copilot-tools-impl` Opus 4.7 spawn paralelo si ban
 
 ## Bitácora
 
-- 2026-05-17 (sesión /pm-vitalia close-slice-1): `/ux-agentico` produjo draft v1 de 02-design-agentic.md. Cubre 3 actors (Valeria 4 tools + Adrián 5 tools subset MVP recommended → 3 + Lucas 3 tools cron-only) × 10 secciones cada uno (turn-by-turn + state machine + tools + slots + voice + recovery + eval + cost + observability + cross-cutting). 4 open questions Chris cementadas en § 0.2 con recommended defaults. 3 delta-spec.md candidates identificados § 5. Próximo: Chris ratify Q1-Q4 + ratify diseño en G6 batched clarification (≤2 sub-rounds esperado) → state refining→refined → handoff /architect.
+- 2026-05-17 (sesión /pm-vitalia close-slice-1): `/ux-agentico` produjo draft v1 de 02-design-agentic.md. Cubre 3 actors (Valeria 4 tools + Adrián 5 tools subset MVP recommended → 3 + Lucas 3 tools cron-only) × 10 secciones cada uno (turn-by-turn + state machine + tools + slots + voice + recovery + eval + cost + observability + cross-cutting). 4 open questions Chris cementadas en § 0.2 con recommended defaults. 3 delta-spec.md candidates identificados § 5.
+- **2026-05-17 ★ v1.0 RATIFIED Chris (single G6 batched round):** all 7 questions (Q1-Q4 + D1-D3) answered with recommended defaults. Design sealed. Surface efectivo Slice 1: **11 tools total** (4 Valeria copilot wizard + 3 Adrián sales_agent subset MVP + 3 Lucas growth setter cron-only). NO delta-spec.md needed. State transitioned refining → refined. Próximo: `/architect vitalia-copilot-tools-impl` Opus 4.7 spawn consume 01-spec parent § Batch 7 + este 02-design-agentic.md → produce ready package (03-arch + 04-validators + 05-guidelines + 06-tickets ≤10).

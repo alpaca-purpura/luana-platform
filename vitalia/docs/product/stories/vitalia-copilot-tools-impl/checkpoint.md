@@ -1,11 +1,13 @@
 ---
 story_id: vitalia-copilot-tools-impl
 outcome: vitalia-mvp-ui-foundation
-state: refining
-phase: UX_AGENTIC_DRAFT_V1_AWAITING_CHRIS_RATIFY
-last_artifact: 02-design-agentic.md
+state: refined
+phase: AGENTIC_DESIGN_RATIFIED
+last_artifact: 02-design-agentic.md (v1.0 RATIFIED Chris 2026-05-17)
 last_modified: 2026-05-17
-next_action: "AGENTIC story DUAL handoff: (1) /po vitalia-copilot-tools-impl — produce 01-spec.md service Gherkin con tool contracts cementados desde 03-arch-agentic.md § 4 (3 actors: Valeria 4 tools + Adrián 5 tools + Lucas 3 tools = 12 tools total Slice 1). (2) /ux-agentico vitalia-copilot-tools-impl — produce 02-design-agentic.md con LangGraph state machine supervisor + deepagents subagent isolation per actor + 5-slot prompt cache architecture (Slot 5 BRAND_VOICE cache stable per personality_profiles.system_instruction NO inject tenant_name mid-block) + voice constraints medical guardrails Slot 4 NEW Slice 1 + eval policy 12 personas × 3 trials pass_k≥0.5 per actor + cost/latency budget per role (Kimi reasoning Lucas + Claude Haiku Adrián + DeepSeek wizard Valeria) + observabilidad (copilot_trace_event + copilot_llm_call + cost recorder canonical via core/luana-core-observability). Open questions Chris: (a) ¿Adrián tools 5 ó subset MVP Slice 1 (recommend send_payment_link + reschedule + screening + dejamos retract+template Slice 2)? (b) ¿Lucas cron-triggered ONLY Slice 1 ó también chat-invokable? (c) ¿Eval goldens 12 personas iniciales hardcoded ó plugin EP-tessl__eval/goldens registry desde MVP? (d) ¿Tessl skills load (langgraph + deepagents + graceful-degradation) cargadas desde repo principal ó offline-only build?"
+ratified_by_chris: true
+ratified_at: 2026-05-17
+next_action: "★ Design v1.0 RATIFIED Chris 2026-05-17 (single G6 batched round, 7 questions Q1-Q4+D1-D3 all defaults accepted). Surface efectivo Slice 1: 11 tools (4 Valeria + 3 Adrián subset MVP + 3 Lucas cron-only). HANDOFF /architect vitalia-copilot-tools-impl Opus 4.7 → consume 02-design-agentic.md + parent 01-spec § Batch 7 + 03-arch-agentic.md cross-reference → produce ready package: 03-arch.md (consolidated) + 04-validators.yaml + 05-guidelines.md + 06-tickets.yaml (tickets ≤10 per paradigm v4 cap). State transition: refined → ready cuando /architect cierra package."
 ratified_by_chris: false
 spawned_at: 2026-05-17
 transitioned_at: 2026-05-17
