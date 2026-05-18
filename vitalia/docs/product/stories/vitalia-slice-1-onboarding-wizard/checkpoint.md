@@ -3,7 +3,7 @@ story_id: vitalia-slice-1-onboarding-wizard
 outcome: vitalia-mvp-ui-foundation
 parent_spec: vitalia-ux-discovery
 state: developing
-phase: BUILD_T_ONBOARDING_1
+phase: BUILD_T_ONBOARDING_5_DONE
 last_artifact: delta-arch-refresh.md
 last_modified: 2026-05-18
 build_started_at: 2026-05-18
@@ -26,7 +26,7 @@ refresh_verdict: MINOR_DRIFT
 refresh_artifacts:
   - delta-arch-refresh.md                 # primary deliverable, 198 lines, 5-check matrix
   - 06-tickets-refresh.yaml               # override yaml, 330 lines, 5 SCOPE_REDUCED + 1 UNCHANGED + 1 SCOPE_REDUCED_FROM_CREATE_TO_VERIFY
-next_action: "Spawn /dev-team con tickets T-onboarding-1..7 del parent 06-tickets.yaml + overrides en 06-tickets-refresh.yaml local. 4 Open Questions ratificadas Chris 2026-05-18 (R23 OPT-OUT T-4/T-5 + mini-arch T-1 + audio defer Slice 2 + FE features/onboarding/). Critical path domina T-onboarding-6 (FE wizard 2200 LOC)."
+next_action: "T-1/T-2/T-3/T-4/T-5 DONE (commits up to 69049df). Remaining: T-onboarding-6 (FE wizard 2200 LOC — critical path) + T-onboarding-7 (FE integration + E2E smoke). Spawn /dev-team con T-onboarding-6."
 ratified_decisions_2026_05_18:
   - OQ-1: R23 OPT-OUT T-onboarding-4 + T-onboarding-5 → RATIFIED (Sonnet OK, production_code=false, wire-up + regression only)
   - OQ-2: T-onboarding-1 mini-arch inline → RATIFIED (Architect inline signatures repos + ORM models + DI binding in 06-tickets-refresh.yaml::T-onboarding-1::scope)
