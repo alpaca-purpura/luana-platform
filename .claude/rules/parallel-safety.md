@@ -105,11 +105,11 @@ opencode honra `.claude/skills/` y `.claude/rules/` igual que Claude Code. Hooks
 | Step 0 | Skill `@import` mec. N | Identico |
 | new/cleanup-session | Bash directo | Identico |
 
-## Reglas M1-M11 (vigentes)
+## Reglas M1-M14 (vigentes — M12/M13/M14 cementados v2 2026-05-18)
 
 | # | Regla |
 |---|---|
-| M1 | Sesiones paralelas usan branches DISTINTOS. Dos sesiones NO comparten branch activo (git lo bloquea por diseño). |
+| M1 | Sesiones paralelas usan branches DISTINTOS — EXCEPTO sesiones paralelas en MISMO canónico (mismo cwd + mismo branch wip/{brand}) con lock por bucket. Ver M14. |
 | M2 | SSoT (`learnings.md`, BACKLOG, MEMORY, PORTFOLIO) SOLO `/pm-{brand}` o `/pm-luana`. Builders nunca. |
 | M3 | Tests/Docker/migrations SECUENCIAL por brand. Max 1 stack docker por brand vivo (D5). |
 | M4 | Claim by commit: `/pm-{brand}` cambia state en checkpoint.md + commit/push inmediato pre-claim. |
@@ -117,17 +117,67 @@ opencode honra `.claude/skills/` y `.claude/rules/` igual que Claude Code. Hooks
 | M6 | Bootstrap PM pregunta story activa antes proceder. |
 | M7 | Subagentes paths PRIMARIOS story + read all + extend-no-destroy archivos ajenos. |
 | M8 | Tocar archivos otra sesion OK si entiendes leyendo + extend/append no replace + STOP si rompe. |
-| M9 | Sub-agents con worktree isolation efimero responsable de cleanup del worktree efimero que crean. |
+| M9 | **REVOCADA v2 2026-05-18:** Sub-agents NO crean worktrees. Trabajan in-place sobre cwd del caller (ver § Sub-agent worktree ban). |
 | M10 | branches `wip/*` son autosave. Push frecuente (M11) garantiza recovery ante crash. NO stash > 30 min. |
 | M11 | NUNCA pasar >30 min sin push si hay cambios significativos. Push activa `ci-wip.yml`. |
+| **M12** | **Canónico = `wip/{brand}` ESTABLE** (NO rota story-by-story). Stories se trabajan EN ESA branch. Worktree story efímero SOLO por pedido explícito user (`EXPLICIT_USER_REQUEST=1`). |
+| **M13** | **Scope per branch enforced** (pre-commit Section 13). `wip/{brand}` SOLO toca `{brand}/**` + raíz brand-agnostic. `wip/protocol-*` SOLO toca modelo. `wip/core-*` SOLO toca engine. Cross-brand mixing PROHIBIDO. |
+| **M14** | **N sesiones mismo cwd permitido** (canónico) con lock por bucket: code / docs / tests. Lock auto-acquire por skill `/pm-{brand}` step 0 (`scripts/git/session-lock.sh`). |
 
-## Inicio de conversacion (branch check)
+## Sub-agent worktree ban (cementado 2026-05-18 v2 — supersedes M9 original)
+
+Sub-agents NUNCA crean worktree. Trabajan in-place sobre el `cwd` del caller.
+
+- ❌ **PROHIBIDO:** `isolation: "worktree"` en frontmatter de cualquier sub-agent (Architect, Auditor, Builder, Explore, etc.)
+- ❌ **PROHIBIDO:** `git worktree add` desde código/scripts ejecutados por sub-agent
+- ✅ **PERMITIDO:** caller (Chris) crea worktree explícito vía `scripts/git/new-session.sh`
+- ✅ **PERMITIDO:** sub-agents write directo sobre `cwd` del caller (Architect/Auditor son "los jefes", trabajan sobre el código real)
+
+**Justificación:** caso vitalia 2026-05-18 — sub-agent creó worktree fantasma `luana-vitalia-infra-cross-cutting` que nunca cleanup + sin manifest. Rama huérfana con commits valiosos casi se pierden.
+
+**Enforcement:**
+- Arch fitness test `scripts/test_no_subagent_worktree.sh` — grep `isolation:\s*['"]?worktree['"]?` en `.claude/agents/*.md` → fail si encuentra
+- Auditor checklist Cat 11 — verifica no creation de worktrees por sub-agent durante PR
+
+## Scope per branch (cementado 2026-05-18 v2 — M13)
+
+Pre-commit Section 13 enforce. Branch pattern → scope permitido/prohibido:
+
+| Branch pattern | Scope permitido | Scope prohibido |
+|---|---|---|
+| `wip/{brand}` | `{brand}/**` + raíz brand-agnostic (CLAUDE.md, AGENTS.md, scripts triviales) | otra-brand/**, core/luana-core-*/**, `.claude/{rules,skills}/`, `docs/{process,architecture}/`, `scripts/git/` |
+| `wip/{brand}-{story-id}` | mismo que `wip/{brand}` | mismo |
+| `wip/protocol-{slug}` | `docs/{process,architecture,specs}/`, `.claude/`, `scripts/` | brand/**, core/** |
+| `wip/core-{slug}` | `core/luana-core-*/**` + tests + lockfiles | brand/**, .claude/** |
+
+**Override:** `SCOPE_GATE_SKIP=1 git commit ...` (emergencias documentadas, auditor escruta razón).
+
+## N sesiones paralelas mismo cwd (cementado 2026-05-18 v2 — M14)
+
+Modelo v2 permite N sesiones Claude/opencode en MISMO canónico `~/Proyectos/luana-{brand}/` (mismo branch `wip/{brand}`), coordinadas por **buckets de scope**:
+
+| Bucket | Paths permitidos |
+|---|---|
+| `code` | `{brand}/{backend,frontend}/src/**` |
+| `docs` | `{brand}/docs/**` + raíz docs/ |
+| `tests` | `{brand}/{backend,frontend}/tests/**` |
+
+**Lock mechanism:** `~/Proyectos/luana-{brand}/.session-locks/{bucket}.lock` con PID + skill + timestamp. Auto-cleanup si PID ya no corre.
+
+**Caso de uso típico:** Chris quiere refinar specs (`docs`) en paralelo a una sesión `/dev-team` activa (`code`). Abre otra ventana terminal en mismo cwd, otra invocación skill, lock `docs` libre → proceed.
+
+**Commits:** cada sesión stagea por nombre exacto, commits separados al mismo branch. Push intercalados sin conflict porque scope físicamente disjunto.
+
+## Inicio de conversacion (branch check + sync activo v2)
 
 ```bash
 git status --short && git branch --show-current && git log --oneline -3
 git worktree list
-scripts/git/status-all.sh     # dashboard cross-worktree (mec. H)
+scripts/git/status-all.sh                    # dashboard cross-worktree (mec. H)
+scripts/git/sync-from-main.sh --check        # sync KISS v2 — solo reportar (no integra)
 ```
+
+Step 0 skill (`/pm-{brand}` o `/pm-luana`) ejecuta `sync-from-main.sh` activo si tree clean (auto-merge si limpio, prompt si conflict).
 
 - Branch `wip/*` o `hotfix/*` o `exp/*` o `wip/core-*` limpio en worktree dedicado → proceder
 - Branch `main` en `~/Proyectos/luana-platform/` (principal) → OK para merges, NO codigo brand

@@ -52,14 +52,31 @@ if [[ "${BEHIND}" -gt 0 ]]; then
   CORE_TOUCHED="$(git diff HEAD..origin/main --name-only 2>/dev/null | grep -cE '^core/luana-core-[^/]+/src/' || echo 0)"
   DEPS_TOUCHED="$(git diff HEAD..origin/main --name-only 2>/dev/null | grep -cE 'core/luana-core-[^/]+/(pyproject\.toml|package\.json)$' || echo 0)"
   echo ""
-  echo "⚠ origin/main adelantó ${BEHIND} commits desde tu HEAD"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "  PUSH BLOCKED (v2 sync KISS cementado 2026-05-18) — rama behind main"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo ""
+  echo "Estado: ${BEHIND} commits behind origin/main"
   if [[ "${CORE_TOUCHED}" -gt 0 ]]; then
     echo "  ⚠ ${CORE_TOUCHED} archivos en core/luana-core-*/src/ cambiaron"
   fi
   if [[ "${DEPS_TOUCHED}" -gt 0 ]]; then
     echo "  ⚠ deps changed → considerá 'uv sync' (Python) o 'pnpm install' (TS)"
   fi
-  echo "  Recomendado antes de push: git fetch origin main && git merge origin/main"
+  echo ""
+  echo "Acción requerida ANTES de push (regla v2 D10):"
+  echo "  scripts/git/sync-from-main.sh"
+  echo ""
+  echo "Override (emergencias documentadas):"
+  echo "  PUSH_WIP_SKIP_SYNC=1 scripts/git/push-wip.sh ${TARGET}"
+  echo ""
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+  if [[ "${PUSH_WIP_SKIP_SYNC:-0}" != "1" ]]; then
+    exit 1
+  fi
+  echo ""
+  echo "  ⚠ Override PUSH_WIP_SKIP_SYNC=1 — proceeding pero riesgo conflict a tu cargo"
   echo ""
 fi
 

@@ -151,11 +151,26 @@ if [[ "${BRAND}" = "core" ]]; then
 else
   case "${TYPE}" in
     canonical)
-      BRANCH="wip/${BRAND}-${SLUG}"
+      # v2 cementado 2026-05-18: canónico = wip/{brand} ESTABLE (NO rota story-by-story).
+      # SLUG es ignorado para canónico. Si already exists → refuse + advise.
+      BRANCH="wip/${BRAND}"
       WORKTREE_DIR="${WORKTREE_PARENT}/luana-${BRAND}"
       WORKTREE_TYPE="canonical"
+      if [[ -n "${SLUG}" ]] && [[ "${SLUG}" != "${BRAND}" ]]; then
+        echo "⚠ TYPE=canonical: SLUG '${SLUG}' ignored (v2 modelo: canónico siempre wip/${BRAND})"
+      fi
+      SLUG="${BRAND}"
       ;;
     story)
+      # v2 cementado 2026-05-18: worktree story SOLO por pedido EXPLÍCITO del user.
+      # Skills (PM/dev-team/auditor) NO crean story worktrees automático.
+      # Para confirmar intención humana: requiere --explicit-user-request flag.
+      if [[ "${EXPLICIT_USER_REQUEST:-0}" != "1" ]]; then
+        echo "::error::TYPE=story requiere EXPLICIT_USER_REQUEST=1 (v2 modelo, evita auto-creates)"
+        echo "  Pedido del user esperado: 'creá worktree story para X' antes de invocar."
+        echo "  Usage: EXPLICIT_USER_REQUEST=1 scripts/git/new-session.sh ${BRAND} story ${SLUG}"
+        exit 1
+      fi
       if [[ -n "${LANE}" ]]; then
         BRANCH="wip/${BRAND}-${SLUG}-${LANE}"
         WORKTREE_DIR="${WORKTREE_PARENT}/luana-${BRAND}-${SLUG}-${LANE}"

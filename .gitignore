@@ -118,3 +118,9 @@ guestly/.env.dev
 guestly/.env.prod
 fitflow/.env.dev
 fitflow/.env.prod
+
+# v2 worktree protocol — session locks per worktree (M14 N sesiones mismo cwd)
+.session-locks/
+
+# v2 worktree protocol — session log per canonical worktree (step-0 #12)
+.session-log

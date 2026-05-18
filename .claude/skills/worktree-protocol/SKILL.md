@@ -5,10 +5,25 @@ description: "Consulta + troubleshoot + modificación del modelo multi-sesión w
 
 # Worktree Protocol — punto único de consulta + troubleshoot + modificación
 
+> **★ v2 cementado 2026-05-18 PM:** modelo actualizado con 5 CORE changes + 7 refinements. Ver `docs/process/worktree-protocol-v2-plan.md` para SSoT del rediseño. Cambios principales: canónico estable `wip/{brand}` (no rota), sync KISS activo, sub-agent worktree ban, scope per branch, N sesiones mismo cwd con lock buckets.
+>
 > Skill consultable de todo el modelo multi-sesión worktree-based de Luana.
 > Vivo, no estático: cuando algo no funciona o querés cambiar una regla, **arrancá aquí**.
 >
 > **Modo conversacional:** preguntá específicamente qué necesitás (troubleshoot / explicar / modificar / cheatsheet). Skill carga el contexto mínimo relevante on-demand.
+
+## v2 cheatsheet (lo nuevo)
+
+| Caso | Comando |
+|---|---|
+| Sync mi wip con main | `scripts/git/sync-from-main.sh` |
+| Solo chequear sync (no integrar) | `scripts/git/sync-from-main.sh --check` |
+| Acquire bucket lock (sesión paralela mismo cwd) | `scripts/git/session-lock.sh acquire {code\|docs\|tests} {skill-name}` |
+| Release bucket lock | `scripts/git/session-lock.sh release {bucket}` |
+| Ver buckets ocupados | `scripts/git/session-lock.sh status` |
+| Kick lock (PID crashed) | `scripts/git/session-lock.sh kick {bucket}` |
+| Crear worktree story EXPLÍCITO (v2 requiere flag) | `EXPLICIT_USER_REQUEST=1 scripts/git/new-session.sh {brand} story {story-id}` |
+| Push bloqueado por behind main | `scripts/git/sync-from-main.sh` primero, luego `scripts/git/push-wip.sh` |
 
 ## SSoTs del modelo (jerarquía cementada)
 

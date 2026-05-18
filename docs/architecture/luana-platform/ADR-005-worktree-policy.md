@@ -168,3 +168,54 @@ Status: rejected en D10. Sólo FF puro silent; merge real requiere prompt (riesg
 Cuando aparezca el primer caso real de checkpoint mid-story → codificar lessons en `scripts/git/checkpoint-merge.sh` o extender `cleanup-session.sh`. Hasta entonces, procedimiento manual documentado en D11.
 
 Cuando bootstrap brands futuras (saasora, inmoflow, retailly, fixia, guestly, fitflow) → actualizar lista de brands válidas en `new-session.sh`, `step-0-worktree.md`, `status-all.sh`, y `docs/portfolio/PORTFOLIO.md` en mismo commit.
+
+---
+
+## 7. Addendum v2 (cementado 2026-05-18 PM — caso vitalia desorden)
+
+### 7.1 Trigger del addendum
+
+Caso vitalia 2026-05-18 reveló 4 gaps del modelo v1:
+
+1. **Canónico rotaba branch story-by-story** (D2/D3 v1) → manifest se desactualizó, branch real ≠ manifest.branch, acumuló cross-brand mixing (vitalia + comunify + modelo en `wip/vitalia-slice-1-shipping`).
+2. **Sub-agents creaban worktrees** (M9 v1) → fantasma `luana-vitalia-infra-cross-cutting` sin cleanup + sin manifest + casi pierde commits valiosos.
+3. **Sync D10 v1 pasivo** (advisory only) → permitía trabajar sobre código viejo + cherry-pick comunify funcionó "by luck" (sin overlap).
+4. **No había modo "N sesiones mismo cwd"** → forzaba worktree extra para sesión docs paralela a dev activa.
+
+### 7.2 Decisiones v2 (supersedes parcial de v1)
+
+| Decisión v2 | Supersedes v1 |
+|---|---|
+| **Canónico = `wip/{brand}` ESTABLE** (NUNCA rota story-by-story) | D2/D3 v1 (rota por story) |
+| **Sync KISS activo** (auto-merge si limpio, BLOCK push si behind) | D10 v1 (advisory pasivo) |
+| **Sub-agent worktree BAN total** (trabajan in-place sobre cwd caller) | M9 v1 (sub-agent responsable cleanup) |
+| **Scope per branch enforced** (pre-commit Section 13 NEW) | (no había) |
+| **N sesiones paralelas mismo cwd con lock buckets** (M14 NEW) | D9 v1 (1 sesión por worktree) |
+| **Worktree story explicit user-only** (`EXPLICIT_USER_REQUEST=1`) | D2 v1 (skills creaban auto) |
+
+### 7.3 Implementación
+
+| Componente | Cambio | Path |
+|---|---|---|
+| Protocol doc | Update D2/D3/D4 + revision header v2 | `docs/process/parallel-sessions-protocol.md` |
+| Plan doc | Resumen ejecutivo 12 puntos | `docs/process/worktree-protocol-v2-plan.md` |
+| Runtime rule | M12/M13/M14 NEW + sub-agent ban + N sesiones | `.claude/rules/parallel-safety.md` |
+| Hook scope gate | Section 13 NEW | `scripts/git-hooks/pre-commit` |
+| Sync script | NEW | `scripts/git/sync-from-main.sh` |
+| Push gate | BLOCK si behind main | `scripts/git/push-wip.sh` |
+| Session script | TYPE=canonical sin SLUG, TYPE=story requiere flag | `scripts/git/new-session.sh` |
+
+### 7.4 Migration vitalia/nicolify/comunify
+
+- **vitalia:** rebrand `wip/vitalia-slice-1-shipping → wip/vitalia` estable en mismo cement-PR (squash-merge previo a main de 27 commits propios + 3 cherry-pick fantasma).
+- **nicolify:** rebrand `wip/nicolify-bootstrap → wip/nicolify` (commit pendiente único f6d366c ya en main vía cherry-pick).
+- **comunify:** rebrand `wip/comunify-bootstrap → wip/comunify` (sin trabajo pendiente).
+- **Fantasma `wip/vitalia-infra-cross-cutting`:** eliminado worktree + branch local + remote.
+
+### 7.5 Verificación cementación v2
+
+```bash
+git worktree list                    # 4 canónicos en wip/{brand} + 1 platform en main
+scripts/git/sync-from-main.sh --check  # all canónicos: "up-to-date"
+scripts/git-hooks/pre-commit         # Section 13 enforcement activo
+```

@@ -1,15 +1,21 @@
 <!-- voseo-allowed: internal process documentation for Chris, not user-facing -->
 
-# Parallel Sessions Protocol (worktree-based)
+# Parallel Sessions Protocol (worktree-based) — v2 cementado 2026-05-18 PM
 
-> **Status:** cemented (2026-05-18 post temas #5-#8 ratificados por Chris).
-> **ADR asociado:** `docs/architecture/luana-platform/ADR-005-worktree-policy.md`
-> **Runtime rule:** `.claude/rules/parallel-safety.md` (sincronizada con este doc al cementar).
+> **★ v2 Revision (2026-05-18 PM — post caso vitalia desorden):**
 >
-> **Supersedes:** contenido pre-2026-05-17 (modelo single-branch `development` + ban worktrees). El ban fue revocado en ADR-004 2026-05-15. Este doc + ADR-005 captura el modelo nuevo.
+> Actualizado D2/D3/D4/D9/D10 al modelo v2:
+> - **Canónico estable** `wip/{brand}` (NO rota story-by-story) — supersedes D2/D3
+> - **Sync KISS activo** — supersedes D10 (auto-merge si limpio, BLOQUEA push si behind)
+> - **Sub-agent worktree BAN** — revoca M9 original
+> - **Scope per branch enforced** (pre-commit Section 13)
+> - **N sesiones mismo cwd** con lock por bucket — D9-bis NEW
 >
+> SSoT detalle: `docs/process/worktree-protocol-v2-plan.md`. Runtime: `.claude/rules/parallel-safety.md` M12/M13/M14.
+>
+> **Status:** v2 cemented (2026-05-18 PM). v1 cemented por la mañana es supersedido en las secciones marcadas.
+> **ADR asociado:** `docs/architecture/luana-platform/ADR-005-worktree-policy.md` (con addendum v2).
 > **Owner:** `/pm-luana` (alias `/pm`). Aplica a todas las brands y opencode.
->
 > **Cambios futuros:** requieren ADR addendum + bump revision en frontmatter del doc + sync `parallel-safety.md`.
 
 ---
@@ -36,19 +42,21 @@
 | Path | Tipo | Branch | Editar código? | Vida |
 |---|---|---|---|---|
 | `~/Proyectos/luana-platform/` | Principal | `main` | ❌ NO (solo merges + lectura cross-brand) | Permanente |
-| `~/Proyectos/luana-{brand}/` | Canónico long-lived | rota `wip/{brand}-*` según story activa | ✅ SÍ (1 sesión a la vez) | Semanas/meses |
-| `~/Proyectos/luana-{brand}-{slug}/` | Efímero | `wip/{brand}-{slug}` único | ✅ SÍ (sesión paralela adicional de la misma brand) | Días (mientras dure la story) |
+| `~/Proyectos/luana-{brand}/` | Canónico long-lived | **`wip/{brand}` ESTABLE** (v2 — NUNCA rota) | ✅ SÍ (N sesiones paralelas mismo cwd con lock buckets — M14) | Permanente |
+| `~/Proyectos/luana-{brand}-{story-id}/` | Efímero story | `wip/{brand}-{story-id}` único | ✅ SÍ (sesión paralela adicional explícita user — `EXPLICIT_USER_REQUEST=1`) | Días (mientras dure la story) |
+| `~/Proyectos/luana-protocol-{slug}/` | Efímero modelo | `wip/protocol-{slug}` | ✅ SÍ (rediseños modelo/skills/scripts) | Días |
 
 ### D3. Naming convention
 
 | Tipo | Branch pattern | Worktree path |
 |---|---|---|
-| Canónico long-lived | rota `wip/{brand}-{slug}` según story activa | `~/Proyectos/luana-{brand}/` |
-| Story estándar (efímero) | `wip/{brand}-{story-id}` | `~/Proyectos/luana-{brand}-{story-id}/` |
-| Story multi-lane (paralelo dentro de misma story) | `wip/{brand}-{story-id}-{lane}` | `~/Proyectos/luana-{brand}-{story-id}-{lane}/` |
+| Canónico long-lived (v2 — ESTABLE) | `wip/{brand}` único per brand | `~/Proyectos/luana-{brand}/` |
+| Story estándar (efímero, explicit user) | `wip/{brand}-{story-id}` | `~/Proyectos/luana-{brand}-{story-id}/` |
+| Story multi-lane (raro) | `wip/{brand}-{story-id}-{lane}` | `~/Proyectos/luana-{brand}-{story-id}-{lane}/` |
 | Hotfix sin story formal | `hotfix/{brand}-{slug-corto}` | `~/Proyectos/luana-{brand}-hotfix-{slug-corto}/` |
 | Experimento / spike | `exp/{brand}-{slug-corto}` | `~/Proyectos/luana-{brand}-exp-{slug-corto}/` |
 | Lift core / cambio engine (D12) | `wip/core-{slug}` | `~/Proyectos/luana-core-{slug}/` |
+| Rediseño modelo/skills/scripts (v2 — NEW) | `wip/protocol-{slug}` | `~/Proyectos/luana-protocol-{slug}/` |
 | Integración estable | `main` (única) | `~/Proyectos/luana-platform/` |
 | Producción brand-específica | `release/{brand}-vX.Y.Z` | (CI/CD, no worktree local) |
 
