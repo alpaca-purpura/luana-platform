@@ -1,9 +1,9 @@
 # docs/product/BACKLOG.yaml — auto-generated SSoT machine-readable
 # DO NOT EDIT MANUALLY — modify source artifacts instead.
 # Regenerate: python scripts/generate_backlog.py
-# Generated at: 2026-05-18T16:53:13+00:00
+# Generated at: 2026-05-18T18:28:54+00:00
 
-generated_at: '2026-05-18T16:53:13+00:00'
+generated_at: '2026-05-18T18:28:54+00:00'
 brand: vitalia
 caps:
   refining_max: 3
@@ -243,29 +243,7 @@ buckets:
       priority_override: null
       audit_iterations: 0
   developed: []
-  reviewing:
-  - id: vitalia-slice-1-infra-cross-cutting
-    kind: story
-    state: reviewing
-    title: vitalia-slice-1-infra-cross-cutting
-    tags: []
-    last_touched: 2026-05-18
-    extra:
-      outcome: vitalia-mvp-ui-foundation
-      phase: AWAIT_SIBLING_STORY_CLOSURE
-      next_action: '★ AUDITOR APPROVED + MERGE DEFERRED 2026-05-18 (Chris ratificó Opción C — cero acción irreversible esta
-        sesión). Story queda state=reviewing + phase=AWAIT_SIBLING_STORY_CLOSURE + ready_to_merge:true. Branch wip/vitalia-infra-cross-cutting
-        con commit 9d79d50 (close audit cycle docs) pusheado a origin. ARTEFACTOS COMPLETOS: CONTEXT-BRIEF + 10 reviews APPROVED
-        + CHECKPOINTS 27/27 ✅ + 07-merge.md + gherkin-matrix.md exempt + 8 capability YAMLs + 5 nuevos modules MD + reconcile_capabilities
-        PASS. PRÓXIMA SESIÓN /pm-vitalia debe: (1) verificar status de sibling story vitalia-copilot-tools-impl (state=developing,
-        defer_audit:true, blocks_on:this), (2) cuando copilot-tools-impl cierre (audit o abandon ratificado), decidir squash-merge
-        consolidado a main respetando 07-merge.md §5 squash-merge guidance (Opción A cherry-pick selectivo o Opción B squash+reset
-        selectivo), (3) post-merge: archive story → vitalia/docs/archive/2026/stories/, (4) ping /pm-luana con 2 promotion
-        candidates (PhiRepositoryBase + idempotent_cron) en learnings, (5) cleanup worktree limpio + branch wip/vitalia-infra-cross-cutting,
-        (6) state=reviewing→done.'
-      blocked_by: null
-      priority_override: null
-      audit_iterations: 0
+  reviewing: []
   done: []
   parked: []
   dropped: []

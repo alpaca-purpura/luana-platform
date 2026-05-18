@@ -46,12 +46,12 @@
 
 > Patrones brand candidatos a lift a luana-core. Lifecycle: proposed → under_review → accepted/rejected → migrated.
 
-- **Open:** 0 (proposed: 0, under_review: 0, accepted: 0)
-- **Migrated:** 4
+- **Open:** 1 (proposed: 1, under_review: 0, accepted: 0)
+- **Migrated:** 6
 - **Rejected (archive):** 0
 
 Ver [docs/promotion-protocol/proposals/](../promotion-protocol/proposals/).
 
 ---
 
-**Última regen:** 2026-05-17 (auto via `make portfolio`).
+**Última regen:** 2026-05-18 (auto via `make portfolio`).

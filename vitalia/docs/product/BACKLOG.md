@@ -1,6 +1,6 @@
 # Vitalia Backlog (auto-generated)
 
-> Generated at: `2026-05-18T16:53:13+00:00`
+> Generated at: `2026-05-18T18:28:54+00:00`
 > DO NOT EDIT MANUALLY — modify source artifacts.
 > Regenerate: `python scripts/generate_backlog.py`
 
@@ -35,8 +35,8 @@
 ### 🧪 Developed — esperando QA (0 / cap 10)
 - _(none)_
 
-### 🔍 Reviewing (1 / cap 2)
-- vitalia-slice-1-infra-cross-cutting
+### 🔍 Reviewing (0 / cap 2)
+- _(none in review)_
 
 ### Recently shipped (last 90d, 0 items)
 - _(none recent)_
@@ -68,8 +68,7 @@ kanban
   🔨 Developing (1 / cap 3)
     vitalia-copilot-tools-impl[vitalia-copilot-tools-impl]
   🧪 Developed (0 / cap 10)
-  🔍 Reviewing (1 / cap 2)
-    vitalia-slice-1-infra-cross-cu[vitalia-slice-1-infra-cross-cutting]
+  🔍 Reviewing (0 / cap 2)
   ✅ Done (0 / 90d rolling)
   🅿 Parked (0)
 ```

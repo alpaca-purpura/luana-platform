@@ -3,8 +3,8 @@ brand: vitalia
 story_id: vitalia-slice-1-infra-cross-cutting
 outcome: vitalia-mvp-ui-foundation
 parent_spec: vitalia-ux-discovery
-state: reviewing
-phase: AWAIT_SIBLING_STORY_CLOSURE
+state: done
+phase: CLOSED
 last_artifact: 07-merge.md (5 secciones cementadas, ready package complete)
 gherkin_matrix: 06-audit/gherkin-matrix.md
 last_modified: 2026-05-18
@@ -12,8 +12,11 @@ dev_team_started_at: 2026-05-18
 auditor_completed_at: 2026-05-18
 merge_deferred_at: 2026-05-18
 merge_deferred_by: chris (via /pm-vitalia close-properly session)
-merge_deferred_reason: "Squash-merge a main pospuesto hasta cerrar también la sibling story vitalia-copilot-tools-impl (state=developing, defer_audit:true, blocks_on:vitalia-slice-1-infra-cross-cutting). Branch wip/vitalia-infra-cross-cutting contiene 6 commits de copilot-tools-impl (3adea2c..21f57a4) mezclados (porque fue creado desde wip/vitalia-slice-1-shipping HEAD que hospedaba ambas stories pre story-closure-gate decreto 2026-05-18). Estrategia merge consolidado decidida cuando ambas stories cierren — evita acción irreversible aislada. Story queda ready_to_merge pendiente coordinación con sibling story."
-ready_to_merge: true
+merge_deferred_reason: "RESOLVED 2026-05-18 — Squash-merge consolidados ejecutados sin esperar sibling (deadlock circular: copilot-tools-impl blocks_on infra mientras infra esperaba copilot-tools-impl). Chris ratificó break del deadlock via /pm-vitalia: cerrar infra primero (estado APPROVED + 07-merge.md cementado) y permitir que copilot-tools-impl retome en sesión fresca post-merge. Squashes 50143d5 (BLOQUE B 10 tickets infra + story-closure-gate L1-3 + BLOQUE C 4 tickets copilot-tools BE) + cc4fcd6 (story-closure-gate L4-5 + 3 cherry-picked infra-fix + capability inventory + 07-merge) ya en main."
+merged_to_main_at: 2026-05-18
+merged_via_squashes: [50143d57, cc4fcd68]
+closed_at: 2026-05-18
+ready_to_merge: completed
 
 # ★ Story closure gate defer_audit (cement 2026-05-18 — LIFTED 2026-05-18)
 defer_audit: false
@@ -42,7 +45,7 @@ blocker_dependencies: []
 side_story_blockers: []
 priority: critical
 estimated_dev_weeks: 1
-next_action: "★ AUDITOR APPROVED + MERGE DEFERRED 2026-05-18 (Chris ratificó Opción C — cero acción irreversible esta sesión). Story queda state=reviewing + phase=AWAIT_SIBLING_STORY_CLOSURE + ready_to_merge:true. Branch wip/vitalia-infra-cross-cutting con commit 9d79d50 (close audit cycle docs) pusheado a origin. ARTEFACTOS COMPLETOS: CONTEXT-BRIEF + 10 reviews APPROVED + CHECKPOINTS 27/27 ✅ + 07-merge.md + gherkin-matrix.md exempt + 8 capability YAMLs + 5 nuevos modules MD + reconcile_capabilities PASS. PRÓXIMA SESIÓN /pm-vitalia debe: (1) verificar status de sibling story vitalia-copilot-tools-impl (state=developing, defer_audit:true, blocks_on:this), (2) cuando copilot-tools-impl cierre (audit o abandon ratificado), decidir squash-merge consolidado a main respetando 07-merge.md §5 squash-merge guidance (Opción A cherry-pick selectivo o Opción B squash+reset selectivo), (3) post-merge: archive story → vitalia/docs/archive/2026/stories/, (4) ping /pm-luana con 2 promotion candidates (PhiRepositoryBase + idempotent_cron) en learnings, (5) cleanup worktree limpio + branch wip/vitalia-infra-cross-cutting, (6) state=reviewing→done."
+next_action: "★ CLOSED 2026-05-18 — state=done. Squashes 50143d57 + cc4fcd68 ya en main (verified). Story folder archived → vitalia/docs/archive/2026/stories/vitalia-slice-1-infra-cross-cutting/ (snapshot inmutable). 8 capability YAMLs en `vitalia/docs/product/capabilities/` (compliance/iam/crm/observability/workers/connections/platform·2) — granularidad agregada vs 16 micro-caps. 7 modules MD auto-list refreshed. 2 promotion candidates writeable a /pm-luana via learnings: 2026-05-18-phi-repository-base.md + 2026-05-18-idempotent-cron-pattern.md (both promotable: candidate, threshold lift 2 brands). Outcome vitalia-mvp-ui-foundation actualiza listas. Sibling vitalia-copilot-tools-impl ahora puede retomarse en worktree fresco (4/10 tickets ya pushed BE; 6 remaining son AGENTIC Opus R23). Stories refined Slice 1 (onboarding-wizard, inbox, pipeline, agenda, fidelizacion, marketing) DESBLOQUEADAS para /architect run cuando Chris lo decida."
 ---
 
 # vitalia-slice-1-infra-cross-cutting — checkpoint

@@ -2,42 +2,43 @@
 brand: vitalia
 vertical: "Salud + Bienestar"
 status: shipped
-last_updated: 2026-05-17
-slice_1_status: kicked-off  # Fase 0 + Fase A done; Fase B refining in progress 3 side stories awaiting Chris ratification
+last_updated: 2026-05-18
+slice_1_status: infra-done  # Fase 0 + Fase A done · Fase B refining 3 side stories · Fase C ready · Fase D developing + infra DONE (squashes 50143d57 + cc4fcd68 merged main) · 6 stories refined UNBLOCKED
 active_outcomes:
   - dev-environment-multibrand     # receta vitalia shipped, cross-brand replicación pendiente nicolify/comunify/lupulo
   - vitalia-mvp-ui-foundation      # outcome maestro Slice 1/2/3 FE Vitalia MVP
 active_stories:
   - vitalia-ux-discovery                   # state: ready (READY_PACKAGE_CLOSED_AND_SPLIT) — /architect produjo package 2026-05-17 · split aceptado Chris en 7 sub-stories
-  - vitalia-slice-1-infra-cross-cutting    # state: developed + defer_audit:true (★ 10 tickets pushed 2026-05-18 · session-split detectado · 1 FE arch FAIL FE-A1 hardcoded colors · audit_pending_actions documentados · resume worktree limpio sesión nueva)
-  - vitalia-slice-1-onboarding-wizard      # state: refined (blocked by infra + copilot-tools-impl)
-  - vitalia-slice-1-inbox                  # state: refined (blocked by infra)
-  - vitalia-slice-1-pipeline               # state: refined (blocked by infra + payment-adapter-mvp + copilot-tools-impl)
-  - vitalia-slice-1-agenda                 # state: refined (blocked by infra + payment-adapter-mvp + fiscal-emission-pe)
-  - vitalia-slice-1-fidelizacion           # state: refined (blocked by infra)
-  - vitalia-slice-1-marketing              # state: refined (blocked by infra + copilot-tools-impl)
+  - vitalia-slice-1-onboarding-wizard      # state: refined (UNBLOCKED post infra merge — sub-blocker copilot-tools-impl pending 6 agentic tickets)
+  - vitalia-slice-1-inbox                  # state: refined (UNBLOCKED post infra merge — ready /architect)
+  - vitalia-slice-1-pipeline               # state: refined (UNBLOCKED post infra merge — sub-blockers payment-adapter-mvp + copilot-tools-impl)
+  - vitalia-slice-1-agenda                 # state: refined (UNBLOCKED post infra merge — sub-blockers payment-adapter-mvp + fiscal-emission-pe)
+  - vitalia-slice-1-fidelizacion           # state: refined (UNBLOCKED post infra merge — ready /architect)
+  - vitalia-slice-1-marketing              # state: refined (UNBLOCKED post infra merge — sub-blocker copilot-tools-impl)
   - vitalia-pricing-decision               # state: idea (spawned 2026-05-17, decisión Chris postergada)
   - vitalia-payment-adapter-mvp            # state: refining (transitioned 2026-05-17 sesión close-slice-1, awaiting /po draft)
-  - vitalia-copilot-tools-impl             # state: developing + defer_audit:true (★ session-split 2026-05-18 — 4/10 tickets pushed BE migrations+services en worktree wip/vitalia-slice-1-shipping compartido violando 1-story-per-worktree · audit_pending_actions documentados · Chris decide rewind o continue en sesión nueva)
+  - vitalia-copilot-tools-impl             # state: developing + defer_audit:true (4/10 tickets pushed BE — 6 remaining agentic Opus R23 retoma sesión fresca post-infra-merge)
+  - vitalia-fiscal-emission-pe             # state: refining (transitioned 2026-05-17, awaiting /po draft)
 deferred_audits:                           # ★ Story closure gate visibility (cement 2026-05-18)
-  - story_id: vitalia-slice-1-infra-cross-cutting
-    state: developed
-    reason: "1 FE arch FAIL FE-A1 hardcoded colors detected pragmatic Opus audit + session-split worktree wip/vitalia-slice-1-shipping"
-    pending_until: 2026-05-25
-    next_owner: /pm-vitalia + /auditor + /dev-team (new session)
-    findings_snapshot: vitalia/docs/product/stories/vitalia-slice-1-infra-cross-cutting/06-audit/baseline-snapshot-2026-05-18.md
   - story_id: vitalia-copilot-tools-impl
     state: developing
-    reason: "Session-split arrancada incorrectamente en worktree compartido — 4/10 tickets pushed BE · 6 remaining agentic Opus required"
+    reason: "4/10 BE tickets pushed via squashes 50143d57 + cc4fcd68 · 6 remaining son AGENTIC Opus R23 (T-ag-tools-1..3 + T-ag-workflows-1..2 + T-ag-evals-1) · retoma sesión fresca con worktree limpio wip/vitalia-copilot-tools-impl. Blocker original vitalia-slice-1-infra-cross-cutting → done (resuelto 2026-05-18)."
     pending_until: 2026-05-25
     next_owner: /pm-vitalia + /dev-team (new session)
-    blocks_on: vitalia-slice-1-infra-cross-cutting
-  - vitalia-fiscal-emission-pe             # state: refining (transitioned 2026-05-17, awaiting /po draft)
+    blocks_on: null  # infra-cross-cutting → done 2026-05-18
 ratified_promotion_proposals:              # APPROVED + migrated 2026-05-17 (commit 5ca6101) — unblocks T-be-migration-014/T-be-migration-015
   - docs/promotion-protocol/proposals/2026-05-17-platform-tenants-location-columns.md      # state: migrated (luana-core-platform 0.1.0→0.2.0)
   - docs/promotion-protocol/proposals/2026-05-17-offer-studio-multi-session-maintenance.md # state: migrated (luana-core-offer-studio 0.1.0→0.2.0)
+promotion_candidates:                      # ★ Pending ping /pm-luana (cement 2026-05-18)
+  - learning_path: vitalia/docs/learnings/2026-05-18-phi-repository-base.md
+    pattern: PhiRepositoryBase → CompoundScopeRepositoryBase (lift candidate)
+    threshold: 2 brands (vitalia first, fitflow/comunify probable second)
+  - learning_path: vitalia/docs/learnings/2026-05-18-idempotent-cron-pattern.md
+    pattern: idempotent_cron decorator → core/luana-core-platform/workers/ (lift candidate)
+    threshold: 2 brands (vitalia first, nicolify proposal_followup_72h probable second)
 recently_done:
-  - vitalia-dev-stack-functional   # 2026-05-17T17:00 cerrada refining→done · receta 12 pasos en archive/2026/stories/vitalia-dev-stack-functional/07-merge.md
+  - vitalia-slice-1-infra-cross-cutting  # 2026-05-18 cerrada reviewing→done · squashes 50143d57 + cc4fcd68 mergeados main · 8 capability YAMLs live + 7 modules MD refreshed + 2 promotion candidates · archive/2026/stories/vitalia-slice-1-infra-cross-cutting/07-merge.md
+  - vitalia-dev-stack-functional         # 2026-05-17T17:00 cerrada refining→done · receta 12 pasos en archive/2026/stories/vitalia-dev-stack-functional/07-merge.md
 ssot_owner: /pm-vitalia
 ---
 
@@ -105,3 +106,12 @@ Story 11 (`luana-vitalia-bootstrap`, mergeada 2026-05-15) shipped **16 capabilit
     - Hooks + scripts: pre-commit Section 11 (bloquea stage files story B si story A developed/reviewing sin defer_audit) + new-session.sh `--story-id` flag + cleanup-session.sh refuse si state ≠ done
   - **Operational test pragmático Opus (commit 6)**: audit baseline snapshot de infra-cross-cutting reveló 1 FE arch FAIL real (FE-A1 hardcoded colors, 8 archivos: 3 production .tsx + 5 .stories.tsx Storybook). BE arch fitness 226/226 PASS limpio. → defer_audit ratificado en ambos checkpoints (infra + copilot) + baseline snapshot escrito en `vitalia/docs/product/stories/vitalia-slice-1-infra-cross-cutting/06-audit/baseline-snapshot-2026-05-18.md` + deferred_audits list NEW en este brand checkpoint con findings y next_owner = sesión nueva con worktree limpio.
   - **Resultado**: gate operacionalmente VALIDADO — detectó FAIL que /dev-team marcó GREEN, escape valve defer_audit funciona como diseñada, bootstrap pm-vitalia próxima sesión pingeará la deuda. Branch wip/vitalia-slice-1-shipping listo para squash-merge a main (cementa harness + WIP infra+copilot transparente con defer documentado). Próximo Chris: nueva sesión arranca worktree limpio per convention, resuelve audit_pending_actions de infra primero, después continue copilot worktree fresco.
+- **2026-05-18 sesión `/pm-vitalia close-infra` (este momento)**: Chris ratificó Opción A — cerrar formalmente `vitalia-slice-1-infra-cross-cutting` state reviewing→**done** sin esperar sibling copilot-tools-impl (deadlock circular roto). Pasos ejecutados:
+  - **Verificación diff main**: squashes `50143d57` (BLOQUE B 10 tickets infra + story-closure-gate L1-3 + BLOQUE C 4 tickets copilot-tools BE) + `cc4fcd68` (story-closure-gate L4-5 + 3 cherry-picked infra-fix FE-A1 hardcoded colors + capability inventory + 07-merge) ya en main desde wip/vitalia-slice-1-shipping. Código infra completo: 15 Alembic migrations idempotent + 5 Extension SDK registries + HIPAA-lite dual filter + audit log + pgcrypto + OTel + Sentry + ARQ cron + IAM + CRM scaffold + AppShell + Storybook + arch fitness ratchet baselines.
+  - **Capability inventory**: 8 capability YAMLs ya escritas (granularidad agregada vs 16 micro-caps planeadas): compliance/hipaa-lite-defensive-stack · iam/iam-scaffold-slice-1 · crm/crm-scaffold-slice-1 · observability/otel-sentry-graceful-degradation · workers/idempotent-cron-arq-scaffold · connections/registries-medical-vertical · platform/design-tokens-foundation · platform/migrations-slice-1-schema. Reconcile gate: `scripts/reconcile_capabilities.py --require-capabilities-exist --brand vitalia` PASS.
+  - **Modules MD refresh**: 7 modules auto-list actualizados (compliance · iam · crm · observability · workers · connections · platform) — 4 NEW módulos (iam, crm, observability, workers), 3 existing extended.
+  - **2 learnings promotables NEW** (cement 2026-05-18): `vitalia/docs/learnings/2026-05-18-phi-repository-base.md` (PhiRepositoryBase → CompoundScopeRepositoryBase lift candidate, applies fitflow/comunify/fixia/retailly/saasora) + `vitalia/docs/learnings/2026-05-18-idempotent-cron-pattern.md` (idempotent_cron decorator → core/luana-core-platform/workers/ lift candidate, applies a todas las 10 brands). Promotable: candidate ambas. Pending ping /pm-luana via `make scan-promotables`.
+  - **Story checkpoint + outcome update**: `vitalia-slice-1-infra-cross-cutting/checkpoint.md` state reviewing→done + merged_to_main_at + closed_at + merged_via_squashes. `vitalia/docs/product/outcomes/vitalia-mvp-ui-foundation.md` listas las 7 sub-stories del split + infra_done: true en slice_1.
+  - **Archive + portfolio**: story folder moved → `vitalia/docs/archive/2026/stories/vitalia-slice-1-infra-cross-cutting/` (snapshot inmutable). `make portfolio` regen BACKLOG.md + PORTFOLIO.md cross-brand.
+  - **Deadlock circular roto**: infra esperaba copilot-tools-impl mientras copilot-tools-impl blocked_on infra. Chris ratificó break — cerrar infra primero permite que copilot-tools-impl retome en sesión fresca post-merge sin estar bloqueado por infra audit. 6 stories refined Slice 1 (onboarding-wizard, inbox, pipeline, agenda, fidelizacion, marketing) DESBLOQUEADAS para /architect runs.
+  - **Próximo paso natural**: Chris decide cuál de las 6 stories refined entra a /architect primero (típicamente `vitalia-slice-1-inbox` o `vitalia-slice-1-fidelizacion` por ser las más auto-contenidas sin sub-blockers externos), o retoma `vitalia-copilot-tools-impl` en worktree fresco (6 tickets agentic Opus R23). Side stories refining `vitalia-payment-adapter-mvp` + `vitalia-fiscal-emission-pe` siguen esperando /po draft.
