@@ -1,0 +1,72 @@
+---
+capability_id: vitalia-design-tokens-foundation
+module: platform
+slug: design-tokens-foundation
+status: live
+date_introduced: 2026-05-18
+story_introduced: vitalia-slice-1-infra-cross-cutting
+package_version: 0.1.0
+package_path: vitalia/frontend/src/app
+license: proprietary
+---
+
+# vitalia-design-tokens-foundation
+
+Brand design system SSoT en `globals.css` con HSL CSS vars + Tailwind v4 + Shadcn pattern + vt-* utility classes. Architectural enforcement: zero hex/hsl literals en TSX files (arch test `test_no_hardcoded_colors.test.ts`).
+
+## Surface
+
+### `globals.css` (`vitalia/frontend/src/app/globals.css`)
+
+**Brand core HSL vars (5):**
+- `--vitalia-cian: 198 99% 49%` → #01B2F8 (hero, links, primary CTA, info, badges)
+- `--vitalia-purpura: 287 53% 37%` → #7B2D91 (acento secundario, hover, agent gradient stop)
+- `--vitalia-amarillo: 53 99% 51%` → #FEE209 (highlight, badge premium, warning soft)
+- `--vitalia-azul-marino: 244 84% 32%` → #180D95 (texto cuerpo, primary button)
+- `--vitalia-verde-lima: 70 73% 51%` → #B8DC2A (acento natural, success soft, Lucas avatar)
+
+**Neutrales (9):** `--vitalia-bg`, `--vitalia-surface`, `--vitalia-surface-alt`, `--vitalia-muted`, `--vitalia-text`, `--vitalia-text-muted`, `--vitalia-text-faint`, `--vitalia-border`, `--vitalia-border-soft`
+
+**Semantic (4):** `--vitalia-success`, `--vitalia-warning`, `--vitalia-danger`, `--vitalia-info`
+
+**Shape (4):** `--radius`, `--radius-lg`, `--radius-bubble`, `--radius-pill`
+
+**Gradients (3):** `--vitalia-gradient-mariposa`, `--vitalia-gradient-agent`, `--vitalia-gradient-app-cta`
+
+**Wrapped color vars (12 — post-4545c22 FE-A1 fix):** `--vitalia-cian-color`, `--vitalia-purpura-color`, `--vitalia-azul-marino-color`, `--vitalia-verde-lima-color`, `--vitalia-text-muted-color`, `--vitalia-text-faint-color`, `--vitalia-border-color`, `--vitalia-success-color`, `--vitalia-danger-color`, `--vitalia-success-soft-bg`, `--vitalia-danger-soft-bg`, `--vitalia-danger-soft-border`. Consumidos via `var(--vitalia-X-color)` en SVG attrs / inline styles donde Tailwind class no aplica.
+
+### vt-* utility classes (globals.css — exempt from arch color scan)
+**Backgrounds:** `vt-bg-app`, `vt-bg-surface`, `vt-bg-surface-alt`, `vt-bg-muted`, `vt-bg-cian` (NEW post-fix), `vt-bg-cian-10`, `vt-bg-cian-8`, `vt-bg-azul-marino`, `vt-bg-danger-12`, `vt-bg-warning-12`, `vt-bg-success-12`, `vt-bg-success` (NEW), `vt-bg-success-soft` (NEW), `vt-bg-danger-soft` (NEW)
+
+**Text:** `vt-text`, `vt-text-muted`, `vt-text-faint`, `vt-text-cian`, `vt-text-azul-marino`, `vt-text-danger`, `vt-text-warning`, `vt-text-success`, `vt-text-white`
+
+**Borders:** `vt-border`, `vt-border-soft`, `vt-border-cian`, `vt-border-cian-l`, `vt-border-verde-lima` (NEW), `vt-border-danger-30`, `vt-border-warning-30`, `vt-border-success-30`, `vt-border-danger-soft` (NEW)
+
+**Ring/Divide/Gradient classes:** `vt-ring-cian`, `vt-divide-border-soft`, `vt-bg-gradient-agent`, `vt-bg-gradient-app-cta`, `vt-bg-gradient-mariposa`, `vitalia-agent-gradient-{valeria,adrian,lucas}`
+
+### `tailwind.config.ts`
+Maps Tailwind utility names (`text-vitalia-cian`, `bg-vitalia-purpura`, etc.) to `hsl(var(--vitalia-X))` consumption via Tailwind v4 + Shadcn pattern. All 18 official tokens consumed.
+
+## Test coverage
+
+- 4 tests `test_no_hardcoded_colors.test.ts` (clean baseline post-4545c22, `KNOWN_COLOR_VIOLATIONS = Set()` shrink-only ratchet)
+
+## Architectural rule
+
+> **CRITICAL:** zero hsl/rgb/hex literals en ningún `.tsx` file. Todo color via:
+> 1. Tailwind utility class (preferred)
+> 2. vt-* CSS class (cuando Tailwind no es suficiente)
+> 3. `var(--vitalia-X-color)` inline style / SVG attr (último recurso cuando class no aplica)
+
+Reference: `vitalia/docs/architecture/design-system.md § 4` (canonical SSoT)
+
+## Promotion candidate (cross-brand)
+
+Status: NO — cada brand tiene su propio design system. Shared TS packages vivien en `core/luana-core-*` (TS) y se consumen vía `@luana/*` imports. CSS vars son brand-internal.
+
+## Referencias
+
+- ADR: `vitalia/docs/architecture/adrs/ADR-vitalia-001-shared-vs-fork.md`
+- Rule: `.claude/rules/frontend-fsd.md` § design tokens
+- Arch fitness test: `vitalia/frontend/src/__tests__/architecture/test_no_hardcoded_colors.test.ts`
+- Fix commit: 4545c22 (post-defer-audit FE-A1 resolution)

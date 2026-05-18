@@ -69,15 +69,15 @@ export const SizeVariants: Story = {
     <div className="flex items-end gap-4">
       <div className="flex flex-col items-center gap-1">
         <AgentAvatar role="valeria" size="sm" />
-        <span style={{ fontSize: 10, color: "#6B7280" }}>sm</span>
+        <span className="text-[10px] vt-text-muted">sm</span>
       </div>
       <div className="flex flex-col items-center gap-1">
         <AgentAvatar role="valeria" size="md" />
-        <span style={{ fontSize: 10, color: "#6B7280" }}>md</span>
+        <span className="text-[10px] vt-text-muted">md</span>
       </div>
       <div className="flex flex-col items-center gap-1">
         <AgentAvatar role="valeria" size="lg" />
-        <span style={{ fontSize: 10, color: "#6B7280" }}>lg</span>
+        <span className="text-[10px] vt-text-muted">lg</span>
       </div>
     </div>
   ),
@@ -90,8 +90,7 @@ export const WithStatusIndicator: Story = {
     <div className="relative inline-flex">
       <AgentAvatar role="valeria" size="md" />
       <span
-        className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white"
-        style={{ background: "#16A34A" }}
+        className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white vt-bg-success"
         aria-label="En línea"
       />
     </div>

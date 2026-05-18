@@ -102,7 +102,7 @@ export const DoctorRoleReveal: Story = {
   render: () => (
     <div className="flex flex-col gap-3">
       <div>
-        <p className="text-xs" style={{ color: "#6B7280", marginBottom: 4 }}>
+        <p className="text-xs vt-text-muted" style={{ marginBottom: 4 }}>
           Rol: doctor (puede ver)
         </p>
         <RequireRole roles={["doctor"]} userRole="doctor">
@@ -110,7 +110,7 @@ export const DoctorRoleReveal: Story = {
         </RequireRole>
       </div>
       <div>
-        <p className="text-xs" style={{ color: "#6B7280", marginBottom: 4 }}>
+        <p className="text-xs vt-text-muted" style={{ marginBottom: 4 }}>
           Rol: marketing (bloqueado — muestra enmascarado)
         </p>
         <RequireRole

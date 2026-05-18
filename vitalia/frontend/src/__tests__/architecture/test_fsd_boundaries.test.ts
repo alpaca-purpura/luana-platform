@@ -29,7 +29,7 @@
 
 import { describe, it, expect } from "vitest";
 import { readFileSync, existsSync } from "fs";
-import { resolve, join, relative, dirname } from "path";
+import { resolve, join, relative } from "path";
 import { readdirSync, statSync } from "fs";
 
 const ROOT = resolve(__dirname, "../../..");

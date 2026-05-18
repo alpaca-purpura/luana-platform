@@ -1,0 +1,61 @@
+---
+capability_id: vitalia-otel-sentry-graceful-degradation
+module: observability
+slug: otel-sentry-graceful-degradation
+status: live
+date_introduced: 2026-05-18
+story_introduced: vitalia-slice-1-infra-cross-cutting
+package_version: 0.1.0
+package_path: vitalia/backend/src/modules/vitalia/_shared/observability
+license: proprietary
+---
+
+# vitalia-otel-sentry-graceful-degradation
+
+OpenTelemetry tracing setup + Sentry alerts declarative IaC con graceful degradation cuando OTel SDK absent (dev venv) o Sentry no configurado.
+
+## Surface
+
+- **`otel_setup.py`** (`build_otel_resource`, `setup_otel`) — `BatchSpanProcessor` mandatory (NO `SimpleSpanProcessor`). DSN/endpoint from env vars only (`OTEL_EXPORTER_OTLP_ENDPOINT`, `OTEL_SERVICE_NAME`)
+- **`cron_spans.py`** — async context manager para cron job spans. 11 NAMED `CRON_SPAN_NAMES` constants. Fallback `Status` / `StatusCode` sentinels si `opentelemetry.trace` import fails
+- **`agent_spans.py`** — `AgentSpanContext` con `.set_cost()` method + 4 cost attrs (`cost_input_usd`, `cost_output_usd`, `cost_cache_usd`, `cost_total_usd`). Importa `sanitize_phi_payload` from T-infra-3 compliance adapter (NOT mirrored locally)
+- **`sentry_alerts.py`** — declarative IaC config 3 alert rules: `cost_runaway` (cost >threshold), `cron_failure` (job exception), `cache_hit` (low hit rate). NO runtime Sentry API calls — config-only
+
+## Test coverage
+
+- 23 tests PASS (`test_otel_setup.py`, `test_cron_spans.py`, `test_agent_spans.py`, `test_sentry_alerts.py`)
+- 8 tests SKIP via `requires_otel` pytest mark (dev venv sin `opentelemetry-sdk`)
+- 1 arch fitness test `test_no_observability_mirror.py` (6 gates) — verify no mirror de `core/luana-core-observability/`
+
+## Dependencies
+
+- `luana-core-observability` (recording sanitization import — `sanitize_phi_payload`)
+- `opentelemetry-sdk` (production deploy, NOT dev venv)
+- `sentry-sdk` (production deploy, graceful fallback if absent)
+
+## Scenarios live
+
+- OTel SDK absent (dev) → tests SKIP gracefully, no test failure
+- OTel SDK present (prod) → spans emitted via BatchSpanProcessor, traces visible en Tempo/Jaeger
+- Cron job span con error → Status=ERROR + Sentry capture exception + structlog audit
+- Agent span con cost > threshold → Sentry cost_runaway alert triggered
+- agent_spans.py loggea payload con PHI → sanitize_phi_payload elimina 22 fields antes export
+
+## Production deploy requirement
+
+⚠️ `opentelemetry-sdk` DEBE estar en `requirements.txt` production Docker image. Graceful degradation es insurance, NO business-as-usual.
+
+`/pm-vitalia` verifica deploy K8s manifests en próxima sesión:
+```bash
+grep "opentelemetry-sdk" vitalia/deploy/k8s/backend-deployment.yaml
+```
+
+## Promotion candidate (cross-brand)
+
+Status: NO en forma actual — wrappers son brand-specific. Pero pattern "graceful degradation when SDK absent" es reusable. Probably NOT promotable a core (cada brand opta-in observability stack distinto).
+
+## Referencias
+
+- Engine import: `core/luana-core-observability/src/luana_core_observability/recording/sanitization.py`
+- Compliance stack: [[hipaa-lite-defensive-stack]] (PHI sanitization)
+- Workers consumer: [[idempotent-cron-arq-scaffold]] (uses cron_spans)

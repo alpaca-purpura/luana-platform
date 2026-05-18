@@ -142,7 +142,7 @@ if [[ -f "${MANIFEST}" ]]; then
   STORY="$(grep -E '^story_id: ' "${MANIFEST}" | head -1 | sed 's/^story_id: //')"
 fi
 
-# Push final
+# Push final (dry-run si GIT_PUSH_DRY_RUN=1, para tests)
 echo "→ Pushing ${BRANCH} (final push before cleanup)..."
 if [[ "${GIT_PUSH_DRY_RUN:-0}" = "1" ]]; then
   echo "  (dry-run skipped actual push)"

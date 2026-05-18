@@ -1,3 +1,5 @@
+<!-- voseo-allowed: internal Warp workflow manual for Chris, not user-facing -->
+
 # Warp Multibrand Handbook
 
 > Manual operativo Warp para day-to-day multi-brand multi-session.

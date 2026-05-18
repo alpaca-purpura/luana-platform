@@ -1,3 +1,4 @@
+<!-- voseo-allowed: internal skill documentation for Chris, not user-facing -->
 ---
 description: "Consulta + troubleshoot + modificación del modelo multi-sesión worktree-based Luana (D1-D14 + ADR-005). Pointer-first. Activá cuando: algo del flow no funciona, no entendés una regla, querés modificar comportamiento del sync/merge/step-0, querés ver cheatsheet rápido, querés explicar a alguien el modelo. Triggers: 'worktree', 'sesión paralela', 'multi-brand workflow', 'step 0', 'sync canónicos', 'lift core', 'merge policy', 'no funciona el sync', 'mainframe del worktree', 'modificar regla worktree', 'cómo cambio el step 0', 'qué hace check-sync', 'qué hace push-wip', 'manifest .session.yaml', 'parallel-safety', 'D10/D11/D12/D13/D14', 'ADR-005', 'cleanup-session', 'new-session', 'status-all', 'regenerate-manifest', 'Warp Workflows luana'."
 ---

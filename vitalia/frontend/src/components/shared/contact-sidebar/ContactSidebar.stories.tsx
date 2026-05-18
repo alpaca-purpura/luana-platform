@@ -69,15 +69,13 @@ export const WithActions: Story = {
     children: (
       <div className="flex gap-2">
         <button
-          className="flex-1 text-xs font-medium py-1.5 px-3 rounded border"
-          style={{ borderColor: "#01B2F8", color: "#01B2F8" }}
+          className="flex-1 text-xs font-medium py-1.5 px-3 rounded border vt-border-cian vt-text-cian"
           type="button"
         >
           Ver expediente
         </button>
         <button
-          className="flex-1 text-xs font-medium py-1.5 px-3 rounded text-white"
-          style={{ background: "#01B2F8" }}
+          className="flex-1 text-xs font-medium py-1.5 px-3 rounded text-white vt-bg-cian"
           type="button"
         >
           Contactar

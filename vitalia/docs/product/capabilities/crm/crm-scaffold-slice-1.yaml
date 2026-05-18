@@ -1,0 +1,71 @@
+---
+capability_id: vitalia-crm-scaffold-slice-1
+module: crm
+slug: crm-scaffold-slice-1
+status: live
+date_introduced: 2026-05-18
+story_introduced: vitalia-slice-1-infra-cross-cutting
+package_version: 0.1.0
+package_path: vitalia/backend/src/modules/vitalia/crm
+license: proprietary
+---
+
+# vitalia-crm-scaffold-slice-1
+
+CRM module Slice 1 scaffold para Vitalia. Patient (PHI dual-filter) + Lead (non-PHI single tenant) + repositories + services con RBAC + endpoints. Raw SQL Slice 1, ORM models pending Slice 2.
+
+## Surface
+
+### Domain entities
+- **`Patient`** (`domain/patient.py`) — PHI entity, dual filter (tenant_id + clinic_id). Fields: id, tenant_id, clinic_id, name (PHI), dni (PHI), phone (PHI), email (PHI), date_of_birth (PHI), address (PHI), status_tag, nps_score, last_access_at, created_at, updated_at
+- **`Lead`** (`domain/lead.py`) — non-PHI entity, single filter tenant_id. Fields: id, tenant_id, email, source_channel, stage, created_at
+
+### Infrastructure repositories
+- **`PatientRepository`** extends `PhiRepositoryBase` — dual filter enforced + audit log sync write on every PHI read/write
+- **`LeadRepository`** (NOT PhiRepositoryBase — Lead non-PHI per spec) — single tenant filter
+
+### Application services
+- **`PatientService`** — `@require_phi_access(roles=["doctor","nurse","admin_clinic"])` decorator on get_by_id / update / opt_out. `opt_out` restricted `roles=["admin_clinic"]` only
+- **`LeadService`** — no RBAC (Lead non-PHI, all roles)
+
+### API routes (4 endpoints, all `response_model=` mandatory)
+- `GET /api/v1/crm/patients/{id}` — fetch patient (PHI dual filter + RBAC + audit log)
+- `PATCH /api/v1/crm/patients/{id}` — update patient (PHI dual filter + RBAC + audit log)
+- `POST /api/v1/crm/patients/{id}/opt-out` — marketing opt-out (admin_clinic only + audit log)
+- `GET /api/v1/crm/leads` — list leads (no RBAC, single tenant filter)
+
+## Test coverage
+
+- 7 CRM repo tests (`test_patient_repository.py` + `test_lead_repository.py`)
+- 6 service tests (`test_patient_service.py` + `test_lead_service.py`)
+- 7 API tests (`test_crm_endpoints.py`)
+- 24 role + dual-filter integration tests (cross-cutting con T-infra-3)
+- 12 misc (validators, edge cases)
+- Total: 64 tests PASS
+
+## Dependencies
+
+- `vitalia/backend/src/modules/vitalia/compliance/` (PhiRepositoryBase, @require_phi_access, AuditLogRepository)
+- `vitalia/backend/src/modules/vitalia/iam/` (VitaliaRole, ClinicContext, decoder)
+- `luana-core-extension-sdk` (BrandContext)
+
+## Scenarios live
+
+- Get patient con role=marketing → 403 PHIAccessDeniedError
+- Get patient con role=doctor sin clinic_id en context → 500 MissingClinicFilterError (architectural protection)
+- Get patient cross-tenant (tenant_A solicita tenant_B patient) → 404 (NO leak)
+- Patch patient con admin_clinic en role → audit_log row creada antes 200 response
+- Opt-out con role=doctor → 403 (admin_clinic only)
+- List leads con cualquier role → 200 (no RBAC, single tenant filter aplica)
+- AsyncMock repos en API tests Slice 1 (FastAPI Depends injection pending Slice 2)
+
+## Promotion candidate (cross-brand)
+
+Status: NO — Patient/Lead son medical-vertical concepts brand-specific.
+
+## Referencias
+
+- Spec: `vitalia/docs/product/stories/vitalia-slice-1-infra-cross-cutting/03-arch-be.md § CRM section`
+- Migrations: `vitalia/backend/alembic/versions/2026_05_18_*.py` (patients table + columns)
+- HIPAA-lite stack: [[hipaa-lite-defensive-stack]]
+- IAM stack: [[iam-scaffold-slice-1]]

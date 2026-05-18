@@ -78,12 +78,12 @@ export function MarketingBowtieSVG({
           <defs>
             {/* Gradient references CSS custom properties from globals.css */}
             <linearGradient id="bowtie-acq" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="hsl(198 99% 49%)" stopOpacity="0.9" />
-              <stop offset="100%" stopColor="hsl(198 99% 49%)" stopOpacity="0.3" />
+              <stop offset="0%" stopColor="var(--vitalia-cian-color)" stopOpacity="0.9" />
+              <stop offset="100%" stopColor="var(--vitalia-cian-color)" stopOpacity="0.3" />
             </linearGradient>
             <linearGradient id="bowtie-ret" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="hsl(287 53% 37%)" stopOpacity="0.3" />
-              <stop offset="100%" stopColor="hsl(287 53% 37%)" stopOpacity="0.9" />
+              <stop offset="0%" stopColor="var(--vitalia-purpura-color)" stopOpacity="0.3" />
+              <stop offset="100%" stopColor="var(--vitalia-purpura-color)" stopOpacity="0.9" />
             </linearGradient>
           </defs>
 
@@ -106,15 +106,15 @@ export function MarketingBowtieSVG({
             cx={width / 2}
             cy={height / 2}
             r={8}
-            fill="hsl(198 99% 49%)"
+            fill="var(--vitalia-cian-color)"
             aria-label="Punto de conversión"
           />
 
           {/* Axis labels */}
-          <text x={10} y={height - 4} fontSize="10" fill="hsl(220 9% 46%)" aria-hidden="true">
+          <text x={10} y={height - 4} fontSize="10" fill="var(--vitalia-text-muted-color)" aria-hidden="true">
             Adquisición
           </text>
-          <text x={width - 80} y={height - 4} fontSize="10" fill="hsl(220 9% 46%)" aria-hidden="true">
+          <text x={width - 80} y={height - 4} fontSize="10" fill="var(--vitalia-text-muted-color)" aria-hidden="true">
             Retención
           </text>
 
@@ -125,7 +125,7 @@ export function MarketingBowtieSVG({
               y={height / 2 - 20}
               textAnchor="middle"
               fontSize="11"
-              fill="hsl(220 9% 65%)"
+              fill="var(--vitalia-text-faint-color)"
               aria-hidden="true"
             >
               Slice 2 — datos reales pendientes

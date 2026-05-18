@@ -33,6 +33,9 @@ const APP_DIR = join(SRC, "app");
 
 // Allowed Tailwind padding/margin classes for studio section pages.
 // These map to the vitalia design token spacing scale.
+// Reference documentation for future maintainers — the spacing scale lives here,
+// but inline-style scan (line 51 INLINE_STYLE_PADDING_PATTERN) handles enforcement directly.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const ALLOWED_PADDING_CLASSES = new Set([
   "p-4", "p-6", "p-8",
   "px-4", "px-6", "px-8",

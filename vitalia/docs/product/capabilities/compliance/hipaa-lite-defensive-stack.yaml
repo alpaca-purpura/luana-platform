@@ -1,0 +1,63 @@
+---
+capability_id: vitalia-hipaa-lite-defensive-stack
+module: compliance
+slug: hipaa-lite-defensive-stack
+status: live
+date_introduced: 2026-05-18
+story_introduced: vitalia-slice-1-infra-cross-cutting
+package_version: 0.1.0
+package_path: vitalia/backend/src/modules/vitalia/compliance
+license: proprietary
+---
+
+# vitalia-hipaa-lite-defensive-stack
+
+HIPAA-lite defensive infrastructure architecturally enforced (no human-discipline). Combina dual filter validation, audit log sync writes, PHI sanitization vía engine factory, RBAC decorator pattern, channel guard, encryption-at-rest pgcrypto.
+
+## Surface
+
+- **`PhiRepositoryBase`** (`infrastructure/persistence/phi_repository_base.py`) — base class enforces dual filter tenant_id + clinic_id en toda query PHI. `.validate_dual_filter(tenant_id, clinic_id)` raises `MissingClinicFilterError` si clinic_id missing
+- **`AuditLogRepository`** (`infrastructure/persistence/audit_log_repository.py`) — sync write (await session.execute + flush) antes response, NO fire-forget. `AuditLogEntry` contiene tenant_id, clinic_id, user_id, action, resource_type, resource_id, from_ip, user_agent, timestamp, payload_redacted BYTEA
+- **`KEKClient`** (`infrastructure/encryption/kek_client.py`) — Key Encryption Key from env var only (KEK rotation annually)
+- **`@require_phi_access(roles=["doctor","nurse","admin_clinic"])`** decorator — application layer RBAC gate. `PHIAccessDeniedError` raised si role no autorizado
+- **`VitaliaComplianceAdapter`** (`application/compliance_adapter.py`) — channel guard. Blocks `whatsapp_free` + `sms` para mensajes con PHI. `BlockedChannelError` raised
+- **`sanitize_phi_payload`** — imported from `core/luana-core-observability/src/luana_core_observability/recording/sanitization.py` (NOT mirrored). Vitalia-specific 22 PHI fields configurados en `phi_fields.py` SSoT
+- **pgcrypto BYTEA columns** (T-infra-1): `treatment_plans.notes`, `re_engagement_events.payload_phi`, `channel_sync_state.oauth_token_encrypted`
+
+## Test coverage
+
+- `vitalia/backend/tests/architecture/test_phi_dual_filter.py` (6 tests) — PhiRepositoryBase enforces dual filter
+- `vitalia/backend/tests/architecture/test_audit_log_sync_write.py` (3 tests) — audit log sync write timing
+- `vitalia/backend/tests/architecture/test_pgcrypto_phi_columns.py` — pgcrypto BYTEA columns en schema
+- `vitalia/backend/tests/modules/vitalia/compliance/` (28 unit tests) — full compliance suite
+
+## Dependencies
+
+- `luana-core-observability` (sanitization factory)
+- `luana-core-extension-sdk` (compliance gates registry)
+
+## Scenarios live
+
+- Toda lectura/escritura PHI via PatientRepository (extends PhiRepositoryBase) bloquea queries sin clinic_id
+- Audit log row creada SYNC antes response — verificable via DB query post-request
+- WhatsApp tier free + SMS bloqueados para mensajes con `contains_phi=true`
+- Marketing role queries → PHIAccessDeniedError (no autorizado)
+- PHI fields redacted en traces via sanitize_phi_payload (22 fields)
+
+## Promotion candidate (cross-brand)
+
+Status: **candidate** (ratificado /pm-vitalia 2026-05-18 — ping /pm-luana pending)
+
+Otras brands con potencial HIPAA-lite necesidad:
+- `fitflow` (gym waivers + medical history)
+- `inmoflow` (broker contracts con PII regulated)
+- `guestly` (guest data hotel regulated GDPR/LGPD)
+
+Target core package: `core/luana-core-compliance/` extend con PhiRepositoryBase abstract base. Brand-specific concrete subclasses heredan + configuran `phi_fields` list local.
+
+## Referencias
+
+- Rule: `vitalia/.claude/rules/hipaa-lite.md`
+- Anti-duplication: `.claude/rules/anti-duplication.md` § sanitize_payload row
+- Engine import: `core/luana-core-observability/src/luana_core_observability/recording/sanitization.py`
+- Migrations: `vitalia/backend/alembic/versions/2026_05_18_*.py` (audit_log + pgcrypto columns)

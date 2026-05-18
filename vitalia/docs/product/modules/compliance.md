@@ -1,7 +1,7 @@
 ---
 module: compliance
 brand: vitalia
-last_updated: 2026-05-16
+last_updated: 2026-05-18
 ---
 
 # compliance — HIPAA-lite LATAM posture
@@ -10,8 +10,11 @@ PII scanner pre-persistencia + PII masking en response models + audit log de ope
 
 Doc completa: `vitalia/docs/domains/compliance.md`.
 
+Post Slice 1 (2026-05-18): arquitectura defensiva architecturally enforced — PhiRepositoryBase dual filter, AuditLogRepository sync write, channel guard, RBAC decorator, encryption-at-rest pgcrypto.
+
 ## Capabilities
 
 <!-- auto-list:start -->
 - `compliance-hipaa-lite-audit` (live)
+- `vitalia-hipaa-lite-defensive-stack` (live)
 <!-- auto-list:end -->

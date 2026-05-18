@@ -49,6 +49,25 @@
   --vitalia-gradient-mariposa: linear-gradient(135deg, #01B2F8 0%, #7B2D91 50%, #B8DC2A 100%);
   --vitalia-gradient-agent:    linear-gradient(135deg, #01B2F8 0%, #7B2D91 100%);
   --vitalia-gradient-app-cta:  linear-gradient(135deg, #01B2F8 0%, #180D95 100%);
+
+  /* ─── Wrapped color vars (TSX inline-style / SVG attr consumption) ─────── */
+  /* Use these via `var(--vitalia-X-color)` when Tailwind class cannot reach    */
+  /* (SVG fill/stopColor attrs, dynamic inline-style backgrounds, etc.).        */
+  /* hsl() lives only here in globals.css — TSX files MUST NOT contain hsl().   */
+  --vitalia-cian-color:        hsl(198 99% 49%);
+  --vitalia-purpura-color:     hsl(287 53% 37%);
+  --vitalia-azul-marino-color: hsl(244 84% 32%);
+  --vitalia-verde-lima-color:  hsl(70 73% 51%);
+  --vitalia-text-muted-color:  hsl(220 9% 46%);
+  --vitalia-text-faint-color:  hsl(220 9% 65%);
+  --vitalia-border-color:      hsl(222 18% 93%);
+  --vitalia-success-color:     hsl(142 76% 36%);
+  --vitalia-danger-color:      hsl(0 73% 50%);
+
+  /* Soft semantic tones (Storybook role-gate demos + future success/danger UIs) */
+  --vitalia-success-soft-bg:     hsl(142 76% 96%);
+  --vitalia-danger-soft-bg:      hsl(0 73% 97%);
+  --vitalia-danger-soft-border:  hsl(0 73% 88%);
 }
 
 /* ─── Vitalia semantic CSS utility classes ─────────────────────────────────── */
@@ -56,16 +75,20 @@
 /* Components use these class names — NO hsl() in TSX files.                    */
 
 /* Backgrounds */
-.vt-bg-app        { background-color: hsl(var(--vitalia-bg)); }
-.vt-bg-surface    { background-color: hsl(var(--vitalia-surface)); }
-.vt-bg-surface-alt{ background-color: hsl(var(--vitalia-surface-alt)); }
-.vt-bg-muted      { background-color: hsl(var(--vitalia-muted)); }
-.vt-bg-cian-10    { background-color: hsl(var(--vitalia-cian) / 0.1); }
-.vt-bg-cian-8     { background-color: hsl(var(--vitalia-cian) / 0.08); }
-.vt-bg-azul-marino{ background-color: hsl(var(--vitalia-azul-marino)); }
-.vt-bg-danger-12  { background-color: hsl(var(--vitalia-danger) / 0.12); }
-.vt-bg-warning-12 { background-color: hsl(var(--vitalia-warning) / 0.12); }
-.vt-bg-success-12 { background-color: hsl(var(--vitalia-success) / 0.12); }
+.vt-bg-app          { background-color: hsl(var(--vitalia-bg)); }
+.vt-bg-surface      { background-color: hsl(var(--vitalia-surface)); }
+.vt-bg-surface-alt  { background-color: hsl(var(--vitalia-surface-alt)); }
+.vt-bg-muted        { background-color: hsl(var(--vitalia-muted)); }
+.vt-bg-cian         { background-color: hsl(var(--vitalia-cian)); }
+.vt-bg-cian-10      { background-color: hsl(var(--vitalia-cian) / 0.1); }
+.vt-bg-cian-8       { background-color: hsl(var(--vitalia-cian) / 0.08); }
+.vt-bg-azul-marino  { background-color: hsl(var(--vitalia-azul-marino)); }
+.vt-bg-danger-12    { background-color: hsl(var(--vitalia-danger) / 0.12); }
+.vt-bg-warning-12   { background-color: hsl(var(--vitalia-warning) / 0.12); }
+.vt-bg-success-12   { background-color: hsl(var(--vitalia-success) / 0.12); }
+.vt-bg-success      { background-color: hsl(var(--vitalia-success)); }
+.vt-bg-success-soft { background-color: var(--vitalia-success-soft-bg); }
+.vt-bg-danger-soft  { background-color: var(--vitalia-danger-soft-bg); }
 
 /* Text colors */
 .vt-text          { color: hsl(var(--vitalia-text)); }
@@ -79,13 +102,15 @@
 .vt-text-white    { color: white; }
 
 /* Borders */
-.vt-border        { border-color: hsl(var(--vitalia-border)); }
-.vt-border-soft   { border-color: hsl(var(--vitalia-border-soft)); }
-.vt-border-cian   { border-color: hsl(var(--vitalia-cian)); }
-.vt-border-cian-l { border-left-color: hsl(var(--vitalia-cian)); }
-.vt-border-danger-30  { border-color: hsl(var(--vitalia-danger) / 0.3); }
-.vt-border-warning-30 { border-color: hsl(var(--vitalia-warning) / 0.3); }
-.vt-border-success-30 { border-color: hsl(var(--vitalia-success) / 0.3); }
+.vt-border             { border-color: hsl(var(--vitalia-border)); }
+.vt-border-soft        { border-color: hsl(var(--vitalia-border-soft)); }
+.vt-border-cian        { border-color: hsl(var(--vitalia-cian)); }
+.vt-border-cian-l      { border-left-color: hsl(var(--vitalia-cian)); }
+.vt-border-verde-lima  { border-color: hsl(var(--vitalia-verde-lima)); }
+.vt-border-danger-30   { border-color: hsl(var(--vitalia-danger) / 0.3); }
+.vt-border-warning-30  { border-color: hsl(var(--vitalia-warning) / 0.3); }
+.vt-border-success-30  { border-color: hsl(var(--vitalia-success) / 0.3); }
+.vt-border-danger-soft { border-color: var(--vitalia-danger-soft-border); }
 
 /* Ring (focus) */
 .vt-ring-cian     { --tw-ring-color: hsl(var(--vitalia-cian)); }

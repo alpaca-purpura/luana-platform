@@ -37,13 +37,13 @@ export const DoctorAllowed: Story = {
     roles: ["doctor", "nurse", "admin_clinic"],
     userRole: "doctor",
     children: (
-      <div className="p-3 rounded border" style={{ borderColor: "#B8DC2A", background: "#F0FDF4" }}>
-        <span style={{ fontSize: 14, color: "#16A34A" }}>Contenido PHI visible para doctor</span>
+      <div className="p-3 rounded border vt-border-verde-lima vt-bg-success-soft">
+        <span className="text-sm vt-text-success">Contenido PHI visible para doctor</span>
       </div>
     ),
     fallback: (
-      <div className="p-3 rounded border" style={{ borderColor: "#FECACA", background: "#FFF1F2" }}>
-        <span style={{ fontSize: 14, color: "#DC2626" }}>Acceso denegado</span>
+      <div className="p-3 rounded border vt-border-danger-soft vt-bg-danger-soft">
+        <span className="text-sm vt-text-danger">Acceso denegado</span>
       </div>
     ),
   },
@@ -56,13 +56,13 @@ export const NurseAllowed: Story = {
     roles: ["doctor", "nurse", "admin_clinic"],
     userRole: "nurse",
     children: (
-      <div className="p-3 rounded border" style={{ borderColor: "#B8DC2A", background: "#F0FDF4" }}>
-        <span style={{ fontSize: 14, color: "#16A34A" }}>Contenido PHI visible para enfermería</span>
+      <div className="p-3 rounded border vt-border-verde-lima vt-bg-success-soft">
+        <span className="text-sm vt-text-success">Contenido PHI visible para enfermería</span>
       </div>
     ),
     fallback: (
-      <div className="p-3 rounded border" style={{ borderColor: "#FECACA", background: "#FFF1F2" }}>
-        <span style={{ fontSize: 14, color: "#DC2626" }}>Acceso denegado</span>
+      <div className="p-3 rounded border vt-border-danger-soft vt-bg-danger-soft">
+        <span className="text-sm vt-text-danger">Acceso denegado</span>
       </div>
     ),
   },
@@ -75,13 +75,13 @@ export const MarketingDenied: Story = {
     roles: ["doctor", "nurse", "admin_clinic"],
     userRole: "marketing",
     children: (
-      <div className="p-3 rounded border" style={{ borderColor: "#B8DC2A", background: "#F0FDF4" }}>
-        <span style={{ fontSize: 14, color: "#16A34A" }}>Contenido PHI — no debería verse</span>
+      <div className="p-3 rounded border vt-border-verde-lima vt-bg-success-soft">
+        <span className="text-sm vt-text-success">Contenido PHI — no debería verse</span>
       </div>
     ),
     fallback: (
-      <div className="p-3 rounded border" style={{ borderColor: "#FECACA", background: "#FFF1F2" }}>
-        <span style={{ fontSize: 14, color: "#DC2626" }}>Acceso denegado — rol insuficiente</span>
+      <div className="p-3 rounded border vt-border-danger-soft vt-bg-danger-soft">
+        <span className="text-sm vt-text-danger">Acceso denegado — rol insuficiente</span>
       </div>
     ),
   },
@@ -93,9 +93,9 @@ export const PatientRestricted: Story = {
   args: {
     roles: ["doctor", "nurse", "admin_clinic"],
     userRole: "patient",
-    children: <span style={{ fontSize: 14, color: "#16A34A" }}>Datos clínicos completos</span>,
+    children: <span className="text-sm vt-text-success">Datos clínicos completos</span>,
     fallback: (
-      <span style={{ fontSize: 14, color: "#6B7280" }}>
+      <span className="text-sm vt-text-muted">
         Solo puedes ver tu propio historial desde el portal del paciente.
       </span>
     ),
@@ -108,8 +108,8 @@ export const NullRole: Story = {
   args: {
     roles: ["doctor", "nurse"],
     userRole: null,
-    children: <span style={{ color: "#16A34A" }}>Datos seguros</span>,
-    fallback: <span style={{ color: "#DC2626" }}>Sin sesión activa</span>,
+    children: <span className="vt-text-success">Datos seguros</span>,
+    fallback: <span className="vt-text-danger">Sin sesión activa</span>,
   },
 };
 
@@ -119,6 +119,6 @@ export const NullFallback: Story = {
   args: {
     roles: ["doctor"],
     userRole: "sales",
-    children: <span style={{ color: "#16A34A" }}>Diagnóstico clínico</span>,
+    children: <span className="vt-text-success">Diagnóstico clínico</span>,
   },
 };

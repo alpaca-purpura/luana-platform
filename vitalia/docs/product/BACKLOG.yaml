@@ -1,9 +1,9 @@
 # docs/product/BACKLOG.yaml — auto-generated SSoT machine-readable
 # DO NOT EDIT MANUALLY — modify source artifacts instead.
 # Regenerate: python scripts/generate_backlog.py
-# Generated at: 2026-05-18T14:56:13+00:00
+# Generated at: 2026-05-18T16:53:13+00:00
 
-generated_at: '2026-05-18T14:56:13+00:00'
+generated_at: '2026-05-18T16:53:13+00:00'
 brand: vitalia
 caps:
   refining_max: 3
@@ -242,23 +242,30 @@ buckets:
       blocked_by: null
       priority_override: null
       audit_iterations: 0
-  developed:
+  developed: []
+  reviewing:
   - id: vitalia-slice-1-infra-cross-cutting
     kind: story
-    state: developed
+    state: reviewing
     title: vitalia-slice-1-infra-cross-cutting
     tags: []
     last_touched: 2026-05-18
     extra:
       outcome: vitalia-mvp-ui-foundation
-      phase: SESSION_SPLIT_AUDIT_DEFERRED
-      next_action: DEFER_AUDIT ratificado 2026-05-18 — story queda state=developed con defer_audit:true hasta nueva sesión
-        Chris arranca worktree limpio wip/vitalia-infra-cross-cutting (1-story-per-worktree convention) + retoma audit_pending_actions
-        arriba. /pm-vitalia bootstrap pingeará esta deuda en próxima sesión via Step 0 NEW.
+      phase: AWAIT_SIBLING_STORY_CLOSURE
+      next_action: '★ AUDITOR APPROVED + MERGE DEFERRED 2026-05-18 (Chris ratificó Opción C — cero acción irreversible esta
+        sesión). Story queda state=reviewing + phase=AWAIT_SIBLING_STORY_CLOSURE + ready_to_merge:true. Branch wip/vitalia-infra-cross-cutting
+        con commit 9d79d50 (close audit cycle docs) pusheado a origin. ARTEFACTOS COMPLETOS: CONTEXT-BRIEF + 10 reviews APPROVED
+        + CHECKPOINTS 27/27 ✅ + 07-merge.md + gherkin-matrix.md exempt + 8 capability YAMLs + 5 nuevos modules MD + reconcile_capabilities
+        PASS. PRÓXIMA SESIÓN /pm-vitalia debe: (1) verificar status de sibling story vitalia-copilot-tools-impl (state=developing,
+        defer_audit:true, blocks_on:this), (2) cuando copilot-tools-impl cierre (audit o abandon ratificado), decidir squash-merge
+        consolidado a main respetando 07-merge.md §5 squash-merge guidance (Opción A cherry-pick selectivo o Opción B squash+reset
+        selectivo), (3) post-merge: archive story → vitalia/docs/archive/2026/stories/, (4) ping /pm-luana con 2 promotion
+        candidates (PhiRepositoryBase + idempotent_cron) en learnings, (5) cleanup worktree limpio + branch wip/vitalia-infra-cross-cutting,
+        (6) state=reviewing→done.'
       blocked_by: null
       priority_override: null
       audit_iterations: 0
-  reviewing: []
   done: []
   parked: []
   dropped: []
@@ -282,6 +289,12 @@ capabilities:
   deprecated: 0
   total: 1
 - module: compliance
+  live: 2
+  in_progress: 0
+  planned: 0
+  deprecated: 0
+  total: 2
+- module: connections
   live: 1
   in_progress: 0
   planned: 0
@@ -293,7 +306,25 @@ capabilities:
   planned: 0
   deprecated: 0
   total: 2
+- module: crm
+  live: 1
+  in_progress: 0
+  planned: 0
+  deprecated: 0
+  total: 1
 - module: fixtures
+  live: 1
+  in_progress: 0
+  planned: 0
+  deprecated: 0
+  total: 1
+- module: iam
+  live: 1
+  in_progress: 0
+  planned: 0
+  deprecated: 0
+  total: 1
+- module: observability
   live: 1
   in_progress: 0
   planned: 0
@@ -324,11 +355,11 @@ capabilities:
   deprecated: 0
   total: 1
 - module: platform
-  live: 1
+  live: 3
   in_progress: 0
   planned: 0
   deprecated: 0
-  total: 1
+  total: 3
 - module: public_landing
   live: 1
   in_progress: 0
@@ -336,6 +367,12 @@ capabilities:
   deprecated: 0
   total: 1
 - module: treatments
+  live: 1
+  in_progress: 0
+  planned: 0
+  deprecated: 0
+  total: 1
+- module: workers
   live: 1
   in_progress: 0
   planned: 0

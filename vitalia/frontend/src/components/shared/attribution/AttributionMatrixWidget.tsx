@@ -128,7 +128,7 @@ export function AttributionMatrixWidget({
                         <span
                           className="inline-flex items-center justify-center w-10 h-6 rounded text-white text-[10px] font-semibold"
                           style={{
-                            backgroundColor: `hsl(198 99% 49% / ${opacity})`,
+                            backgroundColor: `color-mix(in srgb, var(--vitalia-cian-color) ${opacity * 100}%, transparent)`,
                           }}
                         >
                           {score !== null ? `${(score * 100).toFixed(0)}%` : "—"}

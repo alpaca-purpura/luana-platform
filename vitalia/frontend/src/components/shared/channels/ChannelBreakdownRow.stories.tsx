@@ -85,7 +85,7 @@ export const Loading: Story = {
 export const MultipleRows: Story = {
   name: "Varios canales — tabla",
   render: () => (
-    <div className="rounded-[14px] border overflow-hidden" style={{ borderColor: "#E8EAF0" }}>
+    <div className="rounded-[14px] border overflow-hidden vt-border">
       <ChannelBreakdownRow channelSlug="ig" channelName="Instagram Orgánico" primaryValue={8520} primaryLabel="impresiones" secondaryValue={342} secondaryLabel="clics" changePct={12.5} />
       <ChannelBreakdownRow channelSlug="gads" channelName="Google Ads" primaryValue={3100} primaryLabel="impresiones" secondaryValue={180} secondaryLabel="clics" changePct={-3.2} />
       <ChannelBreakdownRow channelSlug="wa" channelName="WhatsApp Saliente" primaryValue={220} primaryLabel="mensajes" changePct={0} />

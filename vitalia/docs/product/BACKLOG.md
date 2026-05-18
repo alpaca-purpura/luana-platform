@@ -1,6 +1,6 @@
 # Vitalia Backlog (auto-generated)
 
-> Generated at: `2026-05-18T14:56:13+00:00`
+> Generated at: `2026-05-18T16:53:13+00:00`
 > DO NOT EDIT MANUALLY — modify source artifacts.
 > Regenerate: `python scripts/generate_backlog.py`
 
@@ -32,11 +32,11 @@
 ### 🔨 Developing (1 / cap 3)
 - **vitalia-copilot-tools-impl** — outcome `vitalia-mvp-ui-foundation` [SESSION_SPLIT_DEFER_AUDIT_OF_INFRA_PADRE]
 
-### 🧪 Developed — esperando QA (1 / cap 10)
-- **vitalia-slice-1-infra-cross-cutting** — outcome `vitalia-mvp-ui-foundation`
+### 🧪 Developed — esperando QA (0 / cap 10)
+- _(none)_
 
-### 🔍 Reviewing (0 / cap 2)
-- _(none in review)_
+### 🔍 Reviewing (1 / cap 2)
+- vitalia-slice-1-infra-cross-cutting
 
 ### Recently shipped (last 90d, 0 items)
 - _(none recent)_
@@ -67,9 +67,9 @@ kanban
     vitalia-ux-discovery[vitalia-ux-discovery]
   🔨 Developing (1 / cap 3)
     vitalia-copilot-tools-impl[vitalia-copilot-tools-impl]
-  🧪 Developed (1 / cap 10)
+  🧪 Developed (0 / cap 10)
+  🔍 Reviewing (1 / cap 2)
     vitalia-slice-1-infra-cross-cu[vitalia-slice-1-infra-cross-cutting]
-  🔍 Reviewing (0 / cap 2)
   ✅ Done (0 / 90d rolling)
   🅿 Parked (0)
 ```
@@ -83,15 +83,20 @@ kanban
 | agentic | 2 | 0 | 0 | 0 | 2 |
 | booking | 2 | 0 | 0 | 0 | 2 |
 | brand_studio | 1 | 0 | 0 | 0 | 1 |
-| compliance | 1 | 0 | 0 | 0 | 1 |
+| compliance | 2 | 0 | 0 | 0 | 2 |
+| connections | 1 | 0 | 0 | 0 | 1 |
 | copilot | 2 | 0 | 0 | 0 | 2 |
+| crm | 1 | 0 | 0 | 0 | 1 |
 | fixtures | 1 | 0 | 0 | 0 | 1 |
+| iam | 1 | 0 | 0 | 0 | 1 |
+| observability | 1 | 0 | 0 | 0 | 1 |
 | offer_studio | 1 | 0 | 0 | 0 | 1 |
 | onboarding | 1 | 0 | 0 | 0 | 1 |
 | patients | 1 | 0 | 0 | 0 | 1 |
 | payment | 1 | 0 | 0 | 0 | 1 |
-| platform | 1 | 0 | 0 | 0 | 1 |
+| platform | 3 | 0 | 0 | 0 | 3 |
 | public_landing | 1 | 0 | 0 | 0 | 1 |
 | treatments | 1 | 0 | 0 | 0 | 1 |
-| **TOTAL** | **16** | **0** | **0** | **0** | **16** |
+| workers | 1 | 0 | 0 | 0 | 1 |
+| **TOTAL** | **24** | **0** | **0** | **0** | **24** |
 

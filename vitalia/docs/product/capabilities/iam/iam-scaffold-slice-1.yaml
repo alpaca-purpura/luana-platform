@@ -1,0 +1,54 @@
+---
+capability_id: vitalia-iam-scaffold-slice-1
+module: iam
+slug: iam-scaffold-slice-1
+status: live
+date_introduced: 2026-05-18
+story_introduced: vitalia-slice-1-infra-cross-cutting
+package_version: 0.1.0
+package_path: vitalia/backend/src/modules/vitalia/iam
+license: proprietary
+---
+
+# vitalia-iam-scaffold-slice-1
+
+IAM module Slice 1 scaffold para Vitalia. Identidad, roles, clinic context, JWT decoding stub Clerk pendiente integration Slice 2.
+
+## Surface
+
+- **`VitaliaRole`** enum (7 roles): `doctor`, `nurse`, `admin_clinic`, `marketing`, `receptionist`, `patient`, `vendor`
+- **`PHI_ALLOWED_ROLES`** frozenset (3 roles): `doctor`, `nurse`, `admin_clinic` — used by `@require_phi_access` decorator
+- **`ClerkJwtDecoder`** stub (`infrastructure/auth/clerk_jwt_decoder.py`) — Slice 1 format string `stub:tenant:clinic:role:user_id`. Real Clerk integration pending Slice 2 (future PR con `/po` sign-off)
+- **`ClinicResolver`** (`application/clinic_resolver.py`) + **`ClinicContext`** value object — resolves `clinic_id` from header `X-Clinic-ID` injected by `fetchClient` FE
+- **`GET /api/v1/iam/me`** endpoint — returns `MeResponse` with role + clinic_id + user_id + tenant_id (response_model con PII allowlist)
+
+## Test coverage
+
+- 24 role tests (vitalia/backend/tests/modules/vitalia/iam/test_roles.py)
+- 7 decoder tests (test_clerk_jwt_decoder.py)
+- 6 clinic_resolver tests (test_clinic_resolver.py)
+- 5 API tests (test_iam_me_endpoint.py)
+- Total: 42 tests PASS
+
+## Dependencies
+
+- `luana-core-iam` (engine — futuro consumer cuando ClerkJwtDecoder se reemplace stub)
+- `luana-core-extension-sdk` (BrandContext)
+- `vitalia/backend/src/modules/vitalia/compliance/` (PHI_ALLOWED_ROLES referenced)
+
+## Scenarios live
+
+- JWT con format `stub:tenant_uuid:clinic_uuid:doctor:user_uuid` decoder retorna AuthContext con role=doctor, clinic_id, etc.
+- ClinicResolver lee header X-Clinic-ID, valida UUID format, raises ValueError si missing
+- GET /iam/me retorna estructura sin PHI (solo identity meta — role, clinic_id hashed, user_id)
+- Marketing role consumiendo PHI endpoint → PHIAccessDeniedError (via @require_phi_access decorator)
+
+## Promotion candidate (cross-brand)
+
+Status: NO — brand-specific (Clerk integration vitalia-aware via headers). Generic JWT decoding ya vive en `luana-core-iam`.
+
+## Referencias
+
+- Spec: `vitalia/docs/product/stories/vitalia-slice-1-infra-cross-cutting/03-arch-be.md § IAM section`
+- Rule: `vitalia/.claude/rules/hipaa-lite.md § RBAC strict`
+- HIPAA-lite stack: [[hipaa-lite-defensive-stack]]

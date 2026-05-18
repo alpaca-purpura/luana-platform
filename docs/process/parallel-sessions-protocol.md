@@ -1,3 +1,5 @@
+<!-- voseo-allowed: internal process documentation for Chris, not user-facing -->
+
 # Parallel Sessions Protocol (worktree-based)
 
 > **Status:** cemented (2026-05-18 post temas #5-#8 ratificados por Chris).

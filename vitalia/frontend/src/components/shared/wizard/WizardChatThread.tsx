@@ -58,8 +58,8 @@ export function WizardChatThread({
       {/* Progress bar */}
       <div className="h-1 vt-bg-muted" aria-hidden="true">
         <div
-          className="h-1 vt-bg-cian-10 transition-[width] duration-500"
-          style={{ width: `${Math.min(1, Math.max(0, progress)) * 100}%`, background: "hsl(198 99% 49%)" }}
+          className="h-1 vt-bg-cian transition-[width] duration-500"
+          style={{ width: `${Math.min(1, Math.max(0, progress)) * 100}%` }}
           role="progressbar"
           aria-valuenow={Math.round(progress * 100)}
           aria-valuemin={0}
@@ -93,13 +93,8 @@ export function WizardChatThread({
               "flex max-w-[80%] rounded-[var(--radius-bubble)] px-3 py-2",
               msg.role === "assistant"
                 ? "self-start vt-bg-muted vt-text"
-                : "self-end vt-text-white"
+                : "self-end vt-bg-cian vt-text-white"
             )}
-            style={
-              msg.role === "user"
-                ? { background: "hsl(198 99% 49%)" }
-                : undefined
-            }
             aria-label={`${msg.role === "assistant" ? "Asistente" : "Tú"}: ${msg.content}`}
           >
             <p className="text-sm leading-relaxed">{msg.content}</p>
