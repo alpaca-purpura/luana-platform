@@ -578,6 +578,58 @@ def register_all(registry: ExtensionPointRegistry) -> None:
         ),
     )
 
+    # T-ag-workflows-2 — Lucas daily analysis graph (ReAct topology, cron-triggered).
+    # Per 03-arch-agentic § 3.4: build_lucas_daily_analysis_graph is the factory
+    # consumed by `LucasOrchestratorService` (application/services). EP-4 declares
+    # the workflow surface; actual graph construction is DI'd by the cron job at
+    # runtime — `steps=()` placeholder maintains the contract (SDK expects a tuple)
+    # while real LangGraph nodes live in workflows/lucas_daily_analysis_graph.py.
+    registry.copilot_workflow_register(
+        WorkflowDef(
+            name=_ns("lucas_daily_analysis"),
+            description=(
+                "Lucas growth setter daily analysis (5 stages → attribution → referrals). "
+                "Cron-triggered (06:00 LOCAL tenant TZ via APScheduler). "
+                "Graph factory: build_lucas_daily_analysis_graph (workflows/). "
+                "Orchestrator: LucasOrchestratorService (application/services/). "
+                "Production checkpointer = AsyncPostgresSaver (package install pending; "
+                "tests use MemorySaver per D10 pattern)."
+            ),
+            steps=(),
+            trigger_event="vitalia.lucas.daily.scheduled",
+        ),
+    )
+
+    # T-ag-workflows-1 — Valeria wizard onboarding supervisor (LangGraph + deepagents).
+    # Per 03-arch-agentic § 3.1 + § 7: build_wizard_onboarding_graph factory lives in
+    # workflows/wizard_onboarding_graph.py and is consumed by WizardOrchestratorService
+    # at FastAPI lifespan startup. EP-4 declares the workflow surface; the actual
+    # StateGraph compilation happens at composition root with InMemorySaver (tests)
+    # or AsyncPostgresSaver (production, package install deferred per D10 pattern).
+    # The 5-slot prompt cache layout lives in workflows/wizard_prompt_compiler.py.
+    # The 3 sandbox sub-tools (scrape_website + parse_document + transcribe_audio)
+    # are scoped to the extract_subagent — parent toolset NOT inherited (deepagents
+    # F2 sandbox cardinal).
+    registry.copilot_workflow_register(
+        WorkflowDef(
+            name=_ns("wizard_onboarding_supervisor"),
+            description=(
+                "Valeria wizard onboarding LangGraph supervisor + deepagents "
+                "extract_subagent (sandbox: scrape_website + parse_document + "
+                "transcribe_audio). 5-slot prompt cache (system + wizard_role + "
+                "tools_manifest + Valeria persona + variable session_state). "
+                "Production checkpointer = AsyncPostgresSaver "
+                "(table_prefix vitalia_wizard_onboarding_); tests use InMemorySaver. "
+                "Graph factory: build_wizard_onboarding_graph (workflows/). "
+                "Orchestrator: WizardOrchestratorService (application/services/). "
+                "4 wizard tools bound at composition: extract_tenant_context + "
+                "confirm_slot + simulate_personality + complete_onboarding."
+            ),
+            steps=(),
+            trigger_event="vitalia.onboarding.started",
+        ),
+    )
+
     # ───────────────────────────────────────────────────────────────────────
     # EP-5 — scheduling_booking_policy_register (DataClass + Callable)
     # ───────────────────────────────────────────────────────────────────────
