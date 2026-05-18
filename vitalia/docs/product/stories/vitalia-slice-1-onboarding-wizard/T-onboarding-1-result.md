@@ -7,7 +7,7 @@
 `developing → developed` (this ticket)
 
 ## Commit
-Pending push (see below). Based on `a7fb67b`.
+`135ffe0` on `wip/vitalia` (pushed 2026-05-18).
 
 ## Validators GREEN
 
