@@ -2,12 +2,21 @@
 story_id: vitalia-slice-1-onboarding-wizard
 outcome: vitalia-mvp-ui-foundation
 parent_spec: vitalia-ux-discovery
-state: developing
-phase: BUILD_T_ONBOARDING_5_DONE
-last_artifact: delta-arch-refresh.md
+state: developed
+phase: HANDOFF_TO_AUDITOR
+last_artifact: T-onboarding-7-result.md
 last_modified: 2026-05-18
 build_started_at: 2026-05-18
 build_started_by: /dev-team (Conv 2 autonomous, Chris ratificó full E2E run)
+build_completed_at: 2026-05-18
+build_commits:
+  - 135ffe0  # T-1 — repos + DI wire-up
+  - 7039d69  # T-2 — LivePreviewService + audio DEFERRED
+  - 13d0a0b  # T-3 — routes DI mock→real + 9 route tests
+  - 615a252  # T-4 — tools wiring smoke + cost canon regression (R23 OPT-OUT)
+  - 69049df  # T-5 — graph e2e integration + cache + cost (R23 OPT-OUT)
+  - 221d0ef  # T-6 — FE wizard 9 components + 6 hooks + E2E smoke
+  - 74ca79a  # T-7 — goldens smoke regression post-FE wire
 ratified_by_chris: true
 spawned_at: 2026-05-17
 spawned_by: /pm-vitalia (split decision post /architect ready package)
@@ -26,7 +35,7 @@ refresh_verdict: MINOR_DRIFT
 refresh_artifacts:
   - delta-arch-refresh.md                 # primary deliverable, 198 lines, 5-check matrix
   - 06-tickets-refresh.yaml               # override yaml, 330 lines, 5 SCOPE_REDUCED + 1 UNCHANGED + 1 SCOPE_REDUCED_FROM_CREATE_TO_VERIFY
-next_action: "T-1/T-2/T-3/T-4/T-5 DONE (commits up to 69049df). Remaining: T-onboarding-6 (FE wizard 2200 LOC — critical path) + T-onboarding-7 (FE integration + E2E smoke). Spawn /dev-team con T-onboarding-6."
+next_action: "AUTO-HANDOFF /auditor — all 7 tickets pushed (commits 135ffe0..74ca79a). State developing→developed. Auditor MUST run Playwright E2E live contra dev stack vivo (port 3002 vitalia FE) — Chris explicit requirement 2026-05-18."
 ratified_decisions_2026_05_18:
   - OQ-1: R23 OPT-OUT T-onboarding-4 + T-onboarding-5 → RATIFIED (Sonnet OK, production_code=false, wire-up + regression only)
   - OQ-2: T-onboarding-1 mini-arch inline → RATIFIED (Architect inline signatures repos + ORM models + DI binding in 06-tickets-refresh.yaml::T-onboarding-1::scope)
@@ -81,3 +90,4 @@ Wizard Brand Studio onboarding agentic Slice 1 — chat-LEFT 50/50 split + voz A
 - 2026-05-18 blockers resolved: infra-cross-cutting + copilot-tools-impl merged.
 - 2026-05-18 refresh validation: `/architect` produjo `delta-arch-refresh.md` (verdict MINOR_DRIFT) + `06-tickets-refresh.yaml`. Inherited package ~85% válido as-is. Critical path domina T-onboarding-6 FE wizard 2200 LOC. Spawn /dev-team blocked en Open Questions OQ-1..OQ-4 awaiting /pm-vitalia ratificación.
 - 2026-05-18 (post-refresh ratify): 4 Open Questions ratificadas Chris verbatim → `06-tickets-refresh.yaml` updated. R23 OPT-OUT T-4/T-5 (production_code=false, Sonnet OK), mini-arch inline T-1 (signatures + ORM + DI binding ~30 líneas), audio Whisper STT deferred Slice 2 (audio_transcriber removed), FE path `features/onboarding/` verbatim per spec. UNBLOCKED for /dev-team spawn.
+- 2026-05-18 (Conv 2 autonomous build): 7 tickets pushed wip/vitalia in DAG order. T-1 (135ffe0) repos+DI 27/27 tests · T-2 (7039d69) LivePreviewService + audio DEFER 36 tests · T-3 (13d0a0b) routes DI swap 9 route tests · T-4 (615a252) tools wiring smoke 6 tests + cost canon · T-5 (69049df) graph e2e 5 integration + 10 goldens · T-6 (221d0ef) FE wizard 9 components + 6 hooks + 54 onboarding + 299 full suite + 38 arch fitness + 0 voseo + 0 ESLint + 0 tsc errors · T-7 (74ca79a) goldens smoke regression 14 tests post-FE wire. State developing→developed. AUTO-HANDOFF /auditor (default per story-closure-gate 2026-05-18, no defer_audit set). Chris explicit ask: Playwright E2E REAL contra dev stack vivo port 3002.
