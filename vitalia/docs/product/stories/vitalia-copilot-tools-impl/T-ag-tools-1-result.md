@@ -6,6 +6,7 @@
 **Worktree:** /home/chalreme/Proyectos/luana-vitalia/ on `wip/vitalia`
 **State at handoff:** tests-passing (ready for gate-runner → auditor)
 **Date:** 2026-05-18
+**Commit SHA:** `9c374aab8b0f276322a3165ebf07dedce3c644ef` (pushed to `origin/wip/vitalia`)
 
 ## Files created (NEW)
 
