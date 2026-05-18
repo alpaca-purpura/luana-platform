@@ -545,6 +545,7 @@ def aggregate(repo: Path, *, brand: str | None = None) -> dict[str, Any]:
 
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "brand": brand or "platform",
         "caps": CAPS,
         "warnings": warnings,
         "stale_ideas": stale_ideas,
@@ -603,7 +604,8 @@ def render_md(backlog: dict[str, Any]) -> str:  # noqa: PLR0915, C901, PLR0912
     warnings = backlog["warnings"]
     buckets = backlog["buckets"]
 
-    lines.append("# Nicolify Backlog (auto-generated)")
+    brand_label = backlog.get("brand", "platform")
+    lines.append(f"# {brand_label.capitalize()} Backlog (auto-generated)")
     lines.append("")
     lines.append(f"> Generated at: `{gen}`")
     lines.append("> DO NOT EDIT MANUALLY — modify source artifacts.")
@@ -730,12 +732,12 @@ def render_md(backlog: dict[str, Any]) -> str:  # noqa: PLR0915, C901, PLR0912
     lines.append("```mermaid")
     lines.append("kanban")
     _emit_mermaid_column(lines, "💡 Ideas", buckets["idea"], cap_label=None)
-    _emit_mermaid_column(lines, "🔬 Refining", buckets["refining"], cap_label=f"cap {CAPS['refining_max']}")
-    _emit_mermaid_column(lines, "✅ Refined", buckets["refined"], cap_label=f"cap {CAPS['refined_max']}")
-    _emit_mermaid_column(lines, "📦 Ready", buckets["ready"], cap_label=f"cap {CAPS['ready_max']}")
-    _emit_mermaid_column(lines, "🔨 Developing", buckets["developing"], cap_label=f"cap {CAPS['developing_max']}")
-    _emit_mermaid_column(lines, "🧪 Developed", buckets["developed"], cap_label=f"cap {CAPS['developed_max']}")
-    _emit_mermaid_column(lines, "🔍 Reviewing", buckets["reviewing"], cap_label=f"cap {CAPS['reviewing_max']}")
+    _emit_mermaid_column(lines, "🔬 Refining", buckets["refining"], cap_label=f"cap {CAPS['refining_max']}", show_cap_eligible=True)
+    _emit_mermaid_column(lines, "✅ Refined", buckets["refined"], cap_label=f"cap {CAPS['refined_max']}", show_cap_eligible=True)
+    _emit_mermaid_column(lines, "📦 Ready", buckets["ready"], cap_label=f"cap {CAPS['ready_max']}", show_cap_eligible=True)
+    _emit_mermaid_column(lines, "🔨 Developing", buckets["developing"], cap_label=f"cap {CAPS['developing_max']}", show_cap_eligible=True)
+    _emit_mermaid_column(lines, "🧪 Developed", buckets["developed"], cap_label=f"cap {CAPS['developed_max']}", show_cap_eligible=True)
+    _emit_mermaid_column(lines, "🔍 Reviewing", buckets["reviewing"], cap_label=f"cap {CAPS['reviewing_max']}", show_cap_eligible=True)
     _emit_mermaid_column(lines, "✅ Done", done_recent, cap_label=f"{CAPS['done_rolling_days']}d rolling")
     _emit_mermaid_column(lines, "🅿 Parked", buckets["parked"], cap_label=None)
     lines.append("```")
@@ -768,12 +770,39 @@ def render_md(backlog: dict[str, Any]) -> str:  # noqa: PLR0915, C901, PLR0912
     return "\n".join(lines) + "\n"
 
 
-def _emit_mermaid_column(lines: list[str], title: str, items: list[dict[str, Any]], cap_label: str | None) -> None:
-    """Emit one Mermaid kanban column with up to 10 items + count."""
-    label = f"{title} ({len(items)}"
-    if cap_label:
-        label += f" / {cap_label}"
-    label += ")"
+def _cap_eligible_count(items: list[dict[str, Any]]) -> int:
+    """Items que cuentan vs WIP cap: kind=story sin tag legacy:* (outcomes excluidos)."""
+    return sum(
+        1
+        for it in items
+        if it.get("kind") == "story" and not any(t.startswith("legacy:") for t in it.get("tags", []))
+    )
+
+
+def _emit_mermaid_column(
+    lines: list[str],
+    title: str,
+    items: list[dict[str, Any]],
+    cap_label: str | None,
+    show_cap_eligible: bool = False,
+) -> None:
+    """Emit one Mermaid kanban column with up to 10 items + count.
+
+    Si `show_cap_eligible=True`, el header muestra "{cap_eligible}/{total} cap-eligible"
+    en vez del total bruto — alineado con la lógica WIP cap (outcomes excluidos).
+    """
+    if show_cap_eligible and cap_label:
+        eligible = _cap_eligible_count(items)
+        total = len(items)
+        if eligible != total:
+            label = f"{title} ({eligible} cap-eligible of {total} / {cap_label})"
+        else:
+            label = f"{title} ({eligible} / {cap_label})"
+    else:
+        label = f"{title} ({len(items)}"
+        if cap_label:
+            label += f" / {cap_label}"
+        label += ")"
     lines.append(f"  {label}")
     for it in items[:10]:
         # Mermaid kanban node syntax: id[Title]

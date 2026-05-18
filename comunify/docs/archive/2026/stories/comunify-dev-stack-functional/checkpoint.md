@@ -1,22 +1,25 @@
 ---
 story_id: comunify-dev-stack-functional
 outcome: dev-stack-cross-brand-fixes              # consumer outcome platform (docs/product/outcomes/)
-state: refining
-phase: SPEC_DRAFT
-last_artifact: 00-research.md
-last_modified: 2026-05-17T18:00:00Z
-next_action: "Ratificar receta replicada del canonical vitalia 07-merge.md (12 pasos). Hot-fix track per .claude/rules/hotfix-repro-mandatory.md (repro pendiente ANTES de ejecutar fixes — make dev-comunify-tunnel debe fallar reproduciendo bugs 1-8 análogos vitalia)."
-ratified_by_chris: false
+state: done                                       # 2026-05-17T20:15Z transition refining→done (hotfix track skip cadena ready/developing/etc)
+phase: MERGED
+last_artifact: 07-merge.md
+last_modified: 2026-05-17T20:15:00Z
+next_action: "Archived. Brand retoma comunify-design-system-cement."
+ratified_by_chris: true                          # implicit — Chris invocó cierre con Playwright smoke como gate
 spawned_at: 2026-05-17T18:00:00Z
 spawned_by: /pm-luana                            # cross-skill override autorizado Chris sesión auditoría harness 2026-05-17
+merged_at: 2026-05-17T20:15:00Z
+merged_by: /pm-comunify
 parallel_safe: true
 blocked_reason: null
 audit_iterations: 0
 hotfix_metadata:
-  repro_verified: false                          # pendiente — Chris debe correr `make dev-comunify-tunnel` y capturar logs análogos vitalia bugs 1-8
-  repro_command: "make dev-comunify-tunnel && docker logs luana-dev-comunify_frontend_dev-1 && docker logs luana-dev-comunify_backend_dev-1"
-  diagnosis_validates_handoff: null              # se confirma cuando repro corra
-canonical_recipe: vitalia/docs/archive/2026/stories/vitalia-dev-stack-functional/07-merge.md  # 12 pasos no rompibles
+  repro_verified: true                           # repro live 2026-05-17T19:30: bugs 1-13 confirmados estructuralmente + bugs 14-15 descubiertos durante ejecución (named volume staleness + Playwright runner gap)
+  repro_command: "make dev-comunify && docker logs luana-dev-comunify_backend_dev-1 (reproduce bug 14 crash loop)"
+  diagnosis_validates_handoff: true              # receta vitalia mecánicamente replicada + 2 addenda nuevos
+  smoke_verified: true                           # Playwright 3/3 GREEN 2026-05-17T20:10 — `e2e/specs/smoke/dev-stack.smoke.spec.ts`
+canonical_recipe: vitalia/docs/archive/2026/stories/vitalia-dev-stack-functional/07-merge.md  # 12 pasos no rompibles + addendum bugs 14-15 cementado en este 07-merge.md
 ---
 
 # comunify-dev-stack-functional — checkpoint

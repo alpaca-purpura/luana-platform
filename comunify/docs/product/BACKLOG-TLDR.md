@@ -1,9 +1,9 @@
 # Backlog TLDR (auto-generated)
-> Generated at: `2026-05-17T19:28:17+00:00`
+> Generated at: `2026-05-17T20:06:07+00:00`
 > Source: scripts/generate_backlog.py — full view: BACKLOG.md
 
 - **Ideas** (1): comunify-design-system-cement
-- **Refining** (1 / cap 3): comunify-dev-stack-functional
+- **Refining** (0 / cap 3): _(none)_
 - **Refined** (0 / cap 5): _(none)_
 - **Ready** (0 / cap 5): _(none)_
 - **Developing** (0 / cap 3): _(none)_

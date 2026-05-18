@@ -4,16 +4,12 @@ vertical: "Creator Economy + Educación"
 status: shipped
 last_updated: 2026-05-17
 active_outcomes:
-  - dev-stack-cross-brand-fixes              # outcome platform (docs/product/outcomes/) — comunify consumer pendiente replicación receta vitalia
+  - dev-stack-cross-brand-fixes              # outcome platform — comunify cerró su milestone 2026-05-17 (Playwright smoke 3/3 GREEN); outcome continúa active hasta nicolify + lupulo cierren sus análogos
 active_stories:
   - id: comunify-design-system-cement
     state: idea
     surface: [frontend]
     opened: 2026-05-16
-  - id: comunify-dev-stack-functional        # spawned 2026-05-17 por /pm-luana cross-skill override (auditoría harness)
-    state: refining
-    surface: [backend, devops]
-    opened: 2026-05-17
 ssot_owner: /pm-comunify
 ---
 
@@ -46,6 +42,13 @@ Story 12 (`luana-comunify-bootstrap`, mergeada 2026-05-15) shipped **17 capabili
 
 ## Bitácora
 
+- 2026-05-17T20:15: **`comunify-dev-stack-functional` mergeada (refining→done)** vía Playwright smoke gate. Trabajo cerrado:
+  - Receta vitalia 12 pasos replicada mecánicamente — bugs 1-13 verificados live (alembic 001_comunify head, 17 tables, /health 200 canonical, /sign-in 200 Clerk widget)
+  - **Bug 14 nuevo descubierto:** named volume staleness post `comunify/pyproject.toml` bump — `comunify_backend_venv` creado pre-deps fix mantuvo `.venv` vacía → `ModuleNotFoundError: psycopg2`. Fix: `docker volume rm comunify_backend_venv` + rebuild. Learning escrito `comunify/docs/learnings/2026-05-17-named-volume-staleness-post-pyproject-bump.md` (promotable=yes — pattern cross-brand, candidato addendum `docs/process/docker-dev-multibrand.md`).
+  - **Bug 15 nuevo descubierto:** Playwright runner gap parity vs nicolify — `comunify/frontend/package.json` declaraba script `test:e2e:smoke` + tenía 5 specs scaffolded pero NUNCA tenía `@playwright/test` en devDeps. Vitalia tiene mismo gap. Fix: add `@playwright/test ^1.59.1` + mirror nicolify 4 scripts pattern. Learning escrito `comunify/docs/learnings/2026-05-17-playwright-runner-parity-gap.md` (promotable=yes — fix-forward sweep candidato vitalia + lupulo bootstrap).
+  - Playwright smoke creado `comunify/frontend/e2e/specs/smoke/dev-stack.smoke.spec.ts` (3 tests: BE /health shape + FE /sign-in + FE root). Verbatim: `3 passed (2.5s)`.
+  - Merge artifact `comunify/docs/archive/2026/stories/comunify-dev-stack-functional/07-merge.md` con addendum receta cross-brand (paso 13 venv re-population + paso 14 Playwright runner setup).
+  - Story archivada `comunify/docs/product/stories/comunify-dev-stack-functional/` → `comunify/docs/archive/2026/stories/comunify-dev-stack-functional/` (snapshot inmutable).
 - 2026-05-17: **auditoría harness `/pm-luana` cross-skill override (autorización Chris explícita)** detectó gaps vs vitalia para que /pm-comunify cumpla rol. Trabajo aplicado:
   - SKILL.md `.claude/skills/pm-comunify/SKILL.md` referencias finales actualizadas (creator-funnels.md framework interpretativo + comunify/.claude/rules/README.md + brand.yaml creator_economy semantics)
   - Outcome platform `docs/product/outcomes/dev-stack-cross-brand-fixes.md` promovido state idea→refining + priority MEDIUM→HIGH + consumer_brands explícitos + canonical_recipe link

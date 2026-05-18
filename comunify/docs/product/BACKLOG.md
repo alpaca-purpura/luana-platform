@@ -1,6 +1,6 @@
 # Comunify Backlog (auto-generated)
 
-> Generated at: `2026-05-17T19:28:17+00:00`
+> Generated at: `2026-05-17T20:06:07+00:00`
 > DO NOT EDIT MANUALLY — modify source artifacts.
 > Regenerate: `python scripts/generate_backlog.py`
 
@@ -9,8 +9,8 @@
 ### 💡 Ideas (1)
 - comunify-design-system-cement `[story]`
 
-### 🔬 Refining (1 total · 1 cap-eligible / cap 3)
-- **comunify-dev-stack-functional** — outcome `dev-stack-cross-brand-fixes` [SPEC_DRAFT]
+### 🔬 Refining (0 total · 0 cap-eligible / cap 3)
+- _(none)_
 
 ### ✅ Refined — listo para arquitectos (0 / cap 5)
 - _(none)_
@@ -40,8 +40,7 @@
 kanban
   💡 Ideas (1)
     comunify-design-system-cement[comunify-design-system-cement]
-  🔬 Refining (1 / cap 3)
-    comunify-dev-stack-functional[comunify-dev-stack-functional]
+  🔬 Refining (0 / cap 3)
   ✅ Refined (0 / cap 5)
   📦 Ready (0 / cap 5)
   🔨 Developing (0 / cap 3)

@@ -7,4 +7,5 @@ packages:
   - vitalia/frontend
   - vitalia/frontend/widget
   - comunify
+  - comunify/frontend
   - lupulo

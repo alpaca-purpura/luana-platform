@@ -28,7 +28,10 @@ services:
       PORT: "8001"
     volumes:
       - .:/workspace:rw  # bind mount monorepo completo (hot-reload)
-      - nicolify_backend_venv:/workspace/nicolify/backend/.venv  # protege .venv container
+      # Named volume protege el venv del container en la ruta donde el Dockerfile lo crea
+      # (workspace root, NO en {brand}/backend/.venv). Docker populates the empty named volume
+      # from the image's /workspace/.venv on first start (built-in init behavior).
+      - nicolify_backend_venv:/workspace/.venv
     ports:
       - "127.0.0.1:8001:8001"
     networks:
@@ -63,8 +66,15 @@ services:
       PORT: "3001"
       NEXT_PUBLIC_API_URL: "http://127.0.0.1:8001"
     volumes:
-      - ./nicolify/frontend:/app:rw
-      - nicolify_frontend_node_modules:/app/node_modules  # anonymous volume
+      # Bind mount al path donde el Dockerfile pone WORKDIR + pnpm install (/app/nicolify/frontend),
+      # NO en /app raíz (eso sobrescribiría /app/node_modules + /app/pnpm-workspace.yaml del image).
+      - ./nicolify/frontend:/app/nicolify/frontend:rw
+      # Nicolify usa workspace deps @luana/* (api-client, ui-kit, design-tokens, format, hooks, schemas).
+      # Los symlinks en node_modules apuntan a /app/core/@luana/* — necesitamos exponer core/ del host.
+      - ./core:/app/core:ro
+      # Anonymous volume enmascara node_modules del host (con symlinks pnpm host-only)
+      # exponiendo los node_modules del image (pnpm install --filter "@luana/nicolify-web").
+      - /app/nicolify/frontend/node_modules
     ports:
       - "127.0.0.1:3001:3001"
     networks:
@@ -72,7 +82,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
+          memory: 2G  # nicolify FE necesita más: webpack + React 19 + Sentry + workspace deps @luana/*
+                     # con 1G hace swap thrashing (block I/O 2.5GB+) y la compilación nunca termina.
 
   nicolify_cloudflared_dev:
     image: cloudflare/cloudflared:latest
@@ -93,8 +104,8 @@ services:
 volumes:
   nicolify_backend_venv:
     name: nicolify_backend_venv
-  nicolify_frontend_node_modules:
-    name: nicolify_frontend_node_modules
+  # nicolify_frontend_node_modules: removido (reemplazado por anonymous volume en el servicio,
+  # ver nicolify_frontend_dev.volumes — Docker maneja el lifecycle automáticamente)
 
 # NOTA: network luana_dev_net es definida en el compose raiz (docker-compose.dev.yml).
 # El name: luana-dev compartido permite que los compose files compartan la misma network.
