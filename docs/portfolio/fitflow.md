@@ -3,7 +3,7 @@ slug: fitflow
 kind: brand
 status: pending-bootstrap
 vertical: "Fitness + Deporte"
-last_updated: 2026-05-17
+last_updated: 2026-05-18
 ssot_live:
   - fitflow/docs/product/
   - fitflow/docs/domains/

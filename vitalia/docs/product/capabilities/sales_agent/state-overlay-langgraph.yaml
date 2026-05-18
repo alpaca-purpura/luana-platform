@@ -1,0 +1,54 @@
+---
+capability_id: vitalia-sales-agent-state-overlay
+module: sales_agent
+slug: state-overlay-langgraph
+status: live
+date_introduced: 2026-05-18
+story_introduced: vitalia-copilot-tools-impl
+package_version: 0.2.0
+package_path: vitalia/backend/src/modules/vitalia/sales_agent/domain/state_overlay.py
+license: proprietary
+---
+
+# vitalia-sales-agent-state-overlay
+
+LangGraph state extension brand-specific vitalia. Extiende core sales_agent state con campos medical (patient_clinic_id, treatment_type, compliance_level) para downstream guardrails + observability subclass.
+
+## Surface
+
+### Domain (`vitalia/backend/src/modules/vitalia/sales_agent/domain/`)
+
+- `state_overlay.py::VitaliaSalesAgentStateOverlay(TypedDict)` — fields:
+  - `patient_clinic_id: UUID` — second tenant filter (dual filter per HIPAA-lite)
+  - `treatment_type: str` — vertical-specific (dental, estetica, psicologia, fertilidad)
+  - `compliance_level: Literal["hipaa_lite", "standard"]` — drives sanitize_payload + ComplianceService behavior
+
+## Test coverage
+
+- Unit: covered indirectamente vía `test_callback_handler.py` (sales_agent observability subclass consume state_overlay via state dict access)
+
+## Dependencies
+
+- `core/luana-core-sales-agent` (engine base state — overlay extiende sin mirror)
+- `typing.TypedDict` Python 3.12 + Pydantic v2 (no inheritance hierarchy direct, TypedDict union)
+
+## Anti-duplication alignment
+
+State overlay NO mirror engine state — provee ADDITIONAL fields que el engine no conoce. Pattern: brand sub-state via TypedDict union at use sites (LangGraph state hygiene).
+
+## Scenarios live
+
+- SC-A2 Adversarial PHI → state.compliance_level == "hipaa_lite" → channel guard activates
+- SC-A4 Estética contraindicación → state.treatment_type == "estetica" routes to vertical-specific persona
+
+## Verification commands
+
+```bash
+WS=$(git rev-parse --show-toplevel)
+${WS}/.venv/bin/pytest vitalia/backend/tests/unit/modules/vitalia/sales_agent/observability/ -v
+```
+
+## Referencias
+
+- `vitalia/docs/product/stories/vitalia-copilot-tools-impl/03-arch-agentic.md` § 5.3 + § 6.2
+- `vitalia/.claude/rules/hipaa-lite.md` (dual filter requirement)

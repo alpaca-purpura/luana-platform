@@ -3,7 +3,7 @@ slug: retailly
 kind: brand
 status: placeholder
 vertical: "E-commerce / D2C"
-last_updated: 2026-05-17
+last_updated: 2026-05-18
 ssot_live:
   - retailly/docs/product/
   - retailly/docs/domains/

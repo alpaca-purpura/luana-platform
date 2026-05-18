@@ -331,36 +331,80 @@ def test_register_all_populates_all_18_eps_with_new_registries() -> None:
         assert len(records) >= 1, f"{ep_id} has no registrations after register_all"
 
 
-def test_ep3_sales_agent_tools_count_four_post_t_infra_2() -> None:
-    """EP-3: still exactly 4 medical tools — no regressions in tool count."""
+def test_ep3_sales_agent_tools_post_wave_3_includes_t_infra_2_baseline() -> None:
+    """EP-3 baseline post vitalia-copilot-tools-impl Wave 3.
+
+    History:
+    - T-infra-2 (vitalia-slice-1-infra-cross-cutting) cementó 4 placeholders
+      raising NotImplementedError (gated en esta story).
+    - T-ag-tools-1 (vitalia-copilot-tools-impl Wave 3) agregó 4 Valeria
+      wizard tools reales (extract_tenant_context, confirm_slot,
+      simulate_personality, complete_onboarding).
+    - T-ag-tools-2 (Wave 3) agregó 3 Adrián sales_agent tools reales
+      (screening_questions, send_payment_link, reschedule_appointment).
+
+    Invariant preserved: los 4 T-infra-2 baseline names siguen registrados.
+    Count assertion relaxed a >=4 con cement Wave 3 superset (≥11 hoy).
+    """
     from src.modules.vitalia.extensions import register_all
 
     registry = _make_fresh_registry()
     register_all(registry)
 
     records = registry.get_all("EP-3")
-    assert len(records) == 4, f"Expected 4 EP-3 ToolDef, got {len(records)}"
-    expected_names = {
+    assert len(records) >= 4, f"Expected ≥4 EP-3 ToolDef (T-infra-2 baseline), got {len(records)}"
+
+    names = {r.name for r in records}
+    t_infra_2_baseline = {
         "vitalia.prepaid_payment_check",
         "vitalia.treatment_followup_check",
         "vitalia.medical_consent_request",
         "vitalia.appointment_reschedule_with_doctor",
     }
-    assert {r.name for r in records} == expected_names
+    assert t_infra_2_baseline.issubset(names), (
+        f"T-infra-2 baseline missing from EP-3 — regression. Missing: {t_infra_2_baseline - names}"
+    )
+
+    wave_3_real = {
+        "vitalia.extract_tenant_context",
+        "vitalia.confirm_slot",
+        "vitalia.simulate_personality",
+        "vitalia.complete_onboarding",
+        "vitalia.send_payment_link",
+        "vitalia.reschedule_appointment",
+        "vitalia.screening_questions",
+    }
+    assert wave_3_real.issubset(names), (
+        f"Wave 3 real tools missing from EP-3 — regression. Missing: {wave_3_real - names}"
+    )
 
 
-def test_ep3_tool_handlers_are_placeholders_raising_not_implemented() -> None:
-    """EP-3 tool handlers MUST raise NotImplementedError until vitalia-copilot-tools-impl side story lands."""
+def test_ep3_t_infra_2_baseline_handlers_still_placeholders() -> None:
+    """EP-3 T-infra-2 baseline (4 placeholders) sigue raising NotImplementedError.
+
+    Wave 3 (vitalia-copilot-tools-impl) reemplazó SOLO los 7 nuevos tools reales
+    (4 Valeria + 3 Adrián). Los 4 T-infra-2 originales (prepaid_payment_check,
+    treatment_followup_check, medical_consent_request,
+    appointment_reschedule_with_doctor) permanecen placeholders gated a
+    sub-stories futuras (Slice 1 follow-up).
+    """
     from src.modules.vitalia.extensions import register_all
 
     registry = _make_fresh_registry()
     register_all(registry)
 
+    t_infra_2_baseline = {
+        "vitalia.prepaid_payment_check",
+        "vitalia.treatment_followup_check",
+        "vitalia.medical_consent_request",
+        "vitalia.appointment_reschedule_with_doctor",
+    }
     records = registry.get_all("EP-3")
     for rec in records:
-        tool_def = rec.payload
-        with pytest.raises(NotImplementedError):
-            tool_def.handler()
+        if rec.name in t_infra_2_baseline:
+            tool_def = rec.payload
+            with pytest.raises(NotImplementedError):
+                tool_def.handler()
 
 
 def test_ep13_medical_guardrails_count_four_post_t_infra_2() -> None:

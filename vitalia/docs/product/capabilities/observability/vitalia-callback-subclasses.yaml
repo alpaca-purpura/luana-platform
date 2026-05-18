@@ -1,0 +1,68 @@
+---
+capability_id: vitalia-callback-subclasses
+module: observability
+slug: vitalia-callback-subclasses
+status: live
+date_introduced: 2026-05-18
+story_introduced: vitalia-copilot-tools-impl
+package_version: 0.2.0
+package_path: vitalia/backend/src/modules/vitalia/{copilot,sales_agent}/observability/recording
+license: proprietary
+---
+
+# vitalia-callback-subclasses
+
+Observability callback subclasses per anti-duplication §0 cardinal rule. 4 archivos heredan engine bases (NEVER mirror). Ratchet enforced via arch fitness tests.
+
+## Surface
+
+### Copilot observability subclasses
+
+- `vitalia/backend/src/modules/vitalia/copilot/observability/recording/callback_handler.py::VitaliaCopilotCallbackHandler(BaseAgentCallbackHandler)` — overrides only persist hooks (`_persist_llm_call_row` + `_persist_trace_event_row`) with vitalia-specific fields (clinic_id + compliance_level=hipaa_lite)
+- `vitalia/backend/src/modules/vitalia/copilot/observability/recording/turn_envelope.py::VitaliaCopilotObservabilityContext(BaseObservabilityContext)` — empty subclass marker for brand attribution
+
+### Sales_agent observability subclasses
+
+- `vitalia/backend/src/modules/vitalia/sales_agent/observability/recording/callback_handler.py::VitaliaSalesAgentCallbackHandler(BaseAgentCallbackHandler)` — same pattern
+- `vitalia/backend/src/modules/vitalia/sales_agent/observability/recording/turn_envelope.py::VitaliaSalesAgentObservabilityContext(BaseObservabilityContext)` — same pattern
+
+## Test coverage
+
+- Unit: `tests/unit/modules/vitalia/{copilot,sales_agent}/observability/test_callback_handler.py`
+- Arch fitness ratchet: `tests/architecture/test_no_observability_mirror_copilot.py` + `test_no_observability_mirror_sales_agent.py` — 25+ forbidden override methods enforced + verifies subclass MUST import from `luana_core_observability`
+
+## Dependencies
+
+- `core/luana-core-observability.recording.base_callback_handler.BaseAgentCallbackHandler` (parent class — extended, NEVER mirrored)
+- `core/luana-core-observability.recording.turn_envelope.BaseObservabilityContext` (parent class)
+- `core/luana-core-observability.recording.sanitization.sanitize_payload` (PHI defense-in-depth)
+- `core/luana-core-observability.cost.cost_recorder.pop_cost` (canonical cost path per PI-12 S1 T-1 cement)
+
+## Anti-duplication §0 cardinal alignment
+
+Per `.claude/rules/anti-duplication.md` § lift shared rule: SHALL NOT redefine `BaseAgentCallbackHandler` plumbing. Subclass override ONLY:
+- `_persist_llm_call_row(**kwargs)` — vitalia adds clinic_id + compliance_level columns
+- `_persist_trace_event_row(**kwargs)` — vitalia adds lead_id + channel_type
+
+Engine canonical contract honored:
+- Cost path: `cost_recorder.pop_cost(litellm_call_id)` from CustomLogger bridge
+- PHI sanitization: engine `sanitize_payload(compliance_level="hipaa_lite")` + vitalia defensive re-sanitize
+
+## Scenarios live
+
+- SC-AD1 Anti-duplication §0 ratchet (arch fitness 245/245)
+- Cost recording per turn: 1 turn_start + N×(LLM/tool/chain) + 1 turn_end events written best-effort
+
+## Verification commands
+
+```bash
+WS=$(git rev-parse --show-toplevel)
+${WS}/.venv/bin/pytest vitalia/backend/tests/architecture/test_no_observability_mirror_copilot.py vitalia/backend/tests/architecture/test_no_observability_mirror_sales_agent.py -v
+${WS}/.venv/bin/pytest vitalia/backend/tests/unit/modules/vitalia/copilot/observability/ vitalia/backend/tests/unit/modules/vitalia/sales_agent/observability/ -v
+```
+
+## Referencias
+
+- `.claude/rules/anti-duplication.md` § 0 (cardinal)
+- `.claude/rules/copilot-observability.md`
+- `vitalia/docs/product/stories/vitalia-copilot-tools-impl/03-arch-agentic.md` § 6 (observability subclasses anti-duplication)

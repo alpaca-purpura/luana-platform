@@ -134,36 +134,69 @@ def test_ep2_offer_preset_pack_count_one() -> None:
     assert len(records) == 1, f"Expected 1 EP-2 PresetPack, got {len(records)}"
 
 
-def test_ep3_sales_agent_tools_count_four() -> None:
-    """EP-3: exactly 4 medical tools per brand.yaml agentic_tools."""
+def test_ep3_sales_agent_tools_post_wave_3_superset() -> None:
+    """EP-3: T-infra-2 baseline (4 placeholders) + Wave 3 reales (7) superset.
+
+    Post vitalia-copilot-tools-impl Wave 3 cement:
+    - 4 T-infra-2 placeholders permanecen (gated a sub-stories Slice 1)
+    - 4 Valeria wizard tools reales (T-ag-tools-1)
+    - 3 Adrián sales_agent tools reales (T-ag-tools-2)
+
+    Total ≥11 ToolDefs. Strict count assertion relaxed a ≥4 baseline + names superset.
+    """
     from src.modules.vitalia.extensions import register_all
 
     registry = _make_fresh_registry()
     register_all(registry)
 
     records = registry.get_all("EP-3")
-    assert len(records) == 4, f"Expected 4 EP-3 ToolDef, got {len(records)}"
+    assert len(records) >= 4, f"Expected ≥4 EP-3 ToolDef (T-infra-2 baseline), got {len(records)}"
 
     names = {r.name for r in records}
-    expected = {
+    t_infra_2_baseline = {
         "vitalia.prepaid_payment_check",
         "vitalia.treatment_followup_check",
         "vitalia.medical_consent_request",
         "vitalia.appointment_reschedule_with_doctor",
     }
-    assert names == expected, f"EP-3 tool names mismatch: {names} != {expected}"
+    assert t_infra_2_baseline.issubset(names), f"T-infra-2 baseline missing — regression: {t_infra_2_baseline - names}"
+
+    wave_3_real = {
+        "vitalia.extract_tenant_context",
+        "vitalia.confirm_slot",
+        "vitalia.simulate_personality",
+        "vitalia.complete_onboarding",
+        "vitalia.send_payment_link",
+        "vitalia.reschedule_appointment",
+        "vitalia.screening_questions",
+    }
+    assert wave_3_real.issubset(names), f"Wave 3 real tools missing — regression: {wave_3_real - names}"
 
 
-def test_ep4_copilot_workflow_count_one() -> None:
-    """EP-4: exactly 1 workflow (treatment_followup_workflow) per brand.yaml."""
+def test_ep4_copilot_workflow_post_wave_4_superset() -> None:
+    """EP-4: Wave 2 baseline (treatment_followup_workflow) + Wave 4 wizard_supervisor.
+
+    Post vitalia-copilot-tools-impl Wave 4 cement:
+    - vitalia.treatment_followup_workflow (Wave 2 baseline)
+    - vitalia.wizard_onboarding_supervisor (T-ag-workflows-1)
+
+    Count assertion: ≥1 (baseline preserved) + check ambos names presentes.
+    """
     from src.modules.vitalia.extensions import register_all
 
     registry = _make_fresh_registry()
     register_all(registry)
 
     records = registry.get_all("EP-4")
-    assert len(records) == 1
-    assert records[0].name == "vitalia.treatment_followup_workflow"
+    assert len(records) >= 1, f"Expected ≥1 EP-4 WorkflowDef, got {len(records)}"
+
+    names = {r.name for r in records}
+    assert "vitalia.treatment_followup_workflow" in names, (
+        f"Wave 2 baseline workflow missing — regression. Got: {names}"
+    )
+    assert "vitalia.wizard_onboarding_supervisor" in names, (
+        f"T-ag-workflows-1 wizard supervisor missing — regression. Got: {names}"
+    )
 
 
 def test_ep7_extractors_count_two() -> None:
@@ -264,8 +297,15 @@ def test_ep17_plan_tiers_count_three() -> None:
 # ─── EP-3 ToolDef shape verification (placeholder handlers + tool_groups) ───
 
 
-def test_ep3_tools_have_placeholder_handlers() -> None:
-    """EP-3 tools: handlers MUST be callables (placeholder stubs OK until T-tools-*)."""
+def test_ep3_tools_handlers_invocable_and_described() -> None:
+    """EP-3 tools: handlers MUST be invocable + description non-empty.
+
+    Post Wave 3 cement: invariant aplica a TODOS los ToolDef registrados
+    (4 T-infra-2 placeholders + 7 Wave 3 reales). Handler shape acceptable:
+    - plain callable (placeholders T-infra-2: `lambda: raise NotImplementedError`)
+    - LangChain StructuredTool (Wave 3 @tool decorated: tiene `.invoke` y `.ainvoke`
+      pero NO es directly callable — checkpoint LangChain ToolNode invocation contract)
+    """
     from src.modules.vitalia.extensions import register_all
 
     registry = _make_fresh_registry()
@@ -274,7 +314,16 @@ def test_ep3_tools_have_placeholder_handlers() -> None:
     records = registry.get_all("EP-3")
     for rec in records:
         tool_def = rec.payload
-        assert callable(tool_def.handler), f"EP-3 tool {tool_def.name!r} handler must be callable"
+        h = tool_def.handler
+        is_invocable = (
+            callable(h)
+            or (hasattr(h, "ainvoke") and callable(h.ainvoke))
+            or (hasattr(h, "invoke") and callable(h.invoke))
+        )
+        assert is_invocable, (
+            f"EP-3 tool {tool_def.name!r} handler must be callable or expose "
+            f"LangChain .invoke/.ainvoke (got {type(h).__name__})"
+        )
         assert tool_def.description, f"EP-3 tool {tool_def.name!r} must have non-empty description"
 
 

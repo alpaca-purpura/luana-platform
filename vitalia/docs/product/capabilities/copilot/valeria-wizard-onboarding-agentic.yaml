@@ -1,0 +1,81 @@
+---
+capability_id: vitalia-valeria-wizard-onboarding-agentic
+module: copilot
+slug: valeria-wizard-onboarding-agentic
+status: live
+date_introduced: 2026-05-18
+story_introduced: vitalia-copilot-tools-impl
+package_version: 0.2.0
+package_path: vitalia/backend/src/modules/vitalia/copilot/{tools,workflows,prompts}
+license: proprietary
+---
+
+# vitalia-valeria-wizard-onboarding-agentic
+
+Wizard supervisor agentic LangGraph para onboarding de clínicas — orquesta extracción contextual (URL + texto + audio) + confirmación slot-by-slot + simulación personality + completion. Heredá observabilidad anti-dup §0 del engine.
+
+## Surface
+
+### Tools (`vitalia/backend/src/modules/vitalia/copilot/tools/`)
+
+- `extract_tenant_context.py` — LangChain @tool async, wraps `extract_tenant_context_service` (3 adapters: website scraper + document extractor + Whisper STT)
+- `confirm_slot.py` — bumps slot confidence to 1.0, fires `onboarding_draft_service.persist_slot`
+- `simulate_personality.py` — throttled + cached personality preview
+- `complete_onboarding.py` — fires `complete_onboarding_service`
+
+### Workflows (`vitalia/backend/src/modules/vitalia/copilot/workflows/`)
+
+- `wizard_supervisor_graph.py` — LangGraph supervisor topology (nodes: extract_context_node, confirm_slot_node, simulate_personality_node, complete_onboarding_node, route_decider_node)
+- `wizard_state.py` — TypedDict state (draft_id, tenant_id, slot_progress, confirmed_slots, pending_extractions, messages)
+- `wizard_subagents.py` — deepagents `SubAgentMiddleware` extract_subagent isolation (sandbox `tools=[]` parent inheritance disabled)
+- `wizard_checkpoint_config.py` — AsyncPostgresSaver namespace `wizard_onboarding/{tenant_id}` reuse `luana_core_platform.db` pool
+- `wizard_prompt_compiler.py` — composes 5 cacheable slots (slot_0_system_constant + slot_1_agent_id + slot_2_wizard_role + slot_3_module_context + slot_4_valeria_persona + slot_5_session_state)
+- `application/services/wizard_orchestrator_service.py` — high-level service para route `wizard_onboarding_routes.py`
+
+### Prompts (`vitalia/backend/src/modules/vitalia/copilot/prompts/`)
+
+- `valeria_persona.md` — Slot 4 voice constraints (tuteo neutro LatAm, no IA reveal, cálido+profesional+claro+breve)
+- `wizard_role_vitalia.md` — Slot 2
+- `extractor_subagent.md` — deepagents sandbox system prompt
+
+## Test coverage
+
+- Unit: `tests/unit/modules/vitalia/copilot/tools/test_*.py` (4 tools) + `workflows/test_wizard_state.py` + `test_wizard_subagents.py` + `test_wizard_prompt_compiler.py`
+- Integration: `tests/integration/modules/vitalia/copilot/workflows/test_wizard_onboarding_graph.py` (8 tests checkpointer-resume + state transitions)
+- Agentic eval: `tests/agentic_evals/copilot/wizard_goldens/{happy,negative,edge_browser_close,adversarial}.yaml` (4 goldens × 3 trials = 12 trial-grades)
+- Arch fitness: `tests/architecture/test_no_observability_mirror_copilot.py`
+
+## Dependencies
+
+- `core/luana-core-observability` (callback handler + ObservabilityContext base — subclassed)
+- `core/luana-core-extension-sdk` (EP-3 ToolDef + EP-4 WorkflowDef registration)
+- `core/luana-core-platform` (`db` pool for AsyncPostgresSaver)
+- `langgraph.checkpoint.postgres.aio.AsyncPostgresSaver` (official LangGraph)
+- `deepagents.SubAgentMiddleware` (subagent sandbox isolation)
+
+## KPIs
+
+- Cache hit rate: ≥ 0.40 (slots 0-3 byte-stable across calls)
+- Pass^k threshold: ≥ 0.5 (≥50% wizard goldens k=3)
+- Voice fidelity min: 0.85
+
+## Scenarios live
+
+- SC-W1 Wizard happy path (URL adjuntada + 5 slots confirmados)
+- SC-W2 Wizard negative (modo texto incompleto, Valeria pregunta slots faltantes)
+- SC-W3 Edge browser close mid-wizard (resume via checkpointer)
+- SC-W4 Adversarial (URL maliciosa + PII en doc + cross-tenant inference + XSS)
+
+## Verification commands
+
+```bash
+WS=$(git rev-parse --show-toplevel)
+${WS}/.venv/bin/pytest vitalia/backend/tests/integration/modules/vitalia/copilot/workflows/test_wizard_onboarding_graph.py -v
+${WS}/.venv/bin/pytest vitalia/backend/tests/agentic_evals/copilot/test_wizard_pass_k_evaluation.py -v
+```
+
+## Referencias
+
+- `vitalia/docs/product/stories/vitalia-copilot-tools-impl/03-arch-agentic.md` § 4.1 + § 5.2 + § 7.1 + § 7.3 + § 8.1
+- `.claude/rules/anti-duplication.md` § 0
+- `.claude/rules/copilot-resilience.md`
