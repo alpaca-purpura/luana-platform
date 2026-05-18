@@ -2,22 +2,25 @@
 story_id: vitalia-copilot-tools-impl
 outcome: vitalia-mvp-ui-foundation
 state: developing
-phase: SESSION_SPLIT_DEFER_AUDIT_OF_INFRA_PADRE
+phase: RESUMING_AGENTIC_WAVE_3_4_5
 last_artifact: T-be-services-3-result.md
 last_modified: 2026-05-18
 dev_team_started_at: 2026-05-18
+dev_team_resumed_at: 2026-05-18  # resume tras defer_audit lift — Chris ratify in-session
 
-# ★ Story closure gate defer_audit (cement 2026-05-18 — caso origen sesión actual)
-defer_audit: true
-defer_audit_reason: "Story arrancada incorrectamente en worktree wip/vitalia-slice-1-shipping (compartido con vitalia-slice-1-infra-cross-cutting state=developed sin auditar) violando 1-story-per-worktree del story-closure-gate decretado 2026-05-18 en esta misma sesión. 4/10 tickets pushed (T-be-migrations-1 + T-be-services-1..3 BE). Continuación correcta: nueva sesión Chris arranca worktree limpio wip/vitalia-copilot-tools-impl post-merge a main. Decisión depende de Chris al retomar: (a) continue developing los 6 tickets restantes (T-ag-tools-1..3 + T-ag-workflows-1..2 + T-ag-evals-1 Opus only R23) en worktree fresco, o (b) rewind a state=ready si infra-cross-cutting cambia post-audit. Por ahora defer hasta infra resuelva."
-defer_audit_ratified_by: chris
-defer_audit_at: 2026-05-18
-defer_audit_until: 2026-05-25  # hint para bootstrap ping (depende de infra resolution)
-defer_audit_blocks_on: vitalia-slice-1-infra-cross-cutting
+# ★ Story closure gate — defer_audit LIFTED 2026-05-18
+defer_audit: false
+defer_audit_lifted_at: 2026-05-18
+defer_audit_lifted_reason: "Blocker original (vitalia-slice-1-infra-cross-cutting) cerrado state=done 2026-05-18 (squashes 50143d57 + cc4fcd68 merged main). Chris ratifica en esta sesión retomar los 6 tickets agentic restantes en worktree canónico wip/vitalia (M12 cement v2 — stories trabajan en wip/{brand} ESTABLE, no rotan story-by-story). Sin necesidad de worktree efímero (M12 default). Forward motion habilitado: /dev-team picks 6 tickets restantes → state=developing→developed → AUTO-HANDOFF /auditor → /pm-vitalia merge."
+defer_audit_lifted_ratified_by: chris
+prior_defer_audit_reason: "Story arrancada incorrectamente en worktree wip/vitalia-slice-1-shipping compartido con vitalia-slice-1-infra-cross-cutting violando 1-story-per-worktree del story-closure-gate decretado 2026-05-18 (resuelto)."
+
 audit_pending_actions:
-  - "Esperar vitalia-slice-1-infra-cross-cutting resuelva audit + merge (defer_audit ratificado en infra checkpoint)"
-  - "Chris decide en sesión nueva: continue dev de 6 tickets restantes O rewind a ready si infra audit reveló cambios upstream"
-  - "Validar que los 4 tickets ya pushed (BE migrations + services) siguen GREEN post-infra-fix (downstream regression scope per .claude/rules/auditor-downstream-regression.md)"
+  - "Spawn /dev-team Wave 3 (T-ag-tools-1, T-ag-tools-2, T-ag-tools-3 parallel) — Opus 4.7 obligatorio R23"
+  - "Wave 4 (T-ag-workflows-1, T-ag-workflows-2 parallel) — Opus 4.7 obligatorio R23"
+  - "Wave 5 (T-ag-evals-1) — Opus|Sonnet OK per owner_eligibility"
+  - "On all GREEN all 10 tickets: AUTO-HANDOFF /auditor (default per story-closure-gate.md)"
+  - "Validar que los 4 tickets BE ya pushed siguen GREEN post-infra-merge (auditor verifica downstream regression per .claude/rules/auditor-downstream-regression.md Cat 10)"
 
 tickets_pushed: [T-be-migrations-1, T-be-services-1, T-be-services-2, T-be-services-3]
 tickets_remaining: [T-ag-tools-1, T-ag-tools-2, T-ag-tools-3, T-ag-workflows-1, T-ag-workflows-2, T-ag-evals-1]

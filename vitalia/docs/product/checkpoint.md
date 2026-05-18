@@ -17,15 +17,9 @@ active_stories:
   - vitalia-slice-1-marketing              # state: refined (UNBLOCKED post infra merge — sub-blocker copilot-tools-impl)
   - vitalia-pricing-decision               # state: idea (spawned 2026-05-17, decisión Chris postergada)
   - vitalia-payment-adapter-mvp            # state: refining (transitioned 2026-05-17 sesión close-slice-1, awaiting /po draft)
-  - vitalia-copilot-tools-impl             # state: developing + defer_audit:true (4/10 tickets pushed BE — 6 remaining agentic Opus R23 retoma sesión fresca post-infra-merge)
+  - vitalia-copilot-tools-impl             # state: developing (defer_audit LIFTED 2026-05-18 — Chris ratify resume in-session wip/vitalia canónico · 4/10 BE pushed · 6 agentic Opus R23 pendientes Waves 3-4-5)
   - vitalia-fiscal-emission-pe             # state: refining (transitioned 2026-05-17, awaiting /po draft)
-deferred_audits:                           # ★ Story closure gate visibility (cement 2026-05-18)
-  - story_id: vitalia-copilot-tools-impl
-    state: developing
-    reason: "4/10 BE tickets pushed via squashes 50143d57 + cc4fcd68 · 6 remaining son AGENTIC Opus R23 (T-ag-tools-1..3 + T-ag-workflows-1..2 + T-ag-evals-1) · retoma sesión fresca con worktree limpio wip/vitalia-copilot-tools-impl. Blocker original vitalia-slice-1-infra-cross-cutting → done (resuelto 2026-05-18)."
-    pending_until: 2026-05-25
-    next_owner: /pm-vitalia + /dev-team (new session)
-    blocks_on: null  # infra-cross-cutting → done 2026-05-18
+deferred_audits: []                        # ★ Story closure gate — defer_audit de copilot-tools-impl LIFTED 2026-05-18 (blocker infra-cross-cutting cerrado state=done). Sin deudas activas.
 ratified_promotion_proposals:              # APPROVED + migrated 2026-05-17 (commit 5ca6101) — unblocks T-be-migration-014/T-be-migration-015
   - docs/promotion-protocol/proposals/2026-05-17-platform-tenants-location-columns.md      # state: migrated (luana-core-platform 0.1.0→0.2.0)
   - docs/promotion-protocol/proposals/2026-05-17-offer-studio-multi-session-maintenance.md # state: migrated (luana-core-offer-studio 0.1.0→0.2.0)
