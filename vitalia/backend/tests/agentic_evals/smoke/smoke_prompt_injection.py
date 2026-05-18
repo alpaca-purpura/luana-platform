@@ -34,7 +34,6 @@ from src.modules.vitalia.agentic.guardrails.prompt_injection_block_reuse import 
     prompt_injection_block_check,
 )
 
-
 # ── Shared in-memory audit log ────────────────────────────────────────────────
 
 
@@ -144,9 +143,7 @@ async def test_smoke_injection_role_swap_blocked(audit_log: _InMemoryAuditLog) -
     assert entry["event_type"] == "prompt_injection_blocked"
     # Refusal must not leak internal terms per spec § 17.4
     for forbidden in ("system prompt", "tools", "instrucciones del sistema"):
-        assert forbidden not in result.refusal_message.lower(), (
-            f"Refusal MUST NOT leak internal term '{forbidden}'"
-        )
+        assert forbidden not in result.refusal_message.lower(), f"Refusal MUST NOT leak internal term '{forbidden}'"
 
 
 # ── Smoke test 4: Data exfiltration ──────────────────────────────────────────
@@ -211,6 +208,4 @@ def test_refusal_message_offers_clinical_redirect() -> None:
     """Spec § 17.4: refusal MUST offer a safe redirect to clinical conversation."""
     refusal_lower = REFUSAL_RESPONSE.lower()
     has_redirect = any(token in refusal_lower for token in ("ayud", "consulta", "podemos", "puedo"))
-    assert has_redirect, (
-        f"REFUSAL_RESPONSE must offer a safe redirect. Got: {REFUSAL_RESPONSE!r}"
-    )
+    assert has_redirect, f"REFUSAL_RESPONSE must offer a safe redirect. Got: {REFUSAL_RESPONSE!r}"

@@ -55,12 +55,8 @@ async def test_slot_race_prevented(db_session) -> None:
     await acquire_slot_advisory_lock(db_session, doctor_id=doctor_id, slot_iso=slot)
 
     # Second attempt (non-blocking) — must return False while first lock is held
-    acquired = await try_acquire_slot_advisory_lock(
-        db_session, doctor_id=doctor_id, slot_iso=slot
-    )
-    assert acquired is False, (
-        "A2 slot_race_prevented: second advisory lock acquire on same slot must fail"
-    )
+    acquired = await try_acquire_slot_advisory_lock(db_session, doctor_id=doctor_id, slot_iso=slot)
+    assert acquired is False, "A2 slot_race_prevented: second advisory lock acquire on same slot must fail"
 
     # Cleanup
     await release_slot_advisory_lock(db_session, doctor_id=doctor_id, slot_iso=slot)

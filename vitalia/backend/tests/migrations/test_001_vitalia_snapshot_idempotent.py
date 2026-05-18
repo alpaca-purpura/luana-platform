@@ -13,12 +13,14 @@ Per .claude/rules/backend-migrations.md:
 - Enums via DO $$ BEGIN ... EXCEPTION END $$ block
 - NEVER op.create_table() / sa.Enum(create_type=True)
 """
+
 from __future__ import annotations
 
 import io
 import os
 import re
 import tokenize
+from pathlib import Path
 
 import pytest
 
@@ -36,12 +38,9 @@ VITALIA_EXPECTED_TABLES = [
     "vitalia_plan_tier_configs",
 ]
 
-from pathlib import Path
-
 _WORKSPACE_ROOT: Path = next(p for p in Path(__file__).resolve().parents if (p / "AGENTS.md").is_file())
 MIGRATION_FILE = str(
-    _WORKSPACE_ROOT / "vitalia" / "backend" / "alembic" / "versions"
-    / "001_vitalia_initial_snapshot.py"
+    _WORKSPACE_ROOT / "vitalia" / "backend" / "alembic" / "versions" / "001_vitalia_initial_snapshot.py"
 )
 
 
@@ -73,27 +72,21 @@ def test_migration_file_exists() -> None:
     """Migration file must exist (post-GREEN)."""
     import pathlib
 
-    assert pathlib.Path(MIGRATION_FILE).exists(), (
-        f"Migration file not found: {MIGRATION_FILE}"
-    )
+    assert pathlib.Path(MIGRATION_FILE).exists(), f"Migration file not found: {MIGRATION_FILE}"
 
 
 def test_migration_has_correct_revision() -> None:
     """Revision identifier must be '001_vitalia'."""
     with open(MIGRATION_FILE) as f:
         content = f.read()
-    assert 'revision = "001_vitalia"' in content, (
-        "revision must equal '001_vitalia'"
-    )
+    assert 'revision = "001_vitalia"' in content, "revision must equal '001_vitalia'"
 
 
 def test_migration_down_revision_is_none() -> None:
     """vitalia is an independent chain — down_revision must be None."""
     with open(MIGRATION_FILE) as f:
         content = f.read()
-    assert "down_revision = None" in content, (
-        "vitalia alembic chain is independent — down_revision must be None"
-    )
+    assert "down_revision = None" in content, "vitalia alembic chain is independent — down_revision must be None"
 
 
 def _strip_docstrings_and_comments(source: str) -> str:
@@ -144,9 +137,7 @@ def test_all_11_tables_have_if_not_exists() -> None:
 
     for table in VITALIA_EXPECTED_TABLES:
         pattern = rf"CREATE TABLE IF NOT EXISTS\s+{re.escape(table)}"
-        assert re.search(pattern, content, re.IGNORECASE), (
-            f"Table '{table}' must use CREATE TABLE IF NOT EXISTS"
-        )
+        assert re.search(pattern, content, re.IGNORECASE), f"Table '{table}' must use CREATE TABLE IF NOT EXISTS"
 
 
 def test_all_indexes_have_if_not_exists() -> None:
@@ -156,9 +147,7 @@ def test_all_indexes_have_if_not_exists() -> None:
 
     index_creates = re.findall(r"CREATE\s+(?:UNIQUE\s+)?INDEX\b[^\n;]+", content, re.IGNORECASE)
     for stmt in index_creates:
-        assert "IF NOT EXISTS" in stmt.upper(), (
-            f"Index statement missing IF NOT EXISTS: {stmt[:80]}"
-        )
+        assert "IF NOT EXISTS" in stmt.upper(), f"Index statement missing IF NOT EXISTS: {stmt[:80]}"
 
 
 def test_medical_audit_log_has_no_deleted_at() -> None:
@@ -213,9 +202,7 @@ def test_timestamps_are_timestamptz() -> None:
     # Should use TIMESTAMPTZ or TIMESTAMP WITH TIME ZONE — no plain TIMESTAMP
     # Count occurrences of TIMESTAMP NOT followed by Z or WITH
     plain_ts = re.findall(r"\bTIMESTAMP\b(?!\s*W|\s*Z|\s+WITH)", content, re.IGNORECASE)
-    assert len(plain_ts) == 0, (
-        f"Found {len(plain_ts)} plain TIMESTAMP columns (must use TIMESTAMPTZ): {plain_ts[:3]}"
-    )
+    assert len(plain_ts) == 0, f"Found {len(plain_ts)} plain TIMESTAMP columns (must use TIMESTAMPTZ): {plain_ts[:3]}"
 
 
 def test_downgrade_drops_tables_in_reverse_order() -> None:
@@ -225,9 +212,7 @@ def test_downgrade_drops_tables_in_reverse_order() -> None:
 
     for table in VITALIA_EXPECTED_TABLES:
         pattern = rf"DROP TABLE IF EXISTS\s+{re.escape(table)}"
-        assert re.search(pattern, content, re.IGNORECASE), (
-            f"downgrade() must DROP TABLE IF EXISTS {table}"
-        )
+        assert re.search(pattern, content, re.IGNORECASE), f"downgrade() must DROP TABLE IF EXISTS {table}"
 
 
 # ---------------------------------------------------------------------------
@@ -255,9 +240,7 @@ def test_upgrade_head_twice_idempotent() -> None:
         capture_output=True,
         text=True,
     )
-    assert result1.returncode == 0, (
-        f"First upgrade failed:\nstdout: {result1.stdout}\nstderr: {result1.stderr}"
-    )
+    assert result1.returncode == 0, f"First upgrade failed:\nstdout: {result1.stdout}\nstderr: {result1.stderr}"
 
     result2 = subprocess.run(
         [venv_alembic, "upgrade", "head"],
@@ -288,9 +271,7 @@ def test_downgrade_then_upgrade() -> None:
         capture_output=True,
         text=True,
     )
-    assert result_down.returncode == 0, (
-        f"Downgrade failed:\nstdout: {result_down.stdout}\nstderr: {result_down.stderr}"
-    )
+    assert result_down.returncode == 0, f"Downgrade failed:\nstdout: {result_down.stdout}\nstderr: {result_down.stderr}"
 
     result_up = subprocess.run(
         [venv_alembic, "upgrade", "head"],
@@ -332,10 +313,7 @@ def test_all_11_tables_present_post_upgrade() -> None:
         conn.close()
 
     missing = set(VITALIA_EXPECTED_TABLES) - found_tables
-    assert not missing, (
-        f"Missing vitalia tables after upgrade: {sorted(missing)}\n"
-        f"Found: {sorted(found_tables)}"
-    )
+    assert not missing, f"Missing vitalia tables after upgrade: {sorted(missing)}\nFound: {sorted(found_tables)}"
     assert len(found_tables) >= 11, (
         f"Expected at least 11 vitalia tables, found {len(found_tables)}: {sorted(found_tables)}"
     )

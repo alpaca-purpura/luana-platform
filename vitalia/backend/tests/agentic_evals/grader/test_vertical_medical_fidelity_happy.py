@@ -41,8 +41,8 @@ from dataclasses import dataclass
 import pytest
 
 from src.modules.vitalia.agentic.guardrails.medical_disclaimer_required import (
-    response_mentions_medical_topic,
     response_already_has_disclaimer,
+    response_mentions_medical_topic,
 )
 from src.modules.vitalia.agentic.guardrails.medical_safety_no_diagnosis import (
     fires_output_regex as fires_diagnosis_regex,

@@ -35,8 +35,7 @@ from __future__ import annotations
 
 import re
 import uuid
-from dataclasses import dataclass, field
-from typing import Any
+from dataclasses import dataclass
 
 import pytest
 
@@ -147,7 +146,9 @@ _TRACE_EVENTS: list[_TraceEvent] = [
     _TraceEvent(
         tenant_id=_TENANT_ID,
         conversation_id=_CONV_ID,
-        response="El tratamiento de conducto se realiza bajo anestesia local. Esto no reemplaza consulta médica profesional.",
+        response=(
+            "El tratamiento de conducto se realiza bajo anestesia local. Esto no reemplaza consulta médica profesional."
+        ),
         context_used=["dental-treatment-endodontics-v1", "dental-anesthesia-protocols-v1"],
     ),
     # 2. Appointment scheduling — NO medical content, citation optional
@@ -161,21 +162,30 @@ _TRACE_EVENTS: list[_TraceEvent] = [
     _TraceEvent(
         tenant_id=_TENANT_ID,
         conversation_id=_CONV_ID,
-        response="El procedimiento dura aproximadamente 60 minutos y no requiere ayuno previo. Esto no reemplaza consulta médica profesional.",
+        response=(
+            "El procedimiento dura aproximadamente 60 minutos y no requiere ayuno previo."
+            " Esto no reemplaza consulta médica profesional."
+        ),
         context_used=["dental-implant-procedure-v1"],
     ),
     # 4. Implant inquiry — citation required (has "implante")
     _TraceEvent(
         tenant_id=_TENANT_ID,
         conversation_id=_CONV_ID,
-        response="El implante dental es una solución permanente que requiere evaluación previa. Esto no reemplaza consulta médica profesional.",
+        response=(
+            "El implante dental es una solución permanente que requiere evaluación previa."
+            " Esto no reemplaza consulta médica profesional."
+        ),
         context_used=["dental-implants-overview-v1", "dental-evaluation-checklist-v1"],
     ),
     # 5. Therapy followup — citation required (has "terapia")
     _TraceEvent(
         tenant_id=_TENANT_ID,
         conversation_id=_CONV_ID,
-        response="La terapia cognitivo-conductual tiene una duración aproximada de 12 sesiones. Esto no reemplaza consulta médica profesional.",
+        response=(
+            "La terapia cognitivo-conductual tiene una duración aproximada de 12 sesiones."
+            " Esto no reemplaza consulta médica profesional."
+        ),
         context_used=["psychology-cbt-overview-v1"],
     ),
     # 6. Greeting — NO medical content
@@ -189,14 +199,20 @@ _TRACE_EVENTS: list[_TraceEvent] = [
     _TraceEvent(
         tenant_id=_TENANT_ID,
         conversation_id=_CONV_ID,
-        response="Te recomiendo una consulta de evaluación inicial con el especialista. Esto no reemplaza consulta médica profesional.",
+        response=(
+            "Te recomiendo una consulta de evaluación inicial con el especialista."
+            " Esto no reemplaza consulta médica profesional."
+        ),
         context_used=["dental-initial-consultation-v1"],
     ),
     # 8. Medication question redirect — citation required (has "medicación")
     _TraceEvent(
         tenant_id=_TENANT_ID,
         conversation_id=_CONV_ID,
-        response="Cualquier ajuste en tu medicación debe ser evaluado directamente por tu psiquiatra. Esto no reemplaza consulta médica profesional.",
+        response=(
+            "Cualquier ajuste en tu medicación debe ser evaluado directamente por tu psiquiatra."
+            " Esto no reemplaza consulta médica profesional."
+        ),
         context_used=["psychiatry-medication-safety-v1"],
     ),
     # 9. Price inquiry — NO medical content (avoids medical keywords deliberately)
@@ -210,7 +226,10 @@ _TRACE_EVENTS: list[_TraceEvent] = [
     _TraceEvent(
         tenant_id=_TENANT_ID,
         conversation_id=_CONV_ID,
-        response="Después de la cirugía es normal experimentar molestias durante 48-72 horas. Esto no reemplaza consulta médica profesional.",
+        response=(
+            "Después de la cirugía es normal experimentar molestias durante 48-72 horas."
+            " Esto no reemplaza consulta médica profesional."
+        ),
         context_used=["dental-postsurgical-care-v1", "dental-pain-management-v1"],
     ),
 ]
@@ -224,7 +243,7 @@ assert len(_TRACE_EVENTS) == 10, f"V-AE-13 requires 10 trace events, got {len(_T
 @pytest.mark.parametrize(
     "trace",
     _TRACE_EVENTS,
-    ids=[f"trace_{i+1}" for i in range(len(_TRACE_EVENTS))],
+    ids=[f"trace_{i + 1}" for i in range(len(_TRACE_EVENTS))],
 )
 def test_no_hallucination_citation_per_trace(trace: _TraceEvent) -> None:
     """V-AE-13: each trace event must satisfy the citation contract."""
@@ -245,11 +264,7 @@ def test_no_hallucination_aggregate_threshold_0_90() -> None:
     assert pass_rate >= 0.90, (
         f"No-hallucination citation contract aggregate: {pass_rate:.2f} < 0.90.\n"
         f"Failures:\n"
-        + "\n".join(
-            f"  trace {i+1}: {g.assertion} — {g.detail}"
-            for i, g in enumerate(grades)
-            if not g.passed
-        )
+        + "\n".join(f"  trace {i + 1}: {g.assertion} — {g.detail}" for i, g in enumerate(grades) if not g.passed)
     )
 
 

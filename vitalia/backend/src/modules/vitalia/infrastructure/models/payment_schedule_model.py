@@ -28,43 +28,23 @@ class VitaliaPaymentScheduleModel(Base):
 
     __tablename__ = "vitalia_payment_schedules"
 
-    id: Mapped[UUID] = mapped_column(
-        PgUUID(as_uuid=True), primary_key=True, default=uuid4
-    )
-    tenant_id: Mapped[UUID] = mapped_column(
-        PgUUID(as_uuid=True), nullable=False, index=True
-    )
+    id: Mapped[UUID] = mapped_column(PgUUID(as_uuid=True), primary_key=True, default=uuid4)
+    tenant_id: Mapped[UUID] = mapped_column(PgUUID(as_uuid=True), nullable=False, index=True)
     booking_id: Mapped[UUID] = mapped_column(PgUUID(as_uuid=True), nullable=False)
     patient_id: Mapped[UUID] = mapped_column(PgUUID(as_uuid=True), nullable=False)
     # "mercadopago" / "stripe_connect" / "tokenized_recurring"
     gateway: Mapped[str] = mapped_column(String(32), nullable=False)
     installment_n: Mapped[int] = mapped_column(nullable=False)
-    scheduled_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False
-    )
-    amount: Mapped[Decimal] = mapped_column(
-        Numeric(precision=14, scale=2), nullable=False
-    )
+    scheduled_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    amount: Mapped[Decimal] = mapped_column(Numeric(precision=14, scale=2), nullable=False)
     currency: Mapped[str] = mapped_column(String(3), nullable=False)  # ISO 4217
     # "scheduled" / "processing" / "succeeded" / "failed" / "cancelled"
-    status: Mapped[str] = mapped_column(
-        String(32), nullable=False, default="scheduled"
-    )
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="scheduled")
     # Populated when payment is executed
-    payment_intent_id: Mapped[UUID | None] = mapped_column(
-        PgUUID(as_uuid=True), nullable=True
-    )
-    schedule_metadata: Mapped[dict] = mapped_column(
-        JSONB, nullable=False, default=dict
-    )
-    processed_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    payment_intent_id: Mapped[UUID | None] = mapped_column(PgUUID(as_uuid=True), nullable=True)
+    schedule_metadata: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
+    processed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     failure_reason: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
     # No deleted_at — financial record

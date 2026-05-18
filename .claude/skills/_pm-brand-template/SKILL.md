@@ -81,6 +81,35 @@ model: opus
 
 (...heredar resto del template idéntico a /pm-nicolify, /pm-vitalia, /pm-comunify, /pm-lupulo
 con placeholders reemplazados...)
+
+★ MANDATORIO: Bootstrap protocol DEBE incluir "Step 0 — Story closure gate scan"
+per `.claude/rules/story-closure-gate.md` (Layer 1). Plantilla:
+
+### Step 0 — Story closure gate scan (MANDATORY post 2026-05-18)
+
+ANTES del menú habitual, scanear stories abiertas en el worktree actual:
+
+\`\`\`bash
+WS=\$(git rev-parse --show-toplevel)
+CURRENT_BRANCH=\$(git branch --show-current)
+
+for cp in \${WS}/{{SLUG}}/docs/product/stories/*/checkpoint.md; do
+  STORY_ID=\$(basename \$(dirname \$cp))
+  STATE=\$(grep -E "^state:" \$cp | head -1 | awk '{print \$2}')
+  DEFER=\$(grep -E "^defer_audit:" \$cp 2>/dev/null | awk '{print \$2}')
+  if [[ "\$STATE" =~ ^(developing|developed|reviewing)\$ ]]; then
+    if [[ "\$DEFER" == "true" ]]; then
+      echo "⏸  DEFERRED: \$STORY_ID (state=\$STATE)"
+    else
+      echo "🔴 OPEN: \$STORY_ID (state=\$STATE) — REQUIRES RESUME FIRST"
+    fi
+  fi
+done
+\`\`\`
+
+**Si hay stories OPEN sin defer_audit:** REUSE THAT FIRST. Refuse menu (a) nueva story.
+
+Detalle SSoT: `.claude/rules/story-closure-gate.md`.
 ```
 
 ## Checklist post-bootstrap

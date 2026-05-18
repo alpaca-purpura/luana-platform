@@ -90,13 +90,15 @@ Detalle completo: `docs/process/pm-redesign-2026-05.md` § Punto 4.
 | 3 | `refined` | Spec + UX/diseño ratificados Chris. Listo para architects | Chris ratifica | `/pm-luana` o `/pm-{brand}` cierra | ≤ 5 |
 | 4 | `ready` | Paquete autocontenido completo (`03-arch` + `04-validators` + `05-guidelines` + `06-tickets`) | `/architect` cierra | `/architect` Opus | ≤ 5 |
 | 5 | `developing` | Autonomous build activo iterando vs validators | `/dev-team` picks | opencode/Sonnet (Opus si agentic prod) | ≤ 3 |
-| 6 | `developed` | Validators GREEN. Build cerrado, awaiting QA | `/dev-team` cierra | `/dev-team` | ≤ 10 |
-| 7 | `reviewing` | Auditor QA en curso (Opus C1-C3 + Sonnet tests) | Chris triggers manual | `/auditor` | ≤ 2 |
+| 6 | `developed` | Validators GREEN. Build cerrado, **AUTO-HANDOFF a `/auditor`** (default) salvo `defer_audit: true` en checkpoint | `/dev-team` cierra + emite handoff `/auditor` | `/dev-team` | ≤ 1 |
+| 7 | `reviewing` | Auditor QA en curso (Opus C1-C3 + Sonnet tests). **AUTO-HANDOFF a `/pm-{brand}` merge** al APPROVED | auto desde Step 6 (o Chris manual si defer_audit ratificado) | `/auditor` | ≤ 1 |
 | 8 | `done` | Auditor APPROVED + merge + capability promovida + docs | auditor APPROVED → `/pm-luana` o `/pm-{brand}` merge | `/pm-luana` o `/pm-{brand}` | rolling 90d |
 | 9 | `parked` | De-prioritized, NO abandonado | manual | Chris | ∞ |
 | 10 | `dropped` | Won't do (terminal) | manual | Chris | ∞ |
 
 **Legacy exempt:** stories pre-paradigma (PI-12 sales-agent-eval) NO violan caps al migrar; cap aplica forward-only post 2026-05-06.
+
+**★ Story closure gate (post 2026-05-18 — caso vitalia auditor-no-disparado):** una story que entra a `state: developed` o `reviewing` NO PUEDE ser abandonada para arrancar trabajo en otra story. `/dev-team` cerrar `developed` dispara **AUTO-HANDOFF** a `/auditor`. `/auditor` APPROVED dispara **AUTO-HANDOFF** a `/pm-{brand}` merge. Escape valve explícita: `checkpoint.md::defer_audit: true` con razón documentada + ratificación Chris. SSoT: `.claude/rules/story-closure-gate.md` + `docs/process/story-closure-gate.md` + `docs/architecture/luana-platform/ADR-006-story-closure-gate.md`.
 
 Outcome (epic) = agrupación semántica de stories por objetivo común. Story = work unit. Ticket = sub-unit. Outcome cierra event-driven (no time-driven). NO PI/Sprint.
 
@@ -130,14 +132,17 @@ Conv 1 — DISCOVERY + READY  (Chris + /pm-luana + /po-ux + /architect)
 Conv 2 — AUTONOMOUS BUILD   (opencode + Sonnet iterando contra validators)
   → /dev-team toma 06-tickets.yaml ticket-por-ticket
   → loop: implement → run validators → fix targeted file → repeat hasta GREEN o cap_reached
-  → on GREEN: state=developing→developed
+  → on GREEN: state=developing→developed + AUTO-HANDOFF /auditor (default)
+  → on defer_audit:true en checkpoint: STOP, pingear Chris en bootstrap /pm-{brand}
   → on cap reached: state=developing→blocked, escalate Chris
 
-Conv 3 — REVIEW + MERGE     (Chris triggers /auditor + /pm-luana o /pm-{brand} merge)
-  → state=developed → reviewing (manual por Chris)
+Conv 3 — REVIEW + MERGE     (auto-handoff cadena; manual opt-in via defer_audit)
+  → state=developed → reviewing (auto desde Conv 2, salvo defer_audit ratificado)
   → /auditor spawna auditor-{be,fe,agentic}
+  → Phase D: gherkin verification matrix (scenario → test → status)
   → CHECKPOINTS.md C1-C5 grid: Code | Spec | Architecture | Cross-cutting | Trace
-  → APPROVED → /pm-luana o /pm-{brand} aplica merge → scenarios migran a capability → story archive a docs/archive/{year}/
+  → APPROVED → AUTO-HANDOFF /pm-luana o /pm-{brand} merge
+  → /pm-{brand} escribe 07-merge.md (5 secciones cementadas) + update capabilities/* + archive story
   → state=reviewing→done
 ```
 

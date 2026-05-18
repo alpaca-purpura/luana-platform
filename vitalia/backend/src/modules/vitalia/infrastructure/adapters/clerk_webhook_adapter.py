@@ -78,7 +78,7 @@ class ClerkWebhookAdapter:
         secret = self.webhook_secret
         # Strip whsec_ prefix if present (Svix format)
         if secret.startswith("whsec_"):
-            secret = secret[len("whsec_"):]
+            secret = secret[len("whsec_") :]
         try:
             self._secret_bytes = base64.b64decode(secret)
         except Exception:
@@ -121,9 +121,7 @@ class ClerkWebhookAdapter:
 
         age_seconds = abs(int(time.time()) - event_ts)
         if age_seconds > self.tolerance_seconds:
-            raise ValueError(
-                f"Clerk webhook timestamp too old ({age_seconds}s > {self.tolerance_seconds}s tolerance)"
-            )
+            raise ValueError(f"Clerk webhook timestamp too old ({age_seconds}s > {self.tolerance_seconds}s tolerance)")
 
         # ── HMAC computation (Svix standard) ────────────────────────────────
         # signed_content = "{svix-id}.{svix-timestamp}.{body}"

@@ -28,37 +28,19 @@ class VitaliaPaymentIntentModel(Base):
 
     __tablename__ = "vitalia_payment_intents"
 
-    id: Mapped[UUID] = mapped_column(
-        PgUUID(as_uuid=True), primary_key=True, default=uuid4
-    )
-    tenant_id: Mapped[UUID] = mapped_column(
-        PgUUID(as_uuid=True), nullable=False, index=True
-    )
-    booking_id: Mapped[UUID] = mapped_column(
-        PgUUID(as_uuid=True), nullable=False, index=True
-    )
+    id: Mapped[UUID] = mapped_column(PgUUID(as_uuid=True), primary_key=True, default=uuid4)
+    tenant_id: Mapped[UUID] = mapped_column(PgUUID(as_uuid=True), nullable=False, index=True)
+    booking_id: Mapped[UUID] = mapped_column(PgUUID(as_uuid=True), nullable=False, index=True)
     # "mercadopago" / "stripe_connect" / "tokenized_recurring"
     gateway: Mapped[str] = mapped_column(String(32), nullable=False)
-    gateway_payment_id: Mapped[str | None] = mapped_column(
-        String(255), nullable=True, unique=True
-    )
-    amount: Mapped[Decimal] = mapped_column(
-        Numeric(precision=14, scale=2), nullable=False
-    )
+    gateway_payment_id: Mapped[str | None] = mapped_column(String(255), nullable=True, unique=True)
+    amount: Mapped[Decimal] = mapped_column(Numeric(precision=14, scale=2), nullable=False)
     currency: Mapped[str] = mapped_column(String(3), nullable=False)  # ISO 4217
     # "initiated" / "processing" / "succeeded" / "failed" / "refunded"
     status: Mapped[str] = mapped_column(String(32), nullable=False)
     failure_reason: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    payment_metadata: Mapped[dict] = mapped_column(
-        JSONB, nullable=False, default=dict
-    )
-    idempotency_key: Mapped[str | None] = mapped_column(
-        String(128), nullable=True, unique=True
-    )
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
-    )
+    payment_metadata: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
+    idempotency_key: Mapped[str | None] = mapped_column(String(128), nullable=True, unique=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
     # No deleted_at — financial record

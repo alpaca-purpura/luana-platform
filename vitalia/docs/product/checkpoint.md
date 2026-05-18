@@ -9,7 +9,7 @@ active_outcomes:
   - vitalia-mvp-ui-foundation      # outcome maestro Slice 1/2/3 FE Vitalia MVP
 active_stories:
   - vitalia-ux-discovery                   # state: ready (READY_PACKAGE_CLOSED_AND_SPLIT) — /architect produjo package 2026-05-17 · split aceptado Chris en 7 sub-stories
-  - vitalia-slice-1-infra-cross-cutting    # state: developing (★ T-arch-1 + T-infra-1 pushed 2026-05-18 · 8 tickets remaining T-infra-2..T-infra-9)
+  - vitalia-slice-1-infra-cross-cutting    # state: developed + defer_audit:true (★ 10 tickets pushed 2026-05-18 · session-split detectado · 1 FE arch FAIL FE-A1 hardcoded colors · audit_pending_actions documentados · resume worktree limpio sesión nueva)
   - vitalia-slice-1-onboarding-wizard      # state: refined (blocked by infra + copilot-tools-impl)
   - vitalia-slice-1-inbox                  # state: refined (blocked by infra)
   - vitalia-slice-1-pipeline               # state: refined (blocked by infra + payment-adapter-mvp + copilot-tools-impl)
@@ -18,7 +18,20 @@ active_stories:
   - vitalia-slice-1-marketing              # state: refined (blocked by infra + copilot-tools-impl)
   - vitalia-pricing-decision               # state: idea (spawned 2026-05-17, decisión Chris postergada)
   - vitalia-payment-adapter-mvp            # state: refining (transitioned 2026-05-17 sesión close-slice-1, awaiting /po draft)
-  - vitalia-copilot-tools-impl             # state: ready (★ /architect Opus 4.7 produjo ready package 2026-05-18 — 6 artifacts + 10 tickets DAG + 29 validators 4 categories + R23 enforcement 6 Opus+4 Sonnet · awaiting /dev-team build cuando vitalia-slice-1-infra-cross-cutting state=developed)
+  - vitalia-copilot-tools-impl             # state: developing + defer_audit:true (★ session-split 2026-05-18 — 4/10 tickets pushed BE migrations+services en worktree wip/vitalia-slice-1-shipping compartido violando 1-story-per-worktree · audit_pending_actions documentados · Chris decide rewind o continue en sesión nueva)
+deferred_audits:                           # ★ Story closure gate visibility (cement 2026-05-18)
+  - story_id: vitalia-slice-1-infra-cross-cutting
+    state: developed
+    reason: "1 FE arch FAIL FE-A1 hardcoded colors detected pragmatic Opus audit + session-split worktree wip/vitalia-slice-1-shipping"
+    pending_until: 2026-05-25
+    next_owner: /pm-vitalia + /auditor + /dev-team (new session)
+    findings_snapshot: vitalia/docs/product/stories/vitalia-slice-1-infra-cross-cutting/06-audit/baseline-snapshot-2026-05-18.md
+  - story_id: vitalia-copilot-tools-impl
+    state: developing
+    reason: "Session-split arrancada incorrectamente en worktree compartido — 4/10 tickets pushed BE · 6 remaining agentic Opus required"
+    pending_until: 2026-05-25
+    next_owner: /pm-vitalia + /dev-team (new session)
+    blocks_on: vitalia-slice-1-infra-cross-cutting
   - vitalia-fiscal-emission-pe             # state: refining (transitioned 2026-05-17, awaiting /po draft)
 ratified_promotion_proposals:              # APPROVED + migrated 2026-05-17 (commit 5ca6101) — unblocks T-be-migration-014/T-be-migration-015
   - docs/promotion-protocol/proposals/2026-05-17-platform-tenants-location-columns.md      # state: migrated (luana-core-platform 0.1.0→0.2.0)
@@ -83,3 +96,12 @@ Story 11 (`luana-vitalia-bootstrap`, mergeada 2026-05-15) shipped **16 capabilit
   - **T-arch-1 PUSHED** (commits d6f01b6 + dc35339 + 3566bce): ADR-vitalia-001-shared-vs-fork.md (NEW ~120 LOC) + globals.css (NEW ~60 LOC, :root CSS vars 5 brand + 9 neutrals + 4 semantic + 3 gradients HSL) + tailwind.config.ts (MODIFY 18 official tokens via CSS vars) + layout.tsx (MODIFY import globals.css). Gate-runner Haiku independent verdict: 3/3 GREEN (tsc 0 errors · eslint 0 warnings --max-warnings=0 · vitest arch fitness 18/18 tests). gate-output.json all_pass=true 45s duration.
   - **T-infra-1 PUSHED** (commits 1194941 + 6820c7b): 15 Alembic migrations 002-016 idempotent + smoke test `test_slice1_migrations.py` (93/93 static PASS, 8/8 integration SKIP por Postgres no-disponible nativo). 12 NEW tables (appointments + payment_events + fiscal_receipts + treatment_plans + re_engagement_events + channel_sync_state + channel_metrics + lucas_recommendations + referrals + onboarding_progress + brand_studio_drafts + vitalia_audit_log) + 4 column additions (014 tenants location_country+location_city+timezone+is_onboarded · 015 offers requires_multi_session+sessions_expected+gap_alert_days+maintenance_schedule+maintenance_custom_days · 016 patients marketing consent). HIPAA-lite: vitalia_audit_log PARTITION BY RANGE monthly + payload_redacted BYTEA + NO deleted_at. pgcrypto BYTEA en treatment_plans.notes + re_engagement_events.payload_phi + channel_sync_state.oauth_token_encrypted. Validators: be_lint_ruff_check PASS · be_format_ruff PASS · be_arch_fitness_brand 166/166 PASS · be_test_migrations_smoke 93/93 PASS. TenantLocationContract (014) + OfferAdherenceContract+MaintenanceScheduleEnum (015) consumidos correctly desde engine commits 5ca6101.
   - **Sesión cierre**: Chris pidió pausar antes T-infra-2 + dejar todo committed+pushed para retomar en nueva sesión. Branch `wip/vitalia-slice-1-shipping` con 12 commits ahead main, todos pushed origin. Brand vitalia checkpoint actualizado (este). Próximo natural: `/dev-team vitalia-slice-1-infra-cross-cutting` continúa T-infra-2 (Extension SDK 5 registries, ★ Opus AGENTIC production_code=true) cascade Wave 2 → después Wave 3 paralelo (T-infra-3 + T-infra-5) → Wave 4 (T-infra-{4,8,9}) → Wave 5 (T-infra-{6,7}).
+- **2026-05-18 sesión cement story-closure-gate + session-split detection**: Chris detectó al volver que /dev-team había arrancado `vitalia-copilot-tools-impl` (4 tickets BE pushed) en mismo worktree `wip/vitalia-slice-1-shipping` donde `vitalia-slice-1-infra-cross-cutting` estaba state=developed sin auditar/mergear. Ratificó cementar nuevo gate cross-brand antes de seguir.
+  - **5 commits cement harness** (e6d59c9 + fed4675 + de159f7 + 123de15 + 5a0c643):
+    - Foundation rule `.claude/rules/story-closure-gate.md` + ADR-005 + `docs/process/story-closure-gate.md` + learnings 2026-05-18 promotable:yes
+    - Paradigm v4 update (CLAUDE.md + pm-redesign-2026-05.md) — Conv 3 AUTO-HANDOFF default + defer_audit escape valve + WIP cap developed/reviewing ≤ 1 por worktree
+    - 14 skills cementadas: dev-team (refuse pickup + auto-handoff /auditor) + auditor (Phase D gherkin matrix + auto-handoff /pm-{brand}) + 11 pm-{brand,luana} bootstrap Step 0 scan stories developed/reviewing + _pm-brand-template scaffold
+    - Templates: `04-tickets-template.yaml` con `gherkin_coverage` field mandatory + `07-merge-template.md` REWRITE con 5 secciones cementadas (gherkin matrix + playwright run + capabilities + modules MD + how to verify)
+    - Hooks + scripts: pre-commit Section 11 (bloquea stage files story B si story A developed/reviewing sin defer_audit) + new-session.sh `--story-id` flag + cleanup-session.sh refuse si state ≠ done
+  - **Operational test pragmático Opus (commit 6)**: audit baseline snapshot de infra-cross-cutting reveló 1 FE arch FAIL real (FE-A1 hardcoded colors, 8 archivos: 3 production .tsx + 5 .stories.tsx Storybook). BE arch fitness 226/226 PASS limpio. → defer_audit ratificado en ambos checkpoints (infra + copilot) + baseline snapshot escrito en `vitalia/docs/product/stories/vitalia-slice-1-infra-cross-cutting/06-audit/baseline-snapshot-2026-05-18.md` + deferred_audits list NEW en este brand checkpoint con findings y next_owner = sesión nueva con worktree limpio.
+  - **Resultado**: gate operacionalmente VALIDADO — detectó FAIL que /dev-team marcó GREEN, escape valve defer_audit funciona como diseñada, bootstrap pm-vitalia próxima sesión pingeará la deuda. Branch wip/vitalia-slice-1-shipping listo para squash-merge a main (cementa harness + WIP infra+copilot transparente con defer documentado). Próximo Chris: nueva sesión arranca worktree limpio per convention, resuelve audit_pending_actions de infra primero, después continue copilot worktree fresco.

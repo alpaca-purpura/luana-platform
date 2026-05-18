@@ -30,59 +30,42 @@ class PaymentIntentRepository:
         self._session = session
         self._tenant_id = tenant_id
 
-    async def get_by_id(
-        self, intent_id: uuid.UUID
-    ) -> VitaliaPaymentIntentModel | None:
+    async def get_by_id(self, intent_id: uuid.UUID) -> VitaliaPaymentIntentModel | None:
         """Return payment intent by ID for this tenant."""
-        stmt = (
-            select(VitaliaPaymentIntentModel)
-            .where(
-                VitaliaPaymentIntentModel.id == intent_id,
-                VitaliaPaymentIntentModel.tenant_id == self._tenant_id,
-            )
+        stmt = select(VitaliaPaymentIntentModel).where(
+            VitaliaPaymentIntentModel.id == intent_id,
+            VitaliaPaymentIntentModel.tenant_id == self._tenant_id,
         )
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_by_idempotency_key(
-        self, idempotency_key: str
-    ) -> VitaliaPaymentIntentModel | None:
+    async def get_by_idempotency_key(self, idempotency_key: str) -> VitaliaPaymentIntentModel | None:
         """Return payment intent by idempotency key for this tenant.
 
         Used for idempotent payment initiation — returns existing if same key.
         """
-        stmt = (
-            select(VitaliaPaymentIntentModel)
-            .where(
-                VitaliaPaymentIntentModel.tenant_id == self._tenant_id,
-                VitaliaPaymentIntentModel.idempotency_key == idempotency_key,
-            )
+        stmt = select(VitaliaPaymentIntentModel).where(
+            VitaliaPaymentIntentModel.tenant_id == self._tenant_id,
+            VitaliaPaymentIntentModel.idempotency_key == idempotency_key,
         )
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_by_gateway_payment_id(
-        self, gateway_payment_id: str
-    ) -> VitaliaPaymentIntentModel | None:
+    async def get_by_gateway_payment_id(self, gateway_payment_id: str) -> VitaliaPaymentIntentModel | None:
         """Return payment intent by gateway_payment_id (for webhook matching).
 
         Note: gateway_payment_id has a unique constraint but no tenant_id filter
         by design (webhooks arrive without tenant context). We still filter by
         tenant_id for safety — webhook handlers must resolve tenant first.
         """
-        stmt = (
-            select(VitaliaPaymentIntentModel)
-            .where(
-                VitaliaPaymentIntentModel.tenant_id == self._tenant_id,
-                VitaliaPaymentIntentModel.gateway_payment_id == gateway_payment_id,
-            )
+        stmt = select(VitaliaPaymentIntentModel).where(
+            VitaliaPaymentIntentModel.tenant_id == self._tenant_id,
+            VitaliaPaymentIntentModel.gateway_payment_id == gateway_payment_id,
         )
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def list_by_booking(
-        self, booking_id: uuid.UUID
-    ) -> list[VitaliaPaymentIntentModel]:
+    async def list_by_booking(self, booking_id: uuid.UUID) -> list[VitaliaPaymentIntentModel]:
         """List all payment intents for a booking within this tenant."""
         stmt = (
             select(VitaliaPaymentIntentModel)

@@ -33,9 +33,10 @@ import pytest
 
 from src.modules.vitalia.agentic.guardrails.medical_disclaimer_required import (
     DISCLAIMER_TEXT,
+)
+from src.modules.vitalia.agentic.guardrails.medical_disclaimer_required import (
     medical_disclaimer_required_check as apply_disclaimer_decorator,
 )
-
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 
@@ -142,10 +143,7 @@ async def test_smoke_hipaa_disclaimer_medication_psychiatry(audit_log: _InMemory
         audit_log=audit_log,
     )
     canonical_phrase = "Esto no reemplaza consulta médica profesional"
-    assert canonical_phrase in result, (
-        f"Flow 2 (medication psychiatry): DISCLAIMER missing in output.\n"
-        f"Got: {result!r}"
-    )
+    assert canonical_phrase in result, f"Flow 2 (medication psychiatry): DISCLAIMER missing in output.\nGot: {result!r}"
     assert len(audit_log.entries) == 1
     assert audit_log.entries[0]["event_type"] == "disclaimer_inserted"
 
@@ -162,9 +160,7 @@ async def test_smoke_hipaa_disclaimer_surgical_consultation(audit_log: _InMemory
         audit_log=audit_log,
     )
     canonical_phrase = "Esto no reemplaza consulta médica profesional"
-    assert canonical_phrase in result, (
-        f"Flow 3 (surgical): DISCLAIMER missing in output.\nGot: {result!r}"
-    )
+    assert canonical_phrase in result, f"Flow 3 (surgical): DISCLAIMER missing in output.\nGot: {result!r}"
     assert len(audit_log.entries) == 1
 
 
@@ -180,9 +176,7 @@ async def test_smoke_hipaa_disclaimer_psychology_therapy(audit_log: _InMemoryAud
         audit_log=audit_log,
     )
     canonical_phrase = "Esto no reemplaza consulta médica profesional"
-    assert canonical_phrase in result, (
-        f"Flow 4 (therapy): DISCLAIMER missing in output.\nGot: {result!r}"
-    )
+    assert canonical_phrase in result, f"Flow 4 (therapy): DISCLAIMER missing in output.\nGot: {result!r}"
     assert len(audit_log.entries) == 1
 
 
@@ -198,9 +192,7 @@ async def test_smoke_hipaa_disclaimer_condition_explanation(audit_log: _InMemory
         audit_log=audit_log,
     )
     canonical_phrase = "Esto no reemplaza consulta médica profesional"
-    assert canonical_phrase in result, (
-        f"Flow 5 (condition): DISCLAIMER missing in output.\nGot: {result!r}"
-    )
+    assert canonical_phrase in result, f"Flow 5 (condition): DISCLAIMER missing in output.\nGot: {result!r}"
     assert len(audit_log.entries) == 1
 
 

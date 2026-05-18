@@ -1036,7 +1036,7 @@ EOF
 fi
 
 # ─────────────────────────────────────────────────────────────────
-# Section 11 — Worktree D11 enforcement (added 2026-05-18 ADR-005)
+# Section 11 — Worktree D11 enforcement (added 2026-05-18 ADR-005 worktree-policy)
 # Block direct commit to main unless squash-merge/merge in progress.
 # Pre-commit no puede leer commit message (eso es commit-msg hook);
 # usamos signal git-native: .git/SQUASH_MSG | .git/MERGE_MSG.
@@ -1068,6 +1068,89 @@ Acciones:
      pre-commit detecta .git/SQUASH_MSG automáticamente.
   3. Si esto es meta-commit del protocolo:
      LUANA_ALLOW_MAIN_COMMIT=1 git commit -m "..."
+
+NEVER use --no-verify.
+─────────────────────────────────────────────────────────────
+EOF
+      printf "\033[0m"
+      exit 1
+    fi
+  fi
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 12. Story closure gate (origen 2026-05-18 — caso vitalia auditor-no-disparado)
+# ─────────────────────────────────────────────────────────────────────────────
+# SSoT: .claude/rules/story-closure-gate.md (Layer 4 enforcement)
+#
+# NOTE: numerada Section 12 porque main introdujo Section 11 (worktree D11
+# enforcement) concurrentemente en commit 25bd3bf (mismo cement-date 2026-05-18).
+# Las dos secciones son complementarias y operan en distintos planos:
+#   Section 11 (main) → bloquea commits directos a 'main' branch
+#   Section 12 (este) → bloquea cross-story commits dentro del mismo worktree
+#
+# Bloquea stage de archivos de story B si story A del mismo worktree esta en
+# state ∈ {developed, reviewing} SIN defer_audit:true.
+#
+# Razon: caso vitalia 2026-05-18. /dev-team cerro infra-cross-cutting en
+# state=developed (sin auditar/mergear) y arranco copilot-tools-impl en mismo
+# worktree. Esta seccion bloquea ese patron.
+#
+# Toggle override: STORY_CLOSURE_GATE_SKIP=1 (solo emergencias documentadas)
+
+if [ "${STORY_CLOSURE_GATE_SKIP:-0}" != "1" ]; then
+  # Stories tocadas por este commit (paths {brand}/docs/product/stories/{id}/...)
+  STAGED_STORIES=$(git diff --cached --name-only 2>/dev/null \
+    | grep -oE "^[a-z]+/docs/product/stories/[a-z0-9_-]+/" \
+    | sort -u \
+    || true)
+
+  # Listar stories en state developed|reviewing sin defer_audit en todo el worktree
+  OPEN_STORIES_LIST=""
+  for B in vitalia nicolify comunify lupulo saasora inmoflow retailly fixia guestly fitflow; do
+    [ -d "${REPO_ROOT}/${B}/docs/product/stories" ] || continue
+    for cp in "${REPO_ROOT}/${B}/docs/product/stories/"*/checkpoint.md; do
+      [ -f "$cp" ] || continue
+      STORY_ID=$(basename "$(dirname "$cp")")
+      STATE=$(grep -E "^state:" "$cp" 2>/dev/null | head -1 | awk '{print $2}' || echo "")
+      DEFER=$(grep -E "^defer_audit:" "$cp" 2>/dev/null | awk '{print $2}' || echo "")
+      if [[ "$STATE" =~ ^(developed|reviewing)$ ]] && [[ "$DEFER" != "true" ]]; then
+        OPEN_STORIES_LIST+="${B}/docs/product/stories/${STORY_ID}/|"
+      fi
+    done
+  done
+
+  # Si hay stories OPEN sin defer_audit + commit toca files de OTRA story → BLOCK
+  if [ -n "${OPEN_STORIES_LIST}" ] && [ -n "${STAGED_STORIES}" ]; then
+    OFFENDING_STAGED=""
+    for staged in ${STAGED_STORIES}; do
+      if [[ "${OPEN_STORIES_LIST}" != *"${staged}"* ]]; then
+        OFFENDING_STAGED+="  - ${staged}"$'\n'
+      fi
+    done
+
+    if [ -n "${OFFENDING_STAGED}" ]; then
+      printf "\033[31m"
+      cat <<EOF
+─────────────────────────────────────────────────────────────
+PRE-COMMIT BLOCKED: Story closure gate (Section 12, Layer 4).
+─────────────────────────────────────────────────────────────
+Hay stories abiertas en state developed/reviewing sin defer_audit:true
+en este worktree:
+
+$(echo "${OPEN_STORIES_LIST}" | tr '|' '\n' | sed 's/^/  - /' | grep -v '^  - $' || true)
+
+Pero este commit toca files de OTRAS stories:
+
+${OFFENDING_STAGED}
+Resolver primero la story open (auto-handoff /auditor → /pm-{brand} merge)
+antes de tocar otras stories. SSoT: .claude/rules/story-closure-gate.md
+
+Acciones disponibles:
+  1. Continuar story open hasta state=done (default forward-motion)
+  2. Ratificar defer_audit:true en checkpoint.md con razon documentada
+  3. Override emergencia: STORY_CLOSURE_GATE_SKIP=1 git commit ...
+     (solo si Chris ratifico explicitamente)
 
 NEVER use --no-verify.
 ─────────────────────────────────────────────────────────────

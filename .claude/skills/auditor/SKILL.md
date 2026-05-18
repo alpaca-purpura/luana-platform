@@ -1,6 +1,6 @@
 ---
 name: auditor
-description: "Auditor independiente v4 (Conv 3 — Review+Merge, post pm-redesign 2026-05 Punto 4). Toma story state=developed (Chris triggered manualmente para controlar gasto Opus) → transition state=developed→reviewing → spawna auditor-{be,fe,agentic} según surface. Veredicto: APPROVED | CHANGES_REQUESTED | ESCALATED. Self-fix triviales (lint/typo/format) cap 2 iter. Diseño/security/arch → escala. Cuando todos tickets audit-passed, escribe CHECKPOINTS.md (C1-C5 grid: Code | Spec | Architecture | Cross-cutting | Trace) → hand off /pm para merge. Activa cuando user dice: '/auditor', 'audita story', 'revisa tickets', 'verdict', 'review final', 'CHECKPOINTS'."
+description: "Auditor independiente v4 (Conv 3 — Review+Merge, post pm-redesign 2026-05 Punto 4 + story-closure-gate 2026-05-18). Toma story state=developed (AUTO-HANDOFF /dev-team default; manual opt-in via defer_audit:true) → transition state=developed→reviewing → spawna auditor-{be,fe,agentic} según surface. Phase D NEW: gherkin verification matrix (cada scenario 01-spec.md → test path → status, escribe 06-audit/gherkin-matrix.md). Veredicto: APPROVED | CHANGES_REQUESTED | ESCALATED. Self-fix triviales (lint/typo/format) cap 2 iter. Diseño/security/arch → escala. Cuando todos tickets audit-passed, escribe CHECKPOINTS.md (C1-C5 grid: Code | Spec | Architecture | Cross-cutting | Trace) + AUTO-HANDOFF /pm-{brand} merge. Activa cuando user dice: '/auditor', 'audita story', 'revisa tickets', 'verdict', 'review final', 'CHECKPOINTS'."
 allowed-tools: Read, Edit, Bash, Grep, Glob, Agent
 model: opus
 ---
@@ -18,7 +18,7 @@ Si invocado vía `/pm-{brand}` o `/dev-team` handoff, el brand viene en el hando
 ## Inputs obligatorios
 
 1. `<brand>` (REQUIRED, ver sección arriba)
-2. `{brand}/docs/product/stories/{story-id}/checkpoint.md` — state=developed requerido (Chris triggered manualmente; auditor transition a `reviewing` al picking up)
+2. `{brand}/docs/product/stories/{story-id}/checkpoint.md` — state=developed requerido (default auto-handoff `/dev-team`; manual opt-in si `defer_audit: true` venció). Auditor transitiona a `reviewing` al picking up
 3. `{brand}/docs/product/stories/{story-id}/06-tickets.yaml` — pila tickets pushed
 4. `{brand}/docs/product/stories/{story-id}/T-{n}-result.md` por ticket (qué dice el dev que entregó)
 5. `{brand}/docs/product/stories/{story-id}/T-{n}-impl-log.md` por ticket (iteration_log autonomous loop)
@@ -142,6 +142,63 @@ Agent({
 ```
 
 Sub-auditor escribe `T-{n}-review.md`. Tu rol: leer veredicto, decidir next.
+
+## Step 2.5 — Phase D: Gherkin verification matrix (story-closure-gate 2026-05-18)
+
+> Origen: story-closure-gate decreto 2026-05-18. Forward-only post-cement-date.
+
+Después de spawnar sub-auditores por ticket, EJECUTAR Phase D una vez por story
+(no por ticket). Phase D verifica que cada scenario Gherkin de `01-spec.md`
+tenga al menos un test PASS asociado.
+
+### Step 2.5a — Extraer Gherkin scenarios + tests mapeados
+
+```bash
+WS=$(git rev-parse --show-toplevel)
+STORY_DIR=${WS}/{brand}/docs/product/stories/{story-id}
+
+# Leer 01-spec.md y extraer scenarios (bloques Scenario: / Escenario: o "SC-NN")
+grep -nE "^### (Scenario|Escenario|SC-[0-9]+)" ${STORY_DIR}/01-spec.md
+# Leer 06-tickets.yaml y extraer gherkin_coverage por ticket
+grep -A 10 "gherkin_coverage:" ${STORY_DIR}/06-tickets.yaml
+```
+
+Si `06-tickets.yaml` NO contiene field `gherkin_coverage` por ticket:
+- Story transitioned ANTES de cement-date 2026-05-18 → exenta del gate Phase D estricto. WARN no FAIL.
+- Story transitioned POST-cement-date → FAIL automático. Devolver `/dev-team` con instrucción de agregar mapping.
+
+### Step 2.5b — Ejecutar tests citados + escribir matrix
+
+```bash
+mkdir -p ${STORY_DIR}/06-audit
+cat > ${STORY_DIR}/06-audit/gherkin-matrix.md <<EOF
+# Gherkin verification matrix — {brand}/{story-id}
+
+> Auditor: Phase D
+> Date: $(date -Iseconds)
+
+| Scenario (Gherkin) | Test path | Status | Notes |
+|---|---|---|---|
+EOF
+# Para cada scenario en 01-spec, lookup tests en gherkin_coverage, run, append row
+# (auditor sub-agent puede invocar pytest/playwright por test path; resultado PASS/FAIL/NO_COVERAGE)
+```
+
+### Step 2.5c — Verdict matrix
+
+- Algún scenario `NO COVERAGE` → CHANGES_REQUESTED + cita scenarios en `T-{n}-review.md § Gherkin gaps`
+- Algún scenario `FAIL` → CHANGES_REQUESTED + dev fix
+- Todos `PASS` → continuar Step 3
+
+### Step 2.5d — Playwright targeted (E2E rutas afectadas)
+
+Si story tiene rutas afectadas listadas en `01-spec.md § Rutas` o `03-arch-fe.md`:
+
+```bash
+cd ${WS}/{brand}/frontend && E2E_BASE_URL=http://localhost:300X npx playwright test --grep "{story-id}"
+```
+
+Output verdict → embedded en `07-merge.md § 2 — Playwright E2E run` por `/pm-{brand}` después.
 
 ## Step 3 — Procesar veredicto por ticket
 
@@ -341,37 +398,59 @@ python3 ${WS}/scripts/emit_process_metric.py \
 
 Best-effort (script missing → log warning + continue, no rompe pipeline).
 
-## Step 5 — Hand off `/pm-{brand}` para merge
+## Step 5 — AUTO-HANDOFF `/pm-{brand}` para merge (story-closure-gate 2026-05-18)
 
-```
-CHECKPOINTS.md APPROVED.
-Story {brand}/{id} ready to merge.
-{N} tickets audited:
-- T-1 APPROVED (commit abc1)
-- T-2 APPROVED (commit def5)
-- T-3 APPROVED (commit 9876)
-
-End-to-end verification:
-- Playwright e2e {story-id} → all green
-- (or) Agentic eval pass^3 = 0.83
-
-C1: 4/4 ✅
-C2: 5/5 ✅
-C3: 6/6 ✅
-C4: 6/6 ✅
-C5: 6/6 ✅ (ready for /pm-{brand} to action)
-
-Próximo: /pm-{brand} aplica 07-merge.md → state=reviewing→done → scenarios migran a {brand}/docs/product/capabilities/ → archive story a {brand}/docs/archive/{year}/stories/{story-id}/.
-```
+Post 2026-05-18 el handoff es DEFAULT auto, no Chris-trigger manual.
 
 Update `{brand}/docs/product/stories/{story-id}/checkpoint.md`:
 ```yaml
 brand: {brand}       # ★ REQUIRED — multibrand scope
 state: reviewing     # mantener — /pm-{brand} transitiona a done en merge step
-phase: AUDIT_DONE
+phase: HANDOFF_TO_PM_MERGE
 last_artifact: CHECKPOINTS.md
-next_action: "/pm-{brand} aplica merge → archive story"
+gherkin_matrix: 06-audit/gherkin-matrix.md
+next_action: "/pm-{brand} aplica merge → 07-merge.md 5 secciones → update capabilities/* + modules MD → archive story → state=reviewing→done"
 ```
+
+Emitir handoff verbatim:
+
+```
+✅ CHECKPOINTS.md APPROVED.
+Story {brand}/{story-id} ready to merge.
+
+{N} tickets audited (all APPROVED):
+- T-1 (commit abc1)
+- T-2 (commit def5)
+- T-3 (commit 9876)
+
+End-to-end verification:
+- Playwright e2e {story-id} → all green
+- Phase D gherkin matrix: {N} scenarios all PASS (see 06-audit/gherkin-matrix.md)
+- (if agentic) Agentic eval pass^3 = 0.83
+
+C1: 4/4 ✅
+C2: 5/5 ✅
+C3: 6/6 ✅
+C4: 6/6 ✅
+C5: 6/6 ✅
+
+→ AUTO-HANDOFF /pm-{brand} merge {story-id}
+
+  (Conv 3 default post 2026-05-18 story-closure-gate.
+   /pm-{brand} debe escribir 07-merge.md con 5 secciones cementadas:
+     § 1 Gherkin verification matrix (copia 06-audit/gherkin-matrix.md)
+     § 2 Playwright E2E run (comando + verdict)
+     § 3 Capabilities updated/created (paths)
+     § 4 Modules MD refreshed (paths)
+     § 5 How to verify (comandos reproducibles)
+   Después update {brand}/docs/product/capabilities/{m}/{c}.yaml con verification.*
+   Después squash-merge wip/{brand}-{story-padre-id} → main
+   Después archive story → state=reviewing→done
+
+   SSoT: .claude/rules/story-closure-gate.md + docs/specs/templates/07-merge-template.md)
+```
+
+STOP la sesión `/auditor` aquí. Chris (o auto-handoff harness) invoca `/pm-{brand}` siguiente.
 
 ## Self-fix policy detallada
 

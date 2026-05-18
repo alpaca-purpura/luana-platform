@@ -38,24 +38,17 @@ class PatientMedicalHistoryRepository:
 
     # ------------------------------------------------------------------ Medical
 
-    async def get_medical_by_id(
-        self, history_id: uuid.UUID
-    ) -> VitaliaPatientMedicalHistoryModel | None:
+    async def get_medical_by_id(self, history_id: uuid.UUID) -> VitaliaPatientMedicalHistoryModel | None:
         """Return medical history by ID for this tenant."""
-        stmt = (
-            select(VitaliaPatientMedicalHistoryModel)
-            .where(
-                VitaliaPatientMedicalHistoryModel.id == history_id,
-                VitaliaPatientMedicalHistoryModel.tenant_id == self._tenant_id,
-                VitaliaPatientMedicalHistoryModel.deleted_at.is_(None),
-            )
+        stmt = select(VitaliaPatientMedicalHistoryModel).where(
+            VitaliaPatientMedicalHistoryModel.id == history_id,
+            VitaliaPatientMedicalHistoryModel.tenant_id == self._tenant_id,
+            VitaliaPatientMedicalHistoryModel.deleted_at.is_(None),
         )
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_medical_by_patient(
-        self, patient_id: uuid.UUID
-    ) -> VitaliaPatientMedicalHistoryModel | None:
+    async def get_medical_by_patient(self, patient_id: uuid.UUID) -> VitaliaPatientMedicalHistoryModel | None:
         """Return the latest active medical history for a patient."""
         stmt = (
             select(VitaliaPatientMedicalHistoryModel)
@@ -69,9 +62,7 @@ class PatientMedicalHistoryRepository:
         result = await self._session.execute(stmt)
         return result.scalars().first()
 
-    async def save_medical(
-        self, history: VitaliaPatientMedicalHistoryModel
-    ) -> None:
+    async def save_medical(self, history: VitaliaPatientMedicalHistoryModel) -> None:
         """Persist a new or updated patient medical history."""
         self._session.add(history)
         await self._session.flush()
@@ -100,24 +91,17 @@ class PatientMedicalHistoryRepository:
 
     # ------------------------------------------------------------------ Dental
 
-    async def get_dental_by_id(
-        self, history_id: uuid.UUID
-    ) -> VitaliaPatientDentalHistoryModel | None:
+    async def get_dental_by_id(self, history_id: uuid.UUID) -> VitaliaPatientDentalHistoryModel | None:
         """Return dental history by ID for this tenant."""
-        stmt = (
-            select(VitaliaPatientDentalHistoryModel)
-            .where(
-                VitaliaPatientDentalHistoryModel.id == history_id,
-                VitaliaPatientDentalHistoryModel.tenant_id == self._tenant_id,
-                VitaliaPatientDentalHistoryModel.deleted_at.is_(None),
-            )
+        stmt = select(VitaliaPatientDentalHistoryModel).where(
+            VitaliaPatientDentalHistoryModel.id == history_id,
+            VitaliaPatientDentalHistoryModel.tenant_id == self._tenant_id,
+            VitaliaPatientDentalHistoryModel.deleted_at.is_(None),
         )
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_dental_by_patient(
-        self, patient_id: uuid.UUID
-    ) -> VitaliaPatientDentalHistoryModel | None:
+    async def get_dental_by_patient(self, patient_id: uuid.UUID) -> VitaliaPatientDentalHistoryModel | None:
         """Return the latest active dental history for a patient."""
         stmt = (
             select(VitaliaPatientDentalHistoryModel)
@@ -131,9 +115,7 @@ class PatientMedicalHistoryRepository:
         result = await self._session.execute(stmt)
         return result.scalars().first()
 
-    async def save_dental(
-        self, history: VitaliaPatientDentalHistoryModel
-    ) -> None:
+    async def save_dental(self, history: VitaliaPatientDentalHistoryModel) -> None:
         """Persist a new or updated patient dental history."""
         self._session.add(history)
         await self._session.flush()

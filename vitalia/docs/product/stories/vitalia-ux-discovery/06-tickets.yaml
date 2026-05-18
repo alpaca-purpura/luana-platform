@@ -115,6 +115,16 @@ tickets:
         - vitalia/backend/tests/test_extensions.py
       validator_ids: [be_lint_ruff_check, be_format_ruff, be_arch_fitness_brand, be_test_extensions]
     blocked_by: [T-infra-1]
+    state: pushed
+    push_commit_sha: 4d1dca2
+    pushed_at: 2026-05-18
+    result_artifact: vitalia/docs/product/stories/vitalia-slice-1-infra-cross-cutting/T-infra-2-result.md
+    builder_model: claude-opus-4.7
+    notes: |
+      Tests-passing state. 12 new files + 1 modify. 29 new tests + 166 arch fitness + 18 regression.
+      Pre-existing baseline (16 ruff errors + 33 format-needed in tests/agentic_evals + tests/migrations
+      from Story 11 era) is OUT OF SCOPE — recommend T-infra-baseline-ruff-cleanup ticket scheduled by /pm-vitalia.
+      Awaiting orchestrator gate-runner + auditor-backend independent verdict.
 
   - id: T-infra-3
     sub_story: vitalia-slice-1-infra-cross-cutting
@@ -140,15 +150,23 @@ tickets:
   - id: T-infra-4
     sub_story: vitalia-slice-1-infra-cross-cutting
     title: Arch fitness tests Slice 1 (NEW gates + allowlist baseline)
+    state: tests-passing
+    pushed_at: "2026-05-18"
+    pushed_by: builder-backend (claude-sonnet-4-6)
+    result_artifact: vitalia/docs/product/stories/vitalia-ux-discovery/T-infra-4-result.md
     scope: |
       vitalia/backend/tests/architecture/{test_phi_dual_filter,test_audit_log_sync_write,test_pgcrypto_phi_columns,test_no_observability_mirror,test_no_legacy_paths,test_extension_sdk_registration,test_response_model_required,test_migrations_idempotent}.py
       vitalia/frontend/src/__tests__/architecture/{test_no_hardcoded_colors,test_no_hardcoded_strings,test_fsd_boundaries,test_no_cross_feature_imports,test_server_first,test_phi_pii_components_used,test_no_voseo_in_copy,test_page_padding}.test.ts
     owner_eligibility: [qwen-opencode, claude-sonnet]
     production_code: false
     estimated_loc: 700
+    actual_loc: 820
     acceptance:
       test_paths: []
       validator_ids: [be_arch_fitness_brand, fe_arch_fitness]
+      be_arch_fitness_brand: "216/216 PASS"
+      fe_arch_fitness: "38/38 PASS (9 test files)"
+      be_full_suite: "1061 PASS, 54 SKIP (Postgres)"
     blocked_by: [T-infra-3, T-arch-1]
 
   - id: T-infra-5
@@ -182,6 +200,9 @@ tickets:
       test_paths: []
       validator_ids: [fe_typecheck_tsc, fe_lint_eslint, visual_storybook_build]
     blocked_by: [T-arch-1, T-infra-4]
+    state: tests-passing
+    pushed_at: 2026-05-18
+    result_artifact: vitalia/docs/product/stories/vitalia-slice-1-infra-cross-cutting/T-infra-6-result.md
 
   - id: T-infra-7
     sub_story: vitalia-slice-1-infra-cross-cutting

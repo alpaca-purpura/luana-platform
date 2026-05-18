@@ -1,13 +1,15 @@
 # Backlog TLDR (auto-generated)
-> Generated at: `2026-05-17T08:22:51+00:00`
+> Generated at: `2026-05-18T14:56:13+00:00`
 > Source: scripts/generate_backlog.py — full view: BACKLOG.md
 
-- **Ideas** (3): vitalia-copilot-tools-impl, vitalia-payment-adapter-mvp, vitalia-pricing-decision
-- **Refining** (1 / cap 3): dev-environment-multibrand, vitalia-mvp-ui-foundation, vitalia-ux-discovery
-- **Refined** (0 / cap 5): _(none)_
-- **Ready** (0 / cap 5): _(none)_
-- **Developing** (0 / cap 3): _(none)_
-- **Developed** (0 / cap 10): _(none)_
+- **Ideas** (1): vitalia-pricing-decision
+- **Refining** (2 / cap 3): dev-environment-multibrand, vitalia-mvp-ui-foundation, vitalia-fiscal-emission-pe +1
+- **Refined** (6 / cap 5 ⚠️): vitalia-slice-1-agenda, vitalia-slice-1-fidelizacion, vitalia-slice-1-inbox +3
+- **Ready** (1 / cap 5): vitalia-ux-discovery
+- **Developing** (1 / cap 3): vitalia-copilot-tools-impl
+- **Developed** (1 / cap 10): vitalia-slice-1-infra-cross-cutting
 - **Reviewing** (0 / cap 2): _(none)_
+
+⚠ Warnings (1): refined cap exceeded (6 > 5, excl. legacy+outcomes)
 
 Detail: read `docs/product/BACKLOG.md` (kanban + roadmap) or `docs/product/stories/{id}/checkpoint.md`.

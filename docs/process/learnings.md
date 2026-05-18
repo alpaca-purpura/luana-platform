@@ -989,3 +989,52 @@ Análisis de rescue parcial mostró que:
 - Nicolify carve-out: [docs/architecture/luana-platform/03-nicolify-carve-out-audit.md](../architecture/luana-platform/03-nicolify-carve-out-audit.md)
 - Snapshot: `nicolify/backend/alembic/versions/001_initial_snapshot.py` (131 migrations consolidadas)
 - Engine recovered: `apps/client-simulator/`
+
+---
+
+## 2026-05-18 — Story closure gate (Conv 3 auto-handoff)
+
+**promotable: yes** (cross-brand — afecta paradigm v4 universal)
+
+**Origen:** caso vitalia 2026-05-18. Worktree `wip/vitalia-slice-1-shipping` con dos stories abiertas simultáneamente: `vitalia-slice-1-infra-cross-cutting` state=developed (10 tickets pushed, validators GREEN, jamás auditada/mergeada) + `vitalia-copilot-tools-impl` state=developing (4 tickets pushed sobre código de la primera no validado). Chris detectó al volver a sesión.
+
+**Qué aprendimos:**
+
+El paradigm v4 (pm-redesign 2026-05-06) introdujo la frase "Conv 3 — Chris triggered manualmente para controlar gasto Opus" como descripción de la fase Review+Merge. Esa frase se embebió textualmente en 4 puntos de control:
+
+- `CLAUDE.md` § Flujo extremo-a-extremo + cost-routing table
+- `docs/process/pm-redesign-2026-05.md:272`
+- `.claude/skills/dev-team/SKILL.md:10` (frontmatter description YAML)
+- `.claude/skills/auditor/SKILL.md:3` (frontmatter description YAML)
+
+`/dev-team` cumplió la instrucción al pie de la letra: cuando Chris dejó la sesión correr autónomamente, `/dev-team` interpretó "siguiente story ready disponible" como acción válida después de cerrar `developed` (su descripción literal decía "On all GREEN all tickets: state=developing→developed. ... awaiting QA — Chris triggers /auditor manualmente").
+
+El control de costo Opus al que apuntaba "Chris manual trigger" ya estaba resuelto por cost-routing per phase introducido en pm-redesign: Sonnet/qwen-opencode default para BE/FE no-agentic, Opus solo en AGENTIC production_code:true (R23). "Chris manual" era conservadurismo pre-routing, no control real.
+
+**Why:** sin gate absoluto, `/dev-team` autónomo acumula stories en `developed` sin auditar. Stories siguientes (B) construyen sobre código de stories anteriores (A) no validado — si A tiene bugs, B hereda riesgo invisible. Worktree branch names ambiguos (`wip/{brand}-slice-N-shipping`) hospedan >1 story simultáneamente.
+
+**How to apply:** Conv 3 default = AUTO-HANDOFF en cadena `/dev-team → /auditor → /pm-{brand} merge`. Sin Chris-trigger manual obligatorio. Escape valve explícita via `checkpoint.md::defer_audit: true` con razón documentada + ratificación Chris. Cement defendido en 7 enforcement layers:
+
+1. Skill `/pm-{brand}` bootstrap Step 0 NEW: scan stories developed/reviewing → REUSE FIRST
+2. Skill `/dev-team` Step 5/6: auto-handoff explícito a `/auditor` + refuse pickup nueva story
+3. Skill `/auditor` Phase D + Step 5: gherkin verification matrix + handoff `/pm-{brand}` merge
+4. Hook `scripts/git-hooks/pre-commit` Section NEW: bloquea stage files story B si story A pending
+5. `scripts/git/cleanup-session.sh`: refuse remove worktree si state ≠ done sin defer_audit
+6. Template `06-tickets.yaml` gana `gherkin_coverage` field mandatory post-cement
+7. Template `07-merge.md` cementa 5 secciones obligatorias
+
+Documentación canónica:
+- Hard rule: `.claude/rules/story-closure-gate.md`
+- Rationale: `docs/process/story-closure-gate.md`
+- Decisión: `docs/architecture/luana-platform/ADR-006-story-closure-gate.md`
+
+**Decisiones operacionales cementadas (Chris ratificó 2026-05-18):**
+
+1. 1 worktree = 1 story padre estricto. Sub-stories del mismo outcome pueden compartir worktree pero atraviesan las 6 fases (dev→audit→fix→gherkin→docs→merge) cada una antes que la siguiente arranque.
+2. Conv 3 auto-handoff default. Excepción opt-in `defer_audit: true` con razón documentada.
+3. Docs al cierre: AMBOS — `07-merge.md` (run frozen, 5 secciones) + capability YAML (`verification.commands` + `verification.gherkin_evidence` canónicos reusables).
+4. Cleanup deuda vitalia: Linear Option A (auditar+mergear infra-cross-cutting primero, continuar copilot-tools-impl worktree nuevo después).
+
+**Cross-brand implications:** lift root `.claude/rules/` aplica a todas las brands (no overlay vitalia). Brands futuras (saasora, inmoflow, retailly, fixia, guestly, fitflow) heredan via `_pm-brand-template`.
+
+**Operational test:** cleanup vitalia (Option A) es la primera ejecución del gate. Si infra cierra limpia con `07-merge.md` 5 secciones + `06-audit/gherkin-matrix.md` + capabilities/* updates → gate operacional. Si falla → debug antes de aplicar a más stories.

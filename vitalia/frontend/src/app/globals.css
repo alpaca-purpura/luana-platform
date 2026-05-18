@@ -51,6 +51,67 @@
   --vitalia-gradient-app-cta:  linear-gradient(135deg, #01B2F8 0%, #180D95 100%);
 }
 
+/* ─── Vitalia semantic CSS utility classes ─────────────────────────────────── */
+/* All hsl() calls live here (globals.css is exempt from arch color test).      */
+/* Components use these class names — NO hsl() in TSX files.                    */
+
+/* Backgrounds */
+.vt-bg-app        { background-color: hsl(var(--vitalia-bg)); }
+.vt-bg-surface    { background-color: hsl(var(--vitalia-surface)); }
+.vt-bg-surface-alt{ background-color: hsl(var(--vitalia-surface-alt)); }
+.vt-bg-muted      { background-color: hsl(var(--vitalia-muted)); }
+.vt-bg-cian-10    { background-color: hsl(var(--vitalia-cian) / 0.1); }
+.vt-bg-cian-8     { background-color: hsl(var(--vitalia-cian) / 0.08); }
+.vt-bg-azul-marino{ background-color: hsl(var(--vitalia-azul-marino)); }
+.vt-bg-danger-12  { background-color: hsl(var(--vitalia-danger) / 0.12); }
+.vt-bg-warning-12 { background-color: hsl(var(--vitalia-warning) / 0.12); }
+.vt-bg-success-12 { background-color: hsl(var(--vitalia-success) / 0.12); }
+
+/* Text colors */
+.vt-text          { color: hsl(var(--vitalia-text)); }
+.vt-text-muted    { color: hsl(var(--vitalia-text-muted)); }
+.vt-text-faint    { color: hsl(var(--vitalia-text-faint)); }
+.vt-text-cian     { color: hsl(var(--vitalia-cian)); }
+.vt-text-azul-marino { color: hsl(var(--vitalia-azul-marino)); }
+.vt-text-danger   { color: hsl(var(--vitalia-danger)); }
+.vt-text-warning  { color: hsl(var(--vitalia-warning)); }
+.vt-text-success  { color: hsl(var(--vitalia-success)); }
+.vt-text-white    { color: white; }
+
+/* Borders */
+.vt-border        { border-color: hsl(var(--vitalia-border)); }
+.vt-border-soft   { border-color: hsl(var(--vitalia-border-soft)); }
+.vt-border-cian   { border-color: hsl(var(--vitalia-cian)); }
+.vt-border-cian-l { border-left-color: hsl(var(--vitalia-cian)); }
+.vt-border-danger-30  { border-color: hsl(var(--vitalia-danger) / 0.3); }
+.vt-border-warning-30 { border-color: hsl(var(--vitalia-warning) / 0.3); }
+.vt-border-success-30 { border-color: hsl(var(--vitalia-success) / 0.3); }
+
+/* Ring (focus) */
+.vt-ring-cian     { --tw-ring-color: hsl(var(--vitalia-cian)); }
+
+/* Divide */
+.vt-divide-border-soft > * + * { border-color: hsl(var(--vitalia-border-soft)); }
+
+/* Gradient backgrounds */
+.vt-bg-gradient-agent    { background: var(--vitalia-gradient-agent); }
+.vt-bg-gradient-app-cta  { background: var(--vitalia-gradient-app-cta); }
+.vt-bg-gradient-mariposa { background: var(--vitalia-gradient-mariposa); }
+
+/* ─── Agent gradients (classes — allow CSS gradient definitions here) ──────── */
+/* gradient classes consume CSS vars above; HEX in :root is allowed in globals.css */
+.vitalia-agent-gradient-valeria {
+  background: var(--vitalia-gradient-agent);
+}
+
+.vitalia-agent-gradient-adrian {
+  background: linear-gradient(135deg, #7B2D91 0%, #180D95 100%);
+}
+
+.vitalia-agent-gradient-lucas {
+  background: linear-gradient(135deg, #B8DC2A 0%, #01B2F8 100%);
+}
+
 /* ─── Base reset + font stack ─────────────────────────────────────────────── */
 * {
   box-sizing: border-box;

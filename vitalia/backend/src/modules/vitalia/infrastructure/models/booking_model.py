@@ -31,50 +31,26 @@ class VitaliaBookingModel(Base):
 
     __tablename__ = "vitalia_bookings"
 
-    id: Mapped[UUID] = mapped_column(
-        PgUUID(as_uuid=True), primary_key=True, default=uuid4
-    )
-    tenant_id: Mapped[UUID] = mapped_column(
-        PgUUID(as_uuid=True), nullable=False, index=True
-    )
+    id: Mapped[UUID] = mapped_column(PgUUID(as_uuid=True), primary_key=True, default=uuid4)
+    tenant_id: Mapped[UUID] = mapped_column(PgUUID(as_uuid=True), nullable=False, index=True)
     offer_id: Mapped[UUID] = mapped_column(PgUUID(as_uuid=True), nullable=False)
     doctor_id: Mapped[UUID] = mapped_column(PgUUID(as_uuid=True), nullable=False)
     patient_id: Mapped[UUID] = mapped_column(PgUUID(as_uuid=True), nullable=False)
-    consent_id: Mapped[UUID | None] = mapped_column(
-        PgUUID(as_uuid=True), nullable=True
-    )
-    slot_iso: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False
-    )
+    consent_id: Mapped[UUID | None] = mapped_column(PgUUID(as_uuid=True), nullable=True)
+    slot_iso: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     duration_minutes: Mapped[int] = mapped_column(nullable=False)
     # "pending_payment"/"awaiting_consent"/"confirmed_deposit"/"confirmed_full"/"cancelled"/"completed"
     status: Mapped[str] = mapped_column(String(32), nullable=False)
-    payment_status: Mapped[str] = mapped_column(
-        String(32), nullable=False, default="not_initiated"
-    )
-    amount_paid: Mapped[Decimal | None] = mapped_column(
-        Numeric(precision=14, scale=2), nullable=True
-    )
-    amount_pending: Mapped[Decimal | None] = mapped_column(
-        Numeric(precision=14, scale=2), nullable=True
-    )
+    payment_status: Mapped[str] = mapped_column(String(32), nullable=False, default="not_initiated")
+    amount_paid: Mapped[Decimal | None] = mapped_column(Numeric(precision=14, scale=2), nullable=True)
+    amount_pending: Mapped[Decimal | None] = mapped_column(Numeric(precision=14, scale=2), nullable=True)
     currency: Mapped[str | None] = mapped_column(String(3), nullable=True)  # ISO 4217
     deposit_percent: Mapped[int | None] = mapped_column(nullable=True)
-    booking_metadata: Mapped[dict] = mapped_column(
-        JSONB, nullable=False, default=dict
-    )
-    idempotency_key: Mapped[str | None] = mapped_column(
-        String(128), nullable=True, unique=True
-    )
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
-    )
-    deleted_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    booking_metadata: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
+    idempotency_key: Mapped[str | None] = mapped_column(String(128), nullable=True, unique=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     __table_args__ = (
         Index(

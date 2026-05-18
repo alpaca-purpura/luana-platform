@@ -30,34 +30,20 @@ class VitaliaDoctorExtensionModel(Base):
 
     __tablename__ = "vitalia_doctor_extensions"
 
-    id: Mapped[UUID] = mapped_column(
-        PgUUID(as_uuid=True), primary_key=True, default=uuid4
-    )
-    tenant_id: Mapped[UUID] = mapped_column(
-        PgUUID(as_uuid=True), nullable=False, index=True
-    )
+    id: Mapped[UUID] = mapped_column(PgUUID(as_uuid=True), primary_key=True, default=uuid4)
+    tenant_id: Mapped[UUID] = mapped_column(PgUUID(as_uuid=True), nullable=False, index=True)
     # References doctor entity in @luana/core/scheduling domain
     doctor_id: Mapped[UUID] = mapped_column(PgUUID(as_uuid=True), nullable=False)
     specialty: Mapped[str | None] = mapped_column(String(64), nullable=True)
     treatment_room: Mapped[str | None] = mapped_column(String(64), nullable=True)
     max_concurrent_per_slot: Mapped[int] = mapped_column(nullable=False, default=1)
     # JSONB list of appointment type slugs
-    appointment_types: Mapped[list] = mapped_column(
-        JSONB, nullable=False, default=list
-    )
+    appointment_types: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
     # JSONB list of offer UUIDs this doctor provides
-    available_offer_ids: Mapped[list] = mapped_column(
-        JSONB, nullable=False, default=list
-    )
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
-    )
-    deleted_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    available_offer_ids: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     __table_args__ = (
         UniqueConstraint(

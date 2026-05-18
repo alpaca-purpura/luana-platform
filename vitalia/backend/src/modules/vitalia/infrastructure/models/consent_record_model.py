@@ -29,45 +29,25 @@ class VitaliaConsentRecordModel(Base):
 
     __tablename__ = "vitalia_consent_records"
 
-    id: Mapped[UUID] = mapped_column(
-        PgUUID(as_uuid=True), primary_key=True, default=uuid4
-    )
-    tenant_id: Mapped[UUID] = mapped_column(
-        PgUUID(as_uuid=True), nullable=False, index=True
-    )
+    id: Mapped[UUID] = mapped_column(PgUUID(as_uuid=True), primary_key=True, default=uuid4)
+    tenant_id: Mapped[UUID] = mapped_column(PgUUID(as_uuid=True), nullable=False, index=True)
     patient_id: Mapped[UUID] = mapped_column(PgUUID(as_uuid=True), nullable=False)
-    booking_id: Mapped[UUID | None] = mapped_column(
-        PgUUID(as_uuid=True), nullable=True
-    )  # nullable pre-booking
+    booking_id: Mapped[UUID | None] = mapped_column(PgUUID(as_uuid=True), nullable=True)  # nullable pre-booking
     consent_template_slug: Mapped[str] = mapped_column(String(64), nullable=False)
     template_version: Mapped[str] = mapped_column(String(16), nullable=False)
     # Full content snapshot for legal record
     template_snapshot_md: Mapped[str] = mapped_column(Text, nullable=False)
     signed_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    signed_ip: Mapped[str | None] = mapped_column(
-        String(45), nullable=True
-    )  # IPv6 compat
+    signed_ip: Mapped[str | None] = mapped_column(String(45), nullable=True)  # IPv6 compat
     signed_user_agent: Mapped[str | None] = mapped_column(String(512), nullable=True)
-    signed_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    signed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     # "typed_name" / "signature_pad"
     signature_method: Mapped[str | None] = mapped_column(String(32), nullable=True)
-    status: Mapped[str] = mapped_column(
-        String(32), nullable=False, default="pending_signature"
-    )
-    expires_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False
-    )  # 24h default
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="pending_signature")
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)  # 24h default
     # ["whatsapp", "email"]
-    delivery_channels: Mapped[list] = mapped_column(
-        JSONB, nullable=False, default=list
-    )
+    delivery_channels: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
     idempotency_key: Mapped[str | None] = mapped_column(String(128), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
     # No deleted_at — legal immutability (use status=revoked instead)

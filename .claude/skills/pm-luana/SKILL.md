@@ -26,12 +26,46 @@ Bootstrap carga ~5k tokens (índice portfolio + promotion-protocol README + core
 
 ## Bootstrap protocol
 
+### Step 0 — Story closure gate scan cross-brand (MANDATORY post 2026-05-18)
+
+ANTES del menú habitual, scanear stories abiertas en cualquier brand activa (panorámico):
+
 ```bash
-git status --short && git branch --show-current && git log --oneline -3
+WS=$(git rev-parse --show-toplevel)
+
+echo "=== Story closure gate scan (post 2026-05-18) ==="
+for B in vitalia nicolify comunify lupulo; do
+  for cp in ${WS}/${B}/docs/product/stories/*/checkpoint.md; do
+    [ -f "$cp" ] || continue
+    STORY_ID=$(basename $(dirname $cp))
+    STATE=$(grep -E "^state:" $cp | head -1 | awk '{print $2}')
+    DEFER=$(grep -E "^defer_audit:" $cp 2>/dev/null | awk '{print $2}')
+    if [[ "$STATE" =~ ^(developing|developed|reviewing)$ ]]; then
+      if [[ "$DEFER" == "true" ]]; then
+        echo "⏸  $B/$STORY_ID (state=$STATE, DEFERRED)"
+      else
+        echo "🔴 $B/$STORY_ID (state=$STATE) — REQUIRES RESUME en brand session"
+      fi
+    fi
+  done
+done
+```
+
+`/pm-luana` NO resuelve stories brand directamente (jurisdicción anti-creep). Si hay
+stories OPEN cross-brand → render lista + sugerir handoff `/pm-{brand}` para cada brand
+con deuda. Layer 1 enforcement del story-closure-gate.
+
+Detalle SSoT: `.claude/rules/story-closure-gate.md`.
+
+### Step 1 — Carga índices portfolio + core
+
+```bash
 cat docs/portfolio/PORTFOLIO.md            # índice navegable 11 universos
 cat docs/promotion-protocol/README.md      # workflow brand→core (solo si query toca core)
 cat docs/core-modules/README.md            # índice 26 packages (solo si query toca core)
 ```
+
+### Step 2 — Menú (solo si Step 0 GREEN o Chris confirma "ignorar deudas brand por ahora")
 
 Pregunta a Chris si la query es ambigua: **"¿modo portfolio (panorama/cross-brand) o modo core (engine/promotion/EP)? ¿O brand específica (handoff a /pm-{brand})?"**
 

@@ -240,8 +240,8 @@ idea ─→ refining ─→ refined ─→ ready ─→ developing ─→ develo
 | 3 | `refined` | Chris ratifica spec + diseño UX/conversacional | `/pm` cierra | mismos archivos pero `ratified_by_chris: true` | ≤ 5 |
 | 4 | `ready` | `/architect` orchestrator cierra package | `/architect` (Opus) | `03-arch.md` + `04-validators.yaml` + `05-guidelines.md` + `06-tickets.yaml` | ≤ 5 |
 | 5 | `developing` | `/dev-team` picks ticket | opencode/Sonnet (Opus si agentic prod) | `T-N-impl-log.md` + iteration logs | ≤ 3 |
-| 6 | `developed` | Todos validators GREEN | `/dev-team` cierra | `T-N-result.md` por ticket | ≤ 10 |
-| 7 | `reviewing` | Chris triggers `/auditor` | `/auditor` (Opus + Sonnet split) | `T-N-review.md` + `CHECKPOINTS.md` (C1-C5) | ≤ 2 |
+| 6 | `developed` | Todos validators GREEN — **AUTO-HANDOFF a `/auditor`** (default) salvo `defer_audit: true` | `/dev-team` cierra + emite handoff | `T-N-result.md` por ticket | ≤ 1 |
+| 7 | `reviewing` | Auditor en curso. **AUTO-HANDOFF a `/pm-{brand}` merge** al APPROVED | auto desde `developed` (o Chris manual si defer ratificado) | `T-N-review.md` + `CHECKPOINTS.md` (C1-C5) + `06-audit/gherkin-matrix.md` | ≤ 1 |
 | 8 | `done` | Auditor APPROVED + `/pm` merge | `/pm` | `07-merge.md` + capabilities promoted + archive | rolling 90d |
 | 9 | `parked` | Manual Chris | Chris | reason field | ∞ |
 | 10 | `dropped` | Manual Chris | Chris | reason field | ∞ (terminal) |
@@ -258,7 +258,9 @@ idea ─→ refining ─→ refined ─→ ready ─→ developing ─→ develo
 | `done` | `done` | sin cambio |
 | `parked` / `dropped` | `parked` / `dropped` | sin cambio |
 
-**Caps cambian:** sumando 3 estados nuevos, total WIP discovery+refinement+development capabilities sigue limitado pero distribuido más finamente. `idea` sin cap (capturar libre); `refining` ≤ 3 (focus deep work); `refined` ≤ 5 (queue para architects); `ready` ≤ 5 (queue para devs); `developing` ≤ 3 (concurrent builds); `developed` ≤ 10 (queue para auditor — outcome multi-story batched); `reviewing` ≤ 2 (concurrent audits).
+**Caps cambian:** sumando 3 estados nuevos, total WIP discovery+refinement+development capabilities sigue limitado pero distribuido más finamente. `idea` sin cap (capturar libre); `refining` ≤ 3 (focus deep work); `refined` ≤ 5 (queue para architects); `ready` ≤ 5 (queue para devs); `developing` ≤ 1 por worktree (forward motion); `developed` ≤ 1 por worktree (pending audit — no acumular, fix gap caso vitalia 2026-05-18); `reviewing` ≤ 1 por worktree (auditor en curso).
+
+**★ Update 2026-05-18 (story closure gate):** `developed ≤ 10` (cap original) era el incentivo perverso que permitió el caso vitalia (2 stories abiertas simultáneamente en worktree `wip/vitalia-slice-1-shipping`). Post-decreto el cap es **≤ 1 por worktree** con escape valve explícita `checkpoint.md::defer_audit: true` ratificada Chris. SSoT cambio: `.claude/rules/story-closure-gate.md` + `docs/process/story-closure-gate.md` + ADR-005.
 
 #### Gates de transición
 
@@ -269,8 +271,8 @@ idea ─→ refining ─→ refined ─→ ready ─→ developing ─→ develo
 | `refined → ready` | `/architect` Opus produce paquete autocontenido (4 archivos canónicos: arch + validators + guidelines + tickets) |
 | `ready → developing` | `/dev-team` picks. Autonomous build SIN supervisión humana (paquete autocontenido cualquier AI debería poder) |
 | `developing → developed` | TODOS validators GREEN. NO escalations open. NO uncommitted WIP |
-| `developed → reviewing` | Chris triggers manual (controla cuándo gastar Opus auditor). NO automático |
-| `reviewing → done` | Auditor APPROVED + `/pm` aplica merge + capabilities promovidas + docs actualizados |
+| `developed → reviewing` | **AUTO-HANDOFF** `/dev-team` → `/auditor` (default post 2026-05-18). Excepción: `defer_audit: true` documentado en checkpoint + ratificación Chris explícita. Control de costo Opus ya está resuelto via cost-routing per phase (Sonnet/Haiku eligible en sub-auditors deterministicos) — manual-trigger era conservadurismo redundante |
+| `reviewing → done` | **AUTO-HANDOFF** `/auditor` APPROVED → `/pm-{brand}` merge. `/pm-{brand}` requiere `07-merge.md` con 5 secciones cementadas (gherkin matrix · playwright run · capabilities updated · modules MD refreshed · how to verify) + `verification.*` fields en capability YAMLs |
 
 #### Cost-routing por phase (model split óptimo)
 

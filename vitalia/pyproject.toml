@@ -23,6 +23,7 @@ dependencies = [
     "luana-core-extension-sdk",
     "luana-core-channels",
     "luana-core-extraction",
+    "apscheduler>=3.10",
 ]
 
 [build-system]

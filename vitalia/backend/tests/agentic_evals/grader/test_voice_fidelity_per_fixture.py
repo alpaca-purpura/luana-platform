@@ -40,8 +40,6 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-import pytest
-
 # ── Voice signature patterns (per Slot 5 BRAND_VOICE per tenant) ─────────────
 
 # Aurora AR: warm_close voseo style
@@ -228,10 +226,7 @@ def test_all_three_tenant_fixtures_pass_voice_fidelity() -> None:
         "sanare": _score_sanare_mx(_SANARE_MX_RESPONSE),
     }
     failures = {tid: s for tid, s in scores.items() if not s.passed}
-    assert not failures, (
-        f"V-AE-12 gate: {len(failures)} tenant(s) failed voice fidelity ≥0.80:\n"
-        + "\n".join(
-            f"  {tid}: score={s.score:.3f} (markers={s.marker_count}, anti={s.anti_marker_count})"
-            for tid, s in failures.items()
-        )
+    assert not failures, f"V-AE-12 gate: {len(failures)} tenant(s) failed voice fidelity ≥0.80:\n" + "\n".join(
+        f"  {tid}: score={s.score:.3f} (markers={s.marker_count}, anti={s.anti_marker_count})"
+        for tid, s in failures.items()
     )

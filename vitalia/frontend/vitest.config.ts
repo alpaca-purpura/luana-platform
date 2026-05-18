@@ -5,6 +5,7 @@ export default defineConfig({
   test: {
     environment: "happy-dom",
     globals: true,
+    setupFiles: ["./src/test-setup.ts"],
     exclude: ["e2e/**", "node_modules/**", "widget/**"],
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -17,12 +18,17 @@ export default defineConfig({
         "src/features/vitalia/schemas/**",
         "src/features/vitalia/api/**",
         "src/lib/**",
+        "src/components/shared/**",
       ],
       exclude: [
         "src/features/vitalia/types/**",
         "src/features/vitalia/index.ts",
         // Hooks use Clerk + React Query — covered in T-fe-3+ component integration tests
         "src/features/vitalia/api/use-*.ts",
+        // Shell/copilot rail use Clerk — covered by E2E (T-infra-8)
+        "src/components/shared/shell/**",
+        "src/components/shared/copilot-rail/**",
+        "src/components/shared/phi/AuditedSection.tsx",
         "**/*.d.ts",
         "**/node_modules/**",
       ],

@@ -1,0 +1,1 @@
+"""Vitalia CRM persistence repositories."""

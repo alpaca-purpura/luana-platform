@@ -27,32 +27,22 @@ class TreatmentFollowupRepository:
         self._session = session
         self._tenant_id = tenant_id
 
-    async def get_by_id(
-        self, followup_id: uuid.UUID
-    ) -> VitaliaTreatmentFollowupModel | None:
+    async def get_by_id(self, followup_id: uuid.UUID) -> VitaliaTreatmentFollowupModel | None:
         """Return followup by ID for this tenant, or None if not found / deleted."""
-        stmt = (
-            select(VitaliaTreatmentFollowupModel)
-            .where(
-                VitaliaTreatmentFollowupModel.id == followup_id,
-                VitaliaTreatmentFollowupModel.tenant_id == self._tenant_id,
-                VitaliaTreatmentFollowupModel.deleted_at.is_(None),
-            )
+        stmt = select(VitaliaTreatmentFollowupModel).where(
+            VitaliaTreatmentFollowupModel.id == followup_id,
+            VitaliaTreatmentFollowupModel.tenant_id == self._tenant_id,
+            VitaliaTreatmentFollowupModel.deleted_at.is_(None),
         )
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_by_booking_id(
-        self, booking_id: uuid.UUID
-    ) -> VitaliaTreatmentFollowupModel | None:
+    async def get_by_booking_id(self, booking_id: uuid.UUID) -> VitaliaTreatmentFollowupModel | None:
         """Return the followup associated with a booking, if any."""
-        stmt = (
-            select(VitaliaTreatmentFollowupModel)
-            .where(
-                VitaliaTreatmentFollowupModel.tenant_id == self._tenant_id,
-                VitaliaTreatmentFollowupModel.booking_id == booking_id,
-                VitaliaTreatmentFollowupModel.deleted_at.is_(None),
-            )
+        stmt = select(VitaliaTreatmentFollowupModel).where(
+            VitaliaTreatmentFollowupModel.tenant_id == self._tenant_id,
+            VitaliaTreatmentFollowupModel.booking_id == booking_id,
+            VitaliaTreatmentFollowupModel.deleted_at.is_(None),
         )
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()
@@ -72,8 +62,10 @@ class TreatmentFollowupRepository:
         if current_step is not None:
             conditions.append(VitaliaTreatmentFollowupModel.current_step == current_step)
 
-        stmt = select(VitaliaTreatmentFollowupModel).where(*conditions).order_by(
-            VitaliaTreatmentFollowupModel.started_at.desc()
+        stmt = (
+            select(VitaliaTreatmentFollowupModel)
+            .where(*conditions)
+            .order_by(VitaliaTreatmentFollowupModel.started_at.desc())
         )
         result = await self._session.execute(stmt)
         return list(result.scalars().all())

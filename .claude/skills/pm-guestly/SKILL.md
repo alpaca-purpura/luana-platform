@@ -37,11 +37,42 @@ Turismo + Hotelería (motor de reservas por temporada, sync OTAs Airbnb/Booking,
 
 ## Bootstrap protocol
 
+### Step 0 — Story closure gate scan (MANDATORY post 2026-05-18)
+
+ANTES del menú habitual, scanear stories abiertas en el worktree actual:
+
 ```bash
-git status --short && git branch --show-current && git log --oneline -3
+WS=$(git rev-parse --show-toplevel)
+CURRENT_BRANCH=$(git branch --show-current)
+
+for cp in ${WS}/guestly/docs/product/stories/*/checkpoint.md; do
+  STORY_ID=$(basename $(dirname $cp))
+  STATE=$(grep -E "^state:" $cp | head -1 | awk '{print $2}')
+  DEFER=$(grep -E "^defer_audit:" $cp 2>/dev/null | awk '{print $2}')
+  if [[ "$STATE" =~ ^(developing|developed|reviewing)$ ]]; then
+    if [[ "$DEFER" == "true" ]]; then
+      REASON=$(grep -E "^defer_audit_reason:" $cp | sed 's/^defer_audit_reason: //')
+      echo "⏸  DEFERRED: $STORY_ID (state=$STATE, reason=$REASON)"
+    else
+      echo "🔴 OPEN: $STORY_ID (state=$STATE) — REQUIRES RESUME FIRST"
+    fi
+  fi
+done
+```
+
+**Si hay stories OPEN sin defer_audit:** REUSE THAT FIRST. Refuse menu (a) nueva story.
+**Si todas DEFERRED:** ofrecer menú + recordatorio deudas.
+
+Detalle SSoT: `.claude/rules/story-closure-gate.md` (Layer 1).
+
+### Step 1 — Carga estado brand
+
+```bash
 cat guestly/docs/product/checkpoint.md      # state global brand
 cat guestly/docs/product/BACKLOG.md         # vista 10 estados
 ```
+
+### Step 2 — Menú (solo si Step 0 GREEN)
 
 Pregunta a Chris: **"¿qué hacemos en Guestly? (a) idea/story nueva / (b) continúa story X / (c) outcome nuevo / (d) capability / (e) learning / (f) drill-down a {drill-target}"**
 

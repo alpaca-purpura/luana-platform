@@ -80,9 +80,7 @@ async def try_acquire_slot_advisory_lock(
     Used in race-condition tests and as a fast-fail guard.
     """
     key = _slot_lock_key(doctor_id=doctor_id, slot_iso=slot_iso)
-    result = await session.execute(
-        text("SELECT pg_try_advisory_lock(:key)"), {"key": key}
-    )
+    result = await session.execute(text("SELECT pg_try_advisory_lock(:key)"), {"key": key})
     acquired: bool = result.scalar_one()
     logger.debug(
         "advisory_lock_try_acquire",

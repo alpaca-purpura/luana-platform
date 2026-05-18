@@ -139,18 +139,15 @@ def test_tenant_scoped_repo_constructor_has_tenant_id(repo_path: str) -> None:
     """Each tenant-scoped repo must accept (session, tenant_id) at construction."""
     module_path, class_name = repo_path.rsplit(".", 1)
     import importlib
+
     mod = importlib.import_module(module_path)
     cls = getattr(mod, class_name)
 
     sig = inspect.signature(cls.__init__)
     params = list(sig.parameters.keys())
 
-    assert "session" in params, (
-        f"{class_name}.__init__ must have 'session' parameter"
-    )
-    assert "tenant_id" in params, (
-        f"{class_name}.__init__ must have 'tenant_id' parameter (A2 tenant isolation)"
-    )
+    assert "session" in params, f"{class_name}.__init__ must have 'session' parameter"
+    assert "tenant_id" in params, f"{class_name}.__init__ must have 'tenant_id' parameter (A2 tenant isolation)"
 
 
 def test_plan_tier_repo_has_no_tenant_id_in_constructor() -> None:
@@ -178,13 +175,12 @@ def test_tenant_scoped_repo_has_get_by_id(repo_path: str) -> None:
     """Each repo must expose get_by_id async method."""
     module_path, class_name = repo_path.rsplit(".", 1)
     import importlib
+
     mod = importlib.import_module(module_path)
     cls = getattr(mod, class_name)
 
     assert hasattr(cls, "get_by_id"), f"{class_name} must have get_by_id method"
-    assert inspect.iscoroutinefunction(cls.get_by_id), (
-        f"{class_name}.get_by_id must be async"
-    )
+    assert inspect.iscoroutinefunction(cls.get_by_id), f"{class_name}.get_by_id must be async"
 
 
 def test_patient_medical_history_repo_has_dual_get_methods() -> None:
@@ -213,6 +209,7 @@ def test_booking_repo_has_async_save() -> None:
     from src.modules.vitalia.infrastructure.repositories.booking_repository import (
         BookingRepository,
     )
+
     assert inspect.iscoroutinefunction(BookingRepository.save)
 
 
@@ -221,6 +218,7 @@ def test_booking_repo_has_async_soft_delete() -> None:
     from src.modules.vitalia.infrastructure.repositories.booking_repository import (
         BookingRepository,
     )
+
     assert inspect.iscoroutinefunction(BookingRepository.soft_delete)
 
 
@@ -229,6 +227,7 @@ def test_medical_audit_log_repo_has_no_soft_delete() -> None:
     from src.modules.vitalia.infrastructure.repositories.medical_audit_log_repository import (
         MedicalAuditLogRepository,
     )
+
     assert not hasattr(MedicalAuditLogRepository, "soft_delete"), (
         "MedicalAuditLogRepository is append-only — must not expose soft_delete"
     )
@@ -239,6 +238,7 @@ def test_plan_tier_repo_has_no_save() -> None:
     from src.modules.vitalia.infrastructure.repositories.plan_tier_repository import (
         PlanTierConfigRepository,
     )
+
     assert not hasattr(PlanTierConfigRepository, "save"), (
         "PlanTierConfigRepository is read-only — must not expose save()"
     )

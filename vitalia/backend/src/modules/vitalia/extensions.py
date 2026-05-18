@@ -90,6 +90,39 @@ from luana_core_extension_sdk import (
 )
 
 # ════════════════════════════════════════════════════════════════════════════
+# T-infra-2 — 5 NEW Vitalia brand-internal registries (referenced by EP-3 tools
+# + EP-8 channel adapters + EP-12 asset templates). These are NOT new engine
+# EPs; they are brand-specific dispatch tables consumed at runtime by the
+# corresponding EP handlers. Slice 2 lift candidates documented in
+# `vitalia/docs/product/stories/vitalia-ux-discovery/delta-arch-notes.md`.
+# ════════════════════════════════════════════════════════════════════════════
+from src.modules.vitalia.connections.appointment_origin import (
+    APPOINTMENT_ORIGIN_REGISTRY,
+)
+from src.modules.vitalia.connections.conversation_initiation import (
+    CONVERSATION_INITIATION_REGISTRY,
+)
+from src.modules.vitalia.connections.fiscal import (
+    FISCAL_PROVIDER_REGISTRY,
+)
+from src.modules.vitalia.connections.payment import (
+    PAYMENT_PROVIDER_REGISTRY,
+)
+from src.modules.vitalia.connections.print_method import (
+    PRINT_METHOD_REGISTRY,
+)
+
+# Module-level smoke: each registry exposes at least one slot (Slice 1 floor).
+# This guarantees `register_all` can dispatch through any of the 5 surfaces
+# without an empty-registry runtime KeyError. The actual count invariants live
+# in `tests/test_extensions.py` Part A.
+assert PAYMENT_PROVIDER_REGISTRY, "vitalia payment registry must have ≥1 slot"
+assert FISCAL_PROVIDER_REGISTRY, "vitalia fiscal registry must have ≥1 slot"
+assert APPOINTMENT_ORIGIN_REGISTRY, "vitalia appointment_origin registry must have ≥1 slot"
+assert CONVERSATION_INITIATION_REGISTRY, "vitalia conversation_initiation registry must have ≥1 slot"
+assert PRINT_METHOD_REGISTRY, "vitalia print_method registry must have ≥1 slot"
+
+# ════════════════════════════════════════════════════════════════════════════
 # CC-4 namespace prefix
 # ════════════════════════════════════════════════════════════════════════════
 

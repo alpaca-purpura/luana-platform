@@ -32,17 +32,12 @@ class MedicalAuditLogRepository:
         self._session = session
         self._tenant_id = tenant_id
 
-    async def get_by_id(
-        self, audit_id: uuid.UUID
-    ) -> VitaliaMedicalAuditLogModel | None:
+    async def get_by_id(self, audit_id: uuid.UUID) -> VitaliaMedicalAuditLogModel | None:
         """Return audit log entry by ID for this tenant."""
-        stmt = (
-            select(VitaliaMedicalAuditLogModel)
-            .where(
-                VitaliaMedicalAuditLogModel.id == audit_id,
-                VitaliaMedicalAuditLogModel.tenant_id == self._tenant_id,
-                # Note: no deleted_at filter — audit log is immutable
-            )
+        stmt = select(VitaliaMedicalAuditLogModel).where(
+            VitaliaMedicalAuditLogModel.id == audit_id,
+            VitaliaMedicalAuditLogModel.tenant_id == self._tenant_id,
+            # Note: no deleted_at filter — audit log is immutable
         )
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()

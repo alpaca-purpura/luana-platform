@@ -32,35 +32,25 @@ class ConsentRepository:
         self._session = session
         self._tenant_id = tenant_id
 
-    async def get_by_id(
-        self, consent_id: uuid.UUID
-    ) -> VitaliaConsentRecordModel | None:
+    async def get_by_id(self, consent_id: uuid.UUID) -> VitaliaConsentRecordModel | None:
         """Return consent record by ID for this tenant.
 
         Note: No deleted_at filter — consent records are legally immutable.
         Returns records in any status (including revoked/expired).
         """
-        stmt = (
-            select(VitaliaConsentRecordModel)
-            .where(
-                VitaliaConsentRecordModel.id == consent_id,
-                VitaliaConsentRecordModel.tenant_id == self._tenant_id,
-            )
+        stmt = select(VitaliaConsentRecordModel).where(
+            VitaliaConsentRecordModel.id == consent_id,
+            VitaliaConsentRecordModel.tenant_id == self._tenant_id,
         )
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_pending_by_booking(
-        self, booking_id: uuid.UUID
-    ) -> VitaliaConsentRecordModel | None:
+    async def get_pending_by_booking(self, booking_id: uuid.UUID) -> VitaliaConsentRecordModel | None:
         """Return the pending_signature consent for a booking, if any."""
-        stmt = (
-            select(VitaliaConsentRecordModel)
-            .where(
-                VitaliaConsentRecordModel.tenant_id == self._tenant_id,
-                VitaliaConsentRecordModel.booking_id == booking_id,
-                VitaliaConsentRecordModel.status == "pending_signature",
-            )
+        stmt = select(VitaliaConsentRecordModel).where(
+            VitaliaConsentRecordModel.tenant_id == self._tenant_id,
+            VitaliaConsentRecordModel.booking_id == booking_id,
+            VitaliaConsentRecordModel.status == "pending_signature",
         )
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()
@@ -79,8 +69,8 @@ class ConsentRepository:
         if status is not None:
             conditions.append(VitaliaConsentRecordModel.status == status)
 
-        stmt = select(VitaliaConsentRecordModel).where(*conditions).order_by(
-            VitaliaConsentRecordModel.created_at.desc()
+        stmt = (
+            select(VitaliaConsentRecordModel).where(*conditions).order_by(VitaliaConsentRecordModel.created_at.desc())
         )
         result = await self._session.execute(stmt)
         return list(result.scalars().all())

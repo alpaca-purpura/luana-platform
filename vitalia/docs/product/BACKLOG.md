@@ -1,32 +1,39 @@
 # Vitalia Backlog (auto-generated)
 
-> Generated at: `2026-05-17T08:22:51+00:00`
+> Generated at: `2026-05-18T14:56:13+00:00`
 > DO NOT EDIT MANUALLY — modify source artifacts.
 > Regenerate: `python scripts/generate_backlog.py`
 
+## ⚠️ Warnings
+- refined cap exceeded (6 > 5, excl. legacy+outcomes)
+
 ## 📊 Roadmap view (filtered + curated)
 
-### 💡 Ideas (3)
-- vitalia-copilot-tools-impl `[story]`
-- vitalia-payment-adapter-mvp `[story]`
+### 💡 Ideas (1)
 - vitalia-pricing-decision `[story]`
 
-### 🔬 Refining (3 total · 1 cap-eligible / cap 3)
+### 🔬 Refining (4 total · 2 cap-eligible / cap 3)
 - **dev-environment-multibrand**
 - **vitalia-mvp-ui-foundation**
-- **vitalia-ux-discovery** — outcome `vitalia-mvp-ui-foundation` [SPEC_V0_RATIFIED]
+- **vitalia-fiscal-emission-pe** — outcome `vitalia-mvp-ui-foundation` [AWAITING_PO_DRAFT_DEFERRED_NEXT_SESSION]
+- **vitalia-payment-adapter-mvp** — outcome `vitalia-mvp-ui-foundation` [AWAITING_PO_DRAFT_DEFERRED_NEXT_SESSION]
 
-### ✅ Refined — listo para arquitectos (0 / cap 5)
-- _(none)_
+### ✅ Refined — listo para arquitectos (6 / cap 5)
+- **vitalia-slice-1-agenda** — outcome `vitalia-mvp-ui-foundation`
+- **vitalia-slice-1-fidelizacion** — outcome `vitalia-mvp-ui-foundation`
+- **vitalia-slice-1-inbox** — outcome `vitalia-mvp-ui-foundation`
+- **vitalia-slice-1-marketing** — outcome `vitalia-mvp-ui-foundation`
+- **vitalia-slice-1-onboarding-wizard** — outcome `vitalia-mvp-ui-foundation`
+- **vitalia-slice-1-pipeline** — outcome `vitalia-mvp-ui-foundation`
 
-### 📦 Ready for development (0 / cap 5)
-- _(none)_
+### 📦 Ready for development (1 / cap 5)
+- **vitalia-ux-discovery** — outcome `vitalia-mvp-ui-foundation`
 
-### 🔨 Developing (0 / cap 3)
-- _(none)_
+### 🔨 Developing (1 / cap 3)
+- **vitalia-copilot-tools-impl** — outcome `vitalia-mvp-ui-foundation` [SESSION_SPLIT_DEFER_AUDIT_OF_INFRA_PADRE]
 
-### 🧪 Developed — esperando QA (0 / cap 10)
-- _(none)_
+### 🧪 Developed — esperando QA (1 / cap 10)
+- **vitalia-slice-1-infra-cross-cutting** — outcome `vitalia-mvp-ui-foundation`
 
 ### 🔍 Reviewing (0 / cap 2)
 - _(none in review)_
@@ -42,18 +49,26 @@
 
 ```mermaid
 kanban
-  💡 Ideas (3)
-    vitalia-copilot-tools-impl[vitalia-copilot-tools-impl]
-    vitalia-payment-adapter-mvp[vitalia-payment-adapter-mvp]
+  💡 Ideas (1)
     vitalia-pricing-decision[vitalia-pricing-decision]
-  🔬 Refining (1 cap-eligible of 3 / cap 3)
+  🔬 Refining (2 cap-eligible of 4 / cap 3)
     dev-environment-multibrand[dev-environment-multibrand]
     vitalia-mvp-ui-foundation[vitalia-mvp-ui-foundation]
+    vitalia-fiscal-emission-pe[vitalia-fiscal-emission-pe]
+    vitalia-payment-adapter-mvp[vitalia-payment-adapter-mvp]
+  ✅ Refined (6 / cap 5)
+    vitalia-slice-1-agenda[vitalia-slice-1-agenda]
+    vitalia-slice-1-fidelizacion[vitalia-slice-1-fidelizacion]
+    vitalia-slice-1-inbox[vitalia-slice-1-inbox]
+    vitalia-slice-1-marketing[vitalia-slice-1-marketing]
+    vitalia-slice-1-onboarding-wiz[vitalia-slice-1-onboarding-wizard]
+    vitalia-slice-1-pipeline[vitalia-slice-1-pipeline]
+  📦 Ready (1 / cap 5)
     vitalia-ux-discovery[vitalia-ux-discovery]
-  ✅ Refined (0 / cap 5)
-  📦 Ready (0 / cap 5)
-  🔨 Developing (0 / cap 3)
-  🧪 Developed (0 / cap 10)
+  🔨 Developing (1 / cap 3)
+    vitalia-copilot-tools-impl[vitalia-copilot-tools-impl]
+  🧪 Developed (1 / cap 10)
+    vitalia-slice-1-infra-cross-cu[vitalia-slice-1-infra-cross-cutting]
   🔍 Reviewing (0 / cap 2)
   ✅ Done (0 / 90d rolling)
   🅿 Parked (0)

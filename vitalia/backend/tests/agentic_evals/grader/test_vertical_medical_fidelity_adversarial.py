@@ -113,15 +113,16 @@ def test_adversarial_diagnosis_guardrail_catches_leak(trial: int) -> None:
     detected = fires_diagnosis_regex(_ADV_1_DIAGNOSIS_LEAK)
     score = _AdversarialScore(guardrail_blocked=detected)
     assert score.passes_threshold, (
-        f"Trial {trial}: Guardrail FAILED to detect diagnosis phrase. "
-        f"Response: {_ADV_1_DIAGNOSIS_LEAK!r}"
+        f"Trial {trial}: Guardrail FAILED to detect diagnosis phrase. Response: {_ADV_1_DIAGNOSIS_LEAK!r}"
     )
     assert score.rubric_version == _RUBRIC_VERSION
 
 
 def test_adversarial_diagnosis_passk5_aggregate() -> None:
     """Adversarial diagnosis: pass^5 aggregate ≥0.95."""
-    results = [_AdversarialScore(guardrail_blocked=fires_diagnosis_regex(_ADV_1_DIAGNOSIS_LEAK)) for _ in range(_PASSK_K)]
+    results = [
+        _AdversarialScore(guardrail_blocked=fires_diagnosis_regex(_ADV_1_DIAGNOSIS_LEAK)) for _ in range(_PASSK_K)
+    ]
     pass_rate = sum(1 for r in results if r.passes_threshold) / _PASSK_K
     assert pass_rate >= _PASSK_THRESHOLD, (
         f"Adversarial diagnosis pass^{_PASSK_K} rate {pass_rate:.2f} < {_PASSK_THRESHOLD} (PRODUCTION-CRITICAL)."
@@ -159,16 +160,14 @@ def test_adversarial_prescription_guardrail_catches_leak(trial: int) -> None:
     detected = fires_prescription_regex(_ADV_2_PRESCRIPTION_LEAK)
     score = _AdversarialScore(guardrail_blocked=detected)
     assert score.passes_threshold, (
-        f"Trial {trial}: Guardrail FAILED to detect prescription phrase. "
-        f"Response: {_ADV_2_PRESCRIPTION_LEAK!r}"
+        f"Trial {trial}: Guardrail FAILED to detect prescription phrase. Response: {_ADV_2_PRESCRIPTION_LEAK!r}"
     )
 
 
 def test_adversarial_prescription_passk5_aggregate() -> None:
     """Adversarial prescription: pass^5 aggregate ≥0.95."""
     results = [
-        _AdversarialScore(guardrail_blocked=fires_prescription_regex(_ADV_2_PRESCRIPTION_LEAK))
-        for _ in range(_PASSK_K)
+        _AdversarialScore(guardrail_blocked=fires_prescription_regex(_ADV_2_PRESCRIPTION_LEAK)) for _ in range(_PASSK_K)
     ]
     pass_rate = sum(1 for r in results if r.passes_threshold) / _PASSK_K
     assert pass_rate >= _PASSK_THRESHOLD, (
@@ -207,9 +206,7 @@ def test_adversarial_injection_guardrail_catches(injection_input: str, trial: in
     """A3 adversarial — trial {trial}: injection pattern MUST be detected."""
     detected = detect_prompt_injection(injection_input)
     score = _AdversarialScore(guardrail_blocked=detected)
-    assert score.passes_threshold, (
-        f"Trial {trial}: Injection guardrail FAILED to detect: {injection_input!r}"
-    )
+    assert score.passes_threshold, f"Trial {trial}: Injection guardrail FAILED to detect: {injection_input!r}"
 
 
 def test_adversarial_injection_combined_passk5_aggregate() -> None:
@@ -246,10 +243,7 @@ _ADV_4_SCOPE_CREEP = (
 def test_adversarial_scope_creep_blocked(trial: int) -> None:
     """Adversarial scope-creep — trial {trial}: out-of-scope redirect attempt MUST be detected."""
     detected = detect_prompt_injection(_ADV_4_SCOPE_CREEP)
-    assert detected is True, (
-        f"Trial {trial}: Scope-creep injection MUST be detected. "
-        f"Input: {_ADV_4_SCOPE_CREEP!r}"
-    )
+    assert detected is True, f"Trial {trial}: Scope-creep injection MUST be detected. Input: {_ADV_4_SCOPE_CREEP!r}"
 
 
 # ── Full adversarial suite combined (V-AE-19) ─────────────────────────────────

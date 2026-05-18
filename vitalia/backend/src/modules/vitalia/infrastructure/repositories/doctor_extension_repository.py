@@ -28,35 +28,25 @@ class DoctorExtensionRepository:
         self._session = session
         self._tenant_id = tenant_id
 
-    async def get_by_id(
-        self, extension_id: uuid.UUID
-    ) -> VitaliaDoctorExtensionModel | None:
+    async def get_by_id(self, extension_id: uuid.UUID) -> VitaliaDoctorExtensionModel | None:
         """Return doctor extension by ID for this tenant."""
-        stmt = (
-            select(VitaliaDoctorExtensionModel)
-            .where(
-                VitaliaDoctorExtensionModel.id == extension_id,
-                VitaliaDoctorExtensionModel.tenant_id == self._tenant_id,
-                VitaliaDoctorExtensionModel.deleted_at.is_(None),
-            )
+        stmt = select(VitaliaDoctorExtensionModel).where(
+            VitaliaDoctorExtensionModel.id == extension_id,
+            VitaliaDoctorExtensionModel.tenant_id == self._tenant_id,
+            VitaliaDoctorExtensionModel.deleted_at.is_(None),
         )
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_by_doctor_id(
-        self, doctor_id: uuid.UUID
-    ) -> VitaliaDoctorExtensionModel | None:
+    async def get_by_doctor_id(self, doctor_id: uuid.UUID) -> VitaliaDoctorExtensionModel | None:
         """Return doctor extension by doctor_id for this tenant.
 
         Returns None if no extension exists or it has been soft-deleted.
         """
-        stmt = (
-            select(VitaliaDoctorExtensionModel)
-            .where(
-                VitaliaDoctorExtensionModel.tenant_id == self._tenant_id,
-                VitaliaDoctorExtensionModel.doctor_id == doctor_id,
-                VitaliaDoctorExtensionModel.deleted_at.is_(None),
-            )
+        stmt = select(VitaliaDoctorExtensionModel).where(
+            VitaliaDoctorExtensionModel.tenant_id == self._tenant_id,
+            VitaliaDoctorExtensionModel.doctor_id == doctor_id,
+            VitaliaDoctorExtensionModel.deleted_at.is_(None),
         )
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()

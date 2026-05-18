@@ -1,4 +1,4 @@
-"""Smoke tests for Slice 1 migrations 002-016 (T-infra-1).
+"""Smoke tests for Slice 1 migrations 002-016 (T-infra-1) + Slice 1 story migrations 017-021 (T-be-migrations-1).
 
 Tests verify:
   - All 15 migration files exist with correct revision chain
@@ -605,3 +605,340 @@ def test_offers_adherence_columns_exist() -> None:
         assert constraint in found_constraints, (
             f"offers constraint '{constraint}' not found — migration 015 must create it"
         )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# T-be-migrations-1: Migrations 017-021 static tests
+# ─────────────────────────────────────────────────────────────────────────────
+
+_MIGRATIONS_017_021: list[tuple[str, str, str]] = [
+    ("017_vitalia_lead_screening_events.py", "017_vitalia", "016_vitalia"),
+    ("018_vitalia_attribution_matrix_snapshots.py", "018_vitalia", "017_vitalia"),
+    ("019_vitalia_referrals_leaderboard_snapshots.py", "019_vitalia", "018_vitalia"),
+    ("020_vitalia_langgraph_checkpoint_tables.py", "020_vitalia", "019_vitalia"),
+    ("021_vitalia_screening_outcome_check.py", "021_vitalia", "020_vitalia"),
+]
+
+_NEW_STORY_TABLES = [
+    "lead_screening_events",
+    "attribution_matrix_snapshots",
+    "referrals_leaderboard_snapshots",
+]
+
+# LangGraph checkpoint table prefixes (migration 020)
+_LANGGRAPH_TABLE_PREFIXES = [
+    "vitalia_wizard_onboarding_checkpoints",
+    "vitalia_wizard_onboarding_checkpoint_writes",
+    "vitalia_wizard_onboarding_checkpoint_blobs",
+    "vitalia_lucas_analysis_checkpoints",
+    "vitalia_lucas_analysis_checkpoint_writes",
+    "vitalia_lucas_analysis_checkpoint_blobs",
+]
+
+
+@pytest.mark.parametrize("filename,revision,down_revision", _MIGRATIONS_017_021)
+def test_migration_017_021_file_exists(filename: str, revision: str, down_revision: str) -> None:
+    """Migrations 017-021 must exist."""
+    path = _VERSIONS_DIR / filename
+    assert path.exists(), f"Migration file not found: {path}"
+
+
+@pytest.mark.parametrize("filename,revision,down_revision", _MIGRATIONS_017_021)
+def test_migration_017_021_revision_ids(filename: str, revision: str, down_revision: str) -> None:
+    """Each of migrations 017-021 must declare correct revision and down_revision."""
+    content = _read_migration(filename)
+    assert f'revision = "{revision}"' in content, f"{filename}: revision must be '{revision}'"
+    assert f'down_revision = "{down_revision}"' in content, f"{filename}: down_revision must be '{down_revision}'"
+
+
+@pytest.mark.parametrize("filename,revision,down_revision", _MIGRATIONS_017_021)
+def test_migration_017_021_no_op_create_table(filename: str, revision: str, down_revision: str) -> None:
+    """No op.create_table() in migrations 017-021."""
+    content = _read_migration(filename)
+    code_only = _strip_docstrings_and_comments(content)
+    assert "op.create_table(" not in code_only, (
+        f"{filename}: op.create_table() found — use raw SQL CREATE TABLE IF NOT EXISTS"
+    )
+
+
+@pytest.mark.parametrize("filename,revision,down_revision", _MIGRATIONS_017_021)
+def test_migration_017_021_no_sa_enum_create_type(filename: str, revision: str, down_revision: str) -> None:
+    """No sa.Enum(create_type=True) in migrations 017-021."""
+    content = _read_migration(filename)
+    code_only = _strip_docstrings_and_comments(content)
+    assert "create_type=True" not in code_only, f"{filename}: sa.Enum(create_type=True) found — broken in SA 2.0.27"
+
+
+@pytest.mark.parametrize("filename,revision,down_revision", _MIGRATIONS_017_021)
+def test_migration_017_021_all_indexes_if_not_exists(filename: str, revision: str, down_revision: str) -> None:
+    """Every CREATE INDEX in migrations 017-021 must use IF NOT EXISTS."""
+    content = _read_migration(filename)
+    index_creates = re.findall(r"CREATE\s+(?:UNIQUE\s+)?INDEX\b[^\n;]+", content, re.IGNORECASE)
+    for stmt in index_creates:
+        assert "IF NOT EXISTS" in stmt.upper(), f"{filename}: index missing IF NOT EXISTS: {stmt[:80]}"
+
+
+@pytest.mark.parametrize("filename,revision,down_revision", _MIGRATIONS_017_021)
+def test_migration_017_021_timestamps_are_timestamptz(filename: str, revision: str, down_revision: str) -> None:
+    """All timestamp columns in migrations 017-021 must use TIMESTAMPTZ."""
+    content = _read_migration(filename)
+    code_only = _strip_docstrings_and_comments(content)
+    plain_ts = re.findall(r"\bTIMESTAMP\b(?!\s*W|\s*Z|\s+WITH)", code_only, re.IGNORECASE)
+    assert len(plain_ts) == 0, f"{filename}: found plain TIMESTAMP — must use TIMESTAMPTZ: {plain_ts[:3]}"
+
+
+def test_migration_017_lead_screening_events_schema() -> None:
+    """Migration 017 must create lead_screening_events with all required columns."""
+    content = _read_migration("017_vitalia_lead_screening_events.py")
+    # Table must exist
+    assert "CREATE TABLE IF NOT EXISTS lead_screening_events" in content
+    # Required columns
+    for column in (
+        "id",
+        "tenant_id",
+        "clinic_id",
+        "lead_id",
+        "vertical",
+        "questions_asked",
+        "response_text",
+        "outcome",
+        "reasoning",
+        "evaluated_at",
+        "created_at",
+        "deleted_at",
+    ):
+        assert column in content, f"017: column '{column}' not found in lead_screening_events"
+    # Must have tenant+clinic+lead index
+    assert "ix_lead_screening_events_tenant_clinic_lead" in content
+    # Must have tenant+vertical+outcome index
+    assert "ix_lead_screening_events_tenant_vertical_outcome" in content
+    # Outcome stored as VARCHAR (no create_type sa.Enum)
+    assert "VARCHAR" in content
+
+
+def test_migration_018_attribution_matrix_snapshots_schema() -> None:
+    """Migration 018 must create attribution_matrix_snapshots with required columns."""
+    content = _read_migration("018_vitalia_attribution_matrix_snapshots.py")
+    assert "CREATE TABLE IF NOT EXISTS attribution_matrix_snapshots" in content
+    for column in (
+        "id",
+        "tenant_id",
+        "clinic_id",
+        "period_start",
+        "period_end",
+        "channel_breakdown",
+        "total_attributed_revenue",
+        "currency",
+        "computed_at",
+        "deleted_at",
+    ):
+        assert column in content, f"018: column '{column}' not found in attribution_matrix_snapshots"
+    # Must have clinic+period index
+    assert "ix_attribution_matrix_snapshots" in content
+    # Revenue stored as NUMERIC
+    assert "NUMERIC" in content
+
+
+def test_migration_019_referrals_leaderboard_snapshots_schema() -> None:
+    """Migration 019 must create referrals_leaderboard_snapshots with required columns."""
+    content = _read_migration("019_vitalia_referrals_leaderboard_snapshots.py")
+    assert "CREATE TABLE IF NOT EXISTS referrals_leaderboard_snapshots" in content
+    for column in (
+        "id",
+        "tenant_id",
+        "clinic_id",
+        "period_start",
+        "period_end",
+        "top_referrers",
+        "total_referrals",
+        "total_converted",
+        "computed_at",
+        "deleted_at",
+    ):
+        assert column in content, f"019: column '{column}' not found in referrals_leaderboard_snapshots"
+    assert "ix_referrals_leaderboard_snapshots" in content
+    assert "JSONB" in content
+
+
+def test_migration_020_langgraph_checkpoint_tables() -> None:
+    """Migration 020 must create all 6 LangGraph checkpoint tables with IF NOT EXISTS."""
+    content = _read_migration("020_vitalia_langgraph_checkpoint_tables.py")
+    for table in _LANGGRAPH_TABLE_PREFIXES:
+        assert f"CREATE TABLE IF NOT EXISTS {table}" in content, f"020: LangGraph checkpoint table '{table}' missing"
+
+
+def test_migration_021_screening_outcome_check_constraint() -> None:
+    """Migration 021 must add CHECK constraint for lead_screening_events.outcome."""
+    content = _read_migration("021_vitalia_screening_outcome_check.py")
+    # Must use idempotent approach (DO block with EXCEPTION or ADD CONSTRAINT IF NOT EXISTS via DO block)
+    assert "screening_outcome_chk" in content, "021: constraint name screening_outcome_chk missing"
+    # Must include all valid outcome values
+    for value in ("booking_ready", "objection_handle", "disqualified", "manual_review"):
+        assert value in content, f"021: outcome value '{value}' missing from CHECK constraint"
+    # Must be idempotent (use DO block pattern)
+    assert "DO $" in content or "DO $$" in content, "021: must use DO $$ block for idempotent constraint add"
+
+
+def test_revision_chain_017_021_sequential() -> None:
+    """Verify the revision chain 016->017->...->021 is complete and sequential."""
+    for filename, revision, down_revision in _MIGRATIONS_017_021:
+        content = _read_migration(filename)
+        assert f'revision = "{revision}"' in content
+        assert f'down_revision = "{down_revision}"' in content, f"{filename}: expected down_revision='{down_revision}'"
+
+
+def test_new_tables_have_tenant_and_clinic_id() -> None:
+    """All new PHI tables (017-019) must have tenant_id + clinic_id NOT NULL (dual filter per hipaa-lite.md)."""
+    phi_migrations = [
+        ("017_vitalia_lead_screening_events.py", "lead_screening_events"),
+        ("018_vitalia_attribution_matrix_snapshots.py", "attribution_matrix_snapshots"),
+        ("019_vitalia_referrals_leaderboard_snapshots.py", "referrals_leaderboard_snapshots"),
+    ]
+    for filename, table in phi_migrations:
+        content = _read_migration(filename)
+        assert "tenant_id" in content, f"{filename}: tenant_id missing in {table}"
+        assert "clinic_id" in content, f"{filename}: clinic_id missing in {table}"
+        # Ensure NOT NULL on both
+        assert re.search(r"tenant_id\s+UUID\s+NOT NULL", content, re.IGNORECASE), (
+            f"{filename}: tenant_id must be UUID NOT NULL"
+        )
+        assert re.search(r"clinic_id\s+UUID\s+NOT NULL", content, re.IGNORECASE), (
+            f"{filename}: clinic_id must be UUID NOT NULL"
+        )
+
+
+def test_new_tables_have_soft_delete() -> None:
+    """Tables 017-019 must have deleted_at TIMESTAMPTZ column for soft delete."""
+    phi_migrations = [
+        "017_vitalia_lead_screening_events.py",
+        "018_vitalia_attribution_matrix_snapshots.py",
+        "019_vitalia_referrals_leaderboard_snapshots.py",
+    ]
+    for filename in phi_migrations:
+        content = _read_migration(filename)
+        assert "deleted_at" in content, f"{filename}: deleted_at column missing (soft delete mandatory)"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# T-be-migrations-1: Integration tests for 017-021 (require Postgres)
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+@pytest.mark.integration
+@pytest.mark.skipif(
+    not _postgres_available,
+    reason="Postgres not available — skipping integration test (document in impl-log)",
+)
+def test_migrations_017_021_apply_clean() -> None:
+    """Migrations 017-021: alembic upgrade head succeeds from current head."""
+    import subprocess
+
+    backend_dir = str(_WORKSPACE_ROOT / "vitalia" / "backend")
+    alembic = str(_WORKSPACE_ROOT / ".venv" / "bin" / "alembic")
+
+    result = subprocess.run(
+        [alembic, "upgrade", "head"],
+        cwd=backend_dir,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, (
+        f"alembic upgrade head (017-021) failed:\nstdout: {result.stdout}\nstderr: {result.stderr}"
+    )
+
+
+@pytest.mark.integration
+@pytest.mark.skipif(
+    not _postgres_available,
+    reason="Postgres not available — skipping integration test (document in impl-log)",
+)
+def test_migrations_017_021_idempotent() -> None:
+    """Migrations 017-021: applying upgrade head twice is a no-op (idempotent)."""
+    import subprocess
+
+    backend_dir = str(_WORKSPACE_ROOT / "vitalia" / "backend")
+    alembic = str(_WORKSPACE_ROOT / ".venv" / "bin" / "alembic")
+
+    r1 = subprocess.run([alembic, "upgrade", "head"], cwd=backend_dir, capture_output=True, text=True)
+    assert r1.returncode == 0, f"First upgrade failed: {r1.stderr}"
+
+    r2 = subprocess.run([alembic, "upgrade", "head"], cwd=backend_dir, capture_output=True, text=True)
+    assert r2.returncode == 0, f"Second upgrade (idempotent) failed: {r2.stderr}"
+
+
+@pytest.mark.integration
+@pytest.mark.skipif(
+    not _postgres_available,
+    reason="Postgres not available — skipping integration test (document in impl-log)",
+)
+def test_lead_screening_events_table_exists() -> None:
+    """Verify lead_screening_events table was created with correct columns."""
+    import psycopg2  # type: ignore[import]
+
+    conn = psycopg2.connect(
+        host=os.environ.get("POSTGRES_HOST", "localhost"),
+        port=int(os.environ.get("POSTGRES_PORT", "5432")),
+        user=os.environ.get("POSTGRES_USER", "postgres"),
+        password=os.environ.get("POSTGRES_PASSWORD", "password"),
+        dbname=os.environ.get("POSTGRES_DB", "vitalia_dev"),
+    )
+    expected_columns = [
+        "id",
+        "tenant_id",
+        "clinic_id",
+        "lead_id",
+        "vertical",
+        "questions_asked",
+        "response_text",
+        "outcome",
+        "reasoning",
+        "evaluated_at",
+        "created_at",
+        "deleted_at",
+    ]
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT column_name FROM information_schema.columns
+                WHERE table_schema = 'public' AND table_name = 'lead_screening_events'
+                ORDER BY column_name;
+            """)
+            found = {r[0] for r in cur.fetchall()}
+    finally:
+        conn.close()
+
+    for col in expected_columns:
+        assert col in found, f"lead_screening_events.{col} not found post-migration"
+
+
+@pytest.mark.integration
+@pytest.mark.skipif(
+    not _postgres_available,
+    reason="Postgres not available — skipping integration test (document in impl-log)",
+)
+def test_screening_outcome_check_constraint_exists() -> None:
+    """Verify screening_outcome_chk CHECK constraint exists on lead_screening_events."""
+    import psycopg2  # type: ignore[import]
+
+    conn = psycopg2.connect(
+        host=os.environ.get("POSTGRES_HOST", "localhost"),
+        port=int(os.environ.get("POSTGRES_PORT", "5432")),
+        user=os.environ.get("POSTGRES_USER", "postgres"),
+        password=os.environ.get("POSTGRES_PASSWORD", "password"),
+        dbname=os.environ.get("POSTGRES_DB", "vitalia_dev"),
+    )
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT conname FROM pg_constraint
+                WHERE conrelid = 'lead_screening_events'::regclass
+                  AND contype = 'c'
+                  AND conname = 'screening_outcome_chk';
+            """)
+            row = cur.fetchone()
+    finally:
+        conn.close()
+
+    assert row is not None, (
+        "screening_outcome_chk CHECK constraint not found on lead_screening_events — migration 021 must create it"
+    )

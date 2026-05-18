@@ -33,30 +33,20 @@ class PlanTierConfigRepository:
         """Note: No tenant_id parameter — cross-tenant catalog."""
         self._session = session
 
-    async def get_by_id(
-        self, tier_id: uuid.UUID
-    ) -> VitaliaPlanTierConfigModel | None:
+    async def get_by_id(self, tier_id: uuid.UUID) -> VitaliaPlanTierConfigModel | None:
         """Return plan tier config by ID (cross-tenant — no tenant filter)."""
-        stmt = (
-            select(VitaliaPlanTierConfigModel)
-            .where(
-                VitaliaPlanTierConfigModel.id == tier_id,
-                VitaliaPlanTierConfigModel.is_active.is_(True),
-            )
+        stmt = select(VitaliaPlanTierConfigModel).where(
+            VitaliaPlanTierConfigModel.id == tier_id,
+            VitaliaPlanTierConfigModel.is_active.is_(True),
         )
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_by_slug(
-        self, plan_tier_slug: str
-    ) -> VitaliaPlanTierConfigModel | None:
+    async def get_by_slug(self, plan_tier_slug: str) -> VitaliaPlanTierConfigModel | None:
         """Return plan tier config by slug (e.g. 'solo_doctor', 'clinic')."""
-        stmt = (
-            select(VitaliaPlanTierConfigModel)
-            .where(
-                VitaliaPlanTierConfigModel.plan_tier_slug == plan_tier_slug,
-                VitaliaPlanTierConfigModel.is_active.is_(True),
-            )
+        stmt = select(VitaliaPlanTierConfigModel).where(
+            VitaliaPlanTierConfigModel.plan_tier_slug == plan_tier_slug,
+            VitaliaPlanTierConfigModel.is_active.is_(True),
         )
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()

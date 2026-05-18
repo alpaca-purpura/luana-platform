@@ -29,8 +29,6 @@ from __future__ import annotations
 
 import uuid
 
-import pytest
-
 from src.modules.vitalia.agentic.prompts.compose import (
     cacheable_prefix_blocks,
     prompt_cache_key,
@@ -43,14 +41,8 @@ _TENANT_AURORA = uuid.UUID("00000000-1111-2222-3333-000000000001")  # Aurora Den
 _TENANT_MINDFUL = uuid.UUID("00000000-1111-2222-3333-000000000002")  # Centro Mindful CL
 _TENANT_SANARE = uuid.UUID("00000000-1111-2222-3333-000000000003")  # Sanaré MX
 
-_AURORA_BRAND_VOICE = (
-    "# Voz Aurora Dental AR (warm_close, voseo)\n\n"
-    "Hablás con calidez y cercanía."
-)
-_MINDFUL_BRAND_VOICE = (
-    "# Voz Centro Mindful Santiago CL (empathic-paciente)\n\n"
-    "Tono empático, pausado, validador."
-)
+_AURORA_BRAND_VOICE = "# Voz Aurora Dental AR (warm_close, voseo)\n\nHablás con calidez y cercanía."
+_MINDFUL_BRAND_VOICE = "# Voz Centro Mindful Santiago CL (empathic-paciente)\n\nTono empático, pausado, validador."
 
 
 # ── Attack vector 1: Tenant ID spoofing via cache key ─────────────────────────
@@ -72,15 +64,10 @@ def test_cross_tenant_cache_keys_are_isolated() -> None:
 
     # All three must be distinct
     assert key_aurora != key_mindful, (
-        "Aurora and Mindful MUST have distinct prompt_cache_keys. "
-        f"Both returned: {key_aurora!r}"
+        f"Aurora and Mindful MUST have distinct prompt_cache_keys. Both returned: {key_aurora!r}"
     )
-    assert key_aurora != key_sanare, (
-        "Aurora and Sanaré MUST have distinct prompt_cache_keys."
-    )
-    assert key_mindful != key_sanare, (
-        "Mindful and Sanaré MUST have distinct prompt_cache_keys."
-    )
+    assert key_aurora != key_sanare, "Aurora and Sanaré MUST have distinct prompt_cache_keys."
+    assert key_mindful != key_sanare, "Mindful and Sanaré MUST have distinct prompt_cache_keys."
 
 
 # ── Attack vector 2: Cross-tenant brand voice bleed via prefix blocks ─────────

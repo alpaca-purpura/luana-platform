@@ -1,13 +1,13 @@
 ---
 name: dev-team
-description: "Developer team router v4 (Conv 2 — autonomous build, post pm-redesign 2026-05 Punto 4). Reads ready package (01-spec.md + 03-arch.md + 04-validators.yaml + 05-guidelines.md + 06-tickets.yaml) en {brand}/docs/product/stories/{story-id}/ state=ready. Itera ticket-por-ticket: implement → run validators (4 categorías: non_functional/functional/visual/agentic_eval) → fix targeted file → repeat hasta GREEN o cap_reached. Decide owner según owner_eligibility + production_code flag (R23). qwen-opencode/Sonnet preferido para BE/FE no-agentic + tests/docs sobre agentic. Opus 4.7 obligatorio para AGENTIC production code. Mantiene T-{n}-impl-log.md vivo. TDD obligatorio. On pickup: state=ready→developing. On all GREEN all tickets: state=developing→developed. On cap reached: state=developing→blocked, escalate. Activa cuando user dice: '/dev-team', 'toma ticket T-N', 'implementa T-N', 'arranca build', 'autonomous build'."
+description: "Developer team router v4 (Conv 2 — autonomous build, post pm-redesign 2026-05 Punto 4 + story-closure-gate 2026-05-18). Reads ready package (01-spec.md + 03-arch.md + 04-validators.yaml + 05-guidelines.md + 06-tickets.yaml) en {brand}/docs/product/stories/{story-id}/ state=ready. Itera ticket-por-ticket: implement → run validators (4 categorías: non_functional/functional/visual/agentic_eval) → fix targeted file → repeat hasta GREEN o cap_reached. Decide owner según owner_eligibility + production_code flag (R23). qwen-opencode/Sonnet preferido para BE/FE no-agentic + tests/docs sobre agentic. Opus 4.7 obligatorio para AGENTIC production code. Mantiene T-{n}-impl-log.md vivo. TDD obligatorio. On pickup: state=ready→developing. On all GREEN all tickets: state=developing→developed + AUTO-HANDOFF /auditor (default, salvo defer_audit:true en checkpoint con razón documentada). REFUSE pickup nueva story si current worktree tiene story en state ∈ {developing, developed, reviewing} sin defer_audit. On cap reached: state=developing→blocked, escalate. Activa cuando user dice: '/dev-team', 'toma ticket T-N', 'implementa T-N', 'arranca build', 'autonomous build'."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
 model: opus
 ---
 
 # /dev-team — Developer Team Router (Conv 2 autonomous build)
 
-> Owner: `T-{n}-impl-log.md` + `T-{n}-result.md` en `{brand}/docs/product/stories/{story-id}/`. Toma 1 ticket → ejecuta TDD + iteración contra `04-validators.yaml` → push. On pickup: state=ready→developing. On GREEN all tickets → state=developing→developed (awaiting QA, NO automatic transition a reviewing — Chris triggers /auditor manualmente para controlar gasto Opus).
+> Owner: `T-{n}-impl-log.md` + `T-{n}-result.md` en `{brand}/docs/product/stories/{story-id}/`. Toma 1 ticket → ejecuta TDD + iteración contra `04-validators.yaml` → push. On pickup: state=ready→developing. On GREEN all tickets → state=developing→developed + **AUTO-HANDOFF a `/auditor`** (default post 2026-05-18 — story-closure-gate). Escape valve explícita: `checkpoint.md::defer_audit: true` con razón documentada + ratificación Chris. **REFUSE pickup nueva story si current worktree tiene story en state ∈ {developing, developed, reviewing} sin `defer_audit: true`** (defense-in-depth Layer 2 del story-closure-gate).
 
 ## REQUIRED first input: `<brand>`
 
@@ -45,7 +45,45 @@ state: developing   # ★ TRANSITION ready → developing ★
 phase: BUILD_T1
 ```
 
-WIP cap check: `building` ≤ 3. Si excedido → escala Chris antes proceder.
+WIP cap check: `developing` ≤ 1 por worktree (post 2026-05-18 story-closure-gate). Si excedido → escala Chris antes proceder.
+
+### Step 0.4 — Story-closure gate (story-closure-gate.md Layer 2)
+
+ANTES de pickup este ticket (o cualquier ticket de esta story), verificar que NO hay otra story abierta en el mismo worktree pendiente de cierre:
+
+```bash
+WS=$(git rev-parse --show-toplevel)
+BRAND={brand}
+
+# Listar todos los checkpoints stories del brand
+for cp in ${WS}/${BRAND}/docs/product/stories/*/checkpoint.md; do
+  STORY_ID=$(basename $(dirname $cp))
+  STATE=$(grep -E "^state:" $cp | head -1 | awk '{print $2}')
+  DEFER=$(grep -E "^defer_audit:" $cp 2>/dev/null | awk '{print $2}')
+  if [[ "$STATE" =~ ^(developing|developed|reviewing)$ ]] && [[ "$DEFER" != "true" ]]; then
+    echo "BLOCK: story $STORY_ID en state=$STATE sin defer_audit"
+  fi
+done
+```
+
+Si encuentro otra story open (developing/developed/reviewing) en el mismo worktree
+SIN `defer_audit: true` ratificado por Chris → REFUSE pickup. Output verbatim:
+
+```
+❌ Story closure gate: cannot pickup ticket T-{n} de story {new-story-id}
+   porque story {open-story-id} está en state={state} sin defer_audit.
+
+   Acciones disponibles:
+   1. Continuar story {open-story-id} hasta state=done (default forward-motion)
+   2. Ratificar defer_audit:true en {open-story-id}/checkpoint.md con razón
+      documentada + Chris explícito
+   3. Cleanup-session el worktree actual y crear nuevo
+      (scripts/git/new-session.sh --story-id {new-story-id})
+
+   SSoT regla: .claude/rules/story-closure-gate.md (Layer 2)
+```
+
+NO arrancar el ticket. Esperar acción explícita Chris.
 
 ## Step 0.5 — Phase 0: Context pre-flight (MANDATORY antes Step 1)
 
@@ -344,29 +382,71 @@ transitions:
 
 Si quedan tickets `ready` → continuar Step 1 con next ticket.
 
-Si TODOS tickets pushed → transition story a review:
+Si TODOS tickets pushed → transition story a developed + AUTO-HANDOFF /auditor (Conv 3 default post 2026-05-18):
 
 ```yaml
 # {brand}/docs/product/stories/{story-id}/checkpoint.md
 brand: {brand}     # ★ REQUIRED — multibrand scope
-state: developed   # ★ TRANSITION developing → developed (awaiting QA — Chris triggers /auditor) ★
-phase: AWAIT_AUDIT
+state: developed   # ★ TRANSITION developing → developed ★
+phase: HANDOFF_TO_AUDITOR
 last_artifact: T-{N}-result.md (last ticket)
-next_action: "/auditor <brand>: {brand} toma story {id} para Conv 3 review+merge"
+next_action: "/auditor <brand>: {brand} toma story {id} para Conv 3 review+merge (AUTO-HANDOFF default)"
 ```
 
-Output:
+**Verificar `defer_audit: true` en checkpoint:**
+
+```bash
+DEFER=$(grep -E "^defer_audit:" ${STORY_DIR}/checkpoint.md 2>/dev/null | awk '{print $2}')
 ```
-Story {brand}/{id} all tickets pushed.
+
+### Caso default — auto-handoff a `/auditor`
+
+Si `defer_audit` no está set o es `false` → EMITIR handoff verbatim, NO arrancar nueva story:
+
+```
+✅ Story {brand}/{story-id} all tickets pushed.
 - T-1 (commit abc1234) ✅
 - T-2 (commit def5678) ✅
 - T-3 (commit 9876abc) ✅
 
 Quality gates: validators all GREEN.
-Story state: developing → developed (awaiting QA, Chris triggers /auditor).
-WIP cap check: building (was N) now N-1; review (was M) now M+1 / cap 2.
+Story state: developing → developed.
+WIP cap check: developing (was 1) now 0; developed (was 0) now 1 / cap 1.
 
-Próximo: /auditor <brand>: {brand} (Conv 3) lee T-{n}-result.md + corre tests independientes + CHECKPOINTS.md C1-C5.
+→ AUTO-HANDOFF /auditor <brand>: {brand} story={story-id}
+
+  (Conv 3 default post 2026-05-18 story-closure-gate.
+   Lee T-{n}-result.md + Phase D gherkin verification + CHECKPOINTS.md C1-C5.
+   No arrancar nueva story hasta state=done de esta.)
+```
+
+STOP la sesión `/dev-team` aquí. Chris (o auto-handoff harness) invoca `/auditor` siguiente.
+
+### Caso defer_audit:true — STOP + ping bootstrap
+
+Si `defer_audit: true` ratificado:
+
+```
+✅ Story {brand}/{story-id} all tickets pushed.
+Story state: developing → developed.
+defer_audit: true (razón: "{defer_audit_reason}", ratified_by: {defer_audit_ratified_by})
+
+⏸  AUDIT DEFERRED.
+
+  /pm-{brand} bootstrap pingeará esta deuda en cada sesión futura hasta
+  resolución. Cuando Chris quiera reanudar, dice "audita {story-id}" y
+  /auditor toma el handoff con full context del defer.
+```
+
+STOP la sesión `/dev-team`.
+
+### Anti-pattern bloqueado (caso vitalia 2026-05-18 origen)
+
+```
+❌ NUNCA: cerrar state=developed + pickup ticket de otra story en el mismo worktree.
+   Layer 2 enforcement: si Step 0.4 detecta otra story abierta sin defer_audit,
+   REFUSE pickup. Si esta story (la actual) acaba de cerrar developed, ANTES
+   de cualquier nueva story el worktree debe llegar a state=done (auditor → merge → archive).
 ```
 
 ## Step 5.5 — R12 layer 1: emit process metric

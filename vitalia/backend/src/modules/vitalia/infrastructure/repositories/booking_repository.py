@@ -44,13 +44,10 @@ class BookingRepository:
 
     async def get_by_id(self, booking_id: uuid.UUID) -> VitaliaBookingModel | None:
         """Return booking by ID for this tenant, or None if not found / deleted."""
-        stmt = (
-            select(VitaliaBookingModel)
-            .where(
-                VitaliaBookingModel.id == booking_id,
-                VitaliaBookingModel.tenant_id == self._tenant_id,
-                VitaliaBookingModel.deleted_at.is_(None),
-            )
+        stmt = select(VitaliaBookingModel).where(
+            VitaliaBookingModel.id == booking_id,
+            VitaliaBookingModel.tenant_id == self._tenant_id,
+            VitaliaBookingModel.deleted_at.is_(None),
         )
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()
@@ -70,9 +67,7 @@ class BookingRepository:
         if status is not None:
             conditions.append(VitaliaBookingModel.status == status)
 
-        stmt = select(VitaliaBookingModel).where(*conditions).order_by(
-            VitaliaBookingModel.slot_iso.desc()
-        )
+        stmt = select(VitaliaBookingModel).where(*conditions).order_by(VitaliaBookingModel.slot_iso.desc())
         result = await self._session.execute(stmt)
         return list(result.scalars().all())
 
@@ -91,9 +86,7 @@ class BookingRepository:
         if status is not None:
             conditions.append(VitaliaBookingModel.status == status)
 
-        stmt = select(VitaliaBookingModel).where(*conditions).order_by(
-            VitaliaBookingModel.slot_iso.asc()
-        )
+        stmt = select(VitaliaBookingModel).where(*conditions).order_by(VitaliaBookingModel.slot_iso.asc())
         result = await self._session.execute(stmt)
         return list(result.scalars().all())
 
@@ -107,15 +100,12 @@ class BookingRepository:
         Used by BookingService advisory lock check pre-creation.
         Only considers non-cancelled, non-deleted bookings as "slot occupied".
         """
-        stmt = (
-            select(VitaliaBookingModel)
-            .where(
-                VitaliaBookingModel.tenant_id == self._tenant_id,
-                VitaliaBookingModel.doctor_id == doctor_id,
-                VitaliaBookingModel.slot_iso == slot_iso,
-                VitaliaBookingModel.status.in_(_ACTIVE_STATUSES),
-                VitaliaBookingModel.deleted_at.is_(None),
-            )
+        stmt = select(VitaliaBookingModel).where(
+            VitaliaBookingModel.tenant_id == self._tenant_id,
+            VitaliaBookingModel.doctor_id == doctor_id,
+            VitaliaBookingModel.slot_iso == slot_iso,
+            VitaliaBookingModel.status.in_(_ACTIVE_STATUSES),
+            VitaliaBookingModel.deleted_at.is_(None),
         )
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()

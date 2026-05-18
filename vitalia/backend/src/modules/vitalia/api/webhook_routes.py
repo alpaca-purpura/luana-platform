@@ -496,7 +496,7 @@ def _verify_whatsapp_hmac(raw_body: bytes, hub_signature_256: str, secret: str) 
     if not hub_signature_256.startswith(prefix):
         raise ValueError(f"WhatsApp X-Hub-Signature-256 header must start with 'sha256=', got: {hub_signature_256!r}")
 
-    received_hex = hub_signature_256[len(prefix):]
+    received_hex = hub_signature_256[len(prefix) :]
     expected_hex = hmac.new(secret.encode(), raw_body, hashlib.sha256).hexdigest()
 
     if not hmac.compare_digest(expected_hex, received_hex.lower()):

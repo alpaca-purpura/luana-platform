@@ -29,30 +29,16 @@ class VitaliaPlanTierConfigModel(Base):
 
     __tablename__ = "vitalia_plan_tier_configs"
 
-    id: Mapped[UUID] = mapped_column(
-        PgUUID(as_uuid=True), primary_key=True, default=uuid4
-    )
+    id: Mapped[UUID] = mapped_column(PgUUID(as_uuid=True), primary_key=True, default=uuid4)
     # No tenant_id — CROSS-TENANT global catalog
-    plan_tier_slug: Mapped[str] = mapped_column(
-        String(64), nullable=False, unique=True
-    )
+    plan_tier_slug: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
     display_name: Mapped[str] = mapped_column(String(128), nullable=False)
-    price_usd_monthly: Mapped[Decimal] = mapped_column(
-        Numeric(precision=10, scale=2), nullable=False
-    )
-    included_user_count: Mapped[int] = mapped_column(
-        Integer, nullable=False, default=1
-    )
+    price_usd_monthly: Mapped[Decimal] = mapped_column(Numeric(precision=10, scale=2), nullable=False)
+    included_user_count: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     max_doctors: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     # JSONB map of feature flag → bool
-    features_enabled: Mapped[dict] = mapped_column(
-        JSONB, nullable=False, default=dict
-    )
+    features_enabled: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
     # No deleted_at — use is_active=False to deactivate

@@ -31,26 +31,16 @@ class VitaliaMedicalAuditLogModel(Base):
 
     __tablename__ = "vitalia_medical_audit_log"
 
-    id: Mapped[UUID] = mapped_column(
-        PgUUID(as_uuid=True), primary_key=True, default=uuid4
-    )
-    tenant_id: Mapped[UUID] = mapped_column(
-        PgUUID(as_uuid=True), nullable=False, index=True
-    )
+    id: Mapped[UUID] = mapped_column(PgUUID(as_uuid=True), primary_key=True, default=uuid4)
+    tenant_id: Mapped[UUID] = mapped_column(PgUUID(as_uuid=True), nullable=False, index=True)
     # See § 15.4 02-design-agentic.md event types
     event_type: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
     # "info" / "medium" / "high"
     severity: Mapped[str] = mapped_column(String(16), nullable=False)
-    patient_id: Mapped[UUID | None] = mapped_column(
-        PgUUID(as_uuid=True), nullable=True
-    )
-    booking_id: Mapped[UUID | None] = mapped_column(
-        PgUUID(as_uuid=True), nullable=True
-    )
+    patient_id: Mapped[UUID | None] = mapped_column(PgUUID(as_uuid=True), nullable=True)
+    booking_id: Mapped[UUID | None] = mapped_column(PgUUID(as_uuid=True), nullable=True)
     # PII-sanitized payload
-    payload_redacted: Mapped[dict] = mapped_column(
-        JSONB, nullable=False, default=dict
-    )
+    payload_redacted: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
     actor_id: Mapped[UUID | None] = mapped_column(PgUUID(as_uuid=True), nullable=True)
     # "clinic_owner" / "sales_agent" / "system" / "patient"
     actor_type: Mapped[str | None] = mapped_column(String(32), nullable=True)

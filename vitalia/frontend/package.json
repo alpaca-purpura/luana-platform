@@ -9,7 +9,9 @@
     "lint": "eslint src/",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e:smoke": "E2E_BASE_URL=http://localhost:3000 npx playwright test --project=smoke"
+    "test:e2e:smoke": "E2E_BASE_URL=http://localhost:3000 npx playwright test --project=smoke",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.36.8",
@@ -21,6 +23,11 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",
+    "@storybook/addon-a11y": "^10.4.0",
+    "@storybook/nextjs": "^10.4.0",
+    "@testing-library/jest-dom": "^6.4.8",
+    "@testing-library/react": "^16.0.0",
+    "@testing-library/user-event": "^14.5.2",
     "@types/node": "^25.0.9",
     "@types/react": "^19.2.8",
     "@types/react-dom": "^19.2.3",
@@ -31,6 +38,7 @@
     "eslint-plugin-boundaries": "^6.0.2",
     "globals": "^17.5.0",
     "happy-dom": "^13.10.0",
+    "storybook": "^10.4.0",
     "tailwindcss": "^4.1.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.58.0",

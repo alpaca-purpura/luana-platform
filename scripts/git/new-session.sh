@@ -18,6 +18,7 @@ set -euo pipefail
 #              core:
 #                lift       → ~/Proyectos/luana-core-{slug}/                   branch wip/core-{slug}
 #   SLUG     identificador story-id/slug-corto. Solo [a-z0-9-], lowercase, max 40 chars
+#            Con TYPE=story, SLUG === story-id (story-closure-gate convention 2026-05-18).
 #   LANE     opcional, solo con TYPE=story: be|fe|tests|docs (libre, recomendado)
 #
 # Exit codes:
@@ -34,13 +35,13 @@ set -euo pipefail
 #
 # Examples:
 #   scripts/git/new-session.sh vitalia canonical bootstrap
-#   scripts/git/new-session.sh vitalia story copilot-tools-impl
-#   scripts/git/new-session.sh vitalia story copilot-tools-impl fe
+#   scripts/git/new-session.sh vitalia story vitalia-copilot-tools-impl
+#   scripts/git/new-session.sh vitalia story vitalia-copilot-tools-impl fe
 #   scripts/git/new-session.sh comunify hotfix kb-broken
 #   scripts/git/new-session.sh core lift extract-callback-handler
 
-BRAND="${1:?Usage: new-session.v2.sh BRAND TYPE [SLUG] [LANE] — see header}"
-TYPE="${2:?Usage: new-session.v2.sh BRAND TYPE [SLUG] [LANE]}"
+BRAND="${1:?Usage: new-session.sh BRAND TYPE [SLUG] [LANE] — see header}"
+TYPE="${2:?Usage: new-session.sh BRAND TYPE [SLUG] [LANE]}"
 SLUG="${3:-}"
 LANE="${4:-}"
 
@@ -90,6 +91,24 @@ fi
 if [[ ${#SLUG} -gt 40 ]]; then
   echo "::error::Slug too long (${#SLUG} chars, max 40)"
   exit 1
+fi
+
+# story-closure-gate convention (post 2026-05-18): cuando TYPE=story, SLUG debe ser
+# story-id existente en {BRAND}/docs/product/stories/ con state ∈ {idea, refining, refined, ready}
+# (no developing/developed/reviewing — esos ya tienen worktree).
+if [[ "${TYPE}" = "story" ]] && [[ "${BRAND}" != "core" ]]; then
+  STORY_CHECKPOINT="${BRAND}/docs/product/stories/${SLUG}/checkpoint.md"
+  if [[ -f "${STORY_CHECKPOINT}" ]]; then
+    STORY_STATE=$(grep -E "^state:" "${STORY_CHECKPOINT}" | head -1 | awk '{print $2}' || echo "")
+    if [[ "${STORY_STATE}" =~ ^(developing|developed|reviewing|done)$ ]]; then
+      echo "::error::Story ${SLUG} state=${STORY_STATE} — ya tiene worktree o esta cerrada."
+      echo "  Si querés retomar: cd al worktree existente."
+      echo "  Si state=done: la story esta cerrada, crear nueva."
+      echo "  SSoT: .claude/rules/story-closure-gate.md (Layer 4)"
+      exit 2
+    fi
+  fi
+  # Si no existe checkpoint, OK — story se creará. /pm-{brand} bootstrap escribirá checkpoint.
 fi
 
 # LANE only valid with story type

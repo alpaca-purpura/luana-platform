@@ -1,9 +1,9 @@
 # docs/product/BACKLOG.yaml — auto-generated SSoT machine-readable
 # DO NOT EDIT MANUALLY — modify source artifacts instead.
 # Regenerate: python scripts/generate_backlog.py
-# Generated at: 2026-05-17T08:22:51+00:00
+# Generated at: 2026-05-18T14:56:13+00:00
 
-generated_at: '2026-05-17T08:22:51+00:00'
+generated_at: '2026-05-18T14:56:13+00:00'
 brand: vitalia
 caps:
   refining_max: 3
@@ -16,40 +16,13 @@ caps:
   refining_stale_days: 60
   refined_stale_days: 30
   done_rolling_days: 90
-warnings: []
+warnings:
+- refined cap exceeded (6 > 5, excl. legacy+outcomes)
 stale_ideas: []
 stale_refining: []
 stale_refined: []
 buckets:
   idea:
-  - id: vitalia-copilot-tools-impl
-    kind: story
-    state: idea
-    title: vitalia-copilot-tools-impl
-    tags: []
-    last_touched: 2026-05-17
-    extra:
-      outcome: vitalia-mvp-ui-foundation
-      phase: SPAWNED
-      next_action: Prioritizar 4 tools T-tools-1..4 (Valeria copilot). Decidir cuáles son MVP (onboarding Brand Studio wizard)
-        vs Slice 2 (configuradores avanzados). Spawn refining cuando Slice 1 spec ratificada.
-      blocked_by: null
-      priority_override: null
-      audit_iterations: 0
-  - id: vitalia-payment-adapter-mvp
-    kind: story
-    state: idea
-    title: vitalia-payment-adapter-mvp
-    tags: []
-    last_touched: 2026-05-17
-    extra:
-      outcome: vitalia-mvp-ui-foundation
-      phase: SPAWNED
-      next_action: Spawn refining cuando Slice 1 entre developing — booking prepaid 30% diferenciador MUST requiere ≥1 gateway
-        wired. Decidir cuál (MercadoPago LATAM principal candidate, Stripe alternativo, Culqi Perú).
-      blocked_by: null
-      priority_override: null
-      audit_iterations: 0
   - id: vitalia-pricing-decision
     kind: story
     state: idea
@@ -100,26 +73,191 @@ buckets:
       target_end: null
       priority: high
       success_metrics: []
-  - id: vitalia-ux-discovery
+  - id: vitalia-fiscal-emission-pe
     kind: story
     state: refining
+    title: vitalia-fiscal-emission-pe
+    tags: []
+    last_touched: 2026-05-17
+    extra:
+      outcome: vitalia-mvp-ui-foundation
+      phase: AWAITING_PO_DRAFT_DEFERRED_NEXT_SESSION
+      next_action: '/po vitalia-fiscal-emission-pe — produce 01-spec.md service-story (sin UI dedicada Slice 1 más allá toggle
+        inline /agenda sheet cobro — UI completa /configuracion/facturacion-pe defer Slice 2). Inputs cementados: scope completo
+        abajo (~80 LOC) + 4 Gherkin scenarios cementados + Capa 2 trigger flow + retry queue policy 8-step exponential backoff
+        + secrets vault design pgcrypto KEK rotada anualmente + CDR archive policy 10y retention. Open questions Chris remaining:
+        (1) Aceptamos Nubefact único PSE/OSE Slice 1 ó multi-provider Strategy pattern (Tefacturo+Facturak) desde MVP? (2)
+        Boleta + Factura ambos Slice 1 ó solo Boleta (factura defer Slice 2)? (3) Dead-letter post 72h alerta solo admin ó
+        también notification Adrián a operador (con copy humano contable)? (4) Setup admin-only Slice 1 vía seed/script aceptable
+        ó requerimos UI mínima emergency? Validate scope cementado con Chris en G6 batched clarification (≤4 batches) → state
+        refining→refined.'
+      blocked_by: null
+      priority_override: null
+      audit_iterations: 0
+  - id: vitalia-payment-adapter-mvp
+    kind: story
+    state: refining
+    title: vitalia-payment-adapter-mvp
+    tags: []
+    last_touched: 2026-05-17
+    extra:
+      outcome: vitalia-mvp-ui-foundation
+      phase: AWAITING_PO_DRAFT_DEFERRED_NEXT_SESSION
+      next_action: '/po vitalia-payment-adapter-mvp — produce 01-spec.md service-story con: (1) Decisión cementada del gateway
+        primario MVP. Recomendación architect 03-arch-be.md § Payment Provider Adapter: MercadoPago Slice 1 (LATAM principal,
+        cobertura AR/PE/MX/CO/CL/BR), Stripe Slice 2+ (US/EU tenants), Culqi opcional Slice 2 (PE-only fallback). (2) 6 Gherkin
+        scenarios: checkout link generation + paciente paga + webhook confirma + auto-cancel 24h sin pago + auto-cancel 72h
+        pago parcial + reembolso 100% pre-confirma. (3) Webhook HMAC signature + timestamp window 5min validation (per hipaa-lite.md
+        encryption in transit). (4) Idempotency keys per booking_id (cron sweeper detecta dups). (5) Flow integración con
+        sales_agent Adrián tool `send_payment_link`. (6) Open questions Chris: aceptamos solo MercadoPago Slice 1 ó wiring
+        multi-gateway Strategy pattern desde MVP?'
+      blocked_by: null
+      priority_override: null
+      audit_iterations: 0
+  refined:
+  - id: vitalia-slice-1-agenda
+    kind: story
+    state: refined
+    title: vitalia-slice-1-agenda
+    tags: []
+    last_touched: 2026-05-17
+    extra:
+      outcome: vitalia-mvp-ui-foundation
+      phase: READY_PACKAGE_INHERITED_BUT_BLOCKED
+      next_action: BLOCKED. Spawn /dev-team cuando vitalia-slice-1-infra-cross-cutting state=developed Y vitalia-payment-adapter-mvp
+        state≥developed (cobranza saldo) Y vitalia-fiscal-emission-pe state≥developed (Capa 2 fiscal Nubefact).
+      blocked_by: null
+      priority_override: null
+      audit_iterations: 0
+  - id: vitalia-slice-1-fidelizacion
+    kind: story
+    state: refined
+    title: vitalia-slice-1-fidelizacion
+    tags: []
+    last_touched: 2026-05-17
+    extra:
+      outcome: vitalia-mvp-ui-foundation
+      phase: READY_PACKAGE_INHERITED_BUT_BLOCKED
+      next_action: BLOCKED. Spawn /dev-team cuando vitalia-slice-1-infra-cross-cutting state=developed.
+      blocked_by: null
+      priority_override: null
+      audit_iterations: 0
+  - id: vitalia-slice-1-inbox
+    kind: story
+    state: refined
+    title: vitalia-slice-1-inbox
+    tags: []
+    last_touched: 2026-05-17
+    extra:
+      outcome: vitalia-mvp-ui-foundation
+      phase: READY_PACKAGE_INHERITED_BUT_BLOCKED
+      next_action: BLOCKED. Spawn /dev-team cuando vitalia-slice-1-infra-cross-cutting state=developed.
+      blocked_by: null
+      priority_override: null
+      audit_iterations: 0
+  - id: vitalia-slice-1-marketing
+    kind: story
+    state: refined
+    title: vitalia-slice-1-marketing
+    tags: []
+    last_touched: 2026-05-17
+    extra:
+      outcome: vitalia-mvp-ui-foundation
+      phase: READY_PACKAGE_INHERITED_BUT_BLOCKED
+      next_action: BLOCKED. Spawn /dev-team cuando vitalia-slice-1-infra-cross-cutting state=developed Y vitalia-copilot-tools-impl
+        state≥developed (Lucas recommendation engine + StageRecommendations tool).
+      blocked_by: null
+      priority_override: null
+      audit_iterations: 0
+  - id: vitalia-slice-1-onboarding-wizard
+    kind: story
+    state: refined
+    title: vitalia-slice-1-onboarding-wizard
+    tags: []
+    last_touched: 2026-05-17
+    extra:
+      outcome: vitalia-mvp-ui-foundation
+      phase: READY_PACKAGE_INHERITED_BUT_BLOCKED
+      next_action: BLOCKED. Spawn /dev-team cuando vitalia-slice-1-infra-cross-cutting state=developed Y vitalia-copilot-tools-impl
+        state≥developed.
+      blocked_by: null
+      priority_override: null
+      audit_iterations: 0
+  - id: vitalia-slice-1-pipeline
+    kind: story
+    state: refined
+    title: vitalia-slice-1-pipeline
+    tags: []
+    last_touched: 2026-05-17
+    extra:
+      outcome: vitalia-mvp-ui-foundation
+      phase: READY_PACKAGE_INHERITED_BUT_BLOCKED
+      next_action: BLOCKED. Spawn /dev-team cuando vitalia-slice-1-infra-cross-cutting state=developed Y vitalia-payment-adapter-mvp
+        state≥developed (depósito 30% badge) Y vitalia-copilot-tools-impl state≥developed (Lucas screening tool).
+      blocked_by: null
+      priority_override: null
+      audit_iterations: 0
+  ready:
+  - id: vitalia-ux-discovery
+    kind: story
+    state: ready
     title: vitalia-ux-discovery
     tags: []
     last_touched: 2026-05-17
     extra:
       outcome: vitalia-mvp-ui-foundation
-      phase: SPEC_V0_RATIFIED
-      next_action: 'Producir v1 ACOTADO a Slice 1 (5 rutas P1: Inbox+Pipeline+Agenda+Fidelización+Marketing). Secciones a
-        agregar: wireframes (ASCII o HTML mockup) + Gherkin scenarios 4-por-flow-crítico + estados visuales + microcopy Spanish
-        neutro + componentes mapping nicolify→vitalia. Slice 2 (rutas P2) queda planned outcome, no spec v1. Precios TBD (postergado,
-        no bloqueante Slice 1). Chris dispara /po-ux cuando esté listo.'
+      phase: READY_PACKAGE_CLOSED_AND_SPLIT
+      next_action: '★ READY package CERRADO 2026-05-17 (Opus 4.7). Artifacts: 03-arch.md (consolidated index) + 03-arch-be.md
+        + 03-arch-fe.md + 03-arch-agentic.md + 04-validators.yaml + 05-guidelines.md + 06-tickets.yaml (56 tickets) + delta-arch-notes.md.
+        ★ NEXT STEP /pm-vitalia decisión: (A) ACCEPTAR split recommendation 7 sub-stories → migrar tickets a sub-stories +
+        spawn /dev-team per sub-story respetando WIP cap; o (B) RECHAZAR split + spawn /dev-team directo sobre esta mega-story
+        (advertencia: 56 tickets exceden 10-ticket cap, WIP developing ≤ 3 será cuello de botella). RECOMENDADO opción (A).
+        PRE-REQUISITO ambos casos: (1) /pm-luana ratifica 2 promotion proposals NEW en docs/promotion-protocol/proposals/2026-05-17-{platform-tenants-location-columns,offer-studio-multi-session-maintenance}.md
+        ANTES /dev-team pick T-be-migration-014 + T-be-migration-015 sub-tasks. (2) Side stories paralelas (vitalia-payment-adapter-mvp
+        · vitalia-copilot-tools-impl · vitalia-fiscal-emission-pe) DEBEN estar state≥developed ANTES /dev-team picks blocked
+        tickets — ver 06-tickets.yaml side_story_blockers tabla. State refined→ready cementado.'
       blocked_by: null
       priority_override: null
       audit_iterations: 0
-  refined: []
-  ready: []
-  developing: []
-  developed: []
+  developing:
+  - id: vitalia-copilot-tools-impl
+    kind: story
+    state: developing
+    title: vitalia-copilot-tools-impl
+    tags: []
+    last_touched: 2026-05-18
+    extra:
+      outcome: vitalia-mvp-ui-foundation
+      phase: SESSION_SPLIT_DEFER_AUDIT_OF_INFRA_PADRE
+      next_action: '★ READY package CLOSED 2026-05-18. /architect Opus 4.7 produjo: 03-arch.md (consolidated index 7 sections)
+        + 03-arch-be.md (BE sub-arch DDD layers + 5 migrations + persistence schema mirrors + 10 application services + 7
+        API routes) + 03-arch-agentic.md (LangGraph supervisor wizard + ReAct Lucas + deepagents SubAgentMiddleware + 4-6
+        slot prompt architectures + 4 medical guardrails + 16 goldens + observability subclasses anti-duplication §0) + 04-validators.yaml
+        (4 categories: non_functional + functional + visual_na + agentic_eval pass^k policy 16 goldens × 3 trials, threshold
+        0.66/0.5) + 05-guidelines.md (patterns required/forbidden + 25+ anti-patterns + skills/rules loadout per surface)
+        + 06-tickets.yaml (10 atomic tickets en 5 waves: T-be-migrations-1 → T-be-services-{1,2,3} parallel → T-ag-tools-{1,2,3}
+        parallel → T-ag-workflows-{1,2} parallel → T-ag-evals-1; R23 enforcement: 6 tickets Opus 4.7 required, 4 tickets Sonnet
+        default). State transition: refined → ready. HANDOFF /dev-team vitalia-copilot-tools-impl. Blockers externos: vitalia-slice-1-infra-cross-cutting/T-infra-{1,2,3}
+        prerequisite — wait for state=developed antes spawn /dev-team.'
+      blocked_by: null
+      priority_override: null
+      audit_iterations: 0
+  developed:
+  - id: vitalia-slice-1-infra-cross-cutting
+    kind: story
+    state: developed
+    title: vitalia-slice-1-infra-cross-cutting
+    tags: []
+    last_touched: 2026-05-18
+    extra:
+      outcome: vitalia-mvp-ui-foundation
+      phase: SESSION_SPLIT_AUDIT_DEFERRED
+      next_action: DEFER_AUDIT ratificado 2026-05-18 — story queda state=developed con defer_audit:true hasta nueva sesión
+        Chris arranca worktree limpio wip/vitalia-infra-cross-cutting (1-story-per-worktree convention) + retoma audit_pending_actions
+        arriba. /pm-vitalia bootstrap pingeará esta deuda en próxima sesión via Step 0 NEW.
+      blocked_by: null
+      priority_override: null
+      audit_iterations: 0
   reviewing: []
   done: []
   parked: []

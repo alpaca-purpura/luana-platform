@@ -29,6 +29,7 @@ pytestmark = pytest.mark.integration
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _make_booking_row(tenant_id: uuid.UUID, **overrides) -> dict:
     """Returns a dict of valid column values for INSERT INTO vitalia_bookings."""
     now = datetime.now(timezone.utc)
@@ -138,9 +139,7 @@ async def test_cross_tenant_isolation(db_session) -> None:
     repo_a = BookingRepository(session=db_session, tenant_id=tenant_a)
     result = await repo_a.get_by_id(row_b["id"])
 
-    assert result is None, (
-        "Cross-tenant isolation violated: tenant_A repo returned tenant_B booking"
-    )
+    assert result is None, "Cross-tenant isolation violated: tenant_A repo returned tenant_B booking"
 
 
 @pytest.mark.asyncio

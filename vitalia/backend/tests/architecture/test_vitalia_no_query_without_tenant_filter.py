@@ -59,13 +59,9 @@ def _get_metadata():
 def test_tenant_scoped_table_has_tenant_id_column(tablename: str) -> None:
     """Each tenant-scoped table must have a tenant_id column."""
     metadata = _get_metadata()
-    assert tablename in metadata.tables, (
-        f"Table '{tablename}' not found in Base.metadata"
-    )
+    assert tablename in metadata.tables, f"Table '{tablename}' not found in Base.metadata"
     table = metadata.tables[tablename]
-    assert "tenant_id" in table.c, (
-        f"Table '{tablename}' missing tenant_id column (R2 tenant-isolation)"
-    )
+    assert "tenant_id" in table.c, f"Table '{tablename}' missing tenant_id column (R2 tenant-isolation)"
 
 
 @pytest.mark.parametrize("tablename", TENANT_SCOPED_TABLES)
@@ -74,9 +70,7 @@ def test_tenant_id_is_not_nullable(tablename: str) -> None:
     metadata = _get_metadata()
     table = metadata.tables[tablename]
     col = table.c["tenant_id"]
-    assert not col.nullable, (
-        f"Table '{tablename}'.tenant_id must be NOT NULL"
-    )
+    assert not col.nullable, f"Table '{tablename}'.tenant_id must be NOT NULL"
 
 
 @pytest.mark.parametrize("tablename", TENANT_SCOPED_TABLES)
@@ -97,8 +91,7 @@ def test_tenant_id_is_indexed(tablename: str) -> None:
 
     has_any_index = has_col_index or ("tenant_id" in index_cols)
     assert has_any_index, (
-        f"Table '{tablename}'.tenant_id must be indexed "
-        "(tenant isolation requires fast tenant-scoped queries)"
+        f"Table '{tablename}'.tenant_id must be indexed (tenant isolation requires fast tenant-scoped queries)"
     )
 
 
@@ -106,13 +99,10 @@ def test_tenant_id_is_indexed(tablename: str) -> None:
 def test_cross_tenant_table_has_no_tenant_id(tablename: str) -> None:
     """Cross-tenant tables (global catalogs) must NOT have tenant_id."""
     metadata = _get_metadata()
-    assert tablename in metadata.tables, (
-        f"Cross-tenant table '{tablename}' not found in Base.metadata"
-    )
+    assert tablename in metadata.tables, f"Cross-tenant table '{tablename}' not found in Base.metadata"
     table = metadata.tables[tablename]
     assert "tenant_id" not in table.c, (
-        f"Cross-tenant table '{tablename}' must NOT have tenant_id "
-        "(it is a global platform catalog)"
+        f"Cross-tenant table '{tablename}' must NOT have tenant_id (it is a global platform catalog)"
     )
 
 
@@ -120,9 +110,7 @@ def test_medical_audit_log_has_no_deleted_at() -> None:
     """vitalia_medical_audit_log must NOT have deleted_at — IMMUTABLE (7-year retention)."""
     metadata = _get_metadata()
     table = metadata.tables["vitalia_medical_audit_log"]
-    assert "deleted_at" not in table.c, (
-        "vitalia_medical_audit_log is IMMUTABLE — must not have deleted_at column"
-    )
+    assert "deleted_at" not in table.c, "vitalia_medical_audit_log is IMMUTABLE — must not have deleted_at column"
 
 
 @pytest.mark.parametrize("tablename", SOFT_DELETE_TABLES)
@@ -142,9 +130,7 @@ def test_deleted_at_is_nullable(tablename: str) -> None:
     metadata = _get_metadata()
     table = metadata.tables[tablename]
     col = table.c["deleted_at"]
-    assert col.nullable, (
-        f"Table '{tablename}'.deleted_at must be nullable (NULL = active record)"
-    )
+    assert col.nullable, f"Table '{tablename}'.deleted_at must be nullable (NULL = active record)"
 
 
 @pytest.mark.parametrize("tablename", TENANT_SCOPED_TABLES + CROSS_TENANT_TABLES)
@@ -152,9 +138,7 @@ def test_all_tables_have_created_at(tablename: str) -> None:
     """All tables must have created_at for auditability."""
     metadata = _get_metadata()
     table = metadata.tables[tablename]
-    assert "created_at" in table.c, (
-        f"Table '{tablename}' missing created_at column"
-    )
+    assert "created_at" in table.c, f"Table '{tablename}' missing created_at column"
 
 
 @pytest.mark.parametrize("tablename", TENANT_SCOPED_TABLES + CROSS_TENANT_TABLES)
@@ -163,9 +147,5 @@ def test_all_tables_have_primary_key(tablename: str) -> None:
     metadata = _get_metadata()
     table = metadata.tables[tablename]
     pk_cols = list(table.primary_key.columns)
-    assert len(pk_cols) >= 1, (
-        f"Table '{tablename}' must have a primary key"
-    )
-    assert pk_cols[0].name == "id", (
-        f"Table '{tablename}' primary key must be 'id'"
-    )
+    assert len(pk_cols) >= 1, f"Table '{tablename}' must have a primary key"
+    assert pk_cols[0].name == "id", f"Table '{tablename}' primary key must be 'id'"

@@ -56,6 +56,11 @@ tickets:
         - be_format_ruff
         - be_arch_fitness_brand_scoped
         - be_test_migrations_smoke
+    state: pushed
+    pushed_at: "2026-05-18"
+    push_commit_sha: "3adea2cf7c5be27b7c23b660bcbcf535e4bc9564"
+    result_artifact: vitalia/docs/product/stories/vitalia-copilot-tools-impl/T-be-migrations-1-result.md
+    test_summary: "arch_fitness=216/216 schema_mirror=34/34 migration=131/131(12skip)"
     deps: []
     blocked_by:
       - vitalia-slice-1-infra-cross-cutting/T-infra-1   # external blocker — parent migrations 002-016 prerequisite
@@ -124,6 +129,10 @@ tickets:
         - be_test_unit_copilot
         - be_test_integration_api_wizard_routes
         - be_coverage_threshold
+    state: pushed
+    pushed_at: "2026-05-18"
+    result_artifact: vitalia/docs/product/stories/vitalia-copilot-tools-impl/T-be-services-1-result.md
+    test_summary: "domain=14/14 onboarding_draft_service=7/7 extract_service=4/4 simulate_service=6/6 complete_service=6/6 api_routes=11/11 full_suite=1317passed/58skipped/0failed"
     deps: [T-be-migrations-1]
     blocked_by:
       - vitalia-slice-1-infra-cross-cutting/T-infra-3   # PHI compliance infrastructure (audit_log_repo, sanitize_payload wrap) prerequisite
@@ -237,6 +246,10 @@ tickets:
     deps: [T-be-migrations-1]
     blocked_by:
       - vitalia-slice-1-infra-cross-cutting/T-infra-1   # tenants.timezone column from Fase A engine lift parent migration 014
+    state: pushed
+    pushed_at: 2026-05-18
+    push_commit_sha: 476a7558d87737e6d54e7631d03e22580eeedd9d
+    result_artifact: T-be-services-3-result.md
 
   # ============================================================
   # T-ag-tools-1  (Valeria 4 tools + slot prompts MD — Opus 4.7 R23)

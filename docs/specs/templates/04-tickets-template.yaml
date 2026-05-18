@@ -77,6 +77,37 @@
 #    - type: backend|agentic|frontend → production_code: true
 #    - type: tests|docs|tooling|migration-only-no-data → production_code: false
 #    Architect MAY override default explicitly cuando ticket es híbrido.
+#
+# 6. gherkin_coverage MANDATORY post-cement-date 2026-05-18 (story-closure-gate):
+#    SSoT: .claude/rules/story-closure-gate.md (Phase D /auditor)
+#
+#    Cada ticket DEBE mapear scenarios Gherkin de 01-spec.md → tests específicos
+#    que cubren ese scenario. /auditor Phase D ejecuta los tests citados y
+#    escribe 06-audit/gherkin-matrix.md (scenario → test path → status PASS/FAIL/NO_COVERAGE).
+#
+#    Schema:
+#      gherkin_coverage:
+#        - scenario: "SC-01 Wizard finaliza con tenant_id válido"
+#          tests:
+#            - "{brand}/backend/tests/modules/{brand}/onboarding/test_wizard_complete.py::test_creates_tenant"
+#        - scenario: "SC-02 Wizard rechaza email duplicado"
+#          tests:
+#            - "{brand}/backend/tests/modules/{brand}/onboarding/test_wizard_complete.py::test_duplicate_email_rejected"
+#            - "{brand}/frontend/e2e/wizard/{story-id}.spec.ts::scenario-02"
+#
+#    Si ticket no toca surface UI o NO tiene scenarios Gherkin asignados, declarar
+#    explícitamente:
+#      gherkin_coverage: []          # ticket es infra puro, scenarios cubiertos en otros tickets
+#    o
+#      gherkin_coverage_note: "Scenarios SC-01..SC-04 cubiertos por T-3 (FE). Este ticket aporta BE service layer únicamente."
+#
+#    Auditor Phase D agrega gherkin_coverage cross-ticket → matrix completa.
+#    Cualquier scenario en 01-spec.md SIN mapping en algún ticket → CHANGES_REQUESTED
+#    (post-cement-date 2026-05-18 forward-only).
+#
+#    Origen: caso vitalia 2026-05-18 (story-closure-gate). Stories sin gherkin_coverage
+#    transitioned a reviewing antes de cement-date quedan exentas; post-cement-date
+#    es FAIL obligatorio.
 
 ---
 story_id: STORY_ID
@@ -152,6 +183,14 @@ T1:
     - { id: A1, description: "POST happy → 200 + ResponseDTO shape", verifier: { type: pytest, path: "tests/modules/copilot/test_brand_audit_endpoint.py::test_happy" } }
     - { id: A2, description: "Cross-tenant → 403", verifier: { type: pytest, path: "...::test_tenant_isolation" } }
     - { id: A3, description: "Migration idempotente", verifier: { type: bash, cmd: "make verify-migration-idempotency" } }
+  # ★ gherkin_coverage MANDATORY post-cement-date 2026-05-18 (story-closure-gate)
+  gherkin_coverage:
+    - scenario: "SC-01 POST /brand-audit con tenant válido retorna 200 + análisis"
+      tests:
+        - "backend/tests/modules/copilot/test_brand_audit_endpoint.py::test_happy"
+    - scenario: "SC-02 POST /brand-audit cross-tenant retorna 403"
+      tests:
+        - "backend/tests/modules/copilot/test_brand_audit_endpoint.py::test_tenant_isolation"
   quality_gates:
     - "/test-backend completo verde"
     - "Coverage del módulo no baja"
@@ -200,6 +239,17 @@ T2:
     - { id: A3, description: "Scenario adversarial-hostile-persona rubric no-overpromise >= 0.9", verifier: { type: pytest, path: "...::test_adversarial" } }
     - { id: A4, description: "Voice fidelity grader >= 0.8", verifier: { type: pytest, path: "...::test_voice_fidelity" } }
     - { id: A5, description: "Cost per session p95 <= $0.50", verifier: { type: pytest, path: "...::test_cost_budget" } }
+  # ★ gherkin_coverage MANDATORY post-cement-date 2026-05-18 (story-closure-gate)
+  gherkin_coverage:
+    - scenario: "SC-03 Agente brand_audit responde sin alucinaciones (rubric ≥ 0.9)"
+      tests:
+        - "backend/tests/agentic_evals/copilot/brand_audit_eval.py::test_no_hallucination"
+    - scenario: "SC-04 Agente brand_audit no sobrepromete bajo presión adversarial (rubric ≥ 0.9)"
+      tests:
+        - "backend/tests/agentic_evals/copilot/brand_audit_eval.py::test_adversarial"
+    - scenario: "SC-05 Voice fidelity ≥ 0.8 cross-trial"
+      tests:
+        - "backend/tests/agentic_evals/copilot/brand_audit_eval.py::test_voice_fidelity"
   quality_gates:
     - "/test-backend backend gates verde"
     - "Eval suite local 100% verde"
@@ -246,6 +296,14 @@ T3:
     - { id: A1, description: "Botón visible cuando user en /copilot. Click → mutation → toast", verifier: { type: vitest, path: "..." } }
     - { id: A2, description: "E2E smoke pass", verifier: { type: e2e, path: "frontend/e2e/regression/copilot-brand-audit.spec.ts" } }
     - { id: A3, description: "Spanish neutro labels", verifier: { type: bash, cmd: "grep -E '\\b(podés|tenés)\\b' src/features/copilot/" } }
+  # ★ gherkin_coverage MANDATORY post-cement-date 2026-05-18 (story-closure-gate)
+  gherkin_coverage:
+    - scenario: "SC-06 Usuario click 'Auditar marca' en copilot drawer → resultado visible"
+      tests:
+        - "frontend/e2e/regression/copilot-brand-audit.spec.ts::scenario-06"
+    - scenario: "SC-07 Labels en español neutro LatAm"
+      tests:
+        - "frontend/e2e/regression/copilot-brand-audit.spec.ts::scenario-07-spanish-neutro"
   quality_gates:
     - "/test-frontend gates verde"
     - "E2E smoke pass"

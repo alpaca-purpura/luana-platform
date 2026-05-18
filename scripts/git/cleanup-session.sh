@@ -100,6 +100,41 @@ if ! $FORCE; then
   fi
 fi
 
+# STORY CLOSURE GATE — Layer 5 enforcement (post 2026-05-18)
+# Verificar que NO hay stories en state developing/developed/reviewing sin defer_audit
+# SSoT: .claude/rules/story-closure-gate.md
+# Toggle override: CLEANUP_SKIP_STORY_GATE=1 (solo emergencias documentadas)
+if [[ "${CLEANUP_SKIP_STORY_GATE:-0}" != "1" ]]; then
+  OPEN_STORIES=""
+  for B in vitalia nicolify comunify lupulo saasora inmoflow retailly fixia guestly fitflow; do
+    [ -d "${WORKTREE_DIR}/${B}/docs/product/stories" ] || continue
+    for cp in "${WORKTREE_DIR}/${B}/docs/product/stories/"*/checkpoint.md; do
+      [ -f "$cp" ] || continue
+      STORY_ID=$(basename "$(dirname "$cp")")
+      STATE=$(grep -E "^state:" "$cp" 2>/dev/null | head -1 | awk '{print $2}' || echo "")
+      DEFER=$(grep -E "^defer_audit:" "$cp" 2>/dev/null | awk '{print $2}' || echo "")
+      if [[ "$STATE" =~ ^(developing|developed|reviewing)$ ]] && [[ "$DEFER" != "true" ]]; then
+        OPEN_STORIES+="  - ${B}/${STORY_ID} (state=${STATE})"$'\n'
+      fi
+    done
+  done
+
+  if [[ -n "${OPEN_STORIES}" ]]; then
+    echo "::error::Story closure gate (Layer 5): no se puede cleanup worktree con stories open."
+    echo "Stories en state developing/developed/reviewing sin defer_audit:"
+    echo "${OPEN_STORIES}"
+    echo "Resolver primero:"
+    echo "  - state=developing → /dev-team continua hasta developed"
+    echo "  - state=developed  → /auditor toma (auto-handoff)"
+    echo "  - state=reviewing  → esperar APPROVED + /pm-{brand} merge"
+    echo "  - O ratificar defer_audit:true en checkpoint con razon documentada"
+    echo "SSoT: .claude/rules/story-closure-gate.md"
+    echo ""
+    echo "Override (emergencias): CLEANUP_SKIP_STORY_GATE=1 scripts/git/cleanup-session.sh ${SLUG}"
+    exit 2
+  fi
+fi
+
 # Read manifest for log
 STORY="—"
 MANIFEST="${WORKTREE_DIR}/.session.yaml"

@@ -1,112 +1,169 @@
-# 07-merge.md — Template (PM aplica diff a product/)
+# 07-merge-template.md — Story closure merge artifact
 
-> Owner: `/pm`. SOLO escrito tras `REVIEW-final.md` con `verdict: APPROVED + ready_to_merge: true`.
-> Documenta los CAMBIOS al producto (capabilities, stories status, modules.md, INDEX).
+> Owner: `/pm-{brand}`. Escrito SOLO tras `/auditor` CHECKPOINTS.md verdict=APPROVED + Phase D gherkin matrix all PASS.
+> Cementa los cambios al producto + reproduce verificación. `/pm-{brand}` REHÚSA transition `reviewing → done` si missing alguna de las 5 secciones obligatorias.
+>
+> **Cement-date:** 2026-05-18 (story-closure-gate). Stories transitioned a reviewing pre-2026-05-18 quedan exentas del schema estricto.
+>
+> SSoT: `.claude/rules/story-closure-gate.md` § Contrato `07-merge.md` + `docs/process/story-closure-gate.md`.
 
 ---
 story_id: STORY_ID
-sprint: SN
-pi: PI-N
-merged_at: 2026-05-04T19:00Z
-merged_by: /pm
-review_final_path: "../06-audit/REVIEW-final.md"
+brand: BRAND_SLUG                     # vitalia | nicolify | comunify | lupulo | platform
+outcome: PARENT_OUTCOME_ID            # outcome del brand (épica padre)
+merged_at: 2026-05-18T20:00Z
+merged_by: /pm-{brand}
+commit_squash_sha: abcd1234            # SHA del squash-merge wip/* → main
+checkpoints_path: "../CHECKPOINTS.md"
+gherkin_matrix_path: "../06-audit/gherkin-matrix.md"
 ---
 
-## Cambios al producto
+## § 1 — Gherkin verification matrix
 
-### `docs/product/stories/{module}/{story-id}.yaml`
+> Copia de `06-audit/gherkin-matrix.md` producida por `/auditor` Phase D. Cada scenario de `01-spec.md` mapeado a test path con verdict PASS.
 
-```diff
-- status: planned
-+ status: live
-- pr_introduced: null
-+ pr_introduced: PR-3
-- pi_introduced: null
-+ pi_introduced: PI-12
-- date_introduced: null
-+ date_introduced: 2026-05-04
-- last_audit: 2026-05-04
-+ last_audit: 2026-05-04
-
-# Scenarios: type capability → regression (los que pasaron pass^3 >= threshold)
-scenarios:
-  - id: happy-path-typical-persona
--   type: capability
-+   type: regression
-  ...
-
-# test_coverage llenado
-test_coverage:
-- eval_suite_path: null
-+ eval_suite_path: backend/tests/agentic_evals/copilot/brand_audit_eval.py
-- pass_k_last_run: null
-+ pass_k_last_run: 0.83
-- cost_last_run_usd: null
-+ cost_last_run_usd: 0.31
-+ last_run_at: 2026-05-04T18:30Z
-```
-
-### `docs/product/capabilities/{module}/{capability}.yaml`
-
-```diff
-- status: planned
-+ status: live
-stories_live: 3 (was 2)
-stories_planned: 1 (was 2)
-```
-
-### `docs/product/modules/{module}.md`
-
-[Sección de capabilities live actualizada — agregar entry para esta story.]
-
-```diff
-+ - **brand-audit** (capability `brand-audit`, story `copilot-brand-audit`) — live desde 2026-05-04 en PI-12 PR-3.
-+   Copilot puede auditar marca conversacionalmente. Identifica gaps, prioriza por sales-impact.
-```
-
-### `docs/product/INDEX.md` (si aplica)
-
-[Si nueva capability impacta routing principal — actualizar INDEX.]
-
-## Tests promovidos a regression suite
-
-| Scenario | De | A | Path |
+| Scenario (Gherkin) | Test path | Status | Notes |
 |---|---|---|---|
-| `happy-path-typical-persona` | capability | regression | `tests/agentic_evals/copilot/brand_audit_eval.py::test_happy_path` |
-| `no-hallucination` | regression (was already) | regression | ... |
+| SC-01 "Wizard finaliza con tenant_id válido" | `{brand}/backend/tests/modules/{brand}/onboarding/test_wizard_complete.py::test_creates_tenant` | ✅ PASS | |
+| SC-02 "Wizard rechaza email duplicado" | `{brand}/backend/tests/modules/{brand}/onboarding/test_wizard_complete.py::test_duplicate_email_rejected` | ✅ PASS | |
+| SC-03 "Wizard genera onboarding event para Lucas" | `{brand}/backend/tests/modules/{brand}/onboarding/test_event_emission.py::test_event_emitted` | ✅ PASS | |
+| ... | ... | ✅ PASS | |
 
-## Métricas de cierre
+**Coverage:** N/N scenarios PASS. Cero NO_COVERAGE. Cero FAIL.
 
-- Pass^3 final: 0.83 ✅
-- Cost p95: $0.31 ✅
-- Latency TTFT p95: 1.4s ✅
-- Coverage delta: +6%
+## § 2 — Playwright E2E run
 
-## Capability promotion
+> Última corrida E2E targeted a rutas afectadas por la story. Comando + output verdict.
 
-- `brand-audit` capability: status `planned` → `live`
-- Trigger: 1 story `live` (de 3 planeadas) + pass^k >= threshold
+```bash
+WS=$(git rev-parse --show-toplevel)
+cd ${WS}/{brand}/frontend && E2E_BASE_URL=http://localhost:300X npx playwright test --grep "{story-id}"
+```
 
-> Nota: la capability `brand-audit` está en `live` aunque tiene 2 stories planned. El status capability se deriva: si AL MENOS 1 story está live → capability live (parcial). Si todas live → capability fully-live. Si todas planned → capability planned.
+- Specs run: N
+- Passed: N
+- Failed: 0
+- Skipped: 0
+- Duration: M.M minutes
+- Trace report: `{brand}/frontend/playwright-report/index.html`
+- Storage state: `{brand}/frontend/playwright/.clerk/user.json` (Clerk fresh, 60-min TTL respected)
+
+**E2E verdict:** ✅ ALL GREEN.
+
+> Si story NO toca UI: documentar `gherkin_coverage_note: "Story service-only, sin E2E targeted"` en CHECKPOINTS.md y omitir esta sección (excepción documentada).
+
+## § 3 — Capabilities updated/created
+
+> Inventory enforcement (R32). Paths exactos. Cada capability YAML incluye `verification.commands` + `verification.gherkin_evidence` post-cement-date.
+
+### NEW capabilities
+- `{brand}/docs/product/capabilities/{module-a}/{cap-x}.yaml` — status: `live`
+  - `verification.commands`: comandos reproducibles para re-verificar (ver § 5)
+  - `verification.gherkin_evidence`: SC-01..SC-N (cita matrix)
+  - `verification.playwright_specs`: `{brand}/frontend/e2e/.../{story-id}.spec.ts` (si aplica)
+
+### UPDATED capabilities
+- `{brand}/docs/product/capabilities/{module-b}/{cap-y}.yaml` — status: `planned → live`
+- `{brand}/docs/product/capabilities/{module-c}/{cap-z}.yaml` — added scenarios SC-04..SC-06
+
+### Capability YAML schema addition (post 2026-05-18)
+
+```yaml
+# {brand}/docs/product/capabilities/{module}/{cap}.yaml
+---
+capability_id: {cap-x}
+module: {module-a}
+slug: {cap-x}
+status: live
+date_introduced: 2026-05-18
+story_introduced: {story-id}
+package_version: ...
+package_path: ...
+license: proprietary
+verification:                                              # ★ NEW post 2026-05-18
+  commands:                                                # comandos canónicos reusables
+    - "cd ${WS}/{brand}/backend && ${WS}/.venv/bin/pytest tests/modules/{brand}/{module-a}/ -v"
+    - "cd ${WS}/{brand}/frontend && npx playwright test --grep '{capability-id}'"
+  gherkin_evidence:                                        # scenarios trazables
+    - scenario: "SC-01 ..."
+      test_path: "{brand}/backend/tests/.../test_x.py::test_y"
+    - scenario: "SC-02 ..."
+      test_path: "{brand}/frontend/e2e/.../{story-id}.spec.ts::scenario-02"
+  playwright_specs:                                        # opcional, si UI
+    - "{brand}/frontend/e2e/{module-a}/{capability-id}.spec.ts"
+  story_merge_artifact: "{brand}/docs/product/stories/{story-id}/07-merge.md"
+---
+```
+
+## § 4 — Modules MD refreshed
+
+> Auto-list marker regenera. Paths exactos.
+
+- `{brand}/docs/product/modules/{module-a}.md` — auto-list incluye `{cap-x}` (post-merge)
+- `{brand}/docs/product/modules/{module-b}.md` — auto-list incluye `{cap-y}` (post-merge)
+
+Regen ejecutado:
+```bash
+cd ${WS} && make portfolio          # regenera {brand}/docs/product/BACKLOG.md + auto-list en modules MD
+```
+
+## § 5 — How to verify (reproducible commands)
+
+> Comandos copy-paste para reproducir la verificación de la funcionalidad. Owner futuro de auditoría / promotion candidate scan corre estos comandos para re-validar.
+
+```bash
+WS=$(git rev-parse --show-toplevel)
+BRAND={brand}
+STORY_ID={story-id}
+
+# 0. Setup: stack {brand} corriendo
+make dev-${BRAND}                     # postgres + backend + frontend
+
+# 1. Unit tests módulo afectado (BE)
+cd ${WS}/${BRAND}/backend && ${WS}/.venv/bin/pytest tests/modules/${BRAND}/{module-a}/ -v
+
+# 2. Architecture fitness (DDD + tenant isolation + anti-duplication)
+cd ${WS}/${BRAND}/backend && ${WS}/.venv/bin/pytest tests/architecture/ -v
+
+# 3. Frontend tests (TS + Vitest)
+cd ${WS}/${BRAND}/frontend && npx tsc --noEmit && npx vitest run src/features/{module-a}/
+
+# 4. E2E Playwright targeted
+cd ${WS}/${BRAND}/frontend && E2E_BASE_URL=http://localhost:300X npx playwright test --grep "${STORY_ID}"
+
+# 5. (Si agentic) Eval goldens
+cd ${WS}/${BRAND}/backend && ${WS}/.venv/bin/pytest tests/agentic_evals/ --trials=3
+```
+
+**Expected:** todos los comandos retornan exit code 0. Si alguno falla post-merge → regression, abrir hot-fix ticket per `.claude/rules/hotfix-repro-mandatory.md`.
+
+## Cross-references
+
+- `01-spec.md` § Gherkin scenarios — origen de la matrix § 1
+- `03-arch.md` — decisiones técnicas honored
+- `04-validators.yaml` — validators ejecutados durante /dev-team build
+- `06-tickets.yaml` — `gherkin_coverage` fields mapped a § 1
+- `CHECKPOINTS.md` — C1-C5 grid auditor verdict
+- `06-audit/gherkin-matrix.md` — output verbatim Phase D auditor
+- `.claude/rules/story-closure-gate.md` — hard rule SSoT
+- `docs/process/story-closure-gate.md` — rationale + case study
 
 ## Story → archive
 
-- Story folder NO se mueve (queda en `projects/active/PI-12/sprints/S1/stories/`)
-- Cuando PI-12 cierre → se mueve PI completa a `projects/archive/`
+- `{brand}/docs/product/stories/{story-id}/` → `{brand}/docs/archive/{year}/stories/{story-id}/` (snapshot inmutable post-merge)
+- Outcome padre actualiza `story_ids` marcando esta story `done`
 
-## Próximo paso
-
-`→ /pm cierra checkpoint story.checkpoint.md → status: done`
-`→ /pm verifica si sprint puede cerrarse (todas las stories del sprint con status: done?)`
-`→ Si sprint cierra → checkpoint sprint = done. Si PI cierra → mover a archive.`
-
-## Salida al user (Chris)
+## Output al user (Chris) post-merge
 
 ```
-✅ Story brand-audit MERGED a producto
-   - Capability brand-audit: live
-   - Story copilot-brand-audit: live (pass^3=0.83)
-   - Diff aplicado a product/stories + capabilities + modules/copilot.md
-   - Tests promovidos a regression suite
-   - PI-12 sprint S1: 1/3 stories done
+✅ Story {brand}/{story-id} MERGED a main (squash-merge: {SHA})
+   - Phase D gherkin matrix: N/N scenarios PASS
+   - Playwright E2E: N specs all green
+   - Capabilities updated: {cap-x} (NEW live), {cap-y} (planned→live)
+   - Modules refreshed: {module-a}.md, {module-b}.md auto-list
+   - Story archived: {brand}/docs/archive/{year}/stories/{story-id}/
+   - Outcome {parent-outcome} updated (1 story → done)
+
+   State transition: reviewing → done.
+   WIP cap status: reviewing (was 1) → 0; done (rolling 90d) +1.
 ```

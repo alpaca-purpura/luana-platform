@@ -96,10 +96,7 @@ def test_patient_medical_history_model_importable() -> None:
         VitaliaPatientMedicalHistoryModel,
     )
 
-    assert (
-        VitaliaPatientMedicalHistoryModel.__tablename__
-        == "vitalia_patient_medical_histories"
-    )
+    assert VitaliaPatientMedicalHistoryModel.__tablename__ == "vitalia_patient_medical_histories"
 
 
 def test_patient_dental_history_model_importable() -> None:
@@ -108,10 +105,7 @@ def test_patient_dental_history_model_importable() -> None:
         VitaliaPatientDentalHistoryModel,
     )
 
-    assert (
-        VitaliaPatientDentalHistoryModel.__tablename__
-        == "vitalia_patient_dental_histories"
-    )
+    assert VitaliaPatientDentalHistoryModel.__tablename__ == "vitalia_patient_dental_histories"
 
 
 def test_plan_tier_config_model_importable() -> None:
@@ -190,23 +184,23 @@ def test_all_11_tables_in_base_metadata() -> None:
     registered = set(Base.metadata.tables.keys())
     for table in EXPECTED_TABLES:
         assert table in registered, (
-            f"Table '{table}' not registered in Base.metadata — "
-            "check that the model class inherits from Base"
+            f"Table '{table}' not registered in Base.metadata — check that the model class inherits from Base"
         )
 
 
-def test_exactly_11_vitalia_tables_registered() -> None:
-    """Exactly 11 vitalia_ prefixed tables must be registered in Base.metadata."""
+def test_exactly_12_vitalia_tables_registered() -> None:
+    """Exactly 12 vitalia_ prefixed tables must be registered in Base.metadata.
+
+    T-be-migrations-1 added vitalia_lucas_recommendations (12th table).
+    Ratchet updated T-be-services-3 (2026-05-18).
+    """
     from luana_core_platform.domain.base_entity import Base
 
     import src.modules.vitalia.infrastructure.models  # noqa: F401
 
-    vitalia_tables = {
-        name for name in Base.metadata.tables if name.startswith("vitalia_")
-    }
-    assert len(vitalia_tables) == 11, (
-        f"Expected 11 vitalia_ tables, got {len(vitalia_tables)}: "
-        f"{sorted(vitalia_tables)}"
+    vitalia_tables = {name for name in Base.metadata.tables if name.startswith("vitalia_")}
+    assert len(vitalia_tables) == 12, (
+        f"Expected 12 vitalia_ tables, got {len(vitalia_tables)}: {sorted(vitalia_tables)}"
     )
 
 
@@ -240,7 +234,6 @@ def test_model_inherits_sqla_base(model_name: str, tablename: str) -> None:
     cls = getattr(models_pkg, model_name)
     # SQLAlchemy 2.0 legacy declarative_base() produces classes with DeclarativeMeta
     assert isinstance(cls, DeclarativeMeta), (
-        f"{model_name} must be a SQLAlchemy ORM model class (DeclarativeMeta), "
-        f"not a Pydantic model"
+        f"{model_name} must be a SQLAlchemy ORM model class (DeclarativeMeta), not a Pydantic model"
     )
     assert cls.__tablename__ == tablename
