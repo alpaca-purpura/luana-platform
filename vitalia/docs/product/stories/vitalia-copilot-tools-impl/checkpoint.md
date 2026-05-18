@@ -1,58 +1,101 @@
 ---
 story_id: vitalia-copilot-tools-impl
 outcome: vitalia-mvp-ui-foundation
-state: refined
-phase: AGENTIC_DESIGN_RATIFIED
-last_artifact: 02-design-agentic.md (v1.0 RATIFIED Chris 2026-05-17)
-last_modified: 2026-05-17
+state: ready
+phase: READY_PACKAGE_CLOSED
+last_artifact: 06-tickets.yaml (v1 — 10 atomic tickets per paradigm v4 cap)
+last_modified: 2026-05-18
 ratified_by_chris: true
 ratified_at: 2026-05-17
-next_action: "★ Design v1.0 RATIFIED Chris 2026-05-17 (single G6 batched round, 7 questions Q1-Q4+D1-D3 all defaults accepted). Surface efectivo Slice 1: 11 tools (4 Valeria + 3 Adrián subset MVP + 3 Lucas cron-only). HANDOFF /architect vitalia-copilot-tools-impl Opus 4.7 → consume 02-design-agentic.md + parent 01-spec § Batch 7 + 03-arch-agentic.md cross-reference → produce ready package: 03-arch.md (consolidated) + 04-validators.yaml + 05-guidelines.md + 06-tickets.yaml (tickets ≤10 per paradigm v4 cap). State transition: refined → ready cuando /architect cierra package."
-ratified_by_chris: false
+architect_run_at: 2026-05-18
+architect_model: claude-opus-4-7[1m]
+next_action: "★ READY package CLOSED 2026-05-18. /architect Opus 4.7 produjo: 03-arch.md (consolidated index 7 sections) + 03-arch-be.md (BE sub-arch DDD layers + 5 migrations + persistence schema mirrors + 10 application services + 7 API routes) + 03-arch-agentic.md (LangGraph supervisor wizard + ReAct Lucas + deepagents SubAgentMiddleware + 4-6 slot prompt architectures + 4 medical guardrails + 16 goldens + observability subclasses anti-duplication §0) + 04-validators.yaml (4 categories: non_functional + functional + visual_na + agentic_eval pass^k policy 16 goldens × 3 trials, threshold 0.66/0.5) + 05-guidelines.md (patterns required/forbidden + 25+ anti-patterns + skills/rules loadout per surface) + 06-tickets.yaml (10 atomic tickets en 5 waves: T-be-migrations-1 → T-be-services-{1,2,3} parallel → T-ag-tools-{1,2,3} parallel → T-ag-workflows-{1,2} parallel → T-ag-evals-1; R23 enforcement: 6 tickets Opus 4.7 required, 4 tickets Sonnet default). State transition: refined → ready. HANDOFF /dev-team vitalia-copilot-tools-impl. Blockers externos: vitalia-slice-1-infra-cross-cutting/T-infra-{1,2,3} prerequisite — wait for state=developed antes spawn /dev-team."
+ratified_by_chris: true
 spawned_at: 2026-05-17
-transitioned_at: 2026-05-17
+transitioned_at: 2026-05-18
 spawned_by: /pm-vitalia
 parallel_safe: true
-blocked_reason: "Bloquea onboarding Valeria wizard (4to diferenciador MUST visible MVP — Brand Studio voz). Sin tools mínimos, fallback a wizard form-based no-conversational. ADEMÁS bloquea: vitalia-slice-1-pipeline (Lucas screening tool) + vitalia-slice-1-marketing (Lucas StageRecommendations + AttributionMatrix + Referrals)."
-priority: high  # bump medium→high — bloquea 3 sub-stories, no solo onboarding
+blocked_reason: ""
+priority: high
 estimated_dev_weeks: 2-3
 parent_spec: "vitalia/docs/product/stories/vitalia-ux-discovery/03-arch-agentic.md § 4 tools tables + § 5 prompt cache slots + 01-spec.md § Batch 7 wizard onboarding agentic + § Batch 2-6 routes Adrián+Lucas tools usage"
+ready_package_artifacts:
+  - 02-design-agentic.md (v1.0 RATIFIED Chris 2026-05-17, 946 LOC)
+  - 03-arch.md (consolidated index, 325 LOC)
+  - 03-arch-be.md (635 LOC)
+  - 03-arch-agentic.md (736 LOC)
+  - 04-validators.yaml (424 LOC, 4 categories)
+  - 05-guidelines.md (414 LOC)
+  - 06-tickets.yaml (657 LOC, 10 atomic tickets)
+total_tickets: 10
+r23_enforcement:
+  opus_required_tickets: [T-ag-tools-1, T-ag-tools-2, T-ag-tools-3, T-ag-workflows-1, T-ag-workflows-2, T-ag-evals-1]
+  sonnet_default_tickets: [T-be-migrations-1, T-be-services-1, T-be-services-2, T-be-services-3]
 ---
 
 # vitalia-copilot-tools-impl — checkpoint
 
-## Goal
+## State: ready (2026-05-18)
 
-Implementar tools backend del copilot Valeria (T-tools-1..4 scaffolds detectados en `vitalia/backend/src/modules/vitalia/copilot/tools/` per 00-research.md audit).
+★ **READY package CLOSED** ★ by /architect Opus 4.7 on 2026-05-18.
 
-Hoy las tools son placeholders (`NotImplementedError`). Sin tools concretos, Valeria charlaría sin ejecutar acciones reales → riesgo teatro.
+## Ready package contents
 
-## Scope
+All 6 deliverables in `vitalia/docs/product/stories/vitalia-copilot-tools-impl/`:
 
-### In-scope MVP (Slice 1)
-- Tool `setup_brand_studio` — conduce wizard onboarding Owner (4 secciones: identity + contact + team + testimonials). Lee/escribe via `brand_studio` BE engine.
-- Tool `get_clinic_status` — Valeria responde "¿cómo va la clínica?" con stats real (turnos hoy, leads pendientes, pagos pendientes).
+1. **02-design-agentic.md** v1.0 RATIFIED Chris 2026-05-17 — 3 actors × turn-by-turn + state machines + tools tables + slot architectures + voice constraints + error recovery matrices + eval policy + cost+latency budgets + observability writes + cross-cutting concerns + 20+ anti-patterns prohibidos.
 
-### Slice 2
-- Tool `configure_treatment` — wizard conversacional crear/editar tratamiento
-- Tool `approve_pending_action` — bandeja Pendientes Owner accionable via chat
+2. **03-arch.md** (consolidated index) — § 0 Context Summary (surface→builder→auditor map, skills consulted, capability YAML updates, arch gates) + § 1 Existing Systems Audit (NO-NEW-LAYER per anti-duplication §0) + § 2 Sub-arch index split BE/agentic + § 3 Cross-cutting principles (tenant+clinic dual filter, currency, master-data, PII/PHI, Spanish neutro, channel guards, medical guardrails, engine boundary, R23 cost-routing, default flag flips ZERO) + § 4 Migration Notes + § 5 Test Surfaces TDD + § 6 Research Notes + § 7 Open Questions (none — all 7 ratified Chris).
 
-### Out-of-scope MVP
-- Tool generation completa (todos los 4 wired) — solo los críticos
-- Voice/audio tools — defer Slice 3
+3. **03-arch-be.md** — Backend DDD Inside-Out layout · Domain entities (OnboardingDraft, WizardSlot, LeadScreeningEvent, StageRecommendation, AttributionMatrixSnapshot, ReferralsLeaderboardSnapshot) · SA 2.0 models · Pydantic v2 DTOs · 7 API routes · Repository interfaces tenant+clinic dual filter · 10 application services (OnboardingDraft, ExtractTenantContext, SimulatePersonality, CompleteOnboarding, ScreeningQuestions, PaymentLink, RescheduleAppointment, LucasStageRecommendation, LucasAttribution, LucasReferrals) · 5 migrations 017-021 idempotent + AsyncPostgresSaver checkpoint tables · 4 NEW arch fitness gates · file structure NEW vs MODIFIED.
 
-## Análisis backend
+4. **03-arch-agentic.md** — LangGraph supervisor topology wizard (Valeria, max-iter 25) · deepagents SubAgentMiddleware extract_subagent sandbox · ReAct topology Lucas (5 stages bounded) · 11 tools tables · 4-6 slot prompt architectures (Adrián 6-slot v2 + Valeria 5-slot + Lucas 3-slot + screening optional cache) · TTL 5min default / 1h batch eval · 4 medical guardrails real impl · channel guards · LiteLLM canonical · 16 goldens YAML (12 Adrián + 4 wizard) · 12 personas Adrián + 4 wizard personas + 1 Lucas persona · pass^k policy · observability subclasses anti-duplication §0 (VitaliaCopilotCallbackHandler + VitaliaSalesAgentCallbackHandler + ObservabilityContext subclasses).
 
-Per `00-research.md` audit:
-- Backend tiene scaffold registry EP-3 (copilot tools)
-- Falta implementación concreta + integration tests
-- `luana-core-copilot` engine ya tiene base (LangGraph state + Anthropic SDK + prompt cache)
+5. **04-validators.yaml** — 4 categories: non_functional (lint, format, arch fitness brand-scoped + engine readonly + anti-duplication cross-module + cross-brand mirror scan + engine boundary audit + Spanish neutro voseo chrome) · functional (8 unit/integration test suites + coverage 43%) · visual (N/A) · agentic_eval (voice fidelity + medical guardrails + pass^k Adrián 12 goldens × 3 trials + pass^k wizard 4 goldens × 3 trials + Lucas smoke + cache hit rate + cost budget + channel guards PHI + anti-duplication mirror + Lucas cron TZ-aware + screening YAML completeness). Eval policy: trials=3, per_trial_threshold=0.66, pass_k_threshold=0.5, voice_fidelity_min=0.85, cache_hit_rate_min=0.40 smoke.
 
-## Dependencies
+6. **05-guidelines.md** — patterns REQUIRED (21) · patterns FORBIDDEN (consolidated 40+ anti-patterns from design § 4.5 + arch § 16) · files in scope NEW vs MODIFIED · skills + rules loadout per surface (builder-agentic Opus + builder-backend Sonnet + auditor-{agentic,backend} Opus) · cross-cutting consistency · hot-fix N/A · process metrics.
 
-- **vitalia-ux-discovery v1** define cuál es onboarding flow exacto (qué tools necesita Valeria realmente)
-- Backend Vitalia Story 11 ya tiene scaffold (extensions.py register_all monta EP-3)
+7. **06-tickets.yaml** — 10 atomic tickets en 5 waves DAG:
+   - Wave 1: T-be-migrations-1 (foundation, Sonnet)
+   - Wave 2 parallel: T-be-services-{1=Valeria, 2=Adrián, 3=Lucas} (Sonnet)
+   - Wave 3 parallel: T-ag-tools-{1=Valeria 4 tools + obs subclass, 2=Adrián 3 tools + slot 4 MEDICAL_SAFETY_RAILS + 4 guardrails real + 5 personas + obs subclass, 3=Lucas 3 tools + persona} (★ Opus 4.7 R23 ★)
+   - Wave 4 parallel: T-ag-workflows-{1=Valeria supervisor + deepagents, 2=Lucas ReAct + cron integration} (★ Opus 4.7 R23 ★)
+   - Wave 5: T-ag-evals-1 (16 goldens + runners harness + voice fidelity, ★ Opus 4.7 R23 ★ for runners; Sonnet OK for YAML data sub-tasks)
+
+## Surface effective Slice 1: 11 tools total
+
+- **Valeria copilot wizard:** 4 tools — extract_tenant_context + confirm_slot + simulate_personality + complete_onboarding
+- **Adrián sales_agent closer:** 3 tools (subset MVP per Q1) — send_payment_link + reschedule_appointment + screening_questions (DEFER Slice 2: send_template_confirmation + retract_last_message)
+- **Lucas growth setter:** 3 tools (cron-only Slice 1 per Q2) — compute_stage_recommendation + compute_attribution_matrix + compute_referrals_leaderboard
+
+## Decisions cardinales Chris ratified 2026-05-17 (single G6 batched round)
+
+| # | Decision |
+|---|---|
+| Q1 | Adrián subset MVP 3 tools (NO 5) |
+| Q2 | Lucas cron-only Slice 1 (NO chat-invokable) |
+| Q3 | Hardcoded YAML goldens Slice 1 (NO plugin EP registry) |
+| Q4 | Tessl MCP load-time + offline fallback `.tessl/tiles/` |
+| D1 | Slot 4 MEDICAL_SAFETY_RAILS NEW Slice 1 arch+design ratify only (NO delta-spec) |
+| D2 | Lucas cron TZ-aware via TenantLocationContract.timezone (Fase A engine lift accepted+migrated commit 5ca6101) |
+| D3 | screening_questions belongs to Adrián (sales_agent). Lucas analytics cron-only. Naming canonical en docs |
+
+## Engine boundary cardinal — NO core/luana-core-*/src/ modification this story
+
+Si durante build builder descubre patrón reusable cross-brand → STOP + escalate /pm-luana promotion proposal en `docs/promotion-protocol/proposals/` con state=draft. PR BLOCKED hasta proposal accepted+migrated.
+
+## External blockers
+
+- vitalia-slice-1-infra-cross-cutting/T-infra-1 (migrations 002-016 + Fase A engine lift consumption) prerequisite
+- vitalia-slice-1-infra-cross-cutting/T-infra-2 (Extension SDK 5 NEW registries Vitalia + EP-3 + EP-13 placeholders) prerequisite
+- vitalia-slice-1-infra-cross-cutting/T-infra-3 (PHI compliance infrastructure: audit_log_repository + pgcrypto + RBAC decorators + sanitize_payload) prerequisite
+
+/dev-team picks tickets cuando state=ready Y external blockers state=developed.
 
 ## Bitácora
 
-- 2026-05-17 spawned: idea formal abierta por /pm-vitalia para tracking. Diferenciador #3 MUST MVP (Brand Studio voz via Valeria wizard) depende parcialmente de esta story (fallback form-based si bloquea).
+- 2026-05-17 spawned (/pm-vitalia close-slice-1 session): idea formal abierta + 00-research stub.
+- 2026-05-17 02-design-agentic.md v1 draft via /ux-agentico (3 actors × turn-by-turn + state machines + slot architectures + voice constraints + error recovery + eval policy + cost+latency + observability + cross-cutting + 20+ anti-patterns) + 7 open questions Q1-Q4+D1-D3.
+- 2026-05-17 ★ v1.0 RATIFIED Chris (single G6 batched round) — all 7 questions answered with recommended defaults. Design sealed. NO delta-spec needed. State refining → refined.
+- 2026-05-18 ★ READY package CLOSED ★ /architect Opus 4.7 produjo 6 deliverables (03-arch + 04-validators + 05-guidelines + 06-tickets). State refined → ready. Próximo: /dev-team picks tickets cuando blockers externos state=developed.
+
