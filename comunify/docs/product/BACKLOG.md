@@ -1,12 +1,13 @@
 # Comunify Backlog (auto-generated)
 
-> Generated at: `2026-05-18T07:27:49+00:00`
+> Generated at: `2026-05-18T18:32:23+00:00`
 > DO NOT EDIT MANUALLY — modify source artifacts.
 > Regenerate: `python scripts/generate_backlog.py`
 
 ## 📊 Roadmap view (filtered + curated)
 
-### 💡 Ideas (1)
+### 💡 Ideas (2)
+- comunify-design-system-tailwind-v4-tokens `[story]`
 - comunify-warning-token-contrast-fix `[story]`
 
 ### 🔬 Refining (0 total · 0 cap-eligible / cap 3)
@@ -38,7 +39,8 @@
 
 ```mermaid
 kanban
-  💡 Ideas (1)
+  💡 Ideas (2)
+    comunify-design-system-tailwin[comunify-design-system-tailwind-v4-token]
     comunify-warning-token-contras[comunify-warning-token-contrast-fix]
   🔬 Refining (0 / cap 3)
   ✅ Refined (0 / cap 5)

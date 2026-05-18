@@ -1,9 +1,9 @@
 # docs/product/BACKLOG.yaml — auto-generated SSoT machine-readable
 # DO NOT EDIT MANUALLY — modify source artifacts instead.
 # Regenerate: python scripts/generate_backlog.py
-# Generated at: 2026-05-18T07:27:49+00:00
+# Generated at: 2026-05-18T18:32:23+00:00
 
-generated_at: '2026-05-18T07:27:49+00:00'
+generated_at: '2026-05-18T18:32:23+00:00'
 brand: comunify
 caps:
   refining_max: 3
@@ -22,6 +22,19 @@ stale_refining: []
 stale_refined: []
 buckets:
   idea:
+  - id: comunify-design-system-tailwind-v4-tokens
+    kind: story
+    state: idea
+    title: comunify-design-system-tailwind-v4-tokens
+    tags: []
+    last_touched: null
+    extra:
+      outcome: null
+      phase: null
+      next_action: null
+      blocked_by: null
+      priority_override: null
+      audit_iterations: 0
   - id: comunify-warning-token-contrast-fix
     kind: story
     state: idea
