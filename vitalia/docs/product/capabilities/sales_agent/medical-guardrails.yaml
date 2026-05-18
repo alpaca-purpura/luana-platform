@@ -1,0 +1,71 @@
+---
+capability_id: vitalia-medical-guardrails
+module: sales_agent
+slug: medical-guardrails
+status: live
+date_introduced: 2026-05-18
+story_introduced: vitalia-copilot-tools-impl
+package_version: 0.2.0
+package_path: vitalia/backend/src/modules/vitalia/sales_agent/application/services/medical_guardrails_service.py
+license: proprietary
+---
+
+# vitalia-medical-guardrails
+
+4 medical guardrails reales (no_diagnosis, no_prescription, disclaimer_required, prompt_injection_block_reuse) orquestados por `MedicalGuardrailsService` — defense-in-depth per HIPAA-lite vitalia overlay. Replaza placeholders T-infra-2 con callables reales.
+
+## Surface
+
+### Service (`vitalia/backend/src/modules/vitalia/sales_agent/application/services/medical_guardrails_service.py`)
+
+- `MedicalGuardrailsService.prevent_diagnosis_disclosure_on_unencrypted_channel(message, channel) -> bool` — channel guard (WhatsApp tier free, SMS block)
+- `redirect_results_to_portal(message) -> str` — substitution to portal seguro link
+- `block_unauthorized_phi_access(role, requested_field) -> bool` — RBAC dual filter (doctor/nurse/admin_clinic only)
+- `validate_compliance_outbound(payload, channel) -> ComplianceVerdict` — wraps engine `ComplianceService.validate_outbound_message`
+
+### Guardrail callables (`vitalia/backend/src/modules/vitalia/compliance/guardrails/`)
+
+- `medical_safety_no_diagnosis.py` — RE-EXPORT canonical `agentic/guardrails/medical_safety_no_diagnosis.py` (regex + sandbox markers DQ2)
+- `medical_safety_no_prescription.py` — RE-EXPORT canonical
+- `medical_disclaimer_required.py` — NEW callable
+- `prompt_injection_block_reuse.py` — NEW callable
+
+Anti-duplication: SHIMS re-export canonical agentic/guardrails (single source enforced).
+
+## Test coverage
+
+- Unit: `tests/unit/modules/vitalia/sales_agent/services/test_medical_guardrails_service.py`
+- Agentic eval (adversarial): `tests/agentic_evals/sales_agent/test_medical_guardrails.py` (4 guards × ≥3 adversarial parametrized = 23 cases)
+
+## Dependencies
+
+- `core/luana-core-compliance.ComplianceService` (channel guards engine)
+- `core/luana-core-observability.recording.sanitization.sanitize_payload` (compliance_level="hipaa_lite")
+- `vitalia/backend/src/modules/vitalia/agentic/guardrails/` (canonical guardrail callables — Story 11 cement)
+
+## HIPAA-lite alignment
+
+- Dual filter tenant+clinic_id en RBAC enforcement
+- Channel guards: WhatsApp tier free + SMS bloquean PHI outbound
+- PHI fields lista SSoT en `vitalia/backend/src/modules/vitalia/compliance/phi_fields.py`
+- Audit log row created per guardrail trigger (sync write antes response)
+- sanitize_payload con compliance_level="hipaa_lite" en traces
+
+## Scenarios live
+
+- SC-A2 Adversarial PHI via WhatsApp (channel guard activates)
+- SC-A3 medical_safety_no_diagnosis blocks adversarial
+- SC-G1 All 4 guardrails enforce 12 adversarial cases
+
+## Verification commands
+
+```bash
+WS=$(git rev-parse --show-toplevel)
+${WS}/.venv/bin/pytest vitalia/backend/tests/agentic_evals/sales_agent/test_medical_guardrails.py -v
+# Expected: 23 passed (adversarial cases)
+```
+
+## Referencias
+
+- `vitalia/.claude/rules/hipaa-lite.md`
+- `vitalia/docs/product/stories/vitalia-copilot-tools-impl/03-arch-agentic.md` § 6.2 (medical guardrails)

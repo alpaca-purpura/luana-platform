@@ -3,23 +3,22 @@ brand: vitalia
 vertical: "Salud + Bienestar"
 status: shipped
 last_updated: 2026-05-18
-slice_1_status: infra-done  # Fase 0 + Fase A done · Fase B refining 3 side stories · Fase C ready · Fase D developing + infra DONE (squashes 50143d57 + cc4fcd68 merged main) · 6 stories refined UNBLOCKED
+slice_1_status: agentic-foundation-done  # Fase 0 + Fase A done · Fase B refining 2 side stories · Fase C ready · infra-cross-cutting DONE (2026-05-18) · copilot-tools-impl DONE (2026-05-18 — Valeria wizard + Adrián tools + medical guardrails + Lucas daily analysis + 16 goldens) · 6 stories refined UNBLOCKED · ready Slice 1 UI build
 active_outcomes:
   - dev-environment-multibrand     # receta vitalia shipped, cross-brand replicación pendiente nicolify/comunify/lupulo
   - vitalia-mvp-ui-foundation      # outcome maestro Slice 1/2/3 FE Vitalia MVP
 active_stories:
   - vitalia-ux-discovery                   # state: ready (READY_PACKAGE_CLOSED_AND_SPLIT) — /architect produjo package 2026-05-17 · split aceptado Chris en 7 sub-stories
-  - vitalia-slice-1-onboarding-wizard      # state: refined (UNBLOCKED post infra merge — sub-blocker copilot-tools-impl pending 6 agentic tickets)
+  - vitalia-slice-1-onboarding-wizard      # state: refined (UNBLOCKED post infra+copilot-tools-impl merges — ready /architect)
   - vitalia-slice-1-inbox                  # state: refined (UNBLOCKED post infra merge — ready /architect)
-  - vitalia-slice-1-pipeline               # state: refined (UNBLOCKED post infra merge — sub-blockers payment-adapter-mvp + copilot-tools-impl)
+  - vitalia-slice-1-pipeline               # state: refined (UNBLOCKED post infra+copilot-tools-impl merges — sub-blocker payment-adapter-mvp pending)
   - vitalia-slice-1-agenda                 # state: refined (UNBLOCKED post infra merge — sub-blockers payment-adapter-mvp + fiscal-emission-pe)
   - vitalia-slice-1-fidelizacion           # state: refined (UNBLOCKED post infra merge — ready /architect)
-  - vitalia-slice-1-marketing              # state: refined (UNBLOCKED post infra merge — sub-blocker copilot-tools-impl)
+  - vitalia-slice-1-marketing              # state: refined (UNBLOCKED post infra+copilot-tools-impl merges — ready /architect)
   - vitalia-pricing-decision               # state: idea (spawned 2026-05-17, decisión Chris postergada)
   - vitalia-payment-adapter-mvp            # state: refining (transitioned 2026-05-17 sesión close-slice-1, awaiting /po draft)
-  - vitalia-copilot-tools-impl             # state: developing (defer_audit LIFTED 2026-05-18 — Chris ratify resume in-session wip/vitalia canónico · 4/10 BE pushed · 6 agentic Opus R23 pendientes Waves 3-4-5)
   - vitalia-fiscal-emission-pe             # state: refining (transitioned 2026-05-17, awaiting /po draft)
-deferred_audits: []                        # ★ Story closure gate — defer_audit de copilot-tools-impl LIFTED 2026-05-18 (blocker infra-cross-cutting cerrado state=done). Sin deudas activas.
+deferred_audits: []                        # ★ Story closure gate — sin deudas activas.
 ratified_promotion_proposals:              # APPROVED + migrated 2026-05-17 (commit 5ca6101) — unblocks T-be-migration-014/T-be-migration-015
   - docs/promotion-protocol/proposals/2026-05-17-platform-tenants-location-columns.md      # state: migrated (luana-core-platform 0.1.0→0.2.0)
   - docs/promotion-protocol/proposals/2026-05-17-offer-studio-multi-session-maintenance.md # state: migrated (luana-core-offer-studio 0.1.0→0.2.0)
@@ -31,6 +30,7 @@ promotion_candidates:                      # ★ Pending ping /pm-luana (cement 
     pattern: idempotent_cron decorator → core/luana-core-platform/workers/ (lift candidate)
     threshold: 2 brands (vitalia first, nicolify proposal_followup_72h probable second)
 recently_done:
+  - vitalia-copilot-tools-impl           # 2026-05-18 cerrada reviewing→done autonomous E2E sesión orquestada · 12 commits pushed wip/vitalia (3331151..427b0f3 → último c87e... post-merge) · 7 capability YAMLs NEW live (valeria-wizard-onboarding-agentic + adrian-3-tools-mvp + medical-guardrails + state-overlay-langgraph + lucas-daily-analysis + vitalia-callback-subclasses + eval-goldens-slice-1) + 1 NEW module MD (sales_agent.md) + 3 modules MD refreshed (copilot + agentic + observability) + 1363/1363 tests GREEN (245 arch + 510 unit + 49 integration + 512 agentic_evals + 47 extensions) · auditor APPROVED (CHECKPOINTS C1-C5 + gherkin matrix 18/18 + REVIEW-agentic.md) · 0 engine modifications + 0 cross-brand mirrors + anti-dup §0 ratchet enforced · archive/2026/stories/vitalia-copilot-tools-impl/07-merge.md
   - vitalia-slice-1-infra-cross-cutting  # 2026-05-18 cerrada reviewing→done · squashes 50143d57 + cc4fcd68 mergeados main · 8 capability YAMLs live + 7 modules MD refreshed + 2 promotion candidates · archive/2026/stories/vitalia-slice-1-infra-cross-cutting/07-merge.md
   - vitalia-dev-stack-functional         # 2026-05-17T17:00 cerrada refining→done · receta 12 pasos en archive/2026/stories/vitalia-dev-stack-functional/07-merge.md
 ssot_owner: /pm-vitalia
