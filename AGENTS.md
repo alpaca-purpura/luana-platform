@@ -49,17 +49,25 @@
 | `main` | Integracion estable + staging auto-deploy. | `ci.yml` (full) + `cd-staging.yml` |
 | `release/{brand}-vX.Y.Z` | Produccion brand-especifica. Desde main validado. | `cd-prod.yml` |
 
-**Worktrees por sesion paralela** (ban historico revocado en ADR-004):
+**Worktrees por sesion paralela** (ADR-004 revocó ban legacy 2026-05-15 · ADR-005 cementó modelo D1-D14 2026-05-18):
 
 ```bash
-# Sesion nueva: worktree dedicado
-scripts/git/new-session.sh A-docker   # crea ../luana-A-docker + branch wip/A-docker
-cd ../luana-A-docker
+# Sesion nueva: worktree dedicado (mec. B — D2/D3/D8)
+scripts/git/new-session.sh vitalia story copilot-tools-impl be
+# crea ~/Proyectos/luana-vitalia-copilot-tools-impl-be/ on wip/vitalia-copilot-tools-impl-be
+
+# Dashboard cross-worktree (mec. H)
+scripts/git/status-all.sh
+
+# Sync + push con advisory (mec. A logic + L)
+scripts/git/check-sync.sh
+scripts/git/push-wip.sh [BRANCH]
 
 # Terminar sesion
-cd /home/chalreme/Proyectos/luana-platform
-scripts/git/cleanup-session.sh A-docker  # push final + remove worktree
+scripts/git/cleanup-session.sh vitalia-copilot-tools-impl-be [--delete-branch]
 ```
+
+**Skill consultable:** `worktree-protocol` — troubleshoot/explicar/modificar reglas. **Manual Warp:** `docs/process/warp-multibrand-handbook.md`. **SSoT:** `docs/process/parallel-sessions-protocol.md` D1-D14 + ADR-005.
 
 **Forbidden**: `git pull`, `git fetch && merge`, `git push --force`, `git revert` (without approval), `git add .` / `git add -A`, `git commit --no-verify`. Push non-fast-forward → STOP, report. No `git pull`.
 

@@ -1,116 +1,180 @@
 ---
 globs: "**/*"
-description: "Seguridad multi-sesion paralela Claude Code — triple-branch + worktrees requeridos (post 2026-05-15)"
+description: "Seguridad multi-sesion paralela Claude Code/opencode — worktree-based + sincronizacion canonicos + step 0 enforcement (post 2026-05-18 D1-D14)"
 ---
 
 # Parallel Safety (OBLIGATORIO)
 
-Chris opera 2-3 sesiones Claude Code en paralelo en Linux (Mint). Cada sesion usa su propio worktree fisico dedicado
-con branch `wip/*` dedicado. No hay "mismo workdir+branch" — ese patron es legacy y fue el origen de colisiones.
+Chris opera 2-3 sesiones Claude/opencode en paralelo en Linux Mint, frecuentemente en brands distintas + ocasional multi-lane dentro de brand. Cada sesion vive en su propio worktree fisico dedicado con branch `wip/*` (o `hotfix/*` o `exp/*` o `wip/core-*`). Modelo cementado en `docs/process/parallel-sessions-protocol.md` D1-D14 + `docs/architecture/luana-platform/ADR-005-worktree-policy.md`.
 
-## Triple-branch en paralelo
+## Topologia filesystem (D2)
 
-Cada sesion paralela:
+| Path | Tipo | Branch | Editar codigo |
+|---|---|---|---|
+| `~/Proyectos/luana-platform/` | PRINCIPAL | `main` | ❌ NO (solo merges + read cross-brand) |
+| `~/Proyectos/luana-{brand}/` | CANONICO long-lived | rota `wip/{brand}-{slug}` segun story | ✅ SI (1 sesion a la vez) |
+| `~/Proyectos/luana-{brand}-{slug}/` | EFIMERO brand | `wip/{brand}-{slug}[-{lane}]` | ✅ SI |
+| `~/Proyectos/luana-{brand}-hotfix-{slug}/` | EFIMERO hotfix | `hotfix/{brand}-{slug}` | ✅ SI |
+| `~/Proyectos/luana-{brand}-exp-{slug}/` | EFIMERO exp | `exp/{brand}-{slug}` | ✅ SI (NUNCA mergea) |
+| `~/Proyectos/luana-core-{slug}/` | EFIMERO core (D12) | `wip/core-{slug}` | ✅ SI (lift gate `/pm-luana`) |
 
-1. Crea su worktree dedicado: `git worktree add ../luana-{slug} wip/{slug}-{desc}`
-2. Trabaja y commitea frecuentemente en su branch `wip/{slug}-{desc}`
-3. Pushea a origin su wip/* branch (autosave + ci-wip.yml light gates)
-4. Hace squash-merge a `main` cuando el trabajo esta listo
+`{brand}` ∈ {vitalia, nicolify, comunify, lupulo} + futuras (saasora, inmoflow, retailly, fixia, guestly, fitflow). `core` reservado para lifts engine.
 
-Ver `.claude/rules/git-safety.md` para la triple-branch policy completa.
-
-## Worktrees requeridos por sesion
-
-El patron obligatorio para sesiones paralelas es worktree + branch wip/* dedicado:
+## Crear y cerrar sesion
 
 ```bash
-# Cada sesion nueva: worktree aislado fisicamente
-git worktree add ../luana-{slug} wip/{slug}-{desc}
+# Crear (mec. B)
+scripts/git/new-session.sh <BRAND> <TYPE> <SLUG> [LANE]
+# Ejemplo
+scripts/git/new-session.sh vitalia story copilot-tools-impl be
+# Lift core
+scripts/git/new-session.sh core lift extract-callback-handler
 
-# Git bloquea automaticamente que dos worktrees tengan el mismo branch.
-# La colision de WIP es imposible por diseno del sistema de archivos.
+# Cerrar (mec. C)
+scripts/git/cleanup-session.sh <BRAND>-<SLUG>[-LANE]
 ```
 
-Por que funciona: git impide que dos worktrees compartan un branch activo. Si la sesion B intenta
-checkout del mismo branch que la sesion A tiene abierto, git retorna error. Sin disciplina humana requerida.
+Worktrees creados a mano sin script → regenerar manifest con `scripts/git/regenerate-manifest.sh` (mec. M) antes de operar.
 
-El ban historico de worktrees (2024-2026) fue revocado en 2026-05-15 (D2 S-GIT-STRATEGY-CORE).
-El problema original era worktrees sin branch dedicado — no la tecnologia en si.
+## Sincronizacion canonicos (D10)
 
-## NO PULL
+3 triggers de sync hacia `origin/main`:
 
-**`git pull` PROHIBIDO sin excepcion.** No al inicio, no antes de commit, no al cierre.
+| Trigger | Aplica | Comportamiento |
+|---|---|---|
+| T1 SessionStart hook (mec. A) | PRINCIPAL + CANONICO | auto-FF silent si tree clean + FF puro; advisory si merge real; banner LOUD si dirty + core changed |
+| T2 `/pm-{brand}` step 0 (mec. N) | TODOS los wip/* | misma logica T1 al bootstrap del skill |
+| T-push PreToolUse (mec. L) | TODOS los wip/* | fetch + advisory pre-push (no bloquea) |
 
-Con triple-branch + worktrees, cada sesion tiene su espacio aislado. `git pull` no es necesario
-para sincronizacion y puede sobreescribir WIP de otra sesion.
+Definicion "toca core": `git diff main..origin/main --name-only | grep -E '^core/luana-core-[^/]+/src/'` → cualquier match escala label CORE en output.
 
-Push falla non-fast-forward → STOP, reportar Chris. NO hacer git pull.
+T1/T-push NUNCA ejecutan `uv sync` ni `pnpm install`. Solo advisory cuando `core/**/pyproject.toml` o `core/**/package.json` cambiaron.
 
-## NO FORCE PUSH
+## Politica merge a main (D11)
 
-`git push --force` / `--force-with-lease` PROHIBIDO. Reescribe historia compartida.
+- Default: 1 squash-merge por story al cerrar `state=done` (auditor APPROVED + CHECKPOINTS.md). `/pm-{brand}` ejecuta como parte de transicion reviewing→done.
+- Checkpoint mid-story opcional cuando mitad logica esta lista (procedimiento documentado, scripteamos cuando aparezca primer caso).
+- Hotfix bypass auditor formal — REQUIERE `repro_verified: true` + test regression RED→GREEN + smoke pass.
+- Experimentos NUNCA mergean. Cleanup extrae learnings.
+- Multi-lane: cada lane mergea independiente cuando su auditor lane APPROVED.
+- Core change requiere `/pm-luana` promotion proposal `state >= accepted`.
 
-## NO REVERT sin aprobacion
+Pre-merge checklist verifica:
+1. Worktree tree limpio
+2. Story state = developed o reviewing (NUNCA mergear desde developing)
+3. Validators GREEN per `04-validators.yaml::must_pass=true`
+4. Si delta toca `core/luana-core-*/src/`: promotion proposal accepted/migrated
+5. Commit message Conventional Commits + co-authored
 
-`git revert` puede sobreescribir trabajo paralelo. Solo con aprobacion explicita de Chris.
+## Cambios al core (D12)
 
-## Reglas M1-M11
+Worktree dedicado `~/Proyectos/luana-core-{slug}/` con branch `wip/core-{slug}`. Manifest brand=core (pseudo-brand). Cross-worktree dependency:
+- Caso A — feature en lift in-flight → brand consumer queda `state=ready` hasta merge a main (NUNCA merge wip→wip)
+- Caso B — feature mergeada → T1 auto-FF o advisory; deps changed → `uv sync` / `pnpm install` advisory
+- Caso C — overlap WIP brand con archivos lift refactoro → FF falla por conflict, advisory LOUD
+
+Breaking change cross-brand → `/pm-luana` coordina stories cross-brand en release window.
+
+## Step 0 enforcement skills (D13)
+
+SSoT `.claude/rules/step-0-worktree.md` (mec. N) consumido por `/pm-{brand}` y `/pm-luana` via `@import`.
+
+**Enforcement matrix:**
+
+| Skill | Worktree | Verdict |
+|---|---|---|
+| `/pm-{brand-X}` | CANONICO/EFIMERO brand X | OK proceed |
+| `/pm-{brand-X}` | CANONICO/EFIMERO brand Y (Y≠X) | **HARD REFUSE** + redirect |
+| `/pm-{brand-X}` | PRINCIPAL | **HARD REFUSE** "principal no edita codigo brand" |
+| `/pm-{brand-X}` | EFIMERO core | **HARD REFUSE** "core lift es /pm-luana territory" |
+| `/pm-{brand-X}` | UNKNOWN | **HARD REFUSE** escalate Chris |
+| `/pm-luana` | PRINCIPAL | OK (default) |
+| `/pm-luana` | CANONICO brand X | OK (cross-brand desde brand context) |
+| `/pm-luana` | EFIMERO core | OK (lift work) |
+| `/pm-luana` | EFIMERO brand X | OK + soft warn |
+| `/pm-luana` | UNKNOWN | **HARD REFUSE** escalate Chris |
+
+## opencode parity (D14)
+
+opencode honra `.claude/skills/` y `.claude/rules/` igual que Claude Code. Hooks no nativos en opencode → wrappers bash portable + Warp Workflows como atajo.
+
+| Logic | Claude Code | opencode |
+|---|---|---|
+| T1 SessionStart | Hook nativo → script | Manual: `scripts/git/check-sync.sh` (Warp Workflow `sync-check`) |
+| T-push | Hook nativo PreToolUse | Manual: `scripts/git/push-wip.sh wip/X` (Warp Workflow `push-wip`) |
+| Step 0 | Skill `@import` mec. N | Identico |
+| new/cleanup-session | Bash directo | Identico |
+
+## Reglas M1-M11 (vigentes)
 
 | # | Regla |
 |---|---|
-| M1 | Sesiones paralelas usan branches `wip/*` DISTINTOS. Dos sesiones NO comparten branch activo (git lo bloquea). |
-| M2 | `docs/process/learnings.md` + `docs/product/BACKLOG.md` (auto-gen) + `MEMORY.md` SOLO `/pm`. Builders nunca. |
-| M3 | Tests/CI/Docker SECUENCIAL. Una sesion a la vez `/test-all`/`/dev-up`/`make ci-parity`. Container/port collision invisible hasta crash. |
-| M4 | Claim by commit: `/pm` cambia `state: developing` en checkpoint.md + commit/push inmediato al branch wip/*. |
-| M5 | NO pull. NO force push. NO revert sin aprobacion. Push falla → STOP. |
-| M6 | Bootstrap PM pregunta `en que outcome/story?` antes proceder. |
-| M7 | Subagentes paths PRIMARIOS story + read all + "extend, no destroy" ajenos. PM prefija story-id completo en prompts. |
-| M8 | Tocar archivos otra sesion OK si: (a) entiendes leyendo, (b) extend/append no replace, (c) rompe → STOP escalate Chris. |
-| M9 | Agent tool sub-agents dentro de sesion pueden usar worktree isolation efimero para tareas de build aisladas. Cleanup del worktree efimero es responsabilidad del agente que lo crea. |
-| M10 | branches `wip/*` son autosave. Push frecuente (M11) garantiza recovery ante crash de sesion. NO guardar WIP solo en stash por mas de 30 minutos. |
-| M11 | NUNCA pasar >30 minutos sin push si hay cambios significativos en worktree activo. El push activa `ci-wip.yml` (light gates) como checkpoint de calidad. |
-
-Detalle: `docs/process/parallel-sessions-protocol.md`.
+| M1 | Sesiones paralelas usan branches DISTINTOS. Dos sesiones NO comparten branch activo (git lo bloquea por diseño). |
+| M2 | SSoT (`learnings.md`, BACKLOG, MEMORY, PORTFOLIO) SOLO `/pm-{brand}` o `/pm-luana`. Builders nunca. |
+| M3 | Tests/Docker/migrations SECUENCIAL por brand. Max 1 stack docker por brand vivo (D5). |
+| M4 | Claim by commit: `/pm-{brand}` cambia state en checkpoint.md + commit/push inmediato pre-claim. |
+| M5 | NO pull. NO force push. NO revert sin aprobacion. Push falla non-fast-forward → STOP, reportar. |
+| M6 | Bootstrap PM pregunta story activa antes proceder. |
+| M7 | Subagentes paths PRIMARIOS story + read all + extend-no-destroy archivos ajenos. |
+| M8 | Tocar archivos otra sesion OK si entiendes leyendo + extend/append no replace + STOP si rompe. |
+| M9 | Sub-agents con worktree isolation efimero responsable de cleanup del worktree efimero que crean. |
+| M10 | branches `wip/*` son autosave. Push frecuente (M11) garantiza recovery ante crash. NO stash > 30 min. |
+| M11 | NUNCA pasar >30 min sin push si hay cambios significativos. Push activa `ci-wip.yml`. |
 
 ## Inicio de conversacion (branch check)
 
 ```bash
 git status --short && git branch --show-current && git log --oneline -3
+git worktree list
+scripts/git/status-all.sh     # dashboard cross-worktree (mec. H)
 ```
 
-- Branch `wip/*` limpio en worktree dedicado → proceder.
-- Branch `main` limpio → OK para squash-merges o commits directos de docs.
-- Branch desconocido (legacy `development`, otros) → crear worktree `wip/*` nuevo.
-- Tree sucio archivos propios → commit a `wip/*` branch o stash si es context-switch corto.
-- Tree sucio archivos AJENOS (otra sesion) → NO tocar esos archivos. Reportar lista.
-
-## Scope commits
-
-Stage por nombre exacto solo archivos de esta sesion. PROHIBIDO `git add .` / `-A` / `-u`.
-Status muestra archivos ajenos → dejarlos intactos y reportar. Pre-commit hooks native — `--no-verify` PROHIBIDO.
+- Branch `wip/*` o `hotfix/*` o `exp/*` o `wip/core-*` limpio en worktree dedicado → proceder
+- Branch `main` en `~/Proyectos/luana-platform/` (principal) → OK para merges, NO codigo brand
+- Tree sucio archivos AJENOS → NO tocar, reportar lista
+- Worktree desconocido → STOP, escalate Chris
 
 ## Cierre de sesion
 
-Cuando user dice "eso es todo" / "gracias" / "cierra":
+`"eso es todo"` / `"gracias"` / `"cierra"` / `/cierra-limpio`:
 
 1. `git status --short`
-2. Cambios propios → stage por nombre + conventional commit + push a `wip/*` branch + reportar hash
+2. Cambios propios → stage por nombre exacto + Conventional Commit + push (via `push-wip.sh` recomendado) + reportar SHA
 3. Archivos ajenos → reportar intactos
-4. Stashes → reportar
-5. WIP roto → `git stash push -m "WIP: {slug}"` + reportar
+4. Si efimero + story cerrada → `scripts/git/cleanup-session.sh {brand}-{slug}`
 
 ## Prohibido
 
 - `git pull` (cualquier forma)
-- `git fetch && merge`
+- `git fetch && merge` automatico (solo fetch + merge --ff-only/squash deliberado)
 - `git push --force` / `--force-with-lease`
 - `git revert` sin aprobacion
 - `git reset --hard` sin aprobacion
 - `git add .` / `-A` / `-u`
 - `git commit --no-verify`
-- Dos sesiones en el mismo branch activo (git bloquea, pero nunca intentarlo)
-- Cierre sin commit/reporte de estado
-- Push `origin main` sin squash-merge consciente
-- Builders editando `learnings.md` / `BACKLOG.md` / `MEMORY.md`
-- Tests/Docker dos sesiones simultaneas (M3)
-- Worktree sin branch `wip/*` dedicado (patron incorrecto — git no bloquea colision en ese caso)
+- Editar codigo en PRINCIPAL (`luana-platform/` en `main`)
+- Misma branch en 2 worktrees (git lo bloquea)
+- `make dev-{brand}` en 2 worktrees de la misma brand simultaneamente (mec. F enforce)
+- Builders editando SSoT (`learnings.md`, BACKLOG, MEMORY, PORTFOLIO)
+- Invocar `/pm-{brand-X}` desde worktree brand Y (D13 HARD REFUSE)
+- Cierre sin commit/reporte
+- Lift core sin promotion proposal `state >= accepted` (D11/D12)
+
+## Conflict resolution
+
+Si encontras archivo modificado por otra sesion (en wip propio o al mergear a main):
+1. **NO sobreescribir.** Leer primero.
+2. Conflict de scope → escalate Chris.
+3. Append-friendly (logs, IMPL-LOG, history) → append OK.
+4. Replacement obvio (typo, refactor) → STOP + reportar antes proceder.
+
+## Referencias
+
+- `docs/process/parallel-sessions-protocol.md` — SSoT D1-D14
+- `docs/architecture/luana-platform/ADR-005-worktree-policy.md` — decision record
+- `docs/architecture/luana-platform/ADR-004-git-branching-and-environments.md` — triple-branch base
+- `.claude/rules/git-safety.md` — triple-branch operacional
+- `.claude/rules/git-haiku-delegation.md` — commit+push delegation pattern
+- `.claude/rules/step-0-worktree.md` — mec. N step 0 SSoT
+- `docs/process/warp-multibrand-handbook.md` — manual operativo Warp
+- `scripts/git/new-session.sh`, `cleanup-session.sh`, `check-sync.sh`, `push-wip.sh`, `status-all.sh`, `regenerate-manifest.sh`

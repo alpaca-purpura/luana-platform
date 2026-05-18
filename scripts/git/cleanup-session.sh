@@ -1,70 +1,142 @@
 #!/usr/bin/env bash
 set -euo pipefail
-# cleanup-session.sh — Push final + remueve worktree de sesion terminada
+# cleanup-session.sh — Push final + remueve worktree + opcional delete branch (mec. C mejorado)
+# SSoT model: docs/process/parallel-sessions-protocol.md § D11 (cleanup post-merge)
 #
-# Usage:  scripts/git/cleanup-session.sh SLUG
+# Usage:
+#   scripts/git/cleanup-session.sh BRAND-SLUG[-LANE]
+#   scripts/git/cleanup-session.sh core-SLUG          (D12 — lift core)
+#   scripts/git/cleanup-session.sh --delete-branch BRAND-SLUG
+#   scripts/git/cleanup-session.sh --force BRAND-SLUG    (skip dirty check, dangerous)
+#
 # Args:
-#   SLUG     Identificador de la sesion a limpiar (ej: A-docker)
-#            Solo caracteres [a-zA-Z0-9_-]. REQUERIDO.
+#   BRAND-SLUG[-LANE]  Identificador del worktree a limpiar (matches branch wip/<arg>)
+#                      Para hotfix usar: hotfix/{brand}-{slug} → arg='hotfix-{brand}-{slug}'
+#                      O verás flagged como unknown — usar --branch para override
+#
+# Flags:
+#   --delete-branch   Post-cleanup: borra branch local + remota (use AFTER squash-merge a main)
+#   --force           Saltea dirty check (no recomendado)
+#
 # Exit codes:
-#   0  Cleanup exitoso: worktree removido + branch pusheada
-#   1  Error: slug invalido / worktree no existe / git error
+#   0  Cleanup OK: worktree removido (+ opcional branch deleted)
+#   1  Error: arg inválido / worktree no existe / git error
 #   2  STOP: worktree tiene cambios uncommitted — no destruye WIP
 #
-# SAFETY: el script NO remueve la branch wip/{SLUG} del repositorio.
-#         Solo remueve el directorio fisico (worktree). La branch queda
-#         para merge futuro a main o cleanup manual.
-#
-# Example:
-#   cd /home/chalreme/Proyectos/luana-platform
-#   scripts/git/cleanup-session.sh A-docker
+# Behavior:
+#   1. Verify worktree exists at expected path
+#   2. SAFETY: check tree clean (or --force)
+#   3. Push final to origin (best-effort)
+#   4. Read manifest .session.yaml para log
+#   5. Remove worktree via `git worktree remove`
+#   6. If --delete-branch: delete branch local + remote
+#   7. Log summary
 
-SLUG="${1:?Usage: cleanup-session.sh SLUG}"
+DELETE_BRANCH=false
+FORCE=false
+ARG=""
+for a in "$@"; do
+  case "$a" in
+    --delete-branch) DELETE_BRANCH=true ;;
+    --force)         FORCE=true ;;
+    -*)              echo "::error::Unknown flag: $a"; exit 1 ;;
+    *)               ARG="$a" ;;
+  esac
+done
 
-# D1 — Sanitize: solo alnum + dash + underscore
-if [[ ! "${SLUG}" =~ ^[a-zA-Z0-9_-]+$ ]]; then
-  echo "::error::Invalid slug '${SLUG}' — only [a-zA-Z0-9_-] allowed"
+if [[ -z "${ARG}" ]]; then
+  echo "::error::Usage: cleanup-session.sh BRAND-SLUG[-LANE] [--delete-branch] [--force]"
   exit 1
 fi
 
-BRANCH="wip/${SLUG}"
-
-# Soporte para WORKTREE_PARENT_OVERRIDE (permite tests aislar del repo real)
-if [[ -n "${WORKTREE_PARENT_OVERRIDE:-}" ]]; then
-  WORKTREE_DIR="${WORKTREE_PARENT_OVERRIDE}/luana-${SLUG}"
-else
-  WORKTREE_DIR="../luana-${SLUG}"
+# Sanitize
+if [[ ! "${ARG}" =~ ^[a-z0-9-]+$ ]]; then
+  echo "::error::Invalid arg '${ARG}' — only [a-z0-9-] allowed"
+  exit 1
 fi
 
-# Verificar que el directorio worktree existe
+# Compute branch + worktree path from arg
+# Cases:
+#   core-SLUG     → branch=wip/core-SLUG path=luana-core-SLUG
+#   BRAND-SLUG    → branch=wip/BRAND-SLUG path=luana-BRAND-SLUG
+#   BRAND-hotfix-SLUG → branch=hotfix/BRAND-SLUG path=luana-BRAND-hotfix-SLUG
+#   BRAND-exp-SLUG    → branch=exp/BRAND-SLUG path=luana-BRAND-exp-SLUG
+#   Default: assume wip/<arg> + luana-<arg>
+WS_PARENT="$(dirname "$(git rev-parse --show-toplevel)")"
+
+if [[ "${ARG}" =~ ^core-(.+)$ ]]; then
+  BRANCH="wip/core-${BASH_REMATCH[1]}"
+  WORKTREE_DIR="${WS_PARENT}/luana-${ARG}"
+elif [[ "${ARG}" =~ ^([a-z]+)-hotfix-(.+)$ ]]; then
+  BRANCH="hotfix/${BASH_REMATCH[1]}-${BASH_REMATCH[2]}"
+  WORKTREE_DIR="${WS_PARENT}/luana-${ARG}"
+elif [[ "${ARG}" =~ ^([a-z]+)-exp-(.+)$ ]]; then
+  BRANCH="exp/${BASH_REMATCH[1]}-${BASH_REMATCH[2]}"
+  WORKTREE_DIR="${WS_PARENT}/luana-${ARG}"
+else
+  BRANCH="wip/${ARG}"
+  WORKTREE_DIR="${WS_PARENT}/luana-${ARG}"
+fi
+
+# Verify worktree exists
 if [[ ! -d "${WORKTREE_DIR}" ]]; then
-  echo "::error::No worktree at ${WORKTREE_DIR} — nothing to cleanup"
+  echo "::error::No worktree at ${WORKTREE_DIR}"
+  echo "Listing all worktrees:"
+  git worktree list
   exit 1
 fi
 
-# SAFETY GATE — verificar tree limpio antes de cualquier operacion destructiva
-# F1: NUNCA destruir sin verificacion previa
-DIRTY_FILES="$(git -C "${WORKTREE_DIR}" status --short 2>/dev/null || true)"
-if [[ -n "${DIRTY_FILES}" ]]; then
-  echo "::error::Worktree ${WORKTREE_DIR} has uncommitted changes — commit or stash first"
-  echo "Run: cd ${WORKTREE_DIR} && git status"
-  exit 2
+# Safety: dirty check
+if ! $FORCE; then
+  DIRTY="$(git -C "${WORKTREE_DIR}" status --short 2>/dev/null || true)"
+  if [[ -n "${DIRTY}" ]]; then
+    echo "::error::Worktree has uncommitted changes:"
+    echo "${DIRTY}"
+    echo ""
+    echo "Run: cd ${WORKTREE_DIR} && git status"
+    echo "Stage + commit + push first, then re-run cleanup."
+    echo "(Or use --force at your own risk)"
+    exit 2
+  fi
 fi
 
-# Push final (modo seco si GIT_PUSH_DRY_RUN=1, para tests)
-echo "Pushing ${BRANCH}..."
-if [[ "${GIT_PUSH_DRY_RUN:-0}" == "1" ]]; then
-  echo "(dry-run: skipping actual git push)"
+# Read manifest for log
+STORY="—"
+MANIFEST="${WORKTREE_DIR}/.session.yaml"
+if [[ -f "${MANIFEST}" ]]; then
+  STORY="$(grep -E '^story_id: ' "${MANIFEST}" | head -1 | sed 's/^story_id: //')"
+fi
+
+# Push final
+echo "→ Pushing ${BRANCH} (final push before cleanup)..."
+if [[ "${GIT_PUSH_DRY_RUN:-0}" = "1" ]]; then
+  echo "  (dry-run skipped actual push)"
 else
-  git -C "${WORKTREE_DIR}" push origin "${BRANCH}" --set-upstream 2>/dev/null \
-    || git -C "${WORKTREE_DIR}" push origin "${BRANCH}" \
-    || echo "(Branch already up-to-date or no remote — skipping push)"
+  if git -C "${WORKTREE_DIR}" push origin "${BRANCH}" --set-upstream 2>/dev/null; then
+    echo "  ✓ pushed"
+  elif git -C "${WORKTREE_DIR}" push origin "${BRANCH}" 2>/dev/null; then
+    echo "  ✓ pushed (already upstream)"
+  else
+    echo "  ⚠ push failed (branch may already be up-to-date)"
+  fi
 fi
 
-# Remover worktree fisico (NO borra la branch)
-echo "Removing worktree ${WORKTREE_DIR}..."
+# Remove worktree
+echo "→ Removing worktree ${WORKTREE_DIR}..."
 git worktree remove "${WORKTREE_DIR}"
+echo "  ✓ removed"
+
+# Optional branch delete
+if $DELETE_BRANCH; then
+  echo "→ Deleting branch ${BRANCH} (local + remote)..."
+  git branch -D "${BRANCH}" 2>/dev/null || echo "  ⚠ local branch delete failed"
+  if [[ "${GIT_PUSH_DRY_RUN:-0}" != "1" ]]; then
+    git push origin --delete "${BRANCH}" 2>/dev/null || echo "  ⚠ remote delete failed (maybe already deleted)"
+  fi
+fi
 
 echo ""
-echo "Cleanup complete: worktree removed, branch ${BRANCH} pushed"
-echo "Branch ${BRANCH} still exists — merge to main when ready or delete manually"
+echo "✓ Cleanup complete"
+echo "  worktree: ${WORKTREE_DIR} removed"
+echo "  branch:   ${BRANCH} $($DELETE_BRANCH && echo 'DELETED' || echo 'preserved (cron purge >30d)')"
+echo "  story:    ${STORY}"

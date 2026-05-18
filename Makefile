@@ -25,16 +25,21 @@ BRANDS := nicolify vitalia comunify lupulo
 COMPOSE_BASE := docker compose -f docker-compose.dev.yml
 
 # ── dev targets ──────────────────────────────────────────────────────────────
+# dev-{brand} pre-condition: scripts/dev-lock-check.sh enforces D5 (max 1 stack docker per brand)
 dev-nicolify:
+	@bash scripts/dev-lock-check.sh nicolify
 	$(COMPOSE_BASE) -f nicolify/docker-compose.dev.yml up -d
 
 dev-vitalia:
+	@bash scripts/dev-lock-check.sh vitalia
 	$(COMPOSE_BASE) -f vitalia/docker-compose.dev.yml up -d
 
 dev-comunify:
+	@bash scripts/dev-lock-check.sh comunify
 	$(COMPOSE_BASE) -f comunify/docker-compose.dev.yml up -d
 
 dev-lupulo:
+	@bash scripts/dev-lock-check.sh lupulo
 	$(COMPOSE_BASE) -f lupulo/docker-compose.dev.yml up -d
 
 # ── tunnel targets (cloudflared profile) ────────────────────────────────────

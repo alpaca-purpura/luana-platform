@@ -268,17 +268,30 @@ NUNCA inline >500 tokens de artifact body. Caller lee file on demand.
 | `main` | Integracion estable + staging auto-deploy. | `ci.yml` (full) + `cd-staging.yml` |
 | `release/{brand}-vX.Y.Z` | Produccion brand-especifica. Desde main validado. | `cd-prod.yml` |
 
-**Worktrees por sesion paralela** (ban historico revocado en ADR-004 2026-05-15):
+**Worktrees por sesion paralela** (ADR-004 revocó ban legacy 2026-05-15 · ADR-005 cementó modelo D1-D14 2026-05-18):
 
 ```bash
-# Sesion nueva: worktree dedicado
-scripts/git/new-session.sh A-docker    # crea ../luana-A-docker + branch wip/A-docker
-cd ../luana-A-docker
+# Sesion nueva: worktree dedicado (mec. B — D2/D3/D8)
+scripts/git/new-session.sh vitalia story copilot-tools-impl be
+# crea ~/Proyectos/luana-vitalia-copilot-tools-impl-be/
+# branch wip/vitalia-copilot-tools-impl-be · manifest .session.yaml · symlink venv
+
+# Dashboard cross-worktree (mec. H)
+scripts/git/status-all.sh
+
+# Sync canónico con main (mec. A logic, runs auto en SessionStart hook)
+scripts/git/check-sync.sh
+
+# Push con advisory sync check (mec. L)
+scripts/git/push-wip.sh [BRANCH]
 
 # Terminar sesion
-cd /home/chalreme/Proyectos/luana-platform
-scripts/git/cleanup-session.sh A-docker  # push final + remove worktree
+scripts/git/cleanup-session.sh vitalia-copilot-tools-impl-be [--delete-branch]
 ```
+
+**Skill consultable:** `worktree-protocol` (`/worktree-protocol`) — troubleshoot, explicar, modificar reglas del modelo. Trigger: "worktree no funciona", "modificar step 0", "cambiar política sync", etc.
+
+**Manual operativo Warp:** `docs/process/warp-multibrand-handbook.md`. **Modelo SSoT:** `docs/process/parallel-sessions-protocol.md` D1-D14 + `docs/architecture/luana-platform/ADR-005-worktree-policy.md`.
 
 **Forbidden**: `git pull`, `git fetch && merge`, `git push --force`, `git revert` (sin aprobacion), `git add .` / `git add -A`, `git commit --no-verify`. Push non-fast-forward → STOP, reportar. No `git pull`.
 
@@ -338,6 +351,7 @@ Detail: `.claude/rules/git-safety.md` (full policy) + `.claude/rules/parallel-sa
 | Capability reconciliation | `/pm-{brand}` skill | `scripts/reconcile_capabilities.py` (legacy, per-brand) |
 | Multibrand carve-out (extracción a luana-core) | `/architect` + `/pm-luana` | `docs/architecture/luana-platform/01-core-audit.md` + `02-core-purge-audit.md` |
 | Promotion proposal brand→core | `/pm-luana` skill | `docs/promotion-protocol/README.md` + `template-proposal.md` |
+| Worktree protocol (consulta/troubleshoot/modificar) | `worktree-protocol` skill | `docs/process/parallel-sessions-protocol.md` D1-D14 + `docs/architecture/luana-platform/ADR-005-worktree-policy.md` + `.claude/rules/{parallel-safety,step-0-worktree}.md` + `scripts/git/*.sh` |
 
 ## Vision
 
