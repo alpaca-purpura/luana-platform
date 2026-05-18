@@ -2,10 +2,11 @@
 story_id: vitalia-slice-1-infra-cross-cutting
 outcome: vitalia-mvp-ui-foundation
 parent_spec: vitalia-ux-discovery
-state: ready
-phase: READY_PACKAGE_INHERITED
-last_artifact: ../vitalia-ux-discovery/06-tickets.yaml (sub-story slice T-arch-1, T-infra-1..T-infra-9)
-last_modified: 2026-05-17
+state: developing
+phase: BUILD_T_ARCH_1
+last_artifact: T-arch-1-impl-log.md (in progress)
+last_modified: 2026-05-18
+dev_team_started_at: 2026-05-18
 ratified_by_chris: true
 spawned_at: 2026-05-17
 spawned_by: /pm-vitalia (split decision post /architect ready package)
