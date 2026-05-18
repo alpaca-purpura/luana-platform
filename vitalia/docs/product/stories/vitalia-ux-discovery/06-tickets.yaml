@@ -70,6 +70,11 @@ tickets:
   - id: T-infra-1
     sub_story: vitalia-slice-1-infra-cross-cutting
     title: Migrations 002-016 idempotent Slice 1 (11 tables + 8 column additions)
+    state: pushed
+    push_commit_sha: "1194941"
+    push_branch: wip/vitalia-slice-1-shipping
+    pushed_at: "2026-05-18"
+    result_artifact: vitalia/docs/product/stories/vitalia-slice-1-infra-cross-cutting/T-infra-1-result.md
     scope: |
       Create 15 Alembic migrations in vitalia/backend/src/modules/vitalia/persistence/migrations/:
       002 appointments columns | 003 payment_events | 004 fiscal_receipts | 005 treatment_plans
@@ -92,6 +97,7 @@ tickets:
       /pm-luana ratifies promotion proposals:
       - docs/promotion-protocol/proposals/2026-05-17-platform-tenants-location-columns.md
       - docs/promotion-protocol/proposals/2026-05-17-offer-studio-multi-session-maintenance.md
+      RESOLVED: both proposals confirmed state=migrated (commit 5ca61019) — migrations 014+015 completed.
 
   - id: T-infra-2
     sub_story: vitalia-slice-1-infra-cross-cutting
