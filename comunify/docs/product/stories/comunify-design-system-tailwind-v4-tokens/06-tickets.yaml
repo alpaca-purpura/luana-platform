@@ -10,9 +10,14 @@ repro_verified: true
 
 tickets:
   - id: T-1
-    title: "Add @theme block to globals.css + fix 2 smoke test assertions"
-    state: ready
+    title: "Add @theme block to globals.css + fix 2 smoke test assertions + install @tailwindcss/postcss"
+    state: pushed
     surface: frontend
+    transitions:
+      - { state: ready, at: 2026-05-18 }
+      - { state: assigned, at: 2026-05-18, by: "/dev-team", to: "builder-frontend (sonnet)" }
+      - { state: tests-passing, at: 2026-05-18, by: "/pm-comunify orchestrator (Opus) — finished after builder context exhausted", note: "scope expanded to install postcss plugin (vitalia has same gap, promotable)" }
+      - { state: pushed, at: 2026-05-18, commit: "<pending — orchestrator commits next>" }
     owner_eligibility: [qwen-opencode, claude-sonnet]   # R23 — production_code: true pero NO agentic surface → Sonnet OK
     production_code: true                                 # FE runtime code
     estimated_minutes: 30

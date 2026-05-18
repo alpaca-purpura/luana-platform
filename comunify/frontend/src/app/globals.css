@@ -1,5 +1,36 @@
 @import "tailwindcss";
 
+@theme {
+  /* Color utilities — Tailwind v4 generates .bg-comunify-X / .text-comunify-X / .border-comunify-X */
+  --color-comunify-primary: hsl(264 92% 58%);
+  --color-comunify-primary-foreground: hsl(0 0% 100%);
+  --color-comunify-primary-hover: hsl(254 79% 49%);
+  --color-comunify-purple-mid: hsl(252 100% 62%);
+  --color-comunify-blue: hsl(217 95% 58%);
+  --color-comunify-blue-deep: hsl(220 84% 45%);
+  --color-comunify-accent: hsl(355 100% 69%);
+  --color-comunify-stable: hsl(152 80% 43%);
+  --color-comunify-warning: hsl(45 100% 48%);
+  --color-comunify-critical: hsl(0 84% 60%);
+  --color-comunify-text: hsl(226 49% 9%);
+  --color-comunify-text-muted: hsl(215 16% 47%);
+  --color-comunify-bg: hsl(210 40% 98%);
+  --color-comunify-surface: hsl(0 0% 100%);
+  --color-comunify-border: hsl(214 32% 91%);
+
+  /* Font utilities — Tailwind v4 generates .font-satoshi / .font-manrope / .font-inter */
+  --font-satoshi: var(--font-satoshi), "ui-sans-serif", "system-ui", "sans-serif";
+  --font-manrope: var(--font-manrope), "ui-sans-serif", "system-ui", "sans-serif";
+  --font-inter: var(--font-inter), "ui-sans-serif", "system-ui", "sans-serif";
+
+  /* Border radius — Tailwind v4 generates .rounded-default / .rounded-lg */
+  --radius-default: 0.75rem;
+  --radius-lg: 1.25rem;
+
+  /* Background image — Tailwind v4 generates .bg-comunify-gradient */
+  --background-image-comunify-gradient: linear-gradient(135deg, #7B2FF7 0%, #6A3CFF 35%, #2D7FF9 70%, #1E5EFF 100%);
+}
+
 :root {
   /* Brand core */
   --comunify-primary: 264 92% 58%;

@@ -41,6 +41,7 @@
     "eslint-plugin-boundaries": "^6.0.2",
     "globals": "^17.5.0",
     "happy-dom": "^13.10.0",
+    "@tailwindcss/postcss": "^4.1.0",
     "tailwindcss": "^4.1.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.58.0",
