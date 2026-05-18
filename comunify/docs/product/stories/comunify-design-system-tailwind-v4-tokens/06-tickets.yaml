@@ -1,0 +1,94 @@
+# 06-tickets — Comunify Design System Tailwind v4 token activation
+#
+# Hot-fix story: 1 ticket único T-1. Scope quirúrgico.
+# Per `.claude/rules/hotfix-repro-mandatory.md` § Step 4: repro_verified=true permite spawn directo /dev-team.
+
+story_id: comunify-design-system-tailwind-v4-tokens
+brand: comunify
+hotfix: true
+repro_verified: true
+
+tickets:
+  - id: T-1
+    title: "Add @theme block to globals.css + fix 2 smoke test assertions"
+    state: ready
+    surface: frontend
+    owner_eligibility: [qwen-opencode, claude-sonnet]   # R23 — production_code: true pero NO agentic surface → Sonnet OK
+    production_code: true                                 # FE runtime code
+    estimated_minutes: 30
+    estimated_size: S
+    acceptance:
+      validator_ids: [val-be-1, val-fe-1, val-fe-2, val-fe-3, val-arch-1, val-typecheck-1]
+    gherkin_coverage:
+      - scenario: "SC-01 body bg-comunify-bg utility applies at runtime"
+        tests:
+          - "comunify/frontend/e2e/specs/smoke/design-system.smoke.spec.ts::body background is comunify-bg + text is comunify-text"
+      - scenario: "SC-02 body text-comunify-text utility applies"
+        tests:
+          - "comunify/frontend/e2e/specs/smoke/design-system.smoke.spec.ts::body background is comunify-bg + text is comunify-text"
+      - scenario: "SC-03 font CSS variables accessible from :root"
+        tests:
+          - "comunify/frontend/e2e/specs/smoke/design-system.smoke.spec.ts::font CSS variables are present on <html>"
+      - scenario: "SC-04 body font-family resolves to Inter"
+        tests:
+          - "comunify/frontend/e2e/specs/smoke/design-system.smoke.spec.ts::font CSS variables are present on <html>"
+      - scenario: "SC-05 CSS bundle contains generated utility rules"
+        tests:
+          - "val-fe-1 (curl + grep direct CSS bundle assertion)"
+      - scenario: "SC-06 design-system smoke test suite passes (cumulative)"
+        tests:
+          - "val-fe-2 (npx playwright design-system.smoke.spec.ts 3/3 PASS)"
+      - scenario: "SC-07 no regression in other passing smoke tests"
+        tests:
+          - "val-fe-3 (npx playwright --project=smoke full suite ≥8 passing)"
+    files_in_scope:
+      - "comunify/frontend/src/app/globals.css"                                 # EDIT — insert @theme block
+      - "comunify/frontend/e2e/specs/smoke/design-system.smoke.spec.ts"         # EDIT — fix 2 assertion bugs
+    files_out_of_scope:
+      - "comunify/frontend/tailwind.config.ts"                                  # leave for separate cleanup story
+      - "comunify/frontend/src/app/layout.tsx"                                  # no changes — font module injection ya correcto
+      - "comunify/.../**/*.tsx"                                                 # consumers no migran (utility classes idiomáticos)
+    repro_verified: true
+    repro_evidence:
+      brand: comunify
+      command: "cd comunify/frontend && E2E_BASE_URL=http://localhost:3003 npx playwright test --project=smoke e2e/specs/smoke/design-system.smoke.spec.ts --reporter=list"
+      output: |
+        3 failed
+          design-system.smoke.spec.ts:27 › font CSS variables are present on <html>
+          design-system.smoke.spec.ts:46 › body background is comunify-bg + text is comunify-text
+          design-system.smoke.spec.ts:67 › sign-in page (chrome elements) inherits comunify tokens
+      diagnosis_validates_handoff: true
+      diagnosis: |
+        See checkpoint.md repro_evidence.diagnosis for full root-cause analysis.
+        Summary: Tailwind v4.1.0 ignores tailwind.config.ts::theme.extend.colors silently.
+        Fix = add @theme block to globals.css (Option A ratified Chris 2026-05-18).
+    tdd_required: true                                    # tests RED → fix → tests GREEN
+    tdd_note: |
+      Tests YA están RED (verified pre-implementation). T-1 corrige 2 assertions de los
+      tests (per 01-spec § "Test corrections required") + agrega @theme block.
+      Post-implementation re-run debe ser 3/3 GREEN. No nuevos tests requeridos.
+    skills_to_load:
+      - frontend-expert
+      - playwright-expert
+    rules_to_load:
+      - .claude/rules/frontend-fsd.md
+      - .claude/rules/frontend-quality.md
+      - .claude/rules/e2e-testing.md
+      - .claude/rules/hotfix-repro-mandatory.md
+      - .claude/rules/git-safety.md
+      - .claude/rules/git-haiku-delegation.md
+    handoff_notes: |
+      Spawn /dev-team con builder-frontend (Sonnet OK per R23 — FE no-agentic).
+      Steps suggested for builder:
+        1. Read globals.css actual (31 líneas)
+        2. Insert @theme block después de "@import \"tailwindcss\";" siguiendo template en 05-guidelines.md
+        3. Preserve :root block como está (retro-compat)
+        4. Edit design-system.smoke.spec.ts:
+           - Test 1 (línea 35): cambiar regex /--font-satoshi/ check a getPropertyValue() assertion (verbatim diff en 01-spec.md § Fix 1)
+           - Test 3 (línea 89): cambiar c.startsWith("comunify-") a c.includes("comunify-") (verbatim diff en 01-spec.md § Fix 2)
+        5. Re-run val-fe-1 (curl CSS bundle grep) — debe encontrar .bg-comunify-bg rule
+        6. Re-run val-fe-2 (playwright design-system.smoke 3/3 PASS)
+        7. Re-run val-fe-3 (full smoke ≥8 pass)
+        8. Re-run val-arch-1 + val-typecheck-1 (no regression)
+      Si HMR no refresca tras edit globals.css:
+        docker restart luana-dev-comunify_frontend_dev-1 && wait 5s, retry.

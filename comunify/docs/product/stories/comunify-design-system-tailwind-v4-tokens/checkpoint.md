@@ -1,17 +1,27 @@
 ---
 brand: comunify
 story_id: comunify-design-system-tailwind-v4-tokens
-state: idea
+state: ready
+state_transition_log:
+  - { from: idea, to: ready, at: 2026-05-18, by: /pm-comunify, reason: "Chris ratificó Opción A explícitamente. Per hotfix-repro-mandatory.md repro_verified=true permite skip /po-ux + /architect. Ready package compactado escrito (01-spec + 04-validators + 05-guidelines + 06-tickets)." }
 created: 2026-05-18
 last_updated: 2026-05-18
 parallel_safe: true
 owner: /pm-comunify
-next_handoff: /dev-team (hot-fix, scope quirúrgico — Chris ratifica skip /po-ux + /architect)
+next_handoff: /dev-team
 surface: [frontend, design-system]
 estimated_size: S
+estimated_minutes: 30
 origin: spawned by /pm-comunify autonomous run 2026-05-18 — validators deferred audit revealed silent ship of design-system cement merge db8a155
 hotfix: true
 repro_verified: true
+chris_ratified_option: A  # @theme block native v4
+ready_package_complete: true
+ready_package_files:
+  - 01-spec.md            # Gherkin SC-01..07 + test correction diffs
+  - 04-validators.yaml    # 6 validators (1 BE + 4 FE + 1 arch + 1 typecheck)
+  - 05-guidelines.md      # files in/out of scope + @theme template + skills/rules to load
+  - 06-tickets.yaml       # T-1 single ticket, handoff_notes para builder
 repro_evidence:
   brand: comunify
   command: "cd ${WS}/comunify/frontend && E2E_BASE_URL=http://localhost:3003 npx playwright test --project=smoke e2e/specs/smoke/design-system.smoke.spec.ts --reporter=list"
