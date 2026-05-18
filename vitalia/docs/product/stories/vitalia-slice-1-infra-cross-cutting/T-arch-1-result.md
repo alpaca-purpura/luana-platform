@@ -73,4 +73,4 @@ estas se deberán migrar a `bg-vitalia-bg font-body` en T-infra-1 (shell layout)
 
 ## Commit SHA pushed
 
-Ver git log — branch wip/vitalia-slice-1-shipping
+`d6f01b6` — branch `wip/vitalia-slice-1-shipping`

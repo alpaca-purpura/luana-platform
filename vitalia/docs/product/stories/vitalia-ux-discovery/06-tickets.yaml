@@ -50,7 +50,7 @@ tickets:
     sub_story: vitalia-slice-1-infra-cross-cutting
     title: ADR vitalia-001 shared-vs-fork decision + design tokens cement
     state: pushed
-    push_commit_sha: see-git-log-wip/vitalia-slice-1-shipping
+    push_commit_sha: d6f01b6
     scope: |
       Produce vitalia/docs/architecture/ADR-vitalia-001-shared-vs-fork.md documenting:
       - Decision: fork físico Slice 1 (Nicolify components copied to vitalia/frontend/ + token adapter)
