@@ -32,8 +32,13 @@ declare -A DOCKER_BY_BRAND
 if command -v docker &>/dev/null; then
   while IFS= read -r container; do
     [[ -z "$container" ]] && continue
-    # luana-{brand}-{service}-dev convention
-    if [[ "$container" =~ ^luana-([a-z]+)- ]]; then
+    # Soportar 2 naming conventions: luana-{brand}-{service}-dev y luana-dev-{brand}_{service}_dev-N
+    if [[ "$container" =~ ^luana-dev-([a-z]+)_ ]]; then
+      brand="${BASH_REMATCH[1]}"
+      # Skip "luana" prefix (postgres compartido se llama luana-dev-luana_postgres)
+      [[ "$brand" = "luana" ]] && continue
+      DOCKER_BY_BRAND["$brand"]=1
+    elif [[ "$container" =~ ^luana-([a-z]+)- ]]; then
       brand="${BASH_REMATCH[1]}"
       DOCKER_BY_BRAND["$brand"]=1
     fi

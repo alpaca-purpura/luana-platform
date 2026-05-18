@@ -1037,24 +1037,18 @@ fi
 
 # ─────────────────────────────────────────────────────────────────
 # Section 11 — Worktree D11 enforcement (added 2026-05-18 ADR-005)
-# Block direct commit to main unless commit is a squash-merge marker
-# or trivial docs/chore. Squash-merge to main is /pm-{brand} territory.
+# Block direct commit to main unless squash-merge/merge in progress.
+# Pre-commit no puede leer commit message (eso es commit-msg hook);
+# usamos signal git-native: .git/SQUASH_MSG | .git/MERGE_MSG.
 # ─────────────────────────────────────────────────────────────────
 if [[ "${GATE_LEVEL:-light}" = "full" ]]; then
   CURRENT_BRANCH="$(git branch --show-current 2>/dev/null || echo '')"
   if [[ "${CURRENT_BRANCH}" = "main" ]]; then
-    # Commit message file passed as $1 to commit-msg hook, not pre-commit.
-    # For pre-commit we check via env COMMIT_MSG_FILE if available, else GIT_COMMIT_MSG.
-    COMMIT_MSG=""
-    if [[ -n "${GIT_COMMIT_MSG:-}" ]]; then
-      COMMIT_MSG="${GIT_COMMIT_MSG}"
-    elif [[ -f "${COMMIT_MSG_FILE:-/dev/null}" ]]; then
-      COMMIT_MSG="$(cat "${COMMIT_MSG_FILE}" 2>/dev/null || true)"
-    fi
-
-    # Allow if message contains explicit squash-merge marker or "shipped"
-    if [[ "${COMMIT_MSG}" =~ shipped|squash-merge|Squash[[:space:]]merge ]]; then
-      :  # OK, /pm-{brand} squash-merge
+    GIT_DIR="$(git rev-parse --git-dir 2>/dev/null || echo '.git')"
+    if [[ -f "${GIT_DIR}/SQUASH_MSG" ]] || [[ -f "${GIT_DIR}/MERGE_MSG" ]]; then
+      :  # OK — squash-merge o merge en progreso (/pm-{brand} territory)
+    elif [[ -n "${LUANA_ALLOW_MAIN_COMMIT:-}" ]]; then
+      :  # OK — bypass explícito (meta-commits del worktree-protocol)
     else
       printf "\033[31m"
       cat <<'EOF'
@@ -1069,10 +1063,11 @@ main están prohibidos.
 Acciones:
   1. Si esto es WIP: crear worktree wip/* primero:
      scripts/git/new-session.sh <brand> <type> <slug>
-  2. Si esto es squash-merge intencional: incluir 'shipped' o
-     'squash-merge' en el commit message para confirmar.
-  3. Si esto es docs/chore trivial: incluir 'shipped' explícito
-     o usar wip/platform-docs-* branch.
+  2. Si esto es squash-merge: el flow correcto es
+     `git merge --squash wip/<branch>` + `git commit` —
+     pre-commit detecta .git/SQUASH_MSG automáticamente.
+  3. Si esto es meta-commit del protocolo:
+     LUANA_ALLOW_MAIN_COMMIT=1 git commit -m "..."
 
 NEVER use --no-verify.
 ─────────────────────────────────────────────────────────────
