@@ -2,8 +2,8 @@ import type { Config } from "tailwindcss";
 
 /**
  * Tailwind CSS config for @luana/comunify-web.
- * @luana/ui design tokens are consumed via CSS variables at runtime (T-scaffold-1).
- * Full token integration with @luana/design-tokens + comunify brand palette wired in T-fe-3.
+ * Full Comunify brand palette wired (T-1 design-system-cement).
+ * CSS vars live in globals.css :root — consumed here via hsl(var(--x)).
  */
 const config: Config = {
   content: [
@@ -15,17 +15,40 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      // Comunify brand tokens (seed values — full palette in T-fe-3)
       colors: {
-        // Primary palette: creator-economy warm
+        // Primary palette
         "comunify-primary": "hsl(var(--comunify-primary))",
         "comunify-primary-foreground": "hsl(var(--comunify-primary-foreground))",
-        // Accent: community engagement
+        "comunify-primary-fg": "hsl(var(--comunify-primary-foreground))",
+        "comunify-primary-hover": "hsl(var(--comunify-primary-hover))",
+        "comunify-purple-mid": "hsl(var(--comunify-purple-mid))",
+        // Tech / trust
+        "comunify-blue": "hsl(var(--comunify-blue))",
+        "comunify-blue-deep": "hsl(var(--comunify-blue-deep))",
+        // CTA conversion (coral)
         "comunify-accent": "hsl(var(--comunify-accent))",
-        // Community safety severity palette
-        "comunify-critical": "hsl(var(--comunify-critical))",
-        "comunify-warning": "hsl(var(--comunify-warning))",
+        // Semantic
         "comunify-stable": "hsl(var(--comunify-stable))",
+        "comunify-warning": "hsl(var(--comunify-warning))",
+        "comunify-critical": "hsl(var(--comunify-critical))",
+        // Neutral / layout
+        "comunify-text": "hsl(var(--comunify-text))",
+        "comunify-text-muted": "hsl(var(--comunify-text-muted))",
+        "comunify-bg": "hsl(var(--comunify-bg))",
+        "comunify-surface": "hsl(var(--comunify-surface))",
+        "comunify-border": "hsl(var(--comunify-border))",
+      },
+      backgroundImage: {
+        "comunify-gradient": "var(--comunify-gradient)",
+      },
+      fontFamily: {
+        satoshi: ["var(--font-satoshi)", "ui-sans-serif", "system-ui", "sans-serif"],
+        manrope: ["var(--font-manrope)", "ui-sans-serif", "system-ui", "sans-serif"],
+        inter: ["var(--font-inter)", "ui-sans-serif", "system-ui", "sans-serif"],
+      },
+      borderRadius: {
+        DEFAULT: "var(--radius)",
+        lg: "var(--radius-lg)",
       },
     },
   },

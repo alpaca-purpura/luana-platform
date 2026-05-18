@@ -19,13 +19,13 @@ export default async function PublicSubscribePage({
   const { "creator-handle": handle } = await params;
   const { offer_id } = await searchParams;
   return (
-    <main className="min-h-screen bg-gray-50 py-12">
+    <main className="min-h-screen bg-comunify-bg py-12">
       <div className="mx-auto max-w-md px-4">
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold text-comunify-text">
           Suscribirse a {handle}
         </h1>
         {offer_id && (
-          <p className="mt-2 text-sm text-gray-500">Oferta: {offer_id}</p>
+          <p className="mt-2 text-sm text-comunify-text-muted">Oferta: {offer_id}</p>
         )}
       </div>
     </main>

@@ -14,8 +14,8 @@ export default async function SubscriptionDetailPage({
   const { id } = await params;
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900">Suscripción</h1>
-      <p className="mt-2 text-sm text-gray-500">ID: {id}</p>
+      <h1 className="text-2xl font-bold text-comunify-text">Suscripción</h1>
+      <p className="mt-2 text-sm text-comunify-text-muted">ID: {id}</p>
     </div>
   );
 }

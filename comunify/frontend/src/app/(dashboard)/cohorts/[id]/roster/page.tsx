@@ -12,8 +12,8 @@ export default async function CohortRosterPage({ params }: CohortRosterPageProps
   const { id } = await params;
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900">Participantes</h1>
-      <p className="mt-2 text-sm text-gray-500">Cohorte: {id}</p>
+      <h1 className="text-2xl font-bold text-comunify-text">Participantes</h1>
+      <p className="mt-2 text-sm text-comunify-text-muted">Cohorte: {id}</p>
     </div>
   );
 }

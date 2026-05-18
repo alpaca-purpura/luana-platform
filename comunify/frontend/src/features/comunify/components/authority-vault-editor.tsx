@@ -23,9 +23,9 @@ const TAB_LABELS: Record<VaultTab, string> = {
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, string> = {
-    valid: "bg-green-100 text-green-700",
-    invalid: "bg-red-100 text-red-700",
-    unverified: "bg-gray-100 text-gray-600",
+    valid: "bg-comunify-stable/10 text-comunify-stable",
+    invalid: "bg-comunify-critical/10 text-comunify-critical",
+    unverified: "bg-comunify-bg text-comunify-text-muted",
   };
   const labels: Record<string, string> = {
     valid: "Verificado",

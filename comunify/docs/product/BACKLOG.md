@@ -1,13 +1,13 @@
 # Comunify Backlog (auto-generated)
 
-> Generated at: `2026-05-17T20:06:07+00:00`
+> Generated at: `2026-05-18T07:27:49+00:00`
 > DO NOT EDIT MANUALLY — modify source artifacts.
 > Regenerate: `python scripts/generate_backlog.py`
 
 ## 📊 Roadmap view (filtered + curated)
 
 ### 💡 Ideas (1)
-- comunify-design-system-cement `[story]`
+- comunify-warning-token-contrast-fix `[story]`
 
 ### 🔬 Refining (0 total · 0 cap-eligible / cap 3)
 - _(none)_
@@ -39,7 +39,7 @@
 ```mermaid
 kanban
   💡 Ideas (1)
-    comunify-design-system-cement[comunify-design-system-cement]
+    comunify-warning-token-contras[comunify-warning-token-contrast-fix]
   🔬 Refining (0 / cap 3)
   ✅ Refined (0 / cap 5)
   📦 Ready (0 / cap 5)
@@ -61,11 +61,12 @@ kanban
 | cohorts | 1 | 0 | 0 | 0 | 1 |
 | copilot | 3 | 0 | 0 | 0 | 3 |
 | fixtures | 1 | 0 | 0 | 0 | 1 |
+| frontend_design_system | 1 | 0 | 0 | 0 | 1 |
 | iam | 1 | 0 | 0 | 0 | 1 |
 | offer_studio | 2 | 0 | 0 | 0 | 2 |
 | onboarding | 1 | 0 | 0 | 0 | 1 |
 | payment | 1 | 0 | 0 | 0 | 1 |
 | platform | 1 | 0 | 0 | 0 | 1 |
 | public_landing | 1 | 0 | 0 | 0 | 1 |
-| **TOTAL** | **17** | **0** | **0** | **0** | **17** |
+| **TOTAL** | **18** | **0** | **0** | **0** | **18** |
 

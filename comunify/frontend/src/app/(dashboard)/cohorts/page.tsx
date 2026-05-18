@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 export default function CohortsListPage() {
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900">Cohortes</h1>
+      <h1 className="text-2xl font-bold text-comunify-text">Cohortes</h1>
     </div>
   );
 }

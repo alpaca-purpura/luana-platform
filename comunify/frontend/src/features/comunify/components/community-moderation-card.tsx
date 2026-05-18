@@ -18,9 +18,9 @@ const ACTION_LABELS: Record<ModerationAction, string> = {
 };
 
 const ACTION_STYLES: Record<ModerationAction, string> = {
-  approve: "bg-green-600 hover:bg-green-700 text-white",
-  reject: "bg-yellow-600 hover:bg-yellow-700 text-white",
-  ban: "bg-red-600 hover:bg-red-700 text-white",
+  approve: "bg-comunify-stable hover:bg-comunify-stable/90 text-white",
+  reject: "bg-comunify-warning hover:bg-comunify-warning/90 text-white",
+  ban: "bg-comunify-critical hover:bg-comunify-critical/90 text-white",
 };
 
 export function CommunityModerationCard({
@@ -72,10 +72,10 @@ export function CommunityModerationCard({
         <span
           className={cn(
             "rounded-full px-2 py-0.5 text-xs font-medium",
-            post.status === "pending_moderation" && "bg-yellow-100 text-yellow-700",
-            post.status === "approved" && "bg-green-100 text-green-700",
-            post.status === "rejected" && "bg-red-100 text-red-700",
-            post.status === "removed" && "bg-gray-100 text-gray-700"
+            post.status === "pending_moderation" && "bg-comunify-warning/10 text-comunify-warning",
+            post.status === "approved" && "bg-comunify-stable/10 text-comunify-stable",
+            post.status === "rejected" && "bg-comunify-critical/10 text-comunify-critical",
+            post.status === "removed" && "bg-comunify-bg text-comunify-text"
           )}
         >
           {post.status}

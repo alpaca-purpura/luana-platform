@@ -51,7 +51,7 @@ export function VoiceDistilledPreview({ compiledVoice, isLoading, className }: V
     <div className={cn("flex flex-col gap-3", className)} aria-label="Vista previa de voz destilada">
       <div className="flex items-center justify-between">
         <h3 className="font-semibold">Vista previa de voz</h3>
-        <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+        <span className="rounded-full bg-comunify-stable/10 px-2 py-0.5 text-xs font-medium text-comunify-stable">
           Destilado
         </span>
       </div>

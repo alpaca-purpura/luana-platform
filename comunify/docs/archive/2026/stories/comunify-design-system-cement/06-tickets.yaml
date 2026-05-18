@@ -1,0 +1,506 @@
+# 06-tickets.yaml — Comunify Design System Cement (FE)
+#
+# Owner: /architect (autonomous mode — Chris pre-authorized via /pm-comunify).
+# Schema: per docs/specs/templates/04-tickets-template.yaml
+#
+# All tickets surface=FE, production_code=true except T-2 + T-4 (tests-only — see flags).
+# Per R23: FE non-agentic → owner pool [qwen-opencode, claude-sonnet, claude-opus].
+# Sonnet preferred (cheap + capable for FE non-agentic per cost-routing CLAUDE.md).
+# No Opus required for this story.
+#
+# Estimates conservative; each ticket includes scope + validators_target + deps.
+
+---
+story_id: comunify-design-system-cement
+sprint: n/a (post-pm-redesign vocab — no PI/sprint)
+pi: n/a
+generated_at: 2026-05-18T00:00Z
+generated_by: /architect (autonomous mode)
+total_tickets: 8
+estimated_total_hours: 9
+
+# ── Resumen pila (alto nivel) ────────────────
+summary:
+  - id: T-1
+    title: "Foundation — globals.css + layout.tsx fonts + tailwind.config.ts extend"
+    surface: FE
+    owner_pool: [qwen-opencode, claude-sonnet, claude-opus]
+    state: ready
+    blocks: [T-2, T-3a, T-3b, T-3c, T-3d, T-4, T-5]
+
+  - id: T-2
+    title: "Arch fitness — test-no-stock-palette.test.ts + allowlist JSON (baseline RED)"
+    surface: FE
+    owner_pool: [qwen-opencode, claude-sonnet, claude-opus]
+    state: ready
+    blocked_by: [T-1]
+    blocks: [T-3a, T-3b, T-3c, T-3d, T-5]
+
+  - id: T-3a
+    title: "Migrate dashboard files (9) — src/app/(dashboard)/**"
+    surface: FE
+    owner_pool: [qwen-opencode, claude-sonnet, claude-opus]
+    state: ready
+    blocked_by: [T-1, T-2]
+    blocks: [T-4, T-5]
+
+  - id: T-3b
+    title: "Migrate features/comunify/components (7 files)"
+    surface: FE
+    owner_pool: [qwen-opencode, claude-sonnet, claude-opus]
+    state: ready
+    blocked_by: [T-1, T-2]
+    blocks: [T-4, T-5]
+
+  - id: T-3c
+    title: "Migrate auth + onboarding + public + landing (6 files)"
+    surface: FE
+    owner_pool: [qwen-opencode, claude-sonnet, claude-opus]
+    state: ready
+    blocked_by: [T-1, T-2]
+    blocks: [T-4, T-5]
+
+  - id: T-3d
+    title: "Audit utility file — format-engagement-bucket.ts"
+    surface: FE
+    owner_pool: [qwen-opencode, claude-sonnet, claude-opus]
+    state: ready
+    blocked_by: [T-1, T-2]
+    blocks: [T-5]
+
+  - id: T-4
+    title: "Playwright smoke — design-system.smoke.spec.ts (3 tests)"
+    surface: FE
+    owner_pool: [qwen-opencode, claude-sonnet, claude-opus]
+    state: ready
+    blocked_by: [T-3a, T-3b, T-3c]
+    blocks: [T-5]
+
+  - id: T-5
+    title: "Final validators bundle + bundle size sanity"
+    surface: FE
+    owner_pool: [qwen-opencode, claude-sonnet, claude-opus]
+    state: ready
+    blocked_by: [T-1, T-2, T-3a, T-3b, T-3c, T-3d, T-4]
+    blocks: []
+
+# ── Detalle (uno por ticket) ─────────────────
+tickets:
+  # ════════════════════════════════════════════════════════════
+  - id: T-1
+    title: "Foundation — globals.css + layout.tsx fonts + tailwind.config.ts extend"
+    type: frontend
+    surface: FE
+    production_code: true
+    state: ready
+    owner_eligibility:
+      qwen_opencode: true
+      claude_sonnet: true
+      claude_opus_required: false
+    priority: 1
+    estimate_hours: 1.5
+    decisions_applicable: [D1, D2, D5]
+    inputs:
+      spec: "../01-spec.md"
+      arch_doc: "../03-arch.md#3-css-architecture-globalscss"
+      story_yaml: "../checkpoint.md"
+      design_system_ssot: "../../../architecture/design-system.md"
+      rules:
+        - ".claude/rules/frontend-fsd.md"
+        - ".claude/rules/frontend-quality.md"
+        - ".claude/rules/anti-duplication.md"
+        - ".claude/rules/tdd-mandatory.md"
+      domain_skills: ["frontend-expert"]
+    deliverables:
+      - "CREATE comunify/frontend/src/app/globals.css with @import 'tailwindcss' + :root containing 15 CSS vars + --radius + --radius-lg + --comunify-gradient (literal HEX permitted here ONLY) — verbatim from design-system.md §4"
+      - "MODIFY comunify/frontend/src/app/layout.tsx — import './globals.css', add next/font/google Manrope + Inter + Plus_Jakarta_Sans (Path B fallback for Satoshi per D2) with variable: '--font-{name}', apply 3 .variable classNames to <html>, set body className to 'min-h-screen bg-comunify-bg font-inter text-comunify-text antialiased'"
+      - "MODIFY comunify/frontend/tailwind.config.ts — extend theme.extend.colors with 15 slots (comunify-primary + alias comunify-primary-fg + comunify-primary-foreground for forward compat + comunify-primary-hover + comunify-purple-mid + comunify-blue + comunify-blue-deep + comunify-accent + comunify-stable + comunify-warning + comunify-critical + comunify-text + comunify-text-muted + comunify-bg + comunify-surface + comunify-border) + backgroundImage.comunify-gradient + fontFamily.{satoshi,manrope,inter} arrays + borderRadius.{DEFAULT,lg} mapping to vars. Preserve content globs unchanged."
+      - "CREATE comunify/frontend/src/app/__tests__/layout.test.tsx — Vitest unit asserting <html> className contains '--font-satoshi' '--font-manrope' '--font-inter' substrings + body className contains 'bg-comunify-bg' 'font-inter' 'text-comunify-text'. Named test 'font-satoshi var present' for filter targeting"
+      - "OPTIONAL: if comunify/frontend/src/assets/fonts/Satoshi-Bold.woff2 exists at impl time, switch to Path A (next/font/local) — document choice in T-1-impl-log.md"
+    out_of_scope:
+      - "Migration of any component files (T-3a/b/c/d)"
+      - "Arch fitness test (T-2)"
+      - "Playwright smoke (T-4)"
+      - "Modifying vitest.config.ts or playwright.config.ts (no changes needed)"
+      - "Adding npm dependencies (Plus_Jakarta_Sans available in @next/font google list, no install)"
+    acceptance:
+      - { id: A1, description: "globals.css exists with @import tailwindcss + 15 CSS vars + --radius + --radius-lg + --comunify-gradient (matches design-system.md §4 verbatim)", verifier: { type: bash, cmd: "grep -E '^\\s*--comunify-(primary|primary-foreground|primary-hover|purple-mid|blue|blue-deep|accent|stable|warning|critical|text|text-muted|bg|surface|border|gradient)' comunify/frontend/src/app/globals.css | wc -l" } }
+      - { id: A2, description: "layout.tsx imports globals.css + 3 fonts + applies 3 .variable to <html>", verifier: { type: bash, cmd: "grep -E '(import.*globals\\.css|next/font/local|next/font/google|--font-satoshi|--font-manrope|--font-inter|\\$\\{.*\\.variable\\})' comunify/frontend/src/app/layout.tsx | wc -l" } }
+      - { id: A3, description: "tailwind.config.ts extends with 15 color slots + gradient + 3 fontFamily + 2 borderRadius", verifier: { type: bash, cmd: "grep -E '(comunify-primary|comunify-stable|comunify-warning|comunify-critical|comunify-text|comunify-bg|comunify-surface|comunify-border|comunify-gradient|satoshi|manrope|inter|--radius)' comunify/frontend/tailwind.config.ts | wc -l" } }
+      - { id: A4, description: "Vitest layout.test.tsx passes — font vars present + body className matches", verifier: { type: vitest, path: "comunify/frontend/src/app/__tests__/layout.test.tsx" } }
+      - { id: A5, description: "next build succeeds without missing-module errors", verifier: { type: shell, cmd: "cd comunify/frontend && npx next build" } }
+    quality_gates:
+      - "fe_typecheck GREEN"
+      - "fe_lint GREEN"
+      - "fe_unit_tests_full GREEN (including new layout.test.tsx)"
+      - "fe_build GREEN"
+    depends_on: []
+    blocks: ["T-2", "T-3a", "T-3b", "T-3c", "T-3d", "T-4", "T-5"]
+    transitions:
+      - { state: draft, at: "2026-05-18T00:00Z", by: "/architect" }
+      - { state: ready, at: "2026-05-18T00:00Z", by: "/architect" }
+    assigned_to: null
+
+  # ════════════════════════════════════════════════════════════
+  - id: T-2
+    title: "Arch fitness — test-no-stock-palette.test.ts + allowlist JSON (baseline RED)"
+    type: tests
+    surface: FE
+    production_code: false        # R23 — tests/ only, but ratchet enforces production code quality
+    state: ready
+    owner_eligibility:
+      qwen_opencode: true
+      claude_sonnet: true
+      claude_opus_required: false
+    priority: 1
+    estimate_hours: 1
+    decisions_applicable: [D4, D5, D8]
+    inputs:
+      spec: "../01-spec.md"
+      arch_doc: "../03-arch.md#7-arch-fitness-test-design-test-no-stock-palettetestts"
+      rules:
+        - ".claude/rules/tdd-mandatory.md"
+        - ".claude/rules/anti-duplication.md"
+      domain_skills: ["frontend-expert"]
+    deliverables:
+      - "CREATE comunify/frontend/src/__tests__/architecture/test-no-stock-palette.test.ts implementing exact spec from 03-arch.md §7 — 3 tests: stock palette regex, HEX literal regex (literal + arbitrary), shrink-only allowlist assertion"
+      - "CREATE comunify/frontend/src/__tests__/architecture/_stock-palette-allowlist.json with content '[]' (empty array — clean slate baseline)"
+      - "Verify test runs and produces baseline RED with ~107 violations listed (one per occurrence). Capture output in T-2-impl-log.md as reference for T-3 migration progress tracking."
+      - "Tests MUST be importable / runnable with vitest 2.x + happy-dom env (no jsdom-only APIs)"
+    out_of_scope:
+      - "Migration of any component files (T-3a/b/c/d)"
+      - "Modifying globals.css or layout.tsx (T-1)"
+      - "Adding entries to allowlist (only empty array — additions justified later via separate PRs)"
+    acceptance:
+      - { id: A1, description: "test-no-stock-palette.test.ts exists + has 3 describe blocks", verifier: { type: bash, cmd: "grep -cE '(describe|it)\\(' comunify/frontend/src/__tests__/architecture/test-no-stock-palette.test.ts" } }
+      - { id: A2, description: "_stock-palette-allowlist.json exists with empty array", verifier: { type: bash, cmd: "test \"$(cat comunify/frontend/src/__tests__/architecture/_stock-palette-allowlist.json)\" = '[]'" } }
+      - { id: A3, description: "Test runs and FAILS at baseline (RED) — ~107 violations detected (sanity: > 50)", verifier: { type: shell, cmd: "cd comunify/frontend && (npx vitest run src/__tests__/architecture/test-no-stock-palette.test.ts --reporter=default 2>&1 | grep -E 'violation|FAIL' || true) | head -20" } }
+    quality_gates:
+      - "fe_typecheck GREEN (test file compiles)"
+      - "fe_lint GREEN"
+      - "Test file itself produces meaningful violation output (manual inspection by builder)"
+    depends_on: ["T-1"]
+    blocks: ["T-3a", "T-3b", "T-3c", "T-3d", "T-5"]
+    transitions:
+      - { state: draft, at: "2026-05-18T00:00Z", by: "/architect" }
+      - { state: ready, at: "2026-05-18T00:00Z", by: "/architect" }
+    assigned_to: null
+
+  # ════════════════════════════════════════════════════════════
+  - id: T-3a
+    title: "Migrate dashboard files (9) — src/app/(dashboard)/**"
+    type: frontend
+    surface: FE
+    production_code: true
+    state: ready
+    owner_eligibility:
+      qwen_opencode: true
+      claude_sonnet: true
+      claude_opus_required: false
+    priority: 2
+    estimate_hours: 1.5
+    decisions_applicable: [D3, D6]
+    inputs:
+      spec: "../01-spec.md"
+      arch_doc: "../03-arch.md#6-token-migration-mechanics"
+      guidelines: "../05-guidelines.md#7-migration-map-canonical--follow-11"
+      rules:
+        - ".claude/rules/frontend-fsd.md"
+        - ".claude/rules/frontend-quality.md"
+        - ".claude/rules/spanish-text.md"
+      domain_skills: ["frontend-expert"]
+    deliverables:
+      - "MIGRATE comunify/frontend/src/app/(dashboard)/page.tsx per migration map"
+      - "MIGRATE comunify/frontend/src/app/(dashboard)/layout.tsx per migration map"
+      - "MIGRATE comunify/frontend/src/app/(dashboard)/brand-studio/page.tsx"
+      - "MIGRATE comunify/frontend/src/app/(dashboard)/cohorts/page.tsx"
+      - "MIGRATE comunify/frontend/src/app/(dashboard)/cohorts/[id]/broadcasts/page.tsx"
+      - "MIGRATE comunify/frontend/src/app/(dashboard)/cohorts/[id]/roster/page.tsx"
+      - "MIGRATE comunify/frontend/src/app/(dashboard)/offers/page.tsx"
+      - "MIGRATE comunify/frontend/src/app/(dashboard)/offers/[id]/page.tsx"
+      - "MIGRATE comunify/frontend/src/app/(dashboard)/subscriptions/[id]/page.tsx"
+      - "After migration: arch fitness test_no_stock_palette progressively reduces violations from baseline ~107 toward goal 0"
+      - "NO LOGIC CHANGES — color/class only. Preserve all data flow, hooks, server-component vs client-component split, copy strings (Spanish neutro preserved verbatim unless voseo encountered → fix inline per spanish-text.md)"
+    out_of_scope:
+      - "Other migrations (T-3b/c/d cover them)"
+      - "Refactoring component structure or adding features"
+      - "Adding tests for migrated components (no logic change → existing tests cover)"
+    acceptance:
+      - { id: A1, description: "9 dashboard files migrated — zero stock palette classes remaining in those paths", verifier: { type: bash, cmd: "! grep -rE '\\b(bg|text|border|ring|hover:bg|hover:text|hover:border)-(gray|green|yellow|red|blue|emerald|amber|rose|sky|violet|purple|pink|orange|teal|cyan|indigo|fuchsia)-[0-9]+\\b' comunify/frontend/src/app/\\(dashboard\\)/" } }
+      - { id: A2, description: "fe_typecheck GREEN post-migration", verifier: { type: shell, cmd: "cd comunify/frontend && npx tsc --noEmit" } }
+      - { id: A3, description: "fe_lint GREEN post-migration", verifier: { type: shell, cmd: "cd comunify/frontend && npx eslint src/app/\\(dashboard\\)/ --cache --cache-location .eslintcache" } }
+      - { id: A4, description: "Existing components/smoke.test.tsx GREEN (no regression)", verifier: { type: vitest, path: "comunify/frontend/src/__tests__/components/smoke.test.tsx" } }
+    quality_gates:
+      - "Arch fitness shows reduced violation count (track in T-3a-impl-log.md before/after)"
+      - "No regression in existing tests"
+    depends_on: ["T-1", "T-2"]
+    blocks: ["T-4", "T-5"]
+    transitions:
+      - { state: draft, at: "2026-05-18T00:00Z", by: "/architect" }
+      - { state: ready, at: "2026-05-18T00:00Z", by: "/architect" }
+    assigned_to: null
+
+  # ════════════════════════════════════════════════════════════
+  - id: T-3b
+    title: "Migrate features/comunify/components (7 files)"
+    type: frontend
+    surface: FE
+    production_code: true
+    state: ready
+    owner_eligibility:
+      qwen_opencode: true
+      claude_sonnet: true
+      claude_opus_required: false
+    priority: 2
+    estimate_hours: 1.5
+    decisions_applicable: [D3, D6]
+    inputs:
+      spec: "../01-spec.md"
+      arch_doc: "../03-arch.md#6-token-migration-mechanics"
+      guidelines: "../05-guidelines.md#7-migration-map-canonical--follow-11"
+      rules:
+        - ".claude/rules/frontend-fsd.md"
+        - ".claude/rules/frontend-quality.md"
+        - ".claude/rules/spanish-text.md"
+      domain_skills: ["frontend-expert"]
+    deliverables:
+      - "MIGRATE authority-vault-editor.tsx"
+      - "MIGRATE cohort-broadcast-composer.tsx"
+      - "MIGRATE community-moderation-card.tsx"
+      - "MIGRATE dunning-active-banner.tsx"
+      - "MIGRATE ladder-visualizer.tsx"
+      - "MIGRATE voice-distilled-preview.tsx"
+      - "MIGRATE voice-samples-uploader.tsx"
+      - "Pay extra attention to severity moderation patterns in community-moderation-card.tsx: stable/warning/critical token mapping per design-system.md §1 'Moderation severity' row"
+      - "Preserve Spanish neutro copy verbatim (fix voseo inline if found)"
+    out_of_scope:
+      - "Other migrations (T-3a/c/d)"
+      - "Refactor of component logic/state"
+    acceptance:
+      - { id: A1, description: "7 component files migrated — zero stock palette classes", verifier: { type: bash, cmd: "! grep -rE '\\b(bg|text|border|ring|hover:bg|hover:text|hover:border)-(gray|green|yellow|red|blue|emerald|amber|rose|sky|violet|purple|pink|orange|teal|cyan|indigo|fuchsia)-[0-9]+\\b' comunify/frontend/src/features/comunify/components/" } }
+      - { id: A2, description: "fe_typecheck GREEN", verifier: { type: shell, cmd: "cd comunify/frontend && npx tsc --noEmit" } }
+      - { id: A3, description: "fe_lint GREEN", verifier: { type: shell, cmd: "cd comunify/frontend && npx eslint src/features/comunify/ --cache" } }
+    quality_gates:
+      - "Arch fitness reduction continues"
+      - "No regression existing tests"
+    depends_on: ["T-1", "T-2"]
+    blocks: ["T-4", "T-5"]
+    transitions:
+      - { state: draft, at: "2026-05-18T00:00Z", by: "/architect" }
+      - { state: ready, at: "2026-05-18T00:00Z", by: "/architect" }
+    assigned_to: null
+
+  # ════════════════════════════════════════════════════════════
+  - id: T-3c
+    title: "Migrate auth + onboarding + public + landing (6 files)"
+    type: frontend
+    surface: FE
+    production_code: true
+    state: ready
+    owner_eligibility:
+      qwen_opencode: true
+      claude_sonnet: true
+      claude_opus_required: false
+    priority: 2
+    estimate_hours: 1
+    decisions_applicable: [D3, D6]
+    inputs:
+      spec: "../01-spec.md"
+      arch_doc: "../03-arch.md#6-token-migration-mechanics"
+      guidelines: "../05-guidelines.md#7-migration-map-canonical--follow-11"
+      rules:
+        - ".claude/rules/frontend-fsd.md"
+        - ".claude/rules/frontend-quality.md"
+        - ".claude/rules/spanish-text.md"
+      domain_skills: ["frontend-expert"]
+    deliverables:
+      - "MIGRATE comunify/frontend/src/app/(auth)/sign-in/page.tsx"
+      - "MIGRATE comunify/frontend/src/app/(auth)/sign-up/page.tsx"
+      - "MIGRATE comunify/frontend/src/app/onboarding/layout.tsx — onboarding progress bar gets bg-comunify-gradient (per spec wireframe + design-system.md §1 'Hero / onboarding' combination)"
+      - "MIGRATE comunify/frontend/src/app/page.tsx (landing root)"
+      - "MIGRATE comunify/frontend/src/app/public/[creator-handle]/page.tsx"
+      - "MIGRATE comunify/frontend/src/app/public/[creator-handle]/subscribe/page.tsx"
+    out_of_scope:
+      - "Other migrations (T-3a/b/d)"
+    acceptance:
+      - { id: A1, description: "6 files migrated — zero stock palette in those paths", verifier: { type: bash, cmd: "! grep -rE '\\b(bg|text|border|ring|hover:bg|hover:text|hover:border)-(gray|green|yellow|red|blue|emerald|amber|rose|sky|violet|purple|pink|orange|teal|cyan|indigo|fuchsia)-[0-9]+\\b' comunify/frontend/src/app/\\(auth\\)/ comunify/frontend/src/app/onboarding/ comunify/frontend/src/app/page.tsx comunify/frontend/src/app/public/" } }
+      - { id: A2, description: "Onboarding progress bar uses bg-comunify-gradient class", verifier: { type: bash, cmd: "grep -E 'bg-comunify-gradient' comunify/frontend/src/app/onboarding/layout.tsx" } }
+      - { id: A3, description: "fe_typecheck + fe_lint GREEN", verifier: { type: shell, cmd: "cd comunify/frontend && npx tsc --noEmit && npx eslint src/app/\\(auth\\)/ src/app/onboarding/ src/app/page.tsx src/app/public/ --cache" } }
+    quality_gates:
+      - "Arch fitness reduction continues"
+    depends_on: ["T-1", "T-2"]
+    blocks: ["T-4", "T-5"]
+    transitions:
+      - { state: draft, at: "2026-05-18T00:00Z", by: "/architect" }
+      - { state: ready, at: "2026-05-18T00:00Z", by: "/architect" }
+    assigned_to: null
+
+  # ════════════════════════════════════════════════════════════
+  - id: T-3d
+    title: "Audit utility file — format-engagement-bucket.ts"
+    type: frontend
+    surface: FE
+    production_code: true
+    state: ready
+    owner_eligibility:
+      qwen_opencode: true
+      claude_sonnet: true
+      claude_opus_required: false
+    priority: 3
+    estimate_hours: 0.5
+    decisions_applicable: [D3]
+    inputs:
+      spec: "../01-spec.md"
+      arch_doc: "../03-arch.md#6-token-migration-mechanics"
+      rules:
+        - ".claude/rules/frontend-fsd.md"
+      domain_skills: ["frontend-expert"]
+    deliverables:
+      - "Read comunify/frontend/src/features/comunify/utils/format-engagement-bucket.ts"
+      - "If file returns Tailwind class strings (e.g., for engagement bucket badge color) → MIGRATE those strings per migration map"
+      - "If file is pure semantic logic (just bucket names without Tailwind classes) → no change needed, document NO-OP in T-3d-impl-log.md with reasoning"
+      - "After: arch fitness GREEN (0 violations) — this is the final migration ticket"
+    out_of_scope:
+      - "Refactoring utility into component (it's a util file by design)"
+      - "Other migrations (already done in T-3a/b/c)"
+    acceptance:
+      - { id: A1, description: "format-engagement-bucket.ts has zero stock palette classes", verifier: { type: bash, cmd: "! grep -E '\\b(bg|text|border|ring|hover:bg|hover:text|hover:border)-(gray|green|yellow|red|blue|emerald|amber|rose|sky|violet|purple|pink|orange|teal|cyan|indigo|fuchsia)-[0-9]+\\b' comunify/frontend/src/features/comunify/utils/format-engagement-bucket.ts" } }
+      - { id: A2, description: "Arch fitness fe_arch_fitness_no_stock_palette GREEN (0 violations across all src/**)", verifier: { type: vitest, path: "comunify/frontend/src/__tests__/architecture/test-no-stock-palette.test.ts" } }
+      - { id: A3, description: "Allowlist still empty (no entries added without justification)", verifier: { type: bash, cmd: "test \"$(cat comunify/frontend/src/__tests__/architecture/_stock-palette-allowlist.json)\" = '[]'" } }
+    quality_gates:
+      - "Arch fitness FULLY GREEN — story migration complete"
+    depends_on: ["T-1", "T-2"]
+    blocks: ["T-5"]
+    transitions:
+      - { state: draft, at: "2026-05-18T00:00Z", by: "/architect" }
+      - { state: ready, at: "2026-05-18T00:00Z", by: "/architect" }
+    assigned_to: null
+
+  # ════════════════════════════════════════════════════════════
+  - id: T-4
+    title: "Playwright smoke — design-system.smoke.spec.ts (3 tests)"
+    type: tests
+    surface: FE
+    production_code: false        # R23 — e2e tests/, no src/ changes
+    state: ready
+    owner_eligibility:
+      qwen_opencode: true
+      claude_sonnet: true
+      claude_opus_required: false
+    priority: 3
+    estimate_hours: 1
+    decisions_applicable: [D7, D8]
+    inputs:
+      spec: "../01-spec.md#playwright-graders-proyecto-smoke"
+      arch_doc: "../03-arch.md#8-playwright-smoke-spec-design-design-systemsmokespects"
+      rules:
+        - ".claude/rules/e2e-testing.md"
+        - ".claude/rules/tdd-mandatory.md"
+      domain_skills: ["playwright-expert", "frontend-expert"]
+    deliverables:
+      - "CREATE comunify/frontend/e2e/specs/smoke/design-system.smoke.spec.ts implementing the 3 tests from 03-arch.md §8 verbatim: (1) font CSS vars on <html>, (2) body bg/text matches comunify-bg/comunify-text computed colors, (3) /sign-in inherits comunify tokens (any element with class starting 'comunify-' present)"
+      - "Run native (NEVER make e2e* per e2e-testing.md): `cd comunify/frontend && E2E_BASE_URL=http://localhost:3003 COMUNIFY_BE_URL=http://127.0.0.1:8003 npx playwright test e2e/specs/smoke/design-system.smoke.spec.ts --project=smoke`"
+      - "Pre-req: `make dev-comunify` running (backend 8003 + frontend 3003 + postgres 5435)"
+      - "Verify existing 5 smoke specs (dev-stack + cohort-create + community-moderation + onboarding-anabella + subscription-create-dunning + cross-tenant-isolation) STILL PASS — total smoke run ≥8 tests GREEN"
+    out_of_scope:
+      - "Visual regression snapshot baseline (--update-snapshots) — out of scope per spec §Out of scope"
+      - "E2E for auth-protected dashboard/onboarding routes (defer to future story; design smoke uses unauth chrome state)"
+      - "Modifying playwright.config.ts (no project changes needed)"
+    acceptance:
+      - { id: A1, description: "design-system.smoke.spec.ts exists with 3 tests in describe block", verifier: { type: bash, cmd: "grep -cE '\\s+test\\(' comunify/frontend/e2e/specs/smoke/design-system.smoke.spec.ts" } }
+      - { id: A2, description: "All 3 new tests pass against running dev stack", verifier: { type: shell, cmd: "cd comunify/frontend && E2E_BASE_URL=http://localhost:3003 COMUNIFY_BE_URL=http://127.0.0.1:8003 npx playwright test e2e/specs/smoke/design-system.smoke.spec.ts --project=smoke" } }
+      - { id: A3, description: "Full smoke regression: existing dev-stack.smoke + community + cohort + onboarding + subscription + cross-tenant specs all still GREEN", verifier: { type: shell, cmd: "cd comunify/frontend && E2E_BASE_URL=http://localhost:3003 COMUNIFY_BE_URL=http://127.0.0.1:8003 npx playwright test --project=smoke" } }
+    quality_gates:
+      - "visual_smoke_design_system GREEN"
+      - "visual_smoke_regression GREEN (no regression)"
+    depends_on: ["T-3a", "T-3b", "T-3c"]
+    blocks: ["T-5"]
+    transitions:
+      - { state: draft, at: "2026-05-18T00:00Z", by: "/architect" }
+      - { state: ready, at: "2026-05-18T00:00Z", by: "/architect" }
+    assigned_to: null
+
+  # ════════════════════════════════════════════════════════════
+  - id: T-5
+    title: "Final validators bundle + bundle size sanity"
+    type: tests
+    surface: FE
+    production_code: false        # R23 — meta-validation pass, no code
+    state: ready
+    owner_eligibility:
+      qwen_opencode: true
+      claude_sonnet: true
+      claude_opus_required: false
+    priority: 4
+    estimate_hours: 1
+    decisions_applicable: [D8]
+    inputs:
+      spec: "../01-spec.md#non-functional-requirements"
+      arch_doc: "../03-arch.md"
+      validators: "../04-validators.yaml"
+      rules:
+        - ".claude/rules/frontend-quality.md"
+      domain_skills: ["frontend-expert"]
+    deliverables:
+      - "Run full validator bundle from 04-validators.yaml (all 11 validators non_functional + functional + visual)"
+      - "Run `cd comunify/frontend && npx next build` — capture .next/static/* bundle sizes (especially font + CSS); compare vs baseline (story checkpoint: pre-cement bundle size)"
+      - "Assert bundle delta < +50KB gzip per spec NFR (3 fonts + tokens). If exceeded, document in T-5-impl-log.md + escalate to Chris"
+      - "Verify Vitest coverage stays ≥20% all categories (statements/branches/functions/lines per vitest.config.ts threshold)"
+      - "Manual sanity: `make dev-comunify` running, visit http://localhost:3003/sign-in in browser, inspect devtools — body has bg-comunify-bg computed (rgb(248,250,252)) + <html> has --font-* vars"
+    out_of_scope:
+      - "Adding new tests (covered in T-2, T-4)"
+      - "Modifying any src/ files (migration done in T-3*)"
+      - "Lighthouse score audit (NFR mentions optional Playwright lighthouse — leave for future visual regression story)"
+    acceptance:
+      - { id: A1, description: "All 04-validators.yaml validators GREEN", verifier: { type: shell, cmd: "cd comunify/frontend && npx tsc --noEmit && npx eslint src/ --cache && npx vitest run --coverage && npx next build" } }
+      - { id: A2, description: "Bundle size delta < +50KB gzip vs pre-cement baseline (document delta in T-5-impl-log.md; if Chris confirms baseline unknown → record absolute size as new baseline)", verifier: { type: bash, cmd: "cd comunify/frontend && du -sh .next/static/ 2>/dev/null || echo 'baseline not built'" } }
+      - { id: A3, description: "Coverage thresholds met", verifier: { type: shell, cmd: "cd comunify/frontend && npx vitest run --coverage" } }
+      - { id: A4, description: "Smoke regression: ≥8 smoke tests GREEN against running dev stack", verifier: { type: shell, cmd: "cd comunify/frontend && E2E_BASE_URL=http://localhost:3003 COMUNIFY_BE_URL=http://127.0.0.1:8003 npx playwright test --project=smoke" } }
+    quality_gates:
+      - "All 11 validators GREEN"
+      - "Bundle within budget"
+      - "Coverage maintained"
+      - "Visual smoke regression GREEN"
+    depends_on: ["T-1", "T-2", "T-3a", "T-3b", "T-3c", "T-3d", "T-4"]
+    blocks: []
+    transitions:
+      - { state: draft, at: "2026-05-18T00:00Z", by: "/architect" }
+      - { state: ready, at: "2026-05-18T00:00Z", by: "/architect" }
+    assigned_to: null
+
+# ═══════════════════════════════════════════════════════════════
+# Cross-ticket notes for /dev-team orchestrator
+# ═══════════════════════════════════════════════════════════════
+
+cross_ticket_notes:
+  parallel_safe_within_session: |
+    T-3a / T-3b / T-3c / T-3d touch DISJOINT file sets — same builder session can
+    process them in series quickly. They are split as separate tickets for
+    traceability + chunked review only.
+
+  required_decision_sources: |
+    Decisions D1-D8 are documented in 03-arch.md § 18 "Decisiones registradas".
+    Each ticket's `decisions_applicable` field cites which decisions apply.
+    Builder commit body MUST include "Decisions honored: <D1, D2, ...>" section
+    citing how each was respected (R6 enforcement).
+
+  hot_fix_repro: |
+    repro_verified: n/a for all tickets — this is NOT a hot-fix story.
+    Origin: capability cement (proactive), not incident response.
+
+  dev_stack_requirement: |
+    T-4 (Playwright smoke) requires `make dev-comunify` running.
+    Other tickets (T-1, T-2, T-3a/b/c/d, T-5 non-visual portions) run WITHOUT dev stack.
+    T-5 visual portions require dev stack same as T-4.
+
+  no_secrets_no_pii: |
+    Zero handling of secrets, credentials, or PII. Pure FE design/typography.
+    No .env changes needed. No new env vars introduced.
+
+  forbidden_operations: |
+    - git add . / -A / -u   (stage by exact filename only)
+    - git commit --no-verify (pre-commit hooks mandatory)
+    - git pull / fetch+merge / push --force / revert
+    - make e2e* (Docker, OOM crash)
+    - docker exec ... npx (Native-First mandatory)
+    - Editing files outside § Files in scope of 05-guidelines.md

@@ -15,12 +15,12 @@ export function DunningActiveBanner({ dunningCount = 0, onResendAll, className }
       className={className}
       data-testid="dunning-active-banner"
     >
-      <div className="flex items-center justify-between rounded-xl border border-orange-200 bg-orange-50 p-4">
+      <div className="flex items-center justify-between rounded-xl border border-comunify-warning bg-comunify-warning/10 p-4">
         <div>
-          <p className="font-semibold text-orange-900">
+          <p className="font-semibold text-comunify-warning">
             {dunningCount === 1 ? "1 suscripción en cobranza" : `${dunningCount} suscripciones en cobranza`}
           </p>
-          <p className="text-sm text-orange-700">
+          <p className="text-sm text-comunify-warning">
             Hay pagos pendientes que requieren atención.
           </p>
         </div>
@@ -28,7 +28,7 @@ export function DunningActiveBanner({ dunningCount = 0, onResendAll, className }
           <button
             type="button"
             onClick={onResendAll}
-            className="rounded-lg bg-orange-600 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="rounded-lg bg-comunify-warning px-4 py-2 text-sm font-medium text-white hover:bg-comunify-warning/90 focus:outline-none focus:ring-2 focus:ring-comunify-warning"
           >
             Reenviar enlaces
           </button>

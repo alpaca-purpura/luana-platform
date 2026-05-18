@@ -86,12 +86,12 @@ export function CohortBroadcastComposer({
             {...register("subject")}
             className={cn(
               "w-full rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary",
-              errors.subject && "border-red-400"
+              errors.subject && "border-comunify-critical"
             )}
             placeholder="Título de tu mensaje"
           />
           {errors.subject && (
-            <p className="mt-1 text-xs text-red-500" role="alert">{errors.subject.message}</p>
+            <p className="mt-1 text-xs text-comunify-critical" role="alert">{errors.subject.message}</p>
           )}
         </div>
 
@@ -106,12 +106,12 @@ export function CohortBroadcastComposer({
             rows={4}
             className={cn(
               "w-full resize-none rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary",
-              errors.body && "border-red-400"
+              errors.body && "border-comunify-critical"
             )}
             placeholder="Escribe tu mensaje aquí..."
           />
           {errors.body && (
-            <p className="mt-1 text-xs text-red-500" role="alert">{errors.body.message}</p>
+            <p className="mt-1 text-xs text-comunify-critical" role="alert">{errors.body.message}</p>
           )}
         </div>
 

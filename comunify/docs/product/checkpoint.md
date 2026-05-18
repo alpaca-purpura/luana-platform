@@ -2,14 +2,15 @@
 brand: comunify
 vertical: "Creator Economy + Educación"
 status: shipped
-last_updated: 2026-05-17
+last_updated: 2026-05-18
 active_outcomes:
   - dev-stack-cross-brand-fixes              # outcome platform — comunify cerró su milestone 2026-05-17 (Playwright smoke 3/3 GREEN); outcome continúa active hasta nicolify + lupulo cierren sus análogos
 active_stories:
-  - id: comunify-design-system-cement
+  - id: comunify-warning-token-contrast-fix
     state: idea
-    surface: [frontend]
-    opened: 2026-05-16
+    surface: [frontend, design-system]
+    opened: 2026-05-18
+    origin: auditor-frontend WARN on comunify-design-system-cement (WCAG AA contrast bg-comunify-warning + text-white = 1.80:1)
 ssot_owner: /pm-comunify
 ---
 
@@ -42,6 +43,16 @@ Story 12 (`luana-comunify-bootstrap`, mergeada 2026-05-15) shipped **17 capabili
 
 ## Bitácora
 
+- 2026-05-18: **`comunify-design-system-cement` mergeada (idea→done) via /pm-comunify autonomous E2E run** (Chris pre-authorized full close, opción "Solo design-system-cement E2E" + "auto-ratificación full autónomo"). Trabajo cerrado:
+  - **Spec** (Conv 1.1): 01-spec.md drafted + auto-ratified (4 Gherkin scenarios happy/negative/edge/adversarial + wireframes inline + token migration map 91 occurrences).
+  - **Architect** (Conv 1.2): `architect-orchestrator` Opus → 03-arch.md + 04-validators.yaml (11 validators) + 05-guidelines.md + 06-tickets.yaml (8 tickets T-1..T-5). 8 decisiones D1-D8 documentadas. Brand overlay creator-funnels.md correctamente NO triggered (design system surface ≠ cohort/community/vault/voice).
+  - **Build** (Conv 2 — 4 spawns Sonnet): T-1 (foundation: globals.css 15 vars + layout fonts Plus Jakarta Sans fallback per D2 + tailwind extend 16 slots) → T-2 (arch fitness RED baseline, 91 violations) → T-3a/b/c/d (23 archivos migrados: 9 dashboard + 7 features + 6 auth/onboarding/public + 1 utility) → T-4 (Playwright spec creado verbatim, ejecución deferida — worktree mount mismatch) → T-5 (validators bundle, gate-runner Haiku stalled → fallback inline).
+  - **Audit** (Conv 3): `auditor-frontend` Opus verdict APPROVED. CHECKPOINTS C1-C5 all PASS (C4 PASS_WITH_NOTES — 1 WARN accesibilidad: `text-white` sobre `bg-comunify-warning` 1.80:1 < AA 4.5:1). 38/38 vitest GREEN, 0 stock palette violations, allowlist `[]` clean ratchet, 0 cross-brand pollution, 0 engine edits.
+  - **Capability promovida:** nuevo módulo `frontend_design_system` (primera capability). `comunify/docs/product/capabilities/frontend_design_system/design-system-cement.yaml` (status: live, package_version 0.2.0).
+  - **Follow-up story abierta:** `comunify-warning-token-contrast-fix` (state=idea) — fix SSoT `--comunify-warning` HSL para resolver WARN auditor (no bloqueante de merge, scope S = 1 token + ≤2 consumers).
+  - **3 validators deferred a Chris post-merge:** `fe_build` (pre-existing Clerk env Story 12), `visual_smoke_design_system` + `visual_smoke_regression` (worktree mount mismatch — fix: post-merge `make dev-down-comunify && make dev-comunify` desde principal).
+  - Story archivada: `comunify/docs/product/stories/comunify-design-system-cement/` → `comunify/docs/archive/2026/stories/comunify-design-system-cement/` (19 archivos snapshot inmutable).
+  - Capabilities count: 17 → 18 (módulos: 11 → 12).
 - 2026-05-17T20:15: **`comunify-dev-stack-functional` mergeada (refining→done)** vía Playwright smoke gate. Trabajo cerrado:
   - Receta vitalia 12 pasos replicada mecánicamente — bugs 1-13 verificados live (alembic 001_comunify head, 17 tables, /health 200 canonical, /sign-in 200 Clerk widget)
   - **Bug 14 nuevo descubierto:** named volume staleness post `comunify/pyproject.toml` bump — `comunify_backend_venv` creado pre-deps fix mantuvo `.venv` vacía → `ModuleNotFoundError: psycopg2`. Fix: `docker volume rm comunify_backend_venv` + rebuild. Learning escrito `comunify/docs/learnings/2026-05-17-named-volume-staleness-post-pyproject-bump.md` (promotable=yes — pattern cross-brand, candidato addendum `docs/process/docker-dev-multibrand.md`).

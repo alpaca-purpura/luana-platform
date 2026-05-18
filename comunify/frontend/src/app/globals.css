@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+:root {
+  /* Brand core */
+  --comunify-primary: 264 92% 58%;
+  --comunify-primary-foreground: 0 0% 100%;
+  --comunify-primary-hover: 254 79% 49%;
+  --comunify-purple-mid: 252 100% 62%;
+  --comunify-blue: 217 95% 58%;
+  --comunify-blue-deep: 220 84% 45%;
+  --comunify-accent: 355 100% 69%;
+
+  /* Semantic */
+  --comunify-stable: 152 80% 43%;
+  --comunify-warning: 45 100% 48%;
+  --comunify-critical: 0 84% 60%;
+
+  /* Neutral */
+  --comunify-text: 226 49% 9%;
+  --comunify-text-muted: 215 16% 47%;
+  --comunify-bg: 210 40% 98%;
+  --comunify-surface: 0 0% 100%;
+  --comunify-border: 214 32% 91%;
+
+  /* Shape */
+  --radius: 0.75rem;
+  --radius-lg: 1.25rem;
+
+  /* Gradient (valor literal con HEX — SSoT canónico, allowlisted en arch fitness) */
+  --comunify-gradient: linear-gradient(135deg, #7B2FF7 0%, #6A3CFF 35%, #2D7FF9 70%, #1E5EFF 100%);
+}

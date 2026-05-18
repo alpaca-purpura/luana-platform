@@ -13,10 +13,10 @@ interface LadderVisualizerProps {
 }
 
 const LEVEL_CONFIG = [
-  { key: "level_1" as const, label: "Lead Magnet", color: "border-blue-300 bg-blue-50", badge: "Gratis" },
-  { key: "level_2" as const, label: "Oferta Core", color: "border-green-300 bg-green-50", badge: "Principal" },
-  { key: "level_3" as const, label: "Upsell", color: "border-orange-300 bg-orange-50", badge: "Premium" },
-  { key: "level_4" as const, label: "VIP", color: "border-purple-300 bg-purple-50", badge: "VIP" },
+  { key: "level_1" as const, label: "Lead Magnet", color: "border-comunify-blue bg-comunify-primary/10", badge: "Gratis" },
+  { key: "level_2" as const, label: "Oferta Core", color: "border-comunify-stable bg-comunify-stable/10", badge: "Principal" },
+  { key: "level_3" as const, label: "Upsell", color: "border-comunify-warning bg-comunify-warning/10", badge: "Premium" },
+  { key: "level_4" as const, label: "VIP", color: "border-comunify-primary bg-comunify-primary/10", badge: "VIP" },
 ];
 
 function OfferCard({ offer, level }: { offer: LadderOffer; level: (typeof LEVEL_CONFIG)[number] }) {
@@ -93,7 +93,7 @@ export function LadderVisualizer({ ladder, onReorder: _onReorder, isLoading, cla
             <div
               className={cn(
                 "h-full rounded-full transition-all",
-                completeness.score >= 80 ? "bg-green-500" : completeness.score >= 40 ? "bg-yellow-500" : "bg-red-400"
+                completeness.score >= 80 ? "bg-comunify-stable" : completeness.score >= 40 ? "bg-comunify-warning" : "bg-comunify-critical"
               )}
               style={{ width: `${completeness.score}%` }}
               role="progressbar"

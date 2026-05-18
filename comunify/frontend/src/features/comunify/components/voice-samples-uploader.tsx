@@ -115,7 +115,7 @@ export function VoiceSamplesUploader({
             <div
               className={cn(
                 "h-full rounded-full transition-all",
-                progressPct >= 100 ? "bg-green-500" : "bg-primary"
+                progressPct >= 100 ? "bg-comunify-stable" : "bg-primary"
               )}
               style={{ width: `${progressPct}%` }}
               role="progressbar"
@@ -140,10 +140,10 @@ export function VoiceSamplesUploader({
               <span
                 className={cn(
                   "ml-2 shrink-0 rounded-full px-2 py-0.5 text-xs",
-                  s.status === "done" && "bg-green-100 text-green-700",
-                  s.status === "uploading" && "bg-yellow-100 text-yellow-700",
-                  s.status === "error" && "bg-red-100 text-red-700",
-                  s.status === "pending" && "bg-gray-100 text-gray-700"
+                  s.status === "done" && "bg-comunify-stable/10 text-comunify-stable",
+                  s.status === "uploading" && "bg-comunify-warning/10 text-comunify-warning",
+                  s.status === "error" && "bg-comunify-critical/10 text-comunify-critical",
+                  s.status === "pending" && "bg-comunify-bg text-comunify-text"
                 )}
               >
                 {s.status === "done" ? `${s.durationSeconds}s` : s.status}

@@ -12,8 +12,8 @@ export default async function CohortBroadcastsPage({ params }: CohortBroadcastsP
   const { id } = await params;
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900">Comunicaciones</h1>
-      <p className="mt-2 text-sm text-gray-500">Cohorte: {id}</p>
+      <h1 className="text-2xl font-bold text-comunify-text">Comunicaciones</h1>
+      <p className="mt-2 text-sm text-comunify-text-muted">Cohorte: {id}</p>
     </div>
   );
 }

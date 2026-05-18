@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 export default function OffersListPage() {
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900">Mis ofertas</h1>
+      <h1 className="text-2xl font-bold text-comunify-text">Mis ofertas</h1>
     </div>
   );
 }

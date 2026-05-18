@@ -1,9 +1,9 @@
 # docs/product/BACKLOG.yaml — auto-generated SSoT machine-readable
 # DO NOT EDIT MANUALLY — modify source artifacts instead.
 # Regenerate: python scripts/generate_backlog.py
-# Generated at: 2026-05-17T20:06:07+00:00
+# Generated at: 2026-05-18T07:27:49+00:00
 
-generated_at: '2026-05-17T20:06:07+00:00'
+generated_at: '2026-05-18T07:27:49+00:00'
 brand: comunify
 caps:
   refining_max: 3
@@ -22,10 +22,10 @@ stale_refining: []
 stale_refined: []
 buckets:
   idea:
-  - id: comunify-design-system-cement
+  - id: comunify-warning-token-contrast-fix
     kind: story
     state: idea
-    title: comunify-design-system-cement
+    title: comunify-warning-token-contrast-fix
     tags: []
     last_touched: null
     extra:
@@ -70,6 +70,12 @@ capabilities:
   deprecated: 0
   total: 3
 - module: fixtures
+  live: 1
+  in_progress: 0
+  planned: 0
+  deprecated: 0
+  total: 1
+- module: frontend_design_system
   live: 1
   in_progress: 0
   planned: 0

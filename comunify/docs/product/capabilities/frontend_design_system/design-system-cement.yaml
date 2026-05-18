@@ -1,0 +1,60 @@
+---
+capability_id: comunify-design-system-cement
+module: frontend_design_system
+slug: design-system-cement
+status: live
+date_introduced: 2026-05-18
+story_introduced: comunify-design-system-cement
+package_version: 0.2.0
+package_path: comunify/frontend
+license: proprietary
+---
+
+# comunify-design-system-cement
+
+Cementación de la identidad visual Comunify en el frontend: 15 CSS variables `--comunify-*` (paleta morado/azul/coral/verde + neutros + semánticos), 3 fuentes (Satoshi via Plus Jakarta Sans fallback + Manrope + Inter), 15+1 slots Tailwind extendidos, gradient signature `bg-comunify-gradient`, y arch fitness ratchet anti-stock-palette + anti-HEX-literal (allowlist shrink-only, baseline `[]`). Migración 23 archivos FE: 91 ocurrencias paleta Tailwind stock → 0 (tokens semánticos comunify-*).
+
+## Surface
+
+- **CSS tokens SSoT:** `comunify/frontend/src/app/globals.css` — 15 vars HSL + `--radius`/`--radius-lg` + `--comunify-gradient` literal HEX (allowlisted como SSoT)
+- **Font loading:** `comunify/frontend/src/app/layout.tsx` — `next/font/google` Manrope + Inter + Plus_Jakarta_Sans (Path B fallback per D2 hasta que Chris provea `Satoshi-Bold.woff2`), 3 `.variable` aplicados a `<html>`, body className con tokens comunify (`bg-comunify-bg font-inter text-comunify-text`)
+- **Tailwind config:** `comunify/frontend/tailwind.config.ts` — `theme.extend.colors` con 16 slots comunify-* + `backgroundImage.comunify-gradient` + `fontFamily.{satoshi,manrope,inter}` + `borderRadius.{DEFAULT,lg}`
+- **Arch fitness ratchet:** `comunify/frontend/src/__tests__/architecture/test-no-stock-palette.test.ts` — 3 tests (stock palette regex + HEX literal regex + allowlist shrink-only invariant)
+- **Allowlist:** `comunify/frontend/src/__tests__/architecture/_stock-palette-allowlist.json` — `[]` (clean slate baseline 2026-05-18)
+- **Vitest unit:** `comunify/frontend/src/app/__tests__/layout.test.tsx` — 9 tests assertando font vars + body className
+- **Playwright smoke spec:** `comunify/frontend/e2e/specs/smoke/design-system.smoke.spec.ts` — 3 tests (font CSS vars on `<html>` + body comunify tokens + sign-in inherits comunify classes). Verificación visual deferida a post-merge dev stack restart.
+- **23 archivos migrados:** `src/app/(dashboard)/**` (9) + `src/features/comunify/components/**` (7) + `src/app/(auth)/** + onboarding/** + page.tsx + public/**` (6) + `src/features/comunify/utils/format-engagement-bucket.ts` (1)
+- **Design system SSoT doc:** `comunify/docs/architecture/design-system.md` (consumido verbatim para tokens)
+
+## Test coverage
+
+- T-1 result: foundation (globals.css + layout fonts + tailwind config + layout.test.tsx) — `fe_typecheck + fe_lint + scenario_happy_tokens_loaded + scenario_edge_satoshi_fallback` GREEN
+- T-2 result: arch fitness RED baseline — 91 violations capturadas (deliberate TDD baseline)
+- T-3a/b/c/d result: migración incremental 91→0 violations, allowlist stays `[]`
+- T-4 result: Playwright smoke spec creado verbatim per arch §8 — visual execution deferida (worktree mount mismatch, post-merge)
+- T-5 result: 9/9 native validators GREEN (8 PASS + 1 PASS_WITH_WARNING coverage pre-existing), 3 deferred (`fe_build` Clerk env pre-existing + 2 visual)
+
+## Dependencies
+
+- `@luana/comunify-web` package (Next 16 + React 19)
+- `tailwindcss ^4.1.0` (theme.extend pattern preservado)
+- `next/font/google` (Manrope + Inter + Plus_Jakarta_Sans built-in, sin npm install)
+
+## Scenarios live
+
+- Creator visita `/sign-in` → body usa `bg-comunify-bg` + `text-comunify-text` + `font-inter` computed (rgb 248,250,252 / rgb 11,16,32)
+- Developer agrega `bg-gray-500` en componente nuevo → arch fitness FAILS con cite `file:line — class (use bg-comunify-surface or bg-comunify-bg)` (verificable agregando + corriendo test)
+- Developer intenta HEX literal `#7B2FF7` o `bg-[#7B2FF7]` en componente → arch fitness FAILS (regex catch ambas formas, allowlist solo globals.css)
+- Falta `Satoshi-Bold.woff2` binary → `--font-satoshi` mapeado a Plus Jakarta Sans Bold como fallback, build no rompe
+
+## Limitations (deferred / out-of-scope)
+
+- **`fe_build` deferred:** falta `comunify/frontend/.env.local` con Clerk publishable key — bloqueo PRE-EXISTING Story 12, no introducido aquí. Tailwind+fonts+globals.css compilan GREEN per T-1.
+- **Visual smoke deferred:** dev stack monta worktree principal (main branch) no este wip — Chris hace `make dev-down-comunify && make dev-comunify` post-merge para validar.
+- **Dark mode:** out of scope (ADR separado cuando se demande).
+- **Logo wordmark SVG:** out of scope (story `comunify-brand-logo` futura).
+- **Gradient animations Framer Motion:** out of scope (story `comunify-motion-system` futura).
+- **Lift tokens a `core/luana-core-platform/design-tokens/`:** requiere `/pm-luana` promotion proposal cross-brand.
+- **Storybook setup:** out of scope.
+- **Visual regression snapshots Playwright (`toMatchScreenshot`):** out of scope (story `comunify-visual-regression-baseline` futura).
+- **WCAG AA contrast on `text-white` over `bg-comunify-warning`:** auditor flagged 1.80:1 (fails AA 4.5:1). Migración honró SSoT mapping 1:1. Follow-up story `comunify-warning-token-contrast-fix` (state=idea) abierta por `/pm-comunify` post-merge.

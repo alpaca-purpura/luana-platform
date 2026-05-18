@@ -1,14 +1,21 @@
 ---
 brand: comunify
 story_id: comunify-design-system-cement
-state: idea
+state: done
 created: 2026-05-16
-last_updated: 2026-05-16
+last_updated: 2026-05-18
 parallel_safe: true
 owner: /pm-comunify
-next_handoff: /po-ux
+next_handoff: /dev-team (Conv 2 autonomous build)
 surface: [frontend]
 estimated_size: M
+artifacts:
+  - 01-spec.md (drafted + auto-ratified 2026-05-18 by /pm-comunify autonomous run)
+  - 03-arch.md (consolidated FE arch, 852 lines, autonomous /architect run 2026-05-18)
+  - 03-arch-fe.md (pointer to 03-arch.md root since story is single-surface FE)
+  - 04-validators.yaml (11 validators across non_functional/functional/visual; agentic_eval N/A)
+  - 05-guidelines.md (patterns + files in scope + brand overlay applicability rationale)
+  - 06-tickets.yaml (8 tickets T-1..T-5 + T-3a/b/c/d split for traceability)
 ---
 
 # Comunify — Design system cement (FE tokens + tipografía + migración)
@@ -71,3 +78,4 @@ Chris dice "refinemos comunify-design-system-cement" → `/pm-comunify` transiti
 ## Bitácora
 
 - 2026-05-16: story abierta state=idea por `/pm-comunify`. Origen: brandbook Chris brief 2026-05-16 → resumido a `comunify/docs/architecture/design-system.md`. Inventario FE: 56 .tsx, 0 HEX, ~52 usos paleta stock, slots tailwind vacíos desde Story 12 (`T-fe-3` nunca ejecutado).
+- 2026-05-18: /architect autonomous run closed. state=refined→ready. 5 artifacts produced (03-arch.md + 03-arch-fe.md + 04-validators.yaml + 05-guidelines.md + 06-tickets.yaml). All 4 open questions auto-resolved per spec §'Resolución open questions' (Satoshi→Plus Jakarta fallback, gradient→CTA+onboarding only, charts→comunify-blue+stable, migration split→T-3a/b/c/d). Decisions D1-D8 documented in 03-arch.md §18. Brand overlay creator-funnels.md NOT triggered (design system surface, not cohort/community/vault/voice modules) — rationale 03-arch.md §11 + 05-guidelines.md §3. Ready for /dev-team T-1 spawn.

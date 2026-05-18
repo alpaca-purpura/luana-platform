@@ -7,9 +7,9 @@ const BUCKET_LABELS: Record<EngagementBucket, string> = {
 };
 
 const BUCKET_COLORS: Record<EngagementBucket, string> = {
-  high: "bg-green-100 text-green-700",
-  medium: "bg-yellow-100 text-yellow-700",
-  low: "bg-blue-100 text-blue-700",
+  high: "bg-comunify-stable/10 text-comunify-stable",
+  medium: "bg-comunify-warning/10 text-comunify-warning",
+  low: "bg-comunify-primary/10 text-comunify-blue",
 };
 
 export function formatEngagementBucket(bucket: EngagementBucket): string {
@@ -17,5 +17,5 @@ export function formatEngagementBucket(bucket: EngagementBucket): string {
 }
 
 export function engagementBucketColor(bucket: EngagementBucket): string {
-  return BUCKET_COLORS[bucket] ?? "bg-gray-100 text-gray-700";
+  return BUCKET_COLORS[bucket] ?? "bg-comunify-bg text-comunify-text";
 }

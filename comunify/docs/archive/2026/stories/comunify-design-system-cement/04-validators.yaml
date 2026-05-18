@@ -1,0 +1,193 @@
+# 04-validators.yaml — Comunify Design System Cement (FE)
+#
+# Owner: /architect (orchestrator).
+# Schema v4 — 4 categories: non_functional / functional / visual / agentic_eval.
+#
+# /dev-team itera contra estos validators en bucle hasta GREEN o cap_reached.
+# /auditor verifica cada uno fue corrido + GREEN antes APPROVED.
+#
+# CRITICAL: cada validator tiene `must_pass: true` y comando ejecutable shell.
+# NATIVE Linux execution mandatory — NEVER `make e2e*` (Docker, OOM per
+# .claude/rules/e2e-testing.md) and NEVER `docker exec` for tsc/eslint/vitest
+# (per AGENTS.md "Native-First").
+#
+# All commands run from `comunify/frontend/` working directory (relative path
+# noted explicitly with `cd comunify/frontend && ...` so /dev-team caller can
+# spawn from workspace root).
+
+---
+story_id: comunify-design-system-cement
+schema_version: v4
+generated_at: 2026-05-18T00:00Z
+generated_by: /architect (autonomous mode — Chris pre-authorized)
+
+validators:
+  # ═══════════════════════════════════════════════════════════════
+  # NON-FUNCTIONAL — code quality (lint, format, type-check, arch fitness, build)
+  # ═══════════════════════════════════════════════════════════════
+
+  - id: fe_typecheck
+    category: non_functional
+    type: shell
+    cmd: "cd comunify/frontend && npx tsc --noEmit"
+    must_pass: true
+    timeout_sec: 120
+    description: "TypeScript strict, 0 errors across comunify/frontend/src/**"
+
+  - id: fe_lint
+    category: non_functional
+    type: shell
+    cmd: "cd comunify/frontend && npx eslint src/ --cache --cache-location .eslintcache"
+    must_pass: true
+    timeout_sec: 90
+    description: "ESLint over comunify/frontend/src/, 0 errors"
+
+  - id: fe_arch_fitness_no_stock_palette
+    category: non_functional
+    type: vitest
+    cmd: "cd comunify/frontend && npx vitest run src/__tests__/architecture/test-no-stock-palette.test.ts --reporter=default"
+    must_pass: true
+    timeout_sec: 60
+    description: "Arch fitness ratchet — 0 stock palette + 0 HEX literals in src/**/*.{tsx,ts} (allowlist shrink-only)"
+
+  - id: fe_unit_tests_full
+    category: non_functional
+    type: vitest
+    cmd: "cd comunify/frontend && npx vitest run --reporter=default"
+    must_pass: true
+    timeout_sec: 180
+    description: "Full Vitest suite — scaffold + components/smoke + new layout test + new arch fitness. 0 failures."
+
+  - id: fe_coverage_threshold
+    category: non_functional
+    type: vitest
+    cmd: "cd comunify/frontend && npx vitest run --coverage --reporter=default"
+    must_pass: true
+    timeout_sec: 240
+    description: "Coverage threshold 20% statements/branches/functions/lines per vitest.config.ts. Must not degrade from baseline."
+
+  - id: fe_build
+    category: non_functional
+    type: shell
+    cmd: "cd comunify/frontend && npx next build"
+    must_pass: true
+    timeout_sec: 300
+    description: "Next.js production build succeeds. Validates fonts load, globals.css imports correctly, no missing modules. Surface check: bundle size delta should be < +50KB gzip per spec NFR."
+
+  # ═══════════════════════════════════════════════════════════════
+  # FUNCTIONAL — Gherkin scenarios from 01-spec.md
+  # 4 scenarios (happy / negative / edge / adversarial) → 1+ validators each
+  # ═══════════════════════════════════════════════════════════════
+
+  - id: scenario_happy_tokens_loaded
+    category: functional
+    type: vitest
+    cmd: "cd comunify/frontend && npx vitest run src/app/__tests__/layout.test.tsx --reporter=default"
+    must_pass: true
+    timeout_sec: 30
+    scenario_id: happy
+    description: "Scenario 1 'tokens-cargados-render-correcto' — Vitest unit asserts <html> carries 3 font CSS vars (--font-satoshi/manrope/inter) + body className includes font-inter + bg-comunify-bg."
+
+  - id: scenario_negative_stock_palette_prohibited
+    category: functional
+    type: vitest
+    cmd: "cd comunify/frontend && npx vitest run src/__tests__/architecture/test-no-stock-palette.test.ts --reporter=default"
+    must_pass: true
+    timeout_sec: 60
+    scenario_id: negative
+    description: "Scenario 2 'stock-palette-prohibida' — arch fitness must FAIL with verbose violation list when stock palette present, and PASS (0 violations) when clean. Same test covers both negative + adversarial scenarios."
+
+  - id: scenario_edge_satoshi_fallback
+    category: functional
+    type: vitest
+    cmd: "cd comunify/frontend && npx vitest run src/app/__tests__/layout.test.tsx --reporter=default -t 'font-satoshi var present'"
+    must_pass: true
+    timeout_sec: 30
+    scenario_id: edge
+    description: "Scenario 3 'satoshi-fallback-grace' — layout.test.tsx asserts --font-satoshi var is ALWAYS present in <html> className regardless of whether Satoshi binary loaded or Plus Jakarta Sans fallback active (verifies auto-resolve option c works without build break)."
+
+  - id: scenario_adversarial_hex_blocked
+    category: functional
+    type: vitest
+    cmd: "cd comunify/frontend && npx vitest run src/__tests__/architecture/test-no-stock-palette.test.ts --reporter=default -t 'no HEX literals'"
+    must_pass: true
+    timeout_sec: 30
+    scenario_id: adversarial
+    description: "Scenario 4 'hex-literal-blocked' — arch fitness HEX regex test asserts 0 HEX literals (#RRGGBB and bg-[#RRGGBB] arbitrary-value) in src/**, with permanent allowlist for globals.css only."
+
+  # ═══════════════════════════════════════════════════════════════
+  # VISUAL — Playwright smoke (3 tests new) + regression on existing smoke
+  # NATIVE Linux execution mandatory (NEVER make e2e per .claude/rules/e2e-testing.md)
+  # Backend (8003) + Frontend (3003) dev stack must be running
+  # ═══════════════════════════════════════════════════════════════
+
+  - id: visual_smoke_design_system
+    category: visual
+    type: playwright
+    cmd: "cd comunify/frontend && E2E_BASE_URL=http://localhost:3003 COMUNIFY_BE_URL=http://127.0.0.1:8003 npx playwright test e2e/specs/smoke/design-system.smoke.spec.ts --project=smoke"
+    must_pass: true
+    timeout_sec: 240
+    description: "3 new smoke tests: (1) font CSS vars on <html>, (2) body uses comunify-bg + comunify-text computed style, (3) /sign-in inherits comunify tokens (chrome has comunify-* classes). Pre-req: make dev-comunify running."
+
+  - id: visual_smoke_regression
+    category: visual
+    type: playwright
+    cmd: "cd comunify/frontend && E2E_BASE_URL=http://localhost:3003 COMUNIFY_BE_URL=http://127.0.0.1:8003 npx playwright test --project=smoke"
+    must_pass: true
+    timeout_sec: 600
+    description: "Full smoke project run — must keep all existing smoke specs GREEN (dev-stack + cohort-create + community-moderation + onboarding-anabella + subscription-create-dunning + cross-tenant-isolation) PLUS new design-system smoke. Target ≥8 tests GREEN."
+
+  # ═══════════════════════════════════════════════════════════════
+  # AGENTIC EVAL — N/A for this story (FE-only, no agentic surfaces)
+  # ═══════════════════════════════════════════════════════════════
+  # Explicitly empty — no agentic validators apply.
+
+# ═══════════════════════════════════════════════════════════════
+# Scenario coverage matrix — 1 scenario maps to N validators
+# ═══════════════════════════════════════════════════════════════
+
+scenario_coverage:
+  - scenario_id: happy
+    validators: [scenario_happy_tokens_loaded, visual_smoke_design_system, fe_build]
+  - scenario_id: negative
+    validators: [scenario_negative_stock_palette_prohibited, fe_arch_fitness_no_stock_palette]
+  - scenario_id: edge
+    validators: [scenario_edge_satoshi_fallback, fe_build]
+  - scenario_id: adversarial
+    validators: [scenario_adversarial_hex_blocked, fe_arch_fitness_no_stock_palette]
+
+# ═══════════════════════════════════════════════════════════════
+# Iteration policy — autonomous build behavior
+# ═══════════════════════════════════════════════════════════════
+
+iteration:
+  max_iterations: 10
+  on_fail: "fix targeted file based on test output, re-run failing validator only"
+  on_all_pass: "set state=developing→developed, append iteration_log to T-{n}-impl-log.md"
+  on_cap_reached: "set state=developing→blocked, escalate to Chris with last error trace"
+
+# ═══════════════════════════════════════════════════════════════
+# Pre-flight notes for /dev-team + /auditor
+# ═══════════════════════════════════════════════════════════════
+
+preflight:
+  required_running_services:
+    - "Postgres shared (127.0.0.1:5435) — for visual_smoke_* validators only (frontend talks to BE 8003 which needs DB)"
+    - "Backend comunify (127.0.0.1:8003 /health → 200) — for visual_smoke_*"
+    - "Frontend comunify (127.0.0.1:3003 / → 200) — for visual_smoke_*"
+  bring_up: "cd /home/chalreme/Proyectos/luana-comunify && make dev-comunify"
+  bring_down: "cd /home/chalreme/Proyectos/luana-comunify && make dev-down-comunify"
+  non_functional_validators_no_services: |
+    fe_typecheck, fe_lint, fe_arch_fitness_no_stock_palette, fe_unit_tests_full,
+    fe_coverage_threshold, fe_build — all run WITHOUT dev stack running.
+    Use these for tight TDD loop. Only visual_smoke_* needs dev stack up.
+
+native_first_enforcement:
+  required: "ALL commands run native (npx, .venv/bin) — NEVER docker exec or make e2e*"
+  rationale: ".claude/rules/e2e-testing.md prohibits make e2e* (Docker OOM). AGENTS.md Native-First mandates."
+  exception_paths_blocked:
+    - "make e2e"
+    - "make e2e-smoke"
+    - "docker exec ... npx"
+    - "docker exec ... vitest"
+    - "docker exec ... tsc"
