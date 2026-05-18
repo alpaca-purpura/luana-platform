@@ -65,7 +65,7 @@ NO mirror created in vitalia. `git diff --name-only core/` empty.
 
 ## Commit
 
-`<COMMIT_SHA_PLACEHOLDER>` — Commit pushed after tests passing.
+`e2b8e62` — pushed to `wip/vitalia` 2026-05-18.
 
 ## Awaiting
 
