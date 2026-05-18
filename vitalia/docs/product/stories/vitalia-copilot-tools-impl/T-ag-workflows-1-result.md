@@ -198,7 +198,7 @@ Both pre-date my changes. Confirmed via `git log -5 -- test_extensions.py`
 
 ## Commit + push
 
-- Commit SHA: 8eebd0d96edf08ec43be7eafdd05f04c11a55c2c
+- Commit SHA: d7683db
 - Branch: `wip/vitalia`
 - Conventional Commits: `feat(vitalia/copilot/workflows): T-ag-workflows-1 …`
 - Co-authored: `Claude Opus 4.7 (1M context)`
