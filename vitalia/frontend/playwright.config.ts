@@ -12,10 +12,16 @@ export default defineConfig({
     trace: "on-first-retry",
   },
   projects: [
-    // Smoke project — all *.smoke.spec.ts on Desktop Chrome
+    // Smoke project — all *.smoke.spec.ts + vitalia-auth-base-functional specs
+    // (e2e/auth/*, e2e/dashboard/*, e2e/admin/* are plain *.spec.ts per 06-tickets.yaml)
     {
       name: "smoke",
-      testMatch: /.*\.smoke\.spec\.ts/,
+      testMatch: [
+        /.*\.smoke\.spec\.ts/,
+        /.*\/e2e\/auth\/.*\.spec\.ts/,
+        /.*\/e2e\/dashboard\/.*\.spec\.ts/,
+        /.*\/e2e\/admin\/.*\.spec\.ts/,
+      ],
       use: { ...devices["Desktop Chrome"] },
     },
     // Responsive projects — spec §9 breakpoints
