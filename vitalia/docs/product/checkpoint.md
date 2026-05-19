@@ -9,7 +9,7 @@ active_outcomes:
   - vitalia-mvp-ui-foundation      # outcome maestro Slice 1/2/3 FE Vitalia MVP
 active_stories:
   - vitalia-ux-discovery                   # state: ready (READY_PACKAGE_CLOSED_AND_SPLIT) — /architect produjo package 2026-05-17 · split aceptado Chris en 7 sub-stories
-  - vitalia-slice-1-onboarding-wizard      # state: refined (UNBLOCKED post infra+copilot-tools-impl merges — ready /architect)
+  - vitalia-slice-1-onboarding-wizard      # state: refined (READY_PACKAGE_REFRESHED 2026-05-18 — /architect refresh verdict MINOR_DRIFT, 5 tickets SCOPE_REDUCED + 1 UNCHANGED + 1 SCOPE_REDUCED-to-smoke, Chris ratificó 4 deltas (R23 OPT-OUT T-4/T-5 + mini-arch T-1 + audio defer Slice 2 + FE features/onboarding/), UNBLOCKED para /dev-team)
   - vitalia-slice-1-inbox                  # state: refined (UNBLOCKED post infra merge — ready /architect)
   - vitalia-slice-1-pipeline               # state: refined (UNBLOCKED post infra+copilot-tools-impl merges — sub-blocker payment-adapter-mvp pending)
   - vitalia-slice-1-agenda                 # state: refined (UNBLOCKED post infra merge — sub-blockers payment-adapter-mvp + fiscal-emission-pe)

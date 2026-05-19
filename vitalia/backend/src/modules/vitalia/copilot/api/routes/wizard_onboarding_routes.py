@@ -26,7 +26,9 @@ from uuid import UUID
 import structlog
 from fastapi import APIRouter, Depends, Header, HTTPException
 from fastapi.responses import StreamingResponse
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.db import get_async_session
 from src.modules.vitalia.copilot.api.dtos.wizard_dtos import (
     CompleteRequest,
     CompleteResponse,
@@ -56,6 +58,12 @@ from src.modules.vitalia.copilot.application.services.simulate_personality_servi
     ThrottleExceededError,
 )
 from src.modules.vitalia.copilot.domain.entities.wizard_slot import WizardSlot
+from src.modules.vitalia.copilot.infrastructure.repositories.brand_studio_draft_repository import (
+    SqlAlchemyBrandStudioDraftRepository,
+)
+from src.modules.vitalia.copilot.infrastructure.repositories.onboarding_progress_repository import (
+    SqlAlchemyOnboardingProgressRepository,
+)
 
 logger = structlog.get_logger()
 
@@ -66,41 +74,68 @@ TenantIdHeader = Annotated[str, Header(alias="X-Tenant-ID")]
 
 
 # ---------------------------------------------------------------------------
-# Dependency factories — per runtime-quality-checklist.md:
-# Use factory functions (closures) NOT Annotated type aliases with AsyncSession
+# Dependency factories — real SQLA 2.0 repositories replacing AsyncMock stubs
+# Per runtime-quality-checklist.md: factory functions (closures), NOT type aliases
 # ---------------------------------------------------------------------------
 
 
-def get_onboarding_draft_service() -> OnboardingDraftService:
-    """Provide OnboardingDraftService with mock repo (Slice 1 scaffold)."""
+async def get_onboarding_progress_repo(
+    session: Annotated[AsyncSession, Depends(get_async_session)],
+) -> SqlAlchemyOnboardingProgressRepository:
+    """Provide SqlAlchemyOnboardingProgressRepository with live DB session."""
+    return SqlAlchemyOnboardingProgressRepository(session=session)
+
+
+async def get_brand_studio_draft_repo(
+    session: Annotated[AsyncSession, Depends(get_async_session)],
+) -> SqlAlchemyBrandStudioDraftRepository:
+    """Provide SqlAlchemyBrandStudioDraftRepository with live DB session."""
+    return SqlAlchemyBrandStudioDraftRepository(session=session)
+
+
+async def get_onboarding_draft_service(
+    progress_repo: Annotated[
+        SqlAlchemyOnboardingProgressRepository,
+        Depends(get_onboarding_progress_repo),
+    ],
+) -> OnboardingDraftService:
+    """Provide OnboardingDraftService wired to real SQLA 2.0 progress repository.
+
+    progress_repo implements the save() + get_by_id() bridge methods
+    required by OnboardingDraftService's draft_repo interface.
+    """
+    return OnboardingDraftService(draft_repo=progress_repo)
+
+
+async def get_extract_service(
+    progress_repo: Annotated[
+        SqlAlchemyOnboardingProgressRepository,
+        Depends(get_onboarding_progress_repo),
+    ],
+) -> ExtractTenantContextService:
+    """Provide ExtractTenantContextService with real draft_repo + stub adapters (Slice 1).
+
+    website_scraper + document_extractor remain stubbed until T-onboarding-2.
+    """
     from unittest.mock import AsyncMock
 
-    draft_repo = AsyncMock()
-    draft_repo.save = AsyncMock(side_effect=lambda d: d)
-    draft_repo.get_by_id = AsyncMock(return_value=None)
-    return OnboardingDraftService(draft_repo=draft_repo)
-
-
-def get_extract_service() -> ExtractTenantContextService:
-    """Provide ExtractTenantContextService with stub adapters (Slice 1 scaffold)."""
-    from unittest.mock import AsyncMock
-
-    draft_repo = AsyncMock()
-    draft_repo.save = AsyncMock(side_effect=lambda d: d)
-    draft_repo.get_by_id = AsyncMock(return_value=None)
     website_scraper = AsyncMock()
     website_scraper.extract = AsyncMock(return_value={})
     document_extractor = AsyncMock()
     document_extractor.extract = AsyncMock(return_value={})
     return ExtractTenantContextService(
-        draft_repo=draft_repo,
+        draft_repo=progress_repo,
         website_scraper=website_scraper,
         document_extractor=document_extractor,
     )
 
 
-def get_simulate_service() -> SimulatePersonalityService:
-    """Provide SimulatePersonalityService with stub adapters (Slice 1 scaffold)."""
+async def get_simulate_service() -> SimulatePersonalityService:
+    """Provide SimulatePersonalityService with stub adapters (Slice 1 scaffold).
+
+    personality_adapter + cache + rate_limiter remain stubbed until T-onboarding-2.
+    No DB dependency — stub adapters only.
+    """
     from unittest.mock import AsyncMock
 
     personality_adapter = AsyncMock()
@@ -116,14 +151,20 @@ def get_simulate_service() -> SimulatePersonalityService:
     )
 
 
-def get_complete_service() -> CompleteOnboardingService:
-    """Provide CompleteOnboardingService with stub ports (Slice 1 scaffold)."""
+async def get_complete_service(
+    progress_repo: Annotated[
+        SqlAlchemyOnboardingProgressRepository,
+        Depends(get_onboarding_progress_repo),
+    ],
+) -> CompleteOnboardingService:
+    """Provide CompleteOnboardingService with real draft_repo + stub ports (Slice 1).
+
+    personality_adapter + brand_studio_port + tenant_port + event_bus remain
+    stubbed until T-onboarding-3 (complete onboarding wire-up).
+    """
     from unittest.mock import AsyncMock, MagicMock
     from uuid import uuid4
 
-    draft_repo = AsyncMock()
-    draft_repo.get_by_id = AsyncMock(return_value=None)
-    draft_repo.save = AsyncMock(side_effect=lambda d: d)
     personality_adapter = AsyncMock()
     personality_adapter.compile_full = AsyncMock(return_value=MagicMock(id=uuid4()))
     brand_studio_port = AsyncMock()
@@ -134,7 +175,7 @@ def get_complete_service() -> CompleteOnboardingService:
     event_bus = AsyncMock()
     event_bus.publish = AsyncMock()
     return CompleteOnboardingService(
-        draft_repo=draft_repo,
+        draft_repo=progress_repo,
         personality_adapter=personality_adapter,
         brand_studio_port=brand_studio_port,
         tenant_port=tenant_port,
