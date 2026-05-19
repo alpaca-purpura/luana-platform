@@ -389,7 +389,12 @@ export function WizardOnboardingLayout({ className }: WizardOnboardingLayoutProp
     >
       {/* TopBar */}
       <header className="flex items-center justify-between h-14 px-4 border-b bg-white flex-shrink-0">
-        <VitaliaLogo />
+        <div className="flex items-center gap-3">
+          <VitaliaLogo />
+          <h1 className="text-sm font-semibold text-gray-900 hidden sm:block">
+            {WIZARD_COPY.topBar.title}
+          </h1>
+        </div>
 
         <div className="flex items-center gap-3">
           {/* Slot counter */}
