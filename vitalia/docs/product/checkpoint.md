@@ -8,6 +8,7 @@ active_outcomes:
   - dev-environment-multibrand     # receta vitalia shipped, cross-brand replicación pendiente nicolify/comunify/lupulo
   - vitalia-mvp-ui-foundation      # outcome maestro Slice 1/2/3 FE Vitalia MVP
 active_stories:
+  - vitalia-auth-base-functional           # ★ NEW state: ready (hot-fix scope quirúrgico — desbloquea validación visual brand · spawned 2026-05-18 post Chris ratificación scope) — BLOCKING OTHER VISUAL VALIDATION
   - vitalia-ux-discovery                   # state: ready (READY_PACKAGE_CLOSED_AND_SPLIT) — /architect produjo package 2026-05-17 · split aceptado Chris en 7 sub-stories
   - vitalia-slice-1-inbox                  # state: refined (UNBLOCKED post infra merge — ready /architect)
   - vitalia-slice-1-pipeline               # state: refined (UNBLOCKED post infra+copilot-tools-impl merges — sub-blocker payment-adapter-mvp pending)
@@ -109,3 +110,20 @@ Story 11 (`luana-vitalia-bootstrap`, mergeada 2026-05-15) shipped **16 capabilit
   - **Archive + portfolio**: story folder moved → `vitalia/docs/archive/2026/stories/vitalia-slice-1-infra-cross-cutting/` (snapshot inmutable). `make portfolio` regen BACKLOG.md + PORTFOLIO.md cross-brand.
   - **Deadlock circular roto**: infra esperaba copilot-tools-impl mientras copilot-tools-impl blocked_on infra. Chris ratificó break — cerrar infra primero permite que copilot-tools-impl retome en sesión fresca post-merge sin estar bloqueado por infra audit. 6 stories refined Slice 1 (onboarding-wizard, inbox, pipeline, agenda, fidelizacion, marketing) DESBLOQUEADAS para /architect runs.
   - **Próximo paso natural**: Chris decide cuál de las 6 stories refined entra a /architect primero (típicamente `vitalia-slice-1-inbox` o `vitalia-slice-1-fidelizacion` por ser las más auto-contenidas sin sub-blockers externos), o retoma `vitalia-copilot-tools-impl` en worktree fresco (6 tickets agentic Opus R23). Side stories refining `vitalia-payment-adapter-mvp` + `vitalia-fiscal-emission-pe` siguen esperando /po draft.
+- **2026-05-18 sesión `/pm-vitalia auth-base-functional` (hot-fix bloqueante validación visual brand)**: Chris reportó dev-app.vitalialat.com mostrando placeholders T-fe-3 literal ("Sidebar/Header/Métricas pendiente T-fe-3") en lugar de Clerk SignIn + dashboard funcional. Investigación `/pm-vitalia` confirmó root cause leyendo repo (sin necesidad de WebFetch protegido por cloudflared 403):
+  - `vitalia/frontend/src/middleware.ts` NO EXISTE → Clerk no protege rutas
+  - `app/(auth)/sign-{in,up}/page.tsx` son stubs texto literal — NO renderizan `<SignIn />` / `<SignUp />`
+  - `app/(dashboard)/page.tsx` + `(dashboard)/{offers,bookings,appointments,patients}/page.tsx` + `app/onboarding/step-{1,2,3}/page.tsx` son stubs scaffolding T-fe-3 de Story 11 nunca implementados (T-fe-3 ticket original sigue diferido)
+  - `vitalia/backend/src/modules/vitalia/admin/` NO EXISTE (Nicolify sí tiene admin Streamlit completo en `nicolify/backend/src/modules/nicolify/admin/`)
+  - Wizard onboarding (Story `vitalia-slice-1-onboarding-wizard` done 2026-05-18) SÍ está implementado y enchufado en `/onboarding/wizard` — pero inaccesible sin Clerk middleware
+  - K8s deploy + cloudflared activos sirven scaffold actual roto
+  - Chris ratificó (AskUserQuestion 4 Q&A): mini-story hot-fix + admin Streamlit espejo Nicolify con SOLO crear-tenant + crear-user (scope mínimo, no scope creep) · worktree wip/vitalia canónico · spec+plan ahora después /dev-team
+  - **Story `vitalia-auth-base-functional` creada state=ready** (skip refining/refined formal por scope quirúrgico ratificado Chris). Ready package autocontenido:
+    - `01-spec.md` (~520 LOC): 10 Gherkin scenarios SC-01..SC-10 + wireframes ASCII + microcopy Spanish neutro + 8 decisions cementadas (D1-D8)
+    - `03-arch-brief.md` (~480 LOC): Clerk middleware shape + admin Streamlit pattern + paths exactos + 20 file inventory (12 NEW + 7 EDIT + 4 DELETE)
+    - `04-validators.yaml`: 12 validators must_pass (7 non_functional + 2 functional + 2 visual + 1 auditor matrix) + gherkin_verification_matrix anchor
+    - `05-guidelines.md` (~400 LOC): files in scope whitelist + 7 patterns required + 12 anti-patterns prohibidos + skills/rules a cargar
+    - `06-tickets.yaml`: 6 tickets atómicos DAG (T-1 middleware FE + T-2 Clerk pages FE + T-3 dashboard mín FE + T-4 admin Streamlit BE + T-5 ops K8s deploy + T-6 Playwright LIVE) con `gherkin_coverage` MANDATORY post-cement-date 2026-05-18 cada ticket
+    - `checkpoint.md`: state=ready, defer_audit=false, repro_verified=true, 4 open questions Q1-Q4 con defaults
+  - Cost-routing: 0 Opus tickets (no agentic production), 6 Sonnet/qwen-opencode eligible. Estimación 18h total, 12h critical path con paralelización T-1+T-4 BE/FE.
+  - **Próximo paso**: Chris responde Q1-Q4 (defaults razonables, puede ratificar todos) → `/dev-team vitalia-auth-base-functional` arranca T-1..T-6 autonomous → validators GREEN → AUTO-HANDOFF `/auditor` → APPROVED → AUTO-HANDOFF `/pm-vitalia merge`. Una vez DONE, esta story DESBLOQUEA validación visual real de las 6 stories refined Slice 1.

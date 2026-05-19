@@ -1,0 +1,159 @@
+# 04-validators.yaml — vitalia-auth-base-functional
+# Validators ejecutables ★ must_pass:true gate
+# /auditor Phase B runs each command, captures verdict.
+
+---
+story_id: vitalia-auth-base-functional
+generated_at: 2026-05-18
+generated_by: /pm-vitalia
+brand: vitalia
+total_validators: 12
+
+# ============================================================
+# § NON_FUNCTIONAL (lint, format, type-check, arch fitness)
+# ============================================================
+
+non_functional:
+
+  - id: nf-fe-tsc
+    must_pass: true
+    surface: frontend
+    command: |
+      cd vitalia/frontend && npx tsc --noEmit
+    expected_exit: 0
+    description: "TypeScript strict, 0 errors across all FE files (incluyendo middleware + dashboard feature)"
+
+  - id: nf-fe-eslint
+    must_pass: true
+    surface: frontend
+    command: |
+      cd vitalia/frontend && npx eslint src/ --cache --max-warnings=0
+    expected_exit: 0
+    description: "ESLint 0 errors + 0 warnings"
+
+  - id: nf-fe-arch-fitness
+    must_pass: true
+    surface: frontend
+    command: |
+      cd vitalia/frontend && npx vitest run src/__tests__/architecture/ --reporter=default
+    expected_exit: 0
+    description: "FE arch fitness ratchet — shrink-only allowlists, no new violations"
+
+  - id: nf-be-ruff-check
+    must_pass: true
+    surface: backend
+    command: |
+      WS=$(git rev-parse --show-toplevel) && cd $WS/vitalia/backend && $WS/.venv/bin/ruff check src/modules/vitalia/admin/ tests/admin/ --no-cache
+    expected_exit: 0
+    description: "Ruff 0 errors on new admin module + tests"
+
+  - id: nf-be-ruff-format
+    must_pass: true
+    surface: backend
+    command: |
+      WS=$(git rev-parse --show-toplevel) && cd $WS/vitalia/backend && $WS/.venv/bin/ruff format --check src/modules/vitalia/admin/ tests/admin/
+    expected_exit: 0
+    description: "Ruff format consistency on admin module"
+
+  - id: nf-be-arch-fitness
+    must_pass: true
+    surface: backend
+    command: |
+      WS=$(git rev-parse --show-toplevel) && cd $WS/vitalia/backend && $WS/.venv/bin/pytest tests/architecture/ -x -q --tb=short
+    expected_exit: 0
+    description: "BE arch fitness (DDD, tenant isolation, admin-panel rules)"
+
+  - id: nf-anti-duplication-scan
+    must_pass: true
+    surface: cross-cutting
+    command: |
+      WS=$(git rev-parse --show-toplevel) && \
+      MIRROR_COUNT=$(diff <(find $WS/nicolify/backend/src/modules/nicolify/admin/modules -name "tenants.py" -o -name "users.py" | xargs cat) <(find $WS/vitalia/backend/src/modules/vitalia/admin/modules -name "tenants.py" -o -name "users.py" | xargs cat) | wc -l) && \
+      [ "$MIRROR_COUNT" -gt 50 ]
+    expected_exit: 0
+    description: "Cross-brand anti-mirror check: vitalia admin modules MUST differ ≥50 lines from nicolify (proven brand-specific reimplementation, not copy-paste). Per .claude/rules/admin-panel.md + anti-duplication.md."
+
+# ============================================================
+# § FUNCTIONAL (unit + integration tests)
+# ============================================================
+
+functional:
+
+  - id: fn-be-admin-contract
+    must_pass: true
+    surface: backend
+    command: |
+      WS=$(git rev-parse --show-toplevel) && cd $WS/vitalia/backend && $WS/.venv/bin/pytest tests/admin/test_admin_contract.py -v
+    expected_exit: 0
+    description: "Admin contract test: PAGE_SPECS registry valid, all pages exist + callable, no slug dups"
+
+  - id: fn-fe-dashboard-unit
+    must_pass: true
+    surface: frontend
+    command: |
+      cd vitalia/frontend && npx vitest run src/features/dashboard/__tests__/ --reporter=default
+    expected_exit: 0
+    description: "Dashboard feature unit tests (DashboardWelcome + SliceOneStubsRow)"
+
+# ============================================================
+# § VISUAL (E2E LIVE Playwright)
+# ============================================================
+
+visual:
+
+  - id: vs-playwright-smoke-live
+    must_pass: true
+    surface: e2e-live
+    command: |
+      cd vitalia/frontend && \
+        E2E_BASE_URL=https://dev-app.vitalialat.com \
+        CLERK_TESTING_TOKEN=${CLERK_TESTING_TOKEN_VITALIA} \
+        VITALIA_ADMIN_PASSWORD=${VITALIA_ADMIN_PASSWORD} \
+        npx playwright test --project=smoke --grep "vitalia-auth-base-functional" --reporter=list
+    expected_exit: 0
+    description: "Playwright LIVE smoke against dev-app.vitalialat.com — 10/10 scenarios PASS (SC-01..SC-10). Requires post-T-5 redeploy completed + secrets configured."
+    requires:
+      - T-5 ops deploy completed
+      - K8s secrets configured (VITALIA_CLERK_* + VITALIA_ADMIN_PASSWORD_HASH)
+      - Fixture clinics seeded
+      - Clerk testing token generated (Chris)
+
+  - id: vs-playwright-trace-no-console-errors
+    must_pass: true
+    surface: e2e-live
+    command: |
+      cd vitalia/frontend && \
+        E2E_BASE_URL=https://dev-app.vitalialat.com \
+        CLERK_TESTING_TOKEN=${CLERK_TESTING_TOKEN_VITALIA} \
+        npx playwright test e2e/auth/ --trace=on --reporter=list && \
+      ! grep -i "ClerkProvider" vitalia/frontend/playwright-report/*.zip 2>/dev/null
+    expected_exit: 0
+    description: "Playwright trace inspection — no Clerk init console errors"
+
+# ============================================================
+# § AGENTIC_EVAL (n/a for this story — non-agentic)
+# ============================================================
+
+agentic_eval: []   # Story toca FE auth + BE admin Streamlit + ops. No agentic surface.
+
+# ============================================================
+# § AUDITOR PHASE D — Gherkin verification matrix
+# ============================================================
+
+gherkin_verification_matrix:
+  required: true
+  source: 01-spec.md § 3
+  scenarios:
+    - SC-01: nf-fe-tsc + vs-playwright-smoke-live (sign-in-redirect.spec.ts)
+    - SC-02: vs-playwright-smoke-live (sign-in-redirect.spec.ts)
+    - SC-03: vs-playwright-smoke-live (sign-in-form.spec.ts)
+    - SC-04: vs-playwright-smoke-live (sign-in-form.spec.ts)
+    - SC-05: vs-playwright-smoke-live (welcome.spec.ts post sign-up flow)
+    - SC-06: fn-fe-dashboard-unit + vs-playwright-smoke-live (welcome.spec.ts)
+    - SC-07: vs-playwright-smoke-live (welcome.spec.ts onboarding CTA)
+    - SC-08: fn-be-admin-contract + vs-playwright-smoke-live (tenants-users.spec.ts)
+    - SC-09: fn-be-admin-contract + vs-playwright-smoke-live (tenants-users.spec.ts)
+    - SC-10: vs-playwright-smoke-live (umbrella — whole suite GREEN)
+
+  pass_threshold: 10/10
+  output: 06-audit/gherkin-matrix.md

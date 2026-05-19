@@ -1,0 +1,327 @@
+# 06-tickets.yaml — vitalia-auth-base-functional
+# 6 tickets atómicos · gherkin_coverage MANDATORY (post 2026-05-18 cement)
+# Owner cost-routing per R23 + production_code per ticket
+# DAG: T-1 → T-2 → T-3 (FE chain) ∥ T-4 (BE admin) → T-5 (ops) → T-6 (Playwright LIVE)
+
+---
+story_id: vitalia-auth-base-functional
+brand: vitalia
+generated_at: 2026-05-18
+generated_by: /pm-vitalia
+total_tickets: 6
+estimated_total_hours: 18
+
+# Hot-fix metadata
+repro_verified: true                          # /pm-vitalia ran investigation 2026-05-18, root cause confirmed
+repro_evidence_ref: checkpoint.md::repro_evidence
+
+# DAG visualization:
+#
+#   T-1 ──→ T-2 ──→ T-3 ──┐
+#                          ├──→ T-5 ──→ T-6
+#                  T-4 ────┘
+#
+# T-1 + T-4 parallel-able (no dependency)
+# T-5 depends on all of T-1..T-4 (deploy full stack)
+# T-6 depends on T-5 (Playwright LIVE requires deploy done)
+
+tickets:
+
+  # ──────────────────────────────────────────────────────────────
+  - id: T-1
+    title: "FE — Clerk middleware (vitalia/frontend/src/middleware.ts NEW)"
+    surface: frontend
+    production_code: true
+    owner_eligibility: [qwen-opencode, claude-sonnet, claude-opus]  # FE non-agentic
+    claude_opus_required: false
+    estimated_hours: 1
+    blocked_by: []
+    blocks: [T-2, T-3, T-5]
+    decisions_applicable: [D1, D5]
+    files_in_scope:
+      - vitalia/frontend/src/middleware.ts (NEW)
+    description: |
+      Crear `middleware.ts` raíz de FE Vitalia con clerkMiddleware + createRouteMatcher.
+      Rutas públicas: /sign-in/*, /sign-up/*, /public/*, /api/v1/vitalia/webhooks/*, /api/health.
+      Resto protegidas via auth.protect(). Matcher config excluye _next + static assets.
+      No redirect manual, no RBAC en middleware.
+    acceptance:
+      validator_ids: [nf-fe-tsc, nf-fe-eslint, nf-fe-arch-fitness]
+    gherkin_coverage:
+      - scenario: "SC-01 — Unauthenticated user accessing dashboard root"
+        tests:
+          - "vitalia/frontend/e2e/auth/sign-in-redirect.spec.ts::SC-01"
+      - scenario: "SC-02 — Public landing route is not protected"
+        tests:
+          - "vitalia/frontend/e2e/auth/sign-in-redirect.spec.ts::SC-02"
+
+  # ──────────────────────────────────────────────────────────────
+  - id: T-2
+    title: "FE — Pages Clerk reales (<SignIn /> + <SignUp />) + cleanup step-{1,2,3}"
+    surface: frontend
+    production_code: true
+    owner_eligibility: [qwen-opencode, claude-sonnet, claude-opus]
+    claude_opus_required: false
+    estimated_hours: 2
+    blocked_by: [T-1]                              # middleware antes para que /sign-in sea reachable
+    blocks: [T-5]
+    decisions_applicable: [D1, D4]
+    files_in_scope:
+      - vitalia/frontend/src/app/(auth)/sign-in/page.tsx (EDIT — replace placeholder con <SignIn />)
+      - vitalia/frontend/src/app/(auth)/sign-up/page.tsx (EDIT — replace placeholder con <SignUp />)
+      - vitalia/frontend/src/app/onboarding/step-1/page.tsx (DELETE)
+      - vitalia/frontend/src/app/onboarding/step-2/page.tsx (DELETE)
+      - vitalia/frontend/src/app/onboarding/step-3/page.tsx (DELETE)
+      - vitalia/frontend/src/app/onboarding/step-1/ (DELETE dir)
+      - vitalia/frontend/src/app/onboarding/step-2/ (DELETE dir)
+      - vitalia/frontend/src/app/onboarding/step-3/ (DELETE dir)
+    description: |
+      Reemplazar 2 page.tsx placeholders por componentes Clerk reales con appearance
+      tokens vitalia. Eliminar 3 stub pages legacy onboarding/step-{1,2,3} (wizard
+      unificado vive en /onboarding/wizard).
+    acceptance:
+      validator_ids: [nf-fe-tsc, nf-fe-eslint]
+    gherkin_coverage:
+      - scenario: "SC-03 — Sign-in page renders Clerk form"
+        tests:
+          - "vitalia/frontend/e2e/auth/sign-in-form.spec.ts::SC-03"
+      - scenario: "SC-04 — Sign-up page renders Clerk form"
+        tests:
+          - "vitalia/frontend/e2e/auth/sign-in-form.spec.ts::SC-04"
+
+  # ──────────────────────────────────────────────────────────────
+  - id: T-3
+    title: "FE — Dashboard `/` mínimo welcome + feature `features/dashboard/`"
+    surface: frontend
+    production_code: true
+    owner_eligibility: [qwen-opencode, claude-sonnet, claude-opus]
+    claude_opus_required: false
+    estimated_hours: 3
+    blocked_by: [T-1]                              # middleware redirige `/` con auth, dashboard renderiza post
+    blocks: [T-5]
+    decisions_applicable: [D1, D4]
+    files_in_scope:
+      - vitalia/frontend/src/app/(dashboard)/page.tsx (EDIT — replace placeholder)
+      - vitalia/frontend/src/app/(dashboard)/layout.tsx (NEW if absent — shell con logo + UserButton)
+      - vitalia/frontend/src/features/dashboard/index.ts (NEW)
+      - vitalia/frontend/src/features/dashboard/components/DashboardWelcome.tsx (NEW Server Component)
+      - vitalia/frontend/src/features/dashboard/components/SliceOneStubsRow.tsx (NEW)
+      - vitalia/frontend/src/features/dashboard/api/useDashboardData.ts (NEW si requiere fetch client; sino server fetch directo)
+      - vitalia/frontend/src/features/dashboard/types/DashboardData.ts (NEW)
+      - vitalia/frontend/src/features/dashboard/__tests__/DashboardWelcome.test.tsx (NEW)
+    description: |
+      Implementar dashboard mínimo welcome state:
+        - h1 "Hola, {first_name}"
+        - Badge "{clinic_name} · {plan_tier}"
+        - CTA "Configurar tu clínica" (visible si !is_onboarded) → /onboarding/wizard
+        - SliceOneStubsRow: 5 cards (Inbox/Pipeline/Agenda/Fideliz/Marketing) con label "pronto"
+      Fetch user via Clerk auth() server-side. Fetch tenant context via /api/v1/iam/me.
+      NO implementar offers/bookings/appointments (siguen placeholder).
+    acceptance:
+      validator_ids: [nf-fe-tsc, nf-fe-eslint, nf-fe-arch-fitness, fn-fe-dashboard-unit]
+    gherkin_coverage:
+      - scenario: "SC-06 — Authenticated user lands on welcome dashboard"
+        tests:
+          - "vitalia/frontend/src/features/dashboard/__tests__/DashboardWelcome.test.tsx::renders_welcome_with_tenant_context"
+          - "vitalia/frontend/e2e/dashboard/welcome.spec.ts::SC-06"
+      - scenario: "SC-07 — Authenticated user can open onboarding wizard"
+        tests:
+          - "vitalia/frontend/e2e/dashboard/welcome.spec.ts::SC-07"
+
+  # ──────────────────────────────────────────────────────────────
+  - id: T-4
+    title: "BE — Admin Streamlit Vitalia (scope mínimo: tenants + usuarios)"
+    surface: backend
+    production_code: true
+    owner_eligibility: [qwen-opencode, claude-sonnet, claude-opus]  # BE non-agentic
+    claude_opus_required: false
+    estimated_hours: 6
+    blocked_by: []                                  # paralelizable con T-1..T-3
+    blocks: [T-5]
+    decisions_applicable: [D2, D3, D7, D8]
+    files_in_scope:
+      - vitalia/backend/src/modules/vitalia/admin/__init__.py (NEW)
+      - vitalia/backend/src/modules/vitalia/admin/app.py (NEW)
+      - vitalia/backend/src/modules/vitalia/admin/pages/__init__.py (NEW)
+      - vitalia/backend/src/modules/vitalia/admin/pages/tenants.py (NEW)
+      - vitalia/backend/src/modules/vitalia/admin/pages/usuarios.py (NEW)
+      - vitalia/backend/src/modules/vitalia/admin/modules/__init__.py (NEW)
+      - vitalia/backend/src/modules/vitalia/admin/modules/tenants.py (NEW)
+      - vitalia/backend/src/modules/vitalia/admin/modules/users.py (NEW)
+      - vitalia/backend/src/modules/vitalia/admin/_shared/__init__.py (NEW)
+      - vitalia/backend/src/modules/vitalia/admin/_shared/auth.py (NEW)
+      - vitalia/backend/src/modules/vitalia/admin/_shared/db.py (NEW)
+      - vitalia/backend/tests/admin/__init__.py (NEW)
+      - vitalia/backend/tests/admin/test_admin_contract.py (NEW)
+      - vitalia/backend/pyproject.toml (EDIT — add deps streamlit + passlib + clerk-backend-api)
+    description: |
+      Bootstrap admin Streamlit Vitalia espejando pattern Nicolify (registry-based
+      st.navigation + pages/modules split + _shared utils) PERO scope mínimo:
+      SOLO 2 pages (tenants + usuarios).
+
+      tenants.py:
+        - Form crear tenant con fields (clinic_name, country, locale, timezone, vertical, plan_tier)
+        - tenant_id UUIDv5 determinista (namespace + seed "vitalia:admin:tenant:{slug}")
+        - INSERT en clinics + tenants + tenant_locations (HIPAA-lite dual filter ready)
+        - Audit log row obligatorio (admin.tenant.create)
+        - List tenants existentes (SELECT last 50)
+
+      users.py:
+        - Form crear user con fields (email, first_name, last_name, tenant_id, clinic_id, role)
+        - Call Clerk Backend API (clerk-backend-api SDK) para crear user
+        - INSERT user_profiles asociando clerk_user_id ↔ tenant_id + clinic_id
+        - Generar magic sign-in link (clerk_client.sign_in_tokens.create)
+        - Audit log row obligatorio (admin.user.create)
+
+      _shared/auth.py:
+        - Streamlit super-admin gate con bcrypt verify vs VITALIA_ADMIN_PASSWORD_HASH
+
+      Contract test:
+        - Cada pages/*.py registered en PAGE_SPECS
+        - Cada PageSpec referencia file que existe + función render_*() callable
+        - No slug duplicado
+        - NO importar de nicolify/ (anti cross-brand mirror)
+    acceptance:
+      validator_ids:
+        - nf-be-ruff-check
+        - nf-be-ruff-format
+        - nf-be-arch-fitness
+        - nf-anti-duplication-scan
+        - fn-be-admin-contract
+    gherkin_coverage:
+      - scenario: "SC-08 — Super-admin opens admin app and creates a tenant"
+        tests:
+          - "vitalia/backend/tests/admin/test_admin_contract.py::test_tenants_page_registered_and_callable"
+          - "vitalia/frontend/e2e/admin/tenants-users.spec.ts::SC-08"
+      - scenario: "SC-09 — Super-admin creates Clerk user associated to tenant"
+        tests:
+          - "vitalia/backend/tests/admin/test_admin_contract.py::test_usuarios_page_registered_and_callable"
+          - "vitalia/frontend/e2e/admin/tenants-users.spec.ts::SC-09"
+
+  # ──────────────────────────────────────────────────────────────
+  - id: T-5
+    title: "ops — K8s deploy backend+frontend+admin + secrets verify + seed fixtures"
+    surface: ops
+    production_code: false                          # config/deploy artifacts, not runtime app code
+    owner_eligibility: [qwen-opencode, claude-sonnet, claude-opus]
+    claude_opus_required: false
+    estimated_hours: 3
+    blocked_by: [T-1, T-2, T-3, T-4]                # full stack ready before deploy
+    blocks: [T-6]
+    decisions_applicable: [D7]
+    files_in_scope:
+      - vitalia/deploy/Dockerfile.admin (NEW)
+      - vitalia/deploy/k8s/admin-deployment.yaml (NEW)
+      - vitalia/deploy/k8s/admin-service.yaml (NEW)
+      - vitalia/deploy/k8s/admin-ingress.yaml (NEW — host vitalia-admin.vitalialat.com)
+      - vitalia/deploy/k8s/secrets.template.yaml (EDIT — add VITALIA_ADMIN_PASSWORD_HASH)
+      - vitalia/.env.dev.template (EDIT — add VITALIA_ADMIN_PASSWORD_HASH)
+    description: |
+      Pasos:
+      1. Build container `vitalia/deploy/Dockerfile.admin` (base python + streamlit + COPY admin/).
+      2. Push container registry.
+      3. Verify K8s vitalia-secrets tiene VITALIA_CLERK_* reales (no REPLACE_ME) — si no, escalate Chris para `kubectl apply`.
+      4. Generar `VITALIA_ADMIN_PASSWORD_HASH` con bcrypt + agregar al secret.
+      5. `kubectl apply` admin-deployment/service/ingress.
+      6. `kubectl rollout restart deployment/vitalia-{backend,admin,frontend}` (force reload).
+      7. `kubectl exec deployment/vitalia-backend -- python scripts/seed_fixture_clinics.py --apply` (3 tenants fixture: aurora-dental-ar, mindful-cl, sanare-mx).
+      8. Confirmar DNS `vitalia-admin.vitalialat.com` resuelve.
+      9. Smoke manual: `curl https://dev-app.vitalialat.com/api/health` → 200, `curl https://vitalia-admin.vitalialat.com/` → 200 streamlit.
+    acceptance:
+      validator_ids: []                              # ops ticket, no runtime test validators directly (T-6 valida funcionalmente)
+      manual_smoke:
+        - "curl https://dev-app.vitalialat.com/api/health → 200"
+        - "curl https://vitalia-admin.vitalialat.com/ → 200 streamlit response"
+        - "kubectl get pods -n vitalia → all Ready"
+    gherkin_coverage: []                             # no Gherkin directo, scope ops infra
+    gherkin_coverage_note: "Ops ticket; scenarios SC-* validados E2E live en T-6 que depende de este deploy."
+
+  # ──────────────────────────────────────────────────────────────
+  - id: T-6
+    title: "tests — Playwright smoke LIVE contra dev-app.vitalialat.com (yo /pm-vitalia ejecuto)"
+    surface: tests
+    production_code: false                          # test code, not runtime
+    owner_eligibility: [claude-sonnet, claude-opus]  # Sonnet OK para tests; Opus para análisis trace si flake
+    claude_opus_required: false
+    estimated_hours: 3
+    blocked_by: [T-5]
+    blocks: []                                       # último ticket
+    decisions_applicable: [D6]
+    files_in_scope:
+      - vitalia/frontend/e2e/auth/sign-in-redirect.spec.ts (NEW)
+      - vitalia/frontend/e2e/auth/sign-in-form.spec.ts (NEW)
+      - vitalia/frontend/e2e/dashboard/welcome.spec.ts (NEW)
+      - vitalia/frontend/e2e/admin/tenants-users.spec.ts (NEW)
+    description: |
+      Implementar Playwright LIVE specs contra `dev-app.vitalialat.com` (no localhost):
+        - sign-in-redirect.spec.ts: SC-01, SC-02
+        - sign-in-form.spec.ts: SC-03, SC-04
+        - welcome.spec.ts: SC-06, SC-07 (requires auth.fixture from onboarding-wizard story)
+        - tenants-users.spec.ts: SC-08, SC-09 (separate baseURL vitalia-admin.vitalialat.com + super-admin password)
+
+      Prerrequisitos:
+        - CLERK_TESTING_TOKEN_VITALIA env var (Chris genera en Clerk dashboard Vitalia → Settings → Testing)
+        - VITALIA_ADMIN_PASSWORD env var (mismo password cuyo hash está en K8s secret)
+        - T-5 deploy completo + DNS resuelto + smoke manual OK
+
+      Ejecución obligatoria por mí (`/pm-vitalia`) ANTES de declarar story PASS:
+        cd vitalia/frontend && \
+          E2E_BASE_URL=https://dev-app.vitalialat.com \
+          CLERK_TESTING_TOKEN=$CLERK_TESTING_TOKEN_VITALIA \
+          VITALIA_ADMIN_PASSWORD=$VITALIA_ADMIN_PASSWORD \
+          npx playwright test --project=smoke --grep "vitalia-auth-base-functional" --reporter=list
+
+      Resultado esperado: 10/10 PASS, < 60s, 0 console errors Clerk.
+    acceptance:
+      validator_ids: [vs-playwright-smoke-live, vs-playwright-trace-no-console-errors]
+    gherkin_coverage:
+      - scenario: "SC-01 — Unauthenticated user accessing dashboard root"
+        tests:
+          - "vitalia/frontend/e2e/auth/sign-in-redirect.spec.ts::SC-01"
+      - scenario: "SC-02 — Public landing route is not protected"
+        tests:
+          - "vitalia/frontend/e2e/auth/sign-in-redirect.spec.ts::SC-02"
+      - scenario: "SC-03 — Sign-in page renders Clerk form"
+        tests:
+          - "vitalia/frontend/e2e/auth/sign-in-form.spec.ts::SC-03"
+      - scenario: "SC-04 — Sign-up page renders Clerk form"
+        tests:
+          - "vitalia/frontend/e2e/auth/sign-in-form.spec.ts::SC-04"
+      - scenario: "SC-05 — User completes sign-up triggers webhook"
+        tests:
+          - "vitalia/frontend/e2e/dashboard/welcome.spec.ts::SC-05-sign-up-flow-to-dashboard"
+      - scenario: "SC-06 — Authenticated user lands on welcome dashboard"
+        tests:
+          - "vitalia/frontend/e2e/dashboard/welcome.spec.ts::SC-06"
+      - scenario: "SC-07 — Authenticated user can open onboarding wizard"
+        tests:
+          - "vitalia/frontend/e2e/dashboard/welcome.spec.ts::SC-07"
+      - scenario: "SC-08 — Super-admin opens admin app and creates a tenant"
+        tests:
+          - "vitalia/frontend/e2e/admin/tenants-users.spec.ts::SC-08"
+      - scenario: "SC-09 — Super-admin creates Clerk user associated to tenant"
+        tests:
+          - "vitalia/frontend/e2e/admin/tenants-users.spec.ts::SC-09"
+      - scenario: "SC-10 — Full smoke suite passes against dev-app.vitalialat.com"
+        tests:
+          - "umbrella — whole suite GREEN ≥ 9/10 PASS"
+
+# ─── Summary ────────────────────────────────────────────────────
+summary:
+  fe_tickets: 3              # T-1, T-2, T-3
+  be_tickets: 1              # T-4
+  ops_tickets: 1             # T-5
+  test_tickets: 1            # T-6
+  total: 6
+  estimated_hours: 18
+  estimated_dev_days: 2
+  parallel_opportunities:
+    - "T-1 + T-4 paralelizables (FE middleware + BE admin sin deps)"
+    - "T-2 + T-3 secuencial post T-1 (FE chain)"
+  critical_path:
+    - "T-1 → T-2 → T-3 → T-5 → T-6"  # max chain hours: 1+2+3+3+3 = 12h
+    - "T-4 → T-5 → T-6"               # alt chain: 6+3+3 = 12h
+    - "critical path = 12h wall clock con paralelización"
+  cost_routing_total:
+    - "0 Opus tickets (no agentic production code)"
+    - "6 Sonnet/qwen-opencode tickets (cost-routing eficiente)"
