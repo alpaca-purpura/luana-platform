@@ -48,7 +48,9 @@ test.describe("SC-14 — A11y axe smoke (vitalia-auth-base-functional)", () => {
 
       const results = await new AxeBuilder({ page })
         // Excluir iframes de terceros (Clerk widget usa iframe interno)
-        .exclude("iframe")
+        // Excluir solo los iframes de Clerk (widget de auth usa iframe interno en dev mode).
+        // Excluir todos los iframes globalmente ocultaría violaciones en iframes propios.
+        .exclude({ selector: 'iframe[src*="clerk"]' })
         .analyze();
 
       const criticalOrSerious = results.violations.filter((v) =>
@@ -78,7 +80,9 @@ authTest.describe(
         });
 
         const results = await new AxeBuilder({ page: authedPage })
-          .exclude("iframe")
+          // Excluir solo los iframes de Clerk (widget de auth usa iframe interno en dev mode).
+        // Excluir todos los iframes globalmente ocultaría violaciones en iframes propios.
+        .exclude({ selector: 'iframe[src*="clerk"]' })
           .analyze();
 
         const criticalOrSerious = results.violations.filter((v) =>

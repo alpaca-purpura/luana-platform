@@ -146,8 +146,9 @@ test.describe("vitalia-auth-base-functional — SC-09: admin panel Usuarios page
 
     // SC-09.2: No debe haber PHI de pacientes visible
     // (Admin de tenants/usuarios no maneja datos médicos)
-    // HIPAA-lite: verificar que no se filtran campos sensibles en la UI admin
-    await expect(page.getByText(/diagnóstico/i)).not.toBeVisible({ timeout: 3_000 }).catch(() => {});
-    await expect(page.getByText(/tratamiento/i)).not.toBeVisible({ timeout: 3_000 }).catch(() => {});
+    // HIPAA-lite: verificar que no se filtran campos sensibles en la UI admin.
+    // toHaveCount(0): falla loudly si el texto PHI aparece (comportamiento deseado — PHI leak = error real).
+    await expect(page.getByText(/diagnóstico/i)).toHaveCount(0, { timeout: 3_000 });
+    await expect(page.getByText(/tratamiento/i)).toHaveCount(0, { timeout: 3_000 });
   });
 });

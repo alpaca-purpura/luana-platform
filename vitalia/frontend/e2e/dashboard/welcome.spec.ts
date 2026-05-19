@@ -25,8 +25,10 @@ import { test, expect } from "../auth.fixture";
 // ─── Mock de la API del dashboard ────────────────────────────────────────────
 
 async function setupDashboardMocks(page: import("@playwright/test").Page) {
-  // Mock: endpoint del tenant/perfil del usuario
-  await page.route("**/api/v1/vitalia/tenant/profile", async (route) => {
+  // Mock: IAMUserResponse endpoint — fuente de verdad del dashboard.
+  // Ruta canónica: /api/v1/iam/me (ver DashboardWelcome.tsx + DashboardData.ts).
+  // HIPAA-lite: mock usa datos de prueba genéricos (sin PHI real de pacientes).
+  await page.route("**/api/v1/iam/me", async (route) => {
     if (route.request().method() !== "GET") {
       await route.continue();
       return;
@@ -35,43 +37,17 @@ async function setupDashboardMocks(page: import("@playwright/test").Page) {
       status: 200,
       contentType: "application/json",
       body: JSON.stringify({
-        tenantId: "vitalia-test-tenant",
+        userId: "user_smoke_test",
+        firstName: "Demo",
+        lastName: "User",
+        email: "demo@vitalia-test.com",
+        role: "admin_clinic",
+        isOnboarded: false,
         // HIPAA-lite: nombre de clínica no es PHI (nombre de negocio, no de paciente)
         clinicName: "Clínica Vitalia Demo",
         planTier: "starter",
-        onboardingCompleted: false,
-        userDisplayName: "Demo User",
-      }),
-    });
-  });
-
-  // Mock: endpoint de dashboard summary (si existe)
-  await page.route("**/api/v1/vitalia/dashboard/summary", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({
         tenantId: "vitalia-test-tenant",
-        clinicName: "Clínica Vitalia Demo",
-        planTier: "starter",
-        onboardingCompleted: false,
-        slices: [
-          { id: "brand-studio", label: "Identidad", status: "pending" },
-          { id: "offer-studio", label: "Servicios", status: "pending" },
-          { id: "sales-agent", label: "Agente IA", status: "pending" },
-        ],
-      }),
-    });
-  });
-
-  // Mock: onboarding wizard state (slice 1 stubs row)
-  await page.route("**/api/v1/vitalia/wizard/status", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({
-        completed: false,
-        currentStep: null,
+        clinicId: "clinic-smoke-test",
       }),
     });
   });

@@ -24,9 +24,10 @@ test.describe("vitalia-auth-base-functional — SC-03: /sign-in renderiza Clerk 
   }) => {
     await page.goto("/sign-in", { waitUntil: "domcontentloaded" });
 
-    // Clerk <SignIn /> debe renderizar; no debe haber placeholder de work-in-progress
+    // Clerk <SignIn /> debe renderizar; no debe haber placeholder de work-in-progress.
+    // toHaveCount(0): si el elemento no existe, count=0 (pasa); si existe, falla loudly.
     const placeholder = page.getByText(/pendiente.*T-fe-3/i);
-    await expect(placeholder).not.toBeVisible({ timeout: 5_000 }).catch(() => {});
+    await expect(placeholder).toHaveCount(0, { timeout: 5_000 });
 
     // El campo de email/identifier debe estar visible
     const emailInput = page.locator(
@@ -42,7 +43,7 @@ test.describe("vitalia-auth-base-functional — SC-03: /sign-in renderiza Clerk 
     await expect(clerkForm.first()).toBeVisible({ timeout: 10_000 });
 
     // No debe existir texto de placeholder visible
-    await expect(page.getByText("pendiente")).not.toBeVisible({ timeout: 3_000 }).catch(() => {});
+    await expect(page.getByText("pendiente")).toHaveCount(0, { timeout: 3_000 });
   });
 });
 
@@ -54,9 +55,10 @@ test.describe("vitalia-auth-base-functional — SC-04: /sign-up renderiza Clerk 
   }) => {
     await page.goto("/sign-up", { waitUntil: "domcontentloaded" });
 
-    // No debe haber placeholder de work-in-progress
+    // No debe haber placeholder de work-in-progress.
+    // toHaveCount(0): si el elemento no existe, count=0 (pasa); si existe, falla loudly.
     const placeholder = page.getByText(/pendiente.*T-fe-3/i);
-    await expect(placeholder).not.toBeVisible({ timeout: 5_000 }).catch(() => {});
+    await expect(placeholder).toHaveCount(0, { timeout: 5_000 });
 
     // Clerk <SignUp /> debe renderizar con campo email o formulario visible
     const emailInput = page.locator(
@@ -71,6 +73,6 @@ test.describe("vitalia-auth-base-functional — SC-04: /sign-up renderiza Clerk 
     await expect(clerkForm.first()).toBeVisible({ timeout: 10_000 });
 
     // No debe existir texto de placeholder visible
-    await expect(page.getByText("pendiente")).not.toBeVisible({ timeout: 3_000 }).catch(() => {});
+    await expect(page.getByText("pendiente")).toHaveCount(0, { timeout: 3_000 });
   });
 });

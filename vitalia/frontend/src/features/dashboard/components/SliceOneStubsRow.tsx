@@ -1,13 +1,12 @@
-"use client";
-
 /**
  * SliceOneStubsRow — 5 coming-soon stub cards for Slice 1 features.
  *
  * Features: Inbox / Pipeline / Agenda / Fidelización / Marketing.
  * All display "pronto" badge — no real functionality yet.
  *
- * Client Component: uses `"use client"` because future iterations will
- * add interactive hover state and progressive disclosure.
+ * Server Component (default): no state, no effects, no event handlers.
+ * If interactive hover state is genuinely required in a future iteration,
+ * re-add "use client" with measured justification at that time.
  *
  * Spanish neutro: "pronto" (no accent needed — monosyllable).
  */

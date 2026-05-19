@@ -25,6 +25,15 @@
 #
 # downstream-regression-na: script de plataforma (cross-brand tooling); no es
 #   source de consumers específicos de brand.
+#
+# LIMITACIÓN — text-fallback (función audit_report_text):
+#   El regex `\b[45][0-9]{2}\b` es una heurística COARSE que extrae cualquier
+#   número de 3 dígitos que empiece con 4 o 5 de archivos .txt/.log del reporte.
+#   Puede producir FALSOS POSITIVOS (p.ej., "versión 4.5.2" o "line 503" en un
+#   stack trace normal). El path canónico y confiable para detectar errores HTTP
+#   es el análisis de trace.zip via `--trace=on` (función audit_traces), que
+#   parsea network.json estructurado con jq. El text-fallback es solo complementario
+#   cuando no hay trace.zip disponible.
 # =============================================================================
 
 set -euo pipefail

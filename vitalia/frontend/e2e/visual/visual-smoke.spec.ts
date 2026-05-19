@@ -2,7 +2,11 @@
  * visual-smoke.spec.ts — SC-16 (vitalia-auth-base-functional)
  *
  * Baseline de screenshots para regresión visual.
- * Threshold: maxDiffPixelRatio 0.2 (20% tolerancia para variaciones de fuente/render).
+ * Umbrales maxDiffPixelRatio:
+ *   - /sign-in y /sign-up: 0.05 (5%) — Clerk vendor UI renderiza con alta consistencia;
+ *     captcha y avatares se enmascaran (mask[]); tolerancia baja es intencional.
+ *   - / (dashboard): 0.1 (10%) — código propio con contenido dinámico enmascarado;
+ *     ligeramente más tolerante por diferencias de antialiasing en fuentes del OS.
  *
  * IMPORTANTE: Las screenshots de referencia se generan en la PRIMERA ejecución LIVE
  * por /pm-vitalia post-deploy (npx playwright test --update-snapshots).
@@ -61,7 +65,8 @@ test.describe("SC-16 — Visual baseline (vitalia-auth-base-functional)", () => 
     });
 
     await expect(page).toHaveScreenshot("signin.png", {
-      maxDiffPixelRatio: 0.2,
+      // 0.05: Clerk vendor UI renderiza consistentemente; captcha/avatar enmascarados.
+      maxDiffPixelRatio: 0.05,
       // Mask elementos que cambian entre runs (timestamps, avatares dinámicos)
       mask: [
         page.locator('[data-testid="clerk-captcha"]'),
@@ -91,7 +96,8 @@ test.describe("SC-16 — Visual baseline (vitalia-auth-base-functional)", () => 
     });
 
     await expect(page).toHaveScreenshot("signup.png", {
-      maxDiffPixelRatio: 0.2,
+      // 0.05: Clerk vendor UI renderiza consistentemente; captcha/avatar enmascarados.
+      maxDiffPixelRatio: 0.05,
       mask: [
         page.locator('[data-testid="clerk-captcha"]'),
         page.locator('[aria-label="captcha"]'),
@@ -129,7 +135,9 @@ authTest.describe(
         });
 
         await expect(authedPage).toHaveScreenshot("dashboard.png", {
-          maxDiffPixelRatio: 0.2,
+          // 0.1: código propio con contenido dinámico enmascarado;
+          // tolerancia moderada por diferencias de antialiasing en fuentes del OS.
+          maxDiffPixelRatio: 0.1,
           // Mask elementos dinámicos: nombre usuario, hora actual
           mask: [
             authedPage.locator("[data-clerk-user-button]"),
