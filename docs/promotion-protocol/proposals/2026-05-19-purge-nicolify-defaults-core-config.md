@@ -1,10 +1,15 @@
 ---
 proposal_id: 2026-05-19-purge-nicolify-defaults-core-config
-state: proposed
+state: migrated
 opened_date: 2026-05-19
 opened_by: /pm-luana
-ratified_by: null
-ratified_date: null
+ratified_by: Chris
+ratified_date: 2026-05-19
+migrated_date: 2026-05-19
+migrated_commit: b869eaf152400dd632e33cc03a008a8e2ceb7361
+wip_branch_commit: a73a1e6
+auditor_review: REVIEW.md (verdict WARN approve-to-merge=true, ephemeral en worktree pre-cleanup)
+gate_output: gate-output.json (verdict READY_FOR_MERGE 6/6, ephemeral en worktree pre-cleanup)
 
 # Origen
 origin_learnings: []  # detectado durante auditoría /pm-luana 2026-05-19 (admin-iam-adoption outcome), no learning pre-existente
@@ -230,6 +235,17 @@ LITELLM_BASE_URL=http://luana-dev-vitalia_litellm-1:4000/v1   # cuando litellm-p
 ## 6. Bitácora
 
 - 2026-05-19: opened by /pm-luana durante auditoría exhaustiva core packages post 1-semana carve-out. Caso detectado: HANDOFF vitalia-auth-base-functional → smoke admin Streamlit reveló phantom tables + audit core/config.py reveló 4 hardcodes Nicolify. State: proposed.
+- 2026-05-19 (misma sesión post commit 03065cf): Chris ratifica APPROVED — "Ratifico el documento, usa sub agentes para el desarrollo, auditoría merge y cierre, todo aquí, de forma autonoma a menos que sea algo que impacte al negocio". State: proposed → accepted.
+- 2026-05-19 (pre-lift verification cross-worktree): detectado que NINGÚN brand `.env.dev` (nicolify/vitalia/comunify) tiene las 4 vars seteadas — todos dependían silenciosamente de defaults engine. Risk escalated to Chris → Chris ratificó Opción A (pre-set .env.dev de cada brand antes del engine purge). Ejecutado pre-set:
+  - `~/Proyectos/luana-nicolify/nicolify/.env.dev`: agregadas 4 vars con valores legacy nicolify (preserve current behavior — `app.nicolify.com`, `nicolify_copilot_bot`, `visionarias_knowledge`, `visionarias_hybrid`, `http://visionarias_litellm:4000/v1`)
+  - `~/Proyectos/luana-vitalia/vitalia/.env.dev`: agregadas 4 vars con valores vitalia (`dev-app.vitalialat.com`, `vitalia_copilot_bot`, `vitalia_knowledge`, `vitalia_hybrid`, `http://localhost:4000/v1`)
+  - `~/Proyectos/luana-comunify/comunify/.env.dev`: agregadas 4 vars con valores comunify (`dev-app.comunifyagents.com`, `comunify_copilot_bot`, `comunify_knowledge`, `comunify_hybrid`, `http://localhost:4000/v1`)
+  - lupulo: SKIP (no worktree activo — al bootstrap, `_pm-brand-template/.env.dev.template` ya tendrá el bloque actualizado)
+- 2026-05-19 (lift en progreso): worktree `wip/core-purge-nicolify-defaults` creado, engine purge ejecutado + 4 brand `.env.dev.template` actualizados + R3 downstream regression PASS:
+  - gate-runner gates 1-6 PASS (engine-platform 220 tests + ruff + arch + downstream-copilot 1640 tests + downstream-sales-agent ADVISORY_PASS unrelated infra + downstream-llm 67 tests). Verdict: READY_FOR_MERGE.
+  - auditor-backend verdict: WARN approve-to-merge=true conditional on 3 commit-time requirements (SCOPE_GATE_SKIP=1 doc-justified per atomicity, Tests-audited section in commit body, R3 brand backend gap mitigated by zero legacy hardcoded asserts grep). 2 INFO non-blocking: bitácora typo fixed; residual nicolify hardcodes in `core/luana-core-sales-agent/.../payment/providers.py` + `orchestrator/graph.py` → próximo proposal candidate.
+- 2026-05-19 (lift cerrado): wip commit `a73a1e6` (worktree `wip/core-purge-nicolify-defaults`) pushed con SCOPE_GATE_SKIP=1 justificado. Squash-merged a `main` commit `b869eaf152400dd632e33cc03a008a8e2ceb7361` pushed origin/main. Pre-commit Section 11 detectó `.git/SQUASH_MSG` y permitió commit a main automáticamente. State: accepted → migrated.
+- 2026-05-19 (post-merge): worktree `wip/core-purge-nicolify-defaults` y branch `wip/core-purge-nicolify-defaults` cleanup pendiente (próximo paso /pm-luana session housekeeping). REVIEW.md + gate-output.json eran artifacts efímeros del worktree, se pierden al cleanup (referencia inmutable: commit SHA + CHANGELOG.md core-platform v0.3.0 entry + esta bitácora).
 
 ## 7. Cross-references
 
