@@ -3,8 +3,8 @@ story_id: vitalia-auth-base-functional
 brand: vitalia
 outcome: vitalia-mvp-ui-foundation
 parent_spec: standalone-hotfix                    # NO descended from vitalia-ux-discovery — independent hot-fix
-state: ready                                       # skip refining→refined formal porque scope quirúrgico Chris-ratificado
-phase: READY_AWAITING_DEV_TEAM
+state: developing                                  # /dev-team pickup 2026-05-18 — autonomous build T-1..T-6.b
+phase: T1_T2_T3_T4_DONE_AWAITING_T6a
 defer_audit: false                                 # NO escape valve — Chris quiere validación live
 parallel_safe: true                                # FE+BE+ops orthogonal, no conflict con otras stories
 spawned_at: 2026-05-18
@@ -139,9 +139,13 @@ state_history:
     at: 2026-05-18
     by: /pm-vitalia
     reason: "Post-Chris ratificación gaps audit (preguntó '¿has considerado todos los medios de validación incluyendo Playwright?'). 11 gaps identificados (4 MUST + 4 SHOULD + 3 COULD), TODOS ratificados Chris. Updates: +9 validators (12→19) +8 scenarios (10→18) +1 ticket split (T-6→T-6.a + T-6.b) +5.5h estim (18→23.5h) +5.5h critical path (12→17.5h). Spec mantiene state=ready, no regresión a refining."
+  - state: developing
+    at: 2026-05-18
+    by: /dev-team
+    reason: "Pickup autonomous build — Chris solicita completar story end-to-end hasta vitalia live. CONTEXT-BRIEF.md generado (Haiku, 436 lines, 16 secciones clean). Arranca T-1 (FE Clerk middleware) + T-4 (BE Admin Streamlit) en paralelo. T-5 deploy bloqueado hasta pre_t5_chris_checklist_done=true (8 items Clerk dashboard). T-6.b ejecutado por /pm-vitalia post-deploy."
 
 # Handoff next
-next_action: "Chris ratifica Q1-Q5 (Q5 NEW post gaps audit) + completa pre-T-5 manual checklist (per 05-guidelines.md § 8) → /pm-vitalia spawn /dev-team vitalia-auth-base-functional arranca T-1..T-6.b"
+next_action: "T-1+T-2+T-3+T-4 DONE (commits e80c806+dcd34d6+69aaab1+2b056a5). T-6.a pending: local smoke Playwright http://localhost:3002 (requires make dev-vitalia running + Clerk keys). Once T-6.a green → T-5 deploy (requires pre_t5_chris_checklist_done=true). Chris needed: pre_t5_chris_checklist_done=true (8 Clerk items)"
 next_owner: /dev-team
 
 # /auditor + /pm-vitalia merge handoffs (post developed)
@@ -149,6 +153,15 @@ post_developed_handoff: /auditor                   # AUTO per story-closure-gate
 post_approved_handoff: /pm-vitalia                 # AUTO merge
 
 last_updated: 2026-05-18
+# Ticket states (post /dev-team build T-1..T-4)
+ticket_states:
+  T-1: done   # commit e80c806 — Clerk middleware
+  T-2: done   # commit dcd34d6 — SignIn/SignUp real pages + DELETE step-{1,2,3}
+  T-3: done   # commit 69aaab1 — Dashboard welcome + features/dashboard/
+  T-4: done   # commit 2b056a5 — Admin Streamlit BE
+  T-6a: pending_stack_running  # requires make dev-vitalia + Clerk keys
+  T-5: blocked_pre_checklist  # blocked until pre_t5_chris_checklist_done=true
+  T-6b: blocked_t5  # blocked until T-5 done
 ---
 
 # vitalia-auth-base-functional — checkpoint
