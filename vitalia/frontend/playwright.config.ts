@@ -13,7 +13,7 @@ export default defineConfig({
   },
   projects: [
     // Smoke project — all *.smoke.spec.ts + vitalia-auth-base-functional specs
-    // (e2e/auth/*, e2e/dashboard/*, e2e/admin/* are plain *.spec.ts per 06-tickets.yaml)
+    // (e2e/auth/*, e2e/dashboard/*, e2e/admin/*, e2e/visual/* are plain *.spec.ts per 06-tickets.yaml)
     {
       name: "smoke",
       testMatch: [
@@ -21,17 +21,21 @@ export default defineConfig({
         /.*\/e2e\/auth\/.*\.spec\.ts/,
         /.*\/e2e\/dashboard\/.*\.spec\.ts/,
         /.*\/e2e\/admin\/.*\.spec\.ts/,
+        /.*\/e2e\/visual\/.*\.spec\.ts/,
       ],
       use: { ...devices["Desktop Chrome"] },
     },
     // Responsive projects — spec §9 breakpoints
-    // mobile: < 768px
+    // mobile: < 768px — includes T-6.b mobile/ specs + legacy responsive/ suite
     {
       name: "mobile",
-      testMatch: /.*\/responsive\/.*\.smoke\.spec\.ts/,
+      testMatch: [
+        /.*\/mobile\/.*\.spec\.ts/,
+        /.*\/responsive\/.*\.smoke\.spec\.ts/,
+      ],
       use: {
         ...devices["iPhone 13"],
-        viewport: { width: 375, height: 812 },
+        viewport: { width: 390, height: 844 },
       },
     },
     // tablet: 768-1024px
@@ -52,10 +56,13 @@ export default defineConfig({
         viewport: { width: 1440, height: 900 },
       },
     },
-    // A11y project — axe-core scans
+    // A11y project — axe-core scans (T-6.b a11y/ specs + legacy *.smoke.spec.ts pattern)
     {
       name: "a11y",
-      testMatch: /.*\/a11y\/.*\.smoke\.spec\.ts/,
+      testMatch: [
+        /.*\/a11y\/.*\.spec\.ts/,
+        /.*\/a11y\/.*\.smoke\.spec\.ts/,
+      ],
       use: { ...devices["Desktop Chrome"] },
     },
   ],
