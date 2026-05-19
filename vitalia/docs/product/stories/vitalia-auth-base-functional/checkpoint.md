@@ -3,8 +3,8 @@ story_id: vitalia-auth-base-functional
 brand: vitalia
 outcome: vitalia-mvp-ui-foundation
 parent_spec: standalone-hotfix                    # NO descended from vitalia-ux-discovery — independent hot-fix
-state: developed                                   # ALL 7 tickets pushed 2026-05-18 — auto-handoff /auditor (default per story-closure-gate)
-phase: HANDOFF_TO_AUDITOR
+state: reviewing                                   # /auditor APPROVED with PENDING_DEPLOY tier — awaiting /pm-vitalia merge
+phase: HANDOFF_TO_PM_MERGE
 defer_audit: false                                 # NO escape valve — Chris quiere validación live
 parallel_safe: true                                # FE+BE+ops orthogonal, no conflict con otras stories
 spawned_at: 2026-05-18
@@ -170,8 +170,8 @@ state_history:
       Phase D auditor evaluará gherkin matrix scenario-by-scenario; runtime-gated tests requerirán Chris merge → CD deploy → /pm-vitalia LIVE smoke ejecución para cerrar.
 
 # Handoff next
-next_action: "ALL 7 tickets pushed. /auditor toma story (defer_audit=false). Phase D gherkin matrix evaluates SC-01..SC-18. Runtime-gated validators (Postgres integration + LIVE deploy + Clerk testing token) requirieren: (a) merge → CD staging deploy, (b) Chris completa Clerk dashboard 8 items + kubectl apply secrets, (c) /pm-vitalia ejecuta T-6.b LIVE smoke contra dev-app.vitalialat.com."
-next_owner: /auditor
+next_action: "/auditor APPROVED with PENDING_DEPLOY tier (commit 65e82b8 self-fix iter-1 closed 6 WARNs). CHECKPOINTS.md C1-C5: 24/27 immediate ✅ + 1 PENDING_DEPLOY (Playwright LIVE) + 2 merge-step. Phase D gherkin-matrix.md: 6/18 PASS now + 12/18 PENDING_DEPLOY (require post-merge CD staging + Chris Clerk dashboard 8 items + /pm-vitalia LIVE smoke exec). AUTO-HANDOFF /pm-vitalia merge: write 07-merge.md 5 secciones + update capabilities/* + modules MD + squash-merge wip/vitalia → main + post-merge /pm-vitalia ejecuta T-6.b LIVE smoke contra dev-app.vitalialat.com."
+next_owner: /pm-vitalia
 
 # /auditor + /pm-vitalia merge handoffs (post developed)
 post_developed_handoff: /auditor                   # AUTO per story-closure-gate.md (default)
