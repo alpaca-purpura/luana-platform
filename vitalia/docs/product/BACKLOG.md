@@ -1,11 +1,8 @@
 # Vitalia Backlog (auto-generated)
 
-> Generated at: `2026-05-18T20:59:40+00:00`
+> Generated at: `2026-05-19T00:16:32+00:00`
 > DO NOT EDIT MANUALLY — modify source artifacts.
 > Regenerate: `python scripts/generate_backlog.py`
-
-## ⚠️ Warnings
-- refined cap exceeded (6 > 5, excl. legacy+outcomes)
 
 ## 📊 Roadmap view (filtered + curated)
 
@@ -18,12 +15,11 @@
 - **vitalia-fiscal-emission-pe** — outcome `vitalia-mvp-ui-foundation` [AWAITING_PO_DRAFT_DEFERRED_NEXT_SESSION]
 - **vitalia-payment-adapter-mvp** — outcome `vitalia-mvp-ui-foundation` [AWAITING_PO_DRAFT_DEFERRED_NEXT_SESSION]
 
-### ✅ Refined — listo para arquitectos (6 / cap 5)
+### ✅ Refined — listo para arquitectos (5 / cap 5)
 - **vitalia-slice-1-agenda** — outcome `vitalia-mvp-ui-foundation`
 - **vitalia-slice-1-fidelizacion** — outcome `vitalia-mvp-ui-foundation`
 - **vitalia-slice-1-inbox** — outcome `vitalia-mvp-ui-foundation`
 - **vitalia-slice-1-marketing** — outcome `vitalia-mvp-ui-foundation`
-- **vitalia-slice-1-onboarding-wizard** — outcome `vitalia-mvp-ui-foundation`
 - **vitalia-slice-1-pipeline** — outcome `vitalia-mvp-ui-foundation`
 
 ### 📦 Ready for development (1 / cap 5)
@@ -35,8 +31,8 @@
 ### 🧪 Developed — esperando QA (0 / cap 10)
 - _(none)_
 
-### 🔍 Reviewing (0 / cap 2)
-- _(none in review)_
+### 🔍 Reviewing (1 / cap 2)
+- vitalia-slice-1-onboarding-wizard
 
 ### Recently shipped (last 90d, 0 items)
 - _(none recent)_
@@ -56,18 +52,18 @@ kanban
     vitalia-mvp-ui-foundation[vitalia-mvp-ui-foundation]
     vitalia-fiscal-emission-pe[vitalia-fiscal-emission-pe]
     vitalia-payment-adapter-mvp[vitalia-payment-adapter-mvp]
-  ✅ Refined (6 / cap 5)
+  ✅ Refined (5 / cap 5)
     vitalia-slice-1-agenda[vitalia-slice-1-agenda]
     vitalia-slice-1-fidelizacion[vitalia-slice-1-fidelizacion]
     vitalia-slice-1-inbox[vitalia-slice-1-inbox]
     vitalia-slice-1-marketing[vitalia-slice-1-marketing]
-    vitalia-slice-1-onboarding-wiz[vitalia-slice-1-onboarding-wizard]
     vitalia-slice-1-pipeline[vitalia-slice-1-pipeline]
   📦 Ready (1 / cap 5)
     vitalia-ux-discovery[vitalia-ux-discovery]
   🔨 Developing (0 / cap 3)
   🧪 Developed (0 / cap 10)
-  🔍 Reviewing (0 / cap 2)
+  🔍 Reviewing (1 / cap 2)
+    vitalia-slice-1-onboarding-wiz[vitalia-slice-1-onboarding-wizard]
   ✅ Done (0 / 90d rolling)
   🅿 Parked (0)
 ```

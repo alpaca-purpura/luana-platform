@@ -2,13 +2,8 @@
 story_id: vitalia-slice-1-onboarding-wizard
 outcome: vitalia-mvp-ui-foundation
 parent_spec: vitalia-ux-discovery
-state: done
-phase: MERGED
-merged_at: 2026-05-18
-merge_commit_main: 4191371
-merge_commit_main_fixup: 38ab9bd
-playwright_e2e_live_verdict: PASS_5_OF_5
-playwright_run_duration_s: 6.3
+state: reviewing
+phase: HANDOFF_TO_PM_MERGE
 audit_started_at: 2026-05-18
 audit_started_by: /auditor (Conv 3 autonomous chain)
 audit_completed_at: 2026-05-18
