@@ -13,12 +13,44 @@ from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
 
 import structlog
 
+from luana_core_platform.core.config import settings
+
 if TYPE_CHECKING:
     from uuid import UUID
 
     from sqlalchemy.orm import Session
 
 logger = structlog.get_logger()
+
+
+def _build_payment_url(action: str, metadata: dict[str, Any]) -> str:
+    """Build payment success/cancel URL from settings.FRONTEND_URL (brand-agnostic).
+
+    Metadata override (``success_url`` / ``cancel_url`` keys) takes precedence;
+    falls back to ``{settings.FRONTEND_URL}/payment/{action}`` derived per brand.
+
+    Raises ``RuntimeError`` if ``settings.FRONTEND_URL`` is empty AND metadata
+    doesn't provide explicit override — failfast vs silent leak to nicolify
+    legacy default (per proposal 2026-05-19-purge-nicolify-hardcodes-sales-agent).
+
+    Args:
+        action: "success" or "cancel" — determines URL path suffix.
+        metadata: Stripe checkout session metadata, may include ``{action}_url`` override.
+
+    Returns:
+        Absolute URL for Stripe ``success_url`` / ``cancel_url`` param.
+    """
+    custom = metadata.get(f"{action}_url")
+    if custom:
+        return custom
+    if not settings.FRONTEND_URL:
+        raise RuntimeError(
+            f"Cannot build payment {action} URL: settings.FRONTEND_URL empty. "
+            f"Brand MUST override FRONTEND_URL in {{brand}}/.env.dev / .env.prod "
+            f"(per proposal 2026-05-19-purge-nicolify-defaults-core-config "
+            f"+ proposal 2026-05-19-purge-nicolify-hardcodes-sales-agent)."
+        )
+    return f"{settings.FRONTEND_URL.rstrip('/')}/payment/{action}"
 
 
 class PaymentStatusEnum(StrEnum):
@@ -189,12 +221,8 @@ class StripePaymentProvider:
                 }
             ],
             mode="payment",
-            success_url=metadata.get(
-                "success_url", "https://app.nicolify.com/payment/success"
-            ),
-            cancel_url=metadata.get(
-                "cancel_url", "https://app.nicolify.com/payment/cancel"
-            ),
+            success_url=_build_payment_url("success", metadata),
+            cancel_url=_build_payment_url("cancel", metadata),
             metadata={
                 "tenant_id": str(tenant_id),
                 "lead_id": str(lead_id),
