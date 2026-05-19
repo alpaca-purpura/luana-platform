@@ -1,0 +1,60 @@
+---
+capability_id: vitalia.auth.clerk-middleware
+module: auth
+slug: clerk-middleware
+status: live
+date_introduced: 2026-05-18
+story_introduced: vitalia-auth-base-functional
+package_version: vitalia-frontend@0.1.0
+package_path: vitalia/frontend/src/middleware.ts
+license: proprietary
+---
+
+# Clerk middleware — Vitalia FE
+
+Protección de rutas mediante `clerkMiddleware` + `createRouteMatcher`. Default deny — todo route protegido excepto los explícitamente públicos.
+
+## Surfaces
+
+- **Config:** `vitalia/frontend/src/middleware.ts`
+- **Backend:** n/a (FE only)
+- **Frontend:** `vitalia/frontend/src/middleware.ts` ejecuta en edge runtime de Next.js 16
+- **Tests:** `vitalia/frontend/src/__tests__/architecture/` (arch fitness ratchet)
+- **Docs:** Story 01-spec.md SC-01, SC-02
+
+## Rutas públicas (matcher)
+
+- `/sign-in(.*)` — Clerk SignIn page
+- `/sign-up(.*)` — Clerk SignUp page
+- `/public(.*)` — Landing pública por clínica (futuro Slice 1)
+- `/api/v1/vitalia/webhooks(.*)` — Webhooks BE (HMAC validation server-side)
+- `/api/health` — Health check endpoint
+
+## Comportamiento
+
+- Sin sesión + ruta protegida → Clerk redirige a `/sign-in` (302/307)
+- Con sesión + ruta protegida → pasa a handler
+- Ruta pública → bypass middleware
+- Matcher excluye `_next` y static assets (`/((?!_next|.*\\..*).*)`)
+
+## Verification
+
+```yaml
+commands:
+  - "cd vitalia/frontend && npx tsc --noEmit"
+  - "cd vitalia/frontend && npx eslint src/middleware.ts --max-warnings=0"
+gherkin_evidence:
+  - SC-01: "vitalia/frontend/e2e/auth/sign-in-redirect.spec.ts::SC-01 (PENDING_DEPLOY)"
+  - SC-02: "vitalia/frontend/e2e/auth/sign-in-redirect.spec.ts::SC-02 (PASS 2026-05-18)"
+```
+
+## Dependencies
+
+- `@clerk/nextjs` (version locked in package.json)
+- Existing Clerk dev keys (`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `CLERK_ISSUER`)
+
+## Notes
+
+- `auth.protect()` delegado 100% a Clerk — sin redirect manual ni RBAC.
+- RBAC se hace en route handlers / page level, no middleware.
+- T-1 commit e80c806.

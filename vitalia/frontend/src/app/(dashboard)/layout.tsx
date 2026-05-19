@@ -1,12 +1,17 @@
 import type { Metadata } from "next";
+import { AppShell } from "@/components/shared/shell";
 
 export const metadata: Metadata = {
   title: "Panel — Vitalia",
 };
 
 /**
- * Layout del panel de administración — sidebar + header (contexto clinic_owner).
- * Sidebar real con @luana/shared SidebarLayout en T-fe-3.
+ * Dashboard layout — AppShell with Sidebar + TopBar.
+ *
+ * T-3: Reemplaza placeholder shell con AppShell real (Sidebar + TopBar).
+ * Sidebar y TopBar son Client Components (estado colapso + acciones).
+ * Este layout file es Server Component — solo pasa `children`.
+ *
  * D9: chrome UI Spanish neutro tuteo.
  */
 export default function DashboardLayout({
@@ -14,30 +19,5 @@ export default function DashboardLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
-    <div className="flex min-h-screen">
-      {/* TODO T-fe-3: sidebar con <SidebarLayout> de @luana/shared */}
-      <aside
-        className="hidden w-64 flex-shrink-0 border-r bg-white lg:block"
-        aria-label="Navegación principal"
-      >
-        <div className="p-4">
-          <p className="text-xs text-gray-400">
-            Sidebar — pendiente T-fe-3
-          </p>
-        </div>
-      </aside>
-      <div className="flex flex-1 flex-col">
-        {/* TODO T-fe-3: header con <PageHeader> + <TenantSwitcher> */}
-        <header className="border-b bg-white px-6 py-4">
-          <p className="text-xs text-gray-400">
-            Header — pendiente T-fe-3
-          </p>
-        </header>
-        <main className="flex-1 p-6">
-          {children}
-        </main>
-      </div>
-    </div>
-  );
+  return <AppShell>{children}</AppShell>;
 }

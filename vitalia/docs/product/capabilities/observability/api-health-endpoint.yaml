@@ -1,0 +1,46 @@
+---
+capability_id: vitalia.observability.api-health-endpoint
+module: observability
+slug: api-health-endpoint
+status: live
+date_introduced: 2026-05-18
+story_introduced: vitalia-auth-base-functional
+package_version: vitalia-backend@0.1.0
+package_path: vitalia/backend/src/main.py
+license: proprietary
+---
+
+# API health endpoint — /api/health
+
+Endpoint mínimo de healthcheck para K8s livenessProbe + post_deploy_smoke.sh.
+
+## Surfaces
+
+- **Backend:** `vitalia/backend/src/main.py` route `GET /api/health`
+- **Ops:** K8s deployments `livenessProbe.httpGet.path: /api/health`
+- **Smoke:** `vitalia/deploy/scripts/post_deploy_smoke.sh` check 2 (`curl -fsS /api/health`)
+
+## Comportamiento
+
+- `GET /api/health` → 200 JSON `{"status":"ok"}`
+- Sin auth, sin tenant filter (es público per middleware matcher)
+- Idempotente, sin DB queries
+
+## Verification
+
+```yaml
+commands:
+  - "WS=$(git rev-parse --show-toplevel) && cd $WS/vitalia/backend && $WS/.venv/bin/ruff check src/main.py"
+  - "curl -fsS http://localhost:8002/api/health"  # local with backend stack up
+  - "curl -fsS https://dev-app.vitalialat.com/api/health"  # LIVE post-deploy
+gherkin_evidence:
+  - SC-17: "vitalia/deploy/scripts/post_deploy_smoke.sh check 2 (PENDING_DEPLOY)"
+```
+
+## Follow-up ticket required
+
+- /api/health unit test (TDD deviation per auditor-backend WARN).
+
+## Notes
+
+- T-5 commit e1c2315 (config artifact + main.py edit).

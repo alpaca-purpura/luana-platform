@@ -58,3 +58,14 @@ class HealthResponse(BaseModel):
 async def health() -> HealthResponse:
     """Liveness probe — used by Docker HEALTHCHECK + smoke checks."""
     return HealthResponse(status="ok", brand="vitalia", version=app.version)
+
+
+@app.get("/api/health", response_model=HealthResponse, tags=["meta"])
+async def api_health() -> HealthResponse:
+    """API-prefixed health endpoint — used by post_deploy_smoke.sh + Clerk middleware public routes.
+
+    Clerk middleware whitelist includes /api/health (no redirect).
+    Idempotent: returns same payload as /health for compatibility.
+    T-5 vitalia-auth-base-functional — SC-17 post-deploy smoke verify.
+    """
+    return HealthResponse(status="ok", brand="vitalia", version=app.version)
