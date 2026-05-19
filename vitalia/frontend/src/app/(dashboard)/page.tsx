@@ -1,24 +1,28 @@
 import type { Metadata } from "next";
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
+import { DashboardWelcome } from "@/features/dashboard";
 
 export const metadata: Metadata = {
   title: "Inicio — Vitalia",
 };
 
 /**
- * Dashboard home — resumen de métricas principales.
- * Contenido real en T-fe-3.
- * D9: chrome UI Spanish neutro tuteo.
+ * Dashboard home — welcome state con contexto de tenant.
+ *
+ * Server Component: auth() verificado server-side, no client overhead.
+ * T-3: Implementación welcome state real (reemplaza placeholder T-fe-3).
+ *
+ * SC-06: usuario autenticado ve h1 "Hola, {first_name}" + badge clínica.
+ * SC-07: CTA "Configurar tu clínica" visible si !is_onboarded.
  */
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const { userId } = await auth();
+  if (!userId) redirect("/sign-in");
+
   return (
-    <section aria-label="Resumen del panel">
-      <h1 className="mb-6 text-2xl font-semibold text-gray-900">
-        Panel de control
-      </h1>
-      {/* TODO T-fe-3: métricas, próximas citas, alertas */}
-      <div className="rounded-lg border border-dashed border-gray-300 p-8 text-center text-sm text-gray-400">
-        Métricas del panel (pendiente T-fe-3)
-      </div>
+    <section aria-label="Panel de inicio">
+      <DashboardWelcome userId={userId} />
     </section>
   );
 }
