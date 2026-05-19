@@ -3,8 +3,8 @@ story_id: vitalia-auth-base-functional
 brand: vitalia
 outcome: vitalia-mvp-ui-foundation
 parent_spec: standalone-hotfix                    # NO descended from vitalia-ux-discovery — independent hot-fix
-state: reviewing                                   # /auditor APPROVED with PENDING_DEPLOY tier — awaiting /pm-vitalia merge
-phase: HANDOFF_TO_PM_MERGE
+state: done                                        # 2026-05-19 — merged to main + LIVE confirmed on dev-app.vitalialat.com
+phase: COMPLETE                                    # Story closed; follow-up ticket queued for 5 BE WARNs + Playwright selector fixes
 defer_audit: false                                 # NO escape valve — Chris quiere validación live
 parallel_safe: true                                # FE+BE+ops orthogonal, no conflict con otras stories
 spawned_at: 2026-05-18
@@ -177,7 +177,7 @@ next_owner: /pm-vitalia
 post_developed_handoff: /auditor                   # AUTO per story-closure-gate.md (default)
 post_approved_handoff: /pm-vitalia                 # AUTO merge
 
-last_updated: 2026-05-18
+last_updated: 2026-05-19
 # Ticket states (post /dev-team build T-1..T-4)
 ticket_states:
   T-1: done   # commit e80c806 — Clerk middleware
