@@ -20,6 +20,7 @@ import re
 from uuid import UUID
 
 import structlog
+from luana_core_platform.core.config import settings
 from luana_core_platform.links.ports.editable_fields import get_catalog
 
 from luana_core_copilot.application.orchestrator.state import CopilotState
@@ -687,16 +688,24 @@ def _build_marketing_kb_hint_fragment() -> str:
 
 
 # PI-5 PR-2 (D-PI5-009) — Telegram-only conventions block. Cross-tenant
-# cacheable: NO timestamps, conv_id, tenant_id, chat_id or any per-turn
-# interpolation. The single ``{tenant_slug}`` and ``{ruta}`` placeholders
-# below are LITERAL strings the LLM substitutes at output time — they
-# are NEVER Python-interpolated. Targeted size ≈ 1500 tokens so the
-# cumulative cacheable head clears the ≥2048 Anthropic Sonnet floor /
-# ≥1024 Kimi K2.6 floor (PM-resolved Q3, see CONTRACT § 16).
-_TELEGRAM_CHANNEL_CONTEXT_ES: str = """\
+# cacheable PER BRAND: NO timestamps, conv_id, tenant_id, chat_id or any
+# per-turn interpolation. Brand-specific markers (__TELEGRAM_BOT__ +
+# __FRONTEND_DOMAIN__) are resolved ONCE at first invocation via
+# settings.COPILOT_TELEGRAM_BOT_USERNAME + settings.FRONTEND_URL —
+# resulting string is stable for the engine instance lifetime (cache hit
+# on Anthropic/Kimi prompt cache per brand). The ``{tenant_slug}`` and
+# ``{ruta}`` placeholders are LITERAL strings the LLM substitutes at
+# output time — NEVER Python-interpolated.
+#
+# Brand-agnostic refactor per proposal 2026-05-19-purge-nicolify-hardcodes-sales-agent
+# (broadened scope to include copilot prompt hardcodes).
+# Targeted size ≈ 1500 tokens so cumulative cacheable head clears the
+# ≥2048 Anthropic Sonnet floor / ≥1024 Kimi K2.6 floor (PM-resolved Q3,
+# see CONTRACT § 16).
+_TELEGRAM_CHANNEL_CONTEXT_ES_TEMPLATE: str = """\
 ## Canal Telegram — convenciones operables
 
-Este turno se envía desde el bot @nicolify_copilot_bot. Aplican TODAS las
+Este turno se envía desde el bot @__TELEGRAM_BOT__. Aplican TODAS las
 reglas siguientes hasta que el canal cambie. Estas reglas son
 deterministas: no las inventes, no las negocies, no pidas confirmación
 al usuario para aplicarlas.
@@ -706,7 +715,7 @@ al usuario para aplicarlas.
 Las siguientes acciones requieren el editor web. Si el usuario las pide,
 NUNCA inventes éxito y NUNCA simules ejecución — responde con la
 plantilla "Esto se ajusta mejor desde el editor web. Te paso el link:
-app.nicolify.com/{tenant_slug}/{ruta}" reemplazando {ruta} por la sección
+__FRONTEND_DOMAIN__/{tenant_slug}/{ruta}" reemplazando {ruta} por la sección
 correspondiente, y termina el turno:
 
 - Edición visual de landings (cualquier tool del grupo `landing.*`):
@@ -795,7 +804,7 @@ una intención o tarea de hace varias horas:
 Plantilla canónica obligatoria, sin variantes ni floreo:
 
 "Esto se ajusta mejor desde el editor web. Te paso el link directo:
-app.nicolify.com/{tenant_slug}/{ruta}"
+__FRONTEND_DOMAIN__/{tenant_slug}/{ruta}"
 
 Reemplaza {ruta} por la sección concreta (brand-studio, offer-studio,
 landing-studio, growth, sales-agent, etc.). Si no estás seguro de la
@@ -910,7 +919,53 @@ def _build_telegram_channel_context_fragment(state: CopilotState) -> str:
     channel = ctx.get("channel") if isinstance(ctx, dict) else None
     if channel != "telegram":
         return ""
-    return _TELEGRAM_CHANNEL_CONTEXT_ES
+    return _get_telegram_channel_context_es()
+
+
+# Lazy cache — built at first telegram-channel invocation, then stable
+# for the engine instance lifetime (preserves prompt cache hit invariant).
+_telegram_channel_context_es_cache: str | None = None
+
+
+def _get_telegram_channel_context_es() -> str:
+    """Lazy-build Telegram channel context with brand-resolved values.
+
+    Replaces ``__TELEGRAM_BOT__`` + ``__FRONTEND_DOMAIN__`` markers in the
+    cacheable template with values from ``settings`` (set per brand via
+    ``{brand}/.env.dev`` / ``.env.prod``). Result cached for engine lifetime.
+
+    Raises RuntimeError if ``settings.FRONTEND_URL`` or
+    ``settings.COPILOT_TELEGRAM_BOT_USERNAME`` are empty (failfast vs silent
+    leak to nicolify legacy defaults — per proposal
+    2026-05-19-purge-nicolify-defaults-core-config).
+    """
+    global _telegram_channel_context_es_cache
+    if _telegram_channel_context_es_cache is not None:
+        return _telegram_channel_context_es_cache
+
+    url = settings.FRONTEND_URL.rstrip("/") if settings.FRONTEND_URL else ""
+    bot = settings.COPILOT_TELEGRAM_BOT_USERNAME
+    if not url or not bot:
+        raise RuntimeError(
+            f"Cannot build telegram channel context: "
+            f"FRONTEND_URL={'set' if url else 'EMPTY'}, "
+            f"COPILOT_TELEGRAM_BOT_USERNAME={'set' if bot else 'EMPTY'}. "
+            f"Brand MUST override in {{brand}}/.env.dev "
+            f"(per proposal 2026-05-19-purge-nicolify-defaults-core-config + "
+            f"proposal 2026-05-19-purge-nicolify-hardcodes-sales-agent)."
+        )
+
+    # Strip protocol — prompts only need the domain (not scheme)
+    domain = url
+    for proto in ("https://", "http://"):
+        if domain.startswith(proto):
+            domain = domain[len(proto) :]
+            break
+
+    _telegram_channel_context_es_cache = _TELEGRAM_CHANNEL_CONTEXT_ES_TEMPLATE.replace(
+        "__FRONTEND_DOMAIN__", domain
+    ).replace("__TELEGRAM_BOT__", bot)
+    return _telegram_channel_context_es_cache
 
 
 def _build_modules_list_fragment() -> str:

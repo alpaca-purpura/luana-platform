@@ -133,8 +133,11 @@ def _resolve_signing_secret(
     tenant_id: UUID | None = None
 
     # Try to extract tenant_id from the payload context (pre-parse best effort)
-    # Many providers include a custom header or query param.
-    raw_tenant = headers.get("x-tenant-id") or headers.get("x-nicolify-tenant-id")
+    # Standard header `x-tenant-id` only — deprecated brand-specific
+    # `x-nicolify-tenant-id` fallback removed per proposal
+    # 2026-05-19-purge-nicolify-hardcodes-sales-agent. Cross-codebase grep
+    # confirmed 0 consumers depending on deprecated header exclusively.
+    raw_tenant = headers.get("x-tenant-id")
     if raw_tenant:
         with contextlib.suppress(ValueError):
             tenant_id = UUID(raw_tenant)
