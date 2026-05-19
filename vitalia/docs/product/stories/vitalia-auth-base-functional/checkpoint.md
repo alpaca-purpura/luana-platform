@@ -3,8 +3,8 @@ story_id: vitalia-auth-base-functional
 brand: vitalia
 outcome: vitalia-mvp-ui-foundation
 parent_spec: standalone-hotfix                    # NO descended from vitalia-ux-discovery — independent hot-fix
-state: developing                                  # /dev-team pickup 2026-05-18 — autonomous build T-1..T-6.b
-phase: T1_T2_T3_T4_DONE_AWAITING_T6a
+state: developed                                   # ALL 7 tickets pushed 2026-05-18 — auto-handoff /auditor (default per story-closure-gate)
+phase: HANDOFF_TO_AUDITOR
 defer_audit: false                                 # NO escape valve — Chris quiere validación live
 parallel_safe: true                                # FE+BE+ops orthogonal, no conflict con otras stories
 spawned_at: 2026-05-18
@@ -143,10 +143,35 @@ state_history:
     at: 2026-05-18
     by: /dev-team
     reason: "Pickup autonomous build — Chris solicita completar story end-to-end hasta vitalia live. CONTEXT-BRIEF.md generado (Haiku, 436 lines, 16 secciones clean). Arranca T-1 (FE Clerk middleware) + T-4 (BE Admin Streamlit) en paralelo. T-5 deploy bloqueado hasta pre_t5_chris_checklist_done=true (8 items Clerk dashboard). T-6.b ejecutado por /pm-vitalia post-deploy."
+  - state: developed
+    at: 2026-05-18
+    by: /dev-team
+    reason: |
+      ALL 7 tickets pushed. Commits:
+      - T-1 e80c806 — FE Clerk middleware (3 files; 7/7 middleware unit + 38/38 arch + 306/306 vitest PASS)
+      - T-2 dcd34d6 — FE SignIn/SignUp real + DELETE legacy step-{1,2,3} (5 files)
+      - T-3 69aaab1 — FE Dashboard welcome + features/dashboard/ (7 files; 3/3 dashboard unit + 38/38 arch + 309 vitest)
+      - T-4 2b056a5 — BE Admin Streamlit + 3 integration tests (23 files; 17/17 unit PASS; integration @pytest.mark.integration gated por Postgres availability — SKIP graceful)
+      - T-6.a 096eba8 — Playwright LOCAL smoke specs (4 specs + config update; static gates GREEN; LOCAL exec partial por stack bindeada a luana-platform/main no este worktree)
+      - T-5 e1c2315 — K8s manifests admin (Dockerfile.admin + 3 K8s YAMLs + secrets template + post_deploy_smoke.sh + generate_admin_password_hash.sh + /api/health endpoint in main.py) (9 files; bash -n + yaml.safe_load + ruff PASS)
+      - T-6.b 2c59f77 — Playwright a11y + mobile + visual + audit script (5 NEW + 2 EDIT; tsc + eslint + bash -n PASS)
+
+      Static validators GREEN: tsc, eslint, arch-fitness, ruff, bash -n, yaml.safe_load, anti-dup scan.
+
+      Runtime-gated validators (NOT executable until post-merge + Chris manual):
+      - fn-be-webhook-clerk-integration ⏸ Postgres available locally pero tests usan @pytest.mark.integration (skip graceful, auditor verifica con stack up)
+      - fn-be-hipaa-audit-log-verify ⏸ idem
+      - fn-be-cross-tenant-isolation-admin ⏸ idem
+      - vs-playwright-smoke-local-pre-deploy ⏸ docker stack bindeada a luana-platform/ (main), no wip/vitalia — resolverá post squash-merge
+      - vs-playwright-smoke-live + vs-playwright-trace-broader-monitor + vs-playwright-a11y-axe + vs-playwright-mobile-viewport + vs-playwright-screenshot-baseline ⏸ requieren T-5 deploy LIVE + Chris CLERK_TESTING_TOKEN_VITALIA + secrets en cluster
+      - ops-k8s-healthcheck-deploy-verify ⏸ requiere kubectl apply real
+
+      AUTO-HANDOFF a /auditor (defer_audit=false default per story-closure-gate.md Layer 2).
+      Phase D auditor evaluará gherkin matrix scenario-by-scenario; runtime-gated tests requerirán Chris merge → CD deploy → /pm-vitalia LIVE smoke ejecución para cerrar.
 
 # Handoff next
-next_action: "T-1+T-2+T-3+T-4 DONE (commits e80c806+dcd34d6+69aaab1+2b056a5). T-6.a pending: local smoke Playwright http://localhost:3002 (requires make dev-vitalia running + Clerk keys). Once T-6.a green → T-5 deploy (requires pre_t5_chris_checklist_done=true). Chris needed: pre_t5_chris_checklist_done=true (8 Clerk items)"
-next_owner: /dev-team
+next_action: "ALL 7 tickets pushed. /auditor toma story (defer_audit=false). Phase D gherkin matrix evaluates SC-01..SC-18. Runtime-gated validators (Postgres integration + LIVE deploy + Clerk testing token) requirieren: (a) merge → CD staging deploy, (b) Chris completa Clerk dashboard 8 items + kubectl apply secrets, (c) /pm-vitalia ejecuta T-6.b LIVE smoke contra dev-app.vitalialat.com."
+next_owner: /auditor
 
 # /auditor + /pm-vitalia merge handoffs (post developed)
 post_developed_handoff: /auditor                   # AUTO per story-closure-gate.md (default)
