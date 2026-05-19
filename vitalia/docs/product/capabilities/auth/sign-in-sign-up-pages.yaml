@@ -1,0 +1,51 @@
+---
+capability_id: vitalia.auth.sign-in-sign-up-pages
+module: auth
+slug: sign-in-sign-up-pages
+status: live
+date_introduced: 2026-05-18
+story_introduced: vitalia-auth-base-functional
+package_version: vitalia-frontend@0.1.0
+package_path: vitalia/frontend/src/app/(auth)/
+license: proprietary
+---
+
+# Sign-in / Sign-up pages — Clerk real components
+
+Pages que renderizan los componentes oficiales de Clerk con localización Spanish neutro.
+
+## Surfaces
+
+- **Frontend:** `vitalia/frontend/src/app/(auth)/sign-in/page.tsx`, `vitalia/frontend/src/app/(auth)/sign-up/page.tsx`
+- **Tests:** `vitalia/frontend/e2e/auth/sign-in-form.spec.ts` (T-6.a)
+
+## Comportamiento
+
+- `/sign-in` → `<SignIn />` Clerk component, redirects to `/` after success (per `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL`)
+- `/sign-up` → `<SignUp />` Clerk component, idem
+- Spanish neutro tuteo en headers/labels (Clerk localization)
+
+## Out-of-scope
+
+- Webhook handler (BE) — capability separado (admin.streamlit-tenants-users via webhook)
+- Custom appearance tokens beyond defaults — defer to brand-styling story
+
+## DELETE legacy (this story)
+
+- `vitalia/frontend/src/app/onboarding/step-1/`, `step-2/`, `step-3/` — eliminados (wizard único en `/onboarding/wizard` desde Story 11)
+
+## Verification
+
+```yaml
+commands:
+  - "cd vitalia/frontend && npx tsc --noEmit"
+  - "cd vitalia/frontend && npx eslint src/app/\\(auth\\)/ --max-warnings=0"
+gherkin_evidence:
+  - SC-03: "vitalia/frontend/e2e/auth/sign-in-form.spec.ts::SC-03 (PENDING_DEPLOY)"
+  - SC-04: "vitalia/frontend/e2e/auth/sign-in-form.spec.ts::SC-04 (PENDING_DEPLOY)"
+```
+
+## Notes
+
+- T-2 commit dcd34d6.
+- Replaces placeholder strings "Inicio de sesión con Clerk (pendiente T-fe-3)" with real Clerk components.
