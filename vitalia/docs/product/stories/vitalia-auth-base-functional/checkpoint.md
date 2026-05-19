@@ -69,24 +69,28 @@ open_questions:
   - id: Q1
     question: "Admin Streamlit URL: subdomain vitalia-admin.vitalialat.com o subpath dev-app.vitalialat.com/admin?"
     default_recommended: "subdomain — aislamiento DNS+CORS más limpio"
-    status: pending_chris
+    status: ratified_default                       # 2026-05-18 — Chris pre-ratificó defaults razonables
+    ratified_value: "subdomain vitalia-admin.vitalialat.com"
   - id: Q2
     question: "Fixture clinic auto-asociada al sign-up del primer user?"
     default_recommended: "Sí — webhook user.created busca tenant con email_domain match en metadata, sino asocia a aurora-dental-ar (default fixture)"
-    status: pending_chris
+    status: ratified_default
+    ratified_value: "Sí — auto-asociar a aurora-dental-ar fixture default si no hay email_domain match"
   - id: Q3
     question: "Eliminar páginas legacy app/onboarding/step-{1,2,3}/page.tsx o dejar stubs muertos?"
     default_recommended: "Eliminar — son code-rot post wizard unificado"
-    status: pending_chris
+    status: ratified_default
+    ratified_value: "Eliminar (per T-2 file list DELETE)"
   - id: Q4
     question: "Admin Streamlit super-admin: 1 password compartido o multi-admin via Streamlit Authenticator config?"
     default_recommended: "1 password env-var (scope mínimo). Multi-admin defer story futura"
-    status: pending_chris
+    status: ratified_default
+    ratified_value: "1 password env-var VITALIA_ADMIN_PASSWORD_HASH bcrypt (scope mínimo). Multi-admin defer story futura."
   - id: Q5
     question: "Pre-T-5 Chris manual checklist Clerk dashboard — ¿cuándo lo completás? Antes spawn /dev-team o just-in-time antes T-5?"
     default_recommended: "Antes spawn /dev-team — así pre_t5_chris_checklist_done=true desde inicio + T-5 no se bloquea cuando llega su turno"
-    status: pending_chris
-    related: "Per 05-guidelines.md § 8 — checklist 8 items ~5 min en dashboard.clerk.com app vitalia"
+    status: pending_chris_manual_action            # Chris-only action, no /pm decision
+    related: "Per 05-guidelines.md § 8 — checklist 8 items ~5 min en dashboard.clerk.com app vitalia. Bloquea T-5 spawn — /dev-team Step 0 antes spawn builder T-5 verifica pre_t5_chris_checklist_done=true"
 
 # Decisions cementadas (ver 01-spec.md § 8)
 decisions:
