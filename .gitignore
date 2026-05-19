@@ -62,6 +62,7 @@ env/
 coverage.json
 htmlcov/
 .pytest_cache/
+**/coverage/
 
 # --- Node.js / pnpm ---
 node_modules/
@@ -83,6 +84,14 @@ static/uploads/
 .claude/worktrees/
 .claude/scheduled_tasks.lock
 CLAUDE.local.md
+
+# --- Auto-installed Skills (user-local, no scope project) ---
+# clerk-* and sentry-* skills auto-installed por claude harness via skills-lock.json.
+# No usados por specs/skills proyecto; mantener fuera de git para reducir noise.
+.agents/
+.claude/skills/clerk*
+.claude/skills/sentry*
+skills-lock.json
 
 # --- Turborepo ---
 .turbo/
