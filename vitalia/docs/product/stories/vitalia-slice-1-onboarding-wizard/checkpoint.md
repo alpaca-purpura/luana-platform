@@ -2,8 +2,21 @@
 story_id: vitalia-slice-1-onboarding-wizard
 outcome: vitalia-mvp-ui-foundation
 parent_spec: vitalia-ux-discovery
-state: developed
-phase: HANDOFF_TO_AUDITOR
+state: reviewing
+phase: HANDOFF_TO_PM_MERGE
+audit_started_at: 2026-05-18
+audit_started_by: /auditor (Conv 3 autonomous chain)
+audit_completed_at: 2026-05-18
+audit_verdict: APPROVED
+audit_artifacts:
+  - 06-audit/REVIEW-backend.md          # T-1/T-2/T-3 — APPROVED (1 WARN Cat 9 non-blocking)
+  - 06-audit/REVIEW-frontend.md         # T-6 — APPROVED (2 WARN F1+F2 non-blocking)
+  - 06-audit/REVIEW-agentic.md          # T-4/T-5/T-7 R23 OPT-OUT — APPROVED 0 findings
+  - 06-audit/gherkin-matrix.md          # Phase D — 13/13 scenarios PASS
+  - 06-audit/CHECKPOINTS.md             # C1-C5 grid — verdict APPROVED with Phase E live deferred to Fase F merge
+auditor_self_fix:
+  - c06ed90  # cap 1/2: render TopBar title in WizardOnboardingLayout (POM expected, copy.ts had string, JSX missing)
+phase_e_live_status: deferred_to_fase_f_merge   # docker stack mounts /home/chalreme/Proyectos/luana-platform/ (principal en main); wip/vitalia commits live post-squash-merge
 last_artifact: T-onboarding-7-result.md
 last_modified: 2026-05-18
 build_started_at: 2026-05-18
@@ -35,7 +48,7 @@ refresh_verdict: MINOR_DRIFT
 refresh_artifacts:
   - delta-arch-refresh.md                 # primary deliverable, 198 lines, 5-check matrix
   - 06-tickets-refresh.yaml               # override yaml, 330 lines, 5 SCOPE_REDUCED + 1 UNCHANGED + 1 SCOPE_REDUCED_FROM_CREATE_TO_VERIFY
-next_action: "AUTO-HANDOFF /auditor — all 7 tickets pushed (commits 135ffe0..74ca79a). State developing→developed. Auditor MUST run Playwright E2E live contra dev stack vivo (port 3002 vitalia FE) — Chris explicit requirement 2026-05-18."
+next_action: "AUTO-HANDOFF /pm-vitalia merge (Fase F). Write 07-merge.md 5 secciones, capabilities + modules MD, archive, state reviewing→done. Fase F § 2 MUST execute Playwright E2E live post squash-merge: (1) squash wip/vitalia→main (commits 135ffe0..c06ed90), (2) docker restart luana-dev-vitalia_frontend_dev-1, (3) cd vitalia/frontend && E2E_BASE_URL=http://localhost:3002 npx playwright test --project=smoke e2e/specs/vitalia/wizard-onboarding.smoke.spec.ts, (4) capture output + trace path en 07-merge.md § 2 verbatim."
 ratified_decisions_2026_05_18:
   - OQ-1: R23 OPT-OUT T-onboarding-4 + T-onboarding-5 → RATIFIED (Sonnet OK, production_code=false, wire-up + regression only)
   - OQ-2: T-onboarding-1 mini-arch inline → RATIFIED (Architect inline signatures repos + ORM models + DI binding in 06-tickets-refresh.yaml::T-onboarding-1::scope)
