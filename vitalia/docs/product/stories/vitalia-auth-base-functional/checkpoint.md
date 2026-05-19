@@ -34,22 +34,35 @@ repro_evidence:
 hot_fix_type: "deploy_base_functional_block"       # bloqueante para validar cualquier feature Slice 1
 priority: critical                                 # blocker validación visual brand vitalia
 
-# Files inventory ref
-files_in_scope_count: 20                           # ~12 NEW + 7 EDIT + 4 DELETE (ver 03-arch-brief.md § 6)
+# Files inventory ref (v2 post gaps audit 2026-05-18)
+files_in_scope_count: 32                           # ~24 NEW + 7 EDIT + 4 DELETE (ver 03-arch-brief.md § 6 + 06-tickets.yaml v2)
 
-# Validators ref
-validators_total: 12                               # 7 non_functional + 2 functional + 2 visual + 1 auditor matrix
-must_pass_count: 12
+# Validators ref (v2)
+validators_total: 19                               # 7 non_functional + 5 functional + 6 visual + 1 ops + matrix anchor
+must_pass_count: 19
+gaps_audit_v2_added_validators: 9                  # +9 vs v1 post Chris ratificación gaps audit
 
-# Tickets ref
-tickets_total: 6                                   # T-1..T-6
+# Tickets ref (v2)
+tickets_total: 7                                   # T-1, T-2, T-3, T-4, T-5, T-6.a, T-6.b
 production_code_tickets: 4                         # T-1, T-2, T-3, T-4
-non_production_tickets: 2                          # T-5 ops + T-6 tests
+non_production_tickets: 3                          # T-5 ops + T-6.a tests + T-6.b tests
 agentic_tickets: 0                                 # no agentic surface
 opus_required_tickets: 0                           # R23 — all Sonnet/qwen-opencode eligible
-estimated_total_hours: 18
-estimated_total_days: 2
-critical_path_hours: 12                            # con paralelización T-1+T-4
+estimated_total_hours: 23.5                        # +5.5h vs v1 (T-4 +2h + T-5 +0.5h + T-6.a NEW 2h + T-6.b +1h)
+estimated_total_days: 3
+critical_path_hours: 17.5                          # T-4 → T-6.a → T-5 → T-6.b (8+2+3.5+4)
+
+# Pre-T-5 Chris manual checklist (per 05-guidelines.md § 8 — v2 NEW)
+pre_t5_chris_checklist_done: false                 # ★ Chris debe marcar true ANTES de spawn T-5 builder ★
+pre_t5_chris_checklist_items:
+  - clerk_app_vitalia_active: false
+  - clerk_domain_dev_app_configured: false
+  - clerk_signin_methods_enabled: false
+  - clerk_api_keys_in_k8s_secret: false
+  - clerk_webhook_endpoint_configured: false
+  - clerk_webhook_signing_secret_in_k8s: false
+  - clerk_testing_token_generated: false
+  - clerk_issuer_url_in_k8s_secret: false
 
 # Open questions (resolver ANTES /dev-team spawn — Chris approve in-chat)
 open_questions:
@@ -69,6 +82,11 @@ open_questions:
     question: "Admin Streamlit super-admin: 1 password compartido o multi-admin via Streamlit Authenticator config?"
     default_recommended: "1 password env-var (scope mínimo). Multi-admin defer story futura"
     status: pending_chris
+  - id: Q5
+    question: "Pre-T-5 Chris manual checklist Clerk dashboard — ¿cuándo lo completás? Antes spawn /dev-team o just-in-time antes T-5?"
+    default_recommended: "Antes spawn /dev-team — así pre_t5_chris_checklist_done=true desde inicio + T-5 no se bloquea cuando llega su turno"
+    status: pending_chris
+    related: "Per 05-guidelines.md § 8 — checklist 8 items ~5 min en dashboard.clerk.com app vitalia"
 
 # Decisions cementadas (ver 01-spec.md § 8)
 decisions:
@@ -81,13 +99,13 @@ decisions:
   D7: Admin Streamlit deploy = container K8s separado
   D8: Super-admin auth Streamlit = bcrypt env-var (scope mínimo)
 
-# Ready package artifacts
+# Ready package artifacts (v2 post gaps audit 2026-05-18)
 artifacts:
-  - 01-spec.md                                     # Gherkin scenarios + wireframes + microcopy + decisions
-  - 03-arch-brief.md                               # decisiones técnicas + paths exactos + patterns
-  - 04-validators.yaml                             # 12 validators must_pass
-  - 05-guidelines.md                               # files in scope + patterns + anti-patterns
-  - 06-tickets.yaml                                # 6 tickets DAG + gherkin_coverage MANDATORY
+  - 01-spec.md                                     # Gherkin scenarios SC-01..SC-18 (18 v2 vs 10 v1) + wireframes + microcopy + decisions
+  - 03-arch-brief.md                               # decisiones técnicas + paths exactos + patterns (v1 no cambió)
+  - 04-validators.yaml                             # 19 validators must_pass (v2 vs 12 v1) + 4 categorías
+  - 05-guidelines.md                               # files in scope + 9 patterns + 16 anti-patterns + TDD note + pre-T-5 Chris checklist + auditor v2 responsibilities
+  - 06-tickets.yaml                                # 7 tickets DAG (T-1..T-6.b) + gherkin_coverage MANDATORY + 4 BE integration tests
 
 # Blockers
 blocker_dependencies: []                           # no story-level blockers
@@ -113,9 +131,13 @@ state_history:
     at: 2026-05-18
     by: /pm-vitalia
     reason: "Hot-fix scope quirúrgico Chris-ratificado. Skip refining/refined formal porque 01-spec.md + 03-arch-brief.md + 04-validators.yaml + 05-guidelines.md + 06-tickets.yaml escritos in-line por /pm-vitalia este turno post-investigación root cause."
+  - state: ready_v2
+    at: 2026-05-18
+    by: /pm-vitalia
+    reason: "Post-Chris ratificación gaps audit (preguntó '¿has considerado todos los medios de validación incluyendo Playwright?'). 11 gaps identificados (4 MUST + 4 SHOULD + 3 COULD), TODOS ratificados Chris. Updates: +9 validators (12→19) +8 scenarios (10→18) +1 ticket split (T-6→T-6.a + T-6.b) +5.5h estim (18→23.5h) +5.5h critical path (12→17.5h). Spec mantiene state=ready, no regresión a refining."
 
 # Handoff next
-next_action: "Chris ratifica spec (responde Q1-Q4 + ack o cambios) → /dev-team vitalia-auth-base-functional arranca T-1..T-6"
+next_action: "Chris ratifica Q1-Q5 (Q5 NEW post gaps audit) + completa pre-T-5 manual checklist (per 05-guidelines.md § 8) → /pm-vitalia spawn /dev-team vitalia-auth-base-functional arranca T-1..T-6.b"
 next_owner: /dev-team
 
 # /auditor + /pm-vitalia merge handoffs (post developed)

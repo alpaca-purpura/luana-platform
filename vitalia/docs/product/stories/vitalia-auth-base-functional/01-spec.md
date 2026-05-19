@@ -193,15 +193,163 @@ Feature: Playwright live verification against deployed environment
     Given the redeploy to dev-app.vitalialat.com is complete
     And K8s secrets VITALIA_CLERK_* are set with real values (not REPLACE_ME)
     And fixture clinics are seeded (Aurora dental AR + Mindful CL + Sanaré MX)
-    When Playwright runs:
+    When Playwright runs the full suite (base + a11y + mobile + visual):
       | spec | scenarios covered |
       | e2e/auth/sign-in-redirect.spec.ts | SC-01, SC-02 |
       | e2e/auth/sign-in-form.spec.ts | SC-03, SC-04 |
       | e2e/dashboard/welcome.spec.ts | SC-06, SC-07 |
       | e2e/admin/tenants-users.spec.ts | SC-08, SC-09 |
-    Then all 4 specs pass (≥ 4/4 PASS, 0 FAIL)
-    And total duration < 60 seconds
-    And no console errors related to Clerk init
+      | e2e/a11y/a11y-smoke.spec.ts | SC-14 |
+      | e2e/mobile/mobile-smoke.spec.ts | SC-15 |
+      | e2e/visual/visual-smoke.spec.ts | SC-16 |
+    Then all specs pass (≥ 18/18 PASS, 0 FAIL)
+    And total duration < 90 seconds
+    And `scripts/playwright_console_network_audit.sh` exit 0 (no console.error|warn, no 4xx/5xx no esperados)
+```
+
+### SC-11 — Cross-tenant isolation enforced post admin create (HIPAA dual filter) ★ v2 NEW ★
+
+```gherkin
+Feature: HIPAA-lite dual filter (tenant_id + clinic_id) prevents cross-tenant data leaks
+
+  Scenario: SC-11 — Tenant A user cannot read Tenant B data via dual filter
+    Given super-admin created Tenant A with clinic_id_A and Tenant B with clinic_id_B
+    And user U_A is associated with tenant_id_A + clinic_id_A
+    When U_A authenticates and queries with X-Tenant-ID=tenant_id_A but clinic_id of Tenant B
+    Then the backend returns 404 (no leak — dual filter enforced per hipaa-lite.md)
+    And no log entry exposes data of clinic_id_B
+    When U_A queries with X-Tenant-ID=tenant_id_B (header mismatch with auth token)
+    Then the backend returns 403 (tenant mismatch detected)
+```
+
+### SC-12 — Webhook HMAC validation rejects invalid signatures ★ v2 NEW ★
+
+```gherkin
+Feature: Clerk webhook adapter HMAC security gate (Svix standard)
+
+  Scenario: SC-12 — Invalid HMAC signature is rejected, no DB write occurs
+    Given the backend exposes /api/v1/vitalia/webhooks/clerk
+    And VITALIA_CLERK_WEBHOOK_SECRET is configured (whsec_...)
+    When a POST arrives with valid payload but invalid svix-signature header
+    Then the backend returns 401 Unauthorized
+    And no UserProfile row is created
+    And no audit_log row is created
+    And the rejection is logged with structlog warning (signature mismatch)
+
+  Scenario: SC-12.bis — Unsupported event types are accepted as no-op
+    Given the backend webhook adapter handles only user.created
+    When Clerk POSTs a user.deleted event with valid HMAC
+    Then the backend returns 200 OK (no error)
+    And no UserProfile row is created (no-op)
+    And no audit_log row is created (no-op)
+```
+
+### SC-13 — Admin audit_log row created post action (HIPAA compliance) ★ v2 NEW ★
+
+```gherkin
+Feature: HIPAA-lite audit_log mandatory (per vitalia/.claude/rules/hipaa-lite.md § audit log)
+
+  Scenario: SC-13 — Admin tenant.create writes audit_log row synchronously
+    Given super-admin is authenticated in admin Streamlit
+    When super-admin submits create-tenant form for "Test Clínica Demo" (AR, dental)
+    Then a row is INSERTED in vitalia_audit_log table with:
+      | column | value |
+      | action | "admin.tenant.create" |
+      | actor | "super-admin" |
+      | resource_type | "tenant" |
+      | resource_id | "{tenant_uuid_v5}" |
+      | payload_redacted | JSON contains clinic_name + country + plan_tier (NO PHI) |
+      | timestamp | within last 5 seconds |
+    And the row is written SYNCHRONOUSLY before the success response
+    And payload_redacted does NOT contain any PHI fields (diagnosis, medical_notes, etc.)
+
+  Scenario: SC-13.bis — Admin user.create writes audit_log row synchronously
+    Given a tenant exists
+    When super-admin submits create-user form
+    Then a row is INSERTED in vitalia_audit_log with action="admin.user.create"
+    And payload_redacted contains email + role (identity only, NO PHI)
+```
+
+### SC-14 — A11y axe smoke pass (sign-in + sign-up + dashboard + wizard) ★ v2 NEW ★
+
+```gherkin
+Feature: A11y compliance smoke (axe-core) — vertical médica stakes altas
+
+  Scenario: SC-14 — All public + post-login pages pass axe critical + serious checks
+    Given Playwright + @axe-core/playwright is configured
+    When axe.run() is invoked on each page:
+      | page | URL |
+      | sign-in | /sign-in |
+      | sign-up | /sign-up |
+      | dashboard | / (authenticated) |
+      | wizard | /onboarding/wizard (authenticated) |
+    Then ZERO critical violations are reported
+    And ZERO serious violations are reported
+    And the test passes (moderate + minor violations logged but non-blocking)
+```
+
+### SC-15 — Mobile viewport (iPhone 13) responsive ★ v2 NEW ★
+
+```gherkin
+Feature: Mobile responsive smoke (devices['iPhone 13'])
+
+  Scenario: SC-15 — Dashboard + sign-in render correctly on mobile
+    Given Playwright project=mobile uses devices['iPhone 13']
+    When the test visits /sign-in on mobile viewport
+    Then the Clerk SignIn form is fully visible without horizontal scroll
+    And tap targets (buttons + inputs) have height ≥ 44px (iOS tappable minimum)
+    When the test visits / (authenticated) on mobile viewport
+    Then DashboardWelcome renders without overflow
+    And SliceOneStubsRow wraps to 2-column grid (no horizontal scroll)
+    And "Configurar tu clínica" CTA is visible + tappable (≥ 44px)
+```
+
+### SC-16 — Visual screenshot baseline (regression detection) ★ v2 NEW ★
+
+```gherkin
+Feature: Visual regression baseline (toHaveScreenshot)
+
+  Scenario: SC-16 — Screenshot baselines established + regression detected on future runs
+    Given Playwright visual specs in e2e/visual/
+    When the test runs `expect(page).toHaveScreenshot('signin-baseline.png')`
+    Then on FIRST RUN: baseline .png is created in e2e/visual/screenshots/
+    And on SUBSEQUENT RUNS: pixel diff vs baseline computed
+    And if diff > 0.2 threshold (allow minor Clerk dev mode UI updates): test FAILS
+    And the baselines cover: /sign-in, /sign-up, / (dashboard welcome)
+    And baselines are git-tracked (committed in T-6.b first push)
+```
+
+### SC-17 — Broader trace monitor (console + network) ★ v2 NEW ★
+
+```gherkin
+Feature: Broader trace monitor post-Playwright run (replaces narrow Clerk grep)
+
+  Scenario: SC-17 — Playwright trace.zip audit detects any error
+    Given Playwright runs all specs with --trace=on
+    When scripts/playwright_console_network_audit.sh parses trace.zip
+    Then the script verifies:
+      | check | expected |
+      | console.error count | 0 |
+      | console.warn count | 0 (allowlist Clerk dev mode if applicable) |
+      | HTTP 4xx responses | 0 (excepto 401 ESPERADO en pre-auth validations) |
+      | HTTP 5xx responses | 0 |
+      | uncaught promise rejections | 0 |
+    And exit code 0 if all checks pass, exit 1 if any violation detected
+```
+
+### SC-18 — Local smoke pre-deploy gate ★ v2 NEW ★
+
+```gherkin
+Feature: Playwright LOCAL smoke as gate de calidad antes del deploy
+
+  Scenario: SC-18 — Local smoke must pass before T-5 deploy proceeds
+    Given the developer ran `make dev-vitalia` and stack is up (postgres + backend:8002 + frontend:3002)
+    And optionally admin Streamlit local on port 8501
+    And scripts/e2e-preflight.sh PASS
+    When Playwright runs `--project=smoke` with E2E_BASE_URL=http://localhost:3002
+    Then base scenarios SC-01..SC-09 pass against local stack
+    And the result gates T-5 deploy (T-5 blocked until T-6.a LOCAL smoke GREEN)
+    And this prevents wire-up bugs from being discovered in production dev environment
 ```
 
 ## § 4 — Wireframes (compactos, scope acotado)
@@ -337,31 +485,42 @@ Feature: Playwright live verification against deployed environment
 | Q3 | Eliminar páginas legacy `app/onboarding/step-{1,2,3}/page.tsx` o dejar stubs muertos? | **Eliminar** — son code-rot post wizard unificado |
 | Q4 | Admin Streamlit super-admin: 1 password compartido o multi-admin via Streamlit Authenticator config? | **1 password env-var** (scope mínimo). Multi-admin defer story futura |
 
-## § 10 — Estimación
+## § 10 — Estimación (v2 post gaps audit)
 
-| Ticket | Surface | Estim hours |
-|---|---|---|
-| T-1 FE middleware Clerk | FE | 1h |
-| T-2 FE pages Clerk + cleanup legacy step pages | FE | 2h |
-| T-3 FE dashboard mínimo welcome | FE | 3h |
-| T-4 BE admin Streamlit tenants+users | BE | 6h |
-| T-5 ops K8s secrets + deploy + seed | ops | 3h |
-| T-6 Playwright smoke live + me-validates | tests | 3h |
-| **TOTAL** | | **~18h (~2 días dev)** |
+| Ticket | Surface | Estim hours | Notas v2 |
+|---|---|---|---|
+| T-1 FE middleware Clerk | FE | 1h | sin cambios v1 |
+| T-2 FE pages Clerk + cleanup legacy step pages | FE | 2h | sin cambios v1 |
+| T-3 FE dashboard mínimo welcome | FE | 3h | sin cambios v1 |
+| T-4 BE admin Streamlit + 3 integration tests | BE | 8h | **+2h v2** (webhook + audit_log + cross-tenant integration tests) |
+| T-5 ops K8s deploy + post_deploy_smoke.sh | ops | 3.5h | **+0.5h v2** (auto smoke script) |
+| T-6.a tests Playwright LOCAL pre-deploy gate | tests | 2h | **NEW v2 split** |
+| T-6.b tests Playwright LIVE + a11y + mobile + screenshots + trace monitor | tests | 4h | **+1h v2** (3 new specs) |
+| **TOTAL** | | **~23.5h (~3 días dev)** | **+5.5h vs v1** |
 
-## § 11 — Acceptance (story-level)
+**Critical path:** T-4 (8h) → T-6.a (2h) → T-5 (3.5h) → T-6.b (4h) = **17.5h wall clock**.
+
+## § 11 — Acceptance (story-level v2)
 
 Story PASS cuando:
 
-1. Todos los 10 scenarios SC-01..SC-10 ejecutados Playwright live contra `dev-app.vitalialat.com` → 10/10 PASS.
-2. `/auditor` Phase D `06-audit/gherkin-matrix.md` → 10/10 scenarios con test PASS.
-3. `04-validators.yaml` `must_pass: true` validators → todos GREEN.
-4. Yo (`/pm-vitalia` orchestrator) corro Playwright live ANTES de declarar PASS y reporto evidencia.
-5. Chris puede loguearse efectivamente y abrir wizard + admin sin asistencia técnica.
+1. Todos los **18 scenarios** SC-01..SC-18 ejecutados (Playwright + backend integration tests) contra `dev-app.vitalialat.com` y entorno local → 18/18 PASS.
+2. `/auditor` Phase D `06-audit/gherkin-matrix.md` → 18/18 scenarios con test PASS.
+3. `04-validators.yaml` **19 validators** `must_pass: true` → todos GREEN.
+4. **T-6.a local smoke GREEN** ANTES de T-5 deploy (gate de calidad).
+5. **T-6.b LIVE smoke + a11y + mobile + screenshots + broader trace monitor** GREEN post-T-5.
+6. Yo (`/pm-vitalia` orchestrator) corro Playwright LIVE T-6.b ANTES de declarar PASS y reporto evidencia.
+7. Chris puede loguearse efectivamente y abrir wizard + admin sin asistencia técnica.
+8. Chris completó pre-T-5 manual checklist (Clerk dashboard webhook config + signing secret) — ver `05-guidelines.md § 8`.
 
 ## § 12 — Handoff next
 
-Post ratificación spec Chris → `/dev-team vitalia-auth-base-functional` arranca T-1..T-6.
+Post ratificación spec Chris → `/dev-team vitalia-auth-base-functional` arranca T-1..T-6.b en orden DAG:
+
+```
+T-1 + T-4 (parallel) → T-2 + T-3 → T-6.a LOCAL (gate) → T-5 ops → T-6.b LIVE
+```
+
 Tras `state=developed` GREEN → **AUTO-HANDOFF** `/auditor` (default per
 `.claude/rules/story-closure-gate.md`).
 Tras APPROVED → **AUTO-HANDOFF** `/pm-vitalia merge`.

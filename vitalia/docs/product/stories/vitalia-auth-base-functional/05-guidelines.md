@@ -251,6 +251,30 @@ compartible cross-brand → flagear como promotion candidate `/pm-luana` POST-st
 
 ✅ Post `kubectl apply secrets` → `kubectl rollout restart deployment/vitalia-{backend,admin,frontend}` para forzar reload.
 
+### A13 — Skip Playwright LOCAL pre-deploy ★ v2 NEW ★
+
+❌ "Pasamos directo de T-4 BE a T-5 deploy sin correr T-6.a local smoke porque el commit compila".
+
+✅ T-6.a es GATE de calidad obligatorio. Sin local smoke GREEN, T-5 deploy bloqueado. Per `.claude/rules/hotfix-repro-mandatory.md` — repro positivo (comportamiento esperado funciona) DEBE verificarse local antes de prod.
+
+### A14 — Console.error silencioso en trace Playwright ★ v2 NEW ★
+
+❌ "Test pasó GREEN, ignoramos console.error en trace porque 'no afecta funcionalidad'".
+
+✅ `scripts/playwright_console_network_audit.sh` exit 1 si CUALQUIER `console.error|warn` o 4xx/5xx no esperado. Cero tolerancia errores silenciosos en runtime.
+
+### A15 — Audit_log async fire-and-forget ★ v2 NEW ★
+
+❌ `asyncio.create_task(write_audit_log(...))` post admin action — riesgo de pérdida si proceso crashea.
+
+✅ Audit log write SÍNCRONO antes de response. Per `vitalia/.claude/rules/hipaa-lite.md` § audit log. `fn-be-hipaa-audit-log-verify` validator enforce.
+
+### A16 — Commitear screenshots baseline sin revisión visual ★ v2 NEW ★
+
+❌ "Push baselines `e2e/visual/screenshots/*.png` sin mirarlas — confío que están bien".
+
+✅ Pre-commit revisión visual obligatoria: abrir cada baseline `.png` + verificar contenido esperado (no Clerk dev errors, no console overlay, layout correct). Baselines incorrectas perpetuán bug visual indefinidamente.
+
 ## § 5 — Test invariants
 
 - ALL tests pass NATIVE Linux (host) — NUNCA `make e2e*` Docker (crashea per `playwright-expert`).
@@ -278,3 +302,106 @@ feat(vitalia/admin): T-4 admin Streamlit tenants + users scope mínimo
 ```
 
 Auditor Cat 11 (Cross-cutting) verifica cite presence.
+
+## § 7 — TDD note explicit por ticket ★ v2 NEW ★
+
+Per `.claude/rules/tdd-mandatory.md` — **tests PRIMERO, implementación DESPUÉS**. Aplica a TODOS los tickets FE/BE de esta story (T-1, T-2, T-3, T-4):
+
+| Ticket | Test RED first | Implementation GREEN after |
+|---|---|---|
+| T-1 FE middleware | Unit test mock requests públicas/protegidas en `middleware.test.ts` (si arch FE lo soporta) | `middleware.ts` con clerkMiddleware + createRouteMatcher |
+| T-2 FE Clerk pages | Snapshot Vitest sign-in/sign-up con `<SignIn />` / `<SignUp />` mocked | Replace placeholders con componentes Clerk reales |
+| T-3 FE dashboard | `DashboardWelcome.test.tsx` RED: renders heading + tenant badge + CTA | Implementar DashboardWelcome.tsx + SliceOneStubsRow.tsx |
+| T-4 BE admin | `test_admin_contract.py` + `test_clerk_webhook_integration.py` + `test_audit_log_verify.py` + `test_cross_tenant_isolation.py` RED | Implementar admin Streamlit modules + audit_log writes + tenant isolation runtime |
+| T-6.a/b Playwright | Specs son inherentemente tests (no aplica RED→GREEN, son el GREEN target) | n/a |
+
+**Ejemplo flow T-4** (per `.claude/rules/tdd-mandatory.md`):
+1. Escribir `test_audit_log_verify.py::test_admin_tenant_create_writes_audit_log` → RED (función no existe)
+2. Implementar `modules/tenants.py::create_tenant()` con `log_admin_action(...)` sync write
+3. Run test → GREEN
+4. Escribir siguiente test (e.g., payload_no_phi) → RED → GREEN
+5. Refactor mientras GREEN
+
+NUNCA escribir implementación primero y "después le pongo el test cuando termine".
+
+## § 8 — Pre-T-5 manual checklist Chris (Clerk dashboard) ★ v2 NEW ★
+
+ANTES de que `/dev-team` arranque T-5 ops deploy, Chris MUST completar este checklist manual en
+Clerk dashboard Vitalia (`https://dashboard.clerk.com` → app "vitalia"):
+
+### Checklist (Chris-only, ~5 min)
+
+- [ ] **App Clerk Vitalia creada y activa** (verificar dashboard).
+- [ ] **Domain configurado**: `dev-app.vitalialat.com` agregado en Clerk dashboard → Settings → Domains.
+- [ ] **Métodos de inicio de sesión habilitados**:
+  - Email + contraseña (mínimo)
+  - Google OAuth (opcional — recomendado para conversión)
+- [ ] **API Keys obtenidas** (Settings → API Keys):
+  - `VITALIA_CLERK_PUBLISHABLE_KEY` (pk_test_... o pk_live_...) → cargado en K8s secret
+  - `VITALIA_CLERK_SECRET_KEY` (sk_...) → cargado en K8s secret
+- [ ] **Webhook endpoint configurado** (Webhooks → + Add Endpoint):
+  - URL: `https://dev-app.vitalialat.com/api/v1/vitalia/webhooks/clerk`
+  - Evento: `user.created` (activo) — más eventos defer Slice 2
+- [ ] **Signing Secret webhook obtenido** (whsec_...) → cargado en K8s secret `VITALIA_CLERK_WEBHOOK_SECRET`
+- [ ] **CLERK_TESTING_TOKEN generado** (Settings → Testing → Generate testing token) → exportar como `CLERK_TESTING_TOKEN_VITALIA` env var para T-6.a + T-6.b Playwright runs
+- [ ] **CLERK_ISSUER URL identificada** (Settings → API Keys → "Frontend API URL") → cargado en K8s secret como `CLERK_ISSUER`
+
+Sin este checklist completo, T-5 ops deploy NO procede. `/dev-team` Step 0 antes de spawn builder T-5 debe verificar checklist done (Chris confirma in-chat o marca campo en `checkpoint.md::pre_t5_chris_checklist_done: true`).
+
+## § 9 — Patrones adicionales v2 ★ NEW ★
+
+### Patrón P8 — Playwright visual screenshot baseline storage ★ v2 NEW ★
+
+Estructura baselines:
+```
+vitalia/frontend/e2e/visual/
+├── visual-smoke.spec.ts
+└── screenshots/
+    ├── signin-baseline.png         (git tracked)
+    ├── signup-baseline.png         (git tracked)
+    └── dashboard-baseline.png      (git tracked)
+```
+
+Convención:
+- Threshold `{ threshold: 0.2, maxDiffPixels: 100 }` — permite minor pixel drift Clerk dev mode UI
+- `expect(page).toHaveScreenshot('name.png', {...})`
+- Primer run en T-6.b CI → genera baselines automáticamente
+- Runs subsecuentes → pixel diff vs baseline → FAIL si excede threshold
+- Git commit baselines con T-6.b push inicial
+
+Si Chris cambia design tokens o Clerk publica UI update → re-generate baselines manualmente con
+`npx playwright test e2e/visual/ --update-snapshots` + commit baselines nuevos.
+
+### Patrón P9 — Backend integration test fixtures ★ v2 NEW ★
+
+Estructura tests integración:
+```
+vitalia/backend/tests/integration/admin/
+├── conftest.py                          # fixtures
+│   - fake_clerk_webhook_payload (valid HMAC)
+│   - fake_clerk_webhook_payload_invalid_hmac
+│   - admin_session_authenticated
+│   - tenant_a_factory / tenant_b_factory (UUIDv5 deterministic)
+├── test_clerk_webhook_integration.py
+├── test_audit_log_verify.py
+└── test_cross_tenant_isolation.py
+```
+
+Patrones:
+- Use `httpx.AsyncClient` + FastAPI `TestClient` para POSTear webhooks
+- Use SQLAlchemy session fixture con transaction rollback (no pollute DB)
+- Verify rows via `select(Model).where(...)` post action
+- HMAC signature: compute con `hmac.new(secret, payload, hashlib.sha256).hexdigest()` para fake valid sig
+
+## § 10 — Auditor responsibilities v2 ★ NEW ★
+
+`/auditor` Phase D `06-audit/gherkin-matrix.md` post-developed:
+
+- Verify 18/18 scenarios SC-01..SC-18 mapped → test → PASS
+- Verify 19 validators must_pass = GREEN
+- Verify pre-T-5 Chris checklist done (cita `checkpoint.md::pre_t5_chris_checklist_done: true`)
+- Verify cross-brand anti-mirror enforced (`nf-anti-duplication-scan` GREEN)
+- Verify TDD respetada (commits muestran test commit antes impl commit per ticket — sample 1 ticket)
+- Verify visual baselines commitead + revisadas (no console errors visibles en .png)
+
+Si todos GREEN → AUTO-HANDOFF `/pm-vitalia merge`.
