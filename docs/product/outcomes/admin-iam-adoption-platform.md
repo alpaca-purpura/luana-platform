@@ -15,12 +15,14 @@ why_now: |
   Sin fix: (a) admin no funciona, (b) violación anti-duplication rule, (c) cuando vengan
   los 6 brands futuros (saasora/inmoflow/retailly/fixia/guestly/fitflow) hay riesgo
   alto de repetir el error si no documentamos el patrón canónico ahora.
-estimated_effort: 8-12h cross-brand (1-2h /pm-luana proposal + 4-6h /pm-vitalia adopción + 2-4h config purge engine)
+estimated_effort: 8-12h cross-brand (1-2h /pm-luana proposal + 4-6h /pm-vitalia adopción + 2-4h config purge engine + 1h hardcodes residuales lift)
 stories:
-  - S-PLATFORM-PURGE-NICOLIFY-DEFAULTS-CORE-CONFIG   # /dev-team execute proposal aceptada
-  - S-VITALIA-ADOPT-LUANA-CORE-IAM                   # /pm-vitalia handed off
+  - S-PLATFORM-PURGE-NICOLIFY-DEFAULTS-CORE-CONFIG     # ✅ MIGRATED b869eaf (proposal padre)
+  - S-PLATFORM-PURGE-NICOLIFY-HARDCODES-RESIDUALES     # ✅ MIGRATED 39b73703 (sales-agent + copilot + llm broadened scope)
+  - S-VITALIA-ADOPT-LUANA-CORE-IAM                     # ⏳ /pm-vitalia handed off (next session)
 related_proposals:
-  - docs/promotion-protocol/proposals/2026-05-19-purge-nicolify-defaults-core-config.md
+  - docs/promotion-protocol/proposals/2026-05-19-purge-nicolify-defaults-core-config.md (state=migrated, commit b869eaf)
+  - docs/promotion-protocol/proposals/2026-05-19-purge-nicolify-hardcodes-sales-agent.md (state=migrated, commit 39b73703 — broadened scope sales-agent + copilot + llm)
 related_rules:
   - .claude/rules/anti-duplication.md (§ lift shared rule — base del cross-brand mirror detection)
   - vitalia/.claude/rules/hipaa-lite.md (dual filter tenant_id + clinic_id obligatorio)
@@ -118,11 +120,31 @@ dirección, equipo, RBAC PHI scoped). Relación: **`tenant 1—N clinic`**.
 Anti-pattern explícito: no crear `vitalia_clinics` HOY como engine-level por especulación.
 **Brand-first, core-second.** Una brand activa NO justifica lift; pasamos por promotion gate cuando 2da brand lo necesite.
 
-### D3 — Hardcodes Nicolify en core/config.py → PURGE
+### D3 — Hardcodes Nicolify en core/config.py → PURGE ✅ MIGRATED
 
-Ver `docs/promotion-protocol/proposals/2026-05-19-purge-nicolify-defaults-core-config.md`.
-Plan: cambiar defaults a strings vacíos o sentinels genéricos. Brand consumidora DEBE override
-en `.env.dev` / `.env.prod`. Sin override → `ConfigError` explícito (fail fast, no silent contamination).
+Ver `docs/promotion-protocol/proposals/2026-05-19-purge-nicolify-defaults-core-config.md`
+(state=migrated, commit `b869eaf`). Defaults cambiados a strings vacíos. Brand consumidora DEBE
+override en `.env.dev` / `.env.prod`. Sin override → `RuntimeError` explícito (fail fast).
+
+### D3.bis — Hardcodes Nicolify residuales en sales-agent + copilot + llm → PURGE ✅ MIGRATED
+
+Ver `docs/promotion-protocol/proposals/2026-05-19-purge-nicolify-hardcodes-sales-agent.md`
+(state=migrated, commit `39b73703`). **Pre-requisite paso previo cementado en esta sesión** post
+descubrimiento del auditor-backend WARN INFO-2 del lift padre + Chris "bug free total" directive.
+
+Cambios:
+- `core/luana-core-sales-agent` 0.1.0 → 0.2.0: helper `_build_payment_url()` deriva success/cancel
+  URLs Stripe desde `settings.FRONTEND_URL` (failfast empty) + remove deprecated header
+  `x-nicolify-tenant-id` fallback (standard `x-tenant-id` only)
+- `core/luana-core-copilot` 0.1.0 → 0.2.0: refactor `_TELEGRAM_CHANNEL_CONTEXT_ES` const a
+  template + lazy helper `_get_telegram_channel_context_es()` con cache. Resuelve `@__TELEGRAM_BOT__`
+  y `__FRONTEND_DOMAIN__` desde settings (preserva Anthropic/Kimi prompt cache invariant).
+  **FIXES FUNCTIONAL BUG:** agent vitalia/comunify/lupulo previamente decía a usuarios "vayan a
+  app.nicolify.com" cross-brand (UX broken + posible data leak).
+- `core/luana-core-llm` (no bump, docstring only): comentario brand-agnostic en `litellm.py`.
+
+Behavioral verify pre-merge: nicolify behavior **BYTE-IDENTICAL** (defaults derivan via env
+override a mismos valores hardcoded). vitalia/comunify/lupulo ahora correctamente brand-agnostic.
 
 ### D4 — Admin Streamlit per-brand con puerto dedicado
 
@@ -162,19 +184,36 @@ Documentar este pattern como ADR para no reabrir el debate cuando lleguen las 6 
 
 ## Sub-outcomes y stories
 
-### S-PLATFORM-PURGE-NICOLIFY-DEFAULTS-CORE-CONFIG (jurisdicción /pm-luana → /dev-team)
+### S-PLATFORM-PURGE-NICOLIFY-DEFAULTS-CORE-CONFIG ✅ MIGRATED 2026-05-19 (commit b869eaf)
 
-Owner: `/pm-luana` (proposal) + `/dev-team` (lift execution post-Chris ratificación)
-Estimado: 2-4h
+Owner: `/pm-luana` (proposal) + autonomous lift cycle
+Estimado real: 2h
 Artifacts: `docs/promotion-protocol/proposals/2026-05-19-purge-nicolify-defaults-core-config.md`
 
-- Cambiar 4 defaults en `core/luana-core-platform/core/config.py` a strings vacíos o `ConfigError`
-- Update CHANGELOG `core/luana-core-platform/CHANGELOG.md` (minor bump)
-- Update `nicolify/.env.dev` para setear explícitamente las 4 vars (mantener funcionamiento actual)
-- Update `vitalia/.env.dev.template` + `vitalia/.env.dev` con valores correctos
-- Update `comunify/.env.dev.template` + `lupulo/.env.dev.template` similar
-- Arch fitness test downstream R3 (corre engine + nicolify + vitalia + comunify + lupulo)
-- Bump `core/luana-core-platform/pyproject.toml::version` minor
+Cambios ejecutados:
+- 4 defaults purgados en `core/luana-core-platform/core/config.py`: FRONTEND_URL,
+  COPILOT_TELEGRAM_BOT_USERNAME, QDRANT_COLLECTION, QDRANT_COLLECTION_HYBRID, LITELLM_BASE_URL
+- CHANGELOG `core/luana-core-platform/CHANGELOG.md` entry 0.3.0 (minor bump)
+- `nicolify/.env.dev` + `vitalia/.env.dev` + `comunify/.env.dev` pre-set con valores explícitos
+- `{nicolify,vitalia,comunify,lupulo}/.env.dev.template` updated con "Brand-specific config" block
+- R3 downstream regression PASS (engine + 4 brand consumers)
+- `core/luana-core-platform/pyproject.toml::version` 0.2.0 → 0.3.0
+
+### S-PLATFORM-PURGE-NICOLIFY-HARDCODES-RESIDUALES ✅ MIGRATED 2026-05-19 (commit 39b73703)
+
+Owner: `/pm-luana` autonomous lift cycle (post auditor WARN-1 + Chris "bug free total")
+Estimado real: 1.5h (broadened scope iter 2)
+Artifacts: `docs/promotion-protocol/proposals/2026-05-19-purge-nicolify-hardcodes-sales-agent.md`
+
+Cambios ejecutados (3 engine packages):
+- `core/luana-core-sales-agent` 0.1.0 → 0.2.0: providers.py helper `_build_payment_url()` +
+  payment_webhooks.py remove `x-nicolify-tenant-id` header fallback + CHANGELOG.md created
+- `core/luana-core-copilot` 0.1.0 → 0.2.0: graph.py refactor const → template + lazy helper
+  `_get_telegram_channel_context_es()` con cache (FIXES functional bug: agent vitalia decía
+  "vayan a app.nicolify.com") + telegram_redirect.py docstring brand-agnostic + CHANGELOG.md created
+- `core/luana-core-llm` (no bump): litellm.py docstring brand-agnostic
+- Gate-runner iter 2: copilot 1640 PASS + orchestrator 19 PASS + llm PASS + ruff PASS +
+  platform regression PASS. Sales-agent ADVISORY_PRE_EXISTING (verified against base commit).
 
 ### S-VITALIA-ADOPT-LUANA-CORE-IAM (jurisdicción /pm-vitalia)
 
