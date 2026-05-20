@@ -5,6 +5,42 @@ All notable changes to this package are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] — 2026-05-20
+
+### Added
+
+- **`luana_core_platform.workers.cron_envelope`** — `@cron_envelope(name, *, ttl, enable_otel, enable_sentry)`
+  engine-grade decorator for ARQ cron job functions. Composes four cross-cutting concerns:
+  1. Idempotency deduplication via `luana_core_idempotency.@idempotent` (soft-fail if package absent).
+  2. OTel span via `luana.cron` tracer (graceful degrade when `opentelemetry-api` not installed).
+  3. structlog audit event `cron_completed` logged on success.
+  4. Sentry capture on exception (graceful degrade when `sentry-sdk` not installed).
+  Promoted from `vitalia/_shared/workers/base.py::idempotent_cron` (brand-local, clinic-specific).
+  Now brand-agnostic: any brand uses `@cron_envelope("{brand}.cron.{slug}")`.
+  Public import: `from luana_core_platform.workers import cron_envelope`.
+
+- **`luana_core_platform.repositories.compound_scope_repository`** — `CompoundScopeRepositoryBase[ModelT, IdT]`
+  abstract async repository base class enforcing dual-scope isolation on every query:
+  - `tenant_id`: root multitenant isolation (per `.claude/rules/tenant-isolation.md`)
+  - `scope_id`: brand-specific secondary axis (named via `scope_field` constructor arg)
+  Brand consumers set semantic names: `"clinic_id"` (vitalia), `"studio_id"` (fitflow),
+  `"store_id"` (retailly), `"cohort_id"` (comunify), `"workspace_id"` (saasora), etc.
+  Provides `get_by_id(*, id, tenant_id, scope_id)` and `list_for_scope(*, tenant_id, scope_id, limit, offset)`.
+  All queries exclude soft-deleted rows (`deleted_at IS NULL`).
+  Promoted from `vitalia/_shared/repositories/phi_repository.py::PhiRepositoryBase` (vitalia HIPAA-lite).
+  Public import: `from luana_core_platform.repositories import CompoundScopeRepositoryBase`.
+
+### Migration notes
+
+- **Vitalia callers**: `vitalia/_shared/workers/base.py::idempotent_cron` and
+  `vitalia/_shared/repositories/phi_repository.py::PhiRepositoryBase` remain in place
+  for this release (backward-compatible). Phase 2 migration ticket will update the 11 brand
+  callers to import from the engine and delete the brand-local originals.
+  See proposal `docs/promotion-protocol/proposals/2026-05-20-core-platform-extensions-slice-1.md`.
+- **New brand consumers**: import from engine directly — no brand-local copy needed.
+  `from luana_core_platform.workers import cron_envelope`
+  `from luana_core_platform.repositories import CompoundScopeRepositoryBase`
+
 ## [0.3.0] — 2026-05-19
 
 ### Changed
