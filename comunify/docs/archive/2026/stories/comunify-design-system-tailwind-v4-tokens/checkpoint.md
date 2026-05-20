@@ -1,17 +1,19 @@
 ---
 brand: comunify
 story_id: comunify-design-system-tailwind-v4-tokens
-state: reviewing
-phase: HANDOFF_TO_PM_MERGE
-last_artifact: CHECKPOINTS.md
+state: done
+phase: ARCHIVED
+last_artifact: 07-merge.md
 gherkin_matrix: 06-audit/gherkin-matrix.md
 auditor_verdict: APPROVED
-next_action: "/pm-comunify aplica merge → 07-merge.md 5 secciones → update capabilities/* + modules MD → archive story → state=reviewing→done"
+merge_commit: TBD (set by /pm-comunify at close commit)
+next_action: "story archived to comunify/docs/archive/2026/stories/comunify-design-system-tailwind-v4-tokens/"
 state_transition_log:
   - { from: idea, to: ready, at: 2026-05-18, by: /pm-comunify, reason: "Chris ratificó Opción A explícitamente. Per hotfix-repro-mandatory.md repro_verified=true permite skip /po-ux + /architect. Ready package compactado escrito (01-spec + 04-validators + 05-guidelines + 06-tickets)." }
   - { from: ready, to: developing, at: 2026-05-18, by: /dev-team, reason: "T-1 pickup. Owner: builder-frontend Sonnet (R23 FE no-agentic + production_code=true). Story-closure gate Layer 2 GREEN (0 other comunify stories open)." }
   - { from: developing, to: developed, at: 2026-05-18, by: /dev-team, reason: "T-1 GREEN all 6 validators (val-be-1 + val-fe-1 + val-fe-2 + val-fe-3 + val-arch-1 + val-typecheck-1). Scope expansion documented: added postcss.config.mjs + @tailwindcss/postcss devDep (root cause Tailwind v4 never wired through PostCSS in comunify — deeper than initial repro). Cross-brand promotable: vitalia has same gap." }
   - { from: developed, to: reviewing, at: 2026-05-18, by: /auditor, reason: "Auto-handoff pickup. Surface frontend → auditor-frontend Opus. Phase D gherkin matrix + CHECKPOINTS C1-C5." }
+  - { from: reviewing, to: done, at: 2026-05-20, by: /pm-comunify, reason: "Auditor APPROVED 27/27 CHECKPOINTS ✅ + 7/7 Phase D gherkin matrix. 07-merge.md 5 secciones written. Capability tailwind-v4-tokens.yaml + module frontend_design_system.md created. Learning tailwind-v4-postcss-wiring-gap (promotable=yes) registrado. Story archived to comunify/docs/archive/2026/stories/. Chris ratificó closure for outstanding 2-day delay." }
 created: 2026-05-18
 last_updated: 2026-05-18
 parallel_safe: true
