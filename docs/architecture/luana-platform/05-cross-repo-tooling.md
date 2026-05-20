@@ -456,14 +456,14 @@ gh auth status && git config --global --list | grep user
 
 ```bash
 # Leer
-cat /home/chris/AISALESHT/docs/architecture/luana-platform/adr/ADR-001-luana-platform.md
+cat /home/chris/AISALESHT/docs/architecture/luana-platform/ADR-001-luana-platform.md
 
 # Si OK, firmar:
 # Editar archivo línea 6: status: PROPOSED → status: ACCEPTED
 # Editar línea ~250 (sección 7): firma + fecha
 # Commit
 cd /home/chris/AISALESHT
-git add docs/architecture/luana-platform/adr/ADR-001-luana-platform.md
+git add docs/architecture/luana-platform/ADR-001-luana-platform.md
 git commit -m "chore(luana): ratify ADR-001 multi-brand vertical SaaS"
 git push origin development
 ```

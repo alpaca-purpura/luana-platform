@@ -35,7 +35,7 @@ EOF_PY
 TOKEN="${UV_PUBLISH_TOKEN:-${GH_PACKAGES_TOKEN:-${GITHUB_TOKEN:-}}}"
 if [ -z "${TOKEN}" ]; then
   echo "::error::No auth token found. Set GH_PACKAGES_TOKEN or GITHUB_TOKEN."
-  echo "::error::See docs/RELEASES.md §Token-setup for setup instructions."
+  echo "::error::See docs/process/release-procedure-v0.1.0.md §Token-setup for setup instructions."
   exit 1
 fi
 echo "machine pypi.pkg.github.com login alpacapurpura password ${TOKEN}" > "${HOME}/.netrc.smoke"

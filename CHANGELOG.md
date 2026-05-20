@@ -2,7 +2,7 @@
 
 All notable changes to the Luana Platform are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
-Versioning follows [SemVer](https://semver.org/spec/v2.0.0.html) per `docs/RELEASES.md` §SemVer.
+Versioning follows [SemVer](https://semver.org/spec/v2.0.0.html) per `docs/process/release-procedure-v0.1.0.md` §SemVer.
 
 ## [0.1.0] — 2026-05-12
 
@@ -13,9 +13,9 @@ Versioning follows [SemVer](https://semver.org/spec/v2.0.0.html) per `docs/RELEA
 - **luana-core-platform**: Introduce GitHub Packages publish pipeline (Python + TypeScript)
 - **luana-core-extension-sdk**: Add `.github/workflows/release.yml` tag-triggered automation
 - Add `release-please-config.json` for v0.2.0+ auto-derivation (33 packages monorepo)
-- Add `docs/migration-from-nicolify.md` consumer migration guide
+- Add `docs/architecture/luana-platform/migration-from-nicolify.md` consumer migration guide
 - Add `docs/api/` auto-gen API reference (pdoc + typedoc)
-- Cement SemVer F1-F6 discipline (see `docs/RELEASES.md` §SemVer)
+- Cement SemVer F1-F6 discipline (see `docs/process/release-procedure-v0.1.0.md` §SemVer)
 - Add `scripts/publish_smoke_test.sh` + `scripts/rollback_partial_publish.sh`
 
 ### Foundations (Story 1 — luana-foundation)
@@ -75,7 +75,7 @@ Versioning follows [SemVer](https://semver.org/spec/v2.0.0.html) per `docs/RELEA
 - **@luana/schemas**: Zod validation schemas
 - **@luana/ui-kit**: Shadcn/Radix component library
 - `apps/test-brand` smoke pack (10 scenarios GREEN)
-- `docs/extension-points.md` 1354-line spec
+- `docs/architecture/luana-platform/extension-points.md` 1354-line spec
 
 ### Known issues
 - `luana-core-sales-agent` ships with 40 pre-existing test failures + 1 collection error (Story 7
@@ -85,7 +85,7 @@ Versioning follows [SemVer](https://semver.org/spec/v2.0.0.html) per `docs/RELEA
   (default off in local dev).
 
 ### Migration from Nicolify (AISALESHT)
-See `docs/migration-from-nicolify.md` for consumer guide. Story 10 (`luana-nicolify-migration`)
+See `docs/architecture/luana-platform/migration-from-nicolify.md` for consumer guide. Story 10 (`luana-nicolify-migration`)
 executes the full migration.
 
 [0.1.0]: https://github.com/alpacapurpura/luana-platform/releases/tag/v0.1.0

@@ -3,7 +3,7 @@ slug: vitalia
 kind: brand
 status: shipped
 vertical: "Salud + Bienestar"
-last_updated: 2026-05-18
+last_updated: 2026-05-19
 ssot_live:
   - vitalia/docs/product/
   - vitalia/docs/domains/

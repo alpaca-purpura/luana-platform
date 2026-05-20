@@ -1,5 +1,5 @@
 # Backlog TLDR (auto-generated)
-> Generated at: `2026-05-20T00:45:04+00:00`
+> Generated at: `2026-05-20T01:54:25+00:00`
 > Source: scripts/generate_backlog.py — full view: BACKLOG.md
 
 - **Ideas** (1): vitalia-pricing-decision

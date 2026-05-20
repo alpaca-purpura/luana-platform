@@ -12,4 +12,4 @@ This is the flagship brand and development reference for all other vertical bran
 
 **Current state (Story 1):** Placeholder with architecture fitness tests bootstrap.
 
-See [docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md) for full monorepo topology.
+See [docs/architecture/luana-platform/00-overview.md](../docs/architecture/luana-platform/00-overview.md) for full monorepo topology.

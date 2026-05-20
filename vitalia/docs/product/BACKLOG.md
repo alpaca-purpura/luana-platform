@@ -1,6 +1,6 @@
 # Vitalia Backlog (auto-generated)
 
-> Generated at: `2026-05-20T00:45:04+00:00`
+> Generated at: `2026-05-20T01:54:25+00:00`
 > DO NOT EDIT MANUALLY — modify source artifacts.
 > Regenerate: `python scripts/generate_backlog.py`
 
@@ -35,8 +35,8 @@
 ### 🔍 Reviewing (0 / cap 2)
 - _(none in review)_
 
-### Recently shipped (last 90d, 1 items)
-- vitalia-slice-1-onboarding-wizard — 2026-05-18
+### Recently shipped (last 90d, 0 items)
+- _(none recent)_
 
 ### Parked (0) · Dropped (0)
 
@@ -65,8 +65,7 @@ kanban
   🔨 Developing (0 / cap 3)
   🧪 Developed (0 / cap 10)
   🔍 Reviewing (0 / cap 2)
-  ✅ Done (1 / 90d rolling)
-    vitalia-slice-1-onboarding-wiz[vitalia-slice-1-onboarding-wizard]
+  ✅ Done (0 / 90d rolling)
   🅿 Parked (0)
 ```
 

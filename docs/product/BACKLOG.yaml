@@ -1,9 +1,9 @@
 # docs/product/BACKLOG.yaml — auto-generated SSoT machine-readable
 # DO NOT EDIT MANUALLY — modify source artifacts instead.
 # Regenerate: python scripts/generate_backlog.py
-# Generated at: 2026-05-20T00:45:04+00:00
+# Generated at: 2026-05-20T01:36:31+00:00
 
-generated_at: '2026-05-20T00:45:04+00:00'
+generated_at: '2026-05-20T01:36:31+00:00'
 brand: platform
 caps:
   refining_max: 3
@@ -160,73 +160,7 @@ buckets:
   developing: []
   developed: []
   reviewing: []
-  done:
-  - id: infra-dev-multibrand-CHECKPOINTS
-    kind: outcome
-    state: done
-    title: infra-dev-multibrand-CHECKPOINTS
-    tags: []
-    last_touched: null
-    extra:
-      story_ids: []
-      why_now: null
-      why_next: null
-      target_end: null
-      priority: 3
-      success_metrics: []
-  - id: S-CICD-DEPLOY
-    kind: story
-    state: done
-    title: S-CICD-DEPLOY
-    tags: []
-    last_touched: 2026-05-15 13:00:00+00:00
-    extra:
-      outcome: infra-dev-multibrand
-      phase: DONE
-      next_action: Outcome cerrado. Capabilities promovidas. Story archivable post rolling 90d.
-      blocked_by: []
-      priority_override: null
-      audit_iterations: 0
-  - id: S-DOCKER-DEV-MULTIBRAND
-    kind: story
-    state: done
-    title: S-DOCKER-DEV-MULTIBRAND
-    tags: []
-    last_touched: 2026-05-15 13:00:00+00:00
-    extra:
-      outcome: infra-dev-multibrand
-      phase: DONE
-      next_action: Outcome cerrado. Capabilities promovidas. Story archivable post rolling 90d.
-      blocked_by: []
-      priority_override: null
-      audit_iterations: 0
-  - id: S-GIT-STRATEGY-CORE
-    kind: story
-    state: done
-    title: S-GIT-STRATEGY-CORE
-    tags: []
-    last_touched: 2026-05-15 13:00:00+00:00
-    extra:
-      outcome: infra-dev-multibrand
-      phase: DONE
-      next_action: Outcome cerrado. Capabilities promovidas. Story archivable a docs/archive/2026/ post rolling 90d.
-      blocked_by: null
-      priority_override: null
-      audit_iterations: 0
-  - id: S-GIT-STRATEGY-HELPERS
-    kind: story
-    state: done
-    title: S-GIT-STRATEGY-HELPERS
-    tags: []
-    last_touched: 2026-05-15 13:00:00+00:00
-    extra:
-      outcome: infra-dev-multibrand
-      phase: DONE
-      next_action: Outcome cerrado. Capabilities promovidas. Story archivable post rolling 90d.
-      blocked_by:
-      - S-GIT-STRATEGY-CORE
-      priority_override: null
-      audit_iterations: 0
+  done: []
   parked: []
   dropped: []
 capabilities: []

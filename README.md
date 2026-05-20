@@ -7,8 +7,8 @@ Monorepo containing the core AI sales/marketing engine and brand-specific applic
 
 ## Documentation
 
-- Architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
-- Contributing: [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)
+- Architecture: [docs/architecture/luana-platform/00-overview.md](docs/architecture/luana-platform/00-overview.md)
+- Contributing: [docs/process/contributing.md](docs/process/contributing.md)
 - ADR: [docs/architecture/ADR/](docs/architecture/ADR/)
 
 ## Status
