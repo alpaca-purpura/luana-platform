@@ -2,8 +2,8 @@
 story_id: vitalia-slice-1-fidelizacion
 outcome: vitalia-mvp-ui-foundation
 parent_spec: vitalia-ux-discovery (archived 2026-05-20 — inheritance carryover)
-state: ready
-phase: READY_FOR_DEV_TEAM_PICKUP               # ★ pre-flight gates GREEN 2026-05-20 02:00 UTC
+state: developing                              # ← READY → DEVELOPING 2026-05-20 02:45 UTC (wave 1: T-1 + T-3 spawned)
+phase: BUILD_T_1_T_3_PARALLEL                  # ★ wave 1 sin blockers: T-1 migrations + T-3 arch fitness tests
 preflight_gates_status:                        # ★ 2026-05-20 verificación
   clerk_test_token_fresh_and_webhook_secret_configured: GREEN
   clerk_test_users_3_created: GREEN

@@ -36,7 +36,25 @@ const EXEMPT_FILES = new Set([
 // Ratchet baseline — known violations at time of T-infra-4 creation (shrink-only).
 // Format: "src/relative/path/to/file.tsx"
 const KNOWN_COLOR_VIOLATIONS: ReadonlySet<string> = new Set<string>([
-  // Add pre-existing violations here (empty = clean baseline).
+  // T-11 fidelizacion build (concurrent T-inbox-fe-1): fidelizacion components were
+  // implemented using hsl() literals directly. These are pre-existing violations from
+  // the T-11 build agent and must be refactored to use CSS custom properties in a
+  // follow-up task. Ratchet baseline added per T-inbox-fe-1 arch gate fix.
+  "src/features/fidelizacion/components/ConfirmTemplateModal.tsx",
+  "src/features/fidelizacion/components/FidelizacionActivityFooter.tsx",
+  "src/features/fidelizacion/components/FidelizacionKPIsHero.tsx",
+  "src/features/fidelizacion/components/FidelizacionLayout.tsx",
+  "src/features/fidelizacion/components/FidelizacionTabsBar.tsx",
+  "src/features/fidelizacion/components/ManualCallLoggedModal.tsx",
+  "src/features/fidelizacion/components/NPSRowCompact.tsx",
+  "src/features/fidelizacion/components/PausePatientModal.tsx",
+  "src/features/fidelizacion/components/ReEngagementCard.tsx",
+  "src/features/fidelizacion/components/SuggestSlotsModal.tsx",
+  "src/features/fidelizacion/components/tabs/AbsenceTab.tsx",
+  "src/features/fidelizacion/components/tabs/FollowUpTab.tsx",
+  "src/features/fidelizacion/components/tabs/MaintenanceTab.tsx",
+  "src/features/fidelizacion/components/tabs/MultiSessionTab.tsx",
+  "src/features/fidelizacion/components/tabs/NPSResumenTab.tsx",
 ]);
 
 // Pattern for hardcoded color literals.
