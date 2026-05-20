@@ -27,6 +27,7 @@ from src.modules.vitalia.crm.api.router import router as crm_router
 from src.modules.vitalia.fidelizacion.api.router import fidelizacion_router
 from src.modules.vitalia.iam.api.router import router as iam_router
 from src.modules.vitalia.inbox.api.router import router as inbox_router
+from src.modules.vitalia.marketing.api.routes import router as marketing_router
 
 # redirect_slashes=False is MANDATORY — arch test test_vitalia_response_models_required.py
 # also verifies this flag. Default True → 307 POST → Next.js drops body (DDD rule).
@@ -56,6 +57,8 @@ app.include_router(admin_helpers_router, prefix="/api/v1/vitalia/admin")
 app.include_router(inbox_router, prefix="/api/v1/vitalia/inbox")
 # T-7 fidelizacion: 9 API endpoints (re_engagement + nps + summary + activity_stream)
 app.include_router(fidelizacion_router, prefix="/api/v1/vitalia/fidelizacion")
+# T-mk-be-5: Marketing module — 11 endpoints (bowtie + channel + recommendations + attribution + referrals)
+app.include_router(marketing_router, prefix="/api/v1/vitalia/marketing")
 
 
 class HealthResponse(BaseModel):
