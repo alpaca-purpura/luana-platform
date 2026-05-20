@@ -1,5 +1,11 @@
 /**
- * Clerk Middleware — Comunify (replicado de Vitalia 2026-05-19)
+ * Clerk Proxy — Comunify (replicado de vitalia 2026-05-20 post merge `13d0138`)
+ *
+ * Next.js 16 renamed the `middleware` file convention to `proxy` (deprecation
+ * v16.0.0). Same location (src/), same `config.matcher` API. The default export
+ * is now named `proxy`. Clerk's `clerkMiddleware()` SDK helper is unchanged —
+ * its name is historical, it just wraps a request handler that Next.js invokes
+ * via the proxy convention.
  *
  * Protege todas las rutas excepto las explícitamente públicas.
  * Rutas públicas: sign-in, sign-up, webhooks Clerk (BE los valida con HMAC),
@@ -19,11 +25,13 @@ const isPublicRoute = createRouteMatcher([
   "/api/health",
 ]);
 
-export default clerkMiddleware(async (auth, request) => {
+export const proxy = clerkMiddleware(async (auth, request) => {
   if (!isPublicRoute(request)) {
     await auth.protect();
   }
 });
+
+export default proxy;
 
 export const config = {
   matcher: [
