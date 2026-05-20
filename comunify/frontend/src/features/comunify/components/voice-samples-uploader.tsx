@@ -35,12 +35,17 @@ export function VoiceSamplesUploader({
     (files: FileList | null) => {
       if (!files) return;
       Array.from(files).forEach((file) => {
-        if (!(COMUNIFY_CONFIG.ACCEPTED_VOICE_MIME_TYPES as readonly string[]).includes(file.type)) return;
+        if (
+          !(
+            COMUNIFY_CONFIG.ACCEPTED_VOICE_MIME_TYPES as readonly string[]
+          ).includes(file.type)
+        )
+          return;
         if (file.size > COMUNIFY_CONFIG.MAX_VOICE_SAMPLE_BYTES) return;
         onUpload(file);
       });
     },
-    [onUpload]
+    [onUpload],
   );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -58,7 +63,7 @@ export function VoiceSamplesUploader({
       setIsDragging(false);
       handleFiles(e.dataTransfer.files);
     },
-    [handleFiles]
+    [handleFiles],
   );
 
   const minDuration = COMUNIFY_CONFIG.MIN_TOTAL_VOICE_DURATION_S;
@@ -76,7 +81,7 @@ export function VoiceSamplesUploader({
           "flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-8 transition-colors",
           isDragging ? "border-primary bg-primary/5" : "border-border bg-card",
           "cursor-pointer hover:border-primary hover:bg-primary/5",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
         )}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -86,7 +91,9 @@ export function VoiceSamplesUploader({
           if (e.key === "Enter" || e.key === " ") inputRef.current?.click();
         }}
       >
-        <span className="text-4xl" aria-hidden="true">🎙️</span>
+        <span className="text-4xl" aria-hidden="true">
+          🎙️
+        </span>
         <p className="text-sm font-medium">
           {isUploading ? "Subiendo..." : "Arrastra tus muestras de voz aquí"}
         </p>
@@ -115,7 +122,7 @@ export function VoiceSamplesUploader({
             <div
               className={cn(
                 "h-full rounded-full transition-all",
-                progressPct >= 100 ? "bg-comunify-stable" : "bg-primary"
+                progressPct >= 100 ? "bg-comunify-stable" : "bg-primary",
               )}
               style={{ width: `${progressPct}%` }}
               role="progressbar"
@@ -140,10 +147,13 @@ export function VoiceSamplesUploader({
               <span
                 className={cn(
                   "ml-2 shrink-0 rounded-full px-2 py-0.5 text-xs",
-                  s.status === "done" && "bg-comunify-stable/10 text-comunify-stable",
-                  s.status === "uploading" && "bg-comunify-warning/10 text-comunify-warning",
-                  s.status === "error" && "bg-comunify-critical/10 text-comunify-critical",
-                  s.status === "pending" && "bg-comunify-bg text-comunify-text"
+                  s.status === "done" &&
+                    "bg-comunify-stable/10 text-comunify-stable-text",
+                  s.status === "uploading" &&
+                    "bg-comunify-warning/10 text-comunify-warning-text",
+                  s.status === "error" &&
+                    "bg-comunify-critical/10 text-comunify-critical-text",
+                  s.status === "pending" && "bg-comunify-bg text-comunify-text",
                 )}
               >
                 {s.status === "done" ? `${s.durationSeconds}s` : s.status}
