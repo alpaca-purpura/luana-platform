@@ -146,6 +146,13 @@ from src.modules.vitalia.sales_agent.tools import (
     send_payment_link,
 )
 
+# T-9 — Adrián proactive re-engagement wrapper (fidelización).
+# Tool delegates to ProactiveOutboundService (T-5 shipped) — opt-out/opt-in/
+# throttle/compliance gate/audit log/outbox event handled by the service.
+from src.modules.vitalia.sales_agent.tools.send_proactive_reengagement import (
+    send_proactive_reengagement,
+)
+
 # Module-level smoke: each registry exposes at least one slot (Slice 1 floor).
 # This guarantees `register_all` can dispatch through any of the 5 surfaces
 # without an empty-registry runtime KeyError. The actual count invariants live
@@ -567,6 +574,82 @@ def register_all(registry: ExtensionPointRegistry) -> None:
             },
             handler=reschedule_appointment,
             tool_groups=("sales_agent", "vertical_medical", "scheduling", "rescheduling"),
+        ),
+    )
+
+    # ───────────────────────────────────────────────────────────────────────
+    # EP-3 — Adrián fidelización tool (NEW per T-9 Slice 1)
+    # ───────────────────────────────────────────────────────────────────────
+    # Per 03-arch-agentic.md § 2.1 + 06-tickets.yaml::T-9.
+    # Wrapper around brand-local ProactiveOutboundService (T-5 shipped). The
+    # service is the SSoT for the 8-step flow (opt_out → marketing_opt_in →
+    # throttle → compliance gate → audit_log sync → persist event → emit
+    # ReEngagementTriggered via outbox → return ProactiveReminderResponse).
+    #
+    # Tool surface contract: tenant + clinic dual filter cardinal (HIPAA-lite),
+    # graceful-degradation envelope (never raises), PHI containment in the
+    # return string (no patient_name / patient_phone echoed back to the LLM).
+    # The 5 Meta-approved WhatsApp HSM templates that this tool dispatches
+    # are registered in WHATSAPP_TEMPLATE_REGISTRY (T-8 shipped, separate
+    # commit on wip/vitalia).
+
+    registry.sales_agent_tool_register(
+        ToolDef(
+            name=_ns("send_proactive_reengagement"),
+            description=(
+                "Send a proactive WhatsApp re-engagement template to a patient. "
+                "Delegates to ProactiveOutboundService (full 8-step flow: opt_out + "
+                "marketing_opt_in + throttle + ComplianceService channel guard + "
+                "audit_log sync write + persist ReEngagementEvent + emit "
+                "ReEngagementTriggered via outbox). Idempotent per "
+                "re_engagement_event_id. Use when a re-engagement event has been "
+                "detected (cron OR operator action) and Adrián is dispatching the "
+                "corresponding proactive template. Patterns: multi_session, follow_up, "
+                "maintenance, absence, nps. Returns structured outcome (event_id + "
+                "status + blocked_reason) — never echoes PHI in the return string."
+            ),
+            input_schema={
+                "type": "object",
+                "properties": {
+                    "tenant_id": {"type": "string", "format": "uuid"},
+                    "clinic_id": {"type": "string", "format": "uuid"},
+                    "patient_id": {"type": "string", "format": "uuid"},
+                    "patient_phone": {"type": "string"},
+                    "patient_name": {"type": "string"},
+                    "pattern": {
+                        "type": "string",
+                        "enum": [
+                            "multi_session",
+                            "follow_up",
+                            "maintenance",
+                            "absence",
+                            "nps",
+                        ],
+                    },
+                    "template_id": {"type": "string"},
+                    "marketing_opt_in": {"type": "boolean"},
+                    "opt_out": {"type": "boolean"},
+                    "re_engagement_event_id": {"type": "string", "format": "uuid"},
+                    "trigger_source": {"type": "string"},
+                    "triggered_by_user_id": {"type": "string", "format": "uuid"},
+                },
+                "required": [
+                    "tenant_id",
+                    "clinic_id",
+                    "patient_id",
+                    "patient_phone",
+                    "patient_name",
+                    "pattern",
+                    "template_id",
+                    "marketing_opt_in",
+                    "opt_out",
+                    "re_engagement_event_id",
+                    "trigger_source",
+                    "triggered_by_user_id",
+                ],
+            },
+            handler=send_proactive_reengagement,
+            tool_groups=("sales_agent", "vertical_medical", "fidelizacion", "re_engagement"),
         ),
     )
 
