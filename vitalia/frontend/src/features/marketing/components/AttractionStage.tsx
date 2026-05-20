@@ -11,6 +11,7 @@ import { forwardRef } from "react";
 import { cn } from "@/lib/cn";
 import { useStageDetail } from "../api/use-stage-detail";
 import { LucasStageRecommendationsCard } from "./LucasStageRecommendationsCard";
+import { ChannelBreakdownRow } from "./ChannelBreakdownRow";
 import { MARKETING_COPY } from "../copy";
 
 export type AttractionStageProps = {
@@ -79,7 +80,7 @@ export const AttractionStage = forwardRef<HTMLElement, AttractionStageProps>(
         {/* Lucas stage recommendations */}
         <LucasStageRecommendationsCard stage="attraction" />
 
-        {/* Channel breakdown placeholder — T-mk-fe-5 fills this with real ChannelBreakdownRow */}
+        {/* Channel breakdown — T-mk-fe-5 real implementation */}
         <div
           data-testid="channel-breakdown-placeholder"
           data-slot="channel-breakdown"
@@ -89,8 +90,9 @@ export const AttractionStage = forwardRef<HTMLElement, AttractionStageProps>(
           <div className="px-4 py-3 border-b vt-border-soft text-xs font-semibold vt-text">
             {MARKETING_COPY.channels.title}
           </div>
-          <div className="p-4 text-xs vt-text-muted italic">
-            {MARKETING_COPY.channels.loadingMessage}
+          <div className="divide-y vt-divide">
+            <ChannelBreakdownRow provider="meta_ads" />
+            <ChannelBreakdownRow provider="google_ads" />
           </div>
         </div>
       </section>

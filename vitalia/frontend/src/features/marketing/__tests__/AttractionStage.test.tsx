@@ -61,6 +61,15 @@ vi.mock("../components/LucasStageRecommendationsCard", () => ({
   ),
 }));
 
+// Mock ChannelBreakdownRow (T-mk-fe-5) to isolate AttractionStage test
+vi.mock("../components/ChannelBreakdownRow", () => ({
+  ChannelBreakdownRow: ({ provider }: { provider?: string }) => (
+    <div data-testid={`channel-row-${provider}`} data-provider={provider}>
+      Channel Row: {provider}
+    </div>
+  ),
+}));
+
 import { useQuery } from "@tanstack/react-query";
 
 const mockStageDetail = {

@@ -114,6 +114,19 @@ export type { LucasUndoChipProps } from "./components/LucasUndoChip";
 export { LucasRejectModal } from "./components/LucasRejectModal";
 export type { LucasRejectModalProps } from "./components/LucasRejectModal";
 
+// Components (T-mk-fe-5)
+export { ConnectionBadge } from "./components/ConnectionBadge";
+export type { ConnectionBadgeProps, ConnectionBadgeVariant } from "./components/ConnectionBadge";
+
+export { ChannelBreakdownRow } from "./components/ChannelBreakdownRow";
+export type { ChannelBreakdownRowProps } from "./components/ChannelBreakdownRow";
+
+export { ChannelDetailSidebar } from "./components/ChannelDetailSidebar";
+export type { ChannelDetailSidebarProps } from "./components/ChannelDetailSidebar";
+
+export { ChannelConnectionWizard } from "./components/ChannelConnectionWizard";
+export type { ChannelConnectionWizardProps } from "./components/ChannelConnectionWizard";
+
 // Components (T-mk-fe-4)
 export { AttributionMatrixWidget } from "./components/AttributionMatrixWidget";
 export type { AttributionMatrixWidgetProps } from "./components/AttributionMatrixWidget";
