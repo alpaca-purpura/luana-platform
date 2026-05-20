@@ -177,7 +177,7 @@ tickets:
           - vitalia/backend/tests/modules/vitalia/marketing/api/test_channels_endpoints.py::test_manual_sync_endpoint_triggers_retry
     blocked_by: [T-mk-be-3, T-mk-be-4]
     state: pushed
-    pushed_sha: pending
+    pushed_sha: "191c93a"
 
   - id: T-mk-be-6
     sub_story: vitalia-slice-1-marketing
