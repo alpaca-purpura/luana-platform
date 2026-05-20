@@ -1,5 +1,11 @@
 /**
- * Clerk Middleware — Vitalia (T-1 vitalia-auth-base-functional)
+ * Clerk Proxy — Vitalia (T-1 vitalia-auth-base-functional)
+ *
+ * Next.js 16 renamed the `middleware` file convention to `proxy` (deprecation
+ * v16.0.0). Same location (src/), same `config.matcher` API. The default export
+ * is now named `proxy`. Clerk's `clerkMiddleware()` SDK helper is unchanged —
+ * its name is historical, it just wraps a request handler that Next.js invokes
+ * via the proxy convention.
  *
  * Protege todas las rutas excepto las explícitamente públicas.
  * Rutas públicas: sign-in, sign-up, landing pública por clínica,
@@ -22,11 +28,13 @@ const isPublicRoute = createRouteMatcher([
   "/api/health",
 ]);
 
-export default clerkMiddleware(async (auth, request) => {
+export const proxy = clerkMiddleware(async (auth, request) => {
   if (!isPublicRoute(request)) {
     await auth.protect();
   }
 });
+
+export default proxy;
 
 export const config = {
   matcher: [
