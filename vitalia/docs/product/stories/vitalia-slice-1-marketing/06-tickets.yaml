@@ -128,6 +128,8 @@ tickets:
           - vitalia/backend/tests/modules/vitalia/connections/meta_ads/test_meta_ads_adapter.py::test_timeout_30s_raises
           - vitalia/backend/tests/modules/vitalia/connections/meta_ads/test_meta_ads_adapter.py::test_circuit_breaker_after_5_consecutive_failures
     blocked_by: [T-mk-be-2]
+    state: pushed
+    pushed_sha: "08555c5"
 
 # ════════════════════════════════════════════════════════════════════════
 # WAVE 3 — BE API routes + 4 cron jobs
