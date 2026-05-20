@@ -16,8 +16,10 @@ from __future__ import annotations
 from fastapi import FastAPI
 from pydantic import BaseModel
 
+from src.modules.vitalia.admin.api.admin_helpers_router import router as admin_helpers_router
 from src.modules.vitalia.api.routes import router as vitalia_router
 from src.modules.vitalia.api.webhook_routes import webhook_router
+from src.modules.vitalia.clinics.api.router import router as clinics_router
 from src.modules.vitalia.copilot.api.routes.wizard_onboarding_routes import (
     router as wizard_onboarding_router,
 )
@@ -44,6 +46,10 @@ app.include_router(iam_router, prefix="/api/v1/iam")
 app.include_router(crm_router, prefix="/api/v1/crm")
 # T-be-services-1: Valeria wizard onboarding (copilot)
 app.include_router(wizard_onboarding_router, prefix="/api/v1/vitalia/onboarding")
+# T-be-clinics-extension: Clinic branches CRUD (brand extension)
+app.include_router(clinics_router, prefix="/api/v1/vitalia/clinics")
+# T-be-clinics-extension: Admin helper API (internal, not in OpenAPI schema)
+app.include_router(admin_helpers_router, prefix="/api/v1/vitalia/admin")
 
 
 class HealthResponse(BaseModel):

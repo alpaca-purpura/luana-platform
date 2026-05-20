@@ -87,6 +87,44 @@ services:
         limits:
           memory: 1G
 
+  vitalia_admin_dev:
+    # Streamlit admin panel for vitalia — port 8502 (per 03-arch-be.md § 5)
+    # Password-gated (bcrypt). Requires VITALIA_ADMIN_PASSWORD env var.
+    # Run standalone: make dev-vitalia-admin
+    profiles: [admin]  # opt-in: make dev-vitalia-admin
+    build:
+      context: .
+      dockerfile: vitalia/backend/Dockerfile
+      target: dev
+    restart: unless-stopped
+    env_file:
+      - path: vitalia/.env.dev
+        required: false
+    environment:
+      STREAMLIT_SERVER_PORT: "8502"
+      STREAMLIT_SERVER_HEADLESS: "true"
+      STREAMLIT_BROWSER_GATHER_USAGE_STATS: "false"
+      PYTHONPATH: "/workspace/vitalia/backend/src"
+    command: >
+      bash -c "cd /workspace && .venv/bin/streamlit run
+      vitalia/backend/src/modules/vitalia/admin/app.py
+      --server.port 8502
+      --server.address 0.0.0.0
+      --server.headless true"
+    volumes:
+      - .:/workspace:rw
+      - vitalia_backend_venv:/workspace/.venv:ro
+    ports:
+      - "127.0.0.1:8502:8502"
+    depends_on:
+      - vitalia_backend_dev
+    networks:
+      - luana_dev_net
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
   vitalia_cloudflared_dev:
     image: cloudflare/cloudflared:latest
     profiles: [tunnel]  # opt-in: make dev-vitalia-tunnel

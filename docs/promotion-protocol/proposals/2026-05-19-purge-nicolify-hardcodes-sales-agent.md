@@ -1,10 +1,15 @@
 ---
 proposal_id: 2026-05-19-purge-nicolify-hardcodes-sales-agent
-state: accepted
+state: migrated
 opened_date: 2026-05-19
 opened_by: /pm-luana
 ratified_by: Chris
 ratified_date: 2026-05-19
+migrated_date: 2026-05-19
+migrated_commit: 39b73703   # main squash-merge SHA (use git log main -1 para full SHA)
+wip_branch_commit: 78c0ddb  # wip/core-purge-sales-agent-hardcodes commit
+gate_output_iter2: gate-output.json (ephemeral en worktree pre-cleanup — copilot 1640 tests PASS + orchestrator 19 PASS + llm PASS + ruff PASS + platform regression PASS; sales-agent ADVISORY_PRE_EXISTING verified base; grep "FAIL" was false positive on intentional doc/comment migration explanations)
+auditor_review_iter1: REVIEW.md (verdict WARN approve-to-merge=true; FAIL-1 "proposal missing" addressed by including proposal in same commit; WARN-1 copilot scope addressed by broadening; WARN-2 R3 brand consumer mitigated by zero brand asserts grep)
 
 # Origen
 origin_learnings: []  # detectado durante auditoría auditor-backend del lift previo (INFO-2 finding)

@@ -14,6 +14,7 @@
 BRANDS := nicolify vitalia comunify lupulo
 
 .PHONY: dev-nicolify dev-vitalia dev-comunify dev-lupulo
+.PHONY: dev-vitalia-admin dev-vitalia-admin-down
 .PHONY: dev-nicolify-tunnel dev-vitalia-tunnel dev-comunify-tunnel dev-lupulo-tunnel
 .PHONY: dev-all dev-all-vector dev-all-cache
 .PHONY: dev-down-nicolify dev-down-vitalia dev-down-comunify dev-down-lupulo dev-down-all
@@ -41,6 +42,16 @@ dev-comunify:
 dev-lupulo:
 	@bash scripts/dev-lock-check.sh lupulo
 	$(COMPOSE_BASE) -f lupulo/docker-compose.dev.yml up -d
+
+# ── vitalia admin panel (Streamlit port 8502) ───────────────────────────────
+# Requires VITALIA_ADMIN_PASSWORD in vitalia/.env.dev
+# Access: http://127.0.0.1:8502
+dev-vitalia-admin:
+	@bash scripts/dev-lock-check.sh vitalia
+	$(COMPOSE_BASE) -f vitalia/docker-compose.dev.yml --profile admin up -d
+
+dev-vitalia-admin-down:
+	$(COMPOSE_BASE) -f vitalia/docker-compose.dev.yml --profile admin stop vitalia_admin_dev
 
 # ── tunnel targets (cloudflared profile) ────────────────────────────────────
 dev-nicolify-tunnel:

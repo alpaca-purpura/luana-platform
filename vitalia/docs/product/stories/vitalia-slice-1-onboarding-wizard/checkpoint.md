@@ -2,8 +2,8 @@
 story_id: vitalia-slice-1-onboarding-wizard
 outcome: vitalia-mvp-ui-foundation
 parent_spec: vitalia-ux-discovery
-state: reviewing
-phase: HANDOFF_TO_PM_MERGE
+state: done                                        # 2026-05-18 — merged in commit 4191371 (squash-merge to main); state update was missed post-merge
+phase: COMPLETE                                    # post-hoc state correction 2026-05-19
 audit_started_at: 2026-05-18
 audit_started_by: /auditor (Conv 3 autonomous chain)
 audit_completed_at: 2026-05-18

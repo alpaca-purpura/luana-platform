@@ -23,7 +23,12 @@ dependencies = [
     "luana-core-extension-sdk",
     "luana-core-channels",
     "luana-core-extraction",
+    "luana-core-iam",
     "apscheduler>=3.10",
+    # Admin Streamlit panel (vitalia/backend/src/modules/vitalia/admin/)
+    "streamlit>=1.40",
+    "passlib[bcrypt]>=1.7.4",
+    "bcrypt>=4.0",
 ]
 
 [build-system]
