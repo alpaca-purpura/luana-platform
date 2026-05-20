@@ -38,3 +38,25 @@ class ReferralRepository(CompoundScopeRepositoryBase[ReferralModel, UUID]):
     def __init__(self, *, session: AsyncSession) -> None:
         """Initialize with clinic_id as the secondary scope axis."""
         super().__init__(session=session, scope_field="clinic_id")
+
+    async def save(self, model: ReferralModel) -> ReferralModel:
+        """Persist a ReferralModel (insert or update).
+
+        Uses session.merge() to handle both new and existing records.
+        Commit is handled by the FastAPI dependency (per-request transaction).
+
+        Args:
+            model: ReferralModel to persist.
+
+        Returns:
+            Merged (refreshed) model instance.
+        """
+        merged = await self._session.merge(model)
+        await self._session.flush()
+        logger.info(
+            "referral.saved",
+            referral_id=str(merged.id),
+            tenant_id=str(merged.tenant_id),
+            status=merged.status,
+        )
+        return merged

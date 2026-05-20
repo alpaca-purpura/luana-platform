@@ -93,6 +93,32 @@ class LucasRecommendationRepository(CompoundScopeRepositoryBase[LucasRecommendat
         )
         return rows
 
+    async def save(self, model: LucasRecommendationModel) -> LucasRecommendationModel:
+        """Persist a LucasRecommendationModel (insert or update).
+
+        Uses session.merge() to handle both new and existing records.
+        Caller must ensure the model has tenant_id + clinic_id set correctly
+        before calling save() — dual filter is enforced by get_by_id() upstream.
+
+        Flushes the session to make changes visible within the transaction.
+        Commit is handled by the FastAPI dependency (per-request transaction).
+
+        Args:
+            model: LucasRecommendationModel to persist.
+
+        Returns:
+            Merged (refreshed) model instance.
+        """
+        merged = await self._session.merge(model)
+        await self._session.flush()
+        logger.info(
+            "lucas_recommendation.saved",
+            recommendation_id=str(merged.id),
+            tenant_id=str(merged.tenant_id),
+            status=merged.status,
+        )
+        return merged
+
     async def list_pending_undo_expired(
         self,
         *,

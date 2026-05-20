@@ -20,6 +20,7 @@ from uuid import UUID, uuid4
 
 import structlog
 from luana_core_platform.repositories.compound_scope_repository import CompoundScopeRepositoryBase
+from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import func
@@ -137,3 +138,55 @@ class ChannelMetricRepository(CompoundScopeRepositoryBase[ChannelMetricModel, UU
             metric_date=str(metric_date),
             campaign_id=campaign_id,
         )
+
+    async def list_for_stage(
+        self,
+        *,
+        tenant_id: UUID,
+        clinic_id: UUID,
+        channel_slugs: list[str],
+        period_start: date,
+        period_end: date,
+    ) -> list[ChannelMetricModel]:
+        """Return channel metric rows for a list of channel slugs within a date range.
+
+        Used by MarketingService.stage_detail() / channel_detail() to aggregate
+        per-stage metrics from persisted channel data.
+
+        Dual filter: tenant_id + clinic_id (HIPAA-lite).
+        Excludes soft-deleted rows.
+
+        Args:
+            tenant_id: Tenant UUID.
+            clinic_id: Clinic UUID (HIPAA dual filter).
+            channel_slugs: List of channel_slug values to filter by.
+            period_start: First date of the period (inclusive).
+            period_end: Last date of the period (inclusive).
+
+        Returns:
+            List of ChannelMetricModel rows matching the filter.
+        """
+        if not channel_slugs:
+            return []
+
+        scope_attr = self._scope_attr()
+        stmt = (
+            select(self.MODEL)
+            .where(self.MODEL.tenant_id == tenant_id)
+            .where(scope_attr == clinic_id)
+            .where(self.MODEL.channel_slug.in_(channel_slugs))
+            .where(self.MODEL.metric_date >= period_start)
+            .where(self.MODEL.metric_date <= period_end)
+            .where(self.MODEL.deleted_at.is_(None))
+            .order_by(self.MODEL.metric_date.desc(), self.MODEL.channel_slug)
+        )
+        result = await self._session.execute(stmt)
+        rows = list(result.scalars().all())
+        logger.info(
+            "channel_metric.list_for_stage",
+            tenant_id=str(tenant_id),
+            clinic_id=str(clinic_id),
+            channel_count=len(channel_slugs),
+            row_count=len(rows),
+        )
+        return rows
