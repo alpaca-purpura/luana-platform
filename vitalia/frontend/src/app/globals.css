@@ -58,6 +58,7 @@
   --vitalia-purpura-color:     hsl(287 53% 37%);
   --vitalia-azul-marino-color: hsl(244 84% 32%);
   --vitalia-verde-lima-color:  hsl(70 73% 51%);
+  --vitalia-text-color:        hsl(226 36% 16%);
   --vitalia-text-muted-color:  hsl(220 9% 46%);
   --vitalia-text-faint-color:  hsl(220 9% 65%);
   --vitalia-border-color:      hsl(222 18% 93%);
@@ -122,6 +123,12 @@
 .vt-bg-gradient-agent    { background: var(--vitalia-gradient-agent); }
 .vt-bg-gradient-app-cta  { background: var(--vitalia-gradient-app-cta); }
 .vt-bg-gradient-mariposa { background: var(--vitalia-gradient-mariposa); }
+/* Marketing bowtie: cian gradient tab-active bg (left-to-right) */
+.vt-bg-tab-active        { background: linear-gradient(to right, hsl(var(--vitalia-cian) / 0.10), transparent); }
+/* Marketing stage tab bottom border (cian) */
+.vt-border-b-cian        { border-bottom: 3px solid hsl(var(--vitalia-cian)); }
+/* Marketing bowtie summary footer */
+.vt-text-azul-marino-bold { color: hsl(var(--vitalia-azul-marino)); font-weight: 600; }
 
 /* ─── Agent gradients (classes — allow CSS gradient definitions here) ──────── */
 /* gradient classes consume CSS vars above; HEX in :root is allowed in globals.css */

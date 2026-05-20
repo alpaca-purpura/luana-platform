@@ -81,3 +81,19 @@ export type { UseSyncChannelVariables } from "./api/use-sync-channel";
 
 // Store
 export { useMarketingStore } from "./store/marketing-store";
+
+// Components (T-mk-fe-2)
+export { MarketingBowtieSVG } from "./components/MarketingBowtieSVG";
+export type { MarketingBowtieSVGProps } from "./components/MarketingBowtieSVG";
+
+export { MarketingStageTabs } from "./components/MarketingStageTabs";
+export type { MarketingStageTabsProps } from "./components/MarketingStageTabs";
+
+export { MarketingLayout } from "./components/MarketingLayout";
+export type { MarketingLayoutProps } from "./components/MarketingLayout";
+
+export { StageDispatcher } from "./components/StageDispatcher";
+export type { StageDispatcherProps } from "./components/StageDispatcher";
+
+export { MarketingActivityFooter } from "./components/MarketingActivityFooter";
+export type { MarketingActivityFooterProps } from "./components/MarketingActivityFooter";
