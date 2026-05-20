@@ -28,10 +28,29 @@ from typing import Annotated
 from uuid import UUID
 
 import structlog
-from fastapi import APIRouter, Header, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from pydantic import BaseModel, ConfigDict
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.db import get_async_session
 from src.modules.vitalia._shared.auth.rbac import PHIAccessDeniedError
+from src.modules.vitalia.audit.audit_writer import AsyncAuditWriter
+from src.modules.vitalia.connections.whisper.adapter import WhisperAdapter
+from src.modules.vitalia.crm.infrastructure.persistence.action_receipt_repository import (
+    ActionReceiptRepository,
+)
+from src.modules.vitalia.crm.infrastructure.persistence.activity_event_repository import (
+    ActivityEventRepository,
+)
+from src.modules.vitalia.crm.infrastructure.persistence.conversation_repository import (
+    ConversationRepository,
+)
+from src.modules.vitalia.crm.infrastructure.persistence.lead_repository import (
+    LeadRepository,
+)
+from src.modules.vitalia.crm.infrastructure.persistence.message_repository import (
+    MessageRepository,
+)
 from src.modules.vitalia.iam.application.services.clinic_resolver import (
     ClinicResolver,
     MissingAuthHeaderError,
@@ -103,104 +122,156 @@ AuthorizationHeader = Annotated[str, Header(alias="Authorization")]
 TenantIdHeader = Annotated[str, Header(alias="X-Tenant-ID")]
 ClinicIdHeader = Annotated[str, Header(alias="X-Clinic-ID")]
 
+# Outbox adapter_bus — module-level import per core engine pattern (same as fidelizacion services)
+# Per anti-duplication.md: use core engine, never reimplement locally
+try:
+    from luana_core_events.outbox import adapter_bus as _adapter_bus  # type: ignore[import]
+except ImportError:  # pragma: no cover — available in runtime, not in offline env
+    from unittest.mock import AsyncMock as _AsyncMock  # noqa: PLC0415
+
+    class _FallbackBus:  # type: ignore[no-redef]
+        """Fallback outbox bus for offline environments."""
+
+        publish = _AsyncMock()
+
+    _adapter_bus = _FallbackBus()
+
+
+# Slice 1 no-op stubs for external integrations not yet wired
+# (compliance_service, rate_limiter, redis_client, whisper_adapter)
+# These are swapped for real implementations in Slice 2.
+
+
+class _NoOpComplianceService:
+    """Slice 1 no-op compliance service — allows all messages through."""
+
+    async def validate_outbound_message(self, message: object, channel: str) -> None:
+        """No-op: allow all messages in Slice 1."""
+
+
+class _NoOpRateLimiter:
+    """Slice 1 no-op rate limiter — allows all sends."""
+
+    async def check_and_increment(self, *args: object, **kwargs: object) -> bool:
+        """No-op: return True (not rate-limited) in Slice 1."""
+        return True
+
+
+class _NoOpRedisClient:
+    """Slice 1 no-op Redis client for PauseAdrianService TTL."""
+
+    async def set(self, *args: object, **kwargs: object) -> None:
+        """No-op: skip Redis SET in Slice 1."""
+
+    async def get(self, *args: object, **kwargs: object) -> None:
+        """No-op: return None (no pause active) in Slice 1."""
+        return None
+
+    async def delete(self, *args: object, **kwargs: object) -> None:
+        """No-op: skip Redis DELETE in Slice 1."""
+
 
 # ---------------------------------------------------------------------------
-# Provider factories (swappable for tests via monkeypatch)
+# Provider factories — real DI with FastAPI Depends (Critical #4)
 # ---------------------------------------------------------------------------
 
 
 def _get_resolver() -> ClinicResolver:
-    """Create a ClinicResolver with the default JWT decoder (Slice 1)."""
+    """Create a ClinicResolver with the default JWT decoder."""
     return ClinicResolver(decoder=ClerkJwtDecoder())
 
 
-def _get_send_service() -> SendMessageService:
-    """Create SendMessageService with AsyncMock repos (Slice 1 — no live DI)."""
-    from unittest.mock import AsyncMock
-
+async def _get_send_service(
+    session: Annotated[AsyncSession, Depends(get_async_session)],
+) -> SendMessageService:
+    """Create SendMessageService with real repo instances and async DI."""
     return SendMessageService(
-        msg_repo=AsyncMock(),
-        conv_repo=AsyncMock(),
-        receipt_repo=AsyncMock(),
-        audit_writer=AsyncMock(),
-        event_bus=AsyncMock(),
-        channel_adapters={},
-        session=None,
+        msg_repo=MessageRepository(session=session),
+        conv_repo=ConversationRepository(session=session),
+        receipt_repo=ActionReceiptRepository(session=session),
+        audit_writer=AsyncAuditWriter(session=session),
+        event_bus=_adapter_bus,
+        session=session,
     )
 
 
-def _get_retract_service() -> RetractMessageService:
-    """Create RetractMessageService with AsyncMock repos (Slice 1)."""
-    from unittest.mock import AsyncMock
-
+async def _get_retract_service(
+    session: Annotated[AsyncSession, Depends(get_async_session)],
+) -> RetractMessageService:
+    """Create RetractMessageService with real repo instances and async DI."""
     return RetractMessageService(
-        msg_repo=AsyncMock(),
-        receipt_repo=AsyncMock(),
-        conv_repo=AsyncMock(),
-        audit_writer=AsyncMock(),
-        event_bus=AsyncMock(),
+        msg_repo=MessageRepository(session=session),
+        receipt_repo=ActionReceiptRepository(session=session),
+        conv_repo=ConversationRepository(session=session),
+        audit_writer=AsyncAuditWriter(session=session),
+        event_bus=_adapter_bus,
         channel_adapters={},
-        session=None,
+        session=session,
     )
 
 
-def _get_set_mode_service() -> SetModeService:
-    """Create SetModeService with AsyncMock repos (Slice 1)."""
-    from unittest.mock import AsyncMock
-
+async def _get_set_mode_service(
+    session: Annotated[AsyncSession, Depends(get_async_session)],
+) -> SetModeService:
+    """Create SetModeService with real repo instances and async DI."""
     return SetModeService(
-        conv_repo=AsyncMock(),
-        audit_writer=AsyncMock(),
-        event_bus=AsyncMock(),
-        session=AsyncMock(),
+        conv_repo=ConversationRepository(session=session),
+        audit_writer=AsyncAuditWriter(session=session),
+        event_bus=_adapter_bus,
+        session=session,
     )
 
 
-def _get_pause_service() -> PauseAdrianService:
-    """Create PauseAdrianService with AsyncMock repos (Slice 1)."""
-    from unittest.mock import AsyncMock
-
+async def _get_pause_service(
+    session: Annotated[AsyncSession, Depends(get_async_session)],
+) -> PauseAdrianService:
+    """Create PauseAdrianService with real repos + Slice 1 Redis stub."""
     return PauseAdrianService(
-        conv_repo=AsyncMock(),
-        audit_writer=AsyncMock(),
-        event_bus=AsyncMock(),
-        redis_client=AsyncMock(),
-        session=AsyncMock(),
+        conv_repo=ConversationRepository(session=session),
+        audit_writer=AsyncAuditWriter(session=session),
+        event_bus=_adapter_bus,
+        redis_client=_NoOpRedisClient(),
+        session=session,
     )
 
 
-def _get_proactive_service() -> ProactiveOutboundService:
-    """Create ProactiveOutboundService with AsyncMock repos (Slice 1)."""
-    from unittest.mock import AsyncMock
-
+async def _get_proactive_service(
+    session: Annotated[AsyncSession, Depends(get_async_session)],
+) -> ProactiveOutboundService:
+    """Create ProactiveOutboundService with real repos + Slice 1 stubs."""
     return ProactiveOutboundService(
-        lead_repo=AsyncMock(),
-        conv_repo=AsyncMock(),
-        msg_repo=AsyncMock(),
-        audit_writer=AsyncMock(),
-        event_bus=AsyncMock(),
-        compliance_service=AsyncMock(),
-        rate_limiter=AsyncMock(),
+        lead_repo=LeadRepository(session),
+        conv_repo=ConversationRepository(session=session),
+        msg_repo=MessageRepository(session=session),
+        audit_writer=AsyncAuditWriter(session=session),
+        event_bus=_adapter_bus,
+        compliance_service=_NoOpComplianceService(),
+        rate_limiter=_NoOpRateLimiter(),
         channel_adapters={},
-        session=None,
+        session=session,
     )
 
 
 def _get_transcribe_service() -> WhisperTranscribeService:
-    """Create WhisperTranscribeService with AsyncMock adapter (Slice 1)."""
-    from unittest.mock import AsyncMock
+    """Create WhisperTranscribeService with Whisper adapter.
 
+    API key from OPENAI_API_KEY env var. Missing key → empty string; adapter
+    returns TranscriptionResult(text=None, confidence=0.0) with graceful degradation.
+    """
+    import os  # noqa: PLC0415
+
+    api_key = os.environ.get("OPENAI_API_KEY", "")
     return WhisperTranscribeService(
-        whisper_adapter=AsyncMock(),
+        whisper_adapter=WhisperAdapter(api_key=api_key),
     )
 
 
-def _get_activity_service() -> ActivityEventService:
-    """Create ActivityEventService with AsyncMock repos (Slice 1)."""
-    from unittest.mock import AsyncMock
-
+async def _get_activity_service(
+    session: Annotated[AsyncSession, Depends(get_async_session)],
+) -> ActivityEventService:
+    """Create ActivityEventService with real repo instances."""
     return ActivityEventService(
-        activity_repo=AsyncMock(),
+        activity_repo=ActivityEventRepository(session=session),
     )
 
 
@@ -254,6 +325,7 @@ async def send_message(
     authorization: AuthorizationHeader,
     x_tenant_id: TenantIdHeader,
     x_clinic_id: ClinicIdHeader,
+    service: Annotated[SendMessageService, Depends(_get_send_service)],
 ) -> MessageResponse:
     """Send an AI or human message to a conversation.
 
@@ -266,6 +338,7 @@ async def send_message(
         authorization: Bearer token.
         x_tenant_id: Tenant ID header.
         x_clinic_id: Clinic ID header (dual PHI filter).
+        service: SendMessageService (injected via DI).
 
     Returns:
         MessageResponse (201 Created).
@@ -295,8 +368,6 @@ async def send_message(
     clinic_id = UUID(x_clinic_id)
     user_id = UUID(ctx.user_id) if len(str(ctx.user_id)) == 36 else UUID(int=0)
 
-    service = _get_send_service()
-
     try:
         result = await service.send(
             tenant_id=tenant_id,
@@ -307,6 +378,7 @@ async def send_message(
             media_url=body.media_url,
             media_kind=body.media_kind,
             media_duration_s=body.media_duration_s,
+            handler_mode_override=body.handler_mode_override,
             idempotency_key=body.idempotency_key,
         )
     except Exception as exc:
@@ -355,6 +427,7 @@ async def revert_message(
     authorization: AuthorizationHeader,
     x_tenant_id: TenantIdHeader,
     x_clinic_id: ClinicIdHeader,
+    service: Annotated[RetractMessageService, Depends(_get_retract_service)],
 ) -> RetractMessageResponse:
     """Retract an AI message within the 5-minute action receipt window.
 
@@ -370,6 +443,7 @@ async def revert_message(
         authorization: Bearer token.
         x_tenant_id: Tenant ID header.
         x_clinic_id: Clinic ID header (dual PHI filter).
+        service: RetractMessageService (injected via DI).
 
     Returns:
         RetractMessageResponse (200 OK).
@@ -401,8 +475,6 @@ async def revert_message(
     tenant_id = ctx.tenant_id
     clinic_id = UUID(x_clinic_id)
     user_id = UUID(ctx.user_id) if len(str(ctx.user_id)) == 36 else UUID(int=0)
-
-    service = _get_retract_service()
 
     try:
         result = await service.retract(
@@ -454,6 +526,7 @@ async def set_conversation_mode(
     authorization: AuthorizationHeader,
     x_tenant_id: TenantIdHeader,
     x_clinic_id: ClinicIdHeader,
+    service: Annotated[SetModeService, Depends(_get_set_mode_service)],
 ) -> ConversationResponse:
     """Change handler mode (ai ↔ human) with OCC check.
 
@@ -467,6 +540,7 @@ async def set_conversation_mode(
         authorization: Bearer token.
         x_tenant_id: Tenant ID header.
         x_clinic_id: Clinic ID header (dual PHI filter).
+        service: SetModeService (injected via DI).
 
     Returns:
         ConversationResponse (200 OK).
@@ -496,8 +570,6 @@ async def set_conversation_mode(
     tenant_id = ctx.tenant_id
     clinic_id = UUID(x_clinic_id)
     user_id = UUID(ctx.user_id) if len(str(ctx.user_id)) == 36 else UUID(int=0)
-
-    service = _get_set_mode_service()
 
     try:
         result = await service.set_mode(
@@ -560,6 +632,7 @@ async def pause_adrian(
     authorization: AuthorizationHeader,
     x_tenant_id: TenantIdHeader,
     x_clinic_id: ClinicIdHeader,
+    service: Annotated[PauseAdrianService, Depends(_get_pause_service)],
 ) -> ConversationResponse:
     """Pause the Adrián AI agent for 60 minutes (default).
 
@@ -573,6 +646,7 @@ async def pause_adrian(
         authorization: Bearer token.
         x_tenant_id: Tenant ID header.
         x_clinic_id: Clinic ID header (dual PHI filter).
+        service: PauseAdrianService (injected via DI).
 
     Returns:
         ConversationResponse with pause_until populated (200 OK).
@@ -601,8 +675,6 @@ async def pause_adrian(
     tenant_id = ctx.tenant_id
     clinic_id = UUID(x_clinic_id)
     user_id = UUID(ctx.user_id) if len(str(ctx.user_id)) == 36 else UUID(int=0)
-
-    service = _get_pause_service()
 
     try:
         result = await service.pause(
@@ -719,6 +791,7 @@ async def get_activity_stream(
     authorization: AuthorizationHeader,
     x_tenant_id: TenantIdHeader,
     x_clinic_id: ClinicIdHeader,
+    service: Annotated[ActivityEventService, Depends(_get_activity_service)],
     limit: int = Query(default=8, ge=1, le=50),
     since_minutes: int = Query(default=60, ge=1, le=1440),
 ) -> ActivityStreamResponse:
@@ -732,6 +805,7 @@ async def get_activity_stream(
         authorization: Bearer token.
         x_tenant_id: Tenant ID header.
         x_clinic_id: Clinic ID header (dual PHI filter).
+        service: ActivityEventService (injected via DI).
         limit: Max events to return (default 8, max 50).
         since_minutes: Look-back window in minutes (default 60, max 1440).
 
@@ -755,8 +829,6 @@ async def get_activity_stream(
 
     tenant_id = ctx.tenant_id
     clinic_id = UUID(x_clinic_id)
-
-    service = _get_activity_service()
 
     result = await service.get_stream(
         tenant_id=tenant_id,
@@ -803,6 +875,7 @@ async def send_proactive_outbound(
     authorization: AuthorizationHeader,
     x_tenant_id: TenantIdHeader,
     x_clinic_id: ClinicIdHeader,
+    service: Annotated[ProactiveOutboundService, Depends(_get_proactive_service)],
 ) -> ProactiveOutboundResponse:
     """Send a proactive outbound message via an approved HSM template.
 
@@ -816,6 +889,7 @@ async def send_proactive_outbound(
         authorization: Bearer token.
         x_tenant_id: Tenant ID header.
         x_clinic_id: Clinic ID header (dual PHI filter).
+        service: ProactiveOutboundService (injected via DI).
 
     Returns:
         ProactiveOutboundResponse (201 Created).
@@ -841,8 +915,6 @@ async def send_proactive_outbound(
     tenant_id = ctx.tenant_id
     clinic_id = UUID(x_clinic_id)
     user_id = UUID(ctx.user_id) if len(str(ctx.user_id)) == 36 else UUID(int=0)
-
-    service = _get_proactive_service()
 
     try:
         result = await service.send_proactive(
@@ -954,7 +1026,7 @@ async def transcribe_audio(
     tenant_id = ctx.tenant_id
     clinic_id = UUID(x_clinic_id)
 
-    service = _get_transcribe_service()
+    service = _get_transcribe_service()  # No DB session needed for Whisper
 
     result = await service.transcribe(
         audio_url=body.audio_url,

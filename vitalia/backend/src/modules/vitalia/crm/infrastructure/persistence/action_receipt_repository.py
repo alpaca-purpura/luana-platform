@@ -4,6 +4,7 @@ Inherits CompoundScopeRepositoryBase with scope_field="clinic_id" to enforce
 the HIPAA-lite dual filter: tenant_id AND clinic_id on every query.
 
 Custom methods:
+- create():                 persist new action receipt for AI message
 - get_active_for_message(): find active (non-retracted, non-expired) receipt
 - mark_retracted():         update retraction state (5min undo SC-01)
 
@@ -20,7 +21,7 @@ downstream-regression-na: brand-local vitalia CRM infrastructure repo
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import structlog
 from luana_core_platform.repositories.compound_scope_repository import (
@@ -58,6 +59,58 @@ class ActionReceiptRepository(CompoundScopeRepositoryBase[ActionReceiptModel, UU
             session: Async SQLAlchemy session (injected by DI).
         """
         super().__init__(session=session, scope_field="clinic_id")
+
+    async def create(
+        self,
+        *,
+        message_id: UUID,
+        conversation_id: UUID,
+        tenant_id: UUID,
+        clinic_id: UUID,
+        expires_at: datetime,
+    ) -> ActionReceiptModel:
+        """Persist a new action receipt for an AI message.
+
+        Called by SendMessageService when sender_type == 'agent_ai'.
+        The receipt enables the 5-minute undo window (SC-01).
+
+        PHI dual filter: tenant_id AND clinic_id mandatory.
+
+        Args:
+            message_id: UUID of the AI message this receipt belongs to.
+            conversation_id: Parent conversation UUID.
+            tenant_id: Root tenant UUID.
+            clinic_id: Clinic UUID (HIPAA-lite second scope filter).
+            expires_at: Absolute expiry timestamp (sent_at + 5 minutes).
+
+        Returns:
+            Created ActionReceiptModel instance.
+        """
+        now = datetime.now(tz=timezone.utc)
+        row = ActionReceiptModel(
+            id=uuid4(),
+            tenant_id=tenant_id,
+            clinic_id=clinic_id,
+            message_id=message_id,
+            conversation_id=conversation_id,
+            expires_at=expires_at,
+            retracted_at=None,
+            retract_succeeded=None,
+            retract_reason=None,
+            created_at=now,
+            updated_at=now,
+        )
+        self._session.add(row)
+        await self._session.flush()
+        logger.info(
+            "action_receipt_repo.create",
+            receipt_id=str(row.id),
+            message_id=str(message_id),
+            tenant_id=str(tenant_id),
+            clinic_id=str(clinic_id),
+            expires_at=expires_at.isoformat(),
+        )
+        return row
 
     async def get_active_for_message(
         self,

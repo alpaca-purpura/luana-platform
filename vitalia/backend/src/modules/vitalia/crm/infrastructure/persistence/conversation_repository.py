@@ -4,8 +4,9 @@ Inherits CompoundScopeRepositoryBase with scope_field="clinic_id" to enforce
 the HIPAA-lite dual filter: tenant_id AND clinic_id on every query.
 
 Custom methods:
-- list_for_inbox():       inbox list with filtering/ordering/pagination
-- update_handler_mode():  OCC update (returns False on conflict, True on success)
+- list_for_inbox():           inbox list with filtering/ordering/pagination
+- update_handler_mode():      OCC update (returns False on conflict, True on success)
+- get_or_create_for_lead():   idempotent upsert for proactive outbound
 
 PHI obligations (hipaa-lite.md § Regla cardinal):
 1. tenant_id + clinic_id dual filter mandatory (via CompoundScopeRepositoryBase)
@@ -19,7 +20,7 @@ downstream-regression-na: brand-local vitalia CRM infrastructure repo
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import structlog
 from luana_core_platform.repositories.compound_scope_repository import (
@@ -160,3 +161,82 @@ class ConversationRepository(CompoundScopeRepositoryBase[ConversationModel, UUID
             occ_success=success,
         )
         return success
+
+    async def get_or_create_for_lead(
+        self,
+        *,
+        tenant_id: UUID,
+        clinic_id: UUID,
+        lead_id: UUID,
+        channel: str,
+    ) -> ConversationModel:
+        """Get existing open conversation for a lead or create a new one.
+
+        Idempotent: returns existing open conversation if found, otherwise
+        creates a new conversation record. Used by ProactiveOutboundService
+        to ensure a conversation context exists before sending an HSM message.
+
+        PHI dual filter applied: tenant_id AND clinic_id mandatory.
+
+        Args:
+            tenant_id: Root tenant UUID.
+            clinic_id: Clinic UUID (HIPAA-lite second scope filter).
+            lead_id: Target lead UUID.
+            channel: Channel for the conversation (e.g. 'whatsapp').
+
+        Returns:
+            Existing or newly-created ConversationModel.
+        """
+        scope_attr = self._scope_attr()
+        # Try to find an existing open conversation for this lead+channel
+        stmt = (
+            select(ConversationModel)
+            .where(ConversationModel.tenant_id == tenant_id)
+            .where(scope_attr == clinic_id)
+            .where(ConversationModel.lead_id == lead_id)
+            .where(ConversationModel.channel == channel)
+            .where(ConversationModel.status == "open")
+            .where(ConversationModel.deleted_at.is_(None))
+            .order_by(ConversationModel.created_at.desc())
+            .limit(1)
+        )
+        result = await self._session.execute(stmt)
+        existing = result.scalar_one_or_none()
+
+        if existing is not None:
+            logger.debug(
+                "conversation_repo.get_or_create_for_lead.found_existing",
+                conversation_id=str(existing.id),
+                lead_id=str(lead_id),
+                tenant_id=str(tenant_id),
+                clinic_id=str(clinic_id),
+            )
+            return existing
+
+        now = datetime.now(tz=timezone.utc)
+        row = ConversationModel(
+            id=uuid4(),
+            tenant_id=tenant_id,
+            clinic_id=clinic_id,
+            lead_id=lead_id,
+            channel=channel,
+            status="open",
+            handler_mode="ai",
+            proposal_required=False,
+            help_needed=False,
+            unread_media_count=0,
+            messages_count=0,
+            created_at=now,
+            updated_at=now,
+        )
+        self._session.add(row)
+        await self._session.flush()
+        logger.info(
+            "conversation_repo.get_or_create_for_lead.created",
+            conversation_id=str(row.id),
+            lead_id=str(lead_id),
+            tenant_id=str(tenant_id),
+            clinic_id=str(clinic_id),
+            channel=channel,
+        )
+        return row

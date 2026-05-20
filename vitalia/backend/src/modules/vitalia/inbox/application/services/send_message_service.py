@@ -13,7 +13,7 @@ downstream-regression-na: brand-local vitalia inbox service
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
@@ -167,6 +167,7 @@ class SendMessageService:
         media_url: str | None = None,
         media_kind: str | None = None,
         media_duration_s: int | None = None,
+        handler_mode_override: str | None = None,
         idempotency_key: str | None = None,
     ) -> SendMessageResult:
         """Send a message in a conversation.
@@ -184,6 +185,8 @@ class SendMessageService:
             media_url: Optional media URL.
             media_kind: Optional media kind (audio/image/video/document).
             media_duration_s: Optional audio duration in seconds.
+            handler_mode_override: Optional override for handler mode ('ai' | 'human').
+                                   When provided, applies before determining sender_type.
             idempotency_key: Optional dedup key (Idempotency-Key header).
 
         Returns:
@@ -236,7 +239,25 @@ class SendMessageService:
             raise ConversationNotFoundError(conversation_id)
 
         now = datetime.now(UTC)
-        sender_type = "agent_human" if conv.handler_mode == "human" else "agent_ai"
+
+        # Apply handler_mode_override if provided (Medium #5)
+        effective_mode = handler_mode_override if handler_mode_override is not None else conv.handler_mode
+        if handler_mode_override is not None and handler_mode_override != conv.handler_mode:
+            await self._conv_repo.update_handler_mode(
+                conversation_id=conversation_id,
+                tenant_id=tenant_id,
+                clinic_id=clinic_id,
+                new_handler_mode=handler_mode_override,
+                expected_updated_at=conv.updated_at,
+            )
+            logger.info(
+                "send_message.handler_mode_override_applied",
+                conversation_id=str(conversation_id),
+                old_mode=conv.handler_mode,
+                new_mode=handler_mode_override,
+            )
+
+        sender_type = "agent_human" if effective_mode == "human" else "agent_ai"
 
         # Persist message
         msg = await self._msg_repo.create(
@@ -259,13 +280,30 @@ class SendMessageService:
             retracted_by_user_id=None,
             retracted_reason=None,
             retract_succeeded=None,
-            handler_mode=conv.handler_mode,
+            handler_mode=effective_mode,
             cache_hit_rate=None,
             llm_cost_usd=None,
             sent_at=now,
             delivered_at=None,
             read_at=None,
         )
+
+        # Create ActionReceipt for AI messages (Critical #1 — SC-01 §6.3)
+        action_receipt_expires_at: datetime | None = None
+        if sender_type == "agent_ai":
+            action_receipt_expires_at = now + timedelta(minutes=_ACTION_RECEIPT_WINDOW_MINUTES)
+            await self._receipt_repo.create(
+                message_id=msg.id,
+                conversation_id=conversation_id,
+                tenant_id=tenant_id,
+                clinic_id=clinic_id,
+                expires_at=action_receipt_expires_at,
+            )
+            logger.info(
+                "send_message.action_receipt_created",
+                message_id=str(msg.id),
+                expires_at=action_receipt_expires_at.isoformat(),
+            )
 
         # Audit log sync write (HIPAA-lite: mandatory pre-response)
         await self._audit_writer.write(
@@ -278,8 +316,9 @@ class SendMessageService:
             payload={
                 "conversation_id": str(conversation_id),
                 "sender_type": sender_type,
-                "handler_mode": conv.handler_mode,
+                "handler_mode": effective_mode,
                 "has_media": media_url is not None,
+                "action_receipt_created": action_receipt_expires_at is not None,
             },
         )
 
@@ -301,6 +340,7 @@ class SendMessageService:
             tenant_id=str(tenant_id),
             conversation_id=str(conversation_id),
             sender_type=sender_type,
+            action_receipt_expires_at=(action_receipt_expires_at.isoformat() if action_receipt_expires_at else None),
         )
 
         return SendMessageResult(
@@ -316,7 +356,7 @@ class SendMessageService:
             transcription_confidence=None,
             retracted_at=None,
             retract_succeeded=None,
-            handler_mode=conv.handler_mode,
+            handler_mode=effective_mode,
             sent_at=now,
-            action_receipt_expires_at=None,
+            action_receipt_expires_at=action_receipt_expires_at,
         )

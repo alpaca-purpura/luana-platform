@@ -221,6 +221,27 @@ class RetractMessageService:
             retracted_reason=reason or "user_undo",
         )
 
+        # Flip conversation handler_mode to 'human' after retract (Critical #2 — SC-01 spec §6.3)
+        # Fetch conversation for OCC token (needed by update_handler_mode)
+        conv = await self._conv_repo.get_by_id(
+            id=conversation_id,
+            tenant_id=tenant_id,
+            scope_id=clinic_id,
+        )
+        if conv is not None:
+            await self._conv_repo.update_handler_mode(
+                conversation_id=conversation_id,
+                tenant_id=tenant_id,
+                clinic_id=clinic_id,
+                new_handler_mode="human",
+                expected_updated_at=conv.updated_at,
+            )
+            logger.info(
+                "retract_message.handler_mode_flipped_human",
+                conversation_id=str(conversation_id),
+                tenant_id=str(tenant_id),
+            )
+
         # Audit log sync write (HIPAA-lite: mandatory pre-response)
         await self._audit_writer.write(
             tenant_id=tenant_id,

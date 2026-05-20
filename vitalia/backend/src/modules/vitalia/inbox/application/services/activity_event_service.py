@@ -19,7 +19,6 @@ from typing import TYPE_CHECKING
 from uuid import UUID
 
 import structlog
-from luana_core_observability.recording.sanitization import sanitize_payload
 
 if TYPE_CHECKING:
     from src.modules.vitalia.crm.infrastructure.persistence.activity_event_repository import (
@@ -108,9 +107,9 @@ class ActivityEventService:
 
         items: list[ActivityStreamItem] = []
         for evt in events:
-            # Defense-in-depth: sanitize payload before returning to UI
-            # Per hipaa-lite.md: PHI must be sanitized before any trace/log
-            _ = sanitize_payload(evt.payload_sanitized or {})
+            # No raw payload is returned to UI: ActivityStreamItem has no payload
+            # field (description_es only). payload_sanitized was already scrubbed at
+            # write time by the upstream service — no second-pass needed here.
             items.append(
                 ActivityStreamItem(
                     id=evt.id,

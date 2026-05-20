@@ -9,7 +9,7 @@ SC-04 coverage:
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
 import pytest
@@ -56,10 +56,19 @@ async def test_activity_stream_returns_at_most_8_events() -> None:
 
 
 @pytest.mark.asyncio
-async def test_activity_stream_applies_sanitize_payload() -> None:
-    """SC-04: sanitize_payload called on each event payload before return."""
+async def test_activity_stream_no_raw_payload_in_items() -> None:
+    """SC-04: ActivityStreamItem has no payload field — PHI not exposed to UI.
+
+    sanitize_payload is applied at write time by the upstream service layer
+    (defense-in-depth at source). The activity stream service does NOT expose
+    payload_sanitized through ActivityStreamItem — only description_es (safe text).
+
+    This replaces the former test_activity_stream_applies_sanitize_payload which
+    was testing dead code (result of sanitize_payload was discarded — Medium #7 fix).
+    """
     from src.modules.vitalia.inbox.application.services.activity_event_service import (
         ActivityEventService,
+        ActivityStreamItem,
     )
 
     activity_repo = AsyncMock()
@@ -67,20 +76,22 @@ async def test_activity_stream_applies_sanitize_payload() -> None:
 
     svc = ActivityEventService(activity_repo=activity_repo)
 
-    with patch(
-        "src.modules.vitalia.inbox.application.services.activity_event_service.sanitize_payload"
-    ) as mock_sanitize:
-        mock_sanitize.return_value = {}
+    result = await svc.get_stream(
+        tenant_id=TENANT_ID,
+        clinic_id=CLINIC_ID,
+        conversation_id=CONV_ID,
+        limit=8,
+        since_minutes=5,
+    )
 
-        await svc.get_stream(
-            tenant_id=TENANT_ID,
-            clinic_id=CLINIC_ID,
-            conversation_id=CONV_ID,
-            limit=8,
-            since_minutes=5,
-        )
-
-        mock_sanitize.assert_called()
+    assert len(result.events) == 1
+    item = result.events[0]
+    assert isinstance(item, ActivityStreamItem)
+    # ActivityStreamItem has no payload field — PHI is NOT exposed to UI layer
+    assert not hasattr(item, "payload")
+    assert not hasattr(item, "payload_sanitized")
+    # Only safe description_es is returned
+    assert item.description_es == "consultó precio de blanqueamiento"
 
 
 @pytest.mark.asyncio
