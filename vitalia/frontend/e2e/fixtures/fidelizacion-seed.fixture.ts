@@ -48,78 +48,80 @@ export const SEED_IDS = {
 
 /** KPI summary (used in smoke + all regression specs) */
 const SUMMARY_MOCK = {
-  period: "30d",
-  patients_in_followup: 12,
-  near_abandonment: 3,
-  return_rate: 0.72,
-  re_engaged: 5,
-  nps_average: 8.4,
-  trend: {
-    patients_in_followup: 0.15,
-    near_abandonment: -0.08,
-    re_engaged: 0.3,
+  patientsInFollowup: 12,
+  nearAbandonment: 3,
+  returnRate: 0.72,
+  reEngagedThisPeriod: 5,
+  npsAverage: 8.4,
+  npsResponsesCount: 24,
+  trendVsPreviousPeriod: {
+    patientsInFollowup: 0.15,
+    nearAbandonment: -0.08,
+    returnRate: 0.05,
+    reEngagedThisPeriod: 0.3,
+    npsAverage: 0.1,
   },
 };
 
 /** Multi-session tab rows — SC-01 patient (Rodríguez) */
 const MULTI_SESSION_ROWS = [
   {
-    re_engagement_event_id: SEED_IDS.eventIdMultiSession,
-    patient_id: SEED_IDS.patientIdMultiSession,
-    patient_name: "M. Rodríguez",
+    reEngagementEventId: SEED_IDS.eventIdMultiSession,
+    patientId: SEED_IDS.patientIdMultiSession,
+    patientName: "M. Rodríguez",
     pattern: "multi_session",
     urgency: "critical",
-    pattern_data: {
+    patternData: {
       kind: "multi_session",
-      offer_label: "Plan ortodoncia 12 sesiones",
-      sessions_completed: 4,
-      sessions_expected: 12,
-      gap_days: 31,
-      last_session_date: "2026-04-19T10:00:00Z",
-      doctor_name: "Dr. Carlos Ortiz",
+      offerLabel: "Plan ortodoncia 12 sesiones",
+      sessionsCompleted: 4,
+      sessionsExpected: 12,
+      gapDays: 31,
+      lastSessionDate: "2026-04-19T10:00:00Z",
+      doctorName: "Dr. Carlos Ortiz",
     },
     acciones: [
-      { id: "send_reminder", enabled: true, disabled_reason: null },
-      { id: "suggest_slots", enabled: true, disabled_reason: null },
-      { id: "pause_patient", enabled: true, disabled_reason: null },
-      { id: "mark_external", enabled: true, disabled_reason: null },
-      { id: "mark_no_continue", enabled: true, disabled_reason: null },
-      { id: "call_manually", enabled: true, disabled_reason: null },
-      { id: "open_conversation", enabled: true, disabled_reason: null },
+      { id: "send_reminder", enabled: true, disabledReason: null },
+      { id: "suggest_slots", enabled: true, disabledReason: null },
+      { id: "pause_patient", enabled: true, disabledReason: null },
+      { id: "mark_external", enabled: true, disabledReason: null },
+      { id: "mark_no_continue", enabled: true, disabledReason: null },
+      { id: "call_manually", enabled: true, disabledReason: null },
+      { id: "open_conversation", enabled: true, disabledReason: null },
     ],
   },
 ];
 
-/** Absence tab rows — SC-02 patient (Vega), marketing_opt_in=false */
+/** Absence tab rows — SC-02 patient (Vega), marketingOptIn=false */
 const ABSENCE_ROWS = [
   {
-    re_engagement_event_id: SEED_IDS.eventIdAbsence,
-    patient_id: SEED_IDS.patientIdAbsence,
-    patient_name: "L. Vega",
+    reEngagementEventId: SEED_IDS.eventIdAbsence,
+    patientId: SEED_IDS.patientIdAbsence,
+    patientName: "L. Vega",
     pattern: "absence",
     urgency: "alert",
-    pattern_data: {
+    patternData: {
       kind: "absence",
-      last_appointment_date: "2025-11-20T10:00:00Z",
-      months_inactive: 6,
-      lifetime_appointments: 8,
-      lifetime_value_cents: 450000,
+      lastAppointmentDate: "2025-11-20T10:00:00Z",
+      monthsInactive: 6,
+      lifetimeAppointments: 8,
+      lifetimeValueCents: 450000,
       currency: "MXN",
-      last_doctor_name: "Dra. Laura Vega",
-      marketing_opt_in: false,
+      lastDoctorName: "Dra. Laura Vega",
+      marketingOptIn: false,
     },
     acciones: [
       {
         id: "send_reminder",
         enabled: false,
-        disabled_reason: "El paciente no aceptó comunicaciones de marketing",
+        disabledReason: "El paciente no aceptó comunicaciones de marketing",
       },
-      { id: "suggest_slots", enabled: false, disabled_reason: "El paciente no aceptó comunicaciones de marketing" },
-      { id: "pause_patient", enabled: true, disabled_reason: null },
-      { id: "mark_external", enabled: true, disabled_reason: null },
-      { id: "mark_no_continue", enabled: true, disabled_reason: null },
-      { id: "call_manually", enabled: true, disabled_reason: null },
-      { id: "open_conversation", enabled: true, disabled_reason: null },
+      { id: "suggest_slots", enabled: false, disabledReason: "El paciente no aceptó comunicaciones de marketing" },
+      { id: "pause_patient", enabled: true, disabledReason: null },
+      { id: "mark_external", enabled: true, disabledReason: null },
+      { id: "mark_no_continue", enabled: true, disabledReason: null },
+      { id: "call_manually", enabled: true, disabledReason: null },
+      { id: "open_conversation", enabled: true, disabledReason: null },
     ],
   },
 ];
@@ -127,28 +129,28 @@ const ABSENCE_ROWS = [
 /** Follow-up tab rows — SC-03 patient (Núñez) */
 const FOLLOW_UP_ROWS = [
   {
-    re_engagement_event_id: SEED_IDS.eventIdFollowUp,
-    patient_id: SEED_IDS.patientIdFollowUp,
-    patient_name: "C. Núñez",
+    reEngagementEventId: SEED_IDS.eventIdFollowUp,
+    patientId: SEED_IDS.patientIdFollowUp,
+    patientName: "C. Núñez",
     pattern: "follow_up",
     urgency: "near",
-    pattern_data: {
+    patternData: {
       kind: "follow_up",
-      doctor_name: "Dr. Carlos Ortiz",
-      follow_up_requested_duration: "3 meses",
-      follow_up_set_at: "2026-02-15T10:00:00Z",
-      follow_up_due_at: "2026-05-22T10:00:00Z",
-      days_until_due: 2,
-      follow_up_reason: "Control post-tratamiento ortodoncia",
+      doctorName: "Dr. Carlos Ortiz",
+      followUpRequestedDuration: "3 meses",
+      followUpSetAt: "2026-02-15T10:00:00Z",
+      followUpDueAt: "2026-05-22T10:00:00Z",
+      daysUntilDue: 2,
+      followUpReason: "Control post-tratamiento ortodoncia",
     },
     acciones: [
-      { id: "send_reminder", enabled: true, disabled_reason: null },
-      { id: "suggest_slots", enabled: true, disabled_reason: null },
-      { id: "pause_patient", enabled: true, disabled_reason: null },
-      { id: "mark_external", enabled: true, disabled_reason: null },
-      { id: "mark_no_continue", enabled: true, disabled_reason: null },
-      { id: "call_manually", enabled: true, disabled_reason: null },
-      { id: "open_conversation", enabled: true, disabled_reason: null },
+      { id: "send_reminder", enabled: true, disabledReason: null },
+      { id: "suggest_slots", enabled: true, disabledReason: null },
+      { id: "pause_patient", enabled: true, disabledReason: null },
+      { id: "mark_external", enabled: true, disabledReason: null },
+      { id: "mark_no_continue", enabled: true, disabledReason: null },
+      { id: "call_manually", enabled: true, disabledReason: null },
+      { id: "open_conversation", enabled: true, disabledReason: null },
     ],
   },
 ];
@@ -162,20 +164,20 @@ const NPS_ROWS: unknown[] = [];
 
 /** After send_proactive — Rodríguez card updated to "sent" outcome */
 const SEND_PROACTIVE_RESPONSE = {
-  re_engagement_event_id: SEED_IDS.eventIdMultiSession,
+  reEngagementEventId: SEED_IDS.eventIdMultiSession,
   status: "sent",
-  conv_id: "conv-fidel-rodriguez-001",
+  convId: "conv-fidel-rodriguez-001",
 };
 
 /** PausePatient response (7 days) */
 const PAUSE_RESPONSE = {
-  resume_at: "2026-06-01T00:00:00Z",
+  resumeAt: "2026-06-01T00:00:00Z",
 };
 
 /** LogManualCall response */
 const MANUAL_CALL_RESPONSE = {
-  event_id: "manual-call-evt-vega-001",
-  logged_at: new Date().toISOString(),
+  eventId: "manual-call-evt-vega-001",
+  loggedAt: new Date().toISOString(),
 };
 
 // ---------------------------------------------------------------------------

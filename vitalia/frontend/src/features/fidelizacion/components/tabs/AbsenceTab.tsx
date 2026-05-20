@@ -34,33 +34,7 @@ export function AbsenceTab({
     urgency: urgency as UrgencyLevel[] | undefined,
   });
 
-  if (isPending) {
-    return (
-      <div className="space-y-3 p-4" aria-busy="true">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-24 animate-pulse rounded-md bg-[hsl(var(--vitalia-bg-soft,220_20%_96%))]" />
-        ))}
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div role="alert" className="p-4 text-sm text-[hsl(var(--vitalia-danger,0_75%_45%))]">
-        {FIDELIZACION_COPY.errors.generic}
-      </div>
-    );
-  }
-
   const rows = data?.rows ?? [];
-
-  if (rows.length === 0) {
-    return (
-      <div className="p-8 text-center text-sm text-[hsl(var(--vitalia-muted,220_10%_55%))]">
-        {FIDELIZACION_COPY.empty.absence}
-      </div>
-    );
-  }
 
   return (
     <section
@@ -69,7 +43,24 @@ export function AbsenceTab({
       aria-labelledby="tab-absence"
       className="space-y-3 p-4"
     >
-      {rows.map((row) => (
+      {isPending && (
+        <div aria-busy="true" className="space-y-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="h-24 animate-pulse rounded-md bg-[hsl(var(--vitalia-bg-soft,220_20%_96%))]" />
+          ))}
+        </div>
+      )}
+      {isError && (
+        <div role="alert" className="text-sm text-[hsl(var(--vitalia-danger,0_75%_45%))]">
+          {FIDELIZACION_COPY.errors.generic}
+        </div>
+      )}
+      {!isPending && !isError && rows.length === 0 && (
+        <div className="py-4 text-center text-sm text-[hsl(var(--vitalia-muted,220_10%_55%))]">
+          {FIDELIZACION_COPY.empty.absence}
+        </div>
+      )}
+      {!isPending && !isError && rows.length > 0 && rows.map((row) => (
         <ReEngagementCard key={row.reEngagementEventId} row={row} {...handlers} />
       ))}
     </section>

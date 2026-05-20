@@ -20,32 +20,6 @@ interface NPSResumenTabProps {
 export function NPSResumenTab({ period }: NPSResumenTabProps) {
   const { data, isPending, isError } = useNpsResponses(period);
 
-  if (isPending) {
-    return (
-      <div className="p-4 space-y-2" aria-busy="true">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-12 animate-pulse rounded bg-[hsl(var(--vitalia-bg-soft,220_20%_96%))]" />
-        ))}
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div role="alert" className="p-4 text-sm text-[hsl(var(--vitalia-danger,0_75%_45%))]">
-        {FIDELIZACION_COPY.errors.generic}
-      </div>
-    );
-  }
-
-  if (!data || data.rows.length === 0) {
-    return (
-      <div className="p-8 text-center text-sm text-[hsl(var(--vitalia-muted,220_10%_55%))]">
-        {FIDELIZACION_COPY.empty.nps}
-      </div>
-    );
-  }
-
   return (
     <section
       id="panel-nps"
@@ -53,32 +27,53 @@ export function NPSResumenTab({ period }: NPSResumenTabProps) {
       aria-labelledby="tab-nps"
       className="p-4"
     >
-      {/* NPS summary header */}
-      <div className="mb-4 flex gap-4 rounded-lg border border-[hsl(var(--vitalia-border,220_13%_91%))] bg-[hsl(var(--vitalia-bg-soft,220_20%_96%))] p-3">
-        <div className="text-center">
-          <p className="text-2xl font-semibold text-[hsl(var(--vitalia-fg,220_25%_15%))]">
-            {data.averageScore.toFixed(1)}
-          </p>
-          <p className="text-xs text-[hsl(var(--vitalia-muted,220_10%_55%))]">
-            {FIDELIZACION_COPY.kpis.npsAverage.label}
-          </p>
+      {isPending && (
+        <div aria-busy="true" className="space-y-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-12 animate-pulse rounded bg-[hsl(var(--vitalia-bg-soft,220_20%_96%))]" />
+          ))}
         </div>
-        <div className="text-center">
-          <p className="text-2xl font-semibold text-[hsl(var(--vitalia-fg,220_25%_15%))]">
-            {data.totalResponses}
-          </p>
-          <p className="text-xs text-[hsl(var(--vitalia-muted,220_10%_55%))]">
-            Respuestas
-          </p>
+      )}
+      {isError && (
+        <div role="alert" className="text-sm text-[hsl(var(--vitalia-danger,0_75%_45%))]">
+          {FIDELIZACION_COPY.errors.generic}
         </div>
-      </div>
+      )}
+      {!isPending && !isError && (!data || data.rows.length === 0) && (
+        <div className="py-4 text-center text-sm text-[hsl(var(--vitalia-muted,220_10%_55%))]">
+          {FIDELIZACION_COPY.empty.nps}
+        </div>
+      )}
+      {!isPending && !isError && data && data.rows.length > 0 && (
+        <>
+          {/* NPS summary header */}
+          <div className="mb-4 flex gap-4 rounded-lg border border-[hsl(var(--vitalia-border,220_13%_91%))] bg-[hsl(var(--vitalia-bg-soft,220_20%_96%))] p-3">
+            <div className="text-center">
+              <p className="text-2xl font-semibold text-[hsl(var(--vitalia-fg,220_25%_15%))]">
+                {data.averageScore.toFixed(1)}
+              </p>
+              <p className="text-xs text-[hsl(var(--vitalia-muted,220_10%_55%))]">
+                {FIDELIZACION_COPY.kpis.npsAverage.label}
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-semibold text-[hsl(var(--vitalia-fg,220_25%_15%))]">
+                {data.totalResponses}
+              </p>
+              <p className="text-xs text-[hsl(var(--vitalia-muted,220_10%_55%))]">
+                Respuestas
+              </p>
+            </div>
+          </div>
 
-      {/* Rows */}
-      <ul aria-label="Respuestas de NPS">
-        {data.rows.map((row) => (
-          <NPSRowCompact key={row.id} row={row} />
-        ))}
-      </ul>
+          {/* Rows */}
+          <ul aria-label="Respuestas de NPS">
+            {data.rows.map((row) => (
+              <NPSRowCompact key={row.id} row={row} />
+            ))}
+          </ul>
+        </>
+      )}
     </section>
   );
 }
