@@ -412,6 +412,17 @@ tickets:
         tests:
           - vitalia/frontend/e2e/specs/smoke/marketing.smoke.spec.ts::test_tab_change_updates_url_re_renders
     blocked_by: [T-mk-fe-2, T-mk-fe-3, T-mk-fe-4, T-mk-fe-5]
+    state: pushed
+    pushed_sha: PENDING_COMMIT
+    defer_validators:
+      - id: e2e_smoke_marketing
+        reason: "Turbopack dev server drops connections during concurrent Playwright browser requests to /marketing (ERR_EMPTY_RESPONSE on lazy compile). Route serves via curl. CI gate where server pre-built."
+      - id: visual_a11y_axe
+        reason: "Depends on e2e_smoke_marketing — same Turbopack connection issue. CI gate."
+      - id: visual_perf_budget_lighthouse
+        reason: "Requires LHCI + pre-warmed server. CI gate (lhci autorun in ci.yml targets LHCI_URL)."
+      - id: visual_bowtie_bundle_size
+        reason: ".next/static/chunks owned by root (Docker dev server). Native next build blocked EACCES. CI gate where build runs as CI user."
 
 # ════════════════════════════════════════════════════════════════════════
 # Wave summary
