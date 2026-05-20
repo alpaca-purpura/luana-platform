@@ -100,6 +100,8 @@ tickets:
       - scenario: SC-MK-04 (adversarial — RBAC + range validation)
         tests:
           - vitalia/backend/tests/modules/vitalia/marketing/application/services/test_lucas_recommendations_service.py::test_approve_action_payload_out_of_range_rejected
+    state: pushed
+    pushed_sha: "978d002"
     blocked_by: [T-mk-be-2]
 
   - id: T-mk-be-4
