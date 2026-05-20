@@ -137,3 +137,105 @@ class ManualCallResponse(BaseModel):
     patient_id: UUID
     outcome: ReEngagementOutcome
     recorded_at: datetime
+
+
+# ---------------------------------------------------------------------------
+# DTOs adicionales para T-7 (mark_external, mark_no_continue, activity_stream)
+# ---------------------------------------------------------------------------
+
+
+class MarkExternalRequest(BaseModel):
+    """Solicitud para registrar que el paciente respondió fuera del canal automatizado."""
+
+    patient_id: UUID
+    clinic_id: UUID
+    event_id: UUID | None = None
+    comment: str | None = None
+    converted_to_appointment_id: UUID | None = None
+    recorded_by_user_id: UUID | None = None
+
+
+class MarkExternalResponse(BaseModel):
+    """Resultado de registrar respuesta externa del paciente."""
+
+    event_id: UUID
+    patient_id: UUID
+    outcome: ReEngagementOutcome
+    recorded_at: datetime
+
+
+class MarkNoContinueRequest(BaseModel):
+    """Solicitud para registrar que el paciente decidió no continuar el tratamiento."""
+
+    patient_id: UUID
+    clinic_id: UUID
+    event_id: UUID | None = None
+    reason: str | None = None
+    recorded_by_user_id: UUID | None = None
+
+
+class MarkNoContinueResponse(BaseModel):
+    """Resultado de registrar decisión de no continuar del paciente."""
+
+    event_id: UUID
+    patient_id: UUID
+    outcome: ReEngagementOutcome
+    recorded_at: datetime
+
+
+class ActivityStreamItem(BaseModel):
+    """Item individual del Activity Stream de fidelización."""
+
+    event_id: UUID
+    patient_id: UUID
+    event_type: str
+    description: str
+    occurred_at: datetime
+    clinic_id: UUID
+
+
+class ActivityStreamResponse(BaseModel):
+    """Respuesta del Activity Stream de fidelización (poll 5s).
+
+    Sin PHI per-patient — solo metadata de trazabilidad.
+    """
+
+    tenant_id: UUID
+    clinic_id: UUID
+    since: datetime | None = None
+    items: list[ActivityStreamItem] = Field(default_factory=list)
+    total: int = 0
+
+
+class ReEngagementPatternListResponse(BaseModel):
+    """Lista de resúmenes de patrones de re-engagement activos."""
+
+    tenant_id: UUID
+    clinic_id: UUID
+    patterns: list[PatternSummaryResponse] = Field(default_factory=list)
+
+
+class FidelizacionSummaryResponse(BaseModel):
+    """Resumen de 5 KPIs de fidelización para el hero dashboard.
+
+    Sin PHI per-patient — solo métricas agregadas.
+    """
+
+    tenant_id: UUID
+    clinic_id: UUID
+    snapshot_at: datetime
+
+    # KPI 1: pacientes activos en seguimiento
+    patients_in_followup: int
+
+    # KPI 2: pacientes cerca de abandono (con gap alert)
+    near_abandonment: int
+
+    # KPI 3: tasa de retorno (re-engaged / total contacted en 30d)
+    return_rate: float
+
+    # KPI 4: cantidad de re-engagements exitosos en periodo
+    re_engaged_count_period: int
+
+    # KPI 5: NPS promedio (None si sin datos)
+    nps_average: float | None = None

@@ -146,6 +146,13 @@ from src.modules.vitalia.sales_agent.tools import (
     send_payment_link,
 )
 
+# T-inbox-agentic-1 / T-inbox-be-6 — Adrián retract_last_message (Slice 1 inbox).
+# Real LangChain @tool decorated async fn (R23 Opus production, SHA 532228f).
+# T-inbox-be-6 mounts this tool into EP-3 so the sales_agent runtime can dispatch it.
+from src.modules.vitalia.sales_agent.tools.retract_last_message import (
+    retract_last_message,
+)
+
 # T-9 — Adrián proactive re-engagement wrapper (fidelización).
 # Tool delegates to ProactiveOutboundService (T-5 shipped) — opt-out/opt-in/
 # throttle/compliance gate/audit log/outbox event handled by the service.
@@ -650,6 +657,59 @@ def register_all(registry: ExtensionPointRegistry) -> None:
             },
             handler=send_proactive_reengagement,
             tool_groups=("sales_agent", "vertical_medical", "fidelizacion", "re_engagement"),
+        ),
+    )
+
+    # ───────────────────────────────────────────────────────────────────────
+    # EP-3 — retract_last_message tool (T-inbox-agentic-1 + T-inbox-be-6 Slice 1)
+    # ───────────────────────────────────────────────────────────────────────
+    # Per 03-arch-agentic.md § 2 + 06-tickets.yaml::T-inbox-be-6.
+    # Real @tool decorated callable (LangChain StructuredTool) shipped in
+    # T-inbox-agentic-1 (R23 Opus 4.7, SHA 532228f). This ticket (T-inbox-be-6)
+    # mounts the tool into the EP-3 registry so the sales_agent runtime can
+    # dispatch it. Adrián-only — retraction is NOT a copilot (Valeria) action.
+    # Tenant + clinic dual filter cardinal (hipaa-lite.md § Regla cardinal).
+
+    registry.sales_agent_tool_register(
+        ToolDef(
+            name=_ns("retract_last_message"),
+            description=(
+                "Retract a message Adrián sent within the 5-minute undo window. "
+                "Validates action_receipt expires_at, checks no patient reply after "
+                "this message, calls connections adapter retract_message_id with "
+                "timeout, updates vitalia_messages.retracted_at + "
+                "handler_mode='human', emits MessageRetracted domain event via "
+                "outbox, sync writes audit_log (HIPAA-lite mandate). "
+                "tenant_id + clinic_id dual filter mandatory. "
+                "Returns Spanish neutral summary; never raises (graceful degradation)."
+            ),
+            input_schema={
+                "type": "object",
+                "properties": {
+                    "tenant_id": {"type": "string", "format": "uuid"},
+                    "clinic_id": {"type": "string", "format": "uuid"},
+                    "conversation_id": {"type": "string", "format": "uuid"},
+                    "message_id": {"type": "string", "format": "uuid"},
+                    "reason": {
+                        "type": "string",
+                        "minLength": 10,
+                        "maxLength": 500,
+                        "description": (
+                            "Adrián's justification for retraction (audit log "
+                            "mandate). Service sanitizes PHI before persisting."
+                        ),
+                    },
+                },
+                "required": [
+                    "tenant_id",
+                    "clinic_id",
+                    "conversation_id",
+                    "message_id",
+                    "reason",
+                ],
+            },
+            handler=retract_last_message,
+            tool_groups=("sales_agent", "vertical_medical", "inbox", "retract"),
         ),
     )
 

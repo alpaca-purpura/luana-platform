@@ -11,6 +11,7 @@ Ver: core/luana-core-platform/src/luana_core_platform/repositories/compound_scop
 
 from __future__ import annotations
 
+from datetime import datetime
 from uuid import UUID
 
 import structlog
@@ -93,6 +94,44 @@ class NPSResponseRepository(CompoundScopeRepositoryBase[NPSResponseModel, UUID])
             .where(self.MODEL.patient_id == patient_id)
             .where(self.MODEL.deleted_at.is_(None))
             .order_by(self.MODEL.responded_at.desc())
+        )
+        result = await self._session.execute(stmt)
+        return list(result.scalars().all())
+
+    async def list_by_period(
+        self,
+        *,
+        tenant_id: UUID,
+        clinic_id: UUID,
+        period_start: datetime,
+        period_end: datetime,
+        limit: int = 1000,
+    ) -> list[NPSResponseModel]:
+        """Lista respuestas NPS para un periodo de tiempo.
+
+        Usada por NPSService.summary() para calcular estadísticas NPS.
+        HIPAA-lite: dual filter tenant_id + clinic_id SIEMPRE aplicado.
+
+        Args:
+            tenant_id: UUID del tenant.
+            clinic_id: UUID de la clínica.
+            period_start: Inicio del periodo (UTC).
+            period_end: Fin del periodo (UTC).
+            limit: Máximo de respuestas a retornar (default 1000).
+
+        Returns:
+            Lista de NPSResponseModel en el periodo, respondidas_at DESC.
+        """
+        scope_attr = self._scope_attr()
+        stmt = (
+            select(self.MODEL)
+            .where(self.MODEL.tenant_id == tenant_id)
+            .where(scope_attr == clinic_id)
+            .where(self.MODEL.responded_at >= period_start)
+            .where(self.MODEL.responded_at <= period_end)
+            .where(self.MODEL.deleted_at.is_(None))
+            .order_by(self.MODEL.responded_at.desc())
+            .limit(limit)
         )
         result = await self._session.execute(stmt)
         return list(result.scalars().all())
