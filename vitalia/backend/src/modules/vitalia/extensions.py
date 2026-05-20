@@ -125,6 +125,13 @@ from src.modules.vitalia.connections.print_method import (
     PRINT_METHOD_REGISTRY,
 )
 
+# T-8 — 5 Meta-approved WhatsApp HSM templates for patient fidelización.
+# registry.py loads JSON from connections/whatsapp/templates/fidelizacion/.
+# MARKETING templates enforce requires_marketing_opt_in=True at service layer.
+from src.modules.vitalia.connections.whatsapp import (
+    WHATSAPP_TEMPLATE_REGISTRY,
+)
+
 # T-ag-tools-1 — Valeria 4 wizard tools (real callables — replace placeholders).
 # Real LangChain @tool decorated async fns, Pydantic v2 args_schema, tenant-scoped.
 from src.modules.vitalia.copilot.tools import (
@@ -148,6 +155,9 @@ assert FISCAL_PROVIDER_REGISTRY, "vitalia fiscal registry must have ≥1 slot"
 assert APPOINTMENT_ORIGIN_REGISTRY, "vitalia appointment_origin registry must have ≥1 slot"
 assert CONVERSATION_INITIATION_REGISTRY, "vitalia conversation_initiation registry must have ≥1 slot"
 assert PRINT_METHOD_REGISTRY, "vitalia print_method registry must have ≥1 slot"
+assert len(WHATSAPP_TEMPLATE_REGISTRY) == 5, (  # noqa: PLR2004
+    "vitalia WhatsApp fidelización registry must have exactly 5 templates (T-8)"
+)
 
 # ════════════════════════════════════════════════════════════════════════════
 # CC-4 namespace prefix
@@ -715,6 +725,37 @@ def register_all(registry: ExtensionPointRegistry) -> None:
                 webhook_handler=_not_implemented_yet(
                     f"EP-8 {_ns(gateway_slug)} webhook_handler",
                     "future payment integration ticket",
+                ),
+            ),
+        )
+
+    # T-8 — 5 WhatsApp Meta-approved HSM template adapters (fidelización).
+    # One ChannelAdapterDef per template slug, namespaced vitalia.fidelizacion_*.
+    # send/receive/webhook_handler are placeholder until T-5/T-9 ProactiveOutboundService
+    # lands the real implementation. The brand-local WHATSAPP_TEMPLATE_REGISTRY provides
+    # the template config (category, body_text, requires_marketing_opt_in) for service layer.
+    # HIPAA-lite: MARKETING templates enforce opt-in at ProactiveOutboundService, not here.
+    for template_slug in WHATSAPP_TEMPLATE_REGISTRY:
+        adapter_slug = f"fidelizacion_{template_slug}"
+        registry.channel_adapter_register(
+            ChannelAdapterDef(
+                channel_slug=_ns(adapter_slug),
+                send=_not_implemented_yet(
+                    f"EP-8 {_ns(adapter_slug)} send",
+                    "T-5 ProactiveOutboundService / T-9 re-engagement",
+                ),
+                receive=_not_implemented_yet(
+                    f"EP-8 {_ns(adapter_slug)} receive",
+                    "T-5 ProactiveOutboundService / T-9 re-engagement",
+                ),
+                format_for_channel=_not_implemented_yet(
+                    f"EP-8 {_ns(adapter_slug)} format_for_channel",
+                    "T-5 ProactiveOutboundService / T-9 re-engagement",
+                ),
+                target_agent_runtime="vertical_brand",
+                webhook_handler=_not_implemented_yet(
+                    f"EP-8 {_ns(adapter_slug)} webhook_handler",
+                    "T-5 ProactiveOutboundService / T-9 re-engagement",
                 ),
             ),
         )
