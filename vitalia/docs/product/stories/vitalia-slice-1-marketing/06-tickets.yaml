@@ -203,6 +203,8 @@ tickets:
           - vitalia/backend/tests/workers/test_marketing_crons.py::test_channel_metrics_sync_meta_soft_fail_per_tenant
           - vitalia/backend/tests/workers/test_marketing_crons.py::test_channel_metrics_sync_meta_publishes_channelsyncfailed_event
           - vitalia/backend/tests/workers/test_marketing_crons.py::test_lucas_daily_analysis_sweep_skips_rejected_30d_cooldown
+    state: pushed
+    pushed_sha: 8471b25
     blocked_by: [T-mk-be-3, T-mk-be-4]
 
 # ════════════════════════════════════════════════════════════════════════
