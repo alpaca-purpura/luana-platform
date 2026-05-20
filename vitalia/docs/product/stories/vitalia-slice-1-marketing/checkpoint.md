@@ -2,8 +2,8 @@
 story_id: vitalia-slice-1-marketing
 outcome: vitalia-mvp-ui-foundation
 parent_spec: vitalia-ux-discovery (archived 2026-05-20 — inheritance carryover)
-state: developed
-phase: HANDOFF_TO_AUDITOR
+state: reviewing
+phase: AUDIT_IN_PROGRESS
 last_artifact: T-mk-fe-7-result.md (Wave 6 closure)
 last_modified: 2026-05-20
 all_tickets_pushed_at: 2026-05-20
