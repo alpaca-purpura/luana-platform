@@ -65,5 +65,16 @@ export default defineConfig({
       ],
       use: { ...devices["Desktop Chrome"] },
     },
+    // Admin-smoke project — Streamlit admin panel at port 8502 (NOT Clerk-gated).
+    // Requires VITALIA_ADMIN_PASSWORD + VITALIA_INTERNAL_API_TOKEN env vars.
+    // Run: E2E_ADMIN_BASE_URL=http://localhost:8502 VITALIA_ADMIN_PASSWORD=... npx playwright test --project=admin-smoke
+    {
+      name: "admin-smoke",
+      testMatch: /.*\/e2e\/admin\/.*\.spec\.ts/,
+      use: {
+        ...devices["Desktop Chrome"],
+        baseURL: process.env["E2E_ADMIN_BASE_URL"] || "http://127.0.0.1:8502",
+      },
+    },
   ],
 });
