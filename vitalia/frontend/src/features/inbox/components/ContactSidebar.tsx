@@ -27,6 +27,8 @@ import { PiiMaskedSpan } from "@/components/shared/phi/PiiMaskedSpan";
 import { RequireRole } from "@/components/shared/phi/RequireRole";
 import { AuditedSection } from "@/components/shared/phi/AuditedSection";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useTenantLocale } from "@/hooks/useTenantLocale";
+import { formatTenantDate } from "@/lib/format/formatTenantDate";
 import { INBOX_COPY } from "../copy";
 
 /** NPS history entry shape */
@@ -66,12 +68,12 @@ interface ContactSidebarProps {
   className?: string;
 }
 
-/** NPS score color badge */
+/** NPS score color badge — vt-* semantic tokens per globals.css */
 function NpsScoreBadge({ score }: { score: number }) {
   const color =
-    score >= 9 ? "text-green-700 bg-green-50 border-green-200" :
-    score >= 7 ? "text-amber-700 bg-amber-50 border-amber-200" :
-    "text-red-700 bg-red-50 border-red-200";
+    score >= 9 ? "vt-text-success vt-bg-success-soft vt-border-success-30" :
+    score >= 7 ? "vt-text-warning vt-bg-warning-12 vt-border-warning-30" :
+    "vt-text-danger vt-bg-danger-soft vt-border-danger-soft";
 
   return (
     <span
@@ -99,6 +101,7 @@ export function ContactSidebar({
   className,
 }: ContactSidebarProps) {
   const { role } = useCurrentUser();
+  const { timezone, locale } = useTenantLocale();
 
   return (
     <aside
@@ -228,15 +231,12 @@ export function ContactSidebar({
                 >
                   <NpsScoreBadge score={entry.score} />
                   <div className="flex flex-col gap-0.5 min-w-0">
+                    {/* Per master-data.md: formatTenantDate (never toLocaleDateString) */}
                     <time
                       dateTime={entry.recorded_at}
                       className="text-xs vt-text-faint"
                     >
-                      {new Date(entry.recorded_at).toLocaleDateString("es-419", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
+                      {formatTenantDate(entry.recorded_at, timezone, locale)}
                     </time>
                     {entry.comment && (
                       <p className="text-xs vt-text-muted truncate">

@@ -103,8 +103,8 @@ function TemplatePreview({
     <div
       className={cn(
         "rounded-xl rounded-tl-none px-4 py-3 text-sm leading-relaxed",
-        "bg-green-100 text-gray-800 max-w-xs shadow-sm",
-        "border border-green-200"
+        "vt-bg-success-12 vt-text-foreground max-w-xs shadow-sm",
+        "border vt-border-success-30"
       )}
       aria-label="Vista previa del mensaje"
       data-testid="template-preview-bubble"
@@ -222,10 +222,10 @@ export function ProactiveOutboundModal({
 
         {/* Body */}
         <div className="px-5 py-4 space-y-5">
-          {/* Success state */}
+          {/* Success state — vt-* semantic tokens per globals.css */}
           {isSuccess && (
             <div
-              className="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700"
+              className="rounded-lg vt-bg-success-soft border vt-border-success-30 px-4 py-3 text-sm vt-text-success"
               role="status"
             >
               {INBOX_COPY.proactiveOutboundModal.sentSuccess}

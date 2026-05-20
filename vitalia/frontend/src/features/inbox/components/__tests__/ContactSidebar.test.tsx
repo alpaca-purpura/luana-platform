@@ -16,6 +16,12 @@ import { render, screen } from "@testing-library/react";
 import { ContactSidebar } from "../ContactSidebar";
 import { INBOX_COPY } from "../../copy";
 
+// Mock Clerk — ContactSidebar calls useTenantLocale() → useOrganization()
+// organization: null triggers vitalia default locale (ARS / America/Argentina/Buenos_Aires / es-419)
+vi.mock("@clerk/nextjs", () => ({
+  useOrganization: () => ({ organization: null }),
+}));
+
 // Track AuditedSection mount calls
 const mockAuditFire = vi.fn();
 vi.mock("@/components/shared/phi/AuditedSection", () => ({

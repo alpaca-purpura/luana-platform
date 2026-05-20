@@ -20,6 +20,12 @@ import { AdrianToolsSheet } from "../AdrianToolsSheet";
 import { INBOX_COPY } from "../../copy";
 import type { ToolsState } from "../../types/tools-state";
 
+// Mock Clerk — AdrianToolsSheet calls useTenantLocale() → useOrganization()
+// organization: null triggers vitalia default locale (ARS / America/Argentina/Buenos_Aires / es-419)
+vi.mock("@clerk/nextjs", () => ({
+  useOrganization: () => ({ organization: null }),
+}));
+
 const mockOnClose = vi.fn();
 
 const mockToolsState: ToolsState = {

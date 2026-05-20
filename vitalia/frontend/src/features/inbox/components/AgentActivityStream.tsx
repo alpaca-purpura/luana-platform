@@ -21,6 +21,8 @@ import { cn } from "@/lib/cn";
 import { useActivityStream } from "../api/use-activity-stream";
 import { useInboxStore } from "../store/inbox-store";
 import { INBOX_COPY } from "../copy";
+import { useTenantLocale } from "@/hooks/useTenantLocale";
+import { formatTenantTime } from "@/lib/format/formatTenantTime";
 import type { ActivityEvent, ActivityEventKind } from "../types/activity-event";
 
 /** Max events to show in the stream (last N, chronological order reversed) */
@@ -48,7 +50,17 @@ interface AgentActivityStreamProps {
 }
 
 /** Single activity event row */
-function ActivityEventItem({ event, index }: { event: ActivityEvent; index: number }) {
+function ActivityEventItem({
+  event,
+  index,
+  timezone,
+  locale,
+}: {
+  event: ActivityEvent;
+  index: number;
+  timezone: string;
+  locale: string;
+}) {
   const kindLabel =
     INBOX_COPY.activityStream.eventKinds[event.kind] ?? event.kind;
   const icon = KIND_ICONS[event.kind] ?? "•";
@@ -73,18 +85,13 @@ function ActivityEventItem({ event, index }: { event: ActivityEvent; index: numb
         </span>
       </div>
 
-      {/* Timestamp */}
+      {/* Timestamp — per master-data.md: formatTenantTime (never toLocaleTimeString) */}
       <time
         dateTime={event.occurred_at}
         className="shrink-0 text-xs vt-text-faint tabular-nums"
         title={event.occurred_at}
       >
-        {new Date(event.occurred_at).toLocaleTimeString("es-419", {
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-          hour12: false,
-        })}
+        {formatTenantTime(event.occurred_at, timezone, locale)}
       </time>
     </li>
   );
@@ -101,6 +108,7 @@ export function AgentActivityStream({
 }: AgentActivityStreamProps) {
   const expanded = useInboxStore((s) => s.expandedActivityStream);
   const toggleActivityStream = useInboxStore((s) => s.toggleActivityStream);
+  const { timezone, locale } = useTenantLocale();
 
   const { data, isLoading } = useActivityStream(conversationId, expanded);
 
@@ -180,7 +188,13 @@ export function AgentActivityStream({
               className="space-y-0"
             >
               {visibleEvents.map((event, idx) => (
-                <ActivityEventItem key={event.id} event={event} index={idx} />
+                <ActivityEventItem
+                  key={event.id}
+                  event={event}
+                  index={idx}
+                  timezone={timezone}
+                  locale={locale}
+                />
               ))}
             </ul>
           )}

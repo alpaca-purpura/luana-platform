@@ -66,6 +66,10 @@ const KNOWN_FSD_BOUNDARY_VIOLATIONS: ReadonlySet<string> = new Set<string>([
   // that carries handler_mode, status, id — all from the Conversation contract.
   // Justified: crm-shared is infrastructure-like PRODUCER; inbox is consumer per 03-arch-fe.md.
   "src/features/inbox/components/ComposerArea.tsx",
+  // T-inbox-fe-1 (audit iter 1): InboxPageClient imports useConversationDetail from crm-shared.
+  // crm-shared is the SSoT for CRM conversation data contracts (Ola 1+).
+  // Justified: crm-shared is infrastructure-like PRODUCER; inbox is consumer per 03-arch-fe.md § 1.
+  "src/features/inbox/components/InboxPageClient.tsx",
 ]);
 
 function collectTsFiles(dir: string): string[] {

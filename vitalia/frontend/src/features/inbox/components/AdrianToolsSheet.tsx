@@ -22,6 +22,8 @@
 import { cn } from "@/lib/cn";
 import { useToolsState } from "../api/use-tools-state";
 import { INBOX_COPY } from "../copy";
+import { useTenantLocale } from "@/hooks/useTenantLocale";
+import { formatTenantDateTime } from "@/lib/format/formatTenantDateTime";
 import type { ToolInvocation, ToolInvocationStatus } from "../types/tools-state";
 
 interface AdrianToolsSheetProps {
@@ -35,10 +37,10 @@ interface AdrianToolsSheetProps {
   className?: string;
 }
 
-/** Status badge color variants */
+/** Status badge color variants — using vt-* semantic tokens per globals.css */
 const STATUS_CLASSES: Record<ToolInvocationStatus, string> = {
-  success: "vt-text-success vt-bg-success/10 border-green-200",
-  error: "vt-text-destructive vt-bg-destructive/10 border-red-200",
+  success: "vt-text-success vt-bg-success-12 vt-border-success-30",
+  error: "vt-text-danger vt-bg-danger-soft vt-border-danger-soft",
   pending: "vt-text-muted vt-bg-muted/20 border-transparent",
   skipped: "vt-text-muted vt-bg-muted/10 border-transparent",
 };
@@ -50,7 +52,15 @@ function statusLabel(status: ToolInvocationStatus): string {
 }
 
 /** Single tool invocation row (read-only) */
-function ToolRow({ invocation }: { invocation: ToolInvocation }) {
+function ToolRow({
+  invocation,
+  timezone,
+  locale,
+}: {
+  invocation: ToolInvocation;
+  timezone: string;
+  locale: string;
+}) {
   return (
     <li
       data-testid={`tool-row-${invocation.tool_name}`}
@@ -81,15 +91,12 @@ function ToolRow({ invocation }: { invocation: ToolInvocation }) {
         </p>
       )}
 
-      {/* Invoked timestamp */}
+      {/* Invoked timestamp — per master-data.md: formatTenantDateTime (never toLocaleDateString) */}
       <p className="text-xs vt-text-faint">
-        {INBOX_COPY.toolsSheet.lastUsed.replace("{date}", new Date(invocation.invoked_at).toLocaleDateString("es-419", {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        }))}
+        {INBOX_COPY.toolsSheet.lastUsed.replace(
+          "{date}",
+          formatTenantDateTime(invocation.invoked_at, timezone, locale)
+        )}
       </p>
     </li>
   );
@@ -106,6 +113,7 @@ export function AdrianToolsSheet({
   className,
 }: AdrianToolsSheetProps) {
   const { data: toolsState, isLoading } = useToolsState(conversationId);
+  const { timezone, locale } = useTenantLocale();
 
   if (!open) return null;
 
@@ -165,12 +173,12 @@ export function AdrianToolsSheet({
           </button>
         </div>
 
-        {/* HIPAA guard note (read-only explanation) */}
+        {/* HIPAA guard note (read-only explanation) — vt-* semantic tokens per globals.css */}
         <div
           data-testid="hipaa-guard-note"
           className={cn(
             "mx-5 mt-4 p-3 rounded-lg border",
-            "border-amber-200 bg-amber-50 text-amber-700",
+            "vt-border-warning-30 vt-bg-warning-12 vt-text-warning",
             "text-xs leading-snug"
           )}
           role="note"
@@ -199,7 +207,12 @@ export function AdrianToolsSheet({
             /* Tool invocation list (read-only) */
             <ul className="space-y-2" aria-label={INBOX_COPY.toolsSheet.ariaLabel}>
               {invocations.map((inv) => (
-                <ToolRow key={`${inv.tool_name}-${inv.invoked_at}`} invocation={inv} />
+                <ToolRow
+                  key={`${inv.tool_name}-${inv.invoked_at}`}
+                  invocation={inv}
+                  timezone={timezone}
+                  locale={locale}
+                />
               ))}
             </ul>
           )}

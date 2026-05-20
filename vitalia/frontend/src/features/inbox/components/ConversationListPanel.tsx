@@ -28,6 +28,7 @@ import { SearchInput } from "./SearchInput";
 import { FilterChips } from "./FilterChips";
 import type { FilterChipsValue } from "./FilterChips";
 import { ConversationList } from "./ConversationList";
+import { INBOX_COPY } from "../copy";
 import { cn } from "@/lib/cn";
 
 interface ConversationListPanelProps {
@@ -135,7 +136,7 @@ export function ConversationListPanel({ className }: ConversationListPanelProps)
           className="shrink-0 px-4 py-2 text-xs vt-text-danger"
           data-testid="conversations-error"
         >
-          No se pudieron cargar las conversaciones. Intenta de nuevo.
+          {INBOX_COPY.errors.loadConversations}
         </div>
       )}
 

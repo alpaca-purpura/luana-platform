@@ -12,6 +12,12 @@ import { ConversationList } from "../ConversationList";
 import { ConversationItem } from "../ConversationItem";
 import type { Conversation } from "@/features/crm-shared";
 
+// Mock Clerk — ConversationItem calls useTenantLocale() → useOrganization()
+// organization: null triggers default locale (ARS / America/Argentina/Buenos_Aires / es-419)
+vi.mock("@clerk/nextjs", () => ({
+  useOrganization: () => ({ organization: null }),
+}));
+
 // Minimal conversation factory
 function makeConversation(overrides: Partial<Conversation> = {}): Conversation {
   return {

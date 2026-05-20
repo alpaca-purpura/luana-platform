@@ -19,6 +19,12 @@ import { AgentActivityStream } from "../AgentActivityStream";
 import { INBOX_COPY } from "../../copy";
 import type { ActivityEvent } from "../../types/activity-event";
 
+// Mock Clerk — AgentActivityStream calls useTenantLocale() → useOrganization()
+// organization: null triggers vitalia default locale (ARS / America/Argentina/Buenos_Aires / es-419)
+vi.mock("@clerk/nextjs", () => ({
+  useOrganization: () => ({ organization: null }),
+}));
+
 // Mock useInboxStore
 let mockExpanded = false;
 const mockToggle = vi.fn();

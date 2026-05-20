@@ -19,6 +19,7 @@
 
 import { memo } from "react";
 import { cn } from "@/lib/cn";
+import { useTenantLocale } from "@/hooks/useTenantLocale";
 import type { Conversation } from "@/features/crm-shared";
 import type { LeadStage } from "@/features/crm-shared";
 
@@ -44,9 +45,10 @@ const STAGE_LABELS: Record<LeadStage, string> = {
 
 /**
  * Formats ISO 8601 date to relative label (hoy/ayer/dd MMM).
- * Uses Intl.DateTimeFormat for locale-aware formatting — never toLocaleDateString().
+ * Per master-data.md: uses Intl.DateTimeFormat with tenant timezone+locale for fallback.
+ * Accepts tenant timezone + locale to keep pure function (no hook dependency).
  */
-function formatRelativeTime(iso: string): string {
+function formatRelativeTime(iso: string, timezone: string, locale: string): string {
   const date = new Date(iso);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -57,7 +59,12 @@ function formatRelativeTime(iso: string): string {
   const diffD = Math.floor(diffH / 24);
   if (diffD === 1) return "Ayer";
   if (diffD < 7) return `${diffD}d`;
-  return new Intl.DateTimeFormat("es-419", { day: "numeric", month: "short" }).format(date);
+  // Fallback: locale-aware short date with tenant timezone (never hardcoded "es-419")
+  return new Intl.DateTimeFormat(locale, {
+    day: "numeric",
+    month: "short",
+    timeZone: timezone,
+  }).format(date);
 }
 
 interface ConversationItemProps {
@@ -80,6 +87,7 @@ export const ConversationItem = memo(function ConversationItem({
   patientName,
   className,
 }: ConversationItemProps) {
+  const { timezone, locale } = useTenantLocale();
   const {
     id,
     channel,
@@ -92,7 +100,8 @@ export const ConversationItem = memo(function ConversationItem({
   } = conversation;
 
   const channelIcon = CHANNEL_ICONS[channel] ?? "💬";
-  const relTime = formatRelativeTime(last_message_at);
+  // Per master-data.md: pass tenant timezone+locale — never hardcoded locale
+  const relTime = formatRelativeTime(last_message_at, timezone, locale);
   const isAiMode = handler_mode === "ai";
 
   return (
