@@ -109,7 +109,9 @@ export class FidelizacionPage {
     });
 
     // ── Tabs ──
-    this.tabsNav = page.getByRole("navigation", {
+    // Component (FidelizacionTabsBar.tsx) renders <nav role="tablist">,
+    // so the ARIA role is "tablist" (overrides implicit "navigation" from <nav>).
+    this.tabsNav = page.getByRole("tablist", {
       name: /navegación de pestañas de seguimiento/i,
     });
 
