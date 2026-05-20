@@ -279,11 +279,15 @@ def _grade_trial(golden: dict, persona: dict) -> TrialResult:
 # ──────────────────────────────────────────────────────────────────────────
 
 
-def test_adrian_goldens_count_is_12() -> None:
-    """Exactly 12 goldens MUST exist (4 verticals × 3 scenarios)."""
+def test_adrian_goldens_count_is_13() -> None:
+    """Exactly 13 goldens MUST exist (4 verticals × 3 scenarios + 1 reinforcement T-inbox-retract).
+
+    Count bumped 12 → 13 (T-inbox-agentic-1 reinforcement golden
+    ``dental/T-inbox-retract-1.yaml`` per Slice 1 inbox architect package).
+    """
     goldens = _discover_goldens()
-    assert len(goldens) == 12, (
-        f"expected 12 Adrián goldens, found {len(goldens)}: "
+    assert len(goldens) == 13, (
+        f"expected 13 Adrián goldens (12 baseline + 1 reinforcement), found {len(goldens)}: "
         f"{sorted(p.relative_to(_GOLDENS_DIR).as_posix() for p, _ in goldens)}"
     )
 
@@ -332,9 +336,13 @@ def test_goldens_required_fields_present() -> None:
 
 @pytest.mark.parametrize("trial_idx", list(range(TRIALS_PER_SCENARIO)), ids=lambda i: f"trial-{i + 1}")
 def test_adrian_pass_k_evaluation(trial_idx: int) -> None:
-    """Run all 12 goldens through 1 trial; assert pass^k threshold (≥50% pass)."""
+    """Run all 13 goldens through 1 trial; assert pass^k threshold (≥50% pass).
+
+    Count bumped 12 → 13 (T-inbox-agentic-1 reinforcement golden
+    ``dental/T-inbox-retract-1.yaml`` per Slice 1 inbox architect package).
+    """
     goldens = _discover_goldens()
-    assert len(goldens) == 12, "schema gate must catch count drift first"
+    assert len(goldens) == 13, "schema gate must catch count drift first"
 
     per_golden_trial_passed: dict[str, bool] = {}
     for path, golden in goldens:
