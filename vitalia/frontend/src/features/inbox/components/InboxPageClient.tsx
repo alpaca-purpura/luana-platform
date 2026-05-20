@@ -44,7 +44,23 @@ import { AdrianToolsSheet } from "./AdrianToolsSheet";
  *   - Right pane: ContactSidebar (HIPAA-lite PHI-aware, role-gated NPS)
  *   - Slide-over: AdrianToolsSheet (read-only tools panel)
  */
+/**
+ * Outer wrapper — mounts NuqsAdapter BEFORE any nuqs hook fires.
+ * `useInboxUrlState()` (which uses `useQueryStates` from nuqs) MUST live in
+ * a descendant of `<NuqsAdapter>`, otherwise nuqs throws NUQS-404.
+ */
 export function InboxPageClient() {
+  return (
+    <NuqsAdapter>
+      <InboxPageContent />
+    </NuqsAdapter>
+  );
+}
+
+/**
+ * Inner content — runs INSIDE NuqsAdapter scope, safe to call useInboxUrlState.
+ */
+function InboxPageContent() {
   const contactSidebarOpen = useInboxStore((s) => s.contactSidebarOpen);
 
   // Tools sheet state — local until T-inbox-fe-6 adds toolsSheetOpen to store
@@ -54,7 +70,7 @@ export function InboxPageClient() {
   const { data: convDetail } = useConversationDetail(conversationId);
 
   return (
-    <NuqsAdapter>
+    <>
       <InboxLayout
         contactSidebarOpen={contactSidebarOpen}
         conversationListSlot={<ConversationListPanel />}
@@ -97,6 +113,6 @@ export function InboxPageClient() {
         onClose={() => setToolsSheetOpen(false)}
         conversationId={conversationId}
       />
-    </NuqsAdapter>
+    </>
   );
 }
