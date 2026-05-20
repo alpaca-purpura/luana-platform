@@ -1,11 +1,18 @@
 ---
 brand: vitalia
 story_id: vitalia-adopt-luana-core-iam
-state: done
-phase: MERGED_TO_MAIN
+state: reviewing
+phase: AWAIT_MAIN_MERGE_CHRIS_RATIFY
 auditor_verdict: APPROVED_WITH_ADVISORY
 audit_run_at: 2026-05-19
-merge_run_at: 2026-05-19
+merge_blocker: |
+  Squash-merge wip/vitalia → main BLOQUEADO autonomamente — main tiene 3 commits
+  AHEAD que wip/vitalia no tiene (9e7351f auth + b869eaf engine config purge +
+  39b7370 engine hardcodes purge). Per .claude/rules/git-safety.md `git fetch &&
+  merge` banned + push non-fast-forward → STOP, reportar. Chris debe ratificar
+  estrategia integración (merge main→wip primero, cherry-pick story commits a main,
+  o squash-merge con resolución conflict).
+merge_run_at: TBD (Chris ratify required)
 followup_stories:
   - vitalia-env-dev-settings-completeness (recommended — addresses GAP-1 Settings env vars incompleteness, unblocks Playwright SC-02..SC-11 E2E)
   - vitalia-admin-streamlit-e2e-coverage (recommended — completar coverage Playwright post GAP-1 fix)
