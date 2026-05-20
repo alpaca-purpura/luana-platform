@@ -4,8 +4,11 @@ Per hipaa-lite.md § Encryption at rest:
   treatment_plans.notes → pgcrypto BYTEA
   re_engagement_events.payload_phi → pgcrypto BYTEA
   channel_sync_state.oauth_token_encrypted → pgcrypto BYTEA
+  nps_responses.comment → pgcrypto BYTEA (migration 025, audit iter 2 fix F2)
 
 This test scans migration files for these columns and verifies BYTEA type.
+Migration 025 adds pgcrypto trigger on nps_responses.comment for column-level
+encryption per hipaa-lite.md § Encryption at rest (patient free-text PHI).
 
 T-infra-3 — vitalia pgcrypto PHI column enforcement gate.
 """
@@ -16,10 +19,12 @@ import re
 from pathlib import Path
 
 # Column-to-migration mapping: each (table, column) that MUST be BYTEA
+# Updated audit iter 2: added nps_responses.comment (F2 fix — migration 025)
 PHI_BYTEA_COLUMNS: list[tuple[str, str]] = [
     ("treatment_plans", "notes"),
     ("re_engagement_events", "payload_phi"),
     ("channel_sync_state", "oauth_token_encrypted"),
+    ("nps_responses", "comment"),
 ]
 
 MIGRATIONS_ROOT = Path(__file__).resolve().parents[4] / "vitalia" / "backend" / "alembic" / "versions"
@@ -159,6 +164,52 @@ class TestPgcryptoPhiColumns:
             "never hardcode it (hipaa-lite.md § Encryption at rest anti-patterns)"
         )
 
+    def test_nps_responses_comment_is_bytea(self) -> None:
+        """nps_responses.comment must be defined as BYTEA in migrations.
+
+        Per hipaa-lite.md: patient free-text NPS comment is PHI.
+        Migration 022 defines comment as BYTEA.
+        Migration 025 adds pgcrypto trigger for column-level encryption.
+        Audit iter 2 fix F2 — closes gap in arch coverage allowlist.
+        """
+        source = _migration_source()
+        if not source:
+            return
+
+        has_bytea = bool(
+            re.search(
+                r"nps_responses.*comment.*BYTEA|comment.*BYTEA.*nps",
+                source,
+                re.IGNORECASE | re.DOTALL,
+            )
+        ) or ("nps_responses" in source and "comment" in source and "BYTEA" in source)
+
+        assert has_bytea, (
+            "nps_responses.comment must be declared as BYTEA type in migrations "
+            "(hipaa-lite.md § Encryption at rest: patient free-text NPS comment is PHI). "
+            "Migration 022 defines the column; migration 025 adds pgcrypto trigger."
+        )
+
+    def test_nps_responses_comment_has_pgcrypto_trigger(self) -> None:
+        """Migration 025 must define pgcrypto trigger on nps_responses.comment.
+
+        Per hipaa-lite.md § Encryption at rest: pgcrypto symmetric encryption
+        required for PHI free-text. Trigger enforces encryption transparently
+        on INSERT/UPDATE using app.encryption_key GUC.
+        """
+        source = _migration_source()
+        if not source:
+            return
+
+        has_trigger = "trg_encrypt_nps_comment" in source or ("nps_responses" in source and "pgp_sym_encrypt" in source)
+
+        assert has_trigger, (
+            "Migration 025 must define pgcrypto encryption trigger on "
+            "vitalia_nps_responses (trg_encrypt_nps_comment) using "
+            "pgp_sym_encrypt() with app.encryption_key GUC. "
+            "Required by hipaa-lite.md § Encryption at rest (F2 audit iter 2)."
+        )
+
     def test_no_phi_column_uses_text_or_varchar_unencrypted(self) -> None:
         """PHI columns listed in hipaa-lite.md MUST NOT use TEXT/VARCHAR (unencrypted)."""
         source = _migration_source()
@@ -172,6 +223,7 @@ class TestPgcryptoPhiColumns:
             (r"payload_phi\s+VARCHAR", "re_engagement_events.payload_phi defined as VARCHAR"),
             (r"oauth_token_encrypted\s+TEXT", "channel_sync_state.oauth_token_encrypted as TEXT"),
             (r"oauth_token_encrypted\s+VARCHAR", "channel_sync_state.oauth_token_encrypted as VARCHAR"),
+            (r"comment\s+TEXT\b(?!.*nps_responses)", "nps_responses.comment defined as TEXT instead of BYTEA"),
         ]
         violations = [msg for pattern, msg in suspicious_patterns if re.search(pattern, source, re.IGNORECASE)]
 

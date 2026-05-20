@@ -1,8 +1,14 @@
-"""Tests para ProactiveOutboundService — SC-01 y SC-02 del T-5.
+"""Tests para ProactiveOutboundService — SC-01, SC-02 y SC-03 del T-5.
 
 Gherkin coverage:
-  SC-01: test_send_proactive_reminder_full_flow
-  SC-02: test_send_proactive_blocks_marketing_no_optin
+  SC-01: test_send_proactive_reminder_full_flow (MARKETING template + opt-in)
+  SC-02: test_send_proactive_blocks_marketing_no_optin (MARKETING template sin opt-in)
+  SC-03: test_utility_template_passes_without_marketing_opt_in (UTILITY template)
+
+Audit iter 2 fix F1: step 2 ahora consulta WHATSAPP_TEMPLATE_REGISTRY.requires_marketing_opt_in.
+Templates UTILITY (recordatorio_proxima_sesion, recordatorio_control_doctor,
+nps_post_tratamiento) no requieren opt-in.
+Templates MARKETING (invitacion_mantenimiento, re_engagement_ausencia) requieren opt-in.
 
 Tests de unidad puros (sin DB). Todos los repos y dependencias son mocks.
 HIPAA-lite: audit log escrito, compliance gate aplicado, sin PHI en logs.
@@ -168,13 +174,14 @@ class TestSendProactiveReminderFullFlow:
         check_result.block_reason = None
         mock_compliance_service.check = AsyncMock(return_value=check_result)
 
+        # SC-01: template MARKETING + marketing_opt_in=True → pasa completo
         result = await proactive_service.send_proactive_reminder(
             tenant_id=tenant_id,
             clinic_id=clinic_id,
             patient_id=patient_id,
             patient_phone="+5491112345678",
             patient_name="Ana García",
-            template_id="multi_session_reminder_01",
+            template_id="invitacion_mantenimiento",  # MARKETING template (requires opt-in)
             pattern=ReEngagementPattern.MULTI_SESSION,
             channel="whatsapp",
             marketing_opt_in=True,
@@ -217,7 +224,7 @@ class TestSendProactiveReminderFullFlow:
             patient_id=patient_id,
             patient_phone="+5491112345678",
             patient_name="Ana García",
-            template_id="multi_session_reminder_01",
+            template_id="invitacion_mantenimiento",  # MARKETING template — valid slug
             pattern=ReEngagementPattern.MULTI_SESSION,
             channel="whatsapp",
             marketing_opt_in=True,
@@ -259,16 +266,17 @@ class TestSendProactiveBlocksMarketingNoOptin:
         # No throttled
         mock_re_engagement_repo.check_throttle.return_value = False
 
+        # SC-02: template MARKETING + marketing_opt_in=False → bloqueado
         result = await proactive_service.send_proactive_reminder(
             tenant_id=tenant_id,
             clinic_id=clinic_id,
             patient_id=patient_id,
             patient_phone="+5491112345678",
             patient_name="Ana García",
-            template_id="multi_session_reminder_01",
+            template_id="invitacion_mantenimiento",  # MARKETING — requires_marketing_opt_in=True
             pattern=ReEngagementPattern.MULTI_SESSION,
             channel="whatsapp",
-            marketing_opt_in=False,  # <-- No opt-in
+            marketing_opt_in=False,  # <-- No opt-in → bloqueado para MARKETING
             opt_out=False,
             user_id=user_id,
         )
@@ -276,9 +284,8 @@ class TestSendProactiveBlocksMarketingNoOptin:
         # Evento NO debe persistirse
         mock_re_engagement_repo.save.assert_not_called()
 
-        # Resultado bloqueado
-        assert result.blocked_reason is not None
-        assert "marketing_opt_in" in result.blocked_reason.lower() or "opt" in result.blocked_reason.lower()
+        # Resultado bloqueado por falta de opt-in para template MARKETING
+        assert result.blocked_reason == "marketing_opt_in_required"
 
     @pytest.mark.asyncio
     async def test_send_proactive_blocks_opted_out_patient(
@@ -291,7 +298,7 @@ class TestSendProactiveBlocksMarketingNoOptin:
         patient_id: Any,
         user_id: Any,
     ) -> None:
-        """Paciente con opt_out=True es bloqueado siempre."""
+        """Paciente con opt_out=True es bloqueado siempre (antes de consultar template)."""
         mock_re_engagement_repo.check_throttle.return_value = False
 
         result = await proactive_service.send_proactive_reminder(
@@ -300,16 +307,70 @@ class TestSendProactiveBlocksMarketingNoOptin:
             patient_id=patient_id,
             patient_phone="+5491112345678",
             patient_name="Ana García",
-            template_id="follow_up_reminder_01",
+            template_id="recordatorio_proxima_sesion",  # UTILITY — valid slug
             pattern=ReEngagementPattern.FOLLOW_UP,
             channel="whatsapp",
             marketing_opt_in=True,
-            opt_out=True,  # <-- Opted out
+            opt_out=True,  # <-- Opted out → bloqueado en paso 1 (antes de registry check)
             user_id=user_id,
         )
 
         mock_re_engagement_repo.save.assert_not_called()
-        assert result.blocked_reason is not None
+        assert result.blocked_reason == "patient_opted_out"
+
+    @pytest.mark.asyncio
+    async def test_utility_template_passes_without_marketing_opt_in(
+        self,
+        proactive_service: Any,
+        mock_re_engagement_repo: AsyncMock,
+        mock_audit_repo: AsyncMock,
+        mock_compliance_service: AsyncMock,
+        tenant_id: Any,
+        clinic_id: Any,
+        patient_id: Any,
+        user_id: Any,
+    ) -> None:
+        """SC-03: Template UTILITY no requiere marketing_opt_in.
+
+        Given: paciente con marketing_opt_in=False
+        When: send_proactive_reminder con template UTILITY (recordatorio_proxima_sesion)
+        Then: mensaje enviado (no bloqueado por marketing_opt_in)
+
+        Audit iter 2 fix F1 — regresión previa: el servicio bloqueaba UTILITY
+        incorrectamente cuando marketing_opt_in=False.
+        """
+        saved_model = MagicMock(spec=ReEngagementEventModel)
+        saved_model.id = uuid4()
+        saved_model.tenant_id = tenant_id
+        saved_model.clinic_id = clinic_id
+        saved_model.patient_id = patient_id
+        saved_model.sent_at = datetime.now(UTC)
+        mock_re_engagement_repo.save = AsyncMock(return_value=saved_model)
+        mock_re_engagement_repo.check_throttle.return_value = False
+
+        check_result = MagicMock()
+        check_result.allowed = True
+        check_result.block_reason = None
+        mock_compliance_service.check = AsyncMock(return_value=check_result)
+
+        result = await proactive_service.send_proactive_reminder(
+            tenant_id=tenant_id,
+            clinic_id=clinic_id,
+            patient_id=patient_id,
+            patient_phone="+5491112345678",
+            patient_name="Ana García",
+            template_id="recordatorio_proxima_sesion",  # UTILITY — requires_marketing_opt_in=False
+            pattern=ReEngagementPattern.FOLLOW_UP,
+            channel="whatsapp",
+            marketing_opt_in=False,  # Sin opt-in marketing — UTILITY no lo requiere
+            opt_out=False,
+            user_id=user_id,
+        )
+
+        # UTILITY debe pasar sin marketing_opt_in
+        assert result.status == "sent"
+        assert result.blocked_reason is None
+        mock_re_engagement_repo.save.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_compliance_block_prevents_send(
@@ -348,7 +409,7 @@ class TestSendProactiveBlocksMarketingNoOptin:
             patient_id=patient_id,
             patient_phone="+5491112345678",
             patient_name="Ana García",
-            template_id="multi_session_reminder_01",
+            template_id="invitacion_mantenimiento",  # valid MARKETING slug
             pattern=ReEngagementPattern.MULTI_SESSION,
             channel="whatsapp",
             marketing_opt_in=True,

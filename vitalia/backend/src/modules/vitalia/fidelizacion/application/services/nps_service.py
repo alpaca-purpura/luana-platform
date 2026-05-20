@@ -122,10 +122,12 @@ class NPSService:
         response_id = uuid4()
         band = NPSBand.from_score(score)
 
-        # Cifrado PHI: comment_plain → bytes (pgcrypto a nivel DB).
-        # En la capa de aplicación almacenamos como bytes vacíos si no hay comentario.
-        # El cifrado real ocurre en la DB mediante pgcrypto trigger (migration 022).
-        # La aplicación NO accede al plaintext en producción — solo almacena vía psql.
+        # Cifrado PHI: comment_plain → bytes.
+        # Migration 025 habilita pgcrypto symmetric encryption en nps_responses.comment
+        # mediante un trigger BEFORE INSERT/UPDATE que aplica pgp_sym_encrypt().
+        # La capa de aplicación pasa el texto en bytes; la DB lo almacena cifrado.
+        # El trigger usa current_setting('app.encryption_key') como KEK.
+        # KEK rotation: anual per hipaa-lite.md § Encryption at rest.
         comment_bytes: bytes | None = comment_plain.encode("utf-8") if comment_plain else None
 
         model = NPSResponseModel(

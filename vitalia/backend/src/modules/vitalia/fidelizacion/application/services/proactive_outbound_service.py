@@ -2,7 +2,7 @@
 
 Flujo de 9 pasos:
   1. Verificar opt_out del paciente
-  2. Verificar marketing_opt_in (para templates MARKETING)
+  2. Verificar marketing_opt_in solo para templates MARKETING (UTILITY no requiere opt-in)
   3. Check throttle (7 días por default)
   4. Compliance channel guard (ComplianceService)
   5. Audit log sync write FIRST (HIPAA-lite mandatorio)
@@ -12,7 +12,13 @@ Flujo de 9 pasos:
 
 HIPAA-lite: audit log sync write mandatorio, dual filter, PHI sanitization.
 SC-01: Flujo completo exitoso.
-SC-02: Bloqueo por marketing_opt_in=False.
+SC-02: Bloqueo por marketing_opt_in=False para template MARKETING.
+SC-03: Template UTILITY pasa sin opt-in (recordatorios de cita confirmada).
+
+Template category resolution via WHATSAPP_TEMPLATE_REGISTRY (T-8 SSoT).
+Per 03-arch-be.md § 7: solo templates con requires_marketing_opt_in=True
+requieren el flag. Templates UTILITY (recordatorio_proxima_sesion,
+recordatorio_control_doctor, nps_post_tratamiento) no lo requieren.
 
 downstream-regression-na: brand-local application service vitalia
 """
@@ -25,6 +31,9 @@ from uuid import UUID, uuid4
 
 import structlog
 
+from src.modules.vitalia.connections.whatsapp.registry import (
+    WHATSAPP_TEMPLATE_REGISTRY,
+)
 from src.modules.vitalia.fidelizacion.application.dtos.re_engagement_dtos import (
     ProactiveReminderResponse,
 )
@@ -161,15 +170,35 @@ class ProactiveOutboundService:
                 blocked_reason="patient_opted_out",
             )
 
-        # Paso 2 — Verificar marketing_opt_in para templates MARKETING
-        # Templates de tipo MARKETING requieren opt-in explícito del paciente.
-        # Templates UTILITY (recordatorios de citas confirmadas) no lo requieren.
-        if not marketing_opt_in:
+        # Paso 2 — Verificar marketing_opt_in SOLO para templates MARKETING.
+        # Consultar WHATSAPP_TEMPLATE_REGISTRY (T-8 SSoT) para la categoría del template.
+        # Templates UTILITY (recordatorio_proxima_sesion, nps_post_tratamiento, etc.)
+        # NO requieren opt-in — solo templates MARKETING lo requieren.
+        # Per 03-arch-be.md § 7: check template.requires_marketing_opt_in.
+        template_def = WHATSAPP_TEMPLATE_REGISTRY.get(template_id)
+        if template_def is None:
+            logger.warning(
+                "proactive_outbound_unknown_template",
+                tenant_id=str(tenant_id),
+                clinic_id=str(clinic_id),
+                patient_id=str(patient_id),
+                template_id=template_id,
+            )
+            return ProactiveReminderResponse(
+                event_id=uuid4(),
+                patient_id=patient_id,
+                status="blocked",
+                throttled=False,
+                blocked_reason="template_unknown",
+            )
+        if template_def.requires_marketing_opt_in and not marketing_opt_in:
             logger.info(
                 "proactive_outbound_blocked_no_marketing_optin",
                 tenant_id=str(tenant_id),
                 clinic_id=str(clinic_id),
                 patient_id=str(patient_id),
+                template_id=template_id,
+                template_category=template_def.category,
             )
             return ProactiveReminderResponse(
                 event_id=uuid4(),
