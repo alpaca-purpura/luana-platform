@@ -39,6 +39,46 @@ class ReferralRepository(CompoundScopeRepositoryBase[ReferralModel, UUID]):
         """Initialize with clinic_id as the secondary scope axis."""
         super().__init__(session=session, scope_field="clinic_id")
 
+    async def list_active_for_value_sync(
+        self,
+        *,
+        tenant_id: UUID | None = None,
+    ) -> list[ReferralModel]:
+        """Return referrals eligible for conversion_value_cents recomputation.
+
+        Queries referrals WHERE status IN ('signed_up', 'converted') AND deleted_at IS NULL.
+        If tenant_id is provided, scopes to that tenant only.
+        Used by the daily referrals_value_sync cron.
+
+        Note: This method intentionally does NOT require clinic_id because the cron
+        iterates all tenants. Individual referral updates still apply dual filter
+        via get_by_id() before writes.
+
+        Args:
+            tenant_id: Optional tenant UUID to scope the query.
+
+        Returns:
+            List of ReferralModel eligible for value sync.
+        """
+        from sqlalchemy import select  # noqa: PLC0415
+
+        stmt = (
+            select(self.MODEL)
+            .where(self.MODEL.status.in_(["signed_up", "converted"]))
+            .where(self.MODEL.deleted_at.is_(None))
+        )
+        if tenant_id is not None:
+            stmt = stmt.where(self.MODEL.tenant_id == tenant_id)
+
+        result = await self._session.execute(stmt)
+        rows = list(result.scalars().all())
+        logger.info(
+            "referral.list_active_for_value_sync",
+            tenant_id=str(tenant_id) if tenant_id else "all",
+            count=len(rows),
+        )
+        return rows
+
     async def save(self, model: ReferralModel) -> ReferralModel:
         """Persist a ReferralModel (insert or update).
 

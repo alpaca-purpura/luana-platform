@@ -1,7 +1,9 @@
-"""Tests for ARQ WorkerSettings — validate 11 cron jobs registered per spec.
+"""Tests for ARQ WorkerSettings — validate 15 cron jobs registered per spec.
 
 Validator: be_test_workers_cron (04-validators.yaml)
 TDD: RED first — these tests written before arq_settings.py exists.
+
+T-mk-be-6 (2026-05-20): expanded from 11 → 15 cron jobs (4 marketing Wave 3 crons added).
 
 downstream-regression-na: brand-local ARQ worker config; no cross-brand consumers
 """
@@ -9,9 +11,10 @@ downstream-regression-na: brand-local ARQ worker config; no cross-brand consumer
 from __future__ import annotations
 
 # ---------------------------------------------------------------------------
-# Expected cron names from T-infra-8 spec (verbatim from cron_spans.py catalog)
+# Expected cron names from T-infra-8 spec + T-mk-be-6 (verbatim from arq_settings.py)
 # ---------------------------------------------------------------------------
 EXPECTED_CRON_NAMES = {
+    # Fidelización crons (T-infra-8)
     "followup_24h",
     "reactivation_45d",
     "maintenance_90d",
@@ -23,9 +26,15 @@ EXPECTED_CRON_NAMES = {
     "lucas_weekly_recommendations",
     "channel_sync_state_15min",
     "audit_log_retention_sweep_monthly",
+    # Marketing Wave 3 crons (T-mk-be-6)
+    "channel_metrics_sync_meta",
+    "channel_metrics_sync_google",
+    "lucas_daily_analysis_sweep",
+    "referrals_value_sync",
 }
 
 EXPECTED_FUNCTION_NAMES = {
+    # Fidelización crons (T-infra-8)
     "followup_24h",
     "reactivation_45d",
     "maintenance_90d",
@@ -37,6 +46,11 @@ EXPECTED_FUNCTION_NAMES = {
     "lucas_weekly_recommendations",
     "channel_sync_state_15min",
     "audit_log_retention_sweep_monthly",
+    # Marketing Wave 3 crons (T-mk-be-6)
+    "channel_metrics_sync_meta",
+    "channel_metrics_sync_google",
+    "lucas_daily_analysis_sweep",
+    "referrals_value_sync",
 }
 
 
@@ -47,12 +61,12 @@ def test_worker_settings_importable() -> None:
     assert WorkerSettings is not None
 
 
-def test_worker_settings_has_11_functions() -> None:
-    """WorkerSettings.functions must list all 11 cron job functions."""
+def test_worker_settings_has_15_functions() -> None:
+    """WorkerSettings.functions must list all 15 cron job functions (T-infra-8 + T-mk-be-6)."""
     from src.modules.vitalia._shared.workers.arq_settings import WorkerSettings  # noqa: PLC0415
 
     assert hasattr(WorkerSettings, "functions"), "WorkerSettings must have 'functions' attribute"
-    assert len(WorkerSettings.functions) == 11, f"Expected 11 functions, got {len(WorkerSettings.functions)}"
+    assert len(WorkerSettings.functions) == 15, f"Expected 15 functions, got {len(WorkerSettings.functions)}"
 
 
 def test_worker_settings_function_names_match_spec() -> None:
@@ -65,12 +79,12 @@ def test_worker_settings_function_names_match_spec() -> None:
     )
 
 
-def test_worker_settings_has_11_cron_jobs() -> None:
-    """WorkerSettings.cron_jobs must have exactly 11 cron entries."""
+def test_worker_settings_has_15_cron_jobs() -> None:
+    """WorkerSettings.cron_jobs must have exactly 15 cron entries (T-infra-8 + T-mk-be-6)."""
     from src.modules.vitalia._shared.workers.arq_settings import WorkerSettings  # noqa: PLC0415
 
     assert hasattr(WorkerSettings, "cron_jobs"), "WorkerSettings must have 'cron_jobs' attribute"
-    assert len(WorkerSettings.cron_jobs) == 11, f"Expected 11 cron_jobs, got {len(WorkerSettings.cron_jobs)}"
+    assert len(WorkerSettings.cron_jobs) == 15, f"Expected 15 cron_jobs, got {len(WorkerSettings.cron_jobs)}"
 
 
 def test_worker_settings_cron_names_match_spec() -> None:

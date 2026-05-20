@@ -1,11 +1,11 @@
 """ARQ WorkerSettings for Vitalia cron runner.
 
-Registers 11 cron job functions with their schedules and idempotency wiring.
+Registers 15 cron job functions with their schedules and idempotency wiring.
 
 WorkerSettings is consumed by the ARQ worker process (started via
 `arq src.modules.vitalia._shared.workers.arq_settings.WorkerSettings`).
 
-Cron schedule table (verbatim from 03-arch-be.md § 4 + T-infra-8 spec):
+Cron schedule table (verbatim from 03-arch-be.md § 4 + T-infra-8 spec + T-mk-be-6):
   followup_24h                        every 1h
   reactivation_45d                    every 6h
   maintenance_90d                     every 12h
@@ -17,6 +17,10 @@ Cron schedule table (verbatim from 03-arch-be.md § 4 + T-infra-8 spec):
   lucas_weekly_recommendations        weekly Mon 04:00 UTC
   channel_sync_state_15min            every 15min
   audit_log_retention_sweep_monthly   monthly 1st 02:00 UTC
+  channel_metrics_sync_meta           every 4h :00 UTC (T-mk-be-6)
+  channel_metrics_sync_google         every 4h :02 UTC (T-mk-be-6)
+  lucas_daily_analysis_sweep          daily 06:00 UTC (T-mk-be-6)
+  referrals_value_sync                daily 10:00 UTC (T-mk-be-6)
 
 All workers TZ-aware: cron schedules expressed in UTC, tenant TZ resolution
 done inside each job function per master-data.md.
@@ -58,6 +62,16 @@ from src.modules.vitalia._shared.workers.jobs.nps_request_24h_post_appointment i
     nps_request_24h_post_appointment,
 )
 from src.modules.vitalia._shared.workers.jobs.reactivation_45d import reactivation_45d
+from src.modules.vitalia.marketing.jobs.channel_metrics_sync_google import (
+    channel_metrics_sync_google,
+)
+from src.modules.vitalia.marketing.jobs.channel_metrics_sync_meta import (
+    channel_metrics_sync_meta,
+)
+from src.modules.vitalia.marketing.jobs.lucas_daily_analysis_sweep import (
+    lucas_daily_analysis_sweep,
+)
+from src.modules.vitalia.marketing.jobs.referrals_value_sync import referrals_value_sync
 
 
 def _redis_settings() -> RedisSettings:
@@ -73,7 +87,7 @@ def _redis_settings() -> RedisSettings:
 class WorkerSettings:
     """ARQ WorkerSettings for Vitalia cron runner.
 
-    Registers all 11 cron job functions.
+    Registers all 15 cron job functions.
     Configuration per T-infra-8 spec:
       keep_result = 3600     (1h result retention)
       max_jobs = 50          (max concurrent jobs)
@@ -92,6 +106,11 @@ class WorkerSettings:
         lucas_weekly_recommendations,
         channel_sync_state_15min,
         audit_log_retention_sweep_monthly,
+        # Marketing Wave 3 crons (T-mk-be-6)
+        channel_metrics_sync_meta,
+        channel_metrics_sync_google,
+        lucas_daily_analysis_sweep,
+        referrals_value_sync,
     ]
 
     cron_jobs = [
@@ -162,6 +181,31 @@ class WorkerSettings:
             day=1,
             hour=2,
             minute=0,  # monthly 1st 02:00 UTC
+        ),
+        # --- Marketing Wave 3 crons (T-mk-be-6) ---
+        cron(
+            channel_metrics_sync_meta,
+            name="channel_metrics_sync_meta",
+            minute=0,
+            hour={0, 4, 8, 12, 16, 20},  # every 4h
+        ),
+        cron(
+            channel_metrics_sync_google,
+            name="channel_metrics_sync_google",
+            minute=2,  # offset 2min from meta to avoid DB contention
+            hour={0, 4, 8, 12, 16, 20},  # every 4h
+        ),
+        cron(
+            lucas_daily_analysis_sweep,
+            name="lucas_daily_analysis_sweep",
+            hour=6,
+            minute=0,  # daily 06:00 UTC
+        ),
+        cron(
+            referrals_value_sync,
+            name="referrals_value_sync",
+            hour=10,
+            minute=0,  # daily 10:00 UTC
         ),
     ]
 

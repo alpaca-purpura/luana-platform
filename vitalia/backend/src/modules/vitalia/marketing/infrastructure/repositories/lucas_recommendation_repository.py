@@ -119,6 +119,95 @@ class LucasRecommendationRepository(CompoundScopeRepositoryBase[LucasRecommendat
         )
         return merged
 
+    async def list_recent_rejections_by_kind(
+        self,
+        *,
+        tenant_id: UUID,
+        clinic_id: UUID,
+        since: datetime,
+    ) -> list[LucasRecommendationModel]:
+        """Return REJECTED recommendations for a clinic rejected after `since`.
+
+        Used by the daily sweep cron to build the 30-day cooldown set of
+        recommendation_kind values that should not be regenerated today.
+
+        Dual filter: tenant_id + clinic_id (HIPAA-lite).
+        Only returns REJECTED rows with rejected_at >= since.
+        Excludes soft-deleted rows.
+
+        Args:
+            tenant_id: Tenant UUID for root isolation.
+            clinic_id: Clinic UUID for secondary isolation.
+            since: Datetime threshold — only rejections on or after this date.
+
+        Returns:
+            List of LucasRecommendationModel with status=REJECTED within window.
+        """
+        scope_attr = self._scope_attr()
+        stmt = (
+            select(self.MODEL)
+            .where(self.MODEL.tenant_id == tenant_id)
+            .where(scope_attr == clinic_id)
+            .where(self.MODEL.status == RecommendationStatus.REJECTED.value)
+            .where(self.MODEL.rejected_at.isnot(None))
+            .where(self.MODEL.rejected_at >= since)
+            .where(self.MODEL.deleted_at.is_(None))
+        )
+        result = await self._session.execute(stmt)
+        rows = list(result.scalars().all())
+        logger.info(
+            "lucas_recommendation.list_recent_rejections_by_kind",
+            tenant_id=str(tenant_id),
+            clinic_id=str(clinic_id),
+            since=since.isoformat(),
+            count=len(rows),
+        )
+        return rows
+
+    async def expire_stale_open(
+        self,
+        *,
+        tenant_id: UUID,
+        clinic_id: UUID,
+        now: datetime,
+    ) -> int:
+        """Soft-expire OPEN recommendations whose expires_at is in the past.
+
+        Updates status from 'open' to 'expired' for stale recommendations.
+        Used by the daily sweep cron before generating new recommendations.
+
+        Dual filter: tenant_id + clinic_id (HIPAA-lite).
+
+        Args:
+            tenant_id: Tenant UUID for root isolation.
+            clinic_id: Clinic UUID for secondary isolation.
+            now: Current UTC datetime (passed explicitly for testability).
+
+        Returns:
+            Number of rows updated.
+        """
+        from sqlalchemy import update  # noqa: PLC0415
+
+        scope_attr = self._scope_attr()
+        stmt = (
+            update(self.MODEL)
+            .where(self.MODEL.tenant_id == tenant_id)
+            .where(scope_attr == clinic_id)
+            .where(self.MODEL.status == RecommendationStatus.OPEN.value)
+            .where(self.MODEL.expires_at < now)
+            .where(self.MODEL.deleted_at.is_(None))
+            .values(status=RecommendationStatus.EXPIRED.value)
+        )
+        result = await self._session.execute(stmt)
+        count: int = result.rowcount  # type: ignore[attr-defined]
+        logger.info(
+            "lucas_recommendation.expire_stale_open",
+            tenant_id=str(tenant_id),
+            clinic_id=str(clinic_id),
+            expired_count=count,
+        )
+        return count
+
     async def list_pending_undo_expired(
         self,
         *,
