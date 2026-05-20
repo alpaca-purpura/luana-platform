@@ -1,6 +1,6 @@
 # Vitalia Backlog (auto-generated)
 
-> Generated at: `2026-05-19T00:16:32+00:00`
+> Generated at: `2026-05-20T01:36:31+00:00`
 > DO NOT EDIT MANUALLY — modify source artifacts.
 > Regenerate: `python scripts/generate_backlog.py`
 
@@ -9,7 +9,8 @@
 ### 💡 Ideas (1)
 - vitalia-pricing-decision `[story]`
 
-### 🔬 Refining (4 total · 2 cap-eligible / cap 3)
+### 🔬 Refining (5 total · 2 cap-eligible / cap 3)
+- **admin-iam-adopt**
 - **dev-environment-multibrand**
 - **vitalia-mvp-ui-foundation**
 - **vitalia-fiscal-emission-pe** — outcome `vitalia-mvp-ui-foundation` [AWAITING_PO_DRAFT_DEFERRED_NEXT_SESSION]
@@ -31,8 +32,8 @@
 ### 🧪 Developed — esperando QA (0 / cap 10)
 - _(none)_
 
-### 🔍 Reviewing (1 / cap 2)
-- vitalia-slice-1-onboarding-wizard
+### 🔍 Reviewing (0 / cap 2)
+- _(none in review)_
 
 ### Recently shipped (last 90d, 0 items)
 - _(none recent)_
@@ -47,7 +48,8 @@
 kanban
   💡 Ideas (1)
     vitalia-pricing-decision[vitalia-pricing-decision]
-  🔬 Refining (2 cap-eligible of 4 / cap 3)
+  🔬 Refining (2 cap-eligible of 5 / cap 3)
+    admin-iam-adopt[admin-iam-adopt]
     dev-environment-multibrand[dev-environment-multibrand]
     vitalia-mvp-ui-foundation[vitalia-mvp-ui-foundation]
     vitalia-fiscal-emission-pe[vitalia-fiscal-emission-pe]
@@ -62,8 +64,7 @@ kanban
     vitalia-ux-discovery[vitalia-ux-discovery]
   🔨 Developing (0 / cap 3)
   🧪 Developed (0 / cap 10)
-  🔍 Reviewing (1 / cap 2)
-    vitalia-slice-1-onboarding-wiz[vitalia-slice-1-onboarding-wizard]
+  🔍 Reviewing (0 / cap 2)
   ✅ Done (0 / 90d rolling)
   🅿 Parked (0)
 ```
@@ -74,24 +75,29 @@ kanban
 
 | module | live | in-progress | planned | deprecated | total |
 |---|---|---|---|---|---|
+| admin | 1 | 0 | 0 | 0 | 1 |
 | agentic | 4 | 0 | 0 | 0 | 4 |
+| auth | 2 | 0 | 0 | 0 | 2 |
 | booking | 2 | 0 | 0 | 0 | 2 |
 | brand_studio | 1 | 0 | 0 | 0 | 1 |
 | compliance | 2 | 0 | 0 | 0 | 2 |
 | connections | 1 | 0 | 0 | 0 | 1 |
 | copilot | 3 | 0 | 0 | 0 | 3 |
 | crm | 1 | 0 | 0 | 0 | 1 |
+| dashboard | 1 | 0 | 0 | 0 | 1 |
 | fixtures | 1 | 0 | 0 | 0 | 1 |
 | iam | 1 | 0 | 0 | 0 | 1 |
-| observability | 2 | 0 | 0 | 0 | 2 |
+| observability | 3 | 0 | 0 | 0 | 3 |
 | offer_studio | 1 | 0 | 0 | 0 | 1 |
-| onboarding | 1 | 0 | 0 | 0 | 1 |
+| onboarding | 2 | 0 | 0 | 0 | 2 |
+| ops | 1 | 0 | 0 | 0 | 1 |
 | patients | 1 | 0 | 0 | 0 | 1 |
 | payment | 1 | 0 | 0 | 0 | 1 |
 | platform | 3 | 0 | 0 | 0 | 3 |
 | public_landing | 1 | 0 | 0 | 0 | 1 |
 | sales_agent | 3 | 0 | 0 | 0 | 3 |
+| tests | 1 | 0 | 0 | 0 | 1 |
 | treatments | 1 | 0 | 0 | 0 | 1 |
 | workers | 1 | 0 | 0 | 0 | 1 |
-| **TOTAL** | **31** | **0** | **0** | **0** | **31** |
+| **TOTAL** | **39** | **0** | **0** | **0** | **39** |
 

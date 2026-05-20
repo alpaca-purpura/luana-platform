@@ -1,4 +1,4 @@
-# Saasora Backlog (auto-generated)
+# Platform Backlog (auto-generated)
 
 > Generated at: `2026-05-20T01:36:31+00:00`
 > DO NOT EDIT MANUALLY — modify source artifacts.
@@ -9,8 +9,13 @@
 ### 💡 Ideas (0)
 - _(none)_
 
-### 🔬 Refining (0 total · 0 cap-eligible / cap 3)
-- _(none)_
+### 🔬 Refining (6 total · 0 cap-eligible / cap 3)
+- **admin-iam-adoption-platform**
+- **cicd-multibrand-deploy**
+- **dev-stack-cross-brand-fixes**
+- **docker-dev-multibrand**
+- **git-strategy-revised**
+- **infra-dev-multibrand**
 
 ### ✅ Refined — listo para arquitectos (0 / cap 5)
 - _(none)_
@@ -39,7 +44,13 @@
 ```mermaid
 kanban
   💡 Ideas (0)
-  🔬 Refining (0 / cap 3)
+  🔬 Refining (0 cap-eligible of 6 / cap 3)
+    admin-iam-adoption-platform[admin-iam-adoption-platform]
+    cicd-multibrand-deploy[cicd-multibrand-deploy]
+    dev-stack-cross-brand-fixes[dev-stack-cross-brand-fixes]
+    docker-dev-multibrand[docker-dev-multibrand]
+    git-strategy-revised[git-strategy-revised]
+    infra-dev-multibrand[infra-dev-multibrand]
   ✅ Refined (0 / cap 5)
   📦 Ready (0 / cap 5)
   🔨 Developing (0 / cap 3)

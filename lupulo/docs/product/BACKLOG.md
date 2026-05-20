@@ -1,52 +1,59 @@
-<!-- AUTO-GENERATED por scripts/generate_portfolio.py — NO editar a mano -->
-<!-- Para regenerar: make portfolio -->
+# Lupulo Backlog (auto-generated)
 
-# Lupulo — Backlog
+> Generated at: `2026-05-20T01:36:31+00:00`
+> DO NOT EDIT MANUALLY — modify source artifacts.
+> Regenerate: `python scripts/generate_backlog.py`
 
-```yaml
-slug: lupulo
-vertical: "Gastronomía"
-status: placeholder
-ssot_owner: /pm-lupulo
-last_regen: placeholder (manual)
-```
+## 📊 Roadmap view (filtered + curated)
 
-## 💡 Ideas
+### 💡 Ideas (0)
+- _(none)_
 
-_(none — append via /pm-lupulo "idea {x}")_
+### 🔬 Refining (0 total · 0 cap-eligible / cap 3)
+- _(none)_
 
-## 🔬 Refinando (cap 3)
+### ✅ Refined — listo para arquitectos (0 / cap 5)
+- _(none)_
 
-_(none)_
+### 📦 Ready for development (0 / cap 5)
+- _(none)_
 
-## ✅ Refinadas (cap 5)
+### 🔨 Developing (0 / cap 3)
+- _(none)_
 
-_(none)_
+### 🧪 Developed — esperando QA (0 / cap 10)
+- _(none)_
 
-## 📦 Ready (cap 5)
+### 🔍 Reviewing (0 / cap 2)
+- _(none in review)_
 
-_(none)_
+### Recently shipped (last 90d, 0 items)
+- _(none recent)_
 
-## 🔨 Developing (cap 3)
-
-_(none)_
-
-## 🧪 Developed (cap 2)
-
-_(none)_
-
-## 🔍 Reviewing (cap 2)
-
-_(none)_
-
-## 🚢 Shipped (rolling 90d)
-
-_(populate al primer merge)_
-
-## 🅿 Parked / 🛑 Dropped
-
-_(none)_
+### Parked (0) · Dropped (0)
 
 ---
 
-**Drill-down:** ver `lupulo/docs/product/stories/{id}/checkpoint.md` per story.
+## 🔄 Operational view (Mermaid kanban)
+
+```mermaid
+kanban
+  💡 Ideas (0)
+  🔬 Refining (0 / cap 3)
+  ✅ Refined (0 / cap 5)
+  📦 Ready (0 / cap 5)
+  🔨 Developing (0 / cap 3)
+  🧪 Developed (0 / cap 10)
+  🔍 Reviewing (0 / cap 2)
+  ✅ Done (0 / 90d rolling)
+  🅿 Parked (0)
+```
+
+---
+
+## 📈 Capabilities snapshot
+
+| module | live | in-progress | planned | deprecated | total |
+|---|---|---|---|---|---|
+| **TOTAL** | **0** | **0** | **0** | **0** | **0** |
+
