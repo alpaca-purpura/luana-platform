@@ -42,7 +42,47 @@ Story 12 (`luana-comunify-bootstrap`, mergeada 2026-05-15) shipped **17 capabili
 - `leaderboard: false`
 - `multi_account_creator_switcher: false` (Q2=B defer)
 
+## Deudas pendientes (parked: blocked_on_chris)
+
+> Items que requieren acción local de Chris (provisión de assets / configuración env) antes de poder destrabar follow-ups. NO son stories activas — son blockers documentados con instrucciones reproducibles.
+
+### D1 — Aportar `Satoshi-Bold.woff2` (font auténtica)
+
+- **Estado:** parked, blocked_on_chris.
+- **Síntoma:** `comunify/frontend/src/app/layout.tsx:8-13` usa `Plus_Jakarta_Sans` como fallback (Path B per D2 spec) porque `comunify/frontend/src/assets/fonts/Satoshi-Bold.woff2` no existe.
+- **Impacto:** typográficamente el feel "Kajabi/Jasper" se logra con Plus Jakarta Sans, pero NO es la Satoshi auténtica del brandbook.
+- **Acción Chris:** comprar/descargar `Satoshi-Bold.woff2` (Fontshare gratis: https://www.fontshare.com/fonts/satoshi) y colocarlo en `comunify/frontend/src/assets/fonts/Satoshi-Bold.woff2`. También opcional: `Satoshi-Variable.woff2` para weights 400-900.
+- **Tras provisión:** abrir story `comunify-provide-satoshi-font` scope XS — revertir `layout.tsx` a `localFont({ src: [...] })` per spec original §2. ≤30 min, sin spec compleja.
+
+### D2 — Configurar `CLERK_TESTING_TOKEN` env local (smoke regression Story 12 inheritance)
+
+- **Estado:** parked, blocked_on_chris.
+- **Síntoma:** 18 de 21 Playwright smoke tests fallan en `comunify/frontend/e2e/fixtures/auth.fixture.ts:95` con `CLERK_TESTING_TOKEN not set`. UNCHANGED desde Story 12 bootstrap (no es regresión cement ni tailwind-v4-tokens).
+- **Impacto:** smoke E2E suite parcialmente disabled. Validators `visual_smoke_design_system` + `visual_smoke_regression` quedan deferred. CI WIP gates corren los 3 tests que NO requieren Clerk auth.
+- **Acción Chris:** generar testing token en Clerk dashboard (https://dashboard.clerk.com/apps/{comunify-app-id}/instances/{dev-instance}/testing) → guardarlo en `comunify/frontend/.env.local` como `CLERK_TESTING_TOKEN=<token>`. NO commitear (`.env.local` gitignored).
+- **Tras provisión:** smoke suite passes 21/21 sin code edits. No abrir story — solo update `comunify/docs/product/checkpoint.md` bitácora confirmando.
+
+### Q2/Q3 features diferidos (recomendación: mantener parked)
+
+5 features marcadas en `comunify/config/brand.yaml` como `false` (Q2=B / Q3=B defer per D8 cement Story 12):
+
+| Feature | brand.yaml flag | Demanda observable? | Recomendación |
+|---|---|---|---|
+| Discord/Circle bridge | `discord_circle_bridge: false` | ⏸ ninguna señal de Chris ni clients | **parked** — abrir story cuando primer creator pida integración |
+| Live streaming | `live_streaming: false` | ⏸ ninguna señal | **parked** — postergar hasta tener base usuarios > N |
+| Gamification (badges/points) | `gamification: false` | ⏸ ninguna señal | **parked** — añade complejidad sin ROI demostrado en MVP |
+| Leaderboard | `leaderboard: false` | ⏸ ninguna señal | **parked** — depende de gamification, se abre juntas |
+| Multi-account creator switcher | `multi_account_creator_switcher: false` | ⏸ ninguna señal (Q2=B defer) | **parked** — solo si Chris confirma uso real cross-tenant |
+
+**Rationale:** sin señal de demanda observable, abrir stories para estos features = scope creep. El paradigm v4 dice "Outcome cierra event-driven, no time-driven" — aplica igual a abrir nuevas. `/pm-comunify` no las moverá a `state: idea` salvo que Chris explicite.
+
 ## Bitácora
+
+- 2026-05-20: **Pendientes consolidados + 3 learnings promotable=yes pingeados a `/pm-luana`** (autonomous /pm-comunify cleanup post Chris ratifying "cerremos todos los pendientes, autónomo primero"). Trabajo cerrado:
+  - INDEX-promotables.md escrito (`comunify/docs/learnings/INDEX-promotables.md`) — pointer queue para `/pm-luana` Modo Core Engineering. 3 learnings listados: tailwind-v4-postcss-wiring-gap + named-volume-staleness-post-pyproject-bump + playwright-runner-parity-gap. Meta-recomendación: outcome platform `bootstrap-brand-template-hardening` agrupando los 3 + sweep vitalia + lupulo.
+  - Sección "Deudas pendientes (parked: blocked_on_chris)" añadida a este checkpoint — D1 (Satoshi-Bold.woff2) + D2 (CLERK_TESTING_TOKEN). Instrucciones reproducibles documentadas, no requieren story abierta (scope XS y waiting on Chris).
+  - Q2/Q3 diferidos (discord/live_streaming/gamification/leaderboard/multi-account-switcher) ratificados parked — sin señal de demanda observable, mantener `false` en `brand.yaml`.
+  - Único follow-up activo: `comunify-warning-token-contrast-fix` (state=idea) — handoff `/po-ux` próximo turno para decisión opción A/B/C (recomendación /pm-comunify: opción B `text-comunify-text` 2 archivos, contrast 9.8:1 AAA).
 
 - 2026-05-20: **`comunify-design-system-tailwind-v4-tokens` mergeada (reviewing→done) + archived** (/pm-comunify formal closure, Chris ratificó cierre tras 2-day delay). Trabajo cerrado:
   - Auditor verdict APPROVED 27/27 CHECKPOINTS ✅ (Phase D gherkin matrix 7/7 PASS, SC-01..SC-07) confirmado pre-merge.
