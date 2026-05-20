@@ -211,6 +211,8 @@ tickets:
 # WAVE 4 — FE foundation (types + hooks + URL state + copy)
 # ════════════════════════════════════════════════════════════════════════
   - id: T-mk-fe-1
+    state: pushed                                # ★ added by /dev-team orchestrator 2026-05-20 post-Wave 6 closure (builder missed state field)
+    pushed_sha: "866079b"
     sub_story: vitalia-slice-1-marketing
     wave: 4
     title: FE foundation — TS types + Zod schemas + nuqs parsers + MARKETING_COPY + React Query hooks

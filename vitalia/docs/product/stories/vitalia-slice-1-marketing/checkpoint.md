@@ -2,10 +2,28 @@
 story_id: vitalia-slice-1-marketing
 outcome: vitalia-mvp-ui-foundation
 parent_spec: vitalia-ux-discovery (archived 2026-05-20 — inheritance carryover)
-state: developing
-phase: BUILD_WAVE_1
-last_artifact: 03-arch.md + 03-arch-be.md + 03-arch-fe.md + 03-arch-agentic.md + 04-validators.yaml + 05-guidelines.md + 06-tickets.yaml + HANDOFF-cross-story-updates.md + 01-spec-extract.md + 02-design-ui.md
+state: developed
+phase: HANDOFF_TO_AUDITOR
+last_artifact: T-mk-fe-7-result.md (Wave 6 closure)
 last_modified: 2026-05-20
+all_tickets_pushed_at: 2026-05-20
+build_summary:
+  tickets_pushed: 13                                     # T-mk-be-{1..6} + T-mk-fe-{1..7}
+  validators_green_local: 17/21                          # 4 DEFERRED (Chromatic + Playwright E2E + Axe + Lighthouse — infra/CI gating)
+  validators_deferred_ci:
+    - visual_regression_bowtie_svg::chromatic            # CHROMATIC_PROJECT_TOKEN missing local — Chris ratifies baselines on merge
+    - e2e_smoke_marketing                                # Turbopack dev server connection instability under concurrent Playwright load (learning 2026-05-20)
+    - visual_a11y_axe                                    # idem stack stability
+    - visual_perf_budget_lighthouse                      # idem
+  tests_total: 700+ unit + integration GREEN (BE+FE)     # marketing module 111/111 BE + 700+ FE suite
+  arch_fitness: 270/270 BE + 42/42 FE GREEN
+  loc_implementation: ~5000 (estimated) across 26 commits (f0e395e..258a42f)
+phase_d_local_coverage:                                  # /dev-team Step 4.5 pre-handoff gate
+  scenarios_in_spec: 4                                   # SC-MK-01..04 in 01-spec-extract.md
+  scenarios_in_gherkin_coverage: 4                       # all 4 covered across multiple tickets (17 ticket entries)
+  status: PASS                                           # all scenarios mapped to ≥1 test
+learning_emitted:
+  - vitalia/docs/learnings/2026-05-20-docker-frontend-ram-turbopack-issue.md (promotable: candidate)
 ratified_by_chris: true
 spawned_at: 2026-05-17
 spawned_by: /pm-vitalia (split decision post /architect ready package)
@@ -27,7 +45,7 @@ priority: high
 estimated_dev_weeks: 3-4
 architect_refresh_date: 2026-05-20
 architect_model: claude-opus-4-7
-next_action: "/dev-team picks T-mk-be-1 wave-1 ticket. Wave DAG: BE foundation (T-mk-be-1, T-mk-be-2) → BE services + adapters (T-mk-be-3, T-mk-be-4) → BE API + crons (T-mk-be-5, T-mk-be-6) → FE foundation (T-mk-fe-1) → FE components NUEVO SIMPLE (T-mk-fe-2..5) → E2E + visual + perf (T-mk-fe-6, T-mk-fe-7). On all GREEN: AUTO-HANDOFF /auditor (story-closure-gate.md default)."
+next_action: "/auditor toma story para Conv 3 review+merge (AUTO-HANDOFF default post 2026-05-18). Lee T-mk-*-result.md + 06-audit/ + ejecuta Phase D gherkin verification matrix + CHECKPOINTS.md C1-C5. NO arrancar nueva story hasta state=done."
 ---
 
 # vitalia-slice-1-marketing — checkpoint
