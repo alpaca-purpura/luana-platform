@@ -10,22 +10,29 @@ consumer: /pm-luana (Modo Core Engineering)
 
 > Index pointer-first de learnings comunify con `promotable: yes` o `promotable: candidate` pendientes de evaluación cross-brand. `/pm-luana` lee este file en su próximo bootstrap (o cuando corra `make scan-promotables`) y decide si abre promotion proposal en `docs/promotion-protocol/proposals/`.
 
-## Pending promotables (6)
+## Pending (1)
 
 | Learning | Slug | Applies to | Target | Rationale 1-line |
 |---|---|---|---|---|
-| `2026-05-18-tailwind-v4-postcss-wiring-gap.md` | tailwind-v4-postcss-wiring-gap | vitalia + 6 brands futuras | `_pm-brand-template/` scaffold rule | Tailwind v4 requiere `@tailwindcss/postcss` plugin + `postcss.config.*` o las utility classes NO se emiten en bundle (descubierto silencioso en comunify, fix en hot-fix tailwind-v4-tokens v0.2.1) |
-| `2026-05-17-named-volume-staleness-post-pyproject-bump.md` | named-volume-staleness-post-pyproject-bump | todas las brands con stack Docker dev | addendum a `docs/process/docker-dev-multibrand.md` (no es package) | `docker compose up -d --build` NO repobla named volumes ya populados — `.venv` queda stale post `pyproject.toml` bump. Síntoma: `ModuleNotFoundError`. Workaround: `docker volume rm {brand}_backend_venv`. |
-| `2026-05-17-playwright-runner-parity-gap.md` | playwright-runner-parity-gap | vitalia + 6 brands futuras | `_pm-brand-template/` scaffold (frontend package.json devDeps) | Stories bootstrap brand shipped `playwright.config.ts` + fixtures + specs pero olvidaron declarar `@playwright/test` en devDeps. Nicolify es el único brand con setup completo. Fix-forward sweep: vitalia + lupulo. |
-| `(pending learning write)` | camino-b-outline-button-pattern | todas las brands | `_pm-brand-template/` design-system scaffold + `core/luana-core-platform/design-tokens/` futura | Camino B = outline button pattern `bg-X/10 border border-X text-X-text hover:bg-X/20` para a11y WCAG AA. Origen comunify a11y-contrast-cement v0.3.0. Resuelve combinatoria fg/bg sin tocar HSL paleta principal. |
-| `(pending learning write)` | arch-fitness-anti-low-contrast | todas las brands con design system | `core/luana-core-platform/design-tokens/` cuando 2+ brands lo necesiten | Test pattern para bloquear pares WCAG fail en commit — 6 patterns HARD + allowlist `[]` + magic comment escape `// a11y-allow:`. Híbrido opción C (blockea críticos, libera UI/large marginales). |
-| `(pending learning write)` | linux-live-verification-replacement | todas las brands FE | platform outcome — replacement de chrome-devtools-verify deprecated | 4to ciclo consecutivo sin alternativa live verification para Linux Mint nativo. Bloquea cierre clean de stories FE que requieren live E2E (Story 12 Clerk env, design-system-cement, tailwind-v4-tokens, a11y-contrast-cement). Candidate: stack DOM-test runner alterno o headless browser-mcp Linux-native. |
+| `2026-05-17-named-volume-staleness-post-pyproject-bump.md` | named-volume-staleness-post-pyproject-bump | todas las brands con stack Docker dev | addendum a `docs/process/docker-dev-multibrand.md` (no es package) | `docker compose up -d --build` NO repobla named volumes ya populados — `.venv` queda stale post `pyproject.toml` bump. Síntoma: `ModuleNotFoundError`. Workaround: `docker volume rm {brand}_backend_venv`. NO requiere promotion proposal (doc-only addendum). |
+
+## Processed (5)
+
+Verdicts ratificados por `/pm-luana` 2026-05-20 (autorización Chris "resolvamoslo todo de una vez"):
+
+| Learning | Slug | Verdict | Outcome/Proposal abierto | Estado próximo |
+|---|---|---|---|---|
+| `2026-05-18-tailwind-v4-postcss-wiring-gap.md` | tailwind-v4-postcss-wiring-gap | ✅ **OPEN PROPOSAL** | `docs/promotion-protocol/proposals/2026-05-20-lift-tailwind-v4-postcss-scaffold.md` (state=proposed) — child de outcome `bootstrap-brand-template-hardening` | Chris ratifica APPROVED/REJECTED inline |
+| `2026-05-17-playwright-runner-parity-gap.md` | playwright-runner-parity-gap | ✅ **OPEN PROPOSAL** | `docs/promotion-protocol/proposals/2026-05-20-lift-playwright-runner-scaffold.md` (state=proposed) — child de outcome `bootstrap-brand-template-hardening` | Chris ratifica APPROVED/REJECTED inline |
+| `(pending physical learning write)` | camino-b-outline-button-pattern | ✅ **OPEN PROPOSAL** | `docs/promotion-protocol/proposals/2026-05-20-lift-camino-b-design-system.md` (state=proposed) — child de outcome `bootstrap-brand-template-hardening` | Chris ratifica + /pm-comunify escribe physical learning file próxima sesión |
+| `(pending physical learning write)` | arch-fitness-anti-low-contrast | ⏸ **DEFERRED** | NO proposal abierto — DRY threshold no alcanzado (solo Comunify consumer hoy) | Esperar 2do consumer (Vitalia o Nicolify) antes de lift; re-evaluar cuando aplique |
+| `(pending physical learning write)` | linux-live-verification-replacement | ✅ **OPEN OUTCOME** | `docs/product/outcomes/linux-live-verification-replacement.md` (state=refining) — outcome platform standalone | Chris ratifica scope outcome → handoff `/po` para Story R1 research |
 
 ## Cross-brand impact
 
-Los 3 learnings apuntan al **mismo root cause meta:** el scaffold `_pm-brand-template/` no es exhaustivo. Brands que bootstrappean copiando vitalia/comunify pattern heredan los gaps silenciosos.
+Los 3 OPEN PROPOSALS apuntan al **mismo root cause meta:** el scaffold `_pm-brand-template/` no es exhaustivo. Brands que bootstrappean copiando vitalia/comunify pattern heredan los gaps silenciosos. Agrupados en **outcome platform `bootstrap-brand-template-hardening`** (ver `docs/product/outcomes/bootstrap-brand-template-hardening.md`) que coordina sweep vitalia + lupulo + actualización scaffold + audit cross-brand. Saves 3 incidents idénticos × 6 brands futuras = 18 incidents-evitados.
 
-**Recomendación a `/pm-luana`:** evaluar abrir 1 outcome platform `bootstrap-brand-template-hardening` que agrupe los 3 gaps + sweep en vitalia + lupulo + actualización `_pm-brand-template/`. Saves 3 incidents idénticos × 6 brands futuras = 18 incidents-evitados.
+El OPEN OUTCOME `linux-live-verification-replacement` es **separate scope** — no es scaffold gap, es plataforma development workflow gap. Urgencia alta (4to ciclo consecutivo bloqueado).
 
 ## Otros learnings comunify (no promotables ahora)
 
@@ -35,12 +42,9 @@ Los 3 learnings apuntan al **mismo root cause meta:** el scaffold `_pm-brand-tem
 
 1. `/pm-luana` bootstrap incluye lectura de este file
 2. Por cada row con `promotable: yes`, `/pm-luana` decide:
-   - **Open proposal:** crear `docs/promotion-protocol/proposals/{date}-lift-{slug}.md`
-   - **Defer:** mark `promotable: deferred` con razón
-   - **Reject:** mark `promotable: no` con razón
-3. Cuando proposal `state >= accepted`, este row se mueve a sección "Processed" (no se elimina, audit trail)
-4. `/pm-comunify` solo añade nuevos rows, nunca edita verdict (jurisdicción `/pm-luana`)
-
-## Processed
-
-_(none yet)_
+   - **Open proposal:** crear `docs/promotion-protocol/proposals/{date}-lift-{slug}.md` → mover row a Processed con link
+   - **Open outcome:** crear `docs/product/outcomes/{slug}.md` (para gaps platform-level no liftable como package) → mover row a Processed con link
+   - **Defer:** mark Processed con verdict DEFERRED + razón
+   - **Reject:** mark Processed con verdict REJECTED + razón
+3. Cuando proposal `state >= accepted`, este row queda en Processed (audit trail forever — no se elimina)
+4. `/pm-comunify` solo añade nuevos rows a Pending, nunca edita Processed (jurisdicción `/pm-luana`)

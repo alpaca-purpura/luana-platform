@@ -46,7 +46,7 @@
 
 > Patrones brand candidatos a lift a luana-core. Lifecycle: proposed → under_review → accepted/rejected → migrated.
 
-- **Open:** 1 (proposed: 1, under_review: 0, accepted: 0)
+- **Open:** 4 (proposed: 4, under_review: 0, accepted: 0)
 - **Migrated:** 9
 - **Rejected (archive):** 0
 

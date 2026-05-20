@@ -30,7 +30,7 @@ Acelerar dev cross-brand. Cada brand aporta aprendizaje → core captura abstrac
 
 ## Promotion proposals (live)
 
-- Proposed: 1
+- Proposed: 4
 - Under review: 0
 - Accepted (lift programado): 0
 - Migrated (cerrados OK): 9
