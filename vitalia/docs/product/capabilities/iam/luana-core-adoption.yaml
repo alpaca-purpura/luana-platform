@@ -1,0 +1,42 @@
+capability_id: vitalia-iam-luana-core-adoption
+module: iam
+slug: luana-core-adoption
+status: live
+date_introduced: 2026-05-19
+story_introduced: vitalia-adopt-luana-core-iam
+package_version: 0.1.0
+package_path: vitalia/backend/src/modules/vitalia/admin/ + vitalia/backend/alembic/versions/022_vitalia_add_engine_iam_tables.py
+license: MIT
+summary: |
+  Vitalia adopta engine `luana-core-iam` para entidades IAM compartidas (users,
+  tenants, user_tenants). Migration 022 crea las 3 tablas matching engine ORM
+  models. Admin code consume engine repositories (UserRepository, TenantRepository,
+  UserTenantRepository) — cero SQL crudo, cero tablas brand-prefixed para
+  entidades engine.
+
+surfaces:
+  config:
+    - vitalia/config/brand.yaml (engine consumer)
+  backend:
+    - vitalia/backend/alembic/versions/022_vitalia_add_engine_iam_tables.py (NEW)
+    - vitalia/backend/src/modules/vitalia/admin/modules/tenants.py (REWRITE consuming TenantRepository)
+    - vitalia/backend/src/modules/vitalia/admin/modules/users.py (REWRITE consuming UserRepository + UserTenantRepository)
+  tests:
+    - vitalia/backend/tests/modules/vitalia/admin/test_tenants_crud.py
+    - vitalia/backend/tests/modules/vitalia/admin/test_users_crud.py
+    - vitalia/backend/tests/architecture/test_admin_consumes_engine_repos.py (arch fitness)
+
+dependencies:
+  - engine_package: core/luana-core-iam (consumed via Python imports, NEVER edited)
+  - engine_package: core/luana-core-platform (Settings + get_db)
+
+verification:
+  commands:
+    - "cd vitalia/backend && ${WS}/.venv/bin/pytest tests/modules/vitalia/admin/ -v"
+    - "cd vitalia/backend && ${WS}/.venv/bin/pytest tests/architecture/test_admin_consumes_engine_repos.py -v"
+    - "docker exec luana-dev-vitalia_backend_dev-1 alembic current"  # expected: 023_vitalia (head)
+  gherkin_evidence:
+    - SC-02 Admin crea tenant nuevo via TenantRepository
+    - SC-04 Admin crea user + asigna a tenant via UserRepository + UserTenantRepository
+    - SC-13 Phantom tables DELETED (cero SQL crudo en admin/modules/)
+    - SC-14 Migrations 002-023 aplicadas

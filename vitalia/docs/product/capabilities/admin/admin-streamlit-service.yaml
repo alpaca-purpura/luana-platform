@@ -1,0 +1,32 @@
+capability_id: vitalia-admin-streamlit-service
+module: admin
+slug: admin-streamlit-service
+status: live
+date_introduced: 2026-05-19
+story_introduced: vitalia-adopt-luana-core-iam
+package_version: 0.1.0
+package_path: vitalia/docker-compose.dev.yml::vitalia_admin_dev + Makefile::dev-vitalia-admin
+license: MIT
+summary: |
+  Service docker-compose `vitalia_admin_dev` exposing Streamlit admin panel en
+  port 8502 (per D4 platform outcome). Profile `admin` opt-in. Bcrypt password
+  auth (VITALIA_ADMIN_PASSWORD_HASH env var, single super-admin). Container
+  name: `luana-dev-vitalia_admin_dev-1`. Makefile target `dev-vitalia-admin`.
+
+surfaces:
+  config:
+    - vitalia/docker-compose.dev.yml (vitalia_admin_dev service, profiles: [admin])
+    - Makefile (dev-vitalia-admin, dev-down-vitalia-admin targets)
+    - vitalia/.env.dev (VITALIA_ADMIN_PASSWORD_HASH + VITALIA_ADMIN_PASSWORD + VITALIA_INTERNAL_API_TOKEN)
+    - vitalia/.env.dev.template (comment re single-quote requirement para hashes con $)
+  tests:
+    - vitalia/frontend/e2e/admin/admin-login.spec.ts (Playwright admin-smoke project)
+
+verification:
+  commands:
+    - "docker compose -f docker-compose.dev.yml -f vitalia/docker-compose.dev.yml --profile admin up -d vitalia_admin_dev"
+    - "curl -sS http://127.0.0.1:8502/_stcore/health"  # expected: ok
+    - "cd vitalia/frontend && E2E_ADMIN_BASE_URL=http://127.0.0.1:8502 VITALIA_ADMIN_PASSWORD='<env>' npx playwright test --project=admin-smoke -g 'SC-01'"
+  gherkin_evidence:
+    - SC-01 Admin login con bcrypt password OK → dashboard accesible
+    - SC-12 Admin logout → session destroyed → redirect login

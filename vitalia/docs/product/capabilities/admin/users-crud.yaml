@@ -1,0 +1,29 @@
+capability_id: vitalia-admin-users-crud
+module: admin
+slug: users-crud
+status: live
+date_introduced: 2026-05-19
+story_introduced: vitalia-adopt-luana-core-iam
+package_version: 0.1.0
+package_path: vitalia/backend/src/modules/vitalia/admin/modules/users.py
+license: MIT
+summary: |
+  Admin Streamlit page para CRUD users + asignaciones a tenants. Consume engine
+  `luana_core_iam.UserRepository` + `UserTenantRepository`. Soporta create + list
+  con join (role per tenant) + ban (toggle is_active) + dropdown filtro por
+  tenant. Audit log sync write.
+
+surfaces:
+  backend:
+    - vitalia/backend/src/modules/vitalia/admin/modules/users.py
+    - vitalia/backend/src/modules/vitalia/admin/pages/users.py
+  tests:
+    - vitalia/backend/tests/modules/vitalia/admin/test_users_crud.py
+
+verification:
+  commands:
+    - "cd vitalia/backend && ${WS}/.venv/bin/pytest tests/modules/vitalia/admin/test_users_crud.py -v"
+  gherkin_evidence:
+    - SC-04 Admin crea user + asigna a tenant → INSERT users + user_tenants + audit
+    - SC-05 Admin lista users con join user_tenants (role per tenant) + filter dropdown
+    - SC-06 Admin banea user → UPDATE users SET is_active=false + audit

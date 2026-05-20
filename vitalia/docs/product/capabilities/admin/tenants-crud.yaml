@@ -1,0 +1,28 @@
+capability_id: vitalia-admin-tenants-crud
+module: admin
+slug: tenants-crud
+status: live
+date_introduced: 2026-05-19
+story_introduced: vitalia-adopt-luana-core-iam
+package_version: 0.1.0
+package_path: vitalia/backend/src/modules/vitalia/admin/modules/tenants.py + vitalia/backend/src/modules/vitalia/admin/pages/
+license: MIT
+summary: |
+  Admin Streamlit page para CRUD tenants (clínicas reales). Consume engine
+  `luana_core_iam.TenantRepository` — cero SQL crudo. Soporta create + list +
+  suspend (toggle is_active). Audit log sync write antes return en cada mutación.
+
+surfaces:
+  backend:
+    - vitalia/backend/src/modules/vitalia/admin/modules/tenants.py
+    - vitalia/backend/src/modules/vitalia/admin/pages/tenants.py
+  tests:
+    - vitalia/backend/tests/modules/vitalia/admin/test_tenants_crud.py
+
+verification:
+  commands:
+    - "cd vitalia/backend && ${WS}/.venv/bin/pytest tests/modules/vitalia/admin/test_tenants_crud.py -v"
+  gherkin_evidence:
+    - SC-02 Admin crea tenant nuevo → INSERT tenants + audit log row
+    - SC-03 Admin lista tenants → SELECT via TenantRepository
+    - SC-07 Admin suspende tenant → UPDATE tenants SET is_active=false + audit log
