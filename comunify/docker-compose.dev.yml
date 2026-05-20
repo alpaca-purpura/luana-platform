@@ -71,7 +71,10 @@ services:
         required: false
     environment:
       PORT: "3003"
-      NEXT_PUBLIC_API_URL: "http://127.0.0.1:8003"
+      # NEXT_PUBLIC_API_URL removed (2026-05-20) — let env_file (comunify/.env.dev) win:
+      #   - tunnel mode: https://dev-app.comunifyagents.com (browser hits tunnel which routes /api/* to backend)
+      #   - local mode:  http://127.0.0.1:8003 (set en .env.dev cuando no se usa tunnel)
+      # Hardcode previo rompía post-login flows desde dev-app.* (mixed content + 127.0.0.1 unreachable from external host).
     volumes:
       # Bind mount al path donde el Dockerfile pone WORKDIR + pnpm install (/app/comunify/frontend),
       # NO en /app raíz (eso sobrescribiría /app/node_modules + /app/pnpm-workspace.yaml del image).
