@@ -85,8 +85,8 @@ export const reEngagementPatternSchema = z.enum(['multi_session', 'follow_up', '
 | Method | Path | Consumed by | Produced status |
 |---|---|---|---|
 | GET | `/api/v1/vitalia/fidelization/summary` | (UI only — propio /fidelización) | NEW Ola 1 fidelización |
-| GET | `/api/v1/vitalia/fidelization/re-engagement/patterns` | /marketing (Ola 2 Lucas card source — future) | NEW Ola 1 fidelización |
-| GET | `/api/v1/vitalia/fidelization/nps/summary` | **/inbox (Ola 1 paralela — tag detractor chip)** | NEW Ola 1 fidelización |
+| GET | `/api/v1/vitalia/fidelization/re-engagement/patterns` | /marketing (Ola 2 Lucas card source — future) | **Implementado** (T-7 + T-16 cement) |
+| GET | `/api/v1/vitalia/fidelization/nps/summary` | **/inbox (Ola 1 paralela — tag detractor chip)** | **Implementado** (T-9 + T-16 cement) |
 | POST | `/api/v1/vitalia/fidelization/nps/submit` | (paciente external token-specific link — webhook desde Adrián) | NEW Ola 1 fidelización |
 | POST | `/api/v1/vitalia/fidelization/patients/{id}/send-proactive` | (UI only — propio modal + Adrián delegate) | NEW |
 | POST | `/api/v1/vitalia/fidelization/patients/{id}/pause` | (UI only) | NEW |
@@ -99,12 +99,12 @@ export const reEngagementPatternSchema = z.enum(['multi_session', 'follow_up', '
 
 ### 1.4 Domain events (engine outbox bus — `luana_core_events.outbox.adapter_bus`)
 
-| Event | Producer | Consumers |
-|---|---|---|
-| `ReEngagementTriggered` | **fidelización (esta story)** Ola 1 | /inbox (Ola 1 paralela) — proactive_outbound conversation auto-creada con attribution metadata `Adrián abrió conv · solicitado por sistema (cron X) confirmado operador {user_id}` |
-| `NPSScoreCollected` | **fidelización (esta story)** Ola 1 | /inbox (Ola 1 paralela) — tag chip render NPS badge per conversation. Future /marketing (Ola 2) — NPS distribution analytics dashboard Slice 2. |
-| `PatientOptedOut` | **fidelización (esta story)** Ola 1 (vía opt_out_service) | /inbox + /pipeline + /marketing — cascade cancel pending conversations + filter futures. |
-| `PatientPausedReEngagement` | **fidelización (esta story)** Ola 1 | /fidelización own UI refresh + log audit. (Slice 2: surface en /inbox CRM card toggle) |
+| Event | Producer | Consumers | Status |
+|---|---|---|---|
+| `ReEngagementTriggered` | **fidelización (esta story)** Ola 1 | /inbox (Ola 1 paralela) — proactive_outbound conversation auto-creada con attribution metadata `Adrián abrió conv · solicitado por sistema (cron X) confirmado operador {user_id}` | **Implementado** (T-5 + T-16 cement) |
+| `NPSScoreCollected` | **fidelización (esta story)** Ola 1 | /inbox (Ola 1 paralela) — tag chip render NPS badge per conversation. Future /marketing (Ola 2) — NPS distribution analytics dashboard Slice 2. | **Implementado** (T-5 + T-16 cement) |
+| `PatientOptedOut` | **fidelización (esta story)** Ola 1 (vía opt_out_service) | /inbox + /pipeline + /marketing — cascade cancel pending conversations + filter futures. | **Implementado** (T-2 + T-16 cement) |
+| `PatientPausedReEngagement` | **fidelización (esta story)** Ola 1 | /fidelización own UI refresh + log audit. (Slice 2: surface en /inbox CRM card toggle) | **Implementado** (T-5 + T-16 cement) |
 
 Schemas concretos en `vitalia/backend/src/modules/vitalia/fidelizacion/domain/events.py`. Emit via `event_bus.publish(event, session=...)` with `USE_OUTBOX_PATTERN_*=True` default post 2026-04-30 (anti-default-flip cementado).
 
@@ -265,6 +265,7 @@ export interface NPSSummaryResponse {
 ## § 4 — Bitácora HANDOFF update
 
 - 2026-05-20: /architect produced ready package vitalia-slice-1-fidelizacion. Contracts cementados producidos + consumidos. APPEND-only diff aplicable a outcome-level HANDOFF al cierre /pm-vitalia merge ticket T-16.
+- 2026-05-20: T-16 cementó contratos verbatim — 26 shape tests GREEN en `vitalia/backend/tests/integration/test_cross_story_contracts.py`. 4 eventos de dominio + 2 endpoint DTOs verificados (NPSScoreCollected, ReEngagementTriggered, PatientOptedOut, PatientPausedReEngagement, NPSSummaryResponse, ReEngagementPatternListResponse). Contratos listos para consumo Ola 2+ sin coordinación adicional.
 
 ## § 5 — Verificación cross-story al merge (post implement)
 
