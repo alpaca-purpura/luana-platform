@@ -46,7 +46,7 @@ docs/product/stories/social-media/  (2 stories)
 docs/product/stories/campaigns/  (9 stories)
 
 docs/product/modules/{analytics,advertising,social-media,campaigns}.md  (capabilities sections appended)
-docs/process/gap-report-2026-05-04-group-b.md  (este archivo)
+docs/process/legacy/gap-report-2026-05-04-group-b.md  (este archivo)
 ```
 
 ---

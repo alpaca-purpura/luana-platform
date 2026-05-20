@@ -21,7 +21,7 @@
 
 | # | Phase | Status | Artifact |
 |---|---|---|---|
-| 0 | Working plan | ✅ | `docs/process/migration-plan.md` |
+| 0 | Working plan | ✅ | `docs/process/legacy/migration-plan-2026-05-04.md` |
 | 1 | Framework dirs + INDEX | 🔄 | `docs/{product,projects,specs,process}/` |
 | 2 | Templates | ⏳ | `docs/specs/templates/` |
 | 3 | Rubrics | ⏳ | `docs/specs/rubrics/` |
@@ -60,7 +60,7 @@
 ## Resume protocol
 
 Si esta sesión muere:
-1. `cat docs/process/migration-plan.md` — leer phase status
+1. `cat docs/process/legacy/migration-plan-2026-05-04.md` — leer phase status
 2. Phase con `🔄` o último `⏳` previo `✅` = retomar ahí
 3. Cada phase tiene artifact path → check existencia para validar avance real
 4. `git status` para ver work-in-progress
