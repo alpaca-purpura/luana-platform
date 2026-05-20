@@ -1,17 +1,40 @@
 # T-{n}-result.md — Template (developer output post-build)
 
 > Owner: developer ASIGNADO. Escrito UNA VEZ post-build, antes de pushear y handoff a /auditor.
-> El auditor consume ESTE archivo + corre tests él mismo (no se fía).
+> El auditor consume ESTE archivo + gate-output.json + diff. NO re-corre tests desde cero (consume JSON).
+>
+> ★ v4.1 cement 2026-05-19 — sección "Skills consulted (must_load enforcement)" obligatoria.
 
 ---
 ticket_id: T-1
 story_id: STORY_ID
+brand: BRAND_SLUG                                 # ★ v4.1
 state: pushed
 finished_by: qwen-opencode
 finished_at: 2026-05-04T17:00Z
 push_commit_sha: abc1234
-push_branch: development
+push_branch: wip/{brand}-{story-padre-id}         # triple-branch policy — NUNCA 'development'
+schema_version: v4.1
 ---
+
+## Skills consulted (must_load enforcement v4.1) ★
+
+> Builder MUST entregar esta tabla. Si missing → auditor CHANGES_REQUESTED automático.
+
+| Skill / Rule | Status | When consulted |
+|---|---|---|
+| backend-expert | ✅ loaded | Step 0 — DDD pattern check + SQLA 2.0 invariantes |
+| copilot-expert | ✅ loaded | Step 0 — module-specific invariantes |
+| .claude/rules/tenant-isolation.md | ✅ loaded | mid-build — verify query filter tenant_id |
+| .claude/rules/backend-ddd.md | ✅ loaded | Step 0 — layer boundaries |
+| .claude/rules/backend-migrations.md | ✅ loaded | mid-build — idempotent IF NOT EXISTS pattern |
+| .claude/rules/spanish-text.md | ✅ loaded | pre-commit — Spanish neutro check (`grep voseo`) |
+| .claude/rules/auditor-self-fix-policy.md | ✅ loaded | Step 0 — saber qué auditor self-fix vs spawn dev-team |
+| .claude/rules/tdd-mandatory.md | ✅ loaded | Step 0 — TDD RED→GREEN discipline |
+| tessl__fastapi | ✅ loaded | endpoint nuevo |
+| tessl__pytest-api-testing | ✅ loaded | endpoint test patterns |
+| frontend-expert | n/a | surface=BE only |
+| playwright-expert | n/a | playwright_required=false (este ticket no toca FE) |
 
 ## Resumen 1-frase
 

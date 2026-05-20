@@ -662,3 +662,81 @@ Sistema PM Nicolify v4 (post Punto 4) operativo. Resumen Wave 5:
 - F7: regen + 934/934 tests PASS
 
 Próximo step Chris: `/pm` 10-state pipeline operativo. Para refinar las 7 PI-12 stories pendientes usar `/po` (service-stories) o `/po + /ux-agentico` (agentic-stories) según cada caso.
+
+---
+
+## § v4.1 — Autonomy amplification (cement 2026-05-19)
+
+> Ratificada por Chris en conversación 2026-05-19. Cementada en ADR-007 + 10 archivos
+> de proceso editados en un solo commit (Full v4.1 cement). Forward-only post-cement-date.
+
+### Origen
+
+Post 2026-05-18 caso vitalia (auditor no se disparó automáticamente, story quedó `developed`
+sin avanzar) emergieron 6 gaps. Chris pidió amplificar autonomy post-refinamiento — una vez
+ratificada la story, el flujo `refined → ready → developing → developed → reviewing → done`
+debe ser ~100% autónomo sin trigger Chris (salvo ESCALATE explícito).
+
+### Decisiones ratificadas (3 + 1 ampliación scope)
+
+**D1 — Auditor decision policy HÍBRIDO por naturaleza del fix:**
+- Whitelist verbatim 17 categorías triviales → self-fix cap 4
+- TDD requerido / refactor 2+ archivos / lógica → spawn dev-team autónomo
+- Security / cross-brand / engine → ESCALATE Chris o /pm-luana
+- Auditor NUNCA escribe tests (preserva TDD discipline)
+- Cap absoluto `audit_iterations: 3` (ampliado de 2)
+- Después spawn dev-team, auditor re-corre gate-runner + Phase D sin trigger Chris
+- SSoT: `.claude/rules/auditor-self-fix-policy.md`
+
+**D2 — `/po-ux` refused refined sin sub-categorías mandatory:**
+- 7 sub-categorías obligatorias (≥1 scenario o `not_applicable_reason` ratificado):
+  race_condition · concurrent_users · network_failure · empty_state · large_dataset · accessibility · i18n
+- TODA story funcional FE: `playwright_required: true` HARD (Chris addendum: "todo lo funcional debe probarse con Playwright")
+- `/po-ux` Step 5 gate refuse refined sin cobertura
+
+**D3 — Architect entrega más al dev-team:**
+- `04-validators.yaml § test_construction_plan` mandatory (orden + POMs + fixtures + scenario_to_test mapping)
+- `05-guidelines.md § must_load_skills` enforceable (no opcional)
+- Nueva categoría `architectural_validation` (5 categorías totales)
+- Schema_version 04-validators bumped v4 → v4.1
+
+**D4 — Scope Full v4.1 cement:**
+- Skills (×4) + Templates (×5) + Rule new (×1) + ADR + pm-redesign append en un solo commit
+- 10+ archivos editados con SCOPE_GATE_SKIP=1 documentado (proceso multi-archivo)
+
+### Forward-only enforcement
+
+Stories transicionadas a `state >= ready` ANTES de 2026-05-19 quedan EXENTAS (no retroactivo).
+Stories con `state=refining` o `state=refined` post-cement-date DEBEN cumplir v4.1 completo.
+
+### Files cementados en single commit (cement 2026-05-19)
+
+Ver ADR-007 § Implementation files changed. Total: 11 archivos + 1 git mv (`04-tickets-template.yaml` → `06-tickets-template.yaml`).
+
+### Quick reference v4 → v4.1 deltas
+
+| Skill / file | v4 | v4.1 cement |
+|---|---|---|
+| `/auditor` Caso B | hand off `/dev-team` y esperar Chris | auto-spawn dev-team autónomo + re-audit sin Chris |
+| `/auditor` cap | self-fix 2, audit_iter 2 | self-fix 4 (whitelist), audit_iter 3 |
+| `/architect` validators | 4 categorías | 5 categorías + test_construction_plan + scenario_coverage sub-categorías |
+| `/architect` guidelines | "Reference docs" sugerencia | `must_load_skills` enforceable + builder reporta "Skills consulted" |
+| `/dev-team` Step 4 | gate-output.json verify | + Phase D local coverage check pre-handoff |
+| `/po-ux` Step 5 | 4 scenarios base | + 7 sub-categorías mandatory + playwright_required HARD funcional |
+| `01-spec-template.md` | 4 scenarios | + scenarios 5-11 (sub-categorías) + playwright_required |
+| `03-arch-template.md` | sin Test Construction | + sección Test Construction Plan (orden + POMs + fixtures + mapping) |
+| `04-validators-template.yaml` | 4 categorías | 5 categorías + test_construction_plan + brand-scoped paths |
+| `05-guidelines-template.md` | n/a (no existía) | NEW — must_load_skills enforceable |
+| `06-tickets-template.yaml` | nombre `04-tickets` (paradigm v3 viejo) | renamed + must_load_skills per ticket |
+| `T-result-template.md` | sin "Skills consulted" | + sección obligatoria (auditor verifica) |
+| `.claude/rules/auditor-self-fix-policy.md` | n/a | NEW — whitelist verbatim 17 + NEVER 16 + caps |
+| ADR | ADR-006 (story-closure-gate) | + ADR-007 (paradigm v4.1 autonomy) |
+
+### Próximo step Chris (post cement)
+
+Stories nuevas usarán paradigm v4.1 automáticamente. Próxima sesión `/po-ux` ya enforce
+sub-categorías mandatory. Próxima `/architect` ya entrega test_construction_plan +
+must_load_skills resolved. Próxima `/auditor` ya hace auto-spawn dev-team ante CHANGES_REQUESTED
+estructural.
+
+Stories existentes `state >= ready` quedan en v4 (no retroactivo, evita re-work).

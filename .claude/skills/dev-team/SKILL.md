@@ -186,6 +186,27 @@ Antes de cualquier `git commit` por el builder, MUST cumplir gate hard:
 
 Builder prompts en Step 2A/2B/2C citan este gate verbatim. Si builder pushea con RED → /dev-team rebota a `state: tests-failing` ANTES Step 4 verify.
 
+### ★ must_load_skills enforcement (v4.1 cement 2026-05-19)
+
+**Antes de spawn builder**, `/dev-team` LEE `05-guidelines.md § must_load_skills` y EXTRACTA la lista completa (con `when:` conditions evaluadas según ticket surface). Pasa la lista RESOLVIDA al builder spawn como bloque verbatim.
+
+**Builder MUST entregar** en `T-{n}-result.md` una sección obligatoria:
+
+```markdown
+## Skills consulted (must_load enforcement v4.1)
+
+| Skill / Rule | Status | When consulted |
+|---|---|---|
+| backend-expert | ✅ loaded | Step 0 — DDD pattern check |
+| frontend-expert | n/a | surface=BE only |
+| .claude/rules/tenant-isolation.md | ✅ loaded | mid-build — verify query filter |
+| .claude/rules/anti-duplication.md | ✅ loaded | Step 0 grep cross-brand |
+| playwright-expert | ✅ loaded | mid-build — POM patterns |
+| ... | ... | ... |
+```
+
+**Auditor verification:** auditor Step 2 verifica esa sección existe + lista todas las skills `must_load`. Si missing/incomplete → CHANGES_REQUESTED automático (categoría: process discipline). Auditor self-fix puede agregar la sección si builder olvidó documentar pero cargó las skills (whitelist #12 docstring trivial análogo).
+
 ### Step 2A — Owner = qwen-opencode (BE/FE no-agentic)
 
 Construir prompt para qwen invocando opencode CLI. **Paths brand-scoped + workspace root parametrizado** (`${WS}` resuelto via `git rev-parse --show-toplevel`):
@@ -204,18 +225,32 @@ PRIORITY READ — CONTEXT-BRIEF (Haiku-built, 5-8k tokens, contiene spec+arch+ru
 
 Lee TAMBIÉN estos archivos del READY PACKAGE (si brief insuficiente):
 - ${STORY_DIR}/01-spec.md — Gherkin scenarios + (si UI std) wireframes
-- ${STORY_DIR}/03-arch.md — technical decisions
-- ${STORY_DIR}/04-validators.yaml — ★ comandos must_pass para iterar contra ★
-- ${STORY_DIR}/05-guidelines.md — patterns required/forbidden + files in scope
-- ${STORY_DIR}/06-tickets.yaml — find your ticket entry T-{n}
+- ${STORY_DIR}/03-arch.md — technical decisions (★ v4.1: incluye § Test Construction Plan)
+- ${STORY_DIR}/04-validators.yaml — ★ comandos must_pass + § test_construction_plan (orden + POMs + fixtures + scenario_to_test mapping)
+- ${STORY_DIR}/05-guidelines.md — patterns required/forbidden + § must_load_skills (★ v4.1 enforceable)
+- ${STORY_DIR}/06-tickets.yaml — find your ticket entry T-{n} + gherkin_coverage
+
+★ MUST LOAD SKILLS (v4.1 enforceable — DEBE cargar TODAS antes de codear):
+<LIST EXTRACTED FROM 05-guidelines.md § must_load_skills RESOLVED, e.g.:>
+- backend-expert
+- playwright-expert (si test_construction_plan.playwright_required=true)
+- .claude/rules/tenant-isolation.md
+- .claude/rules/anti-duplication.md
+- .claude/rules/spanish-text.md
+- .claude/rules/auditor-self-fix-policy.md (saber qué auditor self-fix vs spawn dev-team)
+- tessl__fastapi (si BE endpoint nuevo)
+- ... (extractar verbatim según ticket surface + module)
 
 AUTONOMOUS LOOP:
-1. Read 04-validators.yaml. Run validators ASOCIADOS al ticket T-{n} (acceptance.validator_ids list).
-2. RED: tests fallarán (no implementation yet).
-3. Implementá MÍNIMO para que validators GREEN — solo files dentro 05-guidelines.md "Files in scope" (TODOS brand-scoped bajo ${BRAND}/).
-4. Re-run validators. Si fallan: fix targeted file por error trace, re-run failing validator only.
-5. Repeat hasta TODOS validators GREEN o iteration cap reached (default 10).
-6. Update T-{n}-impl-log.md con iteration_log VIVO mientras trabajás (cada iter: timestamp + validator + result + fix applied).
+1. Load must_load_skills listed above (Step 0). Each Skill tool invocation registrado.
+2. Read 04-validators.yaml § test_construction_plan — sigue creation_order para Playwright tests (no inventes orden).
+3. Read 04-validators.yaml validators list. Run validators ASOCIADOS al ticket T-{n} (acceptance.validator_ids list).
+4. RED: tests fallarán (no implementation yet).
+5. Implementá MÍNIMO para que validators GREEN — solo files dentro 05-guidelines.md "Files in scope" (TODOS brand-scoped bajo ${BRAND}/).
+6. Re-run validators. Si fallan: fix targeted file por error trace, re-run failing validator only.
+7. Repeat hasta TODOS validators GREEN o iteration cap reached (default 10).
+8. Update T-{n}-impl-log.md con iteration_log VIVO mientras trabajás (cada iter: timestamp + validator + result + fix applied).
+9. ★ v4.1: T-{n}-result.md MUST incluir sección "Skills consulted (must_load enforcement v4.1)" con tabla skill/rule + status + when consulted (ver dev-team SKILL.md § must_load_skills enforcement).
 
 Reglas TDD obligatorias:
 1. RED: validators fallan primero (sin implementation)
@@ -282,14 +317,16 @@ Agent({
   prompt: "<brand>: {brand}                          # ★ REQUIRED — multibrand scope
            <pr_folder>: {brand}/docs/product/stories/{story-id}/
            PRIORITY READ: {brand}/docs/product/stories/{story-id}/CONTEXT-BRIEF.md (Haiku-built, 5-8k tokens compresses spec+arch+rules+anti-dup+canonical docs)
-           READY PACKAGE (todos bajo {brand}/docs/product/stories/{story-id}/): 01-spec.md + 02-design-agentic.md + 03-arch.md + 03-arch-agentic.md + 04-validators.yaml + 05-guidelines.md + 06-tickets.yaml
-           Skill consultados obligatorio: copilot-expert/sales-agent-expert + tessl__langgraph + claude-api + graceful-degradation
+           READY PACKAGE (todos bajo {brand}/docs/product/stories/{story-id}/): 01-spec.md + 02-design-agentic.md + 03-arch.md (★ v4.1: incluye § Test Construction Plan) + 03-arch-agentic.md + 04-validators.yaml (★ v4.1: 5 categorías + test_construction_plan + scenario_coverage sub-categorías) + 05-guidelines.md (★ v4.1: must_load_skills enforceable) + 06-tickets.yaml (gherkin_coverage por ticket)
+           ★ MUST_LOAD SKILLS (v4.1 enforceable): <list extracted from 05-guidelines.md § must_load_skills resolved per ticket surface — typical agentic: copilot-expert/sales-agent-expert + tessl__langgraph + claude-api + graceful-degradation + auditor-self-fix-policy.md + tenant-isolation.md + spanish-text.md>
+           ★ MUST DELIVER in T-{n}-result.md: sección "Skills consulted (must_load enforcement v4.1)" con tabla skill/rule + status + when. Auditor flag CHANGES_REQUESTED si missing.
            Surface scope: SOLO {brand}/backend/src/modules/{brand}/{copilot,sales_agent}/{tools,extractors,workflows,personas,goldens,kb}/ (brand-extension). NUNCA core/luana-core-*/src/ (engine — requires /pm-luana lift).
-           AUTONOMOUS LOOP: implement → run validators (04-validators.yaml acceptance.validator_ids) → fix → repeat hasta GREEN o cap_reached
-           TDD: eval goldens RED first, integration tests, tools tests, etc
-           ★ G5 PRE-COMMIT SMOKE GATE: validators GREEN + lint + format + env-gated tests con env real + case-sensitivity match — TODO antes commit. RED bloquea commit, fix file, re-run.
-           Push destination: git push origin \$(git branch --show-current) — wip/* | main | release/{brand}-vX.Y.Z. NUNCA 'origin development'.
-           Output: T-{n}-result.md + commit pushed
+           AUTONOMOUS LOOP: implement → run validators (acceptance.validator_ids) → fix → repeat hasta GREEN o cap_reached
+           TDD: eval goldens RED first, integration tests, tools tests, etc.
+           ★ G5 PRE-COMMIT SMOKE GATE: validators GREEN + lint + format + env-gated tests con env real + case-sensitivity match — TODO antes commit.
+           ★ Test Construction (v4.1): seguir test_construction_plan.creation_order del 04-validators.yaml para Playwright tests (no inventar orden, POMs ni fixtures).
+           Push destination: git push origin \$(git branch --show-current). NUNCA 'origin development'.
+           Output: T-{n}-result.md (con Skills consulted) + commit pushed
            Last line: done -> {brand}/docs/product/stories/{story-id}/T-{n}-result.md (o blocked -> T-{n}-impl-log.md)"
 })
 ```
@@ -308,11 +345,14 @@ Agent({
   prompt: "<brand>: {brand}                          # ★ REQUIRED — multibrand scope
            <pr_folder>: {brand}/docs/product/stories/{story-id}/
            Read {brand}/docs/product/stories/{story-id}/CONTEXT-BRIEF.md FIRST (saves 30-50k tokens vs raw docs).
-           READY PACKAGE (todos bajo {brand}/docs/product/stories/{story-id}/): 01-spec.md + 03-arch.md + 04-validators.yaml + 05-guidelines.md + 06-tickets.yaml
+           READY PACKAGE (todos bajo {brand}/docs/product/stories/{story-id}/): 01-spec.md + 03-arch.md (★ v4.1 § Test Construction Plan) + 04-validators.yaml (★ v4.1 5 categorías) + 05-guidelines.md (★ v4.1 must_load_skills) + 06-tickets.yaml
+           ★ MUST_LOAD SKILLS (v4.1 enforceable): <list extracted from 05-guidelines.md § must_load_skills resolved>
+           ★ MUST DELIVER in T-{n}-result.md: sección "Skills consulted (must_load enforcement v4.1)".
            Surface scope: SOLO {brand}/backend/src/ + {brand}/frontend/src/. NUNCA core/luana-core-*/src/ (engine). NUNCA {other_brand}/...
            AUTONOMOUS LOOP: implement → run validators → fix → repeat
            TDD obligatorio.
            ★ G5 PRE-COMMIT SMOKE GATE: validators GREEN + lint + format + env-gated tests con env real + case-sensitivity match — TODO antes commit. RED bloquea commit.
+           ★ Test Construction (v4.1): seguir test_construction_plan.creation_order del 04-validators.yaml.
            Push destination: git push origin \$(git branch --show-current). NUNCA 'origin development'.
            Last line: done -> {brand}/docs/product/stories/{story-id}/T-{n}-result.md"
 })
@@ -368,6 +408,39 @@ Si cualquier gap → ticket vuelve a `tests-failing` o `building`. Si dev itera 
 > orchestrator, cada subagent corre su propio pytest cycle (~10-15% tokens
 > duplicados). gate-runner Haiku produce JSON estructurado consumible por auditor
 > sin re-correr suite ni parsear stdout.
+
+### Step 4.5 — Phase D local coverage check (★ v4.1 pre-handoff verification)
+
+> Origen v4.1 cement 2026-05-19. Antes de cerrar TODO el story (auto-handoff
+> auditor), `/dev-team` verifica LOCALMENTE que cada Gherkin scenario de
+> `01-spec.md` mapea a ≥1 test PASS. NO espera al auditor para descubrir gaps.
+
+```bash
+WS=$(git rev-parse --show-toplevel)
+STORY_DIR=${WS}/{brand}/docs/product/stories/{story-id}
+
+# Extract scenarios from 01-spec.md
+grep -nE "^### Scenario" ${STORY_DIR}/01-spec.md > /tmp/scenarios.txt
+SCENARIO_COUNT=$(wc -l < /tmp/scenarios.txt)
+
+# Extract gherkin_coverage from 06-tickets.yaml
+grep -A 10 "gherkin_coverage:" ${STORY_DIR}/06-tickets.yaml > /tmp/coverage.txt
+COVERED_COUNT=$(grep -c "scenario:" /tmp/coverage.txt)
+
+if [ $SCENARIO_COUNT -gt $COVERED_COUNT ]; then
+  echo "❌ Phase D local gap: $SCENARIO_COUNT scenarios en 01-spec.md, $COVERED_COUNT cubiertos en gherkin_coverage"
+  echo "   STOP — agrega entries faltantes a 06-tickets.yaml::gherkin_coverage antes auto-handoff auditor"
+  exit 1
+fi
+
+# Verify cada test citado existe + PASS
+# (lectura gherkin_coverage + pytest/playwright targeted run + report)
+echo "✅ Phase D local coverage: $SCENARIO_COUNT/$SCENARIO_COUNT scenarios mapeados"
+```
+
+Si Phase D local detecta gap → `/dev-team` REFUSE auto-handoff. Update `T-{n}-impl-log.md § Phase D gap` + revolver al loop autonomous para completar cobertura. Si gap es de spec (scenario sin test natural) → ESCALATE Chris ("scenario X de 01-spec.md no es testeable como definido").
+
+**Justificación:** auditor Phase D antes detectaba gaps post-handoff → CHANGES_REQUESTED round-trip. Pre-check local en dev-team cierra el loop sin desperdiciar audit cycle Opus.
 
 ## Step 5 — Avanzar a siguiente ticket o cerrar story
 
