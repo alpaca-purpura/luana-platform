@@ -1,10 +1,18 @@
 ---
 story_id: vitalia-ux-discovery
 outcome: vitalia-mvp-ui-foundation
-state: ready
-phase: READY_PACKAGE_CLOSED_AND_SPLIT
-last_artifact: 06-tickets.yaml + 7 sub-stories checkpoints
-last_modified: 2026-05-17
+state: done
+phase: MERGED_AS_PARENT_SSOT
+closure_type: parent_ssot_cumplido    # 17/56 tickets shipped vía 3 sub-stories archivadas. 5 sub-stories Slice 1 UI refined heredan mockups + design-system como referencia inmutable.
+closed_at: 2026-05-20
+closed_by: /pm-vitalia (Chris ratificó 2026-05-20)
+inheritance_carryover:
+  - mockups_redistributed_to: 5 sub-stories Slice 1 (02-design-ui-mockup.html each) + 1 archive snapshot onboarding-wizard
+  - design_tokens_cemented_in: vitalia/frontend/src/app/globals.css (5 colores cian/púrpura/amarillo/marino/lima — T-arch-1 shipped)
+  - audit_report_2026_05_20: audit-2026-05-20/AUDIT-REPORT.md (replan completo)
+merge_commit_main: pending (archive happens in same commit del 07-merge — R2 brand-docs-schema.md)
+last_artifact: 07-merge.md + audit-2026-05-20/AUDIT-REPORT.md
+last_modified: 2026-05-20
 split_accepted_by_chris: true
 split_accepted_at: 2026-05-17
 split_into:

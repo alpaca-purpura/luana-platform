@@ -2,23 +2,38 @@
 brand: vitalia
 vertical: "Salud + Bienestar"
 status: shipped
-last_updated: 2026-05-18
-slice_1_status: agentic-foundation-done  # Fase 0 + Fase A done · Fase B refining 2 side stories · Fase C ready · infra-cross-cutting DONE (2026-05-18) · copilot-tools-impl DONE (2026-05-18 — Valeria wizard + Adrián tools + medical guardrails + Lucas daily analysis + 16 goldens) · 6 stories refined UNBLOCKED · ready Slice 1 UI build
+last_updated: 2026-05-20
+slice_1_status: replan-ratified-2026-05-20-awaiting-preflight-gates  # 3 sub-stories DONE (infra + copilot-tools + onboarding-wizard) + ux-discovery PARENT DONE 2026-05-20 + 5 sub-stories Slice 1 UI refined awaiting Ola 1 build · pre-flight gates ABIERTOS (Clerk Orgs + 3 test users + Playwright storage + suite smoke + lift core combinado)
 active_outcomes:
   - dev-environment-multibrand     # receta vitalia shipped, cross-brand replicación pendiente nicolify/comunify/lupulo
   - vitalia-mvp-ui-foundation      # outcome maestro Slice 1/2/3 FE Vitalia MVP
 active_stories:
-  - vitalia-ux-discovery                   # state: ready (READY_PACKAGE_CLOSED_AND_SPLIT) — /architect produjo package 2026-05-17 · split aceptado Chris en 7 sub-stories
-  - vitalia-slice-1-onboarding-wizard      # state: refined (READY_PACKAGE_REFRESHED 2026-05-18 — /architect refresh verdict MINOR_DRIFT, 5 tickets SCOPE_REDUCED + 1 UNCHANGED + 1 SCOPE_REDUCED-to-smoke, Chris ratificó 4 deltas (R23 OPT-OUT T-4/T-5 + mini-arch T-1 + audio defer Slice 2 + FE features/onboarding/), UNBLOCKED para /dev-team)
-  - vitalia-slice-1-inbox                  # state: refined (UNBLOCKED post infra merge — ready /architect)
-  - vitalia-slice-1-pipeline               # state: refined (UNBLOCKED post infra+copilot-tools-impl merges — sub-blocker payment-adapter-mvp pending)
-  - vitalia-slice-1-agenda                 # state: refined (UNBLOCKED post infra merge — sub-blockers payment-adapter-mvp + fiscal-emission-pe)
-  - vitalia-slice-1-fidelizacion           # state: refined (UNBLOCKED post infra merge — ready /architect)
-  - vitalia-slice-1-marketing              # state: refined (UNBLOCKED post infra+copilot-tools-impl merges — ready /architect)
-  - vitalia-pricing-decision               # state: idea (spawned 2026-05-17, decisión Chris postergada)
-  - vitalia-payment-adapter-mvp            # state: refining (transitioned 2026-05-17 sesión close-slice-1, awaiting /po draft)
-  - vitalia-fiscal-emission-pe             # state: refining (transitioned 2026-05-17, awaiting /po draft)
-deferred_audits: []                        # ★ Story closure gate — sin deudas activas.
+  - vitalia-slice-1-inbox                  # state: refined · Ola 1 (paralela fidelización) · AWAITING_PREFLIGHT_GATES + ARCHITECT_REFRESH (REPLAN 2026-05-20)
+  - vitalia-slice-1-fidelizacion           # state: refined · Ola 1 (paralela inbox) · AWAITING_PREFLIGHT_GATES + ARCHITECT_REFRESH
+  - vitalia-slice-1-pipeline               # state: refined · Ola 2 (paralela marketing) · depende side payment-adapter-mvp
+  - vitalia-slice-1-marketing              # state: refined · Ola 2 (paralela pipeline) · NO usar growth-studio Nicolify (arch diferente per Chris)
+  - vitalia-slice-1-agenda                 # state: refined · Ola 3 (sola, más compleja) · depende side payment-adapter-mvp + side fiscal-emission-pe
+  - vitalia-pricing-decision               # state: idea (Chris postergó, no bloquea Slice 1)
+  - vitalia-payment-adapter-mvp            # state: refining · paralelo Ola 1 (Chris ratificó 2026-05-20: arrancar /po draft AHORA)
+  - vitalia-fiscal-emission-pe             # state: refining · paralelo Ola 1 (Chris ratificó 2026-05-20: arrancar /po draft AHORA)
+deferred_audits: []                        # ★ Story closure gate — sin deudas activas
+slice_1_replan_2026_05_20:                 # ★ Replan ratificado Chris 2026-05-20 — SSoT plan vivo
+  audit_report: vitalia/docs/archive/2026/stories/vitalia-ux-discovery/audit-2026-05-20/AUDIT-REPORT.md
+  preflight_checklist: vitalia/docs/architecture/PRE-FLIGHT-CHECKLIST-slice-1.md
+  proposal_draft: vitalia/docs/architecture/PROPOSAL-DRAFT-core-platform-extensions-slice-1.md
+  handoff_cross_story: vitalia/docs/product/outcomes/vitalia-mvp-ui-foundation-handoff-cross-story.md
+  olas:
+    ola_1: [vitalia-slice-1-inbox, vitalia-slice-1-fidelizacion]
+    ola_2: [vitalia-slice-1-pipeline, vitalia-slice-1-marketing]
+    ola_3: [vitalia-slice-1-agenda]
+  side_stories_parallel_to_ola_1: [vitalia-payment-adapter-mvp, vitalia-fiscal-emission-pe]
+  hard_gates_open:
+    - clerk_organizations_enabled
+    - clerk_test_users_3_created
+    - playwright_storage_state_generated
+    - playwright_smoke_suite_23_specs_green_local_and_live
+    - promotion_proposal_core_platform_extensions_slice_1_migrated
+  auto_handoff_chain: "dev-team developed → auditor → pm-vitalia merge (no Chris intermedia per paradigm v4.1)"
 ratified_promotion_proposals:              # APPROVED + migrated 2026-05-17 (commit 5ca6101) — unblocks T-be-migration-014/T-be-migration-015
   - docs/promotion-protocol/proposals/2026-05-17-platform-tenants-location-columns.md      # state: migrated (luana-core-platform 0.1.0→0.2.0)
   - docs/promotion-protocol/proposals/2026-05-17-offer-studio-multi-session-maintenance.md # state: migrated (luana-core-offer-studio 0.1.0→0.2.0)
@@ -30,6 +45,7 @@ promotion_candidates:                      # ★ Pending ping /pm-luana (cement 
     pattern: idempotent_cron decorator → core/luana-core-platform/workers/ (lift candidate)
     threshold: 2 brands (vitalia first, nicolify proposal_followup_72h probable second)
 recently_done:
+  - vitalia-ux-discovery                 # 2026-05-20 cerrada ready→done — PARENT SSoT cumplido (17/56 tickets shipped vía 3 sub-stories archivadas + 5 sub-stories Slice 1 UI refined heredan mockups + design-system). 6 mockups HTML redistribuidos a sub-stories (5 active + 1 archive snapshot) ANTES del archive · audit-2026-05-20/AUDIT-REPORT.md cementado · archive/2026/stories/vitalia-ux-discovery/07-merge.md
   - vitalia-copilot-tools-impl           # 2026-05-18 cerrada reviewing→done autonomous E2E sesión orquestada · 12 commits pushed wip/vitalia (3331151..427b0f3 → último c87e... post-merge) · 7 capability YAMLs NEW live (valeria-wizard-onboarding-agentic + adrian-3-tools-mvp + medical-guardrails + state-overlay-langgraph + lucas-daily-analysis + vitalia-callback-subclasses + eval-goldens-slice-1) + 1 NEW module MD (sales_agent.md) + 3 modules MD refreshed (copilot + agentic + observability) + 1363/1363 tests GREEN (245 arch + 510 unit + 49 integration + 512 agentic_evals + 47 extensions) · auditor APPROVED (CHECKPOINTS C1-C5 + gherkin matrix 18/18 + REVIEW-agentic.md) · 0 engine modifications + 0 cross-brand mirrors + anti-dup §0 ratchet enforced · archive/2026/stories/vitalia-copilot-tools-impl/07-merge.md
   - vitalia-slice-1-infra-cross-cutting  # 2026-05-18 cerrada reviewing→done · squashes 50143d57 + cc4fcd68 mergeados main · 8 capability YAMLs live + 7 modules MD refreshed + 2 promotion candidates · archive/2026/stories/vitalia-slice-1-infra-cross-cutting/07-merge.md
   - vitalia-dev-stack-functional         # 2026-05-17T17:00 cerrada refining→done · receta 12 pasos en archive/2026/stories/vitalia-dev-stack-functional/07-merge.md
@@ -109,3 +125,22 @@ Story 11 (`luana-vitalia-bootstrap`, mergeada 2026-05-15) shipped **16 capabilit
   - **Archive + portfolio**: story folder moved → `vitalia/docs/archive/2026/stories/vitalia-slice-1-infra-cross-cutting/` (snapshot inmutable). `make portfolio` regen BACKLOG.md + PORTFOLIO.md cross-brand.
   - **Deadlock circular roto**: infra esperaba copilot-tools-impl mientras copilot-tools-impl blocked_on infra. Chris ratificó break — cerrar infra primero permite que copilot-tools-impl retome en sesión fresca post-merge sin estar bloqueado por infra audit. 6 stories refined Slice 1 (onboarding-wizard, inbox, pipeline, agenda, fidelizacion, marketing) DESBLOQUEADAS para /architect runs.
   - **Próximo paso natural**: Chris decide cuál de las 6 stories refined entra a /architect primero (típicamente `vitalia-slice-1-inbox` o `vitalia-slice-1-fidelizacion` por ser las más auto-contenidas sin sub-blockers externos), o retoma `vitalia-copilot-tools-impl` en worktree fresco (6 tickets agentic Opus R23). Side stories refining `vitalia-payment-adapter-mvp` + `vitalia-fiscal-emission-pe` siguen esperando /po draft.
+- **2026-05-20 sesión `/pm-vitalia replan Slice 1`** (Chris pidió audit cada story + re-evaluar con mockups + reuso core + learnings + Clerk/Playwright verde). Producido:
+  - **AUDIT-REPORT.md**: doc-vs-código matrix · 7 stories shipped verificadas · 5 sub-stories Slice 1 UI refined no construidas · 39 capabilities live en 24 módulos · gaps Clerk (0 users, Orgs disabled) + Playwright (sin storage state) identificados · 12 scenarios auth-base-functional quedaron PENDING_DEPLOY · Bug #4 phantom `vitalia_clinics` ya RESUELTO (migration 023 crea `vitalia_clinic_branches` real). Path: `vitalia/docs/archive/2026/stories/vitalia-ux-discovery/audit-2026-05-20/AUDIT-REPORT.md`.
+  - **Verify-first findings core promotion**: `@idempotent` YA EN CORE (`core/luana-core-idempotency/`) — vitalia `@idempotent_cron` es CONVENIENCE WRAPPER (OTel span + audit + sentry capture). Reframe lift candidate como `cron_envelope` (no idempotency check duplicado). `PhiRepositoryBase` NO existe en core — genuine lift como `CompoundScopeRepositoryBase` (axis names: tenant_id + scope_id genérico).
+  - **Ratifications Chris 2026-05-20** (3 decisiones G6 batched):
+    1. ux-discovery state ready→done (parent SSoT cumplido) — mockups REDISTRIBUIDOS a sub-stories ANTES del archive (no se pierden)
+    2. Plan olas 2+2+1 (Ola 1 inbox+fidelización · Ola 2 pipeline+marketing · Ola 3 agenda sola) con `HANDOFF-cross-story.md` global para coordinación paralelas
+    3. Un proposal combinado `core-platform-extensions-slice-1` (cron_envelope + CompoundScopeRepositoryBase) ANTES de Slice 1 build
+    4. Pre-flight gate Clerk+Playwright como HARD GATE antes Ola 1
+    5. Side stories payment-adapter-mvp + fiscal-emission-pe arrancan refining EN PARALELO con Ola 1 (no esperar)
+    6. Auto-handoff dev-team→auditor→pm-vitalia merge sin pedir confirmación intermedia
+    7. NO reusar growth-studio Nicolify (arch diferente) — marketing build NUEVO simple
+  - **Mockups redistribuidos**: 6 HTML del parent ux-discovery copiados a sub-stories en mismo commit del archive:
+    - `vitalia/docs/product/stories/vitalia-slice-1-{inbox,pipeline,agenda,fidelizacion,marketing}/02-design-ui-mockup.html` (5 active)
+    - `vitalia/docs/archive/2026/stories/vitalia-slice-1-onboarding-wizard/02-design-ui-mockup.html` (1 archive snapshot ya shipped)
+  - **ux-discovery archived**: `git mv vitalia/docs/product/stories/vitalia-ux-discovery → vitalia/docs/archive/2026/stories/vitalia-ux-discovery` (R2 brand-docs-schema enforced same commit).
+  - **5 sub-stories checkpoints actualizados**: cada una con ola asignada (1/2/3), mockup heredado path, reuso explícito (nicolify features + core packages), pre-flight gates required, side stories dependencies actualizados, next_action ratified.
+  - **HANDOFF-cross-story.md global creado**: `vitalia/docs/product/outcomes/vitalia-mvp-ui-foundation-handoff-cross-story.md` — SSoT contratos TS + schemas Zod + endpoints API + domain events + BE modules compartidos cross-story · § 10 secciones cementadas.
+  - **proposal-draft + pre-flight-checklist creados**: `vitalia/docs/architecture/{PROPOSAL-DRAFT-core-platform-extensions-slice-1.md, PRE-FLIGHT-CHECKLIST-slice-1.md}` — insumos para /pm-luana ratificar lift y para próxima sesión arrancar Fase 0.
+  - **Próximo paso natural**: (1) `/pm-vitalia` pingea `/pm-luana` con proposal-draft → /pm-luana crea proposal real + accepted + migrated. (2) Manual Chris ejecuta § A.1 PRE-FLIGHT (Clerk dashboard enable Organizations). (3) Una vez gates GREEN → `/architect refresh vitalia-slice-1-inbox` + `/architect refresh vitalia-slice-1-fidelizacion` en paralelo → /dev-team Ola 1 → auto-handoff /auditor → auto-handoff /pm-vitalia merge → repeat para Ola 2 + 3.
