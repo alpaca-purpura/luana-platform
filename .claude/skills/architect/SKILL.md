@@ -87,21 +87,25 @@ Agent({
            - Cross-cutting: tessl__graceful-degradation + domain skills (brand/offer/preset/metrics)
 
            DELIVERABLES (4-5 files, todos bajo {brand}/docs/product/stories/{id}/):
-           1. 03-arch.md (consolidado, secciones por surface)
+           1. 03-arch.md (consolidado, secciones por surface — incluye § Test Construction Plan ★ v4.1)
            2. 03-arch-{be,fe,agentic}.md per surface tocado (opcional, si arch es complejo per-surface)
-           3. 04-validators.yaml (4 categories, scenario_coverage 100%, must_pass:true)
-           4. 05-guidelines.md (patterns + files in scope + skills/rules)
-           5. 06-tickets.yaml (atomic, R23 marked AGENTIC, owner_eligibility, DAG)
+           3. 04-validators.yaml (5 categories — non_functional / functional / visual / agentic_eval / architectural_validation ★ v4.1 — scenario_coverage 100%, must_pass:true, test_construction_plan completo)
+           4. 05-guidelines.md (must_load_skills enforceable ★ v4.1 + patterns required/forbidden + files in scope)
+           5. 06-tickets.yaml (atomic, R23 marked AGENTIC, owner_eligibility, DAG, gherkin_coverage per ticket)
 
            CRITICAL CONSTRAINTS:
            - Cross-module audit anti-duplication.md (no mirror shared abstractions cross-brand)
            - R23: AGENTIC tickets production_code:true → claude_opus_required:true
            - AGENTIC tickets SEPARADOS de BE/FE (R23 enforcement)
            - Tickets > 10 → split story
-           - Each ticket: acceptance.validator_ids + DAG
+           - Each ticket: acceptance.validator_ids + DAG + gherkin_coverage (post 2026-05-18)
            - Hot-fix: repro_verified field si aplica (R26)
            - Engine boundaries: NUNCA proponer tickets que editen `core/luana-core-*/src/` directamente. Si scope requiere editar engine → escalá `/pm-luana` (promotion gate) ANTES de cerrar package.
            - Brand-extension agentic: `{brand}/backend/src/modules/{brand}/{copilot,sales_agent}/{tools,extractors,workflows,personas,goldens,kb}/` SÍ es editable.
+           - ★ v4.1 Playwright mandatory para surface funcional: test_construction_plan.playwright_required=true SIEMPRE que story sea ui-story o ui-mixed
+           - ★ v4.1 must_load_skills enforceable: dev-team builder spawn cita lista verbatim
+           - ★ v4.1 architectural_validation category con sub-tests (DDD/FSD boundaries, tenant_isolation grep, anti-dup scan, cross-module audit)
+           - ★ v4.1 sub-categorías scenarios obligatorias: race conditions, concurrent users, network failures, empty states, large datasets, accessibility, i18n (heredadas de /po-ux refused refined sin ellas)
 
            After writing all files, transition checkpoint.md state: refined → ready.
 
@@ -153,15 +157,20 @@ Template estructura mínima:
 - PII fields: ...
 ```
 
-### Step 5 — Producir 04-validators.yaml ★ CRITICAL ★
+### Step 5 — Producir 04-validators.yaml + Test Construction Plan ★ CRITICAL ★
 
 Este es el **corazón del autonomous build**. Sonnet en Conv 2 itera contra estos hasta GREEN.
+
+**v4.1 cement 2026-05-19:** además de los validators ejecutables, architect MUST producir un `test_construction_plan` explícito que indique al dev-team **CÓMO** construir las pruebas Playwright (no solo qué comandos correr). Esto es responsabilidad arquitectónica — dev-team no debe inventar el orden ni estructura.
 
 Reglas:
 - Cada validator es un comando shell ejecutable (pytest / playwright / lint / etc.)
 - `must_pass: true` por default — sin ambigüedad
 - Cobertura completa de scenarios del 01-spec.md (mapping explícito)
 - Iteration policy define cap + on_fail behavior
+- **Nueva categoría `architectural_validation`** separada de `non_functional` (DDD boundary scan, anti-dup grep, tenant_isolation grep, cross-module audit)
+- **TODA story con surface FE/funcional MUST incluir Playwright behavior tests** — el architect dicta los scenarios E2E exactos a cubrir (no es opcional)
+- **`test_construction_plan` section** dentro de `04-validators.yaml` con: orden de creación, POMs requeridos, fixtures compartidos, mapping scenario Gherkin → spec.ts file → assertions
 
 Template (paths brand-scoped; workspace root parametrizado via `${WS}` o `cd {brand}/...`):
 
@@ -262,15 +271,156 @@ validators:
     must_pass: true
     timeout_sec: 60
 
+  # ─── ARCHITECTURAL VALIDATION (★ v4.1 — separada de non_functional) ───
+  # Verificación arquitectónica explícita: DDD/FSD boundaries, anti-dup scan, tenant isolation grep, cross-module audit
+  - id: arch_ddd_boundaries
+    category: architectural_validation
+    type: pytest
+    cmd: "cd {brand}/backend && ../../.venv/bin/pytest tests/architecture/test_ddd_boundaries.py -v"
+    must_pass: true
+    timeout_sec: 30
+    description: "DDD layers domain→infra→app→api boundary enforcement"
+
+  - id: arch_tenant_isolation_grep
+    category: architectural_validation
+    type: shell
+    cmd: "! grep -rn 'select.*Model)' {brand}/backend/src/modules/{brand}/{m}/ | grep -v 'tenant_id' | grep -v test_"
+    must_pass: true
+    timeout_sec: 10
+    description: "Cada query debe filtrar tenant_id (regex scan + auditor doble check)"
+
+  - id: arch_anti_duplication_scan
+    category: architectural_validation
+    type: shell
+    cmd: "scripts/scan_cross_brand_mirror.sh {brand} {m}"
+    must_pass: true
+    timeout_sec: 30
+    description: "Detecta mirrors cross-brand del módulo. Match → spawn promotion proposal."
+
+  - id: arch_fsd_boundaries
+    category: architectural_validation
+    type: shell
+    cmd: "cd {brand}/frontend && npx vitest run src/__tests__/architecture/test_fsd_boundaries.test.ts"
+    must_pass: true
+    timeout_sec: 60
+    description: "FSD-Lite boundaries — feature → feature own/shared/lib only"
+
 scenario_coverage:
   - scenario_id: happy
     validators: [be_unit_create_endpoint, fe_unit, e2e_happy]
   - scenario_id: negative
     validators: [be_unit_create_endpoint, fe_unit]
   - scenario_id: edge
-    validators: [be_unit_create_endpoint]
+    validators: [be_unit_create_endpoint, e2e_edge_race]
   - scenario_id: adversarial
-    validators: [be_unit_create_endpoint, e2e_happy]
+    validators: [be_unit_create_endpoint, e2e_adversarial]
+  - scenario_id: empty_state
+    validators: [fe_unit, e2e_empty_state]
+  - scenario_id: network_failure
+    validators: [fe_unit, e2e_network_failure]
+  - scenario_id: concurrent_users
+    validators: [be_unit_create_endpoint, e2e_concurrent]
+  - scenario_id: large_dataset
+    validators: [fe_unit, e2e_large_dataset]
+  - scenario_id: accessibility
+    validators: [a11y_axe]
+  - scenario_id: i18n
+    validators: [fe_unit_voseo_check, e2e_locale_AR_MX_CL]
+
+# ★ v4.1 cement 2026-05-19 — Test Construction Plan (mandatory para stories con surface funcional)
+test_construction_plan:
+  # Architect dicta el orden + estructura. Dev-team CONSTRUYE siguiendo este plan, no inventa.
+
+  playwright_required: true     # toda story funcional MUST tener Playwright behavior tests
+  base_path: "{brand}/frontend/e2e/regression/{story-id}/"
+
+  # Orden de creación (dependencias entre tests)
+  creation_order:
+    - step: 1
+      file: "{brand}/frontend/e2e/fixtures/{story-id}.fixture.ts"
+      content: "Fixtures compartidos — tenant setup, Clerk auth state, DB seed minimal"
+      depends_on: []
+    - step: 2
+      file: "{brand}/frontend/e2e/regression/{story-id}/poms/{m}-list-page.pom.ts"
+      content: "Page Object Model para lista {m}"
+      depends_on: [1]
+    - step: 3
+      file: "{brand}/frontend/e2e/regression/{story-id}/poms/{m}-detail-page.pom.ts"
+      content: "Page Object Model para detail {m}"
+      depends_on: [1]
+    - step: 4
+      file: "{brand}/frontend/e2e/regression/{story-id}/{m}-happy.spec.ts"
+      content: "Scenario happy — usa POMs"
+      depends_on: [2, 3]
+    - step: 5
+      file: "{brand}/frontend/e2e/regression/{story-id}/{m}-negative.spec.ts"
+      content: "Scenario negative — input inválido"
+      depends_on: [2, 3]
+    - step: 6
+      file: "{brand}/frontend/e2e/regression/{story-id}/{m}-edge.spec.ts"
+      content: "Scenarios edge (race, concurrent, empty, large, network failure)"
+      depends_on: [2, 3]
+    - step: 7
+      file: "{brand}/frontend/e2e/regression/{story-id}/{m}-adversarial.spec.ts"
+      content: "Scenarios adversarial (cross-tenant, XSS, prompt injection si aplica)"
+      depends_on: [2, 3]
+    - step: 8
+      file: "{brand}/frontend/e2e/a11y/{story-id}.spec.ts"
+      content: "Accessibility axe-core scan"
+      depends_on: [4]
+
+  # Mapping explícito scenario Gherkin (01-spec.md) → spec.ts file → assertions
+  scenario_to_test:
+    - gherkin_scenario: "Scenario 1 — happy-path"
+      test_file: "{brand}/frontend/e2e/regression/{story-id}/{m}-happy.spec.ts"
+      test_function: "test('user creates {entity} successfully'"
+      assertions:
+        - "expect(toast).toContainText('{entity} guardada')"
+        - "expect(page.url()).toContain('/detail/')"
+        - "DB check: SELECT * FROM {table} WHERE tenant_id={tid} AND ... returns 1 row"
+    - gherkin_scenario: "Scenario 2 — negative invalid input"
+      test_file: "{brand}/frontend/e2e/regression/{story-id}/{m}-negative.spec.ts"
+      test_function: "test('rejects empty required field'"
+      assertions:
+        - "expect(form errors).toContainText('Campo requerido')"
+        - "DB check: NO row inserted"
+    - gherkin_scenario: "Scenario 3 — edge concurrent"
+      test_file: "{brand}/frontend/e2e/regression/{story-id}/{m}-edge.spec.ts"
+      test_function: "test('handles concurrent create same slug'"
+      assertions:
+        - "expect(second request).toHaveStatus(409 or 422)"
+        - "DB check: only 1 row exists with that slug"
+    - gherkin_scenario: "Scenario 4 — adversarial cross-tenant"
+      test_file: "{brand}/frontend/e2e/regression/{story-id}/{m}-adversarial.spec.ts"
+      test_function: "test('rejects cross-tenant access'"
+      assertions:
+        - "expect(request as tenant B for tenant A resource).toHaveStatus(404 or 403)"
+        - "NO leak en error body"
+
+  # POMs requeridos (Page Object Models) — qué métodos exponen
+  poms_required:
+    - file: "{m}-list-page.pom.ts"
+      methods:
+        - "goto()"
+        - "filterBy(criteria)"
+        - "clickCreateButton()"
+        - "getRowCount() → number"
+        - "getRowByName(name)"
+    - file: "{m}-detail-page.pom.ts"
+      methods:
+        - "goto(id)"
+        - "fillForm(data)"
+        - "submit()"
+        - "getErrorMessage() → string|null"
+
+  # Fixtures compartidos requeridos
+  fixtures_required:
+    - name: "authedAs(role: 'admin' | 'user')"
+      content: "Clerk storage state + tenant setup"
+    - name: "dbSeed({m}: count)"
+      content: "Insert N rows in {table} para el tenant del test"
+    - name: "networkFailure(endpoint)"
+      content: "Mock route con 500/503 para simular network failure"
 
 iteration:
   max_iterations: 10
@@ -279,11 +429,13 @@ iteration:
   on_cap_reached: "set state=developing→blocked, escalate to Chris with last error trace"
 ```
 
-**Validation gate:** Every scenario in `01-spec.md` MUST appear in `scenario_coverage`. If any uncovered → architect itera hasta cubrirlos.
+**Validation gate v4.1:** Every scenario in `01-spec.md` MUST appear en `scenario_coverage` AND `test_construction_plan.scenario_to_test`. If any uncovered → architect itera hasta cubrirlos. **Sub-categorías scenarios obligatorias (v4.1 /po-ux refused refined sin ellas):** race conditions, concurrent users, network failures, empty states, large datasets, accessibility, i18n. Si /po-ux ratificó refined SIN estas sub-categorías → flag para Chris (spec quality gap).
 
-### Step 6 — Producir 05-guidelines.md
+### Step 6 — Producir 05-guidelines.md ★ v4.1 must_load_skills enforceable ★
 
 Patterns concretos que Sonnet debe seguir/evitar. SIN AMBIGÜEDAD.
+
+**v4.1 cement 2026-05-19:** la sección "Reference docs (load before coding)" pasa a llamarse `must_load_skills` y deja de ser sugerencia — el `dev-team` Step 2 cita esta lista verbatim al builder spawn, y el builder MUST entregar en `T-{n}-result.md` una sección "Skills consulted" listando cuáles cargó. Si no las cargó → CHANGES_REQUESTED auditor automático.
 
 Template:
 
@@ -338,17 +490,55 @@ Template:
 - {brand}/frontend/src/lib/api/fetchClient.ts (cross-cutting per-brand — escalate)
 - .claude/** y {brand}/.claude/** (skill/rule edits — manual only)
 
-## Reference docs (load before coding)
-- skill `backend-expert` (DDD patterns, arch fitness, currency, master-data)
-- skill `frontend-expert` (FSD-Lite, Shadcn reuse, form-runtime)
-- skill `{domain}-expert` (brand-expert / offer-expert / metrics-expert según módulo)
-- `.claude/rules/tenant-isolation.md`
-- `.claude/rules/backend-ddd.md` o `frontend-fsd.md`
-- `.claude/rules/spanish-text.md` (voseo glosario)
-- `.claude/rules/anti-duplication.md`
-- `.claude/rules/tdd-mandatory.md`
-- `01-spec.md` (re-read scenarios mid-build)
-- `03-arch.md` (re-read si surge ambigüedad técnica)
+## must_load_skills (★ v4.1 enforceable — builder MUST cargar todas + reportar "Skills consulted" en T-{n}-result.md)
+required:
+  # Skills core obligatorios por surface
+  - id: backend-expert
+    when: "surface=BE o BE-test"
+    purpose: "DDD patterns, arch fitness, currency, master-data, currency-handling"
+  - id: frontend-expert
+    when: "surface=FE"
+    purpose: "FSD-Lite, Shadcn reuse, form-runtime, tailwind tokens"
+  - id: "{domain}-expert"
+    when: "module touched (brand-expert / offer-expert / metrics-expert / copilot-expert / sales-agent-expert)"
+    purpose: "Domain invariants + reference docs por módulo"
+  - id: playwright-expert
+    when: "test_construction_plan.playwright_required=true"
+    purpose: "POM patterns, Clerk auth fixture, network mocking, smoke debugging"
+
+  # Rules obligatorias siempre
+  - id: ".claude/rules/tenant-isolation.md"
+    purpose: "Every query filter tenant_id"
+  - id: ".claude/rules/backend-ddd.md o frontend-fsd.md"
+    purpose: "Layer boundaries"
+  - id: ".claude/rules/spanish-text.md"
+    purpose: "Voseo glosario + magic comment escape"
+  - id: ".claude/rules/anti-duplication.md"
+    purpose: "Cross-brand mirror ban + shared abstractions inventory"
+  - id: ".claude/rules/tdd-mandatory.md"
+    purpose: "TDD RED→GREEN→REFACTOR discipline"
+  - id: ".claude/rules/auditor-self-fix-policy.md"
+    purpose: "Conocer qué findings auditor self-fix vs spawn dev-team (forward motion)"
+
+  # Tessl skills (versioned canonical docs) si aplica
+  - id: "tessl__fastapi"
+    when: "BE endpoint nuevo"
+  - id: "tessl__pytest-api-testing"
+    when: "BE tests nuevos"
+  - id: "tessl__react-patterns + tessl__shadcn-ui + tessl__tailwind"
+    when: "FE component nuevo"
+  - id: "tessl__zod"
+    when: "FE form con validation"
+  - id: "tessl__vitest"
+    when: "FE tests nuevos"
+  - id: "tessl__langgraph + claude-api"
+    when: "AGENTIC surface"
+
+reference_artifacts:
+  # Documentos del ready package que builder re-lee mid-build cuando surge ambigüedad
+  - "{brand}/docs/product/stories/{story-id}/01-spec.md" (re-read Gherkin scenarios)
+  - "{brand}/docs/product/stories/{story-id}/03-arch.md" (re-read decisiones técnicas)
+  - "{brand}/docs/product/stories/{story-id}/04-validators.yaml § test_construction_plan" (re-read orden + POMs + fixtures)
 ```
 
 ### Step 7 — Producir 06-tickets.yaml
@@ -424,10 +614,11 @@ repro_evidence:
   diagnosis_validates_handoff: <true|false>
 ```
 
-### Step 8 — Validate ready package
+### Step 8 — Validate ready package (★ v4.1 expanded checklist)
 
 Antes de cerrar story como ready:
 
+**Estructura básica:**
 - [ ] `03-arch.md` consolidado escrito (con secciones inline por surface, O archivos separados `03-arch-{be,fe,agentic}.md` si orchestrator decidió split por complejidad)
 - [ ] `04-validators.yaml` cubre TODOS scenarios del `01-spec.md` (gate hard)
 - [ ] `04-validators.yaml` cada validator tiene cmd ejecutable native Linux (host) (no Docker para tests)
@@ -437,6 +628,14 @@ Antes de cerrar story como ready:
 - [ ] AGENTIC tickets con `production_code: true` → claude_opus_required: true (HARD)
 - [ ] Estimate hours razonables (alerta si > 8h por ticket → split)
 - [ ] Tickets > 10 total → STOP, split story
+
+**★ v4.1 cement 2026-05-19 expanded gates:**
+- [ ] `04-validators.yaml § architectural_validation` category presente con ≥3 sub-tests (DDD/FSD + tenant_isolation grep + anti-dup scan)
+- [ ] `04-validators.yaml § test_construction_plan` completo con: `playwright_required` flag, `creation_order` (steps numerados), `scenario_to_test` mapping (cada Gherkin scenario → spec.ts + function + assertions), `poms_required`, `fixtures_required`
+- [ ] Para stories ui-story o ui-mixed: `test_construction_plan.playwright_required: true` (HARD — no opt-out)
+- [ ] `scenario_coverage` cubre sub-categorías mandatory: race / concurrent / network_failure / empty_state / large_dataset / a11y / i18n (heredadas de /po-ux refined gate)
+- [ ] `05-guidelines.md § must_load_skills` enforceable (sección renombrada de "Reference docs", builder spawn cita verbatim)
+- [ ] `06-tickets.yaml` cada ticket tiene `gherkin_coverage` field (post 2026-05-18 mandatory)
 
 ### Step 9 — Transition state + Hand off
 
@@ -507,11 +706,13 @@ Resumen de tickets en lista. Dependencias en flecha. NUNCA reproducir 06-tickets
 
 ## Referencias
 
-- `docs/process/pm-redesign-2026-05.md` — paradigma 3 conversaciones + ready package
-- `docs/specs/templates/03-arch-template.md` — template arch
-- `docs/specs/templates/04-validators-template.yaml` — template validators
-- `docs/specs/templates/05-guidelines-template.md` — template guidelines
-- `docs/specs/templates/06-tickets-template.yaml` — template tickets
+- `docs/process/pm-redesign-2026-05.md` — paradigma 3 conversaciones + ready package + § v4.1 autonomy amplification 2026-05-19
+- `docs/architecture/luana-platform/ADR-007-paradigm-v4.1-autonomy.md` — decisión cementada (test_construction_plan + must_load + Playwright mandatory funcional)
+- `docs/specs/templates/03-arch-template.md` — template arch (incluye Test Construction Plan ★ v4.1)
+- `docs/specs/templates/04-validators-template.yaml` — template validators (5 categorías incluyendo architectural_validation ★ v4.1)
+- `docs/specs/templates/05-guidelines-template.md` — template guidelines (must_load_skills enforceable ★ v4.1)
+- `docs/specs/templates/06-tickets-template.yaml` — template tickets (gherkin_coverage mandatory)
+- `.claude/rules/auditor-self-fix-policy.md` — auditor decision tree v4.1 (whitelist 17 + spawn dev-team autónomo)
 - `.claude/rules/anti-duplication.md` — inventario shared abstractions
 - `.claude/rules/anti-default-flip-audit.md` — R31 default flag flips
 - `.claude/rules/auditor-downstream-regression.md` — surface→downstream test mapping

@@ -23,8 +23,9 @@ links:
 
 ## Acceptance Criteria (Gherkin AI-resistant)
 
-> Mínimo 4 scenarios: 1 happy + 1 negative + 1 edge + 1 adversarial.
-> Cada scenario es testeable + tiene grader explícito.
+> **v4.1 cement 2026-05-19:** Mínimo 4 scenarios base + sub-categorías mandatory aplicables.
+> Cada scenario es testeable + tiene grader explícito + `playwright_required` flag.
+> /po-ux REFUSE ratificar refined si falta cobertura de sub-categorías aplicables.
 
 ### Scenario 1 — `happy-path` (`type: happy`)
 
@@ -39,6 +40,7 @@ links:
 - [efecto 2 medible]
 - [efecto 3 medible]
 
+**playwright_required:** true | false
 **Graders:**
 - [Tipo grader] — [target/path]
 
@@ -53,6 +55,7 @@ links:
 - [estado NO se modifica]
 - [audit log entry si aplica]
 
+**playwright_required:** true | false
 **Graders:** ...
 
 ---
@@ -63,6 +66,7 @@ links:
 **When:** ...
 **Then:** ...
 
+**playwright_required:** true | false
 **Graders:** ...
 
 ---
@@ -78,7 +82,149 @@ links:
 - [no leak]
 - [audit/alerting]
 
+**playwright_required:** true | false
 **Graders:** ...
+
+---
+
+## ★ Sub-categorías mandatory v4.1 (cement 2026-05-19)
+
+> Cada sub-categoría aplicable a la story DEBE tener ≥1 scenario adicional o `not_applicable_reason` ratificado por Chris.
+> /po-ux gate refuse refined sin cobertura.
+
+### Scenario 5 — `race-condition` (`type: edge`, sub: race_condition)
+
+> Aplica cuando: story incluye create/update con unique constraint (slug, key único).
+
+**Given:** [2 actores intentan crear/modificar mismo recurso simultáneamente]
+**When:** [requests A + B llegan en window <100ms]
+**Then:**
+- [solo uno gana — el otro recibe 409 Conflict o 422 con mensaje claro]
+- [DB consistency: 1 row con el slug/key]
+- [no estado intermedio leaked]
+
+**playwright_required:** true (testear via Promise.all 2 requests)
+**Graders:**
+- { type: e2e, path: "{brand}/frontend/e2e/regression/{story-id}/{m}-edge.spec.ts", function: "test_concurrent_create" }
+- { type: state_check, target: db, query: "SELECT count(*) FROM {table} WHERE slug='X'", expect: 1 }
+
+`not_applicable_reason: <razón si NO aplica>`
+
+---
+
+### Scenario 6 — `concurrent-users` (`type: edge`, sub: concurrent_users)
+
+> Aplica cuando: list/detail filterable consumido por 2+ tenants/users mismo momento.
+
+**Given:** [tenant A y tenant B logged simultáneamente]
+**When:** [tenant A lista resources + tenant B lista resources]
+**Then:**
+- [cada uno ve SOLO sus resources (tenant isolation)]
+- [no cross-leak en queries]
+- [performance: p95 < N ms ambos]
+
+**playwright_required:** true (2 contextos Playwright paralelos)
+**Graders:** ...
+
+`not_applicable_reason: <razón si NO aplica>`
+
+---
+
+### Scenario 7 — `network-failure` (`type: edge`, sub: network_failure)
+
+> Aplica cuando: surface FE hace fetch API.
+
+**Given:** [usuario en pantalla X]
+**When:** [API request falla con 500 / 503 / timeout / connectivity drop]
+**Then:**
+- [error UI visible con mensaje claro Spanish neutro ("No pudimos cargar...")]
+- [retry button presente]
+- [no white screen, no infinite loading]
+- [data en memoria NO se pierde (form drafts)]
+
+**playwright_required:** true (mock `page.route` con 500)
+**Graders:**
+- { type: e2e, function: "test_network_failure_retry" }
+- { type: visual_state, screen: "error", element: "[role=alert]", expect: "visible" }
+
+`not_applicable_reason: <razón si NO aplica>`
+
+---
+
+### Scenario 8 — `empty-state` (`type: edge`, sub: empty_state)
+
+> Aplica cuando: list / dashboard / search.
+
+**Given:** [tenant nuevo sin data, o filtro retorna 0 items]
+**When:** [usuario carga pantalla]
+**Then:**
+- [empty state illustration + heading + CTA (no white screen)]
+- [microcopy Spanish neutro ("Aún no tienes..." / "No encontramos resultados")]
+- [CTA dispara create flow o clear filters]
+
+**playwright_required:** true
+**Graders:** ...
+
+`not_applicable_reason: <razón si NO aplica>`
+
+---
+
+### Scenario 9 — `large-dataset` (`type: edge`, sub: large_dataset)
+
+> Aplica cuando: list con pagination.
+
+**Given:** [tenant con ≥1000 items en {table}]
+**When:** [usuario navega list]
+**Then:**
+- [pagination renderiza correctamente (no carga 1000 en DOM)]
+- [scroll smooth, p95 render < 200ms per page]
+- [filtros funcionan vs 1000 items]
+- [no memory leak después N páginas]
+
+**playwright_required:** true (seed DB con 1000 + navigate)
+**Graders:** ...
+
+`not_applicable_reason: <razón si NO aplica>`
+
+---
+
+### Scenario 10 — `accessibility` (`type: edge`, sub: accessibility)
+
+> Aplica cuando: TODO surface FE user-facing.
+
+**Given:** [pantalla cualquier estado]
+**When:** [axe-core scan + keyboard nav + screen reader]
+**Then:**
+- [0 violaciones critical/serious WCAG AA]
+- [Tab order lógico]
+- [ARIA labels en inputs/buttons sin texto visible]
+- [Contrast ratio ≥ 4.5:1 (text), ≥ 3:1 (UI)]
+- [Focus visible en TODOS interactivos]
+
+**playwright_required:** true (axe-core via @axe-core/playwright)
+**Graders:**
+- { type: axe, ruleset: "wcag2aa", paths: ["all-screens"] }
+
+`not_applicable_reason: <razón si NO aplica — service-only stories>`
+
+---
+
+### Scenario 11 — `i18n` (`type: edge`, sub: i18n)
+
+> Aplica cuando: copy user-facing o currency display.
+
+**Given:** [3 tenants distintos locale (AR/MX/CL/PE/CO)]
+**When:** [render screens con currency, dates, microcopy]
+**Then:**
+- [currency tenant_locale respetada (no hardcoded 'USD')]
+- [dates formato es-LATAM (DD/MM/YYYY)]
+- [copy Spanish neutro (no voseo regional excepto sales_agent voice tenant)]
+- [tildes, ñ, ¿ ¡ renderizan correcto]
+
+**playwright_required:** true (3 fixtures tenants distintos)
+**Graders:** ...
+
+`not_applicable_reason: <razón si NO aplica>`
 
 ---
 
