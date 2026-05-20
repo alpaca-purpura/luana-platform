@@ -101,6 +101,39 @@ class ReEngagementEventRepository(CompoundScopeRepositoryBase[ReEngagementEventM
         result = await self._session.execute(stmt)
         return list(result.scalars().all())
 
+    async def list_pending_for_patient(
+        self,
+        *,
+        tenant_id: UUID,
+        clinic_id: UUID,
+        patient_id: UUID,
+    ) -> list[ReEngagementEventModel]:
+        """Lista eventos de re-engagement pendientes (sin sent_at) de un paciente.
+
+        Usada por OptOutService para cascade cancel al darse de baja.
+        HIPAA-lite: dual filter tenant_id + clinic_id SIEMPRE aplicado.
+
+        Args:
+            tenant_id: UUID del tenant.
+            clinic_id: UUID de la clínica.
+            patient_id: UUID del paciente.
+
+        Returns:
+            Lista de ReEngagementEventModel sin sent_at (pendientes de envío).
+        """
+        scope_attr = self._scope_attr()
+        stmt = (
+            select(self.MODEL)
+            .where(self.MODEL.tenant_id == tenant_id)
+            .where(scope_attr == clinic_id)
+            .where(self.MODEL.patient_id == patient_id)
+            .where(self.MODEL.sent_at.is_(None))
+            .where(self.MODEL.deleted_at.is_(None))
+            .order_by(self.MODEL.trigger_at.asc())
+        )
+        result = await self._session.execute(stmt)
+        return list(result.scalars().all())
+
     async def check_throttle(
         self,
         *,
