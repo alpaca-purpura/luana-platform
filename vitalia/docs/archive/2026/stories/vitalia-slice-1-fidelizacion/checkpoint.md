@@ -2,8 +2,8 @@
 story_id: vitalia-slice-1-fidelizacion
 outcome: vitalia-mvp-ui-foundation
 parent_spec: vitalia-ux-discovery (archived 2026-05-20 — inheritance carryover)
-state: developed                               # ← DEVELOPING → DEVELOPED 2026-05-20 (all 16 tickets shipped; smoke 6/15 live — 9 deferred to auditor fix-loop)
-phase: AWAIT_AUDIT                             # auto-handoff /auditor fideliz story (paradigm v4.1 default)
+state: done                                    # ← DEVELOPED → REVIEWING → DONE 2026-05-20 (auditor APPROVED iter 3 BE post F1+F2 + iter 2 FE + merged to main)
+phase: MERGED                                  # 07-merge.md written + capabilities updated + archived
 preflight_gates_status:                        # ★ 2026-05-20 verificación
   clerk_test_token_fresh_and_webhook_secret_configured: GREEN
   clerk_test_users_3_created: GREEN
