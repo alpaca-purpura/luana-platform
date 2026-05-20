@@ -3,7 +3,7 @@ slug: nicolify
 kind: brand
 status: shipped
 vertical: "Agencias + Servicios B2B"
-last_updated: 2026-05-19
+last_updated: 2026-05-20
 ssot_live:
   - nicolify/docs/product/
   - nicolify/docs/domains/

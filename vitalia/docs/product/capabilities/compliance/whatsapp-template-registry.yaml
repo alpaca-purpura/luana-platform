@@ -1,0 +1,115 @@
+---
+capability_id: vitalia-whatsapp-template-registry
+module: compliance
+slug: whatsapp-template-registry
+status: live
+date_introduced: 2026-05-20
+story_introduced: vitalia-slice-1-fidelizacion
+package_version: 0.1.0
+package_path: vitalia/backend/src/modules/vitalia/connections/whatsapp/registry.py
+license: proprietary
+---
+
+# vitalia-whatsapp-template-registry
+
+SSoT brand-local de WhatsApp HSM templates Meta-approved para Vitalia (5 templates Ola 1) con clasificación canónica UTILITY vs MARKETING + flag `requires_marketing_opt_in`. T-8 de Ola 1 fidelización. Foundation que habilita el gate compliance en [[adrian-reengagement-tool]] (`ProactiveOutboundService` consulta `requires_marketing_opt_in` para decidir si bloquear envío sin opt-in marketing).
+
+HIPAA-lite: template `body_text` usa SOLO `{{N}}` placeholders (patient_name, clinic_name, appointment_date). NUNCA PHI embedded literally en template body.
+
+Anti-duplication: registry brand-specific vitalia — NUNCA mirrorear cross-brand (per `.claude/rules/anti-duplication.md`). Otras brands tienen su propio registry en su connections module.
+
+## Surface
+
+### Domain — WhatsAppTemplateDef dataclass (`vitalia/backend/src/modules/vitalia/connections/whatsapp/registry.py`)
+
+```python
+@dataclass(frozen=True)
+class WhatsAppTemplateDef:
+    slug: str                          # Brand-internal id (e.g. 'recordatorio_proxima_sesion')
+    template_name: str                 # Meta-registered template name
+    category: str                      # 'UTILITY' | 'MARKETING'
+    language: str                      # ISO 639-1 ('es' LatAm)
+    body_text: str                     # con {{N}} placeholders, NO PHI
+    requires_marketing_opt_in: bool    # True solo MARKETING
+    components_raw: list[dict[str, Any]]  # full JSON Meta API
+    metadata: dict[str, Any]           # extensible
+```
+
+### 5 Templates registered Ola 1
+
+| Slug | Category | requires_marketing_opt_in | Purpose |
+|---|---|---|---|
+| `recordatorio_proxima_sesion` | UTILITY | False | Appointment reminder |
+| `recordatorio_control_doctor` | UTILITY | False | Follow-up control reminder (★ fix iter 2 F1: ahora pasa sin opt-in) |
+| `invitacion_mantenimiento` | MARKETING | True | Maintenance session invite |
+| `re_engagement_ausencia` | MARKETING | True | Lapsed patient re-engagement |
+| `nps_post_tratamiento` | UTILITY | False | Post-treatment NPS survey trigger |
+
+### Template JSON definitions (`vitalia/backend/src/modules/vitalia/connections/whatsapp/templates/fidelizacion/`)
+
+5 JSON files con `components_raw` per Meta-approved registration.
+
+### Compliance gate enforcement
+
+`ProactiveOutboundService` (consumer, en `vitalia/backend/src/modules/vitalia/fidelizacion/application/services/proactive_outbound_service.py`):
+```python
+template = WHATSAPP_TEMPLATE_REGISTRY.get(template_slug)
+if template is None:
+    raise ComplianceError("template_unknown")
+if template.requires_marketing_opt_in and not patient.marketing_opt_in:
+    raise ComplianceError("marketing_opt_in_required")
+```
+
+## Test coverage
+
+- Unit registry (vitalia/backend/tests/modules/vitalia/connections/whatsapp/ — se incluye en suite connections):
+  - `test_registry_5_templates_registered`
+  - `test_utility_templates_no_opt_in_required`
+  - `test_marketing_templates_require_opt_in`
+  - `test_body_text_no_phi_only_placeholders`
+- Service integration con compliance gate:
+  - `tests/modules/vitalia/fidelizacion/application/test_proactive_outbound_service.py::test_utility_template_passes_without_optin` ★ iter 2 F1 fix ★
+  - `tests/modules/vitalia/fidelizacion/application/test_proactive_outbound_service.py::test_marketing_template_blocked_no_optin`
+  - `tests/modules/vitalia/fidelizacion/application/test_proactive_outbound_service.py::test_unknown_template_blocked`
+- Agentic goldens (`vitalia/backend/tests/agentic_evals/sales_agent/goldens/reengagement/`):
+  - `absence_optin_guard.yaml` — verifica gate compliance MARKETING.
+
+## Dependencies
+
+- `vitalia/backend/src/modules/vitalia/connections/whatsapp/` — WhatsApp Business adapter sibling
+- `vitalia/backend/src/modules/vitalia/crm/` — Patient.marketing_opt_in field consumer ([[crm-scaffold-slice-1]])
+- `vitalia/backend/src/modules/vitalia/compliance/` — ComplianceServiceAdapter consumer enforcement layer
+- `core/luana-core-compliance` — ComplianceService base (engine)
+- `core/luana-core-extension-sdk` — EP-?? ChannelAdapterDef registration
+
+## Scenarios live
+
+- UTILITY `recordatorio_control_doctor` con paciente sin opt-in marketing → SEND OK (iter 2 F1 fix: no más false-positive block).
+- MARKETING `re_engagement_ausencia` con paciente sin opt-in → BLOCK con `reason: marketing_opt_in_required` (gate enforced).
+- Unknown slug → BLOCK con `reason: template_unknown` (defense-in-depth, no silent pass).
+- Template body_text scan — assertion en arch test: ningún `{{patient_name|dni|email|diagnosis|...}}` literal (solo placeholders posicionales {{1}}-{{N}}).
+
+## KPIs
+
+- Templates registered: 5/5 Meta-approved Ola 1
+- Compliance gate hit rate: 100% (no bypass possible — service layer enforce + no direct dispatch)
+- Audit log row per send attempt (success o block): sync write 100%
+
+## Verification commands
+
+```bash
+WS=$(git rev-parse --show-toplevel)
+cd ${WS}/vitalia/backend && ${WS}/.venv/bin/pytest tests/modules/vitalia/fidelizacion/application/test_proactive_outbound_service.py -v
+# Buscar tests específicos del registry si suite connections existe:
+cd ${WS}/vitalia/backend && find tests/modules/vitalia/connections -name "test_*.py" -exec ${WS}/.venv/bin/pytest {} -v \;
+```
+
+## Referencias
+
+- Spec: `vitalia/docs/archive/2026/stories/vitalia-slice-1-fidelizacion/01-spec-extract.md` § T-8
+- Arch BE: `vitalia/docs/archive/2026/stories/vitalia-slice-1-fidelizacion/03-arch-be.md` § WhatsApp template registry
+- Audit fix iter 2 BE: `vitalia/docs/archive/2026/stories/vitalia-slice-1-fidelizacion/AUDIT-FIX-ITER-2-BE-result.md` § F1 UTILITY/MARKETING gate
+- Merge artifact: `vitalia/docs/archive/2026/stories/vitalia-slice-1-fidelizacion/07-merge.md` § 3
+- HIPAA-lite: `vitalia/.claude/rules/hipaa-lite.md` § placeholders only en templates
+- Anti-duplication: `.claude/rules/anti-duplication.md` § brand-specific config NUNCA mirror cross-brand
+- Sister caps: [[adrian-reengagement-tool]] · [[crm-consent-optout]] · [[compliance-hipaa-lite-audit]] · [[registries-medical-vertical]]
