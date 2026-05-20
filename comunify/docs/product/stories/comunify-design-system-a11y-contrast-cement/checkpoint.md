@@ -1,21 +1,26 @@
 ---
 brand: comunify
 story_id: comunify-design-system-a11y-contrast-cement
-state: developed
-phase: T-4_DONE
+state: reviewing
+phase: AUDIT_APPROVED_AWAITING_MERGE
 created: 2026-05-18
 last_updated: 2026-05-20
 parallel_safe: false
-owner: /dev-team (builder-frontend)
+owner: /auditor → /pm-comunify (next handoff merge)
 surface: frontend-only
 estimated_size: S+ (medium-small)
 hot_fix: false
 supersedes: comunify-warning-token-contrast-fix
 ratified_by_chris: true
 ratified_at: 2026-05-20
-next_action: "AUTO-HANDOFF → /auditor (per story-closure-gate.md)"
+next_action: "/pm-comunify writes 07-merge.md + capability YAML + archive (state=reviewing → done)"
 developed_at: 2026-05-20T16:10:00-05:00
 developed_sha: d9cce24
+audit_verdict: APPROVED
+audit_iterations: 1
+self_fix_iter: 0
+audit_sha: c12ba3d
+audit_caveats: "1 informational T-4-F1 (live E2E deferred) non-blocking"
 ---
 
 # Comunify — Design System a11y Contrast Cement — checkpoint
