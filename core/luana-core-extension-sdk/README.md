@@ -6,4 +6,4 @@
 - **EP-6..EP-18 backlog:** SIGNATURE-ONLY (registry stores; dispatch raises NotImplementedError)
 - **Cross-cutting policies CC-1..CC-5:** runtime enforcement (startup-only, namespaced obligatorio, immutable)
 
-See `docs/extension-points.md` for usage examples + recipe.
+See `docs/architecture/luana-platform/extension-points.md` for usage examples + recipe.

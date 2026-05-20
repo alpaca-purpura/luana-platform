@@ -36,4 +36,4 @@ apps/test-brand/
 
 All names use `test-brand.` prefix (CC-4 namespace enforcement).
 
-See `docs/extension-points.md` for full recipe and per-vertical examples.
+See `docs/architecture/luana-platform/extension-points.md` for full recipe and per-vertical examples.

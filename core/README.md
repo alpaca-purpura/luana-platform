@@ -12,4 +12,4 @@ This is the canonical source from which brand-specific workspaces (`nicolify`, `
 
 **Current state (Story 1):** Placeholder — populated in Stories 2-9.
 
-See [docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md) for full monorepo topology.
+See [docs/architecture/luana-platform/00-overview.md](../docs/architecture/luana-platform/00-overview.md) for full monorepo topology.
