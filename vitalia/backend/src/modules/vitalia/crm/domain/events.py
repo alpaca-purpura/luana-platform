@@ -130,6 +130,30 @@ class AdrianPaused(DomainEvent):
 
 
 @dataclass
+class PatientOptedOut(DomainEvent):
+    """Fired when a patient is recorded as opted out from marketing.
+
+    T-2: emitted by PatientConsentService.opt_out() via outbox adapter_bus.
+    Downstream fidelizacion consumers MUST cancel pending fidelization events
+    for this patient (SC-04 Slice 1).
+
+    PHI: carries only UUIDs — no PHI fields (name, diagnosis, etc.).
+    clinic_id mandatory per hipaa-lite.md dual-filter invariant.
+
+    event_name = 'patient_opted_out'
+    """
+
+    patient_id: UUID = field(default_factory=UUID)
+    clinic_id: UUID = field(default_factory=UUID)
+    reason: str | None = None
+    triggered_by_user_id: UUID = field(default_factory=UUID)
+
+    def __post_init__(self) -> None:
+        """Set event_name after dataclass initialization."""
+        self.event_name = "patient_opted_out"
+
+
+@dataclass
 class ProactiveOutboundSent(DomainEvent):
     """Fired when Adrián sends a proactive outbound message.
 

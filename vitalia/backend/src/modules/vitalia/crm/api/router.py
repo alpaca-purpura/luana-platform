@@ -4,10 +4,11 @@ API layer — thin: validate headers → resolve auth → call service → map e
 No business logic here.
 
 Endpoints:
-  GET    /api/v1/crm/patients/{patient_id}           — PHI gated (doctor/nurse/admin_clinic)
-  PATCH  /api/v1/crm/patients/{patient_id}           — PHI write gated
-  POST   /api/v1/crm/patients/{patient_id}/opt-out   — admin_clinic only
-  GET    /api/v1/crm/leads/{lead_id}                 — all authenticated roles
+  GET    /api/v1/crm/patients/{patient_id}                       — PHI gated (doctor/nurse/admin_clinic)
+  PATCH  /api/v1/crm/patients/{patient_id}                       — PHI write gated
+  POST   /api/v1/crm/patients/{patient_id}/opt-out               — admin_clinic only (consent_endpoints.py)
+  PATCH  /api/v1/crm/patients/{patient_id}/marketing-opt-in      — doctor/nurse/admin_clinic (consent_endpoints.py)
+  GET    /api/v1/crm/leads/{lead_id}                             — all authenticated roles
 
 response_model= is MANDATORY on every endpoint (PII gate + arch fitness).
 redirect_slashes=False is set on the FastAPI *app* in main.py, NOT here.
@@ -23,10 +24,9 @@ import structlog
 from fastapi import APIRouter, Header, HTTPException
 
 from src.modules.vitalia._shared.auth.rbac import PHIAccessDeniedError
+from src.modules.vitalia.crm.api.consent_endpoints import router as consent_router
 from src.modules.vitalia.crm.application.dto.lead_dto import LeadResponse
 from src.modules.vitalia.crm.application.dto.patient_dto import (
-    OptOutRequest,
-    OptOutResponse,
     PatientPatchRequest,
     PatientResponse,
 )
@@ -44,6 +44,9 @@ from src.modules.vitalia.iam.infrastructure.clerk_jwt_decoder import (
 logger = structlog.get_logger()
 
 router = APIRouter(tags=["crm"])
+
+# Mount consent endpoints (T-2 — opt-out + marketing-opt-in)
+router.include_router(consent_router)
 
 # Header type aliases
 AuthorizationHeader = Annotated[str, Header(alias="Authorization")]
@@ -213,63 +216,8 @@ async def patch_patient(
     raise HTTPException(status_code=404, detail="Paciente no encontrado.")
 
 
-@router.post("/patients/{patient_id}/opt-out", response_model=OptOutResponse)
-async def opt_out_patient(
-    patient_id: UUID,
-    body: OptOutRequest,
-    authorization: AuthorizationHeader,
-    x_tenant_id: TenantIdHeader,
-    x_clinic_id: ClinicIdHeader,
-) -> OptOutResponse:
-    """Opt patient out of marketing — admin_clinic role only.
-
-    Per LGPD/HIPAA-lite right to erasure flow.
-
-    Args:
-        patient_id: Patient UUID (path param).
-        body: Opt-out reason.
-        authorization: Bearer token.
-        x_tenant_id: Tenant ID header.
-        x_clinic_id: Clinic ID header.
-
-    Returns:
-        OptOutResponse confirming the opt-out.
-
-    Raises:
-        401: Invalid/missing token.
-        403: Role is not admin_clinic.
-    """
-    resolver = _get_resolver()
-    ctx = _resolve_context(authorization, resolver)
-
-    from unittest.mock import AsyncMock
-
-    patient_repo = AsyncMock()
-    patient_repo.opt_out.return_value = None
-    audit_repo = AsyncMock()
-    service = PatientService(patient_repo=patient_repo, audit_repo=audit_repo)
-
-    try:
-        await service.opt_out(
-            patient_id=patient_id,
-            tenant_id=ctx.tenant_id,
-            clinic_id=UUID(x_clinic_id),
-            user_id=UUID(ctx.user_id) if len(ctx.user_id) == 36 else UUID(int=0),
-            user_role=ctx.role,
-            reason=body.reason,
-        )
-    except PHIAccessDeniedError:
-        raise HTTPException(
-            status_code=403,
-            detail="Acceso denegado: solo el administrador de clínica puede registrar exclusiones.",
-        )
-
-    return OptOutResponse(
-        patient_id=patient_id,
-        opted_out=True,
-        message="El paciente ha sido marcado como excluido del marketing.",
-    )
-
+# opt-out endpoint moved to consent_endpoints.py (T-2 — PatientConsentService)
+# router.include_router(consent_router) above mounts it at the same path.
 
 # ---------------------------------------------------------------------------
 # Lead endpoints — non-PHI, all authenticated roles
