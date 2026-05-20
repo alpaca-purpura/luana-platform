@@ -37,7 +37,11 @@ const FEATURES_DIR = join(ROOT, "src", "features");
 
 // Ratchet baseline — known violations at time of T-infra-4 creation (shrink-only).
 const KNOWN_FSD_BOUNDARY_VIOLATIONS: ReadonlySet<string> = new Set<string>([
-  // Empty baseline — clean at T-infra-4.
+  // T-inbox-fe-1: crm-shared is a PRODUCER feature (cross-story shared contracts Ola 1+).
+  // inbox/types/conversation-detail.ts imports Lead + Conversation from crm-shared/index.ts.
+  // This is an intentional exception per 03-arch-fe.md § 1 (crm-shared ← inbox, pipeline, agenda).
+  // The arch boundary exception is justified: crm-shared is NOT a downstream consumer of inbox.
+  "src/features/inbox/types/conversation-detail.ts",
 ]);
 
 function collectTsFiles(dir: string): string[] {

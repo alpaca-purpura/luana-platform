@@ -2,8 +2,8 @@
 story_id: vitalia-slice-1-inbox
 outcome: vitalia-mvp-ui-foundation
 parent_spec: vitalia-ux-discovery (archived 2026-05-20 — inheritance carryover)
-state: ready                                  # ← REFINED → READY post architect package emit (2026-05-20)
-phase: READY_FOR_DEV_TEAM_PICKUP               # ★ pre-flight gates GREEN 2026-05-20 02:00 UTC, /dev-team can pickup now
+state: developing                              # ← READY → DEVELOPING 2026-05-20 02:35 UTC (T-inbox-be-1 spawned)
+phase: BUILD_T_INBOX_BE_1                      # ★ dev-team picks T-inbox-be-1 (domain entities + events, sonnet)
 preflight_gates_status:                        # ★ 2026-05-20 verificación
   clerk_test_token_fresh_and_webhook_secret_configured: GREEN  # token regenerated via clerk CLI + webhook secret confirmed in .env.dev
   clerk_test_users_3_created: GREEN                            # dr.demo + recepcion + admin @vitalialat.com verified in Clerk + DB
