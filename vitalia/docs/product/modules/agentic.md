@@ -1,7 +1,7 @@
 ---
 module: agentic
 brand: vitalia
-last_updated: 2026-05-18
+last_updated: 2026-05-20
 ---
 
 # agentic — Tools + guardrails medical + Lucas daily analysis + eval goldens
@@ -17,4 +17,5 @@ Wave 4-5 (2026-05-18 vitalia-copilot-tools-impl): Lucas daily analysis ReAct Lan
 - `medical-safety-guardrails` (live)
 - `lucas-daily-analysis` (live · 2026-05-18)
 - `eval-goldens-slice-1` (live · 2026-05-18)
+- `lucas-recommendation-tool` (live · 2026-05-20)
 <!-- auto-list:end -->

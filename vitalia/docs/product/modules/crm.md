@@ -1,7 +1,7 @@
 ---
 module: crm
 brand: vitalia
-last_updated: 2026-05-18
+last_updated: 2026-05-20
 ---
 
 # crm — Patient + Lead management
@@ -13,5 +13,6 @@ Slice 1 (2026-05-18) introdujo scaffold con raw SQL `text()` (ORM models pending
 ## Capabilities
 
 <!-- auto-list:start -->
-- `vitalia-crm-scaffold-slice-1` (live)
+- `vitalia-crm-scaffold-slice-1` (live · extended 2026-05-20)
+- `crm-consent-optout` (live · 2026-05-20)
 <!-- auto-list:end -->

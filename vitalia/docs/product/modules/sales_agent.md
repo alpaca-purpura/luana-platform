@@ -1,7 +1,7 @@
 ---
 module: sales_agent
 brand: vitalia
-last_updated: 2026-05-18
+last_updated: 2026-05-20
 ---
 
 # sales_agent — Adrián 3 tools MVP + medical guardrails + state overlay
@@ -23,6 +23,8 @@ Extensión brand de `core/luana-core-sales-agent`. Esta historia (`vitalia-copil
 - `adrian-3-tools-mvp` (live · 2026-05-18)
 - `medical-guardrails` (live · 2026-05-18)
 - `state-overlay-langgraph` (live · 2026-05-18)
+- `inbox-handler-mode-occ` (live · 2026-05-20)
+- `adrian-reengagement-tool` (live · 2026-05-20)
 <!-- auto-list:end -->
 
 ## Voice exception

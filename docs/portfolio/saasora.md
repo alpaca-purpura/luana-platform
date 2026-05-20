@@ -3,7 +3,7 @@ slug: saasora
 kind: brand
 status: placeholder
 vertical: "SaaS + Productos Digitales"
-last_updated: 2026-05-19
+last_updated: 2026-05-20
 ssot_live:
   - saasora/docs/product/
   - saasora/docs/domains/

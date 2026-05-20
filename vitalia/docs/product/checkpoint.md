@@ -3,7 +3,8 @@ brand: vitalia
 vertical: "Salud + Bienestar"
 status: shipped
 last_updated: 2026-05-20
-slice_1_status: ola1-done-2026-05-20  # ✅ Ola 1 COMPLETED — inbox + fideliz state=done en main (squash-merge pending). 29 tickets shipped + 2 auditor iter cycles + 3 fix-loop iter (BE F1+F2 pgcrypto incluido). Capabilities/ YAMLs deferred to follow-up session (placeholder paths documentados en 07-merge.md per story). Cross-cutting fixes mid-session: db_session fixture promotion · Clerk catch-all routes · Cloudflare allowedDevOrigins · middleware→proxy migration · POM tablist · NuqsAdapter wrapper.
+slice_1_status: ola1-done-2026-05-20  # ✅ Ola 1 COMPLETED — inbox + fideliz state=done en main (squash-merge pending). 29 tickets shipped + 2 auditor iter cycles + 3 fix-loop iter (BE F1+F2 pgcrypto incluido). Cross-cutting fixes mid-session: db_session fixture promotion · Clerk catch-all routes · Cloudflare allowedDevOrigins · middleware→proxy migration · POM tablist · NuqsAdapter wrapper.
+cleanup_done_2026-05-20: ola1-capability-inventory-closed  # ✅ 7 NEW + 1 UPDATE capability YAMLs creados (commit 3983b9b) · 6 modules MD auto-list refreshed · portfolio regen · R32 verification gate PASS · gate_status rename en hard_gates_closed_log (workaround parser bug)
 active_outcomes:
   - dev-environment-multibrand     # receta vitalia shipped, cross-brand replicación pendiente nicolify/comunify/lupulo
   - vitalia-mvp-ui-foundation      # outcome maestro Slice 1/2/3 FE Vitalia MVP
@@ -30,25 +31,25 @@ slice_1_replan_2026_05_20:                 # ★ Replan ratificado Chris 2026-05
   hard_gates_open: []                          # ★ TODOS GREEN 2026-05-20 02:00 UTC (ver hard_gates_closed_log)
   hard_gates_closed_log:
     clerk_test_token_fresh_and_webhook_secret_configured:
-      status: GREEN
+      gate_status: GREEN
       verified_at: 2026-05-20T01:15:00Z
       method: "clerk CLI api /testing_tokens POST + grep VITALIA_CLERK_WEBHOOK_SECRET=.+"
     clerk_test_users_3_created:
-      status: GREEN
+      gate_status: GREEN
       verified_at: 2026-05-20T01:18:00Z
       method: "clerk api /users + psql users + user_tenants junctions (3 users + 5 junctions @ sanare/aurora/mindful)"
     playwright_storage_state_generated:
-      status: GREEN
+      gate_status: GREEN
       verified_at: 2026-05-20T01:23:00Z
       method: "ported nicolify clerk.setup.ts → vitalia/frontend/e2e/setup/ + updated playwright.config.ts with setup project + dependencies['setup'] + storageState. setup ticket strategy (Clerk emailAddress sign-in token) GREEN in 10s"
       output: "vitalia/frontend/playwright/.clerk/user.json (9 cookies — __session, __client_uat, __cf_bm, __clerk_db_jwt, etc.)"
     playwright_smoke_suite_green_local:
-      status: GREEN
+      gate_status: GREEN
       verified_at: 2026-05-20T01:33:00Z
       method: "cd vitalia/frontend && E2E_BASE_URL=http://localhost:3002 npx playwright test --project=smoke"
       result: "36/36 specs PASS in 9.2min (incluye visual baselines + responsive + wizard + onboarding × 3 brands)"
     promotion_proposal_core_platform_extensions_slice_1_migrated:
-      status: GREEN
+      gate_status: GREEN
       verified_at: 2026-05-20T00:00:00Z
       method: "luana-core-platform 0.4.0 commit e8d3c04 in main"
     playwright_smoke_suite_green_live: DEFERRED  # non-blocking — needs cloudflared tunnel verify

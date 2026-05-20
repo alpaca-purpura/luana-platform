@@ -1,7 +1,7 @@
 ---
 module: copilot
 brand: vitalia
-last_updated: 2026-05-18
+last_updated: 2026-05-20
 ---
 
 # copilot — KB médico RAG + extractors PDF + Valeria wizard onboarding agentic
@@ -16,4 +16,5 @@ Wave 3-4 (2026-05-18 vitalia-copilot-tools-impl): Valeria wizard supervisor Lang
 - `medical-kb-rag` (live)
 - `medical-pdf-extractors` (live)
 - `valeria-wizard-onboarding-agentic` (live · 2026-05-18)
+- `inbox-tools-extensions` (live · 2026-05-20)
 <!-- auto-list:end -->

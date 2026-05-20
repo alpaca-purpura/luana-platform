@@ -3,7 +3,7 @@ slug: comunify
 kind: brand
 status: shipped
 vertical: "Creator Economy + Educación"
-last_updated: 2026-05-19
+last_updated: 2026-05-20
 ssot_live:
   - comunify/docs/product/
   - comunify/docs/domains/

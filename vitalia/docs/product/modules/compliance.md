@@ -1,7 +1,7 @@
 ---
 module: compliance
 brand: vitalia
-last_updated: 2026-05-18
+last_updated: 2026-05-20
 ---
 
 # compliance — HIPAA-lite LATAM posture
@@ -17,4 +17,5 @@ Post Slice 1 (2026-05-18): arquitectura defensiva architecturally enforced — P
 <!-- auto-list:start -->
 - `compliance-hipaa-lite-audit` (live)
 - `vitalia-hipaa-lite-defensive-stack` (live)
+- `whatsapp-template-registry` (live · 2026-05-20)
 <!-- auto-list:end -->
