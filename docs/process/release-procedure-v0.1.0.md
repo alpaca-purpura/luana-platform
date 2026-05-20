@@ -56,7 +56,7 @@ The `release.yml` workflow already configures this permission.
 is configured → workflow exits with explicit error:
 ```
 ::error::No GH Packages token. Set GH_PACKAGES_TOKEN secret OR ensure GITHUB_TOKEN has
-write:packages scope. See docs/RELEASES.md §Token-setup
+write:packages scope. See docs/process/release-procedure-v0.1.0.md §Token-setup
 ```
 This requires Chris (org admin) to configure token permissions at the org level.
 **This is not autonomously resolvable. Escalate to org admin.**

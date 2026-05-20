@@ -154,7 +154,7 @@ Las dependencias cruzadas son strict-pinned.
 ## §5 Patrón de consumo del Extension SDK
 
 El Extension SDK es el punto de entrada principal para construir una aplicación vertical sobre
-`luana-core`. Lee `docs/extension-points.md` para la especificación completa (18 EPs, 5 CC policies).
+`luana-core`. Lee `docs/architecture/luana-platform/extension-points.md` para la especificación completa (18 EPs, 5 CC policies).
 
 ### Quickstart Python
 
@@ -241,7 +241,7 @@ LITELLM_PROXY_URL=http://...     # proxy LiteLLM (si aplica)
 | `40 test failures` en `luana-core-sales-agent` | Falla pre-existente Story 7 (fixture issue) | Esperado — ver CHANGELOG.md §Known issues. Story 10+ cleanup |
 | `ImportError: cannot import name 'X'` | Cambio de nombre en lifting | Consulta §3 tabla de importaciones. Verifica `docs/api/python/{package}/` |
 | `BrandContext.brand_slug is None` | `LUANA_BRAND_SLUG` no seteada o `BrandContext.from_env()` no invocada | Verifica env var + llama `BrandContext.from_env()` en startup |
-| `HALT: GH Packages auth missing` en CI | `GITHUB_TOKEN` sin `write:packages` + `GH_PACKAGES_TOKEN` no configurado | Ve a Settings → Secrets → Actions → crear `GH_PACKAGES_TOKEN` con `write:packages` scope. Ver `docs/RELEASES.md §Token-setup` |
+| `HALT: GH Packages auth missing` en CI | `GITHUB_TOKEN` sin `write:packages` + `GH_PACKAGES_TOKEN` no configurado | Ve a Settings → Secrets → Actions → crear `GH_PACKAGES_TOKEN` con `write:packages` scope. Ver `docs/process/release-procedure-v0.1.0.md §Token-setup` |
 
 ### Ejecutar tests post-migración
 
@@ -254,5 +254,5 @@ uv run python -c "from luana_core_extension_sdk import ExtensionPointRegistry; r
 cd apps/test-brand && uv run pytest tests/ -x -q --tb=short
 ```
 
-Para más información sobre el Extension SDK, consulta `docs/extension-points.md`.
+Para más información sobre el Extension SDK, consulta `docs/architecture/luana-platform/extension-points.md`.
 Para reportar problemas, abre un issue en `alpacapurpura/luana-platform`.
