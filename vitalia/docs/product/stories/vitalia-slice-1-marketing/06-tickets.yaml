@@ -379,6 +379,10 @@ tickets:
       - scenario: All SC-MK-01..04 (visual baselines per scenario)
         tests:
           - chromatic://vitalia-marketing-baselines  # external service
+    state: pushed
+    pushed_sha: 5b8b0d2
+    chromatic_baseline_pending: true
+    chromatic_note: "CHROMATIC_PROJECT_TOKEN not set. 13 story files written. Local BowtieSVG regression test: 8/8 PASS. Chromatic baselines pending Chris ratification at merge."
     blocked_by: [T-mk-fe-2, T-mk-fe-3, T-mk-fe-4, T-mk-fe-5]
 
   - id: T-mk-fe-7
