@@ -9,6 +9,12 @@
  * downstream-regression-na: brand-local FE barrel; no cross-brand consumers
  */
 
+// Components (T-inbox-fe-6: tools sheet + activity stream + contact sidebar + proactive modal)
+export { AdrianToolsSheet } from "./components/AdrianToolsSheet";
+export { AgentActivityStream } from "./components/AgentActivityStream";
+export { ContactSidebar } from "./components/ContactSidebar";
+export type { InboxContactInfo, NpsEntry } from "./components/ContactSidebar";
+export { ProactiveOutboundModal } from "./components/ProactiveOutboundModal";
 // Components (T-inbox-fe-3: conversation list panel + sub-components)
 export { ConversationListPanel } from "./components/ConversationListPanel";
 export { ConversationList } from "./components/ConversationList";
@@ -18,6 +24,27 @@ export { FilterChips } from "./components/FilterChips";
 export type { FilterChipsValue } from "./components/FilterChips";
 export { ListEmptyState } from "./components/ListEmptyState";
 export type { ListEmptyStateVariant } from "./components/ListEmptyState";
+// Components (T-inbox-fe-5: MessageBubble + Composer + media)
+export { MessageBubble } from "./components/MessageBubble";
+export type { MessageBubbleProps } from "./components/MessageBubble";
+export { VoiceMessagePlayer } from "./components/VoiceMessagePlayer";
+export type { VoiceMessagePlayerProps } from "./components/VoiceMessagePlayer";
+export { ImageAnalysisCard } from "./components/ImageAnalysisCard";
+export type { ImageAnalysisCardProps } from "./components/ImageAnalysisCard";
+export { ActionReceiptUndoChip } from "./components/ActionReceiptUndoChip";
+export type { ActionReceiptUndoChipProps } from "./components/ActionReceiptUndoChip";
+export { ComposerArea } from "./components/ComposerArea";
+export type { ComposerAreaProps } from "./components/ComposerArea";
+export { MessageInput } from "./components/MessageInput";
+export type { MessageInputProps } from "./components/MessageInput";
+export { ComposerAttachButton } from "./components/ComposerAttachButton";
+export type { ComposerAttachButtonProps } from "./components/ComposerAttachButton";
+export { ComposerVoiceButton } from "./components/ComposerVoiceButton";
+export type { ComposerVoiceButtonProps, VoiceReadyResult } from "./components/ComposerVoiceButton";
+export { SendButton } from "./components/SendButton";
+export type { SendButtonProps } from "./components/SendButton";
+export { ProposalCardBanner } from "./components/ProposalCardBanner";
+export type { ProposalCardBannerProps } from "./components/ProposalCardBanner";
 // Components (T-inbox-fe-4: conversation thread + controls)
 export { ConversationThread } from "./components/ConversationThread";
 export { ThreadHeader } from "./components/ThreadHeader";
