@@ -324,6 +324,8 @@ tickets:
         tests:
           - vitalia/frontend/src/features/marketing/__tests__/ReservationStage.test.tsx::test_renders_attribution_matrix_inline
           - vitalia/frontend/src/features/marketing/__tests__/ExpansionStage.test.tsx::test_renders_referrals_widget
+    state: pushed
+    pushed_sha: fc8f6aa
     blocked_by: [T-mk-fe-2, T-mk-fe-3]
 
   - id: T-mk-fe-5
