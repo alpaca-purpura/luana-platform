@@ -2,69 +2,100 @@
 story_id: vitalia-slice-1-marketing
 outcome: vitalia-mvp-ui-foundation
 parent_spec: vitalia-ux-discovery (archived 2026-05-20 — inheritance carryover)
-state: refined
-phase: REPLAN_AWAITING_ARCHITECT_REFRESH
-last_artifact: 02-design-ui-mockup.html (heredado parent) + audit-2026-05-20 (parent archive)
+state: ready
+phase: READY_PACKAGE_PRODUCED
+last_artifact: 03-arch.md + 03-arch-be.md + 03-arch-fe.md + 03-arch-agentic.md + 04-validators.yaml + 05-guidelines.md + 06-tickets.yaml + HANDOFF-cross-story-updates.md + 01-spec-extract.md + 02-design-ui.md
 last_modified: 2026-05-20
 ratified_by_chris: true
 spawned_at: 2026-05-17
 spawned_by: /pm-vitalia (split decision post /architect ready package)
 parallel_safe: true
 ola_assigned: 2
-ola_rationale: "Reuso simple Lucas tools ya shipped (compute_attribution_matrix + compute_referrals_leaderboard + compute_stage_recommendation). NO usar nicolify/growth-studio (arch diferente per Chris)."
+ola_rationale: "Reuso simple Lucas tools ya shipped. NO usar nicolify/growth-studio (Chris 2026-05-20 ratificó)."
 ticket_subset_inherited: [T-marketing-1, T-marketing-2, T-marketing-3, T-marketing-4, T-marketing-5, T-marketing-6, T-marketing-7, T-marketing-8]
+ticket_subset_refreshed: [T-mk-be-1, T-mk-be-2, T-mk-be-3, T-mk-be-4, T-mk-be-5, T-mk-be-6, T-mk-fe-1, T-mk-fe-2, T-mk-fe-3, T-mk-fe-4, T-mk-fe-5, T-mk-fe-6, T-mk-fe-7]
+ready_package_version: v1.0
 blocker_dependencies: []                     # infra-cross-cutting DONE
 side_story_blockers: []                      # vitalia-copilot-tools-impl ya DONE 2026-05-18 (Lucas tools shipped)
 preflight_gates_required:
-  - clerk_test_token_fresh_and_webhook_secret_configured
-  - clerk_test_users_3_created
-  - playwright_storage_state_generated
-  - playwright_smoke_suite_green_23_specs
-  - promotion_proposal_core_platform_extensions_slice_1_migrated  # cron_envelope (ETL channel_metrics cron)
+  - clerk_test_token_fresh_and_webhook_secret_configured     # GREEN
+  - clerk_test_users_3_created                                # GREEN
+  - playwright_storage_state_generated                        # GREEN
+  - playwright_smoke_suite_green_23_specs                     # GREEN (36/36 actual)
+  - promotion_proposal_core_platform_extensions_slice_1_migrated  # GREEN (v0.4.0 migrated 2026-05-20)
 priority: high
-estimated_dev_weeks: 2-3
-next_action: "REPLAN 2026-05-20 ratified Chris. Ola 2 — paralela con pipeline. AWAITING /architect refresh tras gates GREEN. /architect produce ready package propio acotado: Bowtie 5 stages SVG + Lucas recommendations cards + AttributionMatrix + ReferralsWidget + UTM tracking + read-only viewport. NO REUSAR growth-studio (arch diferente per Chris). Build NUEVO simple consumiendo Lucas tools ya shipped + core/luana-core-campaigns workers + cron_envelope core."
+estimated_dev_weeks: 3-4
+architect_refresh_date: 2026-05-20
+architect_model: claude-opus-4-7
+next_action: "/dev-team picks T-mk-be-1 wave-1 ticket. Wave DAG: BE foundation (T-mk-be-1, T-mk-be-2) → BE services + adapters (T-mk-be-3, T-mk-be-4) → BE API + crons (T-mk-be-5, T-mk-be-6) → FE foundation (T-mk-fe-1) → FE components NUEVO SIMPLE (T-mk-fe-2..5) → E2E + visual + perf (T-mk-fe-6, T-mk-fe-7). On all GREEN: AUTO-HANDOFF /auditor (story-closure-gate.md default)."
 ---
 
 # vitalia-slice-1-marketing — checkpoint
 
 ## Goal
 
-Ruta `/marketing` Bowtie 5 stages salud Slice 1 (Batch 6 cementado reframe): Bowtie SVG pixel-invariante + Lucas StageRecommendations protagonista 3 cards top per stage + AttributionMatrixWidget Stage Reserva (4 origins) + ReferralsWidget NEW Stage Expansión + Meta+Google APIs sync simplificado + read-only viewport + UTM tracking lead→origin.
+Ruta `/marketing` Bowtie salud 5 stages: Bowtie SVG pixel-invariante + Lucas StageRecommendations protagonista 3 cards top per stage + AttributionMatrixWidget Stage Reserva (4 origins) + ReferralsWidget Stage Expansión + Meta+Google APIs sync simplificado read-only Slice 1 + UTM tracking lead→origin.
 
 ## ★ Decisión Chris 2026-05-20: NO usar growth-studio Nicolify
 
-Nicolify `frontend/src/features/growth-studio/` tiene arquitectura diferente (progressive loading 4 tiers, stage services, channel registry compleja, etc.) NO compatible con el patrón vitalia más simple. Build de vitalia/marketing es NUEVO desde cero usando como referencia el mockup HTML + tokens cementados + Lucas tools ya shipped.
+Nicolify `frontend/src/features/growth-studio/` tiene arquitectura diferente (progressive loading 4 tiers, stage services, channel registry compleja, 13 hooks, 8 endpoints separados, etc.) NO compatible con el patrón vitalia más simple. Build de vitalia/marketing es NUEVO desde cero usando como referencia el mockup HTML + tokens cementados + Lucas tools ya shipped.
 
 ## Mockup heredado (SSoT visual)
 
-`02-design-ui-mockup.html` — copia del parent ratificado Chris 2026-05-17. Build respeta paleta 4 colores + chat-RIGHT rail + sidebar progresivo v3. Bowtie SVG es el componente visual central.
+`02-design-ui-mockup.html` — copia del parent ratificado Chris 2026-05-17. Build respeta paleta 4+1 colores + chat-RIGHT rail + sidebar progresivo v3. Bowtie SVG es el componente visual central pixel-invariante.
 
 ## Reuso explícito (Slice 1) — NO growth-studio
 
 | Surface | Reuso de | Razón |
 |---|---|---|
-| FE Bowtie SVG component | Construir nuevo siguiendo mockup | Pattern simple SVG + Tailwind, no FSD-Lite legacy growth-studio |
-| FE Lucas recommendations cards | `vitalia/frontend/src/components/shared/lucas-recommendations/` (2 tsx stubs) + nicolify/notifications patterns (cards rendering) | Reuso patterns notifications, no growth-studio |
-| FE AttributionMatrix widget | `vitalia/frontend/src/components/shared/attribution/` (2 tsx stubs) | Reuso scaffold ya en código |
-| FE Referrals widget | `vitalia/frontend/src/components/shared/marketing/` (2 tsx stubs) | idem |
-| FE Channels viewport | `vitalia/frontend/src/components/shared/channels/` (2 tsx stubs) | idem |
-| BE Lucas tools | `vitalia/backend/src/modules/vitalia/agentic/lucas/tools/{compute_attribution_matrix,compute_referrals_leaderboard,compute_stage_recommendation}.py` (ya shipped) | reuso directo |
-| BE workers ETL channel_metrics | `core/luana-core-campaigns/workers/scheduler_tick.py` (engine batch) + brand-specific via EP | engine + brand ext |
-| BE cron envelope | `core/luana-core-platform/workers/cron_envelope` (post lift) | reemplaza vitalia/_shared |
-| BE PHI dual-filter (channel_sync_state + UTM tracking) | `core/luana-core-platform/repositories/CompoundScopeRepositoryBase` (post lift) | reemplaza vitalia/_shared |
-| BE Meta + Google APIs OAuth | `vitalia/backend/src/modules/vitalia/connections/conversation_initiation/registry.py` (Extension SDK EP-8) | brand-local ya scaffolded |
+| FE Bowtie SVG component | Promote scaffold `vitalia/frontend/src/components/shared/marketing/MarketingBowtieSVG.tsx` → feature-scoped + real impl | Build simple SVG + Tailwind, no FSD-Lite legacy growth-studio |
+| FE Lucas recommendations cards | Promote scaffold `vitalia/frontend/src/components/shared/lucas-recommendations/` → feature-scoped + real impl | Build simple, scaffold-promoted pattern |
+| FE AttributionMatrix widget | Promote scaffold `vitalia/frontend/src/components/shared/attribution/` | idem |
+| FE Channels viewport | Promote scaffold `vitalia/frontend/src/components/shared/channels/` | idem |
+| FE Referrals widget | NEW (sin scaffold previo) — consume `LucasReferralsService` ya shipped | NEW Slice 1 |
+| BE Lucas tools | `vitalia/backend/src/modules/vitalia/agentic/lucas/tools/{compute_attribution_matrix,compute_referrals_leaderboard,compute_stage_recommendation}.py` (ya shipped 2026-05-18) | Reuso directo consumer-only |
+| BE Lucas application services | `LucasStageRecommendationService` + `LucasAttributionService` + `LucasReferralsService` + `LucasOrchestratorService` (ya shipped) | Reuso directo via Python import |
+| BE cron envelope | `luana_core_platform.workers.cron_envelope` (engine v0.4.0 migrated 2026-05-20) | Engine consume |
+| BE dual-scope repo | `luana_core_platform.repositories.compound_scope_repository.CompoundScopeRepositoryBase` (engine v0.4.0) con `scope_field="clinic_id"` | Engine consume |
+| BE Meta + Google APIs OAuth | `vitalia/backend/src/modules/vitalia/connections/{meta_ads,google_ads}/adapter.py` (NEW Slice 1 + EP-8 registry) | Brand-local con Extension SDK |
+
+## Ready package artifacts (v1.0)
+
+| Artifact | Path | Purpose |
+|---|---|---|
+| 01-spec-extract.md | `vitalia/docs/product/stories/vitalia-slice-1-marketing/01-spec-extract.md` | Spec scoped a marketing route — gherkin SC-MK-01..04 + JTBD + acceptance A1-A10 |
+| 02-design-ui.md | idem path | Design notes — refresh from mockup HTML + estados + breakpoints + a11y + tokens map + visual baselines list |
+| 02-design-ui-mockup.html | idem path | SSoT visual heredado parent (Chris ratificó 2026-05-17) |
+| 03-arch.md | idem path | Consolidated full-stack architecture index |
+| 03-arch-be.md | idem path | BE sub-arch — DDD layers + 4 tables + 10 endpoints + 4 cron jobs + OAuth adapters + Extension SDK EP-8 |
+| 03-arch-fe.md | idem path | FE sub-arch — FSD-Lite layout + TS types + nuqs URL state + React Query hooks + Zustand store + Storybook |
+| 03-arch-agentic.md | idem path | Agentic sub-arch — consumer-only of Lucas stack, NO new tools/personas/goldens |
+| 04-validators.yaml | idem path | ★ CRITICAL — 6 non_functional + 10 functional + 5 visual + 0 agentic_eval gates `must_pass: true` |
+| 05-guidelines.md | idem path | Patterns required/forbidden + files in scope + skills/rules to load + anti-patterns specific to marketing |
+| 06-tickets.yaml | idem path | 13 tickets DAG (6 BE + 7 FE) wave-1..wave-6 + gherkin_coverage[] per ticket |
+| HANDOFF-cross-story-updates.md | idem path | Deltas to apply to global `vitalia/docs/product/outcomes/vitalia-mvp-ui-foundation-handoff-cross-story.md` at `/pm-vitalia` Fase F MERGE |
 
 ## Side stories paralelas relevantes
 
-- `vitalia-copilot-tools-impl` — ya DONE 2026-05-18, Lucas tools shipped.
+- `vitalia-copilot-tools-impl` — ya DONE 2026-05-18, Lucas tools shipped. Consumer-only access this story.
 - Ninguna otra side story bloquea.
+- Ola 2 parallel: `vitalia-slice-1-pipeline` (separate worktree).
 
 ## HANDOFF-cross-story coordination
 
-Marketing + pipeline (Ola 2) comparten Lucas StageRecommendations cards (mismo backend tool, diferente render). Ver `vitalia/docs/product/outcomes/vitalia-mvp-ui-foundation/HANDOFF-cross-story.md`.
+Marketing + pipeline (Ola 2) comparten Lucas StageRecommendations cards (mismo backend tool, diferente render). Ver `vitalia/docs/product/outcomes/vitalia-mvp-ui-foundation-handoff-cross-story.md` + `HANDOFF-cross-story-updates.md` (deltas to apply at merge).
+
+## Story closure gate cement (per .claude/rules/story-closure-gate.md)
+
+Default forward-motion:
+1. `/dev-team` cierra all GREEN tickets → state `developing → developed` + AUTO-HANDOFF `/auditor`
+2. `/auditor` cierra APPROVED → state `developed → reviewing → done` + AUTO-HANDOFF `/pm-vitalia` Fase F MERGE
+3. `/pm-vitalia` Fase E DOCS + Fase F MERGE writes `07-merge.md` (5 secciones cementadas) + capability update + archive story to `vitalia/docs/archive/2026/stories/vitalia-slice-1-marketing/` (R2 cement)
+
+No `defer_audit: true` requested. WIP cap: `developing ≤ 1` per worktree (Ola 2 parallel `/pipeline` is separate worktree per parallel-safety.md D2).
 
 ## Bitácora
 
-- 2026-05-17 spawned: split decision Chris post /architect ready package mega-story
+- 2026-05-17 spawned: split decision Chris post /architect ready package mega-story.
 - 2026-05-20 REPLAN: Ola 2 paralela con pipeline. growth-studio NO reusar (Chris ratificó arch diferente). vitalia-copilot-tools-impl unblock removido (ya done).
+- 2026-05-20 /architect refresh ready package v1.0 produced. Pre-flight gates GREEN. Engine extensions (cron_envelope + CompoundScopeRepositoryBase) migrated 2026-05-20 v0.4.0. state=refined → ready. AWAITING /dev-team picks T-mk-be-1 wave-1.
