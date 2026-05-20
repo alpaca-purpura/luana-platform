@@ -36,6 +36,8 @@ tickets:
         tests:
           - vitalia/backend/tests/modules/vitalia/marketing/domain/test_lucas_recommendation_entity.py::test_approve_transitions_status
           - vitalia/backend/tests/modules/vitalia/marketing/domain/test_lucas_recommendation_entity.py::test_approved_sets_undo_until_5min
+    state: pushed
+    pushed_sha: f0e395e
     blocked_by: []
 
   - id: T-mk-be-2
