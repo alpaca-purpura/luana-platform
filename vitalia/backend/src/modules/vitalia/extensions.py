@@ -125,6 +125,13 @@ from src.modules.vitalia.connections.print_method import (
     PRINT_METHOD_REGISTRY,
 )
 
+# T-8 — 5 Meta-approved WhatsApp HSM templates for patient fidelización.
+# registry.py loads JSON from connections/whatsapp/templates/fidelizacion/.
+# MARKETING templates enforce requires_marketing_opt_in=True at service layer.
+from src.modules.vitalia.connections.whatsapp import (
+    WHATSAPP_TEMPLATE_REGISTRY,
+)
+
 # T-ag-tools-1 — Valeria 4 wizard tools (real callables — replace placeholders).
 # Real LangChain @tool decorated async fns, Pydantic v2 args_schema, tenant-scoped.
 from src.modules.vitalia.copilot.tools import (
@@ -139,6 +146,20 @@ from src.modules.vitalia.sales_agent.tools import (
     send_payment_link,
 )
 
+# T-inbox-agentic-1 / T-inbox-be-6 — Adrián retract_last_message (Slice 1 inbox).
+# Real LangChain @tool decorated async fn (R23 Opus production, SHA 532228f).
+# T-inbox-be-6 mounts this tool into EP-3 so the sales_agent runtime can dispatch it.
+from src.modules.vitalia.sales_agent.tools.retract_last_message import (
+    retract_last_message,
+)
+
+# T-9 — Adrián proactive re-engagement wrapper (fidelización).
+# Tool delegates to ProactiveOutboundService (T-5 shipped) — opt-out/opt-in/
+# throttle/compliance gate/audit log/outbox event handled by the service.
+from src.modules.vitalia.sales_agent.tools.send_proactive_reengagement import (
+    send_proactive_reengagement,
+)
+
 # Module-level smoke: each registry exposes at least one slot (Slice 1 floor).
 # This guarantees `register_all` can dispatch through any of the 5 surfaces
 # without an empty-registry runtime KeyError. The actual count invariants live
@@ -148,6 +169,9 @@ assert FISCAL_PROVIDER_REGISTRY, "vitalia fiscal registry must have ≥1 slot"
 assert APPOINTMENT_ORIGIN_REGISTRY, "vitalia appointment_origin registry must have ≥1 slot"
 assert CONVERSATION_INITIATION_REGISTRY, "vitalia conversation_initiation registry must have ≥1 slot"
 assert PRINT_METHOD_REGISTRY, "vitalia print_method registry must have ≥1 slot"
+assert len(WHATSAPP_TEMPLATE_REGISTRY) == 5, (  # noqa: PLR2004
+    "vitalia WhatsApp fidelización registry must have exactly 5 templates (T-8)"
+)
 
 # ════════════════════════════════════════════════════════════════════════════
 # CC-4 namespace prefix
@@ -561,6 +585,135 @@ def register_all(registry: ExtensionPointRegistry) -> None:
     )
 
     # ───────────────────────────────────────────────────────────────────────
+    # EP-3 — Adrián fidelización tool (NEW per T-9 Slice 1)
+    # ───────────────────────────────────────────────────────────────────────
+    # Per 03-arch-agentic.md § 2.1 + 06-tickets.yaml::T-9.
+    # Wrapper around brand-local ProactiveOutboundService (T-5 shipped). The
+    # service is the SSoT for the 8-step flow (opt_out → marketing_opt_in →
+    # throttle → compliance gate → audit_log sync → persist event → emit
+    # ReEngagementTriggered via outbox → return ProactiveReminderResponse).
+    #
+    # Tool surface contract: tenant + clinic dual filter cardinal (HIPAA-lite),
+    # graceful-degradation envelope (never raises), PHI containment in the
+    # return string (no patient_name / patient_phone echoed back to the LLM).
+    # The 5 Meta-approved WhatsApp HSM templates that this tool dispatches
+    # are registered in WHATSAPP_TEMPLATE_REGISTRY (T-8 shipped, separate
+    # commit on wip/vitalia).
+
+    registry.sales_agent_tool_register(
+        ToolDef(
+            name=_ns("send_proactive_reengagement"),
+            description=(
+                "Send a proactive WhatsApp re-engagement template to a patient. "
+                "Delegates to ProactiveOutboundService (full 8-step flow: opt_out + "
+                "marketing_opt_in + throttle + ComplianceService channel guard + "
+                "audit_log sync write + persist ReEngagementEvent + emit "
+                "ReEngagementTriggered via outbox). Idempotent per "
+                "re_engagement_event_id. Use when a re-engagement event has been "
+                "detected (cron OR operator action) and Adrián is dispatching the "
+                "corresponding proactive template. Patterns: multi_session, follow_up, "
+                "maintenance, absence, nps. Returns structured outcome (event_id + "
+                "status + blocked_reason) — never echoes PHI in the return string."
+            ),
+            input_schema={
+                "type": "object",
+                "properties": {
+                    "tenant_id": {"type": "string", "format": "uuid"},
+                    "clinic_id": {"type": "string", "format": "uuid"},
+                    "patient_id": {"type": "string", "format": "uuid"},
+                    "patient_phone": {"type": "string"},
+                    "patient_name": {"type": "string"},
+                    "pattern": {
+                        "type": "string",
+                        "enum": [
+                            "multi_session",
+                            "follow_up",
+                            "maintenance",
+                            "absence",
+                            "nps",
+                        ],
+                    },
+                    "template_id": {"type": "string"},
+                    "marketing_opt_in": {"type": "boolean"},
+                    "opt_out": {"type": "boolean"},
+                    "re_engagement_event_id": {"type": "string", "format": "uuid"},
+                    "trigger_source": {"type": "string"},
+                    "triggered_by_user_id": {"type": "string", "format": "uuid"},
+                },
+                "required": [
+                    "tenant_id",
+                    "clinic_id",
+                    "patient_id",
+                    "patient_phone",
+                    "patient_name",
+                    "pattern",
+                    "template_id",
+                    "marketing_opt_in",
+                    "opt_out",
+                    "re_engagement_event_id",
+                    "trigger_source",
+                    "triggered_by_user_id",
+                ],
+            },
+            handler=send_proactive_reengagement,
+            tool_groups=("sales_agent", "vertical_medical", "fidelizacion", "re_engagement"),
+        ),
+    )
+
+    # ───────────────────────────────────────────────────────────────────────
+    # EP-3 — retract_last_message tool (T-inbox-agentic-1 + T-inbox-be-6 Slice 1)
+    # ───────────────────────────────────────────────────────────────────────
+    # Per 03-arch-agentic.md § 2 + 06-tickets.yaml::T-inbox-be-6.
+    # Real @tool decorated callable (LangChain StructuredTool) shipped in
+    # T-inbox-agentic-1 (R23 Opus 4.7, SHA 532228f). This ticket (T-inbox-be-6)
+    # mounts the tool into the EP-3 registry so the sales_agent runtime can
+    # dispatch it. Adrián-only — retraction is NOT a copilot (Valeria) action.
+    # Tenant + clinic dual filter cardinal (hipaa-lite.md § Regla cardinal).
+
+    registry.sales_agent_tool_register(
+        ToolDef(
+            name=_ns("retract_last_message"),
+            description=(
+                "Retract a message Adrián sent within the 5-minute undo window. "
+                "Validates action_receipt expires_at, checks no patient reply after "
+                "this message, calls connections adapter retract_message_id with "
+                "timeout, updates vitalia_messages.retracted_at + "
+                "handler_mode='human', emits MessageRetracted domain event via "
+                "outbox, sync writes audit_log (HIPAA-lite mandate). "
+                "tenant_id + clinic_id dual filter mandatory. "
+                "Returns Spanish neutral summary; never raises (graceful degradation)."
+            ),
+            input_schema={
+                "type": "object",
+                "properties": {
+                    "tenant_id": {"type": "string", "format": "uuid"},
+                    "clinic_id": {"type": "string", "format": "uuid"},
+                    "conversation_id": {"type": "string", "format": "uuid"},
+                    "message_id": {"type": "string", "format": "uuid"},
+                    "reason": {
+                        "type": "string",
+                        "minLength": 10,
+                        "maxLength": 500,
+                        "description": (
+                            "Adrián's justification for retraction (audit log "
+                            "mandate). Service sanitizes PHI before persisting."
+                        ),
+                    },
+                },
+                "required": [
+                    "tenant_id",
+                    "clinic_id",
+                    "conversation_id",
+                    "message_id",
+                    "reason",
+                ],
+            },
+            handler=retract_last_message,
+            tool_groups=("sales_agent", "vertical_medical", "inbox", "retract"),
+        ),
+    )
+
+    # ───────────────────────────────────────────────────────────────────────
     # EP-4 — copilot_workflow_register (DataClass)
     # ───────────────────────────────────────────────────────────────────────
     # 1 workflow per brand.yaml::workflows. Steps will be LangGraph nodes per
@@ -715,6 +868,37 @@ def register_all(registry: ExtensionPointRegistry) -> None:
                 webhook_handler=_not_implemented_yet(
                     f"EP-8 {_ns(gateway_slug)} webhook_handler",
                     "future payment integration ticket",
+                ),
+            ),
+        )
+
+    # T-8 — 5 WhatsApp Meta-approved HSM template adapters (fidelización).
+    # One ChannelAdapterDef per template slug, namespaced vitalia.fidelizacion_*.
+    # send/receive/webhook_handler are placeholder until T-5/T-9 ProactiveOutboundService
+    # lands the real implementation. The brand-local WHATSAPP_TEMPLATE_REGISTRY provides
+    # the template config (category, body_text, requires_marketing_opt_in) for service layer.
+    # HIPAA-lite: MARKETING templates enforce opt-in at ProactiveOutboundService, not here.
+    for template_slug in WHATSAPP_TEMPLATE_REGISTRY:
+        adapter_slug = f"fidelizacion_{template_slug}"
+        registry.channel_adapter_register(
+            ChannelAdapterDef(
+                channel_slug=_ns(adapter_slug),
+                send=_not_implemented_yet(
+                    f"EP-8 {_ns(adapter_slug)} send",
+                    "T-5 ProactiveOutboundService / T-9 re-engagement",
+                ),
+                receive=_not_implemented_yet(
+                    f"EP-8 {_ns(adapter_slug)} receive",
+                    "T-5 ProactiveOutboundService / T-9 re-engagement",
+                ),
+                format_for_channel=_not_implemented_yet(
+                    f"EP-8 {_ns(adapter_slug)} format_for_channel",
+                    "T-5 ProactiveOutboundService / T-9 re-engagement",
+                ),
+                target_agent_runtime="vertical_brand",
+                webhook_handler=_not_implemented_yet(
+                    f"EP-8 {_ns(adapter_slug)} webhook_handler",
+                    "T-5 ProactiveOutboundService / T-9 re-engagement",
                 ),
             ),
         )

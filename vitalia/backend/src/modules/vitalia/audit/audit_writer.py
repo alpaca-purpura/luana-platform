@@ -31,9 +31,11 @@ from __future__ import annotations
 
 import json
 from typing import Any
+from uuid import UUID
 
 import structlog
 from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 logger = structlog.get_logger()
@@ -118,3 +120,99 @@ def write_audit_log_sync(
         resource_type=resource_type,
         resource_id=resource_id,
     )
+
+
+class AsyncAuditWriter:
+    """Async adapter for the HIPAA-lite audit log writer.
+
+    Bridges the async inbox/crm services (which call `await audit_writer.write(...)`)
+    with the sync `write_audit_log_sync` implementation.
+
+    Wraps the sync write in `asyncio.get_event_loop().run_in_executor()` so the
+    async service layer can await it without blocking the event loop.
+
+    Medium #6 fix — replaces AsyncMock audit_writer in router DI factories.
+
+    PHI obligations (hipaa-lite.md § Regla cardinal):
+    - Audit log written sync pre-response (no fire-and-forget)
+    - tenant_id + clinic_id dual filter on every row
+    - sanitize_payload applied inside write_audit_log_sync
+    """
+
+    def __init__(self, *, session: AsyncSession) -> None:
+        """Initialize AsyncAuditWriter.
+
+        Args:
+            session: Async SQLAlchemy session (from FastAPI DI).
+        """
+        self._session = session
+
+    async def write(
+        self,
+        *,
+        tenant_id: UUID,
+        clinic_id: UUID,
+        user_id: UUID,
+        action: str,
+        resource_type: str,
+        resource_id: UUID,
+        payload: dict[str, Any] | None = None,
+        from_ip: str | None = None,
+        user_agent: str = "VitaliaAPI/1.0",
+    ) -> None:
+        """Write a HIPAA-lite audit log row asynchronously.
+
+        Executes the raw SQL INSERT directly on the async session so the audit
+        row is written within the same transaction scope as the business operation.
+
+        PHI dual-filter: tenant_id AND clinic_id mandatory.
+        PII sanitization applied via sanitize_payload.
+
+        Args:
+            tenant_id: Root tenant UUID.
+            clinic_id: Clinic UUID (HIPAA-lite second scope filter).
+            user_id: User UUID performing the action.
+            action: Dot-notation action identifier.
+            resource_type: Resource type string.
+            resource_id: Affected resource UUID.
+            payload: Identity-safe payload dict (NO PHI). Default: empty dict.
+            from_ip: Client IP address (optional).
+            user_agent: User-agent string. Default: VitaliaAPI/1.0.
+        """
+        from luana_core_observability.recording.sanitization import sanitize_payload  # noqa: PLC0415
+
+        safe_payload = sanitize_payload(payload or {}, compliance_level="hipaa_lite")
+        payload_bytes: bytes = json.dumps(safe_payload, default=str, ensure_ascii=False).encode("utf-8")
+
+        await self._session.execute(
+            text("""
+                INSERT INTO vitalia_audit_log
+                    (id, tenant_id, clinic_id, user_id, action, resource_type,
+                     resource_id, from_ip, user_agent, payload_redacted, occurred_at)
+                VALUES
+                    (gen_random_uuid(),
+                     :tenant_id::uuid, :clinic_id::uuid, :user_id::uuid,
+                     :action, :resource_type, :resource_id::uuid,
+                     :from_ip, :user_agent, :payload, NOW())
+            """),
+            {
+                "tenant_id": str(tenant_id),
+                "clinic_id": str(clinic_id),
+                "user_id": str(user_id),
+                "action": action,
+                "resource_type": resource_type,
+                "resource_id": str(resource_id),
+                "from_ip": from_ip,
+                "user_agent": user_agent,
+                "payload": payload_bytes,
+            },
+        )
+
+        logger.info(
+            "audit_log_async_written",
+            tenant_id=str(tenant_id),
+            clinic_id=str(clinic_id),
+            action=action,
+            resource_type=resource_type,
+            resource_id=str(resource_id),
+        )

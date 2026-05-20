@@ -1,9 +1,9 @@
 # docs/product/BACKLOG.yaml — auto-generated SSoT machine-readable
 # DO NOT EDIT MANUALLY — modify source artifacts instead.
 # Regenerate: python scripts/generate_backlog.py
-# Generated at: 2026-05-20T01:36:31+00:00
+# Generated at: 2026-05-20T17:45:27+00:00
 
-generated_at: '2026-05-20T01:36:31+00:00'
+generated_at: '2026-05-20T17:45:27+00:00'
 brand: vitalia
 caps:
   refining_max: 3
@@ -89,6 +89,19 @@ buckets:
       target_end: null
       priority: HIGH
       success_metrics: []
+  - id: vitalia-mvp-ui-foundation-handoff-cross-story
+    kind: outcome
+    state: refining
+    title: vitalia-mvp-ui-foundation-handoff-cross-story
+    tags: []
+    last_touched: 2026-05-20
+    extra:
+      story_ids: []
+      why_now: null
+      why_next: null
+      target_end: null
+      priority: 3
+      success_metrics: []
   - id: vitalia-mvp-ui-foundation
     kind: outcome
     state: refining
@@ -149,38 +162,15 @@ buckets:
     state: refined
     title: vitalia-slice-1-agenda
     tags: []
-    last_touched: 2026-05-17
+    last_touched: 2026-05-20
     extra:
       outcome: vitalia-mvp-ui-foundation
-      phase: READY_PACKAGE_INHERITED_BUT_BLOCKED
-      next_action: BLOCKED. Spawn /dev-team cuando vitalia-slice-1-infra-cross-cutting state=developed Y vitalia-payment-adapter-mvp
-        state≥developed (cobranza saldo) Y vitalia-fiscal-emission-pe state≥developed (Capa 2 fiscal Nubefact).
-      blocked_by: null
-      priority_override: null
-      audit_iterations: 0
-  - id: vitalia-slice-1-fidelizacion
-    kind: story
-    state: refined
-    title: vitalia-slice-1-fidelizacion
-    tags: []
-    last_touched: 2026-05-17
-    extra:
-      outcome: vitalia-mvp-ui-foundation
-      phase: READY_PACKAGE_INHERITED_BUT_BLOCKED
-      next_action: BLOCKED. Spawn /dev-team cuando vitalia-slice-1-infra-cross-cutting state=developed.
-      blocked_by: null
-      priority_override: null
-      audit_iterations: 0
-  - id: vitalia-slice-1-inbox
-    kind: story
-    state: refined
-    title: vitalia-slice-1-inbox
-    tags: []
-    last_touched: 2026-05-17
-    extra:
-      outcome: vitalia-mvp-ui-foundation
-      phase: READY_PACKAGE_INHERITED_BUT_BLOCKED
-      next_action: BLOCKED. Spawn /dev-team cuando vitalia-slice-1-infra-cross-cutting state=developed.
+      phase: REPLAN_AWAITING_ARCHITECT_REFRESH
+      next_action: 'REPLAN 2026-05-20 ratified Chris. Ola 3 — arranca DESPUÉS de Olas 1+2 done y side stories payment + fiscal
+        shipped. AWAITING /architect refresh tras gates GREEN. /architect produce ready package propio acotado: agenda Semana
+        default + 4 origins + 3 capas cobranza + 5 EP registries + 5 cron jobs. Reuso explícito: core/luana-core-scheduling
+        + core/luana-core-channels.payment.* (mercadopago + stripe + tokenized_recurring) + cron_envelope core (recordatorios
+        idempotent) + CompoundScopeRepositoryBase core.'
       blocked_by: null
       priority_override: null
       audit_iterations: 0
@@ -189,12 +179,14 @@ buckets:
     state: refined
     title: vitalia-slice-1-marketing
     tags: []
-    last_touched: 2026-05-17
+    last_touched: 2026-05-20
     extra:
       outcome: vitalia-mvp-ui-foundation
-      phase: READY_PACKAGE_INHERITED_BUT_BLOCKED
-      next_action: BLOCKED. Spawn /dev-team cuando vitalia-slice-1-infra-cross-cutting state=developed Y vitalia-copilot-tools-impl
-        state≥developed (Lucas recommendation engine + StageRecommendations tool).
+      phase: REPLAN_AWAITING_ARCHITECT_REFRESH
+      next_action: 'REPLAN 2026-05-20 ratified Chris. Ola 2 — paralela con pipeline. AWAITING /architect refresh tras gates
+        GREEN. /architect produce ready package propio acotado: Bowtie 5 stages SVG + Lucas recommendations cards + AttributionMatrix
+        + ReferralsWidget + UTM tracking + read-only viewport. NO REUSAR growth-studio (arch diferente per Chris). Build NUEVO
+        simple consumiendo Lucas tools ya shipped + core/luana-core-campaigns workers + cron_envelope core.'
       blocked_by: null
       priority_override: null
       audit_iterations: 0
@@ -203,37 +195,19 @@ buckets:
     state: refined
     title: vitalia-slice-1-pipeline
     tags: []
-    last_touched: 2026-05-17
+    last_touched: 2026-05-20
     extra:
       outcome: vitalia-mvp-ui-foundation
-      phase: READY_PACKAGE_INHERITED_BUT_BLOCKED
-      next_action: BLOCKED. Spawn /dev-team cuando vitalia-slice-1-infra-cross-cutting state=developed Y vitalia-payment-adapter-mvp
-        state≥developed (depósito 30% badge) Y vitalia-copilot-tools-impl state≥developed (Lucas screening tool).
+      phase: REPLAN_AWAITING_ARCHITECT_REFRESH
+      next_action: 'REPLAN 2026-05-20 ratified Chris. Ola 2 — arranca DESPUÉS de Ola 1 done y side payment-adapter-mvp shipped.
+        AWAITING /architect refresh tras gates GREEN. /architect produce ready package propio acotado: 6 stages kanban + atribución
+        agentic + DnD + auto-progression + screening clínico Lucas + badge depósito 30%. Reuso explícito: nicolify/closer-studio
+        + nicolify/copilot rail + core/luana-core-crm.Sale + core/luana-core-events StageAdvanced + CompoundScopeRepositoryBase
+        core.'
       blocked_by: null
       priority_override: null
       audit_iterations: 0
-  ready:
-  - id: vitalia-ux-discovery
-    kind: story
-    state: ready
-    title: vitalia-ux-discovery
-    tags: []
-    last_touched: 2026-05-17
-    extra:
-      outcome: vitalia-mvp-ui-foundation
-      phase: READY_PACKAGE_CLOSED_AND_SPLIT
-      next_action: '★ READY package CERRADO 2026-05-17 (Opus 4.7). Artifacts: 03-arch.md (consolidated index) + 03-arch-be.md
-        + 03-arch-fe.md + 03-arch-agentic.md + 04-validators.yaml + 05-guidelines.md + 06-tickets.yaml (56 tickets) + delta-arch-notes.md.
-        ★ NEXT STEP /pm-vitalia decisión: (A) ACCEPTAR split recommendation 7 sub-stories → migrar tickets a sub-stories +
-        spawn /dev-team per sub-story respetando WIP cap; o (B) RECHAZAR split + spawn /dev-team directo sobre esta mega-story
-        (advertencia: 56 tickets exceden 10-ticket cap, WIP developing ≤ 3 será cuello de botella). RECOMENDADO opción (A).
-        PRE-REQUISITO ambos casos: (1) /pm-luana ratifica 2 promotion proposals NEW en docs/promotion-protocol/proposals/2026-05-17-{platform-tenants-location-columns,offer-studio-multi-session-maintenance}.md
-        ANTES /dev-team pick T-be-migration-014 + T-be-migration-015 sub-tasks. (2) Side stories paralelas (vitalia-payment-adapter-mvp
-        · vitalia-copilot-tools-impl · vitalia-fiscal-emission-pe) DEBEN estar state≥developed ANTES /dev-team picks blocked
-        tickets — ver 06-tickets.yaml side_story_blockers tabla. State refined→ready cementado.'
-      blocked_by: null
-      priority_override: null
-      audit_iterations: 0
+  ready: []
   developing: []
   developed: []
   reviewing: []

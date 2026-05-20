@@ -1,0 +1,253 @@
+/**
+ * copy.ts — Inbox microcopy SSoT (single-locale, tree-shakable).
+ *
+ * Spanish neutro LatAm — NO voseo (spanish-text.md § R2).
+ * Cero strings hardcoded en JSX — todos los textos pasan por INBOX_COPY.
+ * Arch fitness test_no_hardcoded_strings_inbox.test.ts enforces.
+ *
+ * Ratificado /po-ux v1 Batch 2 (01-spec-extract.md § 10).
+ *
+ * downstream-regression-na: brand-local FE copy; no cross-brand consumers
+ */
+
+export const INBOX_COPY = {
+  pageTitle: "Inbox",
+
+  /** ListEmptyState 4 variants */
+  empty: {
+    noConversations: {
+      heading: "Aún no hay conversaciones",
+      body: "Cuando lleguen pacientes interesados, Adrián los va a recibir con calidez. Puedes acompañar siempre.",
+    },
+    noHelpNeeded: {
+      heading: "Adrián resuelve solo por ahora",
+      body: "Si alguna conversación necesita tu mirada, va a aparecer aquí con un indicador rojo.",
+    },
+    noMediaUnread: {
+      heading: "Sin audios o imágenes pendientes",
+      body: "Cuando un paciente envíe una foto o nota de voz, la vas a ver aquí antes de que se enfríe.",
+    },
+    noResultsFilter: {
+      heading: "Sin resultados para este filtro",
+      body: "Limpia los filtros para volver a ver todas las conversaciones.",
+      cta: "Limpiar filtros",
+    },
+  },
+
+  /** FilterChips labels */
+  filters: {
+    all: "Todas",
+    channels: {
+      whatsapp: "WhatsApp",
+      instagram: "Instagram",
+      email: "Email",
+    },
+    status: {
+      active: "Activa",
+      waitingDeposit: "Esperando depósito",
+      npsPending: "NPS pendiente",
+      closed: "Cerradas",
+    },
+    helpNeeded: "Adrián pide ayuda",
+    unreadMedia: "Audio/imagen sin abrir",
+    moreFilters: "Más filtros",
+    lessFilters: "Menos filtros",
+    stage: {
+      label: "Etapa",
+      interested: "Interesado",
+      considering: "Considerando",
+      readyToBook: "Listo para reservar",
+      decidedNo: "Decidió no",
+    },
+    mode: {
+      label: "Modo Adrián",
+      adrianDecide: "Adrián decide",
+      adrianConsulta: "Adrián consulta",
+      yoEscribo: "Yo escribo",
+    },
+    period: {
+      label: "Período",
+      today: "Hoy",
+      yesterday: "Ayer",
+      week: "Esta semana",
+      month: "Este mes",
+    },
+    searchPlaceholder: "Buscar conversación…",
+  },
+
+  /** Segmented mode control */
+  segmentedMode: {
+    adrianDecide: "Adrián decide",
+    adrianConsulta: "Adrián consulta",
+    yoEscribo: "Yo escribo",
+    ariaLabel: "Modo de atención",
+  },
+
+  /** Voice style chip */
+  voiceStyleChip: {
+    configured: "Estilo: consultivo · sin presión",
+    unconfigured: "Estilo: voz por defecto",
+    cta: "Configurar",
+    ariaLabel: "Estilo de voz de Adrián",
+  },
+
+  /** Pause agent button + modal */
+  pauseAgent: {
+    button: "Pausar Adrián",
+    buttonActive: "Adrián pausado",
+    modalTitle: "Pausar a Adrián",
+    modalBody:
+      "Adrián va a dejar de responder esta conversación durante 60 minutos. Puedes retomarlo en cualquier momento.",
+    reasonPlaceholder: "Razón (opcional, queda en el registro de auditoría)…",
+    confirmCta: "Pausar 60 minutos",
+    cancelCta: "Cancelar",
+    toastSuccess: "Adrián pausado por 60 minutos",
+    resumeCta: "Reanudar Adrián",
+    resumeToast: "Adrián vuelve a atender esta conversación",
+  },
+
+  /** Composer area */
+  composer: {
+    placeholder: {
+      adrianDecide:
+        "Escribe algo si quieres tomar la conversación…",
+      adrianConsulta:
+        "Adrián te sugiere esta respuesta… (puedes editarla antes de enviar)",
+      yoEscribo: "Escribe tu mensaje a {patient_name}…",
+    },
+    sendButtonAi: "Enviar como Adrián",
+    sendButtonHuman: "Enviar",
+    attachAriaLabel: "Adjuntar archivo",
+    voiceAriaLabel: "Grabar nota de voz",
+    recordingActive: "Grabando…",
+    recordingStop: "Detener grabación",
+  },
+
+  /** Multimedia messages */
+  multimedia: {
+    audioPlayer: {
+      ariaLabel: "Nota de voz",
+      transcript: "Transcripción:",
+      transcriptFailed: "No se pudo transcribir esta nota de voz.",
+      speedLabel: "Velocidad",
+    },
+    imagePlaceholder: {
+      heading: "Imagen recibida",
+      body: "El análisis de Adrián estará disponible en Slice 2.",
+      ariaLabel: "Vista previa de imagen",
+    },
+    documentLabel: "Documento adjunto",
+    stickerLabel: "Sticker",
+  },
+
+  /** Tools sheet */
+  toolsSheet: {
+    title: "Herramientas de Adrián",
+    ariaLabel: "Panel de herramientas de Adrián",
+    noTools: "No hay herramientas configuradas para esta conversación.",
+    lastUsed: "Usado el {date}",
+    neverUsed: "Sin usar todavía",
+    statusEnabled: "Habilitada",
+    statusDisabled: "Deshabilitada",
+    hipaaGuardNote:
+      "Deshabilitado — no se envían por WhatsApp (HIPAA-lite). Pídele al paciente que ingrese al portal seguro.",
+    changeOfferCta: "Cambiar oferta vinculada",
+    goToOfferStudio: "Ir a /offer-studio →",
+  },
+
+  /** Activity stream */
+  activityStream: {
+    title: "Actividad de Adrián",
+    ariaLabel: "Actividad reciente de Adrián",
+    expandAriaLabel: "Expandir actividad",
+    collapseAriaLabel: "Contraer actividad",
+    empty: "Sin actividad registrada todavía.",
+    loadMore: "Ver más actividad",
+    eventKinds: {
+      tool_call: "Usó herramienta",
+      llm_call: "Procesó consulta",
+      turn_start: "Comenzó turno",
+      turn_end: "Terminó turno",
+      proposal_generated: "Generó propuesta",
+      mode_changed: "Cambió modo",
+      message_sent: "Envió mensaje",
+      message_retracted: "Revirtió mensaje",
+      adrian_paused: "Adrián pausado",
+      compliance_blocked: "Bloqueado por cumplimiento",
+    },
+  },
+
+  /** Action receipt undo chip */
+  actionReceipt: {
+    revertCta: "Revertir",
+    revertAriaLabel: "Revertir mensaje ({remaining})",
+    modalTitle: "Revertir mensaje",
+    modalBody:
+      "Se va a solicitar al canal que elimine el mensaje. El texto vuelve al compositor para que lo puedas editar.",
+    confirmCta: "Sí, revertir",
+    cancelCta: "Cancelar",
+    toastSuccess: "Mensaje revertido. El compositor tiene el texto original.",
+    toastFailed:
+      "No se pudo revertir en el canal. El mensaje fue marcado como erróneo en el registro.",
+    expired: "Tiempo de reversión expirado",
+  },
+
+  /** Contact sidebar */
+  contactSidebar: {
+    ariaLabel: "Información del contacto",
+    sectionContact: "Contacto",
+    sectionStage: "Etapa de la venta",
+    sectionOffer: "Oferta vinculada",
+    sectionNpsHistory: "Historial NPS",
+    revealField: "Revelar",
+    noPhone: "Sin teléfono registrado",
+    noEmail: "Sin correo registrado",
+    noOffer: "Sin oferta vinculada",
+    linkOffer: "Vincular oferta",
+    npsEmpty: "Sin encuestas NPS todavía.",
+    toggleOpen: "Abrir ficha de contacto",
+    toggleClose: "Cerrar ficha de contacto",
+  },
+
+  /** Help needed banner */
+  helpNeededBanner: {
+    heading: "Adrián pide tu ayuda",
+    body: "Revisa la conversación y toma el control cuando estés listo.",
+    reasonLabel: "Razón:",
+    dismissCta: "Entendido",
+    takeover: "Tomar el control",
+  },
+
+  /** Proposal card banner (Adrián waiting approval) */
+  proposalCardBanner: {
+    heading: "Adrián tiene una propuesta lista",
+    body: "Revísala y apruébala o edítala antes de enviar.",
+    approveCta: "Aprobar y enviar",
+    editCta: "Editar propuesta",
+  },
+
+  /** Proactive outbound modal */
+  proactiveOutboundModal: {
+    title: "Iniciar conversación proactiva",
+    selectContact: "Seleccionar contacto",
+    selectTemplate: "Seleccionar plantilla",
+    preview: "Vista previa",
+    confirmCta: "Enviar",
+    cancelCta: "Cancelar",
+    sentSuccess: "Conversación iniciada correctamente.",
+  },
+
+  /** Error states */
+  errors: {
+    loadConversations: "No se pudieron cargar las conversaciones. Intenta de nuevo.",
+    loadThread: "No se pudo cargar la conversación. Intenta de nuevo.",
+    sendMessage: "No se pudo enviar el mensaje. Intenta de nuevo.",
+    sendConflict: "La conversación fue actualizada. Recarga para ver los cambios.",
+    revertFailed: "No se pudo revertir en el canal. El mensaje quedó marcado.",
+    generic: "Ocurrió un error inesperado. Intenta de nuevo.",
+    retry: "Reintentar",
+  },
+} as const;
+
+/** Type helper for INBOX_COPY leaf values */
+export type InboxCopyKey = typeof INBOX_COPY;

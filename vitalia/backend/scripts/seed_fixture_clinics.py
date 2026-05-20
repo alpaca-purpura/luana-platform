@@ -364,7 +364,7 @@ def _insert_fixture_audit_event(cursor: Any, fixture: ClinicFixture) -> None:
     cursor.execute(
         """
         INSERT INTO vitalia_medical_audit_log
-            (id, tenant_id, event_type, severity, metadata, created_at, actor_id)
+            (id, tenant_id, event_type, severity, payload_redacted, created_at, actor_type)
         VALUES
             (%s, %s, %s, %s, %s::jsonb, %s, %s)
         ON CONFLICT (id) DO NOTHING

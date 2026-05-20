@@ -29,7 +29,19 @@ const FEATURES_DIR = join(SRC, "features");
 
 // Ratchet baseline — known violations at time of T-infra-4 creation (shrink-only).
 const KNOWN_CROSS_FEATURE_INTERNAL_IMPORTS: ReadonlySet<string> = new Set<string>([
-  // Empty baseline — clean at T-infra-4.
+  // T-inbox-fe-2: crm-shared/api/use-conversation-detail.ts imports inbox internal type
+  // (conversation-detail.ts). crm-shared is a PRODUCER feature per 03-arch-fe.md § 1;
+  // inbox/types/conversation-detail.ts has a bi-directional type dependency.
+  // Justified: crm-shared ↔ inbox types are tightly coupled in Ola 1 (pipeline/agenda Ola 2+).
+  "src/features/crm-shared/api/use-conversation-detail.ts",
+  // T-inbox-fe-2: use-conversation-filters.ts imports ConversationsFilters type from
+  // crm-shared/api/use-conversations internal path. To be refactored to use
+  // crm-shared index.ts public API in T-inbox-fe-refactor.
+  "src/features/inbox/hooks/use-conversation-filters.ts",
+  // T-inbox-fe-3: ConversationListPanel imports useConversations from crm-shared internal path.
+  // crm-shared is the SSoT producer for CRM data contracts. To be refactored to public
+  // API (crm-shared index.ts) in T-inbox-fe-refactor.
+  "src/features/inbox/components/ConversationListPanel.tsx",
 ]);
 
 function collectTsFiles(dir: string): string[] {
