@@ -3,13 +3,13 @@ brand: vitalia
 vertical: "Salud + Bienestar"
 status: shipped
 last_updated: 2026-05-20
-slice_1_status: ola1-in-progress-2026-05-20-paused-for-new-session  # Pre-flight gates GREEN 2026-05-20 02:00 UTC + Ola 1 autonomous build ARRANCADO (~14 hrs wall). Sesión actual generó 14 commits wip/vitalia: pre-flight (2eac033) + T-inbox-be-1 (137fa28) + T-1 fideliz (2e5f8e5) + T-3 fideliz (750f0c3) + T-12 fideliz (973ed2f) + T-2 fideliz (8601559) + T-inbox-be-2 (42a039f) + T-inbox-be-4 (bfd3c20+c805cbe) + T-inbox-be-3 (055a6f1) + T-4 fideliz (df92ede) + T-5 fideliz (edac078) + T-inbox-agentic-1 (532228f Opus) + T-6 fideliz (9715aa7) + T-inbox-be-5+6+T-7 BUNDLED (4153062 wrong msg) + T-16 (dddb442) + T-9 Opus (a043cef) + T-10 Opus (f508867) + T-15 (0ca020b) + T-inbox-fe-1 (7b73ec0) + T-11 (e0bcf56). Inbox 8/13 done. Fidelización 14/16 done. Pause/handoff a nueva sesión para completar 10 tickets restantes + auditor + merge cada story. Compact crash en 12:00 UTC interrumpió tracking pero work shipped.
+slice_1_status: ola1-done-2026-05-20  # ✅ Ola 1 COMPLETED — inbox + fideliz state=done en main (squash-merge pending). 29 tickets shipped + 2 auditor iter cycles + 3 fix-loop iter (BE F1+F2 pgcrypto incluido). Capabilities/ YAMLs deferred to follow-up session (placeholder paths documentados en 07-merge.md per story). Cross-cutting fixes mid-session: db_session fixture promotion · Clerk catch-all routes · Cloudflare allowedDevOrigins · middleware→proxy migration · POM tablist · NuqsAdapter wrapper.
 active_outcomes:
   - dev-environment-multibrand     # receta vitalia shipped, cross-brand replicación pendiente nicolify/comunify/lupulo
   - vitalia-mvp-ui-foundation      # outcome maestro Slice 1/2/3 FE Vitalia MVP
 active_stories:
-  - vitalia-slice-1-inbox                  # state: ready · Ola 1 (paralela fidelización) · ARCHITECT REFRESH CERRADO 2026-05-20 — 11 artifacts produced, awaiting /dev-team pickup
-  - vitalia-slice-1-fidelizacion           # state: ready · Ola 1 (paralela inbox) · ARCHITECT REFRESH CERRADO 2026-05-20 — 9 artifacts produced, awaiting /dev-team pickup
+  # vitalia-slice-1-inbox            # state: done · archived in vitalia/docs/archive/2026/stories/ · merged 2026-05-20
+  # vitalia-slice-1-fidelizacion     # state: done · archived in vitalia/docs/archive/2026/stories/ · merged 2026-05-20
   - vitalia-slice-1-pipeline               # state: refined · Ola 2 (paralela marketing) · depende side payment-adapter-mvp · pending /architect refresh
   - vitalia-slice-1-marketing              # state: refined · Ola 2 (paralela pipeline) · NO usar growth-studio Nicolify (arch diferente per Chris) · pending /architect refresh
   - vitalia-slice-1-agenda                 # state: refined · Ola 3 (sola, más compleja) · depende side payment-adapter-mvp + side fiscal-emission-pe · pending /architect refresh
