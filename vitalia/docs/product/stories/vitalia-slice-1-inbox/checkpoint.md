@@ -16,7 +16,7 @@ ticket_subset_inherited: [T-inbox-1, T-inbox-2, T-inbox-3, T-inbox-4, T-inbox-5,
 blocker_dependencies: []                     # vitalia-slice-1-infra-cross-cutting ya DONE (2026-05-18)
 side_story_blockers: []                      # ninguna
 preflight_gates_required:
-  - clerk_organizations_enabled              # B2B multi-tenant
+  - clerk_test_token_fresh_and_webhook_secret_configured
   - clerk_test_users_3_created               # dr.demo + recepcion + admin
   - playwright_storage_state_generated
   - playwright_smoke_suite_green_23_specs

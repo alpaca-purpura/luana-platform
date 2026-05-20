@@ -16,7 +16,7 @@ ticket_subset_inherited: [T-fidelizacion-1, T-fidelizacion-2, T-fidelizacion-3, 
 blocker_dependencies: []                     # infra-cross-cutting DONE 2026-05-18
 side_story_blockers: []
 preflight_gates_required:
-  - clerk_organizations_enabled
+  - clerk_test_token_fresh_and_webhook_secret_configured
   - clerk_test_users_3_created
   - playwright_storage_state_generated
   - playwright_smoke_suite_green_23_specs

@@ -16,7 +16,7 @@ ticket_subset_inherited: [T-agenda-1, T-agenda-2, T-agenda-3, T-agenda-4, T-agen
 blocker_dependencies: []                     # infra-cross-cutting DONE
 side_story_blockers: [vitalia-payment-adapter-mvp, vitalia-fiscal-emission-pe]
 preflight_gates_required:
-  - clerk_organizations_enabled
+  - clerk_test_token_fresh_and_webhook_secret_configured
   - clerk_test_users_3_created
   - playwright_storage_state_generated
   - playwright_smoke_suite_green_23_specs

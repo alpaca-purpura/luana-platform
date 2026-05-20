@@ -16,7 +16,7 @@ ticket_subset_inherited: [T-marketing-1, T-marketing-2, T-marketing-3, T-marketi
 blocker_dependencies: []                     # infra-cross-cutting DONE
 side_story_blockers: []                      # vitalia-copilot-tools-impl ya DONE 2026-05-18 (Lucas tools shipped)
 preflight_gates_required:
-  - clerk_organizations_enabled
+  - clerk_test_token_fresh_and_webhook_secret_configured
   - clerk_test_users_3_created
   - playwright_storage_state_generated
   - playwright_smoke_suite_green_23_specs

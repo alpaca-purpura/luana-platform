@@ -15,29 +15,28 @@ purpose: |
 
 ## § Bloque A — Clerk dashboard (manual Chris)
 
+> **★ Decisión Chris 2026-05-20: NO usamos Clerk Organizations en esta etapa.**
+> Multi-tenancy se maneja via tenants + users propios en engine `luana-core-iam` (tablas
+> `tenants` + `users` + `user_tenants` junction). Clerk es solo identity provider.
+> Ver `~/.claude/projects/-home-chalreme-Proyectos-luana-platform/memory/no-clerk-organizations.md`.
+
 Clerk instance: `moral-gator-27.clerk.accounts.dev` (test).
 
-- [ ] **A.1** — Habilitar Organizations feature en Clerk dashboard.
-  Pasos:
-  1. Login Clerk dashboard (https://dashboard.clerk.com)
-  2. Seleccionar instance `moral-gator-27`
-  3. Navigation → User & Authentication → Organizations
-  4. Toggle "Enable organizations" → ON
-  5. Save changes
-
-  Verify: `curl -H "Authorization: Bearer $CLERK_SECRET_KEY" https://api.clerk.com/v1/organizations?limit=1`
-  retorna 200 con `[]` (no `organization_not_enabled_in_instance` error).
-
-- [ ] **A.2** — Generar testing token fresco si el actual expiró.
+- [ ] **A.1** — Verificar testing token fresco.
   Current: `CLERK_TESTING_TOKEN_VITALIA=1779166200-U2unS5MYsyTOGnFGxaS0lsTDuh-eNafxtE7Hwpnce3E`
   Verify expiry: Clerk dashboard → Testing → Tokens → expiry date.
   Si <30 días → regenerar y reemplazar en `vitalia/.env.dev`.
 
-## § Bloque B — Test users + organization (vía Clerk CLI)
+- [ ] **A.2** — Verificar Clerk webhook `VITALIA_CLERK_WEBHOOK_SECRET` configurado en `vitalia/.env.dev`.
+  Sin secret → engine webhook handler no acepta payloads → no auto-sync user.created.
+  Si missing → Clerk dashboard → Webhooks → endpoint dev-app → copiar signing secret.
 
-> Usar pattern `clerk-cli-automation-pattern` (memoria reference) — automatizable via `npx clerk` tras `clerk auth login` 1 vez.
+## § Bloque B — Test users (vía Clerk CLI) + tenants (vía seed script)
 
-- [ ] **B.1** — Crear 3 test users:
+> Usar pattern `clerk-cli-automation-pattern` (memoria reference). Automatizable via
+> `npx clerk users create` tras `clerk auth login` 1 vez. **NO usar `organizations` commands**.
+
+- [ ] **B.1** — Crear 3 test users (Clerk-side):
   ```bash
   # Test user #1 — owner+doctor
   npx clerk users create \
@@ -66,34 +65,48 @@ Clerk instance: `moral-gator-27.clerk.accounts.dev` (test).
 
   Verify: `curl -H "Authorization: Bearer $CLERK_SECRET_KEY" https://api.clerk.com/v1/users` retorna 3 users.
 
-- [ ] **B.2** — Crear test organization:
+- [ ] **B.2** — Sync automático Clerk → backend (`users` table).
+  Al crear users en B.1, Clerk dispara `user.created` webhook hacia engine handler:
+  `core/luana-core-iam/src/luana_core_iam/api/webhooks.py::_handle_user_sync` →
+  `INSERT INTO users (clerk_id, email, full_name, role='admin')`.
+  Vitalia ClerkWebhookAdapter (`vitalia/backend/src/modules/vitalia/infrastructure/adapters/clerk_webhook_adapter.py`)
+  además dispara `OnboardingService.create_clinic_profile(user)` que crea tenant + user_tenant junction.
+
+  **Verify post B.1:**
   ```bash
-  npx clerk organizations create \
-    --name "Clínica Demo Vitalia" \
-    --slug "clinica-demo-vitalia" \
-    --public-metadata '{"vertical":"medical","country":"PE","plan_tier":"clinic"}'
+  docker exec luana-dev-luana_postgres_dev-1 psql -U postgres -d vitalia_dev \
+    -c "SELECT id, email, clerk_id, role FROM users;"
+  # Expected: 3 rows con los 3 clerk_id
   ```
 
-- [ ] **B.3** — Add users to organization con roles:
-  ```bash
-  # dr.demo + admin como org admin
-  npx clerk organizations add-member <ORG_ID> dr.demo@vitalia.test --role org:admin
-  npx clerk organizations add-member <ORG_ID> admin@vitalia.test --role org:admin
-  # recepcion como member
-  npx clerk organizations add-member <ORG_ID> recepcion@vitalia.test --role org:member
-  ```
+  Si webhook NO disparó (dev-app no expuesto a Clerk webhook, o testing token override) →
+  fallback B.3 manual.
 
-- [ ] **B.4** — Crear tenant + clinic_branch en vitalia DB matching Clerk org_id:
+- [ ] **B.3** — Fallback: seed 3 tenants fixture + asociar 3 users via SQL.
+  Si B.2 no auto-sincronizó, usar fixture seed:
   ```bash
-  docker exec -it luana-dev-vitalia_backend_dev-1 bash -c "
-    cd /workspace/vitalia/backend && uv run python -m scripts.seed_demo_tenant \
-      --clerk-org-id <ORG_ID> \
-      --clinic-name 'Clínica Demo Vitalia' \
-      --vertical medical \
-      --country PE
+  docker exec luana-dev-vitalia_backend_dev-1 bash -c "
+    cd /workspace/vitalia/backend && uv run python scripts/seed_fixture_clinics.py --apply
   "
+  # Crea 3 tenants: Aurora (AR/dental) + Mindful (CL/psychology) + Sanaré (MX/psychiatry)
   ```
-  (Si script no existe, crearlo en proceso T-preflight-1.)
+
+  Y crear NEW script `seed_test_users_link.py` (en proceso T-preflight-1):
+  ```bash
+  docker exec luana-dev-vitalia_backend_dev-1 bash -c "
+    cd /workspace/vitalia/backend && uv run python scripts/seed_test_users_link.py
+  "
+  # Link: dr.demo + recepcion → Sanaré (tenant primario tests)
+  #       admin → todos 3 (super_admin)
+  ```
+
+  Verify:
+  ```bash
+  docker exec luana-dev-luana_postgres_dev-1 psql -U postgres -d vitalia_dev \
+    -c "SELECT u.email, t.slug, ut.role FROM users u JOIN user_tenants ut ON u.id=ut.user_id JOIN tenants t ON t.id=ut.tenant_id;"
+  ```
+
+- [ ] **B.4** — (NO usar Clerk Organizations). Skip — modelo legacy ya validado.
 
 ## § Bloque C — Playwright storage state
 

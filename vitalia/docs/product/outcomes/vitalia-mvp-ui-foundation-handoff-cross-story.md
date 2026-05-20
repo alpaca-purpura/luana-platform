@@ -32,13 +32,14 @@ purpose: |
 
 Bloqueo ABSOLUTO Ola 1 hasta cumplir todos:
 
-- [ ] Clerk dashboard `moral-gator-27.clerk.accounts.dev` → Organizations feature ENABLED (vitalia es B2B multi-tenant)
-- [ ] 3 test users creados via Clerk API:
-  - `dr.demo@vitalia.test` (rol: owner+doctor) — `OrgRole: org:admin` + custom claim `vitalia_role: doctor`
-  - `recepcion@vitalia.test` (rol: recepcion) — `OrgRole: org:member` + custom claim `vitalia_role: recepcion`
-  - `admin@vitalia.test` (rol: super_admin) — `OrgRole: org:admin` + custom claim `vitalia_role: super_admin`
-- [ ] 1 test organization "Clínica Demo Vitalia" creada + 3 users assignados
-- [ ] Playwright storage state generado: `vitalia/frontend/playwright/.clerk/user.json` (vía auth.fixture)
+- [ ] Clerk testing token fresco (`CLERK_TESTING_TOKEN_VITALIA` en `vitalia/.env.dev`) + `VITALIA_CLERK_WEBHOOK_SECRET` configurado
+- [ ] 3 test users creados via Clerk API (sin Organizations — Luana usa tenants+users propios engine `luana-core-iam`):
+  - `dr.demo@vitalia.test` — publicMetadata `{"vitalia_role":"doctor"}`
+  - `recepcion@vitalia.test` — publicMetadata `{"vitalia_role":"recepcion"}`
+  - `admin@vitalia.test` — publicMetadata `{"vitalia_role":"super_admin"}`
+- [ ] 3 tenants fixture seedeados via `scripts/seed_fixture_clinics.py --apply` (Aurora AR / Mindful CL / Sanaré MX)
+- [ ] Asociación user↔tenant: vía webhook auto-sync (Clerk user.created → engine `_handle_user_sync` → vitalia `OnboardingService.create_clinic_profile`) o fallback script `seed_test_users_link.py`
+- [ ] Playwright storage state generado: `vitalia/frontend/playwright/.clerk/user.json` (vía auth.fixture, sin org_switch)
 - [ ] Suite smoke 23 specs GREEN local (`E2E_BASE_URL=http://localhost:3002`)
 - [ ] Suite smoke 23 specs GREEN live (`E2E_BASE_URL=https://dev-app.vitalialat.com`)
 - [ ] Promotion proposal `2026-05-20-core-platform-extensions-slice-1` (cron_envelope + CompoundScopeRepositoryBase) state=migrated en main:
