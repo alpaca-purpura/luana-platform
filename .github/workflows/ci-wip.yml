@@ -4,11 +4,29 @@ name: CI (WIP)
 # Goal: fast feedback (<5 min) for iterative work-in-progress commits.
 # Does NOT run: arch-fitness, coverage threshold, jscpd, pip-audit.
 # Full gates run on main via ci.yml when squash-merging the wip branch.
+#
+# Quota-aware (post 2026-05-19 mitigations):
+# - paths-ignore: docs-only / .claude-only commits skip CI (autosave docs no debería burn quota)
+# - concurrency: cancel in-progress runs cuando newer commit lands en mismo branch
+#   (rapid wip push sequences son comunes — cancel los obsolete)
+#
+# Ref: docs/process/learnings.md § 2026-05-19 — GH Actions quota incident
 
 on:
   push:
     branches:
       - 'wip/**'
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.claude/**'
+      - '.gitignore'
+      - 'LICENSE'
+
+# Cancel in-progress runs when newer commit lands on same wip branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 # Minimum permissions — least-privilege (supply chain safety)
 permissions:
