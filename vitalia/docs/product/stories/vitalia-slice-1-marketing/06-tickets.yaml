@@ -413,7 +413,7 @@ tickets:
           - vitalia/frontend/e2e/specs/smoke/marketing.smoke.spec.ts::test_tab_change_updates_url_re_renders
     blocked_by: [T-mk-fe-2, T-mk-fe-3, T-mk-fe-4, T-mk-fe-5]
     state: pushed
-    pushed_sha: PENDING_COMMIT
+    pushed_sha: "145a854"
     defer_validators:
       - id: e2e_smoke_marketing
         reason: "Turbopack dev server drops connections during concurrent Playwright browser requests to /marketing (ERR_EMPTY_RESPONSE on lazy compile). Route serves via curl. CI gate where server pre-built."
