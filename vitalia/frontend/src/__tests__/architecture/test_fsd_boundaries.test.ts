@@ -57,6 +57,10 @@ const KNOWN_FSD_BOUNDARY_VIOLATIONS: ReadonlySet<string> = new Set<string>([
   "src/features/inbox/components/ConversationItem.tsx",
   "src/features/inbox/components/ConversationList.tsx",
   "src/features/inbox/components/ConversationListPanel.tsx",
+  // T-inbox-fe-4: ConversationThread imports useConversationDetail from crm-shared public API.
+  // crm-shared is the SSoT for CRM conversation data contracts (Ola 1+).
+  // Justified: crm-shared is infrastructure-like PRODUCER; inbox is consumer per 03-arch-fe.md.
+  "src/features/inbox/components/ConversationThread.tsx",
 ]);
 
 function collectTsFiles(dir: string): string[] {

@@ -18,6 +18,15 @@ export { FilterChips } from "./components/FilterChips";
 export type { FilterChipsValue } from "./components/FilterChips";
 export { ListEmptyState } from "./components/ListEmptyState";
 export type { ListEmptyStateVariant } from "./components/ListEmptyState";
+// Components (T-inbox-fe-4: conversation thread + controls)
+export { ConversationThread } from "./components/ConversationThread";
+export { ThreadHeader } from "./components/ThreadHeader";
+export { SegmentedControl3Modes } from "./components/SegmentedControl3Modes";
+export { VoiceStyleChip } from "./components/VoiceStyleChip";
+export { PauseAdrianButton } from "./components/PauseAdrianButton";
+export { PauseAdrianConfirmModal } from "./components/PauseAdrianConfirmModal";
+export { ToolsSheetTrigger } from "./components/ToolsSheetTrigger";
+export { ContactSidebarToggle } from "./components/ContactSidebarToggle";
 // Scaffold layout + page client
 export { InboxLayout } from "./components/InboxLayout";
 export { InboxPageClient } from "./components/InboxPageClient";
