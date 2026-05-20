@@ -3,7 +3,7 @@ slug: fixia
 kind: brand
 status: pending-bootstrap
 vertical: "Servicios Hogar + Oficios"
-last_updated: 2026-05-17
+last_updated: 2026-05-19
 ssot_live:
   - fixia/docs/product/
   - fixia/docs/domains/

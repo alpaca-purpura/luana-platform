@@ -42,10 +42,14 @@ class Settings(BaseSettings):
     # TTL magic link en segundos — D-PI5-019 (15 min default)
     COPILOT_TELEGRAM_LINK_TOKEN_TTL_SECONDS: int = 900
     # Bot username (sin @) usado para construir deep link t.me/{username}?start=TOKEN
-    COPILOT_TELEGRAM_BOT_USERNAME: str = "nicolify_copilot_bot"
+    # Brand-specific — MUST override en {brand}/.env.dev (e.g., nicolify_copilot_bot,
+    # vitalia_copilot_bot, etc.). Engine no asume brand (proposal 2026-05-19).
+    COPILOT_TELEGRAM_BOT_USERNAME: str = ""
 
     # Frontend URL pública (para construir CTA URLs hacia web from bot responses)
-    FRONTEND_URL: str = "https://app.nicolify.com"
+    # Brand-specific — MUST override en {brand}/.env.dev (e.g., https://app.nicolify.com,
+    # https://dev-app.vitalialat.com, etc.). Engine no asume brand (proposal 2026-05-19).
+    FRONTEND_URL: str = ""
 
     # Google Calendar
     GOOGLE_CLIENT_ID: str = ""
@@ -182,8 +186,11 @@ class Settings(BaseSettings):
     # Qdrant
     QDRANT_URL: str  # Must be set in .env (e.g. http://qdrant:6333)
     QDRANT_API_KEY: str = ""  # Optional if running locally without auth, but required for prod
-    QDRANT_COLLECTION: str = "visionarias_knowledge"
-    QDRANT_COLLECTION_HYBRID: str = "visionarias_hybrid"
+    # Brand-specific — MUST override en {brand}/.env.dev (e.g., visionarias_knowledge for nicolify
+    # legacy, vitalia_knowledge, comunify_knowledge, etc.). Engine no asume brand (proposal
+    # 2026-05-19). Data isolation crítico (HIPAA-lite, GDPR per brand).
+    QDRANT_COLLECTION: str = ""
+    QDRANT_COLLECTION_HYBRID: str = ""
     QDRANT_VECTOR_SIZE: int = 3072  # Default for text-embedding-3-large
     QDRANT_SPARSE_MODEL: str = "Qdrant/bm25"  # or "prithivida/Splade_PP_en_v1"
 
@@ -235,9 +242,11 @@ class Settings(BaseSettings):
     CORS_ORIGINS: list[str] = []
 
     # ── LiteLLM Proxy (PI-2 S3 PR-2) ────────────────────────────────────
-    # Endpoint del proxy. En dev/prod compose: http://visionarias_litellm:4000/v1
-    # Local dev sin compose: override a http://localhost:4000/v1
-    LITELLM_BASE_URL: str = "http://visionarias_litellm:4000/v1"
+    # Endpoint del proxy. Default brand-agnostic = localhost:4000 (post proposal 2026-05-19).
+    # Cada brand override en {brand}/.env.dev — production typically:
+    #   nicolify: http://visionarias_litellm:4000/v1 (legacy container name)
+    #   vitalia/comunify/lupulo: http://luana-{env}-{brand}_litellm-1:4000/v1
+    LITELLM_BASE_URL: str = "http://localhost:4000/v1"
     # Master key del proxy. En dev: sk-litellm-master-dev (warning si default).
     # En prod: rotation policy per-environment via secrets manager (Q4 — open).
     LITELLM_MASTER_KEY: str = "sk-litellm-master-dev"

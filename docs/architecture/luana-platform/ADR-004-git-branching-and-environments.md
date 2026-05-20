@@ -23,6 +23,7 @@ de desarrollo activa. La politica legacy dictaba:
 
 - **Una sola rama de trabajo:** `development` (unica branch de commits).
 - **`main` = produccion auto-deploy:** push a main triggerea deploy inmediato.
+  > Nota 2026-05-19: ese era el comportamiento legacy. Ahora main solo dispara CI gates; staging es manual + prod va por release/*.
 - **Worktrees PROHIBIDOS:** ban explicito ("no worktrees") con justificacion historica
   de que "Chris perdio una semana" por colision de branches en worktrees.
 - **Sesiones paralelas en mismo workdir:** dos sesiones Claude Code usaban el mismo
@@ -68,8 +69,10 @@ con 3 sesiones Claude paralelas que no tienen memory compartida.
 | Branch | Proposito | Trigger CI/CD | Quien la usa |
 |---|---|---|---|
 | `wip/{slug}` | Autosave iterativo por sesion paralela. TTL 30 dias (cron cleanup). Commits WIP frecuentes. | `ci-wip.yml` (light: lint + tests targeted, <5 min) | Cada sesion Claude Code o developer en su worktree dedicado. |
-| `main` | Integracion estable. Squash-merge wip/* cuando el trabajo esta listo. Estado siempre deployable. | `ci.yml` (full gates) + `cd-staging.yml` (staging auto-deploy) | Squash-merge consciente desde wip/*. |
-| `release/{brand}-vX.Y.Z` | Marcha blanca aprobada a produccion. Branch efimera (vida horas, auto-deleted post-deploy). | `cd-prod.yml` (parse brand+version, deploy selective) | Desde main validado post-staging. |
+| `main` | Integracion estable. Squash-merge wip/* cuando el trabajo esta listo. Estado siempre deployable. | `ci.yml` (full gates) | Squash-merge consciente desde wip/*. |
+| `release/{brand}-vX.Y.Z` | Marcha blanca aprobada a produccion. Branch efimera (vida horas, auto-deleted post-deploy). | `cd-prod.yml` (parse brand+version, deploy selective) | Desde main validado. |
+
+> **★ Cambio policy 2026-05-19 (ratificada Chris):** `cd-staging.yml` ya NO es auto-trigger en push a main. Pasó a `workflow_dispatch` (manual desde GH Actions UI o `gh workflow run`). Razón: evitar deploys staging continuos en cada commit a main (incluyendo docs-only PRs). Staging deploys son ahora explícitos cuando se necesita validar cambios runtime antes de release. CI gates en main (push + pull_request) se mantienen activos como guardrail. **Solo `release/*` dispara deploy automático** — cd-prod.yml.
 
 ### 2.2 Worktrees per sesion paralela (REVOCACION del ban historico)
 

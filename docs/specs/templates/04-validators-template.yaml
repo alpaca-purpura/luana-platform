@@ -1,7 +1,7 @@
 # 04-validators-template.yaml — Validators ejecutables
 #
-# Owner: /architect orchestrator (post pm-redesign 2026-05 Punto 4).
-# Schema v4 — 4 categories: non_functional / functional / visual / agentic_eval.
+# Owner: /architect orchestrator (post pm-redesign 2026-05 Punto 4 + v4.1 cement 2026-05-19).
+# Schema v4.1 — 5 categories: non_functional / functional / visual / agentic_eval / architectural_validation.
 #
 # /dev-team itera contra estos validators en bucle hasta GREEN o cap_reached.
 # /auditor verifica cada uno fue corrido + GREEN antes APPROVED.
@@ -9,10 +9,17 @@
 # CRITICAL: cada validator MUST tener `must_pass: true` y comando ejecutable shell.
 # Si falla, fix targeted + re-run. NO disable ni skip sin justificación commit.
 #
+# v4.1 cement 2026-05-19:
+# - Nueva categoría `architectural_validation` separada (DDD/FSD boundaries, tenant grep, anti-dup, cross-module)
+# - Nueva sección `test_construction_plan` (architect dicta orden + POMs + fixtures + mapping)
+# - Paths brand-scoped (post multibrand reorg 2026-05-15): cd {brand}/backend, cd {brand}/frontend
+# - Workspace venv: ${WS}/.venv/bin/{ruff,pytest} (no backend/.venv)
+#
 # ─────────────────────────────────────────────────────────────────
 
 story_id: STORY_ID
-schema_version: v4
+brand: BRAND_SLUG                                  # ★ v4.1 — vitalia | nicolify | comunify | lupulo
+schema_version: v4.1
 
 validators:
   # ═══════════════════════════════════════════════════════════════
@@ -206,8 +213,55 @@ validators:
     timeout_sec: 600
     description: "Prompt injection + jailbreak + PII leak + scope creep tests"
 
+  # ═══════════════════════════════════════════════════════════════
+  # ARCHITECTURAL VALIDATION (★ v4.1 cement 2026-05-19 — separada de non_functional)
+  # Verificación arquitectónica explícita: DDD/FSD boundaries, tenant grep, anti-dup, cross-module audit
+  # Apply: SIEMPRE, en cualquier story que toque código
+  # ═══════════════════════════════════════════════════════════════
+
+  - id: arch_ddd_boundaries
+    category: architectural_validation
+    type: pytest
+    cmd: "cd {brand}/backend && ${WS}/.venv/bin/pytest tests/architecture/test_ddd_boundaries.py -v"
+    must_pass: true
+    timeout_sec: 30
+    description: "DDD layers domain→infra→app→api boundary enforcement"
+
+  - id: arch_tenant_isolation_grep
+    category: architectural_validation
+    type: shell
+    cmd: "! grep -rn 'select.*Model)' {brand}/backend/src/modules/{brand}/{m}/ | grep -v 'tenant_id' | grep -v test_"
+    must_pass: true
+    timeout_sec: 10
+    description: "Cada query debe filtrar tenant_id (regex scan + auditor doble check)"
+
+  - id: arch_anti_duplication_scan
+    category: architectural_validation
+    type: shell
+    cmd: "scripts/scan_cross_brand_mirror.sh {brand} {m}"
+    must_pass: true
+    timeout_sec: 30
+    description: "Detecta mirrors cross-brand del módulo. Match → spawn promotion proposal."
+
+  - id: arch_fsd_boundaries
+    category: architectural_validation
+    type: shell
+    cmd: "cd {brand}/frontend && npx vitest run src/__tests__/architecture/test_fsd_boundaries.test.ts"
+    must_pass: true
+    timeout_sec: 60
+    description: "FSD-Lite boundaries — feature → feature own/shared/lib only"
+
+  - id: arch_no_cross_brand_imports
+    category: architectural_validation
+    type: shell
+    cmd: "! grep -rn 'from {other_brand}' {brand}/backend/src/ {brand}/frontend/src/ 2>/dev/null"
+    must_pass: true
+    timeout_sec: 10
+    description: "Cross-brand import detection (HARD ban — lift via /pm-luana)"
+
 # ═══════════════════════════════════════════════════════════════
 # Scenario coverage matrix — 1 scenario maps to N validators
+# ★ v4.1 ampliado con sub-categorías mandatory
 # ═══════════════════════════════════════════════════════════════
 
 scenario_coverage:
@@ -219,6 +273,66 @@ scenario_coverage:
     validators: [scenario_edge, agentic_trajectory]
   - scenario_id: adversarial
     validators: [scenario_adversarial, agentic_adversarial]
+  # ★ v4.1 sub-categorías mandatory (heredadas de /po-ux refined gate)
+  - scenario_id: race_condition
+    validators: [scenario_edge, integration_e2e]
+  - scenario_id: concurrent_users
+    validators: [scenario_edge, integration_e2e]
+  - scenario_id: network_failure
+    validators: [scenario_edge, integration_e2e]
+  - scenario_id: empty_state
+    validators: [integration_e2e, visual_fidelity]
+  - scenario_id: large_dataset
+    validators: [integration_e2e]
+  - scenario_id: accessibility
+    validators: [a11y_axe]
+  - scenario_id: i18n
+    validators: [integration_e2e]
+
+# ═══════════════════════════════════════════════════════════════
+# ★ Test Construction Plan (v4.1 cement 2026-05-19)
+# Architect dicta cómo construir Playwright tests. Dev-team CONSTRUYE siguiendo,
+# NO inventa orden, POMs, fixtures, ni mapping scenario→test.
+# ═══════════════════════════════════════════════════════════════
+
+test_construction_plan:
+  playwright_required: true                    # HARD para stories ui-story o ui-mixed; false solo service-only
+  base_path: "{brand}/frontend/e2e/regression/{story-id}/"
+
+  # Orden de creación de tests (dependencias numeradas)
+  creation_order:
+    - { step: 1, file: "fixtures/{story-id}.fixture.ts",       content: "Auth state + tenant setup + DB seed + network mocks", depends_on: [] }
+    - { step: 2, file: "poms/{m}-list-page.pom.ts",            content: "POM list",                            depends_on: [1] }
+    - { step: 3, file: "poms/{m}-detail-page.pom.ts",          content: "POM detail",                          depends_on: [1] }
+    - { step: 4, file: "{m}-happy.spec.ts",                    content: "Scenario happy",                      depends_on: [2, 3] }
+    - { step: 5, file: "{m}-negative.spec.ts",                 content: "Scenario negative",                   depends_on: [2, 3] }
+    - { step: 6, file: "{m}-edge.spec.ts",                     content: "Sub-categorías race/concurrent/empty/large/network", depends_on: [2, 3] }
+    - { step: 7, file: "{m}-adversarial.spec.ts",              content: "Scenario adversarial",                depends_on: [2, 3] }
+    - { step: 8, file: "../a11y/{story-id}.spec.ts",           content: "axe-core wcag2aa",                    depends_on: [4] }
+    - { step: 9, file: "../i18n/{story-id}.spec.ts",           content: "3 tenants distintos locale",          depends_on: [4] }
+
+  # Mapping explícito Gherkin scenario → test
+  scenario_to_test:
+    - { scenario: "happy",            file: "{m}-happy.spec.ts",       function: "test('user creates {entity} successfully'" }
+    - { scenario: "negative",         file: "{m}-negative.spec.ts",    function: "test('rejects empty required field'" }
+    - { scenario: "edge",             file: "{m}-edge.spec.ts",        function: "test('handles standard edge case'" }
+    - { scenario: "adversarial",      file: "{m}-adversarial.spec.ts", function: "test('rejects cross-tenant access'" }
+    - { scenario: "race_condition",   file: "{m}-edge.spec.ts",        function: "test('handles concurrent create same slug'" }
+    - { scenario: "concurrent_users", file: "{m}-edge.spec.ts",        function: "test('tenant isolation under concurrent load'" }
+    - { scenario: "network_failure",  file: "{m}-edge.spec.ts",        function: "test('shows retry on 500'" }
+    - { scenario: "empty_state",      file: "{m}-edge.spec.ts",        function: "test('renders empty state with CTA'" }
+    - { scenario: "large_dataset",    file: "{m}-edge.spec.ts",        function: "test('pagination handles 1000 items'" }
+    - { scenario: "accessibility",    file: "../a11y/{story-id}.spec.ts", function: "test('axe-core wcag2aa pass'" }
+    - { scenario: "i18n",             file: "../i18n/{story-id}.spec.ts", function: "test('renders correct currency per tenant'" }
+
+  poms_required:
+    - { file: "{m}-list-page.pom.ts",   methods: ["goto()", "filterBy(criteria)", "clickCreateButton()", "getRowCount() → number", "getRowByName(name)"] }
+    - { file: "{m}-detail-page.pom.ts", methods: ["goto(id)", "fillForm(data)", "submit()", "getErrorMessage() → string|null"] }
+
+  fixtures_required:
+    - { name: "authedAs(role)",        content: "Clerk storage state per role" }
+    - { name: "dbSeed(m, count)",      content: "Insert N rows in {table} para tenant test" }
+    - { name: "networkFailure(endpt)", content: "page.route mock con 500/503 para network failure sim" }
 
 # ═══════════════════════════════════════════════════════════════
 # Iteration policy — autonomous build behavior

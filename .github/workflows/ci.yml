@@ -1,10 +1,40 @@
 name: CI
 
+# Quota-aware triggers (post 2026-05-19 mitigations):
+# - push:main + pull_request:main both fire to gate code changes
+# - paths-ignore: docs-only / process-only changes skip CI entirely
+#   (no value running full suite when only docs/, .claude/, *.md changed)
+# - concurrency: cancel in-progress runs when newer commit lands
+#   (avoid duplicate billing on rapid push sequences + PR rebases)
+#
+# Ref: docs/process/learnings.md § 2026-05-19 — GH Actions quota incident
+
 on:
   pull_request:
     branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.claude/**'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/PULL_REQUEST_TEMPLATE/**'
+      - '.gitignore'
+      - 'LICENSE'
   push:
     branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.claude/**'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/PULL_REQUEST_TEMPLATE/**'
+      - '.gitignore'
+      - 'LICENSE'
+
+# Cancel in-progress runs when newer commit lands on same ref
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 # Minimum permissions — least-privilege (supply chain safety)
 permissions:

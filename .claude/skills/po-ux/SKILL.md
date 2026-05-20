@@ -127,7 +127,9 @@ state: refining
 - User journey insertion point (dónde aparece en sidebar/flow)
 - Out-of-scope explícito (anti-creep)
 
-#### § Gherkin scenarios (4 obligatorios — AI-resistant)
+#### § Gherkin scenarios (4 base + 7 sub-categorías mandatory ★ v4.1)
+
+**Base obligatorios (4 — AI-resistant):**
 
 | Tipo | Verifica |
 |---|---|
@@ -136,18 +138,32 @@ state: refining
 | `edge` | Concurrencia, límites, recovery |
 | `adversarial` | Security, AI-resistant (cross-tenant, XSS, prompt injection si aplica) |
 
-Si falta UNO → STOP, no procede.
+**★ v4.1 cement 2026-05-19 — sub-categorías mandatory adicionales (refused refined sin ellas):**
+
+| Sub-categoría | Verifica | Aplica cuándo |
+|---|---|---|
+| `race_condition` | 2+ requests concurrentes mismo recurso (slug, key único) | TODO endpoint con create/update + unique constraint |
+| `concurrent_users` | 2+ tenants/users mismo momento | TODO list/detail con filtros |
+| `network_failure` | API timeout / 5xx / connectivity drop | TODO fetch frontend |
+| `empty_state` | 0 items en data fetch | TODO list/dashboard |
+| `large_dataset` | ≥1000 items, pagination edge | TODO list con pagination |
+| `accessibility` | WCAG AA (keyboard nav, screen reader, contrast) | TODO surface FE user-facing |
+| `i18n` | Spanish neutro renderizado correcto + currency tenant_locale | TODO surface FE con copy o currency |
+
+**Gate /po-ux refused refined:** si cualquiera de las sub-categorías aplicables ausente → STOP, no transition refining→refined. Excepción: scenario con `not_applicable_reason: <razón explícita>` ratificado por Chris (ej. "story es service-only, no aplica a11y").
 
 Cada scenario tiene:
 - `given:` (preconditions concretas)
 - `when:` (acción exacta)
 - `then:` (efectos medibles, NO vagos)
+- `playwright_required: true | false` (★ v4.1 — TODO scenario funcional FE: `true`. Service-only sin UI: `false`)
 - `graders:` (cómo se verifica):
 
 ```yaml
-- { type: e2e, path: "{brand}/frontend/e2e/regression/{m}-{story}.spec.ts" }
+- { type: e2e, path: "{brand}/frontend/e2e/regression/{story-id}/{m}-{type}.spec.ts" }  # playwright_required:true → architect dicta path exacto en test_construction_plan
 - { type: state_check, target: db, query: "...", expect: "..." }
 - { type: visual_state, screen: "form-error", element: "input[name=email]", expect: "border-destructive" }
+- { type: axe, ruleset: "wcag2aa" }  # accessibility sub-category
 ```
 
 #### § Wireframes inline
@@ -284,15 +300,47 @@ Chris responde → editás 01-spec.md (no rebuild from scratch — Edit incremen
 
 **Anti-pattern:** rendirte tras 1 iter. Si Chris no responde → pregunta explícito.
 
-### Step 5 — Hand off
+### Step 5 — Validate refined gate + Hand off (★ v4.1 expanded)
 
-Una vez ratificado:
+**Pre-handoff gate (v4.1 cement 2026-05-19) — checklist antes ratificar refined:**
+
+- [ ] 4 scenarios base presentes (happy + negative + edge + adversarial)
+- [ ] **★ Sub-categorías mandatory cubiertas (≥1 scenario cada una, o `not_applicable_reason` ratificado):**
+  - [ ] race_condition (si tiene create/update con unique constraint)
+  - [ ] concurrent_users (si tiene list/detail filterable)
+  - [ ] network_failure (si tiene fetch FE)
+  - [ ] empty_state (si tiene list/dashboard)
+  - [ ] large_dataset (si tiene pagination)
+  - [ ] accessibility (si tiene surface FE user-facing)
+  - [ ] i18n (si tiene copy o currency)
+- [ ] Cada scenario funcional tiene `playwright_required: true` (★ v4.1 HARD para UI std)
+- [ ] Cada `then:` es verificable (no vagos como "mejora UX")
+- [ ] `graders:` declarados (e2e + state_check + visual_state + axe según corresponda)
+- [ ] Wireframes inline (ASCII/HTML/Figma) — UNO de los 3
+- [ ] Estados visuales (idle/loading/success/error/empty)
+- [ ] Microcopy Spanish neutro (no voseo, no léxico regional)
+- [ ] Componentes reuse > new (cada NEW justificado inline)
+- [ ] Responsive breakpoints declarados
+- [ ] Accessibility section presente
+
+Si gate FAIL → STOP, NO transition refining→refined. Iterá con Chris hasta cobertura completa.
+
+Una vez gate PASS + Chris ratifica:
 
 ```
 Spec ratificada v{N} para brand {brand}. Ratified_by_chris: true.
 
-Próximo: /architect <brand>: {brand} lee 01-spec.md → spawn /architect-{be,fe} en paralelo →
-produce ready package (03-arch.md + 04-validators.yaml + 05-guidelines.md + 06-tickets.yaml).
+Gate v4.1 PASS:
+- 4 scenarios base + N sub-categorías mandatory cubiertas
+- M scenarios con playwright_required: true
+- Wireframes + estados + microcopy + responsive + a11y completos
+
+Próximo: /architect <brand>: {brand} lee 01-spec.md → spawn architect-orchestrator single-shot full-stack →
+produce ready package:
+- 03-arch.md (con § Test Construction Plan ★ v4.1 — orden, POMs, fixtures, scenario_to_test mapping)
+- 04-validators.yaml (5 categorías incluyendo architectural_validation ★ v4.1)
+- 05-guidelines.md (must_load_skills enforceable ★ v4.1)
+- 06-tickets.yaml (gherkin_coverage mandatory)
 
 Story state: refining → refined (transition al ratificar). /architect después transición refined → ready al cerrar package.
 
@@ -321,6 +369,9 @@ Si durante mockup/iteración descubrís edge case que el outcome no contemplaba:
 ## Anti-patterns
 
 - ❌ Skip negativos/edge/adversarial → spec inválido
+- ❌ **★ v4.1: ratificar refined sin cubrir sub-categorías mandatory aplicables** (race/concurrent/network/empty/large/a11y/i18n) — gate HARD
+- ❌ **★ v4.1: scenario funcional FE sin `playwright_required: true`** — UI std SIEMPRE testea con Playwright
+- ❌ `not_applicable_reason` vago — debe ser explícito y ratificado Chris ("story es service-only", "feature behind flag no FE-exposed", etc.)
 - ❌ "Then" vagos ("mejora UX", "más claro") → reescribí en términos verificables
 - ❌ Hardcoded hex colors / spacing / fontsize en wireframes/mockups
 - ❌ Inventar componentes que no existen sin justificación inline

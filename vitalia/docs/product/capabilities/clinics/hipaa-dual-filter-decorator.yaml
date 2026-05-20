@@ -1,0 +1,28 @@
+capability_id: vitalia-clinics-hipaa-dual-filter-decorator
+module: clinics
+slug: hipaa-dual-filter-decorator
+status: live
+date_introduced: 2026-05-19
+story_introduced: vitalia-adopt-luana-core-iam
+package_version: 0.1.0
+package_path: vitalia/backend/src/modules/vitalia/clinics/api/decorators.py
+license: MIT
+summary: |
+  HIPAA-lite enforcement decorator `@require_clinic_access(clinic_id_from=...)`
+  que verifica el user autenticado tiene acceso al clinic_id solicitado. Aplica
+  dual filter (tenant_id + clinic_id) per `vitalia/.claude/rules/hipaa-lite.md`.
+  Returns HTTP 403 + audit log row si cross-clinic o cross-tenant.
+
+surfaces:
+  backend:
+    - vitalia/backend/src/modules/vitalia/clinics/api/decorators.py
+  tests:
+    - vitalia/backend/tests/modules/vitalia/clinics/test_require_clinic_access.py
+
+verification:
+  commands:
+    - "cd vitalia/backend && ${WS}/.venv/bin/pytest tests/modules/vitalia/clinics/test_require_clinic_access.py -v"
+  gherkin_evidence:
+    - SC-09 User-tenant dropdown switch → re-fetch filtrada
+    - SC-10 HIPAA cross-clinic query bloqueada → 403 + audit log
+    - SC-11 HIPAA dual filter query PHI → tenant_id + clinic_id obligatorios

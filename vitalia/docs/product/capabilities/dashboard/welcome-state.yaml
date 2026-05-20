@@ -1,0 +1,60 @@
+---
+capability_id: vitalia.dashboard.welcome-state
+module: dashboard
+slug: welcome-state
+status: live
+date_introduced: 2026-05-18
+story_introduced: vitalia-auth-base-functional
+package_version: vitalia-frontend@0.1.0
+package_path: vitalia/frontend/src/features/dashboard/
+license: proprietary
+---
+
+# Dashboard welcome state — vitalia
+
+Pantalla inicial autenticada del dashboard `/`. Welcome con contexto del tenant + 5 placeholder cards para Slice 1.
+
+## Surfaces
+
+- **Frontend (FSD-Lite feature):**
+  - `vitalia/frontend/src/features/dashboard/index.ts` (public surface)
+  - `vitalia/frontend/src/features/dashboard/components/DashboardWelcome.tsx` (Server Component)
+  - `vitalia/frontend/src/features/dashboard/components/SliceOneStubsRow.tsx` (Server Component — corrected from Client in self-fix iter-1)
+  - `vitalia/frontend/src/features/dashboard/types/DashboardData.ts`
+  - `vitalia/frontend/src/app/(dashboard)/page.tsx` (consumes feature)
+  - `vitalia/frontend/src/app/(dashboard)/layout.tsx` (shell con VitaliaLogo + UserButton)
+- **Tests:** `vitalia/frontend/src/features/dashboard/__tests__/DashboardWelcome.test.tsx` (3 unit tests RED→GREEN)
+
+## Comportamiento
+
+- h1 `Hola, {first_name}` — extraído de Clerk `auth()` server-side
+- Badge `{clinic_name} · {plan_tier}` — server fetch `/api/v1/iam/me`
+- CTA `Configurar tu clínica` → linkea `/onboarding/wizard` (visible si `!is_onboarded`)
+- 5 stub cards (Inbox / Pipeline / Agenda / Fidelización / Marketing) con label "pronto"
+
+## Out-of-scope
+
+- Offers / bookings / appointments (placeholders, siguen Slice 1 stories)
+- Métricas reales del Growth Studio (capability separado futuro)
+
+## Verification
+
+```yaml
+commands:
+  - "cd vitalia/frontend && npx vitest run src/features/dashboard/__tests__/ --reporter=default"
+  - "cd vitalia/frontend && npx tsc --noEmit"
+  - "cd vitalia/frontend && npx eslint src/features/dashboard/ --max-warnings=0"
+gherkin_evidence:
+  - SC-06: "vitalia/frontend/src/features/dashboard/__tests__/DashboardWelcome.test.tsx::renders_welcome_with_tenant_context (PASS 3/3 unit) + e2e PENDING_DEPLOY"
+  - SC-07: "vitalia/frontend/e2e/dashboard/welcome.spec.ts::SC-07 (PENDING_DEPLOY)"
+```
+
+## Dependencies
+
+- Clerk `auth()` server-side helper
+- BE endpoint `/api/v1/iam/me` (existing from Story vitalia-slice-1-infra-cross-cutting)
+
+## Notes
+
+- T-3 commit 69aaab1; self-fix iter-1 commit 65e82b8 corrigió "use client" en SliceOneStubsRow.
+- FSD-Lite respetado: features/dashboard/ no importa de otras features.

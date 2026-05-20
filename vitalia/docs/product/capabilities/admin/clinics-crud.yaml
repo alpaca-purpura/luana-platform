@@ -1,0 +1,28 @@
+capability_id: vitalia-admin-clinics-crud
+module: admin
+slug: clinics-crud
+status: live
+date_introduced: 2026-05-19
+story_introduced: vitalia-adopt-luana-core-iam
+package_version: 0.1.0
+package_path: vitalia/backend/src/modules/vitalia/admin/modules/clinics.py + vitalia/backend/src/modules/vitalia/admin/pages/clinicas.py
+license: MIT
+summary: |
+  Admin Streamlit page para CRUD clinics (brand-extension vitalia). Consume
+  brand-local `vitalia.clinics.application.ClinicService` que envuelve
+  `ClinicRepository`. Tabla `vitalia_clinic_branches` con FK a `tenants.id`
+  engine. Audit log sync write.
+
+surfaces:
+  backend:
+    - vitalia/backend/src/modules/vitalia/admin/modules/clinics.py
+    - vitalia/backend/src/modules/vitalia/admin/pages/clinicas.py
+  tests:
+    - vitalia/backend/tests/modules/vitalia/clinics/test_clinic_repository.py
+    - vitalia/backend/tests/modules/vitalia/clinics/test_clinic_service.py
+
+verification:
+  commands:
+    - "cd vitalia/backend && ${WS}/.venv/bin/pytest tests/modules/vitalia/clinics/test_clinic_repository.py tests/modules/vitalia/clinics/test_clinic_service.py -v"
+  gherkin_evidence:
+    - SC-08 Admin crea clinic asociada a tenant → INSERT vitalia_clinic_branches FK tenants.id + audit

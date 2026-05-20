@@ -161,6 +161,6 @@ Se adopta **Alternativa D**: GitHub Actions puro con reusable workflows y GitHub
 - Arquitectura detallada: `docs/product/stories/S-CICD-DEPLOY/03-arch.md`
 - Runbook operacional: `docs/process/cicd-multibrand-runbook.md`
 - Setup GitHub Environments: `docs/process/github-environments-setup.md`
-- ADR anterior: `docs/architecture/luana-platform/adr/ADR-001-luana-platform.md`
+- ADR anterior: `docs/architecture/luana-platform/ADR-001-luana-platform.md`
 - Regla anti-duplication: `.claude/rules/anti-duplication.md`
 - Regla git safety: `.claude/rules/git-safety.md`

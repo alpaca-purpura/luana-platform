@@ -188,19 +188,21 @@ def test_all_11_tables_in_base_metadata() -> None:
         )
 
 
-def test_exactly_12_vitalia_tables_registered() -> None:
-    """Exactly 12 vitalia_ prefixed tables must be registered in Base.metadata.
+def test_exactly_14_vitalia_tables_registered() -> None:
+    """Exactly 14 vitalia_ prefixed tables must be registered in Base.metadata.
 
     T-be-migrations-1 added vitalia_lucas_recommendations (12th table).
-    Ratchet updated T-be-services-3 (2026-05-18).
+    Ratchet updated T-be-services-3 (2026-05-18) to 12.
+    Ratchet updated T-4 (2026-05-18) to 14: vitalia_brand_studio_drafts +
+    vitalia_onboarding_progress added by prior tickets (brand studio + onboarding).
     """
     from luana_core_platform.domain.base_entity import Base
 
     import src.modules.vitalia.infrastructure.models  # noqa: F401
 
     vitalia_tables = {name for name in Base.metadata.tables if name.startswith("vitalia_")}
-    assert len(vitalia_tables) == 12, (
-        f"Expected 12 vitalia_ tables, got {len(vitalia_tables)}: {sorted(vitalia_tables)}"
+    assert len(vitalia_tables) == 14, (
+        f"Expected 14 vitalia_ tables, got {len(vitalia_tables)}: {sorted(vitalia_tables)}"
     )
 
 

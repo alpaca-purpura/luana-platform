@@ -202,6 +202,24 @@ Output verdict → embedded en `07-merge.md § 2 — Playwright E2E run` por `/p
 
 ## Step 3 — Procesar veredicto por ticket
 
+> **Política v4.1 cement 2026-05-19:** decisión por NATURALEZA DEL FIX, no tamaño.
+> Whitelist verbatim self-fix + auto-spawn dev-team autónomo para TDD/refactor.
+> SSoT detallado: `.claude/rules/auditor-self-fix-policy.md`. Auditor MUST leer esa rule antes Step 3.
+
+Decision tree:
+
+```
+¿El fix requiere ESCRIBIR un nuevo test (TDD RED→GREEN)?
+├─ SÍ  → Caso B (spawn dev-team autónomo). Auditor NUNCA escribe tests.
+└─ NO  → ¿El fix toca ≥3 archivos O cambia lógica de negocio?
+        ├─ SÍ  → Caso B (spawn dev-team autónomo).
+        └─ NO  → ¿Está en WHITELIST § self-fix permitido (auditor-self-fix-policy.md)?
+                ├─ SÍ  → Caso C (SELF-FIX cap 4 iter).
+                └─ NO  → Caso D (ESCALATE Chris / /pm-luana).
+```
+
+Cap absoluto **`audit_iterations: 3`** (post v4.1 ampliado de 2 → 3 para forward-motion).
+
 ### Caso A — APPROVED
 
 ```yaml
@@ -215,60 +233,163 @@ transitions:
 Si todos los tickets del story `audit-passed` → ir a Step 4 (CHECKPOINTS.md).
 Si hay tickets pendientes → continuar con next ticket.
 
-### Caso B — CHANGES_REQUESTED
+### Caso B — CHANGES_REQUESTED estructural (auto-spawn dev-team autónomo)
 
-```yaml
-state: changes-requested
-audit_iterations: +1
+Aplica cuando finding ∈ lista NEVER self-fix (test new, branch lógico, refactor 2+ archivos, lógica negocio, DTOs, migrations, etc. — ver auditor-self-fix-policy.md § "NUNCA self-fix").
+
+**Workflow autónomo (sin Chris en el medio):**
+
+1. **Document findings verbatim** en `T-{n}-review.md § Findings` (cada finding: path:line + razón + fix sugerido + categoría #N de la rule):
+   ```markdown
+   ## Audit iteration N (2026-MM-DDTHH:MM:SSZ)
+   ### Verdict
+   CHANGES_REQUESTED (spawn dev-team)
+
+   ### Findings (M)
+   1. {brand}/backend/.../foo.py:42-50 — missing branch lógico para estado empty.
+      Fix sugerido: agregar `if not items: return EmptyResponse()`. Categoría: NEVER #2.
+   2. {brand}/backend/tests/.../test_foo.py — falta scenario edge race condition.
+      Fix sugerido: nuevo test `test_concurrent_create` con asyncio.gather.
+      Categoría: NEVER #1 (nuevo test).
+   ```
+
+2. **Update `06-tickets.yaml` ticket:**
+   ```yaml
+   state: changes-requested
+   audit_iterations: +1   # increment
+   ```
+
+3. **Verificar cap absoluto `audit_iterations <= 3`.** Si > 3 → Caso D (ESCALATE).
+
+4. **SPAWN dev-team autónomo con findings:**
+   ```
+   Agent({
+     description: "Auto-fix T-{n} brand={brand} (auditor handoff iter N)",
+     subagent_type: "builder-{backend|frontend|agentic}",
+     model: "<sonnet | opus si AGENTIC production_code:true per R23>",
+     prompt: "<brand>: {brand}
+              <pr_folder>: {brand}/docs/product/stories/{story-id}/
+              ticket: T-{n}
+              mode: AUDITOR_AUTO_FIX_LOOP
+              audit_iter: {N}
+              findings_source: {brand}/docs/product/stories/{story-id}/T-{n}-review.md § Audit iteration {N} § Findings
+              must_load_skills: <list from 05-guidelines.md>
+
+              AUTONOMOUS LOOP:
+              1. Read T-{n}-review.md § Audit iteration {N} § Findings (cita path:line por finding + fix sugerido)
+              2. Apply targeted fix CADA finding (NO scope creep — touch SOLO files citados en findings)
+              3. Si finding requiere nuevo test → escribe test RED primero (TDD discipline)
+              4. Re-run validators de acceptance.validator_ids (gate-runner)
+              5. If validator GREEN → commit + push branch ACTUAL ($(git branch --show-current))
+              6. If validator RED → iterate fix → re-run (cap 5 iter loop dev-team interno)
+              7. Update T-{n}-result.md con sección 'Auto-fix loop iter {N} response'
+
+              GUARDRAILS HARD:
+              - Edit ONLY files citados en T-{n}-review.md § Findings
+              - NO scope creep (nueva feature, nuevo endpoint, etc.)
+              - Spanish neutro respected (R: spanish-text.md)
+              - Push branch ACTUAL (wip/{brand}-{story-padre-id}), NUNCA 'origin development'
+              - Si finding requiere lift core o cross-brand edit → STOP, escalate orchestrator
+
+              Last line: done -> T-{n}-result.md (sección 'Auto-fix loop iter {N} response')
+                         O blocked -> T-{n}-impl-log.md (cap_reached internal, escalate)"
+   })
+   ```
+
+5. **WAIT result** (auditor NO arranca nueva story, NO espera trigger Chris). Cuando dev-team termina:
+
+6. **Auditor RE-AUDIT autónomo:**
+   - Re-spawn gate-runner (Haiku) → verify `gate-output.json` fresh, `any_fail=false`
+   - Re-spawn sub-auditor (auditor-{be|fe|agentic}) → produce NEW review
+   - Append `## Audit iteration N+1` section a `T-{n}-review.md`
+
+7. **Si verdict nuevo = APPROVED** → mark `state: audit-passed`, continuar siguiente ticket o Step 4 CHECKPOINTS.md
+8. **Si verdict nuevo = CHANGES_REQUESTED** Y `audit_iterations < 3` → loop back to step 1 (Caso B again)
+9. **Si verdict nuevo = CHANGES_REQUESTED** Y `audit_iterations >= 3` → Caso D ESCALATE Chris (cap absoluto)
+
+### Caso C — Self-fix whitelisted (cap 4 iter)
+
+Aplica cuando finding ∈ whitelist verbatim de `auditor-self-fix-policy.md` § "Whitelist verbatim — self-fix permitido". 17 categorías exhaustivas (lint, format, import order, typo, type annotation trivial, off-by-one, signo, default, log message, magic comment, docstring 1-line, Spanish neutro, currency hardcoded, response_model add, import unused, rename consistency, comentario eliminar).
+
+**HARD límites por iter:**
+- MÁXIMO 2 archivos modificados
+- MÁXIMO 10 líneas modificadas
+- Si excede → NO es self-fix, ES refactor → Caso B (spawn dev-team)
+
+**Workflow:**
+
+1. **Document en `T-{n}-review.md § Self-fix log`:**
+   ```markdown
+   ### Self-fix iteration N (2026-MM-DDTHH:MM:SSZ)
+   - Finding: {brand}/backend/.../routes.py:42 — missing response_model (whitelist #15)
+   - Diff applied:
+     ```diff
+     - @router.post("/items")
+     + @router.post("/items", response_model=ItemResponse)
+     ```
+   - Files touched: 1 / Lines: 1
+   ```
+
+2. **Apply edit** (paths brand-aware, NUNCA root legacy):
+   ```bash
+   WS=$(git rev-parse --show-toplevel)
+   CURRENT_BRANCH=$(git branch --show-current)
+   BRAND={brand}
+
+   # Ejemplos típicos por categoría:
+   # Lint #1 + Format #2:
+   ${WS}/.venv/bin/ruff check --fix ${WS}/${BRAND}/backend/src/modules/${BRAND}/{m}/api/routes.py
+   ${WS}/.venv/bin/ruff format ${WS}/${BRAND}/backend/src/modules/${BRAND}/{m}/api/routes.py
+
+   # Spanish neutro #13 + microcopy fix:
+   # Edit directo via Edit tool (path:line:diff)
+
+   # Stage + commit:
+   git add ${WS}/${BRAND}/backend/src/modules/${BRAND}/{m}/api/routes.py
+   git commit -m "chore({brand}/{m}): auditor self-fix T-{n} iter {N} — <categoría #X resumida>"
+   git push origin "${CURRENT_BRANCH}"
+   ```
+
+3. **Re-run validators ticket-asociados** (acceptance.validator_ids) → gate-runner Haiku
+4. **If GREEN** → mark `state: audit-passed`, continuar
+5. **If RED** → escala Caso B (spawn dev-team) en MISMA iter (no usar slot self-fix con failed result)
+6. **Cap absoluto 4 self-fix iter por ticket.** Después → Caso B forzado.
+
+**Boundaries hard self-fix:**
+
+- `core/luana-core-*/src/` — PROHIBIDO self-fix. Escala /pm-luana (promotion gate).
+- `{other_brand}/...` — PROHIBIDO. Escala /pm-luana (cross-brand outcome).
+- `{brand}/backend/src/modules/{brand}/{copilot,sales_agent}/` brand-extension — PERMITIDO solo whitelist categorías triviales (lint/format/Spanish). NUNCA tocar prompts, tools, workflows agentic core.
+
+### Caso D — ESCALATED (Chris / /pm-luana)
+
+Aplica cuando finding cae en estas categorías (lista exhaustiva — ver auditor-self-fix-policy.md):
+
+- **Security violation:** auth bypass, PII leak en logs/responses, tenant_id filter ausente, SQL injection, XSS, prompt injection vector
+- **Architecture drift fundamental:** DDD layer broken, cross-module imports prohibidos, anti-duplication mirror cross-brand
+- **Engine surface edit sin promotion proposal:** PR toca `core/luana-core-*/src/` sin `docs/promotion-protocol/proposals/*-{pkg}-*.md` state ∈ {accepted, migrated}
+- **Cross-brand pollution:** edit `{other_brand}/...` desde story brand-específica
+- **Spec ambiguity:** auditor NO puede decidir intent sin Chris
+- **`audit_iterations >= 3` exceeded:** loop dev-team/auditor no converge → spec o decomposition issue
+- **`self_fix_iter >= 4` exceeded:** dev-team original tenía calidad baja → ESCALATE re-think
+
+→ STOP audit autónomo. `state: blocked` + `blocked_reason`. Output verbatim:
+
 ```
+ESCALATED — auditor cannot self-fix ni spawn dev-team autónomo.
 
-Si `audit_iterations <= 2`:
-- Hand off `/dev-team` con `T-{n}-review.md` como input
-- Dev fix → push → re-audit
-- Loop
+Razón: <categoría exacta de auditor-self-fix-policy.md § ESCALATED>
+Detalle: T-{n}-review.md § Audit iteration {N} § Findings
+audit_iterations: {N}/3
+self_fix_iter: {M}/4
 
-Si `audit_iterations > 2`:
-- ESCALATE a Chris
-- `state: blocked`
-- `blocked_reason: "auditor cap 2 iter exceeded — needs design review"`
-
-### Caso C — Self-fix trivial
-
-Auditor sub-agent puede aplicar fix DIRECTO si trivial (lint/format/typo). Cap 2 self-fix.
-
-**Paths brand-aware (post multibrand reorg 2026-05-15):** el fix debe respetar el brand-scope del story. `{brand}` ∈ `vitalia | nicolify | comunify | lupulo` (o `core/luana-core-{pkg}` si toca engine). NUNCA editar paths root legacy (`backend/`, `frontend/`) — esos NO existen post reorg.
-
-**Branch destino (triple-branch policy):** push al branch ACTUAL (`$(git branch --show-current)`), NUNCA hardcode `origin development` (branch eliminado en reorg). Branches válidos: `wip/{slug}` (autosave), `main` (post squash-merge), `release/{brand}-vX.Y.Z` (produccion).
-
-```bash
-WS=$(git rev-parse --show-toplevel)
-CURRENT_BRANCH=$(git branch --show-current)
-
-${WS}/.venv/bin/ruff format ${WS}/{brand}/backend/src/modules/{brand}/{m}/api/routes.py
-${WS}/.venv/bin/ruff check --fix ${WS}/{brand}/backend/src/modules/{brand}/{m}/...
-git add <specific files by exact name>
-git commit -m "chore({brand}/{m}): auditor lint fix T-{n}"
-git push origin "${CURRENT_BRANCH}"
+Próximo: Chris ratifica acción —
+  (a) refinar spec/arch (back to /po-ux o /architect)
+  (b) lift core via /pm-luana (si engine surface)
+  (c) cross-brand outcome via /pm-luana (si cross-brand)
+  (d) discard scope (drop ticket)
+  (e) re-decompose story (split en N stories más pequeñas)
 ```
-
-**Si está auditando agentic ticket que toca core (`core/luana-core-{copilot,sales-agent}/`):** STOP — self-fix prohibido en core, escalar a `/pm-luana` (promotion gate). Edit en `{brand}/backend/src/modules/{brand}/{copilot,sales_agent}/extensions/` SÍ permitido si scope es brand-extension.
-
-Después self-fix:
-- Re-correr quality gates
-- Si verde → APPROVED
-- Si falla → CHANGES_REQUESTED al dev
-
-Auditoría con self-fix se documenta en `T-{n}-review.md § Self-fix log`.
-
-### Caso D — ESCALATED
-
-Cuando auditor detecta:
-- Diseño fundamentalmente roto (no se puede arreglar in-place)
-- Security violation grave
-- Anti-duplication violation grave (mirror layer cuando shared existe)
-- Drift entre 03-arch/05-guidelines y código no resoluble por dev
-
-→ `state: blocked`, escalate Chris/PM con razón concreta.
 
 ## Step 4 — CHECKPOINTS.md (story-level final review)
 
@@ -328,6 +449,8 @@ Agent({
 - [ ] Migrations idempotentes (IF NOT EXISTS, no sa.Enum() in create_table)
 - [ ] Default flag flips audited (R31 anti-default-flip-audit if applicable)
 - [ ] Security: no SQL injection / XSS / prompt injection vectors
+- [ ] Brand docs schema R1 respected — no `.md` files staged directly under `{brand}/docs/` root (cite `.claude/rules/brand-docs-schema.md`)
+- [ ] Brand docs schema R3 respected — no manual edits to auto-gen files (`{brand}/docs/product/BACKLOG*.{md,yaml}`, `modules/{m}.md` auto-list section). Diff inspection: if BACKLOG modified, must have corresponding source change (checkpoint/outcomes/stories/capabilities)
 
 ## C5 — Trace
 - [ ] checkpoint.md final state=done (will be set by /pm-{brand} at merge)
@@ -335,7 +458,7 @@ Agent({
 - [ ] Capability migration ready (scenarios → {brand}/docs/product/capabilities/{m}/{cap}.yaml)
 - [ ] {brand}/docs/product/modules/{m}.md auto-list refresh ready
 - [ ] {brand}/docs/learnings/ entry si decisión cardinal (note for /pm-{brand}; si promotable cross-brand → ping /pm-luana)
-- [ ] Story folder ready for archive to {brand}/docs/archive/{year}/stories/{story-id}/
+- [ ] Story folder ready for archive to {brand}/docs/archive/{year}/stories/{story-id}/ (R2 per `.claude/rules/brand-docs-schema.md` — `git mv` debe ir en MISMO commit que `07-merge.md` al cerrar reviewing→done)
 
 ## Findings summary
 - C1: <X/4 ✅, Y FAIL>
@@ -452,30 +575,58 @@ C5: 6/6 ✅
 
 STOP la sesión `/auditor` aquí. Chris (o auto-handoff harness) invoca `/pm-{brand}` siguiente.
 
-## Self-fix policy detallada
+## Self-fix policy detallada (v4.1 cement 2026-05-19)
 
-| Categoría | Self-fix permitido |
+> SSoT exhaustivo: `.claude/rules/auditor-self-fix-policy.md`. Whitelist verbatim
+> 17 categorías. Decision tree por NATURALEZA del fix (no tamaño).
+
+**Quick reference table:**
+
+| Categoría finding | Decisión |
 |---|---|
-| Lint (ruff/eslint) | ✅ |
-| Format (ruff format / prettier) | ✅ |
-| Import ordering | ✅ |
-| Typo en string user-facing | ✅ |
-| Comentario decorativo eliminar | ✅ |
-| Type-check trivial (faltó `: str`) | ⚠️ caso por caso |
-| Cualquier lógica de negocio | ❌ → CHANGES_REQUESTED |
-| Security fix | ❌ → ESCALATED |
-| Architecture refactor | ❌ → ESCALATED |
-| Test fix significativo | ❌ → CHANGES_REQUESTED |
+| Lint / format / import order | ✅ self-fix (Caso C) |
+| Typo / Spanish neutro / microcopy | ✅ self-fix (Caso C) |
+| Off-by-one / signo / default value / log message | ✅ self-fix (Caso C, cuando bug es obvio del diff) |
+| `response_model=` faltante (DTO ya existe) | ✅ self-fix (Caso C) |
+| Magic comment add (`# voseo-allowed`) | ✅ self-fix (Caso C) |
+| Type annotation trivial 1-line | ✅ self-fix (Caso C) |
+| Currency hardcoded → tenant_locale (1-line) | ✅ self-fix (Caso C) |
+| Branch lógico (`if/else`) | ⛔ spawn dev-team (Caso B) |
+| Nuevo test requerido (TDD) | ⛔ spawn dev-team (Caso B) — auditor NUNCA escribe tests |
+| Refactor 2+ archivos | ⛔ spawn dev-team (Caso B) |
+| Lógica de negocio cambia | ⛔ spawn dev-team (Caso B) |
+| Pydantic DTO field add/remove | ⛔ spawn dev-team (Caso B) — contract change |
+| SQL query / SQLAlchemy `select` | ⛔ spawn dev-team (Caso B) |
+| Migration file modify | ⛔ spawn dev-team (Caso B) — irreversible |
+| Security (auth/PII/tenant_id) | ⛔ ESCALATE Chris (Caso D) |
+| Architecture refactor (DDD layer) | ⛔ ESCALATE Chris (Caso D) |
+| Engine `core/luana-core-*/` | ⛔ ESCALATE /pm-luana (Caso D — promotion gate) |
+| Cross-brand pollution | ⛔ ESCALATE /pm-luana (Caso D — outcome cross-brand) |
 
-Cap absoluto: 2 self-fix iter por ticket. Después → CHANGES_REQUESTED.
+**Caps absolutos (v4.1):**
+
+| Métrica | Cap | Acción al exceder |
+|---|---|---|
+| `self_fix_iter` por ticket | 4 | Spawn dev-team (Caso B) |
+| `audit_iterations` por ticket | 3 | ESCALATE Chris (Caso D) |
+| Files modificados por self-fix iter | 2 | Caso B (refactor camuflado) |
+| Líneas modificadas por self-fix iter | 10 | Caso B idem |
 
 ## Anti-patterns
 
 - ❌ Auditor aprobando con tests rojos
-- ❌ Auditor editando lógica de negocio (ese es trabajo del dev)
+- ❌ Auditor editando lógica de negocio (ese es trabajo del dev — spawn dev-team Caso B)
+- ❌ **Auditor escribiendo un test (`.test.*` / `.spec.*` / `test_*.py`)** — viola TDD discipline. SIEMPRE Caso B.
+- ❌ Auditor "rápido fix" que toca 4 archivos porque "es trivial" → refactor camuflado, Caso B
+- ❌ Auditor llena `audit_iterations` con self-fix sin progreso real (cap 4, después Caso B forzado)
 - ❌ Auditor ignorando categorías de mirror detection
 - ❌ Auditor saltarse cross-module audit (R3 downstream regression)
-- ❌ Self-fix > 2 iter (debe escalar a CHANGES_REQUESTED)
+- ❌ Self-fix > 4 iter (debe escalar a Caso B spawn dev-team)
+- ❌ `audit_iterations` > 3 sin ESCALATE Chris (Caso D obligatorio)
+- ❌ Spawn dev-team Caso B SIN documentar findings verbatim en `T-{n}-review.md § Findings` (telephone game)
+- ❌ Spawn dev-team con prompt vago "fix bugs" — cita finding paths verbatim
+- ❌ Auditor self-fix de security/auth/tenant_id sin escalate Caso D
+- ❌ Auditor self-fix touch `core/luana-core-*/` o `{other_brand}/` (HARD BAN)
 - ❌ Saltar CHECKPOINTS.md story-level (verificación end-to-end es obligatoria pre-merge)
 - ❌ Auditor sub-agent sin invocar skills mandatory
 - ❌ Aprobar ticket sin verificar diff cumple acceptance.validator_ids
@@ -483,6 +634,9 @@ Cap absoluto: 2 self-fix iter por ticket. Después → CHANGES_REQUESTED.
 - ❌ Producir REVIEW-final.md (paradigma viejo — usa CHECKPOINTS.md C1-C5 grid)
 - ❌ Inferir el brand del contexto si Chris no lo dijo — PREGUNTAR primero
 - ❌ Approve PR que edita `core/luana-core-*/src/` o `{other_brand}/...` desde story brand-específica — flag CHANGES_REQUESTED + escalate /pm-luana
+- ❌ Approve PR con `.md` sueltos en `{brand}/docs/` raíz (R1 violation — ver `.claude/rules/brand-docs-schema.md`)
+- ❌ Approve PR que cierra story state=done sin `git mv` a `{brand}/docs/archive/{year}/stories/` en mismo commit (R2 violation)
+- ❌ Approve PR que modifica `{brand}/docs/product/BACKLOG*.{md,yaml}` sin cambio correspondiente en source (checkpoint/outcomes/stories/capabilities) — R3 violation. BACKLOG es OUTPUT auto-gen.
 
 ## Anti cross-brand pollution
 
@@ -503,9 +657,14 @@ NUNCA dump de findings (cita path).
 
 ## Referencias
 
-- `docs/process/pm-redesign-2026-05.md` — paradigma 3 conversaciones + CHECKPOINTS.md C1-C5
+- `docs/process/pm-redesign-2026-05.md` — paradigma 3 conversaciones + CHECKPOINTS.md C1-C5 + § v4.1 autonomy amplification 2026-05-19
+- `.claude/rules/auditor-self-fix-policy.md` — **★ SSoT exhaustivo v4.1 ★** whitelist 17 categorías + decision tree por naturaleza del fix
 - `.claude/rules/auditor-downstream-regression.md` — surface→downstream test mapping
 - `.claude/rules/anti-default-flip-audit.md` — R31 default flag flips
 - `.claude/rules/anti-duplication.md` — inventario shared abstractions
+- `.claude/rules/brand-docs-schema.md` — R1+R2+R3 schema enforcement `{brand}/docs/` (auditor C4 + C5 verifica)
+- `.claude/rules/story-closure-gate.md` — Fase F MERGE concreta R2 (archive move)
+- `.claude/rules/tdd-mandatory.md` — TDD discipline (auditor NEVER writes tests)
+- `docs/architecture/luana-platform/ADR-007-paradigm-v4.1-autonomy.md` — decisión cementada 2026-05-19
 - `.claude/agents/auditor-{backend,agentic,frontend}.md` — sub-auditors specs
 - `.claude/agents/gate-runner.md` — gate-output.json producer (Haiku)

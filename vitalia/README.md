@@ -8,7 +8,7 @@ validating the Luana Platform Extension SDK (EP-1..EP-18) post Story 10 migratio
 
 **Target market:** Clinics in Argentina, Chile, México, Brasil, Colombia, Perú.
 
-See [docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md) for full monorepo topology.
+See [docs/architecture/luana-platform/00-overview.md](../docs/architecture/luana-platform/00-overview.md) for full monorepo topology.
 
 ---
 
@@ -133,7 +133,7 @@ La API estará disponible en `http://localhost:8001/api/v1/vitalia/`.
 |---|---|
 | [docs/compliance.md](docs/compliance.md) | HIPAA-lite vs HIPAA full, LatAm laws (Ley 25.326/LGPD/LFPDPPP/Ley 19.628/Ley 29.733/Ley 1.581), 7-year audit retention, consent flow, HMAC verification, PII patterns, data rights |
 | [docs/booking-widget-embed.md](docs/booking-widget-embed.md) | Copy-paste iframe snippet, postMessage protocol (widget:loaded/widget:resize/widget:booking-confirmed/widget:payment-redirect), URL canónica alternativa, CDN hosting, origin validation |
-| [../docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md) | Full monorepo topology, Extension SDK EP-1..EP-18 |
+| [../docs/architecture/luana-platform/00-overview.md](../docs/architecture/luana-platform/00-overview.md) | Full monorepo topology, Extension SDK EP-1..EP-18 |
 
 ---
 

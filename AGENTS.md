@@ -46,8 +46,8 @@
 | Branch | Rol | CI/CD |
 |---|---|---|
 | `wip/{slug}` | Autosave por sesion paralela. TTL 30d (cron cleanup). | `ci-wip.yml` (light gates) |
-| `main` | Integracion estable + staging auto-deploy. | `ci.yml` (full) + `cd-staging.yml` |
-| `release/{brand}-vX.Y.Z` | Produccion brand-especifica. Desde main validado. | `cd-prod.yml` |
+| `main` | Integracion estable. CI gates on push + PR. **Staging deploy MANUAL** (post 2026-05-19 ratificada Chris — ADR-004 § policy update). | `ci.yml` (full) — `cd-staging.yml` solo via `workflow_dispatch` |
+| `release/{brand}-vX.Y.Z` | Produccion brand-especifica. Desde main validado. **Único auto-deploy.** | `cd-prod.yml` |
 
 **Worktrees por sesion paralela** (ADR-004 revocó ban legacy 2026-05-15 · ADR-005 cementó modelo D1-D14 2026-05-18):
 

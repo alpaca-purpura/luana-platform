@@ -323,7 +323,7 @@ into `core/luana-core-campaigns/` and formalized the extension SDK in
 | `luana-core-extension-sdk` package | `core/luana-core-extension-sdk/` | 18 EP contracts: EP-1..5 executable, EP-6..18 signatures-only, CC-1..5 cross-cutting policies |
 | `apps/test-brand` smoke app | `apps/test-brand/` | Vertical brand FastAPI app with 18 register_all handlers + 10 smoke scenarios |
 | `@luana/extension-sdk` TS package | `core/@luana/extension-sdk/` | TypeScript mirror of Python SDK types |
-| `docs/extension-points.md` | `docs/extension-points.md` | §1-§5 extension points reference + vertical-agent-recipe (Vitalia treatment-agent) |
+| `docs/architecture/luana-platform/extension-points.md` | `docs/architecture/luana-platform/extension-points.md` | §1-§5 extension points reference + vertical-agent-recipe (Vitalia treatment-agent) |
 | 12 arch fitness tests | `core/tests/architecture/test_*_story8.py` + related | V-NF-3/4 + V-AG-1..7 + V-D-2/3 cemented |
 
 ### ALLOWLISTED STUBS (Story 8 carried over from Story 7)

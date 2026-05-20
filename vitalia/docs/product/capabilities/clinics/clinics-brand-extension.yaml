@@ -1,0 +1,47 @@
+capability_id: vitalia-clinics-brand-extension
+module: clinics
+slug: clinics-brand-extension
+status: live
+date_introduced: 2026-05-19
+story_introduced: vitalia-adopt-luana-core-iam
+package_version: 0.1.0
+package_path: vitalia/backend/src/modules/vitalia/clinics/ + vitalia/backend/alembic/versions/023_vitalia_clinics.py
+license: MIT
+summary: |
+  Brand-extension vitalia module `clinics` con tabla `vitalia_clinic_branches`
+  (FK a `tenants.id` engine). Per D2 platform outcome: clinic concept es
+  brand-local (vitalia salud + bienestar), NO engine. Cuando 2da brand replique
+  patrón → promotion proposal EP-19 `TenantSubUnit`.
+
+  Layers DDD Inside-Out: domain (Clinic entity pure) → infrastructure (ClinicModel
+  SQLAlchemy + ClinicRepository) → application (ClinicService business logic) →
+  api (router + DTOs + decorators).
+
+  Soft deletes: deleted_at column. Idempotent migration (CREATE TABLE IF NOT
+  EXISTS). Unique constraint (tenant_id, slug). Cascade FK ON DELETE.
+
+surfaces:
+  backend:
+    - vitalia/backend/alembic/versions/023_vitalia_clinics.py
+    - vitalia/backend/src/modules/vitalia/clinics/domain/clinic.py
+    - vitalia/backend/src/modules/vitalia/clinics/infrastructure/models/clinic_model.py
+    - vitalia/backend/src/modules/vitalia/clinics/infrastructure/repositories/clinic_repository.py (asumed in builder run)
+    - vitalia/backend/src/modules/vitalia/clinics/application/clinic_service.py
+    - vitalia/backend/src/modules/vitalia/clinics/api/router.py
+    - vitalia/backend/src/modules/vitalia/clinics/api/dtos.py
+    - vitalia/backend/src/modules/vitalia/clinics/api/decorators.py
+  tests:
+    - vitalia/backend/tests/modules/vitalia/clinics/test_clinic_repository.py
+    - vitalia/backend/tests/modules/vitalia/clinics/test_clinic_service.py
+    - vitalia/backend/tests/architecture/test_clinics_domain_no_engine_imports.py (arch fitness)
+
+dependencies:
+  - engine_table_fk: tenants (via vitalia_clinic_branches.tenant_id REFERENCES tenants.id ON DELETE CASCADE)
+
+verification:
+  commands:
+    - "cd vitalia/backend && ${WS}/.venv/bin/pytest tests/modules/vitalia/clinics/ -v"
+    - "cd vitalia/backend && ${WS}/.venv/bin/pytest tests/architecture/test_clinics_domain_no_engine_imports.py -v"
+    - "docker exec luana-dev-luana_postgres_dev-1 psql -U postgres -d vitalia_dev -c \"\\dt vitalia_clinic_branches\""
+  gherkin_evidence:
+    - SC-08 Admin crea clinic asociada a tenant → INSERT vitalia_clinic_branches FK válida

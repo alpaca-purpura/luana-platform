@@ -7,7 +7,7 @@ audience: /pm-luana + /pm-nicolify + /dev-team (future lift execution)
 related:
   - docs/architecture/luana-platform/01-core-audit.md
   - docs/architecture/luana-platform/02-core-purge-audit.md
-  - docs/architecture/luana-platform/adr/ADR-001-luana-platform.md
+  - docs/architecture/luana-platform/ADR-001-luana-platform.md
   - docs/promotion-protocol/README.md
   - nicolify/.claude/rules/b2b-billable-hours.md
 ---

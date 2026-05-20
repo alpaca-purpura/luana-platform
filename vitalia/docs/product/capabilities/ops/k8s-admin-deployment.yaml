@@ -1,0 +1,81 @@
+---
+capability_id: vitalia.ops.k8s-admin-deployment
+module: ops
+slug: k8s-admin-deployment
+status: live
+date_introduced: 2026-05-18
+story_introduced: vitalia-auth-base-functional
+package_version: vitalia-deploy@0.1.0
+package_path: vitalia/deploy/
+license: proprietary
+---
+
+# K8s Admin Deployment — Vitalia
+
+Manifests + Dockerfile + scripts para deployment del admin Streamlit Vitalia en K8s (subdomain `vitalia-admin.vitalialat.com`, port 8501).
+
+## Surfaces
+
+- **Config:**
+  - `vitalia/deploy/Dockerfile.admin` (python:3.12-slim + streamlit + passlib + clerk-backend-api, EXPOSE 8501)
+  - `vitalia/deploy/k8s/admin-deployment.yaml` (Deployment vitalia-admin, replicas 1, envFrom vitalia-secrets, livenessProbe /healthz)
+  - `vitalia/deploy/k8s/admin-service.yaml` (ClusterIP port 8501)
+  - `vitalia/deploy/k8s/admin-ingress.yaml` (host vitalia-admin.vitalialat.com, TLS cert-manager)
+  - `vitalia/deploy/k8s/secrets.template.yaml` (EDIT — added `VITALIA_ADMIN_PASSWORD_HASH`)
+  - `vitalia/.env.dev.template` (EDIT — added admin password vars)
+- **Scripts:**
+  - `vitalia/deploy/scripts/post_deploy_smoke.sh` (automated 5-check smoke; bash strict)
+  - `vitalia/deploy/scripts/generate_admin_password_hash.sh` (bcrypt helper — auditor flagged shell injection mitigation needed in follow-up ticket; trusted-operator local context acceptable for now)
+
+## Comportamiento
+
+### Build + Deploy
+```bash
+docker build -f vitalia/deploy/Dockerfile.admin -t registry/vitalia-admin:latest vitalia/backend
+docker push registry/vitalia-admin:latest
+kubectl apply -f vitalia/deploy/k8s/admin-*.yaml
+kubectl rollout restart deployment/vitalia-admin -n vitalia
+```
+
+### Post-deploy smoke (5 checks)
+1. `kubectl get pods -n vitalia` → all Ready (10s timeout per pod)
+2. `curl -fsS https://dev-app.vitalialat.com/api/health` → 200 JSON {status:"ok"}
+3. `curl -fsS https://vitalia-admin.vitalialat.com/healthz` → 200 (Streamlit native)
+4. `curl -fsS https://dev-app.vitalialat.com/` → 307 to /sign-in (Clerk middleware active)
+5. `curl -fsS https://dev-app.vitalialat.com/sign-in` → 200 HTML contains "Iniciar sesión"
+
+Exit 1 si cualquier check falla.
+
+## Verification
+
+```yaml
+commands:
+  - "bash -n vitalia/deploy/scripts/post_deploy_smoke.sh"
+  - "bash -n vitalia/deploy/scripts/generate_admin_password_hash.sh"
+  - "python3 -c 'import yaml,glob; [yaml.safe_load(open(f)) for f in glob.glob(\"vitalia/deploy/k8s/admin-*.yaml\")]'"
+  - "bash vitalia/deploy/scripts/post_deploy_smoke.sh  # LIVE post-deploy"
+gherkin_evidence:
+  - SC-17: "vitalia/deploy/scripts/post_deploy_smoke.sh (PENDING_DEPLOY)"
+```
+
+## Dependencies (cluster pre-reqs — Chris manual gate)
+
+- Namespace `vitalia` existe
+- Secret `vitalia-secrets` con keys:
+  - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `CLERK_ISSUER`
+  - `VITALIA_CLERK_WEBHOOK_SECRET` (NEW — Chris from Clerk dashboard webhook config)
+  - `VITALIA_ADMIN_PASSWORD_HASH` (NEW — bcrypt from `generate_admin_password_hash.sh`)
+- DNS `vitalia-admin.vitalialat.com` apunta a ingress controller
+- cert-manager letsencrypt issuer configurado
+
+## Follow-up ticket required
+
+Per auditor-backend WARNs (non-blocking):
+1. `generate_admin_password_hash.sh` env-var refactor (replace shell interpolation)
+2. envFrom least-privilege secrets refactor (admin pod scope only)
+3. Streamlit XSRF + nginx proxy headers gap
+
+## Notes
+
+- T-5 commit e1c2315.
+- Pre_t5_chris_checklist (8 items) blocks actual `kubectl apply` execution.

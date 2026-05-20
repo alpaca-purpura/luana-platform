@@ -75,7 +75,6 @@ from luana_core_extension_sdk import (
     FieldDef,
     FieldOverride,
     GuardrailDef,
-    GuardrailResult,
     KbPackDef,
     LandingTemplateDef,
     LifecycleStageDef,
@@ -87,6 +86,20 @@ from luana_core_extension_sdk import (
     ToolDef,
     WizardStepDef,
     WorkflowDef,
+)
+
+# T-ag-tools-2 — Adrián 3 Slice 1 MVP tools (real callables, brand-extension).
+from src.modules.vitalia.compliance.guardrails.medical_disclaimer_required import (
+    guardrail_check_disclaimer_required,
+)
+from src.modules.vitalia.compliance.guardrails.medical_safety_no_diagnosis import (
+    guardrail_check_no_diagnosis,
+)
+from src.modules.vitalia.compliance.guardrails.medical_safety_no_prescription import (
+    guardrail_check_no_prescription,
+)
+from src.modules.vitalia.compliance.guardrails.prompt_injection_block_reuse import (
+    guardrail_check_prompt_injection,
 )
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -110,6 +123,20 @@ from src.modules.vitalia.connections.payment import (
 )
 from src.modules.vitalia.connections.print_method import (
     PRINT_METHOD_REGISTRY,
+)
+
+# T-ag-tools-1 — Valeria 4 wizard tools (real callables — replace placeholders).
+# Real LangChain @tool decorated async fns, Pydantic v2 args_schema, tenant-scoped.
+from src.modules.vitalia.copilot.tools import (
+    complete_onboarding,
+    confirm_slot,
+    extract_tenant_context,
+    simulate_personality,
+)
+from src.modules.vitalia.sales_agent.tools import (
+    reschedule_appointment,
+    screening_questions,
+    send_payment_link,
 )
 
 # Module-level smoke: each registry exposes at least one slot (Slice 1 floor).
@@ -321,6 +348,219 @@ def register_all(registry: ExtensionPointRegistry) -> None:
     )
 
     # ───────────────────────────────────────────────────────────────────────
+    # EP-3 — Valeria wizard tools (4 NEW per T-ag-tools-1, real callables)
+    # ───────────────────────────────────────────────────────────────────────
+    # Per 03-arch-agentic.md § 4.1 + 05-guidelines.md § 1.18 — Valeria copilot
+    # tools surface via EP-3 (sales_agent_tool_register is the unified tool
+    # dispatch surface for both agents per Story 9 SDK cement; copilot uses the
+    # same registry method, dispatched at runtime via tool_groups filter).
+    #
+    # These 4 are REAL callables (LangChain @tool decorated, async, Pydantic v2
+    # args_schema). Replace the placeholder pattern used by the sales_agent
+    # treatment_* tools above. Tool handler is the @tool-decorated async fn
+    # itself; Extension SDK passes it through to the LangGraph supervisor at
+    # binding time.
+
+    registry.sales_agent_tool_register(
+        ToolDef(
+            name=_ns("extract_tenant_context"),
+            description=(
+                "Extract clinic configuration (name, vertical, location) from a URL, "
+                "pasted text, or short audio. Orchestrates website scraper + document "
+                "extractor + Whisper STT. NEVER processes PHI."
+            ),
+            input_schema={
+                "type": "object",
+                "properties": {
+                    "draft_id": {"type": "string", "format": "uuid"},
+                    "tenant_id": {"type": "string", "format": "uuid"},
+                    "url": {"type": ["string", "null"]},
+                    "text_content": {"type": ["string", "null"]},
+                },
+                "required": ["draft_id", "tenant_id"],
+            },
+            handler=extract_tenant_context,
+            tool_groups=("wizard", "copilot", "onboarding"),
+        ),
+    )
+
+    registry.sales_agent_tool_register(
+        ToolDef(
+            name=_ns("confirm_slot"),
+            description=(
+                "Mark a wizard slot as user-confirmed. Bumps confidence to 1.0, sets "
+                "confirmed_at, and persists via OnboardingDraftService.update_slot."
+            ),
+            input_schema={
+                "type": "object",
+                "properties": {
+                    "draft_id": {"type": "string", "format": "uuid"},
+                    "tenant_id": {"type": "string", "format": "uuid"},
+                    "slot_id": {"type": "string", "minLength": 1, "maxLength": 128},
+                    "value": {"type": ["string", "object", "null"]},
+                    "source": {
+                        "type": "string",
+                        "enum": ["user_text", "user_correction"],
+                        "default": "user_text",
+                    },
+                },
+                "required": ["draft_id", "tenant_id", "slot_id", "value"],
+            },
+            handler=confirm_slot,
+            tool_groups=("wizard", "copilot", "onboarding"),
+        ),
+    )
+
+    registry.sales_agent_tool_register(
+        ToolDef(
+            name=_ns("simulate_personality"),
+            description=(
+                "Generate a personality-aligned sample text for live wizard preview. "
+                "Throttled 5 calls/min/tenant + cached 10 min TTL by combination of "
+                "(profile_partial, scenario)."
+            ),
+            input_schema={
+                "type": "object",
+                "properties": {
+                    "tenant_id": {"type": "string", "format": "uuid"},
+                    "profile_partial": {"type": "object"},
+                    "scenario": {"type": "string", "minLength": 1, "maxLength": 64},
+                },
+                "required": ["tenant_id", "profile_partial", "scenario"],
+            },
+            handler=simulate_personality,
+            tool_groups=("wizard", "copilot", "personality_preview"),
+        ),
+    )
+
+    registry.sales_agent_tool_register(
+        ToolDef(
+            name=_ns("complete_onboarding"),
+            description=(
+                "Finalize Valeria wizard onboarding: compile full personality profile, "
+                "commit brand profile, activate tenant, write audit_log SYNC, emit "
+                "TenantOnboardedEvent via outbox."
+            ),
+            input_schema={
+                "type": "object",
+                "properties": {
+                    "draft_id": {"type": "string", "format": "uuid"},
+                    "tenant_id": {"type": "string", "format": "uuid"},
+                    "user_id": {"type": "string", "format": "uuid"},
+                },
+                "required": ["draft_id", "tenant_id", "user_id"],
+            },
+            handler=complete_onboarding,
+            tool_groups=("wizard", "copilot", "onboarding"),
+        ),
+    )
+
+    # ───────────────────────────────────────────────────────────────────────
+    # EP-3 — Adrián sales_agent 3 MVP tools (NEW per T-ag-tools-2 Slice 1)
+    # ───────────────────────────────────────────────────────────────────────
+    # Per 03-arch-agentic.md § 4.2 + 02-design-agentic.md § 2.3 — 3 Slice 1
+    # MVP per Q1 default (send_template_confirmation + retract_last_message
+    # deferred Slice 2). Real LangChain @tool decorated async fns,
+    # Pydantic v2 args_schema, tenant + clinic dual filter cardinal.
+
+    registry.sales_agent_tool_register(
+        ToolDef(
+            name=_ns("screening_questions"),
+            description=(
+                "Apply medical screening to a lead before booking. Loads vertical-specific "
+                "questions from YAML SSoT, calls LLM nano classifier, sanitizes PHI, persists "
+                "LeadScreeningEvent (tenant+clinic dual filter), writes audit log SYNC. "
+                "Outcomes: ok_proceed | derivar_doctor | derivar_emergencia | awaiting_response."
+            ),
+            input_schema={
+                "type": "object",
+                "properties": {
+                    "lead_id": {"type": "string", "format": "uuid"},
+                    "vertical": {
+                        "type": "string",
+                        "enum": ["dental", "estetica", "psicologia", "fertilidad", "otro"],
+                    },
+                    "tenant_id": {"type": "string", "format": "uuid"},
+                    "clinic_id": {"type": "string", "format": "uuid"},
+                    "lead_response": {"type": ["string", "null"]},
+                    "user_id": {"type": ["string", "null"], "format": "uuid"},
+                },
+                "required": ["lead_id", "vertical", "tenant_id", "clinic_id"],
+            },
+            handler=screening_questions,
+            tool_groups=("sales_agent", "vertical_medical", "screening"),
+        ),
+    )
+
+    registry.sales_agent_tool_register(
+        ToolDef(
+            name=_ns("send_payment_link"),
+            description=(
+                "Create + dispatch a MercadoPago deposit payment link. ChannelGuard validates "
+                "BEFORE any send (BlockedChannelError aborts pre-send). Writes payment_events "
+                "with idempotency key (appointment_id, deposit_percent). Sync audit log."
+            ),
+            input_schema={
+                "type": "object",
+                "properties": {
+                    "lead_id": {"type": "string", "format": "uuid"},
+                    "appointment_id": {"type": "string", "format": "uuid"},
+                    "deposit_percent": {"type": "integer", "minimum": 1, "maximum": 100},
+                    "channel": {"type": "string", "minLength": 1, "maxLength": 64},
+                    "tenant_id": {"type": "string", "format": "uuid"},
+                    "clinic_id": {"type": "string", "format": "uuid"},
+                    "amount": {"type": "number", "minimum": 0.0},
+                    "to_phone": {"type": "string"},
+                    "currency": {"type": "string", "minLength": 3, "maxLength": 3},
+                    "template_name": {"type": "string"},
+                    "user_id": {"type": ["string", "null"], "format": "uuid"},
+                },
+                "required": [
+                    "lead_id",
+                    "appointment_id",
+                    "deposit_percent",
+                    "channel",
+                    "tenant_id",
+                    "clinic_id",
+                ],
+            },
+            handler=send_payment_link,
+            tool_groups=("sales_agent", "vertical_medical", "payment", "booking"),
+        ),
+    )
+
+    registry.sales_agent_tool_register(
+        ToolDef(
+            name=_ns("reschedule_appointment"),
+            description=(
+                "Reschedule an existing appointment to a new slot. Delegates to "
+                "AppointmentService (validates professional availability + cross-clinic "
+                "filter). Emits appointment_rescheduled outbox event. Sync audit log."
+            ),
+            input_schema={
+                "type": "object",
+                "properties": {
+                    "appointment_id": {"type": "string", "format": "uuid"},
+                    "new_starts_at": {"type": "string", "format": "date-time"},
+                    "reason": {"type": "string", "maxLength": 500},
+                    "tenant_id": {"type": "string", "format": "uuid"},
+                    "clinic_id": {"type": "string", "format": "uuid"},
+                    "user_id": {"type": ["string", "null"], "format": "uuid"},
+                },
+                "required": [
+                    "appointment_id",
+                    "new_starts_at",
+                    "reason",
+                    "tenant_id",
+                    "clinic_id",
+                ],
+            },
+            handler=reschedule_appointment,
+            tool_groups=("sales_agent", "vertical_medical", "scheduling", "rescheduling"),
+        ),
+    )
+
+    # ───────────────────────────────────────────────────────────────────────
     # EP-4 — copilot_workflow_register (DataClass)
     # ───────────────────────────────────────────────────────────────────────
     # 1 workflow per brand.yaml::workflows. Steps will be LangGraph nodes per
@@ -335,6 +575,58 @@ def register_all(registry: ExtensionPointRegistry) -> None:
             ),
             steps=(),  # populated T-workflow-1 (LangGraph StateGraph definition)
             trigger_event="vitalia.treatment.started",
+        ),
+    )
+
+    # T-ag-workflows-2 — Lucas daily analysis graph (ReAct topology, cron-triggered).
+    # Per 03-arch-agentic § 3.4: build_lucas_daily_analysis_graph is the factory
+    # consumed by `LucasOrchestratorService` (application/services). EP-4 declares
+    # the workflow surface; actual graph construction is DI'd by the cron job at
+    # runtime — `steps=()` placeholder maintains the contract (SDK expects a tuple)
+    # while real LangGraph nodes live in workflows/lucas_daily_analysis_graph.py.
+    registry.copilot_workflow_register(
+        WorkflowDef(
+            name=_ns("lucas_daily_analysis"),
+            description=(
+                "Lucas growth setter daily analysis (5 stages → attribution → referrals). "
+                "Cron-triggered (06:00 LOCAL tenant TZ via APScheduler). "
+                "Graph factory: build_lucas_daily_analysis_graph (workflows/). "
+                "Orchestrator: LucasOrchestratorService (application/services/). "
+                "Production checkpointer = AsyncPostgresSaver (package install pending; "
+                "tests use MemorySaver per D10 pattern)."
+            ),
+            steps=(),
+            trigger_event="vitalia.lucas.daily.scheduled",
+        ),
+    )
+
+    # T-ag-workflows-1 — Valeria wizard onboarding supervisor (LangGraph + deepagents).
+    # Per 03-arch-agentic § 3.1 + § 7: build_wizard_onboarding_graph factory lives in
+    # workflows/wizard_onboarding_graph.py and is consumed by WizardOrchestratorService
+    # at FastAPI lifespan startup. EP-4 declares the workflow surface; the actual
+    # StateGraph compilation happens at composition root with InMemorySaver (tests)
+    # or AsyncPostgresSaver (production, package install deferred per D10 pattern).
+    # The 5-slot prompt cache layout lives in workflows/wizard_prompt_compiler.py.
+    # The 3 sandbox sub-tools (scrape_website + parse_document + transcribe_audio)
+    # are scoped to the extract_subagent — parent toolset NOT inherited (deepagents
+    # F2 sandbox cardinal).
+    registry.copilot_workflow_register(
+        WorkflowDef(
+            name=_ns("wizard_onboarding_supervisor"),
+            description=(
+                "Valeria wizard onboarding LangGraph supervisor + deepagents "
+                "extract_subagent (sandbox: scrape_website + parse_document + "
+                "transcribe_audio). 5-slot prompt cache (system + wizard_role + "
+                "tools_manifest + Valeria persona + variable session_state). "
+                "Production checkpointer = AsyncPostgresSaver "
+                "(table_prefix vitalia_wizard_onboarding_); tests use InMemorySaver. "
+                "Graph factory: build_wizard_onboarding_graph (workflows/). "
+                "Orchestrator: WizardOrchestratorService (application/services/). "
+                "4 wizard tools bound at composition: extract_tenant_context + "
+                "confirm_slot + simulate_personality + complete_onboarding."
+            ),
+            steps=(),
+            trigger_event="vitalia.onboarding.started",
         ),
     )
 
@@ -520,27 +812,50 @@ def register_all(registry: ExtensionPointRegistry) -> None:
     # EP-13 — sales_agent_guardrail_register (DataClass + Callables)
     # ───────────────────────────────────────────────────────────────────────
     # 4 guardrails per brand.yaml::guardrails + 03-arch-agentic § 10.
-    # Real check callables land in T-guards-1..3. prompt_injection_block reuses
-    # Story E base — we still register the brand-scoped vitalia.* alias here for
-    # CC-4 namespace consistency (real handler will delegate to Story E base).
+    # T-ag-tools-2 (Slice 1) — REAL callables replace Story 11 placeholders.
+    # Canonical regex/keyword detection lives at vitalia/agentic/guardrails/;
+    # compliance/guardrails/ shims expose SDK-compatible callables that wrap
+    # the canonical detection. Async + classifier paths live in canonical
+    # module and are invoked by sales_agent orchestrator pipeline, NOT
+    # through EP-13 dispatch (different surface).
 
-    def _block_handler_placeholder(msg: str, ctx: BrandContext) -> GuardrailResult:
-        # Defensive default: NOT blocking — until real impl lands the placeholder
-        # is permissive (warn mode). T-guards-1..3 replace via direct edit of this
-        # file (since EP-13 mode='override' is NOT permitted by CC-2).
-        return GuardrailResult(blocked=False)
+    _EP13_GUARDS: list[tuple[str, int, str, Any, Any]] = [
+        (
+            "medical_safety_no_diagnosis",
+            10,
+            "block",
+            guardrail_check_no_diagnosis,
+            guardrail_check_no_diagnosis,
+        ),
+        (
+            "medical_safety_no_prescription",
+            10,
+            "block",
+            guardrail_check_no_prescription,
+            guardrail_check_no_prescription,
+        ),
+        (
+            "medical_disclaimer_required",
+            20,
+            "rewrite",
+            guardrail_check_disclaimer_required,
+            guardrail_check_disclaimer_required,
+        ),
+        (
+            "prompt_injection_block",
+            5,
+            "block",
+            guardrail_check_prompt_injection,
+            guardrail_check_prompt_injection,
+        ),
+    ]
 
-    for guard_name, priority, mode_kind in [
-        ("medical_safety_no_diagnosis", 10, "block"),
-        ("medical_safety_no_prescription", 10, "block"),
-        ("medical_disclaimer_required", 20, "rewrite"),
-        ("prompt_injection_block", 5, "block"),
-    ]:
+    for guard_name, priority, mode_kind, pre_send, pre_receive in _EP13_GUARDS:
         registry.sales_agent_guardrail_register(
             GuardrailDef(
                 name=_ns(guard_name),
-                pre_send_check=_block_handler_placeholder,
-                pre_receive_check=_block_handler_placeholder,
+                pre_send_check=pre_send,
+                pre_receive_check=pre_receive,
                 priority=priority,
                 mode=mode_kind,  # type: ignore[arg-type]
             ),

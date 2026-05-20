@@ -1,25 +1,32 @@
 import type { Metadata } from "next";
+import { SignUp } from "@clerk/nextjs";
 
 export const metadata: Metadata = {
   title: "Crear cuenta — Vitalia",
 };
 
 /**
- * Página de registro — Clerk sign-up.
- * Contenido real con <SignUp /> de @clerk/nextjs en T-fe-3.
+ * Página de registro — Clerk SignUp.
+ *
+ * SC-04: <SignUp /> renderizado, sin placeholder.
+ * Apariencia alineada con design tokens Vitalia:
+ *   colorPrimary       = var(--vitalia-cian-color)       [hero, CTA primario]
+ *   colorTextSecondary = var(--vitalia-text-muted-color)  [texto secundario]
+ *   borderRadius       = 0.5rem
  */
 export default function SignUpPage() {
   return (
-    <main className="flex min-h-screen items-center justify-center p-6">
-      <div className="w-full max-w-md">
-        <h1 className="mb-4 text-2xl font-semibold text-gray-900">
-          Crear cuenta
-        </h1>
-        <p className="text-sm text-gray-500">
-          {/* TODO T-fe-3: renderizar <SignUp /> de @clerk/nextjs */}
-          Registro con Clerk (pendiente T-fe-3)
-        </p>
-      </div>
+    <main className="flex min-h-screen items-center justify-center bg-vitalia-bg p-6">
+      <SignUp
+        appearance={{
+          variables: {
+            colorPrimary: "var(--vitalia-cian-color)",
+            colorTextSecondary: "var(--vitalia-text-muted-color)",
+            borderRadius: "0.5rem",
+            fontFamily: "inherit",
+          },
+        }}
+      />
     </main>
   );
 }

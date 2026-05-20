@@ -4,18 +4,27 @@ brand: vitalia
 status: active
 priority: high
 spawned_at: 2026-05-17
-last_updated: 2026-05-17
+last_updated: 2026-05-18
 ssot_owner: /pm-vitalia
 parent_outcome: null
 related_outcomes:
   - dev-environment-multibrand   # bloqueante operativo (dev stack debe funcionar para iterar UI)
 stories:
-  - vitalia-ux-discovery         # state: refining/SPEC_V0_RATIFIED (esta entrega)
+  - vitalia-ux-discovery                   # state: ready (READY_PACKAGE_CLOSED_AND_SPLIT) — /architect produjo package 2026-05-17, split en 7 sub-stories
+  - vitalia-slice-1-infra-cross-cutting    # state: done — 2026-05-18 merged (squashes 50143d57 + cc4fcd68), 8 capabilities live
+  - vitalia-slice-1-onboarding-wizard      # state: refined (UNBLOCKED post infra merge)
+  - vitalia-slice-1-inbox                  # state: refined (UNBLOCKED post infra merge)
+  - vitalia-slice-1-pipeline               # state: refined (UNBLOCKED post infra merge, sub-blocker payment-adapter-mvp + copilot-tools-impl)
+  - vitalia-slice-1-agenda                 # state: refined (UNBLOCKED post infra merge, sub-blocker payment-adapter-mvp + fiscal-emission-pe)
+  - vitalia-slice-1-fidelizacion           # state: refined (UNBLOCKED post infra merge)
+  - vitalia-slice-1-marketing              # state: refined (UNBLOCKED post infra merge, sub-blocker copilot-tools-impl)
+  - vitalia-copilot-tools-impl             # state: developing/defer_audit (4/10 tickets pushed BE; 6 remaining agentic Opus R23 — retoma sesión fresca)
 slice_strategy:
   slice_1:
     scope: "5 rutas operativas P1 (Inbox + Pipeline + Agenda + Fidelización + Marketing)"
     target: "Operador puede trabajar un día completo en Vitalia FE"
     status: active
+    infra_done: true   # vitalia-slice-1-infra-cross-cutting → done 2026-05-18
   slice_2:
     scope: "5 rutas dirección P2 (Dashboard ejecutivo + Inversión publicitaria + Brand Studio + Tratamientos + Configuración)"
     target: "Owner puede operar + dirigir"

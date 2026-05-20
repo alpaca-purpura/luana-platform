@@ -116,13 +116,25 @@ Detalle SSoT: `.claude/rules/story-closure-gate.md`.
 
 - [ ] Estructura física `{slug}/` creada
 - [ ] `{slug}/config/brand.yaml` con frontmatter inicial
-- [ ] `{slug}/docs/` con templates iniciales heredados (BACKLOG, checkpoint, READMEs)
+- [ ] `{slug}/docs/` con templates iniciales heredados (BACKLOG, checkpoint, READMEs) — **schema canónico per `.claude/rules/brand-docs-schema.md` (R1+R2+R3)**
 - [ ] `.claude/skills/pm-{slug}/SKILL.md` creado con placeholders reemplazados
 - [ ] `make portfolio` regenerado para incluir nuevo brand en `docs/portfolio/PORTFOLIO.md`
 - [ ] Commit + push (Conventional Commits: `feat({slug}): bootstrap brand topology`)
 - [ ] Update `docs/portfolio/{slug}.md` 1-pager (auto-gen via make portfolio)
 - [ ] Update CLAUDE.md raíz portfolio table si aplica
 - [ ] Probar en sesión nueva: `/pm-{slug}` → bootstrap protocol
+
+## ★ Brand docs schema (MANDATORIO desde el día 1)
+
+> SSoT: `.claude/rules/brand-docs-schema.md` (R1+R2+R3 cementadas 2026-05-19).
+
+Todo `{slug}/docs/` debe cumplir 3 reglas hard:
+
+- **R1 — No MDs sueltos en `{slug}/docs/` raíz.** Solo sub-dirs (`product/`, `archive/`, `learnings/`, `architecture/`, `domains/`). Contenido ad-hoc → al sub-dir apropiado (ADR a `architecture/`, decisión proceso a `domains/`, etc.).
+- **R2 — Stories `state: done` auto-move a `{slug}/docs/archive/{year}/stories/` en el commit del 07-merge.** Nunca quedan en `product/stories/` indefinidamente.
+- **R3 — Auto-gen files NO se editan manual.** `BACKLOG.md`, `BACKLOG-TLDR.md`, `BACKLOG.yaml`, `modules/{m}.md` (sección auto-list) son OUTPUT de scripts. Editar la SOURCE (checkpoint/outcomes/stories/capabilities), luego regen via make.
+
+El template SKILL.md sample (sección abajo) debe incluir referencia explícita a esta rule en la "Anti-patterns" y "Referencias" del `/pm-{slug}` resultante.
 
 ## Próximas acciones post-bootstrap
 
@@ -177,3 +189,5 @@ Ver también: `vitalia/docs/learnings/2026-05-16-capabilities-inventory-gap.md`.
 - `.claude/skills/pm-nicolify/SKILL.md` — ejemplo concreto template aplicado
 - `.claude/skills/pm-luana/SKILL.md` — PM Luana unificado (Modo Portfolio reconoce el brand nuevo después bootstrap + Modo Core recibe futuras promotion candidates del brand). Alias `/pm` apunta acá.
 - `docs/architecture/luana-platform/01-core-audit.md` — plan multibrand original con catálogo 10 brands
+- `.claude/rules/brand-docs-schema.md` — schema canónico `{slug}/docs/` + R1+R2+R3 enforcement (MANDATORIO desde bootstrap)
+- `.claude/rules/story-closure-gate.md` — Fase F MERGE concreta R2 (archive como parte del 07-merge)

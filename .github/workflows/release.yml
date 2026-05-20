@@ -87,13 +87,13 @@ jobs:
         run: |
           # Fail-fast: if no token, error explicitly with actionable hint
           if [ -z "$UV_PUBLISH_TOKEN" ]; then
-            echo "::error::No GH Packages token. Set GH_PACKAGES_TOKEN secret OR ensure GITHUB_TOKEN has write:packages scope. See docs/RELEASES.md §Token-setup"
+            echo "::error::No GH Packages token. Set GH_PACKAGES_TOKEN secret OR ensure GITHUB_TOKEN has write:packages scope. See docs/process/release-procedure-v0.1.0.md §Token-setup"
             exit 1
           fi
           # Publish each wheel/sdist atomically (per-package, fail-fast)
           for f in dist/*.tar.gz dist/*.whl; do
             echo "Publishing $f"
-            uv publish "$f" || { echo "::error::Publish failed for $f. Verify GITHUB_TOKEN has write:packages scope OR set GH_PACKAGES_TOKEN secret per docs/RELEASES.md §Token-setup"; exit 1; }
+            uv publish "$f" || { echo "::error::Publish failed for $f. Verify GITHUB_TOKEN has write:packages scope OR set GH_PACKAGES_TOKEN secret per docs/process/release-procedure-v0.1.0.md §Token-setup"; exit 1; }
           done
 
   publish-typescript:

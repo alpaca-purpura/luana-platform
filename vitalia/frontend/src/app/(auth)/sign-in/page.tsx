@@ -1,25 +1,33 @@
 import type { Metadata } from "next";
+import { SignIn } from "@clerk/nextjs";
 
 export const metadata: Metadata = {
   title: "Iniciar sesión — Vitalia",
 };
 
 /**
- * Página de inicio de sesión — Clerk sign-in.
- * Contenido real con <SignIn /> de @clerk/nextjs en T-fe-3.
+ * Página de inicio de sesión — Clerk SignIn.
+ *
+ * SC-03: <SignIn /> renderizado, inputs email+contraseña visibles, sin placeholder.
+ * Apariencia alineada con design tokens Vitalia:
+ *   colorPrimary  = var(--vitalia-cian-color)    [#01B2F8 — hero, CTA primario]
+ *   colorText     = var(--vitalia-text-color)      [#1A1F36 — cuerpo principal]
+ *   colorTextSecondary = var(--vitalia-text-muted-color)
+ *   borderRadius  = 0.5rem (--vitalia-radius-md equivalente)
  */
 export default function SignInPage() {
   return (
-    <main className="flex min-h-screen items-center justify-center p-6">
-      <div className="w-full max-w-md">
-        <h1 className="mb-4 text-2xl font-semibold text-gray-900">
-          Iniciar sesión
-        </h1>
-        <p className="text-sm text-gray-500">
-          {/* TODO T-fe-3: renderizar <SignIn /> de @clerk/nextjs */}
-          Inicio de sesión con Clerk (pendiente T-fe-3)
-        </p>
-      </div>
+    <main className="flex min-h-screen items-center justify-center bg-vitalia-bg p-6">
+      <SignIn
+        appearance={{
+          variables: {
+            colorPrimary: "var(--vitalia-cian-color)",
+            colorTextSecondary: "var(--vitalia-text-muted-color)",
+            borderRadius: "0.5rem",
+            fontFamily: "inherit",
+          },
+        }}
+      />
     </main>
   );
 }

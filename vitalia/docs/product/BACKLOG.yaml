@@ -1,9 +1,9 @@
 # docs/product/BACKLOG.yaml — auto-generated SSoT machine-readable
 # DO NOT EDIT MANUALLY — modify source artifacts instead.
 # Regenerate: python scripts/generate_backlog.py
-# Generated at: 2026-05-18T16:53:13+00:00
+# Generated at: 2026-05-20T01:36:31+00:00
 
-generated_at: '2026-05-18T16:53:13+00:00'
+generated_at: '2026-05-20T01:36:31+00:00'
 brand: vitalia
 caps:
   refining_max: 3
@@ -16,8 +16,7 @@ caps:
   refining_stale_days: 60
   refined_stale_days: 30
   done_rolling_days: 90
-warnings:
-- refined cap exceeded (6 > 5, excl. legacy+outcomes)
+warnings: []
 stale_ideas: []
 stale_refining: []
 stale_refined: []
@@ -40,6 +39,36 @@ buckets:
       priority_override: null
       audit_iterations: 0
   refining:
+  - id: admin-iam-adopt
+    kind: outcome
+    state: refining
+    title: admin-iam-adopt
+    tags: []
+    last_touched: 2026-05-19
+    extra:
+      story_ids:
+      - vitalia-adopt-luana-core-iam
+      why_now: 'vitalia-auth-base-functional cerró state=done pero admin Streamlit smoke reveló
+
+        4 bugs bloqueantes (HANDOFF-next-session.md). Causa raíz: vitalia reinventó modelo
+
+        IAM en lugar de consumir luana-core-iam que YA existe completo (44 .py + 14 tests).
+
+        Migrations 002-021 pendientes (alembic current=001_vitalia, head=021_vitalia).
+
+        Admin code en vitalia/backend/src/modules/vitalia/admin/modules/{tenants,users}.py
+
+        hace SQL crudo a tabla phantom `vitalia_clinics` que NO existe en ninguna migration.
+
+        Sin fix: admin inutilizable + violación anti-duplication rule + patrón
+
+        contaminado para las 6 brands futuras (saasora/inmoflow/retailly/fixia/guestly/fitflow).
+
+        '
+      why_next: null
+      target_end: null
+      priority: HIGH
+      success_metrics: []
   - id: dev-environment-multibrand
     kind: outcome
     state: refining
@@ -169,20 +198,6 @@ buckets:
       blocked_by: null
       priority_override: null
       audit_iterations: 0
-  - id: vitalia-slice-1-onboarding-wizard
-    kind: story
-    state: refined
-    title: vitalia-slice-1-onboarding-wizard
-    tags: []
-    last_touched: 2026-05-17
-    extra:
-      outcome: vitalia-mvp-ui-foundation
-      phase: READY_PACKAGE_INHERITED_BUT_BLOCKED
-      next_action: BLOCKED. Spawn /dev-team cuando vitalia-slice-1-infra-cross-cutting state=developed Y vitalia-copilot-tools-impl
-        state≥developed.
-      blocked_by: null
-      priority_override: null
-      audit_iterations: 0
   - id: vitalia-slice-1-pipeline
     kind: story
     state: refined
@@ -219,58 +234,26 @@ buckets:
       blocked_by: null
       priority_override: null
       audit_iterations: 0
-  developing:
-  - id: vitalia-copilot-tools-impl
-    kind: story
-    state: developing
-    title: vitalia-copilot-tools-impl
-    tags: []
-    last_touched: 2026-05-18
-    extra:
-      outcome: vitalia-mvp-ui-foundation
-      phase: SESSION_SPLIT_DEFER_AUDIT_OF_INFRA_PADRE
-      next_action: '★ READY package CLOSED 2026-05-18. /architect Opus 4.7 produjo: 03-arch.md (consolidated index 7 sections)
-        + 03-arch-be.md (BE sub-arch DDD layers + 5 migrations + persistence schema mirrors + 10 application services + 7
-        API routes) + 03-arch-agentic.md (LangGraph supervisor wizard + ReAct Lucas + deepagents SubAgentMiddleware + 4-6
-        slot prompt architectures + 4 medical guardrails + 16 goldens + observability subclasses anti-duplication §0) + 04-validators.yaml
-        (4 categories: non_functional + functional + visual_na + agentic_eval pass^k policy 16 goldens × 3 trials, threshold
-        0.66/0.5) + 05-guidelines.md (patterns required/forbidden + 25+ anti-patterns + skills/rules loadout per surface)
-        + 06-tickets.yaml (10 atomic tickets en 5 waves: T-be-migrations-1 → T-be-services-{1,2,3} parallel → T-ag-tools-{1,2,3}
-        parallel → T-ag-workflows-{1,2} parallel → T-ag-evals-1; R23 enforcement: 6 tickets Opus 4.7 required, 4 tickets Sonnet
-        default). State transition: refined → ready. HANDOFF /dev-team vitalia-copilot-tools-impl. Blockers externos: vitalia-slice-1-infra-cross-cutting/T-infra-{1,2,3}
-        prerequisite — wait for state=developed antes spawn /dev-team.'
-      blocked_by: null
-      priority_override: null
-      audit_iterations: 0
+  developing: []
   developed: []
-  reviewing:
-  - id: vitalia-slice-1-infra-cross-cutting
-    kind: story
-    state: reviewing
-    title: vitalia-slice-1-infra-cross-cutting
-    tags: []
-    last_touched: 2026-05-18
-    extra:
-      outcome: vitalia-mvp-ui-foundation
-      phase: AWAIT_SIBLING_STORY_CLOSURE
-      next_action: '★ AUDITOR APPROVED + MERGE DEFERRED 2026-05-18 (Chris ratificó Opción C — cero acción irreversible esta
-        sesión). Story queda state=reviewing + phase=AWAIT_SIBLING_STORY_CLOSURE + ready_to_merge:true. Branch wip/vitalia-infra-cross-cutting
-        con commit 9d79d50 (close audit cycle docs) pusheado a origin. ARTEFACTOS COMPLETOS: CONTEXT-BRIEF + 10 reviews APPROVED
-        + CHECKPOINTS 27/27 ✅ + 07-merge.md + gherkin-matrix.md exempt + 8 capability YAMLs + 5 nuevos modules MD + reconcile_capabilities
-        PASS. PRÓXIMA SESIÓN /pm-vitalia debe: (1) verificar status de sibling story vitalia-copilot-tools-impl (state=developing,
-        defer_audit:true, blocks_on:this), (2) cuando copilot-tools-impl cierre (audit o abandon ratificado), decidir squash-merge
-        consolidado a main respetando 07-merge.md §5 squash-merge guidance (Opción A cherry-pick selectivo o Opción B squash+reset
-        selectivo), (3) post-merge: archive story → vitalia/docs/archive/2026/stories/, (4) ping /pm-luana con 2 promotion
-        candidates (PhiRepositoryBase + idempotent_cron) en learnings, (5) cleanup worktree limpio + branch wip/vitalia-infra-cross-cutting,
-        (6) state=reviewing→done.'
-      blocked_by: null
-      priority_override: null
-      audit_iterations: 0
+  reviewing: []
   done: []
   parked: []
   dropped: []
 capabilities:
+- module: admin
+  live: 1
+  in_progress: 0
+  planned: 0
+  deprecated: 0
+  total: 1
 - module: agentic
+  live: 4
+  in_progress: 0
+  planned: 0
+  deprecated: 0
+  total: 4
+- module: auth
   live: 2
   in_progress: 0
   planned: 0
@@ -301,12 +284,18 @@ capabilities:
   deprecated: 0
   total: 1
 - module: copilot
-  live: 2
+  live: 3
   in_progress: 0
   planned: 0
   deprecated: 0
-  total: 2
+  total: 3
 - module: crm
+  live: 1
+  in_progress: 0
+  planned: 0
+  deprecated: 0
+  total: 1
+- module: dashboard
   live: 1
   in_progress: 0
   planned: 0
@@ -325,11 +314,11 @@ capabilities:
   deprecated: 0
   total: 1
 - module: observability
-  live: 1
+  live: 3
   in_progress: 0
   planned: 0
   deprecated: 0
-  total: 1
+  total: 3
 - module: offer_studio
   live: 1
   in_progress: 0
@@ -337,6 +326,12 @@ capabilities:
   deprecated: 0
   total: 1
 - module: onboarding
+  live: 2
+  in_progress: 0
+  planned: 0
+  deprecated: 0
+  total: 2
+- module: ops
   live: 1
   in_progress: 0
   planned: 0
@@ -361,6 +356,18 @@ capabilities:
   deprecated: 0
   total: 3
 - module: public_landing
+  live: 1
+  in_progress: 0
+  planned: 0
+  deprecated: 0
+  total: 1
+- module: sales_agent
+  live: 3
+  in_progress: 0
+  planned: 0
+  deprecated: 0
+  total: 3
+- module: tests
   live: 1
   in_progress: 0
   planned: 0

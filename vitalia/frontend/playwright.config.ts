@@ -12,20 +12,30 @@ export default defineConfig({
     trace: "on-first-retry",
   },
   projects: [
-    // Smoke project — all *.smoke.spec.ts on Desktop Chrome
+    // Smoke project — all *.smoke.spec.ts + vitalia-auth-base-functional specs
+    // (e2e/auth/*, e2e/dashboard/*, e2e/admin/*, e2e/visual/* are plain *.spec.ts per 06-tickets.yaml)
     {
       name: "smoke",
-      testMatch: /.*\.smoke\.spec\.ts/,
+      testMatch: [
+        /.*\.smoke\.spec\.ts/,
+        /.*\/e2e\/auth\/.*\.spec\.ts/,
+        /.*\/e2e\/dashboard\/.*\.spec\.ts/,
+        /.*\/e2e\/admin\/.*\.spec\.ts/,
+        /.*\/e2e\/visual\/.*\.spec\.ts/,
+      ],
       use: { ...devices["Desktop Chrome"] },
     },
     // Responsive projects — spec §9 breakpoints
-    // mobile: < 768px
+    // mobile: < 768px — includes T-6.b mobile/ specs + legacy responsive/ suite
     {
       name: "mobile",
-      testMatch: /.*\/responsive\/.*\.smoke\.spec\.ts/,
+      testMatch: [
+        /.*\/mobile\/.*\.spec\.ts/,
+        /.*\/responsive\/.*\.smoke\.spec\.ts/,
+      ],
       use: {
         ...devices["iPhone 13"],
-        viewport: { width: 375, height: 812 },
+        viewport: { width: 390, height: 844 },
       },
     },
     // tablet: 768-1024px
@@ -46,11 +56,25 @@ export default defineConfig({
         viewport: { width: 1440, height: 900 },
       },
     },
-    // A11y project — axe-core scans
+    // A11y project — axe-core scans (T-6.b a11y/ specs + legacy *.smoke.spec.ts pattern)
     {
       name: "a11y",
-      testMatch: /.*\/a11y\/.*\.smoke\.spec\.ts/,
+      testMatch: [
+        /.*\/a11y\/.*\.spec\.ts/,
+        /.*\/a11y\/.*\.smoke\.spec\.ts/,
+      ],
       use: { ...devices["Desktop Chrome"] },
+    },
+    // Admin-smoke project — Streamlit admin panel at port 8502 (NOT Clerk-gated).
+    // Requires VITALIA_ADMIN_PASSWORD + VITALIA_INTERNAL_API_TOKEN env vars.
+    // Run: E2E_ADMIN_BASE_URL=http://localhost:8502 VITALIA_ADMIN_PASSWORD=... npx playwright test --project=admin-smoke
+    {
+      name: "admin-smoke",
+      testMatch: /.*\/e2e\/admin\/.*\.spec\.ts/,
+      use: {
+        ...devices["Desktop Chrome"],
+        baseURL: process.env["E2E_ADMIN_BASE_URL"] || "http://127.0.0.1:8502",
+      },
     },
   ],
 });

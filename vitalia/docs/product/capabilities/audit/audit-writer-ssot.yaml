@@ -1,0 +1,36 @@
+capability_id: vitalia-audit-writer-ssot
+module: audit
+slug: audit-writer-ssot
+status: live
+date_introduced: 2026-05-19
+story_introduced: vitalia-adopt-luana-core-iam
+package_version: 0.1.0
+package_path: vitalia/backend/src/modules/vitalia/audit/audit_writer.py
+license: MIT
+summary: |
+  SSoT helper `audit_writer.py` para escribir rows en `vitalia_audit_log` sync
+  (before-return) en todas las mutaciones admin. Consumido por:
+  - admin/modules/tenants.py (create + suspend)
+  - admin/modules/users.py (create + ban + link/unlink)
+  - admin/modules/clinics.py (create)
+  - clinics/application/clinic_service.py (create + update)
+
+  HIPAA-lite: payload_redacted limited a identity fields + IDs (no PHI). Sync
+  write antes return (NO async fire-forget) per rule.
+
+surfaces:
+  backend:
+    - vitalia/backend/src/modules/vitalia/audit/audit_writer.py
+  tests:
+    - vitalia/backend/tests/modules/vitalia/audit/test_audit_log_sync.py
+
+verification:
+  commands:
+    - "cd vitalia/backend && ${WS}/.venv/bin/pytest tests/modules/vitalia/audit/test_audit_log_sync.py -v"
+  gherkin_evidence:
+    - SC-02 audit log row tenant.create
+    - SC-04 audit log row user.create + user_tenant.link
+    - SC-06 audit log row user.ban
+    - SC-07 audit log row tenant.suspend
+    - SC-08 audit log row clinic.create
+    - SC-10 audit log row phi.access_denied (cross-clinic intent)
