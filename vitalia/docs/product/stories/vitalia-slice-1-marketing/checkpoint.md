@@ -2,8 +2,8 @@
 story_id: vitalia-slice-1-marketing
 outcome: vitalia-mvp-ui-foundation
 parent_spec: vitalia-ux-discovery (archived 2026-05-20 — inheritance carryover)
-state: ready
-phase: READY_PACKAGE_PRODUCED
+state: developing
+phase: BUILD_WAVE_1
 last_artifact: 03-arch.md + 03-arch-be.md + 03-arch-fe.md + 03-arch-agentic.md + 04-validators.yaml + 05-guidelines.md + 06-tickets.yaml + HANDOFF-cross-story-updates.md + 01-spec-extract.md + 02-design-ui.md
 last_modified: 2026-05-20
 ratified_by_chris: true
