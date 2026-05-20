@@ -66,6 +66,8 @@ tickets:
         tests:
           - vitalia/backend/tests/modules/vitalia/marketing/infrastructure/repositories/test_lucas_recommendation_repository.py::test_other_clinic_cannot_read
           - vitalia/backend/tests/modules/vitalia/marketing/infrastructure/repositories/test_channel_sync_state_repository.py::test_oauth_token_pgcrypto_roundtrip
+    state: pushed
+    pushed_sha: pending_commit
     blocked_by: [T-mk-be-1]
 
 # ════════════════════════════════════════════════════════════════════════
