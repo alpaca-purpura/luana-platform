@@ -34,16 +34,11 @@ slice_1_replan_2026_05_20:                 # ★ Replan ratificado Chris 2026-05
     - playwright_smoke_suite_23_specs_green_local_and_live
     - promotion_proposal_core_platform_extensions_slice_1_migrated
   auto_handoff_chain: "dev-team developed → auditor → pm-vitalia merge (no Chris intermedia per paradigm v4.1)"
-ratified_promotion_proposals:              # APPROVED + migrated 2026-05-17 (commit 5ca6101) — unblocks T-be-migration-014/T-be-migration-015
+ratified_promotion_proposals:              # APPROVED + migrated
   - docs/promotion-protocol/proposals/2026-05-17-platform-tenants-location-columns.md      # state: migrated (luana-core-platform 0.1.0→0.2.0)
   - docs/promotion-protocol/proposals/2026-05-17-offer-studio-multi-session-maintenance.md # state: migrated (luana-core-offer-studio 0.1.0→0.2.0)
-promotion_candidates:                      # ★ Pending ping /pm-luana (cement 2026-05-18)
-  - learning_path: vitalia/docs/learnings/2026-05-18-phi-repository-base.md
-    pattern: PhiRepositoryBase → CompoundScopeRepositoryBase (lift candidate)
-    threshold: 2 brands (vitalia first, fitflow/comunify probable second)
-  - learning_path: vitalia/docs/learnings/2026-05-18-idempotent-cron-pattern.md
-    pattern: idempotent_cron decorator → core/luana-core-platform/workers/ (lift candidate)
-    threshold: 2 brands (vitalia first, nicolify proposal_followup_72h probable second)
+  - docs/promotion-protocol/proposals/2026-05-20-core-platform-extensions-slice-1.md       # state: migrated (luana-core-platform 0.3.0→0.4.0) — cron_envelope + CompoundScopeRepositoryBase
+promotion_candidates: []                   # ★ Sin candidates pendientes — los 2 anteriores migrated 2026-05-20
 recently_done:
   - vitalia-ux-discovery                 # 2026-05-20 cerrada ready→done — PARENT SSoT cumplido (17/56 tickets shipped vía 3 sub-stories archivadas + 5 sub-stories Slice 1 UI refined heredan mockups + design-system). 6 mockups HTML redistribuidos a sub-stories (5 active + 1 archive snapshot) ANTES del archive · audit-2026-05-20/AUDIT-REPORT.md cementado · archive/2026/stories/vitalia-ux-discovery/07-merge.md
   - vitalia-copilot-tools-impl           # 2026-05-18 cerrada reviewing→done autonomous E2E sesión orquestada · 12 commits pushed wip/vitalia (3331151..427b0f3 → último c87e... post-merge) · 7 capability YAMLs NEW live (valeria-wizard-onboarding-agentic + adrian-3-tools-mvp + medical-guardrails + state-overlay-langgraph + lucas-daily-analysis + vitalia-callback-subclasses + eval-goldens-slice-1) + 1 NEW module MD (sales_agent.md) + 3 modules MD refreshed (copilot + agentic + observability) + 1363/1363 tests GREEN (245 arch + 510 unit + 49 integration + 512 agentic_evals + 47 extensions) · auditor APPROVED (CHECKPOINTS C1-C5 + gherkin matrix 18/18 + REVIEW-agentic.md) · 0 engine modifications + 0 cross-brand mirrors + anti-dup §0 ratchet enforced · archive/2026/stories/vitalia-copilot-tools-impl/07-merge.md

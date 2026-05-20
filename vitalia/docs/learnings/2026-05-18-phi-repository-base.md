@@ -2,9 +2,13 @@
 brand: vitalia
 date: 2026-05-18
 slug: phi-repository-base
-promotable: candidate
+promotable: yes
+proposal_link: docs/promotion-protocol/proposals/2026-05-20-core-platform-extensions-slice-1.md
+migrated_engine_path: core/luana-core-platform/src/luana_core_platform/repositories/compound_scope_repository.py
+migrated_at: 2026-05-20
+migrated_engine_class: CompoundScopeRepositoryBase  # renamed brand-agnostic
 applies_to_other_brands_potentially: [vitalia, fitflow, fixia, retailly, comunify, saasora]
-target_core_package: core/luana-core-compliance (o core/luana-core-platform/repositories/)
+target_core_package: core/luana-core-platform/repositories/
 origin_story: vitalia-slice-1-infra-cross-cutting
 origin_ticket: T-infra-3 (PHI compliance HIPAA-lite)
 related_capabilities:
