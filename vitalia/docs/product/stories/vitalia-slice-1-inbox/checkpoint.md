@@ -2,28 +2,38 @@
 story_id: vitalia-slice-1-inbox
 outcome: vitalia-mvp-ui-foundation
 parent_spec: vitalia-ux-discovery (archived 2026-05-20 — inheritance carryover)
-state: refined
-phase: REPLAN_AWAITING_ARCHITECT_REFRESH    # post 2026-05-20 replan ratified Chris
-last_artifact: 02-design-ui-mockup.html (heredado parent) + audit-2026-05-20/AUDIT-REPORT.md (parent archive)
+state: ready                                  # ← REFINED → READY post architect package emit (2026-05-20)
+phase: AWAITING_DEV_TEAM_PICKUP                # /dev-team picks 06-tickets when pre-flight gates GREEN
+last_artifact: 06-tickets.yaml + HANDOFF-cross-story-updates.md + 05-guidelines.md + 04-validators.yaml + 03-arch-{be,fe,agentic}.md + 03-arch.md + 02-design-ui.md + 01-spec-extract.md (all emitted 2026-05-20)
 last_modified: 2026-05-20
-ratified_by_chris: true
+ratified_by_chris: true                       # replan 2026-05-20
 spawned_at: 2026-05-17
 spawned_by: /pm-vitalia (split decision post /architect ready package)
 parallel_safe: true
-ola_assigned: 1                              # Ola 1 (paralela con vitalia-slice-1-fidelizacion)
-ola_rationale: "Auto-contenida, sin sub-blockers de side stories. Reuso fuerte nicolify/crm-hub + nicolify/copilot."
-ticket_subset_inherited: [T-inbox-1, T-inbox-2, T-inbox-3, T-inbox-4, T-inbox-5, T-inbox-6, T-inbox-7, T-inbox-8, T-inbox-9]  # referencia parent — sub-story produce 06-tickets propio post refresh
-blocker_dependencies: []                     # vitalia-slice-1-infra-cross-cutting ya DONE (2026-05-18)
-side_story_blockers: []                      # ninguna
+ola_assigned: 1                                # Ola 1 (paralela con vitalia-slice-1-fidelizacion)
+ola_rationale: "Auto-contenida, sin sub-blockers de side stories. Reuso fuerte nicolify/crm-hub + nicolify/copilot + nicolify/closer-studio."
+ticket_count: 13                               # T-inbox-be-{1..6} + T-inbox-agentic-1 + T-inbox-fe-{1..7} + T-inbox-integ-{1..2}
+blocker_dependencies: []                       # vitalia-slice-1-infra-cross-cutting ya DONE (2026-05-18)
+side_story_blockers: []                        # ninguna
 preflight_gates_required:
   - clerk_test_token_fresh_and_webhook_secret_configured
-  - clerk_test_users_3_created               # dr.demo + recepcion + admin
+  - clerk_test_users_3_created                 # dr.demo + recepcion + admin
   - playwright_storage_state_generated
   - playwright_smoke_suite_green_23_specs
-  - promotion_proposal_core_platform_extensions_slice_1_migrated  # cron_envelope + CompoundScopeRepositoryBase
+  - promotion_proposal_core_platform_extensions_slice_1_migrated  # cron_envelope + CompoundScopeRepositoryBase (verified migrated 2026-05-20)
 priority: high
 estimated_dev_weeks: 2-3
-next_action: "REPLAN 2026-05-20 ratified Chris. AWAITING /architect refresh tras pre-flight gates GREEN. /architect debe producir: 01-spec-extract.md (recorte mega 01-spec del parent acotado a /inbox) + 02-design-ui.md (link 02-design-ui-mockup.html como SSoT visual + component breakdown) + 03-arch-extract.md (BE+FE+agentic acotado) + 04-validators.yaml (Playwright spec /inbox + tests específicos) + 05-guidelines.md (reuso explícito: nicolify/frontend/src/features/crm-hub/ + nicolify/frontend/src/features/copilot/ rail + core/luana-core-crm/ + core/luana-core-channels/ + CompoundScopeRepositoryBase desde core) + 06-tickets.yaml (atómicos propios, no inherit) + HANDOFF-cross-story.md (comunicación con Ola 2 stories — tipos TS compartidos, schemas Zod, endpoints CRM comunes)."
+defer_audit: false                            # default forward-motion · auto-handoff /auditor at developed
+next_action: |
+  READY for /dev-team pickup. /dev-team consumes 06-tickets.yaml in DAG order:
+    T-inbox-be-1 (domain) → T-inbox-be-2 (infra+migration) ‖ T-inbox-be-4 (connections)
+    → T-inbox-be-3 (services) → T-inbox-agentic-1 (Opus tool) ‖ T-inbox-be-5 (API)
+    → T-inbox-be-6 (extensions register) → T-inbox-fe-1 (FE scaffold)
+    → T-inbox-fe-2 (hooks) → T-inbox-fe-3 (list+filters) → T-inbox-fe-4 (thread+segmented)
+    → T-inbox-fe-{5,6} (composer+media+ActionReceipt ‖ Sheet+ActivityStream+ContactSidebar+ProactiveOutbound)
+    → T-inbox-fe-7 (Storybook+arch test) → T-inbox-integ-{1,2}
+  Verify pre-flight gates GREEN before pickup. All gherkin_coverage fields populated per ticket.
+  Auto-handoff /auditor at state=developed (per .claude/rules/story-closure-gate.md).
 ---
 
 # vitalia-slice-1-inbox — checkpoint
@@ -32,41 +42,64 @@ next_action: "REPLAN 2026-05-20 ratified Chris. AWAITING /architect refresh tras
 
 Ruta `/inbox` conversacional Slice 1 (Batch 2 cementado): segmented 3-modos "Adrián decide" + 6 filtros venta consultiva ética + audio IN Whisper STT + imagen IN stub + composer attach + Tools Sheet read-only + Activity Stream sticky + Action Receipts undo 5min + proactive outbound modal.
 
+## Ready package (emitted 2026-05-20)
+
+| File | Lines | Purpose |
+|---|---|---|
+| `01-spec-extract.md` | 331 | Recorte fiel del mega-spec parent acotado a /inbox. Gherkin SC-01..04 + microcopy + componentes mapping. |
+| `02-design-ui.md` | 178 | Component tree + tokens + states + hooks + reuse mapping. Refers to `02-design-ui-mockup.html` as SSoT visual. |
+| `02-design-ui-mockup.html` | 49KB | SSoT visual heredado parent (clickable state switcher 8 estados). |
+| `03-arch.md` | 287 | Consolidated index · surface→builder→auditor mapping · existing systems audit (ALL EXTEND, zero NEW layers). |
+| `03-arch-be.md` | 803 | Backend DDD · 4 tables + 4 domain entities + 6 events + 8 inbox endpoints + 4 crm endpoints + repos heredan CompoundScopeRepositoryBase. |
+| `03-arch-fe.md` | 555 | FSD-Lite · components + hooks + nuqs URL state + PHI components + Storybook stories + E2E POM. |
+| `03-arch-agentic.md` | 361 | R23 Opus production · 1 NEW tool `retract_last_message` + cache slot architecture preserved + 1 opcional golden. |
+| `04-validators.yaml` | 324 | 4 categorías validators · 25+ must_pass:true gates + pre-flight gates Ola 1. |
+| `05-guidelines.md` | 305 | Skills+rules to load · files in scope · patterns REQUIRED+FORBIDDEN · reuso explícito · commit workflow · open questions. |
+| `06-tickets.yaml` | 691 | 13 atomic tickets · DAG + blockers + gherkin_coverage per ticket · owner_eligibility per R23. |
+| `HANDOFF-cross-story-updates.md` | 190 | Contratos producidos para Olas 2+3 (TS types · Zod · endpoints · events · BE modules). |
+
 ## Mockup heredado (SSoT visual)
 
 `02-design-ui-mockup.html` — copia del parent `vitalia-ux-discovery/mockups/inbox.html` ratificado Chris 2026-05-17. Colores cementados en `vitalia/frontend/src/app/globals.css` (T-arch-1 shipped). Build debe respetar:
 
 - Paleta 4 colores principales: `--vitalia-cian #01B2F8` · `--vitalia-purpura #7B2D91` · `--vitalia-azul-marino #180D95` · `--vitalia-verde-lima #B8DC2A` (avatar Lucas).
 - Layout: chat-RIGHT rail 72-80px (operación diaria post-wizard) + sidebar progresivo v3.
-- Componentes referidos: `shared/contact-sidebar` (2 tsx stubs) + `shared/activity-stream` (2 tsx stubs) + `shared/copilot-rail` (2 tsx stubs) + `shared/agents` (4 tsx Adrián/Valeria/Lucas avatars).
+- Componentes shared ya existen Story 11: `shared/contact-sidebar` + `shared/activity-stream` + `shared/copilot-rail` + `shared/agents` + `shared/phi` + `shared/shell`.
 
-## Reuso explícito (Slice 1 — referenciar en 05-guidelines.md tras refresh)
+## Reuso explícito (Slice 1 — cementado en 05-guidelines.md § 5)
 
 | Surface | Reuso de | Razón |
 |---|---|---|
-| FE conversación list + detail | `nicolify/frontend/src/features/crm-hub/` | crm-hub es el patrón inbox conversacional en Nicolify (legacy ap_sales_agent espejo) |
-| FE rail copilot derecha | `nicolify/frontend/src/features/copilot/` (65+ components, lib, hooks, store) | rail-pattern unificado cross-brand |
-| BE Lead + Conversation domain | `core/luana-core-crm/src/luana_core_crm/domain/{lead,customer}.py` | domain entities ya en engine |
-| BE channel format dispatch | `core/luana-core-channels/src/luana_core_channels/format_for_channel.py` | engine ya consumido |
-| BE PHI dual-filter queries | `core/luana-core-platform/repositories/CompoundScopeRepositoryBase` (post lift) | reemplaza vitalia/_shared/repositories/phi_repository.py local |
-| BE trace observability | `core/luana-core-observability/src/luana_core_observability/persistence/` | engine ya consumido |
+| FE conversación list + detail | `nicolify/frontend/src/features/closer-studio/components/inbox/` | Fork físico Slice 1 ratificado ADR-vitalia-001 |
+| FE composer voice record | `nicolify/frontend/src/features/copilot/components/composer/VoiceOverlay.tsx` | REUSE direct + retoken |
+| FE crm-hub reference | `nicolify/frontend/src/features/crm-hub/components/{ContactDetailContent,LifecycleStageChip,ContactFiltersPanel}.tsx` | Reference only para ContactSidebar PHI-aware + FilterChips Vitalia |
+| BE Lead + Patient (existing) | `vitalia/backend/src/modules/vitalia/crm/` (Story 11) | EXTEND scaffold con Conversation/Message/ActivityEvent/ActionReceipt |
+| BE channel format dispatch | `core/luana-core-channels/format_for_channel` + `intent_detector` | engine CONSUME direct |
+| BE PHI dual-filter queries | `core/luana-core-platform.repositories.CompoundScopeRepositoryBase` (scope_field="clinic_id") | post lift Slice 1 — replaces local PhiRepositoryBase |
+| BE trace observability | `core/luana-core-observability` (turn_envelope · sanitize_payload · cost_recorder) | engine CONSUME via heredancia (NEVER mirror) |
+| Compliance gates | `core/luana-core-compliance.ComplianceService` | engine CONSUME direct |
+| Idempotency keys | `core/luana-core-idempotency` | engine CONSUME direct (Idempotency-Key header) |
+| Outbox events | `core/luana-core-events.outbox.adapter_bus` | engine CONSUME direct |
+| Sales_agent runtime | `core/luana-core-sales-agent` | engine CONSUME · NO modify |
 
 ## Side stories paralelas relevantes
 
 Ninguna — `/inbox` arranca sin side blockers.
 
-## HANDOFF-cross-story coordination (NEW per Chris 2026-05-20)
+Ola 1 paralela: `vitalia-slice-1-fidelizacion` (auto-contenida también).
 
-Ola 1 produce tipos TS + schemas Zod + endpoints comunes que Ola 2 stories (`/pipeline` + `/marketing`) consumen:
+## HANDOFF-cross-story coordination
 
-- `vitalia/frontend/src/features/crm-shared/types.ts` — Lead + Conversation TS contracts (compartido inbox + pipeline)
-- `vitalia/frontend/src/lib/zod-schemas/lead.ts` — Lead validation (compartido)
-- API endpoints `GET /api/v1/vitalia/crm/leads`, `GET /api/v1/vitalia/crm/conversations` (consumidos inbox + pipeline)
-- Tipos Adrián tool calls (compartido inbox + pipeline para action receipts)
+Producer Ola 1 inbox para Ola 2+3 — ver detalle en `HANDOFF-cross-story-updates.md`:
+- TS types: `Lead` + `Conversation` + `LeadStage` (en `crm-shared/types.ts`)
+- Zod schemas: `leadSchema` + `conversationSchema` (en `lib/zod-schemas/`)
+- API endpoints: `GET /api/v1/vitalia/crm/{leads,conversations}/*` + `POST /api/v1/vitalia/inbox/proactive-outbound`
+- Domain events: `ConversationStarted` · `MessageSent` · `MessageRetracted` · `ModeChanged` · `AdrianPaused` · `ProactiveOutboundSent`
 
-Ver `vitalia/docs/product/outcomes/vitalia-mvp-ui-foundation/HANDOFF-cross-story.md` para coordinación full Slice 1.
+Cross-story update obligatorio post-merge: `vitalia/docs/product/outcomes/vitalia-mvp-ui-foundation-handoff-cross-story.md` § 10 Bitácora marca contracts como "shipped".
 
 ## Bitácora
 
 - 2026-05-17 spawned: split decision Chris post /architect ready package mega-story
-- 2026-05-20 REPLAN: ux-discovery → done (parent SSoT cumplido). Mockup heredado. Ola 1 asignada paralela con fidelización. Reuso explícito cementado. Pre-flight gates requeridos antes /architect refresh. State refined permanece hasta /architect produce ready package propio.
+- 2026-05-20 REPLAN: ux-discovery → done (parent SSoT cumplido). Mockup heredado. Ola 1 asignada paralela con fidelización. Reuso explícito cementado. Pre-flight gates requeridos antes /architect refresh.
+- 2026-05-20 READY package emitted: /architect produced 01-spec-extract + 02-design-ui + 03-arch* + 04-validators + 05-guidelines + 06-tickets + HANDOFF-cross-story-updates. State transition refined → ready. Awaiting /dev-team pickup post pre-flight gates GREEN.

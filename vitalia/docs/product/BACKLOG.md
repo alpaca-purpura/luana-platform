@@ -1,6 +1,6 @@
 # Vitalia Backlog (auto-generated)
 
-> Generated at: `2026-05-20T04:36:10+00:00`
+> Generated at: `2026-05-20T05:52:37+00:00`
 > DO NOT EDIT MANUALLY — modify source artifacts.
 > Regenerate: `python scripts/generate_backlog.py`
 
@@ -17,15 +17,14 @@
 - **vitalia-fiscal-emission-pe** — outcome `vitalia-mvp-ui-foundation` [AWAITING_PO_DRAFT_DEFERRED_NEXT_SESSION]
 - **vitalia-payment-adapter-mvp** — outcome `vitalia-mvp-ui-foundation` [AWAITING_PO_DRAFT_DEFERRED_NEXT_SESSION]
 
-### ✅ Refined — listo para arquitectos (5 / cap 5)
+### ✅ Refined — listo para arquitectos (3 / cap 5)
 - **vitalia-slice-1-agenda** — outcome `vitalia-mvp-ui-foundation`
-- **vitalia-slice-1-fidelizacion** — outcome `vitalia-mvp-ui-foundation`
-- **vitalia-slice-1-inbox** — outcome `vitalia-mvp-ui-foundation`
 - **vitalia-slice-1-marketing** — outcome `vitalia-mvp-ui-foundation`
 - **vitalia-slice-1-pipeline** — outcome `vitalia-mvp-ui-foundation`
 
-### 📦 Ready for development (0 / cap 5)
-- _(none)_
+### 📦 Ready for development (2 / cap 5)
+- **vitalia-slice-1-fidelizacion** — outcome `vitalia-mvp-ui-foundation`
+- **vitalia-slice-1-inbox** — outcome `vitalia-mvp-ui-foundation`
 
 ### 🔨 Developing (0 / cap 3)
 - _(none)_
@@ -56,13 +55,13 @@ kanban
     vitalia-mvp-ui-foundation[vitalia-mvp-ui-foundation]
     vitalia-fiscal-emission-pe[vitalia-fiscal-emission-pe]
     vitalia-payment-adapter-mvp[vitalia-payment-adapter-mvp]
-  ✅ Refined (5 / cap 5)
+  ✅ Refined (3 / cap 5)
     vitalia-slice-1-agenda[vitalia-slice-1-agenda]
-    vitalia-slice-1-fidelizacion[vitalia-slice-1-fidelizacion]
-    vitalia-slice-1-inbox[vitalia-slice-1-inbox]
     vitalia-slice-1-marketing[vitalia-slice-1-marketing]
     vitalia-slice-1-pipeline[vitalia-slice-1-pipeline]
-  📦 Ready (0 / cap 5)
+  📦 Ready (2 / cap 5)
+    vitalia-slice-1-fidelizacion[vitalia-slice-1-fidelizacion]
+    vitalia-slice-1-inbox[vitalia-slice-1-inbox]
   🔨 Developing (0 / cap 3)
   🧪 Developed (0 / cap 10)
   🔍 Reviewing (0 / cap 2)

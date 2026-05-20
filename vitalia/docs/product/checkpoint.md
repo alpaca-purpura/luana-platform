@@ -8,14 +8,14 @@ active_outcomes:
   - dev-environment-multibrand     # receta vitalia shipped, cross-brand replicación pendiente nicolify/comunify/lupulo
   - vitalia-mvp-ui-foundation      # outcome maestro Slice 1/2/3 FE Vitalia MVP
 active_stories:
-  - vitalia-slice-1-inbox                  # state: refined · Ola 1 (paralela fidelización) · AWAITING_PREFLIGHT_GATES + ARCHITECT_REFRESH (REPLAN 2026-05-20)
-  - vitalia-slice-1-fidelizacion           # state: refined · Ola 1 (paralela inbox) · AWAITING_PREFLIGHT_GATES + ARCHITECT_REFRESH
-  - vitalia-slice-1-pipeline               # state: refined · Ola 2 (paralela marketing) · depende side payment-adapter-mvp
-  - vitalia-slice-1-marketing              # state: refined · Ola 2 (paralela pipeline) · NO usar growth-studio Nicolify (arch diferente per Chris)
-  - vitalia-slice-1-agenda                 # state: refined · Ola 3 (sola, más compleja) · depende side payment-adapter-mvp + side fiscal-emission-pe
+  - vitalia-slice-1-inbox                  # state: ready · Ola 1 (paralela fidelización) · ARCHITECT REFRESH CERRADO 2026-05-20 — 11 artifacts produced, awaiting /dev-team pickup
+  - vitalia-slice-1-fidelizacion           # state: ready · Ola 1 (paralela inbox) · ARCHITECT REFRESH CERRADO 2026-05-20 — 9 artifacts produced, awaiting /dev-team pickup
+  - vitalia-slice-1-pipeline               # state: refined · Ola 2 (paralela marketing) · depende side payment-adapter-mvp · pending /architect refresh
+  - vitalia-slice-1-marketing              # state: refined · Ola 2 (paralela pipeline) · NO usar growth-studio Nicolify (arch diferente per Chris) · pending /architect refresh
+  - vitalia-slice-1-agenda                 # state: refined · Ola 3 (sola, más compleja) · depende side payment-adapter-mvp + side fiscal-emission-pe · pending /architect refresh
   - vitalia-pricing-decision               # state: idea (Chris postergó, no bloquea Slice 1)
-  - vitalia-payment-adapter-mvp            # state: refining · paralelo Ola 1 (Chris ratificó 2026-05-20: arrancar /po draft AHORA)
-  - vitalia-fiscal-emission-pe             # state: refining · paralelo Ola 1 (Chris ratificó 2026-05-20: arrancar /po draft AHORA)
+  - vitalia-payment-adapter-mvp            # state: refining · paralelo Olas (Chris ratificó 2026-05-20: arrancar /po draft pendiente)
+  - vitalia-fiscal-emission-pe             # state: refining · paralelo Olas (Chris ratificó 2026-05-20: arrancar /po draft pendiente)
 deferred_audits: []                        # ★ Story closure gate — sin deudas activas
 slice_1_replan_2026_05_20:                 # ★ Replan ratificado Chris 2026-05-20 — SSoT plan vivo
   audit_report: vitalia/docs/archive/2026/stories/vitalia-ux-discovery/audit-2026-05-20/AUDIT-REPORT.md
@@ -139,4 +139,15 @@ Story 11 (`luana-vitalia-bootstrap`, mergeada 2026-05-15) shipped **16 capabilit
   - **HANDOFF-cross-story.md global creado**: `vitalia/docs/product/outcomes/vitalia-mvp-ui-foundation-handoff-cross-story.md` — SSoT contratos TS + schemas Zod + endpoints API + domain events + BE modules compartidos cross-story · § 10 secciones cementadas.
   - **proposal-draft + pre-flight-checklist creados**: `vitalia/docs/architecture/{PROPOSAL-DRAFT-core-platform-extensions-slice-1.md, PRE-FLIGHT-CHECKLIST-slice-1.md}` — insumos para /pm-luana ratificar lift y para próxima sesión arrancar Fase 0.
   - **Próximo paso natural**: (1) `/pm-vitalia` pingea `/pm-luana` con proposal-draft → /pm-luana crea proposal real + accepted + migrated. (2) Pre-flight gates (NO Clerk Organizations — Luana usa tenants+users propios engine `luana-core-iam`): verificar testing token + webhook secret + crear 3 test users Clerk + seed 3 tenants fixture + asociar via webhook auto-sync o script fallback. (3) Una vez gates GREEN → `/architect refresh vitalia-slice-1-inbox` + `/architect refresh vitalia-slice-1-fidelizacion` en paralelo → /dev-team Ola 1 → auto-handoff /auditor → auto-handoff /pm-vitalia merge → repeat para Ola 2 + 3.
+- **2026-05-20 sesión idem · Engine lift cementado + Ola 1 architect cerrado**:
+  - **Engine lift mergeado a main** (commit `1e6acef`): `luana_core_platform.workers.cron_envelope` + `luana_core_platform.repositories.compound_scope_repository.CompoundScopeRepositoryBase` versión 0.4.0 con 42 tests verdes. Cherry-picked en wip/vitalia (commit `e8d3c04`). Proposal `2026-05-20-core-platform-extensions-slice-1.md` state=migrated. Worktree efímero `luana-core-platform-extensions-slice-1` cleanup'd.
+  - **Test users + tenants seeded sin Clerk Organizations** (Chris corrigió: NO Organizations en esta etapa, multi-tenancy via engine `luana-core-iam`):
+    - 3 Clerk users: dr.demo + recepcion + admin @vitalialat.com con publicMetadata vitalia_role
+    - 3 tenants fixture insertados (Aurora AR + Mindful CL + Sanaré MX) via `seed_test_users_link.py` + bug fix `seed_fixture_clinics.py` (column rename metadata→payload_redacted)
+    - 5 user_tenants junction links: dr.demo+recepcion → Sanaré MX (tenant primario tests per Chris), admin → 3 tenants
+  - **Ola 1 architect-orchestrator CERRADO** (2 paralelos):
+    - `vitalia-slice-1-inbox` state refined→**ready** ✓ — 11 artifacts produced (~3.7K LOC): 01-spec-extract + 02-design-ui + 03-arch + 03-arch-{be,fe,agentic} + 04-validators + 05-guidelines + 06-tickets + HANDOFF-cross-story-updates + checkpoint. 13 atomic tickets DAG: 1 agentic Opus + 6 BE + 7 FE + 2 integ. Zero engine modifications. HIPAA-lite cardinals cementados.
+    - `vitalia-slice-1-fidelizacion` state refined→**ready** ✓ — 9 artifacts produced (~3K LOC): mismo pattern + 16 tickets DAG Stage 1-8. 3 NEW tables + 9 endpoints + 6 cron jobs consumiendo `@cron_envelope` engine + 1 Adrián tool wrapper + 1 Lucas ReAct tool R23.
+  - **Estado actual brand:** 2 stories ready (Ola 1) · 3 stories refined Slice 1 awaiting /architect refresh (pipeline + marketing + agenda) · 2 side stories refining awaiting /po draft (payment + fiscal) · 1 idea (pricing).
+  - **Próximo paso natural**: Ola 1 puede arrancar /dev-team build (paralelo inbox + fidelización). Ola 2-3 + side stories pueden arrancar /architect refresh en sesión separada (prompt copy-paste handoff a Chris provisto fin sesión).
 - **2026-05-20 corrección post-feedback Chris (NO Clerk Organizations)**: Chris ratificó que Luana NUNCA usó/usará Clerk Organizations en esta etapa — multi-tenancy via tenants+users propios engine `luana-core-iam` (tablas `tenants` + `users` + `user_tenants` junction). Webhook Clerk user.created sync → engine `_handle_user_sync` crea row users + vitalia ClerkWebhookAdapter dispara `OnboardingService.create_clinic_profile` que crea tenant + user_tenant junction. Memoria `~/.claude/projects/.../memory/no-clerk-organizations.md` cementada. Docs corregidos: PRE-FLIGHT-CHECKLIST-slice-1 (Bloque A simplificado a token+webhook · Bloque B sin org-create + sin add-member) + HANDOFF-cross-story.md (sin orgRole) + 5 sub-stories checkpoints (preflight_gates_required `clerk_test_token_fresh_and_webhook_secret_configured` reemplaza `clerk_organizations_enabled`).

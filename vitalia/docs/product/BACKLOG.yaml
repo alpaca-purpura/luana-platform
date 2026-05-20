@@ -1,9 +1,9 @@
 # docs/product/BACKLOG.yaml — auto-generated SSoT machine-readable
 # DO NOT EDIT MANUALLY — modify source artifacts instead.
 # Regenerate: python scripts/generate_backlog.py
-# Generated at: 2026-05-20T04:36:10+00:00
+# Generated at: 2026-05-20T05:52:37+00:00
 
-generated_at: '2026-05-20T04:36:10+00:00'
+generated_at: '2026-05-20T05:52:37+00:00'
 brand: vitalia
 caps:
   refining_max: 3
@@ -174,41 +174,6 @@ buckets:
       blocked_by: null
       priority_override: null
       audit_iterations: 0
-  - id: vitalia-slice-1-fidelizacion
-    kind: story
-    state: refined
-    title: vitalia-slice-1-fidelizacion
-    tags: []
-    last_touched: 2026-05-20
-    extra:
-      outcome: vitalia-mvp-ui-foundation
-      phase: REPLAN_AWAITING_ARCHITECT_REFRESH
-      next_action: 'REPLAN 2026-05-20 ratified Chris. AWAITING /architect refresh tras pre-flight gates GREEN. /architect
-        produce ready package propio acotado: 4 patrones re-engagement + NPS stat card + 6 cron jobs. Reuso explícito: nicolify/campaigns-lite
-        + notifications + core/luana-core-campaigns workers + cron_envelope core (re-engagement crons idempotent) + CompoundScopeRepositoryBase
-        core (PHI re_engagement_events).'
-      blocked_by: null
-      priority_override: null
-      audit_iterations: 0
-  - id: vitalia-slice-1-inbox
-    kind: story
-    state: refined
-    title: vitalia-slice-1-inbox
-    tags: []
-    last_touched: 2026-05-20
-    extra:
-      outcome: vitalia-mvp-ui-foundation
-      phase: REPLAN_AWAITING_ARCHITECT_REFRESH
-      next_action: 'REPLAN 2026-05-20 ratified Chris. AWAITING /architect refresh tras pre-flight gates GREEN. /architect
-        debe producir: 01-spec-extract.md (recorte mega 01-spec del parent acotado a /inbox) + 02-design-ui.md (link 02-design-ui-mockup.html
-        como SSoT visual + component breakdown) + 03-arch-extract.md (BE+FE+agentic acotado) + 04-validators.yaml (Playwright
-        spec /inbox + tests específicos) + 05-guidelines.md (reuso explícito: nicolify/frontend/src/features/crm-hub/ + nicolify/frontend/src/features/copilot/
-        rail + core/luana-core-crm/ + core/luana-core-channels/ + CompoundScopeRepositoryBase desde core) + 06-tickets.yaml
-        (atómicos propios, no inherit) + HANDOFF-cross-story.md (comunicación con Ola 2 stories — tipos TS compartidos, schemas
-        Zod, endpoints CRM comunes).'
-      blocked_by: null
-      priority_override: null
-      audit_iterations: 0
   - id: vitalia-slice-1-marketing
     kind: story
     state: refined
@@ -242,7 +207,40 @@ buckets:
       blocked_by: null
       priority_override: null
       audit_iterations: 0
-  ready: []
+  ready:
+  - id: vitalia-slice-1-fidelizacion
+    kind: story
+    state: ready
+    title: vitalia-slice-1-fidelizacion
+    tags: []
+    last_touched: 2026-05-20
+    extra:
+      outcome: vitalia-mvp-ui-foundation
+      phase: AWAIT_DEV_TEAM_PICKUP
+      next_action: Pre-flight gates GREEN → /dev-team picks T-1 (migrations). DAG Stage 1 → 8 per 06-tickets.yaml. Auto-handoff
+        /auditor al cierre state=developed.
+      blocked_by: null
+      priority_override: null
+      audit_iterations: 0
+  - id: vitalia-slice-1-inbox
+    kind: story
+    state: ready
+    title: vitalia-slice-1-inbox
+    tags: []
+    last_touched: 2026-05-20
+    extra:
+      outcome: vitalia-mvp-ui-foundation
+      phase: AWAITING_DEV_TEAM_PICKUP
+      next_action: "READY for /dev-team pickup. /dev-team consumes 06-tickets.yaml in DAG order:\n  T-inbox-be-1 (domain)\
+        \ → T-inbox-be-2 (infra+migration) ‖ T-inbox-be-4 (connections)\n  → T-inbox-be-3 (services) → T-inbox-agentic-1 (Opus\
+        \ tool) ‖ T-inbox-be-5 (API)\n  → T-inbox-be-6 (extensions register) → T-inbox-fe-1 (FE scaffold)\n  → T-inbox-fe-2\
+        \ (hooks) → T-inbox-fe-3 (list+filters) → T-inbox-fe-4 (thread+segmented)\n  → T-inbox-fe-{5,6} (composer+media+ActionReceipt\
+        \ ‖ Sheet+ActivityStream+ContactSidebar+ProactiveOutbound)\n  → T-inbox-fe-7 (Storybook+arch test) → T-inbox-integ-{1,2}\n\
+        Verify pre-flight gates GREEN before pickup. All gherkin_coverage fields populated per ticket.\nAuto-handoff /auditor\
+        \ at state=developed (per .claude/rules/story-closure-gate.md)."
+      blocked_by: null
+      priority_override: null
+      audit_iterations: 0
   developing: []
   developed: []
   reviewing: []
