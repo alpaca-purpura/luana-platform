@@ -21,7 +21,13 @@ TELEGRAM_TOOL_UNAVAILABLE_TEMPLATE: Final[str] = (
 def build_redirect_url(tenant_id: str, target_path: str) -> str:
     """Construye URL absoluta hacia FE app.
 
-    Ejemplo: ``("abc-123", "/landing")`` → ``"https://app.nicolify.com/abc-123/landing"``
+    Brand-agnostic — usa ``settings.FRONTEND_URL`` (override per brand en
+    ``{brand}/.env.dev`` / ``.env.prod``). Ejemplos:
+
+    - nicolify (FRONTEND_URL=``https://app.nicolify.com``): ``("abc-123",
+      "/landing")`` → ``"https://app.nicolify.com/abc-123/landing"``
+    - vitalia (FRONTEND_URL=``https://dev-app.vitalialat.com``): ``("abc-123",
+      "/landing")`` → ``"https://dev-app.vitalialat.com/abc-123/landing"``
     """
     base = settings.FRONTEND_URL.rstrip("/")
     path = target_path if target_path.startswith("/") else f"/{target_path}"

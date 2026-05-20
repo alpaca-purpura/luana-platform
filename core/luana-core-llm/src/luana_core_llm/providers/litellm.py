@@ -17,7 +17,10 @@ Flow::
              base_url=LITELLM_BASE_URL,
              model=litellm_model_name)
     ↓ POST /v1/chat/completions
-  LiteLLM Proxy (Docker svc visionarias_litellm:4000)
+  LiteLLM Proxy (Docker svc; container name brand-specific via
+                  settings.LITELLM_BASE_URL — nicolify legacy uses
+                  visionarias_litellm:4000, other brands use
+                  luana-{env}-{brand}_litellm-1:4000 or localhost:4000/v1)
     ↓ routes to provider per litellm_config.yaml
   OpenAI / DeepSeek / Kimi / Qwen / Gemini / future Anthropic etc.
 
