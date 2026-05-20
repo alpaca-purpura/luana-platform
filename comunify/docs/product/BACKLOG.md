@@ -1,6 +1,6 @@
 # Comunify Backlog (auto-generated)
 
-> Generated at: `2026-05-20T20:39:40+00:00`
+> Generated at: `2026-05-20T21:24:40+00:00`
 > DO NOT EDIT MANUALLY — modify source artifacts.
 > Regenerate: `python scripts/generate_backlog.py`
 
@@ -12,8 +12,8 @@
 ### 🔬 Refining (0 total · 0 cap-eligible / cap 3)
 - _(none)_
 
-### ✅ Refined — listo para arquitectos (1 / cap 5)
-- **comunify-design-system-a11y-contrast-cement**
+### ✅ Refined — listo para arquitectos (0 / cap 5)
+- _(none)_
 
 ### 📦 Ready for development (0 / cap 5)
 - _(none)_
@@ -40,8 +40,7 @@
 kanban
   💡 Ideas (0)
   🔬 Refining (0 / cap 3)
-  ✅ Refined (1 / cap 5)
-    comunify-design-system-a11y-co[comunify-design-system-a11y-contrast-cem]
+  ✅ Refined (0 / cap 5)
   📦 Ready (0 / cap 5)
   🔨 Developing (0 / cap 3)
   🧪 Developed (0 / cap 10)
@@ -61,12 +60,12 @@ kanban
 | cohorts | 1 | 0 | 0 | 0 | 1 |
 | copilot | 3 | 0 | 0 | 0 | 3 |
 | fixtures | 1 | 0 | 0 | 0 | 1 |
-| frontend_design_system | 2 | 0 | 0 | 0 | 2 |
+| frontend_design_system | 3 | 0 | 0 | 0 | 3 |
 | iam | 1 | 0 | 0 | 0 | 1 |
 | offer_studio | 2 | 0 | 0 | 0 | 2 |
 | onboarding | 1 | 0 | 0 | 0 | 1 |
 | payment | 1 | 0 | 0 | 0 | 1 |
 | platform | 1 | 0 | 0 | 0 | 1 |
 | public_landing | 1 | 0 | 0 | 0 | 1 |
-| **TOTAL** | **19** | **0** | **0** | **0** | **19** |
+| **TOTAL** | **20** | **0** | **0** | **0** | **20** |
 

@@ -22,6 +22,7 @@ Sistema de design tokens Comunify cementado en `comunify/frontend/src/app/global
 <!-- auto-list:start -->
 - `design-system-cement` (live · 2026-05-18) — tokens SSoT + 23 archivos migrados + arch fitness ratchet
 - `tailwind-v4-tokens` (live · 2026-05-18) — hot-fix activación runtime utilities (PostCSS wiring)
+- `a11y-contrast-cement` (live · 2026-05-20) — 5 tokens `*-text` + Camino B universal + arch fitness anti-low-contrast (opción C híbrida)
 <!-- auto-list:end -->
 
 ## Cross-brand status
@@ -31,3 +32,7 @@ Patrón Tailwind v4 + PostCSS plugin wiring es candidate **promotable cross-bran
 - **Brands futuras (saasora/inmoflow/retailly/fixia/guestly/fitflow):** deberían heredar el scaffold completo desde `_pm-brand-template/` para evitar el silent-ship pattern detected aquí
 
 Ver `comunify/docs/learnings/2026-05-18-tailwind-v4-postcss-wiring-gap.md` (promotable=yes) y ping `/pm-luana`.
+
+**a11y-contrast-cement promotable candidates** (post-merge a evaluar):
+- **Camino B universal pattern** (outline buttons + badges + alerts con `bg-X/10 border + text-X-text`) — lifteable a `_pm-brand-template/` para brands futuras.
+- **Arch fitness anti-low-contrast** test pattern (6 HARD-blocked + allowlist `[]` + magic comment escape) — lifteable a `core/luana-core-platform/design-tokens/` cuando 2+ brands lo necesiten.

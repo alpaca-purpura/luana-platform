@@ -5,16 +5,7 @@ status: shipped
 last_updated: 2026-05-20
 active_outcomes:
   - dev-stack-cross-brand-fixes              # outcome platform — comunify cerró su milestone 2026-05-17 (Playwright smoke 3/3 GREEN); outcome continúa active hasta nicolify + lupulo cierren sus análogos
-active_stories:
-  - id: comunify-design-system-a11y-contrast-cement
-    state: refined
-    surface: [frontend, design-system]
-    opened: 2026-05-18
-    refined_at: 2026-05-20
-    supersedes: comunify-warning-token-contrast-fix
-    origin: auditor-frontend WARN + Chris autorización scope expandido (audit comprehensive 22 pares, 10 failed)
-    estimated_size: S+
-    next_handoff: /architect
+active_stories: []   # all stories shipped post 2026-05-20
 ssot_owner: /pm-comunify
 ---
 
@@ -80,6 +71,20 @@ Story 12 (`luana-comunify-bootstrap`, mergeada 2026-05-15) shipped **17 capabili
 **Rationale:** sin señal de demanda observable, abrir stories para estos features = scope creep. El paradigm v4 dice "Outcome cierra event-driven, no time-driven" — aplica igual a abrir nuevas. `/pm-comunify` no las moverá a `state: idea` salvo que Chris explicite.
 
 ## Bitácora
+
+- 2026-05-20 PM: **`comunify-design-system-a11y-contrast-cement` MERGED (reviewing→done) + archived** (`/pm-comunify` autonomous full ciclo end-to-end ratificado Chris "continúa hasta done"). Trabajo cerrado:
+  - **Build:** 4 tickets sequential T-1 → T-4 (foundation tokens → arch fitness RED → Camino B sweep → Playwright + axe)
+  - **Audit:** auditor-frontend Opus verdict APPROVED single-iter (audit_iterations:1, self_fix_iter:0, spawned_dev_team:false, escalated_to_chris:false). 1 informational T-4-F1 (live E2E deferred) non-blocking.
+  - **Capability NEW:** `comunify/docs/product/capabilities/frontend_design_system/a11y-contrast-cement.yaml` (status: live, package_version: 0.3.0)
+  - **Module MD refreshed:** `comunify/docs/product/modules/frontend_design_system.md` auto-list ahora con 3 caps (cement v0.2.0 + tailwind-v4-tokens v0.2.1 + a11y-contrast-cement v0.3.0)
+  - **07-merge.md** 5 secciones canónicas escritas (gherkin matrix · Playwright run · capabilities · modules · how to verify reproducible)
+  - **Tokens cementados:** 5 nuevos `*-text` (warning/stable/accent/critical/blue) — HSL principales del brandbook intactos
+  - **Camino B universal:** outline pattern `bg-X/10 border border-X text-X-text hover:bg-X/20` aplicado en moderation card + dunning banner + 5 archivos badge sweep
+  - **Arch fitness híbrido opción C:** 6 patterns HARD-blocked (warning/stable/accent), critical/blue libres
+  - **Pares WCAG AA failed:** 10 → 0 en componentes shipped
+  - **Capabilities count:** 19 → 20 · módulos: 12 (frontend_design_system ahora con 3 caps)
+  - Story archivada: `comunify/docs/product/stories/comunify-design-system-a11y-contrast-cement/` → `comunify/docs/archive/2026/stories/` (snapshot inmutable per R2)
+  - **Promotable candidates pingeados a `/pm-luana`** (append a INDEX-promotables.md): Camino B universal pattern + arch fitness anti-low-contrast + chrome-devtools-verify deprecated Linux (4to ciclo consecutivo)
 
 - 2026-05-20 PM: **`comunify-design-system-a11y-contrast-cement` (ex `comunify-warning-token-contrast-fix`) state refining→refined** (autonomous /po-ux 3-batch loop ratificada Chris "Apruebo todo continúa hasta done"). Trabajo cerrado:
   - **Scope expandido cementado:** ex 1-token fix → 10 pares WCAG AA failed (6 críticos + 4 marginales) + cementado pares canónicos + arch fitness anti-regresión.

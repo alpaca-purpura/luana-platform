@@ -1,9 +1,9 @@
 # docs/product/BACKLOG.yaml — auto-generated SSoT machine-readable
 # DO NOT EDIT MANUALLY — modify source artifacts instead.
 # Regenerate: python scripts/generate_backlog.py
-# Generated at: 2026-05-20T20:39:40+00:00
+# Generated at: 2026-05-20T21:24:40+00:00
 
-generated_at: '2026-05-20T20:39:40+00:00'
+generated_at: '2026-05-20T21:24:40+00:00'
 brand: comunify
 caps:
   refining_max: 3
@@ -23,20 +23,7 @@ stale_refined: []
 buckets:
   idea: []
   refining: []
-  refined:
-  - id: comunify-design-system-a11y-contrast-cement
-    kind: story
-    state: refined
-    title: comunify-design-system-a11y-contrast-cement
-    tags: []
-    last_touched: null
-    extra:
-      outcome: null
-      phase: SPEC_RATIFIED
-      next_action: /architect lee 01-spec.md → produce ready package (state=refined → ready)
-      blocked_by: null
-      priority_override: null
-      audit_iterations: 0
+  refined: []
   ready: []
   developing: []
   developed: []
@@ -76,11 +63,11 @@ capabilities:
   deprecated: 0
   total: 1
 - module: frontend_design_system
-  live: 2
+  live: 3
   in_progress: 0
   planned: 0
   deprecated: 0
-  total: 2
+  total: 3
 - module: iam
   live: 1
   in_progress: 0
