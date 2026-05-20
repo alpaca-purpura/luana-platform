@@ -1,6 +1,6 @@
-name: "CD — Staging multibrand (auto)"
+name: "CD — Staging multibrand (manual)"
 
-# Auto-deploy a staging en push a main.
+# Deploy a staging MANUAL (post 2026-05-19 policy change ratificada Chris).
 # Detecta por brand cuales tienen cambios (dorny/paths-filter) y
 # dispara el workflow reutilizable _deploy-brand.yml solo para las marcas afectadas.
 #
@@ -9,15 +9,27 @@ name: "CD — Staging multibrand (auto)"
 # Nota sobre lupulo: no tiene backend operativo aun (Story 13 pendiente).
 # El job de staging para lupulo esta explicitamente omitido hasta Story 13.
 #
-# Trigger: SOLO push a main. NO se dispara en branches de produccion.
-# Ref: S-CICD-DEPLOY 01-spec.md § Scenario 2 (happy-staging-auto-deploy)
+# Trigger: workflow_dispatch (manual desde GH Actions UI o gh CLI). NO auto-trigger.
+# Cambio policy 2026-05-19: push a main YA NO dispara staging auto-deploy.
+# Solo release/* dispara prod (cd-prod.yml). Staging deploys son manuales
+# explícitos cuando se necesitan validar cambios.
 #
-# Arch ref: S-CICD-DEPLOY 03-arch.md § cd-staging.yml
+# Ref: ADR-004 § CI/CD (post 2026-05-19 update) — staging manual not auto.
+# Cómo invocar:
+#   gh workflow run "CD — Staging multibrand (manual)" --ref main
+#   o desde GitHub UI: Actions → workflow → Run workflow
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+    inputs:
+      force_all_brands:
+        description: 'Deploy todas las brands sin detección de paths (true) o solo brands afectadas (false)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
 
 # Permisos minimos globales
 permissions:
