@@ -1038,3 +1038,33 @@ Documentación canónica:
 **Cross-brand implications:** lift root `.claude/rules/` aplica a todas las brands (no overlay vitalia). Brands futuras (saasora, inmoflow, retailly, fixia, guestly, fitflow) heredan via `_pm-brand-template`.
 
 **Operational test:** cleanup vitalia (Option A) es la primera ejecución del gate. Si infra cierra limpia con `07-merge.md` 5 secciones + `06-audit/gherkin-matrix.md` + capabilities/* updates → gate operacional. Si falla → debug antes de aplicar a más stories.
+
+---
+
+## 2026-05-19 — Purga docs/ Fase C Batch 1 — `docs/api/` placeholders rotos eliminados
+
+**promotable: no** (decisión housekeeping, no patrón cross-brand)
+
+**Contexto:** durante Fase C de la purga docs (post pm-redesign 2026-05-15 cleanup), el inventario detectó 27 placeholders rotos en `docs/api/python/luana-core-*/index.html` × 26 + `docs/api/typescript/index.html`. Todos con contenido idéntico: "API documentation pending — pdoc generation failed during build. Install dependencies: uv add pdoc then re-run bash scripts/generate_api_docs.sh".
+
+**Causa raíz:** generador `scripts/generate_api_docs.sh` lleva tiempo roto (al menos desde antes del multibrand reorg 2026-05-15). Falta dependencia `pdoc` declarada o paths obsoletos post-extracción de packages a `core/luana-core-*/`. Cada build de docs fallaba silenciosamente, dejando placeholders idénticos que no se actualizaban.
+
+**Decisión Chris ratificada:** delete completo de `docs/api/`. El schema canónico (post pm-redesign 2026-05-15) no contempla `docs/api/` — los contracts públicos viven en `docs/core-modules/{package}.md` × 26 (build-out separado pendiente).
+
+**Acción pendiente (tracked here, no urgente):**
+
+Cuando aparezca demanda real de docs API generados (typedoc/pdoc) — probablemente cuando los `luana-core-*` se publiquen como packages independientes consumibles externamente — crear story formal con:
+
+- Reparar `scripts/generate_api_docs.sh` (verificar `pdoc` install, ajustar paths post-multibrand)
+- Decidir target path: ¿`docs/api/` recreado? ¿`docs/core-modules/{package}/api/` nested? ¿published a Pages?
+- Auto-gen via `make api-docs` target con CI integration
+- Pre-commit hook section freshness check
+
+**Hoy NO es prioridad** porque:
+1. Los contracts públicos cross-consumer ya viven en `docs/core-modules/{package}.md` × 26 (texto, no auto-gen reflectivo)
+2. No hay consumidores externos del engine todavía — packages se importan vía `[tool.uv.workspace]` editable
+3. Los IDEs ya resuelven type stubs vía editable install — devs no necesitan HTML docs
+
+**How to apply:** si en futuras purgas aparece `docs/api/` recreado con placeholders idénticos sin que medie story formal, repetir delete. Si el generador se arregla genuinamente, las regeneraciones serán auto-gen válidas (no placeholders) y este learning queda obsoleto.
+
+**Cross-brand implications:** ninguna — `docs/api/` era cross-brand pero su contenido nunca aportó valor a ninguna brand. Decisión platform-level pura.
