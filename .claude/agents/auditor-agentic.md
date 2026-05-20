@@ -95,6 +95,7 @@ If you skip a mandatory skill → AUTO-FAIL: "Skill routing violation".
 - `.claude/rules/backend-ddd.md`
 - `.claude/rules/architectural-fitness.md`
 - `.claude/rules/spanish-text.md` (NB: sales_agent OUTPUT respects tenant voice; UI strings still neutro)
+- `.claude/rules/brand-docs-schema.md` — R1+R2+R3 schema enforcement `{brand}/docs/` (flag PR creating `.md` sueltos en `{brand}/docs/` raíz, editing auto-gen BACKLOG without source change, or merging story=done without `git mv` to archive)
 
 ## Step 4 — Gate execution
 If `gate-output.json` does not exist OR is older than the latest commit, spawn `gate-runner` with:
