@@ -353,6 +353,8 @@ tickets:
           - vitalia/frontend/src/features/marketing/__tests__/ChannelBreakdownRow.test.tsx::test_shows_last_known_metrics_with_timestamp
           - vitalia/frontend/src/features/marketing/__tests__/ChannelBreakdownRow.test.tsx::test_retry_sync_button_invokes_useSyncChannel
     blocked_by: [T-mk-fe-2]
+    state: pushed
+    pushed_sha: b8edd54
 
 # ════════════════════════════════════════════════════════════════════════
 # WAVE 6 — E2E + visual regression + perf + a11y
