@@ -299,6 +299,8 @@ tickets:
         tests:
           - vitalia/frontend/src/features/marketing/__tests__/LucasApprovalModal.test.tsx::test_role_recepcion_disables_approve_button_with_tooltip
     blocked_by: [T-mk-fe-1]
+    state: pushed
+    pushed_sha: "205e8d9"
 
   - id: T-mk-fe-4
     sub_story: vitalia-slice-1-marketing
