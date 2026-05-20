@@ -82,6 +82,22 @@ class ClinicExistsResponse(BaseModel):
     exists: bool
 
 
+class DbStateResponse(BaseModel):
+    """Response for generic DB state endpoint (counts per table)."""
+
+    counts: dict[str, int]
+
+
+class AuditLogEntry(BaseModel):
+    """Single sanitized audit log entry (no PHI)."""
+
+    id: str
+    tenant_id: str
+    action: str
+    resource_type: str | None
+    occurred_at: str
+
+
 @router.get(
     "/audit-log/count",
     response_model=AuditLogCountResponse,
@@ -205,3 +221,95 @@ async def check_clinic_exists(
         slug=slug,
         exists=model is not None,
     )
+
+
+@router.get(
+    "/db-state",
+    response_model=DbStateResponse,
+    include_in_schema=False,
+)
+async def get_db_state(
+    _: None = Depends(_require_internal_token),
+) -> DbStateResponse:
+    """Generic DB state — row counts for engine IAM + brand-extension tables.
+
+    Used by Playwright admin-smoke E2E tests to assert create/delete ops.
+    Returns counts only (HIPAA — no row content).
+    """
+    from luana_core_platform.core.database import get_db  # noqa: PLC0415
+    from sqlalchemy import text  # noqa: PLC0415
+
+    tables = ["tenants", "users", "user_tenants", "vitalia_clinic_branches", "vitalia_audit_log"]
+    counts: dict[str, int] = {}
+    try:
+        async for db in get_db():
+            for tbl in tables:
+                result = await db.execute(text(f"SELECT COUNT(*) FROM {tbl}"))  # noqa: S608
+                counts[tbl] = int(result.scalar() or 0)
+            break
+    except Exception as exc:  # noqa: BLE001
+        logger.error("admin_helpers_db_state_error", error=str(exc))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"error": "db_error", "message": str(exc)},
+        ) from exc
+
+    return DbStateResponse(counts=counts)
+
+
+@router.get(
+    "/audit-log",
+    response_model=list[AuditLogEntry],
+    include_in_schema=False,
+)
+async def list_audit_log(
+    action: str | None = None,
+    since: str | None = None,
+    limit: int = 50,
+    _: None = Depends(_require_internal_token),
+) -> list[AuditLogEntry]:
+    """List recent sanitized audit log entries.
+
+    Used by Playwright E2E tests to verify audit log rows after mutations.
+    HIPAA: returns no payload content — only id/tenant/action/resource_type/timestamp.
+    """
+    from luana_core_platform.core.database import get_db  # noqa: PLC0415
+    from sqlalchemy import text  # noqa: PLC0415
+
+    where_clauses = []
+    params: dict[str, object] = {"limit": min(limit, 200)}
+    if action:
+        where_clauses.append("action = :action")
+        params["action"] = action
+    if since:
+        where_clauses.append("occurred_at >= :since")
+        params["since"] = since
+    where_sql = (" WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
+    query_sql = (
+        "SELECT id, tenant_id, action, resource_type, occurred_at "
+        "FROM vitalia_audit_log" + where_sql + " ORDER BY occurred_at DESC LIMIT :limit"
+    )
+
+    entries: list[AuditLogEntry] = []
+    try:
+        async for db in get_db():
+            result = await db.execute(text(query_sql), params)
+            for row in result.fetchall():
+                entries.append(
+                    AuditLogEntry(
+                        id=str(row[0]),
+                        tenant_id=str(row[1]),
+                        action=str(row[2]),
+                        resource_type=(str(row[3]) if row[3] is not None else None),
+                        occurred_at=row[4].isoformat() if row[4] else "",
+                    )
+                )
+            break
+    except Exception as exc:  # noqa: BLE001
+        logger.error("admin_helpers_audit_log_error", error=str(exc))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"error": "db_error", "message": str(exc)},
+        ) from exc
+
+    return entries
