@@ -17,6 +17,9 @@ export default defineConfig({
       include: [
         "src/features/vitalia/schemas/**",
         "src/features/vitalia/api/**",
+        "src/features/fidelizacion/store/**",
+        "src/features/fidelizacion/types/**",
+        "src/features/fidelizacion/copy.ts",
         "src/lib/**",
         "src/components/shared/**",
       ],
@@ -25,6 +28,8 @@ export default defineConfig({
         "src/features/vitalia/index.ts",
         // Hooks use Clerk + React Query — covered in T-fe-3+ component integration tests
         "src/features/vitalia/api/use-*.ts",
+        // Fidelizacion hooks use Clerk + React Query — covered in component integration tests
+        "src/features/fidelizacion/api/use-*.ts",
         // Shell/copilot rail use Clerk — covered by E2E (T-infra-8)
         "src/components/shared/shell/**",
         "src/components/shared/copilot-rail/**",

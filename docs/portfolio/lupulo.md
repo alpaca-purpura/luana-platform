@@ -3,7 +3,7 @@ slug: lupulo
 kind: brand
 status: placeholder
 vertical: "Gastronomía"
-last_updated: 2026-05-19
+last_updated: 2026-05-20
 ssot_live:
   - lupulo/docs/product/
   - lupulo/docs/domains/

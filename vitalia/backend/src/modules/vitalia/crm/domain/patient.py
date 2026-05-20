@@ -39,6 +39,12 @@ class Patient:
     # Opt-out tracking (LGPD/HIPAA right to erasure)
     marketing_opt_out_at: datetime | None = None
 
+    # Consent flags — added in migration 023 (T-1 Slice 1 fidelizacion)
+    marketing_opt_in: bool = False
+    opt_out: bool = False
+    opt_out_reason: str | None = None
+    opt_out_at: datetime | None = None
+
     # Soft delete
     deleted_at: datetime | None = None
 

@@ -1,0 +1,123 @@
+---
+capability_id: vitalia-nps-tracking
+module: patients
+slug: nps-tracking
+status: live
+date_introduced: 2026-05-20
+story_introduced: vitalia-slice-1-fidelizacion
+package_version: 0.1.0
+package_path: vitalia/backend/src/modules/vitalia/fidelizacion/{domain/entities/nps_response.py,application/services/nps_service.py,api/nps_endpoints.py,infrastructure/{models,repositories}/nps_response_*.py}
+license: proprietary
+---
+
+# vitalia-nps-tracking
+
+NPS (Net Promoter Score) tracking post-tratamiento — submit individual respuestas paciente + summary aggregate por tenant+clinic+periodo. PHI-aware: comment text libre paciente cifrado en DB via `pgcrypto` (★ post iter 2 F2 audit fix). Dual filter tenant+clinic obligatorio. Audit log sync write en cada submit.
+
+Foundation Ola 1 fidelización — alimenta Lucas analysis (ver [[lucas-recommendation-tool]] pattern `nps`) + Adrián reengagement decisions ([[adrian-reengagement-tool]]).
+
+## Surface
+
+### Domain entity (`vitalia/backend/src/modules/vitalia/fidelizacion/domain/entities/`)
+- **`nps_response.py`** — `NPSResponse` entity. Fields: `id`, `tenant_id`, `clinic_id`, `patient_id`, `score` (0-10), `band` (detractor|passive|promoter), `comment` (PHI cifrado BYTEA), `submitted_at`, `treatment_plan_id` (FK opcional).
+
+### Value object (`vitalia/backend/src/modules/vitalia/fidelizacion/domain/value_objects/nps_band.py`)
+- **`NPSBand`** Enum: `detractor` (0-6), `passive` (7-8), `promoter` (9-10). Derivation pure function.
+
+### Application service (`vitalia/backend/src/modules/vitalia/fidelizacion/application/services/`)
+- **`nps_service.py`** — `NPSService`:
+  - `submit(tenant_id, clinic_id, patient_id, score, comment, treatment_plan_id?)` — almacena respuesta (comment cifrado por trigger pgcrypto) + audit row sync + emite `NPSResponseSubmitted` outbox event.
+  - `summary(tenant_id, clinic_id, period_start, period_end)` — agregados (avg score, distribution by band, total responses) — SIN PHI per-patient.
+  - Dual filter tenant + clinic enforced en TODAS las queries.
+
+### Application DTOs (`application/dtos/nps_dtos.py`)
+- `NPSResponseRequest`, `NPSResponseResponse` (response NO incluye `comment` raw — sanitize), `NPSSummaryResponse`.
+
+### Infrastructure persistence (`vitalia/backend/src/modules/vitalia/fidelizacion/infrastructure/`)
+- **`models/nps_response_model.py`** — SQLAlchemy model. Column `comment` typed BYTEA (encrypted).
+- **`repositories/nps_response_repository.py`** — `NPSResponseRepository` con dual filter tenant + clinic. Reads usan `pgp_sym_decrypt(comment, current_setting('app.encryption_key'))` cuando role autorizado.
+
+### API routes (`api/nps_endpoints.py`)
+- `POST /api/v1/fidelizacion/nps` — submit (paciente o sistema post-tratamiento).
+- `GET /api/v1/fidelizacion/nps/summary` — read-only summary aggregate.
+
+Todos endpoints:
+- `response_model=` mandatory.
+- Dual filter tenant + clinic enforced.
+- `@require_phi_access(roles=["doctor","nurse","admin_clinic"])` para reads que incluyan `comment` decrypted.
+
+### Migration ★ POST ITER 2 F2 FIX ★
+- **`vitalia/backend/alembic/versions/025_vitalia_pgcrypto_nps_comment.py`** — idempotent:
+  - Adds `pgcrypto` extension `IF NOT EXISTS`.
+  - Trigger `trg_encrypt_nps_comment` BEFORE INSERT/UPDATE encrypta `comment` plaintext → BYTEA via `pgp_sym_encrypt()` con `current_setting('app.encryption_key')` GUC.
+  - Arch test allowlist closed in `tests/architecture/test_pgcrypto_phi_columns.py`.
+
+## Test coverage
+
+- Domain (`vitalia/backend/tests/modules/vitalia/fidelizacion/domain/`):
+  - `test_entities.py` — NPSResponse entity validation
+  - `test_value_objects.py` — NPSBand derivation 0-10 → detractor/passive/promoter
+  - `test_events.py` — NPSResponseSubmitted event schema
+- Application (`tests/modules/vitalia/fidelizacion/application/test_nps_service.py`):
+  - `test_submit_creates_row_with_encrypted_comment`
+  - `test_submit_creates_audit_log_sync`
+  - `test_summary_no_phi_per_patient`
+  - `test_dual_filter_tenant_clinic`
+  - `test_cross_tenant_404`
+- Infrastructure (`tests/modules/vitalia/fidelizacion/infrastructure/test_nps_response_repository.py`):
+  - `test_repository_dual_filter`
+  - `test_pgcrypto_encrypt_trigger_active` — verifica trigger encripta on INSERT
+- API (`tests/modules/vitalia/fidelizacion/api/test_nps_router.py`):
+  - `test_post_nps_201_and_audit`
+  - `test_get_summary_aggregate_only`
+  - `test_marketing_role_403_on_read_comment`
+- Arch fitness:
+  - `tests/architecture/test_pgcrypto_phi_columns.py` — allowlist contains `vitalia_nps_responses.comment`.
+
+## Dependencies
+
+- `vitalia/backend/src/modules/vitalia/crm/` — Patient + Lead entities ([[crm-scaffold-slice-1]])
+- `vitalia/backend/src/modules/vitalia/compliance/` — AuditLogRepository + @require_phi_access decorator + sanitize_payload ([[compliance-hipaa-lite-audit]])
+- `vitalia/backend/src/modules/vitalia/iam/` — VitaliaRole enforcement
+- `core/luana-core-events/outbox` — adapter_bus para emisión `NPSResponseSubmitted` event
+- `core/luana-core-observability` — sanitize_payload defense-in-depth
+- Postgres `pgcrypto` extension + `app.encryption_key` GUC (KEK runtime)
+
+## Scenarios live
+
+- Submit con score=9 + comment="excelente atención" → NPSResponse row con `band=promoter` + `comment` BYTEA encrypted + audit log row sync.
+- Summary endpoint con `admin_clinic` role → aggregate stats sin per-patient PHI (avg score, distribution promoter/passive/detractor, total N).
+- Read NPSResponse con `marketing` role → 403 (cannot read `comment` decrypted).
+- Cross-tenant: tenant_A solicita summary clinic_B (de tenant_B) → 404 (dual filter enforced).
+- Lucas consumer ([[lucas-recommendation-tool]]) lee summary aggregate-only → produce recomendaciones (pattern `nps`) sin tocar per-patient PHI.
+
+## KPIs
+
+- Submit rate: 100% sync write (no fire-forget audit)
+- pgcrypto trigger encryption: 100% en inserts (verified `test_pgcrypto_encrypt_trigger_active`)
+- Summary endpoint response time p95: < 200ms (agregados indexados por tenant_id+clinic_id+submitted_at)
+- Retention: 10 años (regulación LatAm health per `vitalia/.claude/rules/hipaa-lite.md` § retention policy PHI)
+
+## Verification commands
+
+```bash
+WS=$(git rev-parse --show-toplevel)
+cd ${WS}/vitalia/backend && ${WS}/.venv/bin/pytest tests/modules/vitalia/fidelizacion/application/test_nps_service.py -v
+cd ${WS}/vitalia/backend && ${WS}/.venv/bin/pytest tests/modules/vitalia/fidelizacion/infrastructure/test_nps_response_repository.py -v
+cd ${WS}/vitalia/backend && ${WS}/.venv/bin/pytest tests/modules/vitalia/fidelizacion/api/test_nps_router.py -v
+cd ${WS}/vitalia/backend && ${WS}/.venv/bin/pytest tests/architecture/test_pgcrypto_phi_columns.py -v
+
+# Migration check
+docker exec luana-dev-vitalia_backend_dev-1 alembic current
+# Expected: 025_vitalia_pgcrypto_nps_comment.py applied
+```
+
+## Referencias
+
+- Spec: `vitalia/docs/archive/2026/stories/vitalia-slice-1-fidelizacion/01-spec-extract.md` § NPS T-?
+- Arch BE: `vitalia/docs/archive/2026/stories/vitalia-slice-1-fidelizacion/03-arch-be.md` § NPS tracking + pgcrypto trigger
+- Audit fix iter 2 BE: `vitalia/docs/archive/2026/stories/vitalia-slice-1-fidelizacion/AUDIT-FIX-ITER-2-BE-result.md` § F2 pgcrypto migration 025
+- Merge artifact: `vitalia/docs/archive/2026/stories/vitalia-slice-1-fidelizacion/07-merge.md` § 3
+- HIPAA-lite: `vitalia/.claude/rules/hipaa-lite.md` § encryption at rest (pgcrypto symmetric)
+- Migration: `vitalia/backend/alembic/versions/025_vitalia_pgcrypto_nps_comment.py`
+- Sister caps: [[patient-records-medical-history]] · [[crm-scaffold-slice-1]] · [[compliance-hipaa-lite-audit]] · [[lucas-recommendation-tool]] · [[adrian-reengagement-tool]]

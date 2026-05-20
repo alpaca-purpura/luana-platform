@@ -1,7 +1,7 @@
 ---
 module: patients
 brand: vitalia
-last_updated: 2026-05-16
+last_updated: 2026-05-20
 ---
 
 # patients — Pacientes + historial médico
@@ -12,4 +12,5 @@ CRUD de pacientes con tenant_id enforcement obligatorio. Upload de PDF historial
 
 <!-- auto-list:start -->
 - `patient-records-medical-history` (live)
+- `nps-tracking` (live · 2026-05-20)
 <!-- auto-list:end -->

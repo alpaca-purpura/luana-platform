@@ -490,3 +490,185 @@ def test_payment_lead_magnet_excluded_from_paid_providers() -> None:
 
     for slug in PAYMENT_PROVIDER_REGISTRY:
         assert "lead_magnet" not in slug
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Part D — T-8 WhatsApp Meta-approved HSM templates (fidelización)
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# T-8 adds 5 brand-local WhatsApp template configs + EP-8 registrations:
+#   1. vitalia.fidelizacion_recordatorio_proxima_sesion   (UTILITY)
+#   2. vitalia.fidelizacion_recordatorio_control_doctor   (UTILITY)
+#   3. vitalia.fidelizacion_invitacion_mantenimiento      (MARKETING — requires opt-in)
+#   4. vitalia.fidelizacion_re_engagement_ausencia        (MARKETING — requires opt-in)
+#   5. vitalia.fidelizacion_nps_post_tratamiento          (UTILITY)
+#
+# Validators: be_arch_fitness + be_test_extensions (this file).
+# ═══════════════════════════════════════════════════════════════════════════
+
+
+# ─── D.1 whatsapp registry importable + structure ───────────────────────────
+
+
+def test_whatsapp_template_registry_importable() -> None:
+    """WHATSAPP_TEMPLATE_REGISTRY can be imported from connections.whatsapp."""
+    from src.modules.vitalia.connections.whatsapp import (
+        WHATSAPP_TEMPLATE_REGISTRY,
+        WhatsAppTemplateDef,
+    )
+
+    assert isinstance(WHATSAPP_TEMPLATE_REGISTRY, dict)
+    assert all(isinstance(v, WhatsAppTemplateDef) for v in WHATSAPP_TEMPLATE_REGISTRY.values())
+
+
+def test_whatsapp_template_registry_has_5_fidelizacion_templates() -> None:
+    """Slice 1 ships exactly 5 fidelización HSM templates."""
+    from src.modules.vitalia.connections.whatsapp import WHATSAPP_TEMPLATE_REGISTRY
+
+    required = {
+        "recordatorio_proxima_sesion",
+        "recordatorio_control_doctor",
+        "invitacion_mantenimiento",
+        "re_engagement_ausencia",
+        "nps_post_tratamiento",
+    }
+    assert required.issubset(WHATSAPP_TEMPLATE_REGISTRY.keys()), (
+        f"Missing T-8 templates: {required - WHATSAPP_TEMPLATE_REGISTRY.keys()}"
+    )
+
+
+def test_whatsapp_template_registry_utility_templates_no_opt_in() -> None:
+    """UTILITY templates do NOT require marketing opt-in per HIPAA-lite policy."""
+    from src.modules.vitalia.connections.whatsapp import WHATSAPP_TEMPLATE_REGISTRY
+
+    utility_slugs = {
+        "recordatorio_proxima_sesion",
+        "recordatorio_control_doctor",
+        "nps_post_tratamiento",
+    }
+    for slug in utility_slugs:
+        entry = WHATSAPP_TEMPLATE_REGISTRY[slug]
+        assert entry.category == "UTILITY", f"{slug!r} should be UTILITY"
+        assert entry.requires_marketing_opt_in is False, f"UTILITY template {slug!r} must NOT require marketing opt-in"
+
+
+def test_whatsapp_template_registry_marketing_templates_require_opt_in() -> None:
+    """MARKETING templates MUST have requires_marketing_opt_in=True (HIPAA-lite policy)."""
+    from src.modules.vitalia.connections.whatsapp import WHATSAPP_TEMPLATE_REGISTRY
+
+    marketing_slugs = {
+        "invitacion_mantenimiento",
+        "re_engagement_ausencia",
+    }
+    for slug in marketing_slugs:
+        entry = WHATSAPP_TEMPLATE_REGISTRY[slug]
+        assert entry.category == "MARKETING", f"{slug!r} should be MARKETING"
+        assert entry.requires_marketing_opt_in is True, (
+            f"MARKETING template {slug!r} MUST require opt-in per HIPAA-lite.md"
+        )
+
+
+def test_whatsapp_template_all_language_es() -> None:
+    """All templates use language 'es' (LatAm neutro per spanish-text.md)."""
+    from src.modules.vitalia.connections.whatsapp import WHATSAPP_TEMPLATE_REGISTRY
+
+    for slug, entry in WHATSAPP_TEMPLATE_REGISTRY.items():
+        assert entry.language == "es", f"Template {slug!r} has language={entry.language!r}, expected 'es'"
+
+
+def test_whatsapp_template_no_phi_in_body_text() -> None:
+    """Template body_text must NOT embed PHI literally — only {{N}} placeholders allowed.
+
+    Per hipaa-lite.md: 'templates NO embed PHI in body — solo patient_name + clinic_name +
+    appointment_date placeholders'. Hardcoded PHI data = HIPAA-lite violation.
+    """
+    from src.modules.vitalia.connections.whatsapp import WHATSAPP_TEMPLATE_REGISTRY
+
+    # PHI patterns that should NEVER appear literally in templates (should only use {{N}})
+    phi_field_names = {
+        "patient.name",
+        "patient.dni",
+        "patient.cuit",
+        "patient.date_of_birth",
+        "patient.phone",
+        "patient.email",
+        "diagnosis",
+        "treatment_plan",
+        "medication",
+        "dosage",
+        "allergies",
+        "symptoms",
+        "medical_notes",
+    }
+    for slug, entry in WHATSAPP_TEMPLATE_REGISTRY.items():
+        body_lower = entry.body_text.lower()
+        for phi_field in phi_field_names:
+            assert phi_field not in body_lower, (
+                f"Template {slug!r} body_text contains literal PHI field '{phi_field}' — "
+                f"use {{{{N}}}} placeholder instead"
+            )
+
+
+def test_whatsapp_template_lookup_helpers_work() -> None:
+    """get_whatsapp_template + list_whatsapp_templates expose the registry."""
+    from src.modules.vitalia.connections.whatsapp import (
+        get_whatsapp_template,
+        list_whatsapp_templates,
+    )
+
+    assert get_whatsapp_template("recordatorio_proxima_sesion") is not None
+    assert get_whatsapp_template("__missing__") is None
+    slugs = list_whatsapp_templates()
+    assert "recordatorio_proxima_sesion" in slugs
+    assert "nps_post_tratamiento" in slugs
+
+
+# ─── D.2 EP-8 registration of 5 fidelización templates ─────────────────────
+
+
+def test_ep8_includes_5_fidelizacion_whatsapp_templates_post_t8() -> None:
+    """EP-8 now includes 5 vitalia.fidelizacion_* channel adapters (T-8 additions)."""
+    from src.modules.vitalia.extensions import register_all
+
+    registry = _make_fresh_registry()
+    register_all(registry)
+
+    records = registry.get_all("EP-8")
+    names = {r.name for r in records}
+
+    t8_templates = {
+        "vitalia.fidelizacion_recordatorio_proxima_sesion",
+        "vitalia.fidelizacion_recordatorio_control_doctor",
+        "vitalia.fidelizacion_invitacion_mantenimiento",
+        "vitalia.fidelizacion_re_engagement_ausencia",
+        "vitalia.fidelizacion_nps_post_tratamiento",
+    }
+    assert t8_templates.issubset(names), f"T-8 WhatsApp template EP-8 adapters missing: {t8_templates - names}"
+
+
+def test_ep8_fidelizacion_adapters_are_namespaced() -> None:
+    """All fidelización EP-8 adapters use vitalia. namespace (CC-4 compliance)."""
+    from src.modules.vitalia.extensions import register_all
+
+    registry = _make_fresh_registry()
+    register_all(registry)
+
+    records = registry.get_all("EP-8")
+    fidelizacion_records = [r for r in records if "fidelizacion" in r.name]
+
+    assert len(fidelizacion_records) == 5, f"Expected 5 fidelizacion EP-8 adapters, got {len(fidelizacion_records)}"
+    for rec in fidelizacion_records:
+        assert rec.name.startswith("vitalia."), (
+            f"EP-8 adapter {rec.name!r} violates CC-4 namespace (must start with 'vitalia.')"
+        )
+
+
+def test_ep8_total_count_increased_by_5_post_t8() -> None:
+    """EP-8 now has the 3 payment adapters (T-infra-2) + 5 WhatsApp (T-8) = >= 8 total."""
+    from src.modules.vitalia.extensions import register_all
+
+    registry = _make_fresh_registry()
+    register_all(registry)
+
+    records = registry.get_all("EP-8")
+    assert len(records) >= 8, f"Expected >= 8 EP-8 registrations (3 payment + 5 WhatsApp), got {len(records)}"

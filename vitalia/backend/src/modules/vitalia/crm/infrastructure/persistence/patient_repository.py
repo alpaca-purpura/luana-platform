@@ -89,7 +89,9 @@ class PatientRepository(PhiRepositoryBase):
             """
             SELECT id, tenant_id, clinic_id, name, date_of_birth,
                    dni, phone, email, address,
-                   marketing_opt_out_at, deleted_at, created_at, updated_at
+                   marketing_opt_out_at,
+                   marketing_opt_in, opt_out, opt_out_reason, opt_out_at,
+                   deleted_at, created_at, updated_at
             FROM vitalia_patients
             WHERE tenant_id = :tenant_id
               AND clinic_id = :clinic_id
@@ -133,6 +135,10 @@ class PatientRepository(PhiRepositoryBase):
             email=row.email,
             address=row.address,
             marketing_opt_out_at=row.marketing_opt_out_at,
+            marketing_opt_in=bool(row.marketing_opt_in) if row.marketing_opt_in is not None else False,
+            opt_out=bool(row.opt_out) if row.opt_out is not None else False,
+            opt_out_reason=row.opt_out_reason,
+            opt_out_at=row.opt_out_at,
             deleted_at=row.deleted_at,
             created_at=row.created_at,
             updated_at=row.updated_at,
@@ -165,7 +171,9 @@ class PatientRepository(PhiRepositoryBase):
             """
             SELECT id, tenant_id, clinic_id, name, date_of_birth,
                    dni, phone, email, address,
-                   marketing_opt_out_at, deleted_at, created_at, updated_at
+                   marketing_opt_out_at,
+                   marketing_opt_in, opt_out, opt_out_reason, opt_out_at,
+                   deleted_at, created_at, updated_at
             FROM vitalia_patients
             WHERE tenant_id = :tenant_id
               AND clinic_id = :clinic_id
@@ -194,6 +202,10 @@ class PatientRepository(PhiRepositoryBase):
                 email=row.email,
                 address=row.address,
                 marketing_opt_out_at=row.marketing_opt_out_at,
+                marketing_opt_in=bool(row.marketing_opt_in) if row.marketing_opt_in is not None else False,
+                opt_out=bool(row.opt_out) if row.opt_out is not None else False,
+                opt_out_reason=row.opt_out_reason,
+                opt_out_at=row.opt_out_at,
                 deleted_at=row.deleted_at,
                 created_at=row.created_at,
                 updated_at=row.updated_at,
@@ -267,7 +279,8 @@ class PatientRepository(PhiRepositoryBase):
     ) -> None:
         """Mark patient as opted out from marketing (LGPD/HIPAA right to erasure flow).
 
-        Sets marketing_opt_out_at to current UTC time.
+        Updates opt_out=True, opt_out_reason, opt_out_at, marketing_opt_in=False
+        per migration 023 columns (T-1 Slice 1 fidelizacion).
 
         Args:
             entity_id: Patient UUID.
@@ -278,21 +291,26 @@ class PatientRepository(PhiRepositoryBase):
         """
         self.validate_dual_filter(tenant_id=tenant_id, clinic_id=clinic_id)
 
+        now = _utc_now()
         stmt = text(
             """
             UPDATE vitalia_patients
-            SET marketing_opt_out_at = :opt_out_at, updated_at = :updated_at
+            SET opt_out = TRUE,
+                opt_out_at = :opt_out_at,
+                opt_out_reason = :opt_out_reason,
+                marketing_opt_in = FALSE,
+                updated_at = :updated_at
             WHERE tenant_id = :tenant_id
               AND clinic_id = :clinic_id
               AND id = :entity_id
               AND deleted_at IS NULL
             """
         )
-        now = _utc_now()
         await self._session.execute(
             stmt,
             {
                 "opt_out_at": now,
+                "opt_out_reason": reason,
                 "updated_at": now,
                 "tenant_id": str(tenant_id),
                 "clinic_id": str(clinic_id),
@@ -304,7 +322,7 @@ class PatientRepository(PhiRepositoryBase):
             tenant_id=tenant_id,
             clinic_id=clinic_id,
             user_id=user_id,
-            action="patient_opt_out",
+            action="patient_opted_out",
             resource_type="patient",
             resource_id=entity_id,
             payload_redacted=b"<reason_redacted>",
@@ -312,8 +330,72 @@ class PatientRepository(PhiRepositoryBase):
         await self._audit_repo.write(audit_entry)
 
         logger.info(
-            "patient_opt_out",
+            "patient_opted_out",
             patient_id=str(entity_id),
             tenant_id=str(tenant_id),
             clinic_id=str(clinic_id),
+        )
+
+    async def marketing_opt_in(
+        self,
+        entity_id: UUID,
+        *,
+        tenant_id: UUID,
+        clinic_id: UUID,
+        user_id: UUID,
+        opt_in: bool,
+    ) -> None:
+        """Update patient marketing consent flag (migration 023 column).
+
+        Sets marketing_opt_in to the given value.
+        Does NOT modify opt_out — consent is a separate flag from erasure.
+
+        Args:
+            entity_id: Patient UUID.
+            tenant_id: Tenant UUID.
+            clinic_id: Clinic UUID.
+            user_id: User updating the consent (for audit log).
+            opt_in: New consent value (True = consented, False = refused).
+        """
+        self.validate_dual_filter(tenant_id=tenant_id, clinic_id=clinic_id)
+
+        now = _utc_now()
+        stmt = text(
+            """
+            UPDATE vitalia_patients
+            SET marketing_opt_in = :opt_in,
+                updated_at = :updated_at
+            WHERE tenant_id = :tenant_id
+              AND clinic_id = :clinic_id
+              AND id = :entity_id
+              AND deleted_at IS NULL
+            """
+        )
+        await self._session.execute(
+            stmt,
+            {
+                "opt_in": opt_in,
+                "updated_at": now,
+                "tenant_id": str(tenant_id),
+                "clinic_id": str(clinic_id),
+                "entity_id": str(entity_id),
+            },
+        )
+
+        audit_entry = AuditLogEntry(
+            tenant_id=tenant_id,
+            clinic_id=clinic_id,
+            user_id=user_id,
+            action="patient_marketing_opt_in",
+            resource_type="patient",
+            resource_id=entity_id,
+        )
+        await self._audit_repo.write(audit_entry)
+
+        logger.info(
+            "patient_marketing_consent_updated",
+            patient_id=str(entity_id),
+            tenant_id=str(tenant_id),
+            clinic_id=str(clinic_id),
+            opt_in=opt_in,
         )

@@ -2,9 +2,13 @@
 brand: vitalia
 date: 2026-05-18
 slug: idempotent-cron-pattern
-promotable: candidate
+promotable: yes
+proposal_link: docs/promotion-protocol/proposals/2026-05-20-core-platform-extensions-slice-1.md
+migrated_engine_path: core/luana-core-platform/src/luana_core_platform/workers/cron_envelope.py
+migrated_at: 2026-05-20
+migrated_engine_decorator: cron_envelope  # renamed (verify-first reveló @idempotent ya en core, solo lift envelope wrapper)
 applies_to_other_brands_potentially: [vitalia, nicolify, comunify, lupulo, fitflow, fixia, retailly, guestly, inmoflow, saasora]
-target_core_package: core/luana-core-platform (workers/) o nuevo core/luana-core-workers
+target_core_package: core/luana-core-platform/workers/
 origin_story: vitalia-slice-1-infra-cross-cutting
 origin_ticket: T-infra-8 (ARQ cron scaffold)
 related_capabilities:
