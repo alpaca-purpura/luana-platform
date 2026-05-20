@@ -267,6 +267,8 @@ tickets:
           - vitalia/frontend/src/features/marketing/__tests__/MarketingStageTabs.test.tsx::test_active_tab_highlight_cian
           - vitalia/frontend/src/features/marketing/__tests__/MarketingLayout.test.tsx::test_bowtie_sticky_top
     blocked_by: [T-mk-fe-1]
+    state: pushed
+    pushed_sha: ac7b3e9
 
   - id: T-mk-fe-3
     sub_story: vitalia-slice-1-marketing
