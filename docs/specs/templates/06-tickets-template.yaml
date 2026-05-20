@@ -1,8 +1,13 @@
-# 04-tickets.yaml — Template (pila tickets ordenada del story)
-# Vive en: docs/projects/active/PI-N/sprints/SN/stories/{story-id}/04-tickets.yaml
+# 06-tickets.yaml — Template (pila tickets ordenada del story, paradigm v4 post pm-redesign 2026-05)
+# Vive en: {brand}/docs/product/stories/{story-id}/06-tickets.yaml
 # Owner: /architect
 #
-# ── Convenciones (origen R6+R8 process-improvement 2026-05-05) ──
+# v4.1 cement 2026-05-19 — adicionalmente cada ticket cita `must_load_skills` resueltas
+# (subset de 05-guidelines.md § must_load_skills aplicable al surface del ticket).
+# Builder MUST entregar T-{n}-result.md § "Skills consulted" listando cada must_load_skill
+# + status (loaded | n/a) + when consulted. Auditor flag CHANGES_REQUESTED si missing.
+#
+# ── Convenciones (origen R6+R8 process-improvement 2026-05-05 + v4.1 2026-05-19) ──
 #
 # 1. decisions_applicable: list of decision IDs (D1, D2, A5, X2, etc.)
 #    ratificadas en 01-spec.md "Decisions" block o 03-arch-*.md
@@ -108,13 +113,38 @@
 #    Origen: caso vitalia 2026-05-18 (story-closure-gate). Stories sin gherkin_coverage
 #    transitioned a reviewing antes de cement-date quedan exentas; post-cement-date
 #    es FAIL obligatorio.
+#
+# 7. must_load_skills enforceable v4.1 (cement 2026-05-19):
+#    SSoT: 05-guidelines.md § must_load_skills + .claude/rules/auditor-self-fix-policy.md
+#
+#    Cada ticket DECLARA un subset RESUELTO de must_load_skills aplicable al ticket
+#    (no las "when:" generales del 05-guidelines.md, sino la lista final ya resuelta
+#    según surface + module del ticket).
+#
+#    Schema:
+#      must_load_skills:
+#        - backend-expert
+#        - playwright-expert
+#        - .claude/rules/tenant-isolation.md
+#        - .claude/rules/spanish-text.md
+#        - .claude/rules/auditor-self-fix-policy.md
+#        - tessl__fastapi
+#        - tessl__pytest-api-testing
+#
+#    /dev-team Step 2 cita esta lista verbatim en builder spawn prompt.
+#    Builder T-{n}-result.md DEBE incluir sección "Skills consulted (must_load enforcement v4.1)"
+#    con tabla skill/rule + status + when consulted. Auditor verifica.
+#
+#    Origen: conversación 2026-05-19 ratificada Chris (autonomy v4.1).
 
 ---
 story_id: STORY_ID
-sprint: SN-SLUG
-pi: PI-N
+brand: BRAND_SLUG                                  # ★ v4.1 — vitalia | nicolify | comunify | lupulo
+sprint: SN-SLUG                                    # legacy — outcomes event-driven post pm-redesign (no PI/Sprint)
+pi: PI-N                                           # legacy idem
 generated_at: 2026-05-04T15:00Z
 generated_by: /architect
+schema_version: v4.1                               # ★ post 2026-05-19 — must_load_skills enforceable per ticket
 total_tickets: 3
 estimated_total_hours: 8
 
@@ -169,13 +199,26 @@ T1:
     rules: [".claude/rules/backend-ddd.md", ".claude/rules/tenant-isolation.md", ".claude/rules/backend-migrations.md"]
     tessl_skills: ["tessl__fastapi", "tessl__pytest-api-testing"]
     domain_skills: ["backend-expert", "copilot-expert"]
+  # ★ v4.1 enforceable — lista resuelta must_load aplicable a este ticket (subset de 05-guidelines.md)
+  must_load_skills:
+    - backend-expert
+    - copilot-expert
+    - .claude/rules/tenant-isolation.md
+    - .claude/rules/backend-ddd.md
+    - .claude/rules/backend-migrations.md
+    - .claude/rules/spanish-text.md
+    - .claude/rules/auditor-self-fix-policy.md
+    - .claude/rules/tdd-mandatory.md
+    - tessl__fastapi
+    - tessl__pytest-api-testing
   deliverables:
-    - "DTO RequestDTO + ResponseDTO en backend/src/modules/copilot/api/dtos.py"
-    - "Endpoint @router.post('/brand-audit') en backend/src/modules/copilot/api/routes.py"
+    - "DTO RequestDTO + ResponseDTO en {brand}/backend/src/modules/{brand}/copilot/api/dtos.py"
+    - "Endpoint @router.post('/brand-audit') en {brand}/backend/src/modules/{brand}/copilot/api/routes.py"
     - "Service BrandAuditService en application/services/"
     - "Repo BrandAuditRepository en infrastructure/repositories/"
     - "Migration alembic — tabla brand_audit_log si aplica"
     - "Tests test_brand_audit_service.py + test_brand_audit_endpoint.py"
+    - "T-{n}-result.md sección 'Skills consulted (must_load enforcement v4.1)' obligatoria"
   out_of_scope:
     - "Tool wire en agente (es T-2)"
     - "FE button (es T-3)"
