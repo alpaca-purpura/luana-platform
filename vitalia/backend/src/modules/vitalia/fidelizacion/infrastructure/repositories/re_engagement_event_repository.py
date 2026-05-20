@@ -134,6 +134,40 @@ class ReEngagementEventRepository(CompoundScopeRepositoryBase[ReEngagementEventM
         result = await self._session.execute(stmt)
         return list(result.scalars().all())
 
+    async def list_in_period(
+        self,
+        *,
+        tenant_id: UUID,
+        clinic_id: UUID,
+        period_days: int,
+    ) -> list[ReEngagementEventModel]:
+        """Lista TODOS los eventos de re-engagement en el período (cualquier patrón).
+
+        Usada por Lucas para agregar señales cross-pattern (T-10).
+        HIPAA-lite: dual filter tenant_id + clinic_id SIEMPRE aplicado.
+
+        Args:
+            tenant_id: UUID del tenant.
+            clinic_id: UUID de la clínica.
+            period_days: Ventana hacia atrás desde now() (UTC) en días.
+
+        Returns:
+            Lista de ReEngagementEventModel triggered dentro del período,
+            ordenada por trigger_at DESC.
+        """
+        cutoff = datetime.now(UTC) - timedelta(days=period_days)
+        scope_attr = self._scope_attr()
+        stmt = (
+            select(self.MODEL)
+            .where(self.MODEL.tenant_id == tenant_id)
+            .where(scope_attr == clinic_id)
+            .where(self.MODEL.trigger_at >= cutoff)
+            .where(self.MODEL.deleted_at.is_(None))
+            .order_by(self.MODEL.trigger_at.desc())
+        )
+        result = await self._session.execute(stmt)
+        return list(result.scalars().all())
+
     async def check_throttle(
         self,
         *,

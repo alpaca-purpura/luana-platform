@@ -8,6 +8,8 @@ Tools (LangChain `@tool` decorated, async, Pydantic v2 input schemas):
 - `compute_stage_recommendation` — LLM call (Kimi reasoning) per stage
 - `compute_attribution_matrix` — pure DB analytics (no LLM)
 - `compute_referrals_leaderboard` — pure DB analytics (no LLM)
+- `compute_re_engagement_recommendation` — aggregate + cluster + LLM (T-10
+  Slice 1 fidelización)
 
 R23 production_code=True — agentic tools, Opus 4.7 exclusive.
 
@@ -24,6 +26,10 @@ from src.modules.vitalia.agentic.lucas.tools.compute_attribution_matrix import (
     MatrixDTO,
     compute_attribution_matrix,
 )
+from src.modules.vitalia.agentic.lucas.tools.compute_re_engagement_recommendation import (
+    ComputeReEngagementRecommendationInput,
+    compute_re_engagement_recommendation,
+)
 from src.modules.vitalia.agentic.lucas.tools.compute_referrals_leaderboard import (
     ComputeReferralsLeaderboardInput,
     LeaderboardDTO,
@@ -37,12 +43,14 @@ from src.modules.vitalia.agentic.lucas.tools.compute_stage_recommendation import
 
 __all__ = [
     "ComputeAttributionMatrixInput",
+    "ComputeReEngagementRecommendationInput",
     "ComputeReferralsLeaderboardInput",
     "ComputeStageRecommendationInput",
     "LeaderboardDTO",
     "MatrixDTO",
     "RecommendationDTO",
     "compute_attribution_matrix",
+    "compute_re_engagement_recommendation",
     "compute_referrals_leaderboard",
     "compute_stage_recommendation",
 ]
