@@ -29,9 +29,11 @@ Una story = un ciclo end-to-end. Cada fase tiene owner explícito y artifact pro
 | **C — FIX-LOOP** | `/dev-team` (si CHANGES_REQUESTED) | `T-{n}-review.md` findings | fix commits · re-audit | cap 2 iter · si excede → ESCALATED |
 | **D — GHERKIN** | `/auditor` (Phase D dentro del audit) | `01-spec.md § Acceptance criteria` + `06-tickets.yaml::gherkin_coverage` | `06-audit/gherkin-matrix.md` (scenario → test path → status) | embedded en B |
 | **E — DOCS** | `/pm-{brand}` | story + audit artifacts | `{brand}/docs/product/capabilities/{m}/{c}.yaml` (créate/update con `verification.commands` + `verification.gherkin_evidence`) · `{brand}/docs/product/modules/{m}.md` (auto-list refresh) | embedded en F prep |
-| **F — MERGE** | `/pm-{brand}` | APPROVED CHECKPOINTS + Fase E docs | `07-merge.md` (5 secciones cementadas) · squash-merge `wip/* → main` · archive story | `reviewing → done` |
+| **F — MERGE** | `/pm-{brand}` | APPROVED CHECKPOINTS + Fase E docs | `07-merge.md` (5 secciones cementadas) · squash-merge `wip/* → main` · **archive story** (`git mv {brand}/docs/product/stories/{story-id}/ {brand}/docs/archive/{year}/stories/{story-id}/` en MISMO commit del 07-merge — R2 per `.claude/rules/brand-docs-schema.md`) | `reviewing → done` |
 
 Solo después de F=done, otra story puede arrancar (en worktree nuevo si la convention "1 worktree = 1 story padre" aplica).
+
+**Cross-reference:** la acción "archive story" en Fase F está concretada como hard rule en `.claude/rules/brand-docs-schema.md` § R2. El path canónico es `{brand}/docs/archive/{year}/stories/{story-id}/` (immutable snapshot). El `git mv` debe ir en el MISMO commit que escribe `07-merge.md` — auditor escruta esto pre-merge (ver `.claude/skills/auditor/SKILL.md` § C5 + § Anti-patterns).
 
 ## Contrato `07-merge.md` (5 secciones cementadas)
 
@@ -247,6 +249,7 @@ Post-decreto: el mismo escenario falla en Layer 2 (`/dev-team` refuse pickup) Y 
 - `.claude/skills/dev-team/SKILL.md` Step 5/6 — auto-handoff trigger
 - `.claude/skills/auditor/SKILL.md` Phase D + Step 5 — gherkin verification + merge handoff
 - `.claude/skills/pm-{brand}/SKILL.md` Bootstrap Step 0 — scan stories developed/reviewing
+- `.claude/rules/brand-docs-schema.md` — R2 concreta el path archive + auto-move como hard rule (cement 2026-05-19)
 - `scripts/git-hooks/pre-commit` Section story-closure-gate — pre-commit guard
 - `scripts/git/new-session.sh` — `--story-id` required
 - `scripts/git/cleanup-session.sh` — refuse if state != done
