@@ -77,7 +77,7 @@ chmod 600 ~/.netrc
 | TS `from '@/components/ui/...'` | `from '@luana/ui-kit/...'` | Shadcn/Radix components |
 | TS `from '@/lib/zod-schemas/...'` | `from '@luana/schemas'` | Zod validation schemas |
 
-Para el mapeo completo por paquete, consulta `docs/api/python/{package}/` + `docs/api/typescript/`.
+Para el mapeo completo por paquete, consulta `docs/core-modules/{package}.md` (WIP build-out post-purga 2026-05-19; pre-purga existía `docs/api/python/` auto-gen pdoc, eliminado por generador roto — ver `docs/process/learnings.md` 2026-05-19 entry).
 
 ---
 
@@ -239,7 +239,7 @@ LITELLM_PROXY_URL=http://...     # proxy LiteLLM (si aplica)
 | `namespace not registered` en Extension SDK | Variable de entorno `LUANA_BRAND_SLUG` ausente | `export LUANA_BRAND_SLUG=nicolify` (o el slug de tu marca) |
 | `ExtensionPointRegistry locked` | Intentas registrar un EP después del startup | Registra todos los handlers **antes** de llamar `registry.lock()` |
 | `40 test failures` en `luana-core-sales-agent` | Falla pre-existente Story 7 (fixture issue) | Esperado — ver CHANGELOG.md §Known issues. Story 10+ cleanup |
-| `ImportError: cannot import name 'X'` | Cambio de nombre en lifting | Consulta §3 tabla de importaciones. Verifica `docs/api/python/{package}/` |
+| `ImportError: cannot import name 'X'` | Cambio de nombre en lifting | Consulta §3 tabla de importaciones. Verifica `docs/core-modules/{package}.md` (WIP build-out) o lee directamente `core/luana-core-{package}/src/luana_core_{package}/__init__.py` |
 | `BrandContext.brand_slug is None` | `LUANA_BRAND_SLUG` no seteada o `BrandContext.from_env()` no invocada | Verifica env var + llama `BrandContext.from_env()` en startup |
 | `HALT: GH Packages auth missing` en CI | `GITHUB_TOKEN` sin `write:packages` + `GH_PACKAGES_TOKEN` no configurado | Ve a Settings → Secrets → Actions → crear `GH_PACKAGES_TOKEN` con `write:packages` scope. Ver `docs/process/release-procedure-v0.1.0.md §Token-setup` |
 
