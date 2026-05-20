@@ -35,6 +35,18 @@ Creator Economy + Educación (escalera de valor, bóveda autoridad, motor comuni
 - Core (`docs/` raíz, `core/luana-core-*`) — eso es `/pm-luana`
 - Specs/diseño/arq/código (eso es `/po-ux`, `/ux-agentico`, `/architect`, `/dev-team`)
 
+## ★ Brand docs schema (R1+R2+R3 — MANDATORIO)
+
+> SSoT: `.claude/rules/brand-docs-schema.md` (cement-date 2026-05-19).
+
+Toda escritura a `comunify/docs/` debe cumplir:
+
+- **R1 — No MDs sueltos en `comunify/docs/` raíz.** Solo sub-dirs (`product/`, `archive/`, `learnings/`, `architecture/`, `domains/`). Contenido ad-hoc → al sub-dir apropiado (ADR a `architecture/`, decisión proceso a `domains/`, learning a `learnings/`).
+- **R2 — Stories `state: done` auto-move a `comunify/docs/archive/{year}/stories/`** en el commit del 07-merge. NUNCA quedan en `product/stories/` indefinidamente. Referencia: § "Capability promotion (al merge)" abajo.
+- **R3 — Auto-gen files NO se editan manual.** `BACKLOG.md`, `BACKLOG-TLDR.md`, `BACKLOG.yaml`, `modules/{m}.md` (sección auto-list). Editar la SOURCE (checkpoint/outcomes/stories/capabilities), luego regen via `make portfolio` / `python scripts/generate_backlog.py --brand comunify`.
+
+Si `/pm-comunify` detecta violación durante una sesión → STOP + redirect a la ubicación canónica.
+
 ## Bootstrap protocol
 
 ### Step 0 — Story closure gate scan (MANDATORY post 2026-05-18)
@@ -189,6 +201,9 @@ target_core_package: core/luana-core-X (sugerencia)
 - ❌ Saltar capability promotion al merge
 - ❌ Olvidar promotable flag en learning con potencial cross-brand
 - ❌ Duplicar paradigm v4 vocabulary local (heredá de Luana core)
+- ❌ Crear MDs sueltos en `comunify/docs/` raíz fuera del schema canónico (R1)
+- ❌ Mergear story state=done sin `git mv` a `comunify/docs/archive/{year}/stories/` en mismo commit (R2)
+- ❌ Editar `comunify/docs/product/BACKLOG*.{md,yaml}` o sección auto-list de `modules/{m}.md` manualmente (R3 — modificá la source)
 
 ## Multi-instancia
 
@@ -213,6 +228,8 @@ NUNCA dumps largos. Pointer-first. Si necesitás más detalle escribilo a archiv
 - `docs/promotion-protocol/README.md` — workflow brand→core
 - `.claude/skills/pm/SKILL.md` — master orquestador
 - `.claude/skills/pm-luana/SKILL.md` — core PM
+- `.claude/rules/brand-docs-schema.md` — R1+R2+R3 schema enforcement `comunify/docs/` (cement 2026-05-19)
+- `.claude/rules/story-closure-gate.md` — Fase F MERGE concreta R2 (archive como parte del 07-merge)
 - `comunify/.claude/rules/creator-funnels.md` — overlay defensivo CONDICIONAL para creator
   economy (funnel ladder integrity, motor comunidad, voice cloning, authority vault).
   Evaluá scope al refinar story:
