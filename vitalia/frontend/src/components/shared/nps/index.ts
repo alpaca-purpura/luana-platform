@@ -4,4 +4,4 @@
  */
 
 export { NPSTagBadge } from "./NPSTagBadge";
-export type { NPSTagBadgeProps, NpsCategory } from "./NPSTagBadge";
+export type { NPSTagBadgeProps, NpsCategory, NpsBadgeSize, NpsBadgeVariant } from "./NPSTagBadge";
