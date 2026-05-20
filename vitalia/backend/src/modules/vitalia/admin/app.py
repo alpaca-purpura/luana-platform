@@ -78,13 +78,20 @@ def _get_users_render() -> Callable[[], None]:
     return render_users_page
 
 
-# ── PAGE_SPECS registry (T-4 scope: 2 pages minimum) ─────────────────────────
+def _get_clinics_render() -> Callable[[], None]:
+    """Late import of clinics render function to avoid streamlit dependency."""
+    from src.modules.vitalia.admin.modules.clinics import render_clinics_page  # noqa: PLC0415
+
+    return render_clinics_page
+
+
+# ── PAGE_SPECS registry ───────────────────────────────────────────────────────
 
 PAGE_SPECS: tuple[PageSpec, ...] = (
     PageSpec(
         slug="tenants",
-        title="Clínicas y Tenants",
-        icon="🏥",
+        title="Tenants",
+        icon="🏢",
         render_fn=_get_tenants_render(),
     ),
     PageSpec(
@@ -92,6 +99,12 @@ PAGE_SPECS: tuple[PageSpec, ...] = (
         title="Usuarios",
         icon="👤",
         render_fn=_get_users_render(),
+    ),
+    PageSpec(
+        slug="clinicas",
+        title="Sucursales Clínicas",
+        icon="🏥",
+        render_fn=_get_clinics_render(),
     ),
 )
 
@@ -175,6 +188,13 @@ def main() -> None:
     if not _require_auth():
         st.stop()
         return
+
+    # Salir button in sidebar
+    with st.sidebar:
+        st.markdown("---")
+        if st.button("Salir", key="btn_logout", use_container_width=True):
+            st.session_state.admin_authenticated = False
+            st.rerun()
 
     pages = _build_pages()
     nav = st.navigation(pages, position="sidebar")
