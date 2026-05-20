@@ -1,0 +1,83 @@
+/**
+ * marketing feature — public API barrel
+ * downstream-regression-na: brand-local FE feature barrel; no cross-brand consumers
+ */
+
+// Types
+export type {
+  RecommendationStage,
+  RecommendationStatus,
+  RejectReason,
+  LucasRecommendation,
+  LucasRecommendationsResponse,
+  ApproveRecommendationResponse,
+  RejectRecommendationResponse,
+  UndoRecommendationResponse,
+} from "./types/lucas-recommendation";
+
+export type {
+  BowtieStage,
+  BowtieSummaryResponse,
+  StageDetailResponse,
+} from "./types/bowtie";
+
+export type {
+  AttributionOrigin,
+  AttributionOriginRow,
+  AttributionMatrixResponse,
+} from "./types/attribution";
+
+export type {
+  ReferrerLeaderboardRow,
+  ReferralsResponse,
+} from "./types/referrals";
+
+export type {
+  ProviderSlug,
+  SyncStatus,
+  ChannelSyncState,
+  ChannelMetricRow,
+  ChannelDetailResponse,
+  OAuthConnectResponse,
+  SyncResponse,
+} from "./types/channel";
+
+export { marketingParsers } from "./types/url-state";
+export type { MarketingTab, MarketingPeriod } from "./types/url-state";
+
+// Copy
+export { MARKETING_COPY } from "./copy";
+
+// Hooks (queries)
+export { useBowtieSummary } from "./api/use-bowtie-summary";
+export type { UseBowtieSummaryOptions } from "./api/use-bowtie-summary";
+
+export { useStageDetail } from "./api/use-stage-detail";
+export type { UseStageDetailOptions } from "./api/use-stage-detail";
+
+export { useChannelDetail } from "./api/use-channel-detail";
+export type { UseChannelDetailOptions } from "./api/use-channel-detail";
+
+export { useLucasRecommendations } from "./api/use-lucas-recommendations";
+
+export { useAttributionMatrix } from "./api/use-attribution-matrix";
+export type { UseAttributionMatrixOptions } from "./api/use-attribution-matrix";
+
+export { useReferrals } from "./api/use-referrals";
+export type { UseReferralsOptions } from "./api/use-referrals";
+
+// Hooks (mutations)
+export { useApproveRecommendation } from "./api/use-approve-recommendation";
+export type { ApproveRecommendationVariables } from "./api/use-approve-recommendation";
+
+export { useRejectRecommendation } from "./api/use-reject-recommendation";
+export type { RejectRecommendationVariables } from "./api/use-reject-recommendation";
+
+export { useUndoRecommendation } from "./api/use-undo-recommendation";
+export type { UndoRecommendationVariables } from "./api/use-undo-recommendation";
+
+export { useSyncChannel } from "./api/use-sync-channel";
+export type { UseSyncChannelVariables } from "./api/use-sync-channel";
+
+// Store
+export { useMarketingStore } from "./store/marketing-store";

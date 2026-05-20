@@ -1,0 +1,38 @@
+/**
+ * useBowtiesSummary — fetches bowtie funnel summary for a tenant+clinic
+ * downstream-regression-na: brand-local FE hook; no cross-brand consumers
+ */
+"use client";
+
+import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@clerk/nextjs";
+import { useClinicId } from "@/hooks/useClinicId";
+import { fetchClient } from "@/lib/api/fetchClient";
+import type { BowtieSummaryResponse } from "../types/bowtie";
+
+export type UseBowtieSummaryOptions = {
+  period?: "7d" | "30d" | "90d";
+};
+
+export function useBowtieSummary({ period = "30d" }: UseBowtieSummaryOptions = {}) {
+  const { getToken, orgId, isLoaded, isSignedIn } = useAuth();
+  const clinicId = useClinicId();
+
+  return useQuery({
+    queryKey: ["marketing", "bowtie", "summary", { period, clinicId }],
+    queryFn: async () => {
+      const token = await getToken();
+      if (!token || !orgId) throw new Error("Not authenticated");
+      return fetchClient<BowtieSummaryResponse>(
+        `/api/v1/vitalia/marketing/bowtie/summary?period=${period}`,
+        {
+          token,
+          tenantId: orgId,
+          clinicId,
+        },
+      );
+    },
+    enabled: isLoaded && isSignedIn === true && Boolean(clinicId),
+    staleTime: 60_000,
+  });
+}
