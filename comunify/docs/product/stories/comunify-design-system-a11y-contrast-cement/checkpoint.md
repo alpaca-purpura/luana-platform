@@ -1,19 +1,19 @@
 ---
 brand: comunify
 story_id: comunify-design-system-a11y-contrast-cement
-state: refined
-phase: SPEC_RATIFIED
+state: ready
+phase: READY_PACKAGE_COMPLETE
 created: 2026-05-18
 last_updated: 2026-05-20
-parallel_safe: true
-owner: /po-ux → /architect (next handoff)
-surface: [frontend, design-system]
+parallel_safe: false
+owner: /architect → /dev-team (next handoff)
+surface: frontend-only
 estimated_size: S+ (medium-small)
 hot_fix: false
 supersedes: comunify-warning-token-contrast-fix
 ratified_by_chris: true
 ratified_at: 2026-05-20
-next_action: "/architect lee 01-spec.md → produce ready package (state=refined → ready)"
+next_action: "/dev-team picks 06-tickets.yaml T-1 → T-4 sequential (state=ready → developing)"
 ---
 
 # Comunify — Design System a11y Contrast Cement — checkpoint
@@ -21,51 +21,64 @@ next_action: "/architect lee 01-spec.md → produce ready package (state=refined
 ## State transitions
 
 - 2026-05-18 → state=idea (spawned by auditor-frontend WARN of comunify-design-system-cement)
-- 2026-05-20 → state=idea → refining (Chris ratificó refinement con scope expandido "auditar TODAS las parejas")
-- 2026-05-20 → state=refining → **refined** (spec ratificada 3 batches loop, Chris autorizó "continúa hasta llegar al done")
+- 2026-05-20 → state=idea → refining (Chris ratificó scope expandido "auditar TODAS las parejas")
+- 2026-05-20 → state=refining → refined (spec ratificada 3 batches loop, Chris autorizó "continúa hasta llegar al done")
+- 2026-05-20 → state=refined → **ready** (architect produced 4-artifact ready package single-shot — no sub-architects spawned per pure-FE surface)
 
-## Scope cementado
+## Ready package artifacts (4 files cementados)
 
-- Slug renombrado: `comunify-warning-token-contrast-fix` → `comunify-design-system-a11y-contrast-cement`
-- 10 pares WCAG AA failed identificados (6 críticos + 4 marginales)
-- 5 tokens nuevos `*-text` para foreground sobre light bg (HSL principales del brandbook intactos)
-- Camino B universal en botones (moderation card + dunning banner) — outline pattern bg/10 + border + text-{X}-text
-- Arch fitness test bloquea 6 patrones HARD (opción C híbrida — critical y blue libres)
-- 10 archivos a editar (~190 LOC added, ~25 modified)
+| Artifact | Path | LOC | Schema |
+|---|---|---|---|
+| 03-arch.md | `comunify/docs/product/stories/comunify-design-system-a11y-contrast-cement/03-arch.md` | 466 | v4.1 — § 0 context + § 1-4 design + § 5 test plan + § 6 verification + § 7-12 cross-cutting/research/open Qs |
+| 04-validators.yaml | idem dir | 204 | v4.1 — 14 validators across 5 categorías (3 NF + 4 FN + 2 VIS + 5 ARCH + 1 AGENTIC=N/A) |
+| 05-guidelines.md | idem dir | 268 | v4.1 — must_load_skills + 6 patterns required + 9 patterns forbidden + files in scope verbatim |
+| 06-tickets.yaml | idem dir | 320 | v4.1 — 4 tickets sequential (T-1 foundation → T-2 RED baseline → T-3 sweep → T-4 validators) + gherkin_coverage mandatory |
 
-## Spec ratificada — características
+## Architect routing decisions
 
-| Sección | Estado |
+- **Sub-architects spawned:** **NONE.** Story is pure FE/CSS/Tailwind — no BE, no agentic. Single architect orchestrator produced consolidated 03-arch.md directly.
+- **Surface → builder → auditor:** all rows → `builder-frontend` (Sonnet) → `auditor-frontend` (Opus).
+- **R23 trigger:** NO. `production_code: false` across all 4 tickets (FE design tokens migration, not agentic production code).
+- **Cost-routing:** opencode + Sonnet OK (per `production_code: false`); Opus NOT required for builders.
+
+## Spec → arch fidelity
+
+| Spec section | Architect coverage |
 |---|---|
-| 4 scenarios base (happy + negative + edge + adversarial) | ✅ |
-| Sub-categoría mandatory accessibility | ✅ cubierta por SC-01..04 + axe |
-| Sub-categorías NO aplicables declaradas | ✅ ratified_by_chris: true |
-| Wireframes ASCII antes/después | ✅ moderation card + dunning banner |
-| Estados visuales (idle/hover/focus/active/disabled) | ✅ |
-| Componentes (0 nuevos) | ✅ solo migración Tailwind classes |
-| Data flow | ✅ no aplica (CSS-only) |
-| Microcopy | ✅ sin cambios |
-| Responsive | ✅ sin cambios |
-| Accessibility section | ✅ |
-| Graders (4 tipos: e2e + axe + arch_fitness + visual_state) | ✅ |
-| playwright_required en cada scenario funcional | ✅ |
+| 5 tokens nuevos with exact HSL channels | ✅ 03-arch § 2.1-2.4 + 06-tickets T-1 |
+| Camino B universal pattern verbatim | ✅ 03-arch § 3 + 05-guidelines Pattern 1 + 06-tickets T-3 |
+| Arch fitness 6 HARD-blocked patterns | ✅ 03-arch § 4.1 regex SSoT + 06-tickets T-2 |
+| Allowlist `[]` baseline (opción C híbrida) | ✅ 03-arch § 4.4-4.6 + val-arch-3 + T-2 + T-3 |
+| 10 archivos scope (3 SSoT + 6 components + 1 utils) | ✅ 03-arch § 1 + 05-guidelines § Files in scope verbatim |
+| 0 componentes nuevos | ✅ enforced by 05-guidelines § Forbidden 6 (scope creep) |
+| 4 base scenarios + axe a11y | ✅ 03-arch § 5.2 scenario_to_test mapping + 06-tickets gherkin_coverage |
+| Sub-categorías mandatory N/A declared | ✅ acknowledged via 04-validators val-ag-1 (agentic N/A) |
+| HSL principales del brandbook intactos | ✅ 03-arch § 2.5 hard invariant + 05-guidelines § Forbidden 4 |
+| Spanish neutro preservado | ✅ 05-guidelines § Spanish neutro (no microcopy touched) |
 
-## Refined gate checklist (v4.1)
+## Open questions for PM
 
-- [x] 4 scenarios base
-- [x] Sub-categoría a11y cubierta (mandatory para UI surface)
-- [x] 6 sub-categorías NO aplicables declaradas con razón ratificada
-- [x] Scenarios funcionales con `playwright_required: true`
-- [x] Then verbs verificables (no vagos)
-- [x] Graders declarados (4 tipos)
-- [x] Wireframes inline ASCII
-- [x] Estados visuales
-- [x] Microcopy Spanish neutro (NO cambia — preserva baseline)
-- [x] Componentes reuse > new (0 nuevos)
-- [x] Responsive declarado (sin cambios)
-- [x] Accessibility section presente
+**Ninguna.** Spec was fully ratified by Chris 2026-05-20 (3 batches). Architect found no design ambiguity — all decisions cemented verbatim.
 
-**Gate PASS ✅** — transition refining→refined ratificada.
+## Ready gate checklist (v4.1)
+
+- [x] 03-arch.md with § 0 Context Summary (surface → builder → auditor mapping)
+- [x] 03-arch.md with § Test Construction Plan v4.1 (orden + POMs + fixtures + scenario_to_test)
+- [x] 03-arch.md with § Verification commands (reproducible)
+- [x] 03-arch.md with § Cross-cutting concerns
+- [x] 03-arch.md with § capability YAML + modules/{m}.md updates required (post-merge)
+- [x] 03-arch.md with § Research notes (date-aware 2026-05-20)
+- [x] 04-validators.yaml — 5 categorías, all must_pass: true (or N/A explicit)
+- [x] 04-validators.yaml — gherkin_coverage_validators index (scenario → validator_ids)
+- [x] 05-guidelines.md — must_load_skills enforceable
+- [x] 05-guidelines.md — patterns REQUIRED + FORBIDDEN
+- [x] 05-guidelines.md — files in scope verbatim (CREATE/MODIFY/DO NOT TOUCH)
+- [x] 06-tickets.yaml — atomic work units with depends_on + estimated_loc + estimated_wall_clock_min
+- [x] 06-tickets.yaml — gherkin_coverage field mandatory per ticket (post-cement-date 2026-05-18)
+- [x] 06-tickets.yaml — production_code flag set per ticket (false × 4 — R23 NOT triggered)
+- [x] 06-tickets.yaml — owner_eligibility declared per ticket (qwen-opencode + claude-sonnet)
+
+**Gate PASS ✅** — state transition refined → **ready** confirmed.
 
 ## Bitácora
 
@@ -77,7 +90,17 @@ next_action: "/architect lee 01-spec.md → produce ready package (state=refined
   - Batch 2 ratificado: Camino B universal (también en dunning button), arch híbrido opción C
   - Batch 3 propuesta integral → Chris "Apruebo todo, continúa hasta llegar al done"
   - Slug renombrado, 01-spec.md escrito, state=refined
+- 2026-05-20 PM: `/architect` produjo ready package single-shot (no sub-architects — pure FE surface):
+  - 03-arch.md (466 LOC) + 04-validators.yaml (204 LOC) + 05-guidelines.md (268 LOC) + 06-tickets.yaml (320 LOC)
+  - state=refined → **ready**
 
 ## Next
 
-`/architect <brand>: comunify` lee 01-spec.md → produce ready package.
+`/dev-team` picks `06-tickets.yaml` T-1 → T-2 → T-3 → T-4 sequential (per RED-first TDD discipline).
+
+State transition: ready → developing (when T-1 starts).
+
+Auto-handoff chain (per `.claude/rules/story-closure-gate.md`):
+- T-4 GREEN → state=developing → developed → AUTO-HANDOFF `/auditor`
+- auditor APPROVED → AUTO-HANDOFF `/pm-comunify` merge
+- /pm-comunify writes 07-merge.md (5 secciones cementadas) + squash-merge wip/* → main + archive story → state=reviewing → done
