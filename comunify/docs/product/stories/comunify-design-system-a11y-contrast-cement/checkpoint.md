@@ -1,19 +1,19 @@
 ---
 brand: comunify
 story_id: comunify-design-system-a11y-contrast-cement
-state: ready
-phase: READY_PACKAGE_COMPLETE
+state: developing
+phase: T-1_IN_PROGRESS
 created: 2026-05-18
 last_updated: 2026-05-20
 parallel_safe: false
-owner: /architect → /dev-team (next handoff)
+owner: /dev-team (builder-frontend)
 surface: frontend-only
 estimated_size: S+ (medium-small)
 hot_fix: false
 supersedes: comunify-warning-token-contrast-fix
 ratified_by_chris: true
 ratified_at: 2026-05-20
-next_action: "/dev-team picks 06-tickets.yaml T-1 → T-4 sequential (state=ready → developing)"
+next_action: "T-1 in progress → T-2 → T-3 → T-4 sequential"
 ---
 
 # Comunify — Design System a11y Contrast Cement — checkpoint

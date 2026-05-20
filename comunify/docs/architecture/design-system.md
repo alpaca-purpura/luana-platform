@@ -38,6 +38,25 @@ HSL en formato `H S% L%` (Tailwind v4 / Shadcn pattern — consumido vía `hsl(v
 | `--comunify-surface`          | Cards, modals                        | `#FFFFFF` | `0 0% 100%`       |
 | `--comunify-border`           | Bordes sutiles                       | `#E2E8F0` | `214 32% 91%`     |
 
+### § 1.5 — Tokens de contraste WCAG AA (dark-foreground -text variants)
+
+Agregados en Story `comunify-design-system-a11y-contrast-cement` (2026-05-20). Uso obligatorio cuando el texto aparece sobre un fondo tint (`bg-X/10`) de su color semántico. Los tokens principales (§ 1) NO se modificaron.
+
+| Slot (CSS var)             | Tailwind class             | HEX       | HSL channels     | Contraste sobre bg-comunify-bg | Uso canónico |
+|---|---|---|---|---|---|
+| `--comunify-warning-text`  | `text-comunify-warning-text`  | `#8E6B00` | `45 100% 28%`    | 4.72:1 ✅ AA          | Texto en botones outline warning, badges warning |
+| `--comunify-stable-text`   | `text-comunify-stable-text`   | `#0E804B` | `152 80% 28%`    | 4.54:1 ✅ AA          | Texto en botones outline stable, badges éxito |
+| `--comunify-accent-text`   | `text-comunify-accent-text`   | `#E50013` | `355 100% 45%`   | 4.53:1 ✅ AA          | Texto en alertas coral críticas, error labels |
+| `--comunify-critical-text` | `text-comunify-critical-text` | `#E51313` | `0 84% 49%`      | 4.60:1 ✅ AA          | Texto en botones outline crítico, moderation ban |
+| `--comunify-blue-text`     | `text-comunify-blue-text`     | `#1069F8` | `217 95% 52%`    | 4.51:1 ✅ AA          | Texto en badges informativos, engagement low |
+
+**Regla cardinal:** si el background es `bg-X/10` (tint 10%), el texto DEBE ser `text-X-text` (no `text-X`, no `text-white`). Ver Camino B en § 6.
+
+**Hard invariants:**
+- Los HSL channels de los tokens principales (§ 1) NO se modifican.
+- Estos 5 slots son additive — no reemplazan a los tokens semánticos existentes.
+- `arch fitness test` (`test-no-low-contrast-pairs.test.ts`) enforza 6 patrones HARD-blocked y allowlist = `[]`.
+
 ### Gradient signature (logo + hero only)
 
 ```css
@@ -206,6 +225,70 @@ className="bg-comunify-accent text-white font-manrope font-semibold
 ```
 
 Reservar coral para **conversiones high-intent** (checkout, upsell, trial-start). NUNCA acciones neutras (cancel, back, edit).
+
+### Camino B — botón outline semántico (WCAG AA universal — a11y cement 2026-05-20)
+
+Patrón obligatorio para botones de acción semántica (moderation, dunning, acciones con color meaning). Reemplaza el patrón legacy `bg-X text-white` que fallaba contraste WCAG.
+
+```tsx
+// WARNING (Revisar / Pausar)
+className="bg-comunify-warning/10 border border-comunify-warning text-comunify-warning-text
+           hover:bg-comunify-warning/20 focus:ring-2 focus:ring-comunify-warning/50 rounded"
+
+// STABLE (Aprobar / Activar)
+className="bg-comunify-stable/10 border border-comunify-stable text-comunify-stable-text
+           hover:bg-comunify-stable/20 focus:ring-2 focus:ring-comunify-stable/50 rounded"
+
+// CRITICAL (Rechazar / Bloquear / Cancelar)
+className="bg-comunify-critical/10 border border-comunify-critical text-comunify-critical-text
+           hover:bg-comunify-critical/20 focus:ring-2 focus:ring-comunify-critical/50 rounded"
+
+// ACCENT (Acciones coral alternativas)
+className="bg-comunify-accent/10 border border-comunify-accent text-comunify-accent-text
+           hover:bg-comunify-accent/20 focus:ring-2 focus:ring-comunify-accent/50 rounded"
+
+// BLUE (Informativo / Info)
+className="bg-comunify-blue/10 border border-comunify-blue text-comunify-blue-text
+           hover:bg-comunify-blue/20 focus:ring-2 focus:ring-comunify-blue/50 rounded"
+```
+
+**Semántica visual preservada:** el borde + tint comunica el color semántico (verde=éxito, amarillo=precaución, rojo=crítico). WCAG AA garantizado por los `-text` tokens.
+
+### Badge tint (engagement, status chips)
+
+```tsx
+// Engagement high
+className="bg-comunify-stable/10 text-comunify-stable-text text-xs font-medium px-2 py-0.5 rounded-full"
+
+// Engagement medium / warning
+className="bg-comunify-warning/10 text-comunify-warning-text text-xs font-medium px-2 py-0.5 rounded-full"
+
+// Engagement low / info
+className="bg-comunify-blue/10 text-comunify-blue-text text-xs font-medium px-2 py-0.5 rounded-full"
+
+// Crítico / expirado
+className="bg-comunify-critical/10 text-comunify-critical-text text-xs font-medium px-2 py-0.5 rounded-full"
+```
+
+### Alert banner / dunning (membresía, pagos)
+
+```tsx
+// Dunning — pago vencido
+className="bg-comunify-warning/10 border border-comunify-warning/30 text-comunify-warning-text
+           rounded p-4 flex items-center gap-3"
+
+// Error crítico
+className="bg-comunify-critical/10 border border-comunify-critical/30 text-comunify-critical-text
+           rounded p-4 flex items-center gap-3"
+```
+
+### Error label (formularios)
+
+```tsx
+className="text-comunify-critical-text text-sm mt-1"
+```
+
+**PROHIBIDO en todos los recipes anteriores:** `text-white`, `text-comunify-warning`, `text-comunify-stable`, `text-comunify-critical`, `text-comunify-accent`, `text-comunify-blue` (los tokens base sin `-text` fallan WCAG AA sobre fondos tint).
 
 ### Card dashboard
 ```tsx

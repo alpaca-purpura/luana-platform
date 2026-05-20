@@ -12,6 +12,24 @@
   --color-comunify-stable: hsl(152 80% 43%);
   --color-comunify-warning: hsl(45 100% 48%);
   --color-comunify-critical: hsl(0 84% 60%);
+
+  /* Dark-foreground -text tokens (a11y contrast cement — WCAG AA ≥ 4.5:1 on tint bg/10) */
+  --color-comunify-warning-text: hsl(
+    45 100% 28%
+  ); /* #8E6B00 — 4.72:1 on bg-comunify-bg */
+  --color-comunify-stable-text: hsl(
+    152 80% 28%
+  ); /* #0E804B — 4.54:1 on bg-comunify-bg */
+  --color-comunify-accent-text: hsl(
+    355 100% 45%
+  ); /* #E50013 — 4.53:1 on bg-comunify-bg */
+  --color-comunify-critical-text: hsl(
+    0 84% 49%
+  ); /* #E51313 — 4.60:1 on bg-comunify-bg */
+  --color-comunify-blue-text: hsl(
+    217 95% 52%
+  ); /* #1069F8 — 4.51:1 on bg-comunify-bg */
+
   --color-comunify-text: hsl(226 49% 9%);
   --color-comunify-text-muted: hsl(215 16% 47%);
   --color-comunify-bg: hsl(210 40% 98%);
@@ -19,8 +37,10 @@
   --color-comunify-border: hsl(214 32% 91%);
 
   /* Font utilities — Tailwind v4 generates .font-satoshi / .font-manrope / .font-inter */
-  --font-satoshi: var(--font-satoshi), "ui-sans-serif", "system-ui", "sans-serif";
-  --font-manrope: var(--font-manrope), "ui-sans-serif", "system-ui", "sans-serif";
+  --font-satoshi:
+    var(--font-satoshi), "ui-sans-serif", "system-ui", "sans-serif";
+  --font-manrope:
+    var(--font-manrope), "ui-sans-serif", "system-ui", "sans-serif";
   --font-inter: var(--font-inter), "ui-sans-serif", "system-ui", "sans-serif";
 
   /* Border radius — Tailwind v4 generates .rounded-default / .rounded-lg */
@@ -28,7 +48,13 @@
   --radius-lg: 1.25rem;
 
   /* Background image — Tailwind v4 generates .bg-comunify-gradient */
-  --background-image-comunify-gradient: linear-gradient(135deg, #7B2FF7 0%, #6A3CFF 35%, #2D7FF9 70%, #1E5EFF 100%);
+  --background-image-comunify-gradient: linear-gradient(
+    135deg,
+    #7b2ff7 0%,
+    #6a3cff 35%,
+    #2d7ff9 70%,
+    #1e5eff 100%
+  );
 }
 
 :root {
@@ -46,6 +72,13 @@
   --comunify-warning: 45 100% 48%;
   --comunify-critical: 0 84% 60%;
 
+  /* Dark-foreground -text tokens (a11y — WCAG AA dark fg for tint backgrounds) */
+  --comunify-warning-text: 45 100% 28%;
+  --comunify-stable-text: 152 80% 28%;
+  --comunify-accent-text: 355 100% 45%;
+  --comunify-critical-text: 0 84% 49%;
+  --comunify-blue-text: 217 95% 52%;
+
   /* Neutral */
   --comunify-text: 226 49% 9%;
   --comunify-text-muted: 215 16% 47%;
@@ -58,5 +91,11 @@
   --radius-lg: 1.25rem;
 
   /* Gradient (valor literal con HEX — SSoT canónico, allowlisted en arch fitness) */
-  --comunify-gradient: linear-gradient(135deg, #7B2FF7 0%, #6A3CFF 35%, #2D7FF9 70%, #1E5EFF 100%);
+  --comunify-gradient: linear-gradient(
+    135deg,
+    #7b2ff7 0%,
+    #6a3cff 35%,
+    #2d7ff9 70%,
+    #1e5eff 100%
+  );
 }

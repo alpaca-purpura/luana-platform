@@ -18,7 +18,8 @@ const config: Config = {
       colors: {
         // Primary palette
         "comunify-primary": "hsl(var(--comunify-primary))",
-        "comunify-primary-foreground": "hsl(var(--comunify-primary-foreground))",
+        "comunify-primary-foreground":
+          "hsl(var(--comunify-primary-foreground))",
         "comunify-primary-fg": "hsl(var(--comunify-primary-foreground))",
         "comunify-primary-hover": "hsl(var(--comunify-primary-hover))",
         "comunify-purple-mid": "hsl(var(--comunify-purple-mid))",
@@ -31,6 +32,12 @@ const config: Config = {
         "comunify-stable": "hsl(var(--comunify-stable))",
         "comunify-warning": "hsl(var(--comunify-warning))",
         "comunify-critical": "hsl(var(--comunify-critical))",
+        // Dark-foreground -text tokens (a11y contrast cement — WCAG AA dark fg for tint bg)
+        "comunify-warning-text": "hsl(var(--comunify-warning-text))",
+        "comunify-stable-text": "hsl(var(--comunify-stable-text))",
+        "comunify-accent-text": "hsl(var(--comunify-accent-text))",
+        "comunify-critical-text": "hsl(var(--comunify-critical-text))",
+        "comunify-blue-text": "hsl(var(--comunify-blue-text))",
         // Neutral / layout
         "comunify-text": "hsl(var(--comunify-text))",
         "comunify-text-muted": "hsl(var(--comunify-text-muted))",
@@ -42,9 +49,24 @@ const config: Config = {
         "comunify-gradient": "var(--comunify-gradient)",
       },
       fontFamily: {
-        satoshi: ["var(--font-satoshi)", "ui-sans-serif", "system-ui", "sans-serif"],
-        manrope: ["var(--font-manrope)", "ui-sans-serif", "system-ui", "sans-serif"],
-        inter: ["var(--font-inter)", "ui-sans-serif", "system-ui", "sans-serif"],
+        satoshi: [
+          "var(--font-satoshi)",
+          "ui-sans-serif",
+          "system-ui",
+          "sans-serif",
+        ],
+        manrope: [
+          "var(--font-manrope)",
+          "ui-sans-serif",
+          "system-ui",
+          "sans-serif",
+        ],
+        inter: [
+          "var(--font-inter)",
+          "ui-sans-serif",
+          "system-ui",
+          "sans-serif",
+        ],
       },
       borderRadius: {
         DEFAULT: "var(--radius)",
