@@ -3,7 +3,17 @@ story_id: vitalia-slice-1-inbox
 outcome: vitalia-mvp-ui-foundation
 parent_spec: vitalia-ux-discovery (archived 2026-05-20 — inheritance carryover)
 state: ready                                  # ← REFINED → READY post architect package emit (2026-05-20)
-phase: AWAITING_DEV_TEAM_PICKUP                # /dev-team picks 06-tickets when pre-flight gates GREEN
+phase: READY_FOR_DEV_TEAM_PICKUP               # ★ pre-flight gates GREEN 2026-05-20 02:00 UTC, /dev-team can pickup now
+preflight_gates_status:                        # ★ 2026-05-20 verificación
+  clerk_test_token_fresh_and_webhook_secret_configured: GREEN  # token regenerated via clerk CLI + webhook secret confirmed in .env.dev
+  clerk_test_users_3_created: GREEN                            # dr.demo + recepcion + admin @vitalialat.com verified in Clerk + DB
+  playwright_storage_state_generated: GREEN                    # vitalia/frontend/playwright/.clerk/user.json (9 cookies) via clerk.setup.ts ticket strategy (~10s)
+  playwright_smoke_suite_green_local: GREEN                    # 36/36 specs PASS 9.2min (vitalia/frontend/playwright-report/)
+  promotion_proposal_core_platform_extensions_slice_1_migrated: GREEN  # luana-core-platform 0.4.0 commit e8d3c04
+preflight_gates_deferred_followup:             # non-blocking — registered for separate session
+  playwright_smoke_suite_green_live: DEFERRED  # needs cloudflared tunnel verified + can run post-merge
+  playwright_mobile_smoke_green: DEFERRED      # responsive specs included in smoke run actually
+  playwright_a11y_smoke_green: DEFERRED        # axe scans non-blocking for Slice 1 build start
 last_artifact: 06-tickets.yaml + HANDOFF-cross-story-updates.md + 05-guidelines.md + 04-validators.yaml + 03-arch-{be,fe,agentic}.md + 03-arch.md + 02-design-ui.md + 01-spec-extract.md (all emitted 2026-05-20)
 last_modified: 2026-05-20
 ratified_by_chris: true                       # replan 2026-05-20

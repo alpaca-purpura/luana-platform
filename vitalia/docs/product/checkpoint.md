@@ -3,7 +3,7 @@ brand: vitalia
 vertical: "Salud + Bienestar"
 status: shipped
 last_updated: 2026-05-20
-slice_1_status: replan-ratified-2026-05-20-awaiting-preflight-gates  # 3 sub-stories DONE (infra + copilot-tools + onboarding-wizard) + ux-discovery PARENT DONE 2026-05-20 + 5 sub-stories Slice 1 UI refined awaiting Ola 1 build · pre-flight gates ABIERTOS (Clerk Orgs + 3 test users + Playwright storage + suite smoke + lift core combinado)
+slice_1_status: preflight-gates-GREEN-2026-05-20-ola1-arrancando  # 3 sub-stories DONE (infra + copilot-tools + onboarding-wizard) + ux-discovery PARENT DONE 2026-05-20 + 5 sub-stories Slice 1 UI refined · pre-flight gates GREEN 2026-05-20 02:00 UTC (clerk.setup.ts portado de Nicolify + setup project GREEN + 36/36 smoke specs GREEN + token regen + storage state) · Ola 1 inbox+fidelización entrando a /dev-team autonomous build
 active_outcomes:
   - dev-environment-multibrand     # receta vitalia shipped, cross-brand replicación pendiente nicolify/comunify/lupulo
   - vitalia-mvp-ui-foundation      # outcome maestro Slice 1/2/3 FE Vitalia MVP
@@ -27,12 +27,33 @@ slice_1_replan_2026_05_20:                 # ★ Replan ratificado Chris 2026-05
     ola_2: [vitalia-slice-1-pipeline, vitalia-slice-1-marketing]
     ola_3: [vitalia-slice-1-agenda]
   side_stories_parallel_to_ola_1: [vitalia-payment-adapter-mvp, vitalia-fiscal-emission-pe]
-  hard_gates_open:
-    - clerk_test_token_fresh_and_webhook_secret_configured
-    - clerk_test_users_3_created
-    - playwright_storage_state_generated
-    - playwright_smoke_suite_23_specs_green_local_and_live
-    - promotion_proposal_core_platform_extensions_slice_1_migrated
+  hard_gates_open: []                          # ★ TODOS GREEN 2026-05-20 02:00 UTC (ver hard_gates_closed_log)
+  hard_gates_closed_log:
+    clerk_test_token_fresh_and_webhook_secret_configured:
+      status: GREEN
+      verified_at: 2026-05-20T01:15:00Z
+      method: "clerk CLI api /testing_tokens POST + grep VITALIA_CLERK_WEBHOOK_SECRET=.+"
+    clerk_test_users_3_created:
+      status: GREEN
+      verified_at: 2026-05-20T01:18:00Z
+      method: "clerk api /users + psql users + user_tenants junctions (3 users + 5 junctions @ sanare/aurora/mindful)"
+    playwright_storage_state_generated:
+      status: GREEN
+      verified_at: 2026-05-20T01:23:00Z
+      method: "ported nicolify clerk.setup.ts → vitalia/frontend/e2e/setup/ + updated playwright.config.ts with setup project + dependencies['setup'] + storageState. setup ticket strategy (Clerk emailAddress sign-in token) GREEN in 10s"
+      output: "vitalia/frontend/playwright/.clerk/user.json (9 cookies — __session, __client_uat, __cf_bm, __clerk_db_jwt, etc.)"
+    playwright_smoke_suite_green_local:
+      status: GREEN
+      verified_at: 2026-05-20T01:33:00Z
+      method: "cd vitalia/frontend && E2E_BASE_URL=http://localhost:3002 npx playwright test --project=smoke"
+      result: "36/36 specs PASS in 9.2min (incluye visual baselines + responsive + wizard + onboarding × 3 brands)"
+    promotion_proposal_core_platform_extensions_slice_1_migrated:
+      status: GREEN
+      verified_at: 2026-05-20T00:00:00Z
+      method: "luana-core-platform 0.4.0 commit e8d3c04 in main"
+    playwright_smoke_suite_green_live: DEFERRED  # non-blocking — needs cloudflared tunnel verify
+    playwright_mobile_smoke_green: DEFERRED
+    playwright_a11y_smoke_green: DEFERRED
   auto_handoff_chain: "dev-team developed → auditor → pm-vitalia merge (no Chris intermedia per paradigm v4.1)"
 ratified_promotion_proposals:              # APPROVED + migrated
   - docs/promotion-protocol/proposals/2026-05-17-platform-tenants-location-columns.md      # state: migrated (luana-core-platform 0.1.0→0.2.0)

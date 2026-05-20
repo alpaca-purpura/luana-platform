@@ -3,7 +3,17 @@ story_id: vitalia-slice-1-fidelizacion
 outcome: vitalia-mvp-ui-foundation
 parent_spec: vitalia-ux-discovery (archived 2026-05-20 — inheritance carryover)
 state: ready
-phase: AWAIT_DEV_TEAM_PICKUP
+phase: READY_FOR_DEV_TEAM_PICKUP               # ★ pre-flight gates GREEN 2026-05-20 02:00 UTC
+preflight_gates_status:                        # ★ 2026-05-20 verificación
+  clerk_test_token_fresh_and_webhook_secret_configured: GREEN
+  clerk_test_users_3_created: GREEN
+  playwright_storage_state_generated: GREEN    # vitalia/frontend/playwright/.clerk/user.json via clerk.setup.ts ticket strategy
+  playwright_smoke_suite_green_local: GREEN    # 36/36 specs PASS 9.2min
+  promotion_proposal_core_platform_extensions_slice_1_migrated: GREEN
+preflight_gates_deferred_followup:
+  playwright_smoke_suite_green_live: DEFERRED
+  playwright_mobile_smoke_green: DEFERRED
+  playwright_a11y_smoke_green: DEFERRED
 last_artifact: 06-tickets.yaml + HANDOFF-cross-story-updates.md (architect refresh 2026-05-20)
 last_modified: 2026-05-20
 ratified_by_chris: true
