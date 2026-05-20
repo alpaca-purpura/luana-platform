@@ -97,3 +97,19 @@ export type { StageDispatcherProps } from "./components/StageDispatcher";
 
 export { MarketingActivityFooter } from "./components/MarketingActivityFooter";
 export type { MarketingActivityFooterProps } from "./components/MarketingActivityFooter";
+
+// Components (T-mk-fe-3)
+export { LucasStageRecommendationsCard } from "./components/LucasStageRecommendationsCard";
+export type { LucasStageRecommendationsCardProps } from "./components/LucasStageRecommendationsCard";
+
+export { LucasRecommendationDetailModal } from "./components/LucasRecommendationDetailModal";
+export type { LucasRecommendationDetailModalProps } from "./components/LucasRecommendationDetailModal";
+
+export { LucasApprovalModal } from "./components/LucasApprovalModal";
+export type { LucasApprovalModalProps } from "./components/LucasApprovalModal";
+
+export { LucasUndoChip } from "./components/LucasUndoChip";
+export type { LucasUndoChipProps } from "./components/LucasUndoChip";
+
+export { LucasRejectModal } from "./components/LucasRejectModal";
+export type { LucasRejectModalProps } from "./components/LucasRejectModal";

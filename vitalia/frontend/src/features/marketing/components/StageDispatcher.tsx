@@ -19,6 +19,7 @@
 import { cn } from "@/lib/cn";
 import type { RecommendationStage } from "../types/lucas-recommendation";
 import { MARKETING_COPY } from "../copy";
+import { LucasStageRecommendationsCard } from "./LucasStageRecommendationsCard";
 
 export type StageDispatcherProps = {
   activeTab: RecommendationStage;
@@ -45,19 +46,9 @@ function StagePlaceholder({ stage }: { stage: RecommendationStage }) {
       aria-labelledby={`stage-tab-${stage}`}
       className="flex flex-col gap-4"
     >
-      {/*
-       * T-mk-fe-3 slot: LucasStageRecommendationsCard will render here.
-       * This placeholder preserves the layout region for the parallel ticket.
-       */}
-      <div
-        data-slot="lucas-recommendations"
-        className="rounded-lg vt-bg-surface vt-border border p-4 min-h-[80px] flex items-center justify-center text-xs vt-text-muted"
-        aria-label={`Recomendaciones de Lucas para ${STAGE_LABELS[stage]}`}
-      >
-        <span>
-          {/* T-mk-fe-3 fills this slot */}
-          Recomendaciones · {STAGE_LABELS[stage]}
-        </span>
+      {/* T-mk-fe-3: LucasStageRecommendationsCard — real implementation */}
+      <div data-slot="lucas-recommendations">
+        <LucasStageRecommendationsCard stage={stage} />
       </div>
 
       {/* Attraction tab: channel breakdown rows slot (T-mk-fe-4) */}
