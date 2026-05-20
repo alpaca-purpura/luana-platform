@@ -113,3 +113,25 @@ export type { LucasUndoChipProps } from "./components/LucasUndoChip";
 
 export { LucasRejectModal } from "./components/LucasRejectModal";
 export type { LucasRejectModalProps } from "./components/LucasRejectModal";
+
+// Components (T-mk-fe-4)
+export { AttributionMatrixWidget } from "./components/AttributionMatrixWidget";
+export type { AttributionMatrixWidgetProps } from "./components/AttributionMatrixWidget";
+
+export { ReferralsWidget } from "./components/ReferralsWidget";
+export type { ReferralsWidgetProps } from "./components/ReferralsWidget";
+
+export { AttractionStage } from "./components/AttractionStage";
+export type { AttractionStageProps } from "./components/AttractionStage";
+
+export { QualificationStage } from "./components/QualificationStage";
+export type { QualificationStageProps } from "./components/QualificationStage";
+
+export { ReservationStage } from "./components/ReservationStage";
+export type { ReservationStageProps } from "./components/ReservationStage";
+
+export { AdoptionStage } from "./components/AdoptionStage";
+export type { AdoptionStageProps } from "./components/AdoptionStage";
+
+export { ExpansionStage } from "./components/ExpansionStage";
+export type { ExpansionStageProps } from "./components/ExpansionStage";
