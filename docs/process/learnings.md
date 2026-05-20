@@ -1068,3 +1068,108 @@ Cuando aparezca demanda real de docs API generados (typedoc/pdoc) — probableme
 **How to apply:** si en futuras purgas aparece `docs/api/` recreado con placeholders idénticos sin que medie story formal, repetir delete. Si el generador se arregla genuinamente, las regeneraciones serán auto-gen válidas (no placeholders) y este learning queda obsoleto.
 
 **Cross-brand implications:** ninguna — `docs/api/` era cross-brand pero su contenido nunca aportó valor a ninguna brand. Decisión platform-level pura.
+
+---
+
+## 2026-05-19 — GH Actions quota exhausted (incident diagnosis + mitigations)
+
+**promotable: candidate** (patrón aplicable a cualquier brand futura que use GH Actions con free tier)
+
+### Contexto
+
+Durante session paradigm v4.1 cement + cd-staging policy change, observamos que TODOS los workflows GitHub Actions fallaban 100% del tiempo en main:
+
+- `CI` (run IDs 26139208119, 26139508xxx, etc.) — 5 jobs (python-lint, python-test, ts-test, arch-fitness, ts-lint) — todos `failure`
+- `CI (WIP)` en wip/vitalia — todos `failure`
+- `CD — Staging multibrand (auto)` — `startup_failure` (workflow no llegó a ejecutar ningún job)
+
+Patrón consistente desde **2026-05-16** hasta 2026-05-19 (4+ días, 60+ runs, 100% failure rate).
+
+### Investigación (sub-agent Opus general-purpose, 2026-05-19)
+
+Spawn auditor con instrucción read-only para diagnosticar y clasificar. Hallazgos empíricos:
+
+1. **`duration_ms: 0` per job:** runners GH Actions (1000001795, 1000001796, etc.) eran asignados pero el workflow se abortaba ANTES de ejecutar el primer step (`actions/checkout@v4`).
+2. **Cero billable execution time:** GitHub aceptaba el workflow, asignaba runner, pero refusaba ejecutarlo. Logs muestran solo dispatch/wait/assign — no steps.
+3. **Transition point identificable:** último run exitoso = `25948364743` (2026-05-16T00:50:16Z, 21min execution). Primer failure pattern = `25958035567` poco después. Brusco, no gradual.
+4. **Affecta todos los workflows:** no es bug de un workflow específico — todos fallan igual.
+5. **Account context:** repo privado en cuenta `User` plan (`alpacapurpura`). Free tier GitHub Actions privados = 2000 min/mes. Pre-incident: ~20min × múltiples workflows por commit → quota consumption alto.
+
+### Root cause confirmed
+
+**GitHub Actions billing/quota exhausted** en cuenta `alpacapurpura`. No es defecto de código. Workflows YAML están sanos — GitHub literalmente no los deja ejecutar.
+
+### Por qué NO podemos arreglarlo con código
+
+- Cualquier edit a workflow YAML, test, configs, etc. resulta en mismo `duration_ms: 0` pattern
+- Los workflows nunca llegan a `actions/checkout@v4` → no hay código corriendo que pueda fallar/pasar
+- "Fix the workflow" es categoricamente imposible — la limitación es account-level
+
+### Decisión Chris ratificada
+
+**Resolución requiere acción Chris fuera de Claude/Git:**
+1. Ir a `github.com/settings/billing` con cuenta `alpacapurpura`
+2. Revisar Actions usage en `github.com/settings/billing/summary`
+3. Una opción:
+   - (a) Subir spending limit + agregar payment method
+   - (b) Esperar reset mensual (~1 jun 2026)
+   - (c) Mover repo a org con créditos Actions disponibles
+   - (d) Hacer repo público (Actions free unlimited para repos públicos)
+
+### Mitigaciones aplicadas en sesión (commits del incident)
+
+**Commit `f2c81bb` — `cd-staging.yml` push:main → workflow_dispatch (manual):**
+- Razón originaria: Chris pidió que solo `release/*` dispare workflows automáticos
+- Beneficio quota: eliminar auto-deploy a staging en cada push a main (incluyendo docs-only) reduce ~30-50% de runs (cada commit a main disparaba 4 deploy jobs)
+- ADR-004 + CLAUDE.md + AGENTS.md actualizados con nuevo policy
+
+**Commit subsiguiente — quota-aware triggers en `ci.yml` + `ci-wip.yml`:**
+
+1. **`paths-ignore`** en ambos workflows — skip CI cuando cambian solo:
+   - `**.md` (docs/), `docs/**`, `.claude/**` (rules/skills), `.gitignore`, `LICENSE`, `.github/ISSUE_TEMPLATE/**`, `.github/PULL_REQUEST_TEMPLATE/**`
+   - Beneficio: paradigm v4.1-style commits (todo docs) no consumen quota CI
+
+2. **`concurrency: group + cancel-in-progress`** — cancela runs en progreso cuando newer commit aterriza en mismo branch:
+   - Beneficio: rapid push sequences (común en wip/* dev) cancela los obsolete
+   - PR merge: si auto-merge corre + se mergea, el primer trigger se cancela
+
+### Mitigaciones NO aplicadas (deferred, sesión separada)
+
+- **Reduce matrix size:** los 5 jobs CI (python-lint, python-test, arch-fitness, ts-lint, ts-test) usan 1 runner each. Merger en 2 jobs (1 python, 1 ts) reduciría a 2 runners pero pierde paralelismo + claridad fail-attribution. Tradeoff a evaluar cuando se decida estrategia coverage final.
+- **Cache improvements:** `uv sync --all-packages` instala TODO el workspace cada vez. Setup-uv cache es minimal. Cache mejorada podría reducir 30-40% setup time pero requiere experimentación.
+
+### Quota math (ballpark)
+
+| Antes | Después mitigations |
+|---|---|
+| Push docs-only a main: 5 CI jobs × ~20min = ~100 min | 0 min (paths-ignore skip) |
+| Push 3 commits rápidos a wip: 3 × 3 CI-WIP jobs × ~5min = 45 min | ~15 min (concurrency cancela 2 obsolete) |
+| Push a main + auto-trigger CD-Staging: 5 CI + 4 staging jobs | 5 CI only (cd-staging manual) |
+
+Estimate combined: **~50-70% reduction** en quota burn cuando se restore el budget.
+
+### Cross-brand implications
+
+**Aplica a todas las brands** (vitalia, nicolify, comunify, lupulo + bootstrap brands futuras). El CI/CD compartido cross-brand significa que el incident impacta a todas. Las mitigaciones aplicadas son cross-brand (workflows raíz). Cuando bootstrap nuevas brands (saasora, inmoflow, etc.), las brand-specific `paths:` filters en cd-staging.yml + ci.yml deberían continuar incluyéndolas para que sus tests también skip cuando solo cambian docs.
+
+### Promotion candidate notas
+
+**Por qué `promotable: candidate` y no `yes`:**
+- El patrón "quota-aware workflows" (paths-ignore + concurrency) es genérico — aplicable a cualquier repo con GH Actions
+- Pero implementación es específica a luana-platform monorepo multibrand
+- Si futuro Luana spin-off / nuevo repo desea adoptar — copiar workflow patterns + adaptar paths
+- No es prioritario lift a `core/` (no es engine code), pero documentar en `docs/portfolio/` o `_pm-brand-template/` workflows si bootstrapeamos nuevas brands con CI/CD propio
+
+### How to apply (forward)
+
+Cuando bootstrapees brand nueva:
+1. Si la brand necesita su propio CI/CD scoped (en vez de monorepo shared), copiar este pattern: paths-ignore + concurrency desde día 1
+2. Si Chris reporta "CI no se ejecuta" o "actions don't run" — primer diagnóstico es quota check (`github.com/settings/billing`), NO debugging workflow YAML
+3. Si CI failures aparecen masivos de un día para otro sin code change — sospechar quota antes que regression
+
+### Referencias
+
+- Conversación 2026-05-19: AskUserQuestion 3 decisions auditor verdict (general-purpose Opus, 144k tokens, 39 tool uses)
+- Commits relacionados: `f2c81bb` (cd-staging manual) · este commit (quota-aware CI)
+- ADR-007 § paradigm v4.1 autonomy (cement mismo día)
+- ADR-004 § triple-branch + nota 2026-05-19 update
