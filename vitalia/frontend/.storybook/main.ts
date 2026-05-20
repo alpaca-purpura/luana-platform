@@ -6,7 +6,10 @@ import type { StorybookConfig } from "@storybook/nextjs";
  * Addons: a11y (HIPAA-lite accessibility) + essentials (bundled in storybook v10)
  */
 const config: StorybookConfig = {
-  stories: ["../src/components/**/*.stories.@(ts|tsx)"],
+  stories: [
+    "../src/components/**/*.stories.@(ts|tsx)",
+    "../src/features/**/*.stories.@(ts|tsx)",
+  ],
   addons: [
     "@storybook/addon-a11y",
   ],
