@@ -3,10 +3,9 @@
  *
  * Consumer pattern (per FSD-Lite boundary matrix):
  *   import type { Lead, Conversation } from "@/features/crm-shared";
+ *   import { useConversations } from "@/features/crm-shared";
  *
  * NO default exports (arch fitness test enforces).
- * React Query hooks for crm-shared (use-leads, use-conversations, use-conversation-detail)
- * are added in T-inbox-fe-2 (they live in crm-shared/api/).
  *
  * downstream-regression-na: brand-local FE barrel; no cross-brand consumers
  */
@@ -20,3 +19,10 @@ export type {
   ConversationStatus,
   HandlerMode,
 } from "./types";
+
+// React Query hooks (T-inbox-fe-2)
+export { useConversations } from "./api/use-conversations";
+export type { ConversationsFilters, ConversationsResponse } from "./api/use-conversations";
+export { useConversationDetail } from "./api/use-conversation-detail";
+export { useLeads } from "./api/use-leads";
+export type { LeadsFilters, LeadsResponse } from "./api/use-leads";
