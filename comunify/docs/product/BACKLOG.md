@@ -1,19 +1,19 @@
 # Comunify Backlog (auto-generated)
 
-> Generated at: `2026-05-20T18:22:02+00:00`
+> Generated at: `2026-05-20T20:39:40+00:00`
 > DO NOT EDIT MANUALLY — modify source artifacts.
 > Regenerate: `python scripts/generate_backlog.py`
 
 ## 📊 Roadmap view (filtered + curated)
 
-### 💡 Ideas (1)
-- comunify-warning-token-contrast-fix `[story]`
+### 💡 Ideas (0)
+- _(none)_
 
 ### 🔬 Refining (0 total · 0 cap-eligible / cap 3)
 - _(none)_
 
-### ✅ Refined — listo para arquitectos (0 / cap 5)
-- _(none)_
+### ✅ Refined — listo para arquitectos (1 / cap 5)
+- **comunify-design-system-a11y-contrast-cement**
 
 ### 📦 Ready for development (0 / cap 5)
 - _(none)_
@@ -38,10 +38,10 @@
 
 ```mermaid
 kanban
-  💡 Ideas (1)
-    comunify-warning-token-contras[comunify-warning-token-contrast-fix]
+  💡 Ideas (0)
   🔬 Refining (0 / cap 3)
-  ✅ Refined (0 / cap 5)
+  ✅ Refined (1 / cap 5)
+    comunify-design-system-a11y-co[comunify-design-system-a11y-contrast-cem]
   📦 Ready (0 / cap 5)
   🔨 Developing (0 / cap 3)
   🧪 Developed (0 / cap 10)

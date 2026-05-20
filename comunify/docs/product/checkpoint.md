@@ -6,12 +6,15 @@ last_updated: 2026-05-20
 active_outcomes:
   - dev-stack-cross-brand-fixes              # outcome platform — comunify cerró su milestone 2026-05-17 (Playwright smoke 3/3 GREEN); outcome continúa active hasta nicolify + lupulo cierren sus análogos
 active_stories:
-  - id: comunify-warning-token-contrast-fix
-    state: idea
+  - id: comunify-design-system-a11y-contrast-cement
+    state: refined
     surface: [frontend, design-system]
     opened: 2026-05-18
-    unblocked_at: 2026-05-20  # tailwind-v4-tokens hot-fix mergeado + archived
-    origin: auditor-frontend WARN on comunify-design-system-cement (WCAG AA contrast bg-comunify-warning + text-white = 1.80:1)
+    refined_at: 2026-05-20
+    supersedes: comunify-warning-token-contrast-fix
+    origin: auditor-frontend WARN + Chris autorización scope expandido (audit comprehensive 22 pares, 10 failed)
+    estimated_size: S+
+    next_handoff: /architect
 ssot_owner: /pm-comunify
 ---
 
@@ -77,6 +80,17 @@ Story 12 (`luana-comunify-bootstrap`, mergeada 2026-05-15) shipped **17 capabili
 **Rationale:** sin señal de demanda observable, abrir stories para estos features = scope creep. El paradigm v4 dice "Outcome cierra event-driven, no time-driven" — aplica igual a abrir nuevas. `/pm-comunify` no las moverá a `state: idea` salvo que Chris explicite.
 
 ## Bitácora
+
+- 2026-05-20 PM: **`comunify-design-system-a11y-contrast-cement` (ex `comunify-warning-token-contrast-fix`) state refining→refined** (autonomous /po-ux 3-batch loop ratificada Chris "Apruebo todo continúa hasta done"). Trabajo cerrado:
+  - **Scope expandido cementado:** ex 1-token fix → 10 pares WCAG AA failed (6 críticos + 4 marginales) + cementado pares canónicos + arch fitness anti-regresión.
+  - **Audit técnico:** 22 pares color calculados con WCAG formula (`/tmp/wcag_audit.py`), 10 failed AA. Optimal HSL para `*-text` tokens calculados (`/tmp/find_text_hsl.py`).
+  - **Decisión técnica refinada (Opt C "a tu criterio"):** mantener HSL principales del brandbook intactos (warning #F5B700, stable #16C784, accent #FF5F6D) + introducir 5 tokens `*-text` (lightness 28-52%) para foreground sobre light bg. NO oscurecer principal palette — paleta logo respetada.
+  - **Camino B universal:** outline pattern (`bg-{X}/10 border border-{X} text-{X}-text hover:bg-{X}/20`) en botones moderation card + dunning banner.
+  - **Arch fitness híbrido opción C:** blockea 6 patrones HARD (warning/stable/accent con text-white o `text-X` sobre bg-bg), critical y blue libres.
+  - **Slug renombrado:** `git mv comunify-warning-token-contrast-fix → comunify-design-system-a11y-contrast-cement`. Old slug supersedes en frontmatter.
+  - **01-spec.md unificado escrito:** 4 scenarios base (happy/negative/edge/adversarial) + sub-categoría a11y cubierta + 6 not_applicable declaradas + wireframes ASCII antes/después + estados visuales + graders 4 tipos (e2e + axe + arch_fitness + visual_state).
+  - **Scope final:** 10 archivos (3 SSoT + 6 componentes + 2 arch test), ~190 LOC added / ~25 modified, 0 componentes nuevos.
+  - Next: `/architect <brand>: comunify` produce ready package (03-arch + 04-validators + 05-guidelines + 06-tickets). State refined→ready al cerrar.
 
 - 2026-05-20: **Pendientes consolidados + 3 learnings promotable=yes pingeados a `/pm-luana`** (autonomous /pm-comunify cleanup post Chris ratifying "cerremos todos los pendientes, autónomo primero"). Trabajo cerrado:
   - INDEX-promotables.md escrito (`comunify/docs/learnings/INDEX-promotables.md`) — pointer queue para `/pm-luana` Modo Core Engineering. 3 learnings listados: tailwind-v4-postcss-wiring-gap + named-volume-staleness-post-pyproject-bump + playwright-runner-parity-gap. Meta-recomendación: outcome platform `bootstrap-brand-template-hardening` agrupando los 3 + sweep vitalia + lupulo.

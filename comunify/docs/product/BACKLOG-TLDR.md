@@ -1,10 +1,10 @@
 # Backlog TLDR (auto-generated)
-> Generated at: `2026-05-20T18:22:02+00:00`
+> Generated at: `2026-05-20T20:39:40+00:00`
 > Source: scripts/generate_backlog.py — full view: BACKLOG.md
 
-- **Ideas** (1): comunify-warning-token-contrast-fix
+- **Ideas** (0): _(none)_
 - **Refining** (0 / cap 3): _(none)_
-- **Refined** (0 / cap 5): _(none)_
+- **Refined** (1 / cap 5): comunify-design-system-a11y-contrast-cement
 - **Ready** (0 / cap 5): _(none)_
 - **Developing** (0 / cap 3): _(none)_
 - **Developed** (0 / cap 10): _(none)_
