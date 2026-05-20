@@ -9,7 +9,16 @@
  * downstream-regression-na: brand-local FE barrel; no cross-brand consumers
  */
 
-// Components (scaffold — full list expanded in T-inbox-fe-3..6)
+// Components (T-inbox-fe-3: conversation list panel + sub-components)
+export { ConversationListPanel } from "./components/ConversationListPanel";
+export { ConversationList } from "./components/ConversationList";
+export { ConversationItem } from "./components/ConversationItem";
+export { SearchInput } from "./components/SearchInput";
+export { FilterChips } from "./components/FilterChips";
+export type { FilterChipsValue } from "./components/FilterChips";
+export { ListEmptyState } from "./components/ListEmptyState";
+export type { ListEmptyStateVariant } from "./components/ListEmptyState";
+// Scaffold layout + page client
 export { InboxLayout } from "./components/InboxLayout";
 export { InboxPageClient } from "./components/InboxPageClient";
 

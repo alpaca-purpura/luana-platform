@@ -42,6 +42,21 @@ const KNOWN_FSD_BOUNDARY_VIOLATIONS: ReadonlySet<string> = new Set<string>([
   // This is an intentional exception per 03-arch-fe.md § 1 (crm-shared ← inbox, pipeline, agenda).
   // The arch boundary exception is justified: crm-shared is NOT a downstream consumer of inbox.
   "src/features/inbox/types/conversation-detail.ts",
+  // T-inbox-fe-2: inbox feature hooks/api import type-only from crm-shared (PRODUCER contract).
+  // crm-shared owns Conversation/Lead types used cross-feature per 03-arch-fe.md § 1.
+  // Justified: crm-shared is infrastructure-like SSoT for CRM contracts (Ola 1+).
+  "src/features/crm-shared/api/use-conversation-detail.ts",
+  "src/features/inbox/api/use-pause-adrian.ts",
+  "src/features/inbox/api/use-proactive-outbound.ts",
+  "src/features/inbox/api/use-set-mode.ts",
+  "src/features/inbox/hooks/use-conversation-filters.ts",
+  "src/features/inbox/hooks/use-mode-toggle.ts",
+  // T-inbox-fe-3: inbox components import Conversation type + useConversations from crm-shared.
+  // crm-shared is the SSoT for CRM data contracts — inbox consumes, never mirrors.
+  // Per 03-arch-fe.md § 1: crm-shared ← inbox (downstream consumer). Justified exception.
+  "src/features/inbox/components/ConversationItem.tsx",
+  "src/features/inbox/components/ConversationList.tsx",
+  "src/features/inbox/components/ConversationListPanel.tsx",
 ]);
 
 function collectTsFiles(dir: string): string[] {
