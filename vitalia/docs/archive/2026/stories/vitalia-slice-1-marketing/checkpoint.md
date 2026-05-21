@@ -2,8 +2,11 @@
 story_id: vitalia-slice-1-marketing
 outcome: vitalia-mvp-ui-foundation
 parent_spec: vitalia-ux-discovery (archived 2026-05-20 — inheritance carryover)
-state: reviewing
-phase: HANDOFF_TO_PM_MERGE
+state: done
+phase: ARCHIVED
+merged_to_main_at: 2026-05-21
+merged_via_squash_commit: fa921711
+archived_at: 2026-05-21
 audit_verdict: APPROVED
 audit_cycle: 3 iterations (cap 3 reached, succeeded)
 audit_artifacts: 06-audit/CHECKPOINTS.md + 06-audit/T-mk-*-review.md (13) + 06-audit/gherkin-matrix-{backend,frontend}.md + gate-output.json (audit-3)
