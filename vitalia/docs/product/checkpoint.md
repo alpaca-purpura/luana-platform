@@ -2,8 +2,9 @@
 brand: vitalia
 vertical: "Salud + Bienestar"
 status: shipped
-last_updated: 2026-05-20
-slice_1_status: ola1-done-2026-05-20  # ✅ Ola 1 COMPLETED — inbox + fideliz state=done en main (squash-merge pending). 29 tickets shipped + 2 auditor iter cycles + 3 fix-loop iter (BE F1+F2 pgcrypto incluido). Cross-cutting fixes mid-session: db_session fixture promotion · Clerk catch-all routes · Cloudflare allowedDevOrigins · middleware→proxy migration · POM tablist · NuqsAdapter wrapper.
+last_updated: 2026-05-21
+slice_1_status: ola2-marketing-done-2026-05-21  # ✅ Ola 2 (parcial) — vitalia-slice-1-marketing state=done autonomous E2E sesión (architect→dev-team→auditor→pm-vitalia). 13 tickets shipped (6 BE + 7 FE) · 3 audit iter (cap 3 reached, succeeded) · 5 capabilities NEW (4 marketing + 1 connections oauth) · 1 module NEW (marketing.md) + 1 UPDATE (connections.md). Pipeline pendiente (Ola 2 paralela).
+ola1_status: done-2026-05-20  # ✅ inbox + fideliz state=done en main (squash-merge previo).
 cleanup_done_2026-05-20: ola1-capability-inventory-closed  # ✅ 7 NEW + 1 UPDATE capability YAMLs creados (commit 3983b9b) · 6 modules MD auto-list refreshed · portfolio regen · R32 verification gate PASS · gate_status rename en hard_gates_closed_log (workaround parser bug)
 active_outcomes:
   - dev-environment-multibrand     # receta vitalia shipped, cross-brand replicación pendiente nicolify/comunify/lupulo
@@ -11,8 +12,8 @@ active_outcomes:
 active_stories:
   # vitalia-slice-1-inbox            # state: done · archived in vitalia/docs/archive/2026/stories/ · merged 2026-05-20
   # vitalia-slice-1-fidelizacion     # state: done · archived in vitalia/docs/archive/2026/stories/ · merged 2026-05-20
-  - vitalia-slice-1-pipeline               # state: refined · Ola 2 (paralela marketing) · depende side payment-adapter-mvp · pending /architect refresh
-  - vitalia-slice-1-marketing              # state: refined · Ola 2 (paralela pipeline) · NO usar growth-studio Nicolify (arch diferente per Chris) · pending /architect refresh
+  - vitalia-slice-1-pipeline               # state: refined · Ola 2 (paralela marketing ya done) · depende side payment-adapter-mvp · pending /architect refresh
+  # vitalia-slice-1-marketing              # state: done · archived in vitalia/docs/archive/2026/stories/ · merged 2026-05-21
   - vitalia-slice-1-agenda                 # state: refined · Ola 3 (sola, más compleja) · depende side payment-adapter-mvp + side fiscal-emission-pe · pending /architect refresh
   - vitalia-pricing-decision               # state: idea (Chris postergó, no bloquea Slice 1)
   - vitalia-payment-adapter-mvp            # state: refining · paralelo Olas (Chris ratificó 2026-05-20: arrancar /po draft pendiente)
@@ -62,6 +63,7 @@ ratified_promotion_proposals:              # APPROVED + migrated
   - docs/promotion-protocol/proposals/2026-05-20-core-platform-extensions-slice-1.md       # state: migrated (luana-core-platform 0.3.0→0.4.0) — cron_envelope + CompoundScopeRepositoryBase
 promotion_candidates: []                   # ★ Sin candidates pendientes — los 2 anteriores migrated 2026-05-20
 recently_done:
+  - vitalia-slice-1-marketing            # 2026-05-21 cerrada reviewing→done autonomous E2E sesión (architect→dev-team→auditor→pm-vitalia chain) · 29 commits f0e395e..8cecbbaa · 13 tickets shipped (6 BE + 7 FE) · 3 audit iter cap reached succeeded · 5 capabilities NEW (4 marketing + 1 connections/oauth-meta-google-ads) + 1 module NEW marketing.md + 1 UPDATE connections.md · 270/270 arch fitness + 158 BE marketing/connections/workers + 116 FE marketing GREEN · 4 deferred CI items (Chromatic + E2E + a11y + perf — Turbopack stack stability follow-up Slice 2) · archive/2026/stories/vitalia-slice-1-marketing/07-merge.md
   - vitalia-ux-discovery                 # 2026-05-20 cerrada ready→done — PARENT SSoT cumplido (17/56 tickets shipped vía 3 sub-stories archivadas + 5 sub-stories Slice 1 UI refined heredan mockups + design-system). 6 mockups HTML redistribuidos a sub-stories (5 active + 1 archive snapshot) ANTES del archive · audit-2026-05-20/AUDIT-REPORT.md cementado · archive/2026/stories/vitalia-ux-discovery/07-merge.md
   - vitalia-copilot-tools-impl           # 2026-05-18 cerrada reviewing→done autonomous E2E sesión orquestada · 12 commits pushed wip/vitalia (3331151..427b0f3 → último c87e... post-merge) · 7 capability YAMLs NEW live (valeria-wizard-onboarding-agentic + adrian-3-tools-mvp + medical-guardrails + state-overlay-langgraph + lucas-daily-analysis + vitalia-callback-subclasses + eval-goldens-slice-1) + 1 NEW module MD (sales_agent.md) + 3 modules MD refreshed (copilot + agentic + observability) + 1363/1363 tests GREEN (245 arch + 510 unit + 49 integration + 512 agentic_evals + 47 extensions) · auditor APPROVED (CHECKPOINTS C1-C5 + gherkin matrix 18/18 + REVIEW-agentic.md) · 0 engine modifications + 0 cross-brand mirrors + anti-dup §0 ratchet enforced · archive/2026/stories/vitalia-copilot-tools-impl/07-merge.md
   - vitalia-slice-1-infra-cross-cutting  # 2026-05-18 cerrada reviewing→done · squashes 50143d57 + cc4fcd68 mergeados main · 8 capability YAMLs live + 7 modules MD refreshed + 2 promotion candidates · archive/2026/stories/vitalia-slice-1-infra-cross-cutting/07-merge.md

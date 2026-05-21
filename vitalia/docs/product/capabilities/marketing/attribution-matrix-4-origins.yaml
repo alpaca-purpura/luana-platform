@@ -1,0 +1,59 @@
+---
+capability_id: vitalia-marketing-attribution-matrix-4-origins
+module: marketing
+slug: attribution-matrix-4-origins
+status: live
+date_introduced: 2026-05-21
+story_introduced: vitalia-slice-1-marketing
+package_version: 0.1.0
+package_path: vitalia/backend/src/modules/vitalia/marketing
+license: proprietary
+---
+
+# vitalia-marketing-attribution-matrix-4-origins
+
+Attribution heatmap 4 origins × KPI columns en Stage Reserva del Bowtie funnel. Identifica qué canales convierten mejor. Top insight Lucas embedded. Consume `LucasAttributionService.compute_attribution_matrix` shipped 2026-05-18 vitalia-copilot-tools-impl.
+
+## Surface
+
+### Domain / Application
+- `AttributionService` (marketing proxy wrapper) — `matrix()` delegates to `LucasAttributionService.compute_matrix(...)`
+- 4 origins: `sales_agent` · `walk_in` · `phone_manual` · `proactive_outbound` (mapped from `APPOINTMENT_ORIGIN_REGISTRY` — registries-medical-vertical capability)
+- KPI columns: bookings · conversions · revenue · CAC (configurable per tenant)
+
+### API
+- `GET /api/v1/vitalia/marketing/attribution-matrix` — read snapshot persisted by Lucas analysis cron
+
+### FE Components
+- `vitalia/frontend/src/features/marketing/components/AttributionMatrixWidget.tsx` — heatmap conv cells (Tailwind tokens vt-text-success/warning/danger) + top insight Lucas
+- `ReservationStage.tsx` — embeds `AttributionMatrixWidget` inline
+
+### Hooks
+- `useAttributionMatrix`
+
+## Verification
+
+```bash
+WS=$(git rev-parse --show-toplevel)
+cd ${WS}/vitalia/backend && ${WS}/.venv/bin/pytest tests/modules/vitalia/marketing/application/services/test_attribution_service.py -v
+cd ${WS}/vitalia/frontend && npx vitest run src/features/marketing/__tests__/AttributionMatrixWidget.test.tsx src/features/marketing/__tests__/ReservationStage.test.tsx
+```
+
+Verification gherkin evidence: SC-MK-03 (tab change → ReservationStage renders attribution inline) — see `06-audit/gherkin-matrix-frontend.md`.
+
+## Dependencies
+
+- ENGINE: `core/luana-core-platform.repositories.compound_scope_repository.CompoundScopeRepositoryBase`
+- BRAND: `vitalia-copilot-tools-impl` (shipped 2026-05-18) — `LucasAttributionService` consumed read-only
+- BRAND: `vitalia-marketing-bowtie-funnel-5-stages` (Reserva stage routes to this widget)
+- BRAND: `vitalia-connections-registries-medical-vertical` (`APPOINTMENT_ORIGIN_REGISTRY`)
+
+## Compliance
+
+- a11y: heatmap cells `role="cell"` + `aria-label` per conv rate
+- Tokens-only colors (no hardcoded)
+
+## KPIs
+
+- Snapshot freshness ≤ 4h (cron-driven)
+- Render time ≤ 100ms
