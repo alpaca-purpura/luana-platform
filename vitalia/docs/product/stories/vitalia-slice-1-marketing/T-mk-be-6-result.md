@@ -88,3 +88,52 @@ vitalia/backend/tests/architecture/                   270/270 PASS
 - The pre-existing `test_vitalia_no_query_without_tenant_filter.py` flaky behavior when combined with agentic eval tests is a SQLAlchemy model re-registration side-effect from `LucasStageRecommendationModel` (agentic module). Not introduced by T-mk-be-6.
 - All 4 crons use injectable factory helpers (`_get_*_repo()`, `_get_*_adapter()`) patchable via `unittest.mock.patch()` without FastAPI DI container.
 - Tests call `fn.__wrapped__(ctx)` to bypass the `cron_envelope` idempotency dedup layer.
+
+---
+
+## Auto-fix loop iter 2 — SHA b239e363 (2026-05-20)
+
+Three regressions identified by auditor iteration 2 in `lucas_daily_analysis_sweep.py` fixed.
+
+### F-iter2-1: LucasOrchestratorService() zero-args construction
+
+**Root cause:** `_get_orchestrator()` called `LucasOrchestratorService()` with no args but constructor requires 4 keyword-only args.
+
+**Fix:**
+- Added `make_orchestrator()` factory in `vitalia/backend/src/modules/vitalia/agentic/lucas/application/services/__init__.py`.
+- Factory wires no-op async handlers for stage/attribution/referrals + `MemorySaver` checkpointer.
+- `_get_orchestrator()` now calls `make_orchestrator()`.
+
+### F-iter2-2: run_daily_sweep() does not exist + locale missing
+
+**Root cause:** Cron called `orchestrator.run_daily_sweep(tenant_id, clinic_id, cooldown_kinds)` — that method was never on `LucasOrchestratorService`. Real method is `run_daily_analysis(*, tenant_id, clinic_id, locale)` returning `AnalysisReport`.
+
+**Fix:**
+- Added `_FallbackLocale` dataclass (UTC/USD) implementing `TenantLocaleProtocol` for cron context.
+- Replaced call with `orchestrator.run_daily_analysis(tenant_id=..., clinic_id=..., locale=locale)`.
+- Cooldown filtering moved POST-call: `[r for r in report.final_state["stage_recommendations"] if r.get("recommendation_kind") not in cooldown_kinds]`.
+
+### F-iter2-3: BowtieStage string passed to event that expects enum
+
+**Root cause:** Code computed `BowtieStage(rec_stage_raw).value` (a string) and passed it as `stage=` to `LucasRecommendationGenerated`. That constructor calls `stage.value` internally → `AttributeError: 'str' object has no attribute 'value'`.
+
+**Fix:**
+- `isinstance` check on `rec_stage_raw` — if already `BowtieStage` use directly.
+- Otherwise: `BowtieStage(rec_stage_raw)` (enum, not `.value`).
+- Pass enum to event: `LucasRecommendationGenerated(stage=rec_stage, ...)`.
+- `rec.get("id")` or `rec.get("recommendation_id")` for UUID extraction from dict.
+
+### Test updates
+
+- `TestLucasDailyAnalysisSweep` class fully rewritten to match new `run_daily_analysis` interface.
+- Mock returns real `AnalysisReport` dataclass instances (not fake `run_daily_sweep` results).
+- New test `test_lucas_daily_analysis_sweep_event_uses_bowtiestage_enum` validates F-iter2-3 contract explicitly.
+- Cooldown test now verifies 0 events published (not "kinds passed to orchestrator").
+
+### Results
+
+```
+vitalia/backend/tests/workers/test_marketing_crons.py  14/14 PASS  (+1 new test)
+vitalia/backend/tests/workers/test_arq_settings.py     10/10 PASS
+vitalia/backend/tests/architecture/                   270/270 PASS
+```
