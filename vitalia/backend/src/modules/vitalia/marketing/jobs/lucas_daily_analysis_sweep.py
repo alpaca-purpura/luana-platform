@@ -5,10 +5,10 @@ Regenerates Lucas AI marketing recommendations for every active tenant+clinic.
 Steps per clinic:
   1. Expire stale OPEN recommendations (expires_at < now → status=expired).
   2. Build 30-day rejection cooldown set: recommendation_kinds rejected in last 30d.
-  3. Invoke LucasOrchestratorService.run_daily_sweep(tenant_id, clinic_id, cooldown_kinds).
-     - Orchestrator skips kinds in cooldown_kinds (avoids regenerating unwanted suggestions).
-     - BudgetGuard is wired inside LucasOrchestratorService (no new wiring here).
-  4. Publish LucasRecommendationGenerated for each new recommendation.
+  3. Invoke `LucasOrchestratorService.run_daily_analysis(tenant_id, clinic_id, locale)`.
+     - The orchestrator runs the full LangGraph analysis internally.
+     - Cooldown filtering applied POST-call on stage_recommendations from AnalysisReport.
+  4. Publish LucasRecommendationGenerated for each recommendation NOT in cooldown.
 
 HIPAA-lite:
   - Dual filter tenant_id + clinic_id on all queries.
@@ -23,6 +23,7 @@ downstream-regression-na: brand-local marketing cron — no cross-brand consumer
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import UUID
@@ -55,6 +56,29 @@ logger = structlog.get_logger()
 
 # 30-day cooldown window for rejected recommendation_kinds
 _REJECTION_COOLDOWN_DAYS: int = 30
+
+
+# ---------------------------------------------------------------------------
+# Minimal locale fallback — UTC/USD defaults for system-level cron sweep.
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class _FallbackLocale:
+    """Minimal TenantLocaleProtocol implementation for the cron sweep.
+
+    The daily sweep is a system-level operation that doesn't have access to
+    per-tenant locale preferences from the request context.  UTC/USD is safe
+    as a fallback because:
+    - `analysis_date` is used only for period labelling (YYYY-MM) in Slice 1.
+    - Off-by-<TZ> errors affect only the period boundary for tenants near
+      midnight when the cron runs (06:00 UTC); acceptable for a daily sweep.
+    - A proper locale lookup can be wired in Slice 2 when per-tenant locale
+      service is available to the cron layer.
+    """
+
+    currency: str = "USD"
+    timezone: str = "UTC"
 
 
 # ---------------------------------------------------------------------------
@@ -99,15 +123,20 @@ def _get_rec_repo() -> LucasRecommendationRepository:
 def _get_orchestrator() -> Any:
     """Return LucasOrchestratorService instance (patchable in tests).
 
-    LucasOrchestratorService is the agentic orchestrator (vitalia-copilot-tools-impl
-    story, shipped 2026-05-18). This cron calls run_daily_sweep() which runs the
-    full LangGraph analysis + BudgetGuard internally.
+    Uses the `make_orchestrator()` factory from the agentic services module,
+    which wires no-op handlers + MemorySaver checkpointer — sufficient for
+    the daily sweep cron that consumes AnalysisReport.stage_recommendations
+    as structured dicts.
+
+    In Slice 2, this factory will be upgraded to inject real
+    LucasStageRecommendationService / AttributionService / ReferralsService
+    instances with proper DB session DI.
     """
-    from src.modules.vitalia.agentic.lucas.application.services.lucas_orchestrator_service import (  # noqa: PLC0415
-        LucasOrchestratorService,
+    from src.modules.vitalia.agentic.lucas.application.services import (  # noqa: PLC0415
+        make_orchestrator,
     )
 
-    return LucasOrchestratorService()
+    return make_orchestrator()
 
 
 # ---------------------------------------------------------------------------
@@ -119,9 +148,8 @@ def _get_orchestrator() -> Any:
 async def lucas_daily_analysis_sweep(ctx: dict[str, Any]) -> None:
     """Daily 06:00 UTC — regenerate Lucas recommendations per stage per tenant+clinic.
 
-    Uses 30d rejection cooldown to avoid re-suggesting kinds the user
-    already rejected recently (SC-MK-02 requirement).
-
+    Runs LangGraph daily analysis via LucasOrchestratorService.run_daily_analysis,
+    then applies 30d rejection cooldown filter post-call on stage_recommendations.
     Soft-fail per clinic — one LLM/BudgetGuard failure does not stop other clinics.
     """
     now = datetime.now(UTC)
@@ -130,6 +158,7 @@ async def lucas_daily_analysis_sweep(ctx: dict[str, Any]) -> None:
     active_clinics = await _get_active_clinics()
     rec_repo = _get_rec_repo()
     orchestrator = _get_orchestrator()
+    locale = _FallbackLocale()
 
     swept = 0
     failed = 0
@@ -169,30 +198,53 @@ async def lucas_daily_analysis_sweep(ctx: dict[str, Any]) -> None:
                     kinds=list(cooldown_kinds),
                 )
 
-            # Step 3: invoke orchestrator (skips cooldown kinds internally)
-            new_recs = await orchestrator.run_daily_sweep(
-                tenant_id=tenant_id,
-                clinic_id=clinic_id,
-                cooldown_kinds=cooldown_kinds,
+            # Step 3: invoke orchestrator via real run_daily_analysis interface
+            from src.modules.vitalia.agentic.lucas.application.services.lucas_orchestrator_service import (  # noqa: PLC0415
+                AnalysisReport,
             )
 
-            # Step 4: publish LucasRecommendationGenerated for each new rec
-            for rec in new_recs or []:
+            report: AnalysisReport = await orchestrator.run_daily_analysis(
+                tenant_id=tenant_id,
+                clinic_id=clinic_id,
+                locale=locale,
+            )
+
+            # Step 4: extract stage recommendations from AnalysisReport and apply
+            # cooldown filter post-call (cooldown_kinds are excluded from events)
+            all_recs: list[dict[str, Any]] = list(report.final_state.get("stage_recommendations") or [])
+            filtered_recs = [r for r in all_recs if r.get("recommendation_kind") not in cooldown_kinds]
+
+            # Step 5: publish LucasRecommendationGenerated for each non-cooled rec
+            for rec in filtered_recs:
                 try:
-                    # Use BowtieStage enum conversion for type safety
-                    rec_stage_raw = getattr(rec, "stage", None)
+                    rec_stage_raw = rec.get("stage")
+                    # F-iter2-3 fix: pass BowtieStage ENUM (not .value string)
+                    # LucasRecommendationGenerated expects stage: BowtieStage
+                    # and calls stage.value internally — passing a string causes
+                    # AttributeError: 'str' object has no attribute 'value'
+                    if isinstance(rec_stage_raw, BowtieStage):
+                        rec_stage = rec_stage_raw
+                    else:
+                        try:
+                            rec_stage = BowtieStage(rec_stage_raw) if rec_stage_raw else BowtieStage.ATTRACTION
+                        except ValueError:
+                            rec_stage = BowtieStage.ATTRACTION
+
+                    rec_id_raw = rec.get("id") or rec.get("recommendation_id")
                     try:
-                        rec_stage = BowtieStage(rec_stage_raw).value if rec_stage_raw else BowtieStage.ATTRACTION.value
-                    except ValueError:
-                        rec_stage = BowtieStage.ATTRACTION.value
+                        from uuid import UUID as _UUID  # noqa: PLC0415
+
+                        rec_id = _UUID(str(rec_id_raw)) if rec_id_raw else UUID(int=0)
+                    except (ValueError, AttributeError):
+                        rec_id = UUID(int=0)
 
                     await adapter_bus.publish(
                         LucasRecommendationGenerated(
                             tenant_id=tenant_id,
-                            recommendation_id=getattr(rec, "id", None) or rec,
+                            recommendation_id=rec_id,
                             stage=rec_stage,
-                            recommendation_kind=getattr(rec, "recommendation_kind", ""),
-                            priority=getattr(rec, "priority", 1),
+                            recommendation_kind=str(rec.get("recommendation_kind") or ""),
+                            priority=int(rec.get("priority") or 1),
                         )
                     )
                 except Exception as event_exc:
@@ -206,7 +258,9 @@ async def lucas_daily_analysis_sweep(ctx: dict[str, Any]) -> None:
                 "lucas_daily_analysis_sweep.clinic_ok",
                 tenant_id=str(tenant_id),
                 clinic_id=str(clinic_id),
-                new_recs=len(new_recs or []),
+                all_recs=len(all_recs),
+                published_recs=len(filtered_recs),
+                cooled_down=len(all_recs) - len(filtered_recs),
             )
 
         except Exception as exc:

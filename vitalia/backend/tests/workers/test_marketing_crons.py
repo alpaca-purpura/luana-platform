@@ -519,18 +519,68 @@ class TestChannelMetricsSyncGoogle:
 
 
 class TestLucasDailyAnalysisSweep:
-    """Tests for lucas_daily_analysis_sweep cron job."""
+    """Tests for lucas_daily_analysis_sweep cron job.
+
+    Post-fix (F-iter2-1/2/3): orchestrator mock uses run_daily_analysis returning
+    AnalysisReport; cooldown filtering is post-call on stage_recommendations dicts;
+    stage enum is BowtieStage (not .value string).
+    """
+
+    # ------------------------------------------------------------------
+    # Helper: build a real AnalysisReport for mock returns
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _make_analysis_report(
+        tenant_id: uuid.UUID,
+        clinic_id: uuid.UUID,
+        stage_recommendations: list[dict[str, Any]] | None = None,
+    ) -> Any:
+        """Build a real AnalysisReport dataclass for orchestrator mock returns."""
+        from src.modules.vitalia.agentic.lucas.application.services.lucas_orchestrator_service import (
+            AnalysisReport,
+        )
+
+        recs = stage_recommendations or []
+        # Build a minimal final_state TypedDict-like dict
+        final_state: dict[str, Any] = {
+            "tenant_id": tenant_id,
+            "clinic_id": clinic_id,
+            "analysis_date": "2026-05-20",
+            "period": "2026-05",
+            "stages_to_analyze": [],
+            "stage_recommendations": recs,
+            "attribution_matrix": None,
+            "referrals_leaderboard": None,
+            "iterations": len(recs),
+            "task_complete": True,
+            "messages": [],
+            "last_error": None,
+        }
+        return AnalysisReport(
+            tenant_id=tenant_id,
+            clinic_id=clinic_id,
+            analysis_date="2026-05-20",
+            period="2026-05",
+            stages_processed=len(recs),
+            attribution_present=False,
+            referrals_present=False,
+            iterations=len(recs),
+            task_complete=True,
+            final_state=final_state,  # type: ignore[arg-type]
+        )
 
     @pytest.mark.asyncio
     async def test_lucas_daily_analysis_sweep_skips_rejected_30d_cooldown(self) -> None:
-        """SC-MK-02: Recommendations rejected within 30d cooldown are not regenerated.
+        """SC-MK-02: Recommendations rejected within 30d cooldown are not published.
 
         Given a clinic has previously rejected 'increase_budget' recommendations
         within the last 30 days,
-        When the daily sweep runs,
-        Then 'increase_budget' recommendations are NOT generated for that clinic
-        (cooldown suppression applies).
+        When the daily sweep runs and orchestrator returns 'increase_budget' rec,
+        Then NO LucasRecommendationGenerated event is published for that kind
+        (cooldown suppression applies post-call).
         """
+
         # Simulate a recently-rejected recommendation (5 days ago — within 30d window)
         recent_rejection = _make_recommendation(
             status="rejected",
@@ -543,28 +593,40 @@ class TestLucasDailyAnalysisSweep:
         mock_rec_repo.list_recent_rejections_by_kind = AsyncMock(return_value=[recent_rejection])
         mock_rec_repo.expire_stale_open = AsyncMock(return_value=0)
 
-        # LucasOrchestratorService mock — tracks what kinds were submitted
-        submitted_kinds: list[str] = []
+        tenant_id = _TENANT_ID
+        clinic_id = _CLINIC_ID
 
-        async def fake_run_sweep(tenant_id: uuid.UUID, clinic_id: uuid.UUID, cooldown_kinds: set[str]) -> list[Any]:
-            # The cron passes cooldown_kinds so orchestrator can skip them
-            submitted_kinds.extend(cooldown_kinds)
-            return []
+        # Orchestrator returns a report with an 'increase_budget' recommendation
+        # — cron should filter it out due to cooldown (post-call)
+        cooled_rec = {
+            "stage": "attraction",
+            "recommendation_kind": "increase_budget",
+            "recommendation_text": "Aumenta el presupuesto.",
+            "confidence": 0.9,
+            "supporting_data": {},
+            "currency": "USD",
+            "status": "generated",
+            "priority": 1,
+        }
+        report = self._make_analysis_report(
+            tenant_id=tenant_id,
+            clinic_id=clinic_id,
+            stage_recommendations=[cooled_rec],
+        )
 
         mock_orchestrator = AsyncMock()
-        mock_orchestrator.run_daily_sweep = AsyncMock(side_effect=fake_run_sweep)
+        mock_orchestrator.run_daily_analysis = AsyncMock(return_value=report)
 
-        mock_active_clinics = [
-            {"tenant_id": _TENANT_ID, "clinic_id": _CLINIC_ID},
-        ]
+        published_events: list[Any] = []
         mock_bus = AsyncMock()
+        mock_bus.publish = AsyncMock(side_effect=lambda e: published_events.append(e))
 
         ctx: dict[str, Any] = {}
 
         with (
             patch(
                 "src.modules.vitalia.marketing.jobs.lucas_daily_analysis_sweep._get_active_clinics",
-                new=AsyncMock(return_value=mock_active_clinics),
+                new=AsyncMock(return_value=[{"tenant_id": tenant_id, "clinic_id": clinic_id}]),
             ),
             patch(
                 "src.modules.vitalia.marketing.jobs.lucas_daily_analysis_sweep._get_rec_repo",
@@ -585,33 +647,55 @@ class TestLucasDailyAnalysisSweep:
 
             await lucas_daily_analysis_sweep.__wrapped__(ctx)
 
-        # 'increase_budget' should be in the cooldown set passed to orchestrator
-        assert "increase_budget" in submitted_kinds
+        # run_daily_analysis was called (not the old run_daily_sweep)
+        mock_orchestrator.run_daily_analysis.assert_called_once()
+
+        # 'increase_budget' is in cooldown → NO event published
+        assert len(published_events) == 0, (
+            "Expected 0 events: 'increase_budget' is in 30d cooldown set and should be filtered out"
+        )
 
     @pytest.mark.asyncio
     async def test_lucas_daily_analysis_sweep_does_not_skip_old_rejections(self) -> None:
-        """Recommendations rejected >30d ago are NOT in cooldown — may be regenerated."""
-        # old_rejection would have rejected_at > 30d ago, not returned by list_recent_rejections_by_kind
+        """Recommendations rejected >30d ago are NOT in cooldown — events published."""
+        # Old rejection not returned by list_recent_rejections_by_kind (repo filtered by since=)
         mock_rec_repo = AsyncMock()
         mock_rec_repo.list_recent_rejections_by_kind = AsyncMock(return_value=[])
         mock_rec_repo.expire_stale_open = AsyncMock(return_value=0)
 
-        submitted_kinds: list[str] = []
+        tenant_id = _TENANT_ID
+        clinic_id = _CLINIC_ID
 
-        async def fake_run_sweep(tenant_id: uuid.UUID, clinic_id: uuid.UUID, cooldown_kinds: set[str]) -> list[Any]:
-            submitted_kinds.extend(cooldown_kinds)
-            return []
+        # Orchestrator returns an 'increase_budget' rec — no cooldown → should be published
+        old_rec = {
+            "stage": "attraction",
+            "recommendation_kind": "increase_budget",
+            "recommendation_text": "Aumenta el presupuesto.",
+            "confidence": 0.8,
+            "supporting_data": {},
+            "currency": "USD",
+            "status": "generated",
+            "priority": 1,
+        }
+        report = self._make_analysis_report(
+            tenant_id=tenant_id,
+            clinic_id=clinic_id,
+            stage_recommendations=[old_rec],
+        )
 
         mock_orchestrator = AsyncMock()
-        mock_orchestrator.run_daily_sweep = AsyncMock(side_effect=fake_run_sweep)
+        mock_orchestrator.run_daily_analysis = AsyncMock(return_value=report)
 
+        published_events: list[Any] = []
         mock_bus = AsyncMock()
+        mock_bus.publish = AsyncMock(side_effect=lambda e: published_events.append(e))
+
         ctx: dict[str, Any] = {}
 
         with (
             patch(
                 "src.modules.vitalia.marketing.jobs.lucas_daily_analysis_sweep._get_active_clinics",
-                new=AsyncMock(return_value=[{"tenant_id": _TENANT_ID, "clinic_id": _CLINIC_ID}]),
+                new=AsyncMock(return_value=[{"tenant_id": tenant_id, "clinic_id": clinic_id}]),
             ),
             patch(
                 "src.modules.vitalia.marketing.jobs.lucas_daily_analysis_sweep._get_rec_repo",
@@ -632,8 +716,83 @@ class TestLucasDailyAnalysisSweep:
 
             await lucas_daily_analysis_sweep.__wrapped__(ctx)
 
-        # Old rejection NOT in cooldown — set should be empty
-        assert "increase_budget" not in submitted_kinds
+        # Old rejection NOT in cooldown → event published
+        assert len(published_events) == 1, "Expected 1 event: 'increase_budget' is not in cooldown (old rejection)"
+
+    @pytest.mark.asyncio
+    async def test_lucas_daily_analysis_sweep_event_uses_bowtiestage_enum(self) -> None:
+        """F-iter2-3: LucasRecommendationGenerated must receive BowtieStage enum not .value string.
+
+        This test validates that stage string from stage_recommendations dict is
+        properly converted to BowtieStage enum before being passed to the event,
+        which would crash with AttributeError if given a plain string.
+        """
+        from src.modules.vitalia.marketing.domain.events import LucasRecommendationGenerated
+
+        mock_rec_repo = AsyncMock()
+        mock_rec_repo.list_recent_rejections_by_kind = AsyncMock(return_value=[])
+        mock_rec_repo.expire_stale_open = AsyncMock(return_value=0)
+
+        tenant_id = _TENANT_ID
+        clinic_id = _CLINIC_ID
+
+        # stage value is a string (as returned by LangGraph state dict)
+        rec_with_string_stage = {
+            "stage": "attraction",  # string — cron must convert to BowtieStage enum
+            "recommendation_kind": "create_content",
+            "recommendation_text": "Crea contenido educativo.",
+            "confidence": 0.85,
+            "supporting_data": {},
+            "currency": "USD",
+            "status": "generated",
+            "priority": 2,
+        }
+        report = self._make_analysis_report(
+            tenant_id=tenant_id,
+            clinic_id=clinic_id,
+            stage_recommendations=[rec_with_string_stage],
+        )
+
+        mock_orchestrator = AsyncMock()
+        mock_orchestrator.run_daily_analysis = AsyncMock(return_value=report)
+
+        published_events: list[Any] = []
+        mock_bus = AsyncMock()
+        mock_bus.publish = AsyncMock(side_effect=lambda e: published_events.append(e))
+
+        ctx: dict[str, Any] = {}
+
+        with (
+            patch(
+                "src.modules.vitalia.marketing.jobs.lucas_daily_analysis_sweep._get_active_clinics",
+                new=AsyncMock(return_value=[{"tenant_id": tenant_id, "clinic_id": clinic_id}]),
+            ),
+            patch(
+                "src.modules.vitalia.marketing.jobs.lucas_daily_analysis_sweep._get_rec_repo",
+                return_value=mock_rec_repo,
+            ),
+            patch(
+                "src.modules.vitalia.marketing.jobs.lucas_daily_analysis_sweep._get_orchestrator",
+                return_value=mock_orchestrator,
+            ),
+            patch(
+                "src.modules.vitalia.marketing.jobs.lucas_daily_analysis_sweep.adapter_bus",
+                mock_bus,
+            ),
+        ):
+            from src.modules.vitalia.marketing.jobs.lucas_daily_analysis_sweep import (
+                lucas_daily_analysis_sweep,
+            )
+
+            # Would crash with AttributeError: 'str' object has no attribute 'value'
+            # if stage is passed as string to LucasRecommendationGenerated(stage=...)
+            await lucas_daily_analysis_sweep.__wrapped__(ctx)
+
+        assert len(published_events) == 1
+        event = published_events[0]
+        assert isinstance(event, LucasRecommendationGenerated)
+        # Verify the event payload has the stage value (string) from enum conversion
+        assert event.payload["stage"] == "attraction"
 
     @pytest.mark.asyncio
     async def test_lucas_daily_analysis_sweep_soft_fail_per_clinic(self) -> None:
@@ -647,14 +806,17 @@ class TestLucasDailyAnalysisSweep:
 
         call_count = [0]
 
-        async def fake_run_sweep(tenant_id: uuid.UUID, clinic_id: uuid.UUID, cooldown_kinds: set[str]) -> list[Any]:
+        async def fake_run_analysis(**kwargs: Any) -> Any:
             call_count[0] += 1
             if call_count[0] == 1:
                 raise RuntimeError("BudgetGuard: límite diario alcanzado")
-            return []
+            return self._make_analysis_report(
+                tenant_id=clinic_b["tenant_id"],
+                clinic_id=clinic_b["clinic_id"],
+            )
 
         mock_orchestrator = AsyncMock()
-        mock_orchestrator.run_daily_sweep = AsyncMock(side_effect=fake_run_sweep)
+        mock_orchestrator.run_daily_analysis = AsyncMock(side_effect=fake_run_analysis)
         mock_bus = AsyncMock()
         ctx: dict[str, Any] = {}
 
@@ -683,7 +845,7 @@ class TestLucasDailyAnalysisSweep:
             # Should NOT raise — soft-fail per clinic
             await lucas_daily_analysis_sweep.__wrapped__(ctx)
 
-        # Both clinics were attempted
+        # Both clinics were attempted (run_daily_analysis called twice)
         assert call_count[0] == 2
 
 
