@@ -1,7 +1,8 @@
 """SQLAlchemy 2.0 model — ReferralModel.
 
 Maps to ``vitalia_referrals`` table (base columns from 007_vitalia_initial_tables.py,
-additions from 029_slice1_marketing_referrals.py).
+additions from 029_slice1_marketing_referrals.py,
+value columns from 031_slice1_marketing_referrals_value_columns.py).
 
 HIPAA-lite:
   - patient_id: UUID reference only — no name, DNI, or contact data stored here.
@@ -22,7 +23,7 @@ from datetime import datetime
 from uuid import UUID, uuid4
 
 from luana_core_platform.domain.base_entity import Base
-from sqlalchemy import DateTime, Index, String
+from sqlalchemy import BigInteger, DateTime, Index, String
 from sqlalchemy.dialects.postgresql import UUID as PgUUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
@@ -33,6 +34,9 @@ class ReferralModel(Base):
 
     PHI-free: patient_id and referred_patient_id are UUID references only.
     Full patient data lives in the crm module with PHI protections.
+
+    Status lifecycle per spec § 2.4:
+      open → shared → signed_up → converted → expired
     """
 
     __tablename__ = "vitalia_referrals"
@@ -47,16 +51,29 @@ class ReferralModel(Base):
     # Referral code (e.g. "REF-A3B4C5") — no PHI embedded
     code: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
 
-    # Lifecycle: "pending" | "converted" | "expired"
-    status: Mapped[str] = mapped_column(String(32), nullable=False, default="pending")
+    # Lifecycle: "open" | "shared" | "signed_up" | "converted" | "expired"
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="open")
 
     # UUID reference to the patient who was referred (set on conversion)
     referred_patient_id: Mapped[UUID | None] = mapped_column(PgUUID(as_uuid=True), nullable=True)
 
-    # Conversion timestamp
+    # Conversion value in the smallest currency unit (e.g. cents)
+    # Set by referrals_value_sync cron from vitalia_appointments.conversion_value_cents
+    conversion_value_cents: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+
+    # ISO-4217 currency code — NEVER hardcoded, from tenant locale
+    currency: Mapped[str | None] = mapped_column(String(3), nullable=True)
+
+    # When the referral code was shared with a prospect
+    shared_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    # When the referred prospect signed up (booked first appointment)
+    signed_up_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    # Conversion timestamp (appointment completed with non-zero value)
     converted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
-    # When the referral expires (cron job sweeps expired pending referrals)
+    # When the referral expires (cron job sweeps expired open referrals)
     expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())

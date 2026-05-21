@@ -39,7 +39,7 @@ class LucasRecommendationModel(Base):
     tenant_id: Mapped[UUID] = mapped_column(PgUUID(as_uuid=True), nullable=False, index=True)
     clinic_id: Mapped[UUID] = mapped_column(PgUUID(as_uuid=True), nullable=False, index=True)
 
-    # Bowtie funnel stage: "attract" | "convert" | "retain"
+    # Bowtie funnel stage: "attraction" | "qualification" | "reservation" | "adoption" | "expansion"
     stage: Mapped[str] = mapped_column(String(32), nullable=False)
 
     # Recommendation classification (e.g. "increase_budget", "adjust_targeting")

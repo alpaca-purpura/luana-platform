@@ -28,7 +28,7 @@ class TestLucasRecommendationGenerated:
         event = LucasRecommendationGenerated(
             tenant_id=tenant_id,
             recommendation_id=rec_id,
-            stage=BowtieStage.ATTRACT,
+            stage=BowtieStage.ATTRACTION,
             recommendation_kind="increase_budget",
             priority=1,
         )
@@ -40,7 +40,7 @@ class TestLucasRecommendationGenerated:
         event = LucasRecommendationGenerated(
             tenant_id=tenant_id,
             recommendation_id=rec_id,
-            stage=BowtieStage.ATTRACT,
+            stage=BowtieStage.ATTRACTION,
             recommendation_kind="increase_budget",
             priority=1,
         )
@@ -51,7 +51,7 @@ class TestLucasRecommendationGenerated:
         event = LucasRecommendationGenerated(
             tenant_id=tenant_id,
             recommendation_id=uuid.uuid4(),
-            stage=BowtieStage.CONVERT,
+            stage=BowtieStage.QUALIFICATION,
             recommendation_kind="add_promo",
             priority=2,
         )
@@ -78,7 +78,7 @@ class TestLucasRecommendationRejected:
             tenant_id=uuid.uuid4(),
             recommendation_id=uuid.uuid4(),
             rejected_by_user_id=uuid.uuid4(),
-            reason=RejectReason.NOT_RELEVANT,
+            reason=RejectReason.NOT_PRIORITY,
         )
         assert event.event_name == "lucas_recommendation_rejected"
 

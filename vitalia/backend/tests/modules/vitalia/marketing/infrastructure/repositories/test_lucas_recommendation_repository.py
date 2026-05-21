@@ -97,7 +97,7 @@ class TestListOpenByStage:
         results = await repo.list_open_by_stage(
             tenant_id=tenant_id,
             clinic_id=clinic_id,
-            stage=BowtieStage.ATTRACT,
+            stage=BowtieStage.ATTRACTION,
         )
 
         assert len(results) == 1
@@ -119,7 +119,7 @@ class TestListOpenByStage:
         await repo.list_open_by_stage(
             tenant_id=tenant_id,
             clinic_id=clinic_id,
-            stage=BowtieStage.ATTRACT,
+            stage=BowtieStage.ATTRACTION,
         )
 
         session.execute.assert_called_once()
@@ -152,7 +152,7 @@ class TestListOpenByStage:
         results = await repo.list_open_by_stage(
             tenant_id=tenant_id,
             clinic_id=clinic_id,
-            stage=BowtieStage.ATTRACT,
+            stage=BowtieStage.ATTRACTION,
         )
 
         # deleted_model excluded (mocked to empty)
@@ -172,7 +172,7 @@ class TestListOpenByStage:
         results = await repo.list_open_by_stage(
             tenant_id=tenant_id,
             clinic_id=clinic_id,
-            stage=BowtieStage.ATTRACT,
+            stage=BowtieStage.ATTRACTION,
         )
 
         assert results == []
@@ -192,7 +192,7 @@ class TestListOpenByStage:
         await repo.list_open_by_stage(
             tenant_id=tenant_id,
             clinic_id=clinic_id,
-            stage=BowtieStage.ATTRACT,
+            stage=BowtieStage.ATTRACTION,
             limit=5,
         )
         session.execute.assert_called_once()

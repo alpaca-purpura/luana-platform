@@ -18,6 +18,10 @@ from uuid import UUID
 
 import structlog
 
+from src.modules.vitalia.agentic.lucas.application.services.lucas_attribution_service import (
+    LucasAttributionService,
+    TenantLocaleProtocol,
+)
 from src.modules.vitalia.marketing.application.dtos.marketing_dtos import AttributionMatrixResponse
 
 logger = structlog.get_logger()
@@ -31,14 +35,14 @@ class AttributionService:
     that Lucas cron computed and persisted.
 
     Methods:
-      - matrix(): latest attribution matrix snapshot for a clinic period
+      - get_attribution_matrix(): latest attribution matrix snapshot for a clinic period
     """
 
     def __init__(
         self,
         *,
-        lucas_attribution_service: object,
-        locale: object,
+        lucas_attribution_service: LucasAttributionService,
+        locale: TenantLocaleProtocol,
     ) -> None:
         """Initialise with DI'd Lucas attribution service.
 
@@ -49,7 +53,7 @@ class AttributionService:
         self._lucas_attribution_service = lucas_attribution_service
         self._locale = locale
 
-    async def matrix(
+    async def get_attribution_matrix(
         self,
         *,
         tenant_id: UUID,
@@ -82,7 +86,7 @@ class AttributionService:
         )
 
         logger.info(
-            "attribution_service.matrix",
+            "attribution_service.get_attribution_matrix",
             tenant_id=str(tenant_id),
             clinic_id=str(clinic_id),
             snapshot_id=str(snapshot.id),

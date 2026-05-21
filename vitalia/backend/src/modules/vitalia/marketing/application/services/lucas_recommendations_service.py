@@ -45,12 +45,15 @@ from src.modules.vitalia.marketing.infrastructure.models.lucas_recommendation_mo
 try:
     from luana_core_events.outbox import adapter_bus  # type: ignore[import]
 except ImportError:  # pragma: no cover — available in runtime
-    from unittest.mock import AsyncMock as _AsyncMock  # noqa: PLC0415
+    import structlog as _structlog
+
+    _fb_logger = _structlog.get_logger()
 
     class _FallbackBus:  # type: ignore[no-redef]
-        """Fallback bus for dev environments without luana_core_events."""
+        """No-op fallback bus for dev environments without luana_core_events installed."""
 
-        publish = _AsyncMock()
+        async def publish(self, event: object) -> None:  # noqa: D102
+            _fb_logger.warning("adapter_bus.fallback_publish", event=repr(event))
 
     adapter_bus = _FallbackBus()
 

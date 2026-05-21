@@ -68,7 +68,7 @@ def _make_bowtie_response() -> dict:
         "period_end": "2026-05-31",
         "stages": [
             {
-                "stage": "attract",
+                "stage": "attraction",
                 "channels": [],
                 "total_impressions": 100,
                 "total_clicks": 10,
@@ -132,7 +132,7 @@ def mock_marketing_service():
     )
     svc.bowtie_summary.return_value = bowtie_mock
     stage_mock = MagicMock(
-        stage="attract",
+        stage="attraction",
         channels=[],
         total_impressions=100,
         total_clicks=10,
@@ -253,7 +253,7 @@ def test_bowtie_stage_detail_returns_200(
         ),
     ):
         response = app_client.get(
-            "/api/v1/vitalia/marketing/stage/attract",
+            "/api/v1/vitalia/marketing/stage/attraction",
             headers=_DOCTOR_HEADERS,
         )
     assert response.status_code == 200

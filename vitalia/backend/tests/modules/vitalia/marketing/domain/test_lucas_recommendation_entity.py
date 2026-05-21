@@ -29,7 +29,7 @@ def open_recommendation() -> LucasRecommendation:
         id=uuid.uuid4(),
         tenant_id=uuid.uuid4(),
         clinic_id=uuid.uuid4(),
-        stage=BowtieStage.ATTRACT,
+        stage=BowtieStage.ATTRACTION,
         recommendation_kind="increase_budget",
         title="Aumenta el presupuesto de Google Ads",
         body="Tu tasa de clic es alta. Aumentar el presupuesto puede generar más conversiones.",
@@ -89,7 +89,7 @@ class TestApproveTransitionsStatus:
         from src.modules.vitalia.marketing.domain.exceptions import InvalidStateTransitionError
 
         user_id = uuid.uuid4()
-        open_recommendation.reject(user_id=user_id, reason=RejectReason.NOT_RELEVANT)
+        open_recommendation.reject(user_id=user_id, reason=RejectReason.NOT_PRIORITY)
 
         with pytest.raises(InvalidStateTransitionError):
             open_recommendation.approve(user_id=user_id)
@@ -112,7 +112,7 @@ class TestRejectTransitionsStatus:
         """reject() debe cambiar status de OPEN a REJECTED."""
         user_id = uuid.uuid4()
 
-        open_recommendation.reject(user_id=user_id, reason=RejectReason.NOT_RELEVANT)
+        open_recommendation.reject(user_id=user_id, reason=RejectReason.NOT_PRIORITY)
 
         assert open_recommendation.status == RecommendationStatus.REJECTED
 
@@ -120,9 +120,9 @@ class TestRejectTransitionsStatus:
         """reject() guarda la razón de rechazo."""
         user_id = uuid.uuid4()
 
-        open_recommendation.reject(user_id=user_id, reason=RejectReason.TOO_EXPENSIVE)
+        open_recommendation.reject(user_id=user_id, reason=RejectReason.TOO_RISKY)
 
-        assert open_recommendation.reject_reason == RejectReason.TOO_EXPENSIVE
+        assert open_recommendation.reject_reason == RejectReason.TOO_RISKY
         assert open_recommendation.rejected_by_user_id == user_id
         assert open_recommendation.rejected_at is not None
 

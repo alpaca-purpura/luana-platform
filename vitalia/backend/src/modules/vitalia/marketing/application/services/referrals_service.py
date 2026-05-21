@@ -20,6 +20,10 @@ from uuid import UUID, uuid4
 
 import structlog
 
+from src.modules.vitalia.agentic.lucas.application.services.lucas_referrals_service import (
+    LucasReferralsService,
+    TenantLocaleProtocol,
+)
 from src.modules.vitalia.marketing.application.dtos.marketing_dtos import (
     ReferralsResponse,
     ReferrerEntryResponse,
@@ -31,10 +35,15 @@ from src.modules.vitalia.marketing.infrastructure.models.referral_model import R
 try:
     from luana_core_events.outbox import adapter_bus  # type: ignore[import]
 except ImportError:  # pragma: no cover
-    from unittest.mock import AsyncMock as _AsyncMock  # noqa: PLC0415
+    import structlog as _structlog
+
+    _fb_logger = _structlog.get_logger()
 
     class _FallbackBus:  # type: ignore[no-redef]
-        publish = _AsyncMock()
+        """No-op fallback bus for dev environments without luana_core_events installed."""
+
+        async def publish(self, event: object) -> None:  # noqa: D102
+            _fb_logger.warning("adapter_bus.fallback_publish", event=repr(event))
 
     adapter_bus = _FallbackBus()
 
@@ -48,7 +57,7 @@ class ReferralsService:
     """Application service for patient referral program.
 
     Responsibilities:
-      - leaderboard(): proxy to LucasReferralsService snapshot
+      - get_referrals(): proxy to LucasReferralsService snapshot
       - generate_code(): create referral code for a patient + persist + emit event
 
     HIPAA: No patient names stored or returned. referrer_id = UUID hash.
@@ -57,9 +66,9 @@ class ReferralsService:
     def __init__(
         self,
         *,
-        lucas_referrals_service: object,
+        lucas_referrals_service: LucasReferralsService,
         referral_repo: object,
-        locale: object,
+        locale: TenantLocaleProtocol,
     ) -> None:
         """Initialise with DI'd services.
 
@@ -72,7 +81,7 @@ class ReferralsService:
         self._referral_repo = referral_repo
         self._locale = locale
 
-    async def leaderboard(
+    async def get_referrals(
         self,
         *,
         tenant_id: UUID,
@@ -115,7 +124,7 @@ class ReferralsService:
         ]
 
         logger.info(
-            "referrals_service.leaderboard",
+            "referrals_service.get_referrals",
             tenant_id=str(tenant_id),
             clinic_id=str(clinic_id),
             total_referrals=snapshot.total_referrals,
@@ -164,7 +173,7 @@ class ReferralsService:
         model.clinic_id = clinic_id
         model.patient_id = patient_id
         model.code = code
-        model.status = "pending"
+        model.status = "open"
 
         saved = await self._referral_repo.save(model)
 

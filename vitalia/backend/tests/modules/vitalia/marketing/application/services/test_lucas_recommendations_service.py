@@ -85,7 +85,7 @@ def _make_rec_model(
     model.id = rec_id
     model.tenant_id = tenant_id
     model.clinic_id = clinic_id
-    model.stage = BowtieStage.ATTRACT.value
+    model.stage = BowtieStage.ATTRACTION.value
     model.recommendation_kind = "increase_budget"
     model.title = "Aumentar presupuesto en Google Ads"
     model.body = "El CTR cayó un 12% esta semana."
@@ -373,14 +373,14 @@ async def test_reject_sets_status_audit_outbox(
             clinic_id=clinic_id,
             recommendation_id=rec_id,
             user_id=user_id,
-            reason=RejectReason.NOT_RELEVANT,
+            reason=RejectReason.NOT_PRIORITY,
         )
 
     # Saved model is REJECTED (save(model) called positionally)
     save_args = mock_repo.save.call_args
     saved_model = save_args.args[0] if save_args.args else next(iter(save_args.kwargs.values()))
     assert saved_model.status == RecommendationStatus.REJECTED.value
-    assert saved_model.reject_reason == RejectReason.NOT_RELEVANT.value
+    assert saved_model.reject_reason == RejectReason.NOT_PRIORITY.value
 
     # Audit log written
     mock_audit_writer.write.assert_awaited_once()
@@ -407,14 +407,14 @@ async def test_list_returns_open_recommendations(
     results = await service.list_open_by_stage(
         tenant_id=tenant_id,
         clinic_id=clinic_id,
-        stage=BowtieStage.ATTRACT,
+        stage=BowtieStage.ATTRACTION,
         limit=3,
     )
 
     mock_repo.list_open_by_stage.assert_awaited_once_with(
         tenant_id=tenant_id,
         clinic_id=clinic_id,
-        stage=BowtieStage.ATTRACT,
+        stage=BowtieStage.ATTRACTION,
         limit=3,
     )
     assert len(results) == 1

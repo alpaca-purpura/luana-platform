@@ -33,7 +33,7 @@ class LucasRecommendationGenerated(DomainEvent):
 
     event_name: str = field(default="lucas_recommendation_generated", init=False)
     recommendation_id: uuid.UUID = field(default_factory=uuid.uuid4)
-    stage: BowtieStage = BowtieStage.ATTRACT
+    stage: BowtieStage = BowtieStage.ATTRACTION
     recommendation_kind: str = ""
     priority: int = 1
 

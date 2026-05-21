@@ -61,10 +61,16 @@ class TestRecommendationStatus:
 
 
 class TestReferralStatus:
-    """ReferralStatus enum covers referral lifecycle."""
+    """ReferralStatus enum covers referral lifecycle (5 states per spec)."""
 
-    def test_pending_value(self) -> None:
-        assert ReferralStatus.PENDING.value == "pending"
+    def test_open_value(self) -> None:
+        assert ReferralStatus.OPEN.value == "open"
+
+    def test_shared_value(self) -> None:
+        assert ReferralStatus.SHARED.value == "shared"
+
+    def test_signed_up_value(self) -> None:
+        assert ReferralStatus.SIGNED_UP.value == "signed_up"
 
     def test_converted_value(self) -> None:
         assert ReferralStatus.CONVERTED.value == "converted"
@@ -72,40 +78,49 @@ class TestReferralStatus:
     def test_expired_value(self) -> None:
         assert ReferralStatus.EXPIRED.value == "expired"
 
-    def test_has_exactly_three_statuses(self) -> None:
-        assert len(ReferralStatus) == 3
+    def test_has_exactly_five_statuses(self) -> None:
+        assert len(ReferralStatus) == 5
 
 
 class TestBowtieStage:
-    """BowtieStage enum covers the bowtie marketing funnel stages."""
+    """BowtieStage enum covers the 5-stage bowtie marketing funnel per spec."""
 
-    def test_attract_value(self) -> None:
-        assert BowtieStage.ATTRACT.value == "attract"
+    def test_attraction_value(self) -> None:
+        assert BowtieStage.ATTRACTION.value == "attraction"
 
-    def test_convert_value(self) -> None:
-        assert BowtieStage.CONVERT.value == "convert"
+    def test_qualification_value(self) -> None:
+        assert BowtieStage.QUALIFICATION.value == "qualification"
 
-    def test_retain_value(self) -> None:
-        assert BowtieStage.RETAIN.value == "retain"
+    def test_reservation_value(self) -> None:
+        assert BowtieStage.RESERVATION.value == "reservation"
 
-    def test_has_exactly_three_stages(self) -> None:
-        assert len(BowtieStage) == 3
+    def test_adoption_value(self) -> None:
+        assert BowtieStage.ADOPTION.value == "adoption"
+
+    def test_expansion_value(self) -> None:
+        assert BowtieStage.EXPANSION.value == "expansion"
+
+    def test_has_exactly_five_stages(self) -> None:
+        assert len(BowtieStage) == 5
 
 
 class TestRejectReason:
-    """RejectReason enum covers reasons a recommendation can be rejected."""
+    """RejectReason enum covers reasons a recommendation can be rejected (5 per spec)."""
 
-    def test_not_relevant_value(self) -> None:
-        assert RejectReason.NOT_RELEVANT.value == "not_relevant"
+    def test_not_priority_value(self) -> None:
+        assert RejectReason.NOT_PRIORITY.value == "not_priority"
 
-    def test_too_expensive_value(self) -> None:
-        assert RejectReason.TOO_EXPENSIVE.value == "too_expensive"
+    def test_already_doing_value(self) -> None:
+        assert RejectReason.ALREADY_DOING.value == "already_doing"
 
-    def test_already_done_value(self) -> None:
-        assert RejectReason.ALREADY_DONE.value == "already_done"
+    def test_data_wrong_value(self) -> None:
+        assert RejectReason.DATA_WRONG.value == "data_wrong"
+
+    def test_too_risky_value(self) -> None:
+        assert RejectReason.TOO_RISKY.value == "too_risky"
 
     def test_other_value(self) -> None:
         assert RejectReason.OTHER.value == "other"
 
-    def test_has_exactly_four_reasons(self) -> None:
-        assert len(RejectReason) == 4
+    def test_has_exactly_five_reasons(self) -> None:
+        assert len(RejectReason) == 5

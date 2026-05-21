@@ -27,11 +27,13 @@ from src.modules.vitalia.marketing.domain.enums import BowtieStage
 logger = structlog.get_logger()
 
 # Mapping from bowtie stage to channel slugs (convention for Vitalia marketing)
-# Attract = top-of-funnel channels; Convert = mid-funnel; Retain = bottom/loyalty
+# 5-stage health-clinic bowtie per spec § 2.1
 _STAGE_CHANNEL_MAP: dict[BowtieStage, list[str]] = {
-    BowtieStage.ATTRACT: ["google_ads_search", "meta_ads_awareness", "google_ads_display"],
-    BowtieStage.CONVERT: ["google_ads_leads", "meta_ads_conversion", "remarketing"],
-    BowtieStage.RETAIN: ["email_reengagement", "whatsapp_reactivation", "organic_referral"],
+    BowtieStage.ATTRACTION: ["google_ads_search", "meta_ads_awareness", "google_ads_display"],
+    BowtieStage.QUALIFICATION: ["google_ads_leads", "meta_ads_conversion", "remarketing"],
+    BowtieStage.RESERVATION: ["email_nurture", "whatsapp_booking", "sms_reminder"],
+    BowtieStage.ADOPTION: ["email_welcome", "whatsapp_followup", "post_visit_survey"],
+    BowtieStage.EXPANSION: ["email_reengagement", "whatsapp_reactivation", "organic_referral"],
 }
 
 

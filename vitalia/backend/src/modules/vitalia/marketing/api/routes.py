@@ -32,12 +32,15 @@ downstream-regression-na: brand-local marketing API routes (vitalia-only)
 from __future__ import annotations
 
 import datetime
-from typing import Annotated
+from typing import Annotated, Any
 from uuid import UUID
 
 import structlog
-from fastapi import APIRouter, Header, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.db import get_async_session
+from src.modules.vitalia.audit.audit_writer import AsyncAuditWriter
 from src.modules.vitalia.iam.application.services.clinic_resolver import (
     ClinicContext,
     ClinicResolver,
@@ -72,6 +75,12 @@ from src.modules.vitalia.marketing.domain.enums import BowtieStage, ProviderSlug
 from src.modules.vitalia.marketing.domain.exceptions import (
     InvalidStateTransitionError,
     UndoWindowExpiredError,
+)
+from src.modules.vitalia.marketing.infrastructure.repositories.channel_metric_repository import (
+    ChannelMetricRepository,
+)
+from src.modules.vitalia.marketing.infrastructure.repositories.lucas_recommendation_repository import (
+    LucasRecommendationRepository,
 )
 
 logger = structlog.get_logger()
@@ -149,96 +158,171 @@ def _require_idempotency_key(idempotency_key: str | None) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Service factory helpers (patchable in tests)
+# Patchable service factory functions (module-level — tests patch these).
+#
+# Pattern: routes receive a session via Depends(get_async_session) and call
+# _get_*_service(session) in the route body. Because the call is resolved at
+# request time (not at registration time), monkey-patching the module-level
+# name works correctly for tests.
 # ---------------------------------------------------------------------------
 
 
-def _get_recs_service() -> LucasRecommendationsService:
-    """Build LucasRecommendationsService with no-op stub dependencies.
+def _get_recs_service(session: AsyncSession) -> LucasRecommendationsService:
+    """Build LucasRecommendationsService. Patchable by tests via patch()."""
+    repo = LucasRecommendationRepository(session=session)
+    audit_writer = AsyncAuditWriter(session=session)
+    return LucasRecommendationsService(repo=repo, audit_writer=audit_writer)
 
-    In production this would use DI with real repos. For Slice 1 the
-    service wiring is done at this layer; T-mk-be-7 (DI refactor) will
-    introduce proper dependency injection containers.
+
+def _get_marketing_service(session: AsyncSession) -> MarketingService:
+    """Build MarketingService. Patchable by tests via patch()."""
+    channel_metric_repo = ChannelMetricRepository(session=session)
+    return MarketingService(channel_metric_repo=channel_metric_repo)
+
+
+def _get_attribution_service(session: AsyncSession) -> AttributionService:
+    """Build AttributionService. Patchable by tests via patch().
+
+    LucasAttributionService requires AnalyticsEngineQueryAdapter + snapshot repo.
+    For Slice 1 these are injected with real implementations (read-only analytics
+    engine queries — no PHI, no mutations).
     """
-    from unittest.mock import AsyncMock, MagicMock  # noqa: PLC0415
+    from src.modules.vitalia.agentic.lucas.application.services.lucas_attribution_service import (  # noqa: PLC0415
+        LucasAttributionService,
+    )
+    from src.modules.vitalia.agentic.lucas.infrastructure.adapters.analytics_engine_query_adapter import (  # noqa: PLC0415
+        AnalyticsEngineQueryAdapter,
+    )
+    from src.modules.vitalia.agentic.lucas.infrastructure.repositories.attribution_matrix_snapshot_repository import (  # noqa: PLC0415
+        AttributionMatrixSnapshotRepository,
+    )
 
-    stub_repo = MagicMock()
-    stub_repo.get_by_id = AsyncMock(return_value=None)
-    stub_repo.save = AsyncMock(return_value=None)
-    stub_repo.list_open_by_stage = AsyncMock(return_value=[])
+    analytics_adapter = AnalyticsEngineQueryAdapter()
+    snapshot_repo = AttributionMatrixSnapshotRepository(session=session)
+    lucas_attribution_svc = LucasAttributionService(
+        repo=snapshot_repo,
+        analytics_adapter=analytics_adapter,
+    )
 
-    stub_audit = MagicMock()
-    stub_audit.write = AsyncMock()
+    # TenantLocale stub — currency/timezone from request context (Slice 2 wires real TenantLocale)
+    class _LocaleStub:
+        currency: str = "USD"  # noqa: RUF012 — overridden by tenant config in Slice 2
+        timezone: str = "UTC"
 
-    return LucasRecommendationsService(repo=stub_repo, audit_writer=stub_audit)
-
-
-def _get_marketing_service() -> MarketingService:
-    """Build MarketingService with stub channel_metric_repo."""
-    from unittest.mock import AsyncMock, MagicMock  # noqa: PLC0415
-
-    stub_repo = MagicMock()
-    stub_repo.list_for_stage = AsyncMock(return_value=[])
-    return MarketingService(channel_metric_repo=stub_repo)
-
-
-def _get_attribution_service() -> AttributionService:
-    """Build AttributionService with stub dependencies."""
-    from unittest.mock import AsyncMock, MagicMock  # noqa: PLC0415
-
-    stub_lucas_svc = MagicMock()
-    stub_lucas_svc.compute_attribution = AsyncMock(return_value=None)
-    stub_locale = MagicMock()
-    stub_locale.currency = None
-    return AttributionService(lucas_attribution_service=stub_lucas_svc, locale=stub_locale)
+    return AttributionService(
+        lucas_attribution_service=lucas_attribution_svc,
+        locale=_LocaleStub(),
+    )
 
 
-def _get_referrals_service() -> ReferralsService:
-    """Build ReferralsService with stub dependencies."""
-    from unittest.mock import AsyncMock, MagicMock  # noqa: PLC0415
+def _get_referrals_service(session: AsyncSession) -> ReferralsService:
+    """Build ReferralsService. Patchable by tests via patch()."""
+    from src.modules.vitalia.agentic.lucas.application.services.lucas_referrals_service import (  # noqa: PLC0415
+        LucasReferralsService,
+    )
+    from src.modules.vitalia.agentic.lucas.infrastructure.adapters.analytics_engine_query_adapter import (  # noqa: PLC0415
+        AnalyticsEngineQueryAdapter,
+    )
+    from src.modules.vitalia.agentic.lucas.infrastructure.repositories import (  # noqa: PLC0415
+        referrals_leaderboard_snapshot_repository as _rlsr,
+    )
 
-    stub_lucas_svc = MagicMock()
-    stub_lucas_svc.compute_referrals = AsyncMock(return_value=None)
-    stub_repo = MagicMock()
-    stub_repo.save = AsyncMock()
-    stub_locale = MagicMock()
-    stub_locale.currency = None
+    ReferralsLeaderboardSnapshotRepository = _rlsr.ReferralsLeaderboardSnapshotRepository
+    from src.modules.vitalia.marketing.infrastructure.repositories.referral_repository import (  # noqa: PLC0415
+        ReferralRepository,
+    )
+
+    analytics_adapter = AnalyticsEngineQueryAdapter()
+    snapshot_repo = ReferralsLeaderboardSnapshotRepository(session=session)
+    lucas_referrals_svc = LucasReferralsService(
+        repo=snapshot_repo,
+        analytics_adapter=analytics_adapter,
+    )
+    referral_repo = ReferralRepository(session=session)
+
+    class _LocaleStub:
+        currency: str = "USD"  # noqa: RUF012 — overridden by tenant config in Slice 2
+        timezone: str = "UTC"
+
     return ReferralsService(
-        lucas_referrals_service=stub_lucas_svc,
-        referral_repo=stub_repo,
-        locale=stub_locale,
+        lucas_referrals_service=lucas_referrals_svc,
+        referral_repo=referral_repo,
+        locale=_LocaleStub(),
     )
 
 
-def _get_sync_service() -> object:
-    """Build sync service stub for channel syncing."""
-    from unittest.mock import AsyncMock, MagicMock  # noqa: PLC0415
+class _SyncServiceStub:
+    """Stub sync service for Slice 1 (OAuth provider not yet wired).
 
-    stub = MagicMock()
-    stub.sync_channel = AsyncMock(
-        return_value=MagicMock(
-            provider="unknown",
-            status="ok",
+    Real OAuth sync service will be wired in Slice 2 channel connections story.
+    Returns a minimal structure that satisfies SyncResponse schema.
+    """
+
+    async def sync_channel(
+        self,
+        *,
+        tenant_id: Any,
+        clinic_id: Any,
+        provider: str,
+        idempotency_key: str | None,
+    ) -> Any:
+        """Return stub sync result — real implementation pending Slice 2."""
+        from dataclasses import dataclass  # noqa: PLC0415
+
+        @dataclass
+        class _Result:
+            provider: str
+            status: str
+            last_synced_at: datetime.datetime
+            error_message: str | None
+
+        return _Result(
+            provider=provider,
+            status="pending",
             last_synced_at=datetime.datetime.now(datetime.timezone.utc),
-            error_message=None,
+            error_message="OAuth sync not yet configured. Se implementará en Slice 2.",
         )
-    )
-    return stub
 
 
-def _get_oauth_service() -> object:
-    """Build OAuth service stub for channel connect."""
-    from unittest.mock import AsyncMock, MagicMock  # noqa: PLC0415
+class _OAuthServiceStub:
+    """Stub OAuth service for Slice 1 (OAuth provider not yet wired).
 
-    stub = MagicMock()
-    stub.initiate_oauth = AsyncMock(
-        return_value=MagicMock(
-            provider="unknown",
-            authorization_url="https://example.com/oauth",
-            state_token="stub-state-token",
+    Real OAuth initiation will be wired in Slice 2 channel connections story.
+    Returns a minimal structure that satisfies OAuthConnectResponse schema.
+    """
+
+    async def initiate_oauth(
+        self,
+        *,
+        tenant_id: Any,
+        clinic_id: Any,
+        provider: str,
+        redirect_uri: str,
+    ) -> Any:
+        """Return stub OAuth result — real implementation pending Slice 2."""
+        from dataclasses import dataclass  # noqa: PLC0415
+
+        @dataclass
+        class _Result:
+            provider: str
+            authorization_url: str
+            state_token: str
+
+        return _Result(
+            provider=provider,
+            authorization_url=f"https://oauth.example.com/{provider}/auth",
+            state_token="stub-state-pending-slice2",
         )
-    )
-    return stub
+
+
+def _get_sync_service() -> _SyncServiceStub:
+    """Return stub sync service (Slice 2 will replace with real OAuth sync)."""
+    return _SyncServiceStub()
+
+
+def _get_oauth_service() -> _OAuthServiceStub:
+    """Return stub OAuth service (Slice 2 will replace with real OAuth flow)."""
+    return _OAuthServiceStub()
 
 
 # ---------------------------------------------------------------------------
@@ -263,6 +347,7 @@ async def get_bowtie_summary(
     authorization: AuthorizationHeader,
     tenant_id: TenantIdHeader,
     clinic_id: ClinicIdHeader,
+    session: Annotated[AsyncSession, Depends(get_async_session)],
     period_start: datetime.date | None = Query(default=None),
     period_end: datetime.date | None = Query(default=None),
 ) -> BowtieSummaryResponse:
@@ -282,7 +367,7 @@ async def get_bowtie_summary(
     if period_end:
         end = period_end
 
-    svc = _get_marketing_service()
+    svc = _get_marketing_service(session)
     result = await svc.bowtie_summary(
         tenant_id=ctx.tenant_id,
         clinic_id=ctx.clinic_id,
@@ -299,6 +384,7 @@ async def get_stage_detail(
     authorization: AuthorizationHeader,
     tenant_id: TenantIdHeader,
     clinic_id: ClinicIdHeader,
+    session: Annotated[AsyncSession, Depends(get_async_session)],
     period_start: datetime.date | None = Query(default=None),
     period_end: datetime.date | None = Query(default=None),
 ) -> StageDetailResponse:
@@ -329,7 +415,7 @@ async def get_stage_detail(
     if period_end:
         end = period_end
 
-    svc = _get_marketing_service()
+    svc = _get_marketing_service(session)
     result = await svc.stage_detail(
         tenant_id=ctx.tenant_id,
         clinic_id=ctx.clinic_id,
@@ -347,6 +433,7 @@ async def get_channel_detail(
     authorization: AuthorizationHeader,
     tenant_id: TenantIdHeader,
     clinic_id: ClinicIdHeader,
+    session: Annotated[AsyncSession, Depends(get_async_session)],
     period_start: datetime.date | None = Query(default=None),
     period_end: datetime.date | None = Query(default=None),
 ) -> list[ChannelDetailResponse]:
@@ -364,7 +451,7 @@ async def get_channel_detail(
     _require_role(ctx, _WRITE_ROLES)
 
     try:
-        ProviderSlug(provider)
+        prov = ProviderSlug(provider)
     except ValueError:
         valid = [p.value for p in ProviderSlug]
         raise HTTPException(
@@ -378,11 +465,19 @@ async def get_channel_detail(
     if period_end:
         end = period_end
 
-    svc = _get_marketing_service()
+    # Map provider to its bowtie stage — use ATTRACTION as default for top-level queries
+    # In Slice 2 this will be refined with provider-to-stage mapping config
+    stage_map = {
+        ProviderSlug.GOOGLE_ADS: BowtieStage.ATTRACTION,
+        ProviderSlug.META_ADS: BowtieStage.ATTRACTION,
+    }
+    stage = stage_map.get(prov, BowtieStage.ATTRACTION)
+
+    svc = _get_marketing_service(session)
     results = await svc.channel_detail(
         tenant_id=ctx.tenant_id,
         clinic_id=ctx.clinic_id,
-        stage=None,
+        stage=stage,
         period_start=start,
         period_end=end,
         currency=None,
@@ -489,6 +584,7 @@ async def list_recommendations(
     authorization: AuthorizationHeader,
     tenant_id: TenantIdHeader,
     clinic_id: ClinicIdHeader,
+    session: Annotated[AsyncSession, Depends(get_async_session)],
     stage: str | None = Query(default=None),
     limit: int = Query(default=3, ge=1, le=10),
 ) -> list[LucasRecommendationResponse]:
@@ -512,7 +608,7 @@ async def list_recommendations(
                 detail=f"Etapa inválida: '{stage}'. Las etapas válidas son: {valid}.",
             )
 
-    svc = _get_recs_service()
+    svc = _get_recs_service(session)
     if bowtie_stage:
         models = await svc.list_open_by_stage(
             tenant_id=ctx.tenant_id,
@@ -521,7 +617,7 @@ async def list_recommendations(
             limit=limit,
         )
     else:
-        # No stage filter — list all stages (attract + convert + retain)
+        # No stage filter — list all stages
         all_models = []
         for s in BowtieStage:
             stage_models = await svc.list_open_by_stage(
@@ -546,6 +642,7 @@ async def approve_recommendation(
     authorization: AuthorizationHeader,
     tenant_id: TenantIdHeader,
     clinic_id: ClinicIdHeader,
+    session: Annotated[AsyncSession, Depends(get_async_session)],
     idempotency_key: IdempotencyKeyHeader = None,
 ) -> LucasRecommendationResponse:
     """Approve a Lucas marketing recommendation (OPEN → APPROVED).
@@ -564,7 +661,7 @@ async def approve_recommendation(
     _require_role(ctx, _WRITE_ROLES)
     _require_idempotency_key(idempotency_key)
 
-    svc = _get_recs_service()
+    svc = _get_recs_service(session)
     try:
         model = await svc.approve(
             tenant_id=ctx.tenant_id,
@@ -590,6 +687,7 @@ async def reject_recommendation(
     authorization: AuthorizationHeader,
     tenant_id: TenantIdHeader,
     clinic_id: ClinicIdHeader,
+    session: Annotated[AsyncSession, Depends(get_async_session)],
     idempotency_key: IdempotencyKeyHeader = None,
 ) -> LucasRecommendationResponse:
     """Reject a Lucas marketing recommendation (OPEN → REJECTED).
@@ -606,7 +704,7 @@ async def reject_recommendation(
     _require_role(ctx, _WRITE_ROLES)
     _require_idempotency_key(idempotency_key)
 
-    svc = _get_recs_service()
+    svc = _get_recs_service(session)
     try:
         model = await svc.reject(
             tenant_id=ctx.tenant_id,
@@ -630,6 +728,7 @@ async def undo_recommendation(
     authorization: AuthorizationHeader,
     tenant_id: TenantIdHeader,
     clinic_id: ClinicIdHeader,
+    session: Annotated[AsyncSession, Depends(get_async_session)],
     idempotency_key: IdempotencyKeyHeader = None,
 ) -> LucasRecommendationResponse:
     """Undo a recent recommendation approval (APPROVED → OPEN).
@@ -648,7 +747,7 @@ async def undo_recommendation(
     _require_role(ctx, _WRITE_ROLES)
     _require_idempotency_key(idempotency_key)
 
-    svc = _get_recs_service()
+    svc = _get_recs_service(session)
     try:
         model = await svc.undo(
             tenant_id=ctx.tenant_id,
@@ -673,6 +772,7 @@ async def get_attribution_matrix(
     authorization: AuthorizationHeader,
     tenant_id: TenantIdHeader,
     clinic_id: ClinicIdHeader,
+    session: Annotated[AsyncSession, Depends(get_async_session)],
     period_start: datetime.date | None = Query(default=None),
     period_end: datetime.date | None = Query(default=None),
 ) -> AttributionMatrixResponse:
@@ -689,7 +789,7 @@ async def get_attribution_matrix(
     if period_end:
         end = period_end
 
-    svc = _get_attribution_service()
+    svc = _get_attribution_service(session)
     result = await svc.get_attribution_matrix(
         tenant_id=ctx.tenant_id,
         clinic_id=ctx.clinic_id,
@@ -709,6 +809,7 @@ async def get_referrals(
     authorization: AuthorizationHeader,
     tenant_id: TenantIdHeader,
     clinic_id: ClinicIdHeader,
+    session: Annotated[AsyncSession, Depends(get_async_session)],
     period_start: datetime.date | None = Query(default=None),
     period_end: datetime.date | None = Query(default=None),
 ) -> ReferralsResponse:
@@ -727,7 +828,7 @@ async def get_referrals(
     if period_end:
         end = period_end
 
-    svc = _get_referrals_service()
+    svc = _get_referrals_service(session)
     result = await svc.get_referrals(
         tenant_id=ctx.tenant_id,
         clinic_id=ctx.clinic_id,

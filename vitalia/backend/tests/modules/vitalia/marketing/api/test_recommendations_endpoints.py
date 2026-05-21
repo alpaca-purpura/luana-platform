@@ -168,7 +168,7 @@ def mock_recs_service():
         undo_until=None,
         rejected_by_user_id=USER_ID,
         rejected_at=now_utc,
-        reject_reason="not_relevant",
+        reject_reason="not_priority",
         created_at=now_utc,
         updated_at=now_utc,
     )
@@ -325,7 +325,7 @@ def test_audit_log_unauthorized_attempt_recorded(app_client: TestClient) -> None
     ):
         response = app_client.post(
             f"/api/v1/vitalia/marketing/recommendations/{REC_ID}/reject",
-            json={"user_id": str(USER_ID), "reason": "not_relevant"},
+            json={"user_id": str(USER_ID), "reason": "not_priority"},
             headers={**_RECEPCION_HEADERS, "Idempotency-Key": "test-sales-403"},
         )
     assert response.status_code == 403
@@ -400,7 +400,7 @@ def test_reject_endpoint_happy_path(app_client: TestClient, mock_recs_service: A
     ):
         response = app_client.post(
             f"/api/v1/vitalia/marketing/recommendations/{REC_ID}/reject",
-            json={"user_id": str(USER_ID), "reason": "not_relevant"},
+            json={"user_id": str(USER_ID), "reason": "not_priority"},
             headers={**_ADMIN_HEADERS, "Idempotency-Key": "test-reject-001"},
         )
     assert response.status_code == 200

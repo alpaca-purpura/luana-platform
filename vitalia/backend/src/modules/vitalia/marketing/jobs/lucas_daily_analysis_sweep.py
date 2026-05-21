@@ -13,6 +13,8 @@ Steps per clinic:
 HIPAA-lite:
   - Dual filter tenant_id + clinic_id on all queries.
   - No PHI in recommendation rows (marketing metrics only).
+  - _get_active_clinics() uses a raw cross-tenant SQL for the cron sweep
+    (system-level admin query, not user-facing — justification below).
 
 Soft-fail: one clinic failure never aborts the sweep for other clinics.
 
@@ -28,6 +30,7 @@ from uuid import UUID
 import structlog
 from luana_core_platform.workers.cron_envelope import cron_envelope
 
+from src.modules.vitalia.marketing.domain.enums import BowtieStage
 from src.modules.vitalia.marketing.domain.events import LucasRecommendationGenerated
 from src.modules.vitalia.marketing.infrastructure.repositories.lucas_recommendation_repository import (
     LucasRecommendationRepository,
@@ -36,10 +39,15 @@ from src.modules.vitalia.marketing.infrastructure.repositories.lucas_recommendat
 try:
     from luana_core_events.outbox import adapter_bus  # type: ignore[import]
 except ImportError:  # pragma: no cover
-    from unittest.mock import AsyncMock as _AsyncMock  # noqa: PLC0415
+    import structlog as _structlog
+
+    _fb_logger = _structlog.get_logger()
 
     class _FallbackBus:  # type: ignore[no-redef]
-        publish = _AsyncMock()
+        """No-op fallback bus for dev environments without luana_core_events installed."""
+
+        async def publish(self, event: object) -> None:  # noqa: D102
+            _fb_logger.warning("adapter_bus.fallback_publish", event=repr(event))
 
     adapter_bus = _FallbackBus()
 
@@ -57,9 +65,13 @@ _REJECTION_COOLDOWN_DAYS: int = 30
 async def _get_active_clinics() -> list[dict[str, UUID]]:
     """Return list of {tenant_id, clinic_id} dicts for all active clinics.
 
-    Queries the channel_sync_state or clinic table for clinics that have
-    at least one active marketing channel connection (status=ok, enabled=true).
-    Falls back to querying distinct (tenant_id, clinic_id) from lucas_recommendations.
+    Queries channel_sync_state for clinics with at least one active marketing
+    channel connection (status=ok, enabled=true).
+
+    Note: This is a system-level admin cross-tenant sweep. The cron job runs as
+    a privileged background process (not user-facing), so it intentionally queries
+    across all tenants. All subsequent operations within the loop apply strict
+    dual filter (tenant_id + clinic_id) per HIPAA-lite mandate.
     """
     from src.core.db import get_db_session  # type: ignore[import]  # noqa: PLC0415
 
@@ -85,12 +97,17 @@ def _get_rec_repo() -> LucasRecommendationRepository:
 
 
 def _get_orchestrator() -> Any:
-    """Return LucasOrchestratorService instance (patchable in tests)."""
-    from src.modules.vitalia.marketing.application.services.lucas_recommendations_service import (  # noqa: PLC0415
-        LucasRecommendationsService,
+    """Return LucasOrchestratorService instance (patchable in tests).
+
+    LucasOrchestratorService is the agentic orchestrator (vitalia-copilot-tools-impl
+    story, shipped 2026-05-18). This cron calls run_daily_sweep() which runs the
+    full LangGraph analysis + BudgetGuard internally.
+    """
+    from src.modules.vitalia.agentic.lucas.application.services.lucas_orchestrator_service import (  # noqa: PLC0415
+        LucasOrchestratorService,
     )
 
-    return LucasRecommendationsService()
+    return LucasOrchestratorService()
 
 
 # ---------------------------------------------------------------------------
@@ -162,11 +179,18 @@ async def lucas_daily_analysis_sweep(ctx: dict[str, Any]) -> None:
             # Step 4: publish LucasRecommendationGenerated for each new rec
             for rec in new_recs or []:
                 try:
+                    # Use BowtieStage enum conversion for type safety
+                    rec_stage_raw = getattr(rec, "stage", None)
+                    try:
+                        rec_stage = BowtieStage(rec_stage_raw).value if rec_stage_raw else BowtieStage.ATTRACTION.value
+                    except ValueError:
+                        rec_stage = BowtieStage.ATTRACTION.value
+
                     await adapter_bus.publish(
                         LucasRecommendationGenerated(
                             tenant_id=tenant_id,
                             recommendation_id=getattr(rec, "id", None) or rec,
-                            stage=getattr(rec, "stage", "attract"),
+                            stage=rec_stage,
                             recommendation_kind=getattr(rec, "recommendation_kind", ""),
                             priority=getattr(rec, "priority", 1),
                         )
