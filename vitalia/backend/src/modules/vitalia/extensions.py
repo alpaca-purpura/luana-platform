@@ -903,6 +903,51 @@ def register_all(registry: ExtensionPointRegistry) -> None:
             ),
         )
 
+    # T-mk-be-4 — Meta Ads OAuth + Insights channel adapter (EP-8).
+    # Adapter provides: authorize_url, callback (token exchange), list_ad_accounts,
+    # fetch_insights. OAuth tokens stored via ChannelSyncStateRepository pgcrypto.
+    # send/receive/format_for_channel/webhook_handler are EP-8 signature-only in v0.1.0
+    # (dispatch raises NotImplementedError until v0.2.x — see extension_points.py _BACKLOG_EPS).
+    # HIPAA-lite: adapter itself does NOT persist tokens; caller (MarketingService)
+    # passes tokens through ChannelSyncStateRepository.save_with_encrypted_token().
+    registry.channel_adapter_register(
+        ChannelAdapterDef(
+            channel_slug=_ns("meta_ads"),
+            send=_not_implemented_yet("EP-8 vitalia.meta_ads send", "T-mk-be-4"),
+            receive=_not_implemented_yet("EP-8 vitalia.meta_ads receive", "T-mk-be-4"),
+            format_for_channel=_not_implemented_yet(
+                "EP-8 vitalia.meta_ads format_for_channel",
+                "T-mk-be-4",
+            ),
+            target_agent_runtime="vertical_brand",
+            webhook_handler=_not_implemented_yet(
+                "EP-8 vitalia.meta_ads webhook_handler",
+                "T-mk-be-4",
+            ),
+        ),
+    )
+
+    # T-mk-be-4 — Google Ads OAuth + Campaign Metrics channel adapter (EP-8).
+    # Adapter provides: authorize_url, callback (token exchange), list_accessible_customers,
+    # fetch_campaign_metrics (GAQL queries, Google Ads API v13).
+    # OAuth tokens (access_token + refresh_token) stored via pgcrypto.
+    registry.channel_adapter_register(
+        ChannelAdapterDef(
+            channel_slug=_ns("google_ads"),
+            send=_not_implemented_yet("EP-8 vitalia.google_ads send", "T-mk-be-4"),
+            receive=_not_implemented_yet("EP-8 vitalia.google_ads receive", "T-mk-be-4"),
+            format_for_channel=_not_implemented_yet(
+                "EP-8 vitalia.google_ads format_for_channel",
+                "T-mk-be-4",
+            ),
+            target_agent_runtime="vertical_brand",
+            webhook_handler=_not_implemented_yet(
+                "EP-8 vitalia.google_ads webhook_handler",
+                "T-mk-be-4",
+            ),
+        ),
+    )
+
     # ───────────────────────────────────────────────────────────────────────
     # EP-9 — metric_register (DataClass)
     # ───────────────────────────────────────────────────────────────────────

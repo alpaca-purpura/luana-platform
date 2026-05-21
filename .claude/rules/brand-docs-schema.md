@@ -86,27 +86,29 @@ Esto está mencionado en cada `pm-{brand}/SKILL.md` § "Capability promotion (al
 
 **Detección:** scanner heuristic — story con `state: done` en `{brand}/docs/product/stories/` (fuera de archive) → flag para `/pm-{brand}` cleanup en próxima sesión.
 
-## R3 — Auto-gen files NO se editan manual
+## R3 — Auto-gen files son GITIGNORED + NO se editan manual
 
-**Regla:** los siguientes archivos son **OUTPUT auto-gen** de scripts. Editarlos manualmente provoca pérdida silenciosa al próximo regen.
+**Regla v2 (cement 2026-05-20):** los siguientes archivos son **OUTPUT auto-gen** de scripts Y están **GITIGNORED** desde 2026-05-20. NO se commitean nunca; cada quien los regenera localmente. Editarlos manualmente provoca pérdida silenciosa al próximo regen.
 
-| Path | Generator | Frecuencia regen |
-|---|---|---|
-| `{brand}/docs/product/BACKLOG.md` | `scripts/generate_backlog.py --brand {brand}` | post story state-change |
-| `{brand}/docs/product/BACKLOG-TLDR.md` | idem | idem |
-| `{brand}/docs/product/BACKLOG.yaml` | idem | idem |
-| `{brand}/docs/product/modules/{module}.md` (sección auto-list) | `scripts/reconcile_capabilities.py --brand {brand}` | post capability change |
-| `docs/portfolio/PORTFOLIO.md` | `scripts/generate_portfolio.py` | `make portfolio` |
-| `docs/portfolio/{brand}.md` | idem | idem |
-| `docs/portfolio/INFRA-MATRIX.md` | `scripts/generate_infra_matrix.py` | `make infra-matrix` |
-| `docs/promotion-protocol/scan-{date}.yaml` | `scripts/scan_promotables.py` | `make scan-promotables` |
-| `docs/etl/extraction-contract.md` (cuando exista) | `make extraction-contract` | post analytics provider change |
+| Path | Generator | Frecuencia regen | Tracked? |
+|---|---|---|---|
+| `{brand}/docs/product/BACKLOG.md` | `scripts/generate_backlog.py --brand {brand}` | post story state-change | ❌ gitignored |
+| `{brand}/docs/product/BACKLOG-TLDR.md` | idem | idem | ❌ gitignored |
+| `{brand}/docs/product/BACKLOG.yaml` | idem | idem | ❌ gitignored |
+| `docs/product/BACKLOG.{md,yaml,-TLDR.md}` (legacy) | `scripts/generate_backlog.py` (sin --brand) | idem | ❌ gitignored |
+| `{brand}/docs/product/modules/{module}.md` (sección auto-list) | `scripts/reconcile_capabilities.py --brand {brand}` | post capability change | ✅ tracked (hybrid: intro hand-written + auto-list block) |
+| `docs/portfolio/PORTFOLIO.md` | `scripts/generate_portfolio.py` | `make portfolio` | ❌ gitignored |
+| `docs/portfolio/{brand}.md` (×11 brands + luana.md) | idem | idem | ❌ gitignored |
+| `docs/portfolio/INFRA-MATRIX.md` | `scripts/generate_infra_matrix.py` | `make infra-matrix` | ❌ gitignored |
+| `docs/promotion-protocol/scan-{date}.yaml` | `scripts/scan_promotables.py` | `make scan-promotables` | ❌ gitignored |
+| `docs/etl/extraction-contract.md` (cuando exista) | `make extraction-contract` | post analytics provider change | TBD |
+| `**/__generated__/*` (frontend, ej. offer-field-paths.ts) | `nicolify/backend/scripts/generate_offer_field_paths.py` | post field-paths change | ❌ gitignored |
 
-**Why:** durante la purga 2026-05-19, dos sesiones distintas regen BACKLOGs con timestamps distintos, generando conflict at merge. Si alguien editase manualmente un `BACKLOG.md` para "agregar una nota", esa edición se pierde al próximo regen. Mismo patrón aplica a portfolio + INFRA-MATRIX.
+**Why gitignored (2026-05-20 cement):** durante semanas múltiples sesiones paralelas regeneraban con timestamps + ordenamientos distintos → merge conflicts crónicos (top 14 días: BACKLOG/PORTFOLIO con 9-11 modifs cada uno). Chris ratificó "gitignore total": SSoT vive en sources (`outcomes/`, `stories/`, `capabilities/`, `brand.yaml`); estos files son **vistas derivadas regenerables**, no fuente. Trade-off aceptado: GitHub UI no muestra la vista master sin clonar+regen, pero el costo de mantenerlos sincronizados era mayor.
 
 **How to apply:**
 
-1. **Headers explícitos:** todo file auto-gen incluye en sus primeras 5 líneas el marker:
+1. **Headers explícitos:** todo file auto-gen incluye en sus primeras 5 líneas el marker (sigue siendo cierto aunque ya no se commitee):
    ```markdown
    <!-- AUTO-GENERATED por scripts/{generator}.py — NO editar a mano -->
    ```
@@ -118,11 +120,25 @@ Esto está mencionado en cada `pm-{brand}/SKILL.md` § "Capability promotion (al
    - INFRA-MATRIX → source es `{brand}/config/brand.yaml::infra`
    - scan-promotables → source es `{brand}/docs/learnings/*.md` con `promotable: candidate|yes`
 
-   Luego: regen via `make {target}` (idempotente).
+   Luego: regen via `make {target}` o `scripts/generate_*.py` (idempotente).
 
-3. **Si urge agregar nota:** crear archivo nuevo en el sub-dir correcto (ej. `{brand}/docs/learnings/{date}-{slug}.md`), NO inline en auto-gen output.
+3. **Ver la vista actualizada cuando la necesites:**
 
-**Anti-pattern:** editar `BACKLOG.md` para "agregar TODO list" o cambiar prioridades manualmente — esos cambios viven en `checkpoint.md` o en outcomes/stories, no en el output consolidado.
+   ```bash
+   make portfolio           # docs/portfolio/{PORTFOLIO,brand,luana}.md
+   make infra-matrix        # docs/portfolio/INFRA-MATRIX.md
+   .venv/bin/python scripts/generate_backlog.py --brand vitalia   # per-brand
+   make scan-promotables    # docs/promotion-protocol/scan-{date}.yaml
+
+   cat docs/portfolio/PORTFOLIO.md
+   cat vitalia/docs/product/BACKLOG.md
+   ```
+
+4. **Si urge agregar nota:** crear archivo nuevo en el sub-dir correcto (ej. `{brand}/docs/learnings/{date}-{slug}.md`), NO inline en auto-gen output.
+
+**Pre-commit hook behavior (Section 6 + 10):** sigue regenerando archivos auto-gen localmente cuando cambian sources (para mantener vista local fresh), pero ya NO ejecuta `git add` sobre ellos (son gitignored). Mensajes hook clarifican "regenerated localmente (gitignored, no incluido en commit)".
+
+**Anti-pattern:** editar `BACKLOG.md` para "agregar TODO list" o cambiar prioridades manualmente — esos cambios viven en `checkpoint.md` o en outcomes/stories, no en el output consolidado. Ahora además los cambios manuales se pierden silenciosamente porque ni siquiera se commitean.
 
 ## Enforcement layers
 

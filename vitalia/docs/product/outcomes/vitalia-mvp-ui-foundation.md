@@ -17,7 +17,7 @@ stories:
   - vitalia-slice-1-pipeline               # state: refined (UNBLOCKED post infra merge, sub-blocker payment-adapter-mvp + copilot-tools-impl)
   - vitalia-slice-1-agenda                 # state: refined (UNBLOCKED post infra merge, sub-blocker payment-adapter-mvp + fiscal-emission-pe)
   - vitalia-slice-1-fidelizacion           # state: refined (UNBLOCKED post infra merge)
-  - vitalia-slice-1-marketing              # state: refined (UNBLOCKED post infra merge, sub-blocker copilot-tools-impl)
+  - vitalia-slice-1-marketing              # state: done — 2026-05-21 merged (audit cycle 3 iter APPROVED), 5 capabilities live (4 marketing + 1 connections)
   - vitalia-copilot-tools-impl             # state: developing/defer_audit (4/10 tickets pushed BE; 6 remaining agentic Opus R23 — retoma sesión fresca)
 slice_strategy:
   slice_1:
