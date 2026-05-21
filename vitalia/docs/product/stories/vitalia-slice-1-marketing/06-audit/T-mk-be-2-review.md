@@ -126,3 +126,55 @@ Per `.claude/rules/auditor-self-fix-policy.md` § NUNCA self-fix #4 (new field) 
 3. Update `Referral` domain entity to mirror.
 4. Update T-mk-be-6 cron tests to use real enum value.
 5. Re-run gate-runner.
+
+---
+
+## Audit iteration 2 (2026-05-21T00:50:00Z — post AUDITOR_AUTO_FIX_LOOP commit ac8ec6f3)
+
+### Verdict
+**APPROVED**
+
+### Re-verification (iter 1 findings)
+
+| Finding | Status | Evidence |
+|---|---|---|
+| FAIL: ReferralModel missing `conversion_value_cents`, `currency`, `shared_at`, `signed_up_at` | ✅ FIXED | `infrastructure/models/referral_model.py:60-71` — all 4 columns added with correct types (BigInteger NULL, String(3) NULL, DateTime(tz=True) NULL × 2) |
+| FAIL: ReferralStatus enum missing `SIGNED_UP` | ✅ FIXED | `domain/enums.py:39-54` — 5 values per spec (`OPEN`, `SHARED`, `SIGNED_UP`, `CONVERTED`, `EXPIRED`); model default changed `"pending" → "open"` (line 55) |
+| WARN: pgcrypto unit test absent | unchanged | (non-blocking; CI skips integration test; recommend Slice 2 PG fixture) |
+| WARN: `decode("latin-1")` design opaque | unchanged | (non-blocking; functionally correct) |
+
+### Migration 031 (NEW)
+
+- `vitalia/backend/alembic/versions/031_slice1_marketing_referrals_value_columns.py` — idempotent raw SQL `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` ✓
+- Adds `conversion_value_cents BIGINT NULL`, `currency CHAR(3) NULL`, `shared_at TIMESTAMPTZ NULL`, `signed_up_at TIMESTAMPTZ NULL` to `vitalia_referrals` ✓
+- Adds `conversion_value_cents BIGINT NULL` to `vitalia_appointments` (T-mk-be-6 cron SQL dependency satisfied) ✓
+- Two partial indexes (`ix_vitalia_referrals_value_sync`, `ix_vitalia_appointments_conversion_value`) ✓
+- `down_revision = "030_vitalia"` (correct chain) ✓
+- `down()` non-destructive per spec ✓
+
+### Domain entity update
+
+- `Referral` dataclass (`domain/entities/referral.py:44-51`) mirrors new model columns ✓
+- `share()` method (line 52-60) sets `status = SHARED + shared_at = now` ✓
+- `sign_up()` method (line 62-72) sets `status = SIGNED_UP + signed_up_at = now + referred_patient_id` ✓
+- Lifecycle Pep doc string updated (line 6-8) `open → shared → signed_up → converted → expired` ✓
+
+### Tests verification
+
+- Tests in `tests/modules/vitalia/marketing/domain/test_enums.py::TestReferralStatus` — 5 values asserted ✓
+- gate-output pytest-marketing-module: 157 PASS (1 skip pgcrypto) — no regressions
+
+### Category re-summary
+
+| # | Category | Status |
+|---|---|---|
+| 1 | DDD/Contract | PASS |
+| 8 | Migration Quality | PASS (idempotent raw SQL) |
+| Contract compliance | PASS |
+
+### Verdict math
+- 2 FAIL findings addressed cleanly
+- 2 WARN findings remain non-blocking (Slice 2 candidates)
+- 0 regressions
+- Overall: **APPROVED**
+

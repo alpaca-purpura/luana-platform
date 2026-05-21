@@ -139,3 +139,41 @@ Per § "NUNCA self-fix" #2 (Cambiar/agregar branch lógico) + #4 (Agregar nuevo 
 - Re-run gate-runner
 
 Builder should NOT touch other findings (currency/PHI/migration shape) — those are PASS.
+
+---
+
+## Audit iteration 2 (2026-05-21T00:50:00Z — post AUDITOR_AUTO_FIX_LOOP commit ac8ec6f3)
+
+### Verdict
+**APPROVED**
+
+### Re-verification (iter 1 findings)
+
+| Finding | Status | Evidence |
+|---|---|---|
+| FAIL: BowtieStage 3-vs-5 mismatch | ✅ FIXED | `domain/enums.py:57-72` — 5 values (ATTRACTION/QUALIFICATION/RESERVATION/ADOPTION/EXPANSION) per spec verbatim |
+| WARN: RejectReason 4-vs-5 mismatch | ✅ FIXED | `domain/enums.py:75-90` — 5 values (NOT_PRIORITY/ALREADY_DOING/DATA_WRONG/TOO_RISKY/OTHER) per spec verbatim |
+| info: Migration renumbering 026-030 | unchanged | (was non-blocking already) |
+
+### Downstream cascade verified
+
+- `marketing_service._STAGE_CHANNEL_MAP` (`services/marketing_service.py:31-37`) — 5 keys mapping correctly to ATTRACTION/QUALIFICATION/RESERVATION/ADOPTION/EXPANSION ✓
+- `events.LucasRecommendationGenerated.stage: BowtieStage = BowtieStage.ATTRACTION` default ✓
+- `routes.py:471-474` provider→stage mapping uses `BowtieStage.ATTRACTION` ✓
+- `test_enums.py::TestBowtieStage::test_has_exactly_five_stages` ✓ (was `_three_`)
+- `test_enums.py::TestRejectReason::test_has_exactly_five_reasons` ✓ (was 4)
+- `lucas_daily_analysis_sweep.py:185-187` uses `BowtieStage(rec_stage_raw).value` for safety (string conversion — see T-mk-be-6 note about type misuse)
+
+### Category re-summary
+
+| # | Category | Status |
+|---|---|---|
+| 1 | DDD Layer Compliance | PASS |
+| 11 | Cross-cutting | PASS (no more spec drift) |
+| Contract compliance | PASS |
+
+### Verdict math
+- All iter 1 findings addressed verbatim per spec
+- 0 regressions introduced in this ticket's surface
+- Overall: **APPROVED**
+
