@@ -13,6 +13,7 @@ active_stories:
   # vitalia-slice-1-inbox            # state: done · archived in vitalia/docs/archive/2026/stories/ · merged 2026-05-20
   # vitalia-slice-1-fidelizacion     # state: done · archived in vitalia/docs/archive/2026/stories/ · merged 2026-05-20
   - vitalia-slice-1-pipeline               # state: refined · Ola 2 (paralela marketing ya done) · depende side payment-adapter-mvp · pending /architect refresh
+  - vitalia-slice-1-marketing-integration  # state: idea · BLOCKER post-merge: marketing shipped pero no integrado a app shell (sidebar nav + dashboard stub + Tailwind runtime bug). Spawned 2026-05-21 por learning auto-handoff-deferred-e2e-blocker. 5 tickets estimate ~3-5h wall.
   # vitalia-slice-1-marketing              # state: done · archived in vitalia/docs/archive/2026/stories/ · merged 2026-05-21
   - vitalia-slice-1-agenda                 # state: refined · Ola 3 (sola, más compleja) · depende side payment-adapter-mvp + side fiscal-emission-pe · pending /architect refresh
   - vitalia-pricing-decision               # state: idea (Chris postergó, no bloquea Slice 1)
