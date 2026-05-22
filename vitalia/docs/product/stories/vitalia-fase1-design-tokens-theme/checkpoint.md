@@ -6,9 +6,23 @@ type: ui-story
 agent_owner: shell
 module: shell-organism
 capability: shell.design-tokens-theme
-state: idea
+state: ready
+phase_state: READY_PACKAGE_CLOSED
 last_modified: 2026-05-22
-ratified_by_chris: false
+last_artifact: 06-tickets.yaml
+ratified_by_chris: true
+ratified_visual_by_chris: true
+ratified_visual_at: 2026-05-22T19:00:00-05:00
+ratified_visual_iter: 1
+ratified_visual_mockups:
+  - vitalia/docs/product/stories/vitalia-fase1-design-tokens-theme/mockups/theme-toggle.html
+po_ux_iterations: 1
+po_ux_decisions_cemented_2026_05_22:
+  D1: "light/dark only (enableSystem=false, defaultTheme=light) — scope minimal F1"
+  D2: "Mockup theme-toggle.html con 4 states aislados en card neutral (light-idle, light-hover, dark-idle, dark-hover)"
+  D3: "Storybook N/A en F1-S1 — diferido a story dedicada futura si se necesita"
+  D4: "storageKey='vitalia-theme' namespaced — defense-in-depth multi-brand FE coexistencia"
+  D5: "drop useTheme.ts hook wrapper — ThemeToggle.tsx import next-themes directo"
 parallel_safe: false
 priority: critical
 estimated_dev_days: 1-2
@@ -18,7 +32,7 @@ dependencies:
 blocks_hard: [vitalia-fase1-topbar-global, vitalia-fase1-shell-layout-5050, vitalia-fase1-valeria-rail-history, vitalia-fase1-ribbon-6-tabs]
 reuse_map_summary: "REUSE next-themes (npm) · NEW ThemeToggle component · tokens cementados en Design Contract § 5"
 spawned_at: 2026-05-22
-next_action: "/po-ux refinar 01-spec.md con scope verbatim + Gherkin completo"
+next_action: "/dev-team vitalia-fase1-design-tokens-theme autonomous build (T-1 fe-next-themes-install first; F1-S0 done state prerequisite — verify done before pickup)"
 ---
 
 # F1-S1 vitalia-fase1-design-tokens-theme — checkpoint
