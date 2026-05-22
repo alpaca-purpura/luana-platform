@@ -6,9 +6,9 @@ type: ui-story
 agent_owner: shell                                  # transversal — no es de un agente
 module: shell-organism / infra
 capability: shell.foundation
-state: refined
-phase_state: SPEC_RATIFIED
-last_artifact: 01-spec.md
+state: ready
+phase_state: READY_PACKAGE_CLOSED
+last_artifact: 06-tickets.yaml
 last_modified: 2026-05-22
 ratified_by_chris: true
 ratified_visual_by_chris: not_applicable
@@ -35,7 +35,7 @@ blocks_hard:                                          # esta story bloquea TODAS
 reuse_map_summary: "infra-only — verifica Tailwind v4 + instala Shadcn + plan deprecación .vt-* (no migra contenido todavía)"
 spawned_at: 2026-05-22
 spawned_by: /pm-vitalia (post shell-organism cement)
-next_action: "/pm-vitalia revisa ready + decide cuándo arrancar /architect. Chris ratificó 01-spec.md whole-doc + 4 artifacts protocolo mockup-per-component (ADR-vitalia-003 + rule overlay + learning + README index) 2026-05-22"
+next_action: "/dev-team vitalia-fase1-stack-stability autonomous build (T-1 fe-shadcn-install first; cap_eligible developing ≤ 1 worktree per story-closure-gate)"
 ---
 
 # vitalia-fase1-stack-stability — checkpoint
