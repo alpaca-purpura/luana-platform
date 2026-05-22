@@ -6,9 +6,29 @@ type: ui-story
 agent_owner: shell
 module: shell-organism
 capability: shell.topbar-global
-state: idea
+state: ready
+phase_state: READY_PACKAGE_CLOSED
 last_modified: 2026-05-22
-ratified_by_chris: false
+last_artifact: 06-tickets.yaml
+ratified_by_chris: true
+ratified_visual_by_chris: true
+ratified_visual_at: 2026-05-22T20:00:00-05:00
+ratified_visual_iter: 1
+ratified_visual_mockups:
+  - vitalia/docs/product/stories/vitalia-fase1-topbar-global/mockups/topbar-global.html
+  - vitalia/docs/product/stories/vitalia-fase1-topbar-global/mockups/logo-mark.html
+po_ux_iterations: 1
+po_ux_decisions_cemented_2026_05_22:
+  D1: "LogoMark 6 combinations (3 sizes sm/md/lg × 2 variants full/mark) height-based 24/32/40px width auto"
+  D2: "Mobile responsive @media <768px switch a variant='mark' (libélula sola)"
+  D3: "TenantSwitcherSlot returns null gap puro · F1-S3 reemplaza drop-in sin layout shift"
+  D4: "Mockups separados: topbar-global.html (4 states light/dark × desktop/mobile) + logo-mark.html (6 combinations grid + dark toggle)"
+  D5: "PNG via Next.js Image ahora · SVG roadmap futuro (story dedicada vitalia-fase2-logo-svg-conversion)"
+  D6: "RESUELTA ✓ — vitalia-logo-dark.png (wordmark white) entregado Chris 2026-05-22"
+assets_brand_real_2026_05_22:
+  - vitalia/frontend/public/brand/vitalia-ico.png       # libélula multicolor (~156KB)
+  - vitalia/frontend/public/brand/vitalia-logo.png      # libélula + wordmark VITALIA navy (~107KB) — light mode
+  - vitalia/frontend/public/brand/vitalia-logo-dark.png # libélula + wordmark VITALIA white (~93KB) — dark mode
 parallel_safe: false
 priority: critical
 estimated_dev_days: 1
@@ -18,7 +38,7 @@ dependencies:
 blocks_hard: [vitalia-fase1-shell-layout-5050]
 reuse_map_summary: "NEW LogoMark + TopBarGlobal composes ThemeToggle (F1-S1) + TenantSwitcher slot (F1-S3)"
 spawned_at: 2026-05-22
-next_action: "/po-ux refinar 01-spec.md"
+next_action: "/dev-team vitalia-fase1-topbar-global autonomous build (T-1 fe-brand-assets-verify first; F1-S0 + F1-S1 done state prerequisite — verify done before pickup)"
 ---
 
 # F1-S2 vitalia-fase1-topbar-global — checkpoint
