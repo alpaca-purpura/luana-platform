@@ -1,237 +1,488 @@
-<!-- voseo-allowed: internal navigation tree editing instructions and architectural notes -->
+<!-- voseo-allowed: internal navigation tree spec for shell-organism -->
 
-# Vitalia — Navigation Tree (editable JSON)
+# Navigation Tree — Vitalia Shell-Organism
 
-> Árbol funcional total vitalia: presente (shipped) + Slice 1 (in-flight) + Slice 2 (planned) + Slice 3 + defer features.
-> 6 padres máx · 6 hijos por nivel máx · profundidad 2-3 (un caso 4 documentado).
-> Editá el JSON debajo a mano. Cuando termines, avisame y lo leo para entender la estructura final.
-
-## Cómo editar
-
-- **Reordenar:** mové bloques `{...}` arriba o abajo dentro de su array.
-- **Renombrar:** cambiá `label` (lo que ve el user) o `id` (slug interno — solo letras/numeros/guiones).
-- **Agregar hijo:** copiá un bloque hermano y modificá.
-- **Borrar:** eliminá el bloque entero (con su coma final).
-- **Mover padre↔hijo:** copiá el bloque y reubicalo dentro/fuera del array `children`.
-- **Marcar deferred / planned:** ajustá `status` (`shipped` · `planned` · `deferred`).
-- **Cambiar icono:** valores válidos = nombre lucide-icons (https://lucide.dev/icons) — preferir outline monochrome para Apple-feel.
-
-## Campos del nodo
-
-| Campo | Tipo | Obligatorio | Notas |
-|---|---|---|---|
-| `id` | string | sí | slug kebab-case · único en todo el árbol |
-| `label` | string | sí | nombre visible al usuario (Spanish neutro) |
-| `icon` | string | sí (en padre) · opcional (hijo) | lucide icon name |
-| `route` | string | sí en hojas · no en padre con hijos | URL relativa (ej. `/dashboard/patients`) |
-| `children` | array | no | si presente, este nodo es padre |
-| `status` | enum | no | `shipped` · `planned` · `deferred` (default: `planned`) |
-| `slice` | string | no | `1` · `2` · `3` (mapping al outcome MVP UI) |
-| `notes` | string | no | comentario interno, no se renderiza |
-
-## Reglas de validación
-
-- Padre top-level: máx 6
-- Hijos por padre: máx 6
-- Profundidad: 3 niveles ideal · 4 solo casos extremos (justificar en `notes`)
-- Si nodo tiene `children` no-vacío → no necesita `route` (el click expande/navega al primer hijo)
-- Si nodo es hoja (sin `children`) → `route` obligatorio
+> **Status:** SSoT ratificado · **Fecha:** 2026-05-22 · **Versión:** 1.0
+> **Reemplaza:** versiones previas en edición humana
+> **Cementa:** estructura completa shell-organism cementada en `00-session-baseline.md` (17 decisiones Q1-Q7 + sub-Qs)
 
 ---
 
-## Tree (editá esto)
+## § 1 — JSON Tree
 
 ```json
 {
-  "version": "draft-1",
-  "brand": "vitalia",
-  "last_updated": "2026-05-21",
-  "owner": "/po-ux",
-  "tree": [
-    {
-      "id": "inicio",
-      "label": "Inicio",
-      "icon": "house",
-      "route": "/dashboard",
-      "status": "shipped",
-      "slice": "1",
-      "notes": "Home adaptativo · operador ve sus tareas del día · owner ve KPIs"
-    },
-    {
-      "id": "operar",
-      "label": "Operar",
-      "icon": "briefcase-business",
-      "status": "planned",
-      "slice": "1",
-      "children": [
-        { "id": "inbox", "label": "Inbox", "icon": "inbox", "route": "/inbox", "status": "planned", "slice": "1", "notes": "Conversaciones unificadas WhatsApp+IG+web+email · Adrián background" },
-        { "id": "agenda", "label": "Agenda", "icon": "calendar-days", "route": "/dashboard/appointments", "status": "planned", "slice": "1", "notes": "Calendar + prepaid 30% · bloqueador payment-adapter + fiscal-emission" },
-        { "id": "pipeline", "label": "Pipeline", "icon": "git-branch", "route": "/dashboard/pipeline", "status": "planned", "slice": "1", "notes": "Lead → reserva · bloqueador payment-adapter + copilot-tools" },
-        { "id": "pacientes", "label": "Pacientes", "icon": "users", "route": "/dashboard/patients", "status": "shipped", "slice": "1", "notes": "CRM core · historia · consent" },
-        { "id": "tratamientos-ejecucion", "label": "Tratamientos en curso", "icon": "stethoscope", "route": "/dashboard/treatments", "status": "shipped", "slice": "1", "notes": "Tratamientos en ejecución + seguimiento post" },
-        { "id": "tareas", "label": "Tareas", "icon": "list-checks", "route": "/dashboard/tasks", "status": "planned", "slice": "1", "notes": "Fidelización pendiente del día · workflows post-tratamiento" }
+  "shell": {
+    "version": "1.0",
+    "ratified_at": "2026-05-22",
+    "paradigm": "agentic-50-50",
+    "topbar": {
+      "type": "thin",
+      "height": "48px",
+      "elements": [
+        { "id": "logo", "type": "LogoMark", "position": "left" },
+        { "id": "theme-toggle", "type": "ThemeToggle", "position": "right" },
+        { "id": "tenant-switcher", "type": "TenantSwitcher", "position": "right" }
       ]
     },
-    {
-      "id": "crecer",
-      "label": "Crecer",
-      "icon": "trending-up",
-      "status": "planned",
-      "slice": "1",
-      "children": [
-        {
-          "id": "marketing",
-          "label": "Marketing",
-          "icon": "megaphone",
-          "status": "shipped",
-          "slice": "1",
-          "children": [
-            { "id": "marketing-campanas", "label": "Campañas activas", "icon": "rocket", "route": "/marketing/campaigns", "status": "planned", "slice": "1" },
-            { "id": "marketing-atribucion", "label": "Atribución", "icon": "git-merge", "route": "/marketing/attribution", "status": "shipped", "slice": "1", "notes": "attribution-matrix-4-origins capability" },
-            { "id": "marketing-bowtie", "label": "Embudo Bowtie", "icon": "git-pull-request", "route": "/marketing/funnel", "status": "shipped", "slice": "1", "notes": "bowtie-funnel-5-stages capability" },
-            { "id": "marketing-inversion", "label": "Inversión publicitaria", "icon": "dollar-sign", "route": "/marketing/ad-spend", "status": "planned", "slice": "2" },
-            { "id": "marketing-insights-lucas", "label": "Insights de Lucas", "icon": "sparkles", "route": "/marketing/insights", "status": "shipped", "slice": "1", "notes": "lucas-stage-recommendations capability" }
-          ]
-        },
-        {
-          "id": "fidelizacion",
-          "label": "Fidelización",
-          "icon": "heart-handshake",
-          "status": "planned",
-          "slice": "1",
-          "children": [
-            { "id": "fid-workflows", "label": "Workflows post-tratamiento", "icon": "workflow", "route": "/fidelizacion/workflows", "status": "planned", "slice": "1" },
-            { "id": "fid-nps", "label": "NPS + reseñas Google", "icon": "star", "route": "/fidelizacion/nps", "status": "planned", "slice": "1" },
-            { "id": "fid-reengagement", "label": "Re-engagement", "icon": "rotate-cw", "route": "/fidelizacion/reengagement", "status": "planned", "slice": "1" },
-            { "id": "fid-referidos", "label": "Referidos", "icon": "trophy", "route": "/fidelizacion/referrals", "status": "shipped", "slice": "1", "notes": "referrals-leaderboard capability" }
-          ]
-        },
-        { "id": "ofertas", "label": "Ofertas y promociones", "icon": "tag", "route": "/dashboard/offers", "status": "shipped", "slice": "1", "notes": "Consume Luana core offer-studio · promo comercial · NO catálogo permanente" }
-      ]
+    "modes": {
+      "agentic": { "default": true, "split": "50/50", "valeria_state": "rail" },
+      "web": { "split": "rail-only/100%", "valeria_state": "collapsed" }
     },
-    {
-      "id": "identidad",
-      "label": "Identidad",
-      "icon": "fingerprint",
-      "status": "planned",
-      "slice": "2",
-      "children": [
-        {
-          "id": "brand-studio",
-          "label": "Brand Studio",
-          "icon": "palette",
-          "status": "shipped",
-          "slice": "2",
-          "children": [
-            { "id": "brand-voz", "label": "Voz de marca", "icon": "mic-vocal", "route": "/dashboard/brand-studio/voice", "status": "shipped", "slice": "2", "notes": "Compartida Adrián + Valeria · personality_profiles" },
-            { "id": "brand-visual", "label": "Identidad visual", "icon": "swatch-book", "route": "/dashboard/brand-studio/visual", "status": "planned", "slice": "2", "notes": "Colores · logo · tokens" },
-            { "id": "brand-equipo", "label": "Equipo", "icon": "users-round", "route": "/dashboard/brand-studio/team", "status": "planned", "slice": "2", "notes": "Médicos · staff · perfiles · testimonios" },
-            { "id": "brand-autoridad", "label": "Autoridad", "icon": "badge-check", "route": "/dashboard/brand-studio/authority", "status": "planned", "slice": "2", "notes": "Testimonios · credenciales · social proof" }
-          ]
-        },
-        { "id": "catalogo-tratamientos", "label": "Catálogo de tratamientos", "icon": "book-open", "route": "/dashboard/treatments/catalog", "status": "planned", "slice": "2", "notes": "Precios · variantes · paquetes · DIFERENTE de tratamientos en curso" },
-        { "id": "landing-publica", "label": "Landing pública", "icon": "globe", "route": "/dashboard/landing", "status": "shipped", "slice": "1", "notes": "/public/[clinic-slug] · booking widget embed live · patient portal Slice 3+" },
-        { "id": "contenido", "label": "Contenido & assets", "icon": "image", "route": "/dashboard/content", "status": "planned", "slice": "2", "notes": "Posts · banners · social proof assets" }
-      ]
+    "panels": {
+      "left": {
+        "id": "valeria-sidebar",
+        "width": "50%",
+        "subgrid": "rail-or-history | chat",
+        "components": ["ValeriaRail", "ValeriaHistory", "ValeriaChat"],
+        "states": ["collapsed", "rail", "full"],
+        "default_state": "rail",
+        "keyboard": { "C": "collapsed", "R": "rail", "F": "full", "N": "new-conv", "Esc": "close", "Cmd+K": "focus-composer" }
+      },
+      "right": {
+        "id": "app-content",
+        "width": "50%",
+        "subgrid": "ribbon | sub-tabs | content",
+        "components": ["Ribbon", "SubTabsBar", "ContentArea"]
+      }
     },
-    {
-      "id": "analisis",
-      "label": "Análisis",
-      "icon": "chart-line",
-      "status": "planned",
-      "slice": "2",
-      "children": [
-        { "id": "dashboard-ejecutivo", "label": "Dashboard ejecutivo", "icon": "layout-dashboard", "route": "/dashboard/executive", "status": "planned", "slice": "2", "notes": "Owner KPIs view" },
-        { "id": "kpis-clinicos", "label": "KPIs clínicos", "icon": "activity", "route": "/dashboard/kpis", "status": "planned", "slice": "2", "notes": "Turnos · conversion · ocupación · no-show rate" },
-        { "id": "roi-publicidad", "label": "ROI publicidad", "icon": "percent", "route": "/dashboard/roi", "status": "planned", "slice": "2" },
-        { "id": "cohortes", "label": "Cohortes & retención", "icon": "users-2", "route": "/dashboard/cohorts", "status": "planned", "slice": "3" },
-        { "id": "reportes", "label": "Reportes", "icon": "file-text", "route": "/dashboard/reports", "status": "planned", "slice": "3", "notes": "Export CSV/PDF" }
-      ]
-    },
-    {
-      "id": "configurar",
-      "label": "Configurar",
-      "icon": "settings",
-      "status": "planned",
-      "slice": "2",
-      "children": [
-        {
-          "id": "clinica",
-          "label": "Clínica",
-          "icon": "building-2",
-          "status": "shipped",
-          "slice": "1",
-          "children": [
-            { "id": "clinica-datos", "label": "Datos generales", "icon": "id-card", "route": "/configurar/clinica/info", "status": "shipped", "slice": "1", "notes": "Razón social · CUIT · horarios · clinics-brand-extension capability" },
-            { "id": "clinica-sucursales", "label": "Sucursales", "icon": "map-pin", "route": "/configurar/clinica/branches", "status": "deferred", "slice": "3", "notes": "Multi-clinic switcher · defer hasta demanda" },
-            { "id": "clinica-calendario", "label": "Calendario operativo", "icon": "calendar-clock", "route": "/configurar/clinica/calendar", "status": "planned", "slice": "2", "notes": "Días no laborables · feriados · turnos especiales" }
-          ]
-        },
-        { "id": "equipo-roles", "label": "Equipo & roles", "icon": "user-cog", "route": "/configurar/team", "status": "shipped", "slice": "1", "notes": "users + RBAC doctor/nurse/admin · luana-core-iam consumer" },
-        {
-          "id": "integraciones",
-          "label": "Integraciones",
-          "icon": "plug",
-          "status": "planned",
-          "slice": "2",
-          "children": [
-            { "id": "integ-canales", "label": "Canales", "icon": "messages-square", "route": "/configurar/integrations/channels", "status": "planned", "slice": "1", "notes": "WhatsApp · IG · Email · ManyChat" },
-            { "id": "integ-pagos", "label": "Pagos", "icon": "credit-card", "route": "/configurar/integrations/payments", "status": "planned", "slice": "1", "notes": "Mercado Pago · Stripe · Culqi · payment-adapter-mvp story" },
-            { "id": "integ-publicidad", "label": "Publicidad", "icon": "target", "route": "/configurar/integrations/ads", "status": "planned", "slice": "2", "notes": "Meta Ads · Google Ads" },
-            { "id": "integ-webhooks", "label": "Webhooks externos", "icon": "webhook", "route": "/configurar/integrations/webhooks", "status": "planned", "slice": "2" }
-          ]
-        },
-        {
-          "id": "compliance",
-          "label": "Compliance",
-          "icon": "shield-check",
-          "status": "shipped",
-          "slice": "1",
-          "children": [
-            { "id": "compliance-hipaa", "label": "HIPAA-lite framework", "icon": "lock", "route": "/dashboard/medical-compliance", "status": "shipped", "slice": "1", "notes": "hipaa-lite-defensive-stack capability" },
-            { "id": "compliance-audit", "label": "Audit log viewer", "icon": "scroll-text", "route": "/configurar/compliance/audit", "status": "planned", "slice": "3" },
-            { "id": "compliance-consents", "label": "Consents pacientes", "icon": "file-check", "route": "/configurar/compliance/consents", "status": "shipped", "slice": "1", "notes": "crm-consent-optout capability" }
-          ]
-        },
-        { "id": "plan-billing", "label": "Plan & facturación", "icon": "wallet", "route": "/configurar/plan", "status": "planned", "slice": "2", "notes": "vitalia-pricing-decision story pendiente · tier model · billing" },
-        {
-          "id": "preferencias",
-          "label": "Preferencias",
-          "icon": "sliders-horizontal",
-          "status": "planned",
-          "slice": "2",
-          "children": [
-            { "id": "pref-idioma", "label": "Idioma & timezone", "icon": "languages", "route": "/configurar/prefs/locale", "status": "planned", "slice": "2" },
-            { "id": "pref-voz", "label": "Voz & voice cloning", "icon": "audio-lines", "route": "/configurar/prefs/voice", "status": "deferred", "slice": "3", "notes": "Voice cloning premium · brand.yaml::voice_cloning currently false" },
-            { "id": "pref-notificaciones", "label": "Notificaciones", "icon": "bell", "route": "/configurar/prefs/notifications", "status": "planned", "slice": "2" }
-          ]
-        }
-      ]
-    }
-  ],
-  "transversal_layer": {
-    "notes": "NO son opciones del menú · viven en el shell siempre presente",
-    "agents": [
-      { "id": "valeria", "role": "copilot owner-facing", "surface": "chat rail right · siempre visible · mode-agent expands a 50%" },
-      { "id": "adrian", "role": "sales agent paciente-facing", "surface": "background en Inbox · atribución agente inline visible" },
-      { "id": "lucas", "role": "analyst", "surface": "insights inline dentro de Marketing/Análisis · daily analysis cron" }
+    "tabs": [
+      {
+        "id": "lisa",
+        "label": "Mi Clínica",
+        "role": "Lisa",
+        "color": "#00D084",
+        "color_token": "--agent-lisa",
+        "avatar": "/agents/lisa/thumbnail.png",
+        "default_subtab": "marca",
+        "subtabs": [
+          {
+            "id": "marca",
+            "label": "Marca",
+            "icon": "🏥",
+            "description": "Identidad · Voz y tono · Landing & presencia",
+            "phase2_story": "vitalia-fase2-lisa-marca",
+            "reuse": "brand_studio shipped (adapt salud)",
+            "n3_dyn": []
+          },
+          {
+            "id": "doctores",
+            "label": "Doctores",
+            "icon": "👨‍⚕️",
+            "description": "CRUD perfiles personal-branding doctor",
+            "phase2_story": "vitalia-fase2-lisa-doctores",
+            "reuse": "patients+staff models shipped",
+            "n3_dyn": [
+              { "id": "perfil-doctor", "path": "[doctor-id]", "description": "Workspace detalle doctor: bio + horarios + servicios + KPIs" }
+            ]
+          },
+          {
+            "id": "servicios",
+            "label": "Servicios",
+            "icon": "🩺",
+            "description": "Toggle Catálogo | Escalera de valor",
+            "phase2_story": "vitalia-fase2-lisa-servicios",
+            "reuse": "treatments shipped + NEW canvas escalera",
+            "toggle_views": ["catalogo", "escalera"],
+            "n3_dyn": [
+              { "id": "tratamiento", "path": "[treatment-id]", "description": "Detalle tratamiento CRUD" },
+              { "id": "ladder-slot", "path": "ladder/[slot-id]", "description": "Detalle slot escalera (rol + treatment_ref + pricing override + cta_copy)" }
+            ]
+          },
+          {
+            "id": "compliance",
+            "label": "Compliance",
+            "icon": "🛡️",
+            "description": "Semáforo HIPAA-lite + política retención + reportes",
+            "phase2_story": "vitalia-fase2-lisa-compliance",
+            "reuse": "medical-compliance shipped",
+            "links_to": ["config/avanzado#raw-log"]
+          }
+        ]
+      },
+      {
+        "id": "lucas",
+        "label": "Atraer",
+        "role": "Lucas",
+        "color": "#111111",
+        "color_token": "--agent-lucas",
+        "avatar": "/agents/lucas/thumbnail.png",
+        "default_subtab": "lanzar",
+        "model": "ciclo-temporal-v2",
+        "subtabs": [
+          {
+            "id": "lanzar",
+            "label": "Lanzar",
+            "icon": "🚀",
+            "description": "Nueva campaña · Quick-post · Borradores · Pendientes aprobación",
+            "phase2_story": "vitalia-fase2-lucas-lanzar",
+            "reuse": "NEW workspace P4 campaign",
+            "n3_dyn": [
+              { "id": "nueva-campana", "path": "nueva", "description": "Wizard adaptivo paga/orgánica" },
+              { "id": "borrador", "path": "borradores/[draft-id]", "description": "Editor borrador campaña" }
+            ]
+          },
+          {
+            "id": "envuelo",
+            "label": "En vuelo",
+            "icon": "📡",
+            "description": "Campañas activas · Posts programados · Performance live",
+            "phase2_story": "vitalia-fase2-lucas-envuelo",
+            "reuse": "NEW",
+            "n3_dyn": [
+              { "id": "campana-activa", "path": "campana/[campaign-id]", "description": "Workspace detalle: live KPIs + creatividades + ajustes" },
+              { "id": "post-programado", "path": "post/[post-id]", "description": "Preview + edit + cancel post" }
+            ]
+          },
+          {
+            "id": "recursos",
+            "label": "Recursos",
+            "icon": "📚",
+            "description": "Biblioteca creatividades · Copy reusable · Generador IA · Importados · Solicitudes Mateo",
+            "phase2_story": "vitalia-fase2-lucas-recursos",
+            "reuse": "marketing module shipped + Mateo assistant cards",
+            "mateo_integration": true,
+            "n3_dyn": [
+              { "id": "asset", "path": "assets/[asset-id]", "description": "Detalle creatividad" }
+            ]
+          },
+          {
+            "id": "resultados",
+            "label": "Resultados",
+            "icon": "📈",
+            "description": "Embudo Bowtie izq · Comparativa canal · Histórico · Post-mortem",
+            "phase2_story": "vitalia-fase2-lucas-resultados",
+            "reuse": "analytics shipped + bowtie funnel shipped",
+            "n3_dyn": [
+              { "id": "post-mortem", "path": "campana/[campaign-id]/post-mortem", "description": "Análisis cerrada: qué funcionó / qué no + recomendación próxima iteración" }
+            ]
+          },
+          {
+            "id": "mercado",
+            "label": "Mercado",
+            "icon": "🌍",
+            "description": "Tendencias rubro · Hashtags · Competencia · Sugerencias Lucas",
+            "phase2_story": "vitalia-fase2-lucas-mercado",
+            "reuse": "NEW (trends mining)"
+          }
+        ]
+      },
+      {
+        "id": "adrian",
+        "label": "Vender",
+        "role": "Adrián",
+        "color": "#01b2f8",
+        "color_token": "--agent-adrian",
+        "avatar": "/agents/adrian/thumbnail.png",
+        "default_subtab": "inbox",
+        "subtabs": [
+          {
+            "id": "inbox",
+            "label": "Inbox",
+            "icon": "💬",
+            "description": "Conversaciones cross-canal · 3-modos · Activity stream",
+            "phase2_story": "vitalia-fase2-adrian-inbox",
+            "reuse": "inbox+sales_agent shipped",
+            "paradigm": "3-modos-decide-consulta-manual",
+            "n3_dyn": [
+              { "id": "conversation", "path": "[conv-id]", "description": "Thread completo + ContactSidebar PHI masked + Activity stream" }
+            ]
+          },
+          {
+            "id": "embudo",
+            "label": "Embudo",
+            "icon": "🎯",
+            "description": "Toggle Kanban | Lista CRM · 6 stages dental",
+            "phase2_story": "vitalia-fase2-adrian-embudo",
+            "reuse": "REFACTOR slice-1-pipeline + nicolify closer-studio",
+            "toggle_views": ["kanban", "lista"],
+            "stages_default_vertical": ["interesado", "calificando", "considerando", "listo", "reservado", "decidio-no"],
+            "stages_customizable_per_vertical": true,
+            "n3_dyn": [
+              { "id": "lead-detail", "path": "[lead-id]", "description": "Lead workspace: datos + historial conv + propuestas + score + time-in-stage + tools registry" }
+            ]
+          },
+          {
+            "id": "outbound",
+            "label": "Outbound",
+            "icon": "📣",
+            "description": "Campañas a leads · 5 templates Meta-approved",
+            "phase2_story": "vitalia-fase2-adrian-outbound",
+            "reuse": "fidelización + 5 templates Meta-approved shipped",
+            "audience": "leads-pre-paciente",
+            "n3_dyn": [
+              { "id": "campana-outbound", "path": "campana/[campaign-id]", "description": "Wizard 3 pasos: segmento + template + schedule" }
+            ]
+          },
+          {
+            "id": "propuestas",
+            "label": "Propuestas",
+            "icon": "💼",
+            "description": "Opt-in dental/estética · Planes pago · Firma digital",
+            "phase2_story": "vitalia-fase2-adrian-propuestas",
+            "reuse": "NEW + Stripe/MP shipped",
+            "opt_in_per_vertical": { "dental": true, "estetica": true, "psicologia": false, "psiquiatria": false },
+            "n3_dyn": [
+              { "id": "propuesta", "path": "[proposal-id]", "description": "Workspace propuesta: tratamientos + plan pago + términos + firma + estado pagos + trazabilidad" }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "valeria",
+        "label": "Operar",
+        "role": "Valeria",
+        "color": "#7b2d91",
+        "color_token": "--agent-valeria",
+        "avatar": "/agents/valeria/thumbnail.png",
+        "default_subtab": "agenda",
+        "dual_role": "tab_operar + chat_persistente_shell",
+        "subtabs": [
+          {
+            "id": "agenda",
+            "label": "Agenda",
+            "icon": "📆",
+            "description": "Calendario + drawer slot · Subform Cobrar saldo inline",
+            "phase2_story": "vitalia-fase2-valeria-agenda",
+            "reuse": "REFACTOR slice-1-agenda + scheduling+booking shipped",
+            "views": ["dia", "semana", "mes"],
+            "slot_statuses": ["pagado", "deposito", "sin-pago", "no-show"],
+            "slot_origins": ["walk-in", "telefono", "proactiva-adrian"],
+            "service_blockers": ["vitalia-payment-adapter-mvp", "vitalia-fiscal-emission-pe"],
+            "presets_filtered": ["hoy", "por-confirmar-manana", "re-agendar-pendientes", "no-shows-del-dia"],
+            "n3_dyn": [
+              { "id": "slot-drawer", "trigger": "click slot", "description": "Drawer inline: paciente PHI masked + turno + Cobrar saldo subform fiscal + acciones" },
+              { "id": "crear-cita", "trigger": "click Crear cita", "options": ["walk-in", "telefono"] }
+            ]
+          },
+          {
+            "id": "pacientes",
+            "label": "Pacientes",
+            "icon": "👥",
+            "description": "Directorio + ficha + Tratamientos activos",
+            "phase2_story": "vitalia-fase2-valeria-pacientes",
+            "reuse": "patients+crm shipped",
+            "segments": ["todos", "deudores", "tratamientos-activos"],
+            "n3_dyn": [
+              { "id": "ficha-paciente", "path": "[patient-id]", "description": "Workspace: datos + historial citas + tratamientos + estado cuenta + etiquetas" },
+              { "id": "nuevo-paciente", "trigger": "click + Nuevo paciente", "description": "Form rápido alta" }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "camila",
+        "label": "Mantener",
+        "role": "Camila",
+        "color": "#180d95",
+        "color_token": "--agent-camila",
+        "avatar": "/agents/camila/thumbnail.png",
+        "default_subtab": "voz",
+        "paradigm": "3-modos-decide-consulta-manual + 12-triggers-ssot",
+        "valeria_centric": true,
+        "subtabs": [
+          {
+            "id": "voz",
+            "label": "Voz del paciente",
+            "icon": "🎤",
+            "description": "Entrante + Curaduría + Activos vivos (UN flujo)",
+            "phase2_story": "vitalia-fase2-camila-voz",
+            "reuse": "fidelización+NPS shipped",
+            "sub_views": ["entrante", "en-curaduria", "activos-vivos"],
+            "triggers_ssot": [
+              "nps-9-10", "nps-7-8", "nps-0-6",
+              "resena-4-plus", "resena-3", "resena-menor-3",
+              "mencion-positiva", "mencion-negativa",
+              "dormant-60d", "fin-tratamiento", "mantenimiento-vence-30d",
+              "promotor-sin-referir-14d", "cumpleanos",
+              "propuesta-sin-firmar-7d", "imagen-testimonio"
+            ]
+          },
+          {
+            "id": "reactivar",
+            "label": "Reactivar",
+            "icon": "🪃",
+            "description": "Audience PACIENTES en riesgo · churn defense · 5 listas dinámicas",
+            "phase2_story": "vitalia-fase2-camila-reactivar",
+            "reuse": "sales_agent reengagement_tool shipped + fidelización",
+            "audience": "pacientes-existentes-post-revenue",
+            "listas_dinamicas": [
+              "sin-actividad-60-90-180d",
+              "fin-tratamiento-sin-recall",
+              "mantenimiento-por-vencer",
+              "propuesta-sin-firmar",
+              "detractor-nps-pendiente"
+            ]
+          },
+          {
+            "id": "multiplicar",
+            "label": "Multiplicar",
+            "icon": "🤝",
+            "description": "Audience PROMOTORES · referidos + advocacy growth",
+            "phase2_story": "vitalia-fase2-camila-multiplicar",
+            "reuse": "referrals_leaderboard MUDAR de Lucas→Camila (P1 atomic ownership)",
+            "audience": "promotores-growth-via-existentes",
+            "listas_dinamicas": ["promotor-sin-referir", "cumpleanos-mes", "aniversario-cliente"],
+            "auto_triggers": ["nps-promotor-14d", "cumpleanos", "resena-5-estrellas"]
+          },
+          {
+            "id": "reputacion",
+            "label": "Reputación",
+            "icon": "📊",
+            "description": "Panorama estratégico cross-canal (planned)",
+            "phase2_story": "vitalia-fase2-camila-reputacion",
+            "reuse": "NEW (planned)",
+            "status": "scaffold-fase2-mvp"
+          }
+        ]
+      },
+      {
+        "id": "config",
+        "label": "Configurar",
+        "role": "Admin",
+        "color": "#64748b",
+        "color_token": "--agent-config",
+        "icon": "⚙️",
+        "no_agent_face": true,
+        "default_subtab": "cuenta",
+        "filosofia": "panel-dueno-uso-1-2x-mes · Valeria-hace-todo-conceptualmente · UI-es-espejo-visual",
+        "subtabs": [
+          {
+            "id": "cuenta",
+            "label": "Mi cuenta",
+            "icon": "🏢",
+            "description": "Info clínica + Plan Luana + Equipo",
+            "phase2_story": "vitalia-fase2-config-cuenta",
+            "reuse": "iam shipped + brand.yaml",
+            "sections": ["info-clinica", "plan-facturacion-luana", "equipo-clinica-rbac"]
+          },
+          {
+            "id": "conexiones",
+            "label": "Conexiones",
+            "icon": "🔌",
+            "description": "HUB integraciones · 6 categorías · OAuth flows",
+            "phase2_story": "vitalia-fase2-config-conexiones",
+            "reuse": "connections shipped + nicolify HUB pattern",
+            "categorias": [
+              "marketing-publicidad",
+              "mensajeria-atencion",
+              "pagos-facturacion",
+              "calendarios-externos",
+              "presencia-online",
+              "integraciones-tecnicas"
+            ],
+            "n3_dyn": [
+              { "id": "provider-detail", "path": "[provider-id]", "description": "Drawer detalle: OAuth + health + permisos + config + actividad + desconectar" }
+            ]
+          },
+          {
+            "id": "avanzado",
+            "label": "Avanzado",
+            "icon": "🔬",
+            "description": "Reglas + Raw audit log + LLM keys + Flags + API + Import/Export + Danger zone",
+            "phase2_story": "vitalia-fase2-config-avanzado",
+            "reuse": "NEW",
+            "sections": [
+              "reglas-politicas",
+              "registro-tecnico-raw",
+              "llm-keys-byo",
+              "feature-flags",
+              "api-tokens-webhooks",
+              "import-export",
+              "zona-peligrosa"
+            ]
+          }
+        ]
+      }
     ],
-    "global_actions": [
-      { "id": "global-search", "label": "Buscar todo", "icon": "search", "shortcut": "cmd+k" },
-      { "id": "global-notifications", "label": "Notificaciones", "icon": "bell" },
-      { "id": "global-user-menu", "label": "Tu cuenta", "icon": "user-circle" }
-    ]
+    "transversal": {
+      "mateo": {
+        "id": "mateo",
+        "role": "diseñador",
+        "color": "#fee209",
+        "no_tab": true,
+        "appearances": [
+          { "context": "lisa.marca.landing", "description": "Assistant card asiste diseño landing" },
+          { "context": "lucas.recursos", "description": "Solicitudes Mateo queue diseño gráfico" }
+        ]
+      }
+    },
+    "cross_shell_notifications": {
+      "type": "bell-icon-topbar",
+      "owner": "all-agents",
+      "description": "Recomendaciones cross-agente viven en bell icon TopBar (modelo Facebook/Linear/GitHub). Click → deep-link al átomo donde tomar acción.",
+      "status": "fase-2-final (postponed)"
+    }
   }
 }
 ```
 
-## Decisiones implícitas (señaladas para que cuestiones si querés)
+---
 
-1. **Valeria/Adrián/Lucas como `transversal_layer`** — NO opciones del menú · viven en el shell.
-2. **Inicio = single route** sin hijos (home adaptativo).
-3. **Tratamientos aparece 2 veces** semánticamente: `operar/tratamientos-ejecucion` (en curso con pacientes) vs `identidad/catalogo-tratamientos` (catálogo definición). Diferentes acciones.
-4. **Ofertas en Crecer** (es promo comercial, no catálogo permanente).
-5. **Patient portal** lo agrupé bajo `identidad/landing-publica` (es público-facing extension del clinic slug). Si lo querés como padre 7º, agregalo.
-6. **Compliance como sub-nodo de Configurar** — si lo querés como padre 7º por ser diferenciador médico-legal, movelo a top-level.
+## § 2 — Counts cementados
 
-Mockup Apple-style cargando en otro file (refresh `http://localhost:8888/dual-mode-shell.html` cuando lo avise).
+| Capa | Cantidad |
+|---|---|
+| Tabs top-level | 6 (5 agentes + 1 Configurar) |
+| Sub-tabs totales | 22 (Lisa 4 · Lucas 5 · Adrián 4 · Valeria 2 · Camila 4 · Configurar 3) |
+| Agente transversal sin tab | 1 (Mateo) |
+| N3-dyn workspaces | ~18 (detalles paciente · doctor · campaña · post · slot · etc.) |
+
+---
+
+## § 3 — Reglas de navegación
+
+| Caso | Comportamiento |
+|---|---|
+| Usuario no autenticado | Clerk middleware → `/sign-in` |
+| Usuario autenticado sin tenant | `/select-tenant` (placeholder, no en MVP) |
+| URL `/{tenant}/(shell-organism)` (sin agente) | Redirect `/{tenant}/(shell-organism)/lisa/marca` (default home) |
+| URL `/{tenant}/(shell-organism)/{agent}` (sin subtab) | Redirect a `default_subtab` del agente per § 1 |
+| URL `/{tenant}/(shell-organism)/{agent-invalido}/...` | 404 `not-found.tsx` con CTA volver |
+| URL `/{tenant}/(shell-organism)/{agent}/{subtab-invalido}` | 404 idem |
+| Navegación vía chat Valeria | Deep-link directo a la sub-tab + opcional indicador "vía Valeria" en breadcrumb |
+| Navegación manual click ribbon | URL update + active state |
+| Cambio tenant | Hard redirect preservando agent + subtab actual |
+
+---
+
+## § 4 — Anti-creep documentado (qué NO entra al shell)
+
+| Concepto | Razón de exclusión | Decisión cementada |
+|---|---|---|
+| Tab "Reportes financieros" propio | Vive en Lisa o TopBar (TBD) — no es agente | Q5 ratificado 2026-05-21 |
+| Tab "Caja" estilo ERP en Valeria | Eliminada — cobro 100% inline en slot agenda | Q5 ratificado |
+| Sub-tab "Notas médicas" en Valeria | Fuera scope — no es PMS | Q-valeria-macro |
+| Sub-tab "Perfil doctor" en Valeria | Movido a Lisa Mi Clínica (asset semi-estático) | Q-doctores |
+| Tab "Estado cuenta" en Valeria | Cohort filtro en directorio Pacientes "Deudores" | Q5 |
+| Tab dedicada "Recomendaciones" | Vive en bell icon TopBar cross-agente | P2 |
+| Tab "Conexiones" duplicada per agente | Centralizada en ⚙️ Configurar + `<RequireConnection>` inline | P3 |
+| Tab "Mateo" | Mateo es transversal sin tab — asiste landing + diseño gráfico futuro | Q1.b |
+| Sub-tab "Doctores" en Configurar | Vive en Lisa Mi Clínica | Q-doctores |
+| Sub-tab "Identidad/Voz/Landing" en Configurar | Vive en Lisa Marca | Q-configurar-macro |
+| Tabs "Catálogo" + "Escalera" separadas | Una sub-tab Servicios con toggle Catálogo\|Escalera | Q-servicios-vs-ladder |
+
+---
+
+## § 5 — Mapping per agente a stories Fase 2
+
+> Cada sub-tab del § 1 cita su `phase2_story`. La generación de stories Fase 2 (Task #7-#11 del task tracker) materializa estos slugs.
+
+| Agente | Sub-tabs | Stories Fase 2 totales |
+|---|---|---|
+| 🟢 Lisa | 4 | 4 stories (F2-S7..F2-S10) |
+| 🖤 Lucas | 5 | 5 stories (F2-S15..F2-S19) |
+| 🔵 Adrián | 4 | 4 stories (F2-S3..F2-S6) |
+| 🟣 Valeria | 2 | 2 stories (F2-S1..F2-S2) |
+| 🟦 Camila | 4 | 4 stories (F2-S11..F2-S14) |
+| ⚙️ Configurar | 3 | 3 stories (F2-S20..F2-S22) |
+| **Total** | **22** | **22** |
+
+---
+
+## § 6 — Versioning
+
+| Versión | Fecha | Cambio |
+|---|---|---|
+| 0.1 | 2026-05-21 | Borrador inicial en edición humana Chris |
+| **1.0** | **2026-05-22** | **Cementado post mockup HTML ratificado. JSON tree completo · counts · anti-creep · mapping stories** |

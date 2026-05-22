@@ -2,24 +2,92 @@
 brand: vitalia
 vertical: "Salud + Bienestar"
 status: shipped
-last_updated: 2026-05-21
-slice_1_status: ola2-marketing-done-2026-05-21  # ✅ Ola 2 (parcial) — vitalia-slice-1-marketing state=done autonomous E2E sesión (architect→dev-team→auditor→pm-vitalia). 13 tickets shipped (6 BE + 7 FE) · 3 audit iter (cap 3 reached, succeeded) · 5 capabilities NEW (4 marketing + 1 connections oauth) · 1 module NEW (marketing.md) + 1 UPDATE (connections.md). Pipeline pendiente (Ola 2 paralela).
-ola1_status: done-2026-05-20  # ✅ inbox + fideliz state=done en main (squash-merge previo).
-cleanup_done_2026-05-20: ola1-capability-inventory-closed  # ✅ 7 NEW + 1 UPDATE capability YAMLs creados (commit 3983b9b) · 6 modules MD auto-list refreshed · portfolio regen · R32 verification gate PASS · gate_status rename en hard_gates_closed_log (workaround parser bug)
+last_updated: 2026-05-22
+paradigm: shell-organism-agentico-v1                 # ★ 2026-05-22 cementado ★
+shell_organism_status: planning-done-2026-05-22      # ★ design-story cerrada, Fase 1 + Fase 2 backlog generado
+slice_1_status: superseded-by-shell-organism-2026-05-22  # ★ paradigma reemplazado · stories slice-1 archivadas o refactored
+ola1_status: done-2026-05-20
+cleanup_done_2026-05-20: ola1-capability-inventory-closed
 active_outcomes:
-  - dev-environment-multibrand     # receta vitalia shipped, cross-brand replicación pendiente nicolify/comunify/lupulo
-  - vitalia-mvp-ui-foundation      # outcome maestro Slice 1/2/3 FE Vitalia MVP
+  - dev-environment-multibrand
+  - vitalia-mvp-ui-foundation      # outcome maestro REFACTORIZADO 2026-05-22 = contenedor Fase 1 + Fase 2 shell-organism
 active_stories:
-  # vitalia-slice-1-inbox            # state: done · archived in vitalia/docs/archive/2026/stories/ · merged 2026-05-20
-  # vitalia-slice-1-fidelizacion     # state: done · archived in vitalia/docs/archive/2026/stories/ · merged 2026-05-20
-  - vitalia-slice-1-pipeline               # state: refined · Ola 2 (paralela marketing ya done) · depende side payment-adapter-mvp · pending /architect refresh
-  - vitalia-slice-1-marketing-integration  # state: idea · BLOCKER post-merge: marketing shipped pero no integrado a app shell (sidebar nav + dashboard stub + Tailwind runtime bug). Spawned 2026-05-21 por learning auto-handoff-deferred-e2e-blocker. 5 tickets estimate ~3-5h wall.
-  # vitalia-slice-1-marketing              # state: done · archived in vitalia/docs/archive/2026/stories/ · merged 2026-05-21
-  - vitalia-slice-1-agenda                 # state: refined · Ola 3 (sola, más compleja) · depende side payment-adapter-mvp + side fiscal-emission-pe · pending /architect refresh
-  - vitalia-pricing-decision               # state: idea (Chris postergó, no bloquea Slice 1)
-  - vitalia-payment-adapter-mvp            # state: refining · paralelo Olas (Chris ratificó 2026-05-20: arrancar /po draft pendiente)
-  - vitalia-fiscal-emission-pe             # state: refining · paralelo Olas (Chris ratificó 2026-05-20: arrancar /po draft pendiente)
-deferred_audits: []                        # ★ Story closure gate — sin deudas activas
+  # === Shell-organism done (2026-05-22) ===
+  # vitalia-shell-organism                 # state: done · archived 2026-05-22 (design-story planning) · artefactos producidos: SHELL-DESIGN-CONTRACT.md + 01-spec-shell-template.md + navigation-tree.md + 07-merge.md
+  # === Fase 1 — shell esqueleto (11 stories, state: idea) ===
+  - vitalia-fase1-stack-stability          # F1-S0 · blocker hard de Fase 1 · Shadcn install + Tailwind v4 verify + .vt-* deprecation plan
+  - vitalia-fase1-design-tokens-theme      # F1-S1
+  - vitalia-fase1-topbar-global            # F1-S2
+  - vitalia-fase1-tenant-switcher          # F1-S3
+  - vitalia-fase1-shell-layout-5050        # F1-S4
+  - vitalia-fase1-valeria-rail-history     # F1-S5
+  - vitalia-fase1-valeria-chat-skeleton    # F1-S6
+  - vitalia-fase1-ribbon-6-tabs            # F1-S7
+  - vitalia-fase1-sub-tabs-line2           # F1-S8
+  - vitalia-fase1-routing-shell            # F1-S9
+  - vitalia-fase1-empty-states             # F1-S10
+  # === Fase 2 — migración progresiva (22 stories, state: idea) ===
+  # 6 Valeria + Adrián primer valor end-to-end:
+  - vitalia-fase2-valeria-agenda           # F2-S1 · refactor desde slice-1-agenda · service deps: payment + fiscal-pe
+  - vitalia-fase2-valeria-pacientes        # F2-S2
+  - vitalia-fase2-adrian-inbox             # F2-S3
+  - vitalia-fase2-adrian-embudo            # F2-S4 · refactor desde slice-1-pipeline · service deps: payment
+  - vitalia-fase2-adrian-outbound          # F2-S5
+  - vitalia-fase2-adrian-propuestas        # F2-S6 · service deps: payment
+  # 4 Lisa:
+  - vitalia-fase2-lisa-marca               # F2-S7
+  - vitalia-fase2-lisa-doctores            # F2-S8
+  - vitalia-fase2-lisa-servicios           # F2-S9
+  - vitalia-fase2-lisa-compliance          # F2-S10
+  # 4 Camila:
+  - vitalia-fase2-camila-voz               # F2-S11
+  - vitalia-fase2-camila-reactivar         # F2-S12
+  - vitalia-fase2-camila-multiplicar       # F2-S13
+  - vitalia-fase2-camila-reputacion        # F2-S14
+  # 5 Lucas:
+  - vitalia-fase2-lucas-lanzar             # F2-S15
+  - vitalia-fase2-lucas-envuelo            # F2-S16
+  - vitalia-fase2-lucas-recursos           # F2-S17
+  - vitalia-fase2-lucas-resultados         # F2-S18
+  - vitalia-fase2-lucas-mercado            # F2-S19
+  # 3 Configurar:
+  - vitalia-fase2-config-cuenta            # F2-S20
+  - vitalia-fase2-config-conexiones        # F2-S21
+  - vitalia-fase2-config-avanzado          # F2-S22
+  # === Service-stories laterales (refining → refined cuando Fase 2 lo necesite) ===
+  - vitalia-payment-adapter-mvp            # state: refining
+  - vitalia-fiscal-emission-pe             # state: refining
+  # === Parked ===
+  - vitalia-pricing-decision               # state: idea (Chris postergó, no bloquea)
+  # === Dropped 2026-05-22 ===
+  # vitalia-slice-1-marketing-integration  # state: dropped · Tailwind diag absorbido en F1-S0 · sidebar tradicional muere con shell-organism
+  # === Refactored (renombrados, originales archivados) ===
+  # vitalia-slice-1-pipeline → vitalia-fase2-adrian-embudo (renombre + checkpoint refresh pending Task #12)
+  # vitalia-slice-1-agenda → vitalia-fase2-valeria-agenda (renombre + checkpoint refresh pending Task #12)
+deferred_audits: []
+shell_organism_paradigm_2026_05_22:
+  cement_date: 2026-05-22
+  ratified_by: chris
+  artifacts:
+    mockup_html: vitalia/docs/product/stories/vitalia-shell-organism/mockups/dual-mode-shell.html
+    design_contract: vitalia/docs/architecture/SHELL-DESIGN-CONTRACT.md
+    story_template: vitalia/docs/specs/templates/01-spec-shell-template.md
+    navigation_tree: vitalia/docs/product/stories/vitalia-shell-organism/navigation-tree.md
+    baseline_decisions: vitalia/docs/product/stories/vitalia-shell-organism/00-session-baseline.md
+    merge_artifact: vitalia/docs/product/stories/vitalia-shell-organism/07-merge.md
+  technical_decisions_5:
+    - "Shadcn UI install en vitalia/frontend/ AHORA (F1-S0)"
+    - "Deprecar .vt-* utility classes COMPLETO (150+ classes)"
+    - "Route group paralelo (shell-organism)/ coexiste con (dashboard)/ legacy"
+    - "Verificar Tailwind v4 empíricamente F1-S0"
+    - "Atomic design strict (átomos · moléculas · organismos · templates · pages)"
+  fase_1_stories_count: 11
+  fase_2_stories_count: 22
+  service_laterales_count: 2
+  refactored_count: 2
+  dropped_count: 1
+  total_new_or_changed: 38
+  next_recommended_action: "/po-ux para refining F1-S0 (vitalia-fase1-stack-stability)"
 slice_1_replan_2026_05_20:                 # ★ Replan ratificado Chris 2026-05-20 — SSoT plan vivo
   audit_report: vitalia/docs/archive/2026/stories/vitalia-ux-discovery/audit-2026-05-20/AUDIT-REPORT.md
   preflight_checklist: vitalia/docs/architecture/PRE-FLIGHT-CHECKLIST-slice-1.md
