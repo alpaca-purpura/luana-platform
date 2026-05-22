@@ -10,8 +10,8 @@ agent_owner: shell                                 # transversal — no es de un
 capability: shell.foundation
 po_version: 1.0
 last_modified: 2026-05-22
-state: refining
-ratified_by_chris: false                           # pasa a true al ratify whole-doc
+state: refined
+ratified_by_chris: true                            # ratificado whole-doc por Chris 2026-05-22 (3 batches consolidados)
 ratified_visual_by_chris: not_applicable          # F1-S0 EXENTA del protocolo mockup-per-component (ADR-vitalia-003 § Excepciones)
 ratified_visual_reason: "F1-S0 es infra-only — no construye componentes user-facing nuevos. Las 2 test pages auxiliares (primitives-showcase.tsx, agent-tokens-swatch.tsx) son fixtures Playwright, no UI prod."
 parallel_safe: false                               # blocker hard de toda Fase 1

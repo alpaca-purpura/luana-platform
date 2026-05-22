@@ -6,11 +6,14 @@ type: ui-story
 agent_owner: shell                                  # transversal — no es de un agente
 module: shell-organism / infra
 capability: shell.foundation
-state: refining
-phase_state: PO_UX_DRAFTING
-last_artifact: checkpoint.md
+state: refined
+phase_state: SPEC_RATIFIED
+last_artifact: 01-spec.md
 last_modified: 2026-05-22
-ratified_by_chris: false
+ratified_by_chris: true
+ratified_visual_by_chris: not_applicable
+ratified_visual_reason: "F1-S0 EXENTA del protocolo mockup-per-component (ADR-vitalia-003 § Excepciones) — es infra-only, no construye componentes user-facing nuevos"
+po_ux_iterations: 3
 parallel_safe: false                                 # blocker hard de toda Fase 1
 priority: critical
 estimated_dev_weeks: 0.5-1
@@ -32,7 +35,7 @@ blocks_hard:                                          # esta story bloquea TODAS
 reuse_map_summary: "infra-only — verifica Tailwind v4 + instala Shadcn + plan deprecación .vt-* (no migra contenido todavía)"
 spawned_at: 2026-05-22
 spawned_by: /pm-vitalia (post shell-organism cement)
-next_action: "/po-ux loop iterativo Chris hasta ratificación 01-spec.md (state refining→refined al ratify) → handoff /architect ready package"
+next_action: "/pm-vitalia revisa ready + decide cuándo arrancar /architect. Chris ratificó 01-spec.md whole-doc + 4 artifacts protocolo mockup-per-component (ADR-vitalia-003 + rule overlay + learning + README index) 2026-05-22"
 ---
 
 # vitalia-fase1-stack-stability — checkpoint
