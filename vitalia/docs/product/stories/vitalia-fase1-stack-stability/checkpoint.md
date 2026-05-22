@@ -6,8 +6,8 @@ type: ui-story
 agent_owner: shell                                  # transversal — no es de un agente
 module: shell-organism / infra
 capability: shell.foundation
-state: idea
-phase_state: SPAWNED
+state: refining
+phase_state: PO_UX_DRAFTING
 last_artifact: checkpoint.md
 last_modified: 2026-05-22
 ratified_by_chris: false
@@ -32,7 +32,7 @@ blocks_hard:                                          # esta story bloquea TODAS
 reuse_map_summary: "infra-only — verifica Tailwind v4 + instala Shadcn + plan deprecación .vt-* (no migra contenido todavía)"
 spawned_at: 2026-05-22
 spawned_by: /pm-vitalia (post shell-organism cement)
-next_action: "/po-ux refinar 01-spec.md detallado con scope verbatim + Gherkin scenarios"
+next_action: "/po-ux loop iterativo Chris hasta ratificación 01-spec.md (state refining→refined al ratify) → handoff /architect ready package"
 ---
 
 # vitalia-fase1-stack-stability — checkpoint

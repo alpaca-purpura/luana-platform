@@ -10,5 +10,6 @@ Extiende `.claude/rules/` raíz Luana con rules brand-specific vitalia (Salud + 
 | Rule | Descripción |
 |---|---|
 | `hipaa-lite.md` | Salvaguardas defensivas PHI: dual filter tenant+clinic, audit log obligatorio, encryption at-rest+in-transit, retention 10y, RBAC strict roles médicos, sanitization en traces, voice patterns sales_agent para canales no-encriptados |
+| `shell-mockup-per-component.md` | Protocolo bloqueante pre-`/architect`: cada story Vitalia Fase 1+2 que construye componente UI shell-organism debe producir mockup HTML por-componente en `{story-id}/mockups/` ratificado por Chris ANTES de transition `refining → refined`. F1-S0 exenta (infra-only). SSoT: `vitalia/docs/architecture/ADR-vitalia-003-shell-mockup-per-component-protocol.md` |
 
 **Naming:** `{topic}.md` (ej. `hipaa-lite.md`).
