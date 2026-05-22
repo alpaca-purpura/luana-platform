@@ -6,10 +6,13 @@ type: ui-story
 agent_owner: shell                                  # transversal — no es de un agente
 module: shell-organism / infra
 capability: shell.foundation
-state: ready
-phase_state: READY_PACKAGE_CLOSED
+state: developing
+phase_state: DEV_TEAM_PICKED_UP
 last_artifact: 06-tickets.yaml
 last_modified: 2026-05-22
+developing_started_at: 2026-05-22T21:30:00-05:00
+developing_owner: /dev-team (autonomous Sonnet/Opus per R23)
+chain_plan: "F1-S0 → F1-S1 → F1-S2 → F1-S3 secuencial (WIP cap developing ≤ 1) · auto-handoff /auditor on developed · auto-handoff /pm-vitalia merge on APPROVED · ratificado Chris 2026-05-22"
 ratified_by_chris: true
 ratified_visual_by_chris: not_applicable
 ratified_visual_reason: "F1-S0 EXENTA del protocolo mockup-per-component (ADR-vitalia-003 § Excepciones) — es infra-only, no construye componentes user-facing nuevos"
@@ -35,7 +38,7 @@ blocks_hard:                                          # esta story bloquea TODAS
 reuse_map_summary: "infra-only — verifica Tailwind v4 + instala Shadcn + plan deprecación .vt-* (no migra contenido todavía)"
 spawned_at: 2026-05-22
 spawned_by: /pm-vitalia (post shell-organism cement)
-next_action: "/dev-team vitalia-fase1-stack-stability autonomous build (T-1 fe-shadcn-install first; cap_eligible developing ≤ 1 worktree per story-closure-gate)"
+next_action: "/dev-team iterando T-1..T-N · on all GREEN → auto-handoff /auditor · cap_reached → escalate Chris"
 ---
 
 # vitalia-fase1-stack-stability — checkpoint
