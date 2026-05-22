@@ -2,21 +2,25 @@
 story_id: vitalia-slice-1-marketing-integration
 outcome: vitalia-mvp-ui-foundation
 parent_story: vitalia-slice-1-marketing (archived 2026-05-21, merged fa921711)
-state: idea
-phase: AWAIT_REFINING
+state: dropped
+dropped_at: 2026-05-22
+dropped_reason: "Paradigma shell-organism agéntico cementado 2026-05-22 elimina sidebar tradicional + dashboard route legacy. Los 3 scope items del story original son absorbidos o eliminados: (1) Sidebar nav link `/marketing` → SIDEBAR TRADICIONAL ELIMINADO (paradigma usa Ribbon 6-tabs + Valeria sidebar agéntica). Marketing dispersado en Lucas (Lanzar/Envuelo/Recursos/Resultados/Mercado) sin necesidad sidebar link. (2) Dashboard `SliceOneStubsRow.tsx` placeholder → DASHBOARD HOME ELIMINADO (paradigma redirect inmediato a `lisa/marca` default). (3) Tailwind v4 runtime issue → ABSORBIDO POR F1-S0 vitalia-fase1-stack-stability (story blocker hard Fase 1 incluye verificación empírica Tailwind v4 + browser visual check). Story ya no aplica."
+phase: DROPPED
 spawned_at: 2026-05-21
 spawned_by: /pm-vitalia (post-mortem visual verification gap)
 spawned_reason: "vitalia-slice-1-marketing shipped state=done con merge fa921711 PERO no integrado a app real — sidebar nav no linkea + dashboard sigue mostrando placeholder + Tailwind no renderiza en runtime. Caso documentado en vitalia/docs/learnings/2026-05-21-auto-handoff-deferred-e2e-blocker.md (promotable: yes cross-brand process gap)."
 parallel_safe: true
-ola_assigned: 2-followup
-priority: high
-estimated_dev_weeks: 0.5 (small, mostly trivial fixes + Tailwind diag)
+ola_assigned: null
+priority: low                                                # post-drop reduced from high
+estimated_dev_weeks: 0
 blockers: []
 side_story_blockers: []
-preflight_gates_required:
-  - stack-stable                                  # diagnosticar Turbopack issue learning 2026-05-20 ANTES o IN PARALLEL
-  - manual-visual-verification-protocol-cemented  # output del learning 2026-05-21 — el gate nuevo del process
-next_action: "/pm-vitalia o Chris ratifica refining. Una vez refined → /architect produce ready package (probablemente 3-4 tickets máximo). /dev-team build → /auditor → /pm-vitalia merge — pero esta vez con HARD GATE de manual visual verification antes de cerrar developed."
+ratified_drop_by_chris: true                                # post 2026-05-22 ratification
+absorbed_by:
+  - vitalia-fase1-stack-stability                           # ★ Tailwind v4 diag (F1-S0)
+process_learnings_preserved:
+  - vitalia/docs/learnings/2026-05-21-auto-handoff-deferred-e2e-blocker.md  # promotable cross-brand process gap
+next_action: "NONE — dropped. Tailwind v4 verification absorbido en F1-S0 vitalia-fase1-stack-stability. Process learning manual-visual-verification preservado en learnings/."
 ---
 
 # vitalia-slice-1-marketing-integration — checkpoint
@@ -73,3 +77,11 @@ Este gate impide que vitalia-slice-1-{pipeline,agenda} (próximas en pipeline) s
 - Bug Turbopack relacionado: `vitalia/docs/learnings/2026-05-20-docker-frontend-ram-turbopack-issue.md`
 - Process SSoT actual (gap): `.claude/rules/story-closure-gate.md` (no contempla deferred e2e)
 - Paradigm cementado: `docs/architecture/luana-platform/ADR-007-paradigm-v4.1-autonomy.md`
+
+## Bitácora drop 2026-05-22
+
+- **DROPPED:** paradigma shell-organism agéntico cementado 2026-05-22 (outcome v2.0) elimina sidebar tradicional + dashboard route legacy.
+- Tailwind v4 diagnóstico (T-mki-3) absorbido en `vitalia-fase1-stack-stability` (F1-S0 · blocker hard de toda Fase 1 · ejecuta `make dev-vitalia` + browser visual check empírico).
+- Sidebar nav (T-mki-1) y Dashboard placeholder (T-mki-2) no aplican: paradigma usa Ribbon 6-tabs + Valeria sidebar agéntica · NO sidebar tradicional.
+- Process learning manual-visual-verification (T-mki-4) preservado en `vitalia/docs/learnings/2026-05-21-auto-handoff-deferred-e2e-blocker.md` (promotable cross-brand).
+- Ratified Chris 2026-05-22 (HANDOFF-session-2026-05-22.md plan completo).

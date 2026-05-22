@@ -2,30 +2,27 @@
 story_id: vitalia-slice-1-agenda
 outcome: vitalia-mvp-ui-foundation
 parent_spec: vitalia-ux-discovery (archived 2026-05-20 — inheritance carryover)
-state: refined
-phase: REPLAN_AWAITING_ARCHITECT_REFRESH
-last_artifact: 02-design-ui-mockup.html (heredado parent) + audit-2026-05-20 (parent archive)
-last_modified: 2026-05-20
+state: dropped                                              # paradigm v4: 'superseded' no existe · usar dropped con superseded_by
+superseded_by: vitalia-fase2-valeria-agenda                # ★ refactor 2026-05-22 paradigma shell-organism
+dropped_at: 2026-05-22
+superseded_at: 2026-05-22
+superseded_reason: "Paradigma shell-organism agéntico cementado 2026-05-22 reemplaza outcome v1.0 slice-based por outcome v2.0 fase-based. Capacidades agenda preservadas en F2-S1 vitalia-fase2-valeria-agenda (calendario + drawer slot + subform cobrar saldo). Reuso conceptos: scheduling engine + payment-adapter + fiscal-emission preservado. Cambios: UI migrada a espacio shell-organism `(shell-organism)/valeria/agenda` · drawer pattern Shadcn Sheet · tokens vitalia (agent valeria color) · plan Fase 2 documentado en outcome v2.0."
+phase: SUPERSEDED
+last_artifact: 02-design-ui-mockup.html (legacy · reemplazado por mockup dual-mode-shell.html + Design Contract atomic design)
+last_modified: 2026-05-22
 ratified_by_chris: true
+ratified_refactor_by_chris: true                            # post 2026-05-22 ratification
 spawned_at: 2026-05-17
 spawned_by: /pm-vitalia (split decision post /architect ready package)
 parallel_safe: true
-ola_assigned: 3
-ola_rationale: "Story más compleja Slice 1 — combina scheduling + 3 capas cobranza + fiscal PE + 5 cron jobs + reuso scheduling engine. Va sola en Ola 3 para concentrar deps payment + fiscal."
-ticket_subset_inherited: [T-agenda-1, T-agenda-2, T-agenda-3, T-agenda-4, T-agenda-5, T-agenda-6, T-agenda-7, T-agenda-8, T-agenda-9]
-blocker_dependencies: []                     # infra-cross-cutting DONE
-side_story_blockers: [vitalia-payment-adapter-mvp, vitalia-fiscal-emission-pe]
-preflight_gates_required:
-  - clerk_test_token_fresh_and_webhook_secret_configured
-  - clerk_test_users_3_created
-  - playwright_storage_state_generated
-  - playwright_smoke_suite_green_23_specs
-  - promotion_proposal_core_platform_extensions_slice_1_migrated
-  - vitalia_payment_adapter_mvp_state_developed_or_higher
-  - vitalia_fiscal_emission_pe_state_developed_or_higher
+ola_assigned: null                                          # ya no aplica · paradigm shift
+ola_rationale: "REPLACED — outcome v2.0 fase-based reemplaza Ola-based"
+ticket_subset_inherited: []                                 # preserved in F2-S1 spec
+blocker_dependencies: []
+side_story_blockers: [vitalia-payment-adapter-mvp, vitalia-fiscal-emission-pe]  # mismas deps en F2-S1
 priority: high
 estimated_dev_weeks: 2-3
-next_action: "REPLAN 2026-05-20 ratified Chris. Ola 3 — arranca DESPUÉS de Olas 1+2 done y side stories payment + fiscal shipped. AWAITING /architect refresh tras gates GREEN. /architect produce ready package propio acotado: agenda Semana default + 4 origins + 3 capas cobranza + 5 EP registries + 5 cron jobs. Reuso explícito: core/luana-core-scheduling + core/luana-core-channels.payment.* (mercadopago + stripe + tokenized_recurring) + cron_envelope core (recordatorios idempotent) + CompoundScopeRepositoryBase core."
+next_action: "NONE — superseded por vitalia-fase2-valeria-agenda. Proceder con F2-S1 cuando Fase 1 done + service-stories payment-adapter + fiscal-emission shipped."
 ---
 
 # vitalia-slice-1-agenda — checkpoint
@@ -66,3 +63,4 @@ Agenda hereda contratos Lead + Customer + Conversation de Olas 1+2 (inbox + pipe
 
 - 2026-05-17 spawned: split decision Chris post /architect ready package mega-story
 - 2026-05-20 REPLAN: Ola 3 asignada (sola, más compleja). Pre-flight + lift core + side payment + side fiscal documentados.
+- **2026-05-22 SUPERSEDED:** paradigma shell-organism agéntico cementado. Capacidades migradas a `vitalia-fase2-valeria-agenda` (F2-S1). Ver detalle: `vitalia/docs/product/stories/vitalia-fase2-valeria-agenda/checkpoint.md`. Outcome refactor v2.0 documentado en `vitalia/docs/product/outcomes/vitalia-mvp-ui-foundation.md` (CHANGELOG v2.0). 17 decisiones cementadas baseline shell-organism: `vitalia/docs/product/stories/vitalia-shell-organism/00-session-baseline.md`. State `superseded` (no `done` ni `dropped`) — preserva inheritance carryover de specs/UX para auditor referencia futura.

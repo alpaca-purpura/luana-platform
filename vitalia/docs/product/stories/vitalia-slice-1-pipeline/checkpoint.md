@@ -2,29 +2,27 @@
 story_id: vitalia-slice-1-pipeline
 outcome: vitalia-mvp-ui-foundation
 parent_spec: vitalia-ux-discovery (archived 2026-05-20 — inheritance carryover)
-state: refined
-phase: REPLAN_AWAITING_ARCHITECT_REFRESH
-last_artifact: 02-design-ui-mockup.html (heredado parent) + audit-2026-05-20 (parent archive)
-last_modified: 2026-05-20
+state: dropped                                              # paradigm v4: 'superseded' no existe · usar dropped con superseded_by
+superseded_by: vitalia-fase2-adrian-embudo                  # ★ refactor 2026-05-22 paradigma shell-organism
+dropped_at: 2026-05-22
+superseded_at: 2026-05-22
+superseded_reason: "Paradigma shell-organism agéntico cementado 2026-05-22 reemplaza outcome v1.0 slice-based por outcome v2.0 fase-based. Capacidades pipeline preservadas en F2-S4 vitalia-fase2-adrian-embudo (Kanban|Lista toggle + 6 stages dental customizable + lead detail N3-dyn workspace). Cambios: ownership Adrián tab Vender · ruta `(shell-organism)/adrian/embudo` · 6 stages dental defaults (interesado · calificando · considerando · listo · reservado · decidio-no) versus 6 anteriores (similar) · @dnd-kit/core para DnD · screening Lucas ya shipped consumido sin cambios. Side payment-adapter-mvp preservado dep."
+phase: SUPERSEDED
+last_artifact: 02-design-ui-mockup.html (legacy · reemplazado por dual-mode-shell.html + Design Contract)
+last_modified: 2026-05-22
 ratified_by_chris: true
+ratified_refactor_by_chris: true
 spawned_at: 2026-05-17
 spawned_by: /pm-vitalia (split decision post /architect ready package)
 parallel_safe: true
-ola_assigned: 2
-ola_rationale: "Reuso fuerte nicolify/closer-studio board kanban. Depende side payment-adapter-mvp (badge depósito 30%) y consume Lucas screening tool ya shipped en vitalia-copilot-tools-impl."
-ticket_subset_inherited: [T-pipeline-1, T-pipeline-2, T-pipeline-3, T-pipeline-4, T-pipeline-5, T-pipeline-6, T-pipeline-7]
-blocker_dependencies: []                     # infra-cross-cutting DONE
-side_story_blockers: [vitalia-payment-adapter-mvp]  # vitalia-copilot-tools-impl ya DONE 2026-05-18 (Lucas screening tool shipped)
-preflight_gates_required:
-  - clerk_test_token_fresh_and_webhook_secret_configured
-  - clerk_test_users_3_created
-  - playwright_storage_state_generated
-  - playwright_smoke_suite_green_23_specs
-  - promotion_proposal_core_platform_extensions_slice_1_migrated
-  - vitalia_payment_adapter_mvp_state_developed_or_higher
+ola_assigned: null
+ola_rationale: "REPLACED — outcome v2.0 fase-based"
+ticket_subset_inherited: []                                 # preserved in F2-S4 spec
+blocker_dependencies: []
+side_story_blockers: [vitalia-payment-adapter-mvp]
 priority: high
 estimated_dev_weeks: 2-3
-next_action: "REPLAN 2026-05-20 ratified Chris. Ola 2 — arranca DESPUÉS de Ola 1 done y side payment-adapter-mvp shipped. AWAITING /architect refresh tras gates GREEN. /architect produce ready package propio acotado: 6 stages kanban + atribución agentic + DnD + auto-progression + screening clínico Lucas + badge depósito 30%. Reuso explícito: nicolify/closer-studio + nicolify/copilot rail + core/luana-core-crm.Sale + core/luana-core-events StageAdvanced + CompoundScopeRepositoryBase core."
+next_action: "NONE — superseded por vitalia-fase2-adrian-embudo. Proceder con F2-S4 cuando Fase 1 done + payment-adapter-mvp shipped."
 ---
 
 # vitalia-slice-1-pipeline — checkpoint
@@ -62,3 +60,4 @@ Pipeline + inbox comparten contratos Lead + Conversation (provistos por Ola 1 in
 
 - 2026-05-17 spawned: split decision Chris post /architect ready package mega-story
 - 2026-05-20 REPLAN: Ola 2 asignada (paralela con marketing). Pre-flight gates + side payment-adapter-mvp documentados. vitalia-copilot-tools-impl unblock removido (ya done).
+- **2026-05-22 SUPERSEDED:** paradigma shell-organism agéntico. Capacidades migradas a `vitalia-fase2-adrian-embudo` (F2-S4). Owner Adrián tab Vender. Ver `vitalia/docs/product/stories/vitalia-fase2-adrian-embudo/checkpoint.md`. Outcome refactor v2.0 cementado.
