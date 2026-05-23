@@ -72,9 +72,14 @@ export default defineConfig({
         /.*\/e2e\/auth\/.*\.spec\.ts/,
         /.*\/e2e\/dashboard\/.*\.spec\.ts/,
         /.*\/e2e\/visual\/.*\.spec\.ts/,
-        // F1-S4 shell-layout regression specs (functional + visual-goldens structure)
+        // F1-S4 shell-layout regression FUNCTIONAL specs
+        // (visual-goldens corre SOLO en project=visual — ver testIgnore abajo)
         /.*\/e2e\/regression\/.*\.spec\.ts/,
       ],
+      // Exclude visual-goldens: corren EXCLUSIVAMENTE en project=visual que tiene
+      // snapshotPathTemplate + maxDiffPixelRatio: 0.001 config. Sin esa config,
+      // toHaveScreenshot() falla porque no encuentra el snapshot path esperado.
+      testIgnore: [/.*\/visual-goldens\.spec\.ts/],
       use: {
         ...devices["Desktop Chrome"],
         storageState: "playwright/.clerk/user.json",

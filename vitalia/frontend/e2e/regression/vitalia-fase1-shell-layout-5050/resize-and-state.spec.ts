@@ -45,13 +45,17 @@ test.describe("SC-3 — resize boundary + persistencia + snap-up (F1-S4)", () =>
     const initialWidth = await pom.getValeriaWidth();
     expect(initialWidth).toBeGreaterThan(0);
 
-    // Drag far left (400px) — should be clamped at minSize=38% ≈ 486px
+    // Drag far left (400px) — should be clamped at Fase 7A ResizeObserver clamp [10, 70]%
     await pom.dragResizeHandle(-400);
 
     const clampedWidth = await pom.getValeriaWidth();
-    // After drag + clamp, width should be ≥ 38% of 1280px ≈ 486px
-    // Allow 20px tolerance for padding/border
-    expect(clampedWidth).toBeGreaterThanOrEqual(380);
+    // Fase 7A refit: ResizeObserver convierte MIN_VALERIA_PX (620px full / 360px rail) a
+    // percentage dinámico con clamp [10, 70]. En este viewport (1280px), el container mide
+    // ~{containerWidth}px. 620px como % puede superar el clamp 70% → clamped a 70%.
+    // Assertion adaptada: min = Math.min(620, containerWidth * 0.7) con 5% tolerancia.
+    const containerWidth = await pom.getMainContainerWidth();
+    const expectedMin = Math.min(620, containerWidth * 0.7);
+    expect(clampedWidth).toBeGreaterThanOrEqual(expectedMin * 0.95); // 5% tolerance
     // Width should be smaller than initial (we moved left)
     expect(clampedWidth).toBeLessThanOrEqual(initialWidth + 20);
   });
@@ -129,8 +133,11 @@ test.describe("SC-3 — resize boundary + persistencia + snap-up (F1-S4)", () =>
     await pom.setValeriaStateViaStore("full");
 
     const snapWidth = await pom.getValeriaWidth();
-    // After switching to 'full', minSize=38% of 1280px ≈ 486px
-    // react-resizable-panels v4 enforces minSize on state change
-    expect(snapWidth).toBeGreaterThanOrEqual(380);
+    // Fase 7A refit: minSize en 'full' = percentage derivado con ResizeObserver clamp [10, 70].
+    // Snap-up enforces minSize dinámico (containerWidth * 0.38 → clamp 70% si excede).
+    // Assertion adaptada: min = Math.min(620, containerWidth * 0.7) con 5% tolerancia.
+    const containerWidth = await pom.getMainContainerWidth();
+    const expectedSnapMin = Math.min(620, containerWidth * 0.7);
+    expect(snapWidth).toBeGreaterThanOrEqual(expectedSnapMin * 0.95); // 5% tolerance
   });
 });

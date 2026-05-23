@@ -279,4 +279,16 @@ export class ShellLayoutPage {
     const box = await this.topBar.boundingBox();
     return box?.height ?? 0;
   }
+
+  /**
+   * Get the total width of the resizable panel group container (PanelGroup).
+   * Used to compute dynamic min/max widths with Fase 7A ResizeObserver clamp [10, 70]%.
+   * Returns the sum of ValeriaSlot + AppSlot widths (the panel group's visible width).
+   */
+  async getMainContainerWidth(): Promise<number> {
+    // The panel group container holds both panels; its width = valeriaWidth + appWidth
+    const valeriaBox = await this.valeriaSlot.boundingBox();
+    const appBox = await this.appSlot.boundingBox();
+    return (valeriaBox?.width ?? 0) + (appBox?.width ?? 0);
+  }
 }
