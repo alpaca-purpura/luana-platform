@@ -6,17 +6,23 @@ type: ui-story
 agent_owner: shell                                  # transversal — no es de un agente
 module: shell-organism / infra
 capability: shell.foundation
-state: reviewing
-phase_state: AUDIT_ESCALATED_TO_CHRIS
-last_artifact: 06-audit/CHECKPOINTS.md
-last_modified: 2026-05-22
+state: done
+phase_state: MERGED_ARCHIVED
+last_artifact: 07-merge.md
+last_modified: 2026-05-23
+merged_at: 2026-05-23T01:35:00-05:00
+merged_via_squash: pending  # squash de wip/vitalia → main al cierre Fase 1 completo (F1-S0..S10)
+archive_path: vitalia/docs/archive/2026/stories/vitalia-fase1-stack-stability/
+capability_promoted: vitalia/docs/product/capabilities/platform/shell-foundation-shadcn-tailwind-v4.yaml
 developing_started_at: 2026-05-22T21:30:00-05:00
 developing_completed_at: 2026-05-22T23:59:00-05:00
 developing_owner: /dev-team (autonomous Sonnet/Opus per R23)
 reviewing_started_at: 2026-05-23T00:30:00-05:00
-reviewing_owner: /auditor (direct examination, no Opus auditor-frontend spawn por blocker estructural)
-audit_verdict: ESCALATED
-audit_verdict_reason: "C1+C3+C4 ALL GREEN (22 ✅). C2+C5 tienen 4 Chris gates ortogonales loop autónomo: (1) T-4 visual goldens require Chris ratify diff humano post-Playwright update-snapshots. (2) T-7 fe_build_production BLOCKED por pre-existing bug marketing/url-state.ts (commit ac7b3e91 pre-F1-S0, NOT regression). (3) T-7 visual validators dashboard_legacy_{light,dark} requieren make dev-vitalia corriendo. (4) Storyfolder archive blocked until done. Ver 06-audit/CHECKPOINTS.md § Findings detallados + 06-audit/gherkin-matrix.md Phase D matrix."
+reviewing_owner: /auditor (direct examination + in-loop fixes con Chris ratify cycle 2026-05-23T00:30 → 01:30)
+audit_verdict: APPROVED
+audit_verdict_ratified_by: chris
+audit_verdict_ratified_at: 2026-05-23T01:30:00-05:00
+audit_verdict_reason: "ESCALATED inicial resuelto in-loop con 6 fixes acumulados (Fix #1-4 commit 1a296b56 + Fix #5-6 commit 2d105e7e). Tailwind v4 PostCSS setup + agent SSoT + avatares ring color + cursor pointer + hover contrast defensive + 6 goldens Playwright ratificados Chris visualmente. Ver 06-audit/CHECKPOINTS.md § Resolución de Chris gates (post-ESCALATED in-loop session)."
 chain_plan: "F1-S0 → F1-S1 → F1-S2 → F1-S3 secuencial (WIP cap developing ≤ 1) · auto-handoff /auditor on developed · auto-handoff /pm-vitalia merge on APPROVED · ratificado Chris 2026-05-22"
 ratified_by_chris: true
 ratified_visual_by_chris: not_applicable
@@ -47,7 +53,7 @@ blocks_hard:                                          # esta story bloquea TODAS
 reuse_map_summary: "infra-only — verifica Tailwind v4 + instala Shadcn + plan deprecación .vt-* (no migra contenido todavía)"
 spawned_at: 2026-05-22
 spawned_by: /pm-vitalia (post shell-organism cement)
-next_action: "ESCALATED — Chris ratifica opción A (strict block) | B (pragmatic done con scope reducido + 2 stories side) | C (partial done con gaps documentados en capability). Ver 06-audit/CHECKPOINTS.md § Opciones de resolución."
+next_action: "DONE — story archived. Próximo en chain: F1-S1 vitalia-fase1-design-tokens-theme transición ready → developing → /dev-team build."
 ---
 
 # vitalia-fase1-stack-stability — checkpoint

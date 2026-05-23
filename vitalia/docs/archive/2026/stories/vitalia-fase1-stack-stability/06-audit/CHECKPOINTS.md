@@ -1,9 +1,9 @@
 # Story DoD CHECKPOINTS — vitalia/vitalia-fase1-stack-stability
 
 > Brand: vitalia
-> Auditor: /auditor (Conv 3 — direct examination, no auditor-frontend Opus spawn por blocker estructural)
-> Date: 2026-05-22
-> Verdict: **ESCALATED** — Chris gates pendientes ortogonales al loop autónomo
+> Auditor: /auditor (Conv 3)
+> Date: 2026-05-22 (revisión inicial) · 2026-05-23 (revisión post Chris ratify)
+> Verdict: **APPROVED** — Chris ratificó 2026-05-23T01:30:00-05:00 post 6 fixes incrementales in-loop
 
 ## C1 — Code
 
@@ -73,9 +73,43 @@
 
 ## Verdict
 
-**ESCALATED** — story tiene Chris gates ortogonales al loop autónomo dev-team→auditor→pm.
+**APPROVED 2026-05-23** — los Chris gates ESCALATED se resolvieron in-loop con 6 fixes incrementales:
 
-### Findings detallados
+### Resolución de Chris gates (post-ESCALATED in-loop session 2026-05-22T22:30 → 2026-05-23T01:30):
+
+- **Fix #1 (commit `4f3c5d6b` predecessor, refinado en `1a296b56`)**: backend migration 024b crea vitalia_nps_responses ANTES del trigger 025. Stack levanta clean, alembic 024 → 024b → 025 → 031.
+- **Fix #2 (commit `1a296b56`)**: Next.js wrappers `src/app/test-stack/{primitives,agent-tokens}/page.tsx` con default export → Playwright navega a /test-stack/* sin 404.
+- **Fix #3 (commit `1a296b56`)**: spec dev-stack-baseline.spec.ts dashboard URL valido (BASE_URL/ resuelve a (dashboard)/page.tsx). Sin cambios — solo proxy.ts agregó /test-stack a public routes para no auth-gating fixtures.
+- **Fix #4 (commit `1a296b56`)**: `vitalia/frontend/src/features/marketing/types/url-state.ts` agregado "use client" directive — fixea pre-existing SSR bug commit `ac7b3e91`.
+- **Fix #5 (commit `2d105e7e`)**: postcss.config.mjs NEW + @tailwindcss/postcss devDep + globals.css migrado a Tailwind v4 syntax (@import "tailwindcss" + @config). CSS 35k → 101k bytes. bg-primary/bg-agent-* utilities ahora generan correctamente. Era el root cause original (learning 2026-05-21).
+- **Fix #6 (commit `2d105e7e`)**: agent SSoT `src/lib/agents.ts` + 6 thumbnails canónicos copiados de `/home/chalreme/Trabajo/Vitalia/agentes/` + avatares con ring color del agente (inline style colorHex). Button/Tabs/DropdownMenu: cursor-pointer + defensive hover:text-*-foreground (lock contraste, evita white-on-gray). Verificación programática Playwright getComputedStyle: cursor=pointer, hover bg=rgb(123,44,144) + text=white.
+
+### Tickets cerrados post-fixes:
+
+- **T-4 (fe-visual-goldens-baseline)**: pushed — 6 goldens generados + ratificados Chris 2026-05-23T01:30 (mockup HTML + agent thumbnails + ring colors verificados).
+- **T-7 (verify-tailwind-build-regression)**: pushed — fe_build_production blocker marketing-nuqs-ssr-fix RESUELTO Fix #4 + fe_typecheck + fe_lint + fe_format + fe_vitest_existing_regression + visual_dashboard_legacy_{light,dark} GREEN.
+
+### Verificación final ratchet:
+
+- ✅ `cd vitalia/frontend && npx tsc --noEmit` → 0 errors
+- ✅ `cd vitalia/frontend && npx eslint src/` → 0 errors
+- ✅ `cd vitalia/frontend && npx vitest run` → 740/740 tests PASS
+- ✅ `cd vitalia/frontend && E2E_BASE_URL=http://localhost:3002 npx playwright test --project=visual --grep "stack-stability"` → 8/8 PASS (incluye setup)
+- ✅ `cd vitalia/frontend && npm run build` → exit 0 (post Fix #4 marketing-nuqs-ssr-fix)
+- ✅ backend `/health` → 200 (post Fix #1 migration order)
+- ✅ frontend `/`, `/test-stack/primitives`, `/test-stack/agent-tokens` → 200
+
+### Story state transition
+
+`reviewing → ready_for_merge` (proceeding to /pm-vitalia merge phase F → done).
+
+---
+
+(Findings detallados del verdict ESCALATED original más abajo — preservados como histórico del audit cycle.)
+
+## Findings originales ESCALATED (RESUELTOS — preservado para trazabilidad)
+
+### Findings detallados (ORIGINALES — todos RESUELTOS in-loop 2026-05-23)
 
 **Finding 1 — T-4 visual goldens DEFERRED (Chris gate, NOT regression):**
 - Path: `vitalia/frontend/e2e/__screenshots__/stack-stability/*.png` (no committed)

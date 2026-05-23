@@ -14,9 +14,9 @@ active_outcomes:
 active_stories:
   # === Shell-organism done (2026-05-22) ===
   # vitalia-shell-organism                 # state: done · archived 2026-05-22 (design-story planning) · artefactos producidos: SHELL-DESIGN-CONTRACT.md + 01-spec-shell-template.md + navigation-tree.md + 07-merge.md
-  # === Fase 1 — shell esqueleto (11 stories, state: idea) ===
-  - vitalia-fase1-stack-stability          # F1-S0 · blocker hard de Fase 1 · Shadcn install + Tailwind v4 verify + .vt-* deprecation plan
-  - vitalia-fase1-design-tokens-theme      # F1-S1
+  # === Fase 1 — shell esqueleto ===
+  # vitalia-fase1-stack-stability          # F1-S0 · state: done 2026-05-23 (archived) · ver recently_done
+  - vitalia-fase1-design-tokens-theme      # F1-S1 · NEXT pickup (ready → developing en cadena Chris ratify 2026-05-22)
   - vitalia-fase1-topbar-global            # F1-S2
   - vitalia-fase1-tenant-switcher          # F1-S3
   - vitalia-fase1-shell-layout-5050        # F1-S4
@@ -132,6 +132,7 @@ ratified_promotion_proposals:              # APPROVED + migrated
   - docs/promotion-protocol/proposals/2026-05-20-core-platform-extensions-slice-1.md       # state: migrated (luana-core-platform 0.3.0→0.4.0) — cron_envelope + CompoundScopeRepositoryBase
 promotion_candidates: []                   # ★ Sin candidates pendientes — los 2 anteriores migrated 2026-05-20
 recently_done:
+  - vitalia-fase1-stack-stability        # 2026-05-23 cerrada reviewing→done autonomous chain con in-loop Chris ratify cycle (audit ESCALATED → 6 fixes → APPROVED) · 12 commits 16d7bd1d..2d105e7e · 7 tickets shipped (Shadcn install + agent tokens + Playwright visual + test pages + arch fitness no-vt + ADR-002 + verify) + 6 visual goldens ratificados Chris · 1 capability NEW platform/shell-foundation-shadcn-tailwind-v4 + 1 module updated platform.md · Tailwind v4 PostCSS plugin instalado (root cause 2026-05-21 learning) + agent SSoT (Lisa/Lucas/Adrián/Valeria/Camila/Mateo) + cursor:pointer universal + hover contrast defensive · 4 fixes side-effect: backend migration 024b NPS table + Next.js wrappers /test-stack/* + marketing-nuqs-ssr-fix + globals.css v4 syntax · 740/740 vitest GREEN + 8/8 Playwright visual GREEN + npm run build exit 0 · archive/2026/stories/vitalia-fase1-stack-stability/07-merge.md
   - vitalia-slice-1-marketing            # 2026-05-21 cerrada reviewing→done autonomous E2E sesión (architect→dev-team→auditor→pm-vitalia chain) · 29 commits f0e395e..8cecbbaa · 13 tickets shipped (6 BE + 7 FE) · 3 audit iter cap reached succeeded · 5 capabilities NEW (4 marketing + 1 connections/oauth-meta-google-ads) + 1 module NEW marketing.md + 1 UPDATE connections.md · 270/270 arch fitness + 158 BE marketing/connections/workers + 116 FE marketing GREEN · 4 deferred CI items (Chromatic + E2E + a11y + perf — Turbopack stack stability follow-up Slice 2) · archive/2026/stories/vitalia-slice-1-marketing/07-merge.md
   - vitalia-ux-discovery                 # 2026-05-20 cerrada ready→done — PARENT SSoT cumplido (17/56 tickets shipped vía 3 sub-stories archivadas + 5 sub-stories Slice 1 UI refined heredan mockups + design-system). 6 mockups HTML redistribuidos a sub-stories (5 active + 1 archive snapshot) ANTES del archive · audit-2026-05-20/AUDIT-REPORT.md cementado · archive/2026/stories/vitalia-ux-discovery/07-merge.md
   - vitalia-copilot-tools-impl           # 2026-05-18 cerrada reviewing→done autonomous E2E sesión orquestada · 12 commits pushed wip/vitalia (3331151..427b0f3 → último c87e... post-merge) · 7 capability YAMLs NEW live (valeria-wizard-onboarding-agentic + adrian-3-tools-mvp + medical-guardrails + state-overlay-langgraph + lucas-daily-analysis + vitalia-callback-subclasses + eval-goldens-slice-1) + 1 NEW module MD (sales_agent.md) + 3 modules MD refreshed (copilot + agentic + observability) + 1363/1363 tests GREEN (245 arch + 510 unit + 49 integration + 512 agentic_evals + 47 extensions) · auditor APPROVED (CHECKPOINTS C1-C5 + gherkin matrix 18/18 + REVIEW-agentic.md) · 0 engine modifications + 0 cross-brand mirrors + anti-dup §0 ratchet enforced · archive/2026/stories/vitalia-copilot-tools-impl/07-merge.md
@@ -161,6 +162,20 @@ Story 11 (`luana-vitalia-bootstrap`, mergeada 2026-05-15) shipped **16 capabilit
 
 ## Bitácora
 
+- **2026-05-23 cierre F1-S0 in-loop session (audit ESCALATED → Chris ratify → APPROVED → merge done)**:
+  - `vitalia-fase1-stack-stability` cerrada `reviewing → done` post 6 fixes incrementales con ratify Chris (audit cycle 2026-05-22T22:30 → 2026-05-23T01:35).
+  - Cycle ESCALATED inicial detectó 4 Chris gates ortogonales: T-4 visual goldens (Chris ratify visual) + T-7 fe_build_production (pre-existing marketing-nuqs bug ac7b3e91) + T-7 visual validators (dev server gate) + story archive. Chris pidió "haz los fixes" → in-loop resolution.
+  - **Fix #1** backend migration `024b_vitalia_nps_responses.py` NEW (creó tabla pre-trigger 025 — alembic chain 024 → 024b → 025 → 031 ahora corre clean). Bug pre-existing: 022_slice1 module-local migration nunca conectada a alembic.ini script_location.
+  - **Fix #2** Next.js wrappers `src/app/test-stack/{primitives,agent-tokens}/page.tsx` con default export — Playwright spec navega URLs reales sin 404.
+  - **Fix #3** proxy.ts agrega /test-stack(.*) a public routes (dev-only preview sin Clerk auth gating).
+  - **Fix #4** `vitalia/frontend/src/features/marketing/types/url-state.ts` agregado `"use client"` directive — resuelve pre-existing build error `parseAsStringEnum called from server`.
+  - **Fix #5 (root cause original 2026-05-21 learning)** `postcss.config.mjs` NEW + `@tailwindcss/postcss` devDep + `globals.css` migrado a Tailwind v4 syntax (`@import "tailwindcss"` + `@config "../../tailwind.config.ts"`). CSS 35k → 101k bytes — `bg-primary` / `bg-agent-*` / `bg-accent` ahora generan correctamente. Era el bug madre que arrastraba.
+  - **Fix #6** agent SSoT `src/lib/agents.ts` NEW (6 agentes: Valeria/Lisa/Adrián/Lucas/Camila/Mateo con nombre + role + colorHex + thumbnail/transparent paths) + thumbnails canónicos copiados de `/home/chalreme/Trabajo/Vitalia/agentes/{Lisa-Estratega,Valeria-Ejecutiva,Adrian-Closer,Lucas-Setter,Camila-Fidelizacion,Mateo-Desarrollador}/` a `vitalia/frontend/public/agents/{slug}/{thumbnail,transparent}.{png,jpeg}` + avatares con `ring-4` + inline style `{'--tw-ring-color': agent.colorHex}` (Tailwind v4 NO genera utilities dinámicas tipo `ring-agent-${slug}`) + cursor-pointer universal Button/Tabs/DropdownMenu + defensive `hover:text-{*}-foreground` lock contraste evita white-on-gray.
+  - 6 visual goldens regenerados + ratificados Chris 2026-05-23T01:30 vs Design Contract § 5.1 + thumbnails canónicos. Playwright getComputedStyle verificó: cursor=pointer en Button/Tab/MenuItem, hover bg=rgb(123,44,144) text=white legible.
+  - **Capability promotion**: NEW `vitalia/docs/product/capabilities/platform/shell-foundation-shadcn-tailwind-v4.yaml` (status: live, package_version 0.1.0). 8 surfaces acopladas (Tailwind v4 infra + 8 Shadcn primitivos + 7 agent tokens CSS + Agent SSoT TS + Agent imagery + Test pages preview + Playwright visual project + 6 goldens + arch fitness no-vt-classes + ADR-002 deprecation).
+  - **07-merge.md** 5 secciones cementadas: Gherkin matrix 8/8 cubiertos + Playwright run 8/8 PASS 6.2s + capabilities updated/created + modules MD refreshed + 12 comandos how-to-verify reproducibles.
+  - **Archive**: `vitalia/docs/product/stories/vitalia-fase1-stack-stability/` → `vitalia/docs/archive/2026/stories/vitalia-fase1-stack-stability/` (snapshot inmutable per R2 brand-docs-schema).
+  - **Próximo en chain autonomous**: F1-S1 `vitalia-fase1-design-tokens-theme` transición `ready → developing` → `/dev-team` build (stack 100% funcional ahora, theme toggle real con next-themes), después F1-S2 topbar-global + F1-S3 tenant-switcher secuenciales per WIP cap developing ≤ 1.
 - **2026-05-22 sesión `/pm-vitalia arranque Fase 1 autonomous chain` (este momento)**: Chris ratificó arrancar `/dev-team` build secuencial sobre F1-S0 → F1-S3 hasta `done`. Pre-checks ejecutados:
   - Step 0 closure gate scan: GREEN (sin stories en developing/developed/reviewing pendientes — todas las 4 F1 ratificadas state=ready).
   - Visual ratification overlay `shell-mockup-per-component.md`: F1-S0 `not_applicable` (infra-only, exempt), F1-S1/S2/S3 `true` con timestamps Chris.

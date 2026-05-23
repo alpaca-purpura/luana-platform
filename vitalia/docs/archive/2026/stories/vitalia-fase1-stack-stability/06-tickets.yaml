@@ -50,8 +50,10 @@ summary:
     title: "fe-visual-goldens-baseline — spec + 6 goldens generation + Chris ratify"
     surface: frontend
     owner_pool: [qwen-opencode, claude-sonnet]
-    state: deferred
-    defer_reason: "Requiere make dev-vitalia running at :3002 + Chris ratify visual diff"
+    state: pushed
+    commit_sha: 2d105e7e
+    chris_ratify_at: 2026-05-23T01:30:00-05:00
+    notes: "Generación deferida hasta auditor in-loop session 2026-05-23. Stack levantado + 6 goldens generados con Tailwind v4 funcional + avatares ring color del agente + hover defensive. Chris ratify visual."
     blocks: [T-7]
     depends_on: [T-3]
   - id: T-5
@@ -283,7 +285,9 @@ tickets:
     type: frontend
     surface: frontend
     production_code: true                            # touches e2e specs + commits __screenshots__/ PNGs (artifact baseline)
-    state: ready
+    state: pushed
+    push_commit_sha: 2d105e7e
+    chris_ratify_at: 2026-05-23T01:30:00-05:00
     owner_eligibility:
       qwen_opencode: true
       claude_sonnet: true
@@ -458,7 +462,9 @@ tickets:
     type: tests
     surface: frontend
     production_code: false                           # verify-only (no code changes, runs all validators)
-    state: ready
+    state: pushed
+    push_commit_sha: 2d105e7e
+    closure_notes: "Pre-existing build blocker marketing-nuqs-ssr-fix RESUELTO Fix #4 (use client directive). fe_build_production exit 0. Tailwind v4 setup completado Fix #5. Todos validators GREEN post in-loop fix session 2026-05-23."
     owner_eligibility:
       qwen_opencode: true
       claude_sonnet: true
