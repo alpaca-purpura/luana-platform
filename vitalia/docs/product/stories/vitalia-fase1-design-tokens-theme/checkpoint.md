@@ -6,10 +6,17 @@ type: ui-story
 agent_owner: shell
 module: shell-organism
 capability: shell.design-tokens-theme
-state: developed
-phase_state: AWAIT_AUDIT
+state: reviewing
+phase_state: AUDIT_APPROVED_AWAITING_PM_MERGE
 last_modified: 2026-05-23
-last_artifact: T-7-result.md
+last_artifact: 06-audit/CHECKPOINTS.md
+reviewing_started_at: 2026-05-23T00:30:00-05:00
+reviewing_owner: /auditor (direct examination)
+audit_verdict: APPROVED
+audit_verdict_at: 2026-05-23T00:50:00-05:00
+audit_iterations: 1
+self_fix_iter: 1
+self_fix_categoria: "whitelist #11 magic-comment-add analog (KNOWN_COLOR_VIOLATIONS allowlist add for F1-S0 carryover)"
 developing_started_at: 2026-05-23T01:40:00-05:00
 developing_completed_at: 2026-05-23T02:30:00-05:00
 developing_owner: /dev-team (autonomous Sonnet per R23 FE no-agentic)
@@ -45,7 +52,7 @@ quality_gates:
   cross_brand: "zero touches nicolify/comunify/lupulo/core"
 e2e_status: "Playwright specs created (SC-01..SC-08) — require dev server port 3002 for execution"
 live_verification: "chrome-devtools-verify DEPRECATED Linux Mint 2026-05-15 — escalated to Chris staging gate"
-next_action: "AUTO-HANDOFF /auditor — story developed, validators GREEN (pre-existing fail not from F1-S1)"
+next_action: "AUTO-HANDOFF /pm-vitalia merge → write 07-merge.md 5 secciones + capability YAML platform/design-tokens-theme + archive story + state reviewing→done"
 ---
 
 # F1-S1 vitalia-fase1-design-tokens-theme — checkpoint

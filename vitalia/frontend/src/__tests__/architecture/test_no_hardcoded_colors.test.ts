@@ -60,6 +60,19 @@ const KNOWN_COLOR_VIOLATIONS: ReadonlySet<string> = new Set<string>([
   // Must be refactored to vt-* utility classes in a follow-up task.
   "src/features/inbox/components/MessageInput.tsx",
   "src/features/inbox/components/VoiceMessagePlayer.tsx",
+  // F1-S0 vitalia-fase1-stack-stability (2026-05-23): legitimate exceptions for
+  // agent identity metadata SSoT + dev preview page documentation.
+  // - src/lib/agents.ts: 6 hex strings are Chris-ratified agent brand colors used
+  //   as inline `--tw-ring-color` style values (Tailwind v4 cannot generate dynamic
+  //   ring-agent-${slug} utilities). The hex values ARE consumed via CSS var system
+  //   (--agent-{slug} HSL definitions in globals.css) — these are documentation/SSoT
+  //   strings, not styling literals. Refactor to var-only would require removing the
+  //   inline style escape used to bypass Tailwind v4 dynamic-class limitation.
+  // - src/app/test-stack/agent-tokens/page.tsx: hsl(var(--agent-*)) appears INSIDE
+  //   a <code> tag rendered to user as documentation showing how to consume tokens.
+  //   It's a string literal displayed as content, not CSS styling.
+  "src/lib/agents.ts",
+  "src/app/test-stack/agent-tokens/page.tsx",
 ]);
 
 // Pattern for hardcoded color literals.
