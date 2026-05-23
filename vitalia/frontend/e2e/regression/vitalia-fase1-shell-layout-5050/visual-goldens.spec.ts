@@ -3,9 +3,9 @@
  *
  * F1-S4 vitalia-fase1-shell-layout-5050 — T-7
  *
- * ⚠️  FASE 7A: ALL TESTS SKIPPED — visual-goldens generation deferred to Fase 7B.
- * Fase 7B prerequisite: Chris ratifica side-by-side mockup HTML vs componente React real.
- * After ratification: run `--update-snapshots --project=visual` to generate PNGs.
+ * FASE 7B: tests UNSKIPPED post Chris ratify visual side-by-side 2026-05-23 PM.
+ * Goldens generados con `--update-snapshots --project=visual` (config visual project
+ * en playwright.config.ts incluye regression dir visual-goldens.spec.ts).
  *
  * 6 test cases per 06-tickets.yaml gherkin_coverage (visual scenario):
  *   1. agentic light 1280x800 — matches shell-layout-agentic.html (light)
@@ -47,55 +47,34 @@ const MOBILE_VIEWPORT = { width: 375, height: 667 };
 test.describe("visual goldens — agentic mode (F1-S4)", () => {
   test.use({ viewport: DESKTOP_VIEWPORT });
 
-  test(
-    "agentic light 1280x800 matches",
-    test.skip(
-      true,
-      "Fase 7B: --update-snapshots deferred hasta Chris ratifique side-by-side mockup shell-layout-agentic.html vs componente React real.",
-    ),
-    async ({ shellPage, tenantId }) => {
-      const pom = new ShellLayoutPage(shellPage);
-      await pom.gotoShell(tenantId);
-      await expect(pom.topBar).toBeVisible();
-      await expect(shellPage).toHaveScreenshot("agentic-1280x800-light.png", {
-        fullPage: false,
-      });
-    },
-  );
+  test("agentic light 1280x800 matches", async ({ shellPage, tenantId }) => {
+    const pom = new ShellLayoutPage(shellPage);
+    await pom.gotoShell(tenantId);
+    await expect(pom.topBar).toBeVisible();
+    await expect(shellPage).toHaveScreenshot("agentic-1280x800-light.png", {
+      fullPage: false,
+    });
+  });
 
-  test(
-    "agentic dark 1280x800 matches",
-    test.skip(
-      true,
-      "Fase 7B: --update-snapshots deferred hasta Chris ratifique side-by-side mockup shell-layout-agentic.html vs componente React real.",
-    ),
-    async ({ darkShellPage, tenantId }) => {
-      const pom = new ShellLayoutPage(darkShellPage);
-      await pom.gotoShell(tenantId);
-      await expect(pom.topBar).toBeVisible();
-      await expect(darkShellPage).toHaveScreenshot("agentic-1280x800-dark.png", {
-        fullPage: false,
-      });
-    },
-  );
+  test("agentic dark 1280x800 matches", async ({ darkShellPage, tenantId }) => {
+    const pom = new ShellLayoutPage(darkShellPage);
+    await pom.gotoShell(tenantId);
+    await expect(pom.topBar).toBeVisible();
+    await expect(darkShellPage).toHaveScreenshot("agentic-1280x800-dark.png", {
+      fullPage: false,
+    });
+  });
 
-  test(
-    "agentic rail 1280x800 matches",
-    test.skip(
-      true,
-      "Fase 7B: --update-snapshots deferred hasta Chris ratifique side-by-side mockup shell-layout-agentic.html vs componente React real (valeriaState=rail).",
-    ),
-    async ({ shellPage, tenantId }) => {
-      const pom = new ShellLayoutPage(shellPage);
-      await pom.gotoShell(tenantId);
-      // Set valeriaState='rail' for this golden
-      await pom.setValeriaStateViaStore("rail");
-      await expect(pom.topBar).toBeVisible();
-      await expect(shellPage).toHaveScreenshot("agentic-rail-1280x800.png", {
-        fullPage: false,
-      });
-    },
-  );
+  test("agentic rail 1280x800 matches", async ({ shellPage, tenantId }) => {
+    const pom = new ShellLayoutPage(shellPage);
+    await pom.gotoShell(tenantId);
+    // Set valeriaState='rail' for this golden
+    await pom.setValeriaStateViaStore("rail");
+    await expect(pom.topBar).toBeVisible();
+    await expect(shellPage).toHaveScreenshot("agentic-rail-1280x800.png", {
+      fullPage: false,
+    });
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -105,39 +84,25 @@ test.describe("visual goldens — agentic mode (F1-S4)", () => {
 test.describe("visual goldens — web mode (F1-S4)", () => {
   test.use({ viewport: DESKTOP_VIEWPORT });
 
-  test(
-    "web light 1280x800 matches",
-    test.skip(
-      true,
-      "Fase 7B: --update-snapshots deferred hasta Chris ratifique side-by-side mockup shell-layout-web.html vs componente React real.",
-    ),
-    async ({ shellPage, tenantId }) => {
-      const pom = new ShellLayoutPage(shellPage);
-      await pom.gotoShell(tenantId);
-      await pom.setShellModeViaStore("web");
-      await expect(pom.topBar).toBeVisible();
-      await expect(shellPage).toHaveScreenshot("web-1280x800-light.png", {
-        fullPage: false,
-      });
-    },
-  );
+  test("web light 1280x800 matches", async ({ shellPage, tenantId }) => {
+    const pom = new ShellLayoutPage(shellPage);
+    await pom.gotoShell(tenantId);
+    await pom.setShellModeViaStore("web");
+    await expect(pom.topBar).toBeVisible();
+    await expect(shellPage).toHaveScreenshot("web-1280x800-light.png", {
+      fullPage: false,
+    });
+  });
 
-  test(
-    "web dark 1280x800 matches",
-    test.skip(
-      true,
-      "Fase 7B: --update-snapshots deferred hasta Chris ratifique side-by-side mockup shell-layout-web.html vs componente React real.",
-    ),
-    async ({ darkShellPage, tenantId }) => {
-      const pom = new ShellLayoutPage(darkShellPage);
-      await pom.gotoShell(tenantId);
-      await pom.setShellModeViaStore("web");
-      await expect(pom.topBar).toBeVisible();
-      await expect(darkShellPage).toHaveScreenshot("web-1280x800-dark.png", {
-        fullPage: false,
-      });
-    },
-  );
+  test("web dark 1280x800 matches", async ({ darkShellPage, tenantId }) => {
+    const pom = new ShellLayoutPage(darkShellPage);
+    await pom.gotoShell(tenantId);
+    await pom.setShellModeViaStore("web");
+    await expect(pom.topBar).toBeVisible();
+    await expect(darkShellPage).toHaveScreenshot("web-1280x800-dark.png", {
+      fullPage: false,
+    });
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -147,19 +112,12 @@ test.describe("visual goldens — web mode (F1-S4)", () => {
 test.describe("visual goldens — mobile (F1-S4)", () => {
   test.use({ viewport: MOBILE_VIEWPORT });
 
-  test(
-    "agentic mobile 375x667 matches",
-    test.skip(
-      true,
-      "Fase 7B: --update-snapshots deferred hasta Chris ratifique side-by-side mockup vs componente React real (mobile 375x667, grid 1-col).",
-    ),
-    async ({ shellPage, tenantId }) => {
-      const pom = new ShellLayoutPage(shellPage);
-      await pom.gotoShell(tenantId);
-      await expect(pom.appSlot).toBeVisible();
-      await expect(shellPage).toHaveScreenshot("agentic-mobile-375x667.png", {
-        fullPage: false,
-      });
-    },
-  );
+  test("agentic mobile 375x667 matches", async ({ shellPage, tenantId }) => {
+    const pom = new ShellLayoutPage(shellPage);
+    await pom.gotoShell(tenantId);
+    await expect(pom.appSlot).toBeVisible();
+    await expect(shellPage).toHaveScreenshot("agentic-mobile-375x667.png", {
+      fullPage: false,
+    });
+  });
 });

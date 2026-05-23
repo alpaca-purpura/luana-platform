@@ -83,10 +83,18 @@ export class ShellLayoutPage {
     this.skipLink = page.locator('a[href="#main-content"]').first();
     // Only one <main> is visible at any time — :visible ensures we target the right one
     this.main = page.locator("main#main-content").filter({ hasText: "" }).first();
-    // Triple-main pattern: multiple testid instances exist in DOM (one per CSS branch).
-    // Use .first() to avoid strict mode violations — the visible one is first in DOM order.
-    this.valeriaSlot = page.getByTestId("valeria-sidebar-slot").first();
-    this.appSlot = page.getByTestId("app-panel-slot").first();
+    // Triple-main pattern: multiple testid instances exist in DOM (one per CSS branch:
+    // agentic md:block, web md:grid, mobile md:hidden). Only ONE is visible per viewport.
+    // Filter por visibility para que assertions toBeVisible() resuelvan el correcto en
+    // CADA viewport sin asumir DOM order (mobile fallback es el último, no el primero).
+    this.valeriaSlot = page
+      .getByTestId("valeria-sidebar-slot")
+      .filter({ visible: true })
+      .first();
+    this.appSlot = page
+      .getByTestId("app-panel-slot")
+      .filter({ visible: true })
+      .first();
     this.resizeHandle = page.locator('[aria-label="Redimensionar paneles"]');
     this.logoMark = page.locator('header a[aria-label*="Vitalia"]').first();
     this.themeToggle = page.locator('header button[aria-label*="tema"], header button[aria-label*="Tema"]').first();

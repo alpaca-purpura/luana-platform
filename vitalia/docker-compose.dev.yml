@@ -85,7 +85,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
+          memory: 4G
 
   vitalia_admin_dev:
     # Streamlit admin panel for vitalia — port 8502 (per 03-arch-be.md § 5)

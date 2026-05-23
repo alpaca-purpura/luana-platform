@@ -155,7 +155,12 @@ export default defineConfig({
     // no las afecta.
     {
       name: "visual",
-      testMatch: /.*\/e2e\/visual\/.*\.spec\.ts/,
+      testMatch: [
+        /.*\/e2e\/visual\/.*\.spec\.ts/,
+        // F1-S4 shell-layout visual-goldens (vive en regression/ junto a su
+        // POM + functional specs por proximidad; ratchet config Fase 7B).
+        /.*\/e2e\/regression\/.*\/visual-goldens\.spec\.ts$/,
+      ],
       use: {
         ...devices["Desktop Chrome"],
         viewport: { width: 1440, height: 900 },
