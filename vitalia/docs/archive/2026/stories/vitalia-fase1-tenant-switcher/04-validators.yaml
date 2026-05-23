@@ -163,8 +163,8 @@ validators:
       must_pass: true
 
     - id: val-arch-no-clerk-orgs
-      description: "MEMORY no-clerk-organizations enforce: NO useOrganization, NO orgId, NO OrganizationSwitcher en src/"
-      command: 'cd vitalia/frontend && if grep -rE "useOrganization|orgId|Clerk.*Organization|OrganizationSwitcher" src/ --include="*.ts" --include="*.tsx"; then echo "FOUND clerk-orgs reference - PROHIBIDO per MEMORY 2026-05-20" && exit 1; else exit 0; fi'
+      description: "MEMORY no-clerk-organizations enforce: NO useOrganization, NO orgId, NO OrganizationSwitcher en src/ (delegated to arch test with allowlist)"
+      command: 'cd vitalia/frontend && npx vitest run src/__tests__/architecture/test-no-clerk-organizations.test.ts --reporter=default'
       must_pass: true
 
     - id: val-arch-no-cross-brand

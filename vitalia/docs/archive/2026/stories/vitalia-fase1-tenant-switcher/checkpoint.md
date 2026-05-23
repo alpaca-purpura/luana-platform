@@ -6,13 +6,24 @@ type: ui-story
 agent_owner: shell
 module: shell-organism
 capability: shell.tenant-switcher
-state: developed
-phase_state: AWAIT_AUDIT
+state: done
+phase_state: MERGED_ARCHIVED
 last_modified: 2026-05-23
 developing_started_at: 2026-05-23T02:10:00-05:00
 developing_finished_at: 2026-05-23T03:10:00-05:00
 developing_owner: /dev-team (autonomous Sonnet per R23 FE no-agentic) + /dev-team orchestrator self-fix (2 lint+tsc fixes post-builder-cutoff)
-chain_position: "F1-S3 último de chain · F1-S0 done 69948873 · F1-S1 done 5c59e89b · F1-S2 done c3bb6546 · F1-S3 pendiente merge"
+reviewing_started_at: 2026-05-23T01:38:00Z                    # iter 1 audit run
+reviewing_finished_at: 2026-05-23T02:13:00Z                   # iter 2 APPROVED
+reviewing_owner: /auditor-frontend (Opus 4.7) 2 iter — CHANGES_REQUESTED iter 1 estructural test-page missing → APPROVED iter 2 post dev-team T-FIX-1 fix
+audit_iterations: 2
+audit_verdict: APPROVED
+audit_self_fix_iter: 1                                         # Cat 17 val-arch-no-clerk-orgs yaml validator delegate
+auto_fix_commits: [0f012ad1]                                   # T-FIX-1 dev-team caso B handoff
+implementation_commits: [d99b1fdd]                             # T-1..T-10 base
+merged_at: 2026-05-23
+merged_via: "wip/vitalia branch direct (per current chain F1-S0..S3 pattern)"
+chain_position: "F1-S3 último de chain · F1-S0 done 69948873 · F1-S1 done 5c59e89b · F1-S2 done c3bb6546 · F1-S3 done 2026-05-23 (CHAIN COMPLETE)"
+pending_chris_visual_ratify: true                              # 5-min next session — compare 7 PNG goldens vs mockups
 validators_green: [tsc, eslint, vitest_908_pass, F1-S3_unit_65_pass]
 build_notes: "Builder Sonnet completó 10 tickets de implementación (TenantBadge + TenantOption + TenantSwitcher + AddClinicPlaceholderModal + TenantStoreBootstrap + Zustand tenant-store + useTenants React Query + useSignOutCleanup + arch test no-clerk-organizations + 5 Shadcn primitives instalados: alert/dialog/scroll-area/separator/skeleton + 11 Playwright specs + POM + fixtures + integración TopBarGlobal + layout.tsx mount Bootstrap + DELETE TenantSwitcherSlot.tsx). Builder cortado mid-fix sobre eslint require() en TenantSwitcher.test.tsx — orchestrator /dev-team aplicó 2 self-fixes whitelist (1: replace require() con ES import; 2: cast ReactNode→ReactElement en Children.map signature). Post-fix: tsc 0 errors + eslint 0 errors + vitest 908/908 PASS + F1-S3 unit suites 65/65 PASS (TenantBadge 10 + TenantOption 13 + TenantSwitcher 20 + tenant-store 15 + TenantStoreBootstrap 7). Visual goldens Playwright NO ejecutado (pending /auditor T-10)."
 ticket_status: "T-1..T-10 implementación pushed bundle commit pendiente. T-result.md files no escritos (builder cortado). Auditor revisará code directo + visual goldens generation."
