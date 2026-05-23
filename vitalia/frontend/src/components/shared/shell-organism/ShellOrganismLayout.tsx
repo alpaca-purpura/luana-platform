@@ -25,6 +25,7 @@
 
 "use client";
 
+import { useEffect, useState } from "react";
 import { Group, Panel, Separator, useDefaultLayout } from "react-resizable-panels";
 import { cn } from "@/lib/utils";
 import { useShellStore } from "@/stores/shell-store";
@@ -70,6 +71,18 @@ export function ShellOrganismLayout({
   const shellMode = useShellStore((s) => s.shellMode);
   const valeriaState = useShellStore((s) => s.valeriaState);
 
+  // SSR-safe mount flag: react-resizable-panels v4.11.1 useDefaultLayout
+  // has bare-name `localStorage` default param (`storage: n = localStorage`
+  // en dist/react-resizable-panels.js:1812) que throws ReferenceError en
+  // SSR aún pasando explicit undefined. Fix: skip useDefaultLayout en SSR
+  // pass mostrando un skeleton minimal, monta el layout completo solo
+  // post-mount client-side. Trade-off aceptado: el shell layout no es
+  // SSR-rendered, mismo pattern que dashboards interactivos pesados.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // One-way viewport guard: forces 'full' → 'rail' when viewport [768, 1104)
   useViewportGuard();
 
@@ -79,15 +92,33 @@ export function ShellOrganismLayout({
   const minAppPct = 30;
   const defaultValeriaPct = shellMode === "agentic" ? 50 : 5;
 
+  // SSR pass: render skeleton minimal sin useDefaultLayout (que tira en SSR).
+  // Client-side post-mount: render shell completo.
+  if (!mounted) {
+    return (
+      <div
+        className="flex h-screen flex-col overflow-hidden bg-background text-foreground"
+        data-shell-ssr-skeleton="true"
+      >
+        <TopBarGlobal />
+        <main
+          id="main-content"
+          tabIndex={-1}
+          className="flex-1 min-h-0 overflow-hidden"
+          aria-label="Cargando shell"
+        />
+      </div>
+    );
+  }
+
   // Persist layout across page reloads via localStorage
   // useDefaultLayout returns { defaultLayout, onLayoutChange, onLayoutChanged }
   // which are spread onto Group to enable persistence.
-  // NOTE: access localStorage via globalThis guard to avoid SSR ReferenceError
-  // (react-resizable-panels "use client" doesn't guarantee server-safe eval of `localStorage` bare ref)
+  // Solo invocado POST-MOUNT — `window.localStorage` siempre defined aquí.
   const layoutProps = useDefaultLayout({
     id: SHELL_GROUP_ID,
     panelIds: [VALERIA_PANEL_ID, APP_PANEL_ID],
-    storage: typeof globalThis.localStorage !== "undefined" ? globalThis.localStorage : undefined,
+    storage: window.localStorage,
   });
 
   return (

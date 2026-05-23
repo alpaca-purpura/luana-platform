@@ -97,12 +97,24 @@ export class ShellLayoutPage {
   // ── Navigation ─────────────────────────────────────────────────────────────
 
   /**
-   * Navigate to the shell organism route for a given tenant.
-   * The page redirects /{tenantId} → /{tenantId}/lisa/marca (307 server redirect).
-   * Waits for networkidle to ensure hydration completes.
+   * Navigate to the shell organism route for visual + functional E2E testing.
+   *
+   * Default: `/test-stack/shell-layout` (public dev-only page, no Clerk auth,
+   * pattern parity con F1-S0..S3). Esta page monta ShellOrganismLayout
+   * directamente sin requerir un real /{tenantId}/lisa/marca route (que no
+   * existe hasta Fase 2).
+   *
+   * Opcional: pasá `useProdRoute: true` para navegar via /{tenantId} redirect
+   * cuando exista la ruta `/lisa/marca` (Fase 2+).
+   *
+   * Waits for topBar visible para confirmar hydration.
    */
-  async gotoShell(tenantId: string): Promise<void> {
-    await this.page.goto(`/${tenantId}`);
+  async gotoShell(tenantId?: string, opts: { useProdRoute?: boolean } = {}): Promise<void> {
+    if (opts.useProdRoute && tenantId) {
+      await this.page.goto(`/${tenantId}`);
+    } else {
+      await this.page.goto("/test-stack/shell-layout");
+    }
     // Wait for shell to hydrate — topBar must be visible
     await this.topBar.waitFor({ state: "visible", timeout: 30_000 });
   }
