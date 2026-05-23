@@ -6,13 +6,19 @@ type: ui-story
 agent_owner: shell
 module: shell-organism
 capability: shell.topbar-global
-state: developing
-phase_state: DEV_TEAM_PICKED_UP
+state: developed
+phase_state: AWAIT_AUDIT
 last_modified: 2026-05-23
 developing_started_at: 2026-05-23T01:05:00-05:00
+developing_finished_at: 2026-05-23T01:55:00-05:00
 developing_owner: /dev-team (autonomous Sonnet per R23 FE no-agentic)
 chain_position: "F1-S2 tercero en chain F1-S0→S1→S2→S3 · F1-S0 done 69948873 · F1-S1 done 5c59e89b · F1-S3 ready awaiting"
-last_artifact: 06-tickets.yaml
+last_artifact: T-8-result.md
+commit_sha: b37b37b3
+tickets_completed: [T-1, T-2, T-3, T-4, T-5, T-6, T-7, T-8]
+validators_green: [fe_typecheck, fe_lint, fe_no_default_exports_grep, fe_no_any_typescript_grep, fe_vitest_existing_regression, fe_topbar_role_banner_grep, fe_skip_link_present_grep, fe_main_content_id_present_grep, fe_logo_mark_next_image_grep, fe_brand_assets_present]
+vitest_summary: "106 test files / 824 tests PASS (F1-S0 + F1-S1 + F1-S2 combined)"
+architecture_fitness: "11 test files / 43 tests PASS"
 ratified_by_chris: true
 ratified_visual_by_chris: true
 ratified_visual_at: 2026-05-22T20:00:00-05:00
@@ -41,7 +47,7 @@ dependencies:
 blocks_hard: [vitalia-fase1-shell-layout-5050]
 reuse_map_summary: "NEW LogoMark + TopBarGlobal composes ThemeToggle (F1-S1) + TenantSwitcher slot (F1-S3)"
 spawned_at: 2026-05-22
-next_action: "/dev-team vitalia-fase1-topbar-global autonomous build (T-1 fe-brand-assets-verify first; F1-S0 + F1-S1 done state prerequisite — verify done before pickup)"
+next_action: "AUTO-HANDOFF → /auditor: story state=developed, T-1..T-8 all PASS. Awaiting auditor-frontend review + CHECKPOINTS.md C1-C5."
 ---
 
 # F1-S2 vitalia-fase1-topbar-global — checkpoint
