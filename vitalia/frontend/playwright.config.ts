@@ -149,5 +149,29 @@ export default defineConfig({
         baseURL: process.env["E2E_ADMIN_BASE_URL"] || "http://127.0.0.1:8502",
       },
     },
+
+    // Visual regression project — F1-S0 stack baseline (Design Contract § 9.4)
+    // maxDiffPixelRatio: 0.001 = 0.1% tolerance. animations disabled for determinism.
+    // Run: E2E_BASE_URL=http://localhost:3002 npx playwright test --project=visual
+    // Goldens path: e2e/__screenshots__/stack-stability/
+    // NOTE: visual project does NOT depend on 'setup' — test pages are public (no auth).
+    {
+      name: "visual",
+      testMatch: /.*\/e2e\/visual\/.*\.spec\.ts/,
+      use: {
+        ...devices["Desktop Chrome"],
+        viewport: { width: 1440, height: 900 },
+        colorScheme: "light",
+      },
+      snapshotPathTemplate:
+        "e2e/__screenshots__/{testFilePath}/{arg}{ext}",
+      expect: {
+        toHaveScreenshot: {
+          maxDiffPixelRatio: 0.001,
+          animations: "disabled",
+          caret: "hide",
+        },
+      },
+    },
   ],
 });
