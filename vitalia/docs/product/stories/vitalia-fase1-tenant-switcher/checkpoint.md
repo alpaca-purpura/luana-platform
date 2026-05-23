@@ -6,8 +6,12 @@ type: ui-story
 agent_owner: shell
 module: shell-organism
 capability: shell.tenant-switcher
-state: ready                                       # refined → ready (2026-05-22 architect emite ready package)
-last_modified: 2026-05-22
+state: developing
+phase_state: DEV_TEAM_PICKED_UP
+last_modified: 2026-05-23
+developing_started_at: 2026-05-23T02:10:00-05:00
+developing_owner: /dev-team (autonomous Sonnet per R23 FE no-agentic)
+chain_position: "F1-S3 último de chain · F1-S0 done 69948873 · F1-S1 done 5c59e89b · F1-S2 done c3bb6546"
 ratified_by_chris: true                            # Chris ratificó whole-doc 01-spec.md iter 1
 ratified_visual_by_chris: true                     # Chris ratificó ambos mockups HTML iter 1
 ratified_visual_at: 2026-05-22T17:00:00-05:00
