@@ -26,49 +26,57 @@ summary:
     title: "fe-shadcn-install — components.json + 8 primitivos + utils.ts + deps"
     surface: frontend
     owner_pool: [qwen-opencode, claude-sonnet]
-    state: ready
+    state: pushed
+    commit_sha: c1690216
     blocks: [T-2, T-3, T-5, T-6]
     depends_on: []
   - id: T-2
     title: "fe-agent-tokens — globals.css (:root + .dark) + tailwind extend"
     surface: frontend
     owner_pool: [qwen-opencode, claude-sonnet]
-    state: ready
+    state: pushed
+    commit_sha: 7fa38b41
     blocks: [T-3, T-4]
     depends_on: [T-1]
   - id: T-3
     title: "fe-playwright-visual-config — playwright.config.ts + 2 test pages"
     surface: frontend
     owner_pool: [qwen-opencode, claude-sonnet]
-    state: ready
+    state: pushed
+    commit_sha: 52bbc3f6
     blocks: [T-4]
     depends_on: [T-2]
   - id: T-4
     title: "fe-visual-goldens-baseline — spec + 6 goldens generation + Chris ratify"
     surface: frontend
     owner_pool: [qwen-opencode, claude-sonnet]
-    state: ready
+    state: deferred
+    defer_reason: "Requiere make dev-vitalia running at :3002 + Chris ratify visual diff"
     blocks: [T-7]
     depends_on: [T-3]
   - id: T-5
     title: "fe-arch-fitness-vt-classes — test-no-vt-classes arch fitness"
     surface: frontend
     owner_pool: [qwen-opencode, claude-sonnet]
-    state: ready
+    state: pushed
+    commit_sha: 72592a2d
     blocks: [T-7]
     depends_on: [T-1]
   - id: T-6
     title: "docs-adr-vt-deprecation — ADR-vitalia-002 8 secciones"
     surface: docs
     owner_pool: [qwen-opencode, claude-sonnet]
-    state: ready
+    state: pushed
+    commit_sha: 9a9a8165
     blocks: [T-7]
     depends_on: [T-1]
   - id: T-7
     title: "verify-tailwind-build-regression — Tailwind v4 empirical + build + existing"
     surface: frontend
     owner_pool: [qwen-opencode, claude-sonnet]
-    state: ready
+    state: pushed
+    commit_sha: d6cc6592
+    notes: "fe_build_production BLOCKED pre-existing marketing nuqs SSR bug (commit ac7b3e91, pre-F1-S0). All other validators GREEN. See T-7-result.md."
     blocks: []
     depends_on: [T-1, T-2, T-3, T-4, T-5, T-6]
 

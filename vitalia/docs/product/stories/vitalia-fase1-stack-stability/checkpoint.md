@@ -6,11 +6,12 @@ type: ui-story
 agent_owner: shell                                  # transversal — no es de un agente
 module: shell-organism / infra
 capability: shell.foundation
-state: developing
-phase_state: DEV_TEAM_PICKED_UP
-last_artifact: 06-tickets.yaml
+state: developed
+phase_state: AWAITING_AUDIT
+last_artifact: T-7-result.md
 last_modified: 2026-05-22
 developing_started_at: 2026-05-22T21:30:00-05:00
+developing_completed_at: 2026-05-22T23:59:00-05:00
 developing_owner: /dev-team (autonomous Sonnet/Opus per R23)
 chain_plan: "F1-S0 → F1-S1 → F1-S2 → F1-S3 secuencial (WIP cap developing ≤ 1) · auto-handoff /auditor on developed · auto-handoff /pm-vitalia merge on APPROVED · ratificado Chris 2026-05-22"
 ratified_by_chris: true
@@ -20,6 +21,10 @@ po_ux_iterations: 3
 parallel_safe: false                                 # blocker hard de toda Fase 1
 priority: critical
 estimated_dev_weeks: 0.5-1
+# Escalations pendientes (no bloquean auditor):
+# 1. marketing-nuqs-ssr-fix: url-state.ts parseAsStringEnum sin "use client" → next build fails (pre-existing, commit ac7b3e91)
+# 2. T-4 goldens deferred: requires make dev-vitalia at :3002 + Chris ratify
+# 3. .next Docker permissions: infra issue root-owned .next/dev
 dependencies:
   hard: []                                           # no depende de nada
   soft: []
@@ -38,7 +43,7 @@ blocks_hard:                                          # esta story bloquea TODAS
 reuse_map_summary: "infra-only — verifica Tailwind v4 + instala Shadcn + plan deprecación .vt-* (no migra contenido todavía)"
 spawned_at: 2026-05-22
 spawned_by: /pm-vitalia (post shell-organism cement)
-next_action: "/dev-team iterando T-1..T-N · on all GREEN → auto-handoff /auditor · cap_reached → escalate Chris"
+next_action: "AUTO-HANDOFF /auditor — T-1..T-6 GREEN (T-4 deferred/T-7 partial pre-existing build blocker documented). Auditor revisa fe_typecheck + fe_lint + fe_vitest + arch fitness + ADR. Pre-existing fe_build_production blocker documentado en T-7-result.md."
 ---
 
 # vitalia-fase1-stack-stability — checkpoint
