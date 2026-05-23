@@ -26,6 +26,10 @@ const isPublicRoute = createRouteMatcher([
   "/public(.*)",
   "/api/v1/vitalia/webhooks(.*)",
   "/api/health",
+  // F1-S0 visual baseline pages (dev-only preview, no auth required)
+  // Used by Playwright @project=visual for goldens generation.
+  // No expone datos sensibles — solo renderiza Shadcn primitives + agent tokens swatches.
+  "/test-stack(.*)",
 ]);
 
 export const proxy = clerkMiddleware(async (auth, request) => {

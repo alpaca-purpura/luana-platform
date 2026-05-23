@@ -25,8 +25,13 @@ CREATE OR REPLACE TRIGGER (Postgres does not support IF NOT EXISTS on
 triggers, so we use CREATE OR REPLACE which is idempotent for PG 14+).
 
 Revision ID: 025_vitalia
-Revises: 024_vitalia
+Revises: 024b_vitalia
 Create Date: 2026-05-20
+
+UPDATE 2026-05-22 F1-S0: down_revision chain fixed from "024_vitalia" → "024b_vitalia"
+to ensure vitalia_nps_responses table exists (created by 024b) before this
+trigger references it. Origin bug discovered during F1-S0 visual goldens
+debug — backend crashed with `relation "vitalia_nps_responses" does not exist`.
 """
 
 from __future__ import annotations
@@ -34,7 +39,7 @@ from __future__ import annotations
 from alembic import op
 
 revision = "025_vitalia"
-down_revision = "024_vitalia"
+down_revision = "024b_vitalia"
 branch_labels = None
 depends_on = None
 

@@ -129,16 +129,6 @@ export default defineConfig({
       dependencies: ["setup"],
     },
     // Admin Streamlit panel — separate baseURL + own auth fixture (NOT Clerk).
-    // Run: E2E_ADMIN_BASE_URL=http://localhost:8502 VITALIA_ADMIN_PASSWORD=...
-    {
-      name: "admin-smoke",
-      testMatch: /.*\/e2e\/admin\/.*\.spec\.ts/,
-      use: {
-        ...devices["Desktop Chrome"],
-        baseURL: process.env["E2E_ADMIN_BASE_URL"] || "http://127.0.0.1:8502",
-      },
-    },
-    // Admin-smoke project — Streamlit admin panel at port 8502 (NOT Clerk-gated).
     // Requires VITALIA_ADMIN_PASSWORD + VITALIA_INTERNAL_API_TOKEN env vars.
     // Run: E2E_ADMIN_BASE_URL=http://localhost:8502 VITALIA_ADMIN_PASSWORD=... npx playwright test --project=admin-smoke
     {
@@ -154,7 +144,13 @@ export default defineConfig({
     // maxDiffPixelRatio: 0.001 = 0.1% tolerance. animations disabled for determinism.
     // Run: E2E_BASE_URL=http://localhost:3002 npx playwright test --project=visual
     // Goldens path: e2e/__screenshots__/stack-stability/
-    // NOTE: visual project does NOT depend on 'setup' — test pages are public (no auth).
+    //
+    // FIX 2026-05-22 F1-S0: agregado storageState + dependencies:['setup'] porque la
+    // dev-stack-baseline.spec.ts incluye dashboard-legacy tests que navegan a
+    // BASE_URL/ que es (dashboard)/page.tsx auth-gated. Sin storageState el spec
+    // se redirige a /sign-in y los goldens capturarían sign-in page en vez del
+    // dashboard. Las páginas /test-stack/* son public (proxy.ts) — storageState
+    // no las afecta.
     {
       name: "visual",
       testMatch: /.*\/e2e\/visual\/.*\.spec\.ts/,
@@ -162,7 +158,9 @@ export default defineConfig({
         ...devices["Desktop Chrome"],
         viewport: { width: 1440, height: 900 },
         colorScheme: "light",
+        storageState: "playwright/.clerk/user.json",
       },
+      dependencies: ["setup"],
       snapshotPathTemplate:
         "e2e/__screenshots__/{testFilePath}/{arg}{ext}",
       expect: {

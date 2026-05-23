@@ -1,7 +1,17 @@
+"use client";
+
 /**
  * URL state parsers for marketing feature — nuqs (Next.js App Router)
  * SC-MK-03: tab changes use replace (intra-route, no browser history entry)
  * downstream-regression-na: brand-local FE url-state; no cross-brand consumers
+ *
+ * FIX 2026-05-22 F1-S0: agregado "use client" directive — sin esto, `parseAsStringEnum`
+ * etc. de nuqs son llamados a module-eval-time en server context durante
+ * `next build`, causando "Attempted to call parseAsStringEnum() from the server
+ * but parseAsStringEnum is on the client". El módulo define solo parsers (sin
+ * runtime React), pero nuqs los marca como client-only. "use client" confina
+ * el módulo al bundle cliente. Origen: bug pre-existing commit ac7b3e91
+ * (marketing T-mk-Fe-2 Wave 5), descubierto en F1-S0 T-7 verify.
  */
 
 import {
