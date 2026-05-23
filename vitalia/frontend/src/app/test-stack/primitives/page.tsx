@@ -36,6 +36,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { AGENT_LIST } from "@/lib/agents"
 
 export default function PrimitivesShowcasePage(): React.ReactElement {
   return (
@@ -67,34 +68,55 @@ export default function PrimitivesShowcasePage(): React.ReactElement {
         </section>
 
         {/* ── Avatar ──────────────────────────────────────────────────── */}
-        <section aria-label="Avatar médico" className="space-y-3">
+        {/* Agentes Vitalia con thumbnail real + ring del color agent-{slug}.
+            Doctores genéricos con fallback iniciales — sin imagen src real.
+            Ring offset blanco para destacar contorno sobre fondo claro. */}
+        <section aria-label="Avatares — agentes Vitalia + doctores" className="space-y-3">
           <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
             Avatar
           </h2>
-          <div className="flex gap-4 items-center">
-            <Avatar className="size-10">
-              <AvatarImage src="" alt="Dra. Valentina Soria" />
-              <AvatarFallback>VS</AvatarFallback>
-            </Avatar>
-            <Avatar className="size-10">
-              <AvatarImage src="" alt="Dr. Marcos Ruiz" />
-              <AvatarFallback>MR</AvatarFallback>
-            </Avatar>
-            <Avatar className="size-10 bg-agent-lisa">
-              <AvatarFallback className="bg-agent-lisa text-white font-bold">
-                L
-              </AvatarFallback>
-            </Avatar>
-            <Avatar className="size-10 bg-agent-valeria">
-              <AvatarFallback className="bg-agent-valeria text-white font-bold">
-                V
-              </AvatarFallback>
-            </Avatar>
-            <Avatar className="size-10 bg-agent-camila">
-              <AvatarFallback className="bg-agent-camila text-white font-bold">
-                C
-              </AvatarFallback>
-            </Avatar>
+          <div className="flex gap-4 items-end">
+            {/* Agentes con foto real + ring color del agente.
+                Inline style usado porque Tailwind v4 NO genera utilities dinámicas
+                tipo ring-agent-${slug} (no detecta clases con interpolación).
+                Hex color de SSoT @/lib/agents → CSS var --tw-ring-color override. */}
+            {AGENT_LIST.map((agent) => (
+              <div key={agent.slug} className="flex flex-col items-center gap-1.5">
+                <Avatar
+                  className="size-12 ring-4 ring-offset-2 ring-offset-background"
+                  style={{ "--tw-ring-color": agent.colorHex } as React.CSSProperties}
+                  aria-label={`${agent.name} — ${agent.role}`}
+                >
+                  <AvatarImage src={agent.thumbnail} alt={agent.name} />
+                  <AvatarFallback
+                    className="text-white font-bold"
+                    style={{ backgroundColor: agent.colorHex }}
+                  >
+                    {agent.name.slice(0, 1)}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-xs text-muted-foreground font-medium">
+                  {agent.name}
+                </span>
+              </div>
+            ))}
+            {/* Doctores genéricos — fallback iniciales (sin foto real) */}
+            <div className="flex flex-col items-center gap-1.5">
+              <Avatar className="size-12 ring-2 ring-offset-2 ring-offset-background ring-border">
+                <AvatarFallback className="bg-muted text-muted-foreground font-bold">
+                  VS
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-xs text-muted-foreground font-medium">Dra. Soria</span>
+            </div>
+            <div className="flex flex-col items-center gap-1.5">
+              <Avatar className="size-12 ring-2 ring-offset-2 ring-offset-background ring-border">
+                <AvatarFallback className="bg-muted text-muted-foreground font-bold">
+                  MR
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-xs text-muted-foreground font-medium">Dr. Ruiz</span>
+            </div>
           </div>
         </section>
 

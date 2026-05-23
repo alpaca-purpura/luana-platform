@@ -8,9 +8,18 @@
  * Dark mode: out of scope MVP — ADR-vitalia-002 cuando se aborde.
  */
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Tailwind v4 entry — @import replaces v3 trio @tailwind base/components/utilities.
+ * Origen 2026-05-22 F1-S0: con postcss.config.mjs + @tailwindcss/postcss el plugin
+ * procesa este @import. El @config directive abajo permite que Tailwind v4 lea
+ * tailwind.config.ts (legacy config con extended colors Shadcn + agent palette)
+ * en lugar de exigir migración full a CSS-first @theme syntax.
+ *
+ * Sin @config, Tailwind v4 NO genera utilities para bg-primary/bg-background/
+ * bg-agent-* etc. — solo core (p-*, m-*, flex). Era el bug origen 2026-05-21
+ * "Tailwind no renderiza en runtime" — clases custom de Shadcn no resolvían.
+ */
+@import "tailwindcss";
+@config "../../tailwind.config.ts";
 
 /* ─── Shadcn standard tokens + agent tokens (F1-S0) ─────────────────────────
  * SSoT: vitalia/docs/architecture/SHELL-DESIGN-CONTRACT.md § 5.1
