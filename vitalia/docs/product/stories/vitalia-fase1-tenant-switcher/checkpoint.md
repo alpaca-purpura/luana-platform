@@ -6,12 +6,16 @@ type: ui-story
 agent_owner: shell
 module: shell-organism
 capability: shell.tenant-switcher
-state: developing
-phase_state: DEV_TEAM_PICKED_UP
+state: developed
+phase_state: AWAIT_AUDIT
 last_modified: 2026-05-23
 developing_started_at: 2026-05-23T02:10:00-05:00
-developing_owner: /dev-team (autonomous Sonnet per R23 FE no-agentic)
-chain_position: "F1-S3 último de chain · F1-S0 done 69948873 · F1-S1 done 5c59e89b · F1-S2 done c3bb6546"
+developing_finished_at: 2026-05-23T03:10:00-05:00
+developing_owner: /dev-team (autonomous Sonnet per R23 FE no-agentic) + /dev-team orchestrator self-fix (2 lint+tsc fixes post-builder-cutoff)
+chain_position: "F1-S3 último de chain · F1-S0 done 69948873 · F1-S1 done 5c59e89b · F1-S2 done c3bb6546 · F1-S3 pendiente merge"
+validators_green: [tsc, eslint, vitest_908_pass, F1-S3_unit_65_pass]
+build_notes: "Builder Sonnet completó 10 tickets de implementación (TenantBadge + TenantOption + TenantSwitcher + AddClinicPlaceholderModal + TenantStoreBootstrap + Zustand tenant-store + useTenants React Query + useSignOutCleanup + arch test no-clerk-organizations + 5 Shadcn primitives instalados: alert/dialog/scroll-area/separator/skeleton + 11 Playwright specs + POM + fixtures + integración TopBarGlobal + layout.tsx mount Bootstrap + DELETE TenantSwitcherSlot.tsx). Builder cortado mid-fix sobre eslint require() en TenantSwitcher.test.tsx — orchestrator /dev-team aplicó 2 self-fixes whitelist (1: replace require() con ES import; 2: cast ReactNode→ReactElement en Children.map signature). Post-fix: tsc 0 errors + eslint 0 errors + vitest 908/908 PASS + F1-S3 unit suites 65/65 PASS (TenantBadge 10 + TenantOption 13 + TenantSwitcher 20 + tenant-store 15 + TenantStoreBootstrap 7). Visual goldens Playwright NO ejecutado (pending /auditor T-10)."
+ticket_status: "T-1..T-10 implementación pushed bundle commit pendiente. T-result.md files no escritos (builder cortado). Auditor revisará code directo + visual goldens generation."
 ratified_by_chris: true                            # Chris ratificó whole-doc 01-spec.md iter 1
 ratified_visual_by_chris: true                     # Chris ratificó ambos mockups HTML iter 1
 ratified_visual_at: 2026-05-22T17:00:00-05:00

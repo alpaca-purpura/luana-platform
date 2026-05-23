@@ -1,6 +1,7 @@
 /**
  * TopBarGlobal.test.tsx — Unit tests for TopBarGlobal organism
  * F1-S2 vitalia-fase1-topbar-global — T-4 TDD RED-first
+ * Updated F1-S3 — T-8: mock TenantSwitcher (Client Component with Clerk hooks)
  *
  * Tests:
  * - Renders <header role="banner"> (AC-11)
@@ -17,10 +18,19 @@ import { render } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { TopBarGlobal } from "./TopBarGlobal";
 
-// Stub next/navigation used by next-themes internally (Vitest jsdom)
+// Stub next/navigation used by next-themes + TenantSwitcher (usePathname) internally
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
   usePathname: () => "/",
+}));
+
+// Mock TenantSwitcher — Client Component with Clerk+ReactQuery hooks.
+// TopBarGlobal tests focus on shell structure (header/logo/theme), not TenantSwitcher internals.
+// TenantSwitcher is independently tested in TenantSwitcher.test.tsx.
+vi.mock("./TenantSwitcher", () => ({
+  TenantSwitcher: () => (
+    <div data-testid="tenant-switcher-mock">TenantSwitcher</div>
+  ),
 }));
 
 describe("TopBarGlobal — structure (AC-10, AC-11, AC-12)", () => {

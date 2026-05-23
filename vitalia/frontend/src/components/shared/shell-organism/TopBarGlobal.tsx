@@ -1,13 +1,15 @@
 /**
  * TopBarGlobal — shell organism (global top navigation bar)
  * F1-S2 vitalia-fase1-topbar-global — T-4
+ * Updated F1-S3 vitalia-fase1-tenant-switcher — T-8
+ *   Replaced TenantSwitcherSlot placeholder with live TenantSwitcher.
  *
  * Server Component (no "use client").
  * Height: h-12 (48px). Positions fixed at top, z-50.
- * Contains: LogoMark (left) + TenantSwitcherSlot (center) + ThemeToggle (right).
+ * Contains: LogoMark (left) + TenantSwitcher (center) + ThemeToggle (right).
  *
- * ThemeToggle is a Client Component — Next.js handles the Server→Client boundary
- * automatically when a Server Component renders a Client Component.
+ * ThemeToggle and TenantSwitcher are Client Components — Next.js handles the
+ * Server→Client boundary automatically when a Server Component renders them.
  *
  * 03-arch.md § 2.3 — implementation verbatim.
  * Named export (no default export) per FSD-Lite enforce.
@@ -17,7 +19,7 @@
  */
 
 import { LogoMark } from "./LogoMark";
-import { TenantSwitcherSlot } from "./TenantSwitcherSlot";
+import { TenantSwitcher } from "./TenantSwitcher";
 import { ThemeToggle } from "./ThemeToggle";
 
 export interface TopBarGlobalProps {
@@ -50,7 +52,7 @@ export function TopBarGlobal({ className }: TopBarGlobalProps) {
       <div className="flex items-center gap-3">
         <LogoMark variant="full" size="md" className="hidden md:inline-flex" />
         <LogoMark variant="mark" size="md" className="inline-flex md:hidden" />
-        <TenantSwitcherSlot />
+        <TenantSwitcher />
       </div>
 
       {/* Right: actions */}
