@@ -25,7 +25,8 @@ import { render, screen } from "@testing-library/react";
 import { useShellStore } from "@/stores/shell-store";
 
 // Mock react-resizable-panels v4 to avoid DOM measurement issues in test env
-// v4 API: Group (was PanelGroup), Panel, Separator (was PanelResizeHandle), useDefaultLayout
+// v4 API: Group (was PanelGroup), Panel, Separator (was PanelResizeHandle),
+//         useDefaultLayout, useGroupRef (F13 snap-up fix)
 vi.mock("react-resizable-panels", () => ({
   Group: ({
     children,
@@ -91,7 +92,16 @@ vi.mock("react-resizable-panels", () => ({
       role="separator"
     />
   ),
-  useDefaultLayout: vi.fn().mockReturnValue(undefined),
+  useDefaultLayout: vi.fn().mockReturnValue({}),
+  // F13 snap-up fix: useGroupRef returns a RefObject with a mock GroupImperativeHandle.
+  // getLayout returns a layout safely above minValeriaPct so the snap-up useEffect
+  // is a no-op in unit tests (no actual DOM panels to measure).
+  useGroupRef: vi.fn(() => ({
+    current: {
+      getLayout: vi.fn(() => ({ "valeria-panel": 50, "app-panel": 50 })),
+      setLayout: vi.fn(),
+    },
+  })),
 }));
 
 // Mock useViewportGuard to avoid window.innerWidth setup complexity in layout tests

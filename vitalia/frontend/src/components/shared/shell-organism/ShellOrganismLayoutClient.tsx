@@ -29,7 +29,13 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import { Group, Panel, Separator, useDefaultLayout } from "react-resizable-panels";
+import {
+  Group,
+  Panel,
+  Separator,
+  useDefaultLayout,
+  useGroupRef,
+} from "react-resizable-panels";
 import { cn } from "@/lib/utils";
 import { useShellStore } from "@/stores/shell-store";
 import { useViewportGuard } from "./useViewportGuard";
@@ -65,9 +71,10 @@ export function ShellOrganismLayoutClient({
   // valeriaState='rail' → min Valeria 360px (rail 60 + chat 300)
   // App min constante 480px (ribbon 6 tabs + sub-tabs sin overflow)
   //
-  // react-resizable-panels v4 `minSize` es PERCENT (no pixels). Calculamos %
-  // dinámicamente con ResizeObserver del container actual del Group para que
-  // el min en pixeles siempre se respete sin importar el viewport actual.
+  // react-resizable-panels v4 minSize: numeric values are treated as PIXELS (not percent).
+  // STRING values ending in "%" ARE treated as percent. We compute the % dynamically
+  // with ResizeObserver on the container so the pixel minimum is always respected,
+  // then pass it as `"${minValeriaPct}%"` string to trigger v4's native percent enforcement.
   const MIN_VALERIA_PX = valeriaState === "full" ? 620 : 360;
   const MIN_APP_PX = 480;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -93,6 +100,45 @@ export function ShellOrganismLayoutClient({
   const minValeriaPct = clampPct(MIN_VALERIA_PX, containerWidth);
   const minAppPct = clampPct(MIN_APP_PX, containerWidth);
   const defaultValeriaPct = shellMode === "agentic" ? 50 : 5;
+
+  // ── Imperative Group ref for snap-up (F13 fix) ───────────────────────────────
+  // Two mechanisms enforce the pixel minimum:
+  //
+  // 1. minSize as string percent (primary, native v4 drag enforcement):
+  //    react-resizable-panels v4 treats NUMERIC minSize as pixels (tiny, useless for
+  //    our layout). STRING minSize ending in "%" is treated as percent (enforced during
+  //    drag). Passing `minValeriaPct + "%"` (e.g., "48.4375%") makes v4 natively clamp
+  //    drag to the correct pixel minimum. This eliminates the need for a manual
+  //    snap-up in onLayoutChanged for the drag case.
+  //
+  // 2. Hydration / state-change snap-up (Fix A — useEffect):
+  //    useDefaultLayout reads localStorage on hydration. If the persisted layout has
+  //    Valeria below the current minValeriaPct (e.g., after valeriaState full→rail→full
+  //    cycle), the panel starts below the current minimum. Fix A snaps it up imperatively.
+  //    Also catches the valeriaState change case (full→rail lowers min — panel stays;
+  //    rail→full raises min — snap up needed).
+  //
+  // API note (react-resizable-panels v4):
+  //   groupRef prop (NOT std ref) → GroupImperativeHandle
+  //   getLayout() → { [panelId: string]: number } (map by panel id, percent 0..100)
+  //   setLayout({ [panelId]: pct }) → applied Layout
+  //   onLayoutChanged(layout) → fires after pointer released (not on each move)
+  const groupRef = useGroupRef();
+
+  // Fix A: snap-up when containerWidth or minValeriaPct changes.
+  // Catches hydration race (localStorage restore below new minimum) and
+  // valeriaState change (full→rail→full cycle where panel is below new min).
+  useEffect(() => {
+    if (containerWidth <= 0 || !groupRef.current) return;
+    const layout = groupRef.current.getLayout();
+    const valeriaPct = layout[VALERIA_PANEL_ID];
+    if (valeriaPct !== undefined && valeriaPct < minValeriaPct) {
+      groupRef.current.setLayout({
+        [VALERIA_PANEL_ID]: minValeriaPct,
+        [APP_PANEL_ID]: 100 - minValeriaPct,
+      });
+    }
+  }, [containerWidth, minValeriaPct, groupRef]);
 
   // Persist layout across page reloads via localStorage.
   // Safe to call directly: this component is client-only via dynamic({ssr:false}).
@@ -125,12 +171,14 @@ export function ShellOrganismLayoutClient({
             id={SHELL_GROUP_ID}
             orientation="horizontal"
             className="h-full"
+            groupRef={groupRef}
             {...layoutProps}
+            onLayoutChanged={layoutProps.onLayoutChanged}
           >
             <Panel
               id={VALERIA_PANEL_ID}
               defaultSize={defaultValeriaPct}
-              minSize={minValeriaPct}
+              minSize={`${minValeriaPct}%`}
               collapsible={false}
             >
               <ValeriaSidebarSlot />
@@ -149,7 +197,7 @@ export function ShellOrganismLayoutClient({
             <Panel
               id={APP_PANEL_ID}
               defaultSize={100 - defaultValeriaPct}
-              minSize={minAppPct}
+              minSize={`${minAppPct}%`}
             >
               <AppPanelSlot>{children}</AppPanelSlot>
             </Panel>
