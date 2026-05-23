@@ -33,6 +33,20 @@ next_action: "/po-ux refinar 01-spec.md"
 - NO implementar content per tab (eso son empty-states F1-S10 + Fase 2)
 - NO bell icon notifications (Fase 2 postponed)
 
+## Open question heredada de F1-S4 (2026-05-23 Chris)
+
+**Cuando refinemos F1-S7 con `/po-ux`, decidir explícitamente cómo se ve el Ribbon en modo `web` vs modo `agentic`.**
+
+Contexto: F1-S4 cementó dos modos shell — `agentic` (split 50/50 Valeria-chat | AppPanel-ribbon) y `web` (Valeria rail 60px | AppPanel expandido 1fr). En el mockup F1-S4 ratificado, el AppPanelSlot muestra un skeleton placeholder del ribbon en AMBOS modos (horizontal con 5 agentes + Configurar). Chris preguntó durante ratify F1-S4 si los tabs realmente quedarán igual en modo web o tendrán otro layout.
+
+Opciones a explorar en F1-S7 refinement:
+- **Misma ribbon horizontal en ambos modos** (default — minimal divergence, consistente UX)
+- **Ribbon vertical/sidebar en modo web** (más espacio para content, paradigma web tradicional)
+- **Ribbon compacta en modo web** (mismo horizontal pero íconos-only sin labels visibles a viewports estrechos)
+- **Tabs migran a un dropdown/menu en modo web** (Apps switcher pattern Google/Microsoft)
+
+Decisión pendiente — explorar con mockups HTML 2-3 variantes en `/po-ux` antes de cementar 03-arch F1-S7.
+
 ## Scope verbatim
 
 ### § 1 — `AGENT_CATALOG` constant
