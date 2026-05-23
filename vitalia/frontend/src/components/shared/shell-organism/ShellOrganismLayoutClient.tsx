@@ -28,6 +28,7 @@
 
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { Group, Panel, Separator, useDefaultLayout } from "react-resizable-panels";
 import { cn } from "@/lib/utils";
 import { useShellStore } from "@/stores/shell-store";
@@ -59,10 +60,38 @@ export function ShellOrganismLayoutClient({
   // One-way viewport guard: forces 'full' → 'rail' when viewport [768, 1104)
   useViewportGuard();
 
-  // Panel size percentages (react-resizable-panels v4 uses percent units)
-  // Reference viewport: 1640px (valeria 620 + handle 4 + app 480 + padding)
-  const minValeriaPct = valeriaState === "full" ? 38 : 22;
-  const minAppPct = 30;
+  // ── Min pixels cementados (01-spec.md §5 + §8) ─────────────────────────────
+  // valeriaState='full' → min Valeria 620px (rail 60 + history 280 + chat 280)
+  // valeriaState='rail' → min Valeria 360px (rail 60 + chat 300)
+  // App min constante 480px (ribbon 6 tabs + sub-tabs sin overflow)
+  //
+  // react-resizable-panels v4 `minSize` es PERCENT (no pixels). Calculamos %
+  // dinámicamente con ResizeObserver del container actual del Group para que
+  // el min en pixeles siempre se respete sin importar el viewport actual.
+  const MIN_VALERIA_PX = valeriaState === "full" ? 620 : 360;
+  const MIN_APP_PX = 480;
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(1280); // sane default
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setContainerWidth(entry.contentRect.width);
+      }
+    });
+    ro.observe(el);
+    setContainerWidth(el.getBoundingClientRect().width);
+    return () => ro.disconnect();
+  }, []);
+
+  // Convert min pixels → percent based on actual container width.
+  // Clamp a [10, 70] para evitar valores absurdos en viewport extremo.
+  const clampPct = (px: number, total: number) =>
+    Math.max(10, Math.min(70, (px / Math.max(total, 1)) * 100));
+  const minValeriaPct = clampPct(MIN_VALERIA_PX, containerWidth);
+  const minAppPct = clampPct(MIN_APP_PX, containerWidth);
   const defaultValeriaPct = shellMode === "agentic" ? 50 : 5;
 
   // Persist layout across page reloads via localStorage.
@@ -90,6 +119,7 @@ export function ShellOrganismLayoutClient({
           tabIndex={-1}
           className="flex-1 min-h-0 overflow-hidden hidden md:block"
           aria-label="Contenido principal"
+          ref={containerRef}
         >
           <Group
             id={SHELL_GROUP_ID}
@@ -109,9 +139,9 @@ export function ShellOrganismLayoutClient({
             <Separator
               id="shell-handle"
               className={cn(
-                "w-1 bg-border hover:bg-primary/40 focus-visible:bg-primary",
-                "data-[separator]:bg-primary",
-                "transition-colors outline-none",
+                // Idle: 1px gris muted (mockup parity). Hover/focus: primary tenue.
+                "w-px bg-border hover:w-1 hover:bg-primary/60 focus-visible:w-1 focus-visible:bg-primary",
+                "transition-all duration-150 outline-none cursor-col-resize",
               )}
               aria-label="Redimensionar paneles"
             />

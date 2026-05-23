@@ -87,6 +87,65 @@ Chris invoca pause-ratify procedure (orchestrator levanta dev-server + reporta U
 
 ---
 
+## Fase 7A fidelity refit (iter post-screenshot — 2026-05-23 PM)
+
+Tras screenshot side-by-side mockup vs componente real, Chris detectó que vs el mockup ratificado iter 4 el componente real se veía tosco (slots vacíos, handle no respeta px cementados, TenantSwitcher mock missing). Refit aplicado en mismo branch `wip/vitalia` sin transición de state:
+
+### Cambios aplicados (4 files)
+
+| File | Cambio |
+|---|---|
+| `vitalia/frontend/src/components/shared/shell-organism/ValeriaSidebarSlot.tsx` | Skeleton siluetas matching mockup: rail 60px (5 íconos cuadrados) + history 280px (rows agrupadas con headers) + chat area (5 bubbles muted/agent-valeria-soft + composer). Slot label flotante centrado. Mobile fallback "abrir desde menú" |
+| `vitalia/frontend/src/components/shared/shell-organism/AppPanelSlot.tsx` | Skeleton ribbon 5 agentes colored (lisa-soft · lucas-soft · adrian-soft · valeria-soft · camila-soft) + Configurar grey + sub-tabs bar 40px + content cards 2x2 grid. Children layer encima del skeleton (cuando F1-S7 active ribbon real domina) |
+| `vitalia/frontend/src/components/shared/shell-organism/ShellOrganismLayoutClient.tsx` | `useRef + ResizeObserver` al containerRef del `<main>` agentic para calcular `minSize` PERCENT desde MIN px cementados (`MIN_VALERIA_PX = valeriaState==='full' ? 620 : 360` + `MIN_APP_PX = 480`). Workaround a react-resizable-panels v4 que usa percent en `minSize` no px. Separator también más sutil (`w-px → hover w-1`) |
+| `vitalia/frontend/e2e/__test-pages__/shell-layout/shell-layout-showcase.tsx` | Mock tenant store con `MOCK_TENANTS` (Sonrisa Plena PE + Dermalia MX) hidratado via `useEffect` — best-effort (ver gap conocido abajo) |
+
+### Visual ratify markers (Playwright DOM probe)
+
+```json
+{
+  "hasValeria": true,         // ValeriaSidebarSlot mounted (640x752 at x=0)
+  "hasApp": true,             // AppPanelSlot mounted (640x752 at x=641)
+  "hasTenant": false,         // TenantSwitcher gap (ver abajo)
+  "skeletonState": false      // ShellOrganismLayoutClient hidratado client-side
+}
+```
+
+Side-by-side screenshots: `/tmp/mockup-agentic-light.png` vs `/tmp/real-shell-light.png` (Chris ratificó visual 2026-05-23 PM, modulo TenantSwitcher gap aceptado).
+
+### Gap conocido — TenantSwitcher mock en showcase fixture
+
+**Symptom:** `<TenantSwitcher />` renderiza `null` en `/test-stack/shell-layout` aún con mock tenants hidratados via `setAvailableTenants` + `setActiveTenant` en useEffect.
+
+**Root cause:**
+- `TenantSwitcher.tsx:97-99` graceful-degrade: `if (!isLoading && !isError && availableTenants.length === 0) return null`
+- En primer render: `availableTenants = []` (store default) → returns null inmediatamente
+- `useTenants()` hook está `enabled: isLoaded && isSignedIn === true` — en showcase `isSignedIn = false` → query never fires → store nunca hidrata vía hook
+- Mock del showcase corre `useEffect` post-mount, pero el TenantSwitcher dentro de `dynamic({ssr:false})` chunk + Zustand subscription post-null-return no triggera re-render reliable
+- Probé 3 approaches en orden: `useEffect` original (la del primer commit T-7) → module-level `useTenantStore.setState()` → `useState(() => setState; return null)` lazy init. Los tres fallan por timing diferente.
+
+**En PROD real funciona:** Clerk signed-in → `useTenants()` corre `/api/tenants` → response hidrata store → TenantSwitcher renderiza normal (probado en F1-S3 dedicated tests `TenantSwitcher.test.tsx` + spec).
+
+**Decisión Chris 2026-05-23:** aceptar gap. NO bloquea visual ratify del shell layout 5050 (split + slots skeleton + handle son lo prioritario). Follow-up nice-to-have: refactor TenantSwitcher con `__forceMock` prop o wrappear showcase con `MockClerkProvider isSignedIn=true` — out-of-scope T-7 Fase 7A.
+
+**Mock retenido en showcase** (useEffect original) para preservar la intención + facilitar resolución futura cuando alguien refactor TenantSwitcher.
+
+### Vitest no-regression post-refit
+
+121 test files / 979 tests pass (sin regresiones vs T-1..T-6 baseline).
+
+### Próximos pasos Fase 7B
+
+1. Servidor mockups corriendo: `http://localhost:8888/shell-layout-agentic.html`
+2. Dev-server vitalia: `http://localhost:3002/test-stack/shell-layout`
+3. `cd vitalia/frontend && npx playwright test e2e/regression/vitalia-fase1-shell-layout-5050/ --update-snapshots` → genera 6 PNGs
+4. Commit goldens + push
+5. Phase D local coverage check
+6. State transition `developing → developed`
+7. AUTO-HANDOFF `/auditor`
+
+---
+
 **Last line per anti-telephone-game contract:**
 
 `done -> /home/chalreme/Proyectos/luana-vitalia/vitalia/docs/product/stories/vitalia-fase1-shell-layout-5050/T-7-result.md`

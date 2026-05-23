@@ -10,6 +10,13 @@
  * Accessible via dev server: /test-stack/shell-layout
  * NOT protected by Clerk auth (public dev-only, no PHI).
  *
+ * Pre-hydrates tenant-store con mock tenants LatAm para que TenantSwitcher
+ * en TopBarGlobal renderice (sin Clerk auth fetched, store viene vacío
+ * y TenantSwitcher hace graceful degrade a null).
+ *
+ * NO pasa children al AppPanelSlot — el skeleton interno ya identifica
+ * el placeholder (slot labels visibles). Children sería redundante.
+ *
  * Playwright specs (e2e/regression/vitalia-fase1-shell-layout-5050/*.spec.ts)
  * usan POM `ShellLayoutPage.gotoShell()` que navega aquí.
  *
@@ -17,20 +24,42 @@
  * downstream-regression-na: brand-local E2E fixture; no cross-brand consumers
  */
 
+"use client";
+
+import { useEffect } from "react";
 import { ShellOrganismLayout } from "@/components/shared/shell-organism/ShellOrganismLayout";
+import { useTenantStore } from "@/stores/tenant-store";
+import type { Tenant } from "@/components/shared/shell-organism/types";
 
 const FIXTURE_TENANT_ID = "test-tenant-shell-layout";
 
+/** Mock tenants LatAm para que TenantSwitcher renderice en showcase. */
+const MOCK_TENANTS: ReadonlyArray<Tenant> = [
+  { id: FIXTURE_TENANT_ID, name: "Sonrisa Plena", city: "Lima" },
+  { id: "tenant-dermalia-mx", name: "Dermalia MX", city: "CDMX" },
+];
+
 export default function ShellLayoutShowcasePage() {
+  const setAvailableTenants = useTenantStore((s) => s.setAvailableTenants);
+  const setActiveTenant = useTenantStore((s) => s.setActiveTenant);
+
+  // Mock hydration post-mount (best-effort). En la práctica TenantSwitcher
+  // returned null al primer render por availableTenants=[] + graceful degrade.
+  // El useEffect llega tarde y zustand re-render del child no funciona porque
+  // el child Component está dentro de dynamic({ssr:false}) y vive en un chunk
+  // que se carga después. En PROD real con Clerk auth no hay este gap — la
+  // tenant list viene de /api/tenants vía useTenants() y el pill renderiza.
+  // Test fixture caveat documentado en T-7-impl-log.md (follow-up nice-to-have).
+  useEffect(() => {
+    setAvailableTenants(MOCK_TENANTS);
+    setActiveTenant(MOCK_TENANTS[0]);
+  }, [setAvailableTenants, setActiveTenant]);
+
+  // Empty children: skeleton del AppPanelSlot ya identifica placeholder.
+  // ShellOrganismLayoutProps.children es required; pasamos null Element.
   return (
     <ShellOrganismLayout tenantId={FIXTURE_TENANT_ID}>
-      {/* AppPanelSlot children — placeholder vacío. F1-S7/S8/S10 lo llenan */}
-      <div
-        data-testid="app-panel-slot-children"
-        className="flex h-full items-center justify-center text-sm text-muted-foreground"
-      >
-        Contenido AppPanel (F1-S7 / S8 / S10 lo construirá)
-      </div>
+      {null}
     </ShellOrganismLayout>
   );
 }
