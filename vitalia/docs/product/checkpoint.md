@@ -2,7 +2,7 @@
 brand: vitalia
 vertical: "Salud + Bienestar"
 status: shipped
-last_updated: 2026-05-23-T2
+last_updated: 2026-05-23-T3
 paradigm: shell-organism-agentico-v1                 # ★ 2026-05-22 cementado ★
 shell_organism_status: planning-done-2026-05-22      # ★ design-story cerrada, Fase 1 + Fase 2 backlog generado
 slice_1_status: superseded-by-shell-organism-2026-05-22  # ★ paradigma reemplazado · stories slice-1 archivadas o refactored
@@ -19,7 +19,7 @@ active_stories:
   # vitalia-fase1-design-tokens-theme      # F1-S1 · state: done 2026-05-23 (archived) · ver recently_done
   # vitalia-fase1-topbar-global            # F1-S2 · state: done 2026-05-23 (archived) · ver recently_done
   # vitalia-fase1-tenant-switcher          # F1-S3 · state: done 2026-05-23 (archived) · ver recently_done · CHAIN F1-S0..S3 COMPLETE
-  - vitalia-fase1-shell-layout-5050        # F1-S4 — state: refining 2026-05-23 · awaiting /po-ux 01-spec.md v1 + 2 mockups HTML (shell-layout-agentic + shell-layout-web) ratificación Chris (gate visual bloqueante)
+  - vitalia-fase1-shell-layout-5050        # F1-S4 — state: refined 2026-05-23T13:45Z · 01-spec.md ratificado Chris + 2 mockups HTML ratificados (iter 4) · awaiting /architect ready package
   - vitalia-fase1-valeria-rail-history     # F1-S5
   - vitalia-fase1-valeria-chat-skeleton    # F1-S6
   - vitalia-fase1-ribbon-6-tabs            # F1-S7
@@ -164,6 +164,18 @@ Story 11 (`luana-vitalia-bootstrap`, mergeada 2026-05-15) shipped **16 capabilit
 - HIPAA-hardening adicional (dual `tenant+clinic` filter, `pgcrypto` column encryption, retention cron 10y, RBAC `@require_phi_access`, ComplianceService channel guard) — ver gap detallado en `vitalia/docs/product/capabilities/compliance/compliance-hipaa-lite-audit.yaml`
 
 ## Bitácora
+
+- **2026-05-23T13:45Z (sesión `/po-ux` iter 1-4) — F1-S4 transition `refining → refined`**:
+  - Chris ratificó visualmente los 2 mockups HTML F1-S4 tras 4 iteraciones:
+    - iter 1: base agentic (50/50 con divisor + min static 360px) + web (60+1fr)
+    - iter 2: agentic con resize draggable + footer devtools (split live + min display + select valeriaState `full|rail`)
+    - iter 3: LogoMark assets reales copiados de `vitalia/frontend/public/brand/` a `mockups/assets/` (vitalia-logo.png + -dark.png + ico.png) por reuso F1-S2 contract
+    - iter 4: fix bug "2 logos visibles en desktop+dark" — JS toggle racing con Tailwind `sm:block`; reemplazado por CSS puro con `.dark` selector + media queries (sin JS swap)
+  - `01-spec.md` UNIFICADO escrito en `vitalia/docs/product/stories/vitalia-fase1-shell-layout-5050/01-spec.md` (15 secciones, 4 Gherkin scenarios base + sub-categorías mandatory v4.1 cubiertas o N/A documentadas + visual goldens + a11y + compliance scope N/A).
+  - Gate v4.1 PASS · `ratified_visual_by_chris: true` cementado en story checkpoint.
+  - Decisión técnica clave (cementada en 01-spec.md §5+§8): min Valeria es función de valeriaState (`'full'`=620, `'rail'`=360); NO auto-collapse al límite (cambio de state es explícito vía rail button F1-S5); snap-up automático al expandir state hacia min mayor.
+  - WIP cap status post-update: refined=2 cap-eligible (payment-adapter-mvp + shell-layout-5050) dentro de cap 5 — cómodo · refining=1 (fiscal-emission-pe) — cómodo.
+  - **Próximo paso (handoff)**: `/architect vitalia vitalia-fase1-shell-layout-5050` → produce ready package (03-arch.md + 04-validators.yaml + 05-guidelines.md + 06-tickets.yaml) → transition refined→ready.
 
 - **2026-05-23 (sesión `/pm-vitalia` post-chain) — F1-S4 transition `idea → refining`**:
   - Chris pidió arrancar F1-S4 `vitalia-fase1-shell-layout-5050` (next recommended post chain F1-S0..S3 done). Verificación pre-`/architect` confirmó gate visual bloqueante NO satisfecho: `01-spec.md` ausente · `mockups/` dir ausente · `ratified_visual_by_chris: false` · state `idea`.

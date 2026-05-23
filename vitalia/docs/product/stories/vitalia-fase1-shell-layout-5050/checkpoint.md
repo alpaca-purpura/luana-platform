@@ -6,13 +6,17 @@ type: ui-story
 agent_owner: shell
 module: shell-organism
 capability: shell.layout-5050
-state: refining
+state: refined
 last_modified: 2026-05-23
-ratified_by_chris: false
-ratified_visual_by_chris: false                    # gate bloqueante per vitalia/.claude/rules/shell-mockup-per-component.md
-ratified_visual_mockups_expected:
+ratified_by_chris: true
+ratified_at: 2026-05-23T13:45:00Z
+ratified_visual_by_chris: true                     # gate bloqueante satisfecho
+ratified_visual_at: 2026-05-23T13:45:00Z
+ratified_visual_iter: 4                            # v1 base · v2 resize dynamic + state toggle · v3 LogoMark assets · v4 CSS swap fix
+ratified_visual_mockups:
   - vitalia/docs/product/stories/vitalia-fase1-shell-layout-5050/mockups/shell-layout-agentic.html
   - vitalia/docs/product/stories/vitalia-fase1-shell-layout-5050/mockups/shell-layout-web.html
+transitioned_to_refined_at: 2026-05-23T13:45:00Z
 parallel_safe: false
 priority: critical
 estimated_dev_days: 1-2
@@ -24,7 +28,7 @@ hard_deps_status: "CHAIN F1-S0..S3 COMPLETE 2026-05-23 — blocker_hard removido
 reuse_map_summary: "NEW shell layout · route group `(shell-organism)/` paralelo a `(dashboard)/` legacy · zustand shellStore para mode (agentic/web)"
 spawned_at: 2026-05-22
 transitioned_to_refining_at: 2026-05-23
-next_action: "/po-ux vitalia-fase1-shell-layout-5050 → producir 01-spec.md v1 + 2 mockups HTML ratificados Chris (gate visual bloqueante)"
+next_action: "/architect vitalia vitalia-fase1-shell-layout-5050 → lee 01-spec.md + 2 mockups ratificados → produce ready package (03-arch.md + 04-validators.yaml + 05-guidelines.md + 06-tickets.yaml) → transition refined→ready"
 ---
 
 # F1-S4 vitalia-fase1-shell-layout-5050 — checkpoint
