@@ -6,9 +6,12 @@ type: ui-story
 agent_owner: shell
 module: shell-organism
 capability: shell.layout-5050
-state: ready
+state: developing
 last_artifact: 06-tickets.yaml
-last_modified: 2026-05-23T14:07:08Z
+last_modified: 2026-05-23T14:15:00Z
+transitioned_to_developing_at: 2026-05-23T14:15:00Z
+dev_team_iter: 1
+current_ticket: T-1
 ratified_by_chris: true
 ratified_at: 2026-05-23T13:45:00Z
 ratified_visual_by_chris: true                     # gate bloqueante satisfecho
@@ -38,7 +41,7 @@ reuse_map_summary: "NEW shell layout · route group `(shell-organism)/` paralelo
 spawned_at: 2026-05-22
 transitioned_to_refining_at: 2026-05-23
 phase_marker: READY_PACKAGE_CLOSED
-next_action: "/dev-team vitalia vitalia-fase1-shell-layout-5050 → Conv 2 autonomous build, toma T-1 first (state ready → developing)"
+next_action: "Conv 2 autonomous build EN CURSO — T-1+T-2 paralelos (no deps) primero, después T-3→T-4+T-5→T-6→T-7"
 ---
 
 # F1-S4 vitalia-fase1-shell-layout-5050 — checkpoint

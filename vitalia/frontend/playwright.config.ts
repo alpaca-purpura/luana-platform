@@ -72,6 +72,8 @@ export default defineConfig({
         /.*\/e2e\/auth\/.*\.spec\.ts/,
         /.*\/e2e\/dashboard\/.*\.spec\.ts/,
         /.*\/e2e\/visual\/.*\.spec\.ts/,
+        // F1-S4 shell-layout regression specs (functional + visual-goldens structure)
+        /.*\/e2e\/regression\/.*\.spec\.ts/,
       ],
       use: {
         ...devices["Desktop Chrome"],

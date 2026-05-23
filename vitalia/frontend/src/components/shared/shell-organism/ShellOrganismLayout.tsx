@@ -82,10 +82,12 @@ export function ShellOrganismLayout({
   // Persist layout across page reloads via localStorage
   // useDefaultLayout returns { defaultLayout, onLayoutChange, onLayoutChanged }
   // which are spread onto Group to enable persistence.
+  // NOTE: access localStorage via globalThis guard to avoid SSR ReferenceError
+  // (react-resizable-panels "use client" doesn't guarantee server-safe eval of `localStorage` bare ref)
   const layoutProps = useDefaultLayout({
     id: SHELL_GROUP_ID,
     panelIds: [VALERIA_PANEL_ID, APP_PANEL_ID],
-    storage: typeof window !== "undefined" ? localStorage : undefined,
+    storage: typeof globalThis.localStorage !== "undefined" ? globalThis.localStorage : undefined,
   });
 
   return (
