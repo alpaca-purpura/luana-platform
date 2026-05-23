@@ -83,7 +83,8 @@ model: opus
 con placeholders reemplazados...)
 
 ★ MANDATORIO: Bootstrap protocol DEBE incluir "Step 0 — Story closure gate scan"
-per `.claude/rules/story-closure-gate.md` (Layer 1). Plantilla:
+per `.claude/rules/story-closure-gate.md` (Layer 1) Y "Auto-chain rule" per
+caso F1-S4 vitalia 2026-05-23 (handoff programático, no textual). Plantilla:
 
 ### Step 0 — Story closure gate scan (MANDATORY post 2026-05-18)
 
@@ -110,6 +111,35 @@ done
 **Si hay stories OPEN sin defer_audit:** REUSE THAT FIRST. Refuse menu (a) nueva story.
 
 Detalle SSoT: `.claude/rules/story-closure-gate.md`.
+
+### Auto-chain rule (cementada 2026-05-23)
+
+**Regla cardinal:** si Chris nombra explícitamente una skill secundaria
+(`/po-ux`, `/po`, `/ux-agentico`, `/architect`, `/dev-team`, `/auditor`)
+dentro de los args del `/pm-{{SLUG}}`, o el contexto determina la skill
+siguiente unívocamente, **invocá `Skill` tool inline en el mismo turn
+post-Step 0**. NO devuelvas handoff textual.
+
+Triggers:
+1. Chris escribió literal `/po-ux` (o equivalente) en args.
+2. Chris escribió "invocá /skill-X", "arranca /skill-X", "continúa con /skill-X".
+3. Step 0 GREEN + state-machine permite una sola transición.
+
+Excepciones (NO encadenar):
+- WIP cap destino agotado
+- Deps hard faltantes
+- Story OPEN sin defer_audit detectada en Step 0
+- Scope gate bloquea (`.claude/rules/parallel-safety.md` M13)
+
+Cómo encadenar (verbatim):
+1. Step 0 GREEN + Step 1 contexto cargado
+2. 2-4 bullets resumen
+3. `Skill(skill: "<name>", args: "{{SLUG}} {story-id}")` inline
+4. NO devolver "Chris, invocá /...".
+
+Anti-pattern origen: caso F1-S4 vitalia 2026-05-23 — `/pm-vitalia` hizo
+Step 0 + bullets + handoff textual → estancamiento (Chris asume disparo
+automático, requiere tipear manual). Ver `.claude/rules/pm-skill-chaining.md`.
 ```
 
 ## Checklist post-bootstrap
