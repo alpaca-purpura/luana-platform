@@ -1,0 +1,40 @@
+# Shell Organism — Vitalia Fase 1 UI Foundation
+
+> Brand-local module. NO cross-brand consumers. UI shell chrome only (no PHI).
+
+## Propósito
+
+El shell-organism es el contenedor raíz del UI Vitalia post-login. Define el layout 50/50 split en modo agéntico (ValeriaPanel a la izquierda como copiloto conversacional · AppPanel a la derecha con ribbon de agentes Lisa/Lucas/Adrián/Valeria/Camila + Configurar) y soporta un modo web alternativo (Valeria collapsed a rail · App 100% para flujos web tradicionales).
+
+Es el primer building block de la Fase 1 UI Foundation antes de F1-S5..S10 que llenarán los slots con contenido real (history, chat, ribbon 6 tabs, sub-tabs, empty-states).
+
+## Capabilities <!-- AUTO-GENERATED — no editar a mano -->
+
+- [`shell.layout-5050`](../capabilities/shell-organism/layout-5050.yaml) — Layout root split 50/50 agentic + web mode alternativo + mobile triple-main pattern (status: live, 2026-05-23, story F1-S4)
+
+<!-- END AUTO-GENERATED -->
+
+## Decisiones cardinales
+
+- **Triple-main pattern CSS-driven:** 3 `<main id="main-content">` elements mutually-exclusive via Tailwind (`md:hidden` mobile + `hidden md:block` agentic + `hidden md:grid` web). Solo UNO es visible per viewport. Skip-link `#main-content` resolve al visible.
+- **react-resizable-panels v4 SSR workaround:** `useDefaultLayout` usa bare-name `localStorage` default param que crashea SSR → split en `ShellOrganismLayout` (wrapper) + `ShellOrganismLayoutClient` (real impl) via `next/dynamic({ssr:false})`. Skeleton fallback mantiene TopBarGlobal + #main-content para skip-link accesibilidad inmediata.
+- **minSize PERCENT (no pixels):** v4 trata numeric minSize como pixels (useless para layout responsive). Pasamos string `"${minValeriaPct}%"` para enforce native drag clamp. ResizeObserver del container recalcula percent dinámicamente desde pixels cementados (MIN_VALERIA_PX 620 full / 360 rail · MIN_APP_PX 480).
+- **Snap-up Fix A via useGroupRef:** useEffect post-ResizeObserver detecta layout persisted < minSize → setLayout([minPct, 100-minPct]) imperativo. Resuelve hydration race condition para drag-clamp (drag-after-rail edge case DEFERRED a F1-S5/S6 lifecycle work).
+- **valeriaState default='full':** override Design Contract §6.1 ('rail') — matches mockup ratificado iter 4 Chris 2026-05-23.
+- **Showcase pattern parity F1-S0..S3:** route `/test-stack/shell-layout` para Playwright E2E sin Clerk auth fixture (paths public via `proxy.ts` matcher).
+
+## Anti-objetivos cementados
+
+- NO incluir contenido del ValeriaPanel (eso es F1-S5 + F1-S6)
+- NO incluir contenido del AppPanel (eso es F1-S7 + F1-S8 + F1-S10)
+- NO modificar TopBarGlobal/LogoMark/ThemeToggle/TenantSwitcher (F1-S1/S2/S3 REUSE)
+- NO touch route group `(dashboard)/` legacy (paralelo route group `(shell-organism)/`)
+- NO cross-brand consumers (brand-local Vitalia)
+
+## Referencias
+
+- `vitalia/docs/architecture/SHELL-DESIGN-CONTRACT.md` — atomic design SSoT del shell completo (componentes + props + estados visuales)
+- Story archive: `vitalia/docs/archive/2026/stories/vitalia-fase1-shell-layout-5050/` (snapshot inmutable F1-S4)
+- Mockups ratificados: `vitalia/docs/archive/2026/stories/vitalia-fase1-shell-layout-5050/mockups/{shell-layout-agentic,shell-layout-web}.html` (iter 4 Chris 2026-05-23)
+- Learning: `vitalia/docs/learnings/2026-05-23-shell-layout-race-condition-defer.md` (race condition pattern promotable cross-brand candidate)
+- Follow-up: `vitalia/docs/product/stories/vitalia-fase1-shell-layout-5050-race-fix/` (state=parked, race fix tracking)

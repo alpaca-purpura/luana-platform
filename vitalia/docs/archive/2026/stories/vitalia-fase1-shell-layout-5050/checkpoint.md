@@ -6,21 +6,26 @@ type: ui-story
 agent_owner: shell
 module: shell-organism
 capability: shell.layout-5050
-state: reviewing
-phase: HANDOFF_TO_PM_MERGE
-last_artifact: CHECKPOINTS.md (APPROVED-WITH-DEFER)
+state: done
+phase: MERGED
+last_artifact: 07-merge.md
 gherkin_matrix: 06-audit/gherkin-matrix.md
-last_modified: 2026-05-23T18:15:00-05:00
+last_modified: 2026-05-23T18:35:00-05:00
 transitioned_to_developing_at: 2026-05-23T14:15:00Z
 transitioned_to_developed_at: 2026-05-23T15:50:00-05:00
 transitioned_to_reviewing_at: 2026-05-23T16:00:00-05:00
+transitioned_to_done_at: 2026-05-23T18:35:00-05:00
 dev_team_iter: 1
-auditor_iter: 3  # cap absoluto 3/3 reached con APPROVED-WITH-DEFER
+auditor_iter: 3
 audit_iterations: 3
-current_ticket: T-7  # 7A refit c1925563 · 7B goldens cbb4af74 · audit-iter-1 73e78abc · audit-iter-2 8fc6593f · audit-iter-3 46fc8700
+current_ticket: T-7  # all done
 verdict: APPROVED-WITH-DEFER
-deferred_scenario: "SC-3 last assertion (rail→full snap-up race condition) — F1-S5/S6 lifecycle refactor"
-next_action: "/pm-vitalia aplica merge → 07-merge.md 5 secciones → update capabilities/* + modules MD → archive story → state=reviewing→done"
+deferred_scenario: "SC-3 last assertion (rail→full snap-up race condition) — F1-S5/S6 lifecycle refactor — tracked en vitalia/docs/product/stories/vitalia-fase1-shell-layout-5050-race-fix/ state=parked"
+merge_commits_range: e630e5d6..bbd79024
+capability_created: vitalia.shell-organism.layout-5050
+learning_created: vitalia/docs/learnings/2026-05-23-shell-layout-race-condition-defer.md (promotable: candidate)
+followup_story_parked: vitalia-fase1-shell-layout-5050-race-fix
+next_action: "MERGED. Archived to vitalia/docs/archive/2026/stories/vitalia-fase1-shell-layout-5050/"
 ratified_by_chris: true
 ratified_at: 2026-05-23T13:45:00Z
 ratified_visual_by_chris: true                     # gate bloqueante satisfecho
