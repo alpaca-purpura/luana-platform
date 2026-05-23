@@ -17,6 +17,57 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        /* ── Shadcn standard semantic tokens (F1-S0) ─────────────────────── */
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        primary: {
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
+        },
+        secondary: {
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+        accent: {
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
+        },
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
+        },
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
+        },
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+
+        /* ── Agent tokens (7 agents × base + soft) ───────────────────────── */
+        agent: {
+          lisa: "hsl(var(--agent-lisa))",
+          "lisa-soft": "hsl(var(--agent-lisa-soft))",
+          lucas: "hsl(var(--agent-lucas))",
+          "lucas-soft": "hsl(var(--agent-lucas-soft))",
+          adrian: "hsl(var(--agent-adrian))",
+          "adrian-soft": "hsl(var(--agent-adrian-soft))",
+          valeria: "hsl(var(--agent-valeria))",
+          "valeria-soft": "hsl(var(--agent-valeria-soft))",
+          camila: "hsl(var(--agent-camila))",
+          "camila-soft": "hsl(var(--agent-camila-soft))",
+          mateo: "hsl(var(--agent-mateo))",
+          config: "hsl(var(--agent-config))",
+        },
+
         /* ── Brand core (4+1 colores oficiales brandbook 2026-05-17) ──────── */
         "vitalia-cian":        "hsl(var(--vitalia-cian))",
         "vitalia-purpura":     "hsl(var(--vitalia-purpura))",
@@ -57,9 +108,11 @@ const config: Config = {
       },
 
       borderRadius: {
-        /* ── Shape tokens (design-system.md § 3) ─────────────────────────── */
+        /* ── Shape tokens (design-system.md § 3 + Shadcn F1-S0) ─────────── */
         DEFAULT: "var(--radius)",
-        lg:      "var(--radius-lg)",
+        lg:      "var(--radius)",
+        md:      "calc(var(--radius) - 2px)",
+        sm:      "calc(var(--radius) - 4px)",
         bubble:  "var(--radius-bubble)",
         pill:    "var(--radius-pill)",
       },
