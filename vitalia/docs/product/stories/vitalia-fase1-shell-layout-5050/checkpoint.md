@@ -6,8 +6,9 @@ type: ui-story
 agent_owner: shell
 module: shell-organism
 capability: shell.layout-5050
-state: refined
-last_modified: 2026-05-23
+state: ready
+last_artifact: 06-tickets.yaml
+last_modified: 2026-05-23T14:07:08Z
 ratified_by_chris: true
 ratified_at: 2026-05-23T13:45:00Z
 ratified_visual_by_chris: true                     # gate bloqueante satisfecho
@@ -17,18 +18,27 @@ ratified_visual_mockups:
   - vitalia/docs/product/stories/vitalia-fase1-shell-layout-5050/mockups/shell-layout-agentic.html
   - vitalia/docs/product/stories/vitalia-fase1-shell-layout-5050/mockups/shell-layout-web.html
 transitioned_to_refined_at: 2026-05-23T13:45:00Z
+transitioned_to_ready_at: 2026-05-23T14:07:08Z
+architect_iter: 1
+architect_run_on: 2026-05-23
 parallel_safe: false
 priority: critical
 estimated_dev_days: 1-2
+total_tickets: 7
+opus_tickets: 0
+sonnet_tickets: 7
+playwright_required: true
+hipaa_lite_scope: not_applicable
 dependencies:
   hard: [vitalia-fase1-stack-stability, vitalia-fase1-design-tokens-theme, vitalia-fase1-topbar-global]
   soft: [vitalia-fase1-tenant-switcher]
 blocks_hard: [vitalia-fase1-valeria-rail-history, vitalia-fase1-valeria-chat-skeleton, vitalia-fase1-ribbon-6-tabs, vitalia-fase1-routing-shell, vitalia-fase1-empty-states]
 hard_deps_status: "CHAIN F1-S0..S3 COMPLETE 2026-05-23 — blocker_hard removido por /pm-vitalia"
-reuse_map_summary: "NEW shell layout · route group `(shell-organism)/` paralelo a `(dashboard)/` legacy · zustand shellStore para mode (agentic/web)"
+reuse_map_summary: "NEW shell layout · route group `(shell-organism)/` paralelo a `(dashboard)/` legacy · zustand shellStore para mode (agentic/web) · react-resizable-panels v4 lib (Shadcn canonical)"
 spawned_at: 2026-05-22
 transitioned_to_refining_at: 2026-05-23
-next_action: "/architect vitalia vitalia-fase1-shell-layout-5050 → lee 01-spec.md + 2 mockups ratificados → produce ready package (03-arch.md + 04-validators.yaml + 05-guidelines.md + 06-tickets.yaml) → transition refined→ready"
+phase_marker: READY_PACKAGE_CLOSED
+next_action: "/dev-team vitalia vitalia-fase1-shell-layout-5050 → Conv 2 autonomous build, toma T-1 first (state ready → developing)"
 ---
 
 # F1-S4 vitalia-fase1-shell-layout-5050 — checkpoint
@@ -42,190 +52,58 @@ Crear el layout root del route group `(shell-organism)/` con split 50/50 (modo a
 - NO incluir contenido del ValeriaPanel (eso es F1-S5 + F1-S6)
 - NO incluir contenido del AppPanel (eso es F1-S7 + F1-S8 + F1-S10)
 - NO touch `(dashboard)/` legacy
+- NO modificar TopBarGlobal/LogoMark/ThemeToggle/TenantSwitcher (F1-S1/S2/S3 REUSE)
+- NO scope cross-brand ni engine core (brand-local Vitalia)
 
-## Scope verbatim
+## Ready package (closed by `/architect` 2026-05-23)
 
-### § 1 — Route group + layout root
+| Artifact | Path | Status |
+|---|---|---|
+| 01-spec.md | `01-spec.md` | ratified (15 secciones, gate v4.1 PASS) |
+| 03-arch.md (consolidado FE only) | `03-arch.md` | NEW · 851 lines · arch_iter 1 |
+| 04-validators.yaml | `04-validators.yaml` | NEW · 5 categorías · scenario_coverage 100% · playwright_required HARD |
+| 05-guidelines.md | `05-guidelines.md` | NEW · must_load_skills + must_load_rules + patterns required/forbidden + files in scope + verify commands |
+| 06-tickets.yaml | `06-tickets.yaml` | NEW · 7 tickets · DAG sequential · gherkin_coverage per ticket |
+| Mockups HTML ratificados | `mockups/shell-layout-{agentic,web}.html` | ratified Chris 2026-05-23 iter 4 |
 
-`vitalia/frontend/src/app/[tenantId]/(shell-organism)/layout.tsx`:
+## Architect resolutions (key decisions cementadas)
 
-```tsx
-import { ShellOrganismLayout } from '@/components/shared/shell-organism/ShellOrganismLayout'
-
-export default function Layout({ children, params }: { children: React.ReactNode, params: { tenantId: string } }) {
-  return <ShellOrganismLayout tenantId={params.tenantId}>{children}</ShellOrganismLayout>
-}
-```
-
-### § 2 — `ShellOrganismLayout` template
-
-`vitalia/frontend/src/components/shared/shell-organism/ShellOrganismLayout.tsx`:
-
-```tsx
-'use client'
-import { TopBarGlobal } from './TopBarGlobal'
-import { ValeriaSidebarSlot } from './ValeriaSidebarSlot'  // placeholder F1-S5
-import { AppPanelSlot } from './AppPanelSlot'              // placeholder F1-S7
-import { useShellStore } from '@/stores/shell-store'
-
-export function ShellOrganismLayout({ children, tenantId }: { children: React.ReactNode, tenantId: string }) {
-  const shellMode = useShellStore(s => s.shellMode)
-
-  return (
-    <div className="flex h-screen flex-col overflow-hidden">
-      <TopBarGlobal />
-      <main
-        id="main-content"
-        tabIndex={-1}
-        className={cn(
-          'flex-1 grid overflow-hidden',
-          shellMode === 'agentic' ? 'grid-cols-2' : 'grid-cols-[60px_1fr]'
-        )}
-      >
-        <ValeriaSidebarSlot />
-        <AppPanelSlot>{children}</AppPanelSlot>
-      </main>
-    </div>
-  )
-}
-```
-
-### § 3 — Placeholders Valeria + App
-
-`ValeriaSidebarSlot.tsx`: aside vacío con border-right + class `bg-card`
-`AppPanelSlot.tsx`: section vacío con `{children}` slot
-
-Estos serán reemplazados en F1-S5/S7 con componentes reales.
-
-### § 4 — `shellStore` zustand
-
-`vitalia/frontend/src/stores/shell-store.ts`: (per Design Contract § 6.1)
-
-```ts
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
-
-type ValeriaState = 'collapsed' | 'rail' | 'full'
-type ShellMode = 'agentic' | 'web'
-
-interface ShellStore {
-  valeriaState: ValeriaState
-  shellMode: ShellMode
-  setValeriaState: (s: ValeriaState) => void
-  cycleValeriaState: () => void
-  setShellMode: (m: ShellMode) => void
-}
-
-export const useShellStore = create<ShellStore>()(
-  persist(
-    (set, get) => ({
-      valeriaState: 'rail',
-      shellMode: 'agentic',
-      setValeriaState: (s) => set({ valeriaState: s }),
-      cycleValeriaState: () => set({ valeriaState: get().valeriaState === 'full' ? 'rail' : 'full' }),
-      setShellMode: (m) => set({ shellMode: m }),
-    }),
-    { name: 'vitalia-shell-state' }
-  )
-)
-```
-
-### § 5 — Mobile drawer pattern
-
-En viewport `< md` (768px):
-- Grid switchea a `grid-cols-1` (App panel ocupa todo)
-- ValeriaSidebar oculto by default, accesible via FAB/burger menu
-- Cuando abre: fixed inset-y-0 left-0 z-50 con backdrop
-
-### § 6 — Default landing page
-
-`vitalia/frontend/src/app/[tenantId]/(shell-organism)/page.tsx`:
-
-```tsx
-import { redirect } from 'next/navigation'
-
-export default function ShellRootPage({ params }: { params: { tenantId: string } }) {
-  redirect(`/${params.tenantId}/lisa/marca`)
-}
-```
-
-## Acceptance criteria
-
-| AC | Verificación |
+| Q | Resolution |
 |---|---|
-| AC-1 | URL `/{tenant}/(shell-organism)` → redirect a `/lisa/marca` |
-| AC-2 | Grid 50/50 visible: ValeriaPanel left · AppPanel right |
-| AC-3 | TopBar siempre visible top 48px |
-| AC-4 | `main` element tiene `id="main-content"` + `tabIndex={-1}` (skip link target) |
-| AC-5 | shellMode toggle (test via store dev mode) switchea grid: agentic 50/50 ↔ web 60px/1fr |
-| AC-6 | shellMode persiste en localStorage |
-| AC-7 | Mobile (375px): grid colapsa a 1 column · ValeriaPanel oculto |
-| AC-8 | Visual golden agentic mode + web mode (light + dark) |
-| AC-9 | `(dashboard)/` legacy sigue funcionando (no rompe) |
-| AC-10 | Vitest unit ShellOrganismLayout |
-| AC-11 | Playwright functional: navegar a shell → ver grid 50/50 |
+| Default valeriaState (DC §6.1 'rail' vs spec SC-1 'full') | `'full'` (override DC §6.1) — matches mockup ratificado + UX onboarding · /pm-vitalia updates DC post-merge |
+| Resize implementation | `react-resizable-panels` v4 (Option A) — Shadcn-canonical, mature (v4.11.1 published 8 days ago 2026-05-23) |
+| ShellModeToggle mount | Overlay sibling dentro ShellOrganismLayout (NO modificar TopBarGlobal) |
+| Viewport [768-1023] + state='full' edge case | `useViewportGuard` one-way force a 'rail', no auto-restore |
+| Triple `<main>` element pattern | CSS-driven viewport branching via `md:hidden`/`md:block`/`md:grid` mutually-exclusive — only ONE main visible per viewport |
+| Visual goldens path | `vitalia/frontend/e2e/__screenshots__/shell-layout-5050/*.png` (6 PNGs) |
+| Mobile drawer trigger | Deferred to F1-S5+ (burger button); F1-S4 mobile fallback solo AppPanelSlot visible |
 
-## Gherkin scenarios
+## Cross-module audit (NO-NEW-LAYER rule)
 
-### Scenario 1 — happy 50/50 render
+- Cross-brand mirror scan: 0 matches en nicolify/comunify/lupulo para `ShellOrganismLayout`, `ValeriaSidebarSlot`, `AppPanelSlot`, `ShellModeToggle`, `shell-store`. **Clean.**
+- Engine core: ningún equivalente TS shell en `core/luana-core-*/`. NEW correcto.
+- Same-brand existing: 0 matches en vitalia/frontend/src. NEW correcto.
+- Verdict: **NEW (justified brand-local)** — futuro lift candidate cuando lupulo/fitflow adopten patrón similar (via `core/luana-core-ui-shell/` promotion proposal /pm-luana).
 
-**Given:** Usuario en `/{tenant}/(shell-organism)/lisa/marca`
+## R23 status
 
-**When:** Página carga
+NO aplica (zero AGENTIC surface). FE only.
 
-**Then:**
-- Grid template columns = `1fr 1fr`
-- ValeriaPanel ocupa 50% izq, AppPanel 50% der
-- TopBar 48px arriba
-- shellMode `agentic` (default)
+## Estimated work
 
-### Scenario 2 — mode web toggle (dev test)
+- 7 tickets · ~13 hours · ~1140 LOC.
+- DAG: T-1+T-2 parallel-safe → T-3 (depends on T-1+T-2) → T-4+T-5 (depend on T-3) → T-6 (depends on T-1..T-5) → T-7 (depends on T-4+T-5+T-6).
+- Owner eligibility: `[qwen-opencode, claude-sonnet]` (zero Opus — FE no-agentic).
 
-**Given:** shellMode `agentic`
+## Next steps
 
-**When:** Dispatch `setShellMode('web')` (dev test, no UI todavía)
-
-**Then:**
-- Grid template columns = `60px 1fr`
-- ValeriaPanel se reduce a rail
-- AppPanel ocupa el resto
-- localStorage persist
-
-### Scenario 3 — mobile drawer
-
-**Given:** Viewport 375x667
-
-**When:** Página carga
-
-**Then:**
-- Grid colapsa a 1 column
-- ValeriaPanel oculto (display: none o translate-x-full)
-- TopBar incluye botón burger (visible solo mobile)
-
-### Scenario 4 — legacy compat
-
-**Given:** Usuario navega a `/{tenant}/dashboard` (legacy `/(dashboard)/`)
-
-**When:** Página carga
-
-**Then:**
-- Layout legacy renderiza (no shell-organism)
-- Sidebar 240px + TopBar 56px viejo
-- Sin breaking changes
-
-## Deliverables
-
-| File | Acción |
-|---|---|
-| `vitalia/frontend/src/app/[tenantId]/(shell-organism)/layout.tsx` | NEW |
-| `vitalia/frontend/src/app/[tenantId]/(shell-organism)/page.tsx` | NEW (redirect) |
-| `vitalia/frontend/src/components/shared/shell-organism/ShellOrganismLayout.tsx` | NEW |
-| `vitalia/frontend/src/components/shared/shell-organism/ValeriaSidebarSlot.tsx` | NEW (placeholder) |
-| `vitalia/frontend/src/components/shared/shell-organism/AppPanelSlot.tsx` | NEW (placeholder) |
-| `vitalia/frontend/src/stores/shell-store.ts` | NEW |
-| `vitalia/frontend/e2e/shell-organism/layout-5050.spec.ts` | NEW |
-| `vitalia/frontend/e2e/__screenshots__/shell/layout-{agentic,web}-{light,dark}.png` | NEW |
+1. `/dev-team vitalia vitalia-fase1-shell-layout-5050` — Conv 2 autonomous build. Takes T-1 first (state ready → developing).
+2. Builders run TDD RED-first per ticket. Re-run validators per `04-validators.yaml`.
+3. T-7 visual goldens iter 1: monta mockups en `python3 -m http.server 8888 mockups/` side-by-side con `localhost:3002` componente real. Chris ratifica side-by-side → `--update-snapshots` once.
+4. ON ALL GREEN: state=developing → developed → AUTO-HANDOFF `/auditor` (default per `story-closure-gate.md`).
+5. Auditor APPROVED → AUTO-HANDOFF `/pm-vitalia` merge.
+6. `/pm-vitalia` writes `07-merge.md` (5 secciones cementadas) + creates `vitalia/docs/product/capabilities/platform/shell.layout-5050.yaml` (status: live) + updates SHELL-DESIGN-CONTRACT.md §6.1 default → 'full' + `git mv` story to archive.
 
 ## Próximo paso post-done
 
-F1-S5 valeria-rail-history + F1-S7 ribbon-6-tabs pueden arrancar en paralelo (independientes entre sí).
+F1-S5 valeria-rail-history + F1-S7 ribbon-6-tabs pueden arrancar en paralelo (independientes entre sí). Ambos REPLACE placeholders ValeriaSidebarSlot/AppPanelSlot generados por F1-S4.

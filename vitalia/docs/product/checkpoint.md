@@ -2,7 +2,7 @@
 brand: vitalia
 vertical: "Salud + Bienestar"
 status: shipped
-last_updated: 2026-05-23-T3
+last_updated: 2026-05-23-T4
 paradigm: shell-organism-agentico-v1                 # ★ 2026-05-22 cementado ★
 shell_organism_status: planning-done-2026-05-22      # ★ design-story cerrada, Fase 1 + Fase 2 backlog generado
 slice_1_status: superseded-by-shell-organism-2026-05-22  # ★ paradigma reemplazado · stories slice-1 archivadas o refactored
@@ -19,7 +19,7 @@ active_stories:
   # vitalia-fase1-design-tokens-theme      # F1-S1 · state: done 2026-05-23 (archived) · ver recently_done
   # vitalia-fase1-topbar-global            # F1-S2 · state: done 2026-05-23 (archived) · ver recently_done
   # vitalia-fase1-tenant-switcher          # F1-S3 · state: done 2026-05-23 (archived) · ver recently_done · CHAIN F1-S0..S3 COMPLETE
-  - vitalia-fase1-shell-layout-5050        # F1-S4 — state: refined 2026-05-23T13:45Z · 01-spec.md ratificado Chris + 2 mockups HTML ratificados (iter 4) · awaiting /architect ready package
+  - vitalia-fase1-shell-layout-5050        # F1-S4 — state: ready 2026-05-23T14:07Z · ready package closed by /architect iter 1 (03-arch.md 851 LOC + 04-validators.yaml 20 validators 5 categorías + 05-guidelines.md must_load enforceable + 06-tickets.yaml 7 tickets DAG) · awaiting /dev-team Conv 2 autonomous build
   - vitalia-fase1-valeria-rail-history     # F1-S5
   - vitalia-fase1-valeria-chat-skeleton    # F1-S6
   - vitalia-fase1-ribbon-6-tabs            # F1-S7
@@ -164,6 +164,18 @@ Story 11 (`luana-vitalia-bootstrap`, mergeada 2026-05-15) shipped **16 capabilit
 - HIPAA-hardening adicional (dual `tenant+clinic` filter, `pgcrypto` column encryption, retention cron 10y, RBAC `@require_phi_access`, ComplianceService channel guard) — ver gap detallado en `vitalia/docs/product/capabilities/compliance/compliance-hipaa-lite-audit.yaml`
 
 ## Bitácora
+
+- **2026-05-23T14:07Z (sesión `/architect` iter 1) — F1-S4 transition `refined → ready`**:
+  - `architect-orchestrator` single-shot full-stack produjo 4 deliverables del ready package (FE only — no BE, no agentic):
+    - **03-arch.md** (851 LOC): file tree exacto + Server/Client decision tree + resize implementation `react-resizable-panels` v4 (Option A — Shadcn-canonical, v4.11.1 published 2026-05-15) + `useViewportGuard` hook one-way force a 'rail' en viewport [768-1023] con state='full' + triple `<main>` pattern CSS-driven viewport branching + ShellModeToggle como overlay sibling (NO modifica TopBarGlobal F1-S2) + valeriaState default `'full'` (override Design Contract §6.1 que decía 'rail' — justificado: matches mockup ratificado iter 4 + UX onboarding; /pm-vitalia update DC post-merge).
+    - **04-validators.yaml** (20 validators · 5 categorías): non_functional 4 (tsc/lint/prettier/vitest) · functional 5 (4 e2e scenarios + axe) · visual 6 (light/dark/rail × agentic/web + mobile PNG snapshots tolerance 0.001) · agentic_eval N/A documented · architectural_validation 5 (fsd-imports + skip-link target + shell-store schema + no-cross-brand-mirror grep + no-default-export ratchet) · scenario_coverage 100% mapeo · sub_categories_coverage a11y+i18n applies · test_construction_plan completo con creation_order + scenario_to_test + POMs + fixtures.
+    - **05-guidelines.md** (252 LOC · 9 secciones): must_load_skills enforceable §1 (frontend-expert + playwright-expert + tessl__react-patterns + tessl__shadcn-ui + tessl__tailwind + tessl__vitest + tessl__nextjs-app-router-modularization) · must_load_rules §2 (tenant-isolation + frontend-fsd + spanish-text + anti-duplication + tdd-mandatory + auditor-self-fix-policy + shell-mockup-per-component) · patterns required/forbidden · files in scope NEW/MODIFY/NEVER · verification commands.
+    - **06-tickets.yaml** (7 tickets · DAG sequential · ~13h estimado · 0 Opus): T-1 shellStore (1h) · T-2 ValeriaSidebarSlot+AppPanelSlot placeholders (1h) — paralelo a T-1 · T-3 ShellOrganismLayout + PanelGroup + useViewportGuard (3h, deps T-1+T-2) · T-4 route page + redirect /lisa/marca (1h, deps T-3) · T-5 ShellModeToggle disabled chip (1h, deps T-3) — paralelo a T-4 · T-6 Vitest aggregate + 3 NEW arch tests (2h, deps T-1..T-5, production_code:false tests-only) · T-7 Playwright POM ShellLayoutPage + shell-theme fixture + 4 functional E2E + 6 visual goldens (4h, deps T-4+T-5+T-6, production_code:false tests-only). gherkin_coverage per ticket.
+  - Cross-module audit: 0 mirrors en nicolify/comunify/lupulo · 0 engine touch · NEW brand-local justificado (futuro lift candidate cuando lupulo/fitflow adopten shell-organism similar).
+  - Gate v4.1 PASS: architectural_validation 5 sub-tests · test_construction_plan completo · playwright_required HARD · must_load_skills enforceable · gherkin_coverage 7/7.
+  - WIP cap status post-update: ready=1/5 (sólo shell-layout-5050) · refined=1/5 (payment-adapter-mvp) · refining=1/3 (fiscal-emission-pe) — cómodo en todos.
+  - Pre-merge tracking: post-merge `/pm-vitalia` debe (1) update `vitalia/docs/architecture/SHELL-DESIGN-CONTRACT.md §6.1` default `valeriaState: 'full'`, (2) create `vitalia/docs/product/capabilities/platform/shell.layout-5050.yaml` (status: live), (3) update `vitalia/docs/product/modules/platform.md` auto-list.
+  - **Próximo paso (handoff)**: `/dev-team vitalia vitalia-fase1-shell-layout-5050` → Conv 2 autonomous build, toma T-1 first (state ready → developing).
 
 - **2026-05-23T13:45Z (sesión `/po-ux` iter 1-4) — F1-S4 transition `refining → refined`**:
   - Chris ratificó visualmente los 2 mockups HTML F1-S4 tras 4 iteraciones:
