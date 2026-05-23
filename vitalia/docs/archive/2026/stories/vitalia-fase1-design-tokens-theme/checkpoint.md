@@ -6,10 +6,14 @@ type: ui-story
 agent_owner: shell
 module: shell-organism
 capability: shell.design-tokens-theme
-state: reviewing
-phase_state: AUDIT_APPROVED_AWAITING_PM_MERGE
+state: done
+phase_state: MERGED_ARCHIVED
 last_modified: 2026-05-23
-last_artifact: 06-audit/CHECKPOINTS.md
+last_artifact: 07-merge.md
+merged_at: 2026-05-23T01:00:00-05:00
+merged_via_squash: pending
+archive_path: vitalia/docs/archive/2026/stories/vitalia-fase1-design-tokens-theme/
+capability_promoted: vitalia/docs/product/capabilities/platform/design-tokens-theme.yaml
 reviewing_started_at: 2026-05-23T00:30:00-05:00
 reviewing_owner: /auditor (direct examination)
 audit_verdict: APPROVED
@@ -52,7 +56,7 @@ quality_gates:
   cross_brand: "zero touches nicolify/comunify/lupulo/core"
 e2e_status: "Playwright specs created (SC-01..SC-08) — require dev server port 3002 for execution"
 live_verification: "chrome-devtools-verify DEPRECATED Linux Mint 2026-05-15 — escalated to Chris staging gate"
-next_action: "AUTO-HANDOFF /pm-vitalia merge → write 07-merge.md 5 secciones + capability YAML platform/design-tokens-theme + archive story + state reviewing→done"
+next_action: "DONE — archived. Próximo chain: F1-S2 vitalia-fase1-topbar-global ready→developing → /dev-team build."
 ---
 
 # F1-S1 vitalia-fase1-design-tokens-theme — checkpoint

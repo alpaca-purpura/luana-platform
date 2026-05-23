@@ -1,0 +1,138 @@
+---
+capability_id: vitalia-design-tokens-theme
+module: platform
+slug: design-tokens-theme
+status: live
+date_introduced: 2026-05-23
+story_introduced: vitalia-fase1-design-tokens-theme
+package_version: 0.1.0
+package_path: vitalia/frontend
+license: proprietary
+related_capabilities:
+  - vitalia-shell-foundation-shadcn-tailwind-v4
+  - vitalia-design-tokens-foundation
+depends_on_engine: []
+---
+
+# vitalia-design-tokens-theme
+
+Theme toggle (light/dark) operativo con persistencia localStorage via next-themes. Completa el sistema de design tokens iniciado en F1-S0: ahora `:root` + `.dark` blocks tienen TODAS las CSS vars Shadcn-standard + agent tokens, `tailwind.config.ts` declara `darkMode: ['class', '[data-theme="dark"]']` para honrar next-themes attribute mode, y `<ThemeToggle>` component reusa Shadcn Button ghost icon con Lucide Moon/Sun + ARIA dinámico Spanish neutro.
+
+## Surface
+
+### Theme infrastructure (`vitalia/frontend/`)
+
+- `package.json` + `pnpm-lock.yaml` — `next-themes ^0.3.0` devDep
+- `src/app/globals.css` — `:root` (light) + `.dark` blocks COMPLETOS verbatim Design Contract § 5.1 (Shadcn standard vars + 7 agent tokens base + 5 soft variants). Bloque `.vt-*` legacy preservado intacto.
+- `tailwind.config.ts` — `darkMode: ['class', '[data-theme="dark"]']` + theme.extend.colors agent palette
+- `src/app/layout.tsx` — `<html lang="es" suppressHydrationWarning>` (silencia hydration warning legítimo por next-themes inline script)
+- `src/app/providers.tsx` — `<ThemeProvider attribute="data-theme" defaultTheme="light" enableSystem={false} storageKey="vitalia-theme">` wrapping children (D1+D4 ratificadas)
+
+### ThemeToggle component (`vitalia/frontend/src/components/shared/shell-organism/`)
+
+- `ThemeToggle.tsx` — client component named export. Uses Shadcn `<Button variant="ghost" size="icon">` + Lucide `Moon`/`Sun` icons (`h-[1.2rem] w-[1.2rem]`). Imports `useTheme` directo desde next-themes (D5 ratificada — drop wrapper hook).
+- `ThemeToggle.test.tsx` — Vitest unit suite (7 tests):
+  - Renders Moon icon when theme=light
+  - Renders Sun icon when theme=dark
+  - aria-label dinámico Spanish neutro `Cambiar tema (actual: ${isDark ? 'oscuro' : 'claro'})`
+  - aria-pressed boolean
+  - data-testid="theme-toggle" estable
+  - Click calls setTheme con valor opuesto
+  - Initial state SSR-safe (defaultTheme="light")
+
+### Vitest introspection (`vitalia/frontend/src/__tests__/tokens/`)
+
+- `test-shadcn-vars-resolvable.test.ts` — 59 tests verificando que CSS vars del Design Contract § 5.1 están definidas en `globals.css` :root + .dark:
+  - 16 Shadcn standard vars (--background, --foreground, --primary, --accent, etc.)
+  - 7 agent tokens base + 5 soft variants
+  - 13 vitalia brand legacy vars preservados
+  - Format HSL space-separated (no commas)
+  - Tailwind config resolvability vía require('./tailwind.config.ts')
+
+### Test page preview (`vitalia/frontend/src/app/test-stack/design-tokens-theme/`)
+
+- `page.tsx` — Next.js wrapper que importa+ exporta default `e2e/__test-pages__/design-tokens-theme/theme-toggle-showcase.tsx`. Permite navegar a `/test-stack/design-tokens-theme` sin auth (proxy.ts ya lista `/test-stack(.*)` public).
+
+### Test page fixture (`vitalia/frontend/e2e/__test-pages__/design-tokens-theme/`)
+
+- `theme-toggle-showcase.tsx` — renderiza ThemeToggle aislado en card neutral (sin Clerk auth, sin layout app). Fixture pure para Playwright visual baseline.
+
+### Playwright suites (`vitalia/frontend/e2e/`)
+
+- `regression/design-tokens-theme/theme-toggle-interaction.smoke.spec.ts` — behavior tests (3 scenarios):
+  - SC-01 click toggle alterna html data-theme + localStorage + ARIA state
+  - SC-02 reload persistencia + NO FOUC
+  - SC-03 ARIA pressed boolean + aria-label dinámico
+- `visual/design-tokens-theme/theme-toggle.spec.ts` — visual goldens (2 scenarios):
+  - SC-04 ThemeToggle light mode golden
+  - SC-05 ThemeToggle dark mode golden
+- `a11y/design-tokens-theme/theme-toggle.spec.ts` — accessibility (3 scenarios):
+  - SC-06 zero WCAG 2.1 AA violations light mode (axe-core)
+  - SC-07 zero WCAG 2.1 AA violations dark mode
+  - SC-08 keyboard navigation Tab focuses + Enter/Space activates
+
+### Visual goldens (`vitalia/frontend/e2e/__screenshots__/visual/design-tokens-theme/theme-toggle.spec.ts/`)
+
+- `theme-toggle-light.png` — generado + matched vs `mockups/theme-toggle.html` (Chris ratificado 2026-05-22T19:00 iter 1)
+- `theme-toggle-dark.png` — primer dark golden REAL (no byte-idéntico a light — F1-S1 introduce real .dark class application via next-themes)
+
+## Verification
+
+```bash
+WS=$(git rev-parse --show-toplevel)
+cd ${WS}
+
+# Stack levantado
+make dev-vitalia
+
+# 1. tsc strict + lint clean
+cd vitalia/frontend && npx tsc --noEmit                        # exit 0
+cd vitalia/frontend && npx eslint src/ --max-warnings 0        # exit 0
+
+# 2. Unit + introspection (66 tests F1-S1 NEW + 740 existing = 806/806)
+cd vitalia/frontend && npx vitest run                          # 806/806 PASS
+
+# 3. Visual goldens (F1-S0 6 + F1-S1 2 = 8 + setup)
+cd vitalia/frontend && E2E_BASE_URL=http://localhost:3002 \
+  npx playwright test --project=visual --grep "design-tokens-theme|stack-stability"
+# 9/9 PASS
+
+# 4. Behavior smoke (SC-01..SC-03)
+cd vitalia/frontend && E2E_BASE_URL=http://localhost:3002 \
+  npx playwright test --project=smoke --grep "design-tokens-theme"
+# 3/3 PASS (1 sub-flaky retry-succeeded acceptable)
+
+# 5. a11y (SC-06..SC-08)
+cd vitalia/frontend && E2E_BASE_URL=http://localhost:3002 \
+  npx playwright test --project=a11y --grep "design-tokens-theme"
+# 5/5 PASS (incluye setup)
+
+# 6. Live page preview
+curl -s -o /dev/null -w "%{http_code}\n" http://localhost:3002/test-stack/design-tokens-theme  # 200
+```
+
+## Gherkin coverage (8 scenarios)
+
+| Scenario | Test | Status |
+|---|---|---|
+| SC-01 click toggle | regression behavior | ✅ PASS |
+| SC-02 reload persistence | regression behavior | ✅ PASS |
+| SC-03 ARIA state | regression behavior | ✅ PASS |
+| SC-04 visual light | visual project | ✅ PASS |
+| SC-05 visual dark | visual project | ✅ PASS |
+| SC-06 a11y light WCAG | a11y project | ✅ PASS |
+| SC-07 a11y dark WCAG | a11y project | ✅ PASS |
+| SC-08 keyboard nav | a11y project | ✅ PASS |
+
+## Dependencies cross-package
+
+- Engine: ninguna (story 100% FE brand-local).
+- Cross-brand: ninguna (next-themes vendored npm, ThemeToggle vitalia-local).
+- Promotion candidates: ThemeToggle pattern (Shadcn Button ghost + Lucide icons + ARIA dinámico Spanish + storageKey namespaced) podría lift si comunify/fitflow replican. Brand-local por ahora.
+
+## Blocks (downstream stories desbloqueadas)
+
+- F1-S2 `vitalia-fase1-topbar-global` — TopBar incluirá ThemeToggle
+- F1-S4 `vitalia-fase1-shell-layout-5050` — shell layout consume tokens dark mode
+- F1-S5 `vitalia-fase1-valeria-rail-history` — Valeria rail uses agent tokens (Lisa/Valeria) en dark variants reales
+- F1-S7 `vitalia-fase1-ribbon-6-tabs` — Ribbon tabs con agent color states light + dark
