@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * ShellOrganismLayoutClient — actual shell layout implementation.
  * F1-S4 vitalia-fase1-shell-layout-5050 — T-3 + T-7 SSR fix
@@ -25,8 +27,6 @@
  * HIPAA-lite: not applicable — chrome UI, no PHI.
  * downstream-regression-na: brand-local shell component; no cross-brand consumers
  */
-
-"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { Group, Panel, Separator, useDefaultLayout } from "react-resizable-panels";

@@ -52,11 +52,19 @@ describe("ValeriaSidebarSlot — accessibility aria-label (SC-4 adversarial)", (
     expect(ariaLabel).not.toMatch(/\btenés\b|\bpodés\b|\bsabes\b|\bvos\b/);
   });
 
-  it("placeholder slot renders no children (empty by design — F1-S5/S6 will fill)", () => {
+  it("slot label text 'VALERIASIDEBARSLOT · F1-S5/S6' present in DOM (skeleton refit c1925563)", () => {
     const { getByTestId } = render(<ValeriaSidebarSlot />);
     const aside = getByTestId("valeria-sidebar-slot");
-    // No text content expected in placeholder
-    expect(aside.textContent).toBe("");
+    // Post-refit: component renders skeleton siluetas + floating slot label
+    // The slot label identifies this as a placeholder pending F1-S5/S6
+    expect(aside.textContent).toContain("ValeriaSidebarSlot · F1-S5/S6");
+  });
+
+  it("mobile fallback hint 'Valeria — abrir desde menú' present in DOM", () => {
+    const { getByTestId } = render(<ValeriaSidebarSlot />);
+    const aside = getByTestId("valeria-sidebar-slot");
+    // Mobile fallback text exists in DOM even if CSS-hidden on desktop viewport
+    expect(aside.textContent).toContain("Valeria — abrir desde menú");
   });
 });
 
