@@ -6,9 +6,12 @@ type: ui-story
 agent_owner: shell
 module: shell-organism
 capability: shell.topbar-global
-state: ready
-phase_state: READY_PACKAGE_CLOSED
-last_modified: 2026-05-22
+state: developing
+phase_state: DEV_TEAM_PICKED_UP
+last_modified: 2026-05-23
+developing_started_at: 2026-05-23T01:05:00-05:00
+developing_owner: /dev-team (autonomous Sonnet per R23 FE no-agentic)
+chain_position: "F1-S2 tercero en chain F1-S0→S1→S2→S3 · F1-S0 done 69948873 · F1-S1 done 5c59e89b · F1-S3 ready awaiting"
 last_artifact: 06-tickets.yaml
 ratified_by_chris: true
 ratified_visual_by_chris: true
