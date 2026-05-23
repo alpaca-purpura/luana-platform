@@ -6,11 +6,12 @@ type: ui-story
 agent_owner: shell
 module: shell-organism
 capability: shell.design-tokens-theme
-state: developing
-phase_state: DEV_TEAM_PICKED_UP
+state: developed
+phase_state: AWAIT_AUDIT
 last_modified: 2026-05-23
-last_artifact: 06-tickets.yaml
+last_artifact: T-7-result.md
 developing_started_at: 2026-05-23T01:40:00-05:00
+developing_completed_at: 2026-05-23T02:30:00-05:00
 developing_owner: /dev-team (autonomous Sonnet per R23 FE no-agentic)
 chain_position: "F1-S1 segundo en chain F1-S0→S1→S2→S3 · F1-S0 done 2026-05-23T01:35 commit 69948873 · F1-S2/S3 ready awaiting"
 ratified_by_chris: true
@@ -35,7 +36,16 @@ dependencies:
 blocks_hard: [vitalia-fase1-topbar-global, vitalia-fase1-shell-layout-5050, vitalia-fase1-valeria-rail-history, vitalia-fase1-ribbon-6-tabs]
 reuse_map_summary: "REUSE next-themes (npm) · NEW ThemeToggle component · tokens cementados en Design Contract § 5"
 spawned_at: 2026-05-22
-next_action: "/dev-team iterando T-1..T-N · F1-S0 prerequisite ✅ DONE 2026-05-23 commit 69948873 (Tailwind v4 + Shadcn + agent SSoT funcional) · on all GREEN → AUTO-HANDOFF /auditor"
+quality_gates:
+  tsc: "0 errors (strict)"
+  eslint: "0 errors, 0 warnings (fixed unused vi import)"
+  vitest: "805 pass / 1 pre-existing fail (test_no_hardcoded_colors — lib/agents.ts F1-S0, confirmed pre-existing)"
+  arch_fitness: "10/11 pass (pre-existing fail unchanged, not from F1-S1)"
+  new_tests: 66 (ThemeToggle.test.tsx 7/7 + test-shadcn-vars-resolvable 59/59)
+  cross_brand: "zero touches nicolify/comunify/lupulo/core"
+e2e_status: "Playwright specs created (SC-01..SC-08) — require dev server port 3002 for execution"
+live_verification: "chrome-devtools-verify DEPRECATED Linux Mint 2026-05-15 — escalated to Chris staging gate"
+next_action: "AUTO-HANDOFF /auditor — story developed, validators GREEN (pre-existing fail not from F1-S1)"
 ---
 
 # F1-S1 vitalia-fase1-design-tokens-theme — checkpoint

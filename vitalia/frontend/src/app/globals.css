@@ -65,7 +65,13 @@
     --agent-config: 240 4% 46%;          /* neutral gray */
   }
 
-  .dark {
+  /* Dark mode: activated by next-themes via [data-theme="dark"] attribute OR .dark class
+   * SSoT: vitalia/docs/architecture/SHELL-DESIGN-CONTRACT.md § 5.1
+   * next-themes uses attribute="data-theme" → sets <html data-theme="dark">
+   * Tailwind v4 config: darkMode: ['class', '[data-theme="dark"]'] activates dark: variants
+   */
+  .dark,
+  [data-theme="dark"] {
     --background: 240 10% 4%;
     --foreground: 0 0% 98%;
     --card: 240 8% 8%;
@@ -237,6 +243,11 @@
 
 html {
   color-scheme: light;
+}
+
+/* Dark mode color-scheme for browser UI (scrollbars, form controls) */
+html[data-theme="dark"] {
+  color-scheme: dark;
 }
 
 body {

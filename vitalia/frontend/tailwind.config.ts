@@ -7,6 +7,11 @@ import type { Config } from "tailwindcss";
  * ADR: vitalia/docs/architecture/ADR-vitalia-001-shared-vs-fork.md
  */
 const config: Config = {
+  // darkMode: ['class', '[data-theme="dark"]'] activates Tailwind dark: variants when either
+  // .dark class OR [data-theme="dark"] attribute is present on <html>. next-themes uses
+  // attribute="data-theme" → sets <html data-theme="dark">, so we need the attribute selector.
+  // See: vitalia/docs/architecture/SHELL-DESIGN-CONTRACT.md § 5.2 (D4 ratificada 2026-05-22)
+  darkMode: ['class', '[data-theme="dark"]'],
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
