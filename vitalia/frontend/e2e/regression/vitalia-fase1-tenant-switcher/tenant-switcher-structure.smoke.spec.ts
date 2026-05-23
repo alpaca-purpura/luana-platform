@@ -27,7 +27,8 @@ import {
 } from "../../fixtures/tenants.fixture";
 
 const BASE_URL = process.env["E2E_BASE_URL"] ?? "http://localhost:3002";
-const TEST_PAGE = `${BASE_URL}/${TENANT_FIXTURES.sonrisaPlena.id}/dashboard`;
+// T-FIX-1: target test-stack page instead of /{tenantId}/dashboard (route not yet created — Fase 2)
+const TEST_PAGE = `${BASE_URL}/test-stack/tenant-switcher`;
 
 test.describe("SC-01..SC-02 — TenantSwitcher structure (F1-S3)", () => {
   test.beforeEach(async ({ page }) => {

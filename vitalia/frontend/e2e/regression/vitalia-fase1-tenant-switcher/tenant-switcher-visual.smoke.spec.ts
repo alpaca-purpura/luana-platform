@@ -30,7 +30,8 @@ import {
 
 const BASE_URL = process.env["E2E_BASE_URL"] ?? "http://localhost:3002";
 const ACTIVE_TENANT = TENANT_FIXTURES.sonrisaPlena;
-const DASHBOARD_PAGE = `${BASE_URL}/${ACTIVE_TENANT.id}/dashboard`;
+// T-FIX-1: target test-stack page instead of /{tenantId}/dashboard (route not yet created — Fase 2)
+const TEST_PAGE = `${BASE_URL}/test-stack/tenant-switcher`;
 
 /** Toggle dark mode by setting data-theme=dark on <html> */
 async function enableDarkMode(
@@ -56,7 +57,7 @@ test.describe("Visual goldens — TenantSwitcher (F1-S3 T-10)", () => {
   // ── 1 & 2: Closed trigger ─────────────────────────────────────────────
   test("visual-01: Closed trigger — light mode", async ({ page }) => {
     await mockTenantsApi(page, ACTIVE_TENANT.id);
-    await page.goto(DASHBOARD_PAGE, { waitUntil: "domcontentloaded" });
+    await page.goto(TEST_PAGE, { waitUntil: "domcontentloaded" });
     await enableLightMode(page);
 
     const pom = new TenantSwitcherPage(page);
@@ -70,7 +71,7 @@ test.describe("Visual goldens — TenantSwitcher (F1-S3 T-10)", () => {
 
   test("visual-02: Closed trigger — dark mode", async ({ page }) => {
     await mockTenantsApi(page, ACTIVE_TENANT.id);
-    await page.goto(DASHBOARD_PAGE, { waitUntil: "domcontentloaded" });
+    await page.goto(TEST_PAGE, { waitUntil: "domcontentloaded" });
     await enableDarkMode(page);
 
     const pom = new TenantSwitcherPage(page);
@@ -86,7 +87,7 @@ test.describe("Visual goldens — TenantSwitcher (F1-S3 T-10)", () => {
     page,
   }) => {
     await mockTenantsApi(page, ACTIVE_TENANT.id);
-    await page.goto(DASHBOARD_PAGE, { waitUntil: "domcontentloaded" });
+    await page.goto(TEST_PAGE, { waitUntil: "domcontentloaded" });
     await enableLightMode(page);
 
     const pom = new TenantSwitcherPage(page);
@@ -101,7 +102,7 @@ test.describe("Visual goldens — TenantSwitcher (F1-S3 T-10)", () => {
     page,
   }) => {
     await mockTenantsApi(page, ACTIVE_TENANT.id);
-    await page.goto(DASHBOARD_PAGE, { waitUntil: "domcontentloaded" });
+    await page.goto(TEST_PAGE, { waitUntil: "domcontentloaded" });
     await enableDarkMode(page);
 
     const pom = new TenantSwitcherPage(page);
@@ -135,7 +136,7 @@ test.describe("Visual goldens — TenantSwitcher (F1-S3 T-10)", () => {
       localStorage.clear();
     });
 
-    await page.goto(DASHBOARD_PAGE, { waitUntil: "domcontentloaded" });
+    await page.goto(TEST_PAGE, { waitUntil: "domcontentloaded" });
 
     // NOTE: In loading state with no persisted activeTenant, the trigger may not
     // render (graceful degrade per 03-arch.md § 8.4). This test captures the
@@ -181,7 +182,7 @@ test.describe("Visual goldens — TenantSwitcher (F1-S3 T-10)", () => {
     // Error response for API
     await mockTenantsApiError(page);
 
-    await page.goto(DASHBOARD_PAGE, { waitUntil: "domcontentloaded" });
+    await page.goto(TEST_PAGE, { waitUntil: "domcontentloaded" });
     await enableLightMode(page);
 
     // Wait for React Query to settle into error state
@@ -203,7 +204,7 @@ test.describe("Visual goldens — TenantSwitcher (F1-S3 T-10)", () => {
     page,
   }) => {
     await mockTenantsApi(page, ACTIVE_TENANT.id);
-    await page.goto(DASHBOARD_PAGE, { waitUntil: "domcontentloaded" });
+    await page.goto(TEST_PAGE, { waitUntil: "domcontentloaded" });
     await enableLightMode(page);
 
     const pom = new TenantSwitcherPage(page);
@@ -220,7 +221,7 @@ test.describe("Visual goldens — TenantSwitcher (F1-S3 T-10)", () => {
     page,
   }) => {
     await mockTenantsApi(page, ACTIVE_TENANT.id);
-    await page.goto(DASHBOARD_PAGE, { waitUntil: "domcontentloaded" });
+    await page.goto(TEST_PAGE, { waitUntil: "domcontentloaded" });
     await enableLightMode(page);
 
     const pom = new TenantSwitcherPage(page);
