@@ -6,9 +6,18 @@ type: ui-story
 agent_owner: shell
 module: shell-organism
 capability: shell.topbar-global
-state: developed
-phase_state: AWAIT_AUDIT
+state: done
+phase_state: MERGED_ARCHIVED
 last_modified: 2026-05-23
+merged_at: 2026-05-23T02:05:00-05:00
+archive_path: vitalia/docs/archive/2026/stories/vitalia-fase1-topbar-global/
+capability_promoted: vitalia/docs/product/capabilities/platform/topbar-global.yaml
+reviewing_started_at: 2026-05-23T01:55:00-05:00
+reviewing_owner: /auditor (direct examination)
+audit_verdict: APPROVED
+audit_verdict_at: 2026-05-23T02:00:00-05:00
+audit_iterations: 1
+self_fix_iter: 0
 developing_started_at: 2026-05-23T01:05:00-05:00
 developing_finished_at: 2026-05-23T01:55:00-05:00
 developing_owner: /dev-team (autonomous Sonnet per R23 FE no-agentic)
@@ -47,7 +56,7 @@ dependencies:
 blocks_hard: [vitalia-fase1-shell-layout-5050]
 reuse_map_summary: "NEW LogoMark + TopBarGlobal composes ThemeToggle (F1-S1) + TenantSwitcher slot (F1-S3)"
 spawned_at: 2026-05-22
-next_action: "AUTO-HANDOFF → /auditor: story state=developed, T-1..T-8 all PASS. Awaiting auditor-frontend review + CHECKPOINTS.md C1-C5."
+next_action: "AUTO-HANDOFF /pm-vitalia merge → write 07-merge.md + capability YAML platform/topbar-global + archive story + state reviewing→done"
 ---
 
 # F1-S2 vitalia-fase1-topbar-global — checkpoint
