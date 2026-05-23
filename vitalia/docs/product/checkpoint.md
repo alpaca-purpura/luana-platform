@@ -2,7 +2,7 @@
 brand: vitalia
 vertical: "Salud + Bienestar"
 status: shipped
-last_updated: 2026-05-23
+last_updated: 2026-05-23-T2
 paradigm: shell-organism-agentico-v1                 # ★ 2026-05-22 cementado ★
 shell_organism_status: planning-done-2026-05-22      # ★ design-story cerrada, Fase 1 + Fase 2 backlog generado
 slice_1_status: superseded-by-shell-organism-2026-05-22  # ★ paradigma reemplazado · stories slice-1 archivadas o refactored
@@ -19,7 +19,7 @@ active_stories:
   # vitalia-fase1-design-tokens-theme      # F1-S1 · state: done 2026-05-23 (archived) · ver recently_done
   # vitalia-fase1-topbar-global            # F1-S2 · state: done 2026-05-23 (archived) · ver recently_done
   # vitalia-fase1-tenant-switcher          # F1-S3 · state: done 2026-05-23 (archived) · ver recently_done · CHAIN F1-S0..S3 COMPLETE
-  - vitalia-fase1-shell-layout-5050        # F1-S4 — desbloqueado por chain F1-S0..S3 COMPLETE, blocker hard removed
+  - vitalia-fase1-shell-layout-5050        # F1-S4 — state: refining 2026-05-23 · awaiting /po-ux 01-spec.md v1 + 2 mockups HTML (shell-layout-agentic + shell-layout-web) ratificación Chris (gate visual bloqueante)
   - vitalia-fase1-valeria-rail-history     # F1-S5
   - vitalia-fase1-valeria-chat-skeleton    # F1-S6
   - vitalia-fase1-ribbon-6-tabs            # F1-S7
@@ -164,6 +164,12 @@ Story 11 (`luana-vitalia-bootstrap`, mergeada 2026-05-15) shipped **16 capabilit
 - HIPAA-hardening adicional (dual `tenant+clinic` filter, `pgcrypto` column encryption, retention cron 10y, RBAC `@require_phi_access`, ComplianceService channel guard) — ver gap detallado en `vitalia/docs/product/capabilities/compliance/compliance-hipaa-lite-audit.yaml`
 
 ## Bitácora
+
+- **2026-05-23 (sesión `/pm-vitalia` post-chain) — F1-S4 transition `idea → refining`**:
+  - Chris pidió arrancar F1-S4 `vitalia-fase1-shell-layout-5050` (next recommended post chain F1-S0..S3 done). Verificación pre-`/architect` confirmó gate visual bloqueante NO satisfecho: `01-spec.md` ausente · `mockups/` dir ausente · `ratified_visual_by_chris: false` · state `idea`.
+  - Story checkpoint actualizado: `state: idea → refining` · `transitioned_to_refining_at: 2026-05-23` · `ratified_visual_by_chris: false` (con `ratified_visual_mockups_expected` cementados: `shell-layout-agentic.html` + `shell-layout-web.html`) · `hard_deps_status: "CHAIN F1-S0..S3 COMPLETE 2026-05-23 — blocker_hard removido"` · `next_action: "/po-ux vitalia-fase1-shell-layout-5050 → producir 01-spec.md v1 + 2 mockups HTML ratificados Chris (gate visual bloqueante)"`.
+  - WIP cap status post-update: refining=3 cap-eligible (payment-adapter-mvp · fiscal-emission-pe · shell-layout-5050) dentro de cap 3 — apretado, próximas transiciones a refining requieren cerrar una antes.
+  - **Próximo paso (Chris invoca)**: `/po-ux vitalia-fase1-shell-layout-5050`. Workflow esperado: refinar Gherkin AI-resistant (4 scenarios base ya en scope verbatim del checkpoint) + microcopy Spanish neutro + estados visuales + producir 2 mockups HTML (`shell-layout-agentic.html` modo 50/50 + `shell-layout-web.html` modo rail 60px) con Tailwind CDN + tokens Vitalia CSS vars + datos LatAm + dark mode toggle local · ratificación Chris cementa `ratified_visual_by_chris: true` + paths en frontmatter · transition `refining → refined` → recién entonces `/architect` arranca.
 
 - **2026-05-23 cierre CHAIN F1-S0..S3 COMPLETE autonomous (Chris descansando, paradigm v4.1 auto-handoff dev-team→auditor→pm-vitalia merge)**:
   - **F1-S3 vitalia-fase1-tenant-switcher** cerrada `developed → reviewing → done` en sesión autonomous post-pausa Opción B.
