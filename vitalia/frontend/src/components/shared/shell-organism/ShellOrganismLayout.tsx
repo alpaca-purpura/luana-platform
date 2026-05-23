@@ -1,23 +1,21 @@
 /**
- * ShellOrganismLayout — main shell layout Client Component.
- * F1-S4 vitalia-fase1-shell-layout-5050 — T-3
+ * ShellOrganismLayout — main shell layout (SSR-safe wrapper).
+ * F1-S4 vitalia-fase1-shell-layout-5050 — T-3 + T-7 SSR fix
  *
  * 03-arch.md § 2.2, § 2.9
  *
- * Client Component justification:
- * - Consumes useShellStore (Zustand hook — Client-only)
- * - Hosts Group from react-resizable-panels v4 (DOM interactive drag)
- * - Calls useViewportGuard (window access)
+ * Wrapper que carga ShellOrganismLayoutClient via next/dynamic con
+ * ssr:false. Razón: react-resizable-panels v4.11.1 dist/react-resizable-panels.js:1812
+ * usa `storage: n = localStorage` como default parameter (bare-name ref)
+ * que crashea durante SSR pass de Next.js con ReferenceError. No fix
+ * posible desde caller (default params evalúan ANTES de cualquier guard
+ * typeof). Workaround idiomatic Next.js: dynamic import client-only.
  *
- * react-resizable-panels v4 API note (differs from arch spec which referenced v3):
- * - PanelGroup → Group (orientation="horizontal", uses useDefaultLayout for persistence)
- * - Panel → Panel (id, defaultSize, minSize, no `order` prop in v4)
- * - PanelResizeHandle → Separator (aria-label via ...rest passthrough)
+ * SSR fallback: skeleton minimal con TopBarGlobal + main#main-content
+ * (mantiene skip-link target accesible inmediato + layout-shift mínimo).
  *
- * Triple-main pattern (03-arch.md § 2.2 implementation note):
- * Three <main id="main-content"> elements — CSS mutually exclusive via Tailwind.
- * Only ONE main is visible at any viewport. Skip-link #main-content resolves
- * to the visible one. Avoids hydration mismatch SSR/CSR (pure CSS branching).
+ * Trade-off aceptado: el shell layout interno (PanelGroup) no es
+ * SSR-rendered. Mismo pattern que dashboards interactivos pesados.
  *
  * HIPAA-lite: not applicable — chrome UI, no PHI.
  * downstream-regression-na: brand-local shell component; no cross-brand consumers
@@ -25,22 +23,8 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
-import { Group, Panel, Separator, useDefaultLayout } from "react-resizable-panels";
-import { cn } from "@/lib/utils";
-import { useShellStore } from "@/stores/shell-store";
-import { useViewportGuard } from "./useViewportGuard";
+import dynamic from "next/dynamic";
 import { TopBarGlobal } from "./TopBarGlobal";
-import { ValeriaSidebarSlot } from "./ValeriaSidebarSlot";
-import { AppPanelSlot } from "./AppPanelSlot";
-import { ShellModeToggle } from "./ShellModeToggle";
-
-/** Unique group ID for localStorage persistence via useDefaultLayout */
-const SHELL_GROUP_ID = "vitalia-shell-split-agentic";
-
-/** Panel IDs must be stable strings (used for layout persistence keying) */
-const VALERIA_PANEL_ID = "valeria-panel";
-const APP_PANEL_ID = "app-panel";
 
 export interface ShellOrganismLayoutProps {
   /** Page content rendered by the route group (F1-S7/S8/S10 will populate) */
@@ -49,157 +33,50 @@ export interface ShellOrganismLayoutProps {
   tenantId: string;
 }
 
-/**
- * ShellOrganismLayout — main shell chrome for vitalia agéntico experience.
- *
- * Renders a full-screen layout with:
- * - TopBarGlobal (fixed 48px header)
- * - Dual-panel resizable area (agentic mode) OR static grid (web mode) for desktop
- * - Mobile fallback <main> (drawer pattern deferred to F1-S5+)
- *
- * Panel size percentages are approximated at 1640px reference viewport:
- * - Valeria full: ~38% (~620px / 1640px)
- * - Valeria rail: ~22% (~360px / 1640px)
- * - App panel min: ~30% (~480px / 1640px)
- *
- * Named export per FSD-Lite (no default export).
- */
-export function ShellOrganismLayout({
-  children,
-  tenantId: _tenantId,
-}: ShellOrganismLayoutProps) {
-  const shellMode = useShellStore((s) => s.shellMode);
-  const valeriaState = useShellStore((s) => s.valeriaState);
-
-  // SSR-safe mount flag: react-resizable-panels v4.11.1 useDefaultLayout
-  // has bare-name `localStorage` default param (`storage: n = localStorage`
-  // en dist/react-resizable-panels.js:1812) que throws ReferenceError en
-  // SSR aún pasando explicit undefined. Fix: skip useDefaultLayout en SSR
-  // pass mostrando un skeleton minimal, monta el layout completo solo
-  // post-mount client-side. Trade-off aceptado: el shell layout no es
-  // SSR-rendered, mismo pattern que dashboards interactivos pesados.
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // One-way viewport guard: forces 'full' → 'rail' when viewport [768, 1104)
-  useViewportGuard();
-
-  // Panel size percentages (react-resizable-panels v4 uses percent units)
-  // Reference viewport: 1640px (valeria 620 + handle 4 + app 480 + padding)
-  const minValeriaPct = valeriaState === "full" ? 38 : 22;
-  const minAppPct = 30;
-  const defaultValeriaPct = shellMode === "agentic" ? 50 : 5;
-
-  // SSR pass: render skeleton minimal sin useDefaultLayout (que tira en SSR).
-  // Client-side post-mount: render shell completo.
-  if (!mounted) {
-    return (
-      <div
-        className="flex h-screen flex-col overflow-hidden bg-background text-foreground"
-        data-shell-ssr-skeleton="true"
-      >
-        <TopBarGlobal />
-        <main
-          id="main-content"
-          tabIndex={-1}
-          className="flex-1 min-h-0 overflow-hidden"
-          aria-label="Cargando shell"
-        />
-      </div>
-    );
-  }
-
-  // Persist layout across page reloads via localStorage
-  // useDefaultLayout returns { defaultLayout, onLayoutChange, onLayoutChanged }
-  // which are spread onto Group to enable persistence.
-  // Solo invocado POST-MOUNT — `window.localStorage` siempre defined aquí.
-  const layoutProps = useDefaultLayout({
-    id: SHELL_GROUP_ID,
-    panelIds: [VALERIA_PANEL_ID, APP_PANEL_ID],
-    storage: window.localStorage,
-  });
-
+/** SSR skeleton: TopBarGlobal + empty main (skip-link target preserved). */
+function ShellOrganismLayoutSkeleton() {
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-background text-foreground">
-      {/* Top bar — always visible (48px) */}
+    <div
+      className="flex h-screen flex-col overflow-hidden bg-background text-foreground"
+      data-shell-ssr-skeleton="true"
+    >
       <TopBarGlobal />
-
-      {/* Shell mode toggle chip — disabled placeholder (F1-S5/S7 activates) */}
-      <div className="absolute top-1.5 left-1/2 -translate-x-1/2 z-50 pointer-events-auto">
-        <ShellModeToggle />
-      </div>
-
-      {/* ── Agentic desktop layout (md+): resizable 2-panel via react-resizable-panels v4 ── */}
-      {shellMode === "agentic" && (
-        <main
-          id="main-content"
-          tabIndex={-1}
-          className="flex-1 min-h-0 overflow-hidden hidden md:block"
-          aria-label="Contenido principal"
-        >
-          <Group
-            id={SHELL_GROUP_ID}
-            orientation="horizontal"
-            className="h-full"
-            {...layoutProps}
-          >
-            <Panel
-              id={VALERIA_PANEL_ID}
-              defaultSize={defaultValeriaPct}
-              minSize={minValeriaPct}
-              collapsible={false}
-            >
-              <ValeriaSidebarSlot />
-            </Panel>
-
-            <Separator
-              id="shell-handle"
-              className={cn(
-                "w-1 bg-border hover:bg-primary/40 focus-visible:bg-primary",
-                "data-[separator]:bg-primary",
-                "transition-colors outline-none",
-              )}
-              aria-label="Redimensionar paneles"
-            />
-
-            <Panel
-              id={APP_PANEL_ID}
-              defaultSize={100 - defaultValeriaPct}
-              minSize={minAppPct}
-            >
-              <AppPanelSlot>{children}</AppPanelSlot>
-            </Panel>
-          </Group>
-        </main>
-      )}
-
-      {/* ── Web desktop layout (md+): static CSS grid 60px / 1px / 1fr ── */}
-      {shellMode === "web" && (
-        <main
-          id="main-content"
-          tabIndex={-1}
-          className="flex-1 min-h-0 overflow-hidden hidden md:grid grid-cols-[60px_1px_1fr]"
-          aria-label="Contenido principal"
-        >
-          <ValeriaSidebarSlot />
-          {/* Visual divider (1px) */}
-          <div className="bg-border" aria-hidden="true" />
-          <AppPanelSlot>{children}</AppPanelSlot>
-        </main>
-      )}
-
-      {/* ── Mobile fallback (< md): single-column, no Valeria visible ── */}
-      {/* Valeria accessible via drawer trigger (F1-S5 will add burger button) */}
       <main
         id="main-content"
         tabIndex={-1}
-        className="flex-1 min-h-0 overflow-hidden md:hidden"
-        aria-label="Contenido principal"
-      >
-        <AppPanelSlot>{children}</AppPanelSlot>
-      </main>
+        className="flex-1 min-h-0 overflow-hidden"
+        aria-label="Cargando shell"
+      />
     </div>
   );
+}
+
+/**
+ * Client-only dynamic import.
+ * `ssr: false` bypassea el SSR pass que crashea por react-resizable-panels v4
+ * bare-name localStorage default param. Carga el layout completo solo en cliente.
+ */
+const ShellOrganismLayoutClient = dynamic(
+  () =>
+    import("./ShellOrganismLayoutClient").then((m) => ({
+      default: m.ShellOrganismLayoutClient,
+    })),
+  {
+    ssr: false,
+    loading: ShellOrganismLayoutSkeleton,
+  },
+);
+
+/**
+ * ShellOrganismLayout — main shell chrome for vitalia agéntico experience.
+ *
+ * Renders full-screen layout client-side post-hydration:
+ * - TopBarGlobal (fixed 48px header) — visible inmediato via SSR skeleton
+ * - Dual-panel resizable area (agentic mode) OR static grid (web mode) desktop
+ * - Mobile fallback <main> (drawer pattern deferred to F1-S5+)
+ *
+ * Named export per FSD-Lite (no default export).
+ */
+export function ShellOrganismLayout(props: ShellOrganismLayoutProps) {
+  return <ShellOrganismLayoutClient {...props} />;
 }

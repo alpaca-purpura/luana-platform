@@ -159,22 +159,22 @@ describe("ShellOrganismLayout — default agentic render (SC-1)", () => {
   });
 
   it("renders TopBarGlobal (banner role)", async () => {
-    const { ShellOrganismLayout } = await import("./ShellOrganismLayout");
+    const { ShellOrganismLayoutClient } = await import("./ShellOrganismLayoutClient");
     render(
-      <ShellOrganismLayout tenantId="acme-clinic">
+      <ShellOrganismLayoutClient tenantId="acme-clinic">
         <div data-testid="page-content">content</div>
-      </ShellOrganismLayout>,
+      </ShellOrganismLayoutClient>,
     );
     expect(screen.getByRole("banner")).toBeInTheDocument();
     expect(screen.getByTestId("topbar-global")).toBeInTheDocument();
   });
 
   it("renders PanelGroup with autoSaveId='vitalia-shell-split-agentic'", async () => {
-    const { ShellOrganismLayout } = await import("./ShellOrganismLayout");
+    const { ShellOrganismLayoutClient } = await import("./ShellOrganismLayoutClient");
     render(
-      <ShellOrganismLayout tenantId="acme-clinic">
+      <ShellOrganismLayoutClient tenantId="acme-clinic">
         <div />
-      </ShellOrganismLayout>,
+      </ShellOrganismLayoutClient>,
     );
     const panelGroup = screen.getByTestId("panel-group");
     expect(panelGroup).toBeInTheDocument();
@@ -185,11 +185,11 @@ describe("ShellOrganismLayout — default agentic render (SC-1)", () => {
   });
 
   it("renders Panel with id='valeria-panel'", async () => {
-    const { ShellOrganismLayout } = await import("./ShellOrganismLayout");
+    const { ShellOrganismLayoutClient } = await import("./ShellOrganismLayoutClient");
     render(
-      <ShellOrganismLayout tenantId="acme-clinic">
+      <ShellOrganismLayoutClient tenantId="acme-clinic">
         <div />
-      </ShellOrganismLayout>,
+      </ShellOrganismLayoutClient>,
     );
     const valeriaPanel = screen.getByTestId("panel-valeria-panel");
     expect(valeriaPanel).toBeInTheDocument();
@@ -198,11 +198,11 @@ describe("ShellOrganismLayout — default agentic render (SC-1)", () => {
   });
 
   it("renders Panel with id='app-panel'", async () => {
-    const { ShellOrganismLayout } = await import("./ShellOrganismLayout");
+    const { ShellOrganismLayoutClient } = await import("./ShellOrganismLayoutClient");
     render(
-      <ShellOrganismLayout tenantId="acme-clinic">
+      <ShellOrganismLayoutClient tenantId="acme-clinic">
         <div />
-      </ShellOrganismLayout>,
+      </ShellOrganismLayoutClient>,
     );
     const appPanel = screen.getByTestId("panel-app-panel");
     expect(appPanel).toBeInTheDocument();
@@ -211,11 +211,11 @@ describe("ShellOrganismLayout — default agentic render (SC-1)", () => {
   });
 
   it("renders PanelResizeHandle with aria-label='Redimensionar paneles'", async () => {
-    const { ShellOrganismLayout } = await import("./ShellOrganismLayout");
+    const { ShellOrganismLayoutClient } = await import("./ShellOrganismLayoutClient");
     render(
-      <ShellOrganismLayout tenantId="acme-clinic">
+      <ShellOrganismLayoutClient tenantId="acme-clinic">
         <div />
-      </ShellOrganismLayout>,
+      </ShellOrganismLayoutClient>,
     );
     const handle = screen.getByTestId("panel-resize-handle");
     expect(handle).toBeInTheDocument();
@@ -224,11 +224,11 @@ describe("ShellOrganismLayout — default agentic render (SC-1)", () => {
   });
 
   it("renders ShellModeToggle disabled chip", async () => {
-    const { ShellOrganismLayout } = await import("./ShellOrganismLayout");
+    const { ShellOrganismLayoutClient } = await import("./ShellOrganismLayoutClient");
     render(
-      <ShellOrganismLayout tenantId="acme-clinic">
+      <ShellOrganismLayoutClient tenantId="acme-clinic">
         <div />
-      </ShellOrganismLayout>,
+      </ShellOrganismLayoutClient>,
     );
     const toggle = screen.getByTestId("shell-mode-toggle");
     expect(toggle).toBeInTheDocument();
@@ -236,11 +236,11 @@ describe("ShellOrganismLayout — default agentic render (SC-1)", () => {
   });
 
   it("passes children to AppPanelSlot (triple-main: appears in both desktop+mobile branches)", async () => {
-    const { ShellOrganismLayout } = await import("./ShellOrganismLayout");
+    const { ShellOrganismLayoutClient } = await import("./ShellOrganismLayoutClient");
     render(
-      <ShellOrganismLayout tenantId="acme-clinic">
+      <ShellOrganismLayoutClient tenantId="acme-clinic">
         <div data-testid="child-content">page content</div>
-      </ShellOrganismLayout>,
+      </ShellOrganismLayoutClient>,
     );
     // Triple-main pattern: children are rendered in both agentic panel + mobile branch
     const childElements = screen.getAllByTestId("child-content");
@@ -255,11 +255,11 @@ describe("ShellOrganismLayout — skip-link target invariant (SC-4)", () => {
   });
 
   it("all rendered <main> elements have id='main-content' (skip-link target)", async () => {
-    const { ShellOrganismLayout } = await import("./ShellOrganismLayout");
+    const { ShellOrganismLayoutClient } = await import("./ShellOrganismLayoutClient");
     const { container } = render(
-      <ShellOrganismLayout tenantId="acme-clinic">
+      <ShellOrganismLayoutClient tenantId="acme-clinic">
         <div />
-      </ShellOrganismLayout>,
+      </ShellOrganismLayoutClient>,
     );
     const mains = container.querySelectorAll("main");
     // Triple-main pattern: there can be 1+ mains (visible + CSS-hidden)
@@ -270,11 +270,11 @@ describe("ShellOrganismLayout — skip-link target invariant (SC-4)", () => {
   });
 
   it("all rendered <main> elements have tabIndex={-1} for skip-link focus", async () => {
-    const { ShellOrganismLayout } = await import("./ShellOrganismLayout");
+    const { ShellOrganismLayoutClient } = await import("./ShellOrganismLayoutClient");
     const { container } = render(
-      <ShellOrganismLayout tenantId="acme-clinic">
+      <ShellOrganismLayoutClient tenantId="acme-clinic">
         <div />
-      </ShellOrganismLayout>,
+      </ShellOrganismLayoutClient>,
     );
     const mains = container.querySelectorAll("main");
     mains.forEach((main) => {
@@ -289,11 +289,11 @@ describe("ShellOrganismLayout — web mode static grid (SC-3 edge)", () => {
   });
 
   it("renders grid static layout (no PanelGroup) when shellMode='web'", async () => {
-    const { ShellOrganismLayout } = await import("./ShellOrganismLayout");
+    const { ShellOrganismLayoutClient } = await import("./ShellOrganismLayoutClient");
     render(
-      <ShellOrganismLayout tenantId="acme-clinic">
+      <ShellOrganismLayoutClient tenantId="acme-clinic">
         <div />
-      </ShellOrganismLayout>,
+      </ShellOrganismLayoutClient>,
     );
     // In web mode, no PanelGroup/resizable-panels is rendered (grid static layout)
     expect(screen.queryByTestId("panel-group")).not.toBeInTheDocument();
@@ -301,11 +301,11 @@ describe("ShellOrganismLayout — web mode static grid (SC-3 edge)", () => {
   });
 
   it("still renders valeria-sidebar-slot in web mode", async () => {
-    const { ShellOrganismLayout } = await import("./ShellOrganismLayout");
+    const { ShellOrganismLayoutClient } = await import("./ShellOrganismLayoutClient");
     render(
-      <ShellOrganismLayout tenantId="acme-clinic">
+      <ShellOrganismLayoutClient tenantId="acme-clinic">
         <div />
-      </ShellOrganismLayout>,
+      </ShellOrganismLayoutClient>,
     );
     // Web mode uses grid: ValeriaSidebarSlot + divider + AppPanelSlot
     expect(screen.getAllByTestId("valeria-sidebar-slot").length).toBeGreaterThanOrEqual(1);
@@ -318,11 +318,11 @@ describe("ShellOrganismLayout — mobile branch (SC-2)", () => {
   });
 
   it("renders a mobile main element (md:hidden branch)", async () => {
-    const { ShellOrganismLayout } = await import("./ShellOrganismLayout");
+    const { ShellOrganismLayoutClient } = await import("./ShellOrganismLayoutClient");
     const { container } = render(
-      <ShellOrganismLayout tenantId="acme-clinic">
+      <ShellOrganismLayoutClient tenantId="acme-clinic">
         <div data-testid="mobile-content">mobile content</div>
-      </ShellOrganismLayout>,
+      </ShellOrganismLayoutClient>,
     );
     // Triple-main pattern: mobile branch has md:hidden class
     const mains = container.querySelectorAll("main#main-content");
@@ -334,11 +334,11 @@ describe("ShellOrganismLayout — mobile branch (SC-2)", () => {
   });
 
   it("mobile branch contains AppPanelSlot", async () => {
-    const { ShellOrganismLayout } = await import("./ShellOrganismLayout");
+    const { ShellOrganismLayoutClient } = await import("./ShellOrganismLayoutClient");
     render(
-      <ShellOrganismLayout tenantId="acme-clinic">
+      <ShellOrganismLayoutClient tenantId="acme-clinic">
         <div />
-      </ShellOrganismLayout>,
+      </ShellOrganismLayoutClient>,
     );
     // app-panel-slot exists in mobile branch (children passed)
     const slots = screen.getAllByTestId("app-panel-slot");
