@@ -6,15 +6,21 @@ type: ui-story
 agent_owner: shell
 module: shell-organism
 capability: shell.layout-5050
-state: developed
-phase: HANDOFF_TO_AUDITOR
-last_artifact: T-7-result.md (Fase 7B goldens generated)
-last_modified: 2026-05-23T15:50:00-05:00
+state: reviewing
+phase: HANDOFF_TO_PM_MERGE
+last_artifact: CHECKPOINTS.md (APPROVED-WITH-DEFER)
+gherkin_matrix: 06-audit/gherkin-matrix.md
+last_modified: 2026-05-23T18:15:00-05:00
 transitioned_to_developing_at: 2026-05-23T14:15:00Z
 transitioned_to_developed_at: 2026-05-23T15:50:00-05:00
+transitioned_to_reviewing_at: 2026-05-23T16:00:00-05:00
 dev_team_iter: 1
-current_ticket: T-7  # Fase 7A refit committed c1925563 · Fase 7B goldens committed cbb4af74
-next_action: "/auditor <brand>: vitalia story=vitalia-fase1-shell-layout-5050 (AUTO-HANDOFF default post 2026-05-18 story-closure-gate)"
+auditor_iter: 3  # cap absoluto 3/3 reached con APPROVED-WITH-DEFER
+audit_iterations: 3
+current_ticket: T-7  # 7A refit c1925563 · 7B goldens cbb4af74 · audit-iter-1 73e78abc · audit-iter-2 8fc6593f · audit-iter-3 46fc8700
+verdict: APPROVED-WITH-DEFER
+deferred_scenario: "SC-3 last assertion (rail→full snap-up race condition) — F1-S5/S6 lifecycle refactor"
+next_action: "/pm-vitalia aplica merge → 07-merge.md 5 secciones → update capabilities/* + modules MD → archive story → state=reviewing→done"
 ratified_by_chris: true
 ratified_at: 2026-05-23T13:45:00Z
 ratified_visual_by_chris: true                     # gate bloqueante satisfecho

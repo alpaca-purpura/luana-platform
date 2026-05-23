@@ -110,8 +110,15 @@ test.describe("SC-3 — resize boundary + persistencia + snap-up (F1-S4)", () =>
   });
 
   // ── Assertion 4: state rail->full at width 400 snap-up to 620 ──────────────
+  // DEFERRED 2026-05-23 (audit iter 3 ESCALATED Caso D, Chris ratify accept-with-defer):
+  // Race condition entre dynamic({ssr:false}) hydration + useDefaultLayout localStorage
+  // restore + ResizeObserver minSize calc → setValeriaStateViaStore('rail')→reload→
+  // setValeriaStateViaStore('full')→reload→drag inmediato no snap-up al new min antes
+  // que el test mida. Fix iter 3 useGroupRef Fix A (commit 46fc8700) resolvió drag-clamp
+  // pero no este transition+drag-immediately edge case. Spec 01-spec.md SC-3 anotado
+  // DEFERRED a F1-S5/S6 lifecycle refactor. Tracking pendiente.
 
-  test("state rail->full at width 400 snap-up to 620", async ({
+  test.skip("state rail->full at width 400 snap-up to 620 (DEFERRED F1-S5/S6 lifecycle)", async ({
     shellPage,
     tenantId,
   }) => {

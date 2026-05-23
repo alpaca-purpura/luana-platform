@@ -97,6 +97,9 @@ Then 400 < min 620 → snap-up automático a 620
   And el history-skel reaparece
   And localStorage[vitalia-valeria-state] persiste 'full'
 ```
+
+> **DEFERRED 2026-05-23 (audit iter 3 ESCALATED Caso D):** la última assertion
+> (`400 < min 620 → snap-up automático a 620` después de `setValeriaStateViaStore('rail')→reload→setValeriaStateViaStore('full')→reload→drag`) requiere refactor del lifecycle hydration race condition entre `dynamic({ssr:false})` mount + `useDefaultLayout` localStorage restore + ResizeObserver minSize calc. Fix iter 3 (commit 46fc8700 via `useGroupRef` Fix A) resolvió drag-clamp pero no este transition+drag-immediately edge case. Chris ratificó accept 33/34 Playwright pass rate + DEFER snap-up race a F1-S5/S6 lifecycle work (`vitalia-fase1-valeria-rail-history` / `vitalia-fase1-valeria-chat-skeleton`). Test `resize-and-state.spec.ts:114` marcado `test.skip(true, ...)` con razón documentada.
 - `playwright_required: true`
 - `graders:`
   - `{ type: e2e, path: "vitalia/frontend/e2e/regression/shell-layout-5050/resize-and-state.spec.ts" }`
