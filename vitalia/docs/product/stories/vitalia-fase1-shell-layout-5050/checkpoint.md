@@ -6,12 +6,15 @@ type: ui-story
 agent_owner: shell
 module: shell-organism
 capability: shell.layout-5050
-state: developing
-last_artifact: 06-tickets.yaml
-last_modified: 2026-05-23T14:15:00Z
+state: developed
+phase: HANDOFF_TO_AUDITOR
+last_artifact: T-7-result.md (Fase 7B goldens generated)
+last_modified: 2026-05-23T15:50:00-05:00
 transitioned_to_developing_at: 2026-05-23T14:15:00Z
+transitioned_to_developed_at: 2026-05-23T15:50:00-05:00
 dev_team_iter: 1
-current_ticket: T-1
+current_ticket: T-7  # Fase 7A refit committed c1925563 · Fase 7B goldens committed cbb4af74
+next_action: "/auditor <brand>: vitalia story=vitalia-fase1-shell-layout-5050 (AUTO-HANDOFF default post 2026-05-18 story-closure-gate)"
 ratified_by_chris: true
 ratified_at: 2026-05-23T13:45:00Z
 ratified_visual_by_chris: true                     # gate bloqueante satisfecho
