@@ -18,7 +18,7 @@ active_stories:
   # vitalia-fase1-stack-stability          # F1-S0 · state: done 2026-05-23 (archived) · ver recently_done
   # vitalia-fase1-design-tokens-theme      # F1-S1 · state: done 2026-05-23 (archived) · ver recently_done
   # vitalia-fase1-topbar-global            # F1-S2 · state: done 2026-05-23 (archived) · ver recently_done
-  - vitalia-fase1-tenant-switcher          # F1-S3 · NEXT pickup (último de la chain F1-S0→S1→S2→S3)
+  - vitalia-fase1-tenant-switcher          # F1-S3 · state: developed 2026-05-23T03:10 commit d99b1fdd · PENDING /auditor + /pm-vitalia merge · ver story checkpoint para detalle gates
   - vitalia-fase1-topbar-global            # F1-S2
   - vitalia-fase1-tenant-switcher          # F1-S3
   - vitalia-fase1-shell-layout-5050        # F1-S4
@@ -166,6 +166,16 @@ Story 11 (`luana-vitalia-bootstrap`, mergeada 2026-05-15) shipped **16 capabilit
 
 ## Bitácora
 
+- **2026-05-23 cierre sesión chain F1-S0..S3 (Chris se va a descansar, pausa Opción B)**:
+  - F1-S0 ✅ done · F1-S1 ✅ done · F1-S2 ✅ done · F1-S3 ⏳ developed (PENDING audit+merge).
+  - F1-S3 commit `d99b1fdd` push wip/vitalia con 31 archivos implementación bundle (TenantSwitcher + Zustand store + React Query + 5 Shadcn primitives + 11 Playwright specs + POM + arch test). Validators GREEN: tsc 0 + eslint 0 + vitest 908/908 + F1-S3 unit 65/65.
+  - **Pendientes F1-S3 para próxima sesión autonomous**:
+    1. Generate 8 visual goldens Playwright `--update-snapshots` (tenant-switcher closed/open × desktop/mobile × light/dark) — requiere stack UP (make dev-vitalia)
+    2. Run 11 Playwright behavior specs contra :3002 — verify SC-01..SC-12 mapped
+    3. /auditor direct examination (similar pattern F1-S1/F1-S2) → write CHECKPOINTS.md + gherkin-matrix.md (Phase D)
+    4. /pm-vitalia merge → 07-merge.md 5 secciones + capability YAML `platform/tenant-switcher` + git mv archive + brand checkpoint update + commit
+    5. Goldens commiteados con flag `pending_chris_visual_ratify: true` en capability YAML — Chris valida visual diff cuando regrese (similar F1-S0 in-loop pattern)
+  - **Próximo paso**: nueva sesión arranca con prompt autonomous handoff (ver session_handoff_prompt en este checkpoint, o ver /tmp/F1-S3-handoff-prompt.md si existe).
 - **2026-05-23 cierre F1-S0 in-loop session (audit ESCALATED → Chris ratify → APPROVED → merge done)**:
   - `vitalia-fase1-stack-stability` cerrada `reviewing → done` post 6 fixes incrementales con ratify Chris (audit cycle 2026-05-22T22:30 → 2026-05-23T01:35).
   - Cycle ESCALATED inicial detectó 4 Chris gates ortogonales: T-4 visual goldens (Chris ratify visual) + T-7 fe_build_production (pre-existing marketing-nuqs bug ac7b3e91) + T-7 visual validators (dev server gate) + story archive. Chris pidió "haz los fixes" → in-loop resolution.
