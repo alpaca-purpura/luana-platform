@@ -377,7 +377,8 @@ tickets:
   # ──────────────────────────────────────────────────────────────
   - id: T-8
     title: "Playwright POM ValeriaSidebarPage + 9 functional E2E specs (1:1 scenarios) + visual goldens (13 PNGs)"
-    state: ready
+    state: pushed
+    push_commit_sha: "pending"
     surface: frontend
     owner_eligibility: [qwen-opencode, claude-sonnet]
     production_code: false   # tests-only

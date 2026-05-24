@@ -62,7 +62,7 @@ test.describe("SC-8 — mobile drawer a11y", () => {
   // changes CSS media queries for that page, making md:hidden inactive at 375px.
   test.use({ viewport: MOBILE_VIEWPORT });
 
-  test("SC-8-1: mobile drawer has role='complementary' + aria-modal='true'", async ({
+  test("SC-8-1: mobile drawer has role='dialog' + aria-modal='true'", async ({
     authedPage,
   }) => {
     await authedPage.setViewportSize(MOBILE_VIEWPORT);
@@ -70,10 +70,13 @@ test.describe("SC-8 — mobile drawer a11y", () => {
     const pom = new ValeriaSidebarPage(authedPage);
     await pom.goto({ valeriaState: "full", shellMode: "agentic", theme: "light" });
 
-    // Mobile drawer renders as fixed overlay when isMobile=true
+    // Mobile drawer renders as fixed overlay when isMobile=true.
+    // ★ T-8.bis a11y fix: role="dialog" (not "complementary") porque aria-modal
+    //   no es válido en role=complementary per WCAG/ARIA spec. Dialog role
+    //   permite aria-modal + focus trap correctly.
     const mobileDrawer = authedPage.locator(MOBILE_DRAWER_SELECTOR);
     await expect(mobileDrawer).toBeVisible({ timeout: 5_000 });
-    await expect(mobileDrawer).toHaveAttribute("role", "complementary");
+    await expect(mobileDrawer).toHaveAttribute("role", "dialog");
     await expect(mobileDrawer).toHaveAttribute("aria-modal", "true");
     await expect(mobileDrawer).toHaveAttribute("aria-expanded", "true");
     await expect(mobileDrawer).toHaveAttribute("aria-label", "Panel Valeria");

@@ -2,12 +2,18 @@
  * shell-theme.fixture.ts — Playwright fixture extending auth.fixture for shell + theme E2E.
  *
  * F1-S4 vitalia-fase1-shell-layout-5050 — T-7
+ * F1-S5 vitalia-fase1-valeria-rail-history — T-8 (extended ValeriaSidebarPage fixtures)
  *
  * Extends auth.fixture.ts to add:
  *   - `shellPage`: authedPage with deterministic localStorage pre-seeded
  *     (shellMode + valeriaState + theme) via addInitScript BEFORE navigation.
  *     Prevents Zustand hydration from reading stale/random state.
  *   - `darkShellPage`: same but forces dark theme for visual goldens.
+ *   - `valeriaPage`: Page seeded with valeriaState='rail' + shellMode='agentic' + light theme.
+ *   - `valeriaFullPage`: Page seeded with valeriaState='full' + shellMode='agentic' + light theme.
+ *   - `valeriaRailPage`: Page seeded with valeriaState='rail' + shellMode='agentic' + light theme.
+ *   - `valeriaMobilePage`: Page at mobile viewport (375x667) with drawer closed.
+ *   - `valeriaPom`: convenience ValeriaSidebarPage POM bound to valeriaPage.
  *
  * addInitScript executes BEFORE page scripts — deterministic for visual goldens.
  *
@@ -23,6 +29,7 @@
 import { test as base } from "../auth.fixture";
 import type { Page } from "@playwright/test";
 import { ShellLayoutPage } from "../pages/ShellLayoutPage";
+import { ValeriaSidebarPage } from "../pages/ValeriaSidebarPage";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -44,6 +51,18 @@ export interface ShellThemeFixtures {
   darkShellPage: Page;
   /** POM instance bound to shellPage. */
   shellPom: ShellLayoutPage;
+
+  // ── F1-S5 ValeriaSidebar fixtures ─────────────────────────────────────────
+  /** Page seeded with valeriaState='rail' + shellMode='agentic' + light theme. */
+  valeriaPage: Page;
+  /** Page seeded with valeriaState='full' + shellMode='agentic' + light theme. */
+  valeriaFullPage: Page;
+  /** Page seeded with valeriaState='rail' + shellMode='agentic' + light theme (alias). */
+  valeriaRailPage: Page;
+  /** Page at mobile viewport (375x667), valeriaState='collapsed', shellMode='web'. */
+  valeriaMobilePage: Page;
+  /** ValeriaSidebarPage POM bound to valeriaPage. */
+  valeriaPom: ValeriaSidebarPage;
 }
 
 // ---------------------------------------------------------------------------
@@ -128,6 +147,66 @@ export const test = base.extend<ShellThemeFixtures>({
    */
   shellPom: async ({ shellPage }, use) => {
     await use(new ShellLayoutPage(shellPage));
+  },
+
+  // ── F1-S5 ValeriaSidebar fixtures ───────────────────────────────────────────
+
+  /**
+   * valeriaPage: authenticated page seeded with valeriaState='rail' for functional specs.
+   */
+  valeriaPage: async ({ authedPage }, use) => {
+    await seedShellLocalStorage(authedPage, {
+      shellMode: "agentic",
+      valeriaState: "rail",
+      theme: "light",
+    });
+    await use(authedPage);
+  },
+
+  /**
+   * valeriaFullPage: authenticated page seeded with valeriaState='full'.
+   */
+  valeriaFullPage: async ({ authedPage }, use) => {
+    await seedShellLocalStorage(authedPage, {
+      shellMode: "agentic",
+      valeriaState: "full",
+      theme: "light",
+    });
+    await use(authedPage);
+  },
+
+  /**
+   * valeriaRailPage: authenticated page seeded with valeriaState='rail' (alias).
+   */
+  valeriaRailPage: async ({ authedPage }, use) => {
+    await seedShellLocalStorage(authedPage, {
+      shellMode: "agentic",
+      valeriaState: "rail",
+      theme: "light",
+    });
+    await use(authedPage);
+  },
+
+  /**
+   * valeriaMobilePage: authenticated page at mobile viewport (375x667), drawer closed.
+   * valeriaState='collapsed' so no drawer on load.
+   * Note: test.use({ viewport }) is preferred in spec — this fixture provides the page
+   * with correct localStorage seeding; callers must also set viewport via test.use().
+   */
+  valeriaMobilePage: async ({ authedPage }, use) => {
+    await seedShellLocalStorage(authedPage, {
+      shellMode: "web",
+      valeriaState: "collapsed",
+      theme: "light",
+    });
+    await use(authedPage);
+  },
+
+  /**
+   * valeriaPom: ValeriaSidebarPage POM bound to valeriaPage (rail state).
+   */
+  valeriaPom: async ({ valeriaPage }, use) => {
+    await use(new ValeriaSidebarPage(valeriaPage));
   },
 });
 

@@ -159,9 +159,11 @@ export function ValeriaSidebar() {
           className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm md:hidden"
         />
 
-        {/* Drawer */}
+        {/* Drawer — role="dialog" + aria-modal valid combo per WCAG/ARIA spec.
+            ★ T-8.bis a11y fix: aside con role=complementary NO permite aria-modal.
+            Dialog role permite modal pattern + focus trap correctly. */}
         <aside
-          role="complementary"
+          role="dialog"
           aria-label="Panel Valeria"
           aria-modal="true"
           aria-expanded="true"

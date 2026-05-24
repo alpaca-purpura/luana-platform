@@ -56,7 +56,15 @@ export function HistoryItem({
       <p className="text-xs font-medium text-foreground truncate leading-tight">
         {title}
       </p>
-      <p className="text-[10px] text-muted-foreground mt-0.5 truncate leading-tight">
+      {/* ★ T-8.bis a11y fix: cuando active (bg-agent-valeria-soft #edd8f3), text-muted-foreground
+          (#71717a) sólo logra 3.61:1 contrast vs 4.5:1 WCAG AA. Use text-foreground/80 que cumple.
+          Cuando inactive (bg-transparent/hover muted), muted-foreground OK. */}
+      <p
+        className={cn(
+          "text-[10px] mt-0.5 truncate leading-tight",
+          active ? "text-foreground/80" : "text-muted-foreground",
+        )}
+      >
         {meta}
       </p>
     </button>
