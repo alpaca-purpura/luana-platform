@@ -27,6 +27,7 @@
  * downstream-regression-na: brand-local shell-organism; no cross-brand consumers
  */
 
+import { createPortal } from "react-dom";
 import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { useShellStore } from "@/stores/shell-store";
@@ -139,8 +140,16 @@ export function ValeriaSidebar() {
   const handleMobileClose = () => setValeriaState("collapsed");
 
   // ── Mobile drawer render ──────────────────────────────────────────────────
+  // ★ FIX T-5.bis: ValeriaSidebar is nested inside <main className="hidden md:block">
+  // in ShellOrganismLayoutClient.tsx. CSS spec: descendants of display:none do NOT
+  // render/paint, even position:fixed children. Portal mounts the drawer directly on
+  // document.body — escaping the hidden parent while keeping the React tree intact.
+  // ShellOrganismLayoutClient.tsx is NOT modified (regression risk = 0).
   if (isMobile && isExpanded) {
-    return (
+    // SSR guard: document is undefined during server render
+    if (typeof document === "undefined") return null;
+
+    return createPortal(
       <>
         {/* Backdrop */}
         <div
@@ -193,7 +202,8 @@ export function ValeriaSidebar() {
             <ValeriaChatSlot />
           </div>
         </aside>
-      </>
+      </>,
+      document.body,
     );
   }
 
