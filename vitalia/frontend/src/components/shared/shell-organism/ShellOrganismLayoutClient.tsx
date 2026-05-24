@@ -188,9 +188,16 @@ export function ShellOrganismLayoutClient({
             <Separator
               id="shell-handle"
               className={cn(
-                // Idle: 1px gris muted (mockup parity). Hover/focus: primary tenue.
-                "w-px bg-border hover:w-1 hover:bg-primary/60 focus-visible:w-1 focus-visible:bg-primary",
-                "transition-all duration-150 outline-none cursor-col-resize",
+                // ★ Fix 2026-05-24: 1px visible (mockup parity) pero 8px hit area.
+                // Antes: w-px directo → handle 1 pixel apenas grabbable + border-r del aside
+                // adyacente confundía hit zone (usuario clickeaba el border no interactivo).
+                // Ahora: container transparente w-2 (8px) con ::after pseudo 1px centrado.
+                // Hover/focus expanden el indicator a 2px (sin cambiar hit area).
+                "group relative w-2 shrink-0 bg-transparent cursor-col-resize outline-none",
+                "after:absolute after:left-1/2 after:top-0 after:h-full after:w-px after:-translate-x-1/2",
+                "after:bg-border after:transition-all after:duration-150",
+                "hover:after:w-0.5 hover:after:bg-primary/60",
+                "focus-visible:after:w-0.5 focus-visible:after:bg-primary",
               )}
               aria-label="Redimensionar paneles"
             />

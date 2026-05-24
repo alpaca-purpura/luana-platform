@@ -216,7 +216,7 @@ export function ValeriaSidebar() {
       aria-label="Panel Valeria"
       aria-expanded={isExpanded}
       data-testid="valeria-sidebar"
-      className="hidden h-full overflow-hidden border-r border-border bg-card motion-reduce:transition-none md:grid"
+      className="hidden h-full overflow-hidden bg-card motion-reduce:transition-none md:grid"
       style={{
         gridTemplateColumns: `${railWidth}px 1fr`,
         gridTemplateRows: "minmax(0, 1fr)",
