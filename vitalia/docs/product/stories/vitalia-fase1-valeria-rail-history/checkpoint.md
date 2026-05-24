@@ -7,9 +7,29 @@ type: ui-story
 agent_owner: shell
 module: shell-organism
 capability: shell.valeria-sidebar
-state: developed                                   # ★ developing→developed 2026-05-24 (8 tickets + T-5.bis Portal fix + T-8.bis a11y all GREEN)
-last_modified: 2026-05-24T22:30:00-05:00
-phase_pm: AWAIT_AUDIT
+state: reviewing                                   # ★ developed→reviewing 2026-05-24 (auditor APPROVED, awaiting /pm-vitalia merge)
+last_modified: 2026-05-24T23:00:00-05:00
+phase_pm: HANDOFF_TO_PM_MERGE
+auditor_iter: 1
+auditor_started_at: 2026-05-24T22:35:00-05:00
+auditor_finished_at: 2026-05-24T23:00:00-05:00
+auditor_verdict: APPROVED                           # ★ 5/5 C1-C5 + 14/14 categorías + gates GREEN
+auditor_summary:
+  checkpoints_passed: 5                             # C1 C2 C3 C4 C5 all PASS
+  categories_passed: 14                             # 14 applicable Cat (no FAILs, 2 WARNs non-blocking)
+  warnings:
+    - "W-1: HistoryGroup doc inaccuracy ('Server Component' label vs render context) — post-merge cleanup"
+    - "W-2: ValeriaSidebar console.warn in render body should be in useEffect — post-merge cleanup"
+  gherkin_matrix: "9/9 SC scenarios PASS (06-audit/gherkin-matrix.md)"
+  visual_goldens: "13/13 PNGs ratchet baseline iter 1 (Chris mockups ratified)"
+  axe_wcag2aa: "0 violations across rail/full/collapsed/mobile drawer"
+  cross_brand_mirror: "0/8 names (anti-duplication clean)"
+  engine_edits: "0 (zero touch core/luana-core-*)"
+  scope_discipline: "held STRICT — zero out-of-scope file touches"
+audit_artifacts:
+  - vitalia/docs/product/stories/vitalia-fase1-valeria-rail-history/T-story-review.md
+  - vitalia/docs/product/stories/vitalia-fase1-valeria-rail-history/CHECKPOINTS.md
+  - vitalia/docs/product/stories/vitalia-fase1-valeria-rail-history/06-audit/gherkin-matrix.md
 dev_team_iter: 1
 dev_team_run_on: 2026-05-24
 dev_team_summary:
@@ -50,7 +70,7 @@ side_effects_F1_S4:                                # ★ ratificados Chris batch
   - "DELETE vitalia/frontend/src/components/shared/shell-organism/ValeriaSidebarSlot.tsx (reemplazado por ValeriaSidebar real)"
   - "DELETE vitalia/frontend/src/components/shared/shell-organism/ValeriaSidebarSlot.test.tsx"
 spawned_at: 2026-05-22
-next_action: "/dev-team vitalia vitalia-fase1-valeria-rail-history → autonomous build T-1..T-8 → state ready→developing→developed"
+next_action: "/pm-vitalia merge vitalia-fase1-valeria-rail-history → 07-merge.md 5 secciones + capability YAML + module MD auto-list + git mv archive/2026/stories/ + squash-merge wip/vitalia → main → state=reviewing→done"
 autonomous_build_requested: true                    # ★ Chris ratificó "implementalo hasta el done de forma autónoma" 2026-05-23
 scope_discipline: "STRICT — solo F1-S5 + side-effects ratificados. NO touch otros componentes shell-organism que ya funcionan (TopBarGlobal cambio solo agrega hamburger, no modifica logic existente; ShellOrganismLayoutClient cambio solo ajusta MIN + replace slot import). 05-guidelines.md § 5 enumera files in scope / never touch"
 ready_package:
