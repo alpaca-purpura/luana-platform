@@ -313,7 +313,13 @@ tickets:
   # ──────────────────────────────────────────────────────────────
   - id: T-7
     title: "Integration: MODIFY ShellOrganismLayoutClient (MIN_VALERIA_PX + slot replace) + DELETE ValeriaSidebarSlot{,.test}.tsx + extend arch tests (3 modify) + NEW arch test shell-store-readonly"
-    state: ready
+    state: pushed
+    push_commit_sha: "pending"
+    transitions:
+      - from: ready
+        to: pushed
+        at: "2026-05-24T00:00:00Z"
+        by: claude-sonnet
     surface: frontend
     owner_eligibility: [qwen-opencode, claude-sonnet]
     production_code: true   # ShellOrganismLayoutClient.tsx es production code, arch tests separados son tests-only pero ticket trata ambos

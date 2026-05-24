@@ -38,3 +38,37 @@ describe('arch: anti-duplication cross-brand mirror = 0 (NEW gate T-6)', () => {
     expect(grepCount('ValeriaSidebarSlot', OTHER_BRANDS_FRONTEND)).toBe(0)
   })
 })
+
+describe('arch: anti-duplication cross-brand mirror = 0 (F1-S5 NEW names T-7)', () => {
+  it('no matches for ValeriaSidebar in nicolify/comunify/lupulo', () => {
+    expect(grepCount('ValeriaSidebar', OTHER_BRANDS_FRONTEND)).toBe(0)
+  })
+
+  it('no matches for ValeriaRail across brands', () => {
+    expect(grepCount('ValeriaRail', OTHER_BRANDS_FRONTEND)).toBe(0)
+  })
+
+  it('no matches for ValeriaHistory across brands', () => {
+    expect(grepCount('ValeriaHistory', OTHER_BRANDS_FRONTEND)).toBe(0)
+  })
+
+  it('no matches for ValeriaChatSlot across brands', () => {
+    expect(grepCount('ValeriaChatSlot', OTHER_BRANDS_FRONTEND)).toBe(0)
+  })
+
+  it('no matches for HistoryItem across brands', () => {
+    expect(grepCount('HistoryItem', OTHER_BRANDS_FRONTEND)).toBe(0)
+  })
+
+  it('no matches for HistoryGroup across brands', () => {
+    expect(grepCount('HistoryGroup', OTHER_BRANDS_FRONTEND)).toBe(0)
+  })
+
+  it('no matches for EmptyStateInline across brands', () => {
+    expect(grepCount('EmptyStateInline', OTHER_BRANDS_FRONTEND)).toBe(0)
+  })
+
+  it('no matches for useKeyboardShortcuts across brands', () => {
+    expect(grepCount('useKeyboardShortcuts', OTHER_BRANDS_FRONTEND)).toBe(0)
+  })
+})

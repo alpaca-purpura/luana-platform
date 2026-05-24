@@ -40,7 +40,7 @@ import { cn } from "@/lib/utils";
 import { useShellStore } from "@/stores/shell-store";
 import { useViewportGuard } from "./useViewportGuard";
 import { TopBarGlobal } from "./TopBarGlobal";
-import { ValeriaSidebarSlot } from "./ValeriaSidebarSlot";
+import { ValeriaSidebar } from "./ValeriaSidebar";
 import { AppPanelSlot } from "./AppPanelSlot";
 import { ShellModeToggle } from "./ShellModeToggle";
 
@@ -67,7 +67,8 @@ export function ShellOrganismLayoutClient({
   useViewportGuard();
 
   // ── Min pixels cementados (01-spec.md §5 + §8) ─────────────────────────────
-  // valeriaState='full' → min Valeria 620px (rail 60 + history 280 + chat 280)
+  // valeriaState='full' → min Valeria 580px (history 280 + chat 300) — D3 F1-S5
+  //   (rail XOR history mutuamente exclusivos: 3-col model obsoleto, nuevo 2-col)
   // valeriaState='rail' → min Valeria 360px (rail 60 + chat 300)
   // App min constante 480px (ribbon 6 tabs + sub-tabs sin overflow)
   //
@@ -75,7 +76,7 @@ export function ShellOrganismLayoutClient({
   // STRING values ending in "%" ARE treated as percent. We compute the % dynamically
   // with ResizeObserver on the container so the pixel minimum is always respected,
   // then pass it as `"${minValeriaPct}%"` string to trigger v4's native percent enforcement.
-  const MIN_VALERIA_PX = valeriaState === "full" ? 620 : 360;
+  const MIN_VALERIA_PX = valeriaState === "full" ? 580 : 360;
   const MIN_APP_PX = 480;
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(1280); // sane default
@@ -181,7 +182,7 @@ export function ShellOrganismLayoutClient({
               minSize={`${minValeriaPct}%`}
               collapsible={false}
             >
-              <ValeriaSidebarSlot />
+              <ValeriaSidebar />
             </Panel>
 
             <Separator
@@ -213,7 +214,7 @@ export function ShellOrganismLayoutClient({
           className="flex-1 min-h-0 overflow-hidden hidden md:grid grid-cols-[60px_1px_1fr]"
           aria-label="Contenido principal"
         >
-          <ValeriaSidebarSlot />
+          <ValeriaSidebar />
           {/* Visual divider (1px) */}
           <div className="bg-border" aria-hidden="true" />
           <AppPanelSlot>{children}</AppPanelSlot>
