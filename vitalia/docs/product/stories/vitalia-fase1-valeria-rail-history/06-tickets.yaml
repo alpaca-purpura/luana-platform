@@ -314,7 +314,7 @@ tickets:
   - id: T-7
     title: "Integration: MODIFY ShellOrganismLayoutClient (MIN_VALERIA_PX + slot replace) + DELETE ValeriaSidebarSlot{,.test}.tsx + extend arch tests (3 modify) + NEW arch test shell-store-readonly"
     state: pushed
-    push_commit_sha: "pending"
+    push_commit_sha: "42ed35b3"
     transitions:
       - from: ready
         to: pushed
