@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * useKeyboardShortcuts.ts — Generic hardened keyboard shortcut hook.
  *
