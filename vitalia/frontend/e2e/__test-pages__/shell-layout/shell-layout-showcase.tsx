@@ -42,18 +42,23 @@ const MOCK_TENANTS: ReadonlyArray<Tenant> = [
 export default function ShellLayoutShowcasePage() {
   const setAvailableTenants = useTenantStore((s) => s.setAvailableTenants);
   const setActiveTenant = useTenantStore((s) => s.setActiveTenant);
+  const availableTenants = useTenantStore((s) => s.availableTenants);
 
-  // Mock hydration post-mount (best-effort). En la práctica TenantSwitcher
-  // returned null al primer render por availableTenants=[] + graceful degrade.
-  // El useEffect llega tarde y zustand re-render del child no funciona porque
-  // el child Component está dentro de dynamic({ssr:false}) y vive en un chunk
-  // que se carga después. En PROD real con Clerk auth no hay este gap — la
-  // tenant list viene de /api/tenants vía useTenants() y el pill renderiza.
-  // Test fixture caveat documentado en T-7-impl-log.md (follow-up nice-to-have).
+  // ★ Fix 2026-05-24 (Chris detectó "Sonrisa Plena desaparece a 1s"):
+  // useSignOutCleanup (mounted en TenantStoreBootstrap root layout) corre
+  // cuando Clerk loads + isSignedIn=false → clearStore() limpia MOCK_TENANTS
+  // → TenantSwitcher returns null. Era flash visible.
+  //
+  // Fix: re-hidratamos MOCK_TENANTS cuando detectamos store vacío. Dep en
+  // availableTenants asegura que post-cleanup el showcase auto-restaura.
+  // En PROD con Clerk login real esto no aplica (isSignedIn=true → cleanup
+  // nunca corre → store stays hydrated).
   useEffect(() => {
-    setAvailableTenants(MOCK_TENANTS);
-    setActiveTenant(MOCK_TENANTS[0]);
-  }, [setAvailableTenants, setActiveTenant]);
+    if (availableTenants.length === 0) {
+      setAvailableTenants(MOCK_TENANTS);
+      setActiveTenant(MOCK_TENANTS[0]);
+    }
+  }, [availableTenants, setAvailableTenants, setActiveTenant]);
 
   // Empty children: skeleton del AppPanelSlot ya identifica placeholder.
   // ShellOrganismLayoutProps.children es required; pasamos null Element.
