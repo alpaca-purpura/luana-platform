@@ -69,7 +69,13 @@ tickets:
   # ──────────────────────────────────────────────────────────────
   - id: T-2
     title: "chat-store.ts zustand + _mock-messages.ts: 6 MOCK_MESSAGES + 4 MOCK_RESPONSES Valeria canned"
-    state: ready
+    state: pushed
+    push_commit_sha: TBD
+    transitions:
+      - from: ready
+        to: pushed
+        at: "2026-05-25T20:05:00-05:00"
+        by: builder-frontend (claude-sonnet-4-6)
     surface: frontend
     owner_eligibility: [qwen-opencode, claude-sonnet]
     production_code: true
@@ -119,7 +125,13 @@ tickets:
   # ──────────────────────────────────────────────────────────────
   - id: T-3
     title: "MessageBubble + ChatHeader + TypingIndicator + DelegateMarker — átomos/moléculas low-level"
-    state: ready
+    state: pushed
+    push_commit_sha: TBD
+    transitions:
+      - from: ready
+        to: pushed
+        at: "2026-05-24T20:06:00-05:00"
+        by: builder-frontend (claude-sonnet-4-6)
     surface: frontend
     owner_eligibility: [qwen-opencode, claude-sonnet]
     production_code: true

@@ -6,9 +6,22 @@ type: ui-story
 agent_owner: shell
 module: shell-organism
 capability: shell.valeria-chat
-state: idea
-last_modified: 2026-05-22
-ratified_by_chris: false
+state: developing
+workflow_phase: BUILD_T2_DONE
+last_modified: 2026-05-25T00:00:00Z
+dev_team_started_at: 2026-05-25T00:00:00Z
+dev_team_owner: claude-sonnet (builder-frontend, FE no-agentic — qwen-opencode fallback not available)
+ratified_by_chris: true
+ratified_at: 2026-05-24T23:40:00Z
+ratified_visual_by_chris: true
+ratified_visual_at: 2026-05-24T23:40:00Z
+ratified_visual_iter: 3
+ratified_visual_mockups:
+  - vitalia/docs/product/stories/vitalia-fase1-valeria-chat-skeleton/mockups/valeria-chat-sample.html
+po_ux_version: 3
+architect_iter: 1
+architect_run_on: 2026-05-24T23:55:00Z
+last_artifact: 06-tickets.yaml
 parallel_safe: true
 priority: high
 estimated_dev_days: 1-2
@@ -18,7 +31,7 @@ dependencies:
 blocks_hard: []
 reuse_map_summary: "NEW estructura chat panel · mock data 5 mensajes · sin sales_agent wiring real (Fase 2 wire)"
 spawned_at: 2026-05-22
-next_action: "/po-ux refinar 01-spec.md"
+next_action: "/dev-team vitalia vitalia-fase1-valeria-chat-skeleton → Conv 2 autonomous build (toma T-1 first: agent-catalog + globals.css token gap; iterate vs 04-validators.yaml; DAG T-1+T-2 paralelizables Wave 1)"
 ---
 
 # F1-S6 vitalia-fase1-valeria-chat-skeleton — checkpoint
