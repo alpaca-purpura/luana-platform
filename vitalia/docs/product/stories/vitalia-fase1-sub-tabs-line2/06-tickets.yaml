@@ -379,7 +379,9 @@ tickets:
   # ──────────────────────────────────────────────────────────────
   - id: T-6
     title: "Playwright E2E suite: POM sub-tabs-bar-page + 9 behavior specs (1 per SC funcional) + visual-goldens.spec.ts con 13 PNGs (--update-snapshots iter 1 post Chris ratify) + axe wcag2aa + i18n regex"
-    state: pending
+    state: pushed
+    pushed_at: 2026-05-25T10:10:00Z
+    note: "Visual goldens deferred — require --update-snapshots run against live app at localhost:3002 + Chris re-ratify post-implementation. Behavior + axe + i18n specs ready for auditor verification."
     surface: frontend
     owner_eligibility: [qwen-opencode, claude-sonnet]
     production_code: false   # tests/POM/fixtures/goldens — no production runtime code
