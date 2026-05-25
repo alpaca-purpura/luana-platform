@@ -15,6 +15,8 @@ auditor_phase: HANDOFF_TO_PM_MERGE
 pm_merged_at: 2026-05-25T04:40:00Z
 pm_merged_by: /pm-vitalia
 merge_artifact: 07-merge.md
+main_merge_status: deferred
+main_merge_note: "Patrón establecido F1-S5/S6: state machine cerrada wip/vitalia + archive + capability live. Mass squash-merge a main es acto separado cross-story release orquestado por Chris. Acumulado wip/vitalia desde fa921711 (Ola 2 Slice 1 pre-Fase 1) = 70+ commits (Fase 1 F1-S0..S7 + Slice 1 marketing follow-ups). REQUIRES /pase-produccion o sesión dedicada Chris para merge a main."
 auditor_verdict: APPROVED
 auditor_warns: 1
 auditor_warns_inventory:
