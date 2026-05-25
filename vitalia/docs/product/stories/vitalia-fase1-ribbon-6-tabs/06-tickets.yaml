@@ -171,7 +171,8 @@ tickets:
   # ──────────────────────────────────────────────────────────────
   - id: T-3
     title: "Ribbon organism: 5 RibbonTabs + 1 ConfigTab + roving tabindex WAI-ARIA + URL-derived active + navigateTo handler"
-    state: ready
+    state: pushed
+    push_commit_sha: PENDING
     surface: frontend
     owner_eligibility: [qwen-opencode, claude-sonnet]
     production_code: true
