@@ -65,9 +65,7 @@ describe("AppPanelSlot — integration with Ribbon + SubTabsBar (F1-S8 T-5)", ()
     expect(subTabsBar).toBeDefined();
     expect(subTabsBar.tagName.toLowerCase()).toBe("nav");
     expect(subTabsBar.getAttribute("role")).toBe("tablist");
-    expect(subTabsBar.getAttribute("aria-label")).toBe(
-      "Sub-secciones Valeria",
-    );
+    expect(subTabsBar.getAttribute("aria-label")).toBe("Sub-secciones Valeria");
   });
 
   it("skeleton sub-tabs placeholder (opacity-45 bars inside h-10 div) REMOVED from DOM after F1-S8 swap", () => {
