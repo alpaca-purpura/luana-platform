@@ -101,7 +101,7 @@ tickets:
   # ──────────────────────────────────────────────────────────────
   - id: T-2
     title: "_agent-tw-classes.ts EXTEND: agentTextClassSubTab(slug) Tailwind switch helper con Lucas exception"
-    state: pending
+    state: pushed
     surface: frontend
     owner_eligibility: [qwen-opencode, claude-sonnet]
     production_code: true

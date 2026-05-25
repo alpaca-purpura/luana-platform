@@ -6,13 +6,13 @@
  * CRITICAL: Tailwind v4 JIT purges dynamic class names (e.g. `bg-${agent}-soft`).
  * ALL class names MUST be statically knowable. Use explicit switch/map only.
  *
- * Consumed by: ChatHeader · TypingIndicator · DelegateMarker · MessageBubble
+ * Consumed by: ChatHeader · TypingIndicator · DelegateMarker · MessageBubble · SubTab (F1-S8)
  *
  * spec_anchor: 03-arch.md § 2.4 "Tailwind classnames pattern" + § 2.5 sub-component contracts
  * downstream-regression-na: brand-local shell-organism; no cross-brand consumers
  */
 
-import type { AgentSlug } from "@/lib/agent-catalog";
+import type { AgentSlug, RibbonTabSlug } from "@/lib/agent-catalog";
 
 /** Background class for agent (full saturation — avatar, user bubbles, accents). */
 export function agentBgClass(slug: AgentSlug): string {
@@ -76,3 +76,42 @@ export function agentTextClass(slug: AgentSlug): string {
 
 /** Dot/icon background for typing-dot dots (same as full bg). */
 export const agentDotBgClass = agentBgClass;
+
+/**
+ * Text color class for active sub-tab label (F1-S8 SubTab molecule).
+ *
+ * Differs from agentTextClass (F1-S6) for two exceptions:
+ * - "lucas": returns "text-foreground" because hex #111111 (near-black) has poor contrast
+ *   on bg-agent-lucas-soft (rgba 10% black on dark backgrounds).
+ *   spec_anchor: 03-arch.md § 2.2 D18 "Lucas exception"
+ * - "config": returns "text-foreground" because Config is not an agent — uses bg-muted neutral.
+ *   spec_anchor: 03-arch.md § 2.2 D19 "Config exception"
+ *
+ * CRITICAL: No dynamic string construction (e.g. `text-agent-${slug}`) — Tailwind v4 JIT
+ * purges non-statically-knowable class names. All return values are explicit string literals.
+ */
+export function agentTextClassSubTab(slug: RibbonTabSlug): string {
+  switch (slug) {
+    case "lisa":
+      return "text-agent-lisa";
+    case "valeria":
+      return "text-agent-valeria";
+    case "adrian":
+      return "text-agent-adrian";
+    case "lucas":
+      // Exception D18: near-black hex #111111 — poor contrast on rgba-10%-black bg-agent-lucas-soft.
+      return "text-foreground";
+    case "camila":
+      return "text-agent-camila";
+    case "mateo":
+      return "text-agent-mateo";
+    case "config":
+      // Exception D19: Config is not an agent — bg-muted neutral, text-foreground per mockup.
+      return "text-foreground";
+    default: {
+      // TypeScript exhaustiveness guard — should never reach here.
+      const _exhaustiveCheck: never = slug;
+      return _exhaustiveCheck;
+    }
+  }
+}
