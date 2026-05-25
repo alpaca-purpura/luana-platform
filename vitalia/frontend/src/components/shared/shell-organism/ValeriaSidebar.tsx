@@ -35,7 +35,7 @@ import type { ValeriaState } from "@/stores/shell-store";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { ValeriaRail } from "./ValeriaRail";
 import { ValeriaHistory } from "./ValeriaHistory";
-import { ValeriaChatSlot } from "./ValeriaChatSlot";
+import { ValeriaChat } from "./ValeriaChat";
 
 // ─── Valid states ─────────────────────────────────────────────────────────────
 
@@ -47,7 +47,7 @@ const VALID_STATES = ["collapsed", "rail", "full"] as const;
  * ValeriaSidebar — organism that composes:
  *   - ValeriaRail (rail mode)
  *   - ValeriaHistory (full mode)
- *   - ValeriaChatSlot (always visible when expanded)
+ *   - ValeriaChat (always visible when expanded)
  *
  * Consumes useShellStore READ-ONLY (no schema mutation per F1-S5 arch test).
  * "use client" required: state + effects + event handlers + matchMedia.
@@ -201,7 +201,7 @@ export function ValeriaSidebar() {
           {/* Body: history + chat stacked */}
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
             <ValeriaHistory onCollapseToRail={() => setValeriaState("rail")} />
-            <ValeriaChatSlot />
+            <ValeriaChat />
           </div>
         </aside>
       </>,
@@ -245,8 +245,8 @@ export function ValeriaSidebar() {
         />
       )}
 
-      {/* ChatSlot — always rendered when not collapsed */}
-      <ValeriaChatSlot />
+      {/* Chat — always rendered when not collapsed */}
+      <ValeriaChat />
     </aside>
   );
 }

@@ -271,18 +271,20 @@ describe("ValeriaSidebar — SC-1 render aside with role + aria + grid", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("ValeriaChatSlot rendered when state='rail' (any visible state)", () => {
+  it("ValeriaChat rendered when state='rail' (any visible state)", () => {
     useShellStore.setState({ valeriaState: "rail", shellMode: "agentic" });
     render(<ValeriaSidebar />);
 
-    expect(screen.getByTestId("valeria-chat-slot")).toBeInTheDocument();
+    // T-6: ValeriaChatSlot replaced by ValeriaChat (data-testid="valeria-chat")
+    expect(screen.getByTestId("valeria-chat")).toBeInTheDocument();
   });
 
-  it("ValeriaChatSlot rendered when state='full'", () => {
+  it("ValeriaChat rendered when state='full'", () => {
     useShellStore.setState({ valeriaState: "full", shellMode: "agentic" });
     render(<ValeriaSidebar />);
 
-    expect(screen.getByTestId("valeria-chat-slot")).toBeInTheDocument();
+    // T-6: ValeriaChatSlot replaced by ValeriaChat (data-testid="valeria-chat")
+    expect(screen.getByTestId("valeria-chat")).toBeInTheDocument();
   });
 
   it("transition class 'motion-reduce:transition-none' applied on aside", () => {
