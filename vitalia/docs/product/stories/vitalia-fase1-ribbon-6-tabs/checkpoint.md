@@ -6,274 +6,104 @@ type: ui-story
 agent_owner: shell
 module: shell-organism
 capability: shell.ribbon
-state: idea
-last_modified: 2026-05-22
-ratified_by_chris: false
+state: developing
+last_modified: 2026-05-25
+dev_team_pickup_at: 2026-05-25T02:30:00Z
+dev_team_phase: BUILD_T2_DONE
+ratified_by_chris: true
+ratified_visual_by_chris: true
+ratified_visual_at: 2026-05-25T02:00:00Z
+ratified_visual_iter: 2
+ratified_visual_mockups:
+  - vitalia/docs/product/stories/vitalia-fase1-ribbon-6-tabs/mockups/ribbon-6-tabs.html
+po_ux_version: 2
+architect_iter: 1
+architect_iter_amendments:
+  - iter: "1-A"
+    date: 2026-05-25
+    reason: "Playwright visual audit (post architect iter 1) detectó 4 bugs visuales/a11y. Aplicados en place sin re-spawn architect-orchestrator (alcance dentro de RibbonTab/ConfigTab API)."
+    cement_changes:
+      - Q13: ConfigTab role=tab + aria-selected + tabindex (a11y semantic peer del tablist)
+      - Q14: Tabs orgánicos (no min-w uniform, label-driven width)
+      - Q15: whitespace-nowrap en tabLabel + role spans (ribbon h-14 uniforme)
+      - Q16: active:hover preserva tint del agente (CSS specificity HARD)
+    files_amended:
+      - vitalia/docs/product/stories/vitalia-fase1-ribbon-6-tabs/01-spec.md (po_ux_version v1→v2, Q-table extended Q13-Q16, Estados visuales table updated, Accessibility § keyboard nav clarified 6 tabs)
+      - vitalia/docs/product/stories/vitalia-fase1-ribbon-6-tabs/03-arch.md (RibbonTab.tsx code amended con whitespace-nowrap + active:hover preservation + decisiones D17.1/D17.2/D17.3)
+      - vitalia/docs/product/stories/vitalia-fase1-ribbon-6-tabs/mockups/ribbon-6-tabs.html (rename desde ribbon.html per overlay rule shell-mockup-per-component + CSS fixes + ConfigTab role=tab)
+    playwright_verification:
+      - "Q15 nowrap PASS — tab heights uniform 55px (Lisa=Lucas)"
+      - "Q13 ConfigTab role=tab PASS — aria-selected + tabindex correctos"
+      - "Q16 active:hover preserves tint PASS — Lisa rgba(0,208,132,0.12) idéntico no-hover y hovered"
+architect_run_on: 2026-05-25
+last_artifact: 06-tickets.yaml
+phase: BUILD_T1
+next_action: "builder-frontend Sonnet ejecuta T-3 Ribbon organism (roving tabindex + URL active + navigateTo handler). Depende T-2 pushed (1aeda3a1)."
+ratified_artifacts:
+  - 01-spec.md (v1)
+  - mockups/ribbon.html (preview interactivo · 7 bloques)
+  - 03-arch.md (v1 — consolidado FE-only, architect_iter=1)
+  - 04-validators.yaml (5 categorías ★ v4.1, scenario_coverage 9/9 = 100%, test_construction_plan complete)
+  - 05-guidelines.md (must_load_skills enforceable, patterns required/forbidden, files_in_scope verbatim)
+  - 06-tickets.yaml (5 atomic tickets, owner_eligibility=qwen-opencode|claude-sonnet, DAG sequential, gherkin_coverage per ticket)
 parallel_safe: true
 priority: high
 estimated_dev_days: 1-2
+estimated_dev_hours: 14
 dependencies:
-  hard: [vitalia-fase1-shell-layout-5050, vitalia-fase1-design-tokens-theme]
+  hard: [vitalia-fase1-shell-layout-5050, vitalia-fase1-design-tokens-theme, vitalia-fase1-valeria-chat-skeleton]
   soft: []
 blocks_hard: [vitalia-fase1-sub-tabs-line2, vitalia-fase1-routing-shell]
-reuse_map_summary: "NEW ribbon component · consume Next.js router para active state · PNGs agentes ya en /public/agents/"
+reuse_map_summary: "EXTEND agent-catalog.ts (anti-duplication HARD) · MODIFY AppPanelSlot swap skeleton → <Ribbon /> · REUSE Shadcn Avatar+Tooltip · REUSE _agent-tw-classes.ts bg-soft helper · NEW Ribbon+RibbonTab+ConfigTab moléculas/organism · NEW arch test test-ribbon-no-shadcn-tabs.test.ts · NEW e2e/regression/vitalia-fase1-ribbon-6-tabs/ suite + 11 visual goldens"
 spawned_at: 2026-05-22
-next_action: "/po-ux refinar 01-spec.md"
 ---
 
 # F1-S7 vitalia-fase1-ribbon-6-tabs — checkpoint
 
 ## Goal
 
-`Ribbon` organismo: barra horizontal arriba del AppPanel con 5 RibbonTabs (Lisa · Lucas · Adrián · Valeria · Camila) + 1 ConfigTab (⚙️ Configurar al final right-aligned). Active state per URL segment `[agent]`. Click navega a default subtab del agente.
+`Ribbon` organismo: barra horizontal arriba del AppPanel con 5 RibbonTabs (Lisa · Lucas · Adrián · Valeria · Camila) + 1 ConfigTab (⚙️ Configurar al final right-aligned). Active state per URL segment `[agent]`. Click navega a default subtab del agente. WAI-ARIA tablist completo con roving tabindex (Arrow + Home/End + Enter/Space). Avatar fallback graceful Shadcn `<AvatarFallback>` con initial letter.
 
 ## Anti-objetivos
 
 - NO incluir sub-tabs línea 2 (eso es F1-S8)
 - NO implementar content per tab (eso son empty-states F1-S10 + Fase 2)
 - NO bell icon notifications (Fase 2 postponed)
+- NO Mateo en el Ribbon (agente transversal — surface futura)
+- NO RBAC para ConfigTab (Fase 2)
+- NO telemetría wireada (TODO Fase 2)
 
-## Open question heredada de F1-S4 (2026-05-23 Chris)
+## Ready package delivered (2026-05-25)
 
-**Cuando refinemos F1-S7 con `/po-ux`, decidir explícitamente cómo se ve el Ribbon en modo `web` vs modo `agentic`.**
+`/architect vitalia vitalia-fase1-ribbon-6-tabs` ejecutó iter 1 y produjo 4 artefactos cementados:
 
-Contexto: F1-S4 cementó dos modos shell — `agentic` (split 50/50 Valeria-chat | AppPanel-ribbon) y `web` (Valeria rail 60px | AppPanel expandido 1fr). En el mockup F1-S4 ratificado, el AppPanelSlot muestra un skeleton placeholder del ribbon en AMBOS modos (horizontal con 5 agentes + Configurar). Chris preguntó durante ratify F1-S4 si los tabs realmente quedarán igual en modo web o tendrán otro layout.
+| Artefacto | Path | Resumen |
+|---|---|---|
+| `03-arch.md` | `vitalia/docs/product/stories/vitalia-fase1-ribbon-6-tabs/03-arch.md` | Consolidado FE-only: § 0 context + skills consulted + § 0.1 anti-duplication audit (EXTEND in-place catalog SSoT) + § 2 FE detail (catalog extend, Ribbon roving tabindex, RibbonTab forwardRef+Avatar, ConfigTab Tooltip+IconButton, AppPanelSlot MODIFY swap skeleton, arch test NEW no-shadcn-tabs) + § 6 cross-cutting decisions (11 CC-N) + § 7 LIFT_CANDIDATE notes (3 L-N) + § 8 Risks + § 9 Test surfaces TDD + § 10 Test Construction Plan v4.1 + § 11 AC verbatim + § 12 Architectural fitness + § 13 capability YAML updates + § 14 cross-cutting concerns + § 15 Research Notes date-aware |
+| `04-validators.yaml` | `vitalia/docs/product/stories/vitalia-fase1-ribbon-6-tabs/04-validators.yaml` | 5 categorías v4.1: non_functional (tsc/lint/prettier/vitest) + functional (9 E2E Playwright specs 1 per SC) + visual (11 goldens shrink-only mockup ratchet) + agentic_eval N/A justified + architectural_validation (10 sub-tests). scenario_coverage 9/9 = 100%. test_construction_plan complete con POMs + fixtures. |
+| `05-guidelines.md` | `vitalia/docs/product/stories/vitalia-fase1-ribbon-6-tabs/05-guidelines.md` | must_load_skills enforceable (frontend-expert + tessl__{react-patterns,shadcn-ui,tailwind,vitest,nextjs-app-router-modularization} + playwright-expert + claude-md-management) + must_load_rules (raíz + vitalia overlay) + 18 patterns required + 25 patterns forbidden + files_in_scope verbatim (NEW/MODIFY/DELETE/out-of-scope explicit) + testing strategy TDD per layer + commit protocol + native dev workflow + quality gates summary table |
+| `06-tickets.yaml` | `vitalia/docs/product/stories/vitalia-fase1-ribbon-6-tabs/06-tickets.yaml` | 5 atomic tickets sequential DAG: T-1 catalog extend (foundation) → T-2 RibbonTab+ConfigTab moléculas → T-3 Ribbon organism → T-4 AppPanelSlot integration + 4 arch tests (1 NEW + 3 EXTEND) → T-5 Playwright suite (POM + 9 specs + 11 goldens + axe + i18n). ZERO Opus (all FE production_code+test surfaces, R23 N/A). ~14 hours estimated. gherkin_coverage explícito per ticket mapeando SC-1..SC-9. |
 
-Opciones a explorar en F1-S7 refinement:
-- **Misma ribbon horizontal en ambos modos** (default — minimal divergence, consistente UX)
-- **Ribbon vertical/sidebar en modo web** (más espacio para content, paradigma web tradicional)
-- **Ribbon compacta en modo web** (mismo horizontal pero íconos-only sin labels visibles a viewports estrechos)
-- **Tabs migran a un dropdown/menu en modo web** (Apps switcher pattern Google/Microsoft)
+## Resolved open question (heredada F1-S4)
 
-Decisión pendiente — explorar con mockups HTML 2-3 variantes en `/po-ux` antes de cementar 03-arch F1-S7.
+**Q: Cómo se ve el Ribbon en modo `web` vs modo `agentic`?**
 
-## Scope verbatim
+**R cementada en spec § 0 + 03-arch.md § 6 CC-8:** Misma horizontal en ambos modos (5 tabs + ConfigTab, `overflow-x-auto`). NO if-statements `mode === 'web'`. La única diferencia entre modos es el ancho disponible del AppPanel; el Ribbon se adapta vía `flex` + `overflow-x-auto` natural.
 
-### § 1 — `AGENT_CATALOG` constant
+## Next action
 
-`vitalia/frontend/src/lib/agents/catalog.ts` (per Design Contract § 7.3):
+`/dev-team vitalia vitalia-fase1-ribbon-6-tabs` arranca Conv 2 autonomous build:
 
-```ts
-export type AgentKey = 'lisa' | 'lucas' | 'adrian' | 'valeria' | 'camila' | 'config'
-
-export const AGENT_CATALOG: Record<AgentKey, AgentMeta> = {
-  lisa:    { tabLabel: 'Mi Clínica', role: 'Lisa',    color: 'lisa',    avatarSrc: '/agents/lisa/thumbnail.png' },
-  lucas:   { tabLabel: 'Atraer',     role: 'Lucas',   color: 'lucas',   avatarSrc: '/agents/lucas/thumbnail.png' },
-  adrian:  { tabLabel: 'Vender',     role: 'Adrián',  color: 'adrian',  avatarSrc: '/agents/adrian/thumbnail.png' },
-  valeria: { tabLabel: 'Operar',     role: 'Valeria', color: 'valeria', avatarSrc: '/agents/valeria/thumbnail.png' },
-  camila:  { tabLabel: 'Mantener',   role: 'Camila',  color: 'camila',  avatarSrc: '/agents/camila/thumbnail.png' },
-  config:  { tabLabel: 'Configurar', role: 'Admin',   color: 'config',  iconName: 'Settings' },
-}
-
-export const AGENT_DEFAULT_SUBTAB: Record<AgentKey, string> = {
-  lisa: 'marca', lucas: 'lanzar', adrian: 'inbox', valeria: 'agenda', camila: 'voz', config: 'cuenta',
-}
-```
-
-### § 2 — `Ribbon` organismo
-
-`vitalia/frontend/src/components/shared/shell-organism/Ribbon.tsx`:
-
-```tsx
-'use client'
-import { usePathname, useRouter, useParams } from 'next/navigation'
-import { RibbonTab } from './RibbonTab'
-import { ConfigTab } from './ConfigTab'
-import { AGENT_CATALOG, AGENT_DEFAULT_SUBTAB, AgentKey } from '@/lib/agents/catalog'
-
-const AGENT_ORDER: AgentKey[] = ['lisa', 'lucas', 'adrian', 'valeria', 'camila']
-
-export function Ribbon() {
-  const pathname = usePathname()
-  const router = useRouter()
-  const params = useParams<{ tenantId: string }>()
-
-  // Extract active agent from URL (e.g. /sonrisa-plena/lisa/marca → 'lisa')
-  const activeAgent = extractAgentFromPath(pathname)
-
-  const handleClick = (agent: AgentKey) => {
-    router.push(`/${params.tenantId}/${agent}/${AGENT_DEFAULT_SUBTAB[agent]}`)
-  }
-
-  return (
-    <nav
-      role="tablist"
-      aria-label="Agentes"
-      className="h-14 bg-card border-b border-border flex items-stretch px-3 gap-1 overflow-x-auto"
-    >
-      {AGENT_ORDER.map(agent => (
-        <RibbonTab
-          key={agent}
-          agent={agent}
-          active={activeAgent === agent}
-          onClick={() => handleClick(agent)}
-        />
-      ))}
-      <div className="ml-auto" />
-      <ConfigTab active={activeAgent === 'config'} onClick={() => handleClick('config')} />
-    </nav>
-  )
-}
-```
-
-### § 3 — `RibbonTab` molécula
-
-`vitalia/frontend/src/components/shared/shell-organism/RibbonTab.tsx`:
-
-```tsx
-import Image from 'next/image'
-import { AGENT_CATALOG, AgentKey } from '@/lib/agents/catalog'
-import { cn } from '@/lib/utils'
-
-const COLOR_BORDER_CLASS: Record<AgentKey, string> = {
-  lisa: 'border-b-agent-lisa',
-  lucas: 'border-b-agent-lucas',
-  adrian: 'border-b-agent-adrian',
-  valeria: 'border-b-agent-valeria',
-  camila: 'border-b-agent-camila',
-  config: 'border-b-agent-config',
-}
-
-export function RibbonTab({ agent, active, onClick }: { agent: AgentKey, active: boolean, onClick: () => void }) {
-  const meta = AGENT_CATALOG[agent]
-  return (
-    <button
-      role="tab"
-      aria-selected={active}
-      data-testid={`ribbon-tab-${agent}`}
-      data-color={agent}
-      onClick={onClick}
-      className={cn(
-        'flex items-center gap-2 px-4 border-b-[3px] border-transparent text-sm font-medium transition-all',
-        active ? cn('text-foreground font-semibold', COLOR_BORDER_CLASS[agent]) : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-      )}
-    >
-      <Image
-        src={meta.avatarSrc!}
-        alt=""
-        width={28}
-        height={28}
-        className={cn('rounded-full border-2', active ? `border-agent-${agent}` : 'border-transparent')}
-      />
-      <span className="flex flex-col items-start leading-tight">
-        <span>{meta.tabLabel}</span>
-        <span className="text-[10px] text-muted-foreground">{meta.role}</span>
-      </span>
-    </button>
-  )
-}
-```
-
-### § 4 — `ConfigTab` molécula
-
-Similar a RibbonTab pero con `<Settings />` Lucide icon en cuadrado `bg-muted` en vez de PNG avatar. Right-aligned via `ml-auto`.
-
-### § 5 — Replace AppPanelSlot wrapper
-
-Update F1-S4 `AppPanelSlot.tsx` para usar:
-
-```tsx
-<section className="grid grid-rows-[auto_auto_1fr] overflow-hidden">
-  <Ribbon />
-  <SubTabsBarSlot />   {/* F1-S8 placeholder */}
-  <div className="overflow-y-auto p-7">{children}</div>
-</section>
-```
-
-### § 6 — Helper `extractAgentFromPath`
-
-```ts
-export function extractAgentFromPath(pathname: string): AgentKey | null {
-  // /{tenantId}/{agent}/{subtab}/...
-  const segments = pathname.split('/').filter(Boolean)
-  if (segments.length < 2) return null
-  const agent = segments[1]
-  return isValidAgent(agent) ? agent : null
-}
-```
-
-## Acceptance criteria
-
-| AC | Verificación |
-|---|---|
-| AC-1 | Ribbon visible top del AppPanel altura 56px |
-| AC-2 | 5 RibbonTabs renderizados con PNG avatars |
-| AC-3 | ConfigTab al final right-aligned con `<Settings />` icon |
-| AC-4 | Tab activa: border-bottom 3px color agente + avatar border color |
-| AC-5 | Tab inactiva: muted-foreground · hover bg-muted |
-| AC-6 | Click tab → router.push `/{tenant}/{agent}/{default-subtab}` |
-| AC-7 | URL change updates active state |
-| AC-8 | a11y: `role="tablist"` + `role="tab"` + `aria-selected` |
-| AC-9 | Visual golden 6 variants (per active tab) light + dark |
-| AC-10 | Horizontal scroll en viewport estrecho |
-| AC-11 | Vitest unit + Playwright functional |
-| AC-12 | Avatar fallback (next/image onError) o fallback con role text |
-
-## Gherkin scenarios
-
-### Scenario 1 — happy click tab
-
-**Given:** Usuario en `/{tenant}/lisa/marca`, active tab Lisa
-
-**When:** Click RibbonTab "Atraer" (Lucas)
-
-**Then:**
-- router.push `/{tenant}/lucas/lanzar` (default subtab Lucas)
-- Active tab cambia a Lucas con border bg-agent-lucas
-- Avatar Lucas border highlight
-
-### Scenario 2 — URL deep link
-
-**Given:** Usuario navega directamente a `/{tenant}/camila/voz`
-
-**When:** Página carga
-
-**Then:**
-- Active tab Camila marca correcto
-- URL refleja agent + subtab
-- Sub-tabs (F1-S8) muestra opciones Camila (cuando S8 listo)
-
-### Scenario 3 — config tab
-
-**Given:** Active tab cualquier agente
-
-**When:** Click ConfigTab ⚙️
-
-**Then:**
-- router.push `/{tenant}/config/cuenta`
-- ConfigTab active style aplica
-- Avatar PNG replaced por Settings icon
-
-### Scenario 4 — keyboard a11y
-
-**Given:** Focus en tab Lisa
-
-**When:** Press Arrow Right
-
-**Then:**
-- Focus mueve a tab Lucas
-- (Radix tabs pattern u manual implementation)
-
-### Scenario 5 — visual parity mockup
-
-**Given:** Active tab Lisa
-
-**When:** Playwright `toHaveScreenshot()`
-
-**Then:** Pixel match con mockup HTML ribbon section (active state Lisa)
-
-## Deliverables
-
-| File | Acción |
-|---|---|
-| `vitalia/frontend/src/lib/agents/catalog.ts` | NEW |
-| `vitalia/frontend/src/components/shared/shell-organism/Ribbon.tsx` | NEW |
-| `vitalia/frontend/src/components/shared/shell-organism/RibbonTab.tsx` | NEW |
-| `vitalia/frontend/src/components/shared/shell-organism/ConfigTab.tsx` | NEW |
-| `vitalia/frontend/src/lib/agents/routing.ts` | NEW (extractAgentFromPath) |
-| `vitalia/frontend/src/components/shared/shell-organism/AppPanelSlot.tsx` | MODIFY (compose Ribbon) |
-| `vitalia/frontend/e2e/shell-organism/ribbon.spec.ts` | NEW |
-| `vitalia/frontend/e2e/__screenshots__/shell/ribbon-{lisa,lucas,adrian,valeria,camila,config}-{light,dark}.png` | NEW (12 goldens) |
+1. Bootstrap `/dev-team` Step 0 closure gate (state=ready ✓)
+2. Spawn `builder-frontend` Sonnet/opencode/qwen consumiendo:
+   - `01-spec.md` (gherkin scenarios + microcopy + wireframes + visual goldens scope)
+   - `03-arch.md` (architecture decisions + files/components contracts)
+   - `04-validators.yaml` (test_construction_plan + validator commands)
+   - `05-guidelines.md` (must_load_skills + patterns required/forbidden + files_in_scope)
+   - `06-tickets.yaml` (DAG tickets T-1..T-5 sequential)
+3. Builder ejecuta TDD per ticket (RED tests → GREEN code) cap 2 iter per ticket
+4. AUTO-HANDOFF `/auditor` post `developed` per story-closure-gate.md
+5. APPROVED → AUTO-HANDOFF `/pm-vitalia` merge Fase F → state `done` + archive
 
 ## Próximo paso post-done
 

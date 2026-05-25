@@ -89,7 +89,8 @@ tickets:
   # ──────────────────────────────────────────────────────────────
   - id: T-2
     title: "RibbonTab + ConfigTab moléculas — Avatar fallback + Tooltip + estados visuales + forwardRef"
-    state: ready
+    state: pushed
+    push_commit_sha: 1aeda3a1
     surface: frontend
     owner_eligibility: [qwen-opencode, claude-sonnet]
     production_code: true
