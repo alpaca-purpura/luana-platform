@@ -6,10 +6,21 @@ type: ui-story
 agent_owner: shell
 module: shell-organism
 capability: shell.ribbon
-state: developed
+state: reviewing
 last_modified: 2026-05-25
 dev_team_pickup_at: 2026-05-25T02:30:00Z
 dev_team_phase: BUILD_T5_DONE
+auditor_pickup_at: 2026-05-25T03:50:00Z
+auditor_phase: HANDOFF_TO_PM_MERGE
+auditor_verdict: APPROVED
+auditor_warns: 1
+auditor_warns_inventory:
+  - "WARN-1 Q16 active:hover JIT purge mechanism (non-blocking, optional follow-up F1-S8)"
+last_artifact: CHECKPOINTS.md
+phase: HANDOFF_TO_PM_MERGE
+gherkin_matrix: 06-audit/gherkin-matrix.md
+review_doc: REVIEW.md
+next_action: "/pm-vitalia aplica merge: escribir 07-merge.md (5 secciones cementadas) · update capabilities/shell-organism/ribbon.yaml NEW · refresh modules/shell-organism.md · 2 learnings (q16-jit-purge + mockup-playwright-audit) · squash-merge wip/vitalia → main · git mv archive · state reviewing→done"
 ratified_by_chris: true
 ratified_visual_by_chris: true
 ratified_visual_at: 2026-05-25T02:00:00Z
