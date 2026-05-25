@@ -301,7 +301,7 @@ tickets:
   # ──────────────────────────────────────────────────────────────
   - id: T-5
     title: "AppPanelSlot MODIFY: swap sub-tabs skeleton → <SubTabsBar /> real + arch tests EXTEND (cross-brand mirror 5 names + server-first 2 components + voseo glossary 22 labels + 6 aria-labels)"
-    state: pending
+    state: pushed
     surface: frontend
     owner_eligibility: [qwen-opencode, claude-sonnet]
     production_code: true

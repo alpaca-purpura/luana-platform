@@ -138,3 +138,31 @@ describe("arch: anti-duplication cross-brand mirror = 0 (F1-S7 NEW names T-4)", 
     expect(grepCount("extractAgentFromPath", OTHER_BRANDS_FRONTEND)).toBe(0);
   });
 });
+
+describe("arch: anti-duplication cross-brand mirror = 0 (F1-S8 NEW names T-5)", () => {
+  // SubTabsBar is vitalia shell-organism specific organism — zero-tolerance cross-brand
+  it("no matches for SubTabsBar in nicolify/comunify/lupulo", () => {
+    expect(grepCount("SubTabsBar", OTHER_BRANDS_FRONTEND)).toBe(0);
+  });
+
+  // SubTab (case-sensitive) is vitalia shell-organism specific molecule — zero-tolerance cross-brand
+  // Note: search is case-sensitive to distinguish from RibbonTab or other Tab suffixes
+  it("no matches for 'SubTab' identifier across brands (case-sensitive — distinguished from RibbonTab)", () => {
+    expect(grepCount("SubTab", OTHER_BRANDS_FRONTEND)).toBe(0);
+  });
+
+  // RIBBON_SUBTABS is vitalia-specific sub-tabs catalog constant — zero-tolerance cross-brand
+  it("no matches for RIBBON_SUBTABS across brands", () => {
+    expect(grepCount("RIBBON_SUBTABS", OTHER_BRANDS_FRONTEND)).toBe(0);
+  });
+
+  // extractSubtabFromPath is vitalia shell-organism specific helper — zero-tolerance cross-brand
+  it("no matches for extractSubtabFromPath across brands", () => {
+    expect(grepCount("extractSubtabFromPath", OTHER_BRANDS_FRONTEND)).toBe(0);
+  });
+
+  // SubTabMeta is vitalia-specific TypeScript interface — zero-tolerance cross-brand
+  it("no matches for SubTabMeta across brands", () => {
+    expect(grepCount("SubTabMeta", OTHER_BRANDS_FRONTEND)).toBe(0);
+  });
+});

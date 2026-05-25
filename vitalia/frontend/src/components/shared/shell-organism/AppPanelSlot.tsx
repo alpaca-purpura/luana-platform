@@ -2,17 +2,18 @@
  * AppPanelSlot — Application content panel host.
  * F1-S4 vitalia-fase1-shell-layout-5050 (original shell grid)
  * F1-S7 vitalia-fase1-ribbon-6-tabs (T-4: swap skeleton ribbon → <Ribbon /> real)
+ * F1-S8 vitalia-fase1-sub-tabs-line2 (T-5: swap skeleton sub-tabs → <SubTabsBar /> real)
  *
  * Host for the main application panel (ribbon nav + sub-tabs + page content).
  * F1-S7 replaced the skeleton ribbon silhouette with <Ribbon /> real organism.
- * F1-S8 (sub-tabs-line2) will replace the sub-tabs skeleton.
+ * F1-S8 replaced the sub-tabs skeleton with <SubTabsBar /> real organism.
  * F1-S10 (empty-states) will replace the content area skeleton.
  *
- * Server Component — no "use client" needed. <Ribbon /> is a Client Component
- * (Next.js App Router natural server/client boundary). Server Component hosts
- * the Client Component slot per tessl__nextjs-app-router-modularization pattern.
+ * Server Component — no "use client" needed. <Ribbon /> and <SubTabsBar /> are Client
+ * Components (Next.js App Router natural server/client boundary). Server Component hosts
+ * Client Component slots per tessl__nextjs-app-router-modularization pattern.
  *
- * Grid structure: flex-col with Ribbon (h-14) + Sub-tabs placeholder (F1-S8) +
+ * Grid structure: flex-col with Ribbon (h-14) + SubTabsBar (min-h-[42px]) +
  * content children (F1-S10 fills). Named export per FSD-Lite enforce.
  *
  * Spec: 03-arch.md § 2.5 (AppPanelSlot MODIFY) · F1-S4 03-arch.md § 2.4 (origin).
@@ -25,6 +26,7 @@
  */
 
 import { Ribbon } from "./Ribbon";
+import { SubTabsBar } from "./SubTabsBar";
 
 interface AppPanelSlotProps {
   /** Page content rendered by the route group (F1-S10 will populate). */
@@ -42,16 +44,8 @@ export function AppPanelSlot({ children }: AppPanelSlotProps) {
       {/* Ribbon nav — F1-S7 real organism (replaces skeleton silhouette) */}
       <Ribbon />
 
-      {/* Sub-tabs placeholder (~40px) — F1-S8 will replace */}
-      <div
-        aria-hidden="true"
-        className="flex items-center gap-3 border-b border-border px-4 h-10 shrink-0"
-      >
-        <div className="h-2 w-16 rounded bg-muted opacity-45" />
-        <div className="h-2 w-20 rounded bg-muted opacity-45" />
-        <div className="h-2 w-14 rounded bg-muted opacity-45" />
-        <div className="h-2 w-[70px] rounded bg-muted opacity-45" />
-      </div>
+      {/* Sub-tabs line 2 — F1-S8 real organism (replaces skeleton placeholder) */}
+      <SubTabsBar />
 
       {/* Content area — children from route group pass-through (F1-S10 will fill skeleton) */}
       <div className="flex-1 min-h-0 overflow-hidden">
@@ -78,7 +72,7 @@ export function AppPanelSlot({ children }: AppPanelSlotProps) {
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 whitespace-nowrap rounded-md border border-dashed border-border bg-background/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground pointer-events-none"
         aria-hidden="true"
       >
-        AppPanelSlot · F1-S8 / S10
+        AppPanelSlot · F1-S10
       </span>
     </section>
   );
