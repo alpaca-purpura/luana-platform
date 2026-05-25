@@ -6,8 +6,8 @@ type: ui-story
 agent_owner: shell
 module: shell-organism
 capability: shell.sub-tabs
-state: reviewing
-last_modified: 2026-05-25T10:35:00Z
+state: done
+last_modified: 2026-05-25T10:45:00Z
 auditor_started_at: 2026-05-25T10:15:00Z
 auditor_finished_at: 2026-05-25T10:35:00Z
 audit_verdict: APPROVED
@@ -15,7 +15,11 @@ audit_iterations: 1
 self_fix_iter: 1
 self_fix_commits:
   - 7bcef820   # prettier auto-fix AppPanelSlot.test.tsx (whitelist #2)
-phase: HANDOFF_TO_PM_MERGE
+phase: MERGED
+merged_at: 2026-05-25T10:45:00Z
+merged_by: /pm-vitalia
+merge_artifact: 07-merge.md
+capability_promoted: vitalia.shell-organism.sub-tabs
 last_artifact: T-6-result.md
 dev_team_started_at: 2026-05-25T09:35:00Z
 dev_team_finished_at: 2026-05-25T10:12:00Z
@@ -55,7 +59,7 @@ dependencies:
 blocks_hard: [vitalia-fase1-routing-shell]
 reuse_map_summary: "NEW · consume AGENT_SUBTABS whitelist · routing Next.js"
 spawned_at: 2026-05-22
-next_action: "/pm-vitalia merge vitalia-fase1-sub-tabs-line2 (AUTO-HANDOFF post APPROVED — autonomous chain authorized Chris)"
+next_action: "DONE — story merged + archived. Next: F1-S9 vitalia-fase1-routing-shell (blocks_hard ya unblocked)."
 ---
 
 # F1-S8 vitalia-fase1-sub-tabs-line2 — checkpoint
