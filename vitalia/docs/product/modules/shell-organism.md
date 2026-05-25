@@ -11,6 +11,9 @@ Es el primer building block de la Fase 1 UI Foundation antes de F1-S5..S10 que l
 ## Capabilities <!-- AUTO-GENERATED — no editar a mano -->
 
 - [`shell.layout-5050`](../capabilities/shell-organism/layout-5050.yaml) — Layout root split 50/50 agentic + web mode alternativo + mobile triple-main pattern (status: live, 2026-05-23, story F1-S4)
+- [`shell.ribbon`](../capabilities/shell-organism/ribbon.yaml) — Ribbon horizontal 5 RibbonTabs (Lisa·Lucas·Adrián·Valeria·Camila) + 1 ConfigTab IconButton · WAI-ARIA tablist + roving tabindex · active state URL-derived via extractAgentFromPath · Avatar fallback graceful (status: live, 2026-05-25, story F1-S7)
+- [`shell.valeria-chat`](../capabilities/shell-organism/valeria-chat.yaml) — Valeria chat panel skeleton (ChatHeader + ChatMessages + ChatComposer + chat-store zustand + mock responses canned) consumido por ValeriaSidebar (status: live, 2026-05-25, story F1-S6)
+- [`shell.valeria-sidebar`](../capabilities/shell-organism/valeria-sidebar.yaml) — Valeria sidebar transpuesta full/rail/collapsed modes con ValeriaRail icon-only 60px + ValeriaHistory expandable groups + ValeriaChatSlot wrapper (status: live, 2026-05-24, story F1-S5)
 
 <!-- END AUTO-GENERATED -->
 

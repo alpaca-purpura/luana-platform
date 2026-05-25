@@ -6,12 +6,15 @@ type: ui-story
 agent_owner: shell
 module: shell-organism
 capability: shell.ribbon
-state: reviewing
+state: done
 last_modified: 2026-05-25
 dev_team_pickup_at: 2026-05-25T02:30:00Z
 dev_team_phase: BUILD_T5_DONE
 auditor_pickup_at: 2026-05-25T03:50:00Z
 auditor_phase: HANDOFF_TO_PM_MERGE
+pm_merged_at: 2026-05-25T04:40:00Z
+pm_merged_by: /pm-vitalia
+merge_artifact: 07-merge.md
 auditor_verdict: APPROVED
 auditor_warns: 1
 auditor_warns_inventory:
