@@ -238,7 +238,7 @@ tickets:
   - id: T-4
     title: "AppPanelSlot MODIFY: swap skeleton ribbon → <Ribbon /> real + arch tests NEW (no-shadcn-tabs) + EXTEND (cross-brand mirror, server-first allowlist, voseo glossary)"
     state: pushed
-    push_commit_sha: PENDING
+    push_commit_sha: d103edb3
     surface: frontend
     owner_eligibility: [qwen-opencode, claude-sonnet]
     production_code: true
