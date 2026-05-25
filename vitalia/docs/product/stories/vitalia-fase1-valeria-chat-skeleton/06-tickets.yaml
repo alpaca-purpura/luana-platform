@@ -441,7 +441,13 @@ tickets:
   # ──────────────────────────────────────────────────────────────
   - id: T-9
     title: "Playwright visual goldens (4 PNGs populated/empty × light/dark) + valeria-chat-{empty, a11y, i18n}.spec.ts"
-    state: ready
+    state: pushed
+    push_commit_sha: TBD
+    transitions:
+      - from: ready
+        to: pushed
+        at: "2026-05-25T02:35:00-05:00"
+        by: builder-frontend (claude-sonnet-4-6)
     surface: frontend
     owner_eligibility: [qwen-opencode, claude-sonnet]
     production_code: false   # tests/PNG only
