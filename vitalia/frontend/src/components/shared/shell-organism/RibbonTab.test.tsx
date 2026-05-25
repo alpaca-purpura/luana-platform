@@ -324,9 +324,7 @@ describe("RibbonTab — Q15 whitespace-nowrap cement", () => {
       />,
     );
     // Find the span containing tabLabel text
-    const tabLabelSpan = container.querySelector(
-      `span.whitespace-nowrap`,
-    );
+    const tabLabelSpan = container.querySelector(`span.whitespace-nowrap`);
     expect(tabLabelSpan).not.toBeNull();
   });
 
