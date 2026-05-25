@@ -9,7 +9,7 @@ capability: shell.ribbon
 state: developing
 last_modified: 2026-05-25
 dev_team_pickup_at: 2026-05-25T02:30:00Z
-dev_team_phase: BUILD_T2_DONE
+dev_team_phase: BUILD_T4_DONE
 ratified_by_chris: true
 ratified_visual_by_chris: true
 ratified_visual_at: 2026-05-25T02:00:00Z
@@ -36,9 +36,9 @@ architect_iter_amendments:
       - "Q13 ConfigTab role=tab PASS — aria-selected + tabindex correctos"
       - "Q16 active:hover preserves tint PASS — Lisa rgba(0,208,132,0.12) idéntico no-hover y hovered"
 architect_run_on: 2026-05-25
-last_artifact: 06-tickets.yaml
-phase: BUILD_T1
-next_action: "builder-frontend Sonnet ejecuta T-3 Ribbon organism (roving tabindex + URL active + navigateTo handler). Depende T-2 pushed (1aeda3a1)."
+last_artifact: T-4-result.md
+phase: BUILD_T4_DONE
+next_action: "builder-frontend Sonnet ejecuta T-5 Playwright E2E suite (POM + 9 behavior specs + 11 visual goldens + axe + i18n). Depende T-4 pushed (d103edb3)."
 ratified_artifacts:
   - 01-spec.md (v1)
   - mockups/ribbon.html (preview interactivo · 7 bloques)
