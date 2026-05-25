@@ -75,6 +75,8 @@ export default defineConfig({
         // F1-S4 shell-layout regression FUNCTIONAL specs
         // (visual-goldens corre SOLO en project=visual — ver testIgnore abajo)
         /.*\/e2e\/regression\/.*\.spec\.ts/,
+        // F1-S6 shell-organism behavior specs (public route /test-stack/shell-layout)
+        /.*\/e2e\/shell-organism\/valeria-chat-.*\.spec\.ts/,
       ],
       // Exclude visual-goldens: corren EXCLUSIVAMENTE en project=visual que tiene
       // snapshotPathTemplate + maxDiffPixelRatio: 0.001 config. Sin esa config,

@@ -386,7 +386,13 @@ tickets:
   # ──────────────────────────────────────────────────────────────
   - id: T-8
     title: "Playwright behavior specs: valeria-chat-{happy, send, keys, xss}.spec.ts"
-    state: ready
+    state: pushed
+    push_commit_sha: TBD
+    transitions:
+      - from: ready
+        to: pushed
+        at: "2026-05-24T21:00:00-05:00"
+        by: builder-frontend (claude-sonnet-4-6)
     surface: frontend
     owner_eligibility: [qwen-opencode, claude-sonnet]
     production_code: false   # tests-only

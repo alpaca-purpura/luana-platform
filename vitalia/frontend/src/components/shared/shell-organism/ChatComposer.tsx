@@ -92,6 +92,7 @@ export function ChatComposer({ className }: { className?: string }) {
         <div className="flex items-center gap-0.5 pb-1.5">
           <button
             type="button"
+            data-testid="composer-attach"
             aria-label="Adjuntar archivo"
             title="Adjuntar (próximamente)"
             className="h-8 w-8 rounded-md hover:bg-muted text-muted-foreground flex items-center justify-center text-base"
@@ -100,6 +101,7 @@ export function ChatComposer({ className }: { className?: string }) {
           </button>
           <button
             type="button"
+            data-testid="composer-voice"
             aria-label="Mensaje de voz"
             title="Voz (próximamente)"
             className="h-8 w-8 rounded-md hover:bg-muted text-muted-foreground flex items-center justify-center text-base"
@@ -108,6 +110,7 @@ export function ChatComposer({ className }: { className?: string }) {
           </button>
           <button
             type="button"
+            data-testid="composer-quick"
             aria-label="Comandos rápidos"
             title="Comandos (próximamente)"
             className="h-8 w-8 rounded-md hover:bg-muted text-muted-foreground flex items-center justify-center text-base"
