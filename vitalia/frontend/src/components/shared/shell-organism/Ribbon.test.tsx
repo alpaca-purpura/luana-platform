@@ -94,7 +94,9 @@ describe("Ribbon — render structure (SC-1 happy)", () => {
     const allTabs = screen.getAllByRole("tab");
     // First 5 tabs are agent tabs in order
     AGENT_RIBBON_ORDER.forEach((slug, idx) => {
-      expect(allTabs[idx].getAttribute("data-testid")).toBe(`ribbon-tab-${slug}`);
+      expect(allTabs[idx].getAttribute("data-testid")).toBe(
+        `ribbon-tab-${slug}`,
+      );
     });
     // Last tab is ConfigTab
     expect(allTabs[5].getAttribute("data-testid")).toBe("ribbon-config-tab");

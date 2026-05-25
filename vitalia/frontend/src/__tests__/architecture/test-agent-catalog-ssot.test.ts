@@ -75,8 +75,8 @@ const KNOWN_HARDCODES: ReadonlySet<string> = new Set<string>([
 // ─── Skip patterns — test files + config files ───────────────────────────────
 
 const SKIP_PATTERNS = [
-  /\.test\.[tj]sx?$/,   // all test files (unit tests assert on rendered text)
-  /\.spec\.[tj]sx?$/,   // all spec files
+  /\.test\.[tj]sx?$/, // all test files (unit tests assert on rendered text)
+  /\.spec\.[tj]sx?$/, // all spec files
   /node_modules/,
   /\.config\.[tj]s$/,
 ];
@@ -139,16 +139,19 @@ describe("arch: agent-catalog SSoT — no hardcoded agent hex colors outside cat
       }
     }
 
-    expect(violations, [
-      "Agent hex colors found outside AGENT_CATALOG SSoT.",
-      "",
-      "Components MUST use Tailwind tokens (colorToken / colorSoftToken) from AGENT_CATALOG.",
-      "Hex values are metadata-only in agent-catalog.ts — never use them in components.",
-      "",
-      "Fix: Replace hex literal with bg-{agent.colorToken} or bg-{agent.colorSoftToken} (from AGENT_CATALOG).",
-      "",
-      ...violations,
-    ].join("\n")).toHaveLength(0);
+    expect(
+      violations,
+      [
+        "Agent hex colors found outside AGENT_CATALOG SSoT.",
+        "",
+        "Components MUST use Tailwind tokens (colorToken / colorSoftToken) from AGENT_CATALOG.",
+        "Hex values are metadata-only in agent-catalog.ts — never use them in components.",
+        "",
+        "Fix: Replace hex literal with bg-{agent.colorToken} or bg-{agent.colorSoftToken} (from AGENT_CATALOG).",
+        "",
+        ...violations,
+      ].join("\n"),
+    ).toHaveLength(0);
   });
 
   it("KNOWN_HARDCODES allowlist only references existing files (shrink-only ratchet)", () => {
@@ -167,7 +170,8 @@ describe("arch: agent-catalog SSoT — thumbnail paths not hardcoded outside cat
    * Thumbnail paths follow pattern /agents/{slug}/thumbnail.png
    * These should only be referenced via AGENT_CATALOG[slug].thumbnail — never inline.
    */
-  const THUMBNAIL_PATTERN = /\/agents\/(lisa|valeria|adrian|lucas|camila|mateo)\//;
+  const THUMBNAIL_PATTERN =
+    /\/agents\/(lisa|valeria|adrian|lucas|camila|mateo)\//;
 
   it("no agent thumbnail path hardcoded in component source files (except catalog + allowlist)", () => {
     if (!existsSync(SRC)) {
@@ -197,15 +201,18 @@ describe("arch: agent-catalog SSoT — thumbnail paths not hardcoded outside cat
       }
     }
 
-    expect(violations, [
-      "Agent thumbnail paths found hardcoded outside AGENT_CATALOG SSoT.",
-      "",
-      "Components MUST read thumbnail paths from AGENT_CATALOG[agent].thumbnail.",
-      "Inline paths create drift risk if assets are moved.",
-      "",
-      "Fix: Use `AGENT_CATALOG[agentSlug].thumbnail` for all agent image src attributes.",
-      "",
-      ...violations,
-    ].join("\n")).toHaveLength(0);
+    expect(
+      violations,
+      [
+        "Agent thumbnail paths found hardcoded outside AGENT_CATALOG SSoT.",
+        "",
+        "Components MUST read thumbnail paths from AGENT_CATALOG[agent].thumbnail.",
+        "Inline paths create drift risk if assets are moved.",
+        "",
+        "Fix: Use `AGENT_CATALOG[agentSlug].thumbnail` for all agent image src attributes.",
+        "",
+        ...violations,
+      ].join("\n"),
+    ).toHaveLength(0);
   });
 });

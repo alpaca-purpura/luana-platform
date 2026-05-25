@@ -14,12 +14,7 @@
  * downstream-regression-na: brand-local shell-organism; no cross-brand consumers
  */
 
-import {
-  useState,
-  useRef,
-  useCallback,
-  type KeyboardEvent,
-} from "react";
+import { useState, useRef, useCallback, type KeyboardEvent } from "react";
 import { usePathname, useRouter, useParams } from "next/navigation";
 import {
   AGENT_CATALOG,
