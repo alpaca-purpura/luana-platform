@@ -26,6 +26,7 @@ export interface RibbonTabProps {
  * D17.1 (Q15 cement): ambos spans tienen whitespace-nowrap para garantizar ribbon h-14 uniforme.
  * D17.2 (Q16 cement): active:hover repite agentBgSoftClass(slug) para preservar tint vs hover:bg-muted.
  * D17.3 (Q14 cement): shrink-0 sin min-w fijo — tabs orgánicos label-driven.
+ * D18 (A11y cement): sub-label span usa text-foreground/60 en active para WCAG AA contrast sobre bg-agent-*-soft.
  *
  * spec_anchor: 01-spec.md § Estados visuales · 03-arch.md § 2.3 D12-D17.3
  * downstream-regression-na: brand-local shell-organism; no cross-brand consumers
@@ -65,14 +66,21 @@ export const RibbonTab = forwardRef<HTMLButtonElement, RibbonTabProps>(
           <AvatarImage src={descriptor.thumbnail} alt="" />
           <AvatarFallback
             className={cn(agentBgSoftClass(slug), "text-foreground")}
+            data-testid={`avatar-fallback-${slug}`}
           >
             {descriptor.initial}
           </AvatarFallback>
         </Avatar>
         {/* Q15 cement: whitespace-nowrap en ambos spans garantiza ribbon h-14 uniforme */}
+        {/* A11y cement: sub-label usa text-foreground/60 cuando active para WCAG AA contrast sobre bg-agent-*-soft */}
         <span className="flex flex-col items-start leading-tight whitespace-nowrap">
           <span className="whitespace-nowrap">{descriptor.tabLabel}</span>
-          <span className="whitespace-nowrap text-[10px] text-muted-foreground">
+          <span
+            className={cn(
+              "whitespace-nowrap text-[10px]",
+              active ? "text-foreground/60" : "text-muted-foreground",
+            )}
+          >
             {descriptor.name}
           </span>
         </span>

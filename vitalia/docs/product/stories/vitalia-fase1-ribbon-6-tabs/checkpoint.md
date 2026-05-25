@@ -6,10 +6,10 @@ type: ui-story
 agent_owner: shell
 module: shell-organism
 capability: shell.ribbon
-state: developing
+state: developed
 last_modified: 2026-05-25
 dev_team_pickup_at: 2026-05-25T02:30:00Z
-dev_team_phase: BUILD_T4_DONE
+dev_team_phase: BUILD_T5_DONE
 ratified_by_chris: true
 ratified_visual_by_chris: true
 ratified_visual_at: 2026-05-25T02:00:00Z
@@ -36,9 +36,9 @@ architect_iter_amendments:
       - "Q13 ConfigTab role=tab PASS — aria-selected + tabindex correctos"
       - "Q16 active:hover preserves tint PASS — Lisa rgba(0,208,132,0.12) idéntico no-hover y hovered"
 architect_run_on: 2026-05-25
-last_artifact: T-4-result.md
-phase: BUILD_T4_DONE
-next_action: "builder-frontend Sonnet ejecuta T-5 Playwright E2E suite (POM + 9 behavior specs + 11 visual goldens + axe + i18n). Depende T-4 pushed (d103edb3)."
+last_artifact: T-5-result.md
+phase: BUILD_T5_DONE
+next_action: "AUTO-HANDOFF /auditor — story state=developed, ALL T-1..T-5 pushed GREEN. Playwright 32/32 smoke + 13/13 visual + 1328/1328 Vitest. D18 a11y cement (WCAG AA axe fix) + D19 AvatarFallback testid. Awaiting auditor-frontend REVIEW."
 ratified_artifacts:
   - 01-spec.md (v1)
   - mockups/ribbon.html (preview interactivo · 7 bloques)

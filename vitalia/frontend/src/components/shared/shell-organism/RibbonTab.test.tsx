@@ -374,4 +374,23 @@ describe("RibbonTab — SC-9 avatar fallback", () => {
     const fallback = container.querySelector("[data-slot='avatar-fallback']");
     expect(fallback?.className).toContain(agentBgSoftClass("lucas"));
   });
+
+  it("AvatarFallback has data-testid='avatar-fallback-{slug}' (SC-9 grader testid — T-5 integration scope)", () => {
+    // data-testid added in T-5 integration scope per orchestrator decision:
+    // SC-9 spec § Gherkin requires testid grader; T-2 omitted this testid.
+    // Zero logic change — only attribute addition for test querying.
+    const { container } = render(
+      <RibbonTab
+        slug="valeria"
+        active={false}
+        tabIndex={0}
+        onClick={vi.fn()}
+        onFocus={vi.fn()}
+      />,
+    );
+    const fallback = container.querySelector(
+      "[data-testid='avatar-fallback-valeria']",
+    );
+    expect(fallback).not.toBeNull();
+  });
 });
