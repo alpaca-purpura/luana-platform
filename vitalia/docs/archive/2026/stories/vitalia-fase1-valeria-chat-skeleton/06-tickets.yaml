@@ -25,13 +25,17 @@ tickets:
   # ──────────────────────────────────────────────────────────────
   - id: T-1
     title: "agent-catalog.ts SSoT 6 agentes + globals.css MODIFY (--agent-mateo-soft light+dark + .typing-dot keyframes)"
-    state: pushed
+    state: audit-passed
     push_commit_sha: c2ba2b89
     transitions:
       - from: ready
         to: pushed
         at: "2026-05-24T19:54:00-05:00"
         by: builder-frontend (claude-sonnet-4-6)
+      - from: pushed
+        to: audit-passed
+        at: "2026-05-25T02:40:00-05:00"
+        by: auditor-frontend (story-level consolidated APPROVED)
     surface: frontend
     owner_eligibility: [qwen-opencode, claude-sonnet]
     production_code: true
@@ -69,13 +73,17 @@ tickets:
   # ──────────────────────────────────────────────────────────────
   - id: T-2
     title: "chat-store.ts zustand + _mock-messages.ts: 6 MOCK_MESSAGES + 4 MOCK_RESPONSES Valeria canned"
-    state: pushed
+    state: audit-passed
     push_commit_sha: 76eaa919
     transitions:
       - from: ready
         to: pushed
         at: "2026-05-25T20:07:28-05:00"
         by: builder-frontend (claude-sonnet-4-6)
+      - from: pushed
+        to: audit-passed
+        at: "2026-05-25T02:40:00-05:00"
+        by: auditor-frontend (story-level consolidated APPROVED)
     surface: frontend
     owner_eligibility: [qwen-opencode, claude-sonnet]
     production_code: true
@@ -125,13 +133,17 @@ tickets:
   # ──────────────────────────────────────────────────────────────
   - id: T-3
     title: "MessageBubble + ChatHeader + TypingIndicator + DelegateMarker — átomos/moléculas low-level"
-    state: pushed
+    state: audit-passed
     push_commit_sha: 76eaa919
     transitions:
       - from: ready
         to: pushed
         at: "2026-05-24T20:06:00-05:00"
         by: builder-frontend (claude-sonnet-4-6)
+      - from: pushed
+        to: audit-passed
+        at: "2026-05-25T02:40:00-05:00"
+        by: auditor-frontend (story-level consolidated APPROVED)
     surface: frontend
     owner_eligibility: [qwen-opencode, claude-sonnet]
     production_code: true
@@ -185,13 +197,17 @@ tickets:
   # ──────────────────────────────────────────────────────────────
   - id: T-4
     title: "ChatComposer molécula: Textarea auto-resize + 3 IconButton stubs + Send button + IME guard + Enter/Shift+Enter"
-    state: pushed
+    state: audit-passed
     push_commit_sha: ef879cd1
     transitions:
       - from: ready
         to: pushed
         at: "2026-05-24T20:15:00-05:00"
         by: builder-frontend (claude-sonnet-4-6)
+      - from: pushed
+        to: audit-passed
+        at: "2026-05-25T02:40:00-05:00"
+        by: auditor-frontend (story-level consolidated APPROVED)
     surface: frontend
     owner_eligibility: [qwen-opencode, claude-sonnet]
     production_code: true
@@ -244,13 +260,17 @@ tickets:
   # ──────────────────────────────────────────────────────────────
   - id: T-5
     title: "ValeriaChat organism (root) + ChatMessages branch logic (populated/empty) + auto-scroll sentinel"
-    state: pushed
+    state: audit-passed
     push_commit_sha: 81061d28
     transitions:
       - from: ready
         to: pushed
         at: "2026-05-24T20:30:00-05:00"
         by: builder-frontend (claude-sonnet-4-6)
+      - from: pushed
+        to: audit-passed
+        at: "2026-05-25T02:40:00-05:00"
+        by: auditor-frontend (story-level consolidated APPROVED)
     surface: frontend
     owner_eligibility: [qwen-opencode, claude-sonnet]
     production_code: true
@@ -298,7 +318,7 @@ tickets:
   # ──────────────────────────────────────────────────────────────
   - id: T-6
     title: "Integration: MODIFY ValeriaSidebar.tsx (swap slot 2 occurrences) + DELETE ValeriaChatSlot{,.test}.tsx + extend arch tests + NEW test-agent-catalog-ssot.test.ts"
-    state: pushed
+    state: audit-passed
     commit: 4820bb2c
     surface: frontend
     owner_eligibility: [qwen-opencode, claude-sonnet]
@@ -358,7 +378,7 @@ tickets:
   # ──────────────────────────────────────────────────────────────
   - id: T-7
     title: "Playwright POM ValeriaChatPage + chat-store-seed fixtures (chatStoreSeed + chatStoreEmpty)"
-    state: pushed
+    state: audit-passed
     surface: frontend
     owner_eligibility: [qwen-opencode, claude-sonnet]
     production_code: false   # tests/POM/fixtures only
@@ -386,13 +406,17 @@ tickets:
   # ──────────────────────────────────────────────────────────────
   - id: T-8
     title: "Playwright behavior specs: valeria-chat-{happy, send, keys, xss}.spec.ts"
-    state: pushed
+    state: audit-passed
     push_commit_sha: b804eb73
     transitions:
       - from: ready
         to: pushed
         at: "2026-05-24T21:00:00-05:00"
         by: builder-frontend (claude-sonnet-4-6)
+      - from: pushed
+        to: audit-passed
+        at: "2026-05-25T02:40:00-05:00"
+        by: auditor-frontend (story-level consolidated APPROVED)
     surface: frontend
     owner_eligibility: [qwen-opencode, claude-sonnet]
     production_code: false   # tests-only
@@ -441,13 +465,17 @@ tickets:
   # ──────────────────────────────────────────────────────────────
   - id: T-9
     title: "Playwright visual goldens (4 PNGs populated/empty × light/dark) + valeria-chat-{empty, a11y, i18n}.spec.ts"
-    state: pushed
+    state: audit-passed
     push_commit_sha: d4341ad7
     transitions:
       - from: ready
         to: pushed
         at: "2026-05-25T02:35:00-05:00"
         by: builder-frontend (claude-sonnet-4-6)
+      - from: pushed
+        to: audit-passed
+        at: "2026-05-25T02:40:00-05:00"
+        by: auditor-frontend (story-level consolidated APPROVED)
     surface: frontend
     owner_eligibility: [qwen-opencode, claude-sonnet]
     production_code: false   # tests/PNG only

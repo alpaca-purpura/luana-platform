@@ -2,7 +2,7 @@
 brand: vitalia
 vertical: "Salud + Bienestar"
 status: shipped
-last_updated: 2026-05-23-T4
+last_updated: 2026-05-25-F1-S6-merged
 paradigm: shell-organism-agentico-v1                 # ★ 2026-05-22 cementado ★
 shell_organism_status: planning-done-2026-05-22      # ★ design-story cerrada, Fase 1 + Fase 2 backlog generado
 slice_1_status: superseded-by-shell-organism-2026-05-22  # ★ paradigma reemplazado · stories slice-1 archivadas o refactored
@@ -20,8 +20,8 @@ active_stories:
   # vitalia-fase1-topbar-global            # F1-S2 · state: done 2026-05-23 (archived) · ver recently_done
   # vitalia-fase1-tenant-switcher          # F1-S3 · state: done 2026-05-23 (archived) · ver recently_done · CHAIN F1-S0..S3 COMPLETE
   - vitalia-fase1-shell-layout-5050        # F1-S4 — state: ready 2026-05-23T14:07Z · ready package closed by /architect iter 1 (03-arch.md 851 LOC + 04-validators.yaml 20 validators 5 categorías + 05-guidelines.md must_load enforceable + 06-tickets.yaml 7 tickets DAG) · awaiting /dev-team Conv 2 autonomous build
-  - vitalia-fase1-valeria-rail-history     # F1-S5
-  - vitalia-fase1-valeria-chat-skeleton    # F1-S6
+  # vitalia-fase1-valeria-rail-history     # F1-S5 · state: done 2026-05-24 (archived) · ver recently_done
+  # vitalia-fase1-valeria-chat-skeleton    # F1-S6 · state: done 2026-05-25 (archived) · ver recently_done · CHAIN F1-S0..S6 COMPLETE (panel Valeria 100% funcional: ValeriaSidebar + ValeriaChat real)
   - vitalia-fase1-ribbon-6-tabs            # F1-S7
   - vitalia-fase1-sub-tabs-line2           # F1-S8
   - vitalia-fase1-routing-shell            # F1-S9

@@ -6,12 +6,20 @@ type: ui-story
 agent_owner: shell
 module: shell-organism
 capability: shell.valeria-chat
-state: developed
-workflow_phase: HANDOFF_TO_AUDITOR
-last_modified: 2026-05-25T02:35:00Z
+state: done
+workflow_phase: MERGED_ARCHIVED
+last_modified: 2026-05-25T02:45:00Z
+pm_merge_completed_at: 2026-05-25T02:45:00Z
+pm_merge_owner: /pm-vitalia
 dev_team_started_at: 2026-05-25T00:00:00Z
 dev_team_completed_at: 2026-05-25T02:35:00Z
 dev_team_owner: claude-sonnet (builder-frontend, FE no-agentic — qwen-opencode fallback not available)
+auditor_started_at: 2026-05-25T02:36:00Z
+auditor_completed_at: 2026-05-25T02:40:00Z
+auditor_verdict: APPROVED
+audit_iterations: 1
+self_fix_iter: 1
+self_fix_summary: "F-1 unused eslint-disable directive removed (chat-store.test.ts:278) — whitelist cat #1 lint auto-fix"
 ratified_by_chris: true
 ratified_at: 2026-05-24T23:40:00Z
 ratified_visual_by_chris: true
@@ -22,7 +30,7 @@ ratified_visual_mockups:
 po_ux_version: 3
 architect_iter: 1
 architect_run_on: 2026-05-24T23:55:00Z
-last_artifact: T-9-result.md
+last_artifact: CHECKPOINTS.md
 parallel_safe: true
 priority: high
 estimated_dev_days: 1-2
@@ -32,7 +40,7 @@ dependencies:
 blocks_hard: []
 reuse_map_summary: "NEW estructura chat panel · mock data 5 mensajes · sin sales_agent wiring real (Fase 2 wire)"
 spawned_at: 2026-05-22
-next_action: "/auditor vitalia vitalia-fase1-valeria-chat-skeleton → Conv 3 review+merge (AUTO-HANDOFF default post 2026-05-18 story-closure-gate)"
+next_action: "story archived (post-merge) — see vitalia/docs/archive/2026/stories/vitalia-fase1-valeria-chat-skeleton/ for inmutable snapshot. Capability vitalia.shell-organism.valeria-chat live."
 ---
 
 # F1-S6 vitalia-fase1-valeria-chat-skeleton — checkpoint
