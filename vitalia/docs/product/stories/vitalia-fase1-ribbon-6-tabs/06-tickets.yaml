@@ -26,7 +26,7 @@ tickets:
   - id: T-1
     title: "agent-catalog.ts EXTEND: tabLabel + defaultSubtab + AGENT_RIBBON_ORDER + extractAgentFromPath helper"
     state: pushed
-    push_commit_sha: pending
+    push_commit_sha: f332d554
     surface: frontend
     owner_eligibility: [qwen-opencode, claude-sonnet]
     production_code: true
