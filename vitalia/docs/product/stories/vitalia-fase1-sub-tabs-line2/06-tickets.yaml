@@ -139,7 +139,7 @@ tickets:
   # ──────────────────────────────────────────────────────────────
   - id: T-3
     title: "SubTab molécula — button forwardRef + emoji + label + active/inactive states + Lucas/Config exceptions + focus-visible ring"
-    state: pending
+    state: pushed
     surface: frontend
     owner_eligibility: [qwen-opencode, claude-sonnet]
     production_code: true
