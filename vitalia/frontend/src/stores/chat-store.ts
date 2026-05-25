@@ -104,9 +104,32 @@ function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+/**
+ * Resolve initial messages for the store.
+ *
+ * Non-production only: reads `window.__chatStoreSeed__` if present.
+ * Set via Playwright `page.addInitScript` in E2E tests BEFORE page load.
+ * Falls back to MOCK_MESSAGES when not set (dev browser, test stack).
+ *
+ * This guard is intentionally BEFORE `create()` so it runs once at module init.
+ * NODE_ENV guard ensures zero production footprint.
+ */
+function resolveInitialMessages(): ChatMessage[] {
+  if (
+    process.env.NODE_ENV !== "production" &&
+    typeof window !== "undefined" &&
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    Array.isArray((window as any).__chatStoreSeed__)
+  ) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (window as any).__chatStoreSeed__ as ChatMessage[];
+  }
+  return [...MOCK_MESSAGES];
+}
+
 export const useChatStore = create<ChatStore>((set, get) => ({
   // ── State ──────────────────────────────────────────────────────────────────
-  messages: [...MOCK_MESSAGES],
+  messages: resolveInitialMessages(),
   activeAgent: DEFAULT_CHAT_AGENT,
   status: "idle",
 
@@ -177,3 +200,22 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
   setActiveAgent: (agent: AgentSlug) => set({ activeAgent: agent }),
 }));
+
+/**
+ * E2E test hook — expose store on window in non-production.
+ *
+ * Playwright POMs (ValeriaChatPage) use `window.__chatStore__` for:
+ * - `getActiveAgent()` — read store state without DOM queries
+ * - `clearMessages()` — reset chat state programmatically
+ * - `waitForStatus()` — poll status for thinking/idle transitions
+ *
+ * NODE_ENV guard ensures zero production footprint.
+ * typeof window guard ensures SSR safety (Next.js server components).
+ *
+ * Magic: double-underscore convention (`__chatStore__`) signals test-only API.
+ * Per 03-arch.md § 3.2 POM contract + T-7 production_code decision.
+ */
+if (process.env.NODE_ENV !== "production" && typeof window !== "undefined") {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).__chatStore__ = useChatStore;
+}

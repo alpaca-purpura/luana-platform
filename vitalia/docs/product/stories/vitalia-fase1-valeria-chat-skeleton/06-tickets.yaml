@@ -358,7 +358,7 @@ tickets:
   # ──────────────────────────────────────────────────────────────
   - id: T-7
     title: "Playwright POM ValeriaChatPage + chat-store-seed fixtures (chatStoreSeed + chatStoreEmpty)"
-    state: ready
+    state: pushed
     surface: frontend
     owner_eligibility: [qwen-opencode, claude-sonnet]
     production_code: false   # tests/POM/fixtures only
