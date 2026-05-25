@@ -6,9 +6,38 @@ type: ui-story
 agent_owner: shell
 module: shell-organism
 capability: shell.sub-tabs
-state: idea
-last_modified: 2026-05-22
-ratified_by_chris: false
+state: developed
+last_modified: 2026-05-25T10:12:00Z
+last_artifact: T-6-result.md
+dev_team_started_at: 2026-05-25T09:35:00Z
+dev_team_finished_at: 2026-05-25T10:12:00Z
+dev_team_owner: claude-sonnet (via builder-frontend autonomous loop)
+tickets_pushed: [T-1, T-2, T-3, T-4, T-5, T-6]
+commits:
+  T-1: 09152867
+  T-2: 8350d912
+  T-3: e2b68ad2
+  T-4: 27fbf9db
+  T-5: 76b66d62
+  T-6: 33c2af59
+  docs: a8bde800
+phase_d_local_coverage: pending_audit  # 9 scenarios SC-1..SC-9 + visual goldens iter-1 deferred
+ratified_by_chris: true
+ratified_visual_by_chris: true
+ratified_visual_at: 2026-05-25T09:05:00Z
+ratified_visual_iter: 1
+ratified_visual_mockups:
+  - vitalia/docs/product/stories/vitalia-fase1-sub-tabs-line2/mockups/sub-tabs.html
+batch_1_decisions:
+  Q1_ssot_path: extend_agent_catalog
+  Q2_icons: emojis
+  Q3_keyboard_nav: roving_tabindex
+  Q4_height: min-h-[42px]
+  Q5_null_agent: return_null
+phase: READY_PACKAGE_CLOSED
+autonomous_chain: true                  # Chris ratificó workflow autónomo /architect → /dev-team → /auditor → /pm-vitalia merge
+chain_authorized_at: 2026-05-25T09:05:00Z
+chain_authorized_by: chris
 parallel_safe: false
 priority: high
 estimated_dev_days: 1
@@ -18,7 +47,7 @@ dependencies:
 blocks_hard: [vitalia-fase1-routing-shell]
 reuse_map_summary: "NEW · consume AGENT_SUBTABS whitelist · routing Next.js"
 spawned_at: 2026-05-22
-next_action: "/po-ux refinar 01-spec.md"
+next_action: "/auditor vitalia vitalia-fase1-sub-tabs-line2 (AUTO-HANDOFF post developed — autonomous chain authorized Chris)"
 ---
 
 # F1-S8 vitalia-fase1-sub-tabs-line2 — checkpoint
@@ -242,3 +271,10 @@ export function extractSubtabFromPath(pathname: string): string | null {
 ## Próximo paso post-done
 
 F1-S9 routing-shell consolida App Router pages + redirects + 404 handling.
+
+## Ready package artifacts (architect closure 2026-05-25T09:25:00Z)
+
+- `03-arch.md` — surface BE/FE/AGENTIC contracts (only FE surface aplicable — single architect-frontend output)
+- `04-validators.yaml` — 5-cat validators (non_functional + functional 9 SC + visual 13 goldens + agentic_eval N/A + architectural_validation)
+- `05-guidelines.md` — files in scope + skills + rules + TDD strategy + commit protocol
+- `06-tickets.yaml` — 6 tickets atómicos (T-1..T-6) DAG estricto · 13h total · ZERO Opus (FE no-agentic puro) · gherkin_coverage 100% (9/9 SC mapped) · validator_ids citados verbatim
