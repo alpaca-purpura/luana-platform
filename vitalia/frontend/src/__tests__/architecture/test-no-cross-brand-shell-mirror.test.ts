@@ -111,3 +111,25 @@ describe("arch: anti-duplication cross-brand mirror = 0 (F1-S6 NEW names T-6)", 
   // Future: if a second brand adopts a similar agent-chat pattern, escalate to /pm-luana
   // for promotion to core/@luana/shell-chat-organism/ (LIFT CANDIDATE documented).
 });
+
+describe("arch: anti-duplication cross-brand mirror = 0 (F1-S7 NEW names T-2)", () => {
+  // RibbonTab is vitalia shell-organism specific molecule — zero-tolerance cross-brand
+  it("no matches for RibbonTab in nicolify/comunify/lupulo", () => {
+    expect(grepCount("RibbonTab", OTHER_BRANDS_FRONTEND)).toBe(0);
+  });
+
+  // ConfigTab is vitalia shell-organism specific molecule — zero-tolerance cross-brand
+  it("no matches for ConfigTab across brands", () => {
+    expect(grepCount("ConfigTab", OTHER_BRANDS_FRONTEND)).toBe(0);
+  });
+
+  // AGENT_RIBBON_ORDER is vitalia-specific ribbon nav constant — zero-tolerance cross-brand
+  it("no matches for AGENT_RIBBON_ORDER across brands", () => {
+    expect(grepCount("AGENT_RIBBON_ORDER", OTHER_BRANDS_FRONTEND)).toBe(0);
+  });
+
+  // extractAgentFromPath is vitalia shell-organism specific helper — zero-tolerance cross-brand
+  it("no matches for extractAgentFromPath across brands", () => {
+    expect(grepCount("extractAgentFromPath", OTHER_BRANDS_FRONTEND)).toBe(0);
+  });
+});
