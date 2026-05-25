@@ -112,7 +112,12 @@ describe("arch: anti-duplication cross-brand mirror = 0 (F1-S6 NEW names T-6)", 
   // for promotion to core/@luana/shell-chat-organism/ (LIFT CANDIDATE documented).
 });
 
-describe("arch: anti-duplication cross-brand mirror = 0 (F1-S7 NEW names T-2)", () => {
+describe("arch: anti-duplication cross-brand mirror = 0 (F1-S7 NEW names T-4)", () => {
+  // Ribbon is vitalia shell-organism specific organism — zero-tolerance cross-brand
+  it("no matches for Ribbon in nicolify/comunify/lupulo", () => {
+    expect(grepCount("Ribbon", OTHER_BRANDS_FRONTEND)).toBe(0);
+  });
+
   // RibbonTab is vitalia shell-organism specific molecule — zero-tolerance cross-brand
   it("no matches for RibbonTab in nicolify/comunify/lupulo", () => {
     expect(grepCount("RibbonTab", OTHER_BRANDS_FRONTEND)).toBe(0);
