@@ -245,7 +245,7 @@ tickets:
   - id: T-5
     title: "ValeriaChat organism (root) + ChatMessages branch logic (populated/empty) + auto-scroll sentinel"
     state: pushed
-    push_commit_sha: TBD
+    push_commit_sha: 81061d28
     transitions:
       - from: ready
         to: pushed
