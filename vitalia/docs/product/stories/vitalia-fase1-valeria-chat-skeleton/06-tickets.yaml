@@ -442,7 +442,7 @@ tickets:
   - id: T-9
     title: "Playwright visual goldens (4 PNGs populated/empty × light/dark) + valeria-chat-{empty, a11y, i18n}.spec.ts"
     state: pushed
-    push_commit_sha: TBD
+    push_commit_sha: d4341ad7
     transitions:
       - from: ready
         to: pushed
