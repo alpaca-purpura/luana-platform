@@ -305,7 +305,7 @@ tickets:
   - id: T-5
     title: "Playwright E2E suite: POM ribbon-page + 9 behavior specs (1 per SC funcional) + ribbon-visual.spec.ts con 11 goldens (--update-snapshots iter 1 post Chris ratify) + axe wcag2aa + i18n regex"
     state: pushed
-    push_commit_sha: TBD
+    push_commit_sha: e7992727
     surface: frontend
     owner_eligibility: [qwen-opencode, claude-sonnet]
     production_code: false   # tests/POM/fixtures/goldens — no production runtime code
