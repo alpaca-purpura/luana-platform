@@ -23,6 +23,8 @@ import {
   AGENT_SLUGS,
   AGENT_RIBBON_ORDER,
   extractAgentFromPath,
+  RIBBON_SUBTABS,
+  extractSubtabFromPath,
 } from "../agent-catalog";
 
 const EXPECTED_SLUGS: AgentSlug[] = [
@@ -404,5 +406,254 @@ describe("tabLabel — Spanish neutro LatAm verbatim (SC-8)", () => {
 
   it("camila tabLabel is exactly 'Mantener'", () => {
     expect(AGENT_CATALOG.camila.tabLabel).toBe("Mantener");
+  });
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// F1-S8 — SubTabMeta interface + RIBBON_SUBTABS + extractSubtabFromPath
+// spec_anchor: 01-spec.md § Catalog SSoT § 1 + 03-arch.md § 2.1
+// ──────────────────────────────────────────────────────────────────────────────
+
+describe("SubTabMeta interface — required fields (F1-S8)", () => {
+  it("SubTabMeta shape: each entry has id (string), label (string), icon (string)", () => {
+    // Use RIBBON_SUBTABS.lisa as representative sample
+    const sample = RIBBON_SUBTABS.lisa[0];
+    // TypeScript enforces shape at compile time; here we verify runtime presence
+    expect(typeof sample.id).toBe("string");
+    expect(typeof sample.label).toBe("string");
+    expect(typeof sample.icon).toBe("string");
+    expect(sample.id.length).toBeGreaterThan(0);
+    expect(sample.label.length).toBeGreaterThan(0);
+    expect(sample.icon.length).toBeGreaterThan(0);
+  });
+
+  it("SubTabMeta id uses kebab-case URL segment pattern", () => {
+    // Verify all ids across all agents are valid URL segments (no spaces, lowercase)
+    const allEntries = Object.values(RIBBON_SUBTABS).flatMap((tabs) => [
+      ...tabs,
+    ]);
+    for (const entry of allEntries) {
+      expect(entry.id).toMatch(/^[a-z][a-z0-9-]*$/);
+    }
+  });
+});
+
+describe("RIBBON_SUBTABS — total count and distribution (F1-S8)", () => {
+  it("RIBBON_SUBTABS satisfies Record<RibbonTabSlug, readonly SubTabMeta[]> — all 7 keys present (lisa/lucas/adrian/valeria/camila/mateo/config)", () => {
+    const expectedKeys = [
+      "lisa",
+      "lucas",
+      "adrian",
+      "valeria",
+      "camila",
+      "mateo",
+      "config",
+    ] as const;
+    for (const key of expectedKeys) {
+      expect(RIBBON_SUBTABS).toHaveProperty(key);
+      expect(Array.isArray(RIBBON_SUBTABS[key])).toBe(true);
+    }
+  });
+
+  it("mateo subtabs is empty array (transversal agent — not in ribbon UI)", () => {
+    expect(RIBBON_SUBTABS.mateo).toHaveLength(0);
+  });
+
+  it("total sub-tabs across 5 ribbon agents + config equals 22 (4+5+4+2+4+3)", () => {
+    // Mateo excluded from count (transversal agent, empty array)
+    const ribbonAndConfig = (
+      ["lisa", "lucas", "adrian", "valeria", "camila", "config"] as const
+    ).reduce((acc, key) => acc + RIBBON_SUBTABS[key].length, 0);
+    expect(ribbonAndConfig).toBe(22);
+  });
+
+  it("lisa has 4 sub-tabs in order: marca, doctores, servicios, compliance", () => {
+    const lisa = RIBBON_SUBTABS.lisa;
+    expect(lisa).toHaveLength(4);
+    expect(lisa.map((t) => t.id)).toEqual([
+      "marca",
+      "doctores",
+      "servicios",
+      "compliance",
+    ]);
+  });
+
+  it("lucas has 5 sub-tabs in order: lanzar, envuelo, recursos, resultados, mercado", () => {
+    const lucas = RIBBON_SUBTABS.lucas;
+    expect(lucas).toHaveLength(5);
+    expect(lucas.map((t) => t.id)).toEqual([
+      "lanzar",
+      "envuelo",
+      "recursos",
+      "resultados",
+      "mercado",
+    ]);
+  });
+
+  it("adrian has 4 sub-tabs in order: inbox, embudo, outbound, propuestas", () => {
+    const adrian = RIBBON_SUBTABS.adrian;
+    expect(adrian).toHaveLength(4);
+    expect(adrian.map((t) => t.id)).toEqual([
+      "inbox",
+      "embudo",
+      "outbound",
+      "propuestas",
+    ]);
+  });
+
+  it("valeria has 2 sub-tabs in order: agenda, pacientes", () => {
+    const valeria = RIBBON_SUBTABS.valeria;
+    expect(valeria).toHaveLength(2);
+    expect(valeria.map((t) => t.id)).toEqual(["agenda", "pacientes"]);
+  });
+
+  it("camila has 4 sub-tabs in order: voz, reactivar, multiplicar, reputacion", () => {
+    const camila = RIBBON_SUBTABS.camila;
+    expect(camila).toHaveLength(4);
+    expect(camila.map((t) => t.id)).toEqual([
+      "voz",
+      "reactivar",
+      "multiplicar",
+      "reputacion",
+    ]);
+  });
+
+  it("config has 3 sub-tabs in order: cuenta, conexiones, avanzado", () => {
+    const config = RIBBON_SUBTABS.config;
+    expect(config).toHaveLength(3);
+    expect(config.map((t) => t.id)).toEqual([
+      "cuenta",
+      "conexiones",
+      "avanzado",
+    ]);
+  });
+});
+
+describe("RIBBON_SUBTABS — label strings Spanish neutro (F1-S8)", () => {
+  it("lisa labels are 'Marca', 'Doctores', 'Servicios', 'Compliance' verbatim", () => {
+    expect(RIBBON_SUBTABS.lisa.map((t) => t.label)).toEqual([
+      "Marca",
+      "Doctores",
+      "Servicios",
+      "Compliance",
+    ]);
+  });
+
+  it("lucas labels: 'Lanzar', 'En vuelo', 'Recursos', 'Resultados', 'Mercado' verbatim", () => {
+    expect(RIBBON_SUBTABS.lucas.map((t) => t.label)).toEqual([
+      "Lanzar",
+      "En vuelo",
+      "Recursos",
+      "Resultados",
+      "Mercado",
+    ]);
+  });
+
+  it("camila.voz label is 'Voz del paciente' (multi-word, no abbreviation)", () => {
+    const voz = RIBBON_SUBTABS.camila.find((t) => t.id === "voz");
+    expect(voz).toBeDefined();
+    expect(voz!.label).toBe("Voz del paciente");
+  });
+
+  it("camila.reputacion label is 'Reputación' (with tilde — Spanish neutro LatAm)", () => {
+    const rep = RIBBON_SUBTABS.camila.find((t) => t.id === "reputacion");
+    expect(rep).toBeDefined();
+    expect(rep!.label).toBe("Reputación");
+    expect(rep!.label).toContain("ó"); // tilde present
+  });
+
+  it("config.cuenta label is 'Mi cuenta' (lowercase 'cuenta')", () => {
+    const cuenta = RIBBON_SUBTABS.config.find((t) => t.id === "cuenta");
+    expect(cuenta).toBeDefined();
+    expect(cuenta!.label).toBe("Mi cuenta");
+  });
+
+  it("each label is a non-empty string with no leading/trailing whitespace", () => {
+    const allEntries = Object.values(RIBBON_SUBTABS).flatMap((tabs) => [
+      ...tabs,
+    ]);
+    for (const entry of allEntries) {
+      expect(entry.label.trim()).toBe(entry.label);
+      expect(entry.label.length).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe("RIBBON_SUBTABS — icon field (emojis, F1-S8)", () => {
+  it("each sub-tab has a non-empty icon string (emoji)", () => {
+    const allEntries = Object.values(RIBBON_SUBTABS).flatMap((tabs) => [
+      ...tabs,
+    ]);
+    for (const entry of allEntries) {
+      expect(entry.icon.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("lisa.doctores icon is '👨‍⚕️' (doctor emoji)", () => {
+    const doc = RIBBON_SUBTABS.lisa.find((t) => t.id === "doctores");
+    expect(doc!.icon).toBe("👨‍⚕️");
+  });
+
+  it("config.conexiones icon is '🔌' (plug emoji — conexiones)", () => {
+    const con = RIBBON_SUBTABS.config.find((t) => t.id === "conexiones");
+    expect(con!.icon).toBe("🔌");
+  });
+});
+
+describe("extractSubtabFromPath — valid paths (F1-S8)", () => {
+  it("extractSubtabFromPath('/tenant-x/lisa/marca') returns 'marca'", () => {
+    expect(extractSubtabFromPath("/tenant-x/lisa/marca")).toBe("marca");
+  });
+
+  it("extractSubtabFromPath('/tenant-x/camila/reactivar') returns 'reactivar'", () => {
+    expect(extractSubtabFromPath("/tenant-x/camila/reactivar")).toBe(
+      "reactivar",
+    );
+  });
+
+  it("extractSubtabFromPath('/tenant-x/config/cuenta') returns 'cuenta'", () => {
+    expect(extractSubtabFromPath("/tenant-x/config/cuenta")).toBe("cuenta");
+  });
+
+  it("extractSubtabFromPath('/tenant-x/lucas/envuelo') returns 'envuelo'", () => {
+    expect(extractSubtabFromPath("/tenant-x/lucas/envuelo")).toBe("envuelo");
+  });
+
+  it("extractSubtabFromPath('/my-clinic-123/adrian/inbox') returns 'inbox'", () => {
+    expect(extractSubtabFromPath("/my-clinic-123/adrian/inbox")).toBe("inbox");
+  });
+
+  it("returns raw segment (no validation against RIBBON_SUBTABS — consumer validates)", () => {
+    // extractSubtabFromPath does NOT validate subtab membership — just extracts segment[2]
+    // Consumer (SubTabsBar) does .find() to match valid subtabs
+    expect(extractSubtabFromPath("/tenant-x/lisa/invalid-subtab")).toBe(
+      "invalid-subtab",
+    );
+  });
+});
+
+describe("extractSubtabFromPath — invalid / null paths (F1-S8)", () => {
+  it("extractSubtabFromPath(null) returns null (defensive nullable input)", () => {
+    expect(extractSubtabFromPath(null)).toBeNull();
+  });
+
+  it("extractSubtabFromPath(undefined) returns null", () => {
+    expect(extractSubtabFromPath(undefined)).toBeNull();
+  });
+
+  it("extractSubtabFromPath('') returns null (empty string)", () => {
+    expect(extractSubtabFromPath("")).toBeNull();
+  });
+
+  it("extractSubtabFromPath('/tenant-x/lisa') returns null (insufficient segments — no subtab)", () => {
+    expect(extractSubtabFromPath("/tenant-x/lisa")).toBeNull();
+  });
+
+  it("extractSubtabFromPath('/tenant-x') returns null (only 1 non-empty segment)", () => {
+    expect(extractSubtabFromPath("/tenant-x")).toBeNull();
+  });
+
+  it("extractSubtabFromPath('/') returns null (root path)", () => {
+    expect(extractSubtabFromPath("/")).toBeNull();
   });
 });

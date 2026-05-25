@@ -176,3 +176,99 @@ export function extractAgentFromPath(
   }
   return null;
 }
+
+// ──────────────────────────────────────────────────────────────────────────────
+// F1-S8 — SubTabMeta interface + RIBBON_SUBTABS constant + extractSubtabFromPath
+// spec_anchor: 03-arch.md § 2.1 + 01-spec.md § Catalog SSoT § 1
+// ──────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Sub-tab descriptor — single sub-tab entry inside RIBBON_SUBTABS[slug].
+ * 22 sub-tabs total distribuidos: lisa 4 · lucas 5 · adrian 4 · valeria 2 · camila 4 · config 3.
+ * spec_anchor: 03-arch.md § 2.1 + 01-spec.md § Catalog SSoT § 1
+ */
+export interface SubTabMeta {
+  /** URL segment identifier — slug kebab-case (e.g., "marca", "doctores", "envuelo"). */
+  id: string;
+  /** Visible label Spanish neutro LatAm — sin voseo (e.g., "Marca", "En vuelo", "Voz del paciente"). */
+  label: string;
+  /** Emoji icon (paridad ribbon catalog Q2 cement — emojis no lucide). */
+  icon: string;
+}
+
+/**
+ * Sub-tabs per ribbon tab — 22 sub-tabs distribuidos 4·5·4·2·4·3.
+ * Counts: Lisa 4 · Lucas 5 · Adrián 4 · Valeria 2 · Camila 4 · Config 3.
+ * Mateo: empty array — transversal agent, not in AGENT_RIBBON_ORDER (F1-S7).
+ * Record<RibbonTabSlug, ...> requires mateo key since AgentSlug includes mateo.
+ *
+ * spec_anchor: 01-spec.md § 1 + 03-arch.md § 2.1 + SHELL-DESIGN-CONTRACT.md § 7.2
+ */
+export const RIBBON_SUBTABS: Record<RibbonTabSlug, readonly SubTabMeta[]> = {
+  lisa: [
+    { id: "marca", label: "Marca", icon: "🏥" },
+    { id: "doctores", label: "Doctores", icon: "👨‍⚕️" },
+    { id: "servicios", label: "Servicios", icon: "🩺" },
+    { id: "compliance", label: "Compliance", icon: "🛡️" },
+  ],
+  lucas: [
+    { id: "lanzar", label: "Lanzar", icon: "🚀" },
+    { id: "envuelo", label: "En vuelo", icon: "📡" },
+    { id: "recursos", label: "Recursos", icon: "📚" },
+    { id: "resultados", label: "Resultados", icon: "📈" },
+    { id: "mercado", label: "Mercado", icon: "🌍" },
+  ],
+  adrian: [
+    { id: "inbox", label: "Inbox", icon: "💬" },
+    { id: "embudo", label: "Embudo", icon: "🎯" },
+    { id: "outbound", label: "Outbound", icon: "📣" },
+    { id: "propuestas", label: "Propuestas", icon: "💼" },
+  ],
+  valeria: [
+    { id: "agenda", label: "Agenda", icon: "📆" },
+    { id: "pacientes", label: "Pacientes", icon: "👥" },
+  ],
+  camila: [
+    { id: "voz", label: "Voz del paciente", icon: "🎤" },
+    { id: "reactivar", label: "Reactivar", icon: "🪃" },
+    { id: "multiplicar", label: "Multiplicar", icon: "🤝" },
+    { id: "reputacion", label: "Reputación", icon: "📊" },
+  ],
+  /** Mateo: transversal agent — no dedicated sub-tabs (empty array, not shown in SubTabsBar). */
+  mateo: [],
+  config: [
+    { id: "cuenta", label: "Mi cuenta", icon: "🏢" },
+    { id: "conexiones", label: "Conexiones", icon: "🔌" },
+    { id: "avanzado", label: "Avanzado", icon: "🔬" },
+  ],
+} as const satisfies Record<RibbonTabSlug, readonly SubTabMeta[]>;
+
+/**
+ * Extrae el segmento [subtab] del pathname.
+ *
+ * Pattern URL: /{tenantId}/{agent}/{subtab}/... → retorna {subtab} si segmento presente,
+ * null si pathname incompleto o vacío.
+ *
+ * Defense-in-depth: NO valida que el subtab pertenezca a RIBBON_SUBTABS[agent] —
+ * el consumidor (SubTabsBar) hace ese check via .find() y dispone defensive null si
+ * el segmento no matchea (SC-5 "invalid subtab → no active"). XSS safe por React
+ * JSX auto-escape on render (segmento se compara como string contra ids estáticos).
+ *
+ * Examples:
+ *   /tenant-x/lisa/marca       → "marca"
+ *   /tenant-x/camila/reactivar → "reactivar"
+ *   /tenant-x/config/cuenta    → "cuenta"
+ *   /tenant-x/lisa             → null (insufficient segments)
+ *   /tenant-x                  → null
+ *   /                          → null
+ *
+ * spec_anchor: 01-spec.md § 5 + § Gherkin SC-3/SC-5/SC-7 + 03-arch.md § 2.1
+ */
+export function extractSubtabFromPath(
+  pathname: string | null | undefined,
+): string | null {
+  if (!pathname) return null;
+  const segments = pathname.split("/").filter(Boolean);
+  if (segments.length < 3) return null;
+  return segments[2] ?? null;
+}
