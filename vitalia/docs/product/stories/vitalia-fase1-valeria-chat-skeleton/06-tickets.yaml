@@ -387,7 +387,7 @@ tickets:
   - id: T-8
     title: "Playwright behavior specs: valeria-chat-{happy, send, keys, xss}.spec.ts"
     state: pushed
-    push_commit_sha: TBD
+    push_commit_sha: b804eb73
     transitions:
       - from: ready
         to: pushed
