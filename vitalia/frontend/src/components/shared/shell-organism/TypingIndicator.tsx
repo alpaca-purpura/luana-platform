@@ -77,7 +77,9 @@ export function TypingIndicator({
             {namePart}
           </span>
         ) : null}
-        <span className="text-muted-foreground">{restPart}</span>
+        {/* a11y SC-6: text-foreground/80 gives ≥4.5:1 contrast on agent-soft bg in both light+dark.
+            * text-muted-foreground (240 4% 46% = ~#737378 on white = 3.4:1) fails wcag2aa. */}
+        <span className="text-foreground/80">{restPart}</span>
         <span
           className="flex items-end gap-0.5 ml-1"
           aria-hidden="true"

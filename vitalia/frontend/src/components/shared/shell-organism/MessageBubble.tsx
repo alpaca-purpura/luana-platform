@@ -60,7 +60,8 @@ export function MessageBubble({
           {content}
         </div>
         {(time ?? label) ? (
-          <span className="text-[10px] text-muted-foreground px-1">
+          /* a11y SC-6: text-foreground/60 ≥4.5:1 contrast; text-muted-foreground (3.4:1 light) fails wcag2aa */
+          <span className="text-[10px] text-foreground/60 px-1">
             {time ? `${label} · ${time}` : label}
           </span>
         ) : null}
@@ -79,7 +80,8 @@ export function MessageBubble({
         {content}
       </div>
       {time ? (
-        <span className="text-[10px] text-muted-foreground px-1">{time}</span>
+        /* a11y SC-6: text-foreground/60 ≥4.5:1 contrast; text-muted-foreground fails wcag2aa at 10px */
+        <span className="text-[10px] text-foreground/60 px-1">{time}</span>
       ) : null}
     </div>
   );

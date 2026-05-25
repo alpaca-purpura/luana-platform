@@ -98,7 +98,8 @@ export function ChatHeader({
         <span className="text-sm font-medium text-foreground leading-tight truncate">
           {descriptor.name}
         </span>
-        <span className="text-xs text-muted-foreground leading-tight truncate">
+        {/* a11y SC-6: text-foreground/60 ≥4.5:1 contrast; text-muted-foreground (3.4:1 light) fails wcag2aa at 12px */}
+        <span className="text-xs text-foreground/60 leading-tight truncate">
           {statusText}
         </span>
       </div>

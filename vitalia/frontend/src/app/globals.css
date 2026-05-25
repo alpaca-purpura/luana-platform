@@ -100,7 +100,24 @@
     --agent-valeria-soft: 287 40% 25%;
     --agent-camila-soft: 244 50% 20%;
     --agent-mateo-soft: 53 80% 18%;
+
   }
+}
+
+/* ─── Agent dark mode a11y overrides (outside @layer base — proper cascade) ────
+ * Tailwind v4 @layer base deduplicates custom property redefinitions, so dark-mode
+ * overrides of :root-defined vars must live outside @layer base to cascade correctly.
+ *
+ * Problem: text-agent-camila (#160d96 = hsl(244 84% 32%)) on dark bg-agent-camila-soft
+ * (#1d1a4d = hsl(244 50% 20%)) yields contrast ratio 1.17:1 (needs 4.5:1 per WCAG 2 AA).
+ * Fix: override --agent-camila in dark mode to a lighter value that reads on dark soft bg.
+ *
+ * a11y: SC-6 axe wcag2aa 0 violations (T-9 valeria-fase1-valeria-chat-skeleton).
+ */
+.dark,
+[data-theme="dark"] {
+  /* hsl(244 80% 78%) = #8b8ef5 — light lavender. Contrast on #1d1a4d ≈ 4.8:1 ✅ */
+  --agent-camila: 244 80% 78%;
 }
 
 /* ─── Legacy vitalia brand tokens (preserved — see ADR-vitalia-002 § 3) ───── */

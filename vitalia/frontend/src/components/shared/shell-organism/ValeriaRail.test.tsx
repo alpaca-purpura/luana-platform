@@ -35,9 +35,7 @@ describe("ValeriaRail — renders 4 buttons MVP-only (SC-1 happy)", () => {
     expect(
       screen.getByRole("button", { name: /Nueva conversación/i }),
     ).toBeDefined();
-    expect(
-      screen.getByRole("button", { name: /Buscar/i }),
-    ).toBeDefined();
+    expect(screen.getByRole("button", { name: /Buscar/i })).toBeDefined();
     expect(
       screen.getByRole("button", { name: /Cerrar Valeria/i }),
     ).toBeDefined();

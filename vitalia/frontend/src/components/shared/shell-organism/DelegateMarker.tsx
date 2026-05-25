@@ -46,7 +46,8 @@ export function DelegateMarker({
     <div
       data-testid="msg-delegate"
       className={cn(
-        "self-center text-xs italic text-muted-foreground flex items-center gap-1.5 py-1",
+        /* a11y SC-6: text-foreground/60 ≥4.5:1 contrast; text-muted-foreground (3.4:1 light) fails wcag2aa */
+        "self-center text-xs italic text-foreground/60 flex items-center gap-1.5 py-1",
         className,
       )}
     >
@@ -82,7 +83,7 @@ export function DelegateMarker({
           {toDescriptor.name}
         </span>
       </span>
-      <span className="text-muted-foreground">(modo {mode})</span>
+      <span className="text-foreground/60">(modo {mode})</span>
     </div>
   );
 }
