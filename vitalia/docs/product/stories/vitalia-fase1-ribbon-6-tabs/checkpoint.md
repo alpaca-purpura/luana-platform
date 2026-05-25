@@ -38,7 +38,7 @@ architect_iter_amendments:
 architect_run_on: 2026-05-25
 last_artifact: T-5-result.md
 phase: BUILD_T5_DONE
-next_action: "AUTO-HANDOFF /auditor — story state=developed, ALL T-1..T-5 pushed GREEN. Playwright 32/32 smoke + 13/13 visual + 1328/1328 Vitest. D18 a11y cement (WCAG AA axe fix) + D19 AvatarFallback testid. Awaiting auditor-frontend REVIEW."
+next_action: "AUTO-HANDOFF /auditor — story state=developed, ALL T-1..T-5 pushed GREEN. Playwright 32/32 smoke + 13/13 visual + 1328/1328 Vitest. D18 a11y cement (WCAG AA axe fix) + D19 AvatarFallback testid. Commit: e7992727. Awaiting auditor-frontend REVIEW."
 ratified_artifacts:
   - 01-spec.md (v1)
   - mockups/ribbon.html (preview interactivo · 7 bloques)
