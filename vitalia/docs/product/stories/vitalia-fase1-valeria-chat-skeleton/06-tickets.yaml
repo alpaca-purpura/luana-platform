@@ -298,7 +298,8 @@ tickets:
   # ──────────────────────────────────────────────────────────────
   - id: T-6
     title: "Integration: MODIFY ValeriaSidebar.tsx (swap slot 2 occurrences) + DELETE ValeriaChatSlot{,.test}.tsx + extend arch tests + NEW test-agent-catalog-ssot.test.ts"
-    state: ready
+    state: pushed
+    commit: 4820bb2c
     surface: frontend
     owner_eligibility: [qwen-opencode, claude-sonnet]
     production_code: true   # ValeriaSidebar.tsx es production code; arch tests son tests-only pero ticket trata ambos
