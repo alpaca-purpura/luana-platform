@@ -214,7 +214,7 @@ tickets:
   # ──────────────────────────────────────────────────────────────
   - id: T-4
     title: "SubTabsBar organism — N SubTabs from RIBBON_SUBTABS[activeAgent] + roving tabindex WAI-ARIA + URL active extraction + return null total cuando activeAgent null"
-    state: pending
+    state: pushed
     surface: frontend
     owner_eligibility: [qwen-opencode, claude-sonnet]
     production_code: true
