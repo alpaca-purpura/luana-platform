@@ -47,7 +47,8 @@ const VOSEO_REGEX = new RegExp(
 );
 
 // Magic comment patterns (per spanish-text.md R25)
-const VOSEO_ALLOWED_COMMENT = /(?:#\s*voseo-allowed([: \t]|$)|<!--\s*voseo-allowed[^>]*-->)/;
+// Supports: # voseo-allowed (Python/shell), // voseo-allowed (TypeScript/JS), <!-- voseo-allowed --> (HTML/JSX)
+const VOSEO_ALLOWED_COMMENT = /(?:(?:#|\/\/)\s*voseo-allowed([: \t—]|$)|<!--\s*voseo-allowed[^>]*-->)/;
 
 // Ratchet baseline — known violations at T-infra-4 creation (shrink-only).
 const KNOWN_VOSEO_VIOLATIONS: ReadonlySet<string> = new Set<string>([
