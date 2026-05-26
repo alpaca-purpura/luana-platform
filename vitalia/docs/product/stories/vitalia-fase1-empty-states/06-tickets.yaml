@@ -198,6 +198,8 @@ tickets:
 
   # ════════════════════════════════════════════════════════════════════
   - id: T-5
+    state: pushed
+    commit: pending
     title: "5 moléculas inbox sales_studio parity (CampaignTag · ConversationItem · MessageBubble · MessageInput · ContactSidebar)"
     description: |
       NEW 5 moléculas inbox brand-local con shape conceptual de `ap_sales_agent/closer-studio/inbox/`

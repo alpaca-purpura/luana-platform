@@ -14,3 +14,18 @@ export { PropuestasPlaceholder } from "./components/placeholders/PropuestasPlace
 
 // ── Placeholder components (T-4 special: AdrianEmbudo) ───────────────────────
 export { EmbudoPlaceholder } from "./components/placeholders/EmbudoPlaceholder";
+
+// ── Inbox molecules (T-5 sales_studio parity — brand-local) ───────────────────
+export { CampaignTag } from "./components/inbox/CampaignTag";
+export { ConversationItem } from "./components/inbox/ConversationItem";
+export { MessageBubble } from "./components/inbox/MessageBubble";
+export { MessageInput } from "./components/inbox/MessageInput";
+export { ContactSidebar } from "./components/inbox/ContactSidebar";
+export type {
+  ConversationListItem,
+  InboxChannel,
+  LeadTemp,
+  FunnelStage,
+  HandlerMode,
+  CampaignRef,
+} from "./components/inbox/types";
