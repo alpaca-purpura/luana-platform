@@ -345,6 +345,19 @@
   background: linear-gradient(135deg, #b8dc2a 0%, #01b2f8 100%);
 }
 
+/* ─── Agenda lunch stripe (F1-S10 T-7 — repeating diagonal muted pattern) ── */
+/* Used by AgendaPlaceholder lunch row (13:00). F2 replaces with functional data. */
+.agenda-lunch-stripe {
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 4px,
+    hsl(var(--muted)) 4px,
+    hsl(var(--muted)) 8px
+  );
+  opacity: 0.4;
+}
+
 /* ─── Base reset + font stack ─────────────────────────────────────────────── */
 * {
   box-sizing: border-box;
