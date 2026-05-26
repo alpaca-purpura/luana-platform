@@ -82,7 +82,7 @@ Arch fitness: 270/270 PASS (unchanged, no allowlist growth).
 
 ## Commit SHA
 
-(pending git push)
+`8561f196` (pushed to `wip/vitalia`)
 
 ## Acceptance Notes
 
