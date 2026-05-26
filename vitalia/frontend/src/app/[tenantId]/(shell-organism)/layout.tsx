@@ -1,22 +1,36 @@
 /**
  * Shell Organism Route Group Layout — Server Component.
- * F1-S4 vitalia-fase1-shell-layout-5050 — T-4
+ * F1-S9 vitalia-fase1-routing-shell — T-3
  *
- * 03-arch.md § 2.1 — verbatim spec.
+ * 03-arch-fe.md § 2.1 — tenant validation server-side.
  *
- * Receives [tenantId] dynamic param (Next.js 16 — params is Promise).
- * Awaits params, forwards tenantId to ShellOrganismLayout (Client Component).
+ * Responsabilidades:
+ *   1. Verificar sesión Clerk (auth() → userId). Sin sesión → /sign-in.
+ *   2. Obtener lista de tenants del usuario (fetchUserTenants).
+ *      Error de red → NetworkErrorFallback (SC-7).
+ *   3. Sin tenants asignados → audit log + sign-out redirect (SC-8).
+ *   4. tenantId de URL ∉ user.tenants → audit log + redirect al primer
+ *      tenant válido (SC-4, SC-5).
+ *   5. tenantId válido → render ShellOrganismLayout.
  *
- * No "use client" — this is a pure Server Component.
- * No metadata export — intentional (child pages own their metadata).
+ * No "use client" — Server Component obligatorio para auth() + redirect().
+ * No metadata export — las páginas hijas son dueñas de su metadata.
+ * Route group (shell-organism) no aparece en la URL.
  *
- * Route group (shell-organism) does NOT appear in the URL path.
+ * HIPAA-lite: audit log payload SOLO userId (opaque Clerk ID) +
+ *   attemptedTenant + timestamp. Sin PHI. Transport: console.warn F1-S9.
  *
- * HIPAA-lite: not applicable — chrome UI, no PHI.
+ * spec_anchor: 03-arch-fe.md § 2.1 + 06-tickets.yaml T-3
  * downstream-regression-na: brand-local route; no cross-brand consumers.
  */
 
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
+
 import { ShellOrganismLayout } from "@/components/shared/shell-organism/ShellOrganismLayout";
+import { fetchUserTenants } from "@/lib/iam/api";
+import { logCrossTenantAttempt, logNoTenantsAssigned } from "@/lib/iam/audit";
+import { NetworkErrorFallback } from "./_components/NetworkErrorFallback";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -25,6 +39,42 @@ interface LayoutProps {
 
 export default async function Layout({ children, params }: LayoutProps) {
   const { tenantId } = await params;
+
+  // SC-01: sin sesión Clerk → redirect a /sign-in
+  const { userId } = await auth();
+  if (!userId) {
+    redirect("/sign-in");
+  }
+
+  // SC-7: error de red al obtener tenants → NetworkErrorFallback
+  let tenants: Awaited<ReturnType<typeof fetchUserTenants>>;
+  try {
+    tenants = await fetchUserTenants(userId);
+  } catch (err) {
+    // No loguear PHI — solo userId opaque + error de conexión
+    console.warn("[audit]", {
+      action: "tenant_fetch_failure",
+      userId,
+      error: String(err),
+      timestamp: new Date().toISOString(),
+    });
+    return <NetworkErrorFallback />;
+  }
+
+  // SC-8: usuario sin tenants asignados → sign-out + error en sign-in
+  if (tenants.length === 0) {
+    logNoTenantsAssigned({ userId });
+    redirect("/sign-out?next=/sign-in?error=no_tenants_assigned");
+  }
+
+  // SC-4, SC-5: tenantId de URL no pertenece al usuario → redirect al primero válido
+  const isValidTenant = tenants.some((t) => t.id === tenantId);
+  if (!isValidTenant) {
+    logCrossTenantAttempt({ userId, attemptedTenant: tenantId });
+    redirect(`/${tenants[0].id}/valeria/agenda`);
+  }
+
+  // Happy path: tenant válido → render shell
   return (
     <ShellOrganismLayout tenantId={tenantId}>{children}</ShellOrganismLayout>
   );

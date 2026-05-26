@@ -9,13 +9,15 @@
  *
  * Protege todas las rutas excepto las explícitamente públicas.
  * Rutas públicas: sign-in, sign-up, landing pública por clínica,
- *   webhooks Clerk (BE los valida con HMAC), health check.
+ *   webhooks Clerk (BE los valida con HMAC), health check, marketing.
  *
  * Auth delegada 100% a Clerk — sin redirect manual ni RBAC.
  * auth.protect() redirige a /sign-in automáticamente si no hay sesión.
  *
  * SC-01: request sin sesión a ruta protegida → Clerk redirige a /sign-in
  * SC-02: request a /public/* → 200, sin redirect
+ *
+ * F1-S9 routing-shell: matcher polish + /marketing(.*) explicit
  */
 
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
@@ -24,6 +26,10 @@ const isPublicRoute = createRouteMatcher([
   "/sign-in(.*)",
   "/sign-up(.*)",
   "/public(.*)",
+  // F1-S9 routing-shell: matcher polish + /marketing(.*) explicit
+  "/marketing(.*)",
+  // Clerk internal routes (account portal, OAuth callbacks)
+  "/__clerk/(.*)",
   "/api/v1/vitalia/webhooks(.*)",
   "/api/health",
   // F1-S0 visual baseline pages (dev-only preview, no auth required)
