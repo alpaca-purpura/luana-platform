@@ -32,6 +32,8 @@ total_tickets: 11
 tickets:
   # ════════════════════════════════════════════════════════════════════
   - id: T-1
+    state: audit-passed
+    commit: 0187ce17
     title: "6 moléculas foundational shell-organism + Vitest unit"
     description: |
       NEW 6 moléculas shared shell-organism (foundation para todos los placeholders):
@@ -75,7 +77,7 @@ tickets:
 
   # ════════════════════════════════════════════════════════════════════
   - id: T-2
-    state: pushed
+    state: audit-passed
     commit: cfda5c44
     title: "16 placeholders genéricos boilerplate (EmptyState wrappers)"
     description: |
@@ -127,7 +129,7 @@ tickets:
 
   # ════════════════════════════════════════════════════════════════════
   - id: T-3
-    state: pushed
+    state: audit-passed
     commit: 84bbceff
     title: "LisaServiciosPlaceholder (toggle Catálogo|Escalera) + ConfigConexionesPlaceholder (grid 6 cat)"
     description: |
@@ -162,7 +164,7 @@ tickets:
 
   # ════════════════════════════════════════════════════════════════════
   - id: T-4
-    state: pushed
+    state: audit-passed
     commit: 3cc26e09
     title: "AdrianEmbudoPlaceholder (Kanban 6 cols + 14 leads mock + toggle Kanban|Lista)"
     description: |
@@ -198,7 +200,7 @@ tickets:
 
   # ════════════════════════════════════════════════════════════════════
   - id: T-5
-    state: pushed
+    state: audit-passed
     commit: be016190
     title: "5 moléculas inbox sales_studio parity (CampaignTag · ConversationItem · MessageBubble · MessageInput · ContactSidebar)"
     description: |
@@ -240,7 +242,7 @@ tickets:
 
   # ════════════════════════════════════════════════════════════════════
   - id: T-6
-    state: pushed
+    state: audit-passed
     commit: 71f43ac4
     title: "2 moléculas takeover UX (ThreadHeader · TakeoverBanner) + AdrianInboxPlaceholder organismo"
     description: |
@@ -324,7 +326,7 @@ tickets:
         - val-fe-vitest-unit-agenda-slot
         - val-fe-arch-fsd-boundaries
         - val-fe-arch-no-phi-real-data
-    state: pushed
+    state: audit-passed
     commit: d8f9ac82
     files_in_scope:
       - vitalia/frontend/src/features/valeria/components/agenda/AgendaToolbar.tsx
@@ -361,7 +363,7 @@ tickets:
     depends_on: [T-1]
     blocks: [T-9]
     gherkin_coverage: []  # cubierto indirectamente por SC-1 navegación 22-subtabs
-    state: pushed
+    state: audit-passed
     commit: 332b8f08
     acceptance:
       validator_ids:
@@ -374,7 +376,7 @@ tickets:
 
   # ════════════════════════════════════════════════════════════════════
   - id: T-9
-    state: pushed
+    state: audit-passed
     commit: 7ba596fe
     title: "page.tsx MODIFY (mount <SubTabContent>) + 3 arch tests NEW (FSD + ribbon-ssot + no-PHI)"
     description: |
@@ -498,7 +500,7 @@ tickets:
       - vitalia/frontend/e2e/regression/vitalia-fase1-empty-states/sc-08-empty-states-genericos.spec.ts
       - vitalia/frontend/e2e/regression/vitalia-fase1-empty-states/sc-09-a11y.spec.ts
       - vitalia/frontend/e2e/regression/vitalia-fase1-empty-states/sc-10-i18n.spec.ts
-    state: pushed
+    state: audit-passed
 
   # ════════════════════════════════════════════════════════════════════
   - id: T-11
@@ -552,7 +554,7 @@ tickets:
         - val-fe-visual-inbox-state-B-human
         - val-fe-visual-inbox-sidebar-closed
         - val-fe-visual-responsive-valeria-agenda
-    state: pushed
+    state: audit-passed
     pending_chris_visual_ratify: true
     files_in_scope:
       - vitalia/frontend/e2e/regression/vitalia-fase1-empty-states/visual-goldens.spec.ts

@@ -6,9 +6,14 @@ type: ui-story
 agent_owner: shell
 module: shell-organism
 capability: shell.empty-states
-state: developed
-phase: AWAIT_AUDIT
-last_modified: 2026-05-26T18:00:00-05:00
+state: done
+phase: MERGED_F1_S10
+last_modified: 2026-05-26T13:55:00-05:00
+transitioned_to_reviewing_at: 2026-05-26T13:35:00-05:00
+transitioned_to_done_at: 2026-05-26T13:55:00-05:00
+merged_by: /pm-vitalia
+auditor_verdict: APPROVED
+phase_1_complete: true   # ★ F1-S10 cierra CHAIN F1-S0..F1-S10 outcome vitalia-mvp-ui-foundation
 t1_state: pushed
 transitioned_to_refining_at: 2026-05-26
 transitioned_to_refined_at: 2026-05-26T11:55:00-05:00
