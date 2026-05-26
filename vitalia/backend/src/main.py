@@ -14,6 +14,7 @@ Arch tests verify:
 from __future__ import annotations
 
 from fastapi import FastAPI
+from luana_core_iam.api.routers import auth_router as iam_users
 from pydantic import BaseModel
 
 from src.modules.vitalia.admin.api.admin_helpers_router import router as admin_helpers_router
@@ -25,7 +26,6 @@ from src.modules.vitalia.copilot.api.routes.wizard_onboarding_routes import (
 )
 from src.modules.vitalia.crm.api.router import router as crm_router
 from src.modules.vitalia.fidelizacion.api.router import fidelizacion_router
-from src.modules.vitalia.iam.api.router import router as iam_router
 from src.modules.vitalia.inbox.api.router import router as inbox_router
 from src.modules.vitalia.marketing.api.routes import router as marketing_router
 
@@ -44,8 +44,12 @@ app = FastAPI(
 app.include_router(vitalia_router)
 # T-be-8: 5 webhook receivers (Stripe + MercadoPago + Clerk + WhatsApp + ManyChat)
 app.include_router(webhook_router)
-# T-infra-9: IAM + CRM modules (Slice 1 scaffold)
-app.include_router(iam_router, prefix="/api/v1/iam")
+# F1-S9: REUSE core IAM auth router (anti-duplication — deleted vitalia local /me stub).
+app.include_router(
+    iam_users.router,
+    prefix="/api/v1/iam/users",
+    tags=["IAM - Users"],
+)
 app.include_router(crm_router, prefix="/api/v1/crm")
 # T-be-services-1: Valeria wizard onboarding (copilot)
 app.include_router(wizard_onboarding_router, prefix="/api/v1/vitalia/onboarding")
