@@ -113,9 +113,9 @@ test.describe("SC-1 · 22 sub-tabs navegables sin error", () => {
         const shell = new ShellOrganismPage(shellPage, tenantId);
         await shell.goto(agent, subtab);
         await expect(
-          shellPage.locator(
-            `[data-testid="subtab-content-${agent}-${subtab}"]`,
-          ),
+          shellPage
+            .locator(`[data-testid="subtab-content-${agent}-${subtab}"]`)
+            .first(),
         ).toBeVisible();
       });
     }

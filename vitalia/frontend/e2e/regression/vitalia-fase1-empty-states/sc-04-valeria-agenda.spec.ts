@@ -36,7 +36,7 @@ test.describe("SC-4 · Valeria Agenda enriquecida (toolbar+filters+grid+footer)"
     shellPage,
   }) => {
     await expect(
-      shellPage.locator('[data-testid="valeria-agenda-placeholder"]'),
+      shellPage.locator('[data-testid="valeria-agenda-placeholder"]').first(),
     ).toBeVisible();
   });
 
@@ -71,7 +71,7 @@ test.describe("SC-4 · Valeria Agenda enriquecida (toolbar+filters+grid+footer)"
   test("6 celdas lunch Horario de almuerzo visibles", async ({ shellPage }) => {
     // One lunch cell per day column
     await expect(
-      shellPage.locator('[aria-label="Horario de almuerzo"]'),
+      shellPage.locator('[aria-label="Horario de almuerzo"]').first(),
     ).toHaveCount(6);
   });
 
@@ -104,10 +104,10 @@ test.describe("SC-4 · Valeria Agenda enriquecida (toolbar+filters+grid+footer)"
 
   test("period toggle semana|dia visible", async ({ shellPage }) => {
     await expect(
-      shellPage.locator('[data-testid="period-toggle-semana"]'),
+      shellPage.locator('[data-testid="period-toggle-semana"]').first(),
     ).toBeVisible();
     await expect(
-      shellPage.locator('[data-testid="period-toggle-dia"]'),
+      shellPage.locator('[data-testid="period-toggle-dia"]').first(),
     ).toBeVisible();
   });
 
@@ -117,7 +117,7 @@ test.describe("SC-4 · Valeria Agenda enriquecida (toolbar+filters+grid+footer)"
   }) => {
     const agenda = new ValeriaAgendaPage(shellPage, tenantId);
     // At least one confirmed slot in mock data
-    await expect(agenda.getSlotPill("confirmed")).toBeVisible();
+    await expect(agenda.getSlotPill("confirmed").first()).toBeVisible();
   });
 
   test("visual week-default · grilla completa Lun26 + 10 slots + footer", async ({

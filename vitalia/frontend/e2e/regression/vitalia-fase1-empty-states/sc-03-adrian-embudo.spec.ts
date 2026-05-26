@@ -45,10 +45,10 @@ test.describe("SC-3 · Adrián Embudo Kanban 6 cols + toggle", () => {
     shellPage,
   }) => {
     await expect(
-      shellPage.locator('[data-testid="embudo-toggle"]'),
+      shellPage.locator('[data-testid="embudo-toggle"]').first(),
     ).toBeVisible();
-    await expect(shellPage.locator("text=Kanban")).toBeVisible();
-    await expect(shellPage.locator("text=Lista")).toBeVisible();
+    await expect(shellPage.locator("text=Kanban").first()).toBeVisible();
+    await expect(shellPage.locator("text=Lista").first()).toBeVisible();
   });
 
   test("6 columnas Kanban visibles con headers verbatim", async ({
@@ -63,9 +63,9 @@ test.describe("SC-3 · Adrián Embudo Kanban 6 cols + toggle", () => {
     shellPage,
   }) => {
     // Mock leads from MOCK_PIPELINE[0].leads in EmbudoPlaceholder.tsx
-    await expect(shellPage.locator("text=María G.")).toBeVisible();
-    await expect(shellPage.locator("text=Carlos P.")).toBeVisible();
-    await expect(shellPage.locator("text=Sofía R.")).toBeVisible();
+    await expect(shellPage.locator("text=María G.").first()).toBeVisible();
+    await expect(shellPage.locator("text=Carlos P.").first()).toBeVisible();
+    await expect(shellPage.locator("text=Sofía R.").first()).toBeVisible();
   });
 
   test("leads muestran valores en PEN S/", async ({ shellPage }) => {
@@ -80,11 +80,15 @@ test.describe("SC-3 · Adrián Embudo Kanban 6 cols + toggle", () => {
   }) => {
     await shellPage
       .locator('[data-testid="embudo-toggle"]')
+      .first()
+      .first()
       .locator("text=Lista")
       .click();
 
     // Lista pane with EmptyState "próximamente"
-    await expect(shellPage.locator("text=/próximamente/i")).toBeVisible();
+    await expect(
+      shellPage.locator("text=/próximamente/i").first(),
+    ).toBeVisible();
   });
 
   test("visual kanban · Kanban view estructura 6 cols visible", async ({
@@ -101,8 +105,12 @@ test.describe("SC-3 · Adrián Embudo Kanban 6 cols + toggle", () => {
   }) => {
     await shellPage
       .locator('[data-testid="embudo-toggle"]')
+      .first()
+      .first()
       .locator("text=Lista")
       .click();
-    await expect(shellPage.locator("text=/próximamente/i")).toBeVisible();
+    await expect(
+      shellPage.locator("text=/próximamente/i").first(),
+    ).toBeVisible();
   });
 });

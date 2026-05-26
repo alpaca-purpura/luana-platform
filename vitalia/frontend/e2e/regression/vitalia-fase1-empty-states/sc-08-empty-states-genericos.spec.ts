@@ -75,14 +75,15 @@ test.describe("SC-8 · 16 sub-tabs genéricos parametrizado (EmptyState consiste
 
         // SubTabContent container rendered
         await expect(
-          shellPage.locator(
-            `[data-testid="subtab-content-${agent}-${subtab}"]`,
-          ),
+          shellPage
+            .locator(`[data-testid="subtab-content-${agent}-${subtab}"]`)
+            .first(),
         ).toBeVisible();
 
         // Content area is non-empty (not blank)
         const contentText = await shellPage
           .locator(`[data-testid="subtab-content-${agent}-${subtab}"]`)
+          .first()
           .textContent();
         expect(contentText?.trim().length ?? 0).toBeGreaterThan(0);
       });
@@ -100,9 +101,9 @@ test.describe("SC-8 · 16 sub-tabs genéricos parametrizado (EmptyState consiste
     await shell.expectSubTabContentVisible("lucas", "lanzar");
 
     // Either placeholder component content OR EmptyState "próximamente" visible
-    const subtabContent = shellPage.locator(
-      '[data-testid="subtab-content-lucas-lanzar"]',
-    );
+    const subtabContent = shellPage
+      .locator('[data-testid="subtab-content-lucas-lanzar"]')
+      .first();
     const text = await subtabContent.textContent();
     expect(text?.trim().length ?? 0).toBeGreaterThan(0);
   });
@@ -113,7 +114,7 @@ test.describe("SC-8 · 16 sub-tabs genéricos parametrizado (EmptyState consiste
   }) => {
     const shell = new ShellOrganismPage(shellPage, tenantId);
     // Navigate to any sub-tab that uses EmptyState fallback
-    await shell.goto("valeria", "pacientes");
+    await shell.goto("valeria", "pacientes").first();
     await shell.expectSubTabContentVisible("valeria", "pacientes");
 
     // Check if EmptyState icon is present (may or may not depending on impl)
@@ -139,17 +140,19 @@ test.describe("SC-8 · 16 sub-tabs genéricos parametrizado (EmptyState consiste
       "Esta vista vive acá. El contenido real se cablea en Fase 2.";
     // Check if this text appears (only if EmptyState fallback is used for this subtab)
     // If a Placeholder component exists, it may have different content
-    const subtabEl = shellPage.locator(
-      '[data-testid="subtab-content-camila-reactivar"]',
-    );
+    const subtabEl = shellPage
+      .locator('[data-testid="subtab-content-camila-reactivar"]')
+      .first();
     await expect(subtabEl).toBeVisible();
     // The element must be non-empty regardless
     const text = await subtabEl.textContent();
     expect(text?.trim().length ?? 0).toBeGreaterThan(0);
     // If using fallback EmptyState, description should be present
-    const pageText = await shellPage.locator("body").textContent();
+    const pageText = await shellPage.locator("body").first().textContent();
     if (pageText?.includes(description)) {
-      await expect(shellPage.locator(`text="${description}"`)).toBeVisible();
+      await expect(
+        shellPage.locator(`text="${description}"`).first(),
+      ).toBeVisible();
     }
   });
 });

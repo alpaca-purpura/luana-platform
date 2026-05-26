@@ -70,12 +70,12 @@ test.describe("SC-7 · XSS payload en URL → safe render (no script execution)"
     await shell.gotoXssSubtab("<script>alert(1)</script>");
 
     // Shell must NOT crash — page must still be functional
-    await expect(shellPage.locator("body")).toBeVisible();
+    await expect(shellPage.locator("body").first()).toBeVisible();
 
     // The invalid subtab is rejected → not-found or safe fallback rendered
     // Ribbon may or may not be visible depending on whether agent segment is valid
     // but shell must not be blank
-    const bodyText = await shellPage.locator("body").textContent();
+    const bodyText = await shellPage.locator("body").first().textContent();
     expect(bodyText).toBeTruthy();
   });
 
@@ -84,7 +84,7 @@ test.describe("SC-7 · XSS payload en URL → safe render (no script execution)"
     tenantId,
   }) => {
     const shell = new ShellOrganismPage(shellPage, tenantId);
-    await shell.gotoXssSubtab("<script>alert('xss')</script>");
+    await shell.gotoXssSubtab("<script>alert('xss').first()</script>");
     await shell.waitForStableRender();
 
     // Count script tags that might contain injected payload

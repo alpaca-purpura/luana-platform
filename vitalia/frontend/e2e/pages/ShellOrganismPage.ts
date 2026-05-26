@@ -36,11 +36,17 @@ export class ShellOrganismPage {
   constructor(page: Page, tenantId: string) {
     this.page = page;
     this.tenantId = tenantId;
-    this.ribbon = page.locator('[data-testid="ribbon"]');
-    this.subTabsBar = page.locator('[data-testid="sub-tabs-bar"]');
-    this.valeriaSidebar = page.locator('[data-testid="valeria-sidebar"]');
-    this.notFoundAgent = page.locator('[data-testid="not-found-agent"]');
-    this.notFoundShell = page.locator('[data-testid="not-found-shell"]');
+    this.ribbon = page.locator('[data-testid="ribbon"]').first();
+    this.subTabsBar = page.locator('[data-testid="sub-tabs-bar"]').first();
+    this.valeriaSidebar = page
+      .locator('[data-testid="valeria-sidebar"]')
+      .first();
+    this.notFoundAgent = page
+      .locator('[data-testid="not-found-agent"]')
+      .first();
+    this.notFoundShell = page
+      .locator('[data-testid="not-found-shell"]')
+      .first();
   }
 
   // ── Navigation ────────────────────────────────────────────────────────
@@ -132,9 +138,9 @@ export class ShellOrganismPage {
    */
   async expectRibbonTabActive(agent: string): Promise<void> {
     await expect(
-      this.page.locator(
-        `[data-testid="ribbon-tab-${agent}"][aria-selected="true"]`,
-      ),
+      this.page
+        .locator(`[data-testid="ribbon-tab-${agent}"][aria-selected="true"]`)
+        .first(),
     ).toBeVisible();
   }
 
@@ -154,7 +160,9 @@ export class ShellOrganismPage {
    */
   async expectSubTabActive(id: string): Promise<void> {
     await expect(
-      this.page.locator(`[data-testid="sub-tab-${id}"][data-active="true"]`),
+      this.page
+        .locator(`[data-testid="sub-tab-${id}"][data-active="true"]`)
+        .first(),
     ).toBeVisible();
   }
 

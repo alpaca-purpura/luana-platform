@@ -66,11 +66,11 @@ test.describe("SC-9 · accessibility heading hierarchy + keyboard", () => {
 
       // SubTabHeader renders h2 — data-testid="subtab-header-lisa-marca"
       await expect(
-        shellPage.locator('[data-testid="subtab-header-lisa-marca"]'),
+        shellPage.locator('[data-testid="subtab-header-lisa-marca"]').first(),
       ).toBeVisible();
 
       // Verify h2 is the top-level heading in the content area (not multiple h1)
-      const h1Count = await shellPage.locator("h1").count();
+      const h1Count = await shellPage.locator("h1").first().count();
       // Shell layout should have at most 1 h1 (page title if any)
       expect(h1Count).toBeLessThanOrEqual(1);
     });
@@ -80,11 +80,11 @@ test.describe("SC-9 · accessibility heading hierarchy + keyboard", () => {
       tenantId,
     }) => {
       const shell = new ShellOrganismPage(shellPage, tenantId);
-      await shell.goto("valeria", "agenda");
+      await shell.goto("valeria", "agenda").first();
       await shell.expectShellMounted();
 
       // h2 from SubTabHeader
-      const h2Count = await shellPage.locator("h2").count();
+      const h2Count = await shellPage.locator("h2").first().count();
       expect(h2Count).toBeGreaterThanOrEqual(1);
     });
   });
@@ -95,7 +95,7 @@ test.describe("SC-9 · accessibility heading hierarchy + keyboard", () => {
       tenantId,
     }) => {
       const shell = new ShellOrganismPage(shellPage, tenantId);
-      await shell.goto("lisa", "marca");
+      await shell.goto("lisa", "marca").first();
       await shell.expectShellMounted();
 
       // Focus the ribbon element area and Tab through it
@@ -124,7 +124,7 @@ test.describe("SC-9 · accessibility heading hierarchy + keyboard", () => {
 
       // Escalera pane should activate
       await expect(
-        shellPage.locator('[data-testid="pane-escalera"]'),
+        shellPage.locator('[data-testid="pane-escalera"]').first(),
       ).toBeVisible();
     });
 
@@ -133,13 +133,13 @@ test.describe("SC-9 · accessibility heading hierarchy + keyboard", () => {
       tenantId,
     }) => {
       const shell = new ShellOrganismPage(shellPage, tenantId);
-      await shell.goto("lisa", "marca");
+      await shell.goto("lisa", "marca").first();
 
       // Active ribbon tab should have aria-selected="true"
       await expect(
-        shellPage.locator(
-          '[data-testid="ribbon-tab-lisa"][aria-selected="true"]',
-        ),
+        shellPage
+          .locator('[data-testid="ribbon-tab-lisa"][aria-selected="true"]')
+          .first(),
       ).toBeVisible();
     });
   });
@@ -150,11 +150,11 @@ test.describe("SC-9 · accessibility heading hierarchy + keyboard", () => {
       tenantId,
     }) => {
       const shell = new ShellOrganismPage(shellPage, tenantId);
-      await shell.goto("adrian", "inbox");
+      await shell.goto("adrian", "inbox").first();
       await shell.expectShellMounted();
 
       await expect(
-        shellPage.locator('[aria-label="Lista de conversaciones"]'),
+        shellPage.locator('[aria-label="Lista de conversaciones"]').first(),
       ).toBeVisible();
     });
 
@@ -163,11 +163,11 @@ test.describe("SC-9 · accessibility heading hierarchy + keyboard", () => {
       tenantId,
     }) => {
       const shell = new ShellOrganismPage(shellPage, tenantId);
-      await shell.goto("valeria", "agenda");
+      await shell.goto("valeria", "agenda").first();
       await shell.expectShellMounted();
 
       await expect(
-        shellPage.locator('[aria-label="Grilla de agenda semanal"]'),
+        shellPage.locator('[aria-label="Grilla de agenda semanal"]').first(),
       ).toBeVisible();
     });
 
@@ -176,13 +176,15 @@ test.describe("SC-9 · accessibility heading hierarchy + keyboard", () => {
       tenantId,
     }) => {
       const shell = new ShellOrganismPage(shellPage, tenantId);
-      await shell.goto("adrian", "inbox");
+      await shell.goto("adrian", "inbox").first();
       await shell.expectShellMounted();
 
       await expect(
-        shellPage.locator(
-          '[aria-live="polite"][aria-label="Mensajes de la conversación"]',
-        ),
+        shellPage
+          .locator(
+            '[aria-live="polite"][aria-label="Mensajes de la conversación"]',
+          )
+          .first(),
       ).toBeVisible();
     });
   });

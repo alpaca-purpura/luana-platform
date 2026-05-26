@@ -125,9 +125,9 @@ test.describe("visual goldens — 22 sub-tabs light theme (F1-S10)", () => {
       await shell.goto(agent, subtab);
 
       // Wait for subtab content to mount
-      const contentLocator = shellPage.locator(
-        `[data-testid="subtab-content-${agent}-${subtab}"]`,
-      );
+      const contentLocator = shellPage
+        .locator(`[data-testid="subtab-content-${agent}-${subtab}"]`)
+        .first();
       await expect(contentLocator).toBeVisible({ timeout: 15_000 });
       await shellPage.waitForTimeout(200); // Allow CSS transitions + active state to settle
 
@@ -195,9 +195,9 @@ test.describe("visual goldens — Adrián Inbox takeover state A (F1-S10)", () =
     await shellPage.waitForTimeout(200);
 
     // Capture full inbox 3-col area
-    const inboxContainer = shellPage.locator(
-      '[data-testid="subtab-content-adrian-inbox"]',
-    );
+    const inboxContainer = shellPage
+      .locator('[data-testid="subtab-content-adrian-inbox"]')
+      .first();
     await expect(inboxContainer).toBeVisible();
     await expect(inboxContainer).toHaveScreenshot(
       "adrian-inbox-state-A-light.png",
@@ -248,9 +248,9 @@ test.describe("visual goldens — Adrián Inbox takeover state B (F1-S10)", () =
     await expect(inbox.returnControlButton).toBeVisible({ timeout: 5_000 });
     await shellPage.waitForTimeout(200);
 
-    const inboxContainer = shellPage.locator(
-      '[data-testid="subtab-content-adrian-inbox"]',
-    );
+    const inboxContainer = shellPage
+      .locator('[data-testid="subtab-content-adrian-inbox"]')
+      .first();
     await expect(inboxContainer).toBeVisible();
     await expect(inboxContainer).toHaveScreenshot(
       "adrian-inbox-state-B-light.png",
@@ -299,14 +299,16 @@ test.describe("visual goldens — Adrián Inbox sidebar closed (F1-S10)", () => 
     await expect(inbox.closeSidebarButton).toBeVisible({ timeout: 10_000 });
     await inbox.closeSidebar();
     // Sidebar should collapse col-3 to 0
-    await expect(shellPage.locator('[data-sidebar="closed"]')).toBeVisible({
+    await expect(
+      shellPage.locator('[data-sidebar="closed"]').first(),
+    ).toBeVisible({
       timeout: 5_000,
     });
     await shellPage.waitForTimeout(200);
 
-    const inboxContainer = shellPage.locator(
-      '[data-testid="subtab-content-adrian-inbox"]',
-    );
+    const inboxContainer = shellPage
+      .locator('[data-testid="subtab-content-adrian-inbox"]')
+      .first();
     await expect(inboxContainer).toBeVisible();
     await expect(inboxContainer).toHaveScreenshot(
       "adrian-inbox-sidebar-closed-light.png",
@@ -323,7 +325,9 @@ test.describe("visual goldens — Adrián Inbox sidebar closed (F1-S10)", () => 
 
     await expect(inbox.closeSidebarButton).toBeVisible({ timeout: 10_000 });
     await inbox.closeSidebar();
-    await expect(darkShellPage.locator('[data-sidebar="closed"]')).toBeVisible({
+    await expect(
+      darkShellPage.locator('[data-sidebar="closed"]').first(),
+    ).toBeVisible({
       timeout: 5_000,
     });
     await darkShellPage.waitForTimeout(200);
@@ -372,9 +376,9 @@ test.describe("visual goldens — responsive mobile 375x812 · 6 specials (F1-S1
       const shell = new ShellOrganismPage(shellPage, tenantId);
       await shell.goto(agent, subtab);
 
-      const contentLocator = shellPage.locator(
-        `[data-testid="subtab-content-${agent}-${subtab}"]`,
-      );
+      const contentLocator = shellPage
+        .locator(`[data-testid="subtab-content-${agent}-${subtab}"]`)
+        .first();
       await expect(contentLocator).toBeVisible({ timeout: 15_000 });
       await shellPage.waitForTimeout(300); // Extra settle time for mobile reflow
 
@@ -395,9 +399,9 @@ test.describe("visual goldens — responsive tablet 768x1024 · 6 specials (F1-S
       const shell = new ShellOrganismPage(shellPage, tenantId);
       await shell.goto(agent, subtab);
 
-      const contentLocator = shellPage.locator(
-        `[data-testid="subtab-content-${agent}-${subtab}"]`,
-      );
+      const contentLocator = shellPage
+        .locator(`[data-testid="subtab-content-${agent}-${subtab}"]`)
+        .first();
       await expect(contentLocator).toBeVisible({ timeout: 15_000 });
       await shellPage.waitForTimeout(300);
 
@@ -418,9 +422,9 @@ test.describe("visual goldens — responsive desktop 1280x900 · 6 specials (F1-
       const shell = new ShellOrganismPage(shellPage, tenantId);
       await shell.goto(agent, subtab);
 
-      const contentLocator = shellPage.locator(
-        `[data-testid="subtab-content-${agent}-${subtab}"]`,
-      );
+      const contentLocator = shellPage
+        .locator(`[data-testid="subtab-content-${agent}-${subtab}"]`)
+        .first();
       await expect(contentLocator).toBeVisible({ timeout: 15_000 });
       await shellPage.waitForTimeout(200);
 
@@ -451,9 +455,9 @@ test.describe("visual goldens — Valeria Agenda week-default (F1-S10)", () => {
     await agenda.expectAgendaMounted();
     await shellPage.waitForTimeout(200);
 
-    const agendaContainer = shellPage.locator(
-      '[data-testid="valeria-agenda-placeholder"]',
-    );
+    const agendaContainer = shellPage
+      .locator('[data-testid="valeria-agenda-placeholder"]')
+      .first();
     await expect(agendaContainer).toBeVisible();
     await expect(agendaContainer).toHaveScreenshot(
       "valeria-agenda-week-default-light.png",
@@ -496,15 +500,17 @@ test.describe("visual goldens — Lisa Servicios toggle states (F1-S10)", () => 
     tenantId,
   }) => {
     const shell = new ShellOrganismPage(shellPage, tenantId);
-    await shell.goto("lisa", "servicios");
+    await shell.goto("lisa", "servicios").first();
 
-    const contentLocator = shellPage.locator(
-      '[data-testid="subtab-content-lisa-servicios"]',
-    );
+    const contentLocator = shellPage
+      .locator('[data-testid="subtab-content-lisa-servicios"]')
+      .first();
     await expect(contentLocator).toBeVisible({ timeout: 15_000 });
 
     // Default state is Catálogo — verify catalogo grid is present
-    const catalogoGrid = shellPage.locator('[data-testid="catalogo-grid"]');
+    const catalogoGrid = shellPage
+      .locator('[data-testid="catalogo-grid"]')
+      .first();
     await expect(catalogoGrid).toBeVisible({ timeout: 5_000 });
     await shellPage.waitForTimeout(200);
 
@@ -523,21 +529,22 @@ test.describe("visual goldens — Lisa Servicios toggle states (F1-S10)", () => 
     const shell = new ShellOrganismPage(shellPage, tenantId);
     await shell.goto("lisa", "servicios");
 
-    const contentLocator = shellPage.locator(
-      '[data-testid="subtab-content-lisa-servicios"]',
-    );
+    const contentLocator = shellPage
+      .locator('[data-testid="subtab-content-lisa-servicios"]')
+      .first();
     await expect(contentLocator).toBeVisible({ timeout: 15_000 });
 
     // Click Escalera toggle
     const escaleraPill = shellPage
       .locator('[data-testid="servicios-toggle"]')
+      .first()
       .locator("text=Escalera");
     await expect(escaleraPill).toBeVisible({ timeout: 5_000 });
     await escaleraPill.click();
 
     // Wait for escalera pane to mount
     await expect(
-      shellPage.locator('[data-testid="pane-escalera"]'),
+      shellPage.locator('[data-testid="pane-escalera"]').first(),
     ).toBeVisible({ timeout: 5_000 });
     await shellPage.waitForTimeout(200);
 
@@ -564,15 +571,17 @@ test.describe("visual goldens — Adrián Embudo Kanban/Lista states (F1-S10)", 
     tenantId,
   }) => {
     const shell = new ShellOrganismPage(shellPage, tenantId);
-    await shell.goto("adrian", "embudo");
+    await shell.goto("adrian", "embudo").first();
 
-    const contentLocator = shellPage.locator(
-      '[data-testid="subtab-content-adrian-embudo"]',
-    );
+    const contentLocator = shellPage
+      .locator('[data-testid="subtab-content-adrian-embudo"]')
+      .first();
     await expect(contentLocator).toBeVisible({ timeout: 15_000 });
 
     // Default state is Kanban — verify kanban board present
-    const kanbanBoard = shellPage.locator('[data-testid="kanban-board"]');
+    const kanbanBoard = shellPage
+      .locator('[data-testid="kanban-board"]')
+      .first();
     await expect(kanbanBoard).toBeVisible({ timeout: 5_000 });
     await shellPage.waitForTimeout(200);
 
@@ -591,20 +600,23 @@ test.describe("visual goldens — Adrián Embudo Kanban/Lista states (F1-S10)", 
     const shell = new ShellOrganismPage(shellPage, tenantId);
     await shell.goto("adrian", "embudo");
 
-    const contentLocator = shellPage.locator(
-      '[data-testid="subtab-content-adrian-embudo"]',
-    );
+    const contentLocator = shellPage
+      .locator('[data-testid="subtab-content-adrian-embudo"]')
+      .first();
     await expect(contentLocator).toBeVisible({ timeout: 15_000 });
 
     // Click Lista toggle
     const listaPill = shellPage
       .locator('[data-testid="embudo-toggle"]')
+      .first()
       .locator("text=Lista");
     await expect(listaPill).toBeVisible({ timeout: 5_000 });
     await listaPill.click();
 
     // Wait for lista view to mount
-    await expect(shellPage.locator('[data-testid="pane-lista"]')).toBeVisible({
+    await expect(
+      shellPage.locator('[data-testid="pane-lista"]').first(),
+    ).toBeVisible({
       timeout: 5_000,
     });
     await shellPage.waitForTimeout(200);

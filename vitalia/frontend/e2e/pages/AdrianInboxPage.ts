@@ -83,7 +83,7 @@ export class AdrianInboxPage {
     );
 
     // The 3-col grid container with data-sidebar attribute
-    this.sidebarContainer = page.locator("[data-sidebar]");
+    this.sidebarContainer = page.locator("[data-sidebar]").first();
   }
 
   // ── Navigation ────────────────────────────────────────────────────────
@@ -133,7 +133,9 @@ export class AdrianInboxPage {
     displayName: string,
   ): Promise<void> {
     await expect(
-      this.page.locator(`[aria-label*="Conversación con ${displayName}"]`),
+      this.page
+        .locator(`[aria-label*="Conversación con ${displayName}"]`)
+        .first(),
     ).toBeVisible();
     await expect(this.getYouChip().first()).toBeVisible();
   }
@@ -168,7 +170,7 @@ export class AdrianInboxPage {
     await expect(this.takeControlButton).toBeVisible();
     // TakeoverBanner should not be present or visible
     await expect(
-      this.page.locator("text=🤖 Devolver a Adrián"),
+      this.page.locator("text=🤖 Devolver a Adrián").first(),
     ).not.toBeVisible();
     // MessageInput placeholder in state A
     await expect(

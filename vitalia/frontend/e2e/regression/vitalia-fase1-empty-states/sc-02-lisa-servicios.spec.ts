@@ -32,7 +32,7 @@ test.describe("SC-2 · Lisa Servicios toggle Catálogo|Escalera", () => {
     shellPage,
   }) => {
     await expect(
-      shellPage.locator('[data-testid="servicios-placeholder"]'),
+      shellPage.locator('[data-testid="servicios-placeholder"]').first(),
     ).toBeVisible();
   });
 
@@ -40,21 +40,21 @@ test.describe("SC-2 · Lisa Servicios toggle Catálogo|Escalera", () => {
     shellPage,
   }) => {
     await expect(
-      shellPage.locator('[data-testid="servicios-toggle"]'),
+      shellPage.locator('[data-testid="servicios-toggle"]').first(),
     ).toBeVisible();
     // Both toggle options exist as buttons/tabs
-    await expect(shellPage.locator("text=Catálogo")).toBeVisible();
-    await expect(shellPage.locator("text=Escalera")).toBeVisible();
+    await expect(shellPage.locator("text=Catálogo").first()).toBeVisible();
+    await expect(shellPage.locator("text=Escalera").first()).toBeVisible();
   });
 
   test("estado default: pane Catálogo visible con grid de tratamientos", async ({
     shellPage,
   }) => {
     await expect(
-      shellPage.locator('[data-testid="pane-catalogo"]'),
+      shellPage.locator('[data-testid="pane-catalogo"]').first(),
     ).toBeVisible();
     await expect(
-      shellPage.locator('[data-testid="catalogo-grid"]'),
+      shellPage.locator('[data-testid="catalogo-grid"]').first(),
     ).toBeVisible();
   });
 
@@ -62,10 +62,10 @@ test.describe("SC-2 · Lisa Servicios toggle Catálogo|Escalera", () => {
     shellPage,
   }) => {
     await expect(
-      shellPage.locator('[data-testid="nuevo-tratamiento-cta"]'),
+      shellPage.locator('[data-testid="nuevo-tratamiento-cta"]').first(),
     ).toBeVisible();
     await expect(
-      shellPage.locator('[aria-label="Agregar nuevo tratamiento"]'),
+      shellPage.locator('[aria-label="Agregar nuevo tratamiento"]').first(),
     ).toBeVisible();
   });
 
@@ -75,17 +75,18 @@ test.describe("SC-2 · Lisa Servicios toggle Catálogo|Escalera", () => {
     // Click the Escalera toggle option
     await shellPage
       .locator('[data-testid="servicios-toggle"]')
+      .first()
       .locator("text=Escalera")
       .click();
 
     // Escalera pane becomes visible
     await expect(
-      shellPage.locator('[data-testid="pane-escalera"]'),
+      shellPage.locator('[data-testid="pane-escalera"]').first(),
     ).toBeVisible();
 
     // EmptyState "próximamente" message visible
     await expect(
-      shellPage.locator("text=/Escalera de valor.*próximamente/i"),
+      shellPage.locator("text=/Escalera de valor.*próximamente/i").first(),
     ).toBeVisible();
   });
 
@@ -96,13 +97,13 @@ test.describe("SC-2 · Lisa Servicios toggle Catálogo|Escalera", () => {
     // Visual golden — captured during T-11 visual golden sprint
     // This test documents the assertion; screenshot comparison done in T-11
     const shell = new ShellOrganismPage(shellPage, tenantId);
-    await shell.goto("lisa", "servicios");
+    await shell.goto("lisa", "servicios").first();
     await expect(
-      shellPage.locator('[data-testid="servicios-placeholder"]'),
+      shellPage.locator('[data-testid="servicios-placeholder"]').first(),
     ).toBeVisible();
     // Confirm Catálogo is the active pane by checking grid presence
     await expect(
-      shellPage.locator('[data-testid="catalogo-grid"]'),
+      shellPage.locator('[data-testid="catalogo-grid"]').first(),
     ).toBeVisible();
   });
 
@@ -110,10 +111,11 @@ test.describe("SC-2 · Lisa Servicios toggle Catálogo|Escalera", () => {
     // Activate escalera pane
     await shellPage
       .locator('[data-testid="servicios-toggle"]')
+      .first()
       .locator("text=Escalera")
       .click();
     await expect(
-      shellPage.locator('[data-testid="pane-escalera"]'),
+      shellPage.locator('[data-testid="pane-escalera"]').first(),
     ).toBeVisible();
   });
 });

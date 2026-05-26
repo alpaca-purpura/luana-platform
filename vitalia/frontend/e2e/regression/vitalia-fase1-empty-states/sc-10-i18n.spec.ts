@@ -69,14 +69,16 @@ test.describe("SC-10 · Spanish neutro LatAm + tenant_locale PEN", () => {
         await shell.expectShellMounted();
 
         // Get all visible text in the page
-        const pageText = await shellPage.locator("body").innerText();
+        const pageText = await shellPage.locator("body").first().innerText();
         const lowercaseText = pageText.toLowerCase();
 
         for (const voseoVerb of VOSEO_PATTERNS) {
           expect(
             lowercaseText,
             `Voseo verb "${voseoVerb}" found in ${agent}.${subtab}`,
-          ).not.toContain(voseoVerb.toLowerCase());
+          )
+            .first()
+            .not.toContain(voseoVerb.toLowerCase());
         }
       });
     }
@@ -97,7 +99,7 @@ test.describe("SC-10 · Spanish neutro LatAm + tenant_locale PEN", () => {
       ).toBeVisible();
 
       // No USD/EUR/ARS in currency values
-      const pageText = await shellPage.locator("body").innerText();
+      const pageText = await shellPage.locator("body").first().innerText();
       expect(pageText).not.toMatch(/\$\s*\d+k/); // USD $ format
     });
 
@@ -106,7 +108,7 @@ test.describe("SC-10 · Spanish neutro LatAm + tenant_locale PEN", () => {
       tenantId,
     }) => {
       const shell = new ShellOrganismPage(shellPage, tenantId);
-      await shell.goto("adrian", "inbox");
+      await shell.goto("adrian", "inbox").first();
       await shell.expectShellMounted();
 
       // Mock thread messages contain "S/ 120" (limpieza dental price)
@@ -122,7 +124,7 @@ test.describe("SC-10 · Spanish neutro LatAm + tenant_locale PEN", () => {
       tenantId,
     }) => {
       const shell = new ShellOrganismPage(shellPage, tenantId);
-      await shell.goto("valeria", "agenda");
+      await shell.goto("valeria", "agenda").first();
       await shell.expectShellMounted();
 
       // TIME_SLOTS in AgendaPlaceholder.tsx use 24h format: "08:00", "09:00", etc.
@@ -131,7 +133,7 @@ test.describe("SC-10 · Spanish neutro LatAm + tenant_locale PEN", () => {
       ).toBeVisible();
 
       // No AM/PM format
-      const pageText = await shellPage.locator("body").innerText();
+      const pageText = await shellPage.locator("body").first().innerText();
       expect(pageText).not.toMatch(/\b\d+:\d{2}\s*(AM|PM)\b/i);
     });
   });
@@ -143,11 +145,11 @@ test.describe("SC-10 · Spanish neutro LatAm + tenant_locale PEN", () => {
     }) => {
       const shell = new ShellOrganismPage(shellPage, tenantId);
       // Navigate to a sub-tab that shows "próximamente" text
-      await shell.goto("lucas", "envuelo");
+      await shell.goto("lucas", "envuelo").first();
       await shell.expectShellMounted();
 
-      const bodyText = await shellPage.locator("body").textContent();
-      if (bodyText?.includes("próximamente")) {
+      const bodyText = await shellPage.locator("body").first().textContent();
+      if (bodyText?.includes("próximamente").first()) {
         // If present, it must have the tilde (ó not o)
         expect(bodyText).toContain("próximamente");
         expect(bodyText).not.toContain("proximamente"); // without tilde
@@ -163,9 +165,11 @@ test.describe("SC-10 · Spanish neutro LatAm + tenant_locale PEN", () => {
       await shell.expectShellMounted();
 
       // "María González" — tilde on a, accent on e
-      await expect(shellPage.locator("text=María González")).toBeVisible();
+      await expect(
+        shellPage.locator("text=María González").first(),
+      ).toBeVisible();
       // "Lucía Ramos" — tilde on i
-      await expect(shellPage.locator("text=Lucía Ramos")).toBeVisible();
+      await expect(shellPage.locator("text=Lucía Ramos").first()).toBeVisible();
     });
   });
 
@@ -175,15 +179,17 @@ test.describe("SC-10 · Spanish neutro LatAm + tenant_locale PEN", () => {
       tenantId,
     }) => {
       const shell = new ShellOrganismPage(shellPage, tenantId);
-      await shell.goto("adrian", "inbox");
+      await shell.goto("adrian", "inbox").first();
       await shell.expectShellMounted();
 
       // Placeholder text in state A: "Adrián decide automáticamente · toma el control para escribir tú"
       // Key: "toma" (tuteo) not "tomá" (voseo); "escribir tú" not "escribir vos"
-      const placeholderEl = shellPage.locator(
-        '[placeholder*="Adrián decide automáticamente"]',
-      );
-      const placeholder = await placeholderEl.getAttribute("placeholder");
+      const placeholderEl = shellPage
+        .locator('[placeholder*="Adrián decide automáticamente"]')
+        .first();
+      const placeholder = await placeholderEl
+        .getAttribute("placeholder")
+        .first();
       if (placeholder) {
         expect(placeholder.toLowerCase()).not.toContain("tomá");
         expect(placeholder.toLowerCase()).not.toContain("vos");
@@ -199,7 +205,7 @@ test.describe("SC-10 · Spanish neutro LatAm + tenant_locale PEN", () => {
       await shell.expectShellMounted();
 
       // "Decidió no" (not "Decidiste no" but correctly neutro)
-      await expect(shellPage.locator("text=Decidió no")).toBeVisible();
+      await expect(shellPage.locator("text=Decidió no").first()).toBeVisible();
     });
   });
 });

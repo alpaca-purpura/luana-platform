@@ -44,20 +44,32 @@ export class ValeriaAgendaPage {
     this.agendaPlaceholder = page.locator(
       '[data-testid="valeria-agenda-placeholder"]',
     );
-    this.agendaGrid = page.locator('[data-testid="agenda-grid"]');
-    this.agendaToolbar = page.locator('[data-testid="agenda-toolbar"]');
-    this.agendaFilters = page.locator('[data-testid="agenda-filters"]');
-    this.summaryFooter = page.locator('[data-testid="agenda-summary-footer"]');
-    this.summaryText = page.locator('[data-testid="agenda-summary-text"]');
+    this.agendaGrid = page.locator('[data-testid="agenda-grid"]').first();
+    this.agendaToolbar = page.locator('[data-testid="agenda-toolbar"]').first();
+    this.agendaFilters = page.locator('[data-testid="agenda-filters"]').first();
+    this.summaryFooter = page
+      .locator('[data-testid="agenda-summary-footer"]')
+      .first();
+    this.summaryText = page
+      .locator('[data-testid="agenda-summary-text"]')
+      .first();
 
     // Toolbar controls
-    this.todayButton = page.locator('[data-testid="agenda-today-btn"]');
-    this.ctaCrearCita = page.locator('[data-testid="agenda-cta-crear-cita"]');
-    this.ctaDropdown = page.locator('[data-testid="agenda-cta-dropdown"]');
+    this.todayButton = page.locator('[data-testid="agenda-today-btn"]').first();
+    this.ctaCrearCita = page
+      .locator('[data-testid="agenda-cta-crear-cita"]')
+      .first();
+    this.ctaDropdown = page
+      .locator('[data-testid="agenda-cta-dropdown"]')
+      .first();
 
     // Period navigation — aria-labels from AgendaToolbar.tsx
-    this.prevPeriodButton = page.locator('[aria-label="Período anterior"]');
-    this.nextPeriodButton = page.locator('[aria-label="Período siguiente"]');
+    this.prevPeriodButton = page
+      .locator('[aria-label="Período anterior"]')
+      .first();
+    this.nextPeriodButton = page
+      .locator('[aria-label="Período siguiente"]')
+      .first();
   }
 
   // ── Navigation ────────────────────────────────────────────────────────
@@ -125,7 +137,7 @@ export class ValeriaAgendaPage {
    * data-testid="agenda-slot" per AgendaSlot.tsx.
    */
   getAgendaSlots(): Locator {
-    return this.page.locator('[data-testid="agenda-slot"]');
+    return this.page.locator('[data-testid="agenda-slot"]').first();
   }
 
   /**
@@ -147,7 +159,9 @@ export class ValeriaAgendaPage {
   async expectDayHeadersVisible(dayNums: number[]): Promise<void> {
     for (const dayNum of dayNums) {
       await expect(
-        this.page.locator(`[data-testid="agenda-day-header-${dayNum}"]`),
+        this.page
+          .locator(`[data-testid="agenda-day-header-${dayNum}"]`)
+          .first(),
       ).toBeVisible();
     }
   }

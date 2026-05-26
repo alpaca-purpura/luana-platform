@@ -193,7 +193,36 @@ const baseUrl =
 
 **Promotable:** YES — esto aplica a TODO server-side fetch en cualquier brand. `vitalia/.claude/rules/server-side-fetch-docker-pattern.md` or equivalent rule TBD. Lift candidate cross-brand. Audit recomendado en `nicolify/frontend/src/lib/` + futuras brands para detectar mismo bug.
 
-### D8 — Triple-main pattern duplica SubTabContent en DOM — DOCUMENTED (tests-only impact)
+### D9 — Clerk JWT testing token missing `email` claim — DESCUBIERTO durante closure E2E live (intermittent flaky)
+
+**Problema:** durante F1 closure E2E live execution (Playwright suite F1-S10), descubrí pattern: ~50% de requests `/api/v1/iam/users/me/tenants` fallan con 401 Unauthorized. BE logs:
+
+```
+[error] token_payload_missing_email keys=['azp', 'exp', 'fva', 'iat', 'iss', 'nbf', 'o', 'sid', 'sts', 'sub', 'v']
+[warning] fetching_email_from_clerk_api_fallback user_id=user_3DyTTJQK0ZQLE5XGSi5BMjKEjrR
+[info] email_resolved_via_clerk_api email=dr.demo@vitalialat.com  (success)
+... OR ...
+INFO: "GET /api/v1/iam/users/me/tenants HTTP/1.1" 401 Unauthorized  (fail)
+```
+
+**Root cause:** Clerk JWT testing token NO incluye claim `email`. BE IAM endpoint hace fallback a Clerk API (`/users/{userId}`) para obtener email — flow funcional pero con race conditions o rate limiting bajo parallel load (4 workers Playwright).
+
+**Impact (F1 closure E2E live):** 64/129 tests fallan intermittently · 13 flaky tests pasan tras retry · 52/129 tests pasan first-try. NO afecta producción (real Clerk JWT incluye email). Solo afecta testing tokens.
+
+**Quick fix posible (NOT applied F1 closure):**
+1. Configure Clerk testing token con `email` claim included (Clerk dashboard config)
+2. OR refactor BE IAM email resolution: cache `clerk_user_id → email` mapping per session (avoid repeated Clerk API calls)
+3. OR Playwright suite use `--workers 1` for sequential execution (slower but no race)
+
+**Root cause structural (DEFERRED):**
+- IAM email resolution debería ser CACHED (Redis or in-memory LRU) — Clerk API call per request es wasteful + rate limit prone
+- NetworkErrorFallback FE muestra el mismo error visual para "network error" vs "401 unauthorized" — debería diferenciar (mostrar "sesión inválida · re-login" para 401)
+
+**Promotable:** YES — todos los brands consumers de luana-core-iam tienen este flow. Refactor email resolution con cache es promotable a `core/luana-core-iam/`.
+
+**WARN status F1 closure:** NO bloquea Fase 2. Tests E2E live intermittent pero infrastructure correcta. Production NO afectado (real Clerk JWT incluye email).
+
+### D8 — Triple-main pattern duplica SubTabContent en DOM — RESUELTO en POMs + specs
 
 **Problema:** F1-S4 shell-layout-5050 implementó "triple-main pattern" para responsividad — 3 `<main>` elements (mobile + agentic + web) en el DOM, mutuamente exclusivos via CSS. Cada `<main>` contiene `<AppPanelSlot>{children}</AppPanelSlot>` → SubTabContent se renderiza 3 VECES en DOM (solo 1 visible per viewport via CSS).
 

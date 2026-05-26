@@ -79,7 +79,9 @@ test.describe("SC-6 · 22 sub-tabs sin re-mount completo shell", () => {
 
       // Correct sub-tab content rendered
       await expect(
-        shellPage.locator(`[data-testid="subtab-content-${agent}-${subtab}"]`),
+        shellPage
+          .locator(`[data-testid="subtab-content-${agent}-${subtab}"]`)
+          .first(),
       ).toBeVisible();
 
       // Ribbon DOM element should be the same node (no remount)

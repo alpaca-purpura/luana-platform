@@ -41,18 +41,22 @@ test.describe("SC-4.bis · Adrián Inbox 3-col + Takeover A↔B + sidebar toggle
   });
 
   test("nombres ficticios LatAm visibles en lista", async ({ shellPage }) => {
-    await expect(shellPage.locator("text=María González")).toBeVisible();
-    await expect(shellPage.locator("text=Carlos Pérez")).toBeVisible();
-    await expect(shellPage.locator("text=Lucía Ramos")).toBeVisible();
-    await expect(shellPage.locator("text=Diego Flores")).toBeVisible();
-    await expect(shellPage.locator("text=Sofía M.")).toBeVisible();
+    await expect(
+      shellPage.locator("text=María González").first(),
+    ).toBeVisible();
+    await expect(shellPage.locator("text=Carlos Pérez").first()).toBeVisible();
+    await expect(shellPage.locator("text=Lucía Ramos").first()).toBeVisible();
+    await expect(shellPage.locator("text=Diego Flores").first()).toBeVisible();
+    await expect(shellPage.locator("text=Sofía M.").first()).toBeVisible();
   });
 
   test("≥2 CampaignTag visibles (Limpieza-PE · Blanqueamiento)", async ({
     shellPage,
   }) => {
-    await expect(shellPage.locator("text=Limpieza-PE")).toBeVisible();
-    await expect(shellPage.locator("text=Blanqueamiento")).toBeVisible();
+    await expect(shellPage.locator("text=Limpieza-PE").first()).toBeVisible();
+    await expect(
+      shellPage.locator("text=Blanqueamiento").first(),
+    ).toBeVisible();
   });
 
   test("Carlos Pérez tiene YouChip '✋ Tú' (handlerMode=human)", async ({
@@ -60,9 +64,9 @@ test.describe("SC-4.bis · Adrián Inbox 3-col + Takeover A↔B + sidebar toggle
     tenantId,
   }) => {
     const inbox = new AdrianInboxPage(shellPage, tenantId);
-    await inbox.expectHumanHandledConversationVisible("Carlos Pérez");
+    await inbox.expectHumanHandledConversationVisible("Carlos Pérez").first();
     // YouChip text visible
-    await expect(shellPage.locator("text=✋ Tú")).toBeVisible();
+    await expect(shellPage.locator("text=✋ Tú").first()).toBeVisible();
   });
 
   test("global mode toggle 3-modos visible", async ({
@@ -72,9 +76,13 @@ test.describe("SC-4.bis · Adrián Inbox 3-col + Takeover A↔B + sidebar toggle
     const inbox = new AdrianInboxPage(shellPage, tenantId);
     await inbox.expectGlobalModeToggleVisible();
     // 3 mode options visible
-    await expect(shellPage.locator("text=🤖 Adrián decide")).toBeVisible();
-    await expect(shellPage.locator("text=👀 Te consulta")).toBeVisible();
-    await expect(shellPage.locator("text=✋ Manual")).toBeVisible();
+    await expect(
+      shellPage.locator("text=🤖 Adrián decide").first(),
+    ).toBeVisible();
+    await expect(
+      shellPage.locator("text=👀 Te consulta").first(),
+    ).toBeVisible();
+    await expect(shellPage.locator("text=✋ Manual").first()).toBeVisible();
   });
 
   // ── Takeover UX State A (default) ────────────────────────────────────
@@ -91,7 +99,10 @@ test.describe("SC-4.bis · Adrián Inbox 3-col + Takeover A↔B + sidebar toggle
     shellPage,
   }) => {
     await expect(
-      shellPage.locator('[placeholder*="Adrián decide automáticamente"]'),
+      shellPage
+        .locator('[placeholder*="Adrián decide automáticamente"]')
+        .first()
+        .first(),
     ).toBeVisible();
   });
 
@@ -120,7 +131,7 @@ test.describe("SC-4.bis · Adrián Inbox 3-col + Takeover A↔B + sidebar toggle
     await expect(inbox.returnControlButton).toBeVisible();
     // MessageInput enabled placeholder "Escribir como tú"
     await expect(
-      shellPage.locator('[placeholder*="Escribir como tú"]'),
+      shellPage.locator('[placeholder*="Escribir como tú"]').first(),
     ).toBeVisible();
   });
 
@@ -139,7 +150,7 @@ test.describe("SC-4.bis · Adrián Inbox 3-col + Takeover A↔B + sidebar toggle
 
   // ── Sidebar toggle ────────────────────────────────────────────────────
 
-  test("sidebar inicialmente open (data-sidebar='open')", async ({
+  test("sidebar inicialmente open (data-sidebar='open').first()", async ({
     shellPage,
     tenantId,
   }) => {
@@ -166,7 +177,9 @@ test.describe("SC-4.bis · Adrián Inbox 3-col + Takeover A↔B + sidebar toggle
     const inbox = new AdrianInboxPage(shellPage, tenantId);
     await inbox.expectThreadVisible();
     // First mock message from MOCK_THREAD_MESSAGES
-    await expect(shellPage.locator("text=/limpieza dental/i")).toBeVisible();
+    await expect(
+      shellPage.locator("text=/limpieza dental/i").first(),
+    ).toBeVisible();
   });
 
   // ── Visual goldens ────────────────────────────────────────────────────
@@ -178,7 +191,9 @@ test.describe("SC-4.bis · Adrián Inbox 3-col + Takeover A↔B + sidebar toggle
     const inbox = new AdrianInboxPage(shellPage, tenantId);
     await inbox.expectStateA();
     // 5 conversations + state A chip visible = visual state A ready
-    await expect(shellPage.locator("text=María González")).toBeVisible();
+    await expect(
+      shellPage.locator("text=María González").first(),
+    ).toBeVisible();
   });
 
   test("visual state B · InboxPlaceholder estado usuario toma control", async ({
@@ -198,9 +213,8 @@ test.describe("SC-4.bis · Adrián Inbox 3-col + Takeover A↔B + sidebar toggle
     await inbox.closeSidebar();
     await inbox.expectSidebarClosed();
     // data-sidebar="closed" means gridTemplateColumns includes "0" for col-3
-    await expect(shellPage.locator('[data-sidebar="closed"]')).toHaveAttribute(
-      "style",
-      /0/,
-    );
+    await expect(
+      shellPage.locator('[data-sidebar="closed"]').first(),
+    ).toHaveAttribute("style", /0/);
   });
 });
