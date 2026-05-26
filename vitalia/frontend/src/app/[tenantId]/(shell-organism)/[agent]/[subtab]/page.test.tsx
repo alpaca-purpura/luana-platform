@@ -4,10 +4,14 @@
  * Vitest + @testing-library/react.
  *
  * SubtabPage valida tanto el agent como el subtab. Si inválido → notFound().
- * Si válido → renderiza placeholder hasta F1-S10.
+ * Si válido → renderiza SubTabContent con el data-testid correcto (T-9).
  *
  * TDD RED-first → GREEN: tests escritos antes de la implementación.
- * spec_anchor: 03-arch-fe.md § 9.6 verbatim + 06-tickets.yaml T-4 SC-3
+ * T-9 update: F1-S10 reemplazó placeholder estático "Contenido próximamente"
+ * con <SubTabContent agent subtab /> → assertions actualizadas a data-testid
+ * del wrapper SubTabContent: `subtab-content-{agent}-{subtab}`.
+ *
+ * spec_anchor: 03-arch-fe.md § 9.6 verbatim + 06-tickets.yaml T-4 SC-3 + T-9
  * downstream-regression-na: brand-local route; no cross-brand consumers
  */
 
@@ -36,52 +40,64 @@ describe("SubtabPage", () => {
   });
 
   describe("happy path — agent y subtab válidos", () => {
-    it("renderiza placeholder para valeria/agenda", async () => {
+    it("renderiza SubTabContent para valeria/agenda", async () => {
       render(
         await SubtabPage({ params: makeParams("clinic-x", "valeria", "agenda") }),
       );
-      expect(screen.getByText(/Contenido próximamente/)).toBeInTheDocument();
+      expect(
+        screen.getByTestId("subtab-content-valeria-agenda"),
+      ).toBeInTheDocument();
     });
 
-    it("renderiza placeholder para lisa/marca", async () => {
+    it("renderiza SubTabContent para lisa/marca", async () => {
       render(
         await SubtabPage({ params: makeParams("clinic-x", "lisa", "marca") }),
       );
-      expect(screen.getByText(/Contenido próximamente/)).toBeInTheDocument();
+      expect(
+        screen.getByTestId("subtab-content-lisa-marca"),
+      ).toBeInTheDocument();
     });
 
-    it("renderiza placeholder para lucas/lanzar", async () => {
+    it("renderiza SubTabContent para lucas/lanzar", async () => {
       render(
         await SubtabPage({ params: makeParams("clinic-x", "lucas", "lanzar") }),
       );
-      expect(screen.getByText(/Contenido próximamente/)).toBeInTheDocument();
+      expect(
+        screen.getByTestId("subtab-content-lucas-lanzar"),
+      ).toBeInTheDocument();
     });
 
-    it("renderiza placeholder para camila/reputacion", async () => {
+    it("renderiza SubTabContent para camila/reputacion", async () => {
       render(
         await SubtabPage({
           params: makeParams("clinic-x", "camila", "reputacion"),
         }),
       );
-      expect(screen.getByText(/Contenido próximamente/)).toBeInTheDocument();
+      expect(
+        screen.getByTestId("subtab-content-camila-reputacion"),
+      ).toBeInTheDocument();
     });
 
-    it("renderiza placeholder para config/cuenta", async () => {
+    it("renderiza SubTabContent para config/cuenta", async () => {
       render(
         await SubtabPage({
           params: makeParams("clinic-x", "config", "cuenta"),
         }),
       );
-      expect(screen.getByText(/Contenido próximamente/)).toBeInTheDocument();
+      expect(
+        screen.getByTestId("subtab-content-config-cuenta"),
+      ).toBeInTheDocument();
     });
 
-    it("renderiza placeholder para config/avanzado", async () => {
+    it("renderiza SubTabContent para config/avanzado", async () => {
       render(
         await SubtabPage({
           params: makeParams("clinic-x", "config", "avanzado"),
         }),
       );
-      expect(screen.getByText(/Contenido próximamente/)).toBeInTheDocument();
+      expect(
+        screen.getByTestId("subtab-content-config-avanzado"),
+      ).toBeInTheDocument();
     });
   });
 

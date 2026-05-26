@@ -1,22 +1,20 @@
 /**
  * SubTabContent — dispatcher organismo.
- * F1-S10 vitalia-fase1-empty-states — T-1
+ * F1-S10 vitalia-fase1-empty-states — T-9 (PLACEHOLDER_MAP fully populated)
  *
  * Maps 22 {agent}.{subtab} combos → placeholder component or EmptyState fallback.
  * Consumes RIBBON_SUBTABS SSoT (READ-ONLY) for metadata lookup.
- * PLACEHOLDER_MAP populated in T-2..T-8; stubs use EmptyState until each ticket lands.
+ * Imports placeholder components via each feature's public API (index.ts) per FSD-Lite.
  *
- * Architecture invariant (test_subtab_content_uses_ribbon_subtabs_ssot.test.ts):
- *   - SubTabContent imports RIBBON_SUBTABS
- *   - PLACEHOLDER_MAP contains exactly the 22 keys from RIBBON_SUBTABS
- *   - No 'mateo.*' keys (RIBBON_SUBTABS.mateo === [])
+ * Architecture invariants (arch tests T-9):
+ *   - PLACEHOLDER_MAP keys must be a subset of RIBBON_SUBTABS keys (no orphans)
+ *   - PLACEHOLDER_MAP contains exactly 22 keys (all sub-tabs covered)
+ *   - No hardcoded sub-tab key strings outside this file (arch test enforces)
+ *   - No PHI real data in placeholder mock data (hipaa-lite arch test enforces)
  *
  * Server Component default — no "use client" (dispatcher is pure Server).
+ * Placeholders that need client state ("use client") mark themselves.
  * Named export (NO default) per FSD-Lite enforce.
- *
- * NOTE: T-1 delivers this file with EmptyState stubs for all 22 keys.
- * T-2..T-8 will replace stubs with real placeholder components.
- * Architecture test (T-9) enforces the full PLACEHOLDER_MAP population.
  *
  * spec_anchor: 03-arch.md § 4
  * downstream-regression-na: brand-local shell-organism; no cross-brand consumers
@@ -28,94 +26,86 @@ import { RIBBON_SUBTABS } from "@/lib/agent-catalog";
 import { SubTabHeader } from "./SubTabHeader";
 import { EmptyState } from "./EmptyState";
 
-// ── Placeholder stubs (T-1 — replaced by real components in T-2..T-8) ──────────
-// Each stub is an EmptyState with the subtab's icon + label.
-// This file's PLACEHOLDER_MAP structure is the SSoT for arch fitness test.
+// ── Lisa placeholders — via public API (T-2 generic + T-3 special) ───────────────
+import {
+  MarcaPlaceholder,
+  DoctoresPlaceholder,
+  ServiciosPlaceholder,
+  CompliancePlaceholder,
+} from "@/features/lisa";
 
+// ── Lucas placeholders — via public API (T-2 generic) ────────────────────────────
+import {
+  LanzarPlaceholder,
+  EnvueloPlaceholder,
+  RecursosPlaceholder,
+  ResultadosPlaceholder,
+  MercadoPlaceholder,
+} from "@/features/lucas";
+
+// ── Adrián placeholders — via public API (T-2 generic + T-4 + T-6 special) ───────
+import {
+  InboxPlaceholder,
+  EmbudoPlaceholder,
+  OutboundPlaceholder,
+  PropuestasPlaceholder,
+} from "@/features/adrian";
+
+// ── Valeria placeholders — via public API (T-2 generic + T-7 special) ────────────
+import { AgendaPlaceholder, PacientesPlaceholder } from "@/features/valeria";
+
+// ── Camila placeholders — via public API (T-2 generic + T-8 special) ─────────────
+import {
+  VozPlaceholder,
+  ReactivarPlaceholder,
+  MultiplicarPlaceholder,
+  ReputacionPlaceholder,
+} from "@/features/camila";
+
+// ── Config placeholders — via public API (T-2 generic + T-3 special) ─────────────
+import {
+  CuentaPlaceholder,
+  ConexionesPlaceholder,
+  AvanzadoPlaceholder,
+} from "@/features/config";
+
+// ── Type helpers ─────────────────────────────────────────────────────────────────
 type PlaceholderComponent = ComponentType;
-
-// ── Type-safe key derivation ────────────────────────────────────────────────────
 type SubTabKey = `${RibbonTabSlug}.${string}`;
 
-// ── Placeholder stubs factory ───────────────────────────────────────────────────
-// Inline stubs until T-2..T-8 land real placeholder components.
-// Naming matches the agent slice import alias pattern from 03-arch.md § 4.1.
-
-function makeStub(icon: string, label: string): PlaceholderComponent {
-  function Stub() {
-    return (
-      <EmptyState
-        icon={icon}
-        title={`${label} — próximamente`}
-        description="Esta vista vive acá. El contenido real se cablea en Fase 2."
-      />
-    );
-  }
-  Stub.displayName = `${label}Stub`;
-  return Stub;
-}
-
-// ── Stubs for all 22 keys (T-1) ─────────────────────────────────────────────────
-// lisa (4)
-const LisaMarcaPlaceholder = makeStub("🏥", "Marca");
-const LisaDoctoresPlaceholder = makeStub("👨‍⚕️", "Doctores");
-const LisaServiciosPlaceholder = makeStub("🩺", "Servicios");
-const LisaCompliancePlaceholder = makeStub("🛡️", "Compliance");
-
-// lucas (5)
-const LucasLanzarPlaceholder = makeStub("🚀", "Lanzar");
-const LucasEnvueloPlaceholder = makeStub("📡", "En vuelo");
-const LucasRecursosPlaceholder = makeStub("📚", "Recursos");
-const LucasResultadosPlaceholder = makeStub("📈", "Resultados");
-const LucasMercadoPlaceholder = makeStub("🌍", "Mercado");
-
-// adrian (4)
-const AdrianInboxPlaceholder = makeStub("💬", "Inbox");
-const AdrianEmbudoPlaceholder = makeStub("🎯", "Embudo");
-const AdrianOutboundPlaceholder = makeStub("📣", "Outbound");
-const AdrianPropuestasPlaceholder = makeStub("💼", "Propuestas");
-
-// valeria (2)
-const ValeriaAgendaPlaceholder = makeStub("📆", "Agenda");
-const ValeriaPacientesPlaceholder = makeStub("👥", "Pacientes");
-
-// camila (4)
-const CamilaVozPlaceholder = makeStub("🎤", "Voz del paciente");
-const CamilaReactivarPlaceholder = makeStub("🪃", "Reactivar");
-const CamilaMultiplicarPlaceholder = makeStub("🤝", "Multiplicar");
-const CamilaReputacionPlaceholder = makeStub("📊", "Reputación");
-
-// config (3)
-const ConfigCuentaPlaceholder = makeStub("🏢", "Mi cuenta");
-const ConfigConexionesPlaceholder = makeStub("🔌", "Conexiones");
-const ConfigAvanzadoPlaceholder = makeStub("🔬", "Avanzado");
-
-// ── PLACEHOLDER_MAP — 22 keys, type-safe ─────────────────────────────────────────
+// ── PLACEHOLDER_MAP — 22 keys (T-9 fully populated) ─────────────────────────────
 // Architecture test verifies this map contains exactly 22 keys from RIBBON_SUBTABS.
 // Keys: 'lisa.marca' | 'lisa.doctores' | ... (22 total, no 'mateo.*')
+// DO NOT hardcode these keys elsewhere — arch test enforces this file as SSoT.
 const PLACEHOLDER_MAP = {
-  "lisa.marca": LisaMarcaPlaceholder,
-  "lisa.doctores": LisaDoctoresPlaceholder,
-  "lisa.servicios": LisaServiciosPlaceholder,
-  "lisa.compliance": LisaCompliancePlaceholder,
-  "lucas.lanzar": LucasLanzarPlaceholder,
-  "lucas.envuelo": LucasEnvueloPlaceholder,
-  "lucas.recursos": LucasRecursosPlaceholder,
-  "lucas.resultados": LucasResultadosPlaceholder,
-  "lucas.mercado": LucasMercadoPlaceholder,
-  "adrian.inbox": AdrianInboxPlaceholder,
-  "adrian.embudo": AdrianEmbudoPlaceholder,
-  "adrian.outbound": AdrianOutboundPlaceholder,
-  "adrian.propuestas": AdrianPropuestasPlaceholder,
-  "valeria.agenda": ValeriaAgendaPlaceholder,
-  "valeria.pacientes": ValeriaPacientesPlaceholder,
-  "camila.voz": CamilaVozPlaceholder,
-  "camila.reactivar": CamilaReactivarPlaceholder,
-  "camila.multiplicar": CamilaMultiplicarPlaceholder,
-  "camila.reputacion": CamilaReputacionPlaceholder,
-  "config.cuenta": ConfigCuentaPlaceholder,
-  "config.conexiones": ConfigConexionesPlaceholder,
-  "config.avanzado": ConfigAvanzadoPlaceholder,
+  // lisa (4) — T-2 generic + T-3 servicios special
+  "lisa.marca": MarcaPlaceholder,
+  "lisa.doctores": DoctoresPlaceholder,
+  "lisa.servicios": ServiciosPlaceholder,
+  "lisa.compliance": CompliancePlaceholder,
+  // lucas (5) — T-2 generic
+  "lucas.lanzar": LanzarPlaceholder,
+  "lucas.envuelo": EnvueloPlaceholder,
+  "lucas.recursos": RecursosPlaceholder,
+  "lucas.resultados": ResultadosPlaceholder,
+  "lucas.mercado": MercadoPlaceholder,
+  // adrian (4) — T-2 generic + T-4 embudo + T-6 inbox
+  "adrian.inbox": InboxPlaceholder,
+  "adrian.embudo": EmbudoPlaceholder,
+  "adrian.outbound": OutboundPlaceholder,
+  "adrian.propuestas": PropuestasPlaceholder,
+  // valeria (2) — T-2 generic + T-7 agenda
+  "valeria.agenda": AgendaPlaceholder,
+  "valeria.pacientes": PacientesPlaceholder,
+  // camila (4) — T-2 generic + T-8 voz
+  "camila.voz": VozPlaceholder,
+  "camila.reactivar": ReactivarPlaceholder,
+  "camila.multiplicar": MultiplicarPlaceholder,
+  "camila.reputacion": ReputacionPlaceholder,
+  // config (3) — T-2 generic + T-3 conexiones special
+  "config.cuenta": CuentaPlaceholder,
+  "config.conexiones": ConexionesPlaceholder,
+  "config.avanzado": AvanzadoPlaceholder,
 } as const satisfies Record<SubTabKey, PlaceholderComponent>;
 
 // ── Component Props ─────────────────────────────────────────────────────────────

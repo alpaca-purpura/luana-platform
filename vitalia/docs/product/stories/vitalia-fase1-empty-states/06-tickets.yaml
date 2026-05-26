@@ -374,6 +374,8 @@ tickets:
 
   # ════════════════════════════════════════════════════════════════════
   - id: T-9
+    state: pushed
+    commit: placeholder-sha
     title: "page.tsx MODIFY (mount <SubTabContent>) + 3 arch tests NEW (FSD + ribbon-ssot + no-PHI)"
     description: |
       MODIFY 1 page route + NEW 3 arch tests:
