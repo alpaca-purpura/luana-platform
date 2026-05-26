@@ -498,6 +498,7 @@ tickets:
       - vitalia/frontend/e2e/regression/vitalia-fase1-empty-states/sc-08-empty-states-genericos.spec.ts
       - vitalia/frontend/e2e/regression/vitalia-fase1-empty-states/sc-09-a11y.spec.ts
       - vitalia/frontend/e2e/regression/vitalia-fase1-empty-states/sc-10-i18n.spec.ts
+    state: pushed
 
   # ════════════════════════════════════════════════════════════════════
   - id: T-11
