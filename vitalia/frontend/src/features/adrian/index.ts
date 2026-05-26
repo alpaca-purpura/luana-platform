@@ -15,12 +15,20 @@ export { PropuestasPlaceholder } from "./components/placeholders/PropuestasPlace
 // ── Placeholder components (T-4 special: AdrianEmbudo) ───────────────────────
 export { EmbudoPlaceholder } from "./components/placeholders/EmbudoPlaceholder";
 
+// ── Placeholder components (T-6 special: AdrianInbox) ───────────────────────
+export { InboxPlaceholder } from "./components/placeholders/InboxPlaceholder";
+
 // ── Inbox molecules (T-5 sales_studio parity — brand-local) ───────────────────
 export { CampaignTag } from "./components/inbox/CampaignTag";
 export { ConversationItem } from "./components/inbox/ConversationItem";
 export { MessageBubble } from "./components/inbox/MessageBubble";
 export { MessageInput } from "./components/inbox/MessageInput";
 export { ContactSidebar } from "./components/inbox/ContactSidebar";
+// ── Inbox molecules (T-6 takeover UX — brand-local) ──────────────────────────
+export { ThreadHeader } from "./components/inbox/ThreadHeader";
+export type { ThreadHeaderProps } from "./components/inbox/ThreadHeader";
+export { TakeoverBanner } from "./components/inbox/TakeoverBanner";
+export type { TakeoverBannerProps } from "./components/inbox/TakeoverBanner";
 export type {
   ConversationListItem,
   InboxChannel,
