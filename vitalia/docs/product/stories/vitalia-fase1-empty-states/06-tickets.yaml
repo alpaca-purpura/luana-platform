@@ -552,8 +552,11 @@ tickets:
         - val-fe-visual-inbox-state-B-human
         - val-fe-visual-inbox-sidebar-closed
         - val-fe-visual-responsive-valeria-agenda
+    state: pushed
+    pending_chris_visual_ratify: true
     files_in_scope:
-      - vitalia/frontend/e2e/__screenshots__/visual/empty-states/  # ~70 PNG directory
+      - vitalia/frontend/e2e/regression/vitalia-fase1-empty-states/visual-goldens.spec.ts
+      - vitalia/frontend/e2e/__screenshots__/visual/empty-states/  # ~70 PNG directory (generated post live-stack run)
 
 # ──────────────────────────────────────────────────────────────────────
 # Summary
