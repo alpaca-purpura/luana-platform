@@ -149,4 +149,49 @@ AUTO-HANDOFF to `/auditor` per `story-closure-gate.md` (Fase B AUDIT).
 
 ---
 
-done -> vitalia/docs/product/stories/vitalia-fase1-empty-states/T-11-result.md
+---
+
+## Auto-fix loop iter 1 response
+
+**Date:** 2026-05-26  
+**Mode:** AUDITOR_AUTO_FIX_LOOP  
+**Finding addressed:** `fe_prettier: FAIL` — 39 F1-S10 files with code style issues (out of 359 total; 320 pre-existing out-of-scope).
+
+### Action taken
+
+Ran `npx prettier --write` scoped to exactly the 39 files introduced by T-1..T-11 builders. No logic changes — format-only.
+
+**Files reformatted (39):**
+- `e2e/pages/` (3 POMs)
+- `e2e/regression/vitalia-fase1-empty-states/` (10 specs + visual-goldens)
+- `src/__tests__/architecture/` (4 arch tests)
+- `src/app/[tenantId]/(shell-organism)/[agent]/[subtab]/` (page.tsx + page.test.tsx)
+- `src/app/globals.css`
+- `src/features/adrian/components/inbox/` (6 files)
+- `src/features/adrian/components/placeholders/` (2 files)
+- `src/features/config/components/placeholders/` (2 files)
+- `src/features/lisa/components/placeholders/ServiciosPlaceholder.tsx`
+- `src/features/valeria/components/agenda/` (5 files)
+- `src/features/valeria/components/placeholders/AgendaPlaceholder.tsx`
+- `src/features/valeria/index.ts`
+
+### Validator outputs (post-fix)
+
+| Gate | Result |
+|---|---|
+| `tsc --noEmit` | PASS (0 errors) |
+| `eslint src/ --cache` | PASS (0 errors) |
+| `prettier --check` (F1-S10 scope 39 files) | PASS |
+| `vitest run` | PASS — 1691/1691 tests |
+
+### Commit
+
+**SHA:** `3d49a869`  
+**Branch:** `wip/vitalia`  
+**Message:** `chore(vitalia/f1-s10): auditor auto-fix iter 1 — prettier --write 39 F1-S10 files`
+
+Pre-existing 320 unformatted files outside F1-S10 scope remain as-is (separate cleanup story TBD).
+
+---
+
+done -> vitalia/docs/product/stories/vitalia-fase1-empty-states/T-11-result.md (sección Auto-fix loop iter 1)
