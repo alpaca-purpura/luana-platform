@@ -1,10 +1,13 @@
 /**
  * Visual baseline spec — F1-S0 vitalia-fase1-stack-stability
  *
- * Generates 6 goldens (light/dark) for:
- *   1. dashboard-legacy — regression test for (dashboard)/ shipped
- *   2. shadcn-primitives — 8 Shadcn primitives showcase
- *   3. agent-tokens-swatch — 7 agent color swatches
+ * Generates 4 goldens (light/dark) for:
+ *   1. shadcn-primitives — 8 Shadcn primitives showcase
+ *   2. agent-tokens-swatch — 7 agent color swatches
+ *
+ * NOTE F1-S9 T-5: dashboard-legacy block removed (app/(dashboard)/ deleted).
+ * The (dashboard)/ route group no longer exists. Visual coverage for the
+ * authenticated shell is in e2e/regression/vitalia-fase1-routing-shell/.
  *
  * Project: @project=visual (playwright.config.ts)
  * Viewport: 1440×900, light/dark colorScheme per test
@@ -36,27 +39,7 @@ async function gotoAndWait(
   await page.waitForLoadState("networkidle")
 }
 
-// ── 1. Dashboard legacy regression ──────────────────────────────────────────
-
-test.describe("dashboard legacy regression", () => {
-  test("(dashboard)/ renders correctly in light mode", async ({ page }) => {
-    await page.emulateMedia({ colorScheme: "light" })
-    await gotoAndWait(page, "/")
-    await expect(page).toHaveScreenshot("dashboard-legacy-light.png", {
-      fullPage: false,
-    })
-  })
-
-  test("(dashboard)/ renders correctly in dark mode", async ({ page }) => {
-    await page.emulateMedia({ colorScheme: "dark" })
-    await gotoAndWait(page, "/")
-    await expect(page).toHaveScreenshot("dashboard-legacy-dark.png", {
-      fullPage: false,
-    })
-  })
-})
-
-// ── 2. Shadcn primitives showcase ────────────────────────────────────────────
+// ── 1. Shadcn primitives showcase ────────────────────────────────────────────
 
 test.describe("shadcn primitives showcase", () => {
   test("primitives render correctly in light mode", async ({ page }) => {
@@ -79,7 +62,7 @@ test.describe("shadcn primitives showcase", () => {
   })
 })
 
-// ── 3. Agent tokens swatch ───────────────────────────────────────────────────
+// ── 2. Agent tokens swatch ───────────────────────────────────────────────────
 
 test.describe("agent tokens swatch", () => {
   test("agent colors render correctly in light mode", async ({ page }) => {

@@ -7,6 +7,10 @@
  *   - Targets táctiles ≥ 44px de alto (botón primario)
  *   - Contenido visible y renderizable
  *
+ * NOTE F1-S9 T-5: bloque "Dashboard autenticado en móvil" removido.
+ * La ruta / (dashboard) fue eliminada. El coverage mobile para shell-organism
+ * vive en e2e/regression/vitalia-fase1-routing-shell/.
+ *
  * Ejecuta en project=mobile (iPhone 13) — ver playwright.config.ts.
  *
  * Run (post-deploy LIVE):
@@ -21,7 +25,6 @@
  */
 
 import { test, expect } from "@playwright/test";
-import { test as authTest } from "../auth.fixture";
 
 // ─── Helper: verificar ausencia de scroll horizontal ─────────────────────────
 
@@ -87,7 +90,7 @@ test.describe("SC-15 — Mobile smoke iPhone 13 (vitalia-auth-base-functional)",
 
   test("SC-15 /onboarding/wizard renderiza sin scroll horizontal en móvil", async ({ page }) => {
     // El wizard puede requerir auth — si redirige a /sign-in, es comportamiento válido
-    const response = await page.goto("/onboarding/wizard", { waitUntil: "domcontentloaded" });
+    await page.goto("/onboarding/wizard", { waitUntil: "domcontentloaded" });
 
     // Aceptar: la página cargó (posiblemente redirigida a /sign-in)
     const currentUrl = page.url();
@@ -100,24 +103,3 @@ test.describe("SC-15 — Mobile smoke iPhone 13 (vitalia-auth-base-functional)",
     await assertNoHorizontalScroll(page);
   });
 });
-
-// ─── SC-15: Dashboard autenticado en móvil ───────────────────────────────────
-
-authTest.describe(
-  "SC-15 — Mobile smoke dashboard autenticado (vitalia-auth-base-functional)",
-  () => {
-    authTest(
-      "SC-15 / (dashboard) renderiza sin scroll horizontal y con h1 visible en móvil",
-      async ({ authedPage }) => {
-        await authedPage.goto("/", { waitUntil: "domcontentloaded" });
-
-        // Sin scroll horizontal
-        await assertNoHorizontalScroll(authedPage);
-
-        // Al menos un heading visible
-        const h1 = authedPage.locator("h1, h2").first();
-        await expect(h1).toBeVisible({ timeout: 5000 });
-      }
-    );
-  }
-);
