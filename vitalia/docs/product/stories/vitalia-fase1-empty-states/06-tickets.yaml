@@ -240,6 +240,8 @@ tickets:
 
   # ════════════════════════════════════════════════════════════════════
   - id: T-6
+    state: pushed
+    commit: 71f43ac4
     title: "2 moléculas takeover UX (ThreadHeader · TakeoverBanner) + AdrianInboxPlaceholder organismo"
     description: |
       NEW 2 moléculas takeover UX + organismo Inbox especial enriquecido:
