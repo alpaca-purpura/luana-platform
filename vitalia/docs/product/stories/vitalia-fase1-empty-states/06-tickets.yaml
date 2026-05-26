@@ -322,6 +322,8 @@ tickets:
         - val-fe-vitest-unit-agenda-slot
         - val-fe-arch-fsd-boundaries
         - val-fe-arch-no-phi-real-data
+    state: pushed
+    commit: d8f9ac82
     files_in_scope:
       - vitalia/frontend/src/features/valeria/components/agenda/AgendaToolbar.tsx
       - vitalia/frontend/src/features/valeria/components/agenda/AgendaFilters.tsx
@@ -329,7 +331,11 @@ tickets:
       - vitalia/frontend/src/features/valeria/components/agenda/AgendaSlot.tsx
       - vitalia/frontend/src/features/valeria/components/agenda/AgendaSummaryFooter.tsx
       - vitalia/frontend/src/features/valeria/components/agenda/AgendaSlot.test.tsx
+      - vitalia/frontend/src/features/valeria/components/agenda/AgendaToolbar.test.tsx
       - vitalia/frontend/src/features/valeria/components/placeholders/AgendaPlaceholder.tsx
+      - vitalia/frontend/src/features/valeria/components/placeholders/AgendaPlaceholder.test.tsx
+      - vitalia/frontend/src/features/valeria/index.ts
+      - vitalia/frontend/src/app/globals.css
 
   # ════════════════════════════════════════════════════════════════════
   - id: T-8
