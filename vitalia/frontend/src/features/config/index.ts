@@ -11,3 +11,6 @@
 // ── Placeholder components (T-2 generic EmptyState wrappers) ──────────────────
 export { CuentaPlaceholder } from "./components/placeholders/CuentaPlaceholder";
 export { AvanzadoPlaceholder } from "./components/placeholders/AvanzadoPlaceholder";
+
+// ── Special placeholders (T-3) ─────────────────────────────────────────────────
+export { ConexionesPlaceholder } from "./components/placeholders/ConexionesPlaceholder";

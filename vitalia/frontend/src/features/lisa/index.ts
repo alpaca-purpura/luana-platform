@@ -12,3 +12,6 @@
 export { MarcaPlaceholder } from "./components/placeholders/MarcaPlaceholder";
 export { DoctoresPlaceholder } from "./components/placeholders/DoctoresPlaceholder";
 export { CompliancePlaceholder } from "./components/placeholders/CompliancePlaceholder";
+
+// ── Special placeholders (T-3) ─────────────────────────────────────────────────
+export { ServiciosPlaceholder } from "./components/placeholders/ServiciosPlaceholder";
