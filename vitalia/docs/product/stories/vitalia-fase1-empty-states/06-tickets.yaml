@@ -163,7 +163,7 @@ tickets:
   # ════════════════════════════════════════════════════════════════════
   - id: T-4
     state: pushed
-    commit: pending
+    commit: 3cc26e09
     title: "AdrianEmbudoPlaceholder (Kanban 6 cols + 14 leads mock + toggle Kanban|Lista)"
     description: |
       NEW 1 placeholder especial Kanban:
