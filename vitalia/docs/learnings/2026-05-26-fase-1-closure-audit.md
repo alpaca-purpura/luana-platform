@@ -193,6 +193,21 @@ const baseUrl =
 
 **Promotable:** YES — esto aplica a TODO server-side fetch en cualquier brand. `vitalia/.claude/rules/server-side-fetch-docker-pattern.md` or equivalent rule TBD. Lift candidate cross-brand. Audit recomendado en `nicolify/frontend/src/lib/` + futuras brands para detectar mismo bug.
 
+### D9.bis — Clerk sign-in API Internal Server Error (rate limit transient) — DESCUBIERTO closure iter 2
+
+**Problema:** Post varios runs Playwright back-to-back, Clerk `signIn` falla con `Internal Server Error` después de 3 retries. Setup project (`e2e/setup/clerk.setup.ts:79`) lanza `Clerk auth failed after 3 attempts: Failed to sign in with email dr.demo@vitalialat.com: Internal Server Error`.
+
+**Root cause probable:** Clerk testing API rate limiting o transient infrastructure issue. NO afecta production (real users use OAuth/email flow).
+
+**Mitigation:**
+1. Wait + retry (Clerk rate limits son time-windowed)
+2. Use storageState from previous successful session (auth file fresh check)
+3. Configure multiple test users (round-robin para Playwright parallel)
+
+**Impact F1 closure:** bloquea visual goldens generation live durante runs paralelos. NO afecta CI normal (production-grade Clerk infrastructure no rate limita signIn flow tradicional).
+
+**Promotable:** parcial — playwright-expert skill update con retry-with-backoff strategy.
+
 ### D9 — Clerk JWT testing token missing `email` claim — DESCUBIERTO durante closure E2E live (intermittent flaky)
 
 **Problema:** durante F1 closure E2E live execution (Playwright suite F1-S10), descubrí pattern: ~50% de requests `/api/v1/iam/users/me/tenants` fallan con 401 Unauthorized. BE logs:
