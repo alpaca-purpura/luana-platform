@@ -11,3 +11,6 @@
 // ── Placeholder components (T-2 generic EmptyState wrappers) ──────────────────
 export { OutboundPlaceholder } from "./components/placeholders/OutboundPlaceholder";
 export { PropuestasPlaceholder } from "./components/placeholders/PropuestasPlaceholder";
+
+// ── Placeholder components (T-4 special: AdrianEmbudo) ───────────────────────
+export { EmbudoPlaceholder } from "./components/placeholders/EmbudoPlaceholder";
