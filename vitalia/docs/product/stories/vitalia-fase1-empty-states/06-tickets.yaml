@@ -127,6 +127,8 @@ tickets:
 
   # ════════════════════════════════════════════════════════════════════
   - id: T-3
+    state: pushed
+    commit: 84bbceff
     title: "LisaServiciosPlaceholder (toggle Catálogo|Escalera) + ConfigConexionesPlaceholder (grid 6 cat)"
     description: |
       NEW 2 placeholders especiales sencillos:
@@ -160,6 +162,8 @@ tickets:
 
   # ════════════════════════════════════════════════════════════════════
   - id: T-4
+    state: pushed
+    commit: pending
     title: "AdrianEmbudoPlaceholder (Kanban 6 cols + 14 leads mock + toggle Kanban|Lista)"
     description: |
       NEW 1 placeholder especial Kanban:
