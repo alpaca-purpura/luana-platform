@@ -244,6 +244,54 @@ export const RIBBON_SUBTABS: Record<RibbonTabSlug, readonly SubTabMeta[]> = {
 } as const satisfies Record<RibbonTabSlug, readonly SubTabMeta[]>;
 
 /**
+ * F1-S9 routing-shell EXTEND: validators para routing tree dynamic [agent]/[subtab].
+ * Consumed by app/[tenantId]/(shell-organism)/[agent]/layout.tsx (T-4).
+ *
+ * spec_anchor: 03-arch-fe.md § 2.2 MODIFY + 06-tickets.yaml T-2
+ */
+
+/**
+ * Type guard — returns true if slug is a valid ribbon agent tab slug.
+ * Includes: 5 ribbon agents (lisa, valeria, adrian, lucas, camila) + 'config'.
+ * Excludes: 'mateo' (transversal agent — not in AGENT_RIBBON_ORDER per F1-S7).
+ *
+ * XSS safe: enum membership check sanitizes any non-slug payload.
+ *
+ * Examples:
+ *   isValidAgent("lisa")      → true (ribbon agent)
+ *   isValidAgent("config")    → true (config tab special slug)
+ *   isValidAgent("mateo")     → false (transversal — excluded from ribbon)
+ *   isValidAgent("foo")       → false (unknown slug)
+ *   isValidAgent("")          → false (empty string)
+ *   isValidAgent("<script>")  → false (XSS payload sanitized)
+ */
+export function isValidAgent(slug: string): slug is RibbonTabSlug {
+  if (slug === "config") return true;
+  // Explicitly exclude mateo (in AgentSlug but transversal, not in ribbon)
+  if (slug === "mateo") return false;
+  return slug in AGENT_CATALOG;
+}
+
+/**
+ * Returns true if subtabSlug is a valid sub-tab for the given agent.
+ * Validates against RIBBON_SUBTABS[agent].
+ *
+ * Examples:
+ *   isValidSubtab("lisa", "marca")        → true
+ *   isValidSubtab("camila", "reputacion") → true
+ *   isValidSubtab("config", "avanzado")   → true
+ *   isValidSubtab("mateo", "any")         → false (mateo subtabs empty array)
+ *   isValidSubtab("camila", "foo")        → false (invalid subtab)
+ *   isValidSubtab("lisa", "")             → false (empty string)
+ */
+export function isValidSubtab(agent: RibbonTabSlug, subtabSlug: string): boolean {
+  if (!subtabSlug) return false;
+  const subtabs = RIBBON_SUBTABS[agent];
+  if (!subtabs || subtabs.length === 0) return false;
+  return subtabs.some((st) => st.id === subtabSlug);
+}
+
+/**
  * Extrae el segmento [subtab] del pathname.
  *
  * Pattern URL: /{tenantId}/{agent}/{subtab}/... → retorna {subtab} si segmento presente,

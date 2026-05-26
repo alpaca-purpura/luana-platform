@@ -657,3 +657,110 @@ describe("extractSubtabFromPath — invalid / null paths (F1-S8)", () => {
     expect(extractSubtabFromPath("/")).toBeNull();
   });
 });
+
+// ──────────────────────────────────────────────────────────────────────────────
+// F1-S9 — isValidAgent + isValidSubtab validators (T-2)
+// spec_anchor: 06-tickets.yaml T-2 gherkin_coverage
+// ──────────────────────────────────────────────────────────────────────────────
+
+import { isValidAgent, isValidSubtab } from "../agent-catalog";
+
+describe("isValidAgent — type guard SC-1 happy path (F1-S9)", () => {
+  it("isValidAgent('lisa') returns true", () => {
+    expect(isValidAgent("lisa")).toBe(true);
+  });
+
+  it("isValidAgent('valeria') returns true", () => {
+    expect(isValidAgent("valeria")).toBe(true);
+  });
+
+  it("isValidAgent('adrian') returns true", () => {
+    expect(isValidAgent("adrian")).toBe(true);
+  });
+
+  it("isValidAgent('lucas') returns true", () => {
+    expect(isValidAgent("lucas")).toBe(true);
+  });
+
+  it("isValidAgent('camila') returns true", () => {
+    expect(isValidAgent("camila")).toBe(true);
+  });
+
+  it("isValidAgent('config') returns true (RibbonTabSlug special slug)", () => {
+    expect(isValidAgent("config")).toBe(true);
+  });
+});
+
+describe("isValidAgent — type guard SC-2 negative (F1-S9)", () => {
+  it("isValidAgent('mateo') returns false (transversal agent — not in Ribbon)", () => {
+    expect(isValidAgent("mateo")).toBe(false);
+  });
+
+  it("isValidAgent('foo') returns false (unknown slug)", () => {
+    expect(isValidAgent("foo")).toBe(false);
+  });
+
+  it("isValidAgent('') returns false (empty string)", () => {
+    expect(isValidAgent("")).toBe(false);
+  });
+
+  it("isValidAgent('<script>') returns false (XSS payload sanitized by enum check)", () => {
+    expect(isValidAgent("<script>")).toBe(false);
+  });
+
+  it("isValidAgent('LISA') returns false (case-sensitive — must be lowercase)", () => {
+    expect(isValidAgent("LISA")).toBe(false);
+  });
+
+  it("isValidAgent('lisa ') returns false (trailing whitespace — not a valid slug)", () => {
+    expect(isValidAgent("lisa ")).toBe(false);
+  });
+});
+
+describe("isValidSubtab — type guard SC-3 happy path (F1-S9)", () => {
+  it("isValidSubtab('lisa', 'marca') returns true", () => {
+    expect(isValidSubtab("lisa", "marca")).toBe(true);
+  });
+
+  it("isValidSubtab('valeria', 'agenda') returns true", () => {
+    expect(isValidSubtab("valeria", "agenda")).toBe(true);
+  });
+
+  it("isValidSubtab('camila', 'reputacion') returns true", () => {
+    expect(isValidSubtab("camila", "reputacion")).toBe(true);
+  });
+
+  it("isValidSubtab('config', 'avanzado') returns true", () => {
+    expect(isValidSubtab("config", "avanzado")).toBe(true);
+  });
+
+  it("isValidSubtab('lucas', 'envuelo') returns true", () => {
+    expect(isValidSubtab("lucas", "envuelo")).toBe(true);
+  });
+
+  it("isValidSubtab('adrian', 'inbox') returns true", () => {
+    expect(isValidSubtab("adrian", "inbox")).toBe(true);
+  });
+});
+
+describe("isValidSubtab — type guard SC-3 negative (F1-S9)", () => {
+  it("isValidSubtab('camila', 'foo') returns false (invalid subtab for agent)", () => {
+    expect(isValidSubtab("camila", "foo")).toBe(false);
+  });
+
+  it("isValidSubtab('mateo', 'any') returns false (mateo subtabs is empty array)", () => {
+    expect(isValidSubtab("mateo", "any")).toBe(false);
+  });
+
+  it("isValidSubtab('lisa', '') returns false (empty subtab string)", () => {
+    expect(isValidSubtab("lisa", "")).toBe(false);
+  });
+
+  it("isValidSubtab('config', 'marca') returns false (subtab from different agent)", () => {
+    expect(isValidSubtab("config", "marca")).toBe(false);
+  });
+
+  it("isValidSubtab('valeria', 'lanzar') returns false (lucas subtab not valid for valeria)", () => {
+    expect(isValidSubtab("valeria", "lanzar")).toBe(false);
+  });
+});
