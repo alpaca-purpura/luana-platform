@@ -61,7 +61,11 @@ const mockStreamResponse: ActivityStreamResponse = {
 
 function createWrapper(queryClient: QueryClient) {
   return function Wrapper({ children }: { children: React.ReactNode }) {
-    return createElement(QueryClientProvider, { client: queryClient }, children);
+    return createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 }
 
@@ -80,7 +84,7 @@ describe("useActivityStream", () => {
 
     const { result } = renderHook(
       () => useActivityStream(CONVERSATION_ID, true),
-      { wrapper: createWrapper(queryClient) }
+      { wrapper: createWrapper(queryClient) },
     );
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -94,7 +98,7 @@ describe("useActivityStream", () => {
 
     const { result } = renderHook(
       () => useActivityStream(CONVERSATION_ID, false),
-      { wrapper: createWrapper(queryClient) }
+      { wrapper: createWrapper(queryClient) },
     );
 
     // Query disabled — should stay in idle/pending state, not trigger fetch
@@ -105,10 +109,9 @@ describe("useActivityStream", () => {
   it("does NOT fetch when conversationId is null", () => {
     vi.mocked(fetchClient).mockResolvedValue(mockStreamResponse);
 
-    const { result } = renderHook(
-      () => useActivityStream(null, true),
-      { wrapper: createWrapper(queryClient) }
-    );
+    const { result } = renderHook(() => useActivityStream(null, true), {
+      wrapper: createWrapper(queryClient),
+    });
 
     expect(result.current.isFetching).toBe(false);
     expect(fetchClient).not.toHaveBeenCalled();
@@ -134,12 +137,15 @@ describe("useActivityStream", () => {
 
     const { result } = renderHook(
       () => useActivityStream(CONVERSATION_ID, true),
-      { wrapper: createWrapper(queryClient) }
+      { wrapper: createWrapper(queryClient) },
     );
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    const payload = result.current.data?.events[0].payload_redacted as Record<string, unknown>;
+    const payload = result.current.data?.events[0].payload_redacted as Record<
+      string,
+      unknown
+    >;
     // PHI fields must NOT be present in payload_redacted
     expect(payload).not.toHaveProperty("patient_name");
     expect(payload).not.toHaveProperty("patient_dni");

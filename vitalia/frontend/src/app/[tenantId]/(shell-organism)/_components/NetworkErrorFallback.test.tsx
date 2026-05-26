@@ -30,9 +30,7 @@ describe("NetworkErrorFallback", () => {
     render(<NetworkErrorFallback />);
 
     expect(
-      screen.getByText(
-        "Estamos teniendo problemas conectando con el servidor"
-      )
+      screen.getByText("Estamos teniendo problemas conectando con el servidor"),
     ).toBeInTheDocument();
   });
 
@@ -40,7 +38,7 @@ describe("NetworkErrorFallback", () => {
     render(<NetworkErrorFallback />);
 
     expect(
-      screen.getByText("Intenta de nuevo en unos segundos.")
+      screen.getByText("Intenta de nuevo en unos segundos."),
     ).toBeInTheDocument();
   });
 
@@ -53,16 +51,18 @@ describe("NetworkErrorFallback", () => {
   it("contiene el botón Reintentar", () => {
     render(<NetworkErrorFallback />);
 
+    expect(screen.getByTestId("network-error-retry")).toBeInTheDocument();
     expect(
-      screen.getByTestId("network-error-retry")
+      screen.getByRole("button", { name: "Reintentar" }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Reintentar" })).toBeInTheDocument();
   });
 
   it("renderiza el ícono de advertencia con aria-label", () => {
     render(<NetworkErrorFallback />);
 
-    expect(screen.getByRole("img", { name: "Advertencia" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("img", { name: "Advertencia" }),
+    ).toBeInTheDocument();
   });
 });
 
@@ -74,7 +74,9 @@ describe("RefreshButton", () => {
   it("renderiza el botón con texto 'Reintentar'", () => {
     render(<RefreshButton />);
 
-    expect(screen.getByRole("button", { name: "Reintentar" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Reintentar" }),
+    ).toBeInTheDocument();
   });
 
   it("tiene data-testid='network-error-retry'", () => {

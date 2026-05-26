@@ -108,7 +108,10 @@ export function ConfirmTemplateModal({
           </div>
 
           {mutation.isError && (
-            <p role="alert" className="text-sm text-[hsl(var(--vitalia-danger,0_75%_45%))]">
+            <p
+              role="alert"
+              className="text-sm text-[hsl(var(--vitalia-danger,0_75%_45%))]"
+            >
               {copy.errorToast}
             </p>
           )}
@@ -133,7 +136,7 @@ export function ConfirmTemplateModal({
             className={cn(
               "rounded px-3 py-1.5 text-sm font-medium text-white transition-opacity",
               "bg-[hsl(var(--vitalia-primary,210_90%_50%))] hover:bg-[hsl(var(--vitalia-primary-hover,210_90%_45%))]",
-              "disabled:opacity-60"
+              "disabled:opacity-60",
             )}
           >
             {mutation.isPending ? copy.sending : copy.confirm}

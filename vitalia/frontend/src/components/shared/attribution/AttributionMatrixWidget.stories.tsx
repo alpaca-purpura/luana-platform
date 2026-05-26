@@ -1,6 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/nextjs";
 import { AttributionMatrixWidget } from "./AttributionMatrixWidget";
-import type { AttributionChannel, AttributionCell } from "./AttributionMatrixWidget";
+import type {
+  AttributionChannel,
+  AttributionCell,
+} from "./AttributionMatrixWidget";
 
 /**
  * AttributionMatrixWidget — channels × touchpoints attribution matrix.
@@ -30,10 +33,10 @@ const cells: AttributionCell[] = [
   { channelSlug: "instagram-organic", touchpoint: "Primer toque", score: 0.45 },
   { channelSlug: "instagram-organic", touchpoint: "Último toque", score: 0.12 },
   { channelSlug: "instagram-organic", touchpoint: "Lineal", score: 0.28 },
-  { channelSlug: "google-ads", touchpoint: "Primer toque", score: 0.20 },
+  { channelSlug: "google-ads", touchpoint: "Primer toque", score: 0.2 },
   { channelSlug: "google-ads", touchpoint: "Último toque", score: 0.58 },
   { channelSlug: "google-ads", touchpoint: "Lineal", score: 0.35 },
-  { channelSlug: "whatsapp-outbound", touchpoint: "Primer toque", score: 0.10 },
+  { channelSlug: "whatsapp-outbound", touchpoint: "Primer toque", score: 0.1 },
   { channelSlug: "whatsapp-outbound", touchpoint: "Último toque", score: 0.22 },
   { channelSlug: "whatsapp-outbound", touchpoint: "Lineal", score: 0.18 },
   { channelSlug: "referrals", touchpoint: "Primer toque", score: 0.25 },

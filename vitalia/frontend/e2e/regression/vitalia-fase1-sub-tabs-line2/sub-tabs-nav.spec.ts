@@ -56,12 +56,24 @@ test.describe("SC-1 — click sub-tab navega a nueva ruta (sub-tabs)", () => {
     });
 
     // Doctores should be active
-    await expect(pom.getSubTab("doctores")).toHaveAttribute("data-active", "true");
-    await expect(pom.getSubTab("doctores")).toHaveAttribute("aria-selected", "true");
+    await expect(pom.getSubTab("doctores")).toHaveAttribute(
+      "data-active",
+      "true",
+    );
+    await expect(pom.getSubTab("doctores")).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
 
     // Marca should be inactive
-    await expect(pom.getSubTab("marca")).toHaveAttribute("data-active", "false");
-    await expect(pom.getSubTab("marca")).toHaveAttribute("aria-selected", "false");
+    await expect(pom.getSubTab("marca")).toHaveAttribute(
+      "data-active",
+      "false",
+    );
+    await expect(pom.getSubTab("marca")).toHaveAttribute(
+      "aria-selected",
+      "false",
+    );
   });
 
   test("SC-1-2: click Reactivar desde Camila/voz → URL /camila/reactivar + Reactivar active", async ({
@@ -85,7 +97,10 @@ test.describe("SC-1 — click sub-tab navega a nueva ruta (sub-tabs)", () => {
       timeout: 10_000,
     });
 
-    await expect(pom.getSubTab("reactivar")).toHaveAttribute("data-active", "true");
+    await expect(pom.getSubTab("reactivar")).toHaveAttribute(
+      "data-active",
+      "true",
+    );
     await expect(pom.getSubTab("voz")).toHaveAttribute("data-active", "false");
   });
 
@@ -109,8 +124,14 @@ test.describe("SC-1 — click sub-tab navega a nueva ruta (sub-tabs)", () => {
       timeout: 10_000,
     });
 
-    await expect(pom.getSubTab("pacientes")).toHaveAttribute("data-active", "true");
-    await expect(pom.getSubTab("agenda")).toHaveAttribute("data-active", "false");
+    await expect(pom.getSubTab("pacientes")).toHaveAttribute(
+      "data-active",
+      "true",
+    );
+    await expect(pom.getSubTab("agenda")).toHaveAttribute(
+      "data-active",
+      "false",
+    );
   });
 
   test("SC-1-4: click Config sub-tab Conexiones desde Config/cuenta → URL /config/conexiones (neutral styling)", async ({
@@ -133,7 +154,13 @@ test.describe("SC-1 — click sub-tab navega a nueva ruta (sub-tabs)", () => {
       timeout: 10_000,
     });
 
-    await expect(pom.getSubTab("conexiones")).toHaveAttribute("data-active", "true");
-    await expect(pom.getSubTab("cuenta")).toHaveAttribute("data-active", "false");
+    await expect(pom.getSubTab("conexiones")).toHaveAttribute(
+      "data-active",
+      "true",
+    );
+    await expect(pom.getSubTab("cuenta")).toHaveAttribute(
+      "data-active",
+      "false",
+    );
   });
 });

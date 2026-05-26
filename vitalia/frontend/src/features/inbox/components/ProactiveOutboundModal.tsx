@@ -53,35 +53,40 @@ const HSM_TEMPLATES: HsmTemplate[] = [
     id: "vitalia_bienvenida_v1",
     name: "Bienvenida inicial",
     label: "Bienvenida a la clínica",
-    preview: "Hola {nombre}, te damos la bienvenida a Vitalia. Estamos aquí para ayudarte con tu salud y bienestar.",
+    preview:
+      "Hola {nombre}, te damos la bienvenida a Vitalia. Estamos aquí para ayudarte con tu salud y bienestar.",
     variables: ["nombre"],
   },
   {
     id: "vitalia_recordatorio_cita_v1",
     name: "Recordatorio de cita",
     label: "Recordatorio de cita próxima",
-    preview: "Hola {nombre}, te recordamos tu cita el {fecha} a las {hora}. Si necesitas cambiarla, escríbenos aquí.",
+    preview:
+      "Hola {nombre}, te recordamos tu cita el {fecha} a las {hora}. Si necesitas cambiarla, escríbenos aquí.",
     variables: ["nombre", "fecha", "hora"],
   },
   {
     id: "vitalia_seguimiento_postratamiento_v1",
     name: "Seguimiento post-tratamiento",
     label: "Seguimiento después del tratamiento",
-    preview: "Hola {nombre}, queremos saber cómo te sientes después de tu tratamiento del {fecha}. ¿Tienes alguna pregunta?",
+    preview:
+      "Hola {nombre}, queremos saber cómo te sientes después de tu tratamiento del {fecha}. ¿Tienes alguna pregunta?",
     variables: ["nombre", "fecha"],
   },
   {
     id: "vitalia_oferta_especial_v1",
     name: "Oferta especial",
     label: "Promoción personalizada",
-    preview: "Hola {nombre}, tenemos una oferta especial para ti: {descripcion_oferta}. ¿Te interesa conocer más detalles?",
+    preview:
+      "Hola {nombre}, tenemos una oferta especial para ti: {descripcion_oferta}. ¿Te interesa conocer más detalles?",
     variables: ["nombre", "descripcion_oferta"],
   },
   {
     id: "vitalia_reactivacion_v1",
     name: "Reactivación de paciente",
     label: "Reactivar contacto inactivo",
-    preview: "Hola {nombre}, hace tiempo que no sabemos de ti. ¿Podemos ayudarte con algo relacionado a tu salud?",
+    preview:
+      "Hola {nombre}, hace tiempo que no sabemos de ti. ¿Podemos ayudarte con algo relacionado a tu salud?",
     variables: ["nombre"],
   },
 ];
@@ -96,7 +101,7 @@ function TemplatePreview({
 }) {
   const text = template.preview.replace(
     /\{(\w+)\}/g,
-    (_, key: string) => vars[key] ?? `{${key}}`
+    (_, key: string) => vars[key] ?? `{${key}}`,
   );
 
   return (
@@ -104,7 +109,7 @@ function TemplatePreview({
       className={cn(
         "rounded-xl rounded-tl-none px-4 py-3 text-sm leading-relaxed",
         "vt-bg-success-12 vt-text-foreground max-w-xs shadow-sm",
-        "border vt-border-success-30"
+        "border vt-border-success-30",
       )}
       aria-label="Vista previa del mensaje"
       data-testid="template-preview-bubble"
@@ -123,13 +128,16 @@ export function ProactiveOutboundModal({
   onClose,
   className,
 }: ProactiveOutboundModalProps) {
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(
+    null,
+  );
   const [leadId, setLeadId] = useState("");
   const [templateVars, setTemplateVars] = useState<Record<string, string>>({});
 
   const { mutate, isPending, isSuccess } = useProactiveOutbound();
 
-  const selectedTemplate = HSM_TEMPLATES.find((t) => t.id === selectedTemplateId) ?? null;
+  const selectedTemplate =
+    HSM_TEMPLATES.find((t) => t.id === selectedTemplateId) ?? null;
   const canSubmit = Boolean(leadId.trim() && selectedTemplateId && !isPending);
 
   const handleTemplateSelect = (templateId: string) => {
@@ -159,7 +167,7 @@ export function ProactiveOutboundModal({
           setSelectedTemplateId(null);
           setTemplateVars({});
         },
-      }
+      },
     );
   };
 
@@ -191,7 +199,7 @@ export function ProactiveOutboundModal({
         className={cn(
           "relative z-10 w-full max-w-lg rounded-xl border vt-border",
           "vt-bg-surface shadow-xl overflow-y-auto max-h-[90vh]",
-          className
+          className,
         )}
       >
         {/* Header */}
@@ -211,11 +219,22 @@ export function ProactiveOutboundModal({
               "vt-text-muted hover:vt-text-foreground hover:vt-bg-muted/40",
               "transition-colors disabled:opacity-50",
               "focus-visible:outline focus-visible:outline-2",
-              "focus-visible:outline-[var(--vitalia-cian)]"
+              "focus-visible:outline-[var(--vitalia-cian)]",
             )}
           >
-            <svg aria-hidden="true" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            <svg
+              aria-hidden="true"
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
@@ -254,7 +273,7 @@ export function ProactiveOutboundModal({
                 "placeholder:vt-text-muted",
                 "focus-visible:outline focus-visible:outline-2",
                 "focus-visible:outline-[var(--vitalia-cian)]",
-                "disabled:opacity-50"
+                "disabled:opacity-50",
               )}
             />
           </div>
@@ -264,7 +283,11 @@ export function ProactiveOutboundModal({
             <p className="text-sm font-medium vt-text-foreground">
               {INBOX_COPY.proactiveOutboundModal.selectTemplate}
             </p>
-            <ul className="space-y-2" role="radiogroup" aria-label={INBOX_COPY.proactiveOutboundModal.selectTemplate}>
+            <ul
+              className="space-y-2"
+              role="radiogroup"
+              aria-label={INBOX_COPY.proactiveOutboundModal.selectTemplate}
+            >
               {HSM_TEMPLATES.map((template) => {
                 const isSelected = selectedTemplateId === template.id;
                 return (
@@ -283,10 +306,12 @@ export function ProactiveOutboundModal({
                         isSelected
                           ? "border-[var(--vitalia-cian)] bg-[var(--vitalia-cian)]/8 vt-text-foreground"
                           : "vt-border vt-bg-surface vt-text-foreground hover:vt-bg-muted/40",
-                        "disabled:opacity-50"
+                        "disabled:opacity-50",
                       )}
                     >
-                      <span className="font-medium block">{template.label}</span>
+                      <span className="font-medium block">
+                        {template.label}
+                      </span>
                       <span className="text-xs vt-text-muted mt-0.5 block leading-snug line-clamp-2">
                         {template.preview}
                       </span>
@@ -326,7 +351,7 @@ export function ProactiveOutboundModal({
                         "placeholder:vt-text-muted",
                         "focus-visible:outline focus-visible:outline-2",
                         "focus-visible:outline-[var(--vitalia-cian)]",
-                        "disabled:opacity-50"
+                        "disabled:opacity-50",
                       )}
                     />
                   </div>
@@ -342,14 +367,14 @@ export function ProactiveOutboundModal({
                 {INBOX_COPY.proactiveOutboundModal.preview}
               </p>
               <div
-                className={cn(
-                  "rounded-xl p-4",
-                  "vt-bg-muted"
-                )}
+                className={cn("rounded-xl p-4", "vt-bg-muted")}
                 data-testid="wa-preview-container"
                 aria-label={INBOX_COPY.proactiveOutboundModal.preview}
               >
-                <TemplatePreview template={selectedTemplate} vars={templateVars} />
+                <TemplatePreview
+                  template={selectedTemplate}
+                  vars={templateVars}
+                />
               </div>
             </div>
           )}
@@ -364,7 +389,7 @@ export function ProactiveOutboundModal({
             className={cn(
               "px-4 py-2 rounded-lg text-sm font-medium",
               "vt-text-muted vt-bg-muted/40 hover:vt-bg-muted/60",
-              "transition-colors disabled:opacity-50"
+              "transition-colors disabled:opacity-50",
             )}
           >
             {INBOX_COPY.proactiveOutboundModal.cancelCta}
@@ -378,10 +403,12 @@ export function ProactiveOutboundModal({
             className={cn(
               "px-4 py-2 rounded-lg text-sm font-medium",
               "text-white bg-[var(--vitalia-cian)] hover:opacity-90",
-              "transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+              "transition-opacity disabled:opacity-40 disabled:cursor-not-allowed",
             )}
           >
-            {isPending ? "Enviando…" : INBOX_COPY.proactiveOutboundModal.confirmCta}
+            {isPending
+              ? "Enviando…"
+              : INBOX_COPY.proactiveOutboundModal.confirmCta}
           </button>
         </div>
       </div>

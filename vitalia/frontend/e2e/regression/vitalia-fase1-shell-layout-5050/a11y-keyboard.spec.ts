@@ -71,7 +71,10 @@ test.describe("SC-4 — a11y keyboard nav + axe WCAG 2.1 AA (F1-S4)", () => {
 
   // ── Assertion 2: resize handle focusable tabindex='0' ──────────────────────
 
-  test("resize handle focusable tabindex='0'", async ({ shellPage, tenantId }) => {
+  test("resize handle focusable tabindex='0'", async ({
+    shellPage,
+    tenantId,
+  }) => {
     const pom = new ShellLayoutPage(shellPage);
     await pom.gotoShell(tenantId);
 
@@ -82,7 +85,10 @@ test.describe("SC-4 — a11y keyboard nav + axe WCAG 2.1 AA (F1-S4)", () => {
     // Separator must be focusable
     await pom.resizeHandle.focus();
     const isFocused = await shellPage.evaluate(() => {
-      return document.activeElement?.getAttribute("aria-label") === "Redimensionar paneles";
+      return (
+        document.activeElement?.getAttribute("aria-label") ===
+        "Redimensionar paneles"
+      );
     });
     expect(isFocused).toBe(true);
   });
@@ -149,7 +155,10 @@ test.describe("SC-4 — a11y keyboard nav + axe WCAG 2.1 AA (F1-S4)", () => {
 
   // ── Assertion 5: axe wcag2aa passes light theme @axe ───────────────────────
 
-  test("axe wcag2aa passes light theme @axe", async ({ shellPage, tenantId }) => {
+  test("axe wcag2aa passes light theme @axe", async ({
+    shellPage,
+    tenantId,
+  }) => {
     const pom = new ShellLayoutPage(shellPage);
     await pom.gotoShell(tenantId);
 
@@ -170,7 +179,16 @@ test.describe("SC-4 — a11y keyboard nav + axe WCAG 2.1 AA (F1-S4)", () => {
 
     expect(
       critical,
-      `Axe critical/serious violations (light theme) shell layout:\n${JSON.stringify(critical.map((v) => ({ id: v.id, impact: v.impact, description: v.description, nodes: v.nodes.map((n) => n.html) })), null, 2)}`,
+      `Axe critical/serious violations (light theme) shell layout:\n${JSON.stringify(
+        critical.map((v) => ({
+          id: v.id,
+          impact: v.impact,
+          description: v.description,
+          nodes: v.nodes.map((n) => n.html),
+        })),
+        null,
+        2,
+      )}`,
     ).toHaveLength(0);
   });
 
@@ -197,7 +215,16 @@ test.describe("SC-4 — a11y keyboard nav + axe WCAG 2.1 AA (F1-S4)", () => {
 
     expect(
       critical,
-      `Axe critical/serious violations (dark theme) shell layout:\n${JSON.stringify(critical.map((v) => ({ id: v.id, impact: v.impact, description: v.description, nodes: v.nodes.map((n) => n.html) })), null, 2)}`,
+      `Axe critical/serious violations (dark theme) shell layout:\n${JSON.stringify(
+        critical.map((v) => ({
+          id: v.id,
+          impact: v.impact,
+          description: v.description,
+          nodes: v.nodes.map((n) => n.html),
+        })),
+        null,
+        2,
+      )}`,
     ).toHaveLength(0);
   });
 });

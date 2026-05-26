@@ -53,10 +53,9 @@ test.describe("SC-5 — ValeriaChat empty state (messages=[])", () => {
     const chatPage = chatStoreEmpty;
 
     // Subtexto must use "Pregúntale" (tilde obligatoria per spec § 6) — NOT "Preguntale"
-    const subtexto = chatPage.page.getByText(
-      "Pregúntale a Valeria",
-      { exact: false },
-    );
+    const subtexto = chatPage.page.getByText("Pregúntale a Valeria", {
+      exact: false,
+    });
     await expect(subtexto).toBeVisible();
   });
 
@@ -136,7 +135,9 @@ test.describe("SC-5 — ValeriaChat empty state (messages=[])", () => {
     await expect(messagesContainer).toBeVisible();
 
     // Verify empty state container exists (either direct testid or inferred from heading)
-    const hasEmptyStateTestId = await emptyStateContainer.isVisible().catch(() => false);
+    const hasEmptyStateTestId = await emptyStateContainer
+      .isVisible()
+      .catch(() => false);
     if (!hasEmptyStateTestId) {
       // Fallback: heading-based assertion is sufficient
       await expect(chatPage.getEmptyState()).toBeVisible();

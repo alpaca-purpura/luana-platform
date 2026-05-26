@@ -91,15 +91,15 @@ describe("ReEngagementCard", () => {
     // Card should render with test-id
     expect(
       screen.getByTestId(
-        `re-engagement-card-multi_session-${mockMultiSessionRow.reEngagementEventId}`
-      )
+        `re-engagement-card-multi_session-${mockMultiSessionRow.reEngagementEventId}`,
+      ),
     ).toBeInTheDocument();
   });
 
   it("renders absence card with disabled send_reminder", () => {
     render(<ReEngagementCard row={mockAbsenceRow} {...defaultHandlers} />);
     const card = screen.getByTestId(
-      `re-engagement-card-absence-${mockAbsenceRow.reEngagementEventId}`
+      `re-engagement-card-absence-${mockAbsenceRow.reEngagementEventId}`,
     );
     expect(card).toBeInTheDocument();
     // send_reminder button should be disabled (opt-in false)
@@ -116,9 +116,11 @@ describe("ReEngagementCard", () => {
         row={mockMultiSessionRow}
         {...defaultHandlers}
         onSendReminder={onSendReminder}
-      />
+      />,
     );
-    const reminderBtn = screen.queryByRole("button", { name: /recordatorio|adrián/i });
+    const reminderBtn = screen.queryByRole("button", {
+      name: /recordatorio|adrián/i,
+    });
     if (reminderBtn && !reminderBtn.hasAttribute("disabled")) {
       fireEvent.click(reminderBtn);
       expect(onSendReminder).toHaveBeenCalled();

@@ -35,7 +35,7 @@ export function CopilotRail({ className }: CopilotRailProps) {
         "vt-bg-surface border-l vt-border",
         "transition-[width] duration-300 ease-in-out overflow-hidden",
         isOpen ? "w-[460px]" : "w-20",
-        className
+        className,
       )}
       aria-label="Panel de copiloto"
       role="complementary"
@@ -45,7 +45,7 @@ export function CopilotRail({ className }: CopilotRailProps) {
       <div
         className={cn(
           "flex items-center shrink-0 h-14 px-3 border-b vt-border",
-          isOpen ? "justify-between" : "justify-center"
+          isOpen ? "justify-between" : "justify-center",
         )}
       >
         <button
@@ -56,7 +56,7 @@ export function CopilotRail({ className }: CopilotRailProps) {
             "vt-text-white vt-bg-gradient-agent",
             "transition-opacity hover:opacity-90",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 vt-ring-cian",
-            isOpen ? "px-4 py-2 text-sm w-auto" : "w-10 h-10 text-lg"
+            isOpen ? "px-4 py-2 text-sm w-auto" : "w-10 h-10 text-lg",
           )}
           aria-label={isOpen ? "Cerrar copiloto" : "Abrir copiloto"}
           aria-controls="copilot-chat-panel"
@@ -73,7 +73,7 @@ export function CopilotRail({ className }: CopilotRailProps) {
               "p-1 rounded vt-text-muted",
               "hover:vt-bg-muted",
               "focus-visible:outline-none focus-visible:ring-2 vt-ring-cian",
-              "transition-colors"
+              "transition-colors",
             )}
             aria-label="Cerrar panel de copiloto"
           >
@@ -87,7 +87,7 @@ export function CopilotRail({ className }: CopilotRailProps) {
         id="copilot-chat-panel"
         className={cn(
           "flex-1 overflow-hidden",
-          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+          isOpen ? "opacity-100" : "opacity-0 pointer-events-none",
         )}
         aria-hidden={!isOpen}
         role="region"

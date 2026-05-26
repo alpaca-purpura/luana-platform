@@ -26,10 +26,10 @@ const TENANT_ID = process.env["E2E_TENANT_ID"] ?? "vitalia-test-tenant";
 const ARIA_LABELS: Record<string, string> = {
   lisa: "Sub-secciones Lisa",
   lucas: "Sub-secciones Lucas",
-  adrian: "Sub-secciones Adrián",   // tilde en Adrián
+  adrian: "Sub-secciones Adrián", // tilde en Adrián
   valeria: "Sub-secciones Valeria",
   camila: "Sub-secciones Camila",
-  config: "Sub-secciones Configuración",  // tilde en Configuración
+  config: "Sub-secciones Configuración", // tilde en Configuración
 };
 
 // Expected sub-tab labels verbatim (22 total)
@@ -38,7 +38,7 @@ const EXPECTED_LABELS: Record<string, string[]> = {
   lucas: ["Lanzar", "En vuelo", "Recursos", "Resultados", "Mercado"],
   adrian: ["Inbox", "Embudo", "Outbound", "Propuestas"],
   valeria: ["Agenda", "Pacientes"],
-  camila: ["Voz del paciente", "Reactivar", "Multiplicar", "Reputación"],  // tilde Reputación
+  camila: ["Voz del paciente", "Reactivar", "Multiplicar", "Reputación"], // tilde Reputación
   config: ["Mi cuenta", "Conexiones", "Avanzado"],
 };
 
@@ -46,16 +46,19 @@ test.describe("SC-9 — nav aria-labels Spanish neutro LatAm + tildes correctas"
   test.use({ viewport: DESKTOP_VIEWPORT });
 
   for (const [agent, expectedLabel] of Object.entries(ARIA_LABELS)) {
-    const subtab = {
-      lisa: "marca",
-      lucas: "lanzar",
-      adrian: "inbox",
-      valeria: "agenda",
-      camila: "voz",
-      config: "cuenta",
-    }[agent] ?? "default";
+    const subtab =
+      {
+        lisa: "marca",
+        lucas: "lanzar",
+        adrian: "inbox",
+        valeria: "agenda",
+        camila: "voz",
+        config: "cuenta",
+      }[agent] ?? "default";
 
-    test(`aria-label for ${agent} → "${expectedLabel}"`, async ({ shellPage }) => {
+    test(`aria-label for ${agent} → "${expectedLabel}"`, async ({
+      shellPage,
+    }) => {
       const pom = new SubTabsBarPage(shellPage);
 
       await pom.goto({ tenantId: TENANT_ID, agent, subtab });
@@ -70,14 +73,15 @@ test.describe("SC-9 — sub-tab labels verbatim Spanish neutro LatAm", () => {
   test.use({ viewport: DESKTOP_VIEWPORT });
 
   for (const [agent, expectedLabels] of Object.entries(EXPECTED_LABELS)) {
-    const subtab = {
-      lisa: "marca",
-      lucas: "lanzar",
-      adrian: "inbox",
-      valeria: "agenda",
-      camila: "voz",
-      config: "cuenta",
-    }[agent] ?? "default";
+    const subtab =
+      {
+        lisa: "marca",
+        lucas: "lanzar",
+        adrian: "inbox",
+        valeria: "agenda",
+        camila: "voz",
+        config: "cuenta",
+      }[agent] ?? "default";
 
     test(`${agent} labels verbatim: ${JSON.stringify(expectedLabels)}`, async ({
       shellPage,
@@ -116,7 +120,7 @@ test.describe("SC-9 — tildes correctas en UI (Adrián, Reputación, Configurac
     const ariaLabel = await pom.getAriaLabel();
     // Must have ó (U+00F3), not plain 'o'
     expect(ariaLabel).toContain("Adrián");
-    expect(ariaLabel).not.toContain("Adrian\n");  // no bare Adrian without accent
+    expect(ariaLabel).not.toContain("Adrian\n"); // no bare Adrian without accent
   });
 
   test("Reputación label contiene tilde (Reputación no Reputacion)", async ({

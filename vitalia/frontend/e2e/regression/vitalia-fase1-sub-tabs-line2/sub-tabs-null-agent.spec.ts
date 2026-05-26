@@ -46,12 +46,14 @@ test.describe("SC-4 — agente inválido → SubTabsBar return null total", () =
     await pom.gotoRaw(`/${TENANT_ID}/foobar/anything`);
 
     // Wait for ribbon to mount (ribbon should still render — it shows idle state)
-    await shellPage.waitForSelector('[data-testid="ribbon"]', {
-      state: "attached",
-      timeout: 15_000,
-    }).catch(() => {
-      // Ribbon may not be visible if 404 page — acceptable for this test
-    });
+    await shellPage
+      .waitForSelector('[data-testid="ribbon"]', {
+        state: "attached",
+        timeout: 15_000,
+      })
+      .catch(() => {
+        // Ribbon may not be visible if 404 page — acceptable for this test
+      });
 
     // SubTabsBar must NOT be present in DOM (Q5 cement: return null total)
     const isPresent = await pom.isPresent();
@@ -108,12 +110,16 @@ test.describe("SC-4 — agente inválido → SubTabsBar return null total", () =
     const url = shellPage.url();
     if (url.includes("/lisa/") || url.includes("/valeria/")) {
       // Valid redirect happened — sub-tabs should render
-      const count = await shellPage.locator('[data-testid="sub-tabs-bar"]').count();
+      const count = await shellPage
+        .locator('[data-testid="sub-tabs-bar"]')
+        .count();
       // May be 0 if redirect didn't complete or page not fully rendered — non-blocking
       expect(count).toBeGreaterThanOrEqual(0);
     } else {
       // No redirect — sub-tabs absent is expected
-      const count = await shellPage.locator('[data-testid="sub-tabs-bar"]').count();
+      const count = await shellPage
+        .locator('[data-testid="sub-tabs-bar"]')
+        .count();
       expect(count).toBe(0);
     }
   });

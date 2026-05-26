@@ -35,7 +35,8 @@ function buildLeadsUrl(filters: LeadsFilters): string {
   if (filters.stage) params.set("stage", filters.stage);
   if (filters.search) params.set("search", filters.search);
   if (filters.page != null) params.set("page", String(filters.page));
-  if (filters.pageSize != null) params.set("page_size", String(filters.pageSize));
+  if (filters.pageSize != null)
+    params.set("page_size", String(filters.pageSize));
   const qs = params.toString();
   return `/api/v1/vitalia/crm/leads${qs ? `?${qs}` : ""}`;
 }

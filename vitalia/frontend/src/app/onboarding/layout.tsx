@@ -19,14 +19,15 @@ export default function OnboardingLayout({
       <header className="border-b bg-white px-6 py-4">
         <div className="mx-auto max-w-2xl">
           <div className="h-2 rounded-full bg-gray-200">
-            <div className="h-2 rounded-full bg-teal-500" style={{ width: "33%" }} />
+            <div
+              className="h-2 rounded-full bg-teal-500"
+              style={{ width: "33%" }}
+            />
           </div>
         </div>
       </header>
       <main className="flex flex-1 items-start justify-center px-6 py-12">
-        <div className="w-full max-w-2xl">
-          {children}
-        </div>
+        <div className="w-full max-w-2xl">{children}</div>
       </main>
     </div>
   );

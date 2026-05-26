@@ -25,7 +25,10 @@ export type ReservationStageProps = {
  */
 export const ReservationStage = forwardRef<HTMLElement, ReservationStageProps>(
   ({ period = "30d", className }, ref) => {
-    const { data, isLoading } = useStageDetail({ stage: "reservation", period });
+    const { data, isLoading } = useStageDetail({
+      stage: "reservation",
+      period,
+    });
 
     if (isLoading) {
       return (

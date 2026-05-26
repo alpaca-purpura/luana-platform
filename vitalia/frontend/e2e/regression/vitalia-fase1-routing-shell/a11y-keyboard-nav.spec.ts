@@ -63,7 +63,9 @@ test.describe("SC-6 — accessibility · keyboard nav + axe WCAG 2.1 AA", () => 
     await pom.gotoSubtab(TENANT_ID, "valeria", "agenda");
 
     // Focus first ribbon tab via keyboard
-    const ribbonTab = shellPage.locator('[data-testid="ribbon"] [role="tab"]').first();
+    const ribbonTab = shellPage
+      .locator('[data-testid="ribbon"] [role="tab"]')
+      .first();
     await ribbonTab.focus();
 
     // Arrow right should move to next tab
@@ -198,14 +200,15 @@ test.describe("SC-6 — accessibility · keyboard nav + axe WCAG 2.1 AA", () => 
   test("SC-6-9: axe WCAG 2.1 AA scan — network error fallback @axe", async ({
     shellPage,
   }) => {
-    const { mockTenantFetchFailure } = await import(
-      "../../fixtures/routing-shell.fixture"
-    );
+    const { mockTenantFetchFailure } =
+      await import("../../fixtures/routing-shell.fixture");
     await mockTenantFetchFailure(shellPage, 6_000);
 
     await shellPage.goto(`/${TENANT_ID}`, { waitUntil: "domcontentloaded" });
     const pom = new ShellPage(shellPage);
-    await expect(pom.getNetworkErrorFallback()).toBeVisible({ timeout: 15_000 });
+    await expect(pom.getNetworkErrorFallback()).toBeVisible({
+      timeout: 15_000,
+    });
 
     const AxeBuilder = (await import("@axe-core/playwright")).default;
     const accessibilityScanResults = await new AxeBuilder({ page: shellPage })

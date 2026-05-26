@@ -22,23 +22,25 @@ describe("VoiceStyleChip", () => {
 
   it("shows unconfigured label when isConfigured=false", () => {
     render(<VoiceStyleChip isConfigured={false} />);
-    expect(
-      screen.getByTestId("voice-style-chip").textContent
-    ).toContain(INBOX_COPY.voiceStyleChip.unconfigured);
+    expect(screen.getByTestId("voice-style-chip").textContent).toContain(
+      INBOX_COPY.voiceStyleChip.unconfigured,
+    );
   });
 
   it("shows default configured label when isConfigured=true and no styleLabel", () => {
     render(<VoiceStyleChip isConfigured={true} />);
-    expect(
-      screen.getByTestId("voice-style-chip").textContent
-    ).toContain(INBOX_COPY.voiceStyleChip.configured);
+    expect(screen.getByTestId("voice-style-chip").textContent).toContain(
+      INBOX_COPY.voiceStyleChip.configured,
+    );
   });
 
   it("shows custom styleLabel when isConfigured=true and styleLabel provided", () => {
-    render(<VoiceStyleChip isConfigured={true} styleLabel="empático · directo" />);
-    expect(
-      screen.getByTestId("voice-style-chip").textContent
-    ).toContain("empático · directo");
+    render(
+      <VoiceStyleChip isConfigured={true} styleLabel="empático · directo" />,
+    );
+    expect(screen.getByTestId("voice-style-chip").textContent).toContain(
+      "empático · directo",
+    );
   });
 
   it("always renders CTA link with INBOX_COPY.voiceStyleChip.cta text", () => {
@@ -64,7 +66,7 @@ describe("VoiceStyleChip", () => {
     render(<VoiceStyleChip />);
     const chip = screen.getByTestId("voice-style-chip");
     expect(chip.getAttribute("aria-label")).toBe(
-      INBOX_COPY.voiceStyleChip.ariaLabel
+      INBOX_COPY.voiceStyleChip.ariaLabel,
     );
   });
 });

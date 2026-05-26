@@ -79,9 +79,12 @@ test.describe("SC-16 — Visual baseline (vitalia-auth-base-functional)", () => 
     await page.goto("/sign-up", { waitUntil: "domcontentloaded" });
 
     await page
-      .waitForSelector("input[type='email'], input[name='emailAddress'], form", {
-        timeout: 10_000,
-      })
+      .waitForSelector(
+        "input[type='email'], input[name='emailAddress'], form",
+        {
+          timeout: 10_000,
+        },
+      )
       .catch(() => {});
 
     await page.addStyleTag({

@@ -54,7 +54,7 @@ const CLIENT_HOOKS = [
 // (method calls like `useState(...)` or `const [...] = useEffect(...)`)
 const CLIENT_HOOK_PATTERN = new RegExp(
   `\\b(${CLIENT_HOOKS.join("|")})\\s*[(<]`,
-  "g"
+  "g",
 );
 
 // Ratchet baseline — known violations at time of T-infra-4 creation (shrink-only).
@@ -72,7 +72,7 @@ const SKIP_PATTERNS = [
   /\.types\.[tj]sx?$/,
   /\/schemas\//,
   /\.schema\.[tj]sx?$/,
-  /\/api\//,  // API hooks (use-*.ts) use React Query which is initialized in a Provider
+  /\/api\//, // API hooks (use-*.ts) use React Query which is initialized in a Provider
 ];
 
 function shouldSkip(relPath: string): boolean {
@@ -101,7 +101,9 @@ function collectTsxFiles(dir: string): string[] {
 describe("Vitalia FE — Server Components first; use client on hook-using files (FE-A5)", () => {
   it("files using client hooks declare 'use client'", () => {
     if (!existsSync(SRC)) {
-      console.log("[SKIP] src/ directory not found — skipping test_server_first");
+      console.log(
+        "[SKIP] src/ directory not found — skipping test_server_first",
+      );
       return;
     }
 
@@ -138,22 +140,25 @@ describe("Vitalia FE — Server Components first; use client on hook-using files
 
       if (!hasUseClient) {
         violations.push(
-          `${relPath}: uses client hook(s) [${[...new Set(usedHooks)].join(", ")}] but missing "use client" directive`
+          `${relPath}: uses client hook(s) [${[...new Set(usedHooks)].join(", ")}] but missing "use client" directive`,
         );
       }
     }
 
-    expect(violations, [
-      'Files using React client hooks missing "use client" directive.',
-      "",
-      'Components that use useState/useEffect/useRef etc. MUST declare',
-      '"use client" at the top of the file.',
-      "Without it, Next.js App Router will throw a runtime error.",
-      "",
-      'Fix: Add `"use client";` as the FIRST line of the file.',
-      "",
-      ...violations,
-    ].join("\n")).toHaveLength(0);
+    expect(
+      violations,
+      [
+        'Files using React client hooks missing "use client" directive.',
+        "",
+        "Components that use useState/useEffect/useRef etc. MUST declare",
+        '"use client" at the top of the file.',
+        "Without it, Next.js App Router will throw a runtime error.",
+        "",
+        'Fix: Add `"use client";` as the FIRST line of the file.',
+        "",
+        ...violations,
+      ].join("\n"),
+    ).toHaveLength(0);
   });
 
   it("KNOWN_MISSING_USE_CLIENT allowlist only references existing files", () => {
@@ -161,7 +166,7 @@ describe("Vitalia FE — Server Components first; use client on hook-using files
       const absPath = join(ROOT, relPath);
       expect(
         existsSync(absPath),
-        `KNOWN_MISSING_USE_CLIENT references non-existent file: ${relPath}. Remove it.`
+        `KNOWN_MISSING_USE_CLIENT references non-existent file: ${relPath}. Remove it.`,
       ).toBe(true);
     }
   });

@@ -39,7 +39,10 @@ export function FidelizacionTabsBar({
     <nav
       role="tablist"
       aria-label={FIDELIZACION_COPY.accessibility.tabsNav}
-      className={cn("flex border-b border-[hsl(var(--vitalia-border,220_13%_91%))]", className)}
+      className={cn(
+        "flex border-b border-[hsl(var(--vitalia-border,220_13%_91%))]",
+        className,
+      )}
     >
       {TABS.map((tab) => {
         const isActive = tab.id === activeTab;
@@ -62,7 +65,7 @@ export function FidelizacionTabsBar({
               "px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px",
               isActive
                 ? "border-[hsl(var(--vitalia-primary,210_90%_50%))] text-[hsl(var(--vitalia-primary,210_90%_50%))]"
-                : "border-transparent text-[hsl(var(--vitalia-muted,220_10%_55%))] hover:text-[hsl(var(--vitalia-fg,220_25%_15%))]"
+                : "border-transparent text-[hsl(var(--vitalia-muted,220_10%_55%))] hover:text-[hsl(var(--vitalia-fg,220_25%_15%))]",
             )}
           >
             {tab.label}

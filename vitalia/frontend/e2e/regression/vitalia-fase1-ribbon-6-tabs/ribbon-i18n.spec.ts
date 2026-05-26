@@ -100,11 +100,19 @@ test.describe("SC-8 — i18n Spanish neutro LatAm + tildes correctas", () => {
       if (slug === "config") {
         // ConfigTab uses aria-label (icon-only button — text lives in Tooltip + aria-label)
         const ariaLabel = await pom.getConfigTab().getAttribute("aria-label");
-        expect(ariaLabel, `ConfigTab aria-label should be "${expectedLabel}"`).toBe(expectedLabel);
+        expect(
+          ariaLabel,
+          `ConfigTab aria-label should be "${expectedLabel}"`,
+        ).toBe(expectedLabel);
       } else {
-        const tab = pom.getTab(slug as "lisa" | "lucas" | "adrian" | "valeria" | "camila");
+        const tab = pom.getTab(
+          slug as "lisa" | "lucas" | "adrian" | "valeria" | "camila",
+        );
         const text = await tab.textContent();
-        expect(text, `Tab "${slug}" should contain label "${expectedLabel}"`).toContain(expectedLabel);
+        expect(
+          text,
+          `Tab "${slug}" should contain label "${expectedLabel}"`,
+        ).toContain(expectedLabel);
       }
     }
   });
@@ -118,18 +126,23 @@ test.describe("SC-8 — i18n Spanish neutro LatAm + tildes correctas", () => {
 
     // Get full text content of ribbon
     const ribbon = pom.getRibbon();
-    const ribbonText = await ribbon.textContent() ?? "";
+    const ribbonText = (await ribbon.textContent()) ?? "";
 
     // Check each voseo pattern against ribbon text
     const violations: string[] = [];
     for (const pattern of VOSEO_PATTERNS) {
       const match = ribbonText.match(pattern);
       if (match) {
-        violations.push(`Voseo pattern "${pattern.source}" matched: "${match[0]}" in ribbon text`);
+        violations.push(
+          `Voseo pattern "${pattern.source}" matched: "${match[0]}" in ribbon text`,
+        );
       }
     }
 
-    expect(violations, `Ribbon should have zero voseo violations:\n${violations.join("\n")}`).toHaveLength(0);
+    expect(
+      violations,
+      `Ribbon should have zero voseo violations:\n${violations.join("\n")}`,
+    ).toHaveLength(0);
   });
 
   test("SC-8-3: tildes presentes en 'Mi Clínica' y 'Configurar'", async ({
@@ -140,11 +153,12 @@ test.describe("SC-8 — i18n Spanish neutro LatAm + tildes correctas", () => {
     await pom.goto({ tenantId: TENANT_ID, agent: "lisa", subtab: "marca" });
 
     // "Mi Clínica" — tilde en la 'i' de Clínica
-    const lisaText = await pom.getTab("lisa").textContent() ?? "";
+    const lisaText = (await pom.getTab("lisa").textContent()) ?? "";
     expect(lisaText).toContain("Clínica"); // Must have tilde (not "Clinica")
 
     // "Configurar" — ConfigTab is icon-only; label lives in aria-label (not textContent)
-    const configAriaLabel = await pom.getConfigTab().getAttribute("aria-label") ?? "";
+    const configAriaLabel =
+      (await pom.getConfigTab().getAttribute("aria-label")) ?? "";
     expect(configAriaLabel).toBe("Configurar");
 
     // Verify none of the tab labels have been corrupted/truncated
@@ -164,7 +178,7 @@ test.describe("SC-8 — i18n Spanish neutro LatAm + tildes correctas", () => {
 
     // Get full ribbon text
     const ribbon = pom.getRibbon();
-    const ribbonText = await ribbon.textContent() ?? "";
+    const ribbonText = (await ribbon.textContent()) ?? "";
 
     // Check for English placeholders
     const placeholderViolations: string[] = [];

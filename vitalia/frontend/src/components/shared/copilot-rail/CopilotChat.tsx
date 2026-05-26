@@ -75,7 +75,7 @@ export function CopilotChat({
         void handleSend();
       }
     },
-    [handleSend]
+    [handleSend],
   );
 
   return (
@@ -112,7 +112,7 @@ export function CopilotChat({
             key={message.id}
             className={cn(
               "flex gap-2",
-              message.role === "user" ? "justify-end" : "justify-start"
+              message.role === "user" ? "justify-end" : "justify-start",
             )}
           >
             {message.role === "agent" && (
@@ -128,7 +128,7 @@ export function CopilotChat({
                 "max-w-[80%] px-3 py-2 text-sm",
                 message.role === "user"
                   ? "rounded-[var(--radius-bubble)] rounded-br-sm vt-bg-azul-marino vt-text-white"
-                  : "rounded-[var(--radius-bubble)] rounded-bl-sm vt-bg-muted vt-text"
+                  : "rounded-[var(--radius-bubble)] rounded-bl-sm vt-bg-muted vt-text",
               )}
               role={message.role === "agent" ? "status" : undefined}
             >
@@ -139,7 +139,10 @@ export function CopilotChat({
 
         {/* Loading indicator */}
         {isLoading && (
-          <div className="flex gap-2 justify-start" aria-label="El copiloto está respondiendo">
+          <div
+            className="flex gap-2 justify-start"
+            aria-label="El copiloto está respondiendo"
+          >
             <div
               className="w-6 h-6 rounded-full vt-bg-gradient-agent flex items-center justify-center vt-text-white text-[10px] font-bold shrink-0 mt-1"
               aria-hidden="true"
@@ -170,9 +173,7 @@ export function CopilotChat({
       </div>
 
       {/* Input area */}
-      <div
-        className="shrink-0 p-3 border-t vt-border vt-bg-surface"
-      >
+      <div className="shrink-0 p-3 border-t vt-border vt-bg-surface">
         <div className="flex gap-2 items-end">
           <textarea
             value={inputValue}
@@ -186,7 +187,7 @@ export function CopilotChat({
               "vt-bg-muted vt-text border vt-border",
               "placeholder:vt-text-faint",
               "focus:outline-none focus:vt-border-cian focus:ring-1 vt-ring-cian",
-              "transition-colors"
+              "transition-colors",
             )}
             aria-label="Escribe un mensaje al copiloto"
             disabled={isLoading}
@@ -200,7 +201,7 @@ export function CopilotChat({
               "vt-bg-gradient-app-cta",
               "disabled:opacity-50 disabled:cursor-not-allowed",
               "hover:opacity-90 transition-opacity",
-              "focus-visible:outline-none focus-visible:ring-2 vt-ring-cian"
+              "focus-visible:outline-none focus-visible:ring-2 vt-ring-cian",
             )}
             aria-label="Enviar mensaje"
           >

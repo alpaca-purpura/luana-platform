@@ -48,7 +48,7 @@ export function TopBar({ title, showCopilot = true, className }: TopBarProps) {
       className={cn(
         "flex items-center justify-between h-14 px-4 shrink-0",
         "vt-bg-surface border-b vt-border",
-        className
+        className,
       )}
       role="banner"
       aria-label="Barra superior"
@@ -85,7 +85,7 @@ export function TopBar({ title, showCopilot = true, className }: TopBarProps) {
               "vt-text-cian vt-border-cian border",
               "hover:vt-bg-cian-8",
               "focus-visible:outline-none focus-visible:ring-2 vt-ring-cian",
-              "transition-colors"
+              "transition-colors",
             )}
             aria-label="Abrir copiloto de IA"
             onClick={() => {
@@ -106,7 +106,7 @@ export function TopBar({ title, showCopilot = true, className }: TopBarProps) {
               "flex items-center justify-center w-8 h-8 rounded-full",
               "vt-bg-azul-marino vt-text-white text-xs font-bold",
               "hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 vt-ring-cian",
-              "transition-opacity"
+              "transition-opacity",
             )}
             aria-label={`Menú de usuario: ${user?.firstName ?? "Usuario"}`}
             aria-haspopup="menu"
@@ -122,7 +122,7 @@ export function TopBar({ title, showCopilot = true, className }: TopBarProps) {
               "rounded-[var(--radius-lg)] shadow-lg",
               "invisible opacity-0 group-hover:visible group-hover:opacity-100",
               "transition-all duration-150",
-              "z-50"
+              "z-50",
             )}
             role="menu"
             aria-label="Opciones de usuario"
@@ -145,7 +145,7 @@ export function TopBar({ title, showCopilot = true, className }: TopBarProps) {
                 "vt-text-muted",
                 "hover:vt-bg-muted hover:vt-text",
                 "focus-visible:outline-none focus-visible:vt-bg-muted",
-                "transition-colors"
+                "transition-colors",
               )}
             >
               Cerrar sesión

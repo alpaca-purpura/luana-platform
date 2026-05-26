@@ -18,18 +18,26 @@ test.describe("Onboarding — Clínica Dental Aurora (AR)", () => {
     await page.goto("/onboarding");
 
     // Step breadcrumb visible
-    await expect(page.getByText(/paso 1 de 3/i)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/paso 1 de 3/i)).toBeVisible({
+      timeout: 10_000,
+    });
 
     // Clinic profile fields present
     await expect(
-      page.getByRole("textbox", { name: /nombre de la cl[íi]nica/i })
+      page.getByRole("textbox", { name: /nombre de la cl[íi]nica/i }),
     ).toBeVisible();
-    await expect(page.getByRole("group", { name: /tipo de cl[íi]nica/i })).toBeVisible();
-    await expect(page.getByRole("combobox", { name: /pa[íi]s/i })).toBeVisible();
+    await expect(
+      page.getByRole("group", { name: /tipo de cl[íi]nica/i }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("combobox", { name: /pa[íi]s/i }),
+    ).toBeVisible();
     await expect(page.getByRole("textbox", { name: /ciudad/i })).toBeVisible();
 
     // "Siguiente" button present
-    await expect(page.getByRole("button", { name: /siguiente/i })).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: /siguiente/i }),
+    ).toBeVisible();
 
     // No critical console errors
     expect(consoleErrors).toHaveLength(0);
@@ -71,7 +79,9 @@ test.describe("Onboarding — Clínica Dental Aurora (AR)", () => {
     await page.goto("/onboarding/plan");
 
     // Plans visible
-    await expect(page.getByText(/solo doctor/i)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/solo doctor/i)).toBeVisible({
+      timeout: 10_000,
+    });
     await expect(page.getByText(/cl[íi]nica/i)).toBeVisible();
     await expect(page.getByText(/multi.?sede/i)).toBeVisible();
 
@@ -86,10 +96,13 @@ test.describe("Onboarding — Clínica Dental Aurora (AR)", () => {
     auroraPage: page,
   }) => {
     // Intercept with loading delay to verify loading state
-    await page.route("**/api/v1/vitalia/onboarding/clinic-profile", async (route) => {
-      await new Promise((r) => setTimeout(r, 100));
-      await route.continue();
-    });
+    await page.route(
+      "**/api/v1/vitalia/onboarding/clinic-profile",
+      async (route) => {
+        await new Promise((r) => setTimeout(r, 100));
+        await route.continue();
+      },
+    );
 
     await page.goto("/onboarding");
 

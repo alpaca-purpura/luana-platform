@@ -11,12 +11,18 @@ import React from "react";
 vi.mock("nuqs", () => {
   const makeParser = () => ({
     withDefault: (_d: unknown) => ({
-      withOptions: (_opts: unknown) => ({ defaultValue: _d, parseServerSide: (v: unknown) => v }),
+      withOptions: (_opts: unknown) => ({
+        defaultValue: _d,
+        parseServerSide: (v: unknown) => v,
+      }),
       defaultValue: _d,
       parseServerSide: (v: unknown) => v,
     }),
     withOptions: (_opts: unknown) => ({
-      withDefault: (_d: unknown) => ({ defaultValue: _d, parseServerSide: (v: unknown) => v }),
+      withDefault: (_d: unknown) => ({
+        defaultValue: _d,
+        parseServerSide: (v: unknown) => v,
+      }),
       defaultValue: undefined,
       parseServerSide: (v: unknown) => v,
     }),
@@ -50,7 +56,9 @@ vi.mock("@tanstack/react-query", () => ({
   useMutation: vi.fn(),
   useQueryClient: () => ({ invalidateQueries: vi.fn() }),
   QueryClient: vi.fn(),
-  QueryClientProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  QueryClientProvider: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
 }));
 
 const mockRecs = [
@@ -148,37 +156,43 @@ describe("LucasStageRecommendationsCard", () => {
   });
 
   it("test_renders_top_3_cards — shows top 3 priority recommendations by default (SC-MK-01)", async () => {
-    const { LucasStageRecommendationsCard } = await import(
-      "../components/LucasStageRecommendationsCard"
-    );
+    const { LucasStageRecommendationsCard } =
+      await import("../components/LucasStageRecommendationsCard");
     // No stage filter — shows all 4 recs cross-stage, top 3 visible
     render(<LucasStageRecommendationsCard />);
 
     // Top 3 cards should be visible (priority 1, 2, 3)
-    expect(screen.getByText("Aumentar presupuesto Meta Ads")).toBeInTheDocument();
+    expect(
+      screen.getByText("Aumentar presupuesto Meta Ads"),
+    ).toBeInTheDocument();
     expect(screen.getByText("Activar retargeting")).toBeInTheDocument();
     expect(screen.getByText("Respuesta rápida a leads")).toBeInTheDocument();
 
     // 4th card should NOT be visible (collapsed)
-    expect(screen.queryByText("Reducir ausencias con recordatorios")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Reducir ausencias con recordatorios"),
+    ).not.toBeInTheDocument();
   });
 
   it("test_expand_shows_all — clicking 'Ver todas' shows all recommendations", async () => {
-    const { LucasStageRecommendationsCard } = await import(
-      "../components/LucasStageRecommendationsCard"
-    );
+    const { LucasStageRecommendationsCard } =
+      await import("../components/LucasStageRecommendationsCard");
     // No stage filter — shows all 4 recs cross-stage
     render(<LucasStageRecommendationsCard />);
 
     // Initially 4th card hidden
-    expect(screen.queryByText("Reducir ausencias con recordatorios")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Reducir ausencias con recordatorios"),
+    ).not.toBeInTheDocument();
 
     // Click expand button (text includes count: "Ver todas (4)")
     const expandBtn = screen.getByRole("button", { name: /ver todas/i });
     fireEvent.click(expandBtn);
 
     // Now 4th card should be visible
-    expect(screen.getByText("Reducir ausencias con recordatorios")).toBeInTheDocument();
+    expect(
+      screen.getByText("Reducir ausencias con recordatorios"),
+    ).toBeInTheDocument();
   });
 
   it("test_loading_state — shows loading indicator when fetching", async () => {
@@ -188,9 +202,8 @@ describe("LucasStageRecommendationsCard", () => {
       isError: false,
     } as ReturnType<typeof useQuery>);
 
-    const { LucasStageRecommendationsCard } = await import(
-      "../components/LucasStageRecommendationsCard"
-    );
+    const { LucasStageRecommendationsCard } =
+      await import("../components/LucasStageRecommendationsCard");
     render(<LucasStageRecommendationsCard stage="attraction" />);
     expect(screen.getByRole("status")).toBeInTheDocument();
   });
@@ -202,9 +215,8 @@ describe("LucasStageRecommendationsCard", () => {
       isError: false,
     } as ReturnType<typeof useQuery>);
 
-    const { LucasStageRecommendationsCard } = await import(
-      "../components/LucasStageRecommendationsCard"
-    );
+    const { LucasStageRecommendationsCard } =
+      await import("../components/LucasStageRecommendationsCard");
     render(<LucasStageRecommendationsCard stage="attraction" />);
     expect(
       screen.getByText(/no hay recomendaciones activas/i),
@@ -212,9 +224,8 @@ describe("LucasStageRecommendationsCard", () => {
   });
 
   it("test_card_click_opens_detail_modal — clicking card opens LucasRecommendationDetailModal", async () => {
-    const { LucasStageRecommendationsCard } = await import(
-      "../components/LucasStageRecommendationsCard"
-    );
+    const { LucasStageRecommendationsCard } =
+      await import("../components/LucasStageRecommendationsCard");
     render(<LucasStageRecommendationsCard stage="attraction" />);
 
     const firstCard = screen.getByText("Aumentar presupuesto Meta Ads");

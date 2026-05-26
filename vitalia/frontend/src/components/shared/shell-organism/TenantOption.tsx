@@ -58,7 +58,10 @@ export function TenantOption({ tenant, active }: TenantOptionProps) {
       {/* Active indicator */}
       {active ? (
         <>
-          <Check className="size-4 shrink-0 text-foreground" aria-hidden="true" />
+          <Check
+            className="size-4 shrink-0 text-foreground"
+            aria-hidden="true"
+          />
           <span className="sr-only">Clínica activa</span>
         </>
       ) : null}

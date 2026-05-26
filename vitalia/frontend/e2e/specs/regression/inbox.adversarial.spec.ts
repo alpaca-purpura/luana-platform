@@ -62,25 +62,28 @@ test.describe("SC-04 — Inbox adversarial (cross-tenant, XSS, RBAC 403)", () =>
     clinicPage: page,
   }) => {
     // Mock: inbox endpoint returns 404 when a foreign tenant_id is injected
-    await page.route("**/api/v1/vitalia/inbox/conversations**", async (route) => {
-      const reqTenantId = route.request().headers()["x-tenant-id"] ?? "";
-      if (reqTenantId === "foreign-tenant-attacker") {
-        await route.fulfill({
-          status: 404,
-          contentType: "application/json",
-          body: JSON.stringify({
-            detail: "Tenant not found",
-            code: "TENANT_NOT_FOUND",
-          }),
-        });
-      } else {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify(MOCK_EMPTY_INBOX),
-        });
-      }
-    });
+    await page.route(
+      "**/api/v1/vitalia/inbox/conversations**",
+      async (route) => {
+        const reqTenantId = route.request().headers()["x-tenant-id"] ?? "";
+        if (reqTenantId === "foreign-tenant-attacker") {
+          await route.fulfill({
+            status: 404,
+            contentType: "application/json",
+            body: JSON.stringify({
+              detail: "Tenant not found",
+              code: "TENANT_NOT_FOUND",
+            }),
+          });
+        } else {
+          await route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: JSON.stringify(MOCK_EMPTY_INBOX),
+          });
+        }
+      },
+    );
 
     // Inject attacker tenant ID and verify API returns 404
     const response = await page.evaluate(async () => {
@@ -100,25 +103,29 @@ test.describe("SC-04 — Inbox adversarial (cross-tenant, XSS, RBAC 403)", () =>
     clinicPage: page,
   }) => {
     // Mock: inbox endpoint returns 403 when clinic_id doesn't match user's clinic
-    await page.route("**/api/v1/vitalia/inbox/conversations**", async (route) => {
-      const reqClinicId = route.request().headers()["x-clinic-id"] ?? "";
-      if (reqClinicId === "foreign-clinic-other-tenant") {
-        await route.fulfill({
-          status: 403,
-          contentType: "application/json",
-          body: JSON.stringify({
-            detail: "Clinic access denied. User not associated with this clinic.",
-            code: "CLINIC_ACCESS_DENIED",
-          }),
-        });
-      } else {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify(MOCK_EMPTY_INBOX),
-        });
-      }
-    });
+    await page.route(
+      "**/api/v1/vitalia/inbox/conversations**",
+      async (route) => {
+        const reqClinicId = route.request().headers()["x-clinic-id"] ?? "";
+        if (reqClinicId === "foreign-clinic-other-tenant") {
+          await route.fulfill({
+            status: 403,
+            contentType: "application/json",
+            body: JSON.stringify({
+              detail:
+                "Clinic access denied. User not associated with this clinic.",
+              code: "CLINIC_ACCESS_DENIED",
+            }),
+          });
+        } else {
+          await route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: JSON.stringify(MOCK_EMPTY_INBOX),
+          });
+        }
+      },
+    );
 
     // Request with a foreign clinic_id
     const response = await page.evaluate(async () => {
@@ -159,7 +166,8 @@ test.describe("SC-04 — Inbox adversarial (cross-tenant, XSS, RBAC 403)", () =>
         status: 403,
         contentType: "application/json",
         body: JSON.stringify({
-          detail: "PHI access denied. Required roles: doctor, nurse, admin_clinic",
+          detail:
+            "PHI access denied. Required roles: doctor, nurse, admin_clinic",
           code: "PHI_ACCESS_DENIED",
         }),
       });
@@ -176,7 +184,9 @@ test.describe("SC-04 — Inbox adversarial (cross-tenant, XSS, RBAC 403)", () =>
 
     // Verify 403 error state visible (error boundary or denied banner)
     // Accept any of: PHI denied banner, error message, empty state with no cards
-    const phiDenied = page.getByText(/acceso denegado|PHI access denied|no tienes permiso/i);
+    const phiDenied = page.getByText(
+      /acceso denegado|PHI access denied|no tienes permiso/i,
+    );
     const errorState = page.locator('[data-testid="inbox-error-state"]');
     const deniedBanner = page.locator('[data-testid="phi-denied-banner"]');
 
@@ -204,62 +214,69 @@ test.describe("SC-04 — Inbox adversarial (cross-tenant, XSS, RBAC 403)", () =>
     }) => {
       // Set global XSS flag to false before test
       await page.addInitScript(() => {
-        (window as typeof window & { __inbox_xss?: boolean }).__inbox_xss = false;
+        (window as typeof window & { __inbox_xss?: boolean }).__inbox_xss =
+          false;
       });
 
       const convId = `conv-xss-test-${idx + 1}`;
       const msgId = `msg-xss-test-${idx + 1}`;
 
       // Mock: conversations list returns a conversation with XSS in last message
-      await page.route("**/api/v1/vitalia/inbox/conversations**", async (route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({
-            conversations: [
-              {
-                id: convId,
-                tenant_id: CLINIC_CONTEXT.tenantId,
-                clinic_id: CLINIC_CONTEXT.clinicId,
-                lead_id: "lead-xss-test",
-                channel: "whatsapp",
-                status: "active",
-                handler_mode: "ai",
-                help_needed: false,
-                last_message_preview: xssPayload,
-                last_message_at: new Date().toISOString(),
-                unread_count: 1,
-              },
-            ],
-            total: 1,
-            has_more: false,
-          }),
-        });
-      });
+      await page.route(
+        "**/api/v1/vitalia/inbox/conversations**",
+        async (route) => {
+          await route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: JSON.stringify({
+              conversations: [
+                {
+                  id: convId,
+                  tenant_id: CLINIC_CONTEXT.tenantId,
+                  clinic_id: CLINIC_CONTEXT.clinicId,
+                  lead_id: "lead-xss-test",
+                  channel: "whatsapp",
+                  status: "active",
+                  handler_mode: "ai",
+                  help_needed: false,
+                  last_message_preview: xssPayload,
+                  last_message_at: new Date().toISOString(),
+                  unread_count: 1,
+                },
+              ],
+              total: 1,
+              has_more: false,
+            }),
+          });
+        },
+      );
 
       // Mock: messages for the conversation include XSS in body_text
-      await page.route(`**/api/v1/vitalia/inbox/conversations/${convId}/messages**`, async (route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({
-            messages: [
-              {
-                id: msgId,
-                conversation_id: convId,
-                sender_type: "patient",
-                body_text: xssPayload,
-                media_kind: null,
-                media_url: null,
-                retracted_at: null,
-                sent_at: new Date().toISOString(),
-              },
-            ],
-            total: 1,
-            has_more: false,
-          }),
-        });
-      });
+      await page.route(
+        `**/api/v1/vitalia/inbox/conversations/${convId}/messages**`,
+        async (route) => {
+          await route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: JSON.stringify({
+              messages: [
+                {
+                  id: msgId,
+                  conversation_id: convId,
+                  sender_type: "patient",
+                  body_text: xssPayload,
+                  media_kind: null,
+                  media_url: null,
+                  retracted_at: null,
+                  sent_at: new Date().toISOString(),
+                },
+              ],
+              total: 1,
+              has_more: false,
+            }),
+          });
+        },
+      );
 
       // Navigate to inbox
       await page.goto("/inbox");
@@ -270,7 +287,9 @@ test.describe("SC-04 — Inbox adversarial (cross-tenant, XSS, RBAC 403)", () =>
 
       // Verify XSS flag was NOT set (React escapes HTML in text nodes)
       const xssFired = await page.evaluate(
-        () => (window as typeof window & { __inbox_xss?: boolean }).__inbox_xss === true
+        () =>
+          (window as typeof window & { __inbox_xss?: boolean }).__inbox_xss ===
+          true,
       );
       expect(xssFired, `XSS payload #${idx + 1} executed in DOM`).toBe(false);
     });
@@ -295,13 +314,16 @@ test.describe("SC-04 — Inbox adversarial (cross-tenant, XSS, RBAC 403)", () =>
     });
 
     // Mock inbox with some data
-    await page.route("**/api/v1/vitalia/inbox/conversations**", async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify(MOCK_EMPTY_INBOX),
-      });
-    });
+    await page.route(
+      "**/api/v1/vitalia/inbox/conversations**",
+      async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(MOCK_EMPTY_INBOX),
+        });
+      },
+    );
 
     await page.goto("/inbox");
     await page.waitForLoadState("domcontentloaded");
@@ -352,7 +374,7 @@ test.describe("SC-04 — Inbox adversarial (cross-tenant, XSS, RBAC 403)", () =>
         } else {
           await route.continue();
         }
-      }
+      },
     );
 
     // Call retract endpoint directly (simulates UI retract button click)
@@ -368,11 +390,11 @@ test.describe("SC-04 — Inbox adversarial (cross-tenant, XSS, RBAC 403)", () =>
               "x-clinic-id": "sanare-mx-dental-001",
             },
             body: JSON.stringify({ reason: "user_undo" }),
-          }
+          },
         );
         return { status: resp.status, code: (await resp.json()).code };
       },
-      { convId, msgId }
+      { convId, msgId },
     );
 
     expect(response.status).toBe(410);

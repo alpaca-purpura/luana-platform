@@ -18,7 +18,7 @@
 export function formatTenantDateTime(
   isoString: string,
   timezone: string = "UTC",
-  locale: string = "es-419"
+  locale: string = "es-419",
 ): string {
   if (!isoString) return "—";
 

@@ -33,7 +33,9 @@ test.describe("SC-04 — Admin crea user + asigna a tenant via UserRepository", 
       .getByText(/Usuarios/i)
       .first()
       .click();
-    await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => {});
+    await page
+      .waitForLoadState("networkidle", { timeout: 10_000 })
+      .catch(() => {});
 
     // Ir al tab "Crear nuevo"
     const createTab = page.getByRole("tab", { name: /crear nuevo/i });
@@ -42,7 +44,10 @@ test.describe("SC-04 — Admin crea user + asigna a tenant via UserRepository", 
 
     // Rellenar formulario de creación
     await page.getByLabel(/email/i).first().fill(USER_EMAIL);
-    await page.getByLabel(/nombre/i).first().fill(USER_NAME);
+    await page
+      .getByLabel(/nombre/i)
+      .first()
+      .fill(USER_NAME);
 
     // Password field si existe
     const passwordField = page.getByLabel(/contraseña|password/i);
@@ -51,11 +56,16 @@ test.describe("SC-04 — Admin crea user + asigna a tenant via UserRepository", 
     }
 
     // Enviar formulario
-    await page.getByRole("button", { name: /crear usuario/i }).first().click();
+    await page
+      .getByRole("button", { name: /crear usuario/i })
+      .first()
+      .click();
 
     // Verificar mensaje de éxito
     await expect(
-      page.getByText(new RegExp(`usuario.*${USER_EMAIL}.*creado|creado.*${USER_EMAIL}`, "i")),
+      page.getByText(
+        new RegExp(`usuario.*${USER_EMAIL}.*creado|creado.*${USER_EMAIL}`, "i"),
+      ),
     ).toBeVisible({ timeout: 15_000 });
 
     // Verificar incremento en DB
@@ -82,7 +92,10 @@ test.describe("SC-04 — Admin crea user + asigna a tenant via UserRepository", 
       return;
     }
     if (before.users === 0) {
-      test.skip(true, "No hay users para asignar — ejecutar SC-04 primera parte primero");
+      test.skip(
+        true,
+        "No hay users para asignar — ejecutar SC-04 primera parte primero",
+      );
       return;
     }
 
@@ -94,32 +107,54 @@ test.describe("SC-04 — Admin crea user + asigna a tenant via UserRepository", 
       .getByText(/Usuarios/i)
       .first()
       .click();
-    await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => {});
+    await page
+      .waitForLoadState("networkidle", { timeout: 10_000 })
+      .catch(() => {});
 
-    const assignTab = page.getByRole("tab", { name: /asignar tenant|vincular/i });
+    const assignTab = page.getByRole("tab", {
+      name: /asignar tenant|vincular/i,
+    });
     if (await assignTab.isVisible({ timeout: 5_000 }).catch(() => false)) {
       await assignTab.click();
 
       // Seleccionar primer user y tenant
-      const userSelect = page.getByLabel(/usuario/i).or(page.locator('[aria-label*="usuario"]'));
-      const tenantSelect = page.getByLabel(/tenant/i).or(page.locator('[aria-label*="tenant"]'));
+      const userSelect = page
+        .getByLabel(/usuario/i)
+        .or(page.locator('[aria-label*="usuario"]'));
+      const tenantSelect = page
+        .getByLabel(/tenant/i)
+        .or(page.locator('[aria-label*="tenant"]'));
 
       if (
-        (await userSelect.first().isVisible({ timeout: 3_000 }).catch(() => false)) &&
-        (await tenantSelect.first().isVisible({ timeout: 3_000 }).catch(() => false))
+        (await userSelect
+          .first()
+          .isVisible({ timeout: 3_000 })
+          .catch(() => false)) &&
+        (await tenantSelect
+          .first()
+          .isVisible({ timeout: 3_000 })
+          .catch(() => false))
       ) {
         // Seleccionar opciones disponibles
         const userOptions = await userSelect.first().locator("option").all();
         if (userOptions.length > 1) {
           await userSelect.first().selectOption({ index: 1 });
         }
-        const tenantOptions = await tenantSelect.first().locator("option").all();
+        const tenantOptions = await tenantSelect
+          .first()
+          .locator("option")
+          .all();
         if (tenantOptions.length > 1) {
           await tenantSelect.first().selectOption({ index: 1 });
         }
 
-        await page.getByRole("button", { name: /asignar|vincular/i }).first().click();
-        await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => {});
+        await page
+          .getByRole("button", { name: /asignar|vincular/i })
+          .first()
+          .click();
+        await page
+          .waitForLoadState("networkidle", { timeout: 10_000 })
+          .catch(() => {});
 
         // Verificar incremento en user_tenants
         const after = await getDbState(request);
@@ -130,7 +165,9 @@ test.describe("SC-04 — Admin crea user + asigna a tenant via UserRepository", 
           sinceMsAgo: Date.now() - sinceMs + 10_000,
         });
         const linkEntry = entries.find(
-          (e) => e.action === "user_tenant.link" || e.action === "user.assign_tenant",
+          (e) =>
+            e.action === "user_tenant.link" ||
+            e.action === "user.assign_tenant",
         );
         // Link audit log es opcional (no bloqueante) si la UI no emite acción separada
         if (linkEntry) {
@@ -152,14 +189,18 @@ test.describe("SC-05 — Admin lista users con role per tenant via UserTenantRep
       .getByText(/Usuarios/i)
       .first()
       .click();
-    await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => {});
+    await page
+      .waitForLoadState("networkidle", { timeout: 10_000 })
+      .catch(() => {});
 
     // Debe mostrar tab "Listado"
     const listTab = page.getByRole("tab", { name: /listado/i });
     await expect(listTab).toBeVisible({ timeout: 10_000 });
     await listTab.click();
 
-    const pageContent = page.locator("main, [data-testid='stAppViewContainer']");
+    const pageContent = page.locator(
+      "main, [data-testid='stAppViewContainer']",
+    );
     // Verificar columnas esperadas
     const hasEmailCol = await pageContent
       .getByText(/Email/i)
@@ -180,7 +221,10 @@ test.describe("SC-05 — Admin lista users con role per tenant via UserTenantRep
   }) => {
     const state = await getDbState(request);
     if (state.tenants < 2) {
-      test.skip(true, "Se necesitan ≥2 tenants para probar filtro — ejecutar SC-02 primero");
+      test.skip(
+        true,
+        "Se necesitan ≥2 tenants para probar filtro — ejecutar SC-02 primero",
+      );
       return;
     }
 
@@ -189,7 +233,9 @@ test.describe("SC-05 — Admin lista users con role per tenant via UserTenantRep
       .getByText(/Usuarios/i)
       .first()
       .click();
-    await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => {});
+    await page
+      .waitForLoadState("networkidle", { timeout: 10_000 })
+      .catch(() => {});
 
     const listTab = page.getByRole("tab", { name: /listado/i });
     if (await listTab.isVisible({ timeout: 5_000 }).catch(() => false)) {
@@ -210,8 +256,13 @@ test.describe("SC-05 — Admin lista users con role per tenant via UserTenantRep
       const beforeText = await page
         .locator("main, [data-testid='stAppViewContainer']")
         .textContent();
-      await tenantFilter.first().selectOption({ index: 1 }).catch(() => {});
-      await page.waitForLoadState("networkidle", { timeout: 8_000 }).catch(() => {});
+      await tenantFilter
+        .first()
+        .selectOption({ index: 1 })
+        .catch(() => {});
+      await page
+        .waitForLoadState("networkidle", { timeout: 8_000 })
+        .catch(() => {});
       // La tabla debe seguir visible
       await expect(
         page.locator("main, [data-testid='stAppViewContainer']"),
@@ -229,12 +280,20 @@ test.describe("SC-05 — Admin lista users con role per tenant via UserTenantRep
       .getByText(/Usuarios/i)
       .first()
       .click();
-    await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => {});
+    await page
+      .waitForLoadState("networkidle", { timeout: 10_000 })
+      .catch(() => {});
 
     // HIPAA-lite: listado de usuarios admin NO debe exponer PHI médico
-    await expect(page.getByText(/diagnóstico/i)).toHaveCount(0, { timeout: 3_000 });
-    await expect(page.getByText(/tratamiento/i)).toHaveCount(0, { timeout: 3_000 });
-    await expect(page.getByText(/medicaci[oó]n/i)).toHaveCount(0, { timeout: 3_000 });
+    await expect(page.getByText(/diagnóstico/i)).toHaveCount(0, {
+      timeout: 3_000,
+    });
+    await expect(page.getByText(/tratamiento/i)).toHaveCount(0, {
+      timeout: 3_000,
+    });
+    await expect(page.getByText(/medicaci[oó]n/i)).toHaveCount(0, {
+      timeout: 3_000,
+    });
   });
 });
 
@@ -247,7 +306,10 @@ test.describe("SC-06 — Admin banea user toggle is_active", () => {
   }) => {
     const state = await getDbState(request);
     if (state.users === 0) {
-      test.skip(true, "No hay users en DB para banear — ejecutar SC-04 primero");
+      test.skip(
+        true,
+        "No hay users en DB para banear — ejecutar SC-04 primero",
+      );
       return;
     }
 
@@ -259,7 +321,9 @@ test.describe("SC-06 — Admin banea user toggle is_active", () => {
       .getByText(/Usuarios/i)
       .first()
       .click();
-    await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => {});
+    await page
+      .waitForLoadState("networkidle", { timeout: 10_000 })
+      .catch(() => {});
 
     const listTab = page.getByRole("tab", { name: /listado/i });
     if (await listTab.isVisible({ timeout: 5_000 }).catch(() => false)) {
@@ -274,7 +338,9 @@ test.describe("SC-06 — Admin banea user toggle is_active", () => {
     await toggleBtn.first().click();
 
     // Esperar respuesta (Streamlit re-render)
-    await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => {});
+    await page
+      .waitForLoadState("networkidle", { timeout: 10_000 })
+      .catch(() => {});
 
     // Verificar que se registró audit log (user.ban o user.activate)
     const entries = await getAuditLog(request, {

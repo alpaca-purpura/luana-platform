@@ -22,7 +22,10 @@ import { useChatStore } from "@/stores/chat-store";
 import { ChatMessages } from "./ChatMessages";
 
 // Helper — reset store to specific messages state
-function seedStore(partial: { messages?: ReturnType<typeof useChatStore.getState>["messages"]; status?: ReturnType<typeof useChatStore.getState>["status"] }) {
+function seedStore(partial: {
+  messages?: ReturnType<typeof useChatStore.getState>["messages"];
+  status?: ReturnType<typeof useChatStore.getState>["status"];
+}) {
   act(() => {
     useChatStore.setState((s) => ({ ...s, ...partial }));
   });
@@ -39,16 +42,12 @@ describe("ChatMessages — empty state (messages.length === 0)", () => {
 
   it("renders empty state heading 'Empieza una conversación' (tuteo correcto per spec § 6)", () => {
     render(<ChatMessages />);
-    expect(
-      screen.getByText("Empieza una conversación"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Empieza una conversación")).toBeInTheDocument();
   });
 
   it("renders empty state subtexto with 'Pregúntale' (tilde correcto per spec § 6)", () => {
     render(<ChatMessages />);
-    expect(
-      screen.getByText(/Pregúntale a Valeria/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Pregúntale a Valeria/i)).toBeInTheDocument();
   });
 
   it("renders empty state avatar image", () => {
@@ -148,23 +147,25 @@ describe("ChatMessages — populated (6 MOCK_MESSAGES)", () => {
 
   it("bot messages have data-role='bot'", () => {
     render(<ChatMessages />);
-    const botBubbles = screen.getAllByTestId("msg-bubble").filter(
-      (el) => el.getAttribute("data-role") === "bot",
-    );
+    const botBubbles = screen
+      .getAllByTestId("msg-bubble")
+      .filter((el) => el.getAttribute("data-role") === "bot");
     expect(botBubbles.length).toBeGreaterThanOrEqual(2);
   });
 
   it("user messages have data-role='user'", () => {
     render(<ChatMessages />);
-    const userBubbles = screen.getAllByTestId("msg-bubble").filter(
-      (el) => el.getAttribute("data-role") === "user",
-    );
+    const userBubbles = screen
+      .getAllByTestId("msg-bubble")
+      .filter((el) => el.getAttribute("data-role") === "user");
     expect(userBubbles.length).toBeGreaterThanOrEqual(2);
   });
 
   it("does NOT render empty state heading in populated state", () => {
     render(<ChatMessages />);
-    expect(screen.queryByText("Empieza una conversación")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Empieza una conversación"),
+    ).not.toBeInTheDocument();
   });
 });
 

@@ -64,7 +64,9 @@ describe("ConnectionBadge", () => {
     const { ConnectionBadge } = await import("../components/ConnectionBadge");
     const { container } = render(<ConnectionBadge status="error" />);
 
-    const allClasses = container.querySelector("[data-testid='connection-badge']")?.className ?? "";
+    const allClasses =
+      container.querySelector("[data-testid='connection-badge']")?.className ??
+      "";
     expect(allClasses).not.toMatch(/#[0-9a-fA-F]{3,6}/);
   });
 });

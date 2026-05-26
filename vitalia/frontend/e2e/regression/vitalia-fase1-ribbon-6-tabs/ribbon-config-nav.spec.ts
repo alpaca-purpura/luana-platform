@@ -27,7 +27,13 @@ import type { AgentSlug } from "@/lib/agent-catalog";
 const DESKTOP_VIEWPORT = { width: 1280, height: 800 };
 const TENANT_ID = process.env["E2E_TENANT_ID"] ?? "vitalia-test-tenant";
 
-const ALL_AGENT_SLUGS: AgentSlug[] = ["lisa", "lucas", "adrian", "valeria", "camila"];
+const ALL_AGENT_SLUGS: AgentSlug[] = [
+  "lisa",
+  "lucas",
+  "adrian",
+  "valeria",
+  "camila",
+];
 
 test.describe("SC-3 — click ConfigTab navega a /config/cuenta", () => {
   test.use({ viewport: DESKTOP_VIEWPORT });

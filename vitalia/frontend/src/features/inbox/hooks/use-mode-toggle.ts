@@ -21,7 +21,10 @@ import { useCallback } from "react";
 import { useSetMode } from "../api/use-set-mode";
 import type { Conversation } from "@/features/crm-shared";
 
-export type SegmentedModeValue = "adrian-decide" | "adrian-consulta" | "yo-escribo";
+export type SegmentedModeValue =
+  | "adrian-decide"
+  | "adrian-consulta"
+  | "yo-escribo";
 
 /** Map UI segment value → API mode input */
 const SEGMENT_TO_API: Record<
@@ -35,7 +38,7 @@ const SEGMENT_TO_API: Record<
 
 /** Map API state → UI segment value (for controlled display) */
 export function conversationToSegmentValue(
-  conversation: Pick<Conversation, "handler_mode" | "proposal_required">
+  conversation: Pick<Conversation, "handler_mode" | "proposal_required">,
 ): SegmentedModeValue {
   if (conversation.handler_mode === "human") return "yo-escribo";
   if (conversation.proposal_required) return "adrian-consulta";
@@ -59,7 +62,7 @@ export interface UseModeToggleResult {
  */
 export function useModeToggle(
   conversationId: string,
-  conversation: Pick<Conversation, "updated_at"> | null | undefined
+  conversation: Pick<Conversation, "updated_at"> | null | undefined,
 ): UseModeToggleResult {
   const { mutate, isPending, error } = useSetMode(conversationId);
 
@@ -72,7 +75,7 @@ export function useModeToggle(
         expectedUpdatedAt: conversation.updated_at,
       });
     },
-    [conversation, mutate]
+    [conversation, mutate],
   );
 
   // Detect 409 conflict from ApiError

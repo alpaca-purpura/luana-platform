@@ -16,7 +16,10 @@ import { cn } from "@/lib/cn";
 import { ClinicTypePicker } from "./clinic-type-picker";
 import { clinicProfileSchema } from "@/features/vitalia/schemas/clinic-profile-schema";
 import { MICROCOPY_ONBOARDING } from "@/features/vitalia/config/microcopy";
-import type { ClinicType, Country } from "@/features/vitalia/types/vitalia.types";
+import type {
+  ClinicType,
+  Country,
+} from "@/features/vitalia/types/vitalia.types";
 import type { ClinicProfileInput } from "@/features/vitalia/schemas/clinic-profile-schema";
 
 export interface OnboardingStep1ClientProps {
@@ -43,7 +46,7 @@ export function OnboardingStep1Client({
 }: OnboardingStep1ClientProps) {
   const [clinicName, setClinicName] = useState(initialData?.clinic_name ?? "");
   const [clinicType, setClinicType] = useState<ClinicType | null>(
-    (initialData?.clinic_type as ClinicType) ?? null
+    (initialData?.clinic_type as ClinicType) ?? null,
   );
   const [country, setCountry] = useState<string>(initialData?.country ?? "");
   const [city, setCity] = useState(initialData?.city ?? "");
@@ -80,7 +83,9 @@ export function OnboardingStep1Client({
         <h2 className="text-lg font-semibold text-gray-900">
           {MICROCOPY_ONBOARDING.sectionTitle}
         </h2>
-        <p className="text-sm text-gray-500 mt-1">{MICROCOPY_ONBOARDING.subtitle}</p>
+        <p className="text-sm text-gray-500 mt-1">
+          {MICROCOPY_ONBOARDING.subtitle}
+        </p>
       </div>
 
       {/* Clinic name */}
@@ -90,7 +95,9 @@ export function OnboardingStep1Client({
           className="text-sm font-medium text-gray-700"
         >
           {MICROCOPY_ONBOARDING.fields.clinicName}
-          <span className="text-red-500 ml-1" aria-hidden="true">*</span>
+          <span className="text-red-500 ml-1" aria-hidden="true">
+            *
+          </span>
         </label>
         <input
           id="clinic-name"
@@ -104,16 +111,22 @@ export function OnboardingStep1Client({
           }}
           disabled={isLoading}
           aria-invalid={!!errors.clinic_name}
-          aria-describedby={errors.clinic_name ? "clinic-name-error" : undefined}
+          aria-describedby={
+            errors.clinic_name ? "clinic-name-error" : undefined
+          }
           className={cn(
             inputBaseClass,
-            errors.clinic_name ? "border-red-500" : "border-gray-300"
+            errors.clinic_name ? "border-red-500" : "border-gray-300",
           )}
           placeholder="Ej: Dental Sonrisa"
           autoComplete="organization"
         />
         {errors.clinic_name && (
-          <p id="clinic-name-error" role="alert" className="text-xs text-red-600">
+          <p
+            id="clinic-name-error"
+            role="alert"
+            className="text-xs text-red-600"
+          >
             {errors.clinic_name}
           </p>
         )}
@@ -140,12 +153,11 @@ export function OnboardingStep1Client({
 
       {/* Country */}
       <div className="flex flex-col gap-1">
-        <label
-          htmlFor="country"
-          className="text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="country" className="text-sm font-medium text-gray-700">
           {MICROCOPY_ONBOARDING.fields.country}
-          <span className="text-red-500 ml-1" aria-hidden="true">*</span>
+          <span className="text-red-500 ml-1" aria-hidden="true">
+            *
+          </span>
         </label>
         <select
           id="country"
@@ -162,7 +174,7 @@ export function OnboardingStep1Client({
           className={cn(
             inputBaseClass,
             "bg-white",
-            errors.country ? "border-red-500" : "border-gray-300"
+            errors.country ? "border-red-500" : "border-gray-300",
           )}
         >
           <option value="">Selecciona un país</option>
@@ -181,12 +193,11 @@ export function OnboardingStep1Client({
 
       {/* City */}
       <div className="flex flex-col gap-1">
-        <label
-          htmlFor="city"
-          className="text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="city" className="text-sm font-medium text-gray-700">
           {MICROCOPY_ONBOARDING.fields.city}
-          <span className="text-red-500 ml-1" aria-hidden="true">*</span>
+          <span className="text-red-500 ml-1" aria-hidden="true">
+            *
+          </span>
         </label>
         <input
           id="city"
@@ -203,7 +214,7 @@ export function OnboardingStep1Client({
           aria-describedby={errors.city ? "city-error" : undefined}
           className={cn(
             inputBaseClass,
-            errors.city ? "border-red-500" : "border-gray-300"
+            errors.city ? "border-red-500" : "border-gray-300",
           )}
           placeholder="Ej: Buenos Aires"
           autoComplete="address-level2"
@@ -226,7 +237,7 @@ export function OnboardingStep1Client({
             "px-6 py-2 rounded-md text-sm font-medium transition-colors",
             "bg-blue-600 text-white hover:bg-blue-700",
             "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
-            "disabled:opacity-50 disabled:cursor-not-allowed"
+            "disabled:opacity-50 disabled:cursor-not-allowed",
           )}
         >
           {isLoading ? "Guardando..." : MICROCOPY_ONBOARDING.cta.next}

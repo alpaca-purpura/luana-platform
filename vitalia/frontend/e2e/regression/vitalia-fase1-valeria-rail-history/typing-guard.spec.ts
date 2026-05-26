@@ -85,8 +85,9 @@ test.describe("SC-2 — typing guard: shortcuts suppressed when input focused", 
     await pom.goto({ valeriaState: "full", shellMode: "agentic" });
 
     // Cmd+K should trigger handleFocusComposer → document.getElementById('valeria-composer-placeholder').focus()
-    const isMac =
-      (await valeriaFullPage.evaluate(() => navigator.platform)).includes("Mac");
+    const isMac = (
+      await valeriaFullPage.evaluate(() => navigator.platform)
+    ).includes("Mac");
     if (isMac) {
       await pom.pressShortcut("k", { meta: true });
     } else {

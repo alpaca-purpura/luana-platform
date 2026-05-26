@@ -46,7 +46,9 @@ export function useProactiveOutbound() {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: async (input: ProactiveOutboundInput): Promise<ProactiveOutboundResult> => {
+    mutationFn: async (
+      input: ProactiveOutboundInput,
+    ): Promise<ProactiveOutboundResult> => {
       const token = await getToken();
       if (!token || !orgId) throw new Error("Not authenticated");
 
@@ -63,7 +65,7 @@ export function useProactiveOutbound() {
             template_vars: input.templateVars ?? {},
             channel: input.channel,
           }),
-        }
+        },
       );
     },
     onSettled: () => {

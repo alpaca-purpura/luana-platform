@@ -38,28 +38,27 @@ test.describe("SC-03 — TenantSwitcher navigation (F1-S3)", () => {
   // TODO: re-enable cuando exista ruta [tenantId]/dashboard real (Fase 2)
   // SC-03 verifica que al cambiar de tenant se navega a /{newTenantId}/dashboard
   // manteniendo el path. No aplica hasta que exista la ruta real.
-  test.skip(
-    "SC-03: Selecting a different tenant navigates to /{newTenantId}/dashboard",
-    async ({ page }) => {
-      await page.goto(TEST_PAGE, { waitUntil: "domcontentloaded" });
-      const pom = new TenantSwitcherPage(page);
+  test.skip("SC-03: Selecting a different tenant navigates to /{newTenantId}/dashboard", async ({
+    page,
+  }) => {
+    await page.goto(TEST_PAGE, { waitUntil: "domcontentloaded" });
+    const pom = new TenantSwitcherPage(page);
 
-      await pom.openDropdown();
+    await pom.openDropdown();
 
-      // Setup navigation listener before click
-      const [response] = await Promise.all([
-        page.waitForNavigation({
-          waitUntil: "domcontentloaded",
-          timeout: 5000,
-        }),
-        pom.selectTenant(OTHER_TENANT.id),
-      ]);
+    // Setup navigation listener before click
+    const [response] = await Promise.all([
+      page.waitForNavigation({
+        waitUntil: "domcontentloaded",
+        timeout: 5000,
+      }),
+      pom.selectTenant(OTHER_TENANT.id),
+    ]);
 
-      // URL should be updated with new tenant id preserving /dashboard path
-      expect(page.url()).toContain(`/${OTHER_TENANT.id}/dashboard`);
-      expect(response).toBeTruthy();
-    },
-  );
+    // URL should be updated with new tenant id preserving /dashboard path
+    expect(page.url()).toContain(`/${OTHER_TENANT.id}/dashboard`);
+    expect(response).toBeTruthy();
+  });
 
   test("SC-03b: Clicking active tenant is a no-op (no navigation)", async ({
     page,

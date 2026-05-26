@@ -10,11 +10,16 @@
 
 import { cn } from "@/lib/cn";
 import { MICROCOPY_COMPLIANCE } from "@/features/vitalia/config/microcopy";
-import type { ComplianceEventItem, ComplianceSeverity } from "@/features/vitalia/types/compliance.types";
+import type {
+  ComplianceEventItem,
+  ComplianceSeverity,
+} from "@/features/vitalia/types/compliance.types";
 
 export type SeverityBadgeVariant = "danger" | "warning" | "neutral";
 
-export function getSeverityBadgeVariant(severity: ComplianceSeverity): SeverityBadgeVariant {
+export function getSeverityBadgeVariant(
+  severity: ComplianceSeverity,
+): SeverityBadgeVariant {
   switch (severity) {
     case "high":
       return "danger";
@@ -55,14 +60,15 @@ const SEVERITY_LABELS: Record<ComplianceSeverity, string> = {
 export function ComplianceEventRow({ event }: ComplianceEventRowProps) {
   const variant = getSeverityBadgeVariant(event.severity);
   const eventLabel =
-    (MICROCOPY_COMPLIANCE.eventTypes as Record<string, string>)[event.event_type] ??
-    event.event_type;
+    (MICROCOPY_COMPLIANCE.eventTypes as Record<string, string>)[
+      event.event_type
+    ] ?? event.event_type;
 
   return (
     <tr
       className={cn(
         "border-b border-gray-100 hover:bg-gray-50 transition-colors",
-        event.severity === "high" && "bg-red-50/40"
+        event.severity === "high" && "bg-red-50/40",
       )}
       role="row"
     >
@@ -72,7 +78,10 @@ export function ComplianceEventRow({ event }: ComplianceEventRowProps) {
       </td>
 
       {/* Event type */}
-      <td className="px-4 py-3 text-sm text-gray-800 max-w-xs truncate" title={eventLabel}>
+      <td
+        className="px-4 py-3 text-sm text-gray-800 max-w-xs truncate"
+        title={eventLabel}
+      >
         {eventLabel}
       </td>
 
@@ -81,7 +90,7 @@ export function ComplianceEventRow({ event }: ComplianceEventRowProps) {
         <span
           className={cn(
             "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium",
-            SEVERITY_CLASSES[variant]
+            SEVERITY_CLASSES[variant],
           )}
           aria-label={`Severidad: ${SEVERITY_LABELS[event.severity]}`}
         >

@@ -5,7 +5,8 @@ import { TenantStoreBootstrap } from "@/components/shared/shell-organism/TenantS
 
 export const metadata: Metadata = {
   title: "Vitalia — Plataforma de salud",
-  description: "Vitalia — Gestión clínica integral para profesionales de salud en Latinoamérica",
+  description:
+    "Vitalia — Gestión clínica integral para profesionales de salud en Latinoamérica",
 };
 
 /**

@@ -89,7 +89,9 @@ export function LucasRejectModal({ recId, onClose }: LucasRejectModalProps) {
         recId,
         reason: result.data.reason,
         reasonOtherText:
-          result.data.reason === "other" ? result.data.reasonOtherText : undefined,
+          result.data.reason === "other"
+            ? result.data.reasonOtherText
+            : undefined,
       });
       onClose();
     } catch {

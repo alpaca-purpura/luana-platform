@@ -71,16 +71,18 @@ interface ContactSidebarProps {
 /** NPS score color badge — vt-* semantic tokens per globals.css */
 function NpsScoreBadge({ score }: { score: number }) {
   const color =
-    score >= 9 ? "vt-text-success vt-bg-success-soft vt-border-success-30" :
-    score >= 7 ? "vt-text-warning vt-bg-warning-12 vt-border-warning-30" :
-    "vt-text-danger vt-bg-danger-soft vt-border-danger-soft";
+    score >= 9
+      ? "vt-text-success vt-bg-success-soft vt-border-success-30"
+      : score >= 7
+        ? "vt-text-warning vt-bg-warning-12 vt-border-warning-30"
+        : "vt-text-danger vt-bg-danger-soft vt-border-danger-soft";
 
   return (
     <span
       className={cn(
         "inline-flex items-center justify-center w-8 h-8 rounded-full",
         "text-sm font-bold border",
-        color
+        color,
       )}
       aria-label={`NPS ${score}`}
     >
@@ -109,7 +111,7 @@ export function ContactSidebar({
       aria-label={INBOX_COPY.contactSidebar.ariaLabel}
       className={cn(
         "flex flex-col h-full overflow-y-auto vt-bg-surface border-l vt-border",
-        className
+        className,
       )}
       data-testid="inbox-contact-sidebar"
     >
@@ -132,7 +134,7 @@ export function ContactSidebar({
 
           <dl className="space-y-3">
             {/* Patient name (PHI — PiiMaskedSpan) */}
-            {(contact.name !== undefined && contact.name !== null) && (
+            {contact.name !== undefined && contact.name !== null && (
               <div className="flex flex-col gap-0.5">
                 <dt className="text-xs vt-text-faint">Nombre</dt>
                 <dd>
@@ -189,7 +191,7 @@ export function ContactSidebar({
                   <span
                     className={cn(
                       "inline-flex px-2 py-0.5 text-xs font-medium rounded-[var(--radius-pill)]",
-                      "vt-bg-muted vt-text-muted vt-border border"
+                      "vt-bg-muted vt-text-muted vt-border border",
                     )}
                   >
                     {contact.statusTag}
@@ -202,10 +204,7 @@ export function ContactSidebar({
       </AuditedSection>
 
       {/* NPS History section — gated to doctor/nurse/admin_clinic */}
-      <RequireRole
-        roles={["doctor", "nurse", "admin_clinic"]}
-        userRole={role}
-      >
+      <RequireRole roles={["doctor", "nurse", "admin_clinic"]} userRole={role}>
         <section
           className="px-4 pt-4 pb-3"
           aria-labelledby={`nps-section-${conversationId}`}

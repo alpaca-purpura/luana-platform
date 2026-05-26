@@ -1,6 +1,9 @@
 // Components — T-fe-5 dashboard Client Components
 export { TreatmentFollowupDashboardClient } from "./components/treatment-followup-dashboard-client";
-export type { TreatmentFollowupDashboardClientProps, TreatmentDashboardStatus } from "./components/treatment-followup-dashboard-client";
+export type {
+  TreatmentFollowupDashboardClientProps,
+  TreatmentDashboardStatus,
+} from "./components/treatment-followup-dashboard-client";
 export { TreatmentListTable } from "./components/treatment-list-table";
 export type { TreatmentListTableProps } from "./components/treatment-list-table";
 export { PatientListTable } from "./components/patient-list-table";
@@ -11,10 +14,19 @@ export { PatientMedicalPdfUpload } from "./components/patient-medical-pdf-upload
 export type { PatientMedicalPdfUploadProps } from "./components/patient-medical-pdf-upload";
 export { AppointmentsCalendarClient } from "./components/appointments-calendar-client";
 export type { AppointmentsCalendarClientProps } from "./components/appointments-calendar-client";
-export { CompliancePageClient, generateCsvBlob } from "./components/compliance-page-client";
+export {
+  CompliancePageClient,
+  generateCsvBlob,
+} from "./components/compliance-page-client";
 export type { CompliancePageClientProps } from "./components/compliance-page-client";
-export { ComplianceEventRow, getSeverityBadgeVariant } from "./components/compliance-event-row";
-export type { ComplianceEventRowProps, SeverityBadgeVariant } from "./components/compliance-event-row";
+export {
+  ComplianceEventRow,
+  getSeverityBadgeVariant,
+} from "./components/compliance-event-row";
+export type {
+  ComplianceEventRowProps,
+  SeverityBadgeVariant,
+} from "./components/compliance-event-row";
 
 // Components — T-fe-4 interactive Client Components
 export { OnboardingStep1Client } from "./components/onboarding-step-1-client";
@@ -23,7 +35,10 @@ export { OnboardingStep2Client } from "./components/onboarding-step-2-client";
 export type { OnboardingStep2ClientProps } from "./components/onboarding-step-2-client";
 export { OnboardingStep3Client } from "./components/onboarding-step-3-client";
 export type { OnboardingStep3ClientProps } from "./components/onboarding-step-3-client";
-export { BrandStudioSectionClient, AUTOSAVE_DEBOUNCE_MS } from "./components/brand-studio-section-client";
+export {
+  BrandStudioSectionClient,
+  AUTOSAVE_DEBOUNCE_MS,
+} from "./components/brand-studio-section-client";
 export type { BrandStudioSectionClientProps } from "./components/brand-studio-section-client";
 export { OfferWizardClient } from "./components/offer-wizard-client";
 export type { OfferWizardClientProps } from "./components/offer-wizard-client";
@@ -31,18 +46,34 @@ export type { OfferWizardClientProps } from "./components/offer-wizard-client";
 // Components — T-fe-3 base components
 export { ClinicTypePicker } from "./components/clinic-type-picker";
 export type { ClinicTypePickerProps } from "./components/clinic-type-picker";
-export { MedicalServicesOfferWizardSteps, OFFER_WIZARD_STEPS } from "./components/medical-services-offer-wizard-steps";
-export type { MedicalServicesOfferWizardStepsProps, WizardStep } from "./components/medical-services-offer-wizard-steps";
+export {
+  MedicalServicesOfferWizardSteps,
+  OFFER_WIZARD_STEPS,
+} from "./components/medical-services-offer-wizard-steps";
+export type {
+  MedicalServicesOfferWizardStepsProps,
+  WizardStep,
+} from "./components/medical-services-offer-wizard-steps";
 export { TreatmentTimeline } from "./components/treatment-timeline";
-export type { TreatmentTimelineProps, TreatmentMilestone, MilestoneName } from "./components/treatment-timeline";
+export type {
+  TreatmentTimelineProps,
+  TreatmentMilestone,
+  MilestoneName,
+} from "./components/treatment-timeline";
 export { ConsentSignatureModal } from "./components/consent-signature-modal";
 export type { ConsentSignatureModalProps } from "./components/consent-signature-modal";
 export { ComplianceStatsCards } from "./components/compliance-stats-cards";
 export type { ComplianceStatsCardsProps } from "./components/compliance-stats-cards";
 export { DoctorAvatarPicker } from "./components/doctor-avatar-picker";
-export type { DoctorAvatarPickerProps, DoctorOption } from "./components/doctor-avatar-picker";
+export type {
+  DoctorAvatarPickerProps,
+  DoctorOption,
+} from "./components/doctor-avatar-picker";
 export { MedicalDisclaimerBanner } from "./components/medical-disclaimer-banner";
-export type { MedicalDisclaimerBannerProps, DisclaimerContext } from "./components/medical-disclaimer-banner";
+export type {
+  MedicalDisclaimerBannerProps,
+  DisclaimerContext,
+} from "./components/medical-disclaimer-banner";
 
 // Microcopy SSoT
 export {
@@ -56,18 +87,79 @@ export {
 } from "./config/microcopy";
 
 // Types
-export type { ClinicType, Country, PlanTierSlug, CreateClinicProfileResponse, OnboardingStatusResponse, SubscribeResponse, OfferPresetResponse } from "./types/vitalia.types";
-export type { PlanTierItem, PlanTierListResponse } from "./types/plan-tier.types";
-export type { BookingStatus, PaymentStatus, DeliveryChannel, CreateBookingRequest, CreateBookingResponse, BookingSummary, BookingListResponse, RescheduleBookingRequest, RescheduleBookingResponse, CancelBookingRequest, CancelBookingResponse, ConsentSignRequest, ConsentSignResponse, SlotItem, AvailableSlotsResponse } from "./types/booking.types";
-export type { TreatmentSummary, TreatmentListResponse, TreatmentDetailResponse, TreatmentFollowupStateResponse, ManualHandoffRequest, ManualHandoffResponse, ReleaseHandoffResponse, StartFollowupRequest, PatientSummary, PatientListResponse, PatientDetailResponse, UploadMedicalPdfRequest, UploadMedicalPdfResponse } from "./types/treatment.types";
-export type { ConsentRecordResponse, ConsentRecordListResponse } from "./types/consent.types";
-export type { ComplianceSeverity, ActorType, ComplianceEventItem, ComplianceEventListResponse } from "./types/compliance.types";
+export type {
+  ClinicType,
+  Country,
+  PlanTierSlug,
+  CreateClinicProfileResponse,
+  OnboardingStatusResponse,
+  SubscribeResponse,
+  OfferPresetResponse,
+} from "./types/vitalia.types";
+export type {
+  PlanTierItem,
+  PlanTierListResponse,
+} from "./types/plan-tier.types";
+export type {
+  BookingStatus,
+  PaymentStatus,
+  DeliveryChannel,
+  CreateBookingRequest,
+  CreateBookingResponse,
+  BookingSummary,
+  BookingListResponse,
+  RescheduleBookingRequest,
+  RescheduleBookingResponse,
+  CancelBookingRequest,
+  CancelBookingResponse,
+  ConsentSignRequest,
+  ConsentSignResponse,
+  SlotItem,
+  AvailableSlotsResponse,
+} from "./types/booking.types";
+export type {
+  TreatmentSummary,
+  TreatmentListResponse,
+  TreatmentDetailResponse,
+  TreatmentFollowupStateResponse,
+  ManualHandoffRequest,
+  ManualHandoffResponse,
+  ReleaseHandoffResponse,
+  StartFollowupRequest,
+  PatientSummary,
+  PatientListResponse,
+  PatientDetailResponse,
+  UploadMedicalPdfRequest,
+  UploadMedicalPdfResponse,
+} from "./types/treatment.types";
+export type {
+  ConsentRecordResponse,
+  ConsentRecordListResponse,
+} from "./types/consent.types";
+export type {
+  ComplianceSeverity,
+  ActorType,
+  ComplianceEventItem,
+  ComplianceEventListResponse,
+} from "./types/compliance.types";
 
 // Schemas
 export { clinicProfileSchema } from "./schemas/clinic-profile-schema";
 export type { ClinicProfileInput } from "./schemas/clinic-profile-schema";
-export { offerWizardStep1Schema, offerWizardStep2Schema, offerWizardStep3Schema, offerWizardStep4Schema, offerWizardStep5Schema } from "./schemas/offer-wizard-schema";
-export type { OfferWizardStep1Input, OfferWizardStep2Input, OfferWizardStep3Input, OfferWizardStep4Input, OfferWizardStep5Input } from "./schemas/offer-wizard-schema";
+export {
+  offerWizardStep1Schema,
+  offerWizardStep2Schema,
+  offerWizardStep3Schema,
+  offerWizardStep4Schema,
+  offerWizardStep5Schema,
+} from "./schemas/offer-wizard-schema";
+export type {
+  OfferWizardStep1Input,
+  OfferWizardStep2Input,
+  OfferWizardStep3Input,
+  OfferWizardStep4Input,
+  OfferWizardStep5Input,
+} from "./schemas/offer-wizard-schema";
 export { bookingCreateSchema } from "./schemas/booking-schema";
 export type { BookingCreateInput } from "./schemas/booking-schema";
 export { consentSignSchema } from "./schemas/consent-schema";
@@ -85,7 +177,10 @@ export type { RescheduleBookingInput } from "./schemas/appointment-schema";
 
 // API hooks — T-fe-4 brand studio hooks
 export { useBrandStudioSections } from "./api/use-brand-studio-sections";
-export type { BrandStudioSection, BrandStudioSectionsResponse } from "./api/use-brand-studio-sections";
+export type {
+  BrandStudioSection,
+  BrandStudioSectionsResponse,
+} from "./api/use-brand-studio-sections";
 export { useBrandStudioSectionPatch } from "./api/use-brand-studio-section-patch";
 export type { PatchBrandStudioSectionPayload } from "./api/use-brand-studio-section-patch";
 

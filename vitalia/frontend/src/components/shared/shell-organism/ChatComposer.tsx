@@ -85,7 +85,10 @@ export function ChatComposer({ className }: { className?: string }) {
   return (
     <footer
       data-testid="chat-composer"
-      className={cn("border-t border-border bg-card px-3 py-2 shrink-0", className)}
+      className={cn(
+        "border-t border-border bg-card px-3 py-2 shrink-0",
+        className,
+      )}
     >
       <div className="flex items-end gap-2">
         {/* Adornment stubs — decorative icon buttons (D3 spec: NOT disabled, title="próximamente") */}
@@ -150,8 +153,8 @@ export function ChatComposer({ className }: { className?: string }) {
       </div>
 
       {/* kbd hint — Cmd+K focus (microcopy Spanish neutro § 6)
-          * a11y SC-6: text-foreground/60 gives ≥4.5:1 on white/card bg.
-          * text-muted-foreground (3.4:1 on white) fails wcag2aa at 10px. */}
+       * a11y SC-6: text-foreground/60 gives ≥4.5:1 on white/card bg.
+       * text-muted-foreground (3.4:1 on white) fails wcag2aa at 10px. */}
       <p className="text-[10px] text-foreground/60 mt-1 px-1">
         <kbd className="rounded border border-border bg-muted px-1 py-0.5 text-[10px] text-foreground/70">
           Cmd

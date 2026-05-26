@@ -25,13 +25,16 @@ export interface ImageAnalysisCardProps {
 /**
  * ImageAnalysisCard — stub UI for Slice 1 image messages.
  */
-export function ImageAnalysisCard({ mediaUrl, className }: ImageAnalysisCardProps) {
+export function ImageAnalysisCard({
+  mediaUrl,
+  className,
+}: ImageAnalysisCardProps) {
   return (
     <div
       className={cn(
         "flex flex-col gap-2 rounded-xl overflow-hidden border vt-border",
         "vt-bg-muted max-w-xs",
-        className
+        className,
       )}
       role="figure"
       aria-label={INBOX_COPY.multimedia.imagePlaceholder.ariaLabel}

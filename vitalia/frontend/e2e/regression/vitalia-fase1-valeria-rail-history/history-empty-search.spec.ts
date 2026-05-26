@@ -66,7 +66,9 @@ test.describe("SC-6 — history empty search state", () => {
     await pom.goto({ valeriaState: "full", shellMode: "agentic" });
 
     // Verify groups visible before search (exact: true avoids strict mode violations)
-    await expect(valeriaFullPage.getByText("Hoy", { exact: true }).first()).toBeVisible();
+    await expect(
+      valeriaFullPage.getByText("Hoy", { exact: true }).first(),
+    ).toBeVisible();
 
     // Type no-match query
     await pom.historySearch.click();
@@ -74,9 +76,15 @@ test.describe("SC-6 — history empty search state", () => {
     await expect(pom.emptyState).toBeVisible({ timeout: 3_000 });
 
     // Group labels should not be visible (filtered out)
-    await expect(valeriaFullPage.getByText("Hoy", { exact: true }).first()).not.toBeVisible();
-    await expect(valeriaFullPage.getByText("Ayer", { exact: true }).first()).not.toBeVisible();
-    await expect(valeriaFullPage.getByText("Esta semana", { exact: true }).first()).not.toBeVisible();
+    await expect(
+      valeriaFullPage.getByText("Hoy", { exact: true }).first(),
+    ).not.toBeVisible();
+    await expect(
+      valeriaFullPage.getByText("Ayer", { exact: true }).first(),
+    ).not.toBeVisible();
+    await expect(
+      valeriaFullPage.getByText("Esta semana", { exact: true }).first(),
+    ).not.toBeVisible();
   });
 
   test("SC-6-4: search input retains typed text when empty state shown", async ({
@@ -114,7 +122,9 @@ test.describe("SC-6 — history empty search state", () => {
     await expect(pom.historySearch).toHaveValue("");
 
     // History list restored — 'Hoy' group visible again
-    await expect(valeriaFullPage.getByText("Hoy", { exact: true }).first()).toBeVisible({ timeout: 3_000 });
+    await expect(
+      valeriaFullPage.getByText("Hoy", { exact: true }).first(),
+    ).toBeVisible({ timeout: 3_000 });
 
     // Critical: valeriaState still 'full' — Esc did NOT collapse when input was focused
     const state = await pom.getValeriaState();

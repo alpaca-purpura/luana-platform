@@ -52,7 +52,7 @@ export function AttributionMatrixWidget({
 }: AttributionMatrixWidgetProps) {
   function getScore(channelSlug: string, touchpoint: string): number | null {
     const cell = cells.find(
-      (c) => c.channelSlug === channelSlug && c.touchpoint === touchpoint
+      (c) => c.channelSlug === channelSlug && c.touchpoint === touchpoint,
     );
     return cell?.score ?? null;
   }
@@ -64,7 +64,10 @@ export function AttributionMatrixWidget({
 
   return (
     <section
-      className={cn("vt-bg-surface vt-border border rounded-[var(--radius-lg)] p-4", className)}
+      className={cn(
+        "vt-bg-surface vt-border border rounded-[var(--radius-lg)] p-4",
+        className,
+      )}
       aria-label="Matriz de atribución de canales"
       aria-busy={isLoading}
     >
@@ -73,7 +76,10 @@ export function AttributionMatrixWidget({
       </h3>
 
       {isLoading && (
-        <div className="text-xs vt-text-muted py-4 text-center" aria-live="polite">
+        <div
+          className="text-xs vt-text-muted py-4 text-center"
+          aria-live="polite"
+        >
           Cargando datos de atribución...
         </div>
       )}
@@ -86,7 +92,11 @@ export function AttributionMatrixWidget({
       )}
 
       {!isLoading && channels.length > 0 && (
-        <div className="overflow-x-auto" role="table" aria-label="Tabla de atribución">
+        <div
+          className="overflow-x-auto"
+          role="table"
+          aria-label="Tabla de atribución"
+        >
           <table className="w-full text-xs border-collapse">
             <thead>
               <tr role="row">
@@ -111,8 +121,16 @@ export function AttributionMatrixWidget({
             </thead>
             <tbody>
               {channels.map((ch) => (
-                <tr key={ch.slug} className="border-t vt-border-soft" role="row">
-                  <td className="py-2 pr-3 vt-text font-medium" role="rowheader" scope="row">
+                <tr
+                  key={ch.slug}
+                  className="border-t vt-border-soft"
+                  role="row"
+                >
+                  <td
+                    className="py-2 pr-3 vt-text font-medium"
+                    role="rowheader"
+                    scope="row"
+                  >
                     {ch.name}
                   </td>
                   {touchpoints.map((tp) => {
@@ -131,7 +149,9 @@ export function AttributionMatrixWidget({
                             backgroundColor: `color-mix(in srgb, var(--vitalia-cian-color) ${opacity * 100}%, transparent)`,
                           }}
                         >
-                          {score !== null ? `${(score * 100).toFixed(0)}%` : "—"}
+                          {score !== null
+                            ? `${(score * 100).toFixed(0)}%`
+                            : "—"}
                         </span>
                       </td>
                     );

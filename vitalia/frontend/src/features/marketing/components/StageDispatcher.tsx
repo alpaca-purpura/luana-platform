@@ -34,29 +34,20 @@ export type StageDispatcherProps = {
 /**
  * StageDispatcher — routes to the appropriate stage section component.
  */
-export function StageDispatcher({ activeTab, period = "30d", className }: StageDispatcherProps) {
+export function StageDispatcher({
+  activeTab,
+  period = "30d",
+  className,
+}: StageDispatcherProps) {
   return (
     <div
-      className={cn(
-        "flex-1 overflow-auto vt-bg-surface-alt p-4",
-        className,
-      )}
+      className={cn("flex-1 overflow-auto vt-bg-surface-alt p-4", className)}
     >
-      {activeTab === "attraction" && (
-        <AttractionStage period={period} />
-      )}
-      {activeTab === "qualification" && (
-        <QualificationStage period={period} />
-      )}
-      {activeTab === "reservation" && (
-        <ReservationStage period={period} />
-      )}
-      {activeTab === "adoption" && (
-        <AdoptionStage period={period} />
-      )}
-      {activeTab === "expansion" && (
-        <ExpansionStage period={period} />
-      )}
+      {activeTab === "attraction" && <AttractionStage period={period} />}
+      {activeTab === "qualification" && <QualificationStage period={period} />}
+      {activeTab === "reservation" && <ReservationStage period={period} />}
+      {activeTab === "adoption" && <AdoptionStage period={period} />}
+      {activeTab === "expansion" && <ExpansionStage period={period} />}
     </div>
   );
 }

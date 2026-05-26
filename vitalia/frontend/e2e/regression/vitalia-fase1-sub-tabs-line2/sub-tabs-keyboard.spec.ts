@@ -88,7 +88,11 @@ test.describe("SC-8 — WAI-ARIA tablist keyboard navigation (SubTabsBar)", () =
   }) => {
     const pom = new SubTabsBarPage(shellPage);
 
-    await pom.goto({ tenantId: TENANT_ID, agent: "lisa", subtab: "compliance" });
+    await pom.goto({
+      tenantId: TENANT_ID,
+      agent: "lisa",
+      subtab: "compliance",
+    });
 
     // Focus Compliance (last sub-tab)
     await pom.getSubTab("compliance").focus();
@@ -156,8 +160,14 @@ test.describe("SC-8 — WAI-ARIA tablist keyboard navigation (SubTabsBar)", () =
       timeout: 10_000,
     });
 
-    await expect(pom.getSubTab("doctores")).toHaveAttribute("data-active", "true");
-    await expect(pom.getSubTab("marca")).toHaveAttribute("data-active", "false");
+    await expect(pom.getSubTab("doctores")).toHaveAttribute(
+      "data-active",
+      "true",
+    );
+    await expect(pom.getSubTab("marca")).toHaveAttribute(
+      "data-active",
+      "false",
+    );
   });
 
   test("SC-8-7: Space activa sub-tab focused → navega a su ruta", async ({
@@ -177,7 +187,10 @@ test.describe("SC-8 — WAI-ARIA tablist keyboard navigation (SubTabsBar)", () =
       timeout: 10_000,
     });
 
-    await expect(pom.getSubTab("servicios")).toHaveAttribute("data-active", "true");
+    await expect(pom.getSubTab("servicios")).toHaveAttribute(
+      "data-active",
+      "true",
+    );
   });
 
   test("SC-8-8: Tab / Escape → no navigateTo, no focus change within sub-tabs", async ({

@@ -10,12 +10,18 @@ import React from "react";
 vi.mock("nuqs", () => {
   const makeParser = () => ({
     withDefault: (_d: unknown) => ({
-      withOptions: (_opts: unknown) => ({ defaultValue: _d, parseServerSide: (v: unknown) => v }),
+      withOptions: (_opts: unknown) => ({
+        defaultValue: _d,
+        parseServerSide: (v: unknown) => v,
+      }),
       defaultValue: _d,
       parseServerSide: (v: unknown) => v,
     }),
     withOptions: (_opts: unknown) => ({
-      withDefault: (_d: unknown) => ({ defaultValue: _d, parseServerSide: (v: unknown) => v }),
+      withDefault: (_d: unknown) => ({
+        defaultValue: _d,
+        parseServerSide: (v: unknown) => v,
+      }),
       defaultValue: undefined,
       parseServerSide: (v: unknown) => v,
     }),
@@ -49,7 +55,9 @@ vi.mock("@tanstack/react-query", () => ({
   useMutation: vi.fn(),
   useQueryClient: () => ({ invalidateQueries: vi.fn() }),
   QueryClient: vi.fn(),
-  QueryClientProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  QueryClientProvider: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
 }));
 
 // Mock child components
@@ -70,8 +78,20 @@ const mockStageDetail = {
   periodEnd: "2026-05-31T23:59:59Z",
   count: 62,
   kpis: [
-    { key: "adherence_rate", label: "Adherencia", value: 87, unit: "pct", currency: null },
-    { key: "followup_rate", label: "Seguimiento completado", value: 73, unit: "pct", currency: null },
+    {
+      key: "adherence_rate",
+      label: "Adherencia",
+      value: 87,
+      unit: "pct",
+      currency: null,
+    },
+    {
+      key: "followup_rate",
+      label: "Seguimiento completado",
+      value: 73,
+      unit: "pct",
+      currency: null,
+    },
   ],
   trendData: [],
 };
@@ -86,9 +106,7 @@ describe("AdoptionStage", () => {
   });
 
   it("test_renders_lucas_for_adoption — shows LucasStageRecommendationsCard with adoption stage", async () => {
-    const { AdoptionStage } = await import(
-      "../components/AdoptionStage"
-    );
+    const { AdoptionStage } = await import("../components/AdoptionStage");
     render(<AdoptionStage />);
 
     const lucasCard = screen.getByTestId("lucas-recommendations");
@@ -97,21 +115,19 @@ describe("AdoptionStage", () => {
   });
 
   it("test_renders_stage_kpis — shows KPI labels from stage detail", async () => {
-    const { AdoptionStage } = await import(
-      "../components/AdoptionStage"
-    );
+    const { AdoptionStage } = await import("../components/AdoptionStage");
     render(<AdoptionStage />);
 
     expect(screen.getByText("Adherencia")).toBeInTheDocument();
   });
 
   it("test_no_attribution_widget — adoption stage does NOT render attribution matrix", async () => {
-    const { AdoptionStage } = await import(
-      "../components/AdoptionStage"
-    );
+    const { AdoptionStage } = await import("../components/AdoptionStage");
     render(<AdoptionStage />);
 
-    expect(screen.queryByTestId("attribution-matrix-widget")).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId("attribution-matrix-widget"),
+    ).not.toBeInTheDocument();
   });
 
   it("test_loading_state — shows skeleton when loading", async () => {
@@ -121,17 +137,13 @@ describe("AdoptionStage", () => {
       isError: false,
     } as ReturnType<typeof useQuery>);
 
-    const { AdoptionStage } = await import(
-      "../components/AdoptionStage"
-    );
+    const { AdoptionStage } = await import("../components/AdoptionStage");
     render(<AdoptionStage />);
     expect(screen.getByRole("status")).toBeInTheDocument();
   });
 
   it("test_aria_tabpanel — stage renders as tabpanel with correct id", async () => {
-    const { AdoptionStage } = await import(
-      "../components/AdoptionStage"
-    );
+    const { AdoptionStage } = await import("../components/AdoptionStage");
     render(<AdoptionStage />);
 
     const panel = screen.getByRole("tabpanel");

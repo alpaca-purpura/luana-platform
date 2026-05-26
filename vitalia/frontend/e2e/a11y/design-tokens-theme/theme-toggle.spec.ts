@@ -23,9 +23,7 @@ import AxeBuilder from "@axe-core/playwright";
 const TEST_PAGE = "/test-stack/design-tokens-theme";
 
 test.describe("SC-06..SC-08 — ThemeToggle a11y (F1-S1)", () => {
-  test("SC-06: zero WCAG 2.1 AA violations in light mode", async ({
-    page,
-  }) => {
+  test("SC-06: zero WCAG 2.1 AA violations in light mode", async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.clear();
     });
@@ -77,16 +75,16 @@ test.describe("SC-06..SC-08 — ThemeToggle a11y (F1-S1)", () => {
 
     // Wait for focus — button should be focused
     // (multiple Tabs may be needed if other focusable elements precede it)
-    const focusedTag = await page.evaluate(
-      () => document.activeElement?.getAttribute("data-testid"),
+    const focusedTag = await page.evaluate(() =>
+      document.activeElement?.getAttribute("data-testid"),
     );
 
     // If not directly focused, try additional Tabs
     if (focusedTag !== "theme-toggle") {
       for (let i = 0; i < 5; i++) {
         await page.keyboard.press("Tab");
-        const tag = await page.evaluate(
-          () => document.activeElement?.getAttribute("data-testid"),
+        const tag = await page.evaluate(() =>
+          document.activeElement?.getAttribute("data-testid"),
         );
         if (tag === "theme-toggle") break;
       }
@@ -97,11 +95,10 @@ test.describe("SC-06..SC-08 — ThemeToggle a11y (F1-S1)", () => {
 
     // Enter should activate (light → dark)
     expect(
-      await page.evaluate(
-        () =>
-          document
-            .querySelector('[data-testid="theme-toggle"]')
-            ?.getAttribute("aria-pressed"),
+      await page.evaluate(() =>
+        document
+          .querySelector('[data-testid="theme-toggle"]')
+          ?.getAttribute("aria-pressed"),
       ),
     ).toBe("false");
 

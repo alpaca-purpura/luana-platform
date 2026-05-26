@@ -11,16 +11,47 @@ import { render, screen } from "@testing-library/react";
 import React from "react";
 
 const mockStages = [
-  { slug: "attraction" as const, label: "Atracción", count: 182, primaryKpiValue: 24, primaryKpiLabel: "cpL" },
-  { slug: "qualification" as const, label: "Calificación", count: 87, primaryKpiValue: 48, primaryKpiLabel: "conv%" },
-  { slug: "reservation" as const, label: "Reserva", count: 36, primaryKpiValue: 41, primaryKpiLabel: "conv%" },
-  { slug: "adoption" as const, label: "Adopción", count: 62, primaryKpiValue: 87, primaryKpiLabel: "adherencia%" },
-  { slug: "expansion" as const, label: "Expansión", count: 28, primaryKpiValue: 72, primaryKpiLabel: "NPS" },
+  {
+    slug: "attraction" as const,
+    label: "Atracción",
+    count: 182,
+    primaryKpiValue: 24,
+    primaryKpiLabel: "cpL",
+  },
+  {
+    slug: "qualification" as const,
+    label: "Calificación",
+    count: 87,
+    primaryKpiValue: 48,
+    primaryKpiLabel: "conv%",
+  },
+  {
+    slug: "reservation" as const,
+    label: "Reserva",
+    count: 36,
+    primaryKpiValue: 41,
+    primaryKpiLabel: "conv%",
+  },
+  {
+    slug: "adoption" as const,
+    label: "Adopción",
+    count: 62,
+    primaryKpiValue: 87,
+    primaryKpiLabel: "adherencia%",
+  },
+  {
+    slug: "expansion" as const,
+    label: "Expansión",
+    count: 28,
+    primaryKpiValue: 72,
+    primaryKpiLabel: "NPS",
+  },
 ];
 
 describe("MarketingBowtieSVG — visual regression (local, chromatic-baseline-pending)", () => {
   it("test_bowtie_svg_renders_5_ellipses — structural invariant", async () => {
-    const { MarketingBowtieSVG } = await import("../components/MarketingBowtieSVG");
+    const { MarketingBowtieSVG } =
+      await import("../components/MarketingBowtieSVG");
     const { container } = render(<MarketingBowtieSVG stages={mockStages} />);
 
     // SVG must be present
@@ -33,7 +64,8 @@ describe("MarketingBowtieSVG — visual regression (local, chromatic-baseline-pe
   });
 
   it("test_bowtie_no_hardcoded_hex_colors — CSS var tokens only", async () => {
-    const { MarketingBowtieSVG } = await import("../components/MarketingBowtieSVG");
+    const { MarketingBowtieSVG } =
+      await import("../components/MarketingBowtieSVG");
     const { container } = render(<MarketingBowtieSVG stages={mockStages} />);
 
     // No fill/stroke attributes with hardcoded HEX — must use CSS vars or currentColor
@@ -52,7 +84,8 @@ describe("MarketingBowtieSVG — visual regression (local, chromatic-baseline-pe
   });
 
   it("test_bowtie_stage_labels_rendered — 5 stage labels visible", async () => {
-    const { MarketingBowtieSVG } = await import("../components/MarketingBowtieSVG");
+    const { MarketingBowtieSVG } =
+      await import("../components/MarketingBowtieSVG");
     render(<MarketingBowtieSVG stages={mockStages} />);
 
     expect(screen.getByText("Atracción")).toBeInTheDocument();
@@ -63,7 +96,8 @@ describe("MarketingBowtieSVG — visual regression (local, chromatic-baseline-pe
   });
 
   it("test_bowtie_count_values_rendered — stage counts visible", async () => {
-    const { MarketingBowtieSVG } = await import("../components/MarketingBowtieSVG");
+    const { MarketingBowtieSVG } =
+      await import("../components/MarketingBowtieSVG");
     render(<MarketingBowtieSVG stages={mockStages} />);
 
     expect(screen.getByText("182")).toBeInTheDocument();
@@ -72,8 +106,11 @@ describe("MarketingBowtieSVG — visual regression (local, chromatic-baseline-pe
   });
 
   it("test_bowtie_loading_state — skeleton visible, no stage labels", async () => {
-    const { MarketingBowtieSVG } = await import("../components/MarketingBowtieSVG");
-    const { container } = render(<MarketingBowtieSVG stages={[]} isLoading={true} />);
+    const { MarketingBowtieSVG } =
+      await import("../components/MarketingBowtieSVG");
+    const { container } = render(
+      <MarketingBowtieSVG stages={[]} isLoading={true} />,
+    );
 
     // Loading state: should have aria-busy or loading indicator
     const loadingEl = container.querySelector("[aria-busy='true']");
@@ -84,8 +121,11 @@ describe("MarketingBowtieSVG — visual regression (local, chromatic-baseline-pe
   });
 
   it("test_bowtie_empty_state — empty message or minimal SVG when no stages", async () => {
-    const { MarketingBowtieSVG } = await import("../components/MarketingBowtieSVG");
-    const { container } = render(<MarketingBowtieSVG stages={[]} isLoading={false} />);
+    const { MarketingBowtieSVG } =
+      await import("../components/MarketingBowtieSVG");
+    const { container } = render(
+      <MarketingBowtieSVG stages={[]} isLoading={false} />,
+    );
 
     // No stage count values
     expect(screen.queryByText("182")).toBeNull();
@@ -94,7 +134,8 @@ describe("MarketingBowtieSVG — visual regression (local, chromatic-baseline-pe
   });
 
   it("test_bowtie_viewbox_invariant — SVG viewBox is 900x180 per mockup spec", async () => {
-    const { MarketingBowtieSVG } = await import("../components/MarketingBowtieSVG");
+    const { MarketingBowtieSVG } =
+      await import("../components/MarketingBowtieSVG");
     const { container } = render(<MarketingBowtieSVG stages={mockStages} />);
 
     const svg = container.querySelector("svg");
@@ -102,7 +143,8 @@ describe("MarketingBowtieSVG — visual regression (local, chromatic-baseline-pe
   });
 
   it("test_bowtie_snapshot — inline SVG structure snapshot (chromatic-baseline-pending)", async () => {
-    const { MarketingBowtieSVG } = await import("../components/MarketingBowtieSVG");
+    const { MarketingBowtieSVG } =
+      await import("../components/MarketingBowtieSVG");
     const { container } = render(<MarketingBowtieSVG stages={mockStages} />);
 
     // Snapshot the SVG element as a local visual regression proxy

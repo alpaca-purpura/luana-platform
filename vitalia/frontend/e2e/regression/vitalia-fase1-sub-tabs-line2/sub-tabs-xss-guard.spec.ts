@@ -54,11 +54,13 @@ test.describe("SC-7 — XSS en URL subtab segment → sin ejecución + all inact
     await pom.gotoRaw(`/${TENANT_ID}/lisa/${xssPayload}`);
 
     // Ribbon should mount (lisa is a valid agent — ribbon shows lisa as active)
-    await shellPage.waitForSelector('[data-testid="ribbon"]:visible', {
-      timeout: 15_000,
-    }).catch(() => {
-      // May get 404 — still valid: no dialog = XSS guard upheld
-    });
+    await shellPage
+      .waitForSelector('[data-testid="ribbon"]:visible', {
+        timeout: 15_000,
+      })
+      .catch(() => {
+        // May get 404 — still valid: no dialog = XSS guard upheld
+      });
 
     await shellPage.waitForTimeout(500);
 
@@ -73,7 +75,10 @@ test.describe("SC-7 — XSS en URL subtab segment → sin ejecución + all inact
       expect(activeId).toBeNull();
 
       for (const id of ["marca", "doctores", "servicios", "compliance"]) {
-        await expect(pom.getSubTab(id)).toHaveAttribute("aria-selected", "false");
+        await expect(pom.getSubTab(id)).toHaveAttribute(
+          "aria-selected",
+          "false",
+        );
       }
 
       // No literal <script> tag in DOM body
@@ -107,9 +112,11 @@ test.describe("SC-7 — XSS en URL subtab segment → sin ejecución + all inact
     const jsPayload = encodeURIComponent("javascript:alert(1)");
     await pom.gotoRaw(`/${TENANT_ID}/lisa/${jsPayload}`);
 
-    await shellPage.waitForSelector('[data-testid="ribbon"]:visible', {
-      timeout: 15_000,
-    }).catch(() => {});
+    await shellPage
+      .waitForSelector('[data-testid="ribbon"]:visible', {
+        timeout: 15_000,
+      })
+      .catch(() => {});
 
     await shellPage.waitForTimeout(500);
 

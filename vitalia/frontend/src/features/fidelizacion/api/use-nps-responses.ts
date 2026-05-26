@@ -28,7 +28,7 @@ export function useNpsResponses(period: FidelizacionPeriod) {
 
       return vitaliaFetch<NPSSummaryResponse>(
         `/api/v1/vitalia/fidelization/nps/responses?period=${period}`,
-        { token, tenantId: orgId }
+        { token, tenantId: orgId },
       );
     },
     enabled: isLoaded && isSignedIn === true,

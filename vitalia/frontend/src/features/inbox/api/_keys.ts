@@ -28,7 +28,9 @@ const INBOX = "inbox" as const;
  * Invalidated on send / retract / mode-change mutations.
  */
 export const conversationsListKey = (filters?: ConversationsFilters) =>
-  filters ? ([INBOX, "conversations", filters] as const) : ([INBOX, "conversations"] as const);
+  filters
+    ? ([INBOX, "conversations", filters] as const)
+    : ([INBOX, "conversations"] as const);
 
 /**
  * Single conversation detail compound response.

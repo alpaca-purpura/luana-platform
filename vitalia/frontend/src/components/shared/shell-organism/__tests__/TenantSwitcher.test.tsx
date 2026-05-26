@@ -26,19 +26,24 @@ import { TenantSwitcher } from "../TenantSwitcher";
 // ── Mock Radix DropdownMenu to render content inline (bypasses portal/pointer events) ──
 
 vi.mock("@/components/ui/dropdown-menu", () => {
-
   function DropdownMenu({ children }: { children: React.ReactNode }) {
     const [open, setOpen] = useState(false);
     // Pass open state + setter to children via context
     return (
       <div data-testid="dropdown-root" data-open={String(open)}>
-        {React.Children.map(children as React.ReactElement | React.ReactElement[], (child) => {
-          if (!React.isValidElement(child)) return child;
-          return React.cloneElement(child as React.ReactElement<Record<string, unknown>>, {
-            __dropdownOpen: open,
-            __setDropdownOpen: setOpen,
-          });
-        })}
+        {React.Children.map(
+          children as React.ReactElement | React.ReactElement[],
+          (child) => {
+            if (!React.isValidElement(child)) return child;
+            return React.cloneElement(
+              child as React.ReactElement<Record<string, unknown>>,
+              {
+                __dropdownOpen: open,
+                __setDropdownOpen: setOpen,
+              },
+            );
+          },
+        )}
       </div>
     );
   }
@@ -89,11 +94,21 @@ vi.mock("@/components/ui/dropdown-menu", () => {
     );
   }
 
-  function DropdownMenuLabel({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) {
+  function DropdownMenuLabel({
+    children,
+    ...props
+  }: {
+    children: React.ReactNode;
+    [key: string]: unknown;
+  }) {
     const clean = { ...props };
     delete clean.__dropdownOpen;
     delete clean.__setDropdownOpen;
-    return <div role="group" {...clean}>{children}</div>;
+    return (
+      <div role="group" {...clean}>
+        {children}
+      </div>
+    );
   }
 
   function DropdownMenuSeparator(props: Record<string, unknown>) {
@@ -109,7 +124,8 @@ vi.mock("@/components/ui/dropdown-menu", () => {
     DropdownMenuContent,
     DropdownMenuLabel,
     DropdownMenuSeparator,
-    DropdownMenuPortal: ({ children }: { children: React.ReactNode }) => children,
+    DropdownMenuPortal: ({ children }: { children: React.ReactNode }) =>
+      children,
     DropdownMenuItem: ({
       children,
       ...props
@@ -120,7 +136,11 @@ vi.mock("@/components/ui/dropdown-menu", () => {
       const clean = { ...props };
       delete clean.__dropdownOpen;
       delete clean.__setDropdownOpen;
-      return <div role="menuitem" {...clean}>{children}</div>;
+      return (
+        <div role="menuitem" {...clean}>
+          {children}
+        </div>
+      );
     },
   };
 });
@@ -130,7 +150,9 @@ vi.mock("@/components/ui/dropdown-menu", () => {
 const mockRefetch = vi.fn();
 const mockUseTenants = vi.fn();
 const mockUseTenantStore = vi.fn();
-const mockUsePathname = vi.fn(() => "/sonrisa-plena/(shell-organism)/lisa/marca");
+const mockUsePathname = vi.fn(
+  () => "/sonrisa-plena/(shell-organism)/lisa/marca",
+);
 
 vi.mock("@/hooks/useTenants", () => ({
   useTenants: () => mockUseTenants(),
@@ -299,21 +321,26 @@ describe("TenantSwitcher", () => {
         data: { tenants: [T_SONRISA, T_DERMALIA, T_CLINCARE] },
         refetch: vi.fn(),
       });
-      setupStoreMock({ activeTenant: T_SONRISA, switchTenant: mockSwitchTenant });
+      setupStoreMock({
+        activeTenant: T_SONRISA,
+        switchTenant: mockSwitchTenant,
+      });
     });
 
     it("trigger has aria-label='Cambiar clínica' (Scenario 10 a11y)", () => {
       render(<TenantSwitcher />);
-      expect(
-        screen.getByTestId("tenant-switcher-trigger"),
-      ).toHaveAttribute("aria-label", "Cambiar clínica");
+      expect(screen.getByTestId("tenant-switcher-trigger")).toHaveAttribute(
+        "aria-label",
+        "Cambiar clínica",
+      );
     });
 
     it("trigger has title attribute = activeTenant.name", () => {
       render(<TenantSwitcher />);
-      expect(
-        screen.getByTestId("tenant-switcher-trigger"),
-      ).toHaveAttribute("title", T_SONRISA.name);
+      expect(screen.getByTestId("tenant-switcher-trigger")).toHaveAttribute(
+        "title",
+        T_SONRISA.name,
+      );
     });
 
     it("click trigger opens dropdown with role=menu", () => {
@@ -338,7 +365,9 @@ describe("TenantSwitcher", () => {
 
     it("click on different tenant triggers switchTenant + window.location.href redirect", () => {
       const locationSetter = vi.fn();
-      vi.spyOn(window.location, "href", "set").mockImplementation(locationSetter);
+      vi.spyOn(window.location, "href", "set").mockImplementation(
+        locationSetter,
+      );
 
       render(<TenantSwitcher />);
       fireEvent.click(screen.getByTestId("tenant-switcher-trigger"));
@@ -351,7 +380,9 @@ describe("TenantSwitcher", () => {
 
     it("Scenario 12: click on already-active tenant does NOT redirect", () => {
       const locationSetter = vi.fn();
-      vi.spyOn(window.location, "href", "set").mockImplementation(locationSetter);
+      vi.spyOn(window.location, "href", "set").mockImplementation(
+        locationSetter,
+      );
 
       render(<TenantSwitcher />);
       fireEvent.click(screen.getByTestId("tenant-switcher-trigger"));
@@ -387,7 +418,9 @@ describe("TenantSwitcher", () => {
         "/sonrisa-plena/(shell-organism)/lisa/marca",
       );
       const locationSetter = vi.fn();
-      vi.spyOn(window.location, "href", "set").mockImplementation(locationSetter);
+      vi.spyOn(window.location, "href", "set").mockImplementation(
+        locationSetter,
+      );
 
       render(<TenantSwitcher />);
       fireEvent.click(screen.getByTestId("tenant-switcher-trigger"));
@@ -412,7 +445,9 @@ describe("TenantSwitcher", () => {
       });
       mockUsePathname.mockReturnValue("/");
       const locationSetter = vi.fn();
-      vi.spyOn(window.location, "href", "set").mockImplementation(locationSetter);
+      vi.spyOn(window.location, "href", "set").mockImplementation(
+        locationSetter,
+      );
 
       render(<TenantSwitcher />);
       fireEvent.click(screen.getByTestId("tenant-switcher-trigger"));

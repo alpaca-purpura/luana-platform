@@ -48,7 +48,7 @@ export function ContactSidebarToggle({
         isOpen
           ? "vt-bg-primary/12 vt-text-primary"
           : "vt-text-foreground hover:vt-bg-muted",
-        className
+        className,
       )}
     >
       {/* Contact icon — 👤 */}

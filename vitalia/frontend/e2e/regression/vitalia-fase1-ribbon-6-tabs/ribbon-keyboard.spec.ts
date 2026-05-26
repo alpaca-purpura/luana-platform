@@ -230,7 +230,11 @@ test.describe("SC-7-axe — axe wcag2aa scan ribbon organism @axe", () => {
     async ({ darkShellPage }) => {
       const pom = new RibbonPage(darkShellPage);
 
-      await pom.goto({ tenantId: TENANT_ID, agent: "valeria", subtab: "agenda" });
+      await pom.goto({
+        tenantId: TENANT_ID,
+        agent: "valeria",
+        subtab: "agenda",
+      });
 
       const results = await new AxeBuilder({ page: darkShellPage })
         .include('[data-testid="ribbon"]')
@@ -243,10 +247,7 @@ test.describe("SC-7-axe — axe wcag2aa scan ribbon organism @axe", () => {
 
       if (criticalOrSerious.length > 0) {
         const details = criticalOrSerious
-          .map(
-            (v) =>
-              `${v.id} (${v.impact}): ${v.description}`,
-          )
+          .map((v) => `${v.id} (${v.impact}): ${v.description}`)
           .join("\n");
         throw new Error(
           `Axe wcag2aa dark mode critical/serious violations found:\n${details}`,

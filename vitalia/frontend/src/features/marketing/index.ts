@@ -116,7 +116,10 @@ export type { LucasRejectModalProps } from "./components/LucasRejectModal";
 
 // Components (T-mk-fe-5)
 export { ConnectionBadge } from "./components/ConnectionBadge";
-export type { ConnectionBadgeProps, ConnectionBadgeVariant } from "./components/ConnectionBadge";
+export type {
+  ConnectionBadgeProps,
+  ConnectionBadgeVariant,
+} from "./components/ConnectionBadge";
 
 export { ChannelBreakdownRow } from "./components/ChannelBreakdownRow";
 export type { ChannelBreakdownRowProps } from "./components/ChannelBreakdownRow";

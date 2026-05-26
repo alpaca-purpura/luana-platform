@@ -40,11 +40,41 @@ const MOCK_BOWTIE_SUMMARY = {
   period_start: "2026-04-20T00:00:00Z",
   period_end: "2026-05-20T00:00:00Z",
   stages: [
-    { slug: "attraction", label: "Atracción", count: 340, primary_kpi_value: 12.5, primary_kpi_label: "CTR" },
-    { slug: "qualification", label: "Calificación", count: 180, primary_kpi_value: 52.9, primary_kpi_label: "Conv." },
-    { slug: "reservation", label: "Reserva", count: 95, primary_kpi_value: 52.8, primary_kpi_label: "Show" },
-    { slug: "adoption", label: "Adopción", count: 67, primary_kpi_value: 70.5, primary_kpi_label: "Retenc." },
-    { slug: "expansion", label: "Expansión", count: 28, primary_kpi_value: null, primary_kpi_label: null },
+    {
+      slug: "attraction",
+      label: "Atracción",
+      count: 340,
+      primary_kpi_value: 12.5,
+      primary_kpi_label: "CTR",
+    },
+    {
+      slug: "qualification",
+      label: "Calificación",
+      count: 180,
+      primary_kpi_value: 52.9,
+      primary_kpi_label: "Conv.",
+    },
+    {
+      slug: "reservation",
+      label: "Reserva",
+      count: 95,
+      primary_kpi_value: 52.8,
+      primary_kpi_label: "Show",
+    },
+    {
+      slug: "adoption",
+      label: "Adopción",
+      count: 67,
+      primary_kpi_value: 70.5,
+      primary_kpi_label: "Retenc.",
+    },
+    {
+      slug: "expansion",
+      label: "Expansión",
+      count: 28,
+      primary_kpi_value: null,
+      primary_kpi_label: null,
+    },
   ],
   overall_conversion_pct: 8.2,
   overall_roi_x: 3.4,
@@ -64,7 +94,11 @@ const MOCK_LUCAS_RECOMMENDATIONS = {
       recommendation_kind: "increase_budget",
       title: "Aumentar presupuesto Meta Ads en Atracción",
       body: "Lucas detectó que el canal Meta Ads genera un CTR de 12.5% pero el presupuesto diario es bajo. Aumentarlo un 20% incrementaría leads en ~40 por mes.",
-      rationale_json: { canal: "meta_ads", ctr: "12.5%", budget_actual: "ARS 5.000/día" },
+      rationale_json: {
+        canal: "meta_ads",
+        ctr: "12.5%",
+        budget_actual: "ARS 5.000/día",
+      },
       action_payload_json: { increase_pct: 20, channel: "meta_ads" },
       priority: 1,
       confidence_pct: 87,
@@ -87,8 +121,20 @@ const MOCK_STAGE_DETAIL_RESERVATION = {
   period_end: "2026-05-20T00:00:00Z",
   count: 95,
   kpis: [
-    { key: "show_rate", label: "Tasa de show", value: 78.5, unit: "pct", currency: null },
-    { key: "avg_lead_time_h", label: "Lead time promedio", value: 24, unit: "h", currency: null },
+    {
+      key: "show_rate",
+      label: "Tasa de show",
+      value: 78.5,
+      unit: "pct",
+      currency: null,
+    },
+    {
+      key: "avg_lead_time_h",
+      label: "Lead time promedio",
+      value: 24,
+      unit: "h",
+      currency: null,
+    },
   ],
   trend_data: [],
 };
@@ -142,7 +188,8 @@ const MOCK_ATTRIBUTION = {
     adoption: 67,
     value_cents: 205000,
   },
-  top_insight_text: "El canal Agente de ventas genera el 53% de los leads calificados.",
+  top_insight_text:
+    "El canal Agente de ventas genera el 53% de los leads calificados.",
 };
 
 // ---------------------------------------------------------------------------
@@ -212,7 +259,9 @@ async function setupMarketingMocks(page: import("@playwright/test").Page) {
 test.describe("/marketing smoke", () => {
   // ─── Smoke básico: bowtie + tabs visibles ─────────────────────────────────
 
-  test("carga bowtie SVG + 5 tabs de etapas visibles", async ({ authedPage: page }) => {
+  test("carga bowtie SVG + 5 tabs de etapas visibles", async ({
+    authedPage: page,
+  }) => {
     await setupMarketingMocks(page);
 
     const mp = new MarketingPage(page);
@@ -231,55 +280,53 @@ test.describe("/marketing smoke", () => {
 
   // ─── SC-MK-03: Tab change updates URL + re-renders stage content ──────────
 
-  test(
-    "test_tab_change_updates_url_re_renders: cambio de tab actualiza URL y re-renderiza contenido de etapa",
-    async ({ authedPage: page }) => {
-      await setupMarketingMocks(page);
+  test("test_tab_change_updates_url_re_renders: cambio de tab actualiza URL y re-renderiza contenido de etapa", async ({
+    authedPage: page,
+  }) => {
+    await setupMarketingMocks(page);
 
-      const mp = new MarketingPage(page);
-      await mp.goto();
-      await mp.waitForReady();
+    const mp = new MarketingPage(page);
+    await mp.goto();
+    await mp.waitForReady();
 
-      // Hacer clic en tab "Reserva" (slug=reservation)
-      await mp.clickStageTab("reservation");
+    // Hacer clic en tab "Reserva" (slug=reservation)
+    await mp.clickStageTab("reservation");
 
-      // URL debe contener ?tab=reservation (nuqs replace)
-      await expect(page).toHaveURL(/tab=reservation/, { timeout: 10_000 });
+    // URL debe contener ?tab=reservation (nuqs replace)
+    await expect(page).toHaveURL(/tab=reservation/, { timeout: 10_000 });
 
-      // Panel de reserva visible
-      await expect(mp.stagePanel("reservation")).toBeVisible({ timeout: 10_000 });
+    // Panel de reserva visible
+    await expect(mp.stagePanel("reservation")).toBeVisible({ timeout: 10_000 });
 
-      // AttributionMatrix visible (SC-MK-03: matriz inline en etapa reservation)
-      await expect(mp.attributionMatrix).toBeVisible({ timeout: 10_000 });
-    }
-  );
+    // AttributionMatrix visible (SC-MK-03: matriz inline en etapa reservation)
+    await expect(mp.attributionMatrix).toBeVisible({ timeout: 10_000 });
+  });
 
   // ─── SC-MK-01: Lucas approval modal opens + closes (no confirm) ───────────
 
-  test(
-    "test_lucas_approval_modal_opens_closes_no_confirm: modal de aprobación Lucas se abre y cierra sin confirmar",
-    async ({ authedPage: page }) => {
-      await setupMarketingMocks(page);
+  test("test_lucas_approval_modal_opens_closes_no_confirm: modal de aprobación Lucas se abre y cierra sin confirmar", async ({
+    authedPage: page,
+  }) => {
+    await setupMarketingMocks(page);
 
-      const mp = new MarketingPage(page);
-      await mp.goto();
-      await mp.waitForReady();
+    const mp = new MarketingPage(page);
+    await mp.goto();
+    await mp.waitForReady();
 
-      // El panel de atracción (default tab) debe mostrar recomendaciones Lucas
-      // Esperar a que la sección Lucas cargue
-      await expect(mp.lucasCardsSection).toBeVisible({ timeout: 10_000 });
+    // El panel de atracción (default tab) debe mostrar recomendaciones Lucas
+    // Esperar a que la sección Lucas cargue
+    await expect(mp.lucasCardsSection).toBeVisible({ timeout: 10_000 });
 
-      // Hacer clic en el primer ítem Lucas para abrir el modal de detalle
-      await mp.clickFirstLucasCardDetail();
+    // Hacer clic en el primer ítem Lucas para abrir el modal de detalle
+    await mp.clickFirstLucasCardDetail();
 
-      // Modal title visible (detail modal: "¿Confirmas la aprobación?" o el título del rec)
-      await expect(mp.approvalModalTitle).toBeVisible({ timeout: 10_000 });
+    // Modal title visible (detail modal: "¿Confirmas la aprobación?" o el título del rec)
+    await expect(mp.approvalModalTitle).toBeVisible({ timeout: 10_000 });
 
-      // Cerrar modal SIN confirmar (botón "Cancelar" o "Cerrar" o Escape)
-      await mp.closeApprovalModal();
+    // Cerrar modal SIN confirmar (botón "Cancelar" o "Cerrar" o Escape)
+    await mp.closeApprovalModal();
 
-      // Modal NO visible tras cierre
-      await expect(mp.approvalModalTitle).toBeHidden({ timeout: 10_000 });
-    }
-  );
+    // Modal NO visible tras cierre
+    await expect(mp.approvalModalTitle).toBeHidden({ timeout: 10_000 });
+  });
 });

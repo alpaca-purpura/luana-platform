@@ -57,7 +57,11 @@ export async function mockTenantsApi(
   await page.addInitScript(
     ({ tenantId, tenants, storageKey }) => {
       const state = {
-        state: { activeTenant: tenants.find((t: { id: string }) => t.id === tenantId) ?? tenants[0] },
+        state: {
+          activeTenant:
+            tenants.find((t: { id: string }) => t.id === tenantId) ??
+            tenants[0],
+        },
         version: 1,
       };
       localStorage.setItem(storageKey, JSON.stringify(state));

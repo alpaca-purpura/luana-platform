@@ -24,7 +24,9 @@ test.describe("Brand Studio — Centro Mindful Santiago (CL)", () => {
     await expect(page.getByText(/testimonios/i)).toBeVisible();
 
     // Forbidden sections not present
-    await expect(page.getByText(/estrategia|posicionamiento/i)).not.toBeVisible();
+    await expect(
+      page.getByText(/estrategia|posicionamiento/i),
+    ).not.toBeVisible();
 
     expect(consoleErrors).toHaveLength(0);
   });
@@ -75,7 +77,9 @@ test.describe("Brand Studio — Centro Mindful Santiago (CL)", () => {
     await page.goto("/brand-studio/testimonios");
 
     // Testimonial content from mindful fixture
-    await expect(page.getByText(/ps\. fuentes.*ansiedad|ansiedad.*ps\. fuentes/i)).toBeVisible({
+    await expect(
+      page.getByText(/ps\. fuentes.*ansiedad|ansiedad.*ps\. fuentes/i),
+    ).toBeVisible({
       timeout: 10_000,
     });
   });

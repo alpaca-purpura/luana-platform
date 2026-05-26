@@ -38,26 +38,26 @@ export interface ContactSidebarProps {
 /**
  * Compact contact info panel. PHI fields are masked via PiiMaskedSpan.
  */
-export function ContactSidebar({ contact, children, className }: ContactSidebarProps) {
+export function ContactSidebar({
+  contact,
+  children,
+  className,
+}: ContactSidebarProps) {
   return (
     <section
       className={cn(
         "vt-bg-surface vt-border",
         "border rounded-[var(--radius-lg)] p-5 shadow-sm",
-        className
+        className,
       )}
       aria-label="Información de contacto del paciente"
     >
-      <h2 className="text-sm font-semibold vt-text mb-4">
-        Contacto
-      </h2>
+      <h2 className="text-sm font-semibold vt-text mb-4">Contacto</h2>
 
       <dl className="space-y-3">
         {contact.name && (
           <div className="flex flex-col gap-0.5">
-            <dt className="text-xs vt-text-faint">
-              Nombre
-            </dt>
+            <dt className="text-xs vt-text-faint">Nombre</dt>
             <dd>
               <PiiMaskedSpan value={contact.name} fieldType="name" />
             </dd>
@@ -66,9 +66,7 @@ export function ContactSidebar({ contact, children, className }: ContactSidebarP
 
         {contact.phone && (
           <div className="flex flex-col gap-0.5">
-            <dt className="text-xs vt-text-faint">
-              Teléfono
-            </dt>
+            <dt className="text-xs vt-text-faint">Teléfono</dt>
             <dd>
               <PiiMaskedSpan value={contact.phone} fieldType="phone" />
             </dd>
@@ -77,9 +75,7 @@ export function ContactSidebar({ contact, children, className }: ContactSidebarP
 
         {contact.email && (
           <div className="flex flex-col gap-0.5">
-            <dt className="text-xs vt-text-faint">
-              Correo
-            </dt>
+            <dt className="text-xs vt-text-faint">Correo</dt>
             <dd>
               <PiiMaskedSpan value={contact.email} fieldType="email" />
             </dd>
@@ -88,14 +84,12 @@ export function ContactSidebar({ contact, children, className }: ContactSidebarP
 
         {contact.statusTag && (
           <div className="flex flex-col gap-0.5">
-            <dt className="text-xs vt-text-faint">
-              Estado
-            </dt>
+            <dt className="text-xs vt-text-faint">Estado</dt>
             <dd>
               <span
                 className={cn(
                   "inline-flex px-2 py-0.5 text-xs font-medium rounded-[var(--radius-pill)]",
-                  "vt-bg-muted vt-text-muted vt-border border"
+                  "vt-bg-muted vt-text-muted vt-border border",
                 )}
               >
                 {contact.statusTag}
@@ -106,9 +100,7 @@ export function ContactSidebar({ contact, children, className }: ContactSidebarP
       </dl>
 
       {children && (
-        <div className="mt-4 pt-4 border-t vt-border-soft">
-          {children}
-        </div>
+        <div className="mt-4 pt-4 border-t vt-border-soft">{children}</div>
       )}
     </section>
   );

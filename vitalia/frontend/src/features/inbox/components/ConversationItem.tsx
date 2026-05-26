@@ -48,7 +48,11 @@ const STAGE_LABELS: Record<LeadStage, string> = {
  * Per master-data.md: uses Intl.DateTimeFormat with tenant timezone+locale for fallback.
  * Accepts tenant timezone + locale to keep pure function (no hook dependency).
  */
-function formatRelativeTime(iso: string, timezone: string, locale: string): string {
+function formatRelativeTime(
+  iso: string,
+  timezone: string,
+  locale: string,
+): string {
   const date = new Date(iso);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -123,7 +127,7 @@ export const ConversationItem = memo(function ConversationItem({
         "hover:vt-bg-muted focus-visible:outline focus-visible:outline-2",
         "focus-visible:outline-inset focus-visible:vt-outline-primary",
         isSelected && "vt-bg-primary/5 border-l-2 vt-border-primary",
-        className
+        className,
       )}
     >
       {/* Row 1: Name + time + badges */}
@@ -196,7 +200,7 @@ export const ConversationItem = memo(function ConversationItem({
             data-testid="stage-chip"
             className={cn(
               "inline-flex items-center rounded-full px-2 py-0.5",
-              "text-[10px] font-medium vt-bg-muted vt-text-muted"
+              "text-[10px] font-medium vt-bg-muted vt-text-muted",
             )}
           >
             {STAGE_LABELS[stage_decision]}

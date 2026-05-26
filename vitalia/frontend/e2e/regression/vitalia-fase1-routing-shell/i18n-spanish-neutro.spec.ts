@@ -22,7 +22,11 @@
  */
 
 import { expect } from "@playwright/test";
-import { test, mockTenants, mockTenantFetchFailure } from "../../fixtures/routing-shell.fixture";
+import {
+  test,
+  mockTenants,
+  mockTenantFetchFailure,
+} from "../../fixtures/routing-shell.fixture";
 import { ShellPage } from "./poms/shell-page.pom";
 
 const DESKTOP_VIEWPORT = { width: 1280, height: 720 };
@@ -77,10 +81,16 @@ const REGIONAL_SLANG_PATTERNS: RegExp[] = [
  */
 function assertNoVoseoOrSlang(text: string, context: string): void {
   for (const pattern of VOSEO_PATTERNS) {
-    expect(text, `${context}: found Rioplatense pattern ${String(pattern)}`).not.toMatch(pattern);
+    expect(
+      text,
+      `${context}: found Rioplatense pattern ${String(pattern)}`,
+    ).not.toMatch(pattern);
   }
   for (const pattern of REGIONAL_SLANG_PATTERNS) {
-    expect(text, `${context}: found regional slang ${String(pattern)}`).not.toMatch(pattern);
+    expect(
+      text,
+      `${context}: found regional slang ${String(pattern)}`,
+    ).not.toMatch(pattern);
   }
 }
 
@@ -116,7 +126,9 @@ test.describe("SC-7 — i18n · microcopy Spanish neutro LatAm verificado", () =
     await shellPage.goto(`/${TENANT_ID}`, { waitUntil: "domcontentloaded" });
 
     const pom = new ShellPage(shellPage);
-    await expect(pom.getNetworkErrorFallback()).toBeVisible({ timeout: 15_000 });
+    await expect(pom.getNetworkErrorFallback()).toBeVisible({
+      timeout: 15_000,
+    });
 
     const bodyText = (await shellPage.locator("body").textContent()) ?? "";
     assertNoVoseoOrSlang(bodyText, "network-error-fallback");
@@ -166,7 +178,9 @@ test.describe("SC-7 — i18n · microcopy Spanish neutro LatAm verificado", () =
     await shellPage.goto(`/${TENANT_ID}`, { waitUntil: "domcontentloaded" });
 
     const pom = new ShellPage(shellPage);
-    await expect(pom.getNetworkErrorFallback()).toBeVisible({ timeout: 15_000 });
+    await expect(pom.getNetworkErrorFallback()).toBeVisible({
+      timeout: 15_000,
+    });
 
     const retryText = await shellPage
       .locator('[data-testid="network-error-retry"]')

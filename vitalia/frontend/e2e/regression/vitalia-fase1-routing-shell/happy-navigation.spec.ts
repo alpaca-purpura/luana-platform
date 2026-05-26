@@ -101,7 +101,9 @@ test.describe("SC-1 — happy · login + default landing + navegación completa"
 
     // Navigate to Adrián via Ribbon
     await pom.clickRibbonTab("adrian");
-    await shellPage.waitForURL(`**/${TENANT_ID}/adrian/**`, { timeout: 10_000 });
+    await shellPage.waitForURL(`**/${TENANT_ID}/adrian/**`, {
+      timeout: 10_000,
+    });
     await pom.waitForRibbonActive("adrian");
 
     // Navigate to Lisa via Ribbon

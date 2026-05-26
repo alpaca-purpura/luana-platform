@@ -11,7 +11,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
 import { vitaliaFetch } from "@/lib/fetch-client";
-import type { MarkExternalRequest, MarkExternalResponse } from "../types/re-engagement";
+import type {
+  MarkExternalRequest,
+  MarkExternalResponse,
+} from "../types/re-engagement";
 
 interface MarkExternalArgs {
   patientId: string;
@@ -37,7 +40,7 @@ export function useMarkExternal() {
           tenantId: orgId,
           method: "POST",
           body: JSON.stringify(payload),
-        }
+        },
       );
     },
     onSuccess: () => {

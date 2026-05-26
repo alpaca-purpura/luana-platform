@@ -37,15 +37,15 @@ function SlotPill({ slot }: { slot: WizardSlot }) {
         "inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap transition-colors duration-200",
         isConfirmed && "bg-green-100 text-green-700",
         isPending && "bg-cyan-50 text-cyan-600",
-        isOptional && "bg-gray-100 text-gray-500"
+        isOptional && "bg-gray-100 text-gray-500",
       )}
       role="status"
       aria-label={`${slot.label}: ${
         isConfirmed
           ? WIZARD_COPY.slotTracker.statusConfirmed
           : isPending
-          ? WIZARD_COPY.slotTracker.statusPending
-          : WIZARD_COPY.slotTracker.statusOptional
+            ? WIZARD_COPY.slotTracker.statusPending
+            : WIZARD_COPY.slotTracker.statusOptional
       }`}
     >
       <span aria-hidden="true">
@@ -63,17 +63,18 @@ SlotPill.displayName = "SlotPill";
 /**
  * Sticky slot tracker — shows slot pills across the top of the chat panel.
  */
-export function SlotTrackerSticky({ slots, className }: SlotTrackerStickyProps) {
-  const visibleSlots = slots.filter(
-    (s) => s.status !== "rejected"
-  );
+export function SlotTrackerSticky({
+  slots,
+  className,
+}: SlotTrackerStickyProps) {
+  const visibleSlots = slots.filter((s) => s.status !== "rejected");
 
   return (
     <div
       className={cn(
         "flex items-center gap-2 overflow-x-auto px-4 py-3 border-b",
         "bg-gray-50 scrollbar-none",
-        className
+        className,
       )}
       role="region"
       aria-label={WIZARD_COPY.a11y.slotTrackerLabel}

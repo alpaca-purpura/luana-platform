@@ -21,7 +21,11 @@ export type LucasApprovalModalProps = {
   userRole?: string;
 };
 
-export function LucasApprovalModal({ rec, onClose, userRole }: LucasApprovalModalProps) {
+export function LucasApprovalModal({
+  rec,
+  onClose,
+  userRole,
+}: LucasApprovalModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const [phase, setPhase] = useState<"confirm" | "approved">("confirm");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -94,7 +98,9 @@ export function LucasApprovalModal({ rec, onClose, userRole }: LucasApprovalModa
               <div className="p-6">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="flex-shrink-0 w-10 h-10 rounded-full vt-bg-tab-active flex items-center justify-center">
-                    <span className="text-sm font-bold vt-text-cian-bold">LU</span>
+                    <span className="text-sm font-bold vt-text-cian-bold">
+                      LU
+                    </span>
                   </div>
                   <h2
                     id="approval-modal-title"
@@ -110,13 +116,18 @@ export function LucasApprovalModal({ rec, onClose, userRole }: LucasApprovalModa
 
                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
                   <p className="text-xs text-amber-700 font-medium">
-                    Esta acción es reversible durante 5 minutos después de aprobar.
+                    Esta acción es reversible durante 5 minutos después de
+                    aprobar.
                   </p>
                 </div>
 
                 <div className="rounded-lg bg-gray-50 border vt-border p-3 mb-4">
-                  <p className="text-xs text-gray-500 font-medium mb-1">Recomendación</p>
-                  <p className="text-sm font-semibold vt-text-azul-marino-bold">{rec.title}</p>
+                  <p className="text-xs text-gray-500 font-medium mb-1">
+                    Recomendación
+                  </p>
+                  <p className="text-sm font-semibold vt-text-azul-marino-bold">
+                    {rec.title}
+                  </p>
                 </div>
 
                 {errorMsg && (
@@ -155,7 +166,9 @@ export function LucasApprovalModal({ rec, onClose, userRole }: LucasApprovalModa
                       : "bg-gray-200 text-gray-400 cursor-not-allowed",
                   )}
                 >
-                  {approve.isPending ? "Aprobando..." : MARKETING_COPY.recommendations.approvalConfirmButton}
+                  {approve.isPending
+                    ? "Aprobando..."
+                    : MARKETING_COPY.recommendations.approvalConfirmButton}
                 </button>
               </div>
             </>
@@ -191,7 +204,9 @@ export function LucasApprovalModal({ rec, onClose, userRole }: LucasApprovalModa
                 <p className="text-xs text-gray-400 mt-2">
                   {MARKETING_COPY.recommendations.undoTimerLabel} 5 minutos
                 </p>
-                <p className="text-xs text-gray-400 mt-4">Cerrando automáticamente...</p>
+                <p className="text-xs text-gray-400 mt-4">
+                  Cerrando automáticamente...
+                </p>
               </div>
             </>
           )}

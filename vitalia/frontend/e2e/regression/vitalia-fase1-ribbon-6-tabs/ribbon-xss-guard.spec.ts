@@ -58,13 +58,15 @@ test.describe("SC-6 — XSS en URL → extractAgentFromPath null + sin ejecució
     await pom.gotoRaw(`/${TENANT_ID}/${xssPayload}/baz`);
 
     // Wait for either ribbon to mount OR page to settle (XSS may cause redirect to 404)
-    await shellPage.waitForSelector('[data-testid="ribbon"]', {
-      state: "attached",
-      timeout: 15_000,
-    }).catch(() => {
-      // Ribbon may not render if the URL causes a 404 page — this is acceptable:
-      // the absence of ribbon does NOT mean XSS succeeded. We verify no dialog.
-    });
+    await shellPage
+      .waitForSelector('[data-testid="ribbon"]', {
+        state: "attached",
+        timeout: 15_000,
+      })
+      .catch(() => {
+        // Ribbon may not render if the URL causes a 404 page — this is acceptable:
+        // the absence of ribbon does NOT mean XSS succeeded. We verify no dialog.
+      });
 
     // Give time for any malicious script to execute
     await shellPage.waitForTimeout(500);
@@ -73,7 +75,10 @@ test.describe("SC-6 — XSS en URL → extractAgentFromPath null + sin ejecució
     expect(dialogTriggered).toBe(false);
 
     // If ribbon is present, verify no tabs are active (idle state)
-    const ribbonVisible = await pom.getRibbon().isVisible().catch(() => false);
+    const ribbonVisible = await pom
+      .getRibbon()
+      .isVisible()
+      .catch(() => false);
     if (ribbonVisible) {
       const activeSlug = await pom.getActiveSlug();
       expect(activeSlug).toBeNull();
@@ -106,12 +111,14 @@ test.describe("SC-6 — XSS en URL → extractAgentFromPath null + sin ejecució
     await pom.gotoRaw(`/${TENANT_ID}/${jsPayload}/baz`);
 
     // Wait for ribbon or page settle
-    await shellPage.waitForSelector('[data-testid="ribbon"]', {
-      state: "attached",
-      timeout: 15_000,
-    }).catch(() => {
-      // Ribbon may not render if URL causes 404 — acceptable: no dialog = XSS guard upheld
-    });
+    await shellPage
+      .waitForSelector('[data-testid="ribbon"]', {
+        state: "attached",
+        timeout: 15_000,
+      })
+      .catch(() => {
+        // Ribbon may not render if URL causes 404 — acceptable: no dialog = XSS guard upheld
+      });
 
     await shellPage.waitForTimeout(500);
 
@@ -119,7 +126,10 @@ test.describe("SC-6 — XSS en URL → extractAgentFromPath null + sin ejecució
     expect(dialogTriggered).toBe(false);
 
     // If ribbon rendered, tabs should all be inactive
-    const ribbonVisible = await pom.getRibbon().isVisible().catch(() => false);
+    const ribbonVisible = await pom
+      .getRibbon()
+      .isVisible()
+      .catch(() => false);
     if (ribbonVisible) {
       const activeSlug = await pom.getActiveSlug();
       expect(activeSlug).toBeNull();
@@ -141,12 +151,14 @@ test.describe("SC-6 — XSS en URL → extractAgentFromPath null + sin ejecució
     await pom.gotoRaw(`/${TENANT_ID}/%3Cscript%3Ealert(1)%3C%2Fscript%3E/baz`);
 
     // Wait for ribbon or page settle
-    await shellPage.waitForSelector('[data-testid="ribbon"]', {
-      state: "attached",
-      timeout: 15_000,
-    }).catch(() => {
-      // Ribbon may not render if URL causes 404 — acceptable: no dialog = XSS guard upheld
-    });
+    await shellPage
+      .waitForSelector('[data-testid="ribbon"]', {
+        state: "attached",
+        timeout: 15_000,
+      })
+      .catch(() => {
+        // Ribbon may not render if URL causes 404 — acceptable: no dialog = XSS guard upheld
+      });
 
     await shellPage.waitForTimeout(500);
 
@@ -154,7 +166,10 @@ test.describe("SC-6 — XSS en URL → extractAgentFromPath null + sin ejecució
     expect(dialogTriggered).toBe(false);
 
     // If ribbon rendered, all tabs should be inactive (XSS payload is not a valid agent slug)
-    const ribbonVisible = await pom.getRibbon().isVisible().catch(() => false);
+    const ribbonVisible = await pom
+      .getRibbon()
+      .isVisible()
+      .catch(() => false);
     if (ribbonVisible) {
       const activeSlug = await pom.getActiveSlug();
       expect(activeSlug).toBeNull();

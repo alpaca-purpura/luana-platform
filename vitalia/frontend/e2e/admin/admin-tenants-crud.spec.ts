@@ -33,7 +33,9 @@ test.describe("SC-02 — Admin crea tenant nuevo via TenantRepository", () => {
       .getByText(/Tenants/i)
       .first()
       .click();
-    await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => {});
+    await page
+      .waitForLoadState("networkidle", { timeout: 10_000 })
+      .catch(() => {});
 
     // Ir al tab "Crear nuevo"
     const createTab = page.getByRole("tab", { name: /crear nuevo/i });
@@ -41,16 +43,24 @@ test.describe("SC-02 — Admin crea tenant nuevo via TenantRepository", () => {
     await createTab.click();
 
     // Rellenar formulario de creación
-    await page.getByLabel(/nombre/i).first().fill(TENANT_NAME);
+    await page
+      .getByLabel(/nombre/i)
+      .first()
+      .fill(TENANT_NAME);
     await page.getByLabel(/slug/i).first().fill(TENANT_SLUG);
     // selectbox País — primer country disponible
-    const countrySelect = page.getByLabel(/país/i).or(page.locator('[aria-label*="País"]'));
+    const countrySelect = page
+      .getByLabel(/país/i)
+      .or(page.locator('[aria-label*="País"]'));
     if (await countrySelect.isVisible({ timeout: 3_000 }).catch(() => false)) {
       await countrySelect.first().selectOption("AR");
     }
 
     // Enviar formulario
-    await page.getByRole("button", { name: /crear tenant/i }).first().click();
+    await page
+      .getByRole("button", { name: /crear tenant/i })
+      .first()
+      .click();
 
     // Verificar mensaje de éxito en UI
     await expect(
@@ -84,7 +94,9 @@ test.describe("SC-03 — Admin lista tenants via TenantRepository", () => {
       .getByText(/Tenants/i)
       .first()
       .click();
-    await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => {});
+    await page
+      .waitForLoadState("networkidle", { timeout: 10_000 })
+      .catch(() => {});
 
     // Debe mostrar tab "Listado"
     const listTab = page.getByRole("tab", { name: /listado/i });
@@ -93,10 +105,20 @@ test.describe("SC-03 — Admin lista tenants via TenantRepository", () => {
 
     // Dataframe o tabla con columnas esperadas
     // Streamlit renderiza dataframes como tablas o elementos stDataFrame
-    const pageContent = page.locator("main, [data-testid='stAppViewContainer']");
+    const pageContent = page.locator(
+      "main, [data-testid='stAppViewContainer']",
+    );
     // Verificar que alguna columna es visible (Nombre, Slug, Estado son esperados)
-    const hasNombreCol = await pageContent.getByText(/Nombre/i).first().isVisible({ timeout: 8_000 }).catch(() => false);
-    const hasSlugCol = await pageContent.getByText(/Slug/i).first().isVisible({ timeout: 3_000 }).catch(() => false);
+    const hasNombreCol = await pageContent
+      .getByText(/Nombre/i)
+      .first()
+      .isVisible({ timeout: 8_000 })
+      .catch(() => false);
+    const hasSlugCol = await pageContent
+      .getByText(/Slug/i)
+      .first()
+      .isVisible({ timeout: 3_000 })
+      .catch(() => false);
     expect(hasNombreCol || hasSlugCol).toBeTruthy();
   });
 
@@ -108,12 +130,20 @@ test.describe("SC-03 — Admin lista tenants via TenantRepository", () => {
       .getByText(/Tenants/i)
       .first()
       .click();
-    await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => {});
+    await page
+      .waitForLoadState("networkidle", { timeout: 10_000 })
+      .catch(() => {});
 
     // HIPAA-lite: listado de tenants/usuarios admin NO debe exponer PHI
-    await expect(page.getByText(/diagnóstico/i)).toHaveCount(0, { timeout: 3_000 });
-    await expect(page.getByText(/tratamiento/i)).toHaveCount(0, { timeout: 3_000 });
-    await expect(page.getByText(/medicaci[oó]n/i)).toHaveCount(0, { timeout: 3_000 });
+    await expect(page.getByText(/diagnóstico/i)).toHaveCount(0, {
+      timeout: 3_000,
+    });
+    await expect(page.getByText(/tratamiento/i)).toHaveCount(0, {
+      timeout: 3_000,
+    });
+    await expect(page.getByText(/medicaci[oó]n/i)).toHaveCount(0, {
+      timeout: 3_000,
+    });
   });
 });
 
@@ -127,7 +157,10 @@ test.describe("SC-07 — Admin suspende tenant toggle is_active", () => {
     // Primero necesitamos al menos un tenant en DB
     const state = await getDbState(request);
     if (state.tenants === 0) {
-      test.skip(true, "No hay tenants en DB para suspender — ejecutar SC-02 primero");
+      test.skip(
+        true,
+        "No hay tenants en DB para suspender — ejecutar SC-02 primero",
+      );
       return;
     }
 
@@ -139,7 +172,9 @@ test.describe("SC-07 — Admin suspende tenant toggle is_active", () => {
       .getByText(/Tenants/i)
       .first()
       .click();
-    await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => {});
+    await page
+      .waitForLoadState("networkidle", { timeout: 10_000 })
+      .catch(() => {});
 
     const listTab = page.getByRole("tab", { name: /listado/i });
     if (await listTab.isVisible({ timeout: 5_000 }).catch(() => false)) {
@@ -154,7 +189,9 @@ test.describe("SC-07 — Admin suspende tenant toggle is_active", () => {
     await toggleBtn.first().click();
 
     // Esperar respuesta (Streamlit re-render)
-    await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => {});
+    await page
+      .waitForLoadState("networkidle", { timeout: 10_000 })
+      .catch(() => {});
 
     // Verificar que se registró audit log (tenant.suspend o tenant.activate)
     const entries = await getAuditLog(request, {

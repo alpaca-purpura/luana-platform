@@ -12,9 +12,18 @@ import React from "react";
 // Mock nuqs
 vi.mock("nuqs", () => ({
   useQueryState: (_key: string, _parser: unknown) => [null, vi.fn()],
-  parseAsStringEnum: () => ({ withDefault: (d: unknown) => ({ withOptions: () => d }), withOptions: () => ({ withDefault: (d: unknown) => d }) }),
-  parseAsString: { withDefault: (d: unknown) => ({ withOptions: () => d }), withOptions: () => ({ withDefault: (d: unknown) => d }) },
-  parseAsBoolean: { withDefault: (d: unknown) => ({ withOptions: () => d }), withOptions: () => ({ withDefault: (d: unknown) => d }) },
+  parseAsStringEnum: () => ({
+    withDefault: (d: unknown) => ({ withOptions: () => d }),
+    withOptions: () => ({ withDefault: (d: unknown) => d }),
+  }),
+  parseAsString: {
+    withDefault: (d: unknown) => ({ withOptions: () => d }),
+    withOptions: () => ({ withDefault: (d: unknown) => d }),
+  },
+  parseAsBoolean: {
+    withDefault: (d: unknown) => ({ withOptions: () => d }),
+    withOptions: () => ({ withDefault: (d: unknown) => d }),
+  },
 }));
 
 // Mock Clerk
@@ -42,7 +51,9 @@ vi.mock("@tanstack/react-query", () => ({
   })),
   useQueryClient: () => ({ invalidateQueries: vi.fn() }),
   QueryClient: vi.fn(),
-  QueryClientProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  QueryClientProvider: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
 }));
 
 // Mock marketing store to verify setPendingUndoTimer is called
@@ -102,7 +113,8 @@ describe("LucasApprovalModal", () => {
   });
 
   it("test_approve_invokes_mutation_with_idempotency_key — approve button calls mutation (SC-MK-01)", async () => {
-    const { LucasApprovalModal } = await import("../components/LucasApprovalModal");
+    const { LucasApprovalModal } =
+      await import("../components/LucasApprovalModal");
     const onClose = vi.fn();
 
     render(<LucasApprovalModal rec={mockRec as never} onClose={onClose} />);
@@ -122,7 +134,8 @@ describe("LucasApprovalModal", () => {
   });
 
   it("test_post_approve_shows_undo_chip_5min — after approval, stores undo timer in store (SC-MK-01)", async () => {
-    const { LucasApprovalModal } = await import("../components/LucasApprovalModal");
+    const { LucasApprovalModal } =
+      await import("../components/LucasApprovalModal");
     const onClose = vi.fn();
 
     render(<LucasApprovalModal rec={mockRec as never} onClose={onClose} />);
@@ -140,7 +153,8 @@ describe("LucasApprovalModal", () => {
   });
 
   it("test_cancel_closes_modal — cancel button triggers onClose", async () => {
-    const { LucasApprovalModal } = await import("../components/LucasApprovalModal");
+    const { LucasApprovalModal } =
+      await import("../components/LucasApprovalModal");
     const onClose = vi.fn();
 
     render(<LucasApprovalModal rec={mockRec as never} onClose={onClose} />);
@@ -152,7 +166,8 @@ describe("LucasApprovalModal", () => {
   });
 
   it("test_esc_key_closes_modal — ESC key triggers onClose", async () => {
-    const { LucasApprovalModal } = await import("../components/LucasApprovalModal");
+    const { LucasApprovalModal } =
+      await import("../components/LucasApprovalModal");
     const onClose = vi.fn();
 
     render(<LucasApprovalModal rec={mockRec as never} onClose={onClose} />);
@@ -163,19 +178,22 @@ describe("LucasApprovalModal", () => {
   });
 
   it("test_role_recepcion_disables_approve_button_with_tooltip — recepcion role sees disabled button (SC-MK-04)", async () => {
-    const { LucasApprovalModal } = await import("../components/LucasApprovalModal");
+    const { LucasApprovalModal } =
+      await import("../components/LucasApprovalModal");
     const onClose = vi.fn();
 
     render(
-      <LucasApprovalModal rec={mockRec as never} onClose={onClose} userRole="recepcion" />,
+      <LucasApprovalModal
+        rec={mockRec as never}
+        onClose={onClose}
+        userRole="recepcion"
+      />,
     );
 
     const confirmBtn = screen.getByRole("button", { name: /sí, aprobar/i });
     expect(confirmBtn).toBeDisabled();
 
     // Tooltip text should be present (may be hidden until hover but accessible)
-    expect(
-      screen.getByText(/no tienes permiso/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/no tienes permiso/i)).toBeInTheDocument();
   });
 });

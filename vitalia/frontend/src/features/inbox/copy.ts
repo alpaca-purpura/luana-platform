@@ -109,8 +109,7 @@ export const INBOX_COPY = {
   /** Composer area */
   composer: {
     placeholder: {
-      adrianDecide:
-        "Escribe algo si quieres tomar la conversación…",
+      adrianDecide: "Escribe algo si quieres tomar la conversación…",
       adrianConsulta:
         "Adrián te sugiere esta respuesta… (puedes editarla antes de enviar)",
       yoEscribo: "Escribe tu mensaje a {patient_name}…",
@@ -239,10 +238,12 @@ export const INBOX_COPY = {
 
   /** Error states */
   errors: {
-    loadConversations: "No se pudieron cargar las conversaciones. Intenta de nuevo.",
+    loadConversations:
+      "No se pudieron cargar las conversaciones. Intenta de nuevo.",
     loadThread: "No se pudo cargar la conversación. Intenta de nuevo.",
     sendMessage: "No se pudo enviar el mensaje. Intenta de nuevo.",
-    sendConflict: "La conversación fue actualizada. Recarga para ver los cambios.",
+    sendConflict:
+      "La conversación fue actualizada. Recarga para ver los cambios.",
     revertFailed: "No se pudo revertir en el canal. El mensaje quedó marcado.",
     generic: "Ocurrió un error inesperado. Intenta de nuevo.",
     retry: "Reintentar",

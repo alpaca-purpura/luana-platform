@@ -19,7 +19,7 @@ test.describe("Booking — Prepago completo Centro Mindful (CL)", () => {
 
     // Slots visible
     await expect(
-      page.getByText(/horarios disponibles|selecciona tu cita/i)
+      page.getByText(/horarios disponibles|selecciona tu cita/i),
     ).toBeVisible({ timeout: 10_000 });
 
     // Only 1 doctor (solo_doctor plan)
@@ -38,7 +38,9 @@ test.describe("Booking — Prepago completo Centro Mindful (CL)", () => {
 
     // Full prepay: $80 USD (deposit_percent=100 per fixture)
     await expect(
-      page.getByText(/\$80|80\.00|usd 80/i).or(page.getByText(/pago completo/i))
+      page
+        .getByText(/\$80|80\.00|usd 80/i)
+        .or(page.getByText(/pago completo/i)),
     ).toBeVisible({ timeout: 10_000 });
   });
 
@@ -76,7 +78,7 @@ test.describe("Booking — Prepago completo Centro Mindful (CL)", () => {
 
         // Mock returns pending_payment status
         await expect(
-          page.getByText(/pendiente de pago|pago pendiente/i)
+          page.getByText(/pendiente de pago|pago pendiente/i),
         ).toBeVisible({ timeout: 10_000 });
       }
     }

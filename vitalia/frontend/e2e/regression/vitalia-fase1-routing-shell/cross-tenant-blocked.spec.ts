@@ -25,9 +25,11 @@
  */
 
 import { expect } from "@playwright/test";
-import { test, mockCrossTenantList } from "../../fixtures/routing-shell.fixture";
+import {
+  test,
+  mockCrossTenantList,
+} from "../../fixtures/routing-shell.fixture";
 import { ShellPage } from "./poms/shell-page.pom";
-
 
 const DESKTOP_VIEWPORT = { width: 1280, height: 720 };
 const TENANT_A = process.env["E2E_TENANT_ID"] ?? "vitalia-test-tenant";
@@ -40,7 +42,10 @@ test.describe("SC-4 — adversarial · cross-tenant access blocked", () => {
     shellPage,
   }) => {
     // Mock: user's tenant list = only TENANT_A (not TENANT_B)
-    await mockCrossTenantList(shellPage, { id: TENANT_A, name: "Clínica Test" });
+    await mockCrossTenantList(shellPage, {
+      id: TENANT_A,
+      name: "Clínica Test",
+    });
 
     // Attempt to access TENANT_B (user does not belong there)
     await shellPage.goto(`/${TENANT_B}/valeria/agenda`);
@@ -57,7 +62,10 @@ test.describe("SC-4 — adversarial · cross-tenant access blocked", () => {
   test("SC-4-2: no clinic-B chrome rendered after redirect", async ({
     shellPage,
   }) => {
-    await mockCrossTenantList(shellPage, { id: TENANT_A, name: "Clínica Test" });
+    await mockCrossTenantList(shellPage, {
+      id: TENANT_A,
+      name: "Clínica Test",
+    });
 
     const pom = new ShellPage(shellPage);
 

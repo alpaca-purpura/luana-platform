@@ -17,7 +17,9 @@ test.describe("Compliance Smoke — PII Detection", () => {
     await page.goto("/medical-compliance");
 
     // pii_detected in breakdown
-    await expect(page.getByText(/pii_detected/i)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/pii_detected/i)).toBeVisible({
+      timeout: 10_000,
+    });
 
     // Count = 3 for Aurora
     await expect(page.getByText(/pii_detected.*3|3.*pii/i)).toBeVisible({
@@ -33,9 +35,11 @@ test.describe("Compliance Smoke — PII Detection", () => {
     await page.goto("/medical-compliance");
 
     // From mock: evt-2 pii_detected severity=warning
-    await expect(page.getByText(/pii_detected/i)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/pii_detected/i)).toBeVisible({
+      timeout: 10_000,
+    });
     await expect(
-      page.getByText(/warning|advertencia|media/i).first()
+      page.getByText(/warning|advertencia|media/i).first(),
     ).toBeVisible({ timeout: 10_000 });
   });
 
@@ -48,12 +52,17 @@ test.describe("Compliance Smoke — PII Detection", () => {
         const body = await route.request().postDataJSON();
         // Check if description contains PII-like content
         const desc = body?.description ?? "";
-        if (desc.includes("DNI") || desc.includes("Pérez") || desc.includes("Juan")) {
+        if (
+          desc.includes("DNI") ||
+          desc.includes("Pérez") ||
+          desc.includes("Juan")
+        ) {
           await route.fulfill({
             status: 422,
             contentType: "application/json",
             body: JSON.stringify({
-              detail: "La descripción contiene datos personales. Eliminá nombres, DNI, condiciones médicas específicas.",
+              detail:
+                "La descripción contiene datos personales. Eliminá nombres, DNI, condiciones médicas específicas.",
               error_code: "PII_DETECTED",
             }),
           });
@@ -73,13 +82,15 @@ test.describe("Compliance Smoke — PII Detection", () => {
       await descField.fill("Tratamiento para Juan Pérez DNI 12345678");
 
       // Submit
-      const submitBtn = page.getByRole("button", { name: /publicar|siguiente/i });
+      const submitBtn = page.getByRole("button", {
+        name: /publicar|siguiente/i,
+      });
       if (await submitBtn.isVisible()) {
         await submitBtn.click();
 
         // PII error shown per spec §3.3.D
         await expect(
-          page.getByText(/datos personales|pii|eliminá nombres/i)
+          page.getByText(/datos personales|pii|eliminá nombres/i),
         ).toBeVisible({ timeout: 10_000 });
       }
     }

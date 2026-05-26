@@ -38,12 +38,48 @@ const fewItems: ActivityItem[] = [
 ];
 
 const manyItems: ActivityItem[] = [
-  { id: "m1", type: "agent", agentRole: "valeria", action: "envió recordatorio de cita", timestamp: "hace 2 min" },
-  { id: "m2", type: "agent", agentRole: "lucas", action: "generó recomendación de etapa", timestamp: "hace 8 min" },
-  { id: "m3", type: "user", userName: "Dra. Pérez", action: "aprobó tratamiento", timestamp: "hace 22 min" },
-  { id: "m4", type: "agent", agentRole: "adrian", action: "procesó pago del depósito", timestamp: "hace 35 min" },
-  { id: "m5", type: "user", userName: "Recep. Ana", action: "registró nueva cita", timestamp: "hace 1 h" },
-  { id: "m6", type: "agent", agentRole: "valeria", action: "actualizó el perfil del contacto", timestamp: "hace 2 h" },
+  {
+    id: "m1",
+    type: "agent",
+    agentRole: "valeria",
+    action: "envió recordatorio de cita",
+    timestamp: "hace 2 min",
+  },
+  {
+    id: "m2",
+    type: "agent",
+    agentRole: "lucas",
+    action: "generó recomendación de etapa",
+    timestamp: "hace 8 min",
+  },
+  {
+    id: "m3",
+    type: "user",
+    userName: "Dra. Pérez",
+    action: "aprobó tratamiento",
+    timestamp: "hace 22 min",
+  },
+  {
+    id: "m4",
+    type: "agent",
+    agentRole: "adrian",
+    action: "procesó pago del depósito",
+    timestamp: "hace 35 min",
+  },
+  {
+    id: "m5",
+    type: "user",
+    userName: "Recep. Ana",
+    action: "registró nueva cita",
+    timestamp: "hace 1 h",
+  },
+  {
+    id: "m6",
+    type: "agent",
+    agentRole: "valeria",
+    action: "actualizó el perfil del contacto",
+    timestamp: "hace 2 h",
+  },
 ];
 
 /** Empty state */

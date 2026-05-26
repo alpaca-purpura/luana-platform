@@ -35,7 +35,9 @@ export function MarketingLayout({ className }: MarketingLayoutProps) {
   const [activeTab, setActiveTab] = useQueryState("tab", marketingParsers.tab);
   const [period] = useQueryState("period", marketingParsers.period);
 
-  const { data, isLoading, isError } = useBowtieSummary({ period: period ?? "30d" });
+  const { data, isLoading, isError } = useBowtieSummary({
+    period: period ?? "30d",
+  });
 
   const stages = data?.stages ?? [];
   const lastSyncAt = data?.lastSyncAt ?? null;
@@ -51,17 +53,11 @@ export function MarketingLayout({ className }: MarketingLayoutProps) {
         className="sticky top-0 z-10 vt-bg-surface border-b vt-border px-4 py-4"
       >
         {isError ? (
-          <p
-            className="text-xs vt-text-danger text-center py-4"
-            role="alert"
-          >
+          <p className="text-xs vt-text-danger text-center py-4" role="alert">
             {MARKETING_COPY.bowtie.errorMessage}
           </p>
         ) : (
-          <MarketingBowtieSVG
-            stages={stages}
-            isLoading={isLoading}
-          />
+          <MarketingBowtieSVG stages={stages} isLoading={isLoading} />
         )}
       </div>
 

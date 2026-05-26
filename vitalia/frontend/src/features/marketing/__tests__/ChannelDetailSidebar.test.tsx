@@ -10,12 +10,18 @@ import React from "react";
 vi.mock("nuqs", () => {
   const makeParser = () => ({
     withDefault: (_d: unknown) => ({
-      withOptions: (_opts: unknown) => ({ defaultValue: _d, parseServerSide: (v: unknown) => v }),
+      withOptions: (_opts: unknown) => ({
+        defaultValue: _d,
+        parseServerSide: (v: unknown) => v,
+      }),
       defaultValue: _d,
       parseServerSide: (v: unknown) => v,
     }),
     withOptions: (_opts: unknown) => ({
-      withDefault: (_d: unknown) => ({ defaultValue: _d, parseServerSide: (v: unknown) => v }),
+      withDefault: (_d: unknown) => ({
+        defaultValue: _d,
+        parseServerSide: (v: unknown) => v,
+      }),
       defaultValue: undefined,
       parseServerSide: (v: unknown) => v,
     }),
@@ -49,7 +55,9 @@ vi.mock("@tanstack/react-query", () => ({
   useMutation: vi.fn().mockReturnValue({ mutate: vi.fn(), isPending: false }),
   useQueryClient: () => ({ invalidateQueries: vi.fn() }),
   QueryClient: vi.fn(),
-  QueryClientProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  QueryClientProvider: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
 }));
 
 // Mock useTenantLocale
@@ -132,24 +140,43 @@ describe("ChannelDetailSidebar", () => {
   });
 
   it("test_not_rendered_when_closed — sidebar not in DOM when open=false", async () => {
-    const { ChannelDetailSidebar } = await import("../components/ChannelDetailSidebar");
+    const { ChannelDetailSidebar } =
+      await import("../components/ChannelDetailSidebar");
     const { queryByRole } = render(
-      <ChannelDetailSidebar open={false} provider="meta_ads" onClose={mockOnClose} />
+      <ChannelDetailSidebar
+        open={false}
+        provider="meta_ads"
+        onClose={mockOnClose}
+      />,
     );
 
     expect(queryByRole("dialog")).not.toBeInTheDocument();
   });
 
   it("test_renders_when_open — sidebar renders as dialog when open=true", async () => {
-    const { ChannelDetailSidebar } = await import("../components/ChannelDetailSidebar");
-    render(<ChannelDetailSidebar open={true} provider="meta_ads" onClose={mockOnClose} />);
+    const { ChannelDetailSidebar } =
+      await import("../components/ChannelDetailSidebar");
+    render(
+      <ChannelDetailSidebar
+        open={true}
+        provider="meta_ads"
+        onClose={mockOnClose}
+      />,
+    );
 
     expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
 
   it("test_close_button_calls_onClose — close button invokes onClose callback", async () => {
-    const { ChannelDetailSidebar } = await import("../components/ChannelDetailSidebar");
-    render(<ChannelDetailSidebar open={true} provider="meta_ads" onClose={mockOnClose} />);
+    const { ChannelDetailSidebar } =
+      await import("../components/ChannelDetailSidebar");
+    render(
+      <ChannelDetailSidebar
+        open={true}
+        provider="meta_ads"
+        onClose={mockOnClose}
+      />,
+    );
 
     const closeBtn = screen.getByTestId("sidebar-close-btn");
     fireEvent.click(closeBtn);
@@ -158,8 +185,15 @@ describe("ChannelDetailSidebar", () => {
   });
 
   it("test_shows_top_3_campaigns — renders up to 3 campaign rows from metrics", async () => {
-    const { ChannelDetailSidebar } = await import("../components/ChannelDetailSidebar");
-    render(<ChannelDetailSidebar open={true} provider="meta_ads" onClose={mockOnClose} />);
+    const { ChannelDetailSidebar } =
+      await import("../components/ChannelDetailSidebar");
+    render(
+      <ChannelDetailSidebar
+        open={true}
+        provider="meta_ads"
+        onClose={mockOnClose}
+      />,
+    );
 
     expect(screen.getByText("Campaña Retargeting")).toBeInTheDocument();
     expect(screen.getByText("Campaña Atracción")).toBeInTheDocument();
@@ -167,15 +201,31 @@ describe("ChannelDetailSidebar", () => {
   });
 
   it("test_shows_provider_title — shows correct provider display name", async () => {
-    const { ChannelDetailSidebar } = await import("../components/ChannelDetailSidebar");
-    render(<ChannelDetailSidebar open={true} provider="meta_ads" onClose={mockOnClose} />);
+    const { ChannelDetailSidebar } =
+      await import("../components/ChannelDetailSidebar");
+    render(
+      <ChannelDetailSidebar
+        open={true}
+        provider="meta_ads"
+        onClose={mockOnClose}
+      />,
+    );
 
-    expect(screen.getByTestId("sidebar-provider-title")).toHaveTextContent("Meta Ads");
+    expect(screen.getByTestId("sidebar-provider-title")).toHaveTextContent(
+      "Meta Ads",
+    );
   });
 
   it("test_external_link_has_target_blank — external link has proper security attributes", async () => {
-    const { ChannelDetailSidebar } = await import("../components/ChannelDetailSidebar");
-    render(<ChannelDetailSidebar open={true} provider="meta_ads" onClose={mockOnClose} />);
+    const { ChannelDetailSidebar } =
+      await import("../components/ChannelDetailSidebar");
+    render(
+      <ChannelDetailSidebar
+        open={true}
+        provider="meta_ads"
+        onClose={mockOnClose}
+      />,
+    );
 
     const externalLink = screen.getByTestId("external-manager-link");
     expect(externalLink.getAttribute("target")).toBe("_blank");
@@ -183,8 +233,15 @@ describe("ChannelDetailSidebar", () => {
   });
 
   it("test_shows_lucas_recommendations — renders Lucas recommendations section", async () => {
-    const { ChannelDetailSidebar } = await import("../components/ChannelDetailSidebar");
-    render(<ChannelDetailSidebar open={true} provider="meta_ads" onClose={mockOnClose} />);
+    const { ChannelDetailSidebar } =
+      await import("../components/ChannelDetailSidebar");
+    render(
+      <ChannelDetailSidebar
+        open={true}
+        provider="meta_ads"
+        onClose={mockOnClose}
+      />,
+    );
 
     expect(screen.getByTestId("lucas-recommendations")).toBeInTheDocument();
   });
@@ -196,8 +253,15 @@ describe("ChannelDetailSidebar", () => {
       isError: false,
     } as ReturnType<typeof useQuery>);
 
-    const { ChannelDetailSidebar } = await import("../components/ChannelDetailSidebar");
-    render(<ChannelDetailSidebar open={true} provider="meta_ads" onClose={mockOnClose} />);
+    const { ChannelDetailSidebar } =
+      await import("../components/ChannelDetailSidebar");
+    render(
+      <ChannelDetailSidebar
+        open={true}
+        provider="meta_ads"
+        onClose={mockOnClose}
+      />,
+    );
 
     expect(screen.getByRole("status")).toBeInTheDocument();
   });
@@ -209,8 +273,15 @@ describe("ChannelDetailSidebar", () => {
       isError: false,
     } as ReturnType<typeof useQuery>);
 
-    const { ChannelDetailSidebar } = await import("../components/ChannelDetailSidebar");
-    render(<ChannelDetailSidebar open={true} provider="meta_ads" onClose={mockOnClose} />);
+    const { ChannelDetailSidebar } =
+      await import("../components/ChannelDetailSidebar");
+    render(
+      <ChannelDetailSidebar
+        open={true}
+        provider="meta_ads"
+        onClose={mockOnClose}
+      />,
+    );
 
     expect(screen.getByTestId("no-campaigns-message")).toBeInTheDocument();
   });

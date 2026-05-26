@@ -70,8 +70,8 @@ function getNpsCategory(score: number): NpsCategory {
  */
 const CATEGORY_LABEL_ES: Record<NpsCategory, string> = {
   detractor: "detractor",
-  passive:   "pasivo",
-  promoter:  "promotor",
+  passive: "pasivo",
+  promoter: "promotor",
 };
 
 /**
@@ -80,8 +80,8 @@ const CATEGORY_LABEL_ES: Record<NpsCategory, string> = {
  */
 const CATEGORY_STYLES: Record<NpsCategory, string> = {
   detractor: "vt-bg-danger-12 vt-text-danger vt-border-danger-30",
-  passive:   "vt-bg-warning-12 vt-text-warning vt-border-warning-30",
-  promoter:  "vt-bg-success-12 vt-text-success vt-border-success-30",
+  passive: "vt-bg-warning-12 vt-text-warning vt-border-warning-30",
+  promoter: "vt-bg-success-12 vt-text-success vt-border-success-30",
 };
 
 /** Text size classes per size variant. */
@@ -101,8 +101,8 @@ const SIZE_PADDING: Record<NpsBadgeSize, string> = {
 /** Border radius classes per variant. */
 const VARIANT_RADIUS: Record<NpsBadgeVariant, string> = {
   badge: "rounded-[var(--radius)]",
-  chip:  "rounded-[var(--radius-pill)]",
-  tag:   "rounded-sm",
+  chip: "rounded-[var(--radius-pill)]",
+  tag: "rounded-sm",
 };
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -132,7 +132,7 @@ export function NPSTagBadge({
           SIZE_PADDING[size],
           VARIANT_RADIUS[variant],
           "vt-bg-muted vt-text-faint vt-border",
-          className
+          className,
         )}
         aria-label="NPS: sin datos"
       >
@@ -156,7 +156,7 @@ export function NPSTagBadge({
         SIZE_PADDING[size],
         VARIANT_RADIUS[variant],
         CATEGORY_STYLES[category],
-        className
+        className,
       )}
       aria-label={`Calificación NPS ${clampedScore}, categoría ${labelEs}`}
     >

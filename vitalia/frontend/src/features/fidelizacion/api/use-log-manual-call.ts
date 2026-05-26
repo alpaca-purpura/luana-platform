@@ -11,7 +11,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
 import { vitaliaFetch } from "@/lib/fetch-client";
-import type { LogManualCallRequest, LogManualCallResponse } from "../types/re-engagement";
+import type {
+  LogManualCallRequest,
+  LogManualCallResponse,
+} from "../types/re-engagement";
 
 interface LogManualCallArgs {
   patientId: string;
@@ -37,12 +40,14 @@ export function useLogManualCall() {
           tenantId: orgId,
           method: "POST",
           body: JSON.stringify(payload),
-        }
+        },
       );
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["fidelizacion"] });
-      void queryClient.invalidateQueries({ queryKey: ["fidelizacion", "activity"] });
+      void queryClient.invalidateQueries({
+        queryKey: ["fidelizacion", "activity"],
+      });
     },
   });
 }

@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 /**
  * /test-stack/primitives — Visual baseline page F1-S0 (vitalia-fase1-stack-stability)
@@ -15,19 +15,19 @@
  * una preview pública dev-only. NO incluye datos sensibles PHI reales (solo
  * placeholders LatAm de ejemplo).
  */
-import * as React from "react"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Textarea } from "@/components/ui/textarea"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import * as React from "react";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
+} from "@/components/ui/tooltip";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,8 +35,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { AGENT_LIST } from "@/lib/agents"
+} from "@/components/ui/dropdown-menu";
+import { AGENT_LIST } from "@/lib/agents";
 
 export default function PrimitivesShowcasePage(): React.ReactElement {
   return (
@@ -71,7 +71,10 @@ export default function PrimitivesShowcasePage(): React.ReactElement {
         {/* Agentes Vitalia con thumbnail real + ring del color agent-{slug}.
             Doctores genéricos con fallback iniciales — sin imagen src real.
             Ring offset blanco para destacar contorno sobre fondo claro. */}
-        <section aria-label="Avatares — agentes Vitalia + doctores" className="space-y-3">
+        <section
+          aria-label="Avatares — agentes Vitalia + doctores"
+          className="space-y-3"
+        >
           <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
             Avatar
           </h2>
@@ -81,10 +84,15 @@ export default function PrimitivesShowcasePage(): React.ReactElement {
                 tipo ring-agent-${slug} (no detecta clases con interpolación).
                 Hex color de SSoT @/lib/agents → CSS var --tw-ring-color override. */}
             {AGENT_LIST.map((agent) => (
-              <div key={agent.slug} className="flex flex-col items-center gap-1.5">
+              <div
+                key={agent.slug}
+                className="flex flex-col items-center gap-1.5"
+              >
                 <Avatar
                   className="size-12 ring-4 ring-offset-2 ring-offset-background"
-                  style={{ "--tw-ring-color": agent.colorHex } as React.CSSProperties}
+                  style={
+                    { "--tw-ring-color": agent.colorHex } as React.CSSProperties
+                  }
                   aria-label={`${agent.name} — ${agent.role}`}
                 >
                   <AvatarImage src={agent.thumbnail} alt={agent.name} />
@@ -107,7 +115,9 @@ export default function PrimitivesShowcasePage(): React.ReactElement {
                   VS
                 </AvatarFallback>
               </Avatar>
-              <span className="text-xs text-muted-foreground font-medium">Dra. Soria</span>
+              <span className="text-xs text-muted-foreground font-medium">
+                Dra. Soria
+              </span>
             </div>
             <div className="flex flex-col items-center gap-1.5">
               <Avatar className="size-12 ring-2 ring-offset-2 ring-offset-background ring-border">
@@ -115,13 +125,18 @@ export default function PrimitivesShowcasePage(): React.ReactElement {
                   MR
                 </AvatarFallback>
               </Avatar>
-              <span className="text-xs text-muted-foreground font-medium">Dr. Ruiz</span>
+              <span className="text-xs text-muted-foreground font-medium">
+                Dr. Ruiz
+              </span>
             </div>
           </div>
         </section>
 
         {/* ── Input ───────────────────────────────────────────────────── */}
-        <section aria-label="Campos de formulario" className="space-y-3 max-w-sm">
+        <section
+          aria-label="Campos de formulario"
+          className="space-y-3 max-w-sm"
+        >
           <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
             Input
           </h2>
@@ -154,14 +169,14 @@ export default function PrimitivesShowcasePage(): React.ReactElement {
         </section>
 
         {/* ── Textarea ────────────────────────────────────────────────── */}
-        <section aria-label="Área de texto médico" className="space-y-3 max-w-sm">
+        <section
+          aria-label="Área de texto médico"
+          className="space-y-3 max-w-sm"
+        >
           <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
             Textarea
           </h2>
-          <Textarea
-            placeholder="Notas clínicas de la consulta..."
-            rows={3}
-          />
+          <Textarea placeholder="Notas clínicas de la consulta..." rows={3} />
           <Textarea
             defaultValue="Paciente con antecedentes de HTA. Se indica control en 30 días."
             rows={3}
@@ -170,7 +185,10 @@ export default function PrimitivesShowcasePage(): React.ReactElement {
         </section>
 
         {/* ── Tabs ────────────────────────────────────────────────────── */}
-        <section aria-label="Pestañas de historial" className="space-y-3 max-w-md">
+        <section
+          aria-label="Pestañas de historial"
+          className="space-y-3 max-w-md"
+        >
           <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
             Tabs
           </h2>
@@ -180,13 +198,22 @@ export default function PrimitivesShowcasePage(): React.ReactElement {
               <TabsTrigger value="estudios">Estudios</TabsTrigger>
               <TabsTrigger value="recetas">Recetas</TabsTrigger>
             </TabsList>
-            <TabsContent value="consultas" className="p-3 text-sm text-muted-foreground">
+            <TabsContent
+              value="consultas"
+              className="p-3 text-sm text-muted-foreground"
+            >
               23/04/2026 — Control cardíaco con Dr. Ruiz
             </TabsContent>
-            <TabsContent value="estudios" className="p-3 text-sm text-muted-foreground">
+            <TabsContent
+              value="estudios"
+              className="p-3 text-sm text-muted-foreground"
+            >
               ECG 12/03/2026 — Ritmo sinusal normal
             </TabsContent>
-            <TabsContent value="recetas" className="p-3 text-sm text-muted-foreground">
+            <TabsContent
+              value="recetas"
+              className="p-3 text-sm text-muted-foreground"
+            >
               Enalapril 10mg — 30 comprimidos (renovación mensual)
             </TabsContent>
           </Tabs>
@@ -204,7 +231,9 @@ export default function PrimitivesShowcasePage(): React.ReactElement {
                   OSDE
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Obra Social de Empleados de Comercio</TooltipContent>
+              <TooltipContent>
+                Obra Social de Empleados de Comercio
+              </TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -212,7 +241,9 @@ export default function PrimitivesShowcasePage(): React.ReactElement {
                   IOMA
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Instituto de Obra Médico Asistencial</TooltipContent>
+              <TooltipContent>
+                Instituto de Obra Médico Asistencial
+              </TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -251,5 +282,5 @@ export default function PrimitivesShowcasePage(): React.ReactElement {
         </section>
       </main>
     </TooltipProvider>
-  )
+  );
 }

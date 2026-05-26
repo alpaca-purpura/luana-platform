@@ -40,7 +40,8 @@ export function DelegateMarker({
   mode = "Mantener",
   className,
 }: DelegateMarkerProps) {
-  const toDescriptor = AGENT_CATALOG[toAgent] ?? AGENT_CATALOG[DEFAULT_CHAT_AGENT];
+  const toDescriptor =
+    AGENT_CATALOG[toAgent] ?? AGENT_CATALOG[DEFAULT_CHAT_AGENT];
 
   return (
     <div
@@ -72,7 +73,8 @@ export function DelegateMarker({
               const parent = target.parentElement;
               if (parent) {
                 const span = document.createElement("span");
-                span.className = "text-[8px] font-semibold text-white select-none";
+                span.className =
+                  "text-[8px] font-semibold text-white select-none";
                 span.textContent = toDescriptor.initial;
                 parent.appendChild(span);
               }

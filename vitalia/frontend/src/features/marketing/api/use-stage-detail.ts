@@ -16,7 +16,10 @@ export type UseStageDetailOptions = {
   period?: "7d" | "30d" | "90d";
 };
 
-export function useStageDetail({ stage, period = "30d" }: UseStageDetailOptions) {
+export function useStageDetail({
+  stage,
+  period = "30d",
+}: UseStageDetailOptions) {
   const { getToken, orgId, isLoaded, isSignedIn } = useAuth();
   const clinicId = useClinicId();
 

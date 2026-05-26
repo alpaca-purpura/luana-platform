@@ -19,10 +19,13 @@ export function useClinicProfileCreate() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: CreateClinicProfilePayload): Promise<CreateClinicProfileResponse> => {
+    mutationFn: async (
+      data: CreateClinicProfilePayload,
+    ): Promise<CreateClinicProfileResponse> => {
       const token = await getToken();
-      const tenantId = (sessionClaims?.public_metadata as Record<string, unknown>)
-        ?.active_tenant_id as string | undefined;
+      const tenantId = (
+        sessionClaims?.public_metadata as Record<string, unknown>
+      )?.active_tenant_id as string | undefined;
       if (!token) throw new Error("Not authenticated");
       return vitaliaFetch<CreateClinicProfileResponse>(
         "/api/v1/vitalia/onboarding/clinic-profile",
@@ -31,11 +34,13 @@ export function useClinicProfileCreate() {
           tenantId: tenantId ?? "",
           method: "POST",
           body: JSON.stringify(data),
-        }
+        },
       );
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: vitaliaQueryKeys.onboarding.status() });
+      queryClient.invalidateQueries({
+        queryKey: vitaliaQueryKeys.onboarding.status(),
+      });
     },
   });
 }

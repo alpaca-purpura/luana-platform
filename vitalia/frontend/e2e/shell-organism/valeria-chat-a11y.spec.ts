@@ -70,9 +70,13 @@ test.describe("SC-6 — ValeriaChat accessibility (axe + keyboard + aria)", () =
     const stubCount = await stubButtons.count();
 
     // Fallback: locate by title attribute if testid not present
-    const adjuntarBtn = chatPage.page.locator('[title="Adjuntar (próximamente)"]');
+    const adjuntarBtn = chatPage.page.locator(
+      '[title="Adjuntar (próximamente)"]',
+    );
     const vozBtn = chatPage.page.locator('[title="Voz (próximamente)"]');
-    const comandosBtn = chatPage.page.locator('[title="Comandos (próximamente)"]');
+    const comandosBtn = chatPage.page.locator(
+      '[title="Comandos (próximamente)"]',
+    );
 
     const adjuntarVisible = await adjuntarBtn.isVisible().catch(() => false);
     const vozVisible = await vozBtn.isVisible().catch(() => false);
@@ -93,7 +97,9 @@ test.describe("SC-6 — ValeriaChat accessibility (axe + keyboard + aria)", () =
       await expect(comandosBtn).not.toBeDisabled();
     } else {
       // At minimum, confirm at least one interactive stub exists in composer area
-      const composerArea = chatPage.page.locator('[data-testid="chat-composer"]');
+      const composerArea = chatPage.page.locator(
+        '[data-testid="chat-composer"]',
+      );
       if (await composerArea.isVisible().catch(() => false)) {
         const buttons = composerArea.locator("button");
         const buttonCount = await buttons.count();

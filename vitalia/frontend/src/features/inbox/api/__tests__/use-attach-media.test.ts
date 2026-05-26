@@ -52,7 +52,11 @@ const mockImageResult: AttachMediaResult = {
 
 function createWrapper(queryClient: QueryClient) {
   return function Wrapper({ children }: { children: React.ReactNode }) {
-    return createElement(QueryClientProvider, { client: queryClient }, children);
+    return createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 }
 
@@ -61,7 +65,10 @@ describe("useAttachMedia", () => {
 
   beforeEach(() => {
     queryClient = new QueryClient({
-      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+      defaultOptions: {
+        queries: { retry: false },
+        mutations: { retry: false },
+      },
     });
     vi.clearAllMocks();
   });
@@ -136,7 +143,9 @@ describe("useAttachMedia", () => {
       wrapper: createWrapper(queryClient),
     });
 
-    const largeFile = new File(["too-large"], "big.jpg", { type: "image/jpeg" });
+    const largeFile = new File(["too-large"], "big.jpg", {
+      type: "image/jpeg",
+    });
 
     await act(async () => {
       result.current.mutate({

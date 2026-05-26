@@ -42,7 +42,11 @@ test.describe("SC-5 — agent válido + subtab inválido → N sub-tabs rendered
       pageErrors.push(err.message);
     });
 
-    await pom.goto({ tenantId: TENANT_ID, agent: "lisa", subtab: "inexistente" });
+    await pom.goto({
+      tenantId: TENANT_ID,
+      agent: "lisa",
+      subtab: "inexistente",
+    });
 
     // Lisa is a valid agent — SubTabsBar should render 4 sub-tabs (NOT return null)
     expect(await pom.isPresent()).toBe(true);
@@ -68,7 +72,11 @@ test.describe("SC-5 — agent válido + subtab inválido → N sub-tabs rendered
   }) => {
     const pom = new SubTabsBarPage(shellPage);
 
-    await pom.goto({ tenantId: TENANT_ID, agent: "lucas", subtab: "inexistente" });
+    await pom.goto({
+      tenantId: TENANT_ID,
+      agent: "lucas",
+      subtab: "inexistente",
+    });
 
     expect(await pom.isPresent()).toBe(true);
     expect(await pom.getSubTabCount()).toBe(5);
@@ -77,7 +85,13 @@ test.describe("SC-5 — agent válido + subtab inválido → N sub-tabs rendered
     const activeId = await pom.getActiveSubTabId();
     expect(activeId).toBeNull();
 
-    for (const id of ["lanzar", "envuelo", "recursos", "resultados", "mercado"]) {
+    for (const id of [
+      "lanzar",
+      "envuelo",
+      "recursos",
+      "resultados",
+      "mercado",
+    ]) {
       await expect(pom.getSubTab(id)).toHaveAttribute("aria-selected", "false");
     }
   });

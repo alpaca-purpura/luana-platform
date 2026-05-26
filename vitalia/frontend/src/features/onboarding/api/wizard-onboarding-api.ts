@@ -56,7 +56,7 @@ export interface WizardApiAuth {
  */
 export async function startDraft(
   auth: WizardApiAuth,
-  payload: StartDraftRequest
+  payload: StartDraftRequest,
 ): Promise<StartDraftResponse> {
   return vitaliaFetch<StartDraftResponse>(`${WIZARD_BASE}/drafts`, {
     method: "POST",
@@ -72,7 +72,7 @@ export async function startDraft(
  */
 export async function getDraft(
   auth: WizardApiAuth,
-  draftId: string
+  draftId: string,
 ): Promise<GetDraftResponse> {
   return vitaliaFetch<GetDraftResponse>(
     `${WIZARD_BASE}/drafts/${encodeURIComponent(draftId)}`,
@@ -80,7 +80,7 @@ export async function getDraft(
       method: "GET",
       token: auth.token,
       tenantId: auth.tenantId,
-    }
+    },
   );
 }
 
@@ -91,7 +91,7 @@ export async function getDraft(
 export async function extractContext(
   auth: WizardApiAuth,
   draftId: string,
-  payload: ExtractContextRequest
+  payload: ExtractContextRequest,
 ): Promise<ExtractContextResponse> {
   return vitaliaFetch<ExtractContextResponse>(
     `${WIZARD_BASE}/drafts/${encodeURIComponent(draftId)}/extract`,
@@ -100,7 +100,7 @@ export async function extractContext(
       token: auth.token,
       tenantId: auth.tenantId,
       body: JSON.stringify(payload),
-    }
+    },
   );
 }
 
@@ -111,7 +111,7 @@ export async function extractContext(
 export async function confirmSlot(
   auth: WizardApiAuth,
   draftId: string,
-  payload: ConfirmSlotRequest
+  payload: ConfirmSlotRequest,
 ): Promise<ConfirmSlotResponse> {
   return vitaliaFetch<ConfirmSlotResponse>(
     `${WIZARD_BASE}/drafts/${encodeURIComponent(draftId)}/slots/${encodeURIComponent(payload.slotId)}/confirm`,
@@ -120,7 +120,7 @@ export async function confirmSlot(
       token: auth.token,
       tenantId: auth.tenantId,
       body: JSON.stringify(payload),
-    }
+    },
   );
 }
 
@@ -131,7 +131,7 @@ export async function confirmSlot(
 export async function simulateVoice(
   auth: WizardApiAuth,
   draftId: string,
-  payload: SimulateVoiceRequest
+  payload: SimulateVoiceRequest,
 ): Promise<SimulateVoiceResponse> {
   return vitaliaFetch<SimulateVoiceResponse>(
     `${WIZARD_BASE}/drafts/${encodeURIComponent(draftId)}/simulate`,
@@ -140,7 +140,7 @@ export async function simulateVoice(
       token: auth.token,
       tenantId: auth.tenantId,
       body: JSON.stringify(payload),
-    }
+    },
   );
 }
 
@@ -150,7 +150,7 @@ export async function simulateVoice(
  */
 export async function completeOnboarding(
   auth: WizardApiAuth,
-  payload: CompleteOnboardingRequest
+  payload: CompleteOnboardingRequest,
 ): Promise<CompleteOnboardingResponse> {
   return vitaliaFetch<CompleteOnboardingResponse>(
     `${WIZARD_BASE}/drafts/${encodeURIComponent(payload.draftId)}/complete`,
@@ -159,7 +159,7 @@ export async function completeOnboarding(
       token: auth.token,
       tenantId: auth.tenantId,
       body: JSON.stringify(payload),
-    }
+    },
   );
 }
 

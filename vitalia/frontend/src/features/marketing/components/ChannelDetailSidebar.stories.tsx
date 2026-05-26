@@ -51,7 +51,8 @@ export const Closed: Story = {
   parameters: {
     docs: {
       description: {
-        story: "Cuando open=false el componente retorna null. No hay DOM renderizado.",
+        story:
+          "Cuando open=false el componente retorna null. No hay DOM renderizado.",
       },
     },
   },

@@ -37,7 +37,10 @@ test.describe("SC-3 — resize boundary + persistencia + snap-up (F1-S4)", () =>
 
   // ── Assertion 1: drag handle left below 620 clamped ────────────────────────
 
-  test("drag handle left below 620 clamped", async ({ shellPage, tenantId }) => {
+  test("drag handle left below 620 clamped", async ({
+    shellPage,
+    tenantId,
+  }) => {
     const pom = new ShellLayoutPage(shellPage);
     await pom.gotoShell(tenantId);
 

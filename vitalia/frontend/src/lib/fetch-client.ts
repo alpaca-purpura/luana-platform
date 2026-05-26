@@ -45,7 +45,7 @@ export interface VitaliaFetchOptions extends Omit<RequestInit, "headers"> {
  */
 export async function vitaliaFetch<T>(
   url: string,
-  options: VitaliaFetchOptions
+  options: VitaliaFetchOptions,
 ): Promise<T> {
   const { token, tenantId, headers: customHeaders, ...rest } = options;
 

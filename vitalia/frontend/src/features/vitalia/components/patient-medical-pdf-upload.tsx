@@ -77,12 +77,13 @@ export function PatientMedicalPdfUpload({
         setStatus("success");
         onSuccess?.(result.extraction_job_id);
       } catch (err) {
-        const msg = err instanceof Error ? err.message : "Error al subir el archivo.";
+        const msg =
+          err instanceof Error ? err.message : "Error al subir el archivo.";
         setErrorMessage(msg);
         setStatus("error");
       }
     },
-    [mutation, onSuccess]
+    [mutation, onSuccess],
   );
 
   const handleFileChange = useCallback(
@@ -94,7 +95,7 @@ export function PatientMedicalPdfUpload({
         e.target.value = "";
       }
     },
-    [processFile]
+    [processFile],
   );
 
   const handleDrop = useCallback(
@@ -106,7 +107,7 @@ export function PatientMedicalPdfUpload({
         void processFile(file);
       }
     },
-    [processFile]
+    [processFile],
   );
 
   const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
@@ -153,12 +154,14 @@ export function PatientMedicalPdfUpload({
             "focus:outline-none focus:ring-2 focus:ring-blue-500",
             isDragging
               ? "border-blue-400 bg-blue-50"
-              : "border-gray-300 bg-gray-50 hover:border-gray-400 hover:bg-gray-100"
+              : "border-gray-300 bg-gray-50 hover:border-gray-400 hover:bg-gray-100",
           )}
         >
           <p className="text-sm font-medium text-gray-700">
             Arrastra un PDF aquí o{" "}
-            <span className="text-blue-600 underline">selecciona un archivo</span>
+            <span className="text-blue-600 underline">
+              selecciona un archivo
+            </span>
           </p>
           <p className="text-xs text-gray-400 mt-1">PDF — máx. 10 MB</p>
         </div>
@@ -172,7 +175,10 @@ export function PatientMedicalPdfUpload({
           aria-busy={true}
           aria-live="polite"
         >
-          <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-blue-200 border-t-blue-600 mb-2" aria-hidden="true" />
+          <div
+            className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-blue-200 border-t-blue-600 mb-2"
+            aria-hidden="true"
+          />
           <p className="text-sm text-blue-700">
             {status === "reading" ? "Leyendo archivo..." : "Subiendo PDF..."}
           </p>

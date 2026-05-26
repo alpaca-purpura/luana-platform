@@ -22,7 +22,10 @@ export type ConnectionBadgeProps = {
   className?: string;
 };
 
-function getStatusClasses(status: SyncStatus, variant?: ConnectionBadgeVariant): string {
+function getStatusClasses(
+  status: SyncStatus,
+  variant?: ConnectionBadgeVariant,
+): string {
   if (variant === "success") {
     return "vt-text-success";
   }
@@ -59,30 +62,31 @@ function getDefaultLabel(status: SyncStatus): string {
  * ConnectionBadge — pill badge showing channel sync status.
  * Uses CSS var tokens (vt-text-*) exclusively — no hardcoded colors.
  */
-export const ConnectionBadge = forwardRef<HTMLSpanElement, ConnectionBadgeProps>(
-  ({ status, variant, label, className }, ref) => {
-    const colorClass = getStatusClasses(status, variant);
-    const displayLabel = label ?? getDefaultLabel(status);
+export const ConnectionBadge = forwardRef<
+  HTMLSpanElement,
+  ConnectionBadgeProps
+>(({ status, variant, label, className }, ref) => {
+  const colorClass = getStatusClasses(status, variant);
+  const displayLabel = label ?? getDefaultLabel(status);
 
-    return (
+  return (
+    <span
+      ref={ref}
+      data-testid="connection-badge"
+      data-state={status}
+      className={cn(
+        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
+        "vt-bg-surface-alt border vt-border",
+        colorClass,
+        className,
+      )}
+    >
       <span
-        ref={ref}
-        data-testid="connection-badge"
-        data-state={status}
-        className={cn(
-          "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
-          "vt-bg-surface-alt border vt-border",
-          colorClass,
-          className,
-        )}
-      >
-        <span
-          className="h-1.5 w-1.5 rounded-full bg-current"
-          aria-hidden="true"
-        />
-        {displayLabel}
-      </span>
-    );
-  },
-);
+        className="h-1.5 w-1.5 rounded-full bg-current"
+        aria-hidden="true"
+      />
+      {displayLabel}
+    </span>
+  );
+});
 ConnectionBadge.displayName = "ConnectionBadge";

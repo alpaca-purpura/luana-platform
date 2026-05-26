@@ -13,7 +13,12 @@ export type BookingStatus =
   | "cancelled"
   | "completed";
 
-export type PaymentStatus = "pending" | "paid_deposit" | "paid_full" | "refunded" | "failed";
+export type PaymentStatus =
+  | "pending"
+  | "paid_deposit"
+  | "paid_full"
+  | "refunded"
+  | "failed";
 
 export type DeliveryChannel = "whatsapp" | "email" | "both";
 

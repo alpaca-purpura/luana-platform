@@ -30,7 +30,12 @@ vi.mock("@/hooks/useClinicId", () => ({
 vi.mock("@/lib/api/fetchClient", () => ({
   fetchClient: vi.fn(async () => ({})),
   ApiError: class ApiError extends Error {
-    constructor(public status: number, message: string) { super(message); }
+    constructor(
+      public status: number,
+      message: string,
+    ) {
+      super(message);
+    }
   },
 }));
 
@@ -76,7 +81,7 @@ describe("MessageBubble", () => {
         message={msg}
         conversationUpdatedAt="2026-01-01T00:00:00Z"
       />,
-      { wrapper }
+      { wrapper },
     );
 
     // AI chip "✨ auto" visible
@@ -90,8 +95,11 @@ describe("MessageBubble", () => {
   it("does NOT show undo chip when action_receipt_expires_at is null", () => {
     const msg = makeMessage({ action_receipt_expires_at: null });
     render(
-      <MessageBubble message={msg} conversationUpdatedAt="2026-01-01T00:00:00Z" />,
-      { wrapper }
+      <MessageBubble
+        message={msg}
+        conversationUpdatedAt="2026-01-01T00:00:00Z"
+      />,
+      { wrapper },
     );
     expect(screen.queryByText("Revertir")).toBeNull();
   });
@@ -103,8 +111,11 @@ describe("MessageBubble", () => {
       retracted_at: "2026-01-01T00:00:10Z",
     });
     render(
-      <MessageBubble message={msg} conversationUpdatedAt="2026-01-01T00:00:00Z" />,
-      { wrapper }
+      <MessageBubble
+        message={msg}
+        conversationUpdatedAt="2026-01-01T00:00:00Z"
+      />,
+      { wrapper },
     );
     expect(screen.queryByText("Revertir")).toBeNull();
   });
@@ -122,8 +133,11 @@ describe("MessageBubble", () => {
       body_text: xssPayload,
     });
     const { container } = render(
-      <MessageBubble message={msg} conversationUpdatedAt="2026-01-01T00:00:00Z" />,
-      { wrapper }
+      <MessageBubble
+        message={msg}
+        conversationUpdatedAt="2026-01-01T00:00:00Z"
+      />,
+      { wrapper },
     );
 
     // The payload must appear as visible text (React escapes it)
@@ -135,8 +149,11 @@ describe("MessageBubble", () => {
   it("renders patient message right-aligned (data-sender=patient)", () => {
     const msg = makeMessage({ sender_type: "patient", body_text: "Hola" });
     const { container } = render(
-      <MessageBubble message={msg} conversationUpdatedAt="2026-01-01T00:00:00Z" />,
-      { wrapper }
+      <MessageBubble
+        message={msg}
+        conversationUpdatedAt="2026-01-01T00:00:00Z"
+      />,
+      { wrapper },
     );
     const bubble = container.querySelector("[data-sender='patient']");
     expect(bubble).toBeInTheDocument();
@@ -150,11 +167,16 @@ describe("MessageBubble", () => {
       body_text: "La conversación fue reasignada",
     });
     render(
-      <MessageBubble message={msg} conversationUpdatedAt="2026-01-01T00:00:00Z" />,
-      { wrapper }
+      <MessageBubble
+        message={msg}
+        conversationUpdatedAt="2026-01-01T00:00:00Z"
+      />,
+      { wrapper },
     );
     expect(screen.getByRole("status")).toBeInTheDocument();
-    expect(screen.getByText("La conversación fue reasignada")).toBeInTheDocument();
+    expect(
+      screen.getByText("La conversación fue reasignada"),
+    ).toBeInTheDocument();
   });
 
   it("renders retracted message with strikethrough style", () => {
@@ -163,8 +185,11 @@ describe("MessageBubble", () => {
       body_text: "Mensaje original",
     });
     render(
-      <MessageBubble message={msg} conversationUpdatedAt="2026-01-01T00:00:00Z" />,
-      { wrapper }
+      <MessageBubble
+        message={msg}
+        conversationUpdatedAt="2026-01-01T00:00:00Z"
+      />,
+      { wrapper },
     );
     expect(screen.getByText("[Mensaje revertido]")).toBeInTheDocument();
   });
@@ -178,10 +203,15 @@ describe("MessageBubble", () => {
       media_duration_s: 15,
     });
     render(
-      <MessageBubble message={msg} conversationUpdatedAt="2026-01-01T00:00:00Z" />,
-      { wrapper }
+      <MessageBubble
+        message={msg}
+        conversationUpdatedAt="2026-01-01T00:00:00Z"
+      />,
+      { wrapper },
     );
     // Audio player region should be present
-    expect(screen.getByRole("region", { name: /nota de voz/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("region", { name: /nota de voz/i }),
+    ).toBeInTheDocument();
   });
 });

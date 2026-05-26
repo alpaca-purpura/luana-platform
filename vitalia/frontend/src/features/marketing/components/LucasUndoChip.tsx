@@ -26,7 +26,9 @@ function formatCountdown(msRemaining: number): string {
 
 export function LucasUndoChip({ recId }: LucasUndoChipProps) {
   const pendingUndoTimers = useMarketingStore((s) => s.pendingUndoTimers);
-  const clearPendingUndoTimer = useMarketingStore((s) => s.clearPendingUndoTimer);
+  const clearPendingUndoTimer = useMarketingStore(
+    (s) => s.clearPendingUndoTimer,
+  );
   const undo = useUndoRecommendation();
 
   const [msRemaining, setMsRemaining] = useState<number | null>(null);
@@ -77,7 +79,9 @@ export function LucasUndoChip({ recId }: LucasUndoChipProps) {
       aria-live="polite"
       aria-label={`${MARKETING_COPY.recommendations.undoTimerLabel} ${formatCountdown(msRemaining)}`}
     >
-      <span className="text-amber-600">{MARKETING_COPY.recommendations.undoTimerLabel}</span>
+      <span className="text-amber-600">
+        {MARKETING_COPY.recommendations.undoTimerLabel}
+      </span>
       <span className="font-mono font-semibold tabular-nums">
         {formatCountdown(msRemaining)}
       </span>

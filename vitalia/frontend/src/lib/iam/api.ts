@@ -22,7 +22,11 @@ import type { TenantSchema } from "./types";
  * - network_failure: DNS / timeout / AbortError
  * - unknown: any other non-2xx status
  */
-export type IamErrorCode = "unauthorized" | "forbidden" | "network_failure" | "unknown";
+export type IamErrorCode =
+  | "unauthorized"
+  | "forbidden"
+  | "network_failure"
+  | "unknown";
 
 /**
  * Structured error thrown by fetchUserTenants on any failure.
@@ -58,7 +62,9 @@ export class IamApiError extends Error {
  *
  * @param _userId - Clerk userId (used for logging context; not sent to API)
  */
-export async function fetchUserTenants(_userId: string): Promise<TenantSchema[]> {
+export async function fetchUserTenants(
+  _userId: string,
+): Promise<TenantSchema[]> {
   // 1. Obtain Clerk JWT from server-side auth
   const { getToken } = await auth();
   const token = await getToken();
@@ -70,7 +76,15 @@ export async function fetchUserTenants(_userId: string): Promise<TenantSchema[]>
     );
   }
 
-  const baseUrl = process.env["NEXT_PUBLIC_API_URL"] ?? "http://localhost:8002";
+  // F1 closure 2026-05-26: server-side fetch (Server Component / RSC layout.tsx) MUST
+  // use INTERNAL_API_URL when running inside Docker container (FE container can't reach
+  // BE via NEXT_PUBLIC_API_URL=http://127.0.0.1:8002 — that resolves to FE container itself).
+  // INTERNAL_API_URL=http://vitalia_backend_dev:8002 is the Docker network internal URL.
+  // Falls back to NEXT_PUBLIC_API_URL (works in dev outside container) then hard default.
+  const baseUrl =
+    process.env["INTERNAL_API_URL"] ??
+    process.env["NEXT_PUBLIC_API_URL"] ??
+    "http://localhost:8002";
   const url = `${baseUrl}/api/v1/iam/users/me/tenants`;
 
   // 2. Fetch user tenants with AbortController for graceful timeout

@@ -20,7 +20,10 @@ import { TopBarGlobal } from "@/components/shared/shell-organism/TopBarGlobal";
 
 export default function TenantSwitcherShowcasePage() {
   return (
-    <div className="min-h-screen bg-background" data-testid="tenant-switcher-showcase">
+    <div
+      className="min-h-screen bg-background"
+      data-testid="tenant-switcher-showcase"
+    >
       <TopBarGlobal />
       {/* Main content anchor for skip link target (WCAG 2.4.1) */}
       <main id="main-content" tabIndex={-1} className="p-6">
@@ -28,8 +31,8 @@ export default function TenantSwitcherShowcasePage() {
           Vitalia — TenantSwitcher (F1-S3 baseline)
         </h1>
         <p className="text-sm text-muted-foreground mt-2">
-          Página de prueba para TenantSwitcher. Accede al componente en la
-          barra de navegación superior.
+          Página de prueba para TenantSwitcher. Accede al componente en la barra
+          de navegación superior.
         </p>
       </main>
     </div>

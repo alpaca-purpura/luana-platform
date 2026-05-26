@@ -25,59 +25,59 @@
  *     npx playwright test --project=visual e2e/visual/stack-stability/
  */
 
-import { test, expect } from "@playwright/test"
+import { test, expect } from "@playwright/test";
 
-const BASE_URL = process.env["E2E_BASE_URL"] ?? "http://localhost:3002"
+const BASE_URL = process.env["E2E_BASE_URL"] ?? "http://localhost:3002";
 
 // ── Helper: navigate + wait for stable render ────────────────────────────────
 async function gotoAndWait(
   page: import("@playwright/test").Page,
   path: string,
 ) {
-  await page.goto(`${BASE_URL}${path}`)
+  await page.goto(`${BASE_URL}${path}`);
   // Wait for Tailwind styles to apply (no animation = deterministic)
-  await page.waitForLoadState("networkidle")
+  await page.waitForLoadState("networkidle");
 }
 
 // ── 1. Shadcn primitives showcase ────────────────────────────────────────────
 
 test.describe("shadcn primitives showcase", () => {
   test("primitives render correctly in light mode", async ({ page }) => {
-    await page.emulateMedia({ colorScheme: "light" })
+    await page.emulateMedia({ colorScheme: "light" });
     // NOTE: primitives-showcase is served via Next.js route or Playwright fixture server
     // In production run, it loads from the same Next.js dev server.
     // The route must exist at /test-stack/primitives (see Next.js config for test fixtures).
-    await gotoAndWait(page, "/test-stack/primitives")
+    await gotoAndWait(page, "/test-stack/primitives");
     await expect(page).toHaveScreenshot("shadcn-primitives-light.png", {
       fullPage: true,
-    })
-  })
+    });
+  });
 
   test("primitives render correctly in dark mode", async ({ page }) => {
-    await page.emulateMedia({ colorScheme: "dark" })
-    await gotoAndWait(page, "/test-stack/primitives")
+    await page.emulateMedia({ colorScheme: "dark" });
+    await gotoAndWait(page, "/test-stack/primitives");
     await expect(page).toHaveScreenshot("shadcn-primitives-dark.png", {
       fullPage: true,
-    })
-  })
-})
+    });
+  });
+});
 
 // ── 2. Agent tokens swatch ───────────────────────────────────────────────────
 
 test.describe("agent tokens swatch", () => {
   test("agent colors render correctly in light mode", async ({ page }) => {
-    await page.emulateMedia({ colorScheme: "light" })
-    await gotoAndWait(page, "/test-stack/agent-tokens")
+    await page.emulateMedia({ colorScheme: "light" });
+    await gotoAndWait(page, "/test-stack/agent-tokens");
     await expect(page).toHaveScreenshot("agent-tokens-swatch-light.png", {
       fullPage: true,
-    })
-  })
+    });
+  });
 
   test("agent colors render correctly in dark mode", async ({ page }) => {
-    await page.emulateMedia({ colorScheme: "dark" })
-    await gotoAndWait(page, "/test-stack/agent-tokens")
+    await page.emulateMedia({ colorScheme: "dark" });
+    await gotoAndWait(page, "/test-stack/agent-tokens");
     await expect(page).toHaveScreenshot("agent-tokens-swatch-dark.png", {
       fullPage: true,
-    })
-  })
-})
+    });
+  });
+});

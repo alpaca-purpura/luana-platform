@@ -30,7 +30,10 @@ function AdherenceBadge({ score }: { score: number | null }) {
         : "bg-red-100 text-red-700";
   return (
     <span
-      className={cn("inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium", colorClass)}
+      className={cn(
+        "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium",
+        colorClass,
+      )}
       aria-label={`Adherencia: ${score}%`}
     >
       {score}%
@@ -102,7 +105,10 @@ export function TreatmentListTable({
   if (isError) {
     return (
       <div
-        className={cn("rounded-lg border border-red-200 bg-red-50 p-6 text-center", className)}
+        className={cn(
+          "rounded-lg border border-red-200 bg-red-50 p-6 text-center",
+          className,
+        )}
         role="alert"
       >
         <p className="text-sm text-red-700">
@@ -122,8 +128,13 @@ export function TreatmentListTable({
             aria-busy={true}
             aria-live="polite"
           >
-            <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600" aria-hidden="true" />
-            <p className="mt-2 text-sm text-gray-500">Cargando tratamientos...</p>
+            <div
+              className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"
+              aria-hidden="true"
+            />
+            <p className="mt-2 text-sm text-gray-500">
+              Cargando tratamientos...
+            </p>
           </div>
         ) : allTreatments.length === 0 ? (
           <div className="p-8 text-center" role="status">
@@ -137,11 +148,21 @@ export function TreatmentListTable({
             >
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr role="row">
-                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">ID</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Plan</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Paso actual</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Adherencia</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Próx. mensaje</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                    ID
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                    Plan
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                    Paso actual
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                    Adherencia
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                    Próx. mensaje
+                  </th>
                 </tr>
               </thead>
               <tbody role="rowgroup">
@@ -162,7 +183,8 @@ export function TreatmentListTable({
       {totalPages > 1 && (
         <div className="flex items-center justify-between text-sm text-gray-500">
           <span>
-            Mostrando {pageStart + 1}–{Math.min(pageStart + PAGE_SIZE, total)} de {total}
+            Mostrando {pageStart + 1}–{Math.min(pageStart + PAGE_SIZE, total)}{" "}
+            de {total}
           </span>
           <div className="flex gap-2">
             <button

@@ -84,10 +84,7 @@ describe("CSS vars — globals.css token completeness", () => {
   let cssContent: string;
 
   beforeAll(() => {
-    const cssPath = path.resolve(
-      __dirname,
-      "../../app/globals.css"
-    );
+    const cssPath = path.resolve(__dirname, "../../app/globals.css");
     cssContent = fs.readFileSync(cssPath, "utf-8");
   });
 
@@ -113,7 +110,7 @@ describe("CSS vars — globals.css token completeness", () => {
     }
   });
 
-  describe("Shadcn standard dark tokens (in .dark / [data-theme=\"dark\"])", () => {
+  describe('Shadcn standard dark tokens (in .dark / [data-theme="dark"])', () => {
     it("has dark mode selector with data-theme attribute", () => {
       // next-themes uses attribute="data-theme" → CSS must target [data-theme="dark"]
       expect(cssContent).toContain('[data-theme="dark"]');
@@ -128,7 +125,7 @@ describe("CSS vars — globals.css token completeness", () => {
     }
   });
 
-  describe("Agent dark soft variants (in .dark / [data-theme=\"dark\"])", () => {
+  describe('Agent dark soft variants (in .dark / [data-theme="dark"])', () => {
     const darkAgentSoftTokens = [
       "--agent-lisa-soft",
       "--agent-lucas-soft",

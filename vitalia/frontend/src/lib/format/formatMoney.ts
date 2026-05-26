@@ -22,7 +22,7 @@
 export function formatMoney(
   amount: number,
   currency: string | null | undefined,
-  locale: string = "es-419"
+  locale: string = "es-419",
 ): string {
   const effectiveCurrency = currency ?? "ARS"; // LatAm safest default (not USD)
 

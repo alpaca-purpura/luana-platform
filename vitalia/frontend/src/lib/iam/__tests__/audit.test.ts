@@ -102,7 +102,10 @@ describe("logCrossTenantAttempt — audit event (SC-4)", () => {
       "address",
     ];
     for (const field of phiFields) {
-      expect(payloadKeys, `Payload must NOT contain PHI field: ${field}`).not.toContain(field);
+      expect(
+        payloadKeys,
+        `Payload must NOT contain PHI field: ${field}`,
+      ).not.toContain(field);
     }
   });
 });
@@ -167,7 +170,10 @@ describe("logNoTenantsAssigned — audit event (SC-8)", () => {
       "patient_name",
     ];
     for (const field of phiFields) {
-      expect(payloadKeys, `Payload must NOT contain PHI field: ${field}`).not.toContain(field);
+      expect(
+        payloadKeys,
+        `Payload must NOT contain PHI field: ${field}`,
+      ).not.toContain(field);
     }
   });
 });

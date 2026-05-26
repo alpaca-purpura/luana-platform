@@ -42,7 +42,9 @@ export function useRetractMessage() {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: async (input: RetractMessageInput): Promise<RetractMessageResult> => {
+    mutationFn: async (
+      input: RetractMessageInput,
+    ): Promise<RetractMessageResult> => {
       const token = await getToken();
       if (!token || !orgId) throw new Error("Not authenticated");
 
@@ -57,7 +59,7 @@ export function useRetractMessage() {
             "If-Match": input.expectedUpdatedAt,
           },
           body: JSON.stringify({}),
-        }
+        },
       );
     },
     onMutate: async (input) => {
@@ -72,10 +74,10 @@ export function useRetractMessage() {
           messages: previousDetail.messages.map((msg) =>
             msg.id === input.messageId
               ? { ...msg, retracted_at: new Date().toISOString() }
-              : msg
+              : msg,
           ),
           action_receipts: previousDetail.action_receipts.filter(
-            (r) => r.message_id !== input.messageId
+            (r) => r.message_id !== input.messageId,
           ),
         });
       }
@@ -85,16 +87,23 @@ export function useRetractMessage() {
     onError: (err, input, ctx) => {
       // Rollback optimistic update
       if (ctx?.previousDetail) {
-        qc.setQueryData(conversationDetailKey(input.conversationId), ctx.previousDetail);
+        qc.setQueryData(
+          conversationDetailKey(input.conversationId),
+          ctx.previousDetail,
+        );
       }
       // For 409: re-fetch to get fresh state
       if (err instanceof ApiError && err.status === 409) {
-        void qc.invalidateQueries({ queryKey: conversationDetailKey(input.conversationId) });
+        void qc.invalidateQueries({
+          queryKey: conversationDetailKey(input.conversationId),
+        });
       }
       // 410 is handled by caller (show expired toast)
     },
     onSettled: (_data, _err, input) => {
-      void qc.invalidateQueries({ queryKey: conversationDetailKey(input.conversationId) });
+      void qc.invalidateQueries({
+        queryKey: conversationDetailKey(input.conversationId),
+      });
       void qc.invalidateQueries({ queryKey: conversationsListKey() });
     },
   });

@@ -20,7 +20,9 @@ test.describe("Compliance Smoke — HIPAA-lite Disclaimer", () => {
 
     // medication_disclaimer_required=true → disclaimer must be visible
     await expect(
-      page.getByText(/descargo de responsabilidad|disclaimer.*medicaci[oó]n|no.*diagnóstico/i)
+      page.getByText(
+        /descargo de responsabilidad|disclaimer.*medicaci[oó]n|no.*diagnóstico/i,
+      ),
     ).toBeVisible({ timeout: 10_000 });
 
     expect(consoleErrors).toHaveLength(0);
@@ -35,7 +37,7 @@ test.describe("Compliance Smoke — HIPAA-lite Disclaimer", () => {
     await expect(
       page
         .getByText(/no diagnóstico/i)
-        .or(page.getByText(/no prescripci[oó]n de medicamentos/i))
+        .or(page.getByText(/no prescripci[oó]n de medicamentos/i)),
     ).toBeVisible({ timeout: 10_000 });
   });
 
@@ -46,7 +48,9 @@ test.describe("Compliance Smoke — HIPAA-lite Disclaimer", () => {
     await page.goto("/medical-compliance");
 
     // Sanare has prompt_injection_blocked count=5 in mock
-    await expect(page.getByText(/5.*prompt_injection|prompt_injection.*5/i)).toBeVisible({
+    await expect(
+      page.getByText(/5.*prompt_injection|prompt_injection.*5/i),
+    ).toBeVisible({
       timeout: 10_000,
     });
   });
@@ -69,7 +73,9 @@ test.describe("Compliance Smoke — HIPAA-lite Disclaimer", () => {
     await page.goto("/medical-compliance");
 
     // Sanaré mock: safety_escalation=12 (higher than Aurora=2)
-    await expect(page.getByText(/12.*safety_escalation|safety_escalation.*12/i)).toBeVisible({
+    await expect(
+      page.getByText(/12.*safety_escalation|safety_escalation.*12/i),
+    ).toBeVisible({
       timeout: 10_000,
     });
   });

@@ -87,13 +87,24 @@ export function AuditedSection({
       } catch (err) {
         // Silent fail per hipaa-lite.md: audit failure logs to observability but does not block UI
         if (process.env.NODE_ENV !== "production") {
-          console.error("[AuditedSection] audit log failed (non-blocking):", err);
+          console.error(
+            "[AuditedSection] audit log failed (non-blocking):",
+            err,
+          );
         }
       }
     };
 
     void fireAudit();
-  }, [action, clinicId, getToken, organization?.id, resourceId, resourceType, userId]);
+  }, [
+    action,
+    clinicId,
+    getToken,
+    organization?.id,
+    resourceId,
+    resourceType,
+    userId,
+  ]);
 
   return <>{children}</>;
 }

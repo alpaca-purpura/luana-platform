@@ -20,9 +20,22 @@ export default meta;
 type Story = StoryObj<typeof LucasStageRecommendationsCard>;
 
 const nutritionRecs: StageRecommendation[] = [
-  { id: "r1", title: "Programar sesión de seguimiento nutricional", priority: "high" },
-  { id: "r2", title: "Enviar guía de alimentación post-tratamiento", detail: "PDF adjunto en la biblioteca", priority: "medium" },
-  { id: "r3", title: "Recordar ingesta de suplementos recetados", priority: "low" },
+  {
+    id: "r1",
+    title: "Programar sesión de seguimiento nutricional",
+    priority: "high",
+  },
+  {
+    id: "r2",
+    title: "Enviar guía de alimentación post-tratamiento",
+    detail: "PDF adjunto en la biblioteca",
+    priority: "medium",
+  },
+  {
+    id: "r3",
+    title: "Recordar ingesta de suplementos recetados",
+    priority: "low",
+  },
 ];
 
 /** Empty state */
@@ -52,7 +65,11 @@ export const SingleHighPriority: Story = {
   args: {
     stageLabel: "Activación",
     recommendations: [
-      { id: "r-hp", title: "Confirmar asistencia a próxima cita — paciente sin respuesta", priority: "high" },
+      {
+        id: "r-hp",
+        title: "Confirmar asistencia a próxima cita — paciente sin respuesta",
+        priority: "high",
+      },
     ],
   },
 };

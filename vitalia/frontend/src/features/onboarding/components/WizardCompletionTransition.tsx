@@ -78,7 +78,7 @@ export function WizardCompletionTransition({
         "transition-all duration-[400ms] ease-out",
         visible ? "opacity-100 scale-100" : "opacity-0 scale-95",
         "motion-reduce:transition-none motion-reduce:opacity-100 motion-reduce:scale-100",
-        className
+        className,
       )}
       role="main"
       aria-live="assertive"
@@ -93,7 +93,7 @@ export function WizardCompletionTransition({
             "shadow-lg",
             "transition-transform duration-500 ease-out",
             visible ? "scale-100" : "scale-0",
-            "motion-reduce:scale-100 motion-reduce:transition-none"
+            "motion-reduce:scale-100 motion-reduce:transition-none",
           )}
           aria-hidden="true"
         >
@@ -118,14 +118,14 @@ export function WizardCompletionTransition({
             "space-y-2",
             "transition-all duration-500 delay-200",
             visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4",
-            "motion-reduce:opacity-100 motion-reduce:translate-y-0 motion-reduce:transition-none"
+            "motion-reduce:opacity-100 motion-reduce:translate-y-0 motion-reduce:transition-none",
           )}
         >
-          <h1 className="text-2xl font-bold text-gray-900">
-            {copy.headline}
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900">{copy.headline}</h1>
           <p className="text-base text-gray-600">{copy.subheadline}</p>
-          <p className="text-sm text-gray-500 leading-relaxed">{copy.bodyText}</p>
+          <p className="text-sm text-gray-500 leading-relaxed">
+            {copy.bodyText}
+          </p>
         </div>
 
         {/* CTA */}
@@ -133,7 +133,7 @@ export function WizardCompletionTransition({
           className={cn(
             "transition-all duration-500 delay-300",
             visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4",
-            "motion-reduce:opacity-100 motion-reduce:translate-y-0 motion-reduce:transition-none"
+            "motion-reduce:opacity-100 motion-reduce:translate-y-0 motion-reduce:transition-none",
           )}
         >
           <button
@@ -147,7 +147,7 @@ export function WizardCompletionTransition({
               "transition-all duration-150",
               "shadow-md hover:shadow-lg",
               "disabled:opacity-70 disabled:cursor-not-allowed",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600",
             )}
           >
             {navigating ? copy.ctaButtonLoading : copy.ctaButton}
@@ -160,7 +160,7 @@ export function WizardCompletionTransition({
             "flex items-center justify-center gap-2",
             "transition-all duration-500 delay-400",
             visible ? "opacity-100" : "opacity-0",
-            "motion-reduce:opacity-100 motion-reduce:transition-none"
+            "motion-reduce:opacity-100 motion-reduce:transition-none",
           )}
           aria-hidden="true"
         >
@@ -168,7 +168,7 @@ export function WizardCompletionTransition({
             className={cn(
               "w-6 h-6 rounded-full flex items-center justify-center",
               "bg-gradient-to-br from-blue-700 to-purple-600",
-              "text-white text-[10px] font-bold"
+              "text-white text-[10px] font-bold",
             )}
           >
             V

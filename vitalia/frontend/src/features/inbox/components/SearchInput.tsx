@@ -65,10 +65,7 @@ export function SearchInput({ value, onChange, className }: SearchInputProps) {
   const hasValue = localValue.length > 0;
 
   return (
-    <div
-      className={cn("relative flex items-center", className)}
-      role="search"
-    >
+    <div className={cn("relative flex items-center", className)} role="search">
       {/* Search icon */}
       <span
         aria-hidden="true"
@@ -92,7 +89,7 @@ export function SearchInput({ value, onChange, className }: SearchInputProps) {
           "vt-border vt-bg-surface vt-text-foreground",
           "placeholder:vt-text-muted",
           "focus:outline-none focus:ring-1 focus:vt-ring-primary",
-          "transition-shadow"
+          "transition-shadow",
         )}
       />
 
@@ -107,7 +104,7 @@ export function SearchInput({ value, onChange, className }: SearchInputProps) {
             "rounded-full text-xs vt-text-muted",
             "hover:vt-text-foreground focus-visible:outline",
             "focus-visible:outline-2 focus-visible:outline-offset-2",
-            "focus-visible:vt-outline-primary transition-colors"
+            "focus-visible:vt-outline-primary transition-colors",
           )}
         >
           ✕

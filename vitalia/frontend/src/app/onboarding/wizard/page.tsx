@@ -17,7 +17,8 @@ import { WizardOnboardingLayout } from "@/features/onboarding";
 
 export const metadata: Metadata = {
   title: "Configuración de tu clínica — Vitalia",
-  description: "Configura el perfil de tu clínica para personalizar tu asistente Vitalia.",
+  description:
+    "Configura el perfil de tu clínica para personalizar tu asistente Vitalia.",
   robots: { index: false, follow: false },
 };
 

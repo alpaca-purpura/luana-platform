@@ -198,7 +198,8 @@ export function useWizardSSEStream({
           ...prev,
           isConnected: false,
           isStreaming: false,
-          error: "No se pudo conectar con el asistente. Por favor, recarga la página.",
+          error:
+            "No se pudo conectar con el asistente. Por favor, recarga la página.",
         }));
       }
     };

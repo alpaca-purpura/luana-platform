@@ -36,7 +36,11 @@ test.describe("SC-3 — edge · subtab inválido dentro agent válido → inner 
   }) => {
     const pom = new ShellPage(shellPage);
 
-    const response = await pom.gotoInvalidSubtab(TENANT_ID, "camila", "subtab-inexistente");
+    const response = await pom.gotoInvalidSubtab(
+      TENANT_ID,
+      "camila",
+      "subtab-inexistente",
+    );
 
     // HTTP 404 (Next.js not-found)
     if (response) {
@@ -88,7 +92,9 @@ test.describe("SC-3 — edge · subtab inválido dentro agent válido → inner 
     // Contains contextual copy about Camila
     expect(textContent).toMatch(/Camila/i);
     // Verify no voseo verb forms (using Unicode escape to avoid pre-commit hook false positive)
-    expect(textContent).not.toMatch(new RegExp("\\btenés\\b|\\bpodés\\b|\\bhacés\\b", "i"));
+    expect(textContent).not.toMatch(
+      new RegExp("\\btenés\\b|\\bpodés\\b|\\bhacés\\b", "i"),
+    );
   });
 
   test("SC-3-5: CTA navigates to Camila defaultSubtab /camila/voz", async ({
@@ -100,7 +106,9 @@ test.describe("SC-3 — edge · subtab inválido dentro agent válido → inner 
     await expect(pom.getNotFoundAgent()).toBeVisible({ timeout: 10_000 });
 
     // Find and click the CTA (navigate to principal view of Camila)
-    const ctaButton = shellPage.getByRole("link", { name: /Ir a.*Camila|Ir a la vista principal de Camila/i });
+    const ctaButton = shellPage.getByRole("link", {
+      name: /Ir a.*Camila|Ir a la vista principal de Camila/i,
+    });
     await ctaButton.click();
 
     // Should navigate to Camila's defaultSubtab = "voz"

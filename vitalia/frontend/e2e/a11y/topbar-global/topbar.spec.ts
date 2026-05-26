@@ -24,9 +24,7 @@ import AxeBuilder from "@axe-core/playwright";
 const TEST_PAGE = "/test-stack/topbar-global";
 
 test.describe("SC-10..SC-13 — TopBarGlobal a11y (F1-S2)", () => {
-  test("SC-10: zero WCAG 2.1 AA violations in light mode", async ({
-    page,
-  }) => {
+  test("SC-10: zero WCAG 2.1 AA violations in light mode", async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.clear();
     });

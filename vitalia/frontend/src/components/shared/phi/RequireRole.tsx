@@ -16,7 +16,14 @@
 
 import type { ReactNode } from "react";
 
-export type PhiRole = "doctor" | "nurse" | "admin_clinic" | "patient" | "marketing" | "sales" | "superadmin";
+export type PhiRole =
+  | "doctor"
+  | "nurse"
+  | "admin_clinic"
+  | "patient"
+  | "marketing"
+  | "sales"
+  | "superadmin";
 
 export interface RequireRoleProps {
   /** Roles that are allowed to see the children */

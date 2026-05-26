@@ -42,7 +42,10 @@ import {
  * Resolves the human-readable label and defaultSubtab for the agent.
  * Handles 'config' separately since it is not in AGENT_CATALOG.
  */
-function resolveAgentMeta(slug: string): { label: string; defaultSubtab: string } {
+function resolveAgentMeta(slug: string): {
+  label: string;
+  defaultSubtab: string;
+} {
   if (slug === "config") {
     return { label: "Configurar", defaultSubtab: "cuenta" };
   }

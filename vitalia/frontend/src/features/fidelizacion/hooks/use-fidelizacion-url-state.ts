@@ -67,7 +67,10 @@ export function useFidelizacionUrlState(): UseFidelizacionUrlStateReturn {
   const urlState = parseFidelizacionUrlState(searchParams);
 
   const updateParams = useCallback(
-    (updates: Partial<FidelizacionUrlState>, method: "push" | "replace" = "replace") => {
+    (
+      updates: Partial<FidelizacionUrlState>,
+      method: "push" | "replace" = "replace",
+    ) => {
       const newState = { ...urlState, ...updates };
       const newParams = serializeFidelizacionUrlState(newState);
       const queryString = newParams.toString();
@@ -79,77 +82,77 @@ export function useFidelizacionUrlState(): UseFidelizacionUrlStateReturn {
         router.replace(url);
       }
     },
-    [router, pathname, urlState]
+    [router, pathname, urlState],
   );
 
   const setTab = useCallback(
     (tab: FidelizacionTab) => updateParams({ tab }, "push"),
-    [updateParams]
+    [updateParams],
   );
 
   const setPeriod = useCallback(
     (period: FidelizacionPeriod) => updateParams({ period }),
-    [updateParams]
+    [updateParams],
   );
 
   const setVertical = useCallback(
     (vertical: string | null) => updateParams({ vertical }),
-    [updateParams]
+    [updateParams],
   );
 
   const setDoctor = useCallback(
     (doctor: string | null) => updateParams({ doctor }),
-    [updateParams]
+    [updateParams],
   );
 
   const setUrgency = useCallback(
     (urgency: UrgencyFilter[]) => updateParams({ urgency }),
-    [updateParams]
+    [updateParams],
   );
 
   const openConfirmTemplateModal = useCallback(
     (eventId: string) => updateParams({ confirmTemplateModal: eventId }),
-    [updateParams]
+    [updateParams],
   );
 
   const closeConfirmTemplateModal = useCallback(
     () => updateParams({ confirmTemplateModal: null }),
-    [updateParams]
+    [updateParams],
   );
 
   const openPauseModal = useCallback(
     (eventId: string) => updateParams({ pauseModal: eventId }),
-    [updateParams]
+    [updateParams],
   );
 
   const closePauseModal = useCallback(
     () => updateParams({ pauseModal: null }),
-    [updateParams]
+    [updateParams],
   );
 
   const openManualCallModal = useCallback(
     (eventId: string) => updateParams({ manualCallModal: eventId }),
-    [updateParams]
+    [updateParams],
   );
 
   const closeManualCallModal = useCallback(
     () => updateParams({ manualCallModal: null }),
-    [updateParams]
+    [updateParams],
   );
 
   const openSuggestSlotsModal = useCallback(
     (eventId: string) => updateParams({ suggestSlotsModal: eventId }),
-    [updateParams]
+    [updateParams],
   );
 
   const closeSuggestSlotsModal = useCallback(
     () => updateParams({ suggestSlotsModal: null }),
-    [updateParams]
+    [updateParams],
   );
 
   const selectPatient = useCallback(
     (patientId: string | null) => updateParams({ selectedPatient: patientId }),
-    [updateParams]
+    [updateParams],
   );
 
   return {

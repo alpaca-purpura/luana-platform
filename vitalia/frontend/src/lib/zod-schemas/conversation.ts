@@ -190,13 +190,19 @@ export const activityStreamResponseSchema = z.object({
 
 /** Inferred TypeScript types */
 export type ConversationSchema = z.infer<typeof conversationSchema>;
-export type ConversationChannelSchema = z.infer<typeof conversationChannelSchema>;
+export type ConversationChannelSchema = z.infer<
+  typeof conversationChannelSchema
+>;
 export type ConversationStatusSchema = z.infer<typeof conversationStatusSchema>;
 export type HandlerModeSchema = z.infer<typeof handlerModeSchema>;
 export type MessageSchema = z.infer<typeof messageSchema>;
 export type ActionReceiptSchema = z.infer<typeof actionReceiptSchema>;
 export type ToolsStateSchema = z.infer<typeof toolsStateSchema>;
 export type ConversationDetailSchema = z.infer<typeof conversationDetailSchema>;
-export type ConversationListResponseSchema = z.infer<typeof conversationListResponseSchema>;
+export type ConversationListResponseSchema = z.infer<
+  typeof conversationListResponseSchema
+>;
 export type ActivityEventSchema = z.infer<typeof activityEventSchema>;
-export type ActivityStreamResponseSchema = z.infer<typeof activityStreamResponseSchema>;
+export type ActivityStreamResponseSchema = z.infer<
+  typeof activityStreamResponseSchema
+>;

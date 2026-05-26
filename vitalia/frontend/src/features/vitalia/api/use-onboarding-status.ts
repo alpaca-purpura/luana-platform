@@ -13,12 +13,13 @@ export function useOnboardingStatus() {
     queryKey: vitaliaQueryKeys.onboarding.status(),
     queryFn: async (): Promise<OnboardingStatusResponse> => {
       const token = await getToken();
-      const tenantId = (sessionClaims?.public_metadata as Record<string, unknown>)
-        ?.active_tenant_id as string | undefined;
+      const tenantId = (
+        sessionClaims?.public_metadata as Record<string, unknown>
+      )?.active_tenant_id as string | undefined;
       if (!token) throw new Error("Not authenticated");
       return vitaliaFetch<OnboardingStatusResponse>(
         "/api/v1/vitalia/onboarding/status",
-        { token, tenantId: tenantId ?? "" }
+        { token, tenantId: tenantId ?? "" },
       );
     },
     enabled: isLoaded && isSignedIn === true,

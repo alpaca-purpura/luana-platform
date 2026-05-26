@@ -107,9 +107,7 @@ export class ValeriaSidebarPage {
     this.drawerBackdrop = page.getByTestId("valeria-drawer-backdrop");
     this.drawerCloseBtn = page.getByTestId("valeria-drawer-close");
     this.composer = page.locator("#valeria-composer-placeholder");
-    this.liveRegion = page
-      .getByRole("status")
-      .filter({ hasText: /Valeria/ });
+    this.liveRegion = page.getByRole("status").filter({ hasText: /Valeria/ });
 
     // Rail buttons — identified by aria-label (Spanish neutro)
     this.railOpenHistoryBtn = page.getByRole("button", {
@@ -334,18 +332,14 @@ export class ValeriaSidebarPage {
     });
 
     await this.page.evaluate(
-      ({
-        id,
-        key,
-      }: {
-        id: string;
-        key: string;
-      }) => {
+      ({ id, key }: { id: string; key: string }) => {
         const el = document.getElementById(id);
         if (!el) return;
 
         // 1. compositionstart
-        el.dispatchEvent(new CompositionEvent("compositionstart", { bubbles: true }));
+        el.dispatchEvent(
+          new CompositionEvent("compositionstart", { bubbles: true }),
+        );
 
         // 2. keydown with isComposing = true
         const keyEvent = new KeyboardEvent("keydown", {
@@ -359,7 +353,9 @@ export class ValeriaSidebarPage {
         el.dispatchEvent(keyEvent);
 
         // 3. compositionend
-        el.dispatchEvent(new CompositionEvent("compositionend", { bubbles: true }));
+        el.dispatchEvent(
+          new CompositionEvent("compositionend", { bubbles: true }),
+        );
       },
       { id: elementId, key: keyDuringComposition },
     );

@@ -11,12 +11,18 @@ import React from "react";
 vi.mock("nuqs", () => {
   const makeParser = () => ({
     withDefault: (_d: unknown) => ({
-      withOptions: (_opts: unknown) => ({ defaultValue: _d, parseServerSide: (v: unknown) => v }),
+      withOptions: (_opts: unknown) => ({
+        defaultValue: _d,
+        parseServerSide: (v: unknown) => v,
+      }),
       defaultValue: _d,
       parseServerSide: (v: unknown) => v,
     }),
     withOptions: (_opts: unknown) => ({
-      withDefault: (_d: unknown) => ({ defaultValue: _d, parseServerSide: (v: unknown) => v }),
+      withDefault: (_d: unknown) => ({
+        defaultValue: _d,
+        parseServerSide: (v: unknown) => v,
+      }),
       defaultValue: undefined,
       parseServerSide: (v: unknown) => v,
     }),
@@ -50,7 +56,9 @@ vi.mock("@tanstack/react-query", () => ({
   useMutation: vi.fn(),
   useQueryClient: () => ({ invalidateQueries: vi.fn() }),
   QueryClient: vi.fn(),
-  QueryClientProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  QueryClientProvider: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
 }));
 
 // Mock child components to isolate stage test
@@ -78,7 +86,13 @@ const mockStageDetail = {
   count: 28,
   kpis: [
     { key: "nps", label: "NPS", value: 72, unit: "score", currency: null },
-    { key: "referral_rate", label: "Tasa de referidos", value: 18, unit: "pct", currency: null },
+    {
+      key: "referral_rate",
+      label: "Tasa de referidos",
+      value: 18,
+      unit: "pct",
+      currency: null,
+    },
   ],
   trendData: [],
 };
@@ -93,9 +107,7 @@ describe("ExpansionStage", () => {
   });
 
   it("test_renders_referrals_widget — SC-MK-03: expansion stage renders ReferralsWidget", async () => {
-    const { ExpansionStage } = await import(
-      "../components/ExpansionStage"
-    );
+    const { ExpansionStage } = await import("../components/ExpansionStage");
     render(<ExpansionStage />);
 
     // SC-MK-03: Referrals widget must appear inline in the expansion stage
@@ -103,9 +115,7 @@ describe("ExpansionStage", () => {
   });
 
   it("test_renders_lucas_recommendations — shows LucasStageRecommendationsCard for expansion", async () => {
-    const { ExpansionStage } = await import(
-      "../components/ExpansionStage"
-    );
+    const { ExpansionStage } = await import("../components/ExpansionStage");
     render(<ExpansionStage />);
 
     const lucasCard = screen.getByTestId("lucas-recommendations");
@@ -114,9 +124,7 @@ describe("ExpansionStage", () => {
   });
 
   it("test_renders_nps_placeholder — shows NPS placeholder section", async () => {
-    const { ExpansionStage } = await import(
-      "../components/ExpansionStage"
-    );
+    const { ExpansionStage } = await import("../components/ExpansionStage");
     render(<ExpansionStage />);
 
     // NPS placeholder section should exist
@@ -124,9 +132,7 @@ describe("ExpansionStage", () => {
   });
 
   it("test_renders_stage_kpis — shows KPI hero cards from stage detail", async () => {
-    const { ExpansionStage } = await import(
-      "../components/ExpansionStage"
-    );
+    const { ExpansionStage } = await import("../components/ExpansionStage");
     render(<ExpansionStage />);
 
     // NPS KPI label appears (may appear multiple times: KPI card + NPS placeholder heading)
@@ -141,17 +147,13 @@ describe("ExpansionStage", () => {
       isError: false,
     } as ReturnType<typeof useQuery>);
 
-    const { ExpansionStage } = await import(
-      "../components/ExpansionStage"
-    );
+    const { ExpansionStage } = await import("../components/ExpansionStage");
     render(<ExpansionStage />);
     expect(screen.getByRole("status")).toBeInTheDocument();
   });
 
   it("test_aria_tabpanel — stage renders as tabpanel with correct id", async () => {
-    const { ExpansionStage } = await import(
-      "../components/ExpansionStage"
-    );
+    const { ExpansionStage } = await import("../components/ExpansionStage");
     render(<ExpansionStage />);
 
     const panel = screen.getByRole("tabpanel");

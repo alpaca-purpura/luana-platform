@@ -10,7 +10,10 @@ export { useFidelizacionSummary } from "./use-fidelizacion-summary";
 export { useReEngagementPatterns } from "./use-re-engagement-patterns";
 export { useNpsResponses } from "./use-nps-responses";
 export { useActivityStream } from "./use-activity-stream";
-export type { ActivityEvent, ActivityStreamResponse } from "./use-activity-stream";
+export type {
+  ActivityEvent,
+  ActivityStreamResponse,
+} from "./use-activity-stream";
 export { useSendProactiveTemplate } from "./use-send-proactive-template";
 export { usePausePatient } from "./use-pause-patient";
 export { useMarkExternal } from "./use-mark-external";

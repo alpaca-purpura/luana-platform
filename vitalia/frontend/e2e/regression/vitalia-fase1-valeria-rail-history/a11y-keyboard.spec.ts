@@ -86,19 +86,25 @@ test.describe("SC-7 — a11y keyboard navigation", () => {
     // rail → 'Valeria abierta'
     await pom.goto({ valeriaState: "rail", shellMode: "agentic" });
     await expect(
-      valeriaRailPage.getByRole("status").filter({ hasText: "Valeria abierta" }),
+      valeriaRailPage
+        .getByRole("status")
+        .filter({ hasText: "Valeria abierta" }),
     ).toBeAttached();
 
     // full → 'Valeria con historial'
     await pom.goto({ valeriaState: "full", shellMode: "agentic" });
     await expect(
-      valeriaRailPage.getByRole("status").filter({ hasText: "Valeria con historial" }),
+      valeriaRailPage
+        .getByRole("status")
+        .filter({ hasText: "Valeria con historial" }),
     ).toBeAttached();
 
     // collapsed → 'Valeria cerrada'
     await pom.goto({ valeriaState: "collapsed", shellMode: "web" });
     await expect(
-      valeriaRailPage.getByRole("status").filter({ hasText: "Valeria cerrada" }),
+      valeriaRailPage
+        .getByRole("status")
+        .filter({ hasText: "Valeria cerrada" }),
     ).toBeAttached();
   });
 

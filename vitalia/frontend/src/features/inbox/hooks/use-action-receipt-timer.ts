@@ -29,7 +29,7 @@ export interface UseActionReceiptTimerResult {
  * @param expiresAt - ISO 8601 string from action_receipt_expires_at. Pass null to disable.
  */
 export function useActionReceiptTimer(
-  expiresAt: string | null | undefined
+  expiresAt: string | null | undefined,
 ): UseActionReceiptTimerResult {
   const computeRemaining = useCallback((): number => {
     if (!expiresAt) return 0;
@@ -37,7 +37,8 @@ export function useActionReceiptTimer(
     return Math.max(0, Math.floor(diffMs / 1000));
   }, [expiresAt]);
 
-  const [remainingSeconds, setRemainingSeconds] = useState<number>(computeRemaining);
+  const [remainingSeconds, setRemainingSeconds] =
+    useState<number>(computeRemaining);
 
   useEffect(() => {
     if (!expiresAt) {

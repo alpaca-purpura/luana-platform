@@ -22,7 +22,8 @@ export const vitaliaQueryKeys = {
     preset: (slug: string) => ["vitalia", "offers", "presets", slug] as const,
   },
   bookings: {
-    list: (filters?: object) => ["vitalia", "bookings", "list", filters] as const,
+    list: (filters?: object) =>
+      ["vitalia", "bookings", "list", filters] as const,
     detail: (id: string) => ["vitalia", "bookings", "detail", id] as const,
     slots: (filters: { doctor_id: string; offer_id?: string }) =>
       ["vitalia", "bookings", "slots", filters] as const,
@@ -30,13 +31,16 @@ export const vitaliaQueryKeys = {
   treatments: {
     list: () => ["vitalia", "treatments", "list"] as const,
     detail: (id: string) => ["vitalia", "treatments", "detail", id] as const,
-    followup: (id: string) => ["vitalia", "treatments", "followup", id] as const,
+    followup: (id: string) =>
+      ["vitalia", "treatments", "followup", id] as const,
   },
   patients: {
-    list: (filters?: object) => ["vitalia", "patients", "list", filters] as const,
+    list: (filters?: object) =>
+      ["vitalia", "patients", "list", filters] as const,
     detail: (id: string) => ["vitalia", "patients", "detail", id] as const,
   },
   compliance: {
-    events: (filters: object) => ["vitalia", "compliance", "events", filters] as const,
+    events: (filters: object) =>
+      ["vitalia", "compliance", "events", filters] as const,
   },
 } as const;

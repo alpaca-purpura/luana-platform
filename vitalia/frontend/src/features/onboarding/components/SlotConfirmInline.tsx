@@ -61,7 +61,7 @@ export function SlotConfirmInline({
         className={cn(
           "inline-flex items-center gap-1.5 rounded-full px-3 py-1",
           "bg-green-100 text-green-700 text-xs font-medium",
-          className
+          className,
         )}
         aria-live="polite"
       >
@@ -76,7 +76,7 @@ export function SlotConfirmInline({
       <div
         className={cn(
           "rounded-xl border border-gray-200 bg-white p-3 space-y-2",
-          className
+          className,
         )}
         role="group"
         aria-label={`Corrección: ${slot.label}`}
@@ -96,7 +96,7 @@ export function SlotConfirmInline({
           className={cn(
             "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm",
             "focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent",
-            "text-gray-900 placeholder-gray-400"
+            "text-gray-900 placeholder-gray-400",
           )}
           onKeyDown={(e) => {
             if (e.key === "Enter" && editValue.trim()) {
@@ -126,7 +126,7 @@ export function SlotConfirmInline({
               "bg-blue-700 text-white",
               "hover:bg-blue-800 transition-colors duration-150",
               "disabled:opacity-50 disabled:cursor-not-allowed",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600",
             )}
           >
             {copy.editSaveButton}
@@ -140,7 +140,7 @@ export function SlotConfirmInline({
             className={cn(
               "rounded-full px-3 py-1 text-xs font-medium border border-gray-300",
               "text-gray-600 hover:bg-gray-50 transition-colors duration-150",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400"
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400",
             )}
           >
             {copy.editCancelButton}
@@ -155,14 +155,16 @@ export function SlotConfirmInline({
     <div
       className={cn(
         "rounded-xl border border-cyan-200 bg-cyan-50 p-3 space-y-2",
-        className
+        className,
       )}
       role="group"
       aria-label={`Confirmar dato: ${slot.label}`}
     >
       <p className="text-xs text-gray-500">{copy.promptPrefix}</p>
       <p className="text-sm font-semibold text-gray-800">
-        <span className="text-xs text-gray-500 font-normal">{slot.label}: </span>
+        <span className="text-xs text-gray-500 font-normal">
+          {slot.label}:{" "}
+        </span>
         {slot.value}
       </p>
       <div className="flex gap-2 flex-wrap">
@@ -178,7 +180,7 @@ export function SlotConfirmInline({
             "bg-blue-700 text-white",
             "hover:bg-blue-800 transition-colors duration-150",
             "disabled:opacity-50 disabled:cursor-not-allowed",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600",
           )}
           aria-label={`Confirmar: ${slot.value}`}
         >
@@ -190,7 +192,7 @@ export function SlotConfirmInline({
           className={cn(
             "rounded-full px-3 py-1 text-xs font-medium border border-gray-300",
             "text-gray-600 hover:bg-gray-50 transition-colors duration-150",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400"
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400",
           )}
         >
           {copy.editLabel}
@@ -201,7 +203,7 @@ export function SlotConfirmInline({
           className={cn(
             "rounded-full px-3 py-1 text-xs font-medium",
             "text-gray-500 hover:text-gray-700 transition-colors duration-150",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400"
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400",
           )}
         >
           {copy.rejectButton}

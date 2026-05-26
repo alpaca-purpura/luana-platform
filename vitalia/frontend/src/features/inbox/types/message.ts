@@ -11,10 +11,19 @@
  */
 
 /** Who sent the message. */
-export type MessageSenderType = "patient" | "agent_ai" | "agent_human" | "system";
+export type MessageSenderType =
+  | "patient"
+  | "agent_ai"
+  | "agent_human"
+  | "system";
 
 /** Supported media types for message attachments. */
-export type MessageMediaKind = "audio" | "image" | "video" | "document" | "sticker";
+export type MessageMediaKind =
+  | "audio"
+  | "image"
+  | "video"
+  | "document"
+  | "sticker";
 
 /**
  * Message — mirrors Pydantic MessageResponse.

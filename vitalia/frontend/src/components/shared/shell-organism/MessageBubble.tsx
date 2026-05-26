@@ -47,11 +47,14 @@ export function MessageBubble({
   className,
 }: MessageBubbleProps) {
   if (role === "bot") {
-    const descriptor = AGENT_CATALOG[agent] ?? AGENT_CATALOG[DEFAULT_CHAT_AGENT];
+    const descriptor =
+      AGENT_CATALOG[agent] ?? AGENT_CATALOG[DEFAULT_CHAT_AGENT];
     const label = footerLabel ?? descriptor.name;
 
     return (
-      <div className={cn("flex flex-col gap-1 self-start max-w-[80%]", className)}>
+      <div
+        className={cn("flex flex-col gap-1 self-start max-w-[80%]", className)}
+      >
         <div
           data-testid="msg-bubble"
           data-role="bot"
@@ -71,7 +74,12 @@ export function MessageBubble({
 
   // role === 'user'
   return (
-    <div className={cn("flex flex-col gap-1 self-end max-w-[80%] items-end", className)}>
+    <div
+      className={cn(
+        "flex flex-col gap-1 self-end max-w-[80%] items-end",
+        className,
+      )}
+    >
       <div
         data-testid="msg-bubble"
         data-role="user"

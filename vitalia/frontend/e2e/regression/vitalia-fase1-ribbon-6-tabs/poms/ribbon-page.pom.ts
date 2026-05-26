@@ -65,9 +65,7 @@ export class RibbonPage {
    */
   async goto(opts: GotoOptions): Promise<void> {
     const { tenantId, agent, subtab = "default" } = opts;
-    const path = agent
-      ? `/${tenantId}/${agent}/${subtab}`
-      : `/${tenantId}`;
+    const path = agent ? `/${tenantId}/${agent}/${subtab}` : `/${tenantId}`;
     await this.page.goto(path);
     // Wait for the visible ribbon to mount (not just attached — multi-layout DOM has
     // hidden ribbon instances; we wait for the VISIBLE one).
@@ -101,7 +99,10 @@ export class RibbonPage {
    * finding the interactive ribbon the user actually sees.
    */
   getRibbon(): Locator {
-    return this.page.locator('[data-testid="ribbon"]').filter({ visible: true }).first();
+    return this.page
+      .locator('[data-testid="ribbon"]')
+      .filter({ visible: true })
+      .first();
   }
 
   // ── Tab locators ──────────────────────────────────────────────────────────
@@ -180,7 +181,9 @@ export class RibbonPage {
     await this.page.waitForTimeout(200);
     // Scope to visible ribbon container to avoid multi-layout duplicates
     const ribbon = this.getRibbon();
-    const active = ribbon.locator('[data-testid^="ribbon-tab-"][data-active="true"]');
+    const active = ribbon.locator(
+      '[data-testid^="ribbon-tab-"][data-active="true"]',
+    );
     const count = await active.count();
     if (count === 0) return null;
     const testid = await active.first().getAttribute("data-testid");

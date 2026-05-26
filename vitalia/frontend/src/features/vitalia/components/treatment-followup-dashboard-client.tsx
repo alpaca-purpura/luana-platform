@@ -39,17 +39,13 @@ function deriveMilestones(currentStep: string): TreatmentMilestone[] {
   return order.map((name, i) => ({
     name,
     status:
-      i < stepIndex
-        ? "completed"
-        : i === stepIndex
-          ? "current"
-          : "pending",
+      i < stepIndex ? "completed" : i === stepIndex ? "current" : "pending",
   }));
 }
 
 function deriveDashboardStatus(
   paused_reason: string | null,
-  current_step: string
+  current_step: string,
 ): TreatmentDashboardStatus {
   if (!paused_reason) {
     if (current_step === "completed") return "completed";
@@ -76,7 +72,9 @@ function StatusBanner({ status }: { status: TreatmentDashboardStatus }) {
         role="alert"
         aria-live="polite"
       >
-        <span className="text-red-600 mt-0.5 text-lg" aria-hidden="true">⚠</span>
+        <span className="text-red-600 mt-0.5 text-lg" aria-hidden="true">
+          ⚠
+        </span>
         <p className="text-sm text-red-700">
           {MICROCOPY_TREATMENT.alerts.symptomsReported}
         </p>
@@ -91,7 +89,9 @@ function StatusBanner({ status }: { status: TreatmentDashboardStatus }) {
         role="status"
         aria-live="polite"
       >
-        <span className="text-yellow-600 mt-0.5 text-lg" aria-hidden="true">⏸</span>
+        <span className="text-yellow-600 mt-0.5 text-lg" aria-hidden="true">
+          ⏸
+        </span>
         <p className="text-sm text-yellow-700">
           Tratamiento pausado. Esperando intervención de la clínica.
         </p>
@@ -105,7 +105,9 @@ function StatusBanner({ status }: { status: TreatmentDashboardStatus }) {
         className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 flex items-start gap-3"
         role="status"
       >
-        <span className="text-green-600 mt-0.5 text-lg" aria-hidden="true">✓</span>
+        <span className="text-green-600 mt-0.5 text-lg" aria-hidden="true">
+          ✓
+        </span>
         <p className="text-sm text-green-700">
           Tratamiento completado exitosamente.
         </p>
@@ -147,9 +149,7 @@ function NextActionCard({
             {MICROCOPY_TREATMENT.adherence.label}
           </p>
           <p className="text-sm text-gray-800">
-            {typeof adherenceScore === "number"
-              ? `${adherenceScore}%`
-              : "—"}
+            {typeof adherenceScore === "number" ? `${adherenceScore}%` : "—"}
           </p>
         </div>
       </div>
@@ -178,7 +178,7 @@ function CtaBar({
           "rounded-md px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500",
           status === "paused_safety_escalation"
             ? "bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
-            : "bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            : "bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed",
         )}
         aria-label={MICROCOPY_TREATMENT.actions.takeConversation}
       >
@@ -219,10 +219,8 @@ export function TreatmentFollowupDashboardClient({
     isError: isTreatmentError,
   } = useTreatment(treatmentId);
 
-  const {
-    data: snapshot,
-    isLoading: isSnapshotLoading,
-  } = useTreatmentSnapshot(treatmentId);
+  const { data: snapshot, isLoading: isSnapshotLoading } =
+    useTreatmentSnapshot(treatmentId);
 
   const isLoading = isTreatmentLoading || isSnapshotLoading;
 
@@ -256,7 +254,10 @@ export function TreatmentFollowupDashboardClient({
         <div className="h-24 w-full rounded-lg bg-gray-100 animate-pulse" />
         <div className="flex gap-3">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="h-9 w-36 rounded-md bg-gray-200 animate-pulse" />
+            <div
+              key={i}
+              className="h-9 w-36 rounded-md bg-gray-200 animate-pulse"
+            />
           ))}
         </div>
       </div>
@@ -266,7 +267,10 @@ export function TreatmentFollowupDashboardClient({
   if (isTreatmentError || !treatment) {
     return (
       <div
-        className={cn("rounded-lg border border-red-200 bg-red-50 p-6 text-center", className)}
+        className={cn(
+          "rounded-lg border border-red-200 bg-red-50 p-6 text-center",
+          className,
+        )}
         role="alert"
       >
         <p className="text-sm text-red-700">
@@ -278,7 +282,8 @@ export function TreatmentFollowupDashboardClient({
 
   const currentStep = snapshot?.current_step ?? treatment.current_step;
   const adherenceScore = snapshot?.adherence_score ?? treatment.adherence_score;
-  const nextScheduledAt = snapshot?.next_scheduled_at ?? treatment.next_scheduled_at;
+  const nextScheduledAt =
+    snapshot?.next_scheduled_at ?? treatment.next_scheduled_at;
   const pausedReason = snapshot?.paused_reason ?? treatment.paused_reason;
 
   const milestones = deriveMilestones(currentStep);
@@ -292,7 +297,8 @@ export function TreatmentFollowupDashboardClient({
           {MICROCOPY_TREATMENT.title}
         </h2>
         <p className="text-sm text-gray-500">
-          Plan: <span className="font-medium">{treatment.plan_template_slug}</span>
+          Plan:{" "}
+          <span className="font-medium">{treatment.plan_template_slug}</span>
         </p>
       </div>
 

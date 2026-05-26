@@ -13,13 +13,14 @@ export function useBooking(id: string) {
     queryKey: vitaliaQueryKeys.bookings.detail(id),
     queryFn: async (): Promise<BookingSummary> => {
       const token = await getToken();
-      const tenantId = (sessionClaims?.public_metadata as Record<string, unknown>)
-        ?.active_tenant_id as string | undefined;
+      const tenantId = (
+        sessionClaims?.public_metadata as Record<string, unknown>
+      )?.active_tenant_id as string | undefined;
       if (!token) throw new Error("Not authenticated");
-      return vitaliaFetch<BookingSummary>(
-        `/api/v1/vitalia/bookings/${id}`,
-        { token, tenantId: tenantId ?? "" }
-      );
+      return vitaliaFetch<BookingSummary>(`/api/v1/vitalia/bookings/${id}`, {
+        token,
+        tenantId: tenantId ?? "",
+      });
     },
     enabled: isLoaded && isSignedIn === true && Boolean(id),
   });

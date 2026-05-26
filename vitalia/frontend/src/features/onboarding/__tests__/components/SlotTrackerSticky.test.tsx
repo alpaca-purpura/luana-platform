@@ -90,7 +90,9 @@ describe("SlotTrackerSticky", () => {
 
   it("has accessible region label", () => {
     render(<SlotTrackerSticky slots={mockSlots} />);
-    const region = screen.getByRole("region", { name: "Progreso de configuración" });
+    const region = screen.getByRole("region", {
+      name: "Progreso de configuración",
+    });
     expect(region).toBeTruthy();
   });
 

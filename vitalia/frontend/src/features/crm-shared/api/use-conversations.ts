@@ -45,11 +45,14 @@ function buildConversationsUrl(filters: ConversationsFilters): string {
   if (filters.stage) params.set("stage", filters.stage);
   if (filters.mode) params.set("mode", filters.mode);
   if (filters.period) params.set("period", filters.period);
-  if (filters.helpNeeded != null) params.set("help_needed", String(filters.helpNeeded));
-  if (filters.unreadMedia != null) params.set("unread_media", String(filters.unreadMedia));
+  if (filters.helpNeeded != null)
+    params.set("help_needed", String(filters.helpNeeded));
+  if (filters.unreadMedia != null)
+    params.set("unread_media", String(filters.unreadMedia));
   if (filters.search) params.set("search", filters.search);
   if (filters.page != null) params.set("page", String(filters.page));
-  if (filters.pageSize != null) params.set("page_size", String(filters.pageSize));
+  if (filters.pageSize != null)
+    params.set("page_size", String(filters.pageSize));
   const qs = params.toString();
   return `/api/v1/vitalia/crm/conversations${qs ? `?${qs}` : ""}`;
 }
@@ -68,11 +71,14 @@ export function useConversations(filters: ConversationsFilters = {}) {
     queryFn: async () => {
       const token = await getToken();
       if (!token || !orgId) throw new Error("Not authenticated");
-      return fetchClient<ConversationsResponse>(buildConversationsUrl(filters), {
-        token,
-        tenantId: orgId,
-        clinicId,
-      });
+      return fetchClient<ConversationsResponse>(
+        buildConversationsUrl(filters),
+        {
+          token,
+          tenantId: orgId,
+          clinicId,
+        },
+      );
     },
     enabled: isLoaded && isSignedIn === true,
     staleTime: 15_000,

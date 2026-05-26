@@ -38,14 +38,18 @@ describe("TenantOption", () => {
   });
 
   it("active=true renders Check icon (aria-hidden)", () => {
-    const { container } = render(<TenantOption tenant={SONRISA} active={true} />);
+    const { container } = render(
+      <TenantOption tenant={SONRISA} active={true} />,
+    );
     // Lucide Check renders as svg
     const svg = container.querySelector("svg");
     expect(svg).toBeInTheDocument();
   });
 
   it("active=true renders sr-only 'Clínica activa'", () => {
-    const { getByText } = render(<TenantOption tenant={SONRISA} active={true} />);
+    const { getByText } = render(
+      <TenantOption tenant={SONRISA} active={true} />,
+    );
     const srOnly = getByText("Clínica activa");
     expect(srOnly).toBeInTheDocument();
     expect(srOnly.className).toContain("sr-only");

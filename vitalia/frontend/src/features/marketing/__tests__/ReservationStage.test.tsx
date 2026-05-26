@@ -11,12 +11,18 @@ import React from "react";
 vi.mock("nuqs", () => {
   const makeParser = () => ({
     withDefault: (_d: unknown) => ({
-      withOptions: (_opts: unknown) => ({ defaultValue: _d, parseServerSide: (v: unknown) => v }),
+      withOptions: (_opts: unknown) => ({
+        defaultValue: _d,
+        parseServerSide: (v: unknown) => v,
+      }),
       defaultValue: _d,
       parseServerSide: (v: unknown) => v,
     }),
     withOptions: (_opts: unknown) => ({
-      withDefault: (_d: unknown) => ({ defaultValue: _d, parseServerSide: (v: unknown) => v }),
+      withDefault: (_d: unknown) => ({
+        defaultValue: _d,
+        parseServerSide: (v: unknown) => v,
+      }),
       defaultValue: undefined,
       parseServerSide: (v: unknown) => v,
     }),
@@ -50,7 +56,9 @@ vi.mock("@tanstack/react-query", () => ({
   useMutation: vi.fn(),
   useQueryClient: () => ({ invalidateQueries: vi.fn() }),
   QueryClient: vi.fn(),
-  QueryClientProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  QueryClientProvider: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
 }));
 
 // Mock child components to isolate stage test
@@ -77,8 +85,20 @@ const mockStageDetail = {
   periodEnd: "2026-05-31T23:59:59Z",
   count: 36,
   kpis: [
-    { key: "conv_rate", label: "Tasa de conversión", value: 41, unit: "pct", currency: null },
-    { key: "no_show_rate", label: "Ausentismo", value: 12, unit: "pct", currency: null },
+    {
+      key: "conv_rate",
+      label: "Tasa de conversión",
+      value: 41,
+      unit: "pct",
+      currency: null,
+    },
+    {
+      key: "no_show_rate",
+      label: "Ausentismo",
+      value: 12,
+      unit: "pct",
+      currency: null,
+    },
   ],
   trendData: [],
 };
@@ -93,9 +113,7 @@ describe("ReservationStage", () => {
   });
 
   it("test_renders_attribution_matrix_inline — SC-MK-03: reservation stage renders AttributionMatrixWidget", async () => {
-    const { ReservationStage } = await import(
-      "../components/ReservationStage"
-    );
+    const { ReservationStage } = await import("../components/ReservationStage");
     render(<ReservationStage />);
 
     // SC-MK-03: Attribution matrix must appear inline in the reservation stage
@@ -103,9 +121,7 @@ describe("ReservationStage", () => {
   });
 
   it("test_renders_lucas_recommendations — shows LucasStageRecommendationsCard for reservation", async () => {
-    const { ReservationStage } = await import(
-      "../components/ReservationStage"
-    );
+    const { ReservationStage } = await import("../components/ReservationStage");
     render(<ReservationStage />);
 
     const lucasCard = screen.getByTestId("lucas-recommendations");
@@ -114,9 +130,7 @@ describe("ReservationStage", () => {
   });
 
   it("test_renders_stage_kpis — shows KPI hero cards from stage detail", async () => {
-    const { ReservationStage } = await import(
-      "../components/ReservationStage"
-    );
+    const { ReservationStage } = await import("../components/ReservationStage");
     render(<ReservationStage />);
 
     // KPI labels from mock data
@@ -130,17 +144,13 @@ describe("ReservationStage", () => {
       isError: false,
     } as ReturnType<typeof useQuery>);
 
-    const { ReservationStage } = await import(
-      "../components/ReservationStage"
-    );
+    const { ReservationStage } = await import("../components/ReservationStage");
     render(<ReservationStage />);
     expect(screen.getByRole("status")).toBeInTheDocument();
   });
 
   it("test_aria_tabpanel — stage renders as tabpanel with correct id", async () => {
-    const { ReservationStage } = await import(
-      "../components/ReservationStage"
-    );
+    const { ReservationStage } = await import("../components/ReservationStage");
     render(<ReservationStage />);
 
     const panel = screen.getByRole("tabpanel");

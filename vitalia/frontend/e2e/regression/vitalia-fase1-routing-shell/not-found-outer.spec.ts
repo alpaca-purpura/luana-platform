@@ -76,7 +76,9 @@ test.describe("SC-2 — negative · agent slug inválido → outer not-found", (
     await expect(pom.getNotFoundShell()).toBeVisible({ timeout: 10_000 });
 
     // Find and click the "Volver al inicio" CTA
-    const ctaButton = shellPage.getByRole("link", { name: /Volver al inicio/i });
+    const ctaButton = shellPage.getByRole("link", {
+      name: /Volver al inicio/i,
+    });
     await ctaButton.click();
 
     // Should navigate to /valeria/agenda (default landing)

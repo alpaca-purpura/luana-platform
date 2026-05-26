@@ -95,7 +95,8 @@ function collectTsFiles(dir: string): string[] {
 function extractImportPaths(source: string): string[] {
   const imports: string[] = [];
   // Match: import ... from "..."  or  import ... from '...'
-  const importPattern = /(?:^|\n)\s*import\s+(?:.*?)\s+from\s+['"]([^'"]+)['"]/g;
+  const importPattern =
+    /(?:^|\n)\s*import\s+(?:.*?)\s+from\s+['"]([^'"]+)['"]/g;
   let match: RegExpExecArray | null;
   while ((match = importPattern.exec(source)) !== null) {
     imports.push(match[1]);
@@ -111,7 +112,9 @@ function extractImportPaths(source: string): string[] {
 describe("Vitalia FE — FSD boundary matrix (FE-A3)", () => {
   it("feature files do not import from a different feature folder", () => {
     if (!existsSync(FEATURES_DIR)) {
-      console.log("[SKIP] src/features/ directory not found — skipping test_fsd_boundaries");
+      console.log(
+        "[SKIP] src/features/ directory not found — skipping test_fsd_boundaries",
+      );
       return;
     }
 
@@ -121,7 +124,9 @@ describe("Vitalia FE — FSD boundary matrix (FE-A3)", () => {
     });
 
     if (featureDirs.length === 0) {
-      console.log("[SKIP] No feature directories found — skipping test_fsd_boundaries");
+      console.log(
+        "[SKIP] No feature directories found — skipping test_fsd_boundaries",
+      );
       return;
     }
 
@@ -148,33 +153,38 @@ describe("Vitalia FE — FSD boundary matrix (FE-A3)", () => {
           if (featureB !== featureA) {
             violations.push(
               `${relPath}: imports from different feature '@/features/${featureB}' ` +
-              `(violation: features/${featureA} → features/${featureB})`
+                `(violation: features/${featureA} → features/${featureB})`,
             );
           }
         }
       }
     }
 
-    expect(violations, [
-      "FSD boundary violation: cross-feature imports detected.",
-      "",
-      "Per .claude/rules/frontend-fsd.md: feature files CANNOT import",
-      "from a different feature folder.",
-      "",
-      "Fix options:",
-      "  1. Move shared code to src/components/shared/ or src/lib/",
-      "  2. Expose via the feature's own index.ts (if it's an internal dep)",
-      "",
-      "If the import is justified (e.g., sidebar consuming tenant-switcher),",
-      "add to KNOWN_FSD_BOUNDARY_VIOLATIONS (shrink-only ratchet).",
-      "",
-      ...violations,
-    ].join("\n")).toHaveLength(0);
+    expect(
+      violations,
+      [
+        "FSD boundary violation: cross-feature imports detected.",
+        "",
+        "Per .claude/rules/frontend-fsd.md: feature files CANNOT import",
+        "from a different feature folder.",
+        "",
+        "Fix options:",
+        "  1. Move shared code to src/components/shared/ or src/lib/",
+        "  2. Expose via the feature's own index.ts (if it's an internal dep)",
+        "",
+        "If the import is justified (e.g., sidebar consuming tenant-switcher),",
+        "add to KNOWN_FSD_BOUNDARY_VIOLATIONS (shrink-only ratchet).",
+        "",
+        ...violations,
+      ].join("\n"),
+    ).toHaveLength(0);
   });
 
   it("feature index.ts files exist as public API gates", () => {
     if (!existsSync(FEATURES_DIR)) {
-      console.log("[SKIP] src/features/ directory not found — skipping FSD index check");
+      console.log(
+        "[SKIP] src/features/ directory not found — skipping FSD index check",
+      );
       return;
     }
 
@@ -191,16 +201,19 @@ describe("Vitalia FE — FSD boundary matrix (FE-A3)", () => {
       }
     }
 
-    expect(missingIndexFiles, [
-      "Feature folders without index.ts (public API gate) detected.",
-      "",
-      "Every feature must expose its public API via index.ts.",
-      "Per FSD: consumers import from the index, not from internal paths.",
-      "",
-      "Fix: Create index.ts that re-exports public components/hooks/types.",
-      "",
-      ...missingIndexFiles,
-    ].join("\n")).toHaveLength(0);
+    expect(
+      missingIndexFiles,
+      [
+        "Feature folders without index.ts (public API gate) detected.",
+        "",
+        "Every feature must expose its public API via index.ts.",
+        "Per FSD: consumers import from the index, not from internal paths.",
+        "",
+        "Fix: Create index.ts that re-exports public components/hooks/types.",
+        "",
+        ...missingIndexFiles,
+      ].join("\n"),
+    ).toHaveLength(0);
   });
 
   it("KNOWN_FSD_BOUNDARY_VIOLATIONS allowlist only references existing files", () => {
@@ -208,7 +221,7 @@ describe("Vitalia FE — FSD boundary matrix (FE-A3)", () => {
       const absPath = join(ROOT, relPath);
       expect(
         existsSync(absPath),
-        `KNOWN_FSD_BOUNDARY_VIOLATIONS references non-existent file: ${relPath}. Remove it.`
+        `KNOWN_FSD_BOUNDARY_VIOLATIONS references non-existent file: ${relPath}. Remove it.`,
       ).toBe(true);
     }
   });

@@ -15,12 +15,20 @@ describe("marketingParsers", () => {
     it("test_tab_param_replace_intra_route — tab parser is configured for replace (intra-route)", () => {
       // nuqs parseAsStringEnum(...).withDefault(...).withOptions({ history: "replace" })
       // verifies that the parser object has replace semantics
-      expect(marketingParsers.tab.parseServerSide("qualification")).toBe("qualification");
-      expect(marketingParsers.tab.parseServerSide("reservation")).toBe("reservation");
+      expect(marketingParsers.tab.parseServerSide("qualification")).toBe(
+        "qualification",
+      );
+      expect(marketingParsers.tab.parseServerSide("reservation")).toBe(
+        "reservation",
+      );
       expect(marketingParsers.tab.parseServerSide("adoption")).toBe("adoption");
-      expect(marketingParsers.tab.parseServerSide("expansion")).toBe("expansion");
+      expect(marketingParsers.tab.parseServerSide("expansion")).toBe(
+        "expansion",
+      );
       // invalid value falls back to default
-      expect(marketingParsers.tab.parseServerSide("invalid")).toBe("attraction");
+      expect(marketingParsers.tab.parseServerSide("invalid")).toBe(
+        "attraction",
+      );
     });
 
     it("period parser default is 30d", () => {
@@ -42,9 +50,8 @@ describe("marketingParsers", () => {
 
   describe("LucasRecommendation Zod schema (schema smoke)", () => {
     it("parses a valid recommendation", async () => {
-      const { lucasRecommendationSchema } = await import(
-        "@/lib/zod-schemas/lucas-recommendation"
-      );
+      const { lucasRecommendationSchema } =
+        await import("@/lib/zod-schemas/lucas-recommendation");
       const valid = {
         id: "rec-123",
         tenant_id: "tenant-abc",
@@ -70,9 +77,8 @@ describe("marketingParsers", () => {
     });
 
     it("rejects invalid status", async () => {
-      const { lucasRecommendationSchema } = await import(
-        "@/lib/zod-schemas/lucas-recommendation"
-      );
+      const { lucasRecommendationSchema } =
+        await import("@/lib/zod-schemas/lucas-recommendation");
       const invalid = {
         id: "rec-123",
         tenant_id: "tenant-abc",

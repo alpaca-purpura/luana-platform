@@ -312,14 +312,18 @@ describe("Vitalia UI strings — no voseo (A2)", () => {
         "Avanzado",
       ];
       for (const label of EXPECTED_LABELS) {
-        expect(source, `Missing label '${label}' in agent-catalog.ts`).toContain(
-          label,
-        );
+        expect(
+          source,
+          `Missing label '${label}' in agent-catalog.ts`,
+        ).toContain(label);
       }
     });
 
     it("nav aria-labels verbatim — 6 Spanish neutro strings with tildes (Adrián + Configuración)", () => {
-      const absPath = resolve(ROOT, "src/components/shared/shell-organism/SubTabsBar.tsx");
+      const absPath = resolve(
+        ROOT,
+        "src/components/shared/shell-organism/SubTabsBar.tsx",
+      );
       if (!existsSync(absPath)) return;
       const source = readFileSync(absPath, "utf-8");
       // Check aria-labels referenced in SubTabsBar (getAriaLabel function)
@@ -339,7 +343,10 @@ describe("Vitalia UI strings — no voseo (A2)", () => {
     });
 
     it("Configuración in aria-label has tilde (Configuración not Configuracion)", () => {
-      const absPath = resolve(ROOT, "src/components/shared/shell-organism/SubTabsBar.tsx");
+      const absPath = resolve(
+        ROOT,
+        "src/components/shared/shell-organism/SubTabsBar.tsx",
+      );
       if (!existsSync(absPath)) return;
       const source = readFileSync(absPath, "utf-8");
       expect(source).toContain("Configuración");

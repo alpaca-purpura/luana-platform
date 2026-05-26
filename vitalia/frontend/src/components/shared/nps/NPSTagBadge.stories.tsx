@@ -33,7 +33,8 @@ const meta: Meta<typeof NPSTagBadge> = {
       options: ["sm", "md", "lg"],
     },
     variant: {
-      description: "Shape variant: badge (rounded), chip (pill), tag (squared).",
+      description:
+        "Shape variant: badge (rounded), chip (pill), tag (squared).",
       control: { type: "select" },
       options: ["badge", "chip", "tag"],
     },

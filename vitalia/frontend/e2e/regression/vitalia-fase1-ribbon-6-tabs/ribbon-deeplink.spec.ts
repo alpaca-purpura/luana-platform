@@ -28,7 +28,13 @@ import type { AgentSlug } from "@/lib/agent-catalog";
 const DESKTOP_VIEWPORT = { width: 1280, height: 800 };
 const TENANT_ID = process.env["E2E_TENANT_ID"] ?? "vitalia-test-tenant";
 
-const ALL_AGENT_SLUGS: AgentSlug[] = ["lisa", "lucas", "adrian", "valeria", "camila"];
+const ALL_AGENT_SLUGS: AgentSlug[] = [
+  "lisa",
+  "lucas",
+  "adrian",
+  "valeria",
+  "camila",
+];
 
 test.describe("SC-2 — URL deep link active state correcto", () => {
   test.use({ viewport: DESKTOP_VIEWPORT });
@@ -49,7 +55,10 @@ test.describe("SC-2 — URL deep link active state correcto", () => {
     for (const slug of ALL_AGENT_SLUGS) {
       if (slug !== "camila") {
         await expect(pom.getTab(slug)).toHaveAttribute("data-active", "false");
-        await expect(pom.getTab(slug)).toHaveAttribute("aria-selected", "false");
+        await expect(pom.getTab(slug)).toHaveAttribute(
+          "aria-selected",
+          "false",
+        );
       }
     }
 
@@ -87,7 +96,10 @@ test.describe("SC-2 — URL deep link active state correcto", () => {
 
     // Valeria tab should be active
     await expect(pom.getTab("valeria")).toHaveAttribute("data-active", "true");
-    await expect(pom.getTab("valeria")).toHaveAttribute("aria-selected", "true");
+    await expect(pom.getTab("valeria")).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
 
     // All others inactive
     for (const slug of ALL_AGENT_SLUGS) {

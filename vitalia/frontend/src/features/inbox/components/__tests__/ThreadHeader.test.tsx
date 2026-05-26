@@ -22,12 +22,14 @@ import type { ConversationDetail } from "../../types/conversation-detail";
 const mockToggleContactSidebar = vi.fn();
 const mockToggleActivityStream = vi.fn();
 vi.mock("../../store/inbox-store", () => ({
-  useInboxStore: (selector: (s: {
-    contactSidebarOpen: boolean;
-    toggleContactSidebar: () => void;
-    expandedActivityStream: boolean;
-    toggleActivityStream: () => void;
-  }) => unknown) =>
+  useInboxStore: (
+    selector: (s: {
+      contactSidebarOpen: boolean;
+      toggleContactSidebar: () => void;
+      expandedActivityStream: boolean;
+      toggleActivityStream: () => void;
+    }) => unknown,
+  ) =>
     selector({
       contactSidebarOpen: false,
       toggleContactSidebar: mockToggleContactSidebar,
@@ -39,7 +41,8 @@ vi.mock("../../store/inbox-store", () => ({
 // Mock useModeToggle
 const mockToggle = vi.fn();
 vi.mock("../../hooks/use-mode-toggle", async (importOriginal) => {
-  const original = await importOriginal<typeof import("../../hooks/use-mode-toggle")>();
+  const original =
+    await importOriginal<typeof import("../../hooks/use-mode-toggle")>();
   return {
     ...original,
     useModeToggle: () => ({
@@ -59,7 +62,9 @@ vi.mock("../../api/use-pause-adrian", () => ({
 }));
 
 /** Build a minimal ConversationDetail fixture */
-function makeDetail(overrides: Partial<ConversationDetail["conversation"]> = {}): ConversationDetail {
+function makeDetail(
+  overrides: Partial<ConversationDetail["conversation"]> = {},
+): ConversationDetail {
   return {
     conversation: {
       id: "conv-test-1",
@@ -120,15 +125,15 @@ describe("ThreadHeader", () => {
 
   it("displays patient name from detail.lead.name", () => {
     render(<ThreadHeader detail={makeDetail()} />);
-    expect(
-      screen.getByTestId("thread-header-patient-name").textContent
-    ).toBe("María García");
+    expect(screen.getByTestId("thread-header-patient-name").textContent).toBe(
+      "María García",
+    );
   });
 
   it("displays channel badge from detail.conversation.channel", () => {
     render(<ThreadHeader detail={makeDetail()} />);
     expect(
-      screen.getByTestId("thread-header-channel").textContent?.toLowerCase()
+      screen.getByTestId("thread-header-channel").textContent?.toLowerCase(),
     ).toContain("whatsapp");
   });
 
@@ -165,7 +170,10 @@ describe("ThreadHeader", () => {
   });
 
   it("SegmentedControl3Modes shows yo-escribo when handler_mode=human", () => {
-    const detail = makeDetail({ handler_mode: "human", proposal_required: false });
+    const detail = makeDetail({
+      handler_mode: "human",
+      proposal_required: false,
+    });
     render(<ThreadHeader detail={detail} />);
     const yoEscribo = screen.getByTestId("segment-yo-escribo");
     expect(yoEscribo.getAttribute("aria-checked")).toBe("true");

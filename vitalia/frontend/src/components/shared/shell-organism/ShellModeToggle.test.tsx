@@ -30,8 +30,9 @@ describe("ShellModeToggle", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Default: agentic mode
-    mockUseShellStore.mockImplementation((selector: (s: { shellMode: string }) => unknown) =>
-      selector({ shellMode: "agentic" }),
+    mockUseShellStore.mockImplementation(
+      (selector: (s: { shellMode: string }) => unknown) =>
+        selector({ shellMode: "agentic" }),
     );
   });
 
@@ -48,16 +49,18 @@ describe("ShellModeToggle", () => {
   });
 
   it("renders 'Agéntico' label when shellMode='agentic'", () => {
-    mockUseShellStore.mockImplementation((selector: (s: { shellMode: string }) => unknown) =>
-      selector({ shellMode: "agentic" }),
+    mockUseShellStore.mockImplementation(
+      (selector: (s: { shellMode: string }) => unknown) =>
+        selector({ shellMode: "agentic" }),
     );
     render(<ShellModeToggle />);
     expect(screen.getByText("Agéntico")).toBeInTheDocument();
   });
 
   it("renders 'Web' label when shellMode='web'", () => {
-    mockUseShellStore.mockImplementation((selector: (s: { shellMode: string }) => unknown) =>
-      selector({ shellMode: "web" }),
+    mockUseShellStore.mockImplementation(
+      (selector: (s: { shellMode: string }) => unknown) =>
+        selector({ shellMode: "web" }),
     );
     render(<ShellModeToggle />);
     expect(screen.getByText("Web")).toBeInTheDocument();
@@ -75,18 +78,26 @@ describe("ShellModeToggle", () => {
   });
 
   it("has aria-label 'Modo de shell: agéntico activo' when mode is agentic", () => {
-    mockUseShellStore.mockImplementation((selector: (s: { shellMode: string }) => unknown) =>
-      selector({ shellMode: "agentic" }),
+    mockUseShellStore.mockImplementation(
+      (selector: (s: { shellMode: string }) => unknown) =>
+        selector({ shellMode: "agentic" }),
     );
     render(<ShellModeToggle />);
     const btn = screen.getByTestId("shell-mode-toggle");
-    expect(btn).toHaveAttribute("aria-label", expect.stringContaining("Modo de shell"));
-    expect(btn).toHaveAttribute("aria-label", expect.stringContaining("agéntico"));
+    expect(btn).toHaveAttribute(
+      "aria-label",
+      expect.stringContaining("Modo de shell"),
+    );
+    expect(btn).toHaveAttribute(
+      "aria-label",
+      expect.stringContaining("agéntico"),
+    );
   });
 
   it("has aria-label containing 'web' when mode is web", () => {
-    mockUseShellStore.mockImplementation((selector: (s: { shellMode: string }) => unknown) =>
-      selector({ shellMode: "web" }),
+    mockUseShellStore.mockImplementation(
+      (selector: (s: { shellMode: string }) => unknown) =>
+        selector({ shellMode: "web" }),
     );
     render(<ShellModeToggle />);
     const btn = screen.getByTestId("shell-mode-toggle");
@@ -94,8 +105,9 @@ describe("ShellModeToggle", () => {
   });
 
   it("renders icon svg with aria-hidden when mode is agentic", () => {
-    mockUseShellStore.mockImplementation((selector: (s: { shellMode: string }) => unknown) =>
-      selector({ shellMode: "agentic" }),
+    mockUseShellStore.mockImplementation(
+      (selector: (s: { shellMode: string }) => unknown) =>
+        selector({ shellMode: "agentic" }),
     );
     const { container } = render(<ShellModeToggle />);
     const svg = container.querySelector("svg");
@@ -104,8 +116,9 @@ describe("ShellModeToggle", () => {
   });
 
   it("renders icon svg with aria-hidden when mode is web", () => {
-    mockUseShellStore.mockImplementation((selector: (s: { shellMode: string }) => unknown) =>
-      selector({ shellMode: "web" }),
+    mockUseShellStore.mockImplementation(
+      (selector: (s: { shellMode: string }) => unknown) =>
+        selector({ shellMode: "web" }),
     );
     const { container } = render(<ShellModeToggle />);
     const svg = container.querySelector("svg");
@@ -114,8 +127,9 @@ describe("ShellModeToggle", () => {
   });
 
   it("uses Spanish neutro: 'Agéntico' with tilde (no voseo)", () => {
-    mockUseShellStore.mockImplementation((selector: (s: { shellMode: string }) => unknown) =>
-      selector({ shellMode: "agentic" }),
+    mockUseShellStore.mockImplementation(
+      (selector: (s: { shellMode: string }) => unknown) =>
+        selector({ shellMode: "agentic" }),
     );
     render(<ShellModeToggle />);
     // Verify correct Spanish neutro spelling with tilde

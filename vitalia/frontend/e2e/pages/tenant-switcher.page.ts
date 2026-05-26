@@ -59,8 +59,12 @@ export class TenantSwitcherPage {
     this.retryButton = page.getByRole("button", { name: "Reintentar" });
 
     // Footer actions
-    this.addClinicButton = page.getByRole("button", { name: "Agregar clínica" }).first();
-    this.manageAccountLink = page.getByRole("link", { name: "Administrar cuenta" });
+    this.addClinicButton = page
+      .getByRole("button", { name: "Agregar clínica" })
+      .first();
+    this.manageAccountLink = page.getByRole("link", {
+      name: "Administrar cuenta",
+    });
 
     // Add clinic placeholder modal
     this.addClinicModal = page.getByRole("dialog");

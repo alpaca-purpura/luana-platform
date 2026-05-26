@@ -64,7 +64,7 @@ export function ThreadHeader({
 
   const { toggle, isPending, isConflict } = useModeToggle(
     conversation.id,
-    conversation
+    conversation,
   );
 
   const segmentValue = conversationToSegmentValue(conversation);
@@ -74,7 +74,7 @@ export function ThreadHeader({
       className={cn(
         "flex flex-col gap-2 px-4 py-3 border-b vt-border shrink-0",
         "vt-bg-surface",
-        className
+        className,
       )}
       data-testid="thread-header"
     >

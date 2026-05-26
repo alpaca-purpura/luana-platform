@@ -13,12 +13,13 @@ export function useOfferPreset(slug = "medical_services_v1") {
     queryKey: vitaliaQueryKeys.offers.preset(slug),
     queryFn: async (): Promise<OfferPresetResponse> => {
       const token = await getToken();
-      const tenantId = (sessionClaims?.public_metadata as Record<string, unknown>)
-        ?.active_tenant_id as string | undefined;
+      const tenantId = (
+        sessionClaims?.public_metadata as Record<string, unknown>
+      )?.active_tenant_id as string | undefined;
       if (!token) throw new Error("Not authenticated");
       return vitaliaFetch<OfferPresetResponse>(
         `/api/v1/vitalia/offers/presets/${slug}`,
-        { token, tenantId: tenantId ?? "" }
+        { token, tenantId: tenantId ?? "" },
       );
     },
     enabled: isLoaded && isSignedIn === true,

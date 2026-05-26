@@ -56,7 +56,9 @@ function KpiHeroCard({
       )}
     >
       <span className="text-xs vt-text-muted">{label}</span>
-      <span className="text-lg font-semibold vt-text tabular-nums">{value}</span>
+      <span className="text-lg font-semibold vt-text tabular-nums">
+        {value}
+      </span>
     </div>
   );
 }
@@ -76,7 +78,10 @@ export const ReferralsWidget = forwardRef<HTMLDivElement, ReferralsWidgetProps>(
           role="status"
           aria-label={MARKETING_COPY.referrals.loadingMessage}
           aria-busy={true}
-          className={cn("rounded-lg vt-bg-surface vt-border border p-4", className)}
+          className={cn(
+            "rounded-lg vt-bg-surface vt-border border p-4",
+            className,
+          )}
         >
           <div className="animate-pulse space-y-3">
             <div className="h-4 vt-bg-surface-alt rounded w-32" />
@@ -97,7 +102,10 @@ export const ReferralsWidget = forwardRef<HTMLDivElement, ReferralsWidgetProps>(
         <div
           ref={ref}
           role="alert"
-          className={cn("rounded-lg vt-bg-surface vt-border border p-4", className)}
+          className={cn(
+            "rounded-lg vt-bg-surface vt-border border p-4",
+            className,
+          )}
         >
           <p className="text-sm vt-text-danger">
             {MARKETING_COPY.referrals.errorMessage}
@@ -110,7 +118,10 @@ export const ReferralsWidget = forwardRef<HTMLDivElement, ReferralsWidgetProps>(
       return (
         <div
           ref={ref}
-          className={cn("rounded-lg vt-bg-surface vt-border border p-4", className)}
+          className={cn(
+            "rounded-lg vt-bg-surface vt-border border p-4",
+            className,
+          )}
         >
           <p className="text-sm vt-text-muted italic">
             {MARKETING_COPY.referrals.emptyMessage}
@@ -124,7 +135,10 @@ export const ReferralsWidget = forwardRef<HTMLDivElement, ReferralsWidgetProps>(
     return (
       <div
         ref={ref}
-        className={cn("rounded-lg vt-bg-surface vt-border border overflow-hidden", className)}
+        className={cn(
+          "rounded-lg vt-bg-surface vt-border border overflow-hidden",
+          className,
+        )}
       >
         {/* Header */}
         <div className="px-4 py-3 border-b vt-border-soft">

@@ -49,9 +49,7 @@ export function ChatHeader({
   const descriptor = AGENT_CATALOG[agent] ?? AGENT_CATALOG[DEFAULT_CHAT_AGENT];
 
   const statusText =
-    status === "online"
-      ? `En línea · ${descriptor.role}`
-      : "Desconectada";
+    status === "online" ? `En línea · ${descriptor.role}` : "Desconectada";
 
   const modeLabel = mode === "agent" ? "🤖 Modo agente" : "🌐 Modo web";
 

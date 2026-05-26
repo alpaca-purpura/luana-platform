@@ -23,9 +23,7 @@ export const MINDFUL_FIXTURE = {
   city: "Santiago",
   planTier: "solo_doctor" as const,
   currency: "USD",
-  doctors: [
-    { name: "Ps. Carolina Fuentes", specialty: "Psicología clínica" },
-  ],
+  doctors: [{ name: "Ps. Carolina Fuentes", specialty: "Psicología clínica" }],
   sampleOffer: {
     name: "Sesión individual orientativa",
     type: "individual_session",
@@ -52,24 +50,27 @@ export type MindfulFixtures = {
 
 async function setupMindfulMocks(page: Page): Promise<void> {
   // Mock: clinic profile
-  await page.route("**/api/v1/vitalia/onboarding/clinic-profile", async (route) => {
-    if (route.request().method() === "POST") {
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({
-          tenant_id: MINDFUL_FIXTURE.tenantId,
-          clinic_name: MINDFUL_FIXTURE.clinicName,
-          clinic_type: MINDFUL_FIXTURE.clinicType,
-          country: MINDFUL_FIXTURE.country,
-          city: MINDFUL_FIXTURE.city,
-          created_at: new Date().toISOString(),
-        }),
-      });
-    } else {
-      await route.continue();
-    }
-  });
+  await page.route(
+    "**/api/v1/vitalia/onboarding/clinic-profile",
+    async (route) => {
+      if (route.request().method() === "POST") {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            tenant_id: MINDFUL_FIXTURE.tenantId,
+            clinic_name: MINDFUL_FIXTURE.clinicName,
+            clinic_type: MINDFUL_FIXTURE.clinicType,
+            country: MINDFUL_FIXTURE.country,
+            city: MINDFUL_FIXTURE.city,
+            created_at: new Date().toISOString(),
+          }),
+        });
+      } else {
+        await route.continue();
+      }
+    },
+  );
 
   // Mock: plans
   await page.route("**/api/v1/vitalia/onboarding/plans", async (route) => {
@@ -77,7 +78,12 @@ async function setupMindfulMocks(page: Page): Promise<void> {
       status: 200,
       contentType: "application/json",
       body: JSON.stringify([
-        { id: "solo_doctor", name: "Solo Doctor", price_usd: 99, max_doctors: 1 },
+        {
+          id: "solo_doctor",
+          name: "Solo Doctor",
+          price_usd: 99,
+          max_doctors: 1,
+        },
         { id: "clinic", name: "Clínica", price_usd: 199, max_doctors: 10 },
       ]),
     });
@@ -99,35 +105,53 @@ async function setupMindfulMocks(page: Page): Promise<void> {
               secondary_color: "#1E1B4B",
               accent_color: "#A5B4FC",
             },
-            contact: { address: "Providencia, Santiago, Chile", phone: "+56-9-8765-4321" },
+            contact: {
+              address: "Providencia, Santiago, Chile",
+              phone: "+56-9-8765-4321",
+            },
             team: { doctors: MINDFUL_FIXTURE.doctors },
             testimonials: [
-              { quote: "La Ps. Fuentes me ayudó a superar mi ansiedad", author: "Ana V.", rating: 5 },
+              {
+                quote: "La Ps. Fuentes me ayudó a superar mi ansiedad",
+                author: "Ana V.",
+                rating: 5,
+              },
             ],
           },
         }),
       });
     } else if (route.request().method() === "PATCH") {
-      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ saved: true }) });
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ saved: true }),
+      });
     } else {
       await route.continue();
     }
   });
 
   // Mock: offer presets (psychology)
-  await page.route("**/api/v1/offers/presets/medical_services_v1**", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({
-        preset_id: "medical_services_v1",
-        label_es: "Servicio médico",
-        preset_types: ["individual_session", "orientative_session", "group_therapy"],
-        requires_consent: false,
-        supports_deposit: false,
-      }),
-    });
-  });
+  await page.route(
+    "**/api/v1/offers/presets/medical_services_v1**",
+    async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          preset_id: "medical_services_v1",
+          label_es: "Servicio médico",
+          preset_types: [
+            "individual_session",
+            "orientative_session",
+            "group_therapy",
+          ],
+          requires_consent: false,
+          supports_deposit: false,
+        }),
+      });
+    },
+  );
 
   // Mock: create offer
   await page.route("**/api/v1/offers", async (route) => {
@@ -149,16 +173,29 @@ async function setupMindfulMocks(page: Page): Promise<void> {
   });
 
   // Mock: available slots (solo doctor)
-  await page.route("**/api/v1/vitalia/bookings/available-slots**", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify([
-        { slot_iso: "2026-05-22T14:00:00Z", doctor_id: "ps-fuentes", doctor_name: "Ps. Carolina Fuentes", available: true },
-        { slot_iso: "2026-05-22T16:00:00Z", doctor_id: "ps-fuentes", doctor_name: "Ps. Carolina Fuentes", available: true },
-      ]),
-    });
-  });
+  await page.route(
+    "**/api/v1/vitalia/bookings/available-slots**",
+    async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify([
+          {
+            slot_iso: "2026-05-22T14:00:00Z",
+            doctor_id: "ps-fuentes",
+            doctor_name: "Ps. Carolina Fuentes",
+            available: true,
+          },
+          {
+            slot_iso: "2026-05-22T16:00:00Z",
+            doctor_id: "ps-fuentes",
+            doctor_name: "Ps. Carolina Fuentes",
+            available: true,
+          },
+        ]),
+      });
+    },
+  );
 
   // Mock: create booking (full prepay)
   await page.route("**/api/v1/vitalia/bookings", async (route) => {
@@ -198,26 +235,34 @@ async function setupMindfulMocks(page: Page): Promise<void> {
   });
 
   // Mock: compliance events (minimal for psychology)
-  await page.route("**/api/v1/vitalia/medical-compliance/events**", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({
-        total: 52,
-        events: [
-          { id: "evt-1", event_type: "consent_signed", severity: "info", created_at: "2026-05-10T10:00:00Z" },
-        ],
-        breakdown: {
-          pii_detected: 0,
-          consent_requested: 5,
-          consent_signed: 5,
-          safety_escalation: 0,
-          prompt_injection_blocked: 0,
-          cross_tenant_attempt: 0,
-        },
-      }),
-    });
-  });
+  await page.route(
+    "**/api/v1/vitalia/medical-compliance/events**",
+    async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          total: 52,
+          events: [
+            {
+              id: "evt-1",
+              event_type: "consent_signed",
+              severity: "info",
+              created_at: "2026-05-10T10:00:00Z",
+            },
+          ],
+          breakdown: {
+            pii_detected: 0,
+            consent_requested: 5,
+            consent_signed: 5,
+            safety_escalation: 0,
+            prompt_injection_blocked: 0,
+            cross_tenant_attempt: 0,
+          },
+        }),
+      });
+    },
+  );
 }
 
 // ---------------------------------------------------------------------------

@@ -34,7 +34,11 @@ test.describe("SC-3 — deep link → URL-derived active state correcto", () => 
   }) => {
     const pom = new SubTabsBarPage(shellPage);
 
-    await pom.goto({ tenantId: TENANT_ID, agent: "camila", subtab: "reactivar" });
+    await pom.goto({
+      tenantId: TENANT_ID,
+      agent: "camila",
+      subtab: "reactivar",
+    });
 
     // 4 Camila sub-tabs
     expect(await pom.getSubTabCount()).toBe(4);
@@ -42,13 +46,28 @@ test.describe("SC-3 — deep link → URL-derived active state correcto", () => 
 
     // Reactivar should be active
     expect(await pom.getActiveSubTabId()).toBe("reactivar");
-    await expect(pom.getSubTab("reactivar")).toHaveAttribute("aria-selected", "true");
-    await expect(pom.getSubTab("reactivar")).toHaveAttribute("data-active", "true");
+    await expect(pom.getSubTab("reactivar")).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    await expect(pom.getSubTab("reactivar")).toHaveAttribute(
+      "data-active",
+      "true",
+    );
 
     // Other sub-tabs should be inactive
-    await expect(pom.getSubTab("voz")).toHaveAttribute("aria-selected", "false");
-    await expect(pom.getSubTab("multiplicar")).toHaveAttribute("data-active", "false");
-    await expect(pom.getSubTab("reputacion")).toHaveAttribute("data-active", "false");
+    await expect(pom.getSubTab("voz")).toHaveAttribute(
+      "aria-selected",
+      "false",
+    );
+    await expect(pom.getSubTab("multiplicar")).toHaveAttribute(
+      "data-active",
+      "false",
+    );
+    await expect(pom.getSubTab("reputacion")).toHaveAttribute(
+      "data-active",
+      "false",
+    );
   });
 
   test("SC-3-2: /lucas/resultados → Resultados active (sub-tab idx 3)", async ({
@@ -56,17 +75,27 @@ test.describe("SC-3 — deep link → URL-derived active state correcto", () => 
   }) => {
     const pom = new SubTabsBarPage(shellPage);
 
-    await pom.goto({ tenantId: TENANT_ID, agent: "lucas", subtab: "resultados" });
+    await pom.goto({
+      tenantId: TENANT_ID,
+      agent: "lucas",
+      subtab: "resultados",
+    });
 
     // 5 Lucas sub-tabs
     expect(await pom.getSubTabCount()).toBe(5);
     expect(await pom.getAriaLabel()).toBe("Sub-secciones Lucas");
 
     expect(await pom.getActiveSubTabId()).toBe("resultados");
-    await expect(pom.getSubTab("resultados")).toHaveAttribute("aria-selected", "true");
+    await expect(pom.getSubTab("resultados")).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
 
     // First sub-tab should be inactive
-    await expect(pom.getSubTab("lanzar")).toHaveAttribute("aria-selected", "false");
+    await expect(pom.getSubTab("lanzar")).toHaveAttribute(
+      "aria-selected",
+      "false",
+    );
   });
 
   test("SC-3-3: /lisa/compliance → Compliance active (Lisa último sub-tab)", async ({
@@ -74,15 +103,25 @@ test.describe("SC-3 — deep link → URL-derived active state correcto", () => 
   }) => {
     const pom = new SubTabsBarPage(shellPage);
 
-    await pom.goto({ tenantId: TENANT_ID, agent: "lisa", subtab: "compliance" });
+    await pom.goto({
+      tenantId: TENANT_ID,
+      agent: "lisa",
+      subtab: "compliance",
+    });
 
     expect(await pom.getSubTabCount()).toBe(4);
     expect(await pom.getAriaLabel()).toBe("Sub-secciones Lisa");
 
     expect(await pom.getActiveSubTabId()).toBe("compliance");
-    await expect(pom.getSubTab("compliance")).toHaveAttribute("aria-selected", "true");
+    await expect(pom.getSubTab("compliance")).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
 
     // Marca (first) should be inactive
-    await expect(pom.getSubTab("marca")).toHaveAttribute("aria-selected", "false");
+    await expect(pom.getSubTab("marca")).toHaveAttribute(
+      "aria-selected",
+      "false",
+    );
   });
 });

@@ -40,7 +40,8 @@ export const Closed: Story = {
   parameters: {
     docs: {
       description: {
-        story: "Cuando open=false el componente retorna null. Estado de reposo.",
+        story:
+          "Cuando open=false el componente retorna null. Estado de reposo.",
       },
     },
   },

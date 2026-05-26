@@ -14,11 +14,7 @@
  * (marketing T-mk-Fe-2 Wave 5), descubierto en F1-S0 T-7 verify.
  */
 
-import {
-  parseAsString,
-  parseAsStringEnum,
-  parseAsBoolean,
-} from "nuqs";
+import { parseAsString, parseAsStringEnum, parseAsBoolean } from "nuqs";
 
 export const marketingParsers = {
   /** Active bowtie tab. replace=true means no new browser history entry (intra-route) */
@@ -44,13 +40,18 @@ export const marketingParsers = {
   selectedRecommendation: parseAsString.withOptions({ history: "replace" }),
 
   /** Approval confirmation modal open state */
-  approvalModal: parseAsBoolean.withDefault(false).withOptions({ history: "replace" }),
+  approvalModal: parseAsBoolean
+    .withDefault(false)
+    .withOptions({ history: "replace" }),
 
   /** Channel detail sidebar (provider slug, optional) */
   channelDetailSidebar: parseAsString.withOptions({ history: "replace" }),
 
   /** Connection wizard (provider slug being connected, optional) */
-  connectionWizard: parseAsStringEnum(["meta_ads", "google_ads"] as const).withOptions({
+  connectionWizard: parseAsStringEnum([
+    "meta_ads",
+    "google_ads",
+  ] as const).withOptions({
     history: "replace",
   }),
 };

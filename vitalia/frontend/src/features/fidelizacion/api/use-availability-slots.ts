@@ -57,7 +57,7 @@ export function useAvailabilitySlots({
 
       return vitaliaFetch<AvailabilitySlotsResponse>(
         `/api/v1/vitalia/scheduling/availability?${params.toString()}`,
-        { token, tenantId: orgId }
+        { token, tenantId: orgId },
       );
     },
     enabled: isLoaded && isSignedIn === true && enabled,

@@ -11,11 +11,11 @@
 import { cn } from "@/lib/cn";
 
 export type DepositStatus =
-  | "pending"    /* Pendiente de pago */
-  | "paid"       /* Pagado y confirmado */
-  | "partial"    /* Pago parcial */
-  | "refunded"   /* Reembolsado */
-  | "expired";   /* Vencido sin pago */
+  | "pending" /* Pendiente de pago */
+  | "paid" /* Pagado y confirmado */
+  | "partial" /* Pago parcial */
+  | "refunded" /* Reembolsado */
+  | "expired"; /* Vencido sin pago */
 
 export interface DepositBadgeProps {
   /** Deposit payment status */
@@ -73,15 +73,13 @@ export function DepositBadge({
         "inline-flex items-center gap-1 font-medium rounded-[var(--radius-pill)]",
         size === "sm" ? "text-[10px] px-2 py-0.5" : "text-xs px-2.5 py-1",
         statusClass,
-        className
+        className,
       )}
       aria-label={`Depósito: ${label}${amountDisplay}`}
       role="status"
     >
       {label}
-      {amountDisplay && (
-        <span className="tabular-nums">{amountDisplay}</span>
-      )}
+      {amountDisplay && <span className="tabular-nums">{amountDisplay}</span>}
     </span>
   );
 }

@@ -26,7 +26,9 @@ vi.mock("@tanstack/react-query", () => ({
   useMutation: vi.fn(),
   useQueryClient: () => ({ invalidateQueries: vi.fn() }),
   QueryClient: vi.fn(),
-  QueryClientProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  QueryClientProvider: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
 }));
 
 const mockAttributionData = {
@@ -95,9 +97,8 @@ describe("AttributionMatrixWidget", () => {
   });
 
   it("test_renders_table_with_4_origins — renders table with 4 origin rows + total", async () => {
-    const { AttributionMatrixWidget } = await import(
-      "../components/AttributionMatrixWidget"
-    );
+    const { AttributionMatrixWidget } =
+      await import("../components/AttributionMatrixWidget");
     render(<AttributionMatrixWidget />);
 
     // Table element must exist for a11y
@@ -115,9 +116,8 @@ describe("AttributionMatrixWidget", () => {
   });
 
   it("test_renders_column_headers — table has correct column headers", async () => {
-    const { AttributionMatrixWidget } = await import(
-      "../components/AttributionMatrixWidget"
-    );
+    const { AttributionMatrixWidget } =
+      await import("../components/AttributionMatrixWidget");
     render(<AttributionMatrixWidget />);
 
     expect(screen.getByText("Leads")).toBeInTheDocument();
@@ -128,13 +128,14 @@ describe("AttributionMatrixWidget", () => {
   });
 
   it("test_renders_top_insight — shows topInsightText from data", async () => {
-    const { AttributionMatrixWidget } = await import(
-      "../components/AttributionMatrixWidget"
-    );
+    const { AttributionMatrixWidget } =
+      await import("../components/AttributionMatrixWidget");
     render(<AttributionMatrixWidget />);
 
     expect(
-      screen.getByText("El agente de ventas genera el 44% de tus leads calificados."),
+      screen.getByText(
+        "El agente de ventas genera el 44% de tus leads calificados.",
+      ),
     ).toBeInTheDocument();
   });
 
@@ -145,9 +146,8 @@ describe("AttributionMatrixWidget", () => {
       isError: false,
     } as ReturnType<typeof useQuery>);
 
-    const { AttributionMatrixWidget } = await import(
-      "../components/AttributionMatrixWidget"
-    );
+    const { AttributionMatrixWidget } =
+      await import("../components/AttributionMatrixWidget");
     render(<AttributionMatrixWidget />);
     expect(screen.getByRole("status")).toBeInTheDocument();
   });
@@ -159,13 +159,10 @@ describe("AttributionMatrixWidget", () => {
       isError: false,
     } as ReturnType<typeof useQuery>);
 
-    const { AttributionMatrixWidget } = await import(
-      "../components/AttributionMatrixWidget"
-    );
+    const { AttributionMatrixWidget } =
+      await import("../components/AttributionMatrixWidget");
     render(<AttributionMatrixWidget />);
-    expect(
-      screen.getByText(/no hay datos de atribución/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/no hay datos de atribución/i)).toBeInTheDocument();
   });
 
   it("test_error_state — shows error message on query error", async () => {
@@ -176,9 +173,8 @@ describe("AttributionMatrixWidget", () => {
       error: new Error("fetch failed"),
     } as ReturnType<typeof useQuery>);
 
-    const { AttributionMatrixWidget } = await import(
-      "../components/AttributionMatrixWidget"
-    );
+    const { AttributionMatrixWidget } =
+      await import("../components/AttributionMatrixWidget");
     render(<AttributionMatrixWidget />);
     expect(
       screen.getByText(/no se pudo cargar la matriz/i),
@@ -186,21 +182,21 @@ describe("AttributionMatrixWidget", () => {
   });
 
   it("test_heatmap_cells_have_aria_label — each data cell has accessible label", async () => {
-    const { AttributionMatrixWidget } = await import(
-      "../components/AttributionMatrixWidget"
-    );
+    const { AttributionMatrixWidget } =
+      await import("../components/AttributionMatrixWidget");
     render(<AttributionMatrixWidget />);
 
     // At least some cells should have aria-label for screen readers
     const cells = screen.getAllByRole("cell");
-    const cellsWithAriaLabel = cells.filter((c) => c.getAttribute("aria-label"));
+    const cellsWithAriaLabel = cells.filter((c) =>
+      c.getAttribute("aria-label"),
+    );
     expect(cellsWithAriaLabel.length).toBeGreaterThan(0);
   });
 
   it("test_no_phi_in_output — does not render patient names", async () => {
-    const { AttributionMatrixWidget } = await import(
-      "../components/AttributionMatrixWidget"
-    );
+    const { AttributionMatrixWidget } =
+      await import("../components/AttributionMatrixWidget");
     const { container } = render(<AttributionMatrixWidget />);
     // Origin labels are channel names, never patient names
     // PHI check: no text like "patient.name" in DOM

@@ -20,7 +20,11 @@ import { MessageBubble } from "./MessageBubble";
 describe("MessageBubble — bot variant (SC-1 happy)", () => {
   it("renders bot bubble with bg-card border-border classes", () => {
     render(
-      <MessageBubble role="bot" content="Hola, ¿en qué te ayudo?" time="09:01" />,
+      <MessageBubble
+        role="bot"
+        content="Hola, ¿en qué te ayudo?"
+        time="09:01"
+      />,
     );
     const bubble = screen.getByTestId("msg-bubble");
     expect(bubble).toBeDefined();
@@ -63,10 +67,7 @@ describe("MessageBubble — bot variant (SC-1 happy)", () => {
 
   it("renders content text correctly", () => {
     render(
-      <MessageBubble
-        role="bot"
-        content="¡Buenos días! Tienes 8 turnos hoy."
-      />,
+      <MessageBubble role="bot" content="¡Buenos días! Tienes 8 turnos hoy." />,
     );
     expect(
       screen.getByText("¡Buenos días! Tienes 8 turnos hoy."),
@@ -76,7 +77,9 @@ describe("MessageBubble — bot variant (SC-1 happy)", () => {
 
 describe("MessageBubble — user variant (SC-1 happy)", () => {
   it("renders user bubble with bg-agent-valeria text-white classes", () => {
-    render(<MessageBubble role="user" content="Mensaje del usuario" time="09:02" />);
+    render(
+      <MessageBubble role="user" content="Mensaje del usuario" time="09:02" />,
+    );
     const bubble = screen.getByTestId("msg-bubble");
     expect(bubble.getAttribute("data-role")).toBe("user");
     expect(bubble.className).toContain("bg-agent-valeria");
@@ -87,9 +90,7 @@ describe("MessageBubble — user variant (SC-1 happy)", () => {
   });
 
   it("user wrapper self-end max-w-[80%] items-end", () => {
-    const { container } = render(
-      <MessageBubble role="user" content="Hola" />,
-    );
+    const { container } = render(<MessageBubble role="user" content="Hola" />);
     const wrapper = container.firstChild as HTMLElement;
     expect(wrapper.className).toContain("self-end");
     expect(wrapper.className).toContain("items-end");

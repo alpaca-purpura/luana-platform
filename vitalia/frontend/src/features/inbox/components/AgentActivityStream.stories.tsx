@@ -105,8 +105,16 @@ export const Colapsado: Story = {
     const { useActivityStream } = await import("../api/use-activity-stream");
 
     (useInboxStore as unknown as InboxStoreMock).mockImplementation(
-      (selector: (s: { expandedActivityStream: boolean; toggleActivityStream: () => void }) => unknown) =>
-        selector({ expandedActivityStream: false, toggleActivityStream: vi.fn() })
+      (
+        selector: (s: {
+          expandedActivityStream: boolean;
+          toggleActivityStream: () => void;
+        }) => unknown,
+      ) =>
+        selector({
+          expandedActivityStream: false,
+          toggleActivityStream: vi.fn(),
+        }),
     );
     (useActivityStream as unknown as ActivityStreamMock).mockReturnValue({
       data: { events: [], total: 0 },
@@ -122,8 +130,16 @@ export const ExpandidoConEventos: Story = {
     const { useActivityStream } = await import("../api/use-activity-stream");
 
     (useInboxStore as unknown as InboxStoreMock).mockImplementation(
-      (selector: (s: { expandedActivityStream: boolean; toggleActivityStream: () => void }) => unknown) =>
-        selector({ expandedActivityStream: true, toggleActivityStream: vi.fn() })
+      (
+        selector: (s: {
+          expandedActivityStream: boolean;
+          toggleActivityStream: () => void;
+        }) => unknown,
+      ) =>
+        selector({
+          expandedActivityStream: true,
+          toggleActivityStream: vi.fn(),
+        }),
     );
     (useActivityStream as unknown as ActivityStreamMock).mockReturnValue({
       data: { events: MOCK_EVENTS, total: MOCK_EVENTS.length },
@@ -139,8 +155,16 @@ export const ExpandidoVacio: Story = {
     const { useActivityStream } = await import("../api/use-activity-stream");
 
     (useInboxStore as unknown as InboxStoreMock).mockImplementation(
-      (selector: (s: { expandedActivityStream: boolean; toggleActivityStream: () => void }) => unknown) =>
-        selector({ expandedActivityStream: true, toggleActivityStream: vi.fn() })
+      (
+        selector: (s: {
+          expandedActivityStream: boolean;
+          toggleActivityStream: () => void;
+        }) => unknown,
+      ) =>
+        selector({
+          expandedActivityStream: true,
+          toggleActivityStream: vi.fn(),
+        }),
     );
     (useActivityStream as unknown as ActivityStreamMock).mockReturnValue({
       data: { events: [], total: 0 },
@@ -156,8 +180,16 @@ export const Cargando: Story = {
     const { useActivityStream } = await import("../api/use-activity-stream");
 
     (useInboxStore as unknown as InboxStoreMock).mockImplementation(
-      (selector: (s: { expandedActivityStream: boolean; toggleActivityStream: () => void }) => unknown) =>
-        selector({ expandedActivityStream: true, toggleActivityStream: vi.fn() })
+      (
+        selector: (s: {
+          expandedActivityStream: boolean;
+          toggleActivityStream: () => void;
+        }) => unknown,
+      ) =>
+        selector({
+          expandedActivityStream: true,
+          toggleActivityStream: vi.fn(),
+        }),
     );
     (useActivityStream as unknown as ActivityStreamMock).mockReturnValue({
       data: undefined,

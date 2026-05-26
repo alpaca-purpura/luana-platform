@@ -51,7 +51,9 @@ test.describe("SC-2 — mobile collapse (F1-S4)", () => {
     //   (b) ninguna instancia está visible en viewport 375px
     const allValeriaSlots = shellPage.getByTestId("valeria-sidebar-slot");
     const domCount = await allValeriaSlots.count();
-    const visibleCount = await allValeriaSlots.filter({ visible: true }).count();
+    const visibleCount = await allValeriaSlots
+      .filter({ visible: true })
+      .count();
     // DOM presence: el slot existe en el árbol (puede estar en la rama agentic hidden)
     expect(domCount).toBeGreaterThanOrEqual(0); // puede no existir en mobile-only branch
     // Visibility: ningún slot visible en viewport mobile
@@ -75,7 +77,10 @@ test.describe("SC-2 — mobile collapse (F1-S4)", () => {
   test("no overflow horizontal", async ({ shellPage }) => {
     // Check document scrollWidth <= clientWidth (no horizontal overflow)
     const hasHorizontalOverflow = await shellPage.evaluate(() => {
-      return document.documentElement.scrollWidth > document.documentElement.clientWidth;
+      return (
+        document.documentElement.scrollWidth >
+        document.documentElement.clientWidth
+      );
     });
     expect(hasHorizontalOverflow).toBe(false);
   });

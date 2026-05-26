@@ -80,9 +80,7 @@ function ActivityEventItem({
         <span className="text-xs font-medium vt-text-foreground mr-1">
           {kindLabel}
         </span>
-        <span className="text-xs vt-text-muted truncate">
-          {event.summary}
-        </span>
+        <span className="text-xs vt-text-muted truncate">{event.summary}</span>
       </div>
 
       {/* Timestamp — per master-data.md: formatTenantTime (never toLocaleTimeString) */}
@@ -122,7 +120,7 @@ export function AgentActivityStream({
       className={cn(
         "flex flex-col border-t vt-border vt-bg-surface transition-all duration-200 ease-in-out",
         expanded ? "min-h-[240px] max-h-[240px]" : "h-8",
-        className
+        className,
       )}
       aria-label={INBOX_COPY.activityStream.ariaLabel}
     >
@@ -148,19 +146,26 @@ export function AgentActivityStream({
             "inline-flex items-center justify-center w-6 h-6 rounded",
             "vt-text-muted hover:vt-text-foreground hover:vt-bg-muted/40",
             "transition-colors focus-visible:outline focus-visible:outline-2",
-            "focus-visible:outline-[var(--vitalia-cian)]"
+            "focus-visible:outline-[var(--vitalia-cian)]",
           )}
         >
           {/* Chevron icon — rotates on expand */}
           <svg
             aria-hidden="true"
-            className={cn("w-3.5 h-3.5 transition-transform", expanded ? "rotate-180" : "")}
+            className={cn(
+              "w-3.5 h-3.5 transition-transform",
+              expanded ? "rotate-180" : "",
+            )}
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
             strokeWidth={2.5}
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M5 15l7-7 7 7"
+            />
           </svg>
         </button>
       </div>
@@ -172,9 +177,16 @@ export function AgentActivityStream({
           className="flex-1 overflow-y-auto px-3 pb-2"
         >
           {isLoading ? (
-            <div aria-busy="true" aria-label="Cargando actividad…" className="space-y-1 py-1">
+            <div
+              aria-busy="true"
+              aria-label="Cargando actividad…"
+              className="space-y-1 py-1"
+            >
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-7 rounded vt-bg-muted/20 animate-pulse" />
+                <div
+                  key={i}
+                  className="h-7 rounded vt-bg-muted/20 animate-pulse"
+                />
               ))}
             </div>
           ) : visibleEvents.length === 0 ? (

@@ -27,7 +27,13 @@ import type { AgentSlug } from "@/lib/agent-catalog";
 const DESKTOP_VIEWPORT = { width: 1280, height: 800 };
 const TENANT_ID = process.env["E2E_TENANT_ID"] ?? "vitalia-test-tenant";
 
-const ALL_AGENT_SLUGS: AgentSlug[] = ["lisa", "lucas", "adrian", "valeria", "camila"];
+const ALL_AGENT_SLUGS: AgentSlug[] = [
+  "lisa",
+  "lucas",
+  "adrian",
+  "valeria",
+  "camila",
+];
 
 test.describe("SC-4 — URL agente inválido → idle state, sin console error", () => {
   test.use({ viewport: DESKTOP_VIEWPORT });

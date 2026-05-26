@@ -40,7 +40,9 @@ export interface NoTenantsAssignedPayload {
  * Transport (F1-S9): console.warn — backend endpoint is Fase 2 scope.
  * Action value: "cross_tenant_attempt" (consumed by E2E spy in SC-4 spec).
  */
-export function logCrossTenantAttempt(payload: CrossTenantAttemptPayload): void {
+export function logCrossTenantAttempt(
+  payload: CrossTenantAttemptPayload,
+): void {
   console.warn("[audit]", {
     action: "cross_tenant_attempt",
     userId: payload.userId,

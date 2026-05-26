@@ -34,10 +34,13 @@ export function MedicalDisclaimerBanner({
       aria-label="Aviso médico"
       className={cn(
         "flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3",
-        className
+        className,
       )}
     >
-      <span className="text-amber-500 text-lg leading-none mt-0.5 flex-shrink-0" aria-hidden="true">
+      <span
+        className="text-amber-500 text-lg leading-none mt-0.5 flex-shrink-0"
+        aria-hidden="true"
+      >
         ⚕️
       </span>
       <p className="text-sm text-amber-800 leading-relaxed">{text}</p>

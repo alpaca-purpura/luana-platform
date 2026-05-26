@@ -25,7 +25,10 @@ export interface MessageInputProps {
   className?: string;
 }
 
-function getPlaceholder(handlerMode: "ai" | "human", patientName?: string | null): string {
+function getPlaceholder(
+  handlerMode: "ai" | "human",
+  patientName?: string | null,
+): string {
   if (handlerMode === "ai") {
     return INBOX_COPY.composer.placeholder.adrianDecide;
   }
@@ -55,14 +58,14 @@ export function MessageInput({
         onSubmit();
       }
     },
-    [onSubmit]
+    [onSubmit],
   );
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       onChange(e.target.value);
     },
-    [onChange]
+    [onChange],
   );
 
   return (
@@ -82,7 +85,7 @@ export function MessageInput({
         "focus:outline-none focus-visible:ring-1 focus-visible:ring-[var(--vitalia-cian-color)]",
         "disabled:opacity-50 disabled:cursor-not-allowed",
         "max-h-24 overflow-y-auto leading-relaxed",
-        className
+        className,
       )}
     />
   );

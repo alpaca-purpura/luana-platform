@@ -54,7 +54,7 @@ export interface FetchClientOptions extends Omit<RequestInit, "headers"> {
  */
 export async function fetchClient<T>(
   url: string,
-  options: FetchClientOptions
+  options: FetchClientOptions,
 ): Promise<T> {
   const {
     token,

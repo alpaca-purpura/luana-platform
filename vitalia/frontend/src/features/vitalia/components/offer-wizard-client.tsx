@@ -63,9 +63,14 @@ function Step1Fields({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
-        <label htmlFor="service-name" className="text-sm font-medium text-gray-700">
+        <label
+          htmlFor="service-name"
+          className="text-sm font-medium text-gray-700"
+        >
           Nombre del servicio
-          <span className="text-red-500 ml-1" aria-hidden="true">*</span>
+          <span className="text-red-500 ml-1" aria-hidden="true">
+            *
+          </span>
         </label>
         <input
           id="service-name"
@@ -73,33 +78,58 @@ function Step1Fields({
           value={data.service_name ?? ""}
           onChange={(e) => onChange({ ...data, service_name: e.target.value })}
           aria-invalid={!!errors.service_name}
-          aria-describedby={errors.service_name ? "service-name-error" : undefined}
-          className={cn(inputBaseClass, errors.service_name && "border-red-500")}
+          aria-describedby={
+            errors.service_name ? "service-name-error" : undefined
+          }
+          className={cn(
+            inputBaseClass,
+            errors.service_name && "border-red-500",
+          )}
           placeholder="Ej: Consulta inicial dental"
         />
         {errors.service_name && (
-          <p id="service-name-error" role="alert" className="text-xs text-red-600">
+          <p
+            id="service-name-error"
+            role="alert"
+            className="text-xs text-red-600"
+          >
             {errors.service_name}
           </p>
         )}
       </div>
       <div className="flex flex-col gap-1">
-        <label htmlFor="offer-category" className="text-sm font-medium text-gray-700">
+        <label
+          htmlFor="offer-category"
+          className="text-sm font-medium text-gray-700"
+        >
           Categoría
-          <span className="text-red-500 ml-1" aria-hidden="true">*</span>
+          <span className="text-red-500 ml-1" aria-hidden="true">
+            *
+          </span>
         </label>
         <input
           id="offer-category"
           type="text"
           value={data.offer_category ?? ""}
-          onChange={(e) => onChange({ ...data, offer_category: e.target.value })}
+          onChange={(e) =>
+            onChange({ ...data, offer_category: e.target.value })
+          }
           aria-invalid={!!errors.offer_category}
-          aria-describedby={errors.offer_category ? "offer-category-error" : undefined}
-          className={cn(inputBaseClass, errors.offer_category && "border-red-500")}
+          aria-describedby={
+            errors.offer_category ? "offer-category-error" : undefined
+          }
+          className={cn(
+            inputBaseClass,
+            errors.offer_category && "border-red-500",
+          )}
           placeholder="Ej: consulta, ortodoncia, terapia"
         />
         {errors.offer_category && (
-          <p id="offer-category-error" role="alert" className="text-xs text-red-600">
+          <p
+            id="offer-category-error"
+            role="alert"
+            className="text-xs text-red-600"
+          >
             {errors.offer_category}
           </p>
         )}
@@ -120,22 +150,31 @@ function Step2Fields({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
-        <label htmlFor="target-description" className="text-sm font-medium text-gray-700">
+        <label
+          htmlFor="target-description"
+          className="text-sm font-medium text-gray-700"
+        >
           ¿Para qué paciente es esta oferta?
-          <span className="text-red-500 ml-1" aria-hidden="true">*</span>
+          <span className="text-red-500 ml-1" aria-hidden="true">
+            *
+          </span>
         </label>
         <textarea
           id="target-description"
           value={data.target_description ?? ""}
-          onChange={(e) => onChange({ ...data, target_description: e.target.value })}
+          onChange={(e) =>
+            onChange({ ...data, target_description: e.target.value })
+          }
           aria-invalid={!!errors.target_description}
-          aria-describedby={errors.target_description ? "target-desc-error" : undefined}
+          aria-describedby={
+            errors.target_description ? "target-desc-error" : undefined
+          }
           rows={3}
           maxLength={1000}
           className={cn(
             inputBaseClass,
             "resize-none",
-            errors.target_description && "border-red-500"
+            errors.target_description && "border-red-500",
           )}
           placeholder="Ej: Adultos con ansiedad leve, sin diagnóstico previo"
         />
@@ -143,7 +182,11 @@ function Step2Fields({
           {(data.target_description ?? "").length}/1000
         </span>
         {errors.target_description && (
-          <p id="target-desc-error" role="alert" className="text-xs text-red-600">
+          <p
+            id="target-desc-error"
+            role="alert"
+            className="text-xs text-red-600"
+          >
             {errors.target_description}
           </p>
         )}
@@ -165,9 +208,14 @@ function Step3Fields({
     <div className="flex flex-col gap-4">
       <div className="flex gap-3">
         <div className="flex flex-col gap-1 flex-1">
-          <label htmlFor="base-price" className="text-sm font-medium text-gray-700">
+          <label
+            htmlFor="base-price"
+            className="text-sm font-medium text-gray-700"
+          >
             Precio base
-            <span className="text-red-500 ml-1" aria-hidden="true">*</span>
+            <span className="text-red-500 ml-1" aria-hidden="true">
+              *
+            </span>
           </label>
           <input
             id="base-price"
@@ -179,22 +227,35 @@ function Step3Fields({
               onChange({ ...data, base_price: parseFloat(e.target.value) || 0 })
             }
             aria-invalid={!!errors.base_price}
-            className={cn(inputBaseClass, errors.base_price && "border-red-500")}
+            className={cn(
+              inputBaseClass,
+              errors.base_price && "border-red-500",
+            )}
             placeholder="0.00"
           />
           {errors.base_price && (
-            <p role="alert" className="text-xs text-red-600">{errors.base_price}</p>
+            <p role="alert" className="text-xs text-red-600">
+              {errors.base_price}
+            </p>
           )}
         </div>
         <div className="flex flex-col gap-1 w-28">
-          <label htmlFor="currency" className="text-sm font-medium text-gray-700">
+          <label
+            htmlFor="currency"
+            className="text-sm font-medium text-gray-700"
+          >
             Moneda
           </label>
           <input
             id="currency"
             type="text"
             value={data.currency ?? ""}
-            onChange={(e) => onChange({ ...data, currency: e.target.value.toUpperCase().slice(0, 3) })}
+            onChange={(e) =>
+              onChange({
+                ...data,
+                currency: e.target.value.toUpperCase().slice(0, 3),
+              })
+            }
             maxLength={3}
             placeholder="ARS"
             className={cn(inputBaseClass, "uppercase")}
@@ -207,10 +268,14 @@ function Step3Fields({
           <input
             type="checkbox"
             checked={data.requires_prepay ?? false}
-            onChange={(e) => onChange({ ...data, requires_prepay: e.target.checked })}
+            onChange={(e) =>
+              onChange({ ...data, requires_prepay: e.target.checked })
+            }
             className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
-          <span className="text-sm text-gray-700">{MICROCOPY_OFFER_WIZARD.prepay.label}</span>
+          <span className="text-sm text-gray-700">
+            {MICROCOPY_OFFER_WIZARD.prepay.label}
+          </span>
         </label>
         {data.requires_prepay && (
           <div className="ml-6 flex flex-col gap-1">
@@ -224,7 +289,10 @@ function Step3Fields({
               max={100}
               value={data.deposit_percent ?? ""}
               onChange={(e) =>
-                onChange({ ...data, deposit_percent: parseInt(e.target.value) || 0 })
+                onChange({
+                  ...data,
+                  deposit_percent: parseInt(e.target.value) || 0,
+                })
               }
               className={cn(inputBaseClass, "w-32")}
               placeholder="30"
@@ -249,10 +317,14 @@ function Step4Fields({
         <input
           type="checkbox"
           checked={data.requires_informed_consent ?? false}
-          onChange={(e) => onChange({ ...data, requires_informed_consent: e.target.checked })}
+          onChange={(e) =>
+            onChange({ ...data, requires_informed_consent: e.target.checked })
+          }
           className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
         />
-        <span className="text-sm text-gray-700">Requiere consentimiento informado</span>
+        <span className="text-sm text-gray-700">
+          Requiere consentimiento informado
+        </span>
       </label>
       {data.requires_informed_consent && (
         <div className="flex flex-col gap-1 ml-6">
@@ -287,9 +359,14 @@ function Step5Fields({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
-        <label htmlFor="duration-min" className="text-sm font-medium text-gray-700">
+        <label
+          htmlFor="duration-min"
+          className="text-sm font-medium text-gray-700"
+        >
           Duración (minutos)
-          <span className="text-red-500 ml-1" aria-hidden="true">*</span>
+          <span className="text-red-500 ml-1" aria-hidden="true">
+            *
+          </span>
         </label>
         <input
           id="duration-min"
@@ -300,17 +377,27 @@ function Step5Fields({
             onChange({ ...data, duration_min: parseInt(e.target.value) || 0 })
           }
           aria-invalid={!!errors.duration_min}
-          className={cn(inputBaseClass, errors.duration_min && "border-red-500")}
+          className={cn(
+            inputBaseClass,
+            errors.duration_min && "border-red-500",
+          )}
           placeholder="60"
         />
         {errors.duration_min && (
-          <p role="alert" className="text-xs text-red-600">{errors.duration_min}</p>
+          <p role="alert" className="text-xs text-red-600">
+            {errors.duration_min}
+          </p>
         )}
       </div>
       <div className="flex flex-col gap-1">
-        <label htmlFor="doctor-id" className="text-sm font-medium text-gray-700">
+        <label
+          htmlFor="doctor-id"
+          className="text-sm font-medium text-gray-700"
+        >
           ID del profesional asignado
-          <span className="text-red-500 ml-1" aria-hidden="true">*</span>
+          <span className="text-red-500 ml-1" aria-hidden="true">
+            *
+          </span>
         </label>
         <input
           id="doctor-id"
@@ -348,7 +435,8 @@ export function OfferWizardClient({
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const { mutateAsync: createOffer, isPending: isSubmitting } = useOfferCreate();
+  const { mutateAsync: createOffer, isPending: isSubmitting } =
+    useOfferCreate();
 
   function validateCurrentStep(): boolean {
     let result;
@@ -456,14 +544,18 @@ export function OfferWizardClient({
         <h2 className="text-lg font-semibold text-gray-900">
           {MICROCOPY_OFFER_WIZARD.publish.successTitle}
         </h2>
-        <p className="text-sm text-gray-500">{MICROCOPY_OFFER_WIZARD.publish.successBody}</p>
+        <p className="text-sm text-gray-500">
+          {MICROCOPY_OFFER_WIZARD.publish.successBody}
+        </p>
       </div>
     );
   }
 
   return (
     <div className="flex flex-col gap-6">
-      <h2 className="text-lg font-semibold text-gray-900">{MICROCOPY_OFFER_WIZARD.title}</h2>
+      <h2 className="text-lg font-semibold text-gray-900">
+        {MICROCOPY_OFFER_WIZARD.title}
+      </h2>
 
       {/* 5-step indicator */}
       <MedicalServicesOfferWizardSteps
@@ -472,12 +564,18 @@ export function OfferWizardClient({
         // Step 1 props
         serviceType={wizardState.step1.service_name}
         onServiceTypeChange={(v) =>
-          setWizardState((prev) => ({ ...prev, step1: { ...prev.step1, service_name: v } }))
+          setWizardState((prev) => ({
+            ...prev,
+            step1: { ...prev.step1, service_name: v },
+          }))
         }
         // Step 3 prepay props
         requiresPrepay={wizardState.step3.requires_prepay}
         onRequiresPrepayChange={(v) =>
-          setWizardState((prev) => ({ ...prev, step3: { ...prev.step3, requires_prepay: v } }))
+          setWizardState((prev) => ({
+            ...prev,
+            step3: { ...prev.step3, requires_prepay: v },
+          }))
         }
         depositOnly={
           wizardState.step3.deposit_percent !== undefined &&
@@ -556,7 +654,7 @@ export function OfferWizardClient({
                 "px-4 py-2 rounded-md text-sm font-medium transition-colors",
                 "border border-gray-300 text-gray-700 hover:bg-gray-50",
                 "focus:outline-none focus:ring-2 focus:ring-blue-500",
-                "disabled:opacity-50 disabled:cursor-not-allowed"
+                "disabled:opacity-50 disabled:cursor-not-allowed",
               )}
             >
               Atrás
@@ -583,7 +681,7 @@ export function OfferWizardClient({
               "px-6 py-2 rounded-md text-sm font-medium transition-colors",
               "bg-blue-600 text-white hover:bg-blue-700",
               "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
-              "disabled:opacity-50 disabled:cursor-not-allowed"
+              "disabled:opacity-50 disabled:cursor-not-allowed",
             )}
           >
             Siguiente
@@ -598,10 +696,12 @@ export function OfferWizardClient({
               "px-6 py-2 rounded-md text-sm font-semibold transition-colors",
               "bg-green-600 text-white hover:bg-green-700",
               "focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2",
-              "disabled:opacity-50 disabled:cursor-not-allowed"
+              "disabled:opacity-50 disabled:cursor-not-allowed",
             )}
           >
-            {isSubmitting ? "Publicando..." : MICROCOPY_OFFER_WIZARD.publish.cta}
+            {isSubmitting
+              ? "Publicando..."
+              : MICROCOPY_OFFER_WIZARD.publish.cta}
           </button>
         )}
       </div>

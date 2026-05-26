@@ -90,9 +90,15 @@ test.describe("SC-9 — i18n Spanish neutro LatAm", () => {
 
     // Group labels visible — use exact text to avoid strict mode violations
     // (timestamps like "Ayer 19:02" also match "Ayer" non-exact)
-    await expect(valeriaFullPage.getByText("Hoy", { exact: true }).first()).toBeVisible();
-    await expect(valeriaFullPage.getByText("Ayer", { exact: true }).first()).toBeVisible();
-    await expect(valeriaFullPage.getByText("Esta semana", { exact: true }).first()).toBeVisible();
+    await expect(
+      valeriaFullPage.getByText("Hoy", { exact: true }).first(),
+    ).toBeVisible();
+    await expect(
+      valeriaFullPage.getByText("Ayer", { exact: true }).first(),
+    ).toBeVisible();
+    await expect(
+      valeriaFullPage.getByText("Esta semana", { exact: true }).first(),
+    ).toBeVisible();
 
     // At least one conversation title visible (mock data loaded)
     await expect(
@@ -154,19 +160,25 @@ test.describe("SC-9 — i18n Spanish neutro LatAm", () => {
     // full → 'Valeria con historial'
     await pom.goto({ valeriaState: "full", shellMode: "agentic" });
     await expect(
-      valeriaFullPage.getByRole("status").filter({ hasText: "Valeria con historial" }),
+      valeriaFullPage
+        .getByRole("status")
+        .filter({ hasText: "Valeria con historial" }),
     ).toBeAttached();
 
     // rail → 'Valeria abierta'
     await pom.goto({ valeriaState: "rail", shellMode: "agentic" });
     await expect(
-      valeriaFullPage.getByRole("status").filter({ hasText: "Valeria abierta" }),
+      valeriaFullPage
+        .getByRole("status")
+        .filter({ hasText: "Valeria abierta" }),
     ).toBeAttached();
 
     // collapsed → 'Valeria cerrada'
     await pom.goto({ valeriaState: "collapsed", shellMode: "web" });
     await expect(
-      valeriaFullPage.getByRole("status").filter({ hasText: "Valeria cerrada" }),
+      valeriaFullPage
+        .getByRole("status")
+        .filter({ hasText: "Valeria cerrada" }),
     ).toBeAttached();
   });
 
@@ -177,7 +189,7 @@ test.describe("SC-9 — i18n Spanish neutro LatAm", () => {
     await pom.goto({ valeriaState: "full", shellMode: "agentic" });
 
     // Get all text content from the sidebar
-    const sidebarText = await pom.sidebar.textContent() ?? "";
+    const sidebarText = (await pom.sidebar.textContent()) ?? "";
 
     for (const pattern of VOSEO_PATTERNS) {
       expect(
@@ -193,7 +205,7 @@ test.describe("SC-9 — i18n Spanish neutro LatAm", () => {
     const pom = new ValeriaSidebarPage(valeriaFullPage);
     await pom.goto({ valeriaState: "full", shellMode: "agentic" });
 
-    const sidebarText = await pom.sidebar.textContent() ?? "";
+    const sidebarText = (await pom.sidebar.textContent()) ?? "";
 
     for (const pattern of ENGLISH_PLACEHOLDER_PATTERNS) {
       expect(

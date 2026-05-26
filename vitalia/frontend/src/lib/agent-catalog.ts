@@ -284,7 +284,10 @@ export function isValidAgent(slug: string): slug is RibbonTabSlug {
  *   isValidSubtab("camila", "foo")        → false (invalid subtab)
  *   isValidSubtab("lisa", "")             → false (empty string)
  */
-export function isValidSubtab(agent: RibbonTabSlug, subtabSlug: string): boolean {
+export function isValidSubtab(
+  agent: RibbonTabSlug,
+  subtabSlug: string,
+): boolean {
   if (!subtabSlug) return false;
   const subtabs = RIBBON_SUBTABS[agent];
   if (!subtabs || subtabs.length === 0) return false;

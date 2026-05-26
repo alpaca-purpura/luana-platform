@@ -67,7 +67,10 @@ describe("formatTenantDateTime", () => {
   const ISO_DT = "2026-03-15T14:30:00Z";
 
   it("formats datetime with time portion", () => {
-    const result = formatTenantDateTime(ISO_DT, "America/Argentina/Buenos_Aires");
+    const result = formatTenantDateTime(
+      ISO_DT,
+      "America/Argentina/Buenos_Aires",
+    );
     expect(typeof result).toBe("string");
     expect(result.length).toBeGreaterThan(0);
   });

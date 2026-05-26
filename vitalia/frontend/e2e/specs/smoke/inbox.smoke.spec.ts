@@ -20,7 +20,10 @@
  * downstream-regression-na: brand-local E2E smoke spec; no cross-brand consumers
  */
 
-import { test as clinicBase, expect } from "../../fixtures/clinic-context.fixture";
+import {
+  test as clinicBase,
+  expect,
+} from "../../fixtures/clinic-context.fixture";
 import { collectConsoleErrors } from "../../auth.fixture";
 import { InboxPage } from "../../pages/inbox.page";
 import type { Page } from "@playwright/test";
@@ -103,13 +106,16 @@ const CONVERSATION_HAPPY_MOCK = {
     {
       message_id: "msg-agent-001",
       sender_type: "agent",
-      content: "¡Hola M. Rodríguez! Te puedo ofrecer martes 12:00 con Dr. Ortiz para una limpieza profunda.",
+      content:
+        "¡Hola M. Rodríguez! Te puedo ofrecer martes 12:00 con Dr. Ortiz para una limpieza profunda.",
       sent_at: "2026-05-20T14:22:05Z",
       media_type: null,
       auto_sent: true,
       action_receipt: {
         receipt_id: "receipt-001",
-        retract_available_until: new Date(Date.now() + 4 * 60 * 1000 + 58 * 1000).toISOString(),
+        retract_available_until: new Date(
+          Date.now() + 4 * 60 * 1000 + 58 * 1000,
+        ).toISOString(),
       },
     },
   ],
@@ -143,7 +149,8 @@ const CONVERSATION_AUDIO_MOCK = {
     {
       message_id: "msg-system-fallback-001",
       sender_type: "system",
-      content: "Adrián recibió una nota de voz pero no pudo entenderla bien. Te paso la conversación para que la escuches tú.",
+      content:
+        "Adrián recibió una nota de voz pero no pudo entenderla bien. Te paso la conversación para que la escuches tú.",
       sent_at: "2026-05-20T14:20:10Z",
       media_type: null,
     },
@@ -167,7 +174,7 @@ const ACTIVITY_STREAM_HAPPY_MOCK = {
     {
       id: "act-003",
       occurred_at: "2026-05-20T14:22:02Z",
-      description: "propuso: \"Te puedo ofrecer martes 12:00…\"",
+      description: 'propuso: "Te puedo ofrecer martes 12:00…"',
     },
     {
       id: "act-004",
@@ -184,7 +191,8 @@ const ACTIVITY_STREAM_AUDIO_MOCK = {
     {
       id: "act-audio-001",
       occurred_at: "2026-05-20T14:20:09Z",
-      description: "Adrián no pudo entender la nota de voz · derivó la conversación",
+      description:
+        "Adrián no pudo entender la nota de voz · derivó la conversación",
     },
   ],
 };
@@ -233,7 +241,7 @@ async function setupInboxMocks(page: Page): Promise<void> {
       } else {
         await route.continue();
       }
-    }
+    },
   );
 
   // Mock: detalle conversación SC-02 (Ana López — audio fallback)
@@ -255,7 +263,7 @@ async function setupInboxMocks(page: Page): Promise<void> {
       } else {
         await route.continue();
       }
-    }
+    },
   );
 
   // Mock: activity stream SC-01
@@ -267,7 +275,7 @@ async function setupInboxMocks(page: Page): Promise<void> {
         contentType: "application/json",
         body: JSON.stringify(ACTIVITY_STREAM_HAPPY_MOCK),
       });
-    }
+    },
   );
 
   // Mock: activity stream SC-02
@@ -279,7 +287,7 @@ async function setupInboxMocks(page: Page): Promise<void> {
         contentType: "application/json",
         body: JSON.stringify(ACTIVITY_STREAM_AUDIO_MOCK),
       });
-    }
+    },
   );
 
   // Mock: transcribe-audio (POST) — confidence < 0.5 triggers SC-02 fallback
@@ -295,14 +303,17 @@ async function setupInboxMocks(page: Page): Promise<void> {
       } else {
         await route.continue();
       }
-    }
+    },
   );
 
   // Mock: mode toggle (POST) — PATCH/POST /mode — return updated conversation
   await page.route(
     `**/api/v1/vitalia/inbox/conversations/*/mode**`,
     async (route) => {
-      if (route.request().method() === "POST" || route.request().method() === "PATCH") {
+      if (
+        route.request().method() === "POST" ||
+        route.request().method() === "PATCH"
+      ) {
         // Parse which conversation and what mode is being set
         const body = route.request().postDataJSON() as {
           handler_mode?: string;
@@ -320,7 +331,7 @@ async function setupInboxMocks(page: Page): Promise<void> {
       } else {
         await route.continue();
       }
-    }
+    },
   );
 
   // Mock: tools endpoint
@@ -332,24 +343,24 @@ async function setupInboxMocks(page: Page): Promise<void> {
         contentType: "application/json",
         body: JSON.stringify({ tools: [] }),
       });
-    }
+    },
   );
 
   // Mock: leads detail (CRM)
-  await page.route(
-    "**/api/v1/vitalia/crm/leads/**",
-    async (route) => {
-      if (route.request().method() === "GET") {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({ lead_id: SEED.leadIdHappy, patient_name: SEED.patientName }),
-        });
-      } else {
-        await route.continue();
-      }
+  await page.route("**/api/v1/vitalia/crm/leads/**", async (route) => {
+    if (route.request().method() === "GET") {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          lead_id: SEED.leadIdHappy,
+          patient_name: SEED.patientName,
+        }),
+      });
+    } else {
+      await route.continue();
     }
-  );
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -397,7 +408,7 @@ test.describe("Inbox — smoke", () => {
       .catch(() => false);
     expect(
       threadPanelVisible || threadPlaceholderVisible,
-      "Se espera conversation-thread-panel o thread-placeholder visible"
+      "Se espera conversation-thread-panel o thread-placeholder visible",
     ).toBe(true);
 
     expect(consoleErrors).toHaveLength(0);
@@ -433,7 +444,9 @@ test.describe("Inbox — smoke", () => {
 
     // ── Phase 2: full thread (requiere T-inbox-fe-4 assembly) ────────────
     // Verificamos si ConversationThread fue ensamblado (post-scaffold)
-    const isThreadAssembled = await inbox.conversationThread.isVisible({ timeout: 3_000 }).catch(() => false);
+    const isThreadAssembled = await inbox.conversationThread
+      .isVisible({ timeout: 3_000 })
+      .catch(() => false);
 
     if (isThreadAssembled) {
       // Full assertions — T-inbox-fe-4 wired
@@ -457,21 +470,28 @@ test.describe("Inbox — smoke", () => {
 
       // Click "Adrián consulta" → activo
       await inbox.clickSegment("adrian-consulta");
-      await expect(segAdrianConsulta).toHaveAttribute("aria-checked", "true", { timeout: 5_000 });
+      await expect(segAdrianConsulta).toHaveAttribute("aria-checked", "true", {
+        timeout: 5_000,
+      });
 
       // Click "Yo escribo" → activo
       await inbox.clickSegment("yo-escribo");
-      await expect(segYoEscribo).toHaveAttribute("aria-checked", "true", { timeout: 5_000 });
+      await expect(segYoEscribo).toHaveAttribute("aria-checked", "true", {
+        timeout: 5_000,
+      });
 
       // Voice style chip siempre visible
       await expect(inbox.voiceStyleChip).toBeVisible();
     } else {
       // Scaffold mode: verifica placeholder visible como smoke básico
       // Full assertions pendientes hasta T-inbox-fe-4 assembly en InboxPageClient
-      const threadPlaceholder = await page.getByTestId("thread-placeholder").isVisible().catch(() => false);
+      const threadPlaceholder = await page
+        .getByTestId("thread-placeholder")
+        .isVisible()
+        .catch(() => false);
       expect(
         threadPlaceholder,
-        "scaffold: thread-placeholder visible mientras T-inbox-fe-4 assembly pending"
+        "scaffold: thread-placeholder visible mientras T-inbox-fe-4 assembly pending",
       ).toBe(true);
     }
   });
@@ -501,8 +521,13 @@ test.describe("Inbox — smoke", () => {
     await expect(inbox.conversationListPanel).toBeVisible();
 
     // ── Phase 2: full thread + activity stream (requiere fe-3/4/6 assembly) ─
-    const isListAssembled = await page.getByTestId(`conversation-item-${SEED.leadIdAudio}`).isVisible({ timeout: 3_000 }).catch(() => false);
-    const isThreadAssembled = await inbox.conversationThread.isVisible({ timeout: 3_000 }).catch(() => false);
+    const isListAssembled = await page
+      .getByTestId(`conversation-item-${SEED.leadIdAudio}`)
+      .isVisible({ timeout: 3_000 })
+      .catch(() => false);
+    const isThreadAssembled = await inbox.conversationThread
+      .isVisible({ timeout: 3_000 })
+      .catch(() => false);
 
     if (isListAssembled && isThreadAssembled) {
       // Full assertions — fe-3/4/6 wired
@@ -510,35 +535,47 @@ test.describe("Inbox — smoke", () => {
       // Segmented control en modo "Yo escribo" (handler_mode='human' post-fallback)
       await expect(inbox.segmentedControl).toBeVisible();
       const segYoEscribo = inbox.segment("yo-escribo");
-      await expect(segYoEscribo).toHaveAttribute("aria-checked", "true", { timeout: 8_000 });
+      await expect(segYoEscribo).toHaveAttribute("aria-checked", "true", {
+        timeout: 8_000,
+      });
 
       // "Adrián decide" ya NO activo
       const segAdrianDecide = inbox.segment("adrian-decide");
       await expect(segAdrianDecide).toHaveAttribute("aria-checked", "false");
 
       // Help-needed badge en la lista
-      const helpBadge = inbox.conversationListPanel.getByTestId("help-needed-badge");
+      const helpBadge =
+        inbox.conversationListPanel.getByTestId("help-needed-badge");
       await expect(helpBadge).toBeVisible({ timeout: 8_000 });
 
       // Activity stream: evento de derivación audio
       const streamToggle = inbox.activityStreamToggle;
       if (await streamToggle.isVisible()) {
-        const isExpanded = await inbox.agentActivityStream.getAttribute("aria-expanded");
+        const isExpanded =
+          await inbox.agentActivityStream.getAttribute("aria-expanded");
         if (isExpanded === "false" || isExpanded === null) {
           await inbox.toggleActivityStream();
         }
       }
 
-      const fallbackEvent = inbox.activityEvent(/Adrián no pudo entender la nota de voz/i);
+      const fallbackEvent = inbox.activityEvent(
+        /Adrián no pudo entender la nota de voz/i,
+      );
       await expect(fallbackEvent).toBeVisible({ timeout: 8_000 });
     } else {
       // Scaffold mode: verifica placeholder visible como smoke básico
       // Full assertions pendientes hasta fe-3/4/6 assembly en InboxPageClient
-      const listPlaceholder = await page.getByTestId("conversation-list-placeholder").isVisible().catch(() => false);
-      const threadPlaceholder = await page.getByTestId("thread-placeholder").isVisible().catch(() => false);
+      const listPlaceholder = await page
+        .getByTestId("conversation-list-placeholder")
+        .isVisible()
+        .catch(() => false);
+      const threadPlaceholder = await page
+        .getByTestId("thread-placeholder")
+        .isVisible()
+        .catch(() => false);
       expect(
         listPlaceholder || threadPlaceholder,
-        "scaffold: conversation-list-placeholder o thread-placeholder visible mientras fe-3/4/6 assembly pending"
+        "scaffold: conversation-list-placeholder o thread-placeholder visible mientras fe-3/4/6 assembly pending",
       ).toBe(true);
     }
   });

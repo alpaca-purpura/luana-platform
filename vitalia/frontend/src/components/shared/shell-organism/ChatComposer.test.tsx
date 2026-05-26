@@ -23,7 +23,11 @@ import { ChatComposer } from "./ChatComposer";
  * Uses zustand setState directly (NO vi.mock per 03-arch.md § 0 tessl__vitest).
  */
 function resetStore() {
-  useChatStore.setState({ messages: [], status: "idle", activeAgent: "valeria" });
+  useChatStore.setState({
+    messages: [],
+    status: "idle",
+    activeAgent: "valeria",
+  });
 }
 
 // ── Test suite ───────────────────────────────────────────────────────────────
@@ -231,7 +235,11 @@ describe("ChatComposer", () => {
       // JSDOM does not support isComposing via KeyboardEvent constructor directly,
       // so we use Object.defineProperty on the event instance.
       const event = Object.assign(
-        new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }),
+        new KeyboardEvent("keydown", {
+          key: "Enter",
+          bubbles: true,
+          cancelable: true,
+        }),
         { isComposing: true },
       );
 
@@ -289,9 +297,7 @@ describe("ChatComposer", () => {
       const kKey = screen.getByText("K");
       expect(kKey).toBeInTheDocument();
       // Verify the contextual text
-      expect(
-        screen.getByText(/enfoca el composer/i),
-      ).toBeInTheDocument();
+      expect(screen.getByText(/enfoca el composer/i)).toBeInTheDocument();
     });
 
     it("renders data-testid='chat-composer' on footer element", () => {

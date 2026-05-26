@@ -33,7 +33,7 @@ describe("Vitalia FE — Proxy Clerk (T-1 SC-01, SC-02)", () => {
   it("proxy.ts exists at src/proxy.ts", () => {
     expect(
       existsSync(PROXY_PATH),
-      "proxy.ts no encontrado en vitalia/frontend/src/proxy.ts — T-1 pendiente"
+      "proxy.ts no encontrado en vitalia/frontend/src/proxy.ts — T-1 pendiente",
     ).toBe(true);
   });
 
@@ -95,14 +95,15 @@ describe("Vitalia FE — Proxy Clerk (T-1 SC-01, SC-02)", () => {
       /NextResponse\.redirect\s*\(.*sign-in/.test(source);
     expect(
       hasManualRedirectToSignIn,
-      "proxy.ts usa NextResponse.redirect manual a /sign-in — Clerk lo maneja internamente"
+      "proxy.ts usa NextResponse.redirect manual a /sign-in — Clerk lo maneja internamente",
     ).toBe(false);
 
-    const hasRoleCheck =
-      /role\s*===|sessionClaims\.role|user\.role/.test(source);
+    const hasRoleCheck = /role\s*===|sessionClaims\.role|user\.role/.test(
+      source,
+    );
     expect(
       hasRoleCheck,
-      "proxy.ts contiene lógica RBAC (role checks) — no permitido en proxy"
+      "proxy.ts contiene lógica RBAC (role checks) — no permitido en proxy",
     ).toBe(false);
   });
 
@@ -115,7 +116,7 @@ describe("Vitalia FE — Proxy Clerk (T-1 SC-01, SC-02)", () => {
 
     expect(
       source.includes('"use client"') || source.includes("'use client'"),
-      "proxy.ts contiene 'use client' — proxy es Server/Edge Runtime, no React Component"
+      "proxy.ts contiene 'use client' — proxy es Server/Edge Runtime, no React Component",
     ).toBe(false);
   });
 });

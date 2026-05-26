@@ -22,7 +22,7 @@ test.describe("Consent Flow — Implante Dental Aurora (AR)", () => {
       page
         .getByText(/consentimiento informado/i)
         .or(page.getByRole("checkbox", { name: /consentimiento/i }))
-        .or(page.getByText(/firma.*consentimiento/i))
+        .or(page.getByText(/firma.*consentimiento/i)),
     ).toBeVisible({ timeout: 10_000 });
 
     expect(consoleErrors).toHaveLength(0);
@@ -61,7 +61,9 @@ test.describe("Consent Flow — Implante Dental Aurora (AR)", () => {
 
       // Error message shown per spec §3.4.D
       await expect(
-        page.getByText(/consentimiento informado.*requerido|requiere consentimiento/i)
+        page.getByText(
+          /consentimiento informado.*requerido|requiere consentimiento/i,
+        ),
       ).toBeVisible({ timeout: 10_000 });
     }
   });
@@ -91,7 +93,9 @@ test.describe("Consent Flow — Implante Dental Aurora (AR)", () => {
 
     // awaiting_consent status visible
     await expect(
-      page.getByText(/esperando consentimiento|awaiting.*consent|consentimiento pendiente/i)
+      page.getByText(
+        /esperando consentimiento|awaiting.*consent|consentimiento pendiente/i,
+      ),
     ).toBeVisible({ timeout: 10_000 });
   });
 
@@ -137,7 +141,9 @@ test.describe("Consent Flow — Implante Dental Aurora (AR)", () => {
     const consentCheckbox = page.getByRole("checkbox", {
       name: /acepto.*consentimiento|he le[íi]do/i,
     });
-    if (await consentCheckbox.isVisible({ timeout: 3_000 }).catch(() => false)) {
+    if (
+      await consentCheckbox.isVisible({ timeout: 3_000 }).catch(() => false)
+    ) {
       await consentCheckbox.check();
     }
 
@@ -150,7 +156,7 @@ test.describe("Consent Flow — Implante Dental Aurora (AR)", () => {
 
       // Booking proceeds to payment step
       await expect(
-        page.getByText(/pendiente de pago|proceder al pago/i)
+        page.getByText(/pendiente de pago|proceder al pago/i),
       ).toBeVisible({ timeout: 10_000 });
     }
   });

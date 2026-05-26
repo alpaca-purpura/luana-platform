@@ -23,7 +23,10 @@
  */
 
 import { expect } from "@playwright/test";
-import { test, mockTenantFetchFailure } from "../../fixtures/routing-shell.fixture";
+import {
+  test,
+  mockTenantFetchFailure,
+} from "../../fixtures/routing-shell.fixture";
 import { ShellPage } from "./poms/shell-page.pom";
 
 const DESKTOP_VIEWPORT = { width: 1280, height: 720 };
@@ -45,7 +48,9 @@ test.describe("SC-5 — network_failure · BE tenant fetch timeout → fallback 
     const pom = new ShellPage(shellPage);
 
     // NetworkErrorFallback should appear (with extended timeout for network delay)
-    await expect(pom.getNetworkErrorFallback()).toBeVisible({ timeout: 15_000 });
+    await expect(pom.getNetworkErrorFallback()).toBeVisible({
+      timeout: 15_000,
+    });
   });
 
   test("SC-5-2: NetworkErrorFallback shows correct Spanish neutro microcopy", async ({
@@ -56,7 +61,9 @@ test.describe("SC-5 — network_failure · BE tenant fetch timeout → fallback 
     await shellPage.goto(`/${TENANT_ID}`, { waitUntil: "domcontentloaded" });
     const pom = new ShellPage(shellPage);
 
-    await expect(pom.getNetworkErrorFallback()).toBeVisible({ timeout: 15_000 });
+    await expect(pom.getNetworkErrorFallback()).toBeVisible({
+      timeout: 15_000,
+    });
 
     const fallbackText = await pom.getNetworkErrorFallback().textContent();
     // Verify expected Spanish neutro copy (from spec § 6.3)
@@ -76,10 +83,14 @@ test.describe("SC-5 — network_failure · BE tenant fetch timeout → fallback 
     await shellPage.goto(`/${TENANT_ID}`, { waitUntil: "domcontentloaded" });
     const pom = new ShellPage(shellPage);
 
-    await expect(pom.getNetworkErrorFallback()).toBeVisible({ timeout: 15_000 });
+    await expect(pom.getNetworkErrorFallback()).toBeVisible({
+      timeout: 15_000,
+    });
 
     // Reintentar button is present and enabled
-    const retryButton = shellPage.locator('[data-testid="network-error-retry"]');
+    const retryButton = shellPage.locator(
+      '[data-testid="network-error-retry"]',
+    );
     await expect(retryButton).toBeVisible({ timeout: 5_000 });
     await expect(retryButton).toBeEnabled();
 
@@ -101,7 +112,9 @@ test.describe("SC-5 — network_failure · BE tenant fetch timeout → fallback 
     await shellPage.goto(`/${TENANT_ID}`, { waitUntil: "domcontentloaded" });
     const pom = new ShellPage(shellPage);
 
-    await expect(pom.getNetworkErrorFallback()).toBeVisible({ timeout: 15_000 });
+    await expect(pom.getNetworkErrorFallback()).toBeVisible({
+      timeout: 15_000,
+    });
 
     // Should not have more than 1-2 navigation requests (no redirect loop)
     expect(redirectCount).toBeLessThan(5);
@@ -115,22 +128,30 @@ test.describe("SC-5 — network_failure · BE tenant fetch timeout → fallback 
     await shellPage.goto(`/${TENANT_ID}`, { waitUntil: "domcontentloaded" });
     const pom = new ShellPage(shellPage);
 
-    await expect(pom.getNetworkErrorFallback()).toBeVisible({ timeout: 15_000 });
+    await expect(pom.getNetworkErrorFallback()).toBeVisible({
+      timeout: 15_000,
+    });
 
     // Ribbon should NOT be present during network failure (tenant validation failed)
-    await expect(pom.getRibbon()).not.toBeVisible({ timeout: 3_000 }).catch(() => {
-      // If Ribbon is not attached at all, that's also acceptable
-    });
+    await expect(pom.getRibbon())
+      .not.toBeVisible({ timeout: 3_000 })
+      .catch(() => {
+        // If Ribbon is not attached at all, that's also acceptable
+      });
   });
 
-  test("SC-5-6: network fallback light visual golden", async ({ shellPage }) => {
+  test("SC-5-6: network fallback light visual golden", async ({
+    shellPage,
+  }) => {
     await mockTenantFetchFailure(shellPage, 6_000);
     await shellPage.setViewportSize(DESKTOP_VIEWPORT);
 
     await shellPage.goto(`/${TENANT_ID}`, { waitUntil: "domcontentloaded" });
     const pom = new ShellPage(shellPage);
 
-    await expect(pom.getNetworkErrorFallback()).toBeVisible({ timeout: 15_000 });
+    await expect(pom.getNetworkErrorFallback()).toBeVisible({
+      timeout: 15_000,
+    });
     await shellPage.waitForTimeout(300);
 
     await expect(shellPage).toHaveScreenshot("network-fallback-light.png", {
@@ -144,10 +165,14 @@ test.describe("SC-5 — network_failure · BE tenant fetch timeout → fallback 
     await mockTenantFetchFailure(darkShellPage, 6_000);
     await darkShellPage.setViewportSize(DESKTOP_VIEWPORT);
 
-    await darkShellPage.goto(`/${TENANT_ID}`, { waitUntil: "domcontentloaded" });
+    await darkShellPage.goto(`/${TENANT_ID}`, {
+      waitUntil: "domcontentloaded",
+    });
     const pom = new ShellPage(darkShellPage);
 
-    await expect(pom.getNetworkErrorFallback()).toBeVisible({ timeout: 15_000 });
+    await expect(pom.getNetworkErrorFallback()).toBeVisible({
+      timeout: 15_000,
+    });
     await darkShellPage.waitForTimeout(300);
 
     await expect(darkShellPage).toHaveScreenshot("network-fallback-dark.png", {

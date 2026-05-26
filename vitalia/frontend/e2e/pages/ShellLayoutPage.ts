@@ -82,7 +82,10 @@ export class ShellLayoutPage {
     this.topBar = page.locator('header[role="banner"]').first();
     this.skipLink = page.locator('a[href="#main-content"]').first();
     // Only one <main> is visible at any time — :visible ensures we target the right one
-    this.main = page.locator("main#main-content").filter({ hasText: "" }).first();
+    this.main = page
+      .locator("main#main-content")
+      .filter({ hasText: "" })
+      .first();
     // Triple-main pattern: multiple testid instances exist in DOM (one per CSS branch:
     // agentic md:block, web md:grid, mobile md:hidden). Only ONE is visible per viewport.
     // Filter por visibility para que assertions toBeVisible() resuelvan el correcto en
@@ -97,7 +100,11 @@ export class ShellLayoutPage {
       .first();
     this.resizeHandle = page.locator('[aria-label="Redimensionar paneles"]');
     this.logoMark = page.locator('header a[aria-label*="Vitalia"]').first();
-    this.themeToggle = page.locator('header button[aria-label*="tema"], header button[aria-label*="Tema"]').first();
+    this.themeToggle = page
+      .locator(
+        'header button[aria-label*="tema"], header button[aria-label*="Tema"]',
+      )
+      .first();
     this.tenantSwitcher = page.getByTestId("tenant-switcher-trigger");
     this.shellModeToggle = page.getByTestId("shell-mode-toggle");
   }
@@ -117,7 +124,10 @@ export class ShellLayoutPage {
    *
    * Waits for topBar visible para confirmar hydration.
    */
-  async gotoShell(tenantId?: string, opts: { useProdRoute?: boolean } = {}): Promise<void> {
+  async gotoShell(
+    tenantId?: string,
+    opts: { useProdRoute?: boolean } = {},
+  ): Promise<void> {
     if (opts.useProdRoute && tenantId) {
       await this.page.goto(`/${tenantId}`);
     } else {
@@ -186,7 +196,8 @@ export class ShellLayoutPage {
    */
   async dragResizeHandle(deltaX: number): Promise<void> {
     const box = await this.resizeHandle.boundingBox();
-    if (!box) throw new Error("resize handle not found — is agentic mode active?");
+    if (!box)
+      throw new Error("resize handle not found — is agentic mode active?");
     const startX = box.x + box.width / 2;
     const startY = box.y + box.height / 2;
     await this.page.mouse.move(startX, startY);

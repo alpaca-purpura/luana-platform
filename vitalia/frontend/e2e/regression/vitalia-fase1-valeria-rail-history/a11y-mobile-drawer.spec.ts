@@ -51,7 +51,8 @@ import { ValeriaSidebarPage } from "../../pages/ValeriaSidebarPage";
 const MOBILE_VIEWPORT = { width: 375, height: 667 };
 
 // Mobile drawer aside selector — targets ONLY the mobile drawer (has aria-modal)
-const MOBILE_DRAWER_SELECTOR = "[data-testid=valeria-sidebar][aria-modal='true']";
+const MOBILE_DRAWER_SELECTOR =
+  "[data-testid=valeria-sidebar][aria-modal='true']";
 
 // T-5.bis: Production bug (display:none parent) fixed via React.createPortal()
 // in ValeriaSidebar.tsx. All SC-8 tests are now active.
@@ -68,7 +69,11 @@ test.describe("SC-8 — mobile drawer a11y", () => {
     await authedPage.setViewportSize(MOBILE_VIEWPORT);
 
     const pom = new ValeriaSidebarPage(authedPage);
-    await pom.goto({ valeriaState: "full", shellMode: "agentic", theme: "light" });
+    await pom.goto({
+      valeriaState: "full",
+      shellMode: "agentic",
+      theme: "light",
+    });
 
     // Mobile drawer renders as fixed overlay when isMobile=true.
     // ★ T-8.bis a11y fix: role="dialog" (not "complementary") porque aria-modal
@@ -88,7 +93,11 @@ test.describe("SC-8 — mobile drawer a11y", () => {
     await authedPage.setViewportSize(MOBILE_VIEWPORT);
 
     const pom = new ValeriaSidebarPage(authedPage);
-    await pom.goto({ valeriaState: "full", shellMode: "agentic", theme: "light" });
+    await pom.goto({
+      valeriaState: "full",
+      shellMode: "agentic",
+      theme: "light",
+    });
 
     await expect(pom.drawerBackdrop).toBeVisible({ timeout: 3_000 });
     await expect(pom.drawerBackdrop).toHaveAttribute("aria-hidden", "true");
@@ -100,7 +109,11 @@ test.describe("SC-8 — mobile drawer a11y", () => {
     await authedPage.setViewportSize(MOBILE_VIEWPORT);
 
     const pom = new ValeriaSidebarPage(authedPage);
-    await pom.goto({ valeriaState: "full", shellMode: "agentic", theme: "light" });
+    await pom.goto({
+      valeriaState: "full",
+      shellMode: "agentic",
+      theme: "light",
+    });
 
     await expect(pom.drawerBackdrop).toBeVisible({ timeout: 3_000 });
 
@@ -120,7 +133,11 @@ test.describe("SC-8 — mobile drawer a11y", () => {
     await authedPage.setViewportSize(MOBILE_VIEWPORT);
 
     const pom = new ValeriaSidebarPage(authedPage);
-    await pom.goto({ valeriaState: "full", shellMode: "agentic", theme: "light" });
+    await pom.goto({
+      valeriaState: "full",
+      shellMode: "agentic",
+      theme: "light",
+    });
 
     const mobileDrawer = authedPage.locator(MOBILE_DRAWER_SELECTOR);
     await expect(mobileDrawer).toBeVisible({ timeout: 3_000 });
@@ -138,7 +155,11 @@ test.describe("SC-8 — mobile drawer a11y", () => {
     await authedPage.setViewportSize(MOBILE_VIEWPORT);
 
     const pom = new ValeriaSidebarPage(authedPage);
-    await pom.goto({ valeriaState: "full", shellMode: "agentic", theme: "light" });
+    await pom.goto({
+      valeriaState: "full",
+      shellMode: "agentic",
+      theme: "light",
+    });
 
     await expect(pom.drawerCloseBtn).toBeVisible({ timeout: 3_000 });
 
@@ -157,7 +178,11 @@ test.describe("SC-8 — mobile drawer a11y", () => {
     await authedPage.setViewportSize(MOBILE_VIEWPORT);
 
     const pom = new ValeriaSidebarPage(authedPage);
-    await pom.goto({ valeriaState: "full", shellMode: "agentic", theme: "light" });
+    await pom.goto({
+      valeriaState: "full",
+      shellMode: "agentic",
+      theme: "light",
+    });
 
     const mobileDrawer = authedPage.locator(MOBILE_DRAWER_SELECTOR);
     await expect(mobileDrawer).toBeVisible({ timeout: 5_000 });

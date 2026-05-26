@@ -35,7 +35,7 @@ export function FidelizacionActivityFooter({
       aria-label={copy.streamTitle}
       className={cn(
         "border-t border-[hsl(var(--vitalia-border,220_13%_91%))] bg-white px-4 py-2",
-        className
+        className,
       )}
     >
       <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-[hsl(var(--vitalia-muted,220_10%_55%))]">

@@ -22,7 +22,15 @@ const meta: Meta<typeof RequireRole> = {
   argTypes: {
     userRole: {
       control: "select",
-      options: ["doctor", "nurse", "admin_clinic", "patient", "marketing", "sales", "superadmin"],
+      options: [
+        "doctor",
+        "nurse",
+        "admin_clinic",
+        "patient",
+        "marketing",
+        "sales",
+        "superadmin",
+      ],
     },
   },
 };
@@ -38,7 +46,9 @@ export const DoctorAllowed: Story = {
     userRole: "doctor",
     children: (
       <div className="p-3 rounded border vt-border-verde-lima vt-bg-success-soft">
-        <span className="text-sm vt-text-success">Contenido PHI visible para doctor</span>
+        <span className="text-sm vt-text-success">
+          Contenido PHI visible para doctor
+        </span>
       </div>
     ),
     fallback: (
@@ -57,7 +67,9 @@ export const NurseAllowed: Story = {
     userRole: "nurse",
     children: (
       <div className="p-3 rounded border vt-border-verde-lima vt-bg-success-soft">
-        <span className="text-sm vt-text-success">Contenido PHI visible para enfermería</span>
+        <span className="text-sm vt-text-success">
+          Contenido PHI visible para enfermería
+        </span>
       </div>
     ),
     fallback: (
@@ -76,12 +88,16 @@ export const MarketingDenied: Story = {
     userRole: "marketing",
     children: (
       <div className="p-3 rounded border vt-border-verde-lima vt-bg-success-soft">
-        <span className="text-sm vt-text-success">Contenido PHI — no debería verse</span>
+        <span className="text-sm vt-text-success">
+          Contenido PHI — no debería verse
+        </span>
       </div>
     ),
     fallback: (
       <div className="p-3 rounded border vt-border-danger-soft vt-bg-danger-soft">
-        <span className="text-sm vt-text-danger">Acceso denegado — rol insuficiente</span>
+        <span className="text-sm vt-text-danger">
+          Acceso denegado — rol insuficiente
+        </span>
       </div>
     ),
   },
@@ -93,7 +109,9 @@ export const PatientRestricted: Story = {
   args: {
     roles: ["doctor", "nurse", "admin_clinic"],
     userRole: "patient",
-    children: <span className="text-sm vt-text-success">Datos clínicos completos</span>,
+    children: (
+      <span className="text-sm vt-text-success">Datos clínicos completos</span>
+    ),
     fallback: (
       <span className="text-sm vt-text-muted">
         Solo puedes ver tu propio historial desde el portal del paciente.

@@ -19,14 +19,19 @@ export interface ClinicTypePickerProps {
   disabled?: boolean;
 }
 
-const CLINIC_OPTIONS: { value: ClinicType; icon: string; ariaLabel: string }[] = [
-  { value: "dental", icon: "🦷", ariaLabel: "Dental" },
-  { value: "psychology", icon: "🧠", ariaLabel: "Psicología" },
-  { value: "psychiatry", icon: "💊", ariaLabel: "Psiquiatría" },
-  { value: "wellness", icon: "✨", ariaLabel: "Wellness" },
-];
+const CLINIC_OPTIONS: { value: ClinicType; icon: string; ariaLabel: string }[] =
+  [
+    { value: "dental", icon: "🦷", ariaLabel: "Dental" },
+    { value: "psychology", icon: "🧠", ariaLabel: "Psicología" },
+    { value: "psychiatry", icon: "💊", ariaLabel: "Psiquiatría" },
+    { value: "wellness", icon: "✨", ariaLabel: "Wellness" },
+  ];
 
-export function ClinicTypePicker({ value, onChange, disabled = false }: ClinicTypePickerProps) {
+export function ClinicTypePicker({
+  value,
+  onChange,
+  disabled = false,
+}: ClinicTypePickerProps) {
   return (
     <fieldset
       className="border-0 p-0 m-0"
@@ -36,7 +41,11 @@ export function ClinicTypePicker({ value, onChange, disabled = false }: ClinicTy
       <legend className="text-sm font-medium text-gray-700 mb-3">
         {MICROCOPY_ONBOARDING.fields.clinicType}
       </legend>
-      <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-label={MICROCOPY_ONBOARDING.fields.clinicType}>
+      <div
+        className="grid grid-cols-2 gap-3"
+        role="radiogroup"
+        aria-label={MICROCOPY_ONBOARDING.fields.clinicType}
+      >
         {CLINIC_OPTIONS.map((option) => {
           const microcopy = MICROCOPY_ONBOARDING.clinicTypes[option.value];
           const isSelected = value === option.value;
@@ -49,7 +58,7 @@ export function ClinicTypePicker({ value, onChange, disabled = false }: ClinicTy
                 isSelected
                   ? "border-blue-600 bg-blue-50"
                   : "border-gray-200 bg-white",
-                disabled && "opacity-50 cursor-not-allowed pointer-events-none"
+                disabled && "opacity-50 cursor-not-allowed pointer-events-none",
               )}
             >
               <input
@@ -68,9 +77,7 @@ export function ClinicTypePicker({ value, onChange, disabled = false }: ClinicTy
               <span className="font-semibold text-gray-900 text-sm">
                 {microcopy.label}
               </span>
-              <span className="text-xs text-gray-500">
-                {microcopy.hint}
-              </span>
+              <span className="text-xs text-gray-500">{microcopy.hint}</span>
               {isSelected && (
                 <span
                   className="absolute top-2 right-2 w-4 h-4 rounded-full bg-blue-600 flex items-center justify-center"

@@ -18,13 +18,19 @@ test.describe("Onboarding — Centro Mindful Santiago (CL)", () => {
     await page.goto("/onboarding");
 
     // Step breadcrumb visible
-    await expect(page.getByText(/paso 1 de 3/i)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/paso 1 de 3/i)).toBeVisible({
+      timeout: 10_000,
+    });
 
     // Clinic type options visible
-    await expect(page.getByRole("group", { name: /tipo de cl[íi]nica/i })).toBeVisible();
+    await expect(
+      page.getByRole("group", { name: /tipo de cl[íi]nica/i }),
+    ).toBeVisible();
 
     // Psychology option exists
-    await expect(page.getByRole("radio", { name: /psicolog[íi]a/i })).toBeVisible();
+    await expect(
+      page.getByRole("radio", { name: /psicolog[íi]a/i }),
+    ).toBeVisible();
 
     // No console errors
     expect(consoleErrors).toHaveLength(0);
@@ -37,7 +43,9 @@ test.describe("Onboarding — Centro Mindful Santiago (CL)", () => {
     await page.goto("/onboarding/plan");
 
     // Solo doctor plan present
-    await expect(page.getByText(/solo doctor/i)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/solo doctor/i)).toBeVisible({
+      timeout: 10_000,
+    });
 
     // USD price shown (CL charges USD per fixture)
     await expect(page.getByText(/99|solo doctor/i)).toBeVisible();

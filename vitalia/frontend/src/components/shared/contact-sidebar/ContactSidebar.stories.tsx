@@ -25,9 +25,9 @@ export const PatientContext: Story = {
   args: {
     contact: {
       patientId: "pat-abc-fake-001",
-      name: "María López",            // fake
-      phone: "+54 11 5555-1234",       // fake
-      email: "m.lopez@example.com",    // fake
+      name: "María López", // fake
+      phone: "+54 11 5555-1234", // fake
+      email: "m.lopez@example.com", // fake
       statusTag: "Activo",
       npsScore: 9,
     },
@@ -40,7 +40,7 @@ export const LeadContext: Story = {
   args: {
     contact: {
       patientId: "lead-fake-002",
-      email: "lead.fake@example.com",  // fake
+      email: "lead.fake@example.com", // fake
       statusTag: "Prospecto",
     },
   },
@@ -62,8 +62,8 @@ export const WithActions: Story = {
   args: {
     contact: {
       patientId: "pat-fake-004",
-      name: "Carlos Díaz",            // fake
-      phone: "+52 55 5555-6789",       // fake
+      name: "Carlos Díaz", // fake
+      phone: "+52 55 5555-6789", // fake
       statusTag: "En seguimiento",
     },
     children: (
@@ -91,8 +91,8 @@ export const PhoneAndEmailOnly: Story = {
   args: {
     contact: {
       patientId: "pat-fake-005",
-      phone: "+56 9 5555-8901",        // fake
-      email: "otro.fake@example.com",  // fake
+      phone: "+56 9 5555-8901", // fake
+      email: "otro.fake@example.com", // fake
     },
   },
 };

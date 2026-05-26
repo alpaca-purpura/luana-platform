@@ -55,19 +55,22 @@ describe("Vitalia FE — no middleware.ts (Next.js 16 uses proxy.ts)", () => {
   it("middleware.ts MUST NOT exist anywhere in src/", () => {
     const found = findMiddlewareTsFiles(SRC);
 
-    expect(found, [
-      "middleware.ts detected — Next.js 16 uses proxy.ts instead.",
-      "",
-      "Next.js 16 deprecated the middleware.ts file convention in favour of",
-      "proxy.ts (same location: src/proxy.ts). Any middleware.ts file in the",
-      "repo will conflict with or duplicate the canonical proxy.ts.",
-      "",
-      "To fix: rename middleware.ts → proxy.ts and update the export name",
-      "from 'middleware' to 'proxy'. Clerk SDK clerkMiddleware() is unchanged.",
-      "",
-      "Offending files:",
-      ...found,
-    ].join("\n")).toHaveLength(0);
+    expect(
+      found,
+      [
+        "middleware.ts detected — Next.js 16 uses proxy.ts instead.",
+        "",
+        "Next.js 16 deprecated the middleware.ts file convention in favour of",
+        "proxy.ts (same location: src/proxy.ts). Any middleware.ts file in the",
+        "repo will conflict with or duplicate the canonical proxy.ts.",
+        "",
+        "To fix: rename middleware.ts → proxy.ts and update the export name",
+        "from 'middleware' to 'proxy'. Clerk SDK clerkMiddleware() is unchanged.",
+        "",
+        "Offending files:",
+        ...found,
+      ].join("\n"),
+    ).toHaveLength(0);
   });
 
   it("proxy.ts MUST exist in src/", () => {
@@ -75,7 +78,7 @@ describe("Vitalia FE — no middleware.ts (Next.js 16 uses proxy.ts)", () => {
     expect(
       existsSync(proxyPath),
       "src/proxy.ts not found — this is the canonical Next.js 16 routing file. " +
-      "Create src/proxy.ts with clerkMiddleware() as per 03-arch-fe.md § 2.2."
+        "Create src/proxy.ts with clerkMiddleware() as per 03-arch-fe.md § 2.2.",
     ).toBe(true);
   });
 });

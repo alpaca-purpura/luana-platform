@@ -51,10 +51,19 @@ test.describe("SC-6 — mobile viewport + sub-tabs overflow-x-auto", () => {
     await expect(bar).toHaveClass(/min-h-\[42px\]/);
 
     // Lanzar should be active
-    await expect(pom.getSubTab("lanzar")).toHaveAttribute("data-active", "true");
+    await expect(pom.getSubTab("lanzar")).toHaveAttribute(
+      "data-active",
+      "true",
+    );
 
     // All 5 sub-tabs are in DOM (even if scrolled out of view)
-    for (const id of ["lanzar", "envuelo", "recursos", "resultados", "mercado"]) {
+    for (const id of [
+      "lanzar",
+      "envuelo",
+      "recursos",
+      "resultados",
+      "mercado",
+    ]) {
       await expect(pom.getSubTab(id)).toBeAttached();
     }
   });

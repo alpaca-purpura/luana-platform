@@ -38,7 +38,8 @@ const PASIVO_ROW: NPSRowDTO = {
   patientName: "Claudia Fernández",
   score: 7,
   band: "passive",
-  commentShort: "El servicio estuvo bien pero los tiempos de espera podrían mejorar un poco.",
+  commentShort:
+    "El servicio estuvo bien pero los tiempos de espera podrían mejorar un poco.",
   respondedAt: "2025-05-08T16:45:00-03:00",
   taggedInInbox: false,
 };

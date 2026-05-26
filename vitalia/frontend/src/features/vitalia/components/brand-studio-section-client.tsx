@@ -52,7 +52,7 @@ function AutosaveBadge({ status }: { status: AutosaveStatus }) {
         "text-xs font-medium",
         status === "saving" && "text-gray-500",
         status === "saved" && "text-green-600",
-        status === "error" && "text-red-600"
+        status === "error" && "text-red-600",
       )}
     >
       {text}
@@ -73,7 +73,10 @@ function SectionEditor({
   // In production, each section would have dedicated fields.
   // This implementation provides the autosave-wired structure.
 
-  const SECTION_FIELDS: Record<SectionType, { key: string; label: string; type: string }[]> = {
+  const SECTION_FIELDS: Record<
+    SectionType,
+    { key: string; label: string; type: string }[]
+  > = {
     identity: [
       { key: "clinic_name", label: "Nombre de la clínica", type: "text" },
       { key: "tagline", label: "Eslogan", type: "text" },
@@ -85,7 +88,11 @@ function SectionEditor({
       { key: "address", label: "Dirección", type: "text" },
     ],
     medical_team: [
-      { key: "team_description", label: "Descripción del equipo", type: "text" },
+      {
+        key: "team_description",
+        label: "Descripción del equipo",
+        type: "text",
+      },
     ],
     testimonials: [
       { key: "testimonials_intro", label: "Introducción", type: "text" },
@@ -122,8 +129,11 @@ function SectionEditor({
 export function BrandStudioSectionClient({
   initialSection = "identity",
 }: BrandStudioSectionClientProps) {
-  const [activeSection, setActiveSection] = useState<SectionType>(initialSection);
-  const [sectionData, setSectionData] = useState<Record<SectionType, Record<string, unknown>>>({
+  const [activeSection, setActiveSection] =
+    useState<SectionType>(initialSection);
+  const [sectionData, setSectionData] = useState<
+    Record<SectionType, Record<string, unknown>>
+  >({
     identity: {},
     contact: {},
     medical_team: {},
@@ -173,7 +183,7 @@ export function BrandStudioSectionClient({
         }
       }, AUTOSAVE_DEBOUNCE_MS);
     },
-    [patchSection]
+    [patchSection],
   );
 
   function handleDataChange(data: Record<string, unknown>) {
@@ -188,8 +198,14 @@ export function BrandStudioSectionClient({
         aria-busy="true"
         aria-label="Cargando Brand Studio"
       >
-        <div className="h-8 w-48 rounded bg-gray-200 animate-pulse" aria-hidden="true" />
-        <div className="h-32 rounded-lg border border-gray-200 bg-gray-100 animate-pulse" aria-hidden="true" />
+        <div
+          className="h-8 w-48 rounded bg-gray-200 animate-pulse"
+          aria-hidden="true"
+        />
+        <div
+          className="h-32 rounded-lg border border-gray-200 bg-gray-100 animate-pulse"
+          aria-hidden="true"
+        />
       </div>
     );
   }
@@ -216,7 +232,7 @@ export function BrandStudioSectionClient({
   }
 
   const hasContent = Object.values(sectionData).some(
-    (d) => Object.keys(d).length > 0
+    (d) => Object.keys(d).length > 0,
   );
 
   if (!hasContent && !isLoading) {
@@ -231,7 +247,9 @@ export function BrandStudioSectionClient({
           <h2 className="text-lg font-semibold text-gray-900">
             {MICROCOPY_BRAND_STUDIO.title}
           </h2>
-          <p className="text-sm text-gray-500">{MICROCOPY_BRAND_STUDIO.subtitle}</p>
+          <p className="text-sm text-gray-500">
+            {MICROCOPY_BRAND_STUDIO.subtitle}
+          </p>
         </div>
         <AutosaveBadge status={autosaveStatus} />
       </div>
@@ -252,7 +270,7 @@ export function BrandStudioSectionClient({
               "border-b-2 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-t",
               activeSection === section.key
                 ? "border-blue-600 text-blue-700"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300",
             )}
           >
             {section.label}

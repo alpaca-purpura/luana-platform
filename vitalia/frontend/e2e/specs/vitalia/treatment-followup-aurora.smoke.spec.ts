@@ -44,25 +44,23 @@ test.describe("Treatment Followup — Implante Dental Aurora (AR)", () => {
     await expect(page.getByText(/corona/i)).toBeVisible();
   });
 
-  test("V-V-13: adherence score displayed", async ({
-    auroraPage: page,
-  }) => {
+  test("V-V-13: adherence score displayed", async ({ auroraPage: page }) => {
     await page.goto(`/tratamientos/${TREATMENT_ID}/seguimiento`);
 
     // Adherence score 0.8 = "Bueno" or 80%
     await expect(
-      page.getByText(/adherencia|adherence/i).or(page.getByText(/0\.8|80%|bueno/i))
+      page
+        .getByText(/adherencia|adherence/i)
+        .or(page.getByText(/0\.8|80%|bueno/i)),
     ).toBeVisible({ timeout: 10_000 });
   });
 
-  test("V-V-13: manual handoff CTA visible", async ({
-    auroraPage: page,
-  }) => {
+  test("V-V-13: manual handoff CTA visible", async ({ auroraPage: page }) => {
     await page.goto(`/tratamientos/${TREATMENT_ID}/seguimiento`);
 
     // "Tomar conversación" button per spec §3.5.A
     await expect(
-      page.getByRole("button", { name: /tomar conversaci[oó]n/i })
+      page.getByRole("button", { name: /tomar conversaci[oó]n/i }),
     ).toBeVisible({ timeout: 10_000 });
   });
 
@@ -72,9 +70,9 @@ test.describe("Treatment Followup — Implante Dental Aurora (AR)", () => {
     await page.goto(`/tratamientos/${TREATMENT_ID}/seguimiento`);
 
     // Next action from mock: sutura_removal on D14
-    await expect(
-      page.getByText(/sutura|d14|pr[oó]xim[ao]/i)
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/sutura|d14|pr[oó]xim[ao]/i)).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   test("V-V-13: milestone statuses reflect done/upcoming/pending", async ({

@@ -67,7 +67,7 @@ export function useSendMessage() {
             handler_mode_override: input.handlerModeOverride ?? null,
             idempotency_key: input.idempotencyKey,
           }),
-        }
+        },
       );
     },
     onMutate: async (input) => {
@@ -89,7 +89,9 @@ export function useSendMessage() {
           transcription_confidence: null,
           retracted_at: null,
           retract_succeeded: null,
-          handler_mode: input.handlerModeOverride ?? previousDetail.conversation.handler_mode,
+          handler_mode:
+            input.handlerModeOverride ??
+            previousDetail.conversation.handler_mode,
           sent_at: new Date().toISOString(),
           action_receipt_expires_at: null,
         };
@@ -103,11 +105,16 @@ export function useSendMessage() {
     onError: (_err, input, ctx) => {
       // Rollback optimistic update on error
       if (ctx?.previousDetail) {
-        qc.setQueryData(conversationDetailKey(input.conversationId), ctx.previousDetail);
+        qc.setQueryData(
+          conversationDetailKey(input.conversationId),
+          ctx.previousDetail,
+        );
       }
     },
     onSettled: (_data, _err, input) => {
-      void qc.invalidateQueries({ queryKey: conversationDetailKey(input.conversationId) });
+      void qc.invalidateQueries({
+        queryKey: conversationDetailKey(input.conversationId),
+      });
       void qc.invalidateQueries({ queryKey: conversationsListKey() });
     },
   });

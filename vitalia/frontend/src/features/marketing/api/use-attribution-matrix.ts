@@ -15,7 +15,9 @@ export type UseAttributionMatrixOptions = {
   period?: "7d" | "30d" | "90d";
 };
 
-export function useAttributionMatrix({ period = "30d" }: UseAttributionMatrixOptions = {}) {
+export function useAttributionMatrix({
+  period = "30d",
+}: UseAttributionMatrixOptions = {}) {
   const { getToken, orgId, isLoaded, isSignedIn } = useAuth();
   const clinicId = useClinicId();
 

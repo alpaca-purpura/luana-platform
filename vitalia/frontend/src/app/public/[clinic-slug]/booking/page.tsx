@@ -4,9 +4,9 @@ interface ClinicBookingPageProps {
   params: Promise<{ "clinic-slug": string }>;
 }
 
-export async function generateMetadata(
-  { params }: ClinicBookingPageProps
-): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: ClinicBookingPageProps): Promise<Metadata> {
   const slug = (await params)["clinic-slug"];
   return {
     title: `Reservar cita — ${slug} — Vitalia`,

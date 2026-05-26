@@ -18,7 +18,9 @@ test.describe("Compliance Smoke — Cross-Tenant Isolation Audit", () => {
     await page.goto("/medical-compliance");
 
     // cross_tenant_attempt = 0 per Aurora mock
-    await expect(page.getByText(/cross_tenant.*attempt.*0|0.*cross_tenant/i)).toBeVisible({
+    await expect(
+      page.getByText(/cross_tenant.*attempt.*0|0.*cross_tenant/i),
+    ).toBeVisible({
       timeout: 10_000,
     });
 
@@ -75,7 +77,7 @@ test.describe("Compliance Smoke — Cross-Tenant Isolation Audit", () => {
     if (await filterSelect.isVisible({ timeout: 5_000 }).catch(() => false)) {
       // Option should be available
       const options = await filterSelect.evaluate((el: HTMLSelectElement) =>
-        Array.from(el.options).map((o) => o.value)
+        Array.from(el.options).map((o) => o.value),
       );
       // cross_tenant_attempt should be filterable
       const hasCrossTenant = options.some((o) => o.includes("cross_tenant"));

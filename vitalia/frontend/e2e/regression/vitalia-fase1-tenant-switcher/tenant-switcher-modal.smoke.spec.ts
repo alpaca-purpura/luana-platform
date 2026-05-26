@@ -40,7 +40,9 @@ test.describe("SC-07 — AddClinicPlaceholderModal (F1-S3)", () => {
     await pom.openAddClinicModal();
 
     // Modal title
-    await expect(page.getByRole("heading", { name: "Próximamente" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Próximamente" }),
+    ).toBeVisible();
 
     // Modal body text
     await expect(

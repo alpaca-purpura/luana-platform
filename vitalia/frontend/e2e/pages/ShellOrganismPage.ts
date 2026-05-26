@@ -95,7 +95,9 @@ export class ShellOrganismPage {
     subtab: string,
   ): Promise<void> {
     await expect(
-      this.page.locator(`[data-testid="subtab-content-${agent}-${subtab}"]`),
+      this.page
+        .locator(`[data-testid="subtab-content-${agent}-${subtab}"]`)
+        .first(),
     ).toBeVisible();
   }
 
@@ -108,7 +110,9 @@ export class ShellOrganismPage {
     subtab: string,
   ): Promise<void> {
     await expect(
-      this.page.locator(`[data-testid="subtab-header-${agent}-${subtab}"]`),
+      this.page
+        .locator(`[data-testid="subtab-header-${agent}-${subtab}"]`)
+        .first(),
     ).toBeVisible();
   }
 

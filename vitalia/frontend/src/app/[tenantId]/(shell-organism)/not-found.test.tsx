@@ -49,9 +49,7 @@ describe("NotFoundShell (outer not-found)", () => {
 
   it("muestra el título correcto en Spanish neutro", () => {
     render(<NotFoundShell />);
-    expect(
-      screen.getByText("No encontramos esta vista"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("No encontramos esta vista")).toBeInTheDocument();
   });
 
   it("muestra la descripción correcta", () => {

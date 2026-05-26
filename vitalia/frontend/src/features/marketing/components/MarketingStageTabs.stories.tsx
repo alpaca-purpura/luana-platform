@@ -23,11 +23,41 @@ export default meta;
 type Story = StoryObj<typeof MarketingStageTabs>;
 
 const mockStages = [
-  { slug: "attraction" as const, label: "Atracción", count: 182, primaryKpiValue: 24, primaryKpiLabel: "cpL" },
-  { slug: "qualification" as const, label: "Calificación", count: 87, primaryKpiValue: 48, primaryKpiLabel: "conv%" },
-  { slug: "reservation" as const, label: "Reserva", count: 36, primaryKpiValue: 41, primaryKpiLabel: "conv%" },
-  { slug: "adoption" as const, label: "Adopción", count: 62, primaryKpiValue: 87, primaryKpiLabel: "adherencia%" },
-  { slug: "expansion" as const, label: "Expansión", count: 28, primaryKpiValue: 72, primaryKpiLabel: "NPS" },
+  {
+    slug: "attraction" as const,
+    label: "Atracción",
+    count: 182,
+    primaryKpiValue: 24,
+    primaryKpiLabel: "cpL",
+  },
+  {
+    slug: "qualification" as const,
+    label: "Calificación",
+    count: 87,
+    primaryKpiValue: 48,
+    primaryKpiLabel: "conv%",
+  },
+  {
+    slug: "reservation" as const,
+    label: "Reserva",
+    count: 36,
+    primaryKpiValue: 41,
+    primaryKpiLabel: "conv%",
+  },
+  {
+    slug: "adoption" as const,
+    label: "Adopción",
+    count: 62,
+    primaryKpiValue: 87,
+    primaryKpiLabel: "adherencia%",
+  },
+  {
+    slug: "expansion" as const,
+    label: "Expansión",
+    count: 28,
+    primaryKpiValue: 72,
+    primaryKpiLabel: "NPS",
+  },
 ];
 
 /** Active tab = Atracción (default) */

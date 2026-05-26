@@ -59,7 +59,9 @@ test.describe("visual goldens — active agent light 1280 (F1-S8)", () => {
     await pom.goto({ tenantId: TENANT_ID, agent: "lisa", subtab: "marca" });
     await expect(pom.getSubTabsBar()).toBeAttached();
     await shellPage.waitForTimeout(200);
-    await expect(pom.getSubTabsBar()).toHaveScreenshot("sub-tabs-lisa-light.png");
+    await expect(pom.getSubTabsBar()).toHaveScreenshot(
+      "sub-tabs-lisa-light.png",
+    );
   });
 
   test("active lucas light 1280", async ({ shellPage }) => {
@@ -67,7 +69,9 @@ test.describe("visual goldens — active agent light 1280 (F1-S8)", () => {
     await pom.goto({ tenantId: TENANT_ID, agent: "lucas", subtab: "lanzar" });
     await expect(pom.getSubTabsBar()).toBeAttached();
     await shellPage.waitForTimeout(200);
-    await expect(pom.getSubTabsBar()).toHaveScreenshot("sub-tabs-lucas-light.png");
+    await expect(pom.getSubTabsBar()).toHaveScreenshot(
+      "sub-tabs-lucas-light.png",
+    );
   });
 
   test("active adrian light 1280", async ({ shellPage }) => {
@@ -75,7 +79,9 @@ test.describe("visual goldens — active agent light 1280 (F1-S8)", () => {
     await pom.goto({ tenantId: TENANT_ID, agent: "adrian", subtab: "inbox" });
     await expect(pom.getSubTabsBar()).toBeAttached();
     await shellPage.waitForTimeout(200);
-    await expect(pom.getSubTabsBar()).toHaveScreenshot("sub-tabs-adrian-light.png");
+    await expect(pom.getSubTabsBar()).toHaveScreenshot(
+      "sub-tabs-adrian-light.png",
+    );
   });
 
   test("active valeria light 1280", async ({ shellPage }) => {
@@ -83,7 +89,9 @@ test.describe("visual goldens — active agent light 1280 (F1-S8)", () => {
     await pom.goto({ tenantId: TENANT_ID, agent: "valeria", subtab: "agenda" });
     await expect(pom.getSubTabsBar()).toBeAttached();
     await shellPage.waitForTimeout(200);
-    await expect(pom.getSubTabsBar()).toHaveScreenshot("sub-tabs-valeria-light.png");
+    await expect(pom.getSubTabsBar()).toHaveScreenshot(
+      "sub-tabs-valeria-light.png",
+    );
   });
 
   test("active camila light 1280", async ({ shellPage }) => {
@@ -91,7 +99,9 @@ test.describe("visual goldens — active agent light 1280 (F1-S8)", () => {
     await pom.goto({ tenantId: TENANT_ID, agent: "camila", subtab: "voz" });
     await expect(pom.getSubTabsBar()).toBeAttached();
     await shellPage.waitForTimeout(200);
-    await expect(pom.getSubTabsBar()).toHaveScreenshot("sub-tabs-camila-light.png");
+    await expect(pom.getSubTabsBar()).toHaveScreenshot(
+      "sub-tabs-camila-light.png",
+    );
   });
 
   test("active config light 1280", async ({ shellPage }) => {
@@ -99,7 +109,9 @@ test.describe("visual goldens — active agent light 1280 (F1-S8)", () => {
     await pom.goto({ tenantId: TENANT_ID, agent: "config", subtab: "cuenta" });
     await expect(pom.getSubTabsBar()).toBeAttached();
     await shellPage.waitForTimeout(200);
-    await expect(pom.getSubTabsBar()).toHaveScreenshot("sub-tabs-config-light.png");
+    await expect(pom.getSubTabsBar()).toHaveScreenshot(
+      "sub-tabs-config-light.png",
+    );
   });
 });
 
@@ -115,7 +127,9 @@ test.describe("visual goldens — active agent dark 1280 (F1-S8)", () => {
     await pom.goto({ tenantId: TENANT_ID, agent: "lisa", subtab: "marca" });
     await expect(pom.getSubTabsBar()).toBeAttached();
     await darkShellPage.waitForTimeout(200);
-    await expect(pom.getSubTabsBar()).toHaveScreenshot("sub-tabs-lisa-dark.png");
+    await expect(pom.getSubTabsBar()).toHaveScreenshot(
+      "sub-tabs-lisa-dark.png",
+    );
   });
 
   test("active lucas dark 1280", async ({ darkShellPage }) => {
@@ -123,7 +137,9 @@ test.describe("visual goldens — active agent dark 1280 (F1-S8)", () => {
     await pom.goto({ tenantId: TENANT_ID, agent: "lucas", subtab: "lanzar" });
     await expect(pom.getSubTabsBar()).toBeAttached();
     await darkShellPage.waitForTimeout(200);
-    await expect(pom.getSubTabsBar()).toHaveScreenshot("sub-tabs-lucas-dark.png");
+    await expect(pom.getSubTabsBar()).toHaveScreenshot(
+      "sub-tabs-lucas-dark.png",
+    );
   });
 
   test("active adrian dark 1280", async ({ darkShellPage }) => {
@@ -131,7 +147,9 @@ test.describe("visual goldens — active agent dark 1280 (F1-S8)", () => {
     await pom.goto({ tenantId: TENANT_ID, agent: "adrian", subtab: "inbox" });
     await expect(pom.getSubTabsBar()).toBeAttached();
     await darkShellPage.waitForTimeout(200);
-    await expect(pom.getSubTabsBar()).toHaveScreenshot("sub-tabs-adrian-dark.png");
+    await expect(pom.getSubTabsBar()).toHaveScreenshot(
+      "sub-tabs-adrian-dark.png",
+    );
   });
 
   test("active valeria dark 1280", async ({ darkShellPage }) => {
@@ -139,7 +157,9 @@ test.describe("visual goldens — active agent dark 1280 (F1-S8)", () => {
     await pom.goto({ tenantId: TENANT_ID, agent: "valeria", subtab: "agenda" });
     await expect(pom.getSubTabsBar()).toBeAttached();
     await darkShellPage.waitForTimeout(200);
-    await expect(pom.getSubTabsBar()).toHaveScreenshot("sub-tabs-valeria-dark.png");
+    await expect(pom.getSubTabsBar()).toHaveScreenshot(
+      "sub-tabs-valeria-dark.png",
+    );
   });
 
   test("active camila dark 1280", async ({ darkShellPage }) => {
@@ -147,7 +167,9 @@ test.describe("visual goldens — active agent dark 1280 (F1-S8)", () => {
     await pom.goto({ tenantId: TENANT_ID, agent: "camila", subtab: "voz" });
     await expect(pom.getSubTabsBar()).toBeAttached();
     await darkShellPage.waitForTimeout(200);
-    await expect(pom.getSubTabsBar()).toHaveScreenshot("sub-tabs-camila-dark.png");
+    await expect(pom.getSubTabsBar()).toHaveScreenshot(
+      "sub-tabs-camila-dark.png",
+    );
   });
 
   test("active config dark 1280", async ({ darkShellPage }) => {
@@ -155,7 +177,9 @@ test.describe("visual goldens — active agent dark 1280 (F1-S8)", () => {
     await pom.goto({ tenantId: TENANT_ID, agent: "config", subtab: "cuenta" });
     await expect(pom.getSubTabsBar()).toBeAttached();
     await darkShellPage.waitForTimeout(200);
-    await expect(pom.getSubTabsBar()).toHaveScreenshot("sub-tabs-config-dark.png");
+    await expect(pom.getSubTabsBar()).toHaveScreenshot(
+      "sub-tabs-config-dark.png",
+    );
   });
 });
 
@@ -171,6 +195,8 @@ test.describe("visual goldens — mobile overflow 375 (F1-S8)", () => {
     await pom.goto({ tenantId: TENANT_ID, agent: "lucas", subtab: "lanzar" });
     await expect(pom.getSubTabsBar()).toBeAttached();
     await shellPage.waitForTimeout(200);
-    await expect(pom.getSubTabsBar()).toHaveScreenshot("sub-tabs-mobile-lucas-375.png");
+    await expect(pom.getSubTabsBar()).toHaveScreenshot(
+      "sub-tabs-mobile-lucas-375.png",
+    );
   });
 });

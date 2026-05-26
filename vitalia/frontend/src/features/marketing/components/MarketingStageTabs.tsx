@@ -51,7 +51,8 @@ export function MarketingStageTabs({
             className={cn(
               "px-4 py-3 text-xs flex items-center gap-2 whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 vt-ring-cian focus-visible:ring-offset-1",
               // Active: cian gradient bg + cian bottom border + azul-marino text + bold
-              isActive && "vt-bg-tab-active vt-border-b-cian vt-text-azul-marino-bold",
+              isActive &&
+                "vt-bg-tab-active vt-border-b-cian vt-text-azul-marino-bold",
               // Inactive
               !isActive && "vt-text-muted hover:vt-bg-muted",
             )}
@@ -60,9 +61,7 @@ export function MarketingStageTabs({
             <span
               className={cn(
                 "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold",
-                isActive
-                  ? "vt-bg-cian vt-text-white"
-                  : "vt-bg-muted vt-text",
+                isActive ? "vt-bg-cian vt-text-white" : "vt-bg-muted vt-text",
               )}
               aria-label={`${stage.count} en ${stage.label}`}
             >

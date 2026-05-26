@@ -16,11 +16,11 @@ import { MARKETING_COPY } from "../copy";
 
 // Stage ellipse geometry per mockup (cx, cy, rx, ry) — pixel-invariante
 const STAGE_GEOMETRY = [
-  { cx: 100, cy: 90, rx: 70, ry: 55 },  // attraction — widest left
-  { cx: 290, cy: 90, rx: 50, ry: 40 },  // qualification
-  { cx: 450, cy: 90, rx: 35, ry: 28 },  // reservation — narrowest pivot
-  { cx: 600, cy: 90, rx: 50, ry: 40 },  // adoption
-  { cx: 800, cy: 90, rx: 70, ry: 55 },  // expansion — widest right
+  { cx: 100, cy: 90, rx: 70, ry: 55 }, // attraction — widest left
+  { cx: 290, cy: 90, rx: 50, ry: 40 }, // qualification
+  { cx: 450, cy: 90, rx: 35, ry: 28 }, // reservation — narrowest pivot
+  { cx: 600, cy: 90, rx: 50, ry: 40 }, // adoption
+  { cx: 800, cy: 90, rx: 70, ry: 55 }, // expansion — widest right
 ] as const;
 
 // Arrow connector x1/x2 pairs per mockup
@@ -34,7 +34,13 @@ const ARROW_CONNECTORS = [
 // Count label font sizes per stage (larger for wider ellipses)
 const COUNT_FONT_SIZES = [22, 18, 15, 18, 22] as const;
 
-const STAGE_COUNT_SUBLABELS: readonly string[] = ["leads", "leads", "res", "adop", "re-eng"];
+const STAGE_COUNT_SUBLABELS: readonly string[] = [
+  "leads",
+  "leads",
+  "res",
+  "adop",
+  "re-eng",
+];
 
 export type MarketingBowtieSVGProps = {
   stages?: BowtieStage[];
@@ -101,13 +107,7 @@ export function MarketingBowtieSVG({
           </linearGradient>
 
           {/* Gradient for stage 5 (expansion): cian → purpura → verde-lima */}
-          <linearGradient
-            id="mktg-grad-expansion"
-            x1="0"
-            y1="0"
-            x2="1"
-            y2="1"
-          >
+          <linearGradient id="mktg-grad-expansion" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stopColor="var(--vitalia-cian-color)" />
             <stop offset="50%" stopColor="var(--vitalia-purpura-color)" />
             <stop offset="100%" stopColor="var(--vitalia-verde-lima-color)" />
@@ -139,17 +139,15 @@ export function MarketingBowtieSVG({
             : "mktg-grad-acquisition";
           const opacity = isExpansion ? 0.85 : [0.85, 0.7, 0.6, 0.7, 0.85][i];
           const countLabel = stage?.count ?? (isLoading ? "…" : "—");
-          const kpiLabel = stage?.primaryKpiValue != null
-            ? `${stage.primaryKpiLabel} ${stage.primaryKpiValue}`
-            : null;
+          const kpiLabel =
+            stage?.primaryKpiValue != null
+              ? `${stage.primaryKpiLabel} ${stage.primaryKpiValue}`
+              : null;
           const countFontSize = COUNT_FONT_SIZES[i];
           const countSubLabel = STAGE_COUNT_SUBLABELS[i];
 
           return (
-            <g
-              key={`stage-${i}`}
-              aria-label={stage?.label ?? `Etapa ${i + 1}`}
-            >
+            <g key={`stage-${i}`} aria-label={stage?.label ?? `Etapa ${i + 1}`}>
               <ellipse
                 cx={cx}
                 cy={cy}

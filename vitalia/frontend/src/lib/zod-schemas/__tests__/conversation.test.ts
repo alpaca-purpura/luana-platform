@@ -192,7 +192,9 @@ describe("messageSchema", () => {
     const result = messageSchema.safeParse(aiMsg);
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.action_receipt_expires_at).toBe("2026-05-19T14:05:00Z");
+      expect(result.data.action_receipt_expires_at).toBe(
+        "2026-05-19T14:05:00Z",
+      );
     }
   });
 
@@ -283,7 +285,11 @@ describe("conversationDetailSchema", () => {
       conversation: { ...validConversation, handler_mode: "ai" as const },
       lead: validLeadDetail,
       messages: [
-        { ...validMessage, sender_type: "agent_ai" as const, action_receipt_expires_at: "2026-05-19T14:05:00Z" },
+        {
+          ...validMessage,
+          sender_type: "agent_ai" as const,
+          action_receipt_expires_at: "2026-05-19T14:05:00Z",
+        },
       ],
       action_receipts: [
         { message_id: validMessage.id, expires_at: "2026-05-19T14:05:00Z" },

@@ -45,7 +45,7 @@ export function useActivityStream(limit: number = 20) {
 
       return vitaliaFetch<ActivityStreamResponse>(
         `/api/v1/vitalia/fidelization/activity?limit=${limit}`,
-        { token, tenantId: orgId }
+        { token, tenantId: orgId },
       );
     },
     enabled: isLoaded && isSignedIn === true,

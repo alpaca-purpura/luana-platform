@@ -68,7 +68,7 @@ export function ListEmptyState({
       data-testid="list-empty-state"
       className={cn(
         "flex flex-col items-center justify-center gap-3 px-6 py-10 text-center",
-        className
+        className,
       )}
     >
       <EmptyIcon variant={variant} />
@@ -77,9 +77,7 @@ export function ListEmptyState({
         <p className="text-sm font-semibold vt-text-foreground">
           {copy.heading}
         </p>
-        <p className="text-xs leading-relaxed vt-text-muted">
-          {copy.body}
-        </p>
+        <p className="text-xs leading-relaxed vt-text-muted">{copy.body}</p>
       </div>
 
       {variant === "noResultsFilter" && onClearFilters && (
@@ -91,7 +89,7 @@ export function ListEmptyState({
             "vt-bg-primary vt-text-primary-foreground",
             "hover:opacity-90 focus-visible:outline focus-visible:outline-2",
             "focus-visible:outline-offset-2 focus-visible:vt-outline-primary",
-            "transition-opacity"
+            "transition-opacity",
           )}
         >
           {INBOX_COPY.empty.noResultsFilter.cta}

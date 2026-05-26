@@ -258,7 +258,10 @@ describe("fetchUserTenants — error paths (SC-5)", () => {
   it("AbortError (network timeout) — throws IamApiError with code='network_failure'", async () => {
     setupAuthMock(MOCK_TOKEN);
 
-    const abortError = new DOMException("The operation was aborted.", "AbortError");
+    const abortError = new DOMException(
+      "The operation was aborted.",
+      "AbortError",
+    );
     vi.stubGlobal("fetch", vi.fn().mockRejectedValueOnce(abortError));
 
     await expect(fetchUserTenants("user-123")).rejects.toMatchObject({

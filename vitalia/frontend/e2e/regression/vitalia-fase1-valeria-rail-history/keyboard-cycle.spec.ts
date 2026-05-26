@@ -23,9 +23,7 @@
  */
 
 import { expect } from "@playwright/test";
-import {
-  test,
-} from "../../fixtures/shell-theme.fixture";
+import { test } from "../../fixtures/shell-theme.fixture";
 import { ValeriaSidebarPage } from "../../pages/ValeriaSidebarPage";
 
 const DESKTOP_VIEWPORT = { width: 1280, height: 800 };

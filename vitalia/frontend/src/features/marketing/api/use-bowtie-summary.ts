@@ -14,7 +14,9 @@ export type UseBowtieSummaryOptions = {
   period?: "7d" | "30d" | "90d";
 };
 
-export function useBowtieSummary({ period = "30d" }: UseBowtieSummaryOptions = {}) {
+export function useBowtieSummary({
+  period = "30d",
+}: UseBowtieSummaryOptions = {}) {
   const { getToken, orgId, isLoaded, isSignedIn } = useAuth();
   const clinicId = useClinicId();
 

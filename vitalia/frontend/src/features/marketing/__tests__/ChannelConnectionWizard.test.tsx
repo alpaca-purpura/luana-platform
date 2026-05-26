@@ -10,12 +10,18 @@ import React from "react";
 vi.mock("nuqs", () => {
   const makeParser = () => ({
     withDefault: (_d: unknown) => ({
-      withOptions: (_opts: unknown) => ({ defaultValue: _d, parseServerSide: (v: unknown) => v }),
+      withOptions: (_opts: unknown) => ({
+        defaultValue: _d,
+        parseServerSide: (v: unknown) => v,
+      }),
       defaultValue: _d,
       parseServerSide: (v: unknown) => v,
     }),
     withOptions: (_opts: unknown) => ({
-      withDefault: (_d: unknown) => ({ defaultValue: _d, parseServerSide: (v: unknown) => v }),
+      withDefault: (_d: unknown) => ({
+        defaultValue: _d,
+        parseServerSide: (v: unknown) => v,
+      }),
       defaultValue: undefined,
       parseServerSide: (v: unknown) => v,
     }),
@@ -55,7 +61,9 @@ vi.mock("@tanstack/react-query", () => ({
   }),
   useQueryClient: () => ({ invalidateQueries: vi.fn() }),
   QueryClient: vi.fn(),
-  QueryClientProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  QueryClientProvider: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
 }));
 
 // Mock useTenantLocale
@@ -79,27 +87,48 @@ describe("ChannelConnectionWizard", () => {
   });
 
   it("test_not_rendered_when_closed — wizard not in DOM when open=false", async () => {
-    const { ChannelConnectionWizard } = await import("../components/ChannelConnectionWizard");
+    const { ChannelConnectionWizard } =
+      await import("../components/ChannelConnectionWizard");
     const { queryByRole } = render(
-      <ChannelConnectionWizard open={false} onClose={mockOnClose} onSuccess={mockOnSuccess} />
+      <ChannelConnectionWizard
+        open={false}
+        onClose={mockOnClose}
+        onSuccess={mockOnSuccess}
+      />,
     );
 
     expect(queryByRole("dialog")).not.toBeInTheDocument();
   });
 
   it("test_step1_renders_provider_selector — step 1 shows provider options", async () => {
-    const { ChannelConnectionWizard } = await import("../components/ChannelConnectionWizard");
-    render(<ChannelConnectionWizard open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    const { ChannelConnectionWizard } =
+      await import("../components/ChannelConnectionWizard");
+    render(
+      <ChannelConnectionWizard
+        open={true}
+        onClose={mockOnClose}
+        onSuccess={mockOnSuccess}
+      />,
+    );
 
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(screen.getByTestId("wizard-step-1")).toBeInTheDocument();
     expect(screen.getByTestId("provider-option-meta_ads")).toBeInTheDocument();
-    expect(screen.getByTestId("provider-option-google_ads")).toBeInTheDocument();
+    expect(
+      screen.getByTestId("provider-option-google_ads"),
+    ).toBeInTheDocument();
   });
 
   it("test_cancel_button_calls_onClose — cancel button invokes onClose", async () => {
-    const { ChannelConnectionWizard } = await import("../components/ChannelConnectionWizard");
-    render(<ChannelConnectionWizard open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    const { ChannelConnectionWizard } =
+      await import("../components/ChannelConnectionWizard");
+    render(
+      <ChannelConnectionWizard
+        open={true}
+        onClose={mockOnClose}
+        onSuccess={mockOnSuccess}
+      />,
+    );
 
     const cancelBtn = screen.getByTestId("wizard-cancel-btn");
     fireEvent.click(cancelBtn);
@@ -108,8 +137,15 @@ describe("ChannelConnectionWizard", () => {
   });
 
   it("test_provider_selection_enables_authorize — selecting provider enables authorize button", async () => {
-    const { ChannelConnectionWizard } = await import("../components/ChannelConnectionWizard");
-    render(<ChannelConnectionWizard open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    const { ChannelConnectionWizard } =
+      await import("../components/ChannelConnectionWizard");
+    render(
+      <ChannelConnectionWizard
+        open={true}
+        onClose={mockOnClose}
+        onSuccess={mockOnSuccess}
+      />,
+    );
 
     // Initially authorize button is disabled (no provider selected)
     const authorizeBtn = screen.getByTestId("wizard-authorize-btn");
@@ -128,7 +164,8 @@ describe("ChannelConnectionWizard", () => {
     const windowOpenSpy = vi.spyOn(window, "open");
     const locationSpy = vi.spyOn(window.location, "href", "set");
 
-    const { ChannelConnectionWizard } = await import("../components/ChannelConnectionWizard");
+    const { ChannelConnectionWizard } =
+      await import("../components/ChannelConnectionWizard");
     render(
       <ChannelConnectionWizard
         open={true}
@@ -136,7 +173,7 @@ describe("ChannelConnectionWizard", () => {
         onSuccess={mockOnSuccess}
         // Inject mock auth URL for test
         _testAuthorizationUrl="https://meta.com/oauth/authorize?state=abc123"
-      />
+      />,
     );
 
     // Select provider and authorize
@@ -146,12 +183,21 @@ describe("ChannelConnectionWizard", () => {
     // Should NOT use window.open (popup)
     expect(windowOpenSpy).not.toHaveBeenCalled();
     // Should use full page navigation
-    expect(locationSpy).toHaveBeenCalledWith("https://meta.com/oauth/authorize?state=abc123");
+    expect(locationSpy).toHaveBeenCalledWith(
+      "https://meta.com/oauth/authorize?state=abc123",
+    );
   });
 
   it("test_wizard_title_spanish_neutro — wizard title uses Spanish neutro tuteo", async () => {
-    const { ChannelConnectionWizard } = await import("../components/ChannelConnectionWizard");
-    render(<ChannelConnectionWizard open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    const { ChannelConnectionWizard } =
+      await import("../components/ChannelConnectionWizard");
+    render(
+      <ChannelConnectionWizard
+        open={true}
+        onClose={mockOnClose}
+        onSuccess={mockOnSuccess}
+      />,
+    );
 
     const dialog = screen.getByRole("dialog");
     // Title text uses tuteo imperatives
@@ -160,9 +206,19 @@ describe("ChannelConnectionWizard", () => {
   });
 
   it("test_step_indicator_shows_step_1_active — step indicator marks step 1 as active initially", async () => {
-    const { ChannelConnectionWizard } = await import("../components/ChannelConnectionWizard");
-    render(<ChannelConnectionWizard open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    const { ChannelConnectionWizard } =
+      await import("../components/ChannelConnectionWizard");
+    render(
+      <ChannelConnectionWizard
+        open={true}
+        onClose={mockOnClose}
+        onSuccess={mockOnSuccess}
+      />,
+    );
 
-    expect(screen.getByTestId("step-indicator-1")).toHaveAttribute("aria-current", "step");
+    expect(screen.getByTestId("step-indicator-1")).toHaveAttribute(
+      "aria-current",
+      "step",
+    );
   });
 });

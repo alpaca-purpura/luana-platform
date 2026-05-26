@@ -51,11 +51,13 @@ export function usePauseAdrian() {
           body: JSON.stringify({
             reason: input.reason ?? null,
           }),
-        }
+        },
       );
     },
     onSettled: (_data, _err, input) => {
-      void qc.invalidateQueries({ queryKey: conversationDetailKey(input.conversationId) });
+      void qc.invalidateQueries({
+        queryKey: conversationDetailKey(input.conversationId),
+      });
       void qc.invalidateQueries({ queryKey: conversationsListKey() });
     },
   });

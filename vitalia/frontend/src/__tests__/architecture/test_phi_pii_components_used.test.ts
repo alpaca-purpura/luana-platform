@@ -66,11 +66,7 @@ const PHI_FIELD_PATTERNS = [
 ];
 
 // Wrapper patterns that indicate proper PHI protection.
-const PHI_WRAPPER_PATTERNS = [
-  /PiiMaskedSpan/,
-  /RequireRole/,
-  /AuditedSection/,
-];
+const PHI_WRAPPER_PATTERNS = [/PiiMaskedSpan/, /RequireRole/, /AuditedSection/];
 
 // Ratchet baseline — known violations at T-infra-4 creation (shrink-only).
 // These files are known to render PHI before T-infra-7 wrappers are implemented.
@@ -134,7 +130,7 @@ describe("Vitalia FE — PHI fields must be wrapped in PiiMaskedSpan/RequireRole
     if (!wrappersExist) {
       console.log(
         "[ADVISORY] PiiMaskedSpan/RequireRole components not found (T-infra-7 pending). " +
-        "PHI wrapping enforcement will be REQUIRED after T-infra-7 ships."
+          "PHI wrapping enforcement will be REQUIRED after T-infra-7 ships.",
       );
       // Advisory only — not a hard fail until wrappers exist
       expect(true).toBe(true);
@@ -144,14 +140,18 @@ describe("Vitalia FE — PHI fields must be wrapped in PiiMaskedSpan/RequireRole
 
   it("components with PHI field access use PiiMaskedSpan or RequireRole wrapper", () => {
     if (!existsSync(SRC)) {
-      console.log("[SKIP] src/ directory not found — skipping test_phi_pii_components_used");
+      console.log(
+        "[SKIP] src/ directory not found — skipping test_phi_pii_components_used",
+      );
       return;
     }
 
     // Check if wrappers exist (T-infra-7). If not, advisory only.
     const wrappersExist = PHI_COMPONENT_PATHS.some((p) => existsSync(p));
     if (!wrappersExist) {
-      console.log("[SKIP] PiiMaskedSpan/RequireRole not yet created (T-infra-7 pending)");
+      console.log(
+        "[SKIP] PiiMaskedSpan/RequireRole not yet created (T-infra-7 pending)",
+      );
       return;
     }
 
@@ -170,32 +170,35 @@ describe("Vitalia FE — PHI fields must be wrapped in PiiMaskedSpan/RequireRole
       if (!hasPhiWrappers(source)) {
         violations.push(
           `${relPath}: accesses PHI fields [${phiFields.slice(0, 3).join(", ")}${phiFields.length > 3 ? "..." : ""}] ` +
-          `without PiiMaskedSpan/RequireRole wrapper`
+            `without PiiMaskedSpan/RequireRole wrapper`,
         );
       }
     }
 
-    expect(violations, [
-      "Components rendering PHI fields without HIPAA-lite wrappers detected.",
-      "",
-      "Per vitalia/.claude/rules/hipaa-lite.md, PHI field values rendered in JSX",
-      "MUST be wrapped in PiiMaskedSpan or RequireRole components.",
-      "",
-      "Fix:",
-      "  import { PiiMaskedSpan } from '@/components/shared/phi/PiiMaskedSpan';",
-      "  <PiiMaskedSpan value={patient.name} />",
-      "",
-      "  OR for role-gated sections:",
-      "  import { RequireRole } from '@/components/shared/phi/RequireRole';",
-      "  <RequireRole roles={['doctor', 'nurse', 'admin_clinic']}>",
-      "    {patient.diagnosis}",
-      "  </RequireRole>",
-      "",
-      "If masking is handled at the BE level (not FE), add to",
-      "KNOWN_PHI_WRAPPER_VIOLATIONS (shrink-only ratchet) with justification.",
-      "",
-      ...violations,
-    ].join("\n")).toHaveLength(0);
+    expect(
+      violations,
+      [
+        "Components rendering PHI fields without HIPAA-lite wrappers detected.",
+        "",
+        "Per vitalia/.claude/rules/hipaa-lite.md, PHI field values rendered in JSX",
+        "MUST be wrapped in PiiMaskedSpan or RequireRole components.",
+        "",
+        "Fix:",
+        "  import { PiiMaskedSpan } from '@/components/shared/phi/PiiMaskedSpan';",
+        "  <PiiMaskedSpan value={patient.name} />",
+        "",
+        "  OR for role-gated sections:",
+        "  import { RequireRole } from '@/components/shared/phi/RequireRole';",
+        "  <RequireRole roles={['doctor', 'nurse', 'admin_clinic']}>",
+        "    {patient.diagnosis}",
+        "  </RequireRole>",
+        "",
+        "If masking is handled at the BE level (not FE), add to",
+        "KNOWN_PHI_WRAPPER_VIOLATIONS (shrink-only ratchet) with justification.",
+        "",
+        ...violations,
+      ].join("\n"),
+    ).toHaveLength(0);
   });
 
   it("KNOWN_PHI_WRAPPER_VIOLATIONS allowlist only references existing files", () => {
@@ -203,7 +206,7 @@ describe("Vitalia FE — PHI fields must be wrapped in PiiMaskedSpan/RequireRole
       const absPath = join(ROOT, relPath);
       expect(
         existsSync(absPath),
-        `KNOWN_PHI_WRAPPER_VIOLATIONS references non-existent file: ${relPath}. Remove it (shrink-only ratchet).`
+        `KNOWN_PHI_WRAPPER_VIOLATIONS references non-existent file: ${relPath}. Remove it (shrink-only ratchet).`,
       ).toBe(true);
     }
   });

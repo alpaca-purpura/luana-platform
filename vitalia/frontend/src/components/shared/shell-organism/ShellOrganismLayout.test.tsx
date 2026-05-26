@@ -46,7 +46,9 @@ vi.mock("react-resizable-panels", () => ({
       data-group-id={id}
       data-auto-save-id={id}
       data-direction={orientation}
-      data-default-layout={defaultLayout ? JSON.stringify(defaultLayout) : undefined}
+      data-default-layout={
+        defaultLayout ? JSON.stringify(defaultLayout) : undefined
+      }
       className={className}
     >
       {children}
@@ -111,9 +113,7 @@ vi.mock("./useViewportGuard", () => ({
 
 // Mock TopBarGlobal to avoid deep tree dependencies (TenantSwitcher, Clerk, etc.)
 vi.mock("./TopBarGlobal", () => ({
-  TopBarGlobal: () => (
-    <header data-testid="topbar-global" role="banner" />
-  ),
+  TopBarGlobal: () => <header data-testid="topbar-global" role="banner" />,
 }));
 
 // Mock ValeriaSidebar (T-7: replaced ValeriaSidebarSlot placeholder)
@@ -169,7 +169,8 @@ describe("ShellOrganismLayout — default agentic render (SC-1)", () => {
   });
 
   it("renders TopBarGlobal (banner role)", async () => {
-    const { ShellOrganismLayoutClient } = await import("./ShellOrganismLayoutClient");
+    const { ShellOrganismLayoutClient } =
+      await import("./ShellOrganismLayoutClient");
     render(
       <ShellOrganismLayoutClient tenantId="acme-clinic">
         <div data-testid="page-content">content</div>
@@ -180,7 +181,8 @@ describe("ShellOrganismLayout — default agentic render (SC-1)", () => {
   });
 
   it("renders PanelGroup with autoSaveId='vitalia-shell-split-agentic'", async () => {
-    const { ShellOrganismLayoutClient } = await import("./ShellOrganismLayoutClient");
+    const { ShellOrganismLayoutClient } =
+      await import("./ShellOrganismLayoutClient");
     render(
       <ShellOrganismLayoutClient tenantId="acme-clinic">
         <div />
@@ -195,7 +197,8 @@ describe("ShellOrganismLayout — default agentic render (SC-1)", () => {
   });
 
   it("renders Panel with id='valeria-panel'", async () => {
-    const { ShellOrganismLayoutClient } = await import("./ShellOrganismLayoutClient");
+    const { ShellOrganismLayoutClient } =
+      await import("./ShellOrganismLayoutClient");
     render(
       <ShellOrganismLayoutClient tenantId="acme-clinic">
         <div />
@@ -208,7 +211,8 @@ describe("ShellOrganismLayout — default agentic render (SC-1)", () => {
   });
 
   it("renders Panel with id='app-panel'", async () => {
-    const { ShellOrganismLayoutClient } = await import("./ShellOrganismLayoutClient");
+    const { ShellOrganismLayoutClient } =
+      await import("./ShellOrganismLayoutClient");
     render(
       <ShellOrganismLayoutClient tenantId="acme-clinic">
         <div />
@@ -221,7 +225,8 @@ describe("ShellOrganismLayout — default agentic render (SC-1)", () => {
   });
 
   it("renders PanelResizeHandle with aria-label='Redimensionar paneles'", async () => {
-    const { ShellOrganismLayoutClient } = await import("./ShellOrganismLayoutClient");
+    const { ShellOrganismLayoutClient } =
+      await import("./ShellOrganismLayoutClient");
     render(
       <ShellOrganismLayoutClient tenantId="acme-clinic">
         <div />
@@ -234,7 +239,8 @@ describe("ShellOrganismLayout — default agentic render (SC-1)", () => {
   });
 
   it("renders ShellModeToggle disabled chip", async () => {
-    const { ShellOrganismLayoutClient } = await import("./ShellOrganismLayoutClient");
+    const { ShellOrganismLayoutClient } =
+      await import("./ShellOrganismLayoutClient");
     render(
       <ShellOrganismLayoutClient tenantId="acme-clinic">
         <div />
@@ -246,7 +252,8 @@ describe("ShellOrganismLayout — default agentic render (SC-1)", () => {
   });
 
   it("passes children to AppPanelSlot (triple-main: appears in both desktop+mobile branches)", async () => {
-    const { ShellOrganismLayoutClient } = await import("./ShellOrganismLayoutClient");
+    const { ShellOrganismLayoutClient } =
+      await import("./ShellOrganismLayoutClient");
     render(
       <ShellOrganismLayoutClient tenantId="acme-clinic">
         <div data-testid="child-content">page content</div>
@@ -265,7 +272,8 @@ describe("ShellOrganismLayout — skip-link target invariant (SC-4)", () => {
   });
 
   it("all rendered <main> elements have id='main-content' (skip-link target)", async () => {
-    const { ShellOrganismLayoutClient } = await import("./ShellOrganismLayoutClient");
+    const { ShellOrganismLayoutClient } =
+      await import("./ShellOrganismLayoutClient");
     const { container } = render(
       <ShellOrganismLayoutClient tenantId="acme-clinic">
         <div />
@@ -280,7 +288,8 @@ describe("ShellOrganismLayout — skip-link target invariant (SC-4)", () => {
   });
 
   it("all rendered <main> elements have tabIndex={-1} for skip-link focus", async () => {
-    const { ShellOrganismLayoutClient } = await import("./ShellOrganismLayoutClient");
+    const { ShellOrganismLayoutClient } =
+      await import("./ShellOrganismLayoutClient");
     const { container } = render(
       <ShellOrganismLayoutClient tenantId="acme-clinic">
         <div />
@@ -299,7 +308,8 @@ describe("ShellOrganismLayout — web mode static grid (SC-3 edge)", () => {
   });
 
   it("renders grid static layout (no PanelGroup) when shellMode='web'", async () => {
-    const { ShellOrganismLayoutClient } = await import("./ShellOrganismLayoutClient");
+    const { ShellOrganismLayoutClient } =
+      await import("./ShellOrganismLayoutClient");
     render(
       <ShellOrganismLayoutClient tenantId="acme-clinic">
         <div />
@@ -311,21 +321,25 @@ describe("ShellOrganismLayout — web mode static grid (SC-3 edge)", () => {
   });
 
   it("still renders valeria-sidebar in web mode", async () => {
-    const { ShellOrganismLayoutClient } = await import("./ShellOrganismLayoutClient");
+    const { ShellOrganismLayoutClient } =
+      await import("./ShellOrganismLayoutClient");
     render(
       <ShellOrganismLayoutClient tenantId="acme-clinic">
         <div />
       </ShellOrganismLayoutClient>,
     );
     // Web mode uses grid: ValeriaSidebar + divider + AppPanelSlot
-    expect(screen.getAllByTestId("valeria-sidebar").length).toBeGreaterThanOrEqual(1);
+    expect(
+      screen.getAllByTestId("valeria-sidebar").length,
+    ).toBeGreaterThanOrEqual(1);
   });
 });
 
 describe("ShellOrganismLayout — MIN_VALERIA_PX invariant (D3)", () => {
   it("MIN_VALERIA_PX === 580 when valeriaState='full' (D3 — rail XOR history 2-col: 280 history + 300 chat min)", async () => {
     useShellStore.setState({ valeriaState: "full", shellMode: "agentic" });
-    const { ShellOrganismLayoutClient } = await import("./ShellOrganismLayoutClient");
+    const { ShellOrganismLayoutClient } =
+      await import("./ShellOrganismLayoutClient");
     render(
       <ShellOrganismLayoutClient tenantId="acme-clinic">
         <div />
@@ -337,7 +351,8 @@ describe("ShellOrganismLayout — MIN_VALERIA_PX invariant (D3)", () => {
 
   it("MIN_VALERIA_PX === 360 when valeriaState='rail'", async () => {
     useShellStore.setState({ valeriaState: "rail", shellMode: "agentic" });
-    const { ShellOrganismLayoutClient } = await import("./ShellOrganismLayoutClient");
+    const { ShellOrganismLayoutClient } =
+      await import("./ShellOrganismLayoutClient");
     render(
       <ShellOrganismLayoutClient tenantId="acme-clinic">
         <div />
@@ -354,7 +369,8 @@ describe("ShellOrganismLayout — mobile branch (SC-2)", () => {
   });
 
   it("renders a mobile main element (md:hidden branch)", async () => {
-    const { ShellOrganismLayoutClient } = await import("./ShellOrganismLayoutClient");
+    const { ShellOrganismLayoutClient } =
+      await import("./ShellOrganismLayoutClient");
     const { container } = render(
       <ShellOrganismLayoutClient tenantId="acme-clinic">
         <div data-testid="mobile-content">mobile content</div>
@@ -370,7 +386,8 @@ describe("ShellOrganismLayout — mobile branch (SC-2)", () => {
   });
 
   it("mobile branch contains AppPanelSlot", async () => {
-    const { ShellOrganismLayoutClient } = await import("./ShellOrganismLayoutClient");
+    const { ShellOrganismLayoutClient } =
+      await import("./ShellOrganismLayoutClient");
     render(
       <ShellOrganismLayoutClient tenantId="acme-clinic">
         <div />

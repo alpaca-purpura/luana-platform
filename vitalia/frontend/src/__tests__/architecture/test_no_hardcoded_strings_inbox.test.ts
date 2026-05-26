@@ -46,7 +46,8 @@ const KNOWN_INLINE_COPY_VIOLATIONS: ReadonlySet<string> = new Set<string>([
  * JSX text node heuristic — matches literal text nodes like: >Texto largo aquí<
  * Captures content of at least 8 chars starting with uppercase (typical heading/label).
  */
-const JSX_TEXT_CONTENT_PATTERN = />\s*([A-ZÁÉÍÓÚÑ][a-záéíóúñA-ZÁÉÍÓÚÑ\s]{8,})\s*</g;
+const JSX_TEXT_CONTENT_PATTERN =
+  />\s*([A-ZÁÉÍÓÚÑ][a-záéíóúñA-ZÁÉÍÓÚÑ\s]{8,})\s*</g;
 
 /**
  * Words that strongly indicate inline user-facing copy in Spanish neutro.
@@ -55,18 +56,61 @@ const JSX_TEXT_CONTENT_PATTERN = />\s*([A-ZÁÉÍÓÚÑ][a-záéíóúñA-ZÁÉ�
  */
 const SPANISH_INDICATOR_WORDS = [
   // Actions
-  "Guardar", "Cancelar", "Confirmar", "Aceptar", "Continuar", "Siguiente", "Anterior",
-  "Crear", "Editar", "Eliminar", "Ver", "Cargar", "Subir", "Descargar", "Enviar",
-  "Pausar", "Reanudar", "Revertir", "Cerrar", "Abrir",
+  "Guardar",
+  "Cancelar",
+  "Confirmar",
+  "Aceptar",
+  "Continuar",
+  "Siguiente",
+  "Anterior",
+  "Crear",
+  "Editar",
+  "Eliminar",
+  "Ver",
+  "Cargar",
+  "Subir",
+  "Descargar",
+  "Enviar",
+  "Pausar",
+  "Reanudar",
+  "Revertir",
+  "Cerrar",
+  "Abrir",
   // Entities
-  "Paciente", "Tratamiento", "Cita", "Consulta", "Clínica", "Médico", "Doctor",
-  "Conversación", "Mensaje", "Plantilla", "Herramienta",
+  "Paciente",
+  "Tratamiento",
+  "Cita",
+  "Consulta",
+  "Clínica",
+  "Médico",
+  "Doctor",
+  "Conversación",
+  "Mensaje",
+  "Plantilla",
+  "Herramienta",
   // Fields
-  "Nombre", "Teléfono", "Correo", "Dirección", "Fecha", "Hora",
-  "Estado", "Tipo", "Descripción", "Comentario", "Nota",
+  "Nombre",
+  "Teléfono",
+  "Correo",
+  "Dirección",
+  "Fecha",
+  "Hora",
+  "Estado",
+  "Tipo",
+  "Descripción",
+  "Comentario",
+  "Nota",
   // States / headings
-  "Cargando", "Error", "Vacío", "Pendiente", "Activo", "Inactivo",
-  "Adrián", "Filtro", "Canal", "Período",
+  "Cargando",
+  "Error",
+  "Vacío",
+  "Pendiente",
+  "Activo",
+  "Inactivo",
+  "Adrián",
+  "Filtro",
+  "Canal",
+  "Período",
 ];
 
 /**
@@ -104,10 +148,9 @@ function collectComponentTsxFiles(dir: string): string[] {
 
 describe("Vitalia Inbox FE — strings en INBOX_COPY SSoT (FE-A2c)", () => {
   it("copy.ts existe y exporta INBOX_COPY con namespaces requeridos", () => {
-    expect(
-      existsSync(COPY_PATH),
-      `copy.ts no encontrado en ${COPY_PATH}`
-    ).toBe(true);
+    expect(existsSync(COPY_PATH), `copy.ts no encontrado en ${COPY_PATH}`).toBe(
+      true,
+    );
 
     const source = readFileSync(COPY_PATH, "utf-8");
 
@@ -124,10 +167,12 @@ describe("Vitalia Inbox FE — strings en INBOX_COPY SSoT (FE-A2c)", () => {
       "proactiveOutboundModal",
     ];
 
-    const missingKeys = requiredKeys.filter((key) => !source.includes(`${key}:`));
+    const missingKeys = requiredKeys.filter(
+      (key) => !source.includes(`${key}:`),
+    );
     expect(
       missingKeys,
-      `copy.ts falta namespace(s): ${missingKeys.join(", ")}. Todos los textos inbox deben vivir en INBOX_COPY.`
+      `copy.ts falta namespace(s): ${missingKeys.join(", ")}. Todos los textos inbox deben vivir en INBOX_COPY.`,
     ).toHaveLength(0);
   });
 
@@ -156,11 +201,11 @@ describe("Vitalia Inbox FE — strings en INBOX_COPY SSoT (FE-A2c)", () => {
 
       // Look for JSX text nodes with Spanish indicator words
       const textMatches = Array.from(
-        sourceWithoutComments.matchAll(JSX_TEXT_CONTENT_PATTERN)
+        sourceWithoutComments.matchAll(JSX_TEXT_CONTENT_PATTERN),
       );
 
       const foundInlineSpanish = textMatches.filter((match) =>
-        SPANISH_INDICATOR_WORDS.some((word) => match[1].includes(word))
+        SPANISH_INDICATOR_WORDS.some((word) => match[1].includes(word)),
       );
 
       if (foundInlineSpanish.length > 0) {
@@ -175,27 +220,30 @@ describe("Vitalia Inbox FE — strings en INBOX_COPY SSoT (FE-A2c)", () => {
               ` Ejemplos: ${foundInlineSpanish
                 .slice(0, 2)
                 .map((m) => `"${m[1].trim()}"`)
-                .join(", ")}`
+                .join(", ")}`,
           );
         }
       }
     }
 
-    expect(violations, [
-      "Componentes inbox con strings español inline detectados (sin import de INBOX_COPY).",
-      "",
-      "Todos los textos user-facing del inbox deben vivir en:",
-      "  src/features/inbox/copy.ts  →  export const INBOX_COPY",
-      "",
-      "Fix: mover el copy al namespace apropiado en copy.ts y referenciarlo",
-      "     como {INBOX_COPY.namespace.key}.",
-      "",
-      "Si el componente tiene razón legítima para strings inline (ej. datos dinámicos",
-      "del servidor renderizados directamente), agrégalo a KNOWN_INLINE_COPY_VIOLATIONS",
-      "con justificación (ratchet shrink-only — no agregar sin justificación).",
-      "",
-      ...violations,
-    ].join("\n")).toHaveLength(0);
+    expect(
+      violations,
+      [
+        "Componentes inbox con strings español inline detectados (sin import de INBOX_COPY).",
+        "",
+        "Todos los textos user-facing del inbox deben vivir en:",
+        "  src/features/inbox/copy.ts  →  export const INBOX_COPY",
+        "",
+        "Fix: mover el copy al namespace apropiado en copy.ts y referenciarlo",
+        "     como {INBOX_COPY.namespace.key}.",
+        "",
+        "Si el componente tiene razón legítima para strings inline (ej. datos dinámicos",
+        "del servidor renderizados directamente), agrégalo a KNOWN_INLINE_COPY_VIOLATIONS",
+        "con justificación (ratchet shrink-only — no agregar sin justificación).",
+        "",
+        ...violations,
+      ].join("\n"),
+    ).toHaveLength(0);
   });
 
   it("KNOWN_INLINE_COPY_VIOLATIONS solo referencia archivos existentes", () => {
@@ -204,7 +252,7 @@ describe("Vitalia Inbox FE — strings en INBOX_COPY SSoT (FE-A2c)", () => {
       expect(
         existsSync(absPath),
         `KNOWN_INLINE_COPY_VIOLATIONS referencia archivo inexistente: ${relPath}. ` +
-          `Eliminar entrada (ratchet shrink-only).`
+          `Eliminar entrada (ratchet shrink-only).`,
       ).toBe(true);
     }
   });
@@ -236,7 +284,10 @@ describe("Vitalia Inbox FE — strings en INBOX_COPY SSoT (FE-A2c)", () => {
 
       // UI components with JSX MUST import INBOX_COPY
       const hasJsx = source.includes("return (") || source.includes("return(");
-      const importsCopy = source.includes("INBOX_COPY") || source.includes("from \"../copy\"") || source.includes("from '../copy'");
+      const importsCopy =
+        source.includes("INBOX_COPY") ||
+        source.includes('from "../copy"') ||
+        source.includes("from '../copy'");
 
       if (hasJsx && !importsCopy) {
         withoutImport.push(relPath);
@@ -249,7 +300,7 @@ describe("Vitalia Inbox FE — strings en INBOX_COPY SSoT (FE-A2c)", () => {
       console.warn(
         "[WARN] Inbox UI components sin import INBOX_COPY:\n" +
           withoutImport.map((p) => `  - ${p}`).join("\n") +
-          "\nConsiderar agregar import de copy.ts para consistencia."
+          "\nConsiderar agregar import de copy.ts para consistencia.",
       );
     }
 

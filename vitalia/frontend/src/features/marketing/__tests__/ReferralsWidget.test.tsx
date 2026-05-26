@@ -15,7 +15,13 @@ vi.mock("@clerk/nextjs", () => ({
     isSignedIn: true,
   }),
   useOrganization: () => ({
-    organization: { publicMetadata: { currency: "PEN", timezone: "America/Lima", locale: "es-419" } },
+    organization: {
+      publicMetadata: {
+        currency: "PEN",
+        timezone: "America/Lima",
+        locale: "es-419",
+      },
+    },
   }),
 }));
 
@@ -24,7 +30,11 @@ vi.mock("@/hooks/useClinicId", () => ({ useClinicId: () => "clinic-123" }));
 
 // Mock tenant locale hook
 vi.mock("@/hooks/useTenantLocale", () => ({
-  useTenantLocale: () => ({ currency: "PEN", timezone: "America/Lima", locale: "es-419" }),
+  useTenantLocale: () => ({
+    currency: "PEN",
+    timezone: "America/Lima",
+    locale: "es-419",
+  }),
 }));
 
 // Mock React Query
@@ -33,7 +43,9 @@ vi.mock("@tanstack/react-query", () => ({
   useMutation: vi.fn(),
   useQueryClient: () => ({ invalidateQueries: vi.fn() }),
   QueryClient: vi.fn(),
-  QueryClientProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  QueryClientProvider: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
 }));
 
 const mockReferralsData = {
@@ -43,11 +55,31 @@ const mockReferralsData = {
   convRate: 0.64,
   avgLtvPerReferrerCents: 89000,
   topReferrers: [
-    { referrerPatientIdHash: "a1b2c3d4e5f6", referralsCount: 5, totalValueCents: 450000 },
-    { referrerPatientIdHash: "b2c3d4e5f6a7", referralsCount: 4, totalValueCents: 360000 },
-    { referrerPatientIdHash: "c3d4e5f6a7b8", referralsCount: 3, totalValueCents: 270000 },
-    { referrerPatientIdHash: "d4e5f6a7b8c9", referralsCount: 2, totalValueCents: 180000 },
-    { referrerPatientIdHash: "e5f6a7b8c9d0", referralsCount: 1, totalValueCents: 90000 },
+    {
+      referrerPatientIdHash: "a1b2c3d4e5f6",
+      referralsCount: 5,
+      totalValueCents: 450000,
+    },
+    {
+      referrerPatientIdHash: "b2c3d4e5f6a7",
+      referralsCount: 4,
+      totalValueCents: 360000,
+    },
+    {
+      referrerPatientIdHash: "c3d4e5f6a7b8",
+      referralsCount: 3,
+      totalValueCents: 270000,
+    },
+    {
+      referrerPatientIdHash: "d4e5f6a7b8c9",
+      referralsCount: 2,
+      totalValueCents: 180000,
+    },
+    {
+      referrerPatientIdHash: "e5f6a7b8c9d0",
+      referralsCount: 1,
+      totalValueCents: 90000,
+    },
   ],
   currency: "PEN",
 };
@@ -64,13 +96,13 @@ describe("ReferralsWidget", () => {
   });
 
   it("test_renders_3_kpi_hero_cards — shows referralsCount, convRate, avgLtv", async () => {
-    const { ReferralsWidget } = await import(
-      "../components/ReferralsWidget"
-    );
+    const { ReferralsWidget } = await import("../components/ReferralsWidget");
     render(<ReferralsWidget />);
 
     // Widget heading (h3 element)
-    expect(screen.getByRole("heading", { name: "Referidos" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Referidos" }),
+    ).toBeInTheDocument();
 
     // KPI labels
     expect(screen.getByText("Total de referidos")).toBeInTheDocument();
@@ -79,9 +111,7 @@ describe("ReferralsWidget", () => {
   });
 
   it("test_renders_top_referrers_leaderboard — shows hashed patient IDs in leaderboard", async () => {
-    const { ReferralsWidget } = await import(
-      "../components/ReferralsWidget"
-    );
+    const { ReferralsWidget } = await import("../components/ReferralsWidget");
     render(<ReferralsWidget />);
 
     // Leaderboard section header
@@ -93,9 +123,7 @@ describe("ReferralsWidget", () => {
   });
 
   it("test_hipaa_no_patient_names — leaderboard shows only hashed IDs, never patient names", async () => {
-    const { ReferralsWidget } = await import(
-      "../components/ReferralsWidget"
-    );
+    const { ReferralsWidget } = await import("../components/ReferralsWidget");
     const { container } = render(<ReferralsWidget />);
 
     // PHI compliance: referrerLabel column header shows anonymized label
@@ -113,9 +141,7 @@ describe("ReferralsWidget", () => {
       isError: false,
     } as ReturnType<typeof useQuery>);
 
-    const { ReferralsWidget } = await import(
-      "../components/ReferralsWidget"
-    );
+    const { ReferralsWidget } = await import("../components/ReferralsWidget");
     render(<ReferralsWidget />);
     expect(screen.getByRole("status")).toBeInTheDocument();
   });
@@ -127,13 +153,9 @@ describe("ReferralsWidget", () => {
       isError: false,
     } as ReturnType<typeof useQuery>);
 
-    const { ReferralsWidget } = await import(
-      "../components/ReferralsWidget"
-    );
+    const { ReferralsWidget } = await import("../components/ReferralsWidget");
     render(<ReferralsWidget />);
-    expect(
-      screen.getByText(/no hay datos de referidos/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/no hay datos de referidos/i)).toBeInTheDocument();
   });
 
   it("test_error_state — shows error message on query error", async () => {
@@ -144,9 +166,7 @@ describe("ReferralsWidget", () => {
       error: new Error("network error"),
     } as ReturnType<typeof useQuery>);
 
-    const { ReferralsWidget } = await import(
-      "../components/ReferralsWidget"
-    );
+    const { ReferralsWidget } = await import("../components/ReferralsWidget");
     render(<ReferralsWidget />);
     expect(
       screen.getByText(/no se pudieron cargar los referidos/i),
@@ -160,12 +180,8 @@ describe("ReferralsWidget", () => {
       isError: false,
     } as ReturnType<typeof useQuery>);
 
-    const { ReferralsWidget } = await import(
-      "../components/ReferralsWidget"
-    );
+    const { ReferralsWidget } = await import("../components/ReferralsWidget");
     render(<ReferralsWidget />);
-    expect(
-      screen.getByText(/no hay datos de referidos/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/no hay datos de referidos/i)).toBeInTheDocument();
   });
 });

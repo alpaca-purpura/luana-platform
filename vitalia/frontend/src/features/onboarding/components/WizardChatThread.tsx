@@ -25,7 +25,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/cn";
 import { WIZARD_COPY } from "../config/copy";
 import { SlotConfirmInline } from "./SlotConfirmInline";
-import type { WizardChatMessage, SlotSource } from "../types/wizard-onboarding.types";
+import type {
+  WizardChatMessage,
+  SlotSource,
+} from "../types/wizard-onboarding.types";
 
 // ---------------------------------------------------------------------------
 // Sub-components
@@ -38,7 +41,7 @@ function ValeAvatar({ className }: { className?: string }) {
         "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center",
         "bg-gradient-to-br from-blue-700 to-purple-600",
         "text-white text-xs font-bold select-none",
-        className
+        className,
       )}
       aria-hidden="true"
     >
@@ -143,7 +146,7 @@ export function WizardChatThread({
         handleSend();
       }
     },
-    [handleSend]
+    [handleSend],
   );
 
   return (
@@ -153,10 +156,7 @@ export function WizardChatThread({
       aria-label={WIZARD_COPY.a11y.chatRegionLabel}
     >
       {/* Progress indicator */}
-      <div
-        className="h-0.5 bg-gray-100 flex-shrink-0"
-        aria-hidden="true"
-      >
+      <div className="h-0.5 bg-gray-100 flex-shrink-0" aria-hidden="true">
         <div
           className="h-0.5 bg-blue-700 transition-[width] duration-500"
           style={{ width: `${Math.min(1, Math.max(0, progress)) * 100}%` }}
@@ -164,7 +164,9 @@ export function WizardChatThread({
           aria-valuenow={Math.round(progress * 100)}
           aria-valuemin={0}
           aria-valuemax={100}
-          aria-label={WIZARD_COPY.a11y.progressLabel(Math.round(progress * 100))}
+          aria-label={WIZARD_COPY.a11y.progressLabel(
+            Math.round(progress * 100),
+          )}
         />
       </div>
 
@@ -190,7 +192,9 @@ export function WizardChatThread({
               key={msg.id}
               className={cn(
                 "flex flex-col gap-1.5 max-w-[80%]",
-                isAssistant ? "self-start items-start" : "self-end items-end ml-auto"
+                isAssistant
+                  ? "self-start items-start"
+                  : "self-end items-end ml-auto",
               )}
             >
               {/* Avatar row (assistant only) */}
@@ -214,7 +218,7 @@ export function WizardChatThread({
                   "px-4 py-2.5 text-sm leading-relaxed",
                   isAssistant
                     ? "rounded-[18px_18px_18px_4px] bg-gray-100 text-gray-800"
-                    : "rounded-[18px_18px_4px_18px] bg-blue-700 text-white"
+                    : "rounded-[18px_18px_4px_18px] bg-blue-700 text-white",
                 )}
                 aria-label={
                   isAssistant
@@ -239,16 +243,17 @@ export function WizardChatThread({
               )}
 
               {/* Bonus NLU section (extracted info summary) */}
-              {isAssistant && msg.slotRef && !msg.requiresSlotConfirm && msg.slotRef.status === "confirmed" && (
-                <div className="flex items-center gap-1.5 mt-1">
-                  <span
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-50 border border-cyan-200 text-[10px] text-cyan-700"
-                  >
-                    <span aria-hidden="true">○</span>
-                    {copy.bonusNluLabel}
-                  </span>
-                </div>
-              )}
+              {isAssistant &&
+                msg.slotRef &&
+                !msg.requiresSlotConfirm &&
+                msg.slotRef.status === "confirmed" && (
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-50 border border-cyan-200 text-[10px] text-cyan-700">
+                      <span aria-hidden="true">○</span>
+                      {copy.bonusNluLabel}
+                    </span>
+                  </div>
+                )}
             </div>
           );
         })}
@@ -275,7 +280,7 @@ export function WizardChatThread({
             className={cn(
               "flex-1 min-w-0 text-sm text-gray-800 placeholder-gray-400",
               "bg-transparent focus:outline-none",
-              isSubmitting && "opacity-50 cursor-not-allowed"
+              isSubmitting && "opacity-50 cursor-not-allowed",
             )}
           />
           <button
@@ -288,7 +293,7 @@ export function WizardChatThread({
               "bg-blue-700 text-white",
               "hover:bg-purple-700 transition-colors duration-150",
               "disabled:opacity-40 disabled:cursor-not-allowed",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600",
             )}
           >
             <svg

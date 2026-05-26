@@ -47,27 +47,31 @@ describe("use-wizard-onboarding-state", () => {
   });
 
   it("should export wizardQueryKeys object", async () => {
-    const { wizardQueryKeys } = await import("../../hooks/use-wizard-onboarding-state");
+    const { wizardQueryKeys } =
+      await import("../../hooks/use-wizard-onboarding-state");
     expect(typeof wizardQueryKeys).toBe("object");
     expect(typeof wizardQueryKeys.all).toBe("function");
     expect(typeof wizardQueryKeys.draft).toBe("function");
   });
 
   it("wizardQueryKeys.all() returns array", async () => {
-    const { wizardQueryKeys } = await import("../../hooks/use-wizard-onboarding-state");
+    const { wizardQueryKeys } =
+      await import("../../hooks/use-wizard-onboarding-state");
     const key = wizardQueryKeys.all();
     expect(Array.isArray(key)).toBe(true);
   });
 
   it("wizardQueryKeys.draft(id) returns array with id", async () => {
-    const { wizardQueryKeys } = await import("../../hooks/use-wizard-onboarding-state");
+    const { wizardQueryKeys } =
+      await import("../../hooks/use-wizard-onboarding-state");
     const key = wizardQueryKeys.draft("test-draft-123");
     expect(Array.isArray(key)).toBe(true);
     expect(JSON.stringify(key)).toContain("test-draft-123");
   });
 
   it("hook returns expected shape when no draftId", async () => {
-    const { useWizardOnboardingState } = await import("../../hooks/use-wizard-onboarding-state");
+    const { useWizardOnboardingState } =
+      await import("../../hooks/use-wizard-onboarding-state");
     // The hook is mocked; verifying it's callable
     const result = useWizardOnboardingState({ draftId: null });
     expect(result).toBeDefined();

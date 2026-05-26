@@ -53,7 +53,7 @@ export function ChannelBreakdownRow({
       className={cn(
         "flex items-center gap-3 py-3 px-4",
         "border-b vt-border-soft last:border-b-0",
-        className
+        className,
       )}
       aria-label={`Canal: ${channelName}`}
       aria-busy={isLoading}
@@ -89,7 +89,7 @@ export function ChannelBreakdownRow({
             "text-xs font-medium min-w-[52px] text-right tabular-nums",
             isPositive && "vt-text-success",
             isNegative && "vt-text-danger",
-            !isPositive && !isNegative && "vt-text-muted"
+            !isPositive && !isNegative && "vt-text-muted",
           )}
           aria-label={`Cambio: ${isPositive ? "+" : ""}${changePct.toFixed(1)}%`}
         >

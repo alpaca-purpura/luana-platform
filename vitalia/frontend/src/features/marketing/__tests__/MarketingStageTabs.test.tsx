@@ -29,11 +29,41 @@ vi.mock("@/features/marketing/api/use-bowtie-summary", () => ({
       periodStart: "2026-05-01T00:00:00Z",
       periodEnd: "2026-05-31T23:59:59Z",
       stages: [
-        { slug: "attraction", label: "Atracción", count: 182, primaryKpiValue: 24, primaryKpiLabel: "cpL" },
-        { slug: "qualification", label: "Calificación", count: 87, primaryKpiValue: 48, primaryKpiLabel: "conv%" },
-        { slug: "reservation", label: "Reserva", count: 36, primaryKpiValue: 41, primaryKpiLabel: "conv%" },
-        { slug: "adoption", label: "Adopción", count: 62, primaryKpiValue: 87, primaryKpiLabel: "adherencia%" },
-        { slug: "expansion", label: "Expansión", count: 28, primaryKpiValue: 72, primaryKpiLabel: "NPS" },
+        {
+          slug: "attraction",
+          label: "Atracción",
+          count: 182,
+          primaryKpiValue: 24,
+          primaryKpiLabel: "cpL",
+        },
+        {
+          slug: "qualification",
+          label: "Calificación",
+          count: 87,
+          primaryKpiValue: 48,
+          primaryKpiLabel: "conv%",
+        },
+        {
+          slug: "reservation",
+          label: "Reserva",
+          count: 36,
+          primaryKpiValue: 41,
+          primaryKpiLabel: "conv%",
+        },
+        {
+          slug: "adoption",
+          label: "Adopción",
+          count: 62,
+          primaryKpiValue: 87,
+          primaryKpiLabel: "adherencia%",
+        },
+        {
+          slug: "expansion",
+          label: "Expansión",
+          count: 28,
+          primaryKpiValue: 72,
+          primaryKpiLabel: "NPS",
+        },
       ],
       overallConversionPct: 15.4,
       overallRoiX: 3.2,
@@ -48,18 +78,53 @@ vi.mock("@/features/marketing/api/use-bowtie-summary", () => ({
 
 vi.mock("@/hooks/useClinicId", () => ({ useClinicId: () => "clinic-123" }));
 vi.mock("@clerk/nextjs", () => ({
-  useAuth: () => ({ getToken: vi.fn().mockResolvedValue("tok"), orgId: "org-1", isLoaded: true, isSignedIn: true }),
+  useAuth: () => ({
+    getToken: vi.fn().mockResolvedValue("tok"),
+    orgId: "org-1",
+    isLoaded: true,
+    isSignedIn: true,
+  }),
 }));
 
 // Import the component (will fail until created — RED test)
 import { MarketingStageTabs } from "../components/MarketingStageTabs";
 
 const mockStages = [
-  { slug: "attraction" as const, label: "Atracción", count: 182, primaryKpiValue: 24, primaryKpiLabel: "cpL" },
-  { slug: "qualification" as const, label: "Calificación", count: 87, primaryKpiValue: 48, primaryKpiLabel: "conv%" },
-  { slug: "reservation" as const, label: "Reserva", count: 36, primaryKpiValue: 41, primaryKpiLabel: "conv%" },
-  { slug: "adoption" as const, label: "Adopción", count: 62, primaryKpiValue: 87, primaryKpiLabel: "adherencia%" },
-  { slug: "expansion" as const, label: "Expansión", count: 28, primaryKpiValue: 72, primaryKpiLabel: "NPS" },
+  {
+    slug: "attraction" as const,
+    label: "Atracción",
+    count: 182,
+    primaryKpiValue: 24,
+    primaryKpiLabel: "cpL",
+  },
+  {
+    slug: "qualification" as const,
+    label: "Calificación",
+    count: 87,
+    primaryKpiValue: 48,
+    primaryKpiLabel: "conv%",
+  },
+  {
+    slug: "reservation" as const,
+    label: "Reserva",
+    count: 36,
+    primaryKpiValue: 41,
+    primaryKpiLabel: "conv%",
+  },
+  {
+    slug: "adoption" as const,
+    label: "Adopción",
+    count: 62,
+    primaryKpiValue: 87,
+    primaryKpiLabel: "adherencia%",
+  },
+  {
+    slug: "expansion" as const,
+    label: "Expansión",
+    count: 28,
+    primaryKpiValue: 72,
+    primaryKpiLabel: "NPS",
+  },
 ];
 
 describe("MarketingStageTabs", () => {
@@ -68,14 +133,26 @@ describe("MarketingStageTabs", () => {
   });
 
   it("test_tab_click_updates_url_replace — clicking a tab calls setTab with slug (SC-MK-03)", () => {
-    render(<MarketingStageTabs stages={mockStages} activeTab="attraction" onTabChange={mockSetTab} />);
+    render(
+      <MarketingStageTabs
+        stages={mockStages}
+        activeTab="attraction"
+        onTabChange={mockSetTab}
+      />,
+    );
     const qualTab = screen.getByRole("tab", { name: /calificación/i });
     fireEvent.click(qualTab);
     expect(mockSetTab).toHaveBeenCalledWith("qualification");
   });
 
   it("test_active_tab_highlight_cian — active tab has cian background class (SC-MK-03)", () => {
-    render(<MarketingStageTabs stages={mockStages} activeTab="attraction" onTabChange={mockSetTab} />);
+    render(
+      <MarketingStageTabs
+        stages={mockStages}
+        activeTab="attraction"
+        onTabChange={mockSetTab}
+      />,
+    );
     const attractionTab = screen.getByRole("tab", { name: /atracción/i });
     // active tab must have cian gradient/border styling
     expect(attractionTab).toHaveAttribute("aria-selected", "true");
@@ -88,19 +165,37 @@ describe("MarketingStageTabs", () => {
   });
 
   it("renders all 5 stage tabs", () => {
-    render(<MarketingStageTabs stages={mockStages} activeTab="attraction" onTabChange={mockSetTab} />);
+    render(
+      <MarketingStageTabs
+        stages={mockStages}
+        activeTab="attraction"
+        onTabChange={mockSetTab}
+      />,
+    );
     expect(screen.getAllByRole("tab")).toHaveLength(5);
   });
 
   it("renders count badge per tab", () => {
-    render(<MarketingStageTabs stages={mockStages} activeTab="attraction" onTabChange={mockSetTab} />);
+    render(
+      <MarketingStageTabs
+        stages={mockStages}
+        activeTab="attraction"
+        onTabChange={mockSetTab}
+      />,
+    );
     expect(screen.getByText("182")).toBeInTheDocument();
     expect(screen.getByText("87")).toBeInTheDocument();
     expect(screen.getByText("36")).toBeInTheDocument();
   });
 
   it("inactive tabs are aria-selected=false", () => {
-    render(<MarketingStageTabs stages={mockStages} activeTab="attraction" onTabChange={mockSetTab} />);
+    render(
+      <MarketingStageTabs
+        stages={mockStages}
+        activeTab="attraction"
+        onTabChange={mockSetTab}
+      />,
+    );
     const qualTab = screen.getByRole("tab", { name: /calificación/i });
     expect(qualTab).toHaveAttribute("aria-selected", "false");
   });

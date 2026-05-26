@@ -16,8 +16,7 @@ export const FIDELIZACION_COPY = {
     description:
       "Gestiona el seguimiento activo de tus pacientes y las acciones de reactivación.",
     loadingText: "Cargando seguimiento...",
-    errorText:
-      "No pudimos cargar el seguimiento. Intenta de nuevo.",
+    errorText: "No pudimos cargar el seguimiento. Intenta de nuevo.",
     errorRetryButton: "Intentar de nuevo",
   },
 
@@ -75,14 +74,10 @@ export const FIDELIZACION_COPY = {
   },
 
   empty: {
-    multisession:
-      "¡Todos los pacientes están al día con sus sesiones! ✓",
-    followup:
-      "No hay seguimientos pendientes en este período.",
-    maintenance:
-      "No hay pacientes que requieran mantenimiento ahora.",
-    absence:
-      "No hay pacientes con ausencia prolongada en este período.",
+    multisession: "¡Todos los pacientes están al día con sus sesiones! ✓",
+    followup: "No hay seguimientos pendientes en este período.",
+    maintenance: "No hay pacientes que requieran mantenimiento ahora.",
+    absence: "No hay pacientes con ausencia prolongada en este período.",
     nps: "No hay respuestas de NPS en este período.",
   },
 
@@ -107,7 +102,9 @@ export const FIDELIZACION_COPY = {
   follow_up_card: {
     followUpDue: "Seguimiento vencido",
     followUpIn: (days: number) =>
-      days >= 0 ? `Vence en ${days} días` : `Venció hace ${Math.abs(days)} días`,
+      days >= 0
+        ? `Vence en ${days} días`
+        : `Venció hace ${Math.abs(days)} días`,
     reason: "Motivo",
     doctor: "Dr./Dra.",
   },
@@ -125,8 +122,7 @@ export const FIDELIZACION_COPY = {
     monthsInactive: (months: number) => `${months} meses inactivo`,
     lifetimeAppointments: (n: number) => `${n} consultas históricas`,
     lifetimeValue: "Valor histórico",
-    noMarketing:
-      "El paciente no aceptó comunicaciones de marketing",
+    noMarketing: "El paciente no aceptó comunicaciones de marketing",
   },
 
   modals: {
@@ -176,8 +172,7 @@ export const FIDELIZACION_COPY = {
 
     suggestSlots: {
       title: "Sugerir turnos disponibles",
-      description:
-        "Selecciona hasta 3 turnos para enviarle al paciente.",
+      description: "Selecciona hasta 3 turnos para enviarle al paciente.",
       noSlots: "No hay turnos disponibles en los próximos 14 días.",
       cancel: "Cancelar",
       confirm: "Enviar sugerencias",

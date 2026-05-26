@@ -65,7 +65,9 @@ describe("LucasUndoChip", () => {
     render(<LucasUndoChip recId="rec-1" />);
 
     // Undo button must be visible
-    expect(screen.getByRole("button", { name: /deshacer/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /deshacer/i }),
+    ).toBeInTheDocument();
     // Timer countdown text must be present
     expect(screen.getByText(/puedes deshacer hasta/i)).toBeInTheDocument();
   });

@@ -28,7 +28,9 @@ export function LucasRecommendationDetailModal({
   userRole,
 }: LucasRecommendationDetailModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
-  const [activeTab, setActiveTab] = useState<"analysis" | "payload">("analysis");
+  const [activeTab, setActiveTab] = useState<"analysis" | "payload">(
+    "analysis",
+  );
 
   const isRecepcion = userRole === "recepcion";
   const canApprove = !isRecepcion && rec.status === "open";
@@ -224,7 +226,10 @@ export function LucasRecommendationDetailModal({
             {activeTab === "analysis" && (
               <div className="space-y-3">
                 {Object.entries(rec.rationaleJson).map(([key, value]) => (
-                  <div key={key} className="flex justify-between items-center py-2 border-b vt-border last:border-0">
+                  <div
+                    key={key}
+                    className="flex justify-between items-center py-2 border-b vt-border last:border-0"
+                  >
                     <span className="text-sm text-gray-600 font-medium capitalize">
                       {key.replace(/_/g, " ")}
                     </span>
@@ -234,7 +239,9 @@ export function LucasRecommendationDetailModal({
                   </div>
                 ))}
                 {Object.keys(rec.rationaleJson).length === 0 && (
-                  <p className="text-sm text-gray-500 italic">Sin datos de análisis disponibles.</p>
+                  <p className="text-sm text-gray-500 italic">
+                    Sin datos de análisis disponibles.
+                  </p>
                 )}
               </div>
             )}
@@ -251,7 +258,9 @@ export function LucasRecommendationDetailModal({
               <div className="text-xs text-gray-500 bg-gray-50 rounded-lg p-3 border vt-border">
                 Aprobada el {formatDate(rec.approvedAt)}
                 {rec.undoUntil && (
-                  <span className="ml-2">· Ventana de deshacer hasta {formatDate(rec.undoUntil)}</span>
+                  <span className="ml-2">
+                    · Ventana de deshacer hasta {formatDate(rec.undoUntil)}
+                  </span>
                 )}
               </div>
             </div>

@@ -85,30 +85,40 @@ export class MarketingPage {
     this.page = page;
 
     // Bowtie: figura SVG con aria-label "Embudo de conversión"
-    this.bowtieContainer = page.locator('[data-testid="bowtie-sticky-container"]');
-    this.bowtieSvg = page.locator('figure[aria-label="Embudo de conversión"] svg[role="img"]');
+    this.bowtieContainer = page.locator(
+      '[data-testid="bowtie-sticky-container"]',
+    );
+    this.bowtieSvg = page.locator(
+      'figure[aria-label="Embudo de conversión"] svg[role="img"]',
+    );
 
     // Stage tabs: todos los role="tab" dentro del role="tablist"
-    this.stageTablist = page.getByRole("tablist", { name: "Etapas del embudo" });
+    this.stageTablist = page.getByRole("tablist", {
+      name: "Etapas del embudo",
+    });
     this.stageTabs = this.stageTablist.getByRole("tab");
 
     // Sección Lucas: el heading h3 "Recomendaciones de Lucas"
     // El componente LucasStageRecommendationsCard emite aria-busy cuando carga
     // y muestra el h3 cuando tiene datos. Usamos el heading o el aria-label del loading.
     this.lucasCardsSection = page.locator(
-      'h3:has-text("Recomendaciones de Lucas"), [aria-label="Cargando recomendaciones..."]'
+      'h3:has-text("Recomendaciones de Lucas"), [aria-label="Cargando recomendaciones..."]',
     );
 
     // Attribution matrix: encabezado h3 "Matriz de atribución"
-    this.attributionMatrix = page.locator('h3:has-text("Matriz de atribución")');
+    this.attributionMatrix = page.locator(
+      'h3:has-text("Matriz de atribución")',
+    );
 
     // Modal de aprobación/detalle: h2 con id "approval-modal-title" o "detail-modal-title"
     this.approvalModalTitle = page.locator(
-      '[role="dialog"] h2#approval-modal-title, [role="dialog"] h2#detail-modal-title'
+      '[role="dialog"] h2#approval-modal-title, [role="dialog"] h2#detail-modal-title',
     );
 
     // Modal overlay + botón cierre
-    this.modalOverlay = page.locator('[role="dialog"] + div[aria-hidden="true"]').first();
+    this.modalOverlay = page
+      .locator('[role="dialog"] + div[aria-hidden="true"]')
+      .first();
     this.modalCloseButton = page.getByRole("button", { name: "Cerrar" });
   }
 
@@ -138,7 +148,9 @@ export class MarketingPage {
    * @param slug - etapa del embudo a activar
    */
   async clickStageTab(slug: MarketingStageSlug): Promise<void> {
-    const tab = this.stageTablist.locator(`[aria-controls="stage-panel-${slug}"]`);
+    const tab = this.stageTablist.locator(
+      `[aria-controls="stage-panel-${slug}"]`,
+    );
     await tab.click();
     // Esperar a que el tabpanel correspondiente sea visible
     await this.page
@@ -175,7 +187,9 @@ export class MarketingPage {
 
     if (await cancelBtn.isVisible({ timeout: 2_000 }).catch(() => false)) {
       await cancelBtn.click();
-    } else if (await closeBtn.isVisible({ timeout: 2_000 }).catch(() => false)) {
+    } else if (
+      await closeBtn.isVisible({ timeout: 2_000 }).catch(() => false)
+    ) {
       await closeBtn.click();
     } else {
       // Fallback: ESC key (todos los modales honran handleKeyDown Escape)

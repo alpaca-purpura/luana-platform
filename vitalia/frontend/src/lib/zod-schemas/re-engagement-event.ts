@@ -117,6 +117,10 @@ export const patternListResponseSchema = z.object({
 });
 
 export type UrgencyLevelSchema = z.infer<typeof urgencyLevelSchema>;
-export type ReEngagementPatternSchema = z.infer<typeof reEngagementPatternSchema>;
+export type ReEngagementPatternSchema = z.infer<
+  typeof reEngagementPatternSchema
+>;
 export type PatternRowSchema = z.infer<typeof patternRowSchema>;
-export type PatternListResponseSchema = z.infer<typeof patternListResponseSchema>;
+export type PatternListResponseSchema = z.infer<
+  typeof patternListResponseSchema
+>;

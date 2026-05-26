@@ -38,7 +38,7 @@ vi.mock("../../config/copy", () => ({
 describe("ModeSelector", () => {
   it("renders without crashing", () => {
     expect(() =>
-      render(<ModeSelector selectedMode="url" onModeChange={vi.fn()} />)
+      render(<ModeSelector selectedMode="url" onModeChange={vi.fn()} />),
     ).not.toThrow();
   });
 
@@ -51,7 +51,9 @@ describe("ModeSelector", () => {
 
   it("calls onModeChange with 'url' when URL button is clicked", () => {
     const onModeChange = vi.fn();
-    render(<ModeSelector selectedMode="document" onModeChange={onModeChange} />);
+    render(
+      <ModeSelector selectedMode="document" onModeChange={onModeChange} />,
+    );
     fireEvent.click(screen.getByText("Sitio web"));
     expect(onModeChange).toHaveBeenCalledWith("url");
   });
@@ -83,12 +85,14 @@ describe("ModeSelector", () => {
 
   it("renders accessible group label", () => {
     render(<ModeSelector selectedMode="url" onModeChange={vi.fn()} />);
-    expect(screen.getByText("¿Cómo quieres compartir información?")).toBeTruthy();
+    expect(
+      screen.getByText("¿Cómo quieres compartir información?"),
+    ).toBeTruthy();
   });
 
   it("highlights selected mode when provided", () => {
     const { container } = render(
-      <ModeSelector selectedMode="url" onModeChange={vi.fn()} />
+      <ModeSelector selectedMode="url" onModeChange={vi.fn()} />,
     );
     // Selected button should have active styling
     expect(container).toBeTruthy();

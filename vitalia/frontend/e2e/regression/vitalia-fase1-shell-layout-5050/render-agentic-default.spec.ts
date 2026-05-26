@@ -75,7 +75,9 @@ test.describe("SC-1 — render agentic default (F1-S4)", () => {
 
   // ── Assertion 5: resize handle visible aria-orientation='vertical' ──────────
 
-  test("resize handle visible aria-orientation='vertical'", async ({ shellPage }) => {
+  test("resize handle visible aria-orientation='vertical'", async ({
+    shellPage,
+  }) => {
     const pom = new ShellLayoutPage(shellPage);
     // In agentic mode with desktop viewport, resize handle (Separator) is visible
     const isVisible = await pom.isResizeHandleVisible();
@@ -87,7 +89,9 @@ test.describe("SC-1 — render agentic default (F1-S4)", () => {
 
   // ── Assertion 6: localStorage 'vitalia-shell-state' shellMode='agentic' ─────
 
-  test("localStorage 'vitalia-shell-state' shellMode='agentic'", async ({ shellPage }) => {
+  test("localStorage 'vitalia-shell-state' shellMode='agentic'", async ({
+    shellPage,
+  }) => {
     const pom = new ShellLayoutPage(shellPage);
     const state = await pom.getStorageState();
     expect(state).not.toBeNull();

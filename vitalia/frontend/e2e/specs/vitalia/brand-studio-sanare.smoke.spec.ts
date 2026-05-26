@@ -34,7 +34,9 @@ test.describe("Brand Studio — Sanaré LATAM (MX)", () => {
 
     // All 3 doctors from fixture
     for (const doctor of sanare.doctors) {
-      await expect(page.getByText(doctor.name)).toBeVisible({ timeout: 10_000 });
+      await expect(page.getByText(doctor.name)).toBeVisible({
+        timeout: 10_000,
+      });
     }
 
     // Dr. Alejandro Ríos = psychiatry (validates psychiatric vertical)
@@ -48,7 +50,9 @@ test.describe("Brand Studio — Sanaré LATAM (MX)", () => {
     await page.goto("/brand-studio/identidad");
 
     // Clinic name from API mock
-    await expect(page.getByText(sanare.clinicName)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(sanare.clinicName)).toBeVisible({
+      timeout: 10_000,
+    });
 
     // Tagline "Bienestar mental para toda LatAm" from mock
     await expect(page.getByText(/bienestar mental/i)).toBeVisible();

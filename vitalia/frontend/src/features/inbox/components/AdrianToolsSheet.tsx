@@ -24,7 +24,10 @@ import { useToolsState } from "../api/use-tools-state";
 import { INBOX_COPY } from "../copy";
 import { useTenantLocale } from "@/hooks/useTenantLocale";
 import { formatTenantDateTime } from "@/lib/format/formatTenantDateTime";
-import type { ToolInvocation, ToolInvocationStatus } from "../types/tools-state";
+import type {
+  ToolInvocation,
+  ToolInvocationStatus,
+} from "../types/tools-state";
 
 interface AdrianToolsSheetProps {
   /** Whether the panel is visible */
@@ -66,7 +69,7 @@ function ToolRow({
       data-testid={`tool-row-${invocation.tool_name}`}
       className={cn(
         "rounded-lg border vt-border p-3 space-y-1.5",
-        "vt-bg-surface"
+        "vt-bg-surface",
       )}
     >
       {/* Tool name + status badge */}
@@ -77,7 +80,7 @@ function ToolRow({
         <span
           className={cn(
             "inline-flex shrink-0 items-center px-2 py-0.5 text-xs font-medium rounded-[var(--radius-pill)] border",
-            STATUS_CLASSES[invocation.status]
+            STATUS_CLASSES[invocation.status],
           )}
         >
           {statusLabel(invocation.status)}
@@ -95,7 +98,7 @@ function ToolRow({
       <p className="text-xs vt-text-faint">
         {INBOX_COPY.toolsSheet.lastUsed.replace(
           "{date}",
-          formatTenantDateTime(invocation.invoked_at, timezone, locale)
+          formatTenantDateTime(invocation.invoked_at, timezone, locale),
         )}
       </p>
     </li>
@@ -140,7 +143,7 @@ export function AdrianToolsSheet({
           "relative z-10 flex flex-col h-full w-[420px] max-w-full",
           "vt-bg-surface border-l vt-border shadow-xl",
           "overflow-y-auto",
-          className
+          className,
         )}
       >
         {/* Header */}
@@ -156,7 +159,7 @@ export function AdrianToolsSheet({
               "inline-flex items-center justify-center rounded-md p-1.5",
               "vt-text-muted hover:vt-text-foreground hover:vt-bg-muted/40",
               "transition-colors focus-visible:outline focus-visible:outline-2",
-              "focus-visible:outline-[var(--vitalia-cian)]"
+              "focus-visible:outline-[var(--vitalia-cian)]",
             )}
           >
             {/* Close icon */}
@@ -168,7 +171,11 @@ export function AdrianToolsSheet({
               stroke="currentColor"
               strokeWidth={2}
             >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
@@ -179,7 +186,7 @@ export function AdrianToolsSheet({
           className={cn(
             "mx-5 mt-4 p-3 rounded-lg border",
             "vt-border-warning-30 vt-bg-warning-12 vt-text-warning",
-            "text-xs leading-snug"
+            "text-xs leading-snug",
           )}
           role="note"
         >
@@ -190,7 +197,11 @@ export function AdrianToolsSheet({
         <div className="flex-1 px-5 py-4 space-y-3">
           {isLoading ? (
             /* Loading skeleton */
-            <div className="space-y-2" aria-busy="true" aria-label="Cargando herramientas…">
+            <div
+              className="space-y-2"
+              aria-busy="true"
+              aria-label="Cargando herramientas…"
+            >
               {[1, 2, 3].map((i) => (
                 <div
                   key={i}
@@ -205,7 +216,10 @@ export function AdrianToolsSheet({
             </p>
           ) : (
             /* Tool invocation list (read-only) */
-            <ul className="space-y-2" aria-label={INBOX_COPY.toolsSheet.ariaLabel}>
+            <ul
+              className="space-y-2"
+              aria-label={INBOX_COPY.toolsSheet.ariaLabel}
+            >
               {invocations.map((inv) => (
                 <ToolRow
                   key={`${inv.tool_name}-${inv.invoked_at}`}
@@ -227,7 +241,7 @@ export function AdrianToolsSheet({
               "inline-flex items-center gap-1 text-xs font-medium",
               "text-[var(--vitalia-cian)] hover:underline",
               "focus-visible:outline focus-visible:outline-2",
-              "focus-visible:outline-[var(--vitalia-cian)]"
+              "focus-visible:outline-[var(--vitalia-cian)]",
             )}
           >
             {INBOX_COPY.toolsSheet.goToOfferStudio}

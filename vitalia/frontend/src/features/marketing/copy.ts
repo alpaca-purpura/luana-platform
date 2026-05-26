@@ -83,7 +83,8 @@ export const MARKETING_COPY = {
     lastSyncLabel: "Última sincronización",
     lastSuccessLabel: "Último éxito",
     errorLabel: "Último error",
-    disconnectedMessage: "Canal desconectado. Reconecta para ver datos actualizados.",
+    disconnectedMessage:
+      "Canal desconectado. Reconecta para ver datos actualizados.",
     idleStatus: "Sin actividad",
     runningStatus: "Sincronizando",
     errorStatus: "Error",

@@ -10,12 +10,18 @@ import React from "react";
 vi.mock("nuqs", () => {
   const makeParser = () => ({
     withDefault: (_d: unknown) => ({
-      withOptions: (_opts: unknown) => ({ defaultValue: _d, parseServerSide: (v: unknown) => v }),
+      withOptions: (_opts: unknown) => ({
+        defaultValue: _d,
+        parseServerSide: (v: unknown) => v,
+      }),
       defaultValue: _d,
       parseServerSide: (v: unknown) => v,
     }),
     withOptions: (_opts: unknown) => ({
-      withDefault: (_d: unknown) => ({ defaultValue: _d, parseServerSide: (v: unknown) => v }),
+      withDefault: (_d: unknown) => ({
+        defaultValue: _d,
+        parseServerSide: (v: unknown) => v,
+      }),
       defaultValue: undefined,
       parseServerSide: (v: unknown) => v,
     }),
@@ -49,7 +55,9 @@ vi.mock("@tanstack/react-query", () => ({
   useMutation: vi.fn(),
   useQueryClient: () => ({ invalidateQueries: vi.fn() }),
   QueryClient: vi.fn(),
-  QueryClientProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  QueryClientProvider: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
 }));
 
 // Mock useTenantLocale
@@ -68,7 +76,13 @@ vi.mock("../components/ConnectionBadge", () => ({
 
 // Mock ChannelDetailSidebar
 vi.mock("../components/ChannelDetailSidebar", () => ({
-  ChannelDetailSidebar: ({ open, onClose }: { open: boolean; onClose: () => void }) =>
+  ChannelDetailSidebar: ({
+    open,
+    onClose,
+  }: {
+    open: boolean;
+    onClose: () => void;
+  }) =>
     open ? (
       <div data-testid="channel-detail-sidebar" role="dialog">
         <button onClick={onClose}>Cerrar</button>
@@ -80,46 +94,48 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 
 const mockMutate = vi.fn();
 
-const mockChannelDetailError: import("../types/channel").ChannelDetailResponse = {
-  provider: "meta_ads",
-  syncState: {
+const mockChannelDetailError: import("../types/channel").ChannelDetailResponse =
+  {
     provider: "meta_ads",
-    lastSyncAt: "2026-05-20T10:00:00Z",
-    lastSuccessAt: "2026-05-19T10:00:00Z",
-    lastError: "API rate limit exceeded",
-    status: "error",
-    enabled: true,
-    accountId: "act_123",
-  },
-  metrics: [
-    {
+    syncState: {
       provider: "meta_ads",
-      channelSlug: "meta-ads",
-      campaignId: "camp-1",
-      campaignName: "Campaña Atracción",
-      metricDate: "2026-05-19",
-      impressions: 5000,
-      clicks: 150,
-      conversions: 12,
-      spendCents: 50000,
-      currency: "PEN",
+      lastSyncAt: "2026-05-20T10:00:00Z",
+      lastSuccessAt: "2026-05-19T10:00:00Z",
+      lastError: "API rate limit exceeded",
+      status: "error",
+      enabled: true,
+      accountId: "act_123",
     },
-  ],
-};
+    metrics: [
+      {
+        provider: "meta_ads",
+        channelSlug: "meta-ads",
+        campaignId: "camp-1",
+        campaignName: "Campaña Atracción",
+        metricDate: "2026-05-19",
+        impressions: 5000,
+        clicks: 150,
+        conversions: 12,
+        spendCents: 50000,
+        currency: "PEN",
+      },
+    ],
+  };
 
-const mockChannelDetailIdle: import("../types/channel").ChannelDetailResponse = {
-  provider: "google_ads",
-  syncState: {
+const mockChannelDetailIdle: import("../types/channel").ChannelDetailResponse =
+  {
     provider: "google_ads",
-    lastSyncAt: "2026-05-20T08:00:00Z",
-    lastSuccessAt: "2026-05-20T08:00:00Z",
-    lastError: null,
-    status: "idle",
-    enabled: true,
-    accountId: "cust-456",
-  },
-  metrics: [],
-};
+    syncState: {
+      provider: "google_ads",
+      lastSyncAt: "2026-05-20T08:00:00Z",
+      lastSuccessAt: "2026-05-20T08:00:00Z",
+      lastError: null,
+      status: "idle",
+      enabled: true,
+      accountId: "cust-456",
+    },
+    metrics: [],
+  };
 
 describe("ChannelBreakdownRow", () => {
   beforeEach(() => {
@@ -150,7 +166,8 @@ describe("ChannelBreakdownRow", () => {
   });
 
   it("test_shows_warning_badge_when_sync_error — SC-MK-02: badge shows error state when sync fails", async () => {
-    const { ChannelBreakdownRow } = await import("../components/ChannelBreakdownRow");
+    const { ChannelBreakdownRow } =
+      await import("../components/ChannelBreakdownRow");
     render(<ChannelBreakdownRow provider="meta_ads" />);
 
     const badge = screen.getByTestId("connection-badge");
@@ -159,7 +176,8 @@ describe("ChannelBreakdownRow", () => {
   });
 
   it("test_shows_last_known_metrics_with_timestamp — SC-MK-02: shows timestamp of last known data when error", async () => {
-    const { ChannelBreakdownRow } = await import("../components/ChannelBreakdownRow");
+    const { ChannelBreakdownRow } =
+      await import("../components/ChannelBreakdownRow");
     render(<ChannelBreakdownRow provider="meta_ads" />);
 
     // Should show last success timestamp even when in error state
@@ -170,7 +188,8 @@ describe("ChannelBreakdownRow", () => {
   });
 
   it("test_retry_sync_button_invokes_useSyncChannel — SC-MK-02: retry button triggers sync mutation", async () => {
-    const { ChannelBreakdownRow } = await import("../components/ChannelBreakdownRow");
+    const { ChannelBreakdownRow } =
+      await import("../components/ChannelBreakdownRow");
     render(<ChannelBreakdownRow provider="meta_ads" />);
 
     const retryBtn = screen.getByTestId("retry-sync-btn");
@@ -181,14 +200,16 @@ describe("ChannelBreakdownRow", () => {
   });
 
   it("test_renders_provider_label — shows provider display name", async () => {
-    const { ChannelBreakdownRow } = await import("../components/ChannelBreakdownRow");
+    const { ChannelBreakdownRow } =
+      await import("../components/ChannelBreakdownRow");
     render(<ChannelBreakdownRow provider="meta_ads" />);
 
     expect(screen.getByText("Meta Ads")).toBeInTheDocument();
   });
 
   it("test_click_row_opens_sidebar — clicking row opens ChannelDetailSidebar", async () => {
-    const { ChannelBreakdownRow } = await import("../components/ChannelBreakdownRow");
+    const { ChannelBreakdownRow } =
+      await import("../components/ChannelBreakdownRow");
     render(<ChannelBreakdownRow provider="meta_ads" />);
 
     const row = screen.getByTestId("channel-row-meta_ads");
@@ -204,7 +225,8 @@ describe("ChannelBreakdownRow", () => {
       isError: false,
     } as ReturnType<typeof useQuery>);
 
-    const { ChannelBreakdownRow } = await import("../components/ChannelBreakdownRow");
+    const { ChannelBreakdownRow } =
+      await import("../components/ChannelBreakdownRow");
     render(<ChannelBreakdownRow provider="meta_ads" />);
 
     expect(screen.getByRole("status")).toBeInTheDocument();
@@ -217,7 +239,8 @@ describe("ChannelBreakdownRow", () => {
       isError: false,
     } as ReturnType<typeof useQuery>);
 
-    const { ChannelBreakdownRow } = await import("../components/ChannelBreakdownRow");
+    const { ChannelBreakdownRow } =
+      await import("../components/ChannelBreakdownRow");
     render(<ChannelBreakdownRow provider="google_ads" />);
 
     expect(screen.queryByTestId("retry-sync-btn")).not.toBeInTheDocument();
@@ -230,7 +253,8 @@ describe("ChannelBreakdownRow", () => {
       isError: false,
     } as ReturnType<typeof useQuery>);
 
-    const { ChannelBreakdownRow } = await import("../components/ChannelBreakdownRow");
+    const { ChannelBreakdownRow } =
+      await import("../components/ChannelBreakdownRow");
     render(<ChannelBreakdownRow provider="google_ads" />);
 
     expect(screen.getByText("Google Ads")).toBeInTheDocument();

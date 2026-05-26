@@ -54,7 +54,11 @@ export function ComposerVoiceButton({
 
   // Check MediaRecorder support on mount (client-only browser API)
   useEffect(() => {
-    if (typeof window === "undefined" || !window.MediaRecorder || !navigator.mediaDevices) {
+    if (
+      typeof window === "undefined" ||
+      !window.MediaRecorder ||
+      !navigator.mediaDevices
+    ) {
       setIsSupported(false);
     }
   }, []);
@@ -80,11 +84,11 @@ export function ComposerVoiceButton({
           onError: (err) => {
             onError?.(err instanceof Error ? err : new Error(String(err)));
           },
-        }
+        },
       );
       chunksRef.current = [];
     },
-    [conversationId, onVoiceReady, onError, transcribeAudio]
+    [conversationId, onVoiceReady, onError, transcribeAudio],
   );
 
   const startRecording = useCallback(async () => {
@@ -116,7 +120,9 @@ export function ComposerVoiceButton({
       mediaRecorderRef.current = recorder;
       setIsRecording(true);
     } catch (err) {
-      onError?.(err instanceof Error ? err : new Error("Microphone access denied"));
+      onError?.(
+        err instanceof Error ? err : new Error("Microphone access denied"),
+      );
     }
   }, [isSupported, handleStop, onError]);
 
@@ -156,7 +162,7 @@ export function ComposerVoiceButton({
           ? "vt-bg-danger-12 vt-text-danger vt-border-danger-30 animate-pulse"
           : "vt-bg-muted vt-text-muted vt-border hover:vt-bg-cian-8 hover:vt-text-cian hover:vt-border-cian",
         "disabled:opacity-50 disabled:cursor-not-allowed",
-        className
+        className,
       )}
     >
       <span aria-hidden="true" className="text-sm">

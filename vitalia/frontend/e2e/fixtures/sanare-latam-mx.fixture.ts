@@ -57,25 +57,28 @@ export type SanareFixtures = {
 
 async function setupSanareMocks(page: Page): Promise<void> {
   // Mock: clinic profile (MX multi_site)
-  await page.route("**/api/v1/vitalia/onboarding/clinic-profile", async (route) => {
-    if (route.request().method() === "POST") {
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({
-          tenant_id: SANARE_FIXTURE.tenantId,
-          clinic_name: SANARE_FIXTURE.clinicName,
-          clinic_type: SANARE_FIXTURE.clinicType,
-          country: SANARE_FIXTURE.country,
-          city: SANARE_FIXTURE.city,
-          multi_site: true,
-          created_at: new Date().toISOString(),
-        }),
-      });
-    } else {
-      await route.continue();
-    }
-  });
+  await page.route(
+    "**/api/v1/vitalia/onboarding/clinic-profile",
+    async (route) => {
+      if (route.request().method() === "POST") {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            tenant_id: SANARE_FIXTURE.tenantId,
+            clinic_name: SANARE_FIXTURE.clinicName,
+            clinic_type: SANARE_FIXTURE.clinicType,
+            country: SANARE_FIXTURE.country,
+            city: SANARE_FIXTURE.city,
+            multi_site: true,
+            created_at: new Date().toISOString(),
+          }),
+        });
+      } else {
+        await route.continue();
+      }
+    },
+  );
 
   // Mock: plans (all 3 including multi_site)
   await page.route("**/api/v1/vitalia/onboarding/plans", async (route) => {
@@ -83,9 +86,19 @@ async function setupSanareMocks(page: Page): Promise<void> {
       status: 200,
       contentType: "application/json",
       body: JSON.stringify([
-        { id: "solo_doctor", name: "Solo Doctor", price_usd: 99, max_doctors: 1 },
+        {
+          id: "solo_doctor",
+          name: "Solo Doctor",
+          price_usd: 99,
+          max_doctors: 1,
+        },
         { id: "clinic", name: "Clínica", price_usd: 199, max_doctors: 10 },
-        { id: "multi_site", name: "Multi-Sede", price_usd: 399, max_doctors: -1 },
+        {
+          id: "multi_site",
+          name: "Multi-Sede",
+          price_usd: 399,
+          max_doctors: -1,
+        },
       ]),
     });
   });
@@ -106,37 +119,61 @@ async function setupSanareMocks(page: Page): Promise<void> {
               secondary_color: "#064E3B",
               accent_color: "#6EE7B7",
             },
-            contact: { address: "Col. Roma Norte, CDMX, México", phone: "+52-55-1234-5678" },
+            contact: {
+              address: "Col. Roma Norte, CDMX, México",
+              phone: "+52-55-1234-5678",
+            },
             team: { doctors: SANARE_FIXTURE.doctors },
             testimonials: [
-              { quote: "El Dr. Ríos me ayudó con mi medicación. Excelente profesional.", author: "Carlos M.", rating: 5 },
-              { quote: "La terapia de pareja con la Ps. Cruz fue transformadora", author: "Ana y Luis R.", rating: 5 },
+              {
+                quote:
+                  "El Dr. Ríos me ayudó con mi medicación. Excelente profesional.",
+                author: "Carlos M.",
+                rating: 5,
+              },
+              {
+                quote:
+                  "La terapia de pareja con la Ps. Cruz fue transformadora",
+                author: "Ana y Luis R.",
+                rating: 5,
+              },
             ],
           },
         }),
       });
     } else if (route.request().method() === "PATCH") {
-      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ saved: true }) });
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ saved: true }),
+      });
     } else {
       await route.continue();
     }
   });
 
   // Mock: offer presets (packages)
-  await page.route("**/api/v1/offers/presets/medical_services_v1**", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({
-        preset_id: "medical_services_v1",
-        label_es: "Servicio médico",
-        preset_types: ["individual_session", "therapy_package", "psychiatric_consultation"],
-        requires_consent: false,
-        supports_deposit: true,
-        supports_recurring: true,
-      }),
-    });
-  });
+  await page.route(
+    "**/api/v1/offers/presets/medical_services_v1**",
+    async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          preset_id: "medical_services_v1",
+          label_es: "Servicio médico",
+          preset_types: [
+            "individual_session",
+            "therapy_package",
+            "psychiatric_consultation",
+          ],
+          requires_consent: false,
+          supports_deposit: true,
+          supports_recurring: true,
+        }),
+      });
+    },
+  );
 
   // Mock: create offer (packages with multi-currency)
   await page.route("**/api/v1/offers", async (route) => {
@@ -160,17 +197,35 @@ async function setupSanareMocks(page: Page): Promise<void> {
   });
 
   // Mock: available slots (multi-doctor MX)
-  await page.route("**/api/v1/vitalia/bookings/available-slots**", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify([
-        { slot_iso: "2026-05-25T10:00:00-06:00", doctor_id: "dr-rios", doctor_name: "Dr. Alejandro Ríos", available: true },
-        { slot_iso: "2026-05-25T12:00:00-06:00", doctor_id: "ps-cruz", doctor_name: "Ps. Valentina Cruz", available: true },
-        { slot_iso: "2026-05-26T09:00:00-06:00", doctor_id: "ps-morales", doctor_name: "Ps. Diego Morales", available: true },
-      ]),
-    });
-  });
+  await page.route(
+    "**/api/v1/vitalia/bookings/available-slots**",
+    async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify([
+          {
+            slot_iso: "2026-05-25T10:00:00-06:00",
+            doctor_id: "dr-rios",
+            doctor_name: "Dr. Alejandro Ríos",
+            available: true,
+          },
+          {
+            slot_iso: "2026-05-25T12:00:00-06:00",
+            doctor_id: "ps-cruz",
+            doctor_name: "Ps. Valentina Cruz",
+            available: true,
+          },
+          {
+            slot_iso: "2026-05-26T09:00:00-06:00",
+            doctor_id: "ps-morales",
+            doctor_name: "Ps. Diego Morales",
+            available: true,
+          },
+        ]),
+      });
+    },
+  );
 
   // Mock: create booking (multi-currency MXN)
   await page.route("**/api/v1/vitalia/bookings", async (route) => {
@@ -209,10 +264,30 @@ async function setupSanareMocks(page: Page): Promise<void> {
         adherence_score: 0.9,
         status: "active",
         milestones: [
-          { day: 0, name: "Consulta inicial", status: "done", date_iso: "2026-04-01T10:00:00Z" },
-          { day: 14, name: "Control 2 semanas", status: "done", date_iso: "2026-04-15T10:00:00Z" },
-          { day: 28, name: "Ajuste dosis", status: "upcoming", date_iso: "2026-04-29T10:00:00Z" },
-          { day: 90, name: "Evaluación 3 meses", status: "pending", date_iso: null },
+          {
+            day: 0,
+            name: "Consulta inicial",
+            status: "done",
+            date_iso: "2026-04-01T10:00:00Z",
+          },
+          {
+            day: 14,
+            name: "Control 2 semanas",
+            status: "done",
+            date_iso: "2026-04-15T10:00:00Z",
+          },
+          {
+            day: 28,
+            name: "Ajuste dosis",
+            status: "upcoming",
+            date_iso: "2026-04-29T10:00:00Z",
+          },
+          {
+            day: 90,
+            name: "Evaluación 3 meses",
+            status: "pending",
+            date_iso: null,
+          },
         ],
         next_action: { type: "dosis_review", date_iso: "2026-04-29T10:00:00Z" },
         manual_handoff: { active: false },
@@ -222,30 +297,58 @@ async function setupSanareMocks(page: Page): Promise<void> {
   });
 
   // Mock: compliance events (high volume multi_site)
-  await page.route("**/api/v1/vitalia/medical-compliance/events**", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({
-        total: 1247,
-        events: [
-          { id: "evt-1", event_type: "consent_signed", severity: "info", created_at: "2026-05-10T10:00:00Z" },
-          { id: "evt-2", event_type: "pii_detected", severity: "warning", created_at: "2026-05-09T08:00:00Z" },
-          { id: "evt-3", event_type: "safety_escalation", severity: "critical", created_at: "2026-05-08T11:00:00Z" },
-          { id: "evt-4", event_type: "prompt_injection_blocked", severity: "critical", created_at: "2026-05-07T15:00:00Z" },
-          { id: "evt-5", event_type: "consent_requested", severity: "info", created_at: "2026-05-06T09:00:00Z" },
-        ],
-        breakdown: {
-          pii_detected: 3,
-          consent_requested: 89,
-          consent_signed: 87,
-          safety_escalation: 12,
-          prompt_injection_blocked: 5,
-          cross_tenant_attempt: 0,
-        },
-      }),
-    });
-  });
+  await page.route(
+    "**/api/v1/vitalia/medical-compliance/events**",
+    async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          total: 1247,
+          events: [
+            {
+              id: "evt-1",
+              event_type: "consent_signed",
+              severity: "info",
+              created_at: "2026-05-10T10:00:00Z",
+            },
+            {
+              id: "evt-2",
+              event_type: "pii_detected",
+              severity: "warning",
+              created_at: "2026-05-09T08:00:00Z",
+            },
+            {
+              id: "evt-3",
+              event_type: "safety_escalation",
+              severity: "critical",
+              created_at: "2026-05-08T11:00:00Z",
+            },
+            {
+              id: "evt-4",
+              event_type: "prompt_injection_blocked",
+              severity: "critical",
+              created_at: "2026-05-07T15:00:00Z",
+            },
+            {
+              id: "evt-5",
+              event_type: "consent_requested",
+              severity: "info",
+              created_at: "2026-05-06T09:00:00Z",
+            },
+          ],
+          breakdown: {
+            pii_detected: 3,
+            consent_requested: 89,
+            consent_signed: 87,
+            safety_escalation: 12,
+            prompt_injection_blocked: 5,
+            cross_tenant_attempt: 0,
+          },
+        }),
+      });
+    },
+  );
 }
 
 // ---------------------------------------------------------------------------

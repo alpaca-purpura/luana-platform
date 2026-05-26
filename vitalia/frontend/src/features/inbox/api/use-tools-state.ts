@@ -35,7 +35,7 @@ export function useToolsState(conversationId: string | null | undefined) {
       if (!conversationId) throw new Error("conversationId required");
       return fetchClient<ToolsState>(
         `/api/v1/vitalia/inbox/conversations/${conversationId}/tools`,
-        { token, tenantId: orgId, clinicId }
+        { token, tenantId: orgId, clinicId },
       );
     },
     enabled: isLoaded && isSignedIn === true && !!conversationId,

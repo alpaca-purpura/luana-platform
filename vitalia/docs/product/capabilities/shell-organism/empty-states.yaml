@@ -1,14 +1,23 @@
+---
 capability_id: vitalia.shell.empty-states
 module: shell-organism
 slug: empty-states
 status: live
 date_introduced: 2026-05-26
 story_introduced: vitalia-fase1-empty-states
-package_version: 0.1.0
-package_path: vitalia/frontend/src/components/shared/shell-organism/SubTabContent.tsx
+package_version: vitalia-frontend@0.1.0
+package_path: vitalia/frontend/src/components/shared/shell-organism/
 license: proprietary
 pending_chris_visual_ratify: true   # 64+ visual goldens pending live generation (stack required `--update-snapshots`) · patrón F1-S3 shipped 2026-05-23
 phase_1_complete: true              # ★ F1-S10 cierra CHAIN F1-S0..F1-S10 outcome vitalia-mvp-ui-foundation
+lift_candidate: cross-brand-when-2-brands-need-inbox-agentico-and-agenda-cockpit
+---
+
+# Empty States — Vitalia FE Fase 1 (F1-S10)
+
+Última story Fase 1 · puebla los 22 sub-tab pages con placeholders. `SubTabContent` dispatcher mapea cada combo `{agent}.{subtab}` → placeholder React via `PLACEHOLDER_MAP` type-safe que consume `RIBBON_SUBTABS` SSoT de `agent-catalog.ts`. 16 sub-tabs genéricas usan `EmptyState` molécula (icon + label del catalog). 6 sub-tabs especiales replican structure rica del mockup ratificada (Lisa Servicios catálogo + Adrián Embudo Kanban + Adrián Inbox sales_studio parity + Takeover UX + Valeria Agenda enriquecida + Camila Voz 3 cards + Config Conexiones grid).
+
+Cierra el outcome `vitalia-mvp-ui-foundation` — shell vacío navegable production-ready. Fase 2 (22 stories sub-tab funcionales) puede arrancar.
 
 ## Surfaces
 

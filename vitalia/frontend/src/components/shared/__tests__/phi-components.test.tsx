@@ -27,7 +27,7 @@ describe("PiiMaskedSpan", () => {
 
   it("applies aria-label for accessibility", () => {
     const { container } = render(
-      <PiiMaskedSpan value="test@email.com" fieldType="email" />
+      <PiiMaskedSpan value="test@email.com" fieldType="email" />,
     );
     const span = container.querySelector("[aria-label]");
     expect(span).toBeTruthy();
@@ -39,7 +39,7 @@ describe("RequireRole", () => {
     render(
       <RequireRole roles={["doctor"]} userRole="doctor">
         <span data-testid="phi-content">Diagnóstico secreto</span>
-      </RequireRole>
+      </RequireRole>,
     );
     expect(screen.getByTestId("phi-content")).toBeTruthy();
   });
@@ -48,7 +48,7 @@ describe("RequireRole", () => {
     render(
       <RequireRole roles={["doctor", "nurse"]} userRole="marketing">
         <span data-testid="phi-content">Diagnóstico secreto</span>
-      </RequireRole>
+      </RequireRole>,
     );
     expect(screen.queryByTestId("phi-content")).toBeNull();
   });
@@ -61,7 +61,7 @@ describe("RequireRole", () => {
         fallback={<span data-testid="fallback">Acceso restringido</span>}
       >
         <span data-testid="phi-content">Diagnóstico</span>
-      </RequireRole>
+      </RequireRole>,
     );
     expect(screen.getByTestId("fallback")).toBeTruthy();
     expect(screen.queryByTestId("phi-content")).toBeNull();

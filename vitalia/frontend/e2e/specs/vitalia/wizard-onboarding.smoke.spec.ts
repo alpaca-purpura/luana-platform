@@ -23,125 +23,148 @@ import { WizardOnboardingPage } from "../../pages/wizard-onboarding.page";
 async function setupWizardMocks(page: import("@playwright/test").Page) {
   // Mock: start draft
   await page.route("**/api/v1/vitalia/wizard/drafts", async (route) => {
-    if (route.request().method() !== "POST") { await route.continue(); return; }
+    if (route.request().method() !== "POST") {
+      await route.continue();
+      return;
+    }
     await route.fulfill({
       status: 201,
       contentType: "application/json",
       body: JSON.stringify({
         draftId: "smoke-draft-001",
         step: "greet",
-        message: "Hola, soy Valeria, tu asistente de configuración. ¿Comenzamos?",
+        message:
+          "Hola, soy Valeria, tu asistente de configuración. ¿Comenzamos?",
         mode: null,
       }),
     });
   });
 
   // Mock: get draft
-  await page.route("**/api/v1/vitalia/wizard/drafts/smoke-draft-001", async (route) => {
-    if (route.request().method() !== "GET") { await route.continue(); return; }
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({
-        draftId: "smoke-draft-001",
-        status: "active",
-        step: "greet",
-        mode: null,
-        slots: [
-          {
-            slotId: "clinic_name",
-            label: "Nombre de la clínica",
-            status: "pending",
-            value: null,
-            required: true,
-            source: null,
-            order: 1,
-          },
-          {
-            slotId: "specialty",
-            label: "Especialidad",
-            status: "pending",
-            value: null,
-            required: true,
-            source: null,
-            order: 2,
-          },
-        ],
-        progress: { confirmed: 0, total: 2, requiredRemaining: 2 },
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }),
-    });
-  });
+  await page.route(
+    "**/api/v1/vitalia/wizard/drafts/smoke-draft-001",
+    async (route) => {
+      if (route.request().method() !== "GET") {
+        await route.continue();
+        return;
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          draftId: "smoke-draft-001",
+          status: "active",
+          step: "greet",
+          mode: null,
+          slots: [
+            {
+              slotId: "clinic_name",
+              label: "Nombre de la clínica",
+              status: "pending",
+              value: null,
+              required: true,
+              source: null,
+              order: 1,
+            },
+            {
+              slotId: "specialty",
+              label: "Especialidad",
+              status: "pending",
+              value: null,
+              required: true,
+              source: null,
+              order: 2,
+            },
+          ],
+          progress: { confirmed: 0, total: 2, requiredRemaining: 2 },
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }),
+      });
+    },
+  );
 
   // Mock: SSE stream (returns done immediately to avoid hanging)
-  await page.route("**/api/v1/vitalia/wizard/drafts/smoke-draft-001/stream**", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "text/event-stream",
-      body: `data: {"type":"done"}\n\n`,
-    });
-  });
+  await page.route(
+    "**/api/v1/vitalia/wizard/drafts/smoke-draft-001/stream**",
+    async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "text/event-stream",
+        body: `data: {"type":"done"}\n\n`,
+      });
+    },
+  );
 
   // Mock: extract context
-  await page.route("**/api/v1/vitalia/wizard/drafts/smoke-draft-001/extract", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({
-        extractedSlots: [
-          {
-            slotId: "clinic_name",
-            label: "Nombre de la clínica",
-            status: "pending_confirm",
-            value: "Clínica Vitalia",
-            required: true,
-            source: "url",
-            order: 1,
-          },
-        ],
-        assistantMessage: "Encontré el nombre de tu clínica: Clínica Vitalia. ¿Es correcto?",
-        nextStep: "confirm",
-      }),
-    });
-  });
+  await page.route(
+    "**/api/v1/vitalia/wizard/drafts/smoke-draft-001/extract",
+    async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          extractedSlots: [
+            {
+              slotId: "clinic_name",
+              label: "Nombre de la clínica",
+              status: "pending_confirm",
+              value: "Clínica Vitalia",
+              required: true,
+              source: "url",
+              order: 1,
+            },
+          ],
+          assistantMessage:
+            "Encontré el nombre de tu clínica: Clínica Vitalia. ¿Es correcto?",
+          nextStep: "confirm",
+        }),
+      });
+    },
+  );
 
   // Mock: confirm slot
-  await page.route("**/api/v1/vitalia/wizard/drafts/smoke-draft-001/slots/*/confirm", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({
-        slot: {
-          slotId: "clinic_name",
-          status: "confirmed",
-          value: "Clínica Vitalia",
-        },
-        allSlotsConfirmed: false,
-        assistantMessage: "Perfecto. ¿Cuál es la especialidad de tu clínica?",
-      }),
-    });
-  });
+  await page.route(
+    "**/api/v1/vitalia/wizard/drafts/smoke-draft-001/slots/*/confirm",
+    async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          slot: {
+            slotId: "clinic_name",
+            status: "confirmed",
+            value: "Clínica Vitalia",
+          },
+          allSlotsConfirmed: false,
+          assistantMessage: "Perfecto. ¿Cuál es la especialidad de tu clínica?",
+        }),
+      });
+    },
+  );
 
   // Mock: simulate voice
-  await page.route("**/api/v1/vitalia/wizard/drafts/smoke-draft-001/simulate", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({
-        sampleText: "Hola, con gusto te ayudo a agendar una consulta.",
-        agentName: "Adrián",
-        scenario: "greeting_inquiry",
-        fromCache: false,
-        landingSnippet: {
-          clinicName: "Clínica Vitalia",
-          specialty: "Medicina General",
-          tagline: "Cuidamos tu salud de manera integral",
-          ctaText: "Agenda tu cita",
-        },
-      }),
-    });
-  });
+  await page.route(
+    "**/api/v1/vitalia/wizard/drafts/smoke-draft-001/simulate",
+    async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          sampleText: "Hola, con gusto te ayudo a agendar una consulta.",
+          agentName: "Adrián",
+          scenario: "greeting_inquiry",
+          fromCache: false,
+          landingSnippet: {
+            clinicName: "Clínica Vitalia",
+            specialty: "Medicina General",
+            tagline: "Cuidamos tu salud de manera integral",
+            ctaText: "Agenda tu cita",
+          },
+        }),
+      });
+    },
+  );
 }
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
@@ -188,7 +211,7 @@ test.describe("Wizard onboarding — smoke tests (V-WIZ-1..5)", () => {
 
     // Greeting message from Valeria
     await expect(
-      page.getByText(/hola.*valeria/i).or(page.getByText(/comenzamos/i))
+      page.getByText(/hola.*valeria/i).or(page.getByText(/comenzamos/i)),
     ).toBeVisible({ timeout: 10_000 });
   });
 

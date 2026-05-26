@@ -134,7 +134,13 @@ test.describe("SC-9 — avatar PNG 404 → AvatarFallback inicial + tab funciona
     await pom.goto({ tenantId: TENANT_ID, agent: "valeria", subtab: "agenda" });
 
     // All agent tabs should still be in DOM and functional
-    const slugsToCheck: AgentSlug[] = ["lisa", "lucas", "adrian", "valeria", "camila"];
+    const slugsToCheck: AgentSlug[] = [
+      "lisa",
+      "lucas",
+      "adrian",
+      "valeria",
+      "camila",
+    ];
     for (const slug of slugsToCheck) {
       await expect(pom.getTab(slug)).toBeAttached();
     }

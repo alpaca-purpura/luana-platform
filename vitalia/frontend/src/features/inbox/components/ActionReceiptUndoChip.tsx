@@ -62,13 +62,13 @@ export function ActionReceiptUndoChip({
         onError: () => {
           setOpen(false);
         },
-      }
+      },
     );
   };
 
   const ariaLabel = INBOX_COPY.actionReceipt.revertAriaLabel.replace(
     "{remaining}",
-    formattedRemaining
+    formattedRemaining,
   );
 
   return (
@@ -85,16 +85,12 @@ export function ActionReceiptUndoChip({
           "hover:vt-bg-cian-8 hover:vt-text-cian hover:vt-border-cian",
           "transition-colors duration-150 cursor-pointer",
           "disabled:opacity-60 disabled:cursor-not-allowed",
-          className
+          className,
         )}
       >
         <span aria-hidden="true">↩</span>
         <span>{INBOX_COPY.actionReceipt.revertCta}</span>
-        <span
-          role="timer"
-          aria-live="polite"
-          aria-label={ariaLabel}
-        >
+        <span role="timer" aria-live="polite" aria-label={ariaLabel}>
           ({formattedRemaining})
         </span>
       </button>
@@ -117,7 +113,7 @@ export function ActionReceiptUndoChip({
             data-testid="retract-confirm-modal"
             className={cn(
               "relative z-10 w-full max-w-sm rounded-xl border vt-border",
-              "vt-bg-surface p-6 shadow-lg"
+              "vt-bg-surface p-6 shadow-lg",
             )}
           >
             <h2
@@ -126,10 +122,7 @@ export function ActionReceiptUndoChip({
             >
               {INBOX_COPY.actionReceipt.modalTitle}
             </h2>
-            <p
-              id="retract-modal-body"
-              className="text-sm vt-text-muted mb-6"
-            >
+            <p id="retract-modal-body" className="text-sm vt-text-muted mb-6">
               {INBOX_COPY.actionReceipt.modalBody}
             </p>
             <div className="flex items-center justify-end gap-3">
@@ -140,7 +133,7 @@ export function ActionReceiptUndoChip({
                 className={cn(
                   "px-4 py-2 rounded-lg text-sm font-medium",
                   "vt-text-muted vt-bg-muted border vt-border",
-                  "hover:vt-text transition-colors disabled:opacity-50"
+                  "hover:vt-text transition-colors disabled:opacity-50",
                 )}
               >
                 {INBOX_COPY.actionReceipt.cancelCta}
@@ -153,7 +146,7 @@ export function ActionReceiptUndoChip({
                 className={cn(
                   "px-4 py-2 rounded-lg text-sm font-medium",
                   "vt-bg-danger-12 vt-text-danger border vt-border-danger-30",
-                  "hover:vt-bg-danger-soft transition-colors disabled:opacity-50"
+                  "hover:vt-bg-danger-soft transition-colors disabled:opacity-50",
                 )}
               >
                 {isRetracting ? "…" : INBOX_COPY.actionReceipt.confirmCta}

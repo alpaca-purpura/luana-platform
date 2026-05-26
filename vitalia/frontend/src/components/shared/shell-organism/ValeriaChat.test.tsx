@@ -62,10 +62,12 @@ describe("ValeriaChat — organism structure (SC-1)", () => {
 
     // Verify DOM order: header before messages before composer
     expect(
-      header.compareDocumentPosition(messages) & Node.DOCUMENT_POSITION_FOLLOWING,
+      header.compareDocumentPosition(messages) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
     expect(
-      messages.compareDocumentPosition(composer) & Node.DOCUMENT_POSITION_FOLLOWING,
+      messages.compareDocumentPosition(composer) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
   });
 });
@@ -202,9 +204,9 @@ describe("ValeriaChat — send message integration (SC-2)", () => {
     });
 
     // User message should appear immediately
-    const userBubbles = screen.queryAllByTestId("msg-bubble").filter(
-      (el) => el.getAttribute("data-role") === "user",
-    );
+    const userBubbles = screen
+      .queryAllByTestId("msg-bubble")
+      .filter((el) => el.getAttribute("data-role") === "user");
     expect(userBubbles.length).toBeGreaterThanOrEqual(1);
 
     // Thinking indicator should appear
@@ -215,9 +217,9 @@ describe("ValeriaChat — send message integration (SC-2)", () => {
       vi.advanceTimersByTime(800);
     });
 
-    const botBubbles = screen.queryAllByTestId("msg-bubble").filter(
-      (el) => el.getAttribute("data-role") === "bot",
-    );
+    const botBubbles = screen
+      .queryAllByTestId("msg-bubble")
+      .filter((el) => el.getAttribute("data-role") === "bot");
     expect(botBubbles.length).toBeGreaterThanOrEqual(1);
 
     expect(screen.queryByTestId("msg-thinking")).not.toBeInTheDocument();

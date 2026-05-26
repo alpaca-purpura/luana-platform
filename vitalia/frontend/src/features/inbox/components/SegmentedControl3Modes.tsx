@@ -60,7 +60,7 @@ export function SegmentedControl3Modes({
       className={cn(
         "inline-flex items-center rounded-lg border vt-border overflow-hidden",
         isConflict && "ring-2 ring-red-400",
-        className
+        className,
       )}
     >
       {SEGMENTS.map((seg) => {
@@ -82,7 +82,7 @@ export function SegmentedControl3Modes({
               "disabled:opacity-50 disabled:cursor-not-allowed",
               isActive
                 ? "vt-bg-primary/12 vt-text-primary font-semibold"
-                : "vt-bg-surface vt-text-muted hover:vt-bg-muted"
+                : "vt-bg-surface vt-text-muted hover:vt-bg-muted",
             )}
           >
             {isActive && (

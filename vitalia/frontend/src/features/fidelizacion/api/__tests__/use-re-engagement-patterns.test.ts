@@ -70,7 +70,7 @@ describe("useReEngagementPatterns", () => {
           pattern: "multi_session",
           period: "30d",
         }),
-      { wrapper: createWrapper() }
+      { wrapper: createWrapper() },
     );
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -88,14 +88,16 @@ describe("useReEngagementPatterns", () => {
           period: "7d",
           urgency: ["critical"],
         }),
-      { wrapper: createWrapper() }
+      { wrapper: createWrapper() },
     );
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     expect(vitaliaFetch).toHaveBeenCalledWith(
-      expect.stringContaining("/api/v1/vitalia/fidelization/re-engagement/patterns"),
-      expect.objectContaining({ token: expect.any(String) })
+      expect.stringContaining(
+        "/api/v1/vitalia/fidelization/re-engagement/patterns",
+      ),
+      expect.objectContaining({ token: expect.any(String) }),
     );
   });
 });

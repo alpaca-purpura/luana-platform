@@ -42,9 +42,15 @@ function PatientRow({
       }}
       aria-label={`Paciente ${fullName}`}
     >
-      <td className="px-4 py-3 text-sm text-gray-800 font-medium">{fullName}</td>
-      <td className="px-4 py-3 text-xs text-gray-500 font-mono">{patient.phone_masked}</td>
-      <td className="px-4 py-3 text-xs text-gray-500 font-mono truncate max-w-xs">{patient.email_masked}</td>
+      <td className="px-4 py-3 text-sm text-gray-800 font-medium">
+        {fullName}
+      </td>
+      <td className="px-4 py-3 text-xs text-gray-500 font-mono">
+        {patient.phone_masked}
+      </td>
+      <td className="px-4 py-3 text-xs text-gray-500 font-mono truncate max-w-xs">
+        {patient.email_masked}
+      </td>
       <td className="px-4 py-3">
         {patient.clinic_type ? (
           <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 capitalize">
@@ -74,7 +80,7 @@ export function PatientListTable({
 }: PatientListTableProps) {
   const [page, setPage] = useState(0);
   const { data, isLoading, isError } = usePatients(
-    clinicTypeFilter ? { clinic_type: clinicTypeFilter } : undefined
+    clinicTypeFilter ? { clinic_type: clinicTypeFilter } : undefined,
   );
 
   const allPatients = data?.patients ?? [];
@@ -86,7 +92,10 @@ export function PatientListTable({
   if (isError) {
     return (
       <div
-        className={cn("rounded-lg border border-red-200 bg-red-50 p-6 text-center", className)}
+        className={cn(
+          "rounded-lg border border-red-200 bg-red-50 p-6 text-center",
+          className,
+        )}
         role="alert"
       >
         <p className="text-sm text-red-700">
@@ -106,7 +115,10 @@ export function PatientListTable({
             aria-busy={true}
             aria-live="polite"
           >
-            <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600" aria-hidden="true" />
+            <div
+              className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"
+              aria-hidden="true"
+            />
             <p className="mt-2 text-sm text-gray-500">Cargando pacientes...</p>
           </div>
         ) : allPatients.length === 0 ? (
@@ -121,16 +133,30 @@ export function PatientListTable({
             >
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr role="row">
-                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Nombre</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Teléfono</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Correo</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tipo clínica</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Registro</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                    Nombre
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                    Teléfono
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                    Correo
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                    Tipo clínica
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                    Registro
+                  </th>
                 </tr>
               </thead>
               <tbody role="rowgroup">
                 {paginated.map((p) => (
-                  <PatientRow key={p.id} patient={p} onSelect={onSelectPatient} />
+                  <PatientRow
+                    key={p.id}
+                    patient={p}
+                    onSelect={onSelectPatient}
+                  />
                 ))}
               </tbody>
             </table>
@@ -141,7 +167,8 @@ export function PatientListTable({
       {totalPages > 1 && (
         <div className="flex items-center justify-between text-sm text-gray-500">
           <span>
-            Mostrando {pageStart + 1}–{Math.min(pageStart + PAGE_SIZE, total)} de {total}
+            Mostrando {pageStart + 1}–{Math.min(pageStart + PAGE_SIZE, total)}{" "}
+            de {total}
           </span>
           <div className="flex gap-2">
             <button

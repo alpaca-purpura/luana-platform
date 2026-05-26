@@ -34,7 +34,7 @@ export function NPSRowCompact({ row, className }: NPSRowCompactProps) {
     <li
       className={cn(
         "flex items-start gap-3 border-b border-[hsl(var(--vitalia-border,220_13%_91%))] py-3 last:border-b-0",
-        className
+        className,
       )}
     >
       {/* NPS badge */}
@@ -48,7 +48,11 @@ export function NPSRowCompact({ row, className }: NPSRowCompactProps) {
           roles={["doctor", "nurse", "admin_clinic"]}
           userRole={role}
           fallback={
-            <PiiMaskedSpan value={row.patientName} fieldType="name" className="text-sm" />
+            <PiiMaskedSpan
+              value={row.patientName}
+              fieldType="name"
+              className="text-sm"
+            />
           }
         >
           <p className="truncate text-sm font-medium text-[hsl(var(--vitalia-fg,220_25%_15%))]">

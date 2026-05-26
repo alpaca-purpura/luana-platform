@@ -64,7 +64,7 @@ export function useSetMode(conversationId: string) {
             mode: input.newMode,
             proposal_required: input.proposalRequired,
           }),
-        }
+        },
       );
     },
     onMutate: async (input) => {
@@ -93,11 +93,15 @@ export function useSetMode(conversationId: string) {
       }
       // On OCC conflict: re-fetch fresh state so UI reflects server truth
       if (err instanceof ApiError && err.status === 409) {
-        void qc.invalidateQueries({ queryKey: conversationDetailKey(conversationId) });
+        void qc.invalidateQueries({
+          queryKey: conversationDetailKey(conversationId),
+        });
       }
     },
     onSettled: () => {
-      void qc.invalidateQueries({ queryKey: conversationDetailKey(conversationId) });
+      void qc.invalidateQueries({
+        queryKey: conversationDetailKey(conversationId),
+      });
       void qc.invalidateQueries({ queryKey: conversationsListKey() });
     },
   });

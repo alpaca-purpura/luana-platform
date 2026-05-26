@@ -18,7 +18,11 @@
 import { cn } from "@/lib/utils";
 import type { AgentSlug } from "@/lib/agent-catalog";
 import { AGENT_CATALOG, DEFAULT_CHAT_AGENT } from "@/lib/agent-catalog";
-import { agentBgSoftClass, agentTextClass, agentDotBgClass } from "./_agent-tw-classes";
+import {
+  agentBgSoftClass,
+  agentTextClass,
+  agentDotBgClass,
+} from "./_agent-tw-classes";
 
 export interface TypingIndicatorProps {
   /** Agent that is typing. Default: DEFAULT_CHAT_AGENT. */
@@ -45,8 +49,7 @@ export function TypingIndicator({
   className,
 }: TypingIndicatorProps) {
   const descriptor = AGENT_CATALOG[agent] ?? AGENT_CATALOG[DEFAULT_CHAT_AGENT];
-  const actionText =
-    text ?? `${descriptor.name} está escribiendo…`;
+  const actionText = text ?? `${descriptor.name} está escribiendo…`;
 
   // Split action text: if it starts with agent name, show name bold + rest normal
   // e.g. "Camila está abriendo Voz del paciente"
@@ -63,7 +66,9 @@ export function TypingIndicator({
   }
 
   return (
-    <div className={cn("flex flex-col gap-1 self-start max-w-[80%]", className)}>
+    <div
+      className={cn("flex flex-col gap-1 self-start max-w-[80%]", className)}
+    >
       <div
         data-testid="msg-thinking"
         data-agent={agent}
@@ -78,20 +83,26 @@ export function TypingIndicator({
           </span>
         ) : null}
         {/* a11y SC-6: text-foreground/80 gives ≥4.5:1 contrast on agent-soft bg in both light+dark.
-            * text-muted-foreground (240 4% 46% = ~#737378 on white = 3.4:1) fails wcag2aa. */}
+         * text-muted-foreground (240 4% 46% = ~#737378 on white = 3.4:1) fails wcag2aa. */}
         <span className="text-foreground/80">{restPart}</span>
-        <span
-          className="flex items-end gap-0.5 ml-1"
-          aria-hidden="true"
-        >
+        <span className="flex items-end gap-0.5 ml-1" aria-hidden="true">
           <span
-            className={cn("typing-dot h-1.5 w-1.5 rounded-full", agentDotBgClass(agent))}
+            className={cn(
+              "typing-dot h-1.5 w-1.5 rounded-full",
+              agentDotBgClass(agent),
+            )}
           />
           <span
-            className={cn("typing-dot h-1.5 w-1.5 rounded-full", agentDotBgClass(agent))}
+            className={cn(
+              "typing-dot h-1.5 w-1.5 rounded-full",
+              agentDotBgClass(agent),
+            )}
           />
           <span
-            className={cn("typing-dot h-1.5 w-1.5 rounded-full", agentDotBgClass(agent))}
+            className={cn(
+              "typing-dot h-1.5 w-1.5 rounded-full",
+              agentDotBgClass(agent),
+            )}
           />
         </span>
       </div>

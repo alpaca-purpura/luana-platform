@@ -44,9 +44,7 @@ describe("ChatHeader — renders avatar + name + status (SC-1 happy)", () => {
 
   it("renders status text containing 'En línea' for valeria online", () => {
     render(<ChatHeader agent="valeria" status="online" mode="agent" />);
-    expect(
-      screen.getByText(/En línea · Tu secretaria virtual/),
-    ).toBeDefined();
+    expect(screen.getByText(/En línea · Tu secretaria virtual/)).toBeDefined();
   });
 
   it("renders status dot with bg-vitalia-success aria-hidden='true'", () => {

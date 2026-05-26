@@ -139,7 +139,10 @@ export function TenantSwitcher() {
           ) : (
             <Skeleton className="h-6 w-20" />
           )}
-          <ChevronDown className="size-3.5 shrink-0 opacity-60" aria-hidden="true" />
+          <ChevronDown
+            className="size-3.5 shrink-0 opacity-60"
+            aria-hidden="true"
+          />
         </Button>
       </DropdownMenuTrigger>
 

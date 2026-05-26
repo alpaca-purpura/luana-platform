@@ -15,7 +15,10 @@ import { LucasRecommendationDetailModal } from "./LucasRecommendationDetailModal
 import { LucasApprovalModal } from "./LucasApprovalModal";
 import { LucasRejectModal } from "./LucasRejectModal";
 import { LucasUndoChip } from "./LucasUndoChip";
-import type { LucasRecommendation, RecommendationStage } from "../types/lucas-recommendation";
+import type {
+  LucasRecommendation,
+  RecommendationStage,
+} from "../types/lucas-recommendation";
 
 export type LucasStageRecommendationsCardProps = {
   /** Filter by stage. If omitted, shows all stages (cross-stage view). */
@@ -80,7 +83,10 @@ export function LucasStageRecommendationsCard({
         </div>
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-16 bg-gray-100 rounded-lg animate-pulse" />
+            <div
+              key={i}
+              className="h-16 bg-gray-100 rounded-lg animate-pulse"
+            />
           ))}
         </div>
         {/* Accessible status indicator */}
@@ -102,7 +108,9 @@ export function LucasStageRecommendationsCard({
             {MARKETING_COPY.recommendations.title}
           </h3>
         </div>
-        <p className="text-sm text-red-600 mb-3">{MARKETING_COPY.recommendations.errorMessage}</p>
+        <p className="text-sm text-red-600 mb-3">
+          {MARKETING_COPY.recommendations.errorMessage}
+        </p>
         <button
           type="button"
           onClick={() => void refetch()}
@@ -134,7 +142,12 @@ export function LucasStageRecommendationsCard({
 
   return (
     <>
-      <div className={cn("rounded-xl border vt-border p-6 vt-bg-surface", className)}>
+      <div
+        className={cn(
+          "rounded-xl border vt-border p-6 vt-bg-surface",
+          className,
+        )}
+      >
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
@@ -175,9 +188,7 @@ export function LucasStageRecommendationsCard({
               className="text-sm font-medium vt-text-cian-bold hover:underline"
               aria-expanded={expanded}
             >
-              {expanded
-                ? "Ver menos"
-                : `Ver todas (${allRecs.length})`}
+              {expanded ? "Ver menos" : `Ver todas (${allRecs.length})`}
             </button>
           </div>
         )}
@@ -201,10 +212,7 @@ export function LucasStageRecommendationsCard({
         />
       )}
       {modal.kind === "reject" && (
-        <LucasRejectModal
-          recId={modal.recId}
-          onClose={closeModal}
-        />
+        <LucasRejectModal recId={modal.recId} onClose={closeModal} />
       )}
     </>
   );
@@ -229,7 +237,9 @@ function RecommendationItem({ rec, onClick }: RecommendationItemProps) {
         <div className="flex items-start gap-3">
           {/* Priority badge */}
           <div className="flex-shrink-0 w-6 h-6 rounded-full vt-bg-tab-active flex items-center justify-center mt-0.5">
-            <span className="text-xs font-bold vt-text-cian-bold">{rec.priority}</span>
+            <span className="text-xs font-bold vt-text-cian-bold">
+              {rec.priority}
+            </span>
           </div>
 
           <div className="flex-1 min-w-0">
@@ -244,7 +254,9 @@ function RecommendationItem({ rec, onClick }: RecommendationItemProps) {
               {rec.confidencePct !== null && (
                 <span className="text-xs text-gray-500">
                   {MARKETING_COPY.recommendations.confidenceLabel}:{" "}
-                  <strong className="vt-text-cian-bold font-semibold">{rec.confidencePct}%</strong>
+                  <strong className="vt-text-cian-bold font-semibold">
+                    {rec.confidencePct}%
+                  </strong>
                 </span>
               )}
               {rec.projectedImpactText && (

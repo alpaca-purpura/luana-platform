@@ -48,10 +48,14 @@ function codeLines(content: string): string[] {
   return content.split("\n").filter((line) => !isCommentLine(line));
 }
 
-const PROHIBITED_PATTERNS: ReadonlyArray<{ pattern: RegExp; description: string }> = [
+const PROHIBITED_PATTERNS: ReadonlyArray<{
+  pattern: RegExp;
+  description: string;
+}> = [
   {
     pattern: /\borgId\b/,
-    description: "orgId (Clerk Organizations) — use Luana IAM tenant_id instead",
+    description:
+      "orgId (Clerk Organizations) — use Luana IAM tenant_id instead",
   },
   {
     pattern: /\buseOrganization\s*[({,]/,
@@ -59,7 +63,8 @@ const PROHIBITED_PATTERNS: ReadonlyArray<{ pattern: RegExp; description: string 
   },
   {
     pattern: /\bauth\(\)\.orgId\b/,
-    description: "auth().orgId (Clerk Organizations) — use auth().userId instead",
+    description:
+      "auth().orgId (Clerk Organizations) — use auth().userId instead",
   },
   {
     pattern: /\borgSlug\b/,
@@ -67,7 +72,8 @@ const PROHIBITED_PATTERNS: ReadonlyArray<{ pattern: RegExp; description: string 
   },
   {
     pattern: /\buseOrganizationList\s*[({]/,
-    description: "useOrganizationList (Clerk Organizations) — use useTenants instead",
+    description:
+      "useOrganizationList (Clerk Organizations) — use useTenants instead",
   },
   {
     pattern: /\buseClerk\(\)\.organization\b/,
@@ -119,7 +125,9 @@ describe("Architecture: F1-S3 files must NOT use Clerk Organizations (MEMORY no-
 
       for (const { pattern, description } of PROHIBITED_PATTERNS) {
         if (pattern.test(nonCommentContent)) {
-          violations.push(`  - ${description} (matched /${pattern.source}/ in ${relativePath})`);
+          violations.push(
+            `  - ${description} (matched /${pattern.source}/ in ${relativePath})`,
+          );
         }
       }
 

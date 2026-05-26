@@ -46,18 +46,22 @@ test.describe("SC-8 — edge · user autenticado sin tenants asignados", () => {
     });
 
     // Should redirect to /sign-in with error param
-    await shellPage.waitForURL(
-      /\/sign-in\?.*error=no_tenants_assigned|\/sign-in.*no_tenants/,
-      { timeout: 15_000 },
-    ).catch(async () => {
-      // If redirect doesn't happen, check if we're at sign-in anyway
-      const url = shellPage.url();
-      if (!url.includes("sign-in")) {
-        // May show error message inline instead of redirect depending on implementation
-        const body = await shellPage.locator("body").textContent();
-        expect(body).toMatch(/no tiene clínicas asignadas|Contactá al administrador/i);
-      }
-    });
+    await shellPage
+      .waitForURL(
+        /\/sign-in\?.*error=no_tenants_assigned|\/sign-in.*no_tenants/,
+        { timeout: 15_000 },
+      )
+      .catch(async () => {
+        // If redirect doesn't happen, check if we're at sign-in anyway
+        const url = shellPage.url();
+        if (!url.includes("sign-in")) {
+          // May show error message inline instead of redirect depending on implementation
+          const body = await shellPage.locator("body").textContent();
+          expect(body).toMatch(
+            /no tiene clínicas asignadas|Contactá al administrador/i,
+          );
+        }
+      });
   });
 
   test("SC-8-2: empty tenants → admin message shown in Spanish neutro", async ({
@@ -96,9 +100,11 @@ test.describe("SC-8 — edge · user autenticado sin tenants asignados", () => {
     const url = shellPage.url();
     if (url.includes("sign-in") || url.includes("no_tenants")) {
       // On sign-in page — Ribbon definitely not present
-      await expect(pom.getRibbon()).not.toBeAttached({ timeout: 3_000 }).catch(() => {
-        // If not attached at all, that's correct
-      });
+      await expect(pom.getRibbon())
+        .not.toBeAttached({ timeout: 3_000 })
+        .catch(() => {
+          // If not attached at all, that's correct
+        });
     } else {
       // Inline error state — Ribbon should still not be visible
       const ribbonVisible = await pom

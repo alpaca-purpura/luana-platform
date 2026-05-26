@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest"
-import { readdirSync, readFileSync, statSync } from "fs"
-import { join } from "path"
+import { describe, it, expect } from "vitest";
+import { readdirSync, readFileSync, statSync } from "fs";
+import { join } from "path";
 
 /**
  * Arch fitness test — ADR-vitalia-002 § 6
@@ -18,47 +18,47 @@ import { join } from "path"
 const SHELL_PATHS = [
   "src/app/[tenantId]/(shell-organism)",
   "src/components/shared/shell-organism",
-]
+];
 
-const VT_PATTERN = /\bvt-[a-z]/
+const VT_PATTERN = /\bvt-[a-z]/;
 
 function* walkFiles(dir: string): Generator<string> {
   for (const entry of readdirSync(dir)) {
-    const full = join(dir, entry)
-    const st = statSync(full)
+    const full = join(dir, entry);
+    const st = statSync(full);
     if (st.isDirectory()) {
-      yield* walkFiles(full)
+      yield* walkFiles(full);
     } else if (/\.(tsx?|css)$/.test(entry)) {
-      yield full
+      yield full;
     }
   }
 }
 
 describe("no .vt-* classes in shell-organism new features (ADR-vitalia-002 § 6)", () => {
   it("every file under SHELL_PATHS is free of .vt-* utility classes", () => {
-    const root = process.cwd()
-    const offenders: string[] = []
+    const root = process.cwd();
+    const offenders: string[] = [];
 
     for (const relPath of SHELL_PATHS) {
-      const abs = join(root, relPath)
-      let exists = false
+      const abs = join(root, relPath);
+      let exists = false;
       try {
-        statSync(abs)
-        exists = true
+        statSync(abs);
+        exists = true;
       } catch {
         /* path doesnt exist yet — GREEN by emptiness */
       }
 
-      if (!exists) continue
+      if (!exists) continue;
 
       for (const f of walkFiles(abs)) {
-        const content = readFileSync(f, "utf-8")
+        const content = readFileSync(f, "utf-8");
         if (VT_PATTERN.test(content)) {
-          offenders.push(f)
+          offenders.push(f);
         }
       }
     }
 
-    expect(offenders).toEqual([])
-  })
-})
+    expect(offenders).toEqual([]);
+  });
+});

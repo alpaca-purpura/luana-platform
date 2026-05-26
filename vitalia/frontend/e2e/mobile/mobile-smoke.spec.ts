@@ -28,21 +28,27 @@ import { test, expect } from "@playwright/test";
 
 // ─── Helper: verificar ausencia de scroll horizontal ─────────────────────────
 
-async function assertNoHorizontalScroll(page: import("@playwright/test").Page): Promise<void> {
+async function assertNoHorizontalScroll(
+  page: import("@playwright/test").Page,
+): Promise<void> {
   const scrollWidth = await page.evaluate(() => document.body.scrollWidth);
   const viewportWidth = await page.evaluate(() => window.innerWidth);
   // Tolerancia de 1px por variaciones de renderizado sub-pixel
   expect(scrollWidth).toBeLessThanOrEqual(
     viewportWidth + 1,
-    `Scroll horizontal detectado: scrollWidth=${scrollWidth} > viewportWidth=${viewportWidth}`
+    `Scroll horizontal detectado: scrollWidth=${scrollWidth} > viewportWidth=${viewportWidth}`,
   );
 }
 
 // ─── Helper: verificar target táctil ≥ 44px de alto ─────────────────────────
 
-async function assertPrimaryButtonTappable(page: import("@playwright/test").Page): Promise<void> {
+async function assertPrimaryButtonTappable(
+  page: import("@playwright/test").Page,
+): Promise<void> {
   // Buscar el botón principal de acción (sign-in, submit, etc.)
-  const btn = page.getByRole("button", { name: /iniciar|sign|continue|siguiente|acceder/i }).first();
+  const btn = page
+    .getByRole("button", { name: /iniciar|sign|continue|siguiente|acceder/i })
+    .first();
   const isVisible = await btn.isVisible().catch(() => false);
 
   if (isVisible) {
@@ -50,7 +56,7 @@ async function assertPrimaryButtonTappable(page: import("@playwright/test").Page
     if (box !== null) {
       expect(box.height).toBeGreaterThanOrEqual(
         44,
-        `Botón primario demasiado pequeño para touch: height=${box.height}px (mínimo 44px)`
+        `Botón primario demasiado pequeño para touch: height=${box.height}px (mínimo 44px)`,
       );
     }
   }
@@ -72,7 +78,9 @@ test.describe("SC-15 — Mobile smoke iPhone 13 (vitalia-auth-base-functional)",
     await assertPrimaryButtonTappable(page);
 
     // Formulario visible (algún input de texto)
-    const inputs = page.locator("input[type='email'], input[type='text'], input[type='password']");
+    const inputs = page.locator(
+      "input[type='email'], input[type='text'], input[type='password']",
+    );
     const inputCount = await inputs.count();
     expect(inputCount).toBeGreaterThan(0);
   });
@@ -83,12 +91,16 @@ test.describe("SC-15 — Mobile smoke iPhone 13 (vitalia-auth-base-functional)",
     await assertNoHorizontalScroll(page);
 
     // Algún input visible
-    const inputs = page.locator("input[type='email'], input[type='text'], input[type='password']");
+    const inputs = page.locator(
+      "input[type='email'], input[type='text'], input[type='password']",
+    );
     const inputCount = await inputs.count();
     expect(inputCount).toBeGreaterThan(0);
   });
 
-  test("SC-15 /onboarding/wizard renderiza sin scroll horizontal en móvil", async ({ page }) => {
+  test("SC-15 /onboarding/wizard renderiza sin scroll horizontal en móvil", async ({
+    page,
+  }) => {
     // El wizard puede requerir auth — si redirige a /sign-in, es comportamiento válido
     await page.goto("/onboarding/wizard", { waitUntil: "domcontentloaded" });
 

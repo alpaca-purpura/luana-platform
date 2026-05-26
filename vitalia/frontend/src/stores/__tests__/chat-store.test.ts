@@ -275,7 +275,7 @@ describe("useChatStore", () => {
         .map((r) => r.content)
         .join(" ");
       expect(allContent).toContain("Quieres");
-      // eslint-disable-next-line no-useless-escape -- voseo variant check for negative assertion
+
       expect(allContent).not.toMatch(/Querés/);
     });
   });

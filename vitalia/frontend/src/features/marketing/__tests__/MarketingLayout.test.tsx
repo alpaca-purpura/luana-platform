@@ -11,12 +11,18 @@ import React from "react";
 vi.mock("nuqs", () => {
   const makeParser = () => ({
     withDefault: (_d: unknown) => ({
-      withOptions: (_opts: unknown) => ({ defaultValue: _d, parseServerSide: (v: unknown) => v }),
+      withOptions: (_opts: unknown) => ({
+        defaultValue: _d,
+        parseServerSide: (v: unknown) => v,
+      }),
       defaultValue: _d,
       parseServerSide: (v: unknown) => v,
     }),
     withOptions: (_opts: unknown) => ({
-      withDefault: (_d: unknown) => ({ defaultValue: _d, parseServerSide: (v: unknown) => v }),
+      withDefault: (_d: unknown) => ({
+        defaultValue: _d,
+        parseServerSide: (v: unknown) => v,
+      }),
       defaultValue: undefined,
       parseServerSide: (v: unknown) => v,
     }),
@@ -38,11 +44,41 @@ vi.mock("@/features/marketing/api/use-bowtie-summary", () => ({
       periodStart: "2026-05-01T00:00:00Z",
       periodEnd: "2026-05-31T23:59:59Z",
       stages: [
-        { slug: "attraction", label: "Atracción", count: 182, primaryKpiValue: 24, primaryKpiLabel: "cpL" },
-        { slug: "qualification", label: "Calificación", count: 87, primaryKpiValue: 48, primaryKpiLabel: "conv%" },
-        { slug: "reservation", label: "Reserva", count: 36, primaryKpiValue: 41, primaryKpiLabel: "conv%" },
-        { slug: "adoption", label: "Adopción", count: 62, primaryKpiValue: 87, primaryKpiLabel: "adherencia%" },
-        { slug: "expansion", label: "Expansión", count: 28, primaryKpiValue: 72, primaryKpiLabel: "NPS" },
+        {
+          slug: "attraction",
+          label: "Atracción",
+          count: 182,
+          primaryKpiValue: 24,
+          primaryKpiLabel: "cpL",
+        },
+        {
+          slug: "qualification",
+          label: "Calificación",
+          count: 87,
+          primaryKpiValue: 48,
+          primaryKpiLabel: "conv%",
+        },
+        {
+          slug: "reservation",
+          label: "Reserva",
+          count: 36,
+          primaryKpiValue: 41,
+          primaryKpiLabel: "conv%",
+        },
+        {
+          slug: "adoption",
+          label: "Adopción",
+          count: 62,
+          primaryKpiValue: 87,
+          primaryKpiLabel: "adherencia%",
+        },
+        {
+          slug: "expansion",
+          label: "Expansión",
+          count: 28,
+          primaryKpiValue: 72,
+          primaryKpiLabel: "NPS",
+        },
       ],
       overallConversionPct: 15.4,
       overallRoiX: 3.2,
@@ -68,7 +104,9 @@ vi.mock("@clerk/nextjs", () => ({
 // Mock child components to isolate layout test
 vi.mock("../components/MarketingBowtieSVG", () => ({
   MarketingBowtieSVG: ({ className }: { className?: string }) => (
-    <div data-testid="bowtie-svg" className={className}>Bowtie SVG</div>
+    <div data-testid="bowtie-svg" className={className}>
+      Bowtie SVG
+    </div>
   ),
 }));
 
@@ -77,11 +115,15 @@ vi.mock("../components/MarketingStageTabs", () => ({
 }));
 
 vi.mock("../components/StageDispatcher", () => ({
-  StageDispatcher: () => <div data-testid="stage-dispatcher">Stage Content</div>,
+  StageDispatcher: () => (
+    <div data-testid="stage-dispatcher">Stage Content</div>
+  ),
 }));
 
 vi.mock("../components/MarketingActivityFooter", () => ({
-  MarketingActivityFooter: () => <div data-testid="activity-footer">Activity Footer</div>,
+  MarketingActivityFooter: () => (
+    <div data-testid="activity-footer">Activity Footer</div>
+  ),
 }));
 
 // Import component under test (RED — will fail until created)
@@ -119,7 +161,9 @@ describe("MarketingLayout", () => {
 
   it("has correct DOM order: bowtie sticky container appears before stage-tabs in document", () => {
     const { container } = render(<MarketingLayout />);
-    const bowtie = container.querySelector("[data-testid='bowtie-sticky-container']");
+    const bowtie = container.querySelector(
+      "[data-testid='bowtie-sticky-container']",
+    );
     const tabs = container.querySelector("[data-testid='stage-tabs']");
     expect(bowtie).toBeInTheDocument();
     expect(tabs).toBeInTheDocument();

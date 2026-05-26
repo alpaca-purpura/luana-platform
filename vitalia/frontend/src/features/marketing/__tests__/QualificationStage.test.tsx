@@ -10,12 +10,18 @@ import React from "react";
 vi.mock("nuqs", () => {
   const makeParser = () => ({
     withDefault: (_d: unknown) => ({
-      withOptions: (_opts: unknown) => ({ defaultValue: _d, parseServerSide: (v: unknown) => v }),
+      withOptions: (_opts: unknown) => ({
+        defaultValue: _d,
+        parseServerSide: (v: unknown) => v,
+      }),
       defaultValue: _d,
       parseServerSide: (v: unknown) => v,
     }),
     withOptions: (_opts: unknown) => ({
-      withDefault: (_d: unknown) => ({ defaultValue: _d, parseServerSide: (v: unknown) => v }),
+      withDefault: (_d: unknown) => ({
+        defaultValue: _d,
+        parseServerSide: (v: unknown) => v,
+      }),
       defaultValue: undefined,
       parseServerSide: (v: unknown) => v,
     }),
@@ -49,7 +55,9 @@ vi.mock("@tanstack/react-query", () => ({
   useMutation: vi.fn(),
   useQueryClient: () => ({ invalidateQueries: vi.fn() }),
   QueryClient: vi.fn(),
-  QueryClientProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  QueryClientProvider: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
 }));
 
 // Mock child components
@@ -70,8 +78,20 @@ const mockStageDetail = {
   periodEnd: "2026-05-31T23:59:59Z",
   count: 87,
   kpis: [
-    { key: "conv_rate", label: "Tasa de conversión", value: 48, unit: "pct", currency: null },
-    { key: "speed_to_lead", label: "Velocidad de contacto", value: 8, unit: "minutes", currency: null },
+    {
+      key: "conv_rate",
+      label: "Tasa de conversión",
+      value: 48,
+      unit: "pct",
+      currency: null,
+    },
+    {
+      key: "speed_to_lead",
+      label: "Velocidad de contacto",
+      value: 8,
+      unit: "minutes",
+      currency: null,
+    },
   ],
   trendData: [],
 };
@@ -86,9 +106,8 @@ describe("QualificationStage", () => {
   });
 
   it("test_renders_lucas_for_qualification — shows LucasStageRecommendationsCard with qualification stage", async () => {
-    const { QualificationStage } = await import(
-      "../components/QualificationStage"
-    );
+    const { QualificationStage } =
+      await import("../components/QualificationStage");
     render(<QualificationStage />);
 
     const lucasCard = screen.getByTestId("lucas-recommendations");
@@ -97,27 +116,26 @@ describe("QualificationStage", () => {
   });
 
   it("test_renders_stage_kpis — shows KPI labels from stage detail", async () => {
-    const { QualificationStage } = await import(
-      "../components/QualificationStage"
-    );
+    const { QualificationStage } =
+      await import("../components/QualificationStage");
     render(<QualificationStage />);
 
     expect(screen.getByText("Tasa de conversión")).toBeInTheDocument();
   });
 
   it("test_no_attribution_widget — qualification stage does NOT render attribution matrix", async () => {
-    const { QualificationStage } = await import(
-      "../components/QualificationStage"
-    );
+    const { QualificationStage } =
+      await import("../components/QualificationStage");
     render(<QualificationStage />);
 
-    expect(screen.queryByTestId("attribution-matrix-widget")).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId("attribution-matrix-widget"),
+    ).not.toBeInTheDocument();
   });
 
   it("test_no_referrals_widget — qualification stage does NOT render referrals widget", async () => {
-    const { QualificationStage } = await import(
-      "../components/QualificationStage"
-    );
+    const { QualificationStage } =
+      await import("../components/QualificationStage");
     render(<QualificationStage />);
 
     expect(screen.queryByTestId("referrals-widget")).not.toBeInTheDocument();
@@ -130,17 +148,15 @@ describe("QualificationStage", () => {
       isError: false,
     } as ReturnType<typeof useQuery>);
 
-    const { QualificationStage } = await import(
-      "../components/QualificationStage"
-    );
+    const { QualificationStage } =
+      await import("../components/QualificationStage");
     render(<QualificationStage />);
     expect(screen.getByRole("status")).toBeInTheDocument();
   });
 
   it("test_aria_tabpanel — stage renders as tabpanel with correct id", async () => {
-    const { QualificationStage } = await import(
-      "../components/QualificationStage"
-    );
+    const { QualificationStage } =
+      await import("../components/QualificationStage");
     render(<QualificationStage />);
 
     const panel = screen.getByRole("tabpanel");

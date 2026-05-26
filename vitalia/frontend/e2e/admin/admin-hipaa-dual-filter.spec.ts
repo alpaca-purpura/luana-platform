@@ -43,7 +43,9 @@ test.describe("SC-09 — User-tenant dropdown switch → re-fetch data filtrada"
       .getByText(/cl[ií]nicas?/i)
       .first()
       .click();
-    await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => {});
+    await page
+      .waitForLoadState("networkidle", { timeout: 10_000 })
+      .catch(() => {});
 
     const listTab = page.getByRole("tab", { name: /listado/i });
     if (await listTab.isVisible({ timeout: 5_000 }).catch(() => false)) {
@@ -54,7 +56,7 @@ test.describe("SC-09 — User-tenant dropdown switch → re-fetch data filtrada"
     const tenantDropdown = page
       .getByLabel(/filtrar por tenant|tenant/i)
       .or(page.locator('[data-testid*="tenant-filter"]'))
-      .or(page.locator('select').filter({ has: page.getByText(/tenant/i) }));
+      .or(page.locator("select").filter({ has: page.getByText(/tenant/i) }));
 
     const hasDropdown = await tenantDropdown
       .first()
@@ -63,13 +65,20 @@ test.describe("SC-09 — User-tenant dropdown switch → re-fetch data filtrada"
 
     if (hasDropdown) {
       // Cambiar a segundo tenant
-      await tenantDropdown.first().selectOption({ index: 2 }).catch(() => {
-        // selectOption con index 2 falla silenciosamente si solo hay 1 tenant — OK
-      });
-      await page.waitForLoadState("networkidle", { timeout: 8_000 }).catch(() => {});
+      await tenantDropdown
+        .first()
+        .selectOption({ index: 2 })
+        .catch(() => {
+          // selectOption con index 2 falla silenciosamente si solo hay 1 tenant — OK
+        });
+      await page
+        .waitForLoadState("networkidle", { timeout: 8_000 })
+        .catch(() => {});
 
       // La página debe seguir visible y sin errores de tabla
-      const mainContent = page.locator("main, [data-testid='stAppViewContainer']");
+      const mainContent = page.locator(
+        "main, [data-testid='stAppViewContainer']",
+      );
       await expect(mainContent).toBeVisible({ timeout: 5_000 });
       await expect(mainContent.getByText(/OperationalError/i)).toHaveCount(0, {
         timeout: 3_000,
@@ -82,10 +91,14 @@ test.describe("SC-09 — User-tenant dropdown switch → re-fetch data filtrada"
     authenticatedAdminPage: page,
   }) => {
     // Verificar que el panel muestra el contexto del tenant activo de alguna forma
-    const mainContent = page.locator("main, [data-testid='stAppViewContainer']");
+    const mainContent = page.locator(
+      "main, [data-testid='stAppViewContainer']",
+    );
     await expect(mainContent).toBeVisible({ timeout: 15_000 });
     // Al menos debe existir la UI principal sin error
-    await expect(mainContent.getByText(/OperationalError|ProgrammingError/i)).toHaveCount(0, {
+    await expect(
+      mainContent.getByText(/OperationalError|ProgrammingError/i),
+    ).toHaveCount(0, {
       timeout: 3_000,
     });
   });
@@ -94,7 +107,9 @@ test.describe("SC-09 — User-tenant dropdown switch → re-fetch data filtrada"
 // ─── SC-10: HIPAA cross-clinic query bloqueada ────────────────────────────────
 
 test.describe("SC-10 — HIPAA cross-clinic query bloqueada → 403 + audit log", () => {
-  test("endpoint clínicas rechaza cross-tenant access con 403", async ({ request }) => {
+  test("endpoint clínicas rechaza cross-tenant access con 403", async ({
+    request,
+  }) => {
     if (!INTERNAL_TOKEN) {
       test.skip(
         true,
@@ -111,9 +126,12 @@ test.describe("SC-10 — HIPAA cross-clinic query bloqueada → 403 + audit log"
     }
 
     // Obtener lista de clinics con un tenant válido para obtener clinic_id real
-    const dbStateRes = await request.get(`${BACKEND_URL}/api/v1/vitalia/admin/db-state`, {
-      headers: { "X-Internal-Token": INTERNAL_TOKEN },
-    });
+    const dbStateRes = await request.get(
+      `${BACKEND_URL}/api/v1/vitalia/admin/db-state`,
+      {
+        headers: { "X-Internal-Token": INTERNAL_TOKEN },
+      },
+    );
     expect(dbStateRes.ok()).toBeTruthy();
 
     // Intentar acceso cross-tenant a la API de clínicas
@@ -157,8 +175,12 @@ test.describe("SC-10 — HIPAA cross-clinic query bloqueada → 403 + audit log"
     authenticatedAdminPage: page,
   }) => {
     // HIPAA-lite: verificar que la UI no expone PHI cruzado
-    const mainContent = page.locator("main, [data-testid='stAppViewContainer']");
-    await expect(mainContent.getByText(/diagnóstico/i)).toHaveCount(0, { timeout: 3_000 });
+    const mainContent = page.locator(
+      "main, [data-testid='stAppViewContainer']",
+    );
+    await expect(mainContent.getByText(/diagnóstico/i)).toHaveCount(0, {
+      timeout: 3_000,
+    });
     await expect(mainContent.getByText(/historial.m[eé]dico/i)).toHaveCount(0, {
       timeout: 3_000,
     });
@@ -171,19 +193,21 @@ test.describe("SC-10 — HIPAA cross-clinic query bloqueada → 403 + audit log"
 // ─── SC-11: HIPAA dual filter tenant_id + clinic_id ──────────────────────────
 
 test.describe("SC-11 — HIPAA dual filter query PHI — tenant_id + clinic_id obligatorios", () => {
-  test("endpoint clínicas requiere X-Tenant-ID header para filtrar", async ({ request }) => {
+  test("endpoint clínicas requiere X-Tenant-ID header para filtrar", async ({
+    request,
+  }) => {
     if (!INTERNAL_TOKEN) {
-      test.skip(
-        true,
-        "VITALIA_INTERNAL_API_TOKEN requerido para SC-11.",
-      );
+      test.skip(true, "VITALIA_INTERNAL_API_TOKEN requerido para SC-11.");
       return;
     }
 
     // Sin X-Tenant-ID → debe retornar error (422 o 403)
-    const noTenantRes = await request.get(`${BACKEND_URL}/api/v1/vitalia/clinics/`, {
-      headers: { Authorization: "Bearer some-token" },
-    });
+    const noTenantRes = await request.get(
+      `${BACKEND_URL}/api/v1/vitalia/clinics/`,
+      {
+        headers: { Authorization: "Bearer some-token" },
+      },
+    );
     // Sin tenant → no debe retornar 200 con todas las clínicas (cross-tenant leak)
     expect(noTenantRes.status()).not.toBe(200);
   });
@@ -215,14 +239,18 @@ test.describe("SC-11 — HIPAA dual filter query PHI — tenant_id + clinic_id o
       .getByText(/cl[ií]nicas?/i)
       .first()
       .click();
-    await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => {});
+    await page
+      .waitForLoadState("networkidle", { timeout: 10_000 })
+      .catch(() => {});
 
     const listTab = page.getByRole("tab", { name: /listado/i });
     if (await listTab.isVisible({ timeout: 5_000 }).catch(() => false)) {
       await listTab.click();
     }
 
-    const mainContent = page.locator("main, [data-testid='stAppViewContainer']");
+    const mainContent = page.locator(
+      "main, [data-testid='stAppViewContainer']",
+    );
 
     // Verificar que la UI está operativa (columnas pueden variar por implementación)
     await expect(mainContent).toBeVisible({ timeout: 5_000 });
@@ -233,7 +261,9 @@ test.describe("SC-11 — HIPAA dual filter query PHI — tenant_id + clinic_id o
     });
 
     // Verificar que la página tiene contenido (no pantalla en blanco o error)
-    const contentText = await mainContent.textContent({ timeout: 5_000 }).catch(() => "");
+    const contentText = await mainContent
+      .textContent({ timeout: 5_000 })
+      .catch(() => "");
     // La página debe tener algo de contenido UI (mínimo el título de la sección)
     expect((contentText ?? "").length).toBeGreaterThan(0);
   });

@@ -21,7 +21,7 @@ describe("SearchInput", () => {
     render(<SearchInput value="" onChange={onChange} />);
     const input = screen.getByRole("searchbox");
     expect((input as HTMLInputElement).placeholder).toBe(
-      INBOX_COPY.filters.searchPlaceholder
+      INBOX_COPY.filters.searchPlaceholder,
     );
   });
 

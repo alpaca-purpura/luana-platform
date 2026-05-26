@@ -10,12 +10,18 @@ import React from "react";
 vi.mock("nuqs", () => {
   const makeParser = () => ({
     withDefault: (_d: unknown) => ({
-      withOptions: (_opts: unknown) => ({ defaultValue: _d, parseServerSide: (v: unknown) => v }),
+      withOptions: (_opts: unknown) => ({
+        defaultValue: _d,
+        parseServerSide: (v: unknown) => v,
+      }),
       defaultValue: _d,
       parseServerSide: (v: unknown) => v,
     }),
     withOptions: (_opts: unknown) => ({
-      withDefault: (_d: unknown) => ({ defaultValue: _d, parseServerSide: (v: unknown) => v }),
+      withDefault: (_d: unknown) => ({
+        defaultValue: _d,
+        parseServerSide: (v: unknown) => v,
+      }),
       defaultValue: undefined,
       parseServerSide: (v: unknown) => v,
     }),
@@ -49,7 +55,9 @@ vi.mock("@tanstack/react-query", () => ({
   useMutation: vi.fn(),
   useQueryClient: () => ({ invalidateQueries: vi.fn() }),
   QueryClient: vi.fn(),
-  QueryClientProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  QueryClientProvider: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
 }));
 
 // Mock child components to isolate stage test
@@ -80,7 +88,13 @@ const mockStageDetail = {
   count: 182,
   kpis: [
     { key: "cpl", label: "CPL", value: 24, unit: "currency", currency: "PEN" },
-    { key: "conv_rate", label: "Tasa de conversión", value: 48, unit: "pct", currency: null },
+    {
+      key: "conv_rate",
+      label: "Tasa de conversión",
+      value: 48,
+      unit: "pct",
+      currency: null,
+    },
   ],
   trendData: [],
 };
@@ -95,19 +109,17 @@ describe("AttractionStage", () => {
   });
 
   it("test_renders_channel_breakdown_placeholder — shows channel breakdown placeholder for T-mk-fe-5", async () => {
-    const { AttractionStage } = await import(
-      "../components/AttractionStage"
-    );
+    const { AttractionStage } = await import("../components/AttractionStage");
     render(<AttractionStage />);
 
     // Channel breakdown placeholder (T-mk-fe-5 will fill with real ChannelBreakdown)
-    expect(screen.getByTestId("channel-breakdown-placeholder")).toBeInTheDocument();
+    expect(
+      screen.getByTestId("channel-breakdown-placeholder"),
+    ).toBeInTheDocument();
   });
 
   it("test_renders_lucas_recommendations — shows LucasStageRecommendationsCard for attraction", async () => {
-    const { AttractionStage } = await import(
-      "../components/AttractionStage"
-    );
+    const { AttractionStage } = await import("../components/AttractionStage");
     render(<AttractionStage />);
 
     const lucasCard = screen.getByTestId("lucas-recommendations");
@@ -116,9 +128,7 @@ describe("AttractionStage", () => {
   });
 
   it("test_renders_stage_kpis — shows KPI labels from stage detail", async () => {
-    const { AttractionStage } = await import(
-      "../components/AttractionStage"
-    );
+    const { AttractionStage } = await import("../components/AttractionStage");
     render(<AttractionStage />);
 
     expect(screen.getByText("CPL")).toBeInTheDocument();
@@ -131,17 +141,13 @@ describe("AttractionStage", () => {
       isError: false,
     } as ReturnType<typeof useQuery>);
 
-    const { AttractionStage } = await import(
-      "../components/AttractionStage"
-    );
+    const { AttractionStage } = await import("../components/AttractionStage");
     render(<AttractionStage />);
     expect(screen.getByRole("status")).toBeInTheDocument();
   });
 
   it("test_aria_tabpanel — stage renders as tabpanel with correct id", async () => {
-    const { AttractionStage } = await import(
-      "../components/AttractionStage"
-    );
+    const { AttractionStage } = await import("../components/AttractionStage");
     render(<AttractionStage />);
 
     const panel = screen.getByRole("tabpanel");

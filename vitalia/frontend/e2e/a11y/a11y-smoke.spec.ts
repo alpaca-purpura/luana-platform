@@ -54,12 +54,12 @@ test.describe("SC-14 — A11y axe smoke (vitalia-auth-base-functional)", () => {
         .analyze();
 
       const criticalOrSerious = results.violations.filter((v) =>
-        (["critical", "serious"] as Array<string>).includes(v.impact ?? "")
+        (["critical", "serious"] as Array<string>).includes(v.impact ?? ""),
       );
 
       expect(
         criticalOrSerious,
-        `Violaciones axe critical/serious en ${pagePath}:\n${JSON.stringify(criticalOrSerious, null, 2)}`
+        `Violaciones axe critical/serious en ${pagePath}:\n${JSON.stringify(criticalOrSerious, null, 2)}`,
       ).toHaveLength(0);
     });
   }

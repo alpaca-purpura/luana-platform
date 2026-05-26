@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 /**
  * /test-stack/agent-tokens — Visual baseline page F1-S0 (vitalia-fase1-stack-stability)
@@ -12,15 +12,15 @@
  * /test-stack/agent-tokens — sin esta página Next.js wrapper, Playwright 404.
  * Lifted to src/app/test-stack/ para servirlo via Next.js dev server.
  */
-import * as React from "react"
+import * as React from "react";
 
 interface SwatchProps {
-  name: string
-  colorClass: string
-  softClass: string
-  hsl: string
-  softHsl: string
-  agentLabel: string
+  name: string;
+  colorClass: string;
+  softClass: string;
+  hsl: string;
+  softHsl: string;
+  agentLabel: string;
 }
 
 function AgentSwatch({
@@ -58,7 +58,7 @@ function AgentSwatch({
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 const AGENT_TOKENS: SwatchProps[] = [
@@ -118,7 +118,7 @@ const AGENT_TOKENS: SwatchProps[] = [
     softHsl: "N/A",
     agentLabel: "Config — Configuración",
   },
-]
+];
 
 export default function AgentTokensSwatchPage(): React.ReactElement {
   return (
@@ -146,7 +146,10 @@ export default function AgentTokensSwatchPage(): React.ReactElement {
       </div>
 
       {/* Surface tokens section */}
-      <section aria-label="Surface tokens" className="space-y-4 pt-8 border-t border-border">
+      <section
+        aria-label="Surface tokens"
+        className="space-y-4 pt-8 border-t border-border"
+      >
         <h2 className="text-lg font-semibold text-foreground">
           Surface Tokens (Shadcn estándar)
         </h2>
@@ -186,5 +189,5 @@ export default function AgentTokensSwatchPage(): React.ReactElement {
         </div>
       </section>
     </main>
-  )
+  );
 }

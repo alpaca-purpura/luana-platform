@@ -53,7 +53,7 @@ function MilestoneNode({
           "w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold border-2",
           isCompleted && "bg-green-600 border-green-600 text-white",
           isCurrent && "bg-white border-blue-600 text-blue-600",
-          isPending && "bg-white border-gray-300 text-gray-400"
+          isPending && "bg-white border-gray-300 text-gray-400",
         )}
         role="img"
         aria-label={`${label}: ${isCompleted ? MICROCOPY_TREATMENT.adherence.done : isCurrent ? "En progreso" : MICROCOPY_TREATMENT.adherence.pending}`}
@@ -65,7 +65,7 @@ function MilestoneNode({
           "text-xs font-medium text-center",
           isCompleted && "text-green-700",
           isCurrent && "text-blue-700",
-          isPending && "text-gray-400"
+          isPending && "text-gray-400",
         )}
       >
         {label}
@@ -91,7 +91,7 @@ export function TreatmentTimeline({
         name,
         status: "pending" as const,
         date: null,
-      }
+      },
   );
 
   return (
@@ -107,7 +107,7 @@ export function TreatmentTimeline({
           <span
             className={cn(
               "text-xs font-medium px-2 py-1 rounded-full",
-              adherenceColor(adherenceScore)
+              adherenceColor(adherenceScore),
             )}
             aria-label={`${MICROCOPY_TREATMENT.adherence.label}: ${adherenceScore}%`}
           >
@@ -118,12 +118,17 @@ export function TreatmentTimeline({
 
       {currentStep && (
         <p className="text-xs text-gray-500">
-          Paso actual: <span className="font-medium text-gray-700">{currentStep}</span>
+          Paso actual:{" "}
+          <span className="font-medium text-gray-700">{currentStep}</span>
         </p>
       )}
 
       {/* Timeline */}
-      <div className="relative flex items-start justify-between" role="list" aria-label="Hitos del tratamiento">
+      <div
+        className="relative flex items-start justify-between"
+        role="list"
+        aria-label="Hitos del tratamiento"
+      >
         {/* Connector line */}
         <div
           className="absolute top-5 left-5 right-5 h-0.5 bg-gray-200"
@@ -142,15 +147,24 @@ export function TreatmentTimeline({
       {/* Legend */}
       <div className="flex items-center gap-4 text-xs text-gray-500">
         <span className="flex items-center gap-1">
-          <span className="w-3 h-3 rounded-full bg-green-600 inline-block" aria-hidden="true" />
+          <span
+            className="w-3 h-3 rounded-full bg-green-600 inline-block"
+            aria-hidden="true"
+          />
           {MICROCOPY_TREATMENT.adherence.done}
         </span>
         <span className="flex items-center gap-1">
-          <span className="w-3 h-3 rounded-full border-2 border-blue-600 inline-block" aria-hidden="true" />
+          <span
+            className="w-3 h-3 rounded-full border-2 border-blue-600 inline-block"
+            aria-hidden="true"
+          />
           En progreso
         </span>
         <span className="flex items-center gap-1">
-          <span className="w-3 h-3 rounded-full border-2 border-gray-300 inline-block" aria-hidden="true" />
+          <span
+            className="w-3 h-3 rounded-full border-2 border-gray-300 inline-block"
+            aria-hidden="true"
+          />
           {MICROCOPY_TREATMENT.adherence.pending}
         </span>
       </div>

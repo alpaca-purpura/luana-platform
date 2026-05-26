@@ -85,7 +85,10 @@ export class ShellPage {
    * Navigate to /{tenantId}/{agent} which redirects to /{tenantId}/{agent}/{defaultSubtab}.
    * Waits for Ribbon to be visible and active tab to reflect agent.
    */
-  async gotoAgentRoot(tenantId: string, agent: AgentSlug | string): Promise<void> {
+  async gotoAgentRoot(
+    tenantId: string,
+    agent: AgentSlug | string,
+  ): Promise<void> {
     await this.page.goto(`/${tenantId}/${agent}`);
     await this.page
       .locator('[data-testid="ribbon"]')
@@ -115,7 +118,10 @@ export class ShellPage {
    * Navigate to an invalid agent slug to trigger outer not-found.
    * Does NOT wait for shell chrome — caller asserts 404 state.
    */
-  async gotoInvalidAgent(tenantId: string, invalidAgent = "foo"): Promise<Response | null> {
+  async gotoInvalidAgent(
+    tenantId: string,
+    invalidAgent = "foo",
+  ): Promise<Response | null> {
     const response = await this.page.goto(`/${tenantId}/${invalidAgent}`);
     await this.page.waitForLoadState("domcontentloaded");
     return response;
@@ -130,7 +136,9 @@ export class ShellPage {
     agent: AgentSlug | string,
     invalidSubtab = "foo",
   ): Promise<Response | null> {
-    const response = await this.page.goto(`/${tenantId}/${agent}/${invalidSubtab}`);
+    const response = await this.page.goto(
+      `/${tenantId}/${agent}/${invalidSubtab}`,
+    );
     // Inner not-found renders shell chrome (Ribbon present)
     await this.page
       .locator('[data-testid="ribbon"]')
@@ -146,7 +154,9 @@ export class ShellPage {
    */
   async waitForRibbonActive(agent: AgentSlug | string): Promise<void> {
     await expect(
-      this.page.locator(`[data-testid="ribbon-tab-${agent}"][aria-selected="true"]`),
+      this.page.locator(
+        `[data-testid="ribbon-tab-${agent}"][aria-selected="true"]`,
+      ),
     ).toBeVisible({ timeout: 10_000 });
   }
 
@@ -156,7 +166,9 @@ export class ShellPage {
    */
   async waitForSubTabActive(subtabId: string): Promise<void> {
     await expect(
-      this.page.locator(`[data-testid="sub-tab-${subtabId}"][data-active="true"]`),
+      this.page.locator(
+        `[data-testid="sub-tab-${subtabId}"][data-active="true"]`,
+      ),
     ).toBeVisible({ timeout: 10_000 });
   }
 
@@ -258,9 +270,7 @@ export class ShellPage {
    * Click the "Reintentar" button inside NetworkErrorFallback.
    */
   async clickRetry(): Promise<void> {
-    await this.page
-      .locator('[data-testid="network-error-retry"]')
-      .click();
+    await this.page.locator('[data-testid="network-error-retry"]').click();
   }
 
   // ── Document title ────────────────────────────────────────────────────────

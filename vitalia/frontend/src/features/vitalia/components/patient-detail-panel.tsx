@@ -16,10 +16,18 @@ export interface PatientDetailPanelProps {
   className?: string;
 }
 
-function DetailField({ label, value }: { label: string; value: string | null | undefined }) {
+function DetailField({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | null | undefined;
+}) {
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">{label}</span>
+      <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+        {label}
+      </span>
       <span className="text-sm text-gray-900">
         {value ?? <span className="text-gray-400">—</span>}
       </span>
@@ -27,13 +35,19 @@ function DetailField({ label, value }: { label: string; value: string | null | u
   );
 }
 
-export function PatientDetailPanel({ patientId, className }: PatientDetailPanelProps) {
+export function PatientDetailPanel({
+  patientId,
+  className,
+}: PatientDetailPanelProps) {
   const { data: patient, isLoading, isError } = usePatient(patientId);
 
   if (isLoading) {
     return (
       <div
-        className={cn("rounded-lg border border-gray-200 bg-white p-6 space-y-4", className)}
+        className={cn(
+          "rounded-lg border border-gray-200 bg-white p-6 space-y-4",
+          className,
+        )}
         role="status"
         aria-busy={true}
         aria-live="polite"
@@ -51,7 +65,10 @@ export function PatientDetailPanel({ patientId, className }: PatientDetailPanelP
   if (isError || !patient) {
     return (
       <div
-        className={cn("rounded-lg border border-red-200 bg-red-50 p-6 text-center", className)}
+        className={cn(
+          "rounded-lg border border-red-200 bg-red-50 p-6 text-center",
+          className,
+        )}
         role="alert"
       >
         <p className="text-sm text-red-700">
@@ -65,7 +82,10 @@ export function PatientDetailPanel({ patientId, className }: PatientDetailPanelP
 
   return (
     <article
-      className={cn("rounded-lg border border-gray-200 bg-white p-6 space-y-5", className)}
+      className={cn(
+        "rounded-lg border border-gray-200 bg-white p-6 space-y-5",
+        className,
+      )}
       aria-label={`Detalle del paciente ${fullName}`}
     >
       {/* Header */}
@@ -116,7 +136,9 @@ export function PatientDetailPanel({ patientId, className }: PatientDetailPanelP
 
       {!patient.medical_history_summary && (
         <div className="rounded-md border border-dashed border-gray-200 p-4 text-center">
-          <p className="text-xs text-gray-400">Sin historial médico registrado.</p>
+          <p className="text-xs text-gray-400">
+            Sin historial médico registrado.
+          </p>
         </div>
       )}
     </article>

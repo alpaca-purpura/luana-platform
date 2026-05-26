@@ -19,25 +19,19 @@ describe("SegmentedControl3Modes — SC-01 3-state aria-radiogroup", () => {
   it("test_3_states_aria_radiogroup: renders container with role=radiogroup", () => {
     const onChange = vi.fn();
     render(
-      <SegmentedControl3Modes
-        value="adrian-decide"
-        onChange={onChange}
-      />
+      <SegmentedControl3Modes value="adrian-decide" onChange={onChange} />,
     );
     const group = screen.getByRole("radiogroup");
     expect(group).toBeDefined();
     expect(group.getAttribute("aria-label")).toBe(
-      INBOX_COPY.segmentedMode.ariaLabel
+      INBOX_COPY.segmentedMode.ariaLabel,
     );
   });
 
   it("test_3_states_aria_radiogroup: renders 3 radio buttons", () => {
     const onChange = vi.fn();
     render(
-      <SegmentedControl3Modes
-        value="adrian-decide"
-        onChange={onChange}
-      />
+      <SegmentedControl3Modes value="adrian-decide" onChange={onChange} />,
     );
     const radios = screen.getAllByRole("radio");
     expect(radios).toHaveLength(3);
@@ -46,10 +40,7 @@ describe("SegmentedControl3Modes — SC-01 3-state aria-radiogroup", () => {
   it("test_3_states_aria_radiogroup: active segment has aria-checked=true, others false", () => {
     const onChange = vi.fn();
     render(
-      <SegmentedControl3Modes
-        value="adrian-consulta"
-        onChange={onChange}
-      />
+      <SegmentedControl3Modes value="adrian-consulta" onChange={onChange} />,
     );
     const radios = screen.getAllByRole("radio");
     const checkedStates = radios.map((r) => r.getAttribute("aria-checked"));
@@ -61,34 +52,20 @@ describe("SegmentedControl3Modes — SC-01 3-state aria-radiogroup", () => {
 
   it("test_3_states_aria_radiogroup: segment labels match INBOX_COPY", () => {
     const onChange = vi.fn();
-    render(
-      <SegmentedControl3Modes
-        value="yo-escribo"
-        onChange={onChange}
-      />
-    );
-    expect(
-      screen.getByTestId("segment-adrian-decide")
-    ).toBeDefined();
-    expect(
-      screen.getByTestId("segment-adrian-consulta")
-    ).toBeDefined();
-    expect(
-      screen.getByTestId("segment-yo-escribo")
-    ).toBeDefined();
+    render(<SegmentedControl3Modes value="yo-escribo" onChange={onChange} />);
+    expect(screen.getByTestId("segment-adrian-decide")).toBeDefined();
+    expect(screen.getByTestId("segment-adrian-consulta")).toBeDefined();
+    expect(screen.getByTestId("segment-yo-escribo")).toBeDefined();
     // Check label text via INBOX_COPY
-    expect(
-      screen.getByTestId("segment-adrian-decide").textContent
-    ).toContain(INBOX_COPY.segmentedMode.adrianDecide);
+    expect(screen.getByTestId("segment-adrian-decide").textContent).toContain(
+      INBOX_COPY.segmentedMode.adrianDecide,
+    );
   });
 
   it("test_onchange_dispatches_set_mode: clicking inactive segment calls onChange with new value", () => {
     const onChange = vi.fn();
     render(
-      <SegmentedControl3Modes
-        value="adrian-decide"
-        onChange={onChange}
-      />
+      <SegmentedControl3Modes value="adrian-decide" onChange={onChange} />,
     );
     // Click "Adrián consulta" (currently inactive)
     fireEvent.click(screen.getByTestId("segment-adrian-consulta"));
@@ -100,10 +77,7 @@ describe("SegmentedControl3Modes — SC-01 3-state aria-radiogroup", () => {
   it("test_onchange_dispatches_set_mode: clicking already active segment does NOT call onChange", () => {
     const onChange = vi.fn();
     render(
-      <SegmentedControl3Modes
-        value="adrian-decide"
-        onChange={onChange}
-      />
+      <SegmentedControl3Modes value="adrian-decide" onChange={onChange} />,
     );
     // Click the active segment
     fireEvent.click(screen.getByTestId("segment-adrian-decide"));
@@ -113,10 +87,7 @@ describe("SegmentedControl3Modes — SC-01 3-state aria-radiogroup", () => {
   it("test_onchange_dispatches_set_mode: yo-escribo segment calls onChange correctly", () => {
     const onChange = vi.fn();
     render(
-      <SegmentedControl3Modes
-        value="adrian-decide"
-        onChange={onChange}
-      />
+      <SegmentedControl3Modes value="adrian-decide" onChange={onChange} />,
     );
     fireEvent.click(screen.getByTestId("segment-yo-escribo"));
     const expected: SegmentedModeValue = "yo-escribo";
@@ -132,7 +103,7 @@ describe("SegmentedControl3Modes — SC-03 OCC conflict (409 rollback)", () => {
         value="adrian-decide"
         onChange={onChange}
         isConflict={true}
-      />
+      />,
     );
     const group = screen.getByTestId("segmented-control-3-modes");
     expect(group.getAttribute("data-conflict")).toBe("true");
@@ -145,7 +116,7 @@ describe("SegmentedControl3Modes — SC-03 OCC conflict (409 rollback)", () => {
         value="adrian-decide"
         onChange={onChange}
         isConflict={false}
-      />
+      />,
     );
     const group = screen.getByTestId("segmented-control-3-modes");
     expect(group.getAttribute("data-conflict")).toBeNull();
@@ -158,7 +129,7 @@ describe("SegmentedControl3Modes — SC-03 OCC conflict (409 rollback)", () => {
         value="adrian-decide"
         onChange={onChange}
         isPending={true}
-      />
+      />,
     );
     const radios = screen.getAllByRole("radio");
     radios.forEach((radio) => {
@@ -173,7 +144,7 @@ describe("SegmentedControl3Modes — SC-03 OCC conflict (409 rollback)", () => {
         value="adrian-decide"
         onChange={onChange}
         isPending={true}
-      />
+      />,
     );
     // Button is disabled, click should not fire onChange
     fireEvent.click(screen.getByTestId("segment-adrian-consulta"));

@@ -98,16 +98,16 @@ describe("useTenantStore", () => {
 
     it("Scenario 2: returns null for unknown id + activeTenant unchanged", () => {
       useTenantStore.getState().setActiveTenant(T_SONRISA);
-      const result = useTenantStore.getState().switchTenant("unknown-clinic-id");
+      const result = useTenantStore
+        .getState()
+        .switchTenant("unknown-clinic-id");
       expect(result).toBeNull();
       expect(useTenantStore.getState().activeTenant).toStrictEqual(T_SONRISA);
     });
 
     it("switches to the first tenant in list", () => {
       useTenantStore.getState().setActiveTenant(T_DERMALIA);
-      const result = useTenantStore
-        .getState()
-        .switchTenant("sonrisa-plena");
+      const result = useTenantStore.getState().switchTenant("sonrisa-plena");
       expect(result).toStrictEqual(T_SONRISA);
     });
   });
@@ -120,9 +120,7 @@ describe("useTenantStore", () => {
     });
 
     it("resets availableTenants to empty array", () => {
-      useTenantStore
-        .getState()
-        .setAvailableTenants([T_SONRISA, T_DERMALIA]);
+      useTenantStore.getState().setAvailableTenants([T_SONRISA, T_DERMALIA]);
       useTenantStore.getState().clearStore();
       expect(useTenantStore.getState().availableTenants).toHaveLength(0);
     });

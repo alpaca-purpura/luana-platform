@@ -58,7 +58,7 @@ function PeriodSelector({
             "rounded px-2.5 py-1 text-xs font-medium transition-colors",
             period === p
               ? "bg-[hsl(var(--vitalia-primary,210_90%_50%))] text-white"
-              : "text-[hsl(var(--vitalia-muted,220_10%_55%))] hover:text-[hsl(var(--vitalia-fg,220_25%_15%))]"
+              : "text-[hsl(var(--vitalia-muted,220_10%_55%))] hover:text-[hsl(var(--vitalia-fg,220_25%_15%))]",
           )}
         >
           {copy[p]}
@@ -89,7 +89,7 @@ export function FidelizacionLayout() {
 
   const store = useFidelizacionStore();
   const { data: summary, isPending: summaryPending } = useFidelizacionSummary(
-    urlState.period
+    urlState.period,
   );
 
   const copy = FIDELIZACION_COPY;
@@ -189,18 +189,12 @@ export function FidelizacionLayout() {
           {urlState.tab === "multisession" && (
             <MultiSessionTab {...tabCommonProps} />
           )}
-          {urlState.tab === "followup" && (
-            <FollowUpTab {...tabCommonProps} />
-          )}
+          {urlState.tab === "followup" && <FollowUpTab {...tabCommonProps} />}
           {urlState.tab === "maintenance" && (
             <MaintenanceTab {...tabCommonProps} />
           )}
-          {urlState.tab === "absence" && (
-            <AbsenceTab {...tabCommonProps} />
-          )}
-          {urlState.tab === "nps" && (
-            <NPSResumenTab period={urlState.period} />
-          )}
+          {urlState.tab === "absence" && <AbsenceTab {...tabCommonProps} />}
+          {urlState.tab === "nps" && <NPSResumenTab period={urlState.period} />}
         </main>
 
         {/* Activity footer */}

@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 /**
  * AgentTokensSwatch — Fixture Playwright para visual baseline F1-S0
@@ -10,15 +10,15 @@
  * NO es una ruta Next.js de producción. Es un fixture de test visual.
  * Path: e2e/__test-pages__/stack-stability/agent-tokens-swatch.tsx
  */
-import * as React from "react"
+import * as React from "react";
 
 interface SwatchProps {
-  name: string
-  colorClass: string
-  softClass: string
-  hsl: string
-  softHsl: string
-  agentLabel: string
+  name: string;
+  colorClass: string;
+  softClass: string;
+  hsl: string;
+  softHsl: string;
+  agentLabel: string;
 }
 
 function AgentSwatch({
@@ -56,7 +56,7 @@ function AgentSwatch({
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 const AGENT_TOKENS: SwatchProps[] = [
@@ -103,7 +103,7 @@ const AGENT_TOKENS: SwatchProps[] = [
   {
     name: "--agent-mateo",
     colorClass: "bg-agent-mateo",
-    softClass: "bg-background",  // mateo has no separate soft class in dark; uses background
+    softClass: "bg-background", // mateo has no separate soft class in dark; uses background
     hsl: "53 99% 51%",
     softHsl: "N/A",
     agentLabel: "Mateo — Atención al Paciente",
@@ -111,12 +111,12 @@ const AGENT_TOKENS: SwatchProps[] = [
   {
     name: "--agent-config",
     colorClass: "bg-agent-config",
-    softClass: "bg-muted",  // config neutral gray; uses muted as soft
+    softClass: "bg-muted", // config neutral gray; uses muted as soft
     hsl: "240 4% 46%",
     softHsl: "N/A",
     agentLabel: "Config — Configuración",
   },
-]
+];
 
 export function AgentTokensSwatch(): React.ReactElement {
   return (
@@ -144,7 +144,10 @@ export function AgentTokensSwatch(): React.ReactElement {
       </div>
 
       {/* Surface tokens section */}
-      <section aria-label="Surface tokens" className="space-y-4 pt-8 border-t border-border">
+      <section
+        aria-label="Surface tokens"
+        className="space-y-4 pt-8 border-t border-border"
+      >
         <h2 className="text-lg font-semibold text-foreground">
           Surface Tokens (Shadcn estándar)
         </h2>
@@ -184,5 +187,5 @@ export function AgentTokensSwatch(): React.ReactElement {
         </div>
       </section>
     </main>
-  )
+  );
 }
