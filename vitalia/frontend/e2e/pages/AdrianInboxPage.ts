@@ -44,11 +44,20 @@ export class AdrianInboxPage {
     this.page = page;
     this.tenantId = tenantId;
 
-    this.globalModeToggle = page.locator('[data-testid="inbox-global-mode-toggle"]');
-    this.conversationList = page.locator('[aria-label="Lista de conversaciones"]');
-    this.threadSection = page.locator('section[aria-label*="Conversación con"]');
+    this.globalModeToggle = page.locator(
+      '[data-testid="inbox-global-mode-toggle"]',
+    );
+    this.conversationList = page.locator(
+      '[aria-label="Lista de conversaciones"]',
+    );
+    this.threadSection = page.locator(
+      'section[aria-label*="Conversación con"]',
+    );
     // ContactSidebar container — the 3rd col
-    this.contactSidebar = page.locator('[data-sidebar]').locator("aside").last();
+    this.contactSidebar = page
+      .locator("[data-sidebar]")
+      .locator("aside")
+      .last();
 
     // Takeover UX — aria-labels verbatim from ThreadHeader.tsx
     this.takeControlButton = page.locator(
@@ -59,9 +68,9 @@ export class AdrianInboxPage {
       '[aria-label="Devolver el control a Adrián en esta conversación"]',
     );
     // TakeoverBanner wrapper — detect by the banner's role + content
-    this.takeoverBanner = page.locator(
-      '[role="alert"], [role="status"]',
-    ).filter({ hasText: /Adrián|Devolver/ });
+    this.takeoverBanner = page
+      .locator('[role="alert"], [role="status"]')
+      .filter({ hasText: /Adrián|Devolver/ });
 
     // Adrian mode chip — aria-label from ThreadHeader.tsx state A
     this.adrianModeChip = page.locator(
@@ -74,7 +83,7 @@ export class AdrianInboxPage {
     );
 
     // The 3-col grid container with data-sidebar attribute
-    this.sidebarContainer = page.locator('[data-sidebar]');
+    this.sidebarContainer = page.locator("[data-sidebar]");
   }
 
   // ── Navigation ────────────────────────────────────────────────────────
@@ -111,14 +120,18 @@ export class AdrianInboxPage {
    * YouChip renders "✋ Tú" text per ConversationItem.tsx.
    */
   getYouChip(): Locator {
-    return this.page.locator('span[title="Tomaste el control · Adrián pausado en esta conversación"]');
+    return this.page.locator(
+      'span[title="Tomaste el control · Adrián pausado en esta conversación"]',
+    );
   }
 
   /**
    * Assert that a conversation item shows the green border (human-handled).
    * The ConversationItem with leadId="cp" (Carlos Pérez) has handlerMode="human".
    */
-  async expectHumanHandledConversationVisible(displayName: string): Promise<void> {
+  async expectHumanHandledConversationVisible(
+    displayName: string,
+  ): Promise<void> {
     await expect(
       this.page.locator(`[aria-label*="Conversación con ${displayName}"]`),
     ).toBeVisible();
@@ -154,12 +167,12 @@ export class AdrianInboxPage {
     await expect(this.adrianModeChip).toBeVisible();
     await expect(this.takeControlButton).toBeVisible();
     // TakeoverBanner should not be present or visible
-    await expect(this.page.locator('text=🤖 Devolver a Adrián')).not.toBeVisible();
+    await expect(
+      this.page.locator("text=🤖 Devolver a Adrián"),
+    ).not.toBeVisible();
     // MessageInput placeholder in state A
     await expect(
-      this.page.locator(
-        '[placeholder*="Adrián decide automáticamente"]',
-      ),
+      this.page.locator('[placeholder*="Adrián decide automáticamente"]'),
     ).toBeVisible();
   }
 
@@ -192,9 +205,7 @@ export class AdrianInboxPage {
    * Assert sidebar is open (data-sidebar="open").
    */
   async expectSidebarOpen(): Promise<void> {
-    await expect(
-      this.page.locator('[data-sidebar="open"]'),
-    ).toBeVisible();
+    await expect(this.page.locator('[data-sidebar="open"]')).toBeVisible();
   }
 
   /**
@@ -202,9 +213,7 @@ export class AdrianInboxPage {
    * The grid col-3 collapses to 0 width.
    */
   async expectSidebarClosed(): Promise<void> {
-    await expect(
-      this.page.locator('[data-sidebar="closed"]'),
-    ).toBeVisible();
+    await expect(this.page.locator('[data-sidebar="closed"]')).toBeVisible();
   }
 
   // ── Thread assertions ─────────────────────────────────────────────────
@@ -214,7 +223,9 @@ export class AdrianInboxPage {
    */
   async expectThreadVisible(): Promise<void> {
     await expect(
-      this.page.locator('[aria-live="polite"][aria-label="Mensajes de la conversación"]'),
+      this.page.locator(
+        '[aria-live="polite"][aria-label="Mensajes de la conversación"]',
+      ),
     ).toBeVisible();
   }
 

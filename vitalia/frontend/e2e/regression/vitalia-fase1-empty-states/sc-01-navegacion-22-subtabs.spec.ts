@@ -77,9 +77,7 @@ test.describe("SC-1 · 22 sub-tabs navegables sin error", () => {
     // Zero console errors across all 22 navigations
     const relevantErrors = consoleErrors.filter(
       (e) =>
-        !e.includes("favicon") &&
-        !e.includes("404") &&
-        !e.includes("net::ERR"),
+        !e.includes("favicon") && !e.includes("404") && !e.includes("net::ERR"),
     );
     expect(relevantErrors).toHaveLength(0);
   });

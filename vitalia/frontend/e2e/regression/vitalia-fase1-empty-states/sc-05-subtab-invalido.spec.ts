@@ -92,9 +92,7 @@ test.describe("SC-5 · subtab inválido → not-found jerárquico", () => {
     // No JS runtime errors
     const uncaught = consoleErrors.filter(
       (e) =>
-        !e.includes("favicon") &&
-        !e.includes("net::ERR") &&
-        !e.includes("404"),
+        !e.includes("favicon") && !e.includes("net::ERR") && !e.includes("404"),
     );
     expect(uncaught).toHaveLength(0);
   });

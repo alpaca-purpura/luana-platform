@@ -69,8 +69,7 @@ const STATUS_CONFIG: Record<
   },
   deposit: {
     pill: "30%",
-    pillClass:
-      "bg-agent-adrian-soft text-agent-adrian dark:bg-agent-adrian/20",
+    pillClass: "bg-agent-adrian-soft text-agent-adrian dark:bg-agent-adrian/20",
     blockClass:
       "border-l-[3px] border-agent-adrian bg-gradient-to-br from-agent-adrian/10 to-agent-adrian/5",
   },

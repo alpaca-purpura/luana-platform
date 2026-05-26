@@ -18,7 +18,10 @@
 
 "use client";
 
-import { TogglePill, TogglePillContent } from "@/components/shared/shell-organism/TogglePill";
+import {
+  TogglePill,
+  TogglePillContent,
+} from "@/components/shared/shell-organism/TogglePill";
 import { PlaceholderCard } from "@/components/shared/shell-organism/PlaceholderCard";
 import { EmptyState } from "@/components/shared/shell-organism/EmptyState";
 import { cn } from "@/lib/utils";
@@ -70,10 +73,7 @@ const TOGGLE_ITEMS = [
  */
 export function ServiciosPlaceholder() {
   return (
-    <div
-      className="flex flex-col gap-0"
-      data-testid="servicios-placeholder"
-    >
+    <div className="flex flex-col gap-0" data-testid="servicios-placeholder">
       {/* Header row: title + description + toggle pill right-aligned */}
       <div className="flex items-start justify-between gap-4 pb-4 border-b border-border mb-6">
         <div className="flex flex-col gap-1">

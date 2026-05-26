@@ -70,7 +70,9 @@ test.describe("SC-3 · Adrián Embudo Kanban 6 cols + toggle", () => {
 
   test("leads muestran valores en PEN S/", async ({ shellPage }) => {
     // Currency PEN — master-data rule compliance
-    await expect(shellPage.locator("text=/S\\/\\s*\\d+/").first()).toBeVisible();
+    await expect(
+      shellPage.locator("text=/S\\/\\s*\\d+/").first(),
+    ).toBeVisible();
   });
 
   test("click Lista → vista lista con EmptyState próximamente", async ({
@@ -82,9 +84,7 @@ test.describe("SC-3 · Adrián Embudo Kanban 6 cols + toggle", () => {
       .click();
 
     // Lista pane with EmptyState "próximamente"
-    await expect(
-      shellPage.locator('text=/próximamente/i'),
-    ).toBeVisible();
+    await expect(shellPage.locator("text=/próximamente/i")).toBeVisible();
   });
 
   test("visual kanban · Kanban view estructura 6 cols visible", async ({
@@ -103,6 +103,6 @@ test.describe("SC-3 · Adrián Embudo Kanban 6 cols + toggle", () => {
       .locator('[data-testid="embudo-toggle"]')
       .locator("text=Lista")
       .click();
-    await expect(shellPage.locator('text=/próximamente/i')).toBeVisible();
+    await expect(shellPage.locator("text=/próximamente/i")).toBeVisible();
   });
 });

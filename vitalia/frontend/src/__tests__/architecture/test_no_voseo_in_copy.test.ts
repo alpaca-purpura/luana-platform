@@ -30,25 +30,65 @@ const SRC = join(ROOT, "src");
 // Complete voseo verb list per spanish-text.md rule
 // voseo-allowed: pattern list for detection — not user-facing strings
 const VOSEO_PATTERNS_RAW = [
-  "tenés", "podés", "hacés", "venís", "decís", "sabés", "querés",
-  "mirá", "dejá", "poné", "usá", "hacé", "elegí", "seleccioná",
-  "arrancá", "empezá", "agregá", "configurá", "revisá", "escribí",
-  "guardá", "subí", "abrí", "volvé", "cambiá", "ofrecés", "cobrás",
-  "ejecutás", "activás", "desactivás", "linkeá", "despublicala",
-  "reactivá", "cancelala", "validá", "considerá", "formulala", "marcá",
-  "refirís", "atendés", "integrás", "listá", "probá", "mostrá",
-  "compartí", "contá", "explicá", "fijate", "acordate",
-  "dale", "andá",
+  "tenés",
+  "podés",
+  "hacés",
+  "venís",
+  "decís",
+  "sabés",
+  "querés",
+  "mirá",
+  "dejá",
+  "poné",
+  "usá",
+  "hacé",
+  "elegí",
+  "seleccioná",
+  "arrancá",
+  "empezá",
+  "agregá",
+  "configurá",
+  "revisá",
+  "escribí",
+  "guardá",
+  "subí",
+  "abrí",
+  "volvé",
+  "cambiá",
+  "ofrecés",
+  "cobrás",
+  "ejecutás",
+  "activás",
+  "desactivás",
+  "linkeá",
+  "despublicala",
+  "reactivá",
+  "cancelala",
+  "validá",
+  "considerá",
+  "formulala",
+  "marcá",
+  "refirís",
+  "atendés",
+  "integrás",
+  "listá",
+  "probá",
+  "mostrá",
+  "compartí",
+  "contá",
+  "explicá",
+  "fijate",
+  "acordate",
+  "dale",
+  "andá",
 ];
 
-const VOSEO_REGEX = new RegExp(
-  `\\b(${VOSEO_PATTERNS_RAW.join("|")})\\b`,
-  "i"
-);
+const VOSEO_REGEX = new RegExp(`\\b(${VOSEO_PATTERNS_RAW.join("|")})\\b`, "i");
 
 // Magic comment patterns (per spanish-text.md R25)
 // Supports: # voseo-allowed (Python/shell), // voseo-allowed (TypeScript/JS), <!-- voseo-allowed --> (HTML/JSX)
-const VOSEO_ALLOWED_COMMENT = /(?:(?:#|\/\/)\s*voseo-allowed([: \t—]|$)|<!--\s*voseo-allowed[^>]*-->)/;
+const VOSEO_ALLOWED_COMMENT =
+  /(?:(?:#|\/\/)\s*voseo-allowed([: \t—]|$)|<!--\s*voseo-allowed[^>]*-->)/;
 
 // Ratchet baseline — known violations at T-infra-4 creation (shrink-only).
 const KNOWN_VOSEO_VIOLATIONS: ReadonlySet<string> = new Set<string>([
@@ -81,13 +121,19 @@ function collectTsFiles(dir: string): string[] {
   return files;
 }
 
-function findVoseoInSource(source: string): { line: number; text: string; match: string }[] {
+function findVoseoInSource(
+  source: string,
+): { line: number; text: string; match: string }[] {
   const violations: { line: number; text: string; match: string }[] = [];
   const lines = source.split("\n");
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     // Skip comment lines
-    if (line.trim().startsWith("//") || line.trim().startsWith("*") || line.trim().startsWith("/*")) {
+    if (
+      line.trim().startsWith("//") ||
+      line.trim().startsWith("*") ||
+      line.trim().startsWith("/*")
+    ) {
       continue;
     }
     // Skip magic comment lines
@@ -115,7 +161,9 @@ describe("Vitalia FE — no voseo in user-facing copy (FE-A7)", () => {
     }
 
     if (allFiles.length === 0) {
-      console.log("[SKIP] No component/copy files found — skipping test_no_voseo_in_copy");
+      console.log(
+        "[SKIP] No component/copy files found — skipping test_no_voseo_in_copy",
+      );
       return;
     }
 
@@ -136,29 +184,32 @@ describe("Vitalia FE — no voseo in user-facing copy (FE-A7)", () => {
           .slice(0, 3)
           .map((v) => `  line ${v.line}: "${v.match}" in: ${v.text}`);
         violations.push(
-          `${relPath}: ${fileViolations.length} voseo occurrence(s):\n${details.join("\n")}`
+          `${relPath}: ${fileViolations.length} voseo occurrence(s):\n${details.join("\n")}`,
         );
       }
     }
 
-    expect(violations, [
-      "Voseo verb forms detected in user-facing copy.",
-      "",
-      "Per .claude/rules/spanish-text.md: ALL user-facing strings must use",
-      "Spanish neutro LatAm (tuteo — tú, tienes, puedes, etc.).",
-      "Voseo excludes MX/CO/PE/CL/EC users (majority of LatAm audience).",
-      "",
-      "Common replacements:",
-      "  tenés → tienes   podés → puedes   hacés → haces",
-      "  mirá  → mira     guardá → guarda  configurá → configura",
-      "",
-      "Exception: sales_agent OUTPUT (not in scope here — that respects tenant voice).",
-      "",
-      "If this file is a rule/test doc with the pattern list (not user-facing),",
-      "add `// voseo-allowed` comment anywhere in the file.",
-      "",
-      ...violations,
-    ].join("\n")).toHaveLength(0);
+    expect(
+      violations,
+      [
+        "Voseo verb forms detected in user-facing copy.",
+        "",
+        "Per .claude/rules/spanish-text.md: ALL user-facing strings must use",
+        "Spanish neutro LatAm (tuteo — tú, tienes, puedes, etc.).",
+        "Voseo excludes MX/CO/PE/CL/EC users (majority of LatAm audience).",
+        "",
+        "Common replacements:",
+        "  tenés → tienes   podés → puedes   hacés → haces",
+        "  mirá  → mira     guardá → guarda  configurá → configura",
+        "",
+        "Exception: sales_agent OUTPUT (not in scope here — that respects tenant voice).",
+        "",
+        "If this file is a rule/test doc with the pattern list (not user-facing),",
+        "add `// voseo-allowed` comment anywhere in the file.",
+        "",
+        ...violations,
+      ].join("\n"),
+    ).toHaveLength(0);
   });
 
   it("KNOWN_VOSEO_VIOLATIONS allowlist only references existing files", () => {
@@ -166,7 +217,7 @@ describe("Vitalia FE — no voseo in user-facing copy (FE-A7)", () => {
       const absPath = join(ROOT, relPath);
       expect(
         existsSync(absPath),
-        `KNOWN_VOSEO_VIOLATIONS references non-existent file: ${relPath}. Remove it (shrink-only ratchet).`
+        `KNOWN_VOSEO_VIOLATIONS references non-existent file: ${relPath}. Remove it (shrink-only ratchet).`,
       ).toBe(true);
     }
   });

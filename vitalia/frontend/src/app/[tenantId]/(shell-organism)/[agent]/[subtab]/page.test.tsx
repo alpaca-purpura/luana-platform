@@ -42,7 +42,9 @@ describe("SubtabPage", () => {
   describe("happy path — agent y subtab válidos", () => {
     it("renderiza SubTabContent para valeria/agenda", async () => {
       render(
-        await SubtabPage({ params: makeParams("clinic-x", "valeria", "agenda") }),
+        await SubtabPage({
+          params: makeParams("clinic-x", "valeria", "agenda"),
+        }),
       );
       expect(
         screen.getByTestId("subtab-content-valeria-agenda"),

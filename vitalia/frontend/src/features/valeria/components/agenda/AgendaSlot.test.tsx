@@ -64,9 +64,7 @@ describe("AgendaSlot", () => {
     const slot = screen.getByTestId("agenda-slot");
     expect(slot).toBeInTheDocument();
     expect(slot.textContent).toContain("🚶");
-    expect(
-      screen.getByLabelText("Origen: walk-in"),
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Origen: walk-in")).toBeInTheDocument();
   });
 
   it("renders phone origin icon 📞", () => {
@@ -90,11 +88,7 @@ describe("AgendaSlot", () => {
 
   it("renders optional note when provided", () => {
     render(
-      <AgendaSlot
-        {...BASE_PROPS}
-        status="noshow"
-        note="histórico 2 faltas"
-      />,
+      <AgendaSlot {...BASE_PROPS} status="noshow" note="histórico 2 faltas" />,
     );
     expect(screen.getByText("histórico 2 faltas")).toBeInTheDocument();
   });

@@ -30,7 +30,7 @@ import { ShellOrganismPage } from "../../pages/ShellOrganismPage";
 const VOSEO_PATTERNS = [
   "tenés",
   "podés",
-  "sos ",   // "sos" as standalone word (avoid matching "nosotros")
+  "sos ", // "sos" as standalone word (avoid matching "nosotros")
   "hacés",
   "venís",
   "mirá",
@@ -92,7 +92,9 @@ test.describe("SC-10 · Spanish neutro LatAm + tenant_locale PEN", () => {
       await shell.expectShellMounted();
 
       // PEN currency format: "S/ 84k" or similar
-      await expect(shellPage.locator("text=/S\\/\\s*\\d+/").first()).toBeVisible();
+      await expect(
+        shellPage.locator("text=/S\\/\\s*\\d+/").first(),
+      ).toBeVisible();
 
       // No USD/EUR/ARS in currency values
       const pageText = await shellPage.locator("body").innerText();
@@ -125,7 +127,7 @@ test.describe("SC-10 · Spanish neutro LatAm + tenant_locale PEN", () => {
 
       // TIME_SLOTS in AgendaPlaceholder.tsx use 24h format: "08:00", "09:00", etc.
       await expect(
-        shellPage.locator('text=/^\\d{2}:\\d{2}$/').first(),
+        shellPage.locator("text=/^\\d{2}:\\d{2}$/").first(),
       ).toBeVisible();
 
       // No AM/PM format

@@ -53,9 +53,7 @@ export function AgendaDayHeader({
       <span
         className={cn(
           "block text-[10px] font-medium",
-          isToday
-            ? "text-agent-valeria"
-            : "text-muted-foreground",
+          isToday ? "text-agent-valeria" : "text-muted-foreground",
         )}
       >
         {dayLabel}
@@ -65,9 +63,7 @@ export function AgendaDayHeader({
       <span
         className={cn(
           "block text-[15px] font-bold mt-0.5",
-          isToday
-            ? "text-agent-adrian"
-            : "text-foreground",
+          isToday ? "text-agent-adrian" : "text-foreground",
         )}
       >
         {dayNum}

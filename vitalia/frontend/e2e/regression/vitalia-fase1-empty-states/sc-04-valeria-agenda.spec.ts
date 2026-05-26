@@ -51,12 +51,18 @@ test.describe("SC-4 · Valeria Agenda enriquecida (toolbar+filters+grid+footer)"
     await expect(agenda.todayButton).toBeVisible();
   });
 
-  test("6 day headers visibles Lun26–Sáb31", async ({ shellPage, tenantId }) => {
+  test("6 day headers visibles Lun26–Sáb31", async ({
+    shellPage,
+    tenantId,
+  }) => {
     const agenda = new ValeriaAgendaPage(shellPage, tenantId);
     await agenda.expectDayHeadersVisible([...EXPECTED_DAY_NUMS]);
   });
 
-  test("≥8 AgendaSlots visibles en la grilla", async ({ shellPage, tenantId }) => {
+  test("≥8 AgendaSlots visibles en la grilla", async ({
+    shellPage,
+    tenantId,
+  }) => {
     const agenda = new ValeriaAgendaPage(shellPage, tenantId);
     const slotsCount = await agenda.getAgendaSlots().count();
     expect(slotsCount).toBeGreaterThanOrEqual(8);

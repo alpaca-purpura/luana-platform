@@ -31,7 +31,11 @@ import { cn } from "@/lib/utils";
 import { AgendaToolbar, type PeriodMode } from "../agenda/AgendaToolbar";
 import { AgendaFilters } from "../agenda/AgendaFilters";
 import { AgendaDayHeader } from "../agenda/AgendaDayHeader";
-import { AgendaSlot, type SlotStatus, type SlotOrigin } from "../agenda/AgendaSlot";
+import {
+  AgendaSlot,
+  type SlotStatus,
+  type SlotOrigin,
+} from "../agenda/AgendaSlot";
 import { AgendaSummaryFooter } from "../agenda/AgendaSummaryFooter";
 
 // ── Mock data (ficticios LatAm — NO PHI real) ──────────────────────────────
@@ -91,36 +95,80 @@ const MOCK_GRID: GridRow[] = [
   [null, null, null, null, null, null],
   // 09:00
   [
-    { patient: "M. Rodríguez", service: "Limpieza dental", doctor: "Dr. C. Mendoza", status: "paid", origin: "web" },
+    {
+      patient: "M. Rodríguez",
+      service: "Limpieza dental",
+      doctor: "Dr. C. Mendoza",
+      status: "paid",
+      origin: "web",
+    },
     null,
-    { patient: "S. López", service: "Blanqueamiento", doctor: "Dra. M. Soto", status: "deposit" },
+    {
+      patient: "S. López",
+      service: "Blanqueamiento",
+      doctor: "Dra. M. Soto",
+      status: "deposit",
+    },
     null,
     null,
     null,
   ],
   // 10:00
   [
-    { patient: "L. Vega", service: "Consulta", doctor: "Dra. M. Soto", status: "deposit", origin: "phone" },
-    { patient: "J. Pérez", service: "Consulta", doctor: "Dr. C. Mendoza", status: "deposit" },
+    {
+      patient: "L. Vega",
+      service: "Consulta",
+      doctor: "Dra. M. Soto",
+      status: "deposit",
+      origin: "phone",
+    },
+    {
+      patient: "J. Pérez",
+      service: "Consulta",
+      doctor: "Dr. C. Mendoza",
+      status: "deposit",
+    },
     null,
-    { patient: "A. Ruiz", service: "Consulta", doctor: "Dr. C. Mendoza", status: "unpaid", origin: "walk-in" },
+    {
+      patient: "A. Ruiz",
+      service: "Consulta",
+      doctor: "Dr. C. Mendoza",
+      status: "unpaid",
+      origin: "walk-in",
+    },
     null,
     null,
   ],
   // 11:00
   [
-    { patient: "P. Sosa", service: "Endodoncia", doctor: "Dr. C. Mendoza", status: "paid" },
+    {
+      patient: "P. Sosa",
+      service: "Endodoncia",
+      doctor: "Dr. C. Mendoza",
+      status: "paid",
+    },
     null,
     null,
     null,
-    { patient: "M. Díaz", service: "Blanqueamiento", doctor: "Dra. M. Soto", status: "deposit", origin: "proactive" },
+    {
+      patient: "M. Díaz",
+      service: "Blanqueamiento",
+      doctor: "Dra. M. Soto",
+      status: "deposit",
+      origin: "proactive",
+    },
     null,
   ],
   // 12:00
   [
     null,
     null,
-    { patient: "R. Cruz", service: "Consulta", doctor: "Dr. C. Mendoza", status: "deposit" },
+    {
+      patient: "R. Cruz",
+      service: "Consulta",
+      doctor: "Dr. C. Mendoza",
+      status: "deposit",
+    },
     null,
     null,
     null,
@@ -130,10 +178,22 @@ const MOCK_GRID: GridRow[] = [
   // 14:00
   [
     null,
-    { patient: "C. Núñez", service: "Consulta", doctor: "Dr. C. Mendoza", status: "noshow", note: "histórico 2 faltas" },
+    {
+      patient: "C. Núñez",
+      service: "Consulta",
+      doctor: "Dr. C. Mendoza",
+      status: "noshow",
+      note: "histórico 2 faltas",
+    },
     null,
     null,
-    { patient: "Sofía B.", service: "Limpieza dental", doctor: "Dra. M. Soto", status: "paid", origin: "walk-in" },
+    {
+      patient: "Sofía B.",
+      service: "Limpieza dental",
+      doctor: "Dra. M. Soto",
+      status: "paid",
+      origin: "walk-in",
+    },
     null,
   ],
   // 15:00 — all empty
@@ -202,7 +262,14 @@ export function AgendaPlaceholder() {
           {/* ─ Time slot rows ─ */}
           {TIME_SLOTS.map((time, rowIdx) => {
             const isLunchRow = rowIdx === LUNCH_ROW_INDEX;
-            const rowSlots = MOCK_GRID[rowIdx] ?? [null, null, null, null, null, null];
+            const rowSlots = MOCK_GRID[rowIdx] ?? [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+            ];
 
             return (
               <div key={`row-${time}`} role="row" className="contents">
@@ -240,9 +307,7 @@ export function AgendaPlaceholder() {
                       )}
                       role="gridcell"
                       aria-label={
-                        slot
-                          ? `${time} — ${slot.patient}`
-                          : `${time} — vacío`
+                        slot ? `${time} — ${slot.patient}` : `${time} — vacío`
                       }
                     >
                       {slot ? (

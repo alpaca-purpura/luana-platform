@@ -23,18 +23,11 @@
 
 import { cn } from "@/lib/utils";
 import { CampaignTag } from "./CampaignTag";
-import {
-  type ConversationListItem,
-  STAGE_LABEL,
-  CHANNEL_ABBR,
-} from "./types";
+import { type ConversationListItem, STAGE_LABEL, CHANNEL_ABBR } from "./types";
 
 // ── Channel color mapping ─────────────────────────────────────────────────────
 /** Maps InboxChannel → Tailwind bg + text class pair for abbreviation badge */
-const CHANNEL_CLASSES: Record<
-  ConversationListItem["channel"],
-  string
-> = {
+const CHANNEL_CLASSES: Record<ConversationListItem["channel"], string> = {
   whatsapp: "bg-agent-adrian-soft text-agent-adrian",
   instagram: "bg-agent-camila-soft text-agent-camila",
   telegram: "bg-agent-adrian-soft text-agent-adrian",
@@ -108,8 +101,8 @@ export function ConversationItem({
         isSelected
           ? "border-l-2 border-l-agent-adrian bg-agent-adrian/5 pl-[10px]"
           : isHumanHandled
-          ? "border-l-2 border-l-green-500 pl-[10px]"
-          : "border-l-2 border-l-transparent",
+            ? "border-l-2 border-l-green-500 pl-[10px]"
+            : "border-l-2 border-l-transparent",
       )}
     >
       <div className="flex items-start gap-2.5">
@@ -177,9 +170,7 @@ export function ConversationItem({
             )}
 
             {/* YouChip — only when human-handled */}
-            {isHumanHandled && (
-              <YouChip />
-            )}
+            {isHumanHandled && <YouChip />}
           </div>
         </div>
       </div>

@@ -31,7 +31,10 @@ test.describe("SC-4.bis · Adrián Inbox 3-col + Takeover A↔B + sidebar toggle
 
   // ── Conversation list ────────────────────────────────────────────────
 
-  test("5 ConversationItem visibles en la lista", async ({ shellPage, tenantId }) => {
+  test("5 ConversationItem visibles en la lista", async ({
+    shellPage,
+    tenantId,
+  }) => {
     const inbox = new AdrianInboxPage(shellPage, tenantId);
     const items = inbox.getConversationItems();
     await expect(items).toHaveCount(5);
@@ -62,7 +65,10 @@ test.describe("SC-4.bis · Adrián Inbox 3-col + Takeover A↔B + sidebar toggle
     await expect(shellPage.locator("text=✋ Tú")).toBeVisible();
   });
 
-  test("global mode toggle 3-modos visible", async ({ shellPage, tenantId }) => {
+  test("global mode toggle 3-modos visible", async ({
+    shellPage,
+    tenantId,
+  }) => {
     const inbox = new AdrianInboxPage(shellPage, tenantId);
     await inbox.expectGlobalModeToggleVisible();
     // 3 mode options visible
@@ -160,9 +166,7 @@ test.describe("SC-4.bis · Adrián Inbox 3-col + Takeover A↔B + sidebar toggle
     const inbox = new AdrianInboxPage(shellPage, tenantId);
     await inbox.expectThreadVisible();
     // First mock message from MOCK_THREAD_MESSAGES
-    await expect(
-      shellPage.locator("text=/limpieza dental/i"),
-    ).toBeVisible();
+    await expect(shellPage.locator("text=/limpieza dental/i")).toBeVisible();
   });
 
   // ── Visual goldens ────────────────────────────────────────────────────
@@ -194,8 +198,9 @@ test.describe("SC-4.bis · Adrián Inbox 3-col + Takeover A↔B + sidebar toggle
     await inbox.closeSidebar();
     await inbox.expectSidebarClosed();
     // data-sidebar="closed" means gridTemplateColumns includes "0" for col-3
-    await expect(
-      shellPage.locator('[data-sidebar="closed"]'),
-    ).toHaveAttribute("style", /0/);
+    await expect(shellPage.locator('[data-sidebar="closed"]')).toHaveAttribute(
+      "style",
+      /0/,
+    );
   });
 });

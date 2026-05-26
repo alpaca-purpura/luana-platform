@@ -98,7 +98,9 @@ describe("Architecture: SubTabContent PLACEHOLDER_MAP ↔ RIBBON_SUBTABS SSoT", 
   });
 
   it("no 'mateo.*' keys exist in PLACEHOLDER_MAP", () => {
-    const mateoKeys = [...placeholderKeys].filter((k) => k.startsWith("mateo."));
+    const mateoKeys = [...placeholderKeys].filter((k) =>
+      k.startsWith("mateo."),
+    );
     expect(mateoKeys).toEqual([]);
   });
 

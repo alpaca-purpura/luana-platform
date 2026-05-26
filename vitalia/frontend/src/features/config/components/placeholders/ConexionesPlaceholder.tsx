@@ -84,10 +84,7 @@ const CONNECTION_CATEGORIES: ConnectionCategory[] = [
  */
 export function ConexionesPlaceholder() {
   return (
-    <div
-      className="flex flex-col gap-0"
-      data-testid="conexiones-placeholder"
-    >
+    <div className="flex flex-col gap-0" data-testid="conexiones-placeholder">
       {/* Header */}
       <div className="flex flex-col gap-1 pb-4 border-b border-border mb-6">
         <h2 className="text-lg font-semibold text-foreground">Conexiones</h2>

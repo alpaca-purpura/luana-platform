@@ -253,9 +253,7 @@ export function InboxPlaceholder() {
 
           {/* TakeoverBanner — visible solo en state B (human) */}
           {handlerState === "human" && (
-            <TakeoverBanner
-              onReturnControl={() => setHandlerState("adrian")}
-            />
+            <TakeoverBanner onReturnControl={() => setHandlerState("adrian")} />
           )}
 
           {/* Messages area */}

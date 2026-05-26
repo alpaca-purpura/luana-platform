@@ -16,12 +16,19 @@ export { AgendaPlaceholder } from "./components/placeholders/AgendaPlaceholder";
 
 // ── Agenda molecules (T-7) ────────────────────────────────────────────────────
 export { AgendaToolbar } from "./components/agenda/AgendaToolbar";
-export type { AgendaToolbarProps, PeriodMode } from "./components/agenda/AgendaToolbar";
+export type {
+  AgendaToolbarProps,
+  PeriodMode,
+} from "./components/agenda/AgendaToolbar";
 export { AgendaFilters } from "./components/agenda/AgendaFilters";
 export type { AgendaFiltersProps } from "./components/agenda/AgendaFilters";
 export { AgendaDayHeader } from "./components/agenda/AgendaDayHeader";
 export type { AgendaDayHeaderProps } from "./components/agenda/AgendaDayHeader";
 export { AgendaSlot } from "./components/agenda/AgendaSlot";
-export type { AgendaSlotProps, SlotStatus, SlotOrigin } from "./components/agenda/AgendaSlot";
+export type {
+  AgendaSlotProps,
+  SlotStatus,
+  SlotOrigin,
+} from "./components/agenda/AgendaSlot";
 export { AgendaSummaryFooter } from "./components/agenda/AgendaSummaryFooter";
 export type { AgendaSummaryFooterProps } from "./components/agenda/AgendaSummaryFooter";

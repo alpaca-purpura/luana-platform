@@ -45,7 +45,9 @@ describe("CampaignTag", () => {
   it("has accessible aria-label with full campaign name", () => {
     const name = "Limpieza-PE";
     render(<CampaignTag campaignId="c5" campaignName={name} />);
-    expect(screen.getByRole("button", { name: `Campaña: ${name}` })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: `Campaña: ${name}` }),
+    ).toBeInTheDocument();
   });
 
   it("applies 'list' variant classes by default", () => {
@@ -55,7 +57,9 @@ describe("CampaignTag", () => {
   });
 
   it("applies 'detail' variant classes when specified", () => {
-    render(<CampaignTag campaignId="c7" campaignName="Test" variant="detail" />);
+    render(
+      <CampaignTag campaignId="c7" campaignName="Test" variant="detail" />,
+    );
     const pill = screen.getByRole("button");
     expect(pill.className).toMatch(/text-xs/);
   });

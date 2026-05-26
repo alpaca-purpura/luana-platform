@@ -72,8 +72,7 @@ function collectFiles(
  * Strategy: match digit sequences >= 10 digits in a row (with optional separators
  * like spaces/dashes but no asterisks between them).
  */
-const UNMASKED_PHONE_REGEX =
-  /(?<!\*)\+?\d[\d\s-]{9,}\d(?!\*)/g;
+const UNMASKED_PHONE_REGEX = /(?<!\*)\+?\d[\d\s-]{9,}\d(?!\*)/g;
 
 /**
  * Detect unmasked email prefixes: full email prefix visible (no masking).
@@ -95,7 +94,11 @@ const UNMASKED_DNI_REGEX = /(?<![*\d])\d{8,}(?![*\d])/g;
  * Check if a string match is already masked (contains asterisks nearby).
  * Returns true if the surrounding context has masking.
  */
-function isAlreadyMasked(content: string, matchIndex: number, matchLength: number): boolean {
+function isAlreadyMasked(
+  content: string,
+  matchIndex: number,
+  matchLength: number,
+): boolean {
   const context = content.slice(
     Math.max(0, matchIndex - 5),
     Math.min(content.length, matchIndex + matchLength + 5),
@@ -183,13 +186,14 @@ describe("Architecture: no PHI real data in placeholder components (hipaa-lite)"
   const placeholderFiles = collectFiles(
     resolve(SRC_ROOT, "features"),
     (name) =>
-      name.endsWith("Placeholder.tsx") ||
-      name.endsWith("Placeholder.test.tsx"),
+      name.endsWith("Placeholder.tsx") || name.endsWith("Placeholder.test.tsx"),
   );
 
   const mockDataFiles = collectFiles(
     resolve(SRC_ROOT, "components/shared/shell-organism"),
-    (name) => name.startsWith("_mock") && (name.endsWith(".ts") || name.endsWith(".tsx")),
+    (name) =>
+      name.startsWith("_mock") &&
+      (name.endsWith(".ts") || name.endsWith(".tsx")),
   );
 
   const allFiles = [...placeholderFiles, ...mockDataFiles];
@@ -202,7 +206,9 @@ describe("Architecture: no PHI real data in placeholder components (hipaa-lite)"
   it("no unmasked phone numbers in placeholder components (hipaa-lite)", () => {
     const violations: PhiViolation[] = [];
     for (const file of allFiles) {
-      const fileViolations = scanFileForPhi(file).filter((v) => v.type === "phone");
+      const fileViolations = scanFileForPhi(file).filter(
+        (v) => v.type === "phone",
+      );
       violations.push(...fileViolations);
     }
 
@@ -222,7 +228,9 @@ describe("Architecture: no PHI real data in placeholder components (hipaa-lite)"
   it("no unmasked email addresses in placeholder components (hipaa-lite)", () => {
     const violations: PhiViolation[] = [];
     for (const file of allFiles) {
-      const fileViolations = scanFileForPhi(file).filter((v) => v.type === "email");
+      const fileViolations = scanFileForPhi(file).filter(
+        (v) => v.type === "email",
+      );
       violations.push(...fileViolations);
     }
 
@@ -242,7 +250,9 @@ describe("Architecture: no PHI real data in placeholder components (hipaa-lite)"
   it("no unmasked DNI/CUIT patterns in placeholder components (hipaa-lite)", () => {
     const violations: PhiViolation[] = [];
     for (const file of allFiles) {
-      const fileViolations = scanFileForPhi(file).filter((v) => v.type === "dni");
+      const fileViolations = scanFileForPhi(file).filter(
+        (v) => v.type === "dni",
+      );
       violations.push(...fileViolations);
     }
 

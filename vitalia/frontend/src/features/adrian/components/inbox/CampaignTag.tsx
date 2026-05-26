@@ -60,9 +60,7 @@ export function CampaignTag({
         "bg-agent-lisa-soft text-agent-lisa border-agent-lisa",
         "hover:opacity-85 transition-opacity",
         // Variant sizing
-        variant === "list"
-          ? "px-2 py-0.5 text-[10px]"
-          : "px-2.5 py-1 text-xs",
+        variant === "list" ? "px-2 py-0.5 text-[10px]" : "px-2.5 py-1 text-xs",
         className,
       )}
       // F1: no onClick — decorative navigation placeholder

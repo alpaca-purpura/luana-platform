@@ -90,7 +90,10 @@ export class ShellOrganismPage {
    * Assert that the SubTabContent dispatcher renders content for the given agent.subtab.
    * Uses data-testid="subtab-content-{agent}-{subtab}" per SubTabContent.tsx.
    */
-  async expectSubTabContentVisible(agent: string, subtab: string): Promise<void> {
+  async expectSubTabContentVisible(
+    agent: string,
+    subtab: string,
+  ): Promise<void> {
     await expect(
       this.page.locator(`[data-testid="subtab-content-${agent}-${subtab}"]`),
     ).toBeVisible();
@@ -100,7 +103,10 @@ export class ShellOrganismPage {
    * Assert the SubTabHeader is rendered for the given agent.subtab.
    * data-testid="subtab-header-{agent}-{subtab}" per SubTabHeader.tsx.
    */
-  async expectSubTabHeaderVisible(agent: string, subtab: string): Promise<void> {
+  async expectSubTabHeaderVisible(
+    agent: string,
+    subtab: string,
+  ): Promise<void> {
     await expect(
       this.page.locator(`[data-testid="subtab-header-${agent}-${subtab}"]`),
     ).toBeVisible();

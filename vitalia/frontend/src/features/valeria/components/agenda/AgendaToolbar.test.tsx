@@ -40,9 +40,7 @@ describe("AgendaToolbar", () => {
     expect(screen.getByTestId("period-toggle-week")).toBeInTheDocument();
     expect(screen.getByTestId("period-toggle-month")).toBeInTheDocument();
     expect(screen.getByTestId("period-toggle-day").textContent).toBe("Día");
-    expect(screen.getByTestId("period-toggle-week").textContent).toBe(
-      "Semana",
-    );
+    expect(screen.getByTestId("period-toggle-week").textContent).toBe("Semana");
     expect(screen.getByTestId("period-toggle-month").textContent).toBe("Mes");
   });
 

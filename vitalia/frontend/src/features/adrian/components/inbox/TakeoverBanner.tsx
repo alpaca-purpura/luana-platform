@@ -62,10 +62,7 @@ export function TakeoverBanner({
       )}
     >
       {/* Icon ⚡ */}
-      <span
-        aria-hidden="true"
-        className="shrink-0 text-xl text-amber-600"
-      >
+      <span aria-hidden="true" className="shrink-0 text-xl text-amber-600">
         ⚡
       </span>
 
@@ -77,7 +74,8 @@ export function TakeoverBanner({
         </p>
         {/* Meta — spec § 10 verbatim */}
         <p className="mt-0.5 text-[10px] text-muted-foreground">
-          El modo global &apos;🤖 Adrián decide&apos; no se altera · solo aquí · puedes devolver el control cuando quieras
+          El modo global &apos;🤖 Adrián decide&apos; no se altera · solo aquí ·
+          puedes devolver el control cuando quieras
         </p>
       </div>
 

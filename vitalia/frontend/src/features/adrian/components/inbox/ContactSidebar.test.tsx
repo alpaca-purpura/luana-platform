@@ -32,10 +32,7 @@ describe("ContactSidebar", () => {
   describe("PHI masking visual (F1 scope)", () => {
     it("renders masked phone in +51 9** pattern", () => {
       render(
-        <ContactSidebar
-          leadId="lead-001"
-          conversation={MOCK_CONVERSATION}
-        />,
+        <ContactSidebar leadId="lead-001" conversation={MOCK_CONVERSATION} />,
       );
       // Pattern: +51 9** ***-4321 (any masked phone)
       expect(screen.getByText(/\+51 9\*\*/)).toBeInTheDocument();
@@ -43,20 +40,14 @@ describe("ContactSidebar", () => {
 
     it("renders masked email with m*** pattern", () => {
       render(
-        <ContactSidebar
-          leadId="lead-001"
-          conversation={MOCK_CONVERSATION}
-        />,
+        <ContactSidebar leadId="lead-001" conversation={MOCK_CONVERSATION} />,
       );
       expect(screen.getByText(/m\*\*\*@gmail\.com/)).toBeInTheDocument();
     });
 
     it("renders 🔓 decorative unlock buttons (disabled)", () => {
       render(
-        <ContactSidebar
-          leadId="lead-001"
-          conversation={MOCK_CONVERSATION}
-        />,
+        <ContactSidebar leadId="lead-001" conversation={MOCK_CONVERSATION} />,
       );
       const unlockBtns = screen.getAllByRole("button", {
         name: /Desbloquear/,
@@ -71,10 +62,7 @@ describe("ContactSidebar", () => {
   describe("3 action buttons", () => {
     it("renders 'Agendar cita' button (disabled F1)", () => {
       render(
-        <ContactSidebar
-          leadId="lead-001"
-          conversation={MOCK_CONVERSATION}
-        />,
+        <ContactSidebar leadId="lead-001" conversation={MOCK_CONVERSATION} />,
       );
       const btn = screen.getByRole("button", { name: /Agendar cita/ });
       expect(btn).toBeInTheDocument();
@@ -83,22 +71,18 @@ describe("ContactSidebar", () => {
 
     it("renders 'Ver historial paciente' button (disabled F1)", () => {
       render(
-        <ContactSidebar
-          leadId="lead-001"
-          conversation={MOCK_CONVERSATION}
-        />,
+        <ContactSidebar leadId="lead-001" conversation={MOCK_CONVERSATION} />,
       );
-      const btn = screen.getByRole("button", { name: /Ver historial paciente/ });
+      const btn = screen.getByRole("button", {
+        name: /Ver historial paciente/,
+      });
       expect(btn).toBeInTheDocument();
       expect(btn).toBeDisabled();
     });
 
     it("renders 'Pasar a embudo' button (disabled F1)", () => {
       render(
-        <ContactSidebar
-          leadId="lead-001"
-          conversation={MOCK_CONVERSATION}
-        />,
+        <ContactSidebar leadId="lead-001" conversation={MOCK_CONVERSATION} />,
       );
       const btn = screen.getByRole("button", { name: /Pasar a embudo/ });
       expect(btn).toBeInTheDocument();
@@ -109,30 +93,21 @@ describe("ContactSidebar", () => {
   describe("section fields", () => {
     it("renders 'Detalles paciente' header label", () => {
       render(
-        <ContactSidebar
-          leadId="lead-001"
-          conversation={MOCK_CONVERSATION}
-        />,
+        <ContactSidebar leadId="lead-001" conversation={MOCK_CONVERSATION} />,
       );
       expect(screen.getByText(/Detalles paciente/i)).toBeInTheDocument();
     });
 
     it("renders patient name", () => {
       render(
-        <ContactSidebar
-          leadId="lead-001"
-          conversation={MOCK_CONVERSATION}
-        />,
+        <ContactSidebar leadId="lead-001" conversation={MOCK_CONVERSATION} />,
       );
       expect(screen.getByText("María González")).toBeInTheDocument();
     });
 
     it("renders CampaignTag when conversation has campaign", () => {
       render(
-        <ContactSidebar
-          leadId="lead-001"
-          conversation={MOCK_CONVERSATION}
-        />,
+        <ContactSidebar leadId="lead-001" conversation={MOCK_CONVERSATION} />,
       );
       expect(screen.getByText(/Limpieza-PE/)).toBeInTheDocument();
     });
@@ -140,12 +115,7 @@ describe("ContactSidebar", () => {
 
   describe("null conversation", () => {
     it("renders without crash when conversation is null", () => {
-      render(
-        <ContactSidebar
-          leadId="lead-001"
-          conversation={null}
-        />,
-      );
+      render(<ContactSidebar leadId="lead-001" conversation={null} />);
       // Should still show static mock patient data
       expect(screen.getByText(/\+51 9\*\*/)).toBeInTheDocument();
     });

@@ -41,7 +41,9 @@ export class ValeriaAgendaPage {
     this.page = page;
     this.tenantId = tenantId;
 
-    this.agendaPlaceholder = page.locator('[data-testid="valeria-agenda-placeholder"]');
+    this.agendaPlaceholder = page.locator(
+      '[data-testid="valeria-agenda-placeholder"]',
+    );
     this.agendaGrid = page.locator('[data-testid="agenda-grid"]');
     this.agendaToolbar = page.locator('[data-testid="agenda-toolbar"]');
     this.agendaFilters = page.locator('[data-testid="agenda-filters"]');
@@ -184,7 +186,9 @@ export class ValeriaAgendaPage {
   async expectFiltersVisible(): Promise<void> {
     await expect(this.agendaFilters).toBeVisible();
     await expect(
-      this.page.locator('[aria-label="Buscar paciente (disponible en Fase 2)"]'),
+      this.page.locator(
+        '[aria-label="Buscar paciente (disponible en Fase 2)"]',
+      ),
     ).toBeVisible();
   }
 

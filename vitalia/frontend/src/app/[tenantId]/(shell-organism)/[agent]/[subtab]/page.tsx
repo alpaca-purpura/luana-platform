@@ -17,7 +17,11 @@
 
 import { notFound } from "next/navigation";
 
-import { isValidAgent, isValidSubtab, type RibbonTabSlug } from "@/lib/agent-catalog";
+import {
+  isValidAgent,
+  isValidSubtab,
+  type RibbonTabSlug,
+} from "@/lib/agent-catalog";
 import { SubTabContent } from "@/components/shared/shell-organism/SubTabContent";
 
 interface PageProps {

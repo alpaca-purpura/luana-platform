@@ -63,7 +63,10 @@ export function AgendaSummaryFooter({
             className="flex items-center gap-1.5 text-foreground"
           >
             <span
-              className={cn("inline-block w-2.5 h-2.5 rounded-full shrink-0", color)}
+              className={cn(
+                "inline-block w-2.5 h-2.5 rounded-full shrink-0",
+                color,
+              )}
               aria-hidden="true"
             />
             {label}
@@ -80,14 +83,10 @@ export function AgendaSummaryFooter({
         className="text-muted-foreground italic text-right"
         data-testid="agenda-summary-text"
       >
-        <span className="font-semibold text-agent-adrian">
-          Adrián
-        </span>{" "}
-        propuso {proposalsToday} turnos hoy · {unpaidCount} sin pago ·{" "}
-        <span className="font-semibold text-agent-lucas">
-          Lucas
-        </span>
-        : {leadsReadyCount} leads listos
+        <span className="font-semibold text-agent-adrian">Adrián</span> propuso{" "}
+        {proposalsToday} turnos hoy · {unpaidCount} sin pago ·{" "}
+        <span className="font-semibold text-agent-lucas">Lucas</span>:{" "}
+        {leadsReadyCount} leads listos
       </div>
     </div>
   );

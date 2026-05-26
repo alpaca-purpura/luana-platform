@@ -206,7 +206,10 @@ describe("ConversationItem", () => {
           onSelect={vi.fn()}
         />,
       );
-      expect(screen.getByRole("button")).toHaveAttribute("aria-selected", "true");
+      expect(screen.getByRole("button")).toHaveAttribute(
+        "aria-selected",
+        "true",
+      );
     });
   });
 
@@ -233,7 +236,9 @@ describe("ConversationItem", () => {
           onSelect={vi.fn()}
         />,
       );
-      expect(screen.queryByRole("button", { name: /Campaña/ })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: /Campaña/ }),
+      ).not.toBeInTheDocument();
     });
   });
 

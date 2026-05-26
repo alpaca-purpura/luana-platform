@@ -85,11 +85,14 @@ test.describe("SC-2 · Lisa Servicios toggle Catálogo|Escalera", () => {
 
     // EmptyState "próximamente" message visible
     await expect(
-      shellPage.locator('text=/Escalera de valor.*próximamente/i'),
+      shellPage.locator("text=/Escalera de valor.*próximamente/i"),
     ).toBeVisible();
   });
 
-  test("visual catalogo · screenshot state Catálogo", async ({ shellPage, tenantId }) => {
+  test("visual catalogo · screenshot state Catálogo", async ({
+    shellPage,
+    tenantId,
+  }) => {
     // Visual golden — captured during T-11 visual golden sprint
     // This test documents the assertion; screenshot comparison done in T-11
     const shell = new ShellOrganismPage(shellPage, tenantId);

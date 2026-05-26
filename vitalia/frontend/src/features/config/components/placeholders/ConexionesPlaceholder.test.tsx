@@ -89,14 +89,10 @@ describe("ConexionesPlaceholder", () => {
     expect(
       screen.getByText("WhatsApp · ManyChat · Instagram DM"),
     ).toBeInTheDocument();
-    expect(
-      screen.getByText("Stripe · MercadoPago · Yape"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Stripe · MercadoPago · Yape")).toBeInTheDocument();
     expect(screen.getByText("Google Calendar · Outlook")).toBeInTheDocument();
     expect(
-      screen.getByText(
-        "Sitio web · Instagram · Facebook · Google Business",
-      ),
+      screen.getByText("Sitio web · Instagram · Facebook · Google Business"),
     ).toBeInTheDocument();
     expect(
       screen.getByText("Webhooks · API tokens · Zapier"),

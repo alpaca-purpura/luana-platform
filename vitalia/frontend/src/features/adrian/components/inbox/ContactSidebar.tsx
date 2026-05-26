@@ -159,9 +159,7 @@ export function ContactSidebar({
 
         {/* Estado embudo */}
         <Field label="Estado embudo">
-          <span
-            className="rounded bg-agent-adrian-soft px-1.5 py-px text-[9px] font-semibold uppercase tracking-[0.04em] text-agent-adrian"
-          >
+          <span className="rounded bg-agent-adrian-soft px-1.5 py-px text-[9px] font-semibold uppercase tracking-[0.04em] text-agent-adrian">
             🟢 {STAGE_LABEL[stage]}
           </span>
         </Field>

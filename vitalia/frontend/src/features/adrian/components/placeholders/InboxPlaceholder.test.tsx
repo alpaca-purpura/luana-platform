@@ -72,7 +72,9 @@ describe("InboxPlaceholder", () => {
       screen.getByText(/La limpieza dental es S\/ 120/),
     ).toBeInTheDocument();
     // Third mock message
-    expect(screen.getByText(/mañana al mediodía si tienen/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/mañana al mediodía si tienen/),
+    ).toBeInTheDocument();
     // Fourth mock message
     expect(screen.getByText(/Dra\. Soto/)).toBeInTheDocument();
   });
@@ -100,7 +102,9 @@ describe("InboxPlaceholder", () => {
     render(<InboxPlaceholder />);
 
     // Click the takeover button
-    const takeoverBtn = screen.getByRole("button", { name: /Tomar el control/i });
+    const takeoverBtn = screen.getByRole("button", {
+      name: /Tomar el control/i,
+    });
     await user.click(takeoverBtn);
 
     // TakeoverBanner visible
@@ -120,9 +124,7 @@ describe("InboxPlaceholder", () => {
     expect(textarea).not.toBeDisabled();
 
     // Footer hint changed to amber (human mode)
-    expect(
-      screen.getByText(/Estás respondiendo como tú/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Estás respondiendo como tú/)).toBeInTheDocument();
 
     // Chip "🤖 Adrián decidiendo" should be hidden
     expect(screen.queryByText(/🤖 Adrián decidiendo/)).not.toBeInTheDocument();

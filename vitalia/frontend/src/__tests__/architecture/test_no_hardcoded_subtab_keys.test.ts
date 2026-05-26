@@ -60,7 +60,11 @@ function collectSourceFiles(dir: string): string[] {
   try {
     const entries = readdirSync(dir);
     for (const entry of entries) {
-      if (entry === "node_modules" || entry === ".next" || entry.startsWith(".")) {
+      if (
+        entry === "node_modules" ||
+        entry === ".next" ||
+        entry.startsWith(".")
+      ) {
         continue;
       }
       const fullPath = resolve(dir, entry);

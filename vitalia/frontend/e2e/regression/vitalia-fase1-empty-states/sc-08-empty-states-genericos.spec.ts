@@ -135,7 +135,8 @@ test.describe("SC-8 · 16 sub-tabs genéricos parametrizado (EmptyState consiste
     await shell.expectSubTabContentVisible("camila", "reactivar");
 
     // EmptyState description from SubTabContent.tsx fallback
-    const description = "Esta vista vive acá. El contenido real se cablea en Fase 2.";
+    const description =
+      "Esta vista vive acá. El contenido real se cablea en Fase 2.";
     // Check if this text appears (only if EmptyState fallback is used for this subtab)
     // If a Placeholder component exists, it may have different content
     const subtabEl = shellPage.locator(

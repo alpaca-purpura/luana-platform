@@ -117,7 +117,10 @@ test.describe("visual goldens — 22 sub-tabs light theme (F1-S10)", () => {
   test.use({ viewport: DESKTOP_VIEWPORT });
 
   for (const { agent, subtab } of ALL_SUBTABS) {
-    test(`${agent}/${subtab} light desktop`, async ({ shellPage, tenantId }) => {
+    test(`${agent}/${subtab} light desktop`, async ({
+      shellPage,
+      tenantId,
+    }) => {
       const shell = new ShellOrganismPage(shellPage, tenantId);
       await shell.goto(agent, subtab);
 
@@ -128,9 +131,12 @@ test.describe("visual goldens — 22 sub-tabs light theme (F1-S10)", () => {
       await expect(contentLocator).toBeVisible({ timeout: 15_000 });
       await shellPage.waitForTimeout(200); // Allow CSS transitions + active state to settle
 
-      await expect(contentLocator).toHaveScreenshot(`${agent}-${subtab}-light.png`, {
-        maxDiffPixelRatio: 0.001,
-      });
+      await expect(contentLocator).toHaveScreenshot(
+        `${agent}-${subtab}-light.png`,
+        {
+          maxDiffPixelRatio: 0.001,
+        },
+      );
     });
   }
 });
@@ -143,7 +149,10 @@ test.describe("visual goldens — 22 sub-tabs dark theme (F1-S10)", () => {
   test.use({ viewport: DESKTOP_VIEWPORT });
 
   for (const { agent, subtab } of ALL_SUBTABS) {
-    test(`${agent}/${subtab} dark desktop`, async ({ darkShellPage, tenantId }) => {
+    test(`${agent}/${subtab} dark desktop`, async ({
+      darkShellPage,
+      tenantId,
+    }) => {
       const shell = new ShellOrganismPage(darkShellPage, tenantId);
       await shell.goto(agent, subtab);
 
@@ -153,9 +162,12 @@ test.describe("visual goldens — 22 sub-tabs dark theme (F1-S10)", () => {
       await expect(contentLocator).toBeVisible({ timeout: 15_000 });
       await darkShellPage.waitForTimeout(200);
 
-      await expect(contentLocator).toHaveScreenshot(`${agent}-${subtab}-dark.png`, {
-        maxDiffPixelRatio: 0.001,
-      });
+      await expect(contentLocator).toHaveScreenshot(
+        `${agent}-${subtab}-dark.png`,
+        {
+          maxDiffPixelRatio: 0.001,
+        },
+      );
     });
   }
 });
@@ -183,11 +195,16 @@ test.describe("visual goldens — Adrián Inbox takeover state A (F1-S10)", () =
     await shellPage.waitForTimeout(200);
 
     // Capture full inbox 3-col area
-    const inboxContainer = shellPage.locator('[data-testid="subtab-content-adrian-inbox"]');
+    const inboxContainer = shellPage.locator(
+      '[data-testid="subtab-content-adrian-inbox"]',
+    );
     await expect(inboxContainer).toBeVisible();
-    await expect(inboxContainer).toHaveScreenshot("adrian-inbox-state-A-light.png", {
-      maxDiffPixelRatio: 0.001,
-    });
+    await expect(inboxContainer).toHaveScreenshot(
+      "adrian-inbox-state-A-light.png",
+      {
+        maxDiffPixelRatio: 0.001,
+      },
+    );
   });
 
   test("adrian-inbox state A (Adrián maneja) dark", async ({
@@ -205,9 +222,12 @@ test.describe("visual goldens — Adrián Inbox takeover state A (F1-S10)", () =
       '[data-testid="subtab-content-adrian-inbox"]',
     );
     await expect(inboxContainer).toBeVisible();
-    await expect(inboxContainer).toHaveScreenshot("adrian-inbox-state-A-dark.png", {
-      maxDiffPixelRatio: 0.001,
-    });
+    await expect(inboxContainer).toHaveScreenshot(
+      "adrian-inbox-state-A-dark.png",
+      {
+        maxDiffPixelRatio: 0.001,
+      },
+    );
   });
 });
 
@@ -228,11 +248,16 @@ test.describe("visual goldens — Adrián Inbox takeover state B (F1-S10)", () =
     await expect(inbox.returnControlButton).toBeVisible({ timeout: 5_000 });
     await shellPage.waitForTimeout(200);
 
-    const inboxContainer = shellPage.locator('[data-testid="subtab-content-adrian-inbox"]');
+    const inboxContainer = shellPage.locator(
+      '[data-testid="subtab-content-adrian-inbox"]',
+    );
     await expect(inboxContainer).toBeVisible();
-    await expect(inboxContainer).toHaveScreenshot("adrian-inbox-state-B-light.png", {
-      maxDiffPixelRatio: 0.001,
-    });
+    await expect(inboxContainer).toHaveScreenshot(
+      "adrian-inbox-state-B-light.png",
+      {
+        maxDiffPixelRatio: 0.001,
+      },
+    );
   });
 
   test("adrian-inbox state B (usuario en control · banner amarillo) dark", async ({
@@ -251,9 +276,12 @@ test.describe("visual goldens — Adrián Inbox takeover state B (F1-S10)", () =
       '[data-testid="subtab-content-adrian-inbox"]',
     );
     await expect(inboxContainer).toBeVisible();
-    await expect(inboxContainer).toHaveScreenshot("adrian-inbox-state-B-dark.png", {
-      maxDiffPixelRatio: 0.001,
-    });
+    await expect(inboxContainer).toHaveScreenshot(
+      "adrian-inbox-state-B-dark.png",
+      {
+        maxDiffPixelRatio: 0.001,
+      },
+    );
   });
 });
 
@@ -276,7 +304,9 @@ test.describe("visual goldens — Adrián Inbox sidebar closed (F1-S10)", () => 
     });
     await shellPage.waitForTimeout(200);
 
-    const inboxContainer = shellPage.locator('[data-testid="subtab-content-adrian-inbox"]');
+    const inboxContainer = shellPage.locator(
+      '[data-testid="subtab-content-adrian-inbox"]',
+    );
     await expect(inboxContainer).toBeVisible();
     await expect(inboxContainer).toHaveScreenshot(
       "adrian-inbox-sidebar-closed-light.png",
@@ -478,9 +508,12 @@ test.describe("visual goldens — Lisa Servicios toggle states (F1-S10)", () => 
     await expect(catalogoGrid).toBeVisible({ timeout: 5_000 });
     await shellPage.waitForTimeout(200);
 
-    await expect(contentLocator).toHaveScreenshot("lisa-servicios-catalogo-light.png", {
-      maxDiffPixelRatio: 0.001,
-    });
+    await expect(contentLocator).toHaveScreenshot(
+      "lisa-servicios-catalogo-light.png",
+      {
+        maxDiffPixelRatio: 0.001,
+      },
+    );
   });
 
   test("lisa-servicios escalera state light 1280", async ({
@@ -508,9 +541,12 @@ test.describe("visual goldens — Lisa Servicios toggle states (F1-S10)", () => 
     ).toBeVisible({ timeout: 5_000 });
     await shellPage.waitForTimeout(200);
 
-    await expect(contentLocator).toHaveScreenshot("lisa-servicios-escalera-light.png", {
-      maxDiffPixelRatio: 0.001,
-    });
+    await expect(contentLocator).toHaveScreenshot(
+      "lisa-servicios-escalera-light.png",
+      {
+        maxDiffPixelRatio: 0.001,
+      },
+    );
   });
 });
 
@@ -540,9 +576,12 @@ test.describe("visual goldens — Adrián Embudo Kanban/Lista states (F1-S10)", 
     await expect(kanbanBoard).toBeVisible({ timeout: 5_000 });
     await shellPage.waitForTimeout(200);
 
-    await expect(contentLocator).toHaveScreenshot("adrian-embudo-kanban-light.png", {
-      maxDiffPixelRatio: 0.001,
-    });
+    await expect(contentLocator).toHaveScreenshot(
+      "adrian-embudo-kanban-light.png",
+      {
+        maxDiffPixelRatio: 0.001,
+      },
+    );
   });
 
   test("adrian-embudo lista state light 1280", async ({
@@ -565,13 +604,16 @@ test.describe("visual goldens — Adrián Embudo Kanban/Lista states (F1-S10)", 
     await listaPill.click();
 
     // Wait for lista view to mount
-    await expect(
-      shellPage.locator('[data-testid="pane-lista"]'),
-    ).toBeVisible({ timeout: 5_000 });
+    await expect(shellPage.locator('[data-testid="pane-lista"]')).toBeVisible({
+      timeout: 5_000,
+    });
     await shellPage.waitForTimeout(200);
 
-    await expect(contentLocator).toHaveScreenshot("adrian-embudo-lista-light.png", {
-      maxDiffPixelRatio: 0.001,
-    });
+    await expect(contentLocator).toHaveScreenshot(
+      "adrian-embudo-lista-light.png",
+      {
+        maxDiffPixelRatio: 0.001,
+      },
+    );
   });
 });

@@ -36,7 +36,10 @@ const AXE_SCAN_ROUTES = [
 test.describe("SC-9 · accessibility heading hierarchy + keyboard", () => {
   test.describe("axe wcag2aa · 0 violations en agentes representativos", () => {
     for (const { agent, subtab } of AXE_SCAN_ROUTES) {
-      test(`axe wcag2aa · ${agent}.${subtab}`, async ({ shellPage, tenantId }) => {
+      test(`axe wcag2aa · ${agent}.${subtab}`, async ({
+        shellPage,
+        tenantId,
+      }) => {
         const shell = new ShellOrganismPage(shellPage, tenantId);
         await shell.goto(agent, subtab);
         await shell.expectShellMounted();
@@ -134,7 +137,9 @@ test.describe("SC-9 · accessibility heading hierarchy + keyboard", () => {
 
       // Active ribbon tab should have aria-selected="true"
       await expect(
-        shellPage.locator('[data-testid="ribbon-tab-lisa"][aria-selected="true"]'),
+        shellPage.locator(
+          '[data-testid="ribbon-tab-lisa"][aria-selected="true"]',
+        ),
       ).toBeVisible();
     });
   });
