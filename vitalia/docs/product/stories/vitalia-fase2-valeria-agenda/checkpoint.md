@@ -6,14 +6,39 @@ type: ui-story
 agent_owner: valeria
 module: scheduling
 capability: valeria.agenda
-state: ready                                                       # ★ transitioned refined → ready 2026-05-27 by /architect
-phase: READY_PACKAGE_CLOSED                                        # ★ post architect single-shot
+state: developed                                                   # ★ transitioned developing → developed 2026-05-27 by /dev-team (autonomous chain)
+phase: HANDOFF_TO_AUDITOR                                          # ★ all 19 tickets pushed, awaiting auditor verdict
 po_ux_iter: 2
 architect_iter: 1                                                  # ★ single-shot full-stack
-last_artifact: 06-tickets.yaml v1 (19 tickets) + 03-arch.md + 04-validators.yaml + 05-guidelines.md
+dev_team_iter: 1                                                   # ★ autonomous build single-pass
+last_artifact: T-19-result.md (last ticket pushed 84c9e977)
 last_modified: 2026-05-27
 transitioned_at: 2026-05-27T00:00:00Z
-transitioned_by: /architect (Opus 4.7 single-shot full-stack)
+transitioned_by: /dev-team (autonomous chain — Sonnet builders BE+FE)
+tickets_pushed:
+  - { id: T-1,  surface: BE, commit: "635a96d7" }
+  - { id: T-2,  surface: BE, commit: "4253e076" }
+  - { id: T-3,  surface: BE, commit: "1ec797e3" }
+  - { id: T-4,  surface: BE, commit: "a860cc60" }
+  - { id: T-5,  surface: BE, commit: "214d1769" }
+  - { id: T-6,  surface: BE, commit: "0995d743" }
+  - { id: T-7,  surface: BE, commit: "b4204ea6" }
+  - { id: T-8,  surface: BE, commit: "40aa6e77" }
+  - { id: T-9,  surface: BE, commit: "340286ff" }
+  - { id: T-10, surface: FE, commit: "1c921968" }
+  - { id: T-11, surface: FE, commit: "df1307c1" }
+  - { id: T-12, surface: FE, commit: "72c724ab" }
+  - { id: T-13, surface: FE, commit: "35b353e0" }
+  - { id: T-14, surface: FE, commit: "ed4171d3" }
+  - { id: T-15, surface: FE, commit: "1ea7053a" }
+  - { id: T-16, surface: FE, commit: "20d90183" }
+  - { id: T-17, surface: FE-E2E, commit: "8a6bb891" }
+  - { id: T-18, surface: FE-a11y, commit: "5fc22cc5" }
+  - { id: T-19, surface: FE-visual, commit: "84c9e977" }
+service_deps_used: "Option A — stubs + MSW per 03-arch § 8.6 (vitalia-payment-adapter-mvp + vitalia-fiscal-emission-pe NOT developed)"
+known_tech_debt:
+  - "AgendaPlaceholder still in PLACEHOLDER_MAP SubTabContent.tsx (dead code post page.tsx static route intercept — audit decides cleanup)"
+  - "Docker stack pre-existing issue (@hookform/resolvers/zod missing in container) blocks visual snapshot runtime generation — specs parse OK, goldens require stack fix"
 ratified_by_chris: true                                            # ★ spec v1 ratificado 2026-05-26
 ratified_at: 2026-05-26T19:35:00Z
 ratified_visual_by_chris: true                                     # ★ 10/10 mockups ratificados
@@ -76,7 +101,7 @@ reuse_map_summary: "REFACTOR slice-1-agenda · REUSE scheduling engine (read-onl
 spawned_at: 2026-05-22
 supersedes:
   - vitalia-slice-1-agenda                    # refactor target — capability promovida aquí
-next_action: "/dev-team vitalia vitalia-fase2-valeria-agenda — ready package complete (03-arch + 04-validators + 05-guidelines + 06-tickets v1). Starts Conv 2 autonomous build · DAG 19 tickets · ~62h · 6-7 dev-days estimate · OPTION A service-blocker stub+MSW per default · AUTO-CHAIN /auditor → /pm-vitalia merge → done · capability scheduling/valeria-agenda promovida post-merge."
+next_action: "/auditor vitalia vitalia-fase2-valeria-agenda — AUTO-HANDOFF post all 19 tickets pushed · spawn auditor-backend + auditor-frontend · Phase D gherkin matrix (11 SC → test path → status) · CHECKPOINTS C1-C5 grid · self-fix cap 4 / audit cap 3 · HIPAA-lite extras (dual filter + audit log + sanitize + ComplianceService + PHI masking) · APPROVED → AUTO-HANDOFF /pm-vitalia merge → done"
 
 cemented_decisions_iter_1:                        # batches 1-4 /po-ux 2026-05-26
   batch_1_mockups_cobrar_calendar_slot:
