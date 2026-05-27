@@ -9,6 +9,15 @@
 # Stories 11-13 (vitalia, comunify, lupulo) heredan automatico.
 
 # ════════════════════════════════════════════════════════════════
+# Workspace root (used by Phase 4b targets — schema v2 ledger + releases)
+# ════════════════════════════════════════════════════════════════
+WS := $(shell git rev-parse --show-toplevel)
+
+# Python venv resolver: prefer worktree-local .venv, fallback a luana-platform principal
+# (worktrees efímeros como protocol-* no tienen .venv propio)
+PYTHON := $(shell test -x $(WS)/.venv/bin/python && echo $(WS)/.venv/bin/python || echo /home/chalreme/Proyectos/luana-platform/.venv/bin/python)
+
+# ════════════════════════════════════════════════════════════════
 # BRANDS — append future brand slugs as their migration stories close
 # ════════════════════════════════════════════════════════════════
 BRANDS := nicolify vitalia comunify lupulo
@@ -21,6 +30,7 @@ BRANDS := nicolify vitalia comunify lupulo
 .PHONY: dev-clean-nicolify dev-clean-vitalia dev-clean-comunify dev-clean-lupulo dev-clean-all
 .PHONY: infra-matrix portfolio portfolio-check scan-promotables
 .PHONY: ci-parity $(BRANDS:%=ci-parity-%) ci-parity-be ci-parity-fe
+.PHONY: releases-vitalia capability-ledger-check migrate-vitalia-schema
 .PHONY: install-hooks help
 
 COMPOSE_BASE := docker compose -f docker-compose.dev.yml
@@ -168,6 +178,31 @@ ci-parity-fe:
 	@for brand in $(BRANDS); do \
 		bash scripts/ci-parity.sh --brand=$$brand --skip-be; \
 	done
+
+# ════════════════════════════════════════════════════════════════
+# Phase 4b — Release schema v2 + capability ledger (cement 2026-05-27)
+# ════════════════════════════════════════════════════════════════
+
+releases-vitalia:  ## Generate BACKLOG by release for vitalia + show stats
+	$(PYTHON) scripts/generate_backlog.py --brand vitalia
+	@echo ""
+	@echo "=== Vitalia releases status ==="
+	@for f in vitalia/docs/product/releases/F*.yaml; do \
+		release_id=$$(basename $$f .yaml); \
+		status=$$(grep -E "^status:" $$f | awk '{print $$2}'); \
+		stories_count=$$(grep -cE "^  - " $$f || echo 0); \
+		echo "$$release_id · status=$$status · stories=$$stories_count"; \
+	done
+
+capability-ledger-check:  ## Run reconcile --validate-ledger across all active brands
+	@for b in vitalia nicolify comunify lupulo; do \
+		echo "=== $$b cap ledger check ==="; \
+		$(PYTHON) scripts/reconcile_capabilities.py --brand $$b --validate-ledger || exit 1; \
+	done
+
+migrate-vitalia-schema:  ## One-shot · migrate vitalia to schema v2 (releases + cap ledger) · idempotent
+	$(PYTHON) scripts/migrate_to_release_schema.py --brand vitalia
+	$(PYTHON) scripts/migrate_capability_ledger.py --brand vitalia
 
 # ── hooks ────────────────────────────────────────────────────────────────────
 install-hooks:

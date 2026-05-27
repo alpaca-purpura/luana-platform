@@ -124,6 +124,24 @@ class CapRollup:
     deprecated: int = 0
 
 
+@dataclass
+class Release:
+    """Release bucket (F0..F8) — schema v2 cement 2026-05-27.
+
+    Loaded from ``{base}/docs/product/releases/F*.yaml``. Used to group stories
+    by release in BACKLOG.md output. Stories without a ``release:`` field (or
+    with ``release: null``) bucket under ``(sin release · legacy)``.
+    """
+
+    release_id: str  # e.g. "F0"
+    name: str  # human-readable title
+    status: str  # planned | in-progress | shipped
+    order: int  # sort key
+    target_date: str | None
+    shipped_date: str | None
+    stories: list[str] = field(default_factory=list)  # story_id list (declarative)
+
+
 # ─── Parsing helpers ───────────────────────────────────────────────────
 
 
@@ -297,6 +315,7 @@ def read_active_stories_new(repo: Path) -> list[Item]:
                 last_touched=fm.get("last_modified"),
                 extra={
                     "outcome": fm.get("outcome"),
+                    "release": fm.get("release"),  # v2 cement 2026-05-27 (None for legacy)
                     "phase": fm.get("phase"),
                     "next_action": fm.get("next_action"),
                     "blocked_by": fm.get("blocked_by"),
@@ -305,6 +324,37 @@ def read_active_stories_new(repo: Path) -> list[Item]:
                 },
             )
         )
+    return out
+
+
+def read_releases(base: Path) -> list[Release]:
+    """Read ``{base}/docs/product/releases/F*.yaml`` → sorted list of Releases.
+
+    Schema v2 cement 2026-05-27. Returns empty list if releases dir missing
+    (backward compatible with brands not yet migrated). Sort order:
+    ``order`` field ascending, then ``release_id`` lexicographic as tiebreaker.
+    """
+    releases_dir = base / "docs" / "product" / "releases"
+    if not releases_dir.exists():
+        return []
+    out: list[Release] = []
+    for f in sorted(releases_dir.glob("F*.yaml")):
+        try:
+            fm = load_frontmatter(f)
+        except (FrontmatterError, yaml.YAMLError):
+            continue
+        out.append(
+            Release(
+                release_id=fm.get("release_id", f.stem),
+                name=fm.get("name", f.stem),
+                status=fm.get("status", "planned"),
+                order=int(fm.get("order", 999)),
+                target_date=fm.get("target_date"),
+                shipped_date=fm.get("shipped_date"),
+                stories=list(fm.get("stories") or []),
+            )
+        )
+    out.sort(key=lambda r: (r.order, r.release_id))
     return out
 
 
@@ -465,6 +515,7 @@ def aggregate(repo: Path, *, brand: str | None = None) -> dict[str, Any]:
     outcomes = read_outcomes(base)
     stories_new = read_active_stories_new(base)
     caps = read_capability_rollup(base)
+    releases = read_releases(base)
 
     # Legacy readers only make sense in root scope (single-brand pre-reorg state).
     # Per-brand scopes never had docs/projects/ or docs/pm-nico/.
@@ -543,6 +594,18 @@ def aggregate(repo: Path, *, brand: str | None = None) -> dict[str, Any]:
     if stale_refined:
         warnings.append(f"{len(stale_refined)} stale refined (>{CAPS['refined_stale_days']}d untouched)")
 
+    # Release-grouping bucket (schema v2 cement 2026-05-27).
+    # Maps release_id → list of story items. Stories without release/null land
+    # in "(sin release · legacy)" bucket for backward compat.
+    by_release: dict[str, list[Item]] = {r.release_id: [] for r in releases}
+    by_release["(sin release · legacy)"] = []
+    for it in stories_new:
+        rel = it.extra.get("release")
+        if rel and rel in by_release:
+            by_release[rel].append(it)
+        else:
+            by_release["(sin release · legacy)"].append(it)
+
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "brand": brand or "platform",
@@ -563,6 +626,24 @@ def aggregate(repo: Path, *, brand: str | None = None) -> dict[str, Any]:
             }
             for c in caps
         ],
+        # Release schema v2 metadata + grouping. Empty list / empty dict if brand
+        # not yet migrated to release schema (backward compat with legacy outcomes).
+        "releases": [
+            {
+                "release_id": r.release_id,
+                "name": r.name,
+                "status": r.status,
+                "order": r.order,
+                "target_date": r.target_date,
+                "shipped_date": r.shipped_date,
+                "declared_stories": r.stories,
+            }
+            for r in releases
+        ],
+        "stories_by_release": {
+            rel_id: [_item_to_dict(it) for it in items_]
+            for rel_id, items_ in by_release.items()
+        },
     }
 
 
@@ -723,6 +804,52 @@ def render_md(backlog: dict[str, Any]) -> str:  # noqa: PLR0915, C901, PLR0912
     for it in buckets["dropped"]:
         lines.append(f"- ❌ ~~{it['id']}~~")
     lines.append("")
+
+    # ─── Stories grouped by release (schema v2 cement 2026-05-27) ────
+    releases_meta = backlog.get("releases") or []
+    by_release_dict = backlog.get("stories_by_release") or {}
+    if releases_meta or by_release_dict.get("(sin release · legacy)"):
+        lines.append("---")
+        lines.append("")
+        lines.append("## 🚀 Stories by release (schema v2)")
+        lines.append("")
+        # Sorted release buckets first (F0..F8 in declared order)
+        for r in releases_meta:
+            rel_id = r["release_id"]
+            stories_in_rel = by_release_dict.get(rel_id, [])
+            status_badge = {
+                "shipped": "✅ shipped",
+                "in-progress": "🔨 in-progress",
+                "planned": "📋 planned",
+            }.get(r.get("status", "planned"), r.get("status", "planned"))
+            date_str = r.get("shipped_date") or r.get("target_date") or "—"
+            lines.append(f"### {rel_id} · {r.get('name', rel_id)}")
+            lines.append(f"> status: **{status_badge}** · date: `{date_str}` · stories: **{len(stories_in_rel)}**")
+            lines.append("")
+            if stories_in_rel:
+                for it in stories_in_rel:
+                    state = it.get("state", "?")
+                    phase = (it.get("extra") or {}).get("phase", "")
+                    phase_str = f" [{phase}]" if phase else ""
+                    lines.append(f"- `{state}` **{it['id']}**{phase_str}")
+            else:
+                lines.append("- _(no stories yet)_")
+            lines.append("")
+        # Legacy bucket — stories without release: field (or release: null)
+        legacy_stories = by_release_dict.get("(sin release · legacy)") or []
+        if legacy_stories:
+            lines.append("### (sin release · legacy)")
+            lines.append(
+                f"> stories sin campo `release:` (pre-schema-v2). Migrar a release "
+                f"appropriado via `scripts/migrate_to_release_schema.py`. **{len(legacy_stories)}** items."
+            )
+            lines.append("")
+            for it in legacy_stories:
+                state = it.get("state", "?")
+                outcome = (it.get("extra") or {}).get("outcome")
+                outcome_str = f" — outcome `{outcome}`" if outcome else ""
+                lines.append(f"- `{state}` **{it['id']}**{outcome_str}")
+            lines.append("")
 
     # ─── Mermaid kanban ──────────────────────────────────────────────
     lines.append("---")
