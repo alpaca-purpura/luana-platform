@@ -24,6 +24,7 @@ import { useCallback } from "react";
 import { List } from "react-window";
 import { cn } from "@/lib/cn";
 import { AgendaSlotInteractive } from "./AgendaSlotInteractive";
+import { useTenantLocale } from "@/hooks/useTenantLocale";
 import type { AgendaSlot } from "../../types/agenda.types";
 
 // ── Constants (03-arch.md § 6.12) ─────────────────────────────────────────────
@@ -87,14 +88,16 @@ function SlotRowComponent(
 
 // ── Formatted date header ──────────────────────────────────────────────────────
 
-function formatDayHeader(dateStr: string): string {
+function formatDayHeader(dateStr: string, timezone: string, locale: string): string {
   try {
     const d = new Date(`${dateStr}T12:00:00`);
-    return d.toLocaleDateString("es-419", {
+    if (isNaN(d.getTime())) return dateStr;
+    return new Intl.DateTimeFormat(locale, {
       weekday: "long",
       day: "numeric",
       month: "long",
-    });
+      timeZone: timezone,
+    }).format(d);
   } catch {
     return dateStr;
   }
@@ -117,7 +120,8 @@ export function DayCalendar({
   onSlotClick,
   className,
 }: DayCalendarProps) {
-  const dayLabel = formatDayHeader(date);
+  const { timezone, locale } = useTenantLocale();
+  const dayLabel = formatDayHeader(date, timezone, locale);
   const useVirtualization = slots.length > VIRTUAL_THRESHOLD;
 
   const handleSlotClick = useCallback(

@@ -23,6 +23,17 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { AppointmentDrawerTurnoSection } from "../AppointmentDrawerTurnoSection";
 import type { Appointment } from "../../../types/agenda.types";
 
+// ── Mocks ──────────────────────────────────────────────────────────────────────
+
+// useTenantLocale added in F2 master-data fix — mock Clerk-dependent hook
+vi.mock("@/hooks/useTenantLocale", () => ({
+  useTenantLocale: () => ({
+    currency: "PEN",
+    timezone: "America/Lima",
+    locale: "es-PE",
+  }),
+}));
+
 // ── Fixtures ───────────────────────────────────────────────────────────────
 
 const BASE_APPOINTMENT: Appointment = {

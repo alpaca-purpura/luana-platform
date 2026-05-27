@@ -180,6 +180,7 @@
   --vitalia-success-color: hsl(142 76% 36%);
   --vitalia-warning-color: hsl(33 91% 44%);
   --vitalia-danger-color: hsl(0 73% 50%);
+  --vitalia-info-color: hsl(213 93% 40%);
   --vitalia-muted-status-color: hsl(220 9% 65%);
 
   /* Soft semantic tones (Storybook role-gate demos + future success/danger UIs) */

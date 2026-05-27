@@ -24,6 +24,8 @@ import { Receipt, FileText } from "lucide-react";
 import { CobrarSaldoSubform } from "./CobrarSaldoSubform";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { formatMoney } from "@/lib/format/formatMoney";
+import { formatTenantDateTime } from "@/lib/format/formatTenantDateTime";
 import type { Appointment, AppointmentPayment } from "../../types/agenda.types";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -37,6 +39,8 @@ export interface AppointmentDrawerPagoSectionProps {
   tenantCurrency: string;
   /** Tenant locale string for Intl.NumberFormat (e.g., "es-PE"). */
   tenantLocale: string;
+  /** Tenant timezone (e.g., "America/Lima") — forwarded for date formatting. */
+  tenantTimezone: string;
   /** Whether to auto-emit invoice (tenant.config.auto_emit_invoice). */
   defaultEmitInvoice?: boolean;
 }
@@ -51,11 +55,11 @@ type PaymentBadgeConfig = {
 const PAYMENT_STATUS_BADGE: Record<string, PaymentBadgeConfig> = {
   paid: {
     label: "Pagado",
-    className: "border-green-500 text-green-700 bg-green-50 dark:bg-green-950/20 dark:text-green-400",
+    className: "border-[color:var(--vitalia-success-color)] text-[color:var(--vitalia-success-color)] bg-[color:var(--vitalia-success-color)]/10",
   },
   deposit: {
     label: "Con depósito",
-    className: "border-yellow-500 text-yellow-700 bg-yellow-50 dark:bg-yellow-950/20 dark:text-yellow-400",
+    className: "border-[color:var(--vitalia-warning-color)] text-[color:var(--vitalia-warning-color)] bg-[color:var(--vitalia-warning-color)]/10",
   },
   unpaid: {
     label: "Sin pago",
@@ -70,36 +74,16 @@ const PAYMENT_STATUS_BADGE: Record<string, PaymentBadgeConfig> = {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 /**
- * Formats cents to display currency string.
- * Uses Intl.NumberFormat with locale and currency from tenant.
- * NEVER hardcodes 'USD' — fallback chain from appointment data → tenantCurrency.
+ * Wraps shared formatMoney for nullable cents (returns "—" when null).
+ * Converts cents → decimal before calling shared helper (F3 dedup fix).
  */
-function formatMoney(
+function formatAmountCents(
   amountCents: number | null,
   currency: string,
   locale: string,
 ): string {
   if (amountCents === null) return "—";
-  const amount = amountCents / 100;
-  return new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency,
-  }).format(amount);
-}
-
-/**
- * Formats ISO 8601 to short date-time (e.g., "27/05/2026 14:30").
- */
-function formatShortDateTime(isoString: string): string {
-  const date = new Date(isoString);
-  return date.toLocaleString("es-419", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
+  return formatMoney(amountCents / 100, currency, locale);
 }
 
 const PAYMENT_METHOD_LABELS: Record<string, string> = {
@@ -121,9 +105,10 @@ interface PaymentRowProps {
   payment: AppointmentPayment;
   currency: string;
   locale: string;
+  timezone: string;
 }
 
-function PaymentRow({ payment, currency, locale }: PaymentRowProps) {
+function PaymentRow({ payment, currency, locale, timezone }: PaymentRowProps) {
   const effectiveCurrency = payment.currency ?? currency;
   const methodLabel = PAYMENT_METHOD_LABELS[payment.method] ?? payment.method;
 
@@ -134,10 +119,10 @@ function PaymentRow({ payment, currency, locale }: PaymentRowProps) {
     >
       <div className="flex flex-col gap-0.5 min-w-0">
         <span className="font-medium">
-          {formatMoney(payment.amountCents, effectiveCurrency, locale)}
+          {formatAmountCents(payment.amountCents, effectiveCurrency, locale)}
         </span>
         <span className="text-xs text-muted-foreground">
-          {methodLabel} · {formatShortDateTime(payment.createdAt)}
+          {methodLabel} · {formatTenantDateTime(payment.createdAt, timezone, locale)}
         </span>
         {payment.createdByLabel && (
           <span className="text-xs text-muted-foreground truncate">
@@ -178,6 +163,7 @@ export function AppointmentDrawerPagoSection({
   tenantId,
   tenantCurrency,
   tenantLocale,
+  tenantTimezone,
   defaultEmitInvoice = true,
 }: AppointmentDrawerPagoSectionProps) {
   // Currency: per-appointment override takes precedence over tenant default
@@ -213,8 +199,8 @@ export function AppointmentDrawerPagoSection({
           {appointment.balancePaidCents !== null && (
             <div className="flex flex-col gap-0.5">
               <span className="text-xs text-muted-foreground">Pagado</span>
-              <span className="font-medium text-green-700 dark:text-green-400">
-                {formatMoney(appointment.balancePaidCents, effectiveCurrency, tenantLocale)}
+              <span className="font-medium text-[color:var(--vitalia-success-color)]">
+                {formatAmountCents(appointment.balancePaidCents, effectiveCurrency, tenantLocale)}
               </span>
             </div>
           )}
@@ -226,10 +212,10 @@ export function AppointmentDrawerPagoSection({
                   "font-medium",
                   appointment.balanceDueCents > 0
                     ? "text-destructive"
-                    : "text-green-700 dark:text-green-400",
+                    : "text-[color:var(--vitalia-success-color)]",
                 )}
               >
-                {formatMoney(appointment.balanceDueCents, effectiveCurrency, tenantLocale)}
+                {formatAmountCents(appointment.balanceDueCents, effectiveCurrency, tenantLocale)}
               </span>
             </div>
           )}
@@ -264,6 +250,7 @@ export function AppointmentDrawerPagoSection({
                   payment={payment}
                   currency={effectiveCurrency}
                   locale={tenantLocale}
+                  timezone={tenantTimezone}
                 />
               </div>
             ))}

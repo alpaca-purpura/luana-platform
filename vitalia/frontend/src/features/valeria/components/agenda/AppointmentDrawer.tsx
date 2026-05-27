@@ -71,6 +71,11 @@ export interface AppointmentDrawerProps {
    * NEVER hardcode — pass from parent which reads useTenantLocale().
    */
   tenantLocale: string;
+  /**
+   * Tenant timezone (e.g., "America/Lima") from useTenantLocale().
+   * NEVER hardcode — forwarded to PagoSection for payment date formatting.
+   */
+  tenantTimezone: string;
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -112,14 +117,12 @@ function useResizeHandle(
       const delta = startX.current - e.clientX;
       const newWidth = startWidth.current + delta;
 
-      // Debounce localStorage write (100ms per spec)
+      // Debounce state write (100ms) — single write path (F5 fix: removed immediate dupe).
+      // React state update drives both visual and localStorage (via useDrawerWidth).
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
       debounceTimer.current = setTimeout(() => {
         setDrawerWidth(newWidth);
       }, 100);
-
-      // Apply visual update immediately (without waiting for debounce)
-      setDrawerWidth(newWidth);
     },
     [setDrawerWidth],
   );
@@ -143,6 +146,7 @@ export function AppointmentDrawer({
   tenantId,
   tenantCurrency,
   tenantLocale,
+  tenantTimezone,
 }: AppointmentDrawerProps) {
   useAuth(); // Confirm auth context is available (Clerk)
   const queryClient = useQueryClient();
@@ -335,6 +339,7 @@ export function AppointmentDrawer({
                         tenantId={tenantId}
                         tenantCurrency={tenantCurrency}
                         tenantLocale={tenantLocale}
+                        tenantTimezone={tenantTimezone}
                       />
                     </AccordionContent>
                   </AccordionItem>

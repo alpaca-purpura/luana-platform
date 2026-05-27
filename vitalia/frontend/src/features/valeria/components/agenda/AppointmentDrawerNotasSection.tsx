@@ -18,6 +18,8 @@
 
 import { Clock } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import { useTenantLocale } from "@/hooks/useTenantLocale";
+import { formatTenantDate } from "@/lib/format/formatTenantDate";
 import type { Appointment } from "../../types/agenda.types";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -34,10 +36,10 @@ export interface AppointmentDrawerNotasSectionProps {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 /**
- * Formats ISO 8601 to relative time string (e.g., "hace 5 min", "hace 2 horas").
- * Falls back to absolute date for older entries.
+ * Formats ISO 8601 to relative time string (e.g., "Hace 5 min", "Hace 2 h").
+ * Falls back to formatTenantDate for older entries (F2 master-data fix).
  */
-function formatRelativeTime(isoString: string): string {
+function formatRelativeTime(isoString: string, timezone: string, locale: string): string {
   const date = new Date(isoString);
   const now = Date.now();
   const diffMs = now - date.getTime();
@@ -50,11 +52,7 @@ function formatRelativeTime(isoString: string): string {
   if (diffHours < 24) return `Hace ${diffHours} h`;
   if (diffDays < 7) return `Hace ${diffDays} días`;
 
-  return date.toLocaleDateString("es-419", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+  return formatTenantDate(isoString, timezone, locale);
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -70,6 +68,8 @@ export function AppointmentDrawerNotasSection({
   onNotesChange,
   isSavingNotes = false,
 }: AppointmentDrawerNotasSectionProps) {
+  const { timezone, locale } = useTenantLocale();
+
   return (
     <div
       className="flex flex-col gap-4"
@@ -115,7 +115,7 @@ export function AppointmentDrawerNotasSection({
             aria-hidden="true"
           />
           <span>
-            Última actividad: {formatRelativeTime(appointment.lastActivityAt)}
+            Última actividad: {formatRelativeTime(appointment.lastActivityAt, timezone, locale)}
             {appointment.lastActivityByLabel && (
               <> por {appointment.lastActivityByLabel}</>
             )}

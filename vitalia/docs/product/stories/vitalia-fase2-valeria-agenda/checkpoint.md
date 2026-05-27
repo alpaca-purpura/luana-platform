@@ -6,8 +6,8 @@ type: ui-story
 agent_owner: valeria
 module: scheduling
 capability: valeria.agenda
-state: developed                                                   # ★ transitioned developing → developed 2026-05-27 by /dev-team (autonomous chain)
-phase: HANDOFF_TO_AUDITOR                                          # ★ all 19 tickets pushed, awaiting auditor verdict
+state: reviewing                                                   # ★ transitioned developed → reviewing 2026-05-27 by /auditor (autonomous chain)
+phase: AUDIT_IN_PROGRESS                                           # ★ auditor-backend + auditor-frontend spawned
 po_ux_iter: 2
 architect_iter: 1                                                  # ★ single-shot full-stack
 dev_team_iter: 1                                                   # ★ autonomous build single-pass

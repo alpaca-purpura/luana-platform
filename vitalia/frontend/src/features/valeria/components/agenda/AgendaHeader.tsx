@@ -21,6 +21,8 @@ import { ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/button";
 import { useAgendaFilters } from "../../hooks/useAgendaFilters";
+import { useTenantLocale } from "@/hooks/useTenantLocale";
+import { formatTenantDate } from "@/lib/format/formatTenantDate";
 import type { AgendaView } from "../../types/agenda.types";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -70,33 +72,40 @@ function stepDate(dateStr: string, view: AgendaView, direction: -1 | 1): string 
   return formatDate(date);
 }
 
-function formatDisplayDate(dateStr: string, view: AgendaView): string {
-  const date = parseDate(dateStr);
-  const locale = "es-419";
-
+function formatDisplayDate(
+  dateStr: string,
+  view: AgendaView,
+  timezone: string,
+  locale: string,
+): string {
   switch (view) {
-    case "dia":
-      return date.toLocaleDateString(locale, {
-        weekday: "short",
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      });
+    case "dia": {
+      const isoDay = `${dateStr}T12:00:00`;
+      return formatTenantDate(isoDay, timezone, locale);
+    }
     case "semana": {
-      // Show start of week label: "Semana del 12 may. 2026"
-      const startOfWeek = new Date(date);
-      startOfWeek.setDate(date.getDate() - date.getDay() + 1); // Monday
-      return `Sem. del ${startOfWeek.toLocaleDateString(locale, {
+      // Show Monday of the week: "Sem. del 12 may. 2026"
+      const date = parseDate(dateStr);
+      const dayOfWeek = date.getDay();
+      const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Monday
+      date.setDate(date.getDate() + diff);
+      const isoMonday = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}T12:00:00`;
+      const formatted = new Intl.DateTimeFormat(locale, {
         day: "numeric",
         month: "short",
         year: "numeric",
-      })}`;
+        timeZone: timezone,
+      }).format(new Date(isoMonday));
+      return `Sem. del ${formatted}`;
     }
-    case "mes":
-      return date.toLocaleDateString(locale, {
+    case "mes": {
+      const isoMid = `${dateStr.slice(0, 7)}-15T12:00:00`;
+      return new Intl.DateTimeFormat(locale, {
         month: "long",
         year: "numeric",
-      });
+        timeZone: timezone,
+      }).format(new Date(isoMid));
+    }
   }
 }
 
@@ -114,6 +123,7 @@ export function AgendaHeader({
   className,
 }: AgendaHeaderProps) {
   const { view, date, setView, setDate } = useAgendaFilters();
+  const { timezone, locale } = useTenantLocale();
 
   const handlePrev = () => setDate(stepDate(date, view, -1));
   const handleNext = () => setDate(stepDate(date, view, 1));
@@ -173,7 +183,7 @@ export function AgendaHeader({
           onClick={handleToday}
           aria-label="Ir a hoy"
         >
-          {formatDisplayDate(date, view)}
+          {formatDisplayDate(date, view, timezone, locale)}
         </Button>
 
         <Button

@@ -22,6 +22,7 @@
 
 import { ExternalLink } from "lucide-react";
 import { toast } from "sonner";
+import { formatMoney } from "@/lib/format/formatMoney";
 import type { ChargeResponseDTO } from "../../types/agenda-schema";
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -34,22 +35,6 @@ export interface ShowChargeSuccessToastParams {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-/**
- * Formats cents to display currency string using tenant locale.
- * NEVER hardcodes currency — uses response.currency.
- */
-function formatChargeAmount(
-  amountCents: number,
-  currency: string,
-  locale: string,
-): string {
-  const amount = amountCents / 100;
-  return new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency,
-  }).format(amount);
-}
 
 /**
  * Returns human-readable fiscal emission status label.
@@ -77,8 +62,8 @@ export function showChargeSuccessToast({
   response,
   tenantLocale,
 }: ShowChargeSuccessToastParams): void {
-  const amountFormatted = formatChargeAmount(
-    response.amountCents,
+  const amountFormatted = formatMoney(
+    response.amountCents / 100,
     response.currency,
     tenantLocale,
   );
@@ -136,7 +121,7 @@ export function ChargeSuccessToastDescription({
           href={response.fiscalDocUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1 text-xs text-green-600 hover:underline underline-offset-2"
+          className="flex items-center gap-1 text-xs text-[color:var(--vitalia-success-color)] hover:underline underline-offset-2"
           aria-label="Ver comprobante fiscal (nueva pestaña)"
         >
           <ExternalLink className="h-3 w-3" aria-hidden="true" />

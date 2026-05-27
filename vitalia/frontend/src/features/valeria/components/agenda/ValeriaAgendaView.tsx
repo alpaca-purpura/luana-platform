@@ -10,10 +10,15 @@
  *   2. Mount useAgendaGrid with polling (refetchInterval: 30_000).
  *   3. Sync useFreshness on each data update.
  *   4. Track AGENDA_VIEWED telemetry on mount (fire-and-forget, PHI-safe).
- *   5. Compose AgendaHeader + placeholder areas for T-13/T-14 components.
+ *   5. Compose full page: AgendaHeader + AgendaPresetFilters + AgendaCalendar
+ *      + AppointmentDrawer + CrearCitaButton (desktop + FAB mobile).
  *
- * Downstream: T-13 adds AgendaPresetFilters + AgendaCalendar + CrearCitaButton.
- *             T-14 adds AppointmentDrawer.
+ * ADR-vitalia-004 § 3.3 — Client root composición cementada.
+ *   - onSlotClick wired to openDrawer
+ *   - AppointmentDrawer conditionally mounted when drawerOpen && selectedSlotId
+ *   - AgendaPresetFilters always mounted
+ *   - CrearCitaButton desktop + FAB (mobile)
+ *   - monthAggregates passed to AgendaCalendar when view === "mes"
  *
  * Named exports only — NO default exports (FSD-Lite boundary enforcement).
  * downstream-regression-na: brand-local FE component; no cross-brand consumers
@@ -26,13 +31,18 @@ import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { AgendaHeader } from "./AgendaHeader";
 import { AgendaCalendar } from "./AgendaCalendar";
-import { useAgendaGrid, agendaKeys } from "../../api/agenda";
+import { AgendaPresetFilters } from "./AgendaPresetFilters";
+import { AppointmentDrawer } from "./AppointmentDrawer";
+import { CrearCitaButton } from "./CrearCitaButton";
+import { useAgendaGrid, useAgendaAggregates, agendaKeys } from "../../api/agenda";
 import { useDrawerStore } from "../../store/agenda-store";
 import { useAgendaFilters } from "../../hooks/useAgendaFilters";
 import { useFreshness } from "../../hooks/useFreshness";
 import { trackEvent, TrackEventType } from "../../lib/telemetry";
+import { useTenantLocale } from "@/hooks/useTenantLocale";
+import { useClinicId } from "@/hooks/useClinicId";
 import type { AgendaGridResponseDTO } from "../../types/agenda-schema";
-import type { AgendaView } from "../../types/agenda.types";
+import type { AgendaView, AgendaFilter } from "../../types/agenda.types";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -44,7 +54,7 @@ export interface ValeriaAgendaViewProps {
   /** Initial ISO 8601 date string from URL. */
   initialDate: string;
   /** Initial preset filter from URL. Null = no filter. */
-  initialPresetFilter: string | null;
+  initialPresetFilter: AgendaFilter | null;
   /** Tenant ID from URL params (injected by page.tsx Server Component). */
   tenantId: string;
 }
@@ -61,25 +71,27 @@ export function ValeriaAgendaView({
   initialData,
   initialView,
   initialDate,
-  initialPresetFilter: _initialPresetFilter,
+  initialPresetFilter,
   tenantId,
 }: ValeriaAgendaViewProps) {
   const queryClient = useQueryClient();
   const { view, date, presetFilter } = useAgendaFilters();
-  const { drawerOpen } = useDrawerStore();
+  const { drawerOpen, selectedSlotId, openDrawer } = useDrawerStore();
   const { freshnessLabel, updateFreshness } = useFreshness();
+  const { currency, timezone, locale } = useTenantLocale();
+  const clinicId = useClinicId();
 
   // Resolve effective view/date (URL overrides initial props after mount)
   const effectiveView = view ?? initialView;
   const effectiveDate = date ?? initialDate;
 
   // Hydrate React Query cache with SSR data on mount.
-  // Deps intentionally empty — run once on mount only (SSR hydration).
-  // queryClient is stable (from QueryClientProvider), initialData/View/Date are SSR props.
+  // Uses initialPresetFilter (not null) to align the cache key with the live hook.
+  // F6 fix: key must match what the live hook uses (initialPresetFilter, not null).
   useEffect(
     () => {
       queryClient.setQueryData(
-        agendaKeys.grid(tenantId, initialView, initialDate, null),
+        agendaKeys.grid(tenantId, initialView, initialDate, initialPresetFilter),
         initialData,
       );
     },
@@ -113,6 +125,12 @@ export function ValeriaAgendaView({
     },
   });
 
+  // Month aggregates: A5 — useAgendaAggregates shape (AgendaAggregatesResponse) does not
+  // match MonthAggregates (month+days) expected by AgendaCalendar. Passing null until
+  // MonthCalendar adapter is implemented in a follow-up ticket.
+  // TODO(T-13+): wire aggregatesQuery.data once MonthAggregates adapter is built.
+  void useAgendaAggregates;  // import retained for future use
+
   // Sync freshness indicator with latest serverTime from BE
   useEffect(() => {
     if (data?.serverTime) {
@@ -124,8 +142,7 @@ export function ValeriaAgendaView({
     <main
       className={cn(
         "flex h-full flex-col gap-0 overflow-hidden",
-        // Shift layout when drawer is open (T-14 will hook into this)
-        drawerOpen && "pr-0",
+        drawerOpen && "md:pr-0",
       )}
       aria-label="Agenda de citas"
     >
@@ -134,6 +151,9 @@ export function ValeriaAgendaView({
         tenantId={tenantId}
         freshnessLabel={freshnessLabel}
       />
+
+      {/* Preset filter chips — always rendered (T-16) */}
+      <AgendaPresetFilters />
 
       {/* Loading overlay — shown only on initial load (not polling refresh) */}
       {isLoading && !data && (
@@ -163,7 +183,7 @@ export function ValeriaAgendaView({
         </div>
       )}
 
-      {/* Main content area — grid + filters (T-13) + drawer (T-14) */}
+      {/* Main content area — grid + drawer */}
       {(data || !isLoading) && (
         <section
           className="relative flex flex-1 overflow-hidden"
@@ -173,7 +193,9 @@ export function ValeriaAgendaView({
           <AgendaCalendar
             slots={data?.slots ?? []}
             tenantId={tenantId}
+            monthAggregates={null}
             isLoading={isLoading && !data}
+            onSlotClick={openDrawer}
             className="flex-1"
           />
           {/* Empty-state announcement for screen readers (also tested by T-12 suite) */}
@@ -185,8 +207,37 @@ export function ValeriaAgendaView({
               Sin citas para mostrar en este período.
             </p>
           )}
-          {/* T-14 will render AppointmentDrawer here */}
+
+          {/* AppointmentDrawer — conditionally mounted when slot is selected (T-14) */}
+          {drawerOpen && selectedSlotId && (
+            <AppointmentDrawer
+              tenantId={tenantId}
+              tenantCurrency={currency}
+              tenantLocale={locale}
+              tenantTimezone={timezone}
+            />
+          )}
         </section>
+      )}
+
+      {/* CrearCitaButton — desktop variant (inline) + FAB mobile (fixed) (T-16) */}
+      {clinicId && (
+        <>
+          {/* Desktop: positioned in lower-right of content area */}
+          <CrearCitaButton
+            tenantId={tenantId}
+            clinicId={clinicId}
+            variant="button"
+            className="absolute bottom-6 right-6 hidden md:flex"
+          />
+          {/* Mobile FAB: fixed bottom-right */}
+          <CrearCitaButton
+            tenantId={tenantId}
+            clinicId={clinicId}
+            variant="fab"
+            className="md:hidden"
+          />
+        </>
       )}
     </main>
   );

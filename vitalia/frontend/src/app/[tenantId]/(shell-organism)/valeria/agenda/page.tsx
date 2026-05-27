@@ -58,7 +58,9 @@ export default async function ValeriaAgendaPage({
 
   const view = resolveView(sp.view);
   const date = sp.date ?? new Date().toISOString().slice(0, 10);
-  const presetFilter = sp.preset_filter ?? null;
+  // Cast to AgendaFilter | null — route layer validates trusted searchParams.
+  // Unknown values reach the server as null (no PHI in URL per HIPAA-lite).
+  const presetFilter = (sp.preset_filter ?? null) as import("@/features/valeria").AgendaFilter | null;
 
   // SSR initial data — graceful degradation (returns empty grid on error)
   const initialData = await getInitialAgendaState({

@@ -27,7 +27,7 @@ export interface AgendaSummaryFooterProps {
 
 /** Status legend items */
 const STATUS_LEGEND = [
-  { color: "bg-green-500", label: "Pagado" },
+  { color: "bg-[color:var(--vitalia-success-color)]", label: "Pagado" },
   { color: "bg-agent-adrian", label: "30% depósito" },
   { color: "bg-amber-500", label: "Sin pago" },
   { color: "bg-red-500", label: "No-show riesgo" },

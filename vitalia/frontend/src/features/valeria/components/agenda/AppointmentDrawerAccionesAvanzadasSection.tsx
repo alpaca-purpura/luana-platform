@@ -85,7 +85,7 @@ export function AppointmentDrawerAccionesAvanzadasSection({
         </span>
 
         {reminderSent ? (
-          <div className="flex items-center gap-2 text-sm text-green-700 dark:text-green-400">
+          <div className="flex items-center gap-2 text-sm text-[color:var(--vitalia-success-color)]">
             <CheckCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
             <span>Recordatorio enviado por WhatsApp</span>
           </div>

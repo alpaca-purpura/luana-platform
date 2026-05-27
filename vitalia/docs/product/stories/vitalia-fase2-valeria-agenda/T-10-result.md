@@ -170,7 +170,7 @@ Primitivos del ticket (todos verificados):
 
 ## Commit SHA
 
-(ver abajo post-push)
+`1c921968` — pushed to `wip/vitalia` (2026-05-27)
 
 ---
 
@@ -183,3 +183,40 @@ Primitivos del ticket (todos verificados):
 **formatRelativeTime:** Thin wrapper sobre `formatTenantRelative` que ya existe en `src/lib/format/`. Agrega prefix "Actualizado " para el patrón FreshnessIndicator específico de la agenda. No duplica lógica.
 
 **TelemetryPayload type:** Tipado loose (`TelemetryPayload | Record<string, unknown>`) para que el caller pueda pasar campos no previstos. El sanitizer protege contra PHI. En tickets futuros (T-13..T-16) se usará `TelemetryPayload` estrictamente.
+
+---
+
+## Auditor iter 1.5 — Clerk useOrganization regression fix
+
+**Fecha:** 2026-05-27  
+**Mode:** AUDITOR_AUTO_FIX_LOOP continuation
+
+### Root cause
+
+Audit iter 1 wired `useTenantLocale()` (replacing `toLocaleDateString()` in F2 master-data fix). `useTenantLocale()` calls `useOrganization()` from `@clerk/nextjs`. Test files that mocked `@clerk/nextjs` but only exported `useAuth` caused Vitest to error: "No `useOrganization` export is defined on the `@clerk/nextjs` mock."
+
+### Files changed (test-only, 5 files)
+
+| File | Fix applied |
+|---|---|
+| `__tests__/AppointmentDrawer.test.tsx` | Added `vi.mock("@/hooks/useTenantLocale", ...)` |
+| `__tests__/AppointmentDrawerPagoSection.test.tsx` | Added `vi.mock("@/hooks/useTenantLocale", ...)` |
+| `__tests__/AgendaCalendar.test.tsx` | Added `vi.mock("@/hooks/useTenantLocale", ...)` |
+| `AgendaHeader.test.tsx` | Added `vi.mock("@/hooks/useTenantLocale", ...)` |
+| `ValeriaAgendaView.test.tsx` | Added `vi.mock("@/hooks/useTenantLocale", ...)` + `vi.mock("@/hooks/useClinicId", ...)` |
+
+**Strategy:** Option B — mock `@/hooks/useTenantLocale` directly (minimal change, isolated, avoids touching Clerk mock structure). `useClinicId` also calls `useOrganization`, mocked the same way for `ValeriaAgendaView`.
+
+### Result
+
+```
+Test Files  13 passed (13)
+     Tests  166 passed (166) ← was 136 passing / 30 failing
+tsc --noEmit: 0 errors
+```
+
+**166/166 GREEN. Regression resolved.**
+
+### Commit
+
+`8c51ff5a` — changes included in parallel session commit to `wip/vitalia` (2026-05-27)

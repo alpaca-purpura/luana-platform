@@ -38,24 +38,24 @@ export function AppointmentDrawerStaleBanner({
   return (
     <Alert
       variant="default"
-      className="border-yellow-500/50 bg-yellow-50 dark:bg-yellow-950/20 dark:border-yellow-500/30"
+      className="border-[color:var(--vitalia-warning-color)]/50 bg-[color:var(--vitalia-warning-color)]/8"
       role="status"
       aria-live="polite"
       data-testid="stale-banner"
     >
       <AlertTriangle
-        className="h-4 w-4 text-yellow-600 dark:text-yellow-400"
+        className="h-4 w-4 text-[color:var(--vitalia-warning-color)]"
         aria-hidden="true"
       />
       <AlertDescription className="flex items-center justify-between gap-4">
-        <span className="text-yellow-800 dark:text-yellow-200">
+        <span className="text-[color:var(--vitalia-warning-color)]">
           Este turno fue actualizado por otro usuario.
         </span>
         <Button
           variant="outline"
           size="sm"
           onClick={onReload}
-          className="border-yellow-600 text-yellow-700 hover:bg-yellow-100 dark:border-yellow-400 dark:text-yellow-300 dark:hover:bg-yellow-900/30 shrink-0"
+          className="border-[color:var(--vitalia-warning-color)] text-[color:var(--vitalia-warning-color)] hover:bg-[color:var(--vitalia-warning-color)]/10 shrink-0"
         >
           Recargar datos
         </Button>

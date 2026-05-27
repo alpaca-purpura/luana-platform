@@ -38,7 +38,49 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { useTenantLocale } from "@/hooks/useTenantLocale";
 import type { Appointment } from "../../types/agenda.types";
+
+// ── Locale-aware date/time helpers ─────────────────────────────────────────────
+
+/**
+ * Formats an ISO 8601 datetime to localized weekday+date (e.g., "martes 27 de mayo de 2026").
+ * Uses tenant timezone — NEVER toLocaleDateString() (F2 master-data compliance).
+ */
+function formatDateWithWeekday(isoString: string, timezone: string, locale: string): string {
+  try {
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) return "—";
+    return new Intl.DateTimeFormat(locale, {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      timeZone: timezone,
+    }).format(date);
+  } catch {
+    return "—";
+  }
+}
+
+/**
+ * Formats an ISO 8601 datetime to HH:MM (24h) in tenant timezone.
+ * NEVER toLocaleTimeString() (F2 master-data compliance).
+ */
+function formatHHMM(isoString: string, timezone: string, locale: string): string {
+  try {
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) return "—";
+    return new Intl.DateTimeFormat(locale, {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+      timeZone: timezone,
+    }).format(date);
+  } catch {
+    return "—";
+  }
+}
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -60,12 +102,12 @@ const STATUS_BADGE: Record<
   SCHEDULED: {
     label: "Agendado",
     variant: "outline",
-    className: "border-blue-500 text-blue-600 bg-blue-50 dark:bg-blue-950/20 dark:text-blue-400",
+    className: "border-[color:var(--vitalia-info-color)] text-[color:var(--vitalia-info-color)] bg-[color:var(--vitalia-info-color)]/10",
   },
   COMPLETED: {
     label: "Completado",
     variant: "outline",
-    className: "border-green-500 text-green-600 bg-green-50 dark:bg-green-950/20 dark:text-green-400",
+    className: "border-[color:var(--vitalia-success-color)] text-[color:var(--vitalia-success-color)] bg-[color:var(--vitalia-success-color)]/10",
   },
   CANCELLED: {
     label: "Cancelado",
@@ -75,40 +117,15 @@ const STATUS_BADGE: Record<
   NO_SHOW: {
     label: "No asistió",
     variant: "outline",
-    className: "border-yellow-500 text-yellow-700 bg-yellow-50 dark:bg-yellow-950/20 dark:text-yellow-400",
+    className: "border-[color:var(--vitalia-warning-color)] text-[color:var(--vitalia-warning-color)] bg-[color:var(--vitalia-warning-color)]/10",
   },
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 /**
- * Formats an ISO 8601 datetime to Spanish date (e.g., "Martes 27 de mayo de 2026").
- * Uses a fixed ES locale — NEVER toLocaleDateString() without locale arg.
- */
-function formatDateEs(isoString: string): string {
-  const date = new Date(isoString);
-  return date.toLocaleDateString("es-419", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-}
-
-/**
- * Formats an ISO 8601 datetime to 24h time string (e.g., "14:30").
- */
-function formatTimeEs(isoString: string): string {
-  const date = new Date(isoString);
-  return date.toLocaleTimeString("es-419", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
-}
-
-/**
  * Computes duration in minutes between two ISO 8601 datetimes.
+ * formatDateEs/formatTimeEs removed (F2 master-data fix) — using formatTenantDate/Time.
  */
 function durationMinutes(startIso: string, endIso: string): number {
   const start = new Date(startIso).getTime();
@@ -130,6 +147,7 @@ export function AppointmentDrawerTurnoSection({
     { action: "CANCELLED" | "NO_SHOW" } | null
   >(null);
 
+  const { timezone, locale } = useTenantLocale();
   const status = appointment.appointmentStatus.toUpperCase();
   const statusConfig = STATUS_BADGE[status] ?? STATUS_BADGE.SCHEDULED;
   const duration = durationMinutes(appointment.startTime, appointment.endTime);
@@ -171,7 +189,7 @@ export function AppointmentDrawerTurnoSection({
             className="h-4 w-4 text-muted-foreground shrink-0"
             aria-hidden="true"
           />
-          <span className="capitalize">{formatDateEs(appointment.startTime)}</span>
+          <span className="capitalize">{formatDateWithWeekday(appointment.startTime, timezone, locale)}</span>
         </div>
         <div className="flex items-center gap-2 text-sm">
           <Clock
@@ -179,7 +197,7 @@ export function AppointmentDrawerTurnoSection({
             aria-hidden="true"
           />
           <span>
-            {formatTimeEs(appointment.startTime)} – {formatTimeEs(appointment.endTime)}
+            {formatHHMM(appointment.startTime, timezone, locale)} – {formatHHMM(appointment.endTime, timezone, locale)}
             <span className="text-muted-foreground ml-2">({duration} min)</span>
           </span>
         </div>
@@ -247,7 +265,7 @@ export function AppointmentDrawerTurnoSection({
             size="sm"
             disabled={isUpdating}
             onClick={() => onStatusChange("COMPLETED")}
-            className="border-green-500 text-green-700 hover:bg-green-50 dark:border-green-400 dark:text-green-400 dark:hover:bg-green-900/20"
+            className="border-[color:var(--vitalia-success-color)] text-[color:var(--vitalia-success-color)] hover:bg-[color:var(--vitalia-success-color)]/10"
           >
             <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
             Completar
@@ -270,7 +288,7 @@ export function AppointmentDrawerTurnoSection({
             size="sm"
             disabled={isUpdating}
             onClick={() => setConfirmDialog({ action: "NO_SHOW" })}
-            className="border-yellow-500 text-yellow-700 hover:bg-yellow-50 dark:border-yellow-400 dark:text-yellow-400"
+            className="border-[color:var(--vitalia-warning-color)] text-[color:var(--vitalia-warning-color)] hover:bg-[color:var(--vitalia-warning-color)]/10"
           >
             <AlertTriangle className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
             No asistió
