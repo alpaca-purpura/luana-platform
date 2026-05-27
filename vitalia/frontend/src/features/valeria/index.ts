@@ -190,3 +190,20 @@ export { AppointmentDrawerNotasSection } from "./components/agenda/AppointmentDr
 export type { AppointmentDrawerNotasSectionProps } from "./components/agenda/AppointmentDrawerNotasSection";
 export { AppointmentDrawerAccionesAvanzadasSection } from "./components/agenda/AppointmentDrawerAccionesAvanzadasSection";
 export type { AppointmentDrawerAccionesAvanzadasSectionProps } from "./components/agenda/AppointmentDrawerAccionesAvanzadasSection";
+
+// ── CobrarSaldoSubform + helpers (T-15) ───────────────────────────────────────
+export { CobrarSaldoSubform } from "./components/agenda/CobrarSaldoSubform";
+export type {
+  CobrarSaldoSubformProps,
+  ChargeErrorState,
+} from "./components/agenda/CobrarSaldoSubform";
+export { CobrarSaldoSubformErrorAlert } from "./components/agenda/CobrarSaldoSubformErrorAlert";
+export type { CobrarSaldoSubformErrorAlertProps } from "./components/agenda/CobrarSaldoSubformErrorAlert";
+export {
+  showChargeSuccessToast,
+  ChargeSuccessToastDescription,
+} from "./components/agenda/CobrarSaldoSubformSuccessToast";
+export type {
+  ShowChargeSuccessToastParams,
+  ChargeSuccessToastDescriptionProps,
+} from "./components/agenda/CobrarSaldoSubformSuccessToast";

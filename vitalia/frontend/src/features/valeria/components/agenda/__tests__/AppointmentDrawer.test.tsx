@@ -33,6 +33,10 @@ vi.mock("@clerk/nextjs", () => ({
   })),
 }));
 
+vi.mock("sonner", () => ({
+  toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() },
+}));
+
 const mockCloseDrawer = vi.fn();
 const mockSetStaleDetected = vi.fn();
 
@@ -97,6 +101,21 @@ vi.mock("../../../api/agenda", () => ({
   usePatchAppointmentStatus: vi.fn(() => ({
     mutate: vi.fn(),
     isPending: false,
+  })),
+  // T-15: CobrarSaldoSubform uses these — must be mocked here too
+  useChargeAppointment: vi.fn(() => ({
+    mutate: vi.fn(),
+    isPending: false,
+    isError: false,
+    error: null,
+    reset: vi.fn(),
+  })),
+  useEmitFiscalDoc: vi.fn(() => ({
+    mutate: vi.fn(),
+    isPending: false,
+    isError: false,
+    error: null,
+    reset: vi.fn(),
   })),
   agendaKeys: {
     detail: (tenantId: string, appointmentId: string) =>

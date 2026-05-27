@@ -2,33 +2,27 @@
 
 /**
  * AppointmentDrawerPagoSection.tsx — "Pago" accordion section for AppointmentDrawer.
- * T-14 vitalia-fase2-valeria-agenda
+ * T-14 + T-15 vitalia-fase2-valeria-agenda
  *
  * Renders:
  *   - Payment status badge (pagado / con depósito / sin pago)
  *   - Balance due / paid display (via formatTenantMoney)
- *   - <CobrarSaldoSubform /> placeholder slot (T-15 ships the real form)
+ *   - <CobrarSaldoSubform /> (T-15) when saldo > 0
  *   - Historical payments list (if any)
  *
- * Slot pattern: CobrarSaldoSubform is feature T-15. Here we render a placeholder
- * stub that T-15 builder will replace in-place. The stub renders a disabled
- * "Cobrar saldo" trigger area + tooltip "Disponible en T-15".
+ * T-15: CobrarSaldoSubformPlaceholder replaced with real CobrarSaldoSubform.
  *
  * HIPAA-lite: amounts use bucketed cents (no PHI). Currency from appointment data.
  * Master-data: formatTenantMoney() from lib/tenant-locale — NEVER hardcode 'USD'.
  *
  * Named exports only — NO default exports (FSD-Lite boundary enforcement).
  * downstream-regression-na: brand-local FE component; no cross-brand consumers
- * spec_anchor: 03-arch.md § 6.6 + § 6.7 + 06-tickets.yaml T-14
+ * spec_anchor: 03-arch.md § 6.6 + § 6.7 + 06-tickets.yaml T-14 + T-15
  */
 
-import { CreditCard, Receipt, FileText } from "lucide-react";
+import { Receipt, FileText } from "lucide-react";
+import { CobrarSaldoSubform } from "./CobrarSaldoSubform";
 import { Badge } from "@/components/ui/badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import type { Appointment, AppointmentPayment } from "../../types/agenda.types";
 
@@ -37,10 +31,14 @@ import type { Appointment, AppointmentPayment } from "../../types/agenda.types";
 export interface AppointmentDrawerPagoSectionProps {
   /** Full appointment detail from useAppointmentDetail. */
   appointment: Appointment;
+  /** Clerk tenant ID — forwarded to CobrarSaldoSubform. */
+  tenantId: string;
   /** Tenant currency fallback (from useTenantLocale). */
   tenantCurrency: string;
   /** Tenant locale string for Intl.NumberFormat (e.g., "es-PE"). */
   tenantLocale: string;
+  /** Whether to auto-emit invoice (tenant.config.auto_emit_invoice). */
+  defaultEmitInvoice?: boolean;
 }
 
 // ── Status badge config ───────────────────────────────────────────────────────
@@ -168,63 +166,19 @@ function PaymentRow({ payment, currency, locale }: PaymentRowProps) {
   );
 }
 
-// ── CobrarSaldoSubform placeholder (T-15 slot) ────────────────────────────────
-
-/**
- * Placeholder slot for CobrarSaldoSubform (T-15).
- * T-15 builder will replace this component in-place.
- * The disabled state + tooltip communicates to staff that cobro is coming.
- *
- * Slot ID: "cobrar-saldo-subform-slot" — T-15 targets this for replacement.
- */
-function CobrarSaldoSubformPlaceholder({ hasDueBalance }: { hasDueBalance: boolean }) {
-  if (!hasDueBalance) return null;
-
-  return (
-    <div
-      id="cobrar-saldo-subform-slot"
-      data-testid="cobrar-saldo-placeholder"
-      className="rounded-md border border-dashed border-primary/40 bg-primary/5 p-4"
-    >
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div
-            className="flex items-center gap-2 cursor-not-allowed"
-            aria-disabled="true"
-            role="group"
-            aria-label="Cobrar saldo (próximamente)"
-          >
-            <CreditCard
-              className="h-4 w-4 text-primary/60 shrink-0"
-              aria-hidden="true"
-            />
-            <div className="flex flex-col gap-0.5">
-              <span className="text-sm font-medium text-primary/70">
-                Cobrar saldo
-              </span>
-              <span className="text-xs text-muted-foreground">
-                Formulario de cobro — disponible en T-15
-              </span>
-            </div>
-          </div>
-        </TooltipTrigger>
-        <TooltipContent side="top">
-          Cobro de saldo — disponible próximamente en la siguiente iteración
-        </TooltipContent>
-      </Tooltip>
-    </div>
-  );
-}
+// (CobrarSaldoSubformPlaceholder removed — T-15 ships the real form)
 
 // ── Main Component ─────────────────────────────────────────────────────────────
 
 /**
- * Pago section — balance summary + cobrar subform placeholder + payment history.
+ * Pago section — balance summary + CobrarSaldoSubform (T-15) + payment history.
  */
 export function AppointmentDrawerPagoSection({
   appointment,
+  tenantId,
   tenantCurrency,
   tenantLocale,
+  defaultEmitInvoice = true,
 }: AppointmentDrawerPagoSectionProps) {
   // Currency: per-appointment override takes precedence over tenant default
   const effectiveCurrency = appointment.currencyOverride ?? appointment.currency ?? tenantCurrency;
@@ -282,8 +236,16 @@ export function AppointmentDrawerPagoSection({
         </div>
       </div>
 
-      {/* CobrarSaldoSubform placeholder slot (T-15 will replace this) */}
-      <CobrarSaldoSubformPlaceholder hasDueBalance={hasDueBalance} />
+      {/* CobrarSaldoSubform (T-15) — rendered when saldo > 0 */}
+      {hasDueBalance && (
+        <CobrarSaldoSubform
+          appointment={appointment}
+          tenantId={tenantId}
+          tenantCurrency={tenantCurrency}
+          tenantLocale={tenantLocale}
+          defaultEmitInvoice={defaultEmitInvoice}
+        />
+      )}
 
       {/* Payment history */}
       {appointment.payments.length > 0 && (

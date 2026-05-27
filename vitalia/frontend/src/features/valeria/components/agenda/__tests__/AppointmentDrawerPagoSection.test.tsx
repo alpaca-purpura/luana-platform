@@ -1,14 +1,14 @@
 /**
  * AppointmentDrawerPagoSection.test.tsx — Vitest unit tests (TDD RED→GREEN).
  *
- * T-14 vitalia-fase2-valeria-agenda
- * spec_anchor: 06-tickets.yaml T-14 + 03-arch.md § 6.7
+ * T-14 + T-15 vitalia-fase2-valeria-agenda
+ * spec_anchor: 06-tickets.yaml T-14 + T-15 + 03-arch.md § 6.7
  *
  * Tests:
  *   - Renders payment status badge for paid/deposit/unpaid/no_show
  *   - Renders balance due and paid amounts using tenantCurrency
- *   - CobrarSaldoSubform placeholder renders when balance > 0 (and is disabled)
- *   - CobrarSaldoSubform placeholder NOT rendered when no balance due
+ *   - CobrarSaldoSubform renders when balance > 0 and status is SCHEDULED (T-15)
+ *   - CobrarSaldoSubform NOT rendered when appointment is CANCELLED
  *   - Historical payments list renders payment rows
  *   - Payment rows show method label + amount
  *   - "Sin registros de pago" renders when no payments and no balance
@@ -17,10 +17,46 @@
  * downstream-regression-na: brand-local FE component; no cross-brand consumers
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AppointmentDrawerPagoSection } from "../AppointmentDrawerPagoSection";
 import type { Appointment, AppointmentPayment } from "../../../types/agenda.types";
+
+// ── Mocks for CobrarSaldoSubform dependencies ──────────────────────────────
+
+vi.mock("@clerk/nextjs", () => ({
+  useAuth: vi.fn(() => ({
+    getToken: vi.fn(() => Promise.resolve("test-token")),
+    isLoaded: true,
+    isSignedIn: true,
+  })),
+}));
+
+vi.mock("sonner", () => ({
+  toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() },
+}));
+
+vi.mock("../../../api/agenda", () => ({
+  useChargeAppointment: vi.fn(() => ({
+    mutate: vi.fn(),
+    isPending: false,
+    isError: false,
+    error: null,
+    reset: vi.fn(),
+  })),
+  useEmitFiscalDoc: vi.fn(() => ({
+    mutate: vi.fn(),
+    isPending: false,
+    isError: false,
+    error: null,
+    reset: vi.fn(),
+  })),
+  agendaKeys: {
+    all: (id: string) => ["agenda", id],
+    detail: (id: string, aid: string) => ["agenda", "detail", id, aid],
+  },
+}));
 
 // ── Fixtures ───────────────────────────────────────────────────────────────
 
@@ -60,28 +96,37 @@ const SAMPLE_PAYMENT: AppointmentPayment = {
   createdByLabel: "Recep. Gómez",
 };
 
+// ── Helper ─────────────────────────────────────────────────────────────────
+
+function renderPagoSection(
+  appointment: Appointment = BASE_APPOINTMENT,
+  overrides?: { tenantCurrency?: string; tenantLocale?: string },
+) {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <AppointmentDrawerPagoSection
+        appointment={appointment}
+        tenantId="tenant-uuid-test"
+        tenantCurrency={overrides?.tenantCurrency ?? "PEN"}
+        tenantLocale={overrides?.tenantLocale ?? "es-PE"}
+      />
+    </QueryClientProvider>,
+  );
+}
+
 // ── Tests ──────────────────────────────────────────────────────────────────
 
 describe("AppointmentDrawerPagoSection", () => {
   it("renders 'Sin pago' badge for unpaid status", () => {
-    render(
-      <AppointmentDrawerPagoSection
-        appointment={BASE_APPOINTMENT}
-        tenantCurrency="PEN"
-        tenantLocale="es-PE"
-      />,
-    );
+    renderPagoSection();
     expect(screen.getByText("Sin pago")).toBeInTheDocument();
   });
 
   it("renders 'Pagado' badge for paid status", () => {
-    render(
-      <AppointmentDrawerPagoSection
-        appointment={{ ...BASE_APPOINTMENT, paymentStatus: "paid", balanceDueCents: 0 }}
-        tenantCurrency="PEN"
-        tenantLocale="es-PE"
-      />,
-    );
+    renderPagoSection({ ...BASE_APPOINTMENT, paymentStatus: "paid", balanceDueCents: 0 });
     // Badge text (distinct from the "Pagado" balance label)
     const allPagado = screen.getAllByText("Pagado");
     // At minimum one instance should exist (the badge)
@@ -89,98 +134,59 @@ describe("AppointmentDrawerPagoSection", () => {
   });
 
   it("renders 'Con depósito' badge for deposit status", () => {
-    render(
-      <AppointmentDrawerPagoSection
-        appointment={{ ...BASE_APPOINTMENT, paymentStatus: "deposit" }}
-        tenantCurrency="PEN"
-        tenantLocale="es-PE"
-      />,
-    );
+    renderPagoSection({ ...BASE_APPOINTMENT, paymentStatus: "deposit" });
     expect(screen.getByText("Con depósito")).toBeInTheDocument();
   });
 
-  it("renders cobrar saldo placeholder when balance > 0 and status is SCHEDULED", () => {
-    render(
-      <AppointmentDrawerPagoSection
-        appointment={BASE_APPOINTMENT}
-        tenantCurrency="PEN"
-        tenantLocale="es-PE"
-      />,
-    );
-    expect(screen.getByTestId("cobrar-saldo-placeholder")).toBeInTheDocument();
+  it("renders CobrarSaldoSubform (T-15) when balance > 0 and status is SCHEDULED", () => {
+    renderPagoSection();
+    // Real form renders with a "Cobrar" submit button (replaces T-14 placeholder)
+    expect(screen.getByRole("button", { name: /cobrar/i })).toBeInTheDocument();
+    expect(screen.getByTestId("cobrar-saldo-subform")).toBeInTheDocument();
   });
 
-  it("does NOT render cobrar saldo placeholder when appointment is CANCELLED", () => {
-    render(
-      <AppointmentDrawerPagoSection
-        appointment={{ ...BASE_APPOINTMENT, appointmentStatus: "CANCELLED" }}
-        tenantCurrency="PEN"
-        tenantLocale="es-PE"
-      />,
-    );
+  it("does NOT render CobrarSaldoSubform when appointment is CANCELLED", () => {
+    renderPagoSection({ ...BASE_APPOINTMENT, appointmentStatus: "CANCELLED" });
     expect(
-      screen.queryByTestId("cobrar-saldo-placeholder"),
+      screen.queryByTestId("cobrar-saldo-subform"),
     ).not.toBeInTheDocument();
   });
 
-  it("does NOT render cobrar saldo placeholder when balance is 0", () => {
-    render(
-      <AppointmentDrawerPagoSection
-        appointment={{ ...BASE_APPOINTMENT, balanceDueCents: 0 }}
-        tenantCurrency="PEN"
-        tenantLocale="es-PE"
-      />,
-    );
+  it("does NOT render CobrarSaldoSubform when balance is 0", () => {
+    renderPagoSection({ ...BASE_APPOINTMENT, balanceDueCents: 0 });
     expect(
-      screen.queryByTestId("cobrar-saldo-placeholder"),
+      screen.queryByTestId("cobrar-saldo-subform"),
     ).not.toBeInTheDocument();
   });
 
   it("renders payment rows from payments array", () => {
-    render(
-      <AppointmentDrawerPagoSection
-        appointment={{ ...BASE_APPOINTMENT, payments: [SAMPLE_PAYMENT] }}
-        tenantCurrency="PEN"
-        tenantLocale="es-PE"
-      />,
-    );
+    renderPagoSection({ ...BASE_APPOINTMENT, payments: [SAMPLE_PAYMENT] });
     expect(screen.getByTestId("payment-row")).toBeInTheDocument();
-    // Method label
-    expect(screen.getByText(/efectivo/i)).toBeInTheDocument();
-    // Staff label
+    // Method label — may appear multiple times (payment row + form select)
+    const efectivoElements = screen.getAllByText(/efectivo/i);
+    expect(efectivoElements.length).toBeGreaterThanOrEqual(1);
+    // Staff label (unique)
     expect(screen.getByText(/Recep\. Gómez/)).toBeInTheDocument();
   });
 
   it("renders 'Sin registros de pago' when no payments and no balance", () => {
-    render(
-      <AppointmentDrawerPagoSection
-        appointment={{
-          ...BASE_APPOINTMENT,
-          paymentStatus: "paid",
-          balanceDueCents: 0,
-          balancePaidCents: 0,
-          payments: [],
-        }}
-        tenantCurrency="PEN"
-        tenantLocale="es-PE"
-      />,
-    );
+    renderPagoSection({
+      ...BASE_APPOINTMENT,
+      paymentStatus: "paid",
+      balanceDueCents: 0,
+      balancePaidCents: 0,
+      payments: [],
+    });
     expect(screen.getByText(/sin registros de pago/i)).toBeInTheDocument();
   });
 
   it("uses currencyOverride when set instead of tenantCurrency", () => {
-    render(
-      <AppointmentDrawerPagoSection
-        appointment={{
-          ...BASE_APPOINTMENT,
-          currency: "PEN",
-          currencyOverride: "USD",
-          payments: [{ ...SAMPLE_PAYMENT, currency: "USD" }],
-        }}
-        tenantCurrency="PEN"
-        tenantLocale="es-PE"
-      />,
-    );
+    renderPagoSection({
+      ...BASE_APPOINTMENT,
+      currency: "PEN",
+      currencyOverride: "USD",
+      payments: [{ ...SAMPLE_PAYMENT, currency: "USD" }],
+    });
     // USD format (dollar sign) should appear in payment rows
     // Intl.NumberFormat('es-PE', {currency: 'USD'}) produces "USD 30.00" or similar
     const row = screen.getByTestId("payment-row");

@@ -332,6 +332,7 @@ export function AppointmentDrawer({
                     <AccordionContent>
                       <AppointmentDrawerPagoSection
                         appointment={appointment}
+                        tenantId={tenantId}
                         tenantCurrency={tenantCurrency}
                         tenantLocale={tenantLocale}
                       />
