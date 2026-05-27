@@ -82,6 +82,21 @@ export type { ValeriaAgendaViewProps } from "./components/agenda/ValeriaAgendaVi
 export { AgendaHeader } from "./components/agenda/AgendaHeader";
 export type { AgendaHeaderProps } from "./components/agenda/AgendaHeader";
 
+// ── T-16: Preset filters + Crear cita + Patient autocomplete + Mobile sheet ───
+export { AgendaPresetFilters } from "./components/agenda/AgendaPresetFilters";
+export type { AgendaPresetFiltersProps } from "./components/agenda/AgendaPresetFilters";
+export { CrearCitaButton } from "./components/agenda/CrearCitaButton";
+export type { CrearCitaButtonProps } from "./components/agenda/CrearCitaButton";
+export { CrearCitaForm } from "./components/agenda/CrearCitaForm";
+export type { CrearCitaFormProps, CrearCitaOrigin } from "./components/agenda/CrearCitaForm";
+export { PatientAutocomplete } from "./components/agenda/PatientAutocomplete";
+export type {
+  PatientAutocompleteProps,
+  PatientSearchResult,
+} from "./components/agenda/PatientAutocomplete";
+export { MobileBottomSheet } from "./components/agenda/MobileBottomSheet";
+export type { MobileBottomSheetProps } from "./components/agenda/MobileBottomSheet";
+
 // ── SSR server-side fetch (T-12) — Server Components only ────────────────────
 // NOTE: This import is safe in server context. Do NOT import this in "use client" components.
 export { getInitialAgendaState } from "./api/agenda-server";
@@ -131,6 +146,22 @@ export type {
   FiltersActions,
 } from "./store/agenda-filters-store";
 
+// ── Calendar components (T-13) ───────────────────────────────────────────────
+export { AgendaCalendar } from "./components/agenda/AgendaCalendar";
+export type { AgendaCalendarProps } from "./components/agenda/AgendaCalendar";
+export { DayCalendar, DAY_CALENDAR_VIRTUAL_THRESHOLD } from "./components/agenda/DayCalendar";
+export type { DayCalendarProps } from "./components/agenda/DayCalendar";
+export { WeekCalendar } from "./components/agenda/WeekCalendar";
+export type { WeekCalendarProps } from "./components/agenda/WeekCalendar";
+export { MonthCalendar } from "./components/agenda/MonthCalendar";
+export type { MonthCalendarProps, MonthAggregates, DayAggregate } from "./components/agenda/MonthCalendar";
+export { SkeletonCalendar } from "./components/agenda/SkeletonCalendar";
+export type { SkeletonCalendarProps } from "./components/agenda/SkeletonCalendar";
+export { AgendaSlotInteractive } from "./components/agenda/AgendaSlotInteractive";
+export type { AgendaSlotInteractiveProps } from "./components/agenda/AgendaSlotInteractive";
+export { FreshnessIndicator } from "./components/agenda/FreshnessIndicator";
+export type { FreshnessIndicatorProps } from "./components/agenda/FreshnessIndicator";
+
 // ── Custom hooks (T-12) ───────────────────────────────────────────────────────
 export { useAgendaFilters } from "./hooks/useAgendaFilters";
 export type {
@@ -142,3 +173,20 @@ export { useDrawerWidth } from "./hooks/useDrawerWidth";
 export type { UseDrawerWidthReturn } from "./hooks/useDrawerWidth";
 export { useFreshness } from "./hooks/useFreshness";
 export type { UseFreshnessReturn } from "./hooks/useFreshness";
+
+// ── AppointmentDrawer components (T-14) ───────────────────────────────────────
+export { AppointmentDrawer } from "./components/agenda/AppointmentDrawer";
+export type { AppointmentDrawerProps } from "./components/agenda/AppointmentDrawer";
+export { AppointmentDrawerHeader } from "./components/agenda/AppointmentDrawerHeader";
+export type { AppointmentDrawerHeaderProps } from "./components/agenda/AppointmentDrawerHeader";
+export { AppointmentDrawerSkeleton } from "./components/agenda/AppointmentDrawerSkeleton";
+export { AppointmentDrawerStaleBanner } from "./components/agenda/AppointmentDrawerStaleBanner";
+export type { AppointmentDrawerStaleBannerProps } from "./components/agenda/AppointmentDrawerStaleBanner";
+export { AppointmentDrawerTurnoSection } from "./components/agenda/AppointmentDrawerTurnoSection";
+export type { AppointmentDrawerTurnoSectionProps } from "./components/agenda/AppointmentDrawerTurnoSection";
+export { AppointmentDrawerPagoSection } from "./components/agenda/AppointmentDrawerPagoSection";
+export type { AppointmentDrawerPagoSectionProps } from "./components/agenda/AppointmentDrawerPagoSection";
+export { AppointmentDrawerNotasSection } from "./components/agenda/AppointmentDrawerNotasSection";
+export type { AppointmentDrawerNotasSectionProps } from "./components/agenda/AppointmentDrawerNotasSection";
+export { AppointmentDrawerAccionesAvanzadasSection } from "./components/agenda/AppointmentDrawerAccionesAvanzadasSection";
+export type { AppointmentDrawerAccionesAvanzadasSectionProps } from "./components/agenda/AppointmentDrawerAccionesAvanzadasSection";
