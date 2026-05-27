@@ -1,56 +1,90 @@
 # Luana Cockpit
 
-Visualizador del Spec-Driven Development workflow para Luana platform (multibrand). Lee directo del filesystem (no requiere DB) y permite editar metadata vía forms que escriben los `.md` correspondientes.
+Visualizador + editor del workflow Spec-Driven Development de Luana platform (multi-brand). Lee directo del filesystem (no requiere DB) y permite editar metadata vía forms + chris-input.md conversacional.
 
-## Status: mockup v0.1 (exploratorio, no ejecutable aún)
+## Status: v0.6 (Next.js standalone WIP · Phase 5.1+5.2)
 
-`mockup-v0.1.html` = mockup HTML standalone con datos reales de Vitalia. Abrir directo en browser:
+Phase 5 del plan `ok-lo-apruebo-realiza-cheeky-harbor.md`:
+
+- **5.1** workspace setup (Next.js 16 + Tailwind v4 + Vitest) — ✓ hecho
+- **5.2** library functions críticas (workspace, fs-reader/writer, git, chris-input parser, cap ledger, release resolver, chokidar watcher) — ✓ hecho
+- **5.3** API routes — pendiente
+- **5.4** vistas pobladas (Roadmap / Board / Map / Learnings) — pendiente
+
+## Quickstart
+
+Requiere Node 20+ y pnpm 9.15.9+.
 
 ```bash
-xdg-open tools/luana-cockpit/mockup-v0.1.html
-# o simplemente doble-click desde el file manager
+cd tools/luana-cockpit
+cp .env.local.template .env.local      # edita si necesario
+pnpm install
+pnpm test                              # corre 6 tests vitest (cap-ledger + chris-input-parser)
+pnpm dev                               # arranca dev server en :4000
+pnpm build                             # build standalone Next.js
 ```
 
-## Las 3 vistas
+Abre <http://localhost:4000>. Redirige a `/roadmap` por defecto.
 
-| # | Vista | Propósito |
+## Las 4 vistas
+
+| Ruta | Vista | Estado |
 |---|---|---|
-| 1 | **Backlog Board** | Kanban por estado (10 estados macro) · click → drawer con metadata form + checkpoint render |
-| 2 | **Mapa Implementado** | Story map agente × módulo × capability · click capability → reglas neg + funcionalidades + mockup-vs-actual + E2E + código BE/FE/Agentic |
-| 3 | **Learnings** | Timeline cronológico + categorías · click → markdown render con cross-refs auto |
+| `/roadmap` | Roadmap por releases (drag stories entre releases) | placeholder · Phase 5.4 |
+| `/board` | Backlog Board kanban por estados v4 | placeholder · Phase 5.4 |
+| `/map` | Mapa Implementado agente × módulo × capability | placeholder · Phase 5.4 |
+| `/learnings` | Timeline learnings cronológico | placeholder · Phase 5.4 |
+
+## Stack
+
+| Capa | Tecnología | Por qué |
+|---|---|---|
+| Framework | Next.js 16 (App Router · standalone output) | SSR + API routes en mismo proceso · ideal para tool local |
+| UI | React 19 + Tailwind v4 | Tokens del mockup v0.5.2 cementados en `tailwind.config.js` |
+| Markdown | gray-matter + react-markdown + rehype-highlight | Frontmatter + render |
+| Editor MD | @uiw/react-md-editor | Edit inline de chris-input.md y otros |
+| FS watching | chokidar | Hot-reload cross-process (skill escribe → cockpit refresca) |
+| Git | simple-git | Status / SHA / diff para metadata stories |
+| Validación | zod | Schemas runtime tipados |
+| Tests | vitest + @vitest/coverage-v8 | Fast + ESM-native |
 
 ## Fuente de datos (sin DB)
 
-Todo se lee directo de:
+Todo se lee directo del filesystem:
 
-- `vitalia/docs/product/stories/{id}/checkpoint.md` (front-matter YAML)
-- `vitalia/docs/archive/{year}/stories/{id}/` (stories done)
-- `vitalia/docs/product/capabilities/{module}/{cap}.yaml`
-- `vitalia/docs/product/modules/{m}.md`
-- `vitalia/docs/learnings/{date}-{slug}.md`
+- `{brand}/docs/product/stories/{id}/checkpoint.md` (front-matter YAML schema v2)
+- `{brand}/docs/product/stories/{id}/chris-input.md` (conversación asíncrona)
+- `{brand}/docs/archive/{year}/stories/{id}/` (stories done)
+- `{brand}/docs/product/capabilities/{module}/{cap}.yaml` (ledger v2 con `change_log[]`)
+- `{brand}/docs/product/releases/{release_id}.yaml` (releases v2 schema)
+- `{brand}/docs/learnings/{date}-{slug}.md`
 
-Edit en cockpit → escribe el archivo correspondiente → próxima invocación `/pm-vitalia` lee actualizado. **Cero impacto en consumo de tokens de Claude.**
+Edit en cockpit → escribe el archivo correspondiente (atomic write · `.tmp` + rename) → próxima invocación de `/pm-{brand}` lee actualizado. **Cero impacto en tokens de Claude.**
 
-## Roadmap evolución
+## Library functions (lib/)
 
-| Versión | Forma | Stack |
-|---|---|---|
-| v0.1 (actual) | Single HTML standalone con datos hardcoded | Tailwind CDN + vanilla JS |
-| v0.2 | Next.js 16 app `app/` + API routes leen filesystem real | Next.js + gray-matter + react-markdown |
-| v0.3 | Edit funcional (forms → PUT `/api/file`) + watch chokidar hot-reload | + chokidar + monaco-editor opcional |
-| v0.4 | Brand switcher (4 brands activas) + cross-brand portfolio view | + estado global brand |
-| v0.5 | Mockup-vs-actual con screenshots Playwright auto + diff visual | + integración Playwright reports |
+Detalle en `docs/process/capability-protocol.md`, `release-protocol.md`, `chris-input-protocol.md`, `cockpit-permissions.md`.
+
+| Módulo | Responsabilidad |
+|---|---|
+| `lib/types.ts` | TypeScript interfaces (Story, Capability, Release, ChrisInput, ConvEntry, ...) |
+| `lib/workspace.ts` | Resolver WORKSPACE_ROOT + detección de brands |
+| `lib/fs-reader.ts` | Read markdown con frontmatter + YAML |
+| `lib/fs-writer.ts` | Atomic write (tmp + rename) + append-only |
+| `lib/git.ts` | Wrappers simple-git (branch, SHA, status, diff) |
+| `lib/chris-input-parser.ts` | Parse + serialize chris-input.md (round-trip idempotente) |
+| `lib/cap-ledger.ts` | 4 ramas `applyCapChange` (new/fix/extend/derive) + `createDerivedCap` |
+| `lib/release-resolver.ts` | Read / list / recompute status releases |
+| `lib/chokidar-watcher.ts` | FS watching debounced para hot-reload cockpit |
 
 ## Por qué dentro de `tools/` y no en una brand
 
-El cockpit sirve a **todas** las brands (vitalia + nicolify + comunify + lupulo + futuras). No es código de producto. Pertenece al tooling del workspace, junto con `scripts/`.
+El cockpit sirve a **todas** las brands (vitalia + nicolify + comunify + lupulo + 6 futuras). No es código de producto. Pertenece al tooling del workspace, junto con `scripts/`. NO se agrega a `pnpm-workspace.yaml` root — corre standalone.
+
+## Mockup ratificado
+
+`mockup-v0.5.2.html` (147 KB) es la SSoT visual. Phase 5.4 popula las 4 vistas siguiendo ese mockup verbatim.
 
 ## Scope gate y commit
 
-`wip/{brand}` branches (e.g. `wip/vitalia`) tienen scope-gate pre-commit que bloquea archivos fuera de `{brand}/**`. Este directorio es cross-cutting, requiere uno de:
-
-1. **Worktree dedicado** `wip/protocol-cockpit-mockup` (recomendado para iteraciones largas)
-2. **Override puntual** `SCOPE_GATE_SKIP=1 git commit ...` con razón documentada
-3. **Mantener untracked** hasta v0.2 cuando se cementa la arquitectura
-
-Por ahora el archivo queda untracked hasta ratificación Chris.
+Branch dedicado: `wip/protocol-cockpit-v0-6` (worktree `~/Proyectos/luana-protocol-cockpit-v0-6/`). Scope: `tools/luana-cockpit/**` + `docs/process/cockpit-*` + `docs/process/{capability,release,chris-input}-protocol.md` + `docs/specs/templates/*template*`.
