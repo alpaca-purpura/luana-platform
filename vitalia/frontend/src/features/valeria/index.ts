@@ -5,6 +5,7 @@
  * Exposes placeholder components created in T-2 and T-7.
  * T-7 adds 5 agenda molecules + AgendaPlaceholder organismo.
  * T-11 adds agenda TypeScript types + Zod runtime schemas.
+ * T-12 adds React Query hooks + Zustand stores + page root + AgendaHeader.
  *
  * downstream-regression-na: brand-local FE barrel; no cross-brand consumers
  */
@@ -74,3 +75,70 @@ export type {
 } from "./components/agenda/AgendaSlot";
 export { AgendaSummaryFooter } from "./components/agenda/AgendaSummaryFooter";
 export type { AgendaSummaryFooterProps } from "./components/agenda/AgendaSummaryFooter";
+
+// ── Agenda root + header (T-12) ───────────────────────────────────────────────
+export { ValeriaAgendaView } from "./components/agenda/ValeriaAgendaView";
+export type { ValeriaAgendaViewProps } from "./components/agenda/ValeriaAgendaView";
+export { AgendaHeader } from "./components/agenda/AgendaHeader";
+export type { AgendaHeaderProps } from "./components/agenda/AgendaHeader";
+
+// ── SSR server-side fetch (T-12) — Server Components only ────────────────────
+// NOTE: This import is safe in server context. Do NOT import this in "use client" components.
+export { getInitialAgendaState } from "./api/agenda-server";
+export type { GetInitialAgendaStateOptions } from "./api/agenda-server";
+
+// ── React Query hooks (T-12) ──────────────────────────────────────────────────
+export {
+  agendaKeys,
+  useAgendaGrid,
+  useAgendaAggregates,
+  useAppointmentDetail,
+  useCreateAppointment,
+  usePatchAppointmentStatus,
+  useChargeAppointment,
+  useEmitFiscalDoc,
+  useSendReminder,
+} from "./api/agenda";
+export type {
+  UseAgendaGridOptions,
+  UseAgendaAggregatesOptions,
+  AgendaAggregatesResponse,
+  UseAppointmentDetailOptions,
+  ChargeAppointmentVariables,
+  EmitFiscalDocVariables,
+  SendReminderResponse,
+  PatchAppointmentVariables,
+} from "./api/agenda";
+export { useChargeMutation } from "./api/payments";
+export type { ChargeMutationVariables } from "./api/payments";
+export { useFiscalEmitMutation } from "./api/fiscal";
+export type { FiscalEmitVariables } from "./api/fiscal";
+export { useSendNotificationMutation } from "./api/notify";
+export type { SendNotificationResponse } from "./api/notify";
+
+// ── Zustand stores (T-12) ─────────────────────────────────────────────────────
+export {
+  useDrawerStore,
+  DRAWER_WIDTH_MIN,
+  DRAWER_WIDTH_MAX,
+  DRAWER_WIDTH_DEFAULT,
+} from "./store/agenda-store";
+export type { DrawerStore, DrawerState, DrawerActions } from "./store/agenda-store";
+export { useFiltersStore } from "./store/agenda-filters-store";
+export type {
+  FiltersStore,
+  FiltersState,
+  FiltersActions,
+} from "./store/agenda-filters-store";
+
+// ── Custom hooks (T-12) ───────────────────────────────────────────────────────
+export { useAgendaFilters } from "./hooks/useAgendaFilters";
+export type {
+  UseAgendaFiltersReturn,
+  AgendaFiltersState,
+  AgendaFiltersActions,
+} from "./hooks/useAgendaFilters";
+export { useDrawerWidth } from "./hooks/useDrawerWidth";
+export type { UseDrawerWidthReturn } from "./hooks/useDrawerWidth";
+export { useFreshness } from "./hooks/useFreshness";
+export type { UseFreshnessReturn } from "./hooks/useFreshness";

@@ -21,6 +21,8 @@ export default defineConfig({
         "src/features/fidelizacion/types/**",
         "src/features/fidelizacion/copy.ts",
         "src/features/valeria/lib/**",
+        "src/features/valeria/store/**",
+        "src/features/valeria/hooks/**",
         "src/lib/**",
         "src/components/shared/**",
       ],
