@@ -137,6 +137,31 @@ Run repro command first, document evidence, then proceed.
 
 Detalle workflow Step 1-3 (reproduce → diagnóstico → cite evidence) en rule SSoT.
 
+## Step 0.7 — Dispatch plan + autonomous_mode (NEW 2026-05-27)
+
+> SSoT: `.claude/rules/architect-autonomous-mode.md`.
+
+Si `{brand}/docs/product/stories/{story-id}/dispatch-plan.md` existe (producido por `/architect` Step 7), **leerlo + respetar verbatim**:
+
+1. **`assignment` block en cada ticket de `06-tickets.yaml`** dicta:
+   - `primary_agent`: el sub-agent type EXACTO a spawnar (NO usar `general-purpose` default — usar el agente nombrado: `builder-backend`, `builder-frontend`, `builder-agentic`)
+   - `model_preference`: el modelo (sonnet | opus | opencode) — respetar salvo override hard de R23
+   - `must_load_skills`: lista verbatim a citar en spawn prompt
+   - `forbidden_to_touch`: pasar al builder como guardrail explícito
+   - `rationale`: respeta razón (no override silencioso)
+
+2. **`autonomous_mode` en `checkpoint.md`**:
+   - `false` (default) → `/dev-team` para después de cada ticket completo + espera ratificación Chris para próximo. Auto-handoff a `/auditor` cuando ALL tickets GREEN (story-closure-gate Layer 1).
+   - `true` (Chris opt-in explícito) → encadenar TODOS los tickets seguidos sin pausa + auto-handoff `/auditor` + auto-handoff `/pm-{brand}` merge si APPROVED. Respetar `autonomous_mode_caps` (max_iterations, max_audit_iterations, max_total_cost_usd, max_wall_clock_minutes).
+   - Si caps excedidos durante autonomous_mode → halt + state=blocked + escalate Chris (NO continuar a ciegas).
+
+3. **`playwright_visual_scope` en `04-validators.yaml`**:
+   - `story_scope_routes` + `story_scope_components` definen DÓNDE puede tocar visualmente
+   - `forbidden_visual_changes.paths` definen DÓNDE NO (Shadcn primitives, shared, app shell)
+   - Si builder necesita cambio visual fuera scope → STOP + documentar en `T-{n}-impl-log.md § Cross-story observed bugs` + escalate Chris (anti-egoísmo per `.claude/rules/worktree-dual-strategy.md`)
+
+**Si `dispatch-plan.md` NO existe** (architect skill viejo pre-2026-05-27): inferir assignments del `06-tickets.yaml` legacy + warning al user "story produced sin dispatch-plan — usando defaults (puede ser sub-óptimo)". NO bloquear.
+
 ## Step 1 — Tomar ticket + decidir owner
 
 Filtrar tickets con `state: ready` (deps cumplidas). Decidir owner según `owner_eligibility` + `production_code` flag (R23):

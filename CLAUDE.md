@@ -2,6 +2,20 @@
 
 **luana-platform** — Multi-brand multitenant SaaS. Modular Monolith DDD + uv/pnpm workspace + Docker-First. **10 brand verticals** consumen engine compartido `core/` (Luana, 26 paquetes `luana-core-*`).
 
+**Objetivo agentic dev:** Chris orquesta /pm-{brand} → /po-ux|/po → /architect → /dev-team → /auditor. Paradigm v4 con auto-handoffs. Cross-brand learning automático. Cost-routing optimizado (Haiku para mecánico, Sonnet para BE/FE no-agentic, Opus para agentic prod + estratégico).
+
+## ★ Brand overlay auto-load
+
+**Cuando trabajés dentro de `{brand}/...` o worktree `~/Proyectos/luana-{brand}*/`, Claude Code carga AUTO el overlay `{brand}/CLAUDE.md`** (walking ancestors built-in). Root + overlay coexisten — NO duplicar contenido. Detalle: `.claude/rules/claude-md-overlay.md`.
+
+| Brand | Overlay | Vision |
+|---|---|---|
+| vitalia | `vitalia/CLAUDE.md` | `vitalia/docs/product/vision.md` |
+| nicolify | `nicolify/CLAUDE.md` | `nicolify/docs/product/vision.md` |
+| comunify | `comunify/CLAUDE.md` | `comunify/docs/product/vision.md` |
+| lupulo | `lupulo/CLAUDE.md` | `lupulo/docs/product/vision.md` |
+| (6 futuras) | TBD post-bootstrap | TBD |
+
 @AGENTS.md cubre stack/commands/native-first/skills/quality/constraints. Este file = overlay project-specific.
 
 **Topología completa + workspace tooling + paradigm v4 detail + 10 brand verticals catalog + cost-routing + bootstrap completo + skills detail:** ver `docs/rules-detail/_CLAUDE-original-backup.md` (load con Read on-demand).
@@ -110,6 +124,12 @@ Detail: `.claude/rules/git-safety.md` + `.claude/rules/parallel-safety.md` + `do
 | 19 | Auditor self-fix policy | `auditor-self-fix-policy.md` |
 | 20 | Anti default-flip audit | `anti-default-flip-audit.md` |
 | 21 | PM skill chaining (Skill tool inline) | `pm-skill-chaining.md` |
+| 22 | Learning capture (técnicos→core, negocio→brand, MEMORY pointer-only) | `learning-capture.md` |
+| 23 | Anti-duplication refining (PM/PO/Architect grep core+nicolify+brands) | `anti-duplication-refining.md` |
+| 24 | Architect autonomous mode + explicit agent_assignment per ticket | `architect-autonomous-mode.md` |
+| 25 | CLAUDE.md hierarchy (root liviano + brand overlay auto-load) | `claude-md-overlay.md` |
+| 26 | Worktree dual strategy (refine+build paralelos sin egoísmo) | `worktree-dual-strategy.md` |
+| 27 | GitHub Actions deferred (pre-commit/pre-push hooks SSoT) | `github-actions-deferred.md` |
 
 ## Conditional Rules (stub → skill on-demand)
 
@@ -175,6 +195,13 @@ Cada subagent (builder-*, auditor-*, gate-runner, context-builder) MUST devolver
 
 ## Vision
 
-`docs/product/vision.md` (snapshot legacy hasta `/pm-luana` regenere). Glossary: `docs/product/glossary.md`. Plan multibrand: `docs/architecture/luana-platform/01-core-audit.md` + ADR-001.
+- Platform-level: `docs/product/vision.md` — qué es luana-platform multibrand + filosofía cross-brand learning.
+- Per-brand: `{brand}/docs/product/vision.md` (auto-load via overlay) — vertical + verticales target + GTM + buyer personas.
+- Glossary: `docs/product/glossary.md`.
+- Plan multibrand: `docs/architecture/luana-platform/01-core-audit.md` + ADR-001.
+
+## Learning capture (1-liner)
+
+Trigger: Chris dice **"aprendamos de esto"** o el hook `learning-detect.sh` sugiere. Captura → archivo `.md` en path canónico (técnico→`docs/learnings/`, negocio→`{brand}/docs/learnings/`, process→`docs/process/learnings.md` append) + MEMORY.md pointer 1 línea. Detalle: `.claude/rules/learning-capture.md`.
 
 @AGENTS.md

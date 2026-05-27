@@ -51,7 +51,52 @@ Si invocado vía `/pm-{brand}` handoff, el brand viene en el handoff. Si invocad
 - `tessl__tailwind` — semantic tokens (no hardcoded hex)
 - Domain skill módulo (`brand-expert` / `offer-expert` / `metrics-expert` / etc.)
 - `playwright-expert` (si scenarios tienen E2E grader)
-- `chrome-devtools-verify` (live verify post-design opcional)
+- `chrome-devtools-verify` (live verify post-design opcional, Linux nativo Chrome MCP)
+
+## ★ Step 0.5 — Anti-duplication refining (MANDATORY 2026-05-27)
+
+> SSoT: `.claude/rules/anti-duplication-refining.md`.
+
+ANTES de drafting `01-spec.md` / wireframes, ejecutar **prior-art-scan** cross-brand:
+
+```bash
+WS=$(git rev-parse --show-toplevel)
+BRAND="${BRAND}"           # provisto por handoff /pm-{brand}
+KW="${STORY_KEYWORDS}"      # ej: "agenda paciente reserva slot"
+
+echo "=== Engine packages ==="
+ls ${WS}/core/ | grep -iE "$(echo $KW | tr ' ' '|')"
+
+echo "=== Brands shipped (nicolify es source principal) ==="
+for B in nicolify vitalia comunify lupulo; do
+  [ "$B" = "$BRAND" ] && continue
+  find ${WS}/${B}/frontend/src/features/ -maxdepth 1 -type d 2>/dev/null | grep -iE "$(echo $KW | tr ' ' '|')"
+done
+
+echo "=== Stories archivadas con feature paralelo ==="
+for B in nicolify vitalia comunify lupulo; do
+  find ${WS}/${B}/docs/archive/*/stories/ -maxdepth 1 -type d 2>/dev/null | grep -iE "$(echo $KW | tr ' ' '|')"
+done
+
+echo "=== Learnings tags relacionados ==="
+grep -rln -iE "$(echo $KW | tr ' ' '|')" ${WS}/docs/learnings/ ${WS}/${BRAND}/docs/learnings/ ${WS}/nicolify/docs/learnings/ 2>/dev/null
+```
+
+**Output mandatory en `01-spec.md` sección `## Prior art applied`**:
+
+```markdown
+## Prior art applied
+
+- **Engine consumed:** `core/luana-core-X` (importé Y para Z)
+- **Reused from nicolify:** `nicolify/frontend/src/features/scheduling/components/SlotPicker.tsx` (componente base + adaptación HIPAA-lite)
+- **Learnings aplicados:**
+  - `docs/learnings/2026-04-15-tanstack-query-cache-invalidation.md` (cache key pattern)
+  - `nicolify/docs/learnings/2026-03-22-agenda-overbooking-edge-case.md` (concurrency lock)
+- **Lift candidates detectados:** patrón `SlotPicker` candidate engine — escalate /pm-luana para promotion proposal
+- **Net-new justificado:** sección `consentimiento informado paciente` HIPAA-lite — nicolify no aplica (B2B agencias)
+```
+
+**SIN esta sección documentada con resultados verbatim del scan, `/po-ux` REFUSE cerrar state=refining→refined.** Auditor Cat 12 verifica que `## Prior art applied` exista.
 
 ## Communication style — batched questions (G6 enforcement)
 

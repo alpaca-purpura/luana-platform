@@ -57,6 +57,27 @@ con deuda. Layer 1 enforcement del story-closure-gate.
 
 Detalle SSoT: `.claude/rules/story-closure-gate.md`.
 
+### Step 0.5 — Anti-duplication refining cross-brand (MANDATORY 2026-05-27)
+
+> SSoT: `.claude/rules/anti-duplication-refining.md`.
+
+Cuando `/pm-luana` evalúa **promotion gate** (brand→core lift) o decide outcome cross-brand:
+
+1. Grep cada brand activa por el pattern candidate:
+   ```bash
+   WS=$(git rev-parse --show-toplevel)
+   PATTERN_KW="${PATTERN_KW}"   # ej: "rate-limiter", "outbox-pattern", "voice-fidelity-grader"
+   for B in vitalia nicolify comunify lupulo; do
+     find ${WS}/${B}/backend/src -name "*${PATTERN_KW}*" 2>/dev/null
+     find ${WS}/${B}/frontend/src -name "*${PATTERN_KW}*" 2>/dev/null
+   done
+   ```
+2. Si ≥2 brands tienen pattern parecido → **lift candidate confirmed** → escribir proposal `docs/promotion-protocol/proposals/{date}-lift-{pattern}.md`.
+3. Si 1 sola brand pero futuras brands probable consumer → **defensive lift** consideration (más conservador, Chris ratifica scope).
+4. Grep `core/luana-core-*/` para detectar engine package paralelo que ya cubra (consumir vs recrear).
+
+Aplica también cuando refinás un outcome platform-level (`docs/product/outcomes/platform-*.md`) — el outcome debe citar qué brands son consumer + qué prior-art existe en cada.
+
 ### Step 1 — Carga índices portfolio + core
 
 ```bash

@@ -34,6 +34,32 @@ Si invocado vía `/pm-{brand}` o vía `/po-ux`/`/po`/`/ux-agentico` handoff, el 
 5. `{brand}/docs/product/modules/{m}.md` — estado funcional per-brand
 6. `{brand}/docs/domains/INDEX.md` o `docs/core-modules/README.md` — routing técnico per-brand vs engine
 7. `.claude/rules/anti-duplication.md` — inventario shared abstractions cross-brand
+8. `.claude/rules/anti-duplication-refining.md` — ★ NEW 2026-05-27 — prior-art-scan cross-brand mandatory en refinamiento
+9. `.claude/rules/architect-autonomous-mode.md` — ★ NEW 2026-05-27 — autonomous_mode + agent_assignment + playwright_visual_scope
+
+## ★ Step 0.5 — Prior-art audit (MANDATORY 2026-05-27)
+
+> SSoT: `.claude/rules/anti-duplication-refining.md`.
+
+ANTES de Step 1 (decidir surfaces), revalidar el scan que `/pm-{brand}` + `/po-ux` debieron documentar. Si `01-spec.md` NO tiene sección `## Prior art applied` documentada → REFUSE producir ready package y escalá:
+
+```
+ERROR: 01-spec.md sin sección "## Prior art applied" verbatim per
+.claude/rules/anti-duplication-refining.md. Vuelve a /po-ux para
+documentar el scan antes de architect.
+```
+
+Si sección existe, **re-ejecutar el scan** desde architect (verificación):
+- Engine packages `core/luana-core-*/` que cubren dominio
+- Brands shipped (especialmente nicolify) con módulo paralelo
+- Lift candidates → si detectás pattern cross-brand sin lift, escalate `/pm-luana` ANTES de cerrar package
+- Stories archivadas done relacionadas (`{brand}/docs/archive/*/stories/` + nicolify equivalent)
+
+Documentá resultado en `03-arch.md § Prior art audit` con:
+- Engine packages consumed via import (lista verbatim)
+- Reused components/services (paths cross-brand)
+- Lift candidates created (paths a proposals si aplica)
+- Net-new justificado (con razón)
 
 ## Workflow
 
@@ -614,6 +640,105 @@ repro_evidence:
   diagnosis_validates_handoff: <true|false>
 ```
 
+### Step 7.5 — Producir dispatch-plan.md + assignment block per ticket (★ NEW 2026-05-27)
+
+> SSoT: `.claude/rules/architect-autonomous-mode.md`.
+
+Cada ticket en `06-tickets.yaml` MUST incluir bloque `assignment` con:
+- `primary_agent`: sub-agent type EXACTO (NO `general-purpose`). Opciones: `builder-backend`, `builder-frontend`, `builder-agentic`. Otros (general-purpose) sólo si no aplica ninguno (raro).
+- `model_preference`: sonnet | opus | opencode (defaults per surface)
+- `must_load_skills`: lista verbatim (heredada de `05-guidelines.md § must_load_skills`)
+- `forbidden_to_touch`: paths explícitos que el builder NO puede tocar
+- `rationale`: 1-2 líneas por qué este agent + modelo
+
+Ejemplo:
+```yaml
+- id: T-1
+  title: "BE endpoint create-appointment"
+  surface: BE
+  production_code: true
+  owner_eligibility: [opencode, sonnet, opus]
+  assignment:
+    primary_agent: builder-backend
+    model_preference: sonnet
+    must_load_skills: [backend-expert, tessl__fastapi, .claude/rules/tenant-isolation.md, .claude/rules/backend-ddd.md]
+    forbidden_to_touch: ["core/luana-core-*/src/", "{other_brand}/", "{brand}/backend/src/modules/{brand}/{copilot,sales_agent}/"]
+    rationale: "BE CRUD non-agentic, Sonnet sweet spot"
+
+- id: T-2
+  title: "AGENTIC tool wire"
+  surface: AGENTIC
+  production_code: true
+  owner_eligibility: [opus]   # HARD R23
+  assignment:
+    primary_agent: builder-agentic
+    model_preference: opus    # HARD per R23
+    must_load_skills: [sales-agent-expert, tessl__langgraph, claude-api]
+    forbidden_to_touch: ["core/luana-core-{copilot,sales-agent}/src/"]
+    rationale: "AGENTIC production R23 → Opus obligatorio"
+```
+
+Adicionalmente, en `04-validators.yaml § test_construction_plan` MUST incluir `playwright_visual_scope`:
+
+```yaml
+playwright_visual_scope:
+  story_scope_routes: ["/agenda/nueva", "/agenda/[id]/edit"]
+  story_scope_components:
+    - "{brand}/frontend/src/features/scheduling/components/AppointmentForm.tsx"
+  forbidden_visual_changes:
+    paths:
+      - "{brand}/frontend/src/components/ui/"        # Shadcn primitives
+      - "{brand}/frontend/src/components/shared/"    # cross-feature shared
+      - "{brand}/frontend/src/app/layout.tsx"        # app shell
+    reasons:
+      - "Cambios visuales en primitives Shadcn impactan TODA la app"
+  if_visual_change_needed_outside_scope:
+    action: "STOP. Document en T-{n}-impl-log.md. Escalate /pm-{brand} para spec extension."
+  non_egoismo_clause: "Bug visible fuera scope = reportar en T-{n}-impl-log § Cross-story observed bugs + opcionalmente abrir hotfix-story-id separada. NO arreglar inline (rompe scope discipline)."
+```
+
+Producir `dispatch-plan.md` (≤100 líneas, 1 sólo file por story) en `{brand}/docs/product/stories/{story-id}/dispatch-plan.md`:
+
+```markdown
+# Dispatch plan — Story {brand}/{id}
+
+## autonomous_mode
+- value: false                # default. Chris opt-in al ratificar
+- chain_if_true: [/dev-team → /auditor → /pm-{brand} merge]
+- caps: {iterations: 10, audit_iter: 3, cost_usd: 5.00, walltime: 90min}
+
+## Ticket→Agent→Model→Cost matrix
+| T-id | Title | Surface | Agent | Model | Est. cost | Est. time |
+|---|---|---|---|---|---|---|
+| T-1 | ... | BE | builder-backend | sonnet | $0.30 | 25min |
+| T-2 | ... | AGENTIC | builder-agentic | opus (R23) | $1.20 | 35min |
+| T-3 | ... | FE | builder-frontend | sonnet | $0.40 | 30min |
+| Total | — | — | — | — | $1.90 | ~90min |
+
+## DAG dependencies
+T-1 → T-2 → T-3 (sequential)
+
+## Playwright visual scope
+- story_scope_routes: [/agenda/nueva, /agenda/[id]/edit]
+- forbidden: components/ui/, components/shared/, app/layout.tsx
+- non_egoismo: report cross-story bugs en T-n-impl-log
+
+## Invocation manual
+/dev-team <brand>: {brand}, ticket: T-1
+
+## Invocation autonomous
+echo 'autonomous_mode: true' >> {brand}/docs/product/stories/{id}/checkpoint.md
+# /dev-team picks up T-1, auto-handoff T-2 → T-3 → /auditor → /pm-{brand} merge
+```
+
+Al cerrar Step 7.5, el ready package incluye **5 artifacts** (era 4):
+
+1. `03-arch.md` consolidado
+2. `04-validators.yaml` con `playwright_visual_scope`
+3. `05-guidelines.md`
+4. `06-tickets.yaml` con `assignment` block per ticket
+5. **`dispatch-plan.md`** (★ NEW 2026-05-27)
+
 ### Step 8 — Validate ready package (★ v4.1 expanded checklist)
 
 Antes de cerrar story como ready:
@@ -636,6 +761,14 @@ Antes de cerrar story como ready:
 - [ ] `scenario_coverage` cubre sub-categorías mandatory: race / concurrent / network_failure / empty_state / large_dataset / a11y / i18n (heredadas de /po-ux refined gate)
 - [ ] `05-guidelines.md § must_load_skills` enforceable (sección renombrada de "Reference docs", builder spawn cita verbatim)
 - [ ] `06-tickets.yaml` cada ticket tiene `gherkin_coverage` field (post 2026-05-18 mandatory)
+
+**★ v4.2 cement 2026-05-27 expanded gates:**
+- [ ] `03-arch.md § Prior art audit` sección presente con paths verbatim del scan cross-brand (consumed engine + reused brands + lift candidates + net-new justificado)
+- [ ] `06-tickets.yaml` cada ticket tiene `assignment` block: `primary_agent` (no general-purpose), `model_preference`, `must_load_skills`, `forbidden_to_touch`, `rationale`
+- [ ] AGENTIC tickets con `production_code: true` → `assignment.model_preference: opus` (HARD R23)
+- [ ] `04-validators.yaml § playwright_visual_scope` presente para UI stories con `story_scope_routes` + `forbidden_visual_changes` + `non_egoismo_clause`
+- [ ] `dispatch-plan.md` producido (5th artifact) con `autonomous_mode: false` default + caps + cost matrix
+- [ ] `checkpoint.md::autonomous_mode` campo presente (default false; Chris ratifica true al cerrar review ready)
 
 ### Step 9 — Transition state + Hand off
 

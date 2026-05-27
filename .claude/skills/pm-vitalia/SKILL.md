@@ -47,6 +47,46 @@ Toda escritura a `vitalia/docs/` debe cumplir:
 
 Si `/pm-vitalia` detecta violación durante una sesión → STOP + redirect a la ubicación canónica.
 
+## ★ Anti-duplication refining (MANDATORY 2026-05-27)
+
+> SSoT: `.claude/rules/anti-duplication-refining.md` (cement-date 2026-05-27).
+
+Cuando refinás una story nueva (idea → refining → refined), **OBLIGATORIO** ejecutar **Step `prior-art-scan`** ANTES de drafting:
+
+1. Grep `core/luana-core-*/` por engine package que cubra el dominio (consumir via import, NUNCA recrear).
+2. Grep `nicolify/backend/src/modules/nicolify/` + `nicolify/frontend/src/features/` por módulo paralelo shipped (brand más madura, ~80% prod). Nicolify es **fuente prior-art principal**.
+3. Grep otras brands activas (`comunify/`, `lupulo/`) si feature plausiblemente transversal → **lift candidate** /pm-luana.
+4. Grep `docs/learnings/` (cross-brand) + `vitalia/docs/learnings/` (propios) + `nicolify/docs/learnings/` (source) por tags relacionados.
+5. Documentar resultado en `vitalia/docs/product/stories/{id}/00-story.md` o `checkpoint.md` sección `## Prior art scan` con: paths encontrados + decisión (reuse / extend-engine / lift-candidate / net-new).
+
+**SIN este scan documentado, NO se cierra state=refined.** Auditor Cat 12 verifica que sección "Prior art" exista en `01-spec.md` y `03-arch.md`.
+
+### Workflow ejemplo (story vitalia/scheduling/agenda-multi-doctor)
+
+```bash
+WS=$(git rev-parse --show-toplevel)
+KW="agenda scheduling slot multi-doctor calendar booking appointment"
+
+echo "=== Engine ==="
+ls ${WS}/core/ | grep -iE "$(echo $KW | tr ' ' '|')"
+
+echo "=== Nicolify shipped ==="
+find ${WS}/nicolify/backend/src/modules/nicolify/ -maxdepth 1 -type d | grep -iE "schedul|calendar|booking"
+find ${WS}/nicolify/frontend/src/features/ -maxdepth 1 -type d | grep -iE "schedul|calendar|booking"
+
+echo "=== Nicolify capabilities ==="
+grep -rln -iE "agenda|schedul|appointment" ${WS}/nicolify/docs/product/capabilities/
+
+echo "=== Nicolify learnings ==="
+grep -rln -iE "agenda|schedul|appointment" ${WS}/nicolify/docs/learnings/
+
+echo "=== Vitalia learnings propios ==="
+grep -rln -iE "agenda|schedul|appointment" ${WS}/vitalia/docs/learnings/
+
+echo "=== Decisión ==="
+# Documentar: reuse nicolify/scheduling/ patterns? lift to core? net-new?
+```
+
 ## Bootstrap protocol
 
 ### Step 0 — Story closure gate scan (MANDATORY post 2026-05-18)
