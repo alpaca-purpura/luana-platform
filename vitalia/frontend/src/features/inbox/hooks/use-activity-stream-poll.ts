@@ -19,11 +19,10 @@ import { useActivityStream } from "../api/use-activity-stream";
 import type { ActivityStreamResponse } from "../api/use-activity-stream";
 import type { UseQueryResult } from "@tanstack/react-query";
 
-export interface UseActivityStreamPollResult
-  extends Pick<
-    UseQueryResult<ActivityStreamResponse>,
-    "data" | "isLoading" | "isError" | "error"
-  > {
+export interface UseActivityStreamPollResult extends Pick<
+  UseQueryResult<ActivityStreamResponse>,
+  "data" | "isLoading" | "isError" | "error"
+> {
   /** Whether polling is currently active */
   isPolling: boolean;
 }

@@ -31,7 +31,7 @@ function AdrianAvatar() {
       className={cn(
         "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center",
         "bg-gradient-to-br from-teal-500 to-cyan-600",
-        "text-white text-xs font-bold select-none"
+        "text-white text-xs font-bold select-none",
       )}
       aria-hidden="true"
     >
@@ -45,10 +45,7 @@ AdrianAvatar.displayName = "AdrianAvatar";
 function SkeletonLine({ width = "w-full" }: { width?: string }) {
   return (
     <div
-      className={cn(
-        "h-3 rounded bg-gray-200 animate-pulse",
-        width
-      )}
+      className={cn("h-3 rounded bg-gray-200 animate-pulse", width)}
       aria-hidden="true"
     />
   );
@@ -70,7 +67,7 @@ export function LiveWhatsAppPreview({
     <div
       className={cn(
         "rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden",
-        className
+        className,
       )}
       role="region"
       aria-label={copy.whatsAppTitle}
@@ -79,7 +76,9 @@ export function LiveWhatsAppPreview({
       {/* Card header */}
       <div className="flex items-center justify-between px-4 py-3 border-b bg-gray-50">
         <div>
-          <p className="text-sm font-semibold text-gray-800">{copy.whatsAppTitle}</p>
+          <p className="text-sm font-semibold text-gray-800">
+            {copy.whatsAppTitle}
+          </p>
           <p className="text-xs text-gray-500">{copy.whatsAppSubtitle}</p>
         </div>
         {data && (
@@ -87,7 +86,10 @@ export function LiveWhatsAppPreview({
             className="flex items-center gap-1 text-xs text-green-600 font-medium"
             aria-label="Vista previa generada"
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-green-500" aria-hidden="true" />
+            <span
+              className="w-1.5 h-1.5 rounded-full bg-green-500"
+              aria-hidden="true"
+            />
             Listo
           </span>
         )}
@@ -129,9 +131,7 @@ export function LiveWhatsAppPreview({
             {copy.modelLabel}: {data.scenario}
           </span>
           {data.fromCache && (
-            <span className="text-[10px] text-gray-400">
-              (desde caché)
-            </span>
+            <span className="text-[10px] text-gray-400">(desde caché)</span>
           )}
         </div>
       )}

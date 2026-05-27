@@ -43,7 +43,11 @@ describe("INBOX_URL_SCHEMA", () => {
   });
 
   it("channel parser parses valid channel values", () => {
-    const validChannels: InboxChannelFilter[] = ["whatsapp", "instagram", "email"];
+    const validChannels: InboxChannelFilter[] = [
+      "whatsapp",
+      "instagram",
+      "email",
+    ];
     validChannels.forEach((channel) => {
       const result = INBOX_URL_SCHEMA.channel.parseServerSide(channel);
       expect(result).toBe(channel);

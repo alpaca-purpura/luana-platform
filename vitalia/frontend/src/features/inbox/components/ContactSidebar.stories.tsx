@@ -23,9 +23,13 @@ vi.mock("@/hooks/useCurrentUser", () => ({
 }));
 
 vi.mock("@/components/shared/phi/PiiMaskedSpan", () => ({
-  PiiMaskedSpan: ({ value, className }: { value: string; className?: string }) => (
-    <span className={className}>{value}</span>
-  ),
+  PiiMaskedSpan: ({
+    value,
+    className,
+  }: {
+    value: string;
+    className?: string;
+  }) => <span className={className}>{value}</span>,
 }));
 
 vi.mock("@/components/shared/phi/RequireRole", () => ({
@@ -41,7 +45,9 @@ vi.mock("@/components/shared/phi/RequireRole", () => ({
 }));
 
 vi.mock("@/components/shared/phi/AuditedSection", () => ({
-  AuditedSection: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  AuditedSection: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
 }));
 
 // ---------------------------------------------------------------------------
@@ -55,7 +61,11 @@ const CONTACT_COMPLETO: InboxContactInfo = {
   email: "valentina@example.com",
   statusTag: "Considerando",
   npsHistory: [
-    { score: 9, recorded_at: "2026-04-15T10:00:00.000Z", comment: "Excelente atención." },
+    {
+      score: 9,
+      recorded_at: "2026-04-15T10:00:00.000Z",
+      comment: "Excelente atención.",
+    },
     { score: 7, recorded_at: "2026-03-10T10:00:00.000Z", comment: null },
   ],
 };
@@ -97,7 +107,9 @@ export const RolDoctor: Story = {
   name: "Rol doctor (ve historial NPS)",
   beforeEach: async () => {
     const { useCurrentUser } = await import("@/hooks/useCurrentUser");
-    (useCurrentUser as ReturnType<typeof vi.fn>).mockReturnValue({ role: "doctor" });
+    (useCurrentUser as ReturnType<typeof vi.fn>).mockReturnValue({
+      role: "doctor",
+    });
   },
 };
 
@@ -105,7 +117,9 @@ export const RolMarketing: Story = {
   name: "Rol marketing (sin historial NPS)",
   beforeEach: async () => {
     const { useCurrentUser } = await import("@/hooks/useCurrentUser");
-    (useCurrentUser as ReturnType<typeof vi.fn>).mockReturnValue({ role: "marketing" });
+    (useCurrentUser as ReturnType<typeof vi.fn>).mockReturnValue({
+      role: "marketing",
+    });
   },
 };
 
@@ -114,7 +128,9 @@ export const ContactoIncompleto: Story = {
   args: { contact: CONTACT_INCOMPLETO },
   beforeEach: async () => {
     const { useCurrentUser } = await import("@/hooks/useCurrentUser");
-    (useCurrentUser as ReturnType<typeof vi.fn>).mockReturnValue({ role: "admin_clinic" });
+    (useCurrentUser as ReturnType<typeof vi.fn>).mockReturnValue({
+      role: "admin_clinic",
+    });
   },
 };
 
@@ -125,6 +141,8 @@ export const NpsVacio: Story = {
   },
   beforeEach: async () => {
     const { useCurrentUser } = await import("@/hooks/useCurrentUser");
-    (useCurrentUser as ReturnType<typeof vi.fn>).mockReturnValue({ role: "nurse" });
+    (useCurrentUser as ReturnType<typeof vi.fn>).mockReturnValue({
+      role: "nurse",
+    });
   },
 };

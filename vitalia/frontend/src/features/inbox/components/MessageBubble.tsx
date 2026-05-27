@@ -51,7 +51,7 @@ function AdrianAvatar() {
         "flex-shrink-0 w-7 h-7 rounded-full",
         "vitalia-agent-gradient-adrian",
         "flex items-center justify-center",
-        "text-white text-[10px] font-bold select-none"
+        "text-white text-[10px] font-bold select-none",
       )}
       aria-label="Adrián"
     >
@@ -67,7 +67,7 @@ function HumanAvatar() {
         "flex-shrink-0 w-7 h-7 rounded-full",
         "vt-bg-azul-marino",
         "flex items-center justify-center",
-        "text-white text-[10px] font-bold select-none"
+        "text-white text-[10px] font-bold select-none",
       )}
       aria-label="Agente humano"
     >
@@ -146,7 +146,7 @@ function SystemMessage({ message }: { message: Message }) {
       <span
         className={cn(
           "text-xs vt-text-muted px-3 py-1 rounded-full",
-          "vt-bg-muted border vt-border-soft"
+          "vt-bg-muted border vt-border-soft",
         )}
       >
         {/* SC-04: React escapes body_text — no dangerouslySetInnerHTML */}
@@ -166,7 +166,12 @@ export function MessageBubble({
   conversationUpdatedAt,
   className,
 }: MessageBubbleProps) {
-  const { sender_type, retracted_at, action_receipt_expires_at, conversation_id } = message;
+  const {
+    sender_type,
+    retracted_at,
+    action_receipt_expires_at,
+    conversation_id,
+  } = message;
 
   // System messages get special centered pill layout
   if (sender_type === "system") {
@@ -180,14 +185,15 @@ export function MessageBubble({
   const isRetracted = retracted_at !== null;
 
   // Determine if ActionReceiptUndoChip should be shown
-  const showUndoChip = isAI && action_receipt_expires_at !== null && !isRetracted;
+  const showUndoChip =
+    isAI && action_receipt_expires_at !== null && !isRetracted;
 
   return (
     <div
       className={cn(
         "flex gap-2 max-w-[85%]",
         isPatient ? "ml-auto flex-row-reverse" : "mr-auto flex-row",
-        className
+        className,
       )}
       data-testid="message-bubble"
       data-sender={sender_type}
@@ -204,7 +210,7 @@ export function MessageBubble({
             <span
               className={cn(
                 "text-[10px] font-semibold px-1.5 py-0.5 rounded-full",
-                "vt-bg-gradient-agent text-white"
+                "vt-bg-gradient-agent text-white",
               )}
               aria-label="Adrián responde automáticamente"
             >
@@ -220,15 +226,20 @@ export function MessageBubble({
             // Patient: right-aligned, azul marino
             isPatient && !isRetracted && "vt-bg-azul-marino text-white",
             // AI: light cian bg
-            isAI && !isRetracted && "vt-bg-cian-8 vt-text border vt-border-soft",
+            isAI &&
+              !isRetracted &&
+              "vt-bg-cian-8 vt-text border vt-border-soft",
             // Human agent: surface bg
-            sender_type === "agent_human" && !isRetracted && "vt-bg-surface vt-text border vt-border",
+            sender_type === "agent_human" &&
+              !isRetracted &&
+              "vt-bg-surface vt-text border vt-border",
             // Retracted: muted strikethrough
-            isRetracted && "vt-bg-muted vt-text-muted border vt-border-soft line-through opacity-60",
+            isRetracted &&
+              "vt-bg-muted vt-text-muted border vt-border-soft line-through opacity-60",
             // Patient side rounding
             isPatient && "rounded-tr-sm",
             // Agent side rounding
-            !isPatient && "rounded-tl-sm"
+            !isPatient && "rounded-tl-sm",
           )}
         >
           {isRetracted ? (

@@ -19,14 +19,18 @@
  *
  * Output: vitalia/frontend/playwright/.clerk/user.json (gitignored)
  */
-import { clerk, clerkSetup, setupClerkTestingToken } from '@clerk/testing/playwright';
-import { test as setup } from '@playwright/test';
-import fs from 'fs';
-import path from 'path';
+import {
+  clerk,
+  clerkSetup,
+  setupClerkTestingToken,
+} from "@clerk/testing/playwright";
+import { test as setup } from "@playwright/test";
+import fs from "fs";
+import path from "path";
 
-setup.describe.configure({ mode: 'serial' });
+setup.describe.configure({ mode: "serial" });
 
-const authFile = path.join(__dirname, '../../playwright/.clerk/user.json');
+const authFile = path.join(__dirname, "../../playwright/.clerk/user.json");
 const FRESH_WINDOW_MS = 4 * 60 * 60 * 1000;
 const CF_BM_SAFETY_MARGIN_S = 5 * 60;
 const SIGNIN_RETRIES = 2;
@@ -39,18 +43,19 @@ function isAuthFileFresh(): boolean {
     const ageMs = Date.now() - stat.mtimeMs;
     if (ageMs > FRESH_WINDOW_MS) return false;
 
-    const raw = JSON.parse(fs.readFileSync(authFile, 'utf-8')) as {
+    const raw = JSON.parse(fs.readFileSync(authFile, "utf-8")) as {
       cookies?: Array<{ name: string; expires?: number }>;
     };
     const cookies = raw.cookies ?? [];
     if (cookies.length === 0) return false;
 
     const nowS = Math.floor(Date.now() / 1000);
-    const cfBm = cookies.find((c) => c.name === '__cf_bm');
-    if (cfBm?.expires && cfBm.expires - nowS < CF_BM_SAFETY_MARGIN_S) return false;
+    const cfBm = cookies.find((c) => c.name === "__cf_bm");
+    if (cfBm?.expires && cfBm.expires - nowS < CF_BM_SAFETY_MARGIN_S)
+      return false;
 
     const clerkSession = cookies.find(
-      (c) => c.name.startsWith('__session') || c.name.startsWith('__client'),
+      (c) => c.name.startsWith("__session") || c.name.startsWith("__client"),
     );
     if (!clerkSession) return false;
 
@@ -63,19 +68,19 @@ function isAuthFileFresh(): boolean {
 function wipeAuthFile(): void {
   if (fs.existsSync(authFile)) {
     fs.unlinkSync(authFile);
-    console.log('[clerk.setup] wiped stale auth file');
+    console.log("[clerk.setup] wiped stale auth file");
   }
 }
 
-setup('clerk setup', async () => {
+setup("clerk setup", async () => {
   await clerkSetup();
 });
 
-setup('authenticate', async ({ page }) => {
+setup("authenticate", async ({ page }) => {
   setup.setTimeout(180_000);
 
   if (isAuthFileFresh()) {
-    console.log('[clerk.setup] auth file fresh — skipping re-auth');
+    console.log("[clerk.setup] auth file fresh — skipping re-auth");
     return;
   }
 
@@ -90,7 +95,10 @@ setup('authenticate', async ({ page }) => {
   for (let attempt = 1; attempt <= SIGNIN_RETRIES + 1; attempt++) {
     try {
       // Visit /sign-in to bootstrap Clerk in the browser (sets __clerk_db_jwt dev cookie + loads Clerk SDK).
-      await page.goto('/sign-in', { waitUntil: 'networkidle', timeout: 60_000 });
+      await page.goto("/sign-in", {
+        waitUntil: "networkidle",
+        timeout: 60_000,
+      });
 
       // Use ticket strategy (sign-in token) — bypasses two-step email/password UI flow.
       // @clerk/testing creates a server-side signInToken via CLERK_SECRET_KEY, then
@@ -99,12 +107,14 @@ setup('authenticate', async ({ page }) => {
       await clerk.signIn({ page, emailAddress: email });
 
       // Navigate to dashboard root to trigger middleware acceptance + verify session is active.
-      await page.goto('/', { waitUntil: 'networkidle', timeout: 60_000 });
+      await page.goto("/", { waitUntil: "networkidle", timeout: 60_000 });
 
       // Sanity check: confirm we are NOT on /sign-in (would mean session not established).
       const currentUrl = page.url();
-      if (currentUrl.includes('/sign-in')) {
-        throw new Error(`Post-signIn navigation landed on /sign-in (session not active): ${currentUrl}`);
+      if (currentUrl.includes("/sign-in")) {
+        throw new Error(
+          `Post-signIn navigation landed on /sign-in (session not active): ${currentUrl}`,
+        );
       }
 
       await page.waitForFunction(
@@ -127,7 +137,9 @@ setup('authenticate', async ({ page }) => {
       console.warn(`[clerk.setup] attempt ${attempt} failed: ${msg}`);
       try {
         await page.evaluate(async () => {
-          const w = window as unknown as { Clerk?: { signOut?: () => Promise<void> } };
+          const w = window as unknown as {
+            Clerk?: { signOut?: () => Promise<void> };
+          };
           await w.Clerk?.signOut?.();
         });
       } catch {
@@ -139,5 +151,7 @@ setup('authenticate', async ({ page }) => {
       }
     }
   }
-  throw new Error(`Clerk auth failed after ${SIGNIN_RETRIES + 1} attempts: ${String(lastErr)}`);
+  throw new Error(
+    `Clerk auth failed after ${SIGNIN_RETRIES + 1} attempts: ${String(lastErr)}`,
+  );
 });

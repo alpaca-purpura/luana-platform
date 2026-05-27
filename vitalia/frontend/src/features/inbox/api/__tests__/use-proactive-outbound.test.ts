@@ -47,7 +47,11 @@ import { fetchClient } from "@/lib/api/fetchClient";
 
 function createWrapper(queryClient: QueryClient) {
   return function Wrapper({ children }: { children: React.ReactNode }) {
-    return createElement(QueryClientProvider, { client: queryClient }, children);
+    return createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 }
 
@@ -56,7 +60,10 @@ describe("useProactiveOutbound", () => {
 
   beforeEach(() => {
     queryClient = new QueryClient({
-      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+      defaultOptions: {
+        queries: { retry: false },
+        mutations: { retry: false },
+      },
     });
     vi.clearAllMocks();
   });
@@ -69,7 +76,9 @@ describe("useProactiveOutbound", () => {
       status: "active",
       handler_mode: "ai",
     };
-    vi.mocked(fetchClient).mockResolvedValue({ conversation: mockConversation });
+    vi.mocked(fetchClient).mockResolvedValue({
+      conversation: mockConversation,
+    });
 
     const { result } = renderHook(() => useProactiveOutbound(), {
       wrapper: createWrapper(queryClient),
@@ -85,7 +94,9 @@ describe("useProactiveOutbound", () => {
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data?.conversation).toMatchObject({ id: "conv-new-001" });
+    expect(result.current.data?.conversation).toMatchObject({
+      id: "conv-new-001",
+    });
     expect(fetchClient).toHaveBeenCalledWith(
       "/api/v1/vitalia/inbox/proactive-outbound",
       expect.objectContaining({
@@ -96,12 +107,14 @@ describe("useProactiveOutbound", () => {
           template_vars: { patient_name: "Ana" },
           channel: "whatsapp",
         }),
-      })
+      }),
     );
   });
 
   it("invalidates conversations list after success", async () => {
-    vi.mocked(fetchClient).mockResolvedValue({ conversation: { id: "conv-new-002" } });
+    vi.mocked(fetchClient).mockResolvedValue({
+      conversation: { id: "conv-new-002" },
+    });
     const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
 
     const { result } = renderHook(() => useProactiveOutbound(), {
@@ -118,7 +131,7 @@ describe("useProactiveOutbound", () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(invalidateSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ queryKey: ["inbox", "conversations"] })
+      expect.objectContaining({ queryKey: ["inbox", "conversations"] }),
     );
   });
 

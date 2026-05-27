@@ -67,7 +67,7 @@ function DoctorCard({
         isSelected
           ? "border-blue-600 bg-blue-50"
           : "border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50",
-        (!doctor.isAvailable || disabled) && "opacity-50 cursor-not-allowed"
+        (!doctor.isAvailable || disabled) && "opacity-50 cursor-not-allowed",
       )}
     >
       {/* Avatar */}
@@ -82,7 +82,9 @@ function DoctorCard({
           <div
             className={cn(
               "w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold",
-              isSelected ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-600"
+              isSelected
+                ? "bg-blue-600 text-white"
+                : "bg-gray-200 text-gray-600",
             )}
             aria-hidden="true"
           >
@@ -93,7 +95,7 @@ function DoctorCard({
         <span
           className={cn(
             "absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-white",
-            doctor.isAvailable ? "bg-green-500" : "bg-gray-400"
+            doctor.isAvailable ? "bg-green-500" : "bg-gray-400",
           )}
           role="img"
           aria-label={
@@ -113,7 +115,8 @@ function DoctorCard({
       {doctor.specialties.length > 0 && (
         <span className="text-xs text-gray-500 leading-tight">
           {doctor.specialties[0]}
-          {doctor.specialties.length > 1 && ` +${doctor.specialties.length - 1}`}
+          {doctor.specialties.length > 1 &&
+            ` +${doctor.specialties.length - 1}`}
         </span>
       )}
 
@@ -121,7 +124,7 @@ function DoctorCard({
       <span
         className={cn(
           "text-xs font-medium",
-          doctor.isAvailable ? "text-green-600" : "text-gray-400"
+          doctor.isAvailable ? "text-green-600" : "text-gray-400",
         )}
       >
         {doctor.isAvailable
@@ -144,7 +147,7 @@ export function DoctorAvatarPicker({
       <div
         className={cn(
           "rounded-lg border border-dashed border-gray-200 p-6 text-center",
-          className
+          className,
         )}
         role="status"
       >

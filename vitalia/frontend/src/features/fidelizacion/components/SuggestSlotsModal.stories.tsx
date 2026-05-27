@@ -32,7 +32,8 @@ const meta: Meta<typeof SuggestSlotsModal> = {
     eventId: { control: false },
     patientId: { control: false },
     doctorId: {
-      description: "ID del médico para filtrar turnos disponibles. Null = cualquier médico.",
+      description:
+        "ID del médico para filtrar turnos disponibles. Null = cualquier médico.",
       control: { type: "text" },
     },
     onClose: { action: "close" },

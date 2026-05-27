@@ -30,9 +30,16 @@ vi.mock("@/hooks/useClinicId", () => ({
 
 // Mock fetchClient
 vi.mock("@/lib/api/fetchClient", () => ({
-  fetchClient: vi.fn(async () => ({ message: { id: "msg-1", retracted_at: new Date().toISOString() } })),
+  fetchClient: vi.fn(async () => ({
+    message: { id: "msg-1", retracted_at: new Date().toISOString() },
+  })),
   ApiError: class ApiError extends Error {
-    constructor(public status: number, message: string) { super(message); }
+    constructor(
+      public status: number,
+      message: string,
+    ) {
+      super(message);
+    }
   },
 }));
 
@@ -74,7 +81,7 @@ describe("ActionReceiptUndoChip", () => {
         expiresAt={expiresAt}
         conversationUpdatedAt="2026-01-01T00:00:00Z"
       />,
-      { wrapper }
+      { wrapper },
     );
 
     // Chip is visible with "Revertir" label
@@ -95,7 +102,7 @@ describe("ActionReceiptUndoChip", () => {
         expiresAt={expiresAt}
         conversationUpdatedAt="2026-01-01T00:00:00Z"
       />,
-      { wrapper }
+      { wrapper },
     );
 
     // Initially visible
@@ -120,7 +127,7 @@ describe("ActionReceiptUndoChip", () => {
         expiresAt={expiresAt}
         conversationUpdatedAt="2026-01-01T00:00:00Z"
       />,
-      { wrapper }
+      { wrapper },
     );
 
     await act(async () => {
@@ -140,7 +147,7 @@ describe("ActionReceiptUndoChip", () => {
         expiresAt={null as unknown as string}
         conversationUpdatedAt="2026-01-01T00:00:00Z"
       />,
-      { wrapper }
+      { wrapper },
     );
     expect(container.firstChild).toBeNull();
   });

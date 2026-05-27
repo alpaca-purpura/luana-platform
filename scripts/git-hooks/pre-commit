@@ -135,18 +135,22 @@ if [ -n "${ALL_TEXT_STAGED}" ]; then
 
     # Per spanish-text.md exception: skill SKILL.md / rules/*.md / process docs
     # may quote voseo glosario or example wrong-then-right pairs. Honor magic
-    # comment in any of these forms (R25 flexible regex 2026-05-05):
-    #   # voseo-allowed                     (Python comment, no reason)
-    #   # voseo-allowed: optional reason    (Python comment, with reason)
+    # comment in any of these forms (R25 flexible regex 2026-05-05 + TS fix 2026-05-26):
+    #   # voseo-allowed                     (Python/shell comment, no reason)
+    #   # voseo-allowed: optional reason    (Python/shell comment, with reason)
     #   # voseo-allowed — optional reason   (any unicode separator + reason)
-    #   <!-- voseo-allowed -->              (Markdown, no reason)
-    #   <!-- voseo-allowed: optional -->    (Markdown, with reason inside)
+    #   // voseo-allowed                    (TypeScript/JS comment, no reason)
+    #   // voseo-allowed: optional reason   (TypeScript/JS comment, with reason)
+    #   <!-- voseo-allowed -->              (Markdown/HTML/JSX, no reason)
+    #   <!-- voseo-allowed: optional -->    (Markdown/HTML/JSX, with reason inside)
     #   <!-- voseo-allowed — reason -->     (any unicode separator + reason)
     #
     # Regex strategy: avoid unicode chars in character classes (locale issues
     # with multi-byte chars in POSIX ERE). Use `[^>]*` for MD and end-of-line
-    # tolerance for Py. Both anchored at literal `voseo-allowed`.
-    if grep -qE '(#\s*voseo-allowed([: \t]|$)|<!--\s*voseo-allowed[^>]*-->)' "${FILE}" 2>/dev/null; then
+    # tolerance for Py/TS. Both anchored at literal `voseo-allowed`.
+    # Supports: # voseo-allowed (Python/shell), // voseo-allowed (TypeScript/JS),
+    #           <!-- voseo-allowed --> (HTML/Markdown/JSX)
+    if grep -qE '((#|//)\s*voseo-allowed([: \t]|$)|<!--\s*voseo-allowed[^>]*-->)' "${FILE}" 2>/dev/null; then
       continue
     fi
 
@@ -186,8 +190,9 @@ Common conversions:
 
 Exception: modules/sales_agent/ voice templates (already excluded).
 If false positive, mark file:
-  # voseo-allowed: <reason>           (Python/TS comment)
-  <!-- voseo-allowed: <reason> -->    (Markdown)
+  # voseo-allowed: <reason>           (Python/shell comment)
+  // voseo-allowed: <reason>          (TypeScript/JS comment)
+  <!-- voseo-allowed: <reason> -->    (Markdown/HTML)
 
 NEVER use --no-verify (.claude/rules/git-safety.md prohibits).
 ─────────────────────────────────────────────────────────────
@@ -607,18 +612,21 @@ if [ -n "${BACKLOG_SOURCES_TOUCHED}" ]; then
 
   if [ -n "${VENV_PY}" ] && [ -f "${GENERATOR}" ]; then
     # Caso 1: paths raíz docs/product/ → invocar generator legacy.
+    # NOTE 2026-05-20: BACKLOG.* es gitignored (.gitignore § "Auto-generated docs").
+    # Regeneramos working-tree local para mantener fresh, NO auto-stage.
     if [ -n "${ROOT_BACKLOG_TOUCHED}" ]; then
       if ! "${VENV_PY}" "${GENERATOR}" --check >/tmp/backlog-check.txt 2>&1; then
-        # Drift detected — regenerate + auto-stage
+        # Drift detected — regenerate local (gitignored, no stage)
         "${VENV_PY}" "${GENERATOR}" >/tmp/backlog-regen.txt 2>&1 || true
-        git add docs/product/BACKLOG.yaml docs/product/BACKLOG.md 2>/dev/null || true
         printf "\033[33m"
         cat <<EOF
 ─────────────────────────────────────────────────────────────
-R33 BACKLOG auto-regenerated (platform/legacy)
+R33 BACKLOG auto-regenerated (platform/legacy) — gitignored
 ─────────────────────────────────────────────────────────────
-Sources changed → docs/product/BACKLOG.{yaml,md} regenerated and re-staged.
-Inspect the diff before pushing if surprised.
+Sources changed → docs/product/BACKLOG.{yaml,md} regenerated localmente
+(gitignored desde 2026-05-20). NO se incluye en el commit.
+
+Cuando necesites la vista actualizada: cat docs/product/BACKLOG.md
 
 Generator output:
 $(tail -10 /tmp/backlog-regen.txt)
@@ -628,28 +636,30 @@ EOF
       fi
     fi
 
-    # Caso 2: paths per-brand → invocar generator con --brand per cada brand + auto-stage.
+    # Caso 2: paths per-brand → invocar generator con --brand per cada brand.
+    # Same gitignored policy aplica per-brand.
     if [ -n "${BRAND_BACKLOG_TOUCHED}" ]; then
       while IFS= read -r BRAND; do
         [ -z "${BRAND}" ] && continue
         if ! "${VENV_PY}" "${GENERATOR}" --check --brand "${BRAND}" >/tmp/backlog-check-${BRAND}.txt 2>&1; then
-          # Drift detected — regenerate + auto-stage
+          # Drift detected — regenerate local (gitignored, no stage)
           "${VENV_PY}" "${GENERATOR}" --brand "${BRAND}" >/tmp/backlog-regen-${BRAND}.txt 2>&1 || true
-          git add "${BRAND}/docs/product/BACKLOG.yaml" "${BRAND}/docs/product/BACKLOG.md" "${BRAND}/docs/product/BACKLOG-TLDR.md" 2>/dev/null || true
           printf "\033[33m"
           cat <<EOF
 ─────────────────────────────────────────────────────────────
-R33 BACKLOG auto-regenerated (brand: ${BRAND})
+R33 BACKLOG auto-regenerated (brand: ${BRAND}) — gitignored
 ─────────────────────────────────────────────────────────────
 Sources changed → ${BRAND}/docs/product/BACKLOG.{yaml,md,TLDR.md}
-regenerated and re-staged. Inspect the diff before pushing if surprised.
+regenerados localmente (gitignored desde 2026-05-20). NO incluidos en commit.
+
+Vista actualizada: cat ${BRAND}/docs/product/BACKLOG.md
 
 Generator output:
 $(tail -10 /tmp/backlog-regen-${BRAND}.txt)
 
 Nota: si la story tocada es candidata cross-brand (promotion to core),
 considerar también:
-  make portfolio   # regenera docs/portfolio/PORTFOLIO.md cross-brand
+  make portfolio   # regenera docs/portfolio/PORTFOLIO.md (también gitignored)
 ─────────────────────────────────────────────────────────────
 EOF
           printf "\033[0m"
@@ -1012,8 +1022,8 @@ if [ -n "${CHANGED_BRAND_YAML}" ]; then
     printf "\033[0m"
   else
     if "${VENV_PY_ROOT}" "${INFRA_SCRIPT}" 2>/tmp/infra-matrix-err.txt; then
-      git add "${REPO_ROOT}/docs/portfolio/INFRA-MATRIX.md" 2>/dev/null || true
-      echo "[pre-commit] INFRA-MATRIX.md regenerado y agregado al commit."
+      # NOTE 2026-05-20: INFRA-MATRIX.md es gitignored — regen sin auto-stage.
+      echo "[pre-commit] INFRA-MATRIX.md regenerado localmente (gitignored, no incluido en commit). Vista: cat docs/portfolio/INFRA-MATRIX.md"
     else
       printf "\033[31m"
       cat <<EOF

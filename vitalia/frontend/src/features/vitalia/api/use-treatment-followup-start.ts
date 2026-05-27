@@ -17,10 +17,13 @@ export function useTreatmentFollowupStart(treatmentId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: StartFollowupRequest): Promise<StartFollowupResponse> => {
+    mutationFn: async (
+      data: StartFollowupRequest,
+    ): Promise<StartFollowupResponse> => {
       const token = await getToken();
-      const tenantId = (sessionClaims?.public_metadata as Record<string, unknown>)
-        ?.active_tenant_id as string | undefined;
+      const tenantId = (
+        sessionClaims?.public_metadata as Record<string, unknown>
+      )?.active_tenant_id as string | undefined;
       if (!token) throw new Error("Not authenticated");
       return vitaliaFetch<StartFollowupResponse>(
         `/api/v1/vitalia/treatments/${treatmentId}/start-followup`,
@@ -29,12 +32,16 @@ export function useTreatmentFollowupStart(treatmentId: string) {
           tenantId: tenantId ?? "",
           method: "POST",
           body: JSON.stringify(data),
-        }
+        },
       );
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: vitaliaQueryKeys.treatments.detail(treatmentId) });
-      queryClient.invalidateQueries({ queryKey: vitaliaQueryKeys.treatments.followup(treatmentId) });
+      queryClient.invalidateQueries({
+        queryKey: vitaliaQueryKeys.treatments.detail(treatmentId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: vitaliaQueryKeys.treatments.followup(treatmentId),
+      });
     },
   });
 }

@@ -22,7 +22,7 @@ const YEAR = 365 * DAY;
  */
 export function formatTenantRelative(
   isoString: string,
-  locale: string = "es-419"
+  locale: string = "es-419",
 ): string {
   if (!isoString) return "—";
 

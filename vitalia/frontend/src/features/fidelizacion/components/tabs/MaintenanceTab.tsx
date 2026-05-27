@@ -8,7 +8,10 @@
 
 import { FIDELIZACION_COPY } from "../../copy";
 import { useReEngagementPatterns } from "../../api/use-re-engagement-patterns";
-import { ReEngagementCard, type ReEngagementCardHandlers } from "../ReEngagementCard";
+import {
+  ReEngagementCard,
+  type ReEngagementCardHandlers,
+} from "../ReEngagementCard";
 import type { FidelizacionPeriod, UrgencyFilter } from "../../types/url-state";
 import type { UrgencyLevel } from "../../types/re-engagement";
 
@@ -46,12 +49,18 @@ export function MaintenanceTab({
       {isPending && (
         <div aria-busy="true" className="space-y-3">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-24 animate-pulse rounded-md bg-[hsl(var(--vitalia-bg-soft,220_20%_96%))]" />
+            <div
+              key={i}
+              className="h-24 animate-pulse rounded-md bg-[hsl(var(--vitalia-bg-soft,220_20%_96%))]"
+            />
           ))}
         </div>
       )}
       {isError && (
-        <div role="alert" className="text-sm text-[hsl(var(--vitalia-danger,0_75%_45%))]">
+        <div
+          role="alert"
+          className="text-sm text-[hsl(var(--vitalia-danger,0_75%_45%))]"
+        >
           {FIDELIZACION_COPY.errors.generic}
         </div>
       )}
@@ -60,9 +69,16 @@ export function MaintenanceTab({
           {FIDELIZACION_COPY.empty.maintenance}
         </div>
       )}
-      {!isPending && !isError && rows.length > 0 && rows.map((row) => (
-        <ReEngagementCard key={row.reEngagementEventId} row={row} {...handlers} />
-      ))}
+      {!isPending &&
+        !isError &&
+        rows.length > 0 &&
+        rows.map((row) => (
+          <ReEngagementCard
+            key={row.reEngagementEventId}
+            row={row}
+            {...handlers}
+          />
+        ))}
     </section>
   );
 }

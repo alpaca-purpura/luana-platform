@@ -43,7 +43,9 @@ export function useTranscribeAudio() {
   const clinicId = useClinicId();
 
   return useMutation({
-    mutationFn: async (input: TranscribeAudioInput): Promise<TranscribeAudioResult> => {
+    mutationFn: async (
+      input: TranscribeAudioInput,
+    ): Promise<TranscribeAudioResult> => {
       const token = await getToken();
       if (!token || !orgId) throw new Error("Not authenticated");
 
@@ -78,7 +80,7 @@ export function useTranscribeAudio() {
             headers,
             body: formData,
             signal: controller.signal,
-          }
+          },
         );
       } finally {
         clearTimeout(timeoutId);

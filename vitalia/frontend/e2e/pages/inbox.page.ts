@@ -13,7 +13,10 @@
 import type { Page, Locator } from "@playwright/test";
 
 /** Segmented control mode values (mapping a SegmentedModeValue) */
-export type InboxSegmentValue = "adrian-decide" | "adrian-consulta" | "yo-escribo";
+export type InboxSegmentValue =
+  | "adrian-decide"
+  | "adrian-consulta"
+  | "yo-escribo";
 
 /** Tab activa del layout */
 export type InboxTabKey = "conversations" | "contact" | "activity";
@@ -70,19 +73,27 @@ export class InboxPage {
     // Layout
     this.inboxLayout = page.getByTestId("inbox-layout");
     this.conversationListPanel = page.getByTestId("conversation-list-panel");
-    this.conversationThreadPanel = page.getByTestId("conversation-thread-panel");
+    this.conversationThreadPanel = page.getByTestId(
+      "conversation-thread-panel",
+    );
     this.contactSidebarPanel = page.getByTestId("contact-sidebar-panel");
 
     // Lista conversaciones
-    this.conversationListEmpty = page.getByTestId("conversation-list-empty-wrapper");
-    this.conversationListPlaceholder = page.getByTestId("conversation-list-placeholder");
+    this.conversationListEmpty = page.getByTestId(
+      "conversation-list-empty-wrapper",
+    );
+    this.conversationListPlaceholder = page.getByTestId(
+      "conversation-list-placeholder",
+    );
 
     // Hilo
     this.threadPlaceholder = page.getByTestId("thread-placeholder");
     this.conversationThread = page.getByTestId("conversation-thread");
     this.messagesList = page.getByTestId("messages-list");
     this.threadHeader = page.getByTestId("thread-header");
-    this.threadHeaderPatientName = page.getByTestId("thread-header-patient-name");
+    this.threadHeaderPatientName = page.getByTestId(
+      "thread-header-patient-name",
+    );
     this.threadHeaderChannel = page.getByTestId("thread-header-channel");
 
     // Segmented control
@@ -103,7 +114,9 @@ export class InboxPage {
     this.pauseAdrianModal = page.getByTestId("pause-adrian-modal");
 
     // Sidebar
-    this.contactSidebarPlaceholder = page.getByTestId("contact-sidebar-placeholder");
+    this.contactSidebarPlaceholder = page.getByTestId(
+      "contact-sidebar-placeholder",
+    );
     this.inboxContactSidebar = page.getByTestId("inbox-contact-sidebar");
   }
 

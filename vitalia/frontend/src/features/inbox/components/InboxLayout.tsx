@@ -45,7 +45,7 @@ export function InboxLayout({
     <div
       className={cn(
         "flex h-full min-h-0 w-full overflow-hidden vt-bg-surface",
-        className
+        className,
       )}
       role="main"
       aria-label={INBOX_COPY.pageTitle}
@@ -74,7 +74,7 @@ export function InboxLayout({
         <aside
           className={cn(
             "hidden w-[280px] shrink-0 flex-col border-l vt-border lg:flex",
-            !contactSidebarOpen && "lg:hidden"
+            !contactSidebarOpen && "lg:hidden",
           )}
           aria-label={INBOX_COPY.contactSidebar.ariaLabel}
           data-testid="contact-sidebar-panel"

@@ -30,7 +30,9 @@ export function OnboardingStep3Client({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-lg font-semibold text-gray-900">Tu primera oferta</h2>
+        <h2 className="text-lg font-semibold text-gray-900">
+          Tu primera oferta
+        </h2>
         <p className="text-sm text-gray-500 mt-1">
           Crea tu primera oferta médica para que los pacientes puedan agendarse.
         </p>
@@ -43,19 +45,22 @@ export function OnboardingStep3Client({
             {MICROCOPY_OFFER_WIZARD.title}
           </span>
           <span className="text-sm text-blue-700">
-            Configura nombre, precio, prepago, consentimiento y profesional asignado.
+            Configura nombre, precio, prepago, consentimiento y profesional
+            asignado.
           </span>
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {["Tipo de servicio", "Precio", "Consentimiento", "Duración"].map((step) => (
-            <span
-              key={step}
-              className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700"
-            >
-              {step}
-            </span>
-          ))}
+          {["Tipo de servicio", "Precio", "Consentimiento", "Duración"].map(
+            (step) => (
+              <span
+                key={step}
+                className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700"
+              >
+                {step}
+              </span>
+            ),
+          )}
         </div>
 
         <button
@@ -67,7 +72,7 @@ export function OnboardingStep3Client({
             "w-full px-6 py-2.5 rounded-md text-sm font-semibold transition-colors",
             "bg-blue-600 text-white hover:bg-blue-700",
             "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
-            "disabled:opacity-50 disabled:cursor-not-allowed"
+            "disabled:opacity-50 disabled:cursor-not-allowed",
           )}
         >
           {isLoading ? "Iniciando..." : "Crear primera oferta"}
@@ -84,7 +89,7 @@ export function OnboardingStep3Client({
             "px-4 py-2 rounded-md text-sm font-medium transition-colors",
             "border border-gray-300 text-gray-700 hover:bg-gray-50",
             "focus:outline-none focus:ring-2 focus:ring-blue-500",
-            "disabled:opacity-50 disabled:cursor-not-allowed"
+            "disabled:opacity-50 disabled:cursor-not-allowed",
           )}
         >
           Atrás
@@ -97,7 +102,7 @@ export function OnboardingStep3Client({
             className={cn(
               "px-4 py-2 rounded-md text-sm font-medium text-gray-500 transition-colors",
               "hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500",
-              "disabled:opacity-50 disabled:cursor-not-allowed"
+              "disabled:opacity-50 disabled:cursor-not-allowed",
             )}
           >
             Omitir por ahora

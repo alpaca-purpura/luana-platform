@@ -31,7 +31,7 @@ export function useFidelizacionSummary(period: FidelizacionPeriod) {
 
       return vitaliaFetch<FidelizacionSummaryResponse>(
         `/api/v1/vitalia/fidelization/summary?period=${period}`,
-        { token, tenantId: orgId }
+        { token, tenantId: orgId },
       );
     },
     enabled: isLoaded && isSignedIn === true,

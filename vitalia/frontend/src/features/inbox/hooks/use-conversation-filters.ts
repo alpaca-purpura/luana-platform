@@ -49,7 +49,9 @@ export function useConversationFilters(): ConversationsFilters {
   return useMemo<ConversationsFilters>(
     () => ({
       channel: urlState.channel ?? null,
-      status: urlState.status ? (URL_STATUS_TO_API[urlState.status] ?? null) : null,
+      status: urlState.status
+        ? (URL_STATUS_TO_API[urlState.status] ?? null)
+        : null,
       stage: urlState.stage ? (URL_STAGE_TO_API[urlState.stage] ?? null) : null,
       mode: urlState.mode ? (URL_MODE_TO_API[urlState.mode] ?? null) : null,
       period: urlState.period ?? null,
@@ -66,6 +68,6 @@ export function useConversationFilters(): ConversationsFilters {
       urlState.helpNeeded,
       urlState.unreadMedia,
       urlState.search,
-    ]
+    ],
   );
 }

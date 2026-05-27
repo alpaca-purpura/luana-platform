@@ -64,13 +64,19 @@ export class WizardOnboardingPage {
 
     // Chat
     this.chatThread = page.getByRole("log");
-    this.messageInput = page.getByRole("textbox", { name: /escribe tu mensaje/i });
+    this.messageInput = page.getByRole("textbox", {
+      name: /escribe tu mensaje/i,
+    });
     this.sendButton = page.getByRole("button", { name: /enviar/i });
     this.typingIndicator = page.getByLabel(/Vitalia está escribiendo/i);
 
     // Live preview
-    this.whatsAppPreview = page.getByRole("region", { name: /cómo escribe adrián/i });
-    this.landingSnippetPreview = page.getByRole("region", { name: /tu página web/i });
+    this.whatsAppPreview = page.getByRole("region", {
+      name: /cómo escribe adrián/i,
+    });
+    this.landingSnippetPreview = page.getByRole("region", {
+      name: /tu página web/i,
+    });
 
     // Close modal
     this.closeModal = page.getByRole("alertdialog");
@@ -105,12 +111,16 @@ export class WizardOnboardingPage {
 
   async waitForAssistantResponse(timeout = 15_000) {
     // Wait for typing indicator to appear then disappear
-    await this.typingIndicator.waitFor({ state: "visible", timeout }).catch(() => {
-      // Typing indicator may be very brief; that's OK
-    });
-    await this.typingIndicator.waitFor({ state: "hidden", timeout }).catch(() => {
-      // Already gone or never appeared
-    });
+    await this.typingIndicator
+      .waitFor({ state: "visible", timeout })
+      .catch(() => {
+        // Typing indicator may be very brief; that's OK
+      });
+    await this.typingIndicator
+      .waitFor({ state: "hidden", timeout })
+      .catch(() => {
+        // Already gone or never appeared
+      });
   }
 
   async waitForFirstMessage(timeout = 10_000) {
@@ -120,7 +130,9 @@ export class WizardOnboardingPage {
   // ─── Slot actions ─────────────────────────────────────────────────────────
 
   async confirmSlot(value: string) {
-    const confirmInput = this.page.getByRole("textbox", { name: /confirmar valor/i });
+    const confirmInput = this.page.getByRole("textbox", {
+      name: /confirmar valor/i,
+    });
     await confirmInput.fill(value);
     const saveBtn = this.page.getByRole("button", { name: /guardar/i }).first();
     await saveBtn.click();

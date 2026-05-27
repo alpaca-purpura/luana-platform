@@ -61,7 +61,8 @@ export function ComposerArea({
   const attachQueue = useInboxStore((s) => s.attachQueue);
 
   const { handler_mode, id: conversationId } = conversation;
-  const isAgentThinking = conversation.status === "active" && handler_mode === "ai";
+  const isAgentThinking =
+    conversation.status === "active" && handler_mode === "ai";
 
   const canSend =
     (text.trim().length > 0 || voiceReady !== null || attachQueue.length > 0) &&
@@ -86,7 +87,7 @@ export function ComposerArea({
             setText("");
             clearAttachQueue();
           },
-        }
+        },
       );
     } else if (text.trim()) {
       sendMessage.mutate(
@@ -100,10 +101,17 @@ export function ComposerArea({
             setText("");
             clearAttachQueue();
           },
-        }
+        },
       );
     }
-  }, [canSend, voiceReady, text, conversationId, sendMessage, clearAttachQueue]);
+  }, [
+    canSend,
+    voiceReady,
+    text,
+    conversationId,
+    sendMessage,
+    clearAttachQueue,
+  ]);
 
   const handleVoiceReady = useCallback((result: VoiceReadyResult) => {
     setVoiceReady(result);
@@ -125,7 +133,9 @@ export function ComposerArea({
   }, [pendingProposalText]);
 
   return (
-    <div className={cn("flex flex-col gap-2 p-3 border-t vt-border", className)}>
+    <div
+      className={cn("flex flex-col gap-2 p-3 border-t vt-border", className)}
+    >
       {/* Proposal banner for Adrián consulta state */}
       {pendingProposalText && (
         <ProposalCardBanner
@@ -141,14 +151,19 @@ export function ComposerArea({
         <div
           className={cn(
             "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs",
-            "vt-bg-cian-8 vt-text-cian border vt-border-cian"
+            "vt-bg-cian-8 vt-text-cian border vt-border-cian",
           )}
         >
           <span aria-hidden="true">🎤</span>
-          <span className="flex-1 truncate">{voiceReady.transcriptionText}</span>
+          <span className="flex-1 truncate">
+            {voiceReady.transcriptionText}
+          </span>
           <button
             type="button"
-            onClick={() => { setVoiceReady(null); setText(""); }}
+            onClick={() => {
+              setVoiceReady(null);
+              setText("");
+            }}
             className="vt-text-muted hover:vt-text-danger text-xs"
             aria-label="Quitar nota de voz"
           >

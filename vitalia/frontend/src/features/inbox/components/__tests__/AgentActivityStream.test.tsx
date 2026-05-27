@@ -29,12 +29,24 @@ vi.mock("@clerk/nextjs", () => ({
 let mockExpanded = false;
 const mockToggle = vi.fn();
 vi.mock("../../store/inbox-store", () => ({
-  useInboxStore: (selector: (s: { expandedActivityStream: boolean; toggleActivityStream: () => void }) => unknown) =>
-    selector({ expandedActivityStream: mockExpanded, toggleActivityStream: mockToggle }),
+  useInboxStore: (
+    selector: (s: {
+      expandedActivityStream: boolean;
+      toggleActivityStream: () => void;
+    }) => unknown,
+  ) =>
+    selector({
+      expandedActivityStream: mockExpanded,
+      toggleActivityStream: mockToggle,
+    }),
 }));
 
 // Create 10 test events (more than 8 to test slice)
-const createEvent = (id: string, kind: ActivityEvent["kind"], summary: string): ActivityEvent => ({
+const createEvent = (
+  id: string,
+  kind: ActivityEvent["kind"],
+  summary: string,
+): ActivityEvent => ({
   id,
   conversation_id: "conv-1",
   kind,
@@ -84,7 +96,9 @@ describe("AgentActivityStream — collapsed state", () => {
   it("toggle button has aria-label from INBOX_COPY.activityStream.expandAriaLabel", () => {
     render(<AgentActivityStream conversationId="conv-1" />);
     const btn = screen.getByTestId("activity-stream-toggle");
-    expect(btn.getAttribute("aria-label")).toBe(INBOX_COPY.activityStream.expandAriaLabel);
+    expect(btn.getAttribute("aria-label")).toBe(
+      INBOX_COPY.activityStream.expandAriaLabel,
+    );
   });
 
   it("clicking toggle calls toggleActivityStream in store", () => {
@@ -143,7 +157,9 @@ describe("AgentActivityStream — expanded state (test_8_last_events_scrollable)
   it("toggle button has aria-label=collapseAriaLabel when expanded", () => {
     render(<AgentActivityStream conversationId="conv-1" />);
     const btn = screen.getByTestId("activity-stream-toggle");
-    expect(btn.getAttribute("aria-label")).toBe(INBOX_COPY.activityStream.collapseAriaLabel);
+    expect(btn.getAttribute("aria-label")).toBe(
+      INBOX_COPY.activityStream.collapseAriaLabel,
+    );
   });
 });
 
@@ -156,8 +172,12 @@ describe("AgentActivityStream — empty events", () => {
     const { useActivityStream } = await import("../../api/use-activity-stream");
     vi.mocked(useActivityStream).mockReturnValue(
       // Mock partial React Query result — full type not needed in test
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      { data: { events: [], total: 0 }, isLoading: false, isError: false } as any
+      {
+        data: { events: [], total: 0 },
+        isLoading: false,
+        isError: false,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any,
     );
 
     render(<AgentActivityStream conversationId="conv-1" />);

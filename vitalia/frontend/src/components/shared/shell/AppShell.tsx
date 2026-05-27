@@ -55,10 +55,7 @@ export function AppShell({
 
         {/* Content area */}
         <main
-          className={cn(
-            "flex-1 overflow-y-auto vt-bg-app",
-            contentClassName
-          )}
+          className={cn("flex-1 overflow-y-auto vt-bg-app", contentClassName)}
           id="main-content"
           tabIndex={-1}
         >

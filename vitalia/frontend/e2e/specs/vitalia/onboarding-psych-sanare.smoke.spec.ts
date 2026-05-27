@@ -18,13 +18,17 @@ test.describe("Onboarding — Sanaré LATAM (MX)", () => {
     await page.goto("/onboarding");
 
     // Step breadcrumb visible
-    await expect(page.getByText(/paso 1 de 3/i)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/paso 1 de 3/i)).toBeVisible({
+      timeout: 10_000,
+    });
 
     // Required fields visible
     await expect(
-      page.getByRole("textbox", { name: /nombre de la cl[íi]nica/i })
+      page.getByRole("textbox", { name: /nombre de la cl[íi]nica/i }),
     ).toBeVisible();
-    await expect(page.getByRole("combobox", { name: /pa[íi]s/i })).toBeVisible();
+    await expect(
+      page.getByRole("combobox", { name: /pa[íi]s/i }),
+    ).toBeVisible();
 
     // No console errors
     expect(consoleErrors).toHaveLength(0);
@@ -37,7 +41,9 @@ test.describe("Onboarding — Sanaré LATAM (MX)", () => {
     await page.goto("/onboarding/plan");
 
     // Multi-sede (multi_site) plan visible
-    await expect(page.getByText(/multi.?sede/i)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/multi.?sede/i)).toBeVisible({
+      timeout: 10_000,
+    });
 
     // Price shown: $399 USD/mo
     await expect(page.getByText(/399/i)).toBeVisible();

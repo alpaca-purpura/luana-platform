@@ -25,7 +25,9 @@ test.describe("Treatment Followup — Seguimiento psiquiátrico Sanaré (MX)", (
     });
 
     // Treatment name from mock: psychiatric SSRI followup
-    await expect(page.getByText(/psiqui[áa]tric[ao]|ssri|ajuste.*dosis/i)).toBeVisible();
+    await expect(
+      page.getByText(/psiqui[áa]tric[ao]|ssri|ajuste.*dosis/i),
+    ).toBeVisible();
 
     expect(consoleErrors).toHaveLength(0);
   });
@@ -51,7 +53,7 @@ test.describe("Treatment Followup — Seguimiento psiquiátrico Sanaré (MX)", (
 
     // medication_disclaimer_required=true → disclaimer must render
     await expect(
-      page.getByText(/medicaci[oó]n|descargo de responsabilidad|disclaimer/i)
+      page.getByText(/medicaci[oó]n|descargo de responsabilidad|disclaimer/i),
     ).toBeVisible({ timeout: 10_000 });
   });
 
@@ -64,7 +66,7 @@ test.describe("Treatment Followup — Seguimiento psiquiátrico Sanaré (MX)", (
     await expect(
       page
         .getByText(/0\.9|90%|excelente|muy bueno/i)
-        .or(page.getByText(/adherencia/i))
+        .or(page.getByText(/adherencia/i)),
     ).toBeVisible({ timeout: 10_000 });
   });
 
@@ -75,7 +77,7 @@ test.describe("Treatment Followup — Seguimiento psiquiátrico Sanaré (MX)", (
 
     // Next action: dosis_review
     await expect(
-      page.getByText(/ajuste de dosis|dosis.*revisi[oó]n|revisi[oó]n.*dosis/i)
+      page.getByText(/ajuste de dosis|dosis.*revisi[oó]n|revisi[oó]n.*dosis/i),
     ).toBeVisible({ timeout: 10_000 });
   });
 });

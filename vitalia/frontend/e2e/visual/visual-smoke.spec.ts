@@ -5,8 +5,7 @@
  * Umbrales maxDiffPixelRatio:
  *   - /sign-in y /sign-up: 0.05 (5%) — Clerk vendor UI renderiza con alta consistencia;
  *     captcha y avatares se enmascaran (mask[]); tolerancia baja es intencional.
- *   - / (dashboard): 0.1 (10%) — código propio con contenido dinámico enmascarado;
- *     ligeramente más tolerante por diferencias de antialiasing en fuentes del OS.
+ *   - /test-stack/: 0.05 (5%) — páginas de prueba de diseño determinísticas.
  *
  * IMPORTANTE: Las screenshots de referencia se generan en la PRIMERA ejecución LIVE
  * por /pm-vitalia post-deploy (npx playwright test --update-snapshots).
@@ -16,8 +15,10 @@
  *   - /sign-in → signin.png
  *   - /sign-up → signup.png
  *
- * Página (con autenticación):
- *   - / (dashboard) → dashboard.png
+ * Nota F1-S9: La página autenticada legacy / (dashboard) fue eliminada en T-5.
+ * La nueva landing post-login es /{tenantId}/valeria/agenda (shell-organism).
+ * El visual baseline para shell-organism se cubre en
+ * e2e/regression/vitalia-fase1-routing-shell/happy-navigation.spec.ts.
  *
  * Ejecuta en project=smoke (Desktop Chrome) — ver playwright.config.ts.
  * No requiere project dedicado; usa misma configuración que smoke base.
@@ -34,7 +35,6 @@
  */
 
 import { test, expect } from "@playwright/test";
-import { test as authTest } from "../auth.fixture";
 
 // ─── SC-16: Páginas públicas — visual baseline ───────────────────────────────
 
@@ -79,9 +79,12 @@ test.describe("SC-16 — Visual baseline (vitalia-auth-base-functional)", () => 
     await page.goto("/sign-up", { waitUntil: "domcontentloaded" });
 
     await page
-      .waitForSelector("input[type='email'], input[name='emailAddress'], form", {
-        timeout: 10_000,
-      })
+      .waitForSelector(
+        "input[type='email'], input[name='emailAddress'], form",
+        {
+          timeout: 10_000,
+        },
+      )
       .catch(() => {});
 
     await page.addStyleTag({
@@ -106,46 +109,8 @@ test.describe("SC-16 — Visual baseline (vitalia-auth-base-functional)", () => 
   });
 });
 
-// ─── SC-16: Dashboard autenticado — visual baseline ──────────────────────────
-
-authTest.describe(
-  "SC-16 — Visual baseline dashboard autenticado (vitalia-auth-base-functional)",
-  () => {
-    authTest(
-      "SC-16 / (dashboard) baseline screenshot",
-      async ({ authedPage }) => {
-        await authedPage.goto("/", { waitUntil: "domcontentloaded" });
-
-        // Esperar que el dashboard cargue el contenido principal
-        await authedPage
-          .waitForSelector("h1, h2, [data-testid='dashboard-welcome']", {
-            timeout: 10_000,
-          })
-          .catch(() => {});
-
-        await authedPage.addStyleTag({
-          content: `
-            *, *::before, *::after {
-              animation-duration: 0ms !important;
-              animation-delay: 0ms !important;
-              transition-duration: 0ms !important;
-              transition-delay: 0ms !important;
-            }
-          `,
-        });
-
-        await expect(authedPage).toHaveScreenshot("dashboard.png", {
-          // 0.1: código propio con contenido dinámico enmascarado;
-          // tolerancia moderada por diferencias de antialiasing en fuentes del OS.
-          maxDiffPixelRatio: 0.1,
-          // Mask elementos dinámicos: nombre usuario, hora actual
-          mask: [
-            authedPage.locator("[data-clerk-user-button]"),
-            authedPage.locator("[data-testid='user-avatar']"),
-            authedPage.locator("time"),
-          ],
-        });
-      }
-    );
-  }
-);
+// NOTE F1-S9: El bloque "Dashboard autenticado" fue removido en T-5 legacy cleanup.
+// La ruta / (dashboard) ya no existe. La nueva landing autenticada es
+// /{tenantId}/valeria/agenda (shell-organism).
+// El coverage visual autenticado vive en:
+//   e2e/regression/vitalia-fase1-routing-shell/happy-navigation.spec.ts

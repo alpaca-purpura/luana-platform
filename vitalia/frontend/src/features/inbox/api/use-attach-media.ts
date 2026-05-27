@@ -71,7 +71,7 @@ export function useAttachMedia() {
             headers,
             body: formData,
             signal: controller.signal,
-          }
+          },
         );
       } finally {
         clearTimeout(timeoutId);

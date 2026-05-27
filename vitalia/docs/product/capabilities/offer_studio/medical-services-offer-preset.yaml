@@ -6,7 +6,8 @@ status: live
 date_introduced: 2026-05-15
 story_introduced: luana-vitalia-bootstrap
 package_version: 0.1.0
-package_path: vitalia/frontend/src/app/(dashboard)/offers
+package_path: vitalia/config/brand.yaml + vitalia/backend/src/modules/vitalia/offer/extensions.py
+fe_planned_phase2: vitalia-fase2-lisa-servicios
 license: proprietary
 ---
 

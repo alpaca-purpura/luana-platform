@@ -36,7 +36,12 @@ export type VitaliaEnvFixtures = {
 // Constants
 // ---------------------------------------------------------------------------
 
-const STORAGE_STATE_PATH = path.join(__dirname, "..", ".playwright", "vitalia-auth.json");
+const STORAGE_STATE_PATH = path.join(
+  __dirname,
+  "..",
+  ".playwright",
+  "vitalia-auth.json",
+);
 const FRESHNESS_THRESHOLD_MS = 60 * 60 * 1000; // 1 hour
 
 // ---------------------------------------------------------------------------
@@ -80,19 +85,24 @@ function collectConsoleErrors(page: import("@playwright/test").Page): string[] {
 // Base authenticated test fixture
 // ---------------------------------------------------------------------------
 
-export const test = base.extend<
-  VitaliaAuthFixtures & VitaliaEnvFixtures
->({
-  tenantId: [process.env["E2E_TENANT_ID"] ?? "vitalia-test-tenant", { option: true }],
-  baseUrl: [process.env["E2E_BASE_URL"] ?? "http://localhost:3000", { option: true }],
+export const test = base.extend<VitaliaAuthFixtures & VitaliaEnvFixtures>({
+  tenantId: [
+    process.env["E2E_TENANT_ID"] ?? "vitalia-test-tenant",
+    { option: true },
+  ],
+  baseUrl: [
+    process.env["E2E_BASE_URL"] ?? "http://localhost:3000",
+    { option: true },
+  ],
 
   authedPage: async ({ page, tenantId }, use) => {
     // Inject Clerk testing token to bypass bot protection
     // When @clerk/testing not available, fall back to localStorage injection only
     try {
-      const { setupClerkTestingToken } = await import("@clerk/testing/playwright").catch(
-        () => ({ setupClerkTestingToken: null })
-      );
+      const { setupClerkTestingToken } =
+        await import("@clerk/testing/playwright").catch(() => ({
+          setupClerkTestingToken: null,
+        }));
       if (setupClerkTestingToken) {
         await setupClerkTestingToken({ page });
       }

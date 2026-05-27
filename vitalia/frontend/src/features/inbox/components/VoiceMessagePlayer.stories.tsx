@@ -30,11 +30,13 @@ const meta: Meta<typeof VoiceMessagePlayer> = {
   argTypes: {
     durationS: {
       control: { type: "number" },
-      description: "Duración en segundos (para mostrar antes de cargar el audio)",
+      description:
+        "Duración en segundos (para mostrar antes de cargar el audio)",
     },
     transcriptionConfidence: {
       control: { type: "range", min: 0, max: 1, step: 0.01 },
-      description: "Confianza de Whisper (0–1). Debajo de 0.5 muestra fallback (SC-02)",
+      description:
+        "Confianza de Whisper (0–1). Debajo de 0.5 muestra fallback (SC-02)",
     },
   },
 };

@@ -62,7 +62,7 @@ export function SuggestSlotsModal({
         ? prev.filter((id) => id !== slotId)
         : prev.length < 3
           ? [...prev, slotId]
-          : prev
+          : prev,
     );
   }
 
@@ -134,7 +134,7 @@ export function SuggestSlotsModal({
                         "w-full text-left rounded border px-3 py-2 text-sm transition-colors",
                         isSelected
                           ? "border-[hsl(var(--vitalia-primary,210_90%_50%))] bg-[hsl(var(--vitalia-primary-bg,210_100%_97%))] text-[hsl(var(--vitalia-primary,210_90%_50%))]"
-                          : "border-[hsl(var(--vitalia-border,220_13%_91%))] hover:bg-[hsl(var(--vitalia-bg-soft,220_20%_96%))]"
+                          : "border-[hsl(var(--vitalia-border,220_13%_91%))] hover:bg-[hsl(var(--vitalia-bg-soft,220_20%_96%))]",
                       )}
                     >
                       <span className="font-medium">{slot.doctorName}</span>

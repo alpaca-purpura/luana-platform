@@ -30,7 +30,7 @@ describe("FilterChips", () => {
       <FilterChips
         value={{ ...defaultFilters, channel: "whatsapp" }}
         onChange={onChange}
-      />
+      />,
     );
     // Click instagram chip — should call onChange with instagram, replacing whatsapp
     const instagramChip = screen.getByRole("button", {
@@ -39,29 +39,29 @@ describe("FilterChips", () => {
     fireEvent.click(instagramChip);
     // onChange should be called with channel: "instagram" (new selection)
     expect(onChange).toHaveBeenCalledWith(
-      expect.objectContaining({ channel: "instagram" })
+      expect.objectContaining({ channel: "instagram" }),
     );
   });
 
   it("renders primary filter chips (channel + status + help/media)", () => {
     render(<FilterChips value={defaultFilters} onChange={vi.fn()} />);
     expect(
-      screen.getByRole("button", { name: INBOX_COPY.filters.all })
+      screen.getByRole("button", { name: INBOX_COPY.filters.all }),
     ).toBeDefined();
     expect(
       screen.getByRole("button", {
         name: new RegExp(INBOX_COPY.filters.channels.whatsapp, "i"),
-      })
+      }),
     ).toBeDefined();
     expect(
       screen.getByRole("button", {
         name: new RegExp(INBOX_COPY.filters.channels.instagram, "i"),
-      })
+      }),
     ).toBeDefined();
     expect(
       screen.getByRole("button", {
         name: new RegExp(INBOX_COPY.filters.channels.email, "i"),
-      })
+      }),
     ).toBeDefined();
   });
 
@@ -70,7 +70,7 @@ describe("FilterChips", () => {
     expect(
       screen.getByRole("button", {
         name: new RegExp(INBOX_COPY.filters.status.active, "i"),
-      })
+      }),
     ).toBeDefined();
   });
 
@@ -79,12 +79,12 @@ describe("FilterChips", () => {
     expect(
       screen.getByRole("button", {
         name: new RegExp(INBOX_COPY.filters.helpNeeded, "i"),
-      })
+      }),
     ).toBeDefined();
     expect(
       screen.getByRole("button", {
         name: new RegExp(INBOX_COPY.filters.unreadMedia, "i"),
-      })
+      }),
     ).toBeDefined();
   });
 
@@ -99,9 +99,11 @@ describe("FilterChips", () => {
           helpNeeded: true,
         }}
         onChange={onChange}
-      />
+      />,
     );
-    fireEvent.click(screen.getByRole("button", { name: INBOX_COPY.filters.all }));
+    fireEvent.click(
+      screen.getByRole("button", { name: INBOX_COPY.filters.all }),
+    );
     expect(onChange).toHaveBeenCalledWith({
       channel: null,
       status: null,
@@ -119,14 +121,14 @@ describe("FilterChips", () => {
       <FilterChips
         value={{ ...defaultFilters, channel: "whatsapp" }}
         onChange={onChange}
-      />
+      />,
     );
     const whatsappChip = screen.getByRole("button", {
       name: new RegExp(INBOX_COPY.filters.channels.whatsapp, "i"),
     });
     fireEvent.click(whatsappChip);
     expect(onChange).toHaveBeenCalledWith(
-      expect.objectContaining({ channel: null })
+      expect.objectContaining({ channel: null }),
     );
   });
 
@@ -140,7 +142,7 @@ describe("FilterChips", () => {
     expect(
       screen.queryByRole("button", {
         name: new RegExp(INBOX_COPY.filters.stage.label, "i"),
-      })
+      }),
     ).toBeNull();
     // Click to expand
     fireEvent.click(moreBtn);
@@ -148,7 +150,7 @@ describe("FilterChips", () => {
     expect(
       screen.getByRole("button", {
         name: new RegExp(INBOX_COPY.filters.lessFilters, "i"),
-      })
+      }),
     ).toBeDefined();
   });
 
@@ -157,7 +159,7 @@ describe("FilterChips", () => {
       <FilterChips
         value={{ ...defaultFilters, channel: "instagram" }}
         onChange={vi.fn()}
-      />
+      />,
     );
     const instagramChip = screen.getByRole("button", {
       name: new RegExp(INBOX_COPY.filters.channels.instagram, "i"),

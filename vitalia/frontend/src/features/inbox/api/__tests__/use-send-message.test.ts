@@ -36,7 +36,7 @@ vi.mock("@/lib/api/fetchClient", () => ({
   ApiError: class ApiError extends Error {
     constructor(
       public status: number,
-      message: string
+      message: string,
     ) {
       super(message);
     }
@@ -111,7 +111,11 @@ const mockConversationDetail: ConversationDetail = {
 
 function createWrapper(queryClient: QueryClient) {
   return function Wrapper({ children }: { children: React.ReactNode }) {
-    return createElement(QueryClientProvider, { client: queryClient }, children);
+    return createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 }
 
@@ -120,7 +124,10 @@ describe("useSendMessage", () => {
 
   beforeEach(() => {
     queryClient = new QueryClient({
-      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+      defaultOptions: {
+        queries: { retry: false },
+        mutations: { retry: false },
+      },
     });
     vi.clearAllMocks();
   });
@@ -153,11 +160,16 @@ describe("useSendMessage", () => {
 
   it("applies optimistic update before API resolves", async () => {
     // Seed the cache with conversation detail
-    queryClient.setQueryData(["inbox", "conversation", CONVERSATION_ID], mockConversationDetail);
+    queryClient.setQueryData(
+      ["inbox", "conversation", CONVERSATION_ID],
+      mockConversationDetail,
+    );
 
     // Delay fetchClient to observe optimistic state
     let resolvePromise!: (value: unknown) => void;
-    vi.mocked(fetchClient).mockReturnValue(new Promise((res) => (resolvePromise = res)));
+    vi.mocked(fetchClient).mockReturnValue(
+      new Promise((res) => (resolvePromise = res)),
+    );
 
     const { result } = renderHook(() => useSendMessage(), {
       wrapper: createWrapper(queryClient),
@@ -187,7 +199,10 @@ describe("useSendMessage", () => {
   });
 
   it("rolls back optimistic update on error", async () => {
-    queryClient.setQueryData(["inbox", "conversation", CONVERSATION_ID], mockConversationDetail);
+    queryClient.setQueryData(
+      ["inbox", "conversation", CONVERSATION_ID],
+      mockConversationDetail,
+    );
     vi.mocked(fetchClient).mockRejectedValue(new Error("Network error"));
 
     const { result } = renderHook(() => useSendMessage(), {

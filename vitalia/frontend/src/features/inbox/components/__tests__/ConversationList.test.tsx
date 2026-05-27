@@ -55,7 +55,7 @@ describe("ConversationList", () => {
         conversations={conversations}
         selectedId={null}
         onSelect={vi.fn()}
-      />
+      />,
     );
     // Both items rendered (role="option" inside role="listbox")
     expect(screen.getAllByRole("option")).toHaveLength(2);
@@ -68,7 +68,7 @@ describe("ConversationList", () => {
         selectedId={null}
         onSelect={vi.fn()}
         isLoading
-      />
+      />,
     );
     // Loading state shows skeleton items
     const skeletons = screen.getAllByTestId("conversation-item-skeleton");
@@ -82,7 +82,7 @@ describe("ConversationList", () => {
         selectedId={null}
         onSelect={vi.fn()}
         emptyVariant="noConversations"
-      />
+      />,
     );
     // Empty state component rendered
     expect(screen.getByTestId("list-empty-state")).toBeDefined();
@@ -95,7 +95,7 @@ describe("ConversationList", () => {
         conversations={conversations}
         selectedId="conv-1"
         onSelect={vi.fn()}
-      />
+      />,
     );
     const item = screen.getByRole("option", { selected: true });
     expect(item).toBeDefined();
@@ -113,7 +113,7 @@ describe("ConversationItem", () => {
         isSelected={false}
         onSelect={vi.fn()}
         patientName="Ana López"
-      />
+      />,
     );
     const badge = screen.getByTestId("help-needed-badge");
     expect(badge).toBeDefined();
@@ -127,7 +127,7 @@ describe("ConversationItem", () => {
         isSelected={false}
         onSelect={vi.fn()}
         patientName="Carlos Ruiz"
-      />
+      />,
     );
     const badge = screen.getByTestId("unread-media-badge");
     expect(badge).toBeDefined();
@@ -141,7 +141,7 @@ describe("ConversationItem", () => {
         isSelected={false}
         onSelect={vi.fn()}
         patientName="María García"
-      />
+      />,
     );
     expect(screen.getByTestId("stage-chip")).toBeDefined();
   });
@@ -158,7 +158,7 @@ describe("ConversationItem", () => {
         isSelected={false}
         onSelect={vi.fn()}
         patientName="Pedro Saenz"
-      />
+      />,
     );
     expect(screen.queryByTestId("help-needed-badge")).toBeNull();
     expect(screen.queryByTestId("unread-media-badge")).toBeNull();
@@ -174,7 +174,7 @@ describe("ConversationItem", () => {
         isSelected={false}
         onSelect={onSelect}
         patientName="Laura Vega"
-      />
+      />,
     );
     const item = screen.getByRole("option");
     item.click();
@@ -189,7 +189,7 @@ describe("ConversationItem", () => {
         isSelected
         onSelect={vi.fn()}
         patientName="Ana Torres"
-      />
+      />,
     );
     const item = screen.getByRole("option", { selected: true });
     expect(item).toBeDefined();
@@ -205,8 +205,10 @@ describe("ConversationItem", () => {
         isSelected={false}
         onSelect={vi.fn()}
         patientName="Juan Perez"
-      />
+      />,
     );
-    expect(screen.getByText("Este es un mensaje bastante largo de prueba")).toBeDefined();
+    expect(
+      screen.getByText("Este es un mensaje bastante largo de prueba"),
+    ).toBeDefined();
   });
 });

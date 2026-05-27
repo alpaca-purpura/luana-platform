@@ -30,7 +30,7 @@ function ClinicLogoPlaceholder({ name }: { name: string }) {
       className={cn(
         "w-10 h-10 rounded-xl flex items-center justify-center",
         "bg-gradient-to-br from-purple-600 to-blue-700",
-        "text-white text-base font-bold select-none shadow-sm"
+        "text-white text-base font-bold select-none shadow-sm",
       )}
       aria-hidden="true"
     >
@@ -67,7 +67,7 @@ export function LiveLandingSnippetPreview({
     <div
       className={cn(
         "rounded-xl border border-gray-200 overflow-hidden shadow-sm",
-        className
+        className,
       )}
       role="region"
       aria-label={copy.landingTitle}
@@ -75,7 +75,9 @@ export function LiveLandingSnippetPreview({
     >
       {/* Card header */}
       <div className="px-4 py-3 border-b bg-gray-50">
-        <p className="text-sm font-semibold text-gray-800">{copy.landingTitle}</p>
+        <p className="text-sm font-semibold text-gray-800">
+          {copy.landingTitle}
+        </p>
       </div>
 
       {/* Landing hero preview */}
@@ -83,12 +85,18 @@ export function LiveLandingSnippetPreview({
         {isLoading ? (
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-xl bg-gray-200 animate-pulse" aria-hidden="true" />
+              <div
+                className="w-10 h-10 rounded-xl bg-gray-200 animate-pulse"
+                aria-hidden="true"
+              />
               <SkeletonLine width="w-32" />
             </div>
             <SkeletonLine />
             <SkeletonLine width="w-4/5" />
-            <div className="h-8 w-32 rounded-full bg-gray-200 animate-pulse mt-2" aria-hidden="true" />
+            <div
+              className="h-8 w-32 rounded-full bg-gray-200 animate-pulse mt-2"
+              aria-hidden="true"
+            />
           </div>
         ) : snippet ? (
           <div className="space-y-3">
@@ -114,7 +122,7 @@ export function LiveLandingSnippetPreview({
               className={cn(
                 "rounded-full px-4 py-2 text-sm font-medium",
                 "bg-blue-700 text-white",
-                "cursor-default opacity-90"
+                "cursor-default opacity-90",
               )}
               aria-label={`Botón de llamada a la acción: ${snippet.ctaText}`}
               tabIndex={-1}

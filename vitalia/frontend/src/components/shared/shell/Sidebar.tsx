@@ -40,7 +40,11 @@ const DEFAULT_NAV_ITEMS: NavItem[] = [
  * Sidebar navigation component.
  * Active state uses vt-bg-cian-10 + vt-border-cian-l classes (from globals.css).
  */
-export function Sidebar({ collapsed = false, onToggle, navItems = DEFAULT_NAV_ITEMS }: SidebarProps) {
+export function Sidebar({
+  collapsed = false,
+  onToggle,
+  navItems = DEFAULT_NAV_ITEMS,
+}: SidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -50,15 +54,13 @@ export function Sidebar({ collapsed = false, onToggle, navItems = DEFAULT_NAV_IT
         "vt-bg-surface vt-border",
         "border-r",
         "transition-[width] duration-200 ease-in-out",
-        collapsed ? "w-16" : "w-60"
+        collapsed ? "w-16" : "w-60",
       )}
       aria-label="Navegación principal"
       role="navigation"
     >
       {/* Logo area */}
-      <div
-        className="flex items-center h-14 px-4 shrink-0 border-b vt-border"
-      >
+      <div className="flex items-center h-14 px-4 shrink-0 border-b vt-border">
         <span
           className="font-bold text-lg vt-text-azul-marino truncate"
           aria-label="Vitalia"
@@ -68,7 +70,10 @@ export function Sidebar({ collapsed = false, onToggle, navItems = DEFAULT_NAV_IT
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-4 px-2" aria-label="Menú principal">
+      <nav
+        className="flex-1 overflow-y-auto py-4 px-2"
+        aria-label="Menú principal"
+      >
         <ul className="space-y-0.5" role="list">
           {navItems.map((item) => {
             const isActive =
@@ -87,7 +92,7 @@ export function Sidebar({ collapsed = false, onToggle, navItems = DEFAULT_NAV_IT
                     "border-l-[3px] -ml-[1px]",
                     isActive
                       ? "vt-bg-cian-10 vt-text-azul-marino vt-border-cian-l"
-                      : "vt-text-muted hover:vt-bg-muted hover:vt-text border-transparent"
+                      : "vt-text-muted hover:vt-bg-muted hover:vt-text border-transparent",
                   )}
                   aria-current={isActive ? "page" : undefined}
                 >
@@ -96,9 +101,7 @@ export function Sidebar({ collapsed = false, onToggle, navItems = DEFAULT_NAV_IT
                       {item.icon}
                     </span>
                   )}
-                  {!collapsed && (
-                    <span className="truncate">{item.label}</span>
-                  )}
+                  {!collapsed && <span className="truncate">{item.label}</span>}
                 </Link>
               </li>
             );
@@ -116,9 +119,11 @@ export function Sidebar({ collapsed = false, onToggle, navItems = DEFAULT_NAV_IT
             "rounded-[var(--radius)]",
             "hover:vt-bg-muted",
             "focus-visible:outline-none focus-visible:ring-2 vt-ring-cian",
-            "transition-colors"
+            "transition-colors",
           )}
-          aria-label={collapsed ? "Expandir barra lateral" : "Contraer barra lateral"}
+          aria-label={
+            collapsed ? "Expandir barra lateral" : "Contraer barra lateral"
+          }
           aria-expanded={!collapsed}
         >
           <span aria-hidden="true">{collapsed ? "→" : "←"}</span>

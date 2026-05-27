@@ -56,7 +56,7 @@ export function ActivityStreamSticky({
         "rounded-[var(--radius-lg)] overflow-hidden",
         "transition-[max-height] duration-300 ease-in-out",
         isExpanded ? "max-h-60" : "max-h-8",
-        className
+        className,
       )}
       aria-label="Flujo de actividad reciente"
     >
@@ -67,7 +67,7 @@ export function ActivityStreamSticky({
           "flex items-center justify-between h-8 px-3 shrink-0",
           "text-xs font-medium vt-text-muted",
           "hover:vt-bg-muted transition-colors",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset vt-ring-cian"
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset vt-ring-cian",
         )}
         aria-expanded={isExpanded}
         aria-controls="activity-stream-list"
@@ -87,7 +87,7 @@ export function ActivityStreamSticky({
         id="activity-stream-list"
         className={cn(
           "overflow-y-auto divide-y vt-divide-border-soft",
-          isExpanded ? "opacity-100" : "opacity-0 pointer-events-none"
+          isExpanded ? "opacity-100" : "opacity-0 pointer-events-none",
         )}
         aria-hidden={!isExpanded}
         role="feed"

@@ -1,0 +1,158 @@
+---
+capability_id: vitalia.scheduling.valeria-agenda
+module: scheduling
+slug: valeria-agenda
+status: live
+date_introduced: 2026-05-27
+story_introduced: vitalia-fase2-valeria-agenda
+package_version: vitalia-fase2-v1.0.0
+package_path: vitalia/backend/src/modules/vitalia/scheduling/
+license: brand-local
+hipaa_lite_overlay: true
+architecture_pattern: ADR-vitalia-004
+---
+
+# Capability — Valeria Agenda (scheduling)
+
+> Brand: vitalia
+> Vertical: Salud + Bienestar (clínicas con reservas prepagadas + cobro inline)
+> Owner agente: Valeria (asistente operativa scheduling)
+> Status: live (post F2-S1 merge 2026-05-27)
+> Pattern: ADR-vitalia-004 shell-feature-architecture (source story)
+
+## Goal
+
+Sub-tab Agenda de Valeria operativa. Calendario día/semana/mes con celdas-slot por estado de pago (pagado · depósito · sin-pago · no-show) y por origen (walk-in · teléfono · proactivo Adrián · existing patient). Click slot → Drawer derecho inline con datos paciente PHI-masked + turno + subform "Cobrar saldo" que emite comprobante fiscal sin salir del flujo.
+
+## Surfaces
+
+### Config
+- `vitalia/config/brand.yaml` — `compliance_level: hipaa_lite`, `auto_emit_invoice` per tenant
+- `vitalia/.claude/rules/hipaa-lite.md` (overlay)
+
+### Backend (Inside-Out DDD)
+- `vitalia/backend/src/modules/vitalia/scheduling/domain/` — enums + dataclasses (AgendaSlot, AppointmentPayment, AppointmentOrigin, etc.)
+- `vitalia/backend/src/modules/vitalia/scheduling/infrastructure/repositories/` — AgendaGridRepository + AppointmentPaymentRepository (optimistic lock + idempotency)
+- `vitalia/backend/src/modules/vitalia/scheduling/application/services/` — agenda_grid_service + appointment_detail_service + create_appointment_service + appointment_status_service + notify_service + charge_orchestrator (saga compensation)
+- `vitalia/backend/src/modules/vitalia/scheduling/application/ports/` — payment_charge_port + fiscal_emit_port (ABC interfaces)
+- `vitalia/backend/src/modules/vitalia/scheduling/api/` — agenda_router (5 endpoints) + notify_router
+- `vitalia/backend/src/modules/vitalia/payments/` — payment_charge_port_impl + stubs (service-blocker Option A) + charge_router
+- `vitalia/backend/src/modules/vitalia/fiscal/` — fiscal_emit_port_impl + stubs (PE boleta/AR factura/MX factura) + emit_router
+- `vitalia/backend/src/modules/vitalia/_shared/phi_masking.py` — mask_name + mask_dni + mask_phone + mask_email
+- `vitalia/backend/src/modules/vitalia/_shared/telemetry/` — growth_studio_emitter + amount_bucket
+- `vitalia/backend/alembic/versions/032_f2_s1_vitalia_agenda.py` — migration idempotent (4 tables: vitalia_appointment_payments + vitalia_fiscal_documents + vitalia_appointment_clinic_map + vitalia_growth_studio_event)
+
+### Frontend (FSD-Lite, Server-First)
+- `vitalia/frontend/src/app/[tenantId]/(shell-organism)/valeria/agenda/page.tsx` — Server Component SSR initial state
+- `vitalia/frontend/src/app/[tenantId]/(shell-organism)/valeria/agenda/error.tsx` — route-level error boundary
+- `vitalia/frontend/src/features/valeria/components/agenda/ValeriaAgendaView.tsx` — Client root (composición 6 hijos)
+- `vitalia/frontend/src/features/valeria/components/agenda/AgendaCalendar.tsx` + DayCalendar + WeekCalendar + MonthCalendar (react-window virtualization mes)
+- `vitalia/frontend/src/features/valeria/components/agenda/AgendaSlot.tsx` — border-status + origin badge + PHI-mask title
+- `vitalia/frontend/src/features/valeria/components/agenda/AppointmentDrawer.tsx` — Sheet Shadcn responsive (side="bottom" mobile, side="right" desktop con useMediaQuery + resize 440-640px localStorage)
+- 5 secciones drawer: Header + Turno + Pago + Notas + AccionesAvanzadas (acordeones colapsables)
+- `vitalia/frontend/src/features/valeria/components/agenda/CobrarSaldoSubform.tsx` — ★ corazón valor (RHF + Zod discriminated union + saga 503/409 handling + audit log integration)
+- `vitalia/frontend/src/features/valeria/components/agenda/AgendaPresetFilters.tsx` — 5 chips single-select
+- `vitalia/frontend/src/features/valeria/components/agenda/CrearCitaButton.tsx` + CrearCitaForm + PatientAutocomplete (HIPAA-compliant patient_id only)
+- `vitalia/frontend/src/features/valeria/components/agenda/MobileBottomSheet.tsx`
+- `vitalia/frontend/src/features/valeria/components/agenda/FreshnessIndicator.tsx` (polling 30s + manual refresh)
+- `vitalia/frontend/src/features/valeria/api/` — React Query hooks (useAgendaGrid + useChargeAppointment + useEmitFiscalDoc + useSendReminder + useCreateAppointment + usePatchAppointmentStatus)
+- `vitalia/frontend/src/features/valeria/store/` — zustand UI state (agenda-store + agenda-filters-store)
+- `vitalia/frontend/src/features/valeria/types/` — agenda.types.ts + agenda-schema.ts (Zod)
+- `vitalia/frontend/src/features/valeria/lib/telemetry.ts` — 7 critical events sanitized
+- `vitalia/frontend/src/hooks/useMediaQuery.ts` — NEW SSR-safe responsive hook
+
+### Tests
+- BE pytest: 181 tests (scheduling + payments + fiscal modules)
+- BE arch fitness NEW: test_scheduling_module_ddd + test_no_phi_in_url_params + test_audit_log_row_per_phi_endpoint
+- FE vitest: 271 tests (features/valeria/)
+- FE Playwright E2E: 83 specs (11 Gherkin scenarios)
+- FE a11y axe WCAG 2.1 AA: 7 specs
+- FE visual goldens: 15 snapshots (3 views × 2 themes + drawer + subform states + mobile + filters + crear-cita + empty-state)
+
+### Docs
+- 01-spec.md — 30 AC + 11 Gherkin scenarios + 41 paths Deliverables
+- 03-arch.md — 2056 LOC (BE + FE + Test Construction Plan v4.1)
+- 04-validators.yaml — 54 validators (5 categorías)
+- 05-guidelines.md — must_load_skills enforceable
+- 06-tickets.yaml — 19 tickets DAG
+- 10 mockups HTML ratificados por Chris
+
+## Dependencies cross-package
+
+- Consume `core/luana-core-scheduling` (Appointment + AppointmentRepository — read-only via dual-filter wrapper)
+- Consume `core/luana-core-compliance` (ComplianceService.validate_outbound_message)
+- Consume `core/luana-core-observability` (sanitize_payload hipaa_lite + base classes)
+- Consume `core/luana-core-platform` (BasePhiRepository pattern reuse)
+- Consume `vitalia.crm.patient` (Patient model + PHI masking server-side)
+- Consume `vitalia.audit.audit_writer` (AsyncAuditWriter transactional sync)
+- Plus service-blockers (stubs Option A pending real adapters):
+  - `vitalia-payment-adapter-mvp` (state: refined, pending developed)
+  - `vitalia-fiscal-emission-pe` (state: refining, pending developed)
+
+## HIPAA-lite compliance (overlay)
+
+- ✅ Dual filter `tenant_id + clinic_id` en TODA query PHI (PhiRepositoryBase pattern)
+- ✅ Audit log row sync write antes response en TODOS PHI endpoints (8 endpoints)
+- ✅ PHI masking server-side: name → "P. Hernández", DNI → "12.***.***"
+- ✅ sanitize_payload(compliance_level='hipaa_lite') en logs + traces + telemetry
+- ✅ RBAC @require_phi_access roles=["valeria_assistant","doctor","nurse","admin_clinic"]
+- ✅ NO PHI en URL params (whitelist ALLOWED_GRID_PARAMS: view, date, filters, page, page_size, status)
+- ✅ NO PHI en localStorage (zustand persist solo drawerWidth numérico)
+- ✅ NO PHI en telemetría (PHI_BLOCKED_KEYS enforces sanitize, 24 keys cubiertos)
+- ✅ ComplianceService channel guard en notify_router (WhatsApp template-only)
+- ✅ PatientAutocomplete returns ONLY patient_id (no PHI form state)
+- ✅ Cross-clinic 404 substrate (no 403, no leak)
+
+## Test coverage
+
+```yaml
+test_coverage:
+  be_unit_arch:
+    - vitalia/backend/tests/modules/vitalia/scheduling/test_agenda_grid_repository.py
+    - vitalia/backend/tests/modules/vitalia/scheduling/test_appointment_payment_repository.py
+    - vitalia/backend/tests/modules/vitalia/scheduling/test_appointment_aggregates_repository.py
+    - vitalia/backend/tests/modules/vitalia/scheduling/test_agenda_grid_service.py
+    - vitalia/backend/tests/modules/vitalia/scheduling/test_appointment_detail_service.py
+    - vitalia/backend/tests/modules/vitalia/scheduling/test_appointment_status_service.py
+    - vitalia/backend/tests/modules/vitalia/scheduling/test_create_appointment_service.py
+    - vitalia/backend/tests/modules/vitalia/scheduling/test_notify_service.py
+    - vitalia/backend/tests/modules/vitalia/scheduling/test_charge_orchestrator.py
+    - vitalia/backend/tests/modules/vitalia/scheduling/test_phi_url_protection.py
+    - vitalia/backend/tests/modules/vitalia/scheduling/test_dual_filter_clinic_isolation.py
+    - vitalia/backend/tests/modules/vitalia/scheduling/test_audit_log_drawer.py
+    - vitalia/backend/tests/modules/vitalia/scheduling/test_create_appointment_router.py
+    - vitalia/backend/tests/modules/vitalia/scheduling/test_patch_status_router.py
+    - vitalia/backend/tests/modules/vitalia/payments/test_charge_router.py
+    - vitalia/backend/tests/modules/vitalia/fiscal/test_emit_router.py
+    - vitalia/backend/tests/modules/vitalia/scheduling/test_notify_router.py
+    - vitalia/backend/tests/modules/vitalia/fiscal/test_fiscal_document_repository.py
+    - vitalia/backend/tests/architecture/test_scheduling_module_ddd.py
+    - vitalia/backend/tests/architecture/test_no_phi_in_url_params.py
+    - vitalia/backend/tests/architecture/test_audit_log_row_per_phi_endpoint.py
+    - vitalia/backend/tests/architecture/test_phi_dual_filter.py
+  fe_unit:
+    - vitalia/frontend/src/features/valeria/components/agenda/__tests__/*.test.tsx (16 components)
+    - vitalia/frontend/src/features/valeria/api/__tests__/agenda.test.ts
+    - vitalia/frontend/src/features/valeria/store/__tests__/*.test.ts
+    - vitalia/frontend/src/features/valeria/lib/__tests__/telemetry.test.ts
+    - vitalia/frontend/src/hooks/useMediaQuery.test.ts
+  fe_e2e_specs:
+    - vitalia/frontend/e2e/regression/vitalia-fase2-valeria-agenda/*.spec.ts (11 scenarios, runtime pending W2)
+  fe_a11y:
+    - vitalia/frontend/e2e/a11y/vitalia-fase2-valeria-agenda.spec.ts (7 axe specs WCAG 2.1 AA)
+  fe_visual:
+    - vitalia/frontend/e2e/visual/vitalia-fase2-valeria-agenda.spec.ts (15 goldens, runtime pending W2)
+```
+
+## KPIs targets (post-launch)
+
+- Click-to-cobro success rate ≥ 95% (charge + fiscal emit happy path)
+- Drawer open latency p95 < 200ms
+- Subform submit latency p95 < 2s (charge + fiscal saga inline)
+- PHI mask coverage 100% (no raw PHI en API responses)
+- Audit log coverage 100% en PHI endpoints
+- Mobile drawer UX usable ≥ 4/5 staff satisfaction
+
+## Promotion candidate notes
+
+ADR-vitalia-004 shell-feature-architecture es source pattern de esta story. Brands futuras con sub-tabs en shell-organism agéntico pueden adoptar el patrón si construyen shell agéntico similar. `/pm-luana` evalúa lift candidate.

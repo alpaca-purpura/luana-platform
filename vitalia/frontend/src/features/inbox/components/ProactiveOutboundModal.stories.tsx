@@ -54,7 +54,8 @@ type Story = StoryObj<typeof ProactiveOutboundModal>;
 export const AbiertoPorDefecto: Story = {
   name: "Modal abierto (sin template seleccionado)",
   beforeEach: async () => {
-    const { useProactiveOutbound } = await import("../api/use-proactive-outbound");
+    const { useProactiveOutbound } =
+      await import("../api/use-proactive-outbound");
     (useProactiveOutbound as ReturnType<typeof vi.fn>).mockReturnValue({
       mutate: fn(),
       isPending: false,
@@ -66,7 +67,8 @@ export const AbiertoPorDefecto: Story = {
 export const Enviando: Story = {
   name: "Estado: enviando mensaje",
   beforeEach: async () => {
-    const { useProactiveOutbound } = await import("../api/use-proactive-outbound");
+    const { useProactiveOutbound } =
+      await import("../api/use-proactive-outbound");
     (useProactiveOutbound as ReturnType<typeof vi.fn>).mockReturnValue({
       mutate: fn(),
       isPending: true,
@@ -78,7 +80,8 @@ export const Enviando: Story = {
 export const Enviado: Story = {
   name: "Éxito: mensaje enviado",
   beforeEach: async () => {
-    const { useProactiveOutbound } = await import("../api/use-proactive-outbound");
+    const { useProactiveOutbound } =
+      await import("../api/use-proactive-outbound");
     (useProactiveOutbound as ReturnType<typeof vi.fn>).mockReturnValue({
       mutate: fn(),
       isPending: false,
@@ -91,7 +94,8 @@ export const Cerrado: Story = {
   name: "Modal cerrado (no renderiza)",
   args: { open: false },
   beforeEach: async () => {
-    const { useProactiveOutbound } = await import("../api/use-proactive-outbound");
+    const { useProactiveOutbound } =
+      await import("../api/use-proactive-outbound");
     (useProactiveOutbound as ReturnType<typeof vi.fn>).mockReturnValue({
       mutate: fn(),
       isPending: false,

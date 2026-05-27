@@ -1,7 +1,7 @@
 ---
 module: connections
 brand: vitalia
-last_updated: 2026-05-18
+last_updated: 2026-05-21
 ---
 
 # connections — Brand-internal dispatch registries
@@ -18,4 +18,5 @@ last_updated: 2026-05-18
 
 <!-- auto-list:start -->
 - `vitalia-registries-medical-vertical` (live)
+- `vitalia-connections-oauth-meta-google-ads` (live)
 <!-- auto-list:end -->

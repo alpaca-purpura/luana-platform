@@ -27,7 +27,8 @@ vi.mock("../../config/copy", () => ({
     completion: {
       headline: "¡Tu clínica está configurada!",
       subheadline: "Vitalia ya conoce tu identidad de marca.",
-      bodyText: "Tu agente inteligente está listo para atender pacientes con tu voz y estilo.",
+      bodyText:
+        "Tu agente inteligente está listo para atender pacientes con tu voz y estilo.",
       ctaButton: "Ir al panel principal",
       ctaButtonLoading: "Preparando tu panel...",
       confettiAlt: "Celebración",
@@ -44,7 +45,7 @@ describe("WizardCompletionTransition", () => {
 
   it("renders null when isActive is false", () => {
     const { container } = render(
-      <WizardCompletionTransition isActive={false} />
+      <WizardCompletionTransition isActive={false} />,
     );
     expect(container.firstChild).toBeNull();
   });
@@ -52,24 +53,32 @@ describe("WizardCompletionTransition", () => {
   it("renders completion content when isActive is true", () => {
     render(<WizardCompletionTransition isActive />);
     expect(screen.getByText("¡Tu clínica está configurada!")).toBeTruthy();
-    expect(screen.getByText("Vitalia ya conoce tu identidad de marca.")).toBeTruthy();
+    expect(
+      screen.getByText("Vitalia ya conoce tu identidad de marca."),
+    ).toBeTruthy();
   });
 
   it("renders CTA button with correct label", () => {
     render(<WizardCompletionTransition isActive />);
-    expect(screen.getByRole("button", { name: "Ir al panel principal" })).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Ir al panel principal" }),
+    ).toBeTruthy();
   });
 
   it("calls onNavigate when CTA is clicked", () => {
     const onNavigate = vi.fn();
     render(<WizardCompletionTransition isActive onNavigate={onNavigate} />);
-    fireEvent.click(screen.getByRole("button", { name: "Ir al panel principal" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Ir al panel principal" }),
+    );
     expect(onNavigate).toHaveBeenCalledTimes(1);
   });
 
   it("navigates to / when no onNavigate provided", () => {
     render(<WizardCompletionTransition isActive />);
-    fireEvent.click(screen.getByRole("button", { name: "Ir al panel principal" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Ir al panel principal" }),
+    );
     expect(mockPush).toHaveBeenCalledWith("/");
   });
 
@@ -88,7 +97,9 @@ describe("WizardCompletionTransition", () => {
     render(<WizardCompletionTransition isActive />);
     const main = screen.getByRole("main");
     // aria-label is set to copy.headline (mocked as "¡Tu clínica está configurada!")
-    expect(main.getAttribute("aria-label")).toBe("¡Tu clínica está configurada!");
+    expect(main.getAttribute("aria-label")).toBe(
+      "¡Tu clínica está configurada!",
+    );
   });
 
   it("renders z-50 fixed overlay (fullscreen)", () => {

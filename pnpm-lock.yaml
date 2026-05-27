@@ -702,12 +702,63 @@ importers:
       '@clerk/nextjs':
         specifier: ^6.36.8
         version: 6.39.3(next@16.2.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      '@hookform/resolvers':
+        specifier: ^5.2.2
+        version: 5.2.2(react-hook-form@7.76.1(react@19.2.6))
+      '@radix-ui/react-accordion':
+        specifier: ^1.2.12
+        version: 1.2.12(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      '@radix-ui/react-avatar':
+        specifier: ^1.1.11
+        version: 1.1.11(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      '@radix-ui/react-dialog':
+        specifier: ^1.1.15
+        version: 1.1.15(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      '@radix-ui/react-dropdown-menu':
+        specifier: ^2.1.16
+        version: 2.1.16(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      '@radix-ui/react-label':
+        specifier: ^2.1.8
+        version: 2.1.8(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      '@radix-ui/react-scroll-area':
+        specifier: ^1.2.10
+        version: 1.2.10(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      '@radix-ui/react-select':
+        specifier: ^2.2.6
+        version: 2.2.6(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      '@radix-ui/react-separator':
+        specifier: ^1.1.8
+        version: 1.1.8(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      '@radix-ui/react-slot':
+        specifier: ^1.2.4
+        version: 1.2.4(@types/react@19.2.14)(react@19.2.6)
+      '@radix-ui/react-tabs':
+        specifier: ^1.1.13
+        version: 1.1.13(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      '@radix-ui/react-tooltip':
+        specifier: ^1.2.8
+        version: 1.2.8(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       '@tanstack/react-query':
         specifier: ^5.100.10
         version: 5.100.10(react@19.2.6)
+      '@types/react-window':
+        specifier: ^2.0.0
+        version: 2.0.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      class-variance-authority:
+        specifier: ^0.7.1
+        version: 0.7.1
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
+      lucide-react:
+        specifier: ^1.16.0
+        version: 1.16.0(react@19.2.6)
       next:
         specifier: ^16.2.3
         version: 16.2.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      next-themes:
+        specifier: ^0.4.6
+        version: 0.4.6(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       nuqs:
         specifier: ^2.4.1
         version: 2.8.9(next@16.2.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)
@@ -717,8 +768,23 @@ importers:
       react-dom:
         specifier: ^19.2.3
         version: 19.2.6(react@19.2.6)
+      react-hook-form:
+        specifier: ^7.76.1
+        version: 7.76.1(react@19.2.6)
+      react-resizable-panels:
+        specifier: ^4.11.1
+        version: 4.11.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      react-window:
+        specifier: ^2.2.7
+        version: 2.2.7(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      sonner:
+        specifier: ^2.0.7
+        version: 2.0.7(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      tailwind-merge:
+        specifier: ^3.6.0
+        version: 3.6.0
       zod:
-        specifier: ^4.3.6
+        specifier: ^4.4.3
         version: 4.4.3
       zustand:
         specifier: ^5.0.5
@@ -739,6 +805,9 @@ importers:
       '@storybook/nextjs':
         specifier: ^10.4.0
         version: 10.4.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(lightningcss@1.32.0)(next@16.2.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(storybook@10.4.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@testing-library/dom@10.4.1)(@types/react@19.2.14)(prettier@3.8.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(type-fest@2.19.0)(typescript@5.9.3)(webpack-hot-middleware@2.26.1)(webpack@5.106.2(lightningcss@1.32.0)(postcss@8.5.14))
+      '@tailwindcss/postcss':
+        specifier: ^4.3.0
+        version: 4.3.0
       '@testing-library/jest-dom':
         specifier: ^6.4.8
         version: 6.9.1
@@ -4618,6 +4687,10 @@ packages:
     peerDependencies:
       '@types/react': ^19.2.0
 
+  '@types/react-window@2.0.0':
+    resolution: {integrity: sha512-E8hMDtImEpMk1SjswSvqoSmYvk7GEtyVaTa/GJV++FdDNuMVVEzpAClyJ0nqeKYBrMkGiyH6M1+rPLM0Nu1exQ==}
+    deprecated: This is a stub types definition. react-window provides its own type definitions, so you do not need this installed.
+
   '@types/react@19.2.14':
     resolution: {integrity: sha512-ilcTH/UniCkMdtexkoCN0bI7pMcJDvmQFPvuPvmEaYA/NSfFTAgdUSLAoVjaRJm7+6PvcM+q1zYOwS4wTYMF9w==}
 
@@ -7379,6 +7452,11 @@ packages:
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
+  lucide-react@1.16.0:
+    resolution: {integrity: sha512-dYwyPzb4MEKpGUmNYk3WKWPnMrHs3FKM+q94kAnJrcDIqqn1hq2xY8scaS2ovsOCM5D51ey2gaRG3PBb1vgoYQ==}
+    peerDependencies:
+      react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
+
   lz-string@1.5.0:
     resolution: {integrity: sha512-h5bgJWpxJNswbU7qCrV0tIKQCaS3blPDrqKWx+QxzuzL1zGUzij9XCWLrSLsJPu5t+eWA/ycetzYAO5IOMcWAQ==}
     hasBin: true
@@ -8379,6 +8457,12 @@ packages:
     peerDependencies:
       react: ^16.8.0 || ^17 || ^18 || ^19
 
+  react-hook-form@7.76.1:
+    resolution: {integrity: sha512-rYM7tPiWlu3nZchkR/ex7piyzui2vFPyaLnXnI/RnblB/L4qfMmyses8llJVtF1NpE9WBBsJlGtcSZzPCXW1qQ==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      react: ^16.8.0 || ^17 || ^18 || ^19
+
   react-hotkeys-hook@4.6.2:
     resolution: {integrity: sha512-FmP+ZriY3EG59Ug/lxNfrObCnW9xQShgk7Nb83+CkpfkcCpfS95ydv+E9JuXA5cp8KtskU7LGlIARpkc92X22Q==}
     peerDependencies:
@@ -8437,6 +8521,12 @@ packages:
       '@types/react':
         optional: true
 
+  react-resizable-panels@4.11.1:
+    resolution: {integrity: sha512-kA4w58V6wYdRLm2rg9pzroZwGlqBLul1FjMP0J8kqTo3zSHtjeH+LXmZaldCo6+HWqs1e5hOcPoajKXdOze37Q==}
+    peerDependencies:
+      react: ^18.0.0 || ^19.0.0
+      react-dom: ^18.0.0 || ^19.0.0
+
   react-smooth@4.0.4:
     resolution: {integrity: sha512-gnGKTpYwqL0Iii09gHobNolvX4Kiq4PKx6eWBCYYix+8cdw+cGo3do906l1NBPKkSWx1DghC1dlWG9L2uGd61Q==}
     peerDependencies:
@@ -8473,6 +8563,12 @@ packages:
     peerDependenciesMeta:
       react-dom:
         optional: true
+
+  react-window@2.2.7:
+    resolution: {integrity: sha512-SH5nvfUQwGHYyriDUAOt7wfPsfG9Qxd6OdzQxl5oQ4dsSsUicqQvjV7dR+NqZ4coY0fUn3w1jnC5PwzIUWEg5w==}
+    peerDependencies:
+      react: ^18.0.0 || ^19.0.0
+      react-dom: ^18.0.0 || ^19.0.0
 
   react@19.2.6:
     resolution: {integrity: sha512-sfWGGfavi0xr8Pg0sVsyHMAOziVYKgPLNrS7ig+ivMNb3wbCBw3KxtflsGBAwD3gYQlE/AEZsTLgToRrSCjb0Q==}
@@ -11068,6 +11164,11 @@ snapshots:
     dependencies:
       '@standard-schema/utils': 0.3.0
       react-hook-form: 7.75.0(react@19.2.6)
+
+  '@hookform/resolvers@5.2.2(react-hook-form@7.76.1(react@19.2.6))':
+    dependencies:
+      '@standard-schema/utils': 0.3.0
+      react-hook-form: 7.76.1(react@19.2.6)
 
   '@humanfs/core@0.19.2':
     dependencies:
@@ -13987,6 +14088,13 @@ snapshots:
   '@types/react-dom@19.2.3(@types/react@19.2.14)':
     dependencies:
       '@types/react': 19.2.14
+
+  '@types/react-window@2.0.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)':
+    dependencies:
+      react-window: 2.2.7(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+    transitivePeerDependencies:
+      - react
+      - react-dom
 
   '@types/react@19.2.14':
     dependencies:
@@ -17242,6 +17350,10 @@ snapshots:
     dependencies:
       react: 19.2.6
 
+  lucide-react@1.16.0(react@19.2.6):
+    dependencies:
+      react: 19.2.6
+
   lz-string@1.5.0: {}
 
   madge@8.0.0(typescript@5.9.3):
@@ -18611,6 +18723,10 @@ snapshots:
     dependencies:
       react: 19.2.6
 
+  react-hook-form@7.76.1(react@19.2.6):
+    dependencies:
+      react: 19.2.6
+
   react-hotkeys-hook@4.6.2(react-dom@19.2.6(react@19.2.6))(react@19.2.6):
     dependencies:
       react: 19.2.6
@@ -18669,6 +18785,11 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.2.14
 
+  react-resizable-panels@4.11.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6):
+    dependencies:
+      react: 19.2.6
+      react-dom: 19.2.6(react@19.2.6)
+
   react-smooth@4.0.4(react-dom@19.2.6(react@19.2.6))(react@19.2.6):
     dependencies:
       fast-equals: 5.4.0
@@ -18707,6 +18828,11 @@ snapshots:
     dependencies:
       react: 19.2.6
     optionalDependencies:
+      react-dom: 19.2.6(react@19.2.6)
+
+  react-window@2.2.7(react-dom@19.2.6(react@19.2.6))(react@19.2.6):
+    dependencies:
+      react: 19.2.6
       react-dom: 19.2.6(react@19.2.6)
 
   react@19.2.6: {}

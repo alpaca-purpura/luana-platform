@@ -60,9 +60,15 @@ describe("AdrianToolsSheet — closed state", () => {
 
   it("renders nothing when open=false", () => {
     const { container } = render(
-      <AdrianToolsSheet open={false} onClose={mockOnClose} conversationId="conv-1" />
+      <AdrianToolsSheet
+        open={false}
+        onClose={mockOnClose}
+        conversationId="conv-1"
+      />,
     );
-    expect(container.querySelector("[data-testid='adrian-tools-sheet']")).toBeNull();
+    expect(
+      container.querySelector("[data-testid='adrian-tools-sheet']"),
+    ).toBeNull();
   });
 });
 
@@ -71,23 +77,37 @@ describe("AdrianToolsSheet — open state with tools", () => {
 
   it("renders panel with correct aria-label when open=true", () => {
     render(
-      <AdrianToolsSheet open={true} onClose={mockOnClose} conversationId="conv-1" />
+      <AdrianToolsSheet
+        open={true}
+        onClose={mockOnClose}
+        conversationId="conv-1"
+      />,
     );
     const panel = screen.getByTestId("adrian-tools-sheet");
     expect(panel).toBeDefined();
-    expect(panel.getAttribute("aria-label")).toBe(INBOX_COPY.toolsSheet.ariaLabel);
+    expect(panel.getAttribute("aria-label")).toBe(
+      INBOX_COPY.toolsSheet.ariaLabel,
+    );
   });
 
   it("shows sheet title", () => {
     render(
-      <AdrianToolsSheet open={true} onClose={mockOnClose} conversationId="conv-1" />
+      <AdrianToolsSheet
+        open={true}
+        onClose={mockOnClose}
+        conversationId="conv-1"
+      />,
     );
     expect(screen.getByText(INBOX_COPY.toolsSheet.title)).toBeDefined();
   });
 
   it("close button calls onClose", () => {
     render(
-      <AdrianToolsSheet open={true} onClose={mockOnClose} conversationId="conv-1" />
+      <AdrianToolsSheet
+        open={true}
+        onClose={mockOnClose}
+        conversationId="conv-1"
+      />,
     );
     fireEvent.click(screen.getByTestId("tools-sheet-close"));
     expect(mockOnClose).toHaveBeenCalledTimes(1);
@@ -95,27 +115,43 @@ describe("AdrianToolsSheet — open state with tools", () => {
 
   it("shows tool names as read-only (test_read_only_with_disabled_explanation)", () => {
     render(
-      <AdrianToolsSheet open={true} onClose={mockOnClose} conversationId="conv-1" />
+      <AdrianToolsSheet
+        open={true}
+        onClose={mockOnClose}
+        conversationId="conv-1"
+      />,
     );
     // Tools are displayed read-only — no interactive controls like buttons for invoking
     expect(screen.getByText("schedule_appointment")).toBeDefined();
     expect(screen.getByText("send_offer_link")).toBeDefined();
     // Tool rows should NOT have a button that invokes the tool
-    const invokeButtons = screen.queryAllByRole("button", { name: /invocar|usar herramienta/i });
+    const invokeButtons = screen.queryAllByRole("button", {
+      name: /invocar|usar herramienta/i,
+    });
     expect(invokeButtons).toHaveLength(0);
   });
 
   it("shows HIPAA guard note explaining why tools are disabled", () => {
     render(
-      <AdrianToolsSheet open={true} onClose={mockOnClose} conversationId="conv-1" />
+      <AdrianToolsSheet
+        open={true}
+        onClose={mockOnClose}
+        conversationId="conv-1"
+      />,
     );
     expect(screen.getByTestId("hipaa-guard-note")).toBeDefined();
-    expect(screen.getByText(INBOX_COPY.toolsSheet.hipaaGuardNote)).toBeDefined();
+    expect(
+      screen.getByText(INBOX_COPY.toolsSheet.hipaaGuardNote),
+    ).toBeDefined();
   });
 
   it("shows goToOfferStudio link", () => {
     render(
-      <AdrianToolsSheet open={true} onClose={mockOnClose} conversationId="conv-1" />
+      <AdrianToolsSheet
+        open={true}
+        onClose={mockOnClose}
+        conversationId="conv-1"
+      />,
     );
     const link = screen.getByTestId("offer-studio-link");
     expect(link).toBeDefined();
@@ -124,12 +160,18 @@ describe("AdrianToolsSheet — open state with tools", () => {
 
   it("shows status label for each tool invocation", () => {
     render(
-      <AdrianToolsSheet open={true} onClose={mockOnClose} conversationId="conv-1" />
+      <AdrianToolsSheet
+        open={true}
+        onClose={mockOnClose}
+        conversationId="conv-1"
+      />,
     );
     // success status
     expect(screen.getByText(INBOX_COPY.toolsSheet.statusEnabled)).toBeDefined();
     // error status row should have statusDisabled label or error marker
-    expect(screen.getByText(INBOX_COPY.toolsSheet.statusDisabled)).toBeDefined();
+    expect(
+      screen.getByText(INBOX_COPY.toolsSheet.statusDisabled),
+    ).toBeDefined();
   });
 });
 
@@ -138,12 +180,24 @@ describe("AdrianToolsSheet — empty invocations", () => {
     const { useToolsState } = await import("../../api/use-tools-state");
     vi.mocked(useToolsState).mockReturnValue(
       // Mock partial React Query result — full type not needed in test
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      { data: { conversation_id: "conv-2", invocations: [], updated_at: "2026-01-15T10:00:00Z" }, isLoading: false, isError: false } as any
+      {
+        data: {
+          conversation_id: "conv-2",
+          invocations: [],
+          updated_at: "2026-01-15T10:00:00Z",
+        },
+        isLoading: false,
+        isError: false,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any,
     );
 
     render(
-      <AdrianToolsSheet open={true} onClose={mockOnClose} conversationId="conv-2" />
+      <AdrianToolsSheet
+        open={true}
+        onClose={mockOnClose}
+        conversationId="conv-2"
+      />,
     );
     expect(screen.getByText(INBOX_COPY.toolsSheet.noTools)).toBeDefined();
   });

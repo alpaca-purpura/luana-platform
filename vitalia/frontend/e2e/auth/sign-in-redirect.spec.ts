@@ -35,7 +35,9 @@ test.describe("vitalia-auth-base-functional — SC-01: redirect unauthenticated 
 
     // El formulario de Clerk debe estar visible
     // Clerk renderiza un formulario con campo email
-    const emailInput = page.locator('input[type="email"], input[name="identifier"], input[autocomplete="email"]');
+    const emailInput = page.locator(
+      'input[type="email"], input[name="identifier"], input[autocomplete="email"]',
+    );
     await expect(emailInput.first()).toBeVisible({ timeout: 15_000 });
   });
 });
@@ -60,7 +62,9 @@ test.describe("vitalia-auth-base-functional — SC-02: public route served witho
     // No debe mostrar formulario de Clerk en ruta pública.
     // toHaveCount(0) es correcto: si el elemento no existe en el DOM, count=0 (pasa);
     // si existe y es visible, count>0 (falla loudly — comportamiento deseado).
-    const clerkSignIn = page.locator('[data-clerk-sign-in], .cl-sign-in-root, [data-testid="clerk-sign-in"]');
+    const clerkSignIn = page.locator(
+      '[data-clerk-sign-in], .cl-sign-in-root, [data-testid="clerk-sign-in"]',
+    );
     await expect(clerkSignIn).toHaveCount(0, { timeout: 5_000 });
   });
 });

@@ -93,7 +93,7 @@ describe("useFidelizacionSummary", () => {
 
     expect(vitaliaFetch).toHaveBeenCalledWith(
       expect.stringContaining("/api/v1/vitalia/fidelization/summary"),
-      expect.objectContaining({ token: expect.any(String) })
+      expect.objectContaining({ token: expect.any(String) }),
     );
   });
 

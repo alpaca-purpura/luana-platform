@@ -46,15 +46,16 @@ export function SendButton({
       className={cn(
         "flex-shrink-0 px-4 py-2 rounded-xl text-sm font-semibold",
         "text-white transition-opacity duration-150",
-        handlerMode === "ai"
-          ? "vt-bg-gradient-agent"
-          : "vt-bg-azul-marino",
+        handlerMode === "ai" ? "vt-bg-gradient-agent" : "vt-bg-azul-marino",
         "disabled:opacity-50 disabled:cursor-not-allowed",
-        className
+        className,
       )}
     >
       {isPending ? (
-        <span aria-hidden="true" className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+        <span
+          aria-hidden="true"
+          className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"
+        />
       ) : (
         <>
           {label}

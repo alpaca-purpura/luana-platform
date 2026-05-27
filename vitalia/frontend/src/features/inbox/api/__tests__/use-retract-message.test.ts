@@ -49,7 +49,9 @@ import { fetchClient } from "@/lib/api/fetchClient";
 const CONVERSATION_ID = "conv-456";
 const MESSAGE_ID = "msg-retractable";
 
-function buildDetail(partial?: Partial<ConversationDetail>): ConversationDetail {
+function buildDetail(
+  partial?: Partial<ConversationDetail>,
+): ConversationDetail {
   return {
     conversation: {
       id: CONVERSATION_ID,
@@ -108,7 +110,9 @@ function buildDetail(partial?: Partial<ConversationDetail>): ConversationDetail 
         action_receipt_expires_at: "2026-01-01T10:05:00Z",
       },
     ],
-    action_receipts: [{ message_id: MESSAGE_ID, expires_at: "2026-01-01T10:05:00Z" }],
+    action_receipts: [
+      { message_id: MESSAGE_ID, expires_at: "2026-01-01T10:05:00Z" },
+    ],
     tools_state: null,
     ...partial,
   };
@@ -116,7 +120,11 @@ function buildDetail(partial?: Partial<ConversationDetail>): ConversationDetail 
 
 function createWrapper(queryClient: QueryClient) {
   return function Wrapper({ children }: { children: React.ReactNode }) {
-    return createElement(QueryClientProvider, { client: queryClient }, children);
+    return createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 }
 
@@ -125,16 +133,22 @@ describe("useRetractMessage", () => {
 
   beforeEach(() => {
     queryClient = new QueryClient({
-      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+      defaultOptions: {
+        queries: { retry: false },
+        mutations: { retry: false },
+      },
     });
     vi.clearAllMocks();
   });
 
   it("optimistically marks message as retracted and removes action receipt", async () => {
-    queryClient.setQueryData(["inbox", "conversation", CONVERSATION_ID], buildDetail());
+    queryClient.setQueryData(
+      ["inbox", "conversation", CONVERSATION_ID],
+      buildDetail(),
+    );
     let resolvePromise!: (value: unknown) => void;
     vi.mocked(fetchClient).mockReturnValue(
-      new Promise((res) => (resolvePromise = res))
+      new Promise((res) => (resolvePromise = res)),
     );
 
     const { result } = renderHook(() => useRetractMessage(), {
@@ -167,7 +181,10 @@ describe("useRetractMessage", () => {
 
   it("rolls back optimistic update on network error", async () => {
     const detail = buildDetail();
-    queryClient.setQueryData(["inbox", "conversation", CONVERSATION_ID], detail);
+    queryClient.setQueryData(
+      ["inbox", "conversation", CONVERSATION_ID],
+      detail,
+    );
     vi.mocked(fetchClient).mockRejectedValue(new Error("Network error"));
 
     const { result } = renderHook(() => useRetractMessage(), {
@@ -194,8 +211,14 @@ describe("useRetractMessage", () => {
   });
 
   it("invalidates detail query on 409 conflict", async () => {
-    queryClient.setQueryData(["inbox", "conversation", CONVERSATION_ID], buildDetail());
-    const conflictError = new ApiError({ status: 409, statusText: "Conflict" } as unknown as Response);
+    queryClient.setQueryData(
+      ["inbox", "conversation", CONVERSATION_ID],
+      buildDetail(),
+    );
+    const conflictError = new ApiError({
+      status: 409,
+      statusText: "Conflict",
+    } as unknown as Response);
     vi.mocked(fetchClient).mockRejectedValue(conflictError);
 
     const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");

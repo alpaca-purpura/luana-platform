@@ -25,7 +25,9 @@ test.describe("Cross-Tenant Isolation (Aurora AR)", () => {
 
     // Mindful data NOT visible (cross-tenant isolation)
     await expect(page.getByText(MINDFUL_FIXTURE.clinicName)).not.toBeVisible();
-    await expect(page.getByText(MINDFUL_FIXTURE.doctors[0].name)).not.toBeVisible();
+    await expect(
+      page.getByText(MINDFUL_FIXTURE.doctors[0].name),
+    ).not.toBeVisible();
 
     expect(consoleErrors).toHaveLength(0);
   });
@@ -87,7 +89,9 @@ test.describe("Cross-Tenant Isolation (Aurora AR)", () => {
     await page.goto("/medical-compliance");
 
     // cross_tenant_attempt = 0 per Aurora fixture (no actual leak)
-    await expect(page.getByText(/cross_tenant.*0|0.*cross_tenant/i)).toBeVisible({
+    await expect(
+      page.getByText(/cross_tenant.*0|0.*cross_tenant/i),
+    ).toBeVisible({
       timeout: 10_000,
     });
   });

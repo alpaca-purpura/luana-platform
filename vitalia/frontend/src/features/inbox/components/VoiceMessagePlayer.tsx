@@ -103,7 +103,7 @@ export function VoiceMessagePlayer({
       }
       setCurrentTime(newTime);
     },
-    []
+    [],
   );
 
   const handleSpeedCycle = useCallback(() => {
@@ -122,7 +122,7 @@ export function VoiceMessagePlayer({
       className={cn(
         "flex flex-col gap-2 rounded-xl p-3 vt-bg-muted border vt-border",
         "min-w-[200px] max-w-xs",
-        className
+        className,
       )}
       role="region"
       aria-label={INBOX_COPY.multimedia.audioPlayer.ariaLabel}
@@ -148,7 +148,7 @@ export function VoiceMessagePlayer({
           className={cn(
             "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center",
             "vt-bg-cian-10 vt-text-cian border vt-border-cian",
-            "hover:vt-bg-cian hover:vt-text-white transition-colors"
+            "hover:vt-bg-cian hover:vt-text-white transition-colors",
           )}
           aria-label={isPlaying ? "Pausar" : "Reproducir"}
         >
@@ -194,7 +194,9 @@ export function VoiceMessagePlayer({
             aria-atomic="true"
           >
             <span>{formatTime(currentTime)}</span>
-            <span>{displayDuration > 0 ? formatTime(displayDuration) : "--:--"}</span>
+            <span>
+              {displayDuration > 0 ? formatTime(displayDuration) : "--:--"}
+            </span>
           </div>
         </div>
 
@@ -205,7 +207,7 @@ export function VoiceMessagePlayer({
           className={cn(
             "flex-shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded",
             "vt-bg-surface vt-text-muted border vt-border",
-            "hover:vt-text-cian hover:vt-border-cian transition-colors"
+            "hover:vt-text-cian hover:vt-border-cian transition-colors",
           )}
           aria-label={`${INBOX_COPY.multimedia.audioPlayer.speedLabel}: ${speed}x`}
         >

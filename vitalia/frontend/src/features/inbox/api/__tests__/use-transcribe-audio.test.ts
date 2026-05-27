@@ -37,7 +37,8 @@ vi.stubGlobal("fetch", mockFetch);
 const CONVERSATION_ID = "conv-transcribe-001";
 
 const mockTranscribeResult: TranscribeAudioResult = {
-  transcription_text: "Buenos días, quisiera información sobre el tratamiento dental.",
+  transcription_text:
+    "Buenos días, quisiera información sobre el tratamiento dental.",
   transcription_confidence: 0.92,
   media_url: "https://cdn.vitalia.com/audio/abc123.webm",
 };
@@ -50,7 +51,11 @@ const mockLowConfidenceResult: TranscribeAudioResult = {
 
 function createWrapper(queryClient: QueryClient) {
   return function Wrapper({ children }: { children: React.ReactNode }) {
-    return createElement(QueryClientProvider, { client: queryClient }, children);
+    return createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 }
 
@@ -59,7 +64,10 @@ describe("useTranscribeAudio", () => {
 
   beforeEach(() => {
     queryClient = new QueryClient({
-      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+      defaultOptions: {
+        queries: { retry: false },
+        mutations: { retry: false },
+      },
     });
     vi.clearAllMocks();
   });
@@ -74,7 +82,9 @@ describe("useTranscribeAudio", () => {
       wrapper: createWrapper(queryClient),
     });
 
-    const audioBlob = new Blob(["fake-audio-data"], { type: "audio/webm;codecs=opus" });
+    const audioBlob = new Blob(["fake-audio-data"], {
+      type: "audio/webm;codecs=opus",
+    });
 
     await act(async () => {
       result.current.mutate({
@@ -87,7 +97,9 @@ describe("useTranscribeAudio", () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     expect(result.current.data).toEqual(mockTranscribeResult);
-    expect(result.current.data?.transcription_confidence).toBeGreaterThanOrEqual(0.5);
+    expect(
+      result.current.data?.transcription_confidence,
+    ).toBeGreaterThanOrEqual(0.5);
 
     // Verify endpoint called correctly
     expect(mockFetch).toHaveBeenCalledOnce();

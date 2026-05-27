@@ -22,7 +22,9 @@ import type { ConversationDetail } from "@/features/inbox/types/conversation-det
  *
  * @param conversationId - The conversation UUID. Pass null/undefined to disable.
  */
-export function useConversationDetail(conversationId: string | null | undefined) {
+export function useConversationDetail(
+  conversationId: string | null | undefined,
+) {
   const { getToken, orgId, isLoaded, isSignedIn } = useAuth();
   const clinicId = useClinicId();
 
@@ -34,7 +36,7 @@ export function useConversationDetail(conversationId: string | null | undefined)
       if (!conversationId) throw new Error("conversationId required");
       return fetchClient<ConversationDetail>(
         `/api/v1/vitalia/crm/conversations/${conversationId}`,
-        { token, tenantId: orgId, clinicId }
+        { token, tenantId: orgId, clinicId },
       );
     },
     enabled: isLoaded && isSignedIn === true && !!conversationId,

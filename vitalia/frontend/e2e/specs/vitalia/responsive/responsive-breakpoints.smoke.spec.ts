@@ -58,7 +58,7 @@ test.describe("Responsive — Vitalia UI (Aurora AR)", () => {
 
     // Slots visible at any breakpoint
     await expect(
-      page.getByText(/horarios disponibles|selecciona tu cita/i)
+      page.getByText(/horarios disponibles|selecciona tu cita/i),
     ).toBeVisible({ timeout: 10_000 });
 
     // Mobile: touch targets ≥ 44×44 px (WCAG 2.5.5)
@@ -88,11 +88,13 @@ test.describe("Responsive — Vitalia UI (Aurora AR)", () => {
 
     // Form fields accessible at any viewport
     await expect(
-      page.getByRole("textbox", { name: /nombre de la cl[íi]nica/i })
+      page.getByRole("textbox", { name: /nombre de la cl[íi]nica/i }),
     ).toBeVisible({ timeout: 10_000 });
 
     // Siguiente button accessible
-    await expect(page.getByRole("button", { name: /siguiente/i })).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: /siguiente/i }),
+    ).toBeVisible();
 
     expect(consoleErrors).toHaveLength(0);
   });
@@ -116,7 +118,7 @@ test.describe("Responsive — Vitalia UI (Aurora AR)", () => {
     } else {
       // Tablet/Desktop: sidebar items visible
       await expect(
-        page.getByRole("navigation").or(page.locator("nav")).first()
+        page.getByRole("navigation").or(page.locator("nav")).first(),
       ).toBeVisible({ timeout: 10_000 });
     }
 

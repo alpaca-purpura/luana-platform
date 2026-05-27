@@ -36,7 +36,7 @@ export function ProposalCardBanner({
     <div
       className={cn(
         "rounded-xl border vt-border-cian vt-bg-cian-8 p-3 flex flex-col gap-2",
-        className
+        className,
       )}
       role="region"
       aria-label={INBOX_COPY.proposalCardBanner.heading}
@@ -46,7 +46,7 @@ export function ProposalCardBanner({
         <span
           className={cn(
             "text-xs font-semibold px-1.5 py-0.5 rounded-full",
-            "vt-bg-gradient-agent text-white"
+            "vt-bg-gradient-agent text-white",
           )}
           aria-hidden="true"
         >
@@ -68,7 +68,7 @@ export function ProposalCardBanner({
           className={cn(
             "rounded-lg px-2.5 py-2 text-sm vt-text",
             "vt-bg-surface border vt-border-soft",
-            "max-h-24 overflow-y-auto"
+            "max-h-24 overflow-y-auto",
           )}
         >
           {/* SC-04: React escapes proposedText — no dangerouslySetInnerHTML */}
@@ -86,7 +86,7 @@ export function ProposalCardBanner({
             "text-xs px-3 py-1.5 rounded-lg",
             "vt-bg-surface border vt-border vt-text-muted",
             "hover:vt-text-cian hover:vt-border-cian transition-colors",
-            "disabled:opacity-50 disabled:cursor-not-allowed"
+            "disabled:opacity-50 disabled:cursor-not-allowed",
           )}
         >
           {INBOX_COPY.proposalCardBanner.editCta}
@@ -100,7 +100,7 @@ export function ProposalCardBanner({
             "text-xs px-3 py-1.5 rounded-lg font-semibold",
             "text-white vt-bg-gradient-agent",
             "disabled:opacity-50 disabled:cursor-not-allowed",
-            "transition-opacity"
+            "transition-opacity",
           )}
         >
           {isApproving ? "…" : INBOX_COPY.proposalCardBanner.approveCta}

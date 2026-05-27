@@ -65,7 +65,7 @@ function StepIndicator({
         "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded",
         isCompleted && "text-blue-600",
         isCurrent && "text-blue-700",
-        !isCompleted && !isCurrent && "text-gray-400"
+        !isCompleted && !isCurrent && "text-gray-400",
       )}
     >
       <span
@@ -73,7 +73,9 @@ function StepIndicator({
           "w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2",
           isCompleted && "bg-blue-600 border-blue-600 text-white",
           isCurrent && "bg-white border-blue-600 text-blue-600",
-          !isCompleted && !isCurrent && "bg-white border-gray-300 text-gray-400"
+          !isCompleted &&
+            !isCurrent &&
+            "bg-white border-gray-300 text-gray-400",
         )}
         aria-hidden="true"
       >
@@ -97,7 +99,10 @@ function Step1Content({
         {MICROCOPY_OFFER_WIZARD.steps.serviceType}
       </h3>
       <div>
-        <label htmlFor="service-type" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="service-type"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
           Nombre del servicio
         </label>
         <input
@@ -137,7 +142,9 @@ function Step3Content({
             onChange={(e) => onRequiresPrepayChange?.(e.target.checked)}
             className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
-          <span className="text-sm text-gray-700">{MICROCOPY_OFFER_WIZARD.prepay.label}</span>
+          <span className="text-sm text-gray-700">
+            {MICROCOPY_OFFER_WIZARD.prepay.label}
+          </span>
         </label>
         {requiresPrepay && (
           <div className="ml-6 space-y-2">
@@ -149,7 +156,9 @@ function Step3Content({
                 onChange={() => onDepositOnlyChange?.(false)}
                 className="border-gray-300 text-blue-600 focus:ring-blue-500"
               />
-              <span className="text-sm text-gray-700">{MICROCOPY_OFFER_WIZARD.prepay.fullPayment}</span>
+              <span className="text-sm text-gray-700">
+                {MICROCOPY_OFFER_WIZARD.prepay.fullPayment}
+              </span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -159,7 +168,9 @@ function Step3Content({
                 onChange={() => onDepositOnlyChange?.(true)}
                 className="border-gray-300 text-blue-600 focus:ring-blue-500"
               />
-              <span className="text-sm text-gray-700">{MICROCOPY_OFFER_WIZARD.prepay.partialDeposit}</span>
+              <span className="text-sm text-gray-700">
+                {MICROCOPY_OFFER_WIZARD.prepay.partialDeposit}
+              </span>
             </label>
           </div>
         )}
@@ -187,7 +198,9 @@ function Step4Content({
           onChange={(e) => onRequiresConsentChange?.(e.target.checked)}
           className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
         />
-        <span className="text-sm text-gray-700">Requiere consentimiento informado</span>
+        <span className="text-sm text-gray-700">
+          Requiere consentimiento informado
+        </span>
       </label>
     </div>
   );
@@ -234,7 +247,10 @@ export function MedicalServicesOfferWizardSteps({
   return (
     <div className="flex flex-col gap-6">
       {/* Step indicators */}
-      <nav aria-label="Pasos del wizard" className="flex items-center justify-between gap-2">
+      <nav
+        aria-label="Pasos del wizard"
+        className="flex items-center justify-between gap-2"
+      >
         {STEPS.map((step, idx) => (
           <div key={step.stepNumber} className="flex items-center flex-1">
             <StepIndicator
@@ -246,7 +262,7 @@ export function MedicalServicesOfferWizardSteps({
               <div
                 className={cn(
                   "flex-1 h-0.5 mx-1 transition-colors",
-                  step.stepNumber < currentStep ? "bg-blue-600" : "bg-gray-200"
+                  step.stepNumber < currentStep ? "bg-blue-600" : "bg-gray-200",
                 )}
                 aria-hidden="true"
               />
@@ -264,7 +280,9 @@ export function MedicalServicesOfferWizardSteps({
           />
         )}
         {currentStep === 2 && (
-          <StepPlaceholderContent label={MICROCOPY_OFFER_WIZARD.steps.targetPatient} />
+          <StepPlaceholderContent
+            label={MICROCOPY_OFFER_WIZARD.steps.targetPatient}
+          />
         )}
         {currentStep === 3 && (
           <Step3Content
@@ -281,7 +299,9 @@ export function MedicalServicesOfferWizardSteps({
           />
         )}
         {currentStep === 5 && (
-          <StepPlaceholderContent label={MICROCOPY_OFFER_WIZARD.steps.durationAndDoctor} />
+          <StepPlaceholderContent
+            label={MICROCOPY_OFFER_WIZARD.steps.durationAndDoctor}
+          />
         )}
       </div>
 
@@ -296,7 +316,7 @@ export function MedicalServicesOfferWizardSteps({
             "px-4 py-2 rounded-md text-sm font-medium transition-colors",
             "border border-gray-300 text-gray-700",
             "hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500",
-            "disabled:opacity-50 disabled:cursor-not-allowed"
+            "disabled:opacity-50 disabled:cursor-not-allowed",
           )}
         >
           {"Atrás"}
@@ -312,7 +332,7 @@ export function MedicalServicesOfferWizardSteps({
             isLastStep
               ? "bg-green-600 hover:bg-green-700 text-white"
               : "bg-blue-600 hover:bg-blue-700 text-white",
-            "disabled:opacity-50 disabled:cursor-not-allowed"
+            "disabled:opacity-50 disabled:cursor-not-allowed",
           )}
         >
           {isLastStep ? MICROCOPY_OFFER_WIZARD.publish.cta : "Siguiente"}

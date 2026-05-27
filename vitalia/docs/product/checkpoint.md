@@ -2,22 +2,92 @@
 brand: vitalia
 vertical: "Salud + Bienestar"
 status: shipped
-last_updated: 2026-05-20
-slice_1_status: ola1-done-2026-05-20  # ✅ Ola 1 COMPLETED — inbox + fideliz state=done en main (squash-merge pending). 29 tickets shipped + 2 auditor iter cycles + 3 fix-loop iter (BE F1+F2 pgcrypto incluido). Cross-cutting fixes mid-session: db_session fixture promotion · Clerk catch-all routes · Cloudflare allowedDevOrigins · middleware→proxy migration · POM tablist · NuqsAdapter wrapper.
-cleanup_done_2026-05-20: ola1-capability-inventory-closed  # ✅ 7 NEW + 1 UPDATE capability YAMLs creados (commit 3983b9b) · 6 modules MD auto-list refreshed · portfolio regen · R32 verification gate PASS · gate_status rename en hard_gates_closed_log (workaround parser bug)
+last_updated: 2026-05-27-F2-S1-done-VALERIA-AGENDA-LIVE-shell-feature-pattern-source
+paradigm: shell-organism-agentico-v1                 # ★ 2026-05-22 cementado ★
+shell_organism_status: planning-done-2026-05-22      # ★ design-story cerrada, Fase 1 + Fase 2 backlog generado
+slice_1_status: superseded-by-shell-organism-2026-05-22  # ★ paradigma reemplazado · stories slice-1 archivadas o refactored
+ola1_status: done-2026-05-20
+cleanup_done_2026-05-20: ola1-capability-inventory-closed
 active_outcomes:
-  - dev-environment-multibrand     # receta vitalia shipped, cross-brand replicación pendiente nicolify/comunify/lupulo
-  - vitalia-mvp-ui-foundation      # outcome maestro Slice 1/2/3 FE Vitalia MVP
+  - dev-environment-multibrand
+  - vitalia-mvp-ui-foundation      # outcome maestro REFACTORIZADO 2026-05-22 = contenedor Fase 1 + Fase 2 shell-organism
 active_stories:
-  # vitalia-slice-1-inbox            # state: done · archived in vitalia/docs/archive/2026/stories/ · merged 2026-05-20
-  # vitalia-slice-1-fidelizacion     # state: done · archived in vitalia/docs/archive/2026/stories/ · merged 2026-05-20
-  - vitalia-slice-1-pipeline               # state: refined · Ola 2 (paralela marketing) · depende side payment-adapter-mvp · pending /architect refresh
-  - vitalia-slice-1-marketing              # state: refined · Ola 2 (paralela pipeline) · NO usar growth-studio Nicolify (arch diferente per Chris) · pending /architect refresh
-  - vitalia-slice-1-agenda                 # state: refined · Ola 3 (sola, más compleja) · depende side payment-adapter-mvp + side fiscal-emission-pe · pending /architect refresh
-  - vitalia-pricing-decision               # state: idea (Chris postergó, no bloquea Slice 1)
-  - vitalia-payment-adapter-mvp            # state: refining · paralelo Olas (Chris ratificó 2026-05-20: arrancar /po draft pendiente)
-  - vitalia-fiscal-emission-pe             # state: refining · paralelo Olas (Chris ratificó 2026-05-20: arrancar /po draft pendiente)
-deferred_audits: []                        # ★ Story closure gate — sin deudas activas
+  # === Shell-organism done (2026-05-22) ===
+  # vitalia-shell-organism                 # state: done · archived 2026-05-22 (design-story planning) · artefactos producidos: SHELL-DESIGN-CONTRACT.md + 01-spec-shell-template.md + navigation-tree.md + 07-merge.md
+  # === Fase 1 — shell esqueleto ===
+  # vitalia-fase1-stack-stability          # F1-S0 · state: done 2026-05-23 (archived) · ver recently_done
+  # vitalia-fase1-design-tokens-theme      # F1-S1 · state: done 2026-05-23 (archived) · ver recently_done
+  # vitalia-fase1-topbar-global            # F1-S2 · state: done 2026-05-23 (archived) · ver recently_done
+  # vitalia-fase1-tenant-switcher          # F1-S3 · state: done 2026-05-23 (archived) · ver recently_done · CHAIN F1-S0..S3 COMPLETE
+  - vitalia-fase1-shell-layout-5050        # F1-S4 — state: ready 2026-05-23T14:07Z · ready package closed by /architect iter 1 (03-arch.md 851 LOC + 04-validators.yaml 20 validators 5 categorías + 05-guidelines.md must_load enforceable + 06-tickets.yaml 7 tickets DAG) · awaiting /dev-team Conv 2 autonomous build
+  # vitalia-fase1-valeria-rail-history     # F1-S5 · state: done 2026-05-24 (archived) · ver recently_done
+  # vitalia-fase1-valeria-chat-skeleton    # F1-S6 · state: done 2026-05-25 (archived) · ver recently_done · CHAIN F1-S0..S6 COMPLETE (panel Valeria 100% funcional: ValeriaSidebar + ValeriaChat real)
+  # vitalia-fase1-ribbon-6-tabs            # F1-S7 · state: done 2026-05-25 (archived) · ver recently_done · Ribbon organism 5 agentes + ConfigTab IconButton · WAI-ARIA tablist · capability NEW shell.ribbon
+  # vitalia-fase1-sub-tabs-line2           # F1-S8 · state: done 2026-05-25 (archived) · ver recently_done · SubTabsBar + RIBBON_SUBTABS SSoT 22 sub-tabs distribuidos 4·5·4·2·4·3·0[mateo]
+  # vitalia-fase1-routing-shell            # F1-S9 · state: done 2026-05-25 (archived) · ver recently_done · proxy.ts Next.js 16 + clerkMiddleware + [agent]/[subtab]/page.tsx + not-found.tsx jerárquico + default landing valeria/agenda
+  # vitalia-fase1-empty-states             # F1-S10 · state: done 2026-05-26 (archived) · ver recently_done · ★ CHAIN F1-S0..F1-S10 COMPLETE → FASE 1 SHELL DONE
+  # === Fase 2 — migración progresiva (22 stories, state: idea) ===
+  # 6 Valeria + Adrián primer valor end-to-end:
+  # vitalia-fase2-valeria-agenda           # F2-S1 · state: done 2026-05-27 (archived) · ★ FIRST FASE 2 STORY SHIPPED · capability valeria.agenda LIVE · 19 tickets · audit iter 3 APPROVED · ADR-vitalia-004 source pattern emerged · Option A stubs+MSW para payment/fiscal service-blockers
+  - vitalia-fase2-valeria-pacientes        # F2-S2
+  - vitalia-fase2-adrian-inbox             # F2-S3
+  - vitalia-fase2-adrian-embudo            # F2-S4 · refactor desde slice-1-pipeline · service deps: payment
+  - vitalia-fase2-adrian-outbound          # F2-S5
+  - vitalia-fase2-adrian-propuestas        # F2-S6 · service deps: payment
+  # 4 Lisa:
+  - vitalia-fase2-lisa-marca               # F2-S7
+  - vitalia-fase2-lisa-doctores            # F2-S8
+  - vitalia-fase2-lisa-servicios           # F2-S9
+  - vitalia-fase2-lisa-compliance          # F2-S10
+  # 4 Camila:
+  - vitalia-fase2-camila-voz               # F2-S11
+  - vitalia-fase2-camila-reactivar         # F2-S12
+  - vitalia-fase2-camila-multiplicar       # F2-S13
+  - vitalia-fase2-camila-reputacion        # F2-S14
+  # 5 Lucas:
+  - vitalia-fase2-lucas-lanzar             # F2-S15
+  - vitalia-fase2-lucas-envuelo            # F2-S16
+  - vitalia-fase2-lucas-recursos           # F2-S17
+  - vitalia-fase2-lucas-resultados         # F2-S18
+  - vitalia-fase2-lucas-mercado            # F2-S19
+  # 3 Configurar:
+  - vitalia-fase2-config-cuenta            # F2-S20
+  - vitalia-fase2-config-conexiones        # F2-S21
+  - vitalia-fase2-config-avanzado          # F2-S22
+  # === Service-stories laterales (refining → refined cuando Fase 2 lo necesite) ===
+  - vitalia-payment-adapter-mvp            # state: refining
+  - vitalia-fiscal-emission-pe             # state: refining
+  # === Parked ===
+  - vitalia-pricing-decision               # state: idea (Chris postergó, no bloquea)
+  # === Dropped 2026-05-22 ===
+  # vitalia-slice-1-marketing-integration  # state: dropped · Tailwind diag absorbido en F1-S0 · sidebar tradicional muere con shell-organism
+  # === Refactored (renombrados, originales archivados) ===
+  # vitalia-slice-1-pipeline → vitalia-fase2-adrian-embudo (renombre + checkpoint refresh pending Task #12)
+  # vitalia-slice-1-agenda → vitalia-fase2-valeria-agenda (renombre + checkpoint refresh pending Task #12)
+deferred_audits: []
+shell_organism_paradigm_2026_05_22:
+  cement_date: 2026-05-22
+  ratified_by: chris
+  artifacts:
+    mockup_html: vitalia/docs/product/stories/vitalia-shell-organism/mockups/dual-mode-shell.html
+    design_contract: vitalia/docs/architecture/SHELL-DESIGN-CONTRACT.md
+    story_template: vitalia/docs/specs/templates/01-spec-shell-template.md
+    navigation_tree: vitalia/docs/product/stories/vitalia-shell-organism/navigation-tree.md
+    baseline_decisions: vitalia/docs/product/stories/vitalia-shell-organism/00-session-baseline.md
+    merge_artifact: vitalia/docs/product/stories/vitalia-shell-organism/07-merge.md
+  technical_decisions_5:
+    - "Shadcn UI install en vitalia/frontend/ AHORA (F1-S0)"
+    - "Deprecar .vt-* utility classes COMPLETO (150+ classes)"
+    - "Route group paralelo (shell-organism)/ coexiste con (dashboard)/ legacy"
+    - "Verificar Tailwind v4 empíricamente F1-S0"
+    - "Atomic design strict (átomos · moléculas · organismos · templates · pages)"
+  fase_1_stories_count: 11
+  fase_2_stories_count: 22
+  service_laterales_count: 2
+  refactored_count: 2
+  dropped_count: 1
+  total_new_or_changed: 38
+  next_recommended_action: "/po-ux para refining F1-S0 (vitalia-fase1-stack-stability)"
 slice_1_replan_2026_05_20:                 # ★ Replan ratificado Chris 2026-05-20 — SSoT plan vivo
   audit_report: vitalia/docs/archive/2026/stories/vitalia-ux-discovery/audit-2026-05-20/AUDIT-REPORT.md
   preflight_checklist: vitalia/docs/architecture/PRE-FLIGHT-CHECKLIST-slice-1.md
@@ -62,6 +132,13 @@ ratified_promotion_proposals:              # APPROVED + migrated
   - docs/promotion-protocol/proposals/2026-05-20-core-platform-extensions-slice-1.md       # state: migrated (luana-core-platform 0.3.0→0.4.0) — cron_envelope + CompoundScopeRepositoryBase
 promotion_candidates: []                   # ★ Sin candidates pendientes — los 2 anteriores migrated 2026-05-20
 recently_done:
+  - vitalia-fase1-empty-states           # ★ 2026-05-26 cerrada reviewing→done · CHAIN F1-S0..F1-S10 COMPLETE · FASE 1 SHELL ORGANISM DONE · 15 commits 0187ce17..f71ed835 + 1 audit auto-fix iter (prettier --write 39 F1-S10 files) + 1 merge commit · 11 tickets ZERO Opus (Sonnet+Haiku stack autonomous wave parallel: T-2+T-8 // T-3+T-4 // T-5+T-7 // T-6 → T-9 → T-10 → T-11) · single-session chain /pm-vitalia → /po-ux iter 2 + 7 mockups ratified Chris batch 1+2 → /architect single-shot → /dev-team → /auditor → /pm-vitalia merge en ~5h wall-clock · 1 audit iter + 1 self-fix iter (Caso B prettier scope F1-S10) · 13/13 Gherkin scenarios (11 testable SPEC_VALID + 2 N/A justified mock-only F1) · CHECKPOINTS C1-C5 30/30 ✅ · 2 WARNs NO blocking (visual goldens pending live gen patrón F1-S3 + pre-existing 320 prettier files OUTSIDE F1-S10 scope) · 1691/1691 Vitest + 135/135 arch fitness (23 test files inc. 3 NEW T-9: subtab-content-ssot + no-hardcoded-keys + no-phi-real-data) + TS strict 0 + ESLint 0 · 11 Playwright behavior specs SC-1..SC-10 + SC-4.bis + ~64 visual goldens specs (pending live gen) · 18 NEW moléculas + 8 organismos + 22 placeholders + 1 page MODIFY · sales_studio parity inbox brand-local (CampaignTag · ConversationItem con YouChip · MessageBubble · MessageInput state dual · ContactSidebar PHI masking visual) + Takeover UX NEW conceptual (ThreadHeader 2 estados + TakeoverBanner amarillo · cap por feedback Chris "no es muy intuitivo") + Agenda enriquecida 5 moléculas (Toolbar period nav + Filters + DayHeader + Slot + SummaryFooter) · 1 capability NEW shell-organism/empty-states.yaml (module shell-organism count 7→8) · 2 learnings cardinales (2026-05-26-autonomous-chain-pm-to-merge promotable:yes paradigm v4.1 evidence + 2026-05-26-takeover-ux-per-conversation-override promotable:candidate lift cuando ≥2 brands necesiten inbox agéntico) · anti-duplication HARD: 0 cross-brand mirrors + 0 engine touches + agent-catalog.ts READ-ONLY · pending_chris_visual_ratify:true (post-merge stack up + ratify goldens patrón F1-S3) · archive/2026/stories/vitalia-fase1-empty-states/07-merge.md
+  - vitalia-fase1-ribbon-6-tabs          # 2026-05-25 cerrada reviewing→done autonomous chain · 15 commits f332d554..7a65d1c8 (T-1..T-5 sequential + 2 prettier follow-ups + audit + checkpoints) · 5 tickets ZERO Opus (all FE production_code+test surfaces · qwen-opencode/Sonnet) · 1 audit iter + 0 self-fix iter (cleanest cycle post-paradigm-v4.1) · 9/9 Gherkin SC scenarios PASS (43 test entries Phase D gherkin-matrix.md) · CHECKPOINTS C1-C5 29/29 ✅ · 1 WARN non-blocking (Q16 JIT purge mechanism — follow-up F1-S8 opcional) · 32/32 Playwright smoke + 13/13 visual goldens + 2/2 axe wcag2aa + 1328/1328 Vitest + 107/107 arch fitness · 1 capability NEW shell-organism/ribbon.yaml + 1 module refresh shell-organism.md auto-list (4 capabilities) · 2 learnings (mockup-playwright-audit-cycle promotable:yes + q16-tailwind-jit-template-purge promotable:candidate) · D17.1/D17.2/D17.3 cement arch iter 1-A (whitespace-nowrap + active:hover preserve + tabs orgánicos) · D18 a11y wcag2aa contrast fix + D19 AvatarFallback testid integration scope · anti-duplication HARD respect: agent-catalog.ts EXTEND in-place + 0 cross-brand mirrors + 0 engine touches · CHAIN F1-S0..S7 COMPLETE 2026-05-25 desbloquea F1-S8 sub-tabs-line2 + F1-S9 routing-shell · archive/2026/stories/vitalia-fase1-ribbon-6-tabs/07-merge.md
+  - vitalia-fase1-tenant-switcher        # 2026-05-23 cerrada reviewing→done autonomous chain · 4 commits d99b1fdd (10 tickets bundle builder-frontend Sonnet 31 archivos) + cd9447df (brand checkpoint pause) + 0f012ad1 (auditor handoff T-FIX-1 dev-team fix: test-stack/tenant-switcher page pattern parity F1-S2 + 6 specs redirect + 7 visual goldens) + merge commit (07-merge + capability + archive) · 2 audit iter (iter 1 CHANGES_REQUESTED estructural test-page missing + iter 2 APPROVED post-fix) + 1 self-fix iter (auditor Cat 17 val-arch-no-clerk-orgs yaml validator delegate to arch test) · 17 Gherkin scenarios 26 PASS + 1 SKIP SC-03 aspirational (requires real /{tenantId}/dashboard route Fase 2) · 7 visual goldens NEW (smoke-linux: trigger closed light/dark + dropdown open light/dark + dropdown error + add-clinic modal + tenant-option active) — pending_chris_visual_ratify:true · 97/97 vitest scoped + 908/908 full baseline · 12/12 arch fitness (55 cases) including NEW test-no-clerk-organizations.test.ts · 1 capability NEW platform/tenant-switcher · CHAIN F1-S0..S3 COMPLETE 2026-05-23 desbloquea F1-S4 shell-layout-5050 · archive/2026/stories/vitalia-fase1-tenant-switcher/07-merge.md
+  - vitalia-fase1-topbar-global          # 2026-05-23 cerrada reviewing→done autonomous chain · 3 commits 58cfbff4 (claim) + b37b37b3 (8 tickets bundle builder-frontend Sonnet) + 77bd681e (state update) · 1 audit iter + 0 self-fix (cleanest cycle) · 13/13 Gherkin scenarios PASS (incl skip-link a11y + mobile responsive + theme switch propagation) · 6 visual goldens NEW (topbar desktop/mobile × light/dark + logo-mark light/dark) · 824/824 vitest (+18 vs F1-S1) · 43/43 arch fitness · TopBarGlobal compose LogoMark (6 combinations CSS-based dark swap dual <Image>) + ThemeToggle (F1-S1 reuse) + TenantSwitcherSlot placeholder (F1-S3 drop-in) · layout.tsx skip-link "Saltar al contenido" + main#main-content WCAG 2.4.1 Bypass Blocks · 1 capability NEW platform/topbar-global · archive/2026/stories/vitalia-fase1-topbar-global/07-merge.md
+  - vitalia-fase1-design-tokens-theme    # 2026-05-23 cerrada reviewing→done autonomous chain · 3 commits 5fea3c03 (claim) + 1e090b95 (bundle 7 tickets builder-frontend Sonnet) + 288883d5 (audit APPROVED + self-fix #11 KNOWN_COLOR_VIOLATIONS allowlist add + rename .smoke.spec.ts) · 1 audit iter + 1 self-fix iter · 8/8 Gherkin scenarios PASS (3 behavior + 2 visual + 3 a11y) · 9/9 visual goldens regression (F1-S0 6 + F1-S1 2 NEW theme-toggle light+dark = primer dark golden REAL no byte-idéntico) · 806/806 vitest (66 new: ThemeToggle.test 7 + test-shadcn-vars 59) · 1 capability NEW platform/design-tokens-theme · ThemeProvider attribute=data-theme + defaultTheme=light + enableSystem=false + storageKey=vitalia-theme + suppressHydrationWarning · ThemeToggle Shadcn ghost icon + Lucide Moon/Sun + ARIA Spanish + cursor-pointer · archive/2026/stories/vitalia-fase1-design-tokens-theme/07-merge.md
+  - vitalia-fase1-stack-stability        # 2026-05-23 cerrada reviewing→done autonomous chain con in-loop Chris ratify cycle (audit ESCALATED → 6 fixes → APPROVED) · 12 commits 16d7bd1d..2d105e7e · 7 tickets shipped (Shadcn install + agent tokens + Playwright visual + test pages + arch fitness no-vt + ADR-002 + verify) + 6 visual goldens ratificados Chris · 1 capability NEW platform/shell-foundation-shadcn-tailwind-v4 + 1 module updated platform.md · Tailwind v4 PostCSS plugin instalado (root cause 2026-05-21 learning) + agent SSoT (Lisa/Lucas/Adrián/Valeria/Camila/Mateo) + cursor:pointer universal + hover contrast defensive · 4 fixes side-effect: backend migration 024b NPS table + Next.js wrappers /test-stack/* + marketing-nuqs-ssr-fix + globals.css v4 syntax · 740/740 vitest GREEN + 8/8 Playwright visual GREEN + npm run build exit 0 · archive/2026/stories/vitalia-fase1-stack-stability/07-merge.md
+  - vitalia-slice-1-marketing            # 2026-05-21 cerrada reviewing→done autonomous E2E sesión (architect→dev-team→auditor→pm-vitalia chain) · 29 commits f0e395e..8cecbbaa · 13 tickets shipped (6 BE + 7 FE) · 3 audit iter cap reached succeeded · 5 capabilities NEW (4 marketing + 1 connections/oauth-meta-google-ads) + 1 module NEW marketing.md + 1 UPDATE connections.md · 270/270 arch fitness + 158 BE marketing/connections/workers + 116 FE marketing GREEN · 4 deferred CI items (Chromatic + E2E + a11y + perf — Turbopack stack stability follow-up Slice 2) · archive/2026/stories/vitalia-slice-1-marketing/07-merge.md
   - vitalia-ux-discovery                 # 2026-05-20 cerrada ready→done — PARENT SSoT cumplido (17/56 tickets shipped vía 3 sub-stories archivadas + 5 sub-stories Slice 1 UI refined heredan mockups + design-system). 6 mockups HTML redistribuidos a sub-stories (5 active + 1 archive snapshot) ANTES del archive · audit-2026-05-20/AUDIT-REPORT.md cementado · archive/2026/stories/vitalia-ux-discovery/07-merge.md
   - vitalia-copilot-tools-impl           # 2026-05-18 cerrada reviewing→done autonomous E2E sesión orquestada · 12 commits pushed wip/vitalia (3331151..427b0f3 → último c87e... post-merge) · 7 capability YAMLs NEW live (valeria-wizard-onboarding-agentic + adrian-3-tools-mvp + medical-guardrails + state-overlay-langgraph + lucas-daily-analysis + vitalia-callback-subclasses + eval-goldens-slice-1) + 1 NEW module MD (sales_agent.md) + 3 modules MD refreshed (copilot + agentic + observability) + 1363/1363 tests GREEN (245 arch + 510 unit + 49 integration + 512 agentic_evals + 47 extensions) · auditor APPROVED (CHECKPOINTS C1-C5 + gherkin matrix 18/18 + REVIEW-agentic.md) · 0 engine modifications + 0 cross-brand mirrors + anti-dup §0 ratchet enforced · archive/2026/stories/vitalia-copilot-tools-impl/07-merge.md
   - vitalia-slice-1-infra-cross-cutting  # 2026-05-18 cerrada reviewing→done · squashes 50143d57 + cc4fcd68 mergeados main · 8 capability YAMLs live + 7 modules MD refreshed + 2 promotion candidates · archive/2026/stories/vitalia-slice-1-infra-cross-cutting/07-merge.md
@@ -90,6 +167,127 @@ Story 11 (`luana-vitalia-bootstrap`, mergeada 2026-05-15) shipped **16 capabilit
 
 ## Bitácora
 
+- **2026-05-26T13:55Z (sesión `/pm-vitalia merge` autonomous chain F1-S10) — F1-S10 transition `reviewing → done` · ★ FASE 1 SHELL ORGANISM COMPLETA ★**:
+  - **CHAIN F1-S0..F1-S10 COMPLETE 2026-05-26** — 11 stories shipped en outcome vitalia-mvp-ui-foundation:
+    - F1-S0 stack-stability · F1-S1 design-tokens-theme · F1-S2 topbar-global · F1-S3 tenant-switcher (CHAIN F1-S0..S3 done 2026-05-23)
+    - F1-S4 shell-layout-5050 · F1-S5 valeria-rail-history · F1-S6 valeria-chat-skeleton (panel Valeria 100% funcional 2026-05-24/25)
+    - F1-S7 ribbon-6-tabs · F1-S8 sub-tabs-line2 · F1-S9 routing-shell (CHAIN F1-S0..S9 done 2026-05-25)
+    - F1-S10 empty-states (this merge 2026-05-26 · FASE 1 CLOSURE)
+  - **Outcome cumplido:** "puedo entrar a dev-app, autenticarme, navegar las 6 pestañas (5 agentes + Configurar) × 22 sub-tabs sin que rompa nada — cualquier vista vacía me hace sentir que el producto es real aunque no esté funcional aún."
+  - **F1-S10 deliverables shipped (11 tickets · 15 commits incluyendo audit auto-fix + merge artifact · 0 Opus required builders · Sonnet+Haiku stack):**
+    - 18 NEW moléculas + 8 organismos (foundation 6 + sales_studio parity 5 + takeover UX 2 + agenda enriquecida 5) + 22 placeholder components + 1 page MODIFY + 3 arch tests NEW
+    - 1691/1691 Vitest GREEN · 135/135 arch fitness · TS strict 0 errors · ESLint 0 errors · prettier scope GREEN
+    - 11 Playwright behavior specs (SC-1..SC-10 + SC-4.bis) + ~64 visual goldens specs (`pending_chris_visual_ratify:true` patrón F1-S3 · stack required live gen)
+    - 1 capability NEW `shell-organism/empty-states.yaml` (module count 7→8)
+    - 2 learnings cardinales: `2026-05-26-autonomous-chain-pm-to-merge.md` (promotable:yes — paradigm v4.1 amplification cement evidence) + `2026-05-26-takeover-ux-per-conversation-override.md` (promotable:candidate — UX pattern lift cuando ≥2 brands necesiten inbox agéntico)
+  - **Autonomous chain demonstrado:** /pm-vitalia → /po-ux (iter 2 + 7 mockups ratified Chris batch 1+2) → /architect (single-shot 4 files ready package) → /dev-team (11 tickets wave parallel · Sonnet+Haiku stack) → /auditor (Phase B+C+D + auto-fix iter 1) → /pm-vitalia merge (este turn) · 1 sesión sola · ~5h wall-clock · ~2M tokens total · 0 Chris intermedio excepto 4 ratify visual + 2 UX feedback rounds (takeover + Camila copy)
+  - **Anti-duplication HARD respect:** 0 cross-brand mirrors · 0 engine touches · agent-catalog.ts READ-ONLY · sales_studio reference conceptual brand-local construction (lift candidate F2+ documentado)
+  - **Auditor warns (NO blocking merge):**
+    - WARN-1 visual goldens pending live gen (stack required `--update-snapshots` · patrón F1-S3 ratify post-merge)
+    - WARN-2 pre-existing 320 prettier unformatted files OUTSIDE F1-S10 scope (separate cleanup story TBD)
+  - **WIP cap status post-update:** developed=0 · reviewing=0 · done +1 (F1-S10) · refining=1 (fiscal-emission-pe) cap-eligible · refined=1 (payment-adapter-mvp) — cómodo cross-states
+  - **Próximo paso Fase 2:** 22 stories `vitalia-fase2-{agent}-{subtab}` (todas state=idea pendientes refinement). Prioridad sugerida — primer valor end-to-end: F2-S1 `valeria-agenda` (refactor desde slice-1-agenda · service deps payment + fiscal-pe) o F2-S3 `adrian-inbox` (alto reuse sales_studio shipped patterns en F1-S10 + Fase 2 wires backend real + RBAC + Zustand store).
+  - **Pendings Chris post-merge (opcional, no bloquea):**
+    1. Stack up vitalia :3002 + ejecutar Playwright behavior suite + visual goldens `--update-snapshots` para baseline canónico
+    2. Ratify visual diff goldens vs mockups HTML cementados → cementar `pending_chris_visual_ratify:false` en empty-states.yaml
+    3. Run `make portfolio` para regen BACKLOG + auto-list shell-organism.md (R3 — auto-gen post-merge)
+    4. Decidir cleanup pre-existing 320 prettier files (separate story scope o ignorar)
+
+- **2026-05-26T13:30Z (sesión `/dev-team` autonomous chain F1-S10) — F1-S10 transition `ready → developing → developed`**:
+  - 11 tickets shipped sequential DAG · ~5h wall-clock autonomous Sonnet · 0 Opus required:
+    - T-1 commit 0187ce17 (foundation 6 moléculas) · T-2 cfda5c44 (16 placeholders genéricos · 21+3 files) · T-3 84bbceff (LisaServicios + ConfigConexiones) · T-4 3cc26e09 (AdrianEmbudo Kanban 6 cols + 14 leads LATAM) · T-5 be016190 (5 moléculas inbox sales_studio parity brand-local · PHI masking visual) · T-6 71f43ac4 (takeover UX ThreadHeader + TakeoverBanner + InboxPlaceholder organismo 3-col 320/flex/288) · T-7 d8f9ac82 (5 moléculas agenda enriquecida + ValeriaAgendaPlaceholder 10 slots LATAM) · T-8 332b8f08 (CamilaVoz copy aclarado batch 2) · T-9 7ba596fe (page.tsx wire + 3 arch tests) · T-10 4f8a7981 (Playwright suite 3 POMs + 11 specs · 18 files · 2552 LOC) · T-11 f71ed835 (visual goldens specs · pending_chris_visual_ratify:true · stack required live gen)
+  - **Test counts finales:** 1691/1691 Vitest PASS · 165/165 test files · 135/135 arch fitness (23 test files inc. 3 NEW T-9) · TS strict 0 errors · ESLint 0 errors
+  - **Anti-duplication HARD respect:** 0 cross-brand mirrors · 0 engine touches · agent-catalog.ts READ-ONLY respected · sales_studio reference SOLO conceptual (brand-local Vitalia construction)
+  - **Wave parallel execution:** Wave A (T-2+T-8) · Wave B (T-3+T-4) · Wave C (T-5+T-7) · sequential T-6 post-T-5 · T-9 · T-10 · T-11 — reduced wall-clock vs full sequential
+  - **CONTEXT-BRIEF.md sealed clean** (Haiku iter 1 · 342 LOC · 17 sections) — amortizó 30-50k tokens cross-builder
+  - **Próximo paso (handoff)**: `Skill(auditor, "vitalia vitalia-fase1-empty-states")` → Phase B+C+D audit · gherkin matrix 13 scenarios · CHECKPOINTS C1-C5 · veredicto APPROVED|CHANGES_REQUESTED|ESCALATED · si APPROVED → AUTO-HANDOFF `/pm-vitalia merge` → state developed→reviewing→done · **FASE 1 COMPLETA** (shell vacío navegable production-ready · Fase 2 unblocked)
+  - WIP cap status: developed=1 (empty-states) cap-eligible 1/1 — auditor must arrancar antes que cualquier otra story Vitalia (story-closure-gate.md Layer 2)
+
+- **2026-05-26T11:55Z (sesión `/po-ux` iter 2 — autonomous chain F1-S10) — F1-S10 transition `idea → refining → refined`**:
+  - Chris invocó `/pm-vitalia` con args "Refinemos F1-S10 — última story Fase 1 y dispara el chain /po-ux → /architect → /dev-team → /auditor → /pm-vitalia merge" → auto-chain `Skill(po-ux, "vitalia vitalia-fase1-empty-states")` programático per `.claude/rules/pm-skill-chaining.md`.
+  - 01-spec.md v2 ratificado tras 2 iteraciones + 10 decisiones cementadas en 3 batches:
+    - **Batch 1**: Q1 mockup strategy = combo 1 grid + 6 standalone · Q2 toggle interactivity = funcionales JS local · Q3 header copy genérico = uniforme
+    - **Batch 2**: Q4 inbox depth = sales_studio parity (CampaignTag pill + widths shipped 320/flex/288 + temp-dot/stage-badge/channel-abbr/handler_mode borders) · Q5 agenda depth = enriquecer ahora (toolbar period nav + filters visuales + grid 6d + slot rico paciente·service·doctor + footer Adrián+Lucas summary) · Q5.bis func scope = F1 mockup+React rich · F2-S1 funcionalidad real (sidebar selectable, payment subform, fiscal capa 2 Nubefact PE, historial, cross-links, filters func, PHI masking RBAC) · Q6 inbox takeover UX = botón explícito "✋ Tomar el control" + TakeoverBanner amarillo + MessageInput dual + ConversationItem chip "✋ Tú" (Chris feedback "no es muy intuitivo" sobre handler_mode passive border) · Q7 Camila Voz copy aclarado mínimo F1 (Chris feedback "no entiendo nada")
+    - **Batch 3 autonomous defaults**: Q8 Mateo scope excluido (catálogo SSoT `mateo: []`) · Q9 default landing valeria/agenda heredado F1-S9 · Q10 telemetría defer F2 (cada sub-tab story F2 cablea su event)
+  - 7 mockups HTML ratificados visualmente (`mockups/`): empty-states-grid.html (TOC 22 sub-tabs navegable + JS toggles + light/dark) + 6 standalone (lisa-servicios · adrian-embudo · adrian-inbox enriquecido takeover · camila-voz aclarado · valeria-agenda cockpit · config-conexiones) · CSS shared `_shared.css` con Vitalia tokens design system.
+  - **22 sub-tabs inventario completo** mapped a RIBBON_SUBTABS SSoT: 16 genéricos EmptyState + 6 especiales con structure rica (lisa/servicios + adrian/embudo + adrian/inbox + valeria/agenda + camila/voz + config/conexiones).
+  - **18 NEW componentes** identificados a construir Fase 1: 6 moléculas foundational (EmptyState · PlaceholderCard · SubTabHeader · StatusDot · TogglePill · SubTabContent dispatcher) + 5 moléculas inbox parity sales_studio (CampaignTag · ConversationItem con YouChip · MessageBubble · MessageInput state dual · ContactSidebar) + 2 moléculas takeover UX (ThreadHeader · TakeoverBanner) + 5 moléculas agenda enriquecida (AgendaToolbar · AgendaFilters · AgendaDayHeader · AgendaSlot · AgendaSummaryFooter) + 22 placeholder components agent-specific.
+  - **Gherkin scenarios**: 4 base (happy navegación 22 + happy lisa-servicios + happy adrian-embudo + happy valeria-agenda enriquecida) + 1 NEW SC-4.bis happy adrian-inbox completo (parity sales_studio + takeover) + negative + edge no-remount + adversarial XSS + sub-cat empty_state + sub-cat a11y + sub-cat i18n. Sub-cat N/A justificadas: network_failure + race_condition + concurrent_users + large_dataset (mock-only Fase 1).
+  - WIP cap status post-update: refining=1 (fiscal-emission-pe) cap-eligible · refined=2 (payment-adapter-mvp + empty-states) dentro cap 5 — cómodo.
+  - **Próximo paso (handoff)**: `Skill(architect, "vitalia vitalia-fase1-empty-states")` → architect-orchestrator full-stack single-shot produce ready package (03-arch-fe.md exhaustivo · 04-validators.yaml ≥20 validators 5 categorías · 05-guidelines.md must_load_skills enforceable · 06-tickets.yaml DAG sequential ~18 tickets estimados gherkin_coverage mandatory) → transition refined → ready.
+
+- **2026-05-23T14:07Z (sesión `/architect` iter 1) — F1-S4 transition `refined → ready`**:
+  - `architect-orchestrator` single-shot full-stack produjo 4 deliverables del ready package (FE only — no BE, no agentic):
+    - **03-arch.md** (851 LOC): file tree exacto + Server/Client decision tree + resize implementation `react-resizable-panels` v4 (Option A — Shadcn-canonical, v4.11.1 published 2026-05-15) + `useViewportGuard` hook one-way force a 'rail' en viewport [768-1023] con state='full' + triple `<main>` pattern CSS-driven viewport branching + ShellModeToggle como overlay sibling (NO modifica TopBarGlobal F1-S2) + valeriaState default `'full'` (override Design Contract §6.1 que decía 'rail' — justificado: matches mockup ratificado iter 4 + UX onboarding; /pm-vitalia update DC post-merge).
+    - **04-validators.yaml** (20 validators · 5 categorías): non_functional 4 (tsc/lint/prettier/vitest) · functional 5 (4 e2e scenarios + axe) · visual 6 (light/dark/rail × agentic/web + mobile PNG snapshots tolerance 0.001) · agentic_eval N/A documented · architectural_validation 5 (fsd-imports + skip-link target + shell-store schema + no-cross-brand-mirror grep + no-default-export ratchet) · scenario_coverage 100% mapeo · sub_categories_coverage a11y+i18n applies · test_construction_plan completo con creation_order + scenario_to_test + POMs + fixtures.
+    - **05-guidelines.md** (252 LOC · 9 secciones): must_load_skills enforceable §1 (frontend-expert + playwright-expert + tessl__react-patterns + tessl__shadcn-ui + tessl__tailwind + tessl__vitest + tessl__nextjs-app-router-modularization) · must_load_rules §2 (tenant-isolation + frontend-fsd + spanish-text + anti-duplication + tdd-mandatory + auditor-self-fix-policy + shell-mockup-per-component) · patterns required/forbidden · files in scope NEW/MODIFY/NEVER · verification commands.
+    - **06-tickets.yaml** (7 tickets · DAG sequential · ~13h estimado · 0 Opus): T-1 shellStore (1h) · T-2 ValeriaSidebarSlot+AppPanelSlot placeholders (1h) — paralelo a T-1 · T-3 ShellOrganismLayout + PanelGroup + useViewportGuard (3h, deps T-1+T-2) · T-4 route page + redirect /lisa/marca (1h, deps T-3) · T-5 ShellModeToggle disabled chip (1h, deps T-3) — paralelo a T-4 · T-6 Vitest aggregate + 3 NEW arch tests (2h, deps T-1..T-5, production_code:false tests-only) · T-7 Playwright POM ShellLayoutPage + shell-theme fixture + 4 functional E2E + 6 visual goldens (4h, deps T-4+T-5+T-6, production_code:false tests-only). gherkin_coverage per ticket.
+  - Cross-module audit: 0 mirrors en nicolify/comunify/lupulo · 0 engine touch · NEW brand-local justificado (futuro lift candidate cuando lupulo/fitflow adopten shell-organism similar).
+  - Gate v4.1 PASS: architectural_validation 5 sub-tests · test_construction_plan completo · playwright_required HARD · must_load_skills enforceable · gherkin_coverage 7/7.
+  - WIP cap status post-update: ready=1/5 (sólo shell-layout-5050) · refined=1/5 (payment-adapter-mvp) · refining=1/3 (fiscal-emission-pe) — cómodo en todos.
+  - Pre-merge tracking: post-merge `/pm-vitalia` debe (1) update `vitalia/docs/architecture/SHELL-DESIGN-CONTRACT.md §6.1` default `valeriaState: 'full'`, (2) create `vitalia/docs/product/capabilities/platform/shell.layout-5050.yaml` (status: live), (3) update `vitalia/docs/product/modules/platform.md` auto-list.
+  - **Próximo paso (handoff)**: `/dev-team vitalia vitalia-fase1-shell-layout-5050` → Conv 2 autonomous build, toma T-1 first (state ready → developing).
+
+- **2026-05-23T13:45Z (sesión `/po-ux` iter 1-4) — F1-S4 transition `refining → refined`**:
+  - Chris ratificó visualmente los 2 mockups HTML F1-S4 tras 4 iteraciones:
+    - iter 1: base agentic (50/50 con divisor + min static 360px) + web (60+1fr)
+    - iter 2: agentic con resize draggable + footer devtools (split live + min display + select valeriaState `full|rail`)
+    - iter 3: LogoMark assets reales copiados de `vitalia/frontend/public/brand/` a `mockups/assets/` (vitalia-logo.png + -dark.png + ico.png) por reuso F1-S2 contract
+    - iter 4: fix bug "2 logos visibles en desktop+dark" — JS toggle racing con Tailwind `sm:block`; reemplazado por CSS puro con `.dark` selector + media queries (sin JS swap)
+  - `01-spec.md` UNIFICADO escrito en `vitalia/docs/product/stories/vitalia-fase1-shell-layout-5050/01-spec.md` (15 secciones, 4 Gherkin scenarios base + sub-categorías mandatory v4.1 cubiertas o N/A documentadas + visual goldens + a11y + compliance scope N/A).
+  - Gate v4.1 PASS · `ratified_visual_by_chris: true` cementado en story checkpoint.
+  - Decisión técnica clave (cementada en 01-spec.md §5+§8): min Valeria es función de valeriaState (`'full'`=620, `'rail'`=360); NO auto-collapse al límite (cambio de state es explícito vía rail button F1-S5); snap-up automático al expandir state hacia min mayor.
+  - WIP cap status post-update: refined=2 cap-eligible (payment-adapter-mvp + shell-layout-5050) dentro de cap 5 — cómodo · refining=1 (fiscal-emission-pe) — cómodo.
+  - **Próximo paso (handoff)**: `/architect vitalia vitalia-fase1-shell-layout-5050` → produce ready package (03-arch.md + 04-validators.yaml + 05-guidelines.md + 06-tickets.yaml) → transition refined→ready.
+
+- **2026-05-23 (sesión `/pm-vitalia` post-chain) — F1-S4 transition `idea → refining`**:
+  - Chris pidió arrancar F1-S4 `vitalia-fase1-shell-layout-5050` (next recommended post chain F1-S0..S3 done). Verificación pre-`/architect` confirmó gate visual bloqueante NO satisfecho: `01-spec.md` ausente · `mockups/` dir ausente · `ratified_visual_by_chris: false` · state `idea`.
+  - Story checkpoint actualizado: `state: idea → refining` · `transitioned_to_refining_at: 2026-05-23` · `ratified_visual_by_chris: false` (con `ratified_visual_mockups_expected` cementados: `shell-layout-agentic.html` + `shell-layout-web.html`) · `hard_deps_status: "CHAIN F1-S0..S3 COMPLETE 2026-05-23 — blocker_hard removido"` · `next_action: "/po-ux vitalia-fase1-shell-layout-5050 → producir 01-spec.md v1 + 2 mockups HTML ratificados Chris (gate visual bloqueante)"`.
+  - WIP cap status post-update: refining=3 cap-eligible (payment-adapter-mvp · fiscal-emission-pe · shell-layout-5050) dentro de cap 3 — apretado, próximas transiciones a refining requieren cerrar una antes.
+  - **Próximo paso (Chris invoca)**: `/po-ux vitalia-fase1-shell-layout-5050`. Workflow esperado: refinar Gherkin AI-resistant (4 scenarios base ya en scope verbatim del checkpoint) + microcopy Spanish neutro + estados visuales + producir 2 mockups HTML (`shell-layout-agentic.html` modo 50/50 + `shell-layout-web.html` modo rail 60px) con Tailwind CDN + tokens Vitalia CSS vars + datos LatAm + dark mode toggle local · ratificación Chris cementa `ratified_visual_by_chris: true` + paths en frontmatter · transition `refining → refined` → recién entonces `/architect` arranca.
+
+- **2026-05-23 cierre CHAIN F1-S0..S3 COMPLETE autonomous (Chris descansando, paradigm v4.1 auto-handoff dev-team→auditor→pm-vitalia merge)**:
+  - **F1-S3 vitalia-fase1-tenant-switcher** cerrada `developed → reviewing → done` en sesión autonomous post-pausa Opción B.
+  - **Audit iter 1**: `/auditor-frontend` ejecutó 22 smoke specs → **22 FAIL** (trigger `tenant-switcher-trigger` no rendered en `/{tenantId}/dashboard`). Root cause: ruta `[tenantId]` dynamic NO existe en `vitalia/frontend/src/app/`; `(dashboard)/layout.tsx` usa `AppShell` legacy con `TopBar.tsx` viejo (no monta `TopBarGlobal`+`TenantSwitcher`). Estructural — spawn dev-team Caso B (per `.claude/rules/auditor-self-fix-policy.md`).
+  - **Dev-team auto-fix T-FIX-1** (commit `0f012ad1` builder-frontend Sonnet, 16 archivos): NEW `vitalia/frontend/e2e/__test-pages__/tenant-switcher/tenant-switcher-showcase.tsx` (Server Component fixture, pattern parity F1-S2) + NEW `vitalia/frontend/src/app/test-stack/tenant-switcher/page.tsx` (Next.js route wrapper) + UPDATE 6 spec files target `${BASE_URL}/test-stack/tenant-switcher` + SKIP SC-03 path-preservation aspirational (requires real `[tenantId]/dashboard` Fase 2) + 7 visual goldens generated `--update-snapshots` (smoke-linux). Cap 1/3 iter.
+  - **Audit iter 2** (commit `0f012ad1` base + auditor self-fix Cat 17 `val-arch-no-clerk-orgs` yaml validator delegates a `test-no-clerk-organizations.test.ts`): re-run 27 specs → **26 PASS / 1 SKIP / 0 FAIL** (workers=1 CI default determinístico). visual-02 dark-mode flake iter 1 resolved con workers=1. Gates: tsc 0 + eslint 0 + vitest 97/97 + 12 arch fitness (55 cases). Goldens vs mockups semantic verification = ALIGNED (badge + nombre + chevron + 3 tenants + 2 footer actions + active checkmark + modal Próximamente + Alert error + tenant-option). `pending_chris_visual_ratify: true` para 5-min review Chris next session. **VERDICT APPROVED** → auto-handoff `/pm-vitalia` merge.
+  - **Capability promotion (Fase E/F)**: NEW `vitalia/docs/product/capabilities/platform/tenant-switcher.yaml` (status: live, package_version 0.1.0, depends_on_engine luana-core-iam GET /api/tenants Story 11, related shell-foundation + design-tokens-theme + topbar-global). `vitalia/docs/product/modules/platform.md` auto-list refreshed: agrega `vitalia-tenant-switcher` + reconciliación caps F1-S1/S2 que estaban faltando en bloque auto-list (drift acumulada pre-merge: design-tokens-theme + shell-foundation-shadcn-tailwind-v4 + topbar-global).
+  - **07-merge.md 5 secciones cementadas**: Gherkin matrix (17 scenarios 26/27 PASS + 1 SKIP) + Playwright run (workers=1) + capabilities (1 NEW) + modules MD (auto-list refresh) + how-to-verify (6 comandos reproducibles).
+  - **Archive (R2 brand-docs-schema)**: `git mv vitalia/docs/product/stories/vitalia-fase1-tenant-switcher → vitalia/docs/archive/2026/stories/vitalia-fase1-tenant-switcher` en mismo commit del 07-merge.
+  - **CHAIN F1-S0..S3 COMPLETE 2026-05-23** — 4 stories shipped autonomous post pm-redesign 2026-05 paradigm v4.1: F1-S0 stack-stability (Tailwind v4 + Shadcn install + agent tokens + 6 visual goldens) + F1-S1 design-tokens-theme (next-themes + ThemeToggle + light/dark switch + 2 visual goldens) + F1-S2 topbar-global (LogoMark + ThemeToggle + TenantSwitcherSlot placeholder + 6 visual goldens) + F1-S3 tenant-switcher (TenantSwitcher organismo + Zustand persist + React Query useTenants + Clerk signOut cleanup + path preservation + 7 visual goldens). 7 capabilities live en module platform (vertical-medical-extension-sdk + design-tokens-foundation + design-tokens-theme + migrations-slice-1-schema + shell-foundation-shadcn-tailwind-v4 + tenant-switcher + topbar-global). **Desbloquea blocker_hard F1-S4 shell-layout-5050** (siguiente en backlog Fase 1).
+  - **Pending Chris next session**: (1) 5-min visual review: comparar 7 PNG goldens `vitalia/docs/archive/2026/stories/vitalia-fase1-tenant-switcher/06-audit/CHECKPOINTS.md` § C2 vs mockups ratified. Si OK → `pending_chris_visual_ratify: false` en `capabilities/platform/tenant-switcher.yaml`. (2) Decidir próximo: F1-S4 shell-layout-5050 ready package refresh (deferred desde 2026-05-22 cuando F1-S0..S3 estaban en cola) o pause Fase 1 + arrancar Fase 2 service-story refining (payment-adapter-mvp + fiscal-emission-pe).
+- **2026-05-23 cierre sesión chain F1-S0..S3 (Chris se va a descansar, pausa Opción B)**:
+  - F1-S0 ✅ done · F1-S1 ✅ done · F1-S2 ✅ done · F1-S3 ⏳ developed (PENDING audit+merge).
+  - F1-S3 commit `d99b1fdd` push wip/vitalia con 31 archivos implementación bundle (TenantSwitcher + Zustand store + React Query + 5 Shadcn primitives + 11 Playwright specs + POM + arch test). Validators GREEN: tsc 0 + eslint 0 + vitest 908/908 + F1-S3 unit 65/65.
+  - **Pendientes F1-S3 para próxima sesión autonomous**:
+    1. Generate 8 visual goldens Playwright `--update-snapshots` (tenant-switcher closed/open × desktop/mobile × light/dark) — requiere stack UP (make dev-vitalia)
+    2. Run 11 Playwright behavior specs contra :3002 — verify SC-01..SC-12 mapped
+    3. /auditor direct examination (similar pattern F1-S1/F1-S2) → write CHECKPOINTS.md + gherkin-matrix.md (Phase D)
+    4. /pm-vitalia merge → 07-merge.md 5 secciones + capability YAML `platform/tenant-switcher` + git mv archive + brand checkpoint update + commit
+    5. Goldens commiteados con flag `pending_chris_visual_ratify: true` en capability YAML — Chris valida visual diff cuando regrese (similar F1-S0 in-loop pattern)
+  - **Próximo paso**: nueva sesión arranca con prompt autonomous handoff (ver session_handoff_prompt en este checkpoint, o ver /tmp/F1-S3-handoff-prompt.md si existe).
+- **2026-05-23 cierre F1-S0 in-loop session (audit ESCALATED → Chris ratify → APPROVED → merge done)**:
+  - `vitalia-fase1-stack-stability` cerrada `reviewing → done` post 6 fixes incrementales con ratify Chris (audit cycle 2026-05-22T22:30 → 2026-05-23T01:35).
+  - Cycle ESCALATED inicial detectó 4 Chris gates ortogonales: T-4 visual goldens (Chris ratify visual) + T-7 fe_build_production (pre-existing marketing-nuqs bug ac7b3e91) + T-7 visual validators (dev server gate) + story archive. Chris pidió "haz los fixes" → in-loop resolution.
+  - **Fix #1** backend migration `024b_vitalia_nps_responses.py` NEW (creó tabla pre-trigger 025 — alembic chain 024 → 024b → 025 → 031 ahora corre clean). Bug pre-existing: 022_slice1 module-local migration nunca conectada a alembic.ini script_location.
+  - **Fix #2** Next.js wrappers `src/app/test-stack/{primitives,agent-tokens}/page.tsx` con default export — Playwright spec navega URLs reales sin 404.
+  - **Fix #3** proxy.ts agrega /test-stack(.*) a public routes (dev-only preview sin Clerk auth gating).
+  - **Fix #4** `vitalia/frontend/src/features/marketing/types/url-state.ts` agregado `"use client"` directive — resuelve pre-existing build error `parseAsStringEnum called from server`.
+  - **Fix #5 (root cause original 2026-05-21 learning)** `postcss.config.mjs` NEW + `@tailwindcss/postcss` devDep + `globals.css` migrado a Tailwind v4 syntax (`@import "tailwindcss"` + `@config "../../tailwind.config.ts"`). CSS 35k → 101k bytes — `bg-primary` / `bg-agent-*` / `bg-accent` ahora generan correctamente. Era el bug madre que arrastraba.
+  - **Fix #6** agent SSoT `src/lib/agents.ts` NEW (6 agentes: Valeria/Lisa/Adrián/Lucas/Camila/Mateo con nombre + role + colorHex + thumbnail/transparent paths) + thumbnails canónicos copiados de `/home/chalreme/Trabajo/Vitalia/agentes/{Lisa-Estratega,Valeria-Ejecutiva,Adrian-Closer,Lucas-Setter,Camila-Fidelizacion,Mateo-Desarrollador}/` a `vitalia/frontend/public/agents/{slug}/{thumbnail,transparent}.{png,jpeg}` + avatares con `ring-4` + inline style `{'--tw-ring-color': agent.colorHex}` (Tailwind v4 NO genera utilities dinámicas tipo `ring-agent-${slug}`) + cursor-pointer universal Button/Tabs/DropdownMenu + defensive `hover:text-{*}-foreground` lock contraste evita white-on-gray.
+  - 6 visual goldens regenerados + ratificados Chris 2026-05-23T01:30 vs Design Contract § 5.1 + thumbnails canónicos. Playwright getComputedStyle verificó: cursor=pointer en Button/Tab/MenuItem, hover bg=rgb(123,44,144) text=white legible.
+  - **Capability promotion**: NEW `vitalia/docs/product/capabilities/platform/shell-foundation-shadcn-tailwind-v4.yaml` (status: live, package_version 0.1.0). 8 surfaces acopladas (Tailwind v4 infra + 8 Shadcn primitivos + 7 agent tokens CSS + Agent SSoT TS + Agent imagery + Test pages preview + Playwright visual project + 6 goldens + arch fitness no-vt-classes + ADR-002 deprecation).
+  - **07-merge.md** 5 secciones cementadas: Gherkin matrix 8/8 cubiertos + Playwright run 8/8 PASS 6.2s + capabilities updated/created + modules MD refreshed + 12 comandos how-to-verify reproducibles.
+  - **Archive**: `vitalia/docs/product/stories/vitalia-fase1-stack-stability/` → `vitalia/docs/archive/2026/stories/vitalia-fase1-stack-stability/` (snapshot inmutable per R2 brand-docs-schema).
+  - **Próximo en chain autonomous**: F1-S1 `vitalia-fase1-design-tokens-theme` transición `ready → developing` → `/dev-team` build (stack 100% funcional ahora, theme toggle real con next-themes), después F1-S2 topbar-global + F1-S3 tenant-switcher secuenciales per WIP cap developing ≤ 1.
+- **2026-05-22 sesión `/pm-vitalia arranque Fase 1 autonomous chain` (este momento)**: Chris ratificó arrancar `/dev-team` build secuencial sobre F1-S0 → F1-S3 hasta `done`. Pre-checks ejecutados:
+  - Step 0 closure gate scan: GREEN (sin stories en developing/developed/reviewing pendientes — todas las 4 F1 ratificadas state=ready).
+  - Visual ratification overlay `shell-mockup-per-component.md`: F1-S0 `not_applicable` (infra-only, exempt), F1-S1/S2/S3 `true` con timestamps Chris.
+  - Ready packages: 4/4 completos (01-spec + 03-arch + 04-validators + 05-guidelines + 06-tickets + mockups donde aplica).
+  - 4 commits ready packages pushed wip/vitalia: `16d7bd1d` (F1-S0) + `08fb52b3` (F1-S1) + `84ecd836` (F1-S2 + brand assets PNG) + `abf0bd0a` (F1-S3). Total 39 archivos shipped (4 stories × ~7 archivos avg + 5 mockups HTML + 3 assets PNG production + 3 assets PNG mockup ref).
+  - F1-S0 state `ready → developing` cementado en su checkpoint + chain_plan documentado (auto-handoff /auditor on developed → /pm-vitalia merge on APPROVED → próxima story).
+  - WIP cap status: developing=1 (F1-S0), developed=0, reviewing=0 — dentro caps story-closure-gate ≤1.
+  - **Próximo paso**: handoff a `/dev-team vitalia-fase1-stack-stability` autonomous build T-1..T-N. Cadena natural F1-S0 → F1-S1 → F1-S2 → F1-S3 via auto-handoff chain (no Chris intermedia per paradigm v4.1, ratificado 2026-05-20).
 - 2026-05-15: brand topology bootstrap (F0 reorg multimarca) — Story 11 `luana-vitalia-bootstrap` shipped
 - 2026-05-16: capability inventory recovery — 16 caps YAMLs escritas en `vitalia/docs/product/capabilities/` desde código vivo + archived YAMLs + Story 11 spec. Gap del paso 2 del capability promotion al merge (ver learning `vitalia/docs/learnings/2026-05-16-capabilities-inventory-gap.md`, promotable: candidate)
 - 2026-05-17: dev tunnel chain montado (commit `e7dc4a0`) + smoke test capa transporte verde. Story `vitalia-dev-stack-functional` abierta state=refining para resolver bugs bootstrap FE+BE descubiertos al levantar stack completa (FE `next: not found` por named volume shadow, BE `.venv` corrupto, DB `vitalia_dev` no auto-creada, alembic no auto-upgrade en first start)

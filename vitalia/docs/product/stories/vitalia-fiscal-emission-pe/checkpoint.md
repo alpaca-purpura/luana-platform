@@ -2,19 +2,21 @@
 story_id: vitalia-fiscal-emission-pe
 outcome: vitalia-mvp-ui-foundation
 state: refining
-phase: AWAITING_PO_DRAFT_DEFERRED_NEXT_SESSION  # Chris 2026-05-17: defer a otra entrega
+phase: AWAITING_PO_DRAFT_RE_PRIORITIZED                    # ★ post 2026-05-22 paradigma shell-organism
 last_artifact: checkpoint.md
-last_modified: 2026-05-17
-next_action: "/po vitalia-fiscal-emission-pe — produce 01-spec.md service-story (sin UI dedicada Slice 1 más allá toggle inline /agenda sheet cobro — UI completa /configuracion/facturacion-pe defer Slice 2). Inputs cementados: scope completo abajo (~80 LOC) + 4 Gherkin scenarios cementados + Capa 2 trigger flow + retry queue policy 8-step exponential backoff + secrets vault design pgcrypto KEK rotada anualmente + CDR archive policy 10y retention. Open questions Chris remaining: (1) Aceptamos Nubefact único PSE/OSE Slice 1 ó multi-provider Strategy pattern (Tefacturo+Facturak) desde MVP? (2) Boleta + Factura ambos Slice 1 ó solo Boleta (factura defer Slice 2)? (3) Dead-letter post 72h alerta solo admin ó también notification Adrián a operador (con copy humano contable)? (4) Setup admin-only Slice 1 vía seed/script aceptable ó requerimos UI mínima emergency? Validate scope cementado con Chris en G6 batched clarification (≤4 batches) → state refining→refined."
+last_modified: 2026-05-22                                  # touched 2026-05-22 cross-story deps update
 ratified_by_chris: false
 spawned_at: 2026-05-17
 transitioned_at: 2026-05-17
 spawned_by: /pm-vitalia
 parallel_safe: true
-blocked_reason: "Bloqueante Capa 2 fiscal del flow cobranza /agenda cementado Batch 4 (Perú tenants no pueden emitir boletas electrónicas SUNAT-compliant sin esto)."
+blocked_reason: "Bloqueante de Fase 2 F2-S1 valeria-agenda subform Cobrar saldo (emisión boleta SUNAT-compliant inline). Vitalia tenants PE no pueden operar sin esto."
 priority: high
 estimated_dev_weeks: 1-2
-parent_spec: "vitalia/docs/product/stories/vitalia-ux-discovery/01-spec.md §§Ruta /agenda Batch 4 ratificado · Capa 2 fiscal toggle Nubefact PE"
+parent_spec: "vitalia/docs/product/stories/vitalia-ux-discovery/01-spec.md §§Capa 2 fiscal toggle Nubefact PE"
+cross_phase_2_consumers:                                   # ★ NEW post 2026-05-22 paradigm
+  - vitalia-fase2-valeria-agenda                           # F2-S1 — subform Cobrar saldo emite boleta inline
+next_action: "/po vitalia-fiscal-emission-pe — produce 01-spec.md service-story (sin UI dedicada Fase 2 más allá toggle inline subform Cobrar saldo F2-S1). UI configuración completa (NubefactConfigEditor) puede ir a F2-S22 config-avanzado o story dedicada futura. Inputs cementados: scope (~80 LOC) + 4 Gherkin + Capa 2 trigger flow + retry queue 8-step exponential backoff + secrets vault pgcrypto KEK rotada anualmente + CDR archive 10y retention. Open Chris: (1) Nubefact único PSE/OSE ó multi-provider Strategy? (2) Boleta + Factura ambos o solo Boleta? (3) Dead-letter alerta admin+Adrián? (4) Setup admin-only vía seed/script? Validate G6 batched (≤4) → refining→refined."
 ---
 
 # vitalia-fiscal-emission-pe — checkpoint
@@ -102,3 +104,4 @@ Pre-architect spawn `/po` debe leer:
 ## Bitácora
 
 - 2026-05-17 spawned: `/pm-vitalia` crea story idea formal para tracking explícito. Hijo directo de `vitalia-ux-discovery` Batch 4 cementado Capa 2 fiscal toggle Nubefact PE. Story side paralela Slice 1 listada en §Slice 1 cut + §Components mapping consolidado + §Handoff /architect del spec principal. Sin esta story Vitalia tenants Perú no operan legalmente (boleta electrónica obligatoria SUNAT Resolución 097-2012). Next: handoff `/po vitalia-fiscal-emission-pe` para refining iterativo con Chris → 01-spec.md service-story con 4 Gherkin scenarios + Capa 2 trigger flow + retry queue policy + secrets vault design + CDR archive policy → ratify Chris → state refining→refined → handoff `/architect`.
+- **2026-05-22 cross-story deps update:** post paradigma shell-organism cementado, consumer único Fase 2 = `vitalia-fase2-valeria-agenda` (F2-S1 subform Cobrar saldo emite boleta inline). UI configuración Nubefact full puede ir a F2-S22 config-avanzado o story dedicada futura. Story sigue refining. Priority bump recomendado cuando Fase 1 (F1-S0..F1-S10) entra developing — para que developed esté ANTES de F2-S1 arrancar. Outcome refactor v2.0 cementado: `vitalia/docs/product/outcomes/vitalia-mvp-ui-foundation.md`.

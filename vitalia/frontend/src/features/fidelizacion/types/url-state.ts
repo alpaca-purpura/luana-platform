@@ -70,7 +70,7 @@ const VALID_URGENCY: UrgencyFilter[] = [
  * Provides safe defaults for missing/invalid values.
  */
 export function parseFidelizacionUrlState(
-  params: URLSearchParams
+  params: URLSearchParams,
 ): FidelizacionUrlState {
   const rawTab = params.get("tab");
   const tab: FidelizacionTab =
@@ -86,7 +86,7 @@ export function parseFidelizacionUrlState(
 
   const rawUrgency = params.getAll("urgency");
   const urgency = rawUrgency.filter((u): u is UrgencyFilter =>
-    VALID_URGENCY.includes(u as UrgencyFilter)
+    VALID_URGENCY.includes(u as UrgencyFilter),
   );
 
   return {
@@ -107,7 +107,7 @@ export function parseFidelizacionUrlState(
  * Serialize FidelizacionUrlState to URLSearchParams.
  */
 export function serializeFidelizacionUrlState(
-  state: Partial<FidelizacionUrlState>
+  state: Partial<FidelizacionUrlState>,
 ): URLSearchParams {
   const params = new URLSearchParams();
 
@@ -127,7 +127,8 @@ export function serializeFidelizacionUrlState(
   if (state.pauseModal) params.set("pauseModal", state.pauseModal);
   if (state.confirmTemplateModal)
     params.set("confirmTemplateModal", state.confirmTemplateModal);
-  if (state.manualCallModal) params.set("manualCallModal", state.manualCallModal);
+  if (state.manualCallModal)
+    params.set("manualCallModal", state.manualCallModal);
   if (state.suggestSlotsModal)
     params.set("suggestSlotsModal", state.suggestSlotsModal);
 

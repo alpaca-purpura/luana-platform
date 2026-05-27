@@ -6,7 +6,8 @@ status: live
 date_introduced: 2026-05-15
 story_introduced: luana-vitalia-bootstrap
 package_version: 0.1.0
-package_path: vitalia/backend/src/modules/vitalia + vitalia/frontend/src/app/(dashboard)/patients
+package_path: vitalia/backend/src/modules/vitalia
+fe_planned_phase2: vitalia-fase2-valeria-pacientes
 license: proprietary
 ---
 

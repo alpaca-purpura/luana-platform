@@ -13,12 +13,13 @@ export function usePatient(id: string) {
     queryKey: vitaliaQueryKeys.patients.detail(id),
     queryFn: async (): Promise<PatientDetailResponse> => {
       const token = await getToken();
-      const tenantId = (sessionClaims?.public_metadata as Record<string, unknown>)
-        ?.active_tenant_id as string | undefined;
+      const tenantId = (
+        sessionClaims?.public_metadata as Record<string, unknown>
+      )?.active_tenant_id as string | undefined;
       if (!token) throw new Error("Not authenticated");
       return vitaliaFetch<PatientDetailResponse>(
         `/api/v1/vitalia/patients/${id}`,
-        { token, tenantId: tenantId ?? "" }
+        { token, tenantId: tenantId ?? "" },
       );
     },
     enabled: isLoaded && isSignedIn === true && Boolean(id),

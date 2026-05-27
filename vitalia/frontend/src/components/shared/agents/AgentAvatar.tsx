@@ -8,7 +8,11 @@
  */
 
 import { cn } from "@/lib/cn";
-import { agentNameByRole, AGENT_GRADIENT_CLASS, AGENT_INITIALS } from "./agent-names";
+import {
+  agentNameByRole,
+  AGENT_GRADIENT_CLASS,
+  AGENT_INITIALS,
+} from "./agent-names";
 import type { AgentRole } from "./agent-names";
 
 export interface AgentAvatarProps {
@@ -30,7 +34,11 @@ const SIZE_CLASSES = {
  * Circular agent avatar with gradient background and initials.
  * No HEX literals — gradient comes from globals.css classes.
  */
-export function AgentAvatar({ role, size = "md", className }: AgentAvatarProps) {
+export function AgentAvatar({
+  role,
+  size = "md",
+  className,
+}: AgentAvatarProps) {
   const name = agentNameByRole(role);
   const initials =
     role in AGENT_INITIALS
@@ -49,7 +57,7 @@ export function AgentAvatar({ role, size = "md", className }: AgentAvatarProps) 
         "font-semibold text-white select-none shrink-0",
         gradientClass,
         SIZE_CLASSES[size],
-        className
+        className,
       )}
       aria-label={`Agente ${name}`}
       role="img"

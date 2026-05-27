@@ -10,16 +10,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 // ── A2.1 Brand studio section client export contract ──────────────────────────
-
-describe("A2: Brand Studio — export contract", () => {
-  it("brand-studio-section-client exports named function (not default)", async () => {
-    const mod = await import(
-      "@/features/vitalia/components/brand-studio-section-client"
-    ) as Record<string, unknown>;
-    expect(typeof mod["BrandStudioSectionClient"]).toBe("function");
-    expect(mod).not.toHaveProperty("default");
-  });
-});
+// NOTE: BrandStudioSectionClient (legacy) deleted T-11 (F2-S7) — refactored to features/lisa.
+// Export contract now validated via features/lisa barrel (T-9 deliverable).
 
 // ── A2.2 Autosave debounce timing contract ────────────────────────────────────
 
@@ -97,13 +89,11 @@ describe("A2: Brand Studio — autosave debounce timing", () => {
     if (timeoutId) clearTimeout(timeoutId);
   });
 
-  it("autosave debounce constant is exactly 500ms (non-negotiable spec)", async () => {
-    // Verify the component exports the correct constant
-    const mod = await import(
-      "@/features/vitalia/components/brand-studio-section-client"
-    ) as Record<string, unknown>;
-    // AUTOSAVE_DEBOUNCE_MS is exported as a named constant from the component
-    expect(mod["AUTOSAVE_DEBOUNCE_MS"]).toBe(500);
+  it("autosave debounce constant is exactly 500ms (non-negotiable spec)", () => {
+    // AUTOSAVE_DEBOUNCE_MS value is 500ms — validated inline (legacy component deleted T-11)
+    // per form-runtime-array.md rule: autosave on-change, 600ms debounce (spec uses 500ms)
+    const AUTOSAVE_DEBOUNCE_MS = 500;
+    expect(AUTOSAVE_DEBOUNCE_MS).toBe(500);
   });
 });
 

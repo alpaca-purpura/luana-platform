@@ -17,7 +17,11 @@
 
 import { useCallback, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import type { WizardMode, WizardStep, WizardUrlState } from "../types/wizard-onboarding.types";
+import type {
+  WizardMode,
+  WizardStep,
+  WizardUrlState,
+} from "../types/wizard-onboarding.types";
 
 const VALID_STEPS: WizardStep[] = [
   "greet",
@@ -62,11 +66,14 @@ export function useWizardUrlState(): UseWizardUrlStateReturn {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const urlState = useMemo<WizardUrlState>(() => ({
-    step: parseStep(searchParams.get("step")),
-    mode: parseMode(searchParams.get("mode")),
-    draftId: searchParams.get("draftId"),
-  }), [searchParams]);
+  const urlState = useMemo<WizardUrlState>(
+    () => ({
+      step: parseStep(searchParams.get("step")),
+      mode: parseMode(searchParams.get("mode")),
+      draftId: searchParams.get("draftId"),
+    }),
+    [searchParams],
+  );
 
   const buildParams = useCallback(
     (patch: Partial<WizardUrlState>): URLSearchParams => {
@@ -93,7 +100,7 @@ export function useWizardUrlState(): UseWizardUrlStateReturn {
 
       return next;
     },
-    [searchParams, urlState]
+    [searchParams, urlState],
   );
 
   const setUrlState = useCallback(
@@ -101,14 +108,14 @@ export function useWizardUrlState(): UseWizardUrlStateReturn {
       const params = buildParams(patch);
       router.replace(`?${params.toString()}`);
     },
-    [buildParams, router]
+    [buildParams, router],
   );
 
   const advanceStep = useCallback(
     (nextStep: WizardStep) => {
       setUrlState({ step: nextStep });
     },
-    [setUrlState]
+    [setUrlState],
   );
 
   const resetUrlState = useCallback(() => {

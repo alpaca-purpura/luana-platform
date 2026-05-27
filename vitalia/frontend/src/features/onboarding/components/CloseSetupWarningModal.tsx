@@ -56,7 +56,7 @@ export function CloseSetupWarningModal({
   useEffect(() => {
     if (!isOpen || !dialogRef.current) return;
     const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
     );
     const first = focusable[0];
     const last = focusable[focusable.length - 1];
@@ -98,14 +98,14 @@ export function CloseSetupWarningModal({
         aria-describedby="close-wizard-desc"
         className={cn(
           "fixed inset-0 z-50 flex items-center justify-center p-4",
-          "pointer-events-none"
+          "pointer-events-none",
         )}
       >
         <div
           className={cn(
             "w-full max-w-md rounded-2xl bg-white shadow-2xl p-6 space-y-4",
             "pointer-events-auto",
-            "animate-in fade-in-0 zoom-in-95 duration-150"
+            "animate-in fade-in-0 zoom-in-95 duration-150",
           )}
         >
           {/* Icon */}
@@ -156,7 +156,7 @@ export function CloseSetupWarningModal({
                 "rounded-xl px-4 py-2 text-sm font-medium",
                 "bg-blue-700 text-white",
                 "hover:bg-blue-800 transition-colors duration-150",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600",
               )}
             >
               {copy.cancelButton}
@@ -168,7 +168,7 @@ export function CloseSetupWarningModal({
                 "rounded-xl px-4 py-2 text-sm font-medium border border-gray-300",
                 "text-gray-700 bg-white",
                 "hover:bg-gray-50 transition-colors duration-150",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400"
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400",
               )}
             >
               {copy.confirmButton}

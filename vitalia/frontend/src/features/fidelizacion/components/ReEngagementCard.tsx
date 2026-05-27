@@ -36,7 +36,8 @@ const URGENCY_CLASS_MAP: Record<string, string> = {
   alert:
     "border-l-4 border-l-[hsl(var(--vitalia-warn,38_92%_50%))] bg-[hsl(var(--vitalia-warn-bg,38_100%_97%))]",
   near: "border-l-4 border-l-[hsl(var(--vitalia-info,210_90%_50%))] bg-white",
-  waiting: "border-l-4 border-l-[hsl(var(--vitalia-muted,220_10%_55%))] bg-white",
+  waiting:
+    "border-l-4 border-l-[hsl(var(--vitalia-muted,220_10%_55%))] bg-white",
   up_to_date:
     "border-l-4 border-l-[hsl(var(--vitalia-success,145_55%_40%))] bg-white",
 };
@@ -79,13 +80,14 @@ function MultiSessionBody({
   return (
     <div className="mt-2 space-y-1 text-sm text-[hsl(var(--vitalia-fg,220_25%_15%))]">
       <p className="font-medium">{data.offerLabel}</p>
-      <p>{copy.sessionsProgress(data.sessionsCompleted, data.sessionsExpected)}</p>
+      <p>
+        {copy.sessionsProgress(data.sessionsCompleted, data.sessionsExpected)}
+      </p>
       <p className="text-[hsl(var(--vitalia-muted,220_10%_55%))]">
         {copy.gap(data.gapDays)}
       </p>
       <p className="text-[hsl(var(--vitalia-muted,220_10%_55%))]">
-        {copy.lastSession}:{" "}
-        {formatTenantDate(data.lastSessionDate, timezone)}
+        {copy.lastSession}: {formatTenantDate(data.lastSessionDate, timezone)}
       </p>
     </div>
   );
@@ -166,7 +168,7 @@ function AbsenceBody({
             {copy.lifetimeValue}:{" "}
             {formatMoney(
               data.lifetimeValueCents / 100,
-              data.currency ?? currency
+              data.currency ?? currency,
             )}
           </p>
         )}
@@ -235,7 +237,7 @@ function ActionButton({
         "rounded px-2 py-1 text-xs font-medium transition-colors",
         action.enabled
           ? "bg-[hsl(var(--vitalia-primary,210_90%_50%))] text-white hover:bg-[hsl(var(--vitalia-primary-hover,210_90%_45%))]"
-          : "cursor-not-allowed bg-[hsl(var(--vitalia-bg-soft,220_20%_96%))] text-[hsl(var(--vitalia-muted,220_10%_55%))]"
+          : "cursor-not-allowed bg-[hsl(var(--vitalia-bg-soft,220_20%_96%))] text-[hsl(var(--vitalia-muted,220_10%_55%))]",
       )}
     >
       {label}
@@ -278,7 +280,7 @@ export function ReEngagementCard({
       className={cn(
         "rounded-md border p-4 transition-shadow hover:shadow-sm",
         URGENCY_CLASS_MAP[row.urgency],
-        className
+        className,
       )}
     >
       {/* Header: urgency + PHI-guarded patient name */}

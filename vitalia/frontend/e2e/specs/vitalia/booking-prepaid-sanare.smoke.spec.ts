@@ -19,7 +19,7 @@ test.describe("Booking — Prepago completo Sanaré (MX)", () => {
 
     // Available slots section renders
     await expect(
-      page.getByText(/horarios disponibles|selecciona tu cita/i)
+      page.getByText(/horarios disponibles|selecciona tu cita/i),
     ).toBeVisible({ timeout: 10_000 });
 
     // Doctor slots from mock (3 doctors: Dr. Ríos, Ps. Cruz, Ps. Morales)
@@ -65,7 +65,7 @@ test.describe("Booking — Prepago completo Sanaré (MX)", () => {
 
       // Should show payment pending state
       await expect(
-        page.getByText(/pendiente de pago|pago pendiente/i)
+        page.getByText(/pendiente de pago|pago pendiente/i),
       ).toBeVisible({ timeout: 10_000 });
     }
   });

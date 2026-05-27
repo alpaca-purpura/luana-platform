@@ -112,7 +112,10 @@ export function createFidelizacionStore(): FidelizacionStore {
       }),
 
     openManualCallModal: (eventId) =>
-      setState({ isManualCallModalOpen: true, manualCallTargetEventId: eventId }),
+      setState({
+        isManualCallModalOpen: true,
+        manualCallTargetEventId: eventId,
+      }),
 
     closeManualCallModal: () =>
       setState({ isManualCallModalOpen: false, manualCallTargetEventId: null }),

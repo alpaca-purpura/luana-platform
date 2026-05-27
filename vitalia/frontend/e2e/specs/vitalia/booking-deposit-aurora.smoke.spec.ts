@@ -19,7 +19,7 @@ test.describe("Booking — Depósito 30% Clínica Dental Aurora (AR)", () => {
 
     // Booking slots visible
     await expect(
-      page.getByText(/horarios disponibles|selecciona tu cita/i)
+      page.getByText(/horarios disponibles|selecciona tu cita/i),
     ).toBeVisible({ timeout: 10_000 });
 
     // Aurora doctors present
@@ -40,7 +40,7 @@ test.describe("Booking — Depósito 30% Clínica Dental Aurora (AR)", () => {
     await expect(
       page
         .getByText(/dep[oó]sito.*30|30%.*dep[oó]sito/)
-        .or(page.getByText(/\$150|usd 150/i))
+        .or(page.getByText(/\$150|usd 150/i)),
     ).toBeVisible({ timeout: 10_000 });
   });
 
@@ -65,7 +65,9 @@ test.describe("Booking — Depósito 30% Clínica Dental Aurora (AR)", () => {
     // Multiple doctors from mock slots
     const doctorNames = [/Dr\. Mart[íi]nez/i, /Dra\. Gonz[áa]lez/i];
     for (const doctorPattern of doctorNames) {
-      await expect(page.getByText(doctorPattern)).toBeVisible({ timeout: 10_000 });
+      await expect(page.getByText(doctorPattern)).toBeVisible({
+        timeout: 10_000,
+      });
     }
   });
 

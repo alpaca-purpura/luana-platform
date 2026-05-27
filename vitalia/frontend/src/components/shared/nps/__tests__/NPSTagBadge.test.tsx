@@ -53,7 +53,7 @@ describe("NPSTagBadge", () => {
     render(<NPSTagBadge score={5} />);
     expect(screen.getByRole("status")).toHaveAttribute(
       "aria-label",
-      "Calificación NPS 5, categoría detractor"
+      "Calificación NPS 5, categoría detractor",
     );
   });
 
@@ -61,7 +61,7 @@ describe("NPSTagBadge", () => {
     render(<NPSTagBadge score={7} />);
     expect(screen.getByRole("status")).toHaveAttribute(
       "aria-label",
-      "Calificación NPS 7, categoría pasivo"
+      "Calificación NPS 7, categoría pasivo",
     );
   });
 
@@ -69,7 +69,7 @@ describe("NPSTagBadge", () => {
     render(<NPSTagBadge score={10} />);
     expect(screen.getByRole("status")).toHaveAttribute(
       "aria-label",
-      "Calificación NPS 10, categoría promotor"
+      "Calificación NPS 10, categoría promotor",
     );
   });
 
@@ -113,7 +113,10 @@ describe("NPSTagBadge", () => {
   it("score null → renders 'Sin NPS' fallback accesible", () => {
     render(<NPSTagBadge score={null} />);
     expect(screen.getByText("Sin NPS")).toBeInTheDocument();
-    expect(screen.getByRole("status")).toHaveAttribute("aria-label", "NPS: sin datos");
+    expect(screen.getByRole("status")).toHaveAttribute(
+      "aria-label",
+      "NPS: sin datos",
+    );
   });
 
   it("score undefined → renders 'Sin NPS' fallback", () => {

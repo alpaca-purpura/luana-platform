@@ -23,7 +23,7 @@ test.describe("Compliance — Audit Log HIPAA-lite (Sanaré MX)", () => {
 
     // Section header
     await expect(
-      page.getByText(/cumplimiento|compliance|audit/i).first()
+      page.getByText(/cumplimiento|compliance|audit/i).first(),
     ).toBeVisible();
 
     expect(consoleErrors).toHaveLength(0);
@@ -38,8 +38,12 @@ test.describe("Compliance — Audit Log HIPAA-lite (Sanaré MX)", () => {
     await expect(page.getByText(/pii_detected|pii detectado/i)).toBeVisible({
       timeout: 10_000,
     });
-    await expect(page.getByText(/consent_signed|consentimiento firmado/i)).toBeVisible();
-    await expect(page.getByText(/safety_escalation|escalaci[oó]n/i)).toBeVisible();
+    await expect(
+      page.getByText(/consent_signed|consentimiento firmado/i),
+    ).toBeVisible();
+    await expect(
+      page.getByText(/safety_escalation|escalaci[oó]n/i),
+    ).toBeVisible();
     await expect(page.getByText(/prompt_injection_blocked/i)).toBeVisible();
   });
 
@@ -49,20 +53,20 @@ test.describe("Compliance — Audit Log HIPAA-lite (Sanaré MX)", () => {
     await page.goto("/medical-compliance");
 
     // Events list from mock — at least consent_signed and pii_detected
-    await expect(page.getByText(/consent_signed/i)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/consent_signed/i)).toBeVisible({
+      timeout: 10_000,
+    });
     await expect(page.getByText(/pii_detected/i)).toBeVisible();
   });
 
-  test("V-V-16: export CSV button present", async ({
-    sanarePage: page,
-  }) => {
+  test("V-V-16: export CSV button present", async ({ sanarePage: page }) => {
     await page.goto("/medical-compliance");
 
     // Export CTA per spec §3.6.A
     await expect(
       page
         .getByRole("button", { name: /exportar csv/i })
-        .or(page.getByRole("link", { name: /exportar csv/i }))
+        .or(page.getByRole("link", { name: /exportar csv/i })),
     ).toBeVisible({ timeout: 10_000 });
   });
 
@@ -76,8 +80,9 @@ test.describe("Compliance — Audit Log HIPAA-lite (Sanaré MX)", () => {
       timeout: 10_000,
     });
     await expect(
-      page.getByRole("combobox", { name: /fecha|periodo/i })
-        .or(page.getByLabel(/fecha|periodo/i))
+      page
+        .getByRole("combobox", { name: /fecha|periodo/i })
+        .or(page.getByLabel(/fecha|periodo/i)),
     ).toBeVisible();
   });
 
@@ -92,8 +97,8 @@ test.describe("Compliance — Audit Log HIPAA-lite (Sanaré MX)", () => {
     });
 
     // Severity indicator present
-    await expect(
-      page.getByText(/cr[íi]tic[ao]|alta/i).first()
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/cr[íi]tic[ao]|alta/i).first()).toBeVisible({
+      timeout: 10_000,
+    });
   });
 });

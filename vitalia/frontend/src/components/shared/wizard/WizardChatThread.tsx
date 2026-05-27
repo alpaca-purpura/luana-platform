@@ -50,7 +50,7 @@ export function WizardChatThread({
       className={cn(
         "flex flex-col gap-3 vt-bg-surface vt-border",
         "border rounded-[var(--radius-lg)] overflow-hidden",
-        className
+        className,
       )}
       aria-label={`Asistente de configuración — ${stepLabel}`}
       role="region"
@@ -93,7 +93,7 @@ export function WizardChatThread({
               "flex max-w-[80%] rounded-[var(--radius-bubble)] px-3 py-2",
               msg.role === "assistant"
                 ? "self-start vt-bg-muted vt-text"
-                : "self-end vt-bg-cian vt-text-white"
+                : "self-end vt-bg-cian vt-text-white",
             )}
             aria-label={`${msg.role === "assistant" ? "Asistente" : "Tú"}: ${msg.content}`}
           >
@@ -108,9 +108,21 @@ export function WizardChatThread({
             aria-live="polite"
             aria-label="El asistente está escribiendo"
           >
-            <span className="w-1.5 h-1.5 rounded-full vt-bg-cian-10 animate-bounce" style={{ animationDelay: "0ms" }} aria-hidden="true" />
-            <span className="w-1.5 h-1.5 rounded-full vt-bg-cian-10 animate-bounce" style={{ animationDelay: "150ms" }} aria-hidden="true" />
-            <span className="w-1.5 h-1.5 rounded-full vt-bg-cian-10 animate-bounce" style={{ animationDelay: "300ms" }} aria-hidden="true" />
+            <span
+              className="w-1.5 h-1.5 rounded-full vt-bg-cian-10 animate-bounce"
+              style={{ animationDelay: "0ms" }}
+              aria-hidden="true"
+            />
+            <span
+              className="w-1.5 h-1.5 rounded-full vt-bg-cian-10 animate-bounce"
+              style={{ animationDelay: "150ms" }}
+              aria-hidden="true"
+            />
+            <span
+              className="w-1.5 h-1.5 rounded-full vt-bg-cian-10 animate-bounce"
+              style={{ animationDelay: "300ms" }}
+              aria-hidden="true"
+            />
           </div>
         )}
       </div>

@@ -31,19 +31,21 @@ test.describe("vitalia-auth-base-functional — SC-03: /sign-in renderiza Clerk 
 
     // El campo de email/identifier debe estar visible
     const emailInput = page.locator(
-      'input[type="email"], input[name="identifier"], input[autocomplete="email"]'
+      'input[type="email"], input[name="identifier"], input[autocomplete="email"]',
     );
     await expect(emailInput.first()).toBeVisible({ timeout: 15_000 });
 
     // Debe haber un campo de contraseña (visible después de ingresar email en Clerk)
     // o al menos el formulario de Clerk está presente (puede ser paso 1 de 2)
     const clerkForm = page.locator(
-      '[data-clerk-sign-in], .cl-sign-in-root, form[data-form="sign-in"], form'
+      '[data-clerk-sign-in], .cl-sign-in-root, form[data-form="sign-in"], form',
     );
     await expect(clerkForm.first()).toBeVisible({ timeout: 10_000 });
 
     // No debe existir texto de placeholder visible
-    await expect(page.getByText("pendiente")).toHaveCount(0, { timeout: 3_000 });
+    await expect(page.getByText("pendiente")).toHaveCount(0, {
+      timeout: 3_000,
+    });
   });
 });
 
@@ -62,17 +64,19 @@ test.describe("vitalia-auth-base-functional — SC-04: /sign-up renderiza Clerk 
 
     // Clerk <SignUp /> debe renderizar con campo email o formulario visible
     const emailInput = page.locator(
-      'input[type="email"], input[name="emailAddress"], input[autocomplete="email"]'
+      'input[type="email"], input[name="emailAddress"], input[autocomplete="email"]',
     );
     await expect(emailInput.first()).toBeVisible({ timeout: 15_000 });
 
     // El formulario de Clerk debe estar presente
     const clerkForm = page.locator(
-      '[data-clerk-sign-up], .cl-sign-up-root, form[data-form="sign-up"], form'
+      '[data-clerk-sign-up], .cl-sign-up-root, form[data-form="sign-up"], form',
     );
     await expect(clerkForm.first()).toBeVisible({ timeout: 10_000 });
 
     // No debe existir texto de placeholder visible
-    await expect(page.getByText("pendiente")).toHaveCount(0, { timeout: 3_000 });
+    await expect(page.getByText("pendiente")).toHaveCount(0, {
+      timeout: 3_000,
+    });
   });
 });

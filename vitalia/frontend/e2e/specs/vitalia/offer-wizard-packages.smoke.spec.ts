@@ -16,9 +16,9 @@ test.describe("Offer Wizard — Paquete sesiones (Sanaré MX)", () => {
 
     await page.goto("/ofertas/nueva");
 
-    await expect(
-      page.getByText(/tipo de servicio|paso 1/i)
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/tipo de servicio|paso 1/i)).toBeVisible({
+      timeout: 10_000,
+    });
 
     expect(consoleErrors).toHaveLength(0);
   });
@@ -31,7 +31,7 @@ test.describe("Offer Wizard — Paquete sesiones (Sanaré MX)", () => {
 
     // Therapy package from mock preset: therapy_package, individual_session, psychiatric_consultation
     await expect(
-      page.getByText(/paquete de terapia|therapy.*package|4 sesiones/i)
+      page.getByText(/paquete de terapia|therapy.*package|4 sesiones/i),
     ).toBeVisible({ timeout: 10_000 });
   });
 
@@ -78,12 +78,14 @@ test.describe("Offer Wizard — Paquete sesiones (Sanaré MX)", () => {
     const psychiatricType = page.getByRole("radio", {
       name: /consulta psiqui[áa]trica|psychiatric/i,
     });
-    if (await psychiatricType.isVisible({ timeout: 3_000 }).catch(() => false)) {
+    if (
+      await psychiatricType.isVisible({ timeout: 3_000 }).catch(() => false)
+    ) {
       await psychiatricType.check();
 
       // Medication disclaimer should appear (HIPAA-lite requirement)
       await expect(
-        page.getByText(/medicaci[oó]n.*descargo|disclaimer.*medicaci[oó]n/i)
+        page.getByText(/medicaci[oó]n.*descargo|disclaimer.*medicaci[oó]n/i),
       ).toBeVisible({ timeout: 5_000 });
     }
   });

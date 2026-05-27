@@ -61,7 +61,7 @@ export function PauseAdrianButton({
         onError: () => {
           setModalOpen(false);
         },
-      }
+      },
     );
   };
 
@@ -92,7 +92,7 @@ export function PauseAdrianButton({
             ? "vt-text-muted opacity-50 cursor-not-allowed"
             : "vt-text-foreground hover:vt-bg-muted",
           isPending && "opacity-50 cursor-wait",
-          className
+          className,
         )}
         aria-busy={isPending}
       >

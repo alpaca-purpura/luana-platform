@@ -21,9 +21,18 @@ interface PausePatientModalProps {
 }
 
 const DURATION_OPTIONS = [
-  { value: "7", label: FIDELIZACION_COPY.modals.pausePatient.durationOptions["7"] },
-  { value: "30", label: FIDELIZACION_COPY.modals.pausePatient.durationOptions["30"] },
-  { value: "custom", label: FIDELIZACION_COPY.modals.pausePatient.durationOptions.custom },
+  {
+    value: "7",
+    label: FIDELIZACION_COPY.modals.pausePatient.durationOptions["7"],
+  },
+  {
+    value: "30",
+    label: FIDELIZACION_COPY.modals.pausePatient.durationOptions["30"],
+  },
+  {
+    value: "custom",
+    label: FIDELIZACION_COPY.modals.pausePatient.durationOptions.custom,
+  },
 ] as const;
 
 export function PausePatientModal({
@@ -117,7 +126,7 @@ export function PausePatientModal({
                     "rounded px-3 py-1.5 text-sm font-medium border transition-colors",
                     duration === opt.value
                       ? "border-[hsl(var(--vitalia-primary,210_90%_50%))] bg-[hsl(var(--vitalia-primary,210_90%_50%))] text-white"
-                      : "border-[hsl(var(--vitalia-border,220_13%_91%))] text-[hsl(var(--vitalia-fg,220_25%_15%))] hover:bg-[hsl(var(--vitalia-bg-soft,220_20%_96%))]"
+                      : "border-[hsl(var(--vitalia-border,220_13%_91%))] text-[hsl(var(--vitalia-fg,220_25%_15%))] hover:bg-[hsl(var(--vitalia-bg-soft,220_20%_96%))]",
                   )}
                 >
                   {opt.label}

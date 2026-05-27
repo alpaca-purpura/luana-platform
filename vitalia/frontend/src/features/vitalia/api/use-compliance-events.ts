@@ -22,8 +22,9 @@ export function useComplianceEvents(filters: ComplianceEventsFilters = {}) {
     queryKey: vitaliaQueryKeys.compliance.events(filters),
     queryFn: async (): Promise<ComplianceEventListResponse> => {
       const token = await getToken();
-      const tenantId = (sessionClaims?.public_metadata as Record<string, unknown>)
-        ?.active_tenant_id as string | undefined;
+      const tenantId = (
+        sessionClaims?.public_metadata as Record<string, unknown>
+      )?.active_tenant_id as string | undefined;
       if (!token) throw new Error("Not authenticated");
       const params = new URLSearchParams();
       if (filters.severity) params.set("severity", filters.severity);
@@ -35,7 +36,7 @@ export function useComplianceEvents(filters: ComplianceEventsFilters = {}) {
       const query = params.toString() ? `?${params.toString()}` : "";
       return vitaliaFetch<ComplianceEventListResponse>(
         `/api/v1/vitalia/medical-compliance/events${query}`,
-        { token, tenantId: tenantId ?? "" }
+        { token, tenantId: tenantId ?? "" },
       );
     },
     enabled: isLoaded && isSignedIn === true,

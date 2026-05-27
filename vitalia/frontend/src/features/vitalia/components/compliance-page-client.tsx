@@ -17,11 +17,21 @@ import { MICROCOPY_COMPLIANCE } from "@/features/vitalia/config/microcopy";
 import { useComplianceEvents } from "@/features/vitalia/api/use-compliance-events";
 import { ComplianceStatsCards } from "@/features/vitalia/components/compliance-stats-cards";
 import { ComplianceEventRow } from "@/features/vitalia/components/compliance-event-row";
-import type { ComplianceEventItem, ComplianceSeverity } from "@/features/vitalia/types/compliance.types";
+import type {
+  ComplianceEventItem,
+  ComplianceSeverity,
+} from "@/features/vitalia/types/compliance.types";
 
 // ── CSV export utility (exported for testability) ─────────────────────────────
 
-const CSV_HEADERS = ["Fecha", "Tipo de evento", "Severidad", "Paciente ID", "Actor", "Booking ID"];
+const CSV_HEADERS = [
+  "Fecha",
+  "Tipo de evento",
+  "Severidad",
+  "Paciente ID",
+  "Actor",
+  "Booking ID",
+];
 
 function escapeCsv(value: string): string {
   if (value.includes(",") || value.includes('"') || value.includes("\n")) {
@@ -65,7 +75,8 @@ type ExportState = "idle" | "preparing" | "ready";
 
 export function CompliancePageClient({ className }: CompliancePageClientProps) {
   const [severityFilter, setSeverityFilter] = useState<SeverityFilter>("all");
-  const [eventTypeFilter, setEventTypeFilter] = useState<EventTypeFilter>("all");
+  const [eventTypeFilter, setEventTypeFilter] =
+    useState<EventTypeFilter>("all");
   const [exportState, setExportState] = useState<ExportState>("idle");
 
   const { data, isLoading, isError } = useComplianceEvents({
@@ -97,7 +108,10 @@ export function CompliancePageClient({ className }: CompliancePageClientProps) {
   if (isError) {
     return (
       <div
-        className={cn("rounded-lg border border-red-200 bg-red-50 p-6 text-center", className)}
+        className={cn(
+          "rounded-lg border border-red-200 bg-red-50 p-6 text-center",
+          className,
+        )}
         role="alert"
         aria-live="polite"
       >
@@ -135,11 +149,13 @@ export function CompliancePageClient({ className }: CompliancePageClientProps) {
             aria-label="Filtrar por tipo de evento"
           >
             <option value="all">Todos los tipos</option>
-            {Object.entries(MICROCOPY_COMPLIANCE.eventTypes).map(([key, label]) => (
-              <option key={key} value={key}>
-                {label}
-              </option>
-            ))}
+            {Object.entries(MICROCOPY_COMPLIANCE.eventTypes).map(
+              ([key, label]) => (
+                <option key={key} value={key}>
+                  {label}
+                </option>
+              ),
+            )}
           </select>
         </div>
 
@@ -154,7 +170,9 @@ export function CompliancePageClient({ className }: CompliancePageClientProps) {
           <select
             id="filter-severity"
             value={severityFilter}
-            onChange={(e) => setSeverityFilter(e.target.value as SeverityFilter)}
+            onChange={(e) =>
+              setSeverityFilter(e.target.value as SeverityFilter)
+            }
             className="rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
             aria-label="Filtrar por severidad"
           >
@@ -176,12 +194,14 @@ export function CompliancePageClient({ className }: CompliancePageClientProps) {
           <button
             type="button"
             onClick={handleExportCsv}
-            disabled={isLoading || exportState === "preparing" || events.length === 0}
+            disabled={
+              isLoading || exportState === "preparing" || events.length === 0
+            }
             className={cn(
               "rounded-md border px-4 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500",
               exportState === "ready"
                 ? "border-green-300 bg-green-50 text-green-700"
-                : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed",
             )}
             aria-busy={exportState === "preparing"}
             aria-label={
@@ -210,14 +230,14 @@ export function CompliancePageClient({ className }: CompliancePageClientProps) {
             aria-live="polite"
             aria-busy={true}
           >
-            <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600" aria-hidden="true" />
+            <div
+              className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"
+              aria-hidden="true"
+            />
             <p className="mt-2 text-sm text-gray-500">Cargando eventos...</p>
           </div>
         ) : events.length === 0 ? (
-          <div
-            className="p-8 text-center border-dashed"
-            role="status"
-          >
+          <div className="p-8 text-center border-dashed" role="status">
             <p className="text-sm text-gray-500">
               Sin eventos de cumplimiento para los filtros seleccionados.
             </p>

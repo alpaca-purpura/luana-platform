@@ -72,7 +72,7 @@ export function PauseAdrianConfirmModal({
         data-testid="pause-adrian-modal"
         className={cn(
           "relative z-10 w-full max-w-sm rounded-xl border vt-border",
-          "vt-bg-surface p-6 shadow-lg"
+          "vt-bg-surface p-6 shadow-lg",
         )}
       >
         <h2
@@ -82,10 +82,7 @@ export function PauseAdrianConfirmModal({
           {INBOX_COPY.pauseAgent.modalTitle}
         </h2>
 
-        <p
-          id="pause-modal-body"
-          className="text-sm vt-text-muted mb-4"
-        >
+        <p id="pause-modal-body" className="text-sm vt-text-muted mb-4">
           {INBOX_COPY.pauseAgent.modalBody}
         </p>
 
@@ -102,7 +99,7 @@ export function PauseAdrianConfirmModal({
             "placeholder:vt-text-muted",
             "focus-visible:outline focus-visible:outline-2",
             "focus-visible:outline-[var(--vitalia-cian)]",
-            "disabled:opacity-50 mb-4"
+            "disabled:opacity-50 mb-4",
           )}
           aria-label={INBOX_COPY.pauseAgent.reasonPlaceholder}
           data-testid="pause-reason-input"
@@ -116,7 +113,7 @@ export function PauseAdrianConfirmModal({
             className={cn(
               "px-4 py-2 rounded-lg text-sm font-medium",
               "vt-text-muted vt-bg-muted/40 hover:vt-bg-muted/60",
-              "transition-colors disabled:opacity-50"
+              "transition-colors disabled:opacity-50",
             )}
             data-testid="pause-modal-cancel"
           >
@@ -129,7 +126,7 @@ export function PauseAdrianConfirmModal({
             className={cn(
               "px-4 py-2 rounded-lg text-sm font-medium",
               "text-white bg-[var(--vitalia-purpura)] hover:opacity-90",
-              "transition-opacity disabled:opacity-50"
+              "transition-opacity disabled:opacity-50",
             )}
             data-testid="pause-modal-confirm"
             aria-busy={isPending}

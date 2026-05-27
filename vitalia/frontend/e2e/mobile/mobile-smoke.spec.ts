@@ -7,6 +7,10 @@
  *   - Targets táctiles ≥ 44px de alto (botón primario)
  *   - Contenido visible y renderizable
  *
+ * NOTE F1-S9 T-5: bloque "Dashboard autenticado en móvil" removido.
+ * La ruta / (dashboard) fue eliminada. El coverage mobile para shell-organism
+ * vive en e2e/regression/vitalia-fase1-routing-shell/.
+ *
  * Ejecuta en project=mobile (iPhone 13) — ver playwright.config.ts.
  *
  * Run (post-deploy LIVE):
@@ -21,25 +25,30 @@
  */
 
 import { test, expect } from "@playwright/test";
-import { test as authTest } from "../auth.fixture";
 
 // ─── Helper: verificar ausencia de scroll horizontal ─────────────────────────
 
-async function assertNoHorizontalScroll(page: import("@playwright/test").Page): Promise<void> {
+async function assertNoHorizontalScroll(
+  page: import("@playwright/test").Page,
+): Promise<void> {
   const scrollWidth = await page.evaluate(() => document.body.scrollWidth);
   const viewportWidth = await page.evaluate(() => window.innerWidth);
   // Tolerancia de 1px por variaciones de renderizado sub-pixel
   expect(scrollWidth).toBeLessThanOrEqual(
     viewportWidth + 1,
-    `Scroll horizontal detectado: scrollWidth=${scrollWidth} > viewportWidth=${viewportWidth}`
+    `Scroll horizontal detectado: scrollWidth=${scrollWidth} > viewportWidth=${viewportWidth}`,
   );
 }
 
 // ─── Helper: verificar target táctil ≥ 44px de alto ─────────────────────────
 
-async function assertPrimaryButtonTappable(page: import("@playwright/test").Page): Promise<void> {
+async function assertPrimaryButtonTappable(
+  page: import("@playwright/test").Page,
+): Promise<void> {
   // Buscar el botón principal de acción (sign-in, submit, etc.)
-  const btn = page.getByRole("button", { name: /iniciar|sign|continue|siguiente|acceder/i }).first();
+  const btn = page
+    .getByRole("button", { name: /iniciar|sign|continue|siguiente|acceder/i })
+    .first();
   const isVisible = await btn.isVisible().catch(() => false);
 
   if (isVisible) {
@@ -47,7 +56,7 @@ async function assertPrimaryButtonTappable(page: import("@playwright/test").Page
     if (box !== null) {
       expect(box.height).toBeGreaterThanOrEqual(
         44,
-        `Botón primario demasiado pequeño para touch: height=${box.height}px (mínimo 44px)`
+        `Botón primario demasiado pequeño para touch: height=${box.height}px (mínimo 44px)`,
       );
     }
   }
@@ -69,7 +78,9 @@ test.describe("SC-15 — Mobile smoke iPhone 13 (vitalia-auth-base-functional)",
     await assertPrimaryButtonTappable(page);
 
     // Formulario visible (algún input de texto)
-    const inputs = page.locator("input[type='email'], input[type='text'], input[type='password']");
+    const inputs = page.locator(
+      "input[type='email'], input[type='text'], input[type='password']",
+    );
     const inputCount = await inputs.count();
     expect(inputCount).toBeGreaterThan(0);
   });
@@ -80,14 +91,18 @@ test.describe("SC-15 — Mobile smoke iPhone 13 (vitalia-auth-base-functional)",
     await assertNoHorizontalScroll(page);
 
     // Algún input visible
-    const inputs = page.locator("input[type='email'], input[type='text'], input[type='password']");
+    const inputs = page.locator(
+      "input[type='email'], input[type='text'], input[type='password']",
+    );
     const inputCount = await inputs.count();
     expect(inputCount).toBeGreaterThan(0);
   });
 
-  test("SC-15 /onboarding/wizard renderiza sin scroll horizontal en móvil", async ({ page }) => {
+  test("SC-15 /onboarding/wizard renderiza sin scroll horizontal en móvil", async ({
+    page,
+  }) => {
     // El wizard puede requerir auth — si redirige a /sign-in, es comportamiento válido
-    const response = await page.goto("/onboarding/wizard", { waitUntil: "domcontentloaded" });
+    await page.goto("/onboarding/wizard", { waitUntil: "domcontentloaded" });
 
     // Aceptar: la página cargó (posiblemente redirigida a /sign-in)
     const currentUrl = page.url();
@@ -100,24 +115,3 @@ test.describe("SC-15 — Mobile smoke iPhone 13 (vitalia-auth-base-functional)",
     await assertNoHorizontalScroll(page);
   });
 });
-
-// ─── SC-15: Dashboard autenticado en móvil ───────────────────────────────────
-
-authTest.describe(
-  "SC-15 — Mobile smoke dashboard autenticado (vitalia-auth-base-functional)",
-  () => {
-    authTest(
-      "SC-15 / (dashboard) renderiza sin scroll horizontal y con h1 visible en móvil",
-      async ({ authedPage }) => {
-        await authedPage.goto("/", { waitUntil: "domcontentloaded" });
-
-        // Sin scroll horizontal
-        await assertNoHorizontalScroll(authedPage);
-
-        // Al menos un heading visible
-        const h1 = authedPage.locator("h1, h2").first();
-        await expect(h1).toBeVisible({ timeout: 5000 });
-      }
-    );
-  }
-);

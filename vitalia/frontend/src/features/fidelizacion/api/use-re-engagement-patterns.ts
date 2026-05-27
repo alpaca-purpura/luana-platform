@@ -60,7 +60,7 @@ export function useReEngagementPatterns(args: UseReEngagementPatternsArgs) {
 
       return vitaliaFetch<PatternListResponse>(
         `/api/v1/vitalia/fidelization/re-engagement/patterns?${params.toString()}`,
-        { token, tenantId: orgId }
+        { token, tenantId: orgId },
       );
     },
     enabled: isLoaded && isSignedIn === true,

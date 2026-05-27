@@ -37,10 +37,7 @@ interface ConversationThreadProps {
 function MessageSkeleton({ width }: { width: string }) {
   return (
     <div
-      className={cn(
-        "h-10 animate-pulse rounded-xl vt-bg-muted",
-        width
-      )}
+      className={cn("h-10 animate-pulse rounded-xl vt-bg-muted", width)}
       aria-hidden="true"
     />
   );
@@ -54,7 +51,11 @@ export function ConversationThread({
   conversationId,
   className,
 }: ConversationThreadProps) {
-  const { data: detail, isLoading, isError } = useConversationDetail(conversationId);
+  const {
+    data: detail,
+    isLoading,
+    isError,
+  } = useConversationDetail(conversationId);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom on new messages
@@ -92,7 +93,7 @@ export function ConversationThread({
       <div
         className={cn(
           "flex flex-col h-full items-center justify-center gap-2 p-8 text-center",
-          className
+          className,
         )}
         data-testid="conversation-thread-error"
         role="alert"
@@ -100,9 +101,7 @@ export function ConversationThread({
         <p className="text-sm font-medium vt-text-foreground">
           {INBOX_COPY.errors.loadThread}
         </p>
-        <p className="text-xs vt-text-muted">
-          {INBOX_COPY.errors.retry}
-        </p>
+        <p className="text-xs vt-text-muted">{INBOX_COPY.errors.retry}</p>
       </div>
     );
   }
@@ -141,7 +140,7 @@ export function ConversationThread({
                 "rounded-xl px-3 py-2 text-sm max-w-[80%]",
                 msg.sender_type === "patient"
                   ? "vt-bg-muted vt-text-foreground self-start"
-                  : "vt-bg-primary/12 vt-text-primary ml-auto"
+                  : "vt-bg-primary/12 vt-text-primary ml-auto",
               )}
             >
               {msg.body_text ?? "[media]"}

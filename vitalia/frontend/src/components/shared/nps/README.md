@@ -27,22 +27,22 @@ import { NPSTagBadge } from "@/components/shared/nps";
 
 ## Props
 
-| Prop | Tipo | Default | Descripción |
-|---|---|---|---|
-| `score` | `number \| null \| undefined` | — | Puntaje NPS 0–10. `null`/`undefined` muestra "Sin NPS". |
-| `size` | `"sm" \| "md" \| "lg"` | `"md"` | Tamaño visual del badge. |
-| `variant` | `"badge" \| "chip" \| "tag"` | `"badge"` | Forma del contenedor. |
-| `className` | `string` | — | Clases CSS adicionales aplicadas al elemento raíz. |
+| Prop        | Tipo                          | Default   | Descripción                                             |
+| ----------- | ----------------------------- | --------- | ------------------------------------------------------- |
+| `score`     | `number \| null \| undefined` | —         | Puntaje NPS 0–10. `null`/`undefined` muestra "Sin NPS". |
+| `size`      | `"sm" \| "md" \| "lg"`        | `"md"`    | Tamaño visual del badge.                                |
+| `variant`   | `"badge" \| "chip" \| "tag"`  | `"badge"` | Forma del contenedor.                                   |
+| `className` | `string`                      | —         | Clases CSS adicionales aplicadas al elemento raíz.      |
 
 ---
 
 ## Categorías y colores
 
-| Rango | Categoría | Color |
-|---|---|---|
-| 0–6 | Detractor | Rojo (`vt-bg-danger-12` + `vt-text-danger`) |
-| 7–8 | Pasivo | Amarillo (`vt-bg-warning-12` + `vt-text-warning`) |
-| 9–10 | Promotor | Verde (`vt-bg-success-12` + `vt-text-success`) |
+| Rango | Categoría | Color                                             |
+| ----- | --------- | ------------------------------------------------- |
+| 0–6   | Detractor | Rojo (`vt-bg-danger-12` + `vt-text-danger`)       |
+| 7–8   | Pasivo    | Amarillo (`vt-bg-warning-12` + `vt-text-warning`) |
+| 9–10  | Promotor  | Verde (`vt-bg-success-12` + `vt-text-success`)    |
 
 Todos los colores usan clases `vt-*` de `globals.css`. No hay literales `hsl()`/`#hex` en el componente (arch fitness FE-A1).
 
@@ -50,11 +50,11 @@ Todos los colores usan clases `vt-*` de `globals.css`. No hay literales `hsl()`/
 
 ## Variantes de forma (`variant`)
 
-| Valor | Radio | Uso recomendado |
-|---|---|---|
-| `badge` | `var(--radius)` = 0.5rem | Default — uso general |
-| `chip` | `var(--radius-pill)` = 999px | Pill — inline filter chips |
-| `tag` | `rounded-sm` | Compacto — celdas de tabla |
+| Valor   | Radio                        | Uso recomendado            |
+| ------- | ---------------------------- | -------------------------- |
+| `badge` | `var(--radius)` = 0.5rem     | Default — uso general      |
+| `chip`  | `var(--radius-pill)` = 999px | Pill — inline filter chips |
+| `tag`   | `rounded-sm`                 | Compacto — celdas de tabla |
 
 ---
 

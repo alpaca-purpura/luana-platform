@@ -11,7 +11,8 @@
 import { test, expect } from "../../../fixtures/aurora-dental-ar.fixture";
 
 // Graceful import — @axe-core/playwright may not be installed
-let AxeBuilder: (typeof import("@axe-core/playwright"))["default"] | null = null;
+let AxeBuilder: (typeof import("@axe-core/playwright"))["default"] | null =
+  null;
 
 test.describe("Accessibility — Vitalia UI axe-core scan (Aurora AR)", () => {
   test.beforeAll(async () => {
@@ -28,7 +29,10 @@ test.describe("Accessibility — Vitalia UI axe-core scan (Aurora AR)", () => {
     auroraPage: page,
   }) => {
     if (!AxeBuilder) {
-      test.skip(true, "@axe-core/playwright not installed — run: npm i -D @axe-core/playwright");
+      test.skip(
+        true,
+        "@axe-core/playwright not installed — run: npm i -D @axe-core/playwright",
+      );
       return;
     }
 
@@ -40,18 +44,18 @@ test.describe("Accessibility — Vitalia UI axe-core scan (Aurora AR)", () => {
       .analyze();
 
     const criticalOrSerious = results.violations.filter(
-      (v) => v.impact === "critical" || v.impact === "serious"
+      (v) => v.impact === "critical" || v.impact === "serious",
     );
 
     if (criticalOrSerious.length > 0) {
       const details = criticalOrSerious
         .map(
           (v) =>
-            `[${v.impact?.toUpperCase()}] ${v.id}: ${v.description}\n  Nodes: ${v.nodes.map((n) => n.target.join(", ")).join("; ")}`
+            `[${v.impact?.toUpperCase()}] ${v.id}: ${v.description}\n  Nodes: ${v.nodes.map((n) => n.target.join(", ")).join("; ")}`,
         )
         .join("\n");
       throw new Error(
-        `Brand Studio has ${criticalOrSerious.length} critical/serious a11y violations:\n${details}`
+        `Brand Studio has ${criticalOrSerious.length} critical/serious a11y violations:\n${details}`,
       );
     }
 
@@ -62,7 +66,10 @@ test.describe("Accessibility — Vitalia UI axe-core scan (Aurora AR)", () => {
     auroraPage: page,
   }) => {
     if (!AxeBuilder) {
-      test.skip(true, "@axe-core/playwright not installed — run: npm i -D @axe-core/playwright");
+      test.skip(
+        true,
+        "@axe-core/playwright not installed — run: npm i -D @axe-core/playwright",
+      );
       return;
     }
 
@@ -74,7 +81,7 @@ test.describe("Accessibility — Vitalia UI axe-core scan (Aurora AR)", () => {
       .analyze();
 
     const criticalOrSerious = results.violations.filter(
-      (v) => v.impact === "critical" || v.impact === "serious"
+      (v) => v.impact === "critical" || v.impact === "serious",
     );
 
     expect(criticalOrSerious).toHaveLength(0);
@@ -84,7 +91,10 @@ test.describe("Accessibility — Vitalia UI axe-core scan (Aurora AR)", () => {
     auroraPage: page,
   }) => {
     if (!AxeBuilder) {
-      test.skip(true, "@axe-core/playwright not installed — run: npm i -D @axe-core/playwright");
+      test.skip(
+        true,
+        "@axe-core/playwright not installed — run: npm i -D @axe-core/playwright",
+      );
       return;
     }
 
@@ -96,7 +106,7 @@ test.describe("Accessibility — Vitalia UI axe-core scan (Aurora AR)", () => {
       .analyze();
 
     const criticalOrSerious = results.violations.filter(
-      (v) => v.impact === "critical" || v.impact === "serious"
+      (v) => v.impact === "critical" || v.impact === "serious",
     );
 
     expect(criticalOrSerious).toHaveLength(0);
@@ -106,7 +116,10 @@ test.describe("Accessibility — Vitalia UI axe-core scan (Aurora AR)", () => {
     auroraPage: page,
   }) => {
     if (!AxeBuilder) {
-      test.skip(true, "@axe-core/playwright not installed — run: npm i -D @axe-core/playwright");
+      test.skip(
+        true,
+        "@axe-core/playwright not installed — run: npm i -D @axe-core/playwright",
+      );
       return;
     }
 
@@ -118,7 +131,7 @@ test.describe("Accessibility — Vitalia UI axe-core scan (Aurora AR)", () => {
       .analyze();
 
     const criticalOrSerious = results.violations.filter(
-      (v) => v.impact === "critical" || v.impact === "serious"
+      (v) => v.impact === "critical" || v.impact === "serious",
     );
 
     expect(criticalOrSerious).toHaveLength(0);

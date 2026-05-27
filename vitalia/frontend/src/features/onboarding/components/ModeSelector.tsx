@@ -140,7 +140,11 @@ export function ModeSelector({
   ];
 
   return (
-    <div className={cn("space-y-3", className)} role="group" aria-label={copy.label}>
+    <div
+      className={cn("space-y-3", className)}
+      role="group"
+      aria-label={copy.label}
+    >
       <p className="text-sm font-medium text-gray-700">{copy.label}</p>
       <div className="flex flex-col gap-2">
         {options.map((option) => {
@@ -173,19 +177,21 @@ export function ModeSelector({
                     ? "border-blue-700 bg-blue-50 text-blue-900"
                     : "border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50",
                   option.disabled &&
-                    "opacity-50 cursor-not-allowed hover:bg-white hover:border-gray-200"
+                    "opacity-50 cursor-not-allowed hover:bg-white hover:border-gray-200",
                 )}
               >
                 <span
                   className={cn(
                     "flex-shrink-0 mt-0.5",
-                    isSelected ? "text-blue-700" : "text-gray-400"
+                    isSelected ? "text-blue-700" : "text-gray-400",
                   )}
                 >
                   {option.icon}
                 </span>
                 <span className="flex-1 min-w-0">
-                  <span className="block text-sm font-medium">{option.label}</span>
+                  <span className="block text-sm font-medium">
+                    {option.label}
+                  </span>
                   <span className="block text-xs text-gray-500 mt-0.5">
                     {option.description}
                   </span>
@@ -209,7 +215,7 @@ export function ModeSelector({
                     "absolute left-1/2 -translate-x-1/2 -bottom-7 z-10",
                     "bg-gray-800 text-white text-xs rounded px-2 py-1 whitespace-nowrap",
                     "pointer-events-none transition-opacity duration-150",
-                    hoveredTooltip === option.id ? "opacity-100" : "opacity-0"
+                    hoveredTooltip === option.id ? "opacity-100" : "opacity-0",
                   )}
                 >
                   {option.disabledTooltip}

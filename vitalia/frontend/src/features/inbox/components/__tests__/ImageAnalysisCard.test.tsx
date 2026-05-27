@@ -12,13 +12,21 @@ import { INBOX_COPY } from "../../copy";
 describe("ImageAnalysisCard", () => {
   it("renders with correct aria-label", () => {
     render(<ImageAnalysisCard mediaUrl="https://cdn.example.com/image.jpg" />);
-    expect(screen.getByRole("figure", { name: INBOX_COPY.multimedia.imagePlaceholder.ariaLabel })).toBeInTheDocument();
+    expect(
+      screen.getByRole("figure", {
+        name: INBOX_COPY.multimedia.imagePlaceholder.ariaLabel,
+      }),
+    ).toBeInTheDocument();
   });
 
   it("renders the placeholder heading and body from INBOX_COPY", () => {
     render(<ImageAnalysisCard mediaUrl="https://cdn.example.com/image.jpg" />);
-    expect(screen.getByText(INBOX_COPY.multimedia.imagePlaceholder.heading)).toBeInTheDocument();
-    expect(screen.getByText(INBOX_COPY.multimedia.imagePlaceholder.body)).toBeInTheDocument();
+    expect(
+      screen.getByText(INBOX_COPY.multimedia.imagePlaceholder.heading),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(INBOX_COPY.multimedia.imagePlaceholder.body),
+    ).toBeInTheDocument();
   });
 
   it("renders an img element with the provided media URL", () => {
@@ -28,12 +36,18 @@ describe("ImageAnalysisCard", () => {
     const img = screen.getByRole("img");
     expect(img).toBeInTheDocument();
     // alt should match copy
-    expect(img).toHaveAttribute("alt", INBOX_COPY.multimedia.imagePlaceholder.ariaLabel);
+    expect(img).toHaveAttribute(
+      "alt",
+      INBOX_COPY.multimedia.imagePlaceholder.ariaLabel,
+    );
   });
 
   it("accepts className prop without errors", () => {
     const { container } = render(
-      <ImageAnalysisCard mediaUrl="https://cdn.example.com/image.jpg" className="custom-class" />
+      <ImageAnalysisCard
+        mediaUrl="https://cdn.example.com/image.jpg"
+        className="custom-class"
+      />,
     );
     expect(container.firstChild).toBeInTheDocument();
   });

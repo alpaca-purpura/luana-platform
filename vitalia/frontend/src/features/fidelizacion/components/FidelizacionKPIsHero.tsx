@@ -34,7 +34,13 @@ interface StatCardProps {
   className?: string;
 }
 
-function StatCard({ label, value, trend, ariaLabel, className }: StatCardProps) {
+function StatCard({
+  label,
+  value,
+  trend,
+  ariaLabel,
+  className,
+}: StatCardProps) {
   const copy = FIDELIZACION_COPY.kpis.trend;
   const trendIcon =
     trend === undefined
@@ -59,7 +65,7 @@ function StatCard({ label, value, trend, ariaLabel, className }: StatCardProps) 
       aria-label={ariaLabel}
       className={cn(
         "flex flex-col gap-1 rounded-lg border border-[hsl(var(--vitalia-border,220_13%_91%))] bg-white p-4",
-        className
+        className,
       )}
     >
       <span className="text-xs font-medium text-[hsl(var(--vitalia-muted,220_10%_55%))] uppercase tracking-wide">
@@ -101,7 +107,7 @@ export function FidelizacionKPIsHero({
         aria-busy="true"
         className={cn(
           "grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5",
-          className
+          className,
         )}
       >
         {Array.from({ length: 5 }).map((_, i) => (
@@ -116,14 +122,16 @@ export function FidelizacionKPIsHero({
       aria-label={FIDELIZACION_COPY.accessibility.kpisRegion}
       className={cn(
         "grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5",
-        className
+        className,
       )}
     >
       <StatCard
         label={copy.patientsInFollowup.label}
         value={data?.patientsInFollowup ?? 0}
         trend={data?.trendVsPreviousPeriod.patientsInFollowup}
-        ariaLabel={copy.patientsInFollowup.ariaLabel(data?.patientsInFollowup ?? 0)}
+        ariaLabel={copy.patientsInFollowup.ariaLabel(
+          data?.patientsInFollowup ?? 0,
+        )}
       />
       <StatCard
         label={copy.nearAbandonment.label}
@@ -149,7 +157,9 @@ export function FidelizacionKPIsHero({
       />
       <StatCard
         label={copy.npsAverage.label}
-        value={data?.npsAverage !== undefined ? data.npsAverage.toFixed(1) : "—"}
+        value={
+          data?.npsAverage !== undefined ? data.npsAverage.toFixed(1) : "—"
+        }
         trend={data?.trendVsPreviousPeriod.npsAverage}
         ariaLabel={copy.npsAverage.ariaLabel(data?.npsAverage ?? 0)}
       />

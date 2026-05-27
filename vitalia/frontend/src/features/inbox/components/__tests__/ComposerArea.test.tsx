@@ -47,7 +47,12 @@ vi.mock("@/lib/api/fetchClient", () => ({
     action_receipt_expires_at: null,
   })),
   ApiError: class ApiError extends Error {
-    constructor(public status: number, message: string) { super(message); }
+    constructor(
+      public status: number,
+      message: string,
+    ) {
+      super(message);
+    }
   },
 }));
 
@@ -90,20 +95,31 @@ describe("ComposerArea", () => {
 
   it("renders attach button with correct aria-label", () => {
     render(<ComposerArea conversation={makeConversation()} />, { wrapper });
-    expect(screen.getByRole("button", { name: INBOX_COPY.composer.attachAriaLabel })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: INBOX_COPY.composer.attachAriaLabel }),
+    ).toBeInTheDocument();
   });
 
   it("renders SendButton with AI label for handler_mode=ai", () => {
-    render(<ComposerArea conversation={makeConversation({ handler_mode: "ai" })} />, { wrapper });
-    expect(screen.getByRole("button", { name: INBOX_COPY.composer.sendButtonAi })).toBeInTheDocument();
+    render(
+      <ComposerArea conversation={makeConversation({ handler_mode: "ai" })} />,
+      { wrapper },
+    );
+    expect(
+      screen.getByRole("button", { name: INBOX_COPY.composer.sendButtonAi }),
+    ).toBeInTheDocument();
   });
 
   it("renders SendButton with human label for handler_mode=human", () => {
     render(
-      <ComposerArea conversation={makeConversation({ handler_mode: "human" })} />,
-      { wrapper }
+      <ComposerArea
+        conversation={makeConversation({ handler_mode: "human" })}
+      />,
+      { wrapper },
     );
-    expect(screen.getByRole("button", { name: INBOX_COPY.composer.sendButtonHuman })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: INBOX_COPY.composer.sendButtonHuman }),
+    ).toBeInTheDocument();
   });
 
   it("shows ProposalCardBanner when pendingProposalText is provided", () => {
@@ -112,15 +128,23 @@ describe("ComposerArea", () => {
         conversation={makeConversation()}
         pendingProposalText="Hola, te puedo ayudar con tu consulta."
       />,
-      { wrapper }
+      { wrapper },
     );
-    expect(screen.getByRole("region", { name: INBOX_COPY.proposalCardBanner.heading })).toBeInTheDocument();
-    expect(screen.getByText("Hola, te puedo ayudar con tu consulta.")).toBeInTheDocument();
+    expect(
+      screen.getByRole("region", {
+        name: INBOX_COPY.proposalCardBanner.heading,
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Hola, te puedo ayudar con tu consulta."),
+    ).toBeInTheDocument();
   });
 
   it("send button is disabled when text is empty", () => {
     render(<ComposerArea conversation={makeConversation()} />, { wrapper });
-    const sendBtn = screen.getByRole("button", { name: INBOX_COPY.composer.sendButtonAi });
+    const sendBtn = screen.getByRole("button", {
+      name: INBOX_COPY.composer.sendButtonAi,
+    });
     expect(sendBtn).toBeDisabled();
   });
 
@@ -128,7 +152,9 @@ describe("ComposerArea", () => {
     render(<ComposerArea conversation={makeConversation()} />, { wrapper });
     const textarea = screen.getByRole("textbox");
     fireEvent.change(textarea, { target: { value: "Hola" } });
-    const sendBtn = screen.getByRole("button", { name: INBOX_COPY.composer.sendButtonAi });
+    const sendBtn = screen.getByRole("button", {
+      name: INBOX_COPY.composer.sendButtonAi,
+    });
     expect(sendBtn).not.toBeDisabled();
   });
 
@@ -138,10 +164,14 @@ describe("ComposerArea", () => {
         conversation={makeConversation()}
         pendingProposalText="Propuesta de Adrián"
       />,
-      { wrapper }
+      { wrapper },
     );
     // Click edit CTA — should copy proposal text to textarea
-    fireEvent.click(screen.getByRole("button", { name: INBOX_COPY.proposalCardBanner.editCta }));
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: INBOX_COPY.proposalCardBanner.editCta,
+      }),
+    );
     const textarea = screen.getByRole("textbox") as HTMLTextAreaElement;
     expect(textarea.value).toBe("Propuesta de Adrián");
   });

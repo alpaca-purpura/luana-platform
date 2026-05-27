@@ -169,7 +169,7 @@ export function ManualCallLoggedModal({
             className={cn(
               "rounded px-3 py-1.5 text-sm font-medium text-white",
               "bg-[hsl(var(--vitalia-primary,210_90%_50%))] hover:bg-[hsl(var(--vitalia-primary-hover,210_90%_45%))]",
-              "disabled:opacity-60"
+              "disabled:opacity-60",
             )}
           >
             {mutation.isPending ? "Registrando..." : copy.confirm}

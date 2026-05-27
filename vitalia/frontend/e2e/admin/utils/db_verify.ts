@@ -12,8 +12,7 @@
 import type { APIRequestContext } from "@playwright/test";
 import type { AuditLogEntry, DbStateResponse } from "./types";
 
-const BACKEND_URL =
-  process.env["E2E_BACKEND_URL"] ?? "http://127.0.0.1:8002";
+const BACKEND_URL = process.env["E2E_BACKEND_URL"] ?? "http://127.0.0.1:8002";
 const INTERNAL_TOKEN = process.env["VITALIA_INTERNAL_API_TOKEN"] ?? "";
 
 /**
@@ -28,9 +27,7 @@ export async function getDbState(
     { headers: { "X-Internal-Token": INTERNAL_TOKEN } },
   );
   if (!res.ok()) {
-    throw new Error(
-      `db-state ${res.status()}: ${await res.text()}`,
-    );
+    throw new Error(`db-state ${res.status()}: ${await res.text()}`);
   }
   return res.json() as Promise<DbStateResponse>;
 }
@@ -47,9 +44,7 @@ export async function getAuditLog(
   const params: Record<string, string> = {};
   if (opts.action) params["action"] = opts.action;
   if (opts.sinceMsAgo) {
-    params["since"] = new Date(
-      Date.now() - opts.sinceMsAgo,
-    ).toISOString();
+    params["since"] = new Date(Date.now() - opts.sinceMsAgo).toISOString();
   }
   const qs = new URLSearchParams(params).toString();
   const url = `${BACKEND_URL}/api/v1/vitalia/admin/audit-log${qs ? "?" + qs : ""}`;

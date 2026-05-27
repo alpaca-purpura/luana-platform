@@ -22,10 +22,10 @@
  */
 export function formatCopy(
   template: string,
-  vars: Record<string, string>
+  vars: Record<string, string>,
 ): string {
   return Object.entries(vars).reduce(
     (result, [key, value]) => result.replace(`{${key}}`, value),
-    template
+    template,
   );
 }

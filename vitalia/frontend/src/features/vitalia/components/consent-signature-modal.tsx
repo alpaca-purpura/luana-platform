@@ -75,7 +75,10 @@ export function ConsentSignatureModal({
       <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4 flex flex-col max-h-screen">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <h2 id="consent-modal-title" className="text-base font-semibold text-gray-900">
+          <h2
+            id="consent-modal-title"
+            className="text-base font-semibold text-gray-900"
+          >
             {title}
           </h2>
           <button
@@ -114,7 +117,7 @@ export function ConsentSignatureModal({
           <label
             className={cn(
               "flex items-start gap-3 cursor-pointer",
-              !hasScrolledToEnd && "opacity-50 pointer-events-none"
+              !hasScrolledToEnd && "opacity-50 pointer-events-none",
             )}
           >
             <input
@@ -136,7 +139,7 @@ export function ConsentSignatureModal({
               htmlFor="consent-signature"
               className={cn(
                 "block text-sm font-medium text-gray-700 mb-1",
-                !accepted && "opacity-50"
+                !accepted && "opacity-50",
               )}
             >
               {MICROCOPY_BOOKING.consent.signaturePrompt}
@@ -153,7 +156,7 @@ export function ConsentSignatureModal({
                 "w-full rounded-md border px-3 py-2 text-sm",
                 "focus:outline-none focus:ring-2 focus:ring-blue-500",
                 "disabled:opacity-50 disabled:cursor-not-allowed",
-                accepted ? "border-gray-300" : "border-gray-200 bg-gray-50"
+                accepted ? "border-gray-300" : "border-gray-200 bg-gray-50",
               )}
             />
           </div>
@@ -178,7 +181,7 @@ export function ConsentSignatureModal({
                 "focus:outline-none focus:ring-2 focus:ring-blue-500",
                 canSign && !isLoading
                   ? "bg-blue-600 hover:bg-blue-700 text-white"
-                  : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                  : "bg-gray-200 text-gray-400 cursor-not-allowed",
               )}
             >
               {isLoading ? "Firmando..." : "Firmar y aceptar"}

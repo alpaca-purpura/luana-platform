@@ -122,8 +122,7 @@ export const WIZARD_COPY = {
     landingTitle: "Portada de tu sitio",
     landingCtaDefault: "Reservar consulta",
     loadingText: "Actualizando vista previa...",
-    emptyState:
-      "La vista previa aparece cuando confirmes tus primeros datos.",
+    emptyState: "La vista previa aparece cuando confirmes tus primeros datos.",
     costLabel: "costo estimado",
     modelLabel: "modelo",
   },
@@ -151,13 +150,13 @@ export const WIZARD_COPY = {
       "No pudimos analizar el contenido. Intenta con otra URL o escribe los datos manualmente.",
     confirmSlotFailed:
       "No pudimos guardar este dato. Por favor, intenta nuevamente.",
-    simulateFailed:
-      "No pudimos generar la vista previa en este momento.",
+    simulateFailed: "No pudimos generar la vista previa en este momento.",
     completeFailed:
       "Hubo un error al finalizar la configuración. Tus datos están guardados.",
     sessionExpired:
       "Tu sesión expiró. Tus datos se guardaron — puedes continuar desde donde lo dejaste.",
-    urlInvalid: "Por favor, ingresa una URL válida (debe comenzar con https://).",
+    urlInvalid:
+      "Por favor, ingresa una URL válida (debe comenzar con https://).",
     retryButton: "Intentar nuevamente",
     genericError: "Algo salió mal. Por favor, intenta de nuevo.",
   },

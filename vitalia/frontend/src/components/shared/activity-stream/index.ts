@@ -4,4 +4,7 @@
  */
 
 export { ActivityStreamSticky } from "./ActivityStreamSticky";
-export type { ActivityStreamStickyProps, ActivityItem } from "./ActivityStreamSticky";
+export type {
+  ActivityStreamStickyProps,
+  ActivityItem,
+} from "./ActivityStreamSticky";

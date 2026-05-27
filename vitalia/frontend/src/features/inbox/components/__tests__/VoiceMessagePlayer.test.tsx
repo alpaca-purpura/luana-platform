@@ -45,14 +45,18 @@ describe("VoiceMessagePlayer", () => {
         durationS={12}
         transcriptionText="Texto con baja confianza"
         transcriptionConfidence={0.3}
-      />
+      />,
     );
 
     // Click to open transcript
-    await user.click(screen.getByText(INBOX_COPY.multimedia.audioPlayer.transcript));
+    await user.click(
+      screen.getByText(INBOX_COPY.multimedia.audioPlayer.transcript),
+    );
 
     // Fallback text should be shown, NOT the raw transcription
-    expect(screen.getByText(INBOX_COPY.multimedia.audioPlayer.transcriptFailed)).toBeInTheDocument();
+    expect(
+      screen.getByText(INBOX_COPY.multimedia.audioPlayer.transcriptFailed),
+    ).toBeInTheDocument();
     expect(screen.queryByText("Texto con baja confianza")).toBeNull();
   });
 
@@ -63,11 +67,15 @@ describe("VoiceMessagePlayer", () => {
         mediaUrl="https://cdn.example.com/audio.webm"
         transcriptionText={null}
         transcriptionConfidence={null}
-      />
+      />,
     );
 
-    await user.click(screen.getByText(INBOX_COPY.multimedia.audioPlayer.transcript));
-    expect(screen.getByText(INBOX_COPY.multimedia.audioPlayer.transcriptFailed)).toBeInTheDocument();
+    await user.click(
+      screen.getByText(INBOX_COPY.multimedia.audioPlayer.transcript),
+    );
+    expect(
+      screen.getByText(INBOX_COPY.multimedia.audioPlayer.transcriptFailed),
+    ).toBeInTheDocument();
   });
 
   it("shows real transcript when confidence >= 0.5", async () => {
@@ -78,12 +86,16 @@ describe("VoiceMessagePlayer", () => {
         mediaUrl="https://cdn.example.com/audio.webm"
         transcriptionText={transcript}
         transcriptionConfidence={0.85}
-      />
+      />,
     );
 
-    await user.click(screen.getByText(INBOX_COPY.multimedia.audioPlayer.transcript));
+    await user.click(
+      screen.getByText(INBOX_COPY.multimedia.audioPlayer.transcript),
+    );
     expect(screen.getByText(transcript)).toBeInTheDocument();
-    expect(screen.queryByText(INBOX_COPY.multimedia.audioPlayer.transcriptFailed)).toBeNull();
+    expect(
+      screen.queryByText(INBOX_COPY.multimedia.audioPlayer.transcriptFailed),
+    ).toBeNull();
   });
 
   it("renders audio region with correct aria-label", () => {
@@ -93,26 +105,28 @@ describe("VoiceMessagePlayer", () => {
         durationS={30}
         transcriptionText="Prueba"
         transcriptionConfidence={0.9}
-      />
+      />,
     );
-    expect(screen.getByRole("region", { name: INBOX_COPY.multimedia.audioPlayer.ariaLabel })).toBeInTheDocument();
+    expect(
+      screen.getByRole("region", {
+        name: INBOX_COPY.multimedia.audioPlayer.ariaLabel,
+      }),
+    ).toBeInTheDocument();
   });
 
   it("renders play button", () => {
     render(
-      <VoiceMessagePlayer
-        mediaUrl="https://cdn.example.com/audio.webm"
-      />
+      <VoiceMessagePlayer mediaUrl="https://cdn.example.com/audio.webm" />,
     );
-    expect(screen.getByRole("button", { name: "Reproducir" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Reproducir" }),
+    ).toBeInTheDocument();
   });
 
   it("cycles speed button through options", async () => {
     const user = userEvent.setup();
     render(
-      <VoiceMessagePlayer
-        mediaUrl="https://cdn.example.com/audio.webm"
-      />
+      <VoiceMessagePlayer mediaUrl="https://cdn.example.com/audio.webm" />,
     );
     const speedBtn = screen.getByRole("button", { name: /velocidad/i });
     expect(speedBtn).toHaveTextContent("1x");

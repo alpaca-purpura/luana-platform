@@ -21,7 +21,8 @@ vi.mock("../../config/copy", () => ({
   WIZARD_COPY: {
     closeModal: {
       title: "¿Deseas cerrar el asistente?",
-      description: "Tu progreso se guarda automáticamente. Puedes continuar la configuración cuando quieras.",
+      description:
+        "Tu progreso se guarda automáticamente. Puedes continuar la configuración cuando quieras.",
       cancelButton: "Continuar configurando",
       confirmButton: "Cerrar por ahora",
     },
@@ -43,7 +44,11 @@ describe("CloseSetupWarningModal", () => {
 
   it("renders null when isOpen is false", () => {
     const { container } = render(
-      <CloseSetupWarningModal isOpen={false} onConfirmClose={vi.fn()} onCancel={vi.fn()} />
+      <CloseSetupWarningModal
+        isOpen={false}
+        onConfirmClose={vi.fn()}
+        onCancel={vi.fn()}
+      />,
     );
     expect(container.firstChild).toBeNull();
   });
@@ -56,17 +61,23 @@ describe("CloseSetupWarningModal", () => {
 
   it("renders cancel button with correct label", () => {
     render(<CloseSetupWarningModal {...defaultProps} />);
-    expect(screen.getByRole("button", { name: "Continuar configurando" })).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Continuar configurando" }),
+    ).toBeTruthy();
   });
 
   it("renders confirm button with correct label", () => {
     render(<CloseSetupWarningModal {...defaultProps} />);
-    expect(screen.getByRole("button", { name: "Cerrar por ahora" })).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Cerrar por ahora" }),
+    ).toBeTruthy();
   });
 
   it("calls onCancel when cancel button clicked", () => {
     render(<CloseSetupWarningModal {...defaultProps} />);
-    fireEvent.click(screen.getByRole("button", { name: "Continuar configurando" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Continuar configurando" }),
+    );
     expect(defaultProps.onCancel).toHaveBeenCalledTimes(1);
   });
 

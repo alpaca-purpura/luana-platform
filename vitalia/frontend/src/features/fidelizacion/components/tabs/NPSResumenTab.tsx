@@ -30,12 +30,18 @@ export function NPSResumenTab({ period }: NPSResumenTabProps) {
       {isPending && (
         <div aria-busy="true" className="space-y-2">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-12 animate-pulse rounded bg-[hsl(var(--vitalia-bg-soft,220_20%_96%))]" />
+            <div
+              key={i}
+              className="h-12 animate-pulse rounded bg-[hsl(var(--vitalia-bg-soft,220_20%_96%))]"
+            />
           ))}
         </div>
       )}
       {isError && (
-        <div role="alert" className="text-sm text-[hsl(var(--vitalia-danger,0_75%_45%))]">
+        <div
+          role="alert"
+          className="text-sm text-[hsl(var(--vitalia-danger,0_75%_45%))]"
+        >
           {FIDELIZACION_COPY.errors.generic}
         </div>
       )}

@@ -38,7 +38,7 @@ const ACTIVITY_STREAM_POLL_INTERVAL_MS = 5_000;
  */
 export function useActivityStream(
   conversationId: string | null | undefined,
-  enabled: boolean = false
+  enabled: boolean = false,
 ) {
   const { getToken, orgId, isLoaded, isSignedIn } = useAuth();
   const clinicId = useClinicId();
@@ -51,7 +51,7 @@ export function useActivityStream(
       if (!conversationId) throw new Error("conversationId required");
       return fetchClient<ActivityStreamResponse>(
         `/api/v1/vitalia/inbox/conversations/${conversationId}/activity-stream`,
-        { token, tenantId: orgId, clinicId }
+        { token, tenantId: orgId, clinicId },
       );
     },
     enabled: isLoaded && isSignedIn === true && !!conversationId && enabled,

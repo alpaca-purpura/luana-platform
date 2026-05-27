@@ -51,7 +51,7 @@ export function ComposerAttachButton({
         fileInputRef.current.value = "";
       }
     },
-    [conversationId, attachMedia, enqueueAttach]
+    [conversationId, attachMedia, enqueueAttach],
   );
 
   const isLoading = attachMedia.isPending;
@@ -81,10 +81,12 @@ export function ComposerAttachButton({
           "hover:vt-bg-cian-8 hover:vt-text-cian hover:vt-border-cian",
           "transition-colors duration-150",
           "disabled:opacity-50 disabled:cursor-not-allowed",
-          className
+          className,
         )}
       >
-        <span aria-hidden="true" className="text-sm">📎</span>
+        <span aria-hidden="true" className="text-sm">
+          📎
+        </span>
       </button>
     </>
   );

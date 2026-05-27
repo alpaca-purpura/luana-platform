@@ -27,14 +27,14 @@ export type WizardStep =
 export type SlotStatus = "confirmed" | "pending" | "optional" | "rejected";
 
 /** Draft status lifecycle */
-export type DraftStatus =
-  | "in_progress"
-  | "completed"
-  | "expired"
-  | "abandoned";
+export type DraftStatus = "in_progress" | "completed" | "expired" | "abandoned";
 
 /** Input extraction source */
-export type SlotSource = "user_text" | "user_correction" | "extracted_url" | "extracted_doc";
+export type SlotSource =
+  | "user_text"
+  | "user_correction"
+  | "extracted_url"
+  | "extracted_doc";
 
 // ---------------------------------------------------------------------------
 // Slot shape (mirrors WizardSlot from copilot/domain/entities/)

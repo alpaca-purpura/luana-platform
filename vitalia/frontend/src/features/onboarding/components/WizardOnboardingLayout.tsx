@@ -64,7 +64,7 @@ function VitaliaLogo() {
         className={cn(
           "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
           "bg-gradient-to-br from-blue-700 to-purple-600",
-          "text-white text-xs font-bold"
+          "text-white text-xs font-bold",
         )}
         aria-hidden="true"
       >
@@ -74,7 +74,9 @@ function VitaliaLogo() {
         <p className="text-sm font-semibold text-gray-900">
           {WIZARD_COPY.topBar.title}
         </p>
-        <p className="text-[10px] text-gray-500">{WIZARD_COPY.topBar.subtitle}</p>
+        <p className="text-[10px] text-gray-500">
+          {WIZARD_COPY.topBar.subtitle}
+        </p>
       </div>
     </div>
   );
@@ -84,13 +86,18 @@ VitaliaLogo.displayName = "VitaliaLogo";
 
 function LoadingState() {
   return (
-    <div className="flex h-screen items-center justify-center" aria-live="polite">
+    <div
+      className="flex h-screen items-center justify-center"
+      aria-live="polite"
+    >
       <div className="text-center space-y-3">
         <div
           className="w-8 h-8 rounded-full border-2 border-blue-700 border-t-transparent animate-spin mx-auto"
           aria-hidden="true"
         />
-        <p className="text-sm text-gray-500">{WIZARD_COPY.loading.initializingWizard}</p>
+        <p className="text-sm text-gray-500">
+          {WIZARD_COPY.loading.initializingWizard}
+        </p>
       </div>
     </div>
   );
@@ -98,7 +105,13 @@ function LoadingState() {
 
 LoadingState.displayName = "LoadingState";
 
-function ErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
+function ErrorState({
+  message,
+  onRetry,
+}: {
+  message: string;
+  onRetry: () => void;
+}) {
   return (
     <div
       className="flex h-screen items-center justify-center p-6"
@@ -110,7 +123,18 @@ function ErrorState({ message, onRetry }: { message: string; onRetry: () => void
           className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto"
           aria-hidden="true"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-600" aria-hidden="true">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-red-600"
+            aria-hidden="true"
+          >
             <circle cx="12" cy="12" r="10" />
             <line x1="15" y1="9" x2="9" y2="15" />
             <line x1="9" y1="9" x2="15" y2="15" />
@@ -144,7 +168,9 @@ export interface WizardOnboardingLayoutProps {
  * Main wizard onboarding layout — orchestrates all wizard sub-components.
  * This is the root Client Component for the /onboarding/wizard page.
  */
-export function WizardOnboardingLayout({ className }: WizardOnboardingLayoutProps) {
+export function WizardOnboardingLayout({
+  className,
+}: WizardOnboardingLayoutProps) {
   const router = useRouter();
   const { getToken, isLoaded, isSignedIn } = useAuth();
   const { organization } = useOrganization();
@@ -162,19 +188,23 @@ export function WizardOnboardingLayout({ className }: WizardOnboardingLayoutProp
   const [startError, setStartError] = useState<string | null>(null);
 
   // Draft query
-  const {
-    data: draftData,
-    error: draftError,
-  } = useWizardOnboardingState({ draftId });
+  const { data: draftData, error: draftError } = useWizardOnboardingState({
+    draftId,
+  });
 
   // SSE stream
   const [sseToken, setSseToken] = useState<string | null>(null);
-  const { isStreaming, latestMessage, error: sseError, disconnect: sseDisconnect } =
-    useWizardSSEStream({
-      draftId,
-      token: sseToken,
-      enabled: Boolean(draftId && step !== "complete"),
-      onEvent: useCallback((event: import("../types/wizard-onboarding.types").WizardSSEEvent) => {
+  const {
+    isStreaming,
+    latestMessage,
+    error: sseError,
+    disconnect: sseDisconnect,
+  } = useWizardSSEStream({
+    draftId,
+    token: sseToken,
+    enabled: Boolean(draftId && step !== "complete"),
+    onEvent: useCallback(
+      (event: import("../types/wizard-onboarding.types").WizardSSEEvent) => {
         if (event.type === "slot_extracted" && event.slot) {
           addSystemMessage({
             role: "assistant",
@@ -186,8 +216,10 @@ export function WizardOnboardingLayout({ className }: WizardOnboardingLayoutProp
         if (event.type === "step_transition" && event.nextStep) {
           advanceStep(event.nextStep);
         }
-      }, [advanceStep]),
-    });
+      },
+      [advanceStep],
+    ),
+  });
 
   // Slot extraction
   const extractionMutation = useWizardSlotExtraction({
@@ -209,15 +241,19 @@ export function WizardOnboardingLayout({ className }: WizardOnboardingLayoutProp
   // Live preview
   const slots = draftData?.slots ?? [];
   const profilePartial: Record<string, unknown> = {};
-  slots.filter((s) => s.status === "confirmed").forEach((s) => {
-    if (s.value) profilePartial[s.slotId] = s.value;
-  });
+  slots
+    .filter((s) => s.status === "confirmed")
+    .forEach((s) => {
+      if (s.value) profilePartial[s.slotId] = s.value;
+    });
 
-  const { data: previewSimData, isLoading: isPreviewLoading } = useWizardLivePreview({
-    draftId,
-    profilePartial: Object.keys(profilePartial).length > 0 ? profilePartial : null,
-    enabled: Boolean(draftId),
-  });
+  const { data: previewSimData, isLoading: isPreviewLoading } =
+    useWizardLivePreview({
+      draftId,
+      profilePartial:
+        Object.keys(profilePartial).length > 0 ? profilePartial : null,
+      enabled: Boolean(draftId),
+    });
 
   // Completion
   const completionMutation = useWizardCompletion({
@@ -249,7 +285,11 @@ export function WizardOnboardingLayout({ className }: WizardOnboardingLayoutProp
 
   // Confirm slot mutation
   const confirmSlotMutation = useMutation({
-    mutationFn: async (args: { slotId: string; value: string; source: SlotSource }) => {
+    mutationFn: async (args: {
+      slotId: string;
+      value: string;
+      source: SlotSource;
+    }) => {
       const token = await getToken();
       if (!token) throw new Error("No autenticado");
       const tenantId = organization?.id;
@@ -259,12 +299,17 @@ export function WizardOnboardingLayout({ className }: WizardOnboardingLayoutProp
     },
     onSuccess: (result) => {
       setConfirmingSlotId(null);
-      void queryClient.invalidateQueries({ queryKey: wizardQueryKeys.draft(draftId ?? "") });
+      void queryClient.invalidateQueries({
+        queryKey: wizardQueryKeys.draft(draftId ?? ""),
+      });
       if (result.allSlotsConfirmed) {
         completionMutation.mutate();
       }
       if (result.assistantMessage) {
-        addSystemMessage({ role: "assistant", content: result.assistantMessage });
+        addSystemMessage({
+          role: "assistant",
+          content: result.assistantMessage,
+        });
       }
     },
     onError: () => {
@@ -308,51 +353,64 @@ export function WizardOnboardingLayout({ className }: WizardOnboardingLayoutProp
   }, [isStreaming, latestMessage]);
 
   // Helpers
-  const addSystemMessage = useCallback((
-    msg: Omit<WizardChatMessage, "id" | "timestamp">
-  ) => {
-    setMessages((prev) => [
-      ...prev,
-      {
-        ...msg,
-        id: crypto.randomUUID(),
-        timestamp: new Date().toLocaleTimeString("es-419", {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      },
-    ]);
-  }, []);
+  const addSystemMessage = useCallback(
+    (msg: Omit<WizardChatMessage, "id" | "timestamp">) => {
+      setMessages((prev) => [
+        ...prev,
+        {
+          ...msg,
+          id: crypto.randomUUID(),
+          timestamp: new Date().toLocaleTimeString("es-419", {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        },
+      ]);
+    },
+    [],
+  );
 
-  const addErrorMessage = useCallback((text: string) => {
-    addSystemMessage({ role: "assistant", content: text });
-  }, [addSystemMessage]);
+  const addErrorMessage = useCallback(
+    (text: string) => {
+      addSystemMessage({ role: "assistant", content: text });
+    },
+    [addSystemMessage],
+  );
 
   // User sends message
-  const handleSend = useCallback((text: string) => {
-    addSystemMessage({ role: "user", content: text });
-    if (extractionMutation.isPending) return;
-    // If step is greet or extract, try URL extraction
-    if (/^https?:\/\//i.test(text)) {
-      extractionMutation.mutate({ url: text });
-    } else {
-      extractionMutation.mutate({ textContent: text });
-    }
-  }, [addSystemMessage, extractionMutation]);
+  const handleSend = useCallback(
+    (text: string) => {
+      addSystemMessage({ role: "user", content: text });
+      if (extractionMutation.isPending) return;
+      // If step is greet or extract, try URL extraction
+      if (/^https?:\/\//i.test(text)) {
+        extractionMutation.mutate({ url: text });
+      } else {
+        extractionMutation.mutate({ textContent: text });
+      }
+    },
+    [addSystemMessage, extractionMutation],
+  );
 
-  const handleConfirmSlot = useCallback((slotId: string, value: string, source: SlotSource) => {
-    setConfirmingSlotId(slotId);
-    confirmSlotMutation.mutate({ slotId, value, source });
-  }, [confirmSlotMutation]);
+  const handleConfirmSlot = useCallback(
+    (slotId: string, value: string, source: SlotSource) => {
+      setConfirmingSlotId(slotId);
+      confirmSlotMutation.mutate({ slotId, value, source });
+    },
+    [confirmSlotMutation],
+  );
 
-  const handleRejectSlot = useCallback((slotId: string) => {
-    addSystemMessage({
-      role: "assistant",
-      content: `Entendido, cuéntame el valor correcto para: ${
-        draftData?.slots.find((s) => s.slotId === slotId)?.label ?? slotId
-      }`,
-    });
-  }, [addSystemMessage, draftData]);
+  const handleRejectSlot = useCallback(
+    (slotId: string) => {
+      addSystemMessage({
+        role: "assistant",
+        content: `Entendido, cuéntame el valor correcto para: ${
+          draftData?.slots.find((s) => s.slotId === slotId)?.label ?? slotId
+        }`,
+      });
+    },
+    [addSystemMessage, draftData],
+  );
 
   // Loading state
   if (!isLoaded || startDraftMutation.isPending) {
@@ -383,7 +441,10 @@ export function WizardOnboardingLayout({ className }: WizardOnboardingLayoutProp
 
   return (
     <div
-      className={cn("flex flex-col h-screen bg-white overflow-hidden", className)}
+      className={cn(
+        "flex flex-col h-screen bg-white overflow-hidden",
+        className,
+      )}
       role="application"
       aria-label={WIZARD_COPY.a11y.wizardRegionLabel}
     >
@@ -410,15 +471,27 @@ export function WizardOnboardingLayout({ className }: WizardOnboardingLayoutProp
               "flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-medium",
               "border border-gray-200 text-gray-600",
               "hover:bg-gray-50 transition-colors duration-150",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400"
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400",
             )}
             aria-label={WIZARD_COPY.topBar.closeButton}
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
-            <span className="hidden sm:inline">{WIZARD_COPY.topBar.closeButton}</span>
+            <span className="hidden sm:inline">
+              {WIZARD_COPY.topBar.closeButton}
+            </span>
           </button>
         </div>
       </header>
@@ -437,7 +510,9 @@ export function WizardOnboardingLayout({ className }: WizardOnboardingLayoutProp
           <WizardChatThread
             messages={messages}
             isTyping={isStreaming || extractionMutation.isPending}
-            isSubmitting={extractionMutation.isPending || confirmSlotMutation.isPending}
+            isSubmitting={
+              extractionMutation.isPending || confirmSlotMutation.isPending
+            }
             onSend={handleSend}
             onConfirmSlot={handleConfirmSlot}
             onRejectSlot={handleRejectSlot}
@@ -459,7 +534,9 @@ export function WizardOnboardingLayout({ className }: WizardOnboardingLayoutProp
             <p className="text-sm font-semibold text-gray-800">
               {WIZARD_COPY.livePreview.panelTitle}
             </p>
-            <p className="text-xs text-gray-500">{WIZARD_COPY.livePreview.panelSubtitle}</p>
+            <p className="text-xs text-gray-500">
+              {WIZARD_COPY.livePreview.panelSubtitle}
+            </p>
           </div>
 
           <LiveWhatsAppPreview

@@ -86,7 +86,7 @@ function Chip({
           ? "vt-bg-primary vt-text-primary-foreground vt-border-primary"
           : "vt-bg-surface vt-text-muted vt-border",
         "hover:opacity-90",
-        className
+        className,
       )}
     >
       {label}
@@ -113,7 +113,7 @@ export function FilterChips({ value, onChange, className }: FilterChipsProps) {
 
   function toggle<K extends keyof FilterChipsValue>(
     key: K,
-    val: FilterChipsValue[K]
+    val: FilterChipsValue[K],
   ) {
     onChange({
       ...value,
@@ -212,7 +212,7 @@ export function FilterChips({ value, onChange, className }: FilterChipsProps) {
             "px-3 py-1 text-xs font-medium vt-text-muted vt-border vt-bg-surface",
             "hover:opacity-90 transition-colors",
             "focus-visible:outline focus-visible:outline-2",
-            "focus-visible:outline-offset-2 focus-visible:vt-outline-primary"
+            "focus-visible:outline-offset-2 focus-visible:vt-outline-primary",
           )}
         >
           {expanded
@@ -224,10 +224,7 @@ export function FilterChips({ value, onChange, className }: FilterChipsProps) {
 
       {/* Collapsible advanced filters */}
       {expanded && (
-        <div
-          id="advanced-filters"
-          className="flex flex-col gap-1.5 px-3 pb-2"
-        >
+        <div id="advanced-filters" className="flex flex-col gap-1.5 px-3 pb-2">
           {/* Stage filter */}
           <div className="flex flex-wrap gap-1.5">
             <span className="self-center text-xs font-medium vt-text-muted">

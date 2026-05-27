@@ -17,23 +17,25 @@ export function useTreatmentCreate() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: TreatmentCreatePayload): Promise<TreatmentSummary> => {
+    mutationFn: async (
+      data: TreatmentCreatePayload,
+    ): Promise<TreatmentSummary> => {
       const token = await getToken();
-      const tenantId = (sessionClaims?.public_metadata as Record<string, unknown>)
-        ?.active_tenant_id as string | undefined;
+      const tenantId = (
+        sessionClaims?.public_metadata as Record<string, unknown>
+      )?.active_tenant_id as string | undefined;
       if (!token) throw new Error("Not authenticated");
-      return vitaliaFetch<TreatmentSummary>(
-        "/api/v1/vitalia/treatments",
-        {
-          token,
-          tenantId: tenantId ?? "",
-          method: "POST",
-          body: JSON.stringify(data),
-        }
-      );
+      return vitaliaFetch<TreatmentSummary>("/api/v1/vitalia/treatments", {
+        token,
+        tenantId: tenantId ?? "",
+        method: "POST",
+        body: JSON.stringify(data),
+      });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: vitaliaQueryKeys.treatments.list() });
+      queryClient.invalidateQueries({
+        queryKey: vitaliaQueryKeys.treatments.list(),
+      });
     },
   });
 }

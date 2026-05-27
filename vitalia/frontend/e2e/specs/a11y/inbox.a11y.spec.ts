@@ -29,7 +29,8 @@ import { CLINIC_CONTEXT } from "../../fixtures/clinic-context.fixture";
 // Graceful import — @axe-core/playwright may not be installed
 // ---------------------------------------------------------------------------
 
-let AxeBuilder: (typeof import("@axe-core/playwright"))["default"] | null = null;
+let AxeBuilder: (typeof import("@axe-core/playwright"))["default"] | null =
+  null;
 
 test.describe("Inbox — WCAG 2.1 AA accessibility (axe-core)", () => {
   test.beforeAll(async () => {
@@ -48,49 +49,55 @@ test.describe("Inbox — WCAG 2.1 AA accessibility (axe-core)", () => {
     clinicPage: page,
   }) => {
     if (!AxeBuilder) {
-      test.skip(true, "@axe-core/playwright not installed — run: npm i -D @axe-core/playwright");
+      test.skip(
+        true,
+        "@axe-core/playwright not installed — run: npm i -D @axe-core/playwright",
+      );
       return;
     }
 
     // Mock: conversations list with 2 conversations
-    await page.route("**/api/v1/vitalia/inbox/conversations**", async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({
-          conversations: [
-            {
-              id: "conv-a11y-001",
-              tenant_id: CLINIC_CONTEXT.tenantId,
-              clinic_id: CLINIC_CONTEXT.clinicId,
-              lead_id: "lead-a11y-001",
-              channel: "whatsapp",
-              status: "active",
-              handler_mode: "ai",
-              help_needed: false,
-              last_message_preview: "Hola, ¿cómo estás?",
-              last_message_at: new Date().toISOString(),
-              unread_count: 2,
-            },
-            {
-              id: "conv-a11y-002",
-              tenant_id: CLINIC_CONTEXT.tenantId,
-              clinic_id: CLINIC_CONTEXT.clinicId,
-              lead_id: "lead-a11y-002",
-              channel: "whatsapp",
-              status: "active",
-              handler_mode: "human",
-              help_needed: true,
-              last_message_preview: "Tengo una duda sobre mi tratamiento.",
-              last_message_at: new Date(Date.now() - 3600_000).toISOString(),
-              unread_count: 0,
-            },
-          ],
-          total: 2,
-          has_more: false,
-        }),
-      });
-    });
+    await page.route(
+      "**/api/v1/vitalia/inbox/conversations**",
+      async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            conversations: [
+              {
+                id: "conv-a11y-001",
+                tenant_id: CLINIC_CONTEXT.tenantId,
+                clinic_id: CLINIC_CONTEXT.clinicId,
+                lead_id: "lead-a11y-001",
+                channel: "whatsapp",
+                status: "active",
+                handler_mode: "ai",
+                help_needed: false,
+                last_message_preview: "Hola, ¿cómo estás?",
+                last_message_at: new Date().toISOString(),
+                unread_count: 2,
+              },
+              {
+                id: "conv-a11y-002",
+                tenant_id: CLINIC_CONTEXT.tenantId,
+                clinic_id: CLINIC_CONTEXT.clinicId,
+                lead_id: "lead-a11y-002",
+                channel: "whatsapp",
+                status: "active",
+                handler_mode: "human",
+                help_needed: true,
+                last_message_preview: "Tengo una duda sobre mi tratamiento.",
+                last_message_at: new Date(Date.now() - 3600_000).toISOString(),
+                unread_count: 0,
+              },
+            ],
+            total: 2,
+            has_more: false,
+          }),
+        });
+      },
+    );
 
     // Navigate to /inbox
     await page.goto("/inbox");
@@ -102,18 +109,18 @@ test.describe("Inbox — WCAG 2.1 AA accessibility (axe-core)", () => {
       .analyze();
 
     const criticalOrSerious = results.violations.filter(
-      (v) => v.impact === "critical" || v.impact === "serious"
+      (v) => v.impact === "critical" || v.impact === "serious",
     );
 
     if (criticalOrSerious.length > 0) {
       const details = criticalOrSerious
         .map(
           (v) =>
-            `[${v.impact?.toUpperCase() ?? "UNKNOWN"}] ${v.id}: ${v.description}\n  Nodes: ${v.nodes.map((n) => n.target.join(", ")).join("; ")}`
+            `[${v.impact?.toUpperCase() ?? "UNKNOWN"}] ${v.id}: ${v.description}\n  Nodes: ${v.nodes.map((n) => n.target.join(", ")).join("; ")}`,
         )
         .join("\n");
       throw new Error(
-        `Inbox /inbox has ${criticalOrSerious.length} critical/serious WCAG 2.1 AA violations:\n${details}`
+        `Inbox /inbox has ${criticalOrSerious.length} critical/serious WCAG 2.1 AA violations:\n${details}`,
       );
     }
 
@@ -126,31 +133,37 @@ test.describe("Inbox — WCAG 2.1 AA accessibility (axe-core)", () => {
     clinicPage: page,
   }) => {
     if (!AxeBuilder) {
-      test.skip(true, "@axe-core/playwright not installed — run: npm i -D @axe-core/playwright");
+      test.skip(
+        true,
+        "@axe-core/playwright not installed — run: npm i -D @axe-core/playwright",
+      );
       return;
     }
 
     const convId = "conv-a11y-detail-001";
 
     // Mock: single conversation details
-    await page.route(`**/api/v1/vitalia/inbox/conversations/${convId}`, async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({
-          id: convId,
-          tenant_id: CLINIC_CONTEXT.tenantId,
-          clinic_id: CLINIC_CONTEXT.clinicId,
-          lead_id: "lead-a11y-detail",
-          channel: "whatsapp",
-          status: "active",
-          handler_mode: "ai",
-          help_needed: false,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        }),
-      });
-    });
+    await page.route(
+      `**/api/v1/vitalia/inbox/conversations/${convId}`,
+      async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            id: convId,
+            tenant_id: CLINIC_CONTEXT.tenantId,
+            clinic_id: CLINIC_CONTEXT.clinicId,
+            lead_id: "lead-a11y-detail",
+            channel: "whatsapp",
+            status: "active",
+            handler_mode: "ai",
+            help_needed: false,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          }),
+        });
+      },
+    );
 
     // Mock: messages for the conversation
     await page.route(
@@ -165,7 +178,8 @@ test.describe("Inbox — WCAG 2.1 AA accessibility (axe-core)", () => {
                 id: "msg-a11y-001",
                 conversation_id: convId,
                 sender_type: "patient",
-                body_text: "Buenos días, tengo una consulta sobre mi tratamiento.",
+                body_text:
+                  "Buenos días, tengo una consulta sobre mi tratamiento.",
                 media_kind: null,
                 media_url: null,
                 retracted_at: null,
@@ -182,14 +196,16 @@ test.describe("Inbox — WCAG 2.1 AA accessibility (axe-core)", () => {
                 retracted_at: null,
                 sent_at: new Date(Date.now() - 300_000).toISOString(),
                 // AI message with active action receipt (retract countdown)
-                action_receipt_expires_at: new Date(Date.now() + 120_000).toISOString(),
+                action_receipt_expires_at: new Date(
+                  Date.now() + 120_000,
+                ).toISOString(),
               },
             ],
             total: 2,
             has_more: false,
           }),
         });
-      }
+      },
     );
 
     // Navigate to conversation detail
@@ -201,18 +217,18 @@ test.describe("Inbox — WCAG 2.1 AA accessibility (axe-core)", () => {
       .analyze();
 
     const criticalOrSerious = results.violations.filter(
-      (v) => v.impact === "critical" || v.impact === "serious"
+      (v) => v.impact === "critical" || v.impact === "serious",
     );
 
     if (criticalOrSerious.length > 0) {
       const details = criticalOrSerious
         .map(
           (v) =>
-            `[${v.impact?.toUpperCase() ?? "UNKNOWN"}] ${v.id}: ${v.description}\n  Nodes: ${v.nodes.map((n) => n.target.join(", ")).join("; ")}`
+            `[${v.impact?.toUpperCase() ?? "UNKNOWN"}] ${v.id}: ${v.description}\n  Nodes: ${v.nodes.map((n) => n.target.join(", ")).join("; ")}`,
         )
         .join("\n");
       throw new Error(
-        `Inbox detail has ${criticalOrSerious.length} critical/serious WCAG 2.1 AA violations:\n${details}`
+        `Inbox detail has ${criticalOrSerious.length} critical/serious WCAG 2.1 AA violations:\n${details}`,
       );
     }
 
@@ -225,7 +241,10 @@ test.describe("Inbox — WCAG 2.1 AA accessibility (axe-core)", () => {
     clinicPage: page,
   }) => {
     if (!AxeBuilder) {
-      test.skip(true, "@axe-core/playwright not installed — run: npm i -D @axe-core/playwright");
+      test.skip(
+        true,
+        "@axe-core/playwright not installed — run: npm i -D @axe-core/playwright",
+      );
       return;
     }
 
@@ -250,14 +269,16 @@ test.describe("Inbox — WCAG 2.1 AA accessibility (axe-core)", () => {
                 retracted_at: null,
                 sent_at: new Date(Date.now() - 60_000).toISOString(),
                 // Active receipt: 4 minutes remaining
-                action_receipt_expires_at: new Date(Date.now() + 240_000).toISOString(),
+                action_receipt_expires_at: new Date(
+                  Date.now() + 240_000,
+                ).toISOString(),
               },
             ],
             total: 1,
             has_more: false,
           }),
         });
-      }
+      },
     );
 
     await page.route(
@@ -279,7 +300,7 @@ test.describe("Inbox — WCAG 2.1 AA accessibility (axe-core)", () => {
             updated_at: new Date().toISOString(),
           }),
         });
-      }
+      },
     );
 
     await page.goto(`/inbox/${convId}`);
@@ -288,10 +309,12 @@ test.describe("Inbox — WCAG 2.1 AA accessibility (axe-core)", () => {
     // Check if action receipt countdown exists — if so, verify aria-live=polite
     // (spec §15: aria-live="polite" for ActionReceipt countdown)
     const receiptCountdown = page.locator(
-      '[data-testid="action-receipt-countdown"], [aria-label*="retract"], [aria-label*="deshacer"]'
+      '[data-testid="action-receipt-countdown"], [aria-label*="retract"], [aria-label*="deshacer"]',
     );
 
-    const countdownVisible = await receiptCountdown.isVisible({ timeout: 3_000 }).catch(() => false);
+    const countdownVisible = await receiptCountdown
+      .isVisible({ timeout: 3_000 })
+      .catch(() => false);
     if (countdownVisible) {
       // Verify aria-live attribute on the countdown or its parent
       const ariaLive = await page
@@ -308,7 +331,7 @@ test.describe("Inbox — WCAG 2.1 AA accessibility (axe-core)", () => {
       .analyze();
 
     const criticalOrSerious = results.violations.filter(
-      (v) => v.impact === "critical" || v.impact === "serious"
+      (v) => v.impact === "critical" || v.impact === "serious",
     );
     expect(criticalOrSerious).toHaveLength(0);
   });
@@ -317,7 +340,10 @@ test.describe("Inbox — WCAG 2.1 AA accessibility (axe-core)", () => {
     clinicPage: page,
   }) => {
     if (!AxeBuilder) {
-      test.skip(true, "@axe-core/playwright not installed — run: npm i -D @axe-core/playwright");
+      test.skip(
+        true,
+        "@axe-core/playwright not installed — run: npm i -D @axe-core/playwright",
+      );
       return;
     }
 
@@ -342,7 +368,7 @@ test.describe("Inbox — WCAG 2.1 AA accessibility (axe-core)", () => {
             updated_at: new Date().toISOString(),
           }),
         });
-      }
+      },
     );
 
     await page.route(
@@ -353,7 +379,7 @@ test.describe("Inbox — WCAG 2.1 AA accessibility (axe-core)", () => {
           contentType: "application/json",
           body: JSON.stringify({ messages: [], total: 0, has_more: false }),
         });
-      }
+      },
     );
 
     await page.goto(`/inbox/${convId}`);
@@ -361,12 +387,20 @@ test.describe("Inbox — WCAG 2.1 AA accessibility (axe-core)", () => {
 
     // Check for handler_mode radiogroup (spec §15: role="radiogroup")
     const radioGroup = page.locator('[role="radiogroup"]');
-    const radioGroupVisible = await radioGroup.isVisible({ timeout: 3_000 }).catch(() => false);
+    const radioGroupVisible = await radioGroup
+      .isVisible({ timeout: 3_000 })
+      .catch(() => false);
 
     if (radioGroupVisible) {
       // Verify accessible label on radiogroup
-      const ariaLabel = await radioGroup.first().getAttribute("aria-label").catch(() => null);
-      const ariaLabelledBy = await radioGroup.first().getAttribute("aria-labelledby").catch(() => null);
+      const ariaLabel = await radioGroup
+        .first()
+        .getAttribute("aria-label")
+        .catch(() => null);
+      const ariaLabelledBy = await radioGroup
+        .first()
+        .getAttribute("aria-labelledby")
+        .catch(() => null);
       expect(ariaLabel || ariaLabelledBy).not.toBeNull();
     }
 
@@ -376,7 +410,7 @@ test.describe("Inbox — WCAG 2.1 AA accessibility (axe-core)", () => {
       .analyze();
 
     const criticalOrSerious = results.violations.filter(
-      (v) => v.impact === "critical" || v.impact === "serious"
+      (v) => v.impact === "critical" || v.impact === "serious",
     );
     expect(criticalOrSerious).toHaveLength(0);
   });

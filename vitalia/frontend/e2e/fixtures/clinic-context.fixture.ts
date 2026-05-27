@@ -154,7 +154,11 @@ export const test = base.extend<ClinicContextFixtures>({
         // Start polling after minimal delay (DOM + Clerk init)
         setTimeout(activateOrg, 200);
       },
-      { tid: CLINIC_CONTEXT.tenantId, cid: CLINIC_CONTEXT.clinicId, orgId: E2E_CLERK_ORG_ID }
+      {
+        tid: CLINIC_CONTEXT.tenantId,
+        cid: CLINIC_CONTEXT.clinicId,
+        orgId: E2E_CLERK_ORG_ID,
+      },
     );
 
     await setupClinicContextMocks(authedPage);

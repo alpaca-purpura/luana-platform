@@ -25,7 +25,16 @@ const meta: Meta<typeof PiiMaskedSpan> = {
   argTypes: {
     fieldType: {
       control: "select",
-      options: ["name", "dni", "cuit", "phone", "email", "address", "date_of_birth", "generic"],
+      options: [
+        "name",
+        "dni",
+        "cuit",
+        "phone",
+        "email",
+        "address",
+        "date_of_birth",
+        "generic",
+      ],
     },
   },
 };
@@ -37,7 +46,7 @@ type Story = StoryObj<typeof PiiMaskedSpan>;
 export const NameMasked: Story = {
   name: "Nombre — enmascarado",
   args: {
-    value: "Ana García",     // fake name for demo
+    value: "Ana García", // fake name for demo
     fieldType: "name",
   },
 };
@@ -46,7 +55,7 @@ export const NameMasked: Story = {
 export const DniMasked: Story = {
   name: "DNI — enmascarado",
   args: {
-    value: "12345678",       // fake DNI
+    value: "12345678", // fake DNI
     fieldType: "dni",
   },
 };
@@ -55,7 +64,7 @@ export const DniMasked: Story = {
 export const CuitMasked: Story = {
   name: "CUIT — enmascarado",
   args: {
-    value: "20123456789",    // fake CUIT
+    value: "20123456789", // fake CUIT
     fieldType: "cuit",
   },
 };
@@ -64,7 +73,7 @@ export const CuitMasked: Story = {
 export const PhoneMasked: Story = {
   name: "Teléfono — enmascarado",
   args: {
-    value: "+54 11 5555-4567",  // fake phone
+    value: "+54 11 5555-4567", // fake phone
     fieldType: "phone",
   },
 };
@@ -73,7 +82,7 @@ export const PhoneMasked: Story = {
 export const EmailMasked: Story = {
   name: "Correo — enmascarado",
   args: {
-    value: "ana.garcia@example.com",   // fake email
+    value: "ana.garcia@example.com", // fake email
     fieldType: "email",
   },
 };
@@ -82,7 +91,7 @@ export const EmailMasked: Story = {
 export const DateOfBirthMasked: Story = {
   name: "Fecha de nacimiento — enmascarada",
   args: {
-    value: "15/03/1985",     // fake date
+    value: "15/03/1985", // fake date
     fieldType: "date_of_birth",
   },
 };

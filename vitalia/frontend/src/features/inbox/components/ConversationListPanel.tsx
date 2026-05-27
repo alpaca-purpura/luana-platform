@@ -41,7 +41,9 @@ interface ConversationListPanelProps {
  * Wires URL state (nuqs) ↔ React Query ↔ child components.
  * Handles loading / error / empty states per tessl__react-patterns baseline.
  */
-export function ConversationListPanel({ className }: ConversationListPanelProps) {
+export function ConversationListPanel({
+  className,
+}: ConversationListPanelProps) {
   const [urlState, setUrlState] = useInboxUrlState();
   const filters = useConversationFilters();
   const { data, isLoading, isError } = useConversations(filters);
@@ -49,7 +51,11 @@ export function ConversationListPanel({ className }: ConversationListPanelProps)
   const conversations = data?.conversations ?? [];
 
   // Determine empty variant based on active filters
-  function getEmptyVariant(): "noConversations" | "noHelpNeeded" | "noMediaUnread" | "noResultsFilter" {
+  function getEmptyVariant():
+    | "noConversations"
+    | "noHelpNeeded"
+    | "noMediaUnread"
+    | "noResultsFilter" {
     if (urlState.helpNeeded) return "noHelpNeeded";
     if (urlState.unreadMedia) return "noMediaUnread";
     const hasOtherFilter =
@@ -122,10 +128,7 @@ export function ConversationListPanel({ className }: ConversationListPanelProps)
 
       {/* Filter chips */}
       <div className="shrink-0 border-b vt-border py-2">
-        <FilterChips
-          value={filterChipsValue}
-          onChange={handleFiltersChange}
-        />
+        <FilterChips value={filterChipsValue} onChange={handleFiltersChange} />
       </div>
 
       {/* Error state */}

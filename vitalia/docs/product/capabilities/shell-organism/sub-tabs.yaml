@@ -1,0 +1,102 @@
+---
+capability_id: vitalia.shell-organism.sub-tabs
+module: shell-organism
+slug: sub-tabs
+status: live
+date_introduced: 2026-05-25
+story_introduced: vitalia-fase1-sub-tabs-line2
+package_version: vitalia-frontend@0.1.0
+package_path: vitalia/frontend/src/components/shared/shell-organism/
+license: proprietary
+lift_candidate: cross-brand-when-2-brands-need-multi-agent-sub-tabs
+---
+
+# SubTabsBar Organism — Vitalia FE Fase 1 (F1-S8)
+
+`SubTabsBar` organismo: barra horizontal LÍNEA 2 debajo del Ribbon, dinámica per agente activo. Renderiza N sub-tabs del agente (4·5·4·2·4·3 según `RIBBON_SUBTABS` whitelist: Lisa 4 · Lucas 5 · Adrián 4 · Valeria 2 · Camila 4 · Config 3) con active state per URL segment `[subtab]` derivado de `extractSubtabFromPath(usePathname())`. Color tint por agente (`bg-agent-{slug}-soft` + `agentTextClassSubTab(slug)`) cuando active; Lucas excepción D18 (text-foreground por contraste); Config excepción D19 (bg-muted + text-foreground, color neutral). WAI-ARIA tablist completo con roving tabindex pattern (Arrow Left/Right circular wrap · Home/End · Enter/Space) — paridad F1-S7 Ribbon.
+
+Q5 cement: `return null` cuando `activeAgent === null || subtabs.length === 0` (no DOM, grid AppPanel colapsa fila). Q4 cement: `min-h-[42px]` contenedor con `bg-card border-b border-border flex items-center px-4 gap-1 overflow-x-auto`. Q1 cement (anti-duplication): EXTEND `vitalia/frontend/src/lib/agent-catalog.ts` (NO crear `lib/agents/subtabs.ts`).
+
+Reemplaza el placeholder skeleton sub-tabs de F1-S4/F1-S7 (`AppPanelSlot.tsx` líneas 56-65) con `<SubTabsBar />` real. Visible en ambos modos shell (`agentic` 50/50 split + `web` Valeria rail 60px) — misma horizontal sin if-statements `mode === 'web'`, adaptación via `flex` + `overflow-x-auto` natural.
+
+## Surfaces
+
+### Frontend (vitalia/frontend/src/)
+
+- `lib/agent-catalog.ts` — **EXTEND F1-S6/F1-S7 SSoT** con `SubTabMeta` interface (`{ id: string; label: string; icon: string }`) + `RIBBON_SUBTABS: Record<RibbonTabSlug, readonly SubTabMeta[]>` (22 sub-tabs distribuidos, mateo=[] transversal) + `extractSubtabFromPath(pathname)` helper con defensive null/undefined handling (devuelve raw segment, consumer compara contra ids estáticos). Anti-duplication Q1 HARD: NO crear `lib/agents/subtabs.ts` ni `lib/agents/routing.ts`.
+- `components/shared/shell-organism/SubTabsBar.tsx` — **NEW** organismo (`'use client'`). `usePathname` + `useRouter` + `useParams<{tenantId}>` + `useRef<(HTMLButtonElement | null)[]>` array + `useState<focusedIdx>` para roving tabindex. `handleKeyDown` sync handler con modulo aritmético wrap circular (paridad Ribbon.tsx F1-S7). `navigateTo(subtabId)` callback con `router.push('/{tenantId}/{activeAgent}/{subtabId}')`. Q5 early-return guard antes de hooks-dependent work.
+- `components/shared/shell-organism/SubTab.tsx` — **NEW** molécula con `forwardRef<HTMLButtonElement>`. Emoji `aria-hidden="true"` (decorative) + visible label span. Active state: `bg-agent-{slug}-soft` tint + `agentTextClassSubTab(slug)` + `font-semibold` + active:hover preserva tint (paridad F1-S7 Q16). `role="tab"` + `aria-selected` + `tabIndex` roving + `data-testid="sub-tab-{id}"` + `data-active` + `data-color`. Focus-visible ring: `focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1` (no plain `focus:`).
+- `components/shared/shell-organism/_agent-tw-classes.ts` — **EXTEND F1-S6** con `agentTextClassSubTab(slug: RibbonTabSlug): string` Tailwind switch helper. Standard agents (lisa/valeria/adrian/camila/mateo) → `text-agent-{slug}`. Lucas exception D18: `text-foreground` (hex #111111 near-black, poor contrast on bg-lucas-soft). Config exception D19: `text-foreground` (Config not agente, bg-muted neutral). TypeScript exhaustiveness guard en default branch (never assertion).
+- `components/shared/shell-organism/AppPanelSlot.tsx` — **MODIFY** swap placeholder `<div aria-hidden="true" className="flex items-center gap-3 ...">` skeleton sub-tabs por `<SubTabsBar />` real. Grid `grid-rows-[auto_auto_1fr]` preservado (Ribbon row 1 · SubTabsBar row 2 · content row 3).
+
+### Tests (188 Vitest + 9 Playwright behavior + 13 visual goldens deferred + 2 axe = 212 total)
+
+- Unit (Vitest, 179 PASS):
+  - `lib/__tests__/agent-catalog.test.ts` (83 tests · 30 nuevos F1-S8: SubTabMeta shape + RIBBON_SUBTABS distribution 22 sub-tabs + 22 labels verbatim Spanish neutro + 22 emoji icons + extractSubtabFromPath happy/negative/XSS adversarial)
+  - `components/shared/shell-organism/__tests__/_agent-tw-classes.test.ts` (13 tests · F1-S8 +agentTextClassSubTab Lucas/Config exceptions)
+  - `components/shared/shell-organism/SubTab.test.tsx` (34 tests · forwardRef + states + Lucas/Config + aria + data-attrs)
+  - `components/shared/shell-organism/SubTabsBar.test.tsx` (36 tests · URL-derived + Q5 return null + roving tabindex + navigateTo)
+  - `components/shared/shell-organism/AppPanelSlot.test.tsx` (13 tests · mount SubTabsBar real)
+- Arch fitness (Vitest, 118 PASS · F1-S8 extends 3 existing):
+  - `__tests__/architecture/test-no-cross-brand-shell-mirror.test.ts` +5 nuevos asserts (SubTabsBar · SubTab · RIBBON_SUBTABS · extractSubtabFromPath · SubTabMeta) zero matches cross-brand
+  - `__tests__/architecture/test-vitalia-ui-strings-no-voseo.test.ts` +F1-S8 describe block (2 file voseo scans + 22 label verbatim + 6 aria-label tilde checks)
+  - `__tests__/architecture/test_server_first.test.ts` continues PASS (allowlist unchanged — baseline 0 entries)
+- E2E (Playwright NATIVE Linux, port 3002 vitalia · runtime deferred /pm-vitalia merge phase):
+  - `e2e/regression/vitalia-fase1-sub-tabs-line2/poms/sub-tabs-bar-page.pom.ts` — POM con `goto`, `gotoRaw`, `getSubTabsBar`, `getSubTab`, `getAllSubTabs`, `clickSubTab`, `pressKey`, `getActiveSubTabId`, `getSubTabAriaSelected`, `getAriaLabel`, `getSubTabCount`, `getFocusedSubTabId`, `setViewport`, `setTheme`
+  - 9 behavior specs (1 per SC funcional): `sub-tabs-{nav,agent-change,deeplink,null-agent,invalid-subtab,mobile-overflow,xss-guard,keyboard,i18n}.spec.ts`
+  - `visual-goldens.spec.ts` — 13 visual goldens deferred (6 light + 6 dark + 1 mobile Lucas) — require `--update-snapshots` iter 1 baseline post Chris re-ratify live app
+- axe wcag2aa scoped `[data-testid=sub-tabs-bar]` (sub-tabs-keyboard.spec.ts SC-8-axe) + i18n verbatim (sub-tabs-i18n.spec.ts SC-9)
+
+### Docs
+
+- `vitalia/docs/product/stories/vitalia-fase1-sub-tabs-line2/01-spec.md` v2 (ratificada Chris 2026-05-25T09:05Z · 10 scenarios SC-1..SC-10)
+- `vitalia/docs/product/stories/vitalia-fase1-sub-tabs-line2/03-arch.md` — FE-only architecture (RIBBON_SUBTABS + SubTab + SubTabsBar + roving tabindex)
+- `vitalia/docs/product/stories/vitalia-fase1-sub-tabs-line2/mockups/sub-tabs.html` — gate visual ratificado Chris (6 variants per agente + dark/light + anatomy + mobile overflow + Q5 A/B comparison)
+- `vitalia/docs/architecture/SHELL-DESIGN-CONTRACT.md` § 7.2 — sub-tabs design contract reference
+
+## Dependencies
+
+### Upstream (must exist before)
+
+- `vitalia.shell-organism.ribbon` (F1-S7 · capabilities/shell-organism/ribbon.yaml) — Ribbon F1-S7 SSoT extension pattern
+- `vitalia.shell-organism.layout-5050` (F1-S4 · capabilities/shell-organism/layout-5050.yaml) — AppPanelSlot grid host
+- `vitalia.shell-organism.valeria-chat` (F1-S6 · capabilities/shell-organism/valeria-chat.yaml) — agent-catalog.ts F1-S6 base SSoT
+
+### Downstream (will consume)
+
+- `vitalia.shell-organism.routing-shell` (F1-S9 future) — `extractSubtabFromPath` + default-redirect logic
+- `vitalia.shell-organism.empty-states` (F1-S10 future) — sub-tab content placeholders consume SubTabsBar active state
+- Fase 2 stories (vitalia-fase2-{valeria,adrian,lisa,camila,lucas}-{subtab}) — consumirán RIBBON_SUBTABS para registrar contenido sub-tab específico
+
+## KPIs
+
+- Visual fidelity vs mockup HTML ratificado: 12 goldens deferred (6 agentes × 2 themes) post live re-ratify
+- a11y: axe wcag2aa scoped `[data-testid=sub-tabs-bar]` 0 critical/serious violations
+- i18n: 22 labels + 6 aria-labels Spanish neutro verbatim (zero voseo · tildes correctas)
+- Roving tabindex parity F1-S7 Ribbon: 100% (mismo pattern useState focusedIdx + tabRefs + handleKeyDown + wrap circular)
+- Anti-duplication F1-S7 SSoT extension pattern: 3ra confirmación (F1-S6 base + F1-S7 ribbon extend + F1-S8 sub-tabs extend) — pattern cementado brand-local Vitalia
+- Cross-brand mirror: 0 matches en nicolify/comunify/lupulo (5 identifiers SubTabsBar/SubTab/RIBBON_SUBTABS/extractSubtabFromPath/agentTextClassSubTab)
+
+## Cementations (decisiones honored)
+
+| Decisión | Implementación |
+|---|---|
+| Q1 SSoT path | RIBBON_SUBTABS + extractSubtabFromPath en `lib/agent-catalog.ts` (NO `lib/agents/`) |
+| Q2 Icons | Emojis (paridad ribbon catalog) — 22 emojis nativos, no lucide |
+| Q3 Keyboard nav | Roving tabindex pattern verbatim de Ribbon.tsx F1-S7 |
+| Q4 Height | `min-h-[42px]` contenedor (no `h-10`) |
+| Q5 activeAgent=null | `return null` total (gap colapsa) |
+| D18 Lucas exception | text-foreground en active (no text-agent-lucas) — contrast WCAG AA |
+| D19 Config exception | bg-muted + text-foreground (color neutral, no agente) |
+| Active:hover preserve tint | Paridad F1-S7 Q16 cement |
+| Config defaultSubtab | `cuenta` (consistente F1-S7 ConfigTab.onClick) |
+| Wrap-around keyboard | Arrow Right en último → primero (paridad F1-S7) |
+
+## Audit trail
+
+- po_ux_version: 2 (Q1-Q5 batch_1_decisions ratified Chris 2026-05-25T09:05Z)
+- ratified_visual_by_chris: true (mockup `sub-tabs.html` ratified 2026-05-25T09:05Z iter 1)
+- architect ready package: 03-arch.md + 04-validators.yaml + 05-guidelines.md + 06-tickets.yaml cerrados
+- dev_team commits: 7 (T-1..T-6 + auditor self-fix iter 1 prettier)
+- audit_verdict: APPROVED (1/3 iter · 1/4 self-fix iter · 14/14 categories PASS · 0 FAIL · 0 WARN)
+- gherkin_coverage_pct: 100 (10/10 scenarios mapped; 9 Playwright runtime deferred + 1 visual goldens deferred per architect cement)

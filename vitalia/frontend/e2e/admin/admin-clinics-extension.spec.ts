@@ -39,22 +39,34 @@ test.describe("SC-08 — Admin crea clinic asociada a tenant via ClinicRepositor
       .getByText(/cl[ií]nicas?/i)
       .first()
       .click();
-    await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => {});
+    await page
+      .waitForLoadState("networkidle", { timeout: 10_000 })
+      .catch(() => {});
 
     // Ir al tab "Crear nueva"
-    const createTab = page.getByRole("tab", { name: /crear nueva|crear nuevo/i });
+    const createTab = page.getByRole("tab", {
+      name: /crear nueva|crear nuevo/i,
+    });
     await expect(createTab).toBeVisible({ timeout: 10_000 });
     await createTab.click();
 
     // Rellenar formulario de creación
-    await page.getByLabel(/nombre/i).first().fill(CLINIC_NAME);
+    await page
+      .getByLabel(/nombre/i)
+      .first()
+      .fill(CLINIC_NAME);
     await page.getByLabel(/slug/i).first().fill(CLINIC_SLUG);
 
     // Seleccionar tenant
     const tenantSelect = page
       .getByLabel(/tenant/i)
       .or(page.locator('[aria-label*="Tenant"]'));
-    if (await tenantSelect.first().isVisible({ timeout: 3_000 }).catch(() => false)) {
+    if (
+      await tenantSelect
+        .first()
+        .isVisible({ timeout: 3_000 })
+        .catch(() => false)
+    ) {
       const options = await tenantSelect.first().locator("option").all();
       if (options.length > 1) {
         await tenantSelect.first().selectOption({ index: 1 });
@@ -62,17 +74,35 @@ test.describe("SC-08 — Admin crea clinic asociada a tenant via ClinicRepositor
     }
 
     // País/ciudad si existe
-    const countryField = page.getByLabel(/país|pa[ií]s/i).or(page.locator('[aria-label*="País"]'));
-    if (await countryField.first().isVisible({ timeout: 3_000 }).catch(() => false)) {
-      await countryField.first().selectOption("AR").catch(() => {});
+    const countryField = page
+      .getByLabel(/país|pa[ií]s/i)
+      .or(page.locator('[aria-label*="País"]'));
+    if (
+      await countryField
+        .first()
+        .isVisible({ timeout: 3_000 })
+        .catch(() => false)
+    ) {
+      await countryField
+        .first()
+        .selectOption("AR")
+        .catch(() => {});
     }
 
     // Enviar formulario
-    await page.getByRole("button", { name: /crear cl[ií]nica/i }).first().click();
+    await page
+      .getByRole("button", { name: /crear cl[ií]nica/i })
+      .first()
+      .click();
 
     // Verificar mensaje de éxito
     await expect(
-      page.getByText(new RegExp(`cl[ií]nica.*${CLINIC_NAME}.*creada|creada.*cl[ií]nica`, "i")),
+      page.getByText(
+        new RegExp(
+          `cl[ií]nica.*${CLINIC_NAME}.*creada|creada.*cl[ií]nica`,
+          "i",
+        ),
+      ),
     ).toBeVisible({ timeout: 15_000 });
 
     // Verificar incremento en DB (clinics count)
@@ -97,14 +127,18 @@ test.describe("SC-08 — Admin crea clinic asociada a tenant via ClinicRepositor
       .getByText(/cl[ií]nicas?/i)
       .first()
       .click();
-    await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => {});
+    await page
+      .waitForLoadState("networkidle", { timeout: 10_000 })
+      .catch(() => {});
 
     // Tab listado
     const listTab = page.getByRole("tab", { name: /listado/i });
     await expect(listTab).toBeVisible({ timeout: 10_000 });
     await listTab.click();
 
-    const pageContent = page.locator("main, [data-testid='stAppViewContainer']");
+    const pageContent = page.locator(
+      "main, [data-testid='stAppViewContainer']",
+    );
     const hasNombreCol = await pageContent
       .getByText(/Nombre/i)
       .first()
@@ -140,23 +174,27 @@ test.describe("SC-13 — Phantom tables eliminadas — UI sin errores de tabla i
         .getByText(section.text)
         .first()
         .click();
-      await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => {});
+      await page
+        .waitForLoadState("networkidle", { timeout: 10_000 })
+        .catch(() => {});
 
-      const mainContent = page.locator("main, [data-testid='stAppViewContainer']");
+      const mainContent = page.locator(
+        "main, [data-testid='stAppViewContainer']",
+      );
 
       // No debe aparecer ninguno de los errores de tabla inexistente
-      await expect(
-        mainContent.getByText(/OperationalError/i),
-      ).toHaveCount(0, { timeout: 3_000 });
-      await expect(
-        mainContent.getByText(/no such table/i),
-      ).toHaveCount(0, { timeout: 3_000 });
+      await expect(mainContent.getByText(/OperationalError/i)).toHaveCount(0, {
+        timeout: 3_000,
+      });
+      await expect(mainContent.getByText(/no such table/i)).toHaveCount(0, {
+        timeout: 3_000,
+      });
       await expect(
         mainContent.getByText(/relation.*does not exist/i),
       ).toHaveCount(0, { timeout: 3_000 });
-      await expect(
-        mainContent.getByText(/ProgrammingError/i),
-      ).toHaveCount(0, { timeout: 3_000 });
+      await expect(mainContent.getByText(/ProgrammingError/i)).toHaveCount(0, {
+        timeout: 3_000,
+      });
 
       // La sección debe mostrar contenido útil (no sólo error)
       await expect(mainContent).toBeVisible({ timeout: 5_000 });
@@ -172,12 +210,18 @@ test.describe("SC-13 — Phantom tables eliminadas — UI sin errores de tabla i
       .getByText(/Tenants/i)
       .first()
       .click();
-    await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => {});
+    await page
+      .waitForLoadState("networkidle", { timeout: 10_000 })
+      .catch(() => {});
 
-    const mainContent = page.locator("main, [data-testid='stAppViewContainer']");
+    const mainContent = page.locator(
+      "main, [data-testid='stAppViewContainer']",
+    );
     // No debe exponer SQL directo en UI
     await expect(
-      mainContent.getByText(/SELECT.*FROM|INSERT INTO|UPDATE.*SET|DELETE FROM/i),
+      mainContent.getByText(
+        /SELECT.*FROM|INSERT INTO|UPDATE.*SET|DELETE FROM/i,
+      ),
     ).toHaveCount(0, { timeout: 3_000 });
   });
 });

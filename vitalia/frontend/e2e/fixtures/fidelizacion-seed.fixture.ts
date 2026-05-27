@@ -116,7 +116,11 @@ const ABSENCE_ROWS = [
         enabled: false,
         disabledReason: "El paciente no aceptó comunicaciones de marketing",
       },
-      { id: "suggest_slots", enabled: false, disabledReason: "El paciente no aceptó comunicaciones de marketing" },
+      {
+        id: "suggest_slots",
+        enabled: false,
+        disabledReason: "El paciente no aceptó comunicaciones de marketing",
+      },
       { id: "pause_patient", enabled: true, disabledReason: null },
       { id: "mark_external", enabled: true, disabledReason: null },
       { id: "mark_no_continue", enabled: true, disabledReason: null },
@@ -198,7 +202,7 @@ export async function setupFidelizacionMocks(page: Page): Promise<void> {
         contentType: "application/json",
         body: JSON.stringify(SUMMARY_MOCK),
       });
-    }
+    },
   );
 
   // Pattern rows: multi_session
@@ -210,7 +214,7 @@ export async function setupFidelizacionMocks(page: Page): Promise<void> {
         contentType: "application/json",
         body: JSON.stringify({ rows: MULTI_SESSION_ROWS }),
       });
-    }
+    },
   );
 
   // Pattern rows: absence
@@ -222,7 +226,7 @@ export async function setupFidelizacionMocks(page: Page): Promise<void> {
         contentType: "application/json",
         body: JSON.stringify({ rows: ABSENCE_ROWS }),
       });
-    }
+    },
   );
 
   // Pattern rows: follow_up
@@ -234,7 +238,7 @@ export async function setupFidelizacionMocks(page: Page): Promise<void> {
         contentType: "application/json",
         body: JSON.stringify({ rows: FOLLOW_UP_ROWS }),
       });
-    }
+    },
   );
 
   // Pattern rows: maintenance
@@ -246,7 +250,7 @@ export async function setupFidelizacionMocks(page: Page): Promise<void> {
         contentType: "application/json",
         body: JSON.stringify({ rows: MAINTENANCE_ROWS }),
       });
-    }
+    },
   );
 
   // Fallback: any patterns endpoint not matched above
@@ -258,7 +262,7 @@ export async function setupFidelizacionMocks(page: Page): Promise<void> {
         contentType: "application/json",
         body: JSON.stringify({ rows: [] }),
       });
-    }
+    },
   );
 
   // send_proactive — Rodríguez reminder
@@ -274,7 +278,7 @@ export async function setupFidelizacionMocks(page: Page): Promise<void> {
       } else {
         await route.continue();
       }
-    }
+    },
   );
 
   // send_proactive — Vega (opt-out guard: returns 403)
@@ -293,7 +297,7 @@ export async function setupFidelizacionMocks(page: Page): Promise<void> {
       } else {
         await route.continue();
       }
-    }
+    },
   );
 
   // pause patient
@@ -309,7 +313,7 @@ export async function setupFidelizacionMocks(page: Page): Promise<void> {
       } else {
         await route.continue();
       }
-    }
+    },
   );
 
   // log manual call
@@ -325,7 +329,7 @@ export async function setupFidelizacionMocks(page: Page): Promise<void> {
       } else {
         await route.continue();
       }
-    }
+    },
   );
 
   // activity stream
@@ -346,7 +350,7 @@ export async function setupFidelizacionMocks(page: Page): Promise<void> {
           ],
         }),
       });
-    }
+    },
   );
 
   // Available slots (for SuggestSlotsModal)
@@ -373,7 +377,7 @@ export async function setupFidelizacionMocks(page: Page): Promise<void> {
           ],
         }),
       });
-    }
+    },
   );
 
   // SC-04: Cross-tenant PHI request → 403 (tested in adversarial spec)
@@ -382,7 +386,12 @@ export async function setupFidelizacionMocks(page: Page): Promise<void> {
   await page.route("**/api/v1/vitalia/fidelization/**", async (route) => {
     const reqTenantId = route.request().headers()["x-tenant-id"];
     // Accept: configured tenantId, clinicId, or the Clerk orgId used in E2E sessions
-    if (reqTenantId && reqTenantId !== tenantId && reqTenantId !== clinicId && reqTenantId !== clerkOrgId) {
+    if (
+      reqTenantId &&
+      reqTenantId !== tenantId &&
+      reqTenantId !== clinicId &&
+      reqTenantId !== clerkOrgId
+    ) {
       await route.fulfill({
         status: 403,
         contentType: "application/json",

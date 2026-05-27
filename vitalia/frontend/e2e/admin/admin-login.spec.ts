@@ -37,7 +37,9 @@ test.describe("SC-01 — Admin login bcrypt password OK → dashboard", () => {
     authenticatedAdminPage: page,
   }) => {
     // Header o título de la app admin
-    const mainContent = page.locator("main, [data-testid='stAppViewContainer']");
+    const mainContent = page.locator(
+      "main, [data-testid='stAppViewContainer']",
+    );
     await expect(
       mainContent
         .getByText(/vitalia/i)
@@ -75,16 +77,18 @@ test.describe("SC-12 — Admin logout → session destroyed → redirect login",
       // Verificar que el formulario tiene campo contraseña (pantalla login = session destroyed state)
       await expect(passwordInput).toBeVisible();
       // No debe haber contenido de dashboard sin autenticar
-      await expect(
-        page.locator('[data-testid="stSidebar"]'),
-      ).not.toBeVisible({ timeout: 3_000 }).catch(() => {});
+      await expect(page.locator('[data-testid="stSidebar"]'))
+        .not.toBeVisible({ timeout: 3_000 })
+        .catch(() => {});
     } else {
       // Sin password gate, verificar que existe algún mecanismo de logout en la app
       // (botón logout en sidebar o header). Si no hay, el test documenta estado actual.
       const logoutBtn = page
         .getByRole("button", { name: /logout|salir|cerrar sesión/i })
         .or(page.getByText(/logout|salir/i));
-      const hasLogout = await logoutBtn.isVisible({ timeout: 5_000 }).catch(() => false);
+      const hasLogout = await logoutBtn
+        .isVisible({ timeout: 5_000 })
+        .catch(() => false);
       if (hasLogout) {
         await logoutBtn.first().click();
         // Post-logout debe volver a mostrar login o pantalla inicial

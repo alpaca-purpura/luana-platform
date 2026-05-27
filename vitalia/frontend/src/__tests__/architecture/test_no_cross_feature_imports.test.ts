@@ -28,21 +28,22 @@ const SRC = join(ROOT, "src");
 const FEATURES_DIR = join(SRC, "features");
 
 // Ratchet baseline — known violations at time of T-infra-4 creation (shrink-only).
-const KNOWN_CROSS_FEATURE_INTERNAL_IMPORTS: ReadonlySet<string> = new Set<string>([
-  // T-inbox-fe-2: crm-shared/api/use-conversation-detail.ts imports inbox internal type
-  // (conversation-detail.ts). crm-shared is a PRODUCER feature per 03-arch-fe.md § 1;
-  // inbox/types/conversation-detail.ts has a bi-directional type dependency.
-  // Justified: crm-shared ↔ inbox types are tightly coupled in Ola 1 (pipeline/agenda Ola 2+).
-  "src/features/crm-shared/api/use-conversation-detail.ts",
-  // T-inbox-fe-2: use-conversation-filters.ts imports ConversationsFilters type from
-  // crm-shared/api/use-conversations internal path. To be refactored to use
-  // crm-shared index.ts public API in T-inbox-fe-refactor.
-  "src/features/inbox/hooks/use-conversation-filters.ts",
-  // T-inbox-fe-3: ConversationListPanel imports useConversations from crm-shared internal path.
-  // crm-shared is the SSoT producer for CRM data contracts. To be refactored to public
-  // API (crm-shared index.ts) in T-inbox-fe-refactor.
-  "src/features/inbox/components/ConversationListPanel.tsx",
-]);
+const KNOWN_CROSS_FEATURE_INTERNAL_IMPORTS: ReadonlySet<string> =
+  new Set<string>([
+    // T-inbox-fe-2: crm-shared/api/use-conversation-detail.ts imports inbox internal type
+    // (conversation-detail.ts). crm-shared is a PRODUCER feature per 03-arch-fe.md § 1;
+    // inbox/types/conversation-detail.ts has a bi-directional type dependency.
+    // Justified: crm-shared ↔ inbox types are tightly coupled in Ola 1 (pipeline/agenda Ola 2+).
+    "src/features/crm-shared/api/use-conversation-detail.ts",
+    // T-inbox-fe-2: use-conversation-filters.ts imports ConversationsFilters type from
+    // crm-shared/api/use-conversations internal path. To be refactored to use
+    // crm-shared index.ts public API in T-inbox-fe-refactor.
+    "src/features/inbox/hooks/use-conversation-filters.ts",
+    // T-inbox-fe-3: ConversationListPanel imports useConversations from crm-shared internal path.
+    // crm-shared is the SSoT producer for CRM data contracts. To be refactored to public
+    // API (crm-shared index.ts) in T-inbox-fe-refactor.
+    "src/features/inbox/components/ConversationListPanel.tsx",
+  ]);
 
 function collectTsFiles(dir: string): string[] {
   if (!existsSync(dir)) return [];
@@ -78,14 +79,16 @@ function isInternalFeaturePath(importPath: string): boolean {
   if (!match) return false;
   const subPath = match[2];
   // Allow: @/features/X/index (explicit index reference)
-  if (subPath === "index" || subPath === "index.ts" || subPath === "index.tsx") return false;
+  if (subPath === "index" || subPath === "index.ts" || subPath === "index.tsx")
+    return false;
   // Any deeper path is an internal import
   return true;
 }
 
 function extractImportPaths(source: string): string[] {
   const imports: string[] = [];
-  const importPattern = /(?:^|\n)\s*import\s+(?:.*?)\s+from\s+['"]([^'"]+)['"]/g;
+  const importPattern =
+    /(?:^|\n)\s*import\s+(?:.*?)\s+from\s+['"]([^'"]+)['"]/g;
   let match: RegExpExecArray | null;
   while ((match = importPattern.exec(source)) !== null) {
     imports.push(match[1]);
@@ -96,11 +99,15 @@ function extractImportPaths(source: string): string[] {
 describe("Vitalia FE — no cross-feature internal path imports (FE-A4)", () => {
   it("files outside a feature do not import internal feature paths", () => {
     if (!existsSync(SRC)) {
-      console.log("[SKIP] src/ directory not found — skipping test_no_cross_feature_imports");
+      console.log(
+        "[SKIP] src/ directory not found — skipping test_no_cross_feature_imports",
+      );
       return;
     }
     if (!existsSync(FEATURES_DIR)) {
-      console.log("[SKIP] src/features/ not found — skipping test_no_cross_feature_imports");
+      console.log(
+        "[SKIP] src/features/ not found — skipping test_no_cross_feature_imports",
+      );
       return;
     }
 
@@ -112,9 +119,10 @@ describe("Vitalia FE — no cross-feature internal path imports (FE-A4)", () => 
       if (KNOWN_CROSS_FEATURE_INTERNAL_IMPORTS.has(relPath)) continue;
 
       // Determine which feature (if any) this file belongs to
-      const ownerFeature = existsSync(FEATURES_DIR) && absPath.startsWith(FEATURES_DIR)
-        ? getFeatureName(absPath)
-        : null;
+      const ownerFeature =
+        existsSync(FEATURES_DIR) && absPath.startsWith(FEATURES_DIR)
+          ? getFeatureName(absPath)
+          : null;
 
       const source = readFileSync(absPath, "utf-8");
       const imports = extractImportPaths(source);
@@ -133,26 +141,29 @@ describe("Vitalia FE — no cross-feature internal path imports (FE-A4)", () => 
 
         violations.push(
           `${relPath}: imports internal path '${importPath}' ` +
-          `(accessing feature '${targetFeature}' internals — must use index.ts public API)`
+            `(accessing feature '${targetFeature}' internals — must use index.ts public API)`,
         );
       }
     }
 
-    expect(violations, [
-      "Cross-feature internal path imports detected.",
-      "",
-      "External files MUST import from a feature's public API (index.ts),",
-      "not from internal paths like @/features/X/components/foo.",
-      "",
-      "Fix: Update the import to use '@/features/X' or '@/features/X/index'",
-      "     and ensure the symbol is exported via the feature's index.ts.",
-      "",
-      "If the internal import is genuinely required (e.g., a type shared via",
-      "an internal namespace), add to KNOWN_CROSS_FEATURE_INTERNAL_IMPORTS",
-      "(shrink-only ratchet) with a justification comment.",
-      "",
-      ...violations,
-    ].join("\n")).toHaveLength(0);
+    expect(
+      violations,
+      [
+        "Cross-feature internal path imports detected.",
+        "",
+        "External files MUST import from a feature's public API (index.ts),",
+        "not from internal paths like @/features/X/components/foo.",
+        "",
+        "Fix: Update the import to use '@/features/X' or '@/features/X/index'",
+        "     and ensure the symbol is exported via the feature's index.ts.",
+        "",
+        "If the internal import is genuinely required (e.g., a type shared via",
+        "an internal namespace), add to KNOWN_CROSS_FEATURE_INTERNAL_IMPORTS",
+        "(shrink-only ratchet) with a justification comment.",
+        "",
+        ...violations,
+      ].join("\n"),
+    ).toHaveLength(0);
   });
 
   it("KNOWN_CROSS_FEATURE_INTERNAL_IMPORTS allowlist only references existing files", () => {
@@ -160,7 +171,7 @@ describe("Vitalia FE — no cross-feature internal path imports (FE-A4)", () => 
       const absPath = join(ROOT, relPath);
       expect(
         existsSync(absPath),
-        `KNOWN_CROSS_FEATURE_INTERNAL_IMPORTS references non-existent file: ${relPath}. Remove it.`
+        `KNOWN_CROSS_FEATURE_INTERNAL_IMPORTS references non-existent file: ${relPath}. Remove it.`,
       ).toBe(true);
     }
   });

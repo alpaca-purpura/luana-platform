@@ -78,12 +78,28 @@ export function MarketingBowtieSVG({
           <defs>
             {/* Gradient references CSS custom properties from globals.css */}
             <linearGradient id="bowtie-acq" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="var(--vitalia-cian-color)" stopOpacity="0.9" />
-              <stop offset="100%" stopColor="var(--vitalia-cian-color)" stopOpacity="0.3" />
+              <stop
+                offset="0%"
+                stopColor="var(--vitalia-cian-color)"
+                stopOpacity="0.9"
+              />
+              <stop
+                offset="100%"
+                stopColor="var(--vitalia-cian-color)"
+                stopOpacity="0.3"
+              />
             </linearGradient>
             <linearGradient id="bowtie-ret" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="var(--vitalia-purpura-color)" stopOpacity="0.3" />
-              <stop offset="100%" stopColor="var(--vitalia-purpura-color)" stopOpacity="0.9" />
+              <stop
+                offset="0%"
+                stopColor="var(--vitalia-purpura-color)"
+                stopOpacity="0.3"
+              />
+              <stop
+                offset="100%"
+                stopColor="var(--vitalia-purpura-color)"
+                stopOpacity="0.9"
+              />
             </linearGradient>
           </defs>
 
@@ -111,10 +127,22 @@ export function MarketingBowtieSVG({
           />
 
           {/* Axis labels */}
-          <text x={10} y={height - 4} fontSize="10" fill="var(--vitalia-text-muted-color)" aria-hidden="true">
+          <text
+            x={10}
+            y={height - 4}
+            fontSize="10"
+            fill="var(--vitalia-text-muted-color)"
+            aria-hidden="true"
+          >
             Adquisición
           </text>
-          <text x={width - 80} y={height - 4} fontSize="10" fill="var(--vitalia-text-muted-color)" aria-hidden="true">
+          <text
+            x={width - 80}
+            y={height - 4}
+            fontSize="10"
+            fill="var(--vitalia-text-muted-color)"
+            aria-hidden="true"
+          >
             Retención
           </text>
 

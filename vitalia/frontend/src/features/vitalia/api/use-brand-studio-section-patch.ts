@@ -16,10 +16,13 @@ export function useBrandStudioSectionPatch() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (payload: PatchBrandStudioSectionPayload): Promise<BrandStudioSection> => {
+    mutationFn: async (
+      payload: PatchBrandStudioSectionPayload,
+    ): Promise<BrandStudioSection> => {
       const token = await getToken();
-      const tenantId = (sessionClaims?.public_metadata as Record<string, unknown>)
-        ?.active_tenant_id as string | undefined;
+      const tenantId = (
+        sessionClaims?.public_metadata as Record<string, unknown>
+      )?.active_tenant_id as string | undefined;
       if (!token) throw new Error("Not authenticated");
       return vitaliaFetch<BrandStudioSection>(
         `/api/v1/vitalia/brand-studio/sections/${payload.section_type}`,
@@ -28,11 +31,13 @@ export function useBrandStudioSectionPatch() {
           tenantId: tenantId ?? "",
           method: "PATCH",
           body: JSON.stringify({ data: payload.data }),
-        }
+        },
       );
     },
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: vitaliaQueryKeys.brandStudio.sections() });
+      queryClient.invalidateQueries({
+        queryKey: vitaliaQueryKeys.brandStudio.sections(),
+      });
       queryClient.invalidateQueries({
         queryKey: vitaliaQueryKeys.brandStudio.section(variables.section_type),
       });

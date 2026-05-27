@@ -54,7 +54,8 @@ type Story = StoryObj<typeof ActionReceiptUndoChip>;
 export const ChipVisible: Story = {
   name: "SC-01: Chip visible (4:58 restantes)",
   beforeEach: async () => {
-    const { useActionReceiptTimer } = await import("../hooks/use-action-receipt-timer");
+    const { useActionReceiptTimer } =
+      await import("../hooks/use-action-receipt-timer");
     const { useRetractMessage } = await import("../api/use-retract-message");
 
     (useActionReceiptTimer as ReturnType<typeof vi.fn>).mockReturnValue({
@@ -73,7 +74,8 @@ export const ChipVisible: Story = {
 export const Revirtiendo: Story = {
   name: "Estado: revirtiendo mensaje",
   beforeEach: async () => {
-    const { useActionReceiptTimer } = await import("../hooks/use-action-receipt-timer");
+    const { useActionReceiptTimer } =
+      await import("../hooks/use-action-receipt-timer");
     const { useRetractMessage } = await import("../api/use-retract-message");
 
     (useActionReceiptTimer as ReturnType<typeof vi.fn>).mockReturnValue({
@@ -92,7 +94,8 @@ export const Revirtiendo: Story = {
 export const Expirado: Story = {
   name: "Chip expirado (no renderiza)",
   beforeEach: async () => {
-    const { useActionReceiptTimer } = await import("../hooks/use-action-receipt-timer");
+    const { useActionReceiptTimer } =
+      await import("../hooks/use-action-receipt-timer");
     const { useRetractMessage } = await import("../api/use-retract-message");
 
     (useActionReceiptTimer as ReturnType<typeof vi.fn>).mockReturnValue({
@@ -111,7 +114,8 @@ export const Expirado: Story = {
 export const UltimoSegundo: Story = {
   name: "Último segundo (0:01)",
   beforeEach: async () => {
-    const { useActionReceiptTimer } = await import("../hooks/use-action-receipt-timer");
+    const { useActionReceiptTimer } =
+      await import("../hooks/use-action-receipt-timer");
     const { useRetractMessage } = await import("../api/use-retract-message");
 
     (useActionReceiptTimer as ReturnType<typeof vi.fn>).mockReturnValue({

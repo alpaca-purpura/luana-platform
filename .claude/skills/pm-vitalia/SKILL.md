@@ -116,22 +116,60 @@ Idéntico paradigm v4 de Luana core. Detalle: `docs/process/pm-redesign-2026-05.
 
 ## Comandos típicos
 
+> **Handoff = invocación programática.** Cuando una fila dice **"Invocá `Skill(name)`"** significa LITERAL: llamar `Skill` tool con `skill: "<name>"` al final del turno actual, NO devolver un mensaje textual pidiendo a Chris que tipee la slash. Ver § "Auto-chain rule" abajo.
+
 | Chris dice | Acción |
 |---|---|
 | "estado vitalia" / "qué tenemos vitalia" | Render `vitalia/docs/product/BACKLOG.md` agrupado por 10 estados con emojis (NO tabla cruda) |
 | "idea {x}" | Crear `vitalia/docs/product/stories/{slug}/checkpoint.md` state=idea (o append a ideas-pool si existe) |
-| "refinemos {story}" | (1) Update checkpoint state=refining. (2) Si épica → decompose. (3) Hand off `/po-ux` (UI std), `/po` (service), o `/po + /ux-agentico` (agentic) |
+| "refinemos {story}" | (1) Update checkpoint state=refining. (2) Si épica → decompose. (3) **Invocá `Skill(po-ux)`** (UI std) o **`Skill(po)`** (service) o **`Skill(po)` luego `Skill(ux-agentico)`** (agentic) con args `"{brand} {story-id}"`. NO devolver handoff textual. |
 | "outcome nuevo {tema}" | Crear `vitalia/docs/product/outcomes/{slug}.md` |
-| "spec ratificada" / "diseño ratificado" | Update state refining→refined. Hand off `/architect` |
+| "spec ratificada" / "diseño ratificado" | Update state refining→refined. **Invocá `Skill(architect)`** con args `"vitalia {story-id}"` |
 | "ready" | Update state refined→ready (verificar 4 archivos: 03-arch, 04-validators, 05-guidelines, 06-tickets) |
-| "build" / "arranca dev" | Hand off `/dev-team`. Update state ready→developing |
+| "build" / "arranca dev" | Update state ready→developing. **Invocá `Skill(dev-team)`** con args `"vitalia {story-id}"` |
 | "validators GREEN" | Update state developing→developed |
-| "audita" / "QA" | Hand off `/auditor`. Update state developed→reviewing |
+| "audita" / "QA" | Update state developed→reviewing. **Invocá `Skill(auditor)`** con args `"vitalia {story-id}"` |
 | "{story-id} merge" | Verificar APPROVED + CHECKPOINTS C1-C5 → escribir 07-merge.md → migrar capability → archive story → update state reviewing→done |
 | "learning {tema}" | Crear `vitalia/docs/learnings/{date}-{slug}.md` con frontmatter promotable: yes/candidate/no |
 | "promotable {tema}" | Append learning con `promotable: candidate` + ping `/pm-luana` para evaluación |
 | "ADR" / "decision arquitectónica" | Crear `vitalia/docs/architecture/ADR-vitalia-NNN-{slug}.md` |
 | "regen backlog" / "regen portfolio" | `make portfolio` (auto-gen `scripts/generate_portfolio.py`) |
+
+## Auto-chain rule (cementada 2026-05-23 — origen estancamiento F1-S4)
+
+**Regla cardinal:** si Chris nombra explícitamente una skill secundaria (`/po-ux`, `/po`, `/ux-agentico`, `/architect`, `/dev-team`, `/auditor`) dentro de los args del `/pm-vitalia` (o cualquier `/pm-{brand}`), o el contexto del turno determina que el siguiente paso obvio es una de esas skills, **invocá `Skill` tool inline en el mismo turn post-Step 0**. NO devuelvas handoff textual.
+
+### Cuándo aplicar (trigger condiciones)
+
+1. Chris escribió literalmente `/po-ux` (o `/po`, `/architect`, `/dev-team`, `/auditor`, `/ux-agentico`) en los args.
+2. Chris escribió "invocá" + nombre skill (ej. "invocá /po-ux", "spawnea /architect").
+3. Chris escribió "continúa con /skill-X" o "arranca /skill-X".
+4. Step 0 GREEN + acción única determinada por estado actual (ej. story `refined` → único próximo skill es `/architect`).
+
+### Cuándo NO encadenar (excepciones)
+
+- WIP cap del estado destino está agotado (refinar respuesta + escalate Chris)
+- Faltan deps hard (citar deps faltantes + opciones)
+- Step 0 detecta stories OPEN sin defer_audit (REUSE THAT FIRST per story-closure-gate.md)
+- Story state actual no permite la transición (ej. Chris pide `/auditor` pero state=refining)
+- Scope gate (`.claude/rules/parallel-safety.md` M13) bloquea — el skill destino tocaría paths fuera del worktree actual
+
+### Cómo encadenar (verbatim)
+
+```text
+1. Step 0 GREEN check (story closure gate)
+2. Step 1 carga checkpoint brand + story
+3. Validar WIP caps + deps + state-machine de la transición
+4. Resumir contexto en 2-4 bullets compactos (qué es la story, cuál es el next_action del checkpoint)
+5. Llamar Skill tool: { skill: "<name>", args: "<brand> <story-id>" }
+6. NO escribir "Chris, invocá /po-ux..." — eso rompe la chain
+```
+
+### Anti-pattern
+
+❌ Caso real 2026-05-23 F1-S4: Chris escribió `quiero invocar /po-ux para vitalia-fase1-shell-layout-5050`. `/pm-vitalia` corrió Step 0 GREEN, leyó checkpoint, hizo bullets... y devolvió `"Chris, invocá /po-ux ..."` esperando que Chris re-tipeara. Resultado: estancamiento — Chris asume que el handoff ya disparó la skill secundaria, pero requiere su intervención manual.
+
+✅ Fix: post-Step 0, invocar `Skill(skill: "po-ux", args: "vitalia vitalia-fase1-shell-layout-5050")` directamente.
 
 ## Capability promotion (al merge)
 

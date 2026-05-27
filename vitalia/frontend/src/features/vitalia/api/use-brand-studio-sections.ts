@@ -24,12 +24,13 @@ export function useBrandStudioSections() {
     queryKey: vitaliaQueryKeys.brandStudio.sections(),
     queryFn: async (): Promise<BrandStudioSectionsResponse> => {
       const token = await getToken();
-      const tenantId = (sessionClaims?.public_metadata as Record<string, unknown>)
-        ?.active_tenant_id as string | undefined;
+      const tenantId = (
+        sessionClaims?.public_metadata as Record<string, unknown>
+      )?.active_tenant_id as string | undefined;
       if (!token) throw new Error("Not authenticated");
       return vitaliaFetch<BrandStudioSectionsResponse>(
         "/api/v1/vitalia/brand-studio/sections",
-        { token, tenantId: tenantId ?? "" }
+        { token, tenantId: tenantId ?? "" },
       );
     },
     enabled: isLoaded && isSignedIn === true,

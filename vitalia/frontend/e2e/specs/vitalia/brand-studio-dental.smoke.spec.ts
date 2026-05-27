@@ -24,7 +24,9 @@ test.describe("Brand Studio — Clínica Dental Aurora (AR)", () => {
     await expect(page.getByText(/testimonios/i)).toBeVisible();
 
     // Forbidden sections NOT visible (per spec §3.2.A)
-    await expect(page.getByText(/story|estrategia|posicionamiento/i)).not.toBeVisible();
+    await expect(
+      page.getByText(/story|estrategia|posicionamiento/i),
+    ).not.toBeVisible();
 
     expect(consoleErrors).toHaveLength(0);
   });
@@ -37,7 +39,7 @@ test.describe("Brand Studio — Clínica Dental Aurora (AR)", () => {
 
     // Core identity fields
     await expect(
-      page.getByRole("textbox", { name: /nombre de la cl[íi]nica/i })
+      page.getByRole("textbox", { name: /nombre de la cl[íi]nica/i }),
     ).toBeVisible({ timeout: 10_000 });
     await expect(page.getByRole("textbox", { name: /tagline/i })).toBeVisible();
 
@@ -78,7 +80,9 @@ test.describe("Brand Studio — Clínica Dental Aurora (AR)", () => {
 
     // Doctors from fixture should render
     for (const doctor of aurora.doctors) {
-      await expect(page.getByText(doctor.name)).toBeVisible({ timeout: 10_000 });
+      await expect(page.getByText(doctor.name)).toBeVisible({
+        timeout: 10_000,
+      });
     }
   });
 
@@ -94,16 +98,14 @@ test.describe("Brand Studio — Clínica Dental Aurora (AR)", () => {
     });
   });
 
-  test("V-V-4: landing preview CTA visible", async ({
-    auroraPage: page,
-  }) => {
+  test("V-V-4: landing preview CTA visible", async ({ auroraPage: page }) => {
     await page.goto("/brand-studio");
 
     // Preview link button
     await expect(
-      page.getByRole("link", { name: /vista previa landing/i }).or(
-        page.getByRole("button", { name: /vista previa/i })
-      )
+      page
+        .getByRole("link", { name: /vista previa landing/i })
+        .or(page.getByRole("button", { name: /vista previa/i })),
     ).toBeVisible({ timeout: 10_000 });
   });
 });

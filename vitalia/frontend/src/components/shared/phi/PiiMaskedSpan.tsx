@@ -44,9 +44,13 @@ function maskValue(value: string, fieldType: PiiFieldType): string {
       const parts = value.trim().split(/\s+/);
       if (parts.length === 0) return "—";
       const first = parts[0];
-      const masked = first.slice(0, 1) + "*".repeat(Math.max(1, first.length - 1));
+      const masked =
+        first.slice(0, 1) + "*".repeat(Math.max(1, first.length - 1));
       return parts.length > 1
-        ? `${masked} ${parts.slice(1).map((p) => p.slice(0, 1) + "***").join(" ")}`
+        ? `${masked} ${parts
+            .slice(1)
+            .map((p) => p.slice(0, 1) + "***")
+            .join(" ")}`
         : masked;
     }
     case "dni":
@@ -59,7 +63,11 @@ function maskValue(value: string, fieldType: PiiFieldType): string {
       // "+54 11 ***-4567" — mask middle digits
       const digits = value.replace(/\D/g, "");
       if (digits.length <= 4) return "***";
-      return value.slice(0, Math.max(1, value.length - 8)) + "***-" + digits.slice(-4);
+      return (
+        value.slice(0, Math.max(1, value.length - 8)) +
+        "***-" +
+        digits.slice(-4)
+      );
     }
     case "email": {
       const atIdx = value.indexOf("@");
@@ -92,7 +100,11 @@ function maskValue(value: string, fieldType: PiiFieldType): string {
  *
  * Color: vt-text-muted class (from globals.css semantic tokens — no hsl literals here).
  */
-export function PiiMaskedSpan({ value, fieldType, className }: PiiMaskedSpanProps) {
+export function PiiMaskedSpan({
+  value,
+  fieldType,
+  className,
+}: PiiMaskedSpanProps) {
   const raw = value ?? "";
   const masked = raw ? maskValue(raw, fieldType) : "—";
 
@@ -100,10 +112,7 @@ export function PiiMaskedSpan({ value, fieldType, className }: PiiMaskedSpanProp
     <span
       data-phi
       data-phi-type={fieldType}
-      className={cn(
-        "font-mono vt-text-muted tracking-wide",
-        className
-      )}
+      className={cn("font-mono vt-text-muted tracking-wide", className)}
       aria-label={`Dato privado — ${fieldType}`}
       title="Información protegida"
     >

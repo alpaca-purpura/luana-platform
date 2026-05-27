@@ -12,7 +12,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
 import { vitaliaFetch } from "@/lib/fetch-client";
-import type { SendProactiveRequest, SendProactiveResponse } from "../types/re-engagement";
+import type {
+  SendProactiveRequest,
+  SendProactiveResponse,
+} from "../types/re-engagement";
 
 interface SendProactiveArgs {
   patientId: string;
@@ -42,12 +45,14 @@ export function useSendProactiveTemplate() {
           method: "POST",
           body: JSON.stringify(payload),
           headers: { "Idempotency-Key": idempotencyKey },
-        }
+        },
       );
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["fidelizacion"] });
-      void queryClient.invalidateQueries({ queryKey: ["inbox", "conversations"] });
+      void queryClient.invalidateQueries({
+        queryKey: ["inbox", "conversations"],
+      });
     },
   });
 }

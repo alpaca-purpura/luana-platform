@@ -37,7 +37,11 @@ const CONVERSATION_ID = "conv-pause-001";
 
 function createWrapper(queryClient: QueryClient) {
   return function Wrapper({ children }: { children: React.ReactNode }) {
-    return createElement(QueryClientProvider, { client: queryClient }, children);
+    return createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 }
 
@@ -46,7 +50,10 @@ describe("usePauseAdrian", () => {
 
   beforeEach(() => {
     queryClient = new QueryClient({
-      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+      defaultOptions: {
+        queries: { retry: false },
+        mutations: { retry: false },
+      },
     });
     vi.clearAllMocks();
   });
@@ -56,7 +63,9 @@ describe("usePauseAdrian", () => {
       id: CONVERSATION_ID,
       pause_until: "2026-01-01T11:00:00Z",
     };
-    vi.mocked(fetchClient).mockResolvedValue({ conversation: pausedConversation });
+    vi.mocked(fetchClient).mockResolvedValue({
+      conversation: pausedConversation,
+    });
 
     const { result } = renderHook(() => usePauseAdrian(), {
       wrapper: createWrapper(queryClient),
@@ -70,20 +79,27 @@ describe("usePauseAdrian", () => {
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data?.conversation).toMatchObject({ pause_until: "2026-01-01T11:00:00Z" });
+    expect(result.current.data?.conversation).toMatchObject({
+      pause_until: "2026-01-01T11:00:00Z",
+    });
 
     expect(fetchClient).toHaveBeenCalledWith(
       expect.stringContaining("/pause-adrian"),
       expect.objectContaining({
         method: "POST",
-        body: JSON.stringify({ reason: "Paciente fuera de horario, Adrián puede esperar" }),
-      })
+        body: JSON.stringify({
+          reason: "Paciente fuera de horario, Adrián puede esperar",
+        }),
+      }),
     );
   });
 
   it("pauses without reason (null reason)", async () => {
     vi.mocked(fetchClient).mockResolvedValue({
-      conversation: { id: CONVERSATION_ID, pause_until: "2026-01-01T11:00:00Z" },
+      conversation: {
+        id: CONVERSATION_ID,
+        pause_until: "2026-01-01T11:00:00Z",
+      },
     });
 
     const { result } = renderHook(() => usePauseAdrian(), {
@@ -97,7 +113,7 @@ describe("usePauseAdrian", () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(fetchClient).toHaveBeenCalledWith(
       expect.anything(),
-      expect.objectContaining({ body: JSON.stringify({ reason: null }) })
+      expect.objectContaining({ body: JSON.stringify({ reason: null }) }),
     );
   });
 
@@ -118,10 +134,12 @@ describe("usePauseAdrian", () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(invalidateSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ queryKey: ["inbox", "conversation", CONVERSATION_ID] })
+      expect.objectContaining({
+        queryKey: ["inbox", "conversation", CONVERSATION_ID],
+      }),
     );
     expect(invalidateSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ queryKey: ["inbox", "conversations"] })
+      expect.objectContaining({ queryKey: ["inbox", "conversations"] }),
     );
   });
 });

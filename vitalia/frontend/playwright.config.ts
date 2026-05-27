@@ -72,7 +72,16 @@ export default defineConfig({
         /.*\/e2e\/auth\/.*\.spec\.ts/,
         /.*\/e2e\/dashboard\/.*\.spec\.ts/,
         /.*\/e2e\/visual\/.*\.spec\.ts/,
+        // F1-S4 shell-layout regression FUNCTIONAL specs
+        // (visual-goldens corre SOLO en project=visual — ver testIgnore abajo)
+        /.*\/e2e\/regression\/.*\.spec\.ts/,
+        // F1-S6 shell-organism behavior specs (public route /test-stack/shell-layout)
+        /.*\/e2e\/shell-organism\/valeria-chat-.*\.spec\.ts/,
       ],
+      // Exclude visual-goldens: corren EXCLUSIVAMENTE en project=visual que tiene
+      // snapshotPathTemplate + maxDiffPixelRatio: 0.001 config. Sin esa config,
+      // toHaveScreenshot() falla porque no encuentra el snapshot path esperado.
+      testIgnore: [/.*\/visual-goldens\.spec\.ts/],
       use: {
         ...devices["Desktop Chrome"],
         storageState: "playwright/.clerk/user.json",
@@ -129,16 +138,6 @@ export default defineConfig({
       dependencies: ["setup"],
     },
     // Admin Streamlit panel — separate baseURL + own auth fixture (NOT Clerk).
-    // Run: E2E_ADMIN_BASE_URL=http://localhost:8502 VITALIA_ADMIN_PASSWORD=...
-    {
-      name: "admin-smoke",
-      testMatch: /.*\/e2e\/admin\/.*\.spec\.ts/,
-      use: {
-        ...devices["Desktop Chrome"],
-        baseURL: process.env["E2E_ADMIN_BASE_URL"] || "http://127.0.0.1:8502",
-      },
-    },
-    // Admin-smoke project — Streamlit admin panel at port 8502 (NOT Clerk-gated).
     // Requires VITALIA_ADMIN_PASSWORD + VITALIA_INTERNAL_API_TOKEN env vars.
     // Run: E2E_ADMIN_BASE_URL=http://localhost:8502 VITALIA_ADMIN_PASSWORD=... npx playwright test --project=admin-smoke
     {
@@ -147,6 +146,43 @@ export default defineConfig({
       use: {
         ...devices["Desktop Chrome"],
         baseURL: process.env["E2E_ADMIN_BASE_URL"] || "http://127.0.0.1:8502",
+      },
+    },
+
+    // Visual regression project — F1-S0 stack baseline (Design Contract § 9.4)
+    // maxDiffPixelRatio: 0.001 = 0.1% tolerance. animations disabled for determinism.
+    // Run: E2E_BASE_URL=http://localhost:3002 npx playwright test --project=visual
+    // Goldens path: e2e/__screenshots__/stack-stability/
+    //
+    // FIX 2026-05-22 F1-S0: agregado storageState + dependencies:['setup'] porque la
+    // dev-stack-baseline.spec.ts incluye dashboard-legacy tests que navegan a
+    // BASE_URL/ que es (dashboard)/page.tsx auth-gated. Sin storageState el spec
+    // se redirige a /sign-in y los goldens capturarían sign-in page en vez del
+    // dashboard. Las páginas /test-stack/* son public (proxy.ts) — storageState
+    // no las afecta.
+    {
+      name: "visual",
+      testMatch: [
+        /.*\/e2e\/visual\/.*\.spec\.ts/,
+        // F1-S4 shell-layout visual-goldens (vive en regression/ junto a su
+        // POM + functional specs por proximidad; ratchet config Fase 7B).
+        /.*\/e2e\/regression\/.*\/visual-goldens\.spec\.ts$/,
+      ],
+      use: {
+        ...devices["Desktop Chrome"],
+        viewport: { width: 1440, height: 900 },
+        colorScheme: "light",
+        storageState: "playwright/.clerk/user.json",
+      },
+      dependencies: ["setup"],
+      snapshotPathTemplate:
+        "e2e/__screenshots__/{testFilePath}/{arg}{ext}",
+      expect: {
+        toHaveScreenshot: {
+          maxDiffPixelRatio: 0.001,
+          animations: "disabled",
+          caret: "hide",
+        },
       },
     },
   ],

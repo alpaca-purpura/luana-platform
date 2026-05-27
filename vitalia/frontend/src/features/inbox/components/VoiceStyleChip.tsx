@@ -52,7 +52,7 @@ export function VoiceStyleChip({
         aria-hidden="true"
         className={cn(
           "inline-block h-2 w-2 rounded-full shrink-0",
-          isConfigured ? "bg-[var(--vitalia-cian)]" : "vt-bg-muted"
+          isConfigured ? "bg-[var(--vitalia-cian)]" : "vt-bg-muted",
         )}
       />
 
@@ -67,7 +67,7 @@ export function VoiceStyleChip({
         className={cn(
           "text-xs underline-offset-2 hover:underline",
           "text-[var(--vitalia-cian)] focus-visible:outline-none",
-          "focus-visible:ring-2 focus-visible:ring-[var(--vitalia-cian)]"
+          "focus-visible:ring-2 focus-visible:ring-[var(--vitalia-cian)]",
         )}
         data-testid="voice-style-chip-cta"
         aria-label={`${INBOX_COPY.voiceStyleChip.cta} — ${INBOX_COPY.voiceStyleChip.ariaLabel}`}

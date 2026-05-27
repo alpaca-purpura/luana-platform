@@ -67,7 +67,11 @@ export function useWizardLivePreview({
 
       setState((prev) => ({ ...prev, isLoading: true, error: null }));
       try {
-        const result = await simulateVoice({ token, tenantId }, draftId, payload);
+        const result = await simulateVoice(
+          { token, tenantId },
+          draftId,
+          payload,
+        );
         setState({
           isLoading: false,
           data: result,
@@ -78,11 +82,14 @@ export function useWizardLivePreview({
         setState((prev) => ({
           ...prev,
           isLoading: false,
-          error: err instanceof Error ? err.message : "Error al generar vista previa",
+          error:
+            err instanceof Error
+              ? err.message
+              : "Error al generar vista previa",
         }));
       }
     },
-    [draftId, getToken, organization]
+    [draftId, getToken, organization],
   );
 
   /** Debounced trigger — replaces any pending simulation */
@@ -97,7 +104,7 @@ export function useWizardLivePreview({
         void executeSimulate(payload);
       }, DEBOUNCE_MS);
     },
-    [enabled, draftId, executeSimulate]
+    [enabled, draftId, executeSimulate],
   );
 
   // Auto-trigger when profilePartial changes (debounced)

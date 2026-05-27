@@ -8,7 +8,10 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { WizardStep, WizardMode } from "../../types/wizard-onboarding.types";
+import type {
+  WizardStep,
+  WizardMode,
+} from "../../types/wizard-onboarding.types";
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
 
@@ -32,9 +35,8 @@ describe("use-wizard-url-state", () => {
   });
 
   it("should export useWizardUrlState function", async () => {
-    const { useWizardUrlState } = await import(
-      "../../hooks/use-wizard-url-state"
-    );
+    const { useWizardUrlState } =
+      await import("../../hooks/use-wizard-url-state");
     expect(typeof useWizardUrlState).toBe("function");
   });
 
@@ -49,7 +51,9 @@ describe("WizardUrlState shape", () => {
   it("step defaults to greet when not in URL", async () => {
     // Type contract test — step should be a valid WizardStep
     const step: WizardStep = "greet";
-    expect(["greet", "extract", "confirm", "preview", "complete"]).toContain(step);
+    expect(["greet", "extract", "confirm", "preview", "complete"]).toContain(
+      step,
+    );
   });
 
   it("mode can be null or a valid WizardMode", () => {

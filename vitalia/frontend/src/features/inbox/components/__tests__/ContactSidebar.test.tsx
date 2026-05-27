@@ -25,7 +25,15 @@ vi.mock("@clerk/nextjs", () => ({
 // Track AuditedSection mount calls
 const mockAuditFire = vi.fn();
 vi.mock("@/components/shared/phi/AuditedSection", () => ({
-  AuditedSection: ({ children, resourceType, resourceId }: { children: React.ReactNode; resourceType: string; resourceId: string }) => {
+  AuditedSection: ({
+    children,
+    resourceType,
+    resourceId,
+  }: {
+    children: React.ReactNode;
+    resourceType: string;
+    resourceId: string;
+  }) => {
     // Simulate firing audit on mount via useEffect equivalent — track it
     mockAuditFire({ resourceType, resourceId });
     return <>{children}</>;
@@ -33,9 +41,18 @@ vi.mock("@/components/shared/phi/AuditedSection", () => ({
 }));
 
 // Track PiiMaskedSpan renders
-const mockPiiMaskedCalls: Array<{ value: string | null | undefined; fieldType: string }> = [];
+const mockPiiMaskedCalls: Array<{
+  value: string | null | undefined;
+  fieldType: string;
+}> = [];
 vi.mock("@/components/shared/phi/PiiMaskedSpan", () => ({
-  PiiMaskedSpan: ({ value, fieldType }: { value: string | null | undefined; fieldType: string }) => {
+  PiiMaskedSpan: ({
+    value,
+    fieldType,
+  }: {
+    value: string | null | undefined;
+    fieldType: string;
+  }) => {
     mockPiiMaskedCalls.push({ value, fieldType });
     return (
       <span data-testid={`pii-masked-${fieldType}`} data-masked="true">
@@ -47,7 +64,17 @@ vi.mock("@/components/shared/phi/PiiMaskedSpan", () => ({
 
 // Track RequireRole usage
 vi.mock("@/components/shared/phi/RequireRole", () => ({
-  RequireRole: ({ children, userRole, roles, fallback }: { children: React.ReactNode; userRole: string | null; roles: string[]; fallback?: React.ReactNode }) => {
+  RequireRole: ({
+    children,
+    userRole,
+    roles,
+    fallback,
+  }: {
+    children: React.ReactNode;
+    userRole: string | null;
+    roles: string[];
+    fallback?: React.ReactNode;
+  }) => {
     if (!userRole || !roles.includes(userRole)) {
       return <>{fallback ?? null}</>;
     }
@@ -61,7 +88,9 @@ vi.mock("@/hooks/useCurrentUser", () => ({
   useCurrentUser: vi.fn(() => ({
     id: "user-1",
     role: mockRole,
-    hasPhiAccess: mockRole !== null && ["doctor", "nurse", "admin_clinic"].includes(mockRole),
+    hasPhiAccess:
+      mockRole !== null &&
+      ["doctor", "nurse", "admin_clinic"].includes(mockRole),
     isLoaded: true,
     firstName: "Test",
     lastName: "User",
@@ -79,7 +108,11 @@ const defaultProps = {
     email: "juan@example.com",
     statusTag: "Interesado",
     npsHistory: [
-      { score: 9, recorded_at: "2026-01-10T00:00:00Z", comment: "Excelente atención" },
+      {
+        score: 9,
+        recorded_at: "2026-01-10T00:00:00Z",
+        comment: "Excelente atención",
+      },
     ],
   },
 };
@@ -94,7 +127,9 @@ describe("ContactSidebar — test_phi_masked_default (PHI fields masked via PiiM
   it("renders sidebar with aria-label from INBOX_COPY.contactSidebar.ariaLabel", () => {
     render(<ContactSidebar {...defaultProps} />);
     const sidebar = screen.getByRole("complementary");
-    expect(sidebar.getAttribute("aria-label")).toBe(INBOX_COPY.contactSidebar.ariaLabel);
+    expect(sidebar.getAttribute("aria-label")).toBe(
+      INBOX_COPY.contactSidebar.ariaLabel,
+    );
   });
 
   it("phone value is rendered via PiiMaskedSpan with fieldType=phone", () => {
@@ -121,7 +156,7 @@ describe("ContactSidebar — test_phi_masked_default (PHI fields masked via PiiM
       <ContactSidebar
         {...defaultProps}
         contact={{ ...defaultProps.contact, phone: null }}
-      />
+      />,
     );
     expect(screen.getByText(INBOX_COPY.contactSidebar.noPhone)).toBeDefined();
   });
@@ -131,7 +166,7 @@ describe("ContactSidebar — test_phi_masked_default (PHI fields masked via PiiM
       <ContactSidebar
         {...defaultProps}
         contact={{ ...defaultProps.contact, email: null }}
-      />
+      />,
     );
     expect(screen.getByText(INBOX_COPY.contactSidebar.noEmail)).toBeDefined();
   });
@@ -147,31 +182,41 @@ describe("ContactSidebar — test_marketing_role_hides_nps_history", () => {
     mockRole = "marketing";
     render(<ContactSidebar {...defaultProps} />);
     // NPS history section title should not be visible to marketing role
-    expect(screen.queryByText(INBOX_COPY.contactSidebar.sectionNpsHistory)).toBeNull();
+    expect(
+      screen.queryByText(INBOX_COPY.contactSidebar.sectionNpsHistory),
+    ).toBeNull();
   });
 
   it("doctor role: NPS history section is visible", () => {
     mockRole = "doctor";
     render(<ContactSidebar {...defaultProps} />);
-    expect(screen.getByText(INBOX_COPY.contactSidebar.sectionNpsHistory)).toBeDefined();
+    expect(
+      screen.getByText(INBOX_COPY.contactSidebar.sectionNpsHistory),
+    ).toBeDefined();
   });
 
   it("nurse role: NPS history section is visible", () => {
     mockRole = "nurse";
     render(<ContactSidebar {...defaultProps} />);
-    expect(screen.getByText(INBOX_COPY.contactSidebar.sectionNpsHistory)).toBeDefined();
+    expect(
+      screen.getByText(INBOX_COPY.contactSidebar.sectionNpsHistory),
+    ).toBeDefined();
   });
 
   it("admin_clinic role: NPS history section is visible", () => {
     mockRole = "admin_clinic";
     render(<ContactSidebar {...defaultProps} />);
-    expect(screen.getByText(INBOX_COPY.contactSidebar.sectionNpsHistory)).toBeDefined();
+    expect(
+      screen.getByText(INBOX_COPY.contactSidebar.sectionNpsHistory),
+    ).toBeDefined();
   });
 
   it("sales role: NPS history section is hidden", () => {
     mockRole = "sales";
     render(<ContactSidebar {...defaultProps} />);
-    expect(screen.queryByText(INBOX_COPY.contactSidebar.sectionNpsHistory)).toBeNull();
+    expect(
+      screen.queryByText(INBOX_COPY.contactSidebar.sectionNpsHistory),
+    ).toBeNull();
   });
 });
 
@@ -184,19 +229,21 @@ describe("ContactSidebar — test_phi_reveal_triggers_audit_log (AuditedSection 
   it("AuditedSection is used with resourceType=patient_profile", () => {
     render(<ContactSidebar {...defaultProps} />);
     expect(mockAuditFire).toHaveBeenCalledWith(
-      expect.objectContaining({ resourceType: "patient_profile" })
+      expect.objectContaining({ resourceType: "patient_profile" }),
     );
   });
 
   it("AuditedSection is called with the patientId as resourceId", () => {
     render(<ContactSidebar {...defaultProps} />);
     expect(mockAuditFire).toHaveBeenCalledWith(
-      expect.objectContaining({ resourceId: "pat-uuid-1" })
+      expect.objectContaining({ resourceId: "pat-uuid-1" }),
     );
   });
 
   it("renders contact section heading", () => {
     render(<ContactSidebar {...defaultProps} />);
-    expect(screen.getByText(INBOX_COPY.contactSidebar.sectionContact)).toBeDefined();
+    expect(
+      screen.getByText(INBOX_COPY.contactSidebar.sectionContact),
+    ).toBeDefined();
   });
 });

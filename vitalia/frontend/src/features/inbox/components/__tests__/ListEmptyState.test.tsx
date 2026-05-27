@@ -15,43 +15,39 @@ describe("ListEmptyState", () => {
   it("renders noConversations variant with correct heading and body", () => {
     render(<ListEmptyState variant="noConversations" />);
     expect(
-      screen.getByText(INBOX_COPY.empty.noConversations.heading)
+      screen.getByText(INBOX_COPY.empty.noConversations.heading),
     ).toBeDefined();
     expect(
-      screen.getByText(INBOX_COPY.empty.noConversations.body)
+      screen.getByText(INBOX_COPY.empty.noConversations.body),
     ).toBeDefined();
   });
 
   it("renders noHelpNeeded variant", () => {
     render(<ListEmptyState variant="noHelpNeeded" />);
     expect(
-      screen.getByText(INBOX_COPY.empty.noHelpNeeded.heading)
+      screen.getByText(INBOX_COPY.empty.noHelpNeeded.heading),
     ).toBeDefined();
-    expect(
-      screen.getByText(INBOX_COPY.empty.noHelpNeeded.body)
-    ).toBeDefined();
+    expect(screen.getByText(INBOX_COPY.empty.noHelpNeeded.body)).toBeDefined();
   });
 
   it("renders noMediaUnread variant", () => {
     render(<ListEmptyState variant="noMediaUnread" />);
     expect(
-      screen.getByText(INBOX_COPY.empty.noMediaUnread.heading)
+      screen.getByText(INBOX_COPY.empty.noMediaUnread.heading),
     ).toBeDefined();
-    expect(
-      screen.getByText(INBOX_COPY.empty.noMediaUnread.body)
-    ).toBeDefined();
+    expect(screen.getByText(INBOX_COPY.empty.noMediaUnread.body)).toBeDefined();
   });
 
   it("renders noResultsFilter variant with CTA and calls onClearFilters", () => {
     const onClear = vi.fn();
     render(
-      <ListEmptyState variant="noResultsFilter" onClearFilters={onClear} />
+      <ListEmptyState variant="noResultsFilter" onClearFilters={onClear} />,
     );
     expect(
-      screen.getByText(INBOX_COPY.empty.noResultsFilter.heading)
+      screen.getByText(INBOX_COPY.empty.noResultsFilter.heading),
     ).toBeDefined();
     expect(
-      screen.getByText(INBOX_COPY.empty.noResultsFilter.body)
+      screen.getByText(INBOX_COPY.empty.noResultsFilter.body),
     ).toBeDefined();
     const ctaButton = screen.getByRole("button", {
       name: INBOX_COPY.empty.noResultsFilter.cta,
@@ -66,14 +62,12 @@ describe("ListEmptyState", () => {
     expect(
       screen.queryByRole("button", {
         name: INBOX_COPY.empty.noResultsFilter.cta,
-      })
+      }),
     ).toBeNull();
   });
 
   it("has accessible role (status or region)", () => {
-    const { container } = render(
-      <ListEmptyState variant="noConversations" />
-    );
+    const { container } = render(<ListEmptyState variant="noConversations" />);
     // Container must have a landmark role for screen readers
     const el = container.firstChild as HTMLElement;
     expect(el).toBeDefined();

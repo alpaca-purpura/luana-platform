@@ -1,0 +1,1 @@
+"""Brand studio infrastructure layer."""

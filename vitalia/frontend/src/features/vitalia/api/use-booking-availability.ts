@@ -16,18 +16,23 @@ export function useBookingAvailability(filters: AvailableSlotsFilters) {
   const { getToken, isLoaded, isSignedIn, sessionClaims } = useAuth();
 
   return useQuery({
-    queryKey: vitaliaQueryKeys.bookings.slots({ doctor_id: filters.doctor_id, offer_id: filters.offer_id }),
+    queryKey: vitaliaQueryKeys.bookings.slots({
+      doctor_id: filters.doctor_id,
+      offer_id: filters.offer_id,
+    }),
     queryFn: async (): Promise<AvailableSlotsResponse> => {
       const token = await getToken();
-      const tenantId = (sessionClaims?.public_metadata as Record<string, unknown>)
-        ?.active_tenant_id as string | undefined;
+      const tenantId = (
+        sessionClaims?.public_metadata as Record<string, unknown>
+      )?.active_tenant_id as string | undefined;
       if (!token) throw new Error("Not authenticated");
       const params = new URLSearchParams({ doctor_id: filters.doctor_id });
       if (filters.offer_id) params.set("offer_id", filters.offer_id);
-      if (filters.window_days) params.set("window_days", String(filters.window_days));
+      if (filters.window_days)
+        params.set("window_days", String(filters.window_days));
       return vitaliaFetch<AvailableSlotsResponse>(
         `/api/v1/vitalia/bookings/available-slots?${params.toString()}`,
-        { token, tenantId: tenantId ?? "" }
+        { token, tenantId: tenantId ?? "" },
       );
     },
     enabled: isLoaded && isSignedIn === true && Boolean(filters.doctor_id),

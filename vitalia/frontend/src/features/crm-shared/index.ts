@@ -22,7 +22,10 @@ export type {
 
 // React Query hooks (T-inbox-fe-2)
 export { useConversations } from "./api/use-conversations";
-export type { ConversationsFilters, ConversationsResponse } from "./api/use-conversations";
+export type {
+  ConversationsFilters,
+  ConversationsResponse,
+} from "./api/use-conversations";
 export { useConversationDetail } from "./api/use-conversation-detail";
 export { useLeads } from "./api/use-leads";
 export type { LeadsFilters, LeadsResponse } from "./api/use-leads";

@@ -31,7 +31,11 @@ export interface CurrentUser {
   isLoaded: boolean;
 }
 
-const PHI_ROLES: ReadonlySet<string> = new Set(["doctor", "nurse", "admin_clinic"]);
+const PHI_ROLES: ReadonlySet<string> = new Set([
+  "doctor",
+  "nurse",
+  "admin_clinic",
+]);
 
 /**
  * Returns current authenticated user with vitalia-specific role.

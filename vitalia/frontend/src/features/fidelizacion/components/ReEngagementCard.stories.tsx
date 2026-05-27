@@ -177,7 +177,11 @@ export const Absence: Story = {
 export const UrgencyCritical: Story = {
   name: "Urgencia: crítica",
   args: {
-    row: { ...MULTI_SESSION_ROW, urgency: "critical", reEngagementEventId: "evt-critical" },
+    row: {
+      ...MULTI_SESSION_ROW,
+      urgency: "critical",
+      reEngagementEventId: "evt-critical",
+    },
   },
 };
 
@@ -185,7 +189,11 @@ export const UrgencyCritical: Story = {
 export const UrgencyUpToDate: Story = {
   name: "Urgencia: al día",
   args: {
-    row: { ...MULTI_SESSION_ROW, urgency: "up_to_date", reEngagementEventId: "evt-uptodate" },
+    row: {
+      ...MULTI_SESSION_ROW,
+      urgency: "up_to_date",
+      reEngagementEventId: "evt-uptodate",
+    },
   },
 };
 
@@ -204,7 +212,11 @@ export const AbsenceNoMarketing: Story = {
         marketingOptIn: false,
       },
       acciones: [
-        { id: "send_reminder", enabled: false, disabledReason: "Paciente no aceptó comunicaciones de marketing" },
+        {
+          id: "send_reminder",
+          enabled: false,
+          disabledReason: "Paciente no aceptó comunicaciones de marketing",
+        },
         { id: "suggest_slots", enabled: true, disabledReason: null },
         { id: "pause_patient", enabled: true, disabledReason: null },
         { id: "open_conversation", enabled: true, disabledReason: null },

@@ -40,6 +40,6 @@ export function useFidelizacionStore(): FidelizacionStoreState &
   return useSyncExternalStore(
     store.current.subscribe,
     store.current.getState,
-    store.current.getState
+    store.current.getState,
   );
 }

@@ -35,7 +35,9 @@ function formatTime(iso: string): string {
   });
 }
 
-function groupByDate(bookings: BookingSummary[]): Map<string, BookingSummary[]> {
+function groupByDate(
+  bookings: BookingSummary[],
+): Map<string, BookingSummary[]> {
   const map = new Map<string, BookingSummary[]>();
   for (const booking of bookings) {
     const dateKey = booking.slot_iso.slice(0, 10); // "YYYY-MM-DD"
@@ -70,7 +72,8 @@ const STATUS_CLASS: Record<string, string> = {
 
 function BookingCard({ booking }: { booking: BookingSummary }) {
   const statusLabel = STATUS_LABEL[booking.status] ?? booking.status;
-  const statusClass = STATUS_CLASS[booking.status] ?? "bg-gray-100 text-gray-600";
+  const statusClass =
+    STATUS_CLASS[booking.status] ?? "bg-gray-100 text-gray-600";
 
   return (
     <div
@@ -78,7 +81,9 @@ function BookingCard({ booking }: { booking: BookingSummary }) {
       role="listitem"
     >
       <div className="text-center w-14 shrink-0">
-        <p className="text-sm font-semibold text-gray-800">{formatTime(booking.slot_iso)}</p>
+        <p className="text-sm font-semibold text-gray-800">
+          {formatTime(booking.slot_iso)}
+        </p>
         <p className="text-xs text-gray-400">{booking.duration_minutes} min</p>
       </div>
       <div className="flex-1 min-w-0">
@@ -89,7 +94,7 @@ function BookingCard({ booking }: { booking: BookingSummary }) {
       <span
         className={cn(
           "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium shrink-0",
-          statusClass
+          statusClass,
         )}
         aria-label={`Estado: ${statusLabel}`}
       >
@@ -106,7 +111,7 @@ export function AppointmentsCalendarClient({
   className,
 }: AppointmentsCalendarClientProps) {
   const { data, isLoading, isError } = useBookings(
-    statusFilter ? { status: statusFilter } : undefined
+    statusFilter ? { status: statusFilter } : undefined,
   );
 
   const grouped = useMemo(() => {
@@ -117,7 +122,10 @@ export function AppointmentsCalendarClient({
   if (isError) {
     return (
       <div
-        className={cn("rounded-lg border border-red-200 bg-red-50 p-6 text-center", className)}
+        className={cn(
+          "rounded-lg border border-red-200 bg-red-50 p-6 text-center",
+          className,
+        )}
         role="alert"
       >
         <p className="text-sm text-red-700">
@@ -148,7 +156,10 @@ export function AppointmentsCalendarClient({
   if (grouped.size === 0) {
     return (
       <div
-        className={cn("rounded-lg border border-dashed border-gray-200 p-8 text-center", className)}
+        className={cn(
+          "rounded-lg border border-dashed border-gray-200 p-8 text-center",
+          className,
+        )}
         role="status"
       >
         <p className="text-sm text-gray-500">Sin citas programadas.</p>

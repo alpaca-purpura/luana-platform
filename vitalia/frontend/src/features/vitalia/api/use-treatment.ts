@@ -13,12 +13,13 @@ export function useTreatment(id: string) {
     queryKey: vitaliaQueryKeys.treatments.detail(id),
     queryFn: async (): Promise<TreatmentDetailResponse> => {
       const token = await getToken();
-      const tenantId = (sessionClaims?.public_metadata as Record<string, unknown>)
-        ?.active_tenant_id as string | undefined;
+      const tenantId = (
+        sessionClaims?.public_metadata as Record<string, unknown>
+      )?.active_tenant_id as string | undefined;
       if (!token) throw new Error("Not authenticated");
       return vitaliaFetch<TreatmentDetailResponse>(
         `/api/v1/vitalia/treatments/${id}`,
-        { token, tenantId: tenantId ?? "" }
+        { token, tenantId: tenantId ?? "" },
       );
     },
     enabled: isLoaded && isSignedIn === true && Boolean(id),

@@ -95,7 +95,11 @@ function buildDetail(handlerMode: "ai" | "human" = "ai"): ConversationDetail {
 
 function createWrapper(queryClient: QueryClient) {
   return function Wrapper({ children }: { children: React.ReactNode }) {
-    return createElement(QueryClientProvider, { client: queryClient }, children);
+    return createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 }
 
@@ -104,16 +108,25 @@ describe("useSetMode — SC-03 OCC conflict", () => {
 
   beforeEach(() => {
     queryClient = new QueryClient({
-      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+      defaultOptions: {
+        queries: { retry: false },
+        mutations: { retry: false },
+      },
     });
     vi.clearAllMocks();
   });
 
   it("SC-03: rolls back optimistic update on 409 conflict and invalidates detail", async () => {
     const detail = buildDetail("ai");
-    queryClient.setQueryData(["inbox", "conversation", CONVERSATION_ID], detail);
+    queryClient.setQueryData(
+      ["inbox", "conversation", CONVERSATION_ID],
+      detail,
+    );
 
-    const conflictError = new ApiError({ status: 409, statusText: "Conflict" } as unknown as Response);
+    const conflictError = new ApiError({
+      status: 409,
+      statusText: "Conflict",
+    } as unknown as Response);
     vi.mocked(fetchClient).mockRejectedValue(conflictError);
 
     const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
@@ -142,17 +155,22 @@ describe("useSetMode — SC-03 OCC conflict", () => {
 
     // Re-fetch triggered
     expect(invalidateSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ queryKey: ["inbox", "conversation", CONVERSATION_ID] })
+      expect.objectContaining({
+        queryKey: ["inbox", "conversation", CONVERSATION_ID],
+      }),
     );
   });
 
   it("applies optimistic update immediately on mutate", async () => {
     const detail = buildDetail("ai");
-    queryClient.setQueryData(["inbox", "conversation", CONVERSATION_ID], detail);
+    queryClient.setQueryData(
+      ["inbox", "conversation", CONVERSATION_ID],
+      detail,
+    );
 
     let resolvePromise!: (value: unknown) => void;
     vi.mocked(fetchClient).mockReturnValue(
-      new Promise((res) => (resolvePromise = res))
+      new Promise((res) => (resolvePromise = res)),
     );
 
     const { result } = renderHook(() => useSetMode(CONVERSATION_ID), {
@@ -183,9 +201,14 @@ describe("useSetMode — SC-03 OCC conflict", () => {
 
   it("sets proposalRequired=true for adrian-consulta equivalent input", async () => {
     const detail = buildDetail("ai");
-    queryClient.setQueryData(["inbox", "conversation", CONVERSATION_ID], detail);
+    queryClient.setQueryData(
+      ["inbox", "conversation", CONVERSATION_ID],
+      detail,
+    );
 
-    vi.mocked(fetchClient).mockResolvedValue({ conversation: buildDetail("ai").conversation });
+    vi.mocked(fetchClient).mockResolvedValue({
+      conversation: buildDetail("ai").conversation,
+    });
 
     const { result } = renderHook(() => useSetMode(CONVERSATION_ID), {
       wrapper: createWrapper(queryClient),
@@ -205,7 +228,7 @@ describe("useSetMode — SC-03 OCC conflict", () => {
       expect.stringContaining("/mode"),
       expect.objectContaining({
         body: JSON.stringify({ mode: "ai", proposal_required: true }),
-      })
+      }),
     );
   });
 });

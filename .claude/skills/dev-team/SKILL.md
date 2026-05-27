@@ -600,9 +600,85 @@ Si 2 tickets independientes (no `depends_on`) están `ready` simultáneamente:
 - IMPORTANTE: ambos no deben tocar mismos archivos (conflict)
 - Si overlap detectado → secuencial
 
+## ★ Delegation pattern (cementado 2026-05-27 — origen autonomous chain lisa-marca)
+
+> **Caso origen:** durante el autonomous chain de `vitalia-fase2-lisa-marca` (12 tickets, ~6 hours of orchestration), el `/dev-team` orchestrator delegó tareas de finalize (commit + result file + ticket state update) a un Haiku `general-purpose` agent. Resultado:
+> - El Haiku stageó archivos incorrectos (5 valeria-agenda test files de sesión paralela en lugar de los 8 lisa-marca files solicitados)
+> - El Haiku claimó `done -> 8c51ff5a` con SHA real pero contenido WRONG
+> - El orchestrator tuvo que hacer un recovery commit con los 12 archivos correctos
+> - Cost: ~1 turn de inference + reputation damage
+
+**Regla cardinal:** delega a `subagent_type` ESPECIALIZADO según el dominio del trabajo, NUNCA a `general-purpose` para tareas que requieren domain knowledge.
+
+### Subagent_type matrix por tarea
+
+| Tarea | subagent_type correcto | Por qué |
+|---|---|---|
+| Implementar BE ticket | `builder-backend` (Sonnet/Opus) | DDD/FastAPI/SA patterns embedded en su system prompt |
+| Implementar FE ticket | `builder-frontend` (Sonnet/Opus) | FSD-Lite/React Query/RHF patterns embedded |
+| Implementar AGENTIC ticket production_code:true | `builder-agentic` (Opus 4.7 OBLIGATORIO) | LangGraph + prompt cache + voice + observability |
+| Run quality gates + write gate-output.json | `gate-runner` (Haiku) | Specialized para ruff+pytest+playwright+JSON output |
+| Build CONTEXT-BRIEF.md (Phase 0 pre-flight) | `context-builder` (Haiku) | Specialized compression spec+arch+rules → 5-8k tokens |
+| Validate CONTEXT-BRIEF.md adversarially | `context-validator` (Haiku) | Specialized re-scan + spot-check + verdict |
+| Audit ticket (BE) | `auditor-backend` (Opus) | 11 categorías DDD/tenant/migrations + 13 gates |
+| Audit ticket (FE) | `auditor-frontend` (Opus) | 12 categorías FSD/Server-Client/forms + 8 gates |
+| Audit ticket (AGENTIC) | `auditor-agentic` (Opus) | 14 categorías LangGraph/cache/observability |
+| Open-ended research / catch-all | `general-purpose` (Sonnet/Haiku) | Cuando NO existe especialista; raro en /dev-team flow |
+
+**Hard ban:** NO usar `general-purpose` para:
+- Git workflow finalize (commit/push/result file write/06-tickets state update) — orchestrator hace Bash directo
+- Build/implement code (siempre builder-* especializado)
+- Run validators (siempre gate-runner)
+- Audit (siempre auditor-{be,fe,agentic})
+
+**Exception válida:** `general-purpose` para tareas que CRUZAN dominios sin specialist clear (e.g., "investiga si X pattern existe en docs/archivos cruzados"). En `/dev-team` flow esto es raro.
+
+### Agent continuation pattern
+
+Cuando un sub-agent stalls mid-work (context exhaustion, API Overload, tool budget reached):
+
+1. **Check git tree first** — agent puede haber dejado partial progress como uncommitted changes. Inspect via `git status --short` + `git diff` para ver scope real.
+2. **Preferir SendMessage** sobre spawn nuevo, si available — preserva el contexto del agent (el agent recuerda qué archivos tocó, qué errores hit). Requiere `agentId` del agent original (presente en su last-line result).
+3. **Spawn nuevo agent (fallback)** cuando SendMessage no disponible — el prompt MUST citar:
+   - Partial work in tree (paths específicos + estado)
+   - Remaining work items (verbatim)
+   - Original task spec (cita path al PRIORITY READ docs)
+   - Workspace state at point of failure
+4. **Document continuation** en `T-{n}-impl-log.md` sección "Continuation iter X" con: razón stall + commits hechos antes + remaining + new agent's verdict.
+
+### API Overload handling
+
+`anthropic.APIStatusError: Overloaded` es common en chains largos (cost spikes Anthropic infra). Cuando ocurre:
+
+1. Verify partial work en tree (`git status`)
+2. NO restart from scratch — preserve any commits/files agent produced
+3. Spawn continuation agent con explicit "previous work in tree, finish remaining" prompt
+4. Si overload persiste >2 retries → escalate Chris o pause autonomous chain
+5. Document API Overload incidents en `T-{n}-impl-log.md` para tracking pattern
+
+### Orchestrator-level direct work (vs delegation)
+
+Orchestrator (Opus PM coordinator) hace DIRECTAMENTE via Bash/Edit/Write:
+- Git commits + push con paths exactos (más control que Haiku stage por nombre)
+- Read context files (spec/arch/rules) cuando deciding scope
+- Update checkpoint.md state transitions (1-2 line edits)
+- Write CHECKPOINTS.md story-level (cuando audit completo)
+- Write 07-merge.md (Fase F MERGE artifact)
+
+Orchestrator DELEGA via Agent tool:
+- Implementación de tickets (subagent_type=builder-*)
+- Quality gates execution (subagent_type=gate-runner)
+- Audit categorías scoring (subagent_type=auditor-*)
+- Context brief building (subagent_type=context-builder)
+
+**Justificación:** Opus tokens son ~5x más caros que Sonnet/Haiku. PM coordinator usa Opus para reasoning/orchestration; trabajos mecánicos (validators, finalize, gates) van a Sonnet/Haiku especializados.
+
 ## Anti-patterns
 
 - ❌ AGENTIC ticket production_code=true asignado a qwen/Sonnet (HARD BAN — Opus only)
+- ❌ **Delegar finalize (commit+push+result file) a `general-purpose` Haiku** — orchestrator hace Bash directo (caso origen lisa-marca 2026-05-27)
+- ❌ Spawn nuevo agent cuando uno stalled — si tree tiene partial progress, continúa via SendMessage o continuation prompt explícito
+- ❌ Restart from scratch tras API Overload — preserve partial work first
 - ❌ Skip TDD (escribir código sin validators RED primero)
 - ❌ `git add .` / `git add -A` / `git add -u` (parallel-safety)
 - ❌ `git commit --no-verify`

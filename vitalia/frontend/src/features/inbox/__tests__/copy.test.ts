@@ -36,13 +36,16 @@ const VOSEO_PATTERNS = [
 ];
 
 /** Flatten INBOX_COPY to an array of all string leaf values */
-function flattenCopyStrings(obj: unknown, path = ""): Array<{ path: string; value: string }> {
+function flattenCopyStrings(
+  obj: unknown,
+  path = "",
+): Array<{ path: string; value: string }> {
   if (typeof obj === "string") {
     return [{ path, value: obj }];
   }
   if (typeof obj === "object" && obj !== null) {
-    return Object.entries(obj as Record<string, unknown>).flatMap(([key, val]) =>
-      flattenCopyStrings(val, path ? `${path}.${key}` : key)
+    return Object.entries(obj as Record<string, unknown>).flatMap(
+      ([key, val]) => flattenCopyStrings(val, path ? `${path}.${key}` : key),
     );
   }
   return [];
@@ -123,7 +126,9 @@ describe("INBOX_COPY", () => {
 
     VOSEO_PATTERNS.forEach((pattern) => {
       it(`no copy string matches voseo pattern ${pattern}`, () => {
-        const violations = allStrings.filter(({ value }) => pattern.test(value));
+        const violations = allStrings.filter(({ value }) =>
+          pattern.test(value),
+        );
         expect(violations).toEqual([]);
       });
     });
@@ -161,10 +166,9 @@ describe("formatCopy (lib/copy.ts)", () => {
   });
 
   it("works with composer placeholder template", () => {
-    const result = formatCopy(
-      INBOX_COPY.composer.placeholder.yoEscribo,
-      { patient_name: "Rosa López" }
-    );
+    const result = formatCopy(INBOX_COPY.composer.placeholder.yoEscribo, {
+      patient_name: "Rosa López",
+    });
     expect(result).toContain("Rosa López");
   });
 });

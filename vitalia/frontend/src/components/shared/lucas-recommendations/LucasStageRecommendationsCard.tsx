@@ -49,7 +49,7 @@ export function LucasStageRecommendationsCard({
       className={cn(
         "vt-bg-surface vt-border",
         "border rounded-[var(--radius-lg)] p-5 shadow-sm",
-        className
+        className,
       )}
       aria-label={`Recomendaciones de Lucas para etapa: ${stageLabel}`}
       aria-busy={isLoading}
@@ -88,7 +88,7 @@ export function LucasStageRecommendationsCard({
                 "p-3 rounded-[var(--radius)] border",
                 rec.priority === "high"
                   ? "vt-bg-cian-8 vt-border-cian"
-                  : "vt-bg-muted vt-border"
+                  : "vt-bg-muted vt-border",
               )}
             >
               <p className="text-sm font-medium vt-text">{rec.title}</p>

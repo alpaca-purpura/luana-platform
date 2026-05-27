@@ -27,21 +27,21 @@ export function useOfferCreate() {
   return useMutation({
     mutationFn: async (data: OfferCreatePayload): Promise<OfferSummary> => {
       const token = await getToken();
-      const tenantId = (sessionClaims?.public_metadata as Record<string, unknown>)
-        ?.active_tenant_id as string | undefined;
+      const tenantId = (
+        sessionClaims?.public_metadata as Record<string, unknown>
+      )?.active_tenant_id as string | undefined;
       if (!token) throw new Error("Not authenticated");
-      return vitaliaFetch<OfferSummary>(
-        "/api/v1/vitalia/offers",
-        {
-          token,
-          tenantId: tenantId ?? "",
-          method: "POST",
-          body: JSON.stringify(data),
-        }
-      );
+      return vitaliaFetch<OfferSummary>("/api/v1/vitalia/offers", {
+        token,
+        tenantId: tenantId ?? "",
+        method: "POST",
+        body: JSON.stringify(data),
+      });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: vitaliaQueryKeys.offers.list() });
+      queryClient.invalidateQueries({
+        queryKey: vitaliaQueryKeys.offers.list(),
+      });
     },
   });
 }
