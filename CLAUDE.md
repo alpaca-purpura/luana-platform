@@ -130,6 +130,10 @@ Detail: `.claude/rules/git-safety.md` + `.claude/rules/parallel-safety.md` + `do
 | 25 | CLAUDE.md hierarchy (root liviano + brand overlay auto-load) | `claude-md-overlay.md` |
 | 26 | Worktree dual strategy (refine+build paralelos sin egoísmo) | `worktree-dual-strategy.md` |
 | 27 | GitHub Actions deferred (pre-commit/pre-push hooks SSoT) | `github-actions-deferred.md` |
+| 28 | Capability protocol (story↔cap doctrine + cap_change_type ledger) | `docs/process/capability-protocol.md` |
+| 29 | Release protocol (entity SSoT · reemplaza outcome+phase legacy) | `docs/process/release-protocol.md` |
+| 30 | chris-input.md protocol (output verbatim per skill) | `docs/process/chris-input-protocol.md` |
+| 31 | Cockpit permissions (whitelist transitions Chris vs Claude) | `docs/process/cockpit-permissions.md` |
 
 ## Conditional Rules (stub → skill on-demand)
 
@@ -163,6 +167,8 @@ git status --short && git branch --show-current && git log --oneline -3
 cat docs/portfolio/PORTFOLIO.md             # Vista master 11 universos
 cat {brand}/docs/product/checkpoint.md      # State brand
 cat {brand}/docs/product/stories/{id}/checkpoint.md   # Story específica
+ls {brand}/docs/product/releases/           # 9 releases F0..F8 (vitalia)
+cat {brand}/docs/product/releases/F2.yaml   # Release activo brand
 ```
 
 Schema checkpoint: `docs/process/checkpoint-protocol.md`. Paradigma v4: `docs/process/pm-redesign-2026-05.md`. Promotion workflow: `docs/promotion-protocol/README.md`.

@@ -16,6 +16,7 @@ Cada aprendizaje **debe vivir en un archivo `.md` dedicado** bajo un path canón
 | **Negocio per-brand** | Verticales, regulación, GTM, buyer personas, pricing, competidores específicos a 1 brand | `{brand}/docs/learnings/{date}-{slug}.md` | `MEMORY.md` § brand-specific (sólo si activamente trabajando esa brand) |
 | **Process/paradigm** | Cambios al flujo /pm-/po-/architect-/dev-team-/auditor, gates nuevos, ADRs metodológicos | `docs/process/learnings.md` (append) + ADR si decisión cementada | `MEMORY.md` § process |
 | **Tooling/workspace** | Comandos, scripts, hooks, IDE setup, MCP servers, environment quirks | `docs/learnings/tooling/{slug}.md` | `MEMORY.md` § workspace operacional |
+| **Cockpit ↔ doctrina iteration** (v2 cement 2026-05-27) | Cuando una iteración del cockpit (mockup o impl) revela una mejora del proceso o doctrina cap_change_type/release/chris-input que no estaba clara → captura como `process` | `docs/process/learnings.md` (append) | `MEMORY.md` § process |
 
 **Naming convention:** `YYYY-MM-DD-{kebab-slug}.md`. Ej: `2026-05-27-clerk-storage-state-freshness-gate.md`.
 

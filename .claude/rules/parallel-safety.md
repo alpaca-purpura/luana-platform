@@ -11,16 +11,17 @@ Chris opera 2-3 sesiones en paralelo en Linux Mint, en brands distintas o lanes 
 
 ## Topología filesystem (D2)
 
-| Path | Tipo | Branch | Editar código |
-|---|---|---|---|
-| `~/Proyectos/luana-platform/` | PRINCIPAL | `main` | ❌ NO (solo merges + read cross-brand) |
-| `~/Proyectos/luana-{brand}/` | CANÓNICO long-lived | rota `wip/{brand}-{slug}` segun story | ✅ SI (1 sesion a la vez) |
-| `~/Proyectos/luana-{brand}-{slug}/` | EFÍMERO brand | `wip/{brand}-{slug}[-{lane}]` | ✅ SI |
-| `~/Proyectos/luana-{brand}-hotfix-{slug}/` | EFÍMERO hotfix | `hotfix/{brand}-{slug}` | ✅ SI |
-| `~/Proyectos/luana-{brand}-exp-{slug}/` | EFÍMERO exp | `exp/{brand}-{slug}` | ✅ SI (NUNCA mergea) |
-| `~/Proyectos/luana-core-{slug}/` | EFÍMERO core (D12) | `wip/core-{slug}` | ✅ SI (lift gate `/pm-luana`) |
+| Path | Tipo | Branch | Editar código | Scope alcance |
+|---|---|---|---|---|
+| `~/Proyectos/luana-platform/` | PRINCIPAL | `main` | ❌ NO (solo merges + read cross-brand) | read-only |
+| `~/Proyectos/luana-{brand}/` | CANÓNICO long-lived | rota `wip/{brand}-{slug}` segun story | ✅ SI (1 sesion a la vez) | `{brand}/**` |
+| `~/Proyectos/luana-{brand}-{slug}/` | EFÍMERO brand | `wip/{brand}-{slug}[-{lane}]` | ✅ SI | `{brand}/**` |
+| `~/Proyectos/luana-{brand}-hotfix-{slug}/` | EFÍMERO hotfix | `hotfix/{brand}-{slug}` | ✅ SI | `{brand}/**` |
+| `~/Proyectos/luana-{brand}-exp-{slug}/` | EFÍMERO exp | `exp/{brand}-{slug}` | ✅ SI (NUNCA mergea) | `{brand}/**` |
+| `~/Proyectos/luana-core-{slug}/` | EFÍMERO core (D12) | `wip/core-{slug}` | ✅ SI (lift gate `/pm-luana`) | `core/luana-core-*/**` |
+| `~/Proyectos/luana-protocol-{slug}/` | EFÍMERO protocol (cross-cutting) | `wip/protocol-{slug}` | ✅ SI (SCOPE_GATE_SKIP=1 con razón) | `tools/**`, `.claude/**`, `docs/process/**`, `docs/specs/templates/**`, `CLAUDE.md`, `scripts/git-hooks/**`, `Makefile`, multi-brand `{brand}/docs/**` |
 
-`{brand}` ∈ {vitalia, nicolify, comunify, lupulo} + futuras. `core` reservado para lifts engine.
+`{brand}` ∈ {vitalia, nicolify, comunify, lupulo} + futuras. `core` reservado para lifts engine. `protocol` reservado para cambios cross-cutting (rules + skills + templates + tools/luana-cockpit/ + docs/process/) que tocan paths fuera de un sólo brand. Commits desde `protocol-*` requieren `SCOPE_GATE_SKIP=1` con razón documentada en commit body.
 
 ## Crear y cerrar sesion
 

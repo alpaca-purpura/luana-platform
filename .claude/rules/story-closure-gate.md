@@ -25,9 +25,26 @@ ready → developing → developed → reviewing → done
 | **C — FIX-LOOP** | `/dev-team` (si CHANGES_REQUESTED) | fix commits + re-audit | cap 2 iter · excede → ESCALATED |
 | **D — GHERKIN** | `/auditor` (Phase D dentro audit) | `06-audit/gherkin-matrix.md` (scenario → test → status) | embedded en B |
 | **E — DOCS** | `/pm-{brand}` | `capabilities/{m}/{c}.yaml` + `modules/{m}.md` auto-list | embedded en F prep |
-| **F — MERGE** | `/pm-{brand}` | `07-merge.md` 5 secciones cementadas + squash-merge + archive story | `reviewing → done` |
+| **F — MERGE** | `/pm-{brand}` | `07-merge.md` 5 secciones + **F.3 Capability ledger update** + squash-merge + archive story (incl. chris-input.md) | `reviewing → done` |
 
 Schema `07-merge.md` 5 secciones + `gherkin_coverage` field en `06-tickets.yaml` (verbatim ejemplos): ver detail doc.
+
+### Fase F.3 — Capability ledger update (v2 cement 2026-05-27)
+
+`/pm-{brand}` aplica logic del `cap_change_type` (declarado en checkpoint.md de la story) al cap YAML target. 4 ramas según el tipo de cambio:
+
+| `cap_change_type` | Acción sobre cap YAML |
+|---|---|
+| `new` | Crear `{brand}/docs/product/capabilities/{module}/{slug}.yaml` con schema v2 completo · `change_log[0]` con `type: new` + atomics iniciales |
+| `fix` | Append `change_log` entry con `type: fix` · `atomics_added: []` · `atomics_modified: []` · NO toca `atomics[]` |
+| `extend` | Append `change_log` entry con `type: extend` + atomics nuevos · Append nuevos atomics al array `atomics[]` con `added_in_story: {story_id}` |
+| `derive` | Crear cap YAML hijo con `parent_cap: {origen_slug}` + `change_log[0] type: derive` · Update cap padre: append `derives_capabilities: [hijo_slug]` |
+
+**Order matters:** en `derive`, crear hijo primero (con `parent_cap` declarado), luego actualizar padre. Atomic write para evitar estado inconsistente.
+
+**Update también:** `last_modified` del cap = today.
+
+Doc canónico: `docs/process/capability-protocol.md` § Sección 5.
 
 ## Escape valve — `defer_audit: true`
 
