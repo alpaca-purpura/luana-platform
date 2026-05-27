@@ -55,6 +55,12 @@ shell_organism_alignment:                             # ★ alignment paradigm 2
   paradigm_p5_respected: true                         # backend invariante al paradigma agéntico FE
   fe_consumers_per_spec_§1.5_match_cross_phase_2_consumers: true   # § 1.5 spec v3 = cross_phase_2_consumers verbatim
 next_action: "Próxima sesión retoma con `/architect <brand>: vitalia <story-id>: vitalia-payment-adapter-mvp` para producir 03-arch + 04-validators + 05-guidelines + 06-tickets. Recommended trigger: cuando F1 (Fase 1) entre `developing` — para que `developed` esté ANTES de F2-S1/F2-S4/F2-S6 arrancar. Spec v3 ratificado covers backend-only + FE consumers map § 1.5 alineado con cross_phase_2_consumers (paradigm shell-organism P5)."
+
+# Schema v2 migration (cement 2026-05-27)
+release: F3   # release ID · ver releases/
+cap_target: null   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # vitalia-payment-adapter-mvp — checkpoint

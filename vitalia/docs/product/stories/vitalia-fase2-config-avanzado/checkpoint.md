@@ -24,6 +24,12 @@ blocks_soft: []
 reuse_map_summary: "NEW workspace técnico admin (uso poco frecuente per filosofía paradigma) · 7 sub-secciones (Reglas · Raw audit · LLM keys BYO · Flags · API tokens · Import/Export · Danger zone) · CONSUME engine compliance + observability"
 spawned_at: 2026-05-22
 next_action: "/po-ux refinar 01-spec.md con wireframes 7 sub-secciones · /architect evaluar danger zone safety"
+
+# Schema v2 migration (cement 2026-05-27)
+release: F2   # release ID · ver releases/
+cap_target: config.avanzado   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # F2-S22 vitalia-fase2-config-avanzado — checkpoint

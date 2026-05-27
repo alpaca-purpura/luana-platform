@@ -72,6 +72,12 @@ dependencies:
 blocks_hard: [vitalia-fase1-sub-tabs-line2, vitalia-fase1-routing-shell]
 reuse_map_summary: "EXTEND agent-catalog.ts (anti-duplication HARD) · MODIFY AppPanelSlot swap skeleton → <Ribbon /> · REUSE Shadcn Avatar+Tooltip · REUSE _agent-tw-classes.ts bg-soft helper · NEW Ribbon+RibbonTab+ConfigTab moléculas/organism · NEW arch test test-ribbon-no-shadcn-tabs.test.ts · NEW e2e/regression/vitalia-fase1-ribbon-6-tabs/ suite + 11 visual goldens"
 spawned_at: 2026-05-22
+
+# Schema v2 migration (cement 2026-05-27)
+release: F1   # release ID · ver releases/
+cap_target: ribbon   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # F1-S7 vitalia-fase1-ribbon-6-tabs — checkpoint

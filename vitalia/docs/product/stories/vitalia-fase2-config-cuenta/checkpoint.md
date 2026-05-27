@@ -24,6 +24,12 @@ blocks_soft: []
 reuse_map_summary: "REUSE core/luana-core-iam tenants + brand.yaml engine · NEW UI 3-secciones (Info clínica · Plan Luana · Equipo RBAC) · NEW billing dashboard Luana"
 spawned_at: 2026-05-22
 next_action: "/po-ux refinar 01-spec.md con wireframes 3 secciones · /architect evaluar billing integration"
+
+# Schema v2 migration (cement 2026-05-27)
+release: F2   # release ID · ver releases/
+cap_target: config.cuenta   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # F2-S20 vitalia-fase2-config-cuenta — checkpoint

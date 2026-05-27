@@ -30,6 +30,12 @@ spawned_at: 2026-05-22
 supersedes:
   - vitalia-slice-1-pipeline                # refactor target
 next_action: "/po-ux refinar 01-spec.md con wireframes Kanban + Lista + lead detail tabs"
+
+# Schema v2 migration (cement 2026-05-27)
+release: F2   # release ID · ver releases/
+cap_target: adrian.embudo   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # F2-S4 vitalia-fase2-adrian-embudo — checkpoint

@@ -57,6 +57,12 @@ blocks_hard: [vitalia-fase1-shell-layout-5050]
 reuse_map_summary: "NEW LogoMark + TopBarGlobal composes ThemeToggle (F1-S1) + TenantSwitcher slot (F1-S3)"
 spawned_at: 2026-05-22
 next_action: "AUTO-HANDOFF /pm-vitalia merge → write 07-merge.md + capability YAML platform/topbar-global + archive story + state reviewing→done"
+
+# Schema v2 migration (cement 2026-05-27)
+release: F1   # release ID · ver releases/
+cap_target: topbar-global   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # F1-S2 vitalia-fase1-topbar-global — checkpoint

@@ -29,6 +29,12 @@ spawned_at: 2026-05-22
 supersedes:
   - vitalia-slice-1-inbox                    # archived 2026 — superseded por este
 next_action: "/po-ux refinar 01-spec.md con wireframes 3-panel + 3-modos toggle + activity stream"
+
+# Schema v2 migration (cement 2026-05-27)
+release: F2   # release ID · ver releases/
+cap_target: adrian.inbox   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # F2-S3 vitalia-fase2-adrian-inbox — checkpoint

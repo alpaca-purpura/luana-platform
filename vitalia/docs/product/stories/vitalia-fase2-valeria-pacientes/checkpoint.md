@@ -27,6 +27,12 @@ blocks_soft:
 reuse_map_summary: "REUSE 90% patients+crm shipped (models + repository + service) · NEW UI directorio + ficha workspace · NEW alta-rápida form + N3-dyn route [patient-id]"
 spawned_at: 2026-05-22
 next_action: "/po-ux refinar 01-spec.md con wireframes ficha tabs + alta rápida modal"
+
+# Schema v2 migration (cement 2026-05-27)
+release: F2   # release ID · ver releases/
+cap_target: valeria.pacientes   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # F2-S2 vitalia-fase2-valeria-pacientes — checkpoint

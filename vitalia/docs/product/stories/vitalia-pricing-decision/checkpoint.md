@@ -13,6 +13,12 @@ parallel_safe: true
 blocked_reason: "★ TIER reclassified 2026-05-27 (audit sweep): TIER 7 DEFERRED (post-MVP maturity). MVP hardcodea pricing placeholder vitalia/config/brand.yaml (solo_doctor 49 USD · clinic 199 USD · multi_site 599 USD). Full pricing engine (cost basis, markup per vertical, tax rules per country, multi-currency rates) se cementa en Fase 3 multi-vertical mature O cuando primer cliente paying pide dynamic pricing. Chris no necesita decidir pricing definitivo HOY — los placeholders son válidos para MVP internal validation. SSoT orden: vitalia/docs/product/outcomes/vitalia-fase-2-tier-roadmap.md § TIER 7."
 priority: medium
 estimated_dev_weeks: 0 (decision-only, no FE/BE code)
+
+# Schema v2 migration (cement 2026-05-27)
+release: F8   # release ID · ver releases/
+cap_target: null   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # vitalia-pricing-decision — checkpoint

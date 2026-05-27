@@ -24,6 +24,12 @@ blocks_soft: []
 reuse_map_summary: "REUSE medical-compliance shipped · REUSE core/luana-core-compliance engine · NEW semáforo HIPAA-lite UI + política retención editor + reportes export · NEW link a Configurar → Avanzado raw log"
 spawned_at: 2026-05-22
 next_action: "/po-ux refinar 01-spec.md con wireframes semáforo + política retención + reportes"
+
+# Schema v2 migration (cement 2026-05-27)
+release: F2   # release ID · ver releases/
+cap_target: lisa.compliance   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # F2-S10 vitalia-fase2-lisa-compliance — checkpoint

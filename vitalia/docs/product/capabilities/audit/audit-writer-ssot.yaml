@@ -34,3 +34,24 @@ verification:
     - SC-07 audit log row tenant.suspend
     - SC-08 audit log row clinic.create
     - SC-10 audit log row phi.access_denied (cross-clinic intent)
+
+# Capability ledger v2 (cement 2026-05-27)
+created_in_story: vitalia-adopt-luana-core-iam   # v2 cement · mirror of story_introduced
+created_date: 2026-05-19   # v2 cement · mirror of date_introduced
+last_modified: 2026-05-19   # v2 cement · mirror of date_updated or date_introduced
+parent_cap: null   # v2 cement · mirror of extends_capability
+derives_capabilities: []   # v2 cement · initial empty list
+
+# Capability ledger v2 (cement 2026-05-27)
+atomics: []   # v2 cement · empty initial · Chris populate manually
+
+# Capability change log v2 (cement 2026-05-27)
+change_log:
+  - story_id: vitalia-adopt-luana-core-iam
+    date: 2026-05-19
+    type: new
+    summary: "Implementación inicial · migración legacy a schema v2"
+    atomics_added: []
+    atomics_modified: []
+    merge_sha: null
+    status: done

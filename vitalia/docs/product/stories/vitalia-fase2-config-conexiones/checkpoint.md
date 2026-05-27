@@ -26,6 +26,12 @@ blocks_soft:
 reuse_map_summary: "REUSE connections module shipped + nicolify HUB pattern · NEW UI 6 categorías + N3-dyn provider detail · NEW OAuth flows per provider · NEW health + actividad · NEW desconectar audit"
 spawned_at: 2026-05-22
 next_action: "/po-ux refinar 01-spec.md con wireframes HUB 6 categorías + provider detail drawer"
+
+# Schema v2 migration (cement 2026-05-27)
+release: F2   # release ID · ver releases/
+cap_target: config.conexiones   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # F2-S21 vitalia-fase2-config-conexiones — checkpoint

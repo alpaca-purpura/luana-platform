@@ -73,6 +73,12 @@ po_ux_iter_history:
   iter_1_2026-05-22: "G6 round 1 closed 4 decisions D1-D4 + mockups closed/open ratified Chris + state refining→refined"
 architect_iter_history:
   iter_1_2026-05-22: "Architect produced ready package (03-arch + 04-validators + 05-guidelines + 06-tickets). 10 tickets · ZERO Opus · 27 validators · 12 scenarios mapped · 8 visual goldens · NEW arch test no-clerk-orgs. state refined→ready."
+
+# Schema v2 migration (cement 2026-05-27)
+release: F1   # release ID · ver releases/
+cap_target: tenant-switcher   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # F1-S3 vitalia-fase1-tenant-switcher — checkpoint

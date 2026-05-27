@@ -20,6 +20,12 @@ spawned_at: 2026-05-21
 transitioned_done_at: 2026-05-22
 spawned_by: chris (sesión Q1-Q7 ratificación)
 closed_by: /pm-vitalia
+
+# Schema v2 migration (cement 2026-05-27)
+release: F0   # release ID · ver releases/
+cap_target: null   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # vitalia-shell-organism — checkpoint

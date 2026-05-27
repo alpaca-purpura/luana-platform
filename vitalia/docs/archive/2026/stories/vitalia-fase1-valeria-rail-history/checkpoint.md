@@ -92,6 +92,12 @@ ready_package:
   scenarios_coverage_pct: 100
   visual_goldens_pngs: 13
   test_construction_plan_present: true
+
+# Schema v2 migration (cement 2026-05-27)
+release: F1   # release ID · ver releases/
+cap_target: valeria-sidebar   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # F1-S5 vitalia-fase1-valeria-rail-history — checkpoint

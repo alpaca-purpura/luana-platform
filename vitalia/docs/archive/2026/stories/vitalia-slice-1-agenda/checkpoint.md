@@ -23,6 +23,12 @@ side_story_blockers: [vitalia-payment-adapter-mvp, vitalia-fiscal-emission-pe]  
 priority: high
 estimated_dev_weeks: 2-3
 next_action: "NONE — superseded por vitalia-fase2-valeria-agenda. Proceder con F2-S1 cuando Fase 1 done + service-stories payment-adapter + fiscal-emission shipped."
+
+# Schema v2 migration (cement 2026-05-27)
+release: F0   # release ID · ver releases/
+cap_target: null   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # vitalia-slice-1-agenda — checkpoint

@@ -40,6 +40,12 @@ blocks_soft:
   - vitalia-fase2-lisa-compliance             # compliance perfil seeded por specialty (Colombia Ley 2460/2025, MX COFEPRIS, etc.)
 reuse_map_summary: "REUSE Shadcn primitives (Dialog/Form/Select/Checkbox/Card/Combobox) · NEW BE table tenant_clinic_config (clinic_vertical + primary_specialties[] + onboarding_completed_at) · NEW FE feature /features/config/components/onboarding · GATE pattern: middleware redirect tenants sin onboarding_completed_at → forced modal/page"
 next_action: "/po-ux refinar 01-spec.md — draft inicial producido por subagent paralelo en sesión lisa-marca (2026-05-26). Iterar wireframes 3-step flow (welcome → vertical → specialties) + mockups HTML por componente."
+
+# Schema v2 migration (cement 2026-05-27)
+release: F2   # release ID · ver releases/
+cap_target: config.onboarding_clinic   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # F2-S{TBD-pm-vitalia} vitalia-fase2-config-onboarding-clinica — checkpoint

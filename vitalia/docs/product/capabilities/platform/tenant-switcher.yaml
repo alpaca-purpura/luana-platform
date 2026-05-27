@@ -15,6 +15,27 @@ related_capabilities:
 depends_on_engine:
   - core/luana-core-iam (GET /api/tenants — shipped Story 11)
 pending_chris_visual_ratify: true                       # set false post next session 5-min review
+
+# Capability ledger v2 (cement 2026-05-27)
+created_in_story: vitalia-fase1-tenant-switcher   # v2 cement · mirror of story_introduced
+created_date: 2026-05-23   # v2 cement · mirror of date_introduced
+last_modified: 2026-05-23   # v2 cement · mirror of date_updated or date_introduced
+parent_cap: null   # v2 cement · mirror of extends_capability
+derives_capabilities: []   # v2 cement · initial empty list
+
+# Capability ledger v2 (cement 2026-05-27)
+atomics: []   # v2 cement · empty initial · Chris populate manually
+
+# Capability change log v2 (cement 2026-05-27)
+change_log:
+  - story_id: vitalia-fase1-tenant-switcher
+    date: 2026-05-23
+    type: new
+    summary: "Implementación inicial · migración legacy a schema v2"
+    atomics_added: []
+    atomics_modified: []
+    merge_sha: null
+    status: done
 ---
 
 # vitalia-tenant-switcher

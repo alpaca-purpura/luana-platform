@@ -80,6 +80,12 @@ v1_open_questions_remaining: []  # all 12 spec § Handoff questions resolved in 
 # Research support
 v1_research_artifacts:
   - vitalia/docs/product/stories/vitalia-ux-discovery/00-research-chat-layout.md  # 436 LOC · 13 productos · 30+ fuentes
+
+# Schema v2 migration (cement 2026-05-27)
+release: F0   # release ID · ver releases/
+cap_target: null   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # vitalia-ux-discovery — checkpoint
