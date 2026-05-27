@@ -26,8 +26,10 @@ from src.modules.vitalia.copilot.api.routes.wizard_onboarding_routes import (
 )
 from src.modules.vitalia.crm.api.router import router as crm_router
 from src.modules.vitalia.fidelizacion.api.router import fidelizacion_router
+from src.modules.vitalia.fiscal.api.emit_router import router as emit_router
 from src.modules.vitalia.inbox.api.router import router as inbox_router
 from src.modules.vitalia.marketing.api.routes import router as marketing_router
+from src.modules.vitalia.payments.api.charge_router import router as charge_router
 from src.modules.vitalia.scheduling.api.agenda_router import router as agenda_router
 from src.modules.vitalia.scheduling.api.notify_router import router as notify_router
 
@@ -69,6 +71,10 @@ app.include_router(marketing_router, prefix="/api/v1/vitalia/marketing")
 app.include_router(agenda_router, prefix="/api/v1/scheduling")
 # T-8 F2-S1: Scheduling notify — template-only WhatsApp + ComplianceService guard + audit log
 app.include_router(notify_router, prefix="/api/v1/scheduling")
+# T-7 F2-S1: Payments charge router — CobrarSaldo saga (payment + fiscal + audit + idempotency)
+app.include_router(charge_router, prefix="/api/v1/payments")
+# T-7 F2-S1: Fiscal emit router — standalone fiscal emission retry (saga compensation A6)
+app.include_router(emit_router, prefix="/api/v1/fiscal")
 
 
 class HealthResponse(BaseModel):
