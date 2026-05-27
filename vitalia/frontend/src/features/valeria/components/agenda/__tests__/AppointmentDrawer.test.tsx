@@ -73,6 +73,11 @@ vi.mock("../../../hooks/useDrawerWidth", () => ({
   })),
 }));
 
+// Default: desktop (isMobile = false)
+vi.mock("@/hooks/useMediaQuery", () => ({
+  useMediaQuery: vi.fn(() => false),
+}));
+
 const mockAppointment: Appointment = {
   appointmentId: "slot-123",
   patientId: "patient-456",
@@ -271,5 +276,27 @@ describe("AppointmentDrawer", () => {
     } as unknown as ReturnType<typeof useAppointmentDetail>);
     renderDrawer(queryClient);
     expect(screen.getByRole("button", { name: /reintentar/i })).toBeInTheDocument();
+  });
+
+  // ── AC-12: Mobile responsive bottom drawer ────────────────────────────────
+
+  it("AC-12 — desktop: SheetContent has side=right (isMobile=false)", () => {
+    // Default mock already returns false — desktop mode
+    renderDrawer(queryClient);
+    const drawer = screen.getByTestId("appointment-drawer");
+    // SheetContent renders as a dialog; verify no mobile class present
+    expect(drawer).toBeInTheDocument();
+    // rounded-t-2xl class is only added on mobile
+    expect(drawer).not.toHaveClass("rounded-t-2xl");
+  });
+
+  it("AC-12 — mobile: SheetContent has h-[95vh] class (isMobile=true)", async () => {
+    const { useMediaQuery } = vi.mocked(await import("@/hooks/useMediaQuery"));
+    useMediaQuery.mockReturnValue(true);
+    renderDrawer(queryClient);
+    const drawer = screen.getByTestId("appointment-drawer");
+    expect(drawer).toBeInTheDocument();
+    // Mobile-specific class applied
+    expect(drawer).toHaveClass("rounded-t-2xl");
   });
 });

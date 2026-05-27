@@ -5,7 +5,7 @@
  * T-14 vitalia-fase2-valeria-agenda
  *
  * Features:
- *   - Shadcn Sheet side="right" for desktop, bottom for mobile (<md)
+ *   - Shadcn Sheet side="bottom" (h-[95vh]) on mobile <md + side="right" on desktop (AC-12)
  *   - Drag resize handle (left edge) 440-640px — persisted via useDrawerWidth
  *   - 5 Shadcn Accordion sections (turno + pago expanded by default)
  *   - Stale data banner when concurrent edit detected (staleDetected via Zustand)
@@ -25,6 +25,7 @@
 
 import { useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@clerk/nextjs";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import {
   Sheet,
   SheetContent,
@@ -151,6 +152,10 @@ export function AppointmentDrawer({
   useAuth(); // Confirm auth context is available (Clerk)
   const queryClient = useQueryClient();
 
+  // Responsive side: bottom (full-screen 95vh) on mobile, right on desktop
+  // Breakpoint matches Tailwind `md` (768px) — AC-12
+  const isMobile = useMediaQuery("(max-width: 767px)");
+
   // Drawer state from Zustand
   const { drawerOpen, selectedSlotId, staleDetected, closeDrawer, setStaleDetected } =
     useDrawerStore();
@@ -218,13 +223,16 @@ export function AppointmentDrawer({
       }}
     >
       <SheetContent
-        side="right"
+        side={isMobile ? "bottom" : "right"}
         className={cn(
           "flex flex-col p-0 gap-0",
-          // Override Shadcn default width with our resizable width
-          "!w-auto",
+          // Mobile: full-screen bottom drawer (AC-12)
+          isMobile
+            ? "h-[95vh] max-h-[95vh] rounded-t-2xl !w-full"
+            : // Desktop: resizable right-side panel
+              "!w-auto",
         )}
-        style={drawerStyle}
+        style={isMobile ? undefined : drawerStyle}
         aria-labelledby="drawer-title"
         data-testid="appointment-drawer"
         data-drawer-opened-telemetry=""
