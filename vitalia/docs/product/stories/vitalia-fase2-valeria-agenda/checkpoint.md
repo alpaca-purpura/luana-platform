@@ -1,34 +1,120 @@
 ---
 story_id: vitalia-fase2-valeria-agenda
 outcome: vitalia-mvp-ui-foundation
-phase: fase-2
+phase_label: fase-2
 type: ui-story
 agent_owner: valeria
 module: scheduling
 capability: valeria.agenda
-state: idea
-last_modified: 2026-05-22
-ratified_by_chris: false
+state: ready                                                       # ★ transitioned refined → ready 2026-05-27 by /architect
+phase: READY_PACKAGE_CLOSED                                        # ★ post architect single-shot
+po_ux_iter: 2
+architect_iter: 1                                                  # ★ single-shot full-stack
+last_artifact: 06-tickets.yaml v1 (19 tickets) + 03-arch.md + 04-validators.yaml + 05-guidelines.md
+last_modified: 2026-05-27
+transitioned_at: 2026-05-27T00:00:00Z
+transitioned_by: /architect (Opus 4.7 single-shot full-stack)
+ratified_by_chris: true                                            # ★ spec v1 ratificado 2026-05-26
+ratified_at: 2026-05-26T19:35:00Z
+ratified_visual_by_chris: true                                     # ★ 10/10 mockups ratificados
+ratified_visual_at: 2026-05-26T19:35:00Z
+ratified_visual_iter: 1
+ratified_visual_mockups:
+  - vitalia/docs/product/stories/vitalia-fase2-valeria-agenda/mockups/agenda-cockpit-grid.html
+  - vitalia/docs/product/stories/vitalia-fase2-valeria-agenda/mockups/agenda-week.html
+  - vitalia/docs/product/stories/vitalia-fase2-valeria-agenda/mockups/agenda-day.html
+  - vitalia/docs/product/stories/vitalia-fase2-valeria-agenda/mockups/agenda-month.html
+  - vitalia/docs/product/stories/vitalia-fase2-valeria-agenda/mockups/slot-states-matrix.html
+  - vitalia/docs/product/stories/vitalia-fase2-valeria-agenda/mockups/appointment-drawer.html
+  - vitalia/docs/product/stories/vitalia-fase2-valeria-agenda/mockups/cobrar-saldo-subform.html
+  - vitalia/docs/product/stories/vitalia-fase2-valeria-agenda/mockups/preset-filters.html
+  - vitalia/docs/product/stories/vitalia-fase2-valeria-agenda/mockups/crear-cita-dropdown.html
+  - vitalia/docs/product/stories/vitalia-fase2-valeria-agenda/mockups/mobile-drawer-fullscreen.html
+ready_package_artifacts:
+  - vitalia/docs/product/stories/vitalia-fase2-valeria-agenda/03-arch.md
+  - vitalia/docs/product/stories/vitalia-fase2-valeria-agenda/04-validators.yaml
+  - vitalia/docs/product/stories/vitalia-fase2-valeria-agenda/05-guidelines.md
+  - vitalia/docs/product/stories/vitalia-fase2-valeria-agenda/06-tickets.yaml
+sub_categories_coverage:
+  happy: covered
+  negative: covered
+  edge: covered
+  adversarial: covered
+  race_condition: covered
+  concurrent_users: covered
+  network_failure: covered
+  empty_state: covered
+  large_dataset: covered
+  accessibility: covered
+  i18n: covered
+total_tickets: 19
+estimated_total_hours: 62
+estimated_dev_days: 5-7
 parallel_safe: true
 priority: critical
-estimated_dev_days: 5-7
+hipaa_lite_overlay: true
 dependencies:
   hard:
     - vitalia-fase1-empty-states              # toda Fase 1 done
     - vitalia-fase1-routing-shell
-    - vitalia-payment-adapter-mvp             # service-blocker BE para "Cobrar saldo"
-    - vitalia-fiscal-emission-pe              # service-blocker BE para emisión inline
+    - vitalia-payment-adapter-mvp             # ★ service-blocker BE state=refined NOT developed
+    - vitalia-fiscal-emission-pe              # ★ service-blocker BE state=refining NOT developed
   soft:
     - vitalia-fase2-valeria-pacientes         # links cross-tab "Ver ficha paciente" del drawer
+service_deps_gate:                            # ★ HARD pre-/dev-team pickup gate
+  blockers_not_developed:
+    - vitalia-payment-adapter-mvp
+    - vitalia-fiscal-emission-pe
+  default_action: "Option A — MSW + stub implementation per 03-arch § 8.6 + 05-guidelines § Service-deps gate. Unblocks F2-S1 BE+FE parallel work. Stubs annotated # DEPRECATED + tracked in 06-tickets.yaml T-5."
+  escalate_alternative: "Option B — /dev-team state: blocked + escalate /pm-vitalia to sequence service-blockers first"
 blocks_hard: []
 blocks_soft:
   - vitalia-fase2-adrian-embudo               # stage "reservado" auto-crea slot via API
   - vitalia-fase2-adrian-propuestas           # propuesta aprobada → genera slot inicial
-reuse_map_summary: "REFACTOR slice-1-agenda (calendar shell + AppointmentDrawer) · REUSE scheduling+booking BE shipped · REUSE crm.patient (PHI masked) · NEW subform Cobrar saldo inline (depende payment-adapter + fiscal-emission)"
+  - vitalia-fase2-camila-voz                  # slot=completed → NPS trigger
+reuse_map_summary: "REFACTOR slice-1-agenda · REUSE scheduling engine (read-only) · REUSE crm.patient (PHI masked) · REUSE PhiRepositoryBase shared · REUSE AsyncAuditWriter shared · REUSE ComplianceService shared · NEW scheduling/payments/fiscal brand-extension modules · NEW subform Cobrar saldo inline (★ corazón valor)"
 spawned_at: 2026-05-22
 supersedes:
   - vitalia-slice-1-agenda                    # refactor target — capability promovida aquí
-next_action: "/po-ux refinar 01-spec.md con visuales del drawer + subform Cobrar saldo (preset filters + status cells)"
+next_action: "/dev-team vitalia vitalia-fase2-valeria-agenda — ready package complete (03-arch + 04-validators + 05-guidelines + 06-tickets v1). Starts Conv 2 autonomous build · DAG 19 tickets · ~62h · 6-7 dev-days estimate · OPTION A service-blocker stub+MSW per default · AUTO-CHAIN /auditor → /pm-vitalia merge → done · capability scheduling/valeria-agenda promovida post-merge."
+
+cemented_decisions_iter_1:                        # batches 1-4 /po-ux 2026-05-26
+  batch_1_mockups_cobrar_calendar_slot:
+    - Q1 mockup strategy: 1 grid TOC + 8 standalone (parity F1-S10)
+    - Q2 cobrar_saldo: full inline (end-to-end payment-adapter + fiscal-pe)
+    - Q3 calendar_default: Semana + URL params persist + lastView localStorage
+    - Q4 slot_matrix: 4×3 + 4 estados interactivos = 16 cells total
+  batch_2_drawer:
+    - Q5 drawer_width: resizable 440-640px localStorage
+    - Q6 drawer_sections: acordeones colapsables (Turno+Pago expanded default)
+    - Q7 cross_tab_link: botón disabled + tooltip "Próximamente"
+    - Q8 action_gates: Cancelar + No-show con Dialog Shadcn confirm
+  batch_3_filters_crear_mobile:
+    - Q9 preset_filters: 5 chips single-select (Hoy · Por confirmar mañana · Re-agendar · No-shows · Saldos pendientes)
+    - Q10 crear_cita: dropdown 3 opciones (walk-in · teléfono · desde paciente existente)
+    - Q11 mobile_ux: vista Día only + bottom-sheet 95vh + chip carousel + FAB Crear cita
+    - Q12 realtime: polling 30s + manual refresh + FreshnessIndicator "Actualizado hace Xs"
+  batch_4_subcategories_hipaa_telemetry:
+    - Q13 large_dataset: virtualización react-window + aggregates server-side mes
+    - Q14 i18n_currency: per-transaction currency_override (multi-currency clinic AR turistas)
+    - Q15 whatsapp_guard: template-only + ComplianceService.validate_outbound_message + audit log
+    - Q16 telemetry: 7 eventos críticos (agenda_viewed · slot_drawer_opened · charge_initiated · charge_succeeded · charge_failed · invoice_emitted · reminder_sent)
+
+architect_decisions_iter_1:                       # ★ NEW architect 2026-05-27
+  A1: "NEW módulo vitalia/backend/src/modules/vitalia/scheduling/ (brand-extension Inside-Out DDD, consume engine read-only)"
+  A2: "NEW módulos payments/ + fiscal/ separados de payment/ scaffold legado"
+  A3: "PaymentChargePort + FiscalEmitPort ABCs (Dependency Inversion)"
+  A4: "Sink telemetry NEW vitalia_growth_studio_event (separado de copilot_trace_event engine)"
+  A5: "Slot DTO PHI-masked server-side projection (no FE masking trust)"
+  A6: "Charge saga NOT same-DB-transaction with fiscal emit (compensation pattern)"
+  A7: "Optimistic lock via balance_version column (NO SELECT FOR UPDATE)"
+  A8: "Idempotency key client-generated UUID en charge + fiscal/emit"
+  A9: "Audit log via AsyncAuditWriter mismo AsyncSession (transactional atomicity)"
+  A10: "NEW arch test test_no_phi_in_url_params.py (PHI URL param whitelist + grep)"
+  A11: "NEW arch test test_audit_log_row_per_phi_endpoint.py (defense-in-depth)"
+  A12: "vitalia_appointment_clinic_map brand-local FK to engine appointments.id (NO engine modify)"
+  A13: "Service-blocker pattern Option A (stub + MSW) por default — unblocks parallel work"
+  A14: "Module scheduling registers via Extension SDK opt-in EPs (existing extensions.py)"
 ---
 
 # F2-S1 vitalia-fase2-valeria-agenda — checkpoint
