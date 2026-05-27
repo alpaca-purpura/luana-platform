@@ -6,8 +6,19 @@ type: ui-story
 agent_owner: valeria
 module: scheduling
 capability: valeria.agenda
-state: reviewing                                                   # ★ transitioned developed → reviewing 2026-05-27 by /auditor (autonomous chain)
-phase: AUDIT_IN_PROGRESS                                           # ★ auditor-backend + auditor-frontend spawned
+state: reviewing                                                   # ★ awaiting /pm-vitalia merge — AUDIT APPROVED iter 3
+phase: HANDOFF_TO_PM_MERGE                                         # ★ CHECKPOINTS.md APPROVED 2026-05-27 audit iter 3
+audit_iterations_used: 3                                           # iter 1 + iter 1.5 regression + iter 3 W4
+audit_artifacts:
+  - T-1-review.md (BE batch PASS deferred WARN H6 + Cat 9)
+  - T-10-review.md (FE batch iter 1 + iter 2 + iter 3 final APPROVED)
+  - CHECKPOINTS.md (C1-C5 story-level grid APPROVED)
+  - 06-audit/gherkin-matrix.md (11/11 SC mapped)
+  - gate-output.json (iter 3 — any_fail=false, 4 gates PASS)
+audit_known_tech_debt_accepted:
+  - W2: Visual goldens runtime generation pending Docker stack fix (@hookform/resolvers/zod missing in container)
+  - W3: AgendaPlaceholder dead code en PLACEHOLDER_MAP (cleanup PR mínimo)
+  - W5: Residual semantic health/payment status colors aceptable per design brief clinical context
 po_ux_iter: 2
 architect_iter: 1                                                  # ★ single-shot full-stack
 dev_team_iter: 1                                                   # ★ autonomous build single-pass
@@ -101,7 +112,7 @@ reuse_map_summary: "REFACTOR slice-1-agenda · REUSE scheduling engine (read-onl
 spawned_at: 2026-05-22
 supersedes:
   - vitalia-slice-1-agenda                    # refactor target — capability promovida aquí
-next_action: "/auditor vitalia vitalia-fase2-valeria-agenda — AUTO-HANDOFF post all 19 tickets pushed · spawn auditor-backend + auditor-frontend · Phase D gherkin matrix (11 SC → test path → status) · CHECKPOINTS C1-C5 grid · self-fix cap 4 / audit cap 3 · HIPAA-lite extras (dual filter + audit log + sanitize + ComplianceService + PHI masking) · APPROVED → AUTO-HANDOFF /pm-vitalia merge → done"
+next_action: "/pm-vitalia merge vitalia-fase2-valeria-agenda — AUTO-HANDOFF post CHECKPOINTS.md APPROVED · escribir 07-merge.md 5 secciones cementadas (gherkin matrix + Playwright E2E + capabilities + modules + how to verify) · crear capability vitalia/docs/product/capabilities/scheduling/valeria-agenda.yaml · update vitalia/docs/product/modules/scheduling.md auto-list · escribir 2 learnings (shell-feature ADR-vitalia-004 source + service-deps Option A pattern) · git mv story → archive/2026/stories/ · squash-merge wip/vitalia → main (per Chris request al final) · state reviewing→done"
 
 cemented_decisions_iter_1:                        # batches 1-4 /po-ux 2026-05-26
   batch_1_mockups_cobrar_calendar_slot:
