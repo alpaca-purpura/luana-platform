@@ -33,6 +33,14 @@ vi.mock("@clerk/nextjs", () => ({
   })),
 }));
 
+vi.mock("@/hooks/useTenantLocale", () => ({
+  useTenantLocale: () => ({
+    currency: "PEN",
+    timezone: "America/Lima",
+    locale: "es-PE",
+  }),
+}));
+
 vi.mock("sonner", () => ({
   toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() },
 }));
@@ -112,6 +120,7 @@ function renderPagoSection(
         tenantId="tenant-uuid-test"
         tenantCurrency={overrides?.tenantCurrency ?? "PEN"}
         tenantLocale={overrides?.tenantLocale ?? "es-PE"}
+        tenantTimezone="America/Lima"
       />
     </QueryClientProvider>,
   );

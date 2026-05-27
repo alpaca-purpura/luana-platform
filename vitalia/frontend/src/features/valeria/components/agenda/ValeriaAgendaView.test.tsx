@@ -32,6 +32,18 @@ vi.mock("@clerk/nextjs", () => ({
   })),
 }));
 
+vi.mock("@/hooks/useTenantLocale", () => ({
+  useTenantLocale: () => ({
+    currency: "PEN",
+    timezone: "America/Lima",
+    locale: "es-PE",
+  }),
+}));
+
+vi.mock("@/hooks/useClinicId", () => ({
+  useClinicId: () => "clinic-1",
+}));
+
 vi.mock("next/navigation", () => ({
   useRouter: vi.fn(() => ({ replace: vi.fn() })),
   usePathname: vi.fn(() => "/tenant-1/valeria/agenda"),

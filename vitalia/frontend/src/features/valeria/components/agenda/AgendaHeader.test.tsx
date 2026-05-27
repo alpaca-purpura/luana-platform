@@ -22,6 +22,14 @@ import React from "react";
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
+vi.mock("@/hooks/useTenantLocale", () => ({
+  useTenantLocale: () => ({
+    currency: "PEN",
+    timezone: "America/Lima",
+    locale: "es-PE",
+  }),
+}));
+
 const mockReplace = vi.fn();
 
 vi.mock("next/navigation", () => ({

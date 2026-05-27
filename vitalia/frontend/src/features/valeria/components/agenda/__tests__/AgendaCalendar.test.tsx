@@ -22,6 +22,15 @@ import type { AgendaSlot } from "../../../types/agenda.types";
 
 // ── Mocks ───────────────────────────────────────────────────────────────────
 
+// Mock useTenantLocale to avoid @clerk/nextjs useOrganization dependency
+vi.mock("@/hooks/useTenantLocale", () => ({
+  useTenantLocale: () => ({
+    currency: "PEN",
+    timezone: "America/Lima",
+    locale: "es-PE",
+  }),
+}));
+
 // Mock react-window v2 (List API) so tests don't need DOM measurement
 vi.mock("react-window", () => ({
   List: ({
