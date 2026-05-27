@@ -132,6 +132,12 @@ Pasar a Modo Core para ratificar.
 - 1-3 bullets cambios concretos (paths citados)
 - 1 línea "próximo paso" o handoff explícito
 
+### Portfolio view extension · agrupar por release (v2 cement 2026-05-27)
+
+Además de outcome legacy, agrupar stories cross-brand por su `release` field del checkpoint.md. `docs/portfolio/PORTFOLIO.md` auto-gen incluye sección "Releases activos cross-brand" con cada brand mostrando sus releases F0..FN status (planning/in_progress/ready_to_merge/shipped).
+
+Doc: `docs/process/release-protocol.md`.
+
 NUNCA dumps largos. Pointer-first siempre.
 
 ---
@@ -319,9 +325,47 @@ Si Chris pide algo que cae en alguna ❌ → handoff explícito al skill correct
 
 Este skill es **stateless cross-session**. No bloquea otros `/pm-{brand}` corriendo en paralelo. Convención: cada brand session corre su `/pm-{brand}` directo, sin pasar por acá salvo que necesite contexto cross.
 
+## Output protocol · chris-input.md append (v2 cement 2026-05-27)
+
+Al cierre de cada turn de esta skill, MUST appendear una entry a la sección 💬 Conversación del `chris-input.md` de la story activa.
+
+**Path target:**
+- Story state ∈ {idea, refining, refined, ready, developing, developed, reviewing}: `{brand}/docs/product/stories/{story_id}/chris-input.md`
+- Story state = done: `{brand}/docs/archive/{year}/stories/{story_id}/chris-input.md` (read-only post-merge)
+
+Nota: en Modo Portfolio (cross-brand panorama) sin story specific en el turn, este protocol es opcional — el contexto puede ser puramente exploratorio sin story scope. En Modo Core (engine work / promotion gate) con story platform → appendear en `docs/product/stories/{story_id}/chris-input.md`.
+
+**Formato verbatim del block markdown a appendear:**
+
+```markdown
+### YYYY-MM-DDTHH:MM · 🤖 claude · `/pm-luana` · {emoji} {VERDICT-LABEL}
+{texto 2-30 líneas · descripción de qué hizo + decisiones tomadas + qué necesita Chris responder}
+```
+
+**Verdict labels (4 valores):**
+
+| Emoji | Label | Cuándo usar |
+|---|---|---|
+| ✓ | APLICADO | Cambios concretos aplicados al spec/design/arch/test (citar paths) |
+| ⚠️ | DUDA | Pregunta a Chris antes de seguir. State queda esperando respuesta |
+| ❌ | REFUTADO | Razón por la que NO se aplica algo que Chris pidió (con justificación) |
+| 💡 | PROPONE | Opción nueva sugerida por Claude · Chris ratifica o descarta |
+
+**Anti-patterns prohibidos:**
+
+- ❌ Skill termina turn sin appendear (silent escape) — siempre appendear, aunque sea `✓ APLICADO · sin cambios sustantivos`
+- ❌ Verdict sin texto sustantivo (1 palabra no informa)
+- ❌ Path hardcoded con brand fija — debe ser `{brand}` dinámico (de checkpoint.md o args del invoke)
+- ❌ Múltiples verdicts en un solo entry — si hay 2 cosas, son 2 entries consecutivas
+- ❌ Entry sin emoji + label de verdict (parser falla)
+
+Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
+
 ## Referencias
 
 - `docs/portfolio/PORTFOLIO.md` — índice 11 universos (auto-gen)
+- `docs/process/release-protocol.md` — Release entity SSoT (portfolio view extension)
+- `docs/process/chris-input-protocol.md` — output protocol per skill
 - `docs/promotion-protocol/README.md` — workflow detallado brand→core
 - `docs/promotion-protocol/template-proposal.md` — schema proposal
 - `docs/core-modules/` — contracts públicos

@@ -308,6 +308,8 @@ Output al terminar:
 - Estado ticket: pushed (en 06-tickets.yaml)
 - Last line del response: "done -> T-{n}-result.md"
 
+**Output protocol · chris-input.md per ticket (v2 cement 2026-05-27):** al cerrar cada ticket T-{n} (`T-{n}-result.md` escrito + commit pushed), appendear entry al chris-input.md de la story con verdict `✓ APLICADO` listando paths modified + decisión técnicas tomadas + reference al gate-output.json result. NO validar cap_change_type (eso es responsabilidad de `/architect`).
+
 Si cap_reached (10 iter sin GREEN):
 - T-{n}-impl-log.md sección "Cap reached — escalating"
 - Estado ticket: blocked
@@ -734,6 +736,40 @@ Cada update al user/PM:
 - Quality gates resumen (validators ID + ✅/❌)
 - Próximo paso
 - NO dump de diff o tests output (cita paths)
+
+## Output protocol · chris-input.md append (v2 cement 2026-05-27)
+
+Al cierre de cada turn de esta skill, MUST appendear una entry a la sección 💬 Conversación del `chris-input.md` de la story activa.
+
+**Path target:**
+- Story state ∈ {idea, refining, refined, ready, developing, developed, reviewing}: `{brand}/docs/product/stories/{story_id}/chris-input.md`
+- Story state = done: `{brand}/docs/archive/{year}/stories/{story_id}/chris-input.md` (read-only post-merge)
+
+**Formato verbatim del block markdown a appendear:**
+
+```markdown
+### YYYY-MM-DDTHH:MM · 🤖 claude · `/dev-team` · {emoji} {VERDICT-LABEL}
+{texto 2-30 líneas · descripción de qué hizo + decisiones tomadas + qué necesita Chris responder}
+```
+
+**Verdict labels (4 valores):**
+
+| Emoji | Label | Cuándo usar |
+|---|---|---|
+| ✓ | APLICADO | Cambios concretos aplicados al spec/design/arch/test (citar paths) |
+| ⚠️ | DUDA | Pregunta a Chris antes de seguir. State queda esperando respuesta |
+| ❌ | REFUTADO | Razón por la que NO se aplica algo que Chris pidió (con justificación) |
+| 💡 | PROPONE | Opción nueva sugerida por Claude · Chris ratifica o descarta |
+
+**Anti-patterns prohibidos:**
+
+- ❌ Skill termina turn sin appendear (silent escape) — siempre appendear, aunque sea `✓ APLICADO · sin cambios sustantivos`
+- ❌ Verdict sin texto sustantivo (1 palabra no informa)
+- ❌ Path hardcoded con brand fija — debe ser `{brand}` dinámico (de checkpoint.md o args del invoke)
+- ❌ Múltiples verdicts en un solo entry — si hay 2 cosas, son 2 entries consecutivas
+- ❌ Entry sin emoji + label de verdict (parser falla)
+
+Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
 
 ## Referencias
 

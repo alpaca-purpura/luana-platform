@@ -133,6 +133,8 @@ cat vitalia/docs/product/checkpoint.md      # state global brand
 cat vitalia/docs/product/BACKLOG.md         # vista 10 estados
 ```
 
+**Step 0 extension · leer releases (v2 cement 2026-05-27):** bootstrap LEE también `vitalia/docs/product/releases/*.yaml` (9 archivos F0..F8) además de `checkpoint.md` brand-level + story-level. Esto da contexto sobre qué stories están en qué release activo. Doc: `docs/process/release-protocol.md`.
+
 ### Step 2 — Menú (solo si Step 0 GREEN)
 
 Pregunta a Chris: **"¿qué hacemos en Vitalia? (a) idea/story nueva / (b) continúa story X / (c) outcome nuevo / (d) capability / (e) learning / (f) drill-down a {drill-target}"**
@@ -228,6 +230,17 @@ Cuando aplicás `07-merge.md` para una story brand:
 7. **Si learning tiene `promotable: candidate|yes` → ping `/pm-luana` para evaluación lift a core**
 8. Update outcome story_ids (mark story done)
 
+### Fase F.3 · Capability ledger update (v2 cement 2026-05-27)
+
+Al cerrar story `reviewing → done`, aplicar logic del `cap_change_type` al YAML target. 4 ramas:
+
+- `new` → crear `vitalia/docs/product/capabilities/{module}/{slug}.yaml` con schema v2 completo + change_log[0] type=new + atomics iniciales
+- `fix` → append change_log entry type=fix · NO toca atomics
+- `extend` → append change_log entry type=extend + append nuevos atomics al array con `added_in_story: {story_id}`
+- `derive` → crear cap YAML hijo con `parent_cap: {origen_slug}` + change_log[0] type=derive · update padre append `derives_capabilities: [hijo_slug]`
+
+Update también `last_modified: today` del cap. Doc: `docs/process/capability-protocol.md` § Sección 5.
+
 ## ★ Capability inventory post-merge (MANDATORIO)
 
 > Origen: proposal `docs/promotion-protocol/proposals/2026-05-16-capability-inventory-enforcement.md` (gap detectado en vitalia Story 11 — ver `vitalia/docs/learnings/2026-05-16-capabilities-inventory-gap.md`).
@@ -308,11 +321,48 @@ Si dos sesiones tocan misma story Vitalia → coordinar via `parallel_safe: fals
 
 NUNCA dumps largos. Pointer-first. Si necesitás más detalle escribilo a archivo y citá path.
 
+## Output protocol · chris-input.md append (v2 cement 2026-05-27)
+
+Al cierre de cada turn de esta skill, MUST appendear una entry a la sección 💬 Conversación del `chris-input.md` de la story activa.
+
+**Path target:**
+- Story state ∈ {idea, refining, refined, ready, developing, developed, reviewing}: `vitalia/docs/product/stories/{story_id}/chris-input.md`
+- Story state = done: `vitalia/docs/archive/{year}/stories/{story_id}/chris-input.md` (read-only post-merge)
+
+**Formato verbatim del block markdown a appendear:**
+
+```markdown
+### YYYY-MM-DDTHH:MM · 🤖 claude · `/pm-vitalia` · {emoji} {VERDICT-LABEL}
+{texto 2-30 líneas · descripción de qué hizo + decisiones tomadas + qué necesita Chris responder}
+```
+
+**Verdict labels (4 valores):**
+
+| Emoji | Label | Cuándo usar |
+|---|---|---|
+| ✓ | APLICADO | Cambios concretos aplicados al spec/design/arch/test (citar paths) |
+| ⚠️ | DUDA | Pregunta a Chris antes de seguir. State queda esperando respuesta |
+| ❌ | REFUTADO | Razón por la que NO se aplica algo que Chris pidió (con justificación) |
+| 💡 | PROPONE | Opción nueva sugerida por Claude · Chris ratifica o descarta |
+
+**Anti-patterns prohibidos:**
+
+- ❌ Skill termina turn sin appendear (silent escape) — siempre appendear, aunque sea `✓ APLICADO · sin cambios sustantivos`
+- ❌ Verdict sin texto sustantivo (1 palabra no informa)
+- ❌ Path hardcoded con brand fija — debe ser `{brand}` dinámico (de checkpoint.md o args del invoke)
+- ❌ Múltiples verdicts en un solo entry — si hay 2 cosas, son 2 entries consecutivas
+- ❌ Entry sin emoji + label de verdict (parser falla)
+
+Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
+
 ## Referencias
 
 - `docs/portfolio/vitalia.md` — 1-pager brand
 - `docs/process/pm-redesign-2026-05.md` — paradigm v4 detalle
 - `docs/process/checkpoint-protocol.md` — schema checkpoint
+- `docs/process/capability-protocol.md` — schema cap YAML v2 + Fase F.3 4 ramas
+- `docs/process/release-protocol.md` — Release entity SSoT
+- `docs/process/chris-input-protocol.md` — output protocol per skill
 - `docs/specs/templates/` — templates 01-spec, 03-arch, 04-validators, 05-guidelines, 06-tickets (heredado Luana core)
 - `docs/promotion-protocol/README.md` — workflow brand→core
 - `.claude/skills/pm/SKILL.md` — master orquestador

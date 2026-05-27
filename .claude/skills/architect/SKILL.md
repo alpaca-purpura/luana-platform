@@ -770,6 +770,14 @@ Antes de cerrar story como ready:
 - [ ] `dispatch-plan.md` producido (5th artifact) con `autonomous_mode: false` default + caps + cost matrix
 - [ ] `checkpoint.md::autonomous_mode` campo presente (default false; Chris ratifica true al cerrar review ready)
 
+**Validation coherencia cap_change_type (v2 cement 2026-05-27):** antes de cerrar state=ready, verificar coherencia entre `cap_change_type` declarado y archivos producidos:
+- Si `extend`: 03-arch.md DEBE citar cap existente en sección "## Prior art audit" + 06-tickets.yaml no toca files de caps cross-target
+- Si `derive`: 03-arch.md DEBE crear/referenciar cap nuevo con `parent_cap: {origen}` explícito + checkpoint.md tiene `parent_story` declarado
+- Si `new`: 03-arch.md crea cap YAML schema v2 completo
+- Si `fix`: 03-arch.md NO crea cap nuevo · solo modifica comportamiento existente
+
+Incoherencia detectada → emit verdict `⚠️ DUDA` pidiendo Chris ratificar o corregir `cap_change_type`. Doc: `docs/process/capability-protocol.md` § Sección 3.
+
 ### Step 9 — Transition state + Hand off
 
 Update `{brand}/docs/product/stories/{story-id}/checkpoint.md`:
@@ -837,7 +845,44 @@ Próximo: Conv 2 (autonomous build). /dev-team <brand>: {brand} toma T-1 (state:
 
 Resumen de tickets en lista. Dependencias en flecha. NUNCA reproducir 06-tickets.yaml entero en chat (cita path).
 
+## Output protocol · chris-input.md append (v2 cement 2026-05-27)
+
+Al cierre de cada turn de esta skill, MUST appendear una entry a la sección 💬 Conversación del `chris-input.md` de la story activa.
+
+**Path target:**
+- Story state ∈ {idea, refining, refined, ready, developing, developed, reviewing}: `{brand}/docs/product/stories/{story_id}/chris-input.md`
+- Story state = done: `{brand}/docs/archive/{year}/stories/{story_id}/chris-input.md` (read-only post-merge)
+
+**Formato verbatim del block markdown a appendear:**
+
+```markdown
+### YYYY-MM-DDTHH:MM · 🤖 claude · `/architect` · {emoji} {VERDICT-LABEL}
+{texto 2-30 líneas · descripción de qué hizo + decisiones tomadas + qué necesita Chris responder}
+```
+
+**Verdict labels (4 valores):**
+
+| Emoji | Label | Cuándo usar |
+|---|---|---|
+| ✓ | APLICADO | Cambios concretos aplicados al spec/design/arch/test (citar paths) |
+| ⚠️ | DUDA | Pregunta a Chris antes de seguir. State queda esperando respuesta |
+| ❌ | REFUTADO | Razón por la que NO se aplica algo que Chris pidió (con justificación) |
+| 💡 | PROPONE | Opción nueva sugerida por Claude · Chris ratifica o descarta |
+
+**Anti-patterns prohibidos:**
+
+- ❌ Skill termina turn sin appendear (silent escape) — siempre appendear, aunque sea `✓ APLICADO · sin cambios sustantivos`
+- ❌ Verdict sin texto sustantivo (1 palabra no informa)
+- ❌ Path hardcoded con brand fija — debe ser `{brand}` dinámico (de checkpoint.md o args del invoke)
+- ❌ Múltiples verdicts en un solo entry — si hay 2 cosas, son 2 entries consecutivas
+- ❌ Entry sin emoji + label de verdict (parser falla)
+
+Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
+
 ## Referencias
+
+- `docs/process/capability-protocol.md` — schema cap YAML v2 + cap_change_type coherence gates
+- `docs/process/chris-input-protocol.md` — output protocol per skill
 
 - `docs/process/pm-redesign-2026-05.md` — paradigma 3 conversaciones + ready package + § v4.1 autonomy amplification 2026-05-19
 - `docs/architecture/luana-platform/ADR-007-paradigm-v4.1-autonomy.md` — decisión cementada (test_construction_plan + must_load + Playwright mandatory funcional)

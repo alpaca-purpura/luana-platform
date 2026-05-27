@@ -200,6 +200,19 @@ cd ${WS}/{brand}/frontend && E2E_BASE_URL=http://localhost:300X npx playwright t
 
 Output verdict → embedded en `07-merge.md § 2 — Playwright E2E run` por `/pm-{brand}` después.
 
+### Step 2.5e — Phase D extension · cap ledger verification (v2 cement 2026-05-27)
+
+Verificar que el cap YAML target post-Fase-F-merge refleja los AC/Gherkin scenarios del spec ratificado:
+
+- Si `cap_change_type: new` → cap YAML creado con schema v2 completo + change_log[0] type=new + atomics iniciales
+- Si `cap_change_type: extend` → atomics nuevos appendeados al `atomics[]` + change_log entry type=extend
+- Si `cap_change_type: fix` → change_log entry type=fix sin tocar atomics
+- Si `cap_change_type: derive` → cap YAML hijo creado con parent_cap declarado + padre actualizado en derives_capabilities[]
+
+Verificar que `chris-input.md` existe para stories `state ∈ {refining, refined, ready, developing, developed, reviewing}` y el último append es de Claude (no Chris esperando respuesta · si Chris último + state ≠ refining flag WARN).
+
+Inconsistencia → verdict `CHANGES_REQUESTED` con findings citados. Doc: `docs/process/capability-protocol.md` § Sección 5.
+
 ## Step 3 — Procesar veredicto por ticket
 
 > **Política v4.1 cement 2026-05-19:** decisión por NATURALEZA DEL FIX, no tamaño.
@@ -654,6 +667,40 @@ Cada paso:
 - Cita path al review file
 
 NUNCA dump de findings (cita path).
+
+## Output protocol · chris-input.md append (v2 cement 2026-05-27)
+
+Al cierre de cada turn de esta skill, MUST appendear una entry a la sección 💬 Conversación del `chris-input.md` de la story activa.
+
+**Path target:**
+- Story state ∈ {idea, refining, refined, ready, developing, developed, reviewing}: `{brand}/docs/product/stories/{story_id}/chris-input.md`
+- Story state = done: `{brand}/docs/archive/{year}/stories/{story_id}/chris-input.md` (read-only post-merge)
+
+**Formato verbatim del block markdown a appendear:**
+
+```markdown
+### YYYY-MM-DDTHH:MM · 🤖 claude · `/auditor` · {emoji} {VERDICT-LABEL}
+{texto 2-30 líneas · descripción de qué hizo + decisiones tomadas + qué necesita Chris responder}
+```
+
+**Verdict labels (4 valores):**
+
+| Emoji | Label | Cuándo usar |
+|---|---|---|
+| ✓ | APLICADO | Cambios concretos aplicados al spec/design/arch/test (citar paths) |
+| ⚠️ | DUDA | Pregunta a Chris antes de seguir. State queda esperando respuesta |
+| ❌ | REFUTADO | Razón por la que NO se aplica algo que Chris pidió (con justificación) |
+| 💡 | PROPONE | Opción nueva sugerida por Claude · Chris ratifica o descarta |
+
+**Anti-patterns prohibidos:**
+
+- ❌ Skill termina turn sin appendear (silent escape) — siempre appendear, aunque sea `✓ APLICADO · sin cambios sustantivos`
+- ❌ Verdict sin texto sustantivo (1 palabra no informa)
+- ❌ Path hardcoded con brand fija — debe ser `{brand}` dinámico (de checkpoint.md o args del invoke)
+- ❌ Múltiples verdicts en un solo entry — si hay 2 cosas, son 2 entries consecutivas
+- ❌ Entry sin emoji + label de verdict (parser falla)
+
+Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
 
 ## Referencias
 
