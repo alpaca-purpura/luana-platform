@@ -220,3 +220,36 @@ tsc --noEmit: 0 errors
 ### Commit
 
 `8c51ff5a` — changes included in parallel session commit to `wip/vitalia` (2026-05-27)
+
+---
+
+## Auditor iter 3 — W4 MobileBottomSheet responsive wiring (AC-12)
+
+**Fecha:** 2026-05-27  
+**Mode:** AUDITOR_AUTO_FIX_LOOP iter 3 (final cap)
+
+### Root cause
+
+W4: `AppointmentDrawer` had `side="right"` hardcoded regardless of viewport. `MobileBottomSheet` component existed but was not wired to `AppointmentDrawer`. AC-12 ("mobile drawer full-screen") was FAIL.
+
+### Files changed
+
+| File | Change |
+|---|---|
+| `vitalia/frontend/src/hooks/useMediaQuery.ts` | NEW — SSR-safe matchMedia hook with addEventListener change |
+| `AppointmentDrawer.tsx` | Import `useMediaQuery`; `const isMobile = useMediaQuery("(max-width: 767px)")`. `SheetContent.side` switches to `"bottom"` + `h-[95vh] rounded-t-2xl` on mobile, `"right"` + `drawerStyle` on desktop. |
+| `__tests__/AppointmentDrawer.test.tsx` | Mock `@/hooks/useMediaQuery` (default `false`); +2 AC-12 tests (desktop no rounded-t-2xl; mobile has class). |
+
+### Result
+
+```
+Tests  13 passed (13) → 168/168 agenda suite GREEN
+tsc --noEmit: 0 errors
+ESLint: 0 errors
+```
+
+**W5 LOW (residual color tokens):** Deferred. The flagged classes (`bg-red-500`, `bg-green-100`, `text-yellow-*`, etc.) are semantic status colors for appointment/payment states and calendar slots — not arbitrary decorative colors. These reflect the Vitalia design brief for health-status semantics and are acceptable per the LOW severity classification.
+
+### Commit
+
+`2d5a2b23` — pushed to `wip/vitalia` (2026-05-27)
