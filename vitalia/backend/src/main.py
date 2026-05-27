@@ -28,6 +28,8 @@ from src.modules.vitalia.crm.api.router import router as crm_router
 from src.modules.vitalia.fidelizacion.api.router import fidelizacion_router
 from src.modules.vitalia.inbox.api.router import router as inbox_router
 from src.modules.vitalia.marketing.api.routes import router as marketing_router
+from src.modules.vitalia.scheduling.api.agenda_router import router as agenda_router
+from src.modules.vitalia.scheduling.api.notify_router import router as notify_router
 
 # redirect_slashes=False is MANDATORY — arch test test_vitalia_response_models_required.py
 # also verifies this flag. Default True → 307 POST → Next.js drops body (DDD rule).
@@ -63,6 +65,10 @@ app.include_router(inbox_router, prefix="/api/v1/vitalia/inbox")
 app.include_router(fidelizacion_router, prefix="/api/v1/vitalia/fidelizacion")
 # T-mk-be-5: Marketing module — 11 endpoints (bowtie + channel + recommendations + attribution + referrals)
 app.include_router(marketing_router, prefix="/api/v1/vitalia/marketing")
+# T-6 F2-S1: Scheduling agenda router — 5 endpoints (grid, aggregates, detail, create, patch_status)
+app.include_router(agenda_router, prefix="/api/v1/scheduling")
+# T-8 F2-S1: Scheduling notify — template-only WhatsApp + ComplianceService guard + audit log
+app.include_router(notify_router, prefix="/api/v1/scheduling")
 
 
 class HealthResponse(BaseModel):
