@@ -30,6 +30,12 @@ export interface DrawerState {
   drawerOpen: boolean;
   /** Drawer width in pixels. Clamped to [440, 640]. Persisted. */
   drawerWidth: number;
+  /**
+   * True when polling detects that the currently open appointment was updated
+   * remotely (updated_at newer than local cached version).
+   * Triggers the stale banner in AppointmentDrawer.
+   */
+  staleDetected: boolean;
 }
 
 export interface DrawerActions {
@@ -41,6 +47,8 @@ export interface DrawerActions {
   toggleDrawer: () => void;
   /** Set drawer width (clamped to [440, 640]). */
   setDrawerWidth: (width: number) => void;
+  /** Mark current appointment as stale (remote update detected via polling). */
+  setStaleDetected: (stale: boolean) => void;
 }
 
 export type DrawerStore = DrawerState & DrawerActions;
@@ -60,13 +68,14 @@ export const useDrawerStore = create<DrawerStore>()(
       selectedSlotId: null,
       drawerOpen: false,
       drawerWidth: DRAWER_WIDTH_DEFAULT,
+      staleDetected: false,
 
       // Actions
       openDrawer: (slotId: string) =>
-        set({ selectedSlotId: slotId, drawerOpen: true }),
+        set({ selectedSlotId: slotId, drawerOpen: true, staleDetected: false }),
 
       closeDrawer: () =>
-        set({ drawerOpen: false, selectedSlotId: null }),
+        set({ drawerOpen: false, selectedSlotId: null, staleDetected: false }),
 
       toggleDrawer: () =>
         set((state) => ({ drawerOpen: !state.drawerOpen })),
@@ -78,6 +87,9 @@ export const useDrawerStore = create<DrawerStore>()(
             Math.max(DRAWER_WIDTH_MIN, Math.round(width)),
           ),
         }),
+
+      setStaleDetected: (stale: boolean) =>
+        set({ staleDetected: stale }),
     }),
     {
       name: DRAWER_WIDTH_STORAGE_KEY,
