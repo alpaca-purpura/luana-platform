@@ -4,13 +4,14 @@
 
 | Campo | Valor |
 |---|---|
-| **Status** | Accepted |
-| **Date** | 2026-05-26 |
+| **Status** | Accepted (v1.1 — 2026-05-27 cementación N3-static SubSubTabsBar) |
+| **Date** | 2026-05-26 (v1.0) · **2026-05-27 (v1.1 addendum)** |
 | **Authors** | Chris + `/po-ux` (orchestrator Opus 4.7) |
 | **Brand** | vitalia |
 | **Scope** | Toda story Fase 2 que construya una **sub-tab** dentro del shell-organism agéntico |
 | **Supersedes** | — (extiende ADR-vitalia-003 mockup-per-component) |
 | **Sources** | `vitalia/docs/product/stories/vitalia-fase2-valeria-agenda/03-arch.md` (architectura cementada por `/architect` Opus 4.7 single-shot 2026-05-27); `SHELL-DESIGN-CONTRACT.md`; rule `.claude/rules/anti-duplication.md` |
+| **Changelog** | **v1.1 (2026-05-27):** cementar Nivel 3 estático `SubSubTabsBar` + routing variant `[subtab]/[subsubtab]/page.tsx` + `AGENT_SUBSUBTABS` catalog convention. Distinción explícita N3-static (sub-sub-tabs cabecera) vs N3-dynamic (`[...slug]` workspace detalle). Origen: refinement `vitalia-fase2-lisa-marca` 2026-05-27 (Chris ratificó gap: nested Tabs body es Nivel 4 anti-pattern). |
 
 ---
 
@@ -67,6 +68,116 @@ vitalia/frontend/src/app/[tenantId]/(shell-organism)/{agent}/{subtab}/page.tsx
 - `params` y `searchParams` son `Promise<...>` (Next.js 16 async params API)
 
 **Anchor source:** valeria-agenda 03-arch § 6.0 + § 6.3.
+
+### § 3.1.1 — Niveles de navegación cementados (★ v1.1 — 2026-05-27)
+
+```
+N1 (Ribbon)           → [agent]                                    → 6 agentes fijos (Lisa·Lucas·Adrián·Valeria·Camila·Configurar)
+N2 (SubTabsBar)       → [agent]/[subtab]                           → AGENT_SUBTABS whitelist per agente
+N3-static (NEW)       → [agent]/[subtab]/[subsubtab]               → AGENT_SUBSUBTABS opcional (sub-tabs complejas)
+N3-dynamic            → [agent]/[subtab]/[...slug]                 → workspace detalle item (catch-all, lower priority)
+```
+
+**Reglas de coexistencia:**
+- Una sub-tab puede tener **N3-static** (sub-sub-tabs cabecera) **Y** **N3-dynamic** (workspace catch-all) simultáneamente — Next.js prioriza static segment sobre catch-all
+- Si `AGENT_SUBSUBTABS[agent][subtab]?.length > 0` → URL `[agent]/[subtab]/` **redirect** a primera entry del array (default convention)
+- Si `AGENT_SUBSUBTABS[agent][subtab]` undefined → sub-tab es single panel (no extra navigation)
+- N3-dynamic usa Sheet drawer (Shadcn) con URL state opcional vía `[...slug]` — patrón valeria-agenda `AppointmentDrawer`
+
+**Anti-pattern PROHIBIDO:**
+- ❌ Shadcn `Tabs` internas en body de sub-tab para agrupar N vistas (esto sería **Nivel 4** anti-pattern — content tab nav fuera de la cabecera shell)
+- ❌ Custom tab bar custom dentro de `{Agent}{Subtab}View.tsx` que duplique función de SubSubTabsBar
+- ❌ Single scroll con secciones múltiples cuando hay 3+ vistas conceptualmente discretas (usar SubSubTabsBar para discoverability)
+
+**Cuándo usar single scroll vs SubSubTabsBar:**
+
+| Caso | Solución |
+|---|---|
+| Sub-tab con UN solo panel coherente (ej. `valeria/agenda`) | Single panel — sin N3-static |
+| Sub-tab con 2 secciones tightly-coupled (ej. config-simple con form + preview side-by-side) | Single scroll con headers H2 |
+| Sub-tab con **3+ vistas conceptualmente discretas** (ej. `lisa/marca` = identidad / voz / presencia) | **SubSubTabsBar (N3-static) MANDATORY** |
+| Detalle item dinámico (ej. abrir doctor específico, slot agenda) | Sheet drawer (Shadcn) + URL state opcional via `[...slug]` |
+
+**Anchor source:** SHELL-DESIGN-CONTRACT § 7.4 (Nivel 3 cementación) · lisa-marca refinement 2026-05-27 (origen ratificación Chris).
+
+### § 3.1.2 — `SubSubTabsBar` componente (NEW v1.1)
+
+```
+vitalia/frontend/src/components/shared/shell-organism/SubSubTabsBar.tsx
+```
+
+**Pattern:** copy verbatim de `SubTabsBar.tsx` (F1-S8) con ajustes mínimos:
+- Roving tabindex WAI-ARIA tablist pattern idéntico
+- URL-derived state: `extractSubsubtabFromPath(pathname)`
+- Render condicional: `if (subsubtabs.length === 0) return null` (mantiene cabecera limpia si sub-tab es single panel)
+- Tint color de la sub-sub-tab activa: heredada del agente (`--agent-{name}`) — consistencia visual
+
+**Layout final del shell con N3-static activo:**
+
+```
+┌──────────────────────────────────────────────────┐
+│ TopBarGlobal                                       │  ← header global
+├──────────────────────────────────────────────────┤
+│ Ribbon: [Lisa] [Lucas] [Adrián] [Valeria]...      │  ← N1 agentes
+├──────────────────────────────────────────────────┤
+│ SubTabsBar: [Marca] [Doctores] [Servicios]...     │  ← N2 sub-tabs per agente
+├──────────────────────────────────────────────────┤
+│ SubSubTabsBar: [Identidad] [Voz y tono] [Presen.] │  ← N3-static (opcional, solo si AGENT_SUBSUBTABS[lisa][marca] !== undefined)
+├──────────────────────────────────────────────────┤
+│                                                    │
+│  {Panel content (single, NO tabs internas)}        │
+│                                                    │
+└──────────────────────────────────────────────────┘
+```
+
+**AppPanelSlot renderiza condicional:**
+
+```tsx
+<section role="region" aria-label="Panel aplicación">
+  <Ribbon />
+  <SubTabsBar />
+  <SubSubTabsBar /> {/* renders null si no aplica */}
+  <div className="flex-1 min-h-0 overflow-hidden">{children}</div>
+</section>
+```
+
+### § 3.1.3 — `AGENT_SUBSUBTABS` catalog (NEW v1.1)
+
+```ts
+// vitalia/frontend/src/lib/routing/shell-routes.ts  (extiende AGENT_SUBTABS existente)
+
+/**
+ * Sub-sub-tabs (N3-static) per (agent, subtab) pair.
+ * Opcional — solo declarar cuando la sub-tab agrupa 3+ vistas discretas.
+ * Default redirect: primer entry del array.
+ */
+export const AGENT_SUBSUBTABS: Partial<Record<AgentKey, Partial<Record<string, readonly string[]>>>> = {
+  lisa: {
+    marca: ['identidad', 'voz-y-tono', 'presencia'],
+    // doctores: undefined  → single panel
+    // servicios: ['catalogo', 'escalera']  (futuro lisa-servicios)
+    // compliance: ['semaforo', 'retencion', 'reportes']  (futuro lisa-compliance)
+  },
+  // Otros agentes declaran subsubtabs cuando aplica
+} as const
+
+/**
+ * Default redirect cuando user llega a [agent]/[subtab]/ sin subsubtab.
+ * Convention: primera entry del array (KISS — evita catalog duplicado).
+ * Sobrescribir SOLO si se requiere default distinto al primero.
+ */
+// AGENT_DEFAULT_SUBSUBTAB no se exporta — primera entry del array es el default.
+```
+
+**Layout file structure post-N3-static (lisa-marca ejemplo):**
+
+```
+app/[tenantId]/(shell-organism)/lisa/marca/
+├── page.tsx                          # → redirect a /lisa/marca/identidad (primera entry)
+├── identidad/page.tsx                # N3-static "identidad"
+├── voz-y-tono/page.tsx               # N3-static "voz-y-tono"
+└── presencia/page.tsx                # N3-static "presencia"
+```
 
 ### § 3.2 — FSD-Lite layout per agente
 

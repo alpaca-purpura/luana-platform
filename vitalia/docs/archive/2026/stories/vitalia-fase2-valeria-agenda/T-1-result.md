@@ -118,7 +118,7 @@ The ticket DELIVERABLES section lists `event_type enum`, `user_id_hash`, `payloa
 
 ## Commit SHA
 
-(pending — see push step below)
+`635a96d7` — pushed to `wip/vitalia`
 
 ---
 

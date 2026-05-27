@@ -6,8 +6,8 @@ type: ui-story
 agent_owner: valeria
 module: scheduling
 capability: valeria.agenda
-state: reviewing                                                   # ★ awaiting /pm-vitalia merge — AUDIT APPROVED iter 3
-phase: HANDOFF_TO_PM_MERGE                                         # ★ CHECKPOINTS.md APPROVED 2026-05-27 audit iter 3
+state: done                                                        # ★ transitioned reviewing → done 2026-05-27 by /pm-vitalia merge (autonomous chain)
+phase: ARCHIVED                                                    # ★ 07-merge.md cementado + capability promoted + story moved to archive R2
 audit_iterations_used: 3                                           # iter 1 + iter 1.5 regression + iter 3 W4
 audit_artifacts:
   - T-1-review.md (BE batch PASS deferred WARN H6 + Cat 9)

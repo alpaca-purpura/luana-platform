@@ -80,7 +80,6 @@ const COMPONENT_FILES = [
   "src/features/vitalia/components/onboarding-step-1-client.tsx",
   "src/features/vitalia/components/onboarding-step-2-client.tsx",
   "src/features/vitalia/components/onboarding-step-3-client.tsx",
-  "src/features/vitalia/components/brand-studio-section-client.tsx",
   "src/features/vitalia/components/offer-wizard-client.tsx",
 ];
 

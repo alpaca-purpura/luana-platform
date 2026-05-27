@@ -244,6 +244,28 @@ export const RIBBON_SUBTABS: Record<RibbonTabSlug, readonly SubTabMeta[]> = {
 } as const satisfies Record<RibbonTabSlug, readonly SubTabMeta[]>;
 
 /**
+ * Sub-tabs que ya tienen ruta Next.js STÁTICA bajo
+ * `app/[tenantId]/(shell-organism)/{agent}/{subtab}/page.tsx`.
+ *
+ * Next.js prioriza rutas estáticas sobre la ruta dinámica `[agent]/[subtab]/page.tsx`,
+ * por lo que el dispatcher `SubTabContent` nunca se invoca para estas combinaciones.
+ * Estas keys quedan EXCLUIDAS del `PLACEHOLDER_MAP`: agregar entry aquí cuando una
+ * story shippea su `{agent}/{subtab}/page.tsx` real.
+ *
+ * Consumed by:
+ *   - components/shared/shell-organism/SubTabContent.tsx (mapa de placeholders)
+ *   - __tests__/architecture/test_subtab_content_uses_ribbon_subtabs_ssot.test.ts (arch fitness)
+ *
+ * spec_anchor: archive/2026/stories/vitalia-fase2-valeria-agenda/07-merge.md (W3 cleanup)
+ */
+export type RibbonSubtabKey = `${RibbonTabSlug}.${string}`;
+
+export const SHIPPED_STATIC_SUBTABS: ReadonlySet<RibbonSubtabKey> = new Set<RibbonSubtabKey>([
+  "valeria.agenda",
+  "lisa.marca",  // F2-S7 T-4 — N3-static subtab (identidad/voz-y-tono/presencia)
+]);
+
+/**
  * F1-S9 routing-shell EXTEND: validators para routing tree dynamic [agent]/[subtab].
  * Consumed by app/[tenantId]/(shell-organism)/[agent]/layout.tsx (T-4).
  *

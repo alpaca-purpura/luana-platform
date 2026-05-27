@@ -31,10 +31,16 @@ const SRC_ROOT = resolve(__dirname, "../..");
 const ALLOWED_FILES = new Set([
   "components/shared/shell-organism/SubTabContent.tsx",
   "lib/agent-catalog.ts",
+  // F2-S7 T-4 (ADR-vitalia-004 v1.1): shell-routes.ts is the N3-static SSoT catalog.
+  // AGENT_SUBSUBTABS uses composite keys as first-class identifiers for sub-sub-tab routing.
+  // Analogous to SubTabContent.tsx for N2 → shell-routes.ts is SSoT for N3.
+  "lib/shell-routes.ts",
   // Arch test files are allowed (this file + related tests)
   "__tests__/architecture/test_subtab_content_uses_ribbon_subtabs_ssot.test.ts",
   "__tests__/architecture/test_no_hardcoded_subtab_keys.test.ts",
   "__tests__/architecture/test_no_phi_real_data.test.ts",
+  // F2-S7 T-4: arch test for AGENT_SUBSUBTABS catalog uses composite keys as test fixtures
+  "__tests__/architecture/test-agent-subsubtabs-ssot.test.ts",
 ]);
 
 /**

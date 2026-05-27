@@ -183,6 +183,16 @@
   --vitalia-info-color: hsl(213 93% 40%);
   --vitalia-muted-status-color: hsl(220 9% 65%);
 
+  /* ─── Social media brand colors (T-7 Presencia — SocialMediaLinksEditor) ── */
+  /* Third-party brand palette. Hex values defined here (globals.css exempt).  */
+  /* TSX files consume via var() — never hardcode hex in components.            */
+  --social-instagram-bg: #ee2a7b;
+  --social-instagram-gradient: linear-gradient(135deg, #f9ce34 0%, #ee2a7b 50%, #6228d7 100%);
+  --social-tiktok-bg: #000000;
+  --social-facebook-bg: #1877f2;
+  --social-google-bg: #4285f4;
+  --social-whatsapp-bg: #25d366;
+
   /* Soft semantic tones (Storybook role-gate demos + future success/danger UIs) */
   --vitalia-success-soft-bg: hsl(142 76% 96%);
   --vitalia-danger-soft-bg: hsl(0 73% 97%);
@@ -345,19 +355,6 @@
 
 .vitalia-agent-gradient-lucas {
   background: linear-gradient(135deg, #b8dc2a 0%, #01b2f8 100%);
-}
-
-/* ─── Agenda lunch stripe (F1-S10 T-7 — repeating diagonal muted pattern) ── */
-/* Used by AgendaPlaceholder lunch row (13:00). F2 replaces with functional data. */
-.agenda-lunch-stripe {
-  background: repeating-linear-gradient(
-    45deg,
-    transparent,
-    transparent 4px,
-    hsl(var(--muted)) 4px,
-    hsl(var(--muted)) 8px
-  );
-  opacity: 0.4;
 }
 
 /* ─── Base reset + font stack ─────────────────────────────────────────────── */

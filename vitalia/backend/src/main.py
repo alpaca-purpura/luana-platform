@@ -20,6 +20,7 @@ from pydantic import BaseModel
 from src.modules.vitalia.admin.api.admin_helpers_router import router as admin_helpers_router
 from src.modules.vitalia.api.routes import router as vitalia_router
 from src.modules.vitalia.api.webhook_routes import webhook_router
+from src.modules.vitalia.brand_studio.api.routers.marca_router import router as marca_router
 from src.modules.vitalia.clinics.api.router import router as clinics_router
 from src.modules.vitalia.copilot.api.routes.wizard_onboarding_routes import (
     router as wizard_onboarding_router,
@@ -75,6 +76,8 @@ app.include_router(notify_router, prefix="/api/v1/scheduling")
 app.include_router(charge_router, prefix="/api/v1/payments")
 # T-7 F2-S1: Fiscal emit router — standalone fiscal emission retry (saga compensation A6)
 app.include_router(emit_router, prefix="/api/v1/fiscal")
+# T-2 F2-S7: Brand Studio marca router — 21 endpoints Lisa > Marca sub-tab
+app.include_router(marca_router, prefix="/api/v1/lisa/marca", tags=["brand_studio"])
 
 
 class HealthResponse(BaseModel):

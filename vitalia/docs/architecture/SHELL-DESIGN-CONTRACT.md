@@ -416,8 +416,9 @@ app/
 │   │       ├── layout.tsx                   # — (vacío, propaga al children)
 │   │       ├── page.tsx                     # → redirect a primera sub-tab del agente
 │   │       └── [subtab]/
-│   │           ├── page.tsx                 # sub-tab content (consume feature components)
-│   │           └── [...slug]/page.tsx       # N3-dyn workspaces
+│   │           ├── page.tsx                 # sub-tab content (single panel) o redirect a primera subsubtab
+│   │           ├── [subsubtab]/page.tsx     # ★ N3-static (sub-sub-tabs cabecera, opcional per AGENT_SUBSUBTABS)
+│   │           └── [...slug]/page.tsx       # N3-dynamic workspaces (catch-all, detalle item)
 │   └── ... (otras rutas legacy bajo [tenantId] si las hubiera)
 └── layout.tsx (root)                       # Providers globales
 ```
@@ -446,7 +447,37 @@ export const AGENT_DEFAULT_SUBTAB: Record<AgentKey, string> = {
   camila: 'voz',
   config: 'cuenta',
 }
+
+// ★ NEW v1.1 (2026-05-27) — Nivel 3 estático (sub-sub-tabs cabecera) opcional per (agent, subtab).
+// Solo declarar cuando la sub-tab agrupa 3+ vistas conceptualmente discretas.
+// Default redirect cuando user llega a [agent]/[subtab]/ sin subsubtab: primera entry del array (KISS).
+export const AGENT_SUBSUBTABS: Partial<Record<AgentKey, Partial<Record<string, readonly string[]>>>> = {
+  lisa: {
+    marca: ['identidad', 'voz-y-tono', 'presencia'],
+    // doctores: undefined  → single panel
+    // servicios: ['catalogo', 'escalera']  (futuro lisa-servicios)
+    // compliance: ['semaforo', 'retencion', 'reportes']  (futuro lisa-compliance)
+  },
+  // Otros agentes declaran subsubtabs cuando aplica (en su story dedicada)
+} as const
 ```
+
+### § 7.2.1 — Niveles de navegación (★ v1.1 cementación 2026-05-27)
+
+```
+N1 (Ribbon)           → [agent]                                    → 6 agentes fijos
+N2 (SubTabsBar)       → [agent]/[subtab]                           → AGENT_SUBTABS whitelist
+N3-static (NEW)       → [agent]/[subtab]/[subsubtab]               → AGENT_SUBSUBTABS opcional
+N3-dynamic            → [agent]/[subtab]/[...slug]                 → workspace detalle item (catch-all)
+```
+
+**Reglas:**
+- N3-static y N3-dynamic **coexisten** en misma sub-tab — Next.js prioriza static segment sobre catch-all
+- N3-static es **opcional** — solo cuando la sub-tab agrupa 3+ vistas discretas (Anti-pattern: Shadcn `Tabs` body en lugar de cabecera N3-static)
+- N3-dynamic se renderiza típicamente vía Sheet drawer (Shadcn) con URL state opcional (patrón valeria-agenda `AppointmentDrawer`)
+- **Anti-pattern PROHIBIDO:** content tab nav fuera de la cabecera shell (sería "Nivel 4" implícito)
+
+**Source decisión:** ADR-vitalia-004 v1.1 § 3.1.1 (cementación 2026-05-27 origen lisa-marca refinement).
 
 ### § 7.3 — Static metadata catalog
 

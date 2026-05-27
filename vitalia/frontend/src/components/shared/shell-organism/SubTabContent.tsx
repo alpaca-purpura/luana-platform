@@ -1,14 +1,19 @@
 /**
  * SubTabContent — dispatcher organismo.
  * F1-S10 vitalia-fase1-empty-states — T-9 (PLACEHOLDER_MAP fully populated)
+ * F2-S1 vitalia-fase2-valeria-agenda — 07-merge.md W3 cleanup
  *
- * Maps 22 {agent}.{subtab} combos → placeholder component or EmptyState fallback.
+ * Maps {agent}.{subtab} combos NOT shipped como static route → placeholder
+ * component or EmptyState fallback. Static routes (ver SHIPPED_STATIC_SUBTABS
+ * en agent-catalog.ts) shadowean al dispatcher dinámico, así que sus keys quedan
+ * fuera del mapa para evitar dead-code drift.
+ *
  * Consumes RIBBON_SUBTABS SSoT (READ-ONLY) for metadata lookup.
  * Imports placeholder components via each feature's public API (index.ts) per FSD-Lite.
  *
- * Architecture invariants (arch tests T-9):
+ * Architecture invariants (arch tests T-9 + W3):
  *   - PLACEHOLDER_MAP keys must be a subset of RIBBON_SUBTABS keys (no orphans)
- *   - PLACEHOLDER_MAP contains exactly 22 keys (all sub-tabs covered)
+ *   - PLACEHOLDER_MAP === RIBBON_SUBTABS minus SHIPPED_STATIC_SUBTABS (no overlap/missing)
  *   - No hardcoded sub-tab key strings outside this file (arch test enforces)
  *   - No PHI real data in placeholder mock data (hipaa-lite arch test enforces)
  *
@@ -16,7 +21,7 @@
  * Placeholders that need client state ("use client") mark themselves.
  * Named export (NO default) per FSD-Lite enforce.
  *
- * spec_anchor: 03-arch.md § 4
+ * spec_anchor: 03-arch.md § 4 + archive/.../vitalia-fase2-valeria-agenda/07-merge.md W3
  * downstream-regression-na: brand-local shell-organism; no cross-brand consumers
  */
 
@@ -27,8 +32,8 @@ import { SubTabHeader } from "./SubTabHeader";
 import { EmptyState } from "./EmptyState";
 
 // ── Lisa placeholders — via public API (T-2 generic + T-3 special) ───────────────
+// lisa.marca is EXCLUDED: shipped as N3-static route (F2-S7 T-4) — see SHIPPED_STATIC_SUBTABS.
 import {
-  MarcaPlaceholder,
   DoctoresPlaceholder,
   ServiciosPlaceholder,
   CompliancePlaceholder,
@@ -51,8 +56,9 @@ import {
   PropuestasPlaceholder,
 } from "@/features/adrian";
 
-// ── Valeria placeholders — via public API (T-2 generic + T-7 special) ────────────
-import { AgendaPlaceholder, PacientesPlaceholder } from "@/features/valeria";
+// ── Valeria placeholders — via public API (T-2 generic) ─────────────────────────
+// valeria.agenda no figura: ya tiene ruta estática shipped (F2-S1) — ver SHIPPED_STATIC_SUBTABS.
+import { PacientesPlaceholder } from "@/features/valeria";
 
 // ── Camila placeholders — via public API (T-2 generic + T-8 special) ─────────────
 import {
@@ -73,13 +79,12 @@ import {
 type PlaceholderComponent = ComponentType;
 type SubTabKey = `${RibbonTabSlug}.${string}`;
 
-// ── PLACEHOLDER_MAP — 22 keys (T-9 fully populated) ─────────────────────────────
-// Architecture test verifies this map contains exactly 22 keys from RIBBON_SUBTABS.
-// Keys: 'lisa.marca' | 'lisa.doctores' | ... (22 total, no 'mateo.*')
+// ── PLACEHOLDER_MAP — 20 keys (RIBBON_SUBTABS - SHIPPED_STATIC_SUBTABS) ──────────
+// Architecture test verifies this map === RIBBON_SUBTABS minus SHIPPED_STATIC_SUBTABS.
+// Keys: 'lisa.doctores' | ... (no 'mateo.*', no 'valeria.agenda' shipped, no 'lisa.marca' shipped)
 // DO NOT hardcode these keys elsewhere — arch test enforces this file as SSoT.
 const PLACEHOLDER_MAP = {
-  // lisa (4) — T-2 generic + T-3 servicios special
-  "lisa.marca": MarcaPlaceholder,
+  // lisa (3) — T-2 generic + T-3 servicios special (lisa.marca shipped N3-static F2-S7 T-4)
   "lisa.doctores": DoctoresPlaceholder,
   "lisa.servicios": ServiciosPlaceholder,
   "lisa.compliance": CompliancePlaceholder,
@@ -94,8 +99,7 @@ const PLACEHOLDER_MAP = {
   "adrian.embudo": EmbudoPlaceholder,
   "adrian.outbound": OutboundPlaceholder,
   "adrian.propuestas": PropuestasPlaceholder,
-  // valeria (2) — T-2 generic + T-7 agenda
-  "valeria.agenda": AgendaPlaceholder,
+  // valeria (1) — T-2 generic (agenda shipped static F2-S1 — ver SHIPPED_STATIC_SUBTABS, lisa.marca shipped F2-S7)
   "valeria.pacientes": PacientesPlaceholder,
   // camila (4) — T-2 generic + T-8 voz
   "camila.voz": VozPlaceholder,

@@ -49,6 +49,37 @@ Todo mockup en `vitalia/docs/product/stories/{story-id}/mockups/{component}.html
 - Incluir **dark mode** si el componente lo soporta (toggle button local en el mockup)
 - **Sin frameworks externos** (NO Bootstrap, NO Material UI) — Shadcn-style copy-paste o markup Tailwind nativo
 
+### ★ Shell wrapper fidelity (cementado 2026-05-27 — origen lisa-marca v2.1 refactor)
+
+Cuando el mockup per-component aterriza dentro del shell-organism (sub-tab / sub-sub-tab / componente Fase 2 que ocupa el panel-content), el **wrapper visual de contexto** (TopBar global, Ribbon agentes, SubTabsBar, ValeriaSidebar/chat) MUST ser **portado verbatim** desde las fuentes canónicas archivadas. Reinventarlo simplificado genera 4 problemas observados:
+
+1. Falsos "regression flags" de Chris al ver pestañas padre con apariencia distinta a producción
+2. Colores grisáceos en vez de tokens marca (gradient mariposa, agent colors)
+3. Layout estático (50/50 hardcoded) sin reflejar splitter resizable real
+4. Chat de Valeria inventado simplificado en vez del componente shipped
+
+**Fuentes canónicas obligatorias del wrapper** (Read-only, port verbatim):
+
+| Layer del shell | Fuente canónica (archivada, immutable) |
+|---|---|
+| Shell integral (referencia macro) | `vitalia/docs/archive/2026/stories/vitalia-shell-organism/mockups/dual-mode-shell.html` |
+| TopBar global + logo gradient | idem § `.topbar`, `.topbar-logo`, `.tenant-switcher` (líneas ~109-200) |
+| Splitter resizable 3 estados | idem § `.shell`, `.panel-valeria[data-state]` (líneas ~203-225) |
+| Ribbon 6 agentes con agent-color borders | idem § `.ribbon`, `.ribbon-tab[data-color]` (líneas ~485-538) |
+| SubTabsBar línea 2 con agent-soft active | idem § `.sub-tabs`, `.sub-tab[data-color]` (líneas ~540-568) |
+| ValeriaChat con avatar + status + composer | `vitalia/docs/archive/2026/stories/vitalia-fase1-valeria-chat-skeleton/mockups/valeria-chat-sample.html` (completo) |
+| ValeriaRail (modo collapsed icons) | `vitalia/docs/archive/2026/stories/vitalia-fase1-valeria-rail-history/mockups/valeria-rail.html` |
+
+**Workflow correcto:**
+
+1. Crear/editar `_shared.css` del story-folder con tokens HSL **idénticos** a `vitalia/frontend/src/app/globals.css` (NO inventar)
+2. Definir clases del wrapper (`.shell-root`, `.shell-body[data-splitter-state]`, `.topbar`, `.chat-side`, `.chat-content`, `.chat-rail-only`, `.ribbon`, `.subtabs-bar`, `.subsubtabs-bar`, `.panel-side`) portando markup + nombres desde los canónicos
+3. En cada `{component}.html` el wrapper es **idéntico cross-mockup** — solo cambia el `.panel-content` (la story owna eso)
+4. Agregar `.splitter-control` en topbar (mockup-only widget) que cambia `data-splitter-state` ∈ `{chat-collapsed, chat-narrow, 50-50}` para que Chris verifique responsividad
+5. `.panel-inner` **sin** `max-width` hard — usa `width: 100%` + `.cards-grid` con `repeat(auto-fit, minmax(...))` para fluidez real
+
+**Cuándo NO aplica:** cuando el componente se ratifica aislado (`theme-toggle.html`, `logo-mark.html`, `tenant-switcher-open.html`) — esos NO necesitan shell, son atómicos. La regla aplica a mockups que muestran el componente **dentro del slot** (cualquier sub-tab Fase 2, cualquier integración intra-shell).
+
 ### Servidor local para revisión Chris
 
 ```bash
@@ -92,6 +123,11 @@ Cuando `/dev-team` builde el componente, los tests obligatorios incluyen:
 - Reusar mockup integral `dual-mode-shell.html` (1439 líneas) como sustituto de mockups-per-component (eso es SSoT del shell completo, no de componentes individuales)
 - Skipear protocolo argumentando "es un componente trivial" — la regla aplica TODOS los componentes user-facing del shell, sin excepción más allá de las listadas en § Scope NO aplica
 - Mockup HTML que diverja del componente final SIN actualizar el mockup en el mismo PR (genera ratchet roto)
+- ★ **Reinventar el wrapper del shell** (topbar/ribbon/sub-tabs/chat-side) en lugar de portarlo verbatim desde `dual-mode-shell.html` + `valeria-chat-sample.html` + `valeria-rail.html` (cementado 2026-05-27 — caso origen: `vitalia-fase2-lisa-marca` v2 → v2.1 refactor obligado por Chris)
+- ★ **Mockup con layout 50/50 hardcoded** sin permitir simular los 3 splitter states (`chat-collapsed`, `chat-narrow`, `50-50`) — pierde fidelidad responsive del shell real
+- ★ **Panel-content con `max-width` fijo** en píxeles (ej. `max-width: 680px`) — debe ser fluido (`width: 100%`) + cards-grid con `auto-fit/minmax` para aprovechar el ancho dictado por el splitter
+- ★ **Tokens HSL inventados o divergentes** de `vitalia/frontend/src/app/globals.css` — el `_shared.css` del story-folder MUST ser espejo de los tokens reales (paleta primario cian #01B2F8, accent púrpura #7B2D91, agent-lisa #00D084, agent-valeria #7B2D91, agent-camila #180D95, gradient mariposa)
+- ★ **ChatValeria simplificado** (textarea suelto sin avatar + dot status + mode pill + composer con adornos 📎🎙️⚡ + Cmd+K hint) — debe portar markup verbatim de `valeria-chat-sample.html`
 
 ## Referencias
 

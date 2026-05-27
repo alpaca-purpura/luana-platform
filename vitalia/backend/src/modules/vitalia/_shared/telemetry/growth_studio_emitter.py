@@ -2,7 +2,7 @@
 
 Rule (03-arch § 3.3 + § 10):
   vitalia_growth_studio_event separates UX funnel events from agentic
-  copilot_trace_event (engine, LLM cost concerns). Fire-forget is ALLOWED
+  engine-level traces (LLM cost concerns). Fire-forget is ALLOWED
   here (unlike audit_log which is mandatory sync pre-response).
 
   7 critical events per 03-arch § 10:
@@ -22,7 +22,7 @@ Usage:
         event_type="create_appointment",
         tenant_id=tenant_id,
         clinic_id=clinic_id,
-        entity_id=appointment_id,
+        entity_id=entity_uuid,
         props={"origin": "walk_in", "duration_minutes": 30},
     )
 """
@@ -38,6 +38,53 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = structlog.get_logger()
+
+# Whitelist of known event names for audit / arch-fitness verification.
+# DO NOT inline PHI in event names. Values are snake_case identifiers only.
+#
+# F2-S1 core events (7 original):
+#   create_appointment, status_changed, appointment_detail_read,
+#   charge_completed, fiscal_emitted, notification_sent, reminder_sent
+#
+# F2-S7 lisa_marca_* events (13 new — per 03-arch § 10.2):
+#   lisa_marca_viewed, lisa_marca_subsubtab_changed,
+#   lisa_marca_identity_saved, lisa_marca_visuals_saved,
+#   lisa_marca_personality_saved, lisa_marca_contact_saved,
+#   lisa_marca_voice_warning_shown, lisa_marca_voice_warning_overridden,
+#   lisa_marca_logo_uploaded, lisa_marca_logo_oversized,
+#   lisa_marca_extract_website_clicked, lisa_marca_team_preview_clicked,
+#   lisa_marca_clinic_config_edit_clicked,
+#   lisa_marca_autosave_failed, lisa_marca_trust_signal_added
+#
+# Arch test `test_growth_studio_event_no_phi.py` validates this constant.
+_KNOWN_EVENT_NAMES: frozenset[str] = frozenset(
+    {
+        # F2-S1 core scheduling events
+        "create_appointment",
+        "status_changed",
+        "appointment_detail_read",
+        "charge_completed",
+        "fiscal_emitted",
+        "notification_sent",
+        "reminder_sent",
+        # F2-S7 lisa_marca_* brand config events
+        "lisa_marca_viewed",
+        "lisa_marca_subsubtab_changed",
+        "lisa_marca_identity_saved",
+        "lisa_marca_visuals_saved",
+        "lisa_marca_personality_saved",
+        "lisa_marca_contact_saved",
+        "lisa_marca_voice_warning_shown",
+        "lisa_marca_voice_warning_overridden",
+        "lisa_marca_logo_uploaded",
+        "lisa_marca_logo_oversized",
+        "lisa_marca_extract_website_clicked",
+        "lisa_marca_team_preview_clicked",
+        "lisa_marca_clinic_config_edit_clicked",
+        "lisa_marca_autosave_failed",
+        "lisa_marca_trust_signal_added",
+    }
+)
 
 
 class GrowthStudioEmitter:
@@ -75,7 +122,7 @@ class GrowthStudioEmitter:
                 Max 64 chars. Must NOT contain PHI values.
             tenant_id: Root tenant UUID.
             clinic_id: Clinic UUID (optional for tenant-level events).
-            entity_id: Primary entity UUID (appointment_id, payment_id, etc.)
+            entity_id: Primary entity UUID (entity_uuid, payment_id, etc.)
                 stored as a prop keyed 'entity_id'. Not stored as FK column.
             user_id: Actor user UUID (optional for system-triggered events).
             props: Additional event metadata. PHI fields auto-stripped.

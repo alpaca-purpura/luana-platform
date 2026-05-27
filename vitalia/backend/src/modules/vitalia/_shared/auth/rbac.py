@@ -1,26 +1,41 @@
-"""PHI RBAC decorator — @require_phi_access.
+"""PHI RBAC decorator — @require_phi_access + brand_owner RBAC dependency.
 
-Enforces role-based access control for PHI endpoints per vitalia HIPAA-lite.
+Enforces role-based access control for PHI and brand-owner endpoints per vitalia HIPAA-lite.
 
-Allowed roles: doctor, nurse, admin_clinic.
-All other roles (marketing, sales, support, etc.) are DENIED.
+PHI allowed roles: doctor, nurse, admin_clinic.
+Brand-owner allowed roles: owner, admin_clinic.
+All other roles are DENIED for their respective surfaces.
 
 Per vitalia/.claude/rules/hipaa-lite.md § Access control (RBAC strict):
   "Roles permitidos PHI: doctor, nurse, admin_clinic.
    Otros (marketing, sales) NUNCA ven PHI."
 
+Per 03-arch.md § 5.2 (F2-S7 vitalia-fase2-lisa-marca):
+  Brand owner endpoints (brand_studio marca_router): owner, admin_clinic only.
+  GET endpoints: broader read allowed (no explicit restriction).
+
 Usage:
+    # PHI endpoints (decorator pattern):
     @require_phi_access(roles=["doctor", "nurse", "admin_clinic"], audit_repo=audit_dep)
     async def get_treatment_plan(
         tenant_id: UUID, clinic_id: UUID, user_id: UUID, user_role: str, ...
     ) -> TreatmentPlan:
         ...
 
-The decorated function MUST accept these keyword args:
+    # Brand-owner endpoints (Depends factory pattern):
+    async def patch_identity(
+        ...,
+        _: str = Depends(require_brand_owner_access()),
+    ) -> BrandIdentityDTO:
+        ...
+
+The PHI decorator MUST accept these keyword args on the decorated function:
   - tenant_id: UUID
   - clinic_id: UUID
   - user_id: UUID
   - user_role: str
+
+require_brand_owner_access() reads X-User-Role header directly.
 
 downstream-regression-na: brand-local RBAC decorator for vitalia PHI endpoints
 """
@@ -33,12 +48,57 @@ from typing import Any
 from uuid import UUID
 
 import structlog
+from fastapi import Header, HTTPException
 
 from src.modules.vitalia._shared.repositories.audit_log_repository import (
     AuditLogEntry,
 )
 
 logger = structlog.get_logger()
+
+# Brand-owner RBAC — brand_studio marca endpoints (F2-S7 vitalia-fase2-lisa-marca)
+ALLOWED_BRAND_OWNER_ROLES: frozenset[str] = frozenset(["owner", "admin_clinic"])
+
+
+def require_brand_owner_access(
+    roles: frozenset[str] = ALLOWED_BRAND_OWNER_ROLES,
+) -> Callable[..., Any]:
+    """FastAPI Depends factory: only owner/admin_clinic can mutate brand config.
+
+    Reads X-User-Role header directly. Raises HTTP 403 with error_code
+    BRAND_OWNER_RBAC_DENIED when role is not in allowed set.
+
+    Per 03-arch.md § 5.2 (F2-S7 vitalia-fase2-lisa-marca).
+    Brand config = owner-level, no PHI — uses this lighter RBAC dep instead
+    of require_phi_access decorator.
+
+    Args:
+        roles: frozenset of allowed role strings. Default: owner, admin_clinic.
+
+    Returns:
+        FastAPI Depends-compatible async dependency function.
+
+    Raises:
+        HTTPException 403: When X-User-Role is not in allowed roles.
+    """
+
+    async def _dep(
+        user_role: str = Header(alias="X-User-Role", default=""),
+    ) -> str:
+        """Validate brand-owner role and return the role string."""
+        if user_role not in roles:
+            logger.warning(
+                "brand_owner_rbac_denied",
+                user_role=user_role,
+                allowed_roles=list(roles),
+            )
+            raise HTTPException(
+                status_code=403,
+                detail={"error_code": "BRAND_OWNER_RBAC_DENIED"},
+            )
+        return user_role
+
+    return _dep
 
 
 class PHIAccessDeniedError(Exception):

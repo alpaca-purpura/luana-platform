@@ -3,7 +3,8 @@
  * F1-S10 vitalia-fase1-empty-states · T-11 vitalia-fase2-valeria-agenda
  *
  * Exposes placeholder components created in T-2 and T-7.
- * T-7 adds 5 agenda molecules + AgendaPlaceholder organismo.
+ * T-7 added 5 agenda molecules + AgendaPlaceholder organismo
+ *   (AgendaPlaceholder removed in F2-S1 07-merge W3 cleanup — agenda shipped static route).
  * T-11 adds agenda TypeScript types + Zod runtime schemas.
  * T-12 adds React Query hooks + Zustand stores + page root + AgendaHeader.
  *
@@ -53,9 +54,6 @@ export type {
 
 // ── Placeholder components (T-2 generic EmptyState wrappers) ──────────────────
 export { PacientesPlaceholder } from "./components/placeholders/PacientesPlaceholder";
-
-// ── Agenda organismo (T-7) ────────────────────────────────────────────────────
-export { AgendaPlaceholder } from "./components/placeholders/AgendaPlaceholder";
 
 // ── Agenda molecules (T-7) ────────────────────────────────────────────────────
 export { AgendaToolbar } from "./components/agenda/AgendaToolbar";

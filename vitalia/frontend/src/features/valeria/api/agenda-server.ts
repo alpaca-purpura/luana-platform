@@ -17,8 +17,15 @@ import { auth } from "@clerk/nextjs/server";
 import type { AgendaGridResponseDTO } from "../types/agenda-schema";
 import type { AgendaView } from "../types/agenda.types";
 
+// SSR runs inside the frontend Docker container: NEXT_PUBLIC_API_URL points to
+// `http://127.0.0.1:8002` (which the host browser can reach) but resolves to the
+// frontend container itself, not the backend. Prefer INTERNAL_API_URL
+// (`http://vitalia_backend_dev:8002` — Docker network) when defined.
+// Mirrors the pattern in vitalia/frontend/src/lib/iam/api.ts.
 const BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8002";
+  process.env.INTERNAL_API_URL ??
+  process.env.NEXT_PUBLIC_API_URL ??
+  "http://localhost:8002";
 
 // ── Empty fallback ─────────────────────────────────────────────────────────────
 

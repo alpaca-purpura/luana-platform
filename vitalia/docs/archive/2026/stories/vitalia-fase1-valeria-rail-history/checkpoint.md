@@ -7,9 +7,13 @@ type: ui-story
 agent_owner: shell
 module: shell-organism
 capability: shell.valeria-sidebar
-state: reviewing                                   # ★ developed→reviewing 2026-05-24 (auditor APPROVED, awaiting /pm-vitalia merge)
-last_modified: 2026-05-24T23:00:00-05:00
-phase_pm: HANDOFF_TO_PM_MERGE
+state: done                                        # ★ reviewing→done 2026-05-24 (/pm-vitalia merge complete)
+last_modified: 2026-05-24T23:30:00-05:00
+phase_pm: MERGED
+merge_artifact: 07-merge.md
+merge_date: 2026-05-24
+merged_to_main: false                              # ⏸ squash-merge wip/vitalia→main pendiente ratificación Chris (action destructive)
+capability_created: vitalia/docs/product/capabilities/shell-organism/valeria-sidebar.yaml
 auditor_iter: 1
 auditor_started_at: 2026-05-24T22:35:00-05:00
 auditor_finished_at: 2026-05-24T23:00:00-05:00

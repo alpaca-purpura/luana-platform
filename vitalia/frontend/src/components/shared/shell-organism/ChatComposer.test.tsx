@@ -288,16 +288,11 @@ describe("ChatComposer", () => {
   // ── kbd hint visual ────────────────────────────────────────────────────────
 
   describe("kbd hint (visual)", () => {
-    it("kbd hint 'Cmd+K enfoca el composer desde cualquier parte del shell.' (Spanish neutro)", () => {
+    // Hint Cmd+K visible removida 2026-05-27 por pedido de Chris (cluttering del shell).
+    // El binding del shortcut sigue activo via useKeyboardShortcuts — solo se quita el affordance visual.
+    it("kbd hint Cmd+K NO es visible debajo del chat (visual cleanup)", () => {
       render(<ChatComposer />);
-      // Look for the paragraph with the kbd hint
-      const hint = screen.getByText(/Cmd/i);
-      expect(hint).toBeInTheDocument();
-      // Check for K key
-      const kKey = screen.getByText("K");
-      expect(kKey).toBeInTheDocument();
-      // Verify the contextual text
-      expect(screen.getByText(/enfoca el composer/i)).toBeInTheDocument();
+      expect(screen.queryByText(/enfoca el composer/i)).not.toBeInTheDocument();
     });
 
     it("renders data-testid='chat-composer' on footer element", () => {

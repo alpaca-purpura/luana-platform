@@ -123,4 +123,4 @@ Initially implemented with `object` type to avoid UUID imports — corrected to 
 
 ## Commit SHA
 
-(Populated post-commit)
+`4253e076` — pushed to `wip/vitalia`

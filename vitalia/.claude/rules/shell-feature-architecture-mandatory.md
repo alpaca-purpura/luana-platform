@@ -31,8 +31,8 @@ Sin esta cita en `01-spec.md` frontmatter (`architecture_pattern: ADR-vitalia-00
 
 Toda story scope MUST cumplir:
 
-1. **Routing**: route group `(shell-organism)/{agent}/{subtab}/page.tsx` con static segment; Server Component default; SSR initial state; PHI nunca en URL/searchParams
-2. **FSD-Lite**: `features/{agent}/components/{subtab}/`, `api/`, `hooks/`, `store/`, `types/` — paths exactos
+1. **Routing**: route group `(shell-organism)/{agent}/{subtab}/page.tsx` con static segment; Server Component default; SSR initial state; PHI nunca en URL/searchParams. **★ v1.1 (2026-05-27):** si la sub-tab agrupa 3+ vistas conceptualmente discretas → MUST usar **N3-static via `SubSubTabsBar`** con routing `[subtab]/[subsubtab]/page.tsx` + entry en `AGENT_SUBSUBTABS` catalog. **NUNCA** Shadcn `Tabs` internas body para sub-secciones — eso es Nivel 4 anti-pattern. Ver ADR-vitalia-004 § 3.1.1.
+2. **FSD-Lite**: `features/{agent}/components/{subtab}/`, `api/`, `hooks/`, `store/`, `types/` — paths exactos. Si sub-tab usa N3-static → sub-sub-tab components viven en `features/{agent}/components/{subtab}/{subsubtab}/` (paths anidados un nivel)
 3. **Client root**: `{Agent}{Subtab}View.tsx` con `"use client"` línea 1 + props hidratación
 4. **Data layer**: React Query para server data + Zustand para UI state (sin mezclar)
 5. **Forms**: RHF + Zod en `types/{subtab}-schema.ts` + autosave debounce 600ms cuando aplique + discriminated unions cuando aplique
@@ -96,6 +96,10 @@ Arch fitness tests (`vitalia/backend/tests/architecture/` + `vitalia/frontend/sr
 
 - `/architect` arranca sin verificar `01-spec.md::architecture_pattern == "ADR-vitalia-004"` (gate violado)
 - `/po-ux` transitions `refining → refined` sin incluir `architecture_pattern` en frontmatter
+- **★ v1.1 (2026-05-27): Shadcn `Tabs` internas (body) usadas para agrupar 3+ sub-secciones de una sub-tab** — Nivel 4 anti-pattern. Solución correcta: SubSubTabsBar (N3-static) en cabecera + routing `[subtab]/[subsubtab]/page.tsx` + entry en `AGENT_SUBSUBTABS`
+- **★ v1.1: Single scroll con headers H2 múltiples cuando hay 3+ vistas conceptualmente discretas** — pierde discoverability. Usar N3-static
+- **★ v1.1: Sub-tab con N3-static cuyo `AGENT_SUBSUBTABS[agent][subtab]` no esté declarado en `shell-routes.ts`** — routing 404 silencioso
+- **★ v1.1: Custom tab bar dentro de `{Agent}{Subtab}View.tsx` que duplique función de SubSubTabsBar** — re-implementación contra convención cementada
 - Sub-tab que usa Redux/Context para data fetch en lugar de React Query
 - Sub-tab que mezcla Zustand con server data (Zustand es UI state ONLY)
 - Repo PHI que no hereda `PhiRepositoryBase` "porque single-clinic tenant"

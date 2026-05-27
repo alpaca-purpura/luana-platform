@@ -135,18 +135,22 @@ if [ -n "${ALL_TEXT_STAGED}" ]; then
 
     # Per spanish-text.md exception: skill SKILL.md / rules/*.md / process docs
     # may quote voseo glosario or example wrong-then-right pairs. Honor magic
-    # comment in any of these forms (R25 flexible regex 2026-05-05):
-    #   # voseo-allowed                     (Python comment, no reason)
-    #   # voseo-allowed: optional reason    (Python comment, with reason)
+    # comment in any of these forms (R25 flexible regex 2026-05-05 + TS fix 2026-05-26):
+    #   # voseo-allowed                     (Python/shell comment, no reason)
+    #   # voseo-allowed: optional reason    (Python/shell comment, with reason)
     #   # voseo-allowed — optional reason   (any unicode separator + reason)
-    #   <!-- voseo-allowed -->              (Markdown, no reason)
-    #   <!-- voseo-allowed: optional -->    (Markdown, with reason inside)
+    #   // voseo-allowed                    (TypeScript/JS comment, no reason)
+    #   // voseo-allowed: optional reason   (TypeScript/JS comment, with reason)
+    #   <!-- voseo-allowed -->              (Markdown/HTML/JSX, no reason)
+    #   <!-- voseo-allowed: optional -->    (Markdown/HTML/JSX, with reason inside)
     #   <!-- voseo-allowed — reason -->     (any unicode separator + reason)
     #
     # Regex strategy: avoid unicode chars in character classes (locale issues
     # with multi-byte chars in POSIX ERE). Use `[^>]*` for MD and end-of-line
-    # tolerance for Py. Both anchored at literal `voseo-allowed`.
-    if grep -qE '(#\s*voseo-allowed([: \t]|$)|<!--\s*voseo-allowed[^>]*-->)' "${FILE}" 2>/dev/null; then
+    # tolerance for Py/TS. Both anchored at literal `voseo-allowed`.
+    # Supports: # voseo-allowed (Python/shell), // voseo-allowed (TypeScript/JS),
+    #           <!-- voseo-allowed --> (HTML/Markdown/JSX)
+    if grep -qE '((#|//)\s*voseo-allowed([: \t]|$)|<!--\s*voseo-allowed[^>]*-->)' "${FILE}" 2>/dev/null; then
       continue
     fi
 
@@ -186,8 +190,9 @@ Common conversions:
 
 Exception: modules/sales_agent/ voice templates (already excluded).
 If false positive, mark file:
-  # voseo-allowed: <reason>           (Python/TS comment)
-  <!-- voseo-allowed: <reason> -->    (Markdown)
+  # voseo-allowed: <reason>           (Python/shell comment)
+  // voseo-allowed: <reason>          (TypeScript/JS comment)
+  <!-- voseo-allowed: <reason> -->    (Markdown/HTML)
 
 NEVER use --no-verify (.claude/rules/git-safety.md prohibits).
 ─────────────────────────────────────────────────────────────

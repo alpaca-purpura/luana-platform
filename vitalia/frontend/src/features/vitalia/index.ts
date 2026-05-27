@@ -35,11 +35,6 @@ export { OnboardingStep2Client } from "./components/onboarding-step-2-client";
 export type { OnboardingStep2ClientProps } from "./components/onboarding-step-2-client";
 export { OnboardingStep3Client } from "./components/onboarding-step-3-client";
 export type { OnboardingStep3ClientProps } from "./components/onboarding-step-3-client";
-export {
-  BrandStudioSectionClient,
-  AUTOSAVE_DEBOUNCE_MS,
-} from "./components/brand-studio-section-client";
-export type { BrandStudioSectionClientProps } from "./components/brand-studio-section-client";
 export { OfferWizardClient } from "./components/offer-wizard-client";
 export type { OfferWizardClientProps } from "./components/offer-wizard-client";
 

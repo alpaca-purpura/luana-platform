@@ -151,20 +151,6 @@ export function ChatComposer({ className }: { className?: string }) {
           Enviar
         </button>
       </div>
-
-      {/* kbd hint — Cmd+K focus (microcopy Spanish neutro § 6)
-       * a11y SC-6: text-foreground/60 gives ≥4.5:1 on white/card bg.
-       * text-muted-foreground (3.4:1 on white) fails wcag2aa at 10px. */}
-      <p className="text-[10px] text-foreground/60 mt-1 px-1">
-        <kbd className="rounded border border-border bg-muted px-1 py-0.5 text-[10px] text-foreground/70">
-          Cmd
-        </kbd>{" "}
-        +{" "}
-        <kbd className="rounded border border-border bg-muted px-1 py-0.5 text-[10px] text-foreground/70">
-          K
-        </kbd>{" "}
-        enfoca el composer desde cualquier parte del shell.
-      </p>
     </footer>
   );
 }
