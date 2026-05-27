@@ -12,7 +12,7 @@ transitioned_at: 2026-05-22T14:30:00Z
 last_session_resume: 2026-05-22T15:30:00Z            # absorción wip/vitalia ← ephemeral worktree
 spawned_by: /pm-vitalia
 parallel_safe: true
-blocked_reason: "Bloqueante de Fase 2 (F2-S1 valeria-agenda + F2-S4 adrian-embudo stage reservado + F2-S6 adrian-propuestas payment plans + F2-S20 config-cuenta plan Luana)"
+blocked_reason: "★ TIER reclassified 2026-05-27 (audit sweep): NO es TIER 0 gating ALL Fase 2 — es TIER 2 (post agendamiento real con stubs MSW). valeria-agenda DONE prueba que Option A stubs es viable para unblock TIER 1 booking flow. Adrian-embudo (stage reservado) + adrian-propuestas (payment plans) son TIER 3 que SÍ requiere TIER 2 real. config-cuenta plan Luana es TIER 7 DEFERRED. SSoT orden: vitalia/docs/product/outcomes/vitalia-fase-2-tier-roadmap.md § TIER 2. Architect spawn deferido hasta TIER 1 (config-onboarding + valeria-pacientes + lisa-landing-public) developed."
 priority: high
 estimated_dev_weeks: 3-4                              # bump 2026-05-22 por multi-gateway scope (MercadoPago + Stripe MVP)
 parent_spec: "vitalia/docs/product/stories/vitalia-ux-discovery/03-arch-be.md § Payment Provider Adapter + EP-8 payment_adapters registry"

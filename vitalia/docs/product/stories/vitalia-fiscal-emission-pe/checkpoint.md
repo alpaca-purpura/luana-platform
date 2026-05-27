@@ -10,7 +10,7 @@ spawned_at: 2026-05-17
 transitioned_at: 2026-05-17
 spawned_by: /pm-vitalia
 parallel_safe: true
-blocked_reason: "Bloqueante de Fase 2 F2-S1 valeria-agenda subform Cobrar saldo (emisión boleta SUNAT-compliant inline). Vitalia tenants PE no pueden operar sin esto."
+blocked_reason: "★ TIER reclassified 2026-05-27 (audit sweep): TIER 2 (post payment-adapter-mvp real). Si MVP NO launch Peru → bajar a TIER 7 DEFERRED hasta Fase 3 PE launch (skip Nubefact integration, otros países usan Stripe/MP invoicing). Si MVP SI Peru → mantener TIER 2 emparejado con payment-adapter (emit boleta inmediata post charge). SSoT orden: vitalia/docs/product/outcomes/vitalia-fase-2-tier-roadmap.md § TIER 2 + § TIER 7. Pre-condition Chris ratify: ¿Peru en MVP launch countries?"
 priority: high
 estimated_dev_weeks: 1-2
 parent_spec: "vitalia/docs/product/stories/vitalia-ux-discovery/01-spec.md §§Capa 2 fiscal toggle Nubefact PE"
