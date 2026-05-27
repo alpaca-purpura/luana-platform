@@ -20,6 +20,7 @@ export default defineConfig({
         "src/features/fidelizacion/store/**",
         "src/features/fidelizacion/types/**",
         "src/features/fidelizacion/copy.ts",
+        "src/features/valeria/lib/**",
         "src/lib/**",
         "src/components/shared/**",
       ],
