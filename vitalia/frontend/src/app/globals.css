@@ -178,7 +178,9 @@
   --vitalia-text-faint-color: hsl(220 9% 65%);
   --vitalia-border-color: hsl(222 18% 93%);
   --vitalia-success-color: hsl(142 76% 36%);
+  --vitalia-warning-color: hsl(33 91% 44%);
   --vitalia-danger-color: hsl(0 73% 50%);
+  --vitalia-muted-status-color: hsl(220 9% 65%);
 
   /* Soft semantic tones (Storybook role-gate demos + future success/danger UIs) */
   --vitalia-success-soft-bg: hsl(142 76% 96%);

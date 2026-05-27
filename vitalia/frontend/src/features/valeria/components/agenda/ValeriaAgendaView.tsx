@@ -25,6 +25,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { AgendaHeader } from "./AgendaHeader";
+import { AgendaCalendar } from "./AgendaCalendar";
 import { useAgendaGrid, agendaKeys } from "../../api/agenda";
 import { useDrawerStore } from "../../store/agenda-store";
 import { useAgendaFilters } from "../../hooks/useAgendaFilters";
@@ -168,18 +169,23 @@ export function ValeriaAgendaView({
           className="relative flex flex-1 overflow-hidden"
           aria-label="Grilla de citas"
         >
-          {/* T-13 will render AgendaPresetFilters + AgendaCalendar here */}
-          {/* T-14 will render AppointmentDrawer here */}
+          {/* AgendaCalendar — dispatches to Day/Week/Month variant (T-13) */}
+          <AgendaCalendar
+            slots={data?.slots ?? []}
+            tenantId={tenantId}
+            isLoading={isLoading && !data}
+            className="flex-1"
+          />
+          {/* Empty-state announcement for screen readers (also tested by T-12 suite) */}
           {data && data.slots.length === 0 && !isLoading && (
-            <div
-              className="flex flex-1 items-center justify-center"
+            <p
+              className="sr-only"
               aria-live="polite"
             >
-              <p className="text-sm text-muted-foreground">
-                Sin citas para mostrar en este período.
-              </p>
-            </div>
+              Sin citas para mostrar en este período.
+            </p>
           )}
+          {/* T-14 will render AppointmentDrawer here */}
         </section>
       )}
     </main>
