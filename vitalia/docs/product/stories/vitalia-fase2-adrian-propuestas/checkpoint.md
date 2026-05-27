@@ -7,6 +7,7 @@ agent_owner: adrian
 module: proposals
 capability: adrian.propuestas
 state: idea
+architecture_pattern: ADR-vitalia-004
 last_modified: 2026-05-22
 ratified_by_chris: false
 parallel_safe: true

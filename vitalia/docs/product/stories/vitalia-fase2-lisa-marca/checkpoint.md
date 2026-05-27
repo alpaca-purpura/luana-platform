@@ -6,9 +6,15 @@ type: ui-story
 agent_owner: lisa
 module: brand_studio
 capability: lisa.marca
-state: idea
-last_modified: 2026-05-22
+state: refining
+architecture_pattern: ADR-vitalia-004
+phase: AWAITING_PO_UX_DRAFT
+last_modified: 2026-05-26
+transitioned_at: 2026-05-26T00:00:00Z
+transitioned_by: /pm-vitalia
 ratified_by_chris: false
+po_ux_iter: 0
+ratified_visual_by_chris: false
 parallel_safe: true
 priority: high
 estimated_dev_days: 3-4

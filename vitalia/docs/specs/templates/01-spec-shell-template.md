@@ -8,8 +8,11 @@
 >
 > **SSoT que esta spec cita:**
 > - `vitalia/docs/architecture/SHELL-DESIGN-CONTRACT.md` (atomic design layers · tokens · stores · routing · a11y · testing)
+> - `vitalia/docs/architecture/ADR-vitalia-004-shell-feature-architecture.md` ★ **MANDATORY** — patrón transversal de 9 secciones (route group · FSD-Lite · Server-First · React Query/Zustand · RHF/Zod · DDD `PhiRepositoryBase` · migrations idempotent · `growth_studio_event` · tests 4 capas)
 > - `vitalia/docs/product/stories/vitalia-shell-organism/mockups/dual-mode-shell.html` (mockup visual ratificado)
 > - `vitalia/docs/product/stories/vitalia-shell-organism/00-session-baseline.md` (17 decisiones cementadas)
+>
+> **★ Citación obligatoria en frontmatter:** `architecture_pattern: ADR-vitalia-004` (sin este campo, `/architect` REFUSE arrancar — ver `vitalia/.claude/rules/shell-feature-architecture-mandatory.md`).
 
 ---
 
@@ -18,6 +21,8 @@
 ```yaml
 ---
 story_id: STORY_ID_KEBAB                          # ej. vitalia-fase1-tenant-switcher
+brand: vitalia                                    # ★ MANDATORY multibrand scope
+architecture_pattern: ADR-vitalia-004             # ★ MANDATORY sub-tab stories — sin esto /architect REFUSE
 type: ui-story | service-story | refactor-story   # shell stories son ui-story por default
 phase: fase-1 | fase-2                            # categoría macro del backlog Vitalia
 module: shell-organism | {agent} | {feature}
@@ -26,6 +31,7 @@ capability: CAPABILITY_ID                          # ej. shell.tenant-switcher �
 po_version: 1
 last_modified: ISO_TIMESTAMP
 ratified_by_chris: false
+ratified_visual_by_chris: false                   # ★ gate ADR-vitalia-003 mockup-per-component
 parallel_safe: true | false
 dependencies:                                       # stories que DEBEN estar done antes
   hard: []                                          # bloquean implementación (ej. F1-S1 design-tokens → F1-S2 topbar)
