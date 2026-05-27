@@ -1,0 +1,132 @@
+"""Growth Studio event emitter — brand-local UX/funnel telemetry.
+
+Rule (03-arch § 3.3 + § 10):
+  vitalia_growth_studio_event separates UX funnel events from agentic
+  copilot_trace_event (engine, LLM cost concerns). Fire-forget is ALLOWED
+  here (unlike audit_log which is mandatory sync pre-response).
+
+  7 critical events per 03-arch § 10:
+    create_appointment, status_changed, appointment_detail_read,
+    charge_completed, fiscal_emitted, notification_sent, reminder_sent
+
+PHI safety: props sanitized via sanitize_payload('hipaa_lite') before insert.
+Event names are snake_case identifiers (no PHI values in event_name).
+
+Table: vitalia_growth_studio_event
+  id UUID PK, tenant_id, clinic_id, user_id (nullable),
+  event_name VARCHAR(64), props JSONB DEFAULT '{}', occurred_at TIMESTAMPTZ
+
+Usage:
+    emitter = GrowthStudioEmitter(session=async_session)
+    await emitter.emit_event(
+        event_type="create_appointment",
+        tenant_id=tenant_id,
+        clinic_id=clinic_id,
+        entity_id=appointment_id,
+        props={"origin": "walk_in", "duration_minutes": 30},
+    )
+"""
+
+from __future__ import annotations
+
+import json
+from typing import Any
+from uuid import UUID
+
+import structlog
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
+
+logger = structlog.get_logger()
+
+
+class GrowthStudioEmitter:
+    """Async emitter for Vitalia brand UX/funnel telemetry events.
+
+    Fire-forget: failures are logged at WARNING level but do NOT propagate.
+    PHI sanitization: applied before writing props to DB.
+    """
+
+    def __init__(self, *, session: AsyncSession) -> None:
+        """Initialize GrowthStudioEmitter.
+
+        Args:
+            session: Async SQLAlchemy session (from FastAPI DI).
+        """
+        self._session = session
+
+    async def emit_event(
+        self,
+        *,
+        event_type: str,
+        tenant_id: UUID,
+        clinic_id: UUID | None = None,
+        entity_id: UUID | None = None,
+        user_id: UUID | None = None,
+        props: dict[str, Any] | None = None,
+    ) -> None:
+        """Emit a growth studio event (fire-forget).
+
+        PHI safety: props dict is sanitized with hipaa_lite compliance level
+        before insertion. PHI fields (name, dni, phone, email) are stripped.
+
+        Args:
+            event_type: Snake_case event identifier (e.g. 'create_appointment').
+                Max 64 chars. Must NOT contain PHI values.
+            tenant_id: Root tenant UUID.
+            clinic_id: Clinic UUID (optional for tenant-level events).
+            entity_id: Primary entity UUID (appointment_id, payment_id, etc.)
+                stored as a prop keyed 'entity_id'. Not stored as FK column.
+            user_id: Actor user UUID (optional for system-triggered events).
+            props: Additional event metadata. PHI fields auto-stripped.
+                Example: {"origin": "walk_in", "duration_minutes": 30}
+
+        Note:
+            Failures are swallowed + logged at WARNING. Never propagates.
+        """
+        try:
+            from luana_core_observability.recording.sanitization import (  # noqa: PLC0415
+                sanitize_payload,
+            )
+
+            # Build props dict (PHI-safe)
+            raw_props: dict[str, Any] = dict(props or {})
+            if entity_id is not None:
+                raw_props["entity_id"] = str(entity_id)
+
+            # sanitize_payload strips PHI fields per hipaa_lite profile
+            sanitized = sanitize_payload(raw_props, compliance_level="hipaa_lite")
+
+            await self._session.execute(
+                text(
+                    """
+                    INSERT INTO vitalia_growth_studio_event
+                        (id, tenant_id, clinic_id, user_id, event_name, props, occurred_at)
+                    VALUES
+                        (gen_random_uuid(), :tenant_id, :clinic_id, :user_id,
+                         :event_name, :props::jsonb, NOW())
+                    """
+                ),
+                {
+                    "tenant_id": str(tenant_id),
+                    "clinic_id": str(clinic_id) if clinic_id else None,
+                    "user_id": str(user_id) if user_id else None,
+                    "event_name": event_type[:64],
+                    "props": json.dumps(sanitized),
+                },
+            )
+
+            logger.debug(
+                "growth_studio_event_emitted",
+                event_type=event_type,
+                tenant_id=str(tenant_id),
+            )
+
+        except Exception as exc:  # noqa: BLE001
+            # Fire-forget: log but never propagate (contrast with audit_log which propagates)
+            logger.warning(
+                "growth_studio_emit_failed",
+                event_type=event_type,
+                tenant_id=str(tenant_id),
+                error=str(exc),
+            )
