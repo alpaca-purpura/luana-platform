@@ -2,7 +2,7 @@
 brand: vitalia
 vertical: "Salud + Bienestar"
 status: shipped
-last_updated: 2026-05-26-F1-S10-done-FASE-1-COMPLETE
+last_updated: 2026-05-27-F2-S1-done-VALERIA-AGENDA-LIVE-shell-feature-pattern-source
 paradigm: shell-organism-agentico-v1                 # ★ 2026-05-22 cementado ★
 shell_organism_status: planning-done-2026-05-22      # ★ design-story cerrada, Fase 1 + Fase 2 backlog generado
 slice_1_status: superseded-by-shell-organism-2026-05-22  # ★ paradigma reemplazado · stories slice-1 archivadas o refactored
@@ -28,7 +28,7 @@ active_stories:
   # vitalia-fase1-empty-states             # F1-S10 · state: done 2026-05-26 (archived) · ver recently_done · ★ CHAIN F1-S0..F1-S10 COMPLETE → FASE 1 SHELL DONE
   # === Fase 2 — migración progresiva (22 stories, state: idea) ===
   # 6 Valeria + Adrián primer valor end-to-end:
-  - vitalia-fase2-valeria-agenda           # F2-S1 · refactor desde slice-1-agenda · service deps: payment + fiscal-pe
+  # vitalia-fase2-valeria-agenda           # F2-S1 · state: done 2026-05-27 (archived) · ★ FIRST FASE 2 STORY SHIPPED · capability valeria.agenda LIVE · 19 tickets · audit iter 3 APPROVED · ADR-vitalia-004 source pattern emerged · Option A stubs+MSW para payment/fiscal service-blockers
   - vitalia-fase2-valeria-pacientes        # F2-S2
   - vitalia-fase2-adrian-inbox             # F2-S3
   - vitalia-fase2-adrian-embudo            # F2-S4 · refactor desde slice-1-pipeline · service deps: payment
