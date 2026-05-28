@@ -140,13 +140,15 @@ Plan de migración del estado actual al modelo de este doc. Estado en tiempo rea
 
 | Fase | Qué logra | Estado |
 |---|---|---|
-| **0 — Doctrina** | Este `lifecycle.md` + resolver incoherencias de skills. No destruye nada | 🟡 EN CURSO (2026-05-28) |
-| **1 — Colapsar modelo** | Matar atomics/outcome/phase/module-alias. cross_check_3+4 HARD | ⏳ pendiente ratificación de ejecución |
-| **2 — Backfill trazabilidad** | Generar scenarios de los ~62 caps desde 01-spec.md archivado. Triage 97 huérfanos. Resolver ~10 caps que reconcile saltea | ⏳ |
-| **3 — Cockpit** | Vista Traza unificada + Salud de Producto + merge ejecutable + autoría scenarios. Sanear README | ⏳ |
-| **4 — Skills** | Alinear pm-vitalia/pm-luana/architect/dev-team/auditor al modelo 4-ejes. Def. de done HARD | ⏳ |
-| **5 — Enforcement** | Gate capabilities en wip/* (o advisory honesto). `live⟹evidencia` HARD. Validators fallan ruidoso | ⏳ |
+| **0 — Doctrina** | Este `lifecycle.md` + resolver incoherencias de skills. No destruye nada | ✅ DONE 2026-05-28 (commit c930a333) |
+| **1 — Colapsar modelo** | Matar atomics/outcome/phase/module-alias. cross_check_3 HARD | ✅ DONE 2026-05-28 (1a bb988b2a + 1b 7ab119c6) |
+| **2 — Backfill trazabilidad** | Generar scenarios de ~55 caps stub desde 01-spec.md archivado. Triage 97 huérfanos. Arreglar **8 caps sin frontmatter YAML** (reconcile los saltea → 64/72) | ⏳ próximo |
+| **3 — Cockpit** | Vista Traza unificada + Salud de Producto + merge ejecutable + autoría scenarios. Sanear README + body atomics table de shell-vitalia + tooltips.ts | ⏳ |
+| **4 — Skills** | Alinear pm-vitalia/pm-luana/architect/dev-team/auditor al modelo 4-ejes. Def. de done HARD. Quitar "outcome nuevo" del menú pm-vitalia | ⏳ |
+| **5 — Enforcement** | Gate capabilities en wip/* (o advisory honesto). `live⟹evidencia` HARD. **Resolver 6 drifts cc4 PHI access → flipear cc4 a HARD vitalia.** Validators fallan ruidoso ante refs no resueltas | ⏳ |
 | **6 — Manual diario** | Doc operativo 1-página (cockpit vs Claude Code) | ⏳ (este doc § 7 es el borrador) |
+
+**Estado post-Fase 1 (2026-05-28):** atomics MUERTO (header en 1120 archivos + campo en 72 caps + scripts + cockpit). outcome+phase ELIMINADOS. Status honesto: 55 stub / 7 declared-live / 1 verified-live / 1 partial (era "verde por vacío"). 45 tests scripts + 66 tests cockpit GREEN.
 
 ---
 
@@ -157,8 +159,10 @@ Plan de migración del estado actual al modelo de este doc. Estado en tiempo rea
 | 1 | WIP caps `≤2` en pm-vitalia vs `≤1` hard rule | Corregido a ≤1 | ✅ Fase 0 |
 | 2 | nicolify "fuente prior-art principal ~80% prod" (es snapshot frozen) | Corregido: vitalia/comunify live, nicolify archivo | ✅ Fase 0 |
 | 3 | Conteo cap stale "16 caps" (son 72) | Corregido | ✅ Fase 0 |
-| 4 | outcome "reemplazado" vs "canónico" | Release único (decisión #2) | ⏳ Fase 1 (borrado físico) |
+| 4 | outcome "reemplazado" vs "canónico" | Release único (decisión #2) | ✅ Fase 1 (6 outcomes borrados + maps_legacy_* quitados) |
 | 5 | F2.yaml referencia stories ausentes (valeria-agenda, lisa-marca) | Reconciliar | ⏳ Fase 2 |
+| 12 | 8 caps sin frontmatter YAML (reconcile saltea → 64/72 cargados) | Backfill frontmatter | ⏳ Fase 2 |
+| 13 | cc4 (PHI access) tiene 6 drifts → no se pudo flipear a HARD aún | Resolver drifts → flip HARD | ⏳ Fase 5 |
 | 6 | Hooks: docs dicen "Section 14", real es Section 16 | Actualizar refs en docs | ⏳ Fase 4 |
 | 7 | `/functionality` tab citado pero es Cap Drawer | Actualizar MEMORY + reglas | ⏳ Fase 3 |
 | 8 | README cockpit stale (14 rutas/4 vistas/6 tests) → real 19/6/53 | Sanear README | ⏳ Fase 3 |
