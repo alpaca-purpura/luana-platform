@@ -9,6 +9,31 @@ package_version: vitalia-backend@0.1.0
 package_path: vitalia/backend/src/main.py
 license: proprietary
 
+# v3 cement 2026-05-27 · 4 dimensiones + dev_preview (ADR-vitalia-005)
+tech_module: observability
+agent_owner: infra
+functional_area: infra.observability
+user_visible: false
+nature: feature
+
+user_facing_name: "Endpoint de health check"
+user_facing_description: >
+  Endpoint GET /health que reporta el estado de la API y sus dependencias
+  (base de datos, Qdrant, Redis). Consumido por las sondas de liveness y
+  readiness de Kubernetes, y por el script de smoke post-deploy para
+  verificar que el servicio levantó correctamente.
+
+dev_preview:
+  route: null
+  how_to_navigate: "BE-only · curl http://localhost:8002/api/health → {status: ok}"
+  main_component: null
+  api_endpoints:
+    - "GET /api/health"
+  e2e_test: null
+  fixtures_required: []
+  storybook_url: null
+  loom_demo: null
+
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-auth-base-functional   # v2 cement · mirror of story_introduced
 created_date: 2026-05-18   # v2 cement · mirror of date_introduced

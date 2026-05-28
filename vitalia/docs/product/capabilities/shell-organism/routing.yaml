@@ -22,6 +22,23 @@ related_capabilities:
 depends_on_engine:
   - luana-core-iam (GET /me/tenants via auth_router mount)
 
+# v3 cement 2026-05-27 · SUPERSEDED por ADR-vitalia-005 (merged en shell-vitalia)
+superseded_by: shell-vitalia
+tech_module: shell-organism
+agent_owner: valeria
+functional_area: valeria.shell
+user_visible: false
+nature: feature
+dev_preview:
+  route: null
+  how_to_navigate: "Ver shell-organism/shell-vitalia.yaml · este cap fue absorbido en el merge ADR-vitalia-005."
+  main_component: null
+  api_endpoints: []
+  e2e_test: null
+  fixtures_required: []
+  storybook_url: null
+  loom_demo: null
+
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-fase1-routing-shell   # v2 cement · mirror of story_introduced
 created_date: 2026-05-26   # v2 cement · mirror of date_introduced

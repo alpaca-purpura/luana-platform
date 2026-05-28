@@ -9,6 +9,30 @@ package_version: 0.2.0
 package_path: vitalia/backend/tests/agentic_evals/{sales_agent,copilot}/{goldens,personas,wizard_goldens,wizard_personas}
 license: proprietary
 
+# v3 cement 2026-05-27 · 4 dimensiones + dev_preview (ADR-vitalia-005)
+tech_module: agentic
+agent_owner: infra
+functional_area: infra.agentic-engine
+user_visible: false
+nature: scaffold
+
+user_facing_name: "Eval goldens · slice 1"
+user_facing_description: >
+  Conjunto de 16 conversaciones golden (12 de Adrián + 4 del wizard de Valeria)
+  junto a 16 personas YAML para evaluar la calidad de los agentes Vitalia.
+  Incluye runners pass^k y un grader de fidelidad de voz. Base del pipeline
+  de evaluación continua de agentes.
+
+dev_preview:
+  route: null
+  how_to_navigate: "Infra scaffolding · no navegable directamente"
+  main_component: null
+  api_endpoints: []
+  e2e_test: null
+  fixtures_required: []
+  storybook_url: null
+  loom_demo: null
+
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-copilot-tools-impl   # v2 cement · mirror of story_introduced
 created_date: 2026-05-18   # v2 cement · mirror of date_introduced

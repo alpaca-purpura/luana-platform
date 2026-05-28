@@ -8,6 +8,32 @@ story_introduced: vitalia-fase1-design-tokens-theme
 package_version: 0.1.0
 package_path: vitalia/frontend
 license: proprietary
+
+# v3 cement 2026-05-27 · 4 dimensiones + dev_preview (ADR-vitalia-005)
+tech_module: platform
+agent_owner: infra
+functional_area: infra.platform
+user_visible: false
+nature: extension-point
+
+user_facing_name: "Tema dark/light de design tokens"
+user_facing_description: >
+  Variantes dark y light del sistema de tokens aplicadas mediante CSS variables
+  y controladas por next-themes con persistencia en localStorage. Incluye el
+  componente ThemeToggle (botón ghost Shadcn con iconos Lucide Moon/Sun y ARIA
+  dinámico en español). Habilita el cambio de tema sin parpadeo (FOUC) en toda
+  la aplicación post-login.
+
+dev_preview:
+  route: null
+  how_to_navigate: "Infra scaffolding · ver preview en http://localhost:3002/test-stack/design-tokens-theme"
+  main_component: null
+  api_endpoints: []
+  e2e_test: "vitalia/frontend/e2e/regression/design-tokens-theme/theme-toggle-interaction.smoke.spec.ts"
+  fixtures_required: []
+  storybook_url: null
+  loom_demo: null
+
 related_capabilities:
   - vitalia-shell-foundation-shadcn-tailwind-v4
   - vitalia-design-tokens-foundation

@@ -12,6 +12,7 @@ import type {
   Release,
   Capability,
   ChrisInput,
+  SystemMap,
   StoryState,
   CapChangeType,
   RefType,
@@ -210,8 +211,10 @@ export async function putFile(relPath: string, content: string): Promise<void> {
   });
 }
 
-export async function openInEditor(absOrRelPath: string): Promise<void> {
-  await request('/api/open', {
+export async function openInEditor(
+  absOrRelPath: string
+): Promise<{ ok: true; editor?: string }> {
+  return await request<{ ok: true; editor?: string }>('/api/open', {
     method: 'POST',
     body: JSON.stringify({ path: absOrRelPath }),
   });
@@ -326,6 +329,17 @@ export async function listLearnings(brand: string): Promise<LearningEntry[]> {
     `/api/learnings?brand=${encodeURIComponent(brand)}`
   );
   return data.learnings;
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// System Map
+// ────────────────────────────────────────────────────────────────────────────
+
+export async function getSystemMap(brand: string): Promise<SystemMap> {
+  const data = await request<{ system_map: SystemMap; path: string }>(
+    `/api/system-map?brand=${encodeURIComponent(brand)}`
+  );
+  return { ...data.system_map, _path: data.path };
 }
 
 // Re-export type for convenience

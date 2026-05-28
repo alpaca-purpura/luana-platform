@@ -7,6 +7,31 @@ story_introduced: vitalia-adopt-luana-core-iam
 package_version: 0.1.0
 package_path: vitalia/backend/src/modules/vitalia/clinics/api/decorators.py
 license: MIT
+
+# v3 cement 2026-05-27 · 4 dimensiones + dev_preview (ADR-vitalia-005)
+tech_module: clinics
+agent_owner: config
+functional_area: config.compliance
+user_visible: false
+nature: extension-point
+
+user_facing_name: "Decorator @require_phi_access dual filter"
+user_facing_description: >
+  Componente técnico que protege de forma automática todo endpoint que acceda a
+  datos sensibles del paciente. Verifica que la consulta incluya tanto el tenant
+  como la clínica correspondiente, y que el rol del usuario tenga permiso para
+  ver PHI. Si alguno de estos filtros falta, bloquea la solicitud con error.
+
+dev_preview:
+  route: null
+  how_to_navigate: "BE-only · ver via tests + logs de error PHIAccessDeniedError o MissingClinicFilterError."
+  main_component: null
+  api_endpoints: []
+  e2e_test: null
+  fixtures_required: []
+  storybook_url: null
+  loom_demo: null
+
 summary: |
   HIPAA-lite enforcement decorator `@require_clinic_access(clinic_id_from=...)`
   que verifica el user autenticado tiene acceso al clinic_id solicitado. Aplica

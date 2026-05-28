@@ -9,6 +9,31 @@ package_version: 0.1.0
 package_path: vitalia/frontend/src/app
 license: proprietary
 
+# v3 cement 2026-05-27 · 4 dimensiones + dev_preview (ADR-vitalia-005)
+tech_module: platform
+agent_owner: infra
+functional_area: infra.platform
+user_visible: false
+nature: extension-point
+
+user_facing_name: "Foundation de design tokens"
+user_facing_description: >
+  Catálogo cementado de tokens de diseño Vitalia definidos como CSS variables HSL
+  en globals.css: cinco colores de marca (cian, púrpura, amarillo, azul marino,
+  verde lima), nueve neutrales, cuatro semánticos (success, warning, danger, info),
+  cuatro de forma y tres gradientes. Fuente de verdad que garantiza cero literales
+  hex/hsl en archivos TSX. Consumido por Tailwind v4 y clases utilitarias vt-*.
+
+dev_preview:
+  route: null
+  how_to_navigate: "BE-only · ver via arch test vitalia/frontend/src/__tests__/architecture/test_no_hardcoded_colors.test.ts"
+  main_component: null
+  api_endpoints: []
+  e2e_test: null
+  fixtures_required: []
+  storybook_url: null
+  loom_demo: null
+
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-slice-1-infra-cross-cutting   # v2 cement · mirror of story_introduced
 created_date: 2026-05-18   # v2 cement · mirror of date_introduced

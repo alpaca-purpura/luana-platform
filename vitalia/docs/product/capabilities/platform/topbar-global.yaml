@@ -8,6 +8,31 @@ story_introduced: vitalia-fase1-topbar-global
 package_version: 0.1.0
 package_path: vitalia/frontend
 license: proprietary
+
+# v3 cement 2026-05-27 · 4 dimensiones + dev_preview (ADR-vitalia-005)
+tech_module: platform
+agent_owner: infra
+functional_area: infra.platform
+user_visible: true
+nature: feature
+
+user_facing_name: "TopBar global con logo, theme y tenant"
+user_facing_description: >
+  Barra superior de 48 px persistente en todas las páginas post-login. Contiene
+  el LogoMark de Vitalia (libélula + wordmark con swap dark/light sin JavaScript),
+  el botón de cambio de tema (ThemeToggle) y el slot del TenantSwitcher. Incluye
+  skip link de accesibilidad y es responsive: en móvil muestra solo la libélula.
+
+dev_preview:
+  route: null
+  how_to_navigate: "Visible en todas las páginas post-login en la barra superior."
+  main_component: "vitalia/frontend/src/components/shared/shell-organism/TopBarGlobal.tsx"
+  api_endpoints: []
+  e2e_test: "vitalia/frontend/e2e/regression/topbar-global/topbar-interaction.smoke.spec.ts"
+  fixtures_required: []
+  storybook_url: null
+  loom_demo: null
+
 related_capabilities:
   - vitalia-shell-foundation-shadcn-tailwind-v4
   - vitalia-design-tokens-theme

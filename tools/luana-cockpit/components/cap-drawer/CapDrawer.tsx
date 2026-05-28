@@ -123,8 +123,112 @@ export function CapDrawer() {
                   <dd className="text-[11px]">{cap.architecture_pattern}</dd>
                 </>
               )}
+              {cap.agent_owner && (
+                <>
+                  <dt className="text-[var(--color-muted)]">Agent owner</dt>
+                  <dd>
+                    <Pill className="bg-[var(--color-panel)] border border-[var(--color-border)]">
+                      {cap.agent_owner}
+                    </Pill>
+                  </dd>
+                </>
+              )}
+              {cap.functional_area && (
+                <>
+                  <dt className="text-[var(--color-muted)]">Functional area</dt>
+                  <dd className="flex items-center gap-1">
+                    {(() => {
+                      const parts = cap.functional_area.split('.');
+                      if (parts.length === 2) {
+                        return (
+                          <>
+                            <Pill className="bg-[var(--color-panel)] border border-[var(--color-border)] text-[10px]">{parts[0]}</Pill>
+                            <Pill className="bg-[var(--color-panel)] border border-[var(--color-border)] text-[10px] opacity-75">{parts[1]}</Pill>
+                          </>
+                        );
+                      }
+                      return <span className="font-mono text-[11px]">{cap.functional_area}</span>;
+                    })()}
+                  </dd>
+                </>
+              )}
+              {cap.nature && (
+                <>
+                  <dt className="text-[var(--color-muted)]">Naturaleza</dt>
+                  <dd className="text-[11px]">{cap.nature}</dd>
+                </>
+              )}
+              <dt className="text-[var(--color-muted)]">User visible</dt>
+              <dd className="text-[11px]">{cap.user_visible !== false ? 'Sí' : 'No (infra)'}</dd>
             </dl>
           </Card>
+
+          {/* v3 · user facing + dev_preview */}
+          {(cap.user_facing_name || cap.user_facing_description || cap.dev_preview) && (
+            <Card>
+              <h3 className="text-sm font-semibold mb-2">📍 Cómo verlo</h3>
+              {cap.user_facing_name && (
+                <div className="text-sm font-medium mb-1">{cap.user_facing_name}</div>
+              )}
+              {cap.user_facing_description && (
+                <p className="text-xs text-[var(--color-muted)] mb-3 leading-relaxed">
+                  {cap.user_facing_description}
+                </p>
+              )}
+              {cap.dev_preview && (
+                <dl className="grid grid-cols-[120px_1fr] gap-x-3 gap-y-1.5 text-xs">
+                  {cap.dev_preview.route && (
+                    <>
+                      <dt className="text-[var(--color-muted)]">Ruta</dt>
+                      <dd className="font-mono text-[11px]">{cap.dev_preview.route}</dd>
+                    </>
+                  )}
+                  {cap.dev_preview.how_to_navigate && (
+                    <>
+                      <dt className="text-[var(--color-muted)]">Cómo llegar</dt>
+                      <dd className="text-[11px] leading-relaxed">{cap.dev_preview.how_to_navigate}</dd>
+                    </>
+                  )}
+                  {cap.dev_preview.main_component && (
+                    <>
+                      <dt className="text-[var(--color-muted)]">Componente</dt>
+                      <dd className="font-mono text-[10px] break-all">{cap.dev_preview.main_component}</dd>
+                    </>
+                  )}
+                  {cap.dev_preview.api_endpoints && cap.dev_preview.api_endpoints.length > 0 && (
+                    <>
+                      <dt className="text-[var(--color-muted)]">Endpoints</dt>
+                      <dd>
+                        <ul className="space-y-0.5">
+                          {cap.dev_preview.api_endpoints.map((ep, i) => (
+                            <li key={i} className="font-mono text-[10px]">{ep}</li>
+                          ))}
+                        </ul>
+                      </dd>
+                    </>
+                  )}
+                  {cap.dev_preview.e2e_test && (
+                    <>
+                      <dt className="text-[var(--color-muted)]">Test E2E</dt>
+                      <dd className="font-mono text-[10px] break-all">{cap.dev_preview.e2e_test}</dd>
+                    </>
+                  )}
+                  {cap.dev_preview.fixtures_required && cap.dev_preview.fixtures_required.length > 0 && (
+                    <>
+                      <dt className="text-[var(--color-muted)]">Fixtures</dt>
+                      <dd className="text-[11px]">{cap.dev_preview.fixtures_required.join(', ')}</dd>
+                    </>
+                  )}
+                </dl>
+              )}
+              {cap.superseded_by && (
+                <div className="mt-3 text-[11px] text-amber-400 bg-amber-950/30 px-2 py-1 rounded border border-amber-700">
+                  Esta capability fue mergeada a <strong>{cap.superseded_by}</strong>.
+                  Ver ese cap para la visión consolidada.
+                </div>
+              )}
+            </Card>
+          )}
 
           {/* Atomics */}
           <section>

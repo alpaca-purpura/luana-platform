@@ -9,6 +9,32 @@ package_version: 0.1.0
 package_path: vitalia/backend/src/modules/vitalia/compliance
 license: proprietary
 
+# v3 cement 2026-05-27 · 4 dimensiones + dev_preview (ADR-vitalia-005)
+tech_module: compliance
+agent_owner: config
+functional_area: config.compliance
+user_visible: true
+nature: feature
+
+user_facing_name: "Stack defensivo HIPAA-lite"
+user_facing_description: >
+  Conjunto de capas defensivas arquitectónicas que protegen los datos sensibles del
+  paciente en toda la plataforma. Incluye doble filtro tenant y clínica en consultas
+  PHI, escritura sincrónica del audit log antes de cada respuesta, decorador RBAC
+  que bloquea roles no autorizados, guard de canal que impide enviar PHI por
+  WhatsApp no encriptado, y cifrado en base de datos vía pgcrypto.
+
+dev_preview:
+  route: "/configurar/compliance"
+  how_to_navigate: "Login como admin_clinic → menú Configurar → Compliance · BE-only para la mayoría de capas; la UI muestra estado de compliance."
+  main_component: null
+  api_endpoints:
+    - "GET /api/v1/vitalia/medical-compliance/events"
+  e2e_test: null
+  fixtures_required: []
+  storybook_url: null
+  loom_demo: null
+
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-slice-1-infra-cross-cutting   # v2 cement · mirror of story_introduced
 created_date: 2026-05-18   # v2 cement · mirror of date_introduced

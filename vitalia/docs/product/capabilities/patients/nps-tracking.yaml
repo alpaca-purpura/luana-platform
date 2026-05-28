@@ -9,6 +9,33 @@ package_version: 0.1.0
 package_path: vitalia/backend/src/modules/vitalia/fidelizacion/{domain/entities/nps_response.py,application/services/nps_service.py,api/nps_endpoints.py,infrastructure/{models,repositories}/nps_response_*.py}
 license: proprietary
 
+# v3 cement 2026-05-27 · 4 dimensiones + dev_preview (ADR-vitalia-005)
+tech_module: patients
+agent_owner: camila
+functional_area: camila.reputacion
+user_visible: true
+nature: feature
+
+user_facing_name: "Camila · seguimiento de NPS post-tratamiento"
+user_facing_description: >
+  Sistema de Net Promoter Score que registra la satisfacción del paciente
+  después de cada tratamiento. El comentario libre del paciente se almacena
+  cifrado en la base de datos (pgcrypto). Los resúmenes agregados alimentan
+  el análisis de Lucas (patrón NPS) y las decisiones de reactivación de
+  Adrián, sin exponer datos individuales de los pacientes.
+
+dev_preview:
+  route: "/camila/nps"
+  how_to_navigate: "Login → ribbon clic en avatar Camila → sub-tab NPS para ver el resumen de puntuaciones y distribución por banda."
+  main_component: null
+  api_endpoints:
+    - "POST /api/v1/fidelizacion/nps"
+    - "GET /api/v1/fidelizacion/nps/summary"
+  e2e_test: null
+  fixtures_required: ["3-clinic-fixture-latam"]
+  storybook_url: null
+  loom_demo: null
+
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-slice-1-fidelizacion   # v2 cement · mirror of story_introduced
 created_date: 2026-05-20   # v2 cement · mirror of date_introduced

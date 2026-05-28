@@ -1,10 +1,11 @@
-# Capability Protocol — Story ↔ Capability Doctrine (v2 cement 2026-05-27)
+# Capability Protocol — Story ↔ Capability Doctrine (v3 cement 2026-05-27)
 
-**Cement-date:** 2026-05-27.
-**Origen:** plan `/home/chalreme/.claude/plans/ok-lo-apruebo-realiza-cheeky-harbor.md` § Phase 1.1.A.
-**SSoT capability YAML schema v2.**
+**Cement-date v3:** 2026-05-27 (extiende v2 misma fecha · Sec 7-9 v3 son aditivas).
+**Origen v2:** plan `/home/chalreme/.claude/plans/ok-lo-apruebo-realiza-cheeky-harbor.md` § Phase 1.1.A.
+**Origen v3:** sesión `/pm-vitalia` 2026-05-27 — ADR-vitalia-005 (4 dimensiones + dev_preview + areas/).
+**SSoT capability YAML schema v3.**
 
-> Doctrina cementada: **Story** es transitoria (idea→done→archive), **Capability** es permanente (append-only ledger). Cada story declara `cap_target` + `cap_change_type` para mantener trazabilidad qué tocó qué.
+> Doctrina cementada: **Story** es transitoria (idea→done→archive), **Capability** es permanente (append-only ledger). Cada story declara `cap_target` + `cap_change_type` para mantener trazabilidad qué tocó qué. **v3 añade:** cada cap declara 4 dimensiones (`tech_module` + `agent_owner` + `functional_area` + `user_visible`) + bloque `dev_preview` para que el producto sea navegable en lenguaje humano.
 
 ---
 
@@ -183,10 +184,152 @@ Cuando una story pasa `reviewing → done` (Fase F MERGE), `/pm-{brand}` aplica 
 - ❌ Cap nuevo con `parent_cap` declarado pero padre NO tiene este cap en `derives_capabilities[]` → inconsistencia
 - ❌ `cap_change_type: extend` con archivos producidos que crean cap nuevo (incoherencia spec/code)
 - ❌ Borrar atomic existente: NUNCA (deprecation cementada → marca `deprecated_in_story` + sigue en array)
+- ❌ Cap YAML sin `agent_owner` o sin `functional_area` declarado (v3 cement · pre-commit hook bloquea)
+- ❌ Cap `user_visible: true` sin bloque `dev_preview` (v3 cement · pre-commit hook bloquea)
+- ❌ `agent_owner:` con valor fuera del set cerrado vitalia `{lisa, valeria, adrian, lucas, camila, config, infra}` (v3 cement)
+- ❌ `functional_area:` sin pattern `<agent>.<slug-kebab>` (e.g. `valeria_agenda` con underscore → debe ser `valeria.agenda`)
+- ❌ Crear cap nuevo cuando `functional_area` existente la cubre — refining favorece `extend` over `new` (rule anti-duplication-refining)
+- ❌ Renombrar `tech_module:` post-merge (path canónico inmutable · usar `superseded_by:` si hay refactor real)
 
 ---
 
-## Sección 7 · Migración stories legacy → schema v2
+## Sección 7 · Las 4 dimensiones de un cap (v3 cement 2026-05-27)
+
+> Origen: ADR-vitalia-005. Acordado con Chris en sesión `/pm-vitalia` 2026-05-27.
+
+El schema v2 introdujo `change_log[]` + atomics objects. El schema v3 NO modifica esos campos — los preserva — pero **agrega 4 dimensiones de clasificación** que el cockpit usa para agrupar caps en lenguaje humano (vs el bucket "Otros módulos" actual).
+
+### Las 4 dimensiones
+
+| # | Campo YAML | Concepto | Valores válidos |
+|---|---|---|---|
+| 1 | `tech_module:` | dominio técnico (DDD backend · FSD frontend) — path canónico | `scheduling`, `crm`, `brand_studio`, ... (kebab del path real) |
+| 2 | `agent_owner:` | quién es el dueño UI/UX user-facing | `lisa` · `valeria` · `adrian` · `lucas` · `camila` · `config` · `infra` |
+| 3 | `functional_area:` | sub-categoría user-facing **dentro** del agente | `<agent>.<area-kebab>` (ej. `valeria.agenda`, `config.compliance`) |
+| 4 | `user_visible:` | aparece en mapa principal del producto | `true` (default) · `false` (infra cross-cutting) |
+
+**Regla cardinal:** todo cap (nuevo o existente) MUST declarar las 4 dimensiones. Cap sin `agent_owner` o sin `functional_area` válido → pre-commit hook bloquea y refining no avanza.
+
+### Mapeo brand `agent_owner` (vitalia · v1)
+
+| `agent_owner` | Emoji | Subtitle | Functional areas válidas |
+|---|---|---|---|
+| `lisa` | 🏥 | Mi Clínica | `lisa.identidad-marca` · `lisa.servicios` · `lisa.autoridad` · `lisa.equipo` |
+| `valeria` | 🗓 | Mi Día | `valeria.agenda` · `valeria.bookings` · `valeria.shell` |
+| `adrian` | 💼 | Vender | `adrian.embudo` · `adrian.inbox` · `adrian.crm` · `adrian.reactivacion` |
+| `lucas` | 📣 | Marketing | `lucas.atribucion` · `lucas.bowtie` · `lucas.recommendations` · `lucas.referrals` |
+| `camila` | 🌟 | Reputación + cohortes | `camila.nps` · `camila.followup` · `camila.cohorts` |
+| `config` | ⚙ | Configurar | `config.onboarding` · `config.compliance` · `config.auth` · `config.iam` · `config.clinics` · `config.public-landing` · `config.patients-records` · `config.connections` · `config.admin` |
+| `infra` | 🔧 | Infra Vitalia | `infra.copilot` · `infra.observability` · `infra.platform` · `infra.payment` · `infra.agentic-engine` · `infra.sales-agent-engine` · `infra.scaffolding` |
+
+Otras brands declaran su propio mapeo `agent_owner` en su ADR-brand-XXX (lift propuesto via `/pm-luana` post-cement vitalia).
+
+### Backward compatibility
+
+El campo `module:` v2 se conserva como **alias de `tech_module:`** durante 1 release. Pre-commit hook acepta ambos (warning si `module:` solo, error si ninguno). Post-deprecation (2026-Q3) solo `tech_module:` válido.
+
+---
+
+## Sección 8 · `user_visible` + `nature`
+
+### `user_visible: true | false` (default true)
+
+Define si el cap aparece en el **mapa principal** del cockpit (vista user-facing del producto) o solo cuando se activa el toggle "Mostrar infra".
+
+| Cap es… | `user_visible:` | Ejemplos |
+|---|---|---|
+| Funcionalidad terminada que un user puede ver/usar | `true` | `valeria.agenda`, `lisa.identidad-marca`, `adrian.inbox` |
+| Infra cross-cutting que habilita features pero no es navegable | `false` | `infra.observability`, `infra.platform`, `infra.payment` |
+| Scaffolding (tests, fixtures, migrations, workers, ops) | `false` | `infra.scaffolding.playwright-smoke-suite`, `infra.scaffolding.3-clinic-fixture-latam` |
+
+**Regla:** si `user_visible: true` → `dev_preview` block obligatorio (Sección 9).
+
+### `nature: feature | scaffold | extension-point` (default feature)
+
+| Valor | Significado | Ejemplos |
+|---|---|---|
+| `feature` | capacidad user-facing terminada | `valeria.agenda` · `adrian.inbox` |
+| `scaffold` | estructura técnica sin user value directo | migrations · fixtures · test suites · cron workers |
+| `extension-point` | cap que otras caps consumen (raro en brand · usual en core) | `compliance.phi-repository-base` |
+
+Caps `nature: scaffold` siempre exentas de `dev_preview` (no hay "cómo llegar" porque no es navegable).
+
+---
+
+## Sección 9 · `dev_preview` block (obligatorio si `user_visible: true`)
+
+> Propósito: responder en 1 vistazo "¿dónde está esto en la app? ¿qué endpoint pegar? ¿cómo verlo en development?".
+
+```yaml
+user_facing_name: "Agenda semanal de Valeria"
+# Nombre human-readable de la capacidad (no el slug · no el tech_module)
+# Máx 80 chars · Spanish neutro (NO voseo per .claude/rules/spanish-text.md
+# salvo sales_agent voice)
+
+user_facing_description: >
+  La vista calendario con drag-to-reschedule donde Valeria muestra los turnos
+  de la semana. El doctor arrastra un slot vacío para crear una reserva o
+  arrastra un slot ocupado para reagendarlo.
+# 2-5 líneas · Spanish neutro · lenguaje humano sin jerga técnica
+# Lo que un médico clínica entendería leyendo
+
+dev_preview:
+  route: "/valeria/agenda"                # ruta Next.js · null si BE-only
+  how_to_navigate: "Login → ribbon clic en avatar Valeria → sub-tab Agenda"
+  # Pasos verbatim para llegar al cap en una sesión local dev
+
+  main_component: "vitalia/frontend/src/features/scheduling/components/AgendaWeekly.tsx"
+  # Path al componente FE principal · null si BE-only
+
+  api_endpoints:                          # endpoints que el cap consume
+    - "GET /api/v1/scheduling/slots?week={iso}"
+    - "POST /api/v1/scheduling/appointments"
+
+  e2e_test: "vitalia/frontend/e2e/specs/valeria-agenda-create.spec.ts"
+  # Path al test Playwright que cubre el happy path · null si no hay E2E aún
+
+  fixtures_required:                       # fixtures que el cap necesita pre-cargadas
+    - "3-clinic-fixture-latam"
+
+  storybook_url: null                      # opcional · null si no aplica
+  loom_demo: null                          # opcional · link Loom 30s si Chris grabó demo
+```
+
+### Reglas de llenado
+
+- `route:` **null** si cap es BE-only (no hay UI · ej. `infra.payment.mercado-pago-adapter`)
+- `how_to_navigate:` siempre poblado si `route:` existe — Spanish neutro 1-2 oraciones
+- `main_component:` path absoluto desde repo root — null si BE-only
+- `api_endpoints:` lista de strings — vacía `[]` si cap es FE-only sin API
+- `e2e_test:` null si cap no tiene E2E aún (advisory · no bloqueante)
+- `fixtures_required:` vacía `[]` si cap no requiere fixtures
+
+### Cap BE-only ejemplo
+
+```yaml
+agent_owner: infra
+functional_area: infra.payment
+user_visible: false
+nature: feature
+user_facing_name: "Adaptador Mercado Pago para reservas prepagadas"
+user_facing_description: >
+  Integra Mercado Pago para procesar pagos de reservas prepagadas en Vitalia.
+  Genera preference, recibe webhook IPN, marca booking como paid.
+
+dev_preview:
+  route: null
+  how_to_navigate: "BE-only · ver via tests de integración + logs payment_callback"
+  main_component: null
+  api_endpoints:
+    - "POST /api/v1/payments/preference"
+    - "POST /api/v1/payments/webhook/mercado-pago"
+  e2e_test: null
+  fixtures_required: []
+```
+
+---
+
+## Sección 10 · Migración stories legacy → schema v2
 
 Para cada cap YAML actual sin `change_log[]`:
 
@@ -218,14 +361,19 @@ Script: `scripts/migrate_capability_ledger.py --brand {b} [--dry-run]`. Idempote
 
 ---
 
-## Sección 8 · Referencias
+## Sección 11 · Referencias
 
+- `vitalia/docs/architecture/ADR-vitalia-005-capability-model-4-dimensions.md` — ADR brand-local que cementa Sec 7-9 v3
 - `docs/process/release-protocol.md` — entity Release agrupa stories que tocan caps
 - `docs/process/chris-input-protocol.md` — chris-input.md donde Chris ratifica `cap_change_type`
 - `docs/process/cockpit-permissions.md` — qué fields del cap son read-only desde cockpit
-- `.claude/rules/anti-duplication-refining.md` — prior-art scan detect cap existente antes `cap_change_type: new`
+- `.claude/rules/anti-duplication-refining.md` — prior-art scan detect cap existente antes `cap_change_type: new` · favoreciendo `extend` over `new`
 - `.claude/rules/story-closure-gate.md` § Fase F.3 — capability ledger update step
 - `.claude/rules/brand-docs-schema.md` — schema canónico `{brand}/docs/product/capabilities/`
 - `scripts/migrate_capability_ledger.py` — migration script
 - `scripts/reconcile_capabilities.py --validate-ledger` — validation
+- `scripts/generate_capability_index.py` — auto-gen `docs/portfolio/{brand}-capabilities.md` user-facing
 - `tools/luana-cockpit/lib/cap-ledger.ts` — implementación 4 ramas (new/fix/extend/derive)
+- `tools/luana-cockpit/components/map/MapView.tsx` — UI consumer del cap YAML (lee `agent_owner` + `functional_area` + `user_visible`)
+- `vitalia/docs/product/areas/` — 7 markdowns user-facing (1 por agent_owner)
+- `vitalia/docs/product/modules/` — markdowns técnicos paralelos (DDD paths para devs)
