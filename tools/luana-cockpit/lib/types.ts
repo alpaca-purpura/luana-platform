@@ -261,6 +261,12 @@ export interface Capability {
   dev_preview?: DevPreview | null;
   superseded_by?: string | null;
 
+  // v3.2 cement 2026-05-28 — 4 bloques aditivos opcionales
+  access?: CapAccess | null;
+  scenarios?: CapScenario[] | null;
+  business_rules?: CapBusinessRule[] | null;
+  related_capabilities?: CapRelated | null;
+
   /** Body markdown opcional (después del frontmatter) */
   body?: string;
   /** Path absoluto al YAML */
@@ -450,6 +456,110 @@ export interface DataEntityOwnership {
   consumed_by: AgentOwner[];
   phi: boolean;
   description: string;
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// v3.2 cement 2026-05-28 — Code↔cap mapping types
+// ────────────────────────────────────────────────────────────────────────────
+
+export interface CodeIndexReport {
+  generated_at: string;
+  brand: string;
+  /** Map file_path → cap_id (or list if multi-cap) */
+  code_to_cap: Record<string, string | string[]>;
+  /** Reverse map: cap_id → list of file paths */
+  cap_to_files: Record<string, string[]>;
+  /** cap_id → union of atomic IDs declared by associated files */
+  cap_to_atomics: Record<string, string[]>;
+  orphans: string[];
+  shared_files: string[];
+  multi_cap_files: Array<{ path: string; caps: string[] }>;
+  no_header: string[];
+  summary: {
+    total_files_scanned: number;
+    files_with_header: number;
+    files_no_header: number;
+    orphans: number;
+    shared_files: number;
+    multi_cap_files: number;
+    caps_with_files: number;
+  };
+}
+
+export type BidirectionalVerdict = 'CLEAN' | 'SOFT_DRIFT' | 'HARD_FAIL';
+
+export interface CrossCheckResult {
+  total: number;
+  pass: number;
+  drift: number;
+  details: Array<Record<string, unknown>>;
+}
+
+export interface BidirectionalValidationReport {
+  validated_at: string;
+  brand: string;
+  schema_version: string;
+  hard_checks: number[];
+  cross_check_1: CrossCheckResult;
+  cross_check_2: CrossCheckResult;
+  cross_check_3: CrossCheckResult;
+  cross_check_4: CrossCheckResult;
+  summary: {
+    total_caps: number;
+    drift_total: number;
+    drift_in_hard: number;
+    verdict: BidirectionalVerdict;
+  };
+}
+
+// v3.2 cap blocks (access + scenarios + business_rules + related_capabilities)
+
+export interface AccessEntryPoint {
+  path: string;
+  navigation?: string;
+  requires_role?: string[];
+  requires_clinic_scope?: boolean;
+  entry_type?: 'ui' | 'api' | 'webhook' | 'event' | 'cli';
+}
+
+export interface CapAccess {
+  entry_points: AccessEntryPoint[];
+  forbidden_roles?: string[];
+  authentication?: 'required' | 'optional' | 'none';
+}
+
+export interface CapScenario {
+  id: string;
+  name: string;
+  actor: string;
+  status: 'live' | 'wip' | 'deprecated';
+  given: string;
+  when: string;
+  then: string;
+  e2e_test?: string | null;
+  story_spec_ref?: string | null;
+  atomic_ref?: string | null;
+  edge_cases?: string[];
+  added_in_story: string;
+  added_date: string;
+  deprecated_in_story?: string | null;
+  deprecated_date?: string | null;
+}
+
+export interface CapBusinessRule {
+  id: string;
+  rule: string;
+  enforcement: string[];
+  code_ref?: string | null;
+  severity: 'critical' | 'high' | 'medium' | 'low';
+  audit_trail?: boolean;
+}
+
+export interface CapRelated {
+  depends_on?: string[];
+  enables?: string[];
+  similar?: string[];
+  obsoletes?: string[];
 }
 
 export interface SystemMap {

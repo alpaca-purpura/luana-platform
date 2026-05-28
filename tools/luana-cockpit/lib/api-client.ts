@@ -17,6 +17,8 @@ import type {
   CapChangeType,
   RefType,
   ComputedStatusReport,
+  CodeIndexReport,
+  BidirectionalValidationReport,
 } from '@/lib/types';
 
 export class ApiClientError extends Error {
@@ -359,6 +361,34 @@ export async function getCapabilityStatus(
 ): Promise<CapabilityStatusResponse> {
   return await request<CapabilityStatusResponse>(
     `/api/capabilities/status?brand=${encodeURIComponent(brand)}`
+  );
+}
+
+export interface CodeIndexResponse {
+  index: CodeIndexReport | null;
+  path: string;
+  brand: string;
+  hint?: string;
+}
+
+export async function getCodeIndex(brand: string): Promise<CodeIndexResponse> {
+  return await request<CodeIndexResponse>(
+    `/api/capabilities/code-index?brand=${encodeURIComponent(brand)}`
+  );
+}
+
+export interface BidirectionalValidationResponse {
+  validation: BidirectionalValidationReport | null;
+  path: string;
+  brand: string;
+  hint?: string;
+}
+
+export async function getBidirectionalValidation(
+  brand: string
+): Promise<BidirectionalValidationResponse> {
+  return await request<BidirectionalValidationResponse>(
+    `/api/capabilities/bidirectional?brand=${encodeURIComponent(brand)}`
   );
 }
 
