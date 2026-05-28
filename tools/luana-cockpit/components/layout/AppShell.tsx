@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import { type ReactNode } from 'react';
 import { BrandProvider, useBrand } from '@/components/providers/BrandProvider';
 import { DrawerProvider } from '@/components/providers/DrawerProvider';
+import { FileWatchProvider } from '@/components/providers/FileWatchProvider';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { StoryDrawer } from '@/components/story-drawer/StoryDrawer';
@@ -33,20 +34,22 @@ export function AppShell({
 }) {
   return (
     <BrandProvider brands={brands}>
-      <DrawerProvider>
-        <ShellInner>{children}</ShellInner>
-        <Toaster
-          position="bottom-right"
-          toastOptions={{
-            style: {
-              background: 'var(--color-panel2)',
-              color: 'var(--color-text)',
-              border: '1px solid var(--color-border)',
-              fontSize: '12px',
-            },
-          }}
-        />
-      </DrawerProvider>
+      <FileWatchProvider>
+        <DrawerProvider>
+          <ShellInner>{children}</ShellInner>
+          <Toaster
+            position="bottom-right"
+            toastOptions={{
+              style: {
+                background: 'var(--color-panel2)',
+                color: 'var(--color-text)',
+                border: '1px solid var(--color-border)',
+                fontSize: '12px',
+              },
+            }}
+          />
+        </DrawerProvider>
+      </FileWatchProvider>
     </BrandProvider>
   );
 }

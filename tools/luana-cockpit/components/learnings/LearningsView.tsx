@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Pill } from '@/components/ui/Badge';
 import { useBrand } from '@/components/providers/BrandProvider';
+import { useFileWatchEvents } from '@/components/providers/FileWatchProvider';
 import { listLearnings, openInEditor, type LearningEntry } from '@/lib/api-client';
 
 const TYPE_CLASSES: Record<string, string> = {
@@ -37,6 +38,14 @@ export function LearningsView() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Live reload cuando un learning .md cambia
+  useFileWatchEvents((event) => {
+    if (event.brand && event.brand !== brand) return;
+    if (event.docType === 'learning') {
+      load();
+    }
+  });
 
   const filtered = useMemo(() => {
     if (!search) return items;

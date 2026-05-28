@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/Card';
 import { Pill } from '@/components/ui/Badge';
 import { useDrawer } from '@/components/providers/DrawerProvider';
 import { useBrand } from '@/components/providers/BrandProvider';
+import { useFileWatchEvents } from '@/components/providers/FileWatchProvider';
 import { listCapabilities } from '@/lib/api-client';
 import type { Capability } from '@/lib/types';
 
@@ -101,6 +102,14 @@ export function MapView() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Live reload cuando un capability YAML cambia
+  useFileWatchEvents((event) => {
+    if (event.brand && event.brand !== brand) return;
+    if (event.docType === 'capability') {
+      load();
+    }
+  });
 
   const filtered = useMemo(() => {
     return caps.filter((c) => {

@@ -17,6 +17,7 @@ import { ReleaseCard } from './ReleaseCard';
 import { NewReleaseModal } from '@/components/modals/NewReleaseModal';
 import { MergeReleaseModal } from '@/components/modals/MergeReleaseModal';
 import { useBrand } from '@/components/providers/BrandProvider';
+import { useFileWatchEvents } from '@/components/providers/FileWatchProvider';
 import {
   listReleases,
   listStories,
@@ -54,6 +55,14 @@ export function RoadmapView() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Live reload cuando archivos del SSoT cambien
+  useFileWatchEvents((event) => {
+    if (event.brand && event.brand !== brand) return;
+    if (event.docType === 'checkpoint' || event.docType === 'release') {
+      load();
+    }
+  });
 
   async function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;

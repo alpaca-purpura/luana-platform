@@ -17,6 +17,7 @@ import { Select } from '@/components/ui/Select';
 import { Badge } from '@/components/ui/Badge';
 import { BoardColumn } from './BoardColumn';
 import { useBrand } from '@/components/providers/BrandProvider';
+import { useFileWatchEvents } from '@/components/providers/FileWatchProvider';
 import {
   listReleases,
   listStories,
@@ -84,6 +85,14 @@ export function BoardView() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Live reload cuando un checkpoint o release del brand cambia
+  useFileWatchEvents((event) => {
+    if (event.brand && event.brand !== brand) return;
+    if (event.docType === 'checkpoint' || event.docType === 'release') {
+      load();
+    }
+  });
 
   const filtered = useMemo(() => {
     return stories.filter((s) => {
