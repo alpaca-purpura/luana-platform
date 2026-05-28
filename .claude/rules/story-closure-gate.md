@@ -44,7 +44,7 @@ Schema `07-merge.md` 5 secciones + `gherkin_coverage` field en `06-tickets.yaml`
 
 **Update también:** `last_modified` del cap = today.
 
-### Enforce reglas (cement 2026-05-28 · cap verification v3.1)
+### Enforce reglas v3.1 (cement 2026-05-28 · cap verification)
 
 Antes de cerrar el merge commit, verificar que el `change_log` entry de esta story cumpla:
 
@@ -55,9 +55,29 @@ Antes de cerrar el merge commit, verificar que el `change_log` entry de esta sto
 | `fix` | `>= 0` (opcional) | NO requiere atomic nuevo |
 | `derive` | `>= 1` REQUIRED en cap hijo | `parent_cap.derives_capabilities[]` lista hijo |
 
-Enforce point: `scripts/reconcile_capabilities.py --validate-ledger` (extiende validación). Pre-commit hook bloquea HARD en `main/release/*` + WARN en `wip/*` (advisory).
+Enforce point: `scripts/reconcile_capabilities.py --validate-ledger`. Pre-commit hook bloquea HARD en `main/release/*` + WARN en `wip/*` (advisory).
 
-Doc canónico: `docs/process/capability-protocol.md` § Sección 5.
+### Enforce reglas v3.2 (cement 2026-05-28 · bidirectional code↔cap mapping)
+
+**Extiende v3.1 con bloques nuevos:** access + scenarios + business_rules.
+
+| `cap_change_type` | `scenarios[]` (si user_visible: true) | `access` (si user_visible: true) | `business_rules` |
+|---|---|---|---|
+| `new` | `>= 1` REQUIRED (cement 2026-Q3 hard · advisory hasta entonces) | REQUIRED (cement 2026-Q3 hard) | OPTIONAL (advisory hasta 2026-Q4) |
+| `extend` | si cap target tiene scenarios → append opcional | si nueva entry_point → REQUIRED | si nueva business rule → REQUIRED |
+| `fix` | NO requiere cambio | NO requiere cambio | NO requiere cambio |
+| `derive` | hijo hereda + customiza scenarios | hijo declara su access | hijo hereda + override |
+
+**Cross-checks Fase F.3 v3.2:** además de los checks v3.1 anteriores, `/pm-{brand}` MUST verificar:
+
+1. **Scenarios → e2e_test paths:** todos los `scenarios[*].e2e_test` declarados existen en filesystem (cross-check 3)
+2. **Access → roles:** roles declarados en `access.entry_points[*].requires_role` coinciden con `@require_phi_access` decorators del código asociado (cross-check 4)
+3. **Code headers → atomics:** archivos con header `# atomics: <id>` declaran IDs que existen en `cap.atomics[].id` (cross-check 2)
+4. **Atomics verification → headers:** archivos en `cap.atomics[*].verification.*_path` tienen header `# cap:` apuntando al mismo cap (cross-check 1)
+
+Enforce point: `scripts/validate_code_cap_bidirectional.py` (cement 2026-05-28). Pre-push hook HARD bloquea si cross_check_1 o cross_check_3 drift > 0.
+
+Doc canónico: `docs/process/capability-protocol.md` § Sección 11 (v3.2) + § Sección 13 (bidirectional validator).
 
 ## Escape valve — `defer_audit: true`
 
