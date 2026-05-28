@@ -57,6 +57,8 @@ export function StoryDrawer() {
           content: (
             <ArtifactTab
               storyPath={story.path}
+              storyState={story.state}
+              isArchived={story.is_archived ?? false}
               candidates={['01-spec.md']}
               missingMessage="01-spec.md aún no existe. Se crea cuando la story entra en refining via /po-ux o /po."
             />
@@ -68,6 +70,8 @@ export function StoryDrawer() {
           content: (
             <ArtifactTab
               storyPath={story.path}
+              storyState={story.state}
+              isArchived={story.is_archived ?? false}
               candidates={['02-design-ui.md', '02-design-agentic.md']}
               missingMessage="02-design-*.md aún no existe. Se crea cuando la story entra en refining (UI o agéntica)."
             />
@@ -79,8 +83,36 @@ export function StoryDrawer() {
           content: (
             <ArtifactTab
               storyPath={story.path}
+              storyState={story.state}
+              isArchived={story.is_archived ?? false}
               candidates={['03-arch.md']}
               missingMessage="03-arch.md aún no existe. Se crea cuando /architect cierra el ready package."
+            />
+          ),
+        },
+        {
+          id: 'validators',
+          label: '✓ Validators',
+          content: (
+            <ArtifactTab
+              storyPath={story.path}
+              storyState={story.state}
+              isArchived={story.is_archived ?? false}
+              candidates={['04-validators.yaml']}
+              missingMessage="04-validators.yaml aún no existe. Se crea cuando /architect cierra el ready package."
+            />
+          ),
+        },
+        {
+          id: 'tickets',
+          label: '🎟 Tickets',
+          content: (
+            <ArtifactTab
+              storyPath={story.path}
+              storyState={story.state}
+              isArchived={story.is_archived ?? false}
+              candidates={['06-tickets.yaml']}
+              missingMessage="06-tickets.yaml aún no existe. Se crea cuando /architect cierra el ready package."
             />
           ),
         },
@@ -90,6 +122,8 @@ export function StoryDrawer() {
           content: (
             <ArtifactTab
               storyPath={story.path}
+              storyState={story.state}
+              isArchived={story.is_archived ?? false}
               candidates={['06-audit/gherkin-matrix.md']}
               missingMessage="audit aún no se ejecutó. Se genera cuando /auditor cierra Phase D."
             />

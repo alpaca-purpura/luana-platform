@@ -93,7 +93,7 @@ Variables disponibles:
 |---|---|---|
 | `WORKSPACE_ROOT` | autodetect via `git rev-parse --show-toplevel` desde cwd | Si el cockpit corre afuera del repo (ej. instalación standalone apuntando a workspace remoto) |
 | `DEFAULT_BRAND` | `vitalia` | Si trabajás más con otra brand · usuario puede cambiarla en UI persiste en localStorage |
-| `EDITOR_BIN` | `xed` | **Mac: usá `code` · Windows: `code` · Linux Mint: `xed` (default) · otros: tu editor preferido** |
+| `EDITOR_BIN` | fallback chain: `xdg-open,code,xed,gnome-text-editor,nano` | Default: prueba `xdg-open` (delega al editor configurado del desktop), luego `code`, luego `xed`, etc. Override con un solo editor (`EDITOR_BIN=code`) o cadena propia (`EDITOR_BIN=cursor,code,xdg-open`). El editor inline del cockpit cubre 90% de casos · este botón es escape hatch. |
 | `PORT` | `4000` | Si el puerto está ocupado · ej. `PORT=4001 pnpm dev` |
 
 ## Las 4 vistas
