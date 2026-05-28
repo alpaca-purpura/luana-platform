@@ -10,6 +10,34 @@ package_path: vitalia/backend/src/modules/vitalia
 fe_planned_phase2: vitalia-fase2-lisa-compliance
 license: proprietary
 
+# v3 cement 2026-05-27 · 4 dimensiones + dev_preview (ADR-vitalia-005)
+tech_module: compliance
+agent_owner: config
+functional_area: config.compliance
+user_visible: true
+nature: feature
+
+user_facing_name: "Audit log HIPAA-lite"
+user_facing_description: >
+  Registro de auditoría sincrónico e inmutable de todo acceso a datos sensibles del
+  paciente (PHI). Guarda quién realizó la acción, qué recurso tocó, cuándo y desde
+  dónde. También gestiona registros de consentimiento informado firmados digitalmente.
+  El administrador puede ver el log y exportarlo en CSV. Retención mínima de 10 años
+  según regulaciones LatAm.
+
+dev_preview:
+  route: "/configurar/compliance/audit"
+  how_to_navigate: "Login como admin_clinic → menú Configurar → Compliance → sección Audit Log"
+  main_component: "vitalia/frontend/src/app/(dashboard)/medical-compliance/page.tsx"
+  api_endpoints:
+    - "GET /api/v1/vitalia/medical-compliance/events"
+    - "GET /api/v1/vitalia/medical-compliance/export-csv"
+    - "GET /api/v1/vitalia/medical-compliance/consent-records"
+  e2e_test: "vitalia/frontend/e2e/specs/vitalia/compliance-audit-log.smoke.spec.ts"
+  fixtures_required: []
+  storybook_url: null
+  loom_demo: null
+
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: luana-vitalia-bootstrap   # v2 cement · mirror of story_introduced
 created_date: 2026-05-15   # v2 cement · mirror of date_introduced

@@ -9,6 +9,31 @@ package_version: 0.1.0
 package_path: vitalia/backend/src/modules/vitalia
 license: proprietary
 
+# v3 cement 2026-05-27 · 4 dimensiones + dev_preview (ADR-vitalia-005)
+tech_module: platform
+agent_owner: infra
+functional_area: infra.platform
+user_visible: false
+nature: extension-point
+
+user_facing_name: "SDK de extensión vertical médica"
+user_facing_description: >
+  Conjunto de extension points específicos del vertical médico construidos sobre
+  luana-core-extension-sdk: decorators HIPAA, catálogo de roles médicos, hooks
+  de auditoría, y el registro completo de EP-1 a EP-18. Un solo archivo
+  extensions.py monta toda la vertical Vitalia sobre el engine compartido
+  sin replicar lógica en el brand.
+
+dev_preview:
+  route: null
+  how_to_navigate: "BE-only · ver via tests en vitalia/backend/tests/unit/test_extensions_register_all.py"
+  main_component: null
+  api_endpoints: []
+  e2e_test: null
+  fixtures_required: []
+  storybook_url: null
+  loom_demo: null
+
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: luana-vitalia-bootstrap   # v2 cement · mirror of story_introduced
 created_date: 2026-05-15   # v2 cement · mirror of date_introduced

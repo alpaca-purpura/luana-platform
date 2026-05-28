@@ -9,6 +9,30 @@ package_version: vitalia-frontend@0.1.0
 package_path: vitalia/frontend/src/app/(auth)/
 license: proprietary
 
+# v3 cement 2026-05-27 · 4 dimensiones + dev_preview (ADR-vitalia-005)
+tech_module: auth
+agent_owner: config
+functional_area: config.auth
+user_visible: true
+nature: feature
+
+user_facing_name: "Páginas de sign-in y sign-up"
+user_facing_description: >
+  Páginas de inicio de sesión y registro de la clínica construidas con los componentes
+  oficiales de Clerk, adaptados con los tokens de marca de Vitalia. El texto aparece
+  en español neutro latinoamericano. Al ingresar correctamente, el sistema redirige
+  al dashboard principal o al onboarding si es el primer acceso.
+
+dev_preview:
+  route: "/sign-in"
+  how_to_navigate: "Navegar a /sign-in directamente o ser redirigido por el middleware al intentar acceder sin sesión"
+  main_component: "vitalia/frontend/src/app/(auth)/sign-in/page.tsx"
+  api_endpoints: []
+  e2e_test: "vitalia/frontend/e2e/auth/sign-in-form.spec.ts"
+  fixtures_required: []
+  storybook_url: null
+  loom_demo: null
+
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-auth-base-functional   # v2 cement · mirror of story_introduced
 created_date: 2026-05-18   # v2 cement · mirror of date_introduced

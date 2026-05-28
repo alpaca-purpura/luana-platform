@@ -8,6 +8,35 @@ story_introduced: vitalia-fase2-valeria-agenda
 package_version: vitalia-fase2-v1.0.0
 package_path: vitalia/backend/src/modules/vitalia/scheduling/
 license: brand-local
+
+# v3 cement 2026-05-27 · 4 dimensiones + dev_preview (ADR-vitalia-005)
+tech_module: scheduling
+agent_owner: valeria
+functional_area: valeria.agenda
+user_visible: true
+nature: feature
+
+user_facing_name: "Agenda semanal de Valeria"
+user_facing_description: >
+  Vista calendario semanal con celdas de slot coloreadas por estado de pago
+  (pagado, depósito, sin pago, no-show) y por origen (presencial, teléfono,
+  proactivo Adrián, paciente existente). Al hacer clic en un slot se abre un
+  drawer lateral con los datos del paciente enmascarados y el subformulario
+  para cobrar saldo e imprimir comprobante fiscal sin salir del flujo.
+
+dev_preview:
+  route: "/valeria/agenda"
+  how_to_navigate: "Login → ribbon clic en avatar Valeria → sub-tab Agenda."
+  main_component: "vitalia/frontend/src/features/valeria/components/agenda/ValeriaAgendaView.tsx"
+  api_endpoints:
+    - "GET /api/v1/scheduling/appointments?week={iso}"
+    - "POST /api/v1/scheduling/appointments"
+    - "PATCH /api/v1/scheduling/appointments/{id}/status"
+  e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase2-valeria-agenda/agenda-create.spec.ts"
+  fixtures_required: ["3-clinic-fixture-latam"]
+  storybook_url: null
+  loom_demo: null
+
 hipaa_lite_overlay: true
 architecture_pattern: ADR-vitalia-004
 

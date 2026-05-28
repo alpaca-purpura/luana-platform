@@ -9,6 +9,23 @@ package_version: vitalia-frontend@0.1.0
 package_path: vitalia/frontend/src/components/shared/shell-organism/
 license: proprietary
 
+# v3 cement 2026-05-27 · SUPERSEDED por ADR-vitalia-005 (merged en shell-vitalia)
+superseded_by: shell-vitalia
+tech_module: shell-organism
+agent_owner: valeria
+functional_area: valeria.shell
+user_visible: false
+nature: feature
+dev_preview:
+  route: null
+  how_to_navigate: "Ver shell-organism/shell-vitalia.yaml · este cap fue absorbido en el merge ADR-vitalia-005."
+  main_component: null
+  api_endpoints: []
+  e2e_test: null
+  fixtures_required: []
+  storybook_url: null
+  loom_demo: null
+
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-fase1-shell-layout-5050   # v2 cement · mirror of story_introduced
 created_date: 2026-05-23   # v2 cement · mirror of date_introduced

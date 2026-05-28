@@ -9,6 +9,31 @@ package_version: 0.2.0
 package_path: vitalia/backend/src/modules/vitalia/agentic/lucas
 license: proprietary
 
+# v3 cement 2026-05-27 · 4 dimensiones + dev_preview (ADR-vitalia-005)
+tech_module: agentic
+agent_owner: lucas
+functional_area: lucas.recomendaciones
+user_visible: false
+nature: feature
+
+user_facing_name: "Lucas · análisis diario con cron y LangGraph"
+user_facing_description: >
+  Pipeline diario cron-invocado de Lucas que orquesta 3 herramientas
+  (recomendaciones por etapa, matriz de atribución y leaderboard de
+  referidos) en un grafo ReAct de LangGraph con máximo 5 iteraciones
+  por ejecución. El análisis es idempotente por tenant+fecha y respeta
+  el presupuesto de costo configurado en brand.yaml.
+
+dev_preview:
+  route: "/lucas/analisis-diario"
+  how_to_navigate: "BE-only · cron 5 AM tenant-TZ · ver resultados via sub-tab Marketing de Lucas en la UI."
+  main_component: null
+  api_endpoints: []
+  e2e_test: null
+  fixtures_required: []
+  storybook_url: null
+  loom_demo: null
+
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-copilot-tools-impl   # v2 cement · mirror of story_introduced
 created_date: 2026-05-18   # v2 cement · mirror of date_introduced

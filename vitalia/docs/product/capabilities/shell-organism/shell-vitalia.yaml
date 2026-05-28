@@ -1,0 +1,233 @@
+---
+capability_id: vitalia-shell-vitalia
+module: shell-organism
+slug: shell-vitalia
+status: live
+date_introduced: 2026-05-27
+story_introduced: vitalia-shell-organism   # merge consolidado post ADR-vitalia-005
+story_extended:
+  - vitalia-fase1-shell-layout-5050     # F1-S4
+  - vitalia-fase1-valeria-rail-history  # F1-S5
+  - vitalia-fase1-valeria-chat-skeleton # F1-S6
+  - vitalia-fase1-ribbon-6-tabs         # F1-S7
+  - vitalia-fase1-sub-tabs-line2        # F1-S8
+  - vitalia-fase1-routing-shell         # F1-S9
+  - vitalia-fase1-empty-states          # F1-S10
+package_version: vitalia-frontend@0.2.0  # merge target · consolida 7 atomic shell caps
+package_path: vitalia/frontend/src/components/shared/shell-organism/
+license: proprietary
+
+# v3 cement 2026-05-27 · 4 dimensiones + dev_preview (ADR-vitalia-005)
+tech_module: shell-organism
+agent_owner: valeria
+functional_area: valeria.shell
+user_visible: true
+nature: feature
+
+user_facing_name: "Shell visual de Vitalia post-login"
+user_facing_description: >
+  El contenedor visual de la aplicación que el usuario ve al iniciar sesión.
+  A la izquierda, Valeria (conversacional) ocupa la mitad de la pantalla.
+  A la derecha, el panel agéntico contiene los 5 agentes (Lisa, Lucas, Adrián,
+  Valeria y Camila) con sus sub-tabs por agente, el Ribbon de navegación y los
+  estados vacíos de bienvenida de cada módulo. El splitter permite ajustar el
+  espacio entre Valeria y el panel.
+
+dev_preview:
+  route: "/"
+  how_to_navigate: "Login → shell principal · ribbon con 5 agentes visible · Valeria chat a la izquierda · panel contenido a la derecha."
+  main_component: "vitalia/frontend/src/components/shared/shell-organism/AppPanelSlot.tsx"
+  api_endpoints: []
+  e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase1-ribbon-6-tabs/ribbon-nav.spec.ts"
+  fixtures_required: ["3-clinic-fixture-latam"]
+  storybook_url: null
+  loom_demo: null
+
+# Capability ledger v2 (cement 2026-05-27)
+created_in_story: vitalia-shell-organism   # merge consolidado por ADR-vitalia-005
+created_date: 2026-05-27
+last_modified: 2026-05-27
+parent_cap: null
+derives_capabilities: []
+
+# Capability ledger v2 (cement 2026-05-27)
+atomics:
+  - id: shell-layout-5050
+    name: "Layout 50/50 con splitter resizable"
+    added_in_story: vitalia-fase1-shell-layout-5050
+    status: live
+    surface: FE
+  - id: shell-valeria-sidebar
+    name: "Valeria sidebar · rail (60px) + history drawer"
+    added_in_story: vitalia-fase1-valeria-rail-history
+    status: live
+    surface: FE
+  - id: shell-valeria-chat
+    name: "Valeria chat skeleton · skeleton de conversación"
+    added_in_story: vitalia-fase1-valeria-chat-skeleton
+    status: live
+    surface: FE
+  - id: shell-ribbon
+    name: "Ribbon 6 tabs · 5 agentes + Configurar"
+    added_in_story: vitalia-fase1-ribbon-6-tabs
+    status: live
+    surface: FE
+  - id: shell-sub-tabs
+    name: "SubTabsBar línea 2 · sub-tabs por agente"
+    added_in_story: vitalia-fase1-sub-tabs-line2
+    status: live
+    surface: FE
+  - id: shell-routing
+    name: "Routing shell · route groups + proxy auth"
+    added_in_story: vitalia-fase1-routing-shell
+    status: live
+    surface: FE
+  - id: shell-empty-states
+    name: "Empty states · 22 placeholders sub-tab"
+    added_in_story: vitalia-fase1-empty-states
+    status: live
+    surface: FE
+
+# Capability change log v2 (cement 2026-05-27)
+change_log:
+  - story_id: vitalia-fase1-shell-layout-5050
+    date: 2026-05-23
+    type: new
+    summary: "Layout 50/50 con splitter resizable · F1-S4"
+    atomics_added: [shell-layout-5050]
+    atomics_modified: []
+    merge_sha: null
+    status: done
+  - story_id: vitalia-fase1-valeria-rail-history
+    date: 2026-05-24
+    type: extend
+    summary: "Valeria sidebar rail 60px + history drawer · F1-S5"
+    atomics_added: [shell-valeria-sidebar]
+    atomics_modified: []
+    merge_sha: null
+    status: done
+  - story_id: vitalia-fase1-valeria-chat-skeleton
+    date: 2026-05-25
+    type: extend
+    summary: "Valeria chat skeleton con avatar + composer · F1-S6"
+    atomics_added: [shell-valeria-chat]
+    atomics_modified: []
+    merge_sha: null
+    status: done
+  - story_id: vitalia-fase1-ribbon-6-tabs
+    date: 2026-05-25
+    type: extend
+    summary: "Ribbon 6 tabs · WAI-ARIA tablist + agent color borders · F1-S7"
+    atomics_added: [shell-ribbon]
+    atomics_modified: []
+    merge_sha: null
+    status: done
+  - story_id: vitalia-fase1-sub-tabs-line2
+    date: 2026-05-25
+    type: extend
+    summary: "SubTabsBar línea 2 · sub-tabs activos por agente · F1-S8"
+    atomics_added: [shell-sub-tabs]
+    atomics_modified: []
+    merge_sha: null
+    status: done
+  - story_id: vitalia-fase1-routing-shell
+    date: 2026-05-26
+    type: extend
+    summary: "Routing shell · route groups + auth proxy + agent-catalog validators · F1-S9"
+    atomics_added: [shell-routing]
+    atomics_modified: []
+    merge_sha: null
+    status: done
+  - story_id: vitalia-fase1-empty-states
+    date: 2026-05-26
+    type: extend
+    summary: "Empty states · 22 sub-tab placeholders completos · F1-S10 cierra chain F1-S0..F1-S10"
+    atomics_added: [shell-empty-states]
+    atomics_modified: []
+    merge_sha: null
+    status: done
+---
+
+# vitalia-shell-vitalia
+
+Shell visual consolidado de Vitalia post-login (ADR-vitalia-005 merge de 7 caps atómicos F1-S4..F1-S10). Layout 50/50 con Valeria conversacional izquierda + panel agéntico derecha (Ribbon 5 agentes + Configurar · SubTabsBar · empty states 22 sub-tabs). Splitter resizable con 3 estados (chat-collapsed · chat-narrow · 50-50). WAI-ARIA tablist completo.
+
+## Atomics incluidos
+
+| Atomic | Story origen | Surface | Status |
+|---|---|---|---|
+| Layout 50/50 splitter resizable | vitalia-fase1-shell-layout-5050 (F1-S4) | FE | live |
+| Valeria sidebar rail + history | vitalia-fase1-valeria-rail-history (F1-S5) | FE | live |
+| Valeria chat skeleton | vitalia-fase1-valeria-chat-skeleton (F1-S6) | FE | live |
+| Ribbon 6 tabs WAI-ARIA | vitalia-fase1-ribbon-6-tabs (F1-S7) | FE | live |
+| SubTabsBar línea 2 | vitalia-fase1-sub-tabs-line2 (F1-S8) | FE | live |
+| Routing shell route groups | vitalia-fase1-routing-shell (F1-S9) | FE | live |
+| Empty states 22 sub-tabs | vitalia-fase1-empty-states (F1-S10) | FE | live |
+
+## Surface
+
+### Key components (`vitalia/frontend/src/components/shared/shell-organism/`)
+
+- `AppPanelSlot.tsx` — orquestador principal. Grid `grid-rows-[auto_auto_1fr]`. Valeria-side izquierda · contenido-side derecha. Splitter resizable 3 estados.
+- `Ribbon.tsx` + `RibbonTab.tsx` + `ConfigTab.tsx` — Ribbon horizontal con 5 agentes + Configurar. WAI-ARIA tablist completo (roving tabindex, Arrow/Home/End, aria-selected).
+- `SubTabsBar.tsx` — sub-tabs de segunda línea que cambian según agente activo. Colores `bg-agent-{slug}-soft`.
+- `SubSubTabsBar.tsx` — N3-static para sub-tabs con 3+ vistas (ADR-vitalia-004 v1.1).
+- `ValeriaChat.tsx` + `ValeriaRail.tsx` — Valeria side: modo chat (expandido) y modo rail (60px colapsado).
+- `EmptyStatePlaceholder.tsx` — Placeholder 22 sub-tabs con mensajes contextuales por agente.
+
+### Routing
+
+- `vitalia/frontend/src/app/[tenantId]/(shell-organism)/` — route group raíz del shell
+- `vitalia/frontend/src/lib/agent-catalog.ts` — SSoT `AGENT_CATALOG` + `AGENT_RIBBON_ORDER` + `AGENT_SUBTABS` + `AGENT_SUBSUBTABS` + `extractAgentFromPath()`
+- `vitalia/frontend/src/proxy.ts` — proxy auth middleware
+- `vitalia/frontend/src/lib/iam/api.ts` — IAM client-side
+
+### Design tokens
+
+- `bg-agent-lisa-soft` · `bg-agent-lucas-soft` · `bg-agent-adrian-soft` · `bg-agent-valeria-soft` · `bg-agent-camila-soft`
+- Fuente: `vitalia/frontend/src/app/globals.css` + `vitalia/frontend/src/lib/tokens.ts`
+
+## Test coverage paths
+
+```
+unit:
+  - vitalia/frontend/src/lib/agent-catalog.test.ts
+  - vitalia/frontend/src/components/shared/shell-organism/Ribbon.test.tsx
+  - vitalia/frontend/src/components/shared/shell-organism/RibbonTab.test.tsx
+  - vitalia/frontend/src/components/shared/shell-organism/ConfigTab.test.tsx
+  - vitalia/frontend/src/components/shared/shell-organism/SubTabsBar.test.tsx
+  - vitalia/frontend/src/components/shared/shell-organism/ValeriaChat.test.tsx
+  - vitalia/frontend/src/components/shared/shell-organism/AppPanelSlot.test.tsx
+
+e2e:
+  - vitalia/frontend/e2e/regression/vitalia-fase1-ribbon-6-tabs/ribbon-{nav,deeplink,config-nav,keyboard,a11y,visual}.spec.ts
+  - vitalia/frontend/e2e/regression/vitalia-fase1-sub-tabs-line2/sub-tabs-*.spec.ts
+  - vitalia/frontend/e2e/regression/vitalia-fase1-routing-shell/routing-*.spec.ts
+  - vitalia/frontend/e2e/regression/vitalia-fase1-empty-states/empty-states-*.spec.ts
+```
+
+## Mockup canónico
+
+`vitalia/docs/archive/2026/stories/vitalia-shell-organism/mockups/dual-mode-shell.html` — referencia macro del shell completo (1439 líneas). Fuente canónica para wrapper en mockups de stories Fase 2 (per `vitalia/.claude/rules/shell-mockup-per-component.md`).
+
+## Lift candidate
+
+`lift_candidate: cross-brand-when-2-brands-need-multi-agent-shell` — si comunify o lupulo adoptan shell agéntico, promover AppPanelSlot + Ribbon + SubTabsBar a `core/luana-core-design-tokens` o `core/luana-core-extension-sdk` FE.
+
+## Dependencies
+
+- **F1-S1** design-tokens-theme — `bg-agent-{slug}-soft` tokens + dark theme
+- **Shadcn primitives** — Avatar · AvatarImage · AvatarFallback · Tooltip · Button · Sheet
+- **ADR-vitalia-003** — shell-mockup-per-component protocol (visual ratification Chris)
+- **ADR-vitalia-004** — shell-feature-architecture-mandatory (sub-tabs Fase 2)
+
+## Supersedes
+
+Los 7 caps atómicos del shell-organism anteriores fueron marcados `superseded_by: shell-vitalia` por ADR-vitalia-005 (cement 2026-05-27). Cada uno conserva su historial original. Consultar caps individuales sólo para arqueología de historia.
+
+## Referencias
+
+- ADR: `vitalia/docs/architecture/ADR-vitalia-005-capability-model-4-dimensions.md` § Shell-organism merge
+- Mockup: `vitalia/docs/archive/2026/stories/vitalia-shell-organism/mockups/dual-mode-shell.html`
+- Design contract: `vitalia/docs/architecture/SHELL-DESIGN-CONTRACT.md`
+- Caps superseded: [[empty-states]] · [[layout-5050]] · [[ribbon]] · [[routing]] · [[sub-tabs]] · [[valeria-chat]] · [[valeria-sidebar]]

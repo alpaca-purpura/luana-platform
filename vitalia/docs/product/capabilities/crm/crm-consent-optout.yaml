@@ -9,6 +9,35 @@ package_version: 0.1.0
 package_path: vitalia/backend/src/modules/vitalia/crm/{application/services,api}
 license: proprietary
 
+# v3 cement 2026-05-27 · 4 dimensiones + dev_preview (ADR-vitalia-005)
+tech_module: crm
+agent_owner: adrian
+functional_area: adrian.crm
+user_visible: true
+nature: feature
+
+user_facing_name: "CRM · consentimiento y opt-out de marketing"
+user_facing_description: >
+  Gestión del consentimiento de marketing del paciente dentro del CRM.
+  El paciente puede solicitar el opt-out de comunicaciones de marketing y
+  el cambio queda registrado con audit log obligatorio. También gestiona
+  consentimientos granulares (procesamiento de datos, grabación de voz,
+  fotografías). Cumple regulaciones LatAm de privacidad sanitaria de los
+  6 países: AR, MX, CO, PE, CL y BR.
+
+dev_preview:
+  route: "/adrian/crm/consentimiento"
+  how_to_navigate: "Login → ribbon clic en avatar Adrián → sub-tab CRM → seleccionar paciente → sección Consentimientos."
+  main_component: null
+  api_endpoints:
+    - "POST /api/v1/crm/patients/{id}/consents"
+    - "GET /api/v1/crm/patients/{id}/consents"
+    - "POST /api/v1/crm/patients/{id}/opt-out"
+  e2e_test: null
+  fixtures_required: []
+  storybook_url: null
+  loom_demo: null
+
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-slice-1-fidelizacion   # v2 cement · mirror of story_introduced
 created_date: 2026-05-20   # v2 cement · mirror of date_introduced
