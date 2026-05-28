@@ -5,7 +5,7 @@
  */
 
 import simpleGit, { type SimpleGit } from 'simple-git';
-import { getWorkspaceRoot } from './workspace.js';
+import { getWorkspaceRoot } from './workspace';
 
 let cachedGit: SimpleGit | null = null;
 

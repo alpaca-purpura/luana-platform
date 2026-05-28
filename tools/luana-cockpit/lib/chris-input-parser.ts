@@ -25,9 +25,9 @@ import {
   LABEL_TO_VERDICT,
   REF_TYPE_TO_EMOJI,
   VERDICT_TO_LABEL,
-} from './types.js';
+} from './types';
 import { readFile } from 'node:fs/promises';
-import { appendToFile, writeFileAtomic } from './fs-writer.js';
+import { appendToFile, writeFileAtomic } from './fs-writer';
 
 // ────────────────────────────────────────────────────────────────────────────
 // Section headers (constants verbatim del protocolo)

@@ -13,10 +13,10 @@
 import path from 'node:path';
 import matter from 'gray-matter';
 import { readFile } from 'node:fs/promises';
-import type { Release, ReleaseStatus, Story, StoryState } from './types.js';
-import { listFiles, readMarkdownWithFrontmatter } from './fs-reader.js';
-import { releasesPath, storiesPath, archivePath } from './workspace.js';
-import { writeFileAtomic } from './fs-writer.js';
+import type { Release, ReleaseStatus, Story, StoryState } from './types';
+import { listFiles, readMarkdownWithFrontmatter } from './fs-reader';
+import { releasesPath, storiesPath, archivePath } from './workspace';
+import { writeFileAtomic } from './fs-writer';
 
 // ────────────────────────────────────────────────────────────────────────────
 // Read / list

@@ -18,8 +18,8 @@ import type {
   Capability,
   ChangeLogEntry,
   CapChangeType,
-} from './types.js';
-import { writeFileAtomic } from './fs-writer.js';
+} from './types';
+import { writeFileAtomic } from './fs-writer';
 
 // ────────────────────────────────────────────────────────────────────────────
 // Read / write capability YAML
