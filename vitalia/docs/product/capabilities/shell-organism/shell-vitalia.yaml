@@ -146,6 +146,104 @@ change_log:
     atomics_modified: []
     merge_sha: null
     status: done
+
+access:
+  entry_points:
+    - path: "/"
+      navigation: "Login con Clerk → shell principal · TopBar global + Ribbon 5 agentes visible + Valeria chat izquierda 50% + panel contenido derecha 50%"
+      requires_role: [doctor, admin_clinic, nurse, receptionist]
+      requires_clinic_scope: true
+      entry_type: ui
+  forbidden_roles: [patient]
+  authentication: required
+
+scenarios:
+  - id: usuario-entra-al-shell
+    name: "Usuario autenticado entra al shell tras login"
+    actor: doctor
+    status: live
+    given: "Doctor autenticado con clinic_scope válido"
+    when: "Navega a la raíz / tras login Clerk exitoso"
+    then: "Ve el shell con TopBar global · Ribbon 5 agentes activos · Valeria chat visible izquierda 50% · panel contenido derecha 50%"
+    e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase1-ribbon-6-tabs/ribbon-nav.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-shell-organism/01-spec.md"
+    atomic_ref: shell-layout-5050
+    edge_cases:
+      - "Usuario sin clinic_scope asignado → redirect a /onboarding/clinic-setup"
+      - "Sesión Clerk expirada → redirect a /sign-in con preservación de return URL"
+      - "Tenant sin agentes habilitados → shell carga con Ribbon vacío + empty state global"
+    added_in_story: vitalia-shell-organism
+    added_date: 2026-05-27
+  - id: usuario-cambia-agente-via-ribbon
+    name: "Usuario cambia de agente activo via Ribbon"
+    actor: doctor
+    status: live
+    given: "Shell cargado con agente Lisa activo (sub-tab Marca visible)"
+    when: "Click en tab Valeria del Ribbon"
+    then: "Panel derecha cambia a Valeria sub-tabs · agent-color border cyan visible · URL actualiza a /valeria/agenda"
+    e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase1-ribbon-6-tabs/ribbon-nav.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase1-ribbon-6-tabs/01-spec.md"
+    atomic_ref: shell-ribbon
+    edge_cases:
+      - "Click en tab Configurar → carga ConfigTab con icon gear (sin agent color)"
+      - "Keyboard nav arrows → roving tabindex respeta WAI-ARIA"
+      - "Click en tab ya activo → no recarga ni cambia sub-tab activa"
+    added_in_story: vitalia-fase1-ribbon-6-tabs
+    added_date: 2026-05-25
+  - id: splitter-ajusta-layout
+    name: "Usuario ajusta el splitter entre Valeria y panel contenido"
+    actor: doctor
+    status: live
+    given: "Shell en estado 50/50 por defecto"
+    when: "Usuario arrastra el splitter hacia la izquierda"
+    then: "Panel Valeria se colapsa a modo rail (60px) · panel contenido ocupa ~95% del ancho · estado persistido en localStorage"
+    e2e_test: null
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase1-shell-layout-5050/01-spec.md"
+    atomic_ref: shell-layout-5050
+    edge_cases:
+      - "Estado chat-narrow: Valeria ocupa 30% · contenido 70%"
+      - "Estado chat-collapsed: solo rail 60px + contenido 100% usable"
+    added_in_story: vitalia-fase1-shell-layout-5050
+    added_date: 2026-05-23
+
+business_rules:
+  - id: clinic-scope-mandatory
+    rule: "Shell no se renderiza si el JWT Clerk no porta clinic_scope · sin scope no se muestra panel de agentes"
+    enforcement:
+      - ".claude/rules/tenant-isolation.md"
+      - "vitalia/.claude/rules/hipaa-lite.md"
+    code_ref: "vitalia/frontend/src/lib/iam/api.ts"
+    severity: critical
+    audit_trail: false
+  - id: agent-color-discipline
+    rule: "Ribbon tabs usan exclusivamente tokens bg-agent-{slug}-soft cementados · NO colores hex hardcoded"
+    enforcement:
+      - "vitalia/docs/architecture/SHELL-DESIGN-CONTRACT.md"
+    code_ref: "vitalia/frontend/src/lib/agent-catalog.ts"
+    severity: medium
+    audit_trail: false
+  - id: forbidden-roles-patient
+    rule: "Rol patient nunca accede al shell clínico · roles válidos: doctor, admin_clinic, nurse, receptionist"
+    enforcement:
+      - ".claude/rules/tenant-isolation.md"
+    code_ref: "vitalia/frontend/src/middleware.ts"
+    severity: critical
+    audit_trail: false
+
+related_capabilities:
+  depends_on:
+    - platform.design-tokens-theme
+    - auth.clerk-middleware
+    - iam.luana-core-adoption
+  enables:
+    - scheduling.valeria-agenda
+    - brand_studio.lisa-marca
+    - sales_agent.inbox-handler-mode-occ
+    - patients.nps-tracking
+    - public_landing.public-clinic-landing
+    - booking.prepaid-booking-advisory-locks
+  similar: []
+  obsoletes: []
 ---
 
 # vitalia-shell-vitalia

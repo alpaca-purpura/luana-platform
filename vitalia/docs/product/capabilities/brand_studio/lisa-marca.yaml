@@ -32,7 +32,7 @@ dev_preview:
     - "GET /api/v1/vitalia/brand/marca/identity"
     - "PATCH /api/v1/vitalia/brand/marca/identity"
     - "POST /api/v1/vitalia/brand/marca/voice-preview"
-  e2e_test: "vitalia/frontend/e2e/regression/lisa-marca/lisa-marca-identidad.spec.ts"
+  e2e_test: null
   fixtures_required: ["3-clinic-fixture-latam"]
   storybook_url: null
   loom_demo: null
@@ -62,6 +62,103 @@ change_log:
     atomics_modified: []
     merge_sha: null
     status: done
+
+access:
+  entry_points:
+    - path: "/lisa/marca"
+      navigation: "Login → ribbon clic en avatar Lisa → sub-tab Marca → N3-static sub-sub-tabs Identidad / Voz y tono / Presencia"
+      requires_role: [doctor, admin_clinic]
+      requires_clinic_scope: true
+      entry_type: ui
+    - path: "/api/v1/vitalia/brand/marca/identity"
+      navigation: "API directa con JWT Clerk + X-Tenant-ID para leer o actualizar identidad de marca"
+      requires_role: [admin_clinic]
+      requires_clinic_scope: true
+      entry_type: api
+  forbidden_roles: [nurse, receptionist, patient, marketing]
+  authentication: required
+
+scenarios:
+  - id: admin-configura-identidad-clinica
+    name: "Administrador configura la identidad visual de la clínica"
+    actor: admin_clinic
+    status: live
+    given: "Admin autenticado en sub-sub-tab Identidad con datos de clínica ya cargados"
+    when: "Edita nombre, logo, paleta de colores y guarda con autosave (debounce 600ms)"
+    then: "Cambios persisten en engine brand-studio · autosave badge confirma guardado · vertical clínico (read-only) no cambia"
+    e2e_test: null
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase2-lisa-marca/01-spec.md"
+    atomic_ref: null
+    edge_cases:
+      - "Logo > 5MB → validación client-side rechaza antes del upload"
+      - "Autosave durante typing rápido → debounce evita múltiples requests"
+      - "Red lenta / 503 → banner de reintento visible sin perder cambios locales"
+    added_in_story: vitalia-fase2-lisa-marca
+    added_date: 2026-05-27
+  - id: admin-define-voz-y-tono
+    name: "Administrador define la voz y tono de la clínica"
+    actor: admin_clinic
+    status: live
+    given: "Admin en sub-sub-tab Voz y tono con arquetipo Caregiver seleccionado por defecto"
+    when: "Cambia arquetipo a Sage, completa 6 bloques de voz del compilador y clic en Previsualizar"
+    then: "Preview de voz de marca se actualiza en el footer · frases prohibidas detectadas muestran warning soft · cache hit rate >70% (LRU + Redis)"
+    e2e_test: null
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase2-lisa-marca/01-spec.md"
+    atomic_ref: null
+    edge_cases:
+      - "Frase 'garantizamos curar' detectada → warning soft sin bloquear guardado"
+      - "Timeout de preview endpoint → botón Previsualizar muestra error inline"
+    added_in_story: vitalia-fase2-lisa-marca
+    added_date: 2026-05-27
+  - id: admin-configura-presencia-web
+    name: "Administrador configura la presencia web y certificaciones"
+    actor: admin_clinic
+    status: live
+    given: "Admin en sub-sub-tab Presencia con campos vacíos"
+    when: "Agrega URL de sitio web, vincula redes sociales y selecciona certificaciones del catálogo cerrado (MINSA/SUSALUD PE)"
+    then: "Datos persisten · certificaciones muestran íconos oficiales · free-text 'Otra' disponible para certificaciones no listadas"
+    e2e_test: null
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase2-lisa-marca/01-spec.md"
+    atomic_ref: null
+    edge_cases:
+      - "URL malformada → validación Zod rechaza con mensaje descriptivo"
+      - "Sin certificaciones configuradas → empty state con CTA para agregar"
+    added_in_story: vitalia-fase2-lisa-marca
+    added_date: 2026-05-27
+
+business_rules:
+  - id: brand-owner-access-only
+    rule: "Solo roles doctor y admin_clinic acceden a la configuración de marca · nurse/receptionist/patient excluidos"
+    enforcement:
+      - ".claude/rules/tenant-isolation.md"
+    code_ref: "vitalia/backend/src/modules/vitalia/brand_studio/_shared/auth/rbac.py"
+    severity: high
+    audit_trail: false
+  - id: no-health-voice-validator
+    rule: "No existe tabla health_voice_validator ni mirror LLM-distilled de voz · el compilador v2 de sales-agent es el SSoT"
+    enforcement:
+      - "vitalia/backend/tests/architecture/test_no_health_voice_validator.py"
+    code_ref: "vitalia/backend/src/modules/vitalia/brand_studio/application/services/"
+    severity: high
+    audit_trail: false
+  - id: clinic-vertical-read-only
+    rule: "El campo clinic_vertical y primary_specialties provienen del onboarding-clinica y son read-only en Brand Studio · no editables"
+    enforcement:
+      - "vitalia/docs/architecture/ADR-vitalia-004.md"
+    code_ref: "vitalia/frontend/src/features/lisa/components/marca/identidad/ClinicVerticalReadOnly.tsx"
+    severity: medium
+    audit_trail: false
+
+related_capabilities:
+  depends_on:
+    - shell-organism.shell-vitalia
+    - auth.clerk-middleware
+    - iam.luana-core-adoption
+  enables:
+    - public_landing.public-clinic-landing
+    - sales_agent.inbox-handler-mode-occ
+  similar: []
+  obsoletes: []
 ---
 
 # vitalia-lisa-marca

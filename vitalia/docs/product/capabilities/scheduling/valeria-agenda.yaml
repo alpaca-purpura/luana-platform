@@ -32,7 +32,7 @@ dev_preview:
     - "GET /api/v1/scheduling/appointments?week={iso}"
     - "POST /api/v1/scheduling/appointments"
     - "PATCH /api/v1/scheduling/appointments/{id}/status"
-  e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase2-valeria-agenda/agenda-create.spec.ts"
+  e2e_test: null
   fixtures_required: ["3-clinic-fixture-latam"]
   storybook_url: null
   loom_demo: null
@@ -60,6 +60,106 @@ change_log:
     atomics_modified: []
     merge_sha: null
     status: done
+
+access:
+  entry_points:
+    - path: "/valeria/agenda"
+      navigation: "Login → ribbon clic en avatar Valeria → sub-tab Agenda"
+      requires_role: [doctor, admin_clinic, nurse]
+      requires_clinic_scope: true
+      entry_type: ui
+    - path: "/api/v1/scheduling/appointments"
+      navigation: "API directa con JWT Clerk + X-Tenant-ID + X-Clinic-ID headers"
+      requires_role: [doctor, admin_clinic, nurse]
+      requires_clinic_scope: true
+      entry_type: api
+  forbidden_roles: [marketing, patient]
+  authentication: required
+
+scenarios:
+  - id: ver-agenda-semanal
+    name: "Doctor visualiza la agenda semanal con slots coloreados"
+    actor: doctor
+    status: live
+    given: "Doctor autenticado con clinic_scope y citas cargadas en la semana actual"
+    when: "Navega a /valeria/agenda"
+    then: "Ve calendario semanal con celdas de slot coloreadas por estado de pago (pagado/depósito/sin-pago/no-show) y origen (presencial/teléfono/proactivo/paciente existente)"
+    e2e_test: null
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase2-valeria-agenda/01-spec.md"
+    atomic_ref: null
+    edge_cases:
+      - "Semana sin citas → empty state con mensaje de bienvenida contextual"
+      - "Cita con status no-show → slot color rojo con badge NP"
+      - "Carga initial SSR: datos de la semana actual disponibles sin spinner"
+    added_in_story: vitalia-fase2-valeria-agenda
+    added_date: 2026-05-27
+  - id: cobrar-saldo-inline
+    name: "Recepcionista cobra el saldo pendiente de una cita desde el drawer"
+    actor: nurse
+    status: live
+    given: "Cita con estado 'depósito' abierta en el drawer lateral"
+    when: "Recepcionista completa el subformulario CobrarSaldo con monto + método + clic en Cobrar"
+    then: "Saga charge + fiscal emit ejecuta inline · status de la cita actualiza a 'pagado' · comprobante fiscal disponible para imprimir · sin salir del drawer"
+    e2e_test: null
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase2-valeria-agenda/01-spec.md"
+    atomic_ref: null
+    edge_cases:
+      - "Error 503 gateway de pago → retry banner con opción reintentar"
+      - "Conflicto 409 (cita modificada por otro operador) → saga compensation + mensaje de error"
+      - "Comprobante fiscal no disponible en country sin emisor configurado → botón deshabilitado con tooltip"
+    added_in_story: vitalia-fase2-valeria-agenda
+    added_date: 2026-05-27
+  - id: crear-cita-desde-agenda
+    name: "Recepcionista crea una nueva cita desde el calendario"
+    actor: receptionist
+    status: live
+    given: "Agenda semanal cargada con slot disponible visible"
+    when: "Click en slot vacío → completa CrearCitaForm con PatientAutocomplete (solo patient_id) y datos de turno"
+    then: "Cita creada con status 'sin pago' · slot aparece en calendario con color correspondiente al origen"
+    e2e_test: null
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase2-valeria-agenda/01-spec.md"
+    atomic_ref: null
+    edge_cases:
+      - "PatientAutocomplete devuelve solo patient_id (no PHI en form state — HIPAA)"
+      - "Slot ya ocupado por otro operador concurrente → error de conflicto 409"
+    added_in_story: vitalia-fase2-valeria-agenda
+    added_date: 2026-05-27
+
+business_rules:
+  - id: dual-tenant-clinic-filter
+    rule: "Toda query PHI de agenda requiere dual filter tenant_id + clinic_id · sin clinic_id la query no se ejecuta"
+    enforcement:
+      - "vitalia/.claude/rules/hipaa-lite.md"
+      - ".claude/rules/tenant-isolation.md"
+    code_ref: "vitalia/backend/src/modules/vitalia/scheduling/infrastructure/repositories/"
+    severity: critical
+    audit_trail: true
+  - id: audit-log-sync-write
+    rule: "Audit log row se escribe de forma sincrónica antes de retornar la respuesta en todos los endpoints PHI de la agenda"
+    enforcement:
+      - "vitalia/.claude/rules/hipaa-lite.md"
+    code_ref: "vitalia/backend/src/modules/vitalia/scheduling/api/"
+    severity: critical
+    audit_trail: true
+  - id: phi-masking-server-side
+    rule: "El nombre del paciente se enmascara server-side (P. Hernández) y el DNI se enmascara (12.***.***) · nunca PHI raw en response ni URL params"
+    enforcement:
+      - "vitalia/.claude/rules/hipaa-lite.md"
+    code_ref: "vitalia/backend/src/modules/vitalia/_shared/phi_masking.py"
+    severity: critical
+    audit_trail: false
+
+related_capabilities:
+  depends_on:
+    - shell-organism.shell-vitalia
+    - auth.clerk-middleware
+    - iam.luana-core-adoption
+    - compliance.hipaa-lite-defensive-stack
+  enables:
+    - booking.prepaid-booking-advisory-locks
+    - patients.nps-tracking
+  similar: []
+  obsoletes: []
 ---
 
 # Capability — Valeria Agenda (scheduling)

@@ -56,6 +56,102 @@ change_log:
     atomics_modified: []
     merge_sha: null
     status: done
+
+access:
+  entry_points:
+    - path: "/camila/nps"
+      navigation: "Login → ribbon clic en avatar Camila → sub-tab NPS para ver el resumen de puntuaciones y distribución por banda"
+      requires_role: [doctor, admin_clinic, nurse]
+      requires_clinic_scope: true
+      entry_type: ui
+    - path: "/api/v1/fidelizacion/nps/summary"
+      navigation: "API GET para leer resumen agregado NPS (sin PHI per-patient)"
+      requires_role: [doctor, admin_clinic, nurse]
+      requires_clinic_scope: true
+      entry_type: api
+    - path: "/api/v1/fidelizacion/nps"
+      navigation: "API POST para registrar una respuesta NPS (paciente o sistema post-tratamiento)"
+      requires_role: [doctor, admin_clinic, nurse]
+      requires_clinic_scope: true
+      entry_type: api
+  forbidden_roles: [marketing, patient]
+  authentication: required
+
+scenarios:
+  - id: sistema-registra-nps-post-tratamiento
+    name: "Sistema registra respuesta NPS del paciente después de un tratamiento"
+    actor: doctor
+    status: live
+    given: "Tratamiento completado · paciente recibió solicitud de NPS por canal autorizado"
+    when: "Paciente responde con score=9 y comentario libre vía el flujo de NPS"
+    then: "NPSResponse row creado con band=promoter · comment cifrado BYTEA via pgcrypto trigger · audit log sync escrito · evento NPSResponseSubmitted emitido via outbox"
+    e2e_test: null
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-slice-1-fidelizacion/01-spec.md"
+    atomic_ref: null
+    edge_cases:
+      - "Score=5 → band=detractor · Adrián puede usar para reengagement campaign"
+      - "Comment sin texto → field null pero row válido"
+      - "Treatment_plan_id opcional: permite NPS espontáneo sin vincular a tratamiento"
+    added_in_story: vitalia-slice-1-fidelizacion
+    added_date: 2026-05-20
+  - id: admin-ve-resumen-nps-agregado
+    name: "Administrador visualiza el resumen NPS agregado de la clínica"
+    actor: admin_clinic
+    status: live
+    given: "Admin en sub-tab NPS con período seleccionado"
+    when: "Carga el resumen de puntuaciones"
+    then: "Ve avg score, distribución promoter/passive/detractor y total de respuestas · sin per-patient PHI en la respuesta"
+    e2e_test: null
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-slice-1-fidelizacion/01-spec.md"
+    atomic_ref: null
+    edge_cases:
+      - "Marketing role intenta leer summary con comment decifrado → 403 (no autorizado)"
+      - "Clínica sin respuestas NPS en el período → empty state con distribución en ceros"
+    added_in_story: vitalia-slice-1-fidelizacion
+    added_date: 2026-05-20
+
+business_rules:
+  - id: nps-comment-encrypted-at-rest
+    rule: "El comentario libre del paciente se almacena cifrado en BYTEA via trigger pgcrypto BEFORE INSERT/UPDATE · nunca plaintext en DB"
+    enforcement:
+      - "vitalia/.claude/rules/hipaa-lite.md"
+    code_ref: "vitalia/backend/alembic/versions/025_vitalia_pgcrypto_nps_comment.py"
+    severity: critical
+    audit_trail: false
+  - id: summary-no-phi-per-patient
+    rule: "El endpoint GET /nps/summary retorna únicamente agregados (avg, distribución, total) · nunca datos individuales de paciente en la respuesta"
+    enforcement:
+      - "vitalia/.claude/rules/hipaa-lite.md"
+      - ".claude/rules/tenant-isolation.md"
+    code_ref: "vitalia/backend/src/modules/vitalia/fidelizacion/application/services/nps_service.py"
+    severity: critical
+    audit_trail: false
+  - id: dual-tenant-clinic-filter-nps
+    rule: "Toda query NPS aplica dual filter tenant_id + clinic_id · cross-tenant y cross-clinic retornan 404"
+    enforcement:
+      - "vitalia/.claude/rules/hipaa-lite.md"
+      - ".claude/rules/tenant-isolation.md"
+    code_ref: "vitalia/backend/src/modules/vitalia/fidelizacion/infrastructure/repositories/nps_response_repository.py"
+    severity: critical
+    audit_trail: true
+  - id: nps-retention-10-years
+    rule: "Datos NPS se retienen 10 años post último acceso del paciente · regulación LatAm health (AR/CO/PE/CL/BR)"
+    enforcement:
+      - "vitalia/.claude/rules/hipaa-lite.md"
+    code_ref: "vitalia/backend/src/modules/vitalia/compliance/"
+    severity: high
+    audit_trail: false
+
+related_capabilities:
+  depends_on:
+    - shell-organism.shell-vitalia
+    - auth.clerk-middleware
+    - compliance.hipaa-lite-defensive-stack
+    - scheduling.valeria-agenda
+  enables:
+    - sales_agent.inbox-handler-mode-occ
+  similar: []
+  obsoletes: []
 ---
 
 # vitalia-nps-tracking

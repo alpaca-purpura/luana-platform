@@ -54,6 +54,80 @@ change_log:
     atomics_modified: []
     merge_sha: null
     status: done
+
+access:
+  entry_points:
+    - path: "/public/{clinic-slug}"
+      navigation: "Navegar directamente a /public/aurora-dental-ba sin login · reemplazar el slug por el de la clínica del fixture"
+      requires_role: []
+      requires_clinic_scope: false
+      entry_type: ui
+    - path: "/public/{clinic-slug}/booking"
+      navigation: "Desde la landing pública · clic en botón 'Reservar turno' → flujo de booking embeddable o standalone"
+      requires_role: []
+      requires_clinic_scope: false
+      entry_type: ui
+  forbidden_roles: []
+  authentication: none
+
+scenarios:
+  - id: paciente-ve-landing-clinica
+    name: "Paciente sin cuenta accede a la landing pública de una clínica"
+    actor: patient
+    status: live
+    given: "Paciente llega a /public/aurora-dental-ba desde un enlace externo o búsqueda"
+    when: "Carga la página sin sesión Clerk activa"
+    then: "Ve identidad de la clínica · equipo médico · testimonios · servicios activos · botón 'Reservar turno' habilitado"
+    e2e_test: null
+    story_spec_ref: "vitalia/docs/archive/2026/stories/luana-vitalia-bootstrap/01-spec.md"
+    atomic_ref: null
+    edge_cases:
+      - "Slug de clínica inexistente → 404 page con mensaje amigable"
+      - "Clínica sin oferta activa → landing visible pero botón de reserva deshabilitado con mensaje 'sin disponibilidad'"
+      - "Clínica con logo no configurado → avatar placeholder institucional"
+    added_in_story: luana-vitalia-bootstrap
+    added_date: 2026-05-15
+  - id: paciente-inicia-reserva-desde-landing
+    name: "Paciente inicia el flujo de reserva desde la landing pública"
+    actor: patient
+    status: live
+    given: "Paciente en /public/aurora-dental-ba con servicios disponibles"
+    when: "Hace clic en el botón 'Reservar turno'"
+    then: "Navega a /public/aurora-dental-ba/booking · flujo de booking inicia sin requerir cuenta · tenant_id resuelto desde clinic_slug vía luana-core-iam"
+    e2e_test: null
+    story_spec_ref: "vitalia/docs/archive/2026/stories/luana-vitalia-bootstrap/01-spec.md"
+    atomic_ref: null
+    edge_cases:
+      - "Widget embebido en sitio web de la clínica: misma lógica vía UMD iframe"
+      - "Slot seleccionado ya ocupado por otro paciente concurrente → advisory lock devuelve error de disponibilidad"
+    added_in_story: luana-vitalia-bootstrap
+    added_date: 2026-05-15
+
+business_rules:
+  - id: public-route-no-auth
+    rule: "Las rutas /public/* no requieren sesión Clerk · tenant_id se resuelve desde clinic_slug vía luana-core-iam sin token"
+    enforcement:
+      - ".claude/rules/tenant-isolation.md"
+    code_ref: "vitalia/frontend/src/middleware.ts"
+    severity: critical
+    audit_trail: false
+  - id: no-phi-in-public-landing
+    rule: "La landing pública no expone PHI de pacientes · solo información pública de la clínica (identidad, equipo, servicios, testimonios genéricos)"
+    enforcement:
+      - "vitalia/.claude/rules/hipaa-lite.md"
+    code_ref: "vitalia/frontend/src/app/public/[clinic-slug]/page.tsx"
+    severity: critical
+    audit_trail: false
+
+related_capabilities:
+  depends_on:
+    - auth.clerk-middleware
+    - iam.luana-core-adoption
+    - brand_studio.lisa-marca
+  enables:
+    - booking.prepaid-booking-advisory-locks
+  similar: []
+  obsoletes: []
 ---
 
 # vitalia-public-clinic-landing

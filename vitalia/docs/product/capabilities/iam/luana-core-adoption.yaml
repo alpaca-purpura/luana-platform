@@ -87,3 +87,58 @@ change_log:
     atomics_modified: []
     merge_sha: null
     status: done
+
+access:
+  entry_points:
+    - path: null
+      navigation: "BE-only · verificar via tests en vitalia/backend/tests/modules/vitalia/admin/ + tests/architecture/test_admin_consumes_engine_repos.py"
+      requires_role: [admin_clinic]
+      requires_clinic_scope: false
+      entry_type: api
+  forbidden_roles: [patient, marketing, nurse, receptionist, doctor]
+  authentication: required
+
+scenarios:
+  - id: admin-crea-tenant-via-engine-repo
+    name: "Admin crea un nuevo tenant usando el repositorio del engine luana-core-iam"
+    actor: admin_clinic
+    status: live
+    given: "Admin autenticado accede al panel de administración de tenants"
+    when: "Invoca TenantRepository.create() con los datos del nuevo tenant"
+    then: "Tenant persiste en tabla 'tenants' (creada por migration 022) · cero SQL crudo en admin code · cero tablas brand-prefixed"
+    e2e_test: null
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-adopt-luana-core-iam/01-spec.md"
+    atomic_ref: null
+    edge_cases:
+      - "Migration 022 no aplicada → ImportError en engine repos al iniciar backend"
+      - "Engine repo ya tiene tenant con mismo slug → constraint violation propagada como 409"
+    added_in_story: vitalia-adopt-luana-core-iam
+    added_date: 2026-05-19
+
+business_rules:
+  - id: engine-repos-no-direct-sql
+    rule: "El código admin consume TenantRepository, UserRepository y UserTenantRepository del engine · cero SQL crudo directo · cero tablas brand-prefixed para entidades engine"
+    enforcement:
+      - ".claude/rules/anti-duplication.md"
+      - "vitalia/backend/tests/architecture/test_admin_consumes_engine_repos.py"
+    code_ref: "vitalia/backend/src/modules/vitalia/admin/modules/"
+    severity: high
+    audit_trail: false
+  - id: migration-022-idempotent
+    rule: "Migration 022 crea las 3 tablas IAM del engine (users, tenants, user_tenants) de forma idempotente con IF NOT EXISTS · nunca op.create_table() directo"
+    enforcement:
+      - ".claude/rules/backend-migrations.md"
+    code_ref: "vitalia/backend/alembic/versions/022_vitalia_add_engine_iam_tables.py"
+    severity: high
+    audit_trail: false
+
+related_capabilities:
+  depends_on:
+    - auth.clerk-middleware
+  enables:
+    - shell-organism.shell-vitalia
+    - compliance.hipaa-lite-defensive-stack
+    - scheduling.valeria-agenda
+    - brand_studio.lisa-marca
+  similar: []
+  obsoletes: []
