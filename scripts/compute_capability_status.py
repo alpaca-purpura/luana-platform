@@ -377,9 +377,12 @@ def process_brand(brand: str, workspace_root: Path, verbose: bool) -> dict[str, 
     if not verbose:
         print()  # newline after dots
 
+    # Normaliza guion→underscore para alinear con el contrato TS
+    # (ComputedStatusReport.summary en tools/luana-cockpit/lib/types.ts usa
+    # verified_live / declared_live, no verified-live / declared-live).
     summary = {
         "total_caps": len(capabilities),
-        **summary_counts,
+        **{key.replace("-", "_"): count for key, count in summary_counts.items()},
     }
 
     return {"capabilities": capabilities, "summary": summary}
@@ -461,8 +464,8 @@ def main() -> None:
     print(
         f"Completado: {summary['total_caps']} caps · "
         f"stub={summary.get('stub', 0)} · "
-        f"declared-live={summary.get('declared-live', 0)} · "
-        f"verified-live={summary.get('verified-live', 0)} · "
+        f"declared-live={summary.get('declared_live', 0)} · "
+        f"verified-live={summary.get('verified_live', 0)} · "
         f"drift={summary.get('drift', 0)} · "
         f"partial={summary.get('partial', 0)} · "
         f"wip={summary.get('wip', 0)} · "
