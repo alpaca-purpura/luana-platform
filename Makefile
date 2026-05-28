@@ -169,6 +169,13 @@ capability-index-check:
 capability-index-all:
 	python3 scripts/generate_capability_index.py --all-brands
 
+# v3 cement 2026-05-27 · ADR-vitalia-005 · SYSTEM-MAP cross-vocabulary validation
+system-map-validate:
+	python3 scripts/validate_system_map.py --brand vitalia
+
+system-map-validate-all:
+	python3 scripts/validate_system_map.py --all-brands
+
 # ════════════════════════════════════════════════════════════════
 # CI parity gate (cross-brand)
 # ════════════════════════════════════════════════════════════════
