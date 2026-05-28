@@ -25,6 +25,12 @@ blocks_soft: []
 reuse_map_summary: "SCAFFOLD MVP planned per navigation-tree · panorama estratégico cross-canal · consumer-side de signals reseñas · NEW dashboard reputation scoring + sources matrix · NO response auto (story future)"
 spawned_at: 2026-05-22
 next_action: "/po-ux refinar 01-spec.md con wireframes dashboard scaffold + roadmap iteration future"
+
+# Schema v2 migration (cement 2026-05-27)
+release: F2   # release ID · ver releases/
+cap_target: camila.reputacion   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # F2-S14 vitalia-fase2-camila-reputacion — checkpoint

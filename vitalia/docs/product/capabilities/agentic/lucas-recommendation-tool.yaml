@@ -8,6 +8,27 @@ story_introduced: vitalia-slice-1-fidelizacion
 package_version: 0.1.0
 package_path: vitalia/backend/src/modules/vitalia/agentic/lucas/tools/compute_re_engagement_recommendation.py
 license: proprietary
+
+# Capability ledger v2 (cement 2026-05-27)
+created_in_story: vitalia-slice-1-fidelizacion   # v2 cement · mirror of story_introduced
+created_date: 2026-05-20   # v2 cement · mirror of date_introduced
+last_modified: 2026-05-20   # v2 cement · mirror of date_updated or date_introduced
+parent_cap: null   # v2 cement · mirror of extends_capability
+derives_capabilities: []   # v2 cement · initial empty list
+
+# Capability ledger v2 (cement 2026-05-27)
+atomics: []   # v2 cement · empty initial · Chris populate manually
+
+# Capability change log v2 (cement 2026-05-27)
+change_log:
+  - story_id: vitalia-slice-1-fidelizacion
+    date: 2026-05-20
+    type: new
+    summary: "Implementación inicial · migración legacy a schema v2"
+    atomics_added: []
+    atomics_modified: []
+    merge_sha: null
+    status: done
 ---
 
 # vitalia-lucas-recommendation-tool

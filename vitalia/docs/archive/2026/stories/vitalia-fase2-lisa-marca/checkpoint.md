@@ -67,6 +67,12 @@ blocks_soft:
 reuse_map_summary: "REUSE 90% brand_studio shipped (core/luana-core-brand-studio + nicolify FE schemas IMPORT verbatim) · NEW BE módulo vitalia.brand_studio brand-extension + NEW FE features/lisa · ADAPT salud overlay (4 archetypes + prohibited phrases tabla + trust hybrid catalog PE seed)"
 spawned_at: 2026-05-22
 next_action: "AUTO-CHAIN: invocar Skill(dev-team) con args 'vitalia vitalia-fase2-lisa-marca' → build 12 tickets atomic per 06-tickets.yaml. Owner pool: [qwen-opencode, claude-sonnet, claude-opus] — NO claude_opus_required (zero agentic surface)"
+
+# Schema v2 migration (cement 2026-05-27)
+release: F2   # release ID · ver releases/
+cap_target: lisa-marca   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # F2-S7 vitalia-fase2-lisa-marca — checkpoint

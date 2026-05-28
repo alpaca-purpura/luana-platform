@@ -23,6 +23,12 @@ closure:
   capability_yaml_written: false  # infra/bootstrap, no surface user-facing
   adr_written: false               # receta prescriptiva mecánica, no tradeoff estructural
   archived_to: vitalia/docs/archive/2026/stories/vitalia-dev-stack-functional/
+
+# Schema v2 migration (cement 2026-05-27)
+release: F0   # release ID · ver releases/
+cap_target: null   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # vitalia-dev-stack-functional — checkpoint

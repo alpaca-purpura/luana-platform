@@ -79,6 +79,27 @@ Cada skill MUST documentar el resultado del scan en el artifact que produce:
 | Learning capturado con tag relevante | Aplicar verbatim en spec/design (citar learning path) | TODOS |
 | Net-new (nada encontrado relevante) | Proceder con design from scratch. Documentar el scan vacío en spec. | `/po-ux` o `/po` |
 
+### Decision matrix `cap_target` + `cap_change_type` (v2 cement 2026-05-27)
+
+Durante refinement (story state=refining), el skill `/po-ux`/`/po`/`/ux-agentico`/`/architect` MUST validar coherencia entre prior-art encontrada y `cap_change_type` declarado en checkpoint.md.
+
+| Situación prior-art | `cap_change_type` válido | Acción |
+|---|---|---|
+| Cap target NO existe en `{brand}/docs/product/capabilities/` | `new` | Crear story · spec declara cap fresh |
+| Cap target existe + esta story arregla bug/regresión SIN agregar funcionalidad | `fix` | Spec NO declara atomics nuevos · solo arregla comportamiento |
+| Cap target existe + esta story agrega ≥1 atomic nuevo al mismo cap | `extend` | Spec lista atomics nuevos · arch cita cap existente como base |
+| Cap target existe pero scope significativamente distinto (mobile-only / segmento separado / variante) | `derive` | Crear cap hijo con `parent_cap: {origen}` · declarar `parent_story` en checkpoint |
+| Cap NO existe pero engine package la cubre | NO crear cap · `architect` propone CONSUMIR | Story se vuelve "wire engine into brand" sin cap brand-local |
+| Cap NO existe pero snapshot legacy `nicolify/` lo tiene shipped | `derive` o lift candidate | Si vertical-specific → `derive` con `parent_cap: {legacy}`. Si transversal → escalate `/pm-luana` |
+
+**Anti-patterns específicos cap_change_type:**
+- ❌ Story marca `new` cuando ya existe el cap (debe ser `fix` o `extend`)
+- ❌ Story marca `extend` pero spec produce arch que crea cap nuevo (debe ser `new` o `derive`)
+- ❌ Story marca `derive` pero spec no cita `parent_story` ni el cap padre (incoherente)
+- ❌ Story marca `fix` pero spec agrega atomics nuevos (debe ser `extend`)
+
+Doc canónico: `docs/process/capability-protocol.md` § Sección 3.
+
 ## Cross-brand learning extraction — fuentes prior-art REALES (corregido 2026-05-27)
 
 > **★ Corrección 2026-05-27 (post stories sweep audit):** la asunción original "nicolify es brand más madura ~80% prod" referenciaba el estado **pre-multibrand-reorg** (2026-05-15). Post-reorg, el brand-level `nicolify/docs/product/` está **vacío** (24 stories shipped quedaron como **snapshot frozen read-only** en `docs/archive/2026/snapshot-pre-multibrand-pm-redesign/`). Live work post-reorg está principalmente en **vitalia** (27 done + Fase 1 shell complete + Fase 2 in-progress) y **comunify** (2 done). Audit doc: `docs/process/audits/2026-05-27-stories-sweep.md` § Hallazgo CRÍTICO #0.

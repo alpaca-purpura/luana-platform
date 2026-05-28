@@ -25,6 +25,12 @@ blocks_soft: []
 reuse_map_summary: "★ MUDAR referrals_leaderboard de Lucas→Camila (atomic ownership P1 paradigma 2026-05-21) · audience PROMOTORES (NPS 9-10 patients) · NEW listas dinámicas + auto-triggers · NEW recompensas tracker"
 spawned_at: 2026-05-22
 next_action: "/po-ux refinar 01-spec.md con wireframes leaderboard + listas + recompensas"
+
+# Schema v2 migration (cement 2026-05-27)
+release: F2   # release ID · ver releases/
+cap_target: camila.multiplicar   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # F2-S13 vitalia-fase2-camila-multiplicar — checkpoint

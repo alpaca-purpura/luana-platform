@@ -8,8 +8,14 @@
 
 ```
 {brand}/docs/
-├── product/{outcomes,stories,capabilities,modules}/ + BACKLOG.{md,yaml,-TLDR.md} + checkpoint.md
-├── archive/{year}/stories/{story-id}/        # stories state=done (immutable)
+├── product/
+│   ├── outcomes/{slug}.md
+│   ├── stories/{id}/{checkpoint.md, chris-input.md, 01-spec.md, 02-design-*.md, 03-arch.md, 04-validators.yaml, 05-guidelines.md, 06-tickets.yaml, 07-merge.md, mockups/, refs/}
+│   ├── capabilities/{module}/{cap}.yaml         # schema v2 con change_log[] + atomics objects
+│   ├── modules/{module}.md
+│   ├── releases/{F0..FN}.yaml                  # v2 cement 2026-05-27 reemplaza outcome+phase legacy
+│   └── BACKLOG.{md,yaml,-TLDR.md} + checkpoint.md
+├── archive/{year}/stories/{story-id}/           # stories state=done (immutable · incluye chris-input.md)
 ├── learnings/{date}-{slug}.md
 ├── architecture/ADR-{brand}-{NNN}-{slug}.md
 └── domains/{ep}/{component}.md
@@ -52,6 +58,21 @@ Move debe ir en commit del squash-merge a main (mismo commit que escribe `07-mer
 
 **Anti-pattern:** mergear con state=done sin mover a archive → BACKLOG auto-gen "active" eternamente.
 
+## R4 — chris-input.md mandatory para stories que pasan por `refining` (v2 cement 2026-05-27)
+
+Toda story que llega a `state ∈ {refining, refined, ready, developing, developed, reviewing}` MUST tener `chris-input.md` en su directorio. Stories que arrancan en `idea` y nunca pasan a refining (van directo a `dropped`) NO requieren chris-input.md.
+
+**Por qué:** chris-input.md es el SSoT de la conversación asíncrona Chris↔Claude durante refinement + build. Skills (po-ux, po, ux-agentico, architect, auditor, pm-{brand}, dev-team) appendean verdict al cierre de cada turn. Sin chris-input.md, la trazabilidad de "qué decidió Chris cuándo + qué aplicó Claude" se pierde.
+
+**How to apply:**
+- `/pm-{brand}` al pasar state `idea → refining` copia template `docs/specs/templates/00-chris-input-template.md` a `{brand}/docs/product/stories/{id}/chris-input.md`
+- `/pm-{brand}` Fase F MERGE (`reviewing → done`) ejecuta `git mv` del chris-input.md junto con resto de la story al `archive/{year}/stories/{id}/`
+- Pre-commit hook (Section 14 nueva) bloquea commit de checkpoint.md con `state ∈ {refining...reviewing}` si chris-input.md ausente en mismo dir (magic comment `# chris-input-skip: razón` permite override puntual)
+
+**Anti-pattern:** Chris invoca `/po-ux <story>` sin que exista chris-input.md → skill debe rechazar + pedir a `/pm-{brand}` el setup inicial.
+
+Doc canónico: `docs/process/chris-input-protocol.md`.
+
 ## R3 — Auto-gen files son GITIGNORED + NO editar manual
 
 Files OUTPUT auto-gen están **gitignored desde 2026-05-20**. Cada quien regenera localmente.
@@ -60,6 +81,7 @@ Files OUTPUT auto-gen están **gitignored desde 2026-05-20**. Cada quien regener
 |---|---|---|
 | `{brand}/docs/product/BACKLOG.{md,yaml,-TLDR.md}` | `scripts/generate_backlog.py --brand {brand}` | ❌ gitignored |
 | `{brand}/docs/product/modules/{module}.md` (auto-list block) | `scripts/reconcile_capabilities.py --brand {brand}` | ✅ tracked (hybrid intro + auto-block) |
+| `{brand}/docs/product/stories/{id}/refs/*` (excepto `*.md` y `.gitkeep`) | upload via cockpit `/api/refs/upload` | ❌ gitignored (chris-input.md sigue tracked + cita paths) |
 | `docs/portfolio/{PORTFOLIO,brand}.md` | `scripts/generate_portfolio.py` (`make portfolio`) | ❌ gitignored |
 | `docs/portfolio/INFRA-MATRIX.md` | `scripts/generate_infra_matrix.py` | ❌ gitignored |
 | `docs/promotion-protocol/scan-{date}.yaml` | `scripts/scan_promotables.py` | ❌ gitignored |

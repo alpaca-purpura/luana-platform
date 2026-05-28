@@ -17,6 +17,12 @@ parent_spec: "vitalia/docs/product/stories/vitalia-ux-discovery/01-spec.md §§C
 cross_phase_2_consumers:                                   # ★ NEW post 2026-05-22 paradigm
   - vitalia-fase2-valeria-agenda                           # F2-S1 — subform Cobrar saldo emite boleta inline
 next_action: "/po vitalia-fiscal-emission-pe — produce 01-spec.md service-story (sin UI dedicada Fase 2 más allá toggle inline subform Cobrar saldo F2-S1). UI configuración completa (NubefactConfigEditor) puede ir a F2-S22 config-avanzado o story dedicada futura. Inputs cementados: scope (~80 LOC) + 4 Gherkin + Capa 2 trigger flow + retry queue 8-step exponential backoff + secrets vault pgcrypto KEK rotada anualmente + CDR archive 10y retention. Open Chris: (1) Nubefact único PSE/OSE ó multi-provider Strategy? (2) Boleta + Factura ambos o solo Boleta? (3) Dead-letter alerta admin+Adrián? (4) Setup admin-only vía seed/script? Validate G6 batched (≤4) → refining→refined."
+
+# Schema v2 migration (cement 2026-05-27)
+release: F3   # release ID · ver releases/
+cap_target: null   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # vitalia-fiscal-emission-pe — checkpoint

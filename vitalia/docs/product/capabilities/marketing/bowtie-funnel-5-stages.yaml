@@ -8,6 +8,27 @@ story_introduced: vitalia-slice-1-marketing
 package_version: 0.1.0
 package_path: vitalia/backend/src/modules/vitalia/marketing
 license: proprietary
+
+# Capability ledger v2 (cement 2026-05-27)
+created_in_story: vitalia-slice-1-marketing   # v2 cement · mirror of story_introduced
+created_date: 2026-05-21   # v2 cement · mirror of date_introduced
+last_modified: 2026-05-21   # v2 cement · mirror of date_updated or date_introduced
+parent_cap: null   # v2 cement · mirror of extends_capability
+derives_capabilities: []   # v2 cement · initial empty list
+
+# Capability ledger v2 (cement 2026-05-27)
+atomics: []   # v2 cement · empty initial · Chris populate manually
+
+# Capability change log v2 (cement 2026-05-27)
+change_log:
+  - story_id: vitalia-slice-1-marketing
+    date: 2026-05-21
+    type: new
+    summary: "Implementación inicial · migración legacy a schema v2"
+    atomics_added: []
+    atomics_modified: []
+    merge_sha: null
+    status: done
 ---
 
 # vitalia-marketing-bowtie-funnel-5-stages

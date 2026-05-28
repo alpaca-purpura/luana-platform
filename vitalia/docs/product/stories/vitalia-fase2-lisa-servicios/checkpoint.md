@@ -27,6 +27,12 @@ blocks_soft:
 reuse_map_summary: "REUSE treatments shipped (vitalia/backend/src/modules/vitalia/treatments/) · NEW canvas escalera de valor (LadderSlot per offer-expert) · NEW toggle Catálogo|Escalera · NEW N3-dyn detalle tratamiento + ladder slot"
 spawned_at: 2026-05-22
 next_action: "/po-ux refinar 01-spec.md con wireframes canvas escalera + detalle tratamiento · /architect evaluar LadderSlot domain model"
+
+# Schema v2 migration (cement 2026-05-27)
+release: F2   # release ID · ver releases/
+cap_target: lisa.servicios   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # F2-S9 vitalia-fase2-lisa-servicios — checkpoint

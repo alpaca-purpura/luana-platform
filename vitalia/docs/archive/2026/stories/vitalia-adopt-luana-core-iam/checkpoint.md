@@ -23,6 +23,12 @@ worktree: ~/Proyectos/luana-vitalia/ (CANÓNICO vitalia)
 branch: wip/vitalia
 defer_audit: false
 ssot_owner: /pm-vitalia
+
+# Schema v2 migration (cement 2026-05-27)
+release: F0   # release ID · ver releases/
+cap_target: luana-core-adoption   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # Vitalia — adopt luana-core-iam (story checkpoint)

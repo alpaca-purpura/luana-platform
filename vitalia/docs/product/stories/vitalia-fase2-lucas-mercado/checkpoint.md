@@ -24,6 +24,12 @@ blocks_soft: []
 reuse_map_summary: "NEW (trends mining no shipped) · NEW tendencias rubro + hashtags + competencia + sugerencias Lucas · CONSUME engine sales-agent intent_detector + core/luana-core-* observability"
 spawned_at: 2026-05-22
 next_action: "/po-ux refinar 01-spec.md con wireframes 4 sub-secciones · /architect evaluar trends mining sources"
+
+# Schema v2 migration (cement 2026-05-27)
+release: F2   # release ID · ver releases/
+cap_target: lucas.mercado   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # F2-S19 vitalia-fase2-lucas-mercado — checkpoint

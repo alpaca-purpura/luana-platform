@@ -26,6 +26,12 @@ blocks_soft:
 reuse_map_summary: "REUSE fidelización module shipped · REUSE 5 templates Meta-approved (vitalia/backend/src/modules/vitalia/campaigns/templates/) · REUSE core/luana-core-campaigns engine · NEW wizard 3-pasos (Segmento · Template · Schedule) · NEW audience builder vs embudo stages"
 spawned_at: 2026-05-22
 next_action: "/po-ux refinar 01-spec.md con wireframes wizard + audience builder"
+
+# Schema v2 migration (cement 2026-05-27)
+release: F2   # release ID · ver releases/
+cap_target: adrian.outbound   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # F2-S5 vitalia-fase2-adrian-outbound — checkpoint

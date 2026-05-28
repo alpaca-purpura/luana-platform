@@ -46,6 +46,12 @@ side_story_blockers: []
 priority: critical
 estimated_dev_weeks: 1
 next_action: "★ CLOSED 2026-05-18 — state=done. Squashes 50143d57 + cc4fcd68 ya en main (verified). Story folder archived → vitalia/docs/archive/2026/stories/vitalia-slice-1-infra-cross-cutting/ (snapshot inmutable). 8 capability YAMLs en `vitalia/docs/product/capabilities/` (compliance/iam/crm/observability/workers/connections/platform·2) — granularidad agregada vs 16 micro-caps. 7 modules MD auto-list refreshed. 2 promotion candidates writeable a /pm-luana via learnings: 2026-05-18-phi-repository-base.md + 2026-05-18-idempotent-cron-pattern.md (both promotable: candidate, threshold lift 2 brands). Outcome vitalia-mvp-ui-foundation actualiza listas. Sibling vitalia-copilot-tools-impl ahora puede retomarse en worktree fresco (4/10 tickets ya pushed BE; 6 remaining son AGENTIC Opus R23). Stories refined Slice 1 (onboarding-wizard, inbox, pipeline, agenda, fidelizacion, marketing) DESBLOQUEADAS para /architect run cuando Chris lo decida."
+
+# Schema v2 migration (cement 2026-05-27)
+release: F0   # release ID · ver releases/
+cap_target: migrations-slice-1-schema   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # vitalia-slice-1-infra-cross-cutting — checkpoint

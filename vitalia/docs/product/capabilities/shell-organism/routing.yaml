@@ -21,6 +21,27 @@ related_capabilities:
   - vitalia.shell.valeria-sidebar
 depends_on_engine:
   - luana-core-iam (GET /me/tenants via auth_router mount)
+
+# Capability ledger v2 (cement 2026-05-27)
+created_in_story: vitalia-fase1-routing-shell   # v2 cement · mirror of story_introduced
+created_date: 2026-05-26   # v2 cement · mirror of date_introduced
+last_modified: 2026-05-26   # v2 cement · mirror of date_updated or date_introduced
+parent_cap: null   # v2 cement · mirror of extends_capability
+derives_capabilities: []   # v2 cement · initial empty list
+
+# Capability ledger v2 (cement 2026-05-27)
+atomics: []   # v2 cement · empty initial · Chris populate manually
+
+# Capability change log v2 (cement 2026-05-27)
+change_log:
+  - story_id: vitalia-fase1-routing-shell
+    date: 2026-05-26
+    type: new
+    summary: "Implementación inicial · migración legacy a schema v2"
+    atomics_added: []
+    atomics_modified: []
+    merge_sha: null
+    status: done
 ---
 
 # vitalia.shell.routing

@@ -21,6 +21,11 @@ absorbed_by:
 process_learnings_preserved:
   - vitalia/docs/learnings/2026-05-21-auto-handoff-deferred-e2e-blocker.md  # promotable cross-brand process gap
 next_action: "NONE — dropped. Tailwind v4 verification absorbido en F1-S0 vitalia-fase1-stack-stability. Process learning manual-visual-verification preservado en learnings/."
+
+# Schema v2 migration (cement 2026-05-27)
+release: F0   # release ID · ver releases/
+cap_target: null   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
 ---
 
 # vitalia-slice-1-marketing-integration — checkpoint

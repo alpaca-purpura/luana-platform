@@ -56,6 +56,12 @@ spawned_at: 2026-05-22
 transitioned_to_refining_at: 2026-05-23
 phase_marker: READY_PACKAGE_CLOSED
 next_action: "Conv 2 autonomous build EN CURSO — T-1+T-2 paralelos (no deps) primero, después T-3→T-4+T-5→T-6→T-7"
+
+# Schema v2 migration (cement 2026-05-27)
+release: F1   # release ID · ver releases/
+cap_target: layout-5050   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # F1-S4 vitalia-fase1-shell-layout-5050 — checkpoint

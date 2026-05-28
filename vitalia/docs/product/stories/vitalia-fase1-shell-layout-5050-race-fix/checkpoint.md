@@ -17,6 +17,11 @@ parallel_safe: true
 priority: low
 estimated_dev_days: 0.5-1
 hipaa_lite_scope: not_applicable
+
+# Schema v2 migration (cement 2026-05-27)
+release: F1   # release ID · ver releases/
+cap_target: shell.layout-5050   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: extend   # new | fix | extend | derive
 ---
 
 # F1-S4b vitalia-fase1-shell-layout-5050-race-fix — checkpoint

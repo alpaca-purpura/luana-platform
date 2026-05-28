@@ -8,6 +8,27 @@ story_introduced: vitalia-auth-base-functional
 package_version: vitalia-frontend@0.1.0
 package_path: vitalia/frontend/src/middleware.ts
 license: proprietary
+
+# Capability ledger v2 (cement 2026-05-27)
+created_in_story: vitalia-auth-base-functional   # v2 cement · mirror of story_introduced
+created_date: 2026-05-18   # v2 cement · mirror of date_introduced
+last_modified: 2026-05-18   # v2 cement · mirror of date_updated or date_introduced
+parent_cap: null   # v2 cement · mirror of extends_capability
+derives_capabilities: []   # v2 cement · initial empty list
+
+# Capability ledger v2 (cement 2026-05-27)
+atomics: []   # v2 cement · empty initial · Chris populate manually
+
+# Capability change log v2 (cement 2026-05-27)
+change_log:
+  - story_id: vitalia-auth-base-functional
+    date: 2026-05-18
+    type: new
+    summary: "Implementación inicial · migración legacy a schema v2"
+    atomics_added: []
+    atomics_modified: []
+    merge_sha: null
+    status: done
 ---
 
 # Clerk middleware — Vitalia FE

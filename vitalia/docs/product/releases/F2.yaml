@@ -1,0 +1,58 @@
+---
+# Release schema (v2 cement 2026-05-27)
+# Doc: docs/process/release-protocol.md
+# Path canónico: vitalia/docs/product/releases/F2.yaml
+
+release_id: F2
+brand: vitalia
+name: "Migración progresiva · primer valor Valeria + Lisa"
+description: "Fase 2 inicial · primer valor end-to-end. F2-S1 valeria-agenda LIVE, F2-S7 lisa-marca LIVE. Sigue valeria-pacientes + adrián primer valor + config-onboarding-clinica + lisa-landing-public."
+status: in_progress
+target_date: null
+shipped_date: null
+order: 2
+created_at: 2026-05-27T18:25:23-05:00
+created_by: scripts/migrate_to_release_schema.py
+
+stories:
+  - vitalia-fase2-adrian-embudo
+  - vitalia-fase2-adrian-inbox
+  - vitalia-fase2-adrian-outbound
+  - vitalia-fase2-adrian-propuestas
+  - vitalia-fase2-camila-multiplicar
+  - vitalia-fase2-camila-reactivar
+  - vitalia-fase2-camila-reputacion
+  - vitalia-fase2-camila-voz
+  - vitalia-fase2-config-avanzado
+  - vitalia-fase2-config-conexiones
+  - vitalia-fase2-config-cuenta
+  - vitalia-fase2-config-onboarding-clinica
+  - vitalia-fase2-lisa-compliance
+  - vitalia-fase2-lisa-doctores
+  - vitalia-fase2-lisa-landing-public
+  - vitalia-fase2-lisa-servicios
+  - vitalia-fase2-lucas-envuelo
+  - vitalia-fase2-lucas-lanzar
+  - vitalia-fase2-lucas-mercado
+  - vitalia-fase2-lucas-recursos
+  - vitalia-fase2-lucas-resultados
+  - vitalia-fase2-valeria-pacientes
+  - vitalia-fase2-lisa-marca
+  - vitalia-fase2-valeria-agenda
+
+# Legacy outcome mapping (transition phase)
+maps_legacy_outcome: "vitalia-mvp-ui-foundation"
+maps_legacy_phase: "fase-2"
+---
+
+# F2 · Migración progresiva · primer valor Valeria + Lisa
+
+> Fase 2 inicial · primer valor end-to-end. F2-S1 valeria-agenda LIVE, F2-S7 lisa-marca LIVE. Sigue valeria-pacientes + adrián primer valor + config-onboarding-clinica + lisa-landing-public.
+
+## Stories incluidas
+
+<!-- Auto-poblado durante migración Phase 3 desde checkpoints reales -->
+
+## Notas del release
+
+(libre · Chris escribe aquí contexto adicional · decisiones · gotchas)

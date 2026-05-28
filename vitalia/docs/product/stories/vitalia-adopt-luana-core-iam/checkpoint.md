@@ -18,6 +18,12 @@ blocked_reason: "Admin Streamlit smoke 2026-05-19 reveló 4 bugs bloqueantes. Ca
 prerequisites_done:
   - "docs/promotion-protocol/proposals/2026-05-19-purge-nicolify-defaults-core-config.md (state=migrated, commit b869eaf)"
   - "docs/promotion-protocol/proposals/2026-05-19-purge-nicolify-hardcodes-sales-agent.md (state=migrated, commit 39b73703)"
+
+# Schema v2 migration (cement 2026-05-27)
+release: F0   # release ID · ver releases/
+cap_target: luana-core-adoption   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # vitalia-adopt-luana-core-iam — checkpoint (stub)

@@ -41,6 +41,12 @@ blocks_hard: []
 reuse_map_summary: "NEW estructura chat panel · mock data 5 mensajes · sin sales_agent wiring real (Fase 2 wire)"
 spawned_at: 2026-05-22
 next_action: "story archived (post-merge) — see vitalia/docs/archive/2026/stories/vitalia-fase1-valeria-chat-skeleton/ for inmutable snapshot. Capability vitalia.shell-organism.valeria-chat live."
+
+# Schema v2 migration (cement 2026-05-27)
+release: F1   # release ID · ver releases/
+cap_target: valeria-chat   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # F1-S6 vitalia-fase1-valeria-chat-skeleton — checkpoint

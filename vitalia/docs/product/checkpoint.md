@@ -144,6 +144,10 @@ recently_done:
   - vitalia-slice-1-infra-cross-cutting  # 2026-05-18 cerrada reviewing→done · squashes 50143d57 + cc4fcd68 mergeados main · 8 capability YAMLs live + 7 modules MD refreshed + 2 promotion candidates · archive/2026/stories/vitalia-slice-1-infra-cross-cutting/07-merge.md
   - vitalia-dev-stack-functional         # 2026-05-17T17:00 cerrada refining→done · receta 12 pasos en archive/2026/stories/vitalia-dev-stack-functional/07-merge.md
 ssot_owner: /pm-vitalia
+
+# Schema v2 migration (cement 2026-05-27)
+current_release: F2
+releases_active: [F2, F3, F4, F5, F6, F7, F8]
 ---
 
 # Vitalia — checkpoint

@@ -178,3 +178,19 @@ docs/promotion-protocol/scan-*.yaml
 
 # Frontend generated code (offer-field-paths + futuros __generated__)
 **/__generated__/
+
+# Story refs (chris-input.md binarios · v2 cement 2026-05-27)
+# Mantenemos chris-input.md tracked (cita paths) pero binarios uploaded vía /api/refs/upload no inflan repo.
+# Si Chris necesita compartir refs cross-machine → mover a {brand}/docs/product/stories/{id}/refs-shared/ (tracked manual opt-in).
+**/docs/product/stories/**/refs/*
+!**/docs/product/stories/**/refs/*.md
+!**/docs/product/stories/**/refs/.gitkeep
+
+# Phase execution log (autonomous /goal runs · ephemeral)
+.phase-execution-log.md
+
+# Cockpit local artifacts (Next.js standalone build)
+tools/luana-cockpit/.next/
+tools/luana-cockpit/node_modules/
+tools/luana-cockpit/.env.local
+tools/luana-cockpit/migrate-report-*.json

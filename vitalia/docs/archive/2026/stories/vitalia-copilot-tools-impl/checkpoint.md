@@ -49,6 +49,12 @@ total_tickets: 10
 r23_enforcement:
   opus_required_tickets: [T-ag-tools-1, T-ag-tools-2, T-ag-tools-3, T-ag-workflows-1, T-ag-workflows-2, T-ag-evals-1]
   sonnet_default_tickets: [T-be-migrations-1, T-be-services-1, T-be-services-2, T-be-services-3]
+
+# Schema v2 migration (cement 2026-05-27)
+release: F0   # release ID · ver releases/
+cap_target: valeria-wizard-onboarding-agentic   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # vitalia-copilot-tools-impl — checkpoint
@@ -116,4 +122,3 @@ Si durante build builder descubre patrón reusable cross-brand → STOP + escala
 - 2026-05-17 02-design-agentic.md v1 draft via /ux-agentico (3 actors × turn-by-turn + state machines + slot architectures + voice constraints + error recovery + eval policy + cost+latency + observability + cross-cutting + 20+ anti-patterns) + 7 open questions Q1-Q4+D1-D3.
 - 2026-05-17 ★ v1.0 RATIFIED Chris (single G6 batched round) — all 7 questions answered with recommended defaults. Design sealed. NO delta-spec needed. State refining → refined.
 - 2026-05-18 ★ READY package CLOSED ★ /architect Opus 4.7 produjo 6 deliverables (03-arch + 04-validators + 05-guidelines + 06-tickets). State refined → ready. Próximo: /dev-team picks tickets cuando blockers externos state=developed.
-

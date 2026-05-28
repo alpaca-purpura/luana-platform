@@ -5,9 +5,20 @@
 
 ---
 story_id: STORY_ID                                # match folder name
-outcome: OUTCOME_SLUG                             # docs/product/outcomes/{slug}.md
+
+# Release entity (v2 cement 2026-05-27 — reemplaza outcome + phase legacy)
+release: F2                                       # release ID · ver {brand}/docs/product/releases/{id}.yaml
+# legacy fields (mantener por migración gradual · removerlos cuando todas las stories migren al schema v2)
+outcome: OUTCOME_SLUG                             # DEPRECATED · migrar a release
+phase: PHASE_SLUG                                 # DEPRECATED · migrar a release
+
+# Capability lineage (v2 cement 2026-05-27)
+cap_target: lisa.marca                            # null si cap nueva sin nombre aún · sino slug existente o nuevo
+cap_change_type: extend                           # new | fix | extend | derive
+parent_story: null                                # opcional · si story spawned desde otra done (parent.id)
+
 state: refining                                   # 10 estados v4 — ver tabla abajo
-phase: PO_SPEC                                    # ver tabla phase abajo (informational)
+phase_workflow: PO_SPEC                           # ver tabla phase workflow abajo (informational · renombrado de "phase" para evitar colisión con release legacy)
 last_artifact: 01-spec.md                         # último archivo escrito
 last_modified: 2026-05-06T15:23:00Z
 next_action: "Chris ratifica spec → invocar /architect"
@@ -17,6 +28,10 @@ spawned_by: /pm
 parallel_safe: true                               # ¿otra sesión puede tocar artefactos de esta story sin conflict?
 blocked_reason: null
 audit_iterations: 0                               # cap 2 → escala automática
+defer_audit: false                                # escape valve story-closure-gate
+defer_audit_reason: null
+parked_reason: null                               # mandatory cuando state=parked (≥10 chars)
+dropped_reason: null                              # mandatory cuando state=dropped (≥10 chars)
 hotfix_metadata:                                  # opcional, solo hot-fix tickets (R26)
   repro_verified: false
   repro_command: null
@@ -69,3 +84,39 @@ hotfix_metadata:                                  # opcional, solo hot-fix ticke
 - Si `blocked_reason != null`, ningún agent procede hasta Chris/PM resuelva.
 - `audit_iterations >= 2` → escala automática a Chris (no más self-fix loops).
 - Para hot-fix tickets (R26): `hotfix_metadata.repro_verified` MUST ser `true` antes spawn builder.
+
+## Capability lineage (v2 cement 2026-05-27)
+
+3 campos nuevos del frontmatter definen la relación story↔capability:
+
+| Field | Significado | Valores válidos |
+|---|---|---|
+| `cap_target` | Slug del cap que esta story toca | string slug (ej `valeria-agenda`) · null solo si state=idea y Chris no decidió aún |
+| `cap_change_type` | Qué tipo de cambio aplica al cap | `new` · `fix` · `extend` · `derive` |
+| `parent_story` | Story padre (si esta story es spawned desde una done) | story_id o null |
+
+### Decision matrix `cap_change_type`
+
+| Situación | Valor |
+|---|---|
+| Cap NO existe · esta story lo crea | `new` |
+| Cap existe · esta story arregla bug/regresión sin agregar funcionalidad | `fix` |
+| Cap existe · esta story agrega atomics nuevos al MISMO cap | `extend` |
+| Cap existe · esta story crea cap hijo basado en uno existente (scope significativamente distinto) | `derive` (declarar `parent_story` opcional + cap YAML hijo tendrá `parent_cap`) |
+
+### Validation enforce-able
+
+- `/po-ux`/`/po`/`/ux-agentico` rechaza state=refining→refined si `cap_target` o `cap_change_type` ausentes
+- `/architect` valida coherencia entre `cap_change_type` y archivos producidos (extend cita cap existente, derive crea YAML nuevo)
+- Pre-commit hook rechaza checkpoint con cap_change_type fuera del enum {new, fix, extend, derive}
+- Auditor Phase D verifica cap YAML target post-merge refleja `cap_change_type` declarado
+
+Doc canónico: `docs/process/capability-protocol.md`.
+
+## Release entity (v2 cement 2026-05-27)
+
+Campo `release` reemplaza el binomio legacy `outcome` + `phase`. Mientras dure la migración gradual, ambos coexisten (legacy fields marcados DEPRECATED).
+
+Cuando esta story esté asignada a un release activo, su release_id debe existir en `{brand}/docs/product/releases/{id}.yaml`. Drag entre releases en cockpit Roadmap actualiza este field + la lista `stories[]` del release.
+
+Doc canónico: `docs/process/release-protocol.md`.

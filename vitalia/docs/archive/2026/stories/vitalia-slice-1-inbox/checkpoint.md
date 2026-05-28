@@ -44,6 +44,12 @@ next_action: |
     → T-inbox-fe-7 (Storybook+arch test) → T-inbox-integ-{1,2}
   Verify pre-flight gates GREEN before pickup. All gherkin_coverage fields populated per ticket.
   Auto-handoff /auditor at state=developed (per .claude/rules/story-closure-gate.md).
+
+# Schema v2 migration (cement 2026-05-27)
+release: F0   # release ID · ver releases/
+cap_target: inbox-tools-extensions   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # vitalia-slice-1-inbox — checkpoint

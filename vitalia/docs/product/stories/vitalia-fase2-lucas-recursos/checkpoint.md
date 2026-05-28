@@ -26,6 +26,12 @@ blocks_soft:
 reuse_map_summary: "REUSE marketing module shipped + assets module · NEW biblioteca creatividades + copy reusable + AI generator (Mateo integration · transversal asistente) + importados + solicitudes Mateo · NEW N3-dyn workspace [asset-id]"
 spawned_at: 2026-05-22
 next_action: "/po-ux refinar 01-spec.md con wireframes biblioteca + Mateo cards · /ux-agentico diseñar flujo Mateo agentic"
+
+# Schema v2 migration (cement 2026-05-27)
+release: F2   # release ID · ver releases/
+cap_target: lucas.recursos   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # F2-S17 vitalia-fase2-lucas-recursos — checkpoint

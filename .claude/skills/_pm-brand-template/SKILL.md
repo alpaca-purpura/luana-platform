@@ -112,6 +112,8 @@ done
 
 Detalle SSoT: `.claude/rules/story-closure-gate.md`.
 
+**Step 0 extension · leer releases (v2 cement 2026-05-27):** bootstrap LEE también `{{SLUG}}/docs/product/releases/*.yaml` además de `checkpoint.md` brand-level + story-level. Esto da contexto sobre qué stories están en qué release activo. Doc: `docs/process/release-protocol.md`.
+
 ### Auto-chain rule (cementada 2026-05-23)
 
 **Regla cardinal:** si Chris nombra explícitamente una skill secundaria
@@ -188,6 +190,17 @@ capability promotion (R32) ANTES de cerrar la sesión:
    story_introduced, package_version, package_path, license`
 3. Cuerpo: surfaces (config, backend, frontend, tests, docs) + KPIs si aplica + dependencies cross-package
 
+### Fase F.3 · Capability ledger update (v2 cement 2026-05-27)
+
+Al cerrar story `reviewing → done`, aplicar logic del `cap_change_type` al YAML target. 4 ramas:
+
+- `new` → crear `{{SLUG}}/docs/product/capabilities/{module}/{cap_slug}.yaml` con schema v2 completo + change_log[0] type=new + atomics iniciales
+- `fix` → append change_log entry type=fix · NO toca atomics
+- `extend` → append change_log entry type=extend + append nuevos atomics al array con `added_in_story: {story_id}`
+- `derive` → crear cap YAML hijo con `parent_cap: {origen_slug}` + change_log[0] type=derive · update padre append `derives_capabilities: [hijo_slug]`
+
+Update también `last_modified: today` del cap. Doc: `docs/process/capability-protocol.md` § Sección 5.
+
 ### Verification gate
 
 Pre-commit hook + CI deben correr:
@@ -214,10 +227,47 @@ inspeccionando código + rules + archive. Toda regen futura del portfolio + audi
 
 Ver también: `vitalia/docs/learnings/2026-05-16-capabilities-inventory-gap.md`.
 
+## Output protocol · chris-input.md append (v2 cement 2026-05-27)
+
+Al cierre de cada turn de esta skill, MUST appendear una entry a la sección 💬 Conversación del `chris-input.md` de la story activa.
+
+**Path target:**
+- Story state ∈ {idea, refining, refined, ready, developing, developed, reviewing}: `{{SLUG}}/docs/product/stories/{story_id}/chris-input.md`
+- Story state = done: `{{SLUG}}/docs/archive/{year}/stories/{story_id}/chris-input.md` (read-only post-merge)
+
+**Formato verbatim del block markdown a appendear:**
+
+```markdown
+### YYYY-MM-DDTHH:MM · 🤖 claude · `/_pm-brand-template` · {emoji} {VERDICT-LABEL}
+{texto 2-30 líneas · descripción de qué hizo + decisiones tomadas + qué necesita Chris responder}
+```
+
+**Verdict labels (4 valores):**
+
+| Emoji | Label | Cuándo usar |
+|---|---|---|
+| ✓ | APLICADO | Cambios concretos aplicados al spec/design/arch/test (citar paths) |
+| ⚠️ | DUDA | Pregunta a Chris antes de seguir. State queda esperando respuesta |
+| ❌ | REFUTADO | Razón por la que NO se aplica algo que Chris pidió (con justificación) |
+| 💡 | PROPONE | Opción nueva sugerida por Claude · Chris ratifica o descarta |
+
+**Anti-patterns prohibidos:**
+
+- ❌ Skill termina turn sin appendear (silent escape) — siempre appendear, aunque sea `✓ APLICADO · sin cambios sustantivos`
+- ❌ Verdict sin texto sustantivo (1 palabra no informa)
+- ❌ Path hardcoded con brand fija — debe ser `{brand}` dinámico (de checkpoint.md o args del invoke)
+- ❌ Múltiples verdicts en un solo entry — si hay 2 cosas, son 2 entries consecutivas
+- ❌ Entry sin emoji + label de verdict (parser falla)
+
+Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
+
 ## Referencias
 
 - `.claude/skills/pm-nicolify/SKILL.md` — ejemplo concreto template aplicado
 - `.claude/skills/pm-luana/SKILL.md` — PM Luana unificado (Modo Portfolio reconoce el brand nuevo después bootstrap + Modo Core recibe futuras promotion candidates del brand). Alias `/pm` apunta acá.
 - `docs/architecture/luana-platform/01-core-audit.md` — plan multibrand original con catálogo 10 brands
+- `docs/process/capability-protocol.md` — schema cap YAML v2 + Fase F.3 4 ramas
+- `docs/process/release-protocol.md` — Release entity SSoT
+- `docs/process/chris-input-protocol.md` — output protocol per skill
 - `.claude/rules/brand-docs-schema.md` — schema canónico `{slug}/docs/` + R1+R2+R3 enforcement (MANDATORIO desde bootstrap)
 - `.claude/rules/story-closure-gate.md` — Fase F MERGE concreta R2 (archive como parte del 07-merge)

@@ -1,0 +1,89 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-bg: #0b0e14;
+  --color-panel: #11151d;
+  --color-panel2: #161b26;
+  --color-border: #232936;
+  --color-text: #e6edf3;
+  --color-muted: #7d8590;
+  --color-accent: #7c3aed;
+  --color-accent-hover: #6d28d9;
+}
+
+html,
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Componentes base reutilizables — replican el mockup */
+.panel {
+  background: var(--color-panel);
+  border: 1px solid var(--color-border);
+}
+
+.panel2 {
+  background: var(--color-panel2);
+  border: 1px solid var(--color-border);
+}
+
+.text-muted {
+  color: var(--color-muted);
+}
+
+.card {
+  background: var(--color-panel2);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 10px;
+  transition: all 0.12s;
+}
+
+.btn {
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--color-border);
+  background: var(--color-panel);
+  color: var(--color-text);
+  transition: all 0.12s;
+}
+
+.btn:hover {
+  background: var(--color-panel2);
+}
+
+.btn-primary {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+}
+
+input,
+select,
+textarea {
+  background: var(--color-panel);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 6px 10px;
+  color: var(--color-text);
+  font-size: 13px;
+  width: 100%;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
