@@ -1,12 +1,15 @@
-"""Tests for scripts/validate_code_cap_bidirectional.py (v3.2 cement 2026-05-28)."""
+"""Tests for scripts/validate_code_cap_bidirectional.py (cement 2026-05-28).
+
+Atomics killed 2026-05-28 — cross_check_1 (atomics→headers) and cross_check_2
+(headers→atomics) were removed. Only cross_check_3 (scenarios e2e_test paths)
+and cross_check_4 (access roles ↔ decorators) remain.
+"""
 
 from __future__ import annotations
 
 import importlib.util
-import json
 from pathlib import Path
 
-import pytest
 import yaml
 
 
@@ -61,228 +64,28 @@ def _setup(tmp_path: Path, brand: str = "vitalia") -> tuple[Path, Path, Path, Pa
     return caps_root, be_root, fe_root, e2e_root
 
 
-# ---------------------------------------------------------------------------
-# parse_cap_list / parse_atomics_list / get_header_info
-# ---------------------------------------------------------------------------
+def _write_code_index(tmp_path: Path, brand: str, cap_to_files: dict[str, list[str]]) -> None:
+    """Write a minimal _code-index.json so cross_check_4 can resolve files."""
+    import json
 
-
-def test_parse_cap_list_simple():
-    mod = _load_module()
-    assert mod.parse_cap_list("scheduling.valeria-agenda") == ["scheduling.valeria-agenda"]
-
-
-def test_parse_cap_list_array():
-    mod = _load_module()
-    assert mod.parse_cap_list("[a.b, c.d]") == ["a.b", "c.d"]
-
-
-def test_parse_atomics_list_simple():
-    mod = _load_module()
-    assert mod.parse_atomics_list("vista-calendario, drag-to-reschedule") == [
-        "vista-calendario",
-        "drag-to-reschedule",
-    ]
-
-
-def test_parse_atomics_list_tbd_empty():
-    mod = _load_module()
-    assert mod.parse_atomics_list("TBD") == []
-    assert mod.parse_atomics_list("") == []
-
-
-def test_get_header_info_python(tmp_path: Path):
-    mod = _load_module()
-    f = tmp_path / "x.py"
-    _write_code(
-        f,
-        "# cap: scheduling.valeria-agenda\n"
-        "# atomics: vista-calendario, drag-to-reschedule\n"
-        "# story-origin: vitalia-fase2-valeria-agenda\n"
-        '"""docstring"""\n',
+    idx_path = tmp_path / brand / "docs" / "product" / "capabilities" / "_code-index.json"
+    idx_path.parent.mkdir(parents=True, exist_ok=True)
+    idx_path.write_text(
+        json.dumps({"cap_to_files": cap_to_files}), encoding="utf-8"
     )
-    caps, atoms = mod.get_header_info(f)
-    assert caps == ["scheduling.valeria-agenda"]
-    assert atoms == ["vista-calendario", "drag-to-reschedule"]
-
-
-def test_get_header_info_tsx(tmp_path: Path):
-    mod = _load_module()
-    f = tmp_path / "x.tsx"
-    _write_code(
-        f,
-        "// cap: shell-organism.shell-vitalia\n"
-        "// atomics: shell-ribbon\n"
-        "// story-origin: vitalia-fase1-ribbon-6-tabs\n"
-        "'use client';\n",
-    )
-    caps, atoms = mod.get_header_info(f)
-    assert caps == ["shell-organism.shell-vitalia"]
-    assert atoms == ["shell-ribbon"]
 
 
 # ---------------------------------------------------------------------------
-# Cross-check 1 — Atomics verification → headers
+# load_capabilities
 # ---------------------------------------------------------------------------
 
 
-def test_cross_check_1_pass(tmp_path: Path):
-    mod = _load_module()
-    caps_root, be_root, _, _ = _setup(tmp_path)
-
-    # Code file with matching header
-    py_file = be_root / "x.py"
-    _write_code(
-        py_file,
-        "# cap: scheduling.valeria-agenda\n# atomics: TBD\n# story-origin: TBD\n",
-    )
-
-    # Cap declares this file in atomics.verification.be_path
-    cap_data = {
-        "slug": "valeria-agenda",
-        "atomics": [
-            {
-                "id": "vista-calendario",
-                "verification": {"be_path": "vitalia/backend/src/x.py"},
-            }
-        ],
-    }
-    _write_cap(caps_root, "scheduling", "valeria-agenda", cap_data)
-
-    caps = mod.load_capabilities("vitalia", tmp_path)
-    result = mod.cross_check_1(caps, tmp_path)
-    assert result["total"] == 1
-    assert result["pass"] == 1
-    assert result["drift"] == 0
-
-
-def test_cross_check_1_header_mismatch(tmp_path: Path):
-    mod = _load_module()
-    caps_root, be_root, _, _ = _setup(tmp_path)
-
-    # Code file with WRONG cap in header
-    py_file = be_root / "x.py"
-    _write_code(
-        py_file,
-        "# cap: brand_studio.lisa-marca\n# atomics: TBD\n# story-origin: TBD\n",
-    )
-
-    cap_data = {
-        "slug": "valeria-agenda",
-        "atomics": [
-            {
-                "id": "vista-calendario",
-                "verification": {"be_path": "vitalia/backend/src/x.py"},
-            }
-        ],
-    }
-    _write_cap(caps_root, "scheduling", "valeria-agenda", cap_data)
-
-    caps = mod.load_capabilities("vitalia", tmp_path)
-    result = mod.cross_check_1(caps, tmp_path)
-    assert result["total"] == 1
-    assert result["drift"] == 1
-    assert result["details"][0]["status"] == "header_mismatch"
-
-
-def test_cross_check_1_missing_file(tmp_path: Path):
+def test_load_capabilities(tmp_path: Path):
     mod = _load_module()
     caps_root, _, _, _ = _setup(tmp_path)
-
-    cap_data = {
-        "slug": "valeria-agenda",
-        "atomics": [
-            {
-                "id": "vista-calendario",
-                "verification": {"be_path": "vitalia/backend/src/missing.py"},
-            }
-        ],
-    }
-    _write_cap(caps_root, "scheduling", "valeria-agenda", cap_data)
-
+    _write_cap(caps_root, "scheduling", "valeria-agenda", {"slug": "valeria-agenda"})
     caps = mod.load_capabilities("vitalia", tmp_path)
-    result = mod.cross_check_1(caps, tmp_path)
-    assert result["drift"] == 1
-    assert result["details"][0]["status"] == "missing_file"
-
-
-def test_cross_check_1_shared_marker_allows(tmp_path: Path):
-    """Files with header `# cap: __shared__` should pass cross-check 1."""
-    mod = _load_module()
-    caps_root, be_root, _, _ = _setup(tmp_path)
-
-    py_file = be_root / "shared.py"
-    _write_code(
-        py_file,
-        "# cap: __shared__\n# atomics: TBD\n# story-origin: TBD\n",
-    )
-
-    cap_data = {
-        "slug": "valeria-agenda",
-        "atomics": [
-            {
-                "id": "vista-calendario",
-                "verification": {"be_path": "vitalia/backend/src/shared.py"},
-            }
-        ],
-    }
-    _write_cap(caps_root, "scheduling", "valeria-agenda", cap_data)
-
-    caps = mod.load_capabilities("vitalia", tmp_path)
-    result = mod.cross_check_1(caps, tmp_path)
-    assert result["pass"] == 1
-
-
-# ---------------------------------------------------------------------------
-# Cross-check 2 — Headers → atomics referenced
-# ---------------------------------------------------------------------------
-
-
-def test_cross_check_2_pass(tmp_path: Path):
-    mod = _load_module()
-    caps_root, be_root, _, _ = _setup(tmp_path)
-
-    py_file = be_root / "x.py"
-    _write_code(
-        py_file,
-        "# cap: scheduling.valeria-agenda\n"
-        "# atomics: vista-calendario\n"
-        "# story-origin: TBD\n",
-    )
-
-    cap_data = {
-        "slug": "valeria-agenda",
-        "atomics": [{"id": "vista-calendario"}],
-    }
-    _write_cap(caps_root, "scheduling", "valeria-agenda", cap_data)
-
-    caps = mod.load_capabilities("vitalia", tmp_path)
-    result = mod.cross_check_2(caps, tmp_path, "vitalia")
-    assert result["total"] == 1
-    assert result["pass"] == 1
-
-
-def test_cross_check_2_orphan_atomic_id(tmp_path: Path):
-    mod = _load_module()
-    caps_root, be_root, _, _ = _setup(tmp_path)
-
-    py_file = be_root / "x.py"
-    _write_code(
-        py_file,
-        "# cap: scheduling.valeria-agenda\n"
-        "# atomics: nonexistent-atomic\n"
-        "# story-origin: TBD\n",
-    )
-
-    cap_data = {
-        "slug": "valeria-agenda",
-        "atomics": [{"id": "vista-calendario"}],
-    }
-    _write_cap(caps_root, "scheduling", "valeria-agenda", cap_data)
-
-    caps = mod.load_capabilities("vitalia", tmp_path)
-    result = mod.cross_check_2(caps, tmp_path, "vitalia")
-    assert result["drift"] == 1
-    assert result["details"][0]["orphan_atomic_id"] == "nonexistent-atomic"
+    assert "scheduling.valeria-agenda" in caps
 
 
 # ---------------------------------------------------------------------------
@@ -294,17 +97,13 @@ def test_cross_check_3_pass(tmp_path: Path):
     mod = _load_module()
     caps_root, _, _, e2e_root = _setup(tmp_path)
 
-    # Write a valid Playwright spec
     spec = e2e_root / "agenda.spec.ts"
     _write_code(spec, "import { test } from '@playwright/test';\ntest('foo', async () => {});\n")
 
     cap_data = {
         "slug": "valeria-agenda",
         "scenarios": [
-            {
-                "id": "doctor-ve-agenda",
-                "e2e_test": f"vitalia/frontend/e2e/agenda.spec.ts",
-            }
+            {"id": "doctor-ve-agenda", "e2e_test": "vitalia/frontend/e2e/agenda.spec.ts"}
         ],
     }
     _write_cap(caps_root, "scheduling", "valeria-agenda", cap_data)
@@ -313,6 +112,7 @@ def test_cross_check_3_pass(tmp_path: Path):
     result = mod.cross_check_3(caps, tmp_path)
     assert result["total"] == 1
     assert result["pass"] == 1
+    assert result["drift"] == 0
 
 
 def test_cross_check_3_missing_file(tmp_path: Path):
@@ -322,10 +122,7 @@ def test_cross_check_3_missing_file(tmp_path: Path):
     cap_data = {
         "slug": "valeria-agenda",
         "scenarios": [
-            {
-                "id": "doctor-ve-agenda",
-                "e2e_test": "vitalia/frontend/e2e/missing.spec.ts",
-            }
+            {"id": "doctor-ve-agenda", "e2e_test": "vitalia/frontend/e2e/missing.spec.ts"}
         ],
     }
     _write_cap(caps_root, "scheduling", "valeria-agenda", cap_data)
@@ -347,10 +144,7 @@ def test_cross_check_3_no_test_pattern(tmp_path: Path):
     cap_data = {
         "slug": "valeria-agenda",
         "scenarios": [
-            {
-                "id": "doctor-ve-agenda",
-                "e2e_test": "vitalia/frontend/e2e/not-a-test.spec.ts",
-            }
+            {"id": "doctor-ve-agenda", "e2e_test": "vitalia/frontend/e2e/not-a-test.spec.ts"}
         ],
     }
     _write_cap(caps_root, "scheduling", "valeria-agenda", cap_data)
@@ -392,19 +186,14 @@ def test_cross_check_4_pass_roles_match(tmp_path: Path):
     py_file = be_root / "api.py"
     _write_code(
         py_file,
-        "# cap: scheduling.valeria-agenda\n# atomics: TBD\n# story-origin: TBD\n"
+        "# cap: scheduling.valeria-agenda\n# story-origin: TBD\n"
         "@require_phi_access(roles=['doctor', 'admin_clinic'])\n"
         "def get_agenda(): pass\n",
     )
+    _write_code_index(tmp_path, "vitalia", {"scheduling.valeria-agenda": ["vitalia/backend/src/api.py"]})
 
     cap_data = {
         "slug": "valeria-agenda",
-        "atomics": [
-            {
-                "id": "vista-calendario",
-                "verification": {"be_path": "vitalia/backend/src/api.py"},
-            }
-        ],
         "access": {
             "entry_points": [
                 {
@@ -429,19 +218,14 @@ def test_cross_check_4_drift_role_mismatch(tmp_path: Path):
     py_file = be_root / "api.py"
     _write_code(
         py_file,
-        "# cap: scheduling.valeria-agenda\n# atomics: TBD\n# story-origin: TBD\n"
+        "# cap: scheduling.valeria-agenda\n# story-origin: TBD\n"
         "@require_phi_access(roles=['nurse'])\n"  # Different role!
         "def get_agenda(): pass\n",
     )
+    _write_code_index(tmp_path, "vitalia", {"scheduling.valeria-agenda": ["vitalia/backend/src/api.py"]})
 
     cap_data = {
         "slug": "valeria-agenda",
-        "atomics": [
-            {
-                "id": "vista-calendario",
-                "verification": {"be_path": "vitalia/backend/src/api.py"},
-            }
-        ],
         "access": {
             "entry_points": [
                 {
@@ -468,18 +252,13 @@ def test_cross_check_4_ui_entry_lenient(tmp_path: Path):
     tsx_file = fe_root / "page.tsx"
     _write_code(
         tsx_file,
-        "// cap: scheduling.valeria-agenda\n// atomics: TBD\n// story-origin: TBD\n"
+        "// cap: scheduling.valeria-agenda\n// story-origin: TBD\n"
         "export default function Page() { return null; }\n",
     )
+    _write_code_index(tmp_path, "vitalia", {"scheduling.valeria-agenda": ["vitalia/frontend/src/page.tsx"]})
 
     cap_data = {
         "slug": "valeria-agenda",
-        "atomics": [
-            {
-                "id": "vista-calendario",
-                "verification": {"fe_path": "vitalia/frontend/src/page.tsx"},
-            }
-        ],
         "access": {
             "entry_points": [
                 {

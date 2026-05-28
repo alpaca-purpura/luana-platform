@@ -1,4 +1,7 @@
-"""Tests for scripts/compute_capability_status.py.
+"""Tests for scripts/compute_capability_status.py (scenarios state-machine).
+
+Atomics killed 2026-05-28 — the unit of behavior is now `scenario` (Gherkin).
+See docs/process/lifecycle.md.
 
 Uses inline YAML fixtures via tmp_path — does NOT depend on real cap files.
 All paths use the workspace-root-relative convention the script expects.
@@ -6,10 +9,8 @@ All paths use the workspace-root-relative convention the script expects.
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
-import pytest
 import yaml
 
 # ---------------------------------------------------------------------------
@@ -38,7 +39,6 @@ def _write_cap(caps_dir: Path, module: str, slug: str, data: dict) -> Path:
 def _run_script(workspace_root: Path, brand: str) -> dict:
     """Import and run compute_capability_status.process_brand directly."""
     import importlib.util
-    import sys
 
     scripts_dir = Path(__file__).parent.parent
     spec = importlib.util.spec_from_file_location(
@@ -58,13 +58,24 @@ def _setup_brand_caps(tmp_path: Path, brand: str) -> Path:
     return caps_dir
 
 
+def _write_e2e(tmp_path: Path, rel_path: str) -> str:
+    """Create a real Playwright spec at workspace-root-relative rel_path."""
+    full = tmp_path / rel_path
+    full.parent.mkdir(parents=True, exist_ok=True)
+    full.write_text(
+        "import { test } from '@playwright/test';\ntest('x', async () => {});\n",
+        encoding="utf-8",
+    )
+    return rel_path
+
+
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
 
 
-def test_stub_cap_when_atomics_empty(tmp_path: Path) -> None:
-    """A cap with atomics: [] must compute as 'stub' regardless of declared status."""
+def test_stub_cap_when_scenarios_empty(tmp_path: Path) -> None:
+    """A cap with scenarios: [] must compute as 'stub' regardless of declared status."""
     brand = "testbrand"
     caps_dir = _setup_brand_caps(tmp_path, brand)
     _write_cap(
@@ -76,7 +87,7 @@ def test_stub_cap_when_atomics_empty(tmp_path: Path) -> None:
             "module": "booking",
             "slug": "booking-widget",
             "status": "live",
-            "atomics": [],
+            "scenarios": [],
         },
     )
 
@@ -84,45 +95,50 @@ def test_stub_cap_when_atomics_empty(tmp_path: Path) -> None:
     cap = result["capabilities"]["booking-widget"]
 
     assert cap["computed_status"] == "stub"
-    assert cap["atomics_total"] == 0
+    assert cap["scenarios_total"] == 0
+    assert cap["scenarios_verified"] == 0
+    assert cap["verification_total"] == 0
+    assert cap["verification_pass"] == 0
     assert result["summary"]["stub"] == 1
 
 
-def test_verified_live_when_all_atomics_live_and_verification_paths_exist(tmp_path: Path) -> None:
-    """Cap with all-live atomics + verification paths that exist → verified-live."""
+def test_stub_when_scenarios_absent(tmp_path: Path) -> None:
+    """A cap with no scenarios key at all is also 'stub'."""
+    brand = "testbrand"
+    caps_dir = _setup_brand_caps(tmp_path, brand)
+    _write_cap(
+        caps_dir,
+        "booking",
+        "no-scenarios",
+        {
+            "slug": "no-scenarios",
+            "status": "live",
+        },
+    )
+
+    result = _run_script(tmp_path, brand)
+    cap = result["capabilities"]["no-scenarios"]
+    assert cap["computed_status"] == "stub"
+
+
+def test_verified_live_when_all_scenarios_have_existing_e2e(tmp_path: Path) -> None:
+    """Cap live + every scenario has an e2e_test that exists → verified-live."""
     brand = "testbrand"
     caps_dir = _setup_brand_caps(tmp_path, brand)
 
-    # Create a real file that verification.fe_path will reference (relative to workspace root)
-    fe_file = tmp_path / "testbrand" / "frontend" / "src" / "components" / "Widget.tsx"
-    fe_file.parent.mkdir(parents=True, exist_ok=True)
-    fe_file.write_text("export const Widget = () => null;\n", encoding="utf-8")
-    fe_path_rel = "testbrand/frontend/src/components/Widget.tsx"
+    e2e1 = _write_e2e(tmp_path, "testbrand/frontend/e2e/a.spec.ts")
+    e2e2 = _write_e2e(tmp_path, "testbrand/frontend/e2e/b.spec.ts")
 
     _write_cap(
         caps_dir,
         "booking",
         "verified-cap",
         {
-            "capability_id": "testbrand-verified-cap",
-            "module": "booking",
             "slug": "verified-cap",
             "status": "live",
-            "atomics": [
-                {
-                    "id": "widget-render",
-                    "name": "Renderizado del widget",
-                    "surface": "FE",
-                    "added_in_story": "story-001",
-                    "added_date": "2026-05-01",
-                    "status": "live",
-                    "verification": {
-                        "fe_path": fe_path_rel,
-                        "be_path": None,
-                        "agentic_path": None,
-                        "e2e_test": None,
-                    },
-                }
+            "scenarios": [
+                {"id": "s1", "name": "Scenario 1", "e2e_test": e2e1},
+                {"id": "s2", "name": "Scenario 2", "e2e_test": e2e2},
             ],
         },
     )
@@ -131,19 +147,18 @@ def test_verified_live_when_all_atomics_live_and_verification_paths_exist(tmp_pa
     cap = result["capabilities"]["verified-cap"]
 
     assert cap["computed_status"] == "verified-live", (
-        f"Expected verified-live but got {cap['computed_status']}. "
-        f"drift_reasons: {cap['drift_reasons']}"
+        f"got {cap['computed_status']}, drift_reasons={cap['drift_reasons']}"
     )
-    assert cap["atomics_total"] == 1
-    assert cap["atomics_live"] == 1
-    assert cap["verification_total"] == 1
-    assert cap["verification_pass"] == 1
+    assert cap["scenarios_total"] == 2
+    assert cap["scenarios_verified"] == 2
+    assert cap["verification_total"] == 2
+    assert cap["verification_pass"] == 2
     assert cap["drift_reasons"] == []
-    assert result["summary"]["verified-live"] == 1
+    assert result["summary"]["verified_live"] == 1
 
 
-def test_declared_live_when_atomics_live_but_no_verification(tmp_path: Path) -> None:
-    """Cap with live atomics but no verification block → declared-live."""
+def test_declared_live_when_no_e2e_declared(tmp_path: Path) -> None:
+    """Cap live with scenarios but zero e2e_test declared → declared-live."""
     brand = "testbrand"
     caps_dir = _setup_brand_caps(tmp_path, brand)
 
@@ -152,28 +167,11 @@ def test_declared_live_when_atomics_live_but_no_verification(tmp_path: Path) -> 
         "shell",
         "shell-vitalia",
         {
-            "capability_id": "testbrand-shell-vitalia",
-            "module": "shell",
             "slug": "shell-vitalia",
             "status": "live",
-            "atomics": [
-                {
-                    "id": "layout-5050",
-                    "name": "Layout 50/50",
-                    "surface": "FE",
-                    "added_in_story": "story-s4",
-                    "added_date": "2026-05-23",
-                    "status": "live",
-                    # No 'verification' key
-                },
-                {
-                    "id": "ribbon",
-                    "name": "Ribbon 6 tabs",
-                    "surface": "FE",
-                    "added_in_story": "story-s7",
-                    "added_date": "2026-05-25",
-                    "status": "live",
-                },
+            "scenarios": [
+                {"id": "layout", "name": "Layout 50/50", "e2e_test": None},
+                {"id": "ribbon", "name": "Ribbon 6 tabs"},  # no e2e_test key
             ],
         },
     )
@@ -182,55 +180,122 @@ def test_declared_live_when_atomics_live_but_no_verification(tmp_path: Path) -> 
     cap = result["capabilities"]["shell-vitalia"]
 
     assert cap["computed_status"] == "declared-live"
-    assert cap["atomics_total"] == 2
-    assert cap["atomics_live"] == 2
+    assert cap["scenarios_total"] == 2
     assert cap["verification_total"] == 0
     assert cap["verification_pass"] == 0
-    assert result["summary"]["declared-live"] == 1
+    assert result["summary"]["declared_live"] == 1
 
 
-def test_drift_when_atomics_wip_but_declared_live(tmp_path: Path) -> None:
-    """Cap declared=live but ALL atomics wip → drift."""
+def test_drift_when_e2e_declared_but_missing(tmp_path: Path) -> None:
+    """Cap live, decl>0 but file(s) missing → drift with reasons naming paths."""
+    brand = "testbrand"
+    caps_dir = _setup_brand_caps(tmp_path, brand)
+
+    _write_cap(
+        caps_dir,
+        "scheduling",
+        "agenda",
+        {
+            "slug": "agenda",
+            "status": "live",
+            "scenarios": [
+                {"id": "s1", "e2e_test": "testbrand/frontend/e2e/missing-1.spec.ts"},
+                {"id": "s2", "e2e_test": "testbrand/frontend/e2e/missing-2.spec.ts"},
+            ],
+        },
+    )
+
+    result = _run_script(tmp_path, brand)
+    cap = result["capabilities"]["agenda"]
+
+    assert cap["computed_status"] == "drift"
+    assert cap["verification_total"] == 2
+    assert cap["verification_pass"] == 0
+    assert len(cap["drift_reasons"]) == 2
+    assert any("missing-1.spec.ts" in r for r in cap["drift_reasons"])
+    assert result["summary"]["drift"] == 1
+
+
+def test_partial_when_some_scenarios_unverified(tmp_path: Path) -> None:
+    """Cap live: one scenario verified, another with no e2e → partial.
+
+    Here exist != scenarios_total (1 < 2) and decl == exist (1 == 1) so it is
+    neither verified-live, nor drift, nor declared-live → partial.
+    """
+    brand = "testbrand"
+    caps_dir = _setup_brand_caps(tmp_path, brand)
+
+    e2e1 = _write_e2e(tmp_path, "testbrand/frontend/e2e/done.spec.ts")
+
+    _write_cap(
+        caps_dir,
+        "crm",
+        "partial-cap",
+        {
+            "slug": "partial-cap",
+            "status": "live",
+            "scenarios": [
+                {"id": "done", "e2e_test": e2e1},
+                {"id": "todo", "e2e_test": None},
+            ],
+        },
+    )
+
+    result = _run_script(tmp_path, brand)
+    cap = result["capabilities"]["partial-cap"]
+
+    assert cap["computed_status"] == "partial"
+    assert cap["scenarios_total"] == 2
+    assert cap["scenarios_verified"] == 1
+    assert cap["verification_total"] == 1
+    assert cap["verification_pass"] == 1
+    assert result["summary"]["partial"] == 1
+
+
+def test_wip_when_declared_beta(tmp_path: Path) -> None:
+    """Cap declared=beta with scenarios → wip."""
     brand = "testbrand"
     caps_dir = _setup_brand_caps(tmp_path, brand)
 
     _write_cap(
         caps_dir,
         "copilot",
-        "copilot-draft",
+        "beta-cap",
         {
-            "capability_id": "testbrand-copilot-draft",
-            "module": "copilot",
-            "slug": "copilot-draft",
-            "status": "live",
-            "atomics": [
-                {
-                    "id": "chat-window",
-                    "name": "Ventana de chat",
-                    "surface": "FE",
-                    "added_in_story": "story-c1",
-                    "added_date": "2026-05-01",
-                    "status": "wip",
-                },
-                {
-                    "id": "backend-handler",
-                    "name": "Manejador backend",
-                    "surface": "BE",
-                    "added_in_story": "story-c1",
-                    "added_date": "2026-05-01",
-                    "status": "wip",
-                },
+            "slug": "beta-cap",
+            "status": "beta",
+            "scenarios": [
+                {"id": "s1", "e2e_test": None},
             ],
         },
     )
 
     result = _run_script(tmp_path, brand)
-    cap = result["capabilities"]["copilot-draft"]
+    cap = result["capabilities"]["beta-cap"]
 
-    assert cap["computed_status"] == "drift"
-    assert cap["atomics_wip"] == 2
-    assert len(cap["drift_reasons"]) >= 1
-    assert result["summary"]["drift"] == 1
+    assert cap["computed_status"] == "wip"
+    assert result["summary"]["wip"] == 1
+
+
+def test_wip_when_declared_planned(tmp_path: Path) -> None:
+    """Cap declared=planned (other) with scenarios → wip."""
+    brand = "testbrand"
+    caps_dir = _setup_brand_caps(tmp_path, brand)
+
+    _write_cap(
+        caps_dir,
+        "copilot",
+        "planned-cap",
+        {
+            "slug": "planned-cap",
+            "status": "planned",
+            "scenarios": [{"id": "s1"}],
+        },
+    )
+
+    result = _run_script(tmp_path, brand)
+    cap = result["capabilities"]["planned-cap"]
+    assert cap["computed_status"] == "wip"
 
 
 def test_deprecated_passthrough(tmp_path: Path) -> None:
@@ -243,20 +308,9 @@ def test_deprecated_passthrough(tmp_path: Path) -> None:
         "legacy",
         "old-feature",
         {
-            "capability_id": "testbrand-old-feature",
-            "module": "legacy",
             "slug": "old-feature",
             "status": "deprecated",
-            "atomics": [
-                {
-                    "id": "old-widget",
-                    "name": "Widget antiguo",
-                    "surface": "FE",
-                    "added_in_story": "story-old",
-                    "added_date": "2025-01-01",
-                    "status": "deprecated",
-                }
-            ],
+            "scenarios": [{"id": "s1", "e2e_test": None}],
         },
     )
 
@@ -267,115 +321,54 @@ def test_deprecated_passthrough(tmp_path: Path) -> None:
     assert result["summary"]["deprecated"] == 1
 
 
-def test_atomics_per_surface_counter(tmp_path: Path) -> None:
-    """atomics_per_surface groups atomics correctly by surface enum."""
+def test_sunset_passthrough(tmp_path: Path) -> None:
+    """Cap declared=sunset → sunset."""
     brand = "testbrand"
     caps_dir = _setup_brand_caps(tmp_path, brand)
 
     _write_cap(
         caps_dir,
-        "sales",
-        "multi-surface-cap",
+        "legacy",
+        "sunset-feature",
         {
-            "capability_id": "testbrand-multi-surface-cap",
-            "module": "sales",
-            "slug": "multi-surface-cap",
-            "status": "live",
-            "atomics": [
-                {
-                    "id": "fe-1",
-                    "name": "Componente FE 1",
-                    "surface": "FE",
-                    "added_in_story": "s1",
-                    "added_date": "2026-05-01",
-                    "status": "live",
-                },
-                {
-                    "id": "fe-2",
-                    "name": "Componente FE 2",
-                    "surface": "FE",
-                    "added_in_story": "s1",
-                    "added_date": "2026-05-01",
-                    "status": "live",
-                },
-                {
-                    "id": "be-1",
-                    "name": "Endpoint BE",
-                    "surface": "BE",
-                    "added_in_story": "s1",
-                    "added_date": "2026-05-01",
-                    "status": "live",
-                },
-                {
-                    "id": "agentic-1",
-                    "name": "Tool agéntico",
-                    "surface": "AGENTIC",
-                    "added_in_story": "s2",
-                    "added_date": "2026-05-02",
-                    "status": "live",
-                },
-                {
-                    "id": "bad-surface",
-                    "name": "Surface desconocida",
-                    "surface": "UNKNOWN_SURFACE",
-                    "added_in_story": "s3",
-                    "added_date": "2026-05-03",
-                    "status": "live",
-                },
-            ],
+            "slug": "sunset-feature",
+            "status": "sunset",
+            "scenarios": [{"id": "s1"}],
         },
     )
 
     result = _run_script(tmp_path, brand)
-    cap = result["capabilities"]["multi-surface-cap"]
+    cap = result["capabilities"]["sunset-feature"]
 
-    per_surface = cap["atomics_per_surface"]
-    assert per_surface["FE"] == 2
-    assert per_surface["BE"] == 1
-    assert per_surface["AGENTIC"] == 1
-    assert per_surface["invalid"] == 1
-    assert cap["atomics_total"] == 5
+    assert cap["computed_status"] == "sunset"
+    assert result["summary"]["sunset"] == 1
 
 
-def test_partial_when_mixed_live_and_wip(tmp_path: Path) -> None:
-    """Cap declared=live with mix of live + wip atomics → partial."""
+def test_summary_keys_use_underscores(tmp_path: Path) -> None:
+    """Summary keys must use underscores (cockpit contract)."""
     brand = "testbrand"
     caps_dir = _setup_brand_caps(tmp_path, brand)
-
+    e2e1 = _write_e2e(tmp_path, "testbrand/frontend/e2e/ok.spec.ts")
     _write_cap(
         caps_dir,
-        "crm",
-        "partial-cap",
-        {
-            "capability_id": "testbrand-partial-cap",
-            "module": "crm",
-            "slug": "partial-cap",
-            "status": "live",
-            "atomics": [
-                {
-                    "id": "done-part",
-                    "name": "Parte completada",
-                    "surface": "FE",
-                    "added_in_story": "s1",
-                    "added_date": "2026-05-01",
-                    "status": "live",
-                },
-                {
-                    "id": "wip-part",
-                    "name": "Parte en progreso",
-                    "surface": "BE",
-                    "added_in_story": "s2",
-                    "added_date": "2026-05-10",
-                    "status": "wip",
-                },
-            ],
-        },
+        "booking",
+        "c1",
+        {"slug": "c1", "status": "live", "scenarios": [{"id": "s1", "e2e_test": e2e1}]},
     )
 
     result = _run_script(tmp_path, brand)
-    cap = result["capabilities"]["partial-cap"]
-
-    assert cap["computed_status"] == "partial"
-    assert cap["atomics_live"] == 1
-    assert cap["atomics_wip"] == 1
-    assert result["summary"]["partial"] == 1
+    summary = result["summary"]
+    for key in (
+        "total_caps",
+        "verified_live",
+        "declared_live",
+        "partial",
+        "wip",
+        "stub",
+        "drift",
+        "deprecated",
+        "sunset",
+    ):
+        assert key in summary, f"missing summary key {key}"
+    # No hyphenated keys leaked
+    assert not any("-" in k for k in summary)

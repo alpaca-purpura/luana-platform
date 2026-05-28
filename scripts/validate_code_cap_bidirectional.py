@@ -1,26 +1,21 @@
 #!/usr/bin/env python3
-"""Bidirectional validator code↔cap mapping (Schema v3.2 · cement 2026-05-28).
+"""Bidirectional validator code↔cap mapping (cement 2026-05-28).
 
-Cross-checks 4 niveles:
-
-1. **Atomics verification → headers**: archivos en `cap.atomics[*].verification.*_path`
-   tienen header `# cap: <cap_id>` (o multi-cap incluyendo). Si header apunta a otro cap → DRIFT.
-
-2. **Headers → atomics referenced**: archivos con header `# atomics: <id1>, <id2>`
-   declaran IDs que existen en `cap.atomics[].id` del cap declarado. IDs huérfanos → DRIFT.
+Cross-checks 2 niveles (atomics killed 2026-05-28 — ver docs/process/lifecycle.md):
 
 3. **Scenarios e2e_test path existence**: `cap.scenarios[*].e2e_test` declarado debe
    existir en filesystem + contener `test(` o `test.describe(`. Missing → HARD pre-push block.
 
 4. **Access roles ↔ runtime decorators (P4)**: roles en `cap.access.entry_points[*].requires_role`
-   coinciden con `@require_phi_access(roles=[...])` decorators del código. Mismatch → advisory.
+   coinciden con `@require_phi_access(roles=[...])` decorators del código. HARD para vitalia
+   (es salud; PHI access no puede ser advisory), advisory para otras brands.
 
 Output:
   `{brand}/docs/product/capabilities/_bidirectional-validation.json` (gitignored R3 v2)
 
 Usage:
   python3 scripts/validate_code_cap_bidirectional.py --brand vitalia
-  python3 scripts/validate_code_cap_bidirectional.py --brand vitalia --strict --hard-checks 1,3
+  python3 scripts/validate_code_cap_bidirectional.py --brand vitalia --strict
 """
 from __future__ import annotations
 
@@ -29,18 +24,15 @@ import json
 import re
 import subprocess
 import sys
-from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 import yaml
 
-# Same regex as generate_code_to_cap_index
+# Header regex (kept for cross-check 4 file association via code-index)
 HEADER_PY_CAP = re.compile(r"^\s*#\s*cap:\s*(.+?)\s*$", re.MULTILINE)
 HEADER_TS_CAP = re.compile(r"^\s*//\s*cap:\s*(.+?)\s*$", re.MULTILINE)
-HEADER_PY_ATOM = re.compile(r"^\s*#\s*atomics:\s*(.+?)\s*$", re.MULTILINE)
-HEADER_TS_ATOM = re.compile(r"^\s*//\s*atomics:\s*(.+?)\s*$", re.MULTILINE)
 
 # Decorator detection patterns for cross-check 4
 DECORATOR_RE = re.compile(
@@ -113,223 +105,6 @@ def load_capabilities(brand: str, workspace_root: Path) -> dict[str, dict[str, A
 
 
 # ---------------------------------------------------------------------------
-# Header parsing helper
-# ---------------------------------------------------------------------------
-
-
-def parse_cap_list(raw: str) -> list[str]:
-    raw = raw.strip()
-    if not raw:
-        return []
-    if raw in {"__orphan__", "__shared__", "__skip__", "TBD"}:
-        return [raw]
-    if raw.startswith("[") and raw.endswith("]"):
-        inner = raw[1:-1]
-        return [c.strip() for c in inner.split(",") if c.strip()]
-    return [raw]
-
-
-def parse_atomics_list(raw: str) -> list[str]:
-    raw = raw.strip()
-    if not raw or raw == "TBD":
-        return []
-    if raw.startswith("[") and raw.endswith("]"):
-        raw = raw[1:-1]
-    return [a.strip() for a in raw.split(",") if a.strip()]
-
-
-def get_header_info(path: Path) -> tuple[list[str], list[str]]:
-    """Returns (caps, atomics) declared in file header."""
-    try:
-        with path.open(encoding="utf-8") as fh:
-            head = "".join(fh.readline() for _ in range(20))
-    except (OSError, UnicodeDecodeError):
-        return [], []
-
-    is_py = path.suffix == ".py"
-    cap_re = HEADER_PY_CAP if is_py else HEADER_TS_CAP
-    atom_re = HEADER_PY_ATOM if is_py else HEADER_TS_ATOM
-
-    cap_match = cap_re.search(head)
-    atoms_match = atom_re.search(head)
-
-    caps = parse_cap_list(cap_match.group(1)) if cap_match else []
-    atoms = parse_atomics_list(atoms_match.group(1)) if atoms_match else []
-    return caps, atoms
-
-
-# ---------------------------------------------------------------------------
-# Cross-check 1 — Atomics verification → headers
-# ---------------------------------------------------------------------------
-
-
-def cross_check_1(
-    caps: dict[str, dict],
-    workspace_root: Path,
-) -> dict[str, Any]:
-    """For each cap.atomics[*].verification.*_path declared, verify header matches."""
-    results: list[dict] = []
-    total = 0
-    passing = 0
-    drift = 0
-
-    for cap_id, cap_data in caps.items():
-        atomics = cap_data.get("atomics") or []
-        for atomic in atomics:
-            if not isinstance(atomic, dict):
-                continue
-            verif = atomic.get("verification") or {}
-            if not isinstance(verif, dict):
-                continue
-            atomic_id = atomic.get("id", "<unknown>")
-
-            for field in ("fe_path", "be_path", "agentic_path"):
-                declared_path = verif.get(field)
-                if not declared_path:
-                    continue
-                total += 1
-                full_path = workspace_root / declared_path
-                if not full_path.exists():
-                    # cross_check_3 catches missing files for e2e. Here it's also drift.
-                    drift += 1
-                    results.append(
-                        {
-                            "cap_id": cap_id,
-                            "atomic_id": atomic_id,
-                            "field": field,
-                            "declared_path": declared_path,
-                            "status": "missing_file",
-                            "drift_reason": f"verification.{field} path doesn't exist",
-                        }
-                    )
-                    continue
-
-                # Read header
-                header_caps, _ = get_header_info(full_path)
-                if not header_caps:
-                    drift += 1
-                    results.append(
-                        {
-                            "cap_id": cap_id,
-                            "atomic_id": atomic_id,
-                            "field": field,
-                            "declared_path": declared_path,
-                            "status": "missing_header",
-                            "drift_reason": f"file has no `# cap:` header",
-                        }
-                    )
-                    continue
-
-                # Header contains this cap_id?
-                if cap_id in header_caps or "__shared__" in header_caps:
-                    passing += 1
-                else:
-                    drift += 1
-                    results.append(
-                        {
-                            "cap_id": cap_id,
-                            "atomic_id": atomic_id,
-                            "field": field,
-                            "declared_path": declared_path,
-                            "status": "header_mismatch",
-                            "header_caps": header_caps,
-                            "drift_reason": (
-                                f"cap declares this atomic but file header points to "
-                                f"{header_caps} instead of {cap_id}"
-                            ),
-                        }
-                    )
-
-    return {
-        "total": total,
-        "pass": passing,
-        "drift": drift,
-        "details": results,
-    }
-
-
-# ---------------------------------------------------------------------------
-# Cross-check 2 — Headers → atomics referenced
-# ---------------------------------------------------------------------------
-
-
-def cross_check_2(
-    caps: dict[str, dict],
-    workspace_root: Path,
-    brand: str,
-) -> dict[str, Any]:
-    """For each file with header `# atomics: <ids>`, verify IDs exist in cap.atomics[]."""
-    results: list[dict] = []
-    total = 0
-    passing = 0
-    drift = 0
-
-    # Build cap → atomics IDs map
-    cap_atomic_ids: dict[str, set[str]] = {}
-    for cap_id, cap_data in caps.items():
-        atomics_arr = cap_data.get("atomics") or []
-        ids: set[str] = set()
-        for atomic in atomics_arr:
-            if isinstance(atomic, dict) and "id" in atomic:
-                ids.add(atomic["id"])
-        cap_atomic_ids[cap_id] = ids
-
-    # Scan code files
-    be_root = workspace_root / brand / "backend" / "src"
-    fe_root = workspace_root / brand / "frontend" / "src"
-
-    scan_paths: list[Path] = []
-    if be_root.exists():
-        scan_paths.extend(p for p in be_root.rglob("*.py") if "__pycache__" not in p.parts)
-    if fe_root.exists():
-        for ext in ("*.ts", "*.tsx"):
-            for p in fe_root.rglob(ext):
-                if any(part in {"__tests__"} for part in p.parts):
-                    continue
-                if p.name.endswith((".test.ts", ".test.tsx", ".spec.ts", ".spec.tsx")):
-                    continue
-                scan_paths.append(p)
-
-    for path in scan_paths:
-        header_caps, header_atomics = get_header_info(path)
-        if not header_caps or not header_atomics:
-            continue
-        # Skip special markers
-        if all(c in {"__orphan__", "__shared__", "__skip__"} for c in header_caps):
-            continue
-
-        rel = str(path.relative_to(workspace_root))
-        for atomic_id in header_atomics:
-            total += 1
-            # Check atomic_id exists in any of declared caps
-            found = False
-            for cap_id in header_caps:
-                if cap_id in cap_atomic_ids and atomic_id in cap_atomic_ids[cap_id]:
-                    found = True
-                    break
-            if found:
-                passing += 1
-            else:
-                drift += 1
-                results.append(
-                    {
-                        "file": rel,
-                        "header_caps": header_caps,
-                        "orphan_atomic_id": atomic_id,
-                        "status": "atomic_id_not_in_cap",
-                        "drift_reason": f"atomic '{atomic_id}' not found in declared caps {header_caps}",
-                    }
-                )
-
-    return {
-        "total": total,
-        "pass": passing,
-        "drift": drift,
-        "details": results,
-    }
-
-
-# ---------------------------------------------------------------------------
 # Cross-check 3 — Scenarios e2e_test path existence
 # ---------------------------------------------------------------------------
 
@@ -364,7 +139,7 @@ def cross_check_3(
                         "scenario_id": scenario.get("id", "<unknown>"),
                         "declared_e2e_test": e2e_test,
                         "status": "missing_file",
-                        "drift_reason": f"e2e_test path doesn't exist",
+                        "drift_reason": "e2e_test path doesn't exist",
                     }
                 )
                 continue
@@ -419,9 +194,8 @@ def cross_check_4(
 ) -> dict[str, Any]:
     """For each cap.access.entry_points[*].requires_role, cross-check decorator in code.
 
-    Sources for related files (in priority order):
-      1. cap.atomics[*].verification.{fe_path, be_path} (declared)
-      2. `_code-index.json` cap_to_files (headers `# cap: <cap_id>`)
+    Related files are resolved from ``_code-index.json`` cap_to_files (headers
+    ``# cap: <cap_id>``).
     """
     results: list[dict] = []
     total = 0
@@ -448,22 +222,8 @@ def cross_check_4(
         if not isinstance(entry_points, list):
             continue
 
-        # Get files associated with this cap (via cap.atomics verification paths OR code-index)
-        related_files: set[str] = set()
-        for atomic in cap_data.get("atomics") or []:
-            if not isinstance(atomic, dict):
-                continue
-            verif = atomic.get("verification") or {}
-            if not isinstance(verif, dict):
-                continue
-            for field in ("be_path", "fe_path"):
-                p = verif.get(field)
-                if p:
-                    related_files.add(p)
-
-        # Augment with code-index headers (more comprehensive · headers were applied Fase A)
-        for f in code_index.get(cap_id, []):
-            related_files.add(f)
+        # Get files associated with this cap via code-index headers (# cap:)
+        related_files: set[str] = set(code_index.get(cap_id, []))
 
         for entry in entry_points:
             if not isinstance(entry, dict):
@@ -547,7 +307,7 @@ def cross_check_4(
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Bidirectional code↔cap validator (v3.2 cement 2026-05-28)"
+        description="Bidirectional code↔cap validator (cement 2026-05-28)"
     )
     parser.add_argument("--brand", required=True)
     parser.add_argument("--out", default=None)
@@ -555,12 +315,7 @@ def main() -> None:
     parser.add_argument(
         "--strict",
         action="store_true",
-        help="Exit 1 if any cross-check has drift > 0",
-    )
-    parser.add_argument(
-        "--hard-checks",
-        default="1,3",
-        help="Cross-checks to enforce HARD (comma-separated 1-4). Default: 1,3",
+        help="Exit 1 if any HARD cross-check has drift > 0",
     )
     parser.add_argument("--repo", default=None)
     args = parser.parse_args()
@@ -590,22 +345,21 @@ def main() -> None:
         / "_bidirectional-validation.json"
     )
 
+    # HARD set: cross_check_3 (scenario→e2e_test) always hard.
+    # cross_check_4 (access roles ↔ @require_phi_access) is ADVISORY for now —
+    # Fase 5 lo flipea a HARD para vitalia DESPUÉS de resolver el drift de acceso
+    # existente (no se prende un gate HARD con fallas conocidas). Ver
+    # docs/process/lifecycle.md § roadmap Fase 5.
+    hard_set = {3}
+
     if args.verbose:
         print(f"Workspace : {workspace_root}")
         print(f"Brand     : {args.brand}")
-        print(f"Hard      : {args.hard_checks}")
+        print(f"Hard      : {sorted(hard_set)}")
         print()
 
     caps = load_capabilities(args.brand, workspace_root)
     print(f"Loaded {len(caps)} caps from {args.brand}")
-
-    print("Running cross-check 1 (atomics → headers)...")
-    cc1 = cross_check_1(caps, workspace_root)
-    print(f"  total={cc1['total']} pass={cc1['pass']} drift={cc1['drift']}")
-
-    print("Running cross-check 2 (headers → atomics)...")
-    cc2 = cross_check_2(caps, workspace_root, args.brand)
-    print(f"  total={cc2['total']} pass={cc2['pass']} drift={cc2['drift']}")
 
     print("Running cross-check 3 (scenarios e2e_test paths)...")
     cc3 = cross_check_3(caps, workspace_root)
@@ -615,10 +369,9 @@ def main() -> None:
     cc4 = cross_check_4(caps, workspace_root, args.brand)
     print(f"  total={cc4['total']} pass={cc4['pass']} drift={cc4['drift']}")
 
-    drift_total = cc1["drift"] + cc2["drift"] + cc3["drift"] + cc4["drift"]
-    hard_set = {int(c) for c in args.hard_checks.split(",") if c.strip()}
+    drift_total = cc3["drift"] + cc4["drift"]
     hard_drift = sum(
-        cc["drift"] for i, cc in [(1, cc1), (2, cc2), (3, cc3), (4, cc4)] if i in hard_set
+        cc["drift"] for i, cc in [(3, cc3), (4, cc4)] if i in hard_set
     )
 
     verdict = "CLEAN" if drift_total == 0 else ("HARD_FAIL" if hard_drift > 0 else "SOFT_DRIFT")
@@ -627,10 +380,8 @@ def main() -> None:
     output: dict[str, Any] = {
         "validated_at": now_iso,
         "brand": args.brand,
-        "schema_version": "v3.2",
+        "schema_version": "v4",
         "hard_checks": sorted(hard_set),
-        "cross_check_1": cc1,
-        "cross_check_2": cc2,
         "cross_check_3": cc3,
         "cross_check_4": cc4,
         "summary": {

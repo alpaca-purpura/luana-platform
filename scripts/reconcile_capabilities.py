@@ -28,7 +28,7 @@ Scope flags (mutually exclusive):
   * ``--all-brands``→ iterate every dir with ``{brand}/config/brand.yaml`` + root
 
 Run via ``python scripts/reconcile_capabilities.py [--check] [--require-capabilities-exist]
-[--validate-atomics] [--strict] [--brand SLUG | --all-brands] [--repo PATH]``.
+[--validate-ledger] [--strict] [--brand SLUG | --all-brands] [--repo PATH]``.
 
 Coverage gate (``--require-capabilities-exist``)
 ================================================
@@ -40,20 +40,6 @@ Combine with ``--brand SLUG`` or ``--all-brands`` to scope which brands are
 checked. Exit 1 on any gap. No auto-fix — gaps require manual inventory by the
 brand's ``/pm-{brand}`` skill.
 
-Atomic validation (``--validate-atomics``)
-==========================================
-Validates the shape of ``atomics[]`` objects in each capability YAML against
-the schema v3.1 canónico (``_cap-verification-decisions.md`` § A). Also enforces
-Fase F.3 rules (``capability-protocol.md`` § 5) for ``change_log`` consistency.
-
-Can be combined with ``--check``, ``--brand``, ``--validate-ledger``, and
-``--all-brands``. Use ``--strict`` to promote warnings to errors.
-
-Bootstrap exception: ``change_log`` entries with
-``story_id == 'vitalia-bootstrap-inventory-2026-05-15'`` (bulk migration) are
-exempt from the ``change_log_atomics_required`` check — they legitimately have
-``atomics_added: []``.
-
 Origen
 ======
 Process improvement R32 (2026-05-05). Multibrand expansion 2026-05-15 (post
@@ -63,8 +49,10 @@ SDD merge phase with deterministic gate.
 Coverage gate added 2026-05-16 via proposal ``2026-05-16-capability-inventory-
 enforcement`` (origen vitalia/docs/learnings/2026-05-16-capabilities-inventory-gap.md).
 
-Atomic validation added 2026-05-28 (Cap Verification Wave 2-F) implementing
-schema v3.1 + Fase F.3 enforce rules from ``_cap-verification-decisions.md`` § A + C.
+Atomics killed 2026-05-28 (``docs/process/lifecycle.md``). The unit of behavior
+is now ``scenario`` (Gherkin), not atomic. The ``--validate-atomics`` flag was
+removed; ``atomics[]``/``atomics_added`` fields in cap YAML are inert historical
+data left untouched.
 """
 
 from __future__ import annotations
@@ -81,16 +69,6 @@ VALID_STORY_STATUS = {"planned", "ratified", "in-progress", "live", "deprecated"
 # `ratified` = spec approved by Chris, not yet built — bucketed with `planned`
 # for capability rollup (capability isn't shipping until at least 1 story `live`).
 PRE_BUILD_STATUSES = {"planned", "ratified"}
-
-# Atomic schema v3.1 — surface enum (capability-protocol.md § A).
-VALID_ATOMIC_SURFACES = {"FE", "BE", "AGENTIC", "FE+BE", "FE+BE+AGENTIC", "DOCS", "INFRA"}
-
-# Atomic schema v3.1 — status enum.
-VALID_ATOMIC_STATUSES = {"live", "wip", "deprecated"}
-
-# Bootstrap migration story IDs exempt from change_log_atomics_required check.
-# These represent bulk legacy migrations with legitimately empty atomics_added[].
-BOOTSTRAP_STORIES = {"vitalia-bootstrap-inventory-2026-05-15"}
 
 
 @dataclass
@@ -139,45 +117,6 @@ class CapLedgerError:
     cap_path: Path
     category: str
     detail: str
-
-
-@dataclass
-class CapAtomicError:
-    """Atomic validation error (schema v3.1 + Fase F.3 enforce, cement 2026-05-28).
-
-    Raised by ``--validate-atomics`` when ``atomics[]`` objects or ``change_log``
-    consistency violates schema v3.1 canónico (``_cap-verification-decisions.md`` § A + C).
-
-    Categories
-    ----------
-    * ``atomic_missing_required_field`` — atomic missing ``id``, ``name``,
-      ``surface``, ``added_in_story``, ``added_date``, or ``status``.
-    * ``atomic_invalid_surface`` — surface not in the canonical enum.
-    * ``atomic_invalid_status`` — status not in {live, wip, deprecated}.
-    * ``atomic_id_duplicate`` — two atomics within the same cap share an id.
-    * ``atomic_added_in_story_missing`` — added_in_story does not resolve to
-      a story checkpoint.md (active or archived).
-    * ``atomic_surface_path_mismatch`` — surface=FE but no fe_path nor e2e_test
-      declared in verification block (severity: warning).
-    * ``change_log_atomics_required`` — cap_change_type ∈ {new, extend} but
-      change_log[last].atomics_added is empty (bootstrap entries exempted).
-    * ``change_log_atomics_grew_extend`` — cap_change_type=extend but atomics[]
-      count did not grow vs sum of previous change_log.atomics_added entries.
-    * ``derive_child_no_atomics`` — cap with parent_cap declared but atomics[]
-      and change_log[0].atomics_added are both empty.
-    * ``derive_parent_missing_child`` — cap child (with parent_cap) not listed
-      in parent.derives_capabilities[].
-
-    Severity
-    --------
-    ``error`` by default. ``atomic_surface_path_mismatch`` defaults to
-    ``warning``; promoted to ``error`` when ``--strict`` is active.
-    """
-
-    cap_path: Path
-    category: str
-    detail: str
-    severity: str = "error"  # "error" | "warning"
 
 
 class FrontmatterError(ValueError):
@@ -460,256 +399,6 @@ def validate_ledger(repo: Path, brand: str | None) -> list[CapLedgerError]:
     return errors
 
 
-def _is_bootstrap_entry(entry: dict) -> bool:
-    """Return True if a change_log entry belongs to a bootstrap migration story.
-
-    Bootstrap entries are exempt from the ``change_log_atomics_required`` check
-    because they represent bulk legacy migrations with legitimately empty
-    ``atomics_added[]``.
-    """
-    return entry.get("story_id") in BOOTSTRAP_STORIES
-
-
-def validate_atomics(
-    repo: Path, brand: str | None, *, strict: bool = False
-) -> list[CapAtomicError]:
-    """Validate atomics[] shape + Fase F.3 change_log enforce rules (v3.1).
-
-    Validations per capability YAML:
-
-    1.  Each ``atomic`` must have required fields: id, name, surface,
-        added_in_story, added_date, status.
-    2.  ``atomic.surface`` must be in the canonical enum.
-    3.  ``atomic.status`` must be in {live, wip, deprecated}.
-    4.  ``atomic.id`` must be unique within the capability.
-    5.  ``atomic.added_in_story`` must resolve to a story checkpoint.md
-        (active or archived) when brand is provided.
-    6.  If surface=FE and verification block is absent (or fe_path=null and
-        e2e_test=null), emit a warning (promoted to error under --strict).
-    7.  For change_log entries with type ∈ {new, extend} and NOT a bootstrap
-        migration entry, ``atomics_added`` must be non-empty.
-    8.  For type=extend, the atomics[] count must exceed the sum of all
-        previous change_log ``atomics_added`` lengths (best-effort growth check).
-    9.  If parent_cap is declared, atomics[] must be non-empty (derive_child_no_atomics).
-    10. If this capability has parent_cap, it must appear in the parent's
-        derives_capabilities[] (derive_parent_missing_child).
-
-    Returns list of ``CapAtomicError``. Empty list = no issues found.
-    """
-    base = repo / brand if brand else repo
-    caps_dir = base / "docs" / "product" / "capabilities"
-    if not caps_dir.exists():
-        return []
-    if not brand:
-        # Atomic validation is brand-scoped (needs story checkpoints for cross-ref).
-        return []
-
-    errors: list[CapAtomicError] = []
-
-    for cap_file in sorted(caps_dir.rglob("*.yaml")):
-        try:
-            cap = load_frontmatter(cap_file)
-        except (FrontmatterError, yaml.YAMLError) as exc:
-            sys.stderr.write(f"SKIP {cap_file}: {exc}\n")
-            continue
-
-        cap_id = cap.get("capability_id") or cap.get("slug") or cap_file.stem
-        atomics = cap.get("atomics") or []
-        change_log = cap.get("change_log") or []
-
-        # ------------------------------------------------------------------ #
-        # Per-atomic field validation
-        # ------------------------------------------------------------------ #
-        seen_ids: set[str] = set()
-        required_fields = ("id", "name", "surface", "added_in_story", "added_date", "status")
-
-        for idx, atomic in enumerate(atomics):
-            if not isinstance(atomic, dict):
-                errors.append(
-                    CapAtomicError(
-                        cap_path=cap_file,
-                        category="atomic_missing_required_field",
-                        detail=f"atomics[{idx}] no es un dict válido",
-                    )
-                )
-                continue
-
-            atomic_label = atomic.get("id") or f"atomic[{idx}]"
-
-            # Check 1: required fields present
-            for req in required_fields:
-                if req not in atomic:
-                    errors.append(
-                        CapAtomicError(
-                            cap_path=cap_file,
-                            category="atomic_missing_required_field",
-                            detail=f"{atomic_label} (atomics[{idx}]) falta campo requerido '{req}'",
-                        )
-                    )
-
-            # Check 2: surface enum
-            surface = atomic.get("surface")
-            if surface is not None and surface not in VALID_ATOMIC_SURFACES:
-                errors.append(
-                    CapAtomicError(
-                        cap_path=cap_file,
-                        category="atomic_invalid_surface",
-                        detail=(
-                            f"{atomic_label} (atomics[{idx}]) surface={surface!r} no es válido. "
-                            f"Valores permitidos: {sorted(VALID_ATOMIC_SURFACES)}"
-                        ),
-                    )
-                )
-
-            # Check 3: status enum
-            status = atomic.get("status")
-            if status is not None and status not in VALID_ATOMIC_STATUSES:
-                errors.append(
-                    CapAtomicError(
-                        cap_path=cap_file,
-                        category="atomic_invalid_status",
-                        detail=(
-                            f"{atomic_label} (atomics[{idx}]) status={status!r} no es válido. "
-                            f"Valores permitidos: {sorted(VALID_ATOMIC_STATUSES)}"
-                        ),
-                    )
-                )
-
-            # Check 4: duplicate id
-            atomic_id = atomic.get("id")
-            if atomic_id is not None:
-                if atomic_id in seen_ids:
-                    errors.append(
-                        CapAtomicError(
-                            cap_path=cap_file,
-                            category="atomic_id_duplicate",
-                            detail=f"atomic id={atomic_id!r} aparece más de una vez en cap {cap_id!r}",
-                        )
-                    )
-                else:
-                    seen_ids.add(atomic_id)
-
-            # Check 5: added_in_story resolves to a checkpoint
-            added_in = atomic.get("added_in_story")
-            if added_in and not _story_checkpoint_exists(repo, brand, added_in):
-                errors.append(
-                    CapAtomicError(
-                        cap_path=cap_file,
-                        category="atomic_added_in_story_missing",
-                        detail=(
-                            f"{atomic_label} (atomics[{idx}]) added_in_story={added_in!r} "
-                            f"no tiene checkpoint.md en stories/ ni archive/*/stories/"
-                        ),
-                    )
-                )
-
-            # Check 6: surface=FE without any verification path (warning)
-            if surface == "FE":
-                verification = atomic.get("verification") or {}
-                fe_path = verification.get("fe_path") if isinstance(verification, dict) else None
-                e2e_test = verification.get("e2e_test") if isinstance(verification, dict) else None
-                if not fe_path and not e2e_test:
-                    errors.append(
-                        CapAtomicError(
-                            cap_path=cap_file,
-                            category="atomic_surface_path_mismatch",
-                            detail=(
-                                f"{atomic_label} (atomics[{idx}]) surface=FE pero "
-                                f"verification.fe_path y verification.e2e_test son null"
-                            ),
-                            severity="error" if strict else "warning",
-                        )
-                    )
-
-        # ------------------------------------------------------------------ #
-        # change_log + Fase F.3 enforce rules
-        # ------------------------------------------------------------------ #
-        if change_log and isinstance(change_log, list):
-            last_entry = change_log[-1] if isinstance(change_log[-1], dict) else {}
-            last_type = last_entry.get("type")
-            last_atomics_added = last_entry.get("atomics_added") or []
-
-            # Check 7: new/extend must have atomics_added (bootstrap exempted)
-            if (
-                last_type in ("new", "extend")
-                and len(last_atomics_added) == 0
-                and not _is_bootstrap_entry(last_entry)
-            ):
-                errors.append(
-                    CapAtomicError(
-                        cap_path=cap_file,
-                        category="change_log_atomics_required",
-                        detail=(
-                            f"change_log[último] type={last_type!r} requiere "
-                            f"atomics_added con al menos 1 entry "
-                            f"(story_id={last_entry.get('story_id')!r})"
-                        ),
-                    )
-                )
-
-            # Check 8: extend — atomics[] must have grown
-            if last_type == "extend" and not _is_bootstrap_entry(last_entry):
-                # Sum atomics_added across ALL entries except the last
-                prev_added_total = sum(
-                    len(e.get("atomics_added") or [])
-                    for e in change_log[:-1]
-                    if isinstance(e, dict)
-                )
-                actual_count = len(atomics)
-                if actual_count <= prev_added_total and actual_count > 0 and prev_added_total > 0:
-                    errors.append(
-                        CapAtomicError(
-                            cap_path=cap_file,
-                            category="change_log_atomics_grew_extend",
-                            detail=(
-                                f"cap_change_type=extend pero atomics[] count={actual_count} "
-                                f"no creció vs suma atomics_added previos={prev_added_total}"
-                            ),
-                        )
-                    )
-
-        # Check 9: derive child must have atomics
-        parent_cap_val = cap.get("parent_cap")
-        if parent_cap_val:
-            first_entry = change_log[0] if change_log and isinstance(change_log[0], dict) else {}
-            first_atomics_added = first_entry.get("atomics_added") or []
-            if not atomics and not first_atomics_added:
-                errors.append(
-                    CapAtomicError(
-                        cap_path=cap_file,
-                        category="derive_child_no_atomics",
-                        detail=(
-                            f"cap {cap_id!r} declara parent_cap={parent_cap_val!r} "
-                            f"pero atomics[] y change_log[0].atomics_added están vacíos"
-                        ),
-                    )
-                )
-
-            # Check 10: parent must list this child in derives_capabilities
-            if caps_dir:
-                parent_path = _resolve_parent_cap(caps_dir, parent_cap_val)
-                if parent_path is not None:
-                    try:
-                        parent_data = load_frontmatter(parent_path)
-                    except (FrontmatterError, yaml.YAMLError):
-                        parent_data = {}
-                    derives = parent_data.get("derives_capabilities") or []
-                    if cap_id not in derives:
-                        errors.append(
-                            CapAtomicError(
-                                cap_path=cap_file,
-                                category="derive_parent_missing_child",
-                                detail=(
-                                    f"cap {cap_id!r} tiene parent_cap={parent_cap_val!r} "
-                                    f"pero el padre no lista {cap_id!r} en derives_capabilities[] "
-                                    f"(found: {derives})"
-                                ),
-                            )
-                        )
-
-    return errors
-
-
 def discover_brands(repo: Path) -> list[str]:
     """Return sorted list of brand slugs (dirs containing ``config/brand.yaml``).
 
@@ -821,24 +510,9 @@ def main() -> int:
         "Exit 1 on any error. Combine with --brand or --all-brands.",
     )
     parser.add_argument(
-        "--validate-atomics",
-        action="store_true",
-        help="Validate atomics[] object shape against schema v3.1 canónico and "
-        "Fase F.3 change_log enforce rules (cement 2026-05-28). "
-        "Categories: atomic_missing_required_field, atomic_invalid_surface, "
-        "atomic_invalid_status, atomic_id_duplicate, atomic_added_in_story_missing, "
-        "atomic_surface_path_mismatch (warning), change_log_atomics_required, "
-        "change_log_atomics_grew_extend, derive_child_no_atomics, "
-        "derive_parent_missing_child. "
-        "Bootstrap entries (vitalia-bootstrap-inventory-2026-05-15) are exempt "
-        "from change_log_atomics_required. Combine with --brand or --all-brands. "
-        "Use --strict to promote warnings to errors.",
-    )
-    parser.add_argument(
         "--strict",
         action="store_true",
-        help="Promote warnings to errors in --validate-atomics. "
-        "Affects: atomic_surface_path_mismatch (normally warning, becomes error).",
+        help="Reserved for future use (promote advisory warnings to errors).",
     )
     parser.add_argument(
         "--repo",
@@ -908,21 +582,7 @@ def main() -> int:
             for e in validate_ledger(args.repo, brand_arg):
                 ledger_errors.append((label, e))
 
-    # Atomic validation (schema v3.1 + Fase F.3, cement 2026-05-28).
-    # Opt-in via --validate-atomics. Brand-scoped. Composable with other flags.
-    atomic_errors: list[tuple[str, CapAtomicError]] = []
-    if args.validate_atomics:
-        for label, brand_arg in scopes:
-            if brand_arg is None:
-                continue  # atomic validation needs brand-scoped story checkpoints
-            for e in validate_atomics(args.repo, brand_arg, strict=args.strict):
-                atomic_errors.append((label, e))
-
-    # Separate atomic errors by severity for reporting and exit code logic.
-    atomic_hard_errors = [(lbl, e) for lbl, e in atomic_errors if e.severity == "error"]
-    atomic_warnings = [(lbl, e) for lbl, e in atomic_errors if e.severity == "warning"]
-
-    if not all_drifts and not coverage_gaps and not ledger_errors and not atomic_hard_errors and not atomic_warnings:
+    if not all_drifts and not coverage_gaps and not ledger_errors:
         scope_desc = ", ".join(label for label, _ in scopes)
         print(f"OK — all capabilities consistent with stories. Scope: {scope_desc}.")  # noqa: T201
         if args.require_capabilities_exist:
@@ -934,9 +594,6 @@ def main() -> int:
         if args.validate_ledger:
             ledger_scopes = ", ".join(label for label, b in scopes if b is not None) or "(none — pass --brand or --all-brands)"
             print(f"Capability ledger check: PASS. Scopes: {ledger_scopes}.")  # noqa: T201
-        if args.validate_atomics:
-            atomic_scopes = ", ".join(label for label, b in scopes if b is not None) or "(none — pass --brand or --all-brands)"
-            print(f"Capability atomics check: PASS. Scopes: {atomic_scopes}.")  # noqa: T201
         return 0
 
     if all_drifts:
@@ -964,38 +621,18 @@ def main() -> int:
             print(f"\n  [{label}] {rel}")  # noqa: T201
             print(f"    category: {e.category}")  # noqa: T201
             print(f"    detail:   {e.detail}")  # noqa: T201
-        print("\nLedger schema v2 cement: 2026-05-27. Fix by editing change_log/atomics/parent_cap/derives_capabilities in cap YAML.")  # noqa: T201
+        print("\nLedger schema v2 cement: 2026-05-27. Fix by editing change_log/parent_cap/derives_capabilities in cap YAML.")  # noqa: T201
 
-    if atomic_hard_errors:
-        print(f"\nCAPABILITY ATOMIC ERRORS in {len(atomic_hard_errors)} entry/entries:")  # noqa: T201
-        for label, e in atomic_hard_errors:
-            rel = e.cap_path.relative_to(args.repo)
-            print(f"\n  [{label}] {rel}")  # noqa: T201
-            print(f"    category: {e.category}")  # noqa: T201
-            print(f"    detail:   {e.detail}")  # noqa: T201
-        print("\nAtomic schema v3.1 cement: 2026-05-28. Fix by editing atomics[] + change_log[] en cap YAML.")  # noqa: T201
-
-    if atomic_warnings:
-        print(f"\nCAPABILITY ATOMIC WARNINGS in {len(atomic_warnings)} entry/entries:")  # noqa: T201
-        for label, e in atomic_warnings:
-            rel = e.cap_path.relative_to(args.repo)
-            print(f"\n  [{label}] {rel} [WARN]")  # noqa: T201
-            print(f"    category: {e.category}")  # noqa: T201
-            print(f"    detail:   {e.detail}")  # noqa: T201
-        print(f"\n{len(atomic_warnings)} warning(s) — usa --strict para convertir en errores.")  # noqa: T201
-
-    has_blocking_errors = bool(coverage_gaps or ledger_errors or atomic_hard_errors)
+    has_blocking_errors = bool(coverage_gaps or ledger_errors)
     if args.check or has_blocking_errors:
-        # Coverage gaps + ledger errors + atomic errors are always blocking
+        # Coverage gaps + ledger errors are always blocking
         # (no auto-fix possible — manual edit required).
         if all_drifts and args.check:
-            print("\nRun without --check to fix drifts in place. Coverage gaps + ledger/atomic errors require manual edits.")  # noqa: T201
-        elif coverage_gaps and not ledger_errors and not atomic_hard_errors:
+            print("\nRun without --check to fix drifts in place. Coverage gaps + ledger errors require manual edits.")  # noqa: T201
+        elif coverage_gaps and not ledger_errors:
             print("\nCoverage gaps require manual capability YAML authoring (no auto-fix).")  # noqa: T201
-        elif ledger_errors and not coverage_gaps and not atomic_hard_errors:
+        elif ledger_errors and not coverage_gaps:
             print("\nLedger errors require manual edits to capability YAML frontmatter.")  # noqa: T201
-        elif atomic_hard_errors:
-            print("\nAtomic errors require manual edits to atomics[]/change_log[] en cap YAML.")  # noqa: T201
         return 1
 
     if not all_drifts:

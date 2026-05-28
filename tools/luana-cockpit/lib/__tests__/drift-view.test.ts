@@ -29,21 +29,17 @@ function makeReport(overrides?: Partial<ComputedStatusReport>): ComputedStatusRe
       'clinics-crud': {
         declared_status: 'live',
         computed_status: 'stub',
-        atomics_total: 0,
-        atomics_live: 0,
-        atomics_wip: 0,
-        atomics_per_surface: {},
+        scenarios_total: 0,
+        scenarios_verified: 0,
         verification_total: 0,
         verification_pass: 0,
-        drift_reasons: ['no atomics declared'],
+        drift_reasons: ['no scenarios declared'],
       },
       'shell-vitalia': {
         declared_status: 'live',
         computed_status: 'drift',
-        atomics_total: 3,
-        atomics_live: 3,
-        atomics_wip: 0,
-        atomics_per_surface: { FE: 3 },
+        scenarios_total: 3,
+        scenarios_verified: 0,
         verification_total: 3,
         verification_pass: 0,
         drift_reasons: ['verification path does not exist: vitalia/frontend/src/features/shell/Shell.tsx'],
@@ -51,10 +47,8 @@ function makeReport(overrides?: Partial<ComputedStatusReport>): ComputedStatusRe
       'auth-login': {
         declared_status: 'live',
         computed_status: 'verified-live',
-        atomics_total: 5,
-        atomics_live: 5,
-        atomics_wip: 0,
-        atomics_per_surface: { FE: 3, BE: 2 },
+        scenarios_total: 5,
+        scenarios_verified: 5,
         verification_total: 5,
         verification_pass: 5,
         drift_reasons: [],
@@ -113,10 +107,8 @@ describe('filterDriftEntries', () => {
         'cap-a': {
           declared_status: 'live',
           computed_status: 'verified-live',
-          atomics_total: 2,
-          atomics_live: 2,
-          atomics_wip: 0,
-          atomics_per_surface: { FE: 2 },
+          scenarios_total: 2,
+          scenarios_verified: 2,
           verification_total: 2,
           verification_pass: 2,
           drift_reasons: [],
@@ -146,7 +138,7 @@ describe('filterDriftEntries', () => {
 
     expect(driftEntry).toBeDefined();
     expect(driftEntry!.computed_status).toBe('drift');
-    expect(driftEntry!.atomics_total).toBe(3);
+    expect(driftEntry!.scenarios_total).toBe(3);
     expect(driftEntry!.drift_reasons).toHaveLength(1);
     expect(driftEntry!.next_action).toContain('URGENTE');
   });
@@ -163,7 +155,7 @@ describe('sortDriftEntries', () => {
         slug: 'stub-cap',
         functional_area: null,
         computed_status: 'stub',
-        atomics_total: 0,
+        scenarios_total: 0,
         drift_reasons: [],
         summary: '',
         next_action: '',
@@ -172,7 +164,7 @@ describe('sortDriftEntries', () => {
         slug: 'drift-cap',
         functional_area: null,
         computed_status: 'drift',
-        atomics_total: 3,
+        scenarios_total: 3,
         drift_reasons: ['path missing'],
         summary: '',
         next_action: '',
@@ -190,7 +182,7 @@ describe('sortDriftEntries', () => {
       slug: `cap-${s}`,
       functional_area: null,
       computed_status: s,
-      atomics_total: 1,
+      scenarios_total: 1,
       drift_reasons: [],
       summary: '',
       next_action: '',
@@ -208,7 +200,7 @@ describe('sortDriftEntries', () => {
         slug: 'b',
         functional_area: null,
         computed_status: 'stub',
-        atomics_total: 0,
+        scenarios_total: 0,
         drift_reasons: [],
         summary: '',
         next_action: '',
@@ -217,7 +209,7 @@ describe('sortDriftEntries', () => {
         slug: 'a',
         functional_area: null,
         computed_status: 'drift',
-        atomics_total: 1,
+        scenarios_total: 1,
         drift_reasons: [],
         summary: '',
         next_action: '',
@@ -248,7 +240,7 @@ describe('getNextAction', () => {
 
   it('test_declared_live_action', () => {
     const action = getNextAction('declared-live');
-    expect(action).toContain('verification');
+    expect(action).toContain('e2e_test');
   });
 
   it('test_deprecated_action', () => {
@@ -277,29 +269,25 @@ describe('getSeverityOrder', () => {
 // ────────────────────────────────────────────────────────────────────────────
 
 describe('buildSummary', () => {
-  it('test_stub_with_no_atomics', () => {
+  it('test_stub_with_no_scenarios', () => {
     const summary = buildSummary({
       declared_status: 'live',
       computed_status: 'stub',
-      atomics_total: 0,
-      atomics_live: 0,
-      atomics_wip: 0,
-      atomics_per_surface: {},
+      scenarios_total: 0,
+      scenarios_verified: 0,
       verification_total: 0,
       verification_pass: 0,
       drift_reasons: [],
     });
-    expect(summary).toContain('Sin atomics');
+    expect(summary).toContain('Sin scenarios');
   });
 
   it('test_drift_shows_first_reason', () => {
     const summary = buildSummary({
       declared_status: 'live',
       computed_status: 'drift',
-      atomics_total: 3,
-      atomics_live: 3,
-      atomics_wip: 0,
-      atomics_per_surface: { FE: 3 },
+      scenarios_total: 3,
+      scenarios_verified: 0,
       verification_total: 3,
       verification_pass: 0,
       drift_reasons: ['path X does not exist'],
@@ -319,7 +307,7 @@ describe('groupByAgent', () => {
         slug: 'cap-a',
         functional_area: 'lisa.servicios',
         computed_status: 'stub',
-        atomics_total: 0,
+        scenarios_total: 0,
         drift_reasons: [],
         summary: '',
         next_action: '',
@@ -328,7 +316,7 @@ describe('groupByAgent', () => {
         slug: 'cap-b',
         functional_area: 'valeria.agenda',
         computed_status: 'drift',
-        atomics_total: 1,
+        scenarios_total: 1,
         drift_reasons: [],
         summary: '',
         next_action: '',
@@ -337,7 +325,7 @@ describe('groupByAgent', () => {
         slug: 'cap-c',
         functional_area: 'lisa.otro',
         computed_status: 'declared-live',
-        atomics_total: 2,
+        scenarios_total: 2,
         drift_reasons: [],
         summary: '',
         next_action: '',
@@ -355,7 +343,7 @@ describe('groupByAgent', () => {
         slug: 'orphan',
         functional_area: null,
         computed_status: 'stub',
-        atomics_total: 0,
+        scenarios_total: 0,
         drift_reasons: [],
         summary: '',
         next_action: '',

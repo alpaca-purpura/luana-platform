@@ -123,7 +123,7 @@ function DriftRow({ entry }: { entry: DriftEntry }) {
               </Pill>
             )}
             <span className="text-[var(--color-muted)] text-[10px] ml-auto shrink-0">
-              {entry.atomics_total} atomic{entry.atomics_total !== 1 ? 's' : ''}
+              {entry.scenarios_total} escenario{entry.scenarios_total !== 1 ? 's' : ''}
             </span>
           </div>
           <div className="text-[10px] text-[var(--color-muted)] mt-0.5 italic truncate">

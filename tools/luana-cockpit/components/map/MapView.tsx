@@ -579,8 +579,9 @@ function CapItem({
     statusReport?.capabilities[cap.slug] ?? null;
   const badge = computed ? getStatusBadge(computed.computed_status) : null;
 
-  const hasAtomics = cap.atomics.length > 0;
-  const isV32Populated = (cap.scenarios?.length ?? 0) > 0;
+  const scenarios = cap.scenarios ?? [];
+  const hasScenarios = scenarios.length > 0;
+  const isV32Populated = hasScenarios;
 
   return (
     <div
@@ -589,7 +590,7 @@ function CapItem({
         'bg-[var(--color-panel)] border-[var(--color-border)]'
       )}
     >
-      {/* Row principal: click abre drawer o toggle atomics */}
+      {/* Row principal: click abre drawer o toggle scenarios */}
       <div className="flex items-stretch">
         <button
           type="button"
@@ -636,18 +637,18 @@ function CapItem({
           </div>
           <div className="text-[10px] text-[var(--color-muted)] mt-0.5 font-mono truncate">
             {cap.module}/{cap.slug}
-            {hasAtomics && (
+            {hasScenarios && (
               <span className="ml-2">
-                · {cap.atomics.length} atomic{cap.atomics.length !== 1 ? 's' : ''}
+                · {scenarios.length} escenario{scenarios.length !== 1 ? 's' : ''}
               </span>
             )}
           </div>
         </button>
 
-        {/* Toggle expand atomics */}
+        {/* Toggle expand scenarios */}
         <button
           type="button"
-          aria-label={expanded ? 'Ocultar atomics' : 'Ver atomics'}
+          aria-label={expanded ? 'Ocultar escenarios' : 'Ver escenarios'}
           onClick={() => setExpanded((v) => !v)}
           className={cn(
             'px-1.5 text-[var(--color-muted)] hover:text-[var(--color-fg)] transition-colors',
@@ -661,53 +662,41 @@ function CapItem({
         </button>
       </div>
 
-      {/* Atomics drawer */}
+      {/* Scenarios drawer */}
       {expanded && (
         <div className="border-t border-[var(--color-border)] px-2 py-1.5">
-          {!hasAtomics ? (
+          {!hasScenarios ? (
             <div className="text-[10px] text-[var(--color-muted)] italic">
-              Sin atomics declarados (cap stub)
+              Sin escenarios declarados (cap stub)
             </div>
           ) : (
             <div className="space-y-0.5">
-              {cap.atomics.map((a, idx) => {
-                // Los atomics pueden tener `name` (v3.1) o `label` (v2 legacy)
-                const atomicName =
-                  (a as unknown as { name?: string }).name ?? a.label ?? '(sin nombre)';
-                const atomicSurface =
-                  (a as unknown as { surface?: string }).surface ?? null;
-                const atomicStatus =
-                  (a as unknown as { status?: string }).status ?? 'live';
-                return (
-                  <div
-                    key={`${a.added_in_story}-${idx}`}
-                    className="text-[10px] text-[var(--color-muted)] flex items-center gap-1"
-                  >
-                    <span
-                      className={cn(
-                        'w-1.5 h-1.5 rounded-full shrink-0',
-                        atomicStatus === 'live'
-                          ? 'bg-green-500'
-                          : atomicStatus === 'wip'
-                          ? 'bg-blue-500'
-                          : 'bg-gray-500'
-                      )}
-                      title={`status: ${atomicStatus}`}
-                    />
-                    {atomicSurface && (
-                      <span className="font-mono text-[9px] opacity-60 shrink-0">
-                        {atomicSurface}
-                      </span>
+              {scenarios.map((s, idx) => (
+                <div
+                  key={`${s.id ?? s.added_in_story}-${idx}`}
+                  className="text-[10px] text-[var(--color-muted)] flex items-center gap-1"
+                >
+                  <span
+                    className={cn(
+                      'w-1.5 h-1.5 rounded-full shrink-0',
+                      s.status === 'live'
+                        ? 'bg-green-500'
+                        : s.status === 'wip'
+                        ? 'bg-blue-500'
+                        : 'bg-gray-500'
                     )}
-                    <span className="truncate">{atomicName}</span>
-                  </div>
-                );
-              })}
+                    title={`status: ${s.status}`}
+                  />
+                  <span className="truncate">{s.name ?? '(sin nombre)'}</span>
+                </div>
+              ))}
             </div>
           )}
           {computed && (
             <div className="mt-1 pt-1 border-t border-[var(--color-border)] text-[9px] text-[var(--color-muted)] font-mono">
-              {badge?.emoji} {computed.computed_status} · {computed.atomics_live}/{computed.atomics_total} live
+              {badge?.emoji} {computed.computed_status} · {computed.scenarios_total} escenario
+              {computed.scenarios_total !== 1 ? 's' : ''} · {computed.scenarios_verified} verificado
+              {computed.scenarios_verified !== 1 ? 's' : ''}
               {computed.drift_reasons.length > 0 && (
                 <span className="text-red-400 ml-1" title={computed.drift_reasons.join('; ')}>
                   · drift

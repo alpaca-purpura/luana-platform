@@ -76,14 +76,13 @@ def test_scan_file_python_simple(tmp_path: Path):
     _write_py(
         f,
         "# cap: scheduling.valeria-agenda\n"
-        "# atomics: vista-calendario-semanal\n"
         "# story-origin: vitalia-fase2-valeria-agenda\n"
         '"""docstring"""\n',
     )
     result = mod.scan_file(f)
     assert result["caps"] == ["scheduling.valeria-agenda"]
-    assert result["atomics"] == ["vista-calendario-semanal"]
     assert result["story_origin"] == "vitalia-fase2-valeria-agenda"
+    assert "atomics" not in result
 
 
 def test_scan_file_tsx_simple(tmp_path: Path):
@@ -92,14 +91,12 @@ def test_scan_file_tsx_simple(tmp_path: Path):
     _write_py(
         f,
         "// cap: shell-organism.shell-vitalia\n"
-        "// atomics: TBD\n"
         "// story-origin: TBD\n"
         "'use client';\n"
         "export function X() {}\n",
     )
     result = mod.scan_file(f)
     assert result["caps"] == ["shell-organism.shell-vitalia"]
-    assert result["atomics"] == []  # TBD treated as empty
     assert result["story_origin"] is None  # TBD treated as None
 
 
@@ -109,7 +106,6 @@ def test_scan_file_multi_cap(tmp_path: Path):
     _write_py(
         f,
         "# cap: [scheduling.valeria-agenda, booking.prepaid-booking-advisory-locks]\n"
-        "# atomics: TBD\n"
         "# story-origin: TBD\n",
     )
     result = mod.scan_file(f)
@@ -119,7 +115,7 @@ def test_scan_file_multi_cap(tmp_path: Path):
 def test_scan_file_orphan_marker(tmp_path: Path):
     mod = _load_module()
     f = tmp_path / "test.py"
-    _write_py(f, "# cap: __orphan__\n# atomics: TBD\n# story-origin: TBD\n")
+    _write_py(f, "# cap: __orphan__\n# story-origin: TBD\n")
     result = mod.scan_file(f)
     assert result["caps"] == ["__orphan__"]
 
@@ -141,7 +137,6 @@ def test_scan_file_shebang_then_header(tmp_path: Path):
         f,
         "#!/usr/bin/env python3\n"
         "# cap: ops.k8s-admin-deployment\n"
-        "# atomics: TBD\n"
         "# story-origin: TBD\n",
     )
     result = mod.scan_file(f)
@@ -280,27 +275,20 @@ def test_process_brand_multi_cap_file(tmp_path: Path):
     assert "shared.py" in result["cap_to_files"]["brand_studio.lisa-marca"][0]
 
 
-def test_process_brand_atomics_aggregation(tmp_path: Path):
+def test_cap_to_atomics_dropped_from_output(tmp_path: Path):
+    """cap_to_atomics must NOT be present in output (atomics killed 2026-05-28)."""
     mod = _load_module()
     brand = "vitalia"
     be, _ = _setup_brand_skeleton(tmp_path, brand)
 
     _write_py(
         be / "a.py",
-        "# cap: scheduling.valeria-agenda\n"
-        "# atomics: vista-calendario, drag-to-reschedule\n"
-        "# story-origin: TBD\n",
-    )
-    _write_py(
-        be / "b.py",
-        "# cap: scheduling.valeria-agenda\n"
-        "# atomics: slot-color-coding\n"
-        "# story-origin: TBD\n",
+        "# cap: scheduling.valeria-agenda\n# story-origin: TBD\n",
     )
 
     result = mod.process_brand(brand, tmp_path, verbose=False)
-    atomics = result["cap_to_atomics"]["scheduling.valeria-agenda"]
-    assert set(atomics) == {"vista-calendario", "drag-to-reschedule", "slot-color-coding"}
+    assert "cap_to_atomics" not in result
+    assert "scheduling.valeria-agenda" in result["cap_to_files"]
 
 
 def test_process_brand_missing_brand_dir(tmp_path: Path):

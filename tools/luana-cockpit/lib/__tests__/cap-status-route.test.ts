@@ -58,13 +58,11 @@ describe('GET /api/capabilities/status', () => {
         'shell-vitalia': {
           declared_status: 'live',
           computed_status: 'declared-live',
-          atomics_total: 7,
-          atomics_live: 7,
-          atomics_wip: 0,
-          atomics_per_surface: { FE: 7 },
+          scenarios_total: 7,
+          scenarios_verified: 0,
           verification_total: 0,
           verification_pass: 0,
-          drift_reasons: ['verification field missing in all 7 atomics'],
+          drift_reasons: ['e2e_test missing in all 7 scenarios'],
         },
       },
       summary: {

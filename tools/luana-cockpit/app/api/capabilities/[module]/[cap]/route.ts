@@ -5,7 +5,7 @@
  *                                                        → { capability }
  *
  * PATCH solo permite editar `status` con razón (cementada en change_log
- * como entry type='fix'). NO permite editar atomics ni change_log directos
+ * como entry type='fix'). NO permite editar scenarios ni change_log directos
  * — eso vive en `/api/extend-cap` via story creation.
  */
 
@@ -77,16 +77,16 @@ export async function PATCH(
   if (typeof body === 'object' && body !== null) {
     const sent = Object.keys(body as Record<string, unknown>);
     const forbidden = sent.filter(
-      (k) => k === 'atomics' || k === 'change_log' || k === 'capability_id' || k === 'slug' || k === 'module' || k === 'license' || k === 'parent_cap' || k === 'derives_capabilities'
+      (k) => k === 'scenarios' || k === 'change_log' || k === 'capability_id' || k === 'slug' || k === 'module' || k === 'license' || k === 'parent_cap' || k === 'derives_capabilities'
     );
     if (forbidden.length > 0) {
       return errorResponse(
-        'edición directa de atomics, change_log y campos estructurales prohibida',
+        'edición directa de scenarios, change_log y campos estructurales prohibida',
         403,
         {
           forbidden_fields: forbidden,
           reason:
-            'modificar atomics o change_log requiere crear una story con cap_change_type. Usa /api/extend-cap o el botón "Extender" del cockpit.',
+            'modificar scenarios o change_log requiere crear una story con cap_change_type. Usa /api/extend-cap o el botón "Extender" del cockpit.',
         }
       );
     }
@@ -118,8 +118,7 @@ export async function PATCH(
     date,
     type: 'fix',
     summary: `Status cambiado a ${parsed.data.status} · razón: ${parsed.data.reason}`,
-    atomics_added: [],
-    atomics_modified: [],
+    scenarios_added: [],
     merge_sha: null,
     status: 'done',
   });

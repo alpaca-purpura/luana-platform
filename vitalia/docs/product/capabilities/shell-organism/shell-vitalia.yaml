@@ -51,43 +51,6 @@ parent_cap: null
 derives_capabilities: []
 
 # Capability ledger v2 (cement 2026-05-27)
-atomics:
-  - id: shell-layout-5050
-    name: "Layout 50/50 con splitter resizable"
-    added_in_story: vitalia-fase1-shell-layout-5050
-    status: live
-    surface: FE
-  - id: shell-valeria-sidebar
-    name: "Valeria sidebar · rail (60px) + history drawer"
-    added_in_story: vitalia-fase1-valeria-rail-history
-    status: live
-    surface: FE
-  - id: shell-valeria-chat
-    name: "Valeria chat skeleton · skeleton de conversación"
-    added_in_story: vitalia-fase1-valeria-chat-skeleton
-    status: live
-    surface: FE
-  - id: shell-ribbon
-    name: "Ribbon 6 tabs · 5 agentes + Configurar"
-    added_in_story: vitalia-fase1-ribbon-6-tabs
-    status: live
-    surface: FE
-  - id: shell-sub-tabs
-    name: "SubTabsBar línea 2 · sub-tabs por agente"
-    added_in_story: vitalia-fase1-sub-tabs-line2
-    status: live
-    surface: FE
-  - id: shell-routing
-    name: "Routing shell · route groups + proxy auth"
-    added_in_story: vitalia-fase1-routing-shell
-    status: live
-    surface: FE
-  - id: shell-empty-states
-    name: "Empty states · 22 placeholders sub-tab"
-    added_in_story: vitalia-fase1-empty-states
-    status: live
-    surface: FE
-
 # Capability change log v2 (cement 2026-05-27)
 change_log:
   - story_id: vitalia-fase1-shell-layout-5050

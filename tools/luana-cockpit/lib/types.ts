@@ -38,7 +38,7 @@ export type CapLicense = 'brand-local' | 'core-shared' | 'proprietary';
 
 /**
  * Estado computado por `scripts/compute_capability_status.py`.
- * NO es el declared status del YAML — es derivado del conjunto de atomics
+ * NO es el declared status del YAML — es derivado del conjunto de scenarios
  * + verification cross-check.
  */
 export type ComputedStatus =
@@ -54,10 +54,8 @@ export type ComputedStatus =
 export interface CapStatusComputed {
   declared_status: CapStatus;
   computed_status: ComputedStatus;
-  atomics_total: number;
-  atomics_live: number;
-  atomics_wip: number;
-  atomics_per_surface: Record<string, number>;
+  scenarios_total: number;
+  scenarios_verified: number;
   verification_total: number;
   verification_pass: number;
   drift_reasons: string[];
@@ -198,22 +196,12 @@ export interface Story {
 // Capability (YAML ledger v2)
 // ────────────────────────────────────────────────────────────────────────────
 
-export interface Atomic {
-  label: string;
-  added_in_story: string;
-  added_date: string; // ISO date YYYY-MM-DD
-  /** Si el atomic fue deprecado en una story posterior */
-  deprecated_in_story?: string | null;
-  deprecated_date?: string | null;
-}
-
 export interface ChangeLogEntry {
   story_id: string;
   date: string;
   type: CapChangeType;
   summary: string;
-  atomics_added: string[];
-  atomics_modified: string[];
+  scenarios_added: string[];
   merge_sha?: string | null;
   status?: 'in-progress' | 'done';
 }
@@ -240,8 +228,7 @@ export interface Capability {
   parent_cap: string | null;
   derives_capabilities: string[];
 
-  // Atomics + ledger
-  atomics: Atomic[];
+  // Ledger
   change_log: ChangeLogEntry[];
 
   // Legacy v1 fields (mantener durante migración)
@@ -469,8 +456,6 @@ export interface CodeIndexReport {
   code_to_cap: Record<string, string | string[]>;
   /** Reverse map: cap_id → list of file paths */
   cap_to_files: Record<string, string[]>;
-  /** cap_id → union of atomic IDs declared by associated files */
-  cap_to_atomics: Record<string, string[]>;
   orphans: string[];
   shared_files: string[];
   multi_cap_files: Array<{ path: string; caps: string[] }>;

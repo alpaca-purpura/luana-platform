@@ -15,7 +15,7 @@ export interface DriftEntry {
   /** Área funcional declarada en el YAML (ej: "lisa.servicios") */
   functional_area: string | null;
   computed_status: ComputedStatus;
-  atomics_total: number;
+  scenarios_total: number;
   drift_reasons: string[];
   /** Texto one-liner para mostrar en la fila de resumen */
   summary: string;
@@ -49,15 +49,15 @@ export function getSeverityOrder(s: ComputedStatus): number {
 export function getNextAction(s: ComputedStatus): string {
   switch (s) {
     case 'stub':
-      return 'Poblar atomics[] vía Fase F.3 (cap_change_type=extend) o documentar como legacy bootstrap';
+      return 'Poblar scenarios[] vía Fase F.3 (cap_change_type=extend) o documentar como legacy bootstrap';
     case 'declared-live':
-      return 'Agregar verification.{fe_path,be_path,agentic_path} a los atomics para promover a verified-live';
+      return 'Agregar e2e_test a los scenarios para promover a verified-live';
     case 'partial':
-      return 'Completar atomics live (algunos siguen wip)';
+      return 'Completar scenarios verificados (algunos siguen wip)';
     case 'wip':
       return 'Cap en desarrollo, espera implementación o transition status:beta→live';
     case 'drift':
-      return 'URGENTE: atomic declarado live pero verification path no existe. Ejecutar validate_atomics_implementation.py para detalles, o restaurar el path declarado';
+      return 'URGENTE: scenario declarado live pero su e2e_test no existe. Ejecutar validate_code_cap_bidirectional.py para detalles, o restaurar el path declarado';
     case 'deprecated':
       return 'Cap end-of-life — confirmar removal scheduled';
     case 'sunset':
@@ -72,20 +72,20 @@ export function getNextAction(s: ComputedStatus): string {
 // ────────────────────────────────────────────────────────────────────────────
 
 export function buildSummary(cap: CapStatusComputed): string {
-  if (cap.atomics_total === 0) {
-    return 'Sin atomics declarados';
+  if (cap.scenarios_total === 0) {
+    return 'Sin scenarios declarados';
   }
   if (cap.drift_reasons.length > 0) {
     return cap.drift_reasons[0];
   }
   if (cap.computed_status === 'partial') {
-    return `${cap.atomics_live} live, ${cap.atomics_wip} wip`;
+    return `${cap.scenarios_verified}/${cap.scenarios_total} scenarios verificados`;
   }
   if (cap.computed_status === 'declared-live') {
-    return `${cap.atomics_live} atomics live sin verification declarada`;
+    return `${cap.scenarios_total} scenarios sin verificación declarada`;
   }
   if (cap.computed_status === 'wip') {
-    return `${cap.atomics_wip} atomics en wip`;
+    return `${cap.scenarios_total} scenarios sin verificación pasando`;
   }
   return `computed: ${cap.computed_status}`;
 }
@@ -106,7 +106,7 @@ export function filterDriftEntries(
       slug,
       functional_area: null, // enriquecido opcionalmente por el componente
       computed_status: cap.computed_status,
-      atomics_total: cap.atomics_total,
+      scenarios_total: cap.scenarios_total,
       drift_reasons: cap.drift_reasons,
       summary: buildSummary(cap),
       next_action: getNextAction(cap.computed_status),

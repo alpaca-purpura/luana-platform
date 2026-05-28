@@ -47,7 +47,6 @@ export function CodeFilesSection({
   }
 
   const files = codeIndex.cap_to_files[capId] ?? [];
-  const atomicsDeclared = codeIndex.cap_to_atomics[capId] ?? [];
 
   if (files.length === 0) {
     return (
@@ -112,17 +111,6 @@ export function CodeFilesSection({
           </li>
         )}
       </ul>
-      {atomicsDeclared.length > 0 && (
-        <div className="mt-2 text-[10px] text-[var(--color-muted)]">
-          <Tooltip content={TOOLTIPS.cap_header}>
-            <span>Atomics IDs declarados en headers</span>
-          </Tooltip>
-          :{' '}
-          <span className="font-mono text-[var(--color-text)]">
-            {atomicsDeclared.join(', ')}
-          </span>
-        </div>
-      )}
     </section>
   );
 }

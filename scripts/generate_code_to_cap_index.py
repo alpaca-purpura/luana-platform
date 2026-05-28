@@ -10,7 +10,7 @@ with:
   - multi_cap_files: files with >1 cap declared
   - summary stats
 
-Header format (per `.claude/rules` schema v3.2):
+Header format (per docs/process/lifecycle.md — atomics killed 2026-05-28):
   Python: `# cap: module.slug` OR `# cap: [a.b, c.d]`
   TS/TSX: `// cap: module.slug` OR `// cap: [a.b, c.d]`
 
@@ -38,9 +38,6 @@ from typing import Any
 HEADER_PY = re.compile(r"^\s*#\s*cap:\s*(.+?)\s*$", re.MULTILINE)
 HEADER_TS = re.compile(r"^\s*//\s*cap:\s*(.+?)\s*$", re.MULTILINE)
 
-ATOMICS_PY = re.compile(r"^\s*#\s*atomics:\s*(.+?)\s*$", re.MULTILINE)
-ATOMICS_TS = re.compile(r"^\s*//\s*atomics:\s*(.+?)\s*$", re.MULTILINE)
-
 STORY_PY = re.compile(r"^\s*#\s*story-origin:\s*(.+?)\s*$", re.MULTILINE)
 STORY_TS = re.compile(r"^\s*//\s*story-origin:\s*(.+?)\s*$", re.MULTILINE)
 
@@ -62,33 +59,23 @@ def parse_cap_list(raw: str) -> list[str]:
 
 
 def scan_file(path: Path) -> dict[str, Any]:
-    """Scan a single file for header. Returns dict with caps/atomics/story-origin."""
+    """Scan a single file for header. Returns dict with caps/story-origin."""
     try:
         # Only read first 20 lines for performance (header should be at top)
         with path.open(encoding="utf-8") as fh:
             head = "".join(fh.readline() for _ in range(20))
     except (OSError, UnicodeDecodeError):
-        return {"caps": [], "atomics": [], "story_origin": None}
+        return {"caps": [], "story_origin": None}
 
     is_py = path.suffix == ".py"
     cap_re = HEADER_PY if is_py else HEADER_TS
-    atomics_re = ATOMICS_PY if is_py else ATOMICS_TS
     story_re = STORY_PY if is_py else STORY_TS
 
     cap_match = cap_re.search(head)
     if not cap_match:
-        return {"caps": [], "atomics": [], "story_origin": None}
+        return {"caps": [], "story_origin": None}
 
     caps = parse_cap_list(cap_match.group(1))
-
-    atomics: list[str] = []
-    atomics_match = atomics_re.search(head)
-    if atomics_match:
-        atomics_raw = atomics_match.group(1).strip()
-        if atomics_raw and atomics_raw != "TBD":
-            if atomics_raw.startswith("[") and atomics_raw.endswith("]"):
-                atomics_raw = atomics_raw[1:-1]
-            atomics = [a.strip() for a in atomics_raw.split(",") if a.strip()]
 
     story_origin = None
     story_match = story_re.search(head)
@@ -97,7 +84,7 @@ def scan_file(path: Path) -> dict[str, Any]:
         if story_origin_raw and story_origin_raw != "TBD":
             story_origin = story_origin_raw
 
-    return {"caps": caps, "atomics": atomics, "story_origin": story_origin}
+    return {"caps": caps, "story_origin": story_origin}
 
 
 def process_brand(brand: str, workspace_root: Path, verbose: bool) -> dict[str, Any]:
@@ -120,7 +107,6 @@ def process_brand(brand: str, workspace_root: Path, verbose: bool) -> dict[str, 
 
     code_to_cap: dict[str, list[str]] = {}
     cap_to_files: dict[str, list[str]] = defaultdict(list)
-    cap_to_atomics: dict[str, set[str]] = defaultdict(set)
     orphans: list[str] = []
     shared_files: list[str] = []
     multi_cap_files: list[dict[str, Any]] = []
@@ -137,7 +123,6 @@ def process_brand(brand: str, workspace_root: Path, verbose: bool) -> dict[str, 
         rel_path = str(path.relative_to(workspace_root))
         info = scan_file(path)
         caps = info["caps"]
-        atomics = info["atomics"]
 
         if not caps:
             no_header.append(rel_path)
@@ -160,8 +145,6 @@ def process_brand(brand: str, workspace_root: Path, verbose: bool) -> dict[str, 
             if cap in {"__orphan__", "__shared__", "__skip__", "TBD"}:
                 continue
             cap_to_files[cap].append(rel_path)
-            for a in atomics:
-                cap_to_atomics[cap].add(a)
 
         if len(caps) > 1:
             multi_cap_files.append({"path": rel_path, "caps": caps})
@@ -174,12 +157,10 @@ def process_brand(brand: str, workspace_root: Path, verbose: bool) -> dict[str, 
 
     # Convert defaultdicts
     cap_to_files_final = {k: sorted(v) for k, v in cap_to_files.items()}
-    cap_to_atomics_final = {k: sorted(v) for k, v in cap_to_atomics.items()}
 
     return {
         "code_to_cap": code_to_cap,
         "cap_to_files": cap_to_files_final,
-        "cap_to_atomics": cap_to_atomics_final,
         "orphans": sorted(orphans),
         "shared_files": sorted(shared_files),
         "multi_cap_files": multi_cap_files,

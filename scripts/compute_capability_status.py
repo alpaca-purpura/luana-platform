@@ -1,19 +1,26 @@
 #!/usr/bin/env python3
-"""Compute derived capability status from YAML atomics state-machine.
+"""Compute derived capability status from YAML scenarios state-machine.
 
 Produces ``{brand}/docs/product/capabilities/_status-computed.json``
-(gitignored R3 v2) with a computed_status badge per capability, atomic
-counters, surface distribution and drift reasons.
+(gitignored R3 v2) with a computed_status badge per capability, scenario
+counters, verification counters and drift reasons.
 
-State-machine (§ B _cap-verification-decisions.md):
-  verified-live   declared=live + ≥1 atomic live + verification paths all exist
-  declared-live   declared=live + ≥1 atomic live BUT verification absent/paths missing
-  partial         declared=live + mix of live + wip atomics
-  wip             declared=beta OR all atomics wip
-  stub            atomics[] empty (independent of declared)
-  drift           declared=live + (all atomics wip OR verification paths missing)
+The unit of behavior is the ``scenario`` (Gherkin). Each scenario may declare
+an optional ``e2e_test`` path (relative to workspace root). A scenario is
+"verified" when its ``e2e_test`` is non-null AND the file exists on disk.
+
+State-machine (declared = cap frontmatter ``status``):
+  stub            0 scenarios — nothing described yet
   deprecated      declared=deprecated
   sunset          declared=sunset
+  wip             declared=beta (OR any other non-live declared, e.g. planned)
+  verified-live   declared=live + all scenarios verified (exist == scenarios_total)
+  drift           declared=live + decl>0 + exist<decl (broken e2e refs)
+  declared-live   declared=live + decl==0 (no verification at all)
+  partial         declared=live + otherwise (some verified, not all)
+
+Where ``decl``  = # scenarios with a non-null e2e_test
+      ``exist`` = # of those whose file exists on disk
 
 Usage:
   python3 scripts/compute_capability_status.py --brand vitalia [--out PATH] [--verbose] [--strict]
@@ -23,7 +30,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -31,14 +37,8 @@ from typing import Any
 
 import yaml
 
-# Valid surface enum values for atomics
-VALID_SURFACES = {"FE", "BE", "AGENTIC", "FE+BE", "FE+BE+AGENTIC", "DOCS", "INFRA"}
-
 # Valid declared status values from cap YAML frontmatter
 VALID_DECLARED = {"live", "beta", "deprecated", "sunset", "planned"}
-
-# Verification path fields inside atomic.verification block
-VERIFICATION_PATH_FIELDS = ("fe_path", "be_path", "agentic_path", "e2e_test")
 
 
 def _parse_frontmatter(path: Path) -> dict[str, Any] | None:
@@ -84,218 +84,87 @@ def _parse_frontmatter(path: Path) -> dict[str, Any] | None:
     return data
 
 
-def _check_verification_paths(atomic: dict[str, Any], workspace_root: Path) -> tuple[int, int, list[str]]:
-    """Return (verification_total, verification_pass, drift_reasons) for one atomic.
+def _build_metrics(
+    scenarios_total: int,
+    decl: int,
+    exist: int,
+    drift_reasons: list[str],
+) -> dict[str, Any]:
+    """Build the metrics dict for the status JSON contract.
 
-    verification_total = count of non-null path fields declared in atomic.verification.
-    verification_pass  = count of those paths that actually exist on the filesystem.
-    drift_reasons      = explanations for paths that are declared but missing.
+    Keys (must match the cockpit contract):
+      scenarios_total, scenarios_verified, verification_total,
+      verification_pass, drift_reasons
     """
-    verification = atomic.get("verification")
-    atomic_id = atomic.get("id", "<sin-id>")
-    total = 0
-    passing = 0
-    reasons: list[str] = []
-
-    if not isinstance(verification, dict):
-        return 0, 0, []
-
-    for field in VERIFICATION_PATH_FIELDS:
-        value = verification.get(field)
-        if value is None:
-            continue
-        total += 1
-        full_path = workspace_root / value
-        if full_path.exists():
-            passing += 1
-        else:
-            reasons.append(
-                f"atomic '{atomic_id}' verification.{field}='{value}' no existe en filesystem"
-            )
-
-    return total, passing, reasons
-
-
-def _compute_atomics_per_surface(atomics: list[dict[str, Any]]) -> dict[str, int]:
-    """Count atomics by surface enum.
-
-    Returns a dict of surface_key → count. Unknown surfaces go under 'invalid'.
-    """
-    counter: dict[str, int] = {}
-    for atomic in atomics:
-        raw_surface = atomic.get("surface", "")
-        if isinstance(raw_surface, str):
-            surface = raw_surface.strip()
-        else:
-            surface = str(raw_surface).strip()
-
-        if surface in VALID_SURFACES:
-            key = surface
-        else:
-            key = "invalid"
-
-        counter[key] = counter.get(key, 0) + 1
-
-    return counter
+    return {
+        "scenarios_total": scenarios_total,
+        "scenarios_verified": exist,
+        "verification_total": decl,
+        "verification_pass": exist,
+        "drift_reasons": drift_reasons,
+    }
 
 
 def _compute_status(
     declared: str,
-    atomics: list[dict[str, Any]],
+    scenarios: list[Any],
     workspace_root: Path,
     cap_slug: str,
 ) -> tuple[str, dict[str, Any]]:
-    """Apply state-machine and return (computed_status, metrics_dict).
+    """Apply scenarios state-machine and return (computed_status, metrics_dict)."""
+    scenarios_total = len(scenarios)
 
-    metrics_dict keys:
-      atomics_total, atomics_live, atomics_wip,
-      atomics_per_surface, verification_total, verification_pass,
-      drift_reasons
-    """
+    # -- stub: no scenarios (independent of declared) --
+    if scenarios_total == 0:
+        return "stub", _build_metrics(0, 0, 0, [])
+
+    # Count declared (e2e_test non-null) + existing on disk
+    decl = 0
+    exist = 0
     drift_reasons: list[str] = []
 
-    # -- stub: empty atomics list (independent of declared) --
-    if not atomics:
-        return "stub", {
-            "atomics_total": 0,
-            "atomics_live": 0,
-            "atomics_wip": 0,
-            "atomics_per_surface": {},
-            "verification_total": 0,
-            "verification_pass": 0,
-            "drift_reasons": [],
-        }
+    for idx, scenario in enumerate(scenarios):
+        if not isinstance(scenario, dict):
+            continue
+        e2e_test = scenario.get("e2e_test")
+        if not e2e_test:
+            continue
+        decl += 1
+        full_path = workspace_root / e2e_test
+        if full_path.exists():
+            exist += 1
+        else:
+            scenario_id = scenario.get("id") or scenario.get("name") or f"scenario[{idx}]"
+            drift_reasons.append(
+                f"scenario '{scenario_id}' e2e_test='{e2e_test}' no existe en filesystem"
+            )
 
     # -- deprecated / sunset passthrough --
     if declared == "deprecated":
-        return "deprecated", _build_metrics(atomics, workspace_root, [])
+        return "deprecated", _build_metrics(scenarios_total, decl, exist, drift_reasons)
     if declared == "sunset":
-        return "sunset", _build_metrics(atomics, workspace_root, [])
+        return "sunset", _build_metrics(scenarios_total, decl, exist, drift_reasons)
 
-    # -- Normalise atomics, counting live/wip; collect per-atomic verification stats --
-    atomics_live = 0
-    atomics_wip = 0
-    ver_total_all = 0
-    ver_pass_all = 0
-    atomic_drift: list[str] = []
+    # -- beta → wip --
+    if declared == "beta":
+        return "wip", _build_metrics(scenarios_total, decl, exist, drift_reasons)
 
-    for atomic in atomics:
-        if not isinstance(atomic, dict):
-            atomics_wip += 1
-            atomic_drift.append(f"atomic con shape inválido (no es mapping): {atomic!r:.80s}")
-            continue
-
-        status_val = atomic.get("status", "live")
-        if status_val == "live":
-            atomics_live += 1
-        elif status_val == "deprecated":
-            # deprecated atomics count as live for presence purposes but are noted
-            atomics_live += 1
-        else:
-            atomics_wip += 1
-
-        # surface validation
-        raw_surface = atomic.get("surface", "")
-        surface = str(raw_surface).strip() if raw_surface else ""
-        if surface not in VALID_SURFACES:
-            atomic_drift.append(
-                f"atomic '{atomic.get('id', '?')}' surface='{surface}' no es valor enum válido"
-            )
-
-        vt, vp, vdrift = _check_verification_paths(atomic, workspace_root)
-        ver_total_all += vt
-        ver_pass_all += vp
-        atomic_drift.extend(vdrift)
-
-    atomics_total = atomics_live + atomics_wip
-    has_live = atomics_live > 0
-    all_wip = atomics_live == 0 and atomics_wip > 0
-    mixed = has_live and atomics_wip > 0
-
-    metrics = {
-        "atomics_total": atomics_total,
-        "atomics_live": atomics_live,
-        "atomics_wip": atomics_wip,
-        "atomics_per_surface": _compute_atomics_per_surface(atomics),
-        "verification_total": ver_total_all,
-        "verification_pass": ver_pass_all,
-        "drift_reasons": [],
-    }
-
-    # -- State-machine --
-    if declared == "beta" or (not has_live and not all_wip):
-        # wip: declared=beta OR no atomics classify as live
-        metrics["drift_reasons"] = atomic_drift
-        return "wip", metrics
-
-    if all_wip:
-        # drift: declared=live but ALL atomics are wip
-        atomic_drift.append(
-            f"cap declara status=live pero todos sus {atomics_wip} atomics son wip"
-        )
-        metrics["drift_reasons"] = atomic_drift
-        return "drift", metrics
-
-    # has_live is True at this point
+    # -- live --
     if declared == "live":
-        if mixed:
-            metrics["drift_reasons"] = atomic_drift
-            return "partial", metrics
+        # all scenarios verified
+        if exist == scenarios_total:
+            return "verified-live", _build_metrics(scenarios_total, decl, exist, [])
+        # broken e2e refs declared but missing → drift
+        if decl > 0 and exist < decl:
+            return "drift", _build_metrics(scenarios_total, decl, exist, drift_reasons)
+        # no verification declared at all → declared-live
+        if decl == 0:
+            return "declared-live", _build_metrics(scenarios_total, decl, exist, drift_reasons)
+        # else: some verified, not all scenarios → partial
+        return "partial", _build_metrics(scenarios_total, decl, exist, drift_reasons)
 
-        # All atomics live — check verification
-        if ver_total_all == 0:
-            # No verification data at all
-            atomic_drift.append(
-                f"verification ausente en todos los {atomics_live} atomics"
-            )
-            metrics["drift_reasons"] = atomic_drift
-            return "declared-live", metrics
-
-        if ver_pass_all < ver_total_all:
-            # Verification declared but paths missing → drift
-            metrics["drift_reasons"] = atomic_drift
-            return "drift", metrics
-
-        # All verification paths exist
-        if atomic_drift:
-            # Other surface/shape issues → declared-live (not fully verified)
-            metrics["drift_reasons"] = atomic_drift
-            return "declared-live", metrics
-
-        metrics["drift_reasons"] = []
-        return "verified-live", metrics
-
-    # Fallback for any other declared value (planned, etc.)
-    metrics["drift_reasons"] = atomic_drift
-    return "declared-live", metrics
-
-
-def _build_metrics(
-    atomics: list[dict[str, Any]],
-    workspace_root: Path,
-    extra_drift: list[str],
-) -> dict[str, Any]:
-    """Build metrics dict for deprecated/sunset caps."""
-    atomics_live = sum(1 for a in atomics if isinstance(a, dict) and a.get("status", "live") == "live")
-    atomics_wip = len(atomics) - atomics_live
-    vt = 0
-    vp = 0
-    for a in atomics:
-        if isinstance(a, dict):
-            t, p, _ = _check_verification_paths(a, workspace_root)
-            vt += t
-            vp += p
-    return {
-        "atomics_total": len(atomics),
-        "atomics_live": atomics_live,
-        "atomics_wip": atomics_wip,
-        "atomics_per_surface": _compute_atomics_per_surface(
-            [a for a in atomics if isinstance(a, dict)]
-        ),
-        "verification_total": vt,
-        "verification_pass": vp,
-        "drift_reasons": extra_drift,
-    }
+    # -- any other declared (planned, etc.) → wip --
+    return "wip", _build_metrics(scenarios_total, decl, exist, drift_reasons)
 
 
 def process_brand(brand: str, workspace_root: Path, verbose: bool) -> dict[str, Any]:
@@ -344,18 +213,18 @@ def process_brand(brand: str, workspace_root: Path, verbose: bool) -> dict[str, 
 
         slug = data.get("slug") or path.stem
         declared = str(data.get("status", "live")).strip()
-        atomics_raw = data.get("atomics")
-        atomics: list[dict[str, Any]] = []
+        scenarios_raw = data.get("scenarios")
+        scenarios: list[Any] = []
 
-        if isinstance(atomics_raw, list):
-            atomics = atomics_raw
-        elif atomics_raw is not None:
+        if isinstance(scenarios_raw, list):
+            scenarios = scenarios_raw
+        elif scenarios_raw is not None:
             print(
-                f"  [WARN] 'atomics' no es lista en {path} — tratado como stub",
+                f"  [WARN] 'scenarios' no es lista en {path} — tratado como stub",
                 file=sys.stderr,
             )
 
-        computed_status, metrics = _compute_status(declared, atomics, workspace_root, slug)
+        computed_status, metrics = _compute_status(declared, scenarios, workspace_root, slug)
 
         if verbose:
             drift_info = ""
@@ -391,7 +260,7 @@ def process_brand(brand: str, workspace_root: Path, verbose: bool) -> dict[str, 
 def main() -> None:
     """Entry point."""
     parser = argparse.ArgumentParser(
-        description="Computa el status derivado de cada capability según state-machine.",
+        description="Computa el status derivado de cada capability según scenarios state-machine.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("--brand", required=True, help="Slug de la brand (ej. vitalia)")

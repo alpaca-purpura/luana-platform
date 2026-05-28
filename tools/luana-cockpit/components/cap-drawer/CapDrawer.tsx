@@ -360,42 +360,6 @@ export function CapDrawer() {
             <BusinessRulesSection rules={cap.business_rules} />
           )}
 
-          {/* Atomics */}
-          <section>
-            <h3 className="text-sm font-semibold mb-2">
-              <Tooltip content={TOOLTIPS.atomics} variant="header">
-                Atomics ({cap.atomics.length})
-              </Tooltip>
-            </h3>
-            {cap.atomics.length === 0 ? (
-              <EmptyState>Sin atomics declarados.</EmptyState>
-            ) : (
-              <ul className="space-y-1.5">
-                {cap.atomics.map((a, i) => (
-                  <li
-                    key={i}
-                    className={
-                      a.deprecated_in_story
-                        ? 'flex items-start gap-2 text-xs text-[var(--color-muted)] line-through'
-                        : 'flex items-start gap-2 text-xs'
-                    }
-                  >
-                    <span className="font-mono text-[10px] text-[var(--color-muted)] shrink-0 w-24">
-                      {a.added_date}
-                    </span>
-                    <span className="flex-1">{a.label}</span>
-                    <button
-                      onClick={() => openStory(a.added_in_story)}
-                      className="text-[10px] text-[var(--color-accent)] hover:underline font-mono"
-                    >
-                      {a.added_in_story}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-
           {/* 📁 Archivos código asociados · v3.2 cross-check */}
           <CodeFilesSection
             capId={`${cap.module}.${cap.slug}`}
