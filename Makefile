@@ -159,6 +159,16 @@ portfolio-check:
 scan-promotables:
 	python3 scripts/scan_promotables.py
 
+# v3 cement 2026-05-27 · ADR-vitalia-005 · capability index user-facing
+capability-index:
+	python3 scripts/generate_capability_index.py --brand vitalia
+
+capability-index-check:
+	python3 scripts/generate_capability_index.py --brand vitalia --check
+
+capability-index-all:
+	python3 scripts/generate_capability_index.py --all-brands
+
 # ════════════════════════════════════════════════════════════════
 # CI parity gate (cross-brand)
 # ════════════════════════════════════════════════════════════════

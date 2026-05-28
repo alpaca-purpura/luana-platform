@@ -9,71 +9,31 @@ import { useDrawer } from '@/components/providers/DrawerProvider';
 import { useBrand } from '@/components/providers/BrandProvider';
 import { useFileWatchEvents } from '@/components/providers/FileWatchProvider';
 import { listCapabilities } from '@/lib/api-client';
-import type { Capability } from '@/lib/types';
+import type { AgentOwner, Capability } from '@/lib/types';
 
 interface AgentSlot {
-  id: string;
+  id: AgentOwner;
   emoji: string;
   name: string;
   subtitle: string;
-  /** Lista de modules considerados owned por este agente */
-  modules: string[];
 }
 
 const AGENTS: AgentSlot[] = [
-  {
-    id: 'lisa',
-    emoji: '🏥',
-    name: 'Lisa',
-    subtitle: 'Mi Clínica',
-    modules: ['brand', 'clinic', 'team', 'authority'],
-  },
-  {
-    id: 'valeria',
-    emoji: '🗓',
-    name: 'Valeria',
-    subtitle: 'Mi Día',
-    modules: ['scheduling', 'appointments', 'agenda', 'reminders'],
-  },
-  {
-    id: 'adrian',
-    emoji: '💼',
-    name: 'Adrián',
-    subtitle: 'Vender',
-    modules: ['sales_agent', 'offer', 'crm', 'campaigns'],
-  },
-  {
-    id: 'lucas',
-    emoji: '📣',
-    name: 'Lucas',
-    subtitle: 'Marketing',
-    modules: ['landing', 'analytics', 'connections', 'assets'],
-  },
-  {
-    id: 'camila',
-    emoji: '🌟',
-    name: 'Camila',
-    subtitle: 'Cohortes + reputación',
-    modules: ['reputation', 'cohorts', 'community', 'reviews'],
-  },
-  {
-    id: 'config',
-    emoji: '⚙',
-    name: 'Configurar',
-    subtitle: 'tenant_domains · iam',
-    modules: ['iam', 'tenant_domains', 'config', 'admin'],
-  },
+  { id: 'lisa', emoji: '🏥', name: 'Lisa', subtitle: 'Mi Clínica' },
+  { id: 'valeria', emoji: '🗓', name: 'Valeria', subtitle: 'Mi Día' },
+  { id: 'adrian', emoji: '💼', name: 'Adrián', subtitle: 'Vender' },
+  { id: 'lucas', emoji: '📣', name: 'Lucas', subtitle: 'Marketing' },
+  { id: 'camila', emoji: '🌟', name: 'Camila', subtitle: 'Reputación + cohortes' },
+  { id: 'config', emoji: '⚙', name: 'Configurar', subtitle: 'tenant · iam · compliance' },
 ];
 
-const INFRA_MODULES = new Set([
-  'copilot',
-  'observability',
-  'platform',
-  'payment',
-  'sales_agent_engine',
-  'agentic',
-  'commercial_calendar',
-]);
+// Infra es un agente especial (renderiza al final, plegado por default)
+const INFRA_AGENT: AgentSlot = {
+  id: 'infra',
+  emoji: '🔧',
+  name: 'Infra Vitalia',
+  subtitle: 'observability · platform · payment · scaffolding',
+};
 
 const STATUS_CLASSES: Record<string, string> = {
   live: 'bg-[#14532d] text-[#86efac]',
@@ -89,6 +49,7 @@ export function MapView() {
   const [error, setError] = useState<string | null>(null);
   const [showLive, setShowLive] = useState(true);
   const [showDraft, setShowDraft] = useState(false);
+  const [showInfra, setShowInfra] = useState(false);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -115,30 +76,39 @@ export function MapView() {
     return caps.filter((c) => {
       if (c.status === 'live' && !showLive) return false;
       if (c.status === 'beta' && !showDraft) return false;
-      return c.status !== 'deprecated' && c.status !== 'sunset';
+      if (c.status === 'deprecated' || c.status === 'sunset') return false;
+      // v3 · ocultar infra (user_visible: false) salvo toggle
+      if (c.user_visible === false && !showInfra) return false;
+      return true;
     });
-  }, [caps, showLive, showDraft]);
+  }, [caps, showLive, showDraft, showInfra]);
 
   const byAgent = useMemo(() => {
-    const map = new Map<string, Capability[]>();
+    const map = new Map<AgentOwner, Capability[]>();
     AGENTS.forEach((a) => map.set(a.id, []));
+    map.set('infra', []);
     const orphans: Capability[] = [];
-    const infra: Capability[] = [];
 
     for (const c of filtered) {
-      if (INFRA_MODULES.has(c.module)) {
-        infra.push(c);
+      // Filter superseded (oculto del mapa principal)
+      if (c.superseded_by) continue;
+
+      const owner = c.agent_owner;
+      if (!owner) {
+        // Cap sin agent_owner declarado · warning
+        orphans.push(c);
         continue;
       }
-      const agent = AGENTS.find((a) => a.modules.includes(c.module));
-      if (agent) {
-        map.get(agent.id)!.push(c);
+      const bucket = map.get(owner);
+      if (bucket) {
+        bucket.push(c);
       } else {
+        // agent_owner con valor fuera del set (shouldn't happen) · orphan
         orphans.push(c);
       }
     }
 
-    return { map, orphans, infra };
+    return { map, orphans };
   }, [filtered]);
 
   if (loading) {
@@ -185,6 +155,15 @@ export function MapView() {
             />
             beta ⚪ ({caps.filter((c) => c.status === 'beta').length})
           </label>
+          <label className="flex items-center gap-1.5">
+            <input
+              type="checkbox"
+              className="!w-auto"
+              checked={showInfra}
+              onChange={(e) => setShowInfra(e.target.checked)}
+            />
+            infra 🔧 ({caps.filter((c) => c.user_visible === false).length})
+          </label>
           <div className="text-[var(--color-muted)]">
             total: {caps.length}
           </div>
@@ -201,37 +180,31 @@ export function MapView() {
         ))}
       </div>
 
-      {byAgent.infra.length > 0 && (
-        <Card className="!p-4">
-          <header className="flex items-baseline gap-2 mb-3 border-b border-[var(--color-border)] pb-2">
-            <span aria-hidden="true" className="text-xl">
-              🔧
-            </span>
-            <h2 className="text-sm font-semibold">Infra</h2>
-            <span className="text-[10px] text-[var(--color-muted)]">
-              ({byAgent.infra.length} caps)
-            </span>
-          </header>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
-            {byAgent.infra.map((c) => (
-              <CapItem key={`${c.module}/${c.slug}`} cap={c} />
-            ))}
-          </div>
-        </Card>
+      {showInfra && (byAgent.map.get('infra') ?? []).length > 0 && (
+        <AgentSection
+          agent={INFRA_AGENT}
+          caps={byAgent.map.get('infra') ?? []}
+          fullWidth
+        />
       )}
 
       {byAgent.orphans.length > 0 && (
-        <Card className="!p-4 mt-4">
+        <Card className="!p-4 mt-4 border-red-700">
           <header className="flex items-baseline gap-2 mb-3">
-            <span aria-hidden="true">❓</span>
-            <h2 className="text-sm font-semibold">Otros módulos</h2>
+            <span aria-hidden="true">⚠️</span>
+            <h2 className="text-sm font-semibold text-red-400">
+              Capabilities sin agent_owner declarado
+            </h2>
             <span className="text-[10px] text-[var(--color-muted)]">
-              ({byAgent.orphans.length} caps)
+              ({byAgent.orphans.length} caps · v3 schema incompleto)
             </span>
           </header>
+          <div className="text-[11px] text-[var(--color-muted)] mb-2">
+            Estos caps necesitan refining para declarar `agent_owner` + `functional_area` per ADR-vitalia-005.
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
-            {byAgent.orphans.map((c) => (
-              <CapItem key={`${c.module}/${c.slug}`} cap={c} />
+            {byAgent.orphans.map((c, i) => (
+              <CapItem key={capKey(c, i)} cap={c} />
             ))}
           </div>
         </Card>
@@ -240,9 +213,26 @@ export function MapView() {
   );
 }
 
-function AgentSection({ agent, caps }: { agent: AgentSlot; caps: Capability[] }) {
+function AgentSection({
+  agent,
+  caps,
+  fullWidth = false,
+}: {
+  agent: AgentSlot;
+  caps: Capability[];
+  fullWidth?: boolean;
+}) {
+  // Group by functional_area dentro del agent
+  const byArea = new Map<string, Capability[]>();
+  for (const c of caps) {
+    const area = c.functional_area ?? `${agent.id}.sin-area`;
+    if (!byArea.has(area)) byArea.set(area, []);
+    byArea.get(area)!.push(c);
+  }
+  const areas = Array.from(byArea.entries()).sort();
+
   return (
-    <Card className="!p-4 h-full">
+    <Card className={`!p-4 h-full ${fullWidth ? 'col-span-full' : ''}`}>
       <header className="flex items-baseline gap-2 mb-3 border-b border-[var(--color-border)] pb-2">
         <span aria-hidden="true" className="text-xl">
           {agent.emoji}
@@ -260,9 +250,18 @@ function AgentSection({ agent, caps }: { agent: AgentSlot; caps: Capability[] })
       {caps.length === 0 ? (
         <EmptyState>Sin capabilities todavía.</EmptyState>
       ) : (
-        <div className="space-y-1.5">
-          {caps.map((c) => (
-            <CapItem key={`${c.module}/${c.slug}`} cap={c} />
+        <div className="space-y-3">
+          {areas.map(([area, areaCaps]) => (
+            <div key={area}>
+              <div className="text-[10px] text-[var(--color-muted)] mb-1 font-mono uppercase tracking-wide">
+                {area.replace(`${agent.id}.`, '')}
+              </div>
+              <div className={fullWidth ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2' : 'space-y-1.5'}>
+                {areaCaps.map((c, i) => (
+                  <CapItem key={capKey(c, i)} cap={c} />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       )}
@@ -286,15 +285,28 @@ function CapItem({ cap }: { cap: Capability }) {
         <Pill className={STATUS_CLASSES[cap.status] ?? 'bg-[#1f2937]'}>
           {cap.status}
         </Pill>
-        <span className="font-mono text-[11px] truncate flex-1">
-          {cap.module}/{cap.slug}
+        <span className="text-[11px] flex-1 truncate">
+          {cap.user_facing_name ?? `${cap.module}/${cap.slug}`}
         </span>
       </div>
-      {cap.atomics.length > 0 && (
-        <div className="text-[10px] text-[var(--color-muted)] mt-0.5">
-          {cap.atomics.length} atomic{cap.atomics.length !== 1 ? 's' : ''}
-        </div>
-      )}
+      <div className="text-[10px] text-[var(--color-muted)] mt-0.5 font-mono truncate">
+        {cap.module}/{cap.slug}
+        {cap.atomics.length > 0 && (
+          <span className="ml-2">· {cap.atomics.length} atomic{cap.atomics.length !== 1 ? 's' : ''}</span>
+        )}
+      </div>
     </button>
   );
+}
+
+/**
+ * Genera React key única para un cap. Algunos caps llegan con module/slug
+ * vacíos (YAML mal formado, schema v2 incompleto) — el patrón ${module}/${slug}
+ * colapsaba en "/" duplicado. Fallback chain: capability_id > path > index.
+ */
+function capKey(cap: Capability, index: number): string {
+  if (cap.capability_id) return `id:${cap.capability_id}`;
+  if (cap.path) return `path:${cap.path}`;
+  if (cap.module && cap.slug) return `${cap.module}/${cap.slug}`;
+  return `idx:${index}:${cap.module ?? '?'}/${cap.slug ?? '?'}`;
 }

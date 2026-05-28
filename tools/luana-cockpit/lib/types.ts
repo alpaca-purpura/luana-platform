@@ -32,6 +32,32 @@ export type CapChangeType = 'new' | 'fix' | 'extend' | 'derive';
 export type CapStatus = 'live' | 'beta' | 'deprecated' | 'sunset';
 export type CapLicense = 'brand-local' | 'core-shared' | 'proprietary';
 
+// ────────────────────────────────────────────────────────────────────────────
+// v3 cement 2026-05-27 — 4 dimensiones + dev_preview (ADR-vitalia-005)
+// ────────────────────────────────────────────────────────────────────────────
+
+export type AgentOwner =
+  | 'lisa'
+  | 'valeria'
+  | 'adrian'
+  | 'lucas'
+  | 'camila'
+  | 'config'
+  | 'infra';
+
+export type CapNature = 'feature' | 'scaffold' | 'extension-point';
+
+export interface DevPreview {
+  route: string | null;
+  how_to_navigate: string | null;
+  main_component: string | null;
+  api_endpoints: string[];
+  e2e_test: string | null;
+  fixtures_required: string[];
+  storybook_url: string | null;
+  loom_demo: string | null;
+}
+
 export type StoryType = 'ui' | 'service' | 'agentic' | 'tech' | 'func';
 export type Surface = 'BE' | 'FE' | 'AGENTIC';
 
@@ -149,6 +175,17 @@ export interface Capability {
   story_introduced?: string | null;
   date_updated?: string | null;
   extends_capability?: string | null;
+
+  // v3 cement 2026-05-27
+  tech_module?: string | null;            // alias de module · path canónico
+  agent_owner?: AgentOwner | null;
+  functional_area?: string | null;
+  user_visible?: boolean;
+  nature?: CapNature | null;
+  user_facing_name?: string | null;
+  user_facing_description?: string | null;
+  dev_preview?: DevPreview | null;
+  superseded_by?: string | null;
 
   /** Body markdown opcional (después del frontmatter) */
   body?: string;

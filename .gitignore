@@ -173,6 +173,21 @@ docs/portfolio/retailly.md
 docs/portfolio/saasora.md
 docs/portfolio/vitalia.md
 
+# Per-brand capabilities index user-facing (auto-gen scripts/generate_capability_index.py · ADR-vitalia-005 v3 cement 2026-05-27)
+docs/portfolio/comunify-capabilities.md
+docs/portfolio/fitflow-capabilities.md
+docs/portfolio/fixia-capabilities.md
+docs/portfolio/guestly-capabilities.md
+docs/portfolio/inmoflow-capabilities.md
+docs/portfolio/lupulo-capabilities.md
+docs/portfolio/nicolify-capabilities.md
+docs/portfolio/retailly-capabilities.md
+docs/portfolio/saasora-capabilities.md
+docs/portfolio/vitalia-capabilities.md
+
+# Per-brand areas/ user-facing (auto-gen scripts/generate_capability_index.py · 1 file por agent_owner)
+*/docs/product/areas/*.md
+
 # Promotion-protocol dated scans (re-run cada vez con `make scan-promotables`)
 docs/promotion-protocol/scan-*.yaml
 
