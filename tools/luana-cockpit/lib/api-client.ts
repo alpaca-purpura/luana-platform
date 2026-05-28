@@ -16,6 +16,7 @@ import type {
   StoryState,
   CapChangeType,
   RefType,
+  ComputedStatusReport,
 } from '@/lib/types';
 
 export class ApiClientError extends Error {
@@ -340,6 +341,25 @@ export async function getSystemMap(brand: string): Promise<SystemMap> {
     `/api/system-map?brand=${encodeURIComponent(brand)}`
   );
   return { ...data.system_map, _path: data.path };
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Capability computed status
+// ────────────────────────────────────────────────────────────────────────────
+
+export interface CapabilityStatusResponse {
+  status: ComputedStatusReport | null;
+  path: string;
+  brand: string;
+  hint?: string;
+}
+
+export async function getCapabilityStatus(
+  brand: string
+): Promise<CapabilityStatusResponse> {
+  return await request<CapabilityStatusResponse>(
+    `/api/capabilities/status?brand=${encodeURIComponent(brand)}`
+  );
 }
 
 // Re-export type for convenience

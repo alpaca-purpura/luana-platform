@@ -33,6 +33,80 @@ export type CapStatus = 'live' | 'beta' | 'deprecated' | 'sunset';
 export type CapLicense = 'brand-local' | 'core-shared' | 'proprietary';
 
 // ────────────────────────────────────────────────────────────────────────────
+// Computed status — state-machine del cockpit (§ B decisions doc)
+// ────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Estado computado por `scripts/compute_capability_status.py`.
+ * NO es el declared status del YAML — es derivado del conjunto de atomics
+ * + verification cross-check.
+ */
+export type ComputedStatus =
+  | 'verified-live'
+  | 'declared-live'
+  | 'partial'
+  | 'wip'
+  | 'stub'
+  | 'drift'
+  | 'deprecated'
+  | 'sunset';
+
+export interface CapStatusComputed {
+  declared_status: CapStatus;
+  computed_status: ComputedStatus;
+  atomics_total: number;
+  atomics_live: number;
+  atomics_wip: number;
+  atomics_per_surface: Record<string, number>;
+  verification_total: number;
+  verification_pass: number;
+  drift_reasons: string[];
+}
+
+export interface ComputedStatusReport {
+  computed_at: string;
+  brand: string;
+  capabilities: Record<string, CapStatusComputed>; // key = capability slug
+  summary: {
+    total_caps: number;
+    verified_live: number;
+    declared_live: number;
+    partial: number;
+    wip: number;
+    stub: number;
+    drift: number;
+    deprecated: number;
+    sunset: number;
+  };
+}
+
+/** Devuelve emoji + label + color para pintar el badge de computed_status */
+export function getStatusBadge(s: ComputedStatus): {
+  emoji: string;
+  label: string;
+  color: string;
+} {
+  switch (s) {
+    case 'verified-live':
+      return { emoji: '🟢', label: 'verificado', color: 'green' };
+    case 'declared-live':
+      return { emoji: '🟡', label: 'declarado', color: 'yellow' };
+    case 'partial':
+      return { emoji: '🟠', label: 'parcial', color: 'orange' };
+    case 'wip':
+      return { emoji: '🔵', label: 'wip', color: 'blue' };
+    case 'stub':
+      return { emoji: '⚪', label: 'stub', color: 'gray' };
+    case 'drift':
+      return { emoji: '🔴', label: 'drift', color: 'red' };
+    case 'deprecated':
+      return { emoji: '⚫', label: 'deprecated', color: 'gray' };
+    case 'sunset':
+      return { emoji: '⚫', label: 'sunset', color: 'gray' };
+  }
+}
+
+// ────────────────────────────────────────────────────────────────────────────
 // v3 cement 2026-05-27 — 4 dimensiones + dev_preview (ADR-vitalia-005)
 // ────────────────────────────────────────────────────────────────────────────
 

@@ -8,8 +8,17 @@ import { Pill } from '@/components/ui/Badge';
 import { useDrawer } from '@/components/providers/DrawerProvider';
 import { useBrand } from '@/components/providers/BrandProvider';
 import { useFileWatchEvents } from '@/components/providers/FileWatchProvider';
-import { listCapabilities, getSystemMap, openInEditor } from '@/lib/api-client';
-import type { Capability, SystemMap, AreaStatus, AgentDefinition, FunctionalArea } from '@/lib/types';
+import { listCapabilities, getSystemMap, openInEditor, getCapabilityStatus } from '@/lib/api-client';
+import type {
+  Capability,
+  SystemMap,
+  AreaStatus,
+  AgentDefinition,
+  FunctionalArea,
+  ComputedStatusReport,
+  CapStatusComputed,
+} from '@/lib/types';
+import { getStatusBadge } from '@/lib/types';
 
 const STATUS_CLASSES: Record<string, string> = {
   live: 'bg-[#14532d] text-[#86efac]',
@@ -29,6 +38,8 @@ export function MapView() {
   const { brand } = useBrand();
   const [caps, setCaps] = useState<Capability[]>([]);
   const [systemMap, setSystemMap] = useState<SystemMap | null>(null);
+  const [statusReport, setStatusReport] = useState<ComputedStatusReport | null>(null);
+  const [statusHint, setStatusHint] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showLive, setShowLive] = useState(true);
@@ -39,10 +50,16 @@ export function MapView() {
   const load = useCallback(() => {
     setLoading(true);
     setError(null);
-    Promise.all([listCapabilities(brand), getSystemMap(brand)])
-      .then(([capsData, mapData]) => {
+    Promise.all([
+      listCapabilities(brand),
+      getSystemMap(brand),
+      getCapabilityStatus(brand),
+    ])
+      .then(([capsData, mapData, statusData]) => {
         setCaps(capsData);
         setSystemMap(mapData);
+        setStatusReport(statusData.status);
+        setStatusHint(statusData.hint ?? null);
       })
       .catch((err) => setError((err as Error).message))
       .finally(() => setLoading(false));
@@ -188,6 +205,16 @@ export function MapView() {
         </div>
       </header>
 
+      {!statusReport && statusHint && (
+        <div className="mb-3 text-[11px] text-amber-400 px-2 py-1 border border-amber-700 rounded flex items-center gap-1.5">
+          <span aria-hidden="true">⚠️</span>
+          <span>
+            Sin datos de verificación.{' '}
+            <span className="font-mono">{statusHint}</span>
+          </span>
+        </div>
+      )}
+
       {byAgentArea ? (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
@@ -199,6 +226,7 @@ export function MapView() {
                   agent={agent}
                   areas={areas}
                   showPlanned={showPlanned}
+                  statusReport={statusReport}
                 />
               ))}
           </div>
@@ -213,13 +241,14 @@ export function MapView() {
                 areas={infraData.areas}
                 showPlanned={showPlanned}
                 fullWidth
+                statusReport={statusReport}
               />
             );
           })()}
         </>
       ) : (
         // Fallback si system-map no cargó: vista legacy por agent_owner
-        <LegacyFallbackView filtered={filtered} caps={caps} showInfra={showInfra} />
+        <LegacyFallbackView filtered={filtered} caps={caps} showInfra={showInfra} statusReport={statusReport} />
       )}
 
       {orphans.length > 0 && (
@@ -238,7 +267,7 @@ export function MapView() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
             {orphans.map((c, i) => (
-              <CapItem key={capKey(c, i)} cap={c} />
+              <CapItem key={capKey(c, i)} cap={c} statusReport={statusReport} />
             ))}
           </div>
         </Card>
@@ -252,11 +281,13 @@ function AgentSection({
   areas,
   showPlanned,
   fullWidth = false,
+  statusReport = null,
 }: {
   agent: AgentDefinition;
   areas: Array<{ area: FunctionalArea; fullId: string; caps: Capability[] }>;
   showPlanned: boolean;
   fullWidth?: boolean;
+  statusReport?: ComputedStatusReport | null;
 }) {
   const totalCaps = areas.reduce((n, a) => n + a.caps.length, 0);
 
@@ -310,7 +341,7 @@ function AgentSection({
                   )
                 ) : (
                   caps.map((c, i) => (
-                    <CapItem key={capKey(c, i)} cap={c} />
+                    <CapItem key={capKey(c, i)} cap={c} statusReport={statusReport} />
                   ))
                 )}
               </div>
@@ -336,10 +367,12 @@ function LegacyFallbackView({
   filtered,
   caps,
   showInfra,
+  statusReport = null,
 }: {
   filtered: Capability[];
   caps: Capability[];
   showInfra: boolean;
+  statusReport?: ComputedStatusReport | null;
 }) {
   const FALLBACK_AGENTS = [
     { id: 'lisa' as const, emoji: '🏥', name: 'Lisa', subtitle: 'Mi Clínica' },
@@ -389,7 +422,7 @@ function LegacyFallbackView({
                 <EmptyState>Sin capabilities todavía.</EmptyState>
               ) : (
                 <div className="space-y-1.5">
-                  {agentCaps.map((c, i) => <CapItem key={capKey(c, i)} cap={c} />)}
+                  {agentCaps.map((c, i) => <CapItem key={capKey(c, i)} cap={c} statusReport={statusReport} />)}
                 </div>
               )}
             </Card>
@@ -406,7 +439,7 @@ function LegacyFallbackView({
             </div>
           </header>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
-            {(byAgent.map.get('infra') ?? []).map((c, i) => <CapItem key={capKey(c, i)} cap={c} />)}
+            {(byAgent.map.get('infra') ?? []).map((c, i) => <CapItem key={capKey(c, i)} cap={c} statusReport={statusReport} />)}
           </div>
         </Card>
       )}
@@ -416,7 +449,7 @@ function LegacyFallbackView({
             ⚠️ Capabilities sin agent_owner ({byAgent.orphans.length})
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
-            {byAgent.orphans.map((c, i) => <CapItem key={capKey(c, i)} cap={c} />)}
+            {byAgent.orphans.map((c, i) => <CapItem key={capKey(c, i)} cap={c} statusReport={statusReport} />)}
           </div>
         </Card>
       )}
@@ -424,47 +457,155 @@ function LegacyFallbackView({
   );
 }
 
-function CapItem({ cap }: { cap: Capability }) {
+function CapItem({
+  cap,
+  statusReport = null,
+}: {
+  cap: Capability;
+  statusReport?: ComputedStatusReport | null;
+}) {
   const { openCap } = useDrawer();
+  const [expanded, setExpanded] = useState(false);
 
   // Split functional_area en [agent].[area] si está set
   const [agentChip, areaChip] = (cap.functional_area ?? '').split('.', 2);
 
+  // Buscar computed status por slug del cap
+  const computed: CapStatusComputed | null =
+    statusReport?.capabilities[cap.slug] ?? null;
+  const badge = computed ? getStatusBadge(computed.computed_status) : null;
+
+  const hasAtomics = cap.atomics.length > 0;
+
   return (
-    <button
-      type="button"
-      onClick={() => openCap(cap.module, cap.slug)}
+    <div
       className={cn(
-        'w-full text-left px-2 py-1.5 rounded border text-xs transition-colors',
-        'bg-[var(--color-panel)] border-[var(--color-border)]',
-        'hover:border-[#3a4358] hover:bg-[var(--color-panel2)]'
+        'rounded border text-xs transition-colors',
+        'bg-[var(--color-panel)] border-[var(--color-border)]'
       )}
     >
-      <div className="flex items-center gap-1.5 flex-wrap">
-        <Pill className={STATUS_CLASSES[cap.status] ?? 'bg-[#1f2937]'}>
-          {cap.status}
-        </Pill>
-        <div className="flex items-center gap-1 text-[11px] flex-1 truncate">
-          <span className="font-medium truncate">{cap.user_facing_name ?? `${cap.module}/${cap.slug}`}</span>
-          {agentChip && (
-            <Pill className="bg-[var(--color-panel)] border border-[var(--color-border)] text-[10px] py-0">
-              {agentChip}
-            </Pill>
+      {/* Row principal: click abre drawer o toggle atomics */}
+      <div className="flex items-stretch">
+        <button
+          type="button"
+          onClick={() => openCap(cap.module, cap.slug)}
+          className={cn(
+            'flex-1 text-left px-2 py-1.5 transition-colors',
+            'hover:border-[#3a4358] hover:bg-[var(--color-panel2)] rounded-l'
           )}
-          {areaChip && (
-            <Pill className="bg-[var(--color-panel)] border border-[var(--color-border)] text-[10px] py-0 opacity-70">
-              {areaChip}
+        >
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <Pill className={STATUS_CLASSES[cap.status] ?? 'bg-[#1f2937]'}>
+              {cap.status}
             </Pill>
+            {badge && (
+              <span
+                className="text-[10px]"
+                title={`Computed: ${computed?.computed_status}`}
+              >
+                {badge.emoji}
+              </span>
+            )}
+            <div className="flex items-center gap-1 text-[11px] flex-1 truncate">
+              <span className="font-medium truncate">
+                {cap.user_facing_name ?? `${cap.module}/${cap.slug}`}
+              </span>
+              {agentChip && (
+                <Pill className="bg-[var(--color-panel)] border border-[var(--color-border)] text-[10px] py-0">
+                  {agentChip}
+                </Pill>
+              )}
+              {areaChip && (
+                <Pill className="bg-[var(--color-panel)] border border-[var(--color-border)] text-[10px] py-0 opacity-70">
+                  {areaChip}
+                </Pill>
+              )}
+            </div>
+          </div>
+          <div className="text-[10px] text-[var(--color-muted)] mt-0.5 font-mono truncate">
+            {cap.module}/{cap.slug}
+            {hasAtomics && (
+              <span className="ml-2">
+                · {cap.atomics.length} atomic{cap.atomics.length !== 1 ? 's' : ''}
+              </span>
+            )}
+          </div>
+        </button>
+
+        {/* Toggle expand atomics */}
+        <button
+          type="button"
+          aria-label={expanded ? 'Ocultar atomics' : 'Ver atomics'}
+          onClick={() => setExpanded((v) => !v)}
+          className={cn(
+            'px-1.5 text-[var(--color-muted)] hover:text-[var(--color-fg)] transition-colors',
+            'border-l border-[var(--color-border)] rounded-r',
+            expanded && 'bg-[var(--color-panel2)]'
+          )}
+        >
+          <span aria-hidden="true" className="text-[10px]">
+            {expanded ? '▲' : '▼'}
+          </span>
+        </button>
+      </div>
+
+      {/* Atomics drawer */}
+      {expanded && (
+        <div className="border-t border-[var(--color-border)] px-2 py-1.5">
+          {!hasAtomics ? (
+            <div className="text-[10px] text-[var(--color-muted)] italic">
+              Sin atomics declarados (cap stub)
+            </div>
+          ) : (
+            <div className="space-y-0.5">
+              {cap.atomics.map((a, idx) => {
+                // Los atomics pueden tener `name` (v3.1) o `label` (v2 legacy)
+                const atomicName =
+                  (a as unknown as { name?: string }).name ?? a.label ?? '(sin nombre)';
+                const atomicSurface =
+                  (a as unknown as { surface?: string }).surface ?? null;
+                const atomicStatus =
+                  (a as unknown as { status?: string }).status ?? 'live';
+                return (
+                  <div
+                    key={`${a.added_in_story}-${idx}`}
+                    className="text-[10px] text-[var(--color-muted)] flex items-center gap-1"
+                  >
+                    <span
+                      className={cn(
+                        'w-1.5 h-1.5 rounded-full shrink-0',
+                        atomicStatus === 'live'
+                          ? 'bg-green-500'
+                          : atomicStatus === 'wip'
+                          ? 'bg-blue-500'
+                          : 'bg-gray-500'
+                      )}
+                      title={`status: ${atomicStatus}`}
+                    />
+                    {atomicSurface && (
+                      <span className="font-mono text-[9px] opacity-60 shrink-0">
+                        {atomicSurface}
+                      </span>
+                    )}
+                    <span className="truncate">{atomicName}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          {computed && (
+            <div className="mt-1 pt-1 border-t border-[var(--color-border)] text-[9px] text-[var(--color-muted)] font-mono">
+              {badge?.emoji} {computed.computed_status} · {computed.atomics_live}/{computed.atomics_total} live
+              {computed.drift_reasons.length > 0 && (
+                <span className="text-red-400 ml-1" title={computed.drift_reasons.join('; ')}>
+                  · drift
+                </span>
+              )}
+            </div>
           )}
         </div>
-      </div>
-      <div className="text-[10px] text-[var(--color-muted)] mt-0.5 font-mono truncate">
-        {cap.module}/{cap.slug}
-        {cap.atomics.length > 0 && (
-          <span className="ml-2">· {cap.atomics.length} atomic{cap.atomics.length !== 1 ? 's' : ''}</span>
-        )}
-      </div>
-    </button>
+      )}
+    </div>
   );
 }
 
