@@ -2,23 +2,50 @@
 
 Visualizador + editor del workflow Spec-Driven Development de Luana platform (multi-brand). Lee directo del filesystem (no requiere DB) y permite editar metadata vía forms + chris-input.md conversacional.
 
-## TL;DR · levantar en cualquier máquina
+## Paradigma A · per-worktree (cement 2026-05-28)
+
+**El cockpit es filesystem-as-DB · vive con vos en CADA worktree, no es servicio central.**
+
+Cuando trabajás en `~/Proyectos/luana-vitalia/` (branch `wip/vitalia`), levantás cockpit desde ESE worktree y ve solo los archivos de ESE filesystem (incluye tus cambios live, antes del squash-merge a main).
+
+Múltiples cockpits coexisten en distintos puertos según el brand inferido del path del worktree:
+
+| Worktree | Brand | Puerto |
+|---|---|---|
+| `~/Proyectos/luana-platform/` (main) | cross-brand (vista consolidada) | **4000** |
+| `~/Proyectos/luana-nicolify/` | nicolify | **4001** |
+| `~/Proyectos/luana-vitalia/` | vitalia | **4002** |
+| `~/Proyectos/luana-comunify/` | comunify | **4003** |
+| `~/Proyectos/luana-lupulo/` | lupulo | **4004** |
+| `~/Proyectos/luana-protocol-*/` (efímero) | cross-brand | 4000 |
+
+Si trabajás en paralelo en vitalia + comunify, ambos cockpits corren simultáneo en :4002 y :4003 sin colisión.
+
+**Por qué per-worktree:** un cockpit central apuntando a `main` NO vería los cambios pendientes en `wip/vitalia` (viven en otro filesystem físico). Cada worktree levanta SU propio cockpit que ve sus cambios live.
+
+## TL;DR · levantar en cualquier worktree
 
 ```bash
-# 1. Tener el repo
-cd ~/Proyectos/luana-platform                # o donde tengas el workspace
+# 1. Posicionate en el worktree donde estás trabajando
+cd ~/Proyectos/luana-vitalia              # o luana-comunify, luana-platform, etc.
 
-# 2. Levantar el cockpit
-cd tools/luana-cockpit
-pnpm install                                  # primera vez · ~2 min · 678 MB node_modules
-pnpm dev                                      # arranca dev server
+# 2. Comando único (auto-detecta brand + puerto)
+make cockpit-up
+# → http://localhost:4002  (vitalia)
+# → http://localhost:4001  (nicolify · si corrés desde luana-nicolify)
+# → http://localhost:4000  (cross-brand · si corrés desde luana-platform/main)
 
-# 3. Abrir navegador
-open http://localhost:4000                    # macOS
-xdg-open http://localhost:4000                # Linux
+# 3. Ctrl+C para detener
 ```
 
-Listo. Redirige a `/roadmap` por defecto · 4 vistas operacionales (Roadmap · Board · Map · Learnings).
+El script `scripts/cockpit-up.sh` detecta automáticamente:
+- Worktree root via `git rev-parse --show-toplevel`
+- Brand inferido del basename (`luana-vitalia` → vitalia → :4002)
+- Auto-install de deps si `node_modules` no existe en ese worktree
+- Port check (te dice qué proceso ocupa el puerto si hay colisión)
+- Sets `WORKSPACE_ROOT` + `DEFAULT_BRAND` envs antes de `exec pnpm dev`
+
+**Override puerto manual:** `PORT=4099 make cockpit-up`.
 
 **Requisitos:** Node 20+ y pnpm 9.15.9+.
 

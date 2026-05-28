@@ -1,7 +1,19 @@
 #!/usr/bin/env bash
-# Levanta el Luana Cockpit (tool operativa cross-brand · SDD visualizer + editor).
-# Standalone Next.js 16 · puerto 4000 · NO Docker · NO DB.
+# Levanta el Luana Cockpit (tool operativa per-worktree · SDD visualizer + editor).
+# Standalone Next.js 16 · puerto convencional por brand (Paradigma A).
 # Doc: tools/luana-cockpit/README.md · CLAUDE.md § Tools operativas.
+#
+# Paradigma A (cement 2026-05-28): cockpit per-worktree. Cada worktree levanta su propio
+# cockpit en puerto convencional según el brand inferido del path:
+#   ~/Proyectos/luana-platform/   → :4000 (cross-brand · vista consolidada from main)
+#   ~/Proyectos/luana-nicolify/   → :4001
+#   ~/Proyectos/luana-vitalia/    → :4002
+#   ~/Proyectos/luana-comunify/   → :4003
+#   ~/Proyectos/luana-lupulo/     → :4004
+#   ~/Proyectos/luana-protocol-*/ → :4000 (efímero · cross-brand)
+#
+# Esto permite que múltiples cockpits coexistan (uno por worktree activo) sin colisión.
+# Override puerto manual: PORT=4099 bash scripts/cockpit-up.sh
 
 set -euo pipefail
 
@@ -13,9 +25,44 @@ fi
 
 COCKPIT="$WS/tools/luana-cockpit"
 if [[ ! -d "$COCKPIT" ]]; then
-  echo "❌ No existe $COCKPIT . ¿Branch correcto? (necesitás main o wip/protocol-cockpit-v0-6)" >&2
+  echo "❌ No existe $COCKPIT" >&2
+  echo "   Si estás en un worktree wip/{brand} desactualizado, sync con main primero:" >&2
+  echo "     cd $WS && git fetch origin && git merge origin/main" >&2
   exit 1
 fi
+
+# Brand detection from worktree path (basename)
+WORKTREE_NAME="$(basename "$WS")"
+case "$WORKTREE_NAME" in
+  luana-platform)
+    BRAND="cross-brand"
+    DEFAULT_PORT=4000
+    ;;
+  luana-vitalia|luana-vitalia-*)
+    BRAND="vitalia"
+    DEFAULT_PORT=4002
+    ;;
+  luana-nicolify|luana-nicolify-*)
+    BRAND="nicolify"
+    DEFAULT_PORT=4001
+    ;;
+  luana-comunify|luana-comunify-*)
+    BRAND="comunify"
+    DEFAULT_PORT=4003
+    ;;
+  luana-lupulo|luana-lupulo-*)
+    BRAND="lupulo"
+    DEFAULT_PORT=4004
+    ;;
+  luana-protocol-*|luana-core-*)
+    BRAND="cross-brand"
+    DEFAULT_PORT=4000
+    ;;
+  *)
+    BRAND="cross-brand"
+    DEFAULT_PORT=4000
+    ;;
+esac
 
 cd "$COCKPIT"
 
@@ -37,25 +84,31 @@ if ! command -v pnpm >/dev/null 2>&1; then
   exit 1
 fi
 
-# 2. Install si node_modules no existe
+# 2. Install si node_modules no existe (cada worktree tiene sus propios node_modules)
 if [[ ! -d node_modules ]]; then
-  echo "📦 Primera vez · instalando deps (~2 min · 678 MB)..."
+  echo "📦 Primera vez en este worktree · instalando deps (~2 min · 678 MB)..."
   pnpm install
 fi
 
-# 3. Verificar puerto 4000
-PORT="${PORT:-4000}"
+# 3. Verificar puerto libre
+PORT="${PORT:-$DEFAULT_PORT}"
 if lsof -i ":$PORT" -t >/dev/null 2>&1; then
   EXISTING_PID="$(lsof -ti ":$PORT")"
   echo "⚠️  Puerto $PORT ya ocupado por PID $EXISTING_PID."
   echo "   Verificá si es el cockpit anterior: ps -p $EXISTING_PID -o cmd="
   echo "   Para matarlo: kill $EXISTING_PID"
-  echo "   O usá otro puerto: PORT=4001 bash scripts/cockpit-up.sh"
+  echo "   O usá otro puerto: PORT=4099 bash scripts/cockpit-up.sh"
   exit 1
 fi
 
 # 4. Arrancar
-echo "🚀 Levantando cockpit en http://localhost:$PORT"
+echo ""
+echo "🚀 Luana Cockpit · worktree: $WORKTREE_NAME"
+echo "   Brand inferido: $BRAND"
+echo "   Workspace root: $WS"
+echo "   URL: http://localhost:$PORT"
 echo "   Ctrl+C para detener · logs abajo:"
 echo ""
+export WORKSPACE_ROOT="$WS"
+export DEFAULT_BRAND="$BRAND"
 exec pnpm dev --port "$PORT"

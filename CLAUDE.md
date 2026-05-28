@@ -43,13 +43,39 @@ Por-brand: `{brand}/docs/` = SSoT autónomo. Vista master cross-brand: `docs/por
 
 **Venv at workspace root** — `.venv/bin/{python,pytest,ruff}`. NUNCA `cd {brand}/backend && python -m venv .venv` (rompe resolución `luana_core_*`).
 
-**Port allocation:** nicolify=8001/3001, vitalia=8002/3002, comunify=8003/3003, lupulo=8004/3004. **Cockpit operativo cross-brand: tools/luana-cockpit/ en :4000.**
+**Port allocation:** nicolify=8001/3001, vitalia=8002/3002, comunify=8003/3003, lupulo=8004/3004. **Cockpit per-worktree (Paradigma A):** main=4000, nicolify=4001, vitalia=4002, comunify=4003, lupulo=4004.
 
 ## Tools operativas (cross-brand · no son código de producto)
 
 | Tool | Path | Trigger conversacional | Cómo levantar |
 |---|---|---|---|
-| **Luana Cockpit** (SDD visualizer + editor) | `tools/luana-cockpit/` | usuario pide "levantar cockpit", "abrir luana-cockpit", "arrancar la tool cockpit" (variantes coloquiales aceptadas) | **Comando único: `make cockpit-up`** (auto-install deps + port check + arranca dev :4000). Alternativa manual: `cd tools/luana-cockpit && pnpm install && pnpm dev`. README: `tools/luana-cockpit/README.md`. Standalone Next.js 16 + filesystem-as-DB · NO Docker · NO PG. Detener: Ctrl+C o `lsof -ti:4000 \| xargs kill`. |
+| **Luana Cockpit** (SDD visualizer + editor · **per-worktree** Paradigma A) | `tools/luana-cockpit/` | usuario pide "levantar cockpit", "abrir luana-cockpit", "arrancar la tool cockpit" (variantes coloquiales aceptadas) | **Comando único: `make cockpit-up`** desde el worktree actual (auto-install deps + brand detection + port asignado + arranca dev). README: `tools/luana-cockpit/README.md`. Standalone Next.js 16 + filesystem-as-DB · NO Docker · NO PG. |
+
+### Cockpit · Paradigma A · per-worktree (cement 2026-05-28)
+
+El cockpit es **filesystem-as-DB**: lee/escribe directo de `.md`/`.yaml` del worktree donde corre. Por eso vive con uno en CADA worktree (no es un servicio compartido).
+
+**Convención puertos** (alineada con backend/frontend brand allocation):
+
+| Worktree | Brand inferido | Puerto cockpit | Backend brand | Frontend brand |
+|---|---|---|---|---|
+| `~/Proyectos/luana-platform/` (main) | cross-brand (vista consolidada) | 4000 | n/a | n/a |
+| `~/Proyectos/luana-nicolify/` | nicolify | 4001 | 8001 | 3001 |
+| `~/Proyectos/luana-vitalia/` | vitalia | 4002 | 8002 | 3002 |
+| `~/Proyectos/luana-comunify/` | comunify | 4003 | 8003 | 3003 |
+| `~/Proyectos/luana-lupulo/` | lupulo | 4004 | 8004 | 3004 |
+| `~/Proyectos/luana-protocol-*/` (efímero) | cross-brand | 4000 | n/a | n/a |
+| `~/Proyectos/luana-core-*/` (efímero lift) | cross-brand | 4000 | n/a | n/a |
+
+`scripts/cockpit-up.sh` detecta el worktree via `git rev-parse --show-toplevel`, infiere brand del basename, asigna puerto + `WORKSPACE_ROOT` + `DEFAULT_BRAND` envs antes de `exec pnpm dev`. Override puerto manual: `PORT=4099 make cockpit-up`.
+
+**Por qué per-worktree:** cuando Chris edita un story en `~/Proyectos/luana-vitalia/` (wip/vitalia), esos cambios viven SOLO en ese filesystem hasta squash-merge a main. Un cockpit central apuntando a main NO los vería. Cada worktree levanta SU propio cockpit que ve sus cambios live.
+
+**Cross-brand views**: cuando se necesita ver el estado consolidado de las 4 brands (Roadmap cross-brand, learnings comparativos), levanta el cockpit desde `~/Proyectos/luana-platform/` (worktree main) en `:4000`.
+
+**Múltiples cockpits coexisten** sin colisión: si hay sesiones paralelas en vitalia + comunify, ambos cockpits corren simultáneo en `:4002` y `:4003` respectivamente.
+
+**Detener:** Ctrl+C en pnpm dev (foreground) o `lsof -ti:400X | xargs kill` por puerto.
 
 ## SDD Level 3 — vocabulario v4 (cementado 2026-05-06)
 
