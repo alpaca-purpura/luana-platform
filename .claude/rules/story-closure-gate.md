@@ -44,6 +44,19 @@ Schema `07-merge.md` 5 secciones + `gherkin_coverage` field en `06-tickets.yaml`
 
 **Update también:** `last_modified` del cap = today.
 
+### Enforce reglas (cement 2026-05-28 · cap verification v3.1)
+
+Antes de cerrar el merge commit, verificar que el `change_log` entry de esta story cumpla:
+
+| `cap_change_type` | `change_log[ultimo].atomics_added.length` | Otros checks |
+|---|---|---|
+| `new` | `>= 1` REQUIRED | `atomics[]` overall ≥1 atomic con shape válido |
+| `extend` | `>= 1` REQUIRED | `atomics[]` debió crecer vs commit anterior |
+| `fix` | `>= 0` (opcional) | NO requiere atomic nuevo |
+| `derive` | `>= 1` REQUIRED en cap hijo | `parent_cap.derives_capabilities[]` lista hijo |
+
+Enforce point: `scripts/reconcile_capabilities.py --validate-ledger` (extiende validación). Pre-commit hook bloquea HARD en `main/release/*` + WARN en `wip/*` (advisory).
+
 Doc canónico: `docs/process/capability-protocol.md` § Sección 5.
 
 ## Escape valve — `defer_audit: true`

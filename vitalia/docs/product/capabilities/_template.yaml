@@ -95,20 +95,30 @@ parent_cap: null                                # null si root · slug si derive
 derives_capabilities: []                        # caps hijas spawned via derive
 superseded_by: null                             # slug del cap que reemplaza a este (post-merge)
 
-# Atomics como objects
+# Atomics como objects (atomic schema v3.1 cement 2026-05-28)
 atomics:
-  - label: "{Atomic 1 user-facing label}"
-    added_in_story: {story-id}
-    added_date: 2026-MM-DD
-  # agregar más cuando se extienda
+  - id: <kebab-case-unique-within-cap>          # REQUIRED · unique dentro del cap · max 60 chars · inmutable post-merge
+    name: "<nombre user-facing Spanish neutro>"  # REQUIRED · Spanish neutro · max 120 chars
+    surface: FE                                  # REQUIRED · FE | BE | AGENTIC | FE+BE | FE+BE+AGENTIC | DOCS | INFRA
+    added_in_story: {story-id}                   # REQUIRED · debe existir en stories/ o archive/*/stories/
+    added_date: 2026-MM-DD                       # REQUIRED · ISO date YYYY-MM-DD
+    status: live                                 # REQUIRED · live | wip | deprecated
+    verification:                                # OPTIONAL en v3.1 (warnings) · REQUIRED en v3.2 (errores)
+      fe_path: null                              # ej: "vitalia/frontend/src/features/{module}/components/{Component}.tsx"
+      be_path: null                              # ej: "vitalia/backend/src/modules/vitalia/{module}/api/{endpoint}.py"
+      agentic_path: null                         # ej: "vitalia/backend/src/modules/vitalia/sales_agent/prompts/{slug}.txt"
+      e2e_test: null                             # ej: "vitalia/frontend/e2e/specs/{module}/{spec-name}.spec.ts"
+    # deprecated_in_story: null                  # OPTIONAL · story que depreca el atomic (si status=deprecated)
+    # deprecated_date: null                      # OPTIONAL · ISO date YYYY-MM-DD (si status=deprecated)
+  # agregar más cuando se extienda (NUNCA eliminar atomics existentes · deprecar con status: deprecated)
 
-# Append-only ledger
+# Append-only ledger (atomics_added lista IDs de atomics nuevos desde v3.1)
 change_log:
   - story_id: {story-id-que-creo}
     date: 2026-MM-DD
     type: new                                   # new | fix | extend | derive
     summary: "{Implementación inicial · qué hace en 1-2 líneas}"
-    atomics_added: ["{Atomic 1 label}"]
+    atomics_added: ["<id-del-atomic-1>"]        # IDs kebab-case (no labels)
     atomics_modified: []
     merge_sha: null                             # populate post-merge
     status: done                                # in-progress | done

@@ -1,9 +1,11 @@
-# Capability Protocol — Story ↔ Capability Doctrine (v3 cement 2026-05-27)
+# Capability Protocol — Story ↔ Capability Doctrine (v3.1 cement 2026-05-28)
 
+**Cement-date v3.1:** 2026-05-28 (extiende v3 · atomic schema canónico v3.1 + Fase F.3 enforce rules).
 **Cement-date v3:** 2026-05-27 (extiende v2 misma fecha · Sec 7-9 v3 son aditivas).
 **Origen v2:** plan `/home/chalreme/.claude/plans/ok-lo-apruebo-realiza-cheeky-harbor.md` § Phase 1.1.A.
 **Origen v3:** sesión `/pm-vitalia` 2026-05-27 — ADR-vitalia-005 (4 dimensiones + dev_preview + areas/).
-**SSoT capability YAML schema v3.**
+**Origen v3.1:** sesión cap-verification 2026-05-28 — audit cockpit Mapa Implementado · atomic schema canónico + Fase F.3 enforce rules.
+**SSoT capability YAML schema v3.1.**
 
 > Doctrina cementada: **Story** es transitoria (idea→done→archive), **Capability** es permanente (append-only ledger). Cada story declara `cap_target` + `cap_change_type` para mantener trazabilidad qué tocó qué. **v3 añade:** cada cap declara 4 dimensiones (`tech_module` + `agent_owner` + `functional_area` + `user_visible`) + bloque `dev_preview` para que el producto sea navegable en lenguaje humano.
 
@@ -24,15 +26,22 @@
 
 ---
 
-## Sección 2 · Schema cap YAML v2
+## Sección 2 · Schema cap YAML v3.1
 
 ```yaml
 ---
 capability_id: vitalia.scheduling.valeria-agenda
-module: scheduling
+module: scheduling                        # alias de tech_module · deprecation 2026-Q3
+tech_module: scheduling                   # REQUIRED v3 · kebab path canónico
 slug: valeria-agenda
 status: live                              # live | beta | deprecated | sunset
 license: brand-local                      # brand-local | core-shared
+
+# Dimensiones v3 (4 campos · cement 2026-05-27 · REQUIRED todos)
+agent_owner: valeria                      # lisa | valeria | adrian | lucas | camila | config | infra
+functional_area: valeria.agenda           # <agent>.<area-kebab>
+user_visible: true                        # true | false
+nature: feature                           # feature | scaffold | extension-point
 
 # Ledger fields (v2 cement 2026-05-27)
 created_in_story: vitalia-fase2-valeria-agenda
@@ -45,27 +54,45 @@ package_path: vitalia/backend/src/modules/vitalia/scheduling/
 architecture_pattern: ADR-vitalia-004     # ADR slug si aplica
 hipaa_lite_overlay: true                  # opcional (vitalia-specific)
 
-# Capability lineage (reuso de extends_capability existente · renombrado conceptualmente como parent_cap)
+# Capability lineage
 parent_cap: null                          # null si root · slug si derive
 derives_capabilities: []                  # caps hijas spawned via derive
 
-# Atomics como objects (v2 — antes era array plano de strings)
+# Atomics como objects (v3.1 — schema canónico · cement 2026-05-28)
 atomics:
-  - label: "Vista calendario semanal"
+  - id: vista-calendario-semanal                    # REQUIRED · kebab-case unique dentro del cap · max 60 chars
+    name: "Vista calendario semanal"                # REQUIRED · Spanish neutro
+    surface: FE                                     # REQUIRED · FE | BE | AGENTIC | FE+BE | FE+BE+AGENTIC | DOCS | INFRA
+    added_in_story: vitalia-fase2-valeria-agenda    # REQUIRED · debe existir en stories/ o archive/*/stories/
+    added_date: 2026-05-27                          # REQUIRED · ISO date
+    status: live                                    # REQUIRED · live | wip | deprecated
+    verification:                                   # OPTIONAL en v3.1 (warnings) · REQUIRED en v3.2
+      fe_path: "vitalia/frontend/src/features/scheduling/components/AgendaWeekly.tsx"
+      be_path: null
+      agentic_path: null
+      e2e_test: "vitalia/frontend/e2e/specs/valeria-agenda-create.spec.ts"
+    # deprecated_in_story: null                     # OPTIONAL · si status=deprecated
+    # deprecated_date: null                         # OPTIONAL · si status=deprecated
+  - id: drag-to-reschedule
+    name: "Drag-to-reschedule"
+    surface: FE
     added_in_story: vitalia-fase2-valeria-agenda
     added_date: 2026-05-27
-  - label: "Drag-to-reschedule"
-    added_in_story: vitalia-fase2-valeria-agenda
-    added_date: 2026-05-27
-  # futuro: cuando llegue extend, agrega aquí más con added_in_story distinto
+    status: live
+    verification:
+      fe_path: null
+      be_path: null
+      agentic_path: null
+      e2e_test: null
+  # futuro: cuando llegue extend, agregar aquí más con added_in_story distinto
 
-# Append-only ledger (v2)
+# Append-only ledger (v2 · atomics_added lista IDs desde v3.1)
 change_log:
   - story_id: vitalia-fase2-valeria-agenda
     date: 2026-05-27
     type: new                              # new | fix | extend | derive
     summary: "Implementación inicial · vista calendario + drag-to-reschedule + advisory lock"
-    atomics_added: ["Vista calendario semanal", "Drag-to-reschedule"]
+    atomics_added: ["vista-calendario-semanal", "drag-to-reschedule"]
     atomics_modified: []
     merge_sha: 4562140c
     status: done                           # in-progress | done
@@ -119,27 +146,103 @@ parent_story: vitalia-fase2-valeria-agenda
 
 ---
 
-## Sección 4 · Atomics como objects
+## Sección 4 · Atomics — schema canónico v3.1 (cement 2026-05-28)
 
-**Antes (v1):**
+### Evolución histórica
+
+**v1 (plano):**
 ```yaml
 atomics: ["Vista calendario semanal", "Drag-to-reschedule"]
 ```
 
-**Después (v2):**
+**v2 (objects con label):**
 ```yaml
 atomics:
   - label: "Vista calendario semanal"
     added_in_story: vitalia-fase2-valeria-agenda
     added_date: 2026-05-27
-  - label: "Drag-to-reschedule"
-    added_in_story: vitalia-fase2-valeria-agenda
-    added_date: 2026-05-27
 ```
 
-**Por qué:** queremos saber cuál story metió cada atomic. Si un cap acumula 12 atomics tras 3 stories de `extend`, el ledger nos dice cuál atomic vino de cuál story. Trazabilidad temporal completa.
+**v3.1 (schema canónico completo):**
+```yaml
+atomics:
+  - id: vista-calendario-semanal           # REQUIRED · kebab-case · unique dentro del cap · max 60 chars
+    name: "Vista calendario semanal"       # REQUIRED · Spanish neutro · string user-facing
+    surface: FE                            # REQUIRED · enum (ver tabla abajo)
+    added_in_story: vitalia-fase2-valeria-agenda  # REQUIRED · debe existir en stories/ o archive/*/stories/
+    added_date: 2026-05-27                 # REQUIRED · ISO date YYYY-MM-DD
+    status: live                           # REQUIRED · live | wip | deprecated
+    verification:                          # OPTIONAL en v3.1 (genera warnings) · REQUIRED en v3.2 (errores)
+      fe_path: <relative path|null>        # ej: "vitalia/frontend/src/features/scheduling/components/AgendaWeekly.tsx"
+      be_path: <relative path|null>        # ej: "vitalia/backend/src/modules/vitalia/scheduling/api/appointments.py"
+      agentic_path: <relative path|null>   # ej: "vitalia/backend/src/modules/vitalia/sales_agent/prompts/slots/valeria_voice.txt"
+      e2e_test: <relative path|null>       # ej: "vitalia/frontend/e2e/specs/scheduling/create-appointment.spec.ts"
+    deprecated_in_story: null              # OPTIONAL · story que depreca el atomic (si status=deprecated)
+    deprecated_date: null                  # OPTIONAL · ISO date (si status=deprecated)
+```
 
-**Migración:** `scripts/migrate_capability_ledger.py` (Phase 4a) convierte arrays planos → arrays de objects usando `story_introduced` + `date_introduced` del frontmatter v1.
+### Tabla campos REQUIRED
+
+| Campo | Tipo | Constraint |
+|---|---|---|
+| `id` | string | kebab-case · único dentro del cap · max 60 chars · inmutable post-merge |
+| `name` | string | Spanish neutro · user-facing · max 120 chars |
+| `surface` | enum | ver tabla Surface enum abajo |
+| `added_in_story` | string | debe existir como story-id en `stories/` activo o `archive/*/stories/` |
+| `added_date` | string | ISO date `YYYY-MM-DD` |
+| `status` | enum | `live` \| `wip` \| `deprecated` |
+
+### Surface enum
+
+| Valor | Cuándo usar |
+|---|---|
+| `FE` | Atomic solo visible en frontend (componente, hook, store, route) |
+| `BE` | Atomic solo en backend (endpoint, domain service, repo, migration) |
+| `AGENTIC` | Atomic en capa agentic (prompt, tool, workflow LangGraph, LLM call) |
+| `FE+BE` | Atomic con superficie frontend + backend (integración form → API) |
+| `FE+BE+AGENTIC` | Atomic full-stack incluyendo agentic engine |
+| `DOCS` | Atomic de documentación/spec/ADR sin código (compliance docs, contracts) |
+| `INFRA` | Atomic de infraestructura (migration, fixture, worker, script ops, config) |
+
+### Reglas verificación path-surface coherencia
+
+- Si `surface: FE` → solo `fe_path` y `e2e_test` pueden ser non-null en `verification`. `be_path` y `agentic_path` deben ser null.
+- Si `surface: BE` → solo `be_path` puede ser non-null. `fe_path` debe ser null.
+- Si `surface: AGENTIC` → solo `agentic_path` puede ser non-null. `fe_path` debe ser null.
+- Si `surface: FE+BE` → al menos `fe_path` y `be_path` declarados (o `e2e_test` ratifica ambas).
+- Si `surface: FE+BE+AGENTIC` → al menos 2 de 3 paths (`fe_path`, `be_path`, `agentic_path`) declarados.
+- Si `surface: DOCS` o `INFRA` → todos los verification paths pueden ser null (advisory si e2e_test declarado).
+
+### Status enum
+
+| Valor | Significado |
+|---|---|
+| `live` | Atomic implementado y en producción |
+| `wip` | Atomic en desarrollo (story en flight) |
+| `deprecated` | Atomic retirado (NO eliminar del array — marcar con `deprecated_in_story` + `deprecated_date`) |
+
+**Regla deprecation:** NUNCA eliminar un atomic del array. Marca `status: deprecated` + `deprecated_in_story` + `deprecated_date`. El ledger es append-only + mark-deprecated.
+
+### Ejemplo canónico shell-vitalia (anchor)
+
+```yaml
+atomics:
+  - id: topbar-global
+    name: "Barra superior global de navegación"
+    surface: FE
+    added_in_story: vitalia-fase1-topbar-global
+    added_date: 2026-05-15
+    status: live
+    verification:
+      fe_path: "vitalia/frontend/src/components/shared/shell-organism/TopBar.tsx"
+      be_path: null
+      agentic_path: null
+      e2e_test: "vitalia/frontend/e2e/specs/smoke/shell-topbar.spec.ts"
+```
+
+**Migración v2 → v3.1:** `scripts/migrate_capability_ledger.py` extiende atomics existentes con los campos nuevos. Items sin `id` asignado usan slug generado desde el `label` (kebab-case truncado a 60 chars). Items sin `surface` infieren desde los campos de `verification` si están declarados; si no, default `FE` + advisory warning para revisión Chris.
+
+**Migración v1 → v2 → v3.1:** `scripts/migrate_capability_ledger.py` (Phase 4a) convierte arrays planos → arrays de objects usando `story_introduced` + `date_introduced` del frontmatter v1, luego amplía al schema v3.1.
 
 ---
 
@@ -165,12 +268,29 @@ Cuando una story pasa `reviewing → done` (Fase F MERGE), `/pm-{brand}` aplica 
 3. Update `last_modified` = today
 
 ### Rama D — `cap_change_type: derive`
-1. Crear cap YAML hijo con schema v2 + `parent_cap: {origen_slug}`
+1. Crear cap YAML hijo con schema v3.1 + `parent_cap: {origen_slug}`
 2. `change_log[0]` con `type: derive` + `summary` referenciando el cap padre
 3. Update cap padre: append `derives_capabilities: [hijo_slug]`
 4. Update padre `last_modified` (modificación de su array `derives_capabilities`)
 
 **Order matters:** en `derive`, primero crear cap hijo (con parent_cap declarado), luego actualizar padre. Atomic write para evitar estado inconsistente.
+
+### Enforce reglas Fase F.3 (cement 2026-05-28 · cap verification v3.1)
+
+Antes de cerrar el merge commit, `/pm-{brand}` MUST verificar que el `change_log` entry de esta story cumpla:
+
+| `cap_change_type` | `change_log[ultimo].atomics_added.length` | Otros checks |
+|---|---|---|
+| `new` | `>= 1` **REQUIRED** | `atomics[]` overall debe tener ≥1 atomic con shape v3.1 válido (campos REQUIRED presentes) |
+| `extend` | `>= 1` **REQUIRED** | `atomics[]` debe haber crecido respecto al commit anterior (diff positivo) |
+| `fix` | `>= 0` (puede ser `[]`) | NO requiere atomic nuevo · solo append `change_log` con fix entry |
+| `derive` | `>= 1` **REQUIRED** en cap hijo | `parent_cap.derives_capabilities[]` debe listar el hijo nuevo |
+
+**Violación detectada** → REFUSE cerrar Fase F.3. Escalar a Chris con message: "cap_change_type={type} declarado pero atomics_added={n} en change_log · mínimo requerido: 1".
+
+**Enforce point:** `scripts/reconcile_capabilities.py --validate-ledger` detecta violaciones post-merge. Pre-commit hook:
+- HARD block en `main/release/*` si commit toca checkpoint con `cap_change_type ∈ {new, extend}` y NO toca cap YAML correspondiente.
+- WARN advisory en `wip/*` (no bloquea, muestra mensaje).
 
 ---
 
