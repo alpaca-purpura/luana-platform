@@ -46,7 +46,7 @@ atomics: []   # v2 cement · empty initial · Chris populate manually
 
 # Capability change log v2 (cement 2026-05-27)
 change_log:
-  - story_id: luana-vitalia-bootstrap
+  - story_id: vitalia-bootstrap-inventory-2026-05-15
     date: 2026-05-15
     type: new
     summary: "Implementación inicial · migración legacy a schema v2"
