@@ -2,11 +2,10 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Map, ClipboardList, Compass, BookOpen, Network, AlertTriangle, Book } from 'lucide-react';
+import { Map, ClipboardList, Compass, BookOpen, Network, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
 const NAV_ITEMS = [
-  { href: '/functionality', label: 'Funcionalidad', Icon: Book },
   { href: '/roadmap', label: 'Roadmap', Icon: Map },
   { href: '/board', label: 'Backlog Board', Icon: ClipboardList },
   { href: '/map', label: 'Mapa Implementado', Icon: Compass },

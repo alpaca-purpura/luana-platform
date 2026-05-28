@@ -13,6 +13,8 @@ import { Plus, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Spinner, ErrorBanner, EmptyState } from '@/components/ui/Spinner';
 import { Panel } from '@/components/ui/Card';
+import { Tooltip } from '@/components/ui/Tooltip';
+import { TOOLTIPS } from '@/lib/tooltips';
 import { ReleaseCard } from './ReleaseCard';
 import { NewReleaseModal } from '@/components/modals/NewReleaseModal';
 import { MergeReleaseModal } from '@/components/modals/MergeReleaseModal';
@@ -117,9 +119,17 @@ export function RoadmapView() {
     <div className="p-6">
       <header className="flex items-start justify-between mb-4 gap-4 flex-wrap">
         <div>
-          <h1 className="text-lg font-semibold">Roadmap · planeación temporal</h1>
+          <h1 className="text-lg font-semibold">
+            <Tooltip content={TOOLTIPS.roadmap} variant="header">
+              Roadmap · planeación temporal
+            </Tooltip>
+          </h1>
           <p className="text-[11px] text-[var(--color-muted)] mt-0.5 max-w-3xl">
-            Arrastra stories entre releases mientras estén en estado{' '}
+            Arrastra stories entre{' '}
+            <Tooltip content={TOOLTIPS.release_concept}>
+              <span>releases</span>
+            </Tooltip>
+            {' '}mientras estén en estado{' '}
             <b>idea</b>, <b>refining</b> o <b>refined</b>. Una vez en{' '}
             <code>ready</code> o más, queda anclada (solo Claude la mueve). Al
             cerrar todas las stories de un release, se habilita merge.

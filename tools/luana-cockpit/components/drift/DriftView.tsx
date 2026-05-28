@@ -5,10 +5,23 @@ import { cn } from '@/lib/cn';
 import { Spinner, ErrorBanner, EmptyState } from '@/components/ui/Spinner';
 import { Card } from '@/components/ui/Card';
 import { Pill } from '@/components/ui/Badge';
+import { Tooltip } from '@/components/ui/Tooltip';
+import { TOOLTIPS } from '@/lib/tooltips';
 import { useBrand } from '@/components/providers/BrandProvider';
 import { useFileWatchEvents } from '@/components/providers/FileWatchProvider';
 import { getCapabilityStatus } from '@/lib/api-client';
 import { getStatusBadge, type ComputedStatus, type ComputedStatusReport } from '@/lib/types';
+
+const STATUS_TOOLTIPS: Record<ComputedStatus, string> = {
+  'verified-live': TOOLTIPS.verified_live,
+  'declared-live': TOOLTIPS.declared_live,
+  'partial': TOOLTIPS.partial,
+  'wip': TOOLTIPS.wip,
+  'stub': TOOLTIPS.stub,
+  'drift': TOOLTIPS.drift,
+  'deprecated': 'Cap marcada como deprecada · pendiente sunset.',
+  'sunset': 'Cap retirada · ya no se mantiene.',
+};
 import {
   filterDriftEntries,
   sortDriftEntries,
@@ -96,9 +109,11 @@ function DriftRow({ entry }: { entry: DriftEntry }) {
       <div className="flex items-stretch">
         <div className="flex-1 px-3 py-2 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <Pill className={cn(cls, 'text-[10px] py-0 shrink-0')}>
-              {badge.emoji} {badge.label}
-            </Pill>
+            <Tooltip content={STATUS_TOOLTIPS[entry.computed_status]} variant="badge">
+              <Pill className={cn(cls, 'text-[10px] py-0 shrink-0')}>
+                {badge.emoji} {badge.label}
+              </Pill>
+            </Tooltip>
             <span className="font-mono font-medium text-[11px] truncate">
               {entry.slug}
             </span>
@@ -294,7 +309,10 @@ export function DriftView() {
       <header className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-lg font-semibold">
-            🚨 Drift —{' '}
+            <Tooltip content={TOOLTIPS.drift_tab} variant="header">
+              🚨 Drift
+            </Tooltip>
+            {' — '}
             <span className="text-[var(--color-muted)] font-normal text-base">
               caps que no están verificadas-live
             </span>

@@ -3,10 +3,25 @@
 import { useDroppable } from '@dnd-kit/core';
 import { cn } from '@/lib/cn';
 import { StateBadge } from '@/components/ui/Badge';
+import { Tooltip } from '@/components/ui/Tooltip';
+import { TOOLTIPS } from '@/lib/tooltips';
 import { BoardCard } from './BoardCard';
 import type { StoryState } from '@/lib/types';
 import type { StoryWithArchive } from '@/lib/api-client';
 import { CHRIS_ALLOWED_TRANSITIONS } from '@/lib/types';
+
+const STATE_TOOLTIPS: Record<StoryState, string> = {
+  idea: TOOLTIPS.state_idea,
+  refining: TOOLTIPS.state_refining,
+  refined: TOOLTIPS.state_refined,
+  ready: TOOLTIPS.state_ready,
+  developing: TOOLTIPS.state_developing,
+  developed: TOOLTIPS.state_developed,
+  reviewing: TOOLTIPS.state_reviewing,
+  done: TOOLTIPS.state_done,
+  parked: TOOLTIPS.state_parked,
+  dropped: TOOLTIPS.state_dropped,
+};
 
 interface BoardColumnProps {
   state: StoryState;
@@ -38,13 +53,17 @@ export function BoardColumn({
   return (
     <div className="w-48 shrink-0 flex flex-col">
       <header className="flex items-center justify-between mb-2 px-1">
-        <StateBadge state={state} />
+        <Tooltip content={STATE_TOOLTIPS[state]} variant="badge">
+          <StateBadge state={state} />
+        </Tooltip>
         <div className="text-[10px] text-[var(--color-muted)] font-mono">
           {stories.length}
           {wipCap !== undefined && (
-            <span className={stories.length > wipCap ? 'text-orange-400' : ''}>
-              /{wipCap}
-            </span>
+            <Tooltip content={TOOLTIPS.wip_cap}>
+              <span className={stories.length > wipCap ? 'text-orange-400' : ''}>
+                /{wipCap}
+              </span>
+            </Tooltip>
           )}
         </div>
       </header>

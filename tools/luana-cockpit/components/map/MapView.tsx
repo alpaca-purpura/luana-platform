@@ -5,6 +5,8 @@ import { cn } from '@/lib/cn';
 import { Spinner, ErrorBanner, EmptyState } from '@/components/ui/Spinner';
 import { Card } from '@/components/ui/Card';
 import { Pill } from '@/components/ui/Badge';
+import { Tooltip } from '@/components/ui/Tooltip';
+import { TOOLTIPS } from '@/lib/tooltips';
 import { useDrawer } from '@/components/providers/DrawerProvider';
 import { useBrand } from '@/components/providers/BrandProvider';
 import { useFileWatchEvents } from '@/components/providers/FileWatchProvider';
@@ -19,6 +21,19 @@ import type {
   CapStatusComputed,
 } from '@/lib/types';
 import { getStatusBadge } from '@/lib/types';
+
+// Roles canónicos vitalia (per HIPAA-lite + IAM)
+const VITALIA_ROLES = [
+  'doctor',
+  'nurse',
+  'admin_clinic',
+  'marketing',
+  'receptionist',
+  'patient',
+  'staff_vitalia',
+] as const;
+
+type VitaliaRole = (typeof VITALIA_ROLES)[number];
 
 const STATUS_CLASSES: Record<string, string> = {
   live: 'bg-[#14532d] text-[#86efac]',
@@ -46,6 +61,11 @@ export function MapView() {
   const [showDraft, setShowDraft] = useState(false);
   const [showInfra, setShowInfra] = useState(false);
   const [showPlanned, setShowPlanned] = useState(true);
+
+  // R3.2 · filtros nuevos (search natural + onboarding rol + solo poblados v3.2)
+  const [searchTerm, setSearchTerm] = useState('');
+  const [roleFilter, setRoleFilter] = useState<VitaliaRole | 'all'>('all');
+  const [showOnlyPopulated, setShowOnlyPopulated] = useState(false);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -79,15 +99,49 @@ export function MapView() {
   });
 
   const filtered = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
     return caps.filter((c) => {
       if (c.status === 'live' && !showLive) return false;
       if (c.status === 'beta' && !showDraft) return false;
       if (c.status === 'deprecated' || c.status === 'sunset') return false;
       // v3 · ocultar infra (user_visible: false) salvo toggle
       if (c.user_visible === false && !showInfra) return false;
+
+      // R3.2 · "solo poblados v3.2"
+      if (showOnlyPopulated && !(c.scenarios && c.scenarios.length > 0)) return false;
+
+      // R3.2 · filtro por rol (onboarding)
+      if (roleFilter !== 'all') {
+        const eps = c.access?.entry_points ?? [];
+        const hasRole = eps.some((ep) =>
+          (ep.requires_role ?? []).includes(roleFilter)
+        );
+        if (!hasRole) return false;
+      }
+
+      // R3.2 · search natural
+      if (term) {
+        const haystacks: string[] = [
+          c.user_facing_name ?? '',
+          c.user_facing_description ?? '',
+          c.module ?? '',
+          c.slug ?? '',
+          c.functional_area ?? '',
+          ...(c.scenarios ?? []).flatMap((s) => [
+            s.name ?? '',
+            s.given ?? '',
+            s.when ?? '',
+            s.then ?? '',
+            ...(s.edge_cases ?? []),
+          ]),
+          ...(c.business_rules ?? []).map((r) => r.rule ?? ''),
+        ];
+        if (!haystacks.some((h) => h.toLowerCase().includes(term))) return false;
+      }
+
       return true;
     });
-  }, [caps, showLive, showDraft, showInfra]);
+  }, [caps, showLive, showDraft, showInfra, showOnlyPopulated, roleFilter, searchTerm]);
 
   const byAgentArea = useMemo(() => {
     if (!systemMap) return null;
@@ -141,26 +195,73 @@ export function MapView() {
 
   return (
     <div className="p-6">
-      <header className="flex items-start justify-between mb-4 gap-4 flex-wrap">
-        <div>
-          <h1 className="text-lg font-semibold">Mapa Implementado · capabilities live</h1>
-          <p className="text-[11px] text-[var(--color-muted)] italic mt-1">
-            Solo capabilities <b>cementadas (live)</b>. Las developing viven en
-            el Backlog Board.
-          </p>
-          {systemMap && (
-            <div className="text-[11px] text-[var(--color-muted)] mt-1">
-              Lee skeleton de{' '}
-              <button
-                onClick={() => openInEditor(systemMap._path ?? '')}
-                className="font-mono text-[var(--color-accent)] hover:underline"
-              >
-                SYSTEM-MAP.yaml
-              </button>
-              {' · '}
-              {systemMap.metadata.total_functional_areas} áreas · {systemMap.metadata.total_cross_agent_flows} flujos cross-agent
-            </div>
-          )}
+      <header className="mb-4 space-y-2">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <h1 className="text-lg font-semibold">
+              <Tooltip content={TOOLTIPS.mapa_implementado} variant="header">
+                Mapa Implementado · capabilities live
+              </Tooltip>
+            </h1>
+            <p className="text-[11px] text-[var(--color-muted)] italic mt-1">
+              Solo capabilities <b>cementadas (live)</b>. Las developing viven en
+              el Backlog Board.
+            </p>
+            {systemMap && (
+              <div className="text-[11px] text-[var(--color-muted)] mt-1">
+                Lee skeleton de{' '}
+                <Tooltip content={TOOLTIPS.system_map}>
+                  <button
+                    onClick={() => openInEditor(systemMap._path ?? '')}
+                    className="font-mono text-[var(--color-accent)] hover:underline"
+                  >
+                    SYSTEM-MAP.yaml
+                  </button>
+                </Tooltip>
+                {' · '}
+                {systemMap.metadata.total_functional_areas} áreas · {systemMap.metadata.total_cross_agent_flows} flujos cross-agent
+              </div>
+            )}
+          </div>
+          <div className="text-[var(--color-muted)] text-xs shrink-0">
+            total: {caps.length} · mostrando: {filtered.length}
+          </div>
+        </div>
+
+        {/* Filtros R3.2 · search + onboarding rol + solo poblados + status checkboxes */}
+        <div className="flex flex-wrap gap-3 items-center text-xs">
+          <input
+            type="text"
+            placeholder="Buscar por scenarios, reglas, descripción…"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="px-3 py-1.5 rounded border border-[var(--color-border)] bg-[var(--color-panel)] text-[var(--color-text)] flex-1 min-w-[200px] max-w-[400px]"
+            aria-label="Buscar capabilities"
+          />
+          <select
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value as VitaliaRole | 'all')}
+            className="px-3 py-1.5 rounded border border-[var(--color-border)] bg-[var(--color-panel)] text-[var(--color-text)]"
+            aria-label="Modo onboarding por rol"
+          >
+            <option value="all">Todos los roles</option>
+            {VITALIA_ROLES.map((r) => (
+              <option key={r} value={r}>
+                Modo onboarding: {r}
+              </option>
+            ))}
+          </select>
+          <label className="flex items-center gap-1.5">
+            <input
+              type="checkbox"
+              className="!w-auto"
+              checked={showOnlyPopulated}
+              onChange={(e) => setShowOnlyPopulated(e.target.checked)}
+            />
+            <Tooltip content={TOOLTIPS.v3_2_badge}>
+              <span>solo poblados v3.2</span>
+            </Tooltip>
+          </label>
         </div>
         <div className="flex items-center gap-3 text-xs flex-wrap">
           <label className="flex items-center gap-1.5">
@@ -188,7 +289,11 @@ export function MapView() {
               checked={showInfra}
               onChange={(e) => setShowInfra(e.target.checked)}
             />
-            infra 🔧 ({caps.filter((c) => c.user_visible === false).length})
+            <Tooltip content={TOOLTIPS.infra_role}>
+              <span>infra 🔧</span>
+            </Tooltip>
+            {' '}
+            ({caps.filter((c) => c.user_visible === false).length})
           </label>
           <label className="flex items-center gap-1.5">
             <input
@@ -197,11 +302,10 @@ export function MapView() {
               checked={showPlanned}
               onChange={(e) => setShowPlanned(e.target.checked)}
             />
-            planned 📋
+            <Tooltip content={TOOLTIPS.planned_status}>
+              <span>planned 📋</span>
+            </Tooltip>
           </label>
-          <div className="text-[var(--color-muted)]">
-            total: {caps.length}
-          </div>
         </div>
       </header>
 
@@ -476,6 +580,7 @@ function CapItem({
   const badge = computed ? getStatusBadge(computed.computed_status) : null;
 
   const hasAtomics = cap.atomics.length > 0;
+  const isV32Populated = (cap.scenarios?.length ?? 0) > 0;
 
   return (
     <div
@@ -505,6 +610,13 @@ function CapItem({
               >
                 {badge.emoji}
               </span>
+            )}
+            {isV32Populated && (
+              <Tooltip content={TOOLTIPS.v3_2_badge} variant="badge">
+                <Pill className="bg-[#1e3a5f] text-[#93c5fd] text-[9px] py-0">
+                  v3.2
+                </Pill>
+              </Tooltip>
             )}
             <div className="flex items-center gap-1 text-[11px] flex-1 truncate">
               <span className="font-medium truncate">
