@@ -43,7 +43,13 @@ Por-brand: `{brand}/docs/` = SSoT autónomo. Vista master cross-brand: `docs/por
 
 **Venv at workspace root** — `.venv/bin/{python,pytest,ruff}`. NUNCA `cd {brand}/backend && python -m venv .venv` (rompe resolución `luana_core_*`).
 
-**Port allocation:** nicolify=8001/3001, vitalia=8002/3002, comunify=8003/3003, lupulo=8004/3004.
+**Port allocation:** nicolify=8001/3001, vitalia=8002/3002, comunify=8003/3003, lupulo=8004/3004. **Cockpit operativo cross-brand: tools/luana-cockpit/ en :4000.**
+
+## Tools operativas (cross-brand · no son código de producto)
+
+| Tool | Path | Trigger conversacional | Cómo levantar |
+|---|---|---|---|
+| **Luana Cockpit** (SDD visualizer + editor) | `tools/luana-cockpit/` | usuario pide "levantar cockpit", "abrir luana-cockpit", "arrancar la tool cockpit" (variantes coloquiales aceptadas) | **Comando único: `make cockpit-up`** (auto-install deps + port check + arranca dev :4000). Alternativa manual: `cd tools/luana-cockpit && pnpm install && pnpm dev`. README: `tools/luana-cockpit/README.md`. Standalone Next.js 16 + filesystem-as-DB · NO Docker · NO PG. Detener: Ctrl+C o `lsof -ti:4000 \| xargs kill`. |
 
 ## SDD Level 3 — vocabulario v4 (cementado 2026-05-06)
 

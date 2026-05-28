@@ -30,7 +30,7 @@ BRANDS := nicolify vitalia comunify lupulo
 .PHONY: dev-clean-nicolify dev-clean-vitalia dev-clean-comunify dev-clean-lupulo dev-clean-all
 .PHONY: infra-matrix portfolio portfolio-check scan-promotables
 .PHONY: ci-parity $(BRANDS:%=ci-parity-%) ci-parity-be ci-parity-fe
-.PHONY: releases-vitalia capability-ledger-check migrate-vitalia-schema
+.PHONY: releases-vitalia capability-ledger-check migrate-vitalia-schema cockpit-up
 .PHONY: install-hooks help
 
 COMPOSE_BASE := docker compose -f docker-compose.dev.yml
@@ -203,6 +203,12 @@ capability-ledger-check:  ## Run reconcile --validate-ledger across all active b
 migrate-vitalia-schema:  ## One-shot · migrate vitalia to schema v2 (releases + cap ledger) · idempotent
 	$(PYTHON) scripts/migrate_to_release_schema.py --brand vitalia
 	$(PYTHON) scripts/migrate_capability_ledger.py --brand vitalia
+
+# ════════════════════════════════════════════════════════════════
+# Tools operativas (cross-brand · cockpit SDD visualizer)
+# ════════════════════════════════════════════════════════════════
+cockpit-up:  ## Levantar luana-cockpit Next.js en localhost:4000 (auto-install + port check)
+	@bash scripts/cockpit-up.sh
 
 # ── hooks ────────────────────────────────────────────────────────────────────
 install-hooks:
