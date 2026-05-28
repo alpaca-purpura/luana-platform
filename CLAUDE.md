@@ -162,10 +162,11 @@ Detail: `.claude/rules/git-safety.md` + `.claude/rules/parallel-safety.md` + `do
 | 25 | CLAUDE.md hierarchy (root liviano + brand overlay auto-load) | `claude-md-overlay.md` |
 | 26 | Worktree dual strategy (refine+build paralelos sin egoísmo) | `worktree-dual-strategy.md` |
 | 27 | GitHub Actions deferred (pre-commit/pre-push hooks SSoT) | `github-actions-deferred.md` |
-| 28 | Capability protocol (story↔cap doctrine + cap_change_type ledger) | `docs/process/capability-protocol.md` |
+| 28 | Capability protocol v3.2 (story↔cap doctrine + scenarios + access + business_rules + header `# cap:` en código) | `docs/process/capability-protocol.md` |
 | 29 | Release protocol (entity SSoT · reemplaza outcome+phase legacy) | `docs/process/release-protocol.md` |
 | 30 | chris-input.md protocol (output verbatim per skill) | `docs/process/chris-input-protocol.md` |
 | 31 | Cockpit permissions (whitelist transitions Chris vs Claude) | `docs/process/cockpit-permissions.md` |
+| 32 | Bidirectional code↔cap mapping (cockpit `/functionality` tab · validator 4 cross-checks · pre-commit/pre-push) | `docs/process/capability-protocol.md` § Sec 12-13 |
 
 ## Conditional Rules (stub → skill on-demand)
 

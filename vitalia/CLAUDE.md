@@ -109,6 +109,24 @@ ls vitalia/docs/product/stories/                  # Stories activas
 ls vitalia/docs/archive/2026/stories/             # Stories done
 ```
 
+## Bidirectional code↔cap mapping (cement 2026-05-28 v3.2)
+
+Toda story que toque `cap_change_type ∈ {new, extend}` sobre cap user_visible:true MUST poblar bloques v3.2 en cap YAML al merge Fase F.3: `scenarios[]` + `access` + `business_rules`. Archivos de código nuevos MUST tener header `# cap: <module>.<slug>` (Python) o `// cap: ...` (TS/TSX) en líneas 1-3.
+
+```bash
+# Levantar cockpit y abrir tab Functionality (vista narrada del producto)
+make cockpit-up                                    # http://localhost:4002/functionality
+
+# Regenerar índices code↔cap (auto-corre en pre-commit Section 5c/5d)
+python3 scripts/generate_code_to_cap_index.py --brand vitalia
+python3 scripts/validate_code_cap_bidirectional.py --brand vitalia
+
+# Outputs gitignored R3 v2:
+ls vitalia/docs/product/capabilities/_*.json       # status + atomics + code-index + bidirectional
+```
+
+SSoT: `docs/process/capability-protocol.md` § Sec 11-13 (v3.2 cement).
+
 ## Voz vitalia
 
 Spanish neutro LatAm (sin voseo) EXCEPTO output de sales_agent que respeta voz tenant (puede ser AR voseo si tenant AR). Tono: profesional cálido. NUNCA infantil, NUNCA hospitalario frío. Brand voice owner: `brand-expert` skill aplicado a config tenant.
