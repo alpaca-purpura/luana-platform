@@ -136,7 +136,20 @@ export function CapDrawer() {
               {cap.functional_area && (
                 <>
                   <dt className="text-[var(--color-muted)]">Functional area</dt>
-                  <dd className="font-mono text-[11px]">{cap.functional_area}</dd>
+                  <dd className="flex items-center gap-1">
+                    {(() => {
+                      const parts = cap.functional_area.split('.');
+                      if (parts.length === 2) {
+                        return (
+                          <>
+                            <Pill className="bg-[var(--color-panel)] border border-[var(--color-border)] text-[10px]">{parts[0]}</Pill>
+                            <Pill className="bg-[var(--color-panel)] border border-[var(--color-border)] text-[10px] opacity-75">{parts[1]}</Pill>
+                          </>
+                        );
+                      }
+                      return <span className="font-mono text-[11px]">{cap.functional_area}</span>;
+                    })()}
+                  </dd>
                 </>
               )}
               {cap.nature && (

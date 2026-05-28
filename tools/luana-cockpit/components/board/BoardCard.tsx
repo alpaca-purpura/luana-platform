@@ -63,11 +63,28 @@ export function BoardCard({ story }: { story: StoryWithArchive }) {
             {s}
           </Pill>
         ))}
-        {story.cap_target && (
-          <Pill className="bg-[var(--color-panel)] border border-[var(--color-border)] text-[var(--color-muted)]">
-            {story.cap_target}
-          </Pill>
-        )}
+        {story.cap_target && (() => {
+          const parts = story.cap_target.split('.');
+          if (parts.length === 2) {
+            const [agentPart, areaPart] = parts;
+            return (
+              <>
+                <Pill className="bg-[var(--color-panel)] border border-[var(--color-border)] text-[var(--color-muted)] text-[10px]">
+                  {agentPart}
+                </Pill>
+                <Pill className="bg-[var(--color-panel)] border border-[var(--color-border)] text-[var(--color-muted)] text-[10px] opacity-75">
+                  {areaPart}
+                </Pill>
+              </>
+            );
+          }
+          // Fallback para format legacy "module/slug"
+          return (
+            <Pill className="bg-[var(--color-panel)] border border-[var(--color-border)] text-[var(--color-muted)]">
+              {story.cap_target}
+            </Pill>
+          );
+        })()}
       </div>
     </div>
   );

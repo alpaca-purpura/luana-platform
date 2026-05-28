@@ -2,13 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Map, ClipboardList, Compass, BookOpen } from 'lucide-react';
+import { Map, ClipboardList, Compass, BookOpen, Network } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
 const NAV_ITEMS = [
   { href: '/roadmap', label: 'Roadmap', Icon: Map },
   { href: '/board', label: 'Backlog Board', Icon: ClipboardList },
   { href: '/map', label: 'Mapa Implementado', Icon: Compass },
+  { href: '/arquitectura', label: 'Arquitectura', Icon: Network },
   { href: '/learnings', label: 'Learnings', Icon: BookOpen },
 ];
 
