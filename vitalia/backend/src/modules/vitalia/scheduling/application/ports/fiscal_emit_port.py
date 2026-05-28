@@ -1,5 +1,4 @@
 # cap: scheduling.valeria-agenda
-# atomics: TBD
 # story-origin: vitalia-fase2-s1-TBD
 """FiscalEmitPort — abstract interface for fiscal document emission (service-blocker pattern).
 

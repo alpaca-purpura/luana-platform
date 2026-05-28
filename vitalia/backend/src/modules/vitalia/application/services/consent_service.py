@@ -1,5 +1,4 @@
 # cap: crm.crm-consent-optout
-# atomics: TBD
 # story-origin: TBD
 """ConsentService — informed consent request + signing with HMAC URL verification.
 

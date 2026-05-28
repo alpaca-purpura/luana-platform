@@ -1,5 +1,4 @@
 # cap: audit.audit-writer-ssot
-# atomics: TBD
 # story-origin: TBD
 """ARQ cron job: audit_log_retention_sweep_monthly — PHI retention 10-year sweep.
 

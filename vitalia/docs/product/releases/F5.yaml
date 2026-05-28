@@ -16,9 +16,6 @@ created_by: scripts/migrate_to_release_schema.py
 
 stories: []
 
-# Legacy outcome mapping (transition phase)
-maps_legacy_outcome: null
-maps_legacy_phase: null
 ---
 
 # F5 · Lisa marca completa + onboarding clínica

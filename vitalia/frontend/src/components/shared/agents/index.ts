@@ -1,5 +1,4 @@
 // cap: platform.topbar-global
-// atomics: TBD
 // story-origin: TBD
 /**
  * agents — barrel exports

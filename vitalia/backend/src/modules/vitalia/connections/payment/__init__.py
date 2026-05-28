@@ -1,5 +1,4 @@
 # cap: connections.oauth-meta-google-ads
-# atomics: TBD
 # story-origin: TBD
 """Vitalia payment provider registry (brand-internal dispatch table)."""
 

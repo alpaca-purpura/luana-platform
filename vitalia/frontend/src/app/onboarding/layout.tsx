@@ -1,5 +1,4 @@
 // cap: onboarding.clinic-onboarding-3step
-// atomics: TBD
 // story-origin: TBD
 import type { Metadata } from "next";
 

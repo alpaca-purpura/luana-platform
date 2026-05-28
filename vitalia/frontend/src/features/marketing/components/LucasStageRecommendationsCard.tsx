@@ -1,5 +1,4 @@
 // cap: public_landing.public-clinic-landing
-// atomics: TBD
 // story-origin: TBD
 /**
  * LucasStageRecommendationsCard — top 3 priority recommendations inline, "Ver todas" expand

@@ -1,5 +1,4 @@
 # cap: clinics.clinics-brand-extension
-# atomics: TBD
 # story-origin: TBD
 """Vitalia Clinic API DTOs — Pydantic v2 request/response models.
 

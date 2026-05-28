@@ -1,5 +1,4 @@
 // cap: public_landing.public-clinic-landing
-// atomics: TBD
 // story-origin: TBD
 /**
  * Bowtie funnel domain types — mirror of BE BowtieSummaryResponse + StageDetailResponse (camelCase)

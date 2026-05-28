@@ -1,5 +1,4 @@
 # cap: __orphan__
-# atomics: TBD
 # story-origin: TBD
 """SQLAlchemy 2.0 model — vitalia_fiscal_documents.
 

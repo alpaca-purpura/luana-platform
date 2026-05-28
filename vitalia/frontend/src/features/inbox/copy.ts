@@ -1,5 +1,4 @@
 // cap: sales_agent.inbox-handler-mode-occ
-// atomics: TBD
 // story-origin: TBD
 /**
  * copy.ts — Inbox microcopy SSoT (single-locale, tree-shakable).

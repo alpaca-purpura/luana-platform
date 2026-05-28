@@ -1,5 +1,4 @@
 # cap: copilot.inbox-tools-extensions
-# atomics: TBD
 # story-origin: TBD
 """Jinja2 prompt templates for `MedicalKBExtractor` (T-extractors-1).
 

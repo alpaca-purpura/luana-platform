@@ -1,5 +1,4 @@
 // cap: auth.sign-in-sign-up-pages
-// atomics: TBD
 // story-origin: vitalia-fase1-s10-TBD
 /**
  * config/index.ts — Feature public API (FSD-Lite boundary matrix).

@@ -1,5 +1,4 @@
 // cap: sales_agent.inbox-handler-mode-occ
-// atomics: TBD
 // story-origin: vitalia-fase1-s10-TBD
 /**
  * MessageInput — molécula input mensaje inbox.

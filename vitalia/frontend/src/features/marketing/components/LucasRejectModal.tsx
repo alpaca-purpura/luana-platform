@@ -1,5 +1,4 @@
 // cap: public_landing.public-clinic-landing
-// atomics: TBD
 // story-origin: TBD
 /**
  * LucasRejectModal — reason-required form for rejecting a Lucas recommendation

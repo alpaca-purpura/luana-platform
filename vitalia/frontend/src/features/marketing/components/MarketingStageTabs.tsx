@@ -1,5 +1,4 @@
 // cap: public_landing.public-clinic-landing
-// atomics: TBD
 // story-origin: TBD
 /**
  * MarketingStageTabs — 5 horizontal tab selectors for bowtie stages.

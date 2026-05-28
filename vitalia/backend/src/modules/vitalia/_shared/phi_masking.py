@@ -1,5 +1,4 @@
 # cap: __orphan__
-# atomics: TBD
 # story-origin: TBD
 """PHI masking utilities — HIPAA-lite compliant display projections.
 

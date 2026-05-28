@@ -1,5 +1,4 @@
 # cap: agentic.eval-goldens-slice-1
-# atomics: TBD
 # story-origin: TBD
 """Vitalia AGENTIC tool — `prepaid_payment_check`.
 

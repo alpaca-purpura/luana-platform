@@ -1,5 +1,4 @@
 # cap: booking.booking-widget-embed
-# atomics: TBD
 # story-origin: TBD
 """BookingService — atomic slot reservation with pg_advisory_lock + idempotency.
 

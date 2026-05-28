@@ -1,5 +1,4 @@
 // cap: __shared__
-// atomics: TBD
 // story-origin: TBD
 import { cn } from "@/lib/utils";
 

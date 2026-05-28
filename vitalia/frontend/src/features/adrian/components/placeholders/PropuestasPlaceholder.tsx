@@ -1,5 +1,4 @@
 // cap: sales_agent.adrian-3-tools-mvp
-// atomics: TBD
 // story-origin: vitalia-fase1-s10-TBD
 /**
  * PropuestasPlaceholder — EmptyState genérico para Adrián/Propuestas.

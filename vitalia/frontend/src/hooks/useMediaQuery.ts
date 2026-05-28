@@ -1,5 +1,4 @@
 // cap: platform.design-tokens-foundation
-// atomics: TBD
 // story-origin: vitalia-fase2-s1-TBD
 "use client";
 

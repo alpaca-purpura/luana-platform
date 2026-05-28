@@ -1,5 +1,4 @@
 # cap: crm.crm-consent-optout
-# atomics: TBD
 # story-origin: TBD
 """LeadRepository — non-PHI entity repository with single tenant_id filter.
 

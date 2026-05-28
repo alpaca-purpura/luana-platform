@@ -1,5 +1,4 @@
 # cap: compliance.compliance-hipaa-lite-audit
-# atomics: TBD
 # story-origin: TBD
 """Vitalia compliance guardrail — ``medical_safety_no_prescription`` (EP-13 wire).
 

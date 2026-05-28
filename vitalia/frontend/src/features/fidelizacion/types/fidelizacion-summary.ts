@@ -1,5 +1,4 @@
 // cap: patients.nps-tracking
-// atomics: TBD
 // story-origin: TBD
 /**
  * fidelizacion-summary.ts — TS types for KPIs hero.

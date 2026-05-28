@@ -1,5 +1,4 @@
 # cap: crm.crm-consent-optout
-# atomics: TBD
 # story-origin: TBD
 """MessageRepository — dual-scope async repository (T-inbox-be-2).
 

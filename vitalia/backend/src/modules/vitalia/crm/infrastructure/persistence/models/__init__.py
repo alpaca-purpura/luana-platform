@@ -1,5 +1,4 @@
 # cap: crm.crm-consent-optout
-# atomics: TBD
 # story-origin: TBD
 """CRM infrastructure models — 4 inbox tables (T-inbox-be-2).
 

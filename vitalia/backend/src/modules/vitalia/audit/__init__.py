@@ -1,5 +1,4 @@
 # cap: audit.audit-writer-ssot
-# atomics: TBD
 # story-origin: TBD
 """Vitalia audit module — HIPAA-lite audit log helpers.
 

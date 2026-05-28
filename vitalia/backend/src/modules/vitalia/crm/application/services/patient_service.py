@@ -1,5 +1,4 @@
 # cap: crm.crm-consent-optout
-# atomics: TBD
 # story-origin: TBD
 """PatientService — RBAC-gated PHI operations.
 

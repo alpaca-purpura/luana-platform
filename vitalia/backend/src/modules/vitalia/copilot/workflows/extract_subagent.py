@@ -1,5 +1,4 @@
 # cap: copilot.inbox-tools-extensions
-# atomics: TBD
 # story-origin: TBD
 """extract_subagent — deepagents-style SubAgent spec for the wizard extractor.
 

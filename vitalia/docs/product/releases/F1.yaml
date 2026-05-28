@@ -28,9 +28,6 @@ stories:
   - vitalia-fase1-valeria-chat-skeleton
   - vitalia-fase1-valeria-rail-history
 
-# Legacy outcome mapping (transition phase)
-maps_legacy_outcome: "vitalia-mvp-ui-foundation"
-maps_legacy_phase: "fase-1"
 ---
 
 # F1 · Shell esqueleto · ribbon + routing + tokens + layout + empty

@@ -1,5 +1,4 @@
 // cap: patients.nps-tracking
-// atomics: TBD
 // story-origin: TBD
 /**
  * fidelizacion/components/index.ts — Components barrel (FSD-Lite public API).

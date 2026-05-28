@@ -1,5 +1,4 @@
 # cap: admin.streamlit-tenants-users
-# atomics: TBD
 # story-origin: TBD
 """Admin module — Tenant management for Vitalia.
 

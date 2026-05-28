@@ -1,5 +1,4 @@
 # cap: agentic.lucas-recommendation-tool
-# atomics: TBD
 # story-origin: TBD
 """ARQ cron job: lucas_weekly_recommendations — Lucas growth setter weekly sweep.
 

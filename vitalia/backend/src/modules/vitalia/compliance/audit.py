@@ -1,5 +1,4 @@
 # cap: compliance.compliance-hipaa-lite-audit
-# atomics: TBD
 # story-origin: TBD
 """Vitalia admin audit log helper — HIPAA-lite PHI-safe action logging.
 

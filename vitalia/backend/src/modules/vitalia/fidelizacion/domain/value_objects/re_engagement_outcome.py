@@ -1,5 +1,4 @@
 # cap: __orphan__
-# atomics: TBD
 # story-origin: TBD
 """Resultado del intento de re-engagement — value object StrEnum."""
 

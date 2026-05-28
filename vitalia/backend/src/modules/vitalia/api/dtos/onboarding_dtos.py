@@ -1,5 +1,4 @@
 # cap: onboarding.clinic-onboarding-3step
-# atomics: TBD
 # story-origin: TBD
 """Onboarding DTOs — Pydantic v2 request/response models.
 

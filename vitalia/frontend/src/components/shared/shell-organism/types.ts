@@ -1,5 +1,4 @@
 // cap: shell-organism.shell-vitalia
-// atomics: TBD
 // story-origin: vitalia-fase1-s3-TBD
 /**
  * types.ts — TypeScript types for F1-S3 tenant-switcher shell-organism components.

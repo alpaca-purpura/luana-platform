@@ -1,5 +1,4 @@
 # cap: observability.otel-sentry-graceful-degradation
-# atomics: TBD
 # story-origin: TBD
 """OpenTelemetry tracer provider setup + Sentry SDK initialisation for Vitalia.
 

@@ -1,5 +1,4 @@
 # cap: marketing.attribution-matrix-4-origins
-# atomics: TBD
 # story-origin: TBD
 """ChannelMetricRepository — dual-scope async repository with upsert.
 

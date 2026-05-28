@@ -1,5 +1,4 @@
 # cap: __orphan__
-# atomics: TBD
 # story-origin: TBD
 """Vitalia fiscal brand-extension module.
 

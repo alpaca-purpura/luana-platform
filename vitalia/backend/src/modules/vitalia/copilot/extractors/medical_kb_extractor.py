@@ -1,5 +1,4 @@
 # cap: copilot.medical-kb-rag
-# atomics: TBD
 # story-origin: TBD
 """Vitalia AGENTIC extractor — `MedicalKBExtractor` (T-extractors-1, R23 Opus 4.7).
 

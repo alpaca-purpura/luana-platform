@@ -1,5 +1,4 @@
 # cap: patients.nps-tracking
-# atomics: TBD
 # story-origin: TBD
 """Migration 023 — vitalia_patients opt-in columns (Slice 1 fidelización).
 

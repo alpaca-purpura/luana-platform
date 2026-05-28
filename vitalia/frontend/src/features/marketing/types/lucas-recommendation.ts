@@ -1,5 +1,4 @@
 // cap: public_landing.public-clinic-landing
-// atomics: TBD
 // story-origin: TBD
 /**
  * Lucas recommendation domain types — mirror of BE LucasRecommendationResponse (camelCase)

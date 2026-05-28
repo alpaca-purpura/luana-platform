@@ -1,5 +1,4 @@
 # cap: copilot.inbox-tools-extensions
-# atomics: TBD
 # story-origin: TBD
 """Vitalia copilot extractors — registered via EP-7 in extensions.py.
 

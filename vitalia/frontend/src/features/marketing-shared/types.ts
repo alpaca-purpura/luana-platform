@@ -1,5 +1,4 @@
 // cap: __shared__
-// atomics: TBD
 // story-origin: TBD
 /**
  * marketing-shared — types re-exported for cross-story consumption (T-mk-fe-2..5)

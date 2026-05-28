@@ -1,5 +1,4 @@
 # cap: __orphan__
-# atomics: TBD
 # story-origin: TBD
 """PiiScannerService — pre-persist PII detection for offer descriptions + testimonial inputs.
 

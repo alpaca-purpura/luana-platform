@@ -1,5 +1,4 @@
 # cap: connections.oauth-meta-google-ads
-# atomics: TBD
 # story-origin: TBD
 """Conversation initiation registry (Vitalia proactive outbound dispatch).
 

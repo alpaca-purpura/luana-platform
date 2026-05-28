@@ -1,5 +1,4 @@
 // cap: shell-organism.shell-vitalia
-// atomics: TBD
 // story-origin: vitalia-fase1-s4-TBD
 /**
  * shell-store.ts — Zustand store for shell layout state with localStorage persistence.

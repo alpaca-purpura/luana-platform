@@ -40,9 +40,6 @@ stories:
   - vitalia-fase2-lisa-marca
   - vitalia-fase2-valeria-agenda
 
-# Legacy outcome mapping (transition phase)
-maps_legacy_outcome: "vitalia-mvp-ui-foundation"
-maps_legacy_phase: "fase-2"
 ---
 
 # F2 · Migración progresiva · primer valor Valeria + Lisa

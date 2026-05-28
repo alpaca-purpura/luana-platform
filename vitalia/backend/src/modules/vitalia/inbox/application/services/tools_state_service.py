@@ -1,5 +1,4 @@
 # cap: agentic.medical-agentic-tools
-# atomics: TBD
 # story-origin: TBD
 """ToolsStateService — vitalia inbox application layer.
 

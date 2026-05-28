@@ -1,5 +1,4 @@
 # cap: connections.oauth-meta-google-ads
-# atomics: TBD
 # story-origin: TBD
 """Fiscal provider registry (Vitalia LATAM e-invoicing dispatch).
 

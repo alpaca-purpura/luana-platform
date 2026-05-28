@@ -1,5 +1,4 @@
 // cap: sales_agent.inbox-handler-mode-occ
-// atomics: TBD
 // story-origin: TBD
 /**
  * url-state.ts — Inbox URL state schema (nuqs parsers).

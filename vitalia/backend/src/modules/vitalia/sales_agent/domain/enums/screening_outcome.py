@@ -1,5 +1,4 @@
 # cap: sales_agent.adrian-3-tools-mvp
-# atomics: TBD
 # story-origin: TBD
 """ScreeningOutcome enum — domain layer (pure Python, no framework deps).
 

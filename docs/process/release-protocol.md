@@ -1,15 +1,17 @@
-# Release Protocol — Entity SSoT (v2 cement 2026-05-27)
+# Release Protocol — Entity SSoT (v3 cement 2026-05-28)
 
-**Cement-date:** 2026-05-27.
-**Origen:** plan `/home/chalreme/.claude/plans/ok-lo-apruebo-realiza-cheeky-harbor.md` § Phase 1.1.B.
+**v3 (cement 2026-05-28):** outcome+phase ELIMINADOS. Release es el único contenedor temporal. Ver `docs/process/lifecycle.md`.
 
-> **Release** unifica los campos legacy `outcome` + `phase` de los checkpoints. Es la unidad temporal que agrupa stories que se mergean juntas a main. State machine: `planning → in_progress → ready_to_merge → shipped`.
+**Cement-date v3:** 2026-05-28.
+**Cement-date v2:** 2026-05-27.
+
+> **Release** es THE contenedor temporal del modelo: no hay outcome por encima. Agrupa stories que se mergean juntas a main. State machine: `backlog → planning → in_progress → ready_to_merge → shipped`.
 
 ---
 
 ## Sección 1 · Release como entidad SSoT
 
-Un **Release** es una agrupación temporal de stories que se mergean juntas a main + se despliegan juntas. Reemplaza el binomio legacy `outcome` + `phase` que en la práctica se solapaba (1 outcome `vitalia-mvp-ui-foundation` contiene F0+F1+F2).
+Un **Release** es una agrupación temporal de stories que se mergean juntas a main + se despliegan juntas. Es el **único contenedor temporal** del modelo: no existe ningún concepto por encima del release (outcome y phase fueron eliminados · ver `docs/process/lifecycle.md`).
 
 **Cuándo crear un release:** Chris define un bloque de trabajo coherente (~2 semanas típico) con un objetivo claro y un set de stories que entregan ese objetivo. Ejemplo: F2 "Migración progresiva · primer valor Valeria + Lisa" agrupa 5 stories que materializan el primer valor end-to-end.
 
@@ -55,10 +57,6 @@ stories:
   - vitalia-fase2-valeria-pacientes       # state: idea
   - vitalia-fase2-lisa-marca-v2           # state: refining
   - vitalia-fase1-shell-layout-5050-race-fix  # state: idea
-
-# Outcome legacy mapping (transition phase · removerlo cuando todas las stories migren)
-maps_legacy_outcome: vitalia-mvp-ui-foundation
-maps_legacy_phase: fase-2
 ---
 
 # Resumen markdown opcional
@@ -70,28 +68,7 @@ maps_legacy_phase: fase-2
 
 ---
 
-## Sección 4 · Migración legacy → release
-
-Mapeo concreto Vitalia (Phase 3.1 del plan):
-
-| outcome legacy | phase legacy | → release |
-|---|---|---|
-| vitalia-mvp-ui-foundation | fase-1 | F1 |
-| vitalia-mvp-ui-foundation | fase-2 | F2 |
-| vitalia-mvp-ui-foundation | fase-3 | F3 |
-| admin-iam-adopt (cross-cutting) | * | F0 (infra base) |
-| vitalia-payment-stack | * | F3 (junto a Adrián primer valor) |
-| vitalia-onboarding-base | * | F5 (lisa marca completa + onboarding) |
-| vitalia-marketing-core | * | F6 |
-| ... otros | * | mapeo manual via script + Chris ratify |
-
-**Stories sin outcome legacy** (idea o net-new sin outcome asignado) → marcan `release: null` y van al bucket "(sin release · legacy)" del BACKLOG hasta que Chris asigne via cockpit Roadmap.
-
-Migration: `scripts/migrate_to_release_schema.py --brand vitalia [--dry-run]`. Idempotente.
-
----
-
-## Sección 5 · WIP caps + recompute logic
+## Sección 4 · WIP caps + recompute logic
 
 WIP cap del release es la suma de stories en `refining/refined/ready/developing/developed/reviewing`. Caps del paradigm v4 aplican (refining ≤3, refined ≤5, etc.) — el release NO impone un cap propio, lo hereda del state-machine cross-platform.
 
@@ -115,7 +92,7 @@ def recompute_release_status(release: Release) -> str:
 
 ---
 
-## Sección 6 · Merge release a main (5 operaciones)
+## Sección 5 · Merge release a main (5 operaciones)
 
 Cuando release.status = `ready_to_merge` y Chris da OK en cockpit (botón "🚀 merge release a main"), `/pm-{brand}` (o el cockpit endpoint `merge-release`) ejecuta:
 
@@ -148,7 +125,7 @@ shipped_date: 2026-MM-DDTHH:MM:SS-05:00
 
 ---
 
-## Sección 7 · Anti-patterns prohibidos
+## Sección 6 · Anti-patterns prohibidos
 
 - ❌ Release con stories de brands distintas (cada release es brand-specific)
 - ❌ `target_date` poblado sin owner asignado (Chris lo llena cuando hay compromiso)
@@ -161,8 +138,9 @@ shipped_date: 2026-MM-DDTHH:MM:SS-05:00
 
 ---
 
-## Sección 8 · Referencias
+## Sección 7 · Referencias
 
+- `docs/process/lifecycle.md` — SSoT del modelo 4-ejes · Release es el único contenedor temporal (outcome+phase muertos)
 - `docs/process/capability-protocol.md` — caps que las stories del release tocan
 - `docs/specs/templates/release-template.yaml` — template para nuevos releases
 - `docs/process/checkpoint-protocol.md` — campo `release` en checkpoint.md de cada story

@@ -1,5 +1,4 @@
 // cap: sales_agent.inbox-handler-mode-occ
-// atomics: TBD
 // story-origin: TBD
 /**
  * ContactSidebar.stories.tsx — Storybook stories for the PHI-aware contact sidebar.

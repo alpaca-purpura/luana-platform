@@ -1,5 +1,4 @@
 # cap: __orphan__
-# atomics: TBD
 # story-origin: TBD
 """Patrón de re-engagement del paciente — value object StrEnum."""
 

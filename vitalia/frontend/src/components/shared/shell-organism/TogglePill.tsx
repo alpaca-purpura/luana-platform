@@ -1,5 +1,4 @@
 // cap: shell-organism.shell-vitalia
-// atomics: TBD
 // story-origin: vitalia-fase1-s10-TBD
 /**
  * TogglePill — wrapper Shadcn Tabs styled as pill toggle.

@@ -1,5 +1,4 @@
 # cap: copilot.inbox-tools-extensions
-# atomics: TBD
 # story-origin: TBD
 """``medical_kb_dental_v1`` — vitalia dental KB pack (Story 11 T-kb-1, R23 Opus 4.7).
 

@@ -1,5 +1,4 @@
 // cap: marketing.attribution-matrix-4-origins
-// atomics: TBD
 // story-origin: TBD
 import type { Meta, StoryObj } from "@storybook/nextjs";
 import { ChannelBreakdownRow } from "./ChannelBreakdownRow";

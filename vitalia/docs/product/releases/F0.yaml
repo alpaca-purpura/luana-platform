@@ -30,9 +30,6 @@ stories:
   - vitalia-slice-1-pipeline
   - vitalia-ux-discovery
 
-# Legacy outcome mapping (transition phase)
-maps_legacy_outcome: "admin-iam-adopt / dev-environment-multibrand"
-maps_legacy_phase: null
 ---
 
 # F0 · Infra base · dev stack + auth + copilot tools + IAM

@@ -1,5 +1,4 @@
 # cap: copilot.inbox-tools-extensions
-# atomics: TBD
 # story-origin: TBD
 """LangChain @tool — extract_tenant_context (Valeria wizard).
 

@@ -1,5 +1,4 @@
 # cap: __orphan__
-# atomics: TBD
 # story-origin: TBD
 """Eventos de dominio del módulo fidelizacion (vitalia).
 

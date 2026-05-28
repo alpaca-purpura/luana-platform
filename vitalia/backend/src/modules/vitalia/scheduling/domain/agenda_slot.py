@@ -1,5 +1,4 @@
 # cap: scheduling.valeria-agenda
-# atomics: TBD
 # story-origin: vitalia-fase2-s1-TBD
 """AgendaSlot — frozen domain projection for the calendar cell.
 

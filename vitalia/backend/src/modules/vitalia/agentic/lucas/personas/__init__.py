@@ -1,5 +1,4 @@
 # cap: agentic.eval-goldens-slice-1
-# atomics: TBD
 # story-origin: TBD
 """Lucas growth setter persona YAML SSoT.
 

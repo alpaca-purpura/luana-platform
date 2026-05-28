@@ -1,5 +1,4 @@
 // cap: __orphan__
-// atomics: TBD
 // story-origin: TBD
 import type { Metadata } from "next";
 import "./globals.css";

@@ -1,5 +1,4 @@
 // cap: platform.design-tokens-theme
-// atomics: TBD
 // story-origin: TBD
 "use client";
 

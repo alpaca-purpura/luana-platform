@@ -1,5 +1,4 @@
 // cap: patients.nps-tracking
-// atomics: TBD
 // story-origin: TBD
 /**
  * url-state.ts — URL state types for fidelizacion feature.

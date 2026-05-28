@@ -1,5 +1,4 @@
 // cap: observability.otel-sentry-graceful-degradation
-// atomics: TBD
 // story-origin: TBD
 /**
  * nps.ts — Zod schemas for NPS response API.

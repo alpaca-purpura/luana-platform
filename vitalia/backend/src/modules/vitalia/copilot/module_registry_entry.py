@@ -1,5 +1,4 @@
 # cap: copilot.inbox-tools-extensions
-# atomics: TBD
 # story-origin: TBD
 """Vitalia copilot module registry entry — TreatmentFollowupWorkflow descriptor.
 

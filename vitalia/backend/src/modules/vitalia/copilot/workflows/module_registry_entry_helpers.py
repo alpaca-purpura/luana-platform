@@ -1,5 +1,4 @@
 # cap: copilot.inbox-tools-extensions
-# atomics: TBD
 # story-origin: TBD
 """Helpers exposing module_registry_entry data to workflow consumers + tests.
 

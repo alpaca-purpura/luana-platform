@@ -1,5 +1,4 @@
 # cap: payment.payment-gateways-latam-recurring
-# atomics: TBD
 # story-origin: vitalia-fase2-s1-TBD
 """Vitalia payments brand-extension module.
 

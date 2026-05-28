@@ -1,5 +1,4 @@
 // cap: shell-organism.shell-vitalia
-// atomics: TBD
 // story-origin: TBD
 "use client";
 
@@ -84,6 +83,14 @@ export function ShellOrganismLayoutClient({
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(1280); // sane default
 
+  // Deterministic readiness signal (F1-S4b race-fix). Set true after the first
+  // post-mount layout reconciliation (Fix A snap-up settled). Exposed as
+  // `data-shell-ready` on the agentic main so consumers and E2E tests can await a
+  // stable layout instead of racing the dynamic({ssr:false}) + useDefaultLayout +
+  // ResizeObserver hydration sequence. Closes the SC-3 transition+drag-immediately
+  // edge case deterministically (no visual/behaviour change for end users).
+  const [shellReady, setShellReady] = useState(false);
+
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -142,6 +149,9 @@ export function ShellOrganismLayoutClient({
         [APP_PANEL_ID]: 100 - minValeriaPct,
       });
     }
+    // Layout reconciled — signal readiness for consumers/tests awaiting a stable
+    // post-hydration layout (idempotent; React bails when already true).
+    setShellReady(true);
   }, [containerWidth, minValeriaPct, groupRef]);
 
   // Persist layout across page reloads via localStorage.
@@ -170,6 +180,7 @@ export function ShellOrganismLayoutClient({
           className="flex-1 min-h-0 overflow-hidden hidden md:block"
           aria-label="Contenido principal"
           ref={containerRef}
+          data-shell-ready={shellReady ? "true" : "false"}
         >
           <Group
             id={SHELL_GROUP_ID}

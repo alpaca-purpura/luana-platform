@@ -1,5 +1,4 @@
 // cap: public_landing.public-clinic-landing
-// atomics: TBD
 // story-origin: TBD
 /**
  * MarketingBowtieSVG — SVG bowtie funnel visualization (pixel-invariante per mockup v1 Batch 6).

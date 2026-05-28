@@ -1,5 +1,4 @@
 # cap: scheduling.valeria-agenda
-# atomics: TBD
 # story-origin: TBD
 """AppointmentAggregatesRepository — monthly slot counts for virtualized calendar.
 

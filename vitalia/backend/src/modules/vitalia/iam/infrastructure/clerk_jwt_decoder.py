@@ -1,5 +1,4 @@
 # cap: iam.iam-scaffold-slice-1
-# atomics: TBD
 # story-origin: TBD
 """Clerk JWT decoder — Slice 1 stub implementation.
 

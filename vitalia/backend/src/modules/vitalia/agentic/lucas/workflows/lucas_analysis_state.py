@@ -1,5 +1,4 @@
 # cap: agentic.lucas-daily-analysis
-# atomics: TBD
 # story-origin: TBD
 """Lucas daily analysis state schema — LangGraph TypedDict.
 

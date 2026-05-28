@@ -1,5 +1,4 @@
 // cap: sales_agent.inbox-handler-mode-occ
-// atomics: TBD
 // story-origin: TBD
 /**
  * VoiceMessagePlayer.stories.tsx — Storybook stories for the inline audio player.

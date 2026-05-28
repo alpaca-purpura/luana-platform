@@ -1,5 +1,4 @@
 # cap: admin.admin-streamlit-service
-# atomics: TBD
 # story-origin: TBD
 """Admin page wrapper for Clinicas — thin caller only."""
 

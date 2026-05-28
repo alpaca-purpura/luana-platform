@@ -1,5 +1,4 @@
 # cap: admin.admin-streamlit-service
-# atomics: TBD
 # story-origin: TBD
 """Vitalia Admin Helper API — internal endpoints for DB state verification.
 

@@ -1,5 +1,4 @@
 # cap: payment.payment-gateways-latam-recurring
-# atomics: TBD
 # story-origin: TBD
 """Vitalia MercadoPago adapter — EXTENDS `luana_core_channels.payment.MercadoPagoAdapter`.
 

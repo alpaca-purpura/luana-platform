@@ -1,5 +1,4 @@
 // cap: shell-organism.shell-vitalia
-// atomics: TBD
 // story-origin: TBD
 /**
  * LogoMark — brand logo atom for Vitalia TopBar

@@ -1,5 +1,4 @@
 // cap: __shared__
-// atomics: TBD
 // story-origin: TBD
 /**
  * marketing-shared — public API barrel for cross-story consumption

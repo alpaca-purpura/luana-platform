@@ -1,5 +1,4 @@
 # cap: patients.nps-tracking
-# atomics: TBD
 # story-origin: TBD
 """ARQ cron job: nps_request_24h_post_appointment — 24h post-appointment NPS request.
 

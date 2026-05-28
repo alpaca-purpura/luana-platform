@@ -1,5 +1,4 @@
 # cap: agentic.lucas-daily-analysis
-# atomics: TBD
 # story-origin: TBD
 """Lucas orchestrator service — high-level entry for daily analysis runs.
 

@@ -1,5 +1,4 @@
 // cap: shell-organism.shell-vitalia
-// atomics: TBD
 // story-origin: vitalia-fase1-s4-TBD
 /**
  * Shell Organism Route Group Layout — Server Component.

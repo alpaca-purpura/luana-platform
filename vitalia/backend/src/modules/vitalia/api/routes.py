@@ -1,5 +1,4 @@
 # cap: __orphan__
-# atomics: TBD
 # story-origin: TBD
 """Vitalia FastAPI router — all REST endpoints (excl. webhooks T-be-8).
 

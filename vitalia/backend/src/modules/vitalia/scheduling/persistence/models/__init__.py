@@ -1,5 +1,4 @@
 # cap: scheduling.valeria-agenda
-# atomics: TBD
 # story-origin: TBD
 """SQLAlchemy 2.0 models for scheduling persistence."""
 

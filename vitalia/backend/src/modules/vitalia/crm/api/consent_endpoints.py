@@ -1,5 +1,4 @@
 # cap: crm.crm-consent-optout
-# atomics: TBD
 # story-origin: TBD
 """CRM consent endpoints — POST /opt-out + PATCH /marketing-opt-in.
 

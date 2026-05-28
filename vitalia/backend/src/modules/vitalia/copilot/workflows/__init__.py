@@ -1,5 +1,4 @@
 # cap: copilot.inbox-tools-extensions
-# atomics: TBD
 # story-origin: TBD
 """Vitalia copilot workflows — registered via EP-4 in extensions.py.
 

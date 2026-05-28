@@ -1,5 +1,4 @@
 # cap: sales_agent.medical-guardrails
-# atomics: TBD
 # story-origin: TBD
 """Vitalia Adrián MedicalGuardrailsService — orchestrates 4 guardrails.
 

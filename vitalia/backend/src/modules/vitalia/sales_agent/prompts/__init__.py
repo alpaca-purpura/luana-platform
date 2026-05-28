@@ -1,5 +1,4 @@
 # cap: sales_agent.adrian-3-tools-mvp
-# atomics: TBD
 # story-origin: TBD
 """Vitalia Adrián sales_agent prompt slots (compiler v2 layout).
 

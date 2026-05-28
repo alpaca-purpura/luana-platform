@@ -1,5 +1,4 @@
 # cap: __orphan__
-# atomics: TBD
 # story-origin: TBD
 """PHI RBAC decorator — @require_phi_access + brand_owner RBAC dependency.
 

@@ -1,5 +1,4 @@
 # cap: treatments.treatment-followup-workflow
-# atomics: TBD
 # story-origin: TBD
 """Entidad de dominio: TreatmentPlan (Plan de Tratamiento).
 

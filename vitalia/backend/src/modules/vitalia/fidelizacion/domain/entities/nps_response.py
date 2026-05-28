@@ -1,5 +1,4 @@
 # cap: patients.nps-tracking
-# atomics: TBD
 # story-origin: TBD
 """Entidad de dominio: NPSResponse (Respuesta NPS del Paciente).
 

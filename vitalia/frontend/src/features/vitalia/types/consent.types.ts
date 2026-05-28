@@ -1,5 +1,4 @@
 // cap: shell-organism.shell-vitalia
-// atomics: TBD
 // story-origin: TBD
 /**
  * Consent types — mirrors Pydantic consent_dtos.py Response DTOs.

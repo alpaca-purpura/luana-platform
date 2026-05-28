@@ -1,5 +1,4 @@
 # cap: copilot.inbox-tools-extensions
-# atomics: TBD
 # story-origin: TBD
 """OnboardingProgressModel — SQLA 2.0 ORM for vitalia_onboarding_progress table.
 

@@ -1,5 +1,4 @@
 # cap: scheduling.valeria-agenda
-# atomics: TBD
 # story-origin: TBD
 """AppointmentDetailRepository — appointment detail view with PHI masking.
 

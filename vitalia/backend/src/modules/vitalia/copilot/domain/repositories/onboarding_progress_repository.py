@@ -1,5 +1,4 @@
 # cap: copilot.inbox-tools-extensions
-# atomics: TBD
 # story-origin: TBD
 """OnboardingProgressRepository — ABC interface for onboarding progress persistence.
 

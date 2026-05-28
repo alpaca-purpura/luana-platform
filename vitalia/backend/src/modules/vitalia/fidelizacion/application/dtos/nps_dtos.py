@@ -1,5 +1,4 @@
 # cap: patients.nps-tracking
-# atomics: TBD
 # story-origin: TBD
 """DTOs de NPS — capa API para fidelización vitalia.
 

@@ -1,5 +1,4 @@
 # cap: __orphan__
-# atomics: TBD
 # story-origin: TBD
 """ARQ cron job: appointment_reminder_2h — 2h pre-appointment reminder.
 

@@ -1,5 +1,4 @@
 # cap: compliance.compliance-hipaa-lite-audit
-# atomics: TBD
 # story-origin: TBD
 """Compliance DTOs — Pydantic v2 request/response models.
 

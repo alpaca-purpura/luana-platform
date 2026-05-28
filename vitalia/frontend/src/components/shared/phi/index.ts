@@ -1,5 +1,4 @@
 // cap: platform.shell-foundation-shadcn-tailwind-v4
-// atomics: TBD
 // story-origin: TBD
 /**
  * phi — barrel exports for HIPAA-lite PHI protection components.

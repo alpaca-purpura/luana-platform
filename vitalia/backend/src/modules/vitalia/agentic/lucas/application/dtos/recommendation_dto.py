@@ -1,5 +1,4 @@
 # cap: agentic.lucas-recommendation-tool
-# atomics: TBD
 # story-origin: TBD
 """Lucas application DTOs — Pydantic v2 response models.
 

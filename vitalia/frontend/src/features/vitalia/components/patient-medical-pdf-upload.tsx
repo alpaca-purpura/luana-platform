@@ -1,5 +1,4 @@
 // cap: shell-organism.shell-vitalia
-// atomics: TBD
 // story-origin: TBD
 /**
  * PatientMedicalPdfUpload — file upload component for medical PDF ingestion.

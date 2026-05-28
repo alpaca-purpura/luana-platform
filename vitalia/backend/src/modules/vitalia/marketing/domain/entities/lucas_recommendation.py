@@ -1,5 +1,4 @@
 # cap: marketing.lucas-stage-recommendations
-# atomics: TBD
 # story-origin: TBD
 """LucasRecommendation domain entity — pure Python, no framework imports.
 

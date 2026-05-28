@@ -1,5 +1,4 @@
 # cap: compliance.compliance-hipaa-lite-audit
-# atomics: TBD
 # story-origin: TBD
 """Vitalia compliance guardrail — ``medical_disclaimer_required`` (NEW Slice 1).
 

@@ -1,5 +1,4 @@
 # cap: payment.payment-gateways-latam-recurring
-# atomics: TBD
 # story-origin: TBD
 """PrepaidPaymentService — gateway routing + payment intent creation.
 

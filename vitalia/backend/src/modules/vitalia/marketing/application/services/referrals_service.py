@@ -1,5 +1,4 @@
 # cap: marketing.referrals-leaderboard
-# atomics: TBD
 # story-origin: TBD
 """ReferralsService — patient referral leaderboard + code generation.
 

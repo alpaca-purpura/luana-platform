@@ -1,5 +1,4 @@
 # cap: copilot.inbox-tools-extensions
-# atomics: TBD
 # story-origin: TBD
 """LivePreviewService — orchestrates WhatsApp + landing live preview generation.
 

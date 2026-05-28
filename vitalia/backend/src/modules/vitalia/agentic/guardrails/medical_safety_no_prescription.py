@@ -1,5 +1,4 @@
 # cap: agentic.medical-safety-guardrails
-# atomics: TBD
 # story-origin: TBD
 """Vitalia AGENTIC guardrail — `medical_safety_no_prescription` (input + output layers).
 

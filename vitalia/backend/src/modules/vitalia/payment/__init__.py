@@ -1,5 +1,4 @@
 # cap: payment.payment-gateways-latam-recurring
-# atomics: TBD
 # story-origin: TBD
 """Vitalia payment channel adapters — EXTEND `@luana/core/channels.payment`.
 

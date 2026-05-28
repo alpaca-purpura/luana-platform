@@ -1,5 +1,4 @@
 // cap: scheduling.valeria-agenda
-// atomics: TBD
 // story-origin: TBD
 /**
  * agenda-schema.ts — Zod validation schemas for Valeria Agenda feature.

@@ -1,5 +1,4 @@
 // cap: shell-organism.shell-vitalia
-// atomics: TBD
 // story-origin: vitalia-fase1-s4-TBD
 /**
  * ShellModeToggle — disabled chip placeholder F1-S4.

@@ -1,5 +1,4 @@
 # cap: marketing.lucas-stage-recommendations
-# atomics: TBD
 # story-origin: TBD
 """lucas_daily_analysis_sweep — ARQ cron job, daily 06:00 UTC.
 

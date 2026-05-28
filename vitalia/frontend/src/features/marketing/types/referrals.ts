@@ -1,5 +1,4 @@
 // cap: public_landing.public-clinic-landing
-// atomics: TBD
 // story-origin: TBD
 /**
  * Referrals domain types — mirror of BE ReferralsResponse (camelCase)

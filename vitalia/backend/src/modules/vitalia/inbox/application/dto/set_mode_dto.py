@@ -1,5 +1,4 @@
 # cap: __orphan__
-# atomics: TBD
 # story-origin: TBD
 """SetMode DTOs — vitalia inbox application layer.
 

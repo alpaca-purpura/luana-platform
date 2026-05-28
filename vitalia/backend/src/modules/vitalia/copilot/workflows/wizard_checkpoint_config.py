@@ -1,5 +1,4 @@
 # cap: copilot.valeria-wizard-onboarding-agentic
-# atomics: TBD
 # story-origin: TBD
 """CheckpointerProtocol + production checkpointer factory for the wizard graph.
 

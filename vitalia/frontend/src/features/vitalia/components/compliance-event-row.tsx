@@ -1,5 +1,4 @@
 // cap: shell-organism.shell-vitalia
-// atomics: TBD
 // story-origin: TBD
 /**
  * ComplianceEventRow — single row in the compliance audit log table.

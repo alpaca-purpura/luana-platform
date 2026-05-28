@@ -1,5 +1,4 @@
 # cap: sales_agent.adrian-3-tools-mvp
-# atomics: TBD
 # story-origin: TBD
 """LeadScreeningEventRepository — SQLAlchemy 2.0 async implementation.
 

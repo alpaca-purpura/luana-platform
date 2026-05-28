@@ -1,5 +1,4 @@
 // cap: onboarding.clinic-onboarding-3step
-// atomics: TBD
 // story-origin: TBD
 /**
  * wizard-onboarding-api.ts — Typed API wrappers for wizard onboarding endpoints.

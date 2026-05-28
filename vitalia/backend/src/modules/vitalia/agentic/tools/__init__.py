@@ -1,5 +1,4 @@
 # cap: agentic.eval-goldens-slice-1
-# atomics: TBD
 # story-origin: TBD
 """Vitalia agentic tools — registered via EP-3 in extensions.py.
 

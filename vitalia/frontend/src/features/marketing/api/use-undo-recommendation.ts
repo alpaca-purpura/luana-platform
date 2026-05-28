@@ -1,5 +1,4 @@
 // cap: public_landing.public-clinic-landing
-// atomics: TBD
 // story-origin: TBD
 /**
  * useUndoRecommendation — mutation: undo an approved recommendation (within undo window)

@@ -1,5 +1,4 @@
 # cap: scheduling.valeria-agenda
-# atomics: TBD
 # story-origin: vitalia-fase2-s1-TBD
 """Slot payment status enum — visual color coding for the agenda cockpit.
 

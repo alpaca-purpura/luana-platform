@@ -1,5 +1,4 @@
 # cap: __orphan__
-# atomics: TBD
 # story-origin: TBD
 """Worker cron: re_engagement_response_timeout_sweep.
 

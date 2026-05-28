@@ -1,5 +1,4 @@
 // cap: platform.design-tokens-theme
-// atomics: TBD
 // story-origin: TBD
 /**
  * /test-stack/logo-mark — Visual baseline page F1-S2

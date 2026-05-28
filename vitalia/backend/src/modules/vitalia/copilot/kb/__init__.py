@@ -1,5 +1,4 @@
 # cap: copilot.inbox-tools-extensions
-# atomics: TBD
 # story-origin: TBD
 """Vitalia copilot KB packs — registered via EP-14 in extensions.py.
 

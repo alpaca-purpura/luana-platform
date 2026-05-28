@@ -1,5 +1,4 @@
 # cap: copilot.valeria-wizard-onboarding-agentic
-# atomics: TBD
 # story-origin: TBD
 """DTOs for Valeria wizard onboarding API endpoints.
 

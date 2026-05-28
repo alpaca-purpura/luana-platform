@@ -1,5 +1,4 @@
 # cap: treatments.treatment-followup-workflow
-# atomics: TBD
 # story-origin: TBD
 """SQLAlchemy 2.0 model — vitalia_treatment_plans.
 

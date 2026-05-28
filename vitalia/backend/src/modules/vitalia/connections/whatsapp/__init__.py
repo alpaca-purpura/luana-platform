@@ -1,5 +1,4 @@
 # cap: connections.oauth-meta-google-ads
-# atomics: TBD
 # story-origin: TBD
 """WhatsApp Cloud API connection adapter + HSM template registry — vitalia connections module.
 

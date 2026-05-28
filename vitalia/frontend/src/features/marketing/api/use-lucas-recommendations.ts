@@ -1,5 +1,4 @@
 // cap: public_landing.public-clinic-landing
-// atomics: TBD
 // story-origin: TBD
 /**
  * useLucasRecommendations — fetches open recommendations for a tenant+clinic

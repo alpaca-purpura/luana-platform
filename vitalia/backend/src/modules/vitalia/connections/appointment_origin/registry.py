@@ -1,5 +1,4 @@
 # cap: connections.oauth-meta-google-ads
-# atomics: TBD
 # story-origin: TBD
 """Appointment origin registry (Vitalia agenda dispatch metadata).
 

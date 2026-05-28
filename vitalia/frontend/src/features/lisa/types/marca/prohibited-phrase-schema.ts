@@ -1,5 +1,4 @@
 // cap: brand_studio.lisa-marca
-// atomics: TBD
 // story-origin: vitalia-fase2-s7-TBD
 /**
  * prohibited-phrase-schema.ts — Zod schema for vitalia prohibited phrases (NEW).

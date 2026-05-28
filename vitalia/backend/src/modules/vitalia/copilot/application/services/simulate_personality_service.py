@@ -1,5 +1,4 @@
 # cap: copilot.inbox-tools-extensions
-# atomics: TBD
 # story-origin: TBD
 """SimulatePersonalityService — personality simulation with cache + rate limiting.
 

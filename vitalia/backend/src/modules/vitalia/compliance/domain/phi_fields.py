@@ -1,5 +1,4 @@
 # cap: compliance.compliance-hipaa-lite-audit
-# atomics: TBD
 # story-origin: TBD
 """PHI fields SSoT — Vitalia HIPAA-lite compliance.
 

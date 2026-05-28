@@ -1,5 +1,4 @@
 # cap: copilot.inbox-tools-extensions
-# atomics: TBD
 # story-origin: TBD
 """Cron handler — TreatmentFollowupWorkflow tick entry points.
 

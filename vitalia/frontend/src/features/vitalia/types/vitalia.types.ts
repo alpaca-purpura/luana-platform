@@ -1,5 +1,4 @@
 // cap: shell-organism.shell-vitalia
-// atomics: TBD
 // story-origin: TBD
 /**
  * Vitalia core types — mirrors Pydantic Response DTOs (onboarding + offer preset).

@@ -1,5 +1,4 @@
 // cap: __orphan__
-// atomics: TBD
 // story-origin: TBD
 /**
  * formatTenantRelative — relative time formatter ("hace 3 minutos").

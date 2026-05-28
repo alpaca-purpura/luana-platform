@@ -1,5 +1,4 @@
 # cap: booking.booking-widget-embed
-# atomics: TBD
 # story-origin: TBD
 """Booking DTOs — Pydantic v2 request/response models.
 

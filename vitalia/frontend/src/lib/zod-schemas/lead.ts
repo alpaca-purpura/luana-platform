@@ -1,5 +1,4 @@
 // cap: __orphan__
-// atomics: TBD
 // story-origin: TBD
 /**
  * lead.ts — Zod schema for Lead runtime validation.

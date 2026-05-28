@@ -1,5 +1,4 @@
 # cap: treatments.treatment-followup-workflow
-# atomics: TBD
 # story-origin: TBD
 """Repositorio de planes de tratamiento — fidelización vitalia.
 

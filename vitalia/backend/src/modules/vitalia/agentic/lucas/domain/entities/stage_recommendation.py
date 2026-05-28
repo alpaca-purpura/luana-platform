@@ -1,5 +1,4 @@
 # cap: agentic.lucas-recommendation-tool
-# atomics: TBD
 # story-origin: TBD
 """Lucas domain entity — StageRecommendation.
 

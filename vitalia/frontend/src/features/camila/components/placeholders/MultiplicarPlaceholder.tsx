@@ -1,5 +1,4 @@
 // cap: patients.nps-tracking
-// atomics: TBD
 // story-origin: vitalia-fase1-s10-TBD
 /**
  * MultiplicarPlaceholder — EmptyState genérico para Camila/Multiplicar.

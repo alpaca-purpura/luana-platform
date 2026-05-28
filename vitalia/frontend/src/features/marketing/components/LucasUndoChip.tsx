@@ -1,5 +1,4 @@
 // cap: public_landing.public-clinic-landing
-// atomics: TBD
 // story-origin: TBD
 /**
  * LucasUndoChip — 5-min countdown undo chip shown after approving a recommendation

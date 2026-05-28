@@ -1,5 +1,4 @@
 // cap: public_landing.public-clinic-landing
-// atomics: TBD
 // story-origin: TBD
 /**
  * ChannelBreakdownRow — per-provider row in AttractionStage channel breakdown.

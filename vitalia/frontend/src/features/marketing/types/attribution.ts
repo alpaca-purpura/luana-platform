@@ -1,5 +1,4 @@
 // cap: public_landing.public-clinic-landing
-// atomics: TBD
 // story-origin: TBD
 /**
  * Attribution matrix domain types — mirror of BE AttributionMatrixResponse (camelCase)

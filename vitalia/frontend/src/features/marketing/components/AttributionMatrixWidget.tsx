@@ -1,5 +1,4 @@
 // cap: public_landing.public-clinic-landing
-// atomics: TBD
 // story-origin: TBD
 /**
  * AttributionMatrixWidget — 4 origins × KPI columns heatmap table with conversion rate coloring.

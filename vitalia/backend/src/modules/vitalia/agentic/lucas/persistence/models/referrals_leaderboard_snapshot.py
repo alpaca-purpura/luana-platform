@@ -1,5 +1,4 @@
 # cap: agentic.eval-goldens-slice-1
-# atomics: TBD
 # story-origin: TBD
 """SQLAlchemy 2.0 ORM model — ReferralsLeaderboardSnapshotModel.
 

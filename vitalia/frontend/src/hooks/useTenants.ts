@@ -1,5 +1,4 @@
 // cap: iam.luana-core-adoption
-// atomics: TBD
 // story-origin: vitalia-fase1-s3-TBD
 "use client";
 

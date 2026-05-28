@@ -1,5 +1,4 @@
 # cap: brand_studio.brand-studio-medical-sections
-# atomics: TBD
 # story-origin: vitalia-fase2-s7-TBD
 """VoicePreview domain value object — compiled BRAND_VOICE slot 5 sample.
 

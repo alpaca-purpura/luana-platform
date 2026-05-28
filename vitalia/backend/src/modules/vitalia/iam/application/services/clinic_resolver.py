@@ -1,5 +1,4 @@
 # cap: iam.iam-scaffold-slice-1
-# atomics: TBD
 # story-origin: TBD
 """ClinicResolver — extracts ClinicContext from a JWT token.
 

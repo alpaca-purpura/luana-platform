@@ -1,5 +1,4 @@
 // cap: platform.shell-foundation-shadcn-tailwind-v4
-// atomics: TBD
 // story-origin: TBD
 /**
  * zod-schemas/index.ts — Public API barrel for shared Zod schemas.

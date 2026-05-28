@@ -1,5 +1,4 @@
 # cap: admin.clinics-crud
-# atomics: TBD
 # story-origin: TBD
 """Admin module — Clinic branches management for Vitalia.
 

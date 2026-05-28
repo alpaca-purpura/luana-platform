@@ -1,5 +1,4 @@
 # cap: __orphan__
-# atomics: TBD
 # story-origin: TBD
 """ARQ cron job: reactivation_45d — 45-day patient reactivation.
 

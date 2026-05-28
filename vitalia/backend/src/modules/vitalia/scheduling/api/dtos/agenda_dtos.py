@@ -1,5 +1,4 @@
 # cap: scheduling.valeria-agenda
-# atomics: TBD
 # story-origin: vitalia-fase2-s1-TBD
 """Agenda API DTOs — PHI-masked response models for Valeria Agenda.
 

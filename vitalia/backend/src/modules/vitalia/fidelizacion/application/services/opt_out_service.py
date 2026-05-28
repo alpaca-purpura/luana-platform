@@ -1,5 +1,4 @@
 # cap: __orphan__
-# atomics: TBD
 # story-origin: TBD
 """OptOutService — dar de baja a un paciente del sistema de fidelización.
 

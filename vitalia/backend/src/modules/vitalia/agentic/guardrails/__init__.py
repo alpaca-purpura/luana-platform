@@ -1,5 +1,4 @@
 # cap: agentic.eval-goldens-slice-1
-# atomics: TBD
 # story-origin: TBD
 """Vitalia agentic guardrails — registered via EP-13 in extensions.py.
 

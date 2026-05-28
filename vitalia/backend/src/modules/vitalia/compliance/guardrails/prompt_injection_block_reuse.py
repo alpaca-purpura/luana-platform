@@ -1,5 +1,4 @@
 # cap: compliance.compliance-hipaa-lite-audit
-# atomics: TBD
 # story-origin: TBD
 """Vitalia compliance guardrail — ``prompt_injection_block_reuse`` (NEW Slice 1).
 

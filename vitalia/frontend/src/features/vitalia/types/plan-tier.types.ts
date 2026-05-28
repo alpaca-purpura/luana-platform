@@ -1,5 +1,4 @@
 // cap: shell-organism.shell-vitalia
-// atomics: TBD
 // story-origin: TBD
 /**
  * Plan tier types — mirrors PlanTierItem + PlanTierListResponse DTOs.

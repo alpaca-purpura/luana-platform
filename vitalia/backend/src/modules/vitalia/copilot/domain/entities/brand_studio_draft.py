@@ -1,5 +1,4 @@
 # cap: copilot.inbox-tools-extensions
-# atomics: TBD
 # story-origin: TBD
 """BrandStudioDraft — domain entity for onboarding extraction staging area.
 

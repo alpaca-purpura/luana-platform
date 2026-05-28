@@ -1,5 +1,4 @@
 # cap: crm.crm-consent-optout
-# atomics: TBD
 # story-origin: TBD
 """Vitalia CRM domain events — 6 events per 03-arch-be.md § 3.5.
 

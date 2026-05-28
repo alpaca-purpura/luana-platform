@@ -1,5 +1,4 @@
 # cap: payment.payment-gateways-latam-recurring
-# atomics: TBD
 # story-origin: TBD
 """Vitalia Tokenized Recurring adapter — card-on-file installment charges.
 

@@ -1,5 +1,4 @@
 # cap: agentic.lucas-daily-analysis
-# atomics: TBD
 # story-origin: TBD
 """Lucas daily analysis LangGraph — ReAct-style cron-triggered topology.
 

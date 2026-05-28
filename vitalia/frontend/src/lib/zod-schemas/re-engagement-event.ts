@@ -1,5 +1,4 @@
 // cap: __orphan__
-// atomics: TBD
 // story-origin: TBD
 /**
  * re-engagement-event.ts — Zod schemas for re-engagement pattern API responses.

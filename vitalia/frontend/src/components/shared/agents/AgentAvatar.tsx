@@ -1,5 +1,4 @@
 // cap: platform.shell-foundation-shadcn-tailwind-v4
-// atomics: TBD
 // story-origin: TBD
 /**
  * AgentAvatar — circular avatar for Vitalia AI agents.

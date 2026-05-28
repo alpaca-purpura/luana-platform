@@ -1,5 +1,4 @@
 # cap: platform.migrations-slice-1-schema
-# atomics: TBD
 # story-origin: TBD
 """Vitalia database session factory — FastAPI DI dependency.
 

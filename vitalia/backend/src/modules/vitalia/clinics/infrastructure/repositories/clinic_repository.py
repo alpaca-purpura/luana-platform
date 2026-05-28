@@ -1,5 +1,4 @@
 # cap: clinics.clinics-brand-extension
-# atomics: TBD
 # story-origin: TBD
 """Vitalia Clinic repository — concrete implementation with HIPAA dual filter.
 

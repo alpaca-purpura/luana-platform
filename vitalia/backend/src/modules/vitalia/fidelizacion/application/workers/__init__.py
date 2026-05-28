@@ -1,5 +1,4 @@
 # cap: __orphan__
-# atomics: TBD
 # story-origin: TBD
 """Workers ARQ para fidelización vitalia — 6 cron jobs registrados.
 

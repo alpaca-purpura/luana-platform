@@ -1,5 +1,4 @@
 # cap: brand_studio.brand-studio-medical-sections
-# atomics: TBD
 # story-origin: vitalia-fase2-s7-TBD
 """VitaliaProhibitedPhraseModel — SA 2.0 model for vitalia_prohibited_phrases table.
 

@@ -1,5 +1,4 @@
 // cap: public_landing.public-clinic-landing
-// atomics: TBD
 // story-origin: TBD
 /**
  * useStageDetail — fetches detailed metrics for a specific bowtie stage

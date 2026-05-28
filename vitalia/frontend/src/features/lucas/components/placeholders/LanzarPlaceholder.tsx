@@ -1,5 +1,4 @@
 // cap: marketing.lucas-stage-recommendations
-// atomics: TBD
 // story-origin: vitalia-fase1-s10-TBD
 /**
  * LanzarPlaceholder — EmptyState genérico para Lucas/Lanzar.

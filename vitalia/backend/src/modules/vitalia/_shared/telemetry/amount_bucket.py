@@ -1,5 +1,4 @@
 # cap: __orphan__
-# atomics: TBD
 # story-origin: TBD
 """Amount bucket utility — privacy-preserving monetary range bucketing for telemetry.
 

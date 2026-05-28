@@ -1,5 +1,4 @@
 # cap: copilot.valeria-wizard-onboarding-agentic
-# atomics: TBD
 # story-origin: TBD
 """Valeria wizard supervisor LangGraph topology + deepagents extract_subagent.
 

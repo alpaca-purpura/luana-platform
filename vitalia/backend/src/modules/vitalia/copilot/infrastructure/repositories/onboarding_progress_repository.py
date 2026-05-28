@@ -1,5 +1,4 @@
 # cap: copilot.inbox-tools-extensions
-# atomics: TBD
 # story-origin: TBD
 """SqlAlchemyOnboardingProgressRepository — SQLA 2.0 implementation.
 

@@ -1,5 +1,4 @@
 # cap: brand_studio.lisa-marca
-# atomics: TBD
 # story-origin: vitalia-fase2-s7-TBD
 """Marca DTOs — 18 Pydantic v2 DTOs for brand_studio API endpoints.
 

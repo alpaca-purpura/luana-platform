@@ -1,5 +1,4 @@
 // cap: iam.luana-core-adoption
-// atomics: TBD
 // story-origin: vitalia-fase1-s9-TBD
 /**
  * lib/iam/api.ts — IAM API client for Vitalia (F1-S9 T-2).

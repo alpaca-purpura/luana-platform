@@ -1,5 +1,4 @@
 // cap: shell-organism.shell-vitalia
-// atomics: TBD
 // story-origin: TBD
 /**
  * Compliance types — mirrors Pydantic compliance_dtos.py Response DTOs.

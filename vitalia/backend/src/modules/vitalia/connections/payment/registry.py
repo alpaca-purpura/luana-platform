@@ -1,5 +1,4 @@
 # cap: connections.oauth-meta-google-ads
-# atomics: TBD
 # story-origin: TBD
 """Payment provider registry (Vitalia brand-internal, NOT an engine EP).
 

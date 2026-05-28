@@ -1,5 +1,4 @@
 # cap: agentic.lucas-recommendation-tool
-# atomics: TBD
 # story-origin: TBD
 """Vitalia AGENTIC tool — `compute_stage_recommendation` (Lucas growth setter).
 

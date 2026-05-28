@@ -1,5 +1,4 @@
 # cap: __orphan__
-# atomics: TBD
 # story-origin: TBD
 """SendMessage DTOs — vitalia inbox application layer.
 

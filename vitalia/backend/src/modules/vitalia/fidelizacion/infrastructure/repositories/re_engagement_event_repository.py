@@ -1,5 +1,4 @@
 # cap: __orphan__
-# atomics: TBD
 # story-origin: TBD
 """Repositorio de eventos de re-engagement — fidelización vitalia.
 

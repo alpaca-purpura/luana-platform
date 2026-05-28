@@ -1,5 +1,4 @@
 # cap: __orphan__
-# atomics: TBD
 # story-origin: TBD
 """DTOs de re-engagement — capa API para fidelización vitalia.
 

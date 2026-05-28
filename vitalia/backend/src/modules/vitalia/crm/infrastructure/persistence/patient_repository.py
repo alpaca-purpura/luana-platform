@@ -1,5 +1,4 @@
 # cap: crm.crm-consent-optout
-# atomics: TBD
 # story-origin: TBD
 """PatientRepository — PHI entity repository with dual filter enforcement.
 

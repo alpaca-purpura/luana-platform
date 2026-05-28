@@ -1,5 +1,4 @@
 # cap: admin.users-crud
-# atomics: TBD
 # story-origin: TBD
 """Admin module — User management for Vitalia.
 

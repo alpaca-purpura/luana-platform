@@ -1,5 +1,4 @@
 # cap: booking.prepaid-booking-advisory-locks
-# atomics: TBD
 # story-origin: TBD
 """Async repository — VitaliaDoctorExtensionModel.
 

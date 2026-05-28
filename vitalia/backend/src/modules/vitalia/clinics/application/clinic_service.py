@@ -1,5 +1,4 @@
 # cap: clinics.clinics-brand-extension
-# atomics: TBD
 # story-origin: TBD
 """Vitalia Clinic application service — business logic + audit log dispatch.
 

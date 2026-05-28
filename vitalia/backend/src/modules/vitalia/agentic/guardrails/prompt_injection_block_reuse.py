@@ -1,5 +1,4 @@
 # cap: agentic.eval-goldens-slice-1
-# atomics: TBD
 # story-origin: TBD
 r"""Vitalia AGENTIC guardrail — `prompt_injection_block` (Story E reuse).
 

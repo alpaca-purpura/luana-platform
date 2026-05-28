@@ -1,5 +1,4 @@
 # cap: workers.idempotent-cron-arq-scaffold
-# atomics: TBD
 # story-origin: TBD
 """Cron job span context manager for Vitalia ARQ workers.
 

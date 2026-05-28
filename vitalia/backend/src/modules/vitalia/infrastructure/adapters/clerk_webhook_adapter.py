@@ -1,5 +1,4 @@
 # cap: booking.prepaid-booking-advisory-locks
-# atomics: TBD
 # story-origin: TBD
 """Vitalia Clerk webhook adapter — signup.completed → tenant create.
 

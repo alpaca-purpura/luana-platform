@@ -1,5 +1,4 @@
 # cap: crm.crm-consent-optout
-# atomics: TBD
 # story-origin: TBD
 """Conversation domain entity — PHI dual-filter (tenant_id + clinic_id).
 

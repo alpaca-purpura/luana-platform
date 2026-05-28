@@ -1,5 +1,4 @@
 // cap: scheduling.valeria-agenda
-// atomics: TBD
 // story-origin: vitalia-fase1-s10-TBD
 /**
  * AgendaSlot — bloque de turno en la grilla de agenda.

@@ -1,5 +1,4 @@
 # cap: __orphan__
-# atomics: TBD
 # story-origin: TBD
 """DTOs for POST /api/v1/fiscal/emit — standalone fiscal emission retry endpoint.
 

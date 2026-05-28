@@ -1,5 +1,4 @@
 // cap: brand_studio.lisa-marca
-// atomics: TBD
 // story-origin: vitalia-fase2-s7-TBD
 /**
  * visuals-schema.ts — Zod schema for brand visuals section.

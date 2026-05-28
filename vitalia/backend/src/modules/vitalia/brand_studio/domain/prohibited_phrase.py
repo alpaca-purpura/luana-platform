@@ -1,5 +1,4 @@
 # cap: brand_studio.brand-studio-medical-sections
-# atomics: TBD
 # story-origin: vitalia-fase2-s7-TBD
 """ProhibitedPhrase domain entity — vitalia brand-local soft warning blocklist.
 

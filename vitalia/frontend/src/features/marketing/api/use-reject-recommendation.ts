@@ -1,5 +1,4 @@
 // cap: public_landing.public-clinic-landing
-// atomics: TBD
 // story-origin: TBD
 /**
  * useRejectRecommendation — mutation: reject a Lucas recommendation with reason

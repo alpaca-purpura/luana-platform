@@ -1,5 +1,4 @@
 # cap: marketing.attribution-matrix-4-origins
-# atomics: TBD
 # story-origin: TBD
 """Marketing domain events for vitalia brand — 9 events total.
 

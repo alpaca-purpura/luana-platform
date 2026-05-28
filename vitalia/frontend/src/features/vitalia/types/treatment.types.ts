@@ -1,5 +1,4 @@
 // cap: shell-organism.shell-vitalia
-// atomics: TBD
 // story-origin: TBD
 /**
  * Treatment types — mirrors Pydantic treatment_dtos.py Response DTOs.

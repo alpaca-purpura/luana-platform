@@ -1,5 +1,4 @@
 // cap: shell-organism.shell-vitalia
-// atomics: TBD
 // story-origin: TBD
 /**
  * Booking types — mirrors Pydantic booking_dtos.py Response DTOs.

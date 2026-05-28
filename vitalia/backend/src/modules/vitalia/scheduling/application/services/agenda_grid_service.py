@@ -1,5 +1,4 @@
 # cap: scheduling.valeria-agenda
-# atomics: TBD
 # story-origin: vitalia-fase2-s1-TBD
 """Agenda Grid Service — list PHI-masked slots for the Valeria Agenda view.
 

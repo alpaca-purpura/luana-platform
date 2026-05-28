@@ -1,5 +1,4 @@
 # cap: copilot.inbox-tools-extensions
-# atomics: TBD
 # story-origin: TBD
 """VitaliaCopilotCallbackHandler — brand subclass of engine BaseAgentCallbackHandler.
 

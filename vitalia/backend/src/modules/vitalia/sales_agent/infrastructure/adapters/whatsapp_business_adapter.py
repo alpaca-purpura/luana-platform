@@ -1,5 +1,4 @@
 # cap: sales_agent.adrian-3-tools-mvp
-# atomics: TBD
 # story-origin: TBD
 """WhatsApp Business API adapter for Vitalia Adrián sales_agent.
 
