@@ -1,3 +1,6 @@
+# cap: agentic.eval-goldens-slice-1
+# atomics: TBD
+# story-origin: TBD
 """Lucas growth setter — StageEnum.
 
 Funnel stages consumed by analytics engine (STAGE_CHANNEL_MAP) and

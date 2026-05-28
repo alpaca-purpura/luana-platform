@@ -1,3 +1,6 @@
+// cap: shell-organism.shell-vitalia
+// atomics: TBD
+// story-origin: vitalia-fase1-s0-TBD
 /**
  * Agents SSoT — Vitalia (F1-S0)
  *

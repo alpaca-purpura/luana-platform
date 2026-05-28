@@ -1,3 +1,6 @@
+# cap: __orphan__
+# atomics: TBD
+# story-origin: TBD
 """Vitalia FastAPI router — all REST endpoints (excl. webhooks T-be-8).
 
 Per 03-arch-be.md § 6 + 05-guidelines § 1.1 (DDD — API thin):

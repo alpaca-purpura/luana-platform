@@ -1,3 +1,6 @@
+# cap: copilot.valeria-wizard-onboarding-agentic
+# atomics: TBD
+# story-origin: TBD
 """Wizard prompt compiler — 5-slot architecture (Anthropic prompt caching).
 
 Per 03-arch-agentic.md § 5.2 + claude-api § Validation:

@@ -1,3 +1,6 @@
+// cap: marketing.lucas-stage-recommendations
+// atomics: TBD
+// story-origin: vitalia-fase1-s10-TBD
 /**
  * RecursosPlaceholder — EmptyState genérico para Lucas/Recursos.
  * F1-S10 vitalia-fase1-empty-states — T-2

@@ -1,3 +1,6 @@
+# cap: platform.migrations-slice-1-schema
+# atomics: TBD
+# story-origin: TBD
 """Vitalia database session factory — FastAPI DI dependency.
 
 Provides ``get_async_session`` async generator for use with ``Depends()``.

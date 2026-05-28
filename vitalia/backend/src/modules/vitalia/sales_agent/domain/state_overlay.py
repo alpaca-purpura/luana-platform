@@ -1,3 +1,6 @@
+# cap: sales_agent.adrian-3-tools-mvp
+# atomics: TBD
+# story-origin: TBD
 """Vitalia Adrián sales_agent state overlay (TypedDict extension).
 
 Story T-ag-tools-2 — R23 production_code=true.

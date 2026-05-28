@@ -1,3 +1,6 @@
+// cap: public_landing.public-clinic-landing
+// atomics: TBD
+// story-origin: TBD
 /**
  * Referrals domain types — mirror of BE ReferralsResponse (camelCase)
  * downstream-regression-na: brand-local FE type; consumed by marketing feature only

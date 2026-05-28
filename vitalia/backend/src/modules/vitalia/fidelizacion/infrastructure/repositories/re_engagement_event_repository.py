@@ -1,3 +1,6 @@
+# cap: __orphan__
+# atomics: TBD
+# story-origin: TBD
 """Repositorio de eventos de re-engagement — fidelización vitalia.
 
 Hereda CompoundScopeRepositoryBase (engine) con scope_field="clinic_id".

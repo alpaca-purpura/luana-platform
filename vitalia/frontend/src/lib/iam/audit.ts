@@ -1,3 +1,6 @@
+// cap: compliance.hipaa-lite-defensive-stack
+// atomics: TBD
+// story-origin: vitalia-fase1-s9-TBD
 /**
  * lib/iam/audit.ts — HIPAA-lite audit logging helpers for IAM events (F1-S9 T-2).
  *

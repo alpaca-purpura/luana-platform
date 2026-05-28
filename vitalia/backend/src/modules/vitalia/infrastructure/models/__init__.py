@@ -1,3 +1,6 @@
+# cap: booking.prepaid-booking-advisory-locks
+# atomics: TBD
+# story-origin: TBD
 """Vitalia infrastructure ORM models.
 
 Exports all 12 SQLAlchemy 2.0 Mapped[] model classes.

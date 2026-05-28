@@ -1,3 +1,6 @@
+// cap: shell-organism.shell-vitalia
+// atomics: TBD
+// story-origin: TBD
 /**
  * microcopy.ts — SSoT for all vitalia user-facing strings.
  * Source: 01-spec.md § 8 (immutable). Spanish neutro LatAm.

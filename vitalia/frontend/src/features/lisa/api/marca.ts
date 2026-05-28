@@ -1,3 +1,6 @@
+// cap: brand_studio.lisa-marca
+// atomics: TBD
+// story-origin: vitalia-fase2-s7-TBD
 /**
  * marca.ts — API client for Lisa Marca sub-tab (brand identity admin).
  *

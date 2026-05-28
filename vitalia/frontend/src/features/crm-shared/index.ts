@@ -1,3 +1,6 @@
+// cap: __shared__
+// atomics: TBD
+// story-origin: TBD
 /**
  * crm-shared — Public API barrel (PRODUCER · Ola 1+).
  *

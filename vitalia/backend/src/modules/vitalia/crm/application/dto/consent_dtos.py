@@ -1,3 +1,6 @@
+# cap: crm.crm-consent-optout
+# atomics: TBD
+# story-origin: TBD
 """Consent DTOs — opt-out and marketing opt-in request/response models.
 
 PII allowlist enforced via response_model= on all routes (tessl pii-sanitisation).

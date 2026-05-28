@@ -1,3 +1,6 @@
+// cap: scheduling.valeria-agenda
+// atomics: TBD
+// story-origin: vitalia-fase2-s1-TBD
 /**
  * freshness.ts — Helper de frescura para indicadores "Actualizado hace X" en Valeria Agenda.
  *

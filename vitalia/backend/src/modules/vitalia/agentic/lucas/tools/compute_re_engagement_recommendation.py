@@ -1,3 +1,6 @@
+# cap: agentic.lucas-recommendation-tool
+# atomics: TBD
+# story-origin: TBD
 """Vitalia AGENTIC tool — `compute_re_engagement_recommendation` (Lucas).
 
 R23: production_code=True AGENTIC tool. Opus 4.7 EXCLUSIVE.

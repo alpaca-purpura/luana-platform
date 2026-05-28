@@ -1,3 +1,6 @@
+# cap: treatments.treatment-followup-workflow
+# atomics: TBD
+# story-origin: TBD
 """Entidad de dominio: TreatmentPlan (Plan de Tratamiento).
 
 PHI — contiene datos médicos sensibles (HIPAA-lite vitalia).

@@ -1,3 +1,6 @@
+# cap: agentic.eval-goldens-slice-1
+# atomics: TBD
+# story-origin: TBD
 """Vitalia 10-slot prompt architecture composer (Anthropic prompt cache).
 
 R23: production_code=True AGENTIC code. Opus 4.7 EXCLUSIVE.

@@ -1,3 +1,6 @@
+# cap: crm.crm-consent-optout
+# atomics: TBD
+# story-origin: TBD
 """LeadService — non-PHI lead management.
 
 Application layer — no RBAC restriction (Lead is not PHI).

@@ -1,3 +1,6 @@
+# cap: compliance.compliance-hipaa-lite-audit
+# atomics: TBD
+# story-origin: TBD
 """Vitalia compliance guardrail — ``medical_safety_no_diagnosis`` (EP-13 wire).
 
 Story T-ag-tools-2 — R23 production_code=true.

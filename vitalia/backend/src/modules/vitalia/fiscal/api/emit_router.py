@@ -1,3 +1,6 @@
+# cap: __orphan__
+# atomics: TBD
+# story-origin: TBD
 """Vitalia Fiscal — Standalone Emit API Router.
 
 POST /api/v1/fiscal/emit — standalone fiscal emission retry endpoint.

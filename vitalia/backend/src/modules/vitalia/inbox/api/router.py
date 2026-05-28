@@ -1,3 +1,6 @@
+# cap: __orphan__
+# atomics: TBD
+# story-origin: TBD
 """Vitalia inbox API router — 8 inbox endpoints.
 
 API layer (thin): validate headers → resolve auth → RBAC → call service → map exceptions → response.

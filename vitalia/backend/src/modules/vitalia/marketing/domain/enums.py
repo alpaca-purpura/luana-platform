@@ -1,3 +1,6 @@
+# cap: marketing.attribution-matrix-4-origins
+# atomics: TBD
+# story-origin: TBD
 """Marketing domain enums for vitalia brand.
 
 Covers ad provider slugs, sync states, recommendation lifecycle,

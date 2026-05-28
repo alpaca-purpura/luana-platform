@@ -1,3 +1,6 @@
+// cap: platform.shell-foundation-shadcn-tailwind-v4
+// atomics: TBD
+// story-origin: TBD
 import type { Meta, StoryObj } from "@storybook/nextjs";
 import { WizardChatThread } from "./WizardChatThread";
 import type { WizardMessage } from "./WizardChatThread";

@@ -1,3 +1,6 @@
+// cap: scheduling.valeria-agenda
+// atomics: TBD
+// story-origin: vitalia-fase2-s1-TBD
 /**
  * fiscal.ts — Fiscal document emission mutation hook for Valeria Agenda.
  * T-12 vitalia-fase2-valeria-agenda

@@ -1,3 +1,6 @@
+# cap: admin.admin-streamlit-service
+# atomics: TBD
+# story-origin: TBD
 """Admin DB session helpers — synchronous session for Streamlit compatibility.
 
 Streamlit runs in a synchronous context. Admin modules use synchronous

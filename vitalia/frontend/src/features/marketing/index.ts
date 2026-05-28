@@ -1,3 +1,6 @@
+// cap: public_landing.public-clinic-landing
+// atomics: TBD
+// story-origin: TBD
 /**
  * marketing feature — public API barrel
  * downstream-regression-na: brand-local FE feature barrel; no cross-brand consumers

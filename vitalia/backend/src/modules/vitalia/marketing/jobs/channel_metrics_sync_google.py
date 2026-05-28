@@ -1,3 +1,6 @@
+# cap: marketing.attribution-matrix-4-origins
+# atomics: TBD
+# story-origin: TBD
 """channel_metrics_sync_google — ARQ cron job, every 4h.
 
 Pulls Google Ads campaign metrics per active tenant+clinic connection,

@@ -1,3 +1,6 @@
+# cap: compliance.compliance-hipaa-lite-audit
+# atomics: TBD
+# story-origin: TBD
 """ComplianceEventService — best-effort medical audit log writes.
 
 HIPAA-lite pattern: writes are best-effort — persist failures NEVER raise

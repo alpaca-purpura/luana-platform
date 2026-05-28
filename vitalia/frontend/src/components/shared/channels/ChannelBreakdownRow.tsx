@@ -1,3 +1,6 @@
+// cap: marketing.attribution-matrix-4-origins
+// atomics: TBD
+// story-origin: TBD
 /**
  * ChannelBreakdownRow — single channel performance row widget.
  *

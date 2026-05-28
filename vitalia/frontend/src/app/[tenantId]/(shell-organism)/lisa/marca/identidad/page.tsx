@@ -1,3 +1,6 @@
+// cap: brand_studio.lisa-marca
+// atomics: TBD
+// story-origin: vitalia-fase2-s7-TBD
 /**
  * lisa/marca/identidad/page.tsx — Identidad sub-sub-tab Server Component.
  *

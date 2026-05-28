@@ -1,3 +1,6 @@
+// cap: shell-organism.shell-vitalia
+// atomics: TBD
+// story-origin: vitalia-fase1-s4-TBD
 /**
  * AppPanelSlot — Application content panel host.
  * F1-S4 vitalia-fase1-shell-layout-5050 (original shell grid)

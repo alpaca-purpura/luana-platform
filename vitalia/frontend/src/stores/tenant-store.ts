@@ -1,3 +1,6 @@
+// cap: iam.luana-core-adoption
+// atomics: TBD
+// story-origin: vitalia-fase1-s3-TBD
 /**
  * tenant-store.ts — Zustand store for tenant state with localStorage persistence.
  * F1-S3 vitalia-fase1-tenant-switcher — T-4

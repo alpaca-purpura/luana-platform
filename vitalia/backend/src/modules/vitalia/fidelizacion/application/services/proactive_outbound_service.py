@@ -1,3 +1,6 @@
+# cap: __orphan__
+# atomics: TBD
+# story-origin: TBD
 """ProactiveOutboundService — envío proactivo de mensajes de re-engagement.
 
 Flujo de 9 pasos:

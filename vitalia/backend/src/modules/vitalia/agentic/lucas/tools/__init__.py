@@ -1,3 +1,6 @@
+# cap: agentic.eval-goldens-slice-1
+# atomics: TBD
+# story-origin: TBD
 """Lucas growth setter tools — cron-invoked agentic tools.
 
 Slice 1 cron-only per 02-design-agentic § 2.4 (Q2 default). Lucas runs

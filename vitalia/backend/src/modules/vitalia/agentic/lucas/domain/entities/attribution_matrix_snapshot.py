@@ -1,3 +1,6 @@
+# cap: agentic.eval-goldens-slice-1
+# atomics: TBD
+# story-origin: TBD
 """Lucas domain entity — AttributionMatrixSnapshot.
 
 Pure Python domain entity. No SQLAlchemy, no FastAPI imports.

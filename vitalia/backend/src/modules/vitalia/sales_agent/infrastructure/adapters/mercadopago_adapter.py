@@ -1,3 +1,6 @@
+# cap: sales_agent.adrian-3-tools-mvp
+# atomics: TBD
+# story-origin: TBD
 """MercadoPago payment adapter for Vitalia Adrián sales_agent.
 
 Creates payment preferences (deposit links) and validates webhook

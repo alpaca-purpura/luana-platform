@@ -1,3 +1,6 @@
+// cap: scheduling.valeria-agenda
+// atomics: TBD
+// story-origin: vitalia-fase2-s1-TBD
 /**
  * agenda.ts — React Query v5 hooks for Valeria Agenda feature.
  * T-12 vitalia-fase2-valeria-agenda

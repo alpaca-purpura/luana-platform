@@ -1,3 +1,6 @@
+// cap: onboarding.clinic-onboarding-3step
+// atomics: TBD
+// story-origin: TBD
 "use client";
 /**
  * use-wizard-url-state.ts — URL state management for wizard onboarding page.

@@ -1,3 +1,6 @@
+# cap: __orphan__
+# atomics: TBD
+# story-origin: TBD
 """SetModeService — vitalia inbox application layer.
 
 SC-03 OCC: mode change with If-Match optimistic concurrency control.

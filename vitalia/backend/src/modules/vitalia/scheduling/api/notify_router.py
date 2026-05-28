@@ -1,3 +1,6 @@
+# cap: scheduling.valeria-agenda
+# atomics: TBD
+# story-origin: vitalia-fase2-s1-TBD
 """Notify router — POST /api/v1/scheduling/appointments/{id}/notify.
 
 T-8: Template-only WhatsApp notification + ComplianceService guard + audit log.

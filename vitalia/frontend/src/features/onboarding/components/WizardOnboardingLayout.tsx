@@ -1,3 +1,6 @@
+// cap: onboarding.clinic-onboarding-3step
+// atomics: TBD
+// story-origin: TBD
 "use client";
 /**
  * WizardOnboardingLayout — Main wizard layout with chat-LEFT 50/50 split.

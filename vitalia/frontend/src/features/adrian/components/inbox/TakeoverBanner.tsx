@@ -1,3 +1,6 @@
+// cap: sales_agent.inbox-handler-mode-occ
+// atomics: TBD
+// story-origin: vitalia-fase1-s10-TBD
 /**
  * TakeoverBanner — banner amarillo indicador de usuario en control.
  * F1-S10 vitalia-fase1-empty-states — T-6

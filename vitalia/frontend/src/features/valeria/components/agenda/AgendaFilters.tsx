@@ -1,3 +1,6 @@
+// cap: scheduling.valeria-agenda
+// atomics: TBD
+// story-origin: vitalia-fase1-s10-TBD
 /**
  * AgendaFilters — fila de 6 chips de filtro visual (disabled F1).
  * F1-S10 vitalia-fase1-empty-states — T-7

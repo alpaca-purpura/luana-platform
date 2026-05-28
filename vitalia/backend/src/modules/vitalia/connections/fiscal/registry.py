@@ -1,3 +1,6 @@
+# cap: connections.oauth-meta-google-ads
+# atomics: TBD
+# story-origin: TBD
 """Fiscal provider registry (Vitalia LATAM e-invoicing dispatch).
 
 Per `03-arch-be.md` § 6.2 — Slice 1 ships only `nubefact_pe`. Real adapter

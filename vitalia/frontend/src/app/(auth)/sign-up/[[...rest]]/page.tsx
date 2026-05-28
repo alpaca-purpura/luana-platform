@@ -1,3 +1,6 @@
+// cap: auth.sign-in-sign-up-pages
+// atomics: TBD
+// story-origin: TBD
 import type { Metadata } from "next";
 import { SignUp } from "@clerk/nextjs";
 

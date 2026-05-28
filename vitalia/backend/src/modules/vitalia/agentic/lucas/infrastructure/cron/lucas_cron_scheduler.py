@@ -1,3 +1,6 @@
+# cap: agentic.lucas-daily-analysis
+# atomics: TBD
+# story-origin: TBD
 """Lucas infrastructure — LucasCronScheduler (APScheduler, TZ-aware per-tenant).
 
 Schedules per-tenant Lucas cron jobs at 06:00 LOCAL time using tenant's

@@ -1,3 +1,6 @@
+// cap: __orphan__
+// atomics: TBD
+// story-origin: TBD
 "use client";
 
 import { ClerkProvider } from "@clerk/nextjs";

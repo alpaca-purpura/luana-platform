@@ -1,3 +1,6 @@
+// cap: public_landing.public-clinic-landing
+// atomics: TBD
+// story-origin: TBD
 /**
  * useChannelDetail — fetches channel integration details for a provider
  * downstream-regression-na: brand-local FE hook; no cross-brand consumers

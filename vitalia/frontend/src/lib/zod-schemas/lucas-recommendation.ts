@@ -1,3 +1,6 @@
+// cap: __orphan__
+// atomics: TBD
+// story-origin: TBD
 /**
  * Zod schema for LucasRecommendation — mirrors Pydantic LucasRecommendationResponse (snake_case)
  * Used for runtime validation of BE API responses.

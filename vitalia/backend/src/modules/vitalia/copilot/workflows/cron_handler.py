@@ -1,3 +1,6 @@
+# cap: copilot.inbox-tools-extensions
+# atomics: TBD
+# story-origin: TBD
 """Cron handler — TreatmentFollowupWorkflow tick entry points.
 
 Story 11 T-workflow-1 (R23 Opus 4.7 production AGENTIC code).

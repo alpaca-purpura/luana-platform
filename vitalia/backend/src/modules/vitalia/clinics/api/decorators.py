@@ -1,3 +1,6 @@
+# cap: clinics.clinics-brand-extension
+# atomics: TBD
+# story-origin: TBD
 """Vitalia Clinic API decorators — HIPAA access control.
 
 Provides @require_clinic_access decorator for FastAPI routes that access

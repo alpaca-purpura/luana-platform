@@ -1,3 +1,6 @@
+# cap: __orphan__
+# atomics: TBD
+# story-origin: TBD
 """Fidelización summary + activity stream API endpoints — T-7 vitalia.
 
 Rutas FastAPI (thin — sin lógica de negocio):

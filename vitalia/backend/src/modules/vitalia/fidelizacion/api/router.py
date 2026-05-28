@@ -1,3 +1,6 @@
+# cap: __orphan__
+# atomics: TBD
+# story-origin: TBD
 """Router de fidelización vitalia — monta los 3 sub-routers de la capa API.
 
 Mounts:

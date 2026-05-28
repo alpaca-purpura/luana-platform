@@ -1,3 +1,6 @@
+# cap: scheduling.valeria-agenda
+# atomics: TBD
+# story-origin: vitalia-fase2-s1-TBD
 """AppointmentPayment — brand-local persisted payment record.
 
 Tracks each payment transaction against a clinic appointment.

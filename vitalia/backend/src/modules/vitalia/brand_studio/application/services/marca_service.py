@@ -1,3 +1,6 @@
+# cap: brand_studio.lisa-marca
+# atomics: TBD
+# story-origin: vitalia-fase2-s7-TBD
 """MarcaService — core orchestrator for sub-tab Lisa > Marca.
 
 Wraps engine brand_studio repos + brand-local audit + telemetry.

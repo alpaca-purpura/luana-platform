@@ -1,3 +1,6 @@
+# cap: observability.api-health-endpoint
+# atomics: TBD
+# story-origin: TBD
 """Vitalia FastAPI application entry point.
 
 Per 03-arch-be.md § 3 + 05-guidelines § 1.1:

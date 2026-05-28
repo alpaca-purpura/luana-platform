@@ -1,3 +1,6 @@
+// cap: agentic.lucas-daily-analysis
+// atomics: TBD
+// story-origin: TBD
 /**
  * activity-stream — barrel exports.
  * No default exports per FSD-Lite + arch fitness gate.

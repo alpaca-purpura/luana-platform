@@ -1,3 +1,6 @@
+# cap: connections.oauth-meta-google-ads
+# atomics: TBD
+# story-origin: TBD
 """Email connection adapter — vitalia connections module.
 
 Email channel does NOT support real message retraction.

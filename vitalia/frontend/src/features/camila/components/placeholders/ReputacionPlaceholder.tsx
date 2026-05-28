@@ -1,3 +1,6 @@
+// cap: patients.nps-tracking
+// atomics: TBD
+// story-origin: vitalia-fase1-s10-TBD
 /**
  * ReputacionPlaceholder — EmptyState genérico para Camila/Reputación.
  * F1-S10 vitalia-fase1-empty-states — T-2

@@ -1,3 +1,6 @@
+# cap: marketing.attribution-matrix-4-origins
+# atomics: TBD
+# story-origin: TBD
 """ReferralRepository — dual-scope async repository.
 
 Subclasses ``CompoundScopeRepositoryBase`` from engine (luana-core-platform v0.4.0).

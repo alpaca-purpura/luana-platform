@@ -1,3 +1,6 @@
+// cap: scheduling.valeria-agenda
+// atomics: TBD
+// story-origin: vitalia-fase1-s10-TBD
 "use client";
 /**
  * AgendaToolbar — barra de navegación period + toggle Día|Semana|Mes + CTA Crear cita.

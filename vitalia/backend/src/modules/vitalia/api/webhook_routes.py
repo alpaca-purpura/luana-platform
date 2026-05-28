@@ -1,3 +1,6 @@
+# cap: __orphan__
+# atomics: TBD
+# story-origin: TBD
 """Vitalia webhook receivers — 5 endpoints with HMAC + idempotency + replay protection.
 
 Per 03-arch-be.md § 6.8 + ticket T-be-8:

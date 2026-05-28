@@ -1,3 +1,6 @@
+// cap: public_landing.public-clinic-landing
+// atomics: TBD
+// story-origin: TBD
 /**
  * useRejectRecommendation — mutation: reject a Lucas recommendation with reason
  * Requires Idempotency-Key header (BE enforced for POST mutations)

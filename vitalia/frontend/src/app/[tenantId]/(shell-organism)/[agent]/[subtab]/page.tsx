@@ -1,3 +1,6 @@
+// cap: shell-organism.shell-vitalia
+// atomics: TBD
+// story-origin: vitalia-fase1-s9-TBD
 /**
  * Subtab Page — Server Component.
  * F1-S10 vitalia-fase1-empty-states — T-9 (MODIFY from F1-S9 placeholder)

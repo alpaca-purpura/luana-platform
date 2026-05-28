@@ -1,3 +1,6 @@
+// cap: sales_agent.inbox-handler-mode-occ
+// atomics: TBD
+// story-origin: TBD
 /**
  * InboxLayout.tsx — 3-pane inbox grid shell (scaffold).
  *

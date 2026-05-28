@@ -1,3 +1,6 @@
+# cap: scheduling.valeria-agenda
+# atomics: TBD
+# story-origin: vitalia-fase2-s1-TBD
 """Vitalia Scheduling — Agenda API Router.
 
 5 endpoints per 03-arch § 5:

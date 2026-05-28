@@ -1,3 +1,6 @@
+# cap: sales_agent.adrian-3-tools-mvp
+# atomics: TBD
+# story-origin: TBD
 """ScreeningOutcome enum — domain layer (pure Python, no framework deps).
 
 Values match the migration 021 CHECK constraint on ``lead_screening_events.outcome``:

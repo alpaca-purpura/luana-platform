@@ -1,3 +1,6 @@
+# cap: connections.oauth-meta-google-ads
+# atomics: TBD
+# story-origin: TBD
 """Vitalia print method registry (receipt/document output methods)."""
 
 from .registry import (

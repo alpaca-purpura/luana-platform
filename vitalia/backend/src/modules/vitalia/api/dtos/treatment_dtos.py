@@ -1,3 +1,6 @@
+# cap: treatments.treatment-followup-workflow
+# atomics: TBD
+# story-origin: TBD
 """Treatment DTOs — Pydantic v2 request/response models.
 
 Per 03-arch-be.md § 6.5 + § 7.1 + Tessl pii-sanitisation:

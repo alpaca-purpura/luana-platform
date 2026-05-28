@@ -1,3 +1,6 @@
+// cap: patients.nps-tracking
+// atomics: TBD
+// story-origin: TBD
 /**
  * re-engagement.ts — TS types mirroring Pydantic DTOs.
  *

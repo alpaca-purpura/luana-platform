@@ -1,3 +1,6 @@
+// cap: iam.iam-scaffold-slice-1
+// atomics: TBD
+// story-origin: vitalia-fase1-s10-TBD
 /**
  * ConexionesPlaceholder — placeholder especial Config/Conexiones con grid 6 categorías.
  * F1-S10 vitalia-fase1-empty-states — T-3

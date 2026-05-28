@@ -1,3 +1,6 @@
+// cap: scheduling.valeria-agenda
+// atomics: TBD
+// story-origin: vitalia-fase1-s10-TBD
 /**
  * AgendaDayHeader — encabezado de columna del día (Lun, Mar, etc.).
  * F1-S10 vitalia-fase1-empty-states — T-7

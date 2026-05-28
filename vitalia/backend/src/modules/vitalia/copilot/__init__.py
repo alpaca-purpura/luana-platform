@@ -1,3 +1,6 @@
+# cap: copilot.inbox-tools-extensions
+# atomics: TBD
+# story-origin: TBD
 """Vitalia copilot surface — extractors + workflows + KB packs.
 
 Story 11 T-extensions-1 creates the scaffolding (empty packages).

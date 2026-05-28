@@ -1,3 +1,6 @@
+// cap: __orphan__
+// atomics: TBD
+// story-origin: TBD
 /**
  * formatMoney — tenant-aware money formatter.
  *

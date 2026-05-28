@@ -1,3 +1,6 @@
+// cap: shell-organism.shell-vitalia
+// atomics: TBD
+// story-origin: vitalia-fase1-s9-TBD
 /**
  * NetworkErrorFallback — Server Component.
  *

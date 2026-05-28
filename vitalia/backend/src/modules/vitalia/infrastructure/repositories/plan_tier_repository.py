@@ -1,3 +1,6 @@
+# cap: booking.prepaid-booking-advisory-locks
+# atomics: TBD
+# story-origin: TBD
 """Async repository — VitaliaPlanTierConfigModel.
 
 CROSS-TENANT catalog — no tenant_id filter (global platform data).

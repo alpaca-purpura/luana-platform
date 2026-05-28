@@ -1,3 +1,6 @@
+// cap: public_landing.public-clinic-landing
+// atomics: TBD
+// story-origin: TBD
 /**
  * Channel integration domain types — mirror of BE ChannelDetailResponse (camelCase)
  * downstream-regression-na: brand-local FE type; consumed by marketing feature only

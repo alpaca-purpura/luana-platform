@@ -1,3 +1,6 @@
+# cap: clinics.clinics-brand-extension
+# atomics: TBD
+# story-origin: TBD
 """Vitalia Clinic API DTOs — Pydantic v2 request/response models.
 
 PII rule: response_model= is MANDATORY on all routes (arch test enforces).

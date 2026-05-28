@@ -1,3 +1,6 @@
+// cap: shell-organism.shell-vitalia
+// atomics: TBD
+// story-origin: TBD
 // Components — T-fe-5 dashboard Client Components
 export { TreatmentFollowupDashboardClient } from "./components/treatment-followup-dashboard-client";
 export type {

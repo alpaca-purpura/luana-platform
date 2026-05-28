@@ -1,3 +1,6 @@
+// cap: shell-organism.shell-vitalia
+// atomics: TBD
+// story-origin: vitalia-fase1-s4-TBD
 /**
  * ShellModeToggle — disabled chip placeholder F1-S4.
  * F1-S5/S7+ activará interaction → setShellMode('agentic' | 'web').

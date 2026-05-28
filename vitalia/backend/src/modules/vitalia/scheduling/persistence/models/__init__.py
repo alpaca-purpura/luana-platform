@@ -1,3 +1,6 @@
+# cap: scheduling.valeria-agenda
+# atomics: TBD
+# story-origin: TBD
 """SQLAlchemy 2.0 models for scheduling persistence."""
 
 from src.modules.vitalia.scheduling.persistence.models.appointment_clinic_map_model import (

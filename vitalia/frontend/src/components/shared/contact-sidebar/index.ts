@@ -1,3 +1,6 @@
+// cap: sales_agent.inbox-handler-mode-occ
+// atomics: TBD
+// story-origin: TBD
 /**
  * contact-sidebar — barrel exports.
  * No default exports per FSD-Lite + arch fitness gate.

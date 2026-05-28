@@ -1,3 +1,6 @@
+// cap: shell-organism.shell-vitalia
+// atomics: TBD
+// story-origin: TBD
 import { z } from "zod";
 
 export const bookingCreateSchema = z.object({

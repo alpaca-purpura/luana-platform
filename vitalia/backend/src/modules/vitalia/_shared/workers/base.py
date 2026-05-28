@@ -1,3 +1,6 @@
+# cap: __orphan__
+# atomics: TBD
+# story-origin: TBD
 """Base helper for Vitalia ARQ cron jobs: idempotent_cron decorator.
 
 Wraps each cron job function with:

@@ -1,3 +1,6 @@
+// cap: sales_agent.inbox-handler-mode-occ
+// atomics: TBD
+// story-origin: TBD
 /**
  * SegmentedControl3Modes.stories.tsx — Storybook stories for the 3-state mode toggle.
  *

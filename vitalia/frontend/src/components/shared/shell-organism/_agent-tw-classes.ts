@@ -1,3 +1,6 @@
+// cap: shell-organism.shell-vitalia
+// atomics: TBD
+// story-origin: vitalia-fase1-s6-TBD
 /**
  * _agent-tw-classes.ts — internal Tailwind class name lookup for agent slugs.
  *

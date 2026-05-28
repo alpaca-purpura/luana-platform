@@ -1,3 +1,6 @@
+# cap: patients.nps-tracking
+# atomics: TBD
+# story-origin: TBD
 """SQLAlchemy 2.0 model — vitalia_nps_responses.
 
 Mapea la tabla creada en migration 022.

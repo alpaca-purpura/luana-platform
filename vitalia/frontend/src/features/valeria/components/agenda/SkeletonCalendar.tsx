@@ -1,3 +1,6 @@
+// cap: scheduling.valeria-agenda
+// atomics: TBD
+// story-origin: vitalia-fase2-s1-TBD
 /**
  * SkeletonCalendar.tsx — Loading skeleton placeholder for calendar views.
  * T-13 vitalia-fase2-valeria-agenda · F2-S1

@@ -1,3 +1,6 @@
+// cap: public_landing.public-clinic-landing
+// atomics: TBD
+// story-origin: TBD
 /**
  * useBowtiesSummary — fetches bowtie funnel summary for a tenant+clinic
  * downstream-regression-na: brand-local FE hook; no cross-brand consumers

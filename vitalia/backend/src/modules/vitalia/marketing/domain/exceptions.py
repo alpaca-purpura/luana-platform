@@ -1,3 +1,6 @@
+# cap: marketing.attribution-matrix-4-origins
+# atomics: TBD
+# story-origin: TBD
 """Marketing domain exceptions for vitalia brand."""
 
 from __future__ import annotations

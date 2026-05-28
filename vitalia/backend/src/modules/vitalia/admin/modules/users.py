@@ -1,3 +1,6 @@
+# cap: admin.users-crud
+# atomics: TBD
+# story-origin: TBD
 """Admin module — User management for Vitalia.
 
 REWRITE: vitalia-adopt-luana-core-iam T-be-admin-rewrite (2026-05-19).

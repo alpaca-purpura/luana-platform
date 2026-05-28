@@ -1,3 +1,6 @@
+# cap: patients.nps-tracking
+# atomics: TBD
+# story-origin: TBD
 """Entidad de dominio: NPSResponse (Respuesta NPS del Paciente).
 
 PHI — comment_encrypted contiene comentario libre del paciente (pgcrypto BYTEA).

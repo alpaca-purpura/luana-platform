@@ -1,3 +1,6 @@
+# cap: __orphan__
+# atomics: TBD
+# story-origin: TBD
 """RetractMessage DTOs — vitalia inbox application layer.
 
 downstream-regression-na: brand-local vitalia inbox DTO

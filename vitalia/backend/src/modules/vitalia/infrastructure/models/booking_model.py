@@ -1,3 +1,6 @@
+# cap: booking.prepaid-booking-advisory-locks
+# atomics: TBD
+# story-origin: TBD
 """SQLAlchemy 2.0 ORM model — VitaliaBookingModel.
 
 Maps to `vitalia_bookings` table (created in 001_vitalia_initial_snapshot.py).

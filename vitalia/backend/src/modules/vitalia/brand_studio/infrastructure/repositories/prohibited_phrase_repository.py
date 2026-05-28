@@ -1,3 +1,6 @@
+# cap: brand_studio.brand-studio-medical-sections
+# atomics: TBD
+# story-origin: vitalia-fase2-s7-TBD
 """ProhibitedPhraseRepository ABC — tenant-scoped seeds + overrides.
 
 NO PhiRepositoryBase — this is owner config (not PHI).

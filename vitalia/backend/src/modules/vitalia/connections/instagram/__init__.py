@@ -1,3 +1,6 @@
+# cap: connections.oauth-meta-google-ads
+# atomics: TBD
+# story-origin: TBD
 """Instagram Graph API connection adapter — vitalia connections module.
 
 Provides retract_message_id via Meta Graph API DELETE with graceful degradation.

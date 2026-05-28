@@ -1,3 +1,6 @@
+// cap: public_landing.public-clinic-landing
+// atomics: TBD
+// story-origin: TBD
 /**
  * QualificationStage — qualification funnel stage panel.
  * Renders: Lucas recommendations card + KPI hero cards.

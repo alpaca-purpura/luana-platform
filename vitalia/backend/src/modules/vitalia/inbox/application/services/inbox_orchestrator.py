@@ -1,3 +1,6 @@
+# cap: copilot.inbox-tools-extensions
+# atomics: TBD
+# story-origin: TBD
 """InboxOrchestrator — vitalia inbox application layer.
 
 Top-level read service composing Lead + Conversation + Message + ActivityEvent.

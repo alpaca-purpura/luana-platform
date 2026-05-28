@@ -1,3 +1,6 @@
+// cap: patients.nps-tracking
+// atomics: TBD
+// story-origin: vitalia-fase1-s10-TBD
 /**
  * ReactivarPlaceholder — EmptyState genérico para Camila/Reactivar.
  * F1-S10 vitalia-fase1-empty-states — T-2

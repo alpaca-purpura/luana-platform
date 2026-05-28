@@ -1,3 +1,6 @@
+# cap: marketing.lucas-stage-recommendations
+# atomics: TBD
+# story-origin: TBD
 """LucasRecommendationsService — state machine for marketing recommendations.
 
 Application layer — orchestrates:

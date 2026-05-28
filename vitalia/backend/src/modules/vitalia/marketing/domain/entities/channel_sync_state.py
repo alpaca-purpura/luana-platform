@@ -1,3 +1,6 @@
+# cap: marketing.attribution-matrix-4-origins
+# atomics: TBD
+# story-origin: TBD
 """ChannelSyncState domain entity — represents OAuth sync state for an ad channel.
 
 Per HIPAA-lite: NO PHI stored here. oauth_token_encrypted stored at-rest

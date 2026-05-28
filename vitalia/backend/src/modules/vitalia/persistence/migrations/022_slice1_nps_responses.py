@@ -1,3 +1,6 @@
+# cap: patients.nps-tracking
+# atomics: TBD
+# story-origin: TBD
 """Migration 022 — vitalia_nps_responses (Slice 1 fidelización).
 
 Creates vitalia_nps_responses table. Patient free-text comment encrypted via pgcrypto

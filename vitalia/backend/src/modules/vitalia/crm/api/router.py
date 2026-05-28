@@ -1,3 +1,6 @@
+# cap: crm.crm-consent-optout
+# atomics: TBD
+# story-origin: TBD
 """Vitalia CRM API router — patients, leads, and conversations endpoints.
 
 API layer — thin: validate headers → resolve auth → call service → map exceptions → response.

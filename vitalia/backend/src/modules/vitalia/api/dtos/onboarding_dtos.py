@@ -1,3 +1,6 @@
+# cap: onboarding.clinic-onboarding-3step
+# atomics: TBD
+# story-origin: TBD
 """Onboarding DTOs — Pydantic v2 request/response models.
 
 Per 03-arch-be.md § 6.1 + § 7.1 + Tessl pii-sanitisation:

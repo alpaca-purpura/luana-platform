@@ -1,3 +1,6 @@
+// cap: public_landing.public-clinic-landing
+// atomics: TBD
+// story-origin: TBD
 /**
  * AttributionMatrixWidget — 4 origins × KPI columns heatmap table with conversion rate coloring.
  * Consumes useAttributionMatrix (HIPAA-lite: dual filter tenant+clinic, no PHI).

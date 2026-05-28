@@ -1,3 +1,6 @@
+# cap: __orphan__
+# atomics: TBD
+# story-origin: TBD
 """RetractMessageService — vitalia inbox application layer.
 
 SC-03 coverage: 5min action receipt window + OCC + channel adapter + fallback.

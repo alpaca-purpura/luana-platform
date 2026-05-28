@@ -1,3 +1,6 @@
+// cap: scheduling.valeria-agenda
+// atomics: TBD
+// story-origin: vitalia-fase2-s1-TBD
 /**
  * agenda-server.ts — SSR initial state fetch for Valeria Agenda Server Component.
  * T-12 vitalia-fase2-valeria-agenda

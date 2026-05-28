@@ -1,3 +1,6 @@
+# cap: admin.streamlit-tenants-users
+# atomics: TBD
+# story-origin: TBD
 """Admin page wrapper — Tenants & Clinics (thin, delegates to modules/tenants.py).
 
 Per admin-panel.md: pages/*.py are THIN wrappers only.

@@ -1,3 +1,6 @@
+// cap: platform.design-tokens-theme
+// atomics: TBD
+// story-origin: vitalia-fase1-s4-TBD
 /**
  * /test-stack/shell-layout — Visual baseline page F1-S4
  * (vitalia-fase1-shell-layout-5050)

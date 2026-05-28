@@ -1,3 +1,6 @@
+# cap: scheduling.valeria-agenda
+# atomics: TBD
+# story-origin: vitalia-fase2-s1-TBD
 """Preset filter enum for the Valeria Agenda cockpit.
 
 Whitelist of valid preset filter chip values — any query-param outside this

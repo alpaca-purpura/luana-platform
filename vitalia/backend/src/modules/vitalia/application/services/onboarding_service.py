@@ -1,3 +1,6 @@
+# cap: onboarding.clinic-onboarding-3step
+# atomics: TBD
+# story-origin: TBD
 """OnboardingService — clinic profile creation with idempotency.
 
 Handles initial clinic onboarding: tenant creation, BrandConfig init,

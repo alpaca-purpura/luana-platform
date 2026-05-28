@@ -1,3 +1,6 @@
+# cap: __orphan__
+# atomics: TBD
+# story-origin: TBD
 """Vitalia fiscal brand-extension module.
 
 Handles fiscal document emission (boleta/factura) for clinic appointments.

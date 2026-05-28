@@ -1,3 +1,6 @@
+// cap: public_landing.public-clinic-landing
+// atomics: TBD
+// story-origin: TBD
 /**
  * ReferralsWidget — 3 KPI hero cards + top 5 referrer leaderboard.
  * HIPAA-lite: leaderboard shows ONLY referrerPatientIdHash — NEVER patient.name.

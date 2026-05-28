@@ -1,3 +1,6 @@
+// cap: __skip__
+// atomics: TBD
+// story-origin: TBD
 /**
  * agenda-handlers.ts — Fetch mock handlers for Valeria Agenda API endpoints.
  * T-12 vitalia-fase2-valeria-agenda

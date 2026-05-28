@@ -1,3 +1,6 @@
+// cap: scheduling.valeria-agenda
+// atomics: TBD
+// story-origin: vitalia-fase2-s1-TBD
 /**
  * agenda-filters-store.ts — Zustand filter + view preference store for Valeria Agenda.
  * T-12 vitalia-fase2-valeria-agenda

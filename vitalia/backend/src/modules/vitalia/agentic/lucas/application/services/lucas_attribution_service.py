@@ -1,3 +1,6 @@
+# cap: agentic.lucas-daily-analysis
+# atomics: TBD
+# story-origin: TBD
 """Lucas application service — LucasAttributionService.
 
 Pure DB service — no LLM calls. Queries analytics engine adapter for

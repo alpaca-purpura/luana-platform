@@ -1,3 +1,6 @@
+// cap: platform.shell-foundation-shadcn-tailwind-v4
+// atomics: TBD
+// story-origin: TBD
 import type { Meta, StoryObj } from "@storybook/nextjs";
 import { PiiMaskedSpan } from "./PiiMaskedSpan";
 import { RequireRole } from "./RequireRole";

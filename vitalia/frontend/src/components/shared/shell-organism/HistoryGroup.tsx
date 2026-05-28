@@ -1,3 +1,6 @@
+// cap: shell-organism.shell-vitalia
+// atomics: TBD
+// story-origin: vitalia-fase1-s5-TBD
 /**
  * HistoryGroup — conversation group molecule (Hoy / Ayer / Esta semana)
  * T-3 of vitalia-fase1-valeria-rail-history (F1-S5)

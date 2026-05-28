@@ -1,3 +1,6 @@
+# cap: connections.oauth-meta-google-ads
+# atomics: TBD
+# story-origin: TBD
 """Whisper STT adapter — vitalia connections module.
 
 Wraps OpenAI Whisper API via httpx.AsyncClient with:

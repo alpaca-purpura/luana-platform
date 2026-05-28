@@ -1,3 +1,6 @@
+# cap: scheduling.valeria-agenda
+# atomics: TBD
+# story-origin: vitalia-fase2-s1-TBD
 """ChargeOrchestrator — saga payment + fiscal emit + audit log + compensation.
 
 Rule (03-arch § 7.2 — service-blocker pattern Option A):

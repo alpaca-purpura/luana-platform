@@ -1,3 +1,6 @@
+# cap: iam.iam-scaffold-slice-1
+# atomics: TBD
+# story-origin: TBD
 """Vitalia User domain entity.
 
 Domain layer — pure Python dataclass, no ORM imports.

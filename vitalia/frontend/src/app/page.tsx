@@ -1,3 +1,6 @@
+// cap: __orphan__
+// atomics: TBD
+// story-origin: TBD
 /**
  * Root Landing — Server Component redirect.
  * Post-merge fix (2026-05-27) — Clerk afterSignIn redirige a "/" por default,

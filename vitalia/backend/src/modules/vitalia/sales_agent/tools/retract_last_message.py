@@ -1,3 +1,6 @@
+# cap: sales_agent.adrian-3-tools-mvp
+# atomics: TBD
+# story-origin: TBD
 """Vitalia Adrián sales_agent tool — ``retract_last_message``.
 
 Story vitalia-slice-1-inbox T-inbox-agentic-1 — R23 production_code=true. Opus 4.7 EXCLUSIVE.

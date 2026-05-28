@@ -1,3 +1,6 @@
+# cap: __orphan__
+# atomics: TBD
+# story-origin: TBD
 """FiscalDocumentRepository — CRUD for fiscal documents (saga compensation).
 
 Charge saga compensation (03-arch A6):

@@ -1,3 +1,6 @@
+# cap: copilot.inbox-tools-extensions
+# atomics: TBD
+# story-origin: TBD
 """BrandStudioDraftModel — SQLA 2.0 ORM for vitalia_brand_studio_drafts table.
 
 Mirrors the DDL from migration 012_vitalia. No autogenerate — raw SQL migrations.

@@ -1,3 +1,6 @@
+# cap: agentic.medical-safety-guardrails
+# atomics: TBD
+# story-origin: TBD
 """Vitalia AGENTIC guardrail — `medical_safety_no_prescription` (input + output layers).
 
 R23: production_code=True AGENTIC code. Opus 4.7 EXCLUSIVE.

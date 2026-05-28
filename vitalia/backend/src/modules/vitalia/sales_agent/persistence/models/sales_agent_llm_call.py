@@ -1,3 +1,6 @@
+# cap: sales_agent.adrian-3-tools-mvp
+# atomics: TBD
+# story-origin: TBD
 """Vitalia brand schema-mirror for ``sales_agent_llm_call``.
 
 SQLAlchemy 2.0 (mapped_column / Mapped) mirror of the engine model

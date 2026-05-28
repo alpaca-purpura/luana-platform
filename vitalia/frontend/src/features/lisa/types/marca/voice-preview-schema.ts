@@ -1,3 +1,6 @@
+// cap: brand_studio.lisa-marca
+// atomics: TBD
+// story-origin: vitalia-fase2-s7-TBD
 /**
  * voice-preview-schema.ts — Zod schema for voice preview request/response (NEW).
  *

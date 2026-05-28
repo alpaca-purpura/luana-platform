@@ -1,3 +1,6 @@
+// cap: iam.luana-core-adoption
+// atomics: TBD
+// story-origin: TBD
 /**
  * vitaliaFetch — tenant-aware fetch wrapper for Vitalia React Query hooks.
  *

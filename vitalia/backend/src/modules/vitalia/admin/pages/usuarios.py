@@ -1,3 +1,6 @@
+# cap: admin.admin-streamlit-service
+# atomics: TBD
+# story-origin: TBD
 """Admin page wrapper — Usuarios (thin, delegates to modules/users.py).
 
 Per admin-panel.md: pages/*.py are THIN wrappers only.

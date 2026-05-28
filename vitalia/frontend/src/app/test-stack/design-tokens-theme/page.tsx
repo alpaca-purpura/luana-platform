@@ -1,3 +1,6 @@
+// cap: platform.design-tokens-theme
+// atomics: TBD
+// story-origin: vitalia-fase1-s1-TBD
 /**
  * /test-stack/design-tokens-theme — Visual baseline page F1-S1
  * (vitalia-fase1-design-tokens-theme)

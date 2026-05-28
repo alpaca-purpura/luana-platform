@@ -1,3 +1,6 @@
+# cap: __orphan__
+# atomics: TBD
+# story-origin: TBD
 """ReEngagementService — detección y orquestación de re-engagement.
 
 Detecta brechas en tratamientos multi-sesión, genera eventos de seguimiento,

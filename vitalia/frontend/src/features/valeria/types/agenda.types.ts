@@ -1,3 +1,6 @@
+// cap: scheduling.valeria-agenda
+// atomics: TBD
+// story-origin: TBD
 /**
  * agenda.types.ts — FE TypeScript types for Valeria Agenda feature.
  * T-11 vitalia-fase2-valeria-agenda

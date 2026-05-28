@@ -1,3 +1,6 @@
+# cap: compliance.compliance-hipaa-lite-audit
+# atomics: TBD
+# story-origin: TBD
 """MedicalResultsChannelGuard — channel guard for PHI transmission.
 
 Implements vitalia/.claude/rules/hipaa-lite.md § Voice patterns:

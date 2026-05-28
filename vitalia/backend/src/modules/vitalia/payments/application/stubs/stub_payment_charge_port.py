@@ -1,3 +1,6 @@
+# cap: payment.payment-gateways-latam-recurring
+# atomics: TBD
+# story-origin: vitalia-fase2-s1-TBD
 """StubPaymentChargePort — service-blocker Option A stub.
 
 # DEPRECATED: replace when vitalia-payment-adapter-mvp state=done.

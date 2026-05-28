@@ -1,3 +1,6 @@
+# cap: treatments.treatment-followup-workflow
+# atomics: TBD
+# story-origin: TBD
 """SQLAlchemy 2.0 model — vitalia_treatment_plans.
 
 Mapea la tabla creada en migration 020. PHI: notes BYTEA (pgcrypto).

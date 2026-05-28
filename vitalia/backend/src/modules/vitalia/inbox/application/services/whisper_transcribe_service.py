@@ -1,3 +1,6 @@
+# cap: __orphan__
+# atomics: TBD
+# story-origin: TBD
 """WhisperTranscribeService — vitalia inbox application layer.
 
 Wraps WhisperAdapter with confidence threshold + fallback.

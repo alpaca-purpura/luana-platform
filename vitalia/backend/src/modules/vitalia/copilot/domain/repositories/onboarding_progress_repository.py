@@ -1,3 +1,6 @@
+# cap: copilot.inbox-tools-extensions
+# atomics: TBD
+# story-origin: TBD
 """OnboardingProgressRepository — ABC interface for onboarding progress persistence.
 
 Domain layer — pure Python, zero framework imports.

@@ -1,3 +1,6 @@
+# cap: copilot.valeria-wizard-onboarding-agentic
+# atomics: TBD
+# story-origin: TBD
 """WizardSlot — frozen value object for onboarding wizard slot state.
 
 Represents a single data slot captured during the Valeria onboarding wizard.

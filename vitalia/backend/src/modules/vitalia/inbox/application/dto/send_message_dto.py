@@ -1,3 +1,6 @@
+# cap: __orphan__
+# atomics: TBD
+# story-origin: TBD
 """SendMessage DTOs — vitalia inbox application layer.
 
 Pydantic v2 DTOs for send-message endpoint.

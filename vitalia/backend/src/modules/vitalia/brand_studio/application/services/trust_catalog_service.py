@@ -1,3 +1,6 @@
+# cap: brand_studio.brand-studio-medical-sections
+# atomics: TBD
+# story-origin: vitalia-fase2-s7-TBD
 """TrustCatalogService — hybrid catalog per country (OQ-D resolution 2026-05-27).
 
 Seed catalog read-only. Closed entries per country + free-text "Otra".

@@ -1,3 +1,6 @@
+// cap: public_landing.public-clinic-landing
+// atomics: TBD
+// story-origin: TBD
 /**
  * ChannelDetailSidebar — slide-in panel with 3 sections:
  *   1. KPIs principales (from syncState)

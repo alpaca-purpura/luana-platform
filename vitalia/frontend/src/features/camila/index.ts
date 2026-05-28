@@ -1,3 +1,6 @@
+// cap: patients.nps-tracking
+// atomics: TBD
+// story-origin: vitalia-fase1-s10-TBD
 /**
  * Public API — camila feature
  * F1-S10 vitalia-fase1-empty-states

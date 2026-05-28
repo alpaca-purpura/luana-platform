@@ -1,3 +1,6 @@
+// cap: public_landing.public-clinic-landing
+// atomics: TBD
+// story-origin: TBD
 import type { Meta, StoryObj } from "@storybook/nextjs";
 import { MarketingBowtieSVG } from "./MarketingBowtieSVG";
 import type { BowtieStage } from "./MarketingBowtieSVG";

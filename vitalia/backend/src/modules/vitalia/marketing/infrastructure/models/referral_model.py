@@ -1,3 +1,6 @@
+# cap: marketing.attribution-matrix-4-origins
+# atomics: TBD
+# story-origin: TBD
 """SQLAlchemy 2.0 model — ReferralModel.
 
 Maps to ``vitalia_referrals`` table (base columns from 007_vitalia_initial_tables.py,

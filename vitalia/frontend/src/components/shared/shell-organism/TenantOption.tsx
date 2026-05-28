@@ -1,3 +1,6 @@
+// cap: shell-organism.shell-vitalia
+// atomics: TBD
+// story-origin: vitalia-fase1-s3-TBD
 /**
  * TenantOption — tenant row molecule for the dropdown list.
  * F1-S3 vitalia-fase1-tenant-switcher — T-3

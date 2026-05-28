@@ -1,3 +1,6 @@
+# cap: copilot.inbox-tools-extensions
+# atomics: TBD
+# story-origin: TBD
 """Vitalia copilot workflows — registered via EP-4 in extensions.py.
 
 Surface aggregation across Wave 2 (Story 11 T-workflow-1 treatment followup)

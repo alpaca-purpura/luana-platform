@@ -1,3 +1,6 @@
+# cap: __orphan__
+# atomics: TBD
+# story-origin: TBD
 """SQLAlchemy 2.0 model — vitalia_re_engagement_events.
 
 Mapea la tabla particionada creada en migration 021.

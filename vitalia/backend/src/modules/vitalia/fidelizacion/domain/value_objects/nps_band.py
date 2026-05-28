@@ -1,3 +1,6 @@
+# cap: patients.nps-tracking
+# atomics: TBD
+# story-origin: TBD
 """Banda NPS (Promoter / Passive / Detractor) — value object StrEnum con factory."""
 
 from enum import StrEnum

@@ -1,3 +1,6 @@
+# cap: __orphan__
+# atomics: TBD
+# story-origin: TBD
 """DTOs de re-engagement — capa API para fidelización vitalia.
 
 Todos los campos PHI excluidos de las respuestas API (PII allowlist).

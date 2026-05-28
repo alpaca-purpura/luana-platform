@@ -1,3 +1,6 @@
+# cap: booking.prepaid-booking-advisory-locks
+# atomics: TBD
+# story-origin: TBD
 """SQLAlchemy 2.0 ORM models — VitaliaPatientMedicalHistoryModel + VitaliaPatientDentalHistoryModel.
 
 Maps to `vitalia_patient_medical_histories` and `vitalia_patient_dental_histories` tables.

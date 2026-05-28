@@ -1,3 +1,6 @@
+// cap: shell-organism.shell-vitalia
+// atomics: TBD
+// story-origin: TBD
 /**
  * TreatmentTimeline — visual horizontal timeline for D0/D5/D14/D90 milestones.
  *

@@ -1,3 +1,6 @@
+// cap: shell-organism.shell-vitalia
+// atomics: TBD
+// story-origin: vitalia-fase1-s4-TBD
 /**
  * ShellOrganismLayout — main shell layout (SSR-safe wrapper).
  * F1-S4 vitalia-fase1-shell-layout-5050 — T-3 + T-7 SSR fix

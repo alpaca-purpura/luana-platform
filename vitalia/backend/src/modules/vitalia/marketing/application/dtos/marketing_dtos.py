@@ -1,3 +1,6 @@
+# cap: marketing.attribution-matrix-4-origins
+# atomics: TBD
+# story-origin: TBD
 """Pydantic v2 DTOs for the vitalia marketing module.
 
 Covers:

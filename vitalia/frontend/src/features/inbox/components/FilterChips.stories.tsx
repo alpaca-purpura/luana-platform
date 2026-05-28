@@ -1,3 +1,6 @@
+// cap: sales_agent.inbox-handler-mode-occ
+// atomics: TBD
+// story-origin: TBD
 /**
  * FilterChips.stories.tsx — Storybook stories for the conversation filter chip bar.
  *

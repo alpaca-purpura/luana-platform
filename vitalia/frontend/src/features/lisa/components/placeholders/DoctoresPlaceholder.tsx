@@ -1,3 +1,6 @@
+// cap: brand_studio.lisa-marca
+// atomics: TBD
+// story-origin: vitalia-fase1-s10-TBD
 /**
  * DoctoresPlaceholder — EmptyState genérico para Lisa/Doctores.
  * F1-S10 vitalia-fase1-empty-states — T-2

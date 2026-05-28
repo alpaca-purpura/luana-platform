@@ -1,3 +1,6 @@
+# cap: sales_agent.adrian-3-tools-mvp
+# atomics: TBD
+# story-origin: TBD
 """Vitalia Adrián sales_agent tool — ``send_proactive_reengagement``.
 
 Story vitalia-slice-1-fidelizacion T-9 — R23 production_code=true. Opus 4.7 EXCLUSIVE.

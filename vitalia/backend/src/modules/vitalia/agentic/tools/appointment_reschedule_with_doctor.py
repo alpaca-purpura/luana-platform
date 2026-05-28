@@ -1,3 +1,6 @@
+# cap: agentic.eval-goldens-slice-1
+# atomics: TBD
+# story-origin: TBD
 """Vitalia AGENTIC tool — `appointment_reschedule_with_doctor`.
 
 R23: production_code=True AGENTIC tool. Opus 4.7 EXCLUSIVE.

@@ -1,3 +1,6 @@
+# cap: compliance.compliance-hipaa-lite-audit
+# atomics: TBD
+# story-origin: TBD
 """PHI fields SSoT — Vitalia HIPAA-lite compliance.
 
 22 canonical PHI (Protected Health Information) fields as defined in

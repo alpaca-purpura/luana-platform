@@ -1,3 +1,6 @@
+# cap: copilot.inbox-tools-extensions
+# atomics: TBD
+# story-origin: TBD
 """VitaliaCopilotObservabilityContext — brand subclass of engine BaseObservabilityContext.
 
 Per .claude/rules/anti-duplication.md § 0 cardinal: this file inherits from

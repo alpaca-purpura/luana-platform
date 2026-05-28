@@ -1,3 +1,6 @@
+// cap: scheduling.valeria-agenda
+// atomics: TBD
+// story-origin: vitalia-fase2-s1-TBD
 /**
  * payments.ts — Payment mutation hook for Valeria Agenda.
  * T-12 vitalia-fase2-valeria-agenda

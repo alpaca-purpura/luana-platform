@@ -1,3 +1,6 @@
+# cap: iam.iam-scaffold-slice-1
+# atomics: TBD
+# story-origin: TBD
 """Clerk JWT decoder — Slice 1 stub implementation.
 
 Infrastructure layer — parses stub tokens in dev/test environments.

@@ -1,3 +1,6 @@
+# cap: __orphan__
+# atomics: TBD
+# story-origin: TBD
 """Worker cron: absence_sweep.
 
 Detecta pacientes con ausencia prolongada (6+ meses) y dispara

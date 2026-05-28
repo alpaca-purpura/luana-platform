@@ -1,3 +1,6 @@
+# cap: copilot.inbox-tools-extensions
+# atomics: TBD
+# story-origin: TBD
 """Vitalia copilot observability recording — callback handler + turn envelope subclasses.
 
 Per anti-duplication §0 cardinal: subclasses ONLY. Plumbing lives in engine

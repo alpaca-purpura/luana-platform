@@ -1,3 +1,6 @@
+# cap: connections.oauth-meta-google-ads
+# atomics: TBD
+# story-origin: TBD
 """Print method registry (Vitalia document/receipt output).
 
 Per `03-arch-be.md` § 6.5 — Slice 1 ships only `browser_pdf` (FE-only

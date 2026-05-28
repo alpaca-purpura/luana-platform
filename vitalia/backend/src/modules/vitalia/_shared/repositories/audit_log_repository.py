@@ -1,3 +1,6 @@
+# cap: audit.audit-writer-ssot
+# atomics: TBD
+# story-origin: TBD
 """AuditLog Repository — HIPAA-lite sync write enforcement.
 
 CRITICAL: Audit log writes MUST be synchronous (await before response).

@@ -1,3 +1,6 @@
+# cap: copilot.inbox-tools-extensions
+# atomics: TBD
+# story-origin: TBD
 """Vitalia brand schema-mirror for ``copilot_llm_call``.
 
 SQLAlchemy 2.0 (mapped_column / Mapped) mirror of the engine model

@@ -1,3 +1,6 @@
+# cap: __orphan__
+# atomics: TBD
+# story-origin: TBD
 """Eventos de dominio del módulo fidelizacion (vitalia).
 
 Subclases de DomainEvent (luana_core_platform). Emitidos via outbox pattern.

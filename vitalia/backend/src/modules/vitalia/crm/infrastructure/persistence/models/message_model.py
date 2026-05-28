@@ -1,3 +1,6 @@
+# cap: crm.crm-consent-optout
+# atomics: TBD
+# story-origin: TBD
 """MessageModel — SQLAlchemy 2.0 mapped class for vitalia_messages.
 
 Infrastructure layer — ORM model only. No domain logic.

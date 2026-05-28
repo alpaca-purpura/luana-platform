@@ -1,3 +1,6 @@
+// cap: sales_agent.inbox-handler-mode-occ
+// atomics: TBD
+// story-origin: TBD
 "use client";
 /**
  * FilterChips.tsx — Filter chip bar for the conversation list.

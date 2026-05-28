@@ -1,3 +1,6 @@
+# cap: copilot.inbox-tools-extensions
+# atomics: TBD
+# story-origin: TBD
 """Helpers exposing module_registry_entry data to workflow consumers + tests.
 
 Story 11 T-workflow-1 — thin re-export layer to decouple test/import paths

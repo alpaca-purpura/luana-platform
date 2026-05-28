@@ -1,3 +1,6 @@
+# cap: crm.crm-consent-optout
+# atomics: TBD
+# story-origin: TBD
 """ActionReceipt domain entity — 5min undo window for AI messages.
 
 Domain layer — pure Python dataclass, no ORM imports.

@@ -1,3 +1,6 @@
+# cap: __orphan__
+# atomics: TBD
+# story-origin: TBD
 """ActivityEventService — vitalia inbox application layer.
 
 Read-only service for the activity stream (≤8 events, ≤5min window).

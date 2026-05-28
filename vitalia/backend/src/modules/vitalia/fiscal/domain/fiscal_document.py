@@ -1,3 +1,6 @@
+# cap: __orphan__
+# atomics: TBD
+# story-origin: TBD
 """FiscalDocument — brand-local fiscal record (boleta/factura/CFDI).
 
 Stub-friendly domain entity for fiscal emission.

@@ -1,3 +1,6 @@
+# cap: marketing.attribution-matrix-4-origins
+# atomics: TBD
+# story-origin: TBD
 """SQLAlchemy 2.0 model — ChannelMetricModel.
 
 Maps to ``vitalia_channel_metrics`` table (base columns from 007_vitalia_initial_tables.py,

@@ -1,3 +1,6 @@
+// cap: shell-organism.shell-vitalia
+// atomics: TBD
+// story-origin: vitalia-fase1-s6-TBD
 /**
  * _mock-messages.ts — Mock data SSoT for Valeria chat shell (F1-S6).
  *

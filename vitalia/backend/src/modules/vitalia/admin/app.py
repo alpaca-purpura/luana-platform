@@ -1,3 +1,6 @@
+# cap: admin.admin-streamlit-service
+# atomics: TBD
+# story-origin: TBD
 """Vitalia Admin — Streamlit entry point.
 
 Registry-based navigation (T-4 scope: 2 pages only — tenants + usuarios).

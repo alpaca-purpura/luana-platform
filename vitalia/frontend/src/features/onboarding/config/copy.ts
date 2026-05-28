@@ -1,3 +1,6 @@
+// cap: onboarding.clinic-onboarding-3step
+// atomics: TBD
+// story-origin: TBD
 /**
  * copy.ts — Onboarding wizard microcopy SSoT
  *

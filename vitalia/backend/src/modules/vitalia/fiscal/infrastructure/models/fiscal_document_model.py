@@ -1,3 +1,6 @@
+# cap: __orphan__
+# atomics: TBD
+# story-origin: TBD
 """SQLAlchemy 2.0 model — vitalia_fiscal_documents.
 
 Mirrors DDL from T-1 migration (032_f2_s1_vitalia_agenda.py).

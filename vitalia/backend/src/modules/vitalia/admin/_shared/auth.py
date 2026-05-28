@@ -1,3 +1,6 @@
+# cap: admin.admin-streamlit-service
+# atomics: TBD
+# story-origin: TBD
 """Admin authentication — bcrypt password verification against env-var hash.
 
 Security model (D8 from CONTEXT-BRIEF):

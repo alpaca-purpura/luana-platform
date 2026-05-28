@@ -1,3 +1,6 @@
+# cap: copilot.inbox-tools-extensions
+# atomics: TBD
+# story-origin: TBD
 """BrandStudioDraftRepository — ABC interface for brand studio draft persistence.
 
 Domain layer — pure Python, zero framework imports.

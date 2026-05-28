@@ -1,3 +1,6 @@
+// cap: shell-organism.shell-vitalia
+// atomics: TBD
+// story-origin: vitalia-fase1-s8-TBD
 "use client";
 /**
  * SubTabsBar.tsx — Shell-organism sub-tabs navigation bar (line 2, F1-S8)

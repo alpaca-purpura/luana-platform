@@ -1,3 +1,6 @@
+# cap: scheduling.valeria-agenda
+# atomics: TBD
+# story-origin: vitalia-fase2-s1-TBD
 """Vitalia scheduling brand-extension module.
 
 Inside-Out DDD layers:

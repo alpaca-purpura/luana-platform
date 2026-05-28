@@ -1,3 +1,6 @@
+// cap: shell-organism.shell-vitalia
+// atomics: TBD
+// story-origin: TBD
 /**
  * ComplianceStatsCards — HIPAA-lite metrics cards for /medical-compliance page.
  *

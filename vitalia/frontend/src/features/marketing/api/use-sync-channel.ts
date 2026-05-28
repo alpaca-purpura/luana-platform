@@ -1,3 +1,6 @@
+// cap: public_landing.public-clinic-landing
+// atomics: TBD
+// story-origin: TBD
 /**
  * useSyncChannel — mutation: trigger manual sync for a channel provider
  * Requires Idempotency-Key header (BE enforced for POST mutations)

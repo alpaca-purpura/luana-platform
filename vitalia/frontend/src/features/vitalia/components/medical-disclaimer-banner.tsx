@@ -1,3 +1,6 @@
+// cap: shell-organism.shell-vitalia
+// atomics: TBD
+// story-origin: TBD
 /**
  * MedicalDisclaimerBanner — contextual HIPAA-lite reminder banner.
  *

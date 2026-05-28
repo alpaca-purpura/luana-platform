@@ -1,3 +1,6 @@
+# cap: brand_studio.lisa-marca
+# atomics: TBD
+# story-origin: vitalia-fase2-s7-TBD
 """Vitalia Brand Studio — Marca API Router (21 endpoints).
 
 Endpoints served under /api/v1/lisa/marca/:

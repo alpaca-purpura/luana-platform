@@ -1,3 +1,6 @@
+# cap: __orphan__
+# atomics: TBD
+# story-origin: TBD
 """FiscalEmitPortImpl — tenant country selector for fiscal document emission.
 
 Rule (03-arch § 7 + service-blocker pattern):

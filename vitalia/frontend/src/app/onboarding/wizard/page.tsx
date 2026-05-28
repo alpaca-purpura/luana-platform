@@ -1,3 +1,6 @@
+// cap: onboarding.clinic-onboarding-3step
+// atomics: TBD
+// story-origin: TBD
 /**
  * /onboarding/wizard — Wizard onboarding entry page.
  *

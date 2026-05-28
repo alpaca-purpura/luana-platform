@@ -1,3 +1,6 @@
+# cap: __orphan__
+# atomics: TBD
+# story-origin: TBD
 """Worker cron: multi_session_gap_sweep.
 
 Detecta pacientes con brechas en tratamientos multi-sesión y dispara

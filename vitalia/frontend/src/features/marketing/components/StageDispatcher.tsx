@@ -1,3 +1,6 @@
+// cap: public_landing.public-clinic-landing
+// atomics: TBD
+// story-origin: TBD
 /**
  * StageDispatcher — renders the correct stage section component based on active URL tab.
  *

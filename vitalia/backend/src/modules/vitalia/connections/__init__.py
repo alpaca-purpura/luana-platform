@@ -1,3 +1,6 @@
+# cap: connections.oauth-meta-google-ads
+# atomics: TBD
+# story-origin: TBD
 """Vitalia connections — brand-extension surface for adapter registries.
 
 Per `03-arch-be.md` § 6 (Slice 1 cement) — 5 NEW brand-internal registries

@@ -1,3 +1,6 @@
+# cap: __orphan__
+# atomics: TBD
+# story-origin: TBD
 """ARQ cron job: maintenance_90d — 90-day treatment maintenance reminder.
 
 Schedule: every 12h

@@ -1,3 +1,6 @@
+# cap: __orphan__
+# atomics: TBD
+# story-origin: TBD
 """File size bucketing helper for telemetry events.
 
 Used in `lisa_marca_logo_uploaded` event props (per 03-arch § 10.3).

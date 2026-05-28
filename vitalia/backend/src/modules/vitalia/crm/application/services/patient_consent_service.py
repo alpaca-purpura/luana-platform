@@ -1,3 +1,6 @@
+# cap: crm.crm-consent-optout
+# atomics: TBD
+# story-origin: TBD
 """PatientConsentService — patient marketing consent management.
 
 Application layer — orchestrates repository + audit log + domain events.

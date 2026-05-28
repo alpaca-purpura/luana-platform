@@ -1,3 +1,6 @@
+// cap: sales_agent.inbox-handler-mode-occ
+// atomics: TBD
+// story-origin: TBD
 /**
  * inbox/index.ts — Public API barrel (FSD-Lite boundary matrix).
  *

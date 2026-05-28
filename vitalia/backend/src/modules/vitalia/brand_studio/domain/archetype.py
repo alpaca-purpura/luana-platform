@@ -1,3 +1,6 @@
+# cap: brand_studio.brand-studio-medical-sections
+# atomics: TBD
+# story-origin: vitalia-fase2-s7-TBD
 """SaludArchetype — 4 Jung archetypes salud-friendly (OQ-B resolution 2026-05-27).
 
 Omit Outlaw/Magician/Lover/Innocent (problematic tone para health context).

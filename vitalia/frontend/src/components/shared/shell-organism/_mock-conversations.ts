@@ -1,3 +1,6 @@
+// cap: shell-organism.shell-vitalia
+// atomics: TBD
+// story-origin: vitalia-fase1-s5-TBD
 // _mock-conversations.ts — mock data F1-S5 (no API real hasta Fase 2)
 // HIPAA-lite: cero PHI (sin patient names, diagnoses, dosages ni identifiers médicos)
 

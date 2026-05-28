@@ -1,3 +1,6 @@
+// cap: brand_studio.lisa-marca
+// atomics: TBD
+// story-origin: vitalia-fase2-s7-TBD
 /**
  * marca-voice-api.ts — API client for Voz y tono sub-sub-tab (T-6).
  *

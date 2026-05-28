@@ -1,3 +1,6 @@
+# cap: copilot.inbox-tools-extensions
+# atomics: TBD
+# story-origin: TBD
 """SqlAlchemyBrandStudioDraftRepository — SQLA 2.0 implementation.
 
 Implements BrandStudioDraftRepository ABC using SQLAlchemy 2.0 async queries.

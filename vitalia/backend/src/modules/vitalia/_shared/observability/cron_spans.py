@@ -1,3 +1,6 @@
+# cap: workers.idempotent-cron-arq-scaffold
+# atomics: TBD
+# story-origin: TBD
 """Cron job span context manager for Vitalia ARQ workers.
 
 Wraps each of the 11 named ARQ cron job functions with an OTel span

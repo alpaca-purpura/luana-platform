@@ -1,3 +1,6 @@
+# cap: connections.oauth-meta-google-ads
+# atomics: TBD
+# story-origin: TBD
 """GoogleAdsAdapter — OAuth + Campaign Metrics integration for Google Ads API v13.
 
 Resilience:

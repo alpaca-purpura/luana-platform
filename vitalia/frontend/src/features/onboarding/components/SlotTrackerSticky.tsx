@@ -1,3 +1,6 @@
+// cap: onboarding.clinic-onboarding-3step
+// atomics: TBD
+// story-origin: TBD
 "use client";
 /**
  * SlotTrackerSticky — horizontal slot pills showing confirmed/pending wizard slots.

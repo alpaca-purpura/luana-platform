@@ -1,3 +1,6 @@
+# cap: crm.crm-consent-optout
+# atomics: TBD
+# story-origin: TBD
 """ActivityEventModel — SQLAlchemy 2.0 mapped class for vitalia_activity_events.
 
 Infrastructure layer — ORM model only. No domain logic.

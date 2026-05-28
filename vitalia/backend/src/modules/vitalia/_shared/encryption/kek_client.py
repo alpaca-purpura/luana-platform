@@ -1,3 +1,6 @@
+# cap: __orphan__
+# atomics: TBD
+# story-origin: TBD
 """KEKClient — Key Encryption Key management for pgcrypto PHI columns.
 
 Vitalia uses pgcrypto symmetric encryption for PHI columns:

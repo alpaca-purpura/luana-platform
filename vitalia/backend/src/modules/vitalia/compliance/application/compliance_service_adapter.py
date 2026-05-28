@@ -1,3 +1,6 @@
+# cap: compliance.compliance-hipaa-lite-audit
+# atomics: TBD
+# story-origin: TBD
 """VitaliaComplianceAdapter — bridges luana-core-compliance for vitalia PHI use cases.
 
 Wraps luana_core_compliance.ComplianceService to add:

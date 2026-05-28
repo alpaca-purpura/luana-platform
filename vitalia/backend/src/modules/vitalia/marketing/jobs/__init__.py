@@ -1,3 +1,6 @@
+# cap: marketing.attribution-matrix-4-origins
+# atomics: TBD
+# story-origin: TBD
 """Marketing cron jobs — 4 ARQ jobs decorated with engine @cron_envelope.
 
 All jobs:

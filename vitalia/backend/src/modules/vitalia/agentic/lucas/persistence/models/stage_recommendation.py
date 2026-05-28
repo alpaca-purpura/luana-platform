@@ -1,3 +1,6 @@
+# cap: agentic.lucas-recommendation-tool
+# atomics: TBD
+# story-origin: TBD
 """SQLAlchemy 2.0 ORM model — LucasStageRecommendationModel.
 
 Maps to ``vitalia_lucas_recommendations`` table (created in

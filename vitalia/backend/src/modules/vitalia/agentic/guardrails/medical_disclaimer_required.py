@@ -1,3 +1,6 @@
+# cap: agentic.eval-goldens-slice-1
+# atomics: TBD
+# story-origin: TBD
 """Vitalia AGENTIC guardrail — `medical_disclaimer_required`.
 
 R23: production_code=True AGENTIC code. Opus 4.7 EXCLUSIVE.

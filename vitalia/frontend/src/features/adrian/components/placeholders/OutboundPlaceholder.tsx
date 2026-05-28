@@ -1,3 +1,6 @@
+// cap: sales_agent.adrian-3-tools-mvp
+// atomics: TBD
+// story-origin: vitalia-fase1-s10-TBD
 /**
  * OutboundPlaceholder — EmptyState genérico para Adrián/Outbound.
  * F1-S10 vitalia-fase1-empty-states — T-2

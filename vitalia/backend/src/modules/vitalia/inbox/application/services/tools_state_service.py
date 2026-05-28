@@ -1,3 +1,6 @@
+# cap: agentic.medical-agentic-tools
+# atomics: TBD
+# story-origin: TBD
 """ToolsStateService — vitalia inbox application layer.
 
 Read-only service deriving tool states from offer.tools_enabled mapping.

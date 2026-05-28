@@ -1,3 +1,6 @@
+# cap: agentic.eval-goldens-slice-1
+# atomics: TBD
+# story-origin: TBD
 """Lucas agentic application services — factory helpers.
 
 `make_orchestrator` provides a minimal no-deps wiring of

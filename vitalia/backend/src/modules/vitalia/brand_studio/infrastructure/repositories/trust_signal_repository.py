@@ -1,3 +1,6 @@
+# cap: brand_studio.brand-studio-medical-sections
+# atomics: TBD
+# story-origin: vitalia-fase2-s7-TBD
 """TrustSignalRepository ABC — tenant trust signals (certifications/authority).
 
 NO PhiRepositoryBase — owner config, not PHI.

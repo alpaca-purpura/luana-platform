@@ -1,3 +1,6 @@
+// cap: shell-organism.shell-vitalia
+// atomics: TBD
+// story-origin: TBD
 /**
  * OnboardingStep2Client — Step 2 of 3-step clinic onboarding wizard.
  *

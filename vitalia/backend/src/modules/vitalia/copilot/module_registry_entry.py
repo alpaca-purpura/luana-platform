@@ -1,3 +1,6 @@
+# cap: copilot.inbox-tools-extensions
+# atomics: TBD
+# story-origin: TBD
 """Vitalia copilot module registry entry — TreatmentFollowupWorkflow descriptor.
 
 Story 11 T-workflow-1 (R23 Opus 4.7 production AGENTIC code).

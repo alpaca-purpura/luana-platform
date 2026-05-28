@@ -1,3 +1,6 @@
+// cap: brand_studio.lisa-marca
+// atomics: TBD
+// story-origin: vitalia-fase2-s7-TBD
 /**
  * ClinicVerticalReadOnly.tsx — Read-only display of clinic vertical + specialties.
  *

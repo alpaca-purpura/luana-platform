@@ -1,3 +1,6 @@
+// cap: scheduling.valeria-agenda
+// atomics: TBD
+// story-origin: vitalia-fase1-s10-TBD
 /**
  * PacientesPlaceholder — EmptyState genérico para Valeria/Pacientes.
  * F1-S10 vitalia-fase1-empty-states — T-2

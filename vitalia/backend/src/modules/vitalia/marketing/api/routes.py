@@ -1,3 +1,6 @@
+# cap: marketing.attribution-matrix-4-origins
+# atomics: TBD
+# story-origin: TBD
 """Vitalia marketing module — FastAPI routes.
 
 Endpoints mounted at /api/v1/vitalia/marketing/:

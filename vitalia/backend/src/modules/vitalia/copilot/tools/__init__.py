@@ -1,3 +1,6 @@
+# cap: copilot.inbox-tools-extensions
+# atomics: TBD
+# story-origin: TBD
 """Vitalia copilot tools — LangChain @tool surfaces for the wizard supervisor.
 
 Per .claude/rules/anti-duplication.md (cross-brand mirror scan) — these tools

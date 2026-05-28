@@ -1,3 +1,6 @@
+// cap: brand_studio.lisa-marca
+// atomics: TBD
+// story-origin: vitalia-fase2-s7-TBD
 /**
  * marca-presence-api.ts — API client for Lisa Marca Presencia sub-sub-tab.
  *

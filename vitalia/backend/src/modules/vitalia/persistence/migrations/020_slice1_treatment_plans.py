@@ -1,3 +1,6 @@
+# cap: treatments.treatment-followup-workflow
+# atomics: TBD
+# story-origin: TBD
 """Migration 020 — vitalia_treatment_plans (Slice 1 fidelización).
 
 Creates vitalia_treatment_plans table with PHI-encrypted notes column (BYTEA, pgcrypto).

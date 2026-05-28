@@ -1,3 +1,6 @@
+# cap: crm.crm-consent-optout
+# atomics: TBD
+# story-origin: TBD
 """PatientRepository — PHI entity repository with dual filter enforcement.
 
 Infrastructure layer — extends PhiRepositoryBase (HIPAA-lite dual filter).

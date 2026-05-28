@@ -1,3 +1,6 @@
+// cap: __orphan__
+// atomics: TBD
+// story-origin: TBD
 /**
  * conversation.ts — Zod schema for Conversation runtime validation.
  *

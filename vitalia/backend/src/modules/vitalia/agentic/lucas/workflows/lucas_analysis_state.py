@@ -1,3 +1,6 @@
+# cap: agentic.lucas-daily-analysis
+# atomics: TBD
+# story-origin: TBD
 """Lucas daily analysis state schema — LangGraph TypedDict.
 
 Story: vitalia-copilot-tools-impl T-ag-workflows-2 (R23 Opus 4.7 production AGENTIC code).

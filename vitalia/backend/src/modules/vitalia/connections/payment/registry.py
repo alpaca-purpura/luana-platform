@@ -1,3 +1,6 @@
+# cap: connections.oauth-meta-google-ads
+# atomics: TBD
+# story-origin: TBD
 """Payment provider registry (Vitalia brand-internal, NOT an engine EP).
 
 Per `03-arch-be.md` § 6.1 — dispatch table consumed by the EP-3 tool

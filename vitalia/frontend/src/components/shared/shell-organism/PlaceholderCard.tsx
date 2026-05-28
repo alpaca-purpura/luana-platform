@@ -1,3 +1,6 @@
+// cap: shell-organism.shell-vitalia
+// atomics: TBD
+// story-origin: vitalia-fase1-s10-TBD
 /**
  * PlaceholderCard — molécula card de placeholder con status.
  * F1-S10 vitalia-fase1-empty-states — T-1

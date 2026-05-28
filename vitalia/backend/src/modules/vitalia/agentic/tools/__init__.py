@@ -1,3 +1,6 @@
+# cap: agentic.eval-goldens-slice-1
+# atomics: TBD
+# story-origin: TBD
 """Vitalia agentic tools — registered via EP-3 in extensions.py.
 
 Skeleton package created Story 11 T-extensions-1. Tool implementations land in:

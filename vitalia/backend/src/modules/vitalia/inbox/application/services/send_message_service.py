@@ -1,3 +1,6 @@
+# cap: __orphan__
+# atomics: TBD
+# story-origin: TBD
 """SendMessageService — vitalia inbox application layer.
 
 SC-01 happy path: human/ai message send with idempotency + audit log + outbox event.

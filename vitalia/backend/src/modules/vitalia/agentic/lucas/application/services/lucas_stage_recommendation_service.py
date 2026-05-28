@@ -1,3 +1,6 @@
+# cap: agentic.lucas-recommendation-tool
+# atomics: TBD
+# story-origin: TBD
 """Lucas application service — LucasStageRecommendationService.
 
 Generates AI-powered stage-based growth recommendations using:

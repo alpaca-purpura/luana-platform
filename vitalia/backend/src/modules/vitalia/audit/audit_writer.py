@@ -1,3 +1,6 @@
+# cap: audit.audit-writer-ssot
+# atomics: TBD
+# story-origin: TBD
 """HIPAA-lite audit log writer — SSoT for Vitalia brand.
 
 Rule (hipaa-lite.md § Audit log):

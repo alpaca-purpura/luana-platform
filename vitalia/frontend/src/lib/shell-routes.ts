@@ -1,3 +1,6 @@
+// cap: shell-organism.shell-vitalia
+// atomics: TBD
+// story-origin: vitalia-fase2-s7-TBD
 /**
  * shell-routes.ts — Sub-sub-tab (N3-static) routing catalog for ADR-vitalia-004 v1.1.
  *

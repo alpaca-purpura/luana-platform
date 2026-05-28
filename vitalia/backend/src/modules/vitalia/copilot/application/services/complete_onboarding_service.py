@@ -1,3 +1,6 @@
+# cap: copilot.inbox-tools-extensions
+# atomics: TBD
+# story-origin: TBD
 """CompleteOnboardingService — finalize Valeria wizard onboarding.
 
 Orchestrates the onboarding completion flow:

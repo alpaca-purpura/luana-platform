@@ -1,3 +1,6 @@
+// cap: public_landing.public-clinic-landing
+// atomics: TBD
+// story-origin: TBD
 /**
  * ChannelConnectionWizard — 3-step OAuth connection wizard.
  * Step 1: Provider selector

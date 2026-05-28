@@ -1,3 +1,6 @@
+# cap: copilot.valeria-wizard-onboarding-agentic
+# atomics: TBD
+# story-origin: TBD
 """Valeria wizard onboarding API routes.
 
 API layer — thin: validate headers → resolve service → call service → map exceptions → response.

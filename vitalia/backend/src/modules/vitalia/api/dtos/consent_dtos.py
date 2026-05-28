@@ -1,3 +1,6 @@
+# cap: crm.crm-consent-optout
+# atomics: TBD
+# story-origin: TBD
 """Consent DTOs — Pydantic v2 request/response models.
 
 Per 03-arch-be.md § 7.2 + Tessl pii-sanitisation:

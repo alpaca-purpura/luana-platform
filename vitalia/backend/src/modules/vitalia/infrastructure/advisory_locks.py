@@ -1,3 +1,6 @@
+# cap: booking.prepaid-booking-advisory-locks
+# atomics: TBD
+# story-origin: TBD
 """Postgres advisory locks for vitalia slot reservation.
 
 Used by BookingService to prevent double-booking the same (doctor_id, slot_iso)

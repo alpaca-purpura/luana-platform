@@ -1,3 +1,6 @@
+# cap: __orphan__
+# atomics: TBD
+# story-origin: TBD
 """ARQ cron job: channel_sync_state_15min — Channel sync state refresh.
 
 Schedule: every 15min

@@ -1,3 +1,6 @@
+# cap: sales_agent.adrian-3-tools-mvp
+# atomics: TBD
+# story-origin: TBD
 """Vitalia Adrián sales_agent tool — ``send_payment_link``.
 
 Story T-ag-tools-2 — R23 production_code=true. Opus 4.7 EXCLUSIVE.

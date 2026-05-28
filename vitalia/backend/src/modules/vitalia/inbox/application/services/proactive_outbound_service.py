@@ -1,3 +1,6 @@
+# cap: __orphan__
+# atomics: TBD
+# story-origin: TBD
 """ProactiveOutboundService — vitalia inbox application layer.
 
 HSM template picker with ComplianceService gate + marketing opt-in enforcement.

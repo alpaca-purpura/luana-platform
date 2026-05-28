@@ -1,3 +1,6 @@
+// cap: sales_agent.inbox-handler-mode-occ
+// atomics: TBD
+// story-origin: TBD
 /**
  * AdrianToolsSheet.stories.tsx — Storybook stories for the Adrián tools panel.
  *

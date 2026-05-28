@@ -1,3 +1,6 @@
+# cap: copilot.valeria-wizard-onboarding-agentic
+# atomics: TBD
+# story-origin: TBD
 """WizardOnboardingState — TypedDict state schema for Valeria wizard supervisor.
 
 Per 03-arch-agentic.md § 2.1 + 05-guidelines.md § 1.11 LangGraph patterns:

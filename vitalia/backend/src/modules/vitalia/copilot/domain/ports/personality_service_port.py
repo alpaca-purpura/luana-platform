@@ -1,3 +1,6 @@
+# cap: copilot.inbox-tools-extensions
+# atomics: TBD
+# story-origin: TBD
 """PersonalityServicePort — abstract port for personality simulation + compilation.
 
 Defines the contract between the application layer (services) and the

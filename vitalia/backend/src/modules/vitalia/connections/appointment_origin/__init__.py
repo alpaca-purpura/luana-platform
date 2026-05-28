@@ -1,3 +1,6 @@
+# cap: connections.oauth-meta-google-ads
+# atomics: TBD
+# story-origin: TBD
 """Vitalia appointment origin registry (4 origins Slice 1)."""
 
 from .registry import (

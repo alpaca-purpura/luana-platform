@@ -1,3 +1,6 @@
+# cap: scheduling.valeria-agenda
+# atomics: TBD
+# story-origin: vitalia-fase2-s1-TBD
 """PaymentChargePort — abstract interface for payment adapter (service-blocker pattern).
 
 Rule (03-arch § 7 + service-blocker decoupling):

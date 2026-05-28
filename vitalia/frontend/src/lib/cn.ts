@@ -1,3 +1,6 @@
+// cap: platform.design-tokens-foundation
+// atomics: TBD
+// story-origin: TBD
 /**
  * cn — lightweight utility for conditional Tailwind class merging.
  * Mirrors Shadcn `cn()` pattern without requiring clsx/tailwind-merge.

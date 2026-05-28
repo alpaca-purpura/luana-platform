@@ -1,3 +1,6 @@
+// cap: sales_agent.inbox-handler-mode-occ
+// atomics: TBD
+// story-origin: TBD
 /**
  * ActionReceiptUndoChip.stories.tsx — Storybook stories for the AI message undo chip.
  *
