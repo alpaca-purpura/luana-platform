@@ -234,7 +234,7 @@ Cuando Chris pide outcome cross-brand (ej. "voice cloning para todas las brands"
 | "rechazo {slug}" | Move state under_review→rejected con razón |
 | "migrated {slug}" | Move state accepted→migrated después de /dev-team cerrar lift |
 | "EP-N nuevo {nombre}" | Crear extension point spec en `core/luana-core-extension-sdk/` + actualizar `docs/architecture/luana-platform/extension-points.md` |
-| "breaking change EP-N" | ADR en `docs/architecture/ADR/` + bump major en packages afectados + migration notes |
+| "breaking change EP-N" | ADR en `docs/architecture/luana-platform/` + bump major en packages afectados + migration notes |
 | "qué hay en core {package}" | `cat docs/core-modules/{package}.md` |
 | "regen core-modules" | `make core-modules` (auto-gen via `scripts/generate_core_modules.py`) |
 

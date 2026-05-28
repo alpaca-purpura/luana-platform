@@ -54,10 +54,11 @@ Si `/pm-vitalia` detecta violación durante una sesión → STOP + redirect a la
 Cuando refinás una story nueva (idea → refining → refined), **OBLIGATORIO** ejecutar **Step `prior-art-scan`** ANTES de drafting:
 
 1. Grep `core/luana-core-*/` por engine package que cubra el dominio (consumir via import, NUNCA recrear).
-2. Grep `nicolify/backend/src/modules/nicolify/` + `nicolify/frontend/src/features/` por módulo paralelo shipped (brand más madura, ~80% prod). Nicolify es **fuente prior-art principal**.
-3. Grep otras brands activas (`comunify/`, `lupulo/`) si feature plausiblemente transversal → **lift candidate** /pm-luana.
-4. Grep `docs/learnings/` (cross-brand) + `vitalia/docs/learnings/` (propios) + `nicolify/docs/learnings/` (source) por tags relacionados.
-5. Documentar resultado en `vitalia/docs/product/stories/{id}/00-story.md` o `checkpoint.md` sección `## Prior art scan` con: paths encontrados + decisión (reuse / extend-engine / lift-candidate / net-new).
+2. Grep **brands ACTIVAS live** (`vitalia/` propio + `comunify/`) por módulo paralelo shipped. Estas son las fuentes prior-art LIVE post-reorg.
+3. Grep `comunify/` si feature plausiblemente transversal → **lift candidate** /pm-luana.
+4. (Opcional, referencia arqueológica) Grep el snapshot frozen `docs/archive/2026/snapshot-pre-multibrand-pm-redesign/` por patterns nicolify shipped — pero es **read-only frozen**, NO live work. Nunca "lift from snapshot" como primera opción.
+5. Grep `docs/learnings/` (cross-brand) + `vitalia/docs/learnings/` (propios) + `comunify/docs/learnings/` por tags relacionados.
+6. Documentar resultado en `vitalia/docs/product/stories/{id}/00-story.md` o `checkpoint.md` sección `## Prior art scan` con: paths encontrados + decisión (reuse / extend-engine / lift-candidate / net-new).
 
 **SIN este scan documentado, NO se cierra state=refined.** Auditor Cat 12 verifica que sección "Prior art" exista en `01-spec.md` y `03-arch.md`.
 
@@ -70,21 +71,19 @@ KW="agenda scheduling slot multi-doctor calendar booking appointment"
 echo "=== Engine ==="
 ls ${WS}/core/ | grep -iE "$(echo $KW | tr ' ' '|')"
 
-echo "=== Nicolify shipped ==="
-find ${WS}/nicolify/backend/src/modules/nicolify/ -maxdepth 1 -type d | grep -iE "schedul|calendar|booking"
-find ${WS}/nicolify/frontend/src/features/ -maxdepth 1 -type d | grep -iE "schedul|calendar|booking"
+echo "=== Brands activas LIVE (vitalia propio + comunify) ==="
+for B in vitalia comunify; do
+  find ${WS}/${B}/backend/src/modules/${B}/ -maxdepth 1 -type d 2>/dev/null | grep -iE "schedul|calendar|booking"
+  find ${WS}/${B}/frontend/src/features/ -maxdepth 1 -type d 2>/dev/null | grep -iE "schedul|calendar|booking"
+  grep -rln -iE "agenda|schedul|appointment" ${WS}/${B}/docs/product/capabilities/ 2>/dev/null
+  grep -rln -iE "agenda|schedul|appointment" ${WS}/${B}/docs/learnings/ 2>/dev/null
+done
 
-echo "=== Nicolify capabilities ==="
-grep -rln -iE "agenda|schedul|appointment" ${WS}/nicolify/docs/product/capabilities/
-
-echo "=== Nicolify learnings ==="
-grep -rln -iE "agenda|schedul|appointment" ${WS}/nicolify/docs/learnings/
-
-echo "=== Vitalia learnings propios ==="
-grep -rln -iE "agenda|schedul|appointment" ${WS}/vitalia/docs/learnings/
+echo "=== Snapshot frozen (referencia arqueológica, NO live) ==="
+find ${WS}/docs/archive/2026/snapshot-pre-multibrand-pm-redesign/ -type d 2>/dev/null | grep -iE "schedul|calendar|booking"
 
 echo "=== Decisión ==="
-# Documentar: reuse nicolify/scheduling/ patterns? lift to core? net-new?
+# Documentar: reuse pattern live vitalia/comunify? lift to core? net-new?
 ```
 
 ## Bootstrap protocol
@@ -149,9 +148,9 @@ Idéntico paradigm v4 de Luana core. Detalle: `docs/process/pm-redesign-2026-05.
 | 2 | `refining` | Decompose stories + drafts spec/UX/agentic | `/pm-vitalia` + `/po-ux`/`/po`/`/ux-agentico` | ≤ 3 |
 | 3 | `refined` | Spec + UX/diseño ratificados Chris | `/pm-vitalia` cierra | ≤ 5 |
 | 4 | `ready` | Paquete autocontenido (`03-arch` + `04-validators` + `05-guidelines` + `06-tickets`) | `/architect` cierra | ≤ 5 |
-| 5 | `developing` | Autonomous build activo | `/dev-team` | ≤ 3 |
-| 6 | `developed` | Validators GREEN | `/dev-team` | ≤ 2 |
-| 7 | `reviewing` | Auditor QA | `/auditor` | ≤ 2 |
+| 5 | `developing` | Autonomous build activo | `/dev-team` | ≤ 1 |
+| 6 | `developed` | Validators GREEN | `/dev-team` | ≤ 1 |
+| 7 | `reviewing` | Auditor QA | `/auditor` | ≤ 1 |
 | 8 | `done` | Auditor APPROVED + merge + capability promovida | `/pm-vitalia` | rolling 90d |
 | 9 | `parked` | De-prioritized | Chris | ∞ |
 | 10 | `dropped` | Won't do | Chris | ∞ |
@@ -261,7 +260,7 @@ Pre-commit hook + CI corren:
 
 Exit 1 si brand `status: shipped` tiene `capabilities/` vacía. NO hay auto-fix — requires manual inventory por `/pm-vitalia`.
 
-Estado vitalia al 2026-05-17: ✅ 16 caps en 13 módulos (recovery 2026-05-16 desde código vivo + archived YAMLs).
+Estado vitalia al 2026-05-28: **72 caps** en disco (mayoría stubs v2 auto-migrados; backfill de scenarios en curso · ver `docs/process/lifecycle.md` Fase 2). Nota: `atomics` MUERTO 2026-05-28 — la unidad atómica es ahora `scenario` (ver `lifecycle.md` § 2).
 
 ### Anti-pattern
 

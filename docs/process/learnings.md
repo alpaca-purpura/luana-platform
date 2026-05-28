@@ -1173,3 +1173,37 @@ Cuando bootstrapees brand nueva:
 - Commits relacionados: `f2c81bb` (cd-staging manual) · este commit (quota-aware CI)
 - ADR-007 § paradigm v4.1 autonomy (cement mismo día)
 - ADR-004 § triple-branch + nota 2026-05-19 update
+
+---
+
+## 2026-05-28 — Consolidación SDD: modelo de 4 ejes + matar atomics/outcome
+
+**Contexto:** Análisis profundo (Opus 4.8) del proceso /pm-luana + /pm-vitalia + cockpit reveló que el modelo SDD tenía 9 ejes solapados (outcome · phase · release · capability · atomic · scenario · tech_module · module · story) y estaba **operacionalmente hueco**:
+- `atomic` era fantasma TOTAL: los 1120 archivos tenían `# atomics: TBD` (cero reales) y 71/72 caps con `atomics: []`. Nunca se instanció una sola vez.
+- Validators pasaban verde "por vacío": cross_check_1/2 (atomics↔headers) corrían con total=0.
+- `outcome` coexistía como "reemplazado por release" Y "épica canónica" — 6 outcomes vivos + releases con `maps_legacy_*`.
+- WIP caps contradictorios: pm-vitalia decía ≤2, hard rule dice ≤1.
+- Enforcement de capabilities skippeado en `wip/*` (branch de trabajo diario); solo HARD en main/release.
+- Cockpit `merge-release` preview-only; no puede editar atomics/scenarios; tab `/functionality` citado pero implementado como Cap Drawer.
+
+**Decisiones (ratificadas Chris):**
+1. **Matar `atomic`** (+ header `# atomics:`). El `scenario` es la unidad atómica de comportamiento. Redundante.
+2. **Matar `outcome` + `phase`.** `release` es el único contenedor temporal. Terminar la migración (borrar 6 archivos + `maps_legacy_*`).
+3. **Drop alias `module`**; solo `tech_module`.
+4. **WIP caps ≤1** (developing/developed/reviewing) — gana `story-closure-gate.md`.
+5. **Modelo de 4 ejes:** Release → Story → Capability → Scenario (+ código auto-mapeado vía `# cap:`, que SÍ funciona: 48 caps mapeados).
+6. **Backfill scenarios GENERANDO del 01-spec.md archivado** (Gherkin ya autorado), no a mano.
+7. **`live ⟹ ≥1 scenario + e2e_test pasando`** HARD (mata verde-por-vacío).
+8. **cross_check_4 (acceso PHI) → HARD en vitalia** (es salud).
+9. **Cockpit = bosque/decisión; Claude Code = ejecución.** El puente: chris-input + checkpoint state + APIs transition/extend-cap.
+10. **Congelar doctrina 30 días** post-consolidación. Shrink-only: no agregar eje sin matar uno.
+
+**Plan:** 7 fases (0 doctrina → 6 manual diario). SSoT del modelo + roadmap + punch-list: `docs/process/lifecycle.md` (creado este día, supersede fragmentos contradictorios de pm-redesign/release-protocol/capability-protocol).
+
+**Fase 0 ejecutada (2026-05-28):** lifecycle.md canónico creado + corregidos en skills: WIP caps ≤1, prior-art source (nicolify es snapshot frozen, no "fuente principal ~80% prod"; live = vitalia/comunify), conteo caps (16→72), ADR path único (pm-luana), bash prior-art-scan.
+
+**How to apply (forward):** toda decisión de modelo de producto se valida contra `lifecycle.md`. Si un skill o doc contradice → lifecycle.md gana. No reintroducir atomics ni outcome.
+
+**Referencias:**
+- `docs/process/lifecycle.md` — SSoT del modelo + roadmap 7 fases + punch-list
+- Análisis origen: conversación 2026-05-28 (4 agentes exploración: skills, cockpit, protocolos, ground-truth disco)
