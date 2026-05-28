@@ -85,9 +85,11 @@ if ! command -v pnpm >/dev/null 2>&1; then
 fi
 
 # 2. Install si node_modules no existe (cada worktree tiene sus propios node_modules)
+# --ignore-workspace flag explícito (defensivo · .npmrc local también lo declara, pero pnpm
+# a veces honra workspace ancestor antes que .npmrc local).
 if [[ ! -d node_modules ]]; then
   echo "📦 Primera vez en este worktree · instalando deps (~2 min · 678 MB)..."
-  pnpm install
+  pnpm install --ignore-workspace
 fi
 
 # 3. Verificar puerto libre
