@@ -213,3 +213,5 @@ tools/luana-cockpit/migrate-report-*.json
 # Cap verification outputs (auto-gen R3 v2)
 **/docs/product/capabilities/_status-computed.json
 **/docs/product/capabilities/_atomics-verification.json
+**/docs/product/capabilities/_code-index.json
+**/docs/product/capabilities/_bidirectional-validation.json
