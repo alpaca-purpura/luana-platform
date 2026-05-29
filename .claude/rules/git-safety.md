@@ -169,12 +169,34 @@ Este procedimiento usa EXPLICITAMENTE comandos del bloque "PROHIBIDO" arriba (`r
 - `git reset --hard` sin aprobacion explicita — PROHIBIDO por default. Excepcion: reset `wip/{brand} → origin/main` post squash-merge cuando 0 commits propios + diff content vacio (ver § Sync wip/{brand}).
 - `git add .` / `git add -A` / `git add -u` — **PROHIBIDO sin excepcion**. Excepcion implicita: `git merge` deja archivos staged automaticamente, no requiere `add .`.
 - `git commit --no-verify` — **PROHIBIDO sin excepcion**.
-- `SCOPE_GATE_SKIP=1 git commit` — PROHIBIDO por default. Excepcion: merge sync legitimo `main → wip/{brand}` que trae cross-cutting updates desde main (no edicion local intencional). Documentar override en commit body con razon.
+- `SCOPE_GATE_SKIP=1 git commit` — ver § Fase solo-bootstrap abajo (relajado durante bootstrap). Fuera de esa fase: PROHIBIDO salvo merge sync legitimo `main → wip/{brand}`.
 - Amend de commits ya pusheados — **PROHIBIDO sin excepcion**.
 
 **Si push non-fast-forward falla:** STOP. Reportar a Chris. NO hacer git pull.
 
 **Cualquier excepcion a "PROHIBIDO" requiere ratificacion explicita Chris en la sesion (o estar documentada como caso permitido en seccion especifica de este file).**
+
+## Fase solo-bootstrap — SCOPE_GATE_SKIP relajado (cement 2026-05-28)
+
+**Origen:** sesión 2026-05-28. Chris está construyendo activamente las propias reglas + cockpit, solo dev, sin CI activo. Exigir un worktree `protocol` dedicado para cada ajuste cross-cutting es fricción sin beneficio en esta fase. Mismo razonamiento + patrón que `.claude/rules/github-actions-deferred.md` ("relajar ahora, endurecer cuando un trigger concreto aparezca").
+
+**Regla cardinal (mientras dure la fase):** `SCOPE_GATE_SKIP=1` está **PERMITIDO para edición intencional cross-cutting Y cross-brand** cuando Chris está seguro del cambio, con **razón documentada en el commit body**. El worktree `protocol` (y la sesión `/pm-{brand}` correcta para cross-brand) siguen siendo la opción prolija **recomendada** pero **NO obligatoria**.
+
+**Guardrails que se mantienen (no es barra libre):**
+- El scope gate **sigue corriendo y bloqueando por default** — pasar requiere tipear conscientemente `SCOPE_GATE_SKIP=1`.
+- Razón **obligatoria en el commit body** (rastro de que fue deliberado, no accidente).
+- Siguen PROHIBIDOS sin excepción: `--no-verify`, secrets/`.env*`, `--force`, `git pull`, amend de pusheados.
+- Pre-commit hook full gate (lint/format/voseo/PII/arch) **NO se saltea** — `SCOPE_GATE_SKIP` solo apaga el scope gate (Section 13), nada más.
+
+**Re-endurecer (volver SCOPE_GATE_SKIP a obligatorio-worktree-protocol) cuando CUALQUIERA:**
+
+| Trigger | Quién declara |
+|---|---|
+| Entra un 2º desarrollador al equipo | Chris |
+| Chris declara reglas + cockpit "fijos/estables" | Chris |
+| Se activa CI/CD real (server staging/prod) — cf. `github-actions-deferred.md` | Chris |
+
+Al re-endurecer: revertir este bloque a "PROHIBIDO para edición local intencional cross-cutting (requiere worktree protocol)" + crear ADR documentando el trigger + actualizar `parallel-safety.md` línea espejo + MEMORY.md pointer.
 
 ## Haiku delegation (commit+push multi-file)
 

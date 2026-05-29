@@ -1207,3 +1207,25 @@ Cuando bootstrapees brand nueva:
 **Referencias:**
 - `docs/process/lifecycle.md` — SSoT del modelo + roadmap 7 fases + punch-list
 - Análisis origen: conversación 2026-05-28 (4 agentes exploración: skills, cockpit, protocolos, ground-truth disco)
+
+---
+
+## 2026-05-28 — chris-input.md nace con la idea (R4 v3)
+
+**Origen:** sesión 2026-05-28 (`/pm-luana`, remote-control). Chris pidió que `chris-input.md` se cree **junto con la idea** (`state: idea`), no recién al pasar a `refining`, para tener un buzón donde volcar lo que desea / cree que necesita desde el día cero. Es un **input** (no orden): Claude lo puede rebatir (verdict ❌ REFUTADO) durante el ciclo de vida y se refina en conjunto.
+
+**Qué cambió (doctrina + enforcement + skills):**
+- `.claude/rules/brand-docs-schema.md` § R4 → "mandatory desde `state: idea`" (era desde `refining`). Título v3.
+- `docs/process/chris-input-protocol.md` → v2: header, Sección 1 (por qué), Sección 6 (lifecycle: Creación = al crear la story en idea), Sección 8/9 (anti-pattern + pre-commit incluyen `idea`), Sección 10 (ref R4).
+- `scripts/git-hooks/pre-commit` Section 16 → agrega `idea` al case que exige chris-input.md (magic comment `# chris-input-skip:` para ideas efímeras).
+- 9 skills `pm-{brand}` → fila "idea {x}" crea checkpoint.md **+ chris-input.md** juntos (desde template).
+- Backfill: creados chris-input.md para las 2 stories en idea/refining que faltaban (`vitalia-compliance-audit-rbac-gap`, `comunify-warning-token-contrast-fix`).
+
+**Ya estaba alineado (no requirió cambio):** cockpit `createNewStoryDocs` (`tools/luana-cockpit/app/api/_lib/story-templates.ts`) ya creaba chris-input.md en idea; template `00-chris-input-template.md` ya era idea-ready.
+
+**How to apply (forward):** toda story creada (incluido idea) nace con checkpoint.md + chris-input.md. Idea descartada sin refinar conserva su buzón. `/pm-{brand}` "idea {x}" hace el dual-create.
+
+**Referencias:**
+- `.claude/rules/brand-docs-schema.md` § R4 (v3 cement 2026-05-28)
+- `docs/process/chris-input-protocol.md` (v2 cement 2026-05-28)
+- `vitalia/docs/learnings/2026-05-28-chris-input-at-idea-doctrine-gap.md` — candidate original (handoff /pm-vitalia → /pm-luana)

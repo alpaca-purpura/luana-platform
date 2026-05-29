@@ -1841,8 +1841,10 @@ fi
 # SSoT: .claude/rules/brand-docs-schema.md § R4
 #
 # Si el commit toca {brand}/docs/product/stories/{id}/checkpoint.md y el state
-# está en {refining, refined, ready, developing, developed, reviewing}, debe
-# existir chris-input.md en el mismo directorio.
+# está en {idea, refining, refined, ready, developing, developed, reviewing},
+# debe existir chris-input.md en el mismo directorio. chris-input.md nace con
+# la idea (R4 v3 cement 2026-05-28) — es el buzón de inputs de Chris desde el
+# día cero.
 #
 # Override:
 #   * frontmatter del checkpoint.md: `# chris-input-skip: razón` (advisory log)
@@ -1872,7 +1874,7 @@ if [ "${CHRIS_INPUT_SKIP:-0}" != "1" ]; then
         | tr -d '"' | tr -d "'" | xargs)
 
       case "$STATE_RAW" in
-        refining|refined|ready|developing|developed|reviewing)
+        idea|refining|refined|ready|developing|developed|reviewing)
           STORY_DIR=$(dirname "$cp_file")
           CHRIS_INPUT="$STORY_DIR/chris-input.md"
           if [ ! -f "$CHRIS_INPUT" ]; then
@@ -1907,7 +1909,8 @@ EOF
           fi
           ;;
         *)
-          # states {idea, done, parked, dropped} — no chris-input.md required
+          # states {done, parked, dropped} — no chris-input.md required
+          # (idea ahora SÍ lo requiere — nace con la idea, R4 v3 cement 2026-05-28)
           ;;
       esac
     done <<< "$STAGED_CHECKPOINTS"

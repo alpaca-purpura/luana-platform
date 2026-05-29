@@ -162,7 +162,7 @@ Idéntico paradigm v4 de Luana core. Detalle: `docs/process/pm-redesign-2026-05.
 | Chris dice | Acción |
 |---|---|
 | "estado vitalia" / "qué tenemos vitalia" | Render `vitalia/docs/product/BACKLOG.md` agrupado por 10 estados con emojis (NO tabla cruda) |
-| "idea {x}" | Crear `vitalia/docs/product/stories/{slug}/checkpoint.md` state=idea (o append a ideas-pool si existe) |
+| "idea {x}" | Crear story dir `state=idea` con **2 archivos juntos**: `vitalia/docs/product/stories/{slug}/checkpoint.md` + `chris-input.md` (este último desde `docs/specs/templates/00-chris-input-template.md` — nace con la idea como buzón donde Chris vuelca lo que desea/necesita; Claude lo puede rebatir durante el ciclo de vida) |
 | "refinemos {story}" | (1) Update checkpoint state=refining. (2) Si épica → decompose. (3) **Invocá `Skill(po-ux)`** (UI std) o **`Skill(po)`** (service) o **`Skill(po)` luego `Skill(ux-agentico)`** (agentic) con args `"{brand} {story-id}"`. NO devolver handoff textual. |
 | "spec ratificada" / "diseño ratificado" | Update state refining→refined. **Invocá `Skill(architect)`** con args `"vitalia {story-id}"` |
 | "ready" | Update state refined→ready (verificar 4 archivos: 03-arch, 04-validators, 05-guidelines, 06-tickets) |

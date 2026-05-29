@@ -23,6 +23,8 @@ Chris opera 2-3 sesiones en paralelo en Linux Mint, en brands distintas o lanes 
 
 `{brand}` ∈ {vitalia, nicolify, comunify, lupulo} + futuras. `core` reservado para lifts engine. `protocol` reservado para cambios cross-cutting (rules + skills + templates + tools/luana-cockpit/ + docs/process/) que tocan paths fuera de un sólo brand. Commits desde `protocol-*` requieren `SCOPE_GATE_SKIP=1` con razón documentada en commit body.
 
+> **Fase solo-bootstrap (cement 2026-05-28):** durante la construcción activa de reglas/cockpit (solo dev, sin CI), NO es obligatorio crear worktree `protocol` para cambios cross-cutting/cross-brand — `SCOPE_GATE_SKIP=1` con razón en commit body está permitido desde cualquier worktree cuando Chris está seguro. El worktree `protocol` sigue siendo lo recomendado-prolijo. SSoT + triggers de re-endurecimiento: `.claude/rules/git-safety.md` § Fase solo-bootstrap.
+
 ## Crear y cerrar sesion
 
 ```bash

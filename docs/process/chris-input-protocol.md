@@ -1,19 +1,19 @@
-# chris-input.md Protocol — Conversación asíncrona Chris↔Claude (v1 cement 2026-05-27)
+# chris-input.md Protocol — Conversación asíncrona Chris↔Claude (v2 cement 2026-05-28)
 
 <!-- voseo-allowed: doc contains verbatim example conversations showing Chris's voseo notes + Claude tuteo responses · escape per spanish-text.md R25 -->
 
-**Cement-date:** 2026-05-27.
-**Origen:** plan `/home/chalreme/.claude/plans/ok-lo-apruebo-realiza-cheeky-harbor.md` § Phase 1.1.C.
+**Cement-date:** 2026-05-27. **v2 (nace con la idea):** 2026-05-28.
+**Origen:** plan `/home/chalreme/.claude/plans/ok-lo-apruebo-realiza-cheeky-harbor.md` § Phase 1.1.C. **v2:** sesión 2026-05-28 — Chris ratificó que el archivo nazca con la idea (buzón de inputs desde `state: idea`, no desde refining).
 
-> **chris-input.md** es el artifact oficial donde Chris escribe notas + referencias + Claude responde con verdicts. Vive 1 archivo per story. Skills appendean al cierre de cada turno. Habilita loop conversacional asíncrono entre cockpit + Claude Code.
+> **chris-input.md** es el artifact oficial donde Chris escribe notas + referencias + Claude responde con verdicts. **Nace junto con la idea** (`state: idea`) y vive 1 archivo per story a lo largo de toda su vida. Es el buzón donde Chris vuelca lo que desea / cree que necesita; Claude lo puede rebatir (verdict ❌ REFUTADO) durante el ciclo de vida y se refina en conjunto. Skills appendean al cierre de cada turno. Habilita loop conversacional asíncrono entre cockpit + Claude Code.
 
 ---
 
 ## Sección 1 · Por qué existe
 
-**Problema:** durante refinement de una story, Chris piensa cosas en lenguaje natural (notas), aporta refs (imágenes/links/learnings), conversa con Claude que responde + decide qué aplicar. Sin un archivo dedicado, esto se pierde o se mezcla con el spec.
+**Problema:** desde que una idea nace (`state: idea`) y durante todo el refinement, Chris piensa cosas en lenguaje natural (notas), aporta refs (imágenes/links/learnings), conversa con Claude que responde + decide qué aplicar. Sin un archivo dedicado **desde el día cero**, esto se pierde, se mezcla con el spec, o las ideas crudas del periodo `idea` no tienen dónde acumularse.
 
-**Solución:** `chris-input.md` separa la conversación de los artifacts formales (spec/design/arch). El spec/design/arch son output ratificado · chris-input es la cocina.
+**Solución:** `chris-input.md` **nace con la idea** y separa la conversación de los artifacts formales (spec/design/arch). El spec/design/arch son output ratificado · chris-input es la cocina + el buzón de inputs de Chris. Lo que Chris escribe es un **input** (lo que desea / cree que necesita), NO una orden: Claude lo puede rebatir durante el ciclo de vida y se refina en conjunto.
 
 **Modelo de uso:**
 1. Chris llena 💭 Notas + 📎 Refs en cockpit (UI visual)
@@ -154,11 +154,11 @@ Cada skill de la pipeline SDD (po-ux, po, ux-agentico, architect, auditor, pm-{b
 
 | Fase | Trigger | Acción |
 |---|---|---|
-| Creación | `/pm-{brand}` pasa story state `idea → refining` | Copia template `00-chris-input-template.md` a `{brand}/docs/product/stories/{id}/chris-input.md` con frontmatter inicial + 3 secciones vacías |
-| Updates | Cada skill turn | Appendea entry a sección Conversación + Chris edita notas/refs vía cockpit |
+| Creación | `/pm-{brand}` **crea la story** (`state: idea`) — o cockpit `extend-cap`/`from-done` | Copia template `00-chris-input-template.md` a `{brand}/docs/product/stories/{id}/chris-input.md` con frontmatter inicial + 3 secciones vacías, **junto con `checkpoint.md`**. Nace con la idea. |
+| Updates | Cada skill turn + Chris escribe inputs | Appendea entry a sección Conversación + Chris edita notas/refs vía cockpit (desde `idea` en adelante) |
 | Archive | `/pm-{brand}` Fase F MERGE state `reviewing → done` | `git mv` chris-input.md junto con resto de stories al archive folder |
 
-**Stories que arrancan en `dropped` directo desde `idea` NO requieren chris-input.md** (no pasaron por refining, no hubo conversación).
+**chris-input.md nace con TODA story creada** (incluido `state: idea`). Una idea que se descarta sin refinar igual conserva su buzón (posiblemente vacío salvo el seed de creación). Override puntual para ideas efímeras: magic comment `# chris-input-skip: razón` en el checkpoint.
 
 ---
 
@@ -191,7 +191,7 @@ Tabla de tipos de referencia en sección 📎 Referencias:
 - ❌ Chris-input.md sin las 3 secciones (parser falla)
 - ❌ Entry chris en sección Notas con timestamp futuro (relojes desincronizados)
 - ❌ Ref `img` apuntando a archivo que no existe en `refs/` (cockpit muestra broken image)
-- ❌ Story state ∈ {refining...reviewing} sin chris-input.md (pre-commit hook bloquea checkpoint)
+- ❌ Story state ∈ {idea, refining...reviewing} sin chris-input.md (pre-commit hook bloquea checkpoint — el archivo nace con la idea)
 - ❌ Editar entry Claude post-hoc (chris-input es append-only conceptualmente, salvo corrección obvia de typo)
 
 ---
@@ -204,9 +204,9 @@ Tabla de tipos de referencia en sección 📎 Referencias:
 - Si último entry es Chris pero state ≠ refining, flag como WARN ("Chris dejó msg sin respuesta de Claude")
 - Verificar que `notes_count`, `refs_count`, `conversation_count` en frontmatter matchea el actual count parseado
 
-**Pre-commit hook section nueva:**
-- Si commit toca `{brand}/docs/product/stories/{id}/checkpoint.md` con `state ∈ {refining, ...reviewing}` y NO existe `chris-input.md` en mismo dir → BLOQUEAR commit
-- Escape: magic comment `# chris-input-skip: razón` en checkpoint frontmatter
+**Pre-commit hook (Section 16):**
+- Si commit toca `{brand}/docs/product/stories/{id}/checkpoint.md` con `state ∈ {idea, refining, ...reviewing}` y NO existe `chris-input.md` en mismo dir → BLOQUEAR commit
+- Escape: magic comment `# chris-input-skip: razón` en checkpoint frontmatter (uso típico: idea efímera que se descarta sin refinar)
 - Validación de schema markdown (3 secciones presentes) opcional via `scripts/validate_chris_input.py`
 
 ---
@@ -216,7 +216,7 @@ Tabla de tipos de referencia en sección 📎 Referencias:
 - `docs/specs/templates/00-chris-input-template.md` — template oficial nuevo
 - `docs/process/capability-protocol.md` — chris-input ratifica `cap_change_type`
 - `docs/process/release-protocol.md` — chris-input no toca release directamente (Chris edita via cockpit)
-- `.claude/rules/brand-docs-schema.md` § R4 — chris-input.md mandatory para refining+ states
+- `.claude/rules/brand-docs-schema.md` § R4 — chris-input.md nace con la idea (mandatory desde `state: idea`)
 - `tools/luana-cockpit/lib/chris-input-parser.ts` — implementación parser markdown
 - `tools/luana-cockpit/app/api/chris-input/[storyId]/route.ts` — CRUD endpoint cockpit
 - `.claude/skills/{po-ux,po,ux-agentico,architect,auditor,pm-vitalia,pm-luana,dev-team}/SKILL.md` § Output protocol — cómo cada skill appendea

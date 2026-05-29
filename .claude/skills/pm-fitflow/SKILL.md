@@ -98,7 +98,7 @@ Idéntico paradigm v4 de Luana core. Detalle: `docs/process/pm-redesign-2026-05.
 | Chris dice | Acción |
 |---|---|
 | "estado fitflow" / "qué tenemos fitflow" | Render `fitflow/docs/product/BACKLOG.md` agrupado por 10 estados |
-| "idea {x}" | Crear `fitflow/docs/product/stories/{slug}/checkpoint.md` state=idea |
+| "idea {x}" | Crear story dir `state=idea` con **2 archivos juntos**: `fitflow/docs/product/stories/{slug}/checkpoint.md` + `chris-input.md` (este último desde `docs/specs/templates/00-chris-input-template.md` — nace con la idea como buzón donde Chris vuelca lo que desea/necesita; Claude lo puede rebatir durante el ciclo de vida) |
 | "refinemos {story}" | Update checkpoint state=refining + hand off `/po-ux`/`/po`/`/ux-agentico` |
 | "spec ratificada" | Update state refining→refined. Hand off `/architect` |
 | "build" / "arranca dev" | Hand off `/dev-team`. Update state ready→developing |
