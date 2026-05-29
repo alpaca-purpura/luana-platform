@@ -40,6 +40,7 @@ import {
 } from "react-resizable-panels";
 import { cn } from "@/lib/utils";
 import { useShellStore } from "@/stores/shell-store";
+import { useStoreHydration } from "@/lib/store/use-store-hydration";
 import { useViewportGuard } from "./useViewportGuard";
 import { TopBarGlobal } from "./TopBarGlobal";
 import { ValeriaSidebar } from "./ValeriaSidebar";
@@ -62,6 +63,25 @@ export function ShellOrganismLayoutClient({
   children,
   tenantId: _tenantId,
 }: ShellOrganismLayoutClientProps) {
+  // D3 (ADR-vitalia-006): Trigger useShellStore rehydration exactly ONCE client-side,
+  // inside this ssr:false chunk. This is the ONLY place rehydrate() is called for the shell store.
+  //
+  // WHY HERE: This component is loaded via dynamic({ssr:false}) in ShellOrganismLayout.
+  // It executes only on the client, after the SSR skeleton has been replaced.
+  // The skeleton renders TopBarGlobal variant="skeleton" (store-free, D4) to prevent
+  // the persist middleware from writing localStorage during SSR/pre-hydration.
+  // Once THIS component mounts, useStoreHydration fires rehydrate() which:
+  //   1. Reads the saved value from localStorage (user's preference).
+  //   2. Flips _hasHydrated = true via onRehydrateStorage.
+  //   3. Enables storage writes (ssrSafeStorage setItem no longer no-ops).
+  //
+  // Combined with D4 (skeleton store-free), this kills the Bug #1 clobber:
+  // No spurious default write can happen before rehydrate() reads the real value.
+  //
+  // StrictMode-safe: useStoreHydration uses a ref guard — double-invoke does not
+  // trigger double rehydrate().
+  useStoreHydration(useShellStore);
+
   const shellMode = useShellStore((s) => s.shellMode);
   const valeriaState = useShellStore((s) => s.valeriaState);
 

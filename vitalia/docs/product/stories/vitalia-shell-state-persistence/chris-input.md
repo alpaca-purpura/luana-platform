@@ -117,3 +117,21 @@ T-1 completo. Factory SSR-safe + hook + migración shell-store. Commit: `da0602e
 **Cross-story bug encontrado (no arreglé inline):** `ChannelConnectionWizard.tsx` missing `"use client"` — pre-existente, agregado a allowlist, reportar story dedicada.
 
 Detalle completo: `T-1-result.md`.
+
+### 2026-05-29 · 🤖 claude · /dev-team · ✓ APLICADO
+T-3 completo. Migración SSR-safe factory a los 3 stores restantes (transversal convention). Commit: `08fe0864`.
+
+**Archivos creados:**
+- `vitalia/frontend/src/stores/__tests__/tenant-store-hydration.test.ts` — 18 smoke tests GREEN (RED-first)
+- `vitalia/frontend/src/features/valeria/store/__tests__/agenda-stores-hydration.test.ts` — 35 smoke tests GREEN (17 drawer + 18 filters)
+
+**Archivos modificados:**
+- `vitalia/frontend/src/stores/tenant-store.ts` — migrado a factory; TenantStore + SsrSafeHydration; activeTenant persist + version:1 + clearStore preservados
+- `vitalia/frontend/src/features/valeria/store/agenda-store.ts` — migrado a factory; DrawerStore + SsrSafeHydration; drawerWidth persist + clamping [440,640] preservados
+- `vitalia/frontend/src/features/valeria/store/agenda-filters-store.ts` — migrado a factory; FiltersStore + SsrSafeHydration; lastView persist preservado
+
+**Gates:** `tsc --noEmit` 0 errores · `eslint` 0 errores · `vitest` T-3 scope 239/239 PASS · arch fitness 148/148 PASS (0 allowlist growth) · regression 38/38 PASS (tenant-store + agenda-store + agenda-filters tests).
+
+**Pre-existing failure (NO T-3):** `TopBarGlobal.test.tsx` 1 test (burger → setValeriaState) — pre-existente en rama, pertenece a T-2 scope.
+
+Detalle completo: `T-3-result.md`.
