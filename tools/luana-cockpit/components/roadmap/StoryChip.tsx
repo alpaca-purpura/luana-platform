@@ -85,6 +85,14 @@ export function StoryChip({ story }: { story: StoryWithArchive }) {
       <div className="text-[11px] leading-snug line-clamp-2 text-[var(--color-text)]">
         {story.goal ?? humanize(story.story_id)}
       </div>
+      {story.dup_collision && (
+        <div
+          className="mt-1 px-1.5 py-0.5 rounded bg-yellow-900/30 border border-yellow-700/50 text-yellow-300 text-[10px] leading-tight"
+          title="story_id duplicado: existe en product/stories (live) y en archive (done). Resolver vía /pm-{brand} (rename o borrar el stub)."
+        >
+          ⚠ id duplicado (live + archivado)
+        </div>
+      )}
     </div>
   );
 }

@@ -118,9 +118,31 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       archivedDirs.map((d) => readCheckpoint(d, brand, true))
     );
 
-    const stories = [...liveStories, ...archivedStories].filter(
+    const all = [...liveStories, ...archivedStories].filter(
       (s): s is StoryWithArchive => s !== null
     );
+
+    // Dedup por story_id (un id puede existir live + archivado por colisión de data,
+    // ej. un stub re-creado con el id de una story ya done). React/dnd exigen ids
+    // únicos → sin dedup la UI crashea. Preferimos la copia archivada (terminal/
+    // canónica) y marcamos `dup_collision` para que la UI lo haga visible.
+    const byId = new Map<string, StoryWithArchive>();
+    const collisions = new Set<string>();
+    for (const s of all) {
+      const prev = byId.get(s.story_id);
+      if (!prev) {
+        byId.set(s.story_id, s);
+        continue;
+      }
+      collisions.add(s.story_id);
+      // archivada gana sobre live; si ya teníamos archivada, la mantenemos.
+      if (s.is_archived && !prev.is_archived) byId.set(s.story_id, s);
+    }
+    for (const id of collisions) {
+      const s = byId.get(id);
+      if (s) s.dup_collision = true;
+    }
+    const stories = [...byId.values()];
 
     return NextResponse.json({ stories });
   } catch (err) {

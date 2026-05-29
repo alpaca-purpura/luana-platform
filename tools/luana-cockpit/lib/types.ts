@@ -178,6 +178,14 @@ export interface Story {
    */
   parse_error?: string | null;
 
+  /**
+   * `true` si este story_id existe en MÁS de un lugar (ej. una copia live en
+   * `product/stories/` y otra `done` en `archive/`). El API deduplica (prefiere la
+   * archivada/canónica) y marca este flag → la UI pinta un badge de advertencia
+   * para que se resuelva la colisión (rename/borrar el stub) vía `/pm-{brand}`.
+   */
+  dup_collision?: boolean | null;
+
   // Metadata cockpit (derivada o pre-seed)
   owner?: string | null;
   agent_owner?: string | null;

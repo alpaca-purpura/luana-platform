@@ -129,6 +129,14 @@ export function BoardCard({
           ⚠ checkpoint inválido — {story.parse_error}
         </div>
       )}
+      {story.dup_collision && (
+        <div
+          className="mt-1 px-1.5 py-0.5 rounded bg-yellow-900/30 border border-yellow-700/50 text-yellow-300 text-[10px] leading-tight"
+          title="story_id duplicado: existe en product/stories (live) y en archive (done). Resolver vía /pm-{brand} (rename o borrar el stub)."
+        >
+          ⚠ id duplicado (live + archivado)
+        </div>
+      )}
 
       {/* Footer: prioridad (punto de color) + surfaces + área */}
       {(story.priority || story.surfaces?.length || area) && (

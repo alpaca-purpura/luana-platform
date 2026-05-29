@@ -80,4 +80,31 @@ describe('GET /api/stories — archived done stories', () => {
     const live = body.stories.find((s) => s.story_id === 'vitalia-live-example');
     expect(live?.is_archived).toBe(false);
   });
+
+  it('deduplica story_id que existe live + archivado (prefiere archivada + flag dup_collision)', async () => {
+    // Mismo story_id en ambos lados → colisión (caso real adopt-luana-core-iam)
+    writeStory(
+      'vitalia/docs/product/stories/vitalia-colision',
+      '---\nstory_id: vitalia-colision\nstate: idea\nrelease: F0\n---'
+    );
+    writeStory(
+      'vitalia/docs/archive/2026/stories/vitalia-colision',
+      '---\nstory_id: vitalia-colision\nstate: done\nrelease: F0\n---'
+    );
+    const GET = await getHandler();
+    const res = await GET(makeReq('vitalia') as Parameters<typeof GET>[0]);
+    const body = (await res.json()) as {
+      stories: Array<{
+        story_id: string;
+        state: string;
+        is_archived: boolean;
+        dup_collision?: boolean;
+      }>;
+    };
+    const hits = body.stories.filter((s) => s.story_id === 'vitalia-colision');
+    expect(hits, 'debe aparecer exactamente una vez (sin crash de key)').toHaveLength(1);
+    expect(hits[0].is_archived).toBe(true); // prefiere la archivada (canónica)
+    expect(hits[0].state).toBe('done');
+    expect(hits[0].dup_collision).toBe(true); // marcada para que la UI avise
+  });
 });
