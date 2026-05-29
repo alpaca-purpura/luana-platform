@@ -18,6 +18,7 @@ import { Tooltip } from '@/components/ui/Tooltip';
 import { TOOLTIPS } from '@/lib/tooltips';
 import { ReleaseCard } from './ReleaseCard';
 import { NewReleaseModal } from '@/components/modals/NewReleaseModal';
+import { EditReleaseModal } from '@/components/modals/EditReleaseModal';
 import { MergeReleaseModal } from '@/components/modals/MergeReleaseModal';
 import { useBrand } from '@/components/providers/BrandProvider';
 import { useFileWatchEvents } from '@/components/providers/FileWatchProvider';
@@ -37,6 +38,7 @@ export function RoadmapView() {
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<'active' | 'shipped'>('active');
   const [newReleaseOpen, setNewReleaseOpen] = useState(false);
+  const [editRelease, setEditRelease] = useState<Release | null>(null);
   const [mergeReleaseId, setMergeReleaseId] = useState<string | null>(null);
 
   const sensors = useSensors(
@@ -201,6 +203,7 @@ export function RoadmapView() {
                 release={r}
                 stories={stories.filter((s) => s.release === r.release_id)}
                 onMergeRequested={setMergeReleaseId}
+                onEditRequested={setEditRelease}
               />
             ))}
           </div>
@@ -211,6 +214,12 @@ export function RoadmapView() {
         open={newReleaseOpen}
         onClose={() => setNewReleaseOpen(false)}
         onCreated={load}
+      />
+      <EditReleaseModal
+        open={editRelease !== null}
+        onClose={() => setEditRelease(null)}
+        release={editRelease}
+        onUpdated={load}
       />
       {mergeReleaseId && (
         <MergeReleaseModal

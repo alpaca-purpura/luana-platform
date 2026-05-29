@@ -130,6 +130,27 @@ export async function createRelease(input: CreateReleaseInput): Promise<Release>
   return data.release;
 }
 
+export interface UpdateReleaseInput {
+  name?: string;
+  description?: string;
+  target_date?: string | null;
+  order?: number;
+  stories?: string[];
+}
+
+/** Edita campos editables de un release (bloqueado server-side si está shipped). */
+export async function updateRelease(
+  releaseId: string,
+  brand: string,
+  patch: UpdateReleaseInput
+): Promise<Release> {
+  const data = await request<{ release: Release }>(
+    `/api/releases?id=${encodeURIComponent(releaseId)}&brand=${encodeURIComponent(brand)}`,
+    { method: 'PUT', body: JSON.stringify(patch) }
+  );
+  return data.release;
+}
+
 // ────────────────────────────────────────────────────────────────────────────
 // Capabilities
 // ────────────────────────────────────────────────────────────────────────────
@@ -313,16 +334,24 @@ export interface MergeReleasePlan {
   executed: boolean;
   preview?: boolean;
   note?: string;
+  release?: Release;
 }
 
 export async function postMergeRelease(
   brand: string,
   releaseId: string,
-  confirmFinal: boolean
+  confirmFinal: boolean,
+  opts?: { verified?: boolean; verificationNote?: string }
 ): Promise<MergeReleasePlan> {
   return await request('/api/merge-release', {
     method: 'POST',
-    body: JSON.stringify({ brand, releaseId, confirmFinal }),
+    body: JSON.stringify({
+      brand,
+      releaseId,
+      confirmFinal,
+      verified: opts?.verified ?? false,
+      verificationNote: opts?.verificationNote,
+    }),
   });
 }
 

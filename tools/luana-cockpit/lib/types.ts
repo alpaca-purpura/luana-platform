@@ -28,6 +28,15 @@ export type ReleaseStatus =
   | 'shipped'
   | 'backlog';
 
+/**
+ * Eje de DESPLIEGUE (separado del eje de integración `ReleaseStatus`).
+ * Un release `shipped` (base sólida en main + staging) puede pasarse a producción
+ * cuando Chris lo decida. FUTURO: hoy todo queda `not_deployed` · la mecánica real
+ * (merge a `release/{brand}-vX.Y.Z` → GH Actions) está deferred hasta servidor real.
+ * Ver `.claude/rules/github-actions-deferred.md` + `docs/process/release-protocol.md` § 8.
+ */
+export type ProductionStatus = 'not_deployed' | 'scheduled' | 'in_production';
+
 export type CapChangeType = 'new' | 'fix' | 'extend' | 'derive';
 export type CapStatus = 'live' | 'beta' | 'deprecated' | 'sunset';
 export type CapLicense = 'brand-local' | 'core-shared' | 'proprietary';
@@ -292,6 +301,20 @@ export interface Release {
   created_at: string;
   created_by: string;
   stories: string[];
+
+  // Gate de shipped (eje integración) — "prueba de comportamiento verde" registrada
+  // por Chris al cerrar el release. Ver release-protocol.md § 5.
+  verified_by?: string | null;       // 'chris' cuando confirmó el check de integración
+  verified_at?: string | null;       // ISO timestamp del check verde
+  verification_note?: string | null; // nota libre (qué corrió, resultado, gotchas)
+
+  // Eje DESPLIEGUE (FUTURO · placeholder reservado) — ver release-protocol.md § 8.
+  production_status?: ProductionStatus | null;  // not_deployed | scheduled | in_production
+  production_version?: string | null;           // semver del pase a prod, ej "v0.3.0"
+  production_scheduled_at?: string | null;       // ISO · inmediato (now) o fecha-hora futura
+  deployed_at?: string | null;                   // ISO · cuándo se completó el deploy real
+  release_branch?: string | null;                // ej "release/vitalia-v0.3.0"
+
   maps_legacy_outcome?: string | null;
   maps_legacy_phase?: string | null;
 

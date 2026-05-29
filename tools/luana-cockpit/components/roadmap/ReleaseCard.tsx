@@ -1,11 +1,12 @@
 'use client';
 
 import { useDroppable } from '@dnd-kit/core';
-import { Rocket } from 'lucide-react';
+import { Rocket, Pencil, Cloud } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { Button } from '@/components/ui/Button';
 import { ReleaseStatusBadge } from '@/components/ui/Badge';
 import { EmptyState } from '@/components/ui/Spinner';
+import { Tooltip } from '@/components/ui/Tooltip';
 import { StoryChip } from './StoryChip';
 import type { Release } from '@/lib/types';
 import type { StoryWithArchive } from '@/lib/api-client';
@@ -14,11 +15,18 @@ interface ReleaseCardProps {
   release: Release;
   stories: StoryWithArchive[];
   onMergeRequested: (releaseId: string) => void;
+  onEditRequested: (release: Release) => void;
 }
 
 const TERMINAL_STATES = new Set(['done', 'dropped']);
 
-export function ReleaseCard({ release, stories, onMergeRequested }: ReleaseCardProps) {
+export function ReleaseCard({
+  release,
+  stories,
+  onMergeRequested,
+  onEditRequested,
+}: ReleaseCardProps) {
+  const isShipped = release.status === 'shipped';
   const { setNodeRef, isOver } = useDroppable({
     id: `release:${release.release_id}`,
     data: { releaseId: release.release_id },
@@ -93,17 +101,51 @@ export function ReleaseCard({ release, stories, onMergeRequested }: ReleaseCardP
               🗓 target: {release.target_date}
             </div>
           )}
+          {/* Sello de verificación (eje integración) en releases shipped */}
+          {isShipped && release.verified_by && (
+            <div className="text-[10px] text-emerald-400/90 mt-1">
+              ✓ verificado por {release.verified_by}
+              {release.verified_at ? ` · ${release.verified_at.substring(0, 10)}` : ''}
+              {release.verification_note ? (
+                <span className="text-[var(--color-muted)]"> · {release.verification_note}</span>
+              ) : null}
+            </div>
+          )}
         </div>
-        {ready && release.status !== 'shipped' && (
-          <Button
-            size="sm"
-            variant="primary"
-            onClick={() => onMergeRequested(release.release_id)}
-          >
-            <Rocket className="w-3 h-3" />
-            Merge a main
-          </Button>
-        )}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {/* Editar nombre/descripción · solo releases por venir (shipped es inmutable) */}
+          {!isShipped && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => onEditRequested(release)}
+              title="Editar nombre / descripción"
+            >
+              <Pencil className="w-3 h-3" />
+            </Button>
+          )}
+          {ready && !isShipped && (
+            <Button
+              size="sm"
+              variant="primary"
+              onClick={() => onMergeRequested(release.release_id)}
+            >
+              <Rocket className="w-3 h-3" />
+              Cerrar → shipped
+            </Button>
+          )}
+          {/* Pase a producción · FUTURO (eje despliegue). Placeholder deshabilitado. */}
+          {isShipped && (
+            <Tooltip content="Próximamente: merge a release/{brand}-vX.Y.Z → deploy a producción (GH Actions). Aún no implementado.">
+              <span>
+                <Button size="sm" variant="ghost" disabled className="opacity-60">
+                  <Cloud className="w-3 h-3" />
+                  Pase a producción
+                </Button>
+              </span>
+            </Tooltip>
+          )}
+        </div>
       </header>
 
       <div
