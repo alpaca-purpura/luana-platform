@@ -1,5 +1,7 @@
 # T-1 Result — Factory SSR-safe `createSsrSafePersistedStore` + hook `useStoreHydration` + migrate shell-store
 
+**Commit:** `da0602ea` (wip/vitalia)
+
 ## Summary
 
 T-1 implements the foundational SSR-safe store pattern (ADR-vitalia-006) that closes the

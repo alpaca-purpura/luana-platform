@@ -101,7 +101,7 @@ Ratificaste **modo autónomo hasta `done`** ("Soluciónalo hasta el done de form
 Si algún cap se excede o el auditor escala → `state=blocked` + te aviso. Caso contrario, próximo mensaje = `done`.
 
 ### 2026-05-29 · 🤖 claude · /dev-team · ✓ APLICADO
-T-1 completo. Factory SSR-safe + hook + migración shell-store. Commit: (ver SHA abajo).
+T-1 completo. Factory SSR-safe + hook + migración shell-store. Commit: `da0602ea`.
 
 **Archivos creados:**
 - `vitalia/frontend/src/lib/store/create-ssr-safe-persisted-store.ts` — factory ADR-vitalia-006
