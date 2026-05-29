@@ -172,3 +172,24 @@ T-4 completo. Mobile drawer lee slice `mobileDrawerOpen` independiente + `useVie
 Commit: `8467706a` → pushed `wip/vitalia`.
 
 Detalle completo: `T-4-result.md`.
+
+### 2026-05-29 · 🤖 claude · /dev-team · ✓ APLICADO
+T-5 completo. Un-skip 3 regresiones + 2 nuevos E2E specs + POM extension + impl-fix.
+
+**Archivos creados:**
+- `vitalia/frontend/e2e/regression/shell-state-persistence/valeria-state-survives-reload.spec.ts` — SC-1/SC-2/SC-3: state persistence through SSR+hydration cycle (adversarial bug check: 'full' NEVER written when 'rail' was saved)
+- `vitalia/frontend/e2e/regression/shell-state-persistence/mobile-collapsed-default.spec.ts` — SC-4/SC-5/SC-5b/SC-8: mobile drawer closed by default, burger opens, remembers between reloads, a11y wcag2aa + keyboard nav
+
+**Archivos modificados:**
+- `vitalia/frontend/e2e/pages/ShellLayoutPage.ts` — EXTENDED: openMobileDrawerViaBurger(), closeMobileDrawer(), isMobileDrawerOpen(), getMobileDrawerSlice(), instrumentSetItem(), getSetItemWrites()
+- `vitalia/frontend/e2e/regression/vitalia-fase1-shell-layout-5050/resize-and-state.spec.ts` — UN-SKIPPED 2 tests (valeriaState survives reload + rail→full snap-up). Uses valeriaRailPage fixture to avoid addInitScript/reload conflict.
+- `vitalia/frontend/e2e/regression/vitalia-fase1-shell-layout-5050/mobile-collapse.spec.ts` — UN-SKIPPED 'ValeriaSlot oculto mobile'
+- `vitalia/frontend/src/components/shared/shell-organism/ValeriaSidebar.tsx` — T-5 impl-fix: Escape handler now calls setMobileDrawerOpen(false) (genuine impl miss — the independent mobile slice was not being closed by Escape)
+
+**Gates:** tsc 0 errores · eslint 0 errores · vitest 252/252 PASS (arch 148 + store hydration 104) · E2E 28/28 PASS (all 4 must-pass validators).
+
+**Key design decision documented:** addInitScript fires on EVERY navigation including reload → persistence tests use valeriaRailPage fixture (seeds 'rail' on every nav) to avoid fixture seed conflict. SC-3 adversarial uses instrumentSetItem spy to capture any 'full' writes during SSR+hydration.
+
+Commit: ff27a9ab → pushed wip/vitalia.
+
+Detalle completo: `T-5-result.md`.
