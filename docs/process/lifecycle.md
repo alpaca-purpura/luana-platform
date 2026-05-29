@@ -158,12 +158,13 @@ Plan de migración del estado actual al modelo de este doc. Estado en tiempo rea
 | **0 — Doctrina** | Este `lifecycle.md` + resolver incoherencias de skills. No destruye nada | ✅ DONE 2026-05-28 (commit c930a333) |
 | **1 — Colapsar modelo** | Matar atomics/outcome/phase/module-alias. cross_check_3 HARD | ✅ DONE 2026-05-28 (1a bb988b2a + 1b 7ab119c6) |
 | **2 — Backfill trazabilidad** | Fence 8 caps · consolidar shell · backfill +43 scenarios · huérfanos 96→0 · redistribuir releases · borrar dead code | ✅ DONE 2026-05-28 (2a b22ca319 + 2b fa73f363) |
-| **3 — Cockpit** | Vista Salud de Producto + Traza unificada + sanear README + limpiar leftovers (shell-vitalia body table, tooltips.ts) | ⏳ próximo |
-| **4 — Skills** | Alinear pm-vitalia/pm-luana/architect/dev-team/auditor al modelo 4-ejes. Def. de done HARD. Quitar "outcome nuevo" del menú | ⏳ |
-| **5 — Enforcement** | Gate capabilities en wip/* (o advisory honesto). `live⟹evidencia` HARD. **Resolver 6 drifts cc4 PHI access → flipear cc4 HARD.** Validators fallan ruidoso · planned caps skip story-resolution OK | ⏳ |
-| **6 — Manual diario** | § 7 de este doc es el manual operativo | ✅ (§ 7 abajo) |
+| **3 — Cockpit** | ProductHealthBanner en /map + CapDrawer trace reordenado + README saneado + tooltips sin atomics | ✅ DONE 2026-05-28 (05ad9c69) |
+| **4 — Skills** | 22 skills/templates al modelo 4-ejes · menú pm-vitalia sin outcome · Def. de DONE | ✅ DONE 2026-05-28 (dfec5e64) |
+| **5 — Enforcement** | cross_check_4 reconoce todos los mecanismos PHI (drift 7→1) · reconcile `live⟹evidencia` WARN · planned caps skip story-resolution | ✅ DONE 2026-05-28 (05ad9c69) |
+| **5.1 — cc4 HARD flip** | Resolver el gap RBAC (story `vitalia-compliance-audit-rbac-gap`) → flipear cc4 a HARD vitalia | ⏳ bloqueado por la story de seguridad |
+| **6 — Manual diario** | § 7 de este doc es el manual operativo | ✅ DONE (§ 7) |
 
-**Estado post-Fase 2 (2026-05-28):** atomics + outcome + phase MUERTOS. **67 caps · 0 huérfanos de código** · trazabilidad real. Status HONESTO: 55 stub / 6 declared-live / 5 partial / 1 verified-live. Los 55 stub son la verdad incómoda (caps sin scenarios aún — planeadas o sin spec fuente). 45 tests scripts + 66 cockpit + FE tsc + ruff GREEN. drift HARD cc3=0.
+**Estado post-consolidación (2026-05-28 · Fases 0-6 DONE):** atomics + outcome + phase MUERTOS. **67 caps · 0 huérfanos de código** · trazabilidad real Release→Story→Capability→Scenario. Status HONESTO: 55 stub / 6 declared-live / 5 partial / 1 verified-live. Validator no miente (cc4 7→1, el único drift es el gap de seguridad RBAC con story dedicada). Cockpit muestra Salud de Producto real. 52 tests scripts + 67 cockpit + FE tsc + ruff GREEN · cc3 HARD=0. **Pendiente:** Fase 5.1 (resolver gap seguridad → cc4 HARD) + backfill orgánico de los 55 stub cuando sus stories shippeen.
 
 ---
 
