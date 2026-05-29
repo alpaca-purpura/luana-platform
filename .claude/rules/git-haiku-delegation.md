@@ -32,7 +32,7 @@ Todo Agent spawn que ejecute git workflow MUST contener estos guardrails verbati
 ## Critical safety rules
 - NEVER `git add .` / `git add -A` / `git add -u` — parallel sessions WIP en tree
 - Stage ONLY by exact filename (lista provista)
-- HUB único (N sesiones mismo árbol · ADR-009): el índice git es COMPARTIDO entre sesiones → **commit por pathspec** `git commit <file1> <file2> -m ...` (commitea SOLO esos paths, ignora lo que otra sesión dejó staged). NO `git add` + `git commit` suelto (arrastraría archivos de otra sesión).
+- HUB único (N sesiones mismo árbol · ADR-009): el índice git es COMPARTIDO entre sesiones (= yo en N terminales) → **commit por pathspec** `git commit --only <file1> <file2> -m ...` (commitea SOLO esos paths, ignora lo demás del índice). NO `git add` + `git commit` suelto. **★ Trap real (caso 0072388f, 2026-05-29):** `git mv` AUTO-stagea el rename en el índice compartido → un `git commit` pelado en otra sesión lo barre. Helper que lo blinda: `scripts/git/commit-paths.sh "<msg>" <paths...>` (usa `--only`, rechaza `.`/`-A`/sin paths). Si por algo usás `git add`, primero `git reset` para limpiar el índice ajeno.
 - NEVER `git commit --no-verify` — pre-commit hook mandatory
 - NEVER `git pull` / `git fetch && merge` — banned per parallel-safety.md
 - NEVER `git push --force` / `--force-with-lease` — banned
