@@ -10,7 +10,7 @@ import path from 'node:path';
 import { readdir, readFile } from 'node:fs/promises';
 import { errorResponse } from '../_lib/responses';
 import { readMarkdownWithFrontmatter } from '@/lib/fs-reader';
-import { storiesPath, archivePath, getBrands } from '@/lib/workspace';
+import { storiesPath, archiveRootPath, getBrands } from '@/lib/workspace';
 import type { Story } from '@/lib/types';
 
 interface StoryWithArchive extends Story {
@@ -98,8 +98,8 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       liveDirs.map((d) => readCheckpoint(d, brand, false))
     );
 
-    // Stories archivadas (escanea todos los años presentes)
-    const archiveRoot = path.dirname(archivePath(brand, '0000'));
+    // Stories archivadas (escanea todos los años presentes bajo {brand}/docs/archive/)
+    const archiveRoot = archiveRootPath(brand);
     let archivedDirs: string[] = [];
     try {
       const years = await readdir(archiveRoot, { withFileTypes: true });
