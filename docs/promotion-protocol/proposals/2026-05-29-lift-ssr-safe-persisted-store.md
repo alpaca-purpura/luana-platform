@@ -1,10 +1,13 @@
 ---
 proposal_id: 2026-05-29-lift-ssr-safe-persisted-store
-state: under_review              # proposed | under_review | accepted | rejected | migrated
+state: migrated                  # proposed | under_review | accepted | rejected | migrated
 opened_date: 2026-05-29
 opened_by: /pm-luana
-ratified_by: null                # Chris cuando ratifica APPROVED/REJECTED
-ratified_date: null
+ratified_by: chris               # APPROVED 2026-05-29
+ratified_date: 2026-05-29
+migrated_date: 2026-05-29
+migrated_commit: cf19d1f5
+target_version: "@luana/hooks@0.2.0"
 
 # Origen
 origin_learnings:
@@ -130,6 +133,8 @@ en vitalia al re-importar, cubierto por R3 (su suite ya es 2310 vitest + 28 E2E 
 
 - 2026-05-29: opened by /pm-luana (manual, post-merge de vitalia-shell-state-persistence). Scan Step 0.5 confirmó ≥2 brands (vitalia + nicolify).
 - 2026-05-29: state proposed → under_review + recomendación APPROVED. Espera ratificación Chris.
+- 2026-05-29: Chris APPROVED → state accepted.
+- 2026-05-29: lift ejecutado (commit `cf19d1f5`) → state **migrated**. Factory+hook a `@luana/hooks@0.2.0` (subpath exports + peerDep zustand). vitalia migrado a consumir vía workspace:* + subpath. R3 GREEN (vitalia 2296/2296 + @luana/hooks 19/19). Descubrimiento: vitalia NO tenía wiring `@luana/*` previo → se estableció (1er consumer @luana en vitalia). Pendiente opt-in voluntario nicolify (`dismiss-store`) via /pm-nicolify.
 
 ## 7. Cross-references
 
