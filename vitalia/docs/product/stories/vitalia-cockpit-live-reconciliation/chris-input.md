@@ -98,3 +98,9 @@ Trabajo ejecutado en esta sesión:
 - no_slice1_rebuild → PASS (los 3 index.ts son cap: headers pre-existentes, no rebuilds)
 
 **Backlog F2 mapeado:** 33 caps deprecated → 20 stories F2 + 4 service stories laterales identificadas. Ninguna superficie ROTO detectada en el sweep (el 500 fue resuelto en T-1).
+
+### 2026-05-29T16:55 · 🤖 claude · `/dev-team` · ✓ APLICADO
+**Chain T-1→T-2→T-3 COMPLETO + pusheado.** T-3 (5b85b869): ledger reconciliado a la verdad — 33 caps slice-1 superseded → `deprecated` + `ui_paradigm: slice-1-superseded` + `replaced_by_story` (mapeadas a 20 stories F2), 11 shell-organism + 10 infra + 5 admin + 1 landing → live con `ui_paradigm` honesto, cap `ops.live-reconciliation-sweep` nueva. Gates verdes: reconcile --validate-ledger exit=0, cross_check_3 HARD drift=0, cero edición engine. Matriz `vitalia/docs/domains/ops/live-reconciliation.md` con backlog F2 priorizado. Story `developing → developed`. Build-claim liberado. AUTO-HANDOFF → `/auditor`.
+
+### 2026-05-29T17:10 · 🤖 claude · `/auditor` · ✓ APLICADO
+**APPROVED.** Review independiente (yo no construí; lo hicieron los sub-agentes). Verifiqué: (1) bug fix de compute_capability_status.py = corrección semántica legítima (no gaming del gate); (2) reconciliación de ledger HONESTA — spot-check confirmó deprecadas genuinamente slice-1 con replaced_by_story válido + kept-live = navegables verificadas, cero superficie OK deprecada por error; (3) disciplina de scope PERFECTA — cero código de feature de app, shell compartido + engine intactos, cero reconstrucción slice-1; (4) Phase D 7/7 scenarios cubiertos; (5) gates: ledger_validate exit=0, cross_check_3 HARD 0 drift. CHECKPOINTS C1✅ C2✅ C3✅ C4✅ C5✅. Observación no bloqueante: 1 SOFT drift cc4/RBAC = gap conocido de otra story. AUTO-HANDOFF → /pm-vitalia merge.

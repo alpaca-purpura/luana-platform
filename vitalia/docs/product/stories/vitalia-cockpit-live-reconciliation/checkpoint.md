@@ -5,7 +5,7 @@ agent_owner: config
 module: platform
 cap_target: ops.live-reconciliation-sweep   # new — la matriz + metodología sweep como capability repetible
 cap_change_type: new                          # + acción de mantenimiento cross-cutting: corregir status de caps sobre-declaradas (documentar en 07-merge)
-state: developed
+state: reviewing
 release: F2
 architecture_pattern: ADR-vitalia-004
 adr_004_compliance: n/a-with-rationale   # no es story sub-tab/feature (ver 03-arch § Architecture Decisions)
@@ -25,12 +25,14 @@ autonomous_mode_caps:
   max_wall_clock_minutes: 150
   on_cap_exceeded: "state=blocked + escalate Chris"
 last_modified: 2026-05-29
-phase: T3_DONE_AWAIT_AUDIT
-last_artifact: T-3-result.md
+phase: HANDOFF_TO_PM_MERGE
+last_artifact: CHECKPOINTS.md
+gherkin_matrix: 06-audit/gherkin-matrix.md
+audit_verdict: APPROVED
 t1_done: true
 t2_done: true
 t3_done: true
-next_action: "AUTO-HANDOFF /auditor vitalia vitalia-cockpit-live-reconciliation → Phase B+C+D audit → si APPROVED → /pm-vitalia merge → state developed→reviewing→done"
+next_action: "/pm-vitalia merge → 07-merge.md 5 secciones + Fase F.3 cap ledger (new ops.live-reconciliation-sweep) + git mv archive → state reviewing→done"
 ---
 
 # Reconciliación cockpit ↔ realidad live · diagnóstico + reparación-o-mapeo
