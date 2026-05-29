@@ -130,9 +130,9 @@ describe("useViewportGuard — no auto-restore on viewport grow (SC-3 edge)", ()
   });
 });
 
-describe("useViewportGuard — no-op when mobile viewport < 768 (SC-2)", () => {
+describe("useViewportGuard — no-op for valeriaState when mobile viewport < 768 (SC-2 + D5)", () => {
   beforeEach(() => {
-    useShellStore.setState({ valeriaState: "full", shellMode: "agentic" });
+    useShellStore.setState({ valeriaState: "full", shellMode: "agentic", mobileDrawerOpen: false });
     Object.defineProperty(window, "innerWidth", {
       writable: true,
       configurable: true,
@@ -144,14 +144,37 @@ describe("useViewportGuard — no-op when mobile viewport < 768 (SC-2)", () => {
     vi.restoreAllMocks();
   });
 
-  it("no-op when viewport=375 (mobile < 768) — delegate to drawer F1-S5+", async () => {
+  it("no-op for valeriaState when viewport=375 (mobile < 768)", async () => {
     const { useViewportGuard } = await import("./useViewportGuard");
 
     renderHook(() => useViewportGuard());
 
-    // No-op: mobile viewport delegates to drawer pattern (F1-S5+)
-    // State should remain unchanged 'full'
+    // No-op: valeriaState stays unchanged (hook does NOT touch valeriaState on mobile)
     expect(useShellStore.getState().valeriaState).toBe("full");
+  });
+
+  it("[D5] hook does NOT touch mobileDrawerOpen on mobile mount (T-4)", async () => {
+    // D5 (ADR-vitalia-006): mobileDrawerOpen is governed by burger/close actions only.
+    // useViewportGuard has ZERO role in mobileDrawerOpen governance.
+    // Default mobileDrawerOpen=false means drawer starts CLOSED on fresh mobile mount.
+    const { useViewportGuard } = await import("./useViewportGuard");
+
+    renderHook(() => useViewportGuard());
+
+    // mobileDrawerOpen must remain false (hook did NOT touch it)
+    expect(useShellStore.getState().mobileDrawerOpen).toBe(false);
+  });
+
+  it("[D5] hook does NOT open mobile drawer when valeriaState='full' on mobile (T-4)", async () => {
+    // Critical: valeriaState='full' on desktop MUST NOT translate to mobileDrawerOpen=true
+    // (that was Bug #2 coupling). The hook must leave mobileDrawerOpen untouched.
+    useShellStore.setState({ valeriaState: "full", shellMode: "agentic", mobileDrawerOpen: false });
+    const { useViewportGuard } = await import("./useViewportGuard");
+
+    renderHook(() => useViewportGuard());
+
+    // Mobile drawer stays closed (fresh default) — desktop 'full' did NOT auto-open it
+    expect(useShellStore.getState().mobileDrawerOpen).toBe(false);
   });
 });
 

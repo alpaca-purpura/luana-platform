@@ -69,6 +69,7 @@ export interface TopBarGlobalProps {
  * This decouples the mobile drawer from the desktop valeriaState slice (ADR-vitalia-006 D5).
  */
 function TopBarGlobalInteractive({ className }: Pick<TopBarGlobalProps, "className">) {
+  const mobileDrawerOpen = useShellStore((s) => s.mobileDrawerOpen);
   const setMobileDrawerOpen = useShellStore((s) => s.setMobileDrawerOpen);
 
   const handleOpenValeria = () => {
@@ -100,7 +101,8 @@ function TopBarGlobalInteractive({ className }: Pick<TopBarGlobalProps, "classNa
           size="icon"
           className="md:hidden"
           onClick={handleOpenValeria}
-          aria-label="Abrir panel Valeria"
+          aria-label={mobileDrawerOpen ? "Cerrar panel Valeria" : "Abrir panel Valeria"}
+          aria-expanded={mobileDrawerOpen}
           data-testid="topbar-hamburger"
         >
           <Menu className="h-5 w-5" aria-hidden="true" />
