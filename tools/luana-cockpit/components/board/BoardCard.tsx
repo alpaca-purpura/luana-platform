@@ -6,9 +6,18 @@ import { Pill } from '@/components/ui/Badge';
 import { useDrawer } from '@/components/providers/DrawerProvider';
 import type { StoryWithArchive } from '@/lib/api-client';
 import type { ActiveSession } from '@/lib/types';
+import { AGENTS, agentOf, releaseHue, priorityColor } from '@/lib/agent-meta';
 
 // Solo idea ↔ refining son draggables (Chris-allowed)
 const DRAGGABLE_STATES = new Set(['idea', 'refining']);
+
+/** Humaniza un story_id cuando no hay goal: quita prefijos vitalia-/faseN- y guiones. */
+function humanize(storyId: string): string {
+  return storyId
+    .replace(/^[a-z]+-/, '')
+    .replace(/^fase\d+-/, '')
+    .replace(/-/g, ' ');
+}
 
 export function BoardCard({
   story,
@@ -26,12 +35,19 @@ export function BoardCard({
     data: { story },
   });
 
-  const style = transform
-    ? {
-        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-        zIndex: 50,
-      }
-    : undefined;
+  const agentId = agentOf(story);
+  const agent = agentId ? AGENTS[agentId] : null;
+  const accent = agent?.color ?? 'var(--color-border)';
+  const hue = releaseHue(story.release);
+  const prioColor = priorityColor(story.priority);
+  const area = story.cap_target?.includes('.') ? story.cap_target.split('.')[1] : null;
+
+  const style: React.CSSProperties = {
+    borderLeftColor: accent,
+    ...(transform
+      ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`, zIndex: 50 }
+      : {}),
+  };
 
   return (
     <div
@@ -44,18 +60,61 @@ export function BoardCard({
         openStory(story.story_id);
       }}
       className={cn(
-        'p-2 rounded border text-xs bg-[var(--color-panel2)] border-[var(--color-border)]',
+        'p-2 pl-2.5 rounded border border-l-[3px] text-xs bg-[var(--color-panel2)] border-[var(--color-border)]',
         'hover:border-[#3a4358] transition-all',
         draggable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer',
         isDragging && 'opacity-40'
       )}
     >
-      <div className="font-mono text-[10px] text-[var(--color-muted)] mb-1 truncate">
+      {/* Header: agente (color) + release badge */}
+      <div className="flex items-center gap-1.5 mb-1">
+        {agent ? (
+          <span
+            className="inline-flex items-center gap-1 text-[11px] font-semibold truncate"
+            style={{ color: accent }}
+          >
+            <span aria-hidden="true">{agent.emoji}</span>
+            {agent.name}
+          </span>
+        ) : (
+          <span className="text-[10px] text-[var(--color-muted)]">—</span>
+        )}
+        <span className="flex-1" />
+        {story.release && (
+          <span
+            className="text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0 leading-none"
+            style={
+              hue !== null
+                ? {
+                    color: `hsl(${hue} 85% 80%)`,
+                    backgroundColor: `hsl(${hue} 55% 20%)`,
+                    border: `1px solid hsl(${hue} 50% 40%)`,
+                  }
+                : undefined
+            }
+            title={`Release planificado: ${story.release}`}
+          >
+            {story.release}
+          </span>
+        )}
+      </div>
+
+      {/* Título legible (goal o id humanizado) */}
+      <div className="text-[11px] leading-snug line-clamp-2 text-[var(--color-text)]">
+        {story.goal ?? humanize(story.story_id)}
+      </div>
+
+      {/* story_id técnico (secundario) */}
+      <div
+        className="font-mono text-[9px] text-[var(--color-muted)] mt-1 truncate"
+        title={story.story_id}
+      >
         {story.story_id}
       </div>
+
       {session && (
         <div
-          className="mb-1 px-1.5 py-0.5 rounded bg-amber-900/30 border border-amber-700/50 text-amber-300 text-[10px] leading-tight inline-flex items-center gap-1"
+          className="mt-1 px-1.5 py-0.5 rounded bg-amber-900/30 border border-amber-700/50 text-amber-300 text-[10px] leading-tight inline-flex items-center gap-1"
           title={`Sesión ${session.lane ?? `pid${session.pid}`} (${session.skill}) construyendo · bucket ${session.bucket}${session.startedAt ? ` · desde ${session.startedAt}` : ''}`}
         >
           🔨 {session.lane ?? `pid${session.pid}`}
@@ -63,52 +122,43 @@ export function BoardCard({
       )}
       {story.parse_error && (
         <div
-          className="mb-1 px-1.5 py-1 rounded bg-red-950/50 border border-red-700 text-red-300 text-[10px] leading-tight"
+          className="mt-1 px-1.5 py-1 rounded bg-red-950/50 border border-red-700 text-red-300 text-[10px] leading-tight"
           title={story.parse_error}
         >
           ⚠ checkpoint inválido — {story.parse_error}
         </div>
       )}
-      {story.goal && (
-        <div className="text-[11px] line-clamp-2">{story.goal}</div>
-      )}
-      <div className="flex items-center gap-1 mt-2 flex-wrap">
-        {story.priority && (
-          <Pill className="bg-[var(--color-panel)] border border-[var(--color-border)] text-[var(--color-text)]">
-            {story.priority}
-          </Pill>
-        )}
-        {story.surfaces?.map((s) => (
-          <Pill
-            key={s}
-            className="bg-[var(--color-panel)] border border-[var(--color-border)] text-[var(--color-muted)]"
-          >
-            {s}
-          </Pill>
-        ))}
-        {story.cap_target && (() => {
-          const parts = story.cap_target.split('.');
-          if (parts.length === 2) {
-            const [agentPart, areaPart] = parts;
-            return (
-              <>
-                <Pill className="bg-[var(--color-panel)] border border-[var(--color-border)] text-[var(--color-muted)] text-[10px]">
-                  {agentPart}
-                </Pill>
-                <Pill className="bg-[var(--color-panel)] border border-[var(--color-border)] text-[var(--color-muted)] text-[10px] opacity-75">
-                  {areaPart}
-                </Pill>
-              </>
-            );
-          }
-          // Fallback para format legacy "module/slug"
-          return (
-            <Pill className="bg-[var(--color-panel)] border border-[var(--color-border)] text-[var(--color-muted)]">
-              {story.cap_target}
+
+      {/* Footer: prioridad (punto de color) + surfaces + área */}
+      {(story.priority || story.surfaces?.length || area) && (
+        <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+          {story.priority && (
+            <span
+              className="inline-flex items-center gap-1 text-[9px] text-[var(--color-muted)]"
+              title={`Prioridad: ${story.priority}`}
+            >
+              <span
+                className="w-2 h-2 rounded-full shrink-0"
+                style={{ backgroundColor: prioColor ?? '#64748b' }}
+              />
+              {story.priority}
+            </span>
+          )}
+          {story.surfaces?.map((s) => (
+            <Pill
+              key={s}
+              className="bg-[var(--color-panel)] border border-[var(--color-border)] text-[var(--color-muted)] text-[9px]"
+            >
+              {s}
             </Pill>
-          );
-        })()}
-      </div>
+          ))}
+          {area && (
+            <Pill className="bg-[var(--color-panel)] border border-[var(--color-border)] text-[var(--color-muted)] text-[9px] opacity-80">
+              {area}
+            </Pill>
+          )}
+        </div>
+      )}
     </div>
   );
 }

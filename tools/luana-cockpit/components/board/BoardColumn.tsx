@@ -53,6 +53,15 @@ export function BoardColumn({
     dropFeedback = allowed ? 'allowed' : 'forbidden';
   }
 
+  // `done`: más recientes entregados arriba, antiguos al fondo (desc por last_modified).
+  // Sin last_modified → al fondo. El resto de columnas mantiene su orden natural.
+  const ordered =
+    state === 'done'
+      ? [...stories].sort((a, b) =>
+          (b.last_modified ?? '').localeCompare(a.last_modified ?? '')
+        )
+      : stories;
+
   return (
     <div className="w-48 shrink-0 flex flex-col">
       <header className="flex items-center justify-between mb-2 px-1">
@@ -85,7 +94,7 @@ export function BoardColumn({
           </div>
         ) : (
           <div className="space-y-1.5">
-            {stories.map((s) => (
+            {ordered.map((s) => (
               <BoardCard
                 key={s.story_id}
                 story={s}

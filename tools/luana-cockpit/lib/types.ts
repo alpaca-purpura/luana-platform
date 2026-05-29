@@ -180,6 +180,7 @@ export interface Story {
 
   // Metadata cockpit (derivada o pre-seed)
   owner?: string | null;
+  agent_owner?: string | null;
   type?: StoryType | null;
   module?: string | null;
   surfaces?: Surface[] | null;
