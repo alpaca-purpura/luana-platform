@@ -135,3 +135,21 @@ T-3 completo. Migración SSR-safe factory a los 3 stores restantes (transversal 
 **Pre-existing failure (NO T-3):** `TopBarGlobal.test.tsx` 1 test (burger → setValeriaState) — pre-existente en rama, pertenece a T-2 scope.
 
 Detalle completo: `T-3-result.md`.
+
+### 2026-05-28 · 🤖 claude · /dev-team · ✓ APLICADO
+T-2 completo. Skeleton store-free (D4) + rehydrate en chunk ssr:false (D3) + arch guard test.
+
+**Archivos creados:**
+- `vitalia/frontend/src/components/shared/shell-organism/__tests__/no-store-in-ssr-skeleton.test.tsx` — 6 architecture guard tests GREEN (TDD RED-first confirmed)
+
+**Archivos modificados:**
+- `vitalia/frontend/src/components/shared/shell-organism/TopBarGlobal.tsx` — `variant` prop (`"interactive" | "skeleton"`); skeleton variant is store-free; D5 burger calls `setMobileDrawerOpen(true)` not `setValeriaState`
+- `vitalia/frontend/src/components/shared/shell-organism/TopBarGlobal.test.tsx` — updated click test (D5) + skeleton variant tests
+- `vitalia/frontend/src/components/shared/shell-organism/ShellOrganismLayout.tsx` — skeleton passes `<TopBarGlobal variant="skeleton" />`
+- `vitalia/frontend/src/components/shared/shell-organism/ShellOrganismLayoutClient.tsx` — `useStoreHydration(useShellStore)` call (D3)
+
+**Gates:** `tsc --noEmit` 0 errores (T-2 files) · `eslint` 0 errores · `vitest` arch guard 6/6 PASS + TopBarGlobal 18/18 PASS + arch fitness 148/148 PASS (0 allowlist growth) · no-store-in-ssr-skeleton RED (before) → GREEN (after).
+
+**Note:** T-2 implementation was committed in the same session as T-3 (T-3 session built on T-2 foundation). Commit `54ffb8e4` includes both T-2 and T-3 files.
+
+Detalle completo: `T-2-result.md`.
