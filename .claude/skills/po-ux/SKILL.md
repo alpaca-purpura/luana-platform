@@ -167,7 +167,7 @@ state: refining
 
 #### § Context
 
-- Outcome al que pertenece (`outcomes/{id}.md`)
+- Release al que pertenece (`releases/{id}.yaml`)
 - Módulo afectado
 - User journey insertion point (dónde aparece en sidebar/flow)
 - Out-of-scope explícito (anti-creep)
@@ -407,10 +407,10 @@ next_action: "/architect <brand>: {brand} lee 01-spec.md → produce ready packa
 
 ## Scope expansion durante diseño
 
-Si durante mockup/iteración descubrís edge case que el outcome no contemplaba:
+Si durante mockup/iteración descubrís edge case que la story no contemplaba:
 
 - **Pequeño** (1 estado UI extra, 1 microcopy faltante) → agregar inline + bumpear `po_ux_version` en frontmatter spec.md
-- **Medio** (scenario nuevo necesario, refactoring scope) → STOP, escala `/pm-{brand}`: "scope crece, requiere ratificar outcome"
+- **Medio** (scenario nuevo necesario, refactoring scope) → STOP, escala `/pm-{brand}`: "scope crece, requiere ratificar alcance de la story"
 - **Grande** (story se vuelve épica, > 5d trabajo) → STOP, `/pm-{brand}` decompose en N stories
 
 ## Anti-patterns
@@ -436,7 +436,7 @@ Si durante mockup/iteración descubrís edge case que el outcome no contemplaba:
 
 ## Anti cross-brand pollution
 
-- ❌ NUNCA editar `{other_brand}/...` cuando trabajás en `{brand}`. Si la story necesita tocar otra brand → STOP, escalate `/pm-luana` (outcome cross-brand).
+- ❌ NUNCA editar `{other_brand}/...` cuando trabajás en `{brand}`. Si la story necesita tocar otra brand → STOP, escalate `/pm-luana` (trabajo cross-brand).
 - ❌ NUNCA editar `core/luana-core-*/src/` directamente. Requiere lift via `/pm-luana` (promotion gate). Si el patrón UI aparece ≥2 brands → escalá como promotion candidate.
 - ❌ NUNCA escribir specs/archs/tickets en root `docs/product/stories/` — solo `platform` (cross-brand) outcomes van ahí, y eso requiere `<brand>: platform` explícito.
 - ❌ NUNCA referenciar `frontend/src/` sin el prefix `{brand}/` — post reorg 2026-05-15 no existe root `frontend/`.

@@ -204,9 +204,9 @@ Output verdict → embedded en `07-merge.md § 2 — Playwright E2E run` por `/p
 
 Verificar que el cap YAML target post-Fase-F-merge refleja los AC/Gherkin scenarios del spec ratificado:
 
-- Si `cap_change_type: new` → cap YAML creado con schema v2 completo + change_log[0] type=new + atomics iniciales
-- Si `cap_change_type: extend` → atomics nuevos appendeados al `atomics[]` + change_log entry type=extend
-- Si `cap_change_type: fix` → change_log entry type=fix sin tocar atomics
+- Si `cap_change_type: new` → cap YAML creado con schema completo + change_log[0] type=new + scenarios iniciales
+- Si `cap_change_type: extend` → scenarios nuevos appendeados al `scenarios[]` + change_log entry type=extend
+- Si `cap_change_type: fix` → change_log entry type=fix sin tocar scenarios
 - Si `cap_change_type: derive` → cap YAML hijo creado con parent_cap declarado + padre actualizado en derives_capabilities[]
 
 Verificar que `chris-input.md` existe para stories `state ∈ {refining, refined, ready, developing, developed, reviewing}` y el último append es de Claude (no Chris esperando respuesta · si Chris último + state ≠ refining flag WARN).
@@ -371,7 +371,7 @@ Aplica cuando finding ∈ whitelist verbatim de `auditor-self-fix-policy.md` § 
 **Boundaries hard self-fix:**
 
 - `core/luana-core-*/src/` — PROHIBIDO self-fix. Escala /pm-luana (promotion gate).
-- `{other_brand}/...` — PROHIBIDO. Escala /pm-luana (cross-brand outcome).
+- `{other_brand}/...` — PROHIBIDO. Escala /pm-luana (trabajo cross-brand).
 - `{brand}/backend/src/modules/{brand}/{copilot,sales_agent}/` brand-extension — PERMITIDO solo whitelist categorías triviales (lint/format/Spanish). NUNCA tocar prompts, tools, workflows agentic core.
 
 ### Caso D — ESCALATED (Chris / /pm-luana)
@@ -399,7 +399,7 @@ self_fix_iter: {M}/4
 Próximo: Chris ratifica acción —
   (a) refinar spec/arch (back to /po-ux o /architect)
   (b) lift core via /pm-luana (si engine surface)
-  (c) cross-brand outcome via /pm-luana (si cross-brand)
+  (c) trabajo cross-brand via /pm-luana (si cross-brand)
   (d) discard scope (drop ticket)
   (e) re-decompose story (split en N stories más pequeñas)
 ```
@@ -614,7 +614,7 @@ STOP la sesión `/auditor` aquí. Chris (o auto-handoff harness) invoca `/pm-{br
 | Security (auth/PII/tenant_id) | ⛔ ESCALATE Chris (Caso D) |
 | Architecture refactor (DDD layer) | ⛔ ESCALATE Chris (Caso D) |
 | Engine `core/luana-core-*/` | ⛔ ESCALATE /pm-luana (Caso D — promotion gate) |
-| Cross-brand pollution | ⛔ ESCALATE /pm-luana (Caso D — outcome cross-brand) |
+| Cross-brand pollution | ⛔ ESCALATE /pm-luana (Caso D — trabajo cross-brand) |
 
 **Caps absolutos (v4.1):**
 
@@ -653,7 +653,7 @@ STOP la sesión `/auditor` aquí. Chris (o auto-handoff harness) invoca `/pm-{br
 
 ## Anti cross-brand pollution
 
-- ❌ NUNCA auditar / approve edits en `{other_brand}/...` cuando trabajás en `{brand}`. Si el PR toca otra brand → flag CHANGES_REQUESTED + escalate `/pm-luana` (outcome cross-brand).
+- ❌ NUNCA auditar / approve edits en `{other_brand}/...` cuando trabajás en `{brand}`. Si el PR toca otra brand → flag CHANGES_REQUESTED + escalate `/pm-luana` (trabajo cross-brand).
 - ❌ NUNCA auditar / approve edits directos a `core/luana-core-*/src/`. Requiere lift via `/pm-luana` (promotion gate) ANTES del build.
 - ❌ NUNCA escribir review/checkpoints en root `docs/product/stories/` — solo `<brand>: platform` cross-brand outcomes van ahí.
 - ❌ NUNCA hardcodear paths absolutos `/home/chris/AISALESHT/...` o `/home/chalreme/Proyectos/luana-platform/...` — usar `${WS}` resuelto via `git rev-parse --show-toplevel`.

@@ -1,6 +1,6 @@
 ---
 name: pm-vitalia
-description: "PM Vitalia — owner del SSoT funcional brand Vitalia (Salud + Bienestar (reservas prepagadas, HIPAA-lite, seguimiento post-tratamiento)). Pointer-first: carga vitalia/docs/product/checkpoint.md + BACKLOG.md en bootstrap. Owner: vitalia/docs/product/{outcomes,stories,capabilities,modules}/, vitalia/docs/learnings/, vitalia/docs/architecture/, vitalia/docs/domains/. Hereda paradigm v4 (10 estados macro) de Luana core. Activa: '/pm-vitalia', 'estado vitalia', 'vitalia backlog', 'vitalia story', 'vitalia outcome', 'vitalia capability', 'vitalia learning', 'clínica', 'reserva prepagada', 'paciente', 'tratamiento', 'HIPAA'."
+description: "PM Vitalia — owner del SSoT funcional brand Vitalia (Salud + Bienestar (reservas prepagadas, HIPAA-lite, seguimiento post-tratamiento)). Pointer-first: carga vitalia/docs/product/checkpoint.md + BACKLOG.md en bootstrap. Owner: vitalia/docs/product/{releases,stories,capabilities,modules}/, vitalia/docs/learnings/, vitalia/docs/architecture/, vitalia/docs/domains/. Hereda paradigm v4 (10 estados macro) de Luana core. Activa: '/pm-vitalia', 'estado vitalia', 'vitalia backlog', 'vitalia story', 'vitalia release', 'vitalia capability', 'vitalia learning', 'clínica', 'reserva prepagada', 'paciente', 'tratamiento', 'HIPAA'."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
 model: opus
 ---
@@ -19,7 +19,7 @@ Salud + Bienestar (reservas prepagadas, HIPAA-lite, seguimiento post-tratamiento
 |---|---|---|
 | `vitalia/docs/product/BACKLOG.md` | auto-gen vista 10 estados | `make portfolio` |
 | `vitalia/docs/product/checkpoint.md` | state global brand | `/pm-vitalia` |
-| `vitalia/docs/product/outcomes/{slug}.md` | épicas brand-specific | `/pm-vitalia` |
+| `vitalia/docs/product/releases/{id}.yaml` | contenedor temporal (F0..FN) | `/pm-vitalia` |
 | `vitalia/docs/product/stories/{id}/checkpoint.md` | per-story state | `/pm-vitalia` + handoffs |
 | `vitalia/docs/product/stories/{id}/00-research.md` | research opcional state=idea | `/pm-vitalia` |
 | `vitalia/docs/product/stories/{id}/07-merge.md` | merge artifact state=done | `/pm-vitalia` |
@@ -136,7 +136,7 @@ cat vitalia/docs/product/BACKLOG.md         # vista 10 estados
 
 ### Step 2 — Menú (solo si Step 0 GREEN)
 
-Pregunta a Chris: **"¿qué hacemos en Vitalia? (a) idea/story nueva / (b) continúa story X / (c) outcome nuevo / (d) capability / (e) learning / (f) drill-down a {drill-target}"**
+Pregunta a Chris: **"¿qué hacemos en Vitalia? (a) idea/story nueva / (b) continúa story X / (c) capability / (d) learning / (e) drill-down a {drill-target}"**
 
 ## Vocabulary — 10 estados macro (heredado Luana core)
 
@@ -164,7 +164,6 @@ Idéntico paradigm v4 de Luana core. Detalle: `docs/process/pm-redesign-2026-05.
 | "estado vitalia" / "qué tenemos vitalia" | Render `vitalia/docs/product/BACKLOG.md` agrupado por 10 estados con emojis (NO tabla cruda) |
 | "idea {x}" | Crear `vitalia/docs/product/stories/{slug}/checkpoint.md` state=idea (o append a ideas-pool si existe) |
 | "refinemos {story}" | (1) Update checkpoint state=refining. (2) Si épica → decompose. (3) **Invocá `Skill(po-ux)`** (UI std) o **`Skill(po)`** (service) o **`Skill(po)` luego `Skill(ux-agentico)`** (agentic) con args `"{brand} {story-id}"`. NO devolver handoff textual. |
-| "outcome nuevo {tema}" | Crear `vitalia/docs/product/outcomes/{slug}.md` |
 | "spec ratificada" / "diseño ratificado" | Update state refining→refined. **Invocá `Skill(architect)`** con args `"vitalia {story-id}"` |
 | "ready" | Update state refined→ready (verificar 4 archivos: 03-arch, 04-validators, 05-guidelines, 06-tickets) |
 | "build" / "arranca dev" | Update state ready→developing. **Invocá `Skill(dev-team)`** con args `"vitalia {story-id}"` |
@@ -227,18 +226,20 @@ Cuando aplicás `07-merge.md` para una story brand:
 5. Archive `vitalia/docs/product/stories/{id}/` → `vitalia/docs/archive/{year}/stories/{id}/` (snapshot inmutable brand-local)
 6. Append entry en `vitalia/docs/learnings/` si aplica (decisión cardinal)
 7. **Si learning tiene `promotable: candidate|yes` → ping `/pm-luana` para evaluación lift a core**
-8. Update outcome story_ids (mark story done)
+8. Update `release.yaml.stories[]` (mark story done — el release recomputa su state machine)
 
 ### Fase F.3 · Capability ledger update (v2 cement 2026-05-27)
 
 Al cerrar story `reviewing → done`, aplicar logic del `cap_change_type` al YAML target. 4 ramas:
 
-- `new` → crear `vitalia/docs/product/capabilities/{module}/{slug}.yaml` con schema v2 completo + change_log[0] type=new + atomics iniciales
-- `fix` → append change_log entry type=fix · NO toca atomics
-- `extend` → append change_log entry type=extend + append nuevos atomics al array con `added_in_story: {story_id}`
+- `new` → crear `vitalia/docs/product/capabilities/{module}/{slug}.yaml` con schema completo + change_log[0] type=new + scenarios iniciales
+- `fix` → append change_log entry type=fix · NO toca scenarios
+- `extend` → append change_log entry type=extend + append nuevos scenarios al array con `added_in_story: {story_id}`
 - `derive` → crear cap YAML hijo con `parent_cap: {origen_slug}` + change_log[0] type=derive · update padre append `derives_capabilities: [hijo_slug]`
 
 Update también `last_modified: today` del cap. Doc: `docs/process/capability-protocol.md` § Sección 5.
+
+**★ Definición de DONE (cement 2026-05-28):** una capability NO puede ser `status=live` sin ≥1 scenario + e2e_test que exista (cross_check_3 HARD). Si no hay e2e aún → status=partial/declared-live, NO live. Ver `docs/process/lifecycle.md` § 4.
 
 ## ★ Capability inventory post-merge (MANDATORIO)
 
@@ -260,7 +261,7 @@ Pre-commit hook + CI corren:
 
 Exit 1 si brand `status: shipped` tiene `capabilities/` vacía. NO hay auto-fix — requires manual inventory por `/pm-vitalia`.
 
-Estado vitalia al 2026-05-28: **72 caps** en disco (mayoría stubs v2 auto-migrados; backfill de scenarios en curso · ver `docs/process/lifecycle.md` Fase 2). Nota: `atomics` MUERTO 2026-05-28 — la unidad atómica es ahora `scenario` (ver `lifecycle.md` § 2).
+Estado vitalia al 2026-05-28: **72 caps** en disco (mayoría stubs auto-migrados; backfill de scenarios en curso · ver `docs/process/lifecycle.md` Fase 2). La unidad atómica de comportamiento es el `scenario` (Gherkin) — ver `lifecycle.md` § 1.
 
 ### Anti-pattern
 
@@ -285,7 +286,7 @@ target_core_package: core/luana-core-X (sugerencia)
 
 **Qué aprendimos:** ...
 
-**Origen:** story {id} / outcome {slug} / incident YYYY-MM-DD
+**Origen:** story {id} / release {id} / incident YYYY-MM-DD
 
 **Why:** razón behind
 

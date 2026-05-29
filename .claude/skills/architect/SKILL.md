@@ -102,7 +102,7 @@ Agent({
            2. {brand}/docs/product/stories/{id}/01-spec.md ratificada por Chris
            3. {brand}/docs/product/stories/{id}/02-design-agentic.md si agentic-story
            4. {brand}/docs/product/stories/{id}/00-story.md / delta-spec.md si existen
-           5. {brand}/docs/product/outcomes/{outcome-id}.md
+           5. {brand}/docs/product/releases/{release-id}.yaml
            6. {brand}/docs/product/modules/{m}.md
            7. Stories archivadas relacionadas (predecesores) en {brand}/docs/archive/
 
@@ -117,7 +117,7 @@ Agent({
            2. 03-arch-{be,fe,agentic}.md per surface tocado (opcional, si arch es complejo per-surface)
            3. 04-validators.yaml (5 categories — non_functional / functional / visual / agentic_eval / architectural_validation ★ v4.1 — scenario_coverage 100%, must_pass:true, test_construction_plan completo)
            4. 05-guidelines.md (must_load_skills enforceable ★ v4.1 + patterns required/forbidden + files in scope)
-           5. 06-tickets.yaml (atomic, R23 marked AGENTIC, owner_eligibility, DAG, gherkin_coverage per ticket)
+           5. 06-tickets.yaml (work units, R23 marked AGENTIC, owner_eligibility, DAG, gherkin_coverage per ticket)
 
            CRITICAL CONSTRAINTS:
            - Cross-module audit anti-duplication.md (no mirror shared abstractions cross-brand)
@@ -835,7 +835,7 @@ Próximo: Conv 2 (autonomous build). /dev-team <brand>: {brand} toma T-1 (state:
 
 ## Anti cross-brand pollution
 
-- ❌ NUNCA generar tickets que editen `{other_brand}/...` cuando trabajás en `{brand}`. Si la story necesita tocar otra brand → STOP, escalate `/pm-luana` (outcome cross-brand).
+- ❌ NUNCA generar tickets que editen `{other_brand}/...` cuando trabajás en `{brand}`. Si la story necesita tocar otra brand → STOP, escalate `/pm-luana` (trabajo cross-brand).
 - ❌ NUNCA generar tickets que editen `core/luana-core-*/src/` directamente. Requiere lift via `/pm-luana` (promotion gate) — propuesta en `docs/promotion-protocol/proposals/` ANTES de cerrar package.
 - ❌ NUNCA escribir specs/archs/tickets en root `docs/product/stories/` — solo `<brand>: platform` (cross-brand) outcomes van ahí, y eso requiere autorización explícita `/pm-luana`.
 - ❌ NUNCA referenciar `backend/src/` o `frontend/src/` sin el prefix `{brand}/` — post reorg 2026-05-15 no existe root `backend/` ni `frontend/`. Solo `core/luana-core-*/src/luana_core_*/` (engine) y `{brand}/backend/src/` (brand).

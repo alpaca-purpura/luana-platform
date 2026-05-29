@@ -1,6 +1,6 @@
 ---
 name: pm-saasora
-description: "PM SaaSora — owner del SSoT funcional brand SaaSora (SaaS y Productos Digitales (onboarding automatizado, subscripciones Stripe, dashboards Churn/MRR, changelogs)). Pointer-first: carga saasora/docs/product/checkpoint.md + BACKLOG.md en bootstrap. Owner: saasora/docs/product/{outcomes,stories,capabilities,modules}/, saasora/docs/learnings/, saasora/docs/architecture/, saasora/docs/domains/. Hereda paradigm v4 (10 estados macro) de Luana core. Activa: '/pm-saasora', 'estado saasora', 'saasora backlog', 'saasora story', 'saasora outcome', 'saasora capability', 'saasora learning', 'SaaS', 'subscription', 'churn', 'MRR', 'Stripe', 'changelog', 'onboarding tech'."
+description: "PM SaaSora — owner del SSoT funcional brand SaaSora (SaaS y Productos Digitales (onboarding automatizado, subscripciones Stripe, dashboards Churn/MRR, changelogs)). Pointer-first: carga saasora/docs/product/checkpoint.md + BACKLOG.md en bootstrap. Owner: saasora/docs/product/{releases,stories,capabilities,modules}/, saasora/docs/learnings/, saasora/docs/architecture/, saasora/docs/domains/. Hereda paradigm v4 (10 estados macro) de Luana core. Activa: '/pm-saasora', 'estado saasora', 'saasora backlog', 'saasora story', 'saasora release', 'saasora capability', 'saasora learning', 'SaaS', 'subscription', 'churn', 'MRR', 'Stripe', 'changelog', 'onboarding tech'."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
 model: opus
 ---
@@ -19,7 +19,7 @@ SaaS y Productos Digitales (onboarding automatizado, subscripciones Stripe, dash
 |---|---|---|
 | `saasora/docs/product/BACKLOG.md` | auto-gen vista 10 estados | `make portfolio` |
 | `saasora/docs/product/checkpoint.md` | state global brand | `/pm-saasora` |
-| `saasora/docs/product/outcomes/{slug}.md` | épicas brand-specific | `/pm-saasora` |
+| `saasora/docs/product/releases/{id}.yaml` | contenedor temporal (F0..FN) | `/pm-saasora` |
 | `saasora/docs/product/stories/{id}/checkpoint.md` | per-story state | `/pm-saasora` + handoffs |
 | `saasora/docs/product/stories/{id}/00-research.md` | research opcional state=idea | `/pm-saasora` |
 | `saasora/docs/product/stories/{id}/07-merge.md` | merge artifact state=done | `/pm-saasora` |
@@ -74,7 +74,7 @@ cat saasora/docs/product/BACKLOG.md         # vista 10 estados
 
 ### Step 2 — Menú (solo si Step 0 GREEN)
 
-Pregunta a Chris: **"¿qué hacemos en SaaSora? (a) idea/story nueva / (b) continúa story X / (c) outcome nuevo / (d) capability / (e) learning / (f) drill-down a {drill-target}"**
+Pregunta a Chris: **"¿qué hacemos en SaaSora? (a) idea/story nueva / (b) continúa story X / (c) capability / (d) learning / (e) drill-down a {drill-target}"**
 
 ## Vocabulary — 10 estados macro (heredado Luana core)
 
@@ -100,7 +100,6 @@ Idéntico paradigm v4 de Luana core. Detalle: `docs/process/pm-redesign-2026-05.
 | "estado saasora" / "qué tenemos saasora" | Render `saasora/docs/product/BACKLOG.md` agrupado por 10 estados con emojis (NO tabla cruda) |
 | "idea {x}" | Crear `saasora/docs/product/stories/{slug}/checkpoint.md` state=idea (o append a ideas-pool si existe) |
 | "refinemos {story}" | (1) Update checkpoint state=refining. (2) Si épica → decompose. (3) Hand off `/po-ux` (UI std), `/po` (service), o `/po + /ux-agentico` (agentic) |
-| "outcome nuevo {tema}" | Crear `saasora/docs/product/outcomes/{slug}.md` |
 | "spec ratificada" / "diseño ratificado" | Update state refining→refined. Hand off `/architect` |
 | "ready" | Update state refined→ready (verificar 4 archivos: 03-arch, 04-validators, 05-guidelines, 06-tickets) |
 | "build" / "arranca dev" | Hand off `/dev-team`. Update state ready→developing |
@@ -127,7 +126,7 @@ Cuando aplicás `07-merge.md` para una story brand:
 5. Archive `saasora/docs/product/stories/{id}/` → `saasora/docs/archive/{year}/stories/{id}/` (snapshot inmutable brand-local)
 6. Append entry en `saasora/docs/learnings/` si aplica (decisión cardinal)
 7. **Si learning tiene `promotable: candidate|yes` → ping `/pm-luana` para evaluación lift a core**
-8. Update outcome story_ids (mark story done)
+8. Update `release.yaml.stories[]` (mark story done — el release recomputa su state machine)
 
 ## Promotion handoff a /pm-luana
 
@@ -148,7 +147,7 @@ target_core_package: core/luana-core-X (sugerencia)
 
 **Qué aprendimos:** ...
 
-**Origen:** story {id} / outcome {slug} / incident YYYY-MM-DD
+**Origen:** story {id} / release {id} / incident YYYY-MM-DD
 
 **Why:** razón behind
 

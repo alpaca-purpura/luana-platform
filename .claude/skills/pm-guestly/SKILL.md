@@ -1,6 +1,6 @@
 ---
 name: pm-guestly
-description: "PM Guestly — owner del SSoT funcional brand Guestly (Turismo + Hotelería (motor de reservas por temporada, sync OTAs Airbnb/Booking, guest experience automatizado)). Pointer-first: carga guestly/docs/product/checkpoint.md + BACKLOG.md en bootstrap. Owner: guestly/docs/product/{outcomes,stories,capabilities,modules}/, guestly/docs/learnings/, guestly/docs/architecture/, guestly/docs/domains/. Hereda paradigm v4 (10 estados macro) de Luana core. Activa: '/pm-guestly', 'estado guestly', 'guestly backlog', 'guestly story', 'guestly outcome', 'guestly capability', 'guestly learning', 'hotel', 'reserva', 'OTA', 'Airbnb', 'Booking', 'huésped', 'temporada', 'check-in', 'checkout', 'turismo', 'hotelería'."
+description: "PM Guestly — owner del SSoT funcional brand Guestly (Turismo + Hotelería (motor de reservas por temporada, sync OTAs Airbnb/Booking, guest experience automatizado)). Pointer-first: carga guestly/docs/product/checkpoint.md + BACKLOG.md en bootstrap. Owner: guestly/docs/product/{releases,stories,capabilities,modules}/, guestly/docs/learnings/, guestly/docs/architecture/, guestly/docs/domains/. Hereda paradigm v4 (10 estados macro) de Luana core. Activa: '/pm-guestly', 'estado guestly', 'guestly backlog', 'guestly story', 'guestly release', 'guestly capability', 'guestly learning', 'hotel', 'reserva', 'OTA', 'Airbnb', 'Booking', 'huésped', 'temporada', 'check-in', 'checkout', 'turismo', 'hotelería'."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
 model: opus
 ---
@@ -19,7 +19,7 @@ Turismo + Hotelería (motor de reservas por temporada, sync OTAs Airbnb/Booking,
 |---|---|---|
 | `guestly/docs/product/BACKLOG.md` | auto-gen vista 10 estados | `make portfolio` |
 | `guestly/docs/product/checkpoint.md` | state global brand | `/pm-guestly` |
-| `guestly/docs/product/outcomes/{slug}.md` | épicas brand-specific | `/pm-guestly` |
+| `guestly/docs/product/releases/{id}.yaml` | contenedor temporal (F0..FN) | `/pm-guestly` |
 | `guestly/docs/product/stories/{id}/checkpoint.md` | per-story state | `/pm-guestly` + handoffs |
 | `guestly/docs/product/stories/{id}/00-research.md` | research opcional state=idea | `/pm-guestly` |
 | `guestly/docs/product/stories/{id}/07-merge.md` | merge artifact state=done | `/pm-guestly` |
@@ -74,7 +74,7 @@ cat guestly/docs/product/BACKLOG.md         # vista 10 estados
 
 ### Step 2 — Menú (solo si Step 0 GREEN)
 
-Pregunta a Chris: **"¿qué hacemos en Guestly? (a) idea/story nueva / (b) continúa story X / (c) outcome nuevo / (d) capability / (e) learning / (f) drill-down a {drill-target}"**
+Pregunta a Chris: **"¿qué hacemos en Guestly? (a) idea/story nueva / (b) continúa story X / (c) capability / (d) learning / (e) drill-down a {drill-target}"**
 
 ## Vocabulary — 10 estados macro (heredado Luana core)
 
@@ -100,7 +100,6 @@ Idéntico paradigm v4 de Luana core. Detalle: `docs/process/pm-redesign-2026-05.
 | "estado guestly" / "qué tenemos guestly" | Render `guestly/docs/product/BACKLOG.md` agrupado por 10 estados |
 | "idea {x}" | Crear `guestly/docs/product/stories/{slug}/checkpoint.md` state=idea |
 | "refinemos {story}" | Update checkpoint state=refining + hand off `/po-ux`/`/po`/`/ux-agentico` |
-| "outcome nuevo {tema}" | Crear `guestly/docs/product/outcomes/{slug}.md` |
 | "spec ratificada" | Update state refining→refined. Hand off `/architect` |
 | "build" / "arranca dev" | Hand off `/dev-team`. Update state ready→developing |
 | "audita" / "QA" | Hand off `/auditor`. Update state developed→reviewing |

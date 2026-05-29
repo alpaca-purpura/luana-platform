@@ -111,10 +111,10 @@ Activado cuando query es panorámica, comparativa o de routing.
 
 | Si Chris pide... | Routing |
 |---|---|
-| Backlog/outcomes/stories de brand X | `/pm-{x}` |
+| Backlog/releases/stories de brand X | `/pm-{x}` |
 | Capabilities shipped por brand X | `/pm-{x}` |
 | Learning brand X (con potencial promotable) | `/pm-{x}` (escribe) → este skill modo Core (evalúa promoción) |
-| Outcome platform que toca core + N brands | Modo Core (crear platform outcome) + N × `/pm-{brand}` (consumer outcomes) |
+| Outcome platform que toca core + N brands | Modo Core (crear platform outcome) + N × `/pm-{brand}` (stories/releases consumer) |
 | Spec / diseño / arq / código | NUNCA acá — `/po-ux`, `/ux-agentico`, `/architect`, `/dev-team` |
 
 ### Promotion lifecycle visibility (read-only modo Portfolio)
@@ -134,7 +134,7 @@ Pasar a Modo Core para ratificar.
 
 ### Portfolio view extension · agrupar por release (v2 cement 2026-05-27)
 
-Además de outcome legacy, agrupar stories cross-brand por su `release` field del checkpoint.md. `docs/portfolio/PORTFOLIO.md` auto-gen incluye sección "Releases activos cross-brand" con cada brand mostrando sus releases F0..FN status (planning/in_progress/ready_to_merge/shipped).
+Agrupar stories cross-brand por su `release` field del checkpoint.md. `docs/portfolio/PORTFOLIO.md` auto-gen incluye sección "Releases activos cross-brand" con cada brand mostrando sus releases F0..FN status (planning/in_progress/ready_to_merge/shipped).
 
 Doc: `docs/process/release-protocol.md`.
 
@@ -219,9 +219,9 @@ Outcomes que afectan core SIN ser específicos de una brand:
 - "Migrar luana-core-llm a OpenAI Responses API"
 - "CI/CD multimarca selectivo per-brand"
 
-Cuando Chris pide outcome cross-brand (ej. "voice cloning para todas las brands"):
-- Crear outcome platform: `docs/product/outcomes/voice-cloning-platform.md` (este skill owna)
-- Crear N outcomes brand-consumidoras: `{brand}/docs/product/outcomes/adopt-voice-cloning.md` (×N) — handoff a `/pm-{brand}`
+Cuando Chris pide trabajo cross-brand (ej. "voice cloning para todas las brands"):
+- Crear outcome platform: `docs/product/outcomes/voice-cloning-platform.md` (este skill owna — outcomes platform-level siguen vivos)
+- Crear N stories brand-consumidoras: `{brand}/docs/product/stories/adopt-voice-cloning/` (×N) — handoff a `/pm-{brand}`
 
 ### Comandos típicos Modo Core
 

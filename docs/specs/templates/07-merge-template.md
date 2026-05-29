@@ -10,7 +10,7 @@
 ---
 story_id: STORY_ID
 brand: BRAND_SLUG                     # vitalia | nicolify | comunify | lupulo | platform
-outcome: PARENT_OUTCOME_ID            # outcome del brand (épica padre)
+release: PARENT_RELEASE_ID            # release del brand (contenedor temporal)
 merged_at: 2026-05-18T20:00Z
 merged_by: /pm-{brand}
 commit_squash_sha: abcd1234            # SHA del squash-merge wip/* → main
@@ -151,7 +151,7 @@ cd ${WS}/${BRAND}/backend && ${WS}/.venv/bin/pytest tests/agentic_evals/ --trial
 ## Story → archive
 
 - `{brand}/docs/product/stories/{story-id}/` → `{brand}/docs/archive/{year}/stories/{story-id}/` (snapshot inmutable post-merge)
-- Outcome padre actualiza `story_ids` marcando esta story `done`
+- Release padre actualiza `stories[]` marcando esta story `done` (recomputa su state machine)
 
 ## Output al user (Chris) post-merge
 
@@ -162,7 +162,7 @@ cd ${WS}/${BRAND}/backend && ${WS}/.venv/bin/pytest tests/agentic_evals/ --trial
    - Capabilities updated: {cap-x} (NEW live), {cap-y} (planned→live)
    - Modules refreshed: {module-a}.md, {module-b}.md auto-list
    - Story archived: {brand}/docs/archive/{year}/stories/{story-id}/
-   - Outcome {parent-outcome} updated (1 story → done)
+   - Release {parent-release} updated (1 story → done)
 
    State transition: reviewing → done.
    WIP cap status: reviewing (was 1) → 0; done (rolling 90d) +1.
