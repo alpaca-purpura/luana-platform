@@ -33,11 +33,13 @@ Schema `07-merge.md` 5 secciones + `gherkin_coverage` field en `06-tickets.yaml`
 
 `/pm-{brand}` aplica logic del `cap_change_type` (declarado en checkpoint.md de la story) al cap YAML target. 4 ramas según el tipo de cambio:
 
+> **★ v4 alignment (cement 2026-05-28):** `atomics` MUERTO — `scenario` es la unidad atómica de comportamiento. SSoT del schema cap: `docs/process/capability-protocol.md` + `docs/process/lifecycle.md`. Toda mención previa a `atomics_added`/`atomics[]` se reemplaza por `scenarios_added`/`scenarios[]`.
+
 | `cap_change_type` | Acción sobre cap YAML |
 |---|---|
-| `new` | Crear `{brand}/docs/product/capabilities/{module}/{slug}.yaml` con schema v2 completo · `change_log[0]` con `type: new` + atomics iniciales |
-| `fix` | Append `change_log` entry con `type: fix` · `atomics_added: []` · `atomics_modified: []` · NO toca `atomics[]` |
-| `extend` | Append `change_log` entry con `type: extend` + atomics nuevos · Append nuevos atomics al array `atomics[]` con `added_in_story: {story_id}` |
+| `new` | Crear `{brand}/docs/product/capabilities/{module}/{slug}.yaml` con schema v4 completo · `change_log[0]` con `type: new` + scenarios iniciales |
+| `fix` | Append `change_log` entry con `type: fix` · `scenarios_added: []` · NO toca `scenarios[]` |
+| `extend` | Append `change_log` entry con `type: extend` + scenarios nuevos · Append nuevos scenarios al array `scenarios[]` con `added_in_story: {story_id}` |
 | `derive` | Crear cap YAML hijo con `parent_cap: {origen_slug}` + `change_log[0] type: derive` · Update cap padre: append `derives_capabilities: [hijo_slug]` |
 
 **Order matters:** en `derive`, crear hijo primero (con `parent_cap` declarado), luego actualizar padre. Atomic write para evitar estado inconsistente.
@@ -48,11 +50,11 @@ Schema `07-merge.md` 5 secciones + `gherkin_coverage` field en `06-tickets.yaml`
 
 Antes de cerrar el merge commit, verificar que el `change_log` entry de esta story cumpla:
 
-| `cap_change_type` | `change_log[ultimo].atomics_added.length` | Otros checks |
+| `cap_change_type` | `change_log[ultimo].scenarios_added.length` | Otros checks |
 |---|---|---|
-| `new` | `>= 1` REQUIRED | `atomics[]` overall ≥1 atomic con shape válido |
-| `extend` | `>= 1` REQUIRED | `atomics[]` debió crecer vs commit anterior |
-| `fix` | `>= 0` (opcional) | NO requiere atomic nuevo |
+| `new` | `>= 1` REQUIRED | `scenarios[]` overall ≥1 scenario con shape válido |
+| `extend` | `>= 1` REQUIRED | `scenarios[]` debió crecer vs commit anterior |
+| `fix` | `>= 0` (opcional) | NO requiere scenario nuevo |
 | `derive` | `>= 1` REQUIRED en cap hijo | `parent_cap.derives_capabilities[]` lista hijo |
 
 Enforce point: `scripts/reconcile_capabilities.py --validate-ledger`. Pre-commit hook bloquea HARD en `main/release/*` + WARN en `wip/*` (advisory).
@@ -70,12 +72,12 @@ Enforce point: `scripts/reconcile_capabilities.py --validate-ledger`. Pre-commit
 
 **Cross-checks Fase F.3 v3.2:** además de los checks v3.1 anteriores, `/pm-{brand}` MUST verificar:
 
-1. **Scenarios → e2e_test paths:** todos los `scenarios[*].e2e_test` declarados existen en filesystem (cross-check 3)
-2. **Access → roles:** roles declarados en `access.entry_points[*].requires_role` coinciden con `@require_phi_access` decorators del código asociado (cross-check 4)
-3. **Code headers → atomics:** archivos con header `# atomics: <id>` declaran IDs que existen en `cap.atomics[].id` (cross-check 2)
-4. **Atomics verification → headers:** archivos en `cap.atomics[*].verification.*_path` tienen header `# cap:` apuntando al mismo cap (cross-check 1)
+1. **Scenarios → e2e_test paths:** todos los `scenarios[*].e2e_test` declarados existen en filesystem (cross-check 3 · HARD)
+2. **Access → roles:** roles declarados en `access.entry_points[*].requires_role` coinciden con `@require_phi_access` decorators del código asociado (cross-check 4 · advisory hasta resolver gap RBAC, ver lifecycle.md Fase 5.1)
 
-Enforce point: `scripts/validate_code_cap_bidirectional.py` (cement 2026-05-28). Pre-push hook HARD bloquea si cross_check_1 o cross_check_3 drift > 0.
+> cross_check_1 y cross_check_2 (atomics↔headers) MUERTOS con atomics — ver `docs/process/lifecycle.md`.
+
+Enforce point: `scripts/validate_code_cap_bidirectional.py` (cement 2026-05-28). Pre-push hook HARD bloquea si cross_check_3 drift > 0.
 
 Doc canónico: `docs/process/capability-protocol.md` § Sección 11 (v3.2) + § Sección 13 (bidirectional validator).
 

@@ -106,9 +106,9 @@ abc1234 feat({m}): endpoint POST /{action} + DTOs + service stub
 
 Push status:
 ```
-$ git push origin development
+$ git push origin "$(git branch --show-current)"      # wip/{brand}-{story-padre-id} — NUNCA 'development' (branch eliminado en reorg 2026-05-15)
 To github.com:...
-   abc1234..def5678  development -> development
+   abc1234..def5678  wip/{brand}-{story-padre-id} -> wip/{brand}-{story-padre-id}
 ```
 
 ## Notas para /auditor
@@ -126,7 +126,7 @@ To github.com:...
 ## Output al orchestrator
 
 ```
-done -> docs/projects/active/PI-N/sprints/SN/stories/{story-id}/05-impl/T-{n}-result.md
+done -> {brand}/docs/product/stories/{story-id}/T-{n}-result.md
 state: pushed (commit def5678)
 ready for /auditor
 ```

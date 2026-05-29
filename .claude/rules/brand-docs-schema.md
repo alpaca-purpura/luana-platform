@@ -11,7 +11,7 @@
 ├── product/
 │   ├── outcomes/{slug}.md
 │   ├── stories/{id}/{checkpoint.md, chris-input.md, 01-spec.md, 02-design-*.md, 03-arch.md, 04-validators.yaml, 05-guidelines.md, 06-tickets.yaml, 07-merge.md, mockups/, refs/}
-│   ├── capabilities/{module}/{cap}.yaml         # schema v2 con change_log[] + atomics objects
+│   ├── capabilities/{module}/{cap}.yaml         # schema v4 con change_log[] + scenarios objects (atomics MUERTO — ver lifecycle.md)
 │   ├── modules/{module}.md
 │   ├── releases/{F0..FN}.yaml                  # v2 cement 2026-05-27 reemplaza outcome+phase legacy
 │   └── BACKLOG.{md,yaml,-TLDR.md} + checkpoint.md

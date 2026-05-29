@@ -112,7 +112,7 @@ Apply tessl skills proactively (you don't wait to be asked):
 
 **Live verification skill (when you're about to claim "done"):**
 - `chrome-devtools-verify` — invoke for any user-facing change. Reproduces user flow on the brand dev URL (`dev-app.{brand}.com` or value from `${WS}/${BRAND}/config/brand.yaml::domains.dev`) via Chrome DevTools MCP from Linux. Catches what tsc + ESLint + Vitest cannot: real DOM, real SSE, real network, real console errors. Type checking and tests verify code correctness, not feature correctness.
-- NOTE 2026-05-15: skill marked DEPRECATED (designed for WSL2+Windows bridge, requires rewrite for Linux Mint). If unavailable, document manual verification steps in IMPL-LOG and escalate to Chris staging gate.
+- NOTE 2026-05-27: skill REINSTATED via official Chrome DevTools MCP (Google, v0.21+) on Linux — supersedes the prior WSL2 deprecation. Use it. If the MCP server is unavailable in this session, document manual verification steps in IMPL-LOG and escalate to Chris staging gate (do NOT claim success unverified).
 
 ## Step 5 — When designing novel patterns
 
