@@ -1,3 +1,4 @@
+---
 capability_id: vitalia-admin-streamlit-service
 module: admin
 slug: admin-streamlit-service
@@ -73,3 +74,8 @@ change_log:
     summary: "Implementación inicial · migración legacy a schema v2"
     merge_sha: null
     status: done
+---
+
+# Servicio admin Streamlit
+
+Panel de administración interno (Streamlit) para el equipo de Vitalia: gestiona tenants, clínicas y usuarios de forma transversal. Corre en un servicio Docker separado (puerto 8502), con autenticación por contraseña de administrador.

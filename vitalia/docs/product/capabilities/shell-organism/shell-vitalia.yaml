@@ -46,7 +46,7 @@ dev_preview:
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-shell-organism   # merge consolidado por ADR-vitalia-005
 created_date: 2026-05-27
-last_modified: 2026-05-27
+last_modified: 2026-05-28
 parent_cap: null
 derives_capabilities: []
 
@@ -109,6 +109,16 @@ change_log:
     atomics_modified: []
     merge_sha: null
     status: done
+  - story_id: vitalia-shell-organism
+    date: 2026-05-28
+    type: extend
+    summary: "Consolida scenarios de 7 sub-caps shell superados (layout-5050, ribbon, routing, sub-tabs, valeria-chat, valeria-sidebar, empty-states) en shell-vitalia · borra los YAML sub-cap duplicados (0 code files) por ADR-vitalia-005"
+    atomics_added: []
+    atomics_modified: [shell-layout-5050, shell-ribbon, shell-routing, shell-sub-tabs, shell-valeria-chat, shell-valeria-sidebar, shell-empty-states]
+    scenarios_added: [deep-link-marca-active-state, config-tab-navega, agent-slug-invalido-idle, subtabs-cambian-por-agente, valeria-chat-envia-mensaje, valeria-chat-xss-guard, valeria-rail-colapsa-expande, valeria-rail-shortcuts-no-en-composer, valeria-history-busqueda-sin-resultados, empty-states-22-subtabs-navegables, empty-states-placeholders-especiales, subtab-invalido-404-en-shell, cross-tenant-bloqueado, avatar-fallback-iniciales, viewport-mobile-colapsa, a11y-keyboard-tablist, microcopy-spanish-neutro, xss-path-guard]
+    caps_deleted: [layout-5050, ribbon, routing, sub-tabs, valeria-chat, valeria-sidebar, empty-states]
+    merge_sha: null
+    status: done
 
 access:
   entry_points:
@@ -168,6 +178,260 @@ scenarios:
       - "Estado chat-collapsed: solo rail 60px + contenido 100% usable"
     added_in_story: vitalia-fase1-shell-layout-5050
     added_date: 2026-05-23
+  - id: deep-link-marca-active-state
+    name: "Deep link a sub-ruta marca el agente y sub-tab activos correctamente"
+    actor: doctor
+    status: live
+    given: "Usuario navega directamente (deep link) a /{tenantId}/camila/voz"
+    when: "La página carga sin pasar por la raíz"
+    then: "extractAgentFromPath devuelve camila · Ribbon marca tab Camila activo · SubTabsBar marca sub-tab Voz activa"
+    e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase1-ribbon-6-tabs/ribbon-deeplink.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase1-ribbon-6-tabs/01-spec.md"
+    atomic_ref: shell-routing
+    edge_cases:
+      - "Deep link a sub-tab arbitraria válida marca su active state correcto"
+    added_in_story: vitalia-fase1-routing-shell
+    added_date: 2026-05-26
+  - id: config-tab-navega
+    name: "Usuario abre Configurar desde el Ribbon"
+    actor: admin_clinic
+    status: live
+    given: "Cualquier agente activo (ej. Valeria en /{tenantId}/valeria/agenda)"
+    when: "Click en ConfigTab (botón gear right-aligned del Ribbon)"
+    then: "router.push a /{tenantId}/config/cuenta · ConfigTab activo sin agent-color border"
+    e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase1-ribbon-6-tabs/ribbon-config-nav.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase1-ribbon-6-tabs/01-spec.md"
+    atomic_ref: shell-ribbon
+    edge_cases: []
+    added_in_story: vitalia-fase1-ribbon-6-tabs
+    added_date: 2026-05-25
+  - id: agent-slug-invalido-idle
+    name: "URL con agente inválido cae en idle state sin romper el shell"
+    actor: doctor
+    status: live
+    given: "Usuario navega a /{tenantId}/foobar/baz con segmento [agent] inválido"
+    when: "La página carga"
+    then: "extractAgentFromPath devuelve null · Ribbon sin tab activo (idle) · SubTabsBar oculto · shell no crashea"
+    e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase1-ribbon-6-tabs/ribbon-invalid-agent.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase1-ribbon-6-tabs/01-spec.md"
+    atomic_ref: shell-ribbon
+    edge_cases:
+      - "Sub-tab inválido dentro de agente válido → SubTabsBar renderiza sub-tabs del agente sin ninguno activo"
+    added_in_story: vitalia-fase1-ribbon-6-tabs
+    added_date: 2026-05-25
+  - id: subtabs-cambian-por-agente
+    name: "SubTabsBar re-renderiza al cambiar de agente activo"
+    actor: doctor
+    status: live
+    given: "Usuario en /{tenantId}/lisa/doctores (sub-tabs de Lisa visibles)"
+    when: "Click en tab Atraer (Lucas) del Ribbon"
+    then: "router.push a /{tenantId}/lucas/lanzar · SubTabsBar muestra sub-tabs de Lucas · default sub-tab activa"
+    e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase1-sub-tabs-line2/sub-tabs-agent-change.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase1-sub-tabs-line2/01-spec.md"
+    atomic_ref: shell-sub-tabs
+    edge_cases:
+      - "Click en sub-tab navega a /{tenantId}/{agent}/{subtab} y marca active state"
+    added_in_story: vitalia-fase1-sub-tabs-line2
+    added_date: 2026-05-25
+  - id: valeria-chat-envia-mensaje
+    name: "Usuario envía un mensaje en el chat de Valeria (skeleton)"
+    actor: doctor
+    status: live
+    given: "Shell con Valeria en estado full · chat con mensajes mock cargados · composer enfocado"
+    when: "El usuario escribe un mensaje y presiona Enter"
+    then: "El mensaje se agrega a la lista del chat · el composer se limpia · Shift+Enter inserta salto de línea sin enviar"
+    e2e_test: null
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase1-valeria-chat-skeleton/01-spec.md"
+    atomic_ref: shell-valeria-chat
+    edge_cases:
+      - "Chat sin mensajes (nueva conversación) → empty state de bienvenida"
+      - "Tildes y eñes preservadas en mensajes renderizados"
+    added_in_story: vitalia-fase1-valeria-chat-skeleton
+    added_date: 2026-05-25
+  - id: valeria-chat-xss-guard
+    name: "Payload XSS en el composer de Valeria se renderiza inerte"
+    actor: doctor
+    status: live
+    given: "Composer del chat de Valeria enfocado"
+    when: "El usuario pega un payload <script>alert('xss')</script> y lo envía"
+    then: "El texto se muestra escapado como string · ningún dialog window.alert se dispara"
+    e2e_test: null
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase1-valeria-chat-skeleton/01-spec.md"
+    atomic_ref: shell-valeria-chat
+    edge_cases: []
+    added_in_story: vitalia-fase1-valeria-chat-skeleton
+    added_date: 2026-05-25
+  - id: valeria-rail-colapsa-expande
+    name: "Usuario colapsa y expande la barra lateral de Valeria"
+    actor: doctor
+    status: live
+    given: "ValeriaSidebar en estado full dentro del shell agéntico"
+    when: "El usuario hace click en el botón PanelLeftClose del footer"
+    then: "La barra colapsa a modo rail (60px) ocultando el history · el panel de contenido ocupa el ancho liberado · estado persistido"
+    e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase1-valeria-rail-history/click-collapse.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase1-valeria-rail-history/01-spec.md"
+    atomic_ref: shell-valeria-sidebar
+    edge_cases:
+      - "Ciclo de estados full → rail → collapsed vía atajo de teclado"
+      - "Snap-up automático a ancho mínimo 620px al volver a estado full"
+    added_in_story: vitalia-fase1-valeria-rail-history
+    added_date: 2026-05-24
+  - id: valeria-rail-shortcuts-no-en-composer
+    name: "Los atajos de estado no se disparan al escribir en el composer"
+    actor: doctor
+    status: live
+    given: "Foco dentro del composer (textarea/contenteditable) de Valeria"
+    when: "El usuario escribe texto que coincide con teclas de atajo"
+    then: "No se dispara ningún cambio de estado del rail · IME composition (acentos) preservada"
+    e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase1-valeria-rail-history/typing-guard.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase1-valeria-rail-history/01-spec.md"
+    atomic_ref: shell-valeria-sidebar
+    edge_cases:
+      - "Tampering del shell-store con valor inválido desde devtools → fallback a estado válido sin crash"
+    added_in_story: vitalia-fase1-valeria-rail-history
+    added_date: 2026-05-24
+  - id: valeria-history-busqueda-sin-resultados
+    name: "Búsqueda en el history de Valeria sin coincidencias muestra empty state"
+    actor: doctor
+    status: live
+    given: "ValeriaSidebar en estado full con conversaciones mock en el history"
+    when: "El usuario escribe un término que no coincide con ninguna conversación"
+    then: "Se muestra el empty state de búsqueda sin resultados en Spanish neutro"
+    e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase1-valeria-rail-history/history-empty-search.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase1-valeria-rail-history/01-spec.md"
+    atomic_ref: shell-valeria-sidebar
+    edge_cases: []
+    added_in_story: vitalia-fase1-valeria-rail-history
+    added_date: 2026-05-24
+  - id: empty-states-22-subtabs-navegables
+    name: "Las 22 sub-tabs del shell son navegables y muestran su empty state"
+    actor: doctor
+    status: live
+    given: "Usuario autenticado con el shell montado"
+    when: "Navega por cada tab de agente (5) + Configurar y sus sub-tabs disponibles"
+    then: "Cada sub-tab renderiza su placeholder de bienvenida sin error · el shell no se re-monta entre navegaciones"
+    e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase1-empty-states/sc-01-navegacion-22-subtabs.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase1-empty-states/01-spec.md"
+    atomic_ref: shell-empty-states
+    edge_cases:
+      - "16 sub-tabs genéricas comparten el placeholder genérico contextual por agente"
+      - "Navegar 21 sub-tabs en secuencia rápida no re-monta el shell completo"
+    added_in_story: vitalia-fase1-empty-states
+    added_date: 2026-05-26
+  - id: empty-states-placeholders-especiales
+    name: "Sub-tabs clave muestran placeholders enriquecidos específicos"
+    actor: doctor
+    status: live
+    given: "Usuario navega a una sub-tab con placeholder especial (Lisa Servicios, Adrián Embudo, Valeria Agenda, Adrián Inbox)"
+    when: "La página carga"
+    then: "Se muestra el placeholder enriquecido propio de esa sub-tab (no el genérico) en Spanish neutro"
+    e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase1-empty-states/sc-02-lisa-servicios.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase1-empty-states/01-spec.md"
+    atomic_ref: shell-empty-states
+    edge_cases:
+      - "Adrián Embudo, Valeria Agenda y Adrián Inbox tienen su propio placeholder enriquecido"
+    added_in_story: vitalia-fase1-empty-states
+    added_date: 2026-05-26
+  - id: subtab-invalido-404-en-shell
+    name: "Sub-tab inválida en la URL muestra 404 dentro del shell"
+    actor: doctor
+    status: live
+    given: "Usuario navega a /{tenantId}/lisa/xxxnotvalid con sub-tab inexistente"
+    when: "La página carga"
+    then: "Se renderiza el not-found interno dentro del shell (TopBar + Ribbon intactos) · mensaje en Spanish neutro"
+    e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase1-routing-shell/not-found-inner.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase1-routing-shell/01-spec.md"
+    atomic_ref: shell-routing
+    edge_cases:
+      - "not-found externo (fuera del shell) para rutas raíz inexistentes"
+    added_in_story: vitalia-fase1-routing-shell
+    added_date: 2026-05-26
+  - id: cross-tenant-bloqueado
+    name: "Acceso cross-tenant queda bloqueado por el shell"
+    actor: doctor
+    status: live
+    given: "Usuario A con JWT tenant_id=clinic-A intenta acceder a una ruta de clinic-B"
+    when: "El layout server-side valida el tenant del JWT contra el segmento de URL"
+    then: "Redirect al primer tenant válido del usuario · ningún dato de clinic-B se filtra"
+    e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase1-routing-shell/cross-tenant-blocked.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase1-routing-shell/01-spec.md"
+    atomic_ref: shell-routing
+    edge_cases:
+      - "Usuario sin tenants asignados → audit_log row no_tenants_assigned + edge handler"
+      - "Timeout del fetch de tenants en BE → fallback server-side sin crash"
+    added_in_story: vitalia-fase1-routing-shell
+    added_date: 2026-05-26
+  - id: avatar-fallback-iniciales
+    name: "Fallback a iniciales cuando el avatar PNG de un agente falla"
+    actor: doctor
+    status: live
+    given: "El thumbnail PNG de un agente (ej. Valeria) responde 404 o falla por red"
+    when: "El Ribbon renderiza el tab de ese agente"
+    then: "El componente Avatar detecta el error y muestra la inicial del agente como fallback sin romper el layout"
+    e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase1-ribbon-6-tabs/ribbon-avatar-fallback.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase1-ribbon-6-tabs/01-spec.md"
+    atomic_ref: shell-ribbon
+    edge_cases: []
+    added_in_story: vitalia-fase1-ribbon-6-tabs
+    added_date: 2026-05-25
+  - id: viewport-mobile-colapsa
+    name: "El shell colapsa a una columna en viewport mobile"
+    actor: doctor
+    status: live
+    given: "Shell montado en modo agéntico"
+    when: "El viewport cae por debajo del breakpoint md (ej. 375x667)"
+    then: "El grid colapsa a una sola columna full-width · Ribbon y SubTabsBar usan overflow-x-auto sin romper · degradación graceful"
+    e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase1-shell-layout-5050/mobile-collapse.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase1-shell-layout-5050/01-spec.md"
+    atomic_ref: shell-layout-5050
+    edge_cases:
+      - "Drawer mobile de Valeria con aria-modal + focus trap"
+      - "Layout degrada sin JS (assets PNG sirven, grid 1-col)"
+    added_in_story: vitalia-fase1-shell-layout-5050
+    added_date: 2026-05-23
+  - id: a11y-keyboard-tablist
+    name: "Navegación por teclado WAI-ARIA completa en el Ribbon"
+    actor: doctor
+    status: live
+    given: "Usuario navega solo con teclado (sin mouse)"
+    when: "Tabula al Ribbon y usa Arrow/Home/End para moverse entre tabs"
+    then: "Roving tabindex respeta WAI-ARIA tablist · focus ring visible en cada tab · aria-selected en el tab activo · screen reader anuncia el cambio de página"
+    e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase1-ribbon-6-tabs/ribbon-keyboard.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase1-ribbon-6-tabs/01-spec.md"
+    atomic_ref: shell-ribbon
+    edge_cases:
+      - "SubTabsBar con roving tabindex: Arrow mueve foco sin disparar navegación hasta Enter/Space"
+      - "Skip-link salta al main#main-content"
+    added_in_story: vitalia-fase1-ribbon-6-tabs
+    added_date: 2026-05-25
+  - id: microcopy-spanish-neutro
+    name: "El microcopy del shell se renderiza en Spanish neutro LatAm"
+    actor: doctor
+    status: live
+    given: "Shell renderizado con locale es-419 default"
+    when: "Se inspeccionan los textos visibles de Ribbon, SubTabsBar, empty states y not-found"
+    then: "Todos los strings están en Spanish neutro sin voseo · tildes y eñes correctas · tenant_locale aplicado a fechas y moneda"
+    e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase1-routing-shell/i18n-spanish-neutro.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase1-empty-states/01-spec.md"
+    atomic_ref: shell-empty-states
+    edge_cases:
+      - "tenant con currency PEN y timezone America/Lima refleja formato local"
+    added_in_story: vitalia-fase1-empty-states
+    added_date: 2026-05-26
+  - id: xss-path-guard
+    name: "Payload XSS en el segmento de ruta se neutraliza"
+    actor: doctor
+    status: live
+    given: "Usuario hostil navega a /{tenantId}/<script>alert(1)</script>/foo"
+    when: "La página carga y el shell parsea el path"
+    then: "extractAgentFromPath devuelve null (no matchea AgentSlug enum) · el segmento se trata como string inerte · ningún script se ejecuta"
+    e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase1-ribbon-6-tabs/ribbon-xss-guard.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase1-ribbon-6-tabs/01-spec.md"
+    atomic_ref: shell-routing
+    edge_cases:
+      - "XSS en segmento de sub-tab → render escapado sin ejecución"
+    added_in_story: vitalia-fase1-sub-tabs-line2
+    added_date: 2026-05-25
 
 business_rules:
   - id: clinic-scope-mandatory

@@ -2,7 +2,7 @@
 capability_id: vitalia-patient-records-medical-history
 module: patients
 slug: patient-records-medical-history
-status: live
+status: planned   # nota: forward-declared (status planned · sin código aún)
 date_introduced: 2026-05-15
 story_introduced: luana-vitalia-bootstrap
 package_version: 0.1.0

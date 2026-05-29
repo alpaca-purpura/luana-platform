@@ -1,3 +1,4 @@
+---
 capability_id: vitalia-audit-writer-ssot
 module: audit
 slug: audit-writer-ssot
@@ -77,3 +78,8 @@ change_log:
     summary: "Implementación inicial · migración legacy a schema v2"
     merge_sha: null
     status: done
+---
+
+# Writer SSoT del audit log
+
+Único punto de escritura del audit log de Vitalia (`audit_writer.py`). Toda mutación sobre datos sensibles pasa por este helper con redacción PHI y escritura sincrónica antes del retorno. Consumido por admin de tenants/usuarios/clínicas y el servicio de clínicas.

@@ -1,3 +1,4 @@
+---
 capability_id: vitalia-admin-users-crud
 module: admin
 slug: users-crud
@@ -70,3 +71,8 @@ change_log:
     summary: "Implementación inicial · migración legacy a schema v2"
     merge_sha: null
     status: done
+---
+
+# Admin · CRUD users
+
+Página del panel admin para crear, listar y banear usuarios de la plataforma, con asignación de rol por tenant. Usa el repositorio de usuarios del engine luana-core-iam + Clerk Backend API, con filtro por tenant y auditoría en cada acción.

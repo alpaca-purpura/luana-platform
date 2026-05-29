@@ -1,3 +1,4 @@
+---
 capability_id: vitalia-iam-luana-core-adoption
 module: iam
 slug: luana-core-adoption
@@ -139,3 +140,8 @@ related_capabilities:
     - brand_studio.lisa-marca
   similar: []
   obsoletes: []
+---
+
+# Adopción de luana-core IAM
+
+Capa de adopción que conecta el módulo IAM de Vitalia con el engine compartido luana-core-iam. La migración 022 crea las tablas users/tenants/user_tenants matching los modelos ORM del engine; el código admin consume los repositorios del engine directamente, eliminando SQL crudo y tablas brand-prefixed para entidades del engine.

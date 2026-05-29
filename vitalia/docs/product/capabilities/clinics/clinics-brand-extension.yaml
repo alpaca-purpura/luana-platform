@@ -1,3 +1,4 @@
+---
 capability_id: vitalia-clinics-brand-extension
 module: clinics
 slug: clinics-brand-extension
@@ -90,3 +91,8 @@ change_log:
     summary: "Implementación inicial · migración legacy a schema v2"
     merge_sha: null
     status: done
+---
+
+# Clínicas · extensión brand
+
+Entidad Clínica brand-local de Vitalia que extiende el modelo base con campos del vertical médico (número fiscal RUC/RUT/CUIT, certificación, especialidades). Tabla `vitalia_clinic_branches` con FK a `tenants.id` engine; acceso a datos de pacientes siempre filtrado por clínica.

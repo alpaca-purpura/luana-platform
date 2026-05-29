@@ -1,7 +1,5 @@
 ---
 story_id: vitalia-fase2-lisa-landing-public
-outcome: vitalia-mvp-ui-foundation
-phase: fase-2
 type: ui-story
 state: idea
 architecture_pattern: ADR-vitalia-004
@@ -28,7 +26,7 @@ blocks_soft: []
 next_action: "Pendiente decisión Chris sobre ubicación. Opciones: (a) sub-tab dedicada Lisa→Landing (extender AGENT_SUBTABS), (b) sub-sub-tab de Configurar (config→presencia-publica), (c) feature standalone fuera del shell-organism agéntico (settings global). Hasta entonces, story queda parked en `idea` sin refinement activo."
 
 # Schema v2 migration (cement 2026-05-27)
-release: F2   # release ID · ver releases/
+release: F6   # release ID · ver releases/
 cap_target: lisa.landing_public   # capability slug target (v2 cement 2026-05-27)
 cap_change_type: new   # new | fix | extend | derive
 parent_story: null   # story padre si spawned · null si independiente

@@ -1,3 +1,4 @@
+---
 capability_id: vitalia-clinics-hipaa-dual-filter-decorator
 module: clinics
 slug: hipaa-dual-filter-decorator
@@ -69,3 +70,8 @@ change_log:
     summary: "Implementación inicial · migración legacy a schema v2"
     merge_sha: null
     status: done
+---
+
+# Decorator @require_phi_access dual filter
+
+Componente técnico HIPAA-lite que protege todo endpoint con acceso a PHI. Verifica que la consulta incluya tenant + clínica y que el rol tenga permiso; si falta algún filtro bloquea con HTTP 403 + audit log row.

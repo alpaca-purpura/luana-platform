@@ -2,7 +2,7 @@
 capability_id: vitalia-registries-medical-vertical
 module: connections
 slug: registries-medical-vertical
-status: live
+status: planned   # nota: forward-declared (status planned · sin código aún)
 date_introduced: 2026-05-18
 story_introduced: vitalia-slice-1-infra-cross-cutting
 package_version: 0.1.0

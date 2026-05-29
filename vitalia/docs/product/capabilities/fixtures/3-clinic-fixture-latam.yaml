@@ -2,7 +2,7 @@
 capability_id: vitalia-3-clinic-fixture-latam
 module: fixtures
 slug: 3-clinic-fixture-latam
-status: live
+status: planned   # nota: forward-declared (status planned · sin código aún)
 date_introduced: 2026-05-15
 story_introduced: luana-vitalia-bootstrap
 package_version: 0.1.0

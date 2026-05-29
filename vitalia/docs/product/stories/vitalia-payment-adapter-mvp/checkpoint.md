@@ -1,8 +1,6 @@
 ---
 story_id: vitalia-payment-adapter-mvp
-outcome: vitalia-mvp-ui-foundation
 state: refined                                       # ★ spec v3 ratificado Chris 2026-05-22T14:30Z (heredado de sesión efímera, absorbido 2026-05-22T15:30Z)
-phase: SPEC_RATIFIED_DEFERRED_ARCHITECT              # spec v3 ratificado, /architect handoff deferred (next: cuando Fase 2 lo requiera)
 last_artifact: 01-spec.md (v3)
 last_modified: 2026-05-22
 ratified_by_chris: true                              # ★ spec v3 ratificado 2026-05-22T14:30Z (4 batches de ratificación)

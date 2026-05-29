@@ -1,3 +1,4 @@
+---
 capability_id: vitalia-admin-tenants-crud
 module: admin
 slug: tenants-crud
@@ -69,3 +70,8 @@ change_log:
     summary: "Implementación inicial · migración legacy a schema v2"
     merge_sha: null
     status: done
+---
+
+# Admin · CRUD tenants
+
+Página del panel admin para crear, listar y suspender tenants (clínicas reales en la plataforma). Consume el repositorio de tenants del engine luana-core-iam (cero SQL crudo) y registra auditoría sincrónica en cada mutación.

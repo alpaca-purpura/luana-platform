@@ -1,3 +1,4 @@
+---
 capability_id: vitalia-admin-clinics-crud
 module: admin
 slug: clinics-crud
@@ -68,3 +69,8 @@ change_log:
     summary: "Implementación inicial · migración legacy a schema v2"
     merge_sha: null
     status: done
+---
+
+# Admin · CRUD clínicas
+
+Página del panel admin para crear, listar, editar y suspender clínicas dentro de un tenant. Consume el servicio de clínicas brand-local de Vitalia y registra un evento de auditoría sincrónico en cada operación de escritura.

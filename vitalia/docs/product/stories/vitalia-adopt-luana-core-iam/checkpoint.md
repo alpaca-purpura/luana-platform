@@ -1,6 +1,5 @@
 ---
 story_id: vitalia-adopt-luana-core-iam
-outcome: admin-iam-adopt
 parent_platform_outcome: docs/product/outcomes/admin-iam-adoption-platform.md
 phase_label: cross-cutting
 type: service-story

@@ -1,7 +1,5 @@
 ---
 story_id: vitalia-fase1-shell-layout-5050-race-fix
-outcome: vitalia-mvp-ui-foundation
-phase: fase-1
 type: ui-story-followup
 agent_owner: shell
 module: shell-organism

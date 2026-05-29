@@ -1,7 +1,5 @@
 ---
 story_id: vitalia-fase2-config-onboarding-clinica
-outcome: vitalia-mvp-ui-foundation
-phase: fase-2
 type: ui-story
 state: idea
 architecture_pattern: ADR-vitalia-004
@@ -42,7 +40,7 @@ reuse_map_summary: "REUSE Shadcn primitives (Dialog/Form/Select/Checkbox/Card/Co
 next_action: "/po-ux refinar 01-spec.md — draft inicial producido por subagent paralelo en sesión lisa-marca (2026-05-26). Iterar wireframes 3-step flow (welcome → vertical → specialties) + mockups HTML por componente."
 
 # Schema v2 migration (cement 2026-05-27)
-release: F2   # release ID · ver releases/
+release: F4   # release ID · ver releases/
 cap_target: config.onboarding_clinic   # capability slug target (v2 cement 2026-05-27)
 cap_change_type: new   # new | fix | extend | derive
 parent_story: null   # story padre si spawned · null si independiente
