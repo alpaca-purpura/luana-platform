@@ -9,8 +9,9 @@ import {
   type DragEndEvent,
 } from '@dnd-kit/core';
 import toast from 'react-hot-toast';
-import { Plus, Eye, EyeOff } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { cn } from '@/lib/cn';
 import { Spinner, ErrorBanner, EmptyState } from '@/components/ui/Spinner';
 import { Panel } from '@/components/ui/Card';
 import { Tooltip } from '@/components/ui/Tooltip';
@@ -34,7 +35,7 @@ export function RoadmapView() {
   const [stories, setStories] = useState<StoryWithArchive[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [hideShipped, setHideShipped] = useState(false);
+  const [tab, setTab] = useState<'active' | 'shipped'>('active');
   const [newReleaseOpen, setNewReleaseOpen] = useState(false);
   const [mergeReleaseId, setMergeReleaseId] = useState<string | null>(null);
 
@@ -109,11 +110,17 @@ export function RoadmapView() {
     );
   }
 
-  const releasesShown = hideShipped
-    ? releases.filter((r) => r.status !== 'shipped')
-    : releases;
+  const activeCount = releases.filter((r) => r.status !== 'shipped').length;
+  const shippedCount = releases.filter((r) => r.status === 'shipped').length;
 
-  const sortedReleases = [...releasesShown].sort((a, b) => a.order - b.order);
+  const releasesShown = releases.filter((r) =>
+    tab === 'shipped' ? r.status === 'shipped' : r.status !== 'shipped'
+  );
+
+  // En curso: orden cronológico (F0 → Fn). Historial: más reciente arriba.
+  const sortedReleases = [...releasesShown].sort((a, b) =>
+    tab === 'shipped' ? b.order - a.order : a.order - b.order
+  );
 
   return (
     <div className="p-6">
@@ -136,19 +143,40 @@ export function RoadmapView() {
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <Button onClick={() => setHideShipped((v) => !v)}>
-            {hideShipped ? (
-              <>
-                <Eye className="w-3 h-3" />
-                mostrar shipped
-              </>
-            ) : (
-              <>
-                <EyeOff className="w-3 h-3" />
-                ocultar shipped
-              </>
-            )}
-          </Button>
+          <div
+            className="inline-flex rounded-md border border-[var(--color-border)] overflow-hidden"
+            role="tablist"
+            aria-label="Filtro de releases"
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={tab === 'active'}
+              onClick={() => setTab('active')}
+              className={cn(
+                'px-3 py-1 text-xs font-medium transition-colors',
+                tab === 'active'
+                  ? 'bg-[var(--color-accent)] text-white'
+                  : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
+              )}
+            >
+              En curso · {activeCount}
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={tab === 'shipped'}
+              onClick={() => setTab('shipped')}
+              className={cn(
+                'px-3 py-1 text-xs font-medium transition-colors border-l border-[var(--color-border)]',
+                tab === 'shipped'
+                  ? 'bg-[var(--color-accent)] text-white'
+                  : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
+              )}
+            >
+              Historial · {shippedCount}
+            </button>
+          </div>
           <Button variant="primary" onClick={() => setNewReleaseOpen(true)}>
             <Plus className="w-3 h-3" />
             Nuevo release
@@ -159,8 +187,9 @@ export function RoadmapView() {
       {sortedReleases.length === 0 ? (
         <Panel className="p-8">
           <EmptyState>
-            Sin releases todavía para {brand}. Crea el primero con el botón
-            arriba.
+            {tab === 'shipped'
+              ? `Sin releases en el historial todavía para ${brand}.`
+              : `Sin releases en curso para ${brand}. Crea el primero con el botón arriba.`}
           </EmptyState>
         </Panel>
       ) : (
