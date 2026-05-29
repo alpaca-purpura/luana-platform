@@ -78,3 +78,29 @@ export function priorityColor(priority: string | null | undefined): string | nul
   if (p.includes('low') || p === 'p3') return '#64748b'; // slate
   return '#64748b';
 }
+
+/** Ícono + label por naturaleza de la story (data real: ui-story, service-story, design-story…). */
+export interface TypeMeta {
+  icon: string;
+  label: string;
+}
+
+const TYPE_META: Record<string, TypeMeta> = {
+  agentic: { icon: '🤖', label: 'Agentic' },
+  service: { icon: '🔌', label: 'Service' },
+  design: { icon: '🎨', label: 'Design' },
+  tech: { icon: '🛠', label: 'Tech' },
+  func: { icon: '📦', label: 'Func' },
+  ui: { icon: '🖥', label: 'UI' },
+};
+
+/** Normaliza `type` (ej. "ui-story-followup" → ui) y devuelve su metadata visual. */
+export function typeMetaOf(type: string | null | undefined): TypeMeta | null {
+  if (!type) return null;
+  const t = type.toLowerCase();
+  // Orden importa: agentic/service/design antes que el fallback ui.
+  for (const key of ['agentic', 'service', 'design', 'tech', 'func', 'ui']) {
+    if (t.includes(key)) return TYPE_META[key];
+  }
+  return null;
+}

@@ -53,14 +53,31 @@ export function BoardColumn({
     dropFeedback = allowed ? 'allowed' : 'forbidden';
   }
 
-  // `done`: más recientes entregados arriba, antiguos al fondo (desc por last_modified).
-  // Sin last_modified → al fondo. El resto de columnas mantiene su orden natural.
-  const ordered =
+  // `done`: agrupar por release (release nuevo arriba) y dentro por entrega reciente
+  // (last_modified desc). Sin release → grupo al fondo. Resto de columnas: orden natural.
+  const releaseNum = (r: string | null | undefined): number => {
+    const m = r?.match(/(\d+)/);
+    return m ? Number.parseInt(m[1], 10) : -1;
+  };
+  const doneGroups =
     state === 'done'
-      ? [...stories].sort((a, b) =>
-          (b.last_modified ?? '').localeCompare(a.last_modified ?? '')
+      ? Object.values(
+          stories.reduce<
+            Record<string, { release: string | null; items: StoryWithArchive[] }>
+          >((acc, s) => {
+            const key = s.release ?? '∅';
+            (acc[key] ??= { release: s.release ?? null, items: [] }).items.push(s);
+            return acc;
+          }, {})
         )
-      : stories;
+          .map((g) => ({
+            release: g.release,
+            items: [...g.items].sort((a, b) =>
+              (b.last_modified ?? '').localeCompare(a.last_modified ?? '')
+            ),
+          }))
+          .sort((a, b) => releaseNum(b.release) - releaseNum(a.release))
+      : null;
 
   return (
     <div className="w-48 shrink-0 flex flex-col">
@@ -92,9 +109,32 @@ export function BoardColumn({
           <div className="text-[10px] text-[var(--color-muted)] italic text-center mt-4">
             Sin stories.
           </div>
+        ) : doneGroups ? (
+          <div className="space-y-3">
+            {doneGroups.map((g) => (
+              <div key={g.release ?? '∅'} className="space-y-1.5">
+                <div className="flex items-center gap-1.5 px-0.5">
+                  <span className="text-[10px] font-bold text-[var(--color-text)]">
+                    {g.release ?? 'sin release'}
+                  </span>
+                  <span className="h-px flex-1 bg-[var(--color-border)]" />
+                  <span className="text-[9px] text-[var(--color-muted)] font-mono">
+                    {g.items.length}
+                  </span>
+                </div>
+                {g.items.map((s) => (
+                  <BoardCard
+                    key={s.story_id}
+                    story={s}
+                    session={sessions?.[s.story_id]}
+                  />
+                ))}
+              </div>
+            ))}
+          </div>
         ) : (
           <div className="space-y-1.5">
-            {ordered.map((s) => (
+            {stories.map((s) => (
               <BoardCard
                 key={s.story_id}
                 story={s}

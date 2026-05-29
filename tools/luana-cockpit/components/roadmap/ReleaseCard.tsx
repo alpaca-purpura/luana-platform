@@ -36,6 +36,25 @@ export function ReleaseCard({ release, stories, onMergeRequested }: ReleaseCardP
     return acc;
   }, {});
 
+  // Progreso del release (PM glance): % entregado.
+  const total = stories.length;
+  const doneCount = stories.filter((s) => s.state === 'done').length;
+  const pct = total ? Math.round((doneCount / total) * 100) : 0;
+
+  // Orden interno (PM repriorización): activas arriba, planeación, cerradas al fondo;
+  // dentro de cada fase, prioridad crítica primero.
+  const PHASE: Record<string, number> = {
+    ready: 0, developing: 0, reviewing: 0, developed: 0,
+    refined: 1, refining: 1, idea: 2, parked: 3, done: 4, dropped: 5,
+  };
+  const PRIO: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 };
+  const sorted = [...stories].sort(
+    (a, b) =>
+      (PHASE[a.state] ?? 9) - (PHASE[b.state] ?? 9) ||
+      (PRIO[(a.priority ?? '').toLowerCase()] ?? 9) -
+        (PRIO[(b.priority ?? '').toLowerCase()] ?? 9)
+  );
+
   return (
     <div className="bg-[var(--color-panel)] border border-[var(--color-border)] rounded-lg">
       <header className="flex items-start justify-between gap-3 px-4 py-3 border-b border-[var(--color-border)]">
@@ -53,6 +72,20 @@ export function ReleaseCard({ release, stories, onMergeRequested }: ReleaseCardP
           {release.description && (
             <div className="text-[11px] text-[var(--color-muted)] mt-0.5 line-clamp-2">
               {release.description}
+            </div>
+          )}
+          {/* Progreso entregado (PM glance) */}
+          {total > 0 && (
+            <div className="flex items-center gap-2 mt-1.5 max-w-xs">
+              <div className="h-1.5 flex-1 rounded-full bg-[var(--color-panel2)] overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-emerald-500 transition-all"
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+              <span className="text-[10px] text-[var(--color-muted)] font-mono shrink-0">
+                {doneCount}/{total} · {pct}%
+              </span>
             </div>
           )}
           {release.target_date && (
@@ -84,7 +117,7 @@ export function ReleaseCard({ release, stories, onMergeRequested }: ReleaseCardP
           <EmptyState>Sin stories asignadas todavía.</EmptyState>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
-            {stories.map((s) => (
+            {sorted.map((s) => (
               <StoryChip key={s.story_id} story={s} />
             ))}
           </div>

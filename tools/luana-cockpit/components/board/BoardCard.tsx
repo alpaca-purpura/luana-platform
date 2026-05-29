@@ -6,7 +6,7 @@ import { Pill } from '@/components/ui/Badge';
 import { useDrawer } from '@/components/providers/DrawerProvider';
 import type { StoryWithArchive } from '@/lib/api-client';
 import type { ActiveSession } from '@/lib/types';
-import { AGENTS, agentOf, releaseHue, priorityColor } from '@/lib/agent-meta';
+import { AGENTS, agentOf, releaseHue, priorityColor, typeMetaOf } from '@/lib/agent-meta';
 
 // Solo idea ↔ refining son draggables (Chris-allowed)
 const DRAGGABLE_STATES = new Set(['idea', 'refining']);
@@ -40,6 +40,7 @@ export function BoardCard({
   const accent = agent?.color ?? 'var(--color-border)';
   const hue = releaseHue(story.release);
   const prioColor = priorityColor(story.priority);
+  const tm = typeMetaOf(story.type);
   const area = story.cap_target?.includes('.') ? story.cap_target.split('.')[1] : null;
 
   const style: React.CSSProperties = {
@@ -80,6 +81,11 @@ export function BoardCard({
           <span className="text-[10px] text-[var(--color-muted)]">—</span>
         )}
         <span className="flex-1" />
+        {tm && (
+          <span className="text-[11px] shrink-0 leading-none" title={tm.label} aria-hidden="true">
+            {tm.icon}
+          </span>
+        )}
         {story.release && (
           <span
             className="text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0 leading-none"
@@ -99,17 +105,12 @@ export function BoardCard({
         )}
       </div>
 
-      {/* Título legible (goal o id humanizado) */}
-      <div className="text-[11px] leading-snug line-clamp-2 text-[var(--color-text)]">
-        {story.goal ?? humanize(story.story_id)}
-      </div>
-
-      {/* story_id técnico (secundario) */}
+      {/* Título legible (goal o id humanizado) · story_id solo en tooltip + drawer */}
       <div
-        className="font-mono text-[9px] text-[var(--color-muted)] mt-1 truncate"
+        className="text-[11px] leading-snug line-clamp-2 text-[var(--color-text)]"
         title={story.story_id}
       >
-        {story.story_id}
+        {story.goal ?? humanize(story.story_id)}
       </div>
 
       {session && (
