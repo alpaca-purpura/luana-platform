@@ -153,3 +153,22 @@ T-2 completo. Skeleton store-free (D4) + rehydrate en chunk ssr:false (D3) + arc
 **Note:** T-2 implementation was committed in the same session as T-3 (T-3 session built on T-2 foundation). Commit `54ffb8e4` includes both T-2 and T-3 files.
 
 Detalle completo: `T-2-result.md`.
+
+### 2026-05-28 · 🤖 claude · /dev-team · ✓ APLICADO
+T-4 completo. Mobile drawer lee slice `mobileDrawerOpen` independiente + `useViewportGuard` `<768` formal D5 + `aria-expanded` en burger.
+
+**Archivos modificados:**
+- `vitalia/frontend/src/components/shared/shell-organism/ValeriaSidebar.tsx` — drawer mobile visible cuando `mobileDrawerOpen=true` (NO derivado de `valeriaState`). `handleMobileClose` → `setMobileDrawerOpen(false)` (valeriaState intacto).
+- `vitalia/frontend/src/components/shared/shell-organism/ValeriaSidebar.test.tsx` — SC-8 reescrito (D5): 27→30 tests. Lock crítico: `valeriaState='full'` + `mobileDrawerOpen=false` → drawer NO renderiza.
+- `vitalia/frontend/src/components/shared/shell-organism/TopBarGlobal.tsx` — `aria-expanded={mobileDrawerOpen}` + aria-label dinámico ("Abrir"/"Cerrar panel Valeria").
+- `vitalia/frontend/src/components/shared/shell-organism/TopBarGlobal.test.tsx` — 18→20 tests: `aria-expanded` + aria-label dinámico.
+- `vitalia/frontend/src/components/shared/shell-organism/useViewportGuard.ts` — documentación formal D5 (hook no toca `mobileDrawerOpen`).
+- `vitalia/frontend/src/components/shared/shell-organism/useViewportGuard.test.ts` — 6→9 tests D5 formales.
+
+**Gates:** `tsc --noEmit` 0 errores · `eslint` 0 errores · `vitest` 2310/2310 PASS (211 test files) · arch fitness 148/148 PASS (0 allowlist growth) · coverage ≥80% all categories.
+
+**TDD RED-first:** 4 tests ValeriaSidebar RED antes del fix, GREEN después. 3 tests useViewportGuard D5 GREEN (comportamiento ya era correcto, tests formalizan el contrato).
+
+Commit: `8467706a` → pushed `wip/vitalia`.
+
+Detalle completo: `T-4-result.md`.
