@@ -46,7 +46,7 @@ dev_preview:
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-shell-organism   # merge consolidado por ADR-vitalia-005
 created_date: 2026-05-27
-last_modified: 2026-05-28
+last_modified: 2026-05-28   # vitalia-shell-state-persistence (SSR-safe persist + mobile recuerda)
 parent_cap: null
 derives_capabilities: []
 
@@ -117,6 +117,15 @@ change_log:
     atomics_modified: [shell-layout-5050, shell-ribbon, shell-routing, shell-sub-tabs, shell-valeria-chat, shell-valeria-sidebar, shell-empty-states]
     scenarios_added: [deep-link-marca-active-state, config-tab-navega, agent-slug-invalido-idle, subtabs-cambian-por-agente, valeria-chat-envia-mensaje, valeria-chat-xss-guard, valeria-rail-colapsa-expande, valeria-rail-shortcuts-no-en-composer, valeria-history-busqueda-sin-resultados, empty-states-22-subtabs-navegables, empty-states-placeholders-especiales, subtab-invalido-404-en-shell, cross-tenant-bloqueado, avatar-fallback-iniciales, viewport-mobile-colapsa, a11y-keyboard-tablist, microcopy-spanish-neutro, xss-path-guard]
     caps_deleted: [layout-5050, ribbon, routing, sub-tabs, valeria-chat, valeria-sidebar, empty-states]
+    merge_sha: null
+    status: done
+  - story_id: vitalia-shell-state-persistence
+    date: 2026-05-28
+    type: extend
+    summary: "Fix transversal SSR-safe persisted store (factory createSsrSafePersistedStore · setItem no-op pre-hydration · skeleton store-free) aplicado a los 4 stores zustand persist → mata el clobber de localStorage en reload. + mobile 'collapsed pero recuerda' (slice mobileDrawerOpen independiente de valeriaState). Governing ADR-vitalia-006."
+    atomics_added: []
+    atomics_modified: [shell-layout-5050, shell-valeria-sidebar]
+    scenarios_added: [shell-state-persists-reload, mobile-drawer-collapsed-pero-recuerda]
     merge_sha: null
     status: done
 
@@ -432,6 +441,36 @@ scenarios:
       - "XSS en segmento de sub-tab → render escapado sin ejecución"
     added_in_story: vitalia-fase1-sub-tabs-line2
     added_date: 2026-05-25
+  - id: shell-state-persists-reload
+    name: "Las preferencias del shell sobreviven un reload (SSR-safe persist)"
+    actor: doctor
+    status: live
+    given: "El usuario setea valeriaState='rail' (o shellMode='web') y el valor queda en localStorage['vitalia-shell-state']"
+    when: "Recarga la página (ciclo SSR-skeleton → hydration → client mount)"
+    then: "La preferencia se restaura intacta · en NINGÚN momento se escribe el default 'full' a localStorage durante la hidratación (factory setItem no-op pre-hydration corta el clobber en la raíz)"
+    e2e_test: "vitalia/frontend/e2e/regression/shell-state-persistence/valeria-state-survives-reload.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-shell-state-persistence/01-spec.md"
+    atomic_ref: shell-layout-5050
+    edge_cases:
+      - "Primera visita sin valor guardado → default full/agentic con UNA escritura limpia (sin clobber)"
+      - "localStorage corrupto (JSON inválido) → fallback a default sin crash"
+    added_in_story: vitalia-shell-state-persistence
+    added_date: 2026-05-28
+  - id: mobile-drawer-collapsed-pero-recuerda
+    name: "El drawer mobile arranca cerrado por default pero recuerda su estado"
+    actor: doctor
+    status: live
+    given: "Viewport mobile (<768px) sin estado de drawer recordado (usuario nuevo)"
+    when: "El shell monta"
+    then: "El drawer mobile arranca CERRADO (sin role=dialog) gobernado por el slice independiente mobileDrawerOpen=false · una preferencia desktop valeriaState='full' NO auto-abre el drawer · el burger lo abre on-demand · tras reload se restaura el último estado abierto/cerrado"
+    e2e_test: "vitalia/frontend/e2e/regression/shell-state-persistence/mobile-collapsed-default.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-shell-state-persistence/01-spec.md"
+    atomic_ref: shell-valeria-sidebar
+    edge_cases:
+      - "Burger setea mobileDrawerOpen (NUNCA valeriaState='full') — desacople bug #2"
+      - "a11y: aria-expanded refleja mobileDrawerOpen · Escape cierra + devuelve foco al burger"
+    added_in_story: vitalia-shell-state-persistence
+    added_date: 2026-05-28
 
 business_rules:
   - id: clinic-scope-mandatory
