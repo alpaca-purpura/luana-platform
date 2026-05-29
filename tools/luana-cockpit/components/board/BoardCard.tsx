@@ -46,6 +46,14 @@ export function BoardCard({ story }: { story: StoryWithArchive }) {
       <div className="font-mono text-[10px] text-[var(--color-muted)] mb-1 truncate">
         {story.story_id}
       </div>
+      {story.parse_error && (
+        <div
+          className="mb-1 px-1.5 py-1 rounded bg-red-950/50 border border-red-700 text-red-300 text-[10px] leading-tight"
+          title={story.parse_error}
+        >
+          ⚠ checkpoint inválido — {story.parse_error}
+        </div>
+      )}
       {story.goal && (
         <div className="text-[11px] line-clamp-2">{story.goal}</div>
       )}

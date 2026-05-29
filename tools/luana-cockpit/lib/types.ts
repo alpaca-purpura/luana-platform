@@ -171,6 +171,13 @@ export interface Story {
   parked_reason?: string | null;
   dropped_reason?: string | null;
 
+  /**
+   * Si el frontmatter del checkpoint.md NO parsea (ej. key duplicada → YAML
+   * inválido), el reader NO silencia: rescata `state` via regex para ubicar la
+   * card y setea este campo con el mensaje del error. El board muestra badge rojo.
+   */
+  parse_error?: string | null;
+
   // Metadata cockpit (derivada o pre-seed)
   owner?: string | null;
   type?: StoryType | null;

@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import path from 'node:path';
-import { readdir } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import { errorResponse } from '../_lib/responses';
 import { readMarkdownWithFrontmatter } from '@/lib/fs-reader';
 import { storiesPath, archivePath, getBrands } from '@/lib/workspace';
@@ -49,8 +49,32 @@ async function readCheckpoint(
       body: parsed.content,
       is_archived: isArchived,
     };
-  } catch {
-    return null;
+  } catch (err) {
+    // Frontmatter malformado (ej. key duplicada → YAML inválido). NO silenciar:
+    // rescatamos `state` via regex para ubicar la card en su columna real y
+    // marcamos parse_error → el board muestra un badge rojo "⚠ checkpoint inválido".
+    // Antes esto retornaba null (la story desaparecía) o caía a state=idea
+    // (la story aparecía en la columna equivocada sin avisar) — confusión silenciosa.
+    let raw = '';
+    try {
+      raw = await readFile(ckptPath, 'utf-8');
+    } catch {
+      return null; // checkpoint.md ni siquiera existe/legible → no es una story
+    }
+    const stateMatch = raw.match(/^state:[ \t]*([a-z]+)/m);
+    return {
+      story_id: path.basename(storyDir),
+      path: storyDir,
+      brand,
+      release: null,
+      cap_target: null,
+      cap_change_type: null,
+      parent_story: null,
+      state: (stateMatch?.[1] as Story['state']) ?? 'idea',
+      body: raw,
+      is_archived: isArchived,
+      parse_error: (err as Error).message.split('\n')[0],
+    };
   }
 }
 
