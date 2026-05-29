@@ -90,10 +90,6 @@ export const TOOLTIPS = {
     'Archivo de código sin cap owner principal. Header `# cap: __orphan__`. Candidato a refactor: atar a una cap o eliminar.',
   shared:
     'Archivo cross-cap consumer (consumen múltiples capacidades). Header `# cap: __shared__`. Típico: utilidades, hooks compartidos, Shadcn UI primitives.',
-  cross_check_1:
-    'Para cada path declarado en cap.atomics[].verification, el archivo apuntado debe tener el header `# cap:` correcto. Detecta caps que declaran un archivo pero el archivo dice ser de otra cap.',
-  cross_check_2:
-    'Para cada archivo con header `# atomics: <id>`, el ID debe existir en cap.atomics[].id. Detecta atomic IDs huérfanos en headers.',
   cross_check_3:
     'Para cada scenarios[].e2e_test declarado, el archivo debe existir y contener un test pattern de Playwright. Detecta tests rotos o nunca creados.',
   cross_check_4:

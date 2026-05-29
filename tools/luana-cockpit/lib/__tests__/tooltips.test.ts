@@ -53,8 +53,6 @@ const REQUIRED_KEYS = [
   'stub',
   'partial',
   'wip',
-  'cross_check_1',
-  'cross_check_2',
   'cross_check_3',
   'cross_check_4',
   'hard_fail',

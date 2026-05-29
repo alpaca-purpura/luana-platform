@@ -46,19 +46,19 @@ export function BidirectionalSection({
     );
   }
 
+  // cross_check_1/2 (atomics↔headers) eliminados 2026-05-28 (atomics killed · ver lifecycle.md).
+  // Solo sobreviven cross_check_3 (scenario→e2e, HARD) y cross_check_4 (access roles).
   const checks = [
-    { num: 1, label: 'cap → file header', result: report.cross_check_1, tip: TOOLTIPS.cross_check_1 },
-    { num: 2, label: 'file atomic id → cap', result: report.cross_check_2, tip: TOOLTIPS.cross_check_2 },
     { num: 3, label: 'scenario → e2e test', result: report.cross_check_3, tip: TOOLTIPS.cross_check_3 },
     { num: 4, label: 'access role → @decorator', result: report.cross_check_4, tip: TOOLTIPS.cross_check_4 },
-  ];
+  ].filter((c) => c.result != null);
 
   const verdictCls = VERDICT_CLS[report.summary.verdict];
   const isHard = (n: number) => report.hard_checks.includes(n);
 
   // Try to find this cap in the cross-check details to surface drift specific to it
   const capRelatedDrift = checks.flatMap((c) =>
-    c.result.details
+    (c.result.details ?? [])
       .filter((d) => {
         const capField = (d.cap ?? d.cap_id ?? '') as string;
         return capField === capId;

@@ -485,8 +485,7 @@ export interface BidirectionalValidationReport {
   brand: string;
   schema_version: string;
   hard_checks: number[];
-  cross_check_1: CrossCheckResult;
-  cross_check_2: CrossCheckResult;
+  // cross_check_1/2 (atomics↔headers) eliminados 2026-05-28 (atomics killed · lifecycle.md)
   cross_check_3: CrossCheckResult;
   cross_check_4: CrossCheckResult;
   summary: {
