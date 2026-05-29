@@ -2,6 +2,11 @@
  * ShellLayoutPage.ts — Page Object Model para ShellOrganismLayout
  *
  * F1-S4 vitalia-fase1-shell-layout-5050 — T-7
+ * Extended vitalia-shell-state-persistence T-5:
+ *   - openMobileDrawerViaBurger(): tap burger, waits for role=dialog
+ *   - isMobileDrawerOpen(): check if mobile drawer (role=dialog) present
+ *   - getMobileDrawerSlice(): read mobileDrawerOpen from localStorage
+ *   - instrumentSetItem(): install spy; getSetItemWrites(): collect writes
  *
  * Locators: data-testid first, ARIA como fallback.
  * Sin assertions en métodos POM — solo acciones + locators.
@@ -373,5 +378,114 @@ export class ShellLayoutPage {
     const valeriaBox = await this.valeriaSlot.boundingBox();
     const appBox = await this.appSlot.boundingBox();
     return (valeriaBox?.width ?? 0) + (appBox?.width ?? 0);
+  }
+
+  // ── Mobile drawer helpers (T-5 vitalia-shell-state-persistence) ───────────
+
+  /**
+   * Tap the hamburger burger button (data-testid="topbar-hamburger") to open
+   * the mobile Valeria drawer. Waits for the drawer dialog to appear.
+   *
+   * Precondition: page must be loaded at a mobile viewport (<768px).
+   */
+  async openMobileDrawerViaBurger(): Promise<void> {
+    const burger = this.page.getByTestId("topbar-hamburger");
+    await burger.waitFor({ state: "visible", timeout: 15_000 });
+    await burger.click();
+    // Wait for the drawer to appear
+    await this.page
+      .locator('[role="dialog"][data-testid="valeria-sidebar"]')
+      .waitFor({ state: "visible", timeout: 15_000 });
+  }
+
+  /**
+   * Close the mobile Valeria drawer via the close button (X inside the drawer).
+   *
+   * Precondition: mobile drawer must be open (role=dialog visible).
+   */
+  async closeMobileDrawer(): Promise<void> {
+    const closeBtn = this.page.getByTestId("valeria-drawer-close");
+    await closeBtn.click();
+    // Wait for dialog to disappear
+    await this.page
+      .locator('[role="dialog"][data-testid="valeria-sidebar"]')
+      .waitFor({ state: "hidden", timeout: 15_000 });
+  }
+
+  /**
+   * Returns true if the mobile Valeria drawer (role=dialog) is currently visible.
+   * Uses a short timeout to avoid flakiness on transitions.
+   */
+  async isMobileDrawerOpen(): Promise<boolean> {
+    try {
+      const drawer = this.page.locator(
+        '[role="dialog"][data-testid="valeria-sidebar"]',
+      );
+      await drawer.waitFor({ state: "visible", timeout: 3_000 });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Read the `mobileDrawerOpen` field from the shell store's localStorage slice.
+   * Returns null if the key is absent or parse fails.
+   */
+  async getMobileDrawerSlice(): Promise<boolean | null> {
+    return await this.page.evaluate((key) => {
+      try {
+        const raw = localStorage.getItem(key);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw) as {
+          state?: { mobileDrawerOpen?: boolean };
+        };
+        const val = parsed.state?.mobileDrawerOpen;
+        if (typeof val !== "boolean") return null;
+        return val;
+      } catch {
+        return null;
+      }
+    }, SHELL_STORAGE_KEY);
+  }
+
+  /**
+   * Install a localStorage.setItem spy via page.addInitScript-equivalent at runtime.
+   * Call BEFORE navigation so all writes are captured from the start.
+   *
+   * After calling this, use getSetItemWrites() to retrieve all captured calls.
+   *
+   * HOW IT WORKS:
+   *   Overrides localStorage.setItem with a wrapper that pushes each call into
+   *   window.__setItemWrites (key, value). The original setItem is still called —
+   *   this is non-destructive spy, not a mock.
+   *
+   * USE CASE (SC-3 adversarial):
+   *   Prove that 'full' is NEVER written to the shell storage key when 'rail' was saved.
+   */
+  async instrumentSetItem(): Promise<void> {
+    await this.page.evaluate(() => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const w = window as any;
+      if (w.__setItemInstrumented) return; // idempotent
+      w.__setItemWrites = [] as Array<{ key: string; value: string }>;
+      const orig = localStorage.setItem.bind(localStorage);
+      localStorage.setItem = (key: string, value: string) => {
+        w.__setItemWrites.push({ key, value });
+        orig(key, value);
+      };
+      w.__setItemInstrumented = true;
+    });
+  }
+
+  /**
+   * Retrieve all localStorage.setItem calls captured since instrumentSetItem().
+   * Each entry is { key, value } as passed to setItem.
+   */
+  async getSetItemWrites(): Promise<Array<{ key: string; value: string }>> {
+    return await this.page.evaluate(() => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (window as any).__setItemWrites ?? [];
+    });
   }
 }

@@ -112,7 +112,14 @@ export function ValeriaSidebar() {
     r: () => setValeriaState("rail"),
     f: () => setValeriaState("full"),
     n: handleNewConversation,
-    Escape: () => setValeriaState("collapsed"),
+    // T-5 impl-fix: Escape closes desktop Valeria (collapsed) AND mobile drawer
+    // (mobileDrawerOpen=false via independent slice — D5 ADR-vitalia-006).
+    // The bug: Escape only called setValeriaState('collapsed') which doesn't close
+    // the mobile drawer (mobileDrawerOpen is an independent slice, not derived from valeriaState).
+    Escape: () => {
+      setValeriaState("collapsed");
+      setMobileDrawerOpen(false);
+    },
     "mod+k": handleFocusComposer,
   });
 
