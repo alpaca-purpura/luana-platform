@@ -1229,3 +1229,24 @@ Cuando bootstrapees brand nueva:
 - `.claude/rules/brand-docs-schema.md` § R4 (v3 cement 2026-05-28)
 - `docs/process/chris-input-protocol.md` (v2 cement 2026-05-28)
 - `vitalia/docs/learnings/2026-05-28-chris-input-at-idea-doctrine-gap.md` — candidate original (handoff /pm-vitalia → /pm-luana)
+
+---
+
+## 2026-05-29 — Verificar = ejercitar + leer logs, NO "HTTP 200" · e2e que mockean el backend = falso verde
+
+**Contexto:** Durante el refinamiento de `vitalia-stub-caps-scenario-backfill`, Chris reportó 500 reales en `/lisa/marca/identidad` + `/voz-y-tono` en dev-app. Claude había declarado superficies "verified-live" porque un `GET` daba **200** — pero (a) el 200 era un placeholder vacío con la tabla `personality_profiles` inexistente, y (b) la acción real (cambiar arquetipo → guardar) fallaba con `PUT → 405` ("Error al guardar"). Al hacer un test honesto **autenticado + SIN mock** contra el backend real, además apareció que la página voz-y-tono ni siquiera carga completa. Chris: *"probar los escenarios es realmente probarlos viendo logs y todo, no solo diciendo está bien porque saco estado 200"* + *"sé inteligente, maneja un usuario todopoderoso para pruebas generales"*.
+
+**Root cause sistémico:** **toda la suite e2e de lisa-marca mockea el backend** (`setupLisaMarcaMocks` → `route.fulfill 200` para identity/visuals/personality/contact/trust/blocklist). Tests verdes contra un backend 100% fake → la story shippeó "LIVE" con 3 bugs reales que NINGÚN test podía pillar (tabla faltante, PUT/405, page-load roto). Mockear el backend en el e2e = falso verde.
+
+**Decisiones cementadas:**
+1. **`test-design-doctrine.md` § "Verificación REAL ≠ HTTP 200"** (cardinal 2026-05-29): un scenario está verificado solo cuando se ejerce la acción real del usuario (especialmente los **writes**) + se leen logs + se confirma el efecto (DB/persistencia). Un GET 200 es necesario, nunca suficiente. Anti-patrón estrella prohibido.
+2. **Smoke real contra dev-app** (ratificado para el backfill): la verificación de funcionalidades visibles corre contra el entorno real, no solo mocks/localhost.
+3. **Harness de auth real para pruebas:** existe `dr.demo@vitalialat.com` (rol `owner` en tenant Sanaré `e69a691d`, vía `user_tenants`) + `CLERK_TESTING_TOKEN_VITALIA` + project `smoke` (dependencies:['setup'] re-autentica). Recipe probada: spec bajo `e2e/regression/**` SIN `setupLisaMarcaMocks` → pega al backend real autenticado.
+4. **Usuario "todopoderoso" de pruebas (propuesto):** un test user con todos los roles (owner+admin_clinic+doctor+nurse) sobre el/los tenant(s) demo, vía RBAC real (NO bypass — nunca debilitar tenant-isolation/HIPAA-lite en prod), para no pelear roles por-feature en pruebas generales. Seed en dev DB. **Pendiente ratificación Chris.**
+
+**How to apply (/pm-luana + builders + auditor):** ver `test-design-doctrine.md`. El auditor (categoría Connectivity + verificación) y los builders deben ejercer writes reales + leer logs; e2e que mockeen el backend del propio surface bajo prueba NO cuentan como verificación de ese surface.
+
+**Referencias:**
+- `.claude/rules/test-design-doctrine.md` § Verificación REAL ≠ "HTTP 200" (cardinal)
+- `vitalia/docs/observed-bugs/2026-05-29-lisa-marca-identidad-voz-500.md` (caso origen, 3 bugs)
+- Commits hotfix: `7c8d2822` (mig 034 personality_profiles), `61f1049c` (FE PUT→PATCH)

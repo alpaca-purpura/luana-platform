@@ -311,7 +311,23 @@ Este skill cubre dos modos pero su jurisdicción NO se expande. Reglas duras:
 
 Si Chris pide algo que cae en alguna ❌ → handoff explícito al skill correcto. NO silenciosamente expandir scope.
 
+## ★ Verificación REAL (doctrina cross-brand · cement 2026-05-29)
+
+> SSoT: `.claude/rules/test-design-doctrine.md` § "Verificación REAL ≠ HTTP 200". Origen: caso lisa-marca 2026-05-29 (ver `docs/process/learnings.md`).
+
+`/pm-luana` (y todo el proceso que orquesta: architect / dev-team / auditor) exige que **"probar un escenario" signifique ejercerlo de verdad + leer logs + confirmar el efecto** — NUNCA declarar "funciona/verified-live" porque un `GET` devolvió 200:
+
+- **Ejercer la acción real**, sobre todo los **writes** (save/edit/delete) — son los que rompen, no los reads. Un GET 200 (o un placeholder vacío) NO prueba la funcionalidad.
+- **Leer logs** del backend durante/después (4xx/5xx/traceback). Un 405/500 al lado en el mismo flujo = NO verificado.
+- **Confirmar el efecto** (row en DB, persistencia al recargar, evento), no el código HTTP.
+- **e2e que mockean el backend del propio surface bajo prueba NO cuentan** como verificación de ese surface (dan falso verde — caso lisa-marca: suite verde con backend 100% mockeado mientras 3 bugs reales shippeaban "LIVE").
+- Verificación contra el entorno real (dev-app) cuando la funcionalidad es visible; si no se puede ejercer de verdad (auth), **decirlo explícito**, no declararlo verificado.
+- Harness recomendado: test user de pruebas con rol suficiente (idealmente un "todopoderoso" con todos los roles sobre tenant(s) demo, vía **RBAC real, nunca bypass**) + project `smoke` (auth fresca) + spec SIN mocks del backend.
+
 ## Anti-patterns
+
+- ❌ Declarar "verificado"/"verified-live"/"funciona" porque un GET dio 200 (sin ejercer writes ni leer logs) — ver § Verificación REAL
+- ❌ Aceptar e2e que mockean el backend como prueba del backend de ese surface (falso verde)
 
 - ❌ Lift sin proposal formal en `docs/promotion-protocol/proposals/`
 - ❌ Bump major sin ADR + migration notes

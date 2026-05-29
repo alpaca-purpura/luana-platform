@@ -11,6 +11,28 @@
 
 El builder NO improvisa los tests. Diseña la **batería de tests apropiada a la naturaleza del ticket** (matriz abajo) ANTES de implementar (fase `technical_design`), siguiendo TDD (RED→GREEN→REFACTOR, primera entrada del bitácora = RED). El `04-validators.yaml § test_construction_plan` del architect manda; esta doctrina es el **fallback independiente** cuando el plan es delgado o falta un tipo de test que la naturaleza exige.
 
+## ★ Verificación REAL ≠ "HTTP 200" (cardinal · cement 2026-05-29)
+
+> **Origen:** sesión 2026-05-29 (`vitalia-stub-caps-scenario-backfill` + hotfix lisa-marca). Claude declaró `/lisa/marca/personality` "verificado" porque un `GET` devolvía **200** — pero el 200 era un **placeholder vacío** (la tabla `personality_profiles` no existía) y la acción real del usuario (**cambiar arquetipo → guardar**) fallaba con `PUT → 405` ("Error al guardar"). Un status 200 de un GET NO prueba que la funcionalidad funcione. Chris: *"probar los escenarios es realmente probarlos viendo logs y todo, no solo diciendo está bien porque saco estado 200"*.
+
+**Regla:** un scenario está VERIFICADO solo cuando se **ejerce la acción real del usuario** y se **observa el efecto + los logs**, no cuando un endpoint devuelve 200. Bar mínimo por naturaleza:
+
+| Naturaleza | "Verificado" significa (mínimo honesto) |
+|---|---|
+| **UI / flujo usuario** | Ejecutar la acción real (crear/editar/**guardar**/eliminar/navegar) en la app corriendo (o E2E que la reproduce) → **resultado esperado visible** (toast OK, fila aparece, valor persistido al recargar) + **logs del backend sin 4xx/5xx inesperado** + (si escribe) **efecto en DB confirmado**. Un `GET 200` o un render de placeholder NO basta. |
+| **BE endpoint** | Ejercer el método/payload reales (incluido el **write**: POST/PATCH/PUT/DELETE), no solo el GET. Confirmar status correcto + **leer logs** (sin traceback) + assert del efecto (row escrita/borrada, evento emitido). Verificar el método HTTP correcto (un 405 en logs = contrato FE↔BE roto). |
+| **Migración / schema** | Aplicar contra DB real + **confirmar que la tabla/columna existe** + que el endpoint que la usa responde OK ejercido de verdad (no asumir). |
+| **Agentic** | Correr el turno/tool real + leer trazas (`copilot_trace_event`) + eval goldens. No "el endpoint respondió". |
+
+**Cómo (checklist de verificación honesta):**
+1. **Ejercer**, no asumir: disparar la acción real del usuario / el método real del endpoint (especialmente los **writes** — son los que rompen, no los reads).
+2. **Leer logs** del backend durante/después (`docker logs <container> --tail N | grep -iE '4|5..|traceback|error|does not exist'`). Un 200 con un 405/500 al lado en otra ruta del mismo flujo = NO verificado.
+3. **Confirmar el efecto** (DB row, archivo, evento, valor persistido al recargar) — no solo el código HTTP.
+4. **Round-trip** cuando aplique: escribir → releer → el valor cambió.
+5. Si no podés ejercerlo de verdad (ej. auth real) → **decilo explícito** ("verifiqué routing, falta el save autenticado"), NO lo declares verificado.
+
+**Anti-patrón estrella (prohibido):** declarar una funcionalidad "verificada"/"verified-live"/"funciona" porque un `GET` dio 200, sin ejercer la acción real ni leer logs. El 200 de un read es necesario pero **nunca suficiente**.
+
 ## Matriz: naturaleza del ticket → tests requeridos
 
 | Naturaleza del ticket | Tests obligatorios (RED primero, por capa) |
@@ -60,6 +82,7 @@ jscpd + arch-fitness son **first-class**: un fix que pasa tests pero duplica có
 
 ## Anti-patterns prohibidos
 
+- ❌ **Declarar "verificado"/"funciona" porque un GET dio 200, sin ejercer la acción real (write/save) ni leer logs** (ver § Verificación REAL ≠ "HTTP 200")
 - ❌ Implementar sin diseñar la batería de tests (improvisar al final)
 - ❌ Solo happy path (sin cross-tenant / negativos / bordes)
 - ❌ Testear implementación interna (test frágil que rompe en cada refactor)
