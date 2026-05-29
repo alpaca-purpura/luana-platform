@@ -196,6 +196,18 @@ def check_auditors_have_edit() -> None:
     )
 
 
+# ── CHECK 8 — este validador está cableado en el pre-commit hook ─────────────
+def check_self_wired_in_precommit() -> None:
+    p = WS / "scripts/git-hooks/pre-commit"
+    wired = p.exists() and "validate_machinery_consistency" in p.read_text(encoding="utf-8")
+    check(
+        "CHECK 8 · machinery-check cableado en scripts/git-hooks/pre-commit",
+        wired,
+        "el pre-commit no invoca validate_machinery_consistency.py (enforcement no activa). "
+        "Nota: en worktrees el hook activo resuelve al checkout de main — activa al mergear.",
+    )
+
+
 def main() -> int:
     print("validate_machinery_consistency.py — anti-drift lock-in\n")
     check_atomics_dead()
@@ -205,6 +217,7 @@ def main() -> int:
     check_rules_registered()
     check_rule_refs_resolve()
     check_auditors_have_edit()
+    check_self_wired_in_precommit()
     print(f"\n{checks_run} checks · {len(failures)} fallos")
     if failures:
         print("\nFALLOS (drift detectado):")
