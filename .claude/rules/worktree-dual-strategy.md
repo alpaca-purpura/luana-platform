@@ -1,31 +1,41 @@
-# Worktree Dual Strategy (refining + build paralelos)
+# Worktree Strategy — Single-Hub default (refining + build paralelos sobre un árbol)
 
-**Origen:** conversación 2026-05-27 — Chris quiere ejecutar refinamiento+UX y arquitectura+desarrollo en paralelo sin pisarse. Mientras dev-team construye una story, /pm-{brand} debe poder refinar las próximas (con anti-duplication-refining + prior-art-scan obligatorio).
+**Origen:** conversación 2026-05-27 — Chris quiere paralelizar refinamiento+UX y arquitectura+desarrollo sin pisarse.
 
-**Cement-date:** 2026-05-27. **Aplica a:** brands con outcomes multi-story (vitalia activamente, nicolify legacy, comunify en bootstrap, lupulo placeholder).
+**Cement-date:** 2026-05-27. **★ v2 cement 2026-05-28 (ADR-009):** el default se INVIRTIÓ — de "2 worktrees separados" a **hub único por marca con N sesiones**. Razón: los worktrees separados fragmentaban el estado (las builds no veían las refinadas nuevas, el cockpit nunca tenía la foto completa, sync ceremonial crónico). SSoT: `docs/architecture/luana-platform/ADR-009-single-hub-worktree.md`. **Aplica a:** brands activas (vitalia, comunify) + futuras.
 
-## Regla cardinal
+## Regla cardinal v2 — hub único por marca (DEFAULT)
 
-Cuando Chris quiere paralelizar refinamiento + build dentro de la MISMA brand activa, usa **2 worktrees dedicados** con scopes distintos:
+Para paralelizar refinamiento + build dentro de la MISMA marca, **NO se crean worktrees separados**. Todas las sesiones corren sobre el **único worktree canónico** de la marca (el "hub"), coordinadas por **bucket locks** (M14):
 
 ```
-~/Proyectos/luana-{brand}-refine/      branch: wip/{brand}-refine
-  └ Sesión Claude #1: /pm-{brand} + /po-ux + /architect (refining stories)
-  └ Toca: {brand}/docs/product/stories/{id}/ NUEVAS
-  └ NO toca: {brand}/{backend,frontend}/src/   (esa parte vive en worktree build)
-
-~/Proyectos/luana-{brand}/             branch: wip/{brand}   (canónico build)
-  └ Sesión Claude #2: /dev-team + /auditor (building active story)
-  └ Toca: {brand}/{backend,frontend}/src/   de la story READY
-  └ NO toca: {brand}/docs/product/stories/{nuevas}/   (esa parte vive en refine)
+~/Proyectos/luana-{brand}/   (wip/{brand})  = HUB único · cockpit corre aquí (:400X) y ve TODO
+  ├── Sesión 1: Chris refina            → bucket docs        (/pm-{brand}, /po-ux, /architect)
+  ├── Sesión 2: build historia A        → bucket code:{modA} (/dev-team, /auditor)
+  └── Sesión 3: build historia B        → bucket code:{modB} (/dev-team, /auditor)
 ```
 
-## Scope per worktree (hard rule)
+Por qué funciona (los 4 dolores del modelo viejo desaparecen): un solo filesystem = un solo SSoT de estado → las builds ven las refinadas al instante, el cockpit tiene la foto completa, refino viendo qué se construye, cero sync. Detalle + riesgos acotados (locks module-scoped + commit por pathspec): ADR-009 § 2.
+
+### Dos mecanismos que blindan el cruce de archivos
+
+1. **Bucket locks module-scoped** (`.claude/rules/parallel-safety.md` M14): `code:{module}` → dos builds de módulos distintos corren en paralelo; mismo módulo se serializa (dependencia real). `docs` no choca con `code:*`. Cada skill hace `scripts/git/session-lock.sh acquire {bucket} {skill} [story-id]` en su step 0; `release` al cerrar.
+2. **Commit por pathspec** (`.claude/rules/git-haiku-delegation.md`): el índice git es compartido entre sesiones del mismo árbol → commitear con `git commit <ruta-exacta>` (nunca `git add .`) evita contaminación cruzada.
+
+### Build-claim + visibilidad en el cockpit
+
+`/dev-team` Step 0 hace `session-lock.sh acquire code:{module} dev-team {story-id}` (lane vía `$LUANA_LANE`, fallback `pid<PID>`). El cockpit lee `.session-locks/*.lock` y pinta **"🔨 {lane}"** sobre la story en construcción → Chris tiene mapeado qué sesión construye qué. `release` al cerrar; si la sesión muere, el lock auto-libera por PID muerto.
+
+## Modo EXCEPCIÓN — worktree separado (solo scopes divergentes)
+
+Worktrees dedicados NO desaparecen, pero dejan de usarse para "refine vs build dentro de una marca". Se reservan para: lift core (`wip/core-*`), cross-cutting (`wip/protocol-*`), experimento divergente (`exp/*`), hot-fix aislado (`hotfix/*`), u **otra marca** (su propio hub). El split refine-lane/build-lane del v1 (tabla abajo) queda como referencia histórica para esos casos divergentes, NO como operación diaria.
+
+## Scope per worktree (cuando usás el modo excepción)
 
 | Worktree | Permitido editar | Prohibido editar |
 |---|---|---|
-| `luana-{brand}-refine` (refining lane) | `{brand}/docs/product/stories/{new-id}/` (specs/designs/arch) + `{brand}/docs/product/{outcomes,capabilities,modules}/` + `{brand}/docs/learnings/` (prior-art capture) | `{brand}/backend/src/` + `{brand}/frontend/src/` (rompe story-in-progress en worktree build) |
-| `luana-{brand}` (canonical build) | `{brand}/backend/src/` + `{brand}/frontend/src/` + tests + migrations de la story READY | `{brand}/docs/product/stories/{otras-stories}/` (rompe refinamiento concurrent) |
+| `luana-{brand}-refine` (refine lane · EXCEPCIÓN) | `{brand}/docs/product/stories/{new-id}/` (specs/designs/arch) + `{brand}/docs/product/{outcomes,capabilities,modules}/` + `{brand}/docs/learnings/` (prior-art capture) | `{brand}/backend/src/` + `{brand}/frontend/src/` (rompe story-in-progress en worktree build) |
+| `luana-{brand}` (canonical · HUB en v2) | `{brand}/docs/**` + `{brand}/backend/src/` + `{brand}/frontend/src/` + tests + migrations — todo bajo bucket locks | (nada extra · scope gate M13 aísla por marca) |
 
 ## Setup ad-hoc
 

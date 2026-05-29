@@ -75,6 +75,8 @@ El cockpit es **filesystem-as-DB**: lee/escribe directo de `.md`/`.yaml` del wor
 
 **Múltiples cockpits coexisten** sin colisión: si hay sesiones paralelas en vitalia + comunify, ambos cockpits corren simultáneo en `:4002` y `:4003` respectivamente.
 
+**Session mapping (single-hub · ADR-009):** con N sesiones sobre el hub de una marca, el cockpit de ese hub lee `.session-locks/*.lock` y pinta **"🔨 {lane}"** sobre la story que cada sesión está construyendo (board + franja "Construyendo ahora"). Lane = `$LUANA_LANE` (export opcional por terminal, ej. `export LUANA_LANE=A`) o `pid<PID>`. Así Chris ve mapeado qué sesión construye qué sin salir del cockpit.
+
 **Detener:** Ctrl+C en pnpm dev (foreground) o `lsof -ti:400X | xargs kill` por puerto.
 
 ## SDD Level 3 — vocabulario v4 (cementado 2026-05-06)
@@ -125,11 +127,11 @@ Extension SDK SSoT: `core/luana-core-extension-sdk/src/luana_core_extension_sdk/
 
 **Triple-branch:** `wip/{slug}` (autosave per worktree) → `main` (integración, **staging deploy MANUAL**) → `release/{brand}-vX.Y.Z` (único auto-deploy prod).
 
-**Worktrees obligatorios** para sesiones paralelas: `scripts/git/new-session.sh {brand} story {slug} [lane]`. Dashboard: `scripts/git/status-all.sh`. Cleanup: `scripts/git/cleanup-session.sh`. M11: nunca >30 min sin push.
+**Single-hub por marca (default · ADR-009):** N sesiones paralelas (refinar + builds) corren sobre el **mismo worktree canónico** `~/Proyectos/luana-{brand}` coordinadas por bucket locks (`session-lock.sh acquire docs|code:{module}`). Un solo filesystem = un solo SSoT de estado = el cockpit ve TODO + builds ven refinadas al instante. Índice git compartido → commit por pathspec. Worktree dedicado (`new-session.sh`) = **excepción** (lift core, protocol, exp, hotfix, otra marca). Dashboard: `scripts/git/status-all.sh`. M11: nunca >30 min sin push.
 
 **Forbidden:** `git pull`, `git fetch && merge`, `git push --force`, `git revert` sin aprobación, `git add .` / `-A`, `git commit --no-verify`. Push non-fast-forward → STOP.
 
-Detail: `.claude/rules/git-safety.md` + `.claude/rules/parallel-safety.md` + `docs/architecture/luana-platform/ADR-{004,005}*.md`.
+Detail: `.claude/rules/git-safety.md` + `.claude/rules/parallel-safety.md` + `.claude/rules/worktree-dual-strategy.md` + `docs/architecture/luana-platform/ADR-{004,005,009}*.md`.
 
 ## Critical Rules (auto-loaded de `.claude/rules/`)
 

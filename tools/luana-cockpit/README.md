@@ -101,13 +101,25 @@ Variables disponibles:
 | Ruta | Vista | Funcionalidad clave |
 |---|---|---|
 | `/roadmap` (default) | Roadmap por releases | Drag stories entre releases F0..F8 (solo idea/refining/refined) · Merge release a main cuando todas done |
-| `/board` | Backlog kanban | 10 columnas estados macro v4 · drag CHRIS_ALLOWED only (idea↔refining + parked/dropped) · WIP badges + filtros |
+| `/board` | Backlog kanban | 10 columnas estados macro v4 · drag CHRIS_ALLOWED only (idea↔refining + parked/dropped) · WIP badges + filtros · **badge 🔨 {lane}** sobre stories en construcción (ADR-009 single-hub, ver abajo) |
 | `/map` | Mapa Implementado | Banner **Salud de Producto** (distribución de caps por status del JSON live) + grid agentes (Lisa/Valeria/Adrián/Lucas/Camila/Configurar) + sección Infra full-width · click cap → **Cap Drawer** |
 | `/arquitectura` | SYSTEM-MAP global | 7 agentes × functional_areas + flows cross-agent + data ownership |
 | `/drift` | Caps no verified-live | Lista priorizada por severidad (stub/wip/partial/drift) para saber qué arreglar |
 | `/learnings` | Timeline learnings | Cronológico desc · search + tags pills + xed open |
 
 > No existe un tab `/functionality`. La trazabilidad de una capability (scenarios → code files → access → business rules → changelog) se ve en el **Cap Drawer**, que se abre clickeando un cap en `/map`.
+
+## Session mapping (single-hub · ADR-009)
+
+Bajo el modelo **hub único** (N sesiones Claude/opencode sobre el mismo worktree de una marca), el `/board` muestra **qué sesión está construyendo qué story**:
+
+- `/dev-team` Step 0 hace build-claim: `scripts/git/session-lock.sh acquire code:{module} dev-team {story-id}`.
+- El claim queda en `.session-locks/*.lock` (gitignored, runtime). Formato: `PID SKILL TIMESTAMP STORY_ID LANE BUCKET`.
+- El cockpit (`GET /api/sessions` → `lib/sessions.ts`) lee esos locks cada 5s, **filtra PIDs muertos**, y pinta **"🔨 {lane}"** sobre la card de la story + una franja **"Construyendo ahora"** arriba del board.
+- **Lane** = `$LUANA_LANE` (export opcional por terminal: `export LUANA_LANE=A`) o fallback `pid<PID>`.
+- Al cerrar la story (`developing → developed`) `/dev-team` hace `release`; si la sesión muere, el lock auto-libera por PID muerto.
+
+SSoT: `docs/architecture/luana-platform/ADR-009-single-hub-worktree.md`.
 
 ## Story Drawer (slide-in 800px)
 

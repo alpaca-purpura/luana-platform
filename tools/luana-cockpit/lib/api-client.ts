@@ -19,6 +19,7 @@ import type {
   ComputedStatusReport,
   CodeIndexReport,
   BidirectionalValidationReport,
+  ActiveSession,
 } from '@/lib/types';
 
 export class ApiClientError extends Error {
@@ -85,6 +86,20 @@ export async function updateStory(
     { method: 'PATCH', body: JSON.stringify({ fields: patch }) }
   );
   return data.story;
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Active sessions (build-claims · ADR-009 single-hub worktree)
+// ────────────────────────────────────────────────────────────────────────────
+
+export interface SessionsResponse {
+  sessions: ActiveSession[];
+  by_story: Record<string, ActiveSession>;
+}
+
+/** Sesiones Claude/opencode vivas trabajando sobre el hub (lee `.session-locks/`). */
+export async function listSessions(): Promise<SessionsResponse> {
+  return request<SessionsResponse>('/api/sessions');
 }
 
 // ────────────────────────────────────────────────────────────────────────────

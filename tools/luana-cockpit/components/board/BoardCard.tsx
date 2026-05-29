@@ -2,14 +2,21 @@
 
 import { useDraggable } from '@dnd-kit/core';
 import { cn } from '@/lib/cn';
-import { StateBadge, Pill } from '@/components/ui/Badge';
+import { Pill } from '@/components/ui/Badge';
 import { useDrawer } from '@/components/providers/DrawerProvider';
 import type { StoryWithArchive } from '@/lib/api-client';
+import type { ActiveSession } from '@/lib/types';
 
 // Solo idea ↔ refining son draggables (Chris-allowed)
 const DRAGGABLE_STATES = new Set(['idea', 'refining']);
 
-export function BoardCard({ story }: { story: StoryWithArchive }) {
+export function BoardCard({
+  story,
+  session,
+}: {
+  story: StoryWithArchive;
+  session?: ActiveSession;
+}) {
   const { openStory } = useDrawer();
   const draggable = DRAGGABLE_STATES.has(story.state);
 
@@ -46,6 +53,14 @@ export function BoardCard({ story }: { story: StoryWithArchive }) {
       <div className="font-mono text-[10px] text-[var(--color-muted)] mb-1 truncate">
         {story.story_id}
       </div>
+      {session && (
+        <div
+          className="mb-1 px-1.5 py-0.5 rounded bg-amber-900/30 border border-amber-700/50 text-amber-300 text-[10px] leading-tight inline-flex items-center gap-1"
+          title={`Sesión ${session.lane ?? `pid${session.pid}`} (${session.skill}) construyendo · bucket ${session.bucket}${session.startedAt ? ` · desde ${session.startedAt}` : ''}`}
+        >
+          🔨 {session.lane ?? `pid${session.pid}`}
+        </div>
+      )}
       {story.parse_error && (
         <div
           className="mb-1 px-1.5 py-1 rounded bg-red-950/50 border border-red-700 text-red-300 text-[10px] leading-tight"

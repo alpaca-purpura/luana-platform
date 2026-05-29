@@ -6,7 +6,7 @@ import { StateBadge } from '@/components/ui/Badge';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { TOOLTIPS } from '@/lib/tooltips';
 import { BoardCard } from './BoardCard';
-import type { StoryState } from '@/lib/types';
+import type { ActiveSession, StoryState } from '@/lib/types';
 import type { StoryWithArchive } from '@/lib/api-client';
 import { CHRIS_ALLOWED_TRANSITIONS } from '@/lib/types';
 
@@ -29,6 +29,8 @@ interface BoardColumnProps {
   /** Estado origen que se está dragging (para feedback drop allowed/forbidden) */
   draggingFromState: StoryState | null;
   wipCap?: number;
+  /** Build-claims vivos por story_id (ADR-009) → badge 🔨 en la card. */
+  sessions?: Record<string, ActiveSession>;
 }
 
 export function BoardColumn({
@@ -36,6 +38,7 @@ export function BoardColumn({
   stories,
   draggingFromState,
   wipCap,
+  sessions,
 }: BoardColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: `state:${state}`,
@@ -83,7 +86,11 @@ export function BoardColumn({
         ) : (
           <div className="space-y-1.5">
             {stories.map((s) => (
-              <BoardCard key={s.story_id} story={s} />
+              <BoardCard
+                key={s.story_id}
+                story={s}
+                session={sessions?.[s.story_id]}
+              />
             ))}
           </div>
         )}

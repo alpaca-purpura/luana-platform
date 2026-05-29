@@ -98,16 +98,18 @@ Mientras true: `/dev-team` NO auto-handoff. `/pm-{brand}` bootstrap pingea deuda
 
 Sin `defer_audit: true` el gate es ABSOLUTO.
 
-## WIP cap post-decreto (hard rule)
+## WIP cap post-decreto (hard rule · ★ v2 module-scoped 2026-05-28 ADR-009)
 
-| Estado | Cap default |
+Bajo el modelo **hub único** (N sesiones / un worktree por marca), la unidad del cap dejó de ser "por worktree" y pasó a ser **por `code:{module}` bucket**: un build en vuelo por módulo. Stories de módulos distintos `developing` en paralelo sobre el mismo hub = OK (es lo que ADR-009 habilita). El bucket lock (`session-lock.sh`) serializa solo el mismo módulo.
+
+| Estado | Cap default (v2) |
 |---|---|
-| `developing` | ≤ 1 por worktree |
-| `developed` | ≤ 1 por worktree |
-| `reviewing` | ≤ 1 por worktree |
+| `developing` | ≤ 1 por **`code:{module}`** (no por worktree) |
+| `developed` | ≤ 1 por módulo (cerrar antes de otra del mismo módulo) |
+| `reviewing` | ≤ 1 por módulo |
 | `done` | ∞ (rolling 90d) |
 
-Sub-stories del mismo outcome pueden compartir worktree pero secuenciales (A `done` ANTES de B arrancar).
+Stories del MISMO módulo siguen secuenciales (A `done` ANTES de B del mismo módulo). SSoT del mecanismo: `.claude/rules/parallel-safety.md` M14 + `worktree-dual-strategy.md` § Regla cardinal v2 + `docs/architecture/luana-platform/ADR-009-single-hub-worktree.md`.
 
 ## Naming convention worktree
 

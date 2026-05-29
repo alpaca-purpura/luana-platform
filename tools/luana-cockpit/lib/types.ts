@@ -573,3 +573,24 @@ export interface SystemMap {
   /** Opcional · populated por API route */
   _path?: string;
 }
+
+// ────────────────────────────────────────────────────────────────────────────
+// Active sessions — build-claims vivos (ADR-009 single-hub worktree)
+// ────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Una sesión Claude/opencode trabajando sobre el hub, leída de `.session-locks/`.
+ * El board pinta "🔨 {lane}" sobre la story que esta sesión construye.
+ */
+export interface ActiveSession {
+  /** Bucket declarado por session-lock.sh (`code:scheduling`, `docs`, `tests`, …). */
+  bucket: string;
+  pid: number;
+  skill: string;
+  /** ISO timestamp del acquire. */
+  startedAt: string | null;
+  /** Story en construcción (build-claim). `null` si el lock no es un build. */
+  storyId: string | null;
+  /** Etiqueta humana (`$LUANA_LANE` o `pid<PID>`). */
+  lane: string | null;
+}
