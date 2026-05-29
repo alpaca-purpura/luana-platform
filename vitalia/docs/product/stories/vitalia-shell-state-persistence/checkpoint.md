@@ -8,8 +8,10 @@ cap_target: valeria.shell
 cap_change_type: extend
 architecture_pattern: ADR-vitalia-004
 new_adr_candidate: ADR-vitalia-006-ssr-safe-persisted-store   # ★ 005 ya ocupado (capability-model); architect autoró 006
-state: developed
-phase: HANDOFF_TO_AUDITOR
+state: reviewing
+phase: HANDOFF_TO_PM_MERGE
+audit_verdict: APPROVED
+gherkin_matrix: 06-audit/gherkin-matrix.md
 last_artifact: gate-output.json
 build_commits: [da0602ea, 58a4ce5b, 54ffb8e4, 08fe0864, d6953264, bf03639c]
 gate_summary: "tsc 0 · eslint 0 · vitest 2310/2310 · arch 148/148 · E2E 28/28 — all GREEN"
@@ -29,8 +31,8 @@ autonomous_mode_caps:
   max_iterations_per_ticket: 10
   max_audit_iterations: 3
   on_cap_exceeded: "state=blocked + escalate Chris"
-next_action: "AUTO-HANDOFF /auditor vitalia vitalia-shell-state-persistence (Conv 3) → si APPROVED → /pm-vitalia merge"
-last_modified: '2026-05-28T22:02:00-05:00'
+next_action: "AUTO-HANDOFF /pm-vitalia merge → 07-merge.md 5 secciones + cap ledger valeria.shell extend + ADR 005→006 fix + learning promotable + archive → state=reviewing→done"
+last_modified: '2026-05-28T22:06:00-05:00'
 parent_story: vitalia-fase1-shell-layout-5050-race-fix
 priority: medium
 estimated_dev_days: 1-2

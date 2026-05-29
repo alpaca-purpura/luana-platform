@@ -209,3 +209,16 @@ Detalle completo: `T-5-result.md`.
 **Flags para el merge (no bloqueantes):** ADR 005→006 (corregir cita en 01-spec frontmatter), learning promotable `/pm-luana` (nicolify dismiss-store mismo hazard).
 
 → **AUTO-HANDOFF `/auditor`** (autonomous_mode:true). Si APPROVED → `/pm-vitalia` merge → done.
+
+### 2026-05-28T22:06 · 🤖 claude · `/auditor` · ✓ APLICADO
+**Audit APPROVED.** Review independiente (auditor-frontend consolidado, 5 tickets FE).
+
+- **El fix es REAL, no enmascarado:** el `setItem` no-op pre-hydration corta el write espurio en la raíz; ninguna de las 4 técnicas fallidas es el mecanismo. SC-3 (adversarial) genuinamente testeado.
+- **Regression-locks no-vacuos:** skeleton store-free (arch guard real), slice mobile independiente (desktop `full` NO auto-abre drawer), transversal preserva partialize.
+- **Ratchet íntegro:** el self-fix 58a4ce5b ENCOGIÓ el allowlist a vacío + arregló la detección honestamente (no lo creció). Verificado: ChannelConnectionWizard tiene `"use client"` línea 15.
+- **Sin polución:** cero core/, cero otra brand, cero components/ui/.
+- **Phase D:** `06-audit/gherkin-matrix.md` — 9/9 scenarios PASS. **CHECKPOINTS.md** C1-C5 APPROVED.
+
+**Notas para el merge (`/pm-vitalia`):** (1) cap `valeria.shell` extend +1 scenario; (2) corregir cita ADR 005→006 en 01-spec frontmatter; (3) learning promotable `/pm-luana` (nicolify dismiss-store mismo hazard).
+
+→ **AUTO-HANDOFF `/pm-vitalia` merge** (autonomous_mode:true). state reviewing → done.
