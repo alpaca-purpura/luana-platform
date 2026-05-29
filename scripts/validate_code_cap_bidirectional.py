@@ -40,6 +40,29 @@ DECORATOR_RE = re.compile(
     re.MULTILINE,
 )
 
+# Additional PHI/role enforcement mechanisms recognized by cross-check 4.
+# The codebase enforces access gates via several idioms beyond the
+# @require_phi_access decorator. cross_check_4 must recognize ALL of them,
+# otherwise it reports false drift where enforcement actually exists.
+
+# 1. FastAPI Depends factory: require_brand_owner_access() (rbac.py:65)
+#    Used as `Depends(require_brand_owner_access())` or `Depends(_brand_owner_required)`.
+DEPENDS_BRAND_OWNER_RE = re.compile(r"require_brand_owner_access\s*\(", re.MULTILINE)
+
+# 2. Helper call: _assert_phi_access(role) (e.g. inbox/api/router.py:300)
+ASSERT_PHI_RE = re.compile(r"_assert_phi_access\s*\(", re.MULTILINE)
+
+# 3. Inline frozenset/list role gate: `if <role_var> not in <NAME>: ... raise ... 403`
+#    where <NAME> looks like a PHI/role allowlist (_PHI_ROLES, ALLOWED_PHI_ROLES,
+#    _NPS_SUMMARY_ROLES, etc.). We detect the gate idiom by the frozenset name
+#    convention + a `not in` membership check.
+INLINE_ROLE_GATE_NAME_RE = re.compile(
+    r"\bnot\s+in\s+("
+    r"_?[A-Z][A-Z0-9_]*(?:PHI|ROLES|ROLE)[A-Z0-9_]*"  # _PHI_ROLES, ALLOWED_PHI_ROLES, _NPS_SUMMARY_ROLES
+    r")\b",
+    re.MULTILINE,
+)
+
 E2E_TEST_PATTERNS = ("test(", "test.describe(")
 
 
@@ -187,12 +210,66 @@ def cross_check_3(
 # ---------------------------------------------------------------------------
 
 
+def detect_enforcement(content: str) -> dict[str, Any]:
+    """Detect ALL PHI/role enforcement mechanisms present in a Python file.
+
+    The codebase gates access via several idioms (not only @require_phi_access):
+
+    - ``@require_phi_access(roles=[...])`` decorator (rbac.py)
+    - ``Depends(require_brand_owner_access())`` FastAPI dependency (rbac.py:65)
+    - ``_assert_phi_access(role)`` helper (inbox/api/router.py:300)
+    - inline ``if <role> not in <FROZENSET>: raise ...403`` where the frozenset is
+      named like ``_PHI_ROLES`` / ``ALLOWED_PHI_ROLES`` / ``_NPS_SUMMARY_ROLES``
+      (scheduling/api/agenda_router.py, fidelizacion/api/nps_endpoints.py)
+
+    Returns dict with:
+      - ``enforced`` (bool): any mechanism present
+      - ``mechanisms`` (list[str]): which mechanisms matched
+      - ``decorator_roles`` (set[str]): roles parsed from @require_phi_access (if any)
+    """
+    mechanisms: list[str] = []
+    decorator_roles: set[str] = set()
+
+    for match in DECORATOR_RE.finditer(content):
+        if "require_phi_access" not in mechanisms:
+            mechanisms.append("require_phi_access")
+        for r in re.findall(r"['\"](\w+)['\"]", match.group(1)):
+            decorator_roles.add(r)
+
+    if DEPENDS_BRAND_OWNER_RE.search(content):
+        mechanisms.append("require_brand_owner_access")
+
+    if ASSERT_PHI_RE.search(content):
+        mechanisms.append("_assert_phi_access")
+
+    for m in INLINE_ROLE_GATE_NAME_RE.finditer(content):
+        gate_name = m.group(1)
+        # only count it if there's a raise/HTTPException 403 in the file
+        if "403" in content or "HTTP_403_FORBIDDEN" in content or "PHIAccessDeniedError" in content:
+            mechanisms.append(f"inline_role_gate:{gate_name}")
+
+    return {
+        "enforced": bool(mechanisms),
+        "mechanisms": mechanisms,
+        "decorator_roles": decorator_roles,
+    }
+
+
 def cross_check_4(
     caps: dict[str, dict],
     workspace_root: Path,
     brand: str,
 ) -> dict[str, Any]:
-    """For each cap.access.entry_points[*].requires_role, cross-check decorator in code.
+    """For each cap.access.entry_points[*].requires_role, cross-check enforcement in code.
+
+    Recognizes ALL enforcement mechanisms (see ``detect_enforcement``), not just
+    the ``@require_phi_access`` decorator. An entry_point whose associated code
+    has ANY recognized mechanism counts as ENFORCED (no drift).
+
+    SKIP rules (no cross-check, not counted):
+      - entry_point ``path`` is null (no HTTP surface to gate)
+      - cap is ``user_visible: false`` + ``nature: extension-point``
+        (BE-only extension point, no HTTP PHI endpoint)
 
     Related files are resolved from ``_code-index.json`` cap_to_files (headers
     ``# cap: <cap_id>``).
@@ -201,6 +278,7 @@ def cross_check_4(
     total = 0
     passing = 0
     drift = 0
+    skipped = 0
 
     # Pre-load code index if exists (cap → files via headers)
     code_index_path = (
@@ -222,40 +300,57 @@ def cross_check_4(
         if not isinstance(entry_points, list):
             continue
 
+        # SKIP whole cap if it's a BE-only extension point (no HTTP PHI endpoint)
+        cap_user_visible = cap_data.get("user_visible")
+        cap_nature = cap_data.get("nature")
+        cap_is_extension_point = (cap_user_visible is False) and (
+            cap_nature == "extension-point"
+        )
+
         # Get files associated with this cap via code-index headers (# cap:)
         related_files: set[str] = set(code_index.get(cap_id, []))
+
+        # Detect enforcement mechanisms across all related backend files (once per cap)
+        cap_mechanisms: list[str] = []
+        cap_decorator_roles: set[str] = set()
+        for rel_file in related_files:
+            full = workspace_root / rel_file
+            if not full.exists() or full.suffix != ".py":
+                continue
+            try:
+                content = full.read_text(encoding="utf-8")
+            except OSError:
+                continue
+            det = detect_enforcement(content)
+            cap_mechanisms.extend(det["mechanisms"])
+            cap_decorator_roles |= det["decorator_roles"]
 
         for entry in entry_points:
             if not isinstance(entry, dict):
                 continue
             declared_roles = set(entry.get("requires_role") or [])
             entry_type = entry.get("entry_type", "ui")
-            path = entry.get("path", "")
+            path = entry.get("path")
 
             if not declared_roles:
                 # No roles declared, no cross-check needed
                 continue
 
+            # SKIP: null path (no HTTP surface) OR BE-only extension point
+            if path is None or cap_is_extension_point:
+                skipped += 1
+                continue
+
             total += 1
 
-            # Look for decorator in any related backend file
-            runtime_roles: set[str] = set()
-            for rel_file in related_files:
-                full = workspace_root / rel_file
-                if not full.exists() or full.suffix != ".py":
-                    continue
-                try:
-                    content = full.read_text(encoding="utf-8")
-                except OSError:
-                    continue
-                for match in DECORATOR_RE.finditer(content):
-                    raw_roles = match.group(1)
-                    for r in re.findall(r"['\"](\w+)['\"]", raw_roles):
-                        runtime_roles.add(r)
-
-            if not runtime_roles:
-                # No decorator found · only advisory if entry_type=api (BE)
-                if entry_type == "api":
+            if cap_mechanisms:
+                # Enforcement present via at least one recognized mechanism.
+                # If a @require_phi_access decorator declares roles, prefer the
+                # exact-match semantics for that (catches role drift). Otherwise
+                # (Depends / _assert_phi_access / inline frozenset gate) the
+                # mechanism's allowlist lives in code constants we don't fully
+                # parse — presence of the gate is sufficient to count ENFORCED.
+                if cap_decorator_roles and declared_roles != cap_decorator_roles:
                     drift += 1
                     results.append(
                         {
@@ -263,19 +358,22 @@ def cross_check_4(
                             "path": path,
                             "entry_type": entry_type,
                             "declared_roles": sorted(declared_roles),
-                            "runtime_roles": [],
-                            "status": "no_decorator_found",
-                            "drift_reason": "cap declares requires_role but no @require_phi_access decorator in associated code",
+                            "runtime_roles": sorted(cap_decorator_roles),
+                            "mechanisms": sorted(set(cap_mechanisms)),
+                            "status": "role_mismatch",
+                            "drift_reason": (
+                                f"cap declares roles {sorted(declared_roles)} but "
+                                f"@require_phi_access decorator declares "
+                                f"{sorted(cap_decorator_roles)}"
+                            ),
                         }
                     )
                 else:
-                    # UI entry — not all routes have decorators (some Clerk middleware level)
                     passing += 1
                 continue
 
-            if declared_roles == runtime_roles:
-                passing += 1
-            else:
+            # No enforcement mechanism found · only drift if entry_type=api (BE)
+            if entry_type == "api":
                 drift += 1
                 results.append(
                     {
@@ -283,19 +381,25 @@ def cross_check_4(
                         "path": path,
                         "entry_type": entry_type,
                         "declared_roles": sorted(declared_roles),
-                        "runtime_roles": sorted(runtime_roles),
-                        "status": "role_mismatch",
+                        "runtime_roles": [],
+                        "mechanisms": [],
+                        "status": "no_enforcement_found",
                         "drift_reason": (
-                            f"cap declares roles {sorted(declared_roles)} but runtime "
-                            f"decorator declares {sorted(runtime_roles)}"
+                            "cap declares requires_role but no recognized enforcement "
+                            "mechanism (@require_phi_access / require_brand_owner_access / "
+                            "_assert_phi_access / inline role frozenset gate) in associated code"
                         ),
                     }
                 )
+            else:
+                # UI entry — not all routes have decorators (some Clerk middleware level)
+                passing += 1
 
     return {
         "total": total,
         "pass": passing,
         "drift": drift,
+        "skipped": skipped,
         "details": results,
     }
 

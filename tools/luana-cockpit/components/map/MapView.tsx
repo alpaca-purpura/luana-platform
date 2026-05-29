@@ -10,6 +10,7 @@ import { TOOLTIPS } from '@/lib/tooltips';
 import { useDrawer } from '@/components/providers/DrawerProvider';
 import { useBrand } from '@/components/providers/BrandProvider';
 import { useFileWatchEvents } from '@/components/providers/FileWatchProvider';
+import { ProductHealthBanner } from './ProductHealthBanner';
 import { listCapabilities, getSystemMap, openInEditor, getCapabilityStatus } from '@/lib/api-client';
 import type {
   Capability,
@@ -195,6 +196,9 @@ export function MapView() {
 
   return (
     <div className="p-6">
+      {/* Salud de Producto · vista honesta del bosque (lee summary del JSON live) */}
+      <ProductHealthBanner report={statusReport} />
+
       <header className="mb-4 space-y-2">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>

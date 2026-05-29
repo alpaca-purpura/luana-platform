@@ -17,7 +17,6 @@ import { TOOLTIPS } from '../tooltips.js';
 
 const REQUIRED_KEYS = [
   // CapDrawer schema cap
-  'atomics',
   'change_log',
   'functional_area',
   'agent_owner',
@@ -76,6 +75,7 @@ const REQUIRED_KEYS = [
   'wip_cap',
   // Cockpit-specific
   'system_map',
+  'product_health',
   'mapa_implementado',
   'roadmap',
   'drift_tab',
@@ -108,6 +108,12 @@ describe('TOOLTIPS dictionary', () => {
     for (const key of REQUIRED_KEYS) {
       expect(TOOLTIPS, `falta key: ${key}`).toHaveProperty(key);
     }
+  });
+
+  it('does not contain dead atomics keys (Fase 1b · unit is scenario now)', () => {
+    // lifecycle.md § 2: atomic + atomic_ref MUERTOS — la unidad atómica es scenario.
+    expect(TOOLTIPS).not.toHaveProperty('atomics');
+    expect(TOOLTIPS).not.toHaveProperty('atomic_ref');
   });
 
   it('all values are non-empty strings', () => {

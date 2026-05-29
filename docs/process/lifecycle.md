@@ -127,10 +127,25 @@ Release (cuándo) → Story-origin (por qué) → Scenarios (qué hace, humano)
 | NO hace | Ejecutar git, avanzar estados de skill, editar código BE/FE | Decisiones de priorización de bosque (eso es de Chris en el cockpit) |
 | El puente | `chris-input.md` + `checkpoint.md::state` + APIs `transition`/`extend-cap`/`from-done` que **crean trabajo** | Levanta el trabajo creado, refleja en vivo (SSE) |
 
-**El loop diario:**
-1. Chris abre el cockpit → ve salud, decide qué sigue, ajusta prioridad/release, mueve `idea→refining`, deja notas/scenarios draft en chris-input.
-2. Chris abre Claude Code → `/pm-vitalia` levanta la story, encadena `/po-ux`/`/architect`/`/dev-team`/`/auditor`, ejecuta.
-3. El cockpit refleja en vivo. Al merge, la cap se actualiza y la traza se completa.
+**El loop diario (manual operativo):**
+
+```
+┌─ COCKPIT (bosque · decidir) ────────────────┐      ┌─ CLAUDE CODE (ejecutar) ───────────────┐
+│ make cockpit-up   (→ :4002)                 │      │ /pm-vitalia                            │
+│ 1. Roadmap: ¿qué release toca?              │      │ 2. levanta story refining-ratificada   │
+│ 2. Salud de Producto: ¿qué caps stub/drift? │ ───► │ 3. encadena /po-ux → /architect →      │
+│ 3. Backlog Board: muevo idea→refining       │      │    /dev-team → /auditor (auto-chain)    │
+│ 4. dejo notas/scenarios draft en chris-input│      │ 4. /pm-vitalia merge (reviewing→done)  │
+│ 5. priorizo / asigno release                │ ◄─── │ 5. cap se actualiza · traza se completa │
+└─────────────────────────────────────────────┘ SSE  └────────────────────────────────────────┘
+```
+
+1. **Cockpit** (`make cockpit-up` → `:4002`): ves la Salud de Producto (cuántas caps stub/partial/live/drift), el Roadmap (releases F0..F8), y el Backlog Board (10 estados). Decidís qué sigue. Movés `idea→refining` (única transición que Chris hace en el cockpit), ajustás prioridad/release, dejás notas y scenarios-draft en `chris-input.md`.
+2. **Claude Code** (`/pm-vitalia`): levanta la story que marcaste, valida WIP caps (≤1), y encadena `Skill(po-ux)`→`Skill(architect)`→`Skill(dev-team)`→`Skill(auditor)` programáticamente. Ejecuta el build con TDD.
+3. **Merge** (`/pm-vitalia merge`): al APPROVED, escribe `07-merge.md`, promueve la capability (status + scenarios desde el spec), archiva la story, squash-merge.
+4. **Cockpit refleja en vivo** (SSE): la cap pasa de stub→partial→verified-live, la traza Release→Story→Scenarios→Code→Tests→Status se completa. El bosque se actualizó.
+
+**Regla de oro:** el cockpit nunca ejecuta git ni avanza estados de skill; Claude Code nunca decide priorización de bosque. El puente es `chris-input.md` + `checkpoint.md::state` + las APIs `transition`/`extend-cap`/`from-done` del cockpit que CREAN trabajo para que Claude lo levante.
 
 ---
 
@@ -142,13 +157,13 @@ Plan de migración del estado actual al modelo de este doc. Estado en tiempo rea
 |---|---|---|
 | **0 — Doctrina** | Este `lifecycle.md` + resolver incoherencias de skills. No destruye nada | ✅ DONE 2026-05-28 (commit c930a333) |
 | **1 — Colapsar modelo** | Matar atomics/outcome/phase/module-alias. cross_check_3 HARD | ✅ DONE 2026-05-28 (1a bb988b2a + 1b 7ab119c6) |
-| **2 — Backfill trazabilidad** | Generar scenarios de ~55 caps stub desde 01-spec.md archivado. Triage 97 huérfanos. Arreglar **8 caps sin frontmatter YAML** (reconcile los saltea → 64/72) | ⏳ próximo |
-| **3 — Cockpit** | Vista Traza unificada + Salud de Producto + merge ejecutable + autoría scenarios. Sanear README + body atomics table de shell-vitalia + tooltips.ts | ⏳ |
-| **4 — Skills** | Alinear pm-vitalia/pm-luana/architect/dev-team/auditor al modelo 4-ejes. Def. de done HARD. Quitar "outcome nuevo" del menú pm-vitalia | ⏳ |
-| **5 — Enforcement** | Gate capabilities en wip/* (o advisory honesto). `live⟹evidencia` HARD. **Resolver 6 drifts cc4 PHI access → flipear cc4 a HARD vitalia.** Validators fallan ruidoso ante refs no resueltas | ⏳ |
-| **6 — Manual diario** | Doc operativo 1-página (cockpit vs Claude Code) | ⏳ (este doc § 7 es el borrador) |
+| **2 — Backfill trazabilidad** | Fence 8 caps · consolidar shell · backfill +43 scenarios · huérfanos 96→0 · redistribuir releases · borrar dead code | ✅ DONE 2026-05-28 (2a b22ca319 + 2b fa73f363) |
+| **3 — Cockpit** | Vista Salud de Producto + Traza unificada + sanear README + limpiar leftovers (shell-vitalia body table, tooltips.ts) | ⏳ próximo |
+| **4 — Skills** | Alinear pm-vitalia/pm-luana/architect/dev-team/auditor al modelo 4-ejes. Def. de done HARD. Quitar "outcome nuevo" del menú | ⏳ |
+| **5 — Enforcement** | Gate capabilities en wip/* (o advisory honesto). `live⟹evidencia` HARD. **Resolver 6 drifts cc4 PHI access → flipear cc4 HARD.** Validators fallan ruidoso · planned caps skip story-resolution OK | ⏳ |
+| **6 — Manual diario** | § 7 de este doc es el manual operativo | ✅ (§ 7 abajo) |
 
-**Estado post-Fase 1 (2026-05-28):** atomics MUERTO (header en 1120 archivos + campo en 72 caps + scripts + cockpit). outcome+phase ELIMINADOS. Status honesto: 55 stub / 7 declared-live / 1 verified-live / 1 partial (era "verde por vacío"). 45 tests scripts + 66 tests cockpit GREEN.
+**Estado post-Fase 2 (2026-05-28):** atomics + outcome + phase MUERTOS. **67 caps · 0 huérfanos de código** · trazabilidad real. Status HONESTO: 55 stub / 6 declared-live / 5 partial / 1 verified-live. Los 55 stub son la verdad incómoda (caps sin scenarios aún — planeadas o sin spec fuente). 45 tests scripts + 66 cockpit + FE tsc + ruff GREEN. drift HARD cc3=0.
 
 ---
 

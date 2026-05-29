@@ -29,9 +29,9 @@ dev_preview:
   how_to_navigate: "Login → ribbon clic en avatar Lisa → sub-tab Marca → N3-static sub-sub-tabs Identidad / Voz y tono / Presencia."
   main_component: "vitalia/frontend/src/features/lisa/components/marca/identidad/IdentidadView.tsx"
   api_endpoints:
-    - "GET /api/v1/vitalia/brand/marca/identity"
-    - "PATCH /api/v1/vitalia/brand/marca/identity"
-    - "POST /api/v1/vitalia/brand/marca/voice-preview"
+    - "GET /api/v1/lisa/marca/identity"
+    - "PATCH /api/v1/lisa/marca/identity"
+    - "POST /api/v1/lisa/marca/voice-preview"
   e2e_test: null
   fixtures_required: ["3-clinic-fixture-latam"]
   storybook_url: null
@@ -84,9 +84,9 @@ access:
       requires_role: [doctor, admin_clinic]
       requires_clinic_scope: true
       entry_type: ui
-    - path: "/api/v1/vitalia/brand/marca/identity"
+    - path: "/api/v1/lisa/marca/identity"
       navigation: "API directa con JWT Clerk + X-Tenant-ID para leer o actualizar identidad de marca"
-      requires_role: [admin_clinic]
+      requires_role: [admin_clinic]  # require_brand_owner_access() → owner, admin_clinic (marca_router.py:98)
       requires_clinic_scope: true
       entry_type: api
   forbidden_roles: [nurse, receptionist, patient, marketing]

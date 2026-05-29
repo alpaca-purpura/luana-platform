@@ -349,23 +349,23 @@ export function CapDrawer() {
             </Card>
           )}
 
-          {/* 🔑 Acceso · v3.2 */}
-          {cap.access && <AccessSection access={cap.access} />}
-
-          {/* ✨ Scenarios · v3.2 */}
+          {/* ✨ Scenarios · v3.2 — qué hace (unidad atómica de comportamiento) */}
           <ScenariosSection scenarios={cap.scenarios ?? []} />
 
-          {/* 📋 Reglas de negocio · v3.2 */}
-          {cap.business_rules && cap.business_rules.length > 0 && (
-            <BusinessRulesSection rules={cap.business_rules} />
-          )}
-
-          {/* 📁 Archivos código asociados · v3.2 cross-check */}
+          {/* 📁 Archivos código asociados · v3.2 cross-check — dónde vive */}
           <CodeFilesSection
             capId={`${cap.module}.${cap.slug}`}
             codeIndex={codeIndex}
             hint={codeIndexHint}
           />
+
+          {/* 🔑 Acceso · v3.2 — quién entra y por dónde */}
+          {cap.access && <AccessSection access={cap.access} />}
+
+          {/* 📋 Reglas de negocio · v3.2 */}
+          {cap.business_rules && cap.business_rules.length > 0 && (
+            <BusinessRulesSection rules={cap.business_rules} />
+          )}
 
           {/* 🔗 Capabilities relacionadas · v3.2 */}
           {cap.related_capabilities && (

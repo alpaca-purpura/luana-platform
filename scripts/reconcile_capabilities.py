@@ -119,6 +119,26 @@ class CapLedgerError:
     detail: str
 
 
+@dataclass
+class CapLedgerWarning:
+    """Ledger-validation WARNING (advisory by default, error under --strict).
+
+    Categories
+    ----------
+    * ``live_without_scenarios`` — cap is ``status: live``/``beta`` but declares
+      0 ``scenarios[]`` → not verifiable. WARN (no e2e coverage anchor).
+    * ``live_created_in_story_unresolved`` — a ``live``/``beta`` cap whose
+      ``created_in_story`` does not resolve to a checkpoint.md. Loud WARN
+      (a shipped cap MUST trace to a real story). NOTE: ``planned`` caps with
+      unresolved ``created_in_story`` are EXPECTED (forward-declared) and are
+      NOT warned.
+    """
+
+    cap_path: Path
+    category: str
+    detail: str
+
+
 class FrontmatterError(ValueError):
     """Raised when a YAML file has malformed or missing frontmatter."""
 
@@ -399,6 +419,82 @@ def validate_ledger(repo: Path, brand: str | None) -> list[CapLedgerError]:
     return errors
 
 
+# Statuses that imply the capability is shipped/usable and therefore should be
+# verifiable + traceable to a real story.
+_LIVE_STATUSES = frozenset({"live", "beta"})
+
+
+def validate_live_evidence(repo: Path, brand: str | None) -> list[CapLedgerWarning]:
+    """Validate live⟹evidence invariants. Returns WARNINGS (advisory by default).
+
+    Two checks per capability YAML:
+
+    1. ``status: live``/``beta`` but 0 ``scenarios[]`` → ``live_without_scenarios``
+       (cap live sin scenarios = no verificable).
+    2. ``status: live``/``beta`` whose ``created_in_story`` does NOT resolve to a
+       checkpoint.md → ``live_created_in_story_unresolved`` (loud — shipped cap
+       must trace to a real story). ``planned`` caps with unresolved
+       ``created_in_story`` are EXPECTED (forward-declared) and skipped silently.
+
+    These are WARNINGS — they do not fail the build unless ``--strict`` is set.
+    """
+    base = repo / brand if brand else repo
+    caps_dir = base / "docs" / "product" / "capabilities"
+    if not caps_dir.exists() or not brand:
+        # Brand-scoped: root scope has no story checkpoints to resolve against.
+        return []
+
+    warnings: list[CapLedgerWarning] = []
+
+    for cap_file in sorted(caps_dir.rglob("*.yaml")):
+        try:
+            cap = load_frontmatter(cap_file)
+        except (FrontmatterError, yaml.YAMLError) as exc:
+            sys.stderr.write(f"SKIP {cap_file}: {exc}\n")
+            continue
+
+        status = str(cap.get("status") or "").strip().lower()
+        cap_id = cap.get("capability_id") or cap.get("slug") or cap_file.stem
+
+        # Check 1: live/beta cap with 0 scenarios → not verifiable
+        if status in _LIVE_STATUSES:
+            scenarios = cap.get("scenarios")
+            n_scenarios = len(scenarios) if isinstance(scenarios, list) else 0
+            if n_scenarios == 0:
+                warnings.append(
+                    CapLedgerWarning(
+                        cap_path=cap_file,
+                        category="live_without_scenarios",
+                        detail=(
+                            f"cap {cap_id!r} is status={status!r} but declares 0 scenarios "
+                            f"(cap live sin scenarios = no verificable). Add scenarios[] with "
+                            f"e2e_test anchors so the live claim can be verified."
+                        ),
+                    )
+                )
+
+        # Check 2: created_in_story resolution. planned → expected (skip).
+        #          live/beta → loud WARN if unresolved.
+        created_in_story = cap.get("created_in_story")
+        if created_in_story and status in _LIVE_STATUSES:
+            if not _story_checkpoint_exists(repo, brand, created_in_story):
+                warnings.append(
+                    CapLedgerWarning(
+                        cap_path=cap_file,
+                        category="live_created_in_story_unresolved",
+                        detail=(
+                            f"cap {cap_id!r} is status={status!r} but created_in_story="
+                            f"{created_in_story!r} has no checkpoint.md at "
+                            f"{brand}/docs/product/stories/{created_in_story}/ nor "
+                            f"{brand}/docs/archive/*/stories/{created_in_story}/ "
+                            f"(a shipped cap must trace to a real story)."
+                        ),
+                    )
+                )
+
+    return warnings
+
+
 def discover_brands(repo: Path) -> list[str]:
     """Return sorted list of brand slugs (dirs containing ``config/brand.yaml``).
 
@@ -582,6 +678,35 @@ def main() -> int:
             for e in validate_ledger(args.repo, brand_arg):
                 ledger_errors.append((label, e))
 
+    # live⟹evidence advisory checks (WARN by default; error only under --strict).
+    # Runs alongside --validate-ledger and --check so the pre-commit gate surfaces
+    # them without silently skipping. Brand-scoped (root has no story checkpoints).
+    ledger_warnings: list[tuple[str, CapLedgerWarning]] = []
+    if args.validate_ledger or args.check:
+        for label, brand_arg in scopes:
+            if brand_arg is None:
+                continue
+            for w in validate_live_evidence(args.repo, brand_arg):
+                ledger_warnings.append((label, w))
+
+    # Under --strict, live⟹evidence warnings are promoted to blocking errors.
+    strict_promotes_warnings = bool(args.strict and ledger_warnings)
+
+    def _print_warnings() -> None:
+        if not ledger_warnings:
+            return
+        label_word = "ERROR" if strict_promotes_warnings else "WARN"
+        print(f"\nLIVE⟹EVIDENCE {label_word}S in {len(ledger_warnings)} cap(s):")  # noqa: T201
+        for label, w in ledger_warnings:
+            rel = w.cap_path.relative_to(args.repo)
+            print(f"\n  [{label}] {rel}")  # noqa: T201
+            print(f"    category: {w.category}")  # noqa: T201
+            print(f"    detail:   {w.detail}")  # noqa: T201
+        if strict_promotes_warnings:
+            print("\n--strict: live⟹evidence warnings promoted to blocking errors.")  # noqa: T201
+        else:
+            print("\n(advisory — non-blocking. Run with --strict to make these errors.)")  # noqa: T201
+
     if not all_drifts and not coverage_gaps and not ledger_errors:
         scope_desc = ", ".join(label for label, _ in scopes)
         print(f"OK — all capabilities consistent with stories. Scope: {scope_desc}.")  # noqa: T201
@@ -594,7 +719,8 @@ def main() -> int:
         if args.validate_ledger:
             ledger_scopes = ", ".join(label for label, b in scopes if b is not None) or "(none — pass --brand or --all-brands)"
             print(f"Capability ledger check: PASS. Scopes: {ledger_scopes}.")  # noqa: T201
-        return 0
+        _print_warnings()
+        return 1 if strict_promotes_warnings else 0
 
     if all_drifts:
         print(f"DRIFT detected in {len(all_drifts)} capability file(s):")  # noqa: T201
@@ -623,7 +749,9 @@ def main() -> int:
             print(f"    detail:   {e.detail}")  # noqa: T201
         print("\nLedger schema v2 cement: 2026-05-27. Fix by editing change_log/parent_cap/derives_capabilities in cap YAML.")  # noqa: T201
 
-    has_blocking_errors = bool(coverage_gaps or ledger_errors)
+    _print_warnings()
+
+    has_blocking_errors = bool(coverage_gaps or ledger_errors or strict_promotes_warnings)
     if args.check or has_blocking_errors:
         # Coverage gaps + ledger errors are always blocking
         # (no auto-fix possible — manual edit required).

@@ -211,6 +211,247 @@ def test_cross_check_4_pass_roles_match(tmp_path: Path):
     assert result["pass"] == 1
 
 
+def test_cross_check_4_drift_no_enforcement(tmp_path: Path):
+    """API entry with roles but NO enforcement mechanism in code → drift."""
+    mod = _load_module()
+    caps_root, be_root, _, _ = _setup(tmp_path)
+
+    py_file = be_root / "events.py"
+    _write_code(
+        py_file,
+        "# cap: compliance.hipaa-lite-defensive-stack\n# story-origin: TBD\n"
+        "def emit_event(): pass\n",  # no gate at all
+    )
+    _write_code_index(
+        tmp_path,
+        "vitalia",
+        {"compliance.hipaa-lite-defensive-stack": ["vitalia/backend/src/events.py"]},
+    )
+
+    cap_data = {
+        "slug": "hipaa-lite-defensive-stack",
+        "user_visible": True,
+        "nature": "feature",
+        "access": {
+            "entry_points": [
+                {
+                    "path": "/api/v1/vitalia/medical-compliance/events",
+                    "requires_role": ["admin_clinic", "staff_vitalia"],
+                    "entry_type": "api",
+                }
+            ]
+        },
+    }
+    _write_cap(caps_root, "compliance", "hipaa-lite-defensive-stack", cap_data)
+
+    caps = mod.load_capabilities("vitalia", tmp_path)
+    result = mod.cross_check_4(caps, tmp_path, "vitalia")
+    assert result["drift"] == 1
+    assert result["details"][0]["status"] == "no_enforcement_found"
+
+
+def test_cross_check_4_pass_require_brand_owner_access(tmp_path: Path):
+    """Depends(require_brand_owner_access()) counts as ENFORCED."""
+    mod = _load_module()
+    caps_root, be_root, _, _ = _setup(tmp_path)
+
+    py_file = be_root / "marca_router.py"
+    _write_code(
+        py_file,
+        "# cap: brand_studio.lisa-marca\n# story-origin: TBD\n"
+        "_brand_owner_required = Depends(require_brand_owner_access())\n"
+        "def patch_identity(): pass\n",
+    )
+    _write_code_index(
+        tmp_path, "vitalia", {"brand_studio.lisa-marca": ["vitalia/backend/src/marca_router.py"]}
+    )
+
+    cap_data = {
+        "slug": "lisa-marca",
+        "access": {
+            "entry_points": [
+                {
+                    "path": "/api/v1/lisa/marca/identity",
+                    "requires_role": ["admin_clinic"],
+                    "entry_type": "api",
+                }
+            ]
+        },
+    }
+    _write_cap(caps_root, "brand_studio", "lisa-marca", cap_data)
+
+    caps = mod.load_capabilities("vitalia", tmp_path)
+    result = mod.cross_check_4(caps, tmp_path, "vitalia")
+    assert result["pass"] == 1
+    assert result["drift"] == 0
+
+
+def test_cross_check_4_pass_assert_phi_access_helper(tmp_path: Path):
+    """_assert_phi_access(role) helper counts as ENFORCED."""
+    mod = _load_module()
+    caps_root, be_root, _, _ = _setup(tmp_path)
+
+    py_file = be_root / "inbox_router.py"
+    _write_code(
+        py_file,
+        "# cap: sales_agent.inbox-handler-mode-occ\n# story-origin: TBD\n"
+        "_PHI_ROLES = frozenset({'doctor', 'nurse', 'admin_clinic'})\n"
+        "def _assert_phi_access(role):\n"
+        "    if role not in _PHI_ROLES:\n"
+        "        raise PHIAccessDeniedError(role, list(_PHI_ROLES))\n"
+        "def set_mode(): _assert_phi_access(user_role)\n",
+    )
+    _write_code_index(
+        tmp_path,
+        "vitalia",
+        {"sales_agent.inbox-handler-mode-occ": ["vitalia/backend/src/inbox_router.py"]},
+    )
+
+    cap_data = {
+        "slug": "inbox-handler-mode-occ",
+        "access": {
+            "entry_points": [
+                {
+                    "path": "/api/v1/vitalia/inbox/conversations/{id}/mode",
+                    "requires_role": ["doctor", "nurse", "admin_clinic"],
+                    "entry_type": "api",
+                }
+            ]
+        },
+    }
+    _write_cap(caps_root, "sales_agent", "inbox-handler-mode-occ", cap_data)
+
+    caps = mod.load_capabilities("vitalia", tmp_path)
+    result = mod.cross_check_4(caps, tmp_path, "vitalia")
+    assert result["pass"] == 1
+    assert result["drift"] == 0
+
+
+def test_cross_check_4_pass_inline_frozenset_gate(tmp_path: Path):
+    """Inline `if role not in _NPS_SUMMARY_ROLES: raise ...403` counts as ENFORCED."""
+    mod = _load_module()
+    caps_root, be_root, _, _ = _setup(tmp_path)
+
+    py_file = be_root / "nps_endpoints.py"
+    _write_code(
+        py_file,
+        "# cap: patients.nps-tracking\n# story-origin: TBD\n"
+        "_NPS_SUMMARY_ROLES = ['doctor', 'nurse', 'admin_clinic', 'marketing']\n"
+        "def get_summary(user_role):\n"
+        "    if user_role not in _NPS_SUMMARY_ROLES:\n"
+        "        raise HTTPException(status_code=403)\n",
+    )
+    _write_code_index(
+        tmp_path, "vitalia", {"patients.nps-tracking": ["vitalia/backend/src/nps_endpoints.py"]}
+    )
+
+    cap_data = {
+        "slug": "nps-tracking",
+        "access": {
+            "entry_points": [
+                {
+                    "path": "/api/v1/vitalia/fidelizacion/nps/summary",
+                    "requires_role": ["doctor", "admin_clinic", "nurse"],
+                    "entry_type": "api",
+                }
+            ]
+        },
+    }
+    _write_cap(caps_root, "patients", "nps-tracking", cap_data)
+
+    caps = mod.load_capabilities("vitalia", tmp_path)
+    result = mod.cross_check_4(caps, tmp_path, "vitalia")
+    assert result["pass"] == 1
+    assert result["drift"] == 0
+
+
+def test_cross_check_4_skip_null_path(tmp_path: Path):
+    """entry_point with path: null is SKIPPED (not counted, not drift)."""
+    mod = _load_module()
+    caps_root, _, _, _ = _setup(tmp_path)
+
+    cap_data = {
+        "slug": "luana-core-adoption",
+        "user_visible": False,
+        "nature": "extension-point",
+        "access": {
+            "entry_points": [
+                {
+                    "path": None,
+                    "requires_role": ["admin_clinic"],
+                    "entry_type": "api",
+                }
+            ]
+        },
+    }
+    _write_cap(caps_root, "iam", "luana-core-adoption", cap_data)
+
+    caps = mod.load_capabilities("vitalia", tmp_path)
+    result = mod.cross_check_4(caps, tmp_path, "vitalia")
+    assert result["total"] == 0
+    assert result["drift"] == 0
+    assert result["skipped"] == 1
+
+
+def test_cross_check_4_skip_extension_point(tmp_path: Path):
+    """BE-only extension point (user_visible: false + nature: extension-point) is SKIPPED."""
+    mod = _load_module()
+    caps_root, _, _, _ = _setup(tmp_path)
+
+    cap_data = {
+        "slug": "luana-core-adoption",
+        "user_visible": False,
+        "nature": "extension-point",
+        "access": {
+            "entry_points": [
+                {
+                    "path": "/api/v1/some/be/route",
+                    "requires_role": ["admin_clinic"],
+                    "entry_type": "api",
+                }
+            ]
+        },
+    }
+    _write_cap(caps_root, "iam", "luana-core-adoption", cap_data)
+
+    caps = mod.load_capabilities("vitalia", tmp_path)
+    result = mod.cross_check_4(caps, tmp_path, "vitalia")
+    assert result["total"] == 0
+    assert result["drift"] == 0
+    assert result["skipped"] == 1
+
+
+def test_cross_check_4_null_role_skips(tmp_path: Path):
+    """entry_point with requires_role: null (ungated by design) is not cross-checked."""
+    mod = _load_module()
+    caps_root, be_root, _, _ = _setup(tmp_path)
+
+    py_file = be_root / "nps_submit.py"
+    _write_code(py_file, "# cap: patients.nps-tracking\n# story-origin: TBD\ndef submit(): pass\n")
+    _write_code_index(
+        tmp_path, "vitalia", {"patients.nps-tracking": ["vitalia/backend/src/nps_submit.py"]}
+    )
+
+    cap_data = {
+        "slug": "nps-tracking",
+        "access": {
+            "entry_points": [
+                {
+                    "path": "/api/v1/vitalia/fidelizacion/nps/submit",
+                    "requires_role": None,
+                    "entry_type": "api",
+                }
+            ]
+        },
+    }
+    _write_cap(caps_root, "patients", "nps-tracking", cap_data)
+
+    caps = mod.load_capabilities("vitalia", tmp_path)
+    result = mod.cross_check_4(caps, tmp_path, "vitalia")
+    assert result["total"] == 0
+    assert result["drift"] == 0
+
+
 def test_cross_check_4_drift_role_mismatch(tmp_path: Path):
     mod = _load_module()
     caps_root, be_root, _, _ = _setup(tmp_path)

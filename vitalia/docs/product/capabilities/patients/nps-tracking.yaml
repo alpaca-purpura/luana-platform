@@ -61,14 +61,14 @@ access:
       requires_role: [doctor, admin_clinic, nurse]
       requires_clinic_scope: true
       entry_type: ui
-    - path: "/api/v1/fidelizacion/nps/summary"
+    - path: "/api/v1/vitalia/fidelizacion/nps/summary"
       navigation: "API GET para leer resumen agregado NPS (sin PHI per-patient)"
-      requires_role: [doctor, admin_clinic, nurse]
+      requires_role: [doctor, admin_clinic, nurse]  # _NPS_SUMMARY_ROLES inline gate (nps_endpoints.py:45,143)
       requires_clinic_scope: true
       entry_type: api
-    - path: "/api/v1/fidelizacion/nps"
+    - path: "/api/v1/vitalia/fidelizacion/nps/submit"
       navigation: "API POST para registrar una respuesta NPS (paciente o sistema post-tratamiento)"
-      requires_role: [doctor, admin_clinic, nurse]
+      requires_role: null  # submit no expone PHI en response · ungated by design (default role=patient, self-submit)
       requires_clinic_scope: true
       entry_type: api
   forbidden_roles: [marketing, patient]

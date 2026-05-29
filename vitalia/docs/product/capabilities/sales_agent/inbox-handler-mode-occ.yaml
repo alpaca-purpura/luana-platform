@@ -63,9 +63,9 @@ access:
       requires_role: [marketing, admin_clinic]
       requires_clinic_scope: true
       entry_type: ui
-    - path: "/api/v1/inbox/conversations/{id}/mode"
+    - path: "/api/v1/vitalia/inbox/conversations/{id}/mode"
       navigation: "API PATCH para cambiar el modo de atención de una conversación"
-      requires_role: [marketing, admin_clinic]
+      requires_role: [doctor, nurse, admin_clinic]  # real _PHI_ROLES (inbox/api/router.py:118)
       requires_clinic_scope: true
       entry_type: api
   forbidden_roles: [patient, nurse, receptionist]

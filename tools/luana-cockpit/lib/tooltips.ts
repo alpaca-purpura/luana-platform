@@ -7,13 +7,11 @@
  * Uso:
  *   import { Tooltip } from '@/components/ui/Tooltip';
  *   import { TOOLTIPS } from '@/lib/tooltips';
- *   <Tooltip content={TOOLTIPS.atomics}>...</Tooltip>
+ *   <Tooltip content={TOOLTIPS.scenarios}>...</Tooltip>
  */
 
 export const TOOLTIPS = {
   // ── Cap schema (visibles en CapDrawer + MapView + DriftView) ─────────────
-  atomics:
-    'Slices verificables de implementación dentro de una capacidad. Cada atomic apunta a archivos de código y/o tests que lo materializan.',
   change_log:
     'Bitácora append-only de cambios sobre la capacidad. Cada entry liga a una story que la modificó.',
   functional_area:
@@ -50,8 +48,6 @@ export const TOOLTIPS = {
     'Casos borde narrativos: qué pasa fuera del happy path (sin permisos, sin datos, errores de red, etc.).',
   story_spec_ref:
     'Link al archivo 01-spec.md original de la story que introdujo este scenario (trazabilidad spec → cap).',
-  atomic_ref:
-    'Si este scenario aplica a un atomic cross-surface (FE+BE+AGENTIC), aquí está el ID del atomic. Opcional: la mayoría de scenarios cuelgan directo del cap.',
   e2e_test:
     'Path al spec de Playwright que verifica este scenario end-to-end.',
   access_entry_points:
@@ -79,17 +75,17 @@ export const TOOLTIPS = {
 
   // ── Verificación (visibles en DriftView + CapDrawer · MapView badges) ────
   verified_live:
-    'Cap declarada live + todos sus atomics están live + todos los paths de verificación existen en filesystem. La realidad del código matchea la declaración.',
+    'Cap declarada live + todos los e2e_test de sus scenarios pasan + los paths de verificación existen en filesystem. La realidad del código matchea la declaración.',
   declared_live:
-    "Cap declarada live + atomics presentes, pero los paths de verificación no están declarados o no se pudieron verificar. La declaración dice 'live' pero no podemos confirmarlo desde el código.",
+    "Cap declarada live con scenarios, pero sin evidencia de tests pasando (e2e_test ausentes o sin verificar). La declaración dice 'live' pero no podemos confirmarlo desde el código.",
   drift:
-    'Mismatch entre lo declarado y la realidad: archivos no existen, atomics todos en wip, o headers de código apuntan a otra cap.',
+    'Mismatch entre lo declarado y la realidad: archivos no existen, código/tests/acceso contradicen lo declarado, o headers de código apuntan a otra cap.',
   stub:
-    "Cap declarada pero sin atomics todavía. Suele ser una cap planeada o un placeholder que migrará a 'live' cuando una story la implemente.",
+    "Cap sin scenarios todavía. No describe nada aún · suele ser una cap planeada o un placeholder que migrará a 'live' cuando una story la implemente.",
   partial:
-    'Cap con algunos atomics live y otros en wip (story en flight).',
+    'Cap con algunos scenarios verificados y otros sin verificar (story en flight).',
   wip:
-    'Atomic en progreso · pertenece a una story que aún no se cierra.',
+    'Scenarios declarados pero ninguno verificado todavía · pertenece a una story que aún no se cierra.',
   orphan:
     'Archivo de código sin cap owner principal. Header `# cap: __orphan__`. Candidato a refactor: atar a una cap o eliminar.',
   shared:
@@ -135,7 +131,7 @@ export const TOOLTIPS = {
   wip_cap:
     'WIP cap: cuántas stories pueden estar simultáneamente en este estado por worktree. Excederlo es advisory para evitar context switching excesivo.',
   cap_change_type:
-    'Tipo de cambio que la story aplica al cap target: new (cap nueva), fix (bug), extend (atomics nuevos), derive (cap hija).',
+    'Tipo de cambio que la story aplica al cap target: new (cap nueva), fix (bug), extend (scenarios nuevos), derive (cap hija).',
   defer_audit:
     'Auditoría pausada explícitamente por Chris. Mientras true, /dev-team no auto-handoff, /pm-{brand} pingea deuda.',
   spawned_by:
@@ -150,6 +146,8 @@ export const TOOLTIPS = {
   // ── Cockpit-specific (visibles en headers / breadcrumbs) ─────────────────
   system_map:
     'Archivo YAML manual editado por Chris (tracked) que define la taxonomía completa del producto: 7 agentes × N functional_areas + flows cross-agent + data ownership. El cockpit lo usa como esqueleto del Mapa Implementado.',
+  product_health:
+    'Distribución honesta de las capabilities por estado de salud (verificado · declarado · parcial · stub · drift). Lee el summary computado de _status-computed.json — refleja la realidad, no la aspiración.',
   mapa_implementado:
     'Vista del producto: caps cementadas agrupadas por agente y functional_area. Lee del SYSTEM-MAP como esqueleto + cruza con las caps reales.',
   backlog_board:
