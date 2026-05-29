@@ -23,6 +23,7 @@ agent_owner: valeria
 functional_area: valeria.shell
 user_visible: true
 nature: feature
+ui_paradigm: shell-organism  # T-3 reconcile 2026-05-29
 
 user_facing_name: "Shell visual de Vitalia post-login"
 user_facing_description: >
@@ -46,7 +47,7 @@ dev_preview:
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-shell-organism   # merge consolidado por ADR-vitalia-005
 created_date: 2026-05-27
-last_modified: 2026-05-28   # vitalia-shell-state-persistence (SSR-safe persist + mobile recuerda)
+last_modified: 2026-05-29   # T-3 reconcile 2026-05-29
 parent_cap: null
 derives_capabilities: []
 

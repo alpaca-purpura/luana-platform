@@ -75,3 +75,26 @@ Chris ratificó autonomous_mode=true (override de mi recomendación manual). Che
 - `.gitignore` — evidencia screenshots (.evidence/) + findings JSON gitignoreados (HIPAA-lite)
 
 Conteos de la matriz v1: **OK=21 · ROTO=0 · INACCESIBLE=0 · SIN-UI=67** (las 67 caps sin ruta navegable directa reflejan la realidad: caps slice-1 superseded + infra-only). El sweep detectó que las 27 superficies shell-organism cargan con 200 y sin console errors graves. Gates verdes: eslint ✅ · tsc ✅ · arch_fe_fsd (148 tests) ✅ · sweep 5/5 PASS ✅ · compute_capability_status ✅ · matrix_artifact_exists ✅.
+
+### 2026-05-29T23:00 · 🤖 claude · `/dev-team` · ✓ APLICADO
+**T-3 (review técnico + reconciliación ledger + backlog mapeado) DONE.**
+
+Trabajo ejecutado en esta sesión:
+- Reconcilié los 67 cap YAMLs + 1 nueva cap (ops.live-reconciliation-sweep): status honesto + ui_paradigm + replaced_by_story + last_modified 2026-05-29.
+- Corregí bug en `scripts/compute_capability_status.py`: deprecated passthrough se ejecutaba DESPUÉS del check stub (todas las caps deprecated con 0 scenarios aparecían como stub en vez de deprecated).
+- Creé `vitalia/docs/product/capabilities/ops/live-reconciliation-sweep.yaml` (cap nueva, schema v4 completo, status=live, scenario con e2e_test apuntando al sweep.spec.ts).
+- Actualicé `vitalia/docs/domains/ops/live-reconciliation.md`: columnas technical_verdict + acción + story_mapeada llenadas para las 88 filas + sección "Backlog mapeado" completa con tablas por prioridad.
+
+**Foto antes/después:**
+- Antes: 67 caps · verified-live=1 · partial=5 · declared-live=6 · stub=55 · deprecated=0
+- Después: 68 caps · verified-live=2 · partial=5 · declared-live=1 · stub=27 · deprecated=33
+
+**Gates output:**
+- `reconcile_capabilities --validate-ledger` → exit=0 (1 hard error corregido: unknown-legacy→vitalia-adopt-luana-core-iam)
+- `validate_code_cap_bidirectional` → cross_check_3: 0 drift (HARD) · cross_check_4: 1 drift (advisory, RBAC gap pre-existente)
+- `compute_capability_status` → 68 caps · deprecated=33 · verified-live=2
+- YAML frontmatter parse → 68 files ALL VALID
+- arch_no_engine_edit → PASS (0 edits engine)
+- no_slice1_rebuild → PASS (los 3 index.ts son cap: headers pre-existentes, no rebuilds)
+
+**Backlog F2 mapeado:** 33 caps deprecated → 20 stories F2 + 4 service stories laterales identificadas. Ninguna superficie ROTO detectada en el sweep (el 500 fue resuelto en T-1).

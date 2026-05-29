@@ -114,7 +114,13 @@ def _compute_status(
     """Apply scenarios state-machine and return (computed_status, metrics_dict)."""
     scenarios_total = len(scenarios)
 
-    # -- stub: no scenarios (independent of declared) --
+    # -- deprecated / sunset passthrough (before stub check — declared status wins) --
+    if declared == "deprecated":
+        return "deprecated", _build_metrics(scenarios_total, 0, 0, [])
+    if declared == "sunset":
+        return "sunset", _build_metrics(scenarios_total, 0, 0, [])
+
+    # -- stub: no scenarios (independent of declared, except deprecated/sunset above) --
     if scenarios_total == 0:
         return "stub", _build_metrics(0, 0, 0, [])
 
@@ -138,12 +144,6 @@ def _compute_status(
             drift_reasons.append(
                 f"scenario '{scenario_id}' e2e_test='{e2e_test}' no existe en filesystem"
             )
-
-    # -- deprecated / sunset passthrough --
-    if declared == "deprecated":
-        return "deprecated", _build_metrics(scenarios_total, decl, exist, drift_reasons)
-    if declared == "sunset":
-        return "sunset", _build_metrics(scenarios_total, decl, exist, drift_reasons)
 
     # -- beta → wip --
     if declared == "beta":

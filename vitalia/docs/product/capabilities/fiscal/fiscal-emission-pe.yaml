@@ -57,7 +57,7 @@ dev_preview:
 # ----------------------------------------------------------------------------
 created_in_story: vitalia-fiscal-emission-pe
 created_date: 2026-05-28
-last_modified: 2026-05-28
+last_modified: 2026-05-29   # T-3 reconcile 2026-05-29
 package_version: vitalia-fase2-v1.0.0
 package_path: vitalia/backend/src/modules/vitalia/fiscal/
 

@@ -15,6 +15,7 @@ agent_owner: config
 functional_area: config.admin
 user_visible: true
 nature: feature
+ui_paradigm: admin-panel  # T-3 reconcile 2026-05-29
 
 user_facing_name: "Servicio admin Streamlit"
 user_facing_description: >
@@ -60,7 +61,7 @@ verification:
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: unknown-legacy   # v2 cement · mirror of story_introduced
 created_date: 2026-05-15   # v2 cement · mirror of date_introduced
-last_modified: 2026-05-15   # v2 cement · mirror of date_updated or date_introduced
+last_modified: 2026-05-29   # T-3 reconcile 2026-05-29
 parent_cap: null   # v2 cement · mirror of extends_capability
 derives_capabilities: []   # v2 cement · initial empty list
 
@@ -68,7 +69,7 @@ derives_capabilities: []   # v2 cement · initial empty list
 
 # Capability change log v2 (cement 2026-05-27)
 change_log:
-  - story_id: unknown-legacy
+  - story_id: vitalia-adopt-luana-core-iam
     date: 2026-05-15
     type: new
     summary: "Implementación inicial · migración legacy a schema v2"
