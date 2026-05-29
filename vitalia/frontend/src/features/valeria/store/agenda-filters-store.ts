@@ -1,19 +1,37 @@
 // cap: scheduling.valeria-agenda
 // story-origin: vitalia-fase2-s1-TBD
 /**
- * agenda-filters-store.ts — Zustand filter + view preference store for Valeria Agenda.
+ * agenda-filters-store.ts — Zustand SSR-safe filter + view preference store for Valeria Agenda.
  * T-12 vitalia-fase2-valeria-agenda
+ * Migrated to createSsrSafePersistedStore (vitalia-shell-state-persistence T-3).
+ *
+ * WHY MIGRATED: The raw persist() middleware auto-writes the default lastView during
+ * SSR/skeleton/pre-hydration, potentially clobbering user view preferences on reload.
+ * The factory wraps persist with skipHydration:true + setItem NO-OP until client rehydrate.
+ * ADR-vitalia-006 documents the pattern (defense-in-depth transversal convention).
  *
  * Persists lastView to localStorage key "vitalia.agenda.lastView" (Q3).
  * activePreset is session-only (URL is SSoT, store is derived state for fast access).
+ *
+ * partialize strategy:
+ * - lastView → persisted (user's view preference)
+ * - activePreset → NOT persisted (session state — URL is SSoT)
+ * - _hasHydrated → NOT persisted (transient hydration flag)
+ * - setHasHydrated → NOT persisted (recreated on hydration)
+ * - action setters → NOT persisted (recreated on hydration)
+ *
+ * REHYDRATION: call useStoreHydration(useFiltersStore) from the first client-side
+ * component that consumes this store (within an ssr:false dynamic chunk).
  *
  * Named exports only — NO default exports (FSD-Lite boundary enforcement).
  * downstream-regression-na: brand-local FE store; no cross-brand consumers
  * spec_anchor: 03-arch.md § 6.5 + 06-tickets.yaml T-12
  */
 
-import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
+import {
+  createSsrSafePersistedStore,
+  type SsrSafeHydration,
+} from "@/lib/store/create-ssr-safe-persisted-store";
 import type { AgendaFilter, AgendaView } from "../types/agenda.types";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -43,6 +61,15 @@ export interface FiltersActions {
 
 export type FiltersStore = FiltersState & FiltersActions;
 
+/** Full store state — extends SsrSafeHydration for factory compliance */
+type FiltersStoreWithHydration = FiltersStore & SsrSafeHydration;
+
+// ── Persisted slice (only lastView) ───────────────────────────────────────────
+
+type PersistedState = {
+  lastView: AgendaView;
+};
+
 // ── Store ─────────────────────────────────────────────────────────────────────
 
 /**
@@ -50,26 +77,36 @@ export type FiltersStore = FiltersState & FiltersActions;
  *
  * URL is the SSoT for view + date (useAgendaFilters syncs URL ↔ store).
  * This store provides fast in-memory access and persistence for lastView.
+ *
+ * Uses createSsrSafePersistedStore for SSR-safe hydration:
+ * - setItem NO-OP while _hasHydrated === false (prevents default clobber)
+ * - onRehydrateStorage flips _hasHydrated = true post-rehydrate
+ * - useStoreHydration(useFiltersStore) triggers rehydrate() once client-side
  */
-export const useFiltersStore = create<FiltersStore>()(
-  persist(
-    (set) => ({
-      // State
-      activePreset: null,
-      lastView: "semana",
+export const useFiltersStore = createSsrSafePersistedStore<FiltersStoreWithHydration>(
+  (set) => ({
+    // ── SsrSafeHydration ────────────────────────────────────────────────────
+    _hasHydrated: false,
+    setHasHydrated: (v: boolean) => set({ _hasHydrated: v }),
 
-      // Actions
-      setActivePreset: (preset) => set({ activePreset: preset }),
+    // ── State ─────────────────────────────────────────────────────────────
+    activePreset: null,
+    lastView: "semana",
 
-      setLastView: (view) => set({ lastView: view }),
+    // ── Actions ───────────────────────────────────────────────────────────
 
-      clearFilters: () => set({ activePreset: null }),
+    setActivePreset: (preset) => set({ activePreset: preset }),
+
+    setLastView: (view) => set({ lastView: view }),
+
+    clearFilters: () => set({ activePreset: null }),
+  }),
+  {
+    name: LAST_VIEW_STORAGE_KEY,
+    // Only persist lastView — activePreset is session state (URL is SSoT)
+    // _hasHydrated and setters are intentionally excluded from persist
+    partialize: (state): PersistedState => ({
+      lastView: state.lastView,
     }),
-    {
-      name: LAST_VIEW_STORAGE_KEY,
-      storage: createJSONStorage(() => localStorage),
-      // Only persist lastView — activePreset is session state (URL is SSoT)
-      partialize: (state) => ({ lastView: state.lastView }),
-    },
-  ),
+  },
 );
