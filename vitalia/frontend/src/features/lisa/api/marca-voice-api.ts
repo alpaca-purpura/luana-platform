@@ -5,7 +5,7 @@
  *
  * Endpoints:
  *   GET  /api/v1/lisa/marca/personality         — fetch personality + voice blocks
- *   PUT  /api/v1/lisa/marca/personality         — update archetype + 6 voice blocks
+ *   PATCH /api/v1/lisa/marca/personality        — update archetype + 6 voice blocks
  *   POST /api/v1/lisa/marca/voice-preview       — server-side compile BRAND_VOICE slot
  *   GET  /api/v1/lisa/marca/prohibited-phrases  — fetch tenant + seed phrases
  *   POST /api/v1/lisa/marca/voice-warning-override — audit log voice override
@@ -100,7 +100,7 @@ export async function updatePersonality(
 ): Promise<PersonalityResponse> {
   return fetchClient<PersonalityResponse>("/api/v1/lisa/marca/personality", {
     ...opts,
-    method: "PUT",
+    method: "PATCH",
     body: JSON.stringify(payload),
   });
 }
