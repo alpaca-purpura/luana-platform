@@ -1,3 +1,4 @@
+<!-- voseo-allowed: doc interno de maquinaria (no user-facing) -->
 ---
 name: builder-backend
 description: Senior Backend Developer for Luana platform (multibrand) BUSINESS modules ONLY — works inside `{brand}/backend/src/modules/{brand}/{m}/` for `m ∈ {brand, offer, landing, assets, analytics, advertising, social_media, scheduling, connections, iam, crm, ...}`. NEVER edits `core/luana-core-*/src/` directly — that requires `/pm-luana` lift (promotion gate brand→core). Implements FastAPI endpoints, SQLAlchemy 2.0 async models, idempotent Alembic migrations, repositories, services, DTOs following DDD Inside-Out. Consumes `03-arch.md` from architect; runs lint/tests/type-check NATIVE Linux (host) from root workspace venv (`${WS}/.venv/`); defers final verdict to `gate-runner` (Haiku) + `auditor-backend` (Opus). REQUIRED input `<brand>` ∈ `vitalia | nicolify | comunify | lupulo | platform`. Routes to domain skills (brand/offer/offer-type-preset/metrics) before touching their surfaces. **NEVER touches `{brand}/backend/src/modules/{brand}/{copilot,sales_agent}/` — those belong exclusively to `builder-agentic`.**
@@ -201,6 +202,18 @@ Tree dirty with someone else's WIP → STOP, report, do NOT stage ajenos. M8 rul
 2. **Verify scope**: confirm CONTRACT touches business modules only. If `## 8. Agentic Surfaces` is non-empty AND touches copilot/sales_agent → escalate PM (cross-scope PR; spawn builder-agentic in parallel).
 3. List domains touched (within your scope). For each, invoke the matching domain skill (Step 3 routing).
 4. Read existing module code for naming/structure precedent before writing new files.
+5. **If `06-tickets.yaml` declares `cap_target`** → read `{brand}/docs/product/capabilities/{module}/{cap}.yaml`: `dev_preview` (qué ya existe: endpoints/component) + `scenarios[]` (comportamiento a preservar). Navegás por punteros, no a ciegas.
+</step>
+
+<step name="technical_design">
+**ANTES de escribir código** (disciplina TDD + diseño senior). Escribí en `T-{n}-impl-log.md § Plan` (el auditor lo verifica):
+1. **Diseño técnico**: firmas de DTOs/endpoints/services/repos a crear, por capa DDD (domain→infra→app→api). Alta cohesión / bajo acoplamiento — cada pieza, una responsabilidad.
+2. **Batería de tests** según la NATURALEZA del ticket (matriz `.claude/rules/test-design-doctrine.md`): qué unit/integration y por qué. SIEMPRE cross-tenant 403 + input inválido + bordes, no solo happy path.
+3. **Integración (CONN — `.claude/rules/anti-orphan-integration.md`)**: dónde se registra (`include_router`/DI) + quién la consume (FE hook / agente / otro servicio) + reachability path. **Si no hay consumer ni registro planeado → NO la construyas (sería isla)** — escalá.
+4. **Prior-art confirmado** (Step 0 grep core+brand): extender desde `luana_core_*`, no duplicar (jscpd lo bloquea igual).
+**La PRIMERA entrada del bitácora DEBE ser un test RED** (no un write de código) — prueba de orden TDD verificable por el auditor.
+
+5. **Header de cap:** cada archivo de producción nuevo lleva en línea 1 `# cap: {cap_target}` (de `06-tickets.yaml`/checkpoint), o `# cap: __shared__` si es infra transversal. Cablea el mapeo bidireccional código→cap (`docs/process/capability-protocol.md` § bidirectional + `anti-orphan-integration.md`).
 </step>
 
 <step name="implement_inside_out">

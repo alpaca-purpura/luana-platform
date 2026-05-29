@@ -417,6 +417,27 @@ Referencias:
 - `.claude/agents/auditor-backend.md` Cat 11 — pattern paralelo (BE)
 - `.claude/agents/auditor-agentic.md` Cat 15 — pattern paralelo (agentic)
 
+### Category 15: Connectivity (anti-isla)
+
+> SSoT: `.claude/rules/anti-orphan-integration.md` (CONN). Componente/página creada debe estar enchufada.
+
+- [ ] **Navigable + Notarized:** cada page/component nuevo está referenciado en una ruta `app/` Y en el nav tree (alcanzable). `grep -rn "<Component>" ${WS}/${BRAND}/frontend/src/app ${WS}/${BRAND}/frontend/src/components` → cero referencias = isla.
+- [ ] **Consumed:** el component consume un hook/data real (no placeholder colgado).
+- [ ] **On the map:** story declara `cap_target`, cap YAML existe, `dev_preview.main_component` apunta al componente real.
+
+**CHANGES_REQUESTED** if: componente/página nuevo no referenciado por ninguna ruta/nav (huérfano visual), o `03-arch.md` sin `Integration design`.
+
+### Category 16: Visual fidelity (mockup adherence + design system + scope)
+
+> SSoT: `.claude/rules/frontend-visual-fidelity.md`. Carril A self-fix aplica (swap a átomo/token/estado cubierto por test existente).
+
+- [ ] **Design-system-first:** reutiliza átomos `components/ui/` + moléculas `components/shared/` + tokens `@luana/design-tokens`. NINGUNA primitiva reinventada, NINGÚN hex/px hardcodeado que ya es token. (Reinventar átomo → FAIL, también cae en Cat 13 mirror.)
+- [ ] **Mockup adherence:** elementos clave del mockup (`02-design-ui.md`/`mockups/`) presentes + estados (empty/loading/error/success) renderizados. Verificación: Playwright visual scoped (`04-validators § visual`) o `chrome-devtools-verify`.
+- [ ] **Scope discipline:** NO se construyó fuera de lo que scopean los scenarios de `01-spec.md` (el mockup puede mostrar de más; exceso = scope creep + posible isla).
+
+**FAIL** if: primitiva reinventada, o token hardcodeado, o ausencia total de verificación visual en user-facing change.
+**WARN** if: elementos del mockup faltantes/estados sin cubrir; o construcción fuera de scope de la historia.
+
 </audit_checklist>
 
 <review_format>

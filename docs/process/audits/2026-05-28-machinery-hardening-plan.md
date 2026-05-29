@@ -32,4 +32,31 @@
 - **5:** `validate_templates_vs_rules.py` falla ante drift sintético; lint de paths corre en pre-commit; suite verde.
 
 ## Tracking
-Tasks #1-#6 en el task list de la sesión.
+Tasks #1-#8 en el task list de la sesión.
+
+---
+
+## Estado final 2026-05-28 (sesión autónoma — todas las fases DONE)
+
+Chris amplió a autonomía plena ("toma las mejores decisiones... que en un mes sea código de un genio ordenado") + reforzó: cero islas/huérfanos, cero duplicación, fidelidad visual FE, alta cohesión/bajo acoplamiento, y que seguimos usando el stack de calidad (ruff/vitest/jscpd/etc.). Se ratificaron las 5 decisiones del self-fix + se agregaron **2 fases nuevas** (6 anti-isla, 7 visual). Todo implementado y autoverificado.
+
+| Fase | Estado | Entregables |
+|---|---|---|
+| 0 | ✅ | 3 rules atomics→scenarios · greps multibrand · contradicción Caso B |
+| 1 | ✅ | assignment block + dispatch-plan-template + T-result fix + chrome-devtools |
+| 2 | ✅ | self-fix v4.2 (3 carriles) · sub-auditores con Edit · auditor SKILL Step 3 |
+| 3 | ✅ | `test-design-doctrine.md` + step `technical_design` (con orden TDD RED-first) en 3 builders |
+| 4 | ✅ | builders leen cap YAML del cap_target + escriben headers `# cap:`/`// cap:` |
+| 5 | ✅ | `scripts/validate_machinery_consistency.py` + `make machinery-check` (12/12 verde) |
+| 6 | ✅ | `anti-orphan-integration.md` (CONN) + architect Integration design + auditor Cat Connectivity (be/fe/agentic) |
+| 7 | ✅ | `frontend-visual-fidelity.md` + builder-frontend (design-system/mockup/scope) + auditor-frontend Cat Visual fidelity |
+
+3 reglas nuevas registradas en CLAUDE.md (filas 33-35, auto-load). Validador 12/12.
+
+### Diferido (decisión consciente, bajo riesgo)
+- **Item 10 — backfill masivo de `// cap:` en 562 archivos FE:** los builders ahora taggean forward (durable). El backfill masivo es script de una-vez riesgoso a ciegas → correr con cuidado en sesión dedicada (variante FE de `generate_code_to_cap_index.py`).
+- **Item 4c — nomenclatura `CONTRACT.md`→`03-arch.md` en `architect-orchestrator.md`:** el return contract ya reconcilia a `03-arch.md`; las menciones internas son bajo riesgo. Pasada focalizada pendiente.
+- **Pre-commit wiring de `machinery-check`:** corre vía `make machinery-check`; insertar sección en `scripts/git-hooks/pre-commit` (cuando staged toca `.claude/{rules,skills,agents}` o `docs/specs/templates`) — no se tocó el hook live para no arriesgar commits en curso.
+
+### Hallazgo separado (deuda PM, NO maquinaria — surgido del validador CHECK 6)
+Skills PM brand referencian rules brand-domain que **no existen aún**: `hipaa-lite.md` (pm-vitalia + pm-luana ref), `creator-funnels.md` (pm-comunify), `field-services-and-local-seo.md` (pm-fixia), `memberships-and-capacity.md` (pm-fitflow), `ota-sync-and-seasonal-pricing.md` (pm-guestly). Son forward-refs a rules planeadas. Acción sugerida: cada `/pm-{brand}` crea su rule o quita la ref. Fuera de scope de este hardening.

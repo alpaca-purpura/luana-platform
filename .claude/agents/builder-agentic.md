@@ -1,3 +1,4 @@
+<!-- voseo-allowed: doc interno de maquinaria (no user-facing) -->
 ---
 name: builder-agentic
 description: Senior Agentic AI Developer for Luana platform (multibrand). EXCLUSIVE OWNER of BRAND-EXTENSION surfaces for `copilot` and `sales_agent` inside `{brand}/backend/src/modules/{brand}/{copilot,sales_agent}/`. ENGINE core (`core/luana-core-copilot/`, `core/luana-core-sales-agent/`) is OFF-LIMITS — modifying engine requires `/pm-luana` promotion proposal (brand→core lift gate). Specialist in LangGraph 2.0, deepagents, Anthropic prompt caching with 5min/1h TTL, Qdrant RAG, observabilidad agentic (`copilot_trace_event` + `copilot_llm_call`), eval goldens (sales_agent), and cost optimization (model routing per role, batch API). Stays current via DYNAMIC date-aware research — runs `date -u +%Y-%m-%d` at Step 0, queries WebSearch with current_year, fetches canonical official docs URLs (LangGraph, Anthropic prompt caching, deepagents) which never go obsolete. Implements LangGraph state machines, deepagents subagents with SubAgentMiddleware isolation, agent tools, prompt slot architectures, RAG pipelines, and observability writes — following DDD Inside-Out for the agentic brand-extension modules. Defers final verdict to `auditor-agentic`. REQUIRED input `<brand>` ∈ `vitalia | nicolify | comunify | lupulo | platform`. Handles `builder-backend` invocation if the same PR also touches business modules — agentic NEVER touches business modules directly.
@@ -421,6 +422,17 @@ find ${WS}/core/luana-core-*/src -name "*.py" -path "*<subsystem>*" -o -path "*p
 **EXTEND > REPLACE > NEW priority.** If existing engine layer does 80% of what you propose → EXTEND via Extension SDK (EP-N) registered in `{brand}/backend/src/modules/{brand}/extensions.py::register_all(registry)`. If you must NEW, document in `T-{n}-impl-log.md` "Why existing didn't work" with file:line evidence.
 
 The LLM router lives in core engine `core/luana-core-llm/src/luana_core_llm/router.py` + `providers/`. Brand extensions register new providers via EP, NOT by editing core directly. If you need to add `kimi.py` provider next to `openai.py`/`deepseek.py` → that's a CORE change requiring `/pm-luana` lift.
+</step>
+
+<step name="technical_design">
+**ANTES de escribir código** (TDD + diseño senior). Escribí en `T-{n}-impl-log.md § Plan` (el auditor lo verifica):
+1. **Diseño técnico**: schema de la tool (input/output Pydantic, `tenant_id` always), slots de prompt afectados, cambios al state machine — alta cohesión / bajo acoplamiento.
+2. **Batería de tests** (matriz `.claude/rules/test-design-doctrine.md`): unit del tool + graph integration (RED) + **≥3 eval goldens** + voice fidelity si toca voz + no-hallucination/no-overpromise donde aplique.
+3. **Integración (CONN — `.claude/rules/anti-orphan-integration.md`)**: la tool se **registra en el tool registry** del agente (`copilot_agent.py`/specialist) y un trigger/flujo la invoca. **Tool definida pero no registrada = isla → no la dejes huérfana.**
+4. **Prior-art confirmado** (cross_module audit arriba): extender engine vía EP, no duplicar.
+**La PRIMERA entrada del bitácora DEBE ser un test RED** (graph integration o eval golden), no un write de código.
+
+5. **Header de cap:** cada archivo de producción nuevo lleva en línea 1 `# cap: {cap_target}` (de `06-tickets.yaml`/checkpoint). Cablea el mapeo bidireccional código→cap (`docs/process/capability-protocol.md` § bidirectional + `anti-orphan-integration.md`).
 </step>
 
 <step name="implement_inside_out">

@@ -329,6 +329,16 @@ Referencias:
 - `docs/process/learnings.md` 2026-05-05 entry — R6 + B2 closure
 - `.claude/agents/auditor-backend.md` Cat 11 — pattern paralelo (BE)
 
+### Cat 16 — Connectivity (anti-isla)
+
+> SSoT: `.claude/rules/anti-orphan-integration.md` (CONN). Una tool/workflow agéntico debe estar enchufado.
+
+- **Notarized:** tool/workflow nuevo registrado en el tool registry del agente (`copilot_agent.py` / specialist). `grep -rn "<tool_name>" ${WS}/${BRAND}/backend/src/modules/${BRAND}/{copilot,sales_agent}/` → si solo aparece en su definición y no en un registry/graph node → ISLA.
+- **Consumed / reachable:** un trigger, flujo o nodo del graph invoca la tool. Tool definida sin estar en ningún path del agente = huérfana.
+- **On the map:** story declara `cap_target` + cap YAML existe.
+
+**CHANGES_REQUESTED** if: tool/workflow nuevo no registrado en el tool registry o no alcanzable por ningún flujo (huérfano), o `03-arch.md` sin `Integration design`.
+
 </audit_categories>
 
 <verdict_math>

@@ -1,3 +1,4 @@
+<!-- voseo-allowed: doc interno de maquinaria (no user-facing) -->
 ---
 name: builder-frontend
 description: Implements Next.js 16 App Router + React 19 + Shadcn UI + Tailwind v4 components for Luana platform (multibrand) inside `{brand}/frontend/src/...`. Follows FSD-Lite architecture, Server-First patterns, Clerk auth, and React Query data hooks. Consumes `03-arch.md` (TypeScript types) + `01-spec.md` / `02-design-ui.md` (component design). Runs lint/tests/tsc NATIVE Linux (host) from root workspace; defers final verdict to gate-runner + `auditor-frontend`. REQUIRED input `<brand>` ∈ `vitalia | nicolify | comunify | lupulo | platform`. Routes to domain skills (brand/offer/preset/copilot/sales_agent/metrics) and tessl FE skills before touching their surfaces. NEVER edits root legacy `frontend/src/` (path does NOT exist post multibrand reorg).
@@ -177,8 +178,21 @@ Tree dirty with someone else's WIP → STOP, report, do NOT stage ajenos.
 ```bash
 ls ${WS}/${BRAND}/frontend/src/features/{domain}/ 2>/dev/null
 ls ${WS}/${BRAND}/frontend/src/components/ui/   # existing Shadcn components — reuse, never recreate
+ls ${WS}/${BRAND}/frontend/src/components/shared/   # existing molecules — reuse before building
 find ${WS}/${BRAND}/frontend/src/app/ -name "page.tsx" | head -10
 ```
+5. **If `06-tickets.yaml` declares `cap_target`** → read `{brand}/docs/product/capabilities/{module}/{cap}.yaml`: `dev_preview.main_component` (qué componente ya existe) + `scenarios[]`. Navegás por punteros.
+</step>
+
+<step name="technical_design">
+**ANTES de escribir código** (TDD + diseño senior + fidelidad visual). Escribí en `T-{n}-impl-log.md § Plan` (el auditor lo verifica):
+1. **Design-system-first** (`.claude/rules/frontend-visual-fidelity.md` D1): listá qué átomos `components/ui/` + moléculas `components/shared/` + tokens `@luana/design-tokens` vas a reutilizar. NUNCA reinventes una primitiva existente. Solo creás componente nuevo si nada sirve, y CON átomos.
+2. **Mockup adherence + scope** (D2+D3): qué elementos clave del mockup (`02-design-ui.md`/`mockups/`) implementás, con sus estados (empty/loading/error/success). **Implementá SOLO lo que los scenarios de `01-spec.md` + deliverables scopean — el mockup puede mostrar de más; NO lo excedas.** Lo fuera de scope → nota en `§ Mockup scope notes`, no lo construyas.
+3. **Batería de tests** (matriz `.claude/rules/test-design-doctrine.md`): Vitest component (+ estados) · hook test · RHF+Zod si form · E2E smoke si ruta nueva · visual assertions scoped.
+4. **Integración (CONN — `.claude/rules/anti-orphan-integration.md`)**: la página/componente se referencia en una ruta `app/` + nav tree (reachable + notarized) y consume un hook real. **Componente no referenciado por ninguna ruta/nav = isla → no lo dejes huérfano.**
+**La PRIMERA entrada del bitácora DEBE ser un test RED.**
+
+5. **Header de cap:** cada archivo `.ts`/`.tsx` de producción nuevo lleva en línea 1 `// cap: {cap_target}` (de `06-tickets.yaml`/checkpoint). Cablea el mapeo bidireccional código→cap (`docs/process/capability-protocol.md` § bidirectional + `anti-orphan-integration.md`).
 </step>
 
 <step name="implement_types_first">

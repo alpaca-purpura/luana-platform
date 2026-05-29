@@ -373,6 +373,18 @@ Para CADA file nuevo en este PR (status `??` en git):
 - Clase con suffix `Service` / `Repository` / `Resolver` / `Factory` similar en otro módulo sin core abstraction explícita
 - File nuevo con docstring que menciona "mirror del pattern X" o "similar a Y/Z" — flag para considerar lift to core
 
+### Category 13: Connectivity (anti-isla)
+
+> SSoT: `.claude/rules/anti-orphan-integration.md` (CONN). Nada llega a `done` como isla. Verificá las 4 contenciones sobre el diff.
+
+Para CADA endpoint/service público nuevo:
+1. **Consumed:** `grep -rn "\b<symbol>\b" ${WS}/${BRAND}/{backend,frontend}/src` excluyendo su definición → ≥1 consumer real (FE hook / agente / otro servicio / test no cuenta como consumer de producción). Cero consumers + no es entry point → ISLA.
+2. **Notarized (registered):** endpoint nuevo → ¿en un `include_router` alcanzable desde `main.py`? `grep -rn "include_router" ${WS}/${BRAND}/backend/src | grep "{module}"`. Service → ¿inyectado/usado? Tool → registry.
+3. **On the map:** la story declara `cap_target` y el cap YAML existe (`{brand}/docs/product/capabilities/{module}/{cap}.yaml`).
+4. **03-arch.md § Integration design** existe con reachability path concreto.
+
+**CHANGES_REQUESTED** if: símbolo público nuevo con cero consumers + no registrado como entry point (huérfano), o `03-arch.md` sin `Integration design`, o endpoint no incluido en router alcanzable. El builder debe cablearlo, NO se aprueba la isla.
+
 </audit_checklist>
 
 <review_format>

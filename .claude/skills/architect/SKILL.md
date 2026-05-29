@@ -159,6 +159,7 @@ Si orchestrator propone NEW cuando shared existe ≥80% → escala `/pm-luana` (
 Lee el `03-arch.md` que el orchestrator escribió. Verificar:
 - Secciones por surface presente (BE / FE / AGENTIC según tickets toca)
 - Cross-cutting decisions section (tenant isolation, currency, PII)
+- **`## Integration design (CONN)` presente** (`.claude/rules/anti-orphan-integration.md`): reachability path concreto + consumers + registration points + home (cap). SIN esto, lo construido será una isla → NO cerrar `ready`.
 - Per-surface detail puede vivir inline en 03-arch.md O en archivos separados `03-arch-{be,fe,agentic}.md` (orchestrator decide según complejidad)
 
 Template estructura mínima:
@@ -181,6 +182,12 @@ Template estructura mínima:
 - Tenant isolation strategy: ...
 - Currency handling: ...
 - PII fields: ...
+
+## Integration design (CONN)   ← OBLIGATORIO (anti-orphan-integration.md)
+### Reachability path: usuario/sistema → ... → feature (camino concreto)
+### Consumers: quién llama cada surface nuevo (UI hook / agente / servicio). Cero consumers → NO construir.
+### Registration points: include_router / nav tree / DI / tool registry (deliverables verificables)
+### Home: cap_target + cap_change_type (dev_preview se actualiza al merge)
 ```
 
 ### Step 5 — Producir 04-validators.yaml + Test Construction Plan ★ CRITICAL ★
@@ -769,6 +776,12 @@ Antes de cerrar story como ready:
 - [ ] `04-validators.yaml § playwright_visual_scope` presente para UI stories con `story_scope_routes` + `forbidden_visual_changes` + `non_egoismo_clause`
 - [ ] `dispatch-plan.md` producido (5th artifact) con `autonomous_mode: false` default + caps + cost matrix
 - [ ] `checkpoint.md::autonomous_mode` campo presente (default false; Chris ratifica true al cerrar review ready)
+
+**★ v4.3 cement 2026-05-28 (anti-isla + fidelidad visual):**
+- [ ] `03-arch.md § Integration design (CONN)` presente: reachability path concreto + consumers (≥1 por surface, o justificación infra) + registration points (router/nav/DI/tool registry como deliverables) + home (cap_target). Sin esto → NO ready (`anti-orphan-integration.md`)
+- [ ] Cada surface nuevo en 06-tickets tiene su deliverable de **registro** (no solo crear el archivo): BE `include_router`, FE ruta+nav, agentic tool registry
+- [ ] UI stories: `02-design-ui.md` lista elementos visuales clave + `04-validators § playwright_visual_scope` separa `story_scope_*` de `out_of_mockup_scope` (no exceder mockup). `frontend-visual-fidelity.md`
+- [ ] UI tickets: deliverables citan reutilización de átomos `components/ui/` + moléculas `components/shared/` (no reinventar primitivas)
 
 **Validation coherencia cap_change_type (v2 cement 2026-05-27):** antes de cerrar state=ready, verificar coherencia entre `cap_change_type` declarado y archivos producidos:
 - Si `extend`: 03-arch.md DEBE citar cap existente en sección "## Prior art audit" + 06-tickets.yaml no toca files de caps cross-target
