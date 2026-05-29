@@ -60,9 +60,7 @@ const CLIENT_HOOK_PATTERN = new RegExp(
 // Ratchet baseline — known violations at time of T-infra-4 creation (shrink-only).
 // Format: "src/relative/path/to/file.tsx"
 const KNOWN_MISSING_USE_CLIENT: ReadonlySet<string> = new Set<string>([
-  // Pre-existing violation discovered during vitalia-shell-state-persistence T-1 (2026-05-29).
-  // Not introduced by T-1. Tracked here per ratchet pattern; fix in dedicated story.
-  "src/features/marketing/components/ChannelConnectionWizard.tsx",
+  // Empty baseline — clean at T-infra-4.
 ]);
 
 // Files to skip entirely (not components, e.g. config/type files)
@@ -134,11 +132,14 @@ describe("Vitalia FE — Server Components first; use client on hook-using files
 
       if (usedHooks.length === 0) continue; // No client hooks — server component OK
 
-      // Verify "use client" is present
+      // Verify "use client" is present. A leading comment/JSDoc block before the
+      // directive is valid Next.js — so check the COMMENT-STRIPPED source's start
+      // (the prior source.slice(0,500) window missed directives pushed past char 500
+      // by long `// cap:` + JSDoc headers, e.g. ChannelConnectionWizard.tsx).
+      const strippedStart = stripped.trimStart();
       const hasUseClient =
-        source.trimStart().startsWith('"use client"') ||
-        source.trimStart().startsWith("'use client'") ||
-        /^\s*["']use client["']/m.test(source.slice(0, 500));
+        strippedStart.startsWith('"use client"') ||
+        strippedStart.startsWith("'use client'");
 
       if (!hasUseClient) {
         violations.push(
