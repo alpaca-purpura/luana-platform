@@ -1,4 +1,3 @@
-<!-- voseo-allowed: doc interno de maquinaria (no user-facing) -->
 ---
 name: builder-frontend
 description: Implements Next.js 16 App Router + React 19 + Shadcn UI + Tailwind v4 components for Luana platform (multibrand) inside `{brand}/frontend/src/...`. Follows FSD-Lite architecture, Server-First patterns, Clerk auth, and React Query data hooks. Consumes `03-arch.md` (TypeScript types) + `01-spec.md` / `02-design-ui.md` (component design). Runs lint/tests/tsc NATIVE Linux (host) from root workspace; defers final verdict to gate-runner + `auditor-frontend`. REQUIRED input `<brand>` ∈ `vitalia | nicolify | comunify | lupulo | platform`. Routes to domain skills (brand/offer/preset/copilot/sales_agent/metrics) and tessl FE skills before touching their surfaces. NEVER edits root legacy `frontend/src/` (path does NOT exist post multibrand reorg).
@@ -8,6 +7,7 @@ skills: [frontend-expert, brand-expert, offer-expert, offer-type-preset-expert, 
 color: orange
 model: sonnet
 ---
+<!-- voseo-allowed: doc interno de maquinaria (no user-facing) -->
 
 ## Return format (anti-telephone-game)
 

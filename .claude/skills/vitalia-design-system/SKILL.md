@@ -51,11 +51,14 @@ description: SSoT cargable del sistema de diseño + shell-organism de Vitalia (�
 
 ## 4 · Shell organism (lo que más se pierde en build)
 
-Estructura de navegación (SSoT: `vitalia/docs/architecture/SHELL-DESIGN-CONTRACT.md`, 665 líneas):
+**★ Modelo de navegación cardinal:** son **3 niveles de tabs que GUÍAN hasta la hoja**. La **hoja = el contenido** (lo que renderiza el `page.tsx` del último tab) y **es lo único que cambia**. Una **hoja NUNCA contiene tabs/subtabs**: los tabs son la ruta, la hoja es el destino. Si el contenido parece necesitar sub-secciones tabuladas, esas sub-secciones son en realidad otro nivel de tab (N3), NO `Tabs` de Shadcn dentro de la hoja (eso es anti-pattern, ADR-vitalia-004 §3.1.1).
 
-- **N1 — Ribbon de 6 agentes**: `Ribbon.tsx` + `RibbonTab.tsx` + `ConfigTab.tsx`. Cada tab con su agent-color border.
-- **N2 — SubTabsBar**: `SubTabsBar.tsx` + `SubTab.tsx` (línea 2, active con `agent-soft`).
-- **N3 — SubSubTabsBar**: `SubSubTabsBar.tsx` + `SubSubTab.tsx` (cuando una sub-tab agrupa 3+ vistas discretas — **N3-static, NO Shadcn Tabs internas**, ADR-vitalia-004 §3.1.1).
+Los 3 niveles de tab (SSoT: `vitalia/docs/architecture/SHELL-DESIGN-CONTRACT.md`, 665 líneas):
+
+- **N1 — Ribbon de 6 agentes** (tab nivel 1): `Ribbon.tsx` + `RibbonTab.tsx` + `ConfigTab.tsx`. Cada tab con su agent-color border.
+- **N2 — SubTabsBar** (tab nivel 2): `SubTabsBar.tsx` + `SubTab.tsx` (línea 2, active con `agent-soft`).
+- **N3 — SubSubTabsBar** (tab nivel 3, último): `SubSubTabsBar.tsx` + `SubSubTab.tsx` (cuando el destino agrupa 3+ vistas discretas — **N3-static, NO Shadcn Tabs internas**, ADR-vitalia-004 §3.1.1).
+- **Hoja (contenido)**: lo que renderiza el `page.tsx` del último tab alcanzado. Es el destino — NO contiene más tabs. Aquí vive el componente de la feature.
 - **Panel Valeria izquierdo (3 estados)**: `ValeriaSidebar.tsx` → `ValeriaRail.tsx` (collapsed) / `ValeriaHistory.tsx` / `ValeriaChat.tsx` (con `ChatComposer`/`ChatHeader`/`ChatMessages`/`MessageBubble`/`TypingIndicator`/`ChatStarters`).
 - **TopBar global**: `TopBarGlobal.tsx` + `LogoMark.tsx` + `TenantSwitcher.tsx`/`TenantBadge.tsx`/`TenantOption.tsx` + `ThemeToggle.tsx`/`ShellModeToggle.tsx`.
 - **Layout**: `ShellOrganismLayout.tsx` (splitter resizable, NO 50/50 hardcoded).
