@@ -1,4 +1,4 @@
-# cap: __orphan__
+# cap: fidelizacion.re-engagement
 # story-origin: TBD
 """ReEngagementService — detección y orquestación de re-engagement.
 

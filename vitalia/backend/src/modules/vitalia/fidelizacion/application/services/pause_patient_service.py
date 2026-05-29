@@ -1,4 +1,4 @@
-# cap: __orphan__
+# cap: fidelizacion.re-engagement
 # story-origin: TBD
 """PausePatientService — pausar re-engagement de un paciente.
 

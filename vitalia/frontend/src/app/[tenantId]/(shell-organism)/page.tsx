@@ -1,4 +1,4 @@
-// cap: __orphan__
+// cap: __shared__
 // story-origin: TBD
 /**
  * Shell Organism Root Page — Server Component redirect.

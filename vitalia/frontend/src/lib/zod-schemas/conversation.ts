@@ -1,4 +1,4 @@
-// cap: __orphan__
+// cap: sales_agent.inbox-handler-mode-occ
 // story-origin: TBD
 /**
  * conversation.ts — Zod schema for Conversation runtime validation.

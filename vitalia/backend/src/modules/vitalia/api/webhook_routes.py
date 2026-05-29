@@ -1,4 +1,4 @@
-# cap: __orphan__
+# cap: __shared__
 # story-origin: TBD
 """Vitalia webhook receivers — 5 endpoints with HMAC + idempotency + replay protection.
 

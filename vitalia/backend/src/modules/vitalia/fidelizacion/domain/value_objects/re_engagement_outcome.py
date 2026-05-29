@@ -1,4 +1,4 @@
-# cap: __orphan__
+# cap: fidelizacion.re-engagement
 # story-origin: TBD
 """Resultado del intento de re-engagement — value object StrEnum."""
 

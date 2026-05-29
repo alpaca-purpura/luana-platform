@@ -1,4 +1,4 @@
-# cap: __orphan__
+# cap: fidelizacion.re-engagement
 # story-origin: TBD
 """Entidad de dominio: ReEngagementEvent (Evento de Re-engagement).
 

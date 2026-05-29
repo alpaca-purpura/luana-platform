@@ -1,4 +1,4 @@
-# cap: __orphan__
+# cap: fiscal.fiscal-emission-pe
 # story-origin: TBD
 """FiscalDocumentRepository — CRUD for fiscal documents (saga compensation).
 

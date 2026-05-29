@@ -50,6 +50,74 @@ change_log:
     summary: "Implementación inicial · migración legacy a schema v2"
     merge_sha: null
     status: done
+  - story_id: vitalia-auth-base-functional
+    date: 2026-05-28
+    type: extend
+    summary: "backfill scenarios desde spec archivado"
+    scenarios_added:
+      - manifests-k8s-validos
+      - smoke-post-deploy-cinco-checks
+      - generar-hash-password-admin
+      - admin-pod-accesible-via-ingress
+    merge_sha: null
+    status: done
+
+scenarios:
+  - id: manifests-k8s-validos
+    name: "Los manifests de Kubernetes del admin son válidos y aplicables"
+    actor: infra
+    status: live
+    given: "Manifests Deployment, Service e Ingress del admin Streamlit en vitalia/deploy/k8s/"
+    when: "Se validan los YAML y se aplican con kubectl al namespace vitalia"
+    then: "Los manifests parsean sin error · Deployment con envFrom vitalia-secrets y livenessProbe /healthz · Service ClusterIP 8501 · Ingress con TLS cert-manager"
+    e2e_test: null
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-auth-base-functional/01-spec.md"
+    atomic_ref: null
+    edge_cases:
+      - "Namespace vitalia inexistente → kubectl apply falla (pre-req manual gate Chris)"
+    added_in_story: vitalia-auth-base-functional
+    added_date: 2026-05-18
+  - id: smoke-post-deploy-cinco-checks
+    name: "El smoke post-deploy verifica las cinco comprobaciones de salud"
+    actor: infra
+    status: live
+    given: "Deploy del admin Streamlit y la app web completado en el ambiente productivo"
+    when: "Se ejecuta el script post_deploy_smoke.sh"
+    then: "Verifica pods Ready · health de la app 200 · healthz del admin Streamlit 200 · redirect 307 a sign-in (middleware Clerk activo) · sign-in 200 con 'Iniciar sesión' · exit 1 si cualquier check falla"
+    e2e_test: null
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-auth-base-functional/01-spec.md"
+    atomic_ref: null
+    edge_cases:
+      - "Cualquier check falla → exit 1 (gate de deploy)"
+    added_in_story: vitalia-auth-base-functional
+    added_date: 2026-05-18
+  - id: generar-hash-password-admin
+    name: "Se genera el hash bcrypt de la contraseña del admin"
+    actor: infra
+    status: live
+    given: "Operador con acceso al script generate_admin_password_hash.sh"
+    when: "Ejecuta el script con la contraseña del admin"
+    then: "Produce el hash bcrypt para el secret VITALIA_ADMIN_PASSWORD_HASH del namespace vitalia"
+    e2e_test: null
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-auth-base-functional/01-spec.md"
+    atomic_ref: null
+    edge_cases:
+      - "Follow-up pendiente: refactor env-var para mitigar shell injection (contexto trusted-operator local aceptable por ahora)"
+    added_in_story: vitalia-auth-base-functional
+    added_date: 2026-05-18
+  - id: admin-pod-accesible-via-ingress
+    name: "El admin Streamlit es accesible en su subdominio con TLS"
+    actor: infra
+    status: live
+    given: "Deploy aplicado con DNS de vitalia-admin.vitalialat.com apuntando al ingress controller y cert-manager configurado"
+    when: "Se hace una petición de salud al subdominio del admin"
+    then: "El healthz del admin responde 200 sobre HTTPS con certificado TLS válido"
+    e2e_test: null
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-auth-base-functional/01-spec.md"
+    atomic_ref: null
+    edge_cases: []
+    added_in_story: vitalia-auth-base-functional
+    added_date: 2026-05-18
 ---
 
 # K8s Admin Deployment — Vitalia

@@ -1,4 +1,4 @@
-# cap: __orphan__
+# cap: __shared__
 # story-origin: TBD
 """ARQ WorkerSettings for Vitalia cron runner.
 

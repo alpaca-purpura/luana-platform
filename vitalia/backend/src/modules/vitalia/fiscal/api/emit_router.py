@@ -1,4 +1,4 @@
-# cap: __orphan__
+# cap: fiscal.fiscal-emission-pe
 # story-origin: TBD
 """Vitalia Fiscal — Standalone Emit API Router.
 

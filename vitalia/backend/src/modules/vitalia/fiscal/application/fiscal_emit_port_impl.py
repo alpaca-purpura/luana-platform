@@ -1,4 +1,4 @@
-# cap: __orphan__
+# cap: fiscal.fiscal-emission-pe
 # story-origin: TBD
 """FiscalEmitPortImpl — tenant country selector for fiscal document emission.
 

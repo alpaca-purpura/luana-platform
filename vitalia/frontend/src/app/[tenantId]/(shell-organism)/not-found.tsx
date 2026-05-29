@@ -1,4 +1,4 @@
-// cap: __orphan__
+// cap: __shared__
 // story-origin: TBD
 /**
  * NotFoundShell — Outer 404 page (Server Component).

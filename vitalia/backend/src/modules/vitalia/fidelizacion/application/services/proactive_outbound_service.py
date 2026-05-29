@@ -1,4 +1,4 @@
-# cap: __orphan__
+# cap: fidelizacion.re-engagement
 # story-origin: TBD
 """ProactiveOutboundService — envío proactivo de mensajes de re-engagement.
 

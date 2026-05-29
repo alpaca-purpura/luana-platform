@@ -1,4 +1,4 @@
-# cap: __orphan__
+# cap: __shared__
 # story-origin: TBD
 """Agent turn span context manager for Vitalia agentic workers.
 

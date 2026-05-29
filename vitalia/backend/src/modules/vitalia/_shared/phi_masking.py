@@ -1,4 +1,4 @@
-# cap: __orphan__
+# cap: __shared__
 # story-origin: TBD
 """PHI masking utilities — HIPAA-lite compliant display projections.
 

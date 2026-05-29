@@ -1,4 +1,4 @@
-# cap: __orphan__
+# cap: sales_agent.inbox-handler-mode-occ
 # story-origin: TBD
 """Vitalia inbox API router — 8 inbox endpoints.
 

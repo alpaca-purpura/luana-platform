@@ -1,4 +1,4 @@
-# cap: __orphan__
+# cap: fidelizacion.re-engagement
 # story-origin: TBD
 """SQLAlchemy 2.0 model — vitalia_re_engagement_events.
 

@@ -1,4 +1,4 @@
-# cap: __orphan__
+# cap: fiscal.fiscal-emission-pe
 # story-origin: TBD
 """SQLAlchemy 2.0 model — vitalia_fiscal_documents.
 

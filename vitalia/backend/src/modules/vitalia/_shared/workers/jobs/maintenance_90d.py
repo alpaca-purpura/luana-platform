@@ -1,4 +1,4 @@
-# cap: __orphan__
+# cap: __shared__
 # story-origin: TBD
 """ARQ cron job: maintenance_90d — 90-day treatment maintenance reminder.
 

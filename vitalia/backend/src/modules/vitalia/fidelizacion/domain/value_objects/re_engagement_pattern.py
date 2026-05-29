@@ -1,4 +1,4 @@
-# cap: __orphan__
+# cap: fidelizacion.re-engagement
 # story-origin: TBD
 """Patrón de re-engagement del paciente — value object StrEnum."""
 

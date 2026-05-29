@@ -1,4 +1,4 @@
-# cap: __orphan__
+# cap: fiscal.fiscal-emission-pe
 # story-origin: TBD
 """FiscalDocument — brand-local fiscal record (boleta/factura/CFDI).
 

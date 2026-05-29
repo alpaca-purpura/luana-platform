@@ -1,4 +1,4 @@
-# cap: __orphan__
+# cap: __shared__
 # story-origin: TBD
 """Vitalia ARQ cron job functions (11 scaffolds).
 

@@ -1,4 +1,4 @@
-# cap: __orphan__
+# cap: fidelizacion.re-engagement
 # story-origin: TBD
 """Eventos de dominio del módulo fidelizacion (vitalia).
 

@@ -1,4 +1,4 @@
-# cap: __orphan__
+# cap: __shared__
 # story-origin: TBD
 """Base helper for Vitalia ARQ cron jobs: idempotent_cron decorator.
 

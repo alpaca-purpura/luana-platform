@@ -1,4 +1,4 @@
-# cap: __orphan__
+# cap: fidelizacion.re-engagement
 # story-origin: TBD
 """Re-engagement API endpoints — T-7 fidelización vitalia.
 

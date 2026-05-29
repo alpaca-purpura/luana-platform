@@ -1,4 +1,4 @@
-# cap: __orphan__
+# cap: __shared__
 # story-origin: TBD
 """KEKClient — Key Encryption Key management for pgcrypto PHI columns.
 

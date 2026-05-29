@@ -85,6 +85,22 @@ change_log:
     summary: "Implementación inicial · migración legacy a schema v2"
     merge_sha: null
     status: done
+  - story_id: vitalia-adopt-luana-core-iam
+    date: 2026-05-28
+    type: extend
+    summary: "backfill scenarios desde spec archivado"
+    scenarios_added:
+      - admin-login-y-logout
+      - admin-lista-tenants
+      - admin-suspende-tenant
+      - admin-crea-user-y-asigna-tenant
+      - admin-lista-y-banea-user
+      - admin-crea-clinica-asociada-tenant
+      - hipaa-cross-clinic-bloqueada
+      - hipaa-dual-filter-pacientes
+      - phantom-tables-eliminadas
+    merge_sha: null
+    status: done
 
 access:
   entry_points:
@@ -110,6 +126,124 @@ scenarios:
     edge_cases:
       - "Migration 022 no aplicada → ImportError en engine repos al iniciar backend"
       - "Engine repo ya tiene tenant con mismo slug → constraint violation propagada como 409"
+    added_in_story: vitalia-adopt-luana-core-iam
+    added_date: 2026-05-19
+  - id: admin-login-y-logout
+    name: "Admin inicia y cierra sesión en el panel de administración"
+    actor: admin_clinic
+    status: live
+    given: "Panel de administración corriendo con admin configurado"
+    when: "Admin ingresa credenciales válidas y luego cierra sesión"
+    then: "Verificación de password contra el hash · sesión autenticada · al salir la sesión se destruye y redirige a login"
+    e2e_test: "vitalia/frontend/e2e/admin/admin-login.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-adopt-luana-core-iam/01-spec.md"
+    atomic_ref: null
+    edge_cases:
+      - "Credenciales inválidas → permanece en login sin autenticar"
+    added_in_story: vitalia-adopt-luana-core-iam
+    added_date: 2026-05-19
+  - id: admin-lista-tenants
+    name: "Admin lista los tenants existentes"
+    actor: admin_clinic
+    status: live
+    given: "Existen tenants en la tabla del engine"
+    when: "Admin navega al listado de tenants"
+    then: "Se listan los tenants ordenados por fecha de creación vía TenantRepository del engine"
+    e2e_test: "vitalia/frontend/e2e/admin/admin-tenants-crud.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-adopt-luana-core-iam/01-spec.md"
+    atomic_ref: null
+    edge_cases: []
+    added_in_story: vitalia-adopt-luana-core-iam
+    added_date: 2026-05-19
+  - id: admin-suspende-tenant
+    name: "Admin suspende un tenant desde el listado"
+    actor: admin_clinic
+    status: live
+    given: "Admin en el listado de tenants"
+    when: "Activa el toggle Suspender en la fila de un tenant"
+    then: "El tenant queda con is_active=false vía repositorio del engine · updated_at refrescado"
+    e2e_test: "vitalia/frontend/e2e/admin/admin-tenants-crud.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-adopt-luana-core-iam/01-spec.md"
+    atomic_ref: null
+    edge_cases: []
+    added_in_story: vitalia-adopt-luana-core-iam
+    added_date: 2026-05-19
+  - id: admin-crea-user-y-asigna-tenant
+    name: "Admin crea un usuario y lo asigna a un tenant"
+    actor: admin_clinic
+    status: live
+    given: "Admin en la página de creación de usuarios"
+    when: "Ingresa email, nombre y asigna rol a un tenant"
+    then: "Usuario persiste vía UserRepository · asignación persiste vía UserTenantRepository del engine"
+    e2e_test: "vitalia/frontend/e2e/admin/admin-users-crud.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-adopt-luana-core-iam/01-spec.md"
+    atomic_ref: null
+    edge_cases: []
+    added_in_story: vitalia-adopt-luana-core-iam
+    added_date: 2026-05-19
+  - id: admin-lista-y-banea-user
+    name: "Admin lista usuarios con su rol por tenant y banea uno"
+    actor: admin_clinic
+    status: live
+    given: "Existen usuarios con asignaciones a múltiples tenants"
+    when: "Admin abre el listado y activa el toggle Banear en una fila"
+    then: "Listado con JOIN users + user_tenants + tenants · el usuario queda con is_active=false"
+    e2e_test: "vitalia/frontend/e2e/admin/admin-users-crud.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-adopt-luana-core-iam/01-spec.md"
+    atomic_ref: null
+    edge_cases: []
+    added_in_story: vitalia-adopt-luana-core-iam
+    added_date: 2026-05-19
+  - id: admin-crea-clinica-asociada-tenant
+    name: "Admin crea una clínica asociada a un tenant (extensión brand)"
+    actor: admin_clinic
+    status: live
+    given: "Admin en la página de creación de clínicas"
+    when: "Ingresa nombre, dirección y timezone de una nueva sede"
+    then: "La clínica persiste en la tabla brand-local vitalia_clinics asociada al tenant"
+    e2e_test: "vitalia/frontend/e2e/admin/admin-clinics-extension.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-adopt-luana-core-iam/01-spec.md"
+    atomic_ref: null
+    edge_cases: []
+    added_in_story: vitalia-adopt-luana-core-iam
+    added_date: 2026-05-19
+  - id: hipaa-cross-clinic-bloqueada
+    name: "Una consulta a una clínica fuera del scope del usuario se bloquea"
+    actor: doctor
+    status: live
+    given: "Usuario con asignación a tenant T1 y clínica C1"
+    when: "Invoca un endpoint de pacientes apuntando a la clínica C2 (fuera de su scope)"
+    then: "El decorator de acceso por clínica verifica user_tenants + scope y bloquea la consulta sin fuga"
+    e2e_test: "vitalia/frontend/e2e/admin/admin-hipaa-dual-filter.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-adopt-luana-core-iam/01-spec.md"
+    atomic_ref: null
+    edge_cases: []
+    added_in_story: vitalia-adopt-luana-core-iam
+    added_date: 2026-05-19
+  - id: hipaa-dual-filter-pacientes
+    name: "Las consultas de pacientes aplican el dual filter tenant + clínica"
+    actor: doctor
+    status: live
+    given: "Pacientes distribuidos en varias clínicas de varios tenants"
+    when: "Usuario consulta pacientes sin params extra"
+    then: "El repositorio aplica dual filter WHERE tenant_id + clinic_id y solo devuelve los pacientes de su clínica"
+    e2e_test: "vitalia/frontend/e2e/admin/admin-hipaa-dual-filter.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-adopt-luana-core-iam/01-spec.md"
+    atomic_ref: null
+    edge_cases: []
+    added_in_story: vitalia-adopt-luana-core-iam
+    added_date: 2026-05-19
+  - id: phantom-tables-eliminadas
+    name: "El código admin no contiene SQL crudo ni tablas brand fantasma"
+    actor: admin_clinic
+    status: live
+    given: "Rewrite admin completo consumiendo repositorios del engine"
+    when: "Se ejecuta grep en el código admin"
+    then: "Cero referencias a tablas brand-prefixed para entidades del engine · cero SQL crudo residual"
+    e2e_test: "vitalia/frontend/e2e/admin/admin-clinics-extension.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-adopt-luana-core-iam/01-spec.md"
+    atomic_ref: null
+    edge_cases: []
     added_in_story: vitalia-adopt-luana-core-iam
     added_date: 2026-05-19
 

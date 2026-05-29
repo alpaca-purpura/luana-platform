@@ -1,4 +1,4 @@
-# cap: __orphan__
+# cap: __shared__
 # story-origin: TBD
 """Capa API de fidelización vitalia — FastAPI thin routers.
 

@@ -1,4 +1,4 @@
-# cap: __orphan__
+# cap: fidelizacion.re-engagement
 # story-origin: TBD
 """Router de fidelización vitalia — monta los 3 sub-routers de la capa API.
 

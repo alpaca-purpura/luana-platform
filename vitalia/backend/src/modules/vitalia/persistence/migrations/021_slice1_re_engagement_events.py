@@ -1,4 +1,4 @@
-# cap: __orphan__
+# cap: __shared__
 # story-origin: TBD
 """Migration 021 — vitalia_re_engagement_events (Slice 1 fidelización).
 
