@@ -53,7 +53,7 @@ export class ShellLayoutPage {
   /** The visible <main id="main-content"> element (CSS-gated triple pattern) */
   readonly main: Locator;
 
-  /** Valeria sidebar slot aside[data-testid="valeria-sidebar-slot"] */
+  /** Valeria sidebar aside[data-testid="valeria-sidebar"] (real component since F1-S5) */
   readonly valeriaSlot: Locator;
 
   /** Application panel slot section[data-testid="app-panel-slot"] */
@@ -90,8 +90,11 @@ export class ShellLayoutPage {
     // agentic md:block, web md:grid, mobile md:hidden). Only ONE is visible per viewport.
     // Filter por visibility para que assertions toBeVisible() resuelvan el correcto en
     // CADA viewport sin asumir DOM order (mobile fallback es el último, no el primero).
+    // F1-S5 replaced the ValeriaSidebarSlot placeholder with the real ValeriaSidebar
+    // component (testid "valeria-sidebar"). Updated 2026-05-28 (F1-S4b race-fix) — the
+    // old "valeria-sidebar-slot" testid no longer exists in the DOM.
     this.valeriaSlot = page
-      .getByTestId("valeria-sidebar-slot")
+      .getByTestId("valeria-sidebar")
       .filter({ visible: true })
       .first();
     this.appSlot = page
@@ -135,6 +138,75 @@ export class ShellLayoutPage {
     }
     // Wait for shell to hydrate — topBar must be visible
     await this.topBar.waitFor({ state: "visible", timeout: 30_000 });
+  }
+
+  /**
+   * Await a stable post-hydration layout in agentic desktop mode.
+   *
+   * topBar visibility alone fires at the SSR-skeleton stage — BEFORE the
+   * dynamic({ssr:false}) client chunk mounts, the ResizeObserver measures, and
+   * the Fix A snap-up reconciles. Measuring panel widths before this settles is
+   * the SC-3 transition+drag-immediately race (F1-S4b). The agentic main exposes
+   * `data-shell-ready="true"` once reconciliation completes; await it for a
+   * deterministic measurement point.
+   *
+   * No-op outside agentic desktop (web/mobile mains carry no readiness attribute).
+   */
+  async waitForShellReady(): Promise<void> {
+    await this.page
+      .locator('main#main-content[data-shell-ready="true"]')
+      .first()
+      .waitFor({ state: "visible", timeout: 30_000 });
+  }
+
+  /**
+   * Anchor the browser's *sequential focus navigation starting point* to the
+   * very top of the document, so the NEXT `keyboard.press("Tab")` lands on the
+   * first focusable element in DOM order (the WCAG skip-link).
+   *
+   * ─── WHY THIS EXISTS (read before touching focus-order assertions) ─────────
+   * The shell mounts via `dynamic({ ssr: false })`: an SSR skeleton is swapped
+   * for the real client shell after hydration. When Chromium replaces that
+   * <main> subtree, the *sequential focus navigation starting point* (a browser
+   * concept SEPARATE from `document.activeElement`) is left anchored INSIDE the
+   * new subtree (≈ the chat composer), NOT at the document start — even though
+   * `document.activeElement` is still <body> and nothing stole focus
+   * (verified: `focusin` trace empty during mount, no focus trap, no `inert`,
+   * no `aria-hidden`, all controls `tabIndex=0`, DOM order is correct).
+   *
+   * Net effect in tests: a bare `keyboard.press("Tab")` right after load jumps
+   * mid-shell and SKIPS the skip-link — a Chromium + dynamic-SSR artifact, NOT
+   * a real focus-order defect in the components (a real keyboard user arriving
+   * from the URL bar, or after any click/scroll, gets the correct order).
+   *
+   * This helper neutralizes that artifact deterministically by focusing <body>
+   * with a transient `tabindex="-1"` then clearing it — leaving the page in the
+   * exact "fresh, no prior interaction" state with the starting point at the top.
+   *
+   * ─── WHEN TO USE ───────────────────────────────────────────────────────────
+   * Call it AFTER `gotoShell()` / `waitForShellReady()` and BEFORE the first
+   * `keyboard.press("Tab")` in ANY test that asserts tab ORDER or skip-link
+   * reachability on the dynamically-mounted shell.
+   *
+   * ─── WHAT NOT TO DO (anti-patterns) ────────────────────────────────────────
+   * - Do NOT "fix" this by adding `autoFocus`/`.focus()` in the shell component
+   *   — auto-focusing a control on mount is itself a WCAG anti-pattern and would
+   *   steal focus from real users. The DOM/tabindex are already correct.
+   * - Do NOT use `body.focus()` alone — <body> isn't focusable without a
+   *   tabindex, so it does NOT re-anchor the starting point (verified: still
+   *   lands on the composer).
+   * - Do NOT use `activeElement.blur()` — that leaves the stale starting point
+   *   untouched (verified: still lands on the composer).
+   *
+   * Learning SSoT: vitalia/docs/learnings/2026-05-28-dynamic-ssr-tab-start-anchor.md
+   */
+  async resetTabSequenceToStart(): Promise<void> {
+    await this.page.evaluate(() => {
+      const b = document.body;
+      b.setAttribute("tabindex", "-1");
+      b.focus();
+      b.removeAttribute("tabindex");
+    });
   }
 
   // ── Store manipulation (via localStorage pre-navigation) ───────────────────

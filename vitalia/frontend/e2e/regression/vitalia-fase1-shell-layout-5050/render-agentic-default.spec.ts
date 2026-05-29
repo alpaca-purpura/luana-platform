@@ -34,7 +34,7 @@ test.describe("SC-1 — render agentic default (F1-S4)", () => {
 
   // ── Assertion 1: redirect /lisa/marca executed ──────────────────────────────
 
-  test("redirect /lisa/marca executed", async ({ shellPage, tenantId }) => {
+  test("redirect /lisa/marca executed", async ({ shellPage }) => {
     // POM.gotoShell navega a /test-stack/shell-layout (fixture dev-only, no requiere F1-S9 routing).
     // La ruta real /{tenantId}/lisa/marca no existe hasta Fase 2 — assertion adaptada al fixture.
     const url = shellPage.url();
@@ -52,14 +52,14 @@ test.describe("SC-1 — render agentic default (F1-S4)", () => {
     expect(height).toBeLessThanOrEqual(52);
   });
 
-  // ── Assertion 3: ValeriaSlot >= 620px width default 'full' ─────────────────
+  // ── Assertion 3: ValeriaSlot >= min width default 'full' ───────────────────
 
-  test("ValeriaSlot >= 620px width default 'full'", async ({ shellPage }) => {
+  test("ValeriaSlot >= min width default 'full'", async ({ shellPage }) => {
     const pom = new ShellLayoutPage(shellPage);
     await expect(pom.valeriaSlot).toBeVisible();
     const width = await pom.getValeriaWidth();
-    // Default valeriaState='full', 50/50 split at 1280px viewport → ~640px per panel
-    // min width for 'full' state is 38% of ~1280px ≈ 486px; at default 50% ≈ 620px
+    // Default valeriaState='full', 50/50 split at 1280px viewport → ~640px per panel.
+    // F1-S5 min for 'full' is 580px (≈45.3% of 1280); default 50% ≈ 640px > min.
     expect(width).toBeGreaterThanOrEqual(480);
   });
 
