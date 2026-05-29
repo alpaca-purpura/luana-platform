@@ -193,3 +193,19 @@ T-5 completo. Un-skip 3 regresiones + 2 nuevos E2E specs + POM extension + impl-
 Commit: ff27a9ab → pushed wip/vitalia.
 
 Detalle completo: `T-5-result.md`.
+
+### 2026-05-28T22:02 · 🤖 claude · `/dev-team` · ✓ APLICADO
+**Build completo — 5 tickets GREEN.** Estado `developing → developed`.
+
+- T-1 `da0602ea` factory SSR-safe + shell-store (setItem no-op pre-hydration = la pieza que faltaba a las 4 técnicas fallidas).
+- followup `58a4ce5b` — arreglé un **falso positivo pre-existente** del arch test server-first (no detectaba `"use client"` tras header `// cap:` largo) en vez de crecer el allowlist (ratchet shrink-only honrado).
+- T-2 `54ffb8e4` skeleton store-free + rehydrate en chunk ssr:false + arch guard `no-store-in-ssr-skeleton`.
+- T-3 `08fe0864` factory aplicada a tenant + agenda + agenda-filters (transversal).
+- T-4 `d6953264` drawer mobile lee `mobileDrawerOpen` (slice independiente); regression-lock: `valeriaState='full' + mobileDrawerOpen=false` → NO drawer (desacople bug #2).
+- T-5 `bf03639c` des-skip 3 regresiones + 2 specs e2e nuevos (survives-reload con instrumentSetItem + mobile collapsed-pero-recuerda + a11y) + POM extendido. In-scope fix: Escape también cierra el slice mobile.
+
+**Gates (HEAD bf03639c):** tsc 0 · eslint 0 · vitest **2310/2310** · arch **148/148** · E2E **28/28**. `gate-output.json` escrito. Cobertura SC-1..SC-8 + SC-5b completa.
+
+**Flags para el merge (no bloqueantes):** ADR 005→006 (corregir cita en 01-spec frontmatter), learning promotable `/pm-luana` (nicolify dismiss-store mismo hazard).
+
+→ **AUTO-HANDOFF `/auditor`** (autonomous_mode:true). Si APPROVED → `/pm-vitalia` merge → done.
