@@ -1,6 +1,5 @@
 "use client";
-// cap: shell-organism.shell-vitalia
-// story-origin: vitalia-shell-state-persistence
+// @luana/hooks — engine-shared. Origin: vitalia-shell-state-persistence / ADR-vitalia-006 (lift 2026-05-29).
 /**
  * use-store-hydration.ts — Idempotent client-side rehydration hook.
  * vitalia-shell-state-persistence T-1 · ADR-vitalia-006
@@ -14,7 +13,7 @@
  * Usage:
  * ```tsx
  * "use client";
- * import { useStoreHydration } from '@/lib/store/use-store-hydration';
+ * import { useStoreHydration } from '@luana/hooks';
  * import { useShellStore } from '@/stores/shell-store';
  *
  * export function ShellOrganismLayoutClient() {

@@ -44,7 +44,7 @@
 import {
   createSsrSafePersistedStore,
   type SsrSafeHydration,
-} from "@/lib/store/create-ssr-safe-persisted-store";
+} from "@luana/hooks/create-ssr-safe-persisted-store";
 
 /** Valeria panel display state — 3 states per Design Contract §6.1 */
 export type ValeriaState = "collapsed" | "rail" | "full";

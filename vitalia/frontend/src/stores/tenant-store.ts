@@ -39,7 +39,7 @@
 import {
   createSsrSafePersistedStore,
   type SsrSafeHydration,
-} from "@/lib/store/create-ssr-safe-persisted-store";
+} from "@luana/hooks/create-ssr-safe-persisted-store";
 import type { TenantStore, Tenant } from "@/components/shared/shell-organism/types";
 
 /** localStorage key for tenant state persistence */

@@ -21,8 +21,8 @@ import { renderHook, act } from "@testing-library/react";
 import {
   createSsrSafePersistedStore,
   type SsrSafeHydration,
-} from "../create-ssr-safe-persisted-store";
-import { useStoreHydration } from "../use-store-hydration";
+} from "../src/create-ssr-safe-persisted-store";
+import { useStoreHydration } from "../src/use-store-hydration";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

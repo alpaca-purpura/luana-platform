@@ -31,7 +31,7 @@
 import {
   createSsrSafePersistedStore,
   type SsrSafeHydration,
-} from "@/lib/store/create-ssr-safe-persisted-store";
+} from "@luana/hooks/create-ssr-safe-persisted-store";
 import type { AgendaFilter, AgendaView } from "../types/agenda.types";
 
 // ── Constants ─────────────────────────────────────────────────────────────────

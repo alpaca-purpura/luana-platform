@@ -1,5 +1,4 @@
-// cap: shell-organism.shell-vitalia
-// story-origin: vitalia-shell-state-persistence
+// @luana/hooks — engine-shared. Origin: vitalia-shell-state-persistence / ADR-vitalia-006 (lift 2026-05-29).
 /**
  * create-ssr-safe-persisted-store.ts — Factory for SSR-safe Zustand persisted stores.
  * vitalia-shell-state-persistence T-1 · ADR-vitalia-006
