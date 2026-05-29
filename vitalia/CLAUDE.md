@@ -76,9 +76,14 @@ docker exec luana-vitalia-backend-dev alembic upgrade head
 curl http://127.0.0.1:8002/health
 ```
 
+## Design system SSoT (★ cargar ANTES de tocar `vitalia/frontend/src/**`)
+
+Skill `vitalia-design-system` = índice cargable del shell-organism + átomos/moléculas + tokens + 6 agentes (NO duplica; apunta a fuentes). `/architect` lo lista en `must_load_skills` de todo ticket FE; `builder-frontend` lo carga (su único canal — no hereda este overlay); `auditor-frontend` lo usa en cat 9/13. SSoT que indexa: `vitalia/docs/architecture/{design-system.md, SHELL-DESIGN-CONTRACT.md}` + `vitalia/frontend/src/app/globals.css` + `tailwind.config.ts` + `src/lib/routing/shell-routes.ts`. ⚠️ `core/@luana/design-tokens` solo exporta z-index — tokens de color viven en `globals.css`.
+
 ## Brand-specific skills
 
 - `/pm-vitalia` — owner SSoT funcional Vitalia (outcomes/stories/capabilities/modules)
+- `vitalia-design-system` — design system + shell organism SSoT cargable (FE builds + audits) ★
 - `/po-ux` — refining stories UI std vitalia (CRUD/list/detail/form/dashboard)
 - `/po` — refining stories service vitalia (orchestration sin UI tradicional)
 - `/ux-agentico` — refining stories conversacionales (Valeria agenda, Camila copilot)

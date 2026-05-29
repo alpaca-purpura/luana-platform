@@ -96,6 +96,7 @@ Before scoring code in a domain with an expert skill, invoke the skill. Same rou
 | `{brand}/frontend/src/features/copilot/` | `copilot-expert` | block adapters, channel format, SSE v2 stream consumption, plan_card render, mutation panel, traces UI; `CONTRACT-MULTIMODAL.md` + `sse-protocol.md` invariants |
 | `{brand}/frontend/src/features/sales-agent/` | `sales-agent-expert` | PersonalityProfile system_instruction surface, voice-tone form correctness, eval goldens UI, voseo respect on output preview (DO NOT spanish-neutro the agent's output) |
 | `{brand}/frontend/src/features/growth-studio/` | `metrics-expert` | channel registry consumption, stage services SSoT, progressive loading tiers (0/1/2/3), no hardcoded channel slugs/group mappings |
+| Cualquier UI con design system (shell-organism, átomos/moléculas, tokens) | `{brand}-design-system` si existe (ej. `vitalia-design-system`) | inventario autoritativo de átomos/moléculas/shell + tokens — base para Cat 13 (mirror) + Cat 16 (visual fidelity) |
 
 ## Step 4 — Tessl FE skill cross-reference
 
@@ -431,7 +432,7 @@ Referencias:
 
 > SSoT: `.claude/rules/frontend-visual-fidelity.md`. Carril A self-fix aplica (swap a átomo/token/estado cubierto por test existente).
 
-- [ ] **Design-system-first:** reutiliza átomos `components/ui/` + moléculas `components/shared/` + tokens `@luana/design-tokens`. NINGUNA primitiva reinventada, NINGÚN hex/px hardcodeado que ya es token. (Reinventar átomo → FAIL, también cae en Cat 13 mirror.)
+- [ ] **Design-system-first:** reutiliza átomos `components/ui/` + moléculas `components/shared/` + tokens (SSoT `{brand}/frontend/src/app/globals.css` + `tailwind.config.ts` — NO `@luana/design-tokens`, que solo exporta z-index). Si existe `{brand}-design-system` (ej. `vitalia-design-system`), ése es el inventario autoritativo a contrastar. NINGUNA primitiva reinventada, NINGÚN hex/px hardcodeado que ya es token. (Reinventar átomo → FAIL, también cae en Cat 13 mirror.)
 - [ ] **Mockup adherence:** elementos clave del mockup (`02-design-ui.md`/`mockups/`) presentes + estados (empty/loading/error/success) renderizados. Verificación: Playwright visual scoped (`04-validators § visual`) o `chrome-devtools-verify`.
 - [ ] **Scope discipline:** NO se construyó fuera de lo que scopean los scenarios de `01-spec.md` (el mockup puede mostrar de más; exceso = scope creep + posible isla).
 
