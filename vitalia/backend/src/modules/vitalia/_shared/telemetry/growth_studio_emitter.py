@@ -11,7 +11,7 @@ Rule (03-arch § 3.3 + § 10):
     create_appointment, status_changed, appointment_detail_read,
     charge_completed, fiscal_emitted, notification_sent, reminder_sent
 
-PHI safety: props sanitized via sanitize_payload('hipaa_lite') before insert.
+PHI safety: props sanitized via sanitize_phi_payload (vitalia brand-local wrapper) before insert.
 Event names are snake_case identifiers (no PHI values in event_name).
 
 Table: vitalia_growth_studio_event
@@ -116,8 +116,9 @@ class GrowthStudioEmitter:
     ) -> None:
         """Emit a growth studio event (fire-forget).
 
-        PHI safety: props dict is sanitized with hipaa_lite compliance level
-        before insertion. PHI fields (name, dni, phone, email) are stripped.
+        PHI safety: props dict is sanitized via sanitize_phi_payload (vitalia
+        brand-local wrapper) before insertion. PHI fields (name, dni, phone, email)
+        are stripped.
 
         Args:
             event_type: Snake_case event identifier (e.g. 'create_appointment').
@@ -134,8 +135,8 @@ class GrowthStudioEmitter:
             Failures are swallowed + logged at WARNING. Never propagates.
         """
         try:
-            from luana_core_observability.recording.sanitization import (  # noqa: PLC0415
-                sanitize_payload,
+            from src.modules.vitalia.compliance.application.compliance_service_adapter import (  # noqa: PLC0415
+                sanitize_phi_payload,
             )
 
             # Build props dict (PHI-safe)
@@ -143,8 +144,8 @@ class GrowthStudioEmitter:
             if entity_id is not None:
                 raw_props["entity_id"] = str(entity_id)
 
-            # sanitize_payload strips PHI fields per hipaa_lite profile
-            sanitized = sanitize_payload(raw_props, compliance_level="hipaa_lite")
+            # sanitize_phi_payload: engine generic PII redaction + 22 vitalia PHI fields
+            sanitized = sanitize_phi_payload(raw_props)
 
             await self._session.execute(
                 text(

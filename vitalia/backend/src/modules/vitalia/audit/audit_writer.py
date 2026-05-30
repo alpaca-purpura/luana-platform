@@ -8,8 +8,10 @@ Rule (hipaa-lite.md § Audit log):
   - TODA lectura/modificación de PHI registra row. NO opcional.
   - NO async fire-forget — SYNC write before response.
   - Retention: 10 años (Ley 25.326 AR, Ley 1581 CO, LGPD BR, etc.)
-  - PII sanitization: sanitize_payload(payload, compliance_level="hipaa_lite")
+  - PII sanitization: sanitize_phi_payload(payload) via vitalia compliance adapter
     before writing to payload_redacted column.
+    (Repointed from engine sanitize_payload — kwarg was removed from engine signature;
+    now uses brand-local wrapper per T-1 arreglar-guardado-voz-y-tono.)
 
 Usage (in any admin or API module):
     from src.modules.vitalia.audit.audit_writer import write_audit_log_sync
@@ -62,8 +64,9 @@ def write_audit_log_sync(
     Caller is responsible for db.commit() after this call.
 
     Invariants:
-        - payload is sanitized via luana_core_observability sanitize_payload
-          with compliance_level="hipaa_lite" before writing.
+        - payload is sanitized via sanitize_phi_payload (vitalia brand-local wrapper)
+          before writing. Wrapper applies engine generic PII redaction +
+          22 vitalia PHI field removal.
         - payload_redacted column stores BYTEA (JSON-encoded bytes).
         - id is gen_random_uuid() in SQL (not Python) for DB-level atomicity.
         - NO PHI fields in payload: only identity data (name, slug, email, role).
@@ -85,9 +88,11 @@ def write_audit_log_sync(
         Exception: Propagates DB errors — caller should handle to avoid silently
                    losing audit trail. Admin modules wrap in try/except + st.error().
     """
-    from luana_core_observability.recording.sanitization import sanitize_payload  # noqa: PLC0415
+    from src.modules.vitalia.compliance.application.compliance_service_adapter import (  # noqa: PLC0415
+        sanitize_phi_payload,
+    )
 
-    safe_payload = sanitize_payload(payload or {}, compliance_level="hipaa_lite")
+    safe_payload = sanitize_phi_payload(payload or {})
     payload_bytes: bytes = json.dumps(safe_payload, default=str, ensure_ascii=False).encode("utf-8")
 
     db.execute(
@@ -168,7 +173,7 @@ class AsyncAuditWriter:
         row is written within the same transaction scope as the business operation.
 
         PHI dual-filter: tenant_id AND clinic_id mandatory.
-        PII sanitization applied via sanitize_payload.
+        PII sanitization applied via sanitize_phi_payload (vitalia brand-local wrapper).
 
         Args:
             tenant_id: Root tenant UUID.
@@ -181,9 +186,11 @@ class AsyncAuditWriter:
             from_ip: Client IP address (optional).
             user_agent: User-agent string. Default: VitaliaAPI/1.0.
         """
-        from luana_core_observability.recording.sanitization import sanitize_payload  # noqa: PLC0415
+        from src.modules.vitalia.compliance.application.compliance_service_adapter import (  # noqa: PLC0415
+            sanitize_phi_payload,
+        )
 
-        safe_payload = sanitize_payload(payload or {}, compliance_level="hipaa_lite")
+        safe_payload = sanitize_phi_payload(payload or {})
         payload_bytes: bytes = json.dumps(safe_payload, default=str, ensure_ascii=False).encode("utf-8")
 
         await self._session.execute(
