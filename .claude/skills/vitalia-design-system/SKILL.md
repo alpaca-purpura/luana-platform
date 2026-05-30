@@ -1,6 +1,6 @@
 ---
 name: vitalia-design-system
-description: SSoT cargable del sistema de diseño + shell-organism de Vitalia (índice narrado sobre los docs + código que ya existen — NO duplica). Cargá ANTES de tocar cualquier `vitalia/frontend/src/**` UI. Cubre autoridad de tokens (globals.css + tailwind.config.ts), inventario de átomos (components/ui/) + moléculas/organism (components/shared/ + shell-organism/), el shell de 6 agentes (ribbon N1 + sub-tabs N2 + sub-sub-tabs N3 + ValeriaSidebar), catálogo de agentes (colores hex + assets), gates ADR-003/ADR-004, fidelidad del wrapper (portar verbatim), y convenciones PHI. Triggers: 'pantalla vitalia', 'componente vitalia', 'shell organism', 'átomos vitalia', 'moléculas vitalia', 'colores de marca vitalia', 'agent color', 'ribbon', 'sub-tab', 'ValeriaSidebar', 'tokens vitalia', 'cómo se hizo este módulo en vitalia', 'fidelidad visual vitalia'. Es brand-scoped (instancia de la clase `{brand}-design-system`).
+description: SSoT cargable del sistema de diseño + shell-organism de Vitalia (índice narrado sobre los docs + código que ya existen — NO duplica). Cargá ANTES de tocar cualquier `vitalia/frontend/src/**` UI. Cubre autoridad de tokens (globals.css + tailwind.config.ts), inventario de átomos (components/ui/) + moléculas/organism (components/shared/ + shell-organism/), el shell de 5 especialistas + Valeria supervisora (ribbon N1 [Lisa·Mateo·Adrián·Lucas·Camila+Plataforma] + sub-tabs N2 + sub-sub-tabs N3 + ValeriaSidebar), catálogo de agentes (colores hex + assets · Mateo=Operar #FEE209 · Valeria=sidebar supervisor), gates ADR-003/ADR-004, fidelidad del wrapper (portar verbatim), y convenciones PHI. ★ v1.2 2026-05-30: Valeria salió del Ribbon; Mateo entró como especialista Operar. Triggers: 'pantalla vitalia', 'componente vitalia', 'shell organism', 'átomos vitalia', 'moléculas vitalia', 'colores de marca vitalia', 'agent color', 'ribbon', 'sub-tab', 'ValeriaSidebar', 'tokens vitalia', 'cómo se hizo este módulo en vitalia', 'fidelidad visual vitalia'. Es brand-scoped (instancia de la clase `{brand}-design-system`).
 ---
 
 <!-- voseo-allowed: internal skill doc (instrucciones al agente builder/architect), no user-facing -->
@@ -55,7 +55,7 @@ description: SSoT cargable del sistema de diseño + shell-organism de Vitalia (�
 
 Los 3 niveles de tab (SSoT: `vitalia/docs/architecture/SHELL-DESIGN-CONTRACT.md`, 665 líneas):
 
-- **N1 — Ribbon de 6 agentes** (tab nivel 1): `Ribbon.tsx` + `RibbonTab.tsx` + `ConfigTab.tsx`. Cada tab con su agent-color border.
+- **N1 — Ribbon de 5 especialistas + Plataforma** (tab nivel 1): `Ribbon.tsx` + `RibbonTab.tsx` + `PlataformaTab.tsx` (antes `ConfigTab.tsx` con label "Configurar"). Orden: Lisa · Mateo · Adrián · Lucas · Camila + Plataforma. ★★ v1.2 (2026-05-30): Valeria removida del Ribbon (es supervisora sidebar); Mateo incorporado como especialista "Operar/Mi Día". Cada tab con su agent-color border.
 - **N2 — SubTabsBar** (tab nivel 2): `SubTabsBar.tsx` + `SubTab.tsx` (línea 2, active con `agent-soft`).
 - **N3 — SubSubTabsBar** (tab nivel 3, último): `SubSubTabsBar.tsx` + `SubSubTab.tsx` (cuando el destino agrupa 3+ vistas discretas — **N3-static, NO Shadcn Tabs internas**, ADR-vitalia-004 §3.1.1).
 - **Hoja (contenido)**: lo que renderiza el `page.tsx` del último tab alcanzado. Es el destino — NO contiene más tabs. Aquí vive el componente de la feature.
@@ -81,19 +81,19 @@ Cuando un componente/sub-tab aterriza dentro del shell, el wrapper de contexto (
 
 SSoT del por qué: `vitalia/.claude/rules/shell-mockup-per-component.md § Shell wrapper fidelity`.
 
-## 5 · Catálogo de agentes (6) — colores + assets
+## 5 · Catálogo de agentes — colores + assets (★★ v1.2 2026-05-30)
 
-| Agente | slug | `--agent-{slug}` | rol corto | assets |
-|---|---|---|---|---|
-| Lisa | `lisa` | `#00D084` (verde) | marca / presencia | `vitalia/frontend/public/agents/lisa/` |
-| Valeria | `valeria` | `#7B2D91` (púrpura) | agenda / chat anfitrión | `…/valeria/` |
-| Adrián | `adrian` | `#01B2F8` (cian) | embudo / inbox | `…/adrian/` |
-| Lucas | `lucas` | `#111111` (negro) | recomendaciones / growth | `…/lucas/` |
-| Camila | `camila` | `#180D95` (azul) | copilot (a11y fix dark) | `…/camila/` |
-| Mateo | `mateo` | `#FEE209` (amarillo) | transversal (sin tab propia) | `…/mateo/` |
-| (Config) | `config` | gris | settings | — |
+| Agente | slug | `--agent-{slug}` | rol corto | tab Ribbon | assets |
+|---|---|---|---|---|---|
+| Lisa | `lisa` | `#00D084` (verde) | marca / presencia | ✅ Ribbon N1 | `vitalia/frontend/public/agents/lisa/` |
+| Mateo | `mateo` | `#FEE209` (amarillo) | **Operar / Mi Día** (agenda+bookings+pacientes) | ✅ Ribbon N1 ★★ v1.2 | `…/mateo/` |
+| Adrián | `adrian` | `#01B2F8` (cian) | embudo / inbox | ✅ Ribbon N1 | `…/adrian/` |
+| Lucas | `lucas` | `#111111` (negro) | recomendaciones / growth | ✅ Ribbon N1 | `…/lucas/` |
+| Camila | `camila` | `#180D95` (azul) | copilot (a11y fix dark) | ✅ Ribbon N1 | `…/camila/` |
+| Valeria | `valeria` | `#7B2D91` (púrpura) | **supervisora sidebar** (orquesta flujo) | ❌ NO Ribbon · sidebar permanente ★★ v1.2 | `…/valeria/` |
+| (Plataforma) | `config` (token) | gris | acceso / onboarding / configuracion | ✅ PlataformaTab (antes "Configurar") ★★ v1.2 | — |
 
-Cada agente: `--agent-{slug}` + `--agent-{slug}-soft`. Cada dir de assets: `thumbnail.png` + `transparent.png/jpeg`. Default chat agent = `valeria`.
+Cada agente especialista: `--agent-{slug}` + `--agent-{slug}-soft`. Cada dir de assets: `thumbnail.png` + `transparent.png/jpeg`. Default chat agent = `valeria` (sidebar).
 
 ## 6 · Gates de proceso (cumplir, no re-litigar)
 

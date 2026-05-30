@@ -65,7 +65,7 @@ Cuando el mockup per-component aterriza dentro del shell-organism (sub-tab / sub
 | Shell integral (referencia macro) | `vitalia/docs/archive/2026/stories/vitalia-shell-organism/mockups/dual-mode-shell.html` |
 | TopBar global + logo gradient | idem § `.topbar`, `.topbar-logo`, `.tenant-switcher` (líneas ~109-200) |
 | Splitter resizable 3 estados | idem § `.shell`, `.panel-valeria[data-state]` (líneas ~203-225) |
-| Ribbon 6 agentes con agent-color borders | idem § `.ribbon`, `.ribbon-tab[data-color]` (líneas ~485-538) |
+| Ribbon 5 especialistas + Plataforma con agent-color borders | idem § `.ribbon`, `.ribbon-tab[data-color]` (líneas ~485-538) · ★★ v1.2: Lisa · Mateo · Adrián · Lucas · Camila + PlataformaTab |
 | SubTabsBar línea 2 con agent-soft active | idem § `.sub-tabs`, `.sub-tab[data-color]` (líneas ~540-568) |
 | ValeriaChat con avatar + status + composer | `vitalia/docs/archive/2026/stories/vitalia-fase1-valeria-chat-skeleton/mockups/valeria-chat-sample.html` (completo) |
 | ValeriaRail (modo collapsed icons) | `vitalia/docs/archive/2026/stories/vitalia-fase1-valeria-rail-history/mockups/valeria-rail.html` |
@@ -126,7 +126,7 @@ Cuando `/dev-team` builde el componente, los tests obligatorios incluyen:
 - ★ **Reinventar el wrapper del shell** (topbar/ribbon/sub-tabs/chat-side) en lugar de portarlo verbatim desde `dual-mode-shell.html` + `valeria-chat-sample.html` + `valeria-rail.html` (cementado 2026-05-27 — caso origen: `vitalia-fase2-lisa-marca` v2 → v2.1 refactor obligado por Chris)
 - ★ **Mockup con layout 50/50 hardcoded** sin permitir simular los 3 splitter states (`chat-collapsed`, `chat-narrow`, `50-50`) — pierde fidelidad responsive del shell real
 - ★ **Panel-content con `max-width` fijo** en píxeles (ej. `max-width: 680px`) — debe ser fluido (`width: 100%`) + cards-grid con `auto-fit/minmax` para aprovechar el ancho dictado por el splitter
-- ★ **Tokens HSL inventados o divergentes** de `vitalia/frontend/src/app/globals.css` — el `_shared.css` del story-folder MUST ser espejo de los tokens reales (paleta primario cian #01B2F8, accent púrpura #7B2D91, agent-lisa #00D084, agent-valeria #7B2D91, agent-camila #180D95, gradient mariposa)
+- ★ **Tokens HSL inventados o divergentes** de `vitalia/frontend/src/app/globals.css` — el `_shared.css` del story-folder MUST ser espejo de los tokens reales (paleta primario cian #01B2F8, accent púrpura #7B2D91, agent-lisa #00D084, agent-valeria #7B2D91, agent-camila #180D95, **agent-mateo #FEE209** ★★ v1.2, gradient mariposa)
 - ★ **ChatValeria simplificado** (textarea suelto sin avatar + dot status + mode pill + composer con adornos 📎🎙️⚡ + Cmd+K hint) — debe portar markup verbatim de `valeria-chat-sample.html`
 
 ## Referencias
