@@ -64,6 +64,8 @@ Cuando una IA (skill/agente) edita el frontmatter de `checkpoint.md`, MUST:
 
 Estas dos capas mecánicas garantizan que el fallo no vuelva a ser **silencioso** (cockpit) ni llegue a **committearse** (hook), independientemente de qué agente o cómo escribió la cabecera.
 
+**Campo `type` (cement 2026-05-30, ADR-011):** `type ∈ {ui-story, service-story, agentic-story, bugfix}`. `bugfix` = tipo lite (arreglo/completion quirúrgico, repro-first, sin diseño nuevo) — requiere `repro_verified: true` antes de `developing`. Ver `docs/process/lifecycle.md` § Tipos de story.
+
 ## Resume protocol — paso a paso
 
 Cuando cualquier agent/sesión arranca o retoma:

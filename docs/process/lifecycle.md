@@ -64,6 +64,23 @@ Heredado de paradigm v4. WIP caps **≤1** por worktree para developing/develope
 
 Transiciones de Chris (cockpit): solo `idea↔refining`, `→parked`, `→dropped`. El resto las hace una skill. Ver `cockpit-permissions.md`.
 
+### Tipos de story (`checkpoint.md::type`)
+
+| Tipo | Surface | Refinador | Ceremonia |
+|---|---|---|---|
+| `ui-story` | UI estándar (CRUD/list/detail/form/dashboard) | `/po-ux` | completa |
+| `service-story` | Servicio backend sin UI propia | `/po` | completa |
+| `agentic-story` | Flujo conversacional (copilot/sales_agent) | `/po` → `/ux-agentico` | completa |
+| `bugfix` | Arreglo de comportamiento roto **o** completion de cableado incompleto, scope quirúrgico (1-N archivos, ≤1-2 días), **sin diseño nuevo** | `/po` (BE/servicio) o `/po-ux` (UI) | **lite** |
+
+**`bugfix` — tipo lightweight (cement 2026-05-30, ADR-011):** recorre los **mismos 10 estados macro** con menos artefactos de *diseño* (nunca menos *verificación*):
+- **Gate repro-first (HARD):** hereda `.claude/rules/hotfix-repro-mandatory.md`. `checkpoint.md::repro_verified: true` antes de `developing`. Bug → test RED que reproduce la falla. Completion → "el comportamiento X falta / Y no renderiza" verificado **en vivo** (ejercer la acción real + leer logs, NO un GET 200 — `test-design-doctrine.md` § Verificación REAL).
+- **`refining` lite:** `01-spec.md` corto con **scenarios de regresión**, sin `02-design-*` ni mockups salvo UI nueva.
+- **`ready` lite:** `/architect` produce ready package reducido (`06-tickets` + `04-validators` con regresión; `03-arch`/`05-guidelines`/`dispatch-plan` opcionales o inline).
+- **`cap_change_type`:** `fix` por default (sin scenarios nuevos); `extend` si la fix completa una cap agregando ≥1 scenario.
+- **No se reduce:** TDD (RED→GREEN), story-closure-gate, anti-orphan (CONN), gates de calidad (lint/arch-fitness/coverage/jscpd).
+- **Reclasificación:** si emerge diseño nuevo (mockups, decisión arquitectónica, ≥1 scenario de feature) → `/pm-{brand}` reclasifica `type` antes de cerrar `ready`.
+
 ---
 
 ## 4. Ciclo de vida — Capability (salud del producto)

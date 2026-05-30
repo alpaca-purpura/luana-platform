@@ -6,7 +6,7 @@
 
 ---
 story_id: STORY_ID_KEBAB
-type: ui-story | agentic-story | service-story
+type: ui-story | agentic-story | service-story | bugfix
 module: MODULE_NAME
 capability: CAPABILITY_ID
 po_version: 1                                     # bump cuando cambies post-handoff
