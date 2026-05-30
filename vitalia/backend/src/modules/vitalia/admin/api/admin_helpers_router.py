@@ -115,11 +115,12 @@ async def get_audit_log_count(
     Used by E2E tests to verify audit log was written after mutations.
     Returns count only — no payload content (HIPAA).
     """
-    from luana_core_platform.core.database import get_db  # noqa: PLC0415
     from sqlalchemy import text  # noqa: PLC0415
 
+    from src.db import get_async_session  # noqa: PLC0415
+
     try:
-        async for db in get_db():
+        async for db in get_async_session():
             result = await db.execute(
                 text("""
                     SELECT COUNT(*) FROM vitalia_audit_log
@@ -153,10 +154,10 @@ async def check_tenant_exists(
 
     Used by E2E tests to verify admin create operations succeeded.
     """
-    from luana_core_platform.core.database import get_db  # noqa: PLC0415
+    from src.db import get_async_session  # noqa: PLC0415
 
     try:
-        async for db in get_db():
+        async for db in get_async_session():
             # TenantRepository uses sync Session; adapt for async context
             from luana_core_iam.infrastructure.models.tenant_model import TenantModel  # noqa: PLC0415
             from sqlalchemy import select  # noqa: PLC0415
@@ -193,15 +194,15 @@ async def check_clinic_exists(
     Used by E2E tests to verify clinic create operations succeeded.
     HIPAA: tenant_id filter enforced (dual filter with slug).
     """
-    from luana_core_platform.core.database import get_db  # noqa: PLC0415
     from sqlalchemy import select  # noqa: PLC0415
 
+    from src.db import get_async_session  # noqa: PLC0415
     from src.modules.vitalia.clinics.infrastructure.models.clinic_model import (  # noqa: PLC0415
         ClinicModel,
     )
 
     try:
-        async for db in get_db():
+        async for db in get_async_session():
             result = await db.execute(
                 select(ClinicModel)
                 .where(ClinicModel.tenant_id == UUID(tenant_id))
@@ -238,13 +239,14 @@ async def get_db_state(
     Used by Playwright admin-smoke E2E tests to assert create/delete ops.
     Returns counts only (HIPAA — no row content).
     """
-    from luana_core_platform.core.database import get_db  # noqa: PLC0415
     from sqlalchemy import text  # noqa: PLC0415
+
+    from src.db import get_async_session  # noqa: PLC0415
 
     tables = ["tenants", "users", "user_tenants", "vitalia_clinic_branches", "vitalia_audit_log"]
     counts: dict[str, int] = {}
     try:
-        async for db in get_db():
+        async for db in get_async_session():
             for tbl in tables:
                 result = await db.execute(text(f"SELECT COUNT(*) FROM {tbl}"))  # noqa: S608
                 counts[tbl] = int(result.scalar() or 0)
@@ -275,8 +277,9 @@ async def list_audit_log(
     Used by Playwright E2E tests to verify audit log rows after mutations.
     HIPAA: returns no payload content — only id/tenant/action/resource_type/timestamp.
     """
-    from luana_core_platform.core.database import get_db  # noqa: PLC0415
     from sqlalchemy import text  # noqa: PLC0415
+
+    from src.db import get_async_session  # noqa: PLC0415
 
     where_clauses = []
     params: dict[str, object] = {"limit": min(limit, 200)}
@@ -294,7 +297,7 @@ async def list_audit_log(
 
     entries: list[AuditLogEntry] = []
     try:
-        async for db in get_db():
+        async for db in get_async_session():
             result = await db.execute(text(query_sql), params)
             for row in result.fetchall():
                 entries.append(
