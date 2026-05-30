@@ -38,3 +38,20 @@ Registré las 5 decisiones en `checkpoint.md::ratified_decisions`. state idea→
 
 ### 2026-05-30 · 🤖 claude · `/po` · ✓ APLICADO
 Escribí `01-spec.md` v1 — spec de migración con 6 scenarios Gherkin verificables (happy F1+F2 re-tag/SYSTEM-MAP · happy Valeria→supervisora/Mateo→Operar · negative cap-sin-caja-STOP · edge idempotencia+user_visible derivado · adversarial box-inventado+cross-brand+render-no-rompe · happy F0 backlog Fase 2). Graders: reconcile_capabilities.py + validate_system_map.py + grep cero-config/infra + tests de migración. Scope boundary respetado (F3 cockpit = tool cross-brand; cap producto = F0+F1+F2). 3 open questions: Q1 bump ADR-vitalia-005 v2 vs ADR-006 · Q2 F4 índice acciones fuera de scope · Q3 cockpit MVP por-zona vs 2 lentes ya. Spec en refining hasta tu ratificación → luego /architect.
+
+### 2026-05-30 · 👤 chris · ✓ RATIFICA (Q1-Q3)
+Q1: bump ADR-vitalia-005 (+ revisá los previos por si hay updates). Q2: todo en esta sesión. Q3: los 2 lentes en una, todo aquí.
+
+### 2026-05-30 · 🤖 claude · `/po` · 💡 PROPONE (shell UI boundary)
+Apliqué Q1/Q2/Q3 al `01-spec.md` v2: F4 (índice de acciones) + 2 lentes ahora EN SCOPE; agregué SC-7. Revisé los 3 ADR previos (pedido Q1):
+- **ADR-vitalia-005** → v2 (5ª dim zona + enum boxes nuevo + config/infra deprecados + Valeria=supervisor/Mateo=Operar + MapView por zona). `areas/` nunca se construyó (Fase D ⏳) → se redefine por zona o se descarta.
+- **ADR-vitalia-004** → addendum (Ribbon ya no es "6 agentes con Valeria+Configurar"; es 5 especialistas Lisa·Mateo·Adrián·Lucas·Camila + Valeria sidebar). El patrón de 9 secciones NO cambia.
+- **ADR-vitalia-003** → ref menor (lista de agentes).
+
+★ **Decisión que necesito:** mover Valeria del Ribbon al sidebar + meter Mateo es **frontend shipped** y dispara **tu gate de mockups ADR-vitalia-003**. Propongo **(A)** hacer acá la reasignación a nivel taxonomía/datos+ADRs+cockpit+F4, y la **UI del shell** como story dependiente `vitalia-shell-ribbon-realign` con mockup-gate (limpio, respeta tu gate). Alternativa (B): meter la UI acá salteando el gate (no recomiendo). ¿A o B? Con eso ratifico spec → refined → /architect.
+
+### 2026-05-30 · 👤 chris · ✓ RATIFICA (B)
+La (b). Modifiquemos todo lo necesario para que quedemos bien y esta sea la nueva (y última) forma de los agentes. Revisá hasta el último detalle en qué impacta y actualizá todo.
+
+### 2026-05-30 · 🤖 claude · `/po` · ✓ APLICADO (opción B · scan exhaustivo)
+Scan exhaustivo (frontend + docs) → inventario completo en `02-impact.md` (SSoT del cambio, hasta el último archivo). Spec a v3 con scope (B): F0 backlog · F1 caps · F2 SYSTEM-MAP · F3 cockpit 2 lentes · F4 índice acciones · F5 docs/ADRs/rules/skills · F6 shell UI realineado (mockups ADR-003 primero) · F7 tests. Hallazgo: en `agent-catalog.ts` Mateo YA existe pero como "Tecnología" — tu d1 lo reescribe a "Operar/Mi Día". Resolví micro-mapeos: 3 ex-valeria→Mateo, shell-vitalia→Infra·plataforma-tecnica, Ribbon "Configurar"→tab "Plataforma". Impacto total: ~70 caps + ~13 docs/rules/skills/ADRs + ~8 archivos FE + 6 stories renombrar + mockups + tests. Falta tu OK final al spec → refined → /architect (que ticketea con mockup-gate para el shell).

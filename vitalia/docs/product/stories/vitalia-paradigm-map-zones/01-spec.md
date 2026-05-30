@@ -5,7 +5,7 @@ brand: vitalia
 type: service-story
 subtype: infra-migration
 state: refining
-po_version: 1
+po_version: 3
 architecture_pattern: ADR-010-orquestacion-agentica + ADR-vitalia-005 (extend → 5ª dim zona)
 cap_target: platform.product-map-zonas
 cap_change_type: new
@@ -28,9 +28,16 @@ Materializa `PARADIGM.md` + `ADR-010` (cementados 2026-05-30) en el mapa del pro
 | **F1** | Re-tag ~71 caps `agent_owner` config/infra → caja nueva (mapping `absorbs`) · zona+`user_visible` derivados | vitalia product |
 | **F2** | `SYSTEM-MAP.yaml`: promover `target_boxes` a boxes de 1er nivel · Valeria→supervisora · Mateo→Operar · deprecar `config`/`infra` · bump ADR | vitalia product |
 | **F3** | Cockpit `MapView.tsx`: render por zona + 2 lentes + Valeria sidebar supervisor | ⚠️ tool cross-brand (`tools/luana-cockpit/`) |
-| **F4** | Índice de acciones (Plano 2) generado del service layer | candidato a story propia (puede quedar fuera) |
+| **F4** | Índice de acciones (Plano 2) generado del service layer (navegación agéntica sin grep) — **EN SCOPE** (Chris Q2) | vitalia + tool |
+| **F5** | Actualizar ADRs/docs/rules/skills: **ADR-vitalia-005 → v2** · **ADR-vitalia-004 addendum** · ADR-003 + SHELL-DESIGN-CONTRACT + capability-protocol §7 + vitalia/CLAUDE.md + vitalia-design-system skill + shell-*.md rules (ver 02-impact §7) | vitalia product |
+| **F6** | **Shell UI realineado** (opción B): `agent-catalog.ts` (Ribbon [lisa,mateo,adrian,lucas,camila] · Mateo=Operar · Valeria fuera) + Ribbon.tsx (Configurar→Plataforma) + routing `valeria/`→`mateo/` + `features/valeria`→`features/mateo` · **mockups ratificados ADR-003 primero** | vitalia product (FE) |
+| **F7** | Tests: actualizar e2e Ribbon/Valeria + test de migración + reconcile/validate verdes | vitalia + tool |
 
-> **Scope boundary:** F3 vive en `tools/luana-cockpit/` (tool operativa cross-brand, NO producto vitalia). Se ejecuta en la misma tanda (fase solo-bootstrap) pero se trackea como tool-scope. La cap de producto vitalia es **F0+F1+F2**.
+> **Inventario completo (hasta el último archivo): `02-impact.md`** — SSoT del mapeo cap→caja (4 valeria · 22 config · 22 infra), frontend, cockpit, docs, backlog, regresiones. Es el blueprint.
+>
+> **Scope boundary (tool):** F3 (cockpit) vive en `tools/luana-cockpit/` (tool cross-brand). Misma tanda (fase solo-bootstrap), trackeado como tool-scope.
+>
+> **Gate ADR-003 (★):** F6 (shell UI) dispara tu gate de mockups → el plan `/architect` incluye ticket(s) de **mockups ratificados** del shell realineado ANTES de construir el FE.
 
 ## Taxonomía objetivo (resumen — detalle en 00-research § 3)
 
@@ -47,6 +54,9 @@ Materializa `PARADIGM.md` + `ADR-010` (cementados 2026-05-30) en el mapa del pro
 5. Las stories `config-*` quedan renombradas a su caja; ningún story `idea` queda con caja inválida.
 6. El cockpit muestra las 3 zonas; una cap sin zona cae en "huérfanas" **visible** (no silent).
 7. Cero cambios a `core/luana-core-*` y cero caps de otras brands tocadas.
+8. `ADR-vitalia-005` bumped a **v2** (5ª dim zona derivada + enum `agent_owner`/`map_box` nuevo + `config`/`infra` deprecados + Valeria=supervisor / Mateo=Operar + §2.6 MapView por zona); `ADR-vitalia-004` con **addendum** de taxonomía Ribbon; `ADR-vitalia-003` ref menor actualizada.
+9. Índice de acciones (Plano 2) generado del service layer existe + es consumible (cockpit lo lee · agente lo navega sin grep) · gitignored (R3).
+10. Cockpit MapView renderiza los **2 lentes** (trabajadores + proceso) sobre los mismos datos.
 
 ## Scenarios (Gherkin AI-resistant)
 
@@ -130,6 +140,18 @@ Then config-onboarding-clinica → caja onboarding (zona Plataforma)
 **graders:**
 - `{ type: state_check, target: shell, cmd: "grep -L 'map_box:' vitalia/docs/product/stories/vitalia-fase2-*/checkpoint.md | wc -l", expect: "0" }`
 
+### SC-7 · happy · F4 índice de acciones (Plano 2) + 2 lentes cockpit
+```gherkin
+Given el service layer del DDD (application services) + headers `# cap:` en el código
+When se corre el generador del índice de acciones
+Then existe un índice estructurado (acción → cap → ruta de código) regenerable + gitignored (R3)
+  And el cockpit MapView ofrece 2 lentes sobre los mismos datos: "trabajadores" (por agente) y "proceso" (value-stream)
+  And un agente resuelve "¿dónde está la acción X?" leyendo el índice, sin grep
+```
+**graders:**
+- `{ type: state_check, target: shell, cmd: "test -f vitalia/docs/product/capabilities/_actions-index.json && echo ok", expect: "ok" }`
+- `{ type: integration, path: "tools/luana-cockpit/lib/__tests__/map-zones.test.ts" }`
+
 ## Out of scope (no-objetivos)
 
 - Construir el supervisor LangGraph real / tools / engine (otra epopeya).
@@ -137,8 +159,26 @@ Then config-onboarding-clinica → caja onboarding (zona Plataforma)
 - Migrar caps/SYSTEM-MAP de otras brands (comunify) — vitalia-only.
 - Tocar `core/luana-core-*` (sería `/pm-luana` lift).
 
-## Open questions (para Chris)
+## Decisiones Chris (Q1-Q3 resueltas 2026-05-30)
 
-- **Q1 · ADR:** ¿bump `ADR-vitalia-005` a v2 (agrega 5ª dim zona) o nuevo `ADR-vitalia-006-product-map-zones`? (recomiendo bump v2 — es la misma decisión de capability model evolucionando).
-- **Q2 · F4:** ¿el índice de acciones queda **fuera** de esta story (story propia) o lo incluimos como diseño-only? (recomiendo fuera — esta story es taxonomía/mapa, F4 es Plano 2).
-- **Q3 · F3 alcance:** ¿el render del cockpit incluye ya los **2 lentes** (trabajadores/proceso) o MVP solo "por zona" y los lentes después? (recomiendo MVP por zona + lente trabajadores; lente proceso = iteración 2).
+- **Q1 · ADR:** bump `ADR-vitalia-005` → v2 + revisar previos (ver § ADR review abajo).
+- **Q2 · F4:** índice de acciones **EN SCOPE** (esta story).
+- **Q3 · F3:** **los 2 lentes** (trabajadores + proceso) en esta story.
+
+## ADR review (pedido Chris Q1) — qué actualizar
+
+| ADR | Estado | Update requerido |
+|---|---|---|
+| **ADR-vitalia-005** (capability model 4 dims) | v1.0 | → **v2.0**: 5ª dim `zone` (derivada) · enum `agent_owner`/`map_box` nuevo (5 especialistas + 3 Plataforma + 4 Infra) · deprecar `config`/`infra` · Valeria=supervisor (fuera de boxes) · Mateo=Operar (agenda/bookings) · §2.6 MapView por zona + 2 lentes · §2.5 `areas/` (nunca construido — Fase D ⏳) se redefine por zona o se descarta |
+| **ADR-vitalia-004** (shell-feature) | v1.1 | → **addendum v1.2**: el Ribbon ya NO es "6 agentes fijos (…Valeria…Configurar)" (línea 75) — es **5 especialistas: Lisa·Mateo·Adrián·Lucas·Camila** + acceso/onboarding/configuracion; **Valeria = sidebar supervisor** (no tab); routing `[agent]` sigue taxonomía SYSTEM-MAP. El patrón de 9 secciones NO cambia |
+| **ADR-vitalia-003** (mockup gate) | Accepted | ref menor (línea 22): lista de agentes del shell → 5 especialistas + Valeria sidebar. NO cambia el gate |
+
+## ★ Decisión shell UI — RESUELTO: (B) ratificado Chris (2026-05-30)
+
+Todo entra en esta story — es el cambio **definitivo y último** de agentes. La UI del shell se realinea ACÁ cumpliendo el gate de mockups ADR-vitalia-003 inline (ticket de mockups en el plan `/architect` antes de construir el FE). Mapeo fino en `02-impact.md`.
+
+**Micro-decisiones resueltas (mi criterio — corregí si alguna no va):**
+- **Mateo:** tab "Tecnología" → **"Operar/Mi Día"** (agenda + pacientes-del-día). Lo "técnico/IA" que Mateo encarnaba se disuelve en Infra·motor-agentico (no es agente user-facing).
+- **Ex-valeria agenda/bookings (3 caps)** → Mateo · **shell-vitalia** → Infra·plataforma-tecnica (es contenedor, no agente).
+- **Ribbon "Configurar"** → **"Plataforma"** (1 tab que agrupa acceso/onboarding/configuración) — mantiene 5 especialistas + 1 plataforma, sin inflar el Ribbon.
+- **Valeria:** cero caps de valor; supervisora (chat sidebar). Su runtime se documenta en Infra·motor-agentico.
