@@ -26,19 +26,24 @@ import { readCapability } from '@/lib/cap-ledger';
 import { capabilitiesPath, storiesPath, getBrands } from '@/lib/workspace';
 import { stat } from 'node:fs/promises';
 
-const SLUG_REGEX = /^[a-z0-9][a-z0-9-]*$/;
+// Story slugs nuevos siguen convención kebab-case (a-z 0-9 -).
+const STORY_SLUG_REGEX = /^[a-z0-9][a-z0-9-]*$/;
+// Referencias a módulos/caps EXISTENTES en filesystem pueden contener guion bajo
+// (brand_studio, sales_agent, offer_studio, public_landing, wizard_brand_studio_slice_1).
+// El regex de referencia DEBE aceptar `_` o rechaza caps válidos al extender.
+const REF_SLUG_REGEX = /^[a-z0-9][a-z0-9_-]*$/;
 
 const BodySchema = z.object({
   brand: z.string(),
   parentCap: z.object({
-    module: z.string().regex(SLUG_REGEX, 'slug inválido'),
-    slug: z.string().regex(SLUG_REGEX, 'slug inválido'),
+    module: z.string().regex(REF_SLUG_REGEX, 'module inválido (a-z 0-9 _ -)'),
+    slug: z.string().regex(REF_SLUG_REGEX, 'cap slug inválido (a-z 0-9 _ -)'),
   }),
   capChangeType: z.enum(['fix', 'extend', 'derive']),
-  newStorySlug: z.string().regex(SLUG_REGEX, 'newStorySlug inválido (solo a-z 0-9 -)'),
+  newStorySlug: z.string().regex(STORY_SLUG_REGEX, 'newStorySlug inválido (solo a-z 0-9 -)'),
   goal: z.string().min(10, 'goal debe tener ≥10 chars'),
   release: z.string().min(1),
-  derivedName: z.string().regex(SLUG_REGEX).optional(),
+  derivedName: z.string().regex(STORY_SLUG_REGEX, 'derivedName inválido (solo a-z 0-9 -)').optional(),
 });
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
