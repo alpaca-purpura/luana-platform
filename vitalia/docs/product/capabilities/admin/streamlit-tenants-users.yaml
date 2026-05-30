@@ -38,7 +38,7 @@ dev_preview:
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-auth-base-functional   # v2 cement · mirror of story_introduced
 created_date: 2026-05-18   # v2 cement · mirror of date_introduced
-last_modified: 2026-05-29   # T-3 reconcile 2026-05-29
+last_modified: 2026-05-30   # backfill scenarios vitalia-stub-caps-scenario-backfill
 parent_cap: null   # v2 cement · mirror of extends_capability
 derives_capabilities: []   # v2 cement · initial empty list
 
@@ -52,6 +52,40 @@ change_log:
     summary: "Implementación inicial · migración legacy a schema v2"
     merge_sha: null
     status: done
+  - story_id: vitalia-stub-caps-scenario-backfill
+    date: 2026-05-30
+    type: extend
+    summary: "backfill scenario+e2e → verified-live (deployed-visible)"
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    status: done
+
+scenarios:
+  - id: admin-panel-tenants-navegacion-formulario
+    name: "Panel admin muestra navegación Tenants y Usuarios con formulario de creación"
+    actor: sistema
+    status: live
+    given: "El panel admin Streamlit está levantado en :8501 (o :8502) y el administrador navega a él"
+    when: "El administrador se autentica (si hay password gate) y accede al panel"
+    then: "El sidebar muestra los ítems Tenants y Usuarios; la sección Tenants muestra el formulario de creación de tenant"
+    e2e_test: "vitalia/frontend/e2e/admin/tenants-users.spec.ts"
+    verification_method: admin-panel
+    story_spec_ref: "vitalia/docs/product/stories/vitalia-stub-caps-scenario-backfill/01-spec.md"
+    atomic_ref: null
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    added_date: 2026-05-30
+  - id: admin-panel-usuarios-formulario-sin-phi
+    name: "Panel admin sección Usuarios muestra formulario de creación sin PHI médico"
+    actor: sistema
+    status: live
+    given: "El panel admin está accesible y el administrador navega a la sección Usuarios"
+    when: "Se hace clic en Usuarios en el menú lateral del admin"
+    then: "La sección Usuarios muestra el formulario de creación; no se expone PHI médico (diagnóstico, tratamiento, medicación no visibles)"
+    e2e_test: "vitalia/frontend/e2e/admin/tenants-users.spec.ts"
+    verification_method: admin-panel
+    story_spec_ref: "vitalia/docs/product/stories/vitalia-stub-caps-scenario-backfill/01-spec.md"
+    atomic_ref: null
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    added_date: 2026-05-30
 ---
 
 # Admin Streamlit — Tenants + Usuarios

@@ -56,7 +56,7 @@ verification:
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-adopt-luana-core-iam   # v2 cement · mirror of story_introduced
 created_date: 2026-05-19   # v2 cement · mirror of date_introduced
-last_modified: 2026-05-29   # T-3 reconcile 2026-05-29
+last_modified: 2026-05-30   # backfill scenarios vitalia-stub-caps-scenario-backfill
 parent_cap: null   # v2 cement · mirror of extends_capability
 derives_capabilities: []   # v2 cement · initial empty list
 
@@ -70,6 +70,40 @@ change_log:
     summary: "Implementación inicial · migración legacy a schema v2"
     merge_sha: null
     status: done
+  - story_id: vitalia-stub-caps-scenario-backfill
+    date: 2026-05-30
+    type: extend
+    summary: "backfill scenario+e2e → verified-live (deployed-visible)"
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    status: done
+
+scenarios:
+  - id: admin-crea-clinica-asociada-tenant
+    name: "Admin crea clínica asociada a un tenant con audit log registrado"
+    actor: sistema
+    status: live
+    given: "El panel admin está autenticado y existe al menos un tenant en la base de datos"
+    when: "El administrador completa el formulario de creación de clínica (nombre, slug, tenant) y envía"
+    then: "Se inserta un row en vitalia_clinic_branches con FK a tenants.id; aparece mensaje de éxito en UI; se registra un audit log con action=clinic.create"
+    e2e_test: "vitalia/frontend/e2e/admin/admin-clinics-extension.spec.ts"
+    verification_method: admin-panel
+    story_spec_ref: "vitalia/docs/product/stories/vitalia-stub-caps-scenario-backfill/01-spec.md"
+    atomic_ref: null
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    added_date: 2026-05-30
+  - id: admin-listado-clinicas-columnas-visibles
+    name: "Listado de clínicas muestra columnas Nombre, Slug y Tenant"
+    actor: sistema
+    status: live
+    given: "El panel admin está autenticado y el administrador navega a la sección Clínicas"
+    when: "Se accede al tab Listado de la página Clínicas"
+    then: "La tabla muestra al menos las columnas Nombre y Slug; no se exponen errores de DB ni SQL crudo"
+    e2e_test: "vitalia/frontend/e2e/admin/admin-clinics-extension.spec.ts"
+    verification_method: admin-panel
+    story_spec_ref: "vitalia/docs/product/stories/vitalia-stub-caps-scenario-backfill/01-spec.md"
+    atomic_ref: null
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    added_date: 2026-05-30
 ---
 
 # Admin · CRUD clínicas

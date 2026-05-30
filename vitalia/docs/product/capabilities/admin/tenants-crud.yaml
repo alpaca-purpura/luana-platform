@@ -57,7 +57,7 @@ verification:
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-adopt-luana-core-iam   # v2 cement · mirror of story_introduced
 created_date: 2026-05-19   # v2 cement · mirror of date_introduced
-last_modified: 2026-05-29   # T-3 reconcile 2026-05-29
+last_modified: 2026-05-30   # backfill scenarios vitalia-stub-caps-scenario-backfill
 parent_cap: null   # v2 cement · mirror of extends_capability
 derives_capabilities: []   # v2 cement · initial empty list
 
@@ -71,6 +71,53 @@ change_log:
     summary: "Implementación inicial · migración legacy a schema v2"
     merge_sha: null
     status: done
+  - story_id: vitalia-stub-caps-scenario-backfill
+    date: 2026-05-30
+    type: extend
+    summary: "backfill scenario+e2e → verified-live (deployed-visible)"
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    status: done
+
+scenarios:
+  - id: admin-crea-tenant-nuevo-audit-log
+    name: "Admin crea tenant nuevo via TenantRepository y audit log es registrado"
+    actor: sistema
+    status: live
+    given: "El panel admin está autenticado y el administrador navega a la sección Tenants"
+    when: "El administrador completa el formulario de creación (nombre, slug, país) y hace clic en Crear tenant"
+    then: "Se inserta un row en la tabla tenants; aparece mensaje de éxito en UI; se registra audit log con action=tenant.create y resource_type=tenant"
+    e2e_test: "vitalia/frontend/e2e/admin/admin-tenants-crud.spec.ts"
+    verification_method: admin-panel
+    story_spec_ref: "vitalia/docs/product/stories/vitalia-stub-caps-scenario-backfill/01-spec.md"
+    atomic_ref: null
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    added_date: 2026-05-30
+  - id: admin-lista-tenants-columnas-visibles
+    name: "Listado de tenants muestra columnas ID, Nombre y Slug sin PHI médico"
+    actor: sistema
+    status: live
+    given: "El panel admin está autenticado y el administrador navega al tab Listado de Tenants"
+    when: "Se accede al tab Listado en la página Tenants"
+    then: "La tabla muestra al menos las columnas Nombre y Slug; no se expone PHI médico (sin diagnóstico, tratamiento ni medicación)"
+    e2e_test: "vitalia/frontend/e2e/admin/admin-tenants-crud.spec.ts"
+    verification_method: admin-panel
+    story_spec_ref: "vitalia/docs/product/stories/vitalia-stub-caps-scenario-backfill/01-spec.md"
+    atomic_ref: null
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    added_date: 2026-05-30
+  - id: admin-suspende-tenant-audit-log
+    name: "Admin suspende tenant via toggle is_active y se registra audit log"
+    actor: sistema
+    status: live
+    given: "El panel admin está autenticado y existe al menos un tenant en la base de datos"
+    when: "El administrador hace clic en el botón Toggle Activo/Suspendido en el listado de tenants"
+    then: "Se actualiza is_active en la tabla tenants; se registra audit log con action=tenant.suspend o tenant.activate"
+    e2e_test: "vitalia/frontend/e2e/admin/admin-tenants-crud.spec.ts"
+    verification_method: admin-panel
+    story_spec_ref: "vitalia/docs/product/stories/vitalia-stub-caps-scenario-backfill/01-spec.md"
+    atomic_ref: null
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    added_date: 2026-05-30
 ---
 
 # Admin · CRUD tenants

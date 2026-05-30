@@ -61,7 +61,7 @@ verification:
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: unknown-legacy   # v2 cement · mirror of story_introduced
 created_date: 2026-05-15   # v2 cement · mirror of date_introduced
-last_modified: 2026-05-29   # T-3 reconcile 2026-05-29
+last_modified: 2026-05-30   # backfill scenarios vitalia-stub-caps-scenario-backfill
 parent_cap: null   # v2 cement · mirror of extends_capability
 derives_capabilities: []   # v2 cement · initial empty list
 
@@ -75,6 +75,40 @@ change_log:
     summary: "Implementación inicial · migración legacy a schema v2"
     merge_sha: null
     status: done
+  - story_id: vitalia-stub-caps-scenario-backfill
+    date: 2026-05-30
+    type: extend
+    summary: "backfill scenario+e2e → verified-live (deployed-visible)"
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    status: done
+
+scenarios:
+  - id: admin-login-bcrypt-dashboard-accesible
+    name: "Admin logea con password bcrypt y accede al dashboard con navegación"
+    actor: sistema
+    status: live
+    given: "El panel admin Streamlit está levantado en :8502 y VITALIA_ADMIN_PASSWORD_HASH está configurado"
+    when: "El administrador ingresa la contraseña correcta en el formulario de login"
+    then: "El sidebar muestra las opciones Tenants y Usuarios; el dashboard principal es accesible"
+    e2e_test: "vitalia/frontend/e2e/admin/admin-login.spec.ts"
+    verification_method: admin-panel
+    story_spec_ref: "vitalia/docs/product/stories/vitalia-stub-caps-scenario-backfill/01-spec.md"
+    atomic_ref: null
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    added_date: 2026-05-30
+  - id: admin-sin-sesion-muestra-login
+    name: "Admin sin sesión activa ve el formulario de login (session destroyed)"
+    actor: sistema
+    status: live
+    given: "El administrador accede al panel sin sesión autenticada o hace logout"
+    when: "Se navega directamente a la URL del admin sin autenticación"
+    then: "Streamlit muestra el campo de contraseña; el sidebar con navegación no es visible"
+    e2e_test: "vitalia/frontend/e2e/admin/admin-login.spec.ts"
+    verification_method: admin-panel
+    story_spec_ref: "vitalia/docs/product/stories/vitalia-stub-caps-scenario-backfill/01-spec.md"
+    atomic_ref: null
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    added_date: 2026-05-30
 ---
 
 # Servicio admin Streamlit
