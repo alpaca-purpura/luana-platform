@@ -20,7 +20,7 @@ Per .claude/rules/backend-ddd.md:
 
 Slice 2 changes:
   - async_resolve() migration: role from DB (not token).
-  - Real PatientRepository wired via Depends(get_async_session).
+  - Real PatientRepository wired via Depends(get_async_session_committing).
   - AsyncMock() inline blocks REMOVED from all runtime paths.
 
 downstream-regression-na: brand-local vitalia CRM consent API endpoints
@@ -35,7 +35,7 @@ import structlog
 from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.db import get_async_session
+from src.db import get_async_session_committing
 from src.modules.vitalia._shared.auth.rbac import PHIAccessDeniedError
 from src.modules.vitalia._shared.encryption.kek_client import KEKClient
 from src.modules.vitalia._shared.repositories.audit_log_repository import (
@@ -125,7 +125,7 @@ async def opt_out_patient(
     authorization: AuthorizationHeader,
     x_tenant_id: TenantIdHeader,
     x_clinic_id: ClinicIdHeader,
-    session: Annotated[AsyncSession, Depends(get_async_session)],
+    session: Annotated[AsyncSession, Depends(get_async_session_committing)],
 ) -> OptOutResponse:
     """Opt patient out of marketing — admin_clinic role only.
 
@@ -189,7 +189,7 @@ async def marketing_opt_in_patient(
     authorization: AuthorizationHeader,
     x_tenant_id: TenantIdHeader,
     x_clinic_id: ClinicIdHeader,
-    session: Annotated[AsyncSession, Depends(get_async_session)],
+    session: Annotated[AsyncSession, Depends(get_async_session_committing)],
 ) -> MarketingOptInResponse:
     """Update patient marketing consent — doctor/nurse/admin_clinic roles.
 

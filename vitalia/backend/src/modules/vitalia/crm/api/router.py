@@ -23,8 +23,8 @@ PHIAccessDeniedError → HTTP 403 (mapped in exception handler below).
 
 Slice 2 changes:
   - async_resolve() migration: all PHI endpoints use DB-sourced role.
-  - Real PatientRepository wired via Depends(get_async_session).
-  - Real LeadRepository wired via Depends(get_async_session).
+  - Real PatientRepository wired via Depends(get_async_session_committing).
+  - Real LeadRepository wired via Depends(get_async_session_committing).
   - AsyncMock() inline blocks REMOVED from all runtime paths.
 """
 
@@ -37,7 +37,7 @@ import structlog
 from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.db import get_async_session
+from src.db import get_async_session_committing
 from src.modules.vitalia._shared.auth.rbac import PHIAccessDeniedError
 from src.modules.vitalia._shared.encryption.kek_client import KEKClient
 from src.modules.vitalia._shared.repositories.audit_log_repository import (
@@ -183,7 +183,7 @@ async def get_patient(
     authorization: AuthorizationHeader,
     x_tenant_id: TenantIdHeader,
     x_clinic_id: ClinicIdHeader,
-    session: Annotated[AsyncSession, Depends(get_async_session)],
+    session: Annotated[AsyncSession, Depends(get_async_session_committing)],
 ) -> PatientResponse:
     """Retrieve a patient by ID — PHI access gated by RBAC.
 
@@ -252,7 +252,7 @@ async def patch_patient(
     authorization: AuthorizationHeader,
     x_tenant_id: TenantIdHeader,
     x_clinic_id: ClinicIdHeader,
-    session: Annotated[AsyncSession, Depends(get_async_session)],
+    session: Annotated[AsyncSession, Depends(get_async_session_committing)],
 ) -> PatientResponse:
     """Update allowed patient fields — PHI write gated by RBAC.
 
@@ -338,7 +338,7 @@ async def get_lead(
     lead_id: UUID,
     authorization: AuthorizationHeader,
     x_tenant_id: TenantIdHeader,
-    session: Annotated[AsyncSession, Depends(get_async_session)],
+    session: Annotated[AsyncSession, Depends(get_async_session_committing)],
     x_clinic_id: OptionalClinicIdHeader = None,
 ) -> LeadResponse:
     """Retrieve a lead by ID — accessible to all authenticated roles.
@@ -396,7 +396,7 @@ async def get_lead(
 async def list_leads(
     authorization: AuthorizationHeader,
     x_tenant_id: TenantIdHeader,
-    session: Annotated[AsyncSession, Depends(get_async_session)],
+    session: Annotated[AsyncSession, Depends(get_async_session_committing)],
     x_clinic_id: OptionalClinicIdHeader = None,
     status: str | None = Query(default=None),
     source: str | None = Query(default=None),
@@ -457,7 +457,7 @@ async def create_lead(
     body: LeadCreateRequest,
     authorization: AuthorizationHeader,
     x_tenant_id: TenantIdHeader,
-    session: Annotated[AsyncSession, Depends(get_async_session)],
+    session: Annotated[AsyncSession, Depends(get_async_session_committing)],
     x_clinic_id: OptionalClinicIdHeader = None,
 ) -> LeadResponse:
     """Create a new lead — all authenticated roles.
@@ -511,7 +511,7 @@ async def update_lead(
     body: LeadUpdateRequest,
     authorization: AuthorizationHeader,
     x_tenant_id: TenantIdHeader,
-    session: Annotated[AsyncSession, Depends(get_async_session)],
+    session: Annotated[AsyncSession, Depends(get_async_session_committing)],
     x_clinic_id: OptionalClinicIdHeader = None,
 ) -> LeadResponse:
     """Update allowed lead fields — all authenticated roles.
@@ -580,7 +580,7 @@ async def list_conversations(
     authorization: AuthorizationHeader,
     x_tenant_id: TenantIdHeader,
     x_clinic_id: ClinicIdHeader,
-    session: Annotated[AsyncSession, Depends(get_async_session)],
+    session: Annotated[AsyncSession, Depends(get_async_session_committing)],
     status: str | None = Query(default=None),
     channel: str | None = Query(default=None),
     handler_mode: str | None = Query(default=None),
@@ -636,7 +636,7 @@ async def get_conversation_detail(
     authorization: AuthorizationHeader,
     x_tenant_id: TenantIdHeader,
     x_clinic_id: ClinicIdHeader,
-    session: Annotated[AsyncSession, Depends(get_async_session)],
+    session: Annotated[AsyncSession, Depends(get_async_session_committing)],
 ) -> ConversationListItem:
     """Get conversation detail — PHI gated.
 
