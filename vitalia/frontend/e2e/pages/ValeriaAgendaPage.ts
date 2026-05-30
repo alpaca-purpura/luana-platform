@@ -1,8 +1,12 @@
 /**
  * ValeriaAgendaPage — POM for Valeria Agenda placeholder (weekly calendar grid).
  * F1-S10 vitalia-fase1-empty-states — T-10
+ * UPDATED: paradigm-map-zones T-6 (2026-05-30) — agenda route migrated.
+ *   goto() now navigates to /{tenantId}/mateo/agenda (was /valeria/agenda pre T-5).
+ *   Component data-testids are unchanged (component kept original testids).
+ *   Valeria sidebar remains — only the routing URL changed.
  *
- * Wraps the AgendaPlaceholder at /{tenantId}/valeria/agenda.
+ * Wraps the AgendaPlaceholder at /{tenantId}/mateo/agenda (migrated from valeria/agenda).
  * Encapsulates all data-testids and aria-labels from:
  *   - AgendaPlaceholder.tsx (data-testid="valeria-agenda-placeholder", data-testid="agenda-grid")
  *   - AgendaToolbar.tsx (data-testid="agenda-toolbar", "agenda-today-btn", "agenda-cta-crear-cita",
@@ -75,7 +79,9 @@ export class ValeriaAgendaPage {
   // ── Navigation ────────────────────────────────────────────────────────
 
   async goto(): Promise<void> {
-    await this.page.goto(`/${this.tenantId}/valeria/agenda`);
+    // UPDATED: paradigm-map-zones T-6 (2026-05-30) — agenda route migrated to mateo/agenda.
+    // Was: /${this.tenantId}/valeria/agenda (pre paradigm-map-zones T-5)
+    await this.page.goto(`/${this.tenantId}/mateo/agenda`);
     await this.page.waitForLoadState("networkidle");
   }
 

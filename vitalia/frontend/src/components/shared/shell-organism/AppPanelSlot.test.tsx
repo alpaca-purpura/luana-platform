@@ -26,7 +26,7 @@ import { AppPanelSlot } from "./AppPanelSlot";
 
 // Mock next/navigation — Ribbon + SubTabsBar use usePathname, useRouter, useParams
 vi.mock("next/navigation", () => ({
-  usePathname: vi.fn(() => "/test-tenant/valeria/agenda"),
+  usePathname: vi.fn(() => "/test-tenant/mateo/agenda"),
   useRouter: vi.fn(() => ({ push: vi.fn() })),
   useParams: vi.fn(() => ({ tenantId: "test-tenant" })),
 }));
@@ -60,12 +60,12 @@ describe("AppPanelSlot — integration with Ribbon + SubTabsBar (F1-S8 T-5)", ()
 
   it("renders [data-testid=sub-tabs-bar] from <SubTabsBar /> — real organism (not skeleton)", () => {
     render(<AppPanelSlot />);
-    // SubTabsBar renders with usePathname '/test-tenant/valeria/agenda' → 2 valeria subtabs
+    // SubTabsBar renders with usePathname '/test-tenant/mateo/agenda' → 2 mateo subtabs (v1.2)
     const subTabsBar = screen.getByTestId("sub-tabs-bar");
     expect(subTabsBar).toBeDefined();
     expect(subTabsBar.tagName.toLowerCase()).toBe("nav");
     expect(subTabsBar.getAttribute("role")).toBe("tablist");
-    expect(subTabsBar.getAttribute("aria-label")).toBe("Sub-secciones Valeria");
+    expect(subTabsBar.getAttribute("aria-label")).toBe("Sub-secciones Mateo");
   });
 
   it("skeleton sub-tabs placeholder (opacity-45 bars inside h-10 div) REMOVED from DOM after F1-S8 swap", () => {
@@ -124,7 +124,7 @@ describe("AppPanelSlot — integration with Ribbon + SubTabsBar (F1-S8 T-5)", ()
   it("AppPanelSlot does not crash when SubTabsBar returns null (Q5 guard defensive integration)", () => {
     // The actual null guard (invalid agent path) is covered by SubTabsBar.test.tsx.
     // Here we verify AppPanelSlot renders stably in normal operation (valid agent).
-    // Mock is set to /test-tenant/valeria/agenda → SubTabsBar renders 2 valeria subtabs.
+    // Mock is set to /test-tenant/mateo/agenda → SubTabsBar renders 2 mateo subtabs (v1.2).
     render(<AppPanelSlot />);
     expect(screen.getByTestId("app-panel-slot")).toBeDefined();
     expect(screen.getByTestId("ribbon")).toBeDefined();

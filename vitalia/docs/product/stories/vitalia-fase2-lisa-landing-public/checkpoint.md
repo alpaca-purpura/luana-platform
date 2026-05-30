@@ -4,12 +4,14 @@ type: ui-story
 state: idea
 architecture_pattern: ADR-vitalia-004
 agent_owner: lisa
+map_zone: agentes
+map_box: lisa
 module: brand_studio
 capability: lisa.landing_public
 spawned_at: 2026-05-27
 spawned_by: /pm-vitalia (via /po-ux session lisa-marca v2)
 spawn_reason: "Landing pública editor descoped de lisa-marca por decisión Chris 2026-05-27 ('no sé dónde va aún'). Refinement pendiente cuando Chris decida ubicación (sub-tab dedicada de Lisa, sub-sub-tab de Configurar, o feature standalone)."
-last_modified: 2026-05-27
+last_modified: 2026-05-30
 ratified_by_chris: false
 ratified_visual_by_chris: false
 parallel_safe: true

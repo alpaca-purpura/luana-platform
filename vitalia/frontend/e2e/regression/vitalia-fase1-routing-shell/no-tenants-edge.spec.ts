@@ -41,7 +41,8 @@ test.describe("SC-8 — edge · user autenticado sin tenants asignados", () => {
     // Mock: BE returns empty tenants list
     await mockNoTenants(shellPage);
 
-    await shellPage.goto(`/${TENANT_ID}/valeria/agenda`, {
+    // UPDATED: paradigm-map-zones T-6 — use mateo/agenda (was valeria/agenda pre v1.2)
+    await shellPage.goto(`/${TENANT_ID}/mateo/agenda`, {
       waitUntil: "domcontentloaded",
     });
 
@@ -120,7 +121,8 @@ test.describe("SC-8 — edge · user autenticado sin tenants asignados", () => {
   }) => {
     await mockNoTenants(shellPage);
 
-    await shellPage.goto(`/${TENANT_ID}/valeria/agenda`, {
+    // UPDATED: paradigm-map-zones T-6 — use mateo/agenda (was valeria/agenda pre v1.2)
+    await shellPage.goto(`/${TENANT_ID}/mateo/agenda`, {
       waitUntil: "domcontentloaded",
     });
 

@@ -22,8 +22,8 @@
 # ============================================================================
 
 brand: vitalia
-version: 1.1
-cement_date: 2026-05-27
+version: 2.0
+cement_date: 2026-05-30
 
 # ────────────────────────────────────────────────────────────────────────────
 # ZONES — taxonomía de 3 zonas del mapa (cement 2026-05-30)
@@ -50,54 +50,161 @@ zones:
     tier: core
     user_visible: true
     description: "El valor user-facing que opera cada trabajador. Un agente lo hace por el dueño."
-    boxes: [lisa, valeria, mateo, adrian, lucas, camila]
-    notes: "Valeria → supervisora transversal (orquesta, no posee caja de proceso). Mateo → Operar/Mi Día. Reasignación Valeria/Mateo pendiente de migración."
+    # v2.0 (2026-05-30): Valeria removida de boxes — es supervisora/orquestadora, no caja de valor.
+    # Mateo reemplaza a Valeria en el Ribbon (Operar/Mi Día: agenda, bookings, pacientes).
+    boxes: [lisa, mateo, adrian, lucas, camila]
+    notes: "Valeria = supervisora transversal (sidebar, orquesta, runtime en motor-agentico). Mateo = Operar/Mi Día (agenda + bookings + pacientes-del-día)."
 
   - id: plataforma
     name: "Plataforma"
     tier: supporting
     user_visible: true
     description: "Superficies transversales que el usuario atraviesa pero NO son de ningún agente. Se operan a mano (sin agente)."
-    boxes: [acceso, onboarding, configuracion]
+    # v2.0 (2026-05-30): target_boxes promovidas a boxes de 1er nivel con functional_areas canónicas.
     legacy_home: config
-    target_boxes:
+    boxes:
       - id: acceso
         name: "Acceso"
-        absorbs: [config.auth, config.iam]
         description: "Autenticación + autorización: Clerk, sesiones, RBAC, roles, scope por clínica."
+        absorbs: [config.auth, config.iam]
+        functional_areas:
+          - id: auth
+            name: "Autenticación (Clerk)"
+            status: live
+            description: "Middleware Clerk + páginas sign-in/sign-up customizadas. Rutas protegidas redirigen automático."
+          - id: iam
+            name: "Identidad y permisos"
+            status: live
+            description: "Roles vitalia-specific (admin_clinic · doctor · nurse · marketing · receptionist) + scope por clínica + JWT context decoder + adopción luana-core IAM."
+
       - id: onboarding
         name: "Onboarding"
-        absorbs: [config.onboarding_clinic]
         description: "Alta + activación: onboarding de clínica, wizard agentic, provisioning."
+        absorbs: [config.onboarding_clinic]
+        functional_areas:
+          - id: onboarding_clinic
+            name: "Onboarding de clínica"
+            status: live
+            description: "Flujo 3 pasos + wizard agentic Valeria para clínica nueva: datos legales, brand mínimo, primer doctor + clínica."
+
       - id: configuracion
         name: "Configuración"
-        absorbs: [config.cuenta, config.clinics, config.conexiones, config.patients-records, config.admin, config.avanzado]
         description: "Ajustes del espacio: cuenta/tenant, clínicas, equipo, conexiones, historial de pacientes, panel admin."
+        absorbs: [config.cuenta, config.clinics, config.conexiones, config.patients-records, config.admin, config.avanzado, config.fiscal]
+        functional_areas:
+          - id: cuenta
+            name: "Cuenta del tenant"
+            status: planned
+            target_release: F2
+            description: "Datos legales (RUC/RUT/CUIT), billing, plan suscripción, info contacto del owner."
+          - id: clinics
+            name: "Multi-clínica"
+            status: live
+            description: "Entidad Clinic vitalia-specific. Multi-clinic por tenant. Dual filter HIPAA enforced."
+          - id: conexiones
+            name: "Conexiones externas"
+            status: live
+            description: "OAuth Meta Ads + Google Ads. Registries proveedores vertical médico: WhatsApp Business, Mercado Pago, Stripe, GA4, Doctoralia."
+          - id: patients-records
+            name: "Historial médico de pacientes"
+            status: live
+            description: "Sección registros médicos del paciente: historial tratamientos, controles, prescripciones. RBAC + audit log + dual filter."
+          - id: admin
+            name: "Panel admin (staff Vitalia)"
+            status: live
+            description: "Streamlit admin paralelo BE principal. Gestión cross-tenant, debugging, ops, CRUD tenants/users/clinics."
+          - id: fiscal
+            name: "Facturación fiscal"
+            status: live
+            description: "Emisión comprobantes fiscales electrónicos en Perú (SUNAT). Extensible a otros países LATAM."
+          - id: avanzado
+            name: "Opciones avanzadas"
+            status: planned
+            target_release: F4
+            description: "Webhooks custom, exports, integraciones avanzadas, opciones devs."
 
   - id: infraestructura
     name: "Infraestructura"
     tier: enabling
     user_visible: false
     description: "No-funcional / técnico (cross-cutting concepts + quality attributes, arc42 §8/§10). Mapeado para que nada quede huérfano; no en el mapa de valor principal."
-    boxes: [seguridad-cumplimiento, observabilidad, plataforma-tecnica, motor-agentico]
+    # v2.0 (2026-05-30): target_boxes promovidas a boxes de 1er nivel con functional_areas canónicas.
     legacy_home: infra
-    target_boxes:
+    boxes:
       - id: seguridad-cumplimiento
         name: "Seguridad & Cumplimiento"
-        absorbs: [config.compliance, infra.scaffolding]
         description: "Cifrado at-rest PHI (pgcrypto), audit log inmutable, dual-filter tenant+clinic, tenant isolation, retention."
+        absorbs: [config.compliance, infra.scaffolding]
+        functional_areas:
+          - id: compliance
+            name: "Compliance HIPAA-lite"
+            status: live
+            description: "Stack defensivo PHI: audit log sincrónico inmutable, dual filter tenant+clinic, encryption at-rest pgcrypto, retention 10 años. WhatsApp template registry."
+          - id: scaffolding
+            name: "Scaffolding de seguridad"
+            status: live
+            description: "Fixtures 3-clinic-LatAm, migrations schema, cron workers idempotentes Arq, K8s admin deployment, audit writer SSoT."
+
       - id: observabilidad
         name: "Observabilidad"
-        absorbs: [infra.observability]
         description: "Trace events, llm_calls, cost recording, pricing snapshots, OTel/Sentry."
+        absorbs: [infra.observability]
+        functional_areas:
+          - id: observability
+            name: "Observability stack"
+            status: live
+            description: "OTel + Sentry con graceful degradation. Callback handlers Vitalia subclases capturando turn envelope + trace events + LLM calls."
+
       - id: plataforma-tecnica
         name: "Plataforma técnica"
-        absorbs: [infra.platform, infra.payment]
         description: "Design tokens/shell, payment rails, idempotency, eventos/outbox, IAM engine adoption, foundation."
+        absorbs: [infra.platform, infra.payment]
+        functional_areas:
+          - id: platform
+            name: "Platform foundation"
+            status: live
+            description: "Design tokens (foundation + theme), shell Shadcn+Tailwind v4, TopBar global, TenantSwitcher, vertical-medical Extension SDK."
+          - id: payment
+            name: "Payment gateways"
+            status: live
+            description: "Adaptadores Mercado Pago/Stripe/Culqi/Wompi para pagos recurrentes. Webhook IPN + reconciliation."
+          - id: shell
+            name: "Shell visual de la app"
+            status: live
+            description: "Contenedor visual post-login. Layout 50/50 split. Ribbon 5 especialistas + Plataforma tab. ValeriaSidebar (supervisora)."
+          - id: scaffolding
+            name: "Scaffolding técnico"
+            status: live
+            description: "Playwright smoke suite, live-reconciliation-sweep, migrations Alembic base."
+          - id: map
+            name: "Mapa del producto"
+            status: live
+            description: "Taxonomía SYSTEM-MAP 3 zonas + 12 cajas + validate_system_map + actions-index (Plano 2)."
+          - id: reconciliation
+            name: "Reconciliación live"
+            status: live
+            description: "Live reconciliation sweep: sync de datos agentic y de plataforma en tiempo real."
+
       - id: motor-agentico
         name: "Motor agéntico"
-        absorbs: [infra.copilot, infra.agentic-engine, infra.sales-agent-engine]
         description: "Engine compartido copilot/sales_agent + RAG/Qdrant + prompt cache. RUNTIME de los trabajadores, NO caja de feature que compita con los agentes."
+        absorbs: [infra.copilot, infra.agentic-engine, infra.sales-agent-engine]
+        # Valeria runtime (supervisora): Valeria como agente supervisor vive en este box.
+        # Orquesta el flujo entre especialistas. Su interface de chat es el ValeriaSidebar del shell.
+        runtime_notes: "Valeria (supervisora transversal): runtime en este box. Interface: ValeriaSidebar (sidebar del shell, siempre visible). Orquesta la conversación entre el usuario y los especialistas. No posee caja de proceso propia."
+        functional_areas:
+          - id: copilot
+            name: "Copilot engine + KB médica"
+            status: live
+            description: "Knowledge base RAG médica con Qdrant + extractores PDF + tools/workflows compartidos copilot. Brand extensions sobre luana-core-copilot."
+          - id: agentic-engine
+            name: "Agentic engine + eval"
+            status: live
+            description: "Tools agentic compartidas + safety guardrails cross-agent + eval goldens. Sobre luana-core-agentic-engine."
+          - id: sales-agent-engine
+            name: "Sales agent engine extensions"
+            status: live
+            description: "State overlay LangGraph para sales_agent. Brand-extension sobre luana-core-sales-agent."
 
 # ────────────────────────────────────────────────────────────────────────────
 # AGENTES (7) + functional_areas
@@ -155,29 +262,51 @@ agents:
         description: "Página pública por clínica auto-generada desde Brand Studio + Offer Studio + datos clínica. Incluye servicios, doctores, contacto, ubicación."
 
   # ──────────────────────────────────────────────────────────────────────────
-  # 🗓 VALERIA — Mi Día
+  # 🗓 VALERIA — Supervisora transversal (NO es caja de valor en el Ribbon)
+  # v2.0 (2026-05-30): Valeria es supervisora/orquestadora. Su runtime vive en
+  # motor-agentico. Su interface es el ValeriaSidebar (siempre visible en shell).
+  # Las caps de valor (agenda/bookings) pasaron a MATEO.
   # ──────────────────────────────────────────────────────────────────────────
   - id: valeria
     emoji: 🗓
     name: Valeria
-    subtitle: Mi Día
+    subtitle: "Supervisora (sidebar)"
+    role: supervisor
+    status: supervisor
     description: >
-      Agente owner del flujo del día del doctor: agenda, bookings, pacientes
-      del día, shell visual de la app. Punto de entrada principal post-login
-      con vista calendario semanal.
+      Supervisora transversal del flujo del usuario. Orquesta la conversación
+      entre el usuario y los especialistas (Lisa, Mateo, Adrián, Lucas, Camila).
+      NO aparece en el Ribbon como tab. Interface: ValeriaSidebar (chat siempre
+      visible en el shell). Runtime en zona infraestructura · motor-agentico.
+    notes: >
+      Las functional_areas de valor que Valeria tenía (agenda, bookings, pacientes)
+      se trasladaron a MATEO (v2.0). La caja de shell se trasladó a plataforma-tecnica.
+      Valeria retiene DEFAULT_CHAT_AGENT en agent-catalog.ts (chat sidebar).
+    functional_areas: []
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # 📅 MATEO — Operar / Mi Día
+  # v2.0 (2026-05-30): Mateo reemplaza a Valeria en el Ribbon. Deja de ser
+  # "Tecnología" (ex-pseudo-tab) y pasa a ser el especialista de las operaciones
+  # diarias del doctor: agenda + bookings + pacientes del día.
+  # ──────────────────────────────────────────────────────────────────────────
+  - id: mateo
+    emoji: 📅
+    name: Mateo
+    subtitle: Operar / Mi Día
+    description: >
+      Agente operativo del flujo diario del doctor. Gestiona la agenda semanal,
+      las reservas prepagadas y la vista de pacientes del día. Punto de entrada
+      principal post-login para la jornada clínica.
     functional_areas:
       - id: agenda
         name: "Agenda semanal"
         status: live
-        description: "Vista calendario semanal con drag-to-reschedule. Slot coloreados por estado de pago (pagado, depósito, sin pago) y origen (presencial, teléfono, proactivo Adrián)."
+        description: "Vista calendario semanal con drag-to-reschedule. Slots coloreados por estado de pago (pagado, depósito, sin pago) y origen (presencial, teléfono, proactivo Adrián)."
       - id: bookings
         name: "Reservas prepagadas"
         status: live
         description: "Sistema de reserva con pago anticipado. Widget embebido en sitio externo + advisory locks PostgreSQL evitan doble-booking + reconciliation Mercado Pago/Stripe."
-      - id: shell
-        name: "Shell visual de la app"
-        status: live
-        description: "Contenedor visual post-login. Layout 50/50 split agentic mode + web mode + mobile triple-main. Ribbon 5 agentes + ConfigTab. Sub-tabs por agente. Routing Next.js [agent]/[subtab]."
       - id: pacientes
         name: "Vista de pacientes del día"
         status: planned
@@ -310,14 +439,22 @@ agents:
         description: "Camila aplica la voz de la marca (definida por Lisa) en todas las comunicaciones automáticas post-tratamiento. Voice fidelity grader + slot prompt cache."
 
   # ──────────────────────────────────────────────────────────────────────────
-  # ⚙ CONFIGURAR — tenant + iam + compliance + admin
+  # ⚙ CONFIG — DEPRECATED (v2.0 2026-05-30)
+  # Las superficies de config se promovieron a cajas de 1er nivel en zona
+  # plataforma: acceso · onboarding · configuracion.
+  # Este pseudo-agente se mantiene como referencia histórica para back-compat.
   # ──────────────────────────────────────────────────────────────────────────
   - id: config
     emoji: ⚙
     name: Configurar
-    subtitle: tenant · iam · compliance · admin
+    subtitle: "DEPRECATED — ver zona plataforma"
+    status: deprecated
+    deprecated_reason: >
+      v2.0 (2026-05-30): superficies promovidas a cajas propias en zona plataforma
+      (acceso, onboarding, configuracion). Las caps que tenían agent_owner:config
+      ahora tienen map_box = acceso | onboarding | configuracion | seguridad-cumplimiento.
     description: >
-      Sección de configuración del tenant. Auth (Clerk), IAM (roles + scope),
+      [DEPRECATED] Sección de configuración del tenant. Auth (Clerk), IAM (roles + scope),
       cuenta (datos legales, billing), clínicas (multi-clinic), conexiones
       (Meta/Google/MercadoPago), historial de pacientes, panel admin staff,
       compliance HIPAA-lite, opciones avanzadas.
@@ -366,14 +503,22 @@ agents:
         description: "Configuración avanzada: webhooks custom, exports, integraciones avanzadas, opciones devs. Reservado para usuarios power."
 
   # ──────────────────────────────────────────────────────────────────────────
-  # 🔧 INFRA — observability · platform · payment · scaffolding
+  # 🔧 INFRA — DEPRECATED (v2.0 2026-05-30)
+  # Las superficies de infra se promovieron a cajas de 1er nivel en zona
+  # infraestructura: seguridad-cumplimiento · observabilidad · plataforma-tecnica · motor-agentico.
+  # Este pseudo-agente se mantiene como referencia histórica para back-compat.
   # ──────────────────────────────────────────────────────────────────────────
   - id: infra
     emoji: 🔧
     name: Infra Vitalia
-    subtitle: cross-cutting (observability · platform · payment · scaffolding)
+    subtitle: "DEPRECATED — ver zona infraestructura"
+    status: deprecated
+    deprecated_reason: >
+      v2.0 (2026-05-30): superficies promovidas a cajas propias en zona infraestructura
+      (seguridad-cumplimiento, observabilidad, plataforma-tecnica, motor-agentico).
+      Las caps que tenían agent_owner:infra ahora tienen map_box = la caja correspondiente.
     description: >
-      Infraestructura defensiva + plataforma. NO user-facing pero habilita
+      [DEPRECATED] Infraestructura defensiva + plataforma. NO user-facing pero habilita
       todo lo de los demás agentes. Solo visible en cockpit con toggle
       "Mostrar infra".
     functional_areas:
@@ -445,16 +590,16 @@ cross_agent_flows:
       area: embudo
       condition: "Lead acepta presupuesto y confirma intención de booking"
     actions:
-      - agent: valeria
+      - agent: mateo
         area: bookings
-        what: "Valeria crea booking prepagado con advisory lock + envía link de pago al paciente. Confirm callback enciende slot."
+        what: "Mateo (Operar) crea booking prepagado con advisory lock + envía link de pago al paciente. Confirm callback enciende slot."
     mechanism: api_call
     endpoint: "POST /api/v1/bookings"
     status: live
 
   - id: tratamiento-terminado-trigger-followup
     trigger:
-      agent: valeria
+      agent: mateo
       area: agenda
       condition: "Turno marcado completed + tratamiento marca último-paso"
     actions:
@@ -511,9 +656,9 @@ data_ownership:
   Patient:
     owner_module: crm
     owner_agent: adrian
-    consumed_by: [adrian, valeria, camila, lucas]
+    consumed_by: [adrian, mateo, camila, lucas]
     phi: true
-    description: "Paciente con dual filter tenant+clinic. Adrián la posee (CRM); Valeria la consume (agenda); Camila (followup); Lucas (atribución anonymous)."
+    description: "Paciente con dual filter tenant+clinic. Adrián la posee (CRM); Mateo la consume (agenda); Camila (followup); Lucas (atribución anonymous)."
 
   Lead:
     owner_module: crm
@@ -525,51 +670,51 @@ data_ownership:
   Conversation:
     owner_module: crm
     owner_agent: adrian
-    consumed_by: [adrian, valeria]
+    consumed_by: [adrian, mateo]
     phi: true
-    description: "Hilo de chat patient/lead↔agent. Adrián la posee (inbox); Valeria la consume (notificaciones turno)."
+    description: "Hilo de chat patient/lead↔agent. Adrián la posee (inbox); Mateo la consume (notificaciones turno)."
 
   Appointment:
     owner_module: scheduling
-    owner_agent: valeria
-    consumed_by: [valeria, adrian, camila]
+    owner_agent: mateo
+    consumed_by: [mateo, adrian, camila]
     phi: true
-    description: "Turno con doctor. Valeria la posee (agenda); Adrián (al cerrar venta); Camila (al terminar tratamiento dispara followup)."
+    description: "Turno con doctor. Mateo (Operar) la posee (agenda); Adrián (al cerrar venta); Camila (al terminar tratamiento dispara followup)."
 
   Booking:
     owner_module: booking
-    owner_agent: valeria
-    consumed_by: [valeria, adrian]
+    owner_agent: mateo
+    consumed_by: [mateo, adrian]
     phi: true
-    description: "Reserva prepagada con advisory lock. Valeria la posee; Adrián la dispara cuando lead confirma."
+    description: "Reserva prepagada con advisory lock. Mateo (Operar) la posee; Adrián la dispara cuando lead confirma."
 
   Clinic:
     owner_module: clinics
-    owner_agent: config
-    consumed_by: [lisa, valeria, adrian, lucas, camila, config]
+    owner_agent: configuracion
+    consumed_by: [lisa, mateo, adrian, lucas, camila]
     phi: false
-    description: "Clínica (multi-tenant). Config la posee; todos los agentes la consumen para scope/filtros."
+    description: "Clínica (multi-tenant). Caja configuracion (zona plataforma) la posee; todos los agentes especialistas la consumen para scope/filtros."
 
   Treatment:
     owner_module: treatments
     owner_agent: camila
-    consumed_by: [valeria, camila, adrian]
+    consumed_by: [mateo, camila, adrian]
     phi: true
-    description: "Tratamiento con paso-by-paso. Camila la posee (followup); Valeria (agenda turnos); Adrián (presupuesto)."
+    description: "Tratamiento con paso-by-paso. Camila la posee (followup); Mateo (agenda turnos); Adrián (presupuesto)."
 
   Brand:
     owner_module: brand_studio
     owner_agent: lisa
-    consumed_by: [lisa, valeria, adrian, lucas, camila]
+    consumed_by: [lisa, mateo, adrian, lucas, camila]
     phi: false
     description: "Identidad de la marca. Lisa la posee; todos los demás agentes consumen voice + values."
 
   Offer:
     owner_module: offer_studio
     owner_agent: lisa
-    consumed_by: [lisa, adrian, lucas, valeria]
+    consumed_by: [lisa, adrian, lucas, mateo]
     phi: false
-    description: "Catálogo de servicios médicos. Lisa la posee; Adrián la cita en propuestas; Lucas en campañas; Valeria en booking widget."
+    description: "Catálogo de servicios médicos. Lisa la posee; Adrián la cita en propuestas; Lucas en campañas; Mateo en booking widget."
 
   NPSResponse:
     owner_module: patients
@@ -580,10 +725,10 @@ data_ownership:
 
   AuditLog:
     owner_module: compliance
-    owner_agent: config
-    consumed_by: [config, infra]
+    owner_agent: seguridad-cumplimiento
+    consumed_by: [seguridad-cumplimiento, observabilidad]
     phi: false
-    description: "Audit log inmutable de todo acceso a PHI. Config la posee (compliance); Infra (observability) la consume."
+    description: "Audit log inmutable de todo acceso a PHI. Caja seguridad-cumplimiento (zona infraestructura) la posee; observabilidad la consume."
 
 # ────────────────────────────────────────────────────────────────────────────
 # AGENT ORCHESTRATION (multi-step flows multi-agente) — placeholder
@@ -599,10 +744,18 @@ agent_orchestration: []
 # ────────────────────────────────────────────────────────────────────────────
 
 metadata:
-  last_modified: 2026-05-27
-  modified_by: chris-pm-vitalia-session-autonomous
-  schema_version: 1.0
-  total_agents: 7
-  total_functional_areas: 47
+  last_modified: 2026-05-30
+  modified_by: builder-backend-T2-vitalia-paradigm-map-zones
+  schema_version: 2.0
+  # Agents: lisa · mateo · adrian · lucas · camila (5 specialists) + valeria (supervisor)
+  # + config (deprecated) + infra (deprecated) = 8 entries in agents[]
+  total_agents: 8
+  # Zones: 3 (agentes · plataforma · infraestructura)
+  total_zones: 3
+  # Boxes: 5 (agentes) + 3 (plataforma) + 4 (infraestructura) = 12
+  total_boxes: 12
+  # Agent specialist boxes: lisa · mateo · adrian · lucas · camila
+  total_specialist_agents: 5
+  total_functional_areas: 55
   total_cross_agent_flows: 5
   total_data_entities: 11

@@ -4,14 +4,14 @@
 
 | Campo | Valor |
 |---|---|
-| **Status** | Accepted (v1.1 — 2026-05-27 cementación N3-static SubSubTabsBar) |
-| **Date** | 2026-05-26 (v1.0) · **2026-05-27 (v1.1 addendum)** |
+| **Status** | Accepted (v1.2 — 2026-05-30 addendum taxonomía agentes) |
+| **Date** | 2026-05-26 (v1.0) · 2026-05-27 (v1.1 addendum) · **2026-05-30 (v1.2 addendum)** |
 | **Authors** | Chris + `/po-ux` (orchestrator Opus 4.7) |
 | **Brand** | vitalia |
 | **Scope** | Toda story Fase 2 que construya una **sub-tab** dentro del shell-organism agéntico |
 | **Supersedes** | — (extiende ADR-vitalia-003 mockup-per-component) |
-| **Sources** | `vitalia/docs/product/stories/vitalia-fase2-valeria-agenda/03-arch.md` (architectura cementada por `/architect` Opus 4.7 single-shot 2026-05-27); `SHELL-DESIGN-CONTRACT.md`; rule `.claude/rules/anti-duplication.md` |
-| **Changelog** | **v1.1 (2026-05-27):** cementar Nivel 3 estático `SubSubTabsBar` + routing variant `[subtab]/[subsubtab]/page.tsx` + `AGENT_SUBSUBTABS` catalog convention. Distinción explícita N3-static (sub-sub-tabs cabecera) vs N3-dynamic (`[...slug]` workspace detalle). Origen: refinement `vitalia-fase2-lisa-marca` 2026-05-27 (Chris ratificó gap: nested Tabs body es Nivel 4 anti-pattern). |
+| **Sources** | `vitalia/docs/product/stories/vitalia-fase2-valeria-agenda/03-arch.md` (architectura cementada por `/architect` Opus 4.7 single-shot 2026-05-27); `SHELL-DESIGN-CONTRACT.md`; rule `.claude/rules/anti-duplication.md`; story `vitalia-paradigm-map-zones` (taxonomía 5 especialistas 2026-05-30) |
+| **Changelog** | v1.0 (2026-05-26): cementación inicial · 9 secciones. v1.1 (2026-05-27): cementar N3-static SubSubTabsBar + routing variant `[subtab]/[subsubtab]/page.tsx` + `AGENT_SUBSUBTABS`. **v1.2 (2026-05-30): addendum taxonomía agentes — N1 Ribbon pasa de "6 agentes fijos" a "5 especialistas + tab Plataforma". Valeria sale del Ribbon (es supervisora sidebar). Mateo entra al Ribbon como especialista Operar/Mi Día. Routing `[agent]` sigue usando map_box del SYSTEM-MAP. El patrón de 9 secciones NO cambia.** |
 
 ---
 
@@ -36,7 +36,7 @@ Toda story Vitalia Fase 2 que construya una sub-tab dentro del shell-organism **
 
 **Aplica a (scope):**
 
-- ✅ Stories Fase 2 sub-tab con UI agentic-organism (`lisa-*`, `valeria-*` excepto agenda ya cementada, `adrian-*`, `lucas-*`, `camila-*`, `config-*`)
+- ✅ Stories Fase 2 sub-tab con UI agentic-organism (`lisa-*`, `mateo-*`, `adrian-*`, `lucas-*`, `camila-*`, `plataforma-*`) — ★★ v1.2: `valeria-*` sub-tabs de valor migradas a `mateo-*`; `config-*` renombradas a `plataforma-*` o `onboarding-*`
 - ✅ Stories Fase 1 restantes que construyan componente con data fetching/persistencia (la mayoría ya está `done`)
 - ✅ Stories `state ∈ {idea, refining, refined}` actualmente abiertas
 
@@ -69,14 +69,27 @@ vitalia/frontend/src/app/[tenantId]/(shell-organism)/{agent}/{subtab}/page.tsx
 
 **Anchor source:** valeria-agenda 03-arch § 6.0 + § 6.3.
 
-### § 3.1.1 — Niveles de navegación cementados (★ v1.1 — 2026-05-27)
+### § 3.1.1 — Niveles de navegación cementados (★ v1.1 — 2026-05-27 · ★★ v1.2 addendum — 2026-05-30)
 
 ```
-N1 (Ribbon)           → [agent]                                    → 6 agentes fijos (Lisa·Lucas·Adrián·Valeria·Camila·Configurar)
+N1 (Ribbon)           → [agent]                                    → 5 especialistas + tab Plataforma
+                                                                      (Lisa · Mateo · Adrián · Lucas · Camila + Plataforma)
+                                                                      ★★ v1.2: Valeria ya NO aparece en el Ribbon.
+                                                                      Valeria = ValeriaSidebar (supervisora, siempre visible).
+                                                                      Mateo = especialista Operar/Mi Día (reemplaza a Valeria en Ribbon).
+                                                                      ConfigTab label: "Configurar" → "Plataforma".
 N2 (SubTabsBar)       → [agent]/[subtab]                           → AGENT_SUBTABS whitelist per agente
 N3-static (NEW)       → [agent]/[subtab]/[subsubtab]               → AGENT_SUBSUBTABS opcional (sub-tabs complejas)
 N3-dynamic            → [agent]/[subtab]/[...slug]                 → workspace detalle item (catch-all, lower priority)
 ```
+
+> **★★ Addendum v1.2 (2026-05-30) — Taxonomía agentes actualizada:**
+> - Ribbon N1: **5 especialistas (Lisa · Mateo · Adrián · Lucas · Camila) + tab Plataforma** (antes 6 tabs con Valeria + Configurar)
+> - Valeria: sale del Ribbon · aparece como sidebar permanente (`ValeriaSidebar`) en el panel izquierdo · es la supervisora orquestadora · su runtime vive en zona infraestructura · motor-agentico
+> - Mateo: entra al Ribbon · subtítulo "Operar / Mi Día" · hereda agenda + bookings + pacientes que tenía Valeria · color `--agent-mateo: #FEE209` (ya existía en el design system)
+> - Tab Plataforma: reemplaza "Configurar" · abarca zona plataforma (acceso · onboarding · configuracion) · `AGENT_RIBBON_ORDER = [lisa, mateo, adrian, lucas, camila]`
+> - El patrón de 9 secciones (routing · FSD-Lite · client root · data layer · forms · BE DDD · migrations · telemetría · tests) NO cambia con v1.2
+> - Las stories sub-tab que citen `config-*` en `architecture_pattern` DEBEN ser renombradas a `plataforma-*` (ver story `vitalia-paradigm-map-zones` T-4)
 
 **Reglas de coexistencia:**
 - Una sub-tab puede tener **N3-static** (sub-sub-tabs cabecera) **Y** **N3-dynamic** (workspace catch-all) simultáneamente — Next.js prioriza static segment sobre catch-all

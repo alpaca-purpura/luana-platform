@@ -2,11 +2,13 @@
 story_id: vitalia-fase2-adrian-propuestas
 type: ui-story
 agent_owner: adrian
+map_zone: agentes
+map_box: adrian
 module: proposals
 capability: adrian.propuestas
 state: idea
 architecture_pattern: ADR-vitalia-004
-last_modified: 2026-05-22
+last_modified: 2026-05-30
 ratified_by_chris: false
 parallel_safe: true
 priority: high

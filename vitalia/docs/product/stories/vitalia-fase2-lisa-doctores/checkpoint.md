@@ -2,11 +2,13 @@
 story_id: vitalia-fase2-lisa-doctores
 type: ui-story
 agent_owner: lisa
+map_zone: agentes
+map_box: lisa
 module: staff
 capability: lisa.doctores
-state: idea
+state: refining
 architecture_pattern: ADR-vitalia-004
-last_modified: 2026-05-22
+last_modified: '2026-05-30'
 ratified_by_chris: false
 parallel_safe: true
 priority: high
@@ -16,20 +18,21 @@ dependencies:
     - vitalia-fase1-empty-states
     - vitalia-fase1-routing-shell
   soft:
-    - vitalia-fase2-lisa-marca               # voice brand alimenta bio default
+    - vitalia-fase2-lisa-marca
 blocks_hard: []
 blocks_soft:
-  - vitalia-fase2-valeria-agenda             # doctor selector en form crear cita
-  - vitalia-fase2-lisa-servicios             # doctor-treatment assignment
-reuse_map_summary: "REUSE patients+staff models shipped · NEW UI CRUD perfiles + N3-dyn workspace [doctor-id] · NEW personal-branding bio + horarios + KPIs · doctors-as-faces preview"
-spawned_at: 2026-05-22
-next_action: "/po-ux refinar 01-spec.md con wireframes directorio + workspace doctor tabs"
-
-# Schema v2 migration (cement 2026-05-27)
-release: F5   # release ID · ver releases/
-cap_target: lisa.doctores   # capability slug target (v2 cement 2026-05-27)
-cap_change_type: new   # new | fix | extend | derive
-parent_story: null   # story padre si spawned · null si independiente
+  - vitalia-fase2-valeria-agenda
+  - vitalia-fase2-lisa-servicios
+reuse_map_summary: >-
+  REUSE patients+staff models shipped · NEW UI CRUD perfiles + N3-dyn workspace
+  [doctor-id] · NEW personal-branding bio + horarios + KPIs · doctors-as-faces
+  preview
+spawned_at: 2026-05-22T00:00:00.000Z
+next_action: /po-ux refinar 01-spec.md con wireframes directorio + workspace doctor tabs
+release: F2
+cap_target: lisa.doctores
+cap_change_type: new
+parent_story: null
 ---
 
 # F2-S8 vitalia-fase2-lisa-doctores — checkpoke

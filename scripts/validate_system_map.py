@@ -46,15 +46,133 @@ def load_system_map(brand_dir: Path) -> dict[str, Any] | None:
 
 
 def extract_valid_areas(system_map: dict[str, Any]) -> set[str]:
-    """Retorna set de `<agent>.<area>` válidos declarados en SYSTEM-MAP."""
+    """Retorna set de functional_area válidos declarados en SYSTEM-MAP.
+
+    Incluye:
+    - Legacy format: `<agent>.<area>` (from agents[].functional_areas[])
+    - v2.0 promoted boxes: `<box>.<area>` (from zones[].boxes[].functional_areas[])
+    - v1.x draft target_boxes: `<box>.*` wildcard (from zones[].target_boxes[].id)
+
+    Backward-compat: legacy agent.area format preserved during transition.
+    """
     valid = set()
+
+    # Legacy: agent.area format from agents[] (back-compat for specialist agents)
     for agent in system_map.get("agents", []):
         agent_id = agent.get("id")
-        for area in agent.get("functional_areas", []):
-            area_id = area.get("id")
-            if agent_id and area_id:
-                valid.add(f"{agent_id}.{area_id}")
+        agent_fa = agent.get("functional_areas", [])
+        # functional_areas can be a list of dicts or empty list
+        if isinstance(agent_fa, list):
+            for area in agent_fa:
+                if isinstance(area, dict):
+                    area_id = area.get("id")
+                    if agent_id and area_id:
+                        valid.add(f"{agent_id}.{area_id}")
+
+    # v2.0: boxes are now first-class objects in zones[].boxes[]
+    # Each box has functional_areas[] with explicit area ids
+    for zone in system_map.get("zones", []):
+        zone_boxes = zone.get("boxes", [])
+
+        if isinstance(zone_boxes, list):
+            for box in zone_boxes:
+                if isinstance(box, str):
+                    # v1.x format: boxes is a list of strings → wildcard accept
+                    valid.add(f"{box}.*")
+                elif isinstance(box, dict):
+                    # v2.0 format: boxes is a list of objects with functional_areas
+                    box_id = box.get("id")
+                    if not box_id:
+                        continue
+                    # Accept box.* wildcard (for back-compat caps with any sub-area)
+                    valid.add(f"{box_id}.*")
+                    # Also accept explicit functional_area ids registered in the box
+                    for fa in box.get("functional_areas", []):
+                        if isinstance(fa, dict):
+                            fa_id = fa.get("id")
+                            if fa_id:
+                                valid.add(f"{box_id}.{fa_id}")
+
+        # v1.x: target_boxes still present as migration reference → accept as wildcards
+        for tb in zone.get("target_boxes", []):
+            if isinstance(tb, dict):
+                box_id = tb.get("id")
+                if box_id:
+                    valid.add(f"{box_id}.*")
+
     return valid
+
+
+def extract_valid_boxes(system_map: dict[str, Any]) -> set[str]:
+    """Retorna set de box IDs válidos (12 cajas del mapa · v2.0).
+
+    Incluye cajas de 1er nivel de zones[].boxes (string o object) y
+    target_boxes[].id (para back-compat v1.x). También incluye IDs de
+    agents[] como box válido (especialistas: lisa, mateo, adrian, lucas, camila).
+    """
+    valid_boxes: set[str] = set()
+
+    for zone in system_map.get("zones", []):
+        for box in zone.get("boxes", []):
+            if isinstance(box, str):
+                valid_boxes.add(box)
+            elif isinstance(box, dict):
+                box_id = box.get("id")
+                if box_id:
+                    valid_boxes.add(box_id)
+        for tb in zone.get("target_boxes", []):
+            if isinstance(tb, dict):
+                box_id = tb.get("id")
+                if box_id:
+                    valid_boxes.add(box_id)
+
+    # Agents are valid boxes too (specialist agents: lisa, mateo, adrian, lucas, camila)
+    for agent in system_map.get("agents", []):
+        agent_id = agent.get("id")
+        if agent_id:
+            valid_boxes.add(agent_id)
+
+    return valid_boxes
+
+
+def extract_zone_for_box(system_map: dict[str, Any]) -> dict[str, str]:
+    """Retorna mapa box_id → zone_id para validar user_visible coherente."""
+    box_to_zone: dict[str, str] = {}
+
+    for zone in system_map.get("zones", []):
+        zone_id = zone.get("id", "")
+        for box in zone.get("boxes", []):
+            if isinstance(box, str):
+                box_to_zone[box] = zone_id
+            elif isinstance(box, dict):
+                box_id = box.get("id")
+                if box_id:
+                    box_to_zone[box_id] = zone_id
+        for tb in zone.get("target_boxes", []):
+            if isinstance(tb, dict):
+                box_id = tb.get("id")
+                if box_id:
+                    box_to_zone[box_id] = zone_id
+
+    # Agents belong to "agentes" zone
+    for agent in system_map.get("agents", []):
+        agent_id = agent.get("id")
+        if agent_id and agent_id not in box_to_zone:
+            box_to_zone[agent_id] = "agentes"
+
+    return box_to_zone
+
+
+def is_valid_area(fa: str, valid_areas: set[str]) -> bool:
+    """Check if a functional_area is valid (exact match or box.* wildcard)."""
+    if fa in valid_areas:
+        return True
+    # Check box.* wildcard: if fa is "acceso.auth", check if "acceso.*" is in valid
+    if "." in fa:
+        prefix, _ = fa.split(".", 1)
+        if f"{prefix}.*" in valid_areas:
+            return True
+    return False
 
 
 def extract_caps_functional_areas(brand_dir: Path) -> list[tuple[Path, str]]:
@@ -164,34 +282,88 @@ def validate_brand(brand: str, strict: bool = False) -> bool:
         return True
 
     valid_areas = extract_valid_areas(system_map)
+    valid_boxes = extract_valid_boxes(system_map)
+    box_to_zone = extract_zone_for_box(system_map)
+
+    # Zones where user_visible should be False
+    infra_zones = {z.get("id") for z in system_map.get("zones", []) if not z.get("user_visible", True)}
+
     print(f"=== {brand} ===")
     print(f"  SYSTEM-MAP areas válidas: {len(valid_areas)}")
+    print(f"  SYSTEM-MAP boxes válidos (12 target): {len(valid_boxes)}")
 
     all_ok = True
     errors: list[str] = []
     warnings: list[str] = []
 
-    # Check 1: caps functional_area en SYSTEM-MAP
+    # Check 1: caps functional_area en SYSTEM-MAP (map_box-aware · back-compat)
     caps_areas = extract_caps_functional_areas(brand_dir)
     print(f"  Caps con functional_area declarada: {len(caps_areas)}")
     for cap_path, fa in caps_areas:
-        if fa not in valid_areas:
+        if not is_valid_area(fa, valid_areas):
             rel_path = cap_path.relative_to(REPO_ROOT).as_posix()
-            errors.append(f"CAP_FA_NOT_IN_SYSTEM_MAP: {rel_path} declara functional_area='{fa}' que NO existe en SYSTEM-MAP.yaml")
+            errors.append(
+                f"CAP_FA_NOT_IN_SYSTEM_MAP: {rel_path} declara functional_area='{fa}' que NO existe en SYSTEM-MAP.yaml"
+            )
+
+    # Check 1b: caps map_box (if present) debe estar en valid_boxes — NEW v2.0 (map_box-aware)
+    caps_dir = brand_dir / "docs" / "product" / "capabilities"
+    if caps_dir.exists():
+        for module_dir in sorted(caps_dir.iterdir()):
+            if not module_dir.is_dir() or module_dir.name.startswith("_"):
+                continue
+            for yaml_file in sorted(module_dir.glob("*.yaml")):
+                if yaml_file.name.startswith("_"):
+                    continue
+                try:
+                    content = yaml_file.read_text(encoding="utf-8")
+                    if content.startswith("---\n"):
+                        parts = content.split("\n---\n", 2)
+                        yaml_text = parts[0][4:] if len(parts) >= 2 else content[4:]
+                    elif "\n---\n" in content:
+                        yaml_text = content.split("\n---\n", 1)[0]
+                    else:
+                        yaml_text = content
+                    data = yaml.safe_load(yaml_text) or {}
+                    if not isinstance(data, dict):
+                        continue
+                    map_box = data.get("map_box")
+                    if not map_box:
+                        continue
+                    rel_path = yaml_file.relative_to(REPO_ROOT).as_posix()
+                    # Check: map_box must be a valid box
+                    if map_box not in valid_boxes:
+                        errors.append(
+                            f"CAP_MAP_BOX_NOT_IN_SYSTEM_MAP: {rel_path} declara map_box='{map_box}' que NO existe en SYSTEM-MAP.yaml zones"
+                        )
+                    else:
+                        # Check user_visible coherence: Infra zone → user_visible must be false
+                        zone_id = box_to_zone.get(map_box, "")
+                        user_visible = data.get("user_visible")
+                        if zone_id in infra_zones and user_visible is True:
+                            warnings.append(
+                                f"CAP_USER_VISIBLE_MISMATCH: {rel_path} tiene map_box='{map_box}' (zona infra) pero user_visible=true (debería ser false)"
+                            )
+                except (yaml.YAMLError, OSError):
+                    continue
 
     # Check 2: stories cap_target en SYSTEM-MAP
     stories_targets = extract_stories_cap_targets(brand_dir)
     print(f"  Stories con cap_target declarado: {len(stories_targets)}")
     for story_path, ct in stories_targets:
-        # cap_target puede ser "<agent>.<area>" o "<slug-de-cap-existente>" (legacy)
-        if "." in ct and ct not in valid_areas:
+        # cap_target puede ser "<agent>.<area>", "<box>.<sub>", o "<slug-de-cap-existente>" (legacy)
+        if "." in ct and not is_valid_area(ct, valid_areas):
             rel_path = story_path.relative_to(REPO_ROOT).as_posix()
-            errors.append(f"STORY_CAP_TARGET_NOT_IN_SYSTEM_MAP: {rel_path} declara cap_target='{ct}' que NO existe en SYSTEM-MAP.yaml")
+            errors.append(
+                f"STORY_CAP_TARGET_NOT_IN_SYSTEM_MAP: {rel_path} declara cap_target='{ct}' que NO existe en SYSTEM-MAP.yaml"
+            )
 
     # Check 3: áreas planned > 6 meses sin caps (advisory)
     old_planned = find_planned_old_areas(system_map, caps_areas, threshold_days=180)
     for full_id, name, target_release in old_planned:
-        warnings.append(f"PLANNED_AREA_STALE: {full_id} ({name}) sin caps shipped por > 6 meses · target_release: {target_release} · ¿considerar parked/dropped?")
+        warnings.append(
+            f"PLANNED_AREA_STALE: {full_id} ({name}) sin caps shipped por > 6 meses · target_release: {target_release} · ¿considerar parked/dropped?"
+        )
 
     # Report
     if errors:
@@ -208,7 +380,7 @@ def validate_brand(brand: str, strict: bool = False) -> bool:
             all_ok = False
 
     if not errors and not warnings:
-        print(f"  ✅ PASS (cero issues)")
+        print("  ✅ PASS (cero issues)")
 
     return all_ok
 

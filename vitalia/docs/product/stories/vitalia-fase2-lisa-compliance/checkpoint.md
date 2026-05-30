@@ -2,11 +2,13 @@
 story_id: vitalia-fase2-lisa-compliance
 type: ui-story
 agent_owner: lisa
+map_zone: agentes
+map_box: lisa
 module: compliance
 capability: lisa.compliance
 state: idea
 architecture_pattern: ADR-vitalia-004
-last_modified: 2026-05-22
+last_modified: '2026-05-30'
 ratified_by_chris: false
 parallel_safe: true
 priority: high
@@ -16,18 +18,21 @@ dependencies:
     - vitalia-fase1-empty-states
     - vitalia-fase1-routing-shell
   soft:
-    - vitalia-fase2-config-avanzado          # raw audit log vive ahí (link cross-tab)
+    - vitalia-fase2-config-avanzado
 blocks_hard: []
 blocks_soft: []
-reuse_map_summary: "REUSE medical-compliance shipped · REUSE core/luana-core-compliance engine · NEW semáforo HIPAA-lite UI + política retención editor + reportes export · NEW link a Configurar → Avanzado raw log"
-spawned_at: 2026-05-22
-next_action: "/po-ux refinar 01-spec.md con wireframes semáforo + política retención + reportes"
-
-# Schema v2 migration (cement 2026-05-27)
-release: F5   # release ID · ver releases/
-cap_target: lisa.compliance   # capability slug target (v2 cement 2026-05-27)
-cap_change_type: new   # new | fix | extend | derive
-parent_story: null   # story padre si spawned · null si independiente
+reuse_map_summary: >-
+  REUSE medical-compliance shipped · REUSE core/luana-core-compliance engine ·
+  NEW semáforo HIPAA-lite UI + política retención editor + reportes export · NEW
+  link a Configurar → Avanzado raw log
+spawned_at: 2026-05-22T00:00:00.000Z
+next_action: >-
+  /po-ux refinar 01-spec.md con wireframes semáforo + política retención +
+  reportes
+release: F2
+cap_target: lisa.compliance
+cap_change_type: new
+parent_story: null
 ---
 
 # F2-S10 vitalia-fase2-lisa-compliance — checkpoint

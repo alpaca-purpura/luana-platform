@@ -2,11 +2,13 @@
 story_id: vitalia-fase2-lisa-servicios
 type: ui-story
 agent_owner: lisa
+map_zone: agentes
+map_box: lisa
 module: treatments
 capability: lisa.servicios
 state: idea
 architecture_pattern: ADR-vitalia-004
-last_modified: 2026-05-22
+last_modified: '2026-05-30'
 ratified_by_chris: false
 parallel_safe: true
 priority: high
@@ -16,21 +18,24 @@ dependencies:
     - vitalia-fase1-empty-states
     - vitalia-fase1-routing-shell
   soft:
-    - vitalia-fase2-lisa-doctores             # doctor-treatment matrix
-    - vitalia-fase2-lisa-marca                # voice brand para descripciones
+    - vitalia-fase2-lisa-doctores
+    - vitalia-fase2-lisa-marca
 blocks_hard: []
 blocks_soft:
-  - vitalia-fase2-adrian-propuestas           # propuestas consumen catalog
-  - vitalia-fase2-valeria-agenda              # crear cita selecciona servicio
-reuse_map_summary: "REUSE treatments shipped (vitalia/backend/src/modules/vitalia/treatments/) · NEW canvas escalera de valor (LadderSlot per offer-expert) · NEW toggle Catálogo|Escalera · NEW N3-dyn detalle tratamiento + ladder slot"
-spawned_at: 2026-05-22
-next_action: "/po-ux refinar 01-spec.md con wireframes canvas escalera + detalle tratamiento · /architect evaluar LadderSlot domain model"
-
-# Schema v2 migration (cement 2026-05-27)
-release: F5   # release ID · ver releases/
-cap_target: lisa.servicios   # capability slug target (v2 cement 2026-05-27)
-cap_change_type: new   # new | fix | extend | derive
-parent_story: null   # story padre si spawned · null si independiente
+  - vitalia-fase2-adrian-propuestas
+  - vitalia-fase2-valeria-agenda
+reuse_map_summary: >-
+  REUSE treatments shipped (vitalia/backend/src/modules/vitalia/treatments/) ·
+  NEW canvas escalera de valor (LadderSlot per offer-expert) · NEW toggle
+  Catálogo|Escalera · NEW N3-dyn detalle tratamiento + ladder slot
+spawned_at: 2026-05-22T00:00:00.000Z
+next_action: >-
+  /po-ux refinar 01-spec.md con wireframes canvas escalera + detalle tratamiento
+  · /architect evaluar LadderSlot domain model
+release: F2
+cap_target: lisa.servicios
+cap_change_type: new
+parent_story: null
 ---
 
 # F2-S9 vitalia-fase2-lisa-servicios — checkpoint

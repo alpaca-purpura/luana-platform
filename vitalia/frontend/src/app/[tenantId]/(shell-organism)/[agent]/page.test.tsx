@@ -38,11 +38,12 @@ describe("AgentRootPage", () => {
     mockNotFound.mockClear();
   });
 
-  it("redirige a /tenantId/valeria/agenda cuando agent=valeria", async () => {
+  it("redirige a /tenantId/mateo/agenda cuando agent=mateo (v1.2 — Mateo=Operar en ribbon)", async () => {
+    // v1.2 (2026-05-30): mateo is now a valid ribbon agent with defaultSubtab=agenda
     await expect(
-      AgentRootPage({ params: makeParams("clinic-x", "valeria") }),
-    ).rejects.toThrow("NEXT_REDIRECT:/clinic-x/valeria/agenda");
-    expect(mockRedirect).toHaveBeenCalledWith("/clinic-x/valeria/agenda");
+      AgentRootPage({ params: makeParams("clinic-x", "mateo") }),
+    ).rejects.toThrow("NEXT_REDIRECT:/clinic-x/mateo/agenda");
+    expect(mockRedirect).toHaveBeenCalledWith("/clinic-x/mateo/agenda");
   });
 
   it("redirige a /tenantId/lisa/marca cuando agent=lisa", async () => {
@@ -88,9 +89,10 @@ describe("AgentRootPage", () => {
     expect(mockNotFound).toHaveBeenCalledTimes(1);
   });
 
-  it("llama notFound() cuando agent='mateo' (transversal — excluido)", async () => {
+  it("llama notFound() cuando agent='valeria' (v1.2 — supervisor sidebar, no ribbon agent)", async () => {
+    // v1.2 (2026-05-30): valeria is NOT a valid ribbon agent — isValidAgent('valeria') = false
     await expect(
-      AgentRootPage({ params: makeParams("clinic-x", "mateo") }),
+      AgentRootPage({ params: makeParams("clinic-x", "valeria") }),
     ).rejects.toThrow("NEXT_NOT_FOUND");
     expect(mockNotFound).toHaveBeenCalledTimes(1);
   });

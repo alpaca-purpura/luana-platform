@@ -57,6 +57,8 @@ change_log:
     summary: "Implementación inicial · migración legacy a schema v2"
     merge_sha: null
     status: done
+map_box: lucas
+
 ---
 
 # vitalia-marketing-lucas-stage-recommendations

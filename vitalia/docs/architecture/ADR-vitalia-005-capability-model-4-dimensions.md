@@ -1,17 +1,17 @@
 <!-- voseo-allowed: internal architecture decision record, not user-facing -->
 
-# ADR-vitalia-005 — Capability Model · 4 dimensiones + dev_preview + areas user-facing
+# ADR-vitalia-005 — Capability Model · 5 dimensiones + dev_preview + MapView por zona
 
 | Campo | Valor |
 |---|---|
-| **Status** | Accepted (v1.0 — 2026-05-27 cementación inicial) |
-| **Date** | 2026-05-27 |
+| **Status** | Accepted (v2.0 — 2026-05-30 taxonomía 3 zonas / 12 cajas) |
+| **Date** | 2026-05-27 (v1.0) · **2026-05-30 (v2.0)** |
 | **Authors** | Chris + `/pm-vitalia` (orchestrator Opus 4.7) |
 | **Brand** | vitalia (modelo aplicable a otras brands vía promotion gate `/pm-luana`) |
-| **Scope** | Schema `vitalia/docs/product/capabilities/{tech_module}/{slug}.yaml` + cockpit MapView + areas/ user-facing |
-| **Supersedes** | — (extiende `docs/process/capability-protocol.md` v2 cement 2026-05-27) |
-| **Sources** | Sesión `/pm-vitalia` 2026-05-27 (Chris ratificó modelo 4 dimensiones + merge shell-organism + areas/). Diagnóstico raíz: 27 caps "huérfanas" en cockpit + mismatch `module:` técnico vs user-facing + ausencia de "user guide" por cap |
-| **Changelog** | v1.0 (2026-05-27): cementación inicial · 4 dimensiones + dev_preview + areas/ + merge shell-organism 7 caps → 1 cap atomics |
+| **Scope** | Schema `vitalia/docs/product/capabilities/{tech_module}/{slug}.yaml` + cockpit MapView + zonas 3-niveles |
+| **Supersedes** | ADR-vitalia-005 v1.0 (campos `agent_owner: config/infra` → deprecados; `areas/` → reemplazado por zonas derivadas de SYSTEM-MAP) |
+| **Sources** | v1.0: Sesión `/pm-vitalia` 2026-05-27 (Chris ratificó modelo 4 dimensiones + merge shell-organism + areas/). v2.0: Story `vitalia-paradigm-map-zones` 2026-05-30 (taxonomía 3 zonas · 12 cajas · Valeria=supervisora · Mateo=Operar) |
+| **Changelog** | v1.0 (2026-05-27): cementación inicial · 4 dimensiones + dev_preview + areas/ + merge shell-organism 7 caps → 1 cap atomics. **v2.0 (2026-05-30): 5ª dimensión `map_box` (derivada de SYSTEM-MAP) · enum 12 cajas · config/infra deprecados · Valeria=supervisora/Mateo=Operar · MapView por zona + 2 lentes · `areas/` redefinido como derivado-por-zona.** |
 
 ---
 
@@ -46,7 +46,7 @@ Un solo campo cargando 3 conceptos colapsa la taxonomía.
 
 Cada YAML `vitalia/docs/product/capabilities/{tech_module}/{slug}.yaml` declara **4 dimensiones explícitas** + bloque `dev_preview` + naturaleza + visibilidad. El cockpit MapView agrupa por las dimensiones leídas del YAML (no por hardcoded mapping en TS). Se promueve una taxonomía paralela `areas/` user-facing (7 archivos · 1 por agente + Configurar + Infra) como SSoT del producto en lenguaje humano. Los `modules/{m}.md` técnicos se mantienen para devs.
 
-### 2.1 · Las 4 dimensiones
+### 2.1 · Las 5 dimensiones (v2.0)
 
 ```yaml
 # Dim 1 — TÉCNICA (DDD backend · FSD frontend · path canónico)
@@ -54,29 +54,54 @@ tech_module: scheduling
 # Path donde vive el código. Inmutable post-merge. Equivale al `module:` previo
 # del schema v2, pero renombrado para evitar el cargo de 3 conceptos en uno.
 
-# Dim 2 — USER-FACING (agrupación del cockpit + producto humano)
-agent_owner: valeria
-# valeria | lisa | adrian | lucas | camila | config | infra
-# Quién es el agente owner UI/UX. "config" para opciones tenant. "infra" para
-# cross-cutting NO user-facing (audit, observability, platform).
+# Dim 2 — CAJA DEL MAPA (★ v2.0 — reemplaza agent_owner enum plano)
+map_box: mateo
+# Enum cerrado de 12 cajas derivadas de SYSTEM-MAP.yaml zones:
+#
+# Zona agentes (user_visible:true · tier:core):
+#   lisa · mateo · adrian · lucas · camila
+#
+# Zona plataforma (user_visible:true · tier:supporting):
+#   acceso · onboarding · configuracion
+#
+# Zona infraestructura (user_visible:false · tier:enabling):
+#   seguridad-cumplimiento · observabilidad · plataforma-tecnica · motor-agentico
+#
+# DEPRECADOS (mantienen back-compat hasta migración completa):
+#   config → mapear a acceso|onboarding|configuracion|seguridad-cumplimiento
+#   infra  → mapear a seguridad-cumplimiento|observabilidad|plataforma-tecnica|motor-agentico
+#
+# Nota: Valeria NO es una caja. Es supervisora transversal (runtime en motor-agentico,
+# interface ValeriaSidebar). Sus caps de valor pasaron a mateo (agenda, bookings, pacientes).
+# Mateo = caja de zona agentes (Operar/Mi Día: agenda + bookings + pacientes del día).
 
-functional_area: valeria.agenda
-# Sub-categoría user-facing DENTRO del agente. Slug `<agent>.<area>` (kebab).
-# Ej: lisa.identidad-marca, valeria.agenda, adrian.embudo, lucas.atribucion,
-# camila.nps, config.compliance, infra.observability.
+functional_area: mateo.agenda
+# Sub-categoría DENTRO de la caja. Slug `<box>.<area>` (kebab).
+# Ej: lisa.marca, mateo.agenda, mateo.bookings, adrian.embudo, lucas.atribucion,
+# camila.reputacion, acceso.auth, configuracion.clinics, motor-agentico.copilot.
+# La zona se DERIVA de map_box vía SYSTEM-MAP — nunca se escribe a mano.
 # NO existe "huérfano" — todo cap declara functional_area. Si no se sabe →
 # refining bloqueado hasta que Chris ratifique.
 
 # Dim 3 — VISIBILIDAD (filtro del mapa)
 user_visible: true
-# true  → aparece en mapa principal del cockpit. Cap user-facing terminada.
-# false → infra cross-cutting. Visible solo con toggle "Mostrar infra".
+# true  → zona agentes o plataforma. Visible en mapa principal del cockpit.
+# false → zona infraestructura. Visible solo con lente "Mostrar infra".
+# Regla: user_visible se VALIDA contra la zona de map_box (validate_system_map.py).
+#   agentes/plataforma → user_visible SHOULD be true
+#   infraestructura    → user_visible SHOULD be false
 
 # Dim 4 — NATURALEZA (qué tipo de pieza es)
 nature: feature
 # feature           → capacidad user-facing terminada
 # scaffold          → estructura técnica (migration, test suite, fixture)
 # extension-point   → cap que otras caps consumen (raro en brand · usual en core)
+
+# Dim 5 — ZONA (★ v2.0 — derivada, no se escribe a mano)
+# zone: agentes | plataforma | infraestructura
+# Derivada de map_box vía SYSTEM-MAP.yaml. El cockpit la lee del YAML generado
+# (scripts/validate_system_map.py enriquece el índice). NO poner en caps YAML
+# (evita drift si se mueve una caja entre zonas).
 ```
 
 ### 2.2 · Bloque `dev_preview` (obligatorio si `user_visible: true`)
@@ -103,17 +128,45 @@ dev_preview:
 
 Caps `user_visible: false` (infra) pueden omitir `dev_preview` o llenarlo parcial. Caps `nature: scaffold` siempre exentas.
 
-### 2.3 · Taxonomía completa Vitalia (7 agentes user-facing + infra)
+### 2.3 · Taxonomía completa Vitalia v2.0 — 3 zonas · 12 cajas
 
-| Agent owner | Emoji | Subtitle | Functional areas |
+**Zona Agentes** (tier:core · user_visible:true) — el valor user-facing que opera cada trabajador:
+
+| Caja (map_box) | Emoji | Subtitle | Functional areas |
 |---|---|---|---|
-| `lisa` | 🏥 | Mi Clínica | `lisa.identidad-marca` · `lisa.servicios` · `lisa.autoridad` · `lisa.equipo` |
-| `valeria` | 🗓 | Mi Día | `valeria.agenda` · `valeria.bookings` · `valeria.shell` (★ merge) |
-| `adrian` | 💼 | Vender | `adrian.embudo` · `adrian.inbox` · `adrian.crm` · `adrian.reactivacion` |
-| `lucas` | 📣 | Marketing | `lucas.atribucion` · `lucas.bowtie` · `lucas.recommendations` · `lucas.referrals` |
-| `camila` | 🌟 | Reputación + cohortes | `camila.nps` · `camila.followup` · `camila.cohorts` |
-| `config` | ⚙ | Configurar | `config.onboarding` · `config.compliance` · `config.auth` · `config.iam` · `config.clinics` · `config.public-landing` · `config.patients-records` · `config.connections` · `config.admin` |
-| `infra` | 🔧 | Infra Vitalia | `infra.copilot` · `infra.observability` · `infra.platform` · `infra.payment` · `infra.agentic-engine` · `infra.sales-agent-engine` · `infra.scaffolding` (tests+fixtures+workers+ops+audit) |
+| `lisa` | 🏥 | Mi Clínica | `lisa.marca` · `lisa.servicios` · `lisa.doctores` · `lisa.compliance` · `lisa.landing-publica` |
+| `mateo` | 📅 | Operar / Mi Día | `mateo.agenda` · `mateo.bookings` · `mateo.pacientes` |
+| `adrian` | 💼 | Vender | `adrian.embudo` · `adrian.inbox` · `adrian.crm` · `adrian.reactivacion` · `adrian.outbound` · `adrian.propuestas` |
+| `lucas` | 📣 | Marketing | `lucas.atribucion` · `lucas.bowtie` · `lucas.recomendaciones` · `lucas.referrals` |
+| `camila` | 🌟 | Reputación + cohortes | `camila.reputacion` · `camila.reactivar` · `camila.multiplicar` · `camila.voz` |
+
+> **Valeria** NO es caja de valor. Es supervisora transversal: runtime en `motor-agentico`, interface via `ValeriaSidebar` (sidebar del shell, siempre visible). Las caps de valor (agenda, bookings) pasaron a mateo en v2.0.
+
+**Zona Plataforma** (tier:supporting · user_visible:true) — superficies que el usuario atraviesa, sin agente dueño:
+
+| Caja (map_box) | Emoji | Subtitle | Functional areas |
+|---|---|---|---|
+| `acceso` | 🔑 | Acceso | `acceso.auth` · `acceso.iam` |
+| `onboarding` | 🚀 | Onboarding | `onboarding.onboarding-clinic` |
+| `configuracion` | ⚙ | Configuración | `configuracion.cuenta` · `configuracion.clinics` · `configuracion.conexiones` · `configuracion.patients-records` · `configuracion.admin` · `configuracion.fiscal` · `configuracion.avanzado` |
+
+**Zona Infraestructura** (tier:enabling · user_visible:false) — no-funcional / técnico:
+
+| Caja (map_box) | Emoji | Subtitle | Functional areas |
+|---|---|---|---|
+| `seguridad-cumplimiento` | 🔒 | Seguridad & Cumplimiento | `seguridad-cumplimiento.compliance` · `seguridad-cumplimiento.scaffolding` |
+| `observabilidad` | 📡 | Observabilidad | `observabilidad.observability` |
+| `plataforma-tecnica` | 🏗 | Plataforma técnica | `plataforma-tecnica.platform` · `plataforma-tecnica.payment` · `plataforma-tecnica.shell` · `plataforma-tecnica.scaffolding` · `plataforma-tecnica.map` · `plataforma-tecnica.reconciliation` |
+| `motor-agentico` | 🤖 | Motor agéntico | `motor-agentico.copilot` · `motor-agentico.agentic-engine` · `motor-agentico.sales-agent-engine` |
+
+> **Valeria runtime:** vive en `motor-agentico`. Su functional_area es implícita (runtime_notes en SYSTEM-MAP). NO posee caja de proceso propia.
+
+**Deprecated (back-compat):**
+
+| map_box (obsoleto) | Migrar a |
+|---|---|
+| `config` | `acceso` \| `onboarding` \| `configuracion` \| `seguridad-cumplimiento` (según la functional area) |
+| `infra` | `seguridad-cumplimiento` \| `observabilidad` \| `plataforma-tecnica` \| `motor-agentico` (según la functional area) |
 
 ### 2.4 · Merge shell-organism (decisión Chris #3)
 
@@ -129,44 +182,40 @@ Las 7 caps actuales de `shell-organism/` (`empty-states`, `layout-5050`, `ribbon
 
 Pattern análogo aplicable a otros casos de granularidad excesiva (e.g. compliance/* tres caps que probablemente son atomics de `config.compliance`).
 
-### 2.5 · Areas/ user-facing (decisión Chris #2)
+### 2.5 · Areas/ (redefinido en v2.0 — derivado por zona)
 
-Se promueve `vitalia/docs/product/areas/` como SSoT user-facing del producto:
+En v1.0, `vitalia/docs/product/areas/` se planificó como SSoT user-facing (7 archivos manuales). En v2.0 este concepto se **reemplaza por zonas derivadas de SYSTEM-MAP**: el cockpit MapView agrupa caps por zona → caja → functional_area leyendo `map_box` del YAML. **`areas/` nunca se construyó (Fase D nunca ejecutada) — se descarta formalmente en v2.0.**
+
+El SSoT user-facing del producto es ahora:
 
 ```
-vitalia/docs/product/
-├── areas/                       ★ NEW · 7 archivos · SSoT user-facing
-│   ├── lisa.md
-│   ├── valeria.md
-│   ├── adrian.md
-│   ├── lucas.md
-│   ├── camila.md
-│   ├── configurar.md
-│   └── infra.md
-├── modules/                     mantener · técnico para devs (DDD paths)
-│   ├── scheduling.md            (paths backend/frontend)
-│   ├── crm.md
-│   └── ...
-└── capabilities/                YAML SSoT (4 dimensiones)
-    ├── scheduling/
-    ├── crm/
-    └── ...
+vitalia/docs/
+├── architecture/SYSTEM-MAP.yaml  ← SSoT de 3 zonas · 12 cajas · functional_areas (semántico)
+└── product/
+    ├── capabilities/{module}/{slug}.yaml  ← YAML con map_box + functional_area (Dim 2 v2.0)
+    ├── modules/{m}.md            ← técnico para devs (DDD paths) — mantener
+    └── (sin areas/)              ← descartado · derivado por zona vía SYSTEM-MAP
 ```
 
-Cada `areas/{agent}.md` lista functional_areas → caps. Auto-gen via `scripts/generate_capability_index.py --brand vitalia` (Fase E).
+El auto-gen de vistas user-facing por zona se produce en el cockpit (MapView lee SYSTEM-MAP + YAML caps) sin necesidad de archivos intermedios `areas/*.md`.
 
-### 2.6 · Cockpit MapView refactor
+### 2.6 · Cockpit MapView por zona + 2 lentes (v2.0)
 
-`tools/luana-cockpit/components/map/MapView.tsx`:
+`tools/luana-cockpit/components/map/MapView.tsx` (dispatch plan tool-scope — ver T-dispatch):
 
-1. Elimina `const AGENTS` con hardcoded `modules: string[]`.
-2. Lee `cap.agent_owner` + `cap.functional_area` del YAML.
-3. Agrupa por agent → functional_area → caps (3 niveles).
-4. Filtro user_visible toggle (default: hide infra · matches "Mostrar live" actual semánticamente).
-5. Cap drawer nuevas tabs:
-   - **Cómo verlo** → render `dev_preview` block (route, navigation, component path, endpoints, test path, fixtures)
-   - **Historial** → timeline `change_log[]` (story_id → date → type → atomics_added/modified → merge_sha)
-6. **Cero bucket "Otros módulos"** — si un cap llega sin `agent_owner` declarado → renderiza warning visual rojo + sugiere refining flow.
+1. Lee `SYSTEM-MAP.yaml` para obtener 3 zonas → 12 cajas → functional_areas (esqueleto del mapa).
+2. Lee `cap.map_box` + `cap.functional_area` del YAML de cada cap. La zona se deriva de map_box vía registro SYSTEM-MAP.
+3. Agrupa por zona → caja → functional_area → caps (3 niveles jerárquicos).
+4. **Lente 1 (default): "Solo agentes + plataforma"** — filtra zona infraestructura (`user_visible:false`). Muestra el valor del producto.
+5. **Lente 2: "Todo el mapa"** — incluye zona infraestructura con indicador visual `tier:enabling`. Toggle en la UI del cockpit.
+6. **Valeria en el mapa:** aparece como nota en `motor-agentico` (supervisora transversal), NO como caja de valor. Su ValeriaSidebar es parte de `plataforma-tecnica.shell`.
+7. **Mateo en el mapa:** caja de zona agentes con functional_areas `mateo.agenda`, `mateo.bookings`, `mateo.pacientes`.
+8. Cap drawer (sin cambio de schema vs v1.0):
+   - **Cómo verlo** → render `dev_preview` block
+   - **Historial** → timeline `change_log[]`
+9. **Cero bucket "Otros módulos"** — si un cap llega sin `map_box` declarado → warning visual rojo + sugiere refining flow.
+
+> **Nota:** la implementación concreta del MapView refactor es tool-scope (Cockpit · `tools/luana-cockpit/`) y va en dispatch separado. Este ADR cementa el CONTRATO que esa implementación debe cumplir.
 
 ---
 
@@ -238,13 +287,17 @@ Promotion candidate flag: `promotable: candidate` en learnings post-cement vital
 
 ## § 6 — Anti-patterns
 
-- ❌ Cap YAML nuevo sin `agent_owner` declarado (refining bloqueado)
+- ❌ Cap YAML nuevo sin `map_box` declarado (refining bloqueado · v2.0 reemplaza `agent_owner` como campo obligatorio)
+- ❌ `map_box: valeria` (Valeria NO es caja de valor en v2.0 — era `agent_owner:valeria` en v1.0; migrar a `mateo` o `motor-agentico` según qué cap)
+- ❌ `map_box: config` o `map_box: infra` en caps NUEVAS (deprecados — usar las 12 cajas nuevas)
 - ❌ Cap `user_visible: true` sin `dev_preview` block (pre-commit hook bloquea)
-- ❌ `functional_area` que no respete pattern `<agent>.<slug-kebab>` (e.g. `valeria_agenda` con underscore en vez de kebab)
-- ❌ `agent_owner: orphan` o `agent_owner: other` (taxonomía cerrada · 7 valores válidos)
-- ❌ Mover el bucket "Otros módulos" al frontend sin resolver el YAML (Band-aid)
+- ❌ `functional_area` que no respete pattern `<box>.<slug-kebab>` (e.g. `mateo_agenda` con underscore en vez de kebab)
+- ❌ `map_box: orphan` o `map_box: other` (taxonomía cerrada · 12 valores válidos en v2.0)
+- ❌ Mover el bucket "Otros módulos" al cockpit sin resolver el YAML (Band-aid)
 - ❌ Borrar `modules/{m}.md` técnicos (los devs los usan)
-- ❌ Crear nueva cap `shell-organism/X` post-merge cuando `valeria.shell` ya cubre (debe ser extend del cap merged)
+- ❌ Crear `areas/` archivos manuales (descartado en v2.0 — la vista user-facing es el cockpit MapView)
+- ❌ Crear nueva cap `shell-organism/X` post-merge cuando `plataforma-tecnica.shell` ya cubre (debe ser extend del cap merged)
+- ❌ Escribir `zone:` en el YAML de la cap (es derivado — lo calcula validate_system_map.py desde map_box)
 
 ---
 
@@ -263,9 +316,9 @@ Promotion candidate flag: `promotable: candidate` en learnings post-cement vital
 ## § 8 — Status board
 
 - ✅ v1.0 cemented 2026-05-27 — Chris ratificó 4 decisiones (modelo 4 dims · renombrar `modules→areas` paralelo · merge shell-organism · sesión autónoma)
-- ⏳ Fase A2 — capability-protocol.md secciones 7-9
-- ⏳ Fase B — backfill 55 caps
-- ⏳ Fase C — cockpit refactor
-- ⏳ Fase D — areas/ creation
-- ⏳ Fase E — auto-gen script
-- ⏳ Fase F — validate + commit + push
+- ✅ v2.0 cemented 2026-05-30 — Story `vitalia-paradigm-map-zones` ratificada Chris: 5ª dim map_box · 3 zonas · 12 cajas · config/infra deprecated · Valeria=supervisora · Mateo=Operar · MapView 2 lentes · areas/ descartado (Fase D)
+- ✅ Fase B — backfill 70 caps (T-1 de story paradigm-map-zones)
+- ✅ Fase A2/SYSTEM-MAP v2.0 — T-2 de story paradigm-map-zones
+- ✅ Fase F5 (este ADR) — T-3 de story paradigm-map-zones
+- ⏳ Fase C — cockpit refactor MapView por zona (tool-scope · dispatch separado)
+- ~~Fase D~~ — areas/ descartado en v2.0 (reemplazado por derivado MapView)

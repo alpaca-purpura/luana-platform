@@ -1,6 +1,8 @@
 /**
  * sc-01-navegacion-22-subtabs.spec.ts — SC-1 · 22 sub-tabs navegables sin error
  * F1-S10 vitalia-fase1-empty-states — T-10
+ * UPDATED: paradigm-map-zones T-6 (2026-05-30) — rutas valeria/agenda + valeria/pacientes
+ *   → mateo/agenda + mateo/pacientes (Valeria es sidebar only v1.2).
  *
  * Assertions:
  *   - Navigate to each of the 22 {agent}/{subtab} routes
@@ -20,13 +22,17 @@ import { test } from "../../fixtures/empty-states.fixture";
 import { ShellOrganismPage } from "../../pages/ShellOrganismPage";
 
 // ── All 22 sub-tab routes (from RIBBON_SUBTABS SSoT — agent-catalog.ts) ───────
-// mateo has NO sub-tabs (transversal agent — excluded per arch invariant)
+// UPDATED v1.2 (paradigm-map-zones T-6 2026-05-30):
+//   valeria (2) → mateo (2) — Valeria is sidebar only, Mateo = Operar/agenda+pacientes
 const SUBTAB_ROUTES = [
   // lisa (4)
   { agent: "lisa", subtab: "marca" },
   { agent: "lisa", subtab: "doctores" },
   { agent: "lisa", subtab: "servicios" },
   { agent: "lisa", subtab: "compliance" },
+  // mateo (2) — UPDATED from valeria (2) in v1.2
+  { agent: "mateo", subtab: "agenda" },
+  { agent: "mateo", subtab: "pacientes" },
   // lucas (5)
   { agent: "lucas", subtab: "lanzar" },
   { agent: "lucas", subtab: "envuelo" },
@@ -38,9 +44,6 @@ const SUBTAB_ROUTES = [
   { agent: "adrian", subtab: "embudo" },
   { agent: "adrian", subtab: "outbound" },
   { agent: "adrian", subtab: "propuestas" },
-  // valeria (2)
-  { agent: "valeria", subtab: "agenda" },
-  { agent: "valeria", subtab: "pacientes" },
   // camila (4)
   { agent: "camila", subtab: "voz" },
   { agent: "camila", subtab: "reactivar" },
@@ -89,11 +92,12 @@ test.describe("SC-1 · 22 sub-tabs navegables sin error", () => {
     const shell = new ShellOrganismPage(shellPage, tenantId);
 
     // Sample check — test the first of each agent to keep test time reasonable
+    // UPDATED v1.2: valeria/agenda → mateo/agenda (paradigm-map-zones T-6)
     const sampleRoutes = [
       { agent: "lisa", subtab: "marca" },
+      { agent: "mateo", subtab: "agenda" },
       { agent: "lucas", subtab: "lanzar" },
       { agent: "adrian", subtab: "embudo" },
-      { agent: "valeria", subtab: "agenda" },
       { agent: "camila", subtab: "voz" },
       { agent: "config", subtab: "cuenta" },
     ];

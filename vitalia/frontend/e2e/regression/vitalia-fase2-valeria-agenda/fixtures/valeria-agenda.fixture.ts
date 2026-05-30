@@ -212,6 +212,8 @@ export async function gotoAgenda(
     }
   }
   const qs = searchParams.toString() ? `?${searchParams.toString()}` : "";
-  await page.goto(`/${tenantId}/valeria/agenda${qs}`);
+  // UPDATED: paradigm-map-zones T-6 (2026-05-30) — route migrated to mateo/agenda.
+  // Was: /${tenantId}/valeria/agenda${qs} (pre paradigm-map-zones T-5)
+  await page.goto(`/${tenantId}/mateo/agenda${qs}`);
   await page.waitForLoadState("domcontentloaded");
 }

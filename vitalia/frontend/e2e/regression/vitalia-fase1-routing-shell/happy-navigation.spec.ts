@@ -2,18 +2,21 @@
  * happy-navigation.spec.ts — SC-1 happy · login + default landing + navegación completa
  *
  * F1-S9 vitalia-fase1-routing-shell — T-6
+ * UPDATED: paradigm-map-zones T-6 (2026-05-30) — default landing changed.
+ *   /{tenantId} → /mateo/agenda (was /valeria/agenda pre T-5 migration).
+ *   Valeria is sidebar only (v1.2). Mateo = ribbon tab "Operar".
  *
  * Gherkin: 01-spec.md § Gherkin SC-1
  *
  * Given: user autenticado con tenant_id=clinic-X en JWT
- * When:  browser carga /{tenantId}/ → redirect valeria/agenda
+ * When:  browser carga /{tenantId}/ → redirect mateo/agenda (UPDATED from valeria/agenda)
  *        user click Ribbon "Atraer" (Lucas) + SubTab "Recursos"
  * Then:  URL = /{tenantId}/lucas/recursos
  *        Ribbon active = Lucas · SubTabsBar active = "Recursos"
  *        document.title = "Vitalia · Lucas · Recursos"
  *
  * gherkin_coverage:
- *   - SC-1: login + default landing /valeria/agenda + navegar Lucas/Recursos → title check
+ *   - SC-1 (UPDATED): login + default landing /mateo/agenda + navegar Lucas/Recursos → title check
  *
  * downstream-regression-na: brand-local E2E spec; no cross-brand consumers
  */
@@ -28,21 +31,23 @@ const TENANT_ID = process.env["E2E_TENANT_ID"] ?? "vitalia-test-tenant";
 test.describe("SC-1 — happy · login + default landing + navegación completa", () => {
   test.use({ viewport: DESKTOP_VIEWPORT });
 
-  test("SC-1-1: default landing redirects to /valeria/agenda with Ribbon + SubTabsBar active", async ({
+  test("SC-1-1 (UPDATED v1.2): default landing redirects to /mateo/agenda with Ribbon + SubTabsBar active", async ({
     shellPage,
   }) => {
+    // UPDATED: paradigm-map-zones T-6 (2026-05-30) — default landing is now /mateo/agenda
+    // Was: /{tenantId}/valeria/agenda (pre T-5 migration)
     const pom = new ShellPage(shellPage);
 
-    // Navigate to tenant root — should redirect to /valeria/agenda
+    // Navigate to tenant root — should redirect to /mateo/agenda
     await pom.gotoTenantRoot(TENANT_ID);
 
-    // Verify URL redirected to /valeria/agenda
-    await shellPage.waitForURL(`**/${TENANT_ID}/valeria/agenda`, {
+    // Verify URL redirected to /mateo/agenda
+    await shellPage.waitForURL(`**/${TENANT_ID}/mateo/agenda`, {
       timeout: 15_000,
     });
 
-    // Ribbon should show Valeria as active
-    await pom.waitForRibbonActive("valeria");
+    // Ribbon should show Mateo as active (v1.2 — Mateo = Operar tab)
+    await pom.waitForRibbonActive("mateo");
 
     // SubTabsBar should show "agenda" as active
     await pom.waitForSubTabActive("agenda");
@@ -56,8 +61,8 @@ test.describe("SC-1 — happy · login + default landing + navegación completa"
   }) => {
     const pom = new ShellPage(shellPage);
 
-    // Start from default landing
-    await pom.gotoSubtab(TENANT_ID, "valeria", "agenda");
+    // Start from default landing — UPDATED: mateo/agenda (was valeria/agenda pre v1.2)
+    await pom.gotoSubtab(TENANT_ID, "mateo", "agenda");
 
     // Click Ribbon tab "Atraer" → Lucas
     await pom.clickRibbonTab("lucas");
@@ -95,9 +100,9 @@ test.describe("SC-1 — happy · login + default landing + navegación completa"
   }) => {
     const pom = new ShellPage(shellPage);
 
-    // Start at valeria/agenda
-    await pom.gotoSubtab(TENANT_ID, "valeria", "agenda");
-    await pom.waitForRibbonActive("valeria");
+    // Start at mateo/agenda — UPDATED: paradigm-map-zones T-6 (v1.2 — was valeria/agenda)
+    await pom.gotoSubtab(TENANT_ID, "mateo", "agenda");
+    await pom.waitForRibbonActive("mateo");
 
     // Navigate to Adrián via Ribbon
     await pom.clickRibbonTab("adrian");

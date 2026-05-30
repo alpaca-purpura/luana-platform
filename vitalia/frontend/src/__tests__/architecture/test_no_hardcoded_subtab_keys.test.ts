@@ -41,6 +41,8 @@ const ALLOWED_FILES = new Set([
   "__tests__/architecture/test_no_phi_real_data.test.ts",
   // F2-S7 T-4: arch test for AGENT_SUBSUBTABS catalog uses composite keys as test fixtures
   "__tests__/architecture/test-agent-subsubtabs-ssot.test.ts",
+  // paradigm-map-zones T-5: ribbon taxonomy test verifies mateo.agenda + valeria.agenda as string literals
+  "__tests__/architecture/agent-catalog-ribbon-taxonomy.test.ts",
 ]);
 
 /**

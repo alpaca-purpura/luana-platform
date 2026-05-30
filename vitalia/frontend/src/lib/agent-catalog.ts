@@ -1,9 +1,19 @@
 // cap: shell-organism.shell-vitalia
 // story-origin: TBD
 /**
- * Agent catalog — Vitalia canonical 6-agent registry.
+ * Agent catalog — Vitalia canonical 6-agent registry (v1.2 — paradigm-map-zones T-5).
  *
- * spec_anchor: 01-spec.md § 5.1 + 03-arch.md § 2.4
+ * v1.2 changes (2026-05-30):
+ *   - AGENT_RIBBON_ORDER: [lisa, mateo, adrian, lucas, camila] (Valeria OUT, Mateo IN)
+ *   - AGENT_CATALOG.mateo: tabLabel="Operar", defaultSubtab="agenda"
+ *   - AGENT_CATALOG.valeria: sidebar supervisor only — NOT in ribbon
+ *   - RIBBON_SUBTABS.mateo: [{agenda}, {pacientes}] (migrated from valeria)
+ *   - RIBBON_SUBTABS.valeria: [] (empty — valeria is sidebar, not ribbon tab)
+ *   - SHIPPED_STATIC_SUBTABS: "mateo.agenda" (replaces "valeria.agenda")
+ *   - isValidAgent: mateo=true, valeria=false
+ *   - ConfigTab label: "Plataforma" (renamed from "Configurar" in ConfigTab.tsx)
+ *
+ * spec_anchor: 01-spec.md § 5.1 + 03-arch.md § 2.4 + 03-arch-fe.md § F6
  * F1-S7 EXTEND: tabLabel + defaultSubtab + AGENT_RIBBON_ORDER + RibbonTabSlug + extractAgentFromPath
  *
  * LIFT CANDIDATE: shell-chat agent catalog cross-brand cuando ≥2 brands lo necesiten.
@@ -107,15 +117,15 @@ export const AGENT_CATALOG: Record<AgentSlug, AgentDescriptor> = {
   mateo: {
     slug: "mateo",
     name: "Mateo",
-    role: "Desarrollador · tecnología y diseño con IA",
+    role: "Operaciones · agenda y pacientes del día",
     colorToken: "agent-mateo",
     colorSoftToken: "agent-mateo-soft",
     hex: "#fee209",
     thumbnail: "/agents/mateo/thumbnail.png",
     transparent: "/agents/mateo/transparent.png",
     initial: "M",
-    tabLabel: "Tecnología",
-    defaultSubtab: "ia",
+    tabLabel: "Operar",
+    defaultSubtab: "agenda",
   },
 };
 
@@ -127,14 +137,16 @@ export const AGENT_SLUGS: AgentSlug[] = Object.keys(
 
 /**
  * Canonical tab order in the Ribbon.
- * Mateo EXCLUDED — transversal agent, out-of-scope F1-S7.
- * spec_anchor: 03-arch.md § 2.1 D1 + 06-tickets.yaml T-1 SC-2
+ * v1.2 (2026-05-30 paradigm-map-zones T-5):
+ *   Mateo IN (Operar — agenda + pacientes).
+ *   Valeria OUT — supervisor sidebar only (not a ribbon tab).
+ * spec_anchor: 03-arch-fe.md § F6 + 02-impact.md § 5 + 06-tickets.yaml T-5
  */
 export const AGENT_RIBBON_ORDER = [
   "lisa",
-  "lucas",
+  "mateo",
   "adrian",
-  "valeria",
+  "lucas",
   "camila",
 ] as const satisfies readonly AgentSlug[];
 
@@ -186,8 +198,9 @@ export function extractAgentFromPath(
 
 /**
  * Sub-tab descriptor — single sub-tab entry inside RIBBON_SUBTABS[slug].
- * 22 sub-tabs total distribuidos: lisa 4 · lucas 5 · adrian 4 · valeria 2 · camila 4 · config 3.
- * spec_anchor: 03-arch.md § 2.1 + 01-spec.md § Catalog SSoT § 1
+ * 22 sub-tabs total distribuidos: lisa 4 · mateo 2 · lucas 5 · adrian 4 · camila 4 · config 3.
+ * v1.2: valeria=0 (sidebar-only) · mateo=2 (agenda+pacientes, migrated from valeria).
+ * spec_anchor: 03-arch-fe.md § F6 + 01-spec.md § Catalog SSoT § 1
  */
 export interface SubTabMeta {
   /** URL segment identifier — slug kebab-case (e.g., "marca", "doctores", "envuelo"). */
@@ -199,12 +212,14 @@ export interface SubTabMeta {
 }
 
 /**
- * Sub-tabs per ribbon tab — 22 sub-tabs distribuidos 4·5·4·2·4·3.
- * Counts: Lisa 4 · Lucas 5 · Adrián 4 · Valeria 2 · Camila 4 · Config 3.
- * Mateo: empty array — transversal agent, not in AGENT_RIBBON_ORDER (F1-S7).
- * Record<RibbonTabSlug, ...> requires mateo key since AgentSlug includes mateo.
+ * Sub-tabs per ribbon tab — 22 sub-tabs distribuidos 4·2·5·4·4·3.
+ * v1.2 (2026-05-30 paradigm-map-zones T-5):
+ *   Mateo: 2 sub-tabs [agenda, pacientes] — migrated from valeria.
+ *   Valeria: empty array — sidebar-only supervisor (NOT a ribbon tab).
+ * Counts: Lisa 4 · Mateo 2 · Lucas 5 · Adrián 4 · Camila 4 · Config 3 = 22 total.
+ * Record<RibbonTabSlug, ...> requires both mateo and valeria keys since AgentSlug includes both.
  *
- * spec_anchor: 01-spec.md § 1 + 03-arch.md § 2.1 + SHELL-DESIGN-CONTRACT.md § 7.2
+ * spec_anchor: 03-arch-fe.md § F6 + 02-impact.md § 5 + SHELL-DESIGN-CONTRACT.md § 7.2
  */
 export const RIBBON_SUBTABS: Record<RibbonTabSlug, readonly SubTabMeta[]> = {
   lisa: [
@@ -212,6 +227,11 @@ export const RIBBON_SUBTABS: Record<RibbonTabSlug, readonly SubTabMeta[]> = {
     { id: "doctores", label: "Doctores", icon: "👨‍⚕️" },
     { id: "servicios", label: "Servicios", icon: "🩺" },
     { id: "compliance", label: "Compliance", icon: "🛡️" },
+  ],
+  /** Mateo: Operar — agenda + pacientes del día (migrated from valeria v1.2). */
+  mateo: [
+    { id: "agenda", label: "Agenda", icon: "📆" },
+    { id: "pacientes", label: "Pacientes", icon: "👥" },
   ],
   lucas: [
     { id: "lanzar", label: "Lanzar", icon: "🚀" },
@@ -226,18 +246,18 @@ export const RIBBON_SUBTABS: Record<RibbonTabSlug, readonly SubTabMeta[]> = {
     { id: "outbound", label: "Outbound", icon: "📣" },
     { id: "propuestas", label: "Propuestas", icon: "💼" },
   ],
-  valeria: [
-    { id: "agenda", label: "Agenda", icon: "📆" },
-    { id: "pacientes", label: "Pacientes", icon: "👥" },
-  ],
+  /**
+   * Valeria: supervisor sidebar only — NOT a ribbon tab (v1.2).
+   * Valeria chat/sidebar/rail components REMAIN (ValeriaSidebar, ValeriaChat, ValeriaRail).
+   * Empty subtabs = never rendered in SubTabsBar for valeria.
+   */
+  valeria: [],
   camila: [
     { id: "voz", label: "Voz del paciente", icon: "🎤" },
     { id: "reactivar", label: "Reactivar", icon: "🪃" },
     { id: "multiplicar", label: "Multiplicar", icon: "🤝" },
     { id: "reputacion", label: "Reputación", icon: "📊" },
   ],
-  /** Mateo: transversal agent — no dedicated sub-tabs (empty array, not shown in SubTabsBar). */
-  mateo: [],
   config: [
     { id: "cuenta", label: "Mi cuenta", icon: "🏢" },
     { id: "conexiones", label: "Conexiones", icon: "🔌" },
@@ -263,8 +283,8 @@ export const RIBBON_SUBTABS: Record<RibbonTabSlug, readonly SubTabMeta[]> = {
 export type RibbonSubtabKey = `${RibbonTabSlug}.${string}`;
 
 export const SHIPPED_STATIC_SUBTABS: ReadonlySet<RibbonSubtabKey> = new Set<RibbonSubtabKey>([
-  "valeria.agenda",
-  "lisa.marca",  // F2-S7 T-4 — N3-static subtab (identidad/voz-y-tono/presencia)
+  "mateo.agenda",  // v1.2 (2026-05-30): migrated from valeria.agenda (paradigm-map-zones T-5)
+  "lisa.marca",    // F2-S7 T-4 — N3-static subtab (identidad/voz-y-tono/presencia)
 ]);
 
 /**
@@ -276,23 +296,25 @@ export const SHIPPED_STATIC_SUBTABS: ReadonlySet<RibbonSubtabKey> = new Set<Ribb
 
 /**
  * Type guard — returns true if slug is a valid ribbon agent tab slug.
- * Includes: 5 ribbon agents (lisa, valeria, adrian, lucas, camila) + 'config'.
- * Excludes: 'mateo' (transversal agent — not in AGENT_RIBBON_ORDER per F1-S7).
+ * v1.2 (2026-05-30 paradigm-map-zones T-5):
+ *   Includes: 5 ribbon agents (lisa, mateo, adrian, lucas, camila) + 'config'.
+ *   Excludes: 'valeria' (supervisor sidebar — not in AGENT_RIBBON_ORDER).
  *
  * XSS safe: enum membership check sanitizes any non-slug payload.
  *
  * Examples:
  *   isValidAgent("lisa")      → true (ribbon agent)
- *   isValidAgent("config")    → true (config tab special slug)
- *   isValidAgent("mateo")     → false (transversal — excluded from ribbon)
+ *   isValidAgent("mateo")     → true (ribbon agent, Operar — v1.2)
+ *   isValidAgent("config")    → true (config/plataforma tab special slug)
+ *   isValidAgent("valeria")   → false (supervisor sidebar — not in ribbon v1.2)
  *   isValidAgent("foo")       → false (unknown slug)
  *   isValidAgent("")          → false (empty string)
  *   isValidAgent("<script>")  → false (XSS payload sanitized)
  */
 export function isValidAgent(slug: string): slug is RibbonTabSlug {
   if (slug === "config") return true;
-  // Explicitly exclude mateo (in AgentSlug but transversal, not in ribbon)
-  if (slug === "mateo") return false;
+  // Explicitly exclude valeria (supervisor sidebar — not in AGENT_RIBBON_ORDER v1.2)
+  if (slug === "valeria") return false;
   return slug in AGENT_CATALOG;
 }
 

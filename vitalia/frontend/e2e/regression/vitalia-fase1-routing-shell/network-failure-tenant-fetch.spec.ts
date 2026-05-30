@@ -41,7 +41,8 @@ test.describe("SC-5 — network_failure · BE tenant fetch timeout → fallback 
     // Mock: delay 6s + 504 → triggers AbortController timeout in fetchUserTenants
     await mockTenantFetchFailure(shellPage, 6_000);
 
-    await shellPage.goto(`/${TENANT_ID}/valeria/agenda`, {
+    // UPDATED: paradigm-map-zones T-6 — use mateo/agenda (was valeria/agenda pre v1.2)
+    await shellPage.goto(`/${TENANT_ID}/mateo/agenda`, {
       waitUntil: "domcontentloaded",
     });
 

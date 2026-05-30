@@ -19,7 +19,7 @@ references:
 
 ## Contexto
 
-El shell-organism Vitalia (`vitalia-mvp-ui-foundation` outcome v2.0) es la base UI de toda la aplicación: 5 agentes (Lisa, Lucas, Adrián, Valeria, Camila) + tab Configurar + Mateo transversal sobre un layout 50/50 con Valeria sidebar permanente. Los 8+ componentes del shell (TopBarGlobal, ValeriaSidebar, ValeriaRail, ValeriaHistory, ValeriaChat, Ribbon, SubTabsBar, ShellOrganismLayout) se construyen en stories F1-S1..S10 durante Fase 1 y se REUSAN en ~22 sub-tabs durante Fase 2 (F2-S1..S22 aprox según outcome master).
+El shell-organism Vitalia (`vitalia-mvp-ui-foundation` outcome v2.0) es la base UI de toda la aplicación: **5 especialistas (Lisa, Mateo, Adrián, Lucas, Camila) + tab Plataforma** en el Ribbon N1, con Valeria como sidebar supervisora permanente (★ v1.2 2026-05-30: Valeria salió del Ribbon; Mateo entró como especialista Operar; ConfigTab "Configurar" → "Plataforma"). Los 8+ componentes del shell (TopBarGlobal, ValeriaSidebar, ValeriaRail, ValeriaHistory, ValeriaChat, Ribbon, SubTabsBar, ShellOrganismLayout) se construyen en stories F1-S1..S10 durante Fase 1 y se REUSAN en ~22 sub-tabs durante Fase 2 (F2-S1..S22 aprox según outcome master).
 
 El mockup HTML integral `vitalia/docs/product/stories/vitalia-shell-organism/mockups/dual-mode-shell.html` (1439 líneas) está ratificado por Chris 2026-05-22 como SSoT visual del shell completo. Sin embargo, este mockup compone organismos en su contexto integral — NO muestra componentes individuales en isolation con todas sus variantes (Button default/secondary/ghost/destructive/outline, ValeriaSidebar collapsed/rail/full, Ribbon active per agente, etc.).
 
