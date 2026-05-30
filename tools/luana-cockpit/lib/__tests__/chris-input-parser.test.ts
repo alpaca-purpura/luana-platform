@@ -9,9 +9,11 @@ import path from 'node:path';
 import { parseChrisInput, serializeChrisInput } from '../chris-input-parser.js';
 import type { ChrisInput } from '../types.js';
 
+// Dir renombrado valeria-pacientes → mateo-pacientes (story vitalia-paradigm-map-zones,
+// 2026-05-30). El contenido del fixture (incl. story_id interno) se preservó intacto.
 const REAL_FILE = path.resolve(
   __dirname,
-  '../../../../vitalia/docs/product/stories/vitalia-fase2-valeria-pacientes/chris-input.md'
+  '../../../../vitalia/docs/product/stories/vitalia-fase2-mateo-pacientes/chris-input.md'
 );
 
 describe('chris-input-parser', () => {

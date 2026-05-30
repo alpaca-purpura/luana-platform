@@ -11,11 +11,12 @@ import type { Story } from './types';
 export type AgentId =
   | 'lisa'
   | 'valeria'
+  | 'mateo'
   | 'adrian'
   | 'lucas'
   | 'camila'
-  | 'config'
-  | 'infra';
+  | 'config' // DEPRECATED v2.0 (2026-05-30) — promovido a cajas zona plataforma
+  | 'infra'; // DEPRECATED v2.0 (2026-05-30) — promovido a cajas zona infraestructura
 
 export interface AgentMeta {
   emoji: string;
@@ -26,10 +27,12 @@ export interface AgentMeta {
 
 export const AGENTS: Record<AgentId, AgentMeta> = {
   lisa: { emoji: '🏥', name: 'Lisa', color: '#10b981' }, // emerald
-  valeria: { emoji: '🗓', name: 'Valeria', color: '#a855f7' }, // purple
+  valeria: { emoji: '🗓', name: 'Valeria', color: '#a855f7' }, // purple — supervisora (sidebar)
+  mateo: { emoji: '📅', name: 'Mateo', color: '#FEE209' }, // amarillo marca (--agent-mateo) — Operar/Mi Día
   adrian: { emoji: '💼', name: 'Adrián', color: '#3b82f6' }, // blue
   lucas: { emoji: '📣', name: 'Lucas', color: '#f59e0b' }, // amber
   camila: { emoji: '🌟', name: 'Camila', color: '#ec4899' }, // pink
+  // DEPRECATED v2.0 — back-compat para story cards viejas (agent_owner config/infra).
   config: { emoji: '⚙', name: 'Config', color: '#64748b' }, // slate
   infra: { emoji: '🔧', name: 'Infra', color: '#06b6d4' }, // cyan
 };
@@ -56,7 +59,7 @@ export function agentOf(
     asAgent(story.cap_target?.includes('.') ? story.cap_target.split('.')[0] : null);
   if (direct) return direct;
 
-  const m = story.story_id?.match(/-(lisa|valeria|adrian|lucas|camila|config)-/);
+  const m = story.story_id?.match(/-(lisa|valeria|mateo|adrian|lucas|camila|config)-/);
   return m ? (m[1] as AgentId) : null;
 }
 

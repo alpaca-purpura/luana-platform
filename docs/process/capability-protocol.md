@@ -39,8 +39,8 @@ status: live                              # live | beta | deprecated | sunset
 license: brand-local                      # brand-local | core-shared
 
 # Dimensiones v3 (4 campos · cement 2026-05-27 · REQUIRED todos)
-agent_owner: valeria                      # lisa | valeria | adrian | lucas | camila | config | infra
-functional_area: valeria.agenda           # <agent>.<area-kebab>
+agent_owner: mateo                        # caja del mapa (v2.0) — ver SYSTEM-MAP.yaml `zones`
+functional_area: mateo.agenda             # <caja>.<area-kebab>
 user_visible: true                        # true | false
 nature: feature                           # feature | scaffold | extension-point
 
@@ -193,7 +193,7 @@ Antes de cerrar el merge commit, `/pm-{brand}` MUST verificar que el `change_log
 - ❌ Borrar scenario existente: NUNCA (deprecation cementada → marca `status: deprecated` + sigue en array)
 - ❌ Cap YAML sin `agent_owner` o sin `functional_area` declarado (cement · pre-commit hook bloquea)
 - ❌ Cap `user_visible: true` sin bloque `dev_preview` (cement · pre-commit hook bloquea)
-- ❌ `agent_owner:` con valor fuera del set cerrado vitalia `{lisa, valeria, adrian, lucas, camila, config, infra}` (cement)
+- ❌ `agent_owner:` con valor fuera del set de cajas v2.0 vitalia `{lisa, mateo, adrian, lucas, camila, acceso, onboarding, configuracion, seguridad-cumplimiento, observabilidad, plataforma-tecnica, motor-agentico}` (cement · `config`/`infra` deprecadas, `valeria` = supervisora sin caja de valor)
 - ❌ `functional_area:` sin pattern `<agent>.<slug-kebab>` (e.g. `valeria_agenda` con underscore → debe ser `valeria.agenda`)
 - ❌ Crear cap nuevo cuando `functional_area` existente la cubre — refining favorece `extend` over `new` (rule anti-duplication-refining)
 - ❌ Renombrar `tech_module:` post-merge (path canónico inmutable · usar `superseded_by:` si hay refactor real)
@@ -212,25 +212,44 @@ Todo cap declara `change_log[]` + scenarios + **4 dimensiones de clasificación*
 | # | Campo YAML | Concepto | Valores válidos |
 |---|---|---|---|
 | 1 | `tech_module:` | dominio técnico (DDD backend · FSD frontend) — path canónico | `scheduling`, `crm`, `brand_studio`, ... (kebab del path real) |
-| 2 | `agent_owner:` | quién es el dueño UI/UX user-facing | `lisa` · `valeria` · `adrian` · `lucas` · `camila` · `config` · `infra` |
-| 3 | `functional_area:` | sub-categoría user-facing **dentro** del agente | `<agent>.<area-kebab>` (ej. `valeria.agenda`, `config.compliance`) |
+| 2 | `agent_owner:` | la **caja** del mapa dueña de la cap (= `map_box`) | 5 especialistas + 3 cajas Plataforma + 4 cajas Infraestructura — **SSoT: `SYSTEM-MAP.yaml` `zones`** (tabla abajo) |
+| 3 | `functional_area:` | sub-categoría **dentro** de la caja | `<caja>.<area-kebab>` (ej. `mateo.agenda`, `seguridad-cumplimiento.compliance`) |
 | 4 | `user_visible:` | aparece en mapa principal del producto | `true` (default) · `false` (infra cross-cutting) |
 
 **Regla cardinal:** todo cap (nuevo o existente) MUST declarar las 4 dimensiones. Cap sin `agent_owner` o sin `functional_area` válido → pre-commit hook bloquea y refining no avanza.
 
-### Mapeo brand `agent_owner` (vitalia · v1)
+### Mapeo brand cajas → zonas (vitalia · v2.0 cement 2026-05-30)
 
-| `agent_owner` | Emoji | Subtitle | Functional areas válidas |
+> **SSoT del registro: `vitalia/docs/architecture/SYSTEM-MAP.yaml` `zones[].boxes`.** Esta tabla es vista derivada (no editar a mano por cap). La **zona se deriva** de la caja vía ese registro. `config`/`infra` quedaron DEPRECATED (sus áreas se promovieron a cajas propias). `valeria` = supervisora transversal (sidebar · runtime `motor-agentico`), NO es caja de valor en el Ribbon.
+
+**Zona Agentes** (5 especialistas · `user_visible: true`):
+
+| Caja (`agent_owner`) | Emoji | Subtitle | Functional areas |
 |---|---|---|---|
-| `lisa` | 🏥 | Mi Clínica | `lisa.identidad-marca` · `lisa.servicios` · `lisa.autoridad` · `lisa.equipo` |
-| `valeria` | 🗓 | Mi Día | `valeria.agenda` · `valeria.bookings` · `valeria.shell` |
-| `adrian` | 💼 | Vender | `adrian.embudo` · `adrian.inbox` · `adrian.crm` · `adrian.reactivacion` |
-| `lucas` | 📣 | Marketing | `lucas.atribucion` · `lucas.bowtie` · `lucas.recommendations` · `lucas.referrals` |
-| `camila` | 🌟 | Reputación + cohortes | `camila.nps` · `camila.followup` · `camila.cohorts` |
-| `config` | ⚙ | Configurar | `config.onboarding` · `config.compliance` · `config.auth` · `config.iam` · `config.clinics` · `config.public-landing` · `config.patients-records` · `config.connections` · `config.admin` |
-| `infra` | 🔧 | Infra Vitalia | `infra.copilot` · `infra.observability` · `infra.platform` · `infra.payment` · `infra.agentic-engine` · `infra.sales-agent-engine` · `infra.scaffolding` |
+| `lisa` | 🏥 | Mi Clínica | `lisa.marca` · `lisa.servicios` · `lisa.doctores` · `lisa.compliance` · `lisa.landing_public` |
+| `mateo` | 📅 | Operar / Mi Día | `mateo.agenda` · `mateo.bookings` · `mateo.pacientes` |
+| `adrian` | 💼 | Vender | `adrian.embudo` · `adrian.inbox` · `adrian.crm` · `adrian.reactivacion` · `adrian.outbound` · `adrian.propuestas` |
+| `lucas` | 📣 | Marketing | `lucas.atribucion` · `lucas.bowtie` · `lucas.recomendaciones` · `lucas.referrals` · … |
+| `camila` | 🌟 | Reputación + cohortes | `camila.reputacion` · `camila.reactivar` · `camila.multiplicar` · `camila.voz` |
 
-Otras brands declaran su propio mapeo `agent_owner` en su ADR-brand-XXX (lift propuesto via `/pm-luana` post-cement vitalia).
+**Zona Plataforma** (transversal user-facing · `user_visible: true`):
+
+| Caja (`agent_owner`) | Functional areas |
+|---|---|
+| `acceso` | `acceso.auth` · `acceso.iam` |
+| `onboarding` | `onboarding.onboarding_clinic` |
+| `configuracion` | `configuracion.cuenta` · `configuracion.clinics` · `configuracion.conexiones` · `configuracion.patients-records` · `configuracion.admin` · `configuracion.fiscal` · `configuracion.avanzado` |
+
+**Zona Infraestructura** (no-funcional · `user_visible: false`):
+
+| Caja (`agent_owner`) | Functional areas |
+|---|---|
+| `seguridad-cumplimiento` | `seguridad-cumplimiento.compliance` · `seguridad-cumplimiento.scaffolding` |
+| `observabilidad` | `observabilidad.observability` |
+| `plataforma-tecnica` | `plataforma-tecnica.platform` · `plataforma-tecnica.payment` · `plataforma-tecnica.shell` · `plataforma-tecnica.map` · `plataforma-tecnica.reconciliation` · … |
+| `motor-agentico` | `motor-agentico.copilot` · `motor-agentico.agentic-engine` · `motor-agentico.sales-agent-engine` |
+
+Otras brands declaran su propio `SYSTEM-MAP.yaml` por zonas (lift del modelo propuesto via `/pm-luana` — ver `docs/promotion-protocol/proposals/2026-05-30-lift-zone-model.md`).
 
 ### Zona del mapa (5ª dimensión DERIVADA — cement 2026-05-30)
 

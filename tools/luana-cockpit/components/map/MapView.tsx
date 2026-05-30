@@ -15,13 +15,25 @@ import { listCapabilities, getSystemMap, openInEditor, getCapabilityStatus } fro
 import type {
   Capability,
   SystemMap,
+  SystemMapZone,
   AreaStatus,
-  AgentDefinition,
-  FunctionalArea,
   ComputedStatusReport,
   CapStatusComputed,
 } from '@/lib/types';
 import { getStatusBadge } from '@/lib/types';
+import {
+  buildZoneTree,
+  buildProcessLens,
+  capsByFunctionalArea,
+  findOrphanCaps,
+  findSupervisor,
+  type BoxNode,
+  type ZoneNode,
+  type ProcessStageNode,
+} from '@/lib/map-zones';
+
+/** Lentes del mapa: por trabajador/superficie (zonas) o por value-stream (proceso). */
+type MapLens = 'trabajadores' | 'proceso';
 
 // Roles canónicos vitalia (per HIPAA-lite + IAM)
 const VITALIA_ROLES = [
@@ -62,6 +74,7 @@ export function MapView() {
   const [showDraft, setShowDraft] = useState(false);
   const [showInfra, setShowInfra] = useState(false);
   const [showPlanned, setShowPlanned] = useState(true);
+  const [lens, setLens] = useState<MapLens>('trabajadores');
 
   // R3.2 · filtros nuevos (search natural + onboarding rol + solo poblados v3.2)
   const [searchTerm, setSearchTerm] = useState('');
@@ -144,40 +157,26 @@ export function MapView() {
     });
   }, [caps, showLive, showDraft, showInfra, showOnlyPopulated, roleFilter, searchTerm]);
 
-  const byAgentArea = useMemo(() => {
-    if (!systemMap) return null;
-
-    // Map "<agent_id>.<area_id>" → array de caps shipped
-    const capsByArea = new Map<string, Capability[]>();
-    for (const c of filtered) {
-      if (c.superseded_by) continue;
-      const fa = c.functional_area;
-      if (!fa) continue;
-      if (!capsByArea.has(fa)) capsByArea.set(fa, []);
-      capsByArea.get(fa)!.push(c);
-    }
-
-    // Build skeleton from SYSTEM-MAP, attach caps
-    return systemMap.agents.map((agent) => ({
-      agent,
-      areas: agent.functional_areas.map((area) => ({
-        area,
-        fullId: `${agent.id}.${area.id}`,
-        caps: capsByArea.get(`${agent.id}.${area.id}`) ?? [],
-      })),
-    }));
+  // Árbol zona → caja → área (SYSTEM-MAP v2.0). null si el map no trae `zones`.
+  const zoneTree = useMemo<ZoneNode[] | null>(() => {
+    if (!systemMap?.zones || systemMap.zones.length === 0) return null;
+    return buildZoneTree(systemMap, capsByFunctionalArea(filtered));
   }, [systemMap, filtered]);
 
-  // Caps sin agent_owner o funcional_area declarado (huérfanas)
-  const orphans = useMemo(() => {
-    if (!byAgentArea) return [];
-    const coveredAreas = new Set(
-      byAgentArea.flatMap((b) => b.areas.map((a) => a.fullId))
-    );
-    return filtered.filter(
-      (c) => !c.superseded_by && (!c.agent_owner || !c.functional_area || !coveredAreas.has(c.functional_area ?? ''))
-    );
-  }, [byAgentArea, filtered]);
+  // Lente "proceso": cajas de la zona Agentes ordenadas por value-stream.
+  const processLens = useMemo<ProcessStageNode[] | null>(
+    () => (zoneTree ? buildProcessLens(zoneTree) : null),
+    [zoneTree]
+  );
+
+  // Supervisora (Valeria) — sidebar, no caja de valor.
+  const supervisor = useMemo(() => findSupervisor(systemMap?.agents), [systemMap]);
+
+  // Caps sin caja/área conocida (huérfanas · anti-isla)
+  const orphans = useMemo(
+    () => (zoneTree ? findOrphanCaps(filtered, zoneTree) : []),
+    [zoneTree, filtered]
+  );
 
   if (loading) {
     return (
@@ -311,6 +310,42 @@ export function MapView() {
             </Tooltip>
           </label>
         </div>
+
+        {/* Lente del mapa: trabajadores (zonas) · proceso (value-stream) */}
+        {zoneTree && (
+          <div className="flex items-center gap-2 text-xs flex-wrap">
+            <span className="text-[var(--color-muted)]">Lente:</span>
+            <div className="inline-flex rounded border border-[var(--color-border)] overflow-hidden">
+              {(
+                [
+                  { id: 'trabajadores', label: '👥 Trabajadores', hint: 'Por zona y caja (quién opera qué)' },
+                  { id: 'proceso', label: '🔄 Proceso', hint: 'Por value-stream del GTM (atraer → vender → operar → fidelizar)' },
+                ] as const
+              ).map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  title={opt.hint}
+                  aria-pressed={lens === opt.id}
+                  onClick={() => setLens(opt.id)}
+                  className={cn(
+                    'px-3 py-1 transition-colors',
+                    lens === opt.id
+                      ? 'bg-[var(--color-accent)] text-black font-medium'
+                      : 'bg-[var(--color-panel)] text-[var(--color-muted)] hover:text-[var(--color-fg)]'
+                  )}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+            {supervisor && (
+              <span className="text-[11px] text-[var(--color-muted)] italic ml-1">
+                {supervisor.emoji} {supervisor.name} = supervisora (sidebar · orquesta, no es caja de valor)
+              </span>
+            )}
+          </div>
+        )}
       </header>
 
       {!statusReport && statusHint && (
@@ -323,39 +358,25 @@ export function MapView() {
         </div>
       )}
 
-      {byAgentArea ? (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-            {byAgentArea
-              .filter((b) => b.agent.id !== 'infra')
-              .map(({ agent, areas }) => (
-                <AgentSection
-                  key={agent.id}
-                  agent={agent}
-                  areas={areas}
-                  showPlanned={showPlanned}
-                  statusReport={statusReport}
-                />
-              ))}
-          </div>
-
-          {showInfra && (() => {
-            const infraData = byAgentArea.find((b) => b.agent.id === 'infra');
-            const infraCapsCount = infraData?.areas.reduce((n, a) => n + a.caps.length, 0) ?? 0;
-            if (!infraData || infraCapsCount === 0) return null;
-            return (
-              <AgentSection
-                agent={infraData.agent}
-                areas={infraData.areas}
-                showPlanned={showPlanned}
-                fullWidth
-                statusReport={statusReport}
-              />
-            );
-          })()}
-        </>
+      {zoneTree ? (
+        lens === 'proceso' && processLens ? (
+          <ProcessLensView
+            stages={processLens}
+            zoneTree={zoneTree}
+            showPlanned={showPlanned}
+            showInfra={showInfra}
+            statusReport={statusReport}
+          />
+        ) : (
+          <ZoneLensView
+            zoneTree={zoneTree}
+            showPlanned={showPlanned}
+            showInfra={showInfra}
+            statusReport={statusReport}
+          />
+        )
       ) : (
-        // Fallback si system-map no cargó: vista legacy por agent_owner
+        // Fallback si SYSTEM-MAP no cargó o no trae `zones`: vista legacy por agent_owner
         <LegacyFallbackView filtered={filtered} caps={caps} showInfra={showInfra} statusReport={statusReport} />
       )}
 
@@ -384,20 +405,217 @@ export function MapView() {
   );
 }
 
-function AgentSection({
-  agent,
-  areas,
+// ── Lente "trabajadores": render por zona → caja → área ─────────────────────
+
+const ZONE_TIER_BADGE: Record<string, { label: string; cls: string }> = {
+  core: { label: 'valor', cls: 'bg-[#14532d] text-[#86efac]' },
+  supporting: { label: 'transversal', cls: 'bg-[#1e3a5f] text-[#93c5fd]' },
+  enabling: { label: 'no-funcional', cls: 'bg-[#3f3f46] text-[#d4d4d8]' },
+};
+
+function ZoneHeader({ zone, totalCaps }: { zone: SystemMapZone; totalCaps: number }) {
+  const tier = ZONE_TIER_BADGE[zone.tier] ?? null;
+  return (
+    <div className="mb-3 border-b border-[var(--color-border)] pb-2">
+      <div className="flex items-baseline gap-2 flex-wrap">
+        <h2 className="text-base font-semibold">{zone.name}</h2>
+        {tier && (
+          <span className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${tier.cls}`}>
+            {tier.label}
+          </span>
+        )}
+        <span className="text-[10px] text-[var(--color-muted)]">
+          {zone.boxes?.length ?? 0} cajas · {totalCaps} caps
+        </span>
+      </div>
+      {zone.description && (
+        <p className="text-[11px] text-[var(--color-muted)] italic mt-0.5 leading-relaxed">
+          {zone.description}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function ZoneBlock({
+  zoneNode,
+  showPlanned,
+  showInfra,
+  statusReport = null,
+}: {
+  zoneNode: ZoneNode;
+  showPlanned: boolean;
+  showInfra: boolean;
+  statusReport?: ComputedStatusReport | null;
+}) {
+  const { zone, boxes, totalCaps } = zoneNode;
+  const isEnabling = zone.user_visible === false;
+
+  // Zona no-funcional (Infraestructura) oculta salvo toggle "infra 🔧"
+  if (isEnabling && !showInfra) {
+    return (
+      <section aria-label={zone.name}>
+        <div className="text-[11px] text-[var(--color-muted)] px-2 py-1.5 border border-dashed border-[var(--color-border)] rounded">
+          🔧 <b>{zone.name}</b> · {zone.boxes?.length ?? 0} cajas · {totalCaps} caps ·{' '}
+          activá <span className="font-mono">infra 🔧</span> arriba para ver
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section aria-label={zone.name}>
+      <ZoneHeader zone={zone} totalCaps={totalCaps} />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {boxes.map((node) => (
+          <BoxSection
+            key={node.box.id}
+            node={node}
+            showPlanned={showPlanned}
+            statusReport={statusReport}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ZoneLensView({
+  zoneTree,
+  showPlanned,
+  showInfra,
+  statusReport = null,
+}: {
+  zoneTree: ZoneNode[];
+  showPlanned: boolean;
+  showInfra: boolean;
+  statusReport?: ComputedStatusReport | null;
+}) {
+  return (
+    <div className="space-y-6 mb-4">
+      {zoneTree.map((zoneNode) => (
+        <ZoneBlock
+          key={zoneNode.zone.id}
+          zoneNode={zoneNode}
+          showPlanned={showPlanned}
+          showInfra={showInfra}
+          statusReport={statusReport}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ── Lente "proceso": value-stream del GTM (zona Agentes) + capas habilitadoras ─
+
+function StageColumn({
+  node,
+  showPlanned,
+  statusReport = null,
+}: {
+  node: ProcessStageNode;
+  showPlanned: boolean;
+  statusReport?: ComputedStatusReport | null;
+}) {
+  return (
+    <div className="space-y-2">
+      <div className="border-b border-[var(--color-accent)] pb-1">
+        <h3 className="text-sm font-semibold">{node.stage.name}</h3>
+        <p className="text-[10px] text-[var(--color-muted)] leading-snug">
+          {node.stage.description}
+        </p>
+        <span className="text-[10px] text-[var(--color-muted)]">{node.totalCaps} caps</span>
+      </div>
+      {node.boxes.length === 0 ? (
+        <EmptyState>Sin cajas.</EmptyState>
+      ) : (
+        node.boxes.map((b) => (
+          <BoxSection
+            key={b.box.id}
+            node={b}
+            showPlanned={showPlanned}
+            statusReport={statusReport}
+          />
+        ))
+      )}
+    </div>
+  );
+}
+
+function ProcessLensView({
+  stages,
+  zoneTree,
+  showPlanned,
+  showInfra,
+  statusReport = null,
+}: {
+  stages: ProcessStageNode[];
+  zoneTree: ZoneNode[];
+  showPlanned: boolean;
+  showInfra: boolean;
+  statusReport?: ComputedStatusReport | null;
+}) {
+  // Capas habilitadoras: todo lo que no es la zona Agentes (Plataforma + Infraestructura)
+  const enablingZones = zoneTree.filter((z) => z.zone.id !== 'agentes');
+
+  return (
+    <div className="space-y-6 mb-4">
+      <section aria-label="Value-stream Agentes">
+        <div className="mb-3 border-b border-[var(--color-border)] pb-2">
+          <h2 className="text-base font-semibold">Value-stream · Agentes</h2>
+          <p className="text-[11px] text-[var(--color-muted)] italic mt-0.5">
+            El recorrido del paciente operado por los trabajadores: atraer → vender → operar → fidelizar.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 items-start">
+          {stages.map((node) => (
+            <StageColumn
+              key={node.stage.id}
+              node={node}
+              showPlanned={showPlanned}
+              statusReport={statusReport}
+            />
+          ))}
+        </div>
+      </section>
+
+      {enablingZones.length > 0 && (
+        <section aria-label="Capas habilitadoras">
+          <div className="mb-3 border-b border-[var(--color-border)] pb-2">
+            <h2 className="text-base font-semibold">Capas habilitadoras</h2>
+            <p className="text-[11px] text-[var(--color-muted)] italic mt-0.5">
+              Plataforma (el usuario atraviesa) + Infraestructura (no-funcional) que sostienen el value-stream.
+            </p>
+          </div>
+          <div className="space-y-6">
+            {enablingZones.map((zoneNode) => (
+              <ZoneBlock
+                key={zoneNode.zone.id}
+                zoneNode={zoneNode}
+                showPlanned={showPlanned}
+                showInfra={showInfra}
+                statusReport={statusReport}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+  );
+}
+
+function BoxSection({
+  node,
   showPlanned,
   fullWidth = false,
   statusReport = null,
 }: {
-  agent: AgentDefinition;
-  areas: Array<{ area: FunctionalArea; fullId: string; caps: Capability[] }>;
+  node: BoxNode;
   showPlanned: boolean;
   fullWidth?: boolean;
   statusReport?: ComputedStatusReport | null;
 }) {
-  const totalCaps = areas.reduce((n, a) => n + a.caps.length, 0);
+  const { box, areas, totalCaps } = node;
 
   // Filtrar áreas: si !showPlanned, ocultar áreas planned sin caps
   const visibleAreas = areas.filter((a) => {
@@ -409,13 +627,13 @@ function AgentSection({
     <Card className={`!p-4 h-full ${fullWidth ? 'col-span-full' : ''}`}>
       <header className="flex items-baseline gap-2 mb-3 border-b border-[var(--color-border)] pb-2">
         <span aria-hidden="true" className="text-xl">
-          {agent.emoji}
+          {box.emoji}
         </span>
         <div className="flex-1 min-w-0">
-          <h2 className="text-sm font-semibold">{agent.name}</h2>
-          <p className="text-[10px] text-[var(--color-muted)]">
-            {agent.subtitle}
-          </p>
+          <h2 className="text-sm font-semibold">{box.name}</h2>
+          {box.subtitle && (
+            <p className="text-[10px] text-[var(--color-muted)]">{box.subtitle}</p>
+          )}
         </div>
         <span className="text-[10px] text-[var(--color-muted)] shrink-0">
           {totalCaps}
@@ -482,13 +700,13 @@ function LegacyFallbackView({
   showInfra: boolean;
   statusReport?: ComputedStatusReport | null;
 }) {
+  // v2.0: 5 especialistas (Valeria = supervisora sidebar, fuera del board) + Mateo Operar.
   const FALLBACK_AGENTS = [
     { id: 'lisa' as const, emoji: '🏥', name: 'Lisa', subtitle: 'Mi Clínica' },
-    { id: 'valeria' as const, emoji: '🗓', name: 'Valeria', subtitle: 'Mi Día' },
+    { id: 'mateo' as const, emoji: '📅', name: 'Mateo', subtitle: 'Operar / Mi Día' },
     { id: 'adrian' as const, emoji: '💼', name: 'Adrián', subtitle: 'Vender' },
     { id: 'lucas' as const, emoji: '📣', name: 'Lucas', subtitle: 'Marketing' },
     { id: 'camila' as const, emoji: '🌟', name: 'Camila', subtitle: 'Reputación + cohortes' },
-    { id: 'config' as const, emoji: '⚙', name: 'Configurar', subtitle: 'tenant · iam · compliance' },
   ];
   const INFRA_FALLBACK = { id: 'infra' as const, emoji: '🔧', name: 'Infra Vitalia', subtitle: 'observability · platform · payment · scaffolding' };
 

@@ -117,14 +117,28 @@ export function getStatusBadge(s: ComputedStatus): {
 // v3 cement 2026-05-27 — 4 dimensiones + dev_preview (ADR-vitalia-005)
 // ────────────────────────────────────────────────────────────────────────────
 
-export type AgentOwner =
-  | 'lisa'
-  | 'valeria'
-  | 'adrian'
-  | 'lucas'
-  | 'camila'
-  | 'config'
-  | 'infra';
+// ── Taxonomía de cajas/zonas (SYSTEM-MAP v2.0 · cement 2026-05-30) ──────────
+// La caja (`agent_owner` / `map_box`) pertenece a una zona; la zona se DERIVA
+// del registro SYSTEM-MAP.yaml (`zones`), nunca se escribe a mano por cap.
+export type ZoneId = 'agentes' | 'plataforma' | 'infraestructura';
+export type ZoneTier = 'core' | 'supporting' | 'enabling';
+
+/** 5 especialistas con caja de valor en el Ribbon (zona Agentes). */
+export type SpecialistAgentId = 'lisa' | 'mateo' | 'adrian' | 'lucas' | 'camila';
+/** Cajas transversales user-facing (zona Plataforma). */
+export type PlatformBoxId = 'acceso' | 'onboarding' | 'configuracion';
+/** Cajas no-funcionales (zona Infraestructura). */
+export type InfraBoxId =
+  | 'seguridad-cumplimiento'
+  | 'observabilidad'
+  | 'plataforma-tecnica'
+  | 'motor-agentico';
+/** Toda caja real del mapa v2.0 (12 cajas). */
+export type MapBoxId = SpecialistAgentId | PlatformBoxId | InfraBoxId;
+
+// `valeria` = supervisora (sidebar · runtime motor-agentico, no es caja de valor).
+// `config`/`infra` = pseudo-agentes DEPRECATED v2.0 (back-compat lectura caps/stories viejas).
+export type AgentOwner = MapBoxId | 'valeria' | 'config' | 'infra';
 
 export type CapNature = 'feature' | 'scaffold' | 'extension-point';
 
@@ -451,7 +465,36 @@ export interface AgentDefinition {
   name: string;
   subtitle: string;
   description?: string;
+  /** v2.0: valeria es supervisora (role/status `supervisor`, functional_areas: []). */
+  role?: string;
+  status?: string;
   functional_areas: FunctionalArea[];
+}
+
+// ── Zonas v2.0 (SYSTEM-MAP `zones`) ─────────────────────────────────────────
+/** Caja transversal definida inline en plataforma/infraestructura (trae sus propias áreas). */
+export interface SystemMapBoxObject {
+  id: MapBoxId | string;
+  name: string;
+  description?: string;
+  absorbs?: string[];
+  functional_areas: FunctionalArea[];
+}
+
+export interface SystemMapZone {
+  id: ZoneId;
+  name: string;
+  tier: ZoneTier;
+  user_visible: boolean;
+  description?: string;
+  notes?: string;
+  legacy_home?: string;
+  /**
+   * Heterogéneo por diseño:
+   *  - zona `agentes`: `string[]` (ids que referencian `agents[]`)
+   *  - zonas `plataforma`/`infraestructura`: `SystemMapBoxObject[]` (cajas con áreas inline)
+   */
+  boxes: Array<string | SystemMapBoxObject>;
 }
 
 export type FlowMechanism = 'domain_event' | 'api_call' | 'webhook' | 'shared_db';
@@ -589,6 +632,8 @@ export interface SystemMap {
   brand: string;
   version: string;
   cement_date: string;
+  /** v2.0 (cement 2026-05-30) · taxonomía de 3 zonas. Ausente en SYSTEM-MAP v1.x. */
+  zones?: SystemMapZone[];
   agents: AgentDefinition[];
   cross_agent_flows: CrossAgentFlow[];
   data_ownership: Record<string, DataEntityOwnership>;
@@ -601,6 +646,10 @@ export interface SystemMap {
     total_functional_areas: number;
     total_cross_agent_flows: number;
     total_data_entities: number;
+    // v2.0 opcionales
+    total_zones?: number;
+    total_boxes?: number;
+    total_specialist_agents?: number;
   };
   /** Opcional · populated por API route */
   _path?: string;
