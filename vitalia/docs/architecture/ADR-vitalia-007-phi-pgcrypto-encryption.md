@@ -63,6 +63,16 @@ No hay prod ni filas plaintext existentes en dev → las tablas se crean cifrada
 - **Negativas / tradeoffs:** no hay lookup por columna cifrada (aceptado — blind index es follow-up); el patrón inline-param diverge del trigger+GUC de 025 (justificado: 025 está roto en runtime); la KEK dev vive en env var (aceptado para dev; prod = KMS slot documentado).
 - **Deuda registrada (follow-up, NO en esta story):** (1) wirear o deprecar el trigger+GUC de 025 (KEK nunca inyectada); (2) blind index si se necesita búsqueda por dni/email; (3) adapter KMS prod + rotación anual; (4) decisión sobre las 5 migraciones legacy huérfanas en `src/modules/vitalia/persistence/migrations/`.
 
+## Validación legacy-mining (2026-05-30 · pre-build, prompt-directed)
+
+Antes de construir se minó el monolito original (`~/Proyectos/luana-nicolify-legacy`, branch `legacy/nicolify-original`) buscando una solución canónica previa para PHI patients/leads que se pudiera traer en vez de inventar (`grep pgp_sym|encrypt|decrypt|CREATE TABLE.*patients|leads`). Resultado:
+
+- **El legacy NO resolvió esto.** `crm/infrastructure/persistence/{patient,lead}_repository.py` del legacy son SQL plaintext **sin** cifrado; `vitalia_leads` **nunca** se creó en ningún árbol legacy (mismo gap); `vitalia_patients` solo en `016` (idéntico esqueleto al actual).
+- El único cifrado pgcrypto del legacy es el de NPS/fidelización (`025` trigger+GUC) — el **mismo patrón roto** (GUC `app.encryption_key` nunca inyectada).
+- `KEKClient` actual = el transplantado del legacy verbatim → **reuse** (API `from_env()`/`get_key()` confirmada), no recrear.
+
+**Conclusión:** no existe solución canónica mejor para importar. La decisión D1 (pgp_sym inline + bound param `:kek`, evitando el trigger+GUC roto) se ratifica como la coherente con el módulo. Sin cambios al ADR ni al `03-arch` tras la minería.
+
 ## Referencias
 
 - `vitalia/.claude/rules/hipaa-lite.md § Encryption at rest`

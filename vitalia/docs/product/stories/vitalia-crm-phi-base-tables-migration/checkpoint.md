@@ -11,8 +11,8 @@ adr_004_compliance: n/a-with-rationale   # BE migración pura, sin sub-tab UI
 priority: high
 parallel_safe: false
 last_modified: 2026-05-30
-state: ready
-phase: READY_PACKAGE_CLOSED
+state: developed
+phase: HANDOFF_TO_AUDITOR
 ratified_by_chris: true
 pgcrypto_in_scope: true   # Chris ratificó 2026-05-30
 adr_007_ref: ADR-vitalia-007-phi-pgcrypto-encryption   # KEK env-based dev + KMS slot prod
@@ -21,11 +21,31 @@ prior_art_audit_done: true   # EXTEND KEKClient existente, cero capa nueva, cero
 prior_art_scan_done: true
 prior_story: vitalia-iam-slice2-phi-real-auth   # nace del hallazgo live god-matrix de aquella
 
-next_action: "/dev-team vitalia: vitalia-crm-phi-base-tables-migration, ticket T-1 (DAG T-1→T-2→T-3). Build SUPERVISADO (autonomous_mode false): verificación live re-god-matrix antes de cerrar T-3."
+next_action: "/auditor vitalia: vitalia-crm-phi-base-tables-migration (AUTO-HANDOFF). T-1/T-2/T-3 + fix commit-gap pushed. god-matrix live verde (VERIFICATION-godmatrix-live.md). Revisar: cifrado pgcrypto BYTEA, fix unit-of-work scoped a crm, finding cross-cutting escalado."
 
-# Autonomous mode — false por default (migración PHI tables, verificación live requerida)
-autonomous_mode: false
-autonomous_mode_hard_false_reason: "Migración de tablas PHI base + drift stamp-vs-apply en dev. Requiere verificación live (re-god-matrix sobre /patients + /leads → 200 + audit row) antes de cerrar. Chris ratifica el approach de reconcile."
+# Build phase summary (2026-05-30)
+build_commits:
+  T-1: 540249cb   # migración 035 pgcrypto + arch test + idempotency
+  T-2: e67c67a1   # repos decrypt/encrypt + KEK + LeadRepository.create/update + router DI + env
+  T-3: 3ee9aed9   # seed cifrado + integration tests
+  fix: 62b068ac   # commit unit-of-work gap (audit rows + writes) — descubierto por verificación live
+live_verification: VERIFICATION-godmatrix-live.md   # SC-1..SC-5 verde con JWT real + conteos DB reales
+cross_cutting_finding: "18 módulos usan get_async_session sin commit explícito en API; fix scoped a crm; resto = follow-up plataforma (stake-asimétrico)"
+
+# Autonomous mode — Chris ratificó override explícito 2026-05-30 (story 100% técnica)
+autonomous_mode: true
+autonomous_mode_ratified_by: chris
+autonomous_mode_ratified_at: 2026-05-30T00:00:00-05:00
+autonomous_mode_override_reason: "Chris ratificó override del hard-false en el prompt /pm-vitalia: 'es todo técnico — ratifico el override de autonomous_mode:false'. La verificación live anti-teatro sigue siendo OBLIGATORIA (la ejecuta el orchestrator + reporta evidencia), no se omite — solo no requiere pausa pre-cierre."
+autonomous_mode_chain: [dev-team, auditor, pm-merge]
+autonomous_mode_caps:
+  max_audit_iterations: 4
+  on_cap_exceeded: "state=blocked + escalate Chris"
+autonomous_mode_prev_hard_false_reason: "Migración de tablas PHI base + drift stamp-vs-apply en dev. Requiere verificación live (re-god-matrix sobre /patients + /leads → 200 + audit row) antes de cerrar."
+
+# Legacy mining (2026-05-30 · pre-build, prompt-directed)
+legacy_mining_done: true
+legacy_mining_outcome: "Minado ~/Proyectos/luana-nicolify-legacy (legacy/nicolify-original): el legacy NO resolvió esto — patient_repository/lead_repository legacy son SQL plaintext sin cifrado, vitalia_leads nunca se creó en ningún árbol legacy, y el cifrado pgp_sym existente es solo NPS/fidelización (025 trigger+GUC, roto). NO hay solución canónica mejor para importar. KEKClient actual = el transplantado (reuse confirmado: from_env()/get_key()). Ready package (pgp_sym inline + bound param :kek, evitando trigger+GUC roto) VALIDADO sin cambios de arquitectura."
 ---
 
 # Migración tablas PHI base — crear vitalia_leads + reconcile vitalia_patients (drift dev)
