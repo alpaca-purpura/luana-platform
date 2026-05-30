@@ -37,6 +37,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db import get_async_session
 from src.modules.vitalia._shared.auth.rbac import PHIAccessDeniedError
+from src.modules.vitalia._shared.encryption.kek_client import KEKClient
 from src.modules.vitalia._shared.repositories.audit_log_repository import (
     AuditLogRepository,
 )
@@ -151,7 +152,7 @@ async def opt_out_patient(
     ctx = await _resolve_context_async(authorization, x_tenant_id, x_clinic_id, session)
 
     audit_repo = AuditLogRepository(session=session)
-    patient_repo = PatientRepository(session=session, audit_repo=audit_repo)
+    patient_repo = PatientRepository(session=session, audit_repo=audit_repo, kek=KEKClient.from_env())
     service = PatientConsentService(patient_repo=patient_repo, audit_repo=audit_repo)
 
     try:
@@ -214,7 +215,7 @@ async def marketing_opt_in_patient(
     ctx = await _resolve_context_async(authorization, x_tenant_id, x_clinic_id, session)
 
     audit_repo = AuditLogRepository(session=session)
-    patient_repo = PatientRepository(session=session, audit_repo=audit_repo)
+    patient_repo = PatientRepository(session=session, audit_repo=audit_repo, kek=KEKClient.from_env())
     service = PatientConsentService(patient_repo=patient_repo, audit_repo=audit_repo)
 
     try:

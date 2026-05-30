@@ -39,6 +39,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db import get_async_session
 from src.modules.vitalia._shared.auth.rbac import PHIAccessDeniedError
+from src.modules.vitalia._shared.encryption.kek_client import KEKClient
 from src.modules.vitalia._shared.repositories.audit_log_repository import (
     AuditLogRepository,
 )
@@ -207,7 +208,7 @@ async def get_patient(
     ctx = await _resolve_context_async(authorization, x_tenant_id, x_clinic_id, session)
 
     audit_repo = AuditLogRepository(session=session)
-    patient_repo = PatientRepository(session=session, audit_repo=audit_repo)
+    patient_repo = PatientRepository(session=session, audit_repo=audit_repo, kek=KEKClient.from_env())
     service = PatientService(patient_repo=patient_repo, audit_repo=audit_repo)
 
     try:
@@ -276,7 +277,7 @@ async def patch_patient(
     ctx = await _resolve_context_async(authorization, x_tenant_id, x_clinic_id, session)
 
     audit_repo = AuditLogRepository(session=session)
-    patient_repo = PatientRepository(session=session, audit_repo=audit_repo)
+    patient_repo = PatientRepository(session=session, audit_repo=audit_repo, kek=KEKClient.from_env())
     service = PatientService(patient_repo=patient_repo, audit_repo=audit_repo)
 
     updates = {k: v for k, v in body.model_dump().items() if v is not None}
@@ -363,7 +364,7 @@ async def get_lead(
     # For simplicity and correctness, use async_resolve with x_clinic_id fallback
     ctx = _resolve_context_sync(authorization, x_tenant_id)
 
-    lead_repo = LeadRepository(session=session)
+    lead_repo = LeadRepository(session=session, kek=KEKClient.from_env())
     service = LeadService(lead_repo=lead_repo)
 
     lead = await service.get_by_id(
@@ -424,7 +425,7 @@ async def list_leads(
     """
     ctx = _resolve_context_sync(authorization, x_tenant_id)
 
-    lead_repo = LeadRepository(session=session)
+    lead_repo = LeadRepository(session=session, kek=KEKClient.from_env())
     service = LeadService(lead_repo=lead_repo)
 
     leads, total = await service.list_for_inbox(
@@ -478,7 +479,7 @@ async def create_lead(
     """
     ctx = _resolve_context_sync(authorization, x_tenant_id)
 
-    lead_repo = LeadRepository(session=session)
+    lead_repo = LeadRepository(session=session, kek=KEKClient.from_env())
     service = LeadService(lead_repo=lead_repo)
 
     lead = await service.create(
@@ -534,7 +535,7 @@ async def update_lead(
     """
     ctx = _resolve_context_sync(authorization, x_tenant_id)
 
-    lead_repo = LeadRepository(session=session)
+    lead_repo = LeadRepository(session=session, kek=KEKClient.from_env())
     service = LeadService(lead_repo=lead_repo)
 
     updates = {k: v for k, v in body.model_dump().items() if v is not None}

@@ -30,6 +30,7 @@ services:
       # su propio .venv local. Forzamos el venv workspace root donde sí están las deps
       # runtime (uvicorn, sqlalchemy, asyncpg, alembic, luana_core_*).
       UV_PROJECT_ENVIRONMENT: "/workspace/.venv"
+      VITALIA_PHI_KEK: "${VITALIA_PHI_KEK}"
     volumes:
       - .:/workspace:rw  # bind mount monorepo completo (hot-reload)
       # Named volume protege el venv del container en la ruta donde el Dockerfile lo crea
