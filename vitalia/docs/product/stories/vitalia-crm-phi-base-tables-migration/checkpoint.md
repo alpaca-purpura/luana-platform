@@ -11,8 +11,8 @@ adr_004_compliance: n/a-with-rationale   # BE migración pura, sin sub-tab UI
 priority: high
 parallel_safe: false
 last_modified: 2026-05-30
-state: developed
-phase: HANDOFF_TO_AUDITOR
+state: reviewing
+phase: HANDOFF_TO_PM_MERGE
 ratified_by_chris: true
 pgcrypto_in_scope: true   # Chris ratificó 2026-05-30
 adr_007_ref: ADR-vitalia-007-phi-pgcrypto-encryption   # KEK env-based dev + KMS slot prod
