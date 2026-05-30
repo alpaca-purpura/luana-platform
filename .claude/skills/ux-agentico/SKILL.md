@@ -28,6 +28,8 @@ Post multibrand reorg 2026-05-15, los módulos agentic son SPLIT engine + brand 
 
 Si el flow diseñado requiere modificar engine (`core/luana-core-*/`) → STOP, escalá `/pm-luana`. Este skill SOLO diseña sobre brand extensions a menos que `<brand>: platform` esté explícito.
 
+**Paradigma (cement 2026-05-30 · `docs/architecture/luana-platform/PARADIGM.md`):** hay **un solo engine** por audiencia (`copilot` interno habla al dueño · `sales_agent` externo habla a leads). El trabajador agéntico se diferencia por **scope + persona + guardrails**, NUNCA por un engine nuevo (eso es Plano 3 sobre Plano 2: invoca acciones únicas, no reimplementa). **Valeria = supervisora** (orquesta + compone multi-paso); especialistas scoped; la pestaña web es **sesgo de ruteo**, no un chat aislado. **Adrián = bifronte** (interno+externo). Árbol caja/zona: `.claude/rules/paradigm-arquitectura.md`.
+
 ## Cuándo usar — decision matrix
 
 | Tipo story | Skill |
@@ -332,6 +334,7 @@ Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
 
 - `docs/process/pm-redesign-2026-05.md` — paradigma 3 conversaciones + ready package
 - `docs/process/capability-protocol.md` — schema cap YAML v2 + cap_target + cap_change_type
+- `docs/architecture/luana-platform/PARADIGM.md` + `ADR-010-orquestacion-agentica.md` — ★ 3 planos · supervisora Valeria · un engine · Adrián bifronte · `.claude/rules/paradigm-arquitectura.md`
 - `docs/process/chris-input-protocol.md` — output protocol per skill
 - `docs/specs/templates/02-design-agentic-template.md` — template diseño agentic
 - `.claude/skills/po/` — service-story spec (sister skill)

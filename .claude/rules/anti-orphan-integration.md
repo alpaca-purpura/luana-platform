@@ -85,6 +85,7 @@ Veredicto: símbolo nuevo público con cero consumers + no registrado como entry
 - ❌ Funcionalidad sin `cap_target` (sin hogar en el map) llegando a `developing`
 - ❌ Auditor APPROVED sin correr la categoría Connectivity
 - ❌ Construir un surface que duplica un cap existente (→ ver `anti-duplication.md`, es FAIL distinto pero relacionado: la isla muchas veces ES una duplicación no detectada)
+- ❌ Cap sin **caja/zona** del mapa (Agentes/Plataforma/Infraestructura, registro `{brand}/docs/architecture/SYSTEM-MAP.yaml`) — sin hogar de 3 niveles (zona→caja→área) = isla. El "On-the-map" (O de CONN) se concreta como la caja/zona del paradigma: `.claude/rules/paradigm-arquitectura.md` + `docs/architecture/luana-platform/PARADIGM.md`
 
 ## Por qué (rationale CTO)
 

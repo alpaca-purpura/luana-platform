@@ -159,7 +159,7 @@ Si orchestrator propone NEW cuando shared existe ≥80% → escala `/pm-luana` (
 Lee el `03-arch.md` que el orchestrator escribió. Verificar:
 - Secciones por surface presente (BE / FE / AGENTIC según tickets toca)
 - Cross-cutting decisions section (tenant isolation, currency, PII)
-- **`## Integration design (CONN)` presente** (`.claude/rules/anti-orphan-integration.md`): reachability path concreto + consumers + registration points + home (cap). SIN esto, lo construido será una isla → NO cerrar `ready`.
+- **`## Integration design (CONN)` presente** (`.claude/rules/anti-orphan-integration.md` + `paradigm-arquitectura.md`): reachability path concreto + consumers + registration points + home (cap). Cada surface declara su **hogar zona→caja** del mapa (derivado de `SYSTEM-MAP.yaml`) y, si es agéntico, que el trabajador **invoca la acción única (Plano 2), no la reimplementa** (un solo engine). SIN esto, lo construido será una isla → NO cerrar `ready`. Doctrina: `docs/architecture/luana-platform/PARADIGM.md`.
 - Per-surface detail puede vivir inline en 03-arch.md O en archivos separados `03-arch-{be,fe,agentic}.md` (orchestrator decide según complejidad)
 
 Template estructura mínima:
@@ -895,6 +895,7 @@ Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
 ## Referencias
 
 - `docs/process/capability-protocol.md` — schema cap YAML v2 + cap_change_type coherence gates
+- `docs/architecture/luana-platform/PARADIGM.md` + `.claude/rules/paradigm-arquitectura.md` — ★ 3 planos · Integration design declara hogar zona→caja + acción única (no reimplementar)
 - `docs/process/chris-input-protocol.md` — output protocol per skill
 
 - `docs/process/pm-redesign-2026-05.md` — paradigma 3 conversaciones + ready package + § v4.1 autonomy amplification 2026-05-19

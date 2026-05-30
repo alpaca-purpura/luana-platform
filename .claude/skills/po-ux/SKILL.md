@@ -370,6 +370,8 @@ Chris responde → editás 01-spec.md (no rebuild from scratch — Edit incremen
 
 **Validation cap lineage (v2 cement 2026-05-27):** antes de cerrar state=refined, verificar checkpoint.md tiene `cap_target` (no null) + `cap_change_type` ∈ {new, fix, extend, derive}. Si Chris no los declaró en chris-input.md, skill propone valores como verdict `💡 PROPONE` y espera ratificación. Doc: `docs/process/capability-protocol.md` § Sección 3.
 
+**Validation caja del mapa (paradigma · cement 2026-05-30):** verificar también que la **caja** de la cap esté declarada (`agent_owner`) aplicando el árbol de decisión de `.claude/rules/paradigm-arquitectura.md`: ¿es valor de un agente (zona **Agentes**) · superficie transversal sin agente — Acceso/Onboarding/Configuración (zona **Plataforma**) · o no-funcional/técnico (zona **Infraestructura**)? La zona se deriva del registro `SYSTEM-MAP.yaml`. Sin caja válida → NO transition refining→refined. Doctrina: `docs/architecture/luana-platform/PARADIGM.md`.
+
 Si gate FAIL → STOP, NO transition refining→refined. Iterá con Chris hasta cobertura completa.
 
 Una vez gate PASS + Chris ratifica:
@@ -490,6 +492,7 @@ Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
 
 - `docs/process/pm-redesign-2026-05.md` — paradigma 3 conversaciones + ready package
 - `docs/process/capability-protocol.md` — schema cap YAML v2 + cap_target + cap_change_type
+- `docs/architecture/luana-platform/PARADIGM.md` + `.claude/rules/paradigm-arquitectura.md` — ★ árbol caja/zona del mapa (declarar desde la idea)
 - `docs/process/chris-input-protocol.md` — output protocol per skill
 - `docs/specs/templates/01-spec-template.md` — template base
 - `.claude/rules/spanish-text.md` — voseo glosario + magic comment escape

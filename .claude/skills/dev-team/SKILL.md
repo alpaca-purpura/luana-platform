@@ -795,6 +795,7 @@ Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
 - `docs/process/pm-redesign-2026-05.md` — paradigma 3 conversaciones + autonomous build
 - `.claude/rules/tdd-mandatory.md` — TDD obligatorio + R31 default flag flips
 - `.claude/rules/anti-duplication.md` — inventario shared abstractions
+- `docs/architecture/luana-platform/PARADIGM.md` + `.claude/rules/paradigm-arquitectura.md` — ★ 3 planos: el trabajador invoca la acción única (Plano 2), no reimplementa; un solo engine; no cruzar de plano sin escalar
 - `.claude/rules/hotfix-repro-mandatory.md` — R26 hot-fix gate
 - `.claude/rules/parallel-safety.md` — M1-M8 multi-session
 - `.claude/agents/builder-{backend,frontend,agentic}.md` — sub-builders specs

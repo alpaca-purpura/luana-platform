@@ -22,8 +22,82 @@
 # ============================================================================
 
 brand: vitalia
-version: 1.0
+version: 1.1
 cement_date: 2026-05-27
+
+# ────────────────────────────────────────────────────────────────────────────
+# ZONES — taxonomía de 3 zonas del mapa (cement 2026-05-30)
+# ────────────────────────────────────────────────────────────────────────────
+#
+# SSoT doctrina: docs/architecture/luana-platform/PARADIGM.md + ADR-010.
+# Árbol de decisión "¿en qué caja va?": .claude/rules/paradigm-arquitectura.md
+#
+# Toda caja del mapa (un trabajador-agente O una superficie transversal)
+# pertenece a UNA zona. La zona de una cap se DERIVA de su caja (agent_owner)
+# vía este registro — NUNCA se escribe a mano por cap (evita drift).
+#
+# tier: core (valor user-facing) | supporting (transversal user-facing) |
+#       enabling (no-funcional / técnico).
+#
+# ★ MIGRACIÓN PENDIENTE (story dedicada): hoy las superficies de Plataforma e
+# Infraestructura viven como functional_areas dentro de los pseudo-agentes
+# `config` e `infra` (definidos en agents[] abajo). El target es promoverlas a
+# cajas propias. `target_boxes[].absorbs` documenta ese destino para la migración.
+
+zones:
+  - id: agentes
+    name: "Agentes"
+    tier: core
+    user_visible: true
+    description: "El valor user-facing que opera cada trabajador. Un agente lo hace por el dueño."
+    boxes: [lisa, valeria, mateo, adrian, lucas, camila]
+    notes: "Valeria → supervisora transversal (orquesta, no posee caja de proceso). Mateo → Operar/Mi Día. Reasignación Valeria/Mateo pendiente de migración."
+
+  - id: plataforma
+    name: "Plataforma"
+    tier: supporting
+    user_visible: true
+    description: "Superficies transversales que el usuario atraviesa pero NO son de ningún agente. Se operan a mano (sin agente)."
+    boxes: [acceso, onboarding, configuracion]
+    legacy_home: config
+    target_boxes:
+      - id: acceso
+        name: "Acceso"
+        absorbs: [config.auth, config.iam]
+        description: "Autenticación + autorización: Clerk, sesiones, RBAC, roles, scope por clínica."
+      - id: onboarding
+        name: "Onboarding"
+        absorbs: [config.onboarding_clinic]
+        description: "Alta + activación: onboarding de clínica, wizard agentic, provisioning."
+      - id: configuracion
+        name: "Configuración"
+        absorbs: [config.cuenta, config.clinics, config.conexiones, config.patients-records, config.admin, config.avanzado]
+        description: "Ajustes del espacio: cuenta/tenant, clínicas, equipo, conexiones, historial de pacientes, panel admin."
+
+  - id: infraestructura
+    name: "Infraestructura"
+    tier: enabling
+    user_visible: false
+    description: "No-funcional / técnico (cross-cutting concepts + quality attributes, arc42 §8/§10). Mapeado para que nada quede huérfano; no en el mapa de valor principal."
+    boxes: [seguridad-cumplimiento, observabilidad, plataforma-tecnica, motor-agentico]
+    legacy_home: infra
+    target_boxes:
+      - id: seguridad-cumplimiento
+        name: "Seguridad & Cumplimiento"
+        absorbs: [config.compliance, infra.scaffolding]
+        description: "Cifrado at-rest PHI (pgcrypto), audit log inmutable, dual-filter tenant+clinic, tenant isolation, retention."
+      - id: observabilidad
+        name: "Observabilidad"
+        absorbs: [infra.observability]
+        description: "Trace events, llm_calls, cost recording, pricing snapshots, OTel/Sentry."
+      - id: plataforma-tecnica
+        name: "Plataforma técnica"
+        absorbs: [infra.platform, infra.payment]
+        description: "Design tokens/shell, payment rails, idempotency, eventos/outbox, IAM engine adoption, foundation."
+      - id: motor-agentico
+        name: "Motor agéntico"
+        absorbs: [infra.copilot, infra.agentic-engine, infra.sales-agent-engine]
+        description: "Engine compartido copilot/sales_agent + RAG/Qdrant + prompt cache. RUNTIME de los trabajadores, NO caja de feature que compita con los agentes."
 
 # ────────────────────────────────────────────────────────────────────────────
 # AGENTES (7) + functional_areas

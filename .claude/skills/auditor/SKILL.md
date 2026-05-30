@@ -660,6 +660,7 @@ STOP la sesión `/auditor` aquí. Chris (o auto-handoff harness) invoca `/pm-{br
 
 - ❌ NUNCA auditar / approve edits en `{other_brand}/...` cuando trabajás en `{brand}`. Si el PR toca otra brand → flag CHANGES_REQUESTED + escalate `/pm-luana` (trabajo cross-brand).
 - ❌ NUNCA auditar / approve edits directos a `core/luana-core-*/src/`. Requiere lift via `/pm-luana` (promotion gate) ANTES del build.
+- ❌ NUNCA approve un trabajador agéntico que **reimplementa lógica de negocio** en vez de invocar la acción única (Plano 2), ni un **engine agéntico nuevo** per-brand (un solo engine compartido en `core/`). Categoría Connectivity: verificá que cada cap nueva tenga **caja/zona** válida del mapa (`SYSTEM-MAP.yaml`) — cap sin hogar = isla. Doctrina: `docs/architecture/luana-platform/PARADIGM.md` + `.claude/rules/{paradigm-arquitectura,anti-orphan-integration}.md`.
 - ❌ NUNCA escribir review/checkpoints en root `docs/product/stories/` — solo `<brand>: platform` cross-brand outcomes van ahí.
 - ❌ NUNCA hardcodear paths absolutos `/home/chris/AISALESHT/...` o `/home/chalreme/Proyectos/luana-platform/...` — usar `${WS}` resuelto via `git rev-parse --show-toplevel`.
 
@@ -714,6 +715,8 @@ Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
 - `.claude/rules/auditor-downstream-regression.md` — surface→downstream test mapping
 - `.claude/rules/anti-default-flip-audit.md` — R31 default flag flips
 - `.claude/rules/anti-duplication.md` — inventario shared abstractions
+- `.claude/rules/paradigm-arquitectura.md` + `docs/architecture/luana-platform/PARADIGM.md` — ★ 3 planos · Connectivity verifica caja/zona + un solo engine + acción única (no isla)
+- `.claude/rules/anti-orphan-integration.md` — CONN: nada llega a `done` como isla
 - `.claude/rules/brand-docs-schema.md` — R1+R2+R3 schema enforcement `{brand}/docs/` (auditor C4 + C5 verifica)
 - `.claude/rules/story-closure-gate.md` — Fase F MERGE concreta R2 (archive move)
 - `.claude/rules/tdd-mandatory.md` — TDD discipline (auditor NEVER writes tests)

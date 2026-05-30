@@ -358,6 +358,7 @@ Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
 ## Referencias
 
 - `docs/portfolio/vitalia.md` — 1-pager brand
+- `docs/architecture/luana-platform/PARADIGM.md` — ★ norte arquitectónico (3 planos · mapa = 3 zonas · trabajadores). Al crear/refinar story aplicá el árbol de decisión de `.claude/rules/paradigm-arquitectura.md` para declarar la **caja** (zona→caja→área) desde la idea.
 - `docs/process/pm-redesign-2026-05.md` — paradigm v4 detalle
 - `docs/process/checkpoint-protocol.md` — schema checkpoint
 - `docs/process/capability-protocol.md` — schema cap YAML v2 + Fase F.3 4 ramas

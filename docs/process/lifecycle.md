@@ -28,7 +28,7 @@ Release  (¿cuándo shippeó?)        — contenedor temporal, agrupa stories
 | **Capability** | Unidad **permanente** de producto. Lo que el producto puede hacer | `{brand}/docs/product/capabilities/{module}/{cap}.yaml` | `/pm-{brand}` (ledger) |
 | **Scenario** | Unidad atómica de comportamiento. Gherkin Given/When/Then | autorado en `01-spec.md`, linkeado al cap | `/po-ux`/`/po` autora, `/pm` linkea |
 
-**Agrupación humana:** la capability se agrupa por `agent_owner` (lisa/valeria/adrián/lucas/camila/config/infra) + `functional_area` (`<agent>.<area>`). Eso alimenta el **Mapa Implementado** del cockpit. Se conserva — es el lenguaje humano del producto.
+**Agrupación humana:** la capability se agrupa por `agent_owner` (lisa/valeria/adrián/lucas/camila/config/infra) + `functional_area` (`<agent>.<area>`). Eso alimenta el **Mapa Implementado** del cockpit. Se conserva — es el lenguaje humano del producto. La caja vive en una de **3 zonas** del mapa — **Agentes · Plataforma · Infraestructura** — derivadas del registro `{brand}/docs/architecture/SYSTEM-MAP.yaml` (`zones`). Doctrina del modelo (3 planos + zonas + invariantes): `docs/architecture/luana-platform/PARADIGM.md` + rule `paradigm-arquitectura.md`.
 
 ---
 

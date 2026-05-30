@@ -232,6 +232,12 @@ Todo cap declara `change_log[]` + scenarios + **4 dimensiones de clasificación*
 
 Otras brands declaran su propio mapeo `agent_owner` en su ADR-brand-XXX (lift propuesto via `/pm-luana` post-cement vitalia).
 
+### Zona del mapa (5ª dimensión DERIVADA — cement 2026-05-30)
+
+La caja (`agent_owner`) pertenece a una de **3 zonas** del mapa: **Agentes** (valor user-facing por trabajador) · **Plataforma** (transversal user-facing: Acceso/Onboarding/Configuración) · **Infraestructura** (no-funcional). La **zona NO se escribe a mano** por cap — se **deriva** del registro `{brand}/docs/architecture/SYSTEM-MAP.yaml` (`zones`). `user_visible` se alinea con la zona (Agentes/Plataforma → `true` · Infraestructura → `false`).
+
+El **árbol de decisión** "¿en qué caja/zona aterriza esta cap?" — aplicado **desde la idea** por `/pm-{brand}`, `/po-ux`, `/po`, `/ux-agentico` — vive en `.claude/rules/paradigm-arquitectura.md`. Doctrina (3 planos + invariantes): `docs/architecture/luana-platform/PARADIGM.md` (+ `ADR-010`).
+
 ---
 
 ## Sección 8 · `user_visible` + `nature`

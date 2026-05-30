@@ -386,6 +386,7 @@ Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
 - `docs/promotion-protocol/template-proposal.md` — schema proposal
 - `docs/core-modules/` — contracts públicos
 - `docs/architecture/luana-platform/01-core-audit.md` — plan multibrand
+- `docs/architecture/luana-platform/PARADIGM.md` — ★ norte arquitectónico platform-wide (3 planos · trabajadores sobre un sistema · un solo engine · acción única). `ADR-010-orquestacion-agentica.md` = decisión. Un patrón agéntico/acción que ≥2 brands repiten → lift candidate al engine (no engine per-brand).
 - `docs/process/pm-redesign-2026-05.md` — paradigm v4 (10 estados macro)
 - `core/luana-core-extension-sdk/` — EP registry
 - `.claude/rules/anti-duplication.md` — patrones shared cross-consumer
