@@ -129,7 +129,7 @@ See `T-1-impl-log.md § Cross-ticket contract §T-2`:
 
 ## Commit SHA
 
-(to be populated after push)
+`ad5957f2` — pushed to `wip/vitalia`
 
 ---
 

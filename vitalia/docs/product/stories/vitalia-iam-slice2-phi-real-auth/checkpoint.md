@@ -12,8 +12,9 @@ priority: high
 ratified_by_chris: true   # 2026-05-30 Q1-Q3 ratificadas
 parallel_safe: false
 last_modified: 2026-05-30
-state: ready
-phase: READY_PACKAGE_CLOSED
+state: developed
+phase: HANDOFF_TO_AUDITOR
+live_verification: "god-matrix JWT real 2026-05-30: doctor 200 / marketing 403 / forged+stub 401 (VERIFICATION-godmatrix-live.md). Gaps pre-existentes: vitalia_patients/vitalia_leads tablas faltan en dev (observed-bug)."
 prior_art_scan_done: true
 prior_story: vitalia-stub-caps-scenario-backfill   # nace del hallazgo de aquella (stub PHI rechaza JWT real)
 
@@ -25,6 +26,11 @@ next_action: "/dev-team T-1 (BE-auth core) → T-2 (repos-wire) + T-3 (FE hook) 
 ready_package: [03-arch.md, 04-validators.yaml, 05-guidelines.md, 06-tickets.yaml, dispatch-plan.md]
 ready_closed_at: 2026-05-30
 ready_closed_by: architect
+# Autonomous ratify — Chris override in-session (escape valve architect-autonomous-mode.md)
+autonomous_mode_ratified_in_session: true
+autonomous_mode_ratified_by: chris
+autonomous_mode_ratified_at: 2026-05-29T23:17:07-05:00
+autonomous_mode_ratify_note: "Chris ratificó autónomo explícito ('hazlo de forma autonoma, aplicando todo lo aprendido, todo debe servir'). Gates innegociables: anti-orphan CONN + verificación REAL (JWT real god-matrix + logs, no HTTP 200) + test-design-doctrine."
 ---
 
 # Slice 2 PHI — desentubar el decoder JWT (stub → JWKS real) + rol desde DB + repos reales
