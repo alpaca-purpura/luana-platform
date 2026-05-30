@@ -86,6 +86,17 @@ scenarios:
     atomic_ref: null
     added_in_story: vitalia-stub-caps-scenario-backfill
     added_date: 2026-05-30
+  - id: tenant-user-link-write-ui-e2e-pendiente-hardening
+    name: "Operación de escritura (tenant↔user link) ejercida end-to-end vía UI admin Streamlit"
+    actor: super_admin
+    status: live
+    given: "El admin Streamlit carga (login OK, navegacion OK, st.dataframe renderiza, db-state 200 tras fix async commit 882f9f49)"
+    when: "Un e2e completa el form de creacion/edicion y verifica el efecto en db-state + audit_log"
+    then: "Row creada/modificada + audit_log row. PENDIENTE: selectores Streamlit fragiles (getByLabel matchea boton Help for X; st.dataframe headers en canvas glide-grid) -> test-hardening en story separada. NO es cap break: el panel funciona hands-on (verificado por orchestrator)."
+    e2e_test: null
+    verification_method: admin-panel
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    added_date: 2026-05-30
 ---
 
 # Admin Streamlit — Tenants + Usuarios

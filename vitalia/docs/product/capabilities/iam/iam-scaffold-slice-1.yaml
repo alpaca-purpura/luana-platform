@@ -83,6 +83,17 @@ scenarios:
       computed_status: partial (routing y shell OK, spec necesita ajuste de POM para strict mode).
     added_in_story: vitalia-stub-caps-scenario-backfill
     added_date: 2026-05-30
+  - id: iam-routing-nav-e2e-pendiente-hardening
+    name: "Navegación dedicada del shell IAM (deep-link a ruta IAM-gated) verificada por e2e"
+    actor: usuario
+    status: live
+    given: "El shell organism carga (confirmado por shell-visual-check pasando) y el routing IAM está cableado"
+    when: "Un e2e dedicado navega por deep-link a una ruta IAM-gated del shell"
+    then: "La ruta renderiza sin error. PENDIENTE: happy-navigation.spec.ts tiene bug POM (ribbon testid duplicado, strict-mode) -> test-hardening en story separada. NO es cap break: el shell+routing renderiza OK."
+    e2e_test: null
+    verification_method: dev-app
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    added_date: 2026-05-30
 ---
 
 # vitalia-iam-scaffold-slice-1

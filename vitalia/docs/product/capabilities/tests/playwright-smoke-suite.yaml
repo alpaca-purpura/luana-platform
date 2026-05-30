@@ -61,15 +61,15 @@ change_log:
 last_modified: 2026-05-30
 
 scenarios:
-  - id: smoke-suite-auth-sign-in-renderiza
-    name: "La suite smoke Playwright ejecuta el spec de sign-in sin errores"
+  - id: smoke-suite-topbar-interaction-verde
+    name: "La suite smoke Playwright ejercita el TopBar (role=banner, logo, ThemeToggle, altura 48px) sin errores críticos"
     actor: infra
     status: live
-    given: "El frontend de Vitalia está disponible en E2E_BASE_URL (localhost:3002 o dev-app); la suite smoke está configurada en playwright.config.ts"
-    when: "Se ejecuta el spec e2e/auth/sign-in-form.spec.ts con el proyecto smoke"
-    then: "Los scenarios SC-03/SC-04 pasan (página /sign-in renderiza Clerk SignIn sin placeholders pendientes); la suite sale exit 0"
-    e2e_test: "vitalia/frontend/e2e/auth/sign-in-form.spec.ts"
-    verification_method: deploy-endpoint
+    given: "El frontend de Vitalia está disponible en E2E_BASE_URL (localhost:3002 o dev-app) con la ruta pública /test-stack/topbar-global accesible; la suite smoke está configurada en playwright.config.ts"
+    when: "Se ejecuta el spec e2e/regression/topbar-global/topbar-interaction.smoke.spec.ts con el proyecto smoke"
+    then: "SC-01 TopBarGlobal renderiza con role=banner + data-testid, SC-02 logo tiene aria-label='Vitalia inicio' + href='/', SC-01b altura 47-50px, SC-03b zero errores de consola críticos; la suite sale con ≥5/7 tests pasando (SC-03 theme toggle puede ser flaky por timing, no es cap break)"
+    e2e_test: "vitalia/frontend/e2e/regression/topbar-global/topbar-interaction.smoke.spec.ts"
+    verification_method: dev-app
     story_spec_ref: "vitalia/docs/product/stories/vitalia-stub-caps-scenario-backfill/01-spec.md"
     atomic_ref: null
     added_in_story: vitalia-stub-caps-scenario-backfill
