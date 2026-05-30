@@ -1,3 +1,5 @@
+# cap: fidelizacion.re-engagement
+# story-origin: TBD
 """PausePatientService — pausar re-engagement de un paciente.
 
 Registra una pausa temporal en los re-engagements de un paciente.

@@ -1,3 +1,5 @@
+# cap: clinics.clinics-brand-extension
+# story-origin: TBD
 """Vitalia Clinic domain entity — pure Python, zero framework imports.
 
 DDD Inside-Out: domain layer is the innermost ring.

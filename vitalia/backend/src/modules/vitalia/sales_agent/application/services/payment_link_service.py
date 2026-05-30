@@ -1,3 +1,5 @@
+# cap: sales_agent.adrian-3-tools-mvp
+# story-origin: TBD
 """PaymentLinkService — MercadoPago deposit link via WhatsApp for Adrián.
 
 Orchestrates:

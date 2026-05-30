@@ -111,10 +111,10 @@ Activado cuando query es panorámica, comparativa o de routing.
 
 | Si Chris pide... | Routing |
 |---|---|
-| Backlog/outcomes/stories de brand X | `/pm-{x}` |
+| Backlog/releases/stories de brand X | `/pm-{x}` |
 | Capabilities shipped por brand X | `/pm-{x}` |
 | Learning brand X (con potencial promotable) | `/pm-{x}` (escribe) → este skill modo Core (evalúa promoción) |
-| Outcome platform que toca core + N brands | Modo Core (crear platform outcome) + N × `/pm-{brand}` (consumer outcomes) |
+| Outcome platform que toca core + N brands | Modo Core (crear platform outcome) + N × `/pm-{brand}` (stories/releases consumer) |
 | Spec / diseño / arq / código | NUNCA acá — `/po-ux`, `/ux-agentico`, `/architect`, `/dev-team` |
 
 ### Promotion lifecycle visibility (read-only modo Portfolio)
@@ -134,7 +134,7 @@ Pasar a Modo Core para ratificar.
 
 ### Portfolio view extension · agrupar por release (v2 cement 2026-05-27)
 
-Además de outcome legacy, agrupar stories cross-brand por su `release` field del checkpoint.md. `docs/portfolio/PORTFOLIO.md` auto-gen incluye sección "Releases activos cross-brand" con cada brand mostrando sus releases F0..FN status (planning/in_progress/ready_to_merge/shipped).
+Agrupar stories cross-brand por su `release` field del checkpoint.md. `docs/portfolio/PORTFOLIO.md` auto-gen incluye sección "Releases activos cross-brand" con cada brand mostrando sus releases F0..FN status (planning/in_progress/ready_to_merge/shipped).
 
 Doc: `docs/process/release-protocol.md`.
 
@@ -219,9 +219,9 @@ Outcomes que afectan core SIN ser específicos de una brand:
 - "Migrar luana-core-llm a OpenAI Responses API"
 - "CI/CD multimarca selectivo per-brand"
 
-Cuando Chris pide outcome cross-brand (ej. "voice cloning para todas las brands"):
-- Crear outcome platform: `docs/product/outcomes/voice-cloning-platform.md` (este skill owna)
-- Crear N outcomes brand-consumidoras: `{brand}/docs/product/outcomes/adopt-voice-cloning.md` (×N) — handoff a `/pm-{brand}`
+Cuando Chris pide trabajo cross-brand (ej. "voice cloning para todas las brands"):
+- Crear outcome platform: `docs/product/outcomes/voice-cloning-platform.md` (este skill owna — outcomes platform-level siguen vivos)
+- Crear N stories brand-consumidoras: `{brand}/docs/product/stories/adopt-voice-cloning/` (×N) — handoff a `/pm-{brand}`
 
 ### Comandos típicos Modo Core
 
@@ -234,7 +234,7 @@ Cuando Chris pide outcome cross-brand (ej. "voice cloning para todas las brands"
 | "rechazo {slug}" | Move state under_review→rejected con razón |
 | "migrated {slug}" | Move state accepted→migrated después de /dev-team cerrar lift |
 | "EP-N nuevo {nombre}" | Crear extension point spec en `core/luana-core-extension-sdk/` + actualizar `docs/architecture/luana-platform/extension-points.md` |
-| "breaking change EP-N" | ADR en `docs/architecture/ADR/` + bump major en packages afectados + migration notes |
+| "breaking change EP-N" | ADR en `docs/architecture/luana-platform/` + bump major en packages afectados + migration notes |
 | "qué hay en core {package}" | `cat docs/core-modules/{package}.md` |
 | "regen core-modules" | `make core-modules` (auto-gen via `scripts/generate_core_modules.py`) |
 
@@ -311,7 +311,23 @@ Este skill cubre dos modos pero su jurisdicción NO se expande. Reglas duras:
 
 Si Chris pide algo que cae en alguna ❌ → handoff explícito al skill correcto. NO silenciosamente expandir scope.
 
+## ★ Verificación REAL (doctrina cross-brand · cement 2026-05-29)
+
+> SSoT: `.claude/rules/test-design-doctrine.md` § "Verificación REAL ≠ HTTP 200". Origen: caso lisa-marca 2026-05-29 (ver `docs/process/learnings.md`).
+
+`/pm-luana` (y todo el proceso que orquesta: architect / dev-team / auditor) exige que **"probar un escenario" signifique ejercerlo de verdad + leer logs + confirmar el efecto** — NUNCA declarar "funciona/verified-live" porque un `GET` devolvió 200:
+
+- **Ejercer la acción real**, sobre todo los **writes** (save/edit/delete) — son los que rompen, no los reads. Un GET 200 (o un placeholder vacío) NO prueba la funcionalidad.
+- **Leer logs** del backend durante/después (4xx/5xx/traceback). Un 405/500 al lado en el mismo flujo = NO verificado.
+- **Confirmar el efecto** (row en DB, persistencia al recargar, evento), no el código HTTP.
+- **e2e que mockean el backend del propio surface bajo prueba NO cuentan** como verificación de ese surface (dan falso verde — caso lisa-marca: suite verde con backend 100% mockeado mientras 3 bugs reales shippeaban "LIVE").
+- Verificación contra el entorno real (dev-app) cuando la funcionalidad es visible; si no se puede ejercer de verdad (auth), **decirlo explícito**, no declararlo verificado.
+- Harness recomendado: test user de pruebas con rol suficiente (idealmente un "todopoderoso" con todos los roles sobre tenant(s) demo, vía **RBAC real, nunca bypass**) + project `smoke` (auth fresca) + spec SIN mocks del backend.
+
 ## Anti-patterns
+
+- ❌ Declarar "verificado"/"verified-live"/"funciona" porque un GET dio 200 (sin ejercer writes ni leer logs) — ver § Verificación REAL
+- ❌ Aceptar e2e que mockean el backend como prueba del backend de ese surface (falso verde)
 
 - ❌ Lift sin proposal formal en `docs/promotion-protocol/proposals/`
 - ❌ Bump major sin ADR + migration notes
@@ -370,6 +386,7 @@ Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
 - `docs/promotion-protocol/template-proposal.md` — schema proposal
 - `docs/core-modules/` — contracts públicos
 - `docs/architecture/luana-platform/01-core-audit.md` — plan multibrand
+- `docs/architecture/luana-platform/PARADIGM.md` — ★ norte arquitectónico platform-wide (3 planos · trabajadores sobre un sistema · un solo engine · acción única). `ADR-010-orquestacion-agentica.md` = decisión. Un patrón agéntico/acción que ≥2 brands repiten → lift candidate al engine (no engine per-brand).
 - `docs/process/pm-redesign-2026-05.md` — paradigm v4 (10 estados macro)
 - `core/luana-core-extension-sdk/` — EP registry
 - `.claude/rules/anti-duplication.md` — patrones shared cross-consumer

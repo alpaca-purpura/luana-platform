@@ -1,3 +1,5 @@
+// cap: public_landing.public-clinic-landing
+// story-origin: TBD
 import type { Meta, StoryObj } from "@storybook/nextjs";
 import { LucasRecommendationDetailModal } from "./LucasRecommendationDetailModal";
 import type { LucasRecommendation } from "../types/lucas-recommendation";

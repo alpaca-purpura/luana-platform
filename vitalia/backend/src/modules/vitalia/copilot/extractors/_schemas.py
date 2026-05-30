@@ -1,3 +1,5 @@
+# cap: copilot.inbox-tools-extensions
+# story-origin: TBD
 """Pydantic schemas for vitalia copilot extractors (T-extractors-1, T-extractors-2).
 
 Spec sources:

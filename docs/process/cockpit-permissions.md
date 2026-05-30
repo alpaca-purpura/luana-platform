@@ -126,14 +126,22 @@ Chris puede editar cap YAMLs SOLO via cockpit "✚ Extender" modal o "+ Nueva st
 
 | Field | Permisos Chris |
 |---|---|
-| `name`, `description` | edit (Chris escribe el bloque de trabajo) |
-| `target_date` | edit (Chris pone deadline cuando hay compromiso) |
+| `name`, `description` | edit **solo si NO shipped** (Chris escribe el bloque de trabajo · botón ✏ Editar en Roadmap) |
+| `target_date` | edit solo si NO shipped (Chris pone deadline cuando hay compromiso) |
 | `order` | edit (drag para reordenar releases en Roadmap) |
-| `stories[]` | edit via drag stories entre releases |
-| `status` | NO edit (auto-recompute) |
+| `stories[]` | edit via drag stories entre releases (solo si NO shipped) |
+| `status` | NO edit (auto-recompute · `shipped` lo sella el flujo "Cerrar → shipped") |
 | `shipped_date` | NO edit (auto-set al cerrar release) |
+| `verified_by`, `verified_at`, `verification_note` | NO edit a mano (los sella el flujo "Cerrar → shipped" con el check de comportamiento) |
+| `production_status`, `production_version`, `production_scheduled_at`, `deployed_at`, `release_branch` | NO edit (eje despliegue · futuro · lo escribirá el flujo "pase a producción") |
 | `release_id` | NO edit (es PK funcional) |
 | `brand`, `created_at`, `created_by` | NO edit |
+
+**Release `shipped` = inmutable.** El cockpit bloquea `PUT` (editar) y `DELETE` (archivar) sobre releases shipped → 403. Correcciones excepcionales solo vía `/pm-{brand}`. Ver `docs/process/release-protocol.md` § 2 + § 5.
+
+**Cerrar → shipped (gate de comportamiento):** el botón "Cerrar → shipped" del Roadmap abre un modal que (1) le da a Chris el prompt exacto para correr la prueba de integración + E2E smoke en Claude Code, y (2) exige un checkbox confirmando que dio verde sin romper lo anterior. Sin ese check, el endpoint no marca shipped. Ver release-protocol.md § 5.
+
+**Pase a producción (futuro):** botón visible en releases shipped pero **deshabilitado** (próximamente). Eje despliegue separado del eje integración. Ver release-protocol.md § 6.
 
 ---
 

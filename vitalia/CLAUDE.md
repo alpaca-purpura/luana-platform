@@ -76,9 +76,14 @@ docker exec luana-vitalia-backend-dev alembic upgrade head
 curl http://127.0.0.1:8002/health
 ```
 
+## Design system SSoT (★ cargar ANTES de tocar `vitalia/frontend/src/**`)
+
+Skill `vitalia-design-system` = índice cargable del shell-organism + átomos/moléculas + tokens + 6 agentes (NO duplica; apunta a fuentes). `/architect` lo lista en `must_load_skills` de todo ticket FE; `builder-frontend` lo carga (su único canal — no hereda este overlay); `auditor-frontend` lo usa en cat 9/13. SSoT que indexa: `vitalia/docs/architecture/{design-system.md, SHELL-DESIGN-CONTRACT.md}` + `vitalia/frontend/src/app/globals.css` + `tailwind.config.ts` + `src/lib/routing/shell-routes.ts`. ⚠️ `core/@luana/design-tokens` solo exporta z-index — tokens de color viven en `globals.css`.
+
 ## Brand-specific skills
 
 - `/pm-vitalia` — owner SSoT funcional Vitalia (outcomes/stories/capabilities/modules)
+- `vitalia-design-system` — design system + shell organism SSoT cargable (FE builds + audits) ★
 - `/po-ux` — refining stories UI std vitalia (CRUD/list/detail/form/dashboard)
 - `/po` — refining stories service vitalia (orchestration sin UI tradicional)
 - `/ux-agentico` — refining stories conversacionales (Valeria agenda, Camila copilot)
@@ -108,6 +113,24 @@ cat vitalia/docs/product/BACKLOG.md               # Backlog auto-gen (NO editar 
 ls vitalia/docs/product/stories/                  # Stories activas
 ls vitalia/docs/archive/2026/stories/             # Stories done
 ```
+
+## Bidirectional code↔cap mapping (cement 2026-05-28 v3.2)
+
+Toda story que toque `cap_change_type ∈ {new, extend}` sobre cap user_visible:true MUST poblar bloques v3.2 en cap YAML al merge Fase F.3: `scenarios[]` + `access` + `business_rules`. Archivos de código nuevos MUST tener header `# cap: <module>.<slug>` (Python) o `// cap: ...` (TS/TSX) en líneas 1-3.
+
+```bash
+# Levantar cockpit y abrir tab Functionality (vista narrada del producto)
+make cockpit-up                                    # http://localhost:4002/functionality
+
+# Regenerar índices code↔cap (auto-corre en pre-commit Section 5c/5d)
+python3 scripts/generate_code_to_cap_index.py --brand vitalia
+python3 scripts/validate_code_cap_bidirectional.py --brand vitalia
+
+# Outputs gitignored R3 v2:
+ls vitalia/docs/product/capabilities/_*.json       # status + atomics + code-index + bidirectional
+```
+
+SSoT: `docs/process/capability-protocol.md` § Sec 11-13 (v3.2 cement).
 
 ## Voz vitalia
 

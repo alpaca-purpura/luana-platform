@@ -1,7 +1,5 @@
 ---
 story_id: vitalia-fase2-lucas-lanzar
-outcome: vitalia-mvp-ui-foundation
-phase: fase-2
 type: ui-story
 agent_owner: lucas
 module: campaigns_growth
@@ -29,7 +27,7 @@ spawned_at: 2026-05-22
 next_action: "★ TIER reclassified 2026-05-27 (audit sweep): TIER 6 HIGH RISK scope ambiguity. Audience definition NO clara — 'prospects NOT patients' overlap directo con adrian-outbound (campaigns a leads en embudo). DEFER refinement hasta TIER 3 Adrian COMPLETO (post adrian-outbound shipped). Después revaluar con data real adrian-outbound usage: (A) si Lucas-Lanzar = new-customer ACQUISITION (anuncios Meta/Google fuera embudo) → keep, build. (B) si Lucas-Lanzar = re-engagement leads existentes → KILL, fusionar con adrian-outbound. Recommendation: Opción A — defer decision a post-TIER-3. SSoT orden: vitalia/docs/product/outcomes/vitalia-fase-2-tier-roadmap.md § TIER 6 + § Stories deprioritized."
 
 # Schema v2 migration (cement 2026-05-27)
-release: F2   # release ID · ver releases/
+release: F6   # release ID · ver releases/
 cap_target: lucas.lanzar   # capability slug target (v2 cement 2026-05-27)
 cap_change_type: new   # new | fix | extend | derive
 parent_story: null   # story padre si spawned · null si independiente

@@ -1,3 +1,5 @@
+# cap: copilot.valeria-wizard-onboarding-agentic
+# story-origin: TBD
 """Wizard prompt compiler — 5-slot architecture (Anthropic prompt caching).
 
 Per 03-arch-agentic.md § 5.2 + claude-api § Validation:
@@ -208,3 +210,5 @@ __all__ = [
     "as_anthropic_system_blocks",
     "compile_wizard_prompt",
 ]
+
+# voseo-allowed: doc/comentario interno citando glosario voseo, no user-facing

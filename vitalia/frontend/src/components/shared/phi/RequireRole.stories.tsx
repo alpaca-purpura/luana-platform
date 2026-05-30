@@ -1,3 +1,5 @@
+// cap: platform.shell-foundation-shadcn-tailwind-v4
+// story-origin: TBD
 import type { Meta, StoryObj } from "@storybook/nextjs";
 import { RequireRole } from "./RequireRole";
 

@@ -1,3 +1,5 @@
+// cap: shell-organism.shell-vitalia
+// story-origin: TBD
 /**
  * MedicalServicesOfferWizardSteps — 5-step wizard for medical_services_v1 preset.
  *

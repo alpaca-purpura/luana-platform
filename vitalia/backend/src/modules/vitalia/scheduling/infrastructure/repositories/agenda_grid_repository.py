@@ -1,3 +1,5 @@
+# cap: scheduling.valeria-agenda
+# story-origin: TBD
 """AgendaGridRepository — interface (Protocol) for agenda grid queries.
 
 Defines the contract for listing appointment slots for the Valeria Agenda

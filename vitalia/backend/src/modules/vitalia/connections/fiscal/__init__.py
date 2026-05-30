@@ -1,3 +1,5 @@
+# cap: connections.oauth-meta-google-ads
+# story-origin: TBD
 """Vitalia fiscal provider registry (LATAM e-invoicing dispatch)."""
 
 from .registry import (

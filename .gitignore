@@ -209,3 +209,14 @@ tools/luana-cockpit/.next/
 tools/luana-cockpit/node_modules/
 tools/luana-cockpit/.env.local
 tools/luana-cockpit/migrate-report-*.json
+
+# Cap verification outputs (auto-gen R3 v2)
+**/docs/product/capabilities/_status-computed.json
+**/docs/product/capabilities/_atomics-verification.json
+**/docs/product/capabilities/_code-index.json
+**/docs/product/capabilities/_bidirectional-validation.json
+
+# Sweep harness evidence + findings (HIPAA-lite: screenshots pueden contener datos mock de pacientes)
+# vitalia-cockpit-live-reconciliation T-2
+vitalia/frontend/e2e/regression/live-reconciliation/.evidence/
+vitalia/frontend/e2e/regression/live-reconciliation/.sweep-findings.json

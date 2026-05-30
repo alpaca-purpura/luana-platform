@@ -1,3 +1,5 @@
+# cap: crm.crm-consent-optout
+# story-origin: TBD
 """ConsentService — informed consent request + signing with HMAC URL verification.
 
 Per 03-arch-be.md § 9.4:

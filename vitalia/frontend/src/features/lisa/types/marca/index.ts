@@ -1,3 +1,5 @@
+// cap: brand_studio.lisa-marca
+// story-origin: vitalia-fase2-s7-TBD
 /**
  * lisa/types/marca/index.ts — Zod schemas barrel for Lisa Marca sub-tab.
  *

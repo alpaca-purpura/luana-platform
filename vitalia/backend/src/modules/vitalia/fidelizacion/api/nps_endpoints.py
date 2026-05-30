@@ -1,3 +1,5 @@
+# cap: patients.nps-tracking
+# story-origin: TBD
 """NPS API endpoints — T-7 fidelización vitalia.
 
 Rutas FastAPI (thin — sin lógica de negocio):

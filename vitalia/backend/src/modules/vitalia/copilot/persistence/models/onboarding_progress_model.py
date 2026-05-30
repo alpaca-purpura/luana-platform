@@ -1,3 +1,5 @@
+# cap: copilot.inbox-tools-extensions
+# story-origin: TBD
 """OnboardingProgressModel — SQLA 2.0 ORM for vitalia_onboarding_progress table.
 
 Mirrors the DDL from migration 011_vitalia. No autogenerate — raw SQL migrations.

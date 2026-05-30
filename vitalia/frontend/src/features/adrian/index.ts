@@ -1,3 +1,5 @@
+// cap: sales_agent.adrian-3-tools-mvp
+// story-origin: vitalia-fase1-s10-TBD
 /**
  * adrian/index.ts — Feature public API (FSD-Lite boundary matrix).
  * F1-S10 vitalia-fase1-empty-states

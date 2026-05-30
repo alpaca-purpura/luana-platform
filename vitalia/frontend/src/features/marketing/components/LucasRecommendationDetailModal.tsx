@@ -1,3 +1,5 @@
+// cap: public_landing.public-clinic-landing
+// story-origin: TBD
 /**
  * LucasRecommendationDetailModal — full-detail view of a Lucas recommendation
  * Shows: analysis (rationaleJson), projection, action_payload preview, Aprobar/Rechazar/Posponer 7d

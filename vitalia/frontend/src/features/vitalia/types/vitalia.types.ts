@@ -1,3 +1,5 @@
+// cap: shell-organism.shell-vitalia
+// story-origin: TBD
 /**
  * Vitalia core types — mirrors Pydantic Response DTOs (onboarding + offer preset).
  * snake_case preserved to match BE JSON field names directly.

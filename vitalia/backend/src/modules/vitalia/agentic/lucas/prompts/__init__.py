@@ -1,3 +1,5 @@
+# cap: agentic.eval-goldens-slice-1
+# story-origin: TBD
 """Lucas growth setter slot prompts (Anthropic prompt caching).
 
 Per 03-arch-agentic § 5.3 — Lucas 3-slot cache architecture:

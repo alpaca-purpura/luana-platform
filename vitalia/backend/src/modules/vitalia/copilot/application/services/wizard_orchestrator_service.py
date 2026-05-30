@@ -1,3 +1,5 @@
+# cap: copilot.valeria-wizard-onboarding-agentic
+# story-origin: TBD
 """WizardOrchestratorService — composition root for the Valeria wizard graph.
 
 High-level service consumed by the FastAPI route

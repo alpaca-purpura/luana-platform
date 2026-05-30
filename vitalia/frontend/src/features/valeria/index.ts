@@ -1,3 +1,5 @@
+// cap: scheduling.valeria-agenda
+// story-origin: vitalia-fase1-s10-TBD
 /**
  * valeria/index.ts — Feature public API (FSD-Lite boundary matrix).
  * F1-S10 vitalia-fase1-empty-states · T-11 vitalia-fase2-valeria-agenda

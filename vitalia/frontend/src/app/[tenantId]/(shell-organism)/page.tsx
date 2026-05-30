@@ -1,3 +1,5 @@
+// cap: __shared__
+// story-origin: TBD
 /**
  * Shell Organism Root Page — Server Component redirect.
  * F1-S4 vitalia-fase1-shell-layout-5050 — T-4 (MODIFIED by F1-S9)

@@ -1,3 +1,5 @@
+// cap: patients.nps-tracking
+// story-origin: TBD
 /**
  * fidelizacion-store.ts — Ephemeral UI state for fidelización feature.
  *

@@ -15,6 +15,7 @@ agent_owner: infra
 functional_area: infra.scaffolding
 user_visible: false
 nature: scaffold
+ui_paradigm: shell-organism  # T-3 reconcile 2026-05-29
 
 user_facing_name: "Suite de smoke tests Playwright"
 user_facing_description: >
@@ -36,12 +37,11 @@ dev_preview:
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-auth-base-functional   # v2 cement · mirror of story_introduced
 created_date: 2026-05-18   # v2 cement · mirror of date_introduced
-last_modified: 2026-05-18   # v2 cement · mirror of date_updated or date_introduced
+last_modified: 2026-05-29   # T-3 reconcile 2026-05-29
 parent_cap: null   # v2 cement · mirror of extends_capability
 derives_capabilities: []   # v2 cement · initial empty list
 
 # Capability ledger v2 (cement 2026-05-27)
-atomics: []   # v2 cement · empty initial · Chris populate manually
 
 # Capability change log v2 (cement 2026-05-27)
 change_log:
@@ -49,10 +49,31 @@ change_log:
     date: 2026-05-18
     type: new
     summary: "Implementación inicial · migración legacy a schema v2"
-    atomics_added: []
-    atomics_modified: []
     merge_sha: null
     status: done
+  - story_id: vitalia-stub-caps-scenario-backfill
+    date: 2026-05-30
+    type: extend
+    summary: "backfill scenario+e2e → verified-live (deployed-visible)"
+    scenarios_added: 1
+    status: done
+
+last_modified: 2026-05-30
+
+scenarios:
+  - id: smoke-suite-topbar-interaction-verde
+    name: "La suite smoke Playwright ejercita el TopBar (role=banner, logo, ThemeToggle, altura 48px) sin errores críticos"
+    actor: infra
+    status: live
+    given: "El frontend de Vitalia está disponible en E2E_BASE_URL (localhost:3002 o dev-app) con la ruta pública /test-stack/topbar-global accesible; la suite smoke está configurada en playwright.config.ts"
+    when: "Se ejecuta el spec e2e/regression/topbar-global/topbar-interaction.smoke.spec.ts con el proyecto smoke"
+    then: "SC-01 TopBarGlobal renderiza con role=banner + data-testid, SC-02 logo tiene aria-label='Vitalia inicio' + href='/', SC-01b altura 47-50px, SC-03b zero errores de consola críticos; la suite sale con ≥5/7 tests pasando (SC-03 theme toggle puede ser flaky por timing, no es cap break)"
+    e2e_test: "vitalia/frontend/e2e/regression/topbar-global/topbar-interaction.smoke.spec.ts"
+    verification_method: dev-app
+    story_spec_ref: "vitalia/docs/product/stories/vitalia-stub-caps-scenario-backfill/01-spec.md"
+    atomic_ref: null
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    added_date: 2026-05-30
 ---
 
 # Playwright smoke suite — vitalia

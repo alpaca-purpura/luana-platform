@@ -1,3 +1,5 @@
+// cap: platform.shell-foundation-shadcn-tailwind-v4
+// story-origin: TBD
 /**
  * DepositBadge — visual badge for prepaid booking deposit status.
  *

@@ -1,3 +1,5 @@
+// cap: brand_studio.lisa-marca
+// story-origin: vitalia-fase1-s10-TBD
 /**
  * MarcaPlaceholder — EmptyState genérico para Lisa/Marca.
  * F1-S10 vitalia-fase1-empty-states — T-2

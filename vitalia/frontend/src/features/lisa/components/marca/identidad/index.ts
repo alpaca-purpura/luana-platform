@@ -1,3 +1,5 @@
+// cap: brand_studio.lisa-marca
+// story-origin: vitalia-fase2-s7-TBD
 /**
  * identidad/index.ts — Component barrel for Identidad sub-sub-tab.
  *

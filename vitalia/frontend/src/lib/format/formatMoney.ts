@@ -1,3 +1,5 @@
+// cap: __shared__
+// story-origin: TBD
 /**
  * formatMoney — tenant-aware money formatter.
  *

@@ -1,7 +1,5 @@
 ---
 story_id: vitalia-fase2-lisa-doctores
-outcome: vitalia-mvp-ui-foundation
-phase: fase-2
 type: ui-story
 agent_owner: lisa
 module: staff
@@ -28,7 +26,7 @@ spawned_at: 2026-05-22
 next_action: "/po-ux refinar 01-spec.md con wireframes directorio + workspace doctor tabs"
 
 # Schema v2 migration (cement 2026-05-27)
-release: F2   # release ID · ver releases/
+release: F5   # release ID · ver releases/
 cap_target: lisa.doctores   # capability slug target (v2 cement 2026-05-27)
 cap_change_type: new   # new | fix | extend | derive
 parent_story: null   # story padre si spawned · null si independiente

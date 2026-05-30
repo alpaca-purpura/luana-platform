@@ -1,3 +1,5 @@
+// cap: platform.design-tokens-theme
+// story-origin: TBD
 /**
  * /test-stack/logo-mark — Visual baseline page F1-S2
  * (vitalia-fase1-topbar-global)

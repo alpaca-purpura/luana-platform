@@ -1,3 +1,5 @@
+// cap: shell-organism.shell-vitalia
+// story-origin: TBD
 /**
  * AppointmentsCalendarClient — calendar view of upcoming bookings.
  *

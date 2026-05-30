@@ -7,6 +7,7 @@ skills: [frontend-expert, brand-expert, offer-expert, offer-type-preset-expert, 
 color: orange
 model: sonnet
 ---
+<!-- voseo-allowed: doc interno de maquinaria (no user-facing) -->
 
 ## Return format (anti-telephone-game)
 
@@ -112,7 +113,7 @@ Apply tessl skills proactively (you don't wait to be asked):
 
 **Live verification skill (when you're about to claim "done"):**
 - `chrome-devtools-verify` — invoke for any user-facing change. Reproduces user flow on the brand dev URL (`dev-app.{brand}.com` or value from `${WS}/${BRAND}/config/brand.yaml::domains.dev`) via Chrome DevTools MCP from Linux. Catches what tsc + ESLint + Vitest cannot: real DOM, real SSE, real network, real console errors. Type checking and tests verify code correctness, not feature correctness.
-- NOTE 2026-05-15: skill marked DEPRECATED (designed for WSL2+Windows bridge, requires rewrite for Linux Mint). If unavailable, document manual verification steps in IMPL-LOG and escalate to Chris staging gate.
+- NOTE 2026-05-27: skill REINSTATED via official Chrome DevTools MCP (Google, v0.21+) on Linux — supersedes the prior WSL2 deprecation. Use it. If the MCP server is unavailable in this session, document manual verification steps in IMPL-LOG and escalate to Chris staging gate (do NOT claim success unverified).
 
 ## Step 5 — When designing novel patterns
 
@@ -177,8 +178,21 @@ Tree dirty with someone else's WIP → STOP, report, do NOT stage ajenos.
 ```bash
 ls ${WS}/${BRAND}/frontend/src/features/{domain}/ 2>/dev/null
 ls ${WS}/${BRAND}/frontend/src/components/ui/   # existing Shadcn components — reuse, never recreate
+ls ${WS}/${BRAND}/frontend/src/components/shared/   # existing molecules — reuse before building
 find ${WS}/${BRAND}/frontend/src/app/ -name "page.tsx" | head -10
 ```
+5. **If `06-tickets.yaml` declares `cap_target`** → read `{brand}/docs/product/capabilities/{module}/{cap}.yaml`: `dev_preview.main_component` (qué componente ya existe) + `scenarios[]`. Navegás por punteros.
+</step>
+
+<step name="technical_design">
+**ANTES de escribir código** (TDD + diseño senior + fidelidad visual). Escribí en `T-{n}-impl-log.md § Plan` (el auditor lo verifica):
+1. **Design-system-first** (`.claude/rules/frontend-visual-fidelity.md` D1): listá qué átomos `components/ui/` + moléculas `components/shared/` + tokens `@luana/design-tokens` vas a reutilizar. NUNCA reinventes una primitiva existente. Solo creás componente nuevo si nada sirve, y CON átomos.
+2. **Mockup adherence + scope** (D2+D3): qué elementos clave del mockup (`02-design-ui.md`/`mockups/`) implementás, con sus estados (empty/loading/error/success). **Implementá SOLO lo que los scenarios de `01-spec.md` + deliverables scopean — el mockup puede mostrar de más; NO lo excedas.** Lo fuera de scope → nota en `§ Mockup scope notes`, no lo construyas.
+3. **Batería de tests** (matriz `.claude/rules/test-design-doctrine.md`): Vitest component (+ estados) · hook test · RHF+Zod si form · E2E smoke si ruta nueva · visual assertions scoped.
+4. **Integración (CONN — `.claude/rules/anti-orphan-integration.md`)**: la página/componente se referencia en una ruta `app/` + nav tree (reachable + notarized) y consume un hook real. **Componente no referenciado por ninguna ruta/nav = isla → no lo dejes huérfano.**
+**La PRIMERA entrada del bitácora DEBE ser un test RED.**
+
+5. **Header de cap:** cada archivo `.ts`/`.tsx` de producción nuevo lleva en línea 1 `// cap: {cap_target}` (de `06-tickets.yaml`/checkpoint). Cablea el mapeo bidireccional código→cap (`docs/process/capability-protocol.md` § bidirectional + `anti-orphan-integration.md`).
 </step>
 
 <step name="implement_types_first">

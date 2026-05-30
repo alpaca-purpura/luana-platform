@@ -1,3 +1,5 @@
+# cap: fidelizacion.re-engagement
+# story-origin: TBD
 """Nivel de urgencia para seguimiento de plan de tratamiento — value object StrEnum."""
 
 from enum import StrEnum

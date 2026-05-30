@@ -1,3 +1,5 @@
+// cap: platform.shell-foundation-shadcn-tailwind-v4
+// story-origin: TBD
 /**
  * agent-names — Vitalia AI agent name mapping.
  *

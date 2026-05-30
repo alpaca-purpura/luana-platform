@@ -7,7 +7,7 @@ model: opus
 
 # /dev-team — Developer Team Router (Conv 2 autonomous build)
 
-> Owner: `T-{n}-impl-log.md` + `T-{n}-result.md` en `{brand}/docs/product/stories/{story-id}/`. Toma 1 ticket → ejecuta TDD + iteración contra `04-validators.yaml` → push. On pickup: state=ready→developing. On GREEN all tickets → state=developing→developed + **AUTO-HANDOFF a `/auditor`** (default post 2026-05-18 — story-closure-gate). Escape valve explícita: `checkpoint.md::defer_audit: true` con razón documentada + ratificación Chris. **REFUSE pickup nueva story si current worktree tiene story en state ∈ {developing, developed, reviewing} sin `defer_audit: true`** (defense-in-depth Layer 2 del story-closure-gate).
+> Owner: `T-{n}-impl-log.md` + `T-{n}-result.md` en `{brand}/docs/product/stories/{story-id}/`. Toma 1 ticket → ejecuta TDD + iteración contra `04-validators.yaml` → push. On pickup: state=ready→developing. On GREEN all tickets → state=developing→developed + **AUTO-HANDOFF a `/auditor`** (default post 2026-05-18 — story-closure-gate). Escape valve explícita: `checkpoint.md::defer_audit: true` con razón documentada + ratificación Chris. **REFUSE pickup si otra story DEL MISMO MÓDULO está en state ∈ {developing, developed, reviewing} sin `defer_audit: true`** (defense-in-depth Layer 2 del story-closure-gate, ★ v2 module-scoped post ADR-009: stories de OTROS módulos developing en paralelo sobre el mismo hub = OK). Build-claim: Step 0 hace `session-lock.sh acquire code:{module}` → cockpit pinta 🔨 lane.
 
 ## REQUIRED first input: `<brand>`
 
@@ -45,45 +45,58 @@ state: developing   # ★ TRANSITION ready → developing ★
 phase: BUILD_T1
 ```
 
-WIP cap check: `developing` ≤ 1 por worktree (post 2026-05-18 story-closure-gate). Si excedido → escala Chris antes proceder.
+WIP cap check (★ v2 2026-05-28 · ADR-009 single-hub): bajo el modelo hub único, N builds corren en el MISMO worktree sobre módulos distintos. Por eso el cap `developing` ya **NO es por worktree** — es **≤ 1 por `code:{module}` bucket** (un build en vuelo por módulo). Stories `developing` concurrentes en módulos DISTINTOS = OK (lo que Chris busca paralelizar). El bucket lock serializa solo el mismo módulo. SSoT: `.claude/rules/parallel-safety.md` M14 + `worktree-dual-strategy.md` § Regla cardinal v2.
 
-### Step 0.4 — Story-closure gate (story-closure-gate.md Layer 2)
+### Step 0.4 — Build-claim + story-closure gate module-scoped (story-closure-gate.md Layer 2 · ADR-009)
 
-ANTES de pickup este ticket (o cualquier ticket de esta story), verificar que NO hay otra story abierta en el mismo worktree pendiente de cierre:
+ANTES de pickup, (a) computar el módulo de esta story, (b) verificar que NO haya otra story del **mismo módulo** abierta sin cerrar, (c) adquirir el build-claim (lock module-scoped + registro para el cockpit):
 
 ```bash
 WS=$(git rev-parse --show-toplevel)
 BRAND={brand}
+STORY_DIR=${WS}/${BRAND}/docs/product/stories/{story-id}
+MODULE=$(grep -E "^module:" ${STORY_DIR}/checkpoint.md | head -1 | awk '{print $2}')
+MODULE=${MODULE:-_nomodule}
 
-# Listar todos los checkpoints stories del brand
+# (b) Gate module-scoped: bloquea SOLO si otra story del MISMO módulo está abierta
+#     sin defer_audit (cross-módulo concurrente = permitido bajo hub único).
 for cp in ${WS}/${BRAND}/docs/product/stories/*/checkpoint.md; do
-  STORY_ID=$(basename $(dirname $cp))
+  OTHER_ID=$(basename $(dirname $cp))
+  [[ "$OTHER_ID" == "{story-id}" ]] && continue
+  OTHER_MOD=$(grep -E "^module:" $cp | head -1 | awk '{print $2}')
   STATE=$(grep -E "^state:" $cp | head -1 | awk '{print $2}')
   DEFER=$(grep -E "^defer_audit:" $cp 2>/dev/null | awk '{print $2}')
-  if [[ "$STATE" =~ ^(developing|developed|reviewing)$ ]] && [[ "$DEFER" != "true" ]]; then
-    echo "BLOCK: story $STORY_ID en state=$STATE sin defer_audit"
+  if [[ "$OTHER_MOD" == "$MODULE" ]] && [[ "$STATE" =~ ^(developing|developed|reviewing)$ ]] && [[ "$DEFER" != "true" ]]; then
+    echo "BLOCK: story $OTHER_ID (módulo $MODULE) en state=$STATE sin defer_audit"
   fi
 done
+
+# (c) Build-claim: lock module-scoped + registra story_id + lane → cockpit pinta 🔨.
+#     Si el bucket está tomado por otra sesión (mismo módulo) → serializa (esperar/escalar).
+bash ${WS}/scripts/git/session-lock.sh acquire code:${MODULE} dev-team {story-id} \
+  || { echo "Bucket code:${MODULE} ocupado por otra sesión — build del mismo módulo en vuelo. Esperar o escalar Chris."; exit 1; }
 ```
 
-Si encuentro otra story open (developing/developed/reviewing) en el mismo worktree
-SIN `defer_audit: true` ratificado por Chris → REFUSE pickup. Output verbatim:
+`$LUANA_LANE` (export opcional por terminal, ej. `export LUANA_LANE=A`) da nombre humano a la sesión en el cockpit; sin él, cae a `pid<PID>`.
+
+Si encuentro otra story open del **mismo módulo** (developing/developed/reviewing) SIN `defer_audit: true` → REFUSE pickup. Output verbatim:
 
 ```
-❌ Story closure gate: cannot pickup ticket T-{n} de story {new-story-id}
-   porque story {open-story-id} está en state={state} sin defer_audit.
+❌ Story closure gate (module-scoped): cannot pickup ticket T-{n} de story {new-story-id}
+   porque story {open-story-id} del MISMO módulo {module} está en state={state} sin defer_audit.
+   (Stories de OTROS módulos developing en paralelo = OK bajo ADR-009 single-hub.)
 
    Acciones disponibles:
    1. Continuar story {open-story-id} hasta state=done (default forward-motion)
-   2. Ratificar defer_audit:true en {open-story-id}/checkpoint.md con razón
-      documentada + Chris explícito
-   3. Cleanup-session el worktree actual y crear nuevo
-      (scripts/git/new-session.sh --story-id {new-story-id})
+   2. Ratificar defer_audit:true en {open-story-id}/checkpoint.md con razón + Chris explícito
+   3. Tomar una story de OTRO módulo (bucket code:{otro} libre)
 
-   SSoT regla: .claude/rules/story-closure-gate.md (Layer 2)
+   SSoT regla: .claude/rules/story-closure-gate.md (Layer 2) + ADR-009 § 2.2
 ```
 
-NO arrancar el ticket. Esperar acción explícita Chris.
+NO arrancar el ticket si el gate bloquea. Esperar acción explícita Chris.
+
+**Release del build-claim:** al cerrar la story (transition `developing → developed`, handoff `/auditor`) o si se aborta el pickup, ejecutar `bash ${WS}/scripts/git/session-lock.sh release code:${MODULE}` para liberar el módulo. Si la sesión muere, el lock auto-libera por PID muerto en el próximo `acquire`.
 
 ## Step 0.5 — Phase 0: Context pre-flight (MANDATORY antes Step 1)
 
@@ -511,7 +524,11 @@ Si `defer_audit` no está set o es `false` → EMITIR handoff verbatim, NO arran
 
 Quality gates: validators all GREEN.
 Story state: developing → developed.
-WIP cap check: developing (was 1) now 0; developed (was 0) now 1 / cap 1.
+WIP cap check (module-scoped · ADR-009): bucket code:{module} liberado; otras stories
+de OTROS módulos pueden seguir developing en paralelo en el hub.
+
+→ Release build-claim: bash ${WS}/scripts/git/session-lock.sh release code:{module}
+  (libera el módulo + saca el badge 🔨 del cockpit)
 
 → AUTO-HANDOFF /auditor <brand>: {brand} story={story-id}
 
@@ -543,10 +560,12 @@ STOP la sesión `/dev-team`.
 ### Anti-pattern bloqueado (caso vitalia 2026-05-18 origen)
 
 ```
-❌ NUNCA: cerrar state=developed + pickup ticket de otra story en el mismo worktree.
-   Layer 2 enforcement: si Step 0.4 detecta otra story abierta sin defer_audit,
-   REFUSE pickup. Si esta story (la actual) acaba de cerrar developed, ANTES
-   de cualquier nueva story el worktree debe llegar a state=done (auditor → merge → archive).
+❌ NUNCA: cerrar state=developed + pickup ticket de otra story DEL MISMO MÓDULO en el mismo worktree.
+   Layer 2 enforcement (★ v2 module-scoped · ADR-009): si Step 0.4 detecta otra story
+   abierta DEL MISMO módulo sin defer_audit, REFUSE pickup. Una story developed del módulo X
+   debe llegar a state=done (auditor → merge → archive) antes de arrancar otra del módulo X.
+   ✅ SÍ permitido: pickup de una story de OTRO módulo (bucket code:{otro} libre) en una
+   sesión paralela del MISMO hub — eso es exactamente lo que ADR-009 habilita.
 ```
 
 ## Step 5.5 — R12 layer 1: emit process metric
@@ -724,7 +743,7 @@ Orchestrator DELEGA via Agent tool:
 
 ## Anti cross-brand pollution
 
-- ❌ NUNCA editar `{other_brand}/...` cuando trabajás en `{brand}`. Si la story necesita tocar otra brand → STOP, escalate `/pm-luana` (outcome cross-brand).
+- ❌ NUNCA editar `{other_brand}/...` cuando trabajás en `{brand}`. Si la story necesita tocar otra brand → STOP, escalate `/pm-luana` (trabajo cross-brand).
 - ❌ NUNCA editar `core/luana-core-*/src/` directamente. Requiere lift via `/pm-luana` (promotion gate).
 - ❌ NUNCA escribir/leer archivos en root `docs/product/stories/` — solo `<brand>: platform` (cross-brand) outcomes van ahí, y eso requiere autorización explícita `/pm-luana`.
 - ❌ Spawn sub-agent sin propagar `<brand>: {brand}` en el prompt — sub-agent puede editar fuera del scope brand.
@@ -776,8 +795,11 @@ Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
 - `docs/process/pm-redesign-2026-05.md` — paradigma 3 conversaciones + autonomous build
 - `.claude/rules/tdd-mandatory.md` — TDD obligatorio + R31 default flag flips
 - `.claude/rules/anti-duplication.md` — inventario shared abstractions
+- `docs/architecture/luana-platform/PARADIGM.md` + `.claude/rules/paradigm-arquitectura.md` — ★ 3 planos: el trabajador invoca la acción única (Plano 2), no reimplementa; un solo engine; no cruzar de plano sin escalar
 - `.claude/rules/hotfix-repro-mandatory.md` — R26 hot-fix gate
 - `.claude/rules/parallel-safety.md` — M1-M8 multi-session
 - `.claude/agents/builder-{backend,frontend,agentic}.md` — sub-builders specs
 - `.claude/agents/gate-runner.md` — gate-output.json producer (Haiku)
 - `.claude/agents/context-builder.md` — CONTEXT-BRIEF.md producer (Haiku)
+
+<!-- voseo-allowed: doc interno / buzón conversacional, no user-facing -->

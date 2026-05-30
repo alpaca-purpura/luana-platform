@@ -14,11 +14,10 @@ order: 5
 created_at: 2026-05-27T18:25:23-05:00
 created_by: scripts/migrate_to_release_schema.py
 
-stories: []
-
-# Legacy outcome mapping (transition phase)
-maps_legacy_outcome: null
-maps_legacy_phase: null
+stories:
+  - vitalia-fase2-lisa-compliance
+  - vitalia-fase2-lisa-doctores
+  - vitalia-fase2-lisa-servicios
 ---
 
 # F5 · Lisa marca completa + onboarding clínica

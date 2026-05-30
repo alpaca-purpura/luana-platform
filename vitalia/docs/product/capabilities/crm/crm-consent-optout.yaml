@@ -2,7 +2,7 @@
 capability_id: vitalia-crm-consent-optout
 module: crm
 slug: crm-consent-optout
-status: live
+status: deprecated
 date_introduced: 2026-05-20
 story_introduced: vitalia-slice-1-fidelizacion
 package_version: 0.1.0
@@ -15,6 +15,8 @@ agent_owner: adrian
 functional_area: adrian.crm
 user_visible: true
 nature: feature
+ui_paradigm: slice-1-superseded  # T-3 reconcile 2026-05-29
+replaced_by_story: vitalia-fase2-valeria-pacientes  # T-3: story F2 que reconstruye esta cap
 
 user_facing_name: "CRM · consentimiento y opt-out de marketing"
 user_facing_description: >
@@ -41,12 +43,11 @@ dev_preview:
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-slice-1-fidelizacion   # v2 cement · mirror of story_introduced
 created_date: 2026-05-20   # v2 cement · mirror of date_introduced
-last_modified: 2026-05-20   # v2 cement · mirror of date_updated or date_introduced
+last_modified: 2026-05-29   # T-3 reconcile 2026-05-29
 parent_cap: null   # v2 cement · mirror of extends_capability
 derives_capabilities: []   # v2 cement · initial empty list
 
 # Capability ledger v2 (cement 2026-05-27)
-atomics: []   # v2 cement · empty initial · Chris populate manually
 
 # Capability change log v2 (cement 2026-05-27)
 change_log:
@@ -54,8 +55,6 @@ change_log:
     date: 2026-05-20
     type: new
     summary: "Implementación inicial · migración legacy a schema v2"
-    atomics_added: []
-    atomics_modified: []
     merge_sha: null
     status: done
 ---

@@ -1,3 +1,5 @@
+# cap: scheduling.valeria-agenda
+# story-origin: vitalia-fase2-s1-TBD
 """Appointment Status Service — status transition + audit log + telemetry.
 
 Rule (hipaa-lite.md § Regla cardinal):

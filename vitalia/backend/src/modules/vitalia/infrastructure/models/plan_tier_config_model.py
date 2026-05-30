@@ -1,3 +1,5 @@
+# cap: booking.prepaid-booking-advisory-locks
+# story-origin: TBD
 """SQLAlchemy 2.0 ORM model — VitaliaPlanTierConfigModel.
 
 Maps to `vitalia_plan_tier_configs` table.

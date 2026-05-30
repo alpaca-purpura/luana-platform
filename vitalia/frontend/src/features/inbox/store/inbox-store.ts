@@ -1,3 +1,5 @@
+// cap: sales_agent.inbox-handler-mode-occ
+// story-origin: TBD
 /**
  * inbox-store.ts — Inbox UI state (Zustand).
  *

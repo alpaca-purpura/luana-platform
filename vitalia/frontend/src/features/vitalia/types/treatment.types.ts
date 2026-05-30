@@ -1,3 +1,5 @@
+// cap: shell-organism.shell-vitalia
+// story-origin: TBD
 /**
  * Treatment types — mirrors Pydantic treatment_dtos.py Response DTOs.
  * snake_case preserved to match BE JSON field names.

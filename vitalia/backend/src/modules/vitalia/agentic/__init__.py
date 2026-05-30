@@ -1,3 +1,5 @@
+# cap: agentic.eval-goldens-slice-1
+# story-origin: TBD
 """Vitalia agentic surface — sales-agent vertical-medical extensions.
 
 Tools, guardrails, prompts, intent classifier all live here.

@@ -1,3 +1,5 @@
+# cap: fidelizacion.re-engagement
+# story-origin: TBD
 """Worker cron: re_engagement_response_timeout_sweep.
 
 Marca como NOT_RESPONSIVE los eventos de re-engagement que llevan

@@ -1,3 +1,5 @@
+// cap: shell-organism.shell-vitalia
+// story-origin: TBD
 /**
  * CompliancePageClient — HIPAA-lite compliance audit log dashboard.
  *

@@ -1,3 +1,5 @@
+# cap: brand_studio.brand-studio-medical-sections
+# story-origin: vitalia-fase2-s7-TBD
 """Brand studio infrastructure repositories — ABCs + impls."""
 
 from .prohibited_phrase_repository import ProhibitedPhraseRepository

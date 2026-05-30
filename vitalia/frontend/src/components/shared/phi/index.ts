@@ -1,3 +1,5 @@
+// cap: platform.shell-foundation-shadcn-tailwind-v4
+// story-origin: TBD
 /**
  * phi — barrel exports for HIPAA-lite PHI protection components.
  * No default exports per FSD-Lite + arch fitness gate.

@@ -1,3 +1,5 @@
+# cap: copilot.inbox-tools-extensions
+# story-origin: TBD
 """OnboardingDraftService — CRUD operations for wizard OnboardingDraft entity.
 
 Handles lifecycle management of wizard onboarding sessions:

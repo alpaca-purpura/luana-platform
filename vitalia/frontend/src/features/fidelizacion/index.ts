@@ -1,3 +1,5 @@
+// cap: patients.nps-tracking
+// story-origin: TBD
 /**
  * fidelizacion/index.ts — Feature public API (FSD-Lite boundary matrix).
  *

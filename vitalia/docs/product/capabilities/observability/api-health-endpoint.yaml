@@ -15,6 +15,7 @@ agent_owner: infra
 functional_area: infra.observability
 user_visible: false
 nature: feature
+ui_paradigm: infra-only  # T-3 reconcile 2026-05-29
 
 user_facing_name: "Endpoint de health check"
 user_facing_description: >
@@ -37,12 +38,11 @@ dev_preview:
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-auth-base-functional   # v2 cement · mirror of story_introduced
 created_date: 2026-05-18   # v2 cement · mirror of date_introduced
-last_modified: 2026-05-18   # v2 cement · mirror of date_updated or date_introduced
+last_modified: 2026-05-29   # T-3 reconcile 2026-05-29
 parent_cap: null   # v2 cement · mirror of extends_capability
 derives_capabilities: []   # v2 cement · initial empty list
 
 # Capability ledger v2 (cement 2026-05-27)
-atomics: []   # v2 cement · empty initial · Chris populate manually
 
 # Capability change log v2 (cement 2026-05-27)
 change_log:
@@ -50,10 +50,31 @@ change_log:
     date: 2026-05-18
     type: new
     summary: "Implementación inicial · migración legacy a schema v2"
-    atomics_added: []
-    atomics_modified: []
     merge_sha: null
     status: done
+  - story_id: vitalia-stub-caps-scenario-backfill
+    date: 2026-05-30
+    type: extend
+    summary: "backfill scenario+e2e → verified-live (deployed-visible)"
+    scenarios_added: 1
+    status: done
+
+last_modified: 2026-05-30
+
+scenarios:
+  - id: health-endpoint-responde-200-sin-auth
+    name: "Endpoint GET /api/health responde 200 con status ok sin autenticación"
+    actor: sistema
+    status: live
+    given: "El backend de Vitalia está corriendo; el endpoint /api/health está registrado sin guard de auth"
+    when: "Se realiza GET /api/health sin header de autorización"
+    then: "El endpoint responde 200 JSON {status: ok, brand: vitalia}; las sondas K8s y el smoke post-deploy pueden consumirlo sin credenciales"
+    e2e_test: "vitalia/backend/tests/integration/test_api_health_endpoint.py"
+    verification_method: deploy-endpoint
+    story_spec_ref: "vitalia/docs/product/stories/vitalia-stub-caps-scenario-backfill/01-spec.md"
+    atomic_ref: null
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    added_date: 2026-05-30
 ---
 
 # API health endpoint — /api/health

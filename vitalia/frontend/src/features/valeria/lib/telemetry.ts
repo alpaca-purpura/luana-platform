@@ -1,3 +1,5 @@
+// cap: scheduling.valeria-agenda
+// story-origin: vitalia-fase2-s1-TBD
 /**
  * telemetry.ts — Telemetría UX para Valeria Agenda (growth_studio_event).
  *

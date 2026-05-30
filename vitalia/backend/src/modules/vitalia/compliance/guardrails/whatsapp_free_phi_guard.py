@@ -1,3 +1,5 @@
+# cap: compliance.whatsapp-template-registry
+# story-origin: TBD
 """WhatsAppFreePhiGuard — payload-level PHI scanner for WhatsApp free tier.
 
 Complements MedicalResultsChannelGuard at the payload level:

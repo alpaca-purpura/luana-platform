@@ -1,3 +1,5 @@
+# cap: sales_agent.inbox-handler-mode-occ
+# story-origin: TBD
 """RetractMessageService — vitalia inbox application layer.
 
 SC-03 coverage: 5min action receipt window + OCC + channel adapter + fallback.

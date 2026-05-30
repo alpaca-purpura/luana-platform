@@ -1,3 +1,5 @@
+// cap: marketing.lucas-stage-recommendations
+// story-origin: vitalia-fase1-s10-TBD
 /**
  * MercadoPlaceholder — EmptyState genérico para Lucas/Mercado.
  * F1-S10 vitalia-fase1-empty-states — T-2

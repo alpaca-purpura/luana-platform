@@ -2,7 +2,7 @@
 capability_id: vitalia-brand-studio-medical-sections
 module: brand_studio
 slug: brand-studio-medical-sections
-status: live
+status: deprecated
 date_introduced: 2026-05-15
 story_introduced: luana-vitalia-bootstrap
 package_version: 0.1.0
@@ -16,6 +16,8 @@ agent_owner: lisa
 functional_area: lisa.marca
 user_visible: true
 nature: feature
+ui_paradigm: slice-1-superseded  # T-3 reconcile 2026-05-29
+replaced_by_story: vitalia-fase2-lisa-doctores  # T-3: story F2 que reconstruye esta cap
 
 user_facing_name: "Secciones médicas del Brand Studio"
 user_facing_description: >
@@ -40,21 +42,18 @@ dev_preview:
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: luana-vitalia-bootstrap   # v2 cement · mirror of story_introduced
 created_date: 2026-05-15   # v2 cement · mirror of date_introduced
-last_modified: 2026-05-15   # v2 cement · mirror of date_updated or date_introduced
+last_modified: 2026-05-29   # T-3 reconcile 2026-05-29
 parent_cap: null   # v2 cement · mirror of extends_capability
-derives_capabilities: [lisa-marca]   # v2 cement · back-populated
+derives_capabilities: [vitalia-lisa-marca]   # v2 cement · back-populated
 
 # Capability ledger v2 (cement 2026-05-27)
-atomics: []   # v2 cement · empty initial · Chris populate manually
 
 # Capability change log v2 (cement 2026-05-27)
 change_log:
-  - story_id: luana-vitalia-bootstrap
+  - story_id: vitalia-bootstrap-inventory-2026-05-15
     date: 2026-05-15
     type: new
     summary: "Implementación inicial · migración legacy a schema v2"
-    atomics_added: []
-    atomics_modified: []
     merge_sha: null
     status: done
 ---

@@ -1,3 +1,5 @@
+# cap: brand_studio.brand-studio-medical-sections
+# story-origin: vitalia-fase2-s1-TBD
 """Growth Studio event emitter — brand-local UX/funnel telemetry.
 
 Rule (03-arch § 3.3 + § 10):

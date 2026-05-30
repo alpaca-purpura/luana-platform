@@ -1,3 +1,5 @@
+# cap: treatments.treatment-followup-workflow
+# story-origin: TBD
 """TreatmentFollowupService — register LangGraph workflow + schedule D+5/14/90 cron ticks.
 
 Per 03-arch-be.md § 9.5:

@@ -1,3 +1,5 @@
+// cap: iam.luana-core-adoption
+// story-origin: TBD
 /**
  * fetchClient — Vitalia tenant+clinic aware fetch wrapper.
  *

@@ -1,3 +1,5 @@
+# cap: patients.nps-tracking
+# story-origin: TBD
 """Migration 023 — vitalia_patients opt-in columns (Slice 1 fidelización).
 
 Extends existing vitalia_patients table (Story 11) with 4 marketing consent columns

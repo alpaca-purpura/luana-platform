@@ -1,3 +1,5 @@
+# cap: agentic.eval-goldens-slice-1
+# story-origin: TBD
 """SQLAlchemy 2.0 ORM model — AttributionMatrixSnapshotModel.
 
 Maps to ``attribution_matrix_snapshots`` table (created in

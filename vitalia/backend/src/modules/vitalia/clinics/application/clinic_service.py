@@ -1,3 +1,5 @@
+# cap: clinics.clinics-brand-extension
+# story-origin: TBD
 """Vitalia Clinic application service — business logic + audit log dispatch.
 
 Application layer sits between API (thin) and repository (infra).

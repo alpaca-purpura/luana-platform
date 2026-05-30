@@ -1,3 +1,5 @@
+# cap: payment.payment-gateways-latam-recurring
+# story-origin: vitalia-fase2-s1-TBD
 """DTOs for POST /api/v1/payments/charge — CobrarSaldo endpoint.
 
 Per 03-arch § 5.3 + T-7 deliverables:

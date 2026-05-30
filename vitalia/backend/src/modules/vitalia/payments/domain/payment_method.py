@@ -1,3 +1,5 @@
+# cap: payment.payment-gateways-latam-recurring
+# story-origin: vitalia-fase2-s1-TBD
 """PaymentMethod enum — vitalia-brand-local payment methods.
 
 Used in:

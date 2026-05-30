@@ -1,3 +1,4 @@
+---
 capability_id: vitalia-admin-streamlit-service
 module: admin
 slug: admin-streamlit-service
@@ -14,6 +15,7 @@ agent_owner: config
 functional_area: config.admin
 user_visible: true
 nature: feature
+ui_paradigm: admin-panel  # T-3 reconcile 2026-05-29
 
 user_facing_name: "Servicio admin Streamlit"
 user_facing_description: >
@@ -59,20 +61,56 @@ verification:
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: unknown-legacy   # v2 cement · mirror of story_introduced
 created_date: 2026-05-15   # v2 cement · mirror of date_introduced
-last_modified: 2026-05-15   # v2 cement · mirror of date_updated or date_introduced
+last_modified: 2026-05-30   # backfill scenarios vitalia-stub-caps-scenario-backfill
 parent_cap: null   # v2 cement · mirror of extends_capability
 derives_capabilities: []   # v2 cement · initial empty list
 
 # Capability ledger v2 (cement 2026-05-27)
-atomics: []   # v2 cement · empty initial · Chris populate manually
 
 # Capability change log v2 (cement 2026-05-27)
 change_log:
-  - story_id: unknown-legacy
+  - story_id: vitalia-adopt-luana-core-iam
     date: 2026-05-15
     type: new
     summary: "Implementación inicial · migración legacy a schema v2"
-    atomics_added: []
-    atomics_modified: []
     merge_sha: null
     status: done
+  - story_id: vitalia-stub-caps-scenario-backfill
+    date: 2026-05-30
+    type: extend
+    summary: "backfill scenario+e2e → verified-live (deployed-visible)"
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    status: done
+
+scenarios:
+  - id: admin-login-bcrypt-dashboard-accesible
+    name: "Admin logea con password bcrypt y accede al dashboard con navegación"
+    actor: sistema
+    status: live
+    given: "El panel admin Streamlit está levantado en :8502 y VITALIA_ADMIN_PASSWORD_HASH está configurado"
+    when: "El administrador ingresa la contraseña correcta en el formulario de login"
+    then: "El sidebar muestra las opciones Tenants y Usuarios; el dashboard principal es accesible"
+    e2e_test: "vitalia/frontend/e2e/admin/admin-login.spec.ts"
+    verification_method: admin-panel
+    story_spec_ref: "vitalia/docs/product/stories/vitalia-stub-caps-scenario-backfill/01-spec.md"
+    atomic_ref: null
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    added_date: 2026-05-30
+  - id: admin-sin-sesion-muestra-login
+    name: "Admin sin sesión activa ve el formulario de login (session destroyed)"
+    actor: sistema
+    status: live
+    given: "El administrador accede al panel sin sesión autenticada o hace logout"
+    when: "Se navega directamente a la URL del admin sin autenticación"
+    then: "Streamlit muestra el campo de contraseña; el sidebar con navegación no es visible"
+    e2e_test: "vitalia/frontend/e2e/admin/admin-login.spec.ts"
+    verification_method: admin-panel
+    story_spec_ref: "vitalia/docs/product/stories/vitalia-stub-caps-scenario-backfill/01-spec.md"
+    atomic_ref: null
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    added_date: 2026-05-30
+---
+
+# Servicio admin Streamlit
+
+Panel de administración interno (Streamlit) para el equipo de Vitalia: gestiona tenants, clínicas y usuarios de forma transversal. Corre en un servicio Docker separado (puerto 8502), con autenticación por contraseña de administrador.

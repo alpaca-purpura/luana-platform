@@ -20,6 +20,7 @@ allowed-tools: Read, Write, Edit, Bash, Grep, Glob
 - `tessl__nextjs-app-router-modularization` — Server/Client split
 - `tessl__graceful-degradation` — timeout/fallback fetch
 - Domain skill según módulo (`brand-expert`, `offer-expert`, `copilot-expert`, etc.)
+- `{brand}-design-system` si existe (ej. `vitalia-design-system`) — inventario átomos/moléculas/shell + autoridad de tokens. ★ Además, inclúyelo en `assignment.must_load_skills` de CADA ticket FE de esa brand: es el único canal por el que el `builder-frontend` (sub-agente) recibe el design system. Sin esto se pierde en build (`anti-orphan-integration.md` + `frontend-visual-fidelity.md § D0`).
 
 ## Workflow
 
@@ -126,6 +127,7 @@ done -> docs/product/stories/{story-id}/03-arch-fe.md
 - ❌ Inline `style={{}}` (use Tailwind + cn())
 - ❌ Hardcoded hex colors / fontsize / spacing (use tokens)
 - ❌ Recreating Shadcn components que existen
+- ❌ Omitir `{brand}-design-system` en `must_load_skills` de tickets FE cuando el skill existe (builder no recibe el design system)
 - ❌ Cross-feature imports default
 - ❌ Hardcoded `'USD'` o `currency || 'USD'`
 - ❌ `toLocaleDateString()`

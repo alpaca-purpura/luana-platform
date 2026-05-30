@@ -1,3 +1,5 @@
+# cap: __shared__
+# story-origin: TBD
 """Capa API de fidelización vitalia — FastAPI thin routers.
 
 Endpoints bajo /api/v1/vitalia/fidelizacion/*:

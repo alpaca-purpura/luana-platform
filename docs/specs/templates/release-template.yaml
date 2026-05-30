@@ -20,11 +20,6 @@ stories: []
 # stories:
 #   - story-id-1
 #   - story-id-2
-
-# Legacy outcome mapping (transition phase · removerlo cuando todas las stories migren al schema v2)
-# Útil para vista de migración + auditoría
-maps_legacy_outcome: null              # ej "vitalia-mvp-ui-foundation" · null si net-new
-maps_legacy_phase: null                # ej "fase-2" · null si net-new
 ---
 
 # {RELEASE_ID} · {Nombre del release}

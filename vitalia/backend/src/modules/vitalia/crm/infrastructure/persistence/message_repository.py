@@ -1,3 +1,5 @@
+# cap: crm.crm-consent-optout
+# story-origin: TBD
 """MessageRepository — dual-scope async repository (T-inbox-be-2).
 
 Inherits CompoundScopeRepositoryBase with scope_field="clinic_id" to enforce

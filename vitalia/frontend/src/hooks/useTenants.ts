@@ -1,3 +1,5 @@
+// cap: iam.luana-core-adoption
+// story-origin: vitalia-fase1-s3-TBD
 "use client";
 
 /**

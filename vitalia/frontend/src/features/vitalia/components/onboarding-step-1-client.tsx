@@ -1,3 +1,5 @@
+// cap: shell-organism.shell-vitalia
+// story-origin: TBD
 /**
  * OnboardingStep1Client — Step 1 of 3-step clinic onboarding wizard.
  *

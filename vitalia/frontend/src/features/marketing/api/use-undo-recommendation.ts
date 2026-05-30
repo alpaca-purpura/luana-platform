@@ -1,3 +1,5 @@
+// cap: public_landing.public-clinic-landing
+// story-origin: TBD
 /**
  * useUndoRecommendation — mutation: undo an approved recommendation (within undo window)
  * Requires Idempotency-Key header (BE enforced for POST mutations)

@@ -1,3 +1,5 @@
+# cap: copilot.inbox-tools-extensions
+# story-origin: TBD
 """SimulatePersonalityService — personality simulation with cache + rate limiting.
 
 Generates a sample personality-aligned text response for the partially

@@ -1,3 +1,5 @@
+# cap: booking.prepaid-booking-advisory-locks
+# story-origin: TBD
 """Vitalia infrastructure repositories.
 
 All repositories are AsyncSession-based (SQLA 2.0 select().where() style).

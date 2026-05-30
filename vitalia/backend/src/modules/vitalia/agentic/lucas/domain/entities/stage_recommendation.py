@@ -1,3 +1,5 @@
+# cap: agentic.lucas-recommendation-tool
+# story-origin: TBD
 """Lucas domain entity — StageRecommendation.
 
 Pure Python domain entity. No SQLAlchemy, no FastAPI imports.

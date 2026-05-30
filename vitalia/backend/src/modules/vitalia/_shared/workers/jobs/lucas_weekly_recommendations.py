@@ -1,3 +1,5 @@
+# cap: agentic.lucas-recommendation-tool
+# story-origin: TBD
 """ARQ cron job: lucas_weekly_recommendations — Lucas growth setter weekly sweep.
 
 Schedule: weekly Monday 04:00 UTC (configured in WorkerSettings.cron_jobs)

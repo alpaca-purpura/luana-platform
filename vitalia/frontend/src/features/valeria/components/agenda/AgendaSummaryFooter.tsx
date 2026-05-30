@@ -1,3 +1,5 @@
+// cap: scheduling.valeria-agenda
+// story-origin: vitalia-fase1-s10-TBD
 /**
  * AgendaSummaryFooter — footer con leyenda de status + resumen Adrián+Lucas.
  * F1-S10 vitalia-fase1-empty-states — T-7

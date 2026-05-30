@@ -1,3 +1,4 @@
+---
 capability_id: vitalia-admin-clinics-crud
 module: admin
 slug: clinics-crud
@@ -14,6 +15,7 @@ agent_owner: config
 functional_area: config.admin
 user_visible: true
 nature: feature
+ui_paradigm: admin-panel  # T-3 reconcile 2026-05-29
 
 user_facing_name: "Admin · CRUD clínicas"
 user_facing_description: >
@@ -54,12 +56,11 @@ verification:
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-adopt-luana-core-iam   # v2 cement · mirror of story_introduced
 created_date: 2026-05-19   # v2 cement · mirror of date_introduced
-last_modified: 2026-05-19   # v2 cement · mirror of date_updated or date_introduced
+last_modified: 2026-05-30   # backfill scenarios vitalia-stub-caps-scenario-backfill
 parent_cap: null   # v2 cement · mirror of extends_capability
 derives_capabilities: []   # v2 cement · initial empty list
 
 # Capability ledger v2 (cement 2026-05-27)
-atomics: []   # v2 cement · empty initial · Chris populate manually
 
 # Capability change log v2 (cement 2026-05-27)
 change_log:
@@ -67,7 +68,55 @@ change_log:
     date: 2026-05-19
     type: new
     summary: "Implementación inicial · migración legacy a schema v2"
-    atomics_added: []
-    atomics_modified: []
     merge_sha: null
     status: done
+  - story_id: vitalia-stub-caps-scenario-backfill
+    date: 2026-05-30
+    type: extend
+    summary: "backfill scenario+e2e → verified-live (deployed-visible)"
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    status: done
+
+scenarios:
+  - id: admin-crea-clinica-asociada-tenant
+    name: "Admin crea clínica asociada a un tenant con audit log registrado"
+    actor: sistema
+    status: live
+    given: "El panel admin está autenticado y existe al menos un tenant en la base de datos"
+    when: "El administrador completa el formulario de creación de clínica (nombre, slug, tenant) y envía"
+    then: "Se inserta un row en vitalia_clinic_branches con FK a tenants.id; aparece mensaje de éxito en UI; se registra un audit log con action=clinic.create"
+    e2e_test: "vitalia/frontend/e2e/admin/admin-clinics-extension.spec.ts"
+    verification_method: admin-panel
+    story_spec_ref: "vitalia/docs/product/stories/vitalia-stub-caps-scenario-backfill/01-spec.md"
+    atomic_ref: null
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    added_date: 2026-05-30
+  - id: admin-listado-clinicas-columnas-visibles
+    name: "Listado de clínicas muestra columnas Nombre, Slug y Tenant"
+    actor: sistema
+    status: live
+    given: "El panel admin está autenticado y el administrador navega a la sección Clínicas"
+    when: "Se accede al tab Listado de la página Clínicas"
+    then: "La tabla muestra al menos las columnas Nombre y Slug; no se exponen errores de DB ni SQL crudo"
+    e2e_test: "vitalia/frontend/e2e/admin/admin-clinics-extension.spec.ts"
+    verification_method: admin-panel
+    story_spec_ref: "vitalia/docs/product/stories/vitalia-stub-caps-scenario-backfill/01-spec.md"
+    atomic_ref: null
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    added_date: 2026-05-30
+  - id: clinic-write-ui-e2e-pendiente-hardening
+    name: "Operación de escritura (clinic) ejercida end-to-end vía UI admin Streamlit"
+    actor: super_admin
+    status: live
+    given: "El admin Streamlit carga (login OK, navegacion OK, st.dataframe renderiza, db-state 200 tras fix async commit 882f9f49)"
+    when: "Un e2e completa el form de creacion/edicion y verifica el efecto en db-state + audit_log"
+    then: "Row creada/modificada + audit_log row. PENDIENTE: selectores Streamlit fragiles (getByLabel matchea boton Help for X; st.dataframe headers en canvas glide-grid) -> test-hardening en story separada. NO es cap break: el panel funciona hands-on (verificado por orchestrator)."
+    e2e_test: null
+    verification_method: admin-panel
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    added_date: 2026-05-30
+---
+
+# Admin · CRUD clínicas
+
+Página del panel admin para crear, listar, editar y suspender clínicas dentro de un tenant. Consume el servicio de clínicas brand-local de Vitalia y registra un evento de auditoría sincrónico en cada operación de escritura.

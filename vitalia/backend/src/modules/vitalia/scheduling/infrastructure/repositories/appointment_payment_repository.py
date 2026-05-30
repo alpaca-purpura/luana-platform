@@ -1,3 +1,5 @@
+# cap: scheduling.valeria-agenda
+# story-origin: TBD
 """AppointmentPaymentRepository — CRUD + optimistic lock + idempotency.
 
 Optimistic lock pattern (03-arch A7 — SC-5 race condition prevention):

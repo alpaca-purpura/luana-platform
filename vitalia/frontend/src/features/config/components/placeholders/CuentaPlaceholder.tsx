@@ -1,3 +1,5 @@
+// cap: iam.iam-scaffold-slice-1
+// story-origin: vitalia-fase1-s10-TBD
 /**
  * CuentaPlaceholder — EmptyState genérico para Config/Mi cuenta.
  * F1-S10 vitalia-fase1-empty-states — T-2

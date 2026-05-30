@@ -1,3 +1,5 @@
+// cap: platform.topbar-global
+// story-origin: TBD
 /**
  * agents — barrel exports
  * No default exports per FSD-Lite + arch fitness gate.

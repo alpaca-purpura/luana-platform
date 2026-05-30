@@ -1,3 +1,5 @@
+// cap: crm.crm-scaffold-slice-1
+// story-origin: TBD
 /**
  * lead.ts — Zod schema for Lead runtime validation.
  *

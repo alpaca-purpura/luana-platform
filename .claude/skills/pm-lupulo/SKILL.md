@@ -1,6 +1,6 @@
 ---
 name: pm-lupulo
-description: "PM Lupulo — owner del SSoT funcional brand Lupulo (Gastronomía (reservas mesa, pedidos digitales, integración KDS via agentes IA)). Pointer-first: carga lupulo/docs/product/checkpoint.md + BACKLOG.md en bootstrap. Owner: lupulo/docs/product/{outcomes,stories,capabilities,modules}/, lupulo/docs/learnings/, lupulo/docs/architecture/, lupulo/docs/domains/. Hereda paradigm v4 (10 estados macro) de Luana core. Activa: '/pm-lupulo', 'estado lupulo', 'lupulo backlog', 'lupulo story', 'lupulo outcome', 'lupulo capability', 'lupulo learning', 'restaurante', 'menú', 'reserva mesa', 'KDS', 'pedido', 'cocina'."
+description: "PM Lupulo — owner del SSoT funcional brand Lupulo (Gastronomía (reservas mesa, pedidos digitales, integración KDS via agentes IA)). Pointer-first: carga lupulo/docs/product/checkpoint.md + BACKLOG.md en bootstrap. Owner: lupulo/docs/product/{releases,stories,capabilities,modules}/, lupulo/docs/learnings/, lupulo/docs/architecture/, lupulo/docs/domains/. Hereda paradigm v4 (10 estados macro) de Luana core. Activa: '/pm-lupulo', 'estado lupulo', 'lupulo backlog', 'lupulo story', 'lupulo release', 'lupulo capability', 'lupulo learning', 'restaurante', 'menú', 'reserva mesa', 'KDS', 'pedido', 'cocina'."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
 model: opus
 ---
@@ -19,7 +19,7 @@ Gastronomía (reservas mesa, pedidos digitales, integración KDS via agentes IA)
 |---|---|---|
 | `lupulo/docs/product/BACKLOG.md` | auto-gen vista 10 estados | `make portfolio` |
 | `lupulo/docs/product/checkpoint.md` | state global brand | `/pm-lupulo` |
-| `lupulo/docs/product/outcomes/{slug}.md` | épicas brand-specific | `/pm-lupulo` |
+| `lupulo/docs/product/releases/{id}.yaml` | contenedor temporal (F0..FN) | `/pm-lupulo` |
 | `lupulo/docs/product/stories/{id}/checkpoint.md` | per-story state | `/pm-lupulo` + handoffs |
 | `lupulo/docs/product/stories/{id}/00-research.md` | research opcional state=idea | `/pm-lupulo` |
 | `lupulo/docs/product/stories/{id}/07-merge.md` | merge artifact state=done | `/pm-lupulo` |
@@ -43,7 +43,7 @@ Toda escritura a `lupulo/docs/` debe cumplir:
 
 - **R1 — No MDs sueltos en `lupulo/docs/` raíz.** Solo sub-dirs (`product/`, `archive/`, `learnings/`, `architecture/`, `domains/`). Contenido ad-hoc → al sub-dir apropiado (ADR a `architecture/`, decisión proceso a `domains/`, learning a `learnings/`).
 - **R2 — Stories `state: done` auto-move a `lupulo/docs/archive/{year}/stories/`** en el commit del 07-merge. NUNCA quedan en `product/stories/` indefinidamente. Referencia: § "Capability promotion (al merge)" abajo.
-- **R3 — Auto-gen files NO se editan manual.** `BACKLOG.md`, `BACKLOG-TLDR.md`, `BACKLOG.yaml`, `modules/{m}.md` (sección auto-list). Editar la SOURCE (checkpoint/outcomes/stories/capabilities), luego regen via `make portfolio` / `python scripts/generate_backlog.py --brand lupulo`.
+- **R3 — Auto-gen files NO se editan manual.** `BACKLOG.md`, `BACKLOG-TLDR.md`, `BACKLOG.yaml`, `modules/{m}.md` (sección auto-list). Editar la SOURCE (checkpoint/releases/stories/capabilities), luego regen via `make portfolio` / `python scripts/generate_backlog.py --brand lupulo`.
 
 Si `/pm-lupulo` detecta violación durante una sesión → STOP + redirect a la ubicación canónica.
 
@@ -86,7 +86,7 @@ cat lupulo/docs/product/BACKLOG.md         # vista 10 estados
 
 ### Step 2 — Menú (solo si Step 0 GREEN)
 
-Pregunta a Chris: **"¿qué hacemos en Lupulo? (a) idea/story nueva / (b) continúa story X / (c) outcome nuevo / (d) capability / (e) learning / (f) drill-down a {drill-target}"**
+Pregunta a Chris: **"¿qué hacemos en Lupulo? (a) idea/story nueva / (b) continúa story X / (c) capability / (d) learning / (e) drill-down a {drill-target}"**
 
 ## Vocabulary — 10 estados macro (heredado Luana core)
 
@@ -110,9 +110,8 @@ Idéntico paradigm v4 de Luana core. Detalle: `docs/process/pm-redesign-2026-05.
 | Chris dice | Acción |
 |---|---|
 | "estado lupulo" / "qué tenemos lupulo" | Render `lupulo/docs/product/BACKLOG.md` agrupado por 10 estados con emojis (NO tabla cruda) |
-| "idea {x}" | Crear `lupulo/docs/product/stories/{slug}/checkpoint.md` state=idea (o append a ideas-pool si existe) |
+| "idea {x}" | Crear story dir `state=idea` con **2 archivos juntos**: `lupulo/docs/product/stories/{slug}/checkpoint.md` + `chris-input.md` (este último desde `docs/specs/templates/00-chris-input-template.md` — nace con la idea como buzón donde Chris vuelca lo que desea/necesita; Claude lo puede rebatir durante el ciclo de vida) |
 | "refinemos {story}" | (1) Update checkpoint state=refining. (2) Si épica → decompose. (3) Hand off `/po-ux` (UI std), `/po` (service), o `/po + /ux-agentico` (agentic) |
-| "outcome nuevo {tema}" | Crear `lupulo/docs/product/outcomes/{slug}.md` |
 | "spec ratificada" / "diseño ratificado" | Update state refining→refined. Hand off `/architect` |
 | "ready" | Update state refined→ready (verificar 4 archivos: 03-arch, 04-validators, 05-guidelines, 06-tickets) |
 | "build" / "arranca dev" | Hand off `/dev-team`. Update state ready→developing |
@@ -139,7 +138,7 @@ Cuando aplicás `07-merge.md` para una story brand:
 5. Archive `lupulo/docs/product/stories/{id}/` → `lupulo/docs/archive/{year}/stories/{id}/` (snapshot inmutable brand-local)
 6. Append entry en `lupulo/docs/learnings/` si aplica (decisión cardinal)
 7. **Si learning tiene `promotable: candidate|yes` → ping `/pm-luana` para evaluación lift a core**
-8. Update outcome story_ids (mark story done)
+8. Update `release.yaml.stories[]` (mark story done — el release recomputa su state machine)
 
 ## ★ Capability inventory post-merge (MANDATORIO)
 
@@ -184,7 +183,7 @@ target_core_package: core/luana-core-X (sugerencia)
 
 **Qué aprendimos:** ...
 
-**Origen:** story {id} / outcome {slug} / incident YYYY-MM-DD
+**Origen:** story {id} / release {id} / incident YYYY-MM-DD
 
 **Why:** razón behind
 
@@ -232,3 +231,5 @@ NUNCA dumps largos. Pointer-first. Si necesitás más detalle escribilo a archiv
 - `.claude/rules/story-closure-gate.md` — Fase F MERGE concreta R2 (archive como parte del 07-merge)
 - `lupulo/.claude/rules/` — rules brand-specific (overlay)
 - `lupulo/config/brand.yaml` — feature flags + opt-in core packages
+
+<!-- voseo-allowed: doc interno / buzón conversacional, no user-facing -->

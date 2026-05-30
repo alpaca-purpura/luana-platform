@@ -1,3 +1,5 @@
+# cap: compliance.compliance-hipaa-lite-audit
+# story-origin: TBD
 """Vitalia compliance guardrail — ``prompt_injection_block_reuse`` (NEW Slice 1).
 
 Story T-ag-tools-2 — R23 production_code=true. Opus 4.7 EXCLUSIVE.

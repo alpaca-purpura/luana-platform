@@ -32,6 +32,7 @@ Todo Agent spawn que ejecute git workflow MUST contener estos guardrails verbati
 ## Critical safety rules
 - NEVER `git add .` / `git add -A` / `git add -u` — parallel sessions WIP en tree
 - Stage ONLY by exact filename (lista provista)
+- HUB único (N sesiones mismo árbol · ADR-009): el índice git es COMPARTIDO entre sesiones (= yo en N terminales) → **commit por pathspec** `git commit --only <file1> <file2> -m ...` (commitea SOLO esos paths, ignora lo demás del índice). NO `git add` + `git commit` suelto. **★ Trap real (caso 0072388f, 2026-05-29):** `git mv` AUTO-stagea el rename en el índice compartido → un `git commit` pelado en otra sesión lo barre. Helper que lo blinda: `scripts/git/commit-paths.sh "<msg>" <paths...>` (usa `--only`, rechaza `.`/`-A`/sin paths). Si por algo usás `git add`, primero `git reset` para limpiar el índice ajeno.
 - NEVER `git commit --no-verify` — pre-commit hook mandatory
 - NEVER `git pull` / `git fetch && merge` — banned per parallel-safety.md
 - NEVER `git push --force` / `--force-with-lease` — banned
@@ -58,12 +59,11 @@ NUNCA cambiar destino sin instrucción explícita del orchestrator.
 ## Steps
 1. `git status --short` — verify state
 2. `git branch --show-current` — confirm current branch matches destination
-3. `git add <file1> <file2> ...` — stage by exact name
+3. **Commit por pathspec** (índice compartido en hub único — ADR-009): `git commit <file1> <file2> ... -m "$(cat <<'EOF' … EOF)"`. El partial commit incluye SOLO esos paths, ignora lo que otra sesión haya dejado staged → cero contaminación. (Pre-commit hook corre sobre esos paths igual.)
 4. `git status --short` — verify other-session files still unstaged + intact
-5. Commit with HEREDOC message
-6. `git push origin <CURRENT_BRANCH>` — push to current branch (wip/*, main, or release/*)
-7. `git log --oneline -2` — confirm commit pushed
-8. Report final commit SHA + push result
+5. `git push origin <CURRENT_BRANCH>` — push to current branch (wip/*, main, or release/*)
+6. `git log --oneline -2` — confirm commit pushed
+7. Report final commit SHA + push result
 
 Last line MUST be: `done -> <commit-sha>` or `failed -> <reason>`
 ```

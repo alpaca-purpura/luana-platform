@@ -1,3 +1,5 @@
+// cap: onboarding.clinic-onboarding-3step
+// story-origin: TBD
 /**
  * wizard-onboarding.types.ts — TypeScript DTOs mirroring BE Pydantic models
  *

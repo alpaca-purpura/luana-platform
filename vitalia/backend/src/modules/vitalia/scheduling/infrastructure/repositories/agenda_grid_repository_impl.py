@@ -1,3 +1,5 @@
+# cap: scheduling.valeria-agenda
+# story-origin: TBD
 """AgendaGridRepositoryImpl — SQLAlchemy 2.0 async implementation.
 
 JOINs:

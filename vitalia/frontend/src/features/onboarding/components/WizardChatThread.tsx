@@ -1,3 +1,5 @@
+// cap: onboarding.clinic-onboarding-3step
+// story-origin: TBD
 "use client";
 /**
  * WizardChatThread — Onboarding-specific full chat thread.

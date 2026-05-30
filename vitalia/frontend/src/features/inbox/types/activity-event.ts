@@ -1,3 +1,5 @@
+// cap: sales_agent.inbox-handler-mode-occ
+// story-origin: TBD
 /**
  * activity-event.ts — TS interface mirroring Pydantic ActivityEventResponse.
  *

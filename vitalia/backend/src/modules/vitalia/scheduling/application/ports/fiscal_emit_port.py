@@ -1,3 +1,5 @@
+# cap: scheduling.valeria-agenda
+# story-origin: vitalia-fase2-s1-TBD
 """FiscalEmitPort — abstract interface for fiscal document emission (service-blocker pattern).
 
 Rule (03-arch § 7 + service-blocker decoupling):

@@ -1,3 +1,5 @@
+// cap: shell-organism.shell-vitalia
+// story-origin: TBD
 "use client";
 
 /**
@@ -38,6 +40,7 @@ import {
 } from "react-resizable-panels";
 import { cn } from "@/lib/utils";
 import { useShellStore } from "@/stores/shell-store";
+import { useStoreHydration } from "@luana/hooks/use-store-hydration";
 import { useViewportGuard } from "./useViewportGuard";
 import { TopBarGlobal } from "./TopBarGlobal";
 import { ValeriaSidebar } from "./ValeriaSidebar";
@@ -60,6 +63,25 @@ export function ShellOrganismLayoutClient({
   children,
   tenantId: _tenantId,
 }: ShellOrganismLayoutClientProps) {
+  // D3 (ADR-vitalia-006): Trigger useShellStore rehydration exactly ONCE client-side,
+  // inside this ssr:false chunk. This is the ONLY place rehydrate() is called for the shell store.
+  //
+  // WHY HERE: This component is loaded via dynamic({ssr:false}) in ShellOrganismLayout.
+  // It executes only on the client, after the SSR skeleton has been replaced.
+  // The skeleton renders TopBarGlobal variant="skeleton" (store-free, D4) to prevent
+  // the persist middleware from writing localStorage during SSR/pre-hydration.
+  // Once THIS component mounts, useStoreHydration fires rehydrate() which:
+  //   1. Reads the saved value from localStorage (user's preference).
+  //   2. Flips _hasHydrated = true via onRehydrateStorage.
+  //   3. Enables storage writes (ssrSafeStorage setItem no longer no-ops).
+  //
+  // Combined with D4 (skeleton store-free), this kills the Bug #1 clobber:
+  // No spurious default write can happen before rehydrate() reads the real value.
+  //
+  // StrictMode-safe: useStoreHydration uses a ref guard — double-invoke does not
+  // trigger double rehydrate().
+  useStoreHydration(useShellStore);
+
   const shellMode = useShellStore((s) => s.shellMode);
   const valeriaState = useShellStore((s) => s.valeriaState);
 
@@ -80,6 +102,14 @@ export function ShellOrganismLayoutClient({
   const MIN_APP_PX = 480;
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(1280); // sane default
+
+  // Deterministic readiness signal (F1-S4b race-fix). Set true after the first
+  // post-mount layout reconciliation (Fix A snap-up settled). Exposed as
+  // `data-shell-ready` on the agentic main so consumers and E2E tests can await a
+  // stable layout instead of racing the dynamic({ssr:false}) + useDefaultLayout +
+  // ResizeObserver hydration sequence. Closes the SC-3 transition+drag-immediately
+  // edge case deterministically (no visual/behaviour change for end users).
+  const [shellReady, setShellReady] = useState(false);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -139,6 +169,9 @@ export function ShellOrganismLayoutClient({
         [APP_PANEL_ID]: 100 - minValeriaPct,
       });
     }
+    // Layout reconciled — signal readiness for consumers/tests awaiting a stable
+    // post-hydration layout (idempotent; React bails when already true).
+    setShellReady(true);
   }, [containerWidth, minValeriaPct, groupRef]);
 
   // Persist layout across page reloads via localStorage.
@@ -167,6 +200,7 @@ export function ShellOrganismLayoutClient({
           className="flex-1 min-h-0 overflow-hidden hidden md:block"
           aria-label="Contenido principal"
           ref={containerRef}
+          data-shell-ready={shellReady ? "true" : "false"}
         >
           <Group
             id={SHELL_GROUP_ID}

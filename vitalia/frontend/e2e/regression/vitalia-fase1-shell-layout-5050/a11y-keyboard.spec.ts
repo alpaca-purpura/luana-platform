@@ -45,6 +45,10 @@ test.describe("SC-4 — a11y keyboard nav + axe WCAG 2.1 AA (F1-S4)", () => {
   }) => {
     const pom = new ShellLayoutPage(shellPage);
     await pom.gotoShell(tenantId);
+    await pom.waitForShellReady();
+    // Anchor the tab sequence to the document start — neutralizes the Chromium +
+    // dynamic-SSR starting-point artifact (see ShellLayoutPage.resetTabSequenceToStart).
+    await pom.resetTabSequenceToStart();
 
     // Press Tab from body to begin keyboard navigation
     // Skip-link is first (sr-only — focus reveals it)
@@ -101,6 +105,7 @@ test.describe("SC-4 — a11y keyboard nav + axe WCAG 2.1 AA (F1-S4)", () => {
   }) => {
     const pom = new ShellLayoutPage(shellPage);
     await pom.gotoShell(tenantId);
+    await pom.waitForShellReady();
 
     // Focus the resize handle
     await pom.resizeHandle.focus();
@@ -131,6 +136,9 @@ test.describe("SC-4 — a11y keyboard nav + axe WCAG 2.1 AA (F1-S4)", () => {
   }) => {
     const pom = new ShellLayoutPage(shellPage);
     await pom.gotoShell(tenantId);
+    await pom.waitForShellReady();
+    // Anchor the tab sequence to the document start (see resetTabSequenceToStart).
+    await pom.resetTabSequenceToStart();
 
     // Tab to reveal skip-link (it's sr-only until focused)
     await shellPage.keyboard.press("Tab");

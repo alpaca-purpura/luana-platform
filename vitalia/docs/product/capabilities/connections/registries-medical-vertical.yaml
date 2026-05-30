@@ -2,7 +2,7 @@
 capability_id: vitalia-registries-medical-vertical
 module: connections
 slug: registries-medical-vertical
-status: live
+status: planned   # nota: forward-declared (status planned · sin código aún)
 date_introduced: 2026-05-18
 story_introduced: vitalia-slice-1-infra-cross-cutting
 package_version: 0.1.0
@@ -37,12 +37,11 @@ dev_preview:
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-slice-1-infra-cross-cutting   # v2 cement · mirror of story_introduced
 created_date: 2026-05-18   # v2 cement · mirror of date_introduced
-last_modified: 2026-05-18   # v2 cement · mirror of date_updated or date_introduced
+last_modified: 2026-05-29   # T-3 reconcile 2026-05-29
 parent_cap: null   # v2 cement · mirror of extends_capability
 derives_capabilities: []   # v2 cement · initial empty list
 
 # Capability ledger v2 (cement 2026-05-27)
-atomics: []   # v2 cement · empty initial · Chris populate manually
 
 # Capability change log v2 (cement 2026-05-27)
 change_log:
@@ -50,8 +49,6 @@ change_log:
     date: 2026-05-18
     type: new
     summary: "Implementación inicial · migración legacy a schema v2"
-    atomics_added: []
-    atomics_modified: []
     merge_sha: null
     status: done
 ---

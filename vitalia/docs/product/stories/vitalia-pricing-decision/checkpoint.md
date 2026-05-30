@@ -1,8 +1,6 @@
 ---
 story_id: vitalia-pricing-decision
-outcome: vitalia-mvp-ui-foundation
 state: idea
-phase: SPAWNED
 last_artifact: checkpoint.md
 last_modified: 2026-05-17
 next_action: "Chris dispara sesión dedicada para definir tier model + precios concretos USD. Análisis competitivo de pricing en vitalia/docs/product/stories/vitalia-ux-discovery/01-spec.md § Matriz comparativa funcional (Rendu CLP $40-250k, Doctocliq USD $19+, BotClín no público). Cuando ratificado → update vitalia/config/brand.yaml::plan_tiers + cleanup TBDs en specs."

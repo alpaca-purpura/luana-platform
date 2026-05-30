@@ -1,3 +1,5 @@
+# cap: __shared__
+# story-origin: TBD
 """Workers ARQ para fidelización vitalia — 6 cron jobs registrados.
 
 Exporta ARQ_CRON_JOBS con las entradas necesarias para el scheduler ARQ.

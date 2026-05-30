@@ -1,3 +1,5 @@
+# cap: fidelizacion.re-engagement
+# story-origin: TBD
 """Worker cron: multi_session_gap_sweep.
 
 Detecta pacientes con brechas en tratamientos multi-sesión y dispara

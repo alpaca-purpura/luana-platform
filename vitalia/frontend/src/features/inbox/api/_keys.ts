@@ -1,3 +1,5 @@
+// cap: sales_agent.inbox-handler-mode-occ
+// story-origin: TBD
 /**
  * _keys.ts — React Query key factory for inbox feature.
  *

@@ -1,3 +1,5 @@
+# cap: booking.prepaid-booking-advisory-locks
+# story-origin: TBD
 """SQLAlchemy 2.0 ORM model — VitaliaPaymentScheduleModel.
 
 Maps to `vitalia_payment_schedules` table.

@@ -1,3 +1,5 @@
+// cap: onboarding.clinic-onboarding-3step
+// story-origin: TBD
 "use client";
 /**
  * CloseSetupWarningModal — AlertDialog confirming wizard close with progress save note.

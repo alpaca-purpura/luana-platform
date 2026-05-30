@@ -15,6 +15,7 @@ agent_owner: config
 functional_area: config.auth
 user_visible: true
 nature: feature
+ui_paradigm: shell-organism  # T-3 reconcile 2026-05-29
 
 user_facing_name: "Middleware Clerk para autenticación"
 user_facing_description: >
@@ -36,12 +37,11 @@ dev_preview:
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-auth-base-functional   # v2 cement · mirror of story_introduced
 created_date: 2026-05-18   # v2 cement · mirror of date_introduced
-last_modified: 2026-05-18   # v2 cement · mirror of date_updated or date_introduced
+last_modified: 2026-05-29   # T-3 reconcile 2026-05-29
 parent_cap: null   # v2 cement · mirror of extends_capability
 derives_capabilities: []   # v2 cement · initial empty list
 
 # Capability ledger v2 (cement 2026-05-27)
-atomics: []   # v2 cement · empty initial · Chris populate manually
 
 # Capability change log v2 (cement 2026-05-27)
 change_log:
@@ -49,10 +49,86 @@ change_log:
     date: 2026-05-18
     type: new
     summary: "Implementación inicial · migración legacy a schema v2"
-    atomics_added: []
-    atomics_modified: []
     merge_sha: null
     status: done
+
+access:
+  entry_points:
+    - path: "/sign-in"
+      navigation: "Acceder a cualquier ruta protegida sin sesión activa → middleware redirige automáticamente a /sign-in"
+      requires_role: []
+      requires_clinic_scope: false
+      entry_type: ui
+  forbidden_roles: []
+  authentication: none
+
+scenarios:
+  - id: usuario-sin-sesion-redirigido
+    name: "Usuario sin sesión es redirigido a /sign-in al acceder ruta protegida"
+    actor: doctor
+    status: live
+    given: "Usuario no autenticado intenta acceder a /valeria/agenda"
+    when: "Request llega al middleware Clerk"
+    then: "Clerk redirige con 302/307 a /sign-in · URL de retorno preservada en parámetro redirectUrl"
+    e2e_test: "vitalia/frontend/e2e/auth/sign-in-redirect.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-auth-base-functional/01-spec.md"
+    atomic_ref: null
+    edge_cases:
+      - "Ruta _next o assets estáticos → bypasan el middleware sin redirección"
+      - "Ruta /api/v1/vitalia/webhooks → pública (HMAC validado server-side independiente)"
+      - "Ruta /public/{clinic-slug} → pública sin auth (landing pública)"
+    added_in_story: vitalia-auth-base-functional
+    added_date: 2026-05-18
+  - id: usuario-autenticado-accede-ruta
+    name: "Usuario con sesión válida accede a ruta protegida"
+    actor: admin_clinic
+    status: live
+    given: "Admin con sesión Clerk activa y clinic_scope válido"
+    when: "Accede a /lisa/marca"
+    then: "Middleware valida sesión · pasa request al handler · shell carga correctamente"
+    e2e_test: "vitalia/frontend/e2e/auth/sign-in-redirect.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-auth-base-functional/01-spec.md"
+    atomic_ref: null
+    edge_cases:
+      - "Token Clerk expirado → middleware redirige a /sign-in con preservación de URL"
+      - "RBAC se realiza en route handlers / page level, NO en el middleware"
+    added_in_story: vitalia-auth-base-functional
+    added_date: 2026-05-18
+
+business_rules:
+  - id: default-deny-all-routes
+    rule: "Todas las rutas son protegidas por defecto · solo las rutas explícitamente listadas en createRouteMatcher son públicas"
+    enforcement:
+      - ".claude/rules/tenant-isolation.md"
+    code_ref: "vitalia/frontend/src/middleware.ts"
+    severity: critical
+    audit_trail: false
+  - id: rbac-not-in-middleware
+    rule: "El middleware NO realiza RBAC · auth.protect() delegado 100% a Clerk · RBAC se aplica en route handlers o page level"
+    enforcement:
+      - ".claude/rules/tenant-isolation.md"
+    code_ref: "vitalia/frontend/src/middleware.ts"
+    severity: high
+    audit_trail: false
+  - id: webhook-routes-public
+    rule: "Rutas /api/v1/vitalia/webhooks/* son públicas en middleware · seguridad garantizada por HMAC signature + timestamp window 5min server-side"
+    enforcement:
+      - "vitalia/.claude/rules/hipaa-lite.md"
+    code_ref: "vitalia/frontend/src/middleware.ts"
+    severity: high
+    audit_trail: false
+
+related_capabilities:
+  depends_on: []
+  enables:
+    - shell-organism.shell-vitalia
+    - iam.luana-core-adoption
+    - scheduling.valeria-agenda
+    - brand_studio.lisa-marca
+    - compliance.hipaa-lite-defensive-stack
+    - public_landing.public-clinic-landing
+  similar: []
+  obsoletes: []
 ---
 
 # Clerk middleware — Vitalia FE

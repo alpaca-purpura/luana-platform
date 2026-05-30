@@ -1,3 +1,5 @@
+# cap: treatments.treatment-followup-workflow
+# story-origin: TBD
 """ARQ cron job: followup_24h — 24h post-conversation follow-up.
 
 Schedule: every 1h

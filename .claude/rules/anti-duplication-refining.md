@@ -86,8 +86,8 @@ Durante refinement (story state=refining), el skill `/po-ux`/`/po`/`/ux-agentico
 | Situación prior-art | `cap_change_type` válido | Acción |
 |---|---|---|
 | Cap target NO existe en `{brand}/docs/product/capabilities/` | `new` | Crear story · spec declara cap fresh |
-| Cap target existe + esta story arregla bug/regresión SIN agregar funcionalidad | `fix` | Spec NO declara atomics nuevos · solo arregla comportamiento |
-| Cap target existe + esta story agrega ≥1 atomic nuevo al mismo cap | `extend` | Spec lista atomics nuevos · arch cita cap existente como base |
+| Cap target existe + esta story arregla bug/regresión SIN agregar funcionalidad | `fix` | Spec NO declara scenarios nuevos · solo arregla comportamiento |
+| Cap target existe + esta story agrega ≥1 scenario nuevo al mismo cap | `extend` | Spec lista scenarios nuevos · arch cita cap existente como base |
 | Cap target existe pero scope significativamente distinto (mobile-only / segmento separado / variante) | `derive` | Crear cap hijo con `parent_cap: {origen}` · declarar `parent_story` en checkpoint |
 | Cap NO existe pero engine package la cubre | NO crear cap · `architect` propone CONSUMIR | Story se vuelve "wire engine into brand" sin cap brand-local |
 | Cap NO existe pero snapshot legacy `nicolify/` lo tiene shipped | `derive` o lift candidate | Si vertical-specific → `derive` con `parent_cap: {legacy}`. Si transversal → escalate `/pm-luana` |
@@ -96,7 +96,7 @@ Durante refinement (story state=refining), el skill `/po-ux`/`/po`/`/ux-agentico
 - ❌ Story marca `new` cuando ya existe el cap (debe ser `fix` o `extend`)
 - ❌ Story marca `extend` pero spec produce arch que crea cap nuevo (debe ser `new` o `derive`)
 - ❌ Story marca `derive` pero spec no cita `parent_story` ni el cap padre (incoherente)
-- ❌ Story marca `fix` pero spec agrega atomics nuevos (debe ser `extend`)
+- ❌ Story marca `fix` pero spec agrega scenarios nuevos (debe ser `extend`)
 
 Doc canónico: `docs/process/capability-protocol.md` § Sección 3.
 

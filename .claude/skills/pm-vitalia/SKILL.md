@@ -1,6 +1,6 @@
 ---
 name: pm-vitalia
-description: "PM Vitalia — owner del SSoT funcional brand Vitalia (Salud + Bienestar (reservas prepagadas, HIPAA-lite, seguimiento post-tratamiento)). Pointer-first: carga vitalia/docs/product/checkpoint.md + BACKLOG.md en bootstrap. Owner: vitalia/docs/product/{outcomes,stories,capabilities,modules}/, vitalia/docs/learnings/, vitalia/docs/architecture/, vitalia/docs/domains/. Hereda paradigm v4 (10 estados macro) de Luana core. Activa: '/pm-vitalia', 'estado vitalia', 'vitalia backlog', 'vitalia story', 'vitalia outcome', 'vitalia capability', 'vitalia learning', 'clínica', 'reserva prepagada', 'paciente', 'tratamiento', 'HIPAA'."
+description: "PM Vitalia — owner del SSoT funcional brand Vitalia (Salud + Bienestar (reservas prepagadas, HIPAA-lite, seguimiento post-tratamiento)). Pointer-first: carga vitalia/docs/product/checkpoint.md + BACKLOG.md en bootstrap. Owner: vitalia/docs/product/{releases,stories,capabilities,modules}/, vitalia/docs/learnings/, vitalia/docs/architecture/, vitalia/docs/domains/. Hereda paradigm v4 (10 estados macro) de Luana core. Activa: '/pm-vitalia', 'estado vitalia', 'vitalia backlog', 'vitalia story', 'vitalia release', 'vitalia capability', 'vitalia learning', 'clínica', 'reserva prepagada', 'paciente', 'tratamiento', 'HIPAA'."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
 model: opus
 ---
@@ -19,7 +19,7 @@ Salud + Bienestar (reservas prepagadas, HIPAA-lite, seguimiento post-tratamiento
 |---|---|---|
 | `vitalia/docs/product/BACKLOG.md` | auto-gen vista 10 estados | `make portfolio` |
 | `vitalia/docs/product/checkpoint.md` | state global brand | `/pm-vitalia` |
-| `vitalia/docs/product/outcomes/{slug}.md` | épicas brand-specific | `/pm-vitalia` |
+| `vitalia/docs/product/releases/{id}.yaml` | contenedor temporal (F0..FN) | `/pm-vitalia` |
 | `vitalia/docs/product/stories/{id}/checkpoint.md` | per-story state | `/pm-vitalia` + handoffs |
 | `vitalia/docs/product/stories/{id}/00-research.md` | research opcional state=idea | `/pm-vitalia` |
 | `vitalia/docs/product/stories/{id}/07-merge.md` | merge artifact state=done | `/pm-vitalia` |
@@ -54,10 +54,11 @@ Si `/pm-vitalia` detecta violación durante una sesión → STOP + redirect a la
 Cuando refinás una story nueva (idea → refining → refined), **OBLIGATORIO** ejecutar **Step `prior-art-scan`** ANTES de drafting:
 
 1. Grep `core/luana-core-*/` por engine package que cubra el dominio (consumir via import, NUNCA recrear).
-2. Grep `nicolify/backend/src/modules/nicolify/` + `nicolify/frontend/src/features/` por módulo paralelo shipped (brand más madura, ~80% prod). Nicolify es **fuente prior-art principal**.
-3. Grep otras brands activas (`comunify/`, `lupulo/`) si feature plausiblemente transversal → **lift candidate** /pm-luana.
-4. Grep `docs/learnings/` (cross-brand) + `vitalia/docs/learnings/` (propios) + `nicolify/docs/learnings/` (source) por tags relacionados.
-5. Documentar resultado en `vitalia/docs/product/stories/{id}/00-story.md` o `checkpoint.md` sección `## Prior art scan` con: paths encontrados + decisión (reuse / extend-engine / lift-candidate / net-new).
+2. Grep **brands ACTIVAS live** (`vitalia/` propio + `comunify/`) por módulo paralelo shipped. Estas son las fuentes prior-art LIVE post-reorg.
+3. Grep `comunify/` si feature plausiblemente transversal → **lift candidate** /pm-luana.
+4. (Opcional, referencia arqueológica) Grep el snapshot frozen `docs/archive/2026/snapshot-pre-multibrand-pm-redesign/` por patterns nicolify shipped — pero es **read-only frozen**, NO live work. Nunca "lift from snapshot" como primera opción.
+5. Grep `docs/learnings/` (cross-brand) + `vitalia/docs/learnings/` (propios) + `comunify/docs/learnings/` por tags relacionados.
+6. Documentar resultado en `vitalia/docs/product/stories/{id}/00-story.md` o `checkpoint.md` sección `## Prior art scan` con: paths encontrados + decisión (reuse / extend-engine / lift-candidate / net-new).
 
 **SIN este scan documentado, NO se cierra state=refined.** Auditor Cat 12 verifica que sección "Prior art" exista en `01-spec.md` y `03-arch.md`.
 
@@ -70,21 +71,19 @@ KW="agenda scheduling slot multi-doctor calendar booking appointment"
 echo "=== Engine ==="
 ls ${WS}/core/ | grep -iE "$(echo $KW | tr ' ' '|')"
 
-echo "=== Nicolify shipped ==="
-find ${WS}/nicolify/backend/src/modules/nicolify/ -maxdepth 1 -type d | grep -iE "schedul|calendar|booking"
-find ${WS}/nicolify/frontend/src/features/ -maxdepth 1 -type d | grep -iE "schedul|calendar|booking"
+echo "=== Brands activas LIVE (vitalia propio + comunify) ==="
+for B in vitalia comunify; do
+  find ${WS}/${B}/backend/src/modules/${B}/ -maxdepth 1 -type d 2>/dev/null | grep -iE "schedul|calendar|booking"
+  find ${WS}/${B}/frontend/src/features/ -maxdepth 1 -type d 2>/dev/null | grep -iE "schedul|calendar|booking"
+  grep -rln -iE "agenda|schedul|appointment" ${WS}/${B}/docs/product/capabilities/ 2>/dev/null
+  grep -rln -iE "agenda|schedul|appointment" ${WS}/${B}/docs/learnings/ 2>/dev/null
+done
 
-echo "=== Nicolify capabilities ==="
-grep -rln -iE "agenda|schedul|appointment" ${WS}/nicolify/docs/product/capabilities/
-
-echo "=== Nicolify learnings ==="
-grep -rln -iE "agenda|schedul|appointment" ${WS}/nicolify/docs/learnings/
-
-echo "=== Vitalia learnings propios ==="
-grep -rln -iE "agenda|schedul|appointment" ${WS}/vitalia/docs/learnings/
+echo "=== Snapshot frozen (referencia arqueológica, NO live) ==="
+find ${WS}/docs/archive/2026/snapshot-pre-multibrand-pm-redesign/ -type d 2>/dev/null | grep -iE "schedul|calendar|booking"
 
 echo "=== Decisión ==="
-# Documentar: reuse nicolify/scheduling/ patterns? lift to core? net-new?
+# Documentar: reuse pattern live vitalia/comunify? lift to core? net-new?
 ```
 
 ## Bootstrap protocol
@@ -137,7 +136,7 @@ cat vitalia/docs/product/BACKLOG.md         # vista 10 estados
 
 ### Step 2 — Menú (solo si Step 0 GREEN)
 
-Pregunta a Chris: **"¿qué hacemos en Vitalia? (a) idea/story nueva / (b) continúa story X / (c) outcome nuevo / (d) capability / (e) learning / (f) drill-down a {drill-target}"**
+Pregunta a Chris: **"¿qué hacemos en Vitalia? (a) idea/story nueva / (b) continúa story X / (c) capability / (d) learning / (e) drill-down a {drill-target}"**
 
 ## Vocabulary — 10 estados macro (heredado Luana core)
 
@@ -149,9 +148,9 @@ Idéntico paradigm v4 de Luana core. Detalle: `docs/process/pm-redesign-2026-05.
 | 2 | `refining` | Decompose stories + drafts spec/UX/agentic | `/pm-vitalia` + `/po-ux`/`/po`/`/ux-agentico` | ≤ 3 |
 | 3 | `refined` | Spec + UX/diseño ratificados Chris | `/pm-vitalia` cierra | ≤ 5 |
 | 4 | `ready` | Paquete autocontenido (`03-arch` + `04-validators` + `05-guidelines` + `06-tickets`) | `/architect` cierra | ≤ 5 |
-| 5 | `developing` | Autonomous build activo | `/dev-team` | ≤ 3 |
-| 6 | `developed` | Validators GREEN | `/dev-team` | ≤ 2 |
-| 7 | `reviewing` | Auditor QA | `/auditor` | ≤ 2 |
+| 5 | `developing` | Autonomous build activo | `/dev-team` | ≤ 1 |
+| 6 | `developed` | Validators GREEN | `/dev-team` | ≤ 1 |
+| 7 | `reviewing` | Auditor QA | `/auditor` | ≤ 1 |
 | 8 | `done` | Auditor APPROVED + merge + capability promovida | `/pm-vitalia` | rolling 90d |
 | 9 | `parked` | De-prioritized | Chris | ∞ |
 | 10 | `dropped` | Won't do | Chris | ∞ |
@@ -163,9 +162,8 @@ Idéntico paradigm v4 de Luana core. Detalle: `docs/process/pm-redesign-2026-05.
 | Chris dice | Acción |
 |---|---|
 | "estado vitalia" / "qué tenemos vitalia" | Render `vitalia/docs/product/BACKLOG.md` agrupado por 10 estados con emojis (NO tabla cruda) |
-| "idea {x}" | Crear `vitalia/docs/product/stories/{slug}/checkpoint.md` state=idea (o append a ideas-pool si existe) |
+| "idea {x}" | Crear story dir `state=idea` con **2 archivos juntos**: `vitalia/docs/product/stories/{slug}/checkpoint.md` + `chris-input.md` (este último desde `docs/specs/templates/00-chris-input-template.md` — nace con la idea como buzón donde Chris vuelca lo que desea/necesita; Claude lo puede rebatir durante el ciclo de vida) |
 | "refinemos {story}" | (1) Update checkpoint state=refining. (2) Si épica → decompose. (3) **Invocá `Skill(po-ux)`** (UI std) o **`Skill(po)`** (service) o **`Skill(po)` luego `Skill(ux-agentico)`** (agentic) con args `"{brand} {story-id}"`. NO devolver handoff textual. |
-| "outcome nuevo {tema}" | Crear `vitalia/docs/product/outcomes/{slug}.md` |
 | "spec ratificada" / "diseño ratificado" | Update state refining→refined. **Invocá `Skill(architect)`** con args `"vitalia {story-id}"` |
 | "ready" | Update state refined→ready (verificar 4 archivos: 03-arch, 04-validators, 05-guidelines, 06-tickets) |
 | "build" / "arranca dev" | Update state ready→developing. **Invocá `Skill(dev-team)`** con args `"vitalia {story-id}"` |
@@ -228,18 +226,20 @@ Cuando aplicás `07-merge.md` para una story brand:
 5. Archive `vitalia/docs/product/stories/{id}/` → `vitalia/docs/archive/{year}/stories/{id}/` (snapshot inmutable brand-local)
 6. Append entry en `vitalia/docs/learnings/` si aplica (decisión cardinal)
 7. **Si learning tiene `promotable: candidate|yes` → ping `/pm-luana` para evaluación lift a core**
-8. Update outcome story_ids (mark story done)
+8. Update `release.yaml.stories[]` (mark story done — el release recomputa su state machine)
 
 ### Fase F.3 · Capability ledger update (v2 cement 2026-05-27)
 
 Al cerrar story `reviewing → done`, aplicar logic del `cap_change_type` al YAML target. 4 ramas:
 
-- `new` → crear `vitalia/docs/product/capabilities/{module}/{slug}.yaml` con schema v2 completo + change_log[0] type=new + atomics iniciales
-- `fix` → append change_log entry type=fix · NO toca atomics
-- `extend` → append change_log entry type=extend + append nuevos atomics al array con `added_in_story: {story_id}`
+- `new` → crear `vitalia/docs/product/capabilities/{module}/{slug}.yaml` con schema completo + change_log[0] type=new + scenarios iniciales
+- `fix` → append change_log entry type=fix · NO toca scenarios
+- `extend` → append change_log entry type=extend + append nuevos scenarios al array con `added_in_story: {story_id}`
 - `derive` → crear cap YAML hijo con `parent_cap: {origen_slug}` + change_log[0] type=derive · update padre append `derives_capabilities: [hijo_slug]`
 
 Update también `last_modified: today` del cap. Doc: `docs/process/capability-protocol.md` § Sección 5.
+
+**★ Definición de DONE (cement 2026-05-28):** una capability NO puede ser `status=live` sin ≥1 scenario + e2e_test que exista (cross_check_3 HARD). Si no hay e2e aún → status=partial/declared-live, NO live. Ver `docs/process/lifecycle.md` § 4.
 
 ## ★ Capability inventory post-merge (MANDATORIO)
 
@@ -261,7 +261,7 @@ Pre-commit hook + CI corren:
 
 Exit 1 si brand `status: shipped` tiene `capabilities/` vacía. NO hay auto-fix — requires manual inventory por `/pm-vitalia`.
 
-Estado vitalia al 2026-05-17: ✅ 16 caps en 13 módulos (recovery 2026-05-16 desde código vivo + archived YAMLs).
+Estado vitalia al 2026-05-28: **72 caps** en disco (mayoría stubs auto-migrados; backfill de scenarios en curso · ver `docs/process/lifecycle.md` Fase 2). La unidad atómica de comportamiento es el `scenario` (Gherkin) — ver `lifecycle.md` § 1.
 
 ### Anti-pattern
 
@@ -286,7 +286,7 @@ target_core_package: core/luana-core-X (sugerencia)
 
 **Qué aprendimos:** ...
 
-**Origen:** story {id} / outcome {slug} / incident YYYY-MM-DD
+**Origen:** story {id} / release {id} / incident YYYY-MM-DD
 
 **Why:** razón behind
 
@@ -358,6 +358,7 @@ Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
 ## Referencias
 
 - `docs/portfolio/vitalia.md` — 1-pager brand
+- `docs/architecture/luana-platform/PARADIGM.md` — ★ norte arquitectónico (3 planos · mapa = 3 zonas · trabajadores). Al crear/refinar story aplicá el árbol de decisión de `.claude/rules/paradigm-arquitectura.md` para declarar la **caja** (zona→caja→área) desde la idea.
 - `docs/process/pm-redesign-2026-05.md` — paradigm v4 detalle
 - `docs/process/checkpoint-protocol.md` — schema checkpoint
 - `docs/process/capability-protocol.md` — schema cap YAML v2 + Fase F.3 4 ramas
@@ -378,3 +379,5 @@ Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
     - **NO aplica** (solo tenant-isolation raíz basta): story toca únicamente `appointment_*`/`booking_*` sin tocar `patient_*`/`medical_*`/`treatment_*`.
 - `vitalia/.claude/rules/README.md` — index overlay rules brand
 - `vitalia/config/brand.yaml` — feature flags + opt-in core packages + `compliance_level: hipaa_lite` (interpretar como framework de referencia, no como claim de certificación)
+
+<!-- voseo-allowed: doc interno / buzón conversacional, no user-facing -->

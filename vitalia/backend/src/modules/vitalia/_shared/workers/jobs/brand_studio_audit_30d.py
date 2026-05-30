@@ -1,3 +1,5 @@
+# cap: brand_studio.brand-studio-medical-sections
+# story-origin: TBD
 """ARQ cron job: brand_studio_audit_30d — Brand Studio voice audit every 30 days.
 
 Schedule: daily 03:00 UTC

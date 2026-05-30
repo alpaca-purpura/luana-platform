@@ -360,49 +360,100 @@ describe("ValeriaSidebar — SC-7 live region updates per state", () => {
   });
 });
 
-// ─── SC-8 mobile drawer smoke (4 tests) ──────────────────────────────────────
+// ─── SC-8 mobile drawer smoke — T-4 UPDATE (D5 mobileDrawerOpen slice) ──────
+//
+// T-4 change: mobile drawer open/closed is governed SOLELY by `mobileDrawerOpen`
+// (independent slice in shell-store). valeriaState='rail'/'full' DOES NOT auto-open
+// the drawer on mobile (that was Bug #2 coupling). Drawer opens only when
+// mobileDrawerOpen=true; closes via setMobileDrawerOpen(false), NOT setValeriaState.
+//
+// ADR-vitalia-006 § D5 + 03-arch.md § 2 D5 + spec SC-4/SC-5/SC-5b.
 
-describe("ValeriaSidebar — SC-8 mobile drawer smoke (full E2E en T-8)", () => {
-  it("mobile viewport + isExpanded=true → aside has aria-modal='true'", () => {
+describe("ValeriaSidebar — SC-8 mobile drawer (T-4 D5: mobileDrawerOpen independent slice)", () => {
+  it("[SC-4 D5] mobile + mobileDrawerOpen=true → aside role=dialog aria-modal rendered", () => {
     setupMobile();
-    useShellStore.setState({ valeriaState: "rail", shellMode: "agentic" });
+    // D5: mobileDrawerOpen=true opens drawer, regardless of valeriaState
+    useShellStore.setState({ valeriaState: "rail", shellMode: "agentic", mobileDrawerOpen: true });
 
     render(<ValeriaSidebar />);
 
     const sidebar = screen.getByTestId("valeria-sidebar");
     expect(sidebar).toHaveAttribute("aria-modal", "true");
+    expect(sidebar).toHaveAttribute("role", "dialog");
   });
 
-  it("mobile viewport + isExpanded=true → backdrop rendered data-testid='valeria-drawer-backdrop'", () => {
+  it("[SC-4 D5] mobile + mobileDrawerOpen=true → backdrop rendered data-testid='valeria-drawer-backdrop'", () => {
     setupMobile();
-    useShellStore.setState({ valeriaState: "rail", shellMode: "agentic" });
+    useShellStore.setState({ valeriaState: "rail", shellMode: "agentic", mobileDrawerOpen: true });
 
     render(<ValeriaSidebar />);
 
     expect(screen.getByTestId("valeria-drawer-backdrop")).toBeInTheDocument();
   });
 
-  it("mobile backdrop click → setValeriaState('collapsed') called", async () => {
+  it("[SC-4 CRITICAL D5] mobile + valeriaState='full' + mobileDrawerOpen=false → drawer NOT rendered (decoupled)", () => {
+    // D5 anti-pattern fix: desktop valeriaState='full' must NOT auto-open mobile drawer
+    // (this was Bug #2 root cause — mobileDrawerOpen was derived from valeriaState)
     setupMobile();
-    useShellStore.setState({ valeriaState: "rail", shellMode: "agentic" });
+    useShellStore.setState({ valeriaState: "full", shellMode: "agentic", mobileDrawerOpen: false });
+
+    render(<ValeriaSidebar />);
+
+    // Drawer (role=dialog) must NOT be present when mobileDrawerOpen=false
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("valeria-drawer-backdrop")).not.toBeInTheDocument();
+  });
+
+  it("[SC-4 fresh] mobile + default mobileDrawerOpen=false → drawer NOT rendered (fresh user)", () => {
+    // SC-4: fresh user / storage clean → mobileDrawerOpen defaults to false → drawer closed
+    setupMobile();
+    // Reset to defaults (mobileDrawerOpen=false is default)
+    useShellStore.setState({ valeriaState: "full", shellMode: "agentic", mobileDrawerOpen: false });
+
+    render(<ValeriaSidebar />);
+
+    // Fresh mobile: drawer is closed (not in DOM)
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("[SC-5 D5] mobile backdrop click → setMobileDrawerOpen(false) called (NOT setValeriaState)", async () => {
+    setupMobile();
+    useShellStore.setState({ valeriaState: "rail", shellMode: "agentic", mobileDrawerOpen: true });
 
     render(<ValeriaSidebar />);
 
     const backdrop = screen.getByTestId("valeria-drawer-backdrop");
     await userEvent.click(backdrop);
 
-    // After click: valeriaState should be 'collapsed'
-    expect(useShellStore.getState().valeriaState).toBe("collapsed");
+    // D5: close action uses the independent mobile slice
+    expect(useShellStore.getState().mobileDrawerOpen).toBe(false);
+    // valeriaState is NOT changed by mobile close (independent slices)
+    expect(useShellStore.getState().valeriaState).toBe("rail");
   });
 
-  it("mobile drawer close X button data-testid='valeria-drawer-close' visible cuando isExpanded", () => {
+  it("[SC-5 D5] mobile drawer close X button visible when mobileDrawerOpen=true", () => {
     setupMobile();
-    useShellStore.setState({ valeriaState: "full", shellMode: "agentic" });
+    useShellStore.setState({ valeriaState: "rail", shellMode: "agentic", mobileDrawerOpen: true });
 
     render(<ValeriaSidebar />);
 
     const closeBtn = screen.getByTestId("valeria-drawer-close");
     expect(closeBtn).toBeInTheDocument();
     expect(closeBtn).toBeVisible();
+  });
+
+  it("[SC-5 D5] mobile X button click → setMobileDrawerOpen(false) (NOT setValeriaState)", async () => {
+    setupMobile();
+    useShellStore.setState({ valeriaState: "full", shellMode: "agentic", mobileDrawerOpen: true });
+
+    render(<ValeriaSidebar />);
+
+    const closeBtn = screen.getByTestId("valeria-drawer-close");
+    await userEvent.click(closeBtn);
+
+    // D5: close via X button uses the independent mobile slice
+    expect(useShellStore.getState().mobileDrawerOpen).toBe(false);
+    // valeriaState is NOT changed
+    expect(useShellStore.getState().valeriaState).toBe("full");
   });
 });

@@ -1,3 +1,5 @@
+// cap: shell-organism.shell-vitalia
+// story-origin: TBD
 /**
  * Agent catalog — Vitalia canonical 6-agent registry.
  *

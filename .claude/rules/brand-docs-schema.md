@@ -11,7 +11,7 @@
 ├── product/
 │   ├── outcomes/{slug}.md
 │   ├── stories/{id}/{checkpoint.md, chris-input.md, 01-spec.md, 02-design-*.md, 03-arch.md, 04-validators.yaml, 05-guidelines.md, 06-tickets.yaml, 07-merge.md, mockups/, refs/}
-│   ├── capabilities/{module}/{cap}.yaml         # schema v2 con change_log[] + atomics objects
+│   ├── capabilities/{module}/{cap}.yaml         # schema v4 con change_log[] + scenarios objects (atomics MUERTO — ver lifecycle.md)
 │   ├── modules/{module}.md
 │   ├── releases/{F0..FN}.yaml                  # v2 cement 2026-05-27 reemplaza outcome+phase legacy
 │   └── BACKLOG.{md,yaml,-TLDR.md} + checkpoint.md
@@ -58,18 +58,18 @@ Move debe ir en commit del squash-merge a main (mismo commit que escribe `07-mer
 
 **Anti-pattern:** mergear con state=done sin mover a archive → BACKLOG auto-gen "active" eternamente.
 
-## R4 — chris-input.md mandatory para stories que pasan por `refining` (v2 cement 2026-05-27)
+## R4 — chris-input.md nace con la idea (state=idea) — buzón de inputs de Chris (v3 cement 2026-05-28)
 
-Toda story que llega a `state ∈ {refining, refined, ready, developing, developed, reviewing}` MUST tener `chris-input.md` en su directorio. Stories que arrancan en `idea` y nunca pasan a refining (van directo a `dropped`) NO requieren chris-input.md.
+Toda story creada (desde `state: idea`) MUST tener `chris-input.md` en su directorio, **junto con `checkpoint.md`**. Nace con la idea — NO se espera a `refining`. Es el **buzón donde Chris vuelca lo que desea y/o cree que necesita** desde el minuto cero; Claude lo puede **rebatir** (verdict ❌ REFUTADO) durante el ciclo de vida de la story, y se refina en conjunto.
 
-**Por qué:** chris-input.md es el SSoT de la conversación asíncrona Chris↔Claude durante refinement + build. Skills (po-ux, po, ux-agentico, architect, auditor, pm-{brand}, dev-team) appendean verdict al cierre de cada turn. Sin chris-input.md, la trazabilidad de "qué decidió Chris cuándo + qué aplicó Claude" se pierde.
+**Por qué:** chris-input.md es el SSoT de la conversación asíncrona Chris↔Claude a lo largo de TODA la vida de la story (idea → refinement → build). Si naciera recién en `refining`, las ideas crudas del periodo `idea` no tendrían hogar tracked → se pierden en el chat o en la cabeza de Chris. Naciendo con la idea, es el buzón único de inputs desde el día cero. Skills (po-ux, po, ux-agentico, architect, auditor, pm-{brand}, dev-team) appendean verdict al cierre de cada turn.
 
 **How to apply:**
-- `/pm-{brand}` al pasar state `idea → refining` copia template `docs/specs/templates/00-chris-input-template.md` a `{brand}/docs/product/stories/{id}/chris-input.md`
+- `/pm-{brand}` al **CREAR** la story (`state: idea`) crea `checkpoint.md` + `chris-input.md` juntos (chris-input.md desde template `docs/specs/templates/00-chris-input-template.md`). El cockpit (`extend-cap`, `from-done`) ya lo hace vía `createNewStoryDocs`.
 - `/pm-{brand}` Fase F MERGE (`reviewing → done`) ejecuta `git mv` del chris-input.md junto con resto de la story al `archive/{year}/stories/{id}/`
-- Pre-commit hook (Section 14 nueva) bloquea commit de checkpoint.md con `state ∈ {refining...reviewing}` si chris-input.md ausente en mismo dir (magic comment `# chris-input-skip: razón` permite override puntual)
+- Pre-commit hook (Section 16) bloquea commit de checkpoint.md con `state ∈ {idea, refining...reviewing}` si chris-input.md ausente en mismo dir (magic comment `# chris-input-skip: razón` permite override puntual — ej. idea efímera que se descarta sin refinar)
 
-**Anti-pattern:** Chris invoca `/po-ux <story>` sin que exista chris-input.md → skill debe rechazar + pedir a `/pm-{brand}` el setup inicial.
+**Anti-pattern:** Chris invoca `/po-ux <story>` sin que exista chris-input.md → skill debe rechazar + pedir a `/pm-{brand}` el setup inicial. Story creada en `idea` sin chris-input.md (la idea no tiene buzón para los inputs de Chris).
 
 Doc canónico: `docs/process/chris-input-protocol.md`.
 

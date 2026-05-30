@@ -81,7 +81,11 @@ export default defineConfig({
       // Exclude visual-goldens: corren EXCLUSIVAMENTE en project=visual que tiene
       // snapshotPathTemplate + maxDiffPixelRatio: 0.001 config. Sin esa config,
       // toHaveScreenshot() falla porque no encuentra el snapshot path esperado.
-      testIgnore: [/.*\/visual-goldens\.spec\.ts/],
+      // Exclude sweep.spec.ts: corre EXCLUSIVAMENTE en project=live-recon (SSoT de superficies).
+      testIgnore: [
+        /.*\/visual-goldens\.spec\.ts/,
+        /.*\/live-reconciliation\/sweep\.spec\.ts$/,
+      ],
       use: {
         ...devices["Desktop Chrome"],
         storageState: "playwright/.clerk/user.json",
@@ -124,6 +128,25 @@ export default defineConfig({
       },
       dependencies: ["setup"],
     },
+    // Live reconciliation sweep — T-2 vitalia-cockpit-live-reconciliation
+    // Runs all surfaces from shell-routes.ts SSoT; ROTO verdicts are findings (not failures).
+    // Run: E2E_BASE_URL=http://localhost:3002 npx playwright test --project=live-recon
+    {
+      name: "live-recon",
+      testMatch: [
+        /.*\/e2e\/regression\/live-reconciliation\/sweep\.spec\.ts$/,
+      ],
+      use: {
+        ...devices["Desktop Chrome"],
+        viewport: { width: 1440, height: 900 },
+        storageState: "playwright/.clerk/user.json",
+        // Extra time per surface navigation
+        actionTimeout: 20_000,
+        navigationTimeout: 60_000,
+      },
+      dependencies: ["setup"],
+    },
+
     // A11y axe scans
     {
       name: "a11y",

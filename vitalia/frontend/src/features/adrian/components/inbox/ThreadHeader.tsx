@@ -1,3 +1,5 @@
+// cap: sales_agent.inbox-handler-mode-occ
+// story-origin: vitalia-fase1-s10-TBD
 /**
  * ThreadHeader — cabecera del thread de conversación.
  * F1-S10 vitalia-fase1-empty-states — T-6

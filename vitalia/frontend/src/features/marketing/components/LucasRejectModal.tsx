@@ -1,3 +1,5 @@
+// cap: public_landing.public-clinic-landing
+// story-origin: TBD
 /**
  * LucasRejectModal — reason-required form for rejecting a Lucas recommendation
  * Uses Zod for runtime validation, native React state (RHF not installed in this brand).

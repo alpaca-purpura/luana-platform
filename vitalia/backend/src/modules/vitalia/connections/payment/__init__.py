@@ -1,3 +1,5 @@
+# cap: connections.oauth-meta-google-ads
+# story-origin: TBD
 """Vitalia payment provider registry (brand-internal dispatch table)."""
 
 from .registry import (

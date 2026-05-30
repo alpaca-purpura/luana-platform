@@ -33,18 +33,53 @@ Schema `07-merge.md` 5 secciones + `gherkin_coverage` field en `06-tickets.yaml`
 
 `/pm-{brand}` aplica logic del `cap_change_type` (declarado en checkpoint.md de la story) al cap YAML target. 4 ramas según el tipo de cambio:
 
+> **★ v4 alignment (cement 2026-05-28):** `atomics` MUERTO — `scenario` es la unidad atómica de comportamiento. SSoT del schema cap: `docs/process/capability-protocol.md` + `docs/process/lifecycle.md`. Toda mención previa a `atomics_added`/`atomics[]` se reemplaza por `scenarios_added`/`scenarios[]`.
+
 | `cap_change_type` | Acción sobre cap YAML |
 |---|---|
-| `new` | Crear `{brand}/docs/product/capabilities/{module}/{slug}.yaml` con schema v2 completo · `change_log[0]` con `type: new` + atomics iniciales |
-| `fix` | Append `change_log` entry con `type: fix` · `atomics_added: []` · `atomics_modified: []` · NO toca `atomics[]` |
-| `extend` | Append `change_log` entry con `type: extend` + atomics nuevos · Append nuevos atomics al array `atomics[]` con `added_in_story: {story_id}` |
+| `new` | Crear `{brand}/docs/product/capabilities/{module}/{slug}.yaml` con schema v4 completo · `change_log[0]` con `type: new` + scenarios iniciales |
+| `fix` | Append `change_log` entry con `type: fix` · `scenarios_added: []` · NO toca `scenarios[]` |
+| `extend` | Append `change_log` entry con `type: extend` + scenarios nuevos · Append nuevos scenarios al array `scenarios[]` con `added_in_story: {story_id}` |
 | `derive` | Crear cap YAML hijo con `parent_cap: {origen_slug}` + `change_log[0] type: derive` · Update cap padre: append `derives_capabilities: [hijo_slug]` |
 
 **Order matters:** en `derive`, crear hijo primero (con `parent_cap` declarado), luego actualizar padre. Atomic write para evitar estado inconsistente.
 
 **Update también:** `last_modified` del cap = today.
 
-Doc canónico: `docs/process/capability-protocol.md` § Sección 5.
+### Enforce reglas v3.1 (cement 2026-05-28 · cap verification)
+
+Antes de cerrar el merge commit, verificar que el `change_log` entry de esta story cumpla:
+
+| `cap_change_type` | `change_log[ultimo].scenarios_added.length` | Otros checks |
+|---|---|---|
+| `new` | `>= 1` REQUIRED | `scenarios[]` overall ≥1 scenario con shape válido |
+| `extend` | `>= 1` REQUIRED | `scenarios[]` debió crecer vs commit anterior |
+| `fix` | `>= 0` (opcional) | NO requiere scenario nuevo |
+| `derive` | `>= 1` REQUIRED en cap hijo | `parent_cap.derives_capabilities[]` lista hijo |
+
+Enforce point: `scripts/reconcile_capabilities.py --validate-ledger`. Pre-commit hook bloquea HARD en `main/release/*` + WARN en `wip/*` (advisory).
+
+### Enforce reglas v3.2 (cement 2026-05-28 · bidirectional code↔cap mapping)
+
+**Extiende v3.1 con bloques nuevos:** access + scenarios + business_rules.
+
+| `cap_change_type` | `scenarios[]` (si user_visible: true) | `access` (si user_visible: true) | `business_rules` |
+|---|---|---|---|
+| `new` | `>= 1` REQUIRED (cement 2026-Q3 hard · advisory hasta entonces) | REQUIRED (cement 2026-Q3 hard) | OPTIONAL (advisory hasta 2026-Q4) |
+| `extend` | si cap target tiene scenarios → append opcional | si nueva entry_point → REQUIRED | si nueva business rule → REQUIRED |
+| `fix` | NO requiere cambio | NO requiere cambio | NO requiere cambio |
+| `derive` | hijo hereda + customiza scenarios | hijo declara su access | hijo hereda + override |
+
+**Cross-checks Fase F.3 v3.2:** además de los checks v3.1 anteriores, `/pm-{brand}` MUST verificar:
+
+1. **Scenarios → e2e_test paths:** todos los `scenarios[*].e2e_test` declarados existen en filesystem (cross-check 3 · HARD)
+2. **Access → roles:** roles declarados en `access.entry_points[*].requires_role` coinciden con `@require_phi_access` decorators del código asociado (cross-check 4 · advisory hasta resolver gap RBAC, ver lifecycle.md Fase 5.1)
+
+> cross_check_1 y cross_check_2 (atomics↔headers) MUERTOS con atomics — ver `docs/process/lifecycle.md`.
+
+Enforce point: `scripts/validate_code_cap_bidirectional.py` (cement 2026-05-28). Pre-push hook HARD bloquea si cross_check_3 drift > 0.
+
+Doc canónico: `docs/process/capability-protocol.md` § Sección 11 (v3.2) + § Sección 13 (bidirectional validator).
 
 ## Escape valve — `defer_audit: true`
 
@@ -63,16 +98,18 @@ Mientras true: `/dev-team` NO auto-handoff. `/pm-{brand}` bootstrap pingea deuda
 
 Sin `defer_audit: true` el gate es ABSOLUTO.
 
-## WIP cap post-decreto (hard rule)
+## WIP cap post-decreto (hard rule · ★ v2 module-scoped 2026-05-28 ADR-009)
 
-| Estado | Cap default |
+Bajo el modelo **hub único** (N sesiones / un worktree por marca), la unidad del cap dejó de ser "por worktree" y pasó a ser **por `code:{module}` bucket**: un build en vuelo por módulo. Stories de módulos distintos `developing` en paralelo sobre el mismo hub = OK (es lo que ADR-009 habilita). El bucket lock (`session-lock.sh`) serializa solo el mismo módulo.
+
+| Estado | Cap default (v2) |
 |---|---|
-| `developing` | ≤ 1 por worktree |
-| `developed` | ≤ 1 por worktree |
-| `reviewing` | ≤ 1 por worktree |
+| `developing` | ≤ 1 por **`code:{module}`** (no por worktree) |
+| `developed` | ≤ 1 por módulo (cerrar antes de otra del mismo módulo) |
+| `reviewing` | ≤ 1 por módulo |
 | `done` | ∞ (rolling 90d) |
 
-Sub-stories del mismo outcome pueden compartir worktree pero secuenciales (A `done` ANTES de B arrancar).
+Stories del MISMO módulo siguen secuenciales (A `done` ANTES de B del mismo módulo). SSoT del mecanismo: `.claude/rules/parallel-safety.md` M14 + `worktree-dual-strategy.md` § Regla cardinal v2 + `docs/architecture/luana-platform/ADR-009-single-hub-worktree.md`.
 
 ## Naming convention worktree
 

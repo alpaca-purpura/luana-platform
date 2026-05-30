@@ -1,3 +1,5 @@
+// cap: shell-organism.shell-vitalia
+// story-origin: TBD
 /**
  * ConsentSignatureModal — HIPAA-lite consent capture modal.
  *

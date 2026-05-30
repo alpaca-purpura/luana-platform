@@ -1,3 +1,5 @@
+# cap: copilot.inbox-tools-extensions
+# story-origin: TBD
 """TreatmentFollowupWorkflow — LangGraph 2.0 StateGraph.
 
 Story 11 T-workflow-1 (R23 Opus 4.7 production AGENTIC code).

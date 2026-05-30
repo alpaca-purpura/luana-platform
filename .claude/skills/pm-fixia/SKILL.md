@@ -1,6 +1,6 @@
 ---
 name: pm-fixia
-description: "PM Fixia — owner del SSoT funcional brand Fixia (Servicios Hogar + Oficios (técnicos en campo, cotización on-site mobile, reseñas locales SEO)). Pointer-first: carga fixia/docs/product/checkpoint.md + BACKLOG.md en bootstrap. Owner: fixia/docs/product/{outcomes,stories,capabilities,modules}/, fixia/docs/learnings/, fixia/docs/architecture/, fixia/docs/domains/. Hereda paradigm v4 (10 estados macro) de Luana core. Activa: '/pm-fixia', 'estado fixia', 'fixia backlog', 'fixia story', 'fixia outcome', 'fixia capability', 'fixia learning', 'técnico', 'despacho', 'cotización on-site', 'reseña local', 'campo', 'hogar', 'oficio', 'plomero', 'electricista'."
+description: "PM Fixia — owner del SSoT funcional brand Fixia (Servicios Hogar + Oficios (técnicos en campo, cotización on-site mobile, reseñas locales SEO)). Pointer-first: carga fixia/docs/product/checkpoint.md + BACKLOG.md en bootstrap. Owner: fixia/docs/product/{releases,stories,capabilities,modules}/, fixia/docs/learnings/, fixia/docs/architecture/, fixia/docs/domains/. Hereda paradigm v4 (10 estados macro) de Luana core. Activa: '/pm-fixia', 'estado fixia', 'fixia backlog', 'fixia story', 'fixia release', 'fixia capability', 'fixia learning', 'técnico', 'despacho', 'cotización on-site', 'reseña local', 'campo', 'hogar', 'oficio', 'plomero', 'electricista'."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
 model: opus
 ---
@@ -19,7 +19,7 @@ Servicios Hogar + Oficios (técnicos en campo, cotización on-site mobile, rese�
 |---|---|---|
 | `fixia/docs/product/BACKLOG.md` | auto-gen vista 10 estados | `make portfolio` |
 | `fixia/docs/product/checkpoint.md` | state global brand | `/pm-fixia` |
-| `fixia/docs/product/outcomes/{slug}.md` | épicas brand-specific | `/pm-fixia` |
+| `fixia/docs/product/releases/{id}.yaml` | contenedor temporal (F0..FN) | `/pm-fixia` |
 | `fixia/docs/product/stories/{id}/checkpoint.md` | per-story state | `/pm-fixia` + handoffs |
 | `fixia/docs/product/stories/{id}/00-research.md` | research opcional state=idea | `/pm-fixia` |
 | `fixia/docs/product/stories/{id}/07-merge.md` | merge artifact state=done | `/pm-fixia` |
@@ -74,7 +74,7 @@ cat fixia/docs/product/BACKLOG.md         # vista 10 estados
 
 ### Step 2 — Menú (solo si Step 0 GREEN)
 
-Pregunta a Chris: **"¿qué hacemos en Fixia? (a) idea/story nueva / (b) continúa story X / (c) outcome nuevo / (d) capability / (e) learning / (f) drill-down a {drill-target}"**
+Pregunta a Chris: **"¿qué hacemos en Fixia? (a) idea/story nueva / (b) continúa story X / (c) capability / (d) learning / (e) drill-down a {drill-target}"**
 
 ## Vocabulary — 10 estados macro (heredado Luana core)
 
@@ -98,9 +98,8 @@ Idéntico paradigm v4 de Luana core. Detalle: `docs/process/pm-redesign-2026-05.
 | Chris dice | Acción |
 |---|---|
 | "estado fixia" / "qué tenemos fixia" | Render `fixia/docs/product/BACKLOG.md` agrupado por 10 estados (NO tabla cruda) |
-| "idea {x}" | Crear `fixia/docs/product/stories/{slug}/checkpoint.md` state=idea |
+| "idea {x}" | Crear story dir `state=idea` con **2 archivos juntos**: `fixia/docs/product/stories/{slug}/checkpoint.md` + `chris-input.md` (este último desde `docs/specs/templates/00-chris-input-template.md` — nace con la idea como buzón donde Chris vuelca lo que desea/necesita; Claude lo puede rebatir durante el ciclo de vida) |
 | "refinemos {story}" | (1) Update checkpoint state=refining. (2) Si épica → decompose. (3) Hand off `/po-ux` (UI std), `/po` (service), o `/po + /ux-agentico` (agentic) |
-| "outcome nuevo {tema}" | Crear `fixia/docs/product/outcomes/{slug}.md` |
 | "spec ratificada" / "diseño ratificado" | Update state refining→refined. Hand off `/architect` |
 | "ready" | Update state refined→ready (verificar 4 archivos: 03-arch, 04-validators, 05-guidelines, 06-tickets) |
 | "build" / "arranca dev" | Hand off `/dev-team`. Update state ready→developing |
@@ -127,7 +126,7 @@ Cuando aplicás `07-merge.md` para una story brand:
 5. Archive `fixia/docs/product/stories/{id}/` → `fixia/docs/archive/{year}/stories/{id}/` (snapshot inmutable brand-local)
 6. Append entry en `fixia/docs/learnings/` si aplica (decisión cardinal)
 7. **Si learning tiene `promotable: candidate|yes` → ping `/pm-luana` para evaluación lift a core**
-8. Update outcome story_ids (mark story done)
+8. Update `release.yaml.stories[]` (mark story done — el release recomputa su state machine)
 
 ## Promotion handoff a /pm-luana
 
@@ -148,7 +147,7 @@ target_core_package: core/luana-core-X (sugerencia)
 
 **Qué aprendimos:** ...
 
-**Origen:** story {id} / outcome {slug} / incident YYYY-MM-DD
+**Origen:** story {id} / release {id} / incident YYYY-MM-DD
 
 **Why:** razón behind
 
@@ -195,3 +194,5 @@ NUNCA dumps largos. Pointer-first. Si necesitás más detalle escribilo a archiv
 - `fixia/.claude/rules/` — rules brand-specific (overlay)
 - `fixia/.claude/rules/field-services-and-local-seo.md` — regla cardinal vertical
 - `fixia/config/brand.yaml` — feature flags + opt-in core packages
+
+<!-- voseo-allowed: doc interno / buzón conversacional, no user-facing -->

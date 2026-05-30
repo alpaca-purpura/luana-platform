@@ -1,3 +1,5 @@
+# cap: crm.crm-consent-optout
+# story-origin: TBD
 """PatientService — RBAC-gated PHI operations.
 
 Application layer — orchestrates repository calls with RBAC enforcement.

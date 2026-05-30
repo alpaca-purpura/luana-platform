@@ -1,3 +1,5 @@
+# cap: copilot.inbox-tools-extensions
+# story-origin: TBD
 """LivePreviewService — orchestrates WhatsApp + landing live preview generation.
 
 Combines SimulatePersonalityService (sample brand voice message) and a

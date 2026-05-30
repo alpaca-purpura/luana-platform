@@ -1,3 +1,5 @@
+# cap: sales_agent.adrian-3-tools-mvp
+# story-origin: TBD
 """Vitalia Adrián sales_agent tools (3 MVP per Q1 Slice 1 default).
 
 Story T-ag-tools-2 (R23 production_code=true).

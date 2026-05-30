@@ -25,16 +25,20 @@ allowed-tools: Read, Write, Edit, Bash, Grep, Glob
 Antes de diseñar nueva infraestructura, grep cross-codebase:
 
 ```bash
-# Subsystem keywords del story
-grep -rn "<kw>" backend/src/core/
-grep -rn "<kw>" backend/src/shared/
-grep -rn "from src.core.config\|from src.shared" backend/src/modules/{m}/
-find backend/src -name "*.py" -path "*<kw>*" -o -path "*provider*" -o -path "*adapter*"
+# WS = $(git rev-parse --show-toplevel) · BRAND = brand activa de la story
+# Subsystem keywords del story — grep engine core + brand propia (NUNCA cross-brand mirror)
+grep -rn "<kw>" ${WS}/core/luana-core-*/src/
+grep -rn "<kw>" ${WS}/${BRAND}/backend/src/modules/${BRAND}/
+grep -rn "from luana_core_" ${WS}/${BRAND}/backend/src/modules/${BRAND}/
+find ${WS}/core ${WS}/${BRAND}/backend/src -name "*.py" \( -path "*<kw>*" -o -path "*provider*" -o -path "*adapter*" \)
+# Detectar mirror en OTRA brand (lift candidate):
+for B in vitalia nicolify comunify lupulo; do [ "$B" = "$BRAND" ] && continue; grep -rln "<kw>" ${WS}/$B/backend/src 2>/dev/null; done
 ```
 
-Decisión:
-- Match en shared 80%+ overlap → **EXTEND** (default)
+Decisión (ver `.claude/rules/anti-duplication.md` § Inventario engine abstractions SSoT):
+- Match en `core/luana-core-*` 80%+ overlap → **EXTEND vía import** `from luana_core_*` (default)
 - Match 40-79% → **EXTEND con caveat** (architect orchestrator decide)
+- Match en OTRA brand → **ESCALATE `/pm-luana`** (lift candidate brand→core, NUNCA mirror)
 - No match → **NEW** (justificar en 03-arch-be.md sección "Por qué los existentes no sirven")
 
 Cita paths + lines en `03-arch-be.md § Existing systems audit`.

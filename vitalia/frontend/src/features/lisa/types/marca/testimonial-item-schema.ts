@@ -1,3 +1,5 @@
+// cap: brand_studio.lisa-marca
+// story-origin: vitalia-fase2-s7-TBD
 /**
  * testimonial-item-schema.ts — Zod schema for testimonial collection.
  *

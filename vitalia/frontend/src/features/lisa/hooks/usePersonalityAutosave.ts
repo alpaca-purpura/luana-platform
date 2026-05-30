@@ -1,9 +1,11 @@
+// cap: brand_studio.lisa-marca
+// story-origin: vitalia-fase2-s7-TBD
 "use client";
 
 /**
  * usePersonalityAutosave.ts — Autosave hook for brand personality (Voz y tono).
  *
- * Debounce 600ms on form change → useMutation PUT /lisa/marca/personality.
+ * Debounce 600ms on form change → useMutation PATCH /lisa/marca/personality.
  * React Query invalidation on success.
  * AutosaveStatus propagated to AutosaveBadge.
  *

@@ -1,3 +1,5 @@
+// cap: shell-organism.shell-vitalia
+// story-origin: vitalia-fase1-s6-TBD
 /**
  * chat-store.ts — Zustand store for Valeria chat state (F1-S6).
  *

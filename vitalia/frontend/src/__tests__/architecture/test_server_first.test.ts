@@ -132,11 +132,14 @@ describe("Vitalia FE — Server Components first; use client on hook-using files
 
       if (usedHooks.length === 0) continue; // No client hooks — server component OK
 
-      // Verify "use client" is present
+      // Verify "use client" is present. A leading comment/JSDoc block before the
+      // directive is valid Next.js — so check the COMMENT-STRIPPED source's start
+      // (the prior source.slice(0,500) window missed directives pushed past char 500
+      // by long `// cap:` + JSDoc headers, e.g. ChannelConnectionWizard.tsx).
+      const strippedStart = stripped.trimStart();
       const hasUseClient =
-        source.trimStart().startsWith('"use client"') ||
-        source.trimStart().startsWith("'use client'") ||
-        /^\s*["']use client["']/m.test(source.slice(0, 500));
+        strippedStart.startsWith('"use client"') ||
+        strippedStart.startsWith("'use client'");
 
       if (!hasUseClient) {
         violations.push(

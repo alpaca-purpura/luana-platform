@@ -1,3 +1,5 @@
+// cap: shell-organism.shell-vitalia
+// story-origin: TBD
 /**
  * OfferWizardClient — 5-step offer wizard for medical_services_v1 preset.
  *

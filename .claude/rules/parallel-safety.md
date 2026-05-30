@@ -14,7 +14,7 @@ Chris opera 2-3 sesiones en paralelo en Linux Mint, en brands distintas o lanes 
 | Path | Tipo | Branch | Editar código | Scope alcance |
 |---|---|---|---|---|
 | `~/Proyectos/luana-platform/` | PRINCIPAL | `main` | ❌ NO (solo merges + read cross-brand) | read-only |
-| `~/Proyectos/luana-{brand}/` | CANÓNICO long-lived | rota `wip/{brand}-{slug}` segun story | ✅ SI (1 sesion a la vez) | `{brand}/**` |
+| `~/Proyectos/luana-{brand}/` | CANÓNICO long-lived = **HUB único** (ADR-009) | `wip/{brand}` ESTABLE (M12 · no rota) | ✅ SI (**N sesiones** con bucket locks M14) | `{brand}/**` |
 | `~/Proyectos/luana-{brand}-{slug}/` | EFÍMERO brand | `wip/{brand}-{slug}[-{lane}]` | ✅ SI | `{brand}/**` |
 | `~/Proyectos/luana-{brand}-hotfix-{slug}/` | EFÍMERO hotfix | `hotfix/{brand}-{slug}` | ✅ SI | `{brand}/**` |
 | `~/Proyectos/luana-{brand}-exp-{slug}/` | EFÍMERO exp | `exp/{brand}-{slug}` | ✅ SI (NUNCA mergea) | `{brand}/**` |
@@ -22,6 +22,8 @@ Chris opera 2-3 sesiones en paralelo en Linux Mint, en brands distintas o lanes 
 | `~/Proyectos/luana-protocol-{slug}/` | EFÍMERO protocol (cross-cutting) | `wip/protocol-{slug}` | ✅ SI (SCOPE_GATE_SKIP=1 con razón) | `tools/**`, `.claude/**`, `docs/process/**`, `docs/specs/templates/**`, `CLAUDE.md`, `scripts/git-hooks/**`, `Makefile`, multi-brand `{brand}/docs/**` |
 
 `{brand}` ∈ {vitalia, nicolify, comunify, lupulo} + futuras. `core` reservado para lifts engine. `protocol` reservado para cambios cross-cutting (rules + skills + templates + tools/luana-cockpit/ + docs/process/) que tocan paths fuera de un sólo brand. Commits desde `protocol-*` requieren `SCOPE_GATE_SKIP=1` con razón documentada en commit body.
+
+> **Fase solo-bootstrap (cement 2026-05-28):** durante la construcción activa de reglas/cockpit (solo dev, sin CI), NO es obligatorio crear worktree `protocol` para cambios cross-cutting/cross-brand — `SCOPE_GATE_SKIP=1` con razón en commit body está permitido desde cualquier worktree cuando Chris está seguro. El worktree `protocol` sigue siendo lo recomendado-prolijo. SSoT + triggers de re-endurecimiento: `.claude/rules/git-safety.md` § Fase solo-bootstrap.
 
 ## Crear y cerrar sesion
 
@@ -48,7 +50,7 @@ scripts/git/regenerate-manifest.sh                            # recovery manual
 | M11 | NUNCA pasar >30 min sin push si hay cambios significativos. |
 | **M12** | **Canónico = `wip/{brand}` ESTABLE** (NO rota story-by-story). Worktree story efímero SOLO por pedido explícito user. |
 | **M13** | **Scope per branch enforced** (pre-commit Section 13). `wip/{brand}` SOLO `{brand}/**`. `wip/core-*` SOLO engine. Cross-brand mixing PROHIBIDO. |
-| **M14** | **N sesiones mismo cwd permitido** (canónico) con lock por bucket: code / docs / tests. Auto-acquire por skill step 0. |
+| **M14** | **N sesiones mismo cwd permitido** (canónico = HUB único por marca, ADR-009) con lock por bucket: `docs` / `tests` / `code` / **`code:{module}`**. ★ v2 2026-05-28: el bucket `code` se sub-divide module-scoped → dos builds de módulos distintos (`code:scheduling` vs `code:crm`) corren en paralelo; mismo módulo se serializa. `code` (whole) bloquea cross-módulo (refactor). Auto-acquire por skill step 0 (`scripts/git/session-lock.sh acquire {bucket} {skill} [story-id]`); build-claim registra story_id + `$LUANA_LANE` → cockpit pinta 🔨 lane. Índice git compartido → commit por pathspec (git-haiku-delegation.md). |
 
 ## Sincronizacion canonicos (D10)
 
@@ -115,7 +117,7 @@ NO sobreescribir. Append-friendly OK. Replacement obvio → STOP + reportar. Con
 
 - `docs/rules-detail/parallel-safety.md` — **detalle completo** (sub-agent ban, scope per branch enforce, N sesiones lock buckets, sync KISS, opencode parity)
 - `docs/process/parallel-sessions-protocol.md` — SSoT D1-D14
-- `docs/architecture/luana-platform/ADR-{004,005}*.md` — triple-branch + worktree policy
-- `.claude/rules/{git-safety,git-haiku-delegation,step-0-worktree}.md`
+- `docs/architecture/luana-platform/ADR-{004,005,009}*.md` — triple-branch + worktree policy + single-hub (N sesiones/marca)
+- `.claude/rules/{git-safety,git-haiku-delegation,step-0-worktree,worktree-dual-strategy}.md`
 - `docs/process/warp-multibrand-handbook.md` — manual operativo Warp
 - `scripts/git/{new-session,cleanup-session,check-sync,push-wip,status-all,regenerate-manifest}.sh`

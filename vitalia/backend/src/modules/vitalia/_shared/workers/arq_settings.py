@@ -1,3 +1,5 @@
+# cap: __shared__
+# story-origin: TBD
 """ARQ WorkerSettings for Vitalia cron runner.
 
 Registers 15 cron job functions with their schedules and idempotency wiring.

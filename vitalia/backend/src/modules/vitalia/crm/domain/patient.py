@@ -1,3 +1,5 @@
+# cap: crm.crm-consent-optout
+# story-origin: TBD
 """Patient domain entity — PHI (Protected Health Information).
 
 Domain layer — pure Python dataclass, no ORM imports.

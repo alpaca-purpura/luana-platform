@@ -1,3 +1,5 @@
+// cap: onboarding.clinic-onboarding-3step
+// story-origin: TBD
 "use client";
 /**
  * use-wizard-slot-extraction.ts — Mutation hook for extracting tenant context.

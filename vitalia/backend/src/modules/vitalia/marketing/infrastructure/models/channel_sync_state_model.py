@@ -1,3 +1,5 @@
+# cap: marketing.attribution-matrix-4-origins
+# story-origin: TBD
 """SQLAlchemy 2.0 model — ChannelSyncStateModel.
 
 Maps to ``vitalia_channel_sync_state`` table (base columns from 007_vitalia_initial_tables.py,

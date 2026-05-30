@@ -1,3 +1,5 @@
+# cap: fidelizacion.re-engagement
+# story-origin: TBD
 """Worker cron: absence_sweep.
 
 Detecta pacientes con ausencia prolongada (6+ meses) y dispara

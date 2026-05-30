@@ -1,3 +1,5 @@
+# cap: marketing.referrals-leaderboard
+# story-origin: TBD
 """referrals_value_sync — ARQ cron job, daily 10:00 UTC.
 
 Refreshes referral conversion_value_cents from completed appointments

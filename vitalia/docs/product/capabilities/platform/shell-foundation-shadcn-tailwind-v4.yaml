@@ -15,6 +15,7 @@ agent_owner: infra
 functional_area: infra.platform
 user_visible: false
 nature: extension-point
+ui_paradigm: infra-only  # T-3 reconcile 2026-05-29
 
 user_facing_name: "Shell foundation Shadcn + Tailwind v4"
 user_facing_description: >
@@ -41,12 +42,11 @@ depends_on_engine: []
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-fase1-stack-stability   # v2 cement · mirror of story_introduced
 created_date: 2026-05-23   # v2 cement · mirror of date_introduced
-last_modified: 2026-05-23   # v2 cement · mirror of date_updated or date_introduced
+last_modified: 2026-05-29   # T-3 reconcile 2026-05-29
 parent_cap: null   # v2 cement · mirror of extends_capability
 derives_capabilities: []   # v2 cement · initial empty list
 
 # Capability ledger v2 (cement 2026-05-27)
-atomics: []   # v2 cement · empty initial · Chris populate manually
 
 # Capability change log v2 (cement 2026-05-27)
 change_log:
@@ -54,10 +54,31 @@ change_log:
     date: 2026-05-23
     type: new
     summary: "Implementación inicial · migración legacy a schema v2"
-    atomics_added: []
-    atomics_modified: []
     merge_sha: null
     status: done
+  - story_id: vitalia-stub-caps-scenario-backfill
+    date: 2026-05-30
+    type: extend
+    summary: "backfill scenario+e2e → verified-live (deployed-visible)"
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    status: done
+
+last_modified: 2026-05-30
+
+scenarios:
+  - id: shell-primitivas-shadcn-renderizan
+    name: "Primitivas Shadcn (Button, Avatar, etc.) renderizan correctamente en el shell organism"
+    actor: sistema
+    status: live
+    given: "Stack Tailwind v4 + Shadcn UI instalado en vitalia/frontend con postcss.config.mjs + 8 primitivos vendored"
+    when: "El shell visual check carga rutas autenticadas del shell (/valeria/agenda, /lisa/marca/identidad)"
+    then: "No aparece el texto placeholder 'AppPanelSlot' en ninguna ruta · las rutas cargan sin errores de consola relacionados con Tailwind/Shadcn · screenshots de las rutas capturan el layout real"
+    e2e_test: "vitalia/frontend/e2e/regression/shell-visual-check/shell-visual-check.spec.ts"
+    verification_method: dev-app
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase1-stack-stability/01-spec.md"
+    atomic_ref: null
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    added_date: 2026-05-30
 ---
 
 # vitalia-shell-foundation-shadcn-tailwind-v4

@@ -7,15 +7,24 @@ set -euo pipefail
 # coordinadas por buckets de scope: code, docs, tests.
 #
 # Usage:
-#   scripts/git/session-lock.sh acquire BUCKET SKILL_NAME
+#   scripts/git/session-lock.sh acquire BUCKET SKILL_NAME [STORY_ID]
 #   scripts/git/session-lock.sh release BUCKET
 #   scripts/git/session-lock.sh status [BUCKET]   # all if omit
 #   scripts/git/session-lock.sh kick BUCKET       # force release (use si PID crashed)
 #
 # Buckets:
-#   code   → {brand}/{backend,frontend}/src/
-#   docs   → {brand}/docs/ + raíz docs/
-#   tests  → {brand}/{backend,frontend}/tests/
+#   code            → {brand}/{backend,frontend}/src/ (whole-code, ej. refactor cross-módulo)
+#   code:{module}   → {brand}/.../modules/{module}/ (build module-scoped · ADR-009 single-hub)
+#   docs            → {brand}/docs/ + raíz docs/
+#   tests           → {brand}/{backend,frontend}/tests/
+#
+# code:{module} (ADR-009): dos builds sobre módulos distintos NO contienden → corren
+# en paralelo sobre el MISMO worktree (hub único). Dos builds del mismo módulo comparten
+# bucket → se serializan (dependencia real). `code` (sin módulo) bloquea todo `code:*`.
+#
+# Build-claim: el 3er arg opcional STORY_ID + la env var LUANA_LANE (fallback pid<PID>)
+# se registran en el lock. El cockpit lee `.session-locks/*.lock` y pinta "🔨 lane"
+# sobre la story en construcción. Lock line: `PID SKILL TIMESTAMP STORY_ID LANE BUCKET`.
 #
 # Exit codes:
 #   0  acquire OK / release OK / status OK
@@ -32,6 +41,8 @@ fi
 ACTION="$1"
 BUCKET="${2:-}"
 SKILL="${3:-unknown}"
+STORY_ID="${4:-—}"
+LANE="${LUANA_LANE:-pid$$}"
 
 # Worktree detection
 WORKTREE="$(git rev-parse --show-toplevel 2>/dev/null || true)"
@@ -50,14 +61,18 @@ fi
 if [[ ${NEEDS_BUCKET} -eq 1 ]]; then
   case "${BUCKET}" in
     code|docs|tests) ;;
+    code:?*) ;;   # code:{module} — build module-scoped (ADR-009)
     *)
-      echo "::error::Invalid bucket '${BUCKET}'. Allowed: code, docs, tests"
+      echo "::error::Invalid bucket '${BUCKET}'. Allowed: code, code:{module}, docs, tests"
       exit 2
       ;;
   esac
 fi
 
-LOCK_FILE="${LOCK_DIR}/${BUCKET:-_unset}.lock"
+# Sanitiza el bucket para nombre de archivo (`:` `/` → `__`). El bucket original
+# se guarda como campo dentro del lock para que el cockpit lo muestre verbatim.
+SAFE_BUCKET="${BUCKET//[:\/]/__}"
+LOCK_FILE="${LOCK_DIR}/${SAFE_BUCKET:-_unset}.lock"
 
 case "${ACTION}" in
   acquire)
@@ -79,8 +94,8 @@ case "${ACTION}" in
         exit 1
       fi
     fi
-    echo "$$ ${SKILL} $(date -Iseconds)" > "${LOCK_FILE}"
-    echo "✓ Lock acquired: ${BUCKET} (PID $$, skill=${SKILL})"
+    echo "$$ ${SKILL} $(date -Iseconds) ${STORY_ID} ${LANE} ${BUCKET}" > "${LOCK_FILE}"
+    echo "✓ Lock acquired: ${BUCKET} (PID $$, skill=${SKILL}, lane=${LANE}, story=${STORY_ID})"
     exit 0
     ;;
 
@@ -100,26 +115,36 @@ case "${ACTION}" in
     ;;
 
   status)
-    if [[ -n "${BUCKET}" ]]; then
-      BUCKETS=("${BUCKET}")
-    else
-      BUCKETS=(code docs tests)
-    fi
     echo "Worktree: ${WORKTREE}"
-    for B in "${BUCKETS[@]}"; do
-      LF="${LOCK_DIR}/${B}.lock"
+    print_lock() {
+      local LF="$1" LABEL="$2" OWNER PID SK ST LN
       if [[ -f "${LF}" ]]; then
         OWNER=$(head -1 "${LF}")
         PID=$(echo "${OWNER}" | awk '{print $1}')
+        SK=$(echo "${OWNER}" | awk '{print $2}')
+        ST=$(echo "${OWNER}" | awk '{print $4}')
+        LN=$(echo "${OWNER}" | awk '{print $5}')
         if kill -0 "${PID}" 2>/dev/null; then
-          echo "  ${B}: LOCKED by ${OWNER}"
+          echo "  ${LABEL}: LOCKED pid=${PID} skill=${SK} lane=${LN} story=${ST}"
         else
-          echo "  ${B}: LOCKED by ${OWNER} (PID DEAD — call kick or auto-cleanup on next acquire)"
+          echo "  ${LABEL}: STALE (pid=${PID} muerto) — kick o auto-cleanup en próximo acquire"
         fi
       else
-        echo "  ${B}: free"
+        echo "  ${LABEL}: free"
       fi
-    done
+    }
+    if [[ -n "${BUCKET}" ]]; then
+      print_lock "${LOCK_FILE}" "${BUCKET}"
+    else
+      shopt -s nullglob
+      found=0
+      for LF in "${LOCK_DIR}"/*.lock; do
+        found=1
+        BK=$(basename "${LF}" .lock)
+        print_lock "${LF}" "${BK//__/:}"
+      done
+      [[ ${found} -eq 0 ]] && echo "  (sin locks activos)"
+    fi
     exit 0
     ;;
 

@@ -1173,3 +1173,80 @@ Cuando bootstrapees brand nueva:
 - Commits relacionados: `f2c81bb` (cd-staging manual) · este commit (quota-aware CI)
 - ADR-007 § paradigm v4.1 autonomy (cement mismo día)
 - ADR-004 § triple-branch + nota 2026-05-19 update
+
+---
+
+## 2026-05-28 — Consolidación SDD: modelo de 4 ejes + matar atomics/outcome
+
+**Contexto:** Análisis profundo (Opus 4.8) del proceso /pm-luana + /pm-vitalia + cockpit reveló que el modelo SDD tenía 9 ejes solapados (outcome · phase · release · capability · atomic · scenario · tech_module · module · story) y estaba **operacionalmente hueco**:
+- `atomic` era fantasma TOTAL: los 1120 archivos tenían `# atomics: TBD` (cero reales) y 71/72 caps con `atomics: []`. Nunca se instanció una sola vez.
+- Validators pasaban verde "por vacío": cross_check_1/2 (atomics↔headers) corrían con total=0.
+- `outcome` coexistía como "reemplazado por release" Y "épica canónica" — 6 outcomes vivos + releases con `maps_legacy_*`.
+- WIP caps contradictorios: pm-vitalia decía ≤2, hard rule dice ≤1.
+- Enforcement de capabilities skippeado en `wip/*` (branch de trabajo diario); solo HARD en main/release.
+- Cockpit `merge-release` preview-only; no puede editar atomics/scenarios; tab `/functionality` citado pero implementado como Cap Drawer.
+
+**Decisiones (ratificadas Chris):**
+1. **Matar `atomic`** (+ header `# atomics:`). El `scenario` es la unidad atómica de comportamiento. Redundante.
+2. **Matar `outcome` + `phase`.** `release` es el único contenedor temporal. Terminar la migración (borrar 6 archivos + `maps_legacy_*`).
+3. **Drop alias `module`**; solo `tech_module`.
+4. **WIP caps ≤1** (developing/developed/reviewing) — gana `story-closure-gate.md`.
+5. **Modelo de 4 ejes:** Release → Story → Capability → Scenario (+ código auto-mapeado vía `# cap:`, que SÍ funciona: 48 caps mapeados).
+6. **Backfill scenarios GENERANDO del 01-spec.md archivado** (Gherkin ya autorado), no a mano.
+7. **`live ⟹ ≥1 scenario + e2e_test pasando`** HARD (mata verde-por-vacío).
+8. **cross_check_4 (acceso PHI) → HARD en vitalia** (es salud).
+9. **Cockpit = bosque/decisión; Claude Code = ejecución.** El puente: chris-input + checkpoint state + APIs transition/extend-cap.
+10. **Congelar doctrina 30 días** post-consolidación. Shrink-only: no agregar eje sin matar uno.
+
+**Plan:** 7 fases (0 doctrina → 6 manual diario). SSoT del modelo + roadmap + punch-list: `docs/process/lifecycle.md` (creado este día, supersede fragmentos contradictorios de pm-redesign/release-protocol/capability-protocol).
+
+**Fase 0 ejecutada (2026-05-28):** lifecycle.md canónico creado + corregidos en skills: WIP caps ≤1, prior-art source (nicolify es snapshot frozen, no "fuente principal ~80% prod"; live = vitalia/comunify), conteo caps (16→72), ADR path único (pm-luana), bash prior-art-scan.
+
+**How to apply (forward):** toda decisión de modelo de producto se valida contra `lifecycle.md`. Si un skill o doc contradice → lifecycle.md gana. No reintroducir atomics ni outcome.
+
+**Referencias:**
+- `docs/process/lifecycle.md` — SSoT del modelo + roadmap 7 fases + punch-list
+- Análisis origen: conversación 2026-05-28 (4 agentes exploración: skills, cockpit, protocolos, ground-truth disco)
+
+---
+
+## 2026-05-28 — chris-input.md nace con la idea (R4 v3)
+
+**Origen:** sesión 2026-05-28 (`/pm-luana`, remote-control). Chris pidió que `chris-input.md` se cree **junto con la idea** (`state: idea`), no recién al pasar a `refining`, para tener un buzón donde volcar lo que desea / cree que necesita desde el día cero. Es un **input** (no orden): Claude lo puede rebatir (verdict ❌ REFUTADO) durante el ciclo de vida y se refina en conjunto.
+
+**Qué cambió (doctrina + enforcement + skills):**
+- `.claude/rules/brand-docs-schema.md` § R4 → "mandatory desde `state: idea`" (era desde `refining`). Título v3.
+- `docs/process/chris-input-protocol.md` → v2: header, Sección 1 (por qué), Sección 6 (lifecycle: Creación = al crear la story en idea), Sección 8/9 (anti-pattern + pre-commit incluyen `idea`), Sección 10 (ref R4).
+- `scripts/git-hooks/pre-commit` Section 16 → agrega `idea` al case que exige chris-input.md (magic comment `# chris-input-skip:` para ideas efímeras).
+- 9 skills `pm-{brand}` → fila "idea {x}" crea checkpoint.md **+ chris-input.md** juntos (desde template).
+- Backfill: creados chris-input.md para las 2 stories en idea/refining que faltaban (`vitalia-compliance-audit-rbac-gap`, `comunify-warning-token-contrast-fix`).
+
+**Ya estaba alineado (no requirió cambio):** cockpit `createNewStoryDocs` (`tools/luana-cockpit/app/api/_lib/story-templates.ts`) ya creaba chris-input.md en idea; template `00-chris-input-template.md` ya era idea-ready.
+
+**How to apply (forward):** toda story creada (incluido idea) nace con checkpoint.md + chris-input.md. Idea descartada sin refinar conserva su buzón. `/pm-{brand}` "idea {x}" hace el dual-create.
+
+**Referencias:**
+- `.claude/rules/brand-docs-schema.md` § R4 (v3 cement 2026-05-28)
+- `docs/process/chris-input-protocol.md` (v2 cement 2026-05-28)
+- `vitalia/docs/learnings/2026-05-28-chris-input-at-idea-doctrine-gap.md` — candidate original (handoff /pm-vitalia → /pm-luana)
+
+---
+
+## 2026-05-29 — Verificar = ejercitar + leer logs, NO "HTTP 200" · e2e que mockean el backend = falso verde
+
+**Contexto:** Durante el refinamiento de `vitalia-stub-caps-scenario-backfill`, Chris reportó 500 reales en `/lisa/marca/identidad` + `/voz-y-tono` en dev-app. Claude había declarado superficies "verified-live" porque un `GET` daba **200** — pero (a) el 200 era un placeholder vacío con la tabla `personality_profiles` inexistente, y (b) la acción real (cambiar arquetipo → guardar) fallaba con `PUT → 405` ("Error al guardar"). Al hacer un test honesto **autenticado + SIN mock** contra el backend real, además apareció que la página voz-y-tono ni siquiera carga completa. Chris: *"probar los escenarios es realmente probarlos viendo logs y todo, no solo diciendo está bien porque saco estado 200"* + *"sé inteligente, maneja un usuario todopoderoso para pruebas generales"*.
+
+**Root cause sistémico:** **toda la suite e2e de lisa-marca mockea el backend** (`setupLisaMarcaMocks` → `route.fulfill 200` para identity/visuals/personality/contact/trust/blocklist). Tests verdes contra un backend 100% fake → la story shippeó "LIVE" con 3 bugs reales que NINGÚN test podía pillar (tabla faltante, PUT/405, page-load roto). Mockear el backend en el e2e = falso verde.
+
+**Decisiones cementadas:**
+1. **`test-design-doctrine.md` § "Verificación REAL ≠ HTTP 200"** (cardinal 2026-05-29): un scenario está verificado solo cuando se ejerce la acción real del usuario (especialmente los **writes**) + se leen logs + se confirma el efecto (DB/persistencia). Un GET 200 es necesario, nunca suficiente. Anti-patrón estrella prohibido.
+2. **Smoke real contra dev-app** (ratificado para el backfill): la verificación de funcionalidades visibles corre contra el entorno real, no solo mocks/localhost.
+3. **Harness de auth real para pruebas:** existe `dr.demo@vitalialat.com` (rol `owner` en tenant Sanaré `e69a691d`, vía `user_tenants`) + `CLERK_TESTING_TOKEN_VITALIA` + project `smoke` (dependencies:['setup'] re-autentica). Recipe probada: spec bajo `e2e/regression/**` SIN `setupLisaMarcaMocks` → pega al backend real autenticado.
+4. **Usuario "todopoderoso" de pruebas (propuesto):** un test user con todos los roles (owner+admin_clinic+doctor+nurse) sobre el/los tenant(s) demo, vía RBAC real (NO bypass — nunca debilitar tenant-isolation/HIPAA-lite en prod), para no pelear roles por-feature en pruebas generales. Seed en dev DB. **Pendiente ratificación Chris.**
+
+**How to apply (/pm-luana + builders + auditor):** ver `test-design-doctrine.md`. El auditor (categoría Connectivity + verificación) y los builders deben ejercer writes reales + leer logs; e2e que mockeen el backend del propio surface bajo prueba NO cuentan como verificación de ese surface.
+
+**Referencias:**
+- `.claude/rules/test-design-doctrine.md` § Verificación REAL ≠ "HTTP 200" (cardinal)
+- `vitalia/docs/observed-bugs/2026-05-29-lisa-marca-identidad-voz-500.md` (caso origen, 3 bugs)
+- Commits hotfix: `7c8d2822` (mig 034 personality_profiles), `61f1049c` (FE PUT→PATCH)

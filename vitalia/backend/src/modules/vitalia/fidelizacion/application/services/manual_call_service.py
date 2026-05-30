@@ -1,3 +1,5 @@
+# cap: fidelizacion.re-engagement
+# story-origin: TBD
 """ManualCallService — registrar llamadas telefónicas manuales.
 
 Permite al equipo clínico registrar el resultado de llamadas realizadas

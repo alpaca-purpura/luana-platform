@@ -1,3 +1,5 @@
+# cap: sales_agent.inbox-handler-mode-occ
+# story-origin: TBD
 """ActivityEvent DTOs — vitalia inbox application layer.
 
 downstream-regression-na: brand-local vitalia inbox DTO

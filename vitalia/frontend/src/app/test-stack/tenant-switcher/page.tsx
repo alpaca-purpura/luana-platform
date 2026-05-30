@@ -1,3 +1,5 @@
+// cap: platform.design-tokens-theme
+// story-origin: vitalia-fase1-s3-TBD
 /**
  * /test-stack/tenant-switcher — Visual baseline page F1-S3
  * (vitalia-fase1-tenant-switcher)

@@ -1,3 +1,5 @@
+# cap: brand_studio.brand-studio-medical-sections
+# story-origin: vitalia-fase2-s7-TBD
 """VitaliaProhibitedPhraseModel — SA 2.0 model for vitalia_prohibited_phrases table.
 
 Brand-local prohibited phrases for soft warning UI.

@@ -1,3 +1,5 @@
+# cap: copilot.inbox-tools-extensions
+# story-origin: TBD
 """Lucas cron trigger internal API routes.
 
 Internal endpoint consumed by LucasCronScheduler (APScheduler) only.

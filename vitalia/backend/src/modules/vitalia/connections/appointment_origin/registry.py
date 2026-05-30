@@ -1,3 +1,5 @@
+# cap: connections.oauth-meta-google-ads
+# story-origin: TBD
 """Appointment origin registry (Vitalia agenda dispatch metadata).
 
 Per `03-arch-be.md` § 6.3 — 4 origins Slice 1 mapped to

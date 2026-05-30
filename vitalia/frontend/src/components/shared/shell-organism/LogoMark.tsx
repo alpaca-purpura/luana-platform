@@ -1,3 +1,5 @@
+// cap: shell-organism.shell-vitalia
+// story-origin: TBD
 /**
  * LogoMark — brand logo atom for Vitalia TopBar
  * F1-S2 vitalia-fase1-topbar-global — T-2

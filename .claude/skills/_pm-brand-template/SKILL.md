@@ -21,7 +21,7 @@ TRIGGERS_EXTRA="<comma-separated extra triggers in quotes>"
 
 # 1. Crear estructura física brand
 mkdir -p ${SLUG}/{backend,frontend,config,deploy/{k8s,cloudflared}}
-mkdir -p ${SLUG}/docs/{product/{outcomes,stories,capabilities,modules},domains,learnings,architecture}
+mkdir -p ${SLUG}/docs/{product/{releases,stories,capabilities,modules},domains,learnings,architecture}
 mkdir -p ${SLUG}/.claude/{rules,skills}
 
 # 2. Copiar templates docs (heredan de Luana core paradigm v4)
@@ -66,7 +66,7 @@ ls .claude/skills/pm-${SLUG}/
 ```markdown
 ---
 name: pm-{{SLUG}}
-description: "PM {{NAME_CAP}} — owner del SSoT funcional brand {{NAME_CAP}} ({{VERTICAL}}). Pointer-first: carga {{SLUG}}/docs/product/checkpoint.md + BACKLOG.md en bootstrap. Owner: {{SLUG}}/docs/product/{outcomes,stories,capabilities,modules}/, {{SLUG}}/docs/learnings/, {{SLUG}}/docs/architecture/, {{SLUG}}/docs/domains/. Hereda paradigm v4 (10 estados macro) de Luana core. Activa: '/pm-{{SLUG}}', 'estado {{SLUG}}', '{{SLUG}} backlog', '{{SLUG}} story', '{{SLUG}} outcome', '{{SLUG}} capability', '{{SLUG}} learning'{{TRIGGERS_EXTRA}}."
+description: "PM {{NAME_CAP}} — owner del SSoT funcional brand {{NAME_CAP}} ({{VERTICAL}}). Pointer-first: carga {{SLUG}}/docs/product/checkpoint.md + BACKLOG.md en bootstrap. Owner: {{SLUG}}/docs/product/{releases,stories,capabilities,modules}/, {{SLUG}}/docs/learnings/, {{SLUG}}/docs/architecture/, {{SLUG}}/docs/domains/. Hereda paradigm v4 (10 estados macro) de Luana core. Activa: '/pm-{{SLUG}}', 'estado {{SLUG}}', '{{SLUG}} backlog', '{{SLUG}} story', '{{SLUG}} release', '{{SLUG}} capability', '{{SLUG}} learning'{{TRIGGERS_EXTRA}}."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
 model: opus
 ---
@@ -164,13 +164,13 @@ Todo `{slug}/docs/` debe cumplir 3 reglas hard:
 
 - **R1 — No MDs sueltos en `{slug}/docs/` raíz.** Solo sub-dirs (`product/`, `archive/`, `learnings/`, `architecture/`, `domains/`). Contenido ad-hoc → al sub-dir apropiado (ADR a `architecture/`, decisión proceso a `domains/`, etc.).
 - **R2 — Stories `state: done` auto-move a `{slug}/docs/archive/{year}/stories/` en el commit del 07-merge.** Nunca quedan en `product/stories/` indefinidamente.
-- **R3 — Auto-gen files NO se editan manual.** `BACKLOG.md`, `BACKLOG-TLDR.md`, `BACKLOG.yaml`, `modules/{m}.md` (sección auto-list) son OUTPUT de scripts. Editar la SOURCE (checkpoint/outcomes/stories/capabilities), luego regen via make.
+- **R3 — Auto-gen files NO se editan manual.** `BACKLOG.md`, `BACKLOG-TLDR.md`, `BACKLOG.yaml`, `modules/{m}.md` (sección auto-list) son OUTPUT de scripts. Editar la SOURCE (checkpoint/releases/stories/capabilities), luego regen via make.
 
 El template SKILL.md sample (sección abajo) debe incluir referencia explícita a esta rule en la "Anti-patterns" y "Referencias" del `/pm-{slug}` resultante.
 
 ## Próximas acciones post-bootstrap
 
-1. Brand owner (Chris) define primer outcome en `{slug}/docs/product/outcomes/`
+1. Brand owner (Chris) define primer release en `{slug}/docs/product/releases/`
 2. Decompose en stories
 3. /po-ux o /po o /ux-agentico drafts spec
 4. /architect cierra ready package
@@ -194,9 +194,9 @@ capability promotion (R32) ANTES de cerrar la sesión:
 
 Al cerrar story `reviewing → done`, aplicar logic del `cap_change_type` al YAML target. 4 ramas:
 
-- `new` → crear `{{SLUG}}/docs/product/capabilities/{module}/{cap_slug}.yaml` con schema v2 completo + change_log[0] type=new + atomics iniciales
-- `fix` → append change_log entry type=fix · NO toca atomics
-- `extend` → append change_log entry type=extend + append nuevos atomics al array con `added_in_story: {story_id}`
+- `new` → crear `{{SLUG}}/docs/product/capabilities/{module}/{cap_slug}.yaml` con schema completo + change_log[0] type=new + scenarios iniciales
+- `fix` → append change_log entry type=fix · NO toca scenarios
+- `extend` → append change_log entry type=extend + append nuevos scenarios al array con `added_in_story: {story_id}`
 - `derive` → crear cap YAML hijo con `parent_cap: {origen_slug}` + change_log[0] type=derive · update padre append `derives_capabilities: [hijo_slug]`
 
 Update también `last_modified: today` del cap. Doc: `docs/process/capability-protocol.md` § Sección 5.

@@ -1,3 +1,5 @@
+# cap: payment.payment-gateways-latam-recurring
+# story-origin: TBD
 """Vitalia Tokenized Recurring adapter — card-on-file installment charges.
 
 Per Story 11 03-arch-be.md § 11.3 + ticket T-payment-2:
@@ -510,3 +512,6 @@ async def _real_mp_charge(
         "status": data.get("status", "in_process"),
         "idempotency_key": idempotency_key,
     }
+
+
+# voseo-allowed: doc/comentario interno citando glosario voseo, no user-facing

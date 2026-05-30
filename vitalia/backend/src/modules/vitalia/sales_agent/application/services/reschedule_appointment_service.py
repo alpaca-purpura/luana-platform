@@ -1,3 +1,5 @@
+# cap: sales_agent.adrian-3-tools-mvp
+# story-origin: TBD
 """RescheduleAppointmentService — appointment slot update for Adrián.
 
 Delegates slot change to AppointmentService, writes audit log synchronously.

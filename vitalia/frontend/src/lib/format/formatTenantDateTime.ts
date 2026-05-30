@@ -1,3 +1,5 @@
+// cap: __shared__
+// story-origin: TBD
 /**
  * formatTenantDateTime — datetime formatter in tenant timezone.
  *

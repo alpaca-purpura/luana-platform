@@ -1,11 +1,12 @@
 ---
 # ============================================================================
-# Capability YAML template · schema v3 (cement 2026-05-27)
-# SSoT: docs/process/capability-protocol.md § Sec 7-9
+# Capability YAML template · schema v3.2 (cement 2026-05-28)
+# SSoT: docs/process/capability-protocol.md § Sec 7-13
 # ADR: vitalia/docs/architecture/ADR-vitalia-005-capability-model-4-dimensions.md
 # ============================================================================
 # Copiá este file a {tech_module}/{slug}.yaml + llenarás los placeholders.
 # Pre-commit hook valida los campos obligatorios.
+# v3.2 agrega 4 bloques aditivos: access + scenarios + business_rules + related_capabilities
 # ============================================================================
 
 # ----------------------------------------------------------------------------
@@ -95,23 +96,64 @@ parent_cap: null                                # null si root · slug si derive
 derives_capabilities: []                        # caps hijas spawned via derive
 superseded_by: null                             # slug del cap que reemplaza a este (post-merge)
 
-# Atomics como objects
-atomics:
-  - label: "{Atomic 1 user-facing label}"
-    added_in_story: {story-id}
-    added_date: 2026-MM-DD
-  # agregar más cuando se extienda
-
-# Append-only ledger
+# Atomics como objects (atomic schema v3.1 cement 2026-05-28)
 change_log:
   - story_id: {story-id-que-creo}
     date: 2026-MM-DD
     type: new                                   # new | fix | extend | derive
     summary: "{Implementación inicial · qué hace en 1-2 líneas}"
-    atomics_added: ["{Atomic 1 label}"]
+    atomics_added: ["<id-del-atomic-1>"]        # IDs kebab-case (no labels)
     atomics_modified: []
     merge_sha: null                             # populate post-merge
     status: done                                # in-progress | done
+
+# ============================================================================
+# v3.2 BLOQUES NUEVOS (cement 2026-05-28 · OPTIONAL en v3.2 · REQUIRED 2026-Q3 para user_visible:true)
+# ============================================================================
+
+# Bloque 1 · access (extiende dev_preview con roles + multi-entry-point)
+access:
+  entry_points:
+    - path: "/{path-next-router-o-api-endpoint}"
+      navigation: "{Pasos verbatim para acceder al cap · Spanish neutro}"
+      requires_role: [doctor, admin_clinic]    # roles canónicos vitalia
+      requires_clinic_scope: false             # true = HIPAA dual filter
+      entry_type: ui                            # ui | api | webhook | event | cli
+  forbidden_roles: []                           # roles explícitamente denegados (audit)
+  authentication: required                      # required | optional | none
+
+# Bloque 2 · scenarios (BDD user-facing capability lifecycle · híbrido P1 ratificado)
+scenarios:
+  - id: <kebab-scenario-id>                   # REQUIRED · unique dentro del cap · max 60 chars
+    name: "<Nombre user-facing Spanish neutro>"
+    actor: doctor                                # rol que actúa
+    status: live                                 # live | wip | deprecated
+    given: "{Contexto inicial · 1 línea}"
+    when: "{Acción del actor · 1 línea}"
+    then: "{Resultado esperado · 1+ líneas}"
+    e2e_test: null                               # OPTIONAL · path Playwright spec
+    story_spec_ref: null                         # OPTIONAL · vitalia/docs/archive/.../01-spec.md#anchor
+    atomic_ref: null                             # OPTIONAL · solo si scenario aplica a atomic cross-surface
+    edge_cases: []                               # OPTIONAL · lista narrativa Spanish neutro
+    added_in_story: {story-id}
+    added_date: 2026-MM-DD
+
+# Bloque 3 · business_rules (invariantes + HIPAA + retention + business logic)
+business_rules:
+  - id: <kebab-rule-id>
+    rule: "{Regla en 1-2 líneas Spanish neutro}"
+    enforcement:                                  # paths a rules/docs que enforce
+      - ".claude/rules/{rule}.md"
+    code_ref: null                                # OPTIONAL · path código que implementa
+    severity: medium                              # critical | high | medium | low
+    audit_trail: false                            # true = action genera audit_log row
+
+# Bloque 4 · related_capabilities (grafo de dependencias)
+related_capabilities:
+  depends_on: []                                  # caps que ESTE cap necesita activas
+  enables: []                                     # caps que SE habilitan por este
+  similar: []                                     # variantes/derive children
+  obsoletes: []                                   # caps marcados deprecated por este
 ---
 
 # {Capability name}

@@ -15,6 +15,7 @@ agent_owner: infra
 functional_area: infra.platform
 user_visible: true
 nature: feature
+ui_paradigm: shell-organism  # T-3 reconcile 2026-05-29
 
 user_facing_name: "TopBar global con logo, theme y tenant"
 user_facing_description: >
@@ -41,12 +42,11 @@ depends_on_engine: []
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-fase1-topbar-global   # v2 cement · mirror of story_introduced
 created_date: 2026-05-23   # v2 cement · mirror of date_introduced
-last_modified: 2026-05-23   # v2 cement · mirror of date_updated or date_introduced
+last_modified: 2026-05-29   # T-3 reconcile 2026-05-29
 parent_cap: null   # v2 cement · mirror of extends_capability
 derives_capabilities: []   # v2 cement · initial empty list
 
 # Capability ledger v2 (cement 2026-05-27)
-atomics: []   # v2 cement · empty initial · Chris populate manually
 
 # Capability change log v2 (cement 2026-05-27)
 change_log:
@@ -54,10 +54,31 @@ change_log:
     date: 2026-05-23
     type: new
     summary: "Implementación inicial · migración legacy a schema v2"
-    atomics_added: []
-    atomics_modified: []
     merge_sha: null
     status: done
+  - story_id: vitalia-stub-caps-scenario-backfill
+    date: 2026-05-30
+    type: extend
+    summary: "backfill scenario+e2e → verified-live (deployed-visible)"
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    status: done
+
+last_modified: 2026-05-30
+
+scenarios:
+  - id: topbar-renderiza-con-logo-y-toggle
+    name: "TopBarGlobal renderiza con role=banner, logo y ThemeToggle interactivo"
+    actor: doctor
+    status: live
+    given: "Usuario accede a la página de showcase /test-stack/topbar-global (ruta pública)"
+    when: "Carga la página y hace clic en el botón ThemeToggle"
+    then: "El elemento [data-testid=topbar-global] tiene role=banner · el logo tiene aria-label='Vitalia inicio' y href='/' · el toggle alterna entre data-theme=dark y sin data-theme · altura del topbar entre 47 y 50px"
+    e2e_test: "vitalia/frontend/e2e/regression/topbar-global/topbar-interaction.smoke.spec.ts"
+    verification_method: dev-app
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase1-topbar-global/01-spec.md"
+    atomic_ref: null
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    added_date: 2026-05-30
 ---
 
 # vitalia-topbar-global

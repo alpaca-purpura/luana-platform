@@ -1,3 +1,5 @@
+// cap: platform.topbar-global
+// story-origin: TBD
 "use client";
 
 /**

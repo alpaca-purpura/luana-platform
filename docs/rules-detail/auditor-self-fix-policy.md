@@ -1,4 +1,6 @@
-# Auditor Self-Fix Policy (paradigm v4.1 cement 2026-05-19)
+# Auditor Self-Fix Policy (paradigm v4.1 → v4.2)
+
+> **★ SUPERSEDED por v4.2 (cement 2026-05-28).** El SSoT cardinal vigente es `.claude/rules/auditor-self-fix-policy.md` v4.2 (3 carriles por NATURALEZA DE LA VERIFICACIÓN, no por tamaño). Cambios clave: (1) eliminado el cap "≤2 files/≤10 líneas" — el criterio de self-fix ahora es "¿lo verifica un test/gate EXISTENTE?"; (2) Carril A lo ejecuta el **sub-auditor mismo** (auditor-{be,fe,agentic} con tool `Edit`), sin re-spawn full; (3) caps `self_fix_iter: 5` + `audit_iterations: 4`; (4) AGENTIC Carril A solo mecánico. La whitelist de 17 categorías de abajo sigue siendo un subconjunto VÁLIDO de Carril A (todas no requieren test nuevo). El workflow Caso B/C/D de abajo aplica con esos números actualizados. Análisis: `docs/process/audits/2026-05-28-agentic-machinery-audit.md` § 1.
 
 **Origen:** Conversación 2026-05-19 ratificada por Chris. Amplificación autonomy post-refinamiento del paradigm v4 (10 estados macro + story-closure-gate). Decisión clave: cuando auditor encuentra CHANGES_REQUESTED, ¿auditor lo arregla (Opus single-mind) o spawnea dev-team autónomo? **Híbrido por NATURALEZA DEL FIX, no tamaño.**
 
@@ -101,7 +103,12 @@ Agent({
            
            GUARDRAILS:
            - Only edit files cited en T-{n}-review.md § Findings
-           - NO new tests added (auditor verifica fix vs scenarios existentes)
+           - TESTS (condicional según motivo del spawn):
+               · Si el finding ES "falta test / cobertura insuficiente" (NUNCA-self-fix #1) →
+                 ESCRIBÍ el test nuevo RED→GREEN (ése es EL motivo del spawn — dev-team es
+                 dueño del TDD).
+               · Para cualquier otro finding estructural ya cubierto por tests existentes →
+                 NO agregues tests nuevos (auditor verifica el fix vs scenarios existentes).
            - NO refactor outside findings scope
            - Spanish neutro respected
            - Push branch ACTUAL (wip/{brand}-{story-padre-id})

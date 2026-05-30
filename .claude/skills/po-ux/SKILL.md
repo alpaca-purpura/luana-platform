@@ -167,7 +167,7 @@ state: refining
 
 #### § Context
 
-- Outcome al que pertenece (`outcomes/{id}.md`)
+- Release al que pertenece (`releases/{id}.yaml`)
 - Módulo afectado
 - User journey insertion point (dónde aparece en sidebar/flow)
 - Out-of-scope explícito (anti-creep)
@@ -370,6 +370,8 @@ Chris responde → editás 01-spec.md (no rebuild from scratch — Edit incremen
 
 **Validation cap lineage (v2 cement 2026-05-27):** antes de cerrar state=refined, verificar checkpoint.md tiene `cap_target` (no null) + `cap_change_type` ∈ {new, fix, extend, derive}. Si Chris no los declaró en chris-input.md, skill propone valores como verdict `💡 PROPONE` y espera ratificación. Doc: `docs/process/capability-protocol.md` § Sección 3.
 
+**Validation caja del mapa (paradigma · cement 2026-05-30):** verificar también que la **caja** de la cap esté declarada (`agent_owner`) aplicando el árbol de decisión de `.claude/rules/paradigm-arquitectura.md`: ¿es valor de un agente (zona **Agentes**) · superficie transversal sin agente — Acceso/Onboarding/Configuración (zona **Plataforma**) · o no-funcional/técnico (zona **Infraestructura**)? La zona se deriva del registro `SYSTEM-MAP.yaml`. Sin caja válida → NO transition refining→refined. Doctrina: `docs/architecture/luana-platform/PARADIGM.md`.
+
 Si gate FAIL → STOP, NO transition refining→refined. Iterá con Chris hasta cobertura completa.
 
 Una vez gate PASS + Chris ratifica:
@@ -407,10 +409,10 @@ next_action: "/architect <brand>: {brand} lee 01-spec.md → produce ready packa
 
 ## Scope expansion durante diseño
 
-Si durante mockup/iteración descubrís edge case que el outcome no contemplaba:
+Si durante mockup/iteración descubrís edge case que la story no contemplaba:
 
 - **Pequeño** (1 estado UI extra, 1 microcopy faltante) → agregar inline + bumpear `po_ux_version` en frontmatter spec.md
-- **Medio** (scenario nuevo necesario, refactoring scope) → STOP, escala `/pm-{brand}`: "scope crece, requiere ratificar outcome"
+- **Medio** (scenario nuevo necesario, refactoring scope) → STOP, escala `/pm-{brand}`: "scope crece, requiere ratificar alcance de la story"
 - **Grande** (story se vuelve épica, > 5d trabajo) → STOP, `/pm-{brand}` decompose en N stories
 
 ## Anti-patterns
@@ -436,7 +438,7 @@ Si durante mockup/iteración descubrís edge case que el outcome no contemplaba:
 
 ## Anti cross-brand pollution
 
-- ❌ NUNCA editar `{other_brand}/...` cuando trabajás en `{brand}`. Si la story necesita tocar otra brand → STOP, escalate `/pm-luana` (outcome cross-brand).
+- ❌ NUNCA editar `{other_brand}/...` cuando trabajás en `{brand}`. Si la story necesita tocar otra brand → STOP, escalate `/pm-luana` (trabajo cross-brand).
 - ❌ NUNCA editar `core/luana-core-*/src/` directamente. Requiere lift via `/pm-luana` (promotion gate). Si el patrón UI aparece ≥2 brands → escalá como promotion candidate.
 - ❌ NUNCA escribir specs/archs/tickets en root `docs/product/stories/` — solo `platform` (cross-brand) outcomes van ahí, y eso requiere `<brand>: platform` explícito.
 - ❌ NUNCA referenciar `frontend/src/` sin el prefix `{brand}/` — post reorg 2026-05-15 no existe root `frontend/`.
@@ -490,6 +492,7 @@ Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
 
 - `docs/process/pm-redesign-2026-05.md` — paradigma 3 conversaciones + ready package
 - `docs/process/capability-protocol.md` — schema cap YAML v2 + cap_target + cap_change_type
+- `docs/architecture/luana-platform/PARADIGM.md` + `.claude/rules/paradigm-arquitectura.md` — ★ árbol caja/zona del mapa (declarar desde la idea)
 - `docs/process/chris-input-protocol.md` — output protocol per skill
 - `docs/specs/templates/01-spec-template.md` — template base
 - `.claude/rules/spanish-text.md` — voseo glosario + magic comment escape

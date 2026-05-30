@@ -1,3 +1,5 @@
+# cap: crm.crm-consent-optout
+# story-origin: TBD
 """Message domain entity — PHI dual-filter.
 
 Domain layer — pure Python dataclass, no ORM imports.

@@ -1,3 +1,5 @@
+# cap: scheduling.valeria-agenda
+# story-origin: vitalia-fase2-s1-TBD
 """Agenda calendar display view mode.
 
 Controls the calendar rendering mode. Persisted in URL params + localStorage

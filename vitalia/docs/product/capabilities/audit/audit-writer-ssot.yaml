@@ -1,3 +1,4 @@
+---
 capability_id: vitalia-audit-writer-ssot
 module: audit
 slug: audit-writer-ssot
@@ -14,6 +15,7 @@ agent_owner: config
 functional_area: config.compliance
 user_visible: false
 nature: extension-point
+ui_paradigm: infra-only  # T-3 reconcile 2026-05-29
 
 user_facing_name: "Writer SSoT del audit log"
 user_facing_description: >
@@ -63,12 +65,11 @@ verification:
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-adopt-luana-core-iam   # v2 cement · mirror of story_introduced
 created_date: 2026-05-19   # v2 cement · mirror of date_introduced
-last_modified: 2026-05-19   # v2 cement · mirror of date_updated or date_introduced
+last_modified: 2026-05-29   # T-3 reconcile 2026-05-29
 parent_cap: null   # v2 cement · mirror of extends_capability
 derives_capabilities: []   # v2 cement · initial empty list
 
 # Capability ledger v2 (cement 2026-05-27)
-atomics: []   # v2 cement · empty initial · Chris populate manually
 
 # Capability change log v2 (cement 2026-05-27)
 change_log:
@@ -76,7 +77,46 @@ change_log:
     date: 2026-05-19
     type: new
     summary: "Implementación inicial · migración legacy a schema v2"
-    atomics_added: []
-    atomics_modified: []
     merge_sha: null
     status: done
+  - story_id: vitalia-stub-caps-scenario-backfill
+    date: 2026-05-30
+    type: extend
+    summary: "backfill scenario+e2e → verified-live (deployed-visible)"
+    scenarios_added: 2
+    status: done
+
+last_modified: 2026-05-30
+
+scenarios:
+  - id: audit-writer-escribe-sync-antes-response
+    name: "Arch fitness verifica que AuditLogRepository.write es sync-callable (no fire-and-forget)"
+    actor: sistema
+    status: live
+    given: "El archivo audit_log_repository.py existe en el módulo _shared/repositories"
+    when: "Se corre test_audit_log_sync_write.py que escanea via AST el método write() del repositorio"
+    then: "El test verifica que write() es async (awaitable) y NO es un background task; garantiza escritura sync antes del response; exit 0"
+    e2e_test: "vitalia/backend/tests/architecture/test_audit_log_sync_write.py"
+    verification_method: pytest-backend-justified
+    story_spec_ref: "vitalia/docs/product/stories/vitalia-stub-caps-scenario-backfill/01-spec.md"
+    atomic_ref: null
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    added_date: 2026-05-30
+  - id: audit-writer-row-por-endpoint-phi
+    name: "Arch fitness verifica que cada endpoint PHI contiene llamada a audit_writer.write"
+    actor: sistema
+    status: live
+    given: "Los routers y servicios PHI de Vitalia (agenda, charge, emit, notify) están en el filesystem"
+    when: "Se corre test_audit_log_row_per_phi_endpoint.py que detecta endpoints con @require_phi_access y verifica que el router/service tiene audit_writer.write()"
+    then: "El ratchet de endpoints PHI conocidos (agenda_router, charge_router, emit_router, notify_router) están cubiertos; agregar endpoint PHI sin audit = falla ratchet; exit 0"
+    e2e_test: "vitalia/backend/tests/architecture/test_audit_log_row_per_phi_endpoint.py"
+    verification_method: pytest-backend-justified
+    story_spec_ref: "vitalia/docs/product/stories/vitalia-stub-caps-scenario-backfill/01-spec.md"
+    atomic_ref: null
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    added_date: 2026-05-30
+---
+
+# Writer SSoT del audit log
+
+Único punto de escritura del audit log de Vitalia (`audit_writer.py`). Toda mutación sobre datos sensibles pasa por este helper con redacción PHI y escritura sincrónica antes del retorno. Consumido por admin de tenants/usuarios/clínicas y el servicio de clínicas.

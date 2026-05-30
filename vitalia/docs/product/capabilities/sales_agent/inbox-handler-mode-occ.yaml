@@ -2,7 +2,7 @@
 capability_id: vitalia-inbox-handler-mode-occ
 module: sales_agent
 slug: inbox-handler-mode-occ
-status: live
+status: deprecated
 date_introduced: 2026-05-20
 story_introduced: vitalia-slice-1-inbox
 package_version: 0.1.0
@@ -15,6 +15,8 @@ agent_owner: adrian
 functional_area: adrian.inbox
 user_visible: true
 nature: feature
+ui_paradigm: slice-1-superseded  # T-3 reconcile 2026-05-29
+replaced_by_story: vitalia-fase2-adrian-inbox  # T-3: story F2 que reconstruye esta cap
 
 user_facing_name: "Adrián · inbox con modo handler (agente/humano/pausado) y OCC"
 user_facing_description: >
@@ -41,12 +43,11 @@ dev_preview:
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-slice-1-inbox   # v2 cement · mirror of story_introduced
 created_date: 2026-05-20   # v2 cement · mirror of date_introduced
-last_modified: 2026-05-20   # v2 cement · mirror of date_updated or date_introduced
+last_modified: 2026-05-29   # T-3 reconcile 2026-05-29
 parent_cap: null   # v2 cement · mirror of extends_capability
 derives_capabilities: []   # v2 cement · initial empty list
 
 # Capability ledger v2 (cement 2026-05-27)
-atomics: []   # v2 cement · empty initial · Chris populate manually
 
 # Capability change log v2 (cement 2026-05-27)
 change_log:
@@ -54,10 +55,103 @@ change_log:
     date: 2026-05-20
     type: new
     summary: "Implementación inicial · migración legacy a schema v2"
-    atomics_added: []
-    atomics_modified: []
     merge_sha: null
     status: done
+
+access:
+  entry_points:
+    - path: "/adrian/inbox"
+      navigation: "Login → ribbon clic en avatar Adrián → sub-tab Inbox para ver el listado de conversaciones"
+      requires_role: [marketing, admin_clinic]
+      requires_clinic_scope: true
+      entry_type: ui
+    - path: "/api/v1/vitalia/inbox/conversations/{id}/mode"
+      navigation: "API PATCH para cambiar el modo de atención de una conversación"
+      requires_role: [doctor, nurse, admin_clinic]  # real _PHI_ROLES (inbox/api/router.py:118)
+      requires_clinic_scope: true
+      entry_type: api
+  forbidden_roles: [patient, nurse, receptionist]
+  authentication: required
+
+scenarios:
+  - id: operador-cambia-modo-agente-a-humano
+    name: "Operador toma el control de una conversación de Adrián"
+    actor: marketing
+    status: live
+    given: "Conversación en modo 'agente' con Adrián respondiendo automáticamente"
+    when: "Operador cambia el modo a 'humano' enviando expected_version correcto"
+    then: "Modo actualiza a humano · Adrián deja de actuar · versión incrementa a M+1 · operador puede responder directamente"
+    e2e_test: null
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-slice-1-inbox/01-spec.md"
+    atomic_ref: null
+    edge_cases:
+      - "Dos operadores cambian modo simultáneamente → segundo recibe 409 con current_version · hace rollback de su UI"
+      - "Transición inválida (ej. human → human) → 422 Unprocessable Entity"
+    added_in_story: vitalia-slice-1-inbox
+    added_date: 2026-05-20
+  - id: operador-deshace-mensaje-de-adrian
+    name: "Operador deshace el último mensaje de Adrián dentro de los 5 minutos"
+    actor: marketing
+    status: live
+    given: "Adrián envió un mensaje hace 2 minutos · ActionReceipt en estado active con countdown visible"
+    when: "Operador hace clic en el chip de undo antes de que expire el TTL"
+    then: "ActionReceipt → status undone · Message → retracted_at = NOW · evento MessageRetracted emitido · countdown desaparece del UI"
+    e2e_test: null
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-slice-1-inbox/01-spec.md"
+    atomic_ref: null
+    edge_cases:
+      - "Intento de undo después de 5 minutos → 410 Gone · UI muestra 'no se puede deshacer'"
+      - "Retract atómico: message.retracted_at y receipt.status en misma transacción"
+    added_in_story: vitalia-slice-1-inbox
+    added_date: 2026-05-20
+  - id: adriano-en-modo-pausado
+    name: "Conversación en modo pausado bloquea a Adrián y al operador"
+    actor: admin_clinic
+    status: live
+    given: "Conversación activa con paciente"
+    when: "Admin cambia el modo a 'pausado'"
+    then: "Adrián no actúa · operador no envía mensajes · modo escucha activo · EP-13 GuardrailDef bloquea herramientas de Adrián"
+    e2e_test: null
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-slice-1-inbox/01-spec.md"
+    atomic_ref: null
+    edge_cases:
+      - "Cambio de paused a human → permitido (transición válida)"
+      - "Cambio de paused a paused → 422 (auto-transición inválida)"
+    added_in_story: vitalia-slice-1-inbox
+    added_date: 2026-05-20
+
+business_rules:
+  - id: occ-version-check
+    rule: "Toda actualización de handler_mode requiere expected_version coincidente · mismatch retorna 409 con current_version para que el cliente refresque su estado"
+    enforcement:
+      - ".claude/rules/backend-ddd.md"
+    code_ref: "vitalia/backend/src/modules/vitalia/inbox/application/services/set_mode_service.py"
+    severity: critical
+    audit_trail: false
+  - id: action-receipt-5min-ttl
+    rule: "ActionReceipt expira 5 minutos post-creación · undo después del TTL retorna 410 Gone · no hay extensión del TTL"
+    enforcement:
+      - "vitalia/docs/architecture/ADR-vitalia-004.md"
+    code_ref: "vitalia/backend/src/modules/vitalia/crm/domain/action_receipt.py"
+    severity: high
+    audit_trail: false
+  - id: inbox-no-phi-in-mode-endpoint
+    rule: "Los endpoints de cambio de modo y retract no exponen PHI del paciente · solo IDs y metadatos de conversación"
+    enforcement:
+      - "vitalia/.claude/rules/hipaa-lite.md"
+    code_ref: "vitalia/backend/src/modules/vitalia/inbox/api/"
+    severity: high
+    audit_trail: true
+
+related_capabilities:
+  depends_on:
+    - shell-organism.shell-vitalia
+    - auth.clerk-middleware
+    - compliance.hipaa-lite-defensive-stack
+  enables:
+    - patients.nps-tracking
+  similar: []
+  obsoletes: []
 ---
 
 # vitalia-inbox-handler-mode-occ

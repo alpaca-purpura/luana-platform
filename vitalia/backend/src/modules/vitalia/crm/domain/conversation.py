@@ -1,3 +1,5 @@
+# cap: crm.crm-consent-optout
+# story-origin: TBD
 """Conversation domain entity — PHI dual-filter (tenant_id + clinic_id).
 
 Domain layer — pure Python dataclass, no ORM imports.

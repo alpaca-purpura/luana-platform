@@ -102,7 +102,7 @@ Agent({
            2. {brand}/docs/product/stories/{id}/01-spec.md ratificada por Chris
            3. {brand}/docs/product/stories/{id}/02-design-agentic.md si agentic-story
            4. {brand}/docs/product/stories/{id}/00-story.md / delta-spec.md si existen
-           5. {brand}/docs/product/outcomes/{outcome-id}.md
+           5. {brand}/docs/product/releases/{release-id}.yaml
            6. {brand}/docs/product/modules/{m}.md
            7. Stories archivadas relacionadas (predecesores) en {brand}/docs/archive/
 
@@ -117,7 +117,7 @@ Agent({
            2. 03-arch-{be,fe,agentic}.md per surface tocado (opcional, si arch es complejo per-surface)
            3. 04-validators.yaml (5 categories — non_functional / functional / visual / agentic_eval / architectural_validation ★ v4.1 — scenario_coverage 100%, must_pass:true, test_construction_plan completo)
            4. 05-guidelines.md (must_load_skills enforceable ★ v4.1 + patterns required/forbidden + files in scope)
-           5. 06-tickets.yaml (atomic, R23 marked AGENTIC, owner_eligibility, DAG, gherkin_coverage per ticket)
+           5. 06-tickets.yaml (work units, R23 marked AGENTIC, owner_eligibility, DAG, gherkin_coverage per ticket)
 
            CRITICAL CONSTRAINTS:
            - Cross-module audit anti-duplication.md (no mirror shared abstractions cross-brand)
@@ -159,6 +159,7 @@ Si orchestrator propone NEW cuando shared existe ≥80% → escala `/pm-luana` (
 Lee el `03-arch.md` que el orchestrator escribió. Verificar:
 - Secciones por surface presente (BE / FE / AGENTIC según tickets toca)
 - Cross-cutting decisions section (tenant isolation, currency, PII)
+- **`## Integration design (CONN)` presente** (`.claude/rules/anti-orphan-integration.md` + `paradigm-arquitectura.md`): reachability path concreto + consumers + registration points + home (cap). Cada surface declara su **hogar zona→caja** del mapa (derivado de `SYSTEM-MAP.yaml`) y, si es agéntico, que el trabajador **invoca la acción única (Plano 2), no la reimplementa** (un solo engine). SIN esto, lo construido será una isla → NO cerrar `ready`. Doctrina: `docs/architecture/luana-platform/PARADIGM.md`.
 - Per-surface detail puede vivir inline en 03-arch.md O en archivos separados `03-arch-{be,fe,agentic}.md` (orchestrator decide según complejidad)
 
 Template estructura mínima:
@@ -181,6 +182,12 @@ Template estructura mínima:
 - Tenant isolation strategy: ...
 - Currency handling: ...
 - PII fields: ...
+
+## Integration design (CONN)   ← OBLIGATORIO (anti-orphan-integration.md)
+### Reachability path: usuario/sistema → ... → feature (camino concreto)
+### Consumers: quién llama cada surface nuevo (UI hook / agente / servicio). Cero consumers → NO construir.
+### Registration points: include_router / nav tree / DI / tool registry (deliverables verificables)
+### Home: cap_target + cap_change_type (dev_preview se actualiza al merge)
 ```
 
 ### Step 5 — Producir 04-validators.yaml + Test Construction Plan ★ CRITICAL ★
@@ -770,6 +777,12 @@ Antes de cerrar story como ready:
 - [ ] `dispatch-plan.md` producido (5th artifact) con `autonomous_mode: false` default + caps + cost matrix
 - [ ] `checkpoint.md::autonomous_mode` campo presente (default false; Chris ratifica true al cerrar review ready)
 
+**★ v4.3 cement 2026-05-28 (anti-isla + fidelidad visual):**
+- [ ] `03-arch.md § Integration design (CONN)` presente: reachability path concreto + consumers (≥1 por surface, o justificación infra) + registration points (router/nav/DI/tool registry como deliverables) + home (cap_target). Sin esto → NO ready (`anti-orphan-integration.md`)
+- [ ] Cada surface nuevo en 06-tickets tiene su deliverable de **registro** (no solo crear el archivo): BE `include_router`, FE ruta+nav, agentic tool registry
+- [ ] UI stories: `02-design-ui.md` lista elementos visuales clave + `04-validators § playwright_visual_scope` separa `story_scope_*` de `out_of_mockup_scope` (no exceder mockup). `frontend-visual-fidelity.md`
+- [ ] UI tickets: deliverables citan reutilización de átomos `components/ui/` + moléculas `components/shared/` (no reinventar primitivas)
+
 **Validation coherencia cap_change_type (v2 cement 2026-05-27):** antes de cerrar state=ready, verificar coherencia entre `cap_change_type` declarado y archivos producidos:
 - Si `extend`: 03-arch.md DEBE citar cap existente en sección "## Prior art audit" + 06-tickets.yaml no toca files de caps cross-target
 - Si `derive`: 03-arch.md DEBE crear/referenciar cap nuevo con `parent_cap: {origen}` explícito + checkpoint.md tiene `parent_story` declarado
@@ -835,7 +848,7 @@ Próximo: Conv 2 (autonomous build). /dev-team <brand>: {brand} toma T-1 (state:
 
 ## Anti cross-brand pollution
 
-- ❌ NUNCA generar tickets que editen `{other_brand}/...` cuando trabajás en `{brand}`. Si la story necesita tocar otra brand → STOP, escalate `/pm-luana` (outcome cross-brand).
+- ❌ NUNCA generar tickets que editen `{other_brand}/...` cuando trabajás en `{brand}`. Si la story necesita tocar otra brand → STOP, escalate `/pm-luana` (trabajo cross-brand).
 - ❌ NUNCA generar tickets que editen `core/luana-core-*/src/` directamente. Requiere lift via `/pm-luana` (promotion gate) — propuesta en `docs/promotion-protocol/proposals/` ANTES de cerrar package.
 - ❌ NUNCA escribir specs/archs/tickets en root `docs/product/stories/` — solo `<brand>: platform` (cross-brand) outcomes van ahí, y eso requiere autorización explícita `/pm-luana`.
 - ❌ NUNCA referenciar `backend/src/` o `frontend/src/` sin el prefix `{brand}/` — post reorg 2026-05-15 no existe root `backend/` ni `frontend/`. Solo `core/luana-core-*/src/luana_core_*/` (engine) y `{brand}/backend/src/` (brand).
@@ -882,6 +895,7 @@ Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
 ## Referencias
 
 - `docs/process/capability-protocol.md` — schema cap YAML v2 + cap_change_type coherence gates
+- `docs/architecture/luana-platform/PARADIGM.md` + `.claude/rules/paradigm-arquitectura.md` — ★ 3 planos · Integration design declara hogar zona→caja + acción única (no reimplementar)
 - `docs/process/chris-input-protocol.md` — output protocol per skill
 
 - `docs/process/pm-redesign-2026-05.md` — paradigma 3 conversaciones + ready package + § v4.1 autonomy amplification 2026-05-19

@@ -6,11 +6,8 @@
 ---
 story_id: STORY_ID                                # match folder name
 
-# Release entity (v2 cement 2026-05-27 — reemplaza outcome + phase legacy)
+# Release entity (único contenedor temporal · ver lifecycle.md § 5)
 release: F2                                       # release ID · ver {brand}/docs/product/releases/{id}.yaml
-# legacy fields (mantener por migración gradual · removerlos cuando todas las stories migren al schema v2)
-outcome: OUTCOME_SLUG                             # DEPRECATED · migrar a release
-phase: PHASE_SLUG                                 # DEPRECATED · migrar a release
 
 # Capability lineage (v2 cement 2026-05-27)
 cap_target: lisa.marca                            # null si cap nueva sin nombre aún · sino slug existente o nuevo
@@ -18,7 +15,7 @@ cap_change_type: extend                           # new | fix | extend | derive
 parent_story: null                                # opcional · si story spawned desde otra done (parent.id)
 
 state: refining                                   # 10 estados v4 — ver tabla abajo
-phase_workflow: PO_SPEC                           # ver tabla phase workflow abajo (informational · renombrado de "phase" para evitar colisión con release legacy)
+phase_workflow: PO_SPEC                           # ver tabla phase workflow abajo (informational · paso interno del pipeline SDD, NO un eje del modelo)
 last_artifact: 01-spec.md                         # último archivo escrito
 last_modified: 2026-05-06T15:23:00Z
 next_action: "Chris ratifica spec → invocar /architect"
@@ -101,7 +98,7 @@ hotfix_metadata:                                  # opcional, solo hot-fix ticke
 |---|---|
 | Cap NO existe · esta story lo crea | `new` |
 | Cap existe · esta story arregla bug/regresión sin agregar funcionalidad | `fix` |
-| Cap existe · esta story agrega atomics nuevos al MISMO cap | `extend` |
+| Cap existe · esta story agrega scenarios nuevos al MISMO cap | `extend` |
 | Cap existe · esta story crea cap hijo basado en uno existente (scope significativamente distinto) | `derive` (declarar `parent_story` opcional + cap YAML hijo tendrá `parent_cap`) |
 
 ### Validation enforce-able
@@ -115,7 +112,7 @@ Doc canónico: `docs/process/capability-protocol.md`.
 
 ## Release entity (v2 cement 2026-05-27)
 
-Campo `release` reemplaza el binomio legacy `outcome` + `phase`. Mientras dure la migración gradual, ambos coexisten (legacy fields marcados DEPRECATED).
+Campo `release` es el único contenedor temporal del modelo (no hay outcome ni phase por encima). Ver `docs/process/lifecycle.md` § 1 + § 5.
 
 Cuando esta story esté asignada a un release activo, su release_id debe existir en `{brand}/docs/product/releases/{id}.yaml`. Drag entre releases en cockpit Roadmap actualiza este field + la lista `stories[]` del release.
 

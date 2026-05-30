@@ -1,3 +1,5 @@
+// cap: onboarding.clinic-onboarding-3step
+// story-origin: TBD
 "use client";
 /**
  * use-wizard-sse-stream.ts — SSE stream hook for wizard assistant messages.

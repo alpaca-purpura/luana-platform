@@ -1,3 +1,5 @@
+# cap: connections.oauth-meta-google-ads
+# story-origin: TBD
 """Conversation initiation registry (Vitalia proactive outbound dispatch).
 
 Per `03-arch-be.md` § 6.4 — channel + template mapping for inbound /

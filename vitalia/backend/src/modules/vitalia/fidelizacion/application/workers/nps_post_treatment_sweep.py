@@ -1,3 +1,5 @@
+# cap: patients.nps-tracking
+# story-origin: TBD
 """Worker cron: nps_post_treatment_sweep.
 
 Dispara encuesta NPS para pacientes que completaron un tratamiento

@@ -1,3 +1,5 @@
+// cap: onboarding.clinic-onboarding-3step
+// story-origin: TBD
 "use client";
 /**
  * SlotConfirmInline — inline slot confirmation widget in the chat thread.

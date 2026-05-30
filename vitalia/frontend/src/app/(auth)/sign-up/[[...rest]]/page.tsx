@@ -1,3 +1,5 @@
+// cap: auth.sign-in-sign-up-pages
+// story-origin: TBD
 import type { Metadata } from "next";
 import { SignUp } from "@clerk/nextjs";
 

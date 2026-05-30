@@ -1,3 +1,5 @@
+# cap: marketing.attribution-matrix-4-origins
+# story-origin: TBD
 """ChannelMetric domain entity — immutable daily metric snapshot per channel.
 
 Per HIPAA-lite: NO PHI stored here. UTM fields contain campaign attribution

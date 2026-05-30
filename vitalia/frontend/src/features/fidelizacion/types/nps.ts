@@ -1,3 +1,5 @@
+// cap: patients.nps-tracking
+// story-origin: TBD
 /**
  * nps.ts — TS types for NPS module.
  *

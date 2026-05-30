@@ -559,6 +559,285 @@ fi
 fi  # end GATE_LEVEL=full guard (section 5)
 
 # ─────────────────────────────────────────────────────────────────
+# 5b. Capability advisory — wip/* light gate (cement 2026-05-28)
+# ─────────────────────────────────────────────────────────────────
+# Runs ONLY in GATE_LEVEL=light (wip/* branches). Two sub-checks:
+#
+# Advisory (no exit 1):
+#   If cap YAML files or story checkpoint.md files are staged, run
+#   reconcile_capabilities.py --check --brand {brand} as advisory.
+#   Output is printed but NEVER blocks the commit (|| true).
+#
+# HARD block (exit 1):
+#   If a staged checkpoint.md declares cap_change_type ∈ {new, extend}
+#   but NO cap YAML is staged in the same commit → BLOCK.
+#   Rationale: Fase F.3 requires both checkpoint + cap YAML to be committed
+#   together so the ledger stays coherent. Committing the checkpoint without
+#   the cap YAML leaves the ledger in an inconsistent state visible to
+#   reconcile_capabilities.py --validate-ledger.
+#
+# Override HARD block:
+#   * env: CAP_ADVISORY_SKIP=1 git commit ...
+#
+# Note: reconcile_capabilities.py has no --advisory flag; we achieve
+# advisory behavior by appending `|| true` to the invocation.
+# ─────────────────────────────────────────────────────────────────
+
+if [ "${GATE_LEVEL}" = "light" ] && [ "${CAP_ADVISORY_SKIP:-0}" != "1" ]; then
+
+  # Detect staged capability YAML files (per-brand, not platform/legacy)
+  CAP5B_STAGED=$(git diff --cached --name-only --diff-filter=ACMR 2>/dev/null \
+    | grep -E '^(vitalia|nicolify|comunify|lupulo|saasora|inmoflow|retailly|fixia|guestly|fitflow)/docs/product/capabilities/[^/]+/[^/]+\.yaml$' \
+    || true)
+
+  # Detect staged story checkpoint.md files (per-brand)
+  CHECKPOINT5B_STAGED=$(git diff --cached --name-only --diff-filter=ACMR 2>/dev/null \
+    | grep -E '^(vitalia|nicolify|comunify|lupulo|saasora|inmoflow|retailly|fixia|guestly|fitflow)/docs/product/stories/[^/]+/checkpoint\.md$' \
+    || true)
+
+  if [ -n "${CAP5B_STAGED}" ] || [ -n "${CHECKPOINT5B_STAGED}" ]; then
+    # Derive brand(s) from staged files (first segment of path)
+    BRANDS5B=$(printf '%s\n%s\n' "${CAP5B_STAGED}" "${CHECKPOINT5B_STAGED}" \
+      | grep -v '^$' \
+      | cut -d/ -f1 \
+      | sort -u || true)
+
+    # ── Advisory: run reconcile --check per brand (non-blocking) ──
+    RECONCILER5B="${REPO_ROOT}/scripts/reconcile_capabilities.py"
+    if [ -x "${REPO_ROOT}/.venv/bin/python" ]; then
+      VENV5B="${REPO_ROOT}/.venv/bin/python"
+    elif [ -x "${REPO_ROOT}/backend/.venv/bin/python" ]; then
+      VENV5B="${REPO_ROOT}/backend/.venv/bin/python"
+    else
+      VENV5B=""
+    fi
+
+    if [ -n "${VENV5B}" ] && [ -f "${RECONCILER5B}" ] && [ -n "${BRANDS5B}" ]; then
+      echo ""
+      echo "[5b] Capability advisory (wip/* light gate — non-blocking)"
+      while IFS= read -r B5B; do
+        [ -z "${B5B}" ] && continue
+        ADVISORY_OUT=$("${VENV5B}" "${RECONCILER5B}" --check --brand "${B5B}" 2>&1 || true)
+        if [ -n "${ADVISORY_OUT}" ]; then
+          printf "\033[33m"
+          echo "  [5b advisory · ${B5B}]"
+          echo "${ADVISORY_OUT}" | head -30 | sed 's/^/    /'
+          printf "\033[0m"
+        fi
+      done <<< "${BRANDS5B}"
+      echo "[5b] advisory done (warnings above do not block commit)"
+    fi
+
+    # ── HARD check: cap_change_type ∈ {new, extend} without cap YAML staged ──
+    if [ -n "${CHECKPOINT5B_STAGED}" ]; then
+      while IFS= read -r CP5B; do
+        [ -z "${CP5B}" ] && continue
+        [ ! -f "${CP5B}" ] && continue
+
+        # Read cap_change_type from staged content (git show) to check the
+        # version being committed, not just the working-tree version.
+        STAGED_CP_CONTENT=$(git show ":${CP5B}" 2>/dev/null || true)
+        [ -z "${STAGED_CP_CONTENT}" ] && continue
+
+        CCT=$(echo "${STAGED_CP_CONTENT}" \
+          | grep -E '^cap_change_type:' \
+          | head -1 \
+          | sed -E 's/^cap_change_type:[[:space:]]*//' \
+          | sed -E 's/[[:space:]]*#.*$//' \
+          | tr -d '"'"'" \
+          | xargs 2>/dev/null || true)
+
+        if [ "${CCT}" = "new" ] || [ "${CCT}" = "extend" ]; then
+          if [ -z "${CAP5B_STAGED}" ]; then
+            printf "\033[31m"
+            cat <<EOF
+
+─────────────────────────────────────────────────────────────
+PRE-COMMIT BLOCKED: cap_change_type=${CCT} declared without cap YAML staged
+(Section 5b HARD check — cement 2026-05-28)
+
+Checkpoint: ${CP5B}
+cap_change_type: ${CCT}
+
+Cuando cap_change_type ∈ {new, extend}, el cap YAML target DEBE estar
+staged en el mismo commit (Fase F.3 enforce — capability-protocol.md § 5).
+
+Sin cap YAML staged, reconcile_capabilities.py --validate-ledger reportará
+inconsistencia al siguiente full-gate commit (main/release/*).
+
+Acciones:
+  1. Stage el cap YAML correspondiente junto con este checkpoint:
+       git add {brand}/docs/product/capabilities/{module}/{cap-slug}.yaml
+  2. Si la story aún está en progreso y el cap YAML no está listo:
+       Quitar cap_change_type: ${CCT} del checkpoint por ahora, o usar
+       cap_change_type: fix hasta que el YAML esté listo.
+  3. Override emergencia (solo si Chris ratificó):
+       CAP_ADVISORY_SKIP=1 git commit ...
+
+SSoT: _cap-verification-decisions.md § F + docs/process/capability-protocol.md § 5
+─────────────────────────────────────────────────────────────
+EOF
+            printf "\033[0m"
+            exit 1
+          fi
+        fi
+      done <<< "${CHECKPOINT5B_STAGED}"
+    fi
+  fi
+
+fi  # end GATE_LEVEL=light guard (section 5b)
+
+# ─────────────────────────────────────────────────────────────────
+# 5c. Code-to-cap index regen advisory (cement 2026-05-28 · Fase A)
+# ─────────────────────────────────────────────────────────────────
+# Re-genera `{brand}/docs/product/capabilities/_code-index.json` cuando
+# archivos de código (.py / .ts / .tsx) son staged. Output gitignored R3 v2.
+#
+# Behavior:
+#   Advisory (never blocks): regenera índice silenciosamente. Si detecta
+#   archivos NUEVOS sin header `# cap:` / `// cap:`, imprime warning
+#   con paths sugeridos.
+#
+# Override:
+#   * env: CODE_INDEX_SKIP=1 git commit ...
+#
+# SSoT: docs/process/capability-protocol.md § Sección 12 v3.2 (Fase A)
+#       .claude/rules/anti-duplication-refining.md
+# ─────────────────────────────────────────────────────────────────
+
+if [ "${CODE_INDEX_SKIP:-0}" != "1" ]; then
+
+  # Detect staged code files (per-brand backend/frontend/src)
+  CODE_STAGED=$(git diff --cached --name-only --diff-filter=ACMR 2>/dev/null \
+    | grep -E '^(vitalia|nicolify|comunify|lupulo|saasora|inmoflow|retailly|fixia|guestly|fitflow)/(backend|frontend)/src/.*\.(py|ts|tsx)$' \
+    || true)
+
+  if [ -n "${CODE_STAGED}" ]; then
+    # Derive brand(s) from staged paths
+    BRANDS_CODE=$(echo "${CODE_STAGED}" | cut -d/ -f1 | sort -u)
+
+    INDEX_SCRIPT="${REPO_ROOT}/scripts/generate_code_to_cap_index.py"
+    if [ -x "${REPO_ROOT}/.venv/bin/python" ]; then
+      VENV_CODE="${REPO_ROOT}/.venv/bin/python"
+    elif [ -x "${REPO_ROOT}/backend/.venv/bin/python" ]; then
+      VENV_CODE="${REPO_ROOT}/backend/.venv/bin/python"
+    else
+      VENV_CODE=""
+    fi
+
+    if [ -n "${VENV_CODE}" ] && [ -f "${INDEX_SCRIPT}" ]; then
+      while IFS= read -r B_CODE; do
+        [ -z "${B_CODE}" ] && continue
+
+        # Regen silently (output gitignored)
+        CODE_OUT=$("${VENV_CODE}" "${INDEX_SCRIPT}" --brand "${B_CODE}" 2>&1 || true)
+
+        # Parse no_header count from output
+        NO_HEADER_COUNT=$(echo "${CODE_OUT}" | grep -oE 'no_header=[0-9]+' | head -1 | sed 's/no_header=//')
+
+        if [ -n "${NO_HEADER_COUNT}" ] && [ "${NO_HEADER_COUNT}" -gt 0 ]; then
+          # Get list of files without header from JSON
+          INDEX_JSON="${REPO_ROOT}/${B_CODE}/docs/product/capabilities/_code-index.json"
+          if [ -f "${INDEX_JSON}" ]; then
+            NO_HEADER_FILES=$("${VENV_CODE}" -c "
+import json
+d = json.load(open('${INDEX_JSON}'))
+# Only show NEWLY staged files without header
+import sys
+staged = set('''${CODE_STAGED}'''.strip().split('\n'))
+new_orphans = [f for f in d.get('no_header', []) if f in staged]
+for f in new_orphans[:5]:
+    print(f'    {f}')
+" 2>/dev/null || true)
+
+            if [ -n "${NO_HEADER_FILES}" ]; then
+              printf "\033[33m"
+              echo ""
+              echo "[5c] Code-index advisory · ${B_CODE} (non-blocking)"
+              echo "  ${NO_HEADER_COUNT} archivos sin header \`# cap:\` / \`// cap:\`:"
+              echo "${NO_HEADER_FILES}"
+              echo ""
+              echo "  Agregá header al archivo (2 líneas) per docs/process/capability-protocol.md § 12:"
+              echo "    Python: # cap: {module}.{slug}"
+              echo "            # story-origin: TBD"
+              echo "    TS/TSX: // cap: {module}.{slug}"
+              echo "            // story-origin: TBD"
+              echo "  Special markers: __orphan__ · __shared__ · __skip__"
+              printf "\033[0m"
+            fi
+          fi
+        fi
+      done <<< "${BRANDS_CODE}"
+    fi
+  fi
+
+fi  # end CODE_INDEX_SKIP guard (section 5c)
+
+# ─────────────────────────────────────────────────────────────────
+# 5d. Bidirectional validator advisory (cement 2026-05-28 · Fase B)
+# ─────────────────────────────────────────────────────────────────
+# Runs `validate_code_cap_bidirectional.py --brand {brand}` cuando archivos
+# de código (.py/.ts/.tsx) O cap YAMLs son staged. Output advisory only.
+#
+# HARD pre-push enforce vive en scripts/git-hooks/pre-push (Section 4d).
+#
+# Behavior:
+#   Advisory (never blocks): regenera _bidirectional-validation.json silente.
+#   Si detecta drift en cross_check_1 (atomics→headers) o cross_check_3
+#   (scenarios e2e_test paths), imprime warning con caps afectados.
+#
+# Override:
+#   * env: BIDIRECTIONAL_SKIP=1 git commit ...
+#
+# SSoT: docs/process/capability-protocol.md § Sección 13 (cement 2026-05-28)
+# ─────────────────────────────────────────────────────────────────
+
+if [ "${BIDIRECTIONAL_SKIP:-0}" != "1" ]; then
+
+  # Trigger: any code file OR cap YAML staged
+  BIDIR_STAGED=$(git diff --cached --name-only --diff-filter=ACMR 2>/dev/null \
+    | grep -E '^(vitalia|nicolify|comunify|lupulo|saasora|inmoflow|retailly|fixia|guestly|fitflow)/(backend|frontend)/src/.*\.(py|ts|tsx)$|^(vitalia|nicolify|comunify|lupulo|saasora|inmoflow|retailly|fixia|guestly|fitflow)/docs/product/capabilities/[^/]+/[^/]+\.yaml$' \
+    || true)
+
+  if [ -n "${BIDIR_STAGED}" ]; then
+    BRANDS_BIDIR=$(echo "${BIDIR_STAGED}" | cut -d/ -f1 | sort -u)
+
+    BIDIR_SCRIPT="${REPO_ROOT}/scripts/validate_code_cap_bidirectional.py"
+    if [ -x "${REPO_ROOT}/.venv/bin/python" ]; then
+      VENV_BIDIR="${REPO_ROOT}/.venv/bin/python"
+    elif [ -x "${REPO_ROOT}/backend/.venv/bin/python" ]; then
+      VENV_BIDIR="${REPO_ROOT}/backend/.venv/bin/python"
+    else
+      VENV_BIDIR=""
+    fi
+
+    if [ -n "${VENV_BIDIR}" ] && [ -f "${BIDIR_SCRIPT}" ]; then
+      while IFS= read -r B_BIDIR; do
+        [ -z "${B_BIDIR}" ] && continue
+
+        BIDIR_OUT=$("${VENV_BIDIR}" "${BIDIR_SCRIPT}" --brand "${B_BIDIR}" 2>&1 || true)
+        BIDIR_VERDICT=$(echo "${BIDIR_OUT}" | grep -oE 'Verdict: \w+' | head -1 | sed 's/Verdict: //')
+
+        if [ "${BIDIR_VERDICT}" = "HARD_FAIL" ] || [ "${BIDIR_VERDICT}" = "SOFT_DRIFT" ]; then
+          printf "\033[33m"
+          echo ""
+          echo "[5d] Bidirectional validator advisory · ${B_BIDIR} · verdict=${BIDIR_VERDICT}"
+          echo "${BIDIR_OUT}" | grep -E "drift=|Drift" | head -5 | sed 's/^/  /'
+          echo ""
+          if [ "${BIDIR_VERDICT}" = "HARD_FAIL" ]; then
+            echo "  ⚠ HARD checks failing (cross_check_1 atomics→headers o cross_check_3 e2e_test)"
+            echo "  Pre-push hook bloqueará push a main/release/* si HARD persiste."
+          fi
+          echo "  Detalle: ${B_BIDIR}/docs/product/capabilities/_bidirectional-validation.json"
+          printf "\033[0m"
+        fi
+      done <<< "${BRANDS_BIDIR}"
+    fi
+  fi
+
+fi  # end BIDIRECTIONAL_SKIP guard (section 5d)
+
+# ─────────────────────────────────────────────────────────────────
 # 6. R33 BACKLOG.yaml + BACKLOG.md freshness (origen 2026-05-05) — MULTIBRAND
 # (refactor 2026-05-15 post multibrand reorg)
 # Gate: FULL only (wip/* branches skip — backlog regen during WIP commits
@@ -1374,8 +1653,9 @@ fi
 #
 # Verifica que las capacidades modificadas en este commit tengan:
 #   * change_log:  field presente (post Phase 3 migration)
-#   * cada atomic.label en atomics[] aparece en al menos un
-#     change_log[].atomics_added (forward-reference consistency)
+#
+# (atomics killed 2026-05-28 — ver docs/process/lifecycle.md. El check de
+#  atomics[].label ↔ change_log[].atomics_added fue removido.)
 #
 # Override:
 #   * frontmatter del cap YAML: `# cap-ledger-skip: razón` (cualquier línea)
@@ -1456,34 +1736,8 @@ errors = []
 if "change_log" not in data:
     errors.append("MISSING_CHANGE_LOG: capability lacks change_log field (post-Phase-3 schema v2 cement 2026-05-27)")
 
-# Check 2: each atomic.label must appear in some change_log[].atomics_added
-atomics = data.get("atomics") or []
-change_log = data.get("change_log") or []
-all_added = set()
-if isinstance(change_log, list):
-    for entry in change_log:
-        if isinstance(entry, dict):
-            added = entry.get("atomics_added") or []
-            if isinstance(added, list):
-                for a in added:
-                    if isinstance(a, str):
-                        all_added.add(a)
-                    elif isinstance(a, dict):
-                        label = a.get("label") or a.get("id")
-                        if label:
-                            all_added.add(label)
-if isinstance(atomics, list):
-    for idx, atomic in enumerate(atomics):
-        if not isinstance(atomic, dict):
-            continue
-        label = atomic.get("label") or atomic.get("id")
-        if not label:
-            continue
-        if label not in all_added:
-            errors.append(
-                f"ATOMIC_NOT_IN_CHANGELOG: atomics[{idx}].label={label!r} "
-                f"not referenced by any change_log[].atomics_added"
-            )
+# (atomics killed 2026-05-28 — atomics[].label ↔ change_log[].atomics_added
+#  consistency check removed; ver docs/process/lifecycle.md)
 
 if errors:
     print("FAIL")
@@ -1508,11 +1762,10 @@ $RESULT
 
 Schema v2 requires:
   * change_log: field present (Phase 3 migration script ya lo agregó)
-  * cada atomics[].label debe aparecer en algún change_log[].atomics_added
 
 Fix:
-  * Editar $cap_file y agregar el atomic.label al change_log[].atomics_added
-    de la entrada de story que lo introdujo
+  * Editar $cap_file y agregar el field change_log: con la entrada de la
+    story que introdujo la capability
   * Si es advisory legítimo: agregar al cap YAML una línea:
         # cap-ledger-skip: razón aquí
   * Emergency override: CAP_LEDGER_SKIP=1 git commit ...
@@ -1588,8 +1841,10 @@ fi
 # SSoT: .claude/rules/brand-docs-schema.md § R4
 #
 # Si el commit toca {brand}/docs/product/stories/{id}/checkpoint.md y el state
-# está en {refining, refined, ready, developing, developed, reviewing}, debe
-# existir chris-input.md en el mismo directorio.
+# está en {idea, refining, refined, ready, developing, developed, reviewing},
+# debe existir chris-input.md en el mismo directorio. chris-input.md nace con
+# la idea (R4 v3 cement 2026-05-28) — es el buzón de inputs de Chris desde el
+# día cero.
 #
 # Override:
 #   * frontmatter del checkpoint.md: `# chris-input-skip: razón` (advisory log)
@@ -1619,7 +1874,7 @@ if [ "${CHRIS_INPUT_SKIP:-0}" != "1" ]; then
         | tr -d '"' | tr -d "'" | xargs)
 
       case "$STATE_RAW" in
-        refining|refined|ready|developing|developed|reviewing)
+        idea|refining|refined|ready|developing|developed|reviewing)
           STORY_DIR=$(dirname "$cp_file")
           CHRIS_INPUT="$STORY_DIR/chris-input.md"
           if [ ! -f "$CHRIS_INPUT" ]; then
@@ -1654,10 +1909,96 @@ EOF
           fi
           ;;
         *)
-          # states {idea, done, parked, dropped} — no chris-input.md required
+          # states {done, parked, dropped} — no chris-input.md required
+          # (idea ahora SÍ lo requiere — nace con la idea, R4 v3 cement 2026-05-28)
           ;;
       esac
     done <<< "$STAGED_CHECKPOINTS"
+  fi
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Section 17 — checkpoint.md frontmatter: NO duplicate top-level keys (cement 2026-05-28)
+# ─────────────────────────────────────────────────────────────────────────────
+# Causa raíz del bug "la story no aparece en el board": una key top-level repetida
+# en el frontmatter (ej. `phase:` dos veces) rompe el parse YAML → el cockpit no
+# puede leer el checkpoint (cae a state=idea o lo descarta).
+#
+# Disciplina (SSoT docs/process/checkpoint-protocol.md § Frontmatter edit discipline):
+# al editar checkpoint.md se ACTUALIZA la key existente en la cabecera, NUNCA se
+# appendea una nueva. Este gate bloquea el commit si detecta keys duplicadas.
+# Override emergencia: CHECKPOINT_DUPKEY_SKIP=1 git commit ...
+# ─────────────────────────────────────────────────────────────────────────────
+if [ "${CHECKPOINT_DUPKEY_SKIP:-0}" != "1" ]; then
+  DUP_CKPTS=$(git diff --cached --name-only --diff-filter=AM 2>/dev/null \
+    | grep -E '/checkpoint\.md$' || true)
+  if [ -n "$DUP_CKPTS" ]; then
+    DUPKEY_FOUND=0
+    while IFS= read -r cp_file; do
+      [[ -z "$cp_file" || ! -f "$cp_file" ]] && continue
+      DUPS=$(awk '
+        /^---[[:space:]]*$/ { fm++; next }
+        fm==1 && /^[A-Za-z_][A-Za-z0-9_]*:/ {
+          k=$0; sub(/:.*/, "", k)
+          if (seen[k]++) print k
+        }
+        fm>=2 { exit }
+      ' "$cp_file" | sort -u)
+      if [ -n "$DUPS" ]; then
+        DUPKEY_FOUND=1
+        printf "\033[31m"
+        cat <<EOF
+
+─────────────────────────────────────────────────────────────
+CHECKPOINT FRONTMATTER · KEY DUPLICADA (cement 2026-05-28)
+
+File: $cp_file
+Keys duplicadas: $(echo "$DUPS" | tr '\n' ' ')
+
+Una key top-level repetida rompe el parse YAML → el cockpit no puede
+leer el checkpoint (cae a state=idea o lo descarta del board).
+
+FIX: actualiza la key EXISTENTE en la cabecera, no agregues una nueva.
+     (caso típico: 'outcome:'/'phase:' legacy viejos + el nuevo encima)
+
+Override emergencia: CHECKPOINT_DUPKEY_SKIP=1 git commit ...
+SSoT: docs/process/checkpoint-protocol.md § Frontmatter edit discipline
+─────────────────────────────────────────────────────────────
+EOF
+        printf "\033[0m"
+      fi
+    done <<< "$DUP_CKPTS"
+    [ "$DUPKEY_FOUND" = "1" ] && exit 1
+  fi
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 13. Machinery consistency (anti-drift doctrina↔templates↔agentes — 2026-05-28)
+# ─────────────────────────────────────────────────────────────────────────────
+# SSoT: scripts/validate_machinery_consistency.py + docs/process/audits/2026-05-28-*.
+# Corre (ambos gate levels — barato, sin red) cuando el commit toca la maquinaria
+# agéntica (.claude/{rules,skills,agents}/ o docs/specs/templates/). Evita el
+# bug-class #1 de la auditoría 2026-05-28: drift silencioso entre la doctrina
+# (rules/skills) y los templates/agentes que la materializan.
+MACHINERY_STAGED=$(git diff --cached --name-only --diff-filter=ACM \
+  | grep -E '^\.claude/(rules|skills|agents)/|^docs/specs/templates/' || true)
+if [ -n "${MACHINERY_STAGED}" ] && [ "${MACHINERY_CHECK_SKIP:-0}" != "1" ]; then
+  REPO_ROOT_MC=$(git rev-parse --show-toplevel)
+  if [ -f "${REPO_ROOT_MC}/scripts/validate_machinery_consistency.py" ]; then
+    echo "→ machinery-check (anti-drift, Section 13)…"
+    if ! python3 "${REPO_ROOT_MC}/scripts/validate_machinery_consistency.py"; then
+      printf "\033[31m"
+      cat <<'EOF'
+❌ MACHINERY DRIFT detectado (Section 13)
+La doctrina (rules/skills) y los templates/agentes que la materializan divergieron.
+Corré: make machinery-check  (o python3 scripts/validate_machinery_consistency.py)
+y corregí los CHECK en rojo antes de commitear.
+Override emergencia: MACHINERY_CHECK_SKIP=1 git commit ...
+─────────────────────────────────────────────────────────────
+EOF
+      printf "\033[0m"
+      exit 1
+    fi
   fi
 fi
 

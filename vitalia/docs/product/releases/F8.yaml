@@ -17,9 +17,6 @@ created_by: scripts/migrate_to_release_schema.py
 stories:
   - vitalia-pricing-decision
 
-# Legacy outcome mapping (transition phase)
-maps_legacy_outcome: null
-maps_legacy_phase: null
 ---
 
 # F8 · Tail · marketing extension + finanzas + low prio

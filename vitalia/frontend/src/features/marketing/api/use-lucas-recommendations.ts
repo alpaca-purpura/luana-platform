@@ -1,3 +1,5 @@
+// cap: public_landing.public-clinic-landing
+// story-origin: TBD
 /**
  * useLucasRecommendations — fetches open recommendations for a tenant+clinic
  * downstream-regression-na: brand-local FE hook; no cross-brand consumers

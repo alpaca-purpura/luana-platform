@@ -1,3 +1,5 @@
+// cap: shell-organism.shell-vitalia
+// story-origin: TBD
 /**
  * Plan tier types — mirrors PlanTierItem + PlanTierListResponse DTOs.
  * snake_case preserved to match BE JSON field names.

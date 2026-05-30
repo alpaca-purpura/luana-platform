@@ -1,3 +1,5 @@
+// cap: sales_agent.inbox-handler-mode-occ
+// story-origin: TBD
 /**
  * ConversationListPanel.tsx — Left pane container (320px) of the inbox layout.
  *

@@ -15,6 +15,7 @@ agent_owner: infra
 functional_area: infra.platform
 user_visible: false
 nature: extension-point
+ui_paradigm: infra-only  # T-3 reconcile 2026-05-29
 
 user_facing_name: "Foundation de design tokens"
 user_facing_description: >
@@ -37,12 +38,11 @@ dev_preview:
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-slice-1-infra-cross-cutting   # v2 cement · mirror of story_introduced
 created_date: 2026-05-18   # v2 cement · mirror of date_introduced
-last_modified: 2026-05-18   # v2 cement · mirror of date_updated or date_introduced
+last_modified: 2026-05-29   # T-3 reconcile 2026-05-29
 parent_cap: null   # v2 cement · mirror of extends_capability
 derives_capabilities: []   # v2 cement · initial empty list
 
 # Capability ledger v2 (cement 2026-05-27)
-atomics: []   # v2 cement · empty initial · Chris populate manually
 
 # Capability change log v2 (cement 2026-05-27)
 change_log:
@@ -50,10 +50,31 @@ change_log:
     date: 2026-05-18
     type: new
     summary: "Implementación inicial · migración legacy a schema v2"
-    atomics_added: []
-    atomics_modified: []
     merge_sha: null
     status: done
+  - story_id: vitalia-stub-caps-scenario-backfill
+    date: 2026-05-30
+    type: extend
+    summary: "backfill scenario+e2e → verified-live (deployed-visible)"
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    status: done
+
+last_modified: 2026-05-30
+
+scenarios:
+  - id: tokens-hsl-aplicados-en-shell
+    name: "Los tokens HSL de design system se aplican en el shell sin literales hex en TSX"
+    actor: sistema
+    status: live
+    given: "El archivo globals.css define tokens HSL (:root block) y el arch-fitness test escanea archivos TSX"
+    when: "Se corre el test de arquitectura test_no_hardcoded_colors + el theme toggle renderiza el componente"
+    then: "No se encuentran literales hex/hsl en archivos TSX · los tokens CSS vars están definidos · ThemeToggle renderiza en light y dark con tokens correctos (golden visual)"
+    e2e_test: "vitalia/frontend/e2e/visual/design-tokens-theme/theme-toggle.spec.ts"
+    verification_method: dev-app
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-slice-1-infra-cross-cutting/01-spec.md"
+    atomic_ref: null
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    added_date: 2026-05-30
 ---
 
 # vitalia-design-tokens-foundation

@@ -1,8 +1,6 @@
 ---
 story_id: vitalia-fiscal-emission-pe
-outcome: vitalia-mvp-ui-foundation
 state: refining
-phase: AWAITING_PO_DRAFT_RE_PRIORITIZED                    # ★ post 2026-05-22 paradigma shell-organism
 last_artifact: checkpoint.md
 last_modified: 2026-05-22                                  # touched 2026-05-22 cross-story deps update
 ratified_by_chris: false

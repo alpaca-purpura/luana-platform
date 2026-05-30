@@ -1,3 +1,5 @@
+# cap: scheduling.valeria-agenda
+# story-origin: vitalia-fase2-s1-TBD
 """Agenda API DTOs — PHI-masked response models for Valeria Agenda.
 
 All DTOs carry response_model= on their corresponding routes (arch test enforces).

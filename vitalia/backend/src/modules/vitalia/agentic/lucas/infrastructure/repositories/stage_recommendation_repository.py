@@ -1,3 +1,5 @@
+# cap: agentic.lucas-recommendation-tool
+# story-origin: TBD
 """Lucas infrastructure — StageRecommendationRepository.
 
 SQLAlchemy 2.0 async repository for LucasStageRecommendationModel.

@@ -1,3 +1,5 @@
+# cap: copilot.inbox-tools-extensions
+# story-origin: TBD
 """SqlAlchemyOnboardingProgressRepository — SQLA 2.0 implementation.
 
 Implements OnboardingProgressRepository ABC using SQLAlchemy 2.0 async queries.

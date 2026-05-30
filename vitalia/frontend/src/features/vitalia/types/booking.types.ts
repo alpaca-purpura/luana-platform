@@ -1,3 +1,5 @@
+// cap: shell-organism.shell-vitalia
+// story-origin: TBD
 /**
  * Booking types — mirrors Pydantic booking_dtos.py Response DTOs.
  * snake_case preserved to match BE JSON field names.

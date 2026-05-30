@@ -1,3 +1,5 @@
+// cap: shell-organism.shell-vitalia
+// story-origin: vitalia-fase1-s10-TBD
 /**
  * SubTabHeader — molécula h2 + descripción + CTA right-aligned.
  * F1-S10 vitalia-fase1-empty-states — T-1

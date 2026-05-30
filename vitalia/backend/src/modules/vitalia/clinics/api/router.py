@@ -1,3 +1,5 @@
+# cap: clinics.clinics-brand-extension
+# story-origin: TBD
 """Vitalia Clinics API router — FastAPI thin layer.
 
 Routes:

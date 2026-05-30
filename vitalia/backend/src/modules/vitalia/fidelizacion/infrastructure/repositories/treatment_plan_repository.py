@@ -1,3 +1,5 @@
+# cap: treatments.treatment-followup-workflow
+# story-origin: TBD
 """Repositorio de planes de tratamiento — fidelización vitalia.
 
 Hereda CompoundScopeRepositoryBase (engine) con scope_field="clinic_id".

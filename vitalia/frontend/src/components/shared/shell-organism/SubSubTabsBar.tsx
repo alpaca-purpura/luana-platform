@@ -1,3 +1,5 @@
+// cap: shell-organism.shell-vitalia
+// story-origin: vitalia-fase2-s7-TBD
 "use client";
 /**
  * SubSubTabsBar.tsx — Shell-organism N3-static sub-sub-tabs navigation bar.

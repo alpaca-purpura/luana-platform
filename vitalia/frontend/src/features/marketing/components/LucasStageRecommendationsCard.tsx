@@ -1,3 +1,5 @@
+// cap: public_landing.public-clinic-landing
+// story-origin: TBD
 /**
  * LucasStageRecommendationsCard — top 3 priority recommendations inline, "Ver todas" expand
  * Click card → LucasRecommendationDetailModal (which hosts Aprobar / Rechazar)

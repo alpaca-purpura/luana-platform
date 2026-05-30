@@ -1,3 +1,5 @@
+# cap: patients.nps-tracking
+# story-origin: TBD
 """NPSService — registro y resumen de encuestas NPS.
 
 submit: Almacena respuesta NPS del paciente con PHI cifrado (comment pgcrypto).

@@ -1,3 +1,5 @@
+# cap: connections.oauth-meta-google-ads
+# story-origin: TBD
 """Vitalia conversation initiation registry (proactive outbound dispatch)."""
 
 from .registry import (

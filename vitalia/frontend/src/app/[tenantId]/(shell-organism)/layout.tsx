@@ -1,3 +1,5 @@
+// cap: shell-organism.shell-vitalia
+// story-origin: vitalia-fase1-s4-TBD
 /**
  * Shell Organism Route Group Layout — Server Component.
  * F1-S9 vitalia-fase1-routing-shell — T-3

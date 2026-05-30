@@ -1,11 +1,15 @@
-# Capability Protocol — Story ↔ Capability Doctrine (v3 cement 2026-05-27)
+# Capability Protocol — Story ↔ Capability Doctrine (v4 cement 2026-05-28)
 
+**v4 (cement 2026-05-28):** atomics MUERTO, scenario es la unidad atómica. outcome MUERTO. Ver `docs/process/lifecycle.md`.
+
+**Cement-date v4:** 2026-05-28 (colapso del modelo: atomics/outcome/phase/module-alias eliminados · scenario es la unidad atómica de comportamiento).
+**Cement-date v3.2:** 2026-05-28 (extiende v3.1 misma fecha · 4 bloques nuevos aditivos + header convention código).
 **Cement-date v3:** 2026-05-27 (extiende v2 misma fecha · Sec 7-9 v3 son aditivas).
-**Origen v2:** plan `/home/chalreme/.claude/plans/ok-lo-apruebo-realiza-cheeky-harbor.md` § Phase 1.1.A.
 **Origen v3:** sesión `/pm-vitalia` 2026-05-27 — ADR-vitalia-005 (4 dimensiones + dev_preview + areas/).
-**SSoT capability YAML schema v3.**
+**Origen v3.2:** sesión bidirectional code↔cap mapping 2026-05-28 — Chris ratificó P1-P4 (scenarios híbrido + Copy gherkin + comentario header + validator cross-check).
+**SSoT capability YAML schema v4.**
 
-> Doctrina cementada: **Story** es transitoria (idea→done→archive), **Capability** es permanente (append-only ledger). Cada story declara `cap_target` + `cap_change_type` para mantener trazabilidad qué tocó qué. **v3 añade:** cada cap declara 4 dimensiones (`tech_module` + `agent_owner` + `functional_area` + `user_visible`) + bloque `dev_preview` para que el producto sea navegable en lenguaje humano.
+> Doctrina cementada: **Story** es transitoria (idea→done→archive), **Capability** es permanente (append-only ledger). Cada story declara `cap_target` + `cap_change_type` para mantener trazabilidad qué tocó qué. Cada cap declara 4 dimensiones (`tech_module` + `agent_owner` + `functional_area` + `user_visible`) + bloque `dev_preview` para que el producto sea navegable en lenguaje humano. La **unidad atómica de comportamiento** es el `scenario` (Gherkin Given/When/Then), no el atomic.
 
 ---
 
@@ -24,15 +28,21 @@
 
 ---
 
-## Sección 2 · Schema cap YAML v2
+## Sección 2 · Schema cap YAML v4
 
 ```yaml
 ---
 capability_id: vitalia.scheduling.valeria-agenda
-module: scheduling
+tech_module: scheduling                   # REQUIRED · kebab path canónico (DDD backend · FSD frontend)
 slug: valeria-agenda
 status: live                              # live | beta | deprecated | sunset
 license: brand-local                      # brand-local | core-shared
+
+# Dimensiones v3 (4 campos · cement 2026-05-27 · REQUIRED todos)
+agent_owner: valeria                      # lisa | valeria | adrian | lucas | camila | config | infra
+functional_area: valeria.agenda           # <agent>.<area-kebab>
+user_visible: true                        # true | false
+nature: feature                           # feature | scaffold | extension-point
 
 # Ledger fields (v2 cement 2026-05-27)
 created_in_story: vitalia-fase2-valeria-agenda
@@ -45,28 +55,30 @@ package_path: vitalia/backend/src/modules/vitalia/scheduling/
 architecture_pattern: ADR-vitalia-004     # ADR slug si aplica
 hipaa_lite_overlay: true                  # opcional (vitalia-specific)
 
-# Capability lineage (reuso de extends_capability existente · renombrado conceptualmente como parent_cap)
+# Capability lineage
 parent_cap: null                          # null si root · slug si derive
 derives_capabilities: []                  # caps hijas spawned via derive
 
-# Atomics como objects (v2 — antes era array plano de strings)
-atomics:
-  - label: "Vista calendario semanal"
+# Scenarios — unidad atómica de comportamiento (ver Sección 11 para schema completo)
+scenarios:
+  - id: doctor-ve-agenda-semanal
+    name: "Doctor abre su agenda de la semana"
+    actor: doctor
+    status: live
+    given: "Doctor autenticado con clinic_scope=clinic-A"
+    when: "Navega a /valeria/agenda"
+    then: "Ve calendario semana actual con turnos coloreados por estado pago"
+    e2e_test: "vitalia/frontend/e2e/specs/valeria-agenda-list.spec.ts"
     added_in_story: vitalia-fase2-valeria-agenda
     added_date: 2026-05-27
-  - label: "Drag-to-reschedule"
-    added_in_story: vitalia-fase2-valeria-agenda
-    added_date: 2026-05-27
-  # futuro: cuando llegue extend, agrega aquí más con added_in_story distinto
 
-# Append-only ledger (v2)
+# Append-only ledger
 change_log:
   - story_id: vitalia-fase2-valeria-agenda
     date: 2026-05-27
     type: new                              # new | fix | extend | derive
     summary: "Implementación inicial · vista calendario + drag-to-reschedule + advisory lock"
-    atomics_added: ["Vista calendario semanal", "Drag-to-reschedule"]
-    atomics_modified: []
+    scenarios_added: ["doctor-ve-agenda-semanal"]
     merge_sha: 4562140c
     status: done                           # in-progress | done
 ---
@@ -82,9 +94,9 @@ Cada story declara qué tipo de cambio aplica al cap target. Es enforce-able via
 
 | Tipo | Cuándo aplica | Efecto en cap YAML |
 |---|---|---|
-| `new` | Story crea un cap que NO existía antes | Crea el YAML + `change_log[0]` + atomics iniciales |
-| `fix` | Story arregla bug/regresión SIN agregar funcionalidad | Append `change_log` entry (atomics NO cambia) |
-| `extend` | Story agrega capacidades NUEVAS al mismo cap | Append `change_log` + append nuevos atomics |
+| `new` | Story crea un cap que NO existía antes | Crea el YAML + `change_log[0]` + scenarios iniciales |
+| `fix` | Story arregla bug/regresión SIN agregar funcionalidad | Append `change_log` entry (scenarios NO cambian) |
+| `extend` | Story agrega capacidades NUEVAS al mismo cap | Append `change_log` + append nuevos scenarios |
 | `derive` | Story crea cap HIJO basado en uno existente | Crea YAML hijo con `parent_cap: {origen}` + `change_log[0]` + actualiza `derives_capabilities[]` del padre |
 
 ### Ejemplos:
@@ -102,7 +114,7 @@ cap_target: shell.layout-5050
 cap_change_type: fix
 ```
 
-**extend** — F2-S7v2 `lisa-marca v2` agrega atomics adicionales a `lisa-marca`:
+**extend** — F2-S7v2 `lisa-marca v2` agrega scenarios adicionales a `lisa-marca`:
 ```yaml
 cap_target: lisa.marca
 cap_change_type: extend
@@ -119,77 +131,73 @@ parent_story: vitalia-fase2-valeria-agenda
 
 ---
 
-## Sección 4 · Atomics como objects
-
-**Antes (v1):**
-```yaml
-atomics: ["Vista calendario semanal", "Drag-to-reschedule"]
-```
-
-**Después (v2):**
-```yaml
-atomics:
-  - label: "Vista calendario semanal"
-    added_in_story: vitalia-fase2-valeria-agenda
-    added_date: 2026-05-27
-  - label: "Drag-to-reschedule"
-    added_in_story: vitalia-fase2-valeria-agenda
-    added_date: 2026-05-27
-```
-
-**Por qué:** queremos saber cuál story metió cada atomic. Si un cap acumula 12 atomics tras 3 stories de `extend`, el ledger nos dice cuál atomic vino de cuál story. Trazabilidad temporal completa.
-
-**Migración:** `scripts/migrate_capability_ledger.py` (Phase 4a) convierte arrays planos → arrays de objects usando `story_introduced` + `date_introduced` del frontmatter v1.
-
----
-
 ## Sección 5 · Fase F MERGE — ledger logic en `/pm-{brand}`
 
 Cuando una story pasa `reviewing → done` (Fase F MERGE), `/pm-{brand}` aplica logic del `cap_change_type` al YAML target:
 
 ### Rama A — `cap_change_type: new`
-1. Crear `{brand}/docs/product/capabilities/{module}/{slug}.yaml` con schema v2 completo
-2. `change_log[0]` con `type: new` + `summary` + `atomics_added` listando atomics iniciales
+1. Crear `{brand}/docs/product/capabilities/{module}/{slug}.yaml` con schema v4 completo
+2. `change_log[0]` con `type: new` + `summary` + `scenarios_added` listando scenarios iniciales
 3. `created_in_story` = story.id
 4. `created_date` = today
 5. Append commit body: "cap nueva: {slug}"
 
 ### Rama B — `cap_change_type: fix`
-1. Append `change_log` entry con `type: fix`, atomics_added: [], atomics_modified: []
-2. NO modifica `atomics[]` (eso solo cambia con extend)
+1. Append `change_log` entry con `type: fix`, `scenarios_added: []`
+2. NO modifica `scenarios[]` (eso solo cambia con extend)
 3. Update `last_modified` = today
 
 ### Rama C — `cap_change_type: extend`
-1. Append `change_log` entry con `type: extend` + lista de atomics nuevos
-2. Append nuevos atomics al array `atomics[]` con `added_in_story` apuntando a esta story
+1. Append `change_log` entry con `type: extend` + lista de scenarios nuevos
+2. Append nuevos scenarios al array `scenarios[]` con `added_in_story` apuntando a esta story
 3. Update `last_modified` = today
 
 ### Rama D — `cap_change_type: derive`
-1. Crear cap YAML hijo con schema v2 + `parent_cap: {origen_slug}`
+1. Crear cap YAML hijo con schema v4 + `parent_cap: {origen_slug}`
 2. `change_log[0]` con `type: derive` + `summary` referenciando el cap padre
 3. Update cap padre: append `derives_capabilities: [hijo_slug]`
 4. Update padre `last_modified` (modificación de su array `derives_capabilities`)
 
-**Order matters:** en `derive`, primero crear cap hijo (con parent_cap declarado), luego actualizar padre. Atomic write para evitar estado inconsistente.
+**Order matters:** en `derive`, primero crear cap hijo (con parent_cap declarado), luego actualizar padre. Escritura atómica para evitar estado inconsistente.
+
+### Enforce reglas Fase F.3 (cement 2026-05-28 · cap verification v4)
+
+Antes de cerrar el merge commit, `/pm-{brand}` MUST verificar que el `change_log` entry de esta story cumpla:
+
+| `cap_change_type` | `change_log[ultimo].scenarios_added.length` | Otros checks |
+|---|---|---|
+| `new` | `>= 1` **REQUIRED** (si `user_visible: true`) | `scenarios[]` overall debe tener ≥1 scenario con shape válido (campos REQUIRED presentes) |
+| `extend` | `>= 1` **REQUIRED** | `scenarios[]` debe haber crecido respecto al commit anterior (diff positivo) |
+| `fix` | `>= 0` (puede ser `[]`) | NO requiere scenario nuevo · solo append `change_log` con fix entry |
+| `derive` | `>= 1` **REQUIRED** en cap hijo | `parent_cap.derives_capabilities[]` debe listar el hijo nuevo |
+
+**Violación detectada** → REFUSE cerrar Fase F.3. Escalar a Chris con message: "cap_change_type={type} declarado pero scenarios_added={n} en change_log · mínimo requerido: 1".
+
+**Enforce point:** `scripts/reconcile_capabilities.py --validate-ledger` detecta violaciones post-merge. Pre-commit hook:
+- HARD block en `main/release/*` si commit toca checkpoint con `cap_change_type ∈ {new, extend}` y NO toca cap YAML correspondiente.
+- WARN advisory en `wip/*` (no bloquea, muestra mensaje).
+
+**Definición de DONE (cement 2026-05-28):** una capability **no puede ser `live`** sin **≥1 scenario + e2e_test pasando**. `live` con scenarios vacíos = inválido. Esto mata el "verde por vacío".
 
 ---
 
 ## Sección 6 · Anti-patterns prohibidos
 
-- ❌ Editar `atomics[]` manualmente desde un commit que no sea Fase F MERGE de la story que los introduce
+- ❌ Editar `scenarios[]` manualmente desde un commit que no sea Fase F MERGE de la story que los introduce
 - ❌ Story sin `cap_target` declarado pasa `refining → refined` (skill /architect debe rechazar)
 - ❌ Cross-brand mirror cap: dos brands replican el mismo cap → debe vivir en `core/luana-core-*/` (lift gate `/pm-luana`)
 - ❌ `change_log[]` modificado (no append) — viola append-only ledger
-- ❌ Atomic con `added_in_story` que NO existe en `change_log[]` → inconsistencia (pre-commit hook bloquea)
+- ❌ Scenario con `added_in_story` que NO existe en `change_log[]` → inconsistencia (pre-commit hook bloquea)
 - ❌ Cap nuevo con `parent_cap` declarado pero padre NO tiene este cap en `derives_capabilities[]` → inconsistencia
 - ❌ `cap_change_type: extend` con archivos producidos que crean cap nuevo (incoherencia spec/code)
-- ❌ Borrar atomic existente: NUNCA (deprecation cementada → marca `deprecated_in_story` + sigue en array)
-- ❌ Cap YAML sin `agent_owner` o sin `functional_area` declarado (v3 cement · pre-commit hook bloquea)
-- ❌ Cap `user_visible: true` sin bloque `dev_preview` (v3 cement · pre-commit hook bloquea)
-- ❌ `agent_owner:` con valor fuera del set cerrado vitalia `{lisa, valeria, adrian, lucas, camila, config, infra}` (v3 cement)
+- ❌ Borrar scenario existente: NUNCA (deprecation cementada → marca `status: deprecated` + sigue en array)
+- ❌ Cap YAML sin `agent_owner` o sin `functional_area` declarado (cement · pre-commit hook bloquea)
+- ❌ Cap `user_visible: true` sin bloque `dev_preview` (cement · pre-commit hook bloquea)
+- ❌ `agent_owner:` con valor fuera del set cerrado vitalia `{lisa, valeria, adrian, lucas, camila, config, infra}` (cement)
 - ❌ `functional_area:` sin pattern `<agent>.<slug-kebab>` (e.g. `valeria_agenda` con underscore → debe ser `valeria.agenda`)
 - ❌ Crear cap nuevo cuando `functional_area` existente la cubre — refining favorece `extend` over `new` (rule anti-duplication-refining)
 - ❌ Renombrar `tech_module:` post-merge (path canónico inmutable · usar `superseded_by:` si hay refactor real)
+- ❌ Capability `live` con `scenarios: []` (verde por vacío · inválido)
 
 ---
 
@@ -197,7 +205,7 @@ Cuando una story pasa `reviewing → done` (Fase F MERGE), `/pm-{brand}` aplica 
 
 > Origen: ADR-vitalia-005. Acordado con Chris en sesión `/pm-vitalia` 2026-05-27.
 
-El schema v2 introdujo `change_log[]` + atomics objects. El schema v3 NO modifica esos campos — los preserva — pero **agrega 4 dimensiones de clasificación** que el cockpit usa para agrupar caps en lenguaje humano (vs el bucket "Otros módulos" actual).
+Todo cap declara `change_log[]` + scenarios + **4 dimensiones de clasificación** que el cockpit usa para agrupar caps en lenguaje humano (vs el bucket "Otros módulos" actual).
 
 ### Las 4 dimensiones
 
@@ -224,9 +232,11 @@ El schema v2 introdujo `change_log[]` + atomics objects. El schema v3 NO modific
 
 Otras brands declaran su propio mapeo `agent_owner` en su ADR-brand-XXX (lift propuesto via `/pm-luana` post-cement vitalia).
 
-### Backward compatibility
+### Zona del mapa (5ª dimensión DERIVADA — cement 2026-05-30)
 
-El campo `module:` v2 se conserva como **alias de `tech_module:`** durante 1 release. Pre-commit hook acepta ambos (warning si `module:` solo, error si ninguno). Post-deprecation (2026-Q3) solo `tech_module:` válido.
+La caja (`agent_owner`) pertenece a una de **3 zonas** del mapa: **Agentes** (valor user-facing por trabajador) · **Plataforma** (transversal user-facing: Acceso/Onboarding/Configuración) · **Infraestructura** (no-funcional). La **zona NO se escribe a mano** por cap — se **deriva** del registro `{brand}/docs/architecture/SYSTEM-MAP.yaml` (`zones`). `user_visible` se alinea con la zona (Agentes/Plataforma → `true` · Infraestructura → `false`).
+
+El **árbol de decisión** "¿en qué caja/zona aterriza esta cap?" — aplicado **desde la idea** por `/pm-{brand}`, `/po-ux`, `/po`, `/ux-agentico` — vive en `.claude/rules/paradigm-arquitectura.md`. Doctrina (3 planos + invariantes): `docs/architecture/luana-platform/PARADIGM.md` (+ `ADR-010`).
 
 ---
 
@@ -329,40 +339,246 @@ dev_preview:
 
 ---
 
-## Sección 10 · Migración stories legacy → schema v2
+## Sección 11 · Schema v3.2 — bloques nuevos (cement 2026-05-28)
 
-Para cada cap YAML actual sin `change_log[]`:
+> Origen: sesión bidirectional code↔cap mapping 2026-05-28. Chris ratificó P1-P4 (scenarios híbrido + Copy gherkin + comentario header + validator cross-check). Los bloques v3.2 son **estricto aditivos** — no modifican `identity`, `4 dimensions`, `dev_preview`, `scenarios`, ni `ledger`.
 
-1. Leer `story_introduced` + `date_introduced` del frontmatter v1
-2. Inicializar `change_log[0]`:
-   ```yaml
-   change_log:
-     - story_id: {story_introduced}
-       date: {date_introduced}
-       type: new                  # default · migración legacy
-       summary: "Implementación inicial · migración legacy"
-       atomics_added: [todos los atomics existentes en v1]
-       atomics_modified: []
-       merge_sha: null            # no recuperable retroactivamente
-       status: done
-   ```
-3. Convertir `atomics[]` (array string → array object): cada item gana `added_in_story: {story_introduced}` + `added_date: {date_introduced}`
-4. Si `extends_capability:` poblado → `parent_cap` (alias, mantener ambos por compat)
-5. `created_in_story` = `story_introduced`
-6. `created_date` = `date_introduced`
-7. `last_modified` = `date_updated` si existe, else `date_introduced`
+### Propósito v3.2
 
-Script: `scripts/migrate_capability_ledger.py --brand {b} [--dry-run]`. Idempotente.
+Que el cockpit Luana sea **la fuente verificable y narrada** de qué hace realmente el sistema:
+1. **`access`** — extiende `dev_preview` con roles + multi-entry-point. Validator cross-checks contra `@require_phi_access` decorators del código.
+2. **`scenarios`** — captura BDD user-facing (Given/When/Then) como SSoT permanente. Reemplaza navegar archive 01-spec.md.
+3. **`business_rules`** — invariantes + HIPAA + retention + business logic explícitos.
+4. **`related_capabilities`** — grafo dependencias (depends_on/enables/similar/obsoletes).
 
-**Casos edge:**
-- Cap sin atomics → `atomics: []` + `change_log[0].atomics_added: []` + warning para Chris ratify caso por caso
-- Cap con `extends_capability:` poblado pero el padre no existe → marca como `parent_cap: {orphan-slug}` + WARN
-- Cap con timestamps inconsistentes → usar `date_introduced` siempre como `created_date`
+### Reglas obligatoriedad v3.2
+
+- Bloques v3.2 son **opcionales** en v3.2 (compat con v3.1 caps existentes).
+- Para caps `user_visible: true`, los bloques `access` + `scenarios` + `business_rules` se vuelven **REQUIRED** al merge Fase F.3 cuando `cap_change_type ∈ {new, extend}` (cement 2026-Q3).
+- `related_capabilities` siempre opcional.
+- v3.1 caps existentes migran gradualmente cuando se tocan via stories.
+
+### Bloque 1 — `access` (extiende `dev_preview`)
+
+```yaml
+access:
+  entry_points:                          # 1+ rutas para acceder al cap
+    - path: "/valeria/agenda"             # REQUIRED · Next.js route O backend path
+      navigation: "Login → ribbon Valeria → sub-tab Agenda"  # REQUIRED · Spanish neutro
+      requires_role: [doctor, admin_clinic, nurse]  # REQUIRED si HIPAA · []  si público
+      requires_clinic_scope: true         # OPTIONAL · default false · true = dual filter HIPAA
+      entry_type: ui                      # OPTIONAL · ui | api | webhook | event | cli · default ui
+  forbidden_roles: [marketing, patient]   # OPTIONAL · roles explícitamente denegados (audit)
+  authentication: required                # REQUIRED · required | optional | none
+```
+
+**Roles canónicos vitalia** (per `vitalia/.claude/rules/hipaa-lite.md`):
+- `doctor` · `nurse` · `admin_clinic` · `marketing` · `receptionist` · `patient`
+- `staff_vitalia` (admin panel)
+
+**Cross-check runtime (P4 ratificada):** validator `validate_code_cap_bidirectional.py` detecta drift entre `access.entry_points[].requires_role` y `@require_phi_access(roles=[...])` decorators en código + middleware Clerk. **Runtime mantiene enforcement actual · cap es fuente documental.**
+
+### Bloque 2 — `scenarios` (BDD user-facing capability lifecycle)
+
+```yaml
+scenarios:
+  - id: doctor-ve-agenda-semanal         # REQUIRED · kebab unique dentro del cap · max 60 chars
+    name: "Doctor abre su agenda de la semana"  # REQUIRED · user-facing Spanish neutro · max 120 chars
+    actor: doctor                         # REQUIRED · rol que actúa (debe estar en access.entry_points[].requires_role)
+    status: live                          # REQUIRED · live | wip | deprecated
+    given: "Doctor autenticado con clinic_scope=clinic-A"  # REQUIRED · 1 línea contexto inicial
+    when: "Navega a /valeria/agenda"      # REQUIRED · 1 línea acción del actor
+    then: "Ve calendario semana actual con turnos coloreados por estado pago"  # REQUIRED · 1+ líneas resultado esperado
+    e2e_test: "vitalia/frontend/e2e/specs/valeria-agenda-list.spec.ts"  # OPTIONAL · path al test que cubre
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase2-valeria-agenda/01-spec.md#scenario-1"  # OPTIONAL · trazabilidad spec origen
+    surface: FE                           # OPTIONAL · FE | BE | AGENTIC | FE+BE | FE+BE+AGENTIC (superficie del scenario)
+    edge_cases:                           # OPTIONAL · lista narrativa Spanish neutro
+      - "Semana sin turnos → empty state amigable con call-to-action 'agendar primer turno'"
+      - "Doctor sin clinic_scope → 403 + redirect a setup clínica"
+    added_in_story: vitalia-fase2-valeria-agenda  # REQUIRED · trazabilidad
+    added_date: 2026-05-27                # REQUIRED · ISO date
+    # deprecated_in_story: null           # OPTIONAL · si status=deprecated
+    # deprecated_date: null               # OPTIONAL · ISO date
+```
+
+**Granularidad ratificada:**
+- Scenarios cuelgan **directo de cap.scenarios[]** — son la unidad atómica de comportamiento.
+- `surface` OPCIONAL para distinguir scenarios cross-surface (FE+BE / FE+BE+AGENTIC).
+- Sin niveles intermedios: cap → scenarios → code/tests.
+
+**Migración Gherkin P2 ratificada (Copy + story_spec_ref):**
+- Scenarios principales (happy path + business rules) **copy verbatim** desde `01-spec.md` archive al cap YAML al merge Fase F.3.
+- Edge cases extensos opcionalmente solo linkean al spec.
+- Cap autocontenido = SSoT navegable sin necesidad de leer archive.
+
+### Bloque 3 — `business_rules` (invariantes user-facing + HIPAA + retention)
+
+```yaml
+business_rules:
+  - id: dual-tenant-clinic-filter         # REQUIRED · kebab unique dentro del cap
+    rule: "Toda query a Appointment filtra tenant_id AND clinic_id (HIPAA dual filter)"  # REQUIRED · 1-2 líneas Spanish neutro
+    enforcement:                          # REQUIRED · paths a rules/docs que enforce
+      - ".claude/rules/tenant-isolation.md"
+      - "vitalia/.claude/rules/hipaa-lite.md"
+    code_ref: "vitalia/backend/src/modules/vitalia/scheduling/infrastructure/repositories.py"  # OPTIONAL · path código que implementa
+    severity: critical                    # REQUIRED · critical | high | medium | low
+    audit_trail: true                     # OPTIONAL · default false · true = action genera audit_log row
+```
+
+### Bloque 4 — `related_capabilities` (grafo de dependencias)
+
+```yaml
+related_capabilities:
+  depends_on:                             # OPTIONAL · caps que ESTE cap necesita activas
+    - shell-organism.shell-vitalia
+    - iam.luana-core-adoption
+  enables:                                # OPTIONAL · caps que SE habilitan por este (rev de depends_on)
+    - scheduling.bookings-prepagadas
+  similar:                                # OPTIONAL · variantes/derive children
+    - valeria.agenda.mobile
+  obsoletes:                              # OPTIONAL · caps marcados deprecated por este (refactor)
+    - valeria.legacy-agenda-v1
+```
+
+### Reglas Fase F.3 enforce v3.2 (extiende § 5)
+
+Al merge story con `cap_change_type ∈ {new, extend}`, `/pm-{brand}` MUST verificar adicionalmente (sobre § 5):
+
+| cap_change_type | scenarios[] | access | business_rules |
+|---|---|---|---|
+| `new` + `user_visible: true` | `>= 1` REQUIRED (cement 2026-Q3) | REQUIRED (cement 2026-Q3) | OPTIONAL (advisory hasta 2026-Q4) |
+| `new` + `user_visible: false` | OPTIONAL | OPTIONAL | OPTIONAL |
+| `extend` + cap target tiene scenarios | append nuevos opcional | si nueva entry_point → REQUIRED | si nueva business rule → REQUIRED |
+| `fix` | NO requiere cambio | NO requiere cambio | NO requiere cambio |
+| `derive` | hijo hereda + customiza scenarios | hijo declara su access | hijo hereda + override |
+
+**Enforce point:** `scripts/validate_code_cap_bidirectional.py` (cement 2026-05-28) detecta drift:
+- HARD pre-push si scenarios[].e2e_test path declarado no existe
+- HARD pre-push si access.entry_points[].requires_role contradice runtime decorators
+- Advisory pre-commit wip si caps user_visible carecen de bloques v3.2 obligatorios (cement 2026-Q3)
 
 ---
 
-## Sección 11 · Referencias
+## Sección 12 · Header convention código (P3 ratificada · cement 2026-05-28)
 
+Cada archivo de código (`.py`, `.ts`, `.tsx`) declara su capability owner via header de 2 líneas en posición 1.
+
+### Formato canónico
+
+**Python (`*.py`):**
+```python
+# cap: scheduling.valeria-agenda
+# story-origin: vitalia-fase2-valeria-agenda
+"""(docstring de la función/clase normal)"""
+```
+
+**TS/TSX (`*.ts`, `*.tsx`):**
+```tsx
+// cap: scheduling.valeria-agenda
+// story-origin: vitalia-fase2-valeria-agenda
+'use client';
+
+export function AgendaWeekly() { ... }
+```
+
+**Multi-cap (archivo aporta a 2+ caps):**
+```python
+# cap: [shell-organism.shell-vitalia, scheduling.valeria-agenda]
+# story-origin: [vitalia-fase1-routing-shell, vitalia-fase2-valeria-agenda]
+```
+
+### Special markers
+
+| Marker | Significado | Cuándo usar |
+|---|---|---|
+| `__orphan__` | Archivo sin cap owner principal (candidato refactor) | Cross-module utilities sin claro home |
+| `__shared__` | Cross-cap consumer multi-feature | Shadcn UI primitives, format helpers, hooks compartidos |
+| `__skip__` | Intencionalmente sin cap (testing infra, fixtures) | `test-setup.ts`, `test-utils/`, fixtures |
+
+### Reglas obligatorias
+
+| Campo | Required | Constraint |
+|---|---|---|
+| `cap:` | YES | string `<module>.<slug>` OR array OR special marker · debe existir en `{brand}/docs/product/capabilities/{module}/{slug}.yaml` |
+| `story-origin:` | YES | story-id del primer commit que tocó este archivo dentro del cap · trazabilidad |
+
+**Position rules:**
+- BE Python: header ANTES de docstring del módulo (líneas 1-5). Si shebang `#!/usr/bin/env python3`, header DESPUÉS.
+- FE TS/TSX: header ANTES de `'use client'`. Si JSDoc preexistente, header después de JSDoc.
+- Idempotente: re-aplicar NO duplica headers (validator detecta header existente).
+
+### Regex parseable (validators usan estos exactos)
+
+```regex
+# Python
+^\s*#\s*cap:\s*(\[.+?\]|\S+)
+^\s*#\s*story-origin:\s*(\[.+?\]|\S+)
+
+# TS/TSX
+^\s*//\s*cap:\s*(\[.+?\]|\S+)
+^\s*//\s*story-origin:\s*(\[.+?\]|\S+)
+```
+
+### Excepciones (NO requieren header)
+
+- `vitalia/backend/alembic/` (migrations infra)
+- Test files (`*.test.ts`, `*.spec.ts`, `__tests__/`) — heredan cap del file que testean
+- `_pycache_/` (bytecode)
+
+### Tooling
+
+- `scripts/generate_code_to_cap_index.py` (cement 2026-05-28) — grep headers + produce `{brand}/docs/product/capabilities/_code-index.json` (gitignored R3 v2)
+- `scripts/git-hooks/pre-commit` § Section 5c — advisory regen al stage code files
+- `scripts/validate_code_cap_bidirectional.py` (cement 2026-05-28) — cross-check entre scenarios e2e_test + access roles ↔ decorators runtime
+
+---
+
+## Sección 13 · Bidirectional validator cross-checks (cement 2026-05-28)
+
+`scripts/validate_code_cap_bidirectional.py` ejecuta 2 cross-checks que detectan drift entre code headers + cap YAML + runtime enforcement. (Los cross_check_1 y cross_check_2 atomics↔headers fueron eliminados con atomics — ver `docs/process/lifecycle.md`.)
+
+### Cross-check 3 — Scenarios e2e_test path existence
+
+Para cada `cap.scenarios[*].e2e_test` declarado:
+- El path MUST existir en filesystem
+- El archivo MUST contener `test(` o `test.describe(` (Playwright pattern)
+- Si missing → HARD pre-push block
+
+### Cross-check 4 — Access roles ↔ runtime decorators (P4 ratificada)
+
+Para cada `cap.access.entry_points[*].requires_role: [...]`:
+- Si `entry_type: ui` → buscar Next.js route en `vitalia/frontend/src/app/...{path}/page.tsx` + verificar middleware Clerk + tenant context
+- Si `entry_type: api` → buscar FastAPI endpoint en `vitalia/backend/src/modules/vitalia/{module}/api/` + verificar `@require_phi_access(roles=[...])` decorator
+- Roles declarados en cap MUST coincidir con roles en decorator (cross-check sets equal)
+- Drift → **HARD para vitalia** (es salud · el control de acceso a PHI no puede ser advisory). Otras brands: advisory.
+
+### Output
+
+`{brand}/docs/product/capabilities/_bidirectional-validation.json` (gitignored R3 v2):
+```json
+{
+  "validated_at": "2026-05-28T...",
+  "brand": "vitalia",
+  "cross_check_3": { "total": 0, "pass": 0, "drift": 0, "details": [] },
+  "cross_check_4": { "total": 0, "pass": 0, "drift": 0, "details": [] },
+  "summary": { "drift_total": 0, "verdict": "PASS" }
+}
+```
+
+### Enforcement
+
+| Layer | Mecanismo | Status |
+|---|---|---|
+| 1 | Pre-commit Section 5d advisory wip | cement 2026-05-28 |
+| 2 | Pre-push HARD block en main/release/* si cross_check_3 drift > 0 | cement 2026-05-28 |
+| 3 | Pre-push HARD block (vitalia) si cross_check_4 drift > 0 (access roles ↔ runtime decorators) | cement 2026-05-28 |
+| 4 | Cockpit DriftView lee `_bidirectional-validation.json` + muestra drift visualmente | Fase C |
+
+---
+
+## Sección 14 · Referencias
+
+- `docs/process/lifecycle.md` — SSoT del modelo 4-ejes (Release → Story → Capability → Scenario) · atomics/outcome/phase muertos
 - `vitalia/docs/architecture/ADR-vitalia-005-capability-model-4-dimensions.md` — ADR brand-local que cementa Sec 7-9 v3
 - `docs/process/release-protocol.md` — entity Release agrupa stories que tocan caps
 - `docs/process/chris-input-protocol.md` — chris-input.md donde Chris ratifica `cap_change_type`
@@ -377,3 +593,7 @@ Script: `scripts/migrate_capability_ledger.py --brand {b} [--dry-run]`. Idempote
 - `tools/luana-cockpit/components/map/MapView.tsx` — UI consumer del cap YAML (lee `agent_owner` + `functional_area` + `user_visible`)
 - `vitalia/docs/product/areas/` — 7 markdowns user-facing (1 por agent_owner)
 - `vitalia/docs/product/modules/` — markdowns técnicos paralelos (DDD paths para devs)
+- `scripts/generate_code_to_cap_index.py` (cement 2026-05-28) — code↔cap index R3 v2
+- `scripts/validate_code_cap_bidirectional.py` (cement 2026-05-28) — bidirectional validator 2 cross-checks (scenario e2e_test + access roles)
+- `scripts/git-hooks/pre-commit` § Section 5c (regen advisory) + 5d (bidirectional advisory) — wip gates
+- `_research-notes.md` + `_fase-decisions.md` (temporales · eliminados al cerrar Fase C 2026-05-28)

@@ -1,3 +1,5 @@
+# cap: clinics.clinics-brand-extension
+# story-origin: TBD
 """SQLAlchemy model for vitalia_clinic_branches table.
 
 Uses Column() style for consistency with engine models (TenantModel, UserModel).

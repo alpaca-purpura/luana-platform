@@ -1,3 +1,5 @@
+# cap: brand_studio.brand-studio-medical-sections
+# story-origin: vitalia-fase2-s7-TBD
 """ProhibitedPhrase domain entity — vitalia brand-local soft warning blocklist.
 
 Anti-creep guards:

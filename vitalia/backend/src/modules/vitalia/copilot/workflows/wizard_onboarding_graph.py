@@ -1,3 +1,5 @@
+# cap: copilot.valeria-wizard-onboarding-agentic
+# story-origin: TBD
 """Valeria wizard supervisor LangGraph topology + deepagents extract_subagent.
 
 Per 03-arch-agentic.md § 3.1 + § 7 + tessl__langgraph + tessl__deepagents:

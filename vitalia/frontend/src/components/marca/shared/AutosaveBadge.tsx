@@ -1,3 +1,5 @@
+// cap: brand_studio.lisa-marca
+// story-origin: vitalia-fase2-s7-TBD
 /**
  * AutosaveBadge.tsx — Shared autosave status badge.
  *

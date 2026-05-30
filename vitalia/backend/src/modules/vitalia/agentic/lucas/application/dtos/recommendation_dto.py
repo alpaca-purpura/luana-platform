@@ -1,3 +1,5 @@
+# cap: agentic.lucas-recommendation-tool
+# story-origin: TBD
 """Lucas application DTOs — Pydantic v2 response models.
 
 Used by internal route and for serialization.

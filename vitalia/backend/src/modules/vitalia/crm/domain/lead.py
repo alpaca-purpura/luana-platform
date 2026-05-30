@@ -1,3 +1,5 @@
+# cap: crm.crm-consent-optout
+# story-origin: TBD
 """Lead domain entity — NOT PHI.
 
 Domain layer — pure Python dataclass, no ORM imports.

@@ -18,9 +18,6 @@ stories:
   - vitalia-fiscal-emission-pe
   - vitalia-payment-adapter-mvp
 
-# Legacy outcome mapping (transition phase)
-maps_legacy_outcome: null
-maps_legacy_phase: null
 ---
 
 # F3 · Adrián vendiendo + Payment infra crítico

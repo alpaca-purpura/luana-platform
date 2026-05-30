@@ -1,3 +1,5 @@
+# cap: agentic.medical-agentic-tools
+# story-origin: TBD
 """ToolsState DTOs — vitalia inbox application layer.
 
 downstream-regression-na: brand-local vitalia inbox DTO

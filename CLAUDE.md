@@ -20,6 +20,10 @@
 
 **Topología completa + workspace tooling + paradigm v4 detail + 10 brand verticals catalog + cost-routing + bootstrap completo + skills detail:** ver `docs/rules-detail/_CLAUDE-original-backup.md` (load con Read on-demand).
 
+## ★ Paradigma de trabajo (norte arquitectónico — por encima de features y de la tech)
+
+Luana = **equipo de trabajadores digitales** que operan un sistema de Go-To-Market (NO un SaaS-herramienta). **3 planos:** Sistema (capacidades de negocio) · Capa de acción (acción única, web + agentes comparten) · Trabajadores (supervisora **Valeria** + especialistas scoped, **UN engine**). El **mapa del producto = 3 zonas**: **Agentes** · **Plataforma** (Acceso · Onboarding · Configuración) · **Infraestructura** (no-funcional). Toda capability declara su **caja desde la idea** + la zona se **deriva** del registro `SYSTEM-MAP.yaml`. La tech (MCP/code-mode) es implementación **swappable**; el invariante es "acción única descubrible + un solo engine + cero isla". SSoT: `docs/architecture/luana-platform/PARADIGM.md` (+ `ADR-010-orquestacion-agentica.md` + rule `paradigm-arquitectura.md`).
+
 ## Topology (1-liner)
 
 ```
@@ -75,6 +79,8 @@ El cockpit es **filesystem-as-DB**: lee/escribe directo de `.md`/`.yaml` del wor
 
 **Múltiples cockpits coexisten** sin colisión: si hay sesiones paralelas en vitalia + comunify, ambos cockpits corren simultáneo en `:4002` y `:4003` respectivamente.
 
+**Session mapping (single-hub · ADR-009):** con N sesiones sobre el hub de una marca, el cockpit de ese hub lee `.session-locks/*.lock` y pinta **"🔨 {lane}"** sobre la story que cada sesión está construyendo (board + franja "Construyendo ahora"). Lane = `$LUANA_LANE` (export opcional por terminal, ej. `export LUANA_LANE=A`) o `pid<PID>`. Así Chris ve mapeado qué sesión construye qué sin salir del cockpit.
+
 **Detener:** Ctrl+C en pnpm dev (foreground) o `lsof -ti:400X | xargs kill` por puerto.
 
 ## SDD Level 3 — vocabulario v4 (cementado 2026-05-06)
@@ -125,11 +131,11 @@ Extension SDK SSoT: `core/luana-core-extension-sdk/src/luana_core_extension_sdk/
 
 **Triple-branch:** `wip/{slug}` (autosave per worktree) → `main` (integración, **staging deploy MANUAL**) → `release/{brand}-vX.Y.Z` (único auto-deploy prod).
 
-**Worktrees obligatorios** para sesiones paralelas: `scripts/git/new-session.sh {brand} story {slug} [lane]`. Dashboard: `scripts/git/status-all.sh`. Cleanup: `scripts/git/cleanup-session.sh`. M11: nunca >30 min sin push.
+**Single-hub por marca (default · ADR-009):** N sesiones paralelas (refinar + builds) corren sobre el **mismo worktree canónico** `~/Proyectos/luana-{brand}` coordinadas por bucket locks (`session-lock.sh acquire docs|code:{module}`). Un solo filesystem = un solo SSoT de estado = el cockpit ve TODO + builds ven refinadas al instante. Índice git compartido → commit por pathspec. Worktree dedicado (`new-session.sh`) = **excepción** (lift core, protocol, exp, hotfix, otra marca). Dashboard: `scripts/git/status-all.sh`. M11: nunca >30 min sin push.
 
 **Forbidden:** `git pull`, `git fetch && merge`, `git push --force`, `git revert` sin aprobación, `git add .` / `-A`, `git commit --no-verify`. Push non-fast-forward → STOP.
 
-Detail: `.claude/rules/git-safety.md` + `.claude/rules/parallel-safety.md` + `docs/architecture/luana-platform/ADR-{004,005}*.md`.
+Detail: `.claude/rules/git-safety.md` + `.claude/rules/parallel-safety.md` + `.claude/rules/worktree-dual-strategy.md` + `docs/architecture/luana-platform/ADR-{004,005,009}*.md`.
 
 ## Critical Rules (auto-loaded de `.claude/rules/`)
 
@@ -162,10 +168,15 @@ Detail: `.claude/rules/git-safety.md` + `.claude/rules/parallel-safety.md` + `do
 | 25 | CLAUDE.md hierarchy (root liviano + brand overlay auto-load) | `claude-md-overlay.md` |
 | 26 | Worktree dual strategy (refine+build paralelos sin egoísmo) | `worktree-dual-strategy.md` |
 | 27 | GitHub Actions deferred (pre-commit/pre-push hooks SSoT) | `github-actions-deferred.md` |
-| 28 | Capability protocol (story↔cap doctrine + cap_change_type ledger) | `docs/process/capability-protocol.md` |
+| 28 | Capability protocol v3.2 (story↔cap doctrine + scenarios + access + business_rules + header `# cap:` en código) | `docs/process/capability-protocol.md` |
 | 29 | Release protocol (entity SSoT · reemplaza outcome+phase legacy) | `docs/process/release-protocol.md` |
 | 30 | chris-input.md protocol (output verbatim per skill) | `docs/process/chris-input-protocol.md` |
 | 31 | Cockpit permissions (whitelist transitions Chris vs Claude) | `docs/process/cockpit-permissions.md` |
+| 32 | Bidirectional code↔cap mapping (cockpit `/functionality` tab · validator 4 cross-checks · pre-commit/pre-push) | `docs/process/capability-protocol.md` § Sec 12-13 |
+| 33 | Anti-orphan integration (CONN: nada llega a `done` como isla — Consumed/On-map/Navigable/Notarized) | `anti-orphan-integration.md` |
+| 34 | Frontend visual fidelity (átomos/moléculas + mockup adherence + scope discipline + Playwright scoped) | `frontend-visual-fidelity.md` |
+| 35 | Test design doctrine (naturaleza del ticket → batería de tests · jscpd+arch-fitness first-class) | `test-design-doctrine.md` |
+| 36 | Paradigma arquitectura (3 planos · mapa = 3 zonas · trabajadores sobre un sistema · acción única · un engine) | `paradigm-arquitectura.md` + `docs/architecture/luana-platform/PARADIGM.md` |
 
 ## Conditional Rules (stub → skill on-demand)
 

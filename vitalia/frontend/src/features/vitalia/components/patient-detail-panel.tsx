@@ -1,3 +1,5 @@
+// cap: shell-organism.shell-vitalia
+// story-origin: TBD
 /**
  * PatientDetailPanel — right-panel detail view for a selected patient.
  *

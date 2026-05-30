@@ -1,3 +1,5 @@
+# cap: __shared__
+# story-origin: TBD
 """Amount bucket utility — privacy-preserving monetary range bucketing for telemetry.
 
 Rule (03-arch § 10 + hipaa-lite.md):

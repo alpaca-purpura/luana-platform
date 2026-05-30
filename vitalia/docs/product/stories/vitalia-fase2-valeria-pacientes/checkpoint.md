@@ -1,7 +1,5 @@
 ---
 story_id: vitalia-fase2-valeria-pacientes
-outcome: vitalia-mvp-ui-foundation
-phase: fase-2
 type: ui-story
 agent_owner: valeria
 module: crm
