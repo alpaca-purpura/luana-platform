@@ -1,4 +1,4 @@
-"""T-2 — camelCase alias regression tests for BrandPersonalityDTO + BrandPersonalityPatchDTO.
+"""T-2 / T-2.bis — camelCase alias + telemetry tenant_id regression tests.
 
 Verifies that:
   1. camelCase voice-block fields (soISpeak, identityAnchor, etc.) are accepted in PATCH.
@@ -12,8 +12,12 @@ Verifies that:
 § 1 — DTO-level unit tests: no integration mark (run without Postgres).
 § 2 — HTTP route-level tests: @pytest.mark.integration (skipped without Postgres).
 § 3 — Cross-tenant isolation: @pytest.mark.integration.
+§ 4 — T-2.bis: _emit_telemetry forwards tenant_id to emit_event (unit, no DB).
+      RED before fix: GrowthStudioEmitter.emit_event() missing 1 required keyword-only
+      argument: 'tenant_id' (swallowed, event silently lost).
+      GREEN after: emit_event called with tenant_id= kwarg present.
 
-Story: arreglar-guardado-voz-y-tono / T-2
+Story: arreglar-guardado-voz-y-tono / T-2 + T-2.bis
 cap: brand_studio.lisa-marca
 """
 
@@ -390,3 +394,129 @@ class TestPatchPersonalityCrossTenantIsolation:
             call_kwargs = mock_bundle.marca.patch_personality.call_args.kwargs
             assert str(call_kwargs["tenant_id"]) == _TENANT_B
             assert str(call_kwargs["tenant_id"]) != _TENANT_A
+
+
+# ---------------------------------------------------------------------------
+# § 4  T-2.bis — _emit_telemetry forwards tenant_id to emit_event (unit, no DB)
+#
+# Root cause: _emit_telemetry(event_type, **props) silently swallowed every
+# GrowthStudioEmitter.emit_event() call because it never forwarded `tenant_id`
+# (keyword-only required arg). TypeError was caught by bare `except Exception`
+# → every brand_studio save lost its telemetry event silently.
+#
+# RED before fix: emit_event is called WITHOUT tenant_id kwarg → TypeError.
+# GREEN after fix: emit_event awaited with tenant_id= present.
+# ---------------------------------------------------------------------------
+
+
+class TestEmitTelemetryForwardsTenantId:
+    """Unit: MarcaService._emit_telemetry passes tenant_id to GrowthStudioEmitter.emit_event.
+
+    No DB required — GrowthStudioEmitter mocked via AsyncMock.
+    """
+
+    def _make_service(self, mock_emitter: AsyncMock) -> object:  # MarcaService (imported lazily)
+        """Build a MarcaService with all dependencies mocked except the emitter."""
+        from unittest.mock import AsyncMock as _AsyncMock
+
+        from src.modules.vitalia.brand_studio.application.services.marca_service import MarcaService
+
+        return MarcaService(
+            session=_AsyncMock(),
+            audit=_AsyncMock(),
+            telemetry=mock_emitter,
+            voice_preview_service=_AsyncMock(),
+            voice_blocklist_service=_AsyncMock(),
+            trust_signal_repo=_AsyncMock(),
+            trust_catalog_service=_AsyncMock(),
+        )
+
+    @pytest.mark.asyncio
+    async def test_emit_telemetry_passes_tenant_id_as_kwarg(self) -> None:
+        """After fix, emit_event must be awaited with tenant_id= as explicit kwarg.
+
+        RED: emit_event called WITHOUT tenant_id → TypeError swallowed → silent loss.
+        GREEN: emit_event awaited with keyword argument tenant_id=<UUID>.
+        """
+        mock_emitter = AsyncMock()
+        mock_emitter.emit_event = AsyncMock()
+
+        service = self._make_service(mock_emitter)
+        tenant_id = UUID(_TENANT_A)
+
+        # Exercise: call the helper directly — no DB interactions needed.
+        await service._emit_telemetry(
+            "lisa_marca_personality_saved",
+            tenant_id=tenant_id,
+            archetype="caregiver",
+            voice_warning_triggered=False,
+        )
+
+        # Verify emit_event was awaited exactly once with tenant_id as kwarg.
+        mock_emitter.emit_event.assert_awaited_once()
+        call_kwargs = mock_emitter.emit_event.call_args.kwargs
+        assert "tenant_id" in call_kwargs, (
+            f"emit_event NOT called with tenant_id kwarg — it would have raised TypeError. Actual kwargs: {call_kwargs}"
+        )
+        assert call_kwargs["tenant_id"] == tenant_id
+        assert call_kwargs["event_type"] == "lisa_marca_personality_saved"
+
+    @pytest.mark.asyncio
+    async def test_emit_telemetry_extra_props_not_in_tenant_id_position(self) -> None:
+        """Extra props (archetype, voice_warning_triggered) must NOT be passed as tenant_id.
+
+        Guards against regression where tenant_id is buried in props dict.
+        """
+        mock_emitter = AsyncMock()
+        mock_emitter.emit_event = AsyncMock()
+
+        service = self._make_service(mock_emitter)
+        tenant_id = UUID(_TENANT_A)
+
+        await service._emit_telemetry(
+            "lisa_marca_personality_saved",
+            tenant_id=tenant_id,
+            archetype="sage",
+        )
+
+        call_kwargs = mock_emitter.emit_event.call_args.kwargs
+        # tenant_id must NOT be in props dict — it must be a direct kwarg.
+        props = call_kwargs.get("props", {})
+        assert "tenant_id" not in props, "tenant_id must be a direct emit_event kwarg, not buried in props dict."
+
+    @pytest.mark.asyncio
+    async def test_emit_telemetry_user_id_forwarded_when_present(self) -> None:
+        """user_id, when provided, must be forwarded as a direct kwarg to emit_event."""
+        mock_emitter = AsyncMock()
+        mock_emitter.emit_event = AsyncMock()
+
+        service = self._make_service(mock_emitter)
+        tenant_id = UUID(_TENANT_A)
+        user_id = UUID(_USER_A)
+
+        await service._emit_telemetry(
+            "lisa_marca_trust_signal_added",
+            tenant_id=tenant_id,
+            user_id=user_id,
+        )
+
+        call_kwargs = mock_emitter.emit_event.call_args.kwargs
+        assert call_kwargs.get("user_id") == user_id
+
+    @pytest.mark.asyncio
+    async def test_emit_telemetry_swallows_exception_gracefully(self) -> None:
+        """Exception from emit_event must be caught — never propagated to caller.
+
+        Contract: fire-forget. An exception in telemetry must NOT break the save.
+        """
+        mock_emitter = AsyncMock()
+        mock_emitter.emit_event = AsyncMock(side_effect=Exception("DB down"))
+
+        service = self._make_service(mock_emitter)
+
+        # Must NOT raise — exception is swallowed + logged at WARNING.
+        await service._emit_telemetry(
+            "lisa_marca_personality_saved",
+            tenant_id=UUID(_TENANT_A),
+            archetype="caregiver",
+        )

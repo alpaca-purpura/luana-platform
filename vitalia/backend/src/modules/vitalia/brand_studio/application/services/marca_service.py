@@ -168,10 +168,29 @@ class MarcaService:
         result = await self._session.execute(stmt)
         return result.scalars().first()
 
-    def _emit_telemetry(self, event_type: str, **props: Any) -> None:
-        """Fire-forget telemetry — swallow all exceptions."""
+    async def _emit_telemetry(
+        self,
+        event_type: str,
+        *,
+        tenant_id: UUID,
+        user_id: UUID | None = None,
+        **props: Any,
+    ) -> None:
+        """Fire-forget telemetry — swallow all exceptions.
+
+        Args:
+            event_type: Snake_case event identifier (e.g. 'lisa_marca_personality_saved').
+            tenant_id: Root tenant UUID — forwarded to GrowthStudioEmitter (required kwarg).
+            user_id: Actor user UUID (optional).
+            **props: Additional event properties passed as the `props` dict.
+        """
         try:
-            self._telemetry.emit_event(event_type=event_type, props=props)
+            await self._telemetry.emit_event(
+                event_type=event_type,
+                tenant_id=tenant_id,
+                user_id=user_id,
+                props=props,
+            )
         except Exception as exc:  # noqa: BLE001
             logger.warning("telemetry_emit_failed", event_type=event_type, error=str(exc))
 
@@ -250,8 +269,10 @@ class MarcaService:
             },
         )
 
-        self._emit_telemetry(
+        await self._emit_telemetry(
             "lisa_marca_identity_saved",
+            tenant_id=tenant_id,
+            user_id=user_id,
             field_count_changed=len(patch_data),
         )
 
@@ -351,8 +372,10 @@ class MarcaService:
             },
         )
 
-        self._emit_telemetry(
+        await self._emit_telemetry(
             "lisa_marca_visuals_saved",
+            tenant_id=tenant_id,
+            user_id=user_id,
             field_count_changed=len(patch_data),
             has_logo=bool(settings.identity.visuals.logo_url),
         )
@@ -498,8 +521,10 @@ class MarcaService:
             },
         )
 
-        self._emit_telemetry(
+        await self._emit_telemetry(
             "lisa_marca_personality_saved",
+            tenant_id=tenant_id,
+            user_id=user_id,
             archetype=archetype or "unchanged",
             voice_warning_triggered=False,
         )
@@ -597,8 +622,10 @@ class MarcaService:
             },
         )
 
-        self._emit_telemetry(
+        await self._emit_telemetry(
             "lisa_marca_contact_saved",
+            tenant_id=tenant_id,
+            user_id=user_id,
             field_count_changed=len(patch_data),
         )
 
@@ -900,7 +927,7 @@ class MarcaService:
             label=saved.label,
         )
 
-        self._emit_telemetry("lisa_marca_trust_signal_added", tenant_id=tenant_id, user_id=user_id)
+        await self._emit_telemetry("lisa_marca_trust_signal_added", tenant_id=tenant_id, user_id=user_id)
 
         return TrustSignalDTO(
             id=saved.id,
@@ -995,7 +1022,7 @@ class MarcaService:
             payload={"logo_id": str(logo_id), "ext": ext, "size_bytes": size_bytes},
         )
 
-        self._emit_telemetry("lisa_marca_logo_uploaded", tenant_id=tenant_id, user_id=user_id)
+        await self._emit_telemetry("lisa_marca_logo_uploaded", tenant_id=tenant_id, user_id=user_id)
 
         literal_ext = ext
         from typing import get_args  # noqa: PLC0415
