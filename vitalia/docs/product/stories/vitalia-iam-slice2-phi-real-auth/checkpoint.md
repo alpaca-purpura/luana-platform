@@ -12,8 +12,8 @@ priority: high
 ratified_by_chris: true   # 2026-05-30 Q1-Q3 ratificadas
 parallel_safe: false
 last_modified: 2026-05-30
-state: refined
-phase: SPEC_RATIFIED
+state: ready
+phase: READY_PACKAGE_CLOSED
 prior_art_scan_done: true
 prior_story: vitalia-stub-caps-scenario-backfill   # nace del hallazgo de aquella (stub PHI rechaza JWT real)
 
@@ -21,7 +21,10 @@ prior_story: vitalia-stub-caps-scenario-backfill   # nace del hallazgo de aquell
 autonomous_mode: false
 autonomous_mode_hard_false_reason: "Toca auth + PHI (HIPAA-lite). Per .claude/rules/architect-autonomous-mode.md: security/auth/PHI requiere supervisión Chris. NO auto-build."
 
-next_action: "/architect ready package (reuse engine JWKS + rol DB + repos reales + FE rol-desde-/me + stub env-gated test-only) → build SUPERVISADO → verificación god-matrix JWT real."
+next_action: "/dev-team T-1 (BE-auth core) → T-2 (repos-wire) + T-3 (FE hook) → build SUPERVISADO (autonomous_mode false) → gate verificación god-matrix JWT real → /auditor → /pm-vitalia merge."
+ready_package: [03-arch.md, 04-validators.yaml, 05-guidelines.md, 06-tickets.yaml, dispatch-plan.md]
+ready_closed_at: 2026-05-30
+ready_closed_by: architect
 ---
 
 # Slice 2 PHI — desentubar el decoder JWT (stub → JWKS real) + rol desde DB + repos reales
