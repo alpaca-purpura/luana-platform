@@ -55,3 +55,12 @@ La (b). Modifiquemos todo lo necesario para que quedemos bien y esta sea la nuev
 
 ### 2026-05-30 · 🤖 claude · `/po` · ✓ APLICADO (opción B · scan exhaustivo)
 Scan exhaustivo (frontend + docs) → inventario completo en `02-impact.md` (SSoT del cambio, hasta el último archivo). Spec a v3 con scope (B): F0 backlog · F1 caps · F2 SYSTEM-MAP · F3 cockpit 2 lentes · F4 índice acciones · F5 docs/ADRs/rules/skills · F6 shell UI realineado (mockups ADR-003 primero) · F7 tests. Hallazgo: en `agent-catalog.ts` Mateo YA existe pero como "Tecnología" — tu d1 lo reescribe a "Operar/Mi Día". Resolví micro-mapeos: 3 ex-valeria→Mateo, shell-vitalia→Infra·plataforma-tecnica, Ribbon "Configurar"→tab "Plataforma". Impacto total: ~70 caps + ~13 docs/rules/skills/ADRs + ~8 archivos FE + 6 stories renombrar + mockups + tests. Falta tu OK final al spec → refined → /architect (que ticketea con mockup-gate para el shell).
+
+### 2026-05-30 · 👤 chris · ✓ RATIFICA
+Dala por refinada, continuá con architect hasta el done. Merge preservando historia. No generes mockup (cambio mínimo).
+
+### 2026-05-30 · 🤖 claude · `/pm-vitalia` · ✓ APLICADO
+Spec v3 ratificado → state=**refined**. Gate de mockups ADR-vitalia-003 **waived** por Chris (cambio mínimo Ribbon, documentado en checkpoint `mockup_gate_waived`). Arranco `/architect` (ready package F0-F7).
+
+### 2026-05-30 · 🤖 claude · `/pm-vitalia` · ⚠️ DUDA (merge a main)
+El merge wip/vitalia→main **NO es limpio**: main divergió (tiene `cockpit v0.6` + su propio `vitalia cap-model-v3` que wip no tiene); ~79 archivos cambiados en ambos lados (caps, SYSTEM-MAP, ADR-vitalia-005, cockpit). Bulldozear main puede romperlo/regresar cockpit v0.6 → NO lo hago a ciegas. Approach seguro: sync main→wip (resolver en wip favoreciendo cockpit v0.6 + caps nuevas), luego merge limpio. Espero tu OK al approach antes de tocar main.

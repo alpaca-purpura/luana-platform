@@ -5,11 +5,18 @@ type: infra-migration
 title: "Migración del mapa a 3 zonas (PARADIGM/ADR-010) + reorganización del backlog"
 agent_owner: infra
 module: platform
-state: refining
+state: ready
 architecture_pattern: ADR-010-orquestacion-agentica + ADR-vitalia-005-capability-model-4-dimensions (extiende → 5ª dim: zona)
 last_modified: 2026-05-30
 ratified_by_chris: true
 ratified_at: 2026-05-30
+spec_ratified_by_chris: true
+mockup_gate_waived: true
+mockup_gate_waived_by: chris
+ready_package_closed_by: architect
+ready_package_closed_at: 2026-05-30
+ready_package_artifacts: [03-arch.md, 03-arch-be.md, 03-arch-fe.md, 04-validators.yaml, 05-guidelines.md, 06-tickets.yaml, dispatch-plan.md]
+mockup_gate_waived_reason: "Realineación Ribbon (5 tabs Lisa·Mateo·Adrián·Lucas·Camila + Plataforma; Valeria→sidebar). Sin componente nuevo → cambio mínimo. Chris ratificó skip ADR-vitalia-003 (2026-05-30)."
 parallel_safe: false        # toca SYSTEM-MAP + ~71 caps + cockpit (cross-brand tool) — serializar
 priority: high
 estimated_dev_days: 3-4
@@ -53,7 +60,7 @@ scope_boundary_note: >
   /pm-vitalia NO la owna. Se ejecuta en la misma tanda (fase solo-bootstrap permite) pero se trackea como
   tool-scope, no como cap de producto vitalia. La parte vitalia-propia es F0+F1+F2 (data: caps + SYSTEM-MAP + reassign).
 
-next_action: "Chris ratificó las 5 decisiones (2026-05-30). state=refining → /po draft 01-spec (spec de migración, base 00-research.md) → refined → /architect."
+next_action: "Ready package cerrado por /architect (2026-05-30): 03-arch(+be/fe) + 04-validators + 05-guidelines + 06-tickets(6 vitalia-scope) + dispatch-plan. state=refined → ready. DAG: T-1→T-2→T-5→T-6 · T-3 paralelo · T-4 dep T-2. TOOL-SCOPE (F3 cockpit + F4-consumer + capability-protocol §7) = dispatch separado SCOPE_GATE_SKIP. autonomous_mode:false. ⚠️ Merge wip/vitalia→main PENDIENTE decisión approach (main divergió)."
 ---
 
 # vitalia-paradigm-map-zones
