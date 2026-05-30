@@ -5,16 +5,36 @@ agent_owner: config
 module: platform
 cap_target: multi-cap-backfill            # 20 caps existentes — extend (append scenario+e2e); NO crea caps nuevas
 cap_change_type: extend                    # agrega scenarios a caps live existentes (cross_check_3 → verified-live)
-state: idea
+state: ready                            # ⬅ ROLLBACK refined→refining 2026-05-29: DONE cambió (bar deployed-visible de Chris)
 release: F2
 architecture_pattern: ADR-vitalia-004
 adr_004_compliance: n/a-with-rationale    # no es story sub-tab/feature; es backfill de verificación (como cockpit-live-reconciliation)
 priority: medium
-ratified_by_chris: false
+ratified_by_chris: true  # v2 ratificado-por-extensión (decisiones pre-ratificadas 2026-05-29 + AskUserQuestion 2026-05-30)                   # spec v1 ratificado, pero DONE en revisión v2 (bar deployed-visible)
 parallel_safe: false                       # toca 20 cap YAMLs + tests cross-módulo
-last_modified: 2026-05-29
-phase: IDEA_AWAITING_REFINE
+last_modified: 2026-05-30
+phase: READY_PACKAGE_CLOSED           # esperando decisiones Chris (verificación deployed + política caps rotos)
+prior_art_scan_done: true                  # 2026-05-29 — ver § Prior art scan (sección abajo)
 prior_story: vitalia-cockpit-live-reconciliation   # esta nace del hallazgo de aquella (done 2026-05-29)
+last_artifact: 06-tickets.yaml                  # architect parcial (solo 03-arch.md) — pausado al cambiar DONE
+next_action: "/dev-team build autónomo T-0→T-C, T-A∥T-B, T-D final. Verificación dev-app hands-on (orchestrator) post-build, pre-auditor."
+
+# Autonomous mode — PAUSADO 2026-05-29 (DONE cambió post-ratify · bar deployed-visible)
+autonomous_mode: false                     # ⬅ era true; pausado porque la definición de DONE cambió materialmente
+autonomous_mode_paused_reason: "Chris fijó bar nuevo: funcionalidades verificadas deben ser visibles en dev-app.vitalialat.com (salvo netamente backend justificado). Cambia DONE + estrategia de verificación → re-refinar spec antes de reanudar autónomo."
+autonomous_mode_chain: [architect, dev-team, auditor, pm-merge]
+autonomous_mode_ratified_by: chris
+autonomous_mode_ratified_at: 2026-05-29T18:35:00-05:00
+autonomous_mode_caps:
+  max_iterations_per_ticket: 10
+  max_audit_iterations: 3
+  max_total_cost_usd: 6.00
+  max_wall_clock_minutes: 120
+  on_cap_exceeded: "state=blocked + escalate Chris"
+autonomous_mode_notes: >
+  Technical-story no-agentic, ~4 tickets (T-0 gate-extension + T-A/T-B/T-C baterías).
+  HARD-false conditions OK: no toca core/luana-core, no agentic prod, no cross-brand, validators must_pass claros (no pass_k).
+  CAVEAT scope: T-0 toca scripts/*.py (cross-cutting tooling, NO engine core) → builder commitea con SCOPE_GATE_SKIP=1 + razón (fase solo-bootstrap permitida). Cambio ADITIVO (reconoce pytest sin romper .ts). Anti-teatro: correr-verde + relevancia por cada e2e_test cableado.
 ---
 
 # Backfill de scenarios+e2e para los 20 caps `stub` (declarados live sin verificación)
@@ -58,12 +78,20 @@ Y las 33 `deprecated` (slice-1 superseded) — se reconstruyen en Fase 2, no se 
 - `/drift` del cockpit: se limpia (deja de mostrar estos 20 como drift).
 - Disciplina: cero código de feature nuevo (solo scenarios + tests + wiring); cero reconstrucción; cero engine edit. Caben fixes inline triviales si un test revela algo, con gates verdes.
 
-## Prior art scan (preliminar — el refine lo formaliza)
-- `vitalia/docs/domains/ops/live-reconciliation.md` (matriz, input directo)
-- `vitalia/docs/product/stories` archive `vitalia-cockpit-live-reconciliation` (story madre, done)
-- `docs/process/lifecycle.md` § Fase 2 (backfill de scenarios — esta story ES eso)
-- `scripts/{compute_capability_status,validate_code_cap_bidirectional}.py` (gates objetivos)
-- `vitalia/frontend/e2e/**` (tests existentes a cablear)
+## Prior art scan (formalizado /pm-vitalia 2026-05-29)
+
+> Ejecutado per `.claude/rules/anti-duplication-refining.md` Step prior-art-scan. KW: `capability scenario backfill verified-live cross_check_3 e2e wiring`.
+
+| Fuente | Hallazgo | Decisión |
+|---|---|---|
+| **Engine `core/luana-core-*/`** | Ningún package backfillea scenarios de caps (es tooling de proceso SDD, no runtime). | **net-new tooling-work** — sin import de engine |
+| **vitalia propio** | `scripts/compute_capability_status.py` + `validate_code_cap_bidirectional.py` ya existen (gates objetivos). `vitalia/docs/domains/ops/live-reconciliation.md` = matriz cap↔realidad (input directo). | **reuse** scripts como gate; consume matriz |
+| **vitalia e2e existentes** | Confirmados specs a CABLEAR (no escribir): `e2e/visual|a11y/topbar-global/topbar.spec.ts`, `.../design-tokens-theme/theme-toggle.spec.ts`, `e2e/auth/sign-in-*.spec.ts`, `e2e/admin/admin-{login,users-crud,tenants-crud,clinics-extension,hipaa-dual-filter}.spec.ts`, `tenants-users.spec.ts`. | **wire-existing** (batería A+B) |
+| **comunify live** | Sin pattern paralelo de backfill (comunify aún no llegó a reconciliación de ledger). | **no aplica** |
+| **story madre** | `vitalia-cockpit-live-reconciliation` (done 2026-05-29) produjo la matriz + reveló los 20 stub. | **input directo** |
+| **`docs/process/lifecycle.md` § Fase 2** | "backfill de scenarios" es exactamente el proceso que esta story ejecuta. | **esta story ES eso** |
+
+**Conclusión:** cero duplicación engine/cross-brand. Es tooling-work interno vitalia: cablear e2e existentes (A/B) + escribir integration/contract tests donde no hay UI (C) + poblar `scenarios[]` en 20 cap YAMLs. `cap_change_type: extend` coherente (agrega scenarios a caps live, NO crea caps).
 
 ## next_action
 - `/pm-vitalia` refinemos → `/po` (technical-story) produce 01-spec con: scenario real por cap (3 baterías A/B/C) + criterio wiring-vs-writing + gate cross_check_3. Luego `/architect` (tickets por grupo A/B/C) → `/dev-team` → `/auditor` → merge.
