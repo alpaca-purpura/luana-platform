@@ -66,6 +66,14 @@ change_log:
     added_in_story: vitalia-iam-slice2-phi-real-auth
     merge_sha: null
     status: done
+  - story_id: vitalia-crm-phi-base-tables-migration
+    date: 2026-05-30
+    type: fix
+    summary: "Materializa las tablas PHI base que los endpoints RBAC esperaban (drift stamp-vs-apply: vitalia_patients no existía físicamente + vitalia_leads nunca creada → 500). Migración 035 idempotente crea/reconcile ambas con columnas PHI cifradas at-rest (pgcrypto BYTEA, KEK bound param vía KEKClient · ADR-vitalia-007). Repos descifran al leer/cifran al escribir. + Fix commit unit-of-work (get_async_session_committing): el audit row de lectura PHI y los writes CRM ahora persisten (antes flush sin commit → rollback). Cierra el gap audit-on-patient-read del Slice 2 (SC-1 quedó verificado contra /crm/conversations stub; ahora verificado live sobre /crm/patients/{id} real → 200 + name descifrado + audit read_patient persiste 0→1). god-matrix live verde: doctor 200 / marketing 403 / cross-tenant 404 / forjado 401 / at-rest ciphertext (VERIFICATION-godmatrix-live.md)."
+    added_in_story: vitalia-crm-phi-base-tables-migration
+    scenarios_added: []   # cap_change_type: fix — no agrega scenarios nuevos
+    merge_sha: null
+    status: done
 
 last_modified: 2026-05-30
 

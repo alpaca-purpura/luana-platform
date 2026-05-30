@@ -28,8 +28,11 @@ sid=$(curl -s -X POST "https://api.clerk.com/v1/sessions" \
   -H "Authorization: Bearer $CLERK_SECRET_KEY" -H "Content-Type: application/json" \
   -d "{\"user_id\":\"$USER_ID\"}" | jq -r .id)
 # 2. Mintear JWT de esa sesión (default template, ~60s TTL)
+#    ★ corrección 2026-05-30 (story vitalia-crm-phi-base-tables-migration): el endpoint
+#    /v1/sessions/{id}/tokens ahora EXIGE Content-Type: application/json (devuelve
+#    {"errors":[{"code":"unsupported_content_type"}]} sin él → jwt=null → todo 401).
 jwt=$(curl -s -X POST "https://api.clerk.com/v1/sessions/$sid/tokens" \
-  -H "Authorization: Bearer $CLERK_SECRET_KEY" | jq -r .jwt)
+  -H "Authorization: Bearer $CLERK_SECRET_KEY" -H "Content-Type: application/json" | jq -r .jwt)
 # 3. Ejercer el endpoint PHI con el JWT real + headers reales
 curl -s -o /dev/null -w "%{http_code}" "$EP" \
   -H "Authorization: Bearer $jwt" -H "X-Tenant-ID: $TENANT" -H "X-Clinic-ID: $CLINIC"

@@ -19,6 +19,7 @@ stories:
   - vitalia-fase2-lisa-marca
   - vitalia-fase2-valeria-agenda
   - vitalia-fase2-valeria-pacientes
+  - vitalia-crm-phi-base-tables-migration   # done 2026-05-30 (PHI base tables + pgcrypto + commit-gap fix)
 ---
 
 # F2 · Migración progresiva · primer valor Valeria + Lisa

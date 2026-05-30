@@ -11,8 +11,10 @@ adr_004_compliance: n/a-with-rationale   # BE migración pura, sin sub-tab UI
 priority: high
 parallel_safe: false
 last_modified: 2026-05-30
-state: reviewing
-phase: HANDOFF_TO_PM_MERGE
+state: done
+phase: MERGED
+merged_at: 2026-05-30
+cap_target_final: iam-scaffold-slice-1   # Fase F.3: append change_log type=fix (crm-consent-optout estaba deprecated; iam-scaffold-slice-1 es el cap live que representa acceso PHI + audit que este story hizo operativo)
 ratified_by_chris: true
 pgcrypto_in_scope: true   # Chris ratificó 2026-05-30
 adr_007_ref: ADR-vitalia-007-phi-pgcrypto-encryption   # KEK env-based dev + KMS slot prod
