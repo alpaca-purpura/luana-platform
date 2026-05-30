@@ -76,14 +76,6 @@ export function AppPanelSlot({ children }: AppPanelSlotProps) {
           </div>
         )}
       </div>
-
-      {/* Slot label — identifies remaining F1 placeholders */}
-      <span
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 whitespace-nowrap rounded-md border border-dashed border-border bg-background/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground pointer-events-none"
-        aria-hidden="true"
-      >
-        AppPanelSlot · F1-S10
-      </span>
     </section>
   );
 }

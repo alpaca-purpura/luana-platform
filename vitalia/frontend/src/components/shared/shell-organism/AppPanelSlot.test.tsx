@@ -84,16 +84,15 @@ describe("AppPanelSlot — integration with Ribbon + SubTabsBar (F1-S8 T-5)", ()
     expect(skeletonCircles.length).toBe(0);
   });
 
-  it("slot label text is 'AppPanelSlot · F1-S10' (S8 done — removed from label)", () => {
+  it("NO renderiza el label placeholder de debug (removido 2026-05-29 — leakeaba 'AppPanelSlot' encima del contenido real)", () => {
     const { container } = render(<AppPanelSlot />);
+    // El span placeholder absoluto/z-20 fue removido: el contenido real (o su skeleton)
+    // ya no debe tener un label de debug flotando encima en ninguna ruta del shell.
     const labelSpan = container.querySelector(
       "span.tracking-wider[aria-hidden='true']",
     );
-    expect(labelSpan).not.toBeNull();
-    expect(labelSpan?.textContent).toBe("AppPanelSlot · F1-S10");
-    // F1-S7 and F1-S8 should NOT be in label (already done)
-    expect(labelSpan?.textContent).not.toContain("S7");
-    expect(labelSpan?.textContent).not.toContain("S8");
+    expect(labelSpan).toBeNull();
+    expect(container.textContent ?? "").not.toContain("AppPanelSlot");
   });
 
   it("aria-label is 'Panel aplicación' (preserved)", () => {
