@@ -22,7 +22,11 @@ vi.mock('@/lib/workspace', () => ({
 }));
 
 vi.mock('@/lib/cap-ledger', () => ({
-  readCapability: vi.fn(async () => ({ id: 'fake-cap' })),
+  readCapability: vi.fn(async () => ({
+    id: 'fake-cap',
+    module: 'brand_studio',
+    agent_owner: 'lisa',
+  })),
 }));
 
 vi.mock('../../app/api/_lib/story-templates', () => ({
@@ -171,6 +175,21 @@ describe('POST /api/extend-cap', () => {
         capChangeType: 'extend',
         parentStory: null,
         spawnedBy: 'cockpit-extend-cap',
+      })
+    );
+  });
+
+  it('test_propagates_agent_owner_and_module_from_parent_cap', async () => {
+    // Regresión: la story creada debe heredar agent_owner + module del cap padre
+    // → el board pinta el agente/módulo en vez de "—".
+    const { createNewStoryDocs } = await import('../../app/api/_lib/story-templates.js');
+    const POST = await getHandler();
+    await POST(makeRequest(baseBody()) as Parameters<typeof POST>[0]);
+
+    expect(createNewStoryDocs).toHaveBeenCalledWith(
+      expect.objectContaining({
+        agentOwner: 'lisa',
+        module: 'brand_studio',
       })
     );
   });

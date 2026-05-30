@@ -112,6 +112,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       capTarget: parent.story.cap_target ?? null,
       capChangeType: parent.story.cap_target ? 'extend' : null,
       parentStory: data.parentStoryId,
+      // Hereda agente + módulo de la story padre → board pinta agente/módulo.
+      agentOwner: parent.story.agent_owner ?? null,
+      module: parent.story.module ?? null,
       spawnedBy: 'cockpit-from-done',
     });
 

@@ -66,8 +66,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     data.parentCap.module,
     `${data.parentCap.slug}.yaml`
   );
+  let parentCapData;
   try {
-    await readCapability(parentCapPath);
+    parentCapData = await readCapability(parentCapPath);
   } catch {
     return errorResponse('parentCap no encontrada', 404, {
       parent: `${data.parentCap.module}/${data.parentCap.slug}`,
@@ -110,6 +111,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       capTarget,
       capChangeType: data.capChangeType,
       parentStory: null,
+      // Hereda agente + módulo del cap padre → el board pinta agente/módulo
+      // en vez de "—". (derive crea un cap hijo nuevo pero mantiene la raíz.)
+      agentOwner: parentCapData.agent_owner ?? null,
+      module: parentCapData.module || data.parentCap.module,
       spawnedBy: 'cockpit-extend-cap',
     });
 

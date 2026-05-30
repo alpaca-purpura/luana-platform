@@ -19,6 +19,10 @@ export interface NewStoryInput {
   capChangeType?: CapChangeType | null;
   parentStory?: string | null;
   spawnedBy?: string;
+  /** Agente dueño (heredado del cap/story padre) → board pinta franja + emoji. */
+  agentOwner?: string | null;
+  /** Módulo del cap (heredado del cap/story padre) → ubicación en el mapa. */
+  module?: string | null;
 }
 
 function nowIso(): string {
@@ -56,6 +60,8 @@ export async function createNewStoryDocs(
     cap_target: input.capTarget ?? null,
     cap_change_type: input.capChangeType ?? null,
     parent_story: input.parentStory ?? null,
+    agent_owner: input.agentOwner ?? null,
+    module: input.module ?? null,
     last_modified: nowIso(),
     spawned_at: todayIso(),
     spawned_by: input.spawnedBy ?? 'cockpit',
