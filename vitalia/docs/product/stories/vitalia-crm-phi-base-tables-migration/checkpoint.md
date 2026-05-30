@@ -11,14 +11,17 @@ adr_004_compliance: n/a-with-rationale   # BE migración pura, sin sub-tab UI
 priority: high
 parallel_safe: false
 last_modified: 2026-05-30
-state: refined
-phase: SPEC_RATIFIED
+state: ready
+phase: READY_PACKAGE_CLOSED
 ratified_by_chris: true
 pgcrypto_in_scope: true   # Chris ratificó 2026-05-30
+adr_007_ref: ADR-vitalia-007-phi-pgcrypto-encryption   # KEK env-based dev + KMS slot prod
+ready_package_done: true   # 03-arch + ADR-007 + 04-validators + 05-guidelines + 06-tickets + dispatch-plan
+prior_art_audit_done: true   # EXTEND KEKClient existente, cero capa nueva, cero mirror cross-brand
 prior_art_scan_done: true
 prior_story: vitalia-iam-slice2-phi-real-auth   # nace del hallazgo live god-matrix de aquella
 
-next_action: "/architect produce ready package (deriva schema canónico + pgcrypto DDL + repo decrypt wiring + KEK + 04-validators + 05-guidelines + 06-tickets). Build SUPERVISADO."
+next_action: "/dev-team vitalia: vitalia-crm-phi-base-tables-migration, ticket T-1 (DAG T-1→T-2→T-3). Build SUPERVISADO (autonomous_mode false): verificación live re-god-matrix antes de cerrar T-3."
 
 # Autonomous mode — false por default (migración PHI tables, verificación live requerida)
 autonomous_mode: false
