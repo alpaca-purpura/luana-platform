@@ -52,6 +52,29 @@ change_log:
     summary: "Implementación inicial · migración legacy a schema v2"
     merge_sha: null
     status: done
+  - story_id: vitalia-stub-caps-scenario-backfill
+    date: 2026-05-30
+    type: extend
+    summary: "backfill scenario+e2e → verified-live (deployed-visible)"
+    scenarios_added: 1
+    status: done
+
+last_modified: 2026-05-30
+
+scenarios:
+  - id: callback-subclasses-heredan-engine-no-mirror
+    name: "Arch fitness verifica que las subclases de callback de Vitalia heredan el engine y no duplican su lógica"
+    actor: sistema
+    status: live
+    given: "Los archivos VitaliaCopilotCallbackHandler y VitaliaSalesAgentCallbackHandler existen en los módulos copilot/sales_agent de Vitalia"
+    when: "Se corre test_no_observability_mirror_copilot.py y test_no_observability_mirror_sales_agent.py que verifican herencia y ausencia de redefinición de métodos del engine"
+    then: "VitaliaCopilotCallbackHandler hereda BaseAgentCallbackHandler; VitaliaCopilotObservabilityContext hereda BaseObservabilityContext; ningún método de plumbing del engine está redefinido localmente; ratchet 25+ gates pasan; exit 0"
+    e2e_test: "vitalia/backend/tests/architecture/test_no_observability_mirror_copilot.py"
+    verification_method: pytest-backend-justified
+    story_spec_ref: "vitalia/docs/product/stories/vitalia-stub-caps-scenario-backfill/01-spec.md"
+    atomic_ref: null
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    added_date: 2026-05-30
 ---
 
 # vitalia-callback-subclasses

@@ -52,6 +52,29 @@ change_log:
     summary: "Implementación inicial · migración legacy a schema v2"
     merge_sha: null
     status: done
+  - story_id: vitalia-stub-caps-scenario-backfill
+    date: 2026-05-30
+    type: extend
+    summary: "backfill scenario+e2e → verified-live (deployed-visible)"
+    scenarios_added: 1
+    status: done
+
+last_modified: 2026-05-30
+
+scenarios:
+  - id: otel-degradacion-graceful-sdk-ausente
+    name: "OTel y Sentry degradan graciosamente cuando el SDK no está instalado en venv de desarrollo"
+    actor: sistema
+    status: live
+    given: "El setup de OTel (otel_setup.py) y los spans de cron/agent están implementados; en el venv de desarrollo opentelemetry-sdk puede no estar instalado"
+    when: "Se corre tests/_shared/observability/test_otel_setup.py que verifica el setup de recursos OTel y el comportamiento de degradación graceful"
+    then: "Los tests que requieren OTel SDK se saltean graciosamente (8 SKIP) cuando el SDK no está; los tests de contrato que no requieren SDK pasan (2 PASS); la aplicación no falla al iniciar aunque OTel esté ausente; exit 0"
+    e2e_test: "vitalia/backend/tests/_shared/observability/test_otel_setup.py"
+    verification_method: pytest-backend-justified
+    story_spec_ref: "vitalia/docs/product/stories/vitalia-stub-caps-scenario-backfill/01-spec.md"
+    atomic_ref: null
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    added_date: 2026-05-30
 ---
 
 # vitalia-otel-sentry-graceful-degradation

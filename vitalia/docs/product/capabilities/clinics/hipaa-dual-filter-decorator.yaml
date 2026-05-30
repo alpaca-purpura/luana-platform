@@ -71,6 +71,29 @@ change_log:
     summary: "Implementación inicial · migración legacy a schema v2"
     merge_sha: null
     status: done
+  - story_id: vitalia-stub-caps-scenario-backfill
+    date: 2026-05-30
+    type: extend
+    summary: "backfill scenario+e2e → verified-live (deployed-visible)"
+    scenarios_added: 1
+    status: done
+
+last_modified: 2026-05-30
+
+scenarios:
+  - id: hipaa-dual-filter-bloquea-cross-clinic
+    name: "Arch fitness verifica que todos los repos PHI incluyen dual filter tenant_id + clinic_id"
+    actor: sistema
+    status: live
+    given: "Los archivos *_repository.py de Vitalia que acceden a modelos PHI (Patient, Appointment, TreatmentPlan, etc.) están en el filesystem"
+    when: "Se corre el arch fitness test test_phi_dual_filter.py que escanea via AST los .where() de cada repo"
+    then: "El test verifica que toda query PHI incluye tenant_id AND clinic_id; ningún repo accede a PHI con filtro simple; el test sale exit 0"
+    e2e_test: "vitalia/backend/tests/architecture/test_phi_dual_filter.py"
+    verification_method: pytest-backend-justified
+    story_spec_ref: "vitalia/docs/product/stories/vitalia-stub-caps-scenario-backfill/01-spec.md"
+    atomic_ref: null
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    added_date: 2026-05-30
 ---
 
 # Decorator @require_phi_access dual filter

@@ -52,6 +52,29 @@ change_log:
     summary: "Implementación inicial · migración legacy a schema v2"
     merge_sha: null
     status: done
+  - story_id: vitalia-stub-caps-scenario-backfill
+    date: 2026-05-30
+    type: extend
+    summary: "backfill scenario+e2e → verified-live (deployed-visible)"
+    scenarios_added: 1
+    status: done
+
+last_modified: 2026-05-30
+
+scenarios:
+  - id: health-endpoint-responde-200-sin-auth
+    name: "Endpoint GET /api/health responde 200 con status ok sin autenticación"
+    actor: sistema
+    status: live
+    given: "El backend de Vitalia está corriendo; el endpoint /api/health está registrado sin guard de auth"
+    when: "Se realiza GET /api/health sin header de autorización"
+    then: "El endpoint responde 200 JSON {status: ok, brand: vitalia}; las sondas K8s y el smoke post-deploy pueden consumirlo sin credenciales"
+    e2e_test: "vitalia/backend/tests/integration/test_api_health_endpoint.py"
+    verification_method: deploy-endpoint
+    story_spec_ref: "vitalia/docs/product/stories/vitalia-stub-caps-scenario-backfill/01-spec.md"
+    atomic_ref: null
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    added_date: 2026-05-30
 ---
 
 # API health endpoint — /api/health

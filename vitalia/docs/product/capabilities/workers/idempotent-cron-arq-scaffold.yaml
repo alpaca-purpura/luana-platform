@@ -52,6 +52,42 @@ change_log:
     summary: "Implementación inicial · migración legacy a schema v2"
     merge_sha: null
     status: done
+  - story_id: vitalia-stub-caps-scenario-backfill
+    date: 2026-05-30
+    type: extend
+    summary: "backfill scenario+e2e → verified-live (deployed-visible)"
+    scenarios_added: 2
+    status: done
+
+last_modified: 2026-05-30
+
+scenarios:
+  - id: cron-envelope-usado-en-todos-los-crons
+    name: "Arch fitness verifica que todos los cron jobs de Vitalia usan @cron_envelope del engine"
+    actor: sistema
+    status: live
+    given: "Los archivos workers/jobs/*.py de Vitalia contienen 11 funciones cron decoradas"
+    when: "Se corre test_cron_envelope_used.py que escanea decoradores y verifica que solo se usa @cron_envelope importado de luana_core_platform.workers.cron_envelope"
+    then: "Ninguna función cron usa decorator alternativo (@idempotent_cron, @cron_job, etc.); el ratchet KNOWN_LEGACY_CRONS no ha crecido; exit 0"
+    e2e_test: "vitalia/backend/tests/architecture/test_cron_envelope_used.py"
+    verification_method: pytest-backend-justified
+    story_spec_ref: "vitalia/docs/product/stories/vitalia-stub-caps-scenario-backfill/01-spec.md"
+    atomic_ref: null
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    added_date: 2026-05-30
+  - id: arq-settings-declara-11-cron-jobs
+    name: "WorkerSettings ARQ declara 11 cron jobs con nombres explícitos y configuración válida"
+    actor: sistema
+    status: live
+    given: "vitalia/backend/src/modules/vitalia/_shared/workers/arq_settings.py existe con WorkerSettings"
+    when: "Se corre tests/workers/test_arq_settings.py que verifica la configuración ARQ"
+    then: "WorkerSettings declara 11 funciones + 11 cron_jobs con redis_settings, keep_result, max_jobs, health_check_interval; todas las cron() calls usan name= explícito; exit 0"
+    e2e_test: "vitalia/backend/tests/workers/test_arq_settings.py"
+    verification_method: pytest-backend-justified
+    story_spec_ref: "vitalia/docs/product/stories/vitalia-stub-caps-scenario-backfill/01-spec.md"
+    atomic_ref: null
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    added_date: 2026-05-30
 ---
 
 # vitalia-idempotent-cron-arq-scaffold

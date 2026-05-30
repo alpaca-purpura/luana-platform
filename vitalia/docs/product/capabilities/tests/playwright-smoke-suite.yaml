@@ -51,6 +51,29 @@ change_log:
     summary: "Implementación inicial · migración legacy a schema v2"
     merge_sha: null
     status: done
+  - story_id: vitalia-stub-caps-scenario-backfill
+    date: 2026-05-30
+    type: extend
+    summary: "backfill scenario+e2e → verified-live (deployed-visible)"
+    scenarios_added: 1
+    status: done
+
+last_modified: 2026-05-30
+
+scenarios:
+  - id: smoke-suite-auth-sign-in-renderiza
+    name: "La suite smoke Playwright ejecuta el spec de sign-in sin errores"
+    actor: infra
+    status: live
+    given: "El frontend de Vitalia está disponible en E2E_BASE_URL (localhost:3002 o dev-app); la suite smoke está configurada en playwright.config.ts"
+    when: "Se ejecuta el spec e2e/auth/sign-in-form.spec.ts con el proyecto smoke"
+    then: "Los scenarios SC-03/SC-04 pasan (página /sign-in renderiza Clerk SignIn sin placeholders pendientes); la suite sale exit 0"
+    e2e_test: "vitalia/frontend/e2e/auth/sign-in-form.spec.ts"
+    verification_method: deploy-endpoint
+    story_spec_ref: "vitalia/docs/product/stories/vitalia-stub-caps-scenario-backfill/01-spec.md"
+    atomic_ref: null
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    added_date: 2026-05-30
 ---
 
 # Playwright smoke suite — vitalia
