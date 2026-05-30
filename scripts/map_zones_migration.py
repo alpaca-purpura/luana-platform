@@ -87,37 +87,82 @@ def load_system_map(brand_dir: Path) -> dict[str, Any]:
 
 
 def build_absorbs_table(system_map: dict[str, Any]) -> dict[str, str]:
-    """Build functional_area → map_box dict from zones[].target_boxes[].absorbs."""
+    """Build functional_area → map_box dict from zones[].boxes[].absorbs.
+
+    Supports SYSTEM-MAP v2.0 where zones[].boxes is a list of objects
+    (each with id + absorbs[]) and the legacy v1.x where target_boxes[]
+    held the absorbs data.  Back-compat: also reads target_boxes[] when
+    present so the same script works against both schema versions.
+    """
     table: dict[str, str] = {}
     for zone in system_map.get("zones", []):
+        # v2.0: boxes is a list of objects {id, name, absorbs, ...}
+        for box in zone.get("boxes", []):
+            if isinstance(box, dict):
+                box_id = box.get("id", "")
+                for absorb in box.get("absorbs", []):
+                    table[absorb] = box_id
+        # v1.x back-compat: target_boxes[] (may not exist in v2.0)
         for tb in zone.get("target_boxes", []):
-            box_id = tb["id"]
-            for absorb in tb.get("absorbs", []):
-                table[absorb] = box_id
+            if isinstance(tb, dict):
+                box_id = tb.get("id", "")
+                for absorb in tb.get("absorbs", []):
+                    table[absorb] = box_id
     return table
 
 
 def build_valid_boxes(system_map: dict[str, Any]) -> set[str]:
-    """All valid box IDs from zones (Agentes boxes + Plataforma boxes + Infra boxes)."""
+    """All valid box IDs from zones (Agentes boxes + Plataforma boxes + Infra boxes).
+
+    Supports SYSTEM-MAP v2.0 where zones[].boxes is a list of objects
+    {id, ...}, and v1.x where boxes is a list of plain strings + target_boxes
+    carried the object form.
+    """
     valid: set[str] = set()
     for zone in system_map.get("zones", []):
-        boxes = zone.get("boxes", [])
-        if isinstance(boxes, list):
-            valid.update(boxes)
+        for box in zone.get("boxes", []):
+            if isinstance(box, dict):
+                # v2.0: box object — extract id
+                box_id = box.get("id", "")
+                if box_id:
+                    valid.add(box_id)
+            elif isinstance(box, str):
+                # v1.x: plain string
+                valid.add(box)
+        # v1.x back-compat: target_boxes[] may coexist
         for tb in zone.get("target_boxes", []):
-            valid.add(tb["id"])
+            if isinstance(tb, dict):
+                box_id = tb.get("id", "")
+                if box_id:
+                    valid.add(box_id)
     return valid
 
 
 def box_to_zone(system_map: dict[str, Any]) -> dict[str, str]:
-    """Build box_id → zone_id dict."""
+    """Build box_id → zone_id dict.
+
+    Supports SYSTEM-MAP v2.0 where zones[].boxes is a list of objects
+    {id, ...}, and v1.x where boxes is a list of plain strings + target_boxes
+    carried the object form.
+    """
     mapping: dict[str, str] = {}
     for zone in system_map.get("zones", []):
         zid = zone["id"]
         for box in zone.get("boxes", []):
-            mapping[box] = zid
+            if isinstance(box, dict):
+                # v2.0: box object — extract id
+                box_id = box.get("id", "")
+                if box_id:
+                    mapping[box_id] = zid
+            elif isinstance(box, str):
+                # v1.x: plain string
+                mapping[box] = zid
+        # v1.x back-compat: target_boxes[]
         for tb in zone.get("target_boxes", []):
-            mapping[tb["id"]] = zid
+            if isinstance(tb, dict):
+                box_id = tb.get("id", "")
+                if box_id:
+                    mapping[box_id] = zid
     return mapping
 
 

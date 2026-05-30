@@ -47,13 +47,14 @@ def _load_module():
 
 SYSTEM_MAP_MINIMAL = {
     "brand": "vitalia",
-    "version": "1.1",
+    "version": "2.0",
     "zones": [
         {
             "id": "agentes",
             "name": "Agentes",
             "tier": "core",
             "user_visible": True,
+            # v2.0: agent boxes are plain strings (no absorbs — agent_owner drives mapping)
             "boxes": ["lisa", "mateo", "adrian", "lucas", "camila"],
             "notes": "",
         },
@@ -62,9 +63,9 @@ SYSTEM_MAP_MINIMAL = {
             "name": "Plataforma",
             "tier": "supporting",
             "user_visible": True,
-            "boxes": ["acceso", "onboarding", "configuracion"],
             "legacy_home": "config",
-            "target_boxes": [
+            # v2.0: boxes are objects with id + absorbs (target_boxes promoted to 1st-level)
+            "boxes": [
                 {"id": "acceso", "name": "Acceso", "absorbs": ["config.auth", "config.iam"]},
                 {"id": "onboarding", "name": "Onboarding", "absorbs": ["config.onboarding_clinic"]},
                 {
@@ -86,9 +87,9 @@ SYSTEM_MAP_MINIMAL = {
             "name": "Infraestructura",
             "tier": "enabling",
             "user_visible": False,
-            "boxes": ["seguridad-cumplimiento", "observabilidad", "plataforma-tecnica", "motor-agentico"],
             "legacy_home": "infra",
-            "target_boxes": [
+            # v2.0: boxes are objects with id + absorbs (target_boxes promoted to 1st-level)
+            "boxes": [
                 {
                     "id": "seguridad-cumplimiento",
                     "name": "Seguridad & Cumplimiento",
@@ -123,7 +124,7 @@ SYSTEM_MAP_MINIMAL = {
     "agent_orchestration": [],
     "metadata": {
         "last_modified": "2026-05-30",
-        "schema_version": "1.0",
+        "schema_version": "2.0",
     },
 }
 
