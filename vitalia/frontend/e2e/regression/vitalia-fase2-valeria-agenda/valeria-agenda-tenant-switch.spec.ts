@@ -56,7 +56,8 @@ test.describe("SC-3 — tenant switch invalidates drawer + cache", () => {
 
     // 3. Switch to tenant B
     await setupAgendaGridMock(agendaPage, "tenant_b");
-    await agendaPage.goto(`/${TENANT_B_ID}/valeria/agenda?view=semana`);
+    // UPDATED: paradigm-map-zones T-6 — route migrated to mateo/agenda
+    await agendaPage.goto(`/${TENANT_B_ID}/mateo/agenda?view=semana`);
     await agendaPage.waitForLoadState("domcontentloaded");
 
     // 4. Drawer must be closed after navigation (Zustand reset on tenant switch)
@@ -85,7 +86,8 @@ test.describe("SC-3 — tenant switch invalidates drawer + cache", () => {
 
     // Switch tenant
     await setupAgendaGridMock(agendaPage, "tenant_b");
-    await agendaPage.goto(`/${TENANT_B_ID}/valeria/agenda`);
+    // UPDATED: paradigm-map-zones T-6 — route migrated to mateo/agenda
+    await agendaPage.goto(`/${TENANT_B_ID}/mateo/agenda`);
     await agendaPage.waitForLoadState("domcontentloaded");
 
     // localStorage updated to tenant B
@@ -111,7 +113,8 @@ test.describe("SC-3 — tenant switch invalidates drawer + cache", () => {
     await setupAgendaGridMock(agendaPage, "tenant_b");
     await agendaPage.evaluate((newTenantId: string) => {
       // Simulate tenant switch via Clerk / app navigation
-      window.location.href = `/${newTenantId}/valeria/agenda`;
+      // UPDATED: paradigm-map-zones T-6 — route migrated to mateo/agenda
+      window.location.href = `/${newTenantId}/mateo/agenda`;
     }, TENANT_B_ID);
     await agendaPage.waitForLoadState("domcontentloaded");
 

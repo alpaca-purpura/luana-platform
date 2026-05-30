@@ -12,7 +12,8 @@ const T = "e69a691d-070e-5caf-a053-6e74642ec100";
 test("arrastrar splitter a tope-izq respeta el min del panel Valeria (no colapsa el chat)", async ({
   page,
 }) => {
-  await page.goto(`/${T}/valeria/agenda`, { waitUntil: "domcontentloaded" });
+  // UPDATED: paradigm-map-zones T-6 (2026-05-30) — route migrated to mateo/agenda
+  await page.goto(`/${T}/mateo/agenda`, { waitUntil: "domcontentloaded" });
   await page.waitForTimeout(3500);
 
   const sep = page.locator('[aria-label="Redimensionar paneles"]').first();
@@ -42,7 +43,8 @@ test("arrastrar splitter a tope-izq respeta el min del panel Valeria (no colapsa
 test("arrastrar splitter a tope-DER respeta el min del panel app (contenedores derecha no colapsan)", async ({
   page,
 }) => {
-  await page.goto(`/${T}/valeria/agenda`, { waitUntil: "domcontentloaded" });
+  // UPDATED: paradigm-map-zones T-6 (2026-05-30) — route migrated to mateo/agenda
+  await page.goto(`/${T}/mateo/agenda`, { waitUntil: "domcontentloaded" });
   await page.waitForTimeout(3500);
 
   const vw = page.viewportSize()?.width ?? 1280;

@@ -76,3 +76,6 @@ T-4 completado (F0 rename backlog Fase 2 + map_box). **5 story dirs renombrados*
 
 ### 2026-05-30 · 🤖 claude · `/dev-team` · ✓ APLICADO (T-5)
 T-5 (F6 shell UI) completado. agent-catalog.ts: Ribbon = [lisa,mateo,adrian,lucas,camila], Mateo=Operar (agenda+pacientes ex-valeria), Valeria fuera del ribbon. **Valeria sidebar/chat/rail PRESERVADO** (supervisora). git mv routing valeria/→mateo/ + features/valeria→mateo. ConfigTab→Plataforma. El builder quedó a una falla (budget); cerré yo el bug (`PacientesPlaceholder` leía `RIBBON_SUBTABS.valeria` ahora vacío → `.mateo`, Carril A gate-verified). tsc 0 · eslint 0 · **vitest 2319/2319 PASS**. Falta T-6 (e2e) → auditor → merge.
+
+### 2026-05-30 · 🤖 claude · `/dev-team` · ✓ APLICADO (T-6 · ÚLTIMO ticket)
+T-6 (F7 tests) completado. 2 specs e2e nuevos (ribbon-realign: 5 tabs+Plataforma·Mateo·sin Valeria-tab · mateo-agenda-loads) + ~20 specs existentes actualizados (rutas valeria/agenda→mateo/agenda; tab Valeria→Mateo; sidebar Valeria preservado). Validators: migración idempotente GREEN · reconcile + validate_system_map(--brand vitalia) PASS · tsc 0 · eslint 0 · vitest 2319 sin regresión. e2e specs escritos+typecheckan (run real = CI, stack down). Builder paró por budget verificando; cerré yo. **BUILD COMPLETO 6/6** → transición developed → /auditor.

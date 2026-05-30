@@ -86,7 +86,9 @@ export class AgendaViewPage {
     if (view) params.set("view", view);
     if (date) params.set("date", date);
     const qs = params.toString() ? `?${params.toString()}` : "";
-    await this.page.goto(`/${this.tenantId}/valeria/agenda${qs}`);
+    // UPDATED: paradigm-map-zones T-6 (2026-05-30) — route migrated to mateo/agenda.
+    // Was: /${this.tenantId}/valeria/agenda (pre paradigm-map-zones T-5)
+    await this.page.goto(`/${this.tenantId}/mateo/agenda${qs}`);
     await this.page.waitForLoadState("domcontentloaded");
   }
 

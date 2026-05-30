@@ -16,7 +16,7 @@
  *   - /sign-up → signup.png
  *
  * Nota F1-S9: La página autenticada legacy / (dashboard) fue eliminada en T-5.
- * La nueva landing post-login es /{tenantId}/valeria/agenda (shell-organism).
+ * La nueva landing post-login es /{tenantId}/mateo/agenda (shell-organism · UPDATED v1.2 paradigm-map-zones T-6).
  * El visual baseline para shell-organism se cubre en
  * e2e/regression/vitalia-fase1-routing-shell/happy-navigation.spec.ts.
  *
@@ -111,6 +111,6 @@ test.describe("SC-16 — Visual baseline (vitalia-auth-base-functional)", () => 
 
 // NOTE F1-S9: El bloque "Dashboard autenticado" fue removido en T-5 legacy cleanup.
 // La ruta / (dashboard) ya no existe. La nueva landing autenticada es
-// /{tenantId}/valeria/agenda (shell-organism).
+// /{tenantId}/mateo/agenda (shell-organism · UPDATED v1.2 paradigm-map-zones T-6).
 // El coverage visual autenticado vive en:
 //   e2e/regression/vitalia-fase1-routing-shell/happy-navigation.spec.ts

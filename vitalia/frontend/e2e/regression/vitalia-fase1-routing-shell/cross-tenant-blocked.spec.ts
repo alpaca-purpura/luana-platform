@@ -6,11 +6,11 @@
  * Gherkin: 01-spec.md § Gherkin SC-4
  *
  * Given: user A con JWT tenant_id=clinic-A
- *        user A intenta acceder a /clinic-B/(shell-organism)/valeria/agenda
+ *        user A intenta acceder a /clinic-B/(shell-organism)/mateo/agenda (UPDATED v1.2)
  * When:  proxy.ts pasa request (auth Clerk válida)
  *        layout.tsx server-side fetch GET /api/v1/iam/me/tenants → [{id:"clinic-A"}]
  *        layout detecta params.tenantId="clinic-B" ∉ user.tenants
- * Then:  redirect a /clinic-A/valeria/agenda
+ * Then:  redirect a /clinic-A/mateo/agenda (UPDATED v1.2 default landing)
  *        browser final URL contains "clinic-A"
  *        NO chrome de clinic-B rendered
  *        audit log row emitted (HIPAA-lite: userId + attemptedTenant + timestamp, NO PHI)
@@ -48,7 +48,8 @@ test.describe("SC-4 — adversarial · cross-tenant access blocked", () => {
     });
 
     // Attempt to access TENANT_B (user does not belong there)
-    await shellPage.goto(`/${TENANT_B}/valeria/agenda`);
+    // UPDATED: paradigm-map-zones T-6 — use mateo/agenda (was valeria/agenda pre v1.2)
+    await shellPage.goto(`/${TENANT_B}/mateo/agenda`);
 
     // Should redirect to TENANT_A (first valid tenant)
     await shellPage.waitForURL(`**/${TENANT_A}/**`, { timeout: 15_000 });
@@ -69,7 +70,8 @@ test.describe("SC-4 — adversarial · cross-tenant access blocked", () => {
 
     const pom = new ShellPage(shellPage);
 
-    await shellPage.goto(`/${TENANT_B}/valeria/agenda`);
+    // UPDATED: paradigm-map-zones T-6 — use mateo/agenda (was valeria/agenda pre v1.2)
+    await shellPage.goto(`/${TENANT_B}/mateo/agenda`);
     await shellPage.waitForURL(`**/${TENANT_A}/**`, { timeout: 15_000 });
 
     // Shell chrome should render for TENANT_A, not be blank or TENANT_B

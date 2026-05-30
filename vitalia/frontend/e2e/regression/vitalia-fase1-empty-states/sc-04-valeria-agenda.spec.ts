@@ -1,9 +1,12 @@
 /**
- * sc-04-valeria-agenda.spec.ts — SC-4 · Valeria Agenda enriquecida
+ * sc-04-valeria-agenda.spec.ts — SC-4 · Agenda enriquecida (ruta mateo/agenda post T-5 migration)
  * F1-S10 vitalia-fase1-empty-states — T-10
+ * UPDATED: paradigm-map-zones T-6 (2026-05-30) — agenda migrada a mateo/agenda.
+ *   ValeriaAgendaPage POM sigue usable pero navegando a /mateo/agenda.
+ *   Valeria ya NO es tab del ribbon (supervisor sidebar only v1.2).
  *
  * Assertions:
- *   - AgendaPlaceholder mounts at /valeria/agenda
+ *   - AgendaPlaceholder mounts at /mateo/agenda (migrated from /valeria/agenda T-5)
  *   - AgendaToolbar visible (period nav + today btn + CTA crear-cita + period toggle)
  *   - AgendaFilters visible
  *   - 6 day headers: Lun 26 through Sáb 31 (from DAYS mock data)
@@ -12,7 +15,7 @@
  *   - AgendaSummaryFooter visible with summary text
  *   - CTA dropdown opens on click (3 origin options: walk-in / phone / outbound)
  *
- * Uses: ValeriaAgendaPage POM + empty-states.fixture
+ * Uses: ValeriaAgendaPage POM (overriding goto to mateo/agenda) + empty-states.fixture
  *
  * SC-4 validator: val-fe-e2e-sc04-valeria-agenda
  * downstream-regression-na: brand-local vitalia e2e spec
@@ -25,16 +28,32 @@ import { ValeriaAgendaPage } from "../../pages/ValeriaAgendaPage";
 // Day numbers from DAYS mock array in AgendaPlaceholder.tsx: Lun26..Sáb31
 const EXPECTED_DAY_NUMS = [26, 27, 28, 29, 30, 31] as const;
 
-test.describe("SC-4 · Valeria Agenda enriquecida (toolbar+filters+grid+footer)", () => {
+/**
+ * Navigate to the migrated agenda route: mateo/agenda (was valeria/agenda pre T-5).
+ * ValeriaAgendaPage.goto() still navigates to valeria/agenda — override here.
+ */
+async function gotoMateoAgenda(
+  page: import("@playwright/test").Page,
+  tenantId: string,
+): Promise<void> {
+  // UPDATED: paradigm-map-zones T-6 — agenda moved to mateo/agenda in T-5
+  await page.goto(`/${tenantId}/mateo/agenda`);
+  await page.waitForLoadState("networkidle");
+}
+
+test.describe("SC-4 · Agenda enriquecida (mateo/agenda — migrada de valeria/agenda)", () => {
   test.beforeEach(async ({ shellPage, tenantId }) => {
+    // UPDATED: navigate to mateo/agenda instead of valeria/agenda (paradigm-map-zones T-6)
+    await gotoMateoAgenda(shellPage, tenantId);
     const agenda = new ValeriaAgendaPage(shellPage, tenantId);
-    await agenda.goto();
     await agenda.expectAgendaMounted();
   });
 
-  test("AgendaPlaceholder monta con data-testid 'valeria-agenda-placeholder'", async ({
+  test("AgendaPlaceholder monta con data-testid 'valeria-agenda-placeholder' (ruta mateo/agenda)", async ({
     shellPage,
   }) => {
+    // NOTE: data-testid remains "valeria-agenda-placeholder" (component kept original testid).
+    // Route changed: mateo/agenda (paradigm-map-zones T-6).
     await expect(
       shellPage.locator('[data-testid="valeria-agenda-placeholder"]').first(),
     ).toBeVisible();
@@ -133,25 +152,25 @@ test.describe("SC-4 · Valeria Agenda enriquecida (toolbar+filters+grid+footer)"
     await agenda.expectSummaryFooterVisible();
   });
 
-  test("responsive · agenda visible en 3 breakpoints", async ({
+  test("responsive · agenda visible en 3 breakpoints (ruta mateo/agenda)", async ({
     shellPage,
     tenantId,
   }) => {
     const agenda = new ValeriaAgendaPage(shellPage, tenantId);
 
-    // Mobile 375px
+    // Mobile 375px — UPDATED: gotoMateoAgenda (was agenda.goto() → valeria/agenda)
     await shellPage.setViewportSize({ width: 375, height: 812 });
-    await agenda.goto();
+    await gotoMateoAgenda(shellPage, tenantId);
     await expect(agenda.agendaPlaceholder).toBeVisible();
 
     // Tablet 768px
     await shellPage.setViewportSize({ width: 768, height: 1024 });
-    await agenda.goto();
+    await gotoMateoAgenda(shellPage, tenantId);
     await expect(agenda.agendaPlaceholder).toBeVisible();
 
     // Desktop 1280px
     await shellPage.setViewportSize({ width: 1280, height: 800 });
-    await agenda.goto();
+    await gotoMateoAgenda(shellPage, tenantId);
     await expect(agenda.agendaPlaceholder).toBeVisible();
   });
 });

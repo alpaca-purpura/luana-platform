@@ -10,7 +10,7 @@
  * Then:  HTTP 404
  *        [data-testid=not-found-shell] visible
  *        Ribbon NOT in DOM
- *        CTA "Volver al inicio" → navega a /valeria/agenda
+ *        CTA "Volver al inicio" → navega a /mateo/agenda (UPDATED from /valeria/agenda v1.2)
  *
  * Visual goldens: @light @dark @mobile (seeded via --update-snapshots iter 1)
  *
@@ -66,9 +66,11 @@ test.describe("SC-2 — negative · agent slug inválido → outer not-found", (
     expect(textContent).toMatch(/Volver al inicio/i);
   });
 
-  test("SC-2-3: CTA 'Volver al inicio' navigates to /valeria/agenda", async ({
+  test("SC-2-3 (UPDATED v1.2): CTA 'Volver al inicio' navigates to /mateo/agenda", async ({
     shellPage,
   }) => {
+    // UPDATED: paradigm-map-zones T-6 (2026-05-30) — default landing is /mateo/agenda
+    // Was: /valeria/agenda (pre T-5 migration)
     test.use({ viewport: DESKTOP_VIEWPORT });
     const pom = new ShellPage(shellPage);
 
@@ -81,8 +83,8 @@ test.describe("SC-2 — negative · agent slug inválido → outer not-found", (
     });
     await ctaButton.click();
 
-    // Should navigate to /valeria/agenda (default landing)
-    await shellPage.waitForURL(`**/${TENANT_ID}/valeria/agenda`, {
+    // Should navigate to /mateo/agenda (default landing v1.2)
+    await shellPage.waitForURL(`**/${TENANT_ID}/mateo/agenda`, {
       timeout: 15_000,
     });
 

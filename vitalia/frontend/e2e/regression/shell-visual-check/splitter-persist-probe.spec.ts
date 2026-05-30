@@ -7,7 +7,8 @@ const T = "e69a691d-070e-5caf-a053-6e74642ec100";
 test("probe: dump localStorage del shell + ¿layout stale below-min sobrevive el reload?", async ({
   page,
 }) => {
-  await page.goto(`/${T}/valeria/agenda`, { waitUntil: "domcontentloaded" });
+  // UPDATED: paradigm-map-zones T-6 (2026-05-30) — route migrated to mateo/agenda
+  await page.goto(`/${T}/mateo/agenda`, { waitUntil: "domcontentloaded" });
   await page.waitForTimeout(3000);
 
   // 1. Dump localStorage keys actuales (hallar key de rrp + zustand)

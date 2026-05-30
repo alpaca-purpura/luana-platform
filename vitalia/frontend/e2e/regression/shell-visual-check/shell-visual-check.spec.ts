@@ -11,7 +11,8 @@ import { test, expect } from "@playwright/test";
 import fs from "fs";
 
 const T = "e69a691d-070e-5caf-a053-6e74642ec100";
-const ROUTES = ["valeria/agenda", "lisa/marca/identidad"];
+// UPDATED: paradigm-map-zones T-6 (2026-05-30) — valeria/agenda → mateo/agenda
+const ROUTES = ["mateo/agenda", "lisa/marca/identidad"];
 
 test.beforeAll(() => {
   fs.mkdirSync("_shots", { recursive: true });

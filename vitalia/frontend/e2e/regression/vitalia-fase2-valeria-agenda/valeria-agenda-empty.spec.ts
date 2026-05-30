@@ -116,7 +116,8 @@ test.describe("SC-8 — empty day shows empty state with CTA crear cita", () => 
 
   test("empty week view also renders empty state", async ({ agendaPage }) => {
     // Switch to semana view with empty data
-    await agendaPage.goto(`/${tenantId}/valeria/agenda?view=semana`);
+    // UPDATED: paradigm-map-zones T-6 — route migrated to mateo/agenda
+    await agendaPage.goto(`/${tenantId}/mateo/agenda?view=semana`);
     await agendaPage.waitForLoadState("domcontentloaded");
 
     const agendaView = new AgendaViewPage(agendaPage, tenantId);

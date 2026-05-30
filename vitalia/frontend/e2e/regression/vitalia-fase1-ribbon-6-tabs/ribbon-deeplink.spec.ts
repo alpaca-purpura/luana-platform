@@ -2,6 +2,9 @@
  * ribbon-deeplink.spec.ts — SC-2 happy · URL deep link marca active state correcto
  *
  * F1-S7 vitalia-fase1-ribbon-6-tabs — T-5
+ * UPDATED: paradigm-map-zones T-6 (2026-05-30) — SC-2-3 actualizado a mateo/agenda.
+ *   Valeria ya NO es tab del ribbon (supervisor sidebar only v1.2).
+ *   SC-2-3 ahora valida: deep link mateo/agenda → Mateo active.
  *
  * Gherkin: 01-spec.md § Gherkin SC-2
  *
@@ -15,7 +18,7 @@
  * gherkin_coverage:
  *   - SC-2-1: deep link camila/voz → Camila active, others inactive
  *   - SC-2-2: deep link lisa/marca → Lisa active
- *   - SC-2-3: deep link valeria/agenda → Valeria active
+ *   - SC-2-3 (UPDATED): deep link mateo/agenda → Mateo active (replaces valeria/agenda — v1.2)
  *
  * downstream-regression-na: brand-local E2E spec; no cross-brand consumers
  */
@@ -28,11 +31,13 @@ import type { AgentSlug } from "@/lib/agent-catalog";
 const DESKTOP_VIEWPORT = { width: 1280, height: 800 };
 const TENANT_ID = process.env["E2E_TENANT_ID"] ?? "vitalia-test-tenant";
 
+// v1.2 (paradigm-map-zones T-6): Valeria removed from ribbon (sidebar only).
+// Ribbon now has 5 specialist tabs: lisa, mateo, adrian, lucas, camila.
 const ALL_AGENT_SLUGS: AgentSlug[] = [
   "lisa",
-  "lucas",
+  "mateo",
   "adrian",
-  "valeria",
+  "lucas",
   "camila",
 ];
 
@@ -87,23 +92,26 @@ test.describe("SC-2 — URL deep link active state correcto", () => {
     await expect(pom.getConfigTab()).toHaveAttribute("data-active", "false");
   });
 
-  test("SC-2-3: deep link valeria/agenda → Valeria active + others inactive", async ({
+  test("SC-2-3 (UPDATED v1.2): deep link mateo/agenda → Mateo active + others inactive", async ({
     shellPage,
   }) => {
+    // UPDATED: paradigm-map-zones T-6 (2026-05-30)
+    // Valeria is no longer a ribbon tab (supervisor sidebar only).
+    // SC-2-3 now validates Mateo (Operar) as the agenda-owner tab.
     const pom = new RibbonPage(shellPage);
 
-    await pom.goto({ tenantId: TENANT_ID, agent: "valeria", subtab: "agenda" });
+    await pom.goto({ tenantId: TENANT_ID, agent: "mateo", subtab: "agenda" });
 
-    // Valeria tab should be active
-    await expect(pom.getTab("valeria")).toHaveAttribute("data-active", "true");
-    await expect(pom.getTab("valeria")).toHaveAttribute(
+    // Mateo tab should be active
+    await expect(pom.getTab("mateo")).toHaveAttribute("data-active", "true");
+    await expect(pom.getTab("mateo")).toHaveAttribute(
       "aria-selected",
       "true",
     );
 
     // All others inactive
     for (const slug of ALL_AGENT_SLUGS) {
-      if (slug !== "valeria") {
+      if (slug !== "mateo") {
         await expect(pom.getTab(slug)).toHaveAttribute("data-active", "false");
       }
     }

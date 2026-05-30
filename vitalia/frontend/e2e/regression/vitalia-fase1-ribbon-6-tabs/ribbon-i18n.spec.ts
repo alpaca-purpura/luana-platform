@@ -34,14 +34,16 @@ const TENANT_ID = process.env["E2E_TENANT_ID"] ?? "vitalia-test-tenant";
 /**
  * Expected tab labels per 01-spec.md § 3 Agent catalog + Design Contract
  * SSoT: vitalia/frontend/src/lib/agent-catalog.ts :: tabLabel field
+ * UPDATED: paradigm-map-zones T-6 (2026-05-30) — Valeria removed from ribbon (sidebar only v1.2).
+ *   Mateo (Operar) added. ConfigTab label → "Plataforma" (was "Configurar").
  */
 const EXPECTED_TAB_LABELS = {
   lisa: "Mi Clínica",
-  lucas: "Atraer",
+  mateo: "Operar",
   adrian: "Vender",
-  valeria: "Operar",
+  lucas: "Atraer",
   camila: "Mantener",
-  config: "Configurar",
+  config: "Plataforma",
 } as const;
 
 /**
@@ -88,9 +90,11 @@ const ENGLISH_PLACEHOLDER_PATTERNS = [
 test.describe("SC-8 — i18n Spanish neutro LatAm + tildes correctas", () => {
   test.use({ viewport: DESKTOP_VIEWPORT });
 
-  test("SC-8-1: 11 strings verbatim en ribbon tabs (5 agentes + ConfigTab)", async ({
+  test("SC-8-1 (UPDATED v1.2): strings verbatim en ribbon tabs (5 especialistas + Plataforma)", async ({
     shellPage,
   }) => {
+    // UPDATED: paradigm-map-zones T-6 (2026-05-30)
+    // v1.2: Mateo replaces Valeria in ribbon. ConfigTab label → "Plataforma".
     const pom = new RibbonPage(shellPage);
 
     await pom.goto({ tenantId: TENANT_ID, agent: "lisa", subtab: "marca" });
@@ -106,7 +110,7 @@ test.describe("SC-8 — i18n Spanish neutro LatAm + tildes correctas", () => {
         ).toBe(expectedLabel);
       } else {
         const tab = pom.getTab(
-          slug as "lisa" | "lucas" | "adrian" | "valeria" | "camila",
+          slug as "lisa" | "mateo" | "adrian" | "lucas" | "camila",
         );
         const text = await tab.textContent();
         expect(
@@ -145,9 +149,11 @@ test.describe("SC-8 — i18n Spanish neutro LatAm + tildes correctas", () => {
     ).toHaveLength(0);
   });
 
-  test("SC-8-3: tildes presentes en 'Mi Clínica' y 'Configurar'", async ({
+  test("SC-8-3 (UPDATED v1.2): tildes presentes en 'Mi Clínica' y 'Plataforma'", async ({
     shellPage,
   }) => {
+    // UPDATED: paradigm-map-zones T-6 (2026-05-30)
+    // ConfigTab label → "Plataforma" (was "Configurar"). Mateo replaces Valeria.
     const pom = new RibbonPage(shellPage);
 
     await pom.goto({ tenantId: TENANT_ID, agent: "lisa", subtab: "marca" });
@@ -156,16 +162,16 @@ test.describe("SC-8 — i18n Spanish neutro LatAm + tildes correctas", () => {
     const lisaText = (await pom.getTab("lisa").textContent()) ?? "";
     expect(lisaText).toContain("Clínica"); // Must have tilde (not "Clinica")
 
-    // "Configurar" — ConfigTab is icon-only; label lives in aria-label (not textContent)
+    // "Plataforma" — ConfigTab is icon-only; label lives in aria-label (not textContent)
     const configAriaLabel =
       (await pom.getConfigTab().getAttribute("aria-label")) ?? "";
-    expect(configAriaLabel).toBe("Configurar");
+    expect(configAriaLabel).toBe("Plataforma");
 
-    // Verify none of the tab labels have been corrupted/truncated
+    // Verify none of the tab labels have been corrupted/truncated (v1.2 ribbon order)
     expect(lisaText).toContain("Mi Clínica");
+    expect(await pom.getTab("mateo").textContent()).toContain("Operar");
     expect(await pom.getTab("lucas").textContent()).toContain("Atraer");
     expect(await pom.getTab("adrian").textContent()).toContain("Vender");
-    expect(await pom.getTab("valeria").textContent()).toContain("Operar");
     expect(await pom.getTab("camila").textContent()).toContain("Mantener");
   });
 
@@ -174,7 +180,8 @@ test.describe("SC-8 — i18n Spanish neutro LatAm + tildes correctas", () => {
   }) => {
     const pom = new RibbonPage(shellPage);
 
-    await pom.goto({ tenantId: TENANT_ID, agent: "valeria", subtab: "agenda" });
+    // UPDATED: use mateo/agenda (Valeria no longer a ribbon tab — v1.2)
+    await pom.goto({ tenantId: TENANT_ID, agent: "mateo", subtab: "agenda" });
 
     // Get full ribbon text
     const ribbon = pom.getRibbon();

@@ -11,7 +11,8 @@
  *   - Chrome presence/absence checks (not-found outer hides shell chrome)
  *
  * Route model: /{tenantId}/{agent}/{subtab}
- * Default landing: /{tenantId}/valeria/agenda (F1-S9 default — Chris 2026-05-25)
+ * Default landing: /{tenantId}/mateo/agenda (UPDATED v1.2 — paradigm-map-zones T-6 2026-05-30)
+ *   Was: /{tenantId}/valeria/agenda (F1-S9 default — Chris 2026-05-25, pre T-5 migration)
  *
  * data-testid map:
  *   ribbon                → Ribbon organism
@@ -32,8 +33,10 @@ import { expect } from "@playwright/test";
 // Types
 // ---------------------------------------------------------------------------
 
+// UPDATED v1.2 (paradigm-map-zones T-6): Mateo added to ribbon; Valeria is sidebar only.
 export type AgentSlug =
   | "lisa"
+  | "mateo"
   | "valeria"
   | "adrian"
   | "lucas"
@@ -50,8 +53,10 @@ export interface ShellGotoOptions {
 // Default subtab per agent (mirrors RIBBON_SUBTABS first entry in agent-catalog.ts)
 // ---------------------------------------------------------------------------
 
+// UPDATED v1.2 (paradigm-map-zones T-6): Mateo defaultSubtab = "agenda".
 const AGENT_DEFAULT_SUBTAB: Record<string, string> = {
   lisa: "marca",
+  mateo: "agenda",
   valeria: "agenda",
   adrian: "inbox",
   lucas: "lanzar",
@@ -70,12 +75,12 @@ export class ShellPage {
 
   /**
    * Navigate to tenant root and wait for redirect to default landing
-   * /{tenantId}/valeria/agenda.
+   * /{tenantId}/mateo/agenda (UPDATED v1.2 — was /valeria/agenda pre paradigm-map-zones T-5).
    * SC-1 happy path start.
    */
   async gotoTenantRoot(tenantId: string): Promise<void> {
     await this.page.goto(`/${tenantId}`);
-    // Root page redirects to /valeria/agenda — wait for Ribbon to confirm load
+    // Root page redirects to /mateo/agenda (v1.2) — wait for Ribbon to confirm load
     await this.page
       .locator('[data-testid="ribbon"]')
       .waitFor({ state: "visible", timeout: 20_000 });
