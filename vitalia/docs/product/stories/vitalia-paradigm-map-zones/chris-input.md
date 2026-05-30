@@ -29,3 +29,12 @@ Necesito que ratifiques (00-research.md § 5):
 5. Cockpit (F3) es tool cross-brand: ¿misma tanda o tarea tool-scope aparte?
 
 Tras tu ratificación → state=refining → `/architect` para el plan de migración (06-tickets).
+
+### 2026-05-30 · 👤 chris · ✓ RATIFICA
+Confirmo las 5 decisiones. Pasá a refining.
+
+### 2026-05-30 · 🤖 claude · `/pm-vitalia` · ✓ APLICADO
+Registré las 5 decisiones en `checkpoint.md::ratified_decisions`. state idea→refining. Resolución de las either/or: **d2** split — "pacientes del día"→Mateo, "historial médico" (config.patients-records)→Configuración/clínico · **d3** vista compliance→Plataforma·configuracion + enforcement→Infra·seguridad · **d4** renombrar `config-*` a su caja · **d5** cockpit (F3) misma tanda como tool-scope, índice de acciones (F4) puede diferir. Encadeno a `/po` para draft del 01-spec (spec de migración) usando `00-research.md` como plan base.
+
+### 2026-05-30 · 🤖 claude · `/po` · ✓ APLICADO
+Escribí `01-spec.md` v1 — spec de migración con 6 scenarios Gherkin verificables (happy F1+F2 re-tag/SYSTEM-MAP · happy Valeria→supervisora/Mateo→Operar · negative cap-sin-caja-STOP · edge idempotencia+user_visible derivado · adversarial box-inventado+cross-brand+render-no-rompe · happy F0 backlog Fase 2). Graders: reconcile_capabilities.py + validate_system_map.py + grep cero-config/infra + tests de migración. Scope boundary respetado (F3 cockpit = tool cross-brand; cap producto = F0+F1+F2). 3 open questions: Q1 bump ADR-vitalia-005 v2 vs ADR-006 · Q2 F4 índice acciones fuera de scope · Q3 cockpit MVP por-zona vs 2 lentes ya. Spec en refining hasta tu ratificación → luego /architect.

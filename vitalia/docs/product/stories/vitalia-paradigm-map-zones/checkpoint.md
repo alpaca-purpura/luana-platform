@@ -5,10 +5,11 @@ type: infra-migration
 title: "Migración del mapa a 3 zonas (PARADIGM/ADR-010) + reorganización del backlog"
 agent_owner: infra
 module: platform
-state: idea
+state: refining
 architecture_pattern: ADR-010-orquestacion-agentica + ADR-vitalia-005-capability-model-4-dimensions (extiende → 5ª dim: zona)
 last_modified: 2026-05-30
-ratified_by_chris: false
+ratified_by_chris: true
+ratified_at: 2026-05-30
 parallel_safe: false        # toca SYSTEM-MAP + ~71 caps + cockpit (cross-brand tool) — serializar
 priority: high
 estimated_dev_days: 3-4
@@ -20,6 +21,14 @@ release: F2
 cap_target: platform.product-map-zonas
 cap_change_type: new
 parent_story: null
+
+# ── Decisiones ratificadas Chris 2026-05-30 ──
+ratified_decisions:
+  d1_valeria_mateo: "Valeria=supervisora (chat sidebar, NO caja de valor) + Mateo=Operar/Mi Día (agenda+bookings). Zona Agentes = 5 especialistas: Lisa·Mateo·Adrián·Lucas·Camila."
+  d2_valeria_pacientes: "Split: 'pacientes del día' → Mateo (operativo) · 'historial médico' (config.patients-records) → Configuración/clínico."
+  d3_lisa_compliance: "Vista compliance al cliente → Plataforma·configuracion (user-facing) · enforcement técnico (cifrado/audit/dual-filter) → Infraestructura·seguridad-cumplimiento."
+  d4_naming: "Renombrar stories config-* a su caja nueva (coherencia), no solo re-tag."
+  d5_cockpit: "F3 cockpit MapView misma tanda, tool-scope cross-brand (fase solo-bootstrap) · F4 índice de acciones puede diferir a story propia."
 
 # ── Paradigma (caja/zona del mapa · cement 2026-05-30) ──
 map_zone: infraestructura
@@ -44,7 +53,7 @@ scope_boundary_note: >
   /pm-vitalia NO la owna. Se ejecuta en la misma tanda (fase solo-bootstrap permite) pero se trackea como
   tool-scope, no como cap de producto vitalia. La parte vitalia-propia es F0+F1+F2 (data: caps + SYSTEM-MAP + reassign).
 
-next_action: "Chris ratifica la propuesta de organización (00-research.md) — decisiones: rol Valeria, split de cajas, re-mapeo backlog. Luego refining → /architect."
+next_action: "Chris ratificó las 5 decisiones (2026-05-30). state=refining → /po draft 01-spec (spec de migración, base 00-research.md) → refined → /architect."
 ---
 
 # vitalia-paradigm-map-zones
