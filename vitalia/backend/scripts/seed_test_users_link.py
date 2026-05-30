@@ -1,9 +1,11 @@
-"""Seed test users + tenants + user_tenants + clinic branch (RBAC test matrix · SSoT).
+"""Seed test users + tenants + user_tenants + clinic branch + PHI patient (RBAC test matrix · SSoT).
 
 Origin: pre-flight gate Slice 1 vitalia (Chris ratificó 2026-05-20 NO Clerk Organizations).
 Multi-tenancy via tenants + users + user_tenants en engine luana-core-iam.
 Extended 2026-05-29 (P2 god-user): full per-role test matrix over the demo tenant (Sanaré)
 so every VitaliaRole can be exercised via REAL RBAC (never bypass).
+Extended 2026-05-30 (T-3 PHI base tables): add 1 encrypted patient + 1 encrypted lead
+so SC-1/SC-5 integration tests can exercise tablas reales (035 migration).
 
 What this seed does (idempotent — ON CONFLICT DO NOTHING/UPDATE everywhere):
   1. INSERT tenants rows (3 fixture clinics — Aurora AR · Mindful CL · Sanaré MX)
@@ -12,6 +14,8 @@ What this seed does (idempotent — ON CONFLICT DO NOTHING/UPDATE everywhere):
      so FE (reads publicMetadata.role) and BE engine (reads user_tenants.role) AGREE.
   4. INSERT users rows con clerk_id link
   5. INSERT user_tenants junction (per-role over Sanaré, demo tenant)
+  6. INSERT vitalia_patients — 1 cifrado Sanaré demo (id determinístico · pgp_sym_encrypt)
+  7. INSERT vitalia_leads   — 1 cifrado Sanaré demo (id determinístico · pgp_sym_encrypt)
 
 ★ Role resolution truth (2026-05-29):
   - BE engine path (get_current_user): role = user_tenants.role (DB) for the active tenant.
@@ -21,6 +25,12 @@ What this seed does (idempotent — ON CONFLICT DO NOTHING/UPDATE everywhere):
     user_tenants into ClinicContext + real repos). NOT covered by this seed.
   - NOTE enum mismatch: VitaliaRole.RECEPTIONIST == "receptionist" but the legacy recepcion
     user/role is "recepcion". Kept as-is (non-PHI) to avoid breaking existing fixtures.
+
+★ PHI seed (2026-05-30 T-3):
+  - PATIENT_SANARE_DEMO: deterministic id via uuid5. Encrypted con pgp_sym_encrypt.
+    VITALIA_PHI_KEK env var MUST be set; seed fails clearly if absent (no plaintext fallback).
+  - LEAD_SANARE_DEMO: idem for leads.
+  - IDs are printed at the end of the run (NUNCA KEK/PHI plaintext).
 
 Usage:
     # Full sync (host — has Clerk egress + secret). Recommended.
@@ -53,6 +63,12 @@ TENANT_AURORA = uuid.uuid5(NAMESPACE, "aurora-dental-ar")
 TENANT_MINDFUL = uuid.uuid5(NAMESPACE, "mindful-santiago-cl")
 TENANT_SANARE = uuid.uuid5(NAMESPACE, "sanare-latam-mx")  # == e69a691d-070e-5caf-a053-6e74642ec100 (demo tenant)
 CLINIC_SANARE = uuid.uuid5(NAMESPACE, "clinic:sanare-latam-mx:principal")  # == f035be5b-0ac4-5210-8fc3-395650ca2b83
+
+# ─── PHI seed fixtures (T-3 · 2026-05-30) ───────────────────────────────────
+# Deterministic IDs so SC-1/SC-5 integration tests read them by known id.
+# PRINT these at end of seed run; NUNCA imprimir KEK/PHI plaintext.
+PATIENT_SANARE_DEMO = uuid.uuid5(NAMESPACE, "patient:sanare-latam-mx:demo")
+LEAD_SANARE_DEMO = uuid.uuid5(NAMESPACE, "lead:sanare-latam-mx:demo")
 
 CLERK_API = "https://api.clerk.com/v1"
 TEST_PASSWORD = "VitaliaRoles2026!"  # noqa: S105 — dev-only fixture password
@@ -227,9 +243,20 @@ def _clerk_sync(secret: str, clinic_id: str) -> dict[str, str]:
     return resolved
 
 
-def main() -> int:
+def main() -> int:  # noqa: C901
     do_clerk = "--clerk-sync" in sys.argv and not os.environ.get("NO_CLERK")
     secret = os.environ.get("CLERK_SECRET_KEY", "")
+
+    # ─── KEK presence check (T-3 requirement: fail clearly, not silently) ────
+    kek = os.environ.get("VITALIA_PHI_KEK", "")
+    if not kek:
+        print(
+            "ERROR: VITALIA_PHI_KEK env var not set.\n"
+            "Set it before running the seed (dev-only, NOT for prod):\n"
+            '  export VITALIA_PHI_KEK=$(python3 -c "import secrets; print(secrets.token_hex(32))")',
+            file=sys.stderr,
+        )
+        return 1
 
     # Resolve clerk_ids: live sync (if requested + secret) else hardcoded fallback.
     clerk_ids = dict(CLERK_IDS)
@@ -244,7 +271,7 @@ def main() -> int:
 
     conn = _get_pg_conn()
     cursor = conn.cursor()
-    n_tenants = n_clinics = n_users = n_links = 0
+    n_tenants = n_clinics = n_users = n_links = n_patients = n_leads = 0
 
     try:
         # ─── 1. Tenants ──────────────────────────────────────────────────────
@@ -334,11 +361,91 @@ def main() -> int:
             )
             n_links += int(cursor.rowcount > 0)
 
+        # ─── 5. PHI patient Sanaré demo (cifrado at-rest · T-3) ──────────────
+        # date_of_birth stored as ISO-format string via pgp_sym_encrypt so _parse_dob
+        # in PatientRepository can reconstruct it with datetime.fromisoformat.
+        # Spanish neutro LatAm — datos MX realistas. NUNCA imprimir KEK ni PHI plaintext.
+        cursor.execute(
+            """
+            INSERT INTO vitalia_patients
+                (id, tenant_id, clinic_id,
+                 name, date_of_birth, dni, phone, email, address,
+                 marketing_opt_in, opt_out, created_at, updated_at)
+            VALUES (
+                %s, %s, %s,
+                pgp_sym_encrypt(%s, %s),
+                pgp_sym_encrypt(%s, %s),
+                pgp_sym_encrypt(%s, %s),
+                pgp_sym_encrypt(%s, %s),
+                pgp_sym_encrypt(%s, %s),
+                pgp_sym_encrypt(%s, %s),
+                false, false, NOW(), NOW()
+            )
+            ON CONFLICT (id) DO NOTHING
+            """,
+            (
+                str(PATIENT_SANARE_DEMO),
+                str(TENANT_SANARE),
+                str(CLINIC_SANARE),
+                "María Fernanda Gómez",
+                kek,  # name
+                "1985-03-15T00:00:00+00:00",
+                kek,  # date_of_birth (ISO — _parse_dob)
+                "GOMF850315MDFNRR09",
+                kek,  # dni (CURP MX realista)
+                "+52 55 1234 5678",
+                kek,  # phone
+                "mfgomez@correo.ejemplo.mx",
+                kek,  # email
+                "Av. Insurgentes Sur 1234, Col. Florida, CDMX",
+                kek,  # address
+            ),
+        )
+        n_patients += int(cursor.rowcount > 0)
+
+        # ─── 6. PHI lead Sanaré demo (cifrado at-rest · T-3) ─────────────────
+        cursor.execute(
+            """
+            INSERT INTO vitalia_leads
+                (id, tenant_id,
+                 name, email, phone, notes,
+                 source, status, created_at, updated_at)
+            VALUES (
+                %s, %s,
+                pgp_sym_encrypt(%s, %s),
+                pgp_sym_encrypt(%s, %s),
+                pgp_sym_encrypt(%s, %s),
+                pgp_sym_encrypt(%s, %s),
+                %s, %s, NOW(), NOW()
+            )
+            ON CONFLICT (id) DO NOTHING
+            """,
+            (
+                str(LEAD_SANARE_DEMO),
+                str(TENANT_SANARE),
+                "Carlos Ramírez Ortega",
+                kek,  # name
+                "carlos.ramirez@correo.ejemplo.mx",
+                kek,  # email
+                "+52 55 9876 5432",
+                kek,  # phone
+                "Interesado en blanqueamiento dental por Instagram",
+                kek,  # notes
+                "instagram",  # source (plaintext)
+                "new",  # status (plaintext)
+            ),
+        )
+        n_leads += int(cursor.rowcount > 0)
+
         conn.commit()
         print(
             f"\n  Result: {n_tenants} tenants, {n_clinics} clinics, "
-            f"{n_users} users upserted, {n_links} user_tenants links"
+            f"{n_users} users upserted, {n_links} user_tenants links, "
+            f"{n_patients} patients seeded, {n_leads} leads seeded"
         )
+        print("\n  PHI seed IDs (for integration tests — NOT KEK/PHI values):")
+        print(f"    PATIENT_SANARE_DEMO = {PATIENT_SANARE_DEMO}")
+        print(f"    LEAD_SANARE_DEMO    = {LEAD_SANARE_DEMO}")
         return 0
     except Exception as e:  # noqa: BLE001 — top-level catch
         conn.rollback()
