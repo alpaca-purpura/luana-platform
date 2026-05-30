@@ -9,11 +9,11 @@ release: F2
 architecture_pattern: ADR-vitalia-004
 adr_004_compliance: n/a-with-rationale      # BE auth wiring, no sub-tab UI
 priority: high
-ratified_by_chris: false
+ratified_by_chris: true   # 2026-05-30 Q1-Q3 ratificadas
 parallel_safe: false
 last_modified: 2026-05-30
-state: refining
-phase: REFINING_SPEC
+state: refined
+phase: SPEC_RATIFIED
 prior_art_scan_done: true
 prior_story: vitalia-stub-caps-scenario-backfill   # nace del hallazgo de aquella (stub PHI rechaza JWT real)
 
@@ -21,7 +21,7 @@ prior_story: vitalia-stub-caps-scenario-backfill   # nace del hallazgo de aquell
 autonomous_mode: false
 autonomous_mode_hard_false_reason: "Toca auth + PHI (HIPAA-lite). Per .claude/rules/architect-autonomous-mode.md: security/auth/PHI requiere supervisión Chris. NO auto-build."
 
-next_action: "/po escribe 01-spec (reuse engine JWKS verify_token_payload + rol desde user_tenants + repos reales DI + dual filter HIPAA) → Chris ratifica → /architect → build SUPERVISADO."
+next_action: "/architect ready package (reuse engine JWKS + rol DB + repos reales + FE rol-desde-/me + stub env-gated test-only) → build SUPERVISADO → verificación god-matrix JWT real."
 ---
 
 # Slice 2 PHI — desentubar el decoder JWT (stub → JWKS real) + rol desde DB + repos reales

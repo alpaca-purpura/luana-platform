@@ -3,15 +3,17 @@ story_id: vitalia-iam-slice2-phi-real-auth
 brand: vitalia
 type: service-story
 state: refining
-po_version: 1
+po_version: 2
 cap_target: iam-scaffold-slice-1
 cap_change_type: extend
 architecture_pattern: ADR-vitalia-004
 adr_004_compliance: n/a-with-rationale
-ratified_by_chris: false
+ratified_by_chris: true   # v2 ratificado 2026-05-30 (Q1 incluir FE / Q2 stub env-gated / Q3 proceder)
 prior_story: vitalia-stub-caps-scenario-backfill
 last_modified: 2026-05-30
 ---
+
+> **★ v2 ratificado Chris 2026-05-30:** Q1 → **incluir** el switch FE (rol desde `/me`) en esta story. Q2 → **stub test-only env-gated** (`VITALIA_AUTH_STUB=1` solo en tests; runtime/dev-app SIEMPRE JWKS real). Q3 → proceder a `/architect` (build supervisado, autonomous_mode false).
 
 # 01-spec — Slice 2 PHI: decoder JWT real (JWKS) + rol desde DB + repos reales
 
@@ -51,7 +53,7 @@ Hoy: FE lee `publicMetadata.role` (Clerk), BE engine lee `user_tenants.role` (DB
 3. Repos reales cableados (DI FastAPI `Depends`) en crm + consent + marketing + inbox (cero `AsyncMock` en runtime).
 4. HIPAA-lite respetado: dual filter `tenant_id + clinic_id` en queries PHI, audit log sync write pre-response, sanitization en traces, `@require_phi_access(roles=[doctor,nurse,admin_clinic])`.
 5. **Verificación god-matrix (anti-teatro, deployed):** doctor.demo ve PHI (200 + efecto + audit row), recepcion/marketing → 403, cross-tenant → 404, cross-clinic → 403. Ejercido con **JWT real** (mint vía Clerk Backend API o login dev-app) + logs backend leídos.
-6. (Si ratificado) FE toma rol de `/me` (1 fuente de verdad).
+6. **(RATIFICADO — in scope)** FE toma rol de `GET /api/v1/iam/users/me` (1 fuente de verdad DB), no de Clerk `publicMetadata.role`. Cambio mínimo en el hook de rol FE.
 
 ## Scenarios (4/4 obligatorios · graders ejecutables)
 
@@ -92,12 +94,12 @@ cd ${WS}/vitalia/backend && ${WS}/.venv/bin/ruff check src/modules/vitalia/{iam,
 #   doctor.demo → PHI 200 ; recepcion → 403 ; cross-tenant → 404 ; logs leídos
 ```
 
-## Open questions (para Chris)
+## Open questions — RESUELTAS (Chris 2026-05-30)
 
-- **Q1 — FE role source:** ¿incluir el switch FE (rol desde `/me`, no Clerk metadata) en esta story, o follow-up? (propuesta: incluir, es mínimo + cierra la 3ª inconsistencia).
-- **Q2 — stub en tests:** el decoder stub se usa en tests unit/integration existentes (fixtures `stub:...`). ¿Mantener un modo test-only (env-gated `VITALIA_AUTH_STUB=1`) para no romper la suite, o migrar todos los fixtures a JWT real minteado? (propuesta: modo env-gated test-only — el runtime/dev-app SIEMPRE JWKS real; los tests pueden optar al stub vía env explícito, documentado).
-- **Q3 — alcance repos:** confirmar que cablear repos reales en crm/marketing/inbox no arrastra deuda mayor (si algún repo real no existe aún → sub-scope).
+- **Q1 — FE role source** → RESUELTA: **incluir** en Slice 2. El hook de rol FE lee de `GET /api/v1/iam/users/me` (devuelve `role`) en vez de `publicMetadata.role` de Clerk → 1 sola fuente de verdad (DB). Cambio FE mínimo (DONE point 6).
+- **Q2 — stub en tests** → RESUELTA: **stub test-only env-gated**. Runtime/dev-app SIEMPRE JWKS real (cero bypass). Los tests optan al stub vía `VITALIA_AUTH_STUB=1` explícito (documentado, NUNCA en runtime). El decoder: si `VITALIA_AUTH_STUB=1` Y token empieza con `stub:` → parse stub (solo test); en cualquier otro caso → JWKS real. Arch test debe verificar que el runtime no setea esa env.
+- **Q3 — alcance repos** → el architect confirma en el ready package que los repos reales existen para crm/marketing/inbox; si alguno falta → lo marca sub-scope explícito (no se inventa repo nuevo sin nota).
 
 ## Próximo paso
 
-Chris ratifica (responde Q1-Q3) → `/architect` produce ready package → build **SUPERVISADO** (autonomous_mode HARD false: auth/PHI). Verificación final god-matrix con JWT real (anti-teatro).
+`/architect` produce ready package → build **SUPERVISADO** (autonomous_mode false: auth/PHI). Verificación final god-matrix con JWT real (anti-teatro): doctor PHI 200 / recepcion 403 / cross-tenant 404 — ejercido + logs. El orchestrator reporta a Chris en el gate de verificación PHI antes de cerrar.
