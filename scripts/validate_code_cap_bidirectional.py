@@ -17,6 +17,7 @@ Usage:
   python3 scripts/validate_code_cap_bidirectional.py --brand vitalia
   python3 scripts/validate_code_cap_bidirectional.py --brand vitalia --strict
 """
+
 from __future__ import annotations
 
 import argparse
@@ -64,6 +65,11 @@ INLINE_ROLE_GATE_NAME_RE = re.compile(
 )
 
 E2E_TEST_PATTERNS = ("test(", "test.describe(")
+
+# Pytest test pattern: matches 'def test_foo', 'def test(', 'def test_anything'.
+# Used by cross_check_3 when the declared e2e_test path has a .py extension.
+# JS patterns above are used for .ts / .tsx / any other extension.
+PYTEST_PATTERN = re.compile(r"\bdef test", re.MULTILINE)
 
 
 # ---------------------------------------------------------------------------
@@ -182,7 +188,11 @@ def cross_check_3(
                 )
                 continue
 
-            has_pattern = any(p in content for p in E2E_TEST_PATTERNS)
+            # Path-aware pattern check: pytest for .py, JS patterns for others.
+            if full_path.suffix == ".py":
+                has_pattern = bool(PYTEST_PATTERN.search(content))
+            else:
+                has_pattern = any(p in content for p in E2E_TEST_PATTERNS)
             if has_pattern:
                 passing += 1
             else:
@@ -193,7 +203,10 @@ def cross_check_3(
                         "scenario_id": scenario.get("id"),
                         "declared_e2e_test": e2e_test,
                         "status": "no_test_pattern",
-                        "drift_reason": "file exists but contains no 'test(' or 'test.describe('",
+                        "drift_reason": (
+                            "file exists but contains no test pattern "
+                            "('def test' for .py, 'test(' or 'test.describe(' for .ts/.tsx)"
+                        ),
                     }
                 )
 
@@ -281,9 +294,7 @@ def cross_check_4(
     skipped = 0
 
     # Pre-load code index if exists (cap → files via headers)
-    code_index_path = (
-        workspace_root / brand / "docs" / "product" / "capabilities" / "_code-index.json"
-    )
+    code_index_path = workspace_root / brand / "docs" / "product" / "capabilities" / "_code-index.json"
     code_index: dict[str, list[str]] = {}
     if code_index_path.exists():
         try:
@@ -303,9 +314,7 @@ def cross_check_4(
         # SKIP whole cap if it's a BE-only extension point (no HTTP PHI endpoint)
         cap_user_visible = cap_data.get("user_visible")
         cap_nature = cap_data.get("nature")
-        cap_is_extension_point = (cap_user_visible is False) and (
-            cap_nature == "extension-point"
-        )
+        cap_is_extension_point = (cap_user_visible is False) and (cap_nature == "extension-point")
 
         # Get files associated with this cap via code-index headers (# cap:)
         related_files: set[str] = set(code_index.get(cap_id, []))
@@ -410,9 +419,7 @@ def cross_check_4(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Bidirectional code↔cap validator (cement 2026-05-28)"
-    )
+    parser = argparse.ArgumentParser(description="Bidirectional code↔cap validator (cement 2026-05-28)")
     parser.add_argument("--brand", required=True)
     parser.add_argument("--out", default=None)
     parser.add_argument("--verbose", "-v", action="store_true")
@@ -441,12 +448,7 @@ def main() -> None:
     out_path = (
         Path(args.out).resolve()
         if args.out
-        else workspace_root
-        / args.brand
-        / "docs"
-        / "product"
-        / "capabilities"
-        / "_bidirectional-validation.json"
+        else workspace_root / args.brand / "docs" / "product" / "capabilities" / "_bidirectional-validation.json"
     )
 
     # HARD set: cross_check_3 (scenario→e2e_test) always hard.
@@ -474,9 +476,7 @@ def main() -> None:
     print(f"  total={cc4['total']} pass={cc4['pass']} drift={cc4['drift']}")
 
     drift_total = cc3["drift"] + cc4["drift"]
-    hard_drift = sum(
-        cc["drift"] for i, cc in [(3, cc3), (4, cc4)] if i in hard_set
-    )
+    hard_drift = sum(cc["drift"] for i, cc in [(3, cc3), (4, cc4)] if i in hard_set)
 
     verdict = "CLEAN" if drift_total == 0 else ("HARD_FAIL" if hard_drift > 0 else "SOFT_DRIFT")
 

@@ -70,9 +70,7 @@ def _write_code_index(tmp_path: Path, brand: str, cap_to_files: dict[str, list[s
 
     idx_path = tmp_path / brand / "docs" / "product" / "capabilities" / "_code-index.json"
     idx_path.parent.mkdir(parents=True, exist_ok=True)
-    idx_path.write_text(
-        json.dumps({"cap_to_files": cap_to_files}), encoding="utf-8"
-    )
+    idx_path.write_text(json.dumps({"cap_to_files": cap_to_files}), encoding="utf-8")
 
 
 # ---------------------------------------------------------------------------
@@ -102,9 +100,7 @@ def test_cross_check_3_pass(tmp_path: Path):
 
     cap_data = {
         "slug": "valeria-agenda",
-        "scenarios": [
-            {"id": "doctor-ve-agenda", "e2e_test": "vitalia/frontend/e2e/agenda.spec.ts"}
-        ],
+        "scenarios": [{"id": "doctor-ve-agenda", "e2e_test": "vitalia/frontend/e2e/agenda.spec.ts"}],
     }
     _write_cap(caps_root, "scheduling", "valeria-agenda", cap_data)
 
@@ -121,9 +117,7 @@ def test_cross_check_3_missing_file(tmp_path: Path):
 
     cap_data = {
         "slug": "valeria-agenda",
-        "scenarios": [
-            {"id": "doctor-ve-agenda", "e2e_test": "vitalia/frontend/e2e/missing.spec.ts"}
-        ],
+        "scenarios": [{"id": "doctor-ve-agenda", "e2e_test": "vitalia/frontend/e2e/missing.spec.ts"}],
     }
     _write_cap(caps_root, "scheduling", "valeria-agenda", cap_data)
 
@@ -143,9 +137,7 @@ def test_cross_check_3_no_test_pattern(tmp_path: Path):
 
     cap_data = {
         "slug": "valeria-agenda",
-        "scenarios": [
-            {"id": "doctor-ve-agenda", "e2e_test": "vitalia/frontend/e2e/not-a-test.spec.ts"}
-        ],
+        "scenarios": [{"id": "doctor-ve-agenda", "e2e_test": "vitalia/frontend/e2e/not-a-test.spec.ts"}],
     }
     _write_cap(caps_root, "scheduling", "valeria-agenda", cap_data)
 
@@ -219,8 +211,7 @@ def test_cross_check_4_drift_no_enforcement(tmp_path: Path):
     py_file = be_root / "events.py"
     _write_code(
         py_file,
-        "# cap: compliance.hipaa-lite-defensive-stack\n# story-origin: TBD\n"
-        "def emit_event(): pass\n",  # no gate at all
+        "# cap: compliance.hipaa-lite-defensive-stack\n# story-origin: TBD\ndef emit_event(): pass\n",  # no gate at all
     )
     _write_code_index(
         tmp_path,
@@ -262,9 +253,7 @@ def test_cross_check_4_pass_require_brand_owner_access(tmp_path: Path):
         "_brand_owner_required = Depends(require_brand_owner_access())\n"
         "def patch_identity(): pass\n",
     )
-    _write_code_index(
-        tmp_path, "vitalia", {"brand_studio.lisa-marca": ["vitalia/backend/src/marca_router.py"]}
-    )
+    _write_code_index(tmp_path, "vitalia", {"brand_studio.lisa-marca": ["vitalia/backend/src/marca_router.py"]})
 
     cap_data = {
         "slug": "lisa-marca",
@@ -341,9 +330,7 @@ def test_cross_check_4_pass_inline_frozenset_gate(tmp_path: Path):
         "    if user_role not in _NPS_SUMMARY_ROLES:\n"
         "        raise HTTPException(status_code=403)\n",
     )
-    _write_code_index(
-        tmp_path, "vitalia", {"patients.nps-tracking": ["vitalia/backend/src/nps_endpoints.py"]}
-    )
+    _write_code_index(tmp_path, "vitalia", {"patients.nps-tracking": ["vitalia/backend/src/nps_endpoints.py"]})
 
     cap_data = {
         "slug": "nps-tracking",
@@ -428,9 +415,7 @@ def test_cross_check_4_null_role_skips(tmp_path: Path):
 
     py_file = be_root / "nps_submit.py"
     _write_code(py_file, "# cap: patients.nps-tracking\n# story-origin: TBD\ndef submit(): pass\n")
-    _write_code_index(
-        tmp_path, "vitalia", {"patients.nps-tracking": ["vitalia/backend/src/nps_submit.py"]}
-    )
+    _write_code_index(tmp_path, "vitalia", {"patients.nps-tracking": ["vitalia/backend/src/nps_submit.py"]})
 
     cap_data = {
         "slug": "nps-tracking",
@@ -485,6 +470,143 @@ def test_cross_check_4_drift_role_mismatch(tmp_path: Path):
     assert result["details"][0]["status"] == "role_mismatch"
 
 
+# ---------------------------------------------------------------------------
+# Cross-check 3 — pytest path-aware extension (T-0 backfill)
+# ---------------------------------------------------------------------------
+
+
+def test_cross_check_3_py_with_def_test_passes(tmp_path: Path):
+    """(a) .py file with 'def test_foo():' → cross_check_3 drift=0, pass=1.
+
+    RED against old code (old code checks 'test(' / 'test.describe(' — a
+    Python def-test never matches those JS substrings → drift=1 before fix).
+    """
+    mod = _load_module()
+    caps_root, be_root, _, _ = _setup(tmp_path)
+
+    py_test = be_root.parent / "tests" / "test_api_health.py"
+    _write_code(
+        py_test,
+        "# cap: platform.api-health-endpoint\n"
+        "import pytest\n\n"
+        "def test_health_returns_200(client):\n"
+        "    resp = client.get('/health')\n"
+        "    assert resp.status_code == 200\n",
+    )
+
+    cap_data = {
+        "slug": "api-health-endpoint",
+        "scenarios": [
+            {
+                "id": "health-check-live",
+                "e2e_test": str(py_test.relative_to(tmp_path)),
+            }
+        ],
+    }
+    _write_cap(caps_root, "platform", "api-health-endpoint", cap_data)
+
+    caps = mod.load_capabilities("vitalia", tmp_path)
+    result = mod.cross_check_3(caps, tmp_path)
+
+    assert result["total"] == 1
+    assert result["pass"] == 1, (
+        "Expected pass=1 for .py file with 'def test_', got drift instead. "
+        "Confirms path-aware pattern not yet implemented (RED)."
+    )
+    assert result["drift"] == 0
+
+
+def test_cross_check_3_py_without_def_test_is_drift(tmp_path: Path):
+    """(b) .py file with no 'def test' → drift=1, status 'no_test_pattern'."""
+    mod = _load_module()
+    caps_root, be_root, _, _ = _setup(tmp_path)
+
+    py_file = be_root.parent / "tests" / "helper.py"
+    _write_code(
+        py_file,
+        "# A helper module without actual test functions\ndef setup_fixtures():\n    pass\n",
+    )
+
+    cap_data = {
+        "slug": "api-health-endpoint",
+        "scenarios": [
+            {
+                "id": "health-check-live",
+                "e2e_test": str(py_file.relative_to(tmp_path)),
+            }
+        ],
+    }
+    _write_cap(caps_root, "platform", "api-health-endpoint", cap_data)
+
+    caps = mod.load_capabilities("vitalia", tmp_path)
+    result = mod.cross_check_3(caps, tmp_path)
+
+    assert result["drift"] == 1
+    assert result["details"][0]["status"] == "no_test_pattern"
+
+
+def test_cross_check_3_ts_with_test_still_passes(tmp_path: Path):
+    """(c) Regression: .ts file with 'test(' still passes (no change to JS behaviour)."""
+    mod = _load_module()
+    caps_root, _, _, e2e_root = _setup(tmp_path)
+
+    ts_spec = e2e_root / "smoke.spec.ts"
+    _write_code(
+        ts_spec,
+        "import { test, expect } from '@playwright/test';\n"
+        "test('smoke', async ({ page }) => {\n"
+        "  await page.goto('/');\n"
+        "  await expect(page).toHaveTitle(/Vitalia/);\n"
+        "});\n",
+    )
+
+    cap_data = {
+        "slug": "valeria-agenda",
+        "scenarios": [
+            {
+                "id": "agenda-smoke",
+                "e2e_test": "vitalia/frontend/e2e/smoke.spec.ts",
+            }
+        ],
+    }
+    _write_cap(caps_root, "scheduling", "valeria-agenda", cap_data)
+
+    caps = mod.load_capabilities("vitalia", tmp_path)
+    result = mod.cross_check_3(caps, tmp_path)
+
+    assert result["pass"] == 1
+    assert result["drift"] == 0, "Regression: .ts files with test( must still pass"
+
+
+def test_cross_check_3_ts_without_test_is_drift(tmp_path: Path):
+    """(d) Bonus regression negative: .ts without 'test(' → drift 'no_test_pattern'."""
+    mod = _load_module()
+    caps_root, _, _, e2e_root = _setup(tmp_path)
+
+    ts_util = e2e_root / "utils.ts"
+    _write_code(
+        ts_util,
+        "// Utility helpers — no test functions here\nexport const BASE_URL = 'http://localhost:3002';\n",
+    )
+
+    cap_data = {
+        "slug": "valeria-agenda",
+        "scenarios": [
+            {
+                "id": "agenda-smoke",
+                "e2e_test": "vitalia/frontend/e2e/utils.ts",
+            }
+        ],
+    }
+    _write_cap(caps_root, "scheduling", "valeria-agenda", cap_data)
+
+    caps = mod.load_capabilities("vitalia", tmp_path)
+    result = mod.cross_check_3(caps, tmp_path)
+
+    assert result["drift"] == 1
+    assert result["details"][0]["status"] == "no_test_pattern"
+
+
 def test_cross_check_4_ui_entry_lenient(tmp_path: Path):
     """UI entry without decorator should pass (Clerk middleware handles)."""
     mod = _load_module()
@@ -493,8 +615,7 @@ def test_cross_check_4_ui_entry_lenient(tmp_path: Path):
     tsx_file = fe_root / "page.tsx"
     _write_code(
         tsx_file,
-        "// cap: scheduling.valeria-agenda\n// story-origin: TBD\n"
-        "export default function Page() { return null; }\n",
+        "// cap: scheduling.valeria-agenda\n// story-origin: TBD\nexport default function Page() { return null; }\n",
     )
     _write_code_index(tmp_path, "vitalia", {"scheduling.valeria-agenda": ["vitalia/frontend/src/page.tsx"]})
 
