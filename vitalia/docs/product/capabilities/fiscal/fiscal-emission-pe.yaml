@@ -20,8 +20,8 @@ module: fiscal
 # ----------------------------------------------------------------------------
 # DIMENSIÓN 2 · USER-FACING
 # ----------------------------------------------------------------------------
-agent_owner: config
-functional_area: config.fiscal
+agent_owner: configuracion
+functional_area: configuracion.fiscal
 
 # ----------------------------------------------------------------------------
 # DIMENSIÓN 3 · VISIBILIDAD
@@ -76,6 +76,8 @@ change_log:
     scenarios_added: []
     merge_sha: null
     status: in-progress
+map_box: configuracion
+
 ---
 
 # Emisión fiscal (boleta/factura) Perú

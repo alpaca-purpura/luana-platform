@@ -11,8 +11,8 @@ license: proprietary
 
 # v3 cement 2026-05-27 · 4 dimensiones + dev_preview (ADR-vitalia-005)
 tech_module: observability
-agent_owner: infra
-functional_area: infra.observability
+agent_owner: observabilidad
+functional_area: observabilidad.observability
 user_visible: false
 nature: extension-point
 ui_paradigm: infra-only  # T-3 reconcile 2026-05-29
@@ -75,6 +75,8 @@ scenarios:
     atomic_ref: null
     added_in_story: vitalia-stub-caps-scenario-backfill
     added_date: 2026-05-30
+map_box: observabilidad
+
 ---
 
 # vitalia-otel-sentry-graceful-degradation

@@ -59,6 +59,8 @@ change_log:
     summary: "Implementación inicial · migración legacy a schema v2"
     merge_sha: null
     status: done
+map_box: adrian
+
 ---
 
 # vitalia-crm-scaffold-slice-1

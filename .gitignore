@@ -215,6 +215,7 @@ tools/luana-cockpit/migrate-report-*.json
 **/docs/product/capabilities/_atomics-verification.json
 **/docs/product/capabilities/_code-index.json
 **/docs/product/capabilities/_bidirectional-validation.json
+**/docs/product/capabilities/_actions-index.json
 
 # Sweep harness evidence + findings (HIPAA-lite: screenshots pueden contener datos mock de pacientes)
 # vitalia-cockpit-live-reconciliation T-2

@@ -151,6 +151,8 @@ related_capabilities:
     - sales_agent.inbox-handler-mode-occ
   similar: []
   obsoletes: []
+map_box: camila
+
 ---
 
 # vitalia-nps-tracking

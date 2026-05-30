@@ -13,7 +13,7 @@ license: proprietary
 tech_module: agentic
 agent_owner: lucas
 functional_area: lucas.recomendaciones
-user_visible: false
+user_visible: true
 nature: extension-point
 ui_paradigm: slice-1-superseded  # T-3 reconcile 2026-05-29
 replaced_by_story: vitalia-fase2-lucas-lanzar  # T-3: story F2 que reconstruye esta cap
@@ -53,6 +53,8 @@ change_log:
     summary: "Implementación inicial · migración legacy a schema v2"
     merge_sha: null
     status: done
+map_box: lucas
+
 ---
 
 # vitalia-lucas-recommendation-tool

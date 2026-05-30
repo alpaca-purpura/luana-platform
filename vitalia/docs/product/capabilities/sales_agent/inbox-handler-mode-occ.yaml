@@ -152,6 +152,8 @@ related_capabilities:
     - patients.nps-tracking
   similar: []
   obsoletes: []
+map_box: adrian
+
 ---
 
 # vitalia-inbox-handler-mode-occ

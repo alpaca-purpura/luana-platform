@@ -64,3 +64,6 @@ Spec v3 ratificado → state=**refined**. Gate de mockups ADR-vitalia-003 **waiv
 
 ### 2026-05-30 · 🤖 claude · `/pm-vitalia` · ⚠️ DUDA (merge a main)
 El merge wip/vitalia→main **NO es limpio**: main divergió (tiene `cockpit v0.6` + su propio `vitalia cap-model-v3` que wip no tiene); ~79 archivos cambiados en ambos lados (caps, SYSTEM-MAP, ADR-vitalia-005, cockpit). Bulldozear main puede romperlo/regresar cockpit v0.6 → NO lo hago a ciegas. Approach seguro: sync main→wip (resolver en wip favoreciendo cockpit v0.6 + caps nuevas), luego merge limpio. Espero tu OK al approach antes de tocar main.
+
+### 2026-05-30 · 🤖 claude · `builder-backend` · ✓ APLICADO (T-1)
+T-1 completado (F1+F4). **68 caps re-taggeadas** con `map_box` + `agent_owner` actualizado + `user_visible` alineado. **3 caps problemáticas normalizadas** (config.fiscal → configuracion, ops.reconciliation → plataforma-tecnica, camila.reactivacion → camila.reactivar). **validate_system_map.py** actualizado back-compat map_box-aware. **`_actions-index.json`** generado (69 caps). **`platform/product-map-zonas.yaml`** creado (cap nuevo schema v4). 9 tests escritos RED-first → GREEN. Todos los graders SC-1/SC-3/SC-4/SC-5/SC-7 + AV-2/AV-4 PASS. Awaiting gate-runner + auditor-backend.

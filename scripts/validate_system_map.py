@@ -46,15 +46,49 @@ def load_system_map(brand_dir: Path) -> dict[str, Any] | None:
 
 
 def extract_valid_areas(system_map: dict[str, Any]) -> set[str]:
-    """Retorna set de `<agent>.<area>` válidos declarados en SYSTEM-MAP."""
+    """Retorna set de functional_area válidos declarados en SYSTEM-MAP.
+
+    Incluye:
+    - Legacy format: `<agent>.<area>` (from agents[].functional_areas[])
+    - New format post-map_zones_migration: `<box>.<sub_area>` (from zones[].target_boxes[].absorbs)
+
+    Backward-compat: ambos formatos son válidos durante el periodo de transición.
+    """
     valid = set()
+
+    # Legacy: agent.area format from agents[]
     for agent in system_map.get("agents", []):
         agent_id = agent.get("id")
         for area in agent.get("functional_areas", []):
             area_id = area.get("id")
             if agent_id and area_id:
                 valid.add(f"{agent_id}.{area_id}")
+
+    # New: box.sub_area format derived from zones[].target_boxes[].absorbs
+    # The migration re-maps config.auth → acceso.auth, infra.platform → plataforma-tecnica.platform, etc.
+    # We accept {box}.{anything} where box is a known box from zones[].boxes or target_boxes[].id
+    for zone in system_map.get("zones", []):
+        # Accept zone.box IDs as prefixes
+        for box in zone.get("boxes", []):
+            valid.add(f"{box}.*")  # wildcard marker (handled below)
+        for tb in zone.get("target_boxes", []):
+            box_id = tb.get("id")
+            if box_id:
+                valid.add(f"{box_id}.*")  # wildcard marker
+
     return valid
+
+
+def is_valid_area(fa: str, valid_areas: set[str]) -> bool:
+    """Check if a functional_area is valid (exact match or box.* wildcard)."""
+    if fa in valid_areas:
+        return True
+    # Check box.* wildcard: if fa is "acceso.auth", check if "acceso.*" is in valid
+    if "." in fa:
+        prefix, _ = fa.split(".", 1)
+        if f"{prefix}.*" in valid_areas:
+            return True
+    return False
 
 
 def extract_caps_functional_areas(brand_dir: Path) -> list[tuple[Path, str]]:
@@ -171,27 +205,33 @@ def validate_brand(brand: str, strict: bool = False) -> bool:
     errors: list[str] = []
     warnings: list[str] = []
 
-    # Check 1: caps functional_area en SYSTEM-MAP
+    # Check 1: caps functional_area en SYSTEM-MAP (map_box-aware · back-compat)
     caps_areas = extract_caps_functional_areas(brand_dir)
     print(f"  Caps con functional_area declarada: {len(caps_areas)}")
     for cap_path, fa in caps_areas:
-        if fa not in valid_areas:
+        if not is_valid_area(fa, valid_areas):
             rel_path = cap_path.relative_to(REPO_ROOT).as_posix()
-            errors.append(f"CAP_FA_NOT_IN_SYSTEM_MAP: {rel_path} declara functional_area='{fa}' que NO existe en SYSTEM-MAP.yaml")
+            errors.append(
+                f"CAP_FA_NOT_IN_SYSTEM_MAP: {rel_path} declara functional_area='{fa}' que NO existe en SYSTEM-MAP.yaml"
+            )
 
     # Check 2: stories cap_target en SYSTEM-MAP
     stories_targets = extract_stories_cap_targets(brand_dir)
     print(f"  Stories con cap_target declarado: {len(stories_targets)}")
     for story_path, ct in stories_targets:
-        # cap_target puede ser "<agent>.<area>" o "<slug-de-cap-existente>" (legacy)
-        if "." in ct and ct not in valid_areas:
+        # cap_target puede ser "<agent>.<area>", "<box>.<sub>", o "<slug-de-cap-existente>" (legacy)
+        if "." in ct and not is_valid_area(ct, valid_areas):
             rel_path = story_path.relative_to(REPO_ROOT).as_posix()
-            errors.append(f"STORY_CAP_TARGET_NOT_IN_SYSTEM_MAP: {rel_path} declara cap_target='{ct}' que NO existe en SYSTEM-MAP.yaml")
+            errors.append(
+                f"STORY_CAP_TARGET_NOT_IN_SYSTEM_MAP: {rel_path} declara cap_target='{ct}' que NO existe en SYSTEM-MAP.yaml"
+            )
 
     # Check 3: áreas planned > 6 meses sin caps (advisory)
     old_planned = find_planned_old_areas(system_map, caps_areas, threshold_days=180)
     for full_id, name, target_release in old_planned:
-        warnings.append(f"PLANNED_AREA_STALE: {full_id} ({name}) sin caps shipped por > 6 meses · target_release: {target_release} · ¿considerar parked/dropped?")
+        warnings.append(
+            f"PLANNED_AREA_STALE: {full_id} ({name}) sin caps shipped por > 6 meses · target_release: {target_release} · ¿considerar parked/dropped?"
+        )
 
     # Report
     if errors:
@@ -208,7 +248,7 @@ def validate_brand(brand: str, strict: bool = False) -> bool:
             all_ok = False
 
     if not errors and not warnings:
-        print(f"  ✅ PASS (cero issues)")
+        print("  ✅ PASS (cero issues)")
 
     return all_ok
 

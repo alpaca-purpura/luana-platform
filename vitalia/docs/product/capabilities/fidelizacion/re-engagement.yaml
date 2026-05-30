@@ -21,7 +21,7 @@ module: fidelizacion
 # DIMENSIÓN 2 · USER-FACING
 # ----------------------------------------------------------------------------
 agent_owner: camila
-functional_area: camila.reactivacion
+functional_area: camila.reactivar
 
 # ----------------------------------------------------------------------------
 # DIMENSIÓN 3 · VISIBILIDAD
@@ -77,6 +77,8 @@ change_log:
     scenarios_added: []
     merge_sha: null
     status: in-progress
+map_box: camila
+
 ---
 
 # Camila · reactivación y fidelización de pacientes
