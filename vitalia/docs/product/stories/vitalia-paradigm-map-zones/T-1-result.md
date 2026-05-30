@@ -155,3 +155,42 @@ All `scripts/tests/test_map_zones_migration.py` tests GREEN.
 - Cero `tools/luana-cockpit/` tocados
 - Cero `vitalia/backend/src/modules/` tocados
 - `git diff --name-only | grep '^(comunify|nicolify|lupulo|core/)' | wc -l` = 0
+
+---
+
+## Auto-fix loop iter 1 response (AUDITOR_AUTO_FIX_LOOP · 2026-05-30)
+
+**Finding addressed:** F-1 from `T-be-review.md` — SYSTEM-MAP v2.0 regression in map_zones_migration.py
+
+**Root cause:** T-2 restructured `SYSTEM-MAP.yaml` to v2.0 where `zones[].boxes` became a list of
+objects `{id, name, absorbs, functional_areas}` (not strings) and `target_boxes[]` was eliminated
+(promoted directly into `boxes`). Three functions in the migration script crashed:
+- `build_valid_boxes`: `valid.update(boxes)` tried to hash dict objects → `TypeError: unhashable type: 'dict'`
+- `box_to_zone`: `mapping[box] = zid` tried to use dict as key → same TypeError
+- `build_absorbs_table`: only read `target_boxes[]` (now absent in v2.0) → returned `{}`
+
+**Fix applied (Carril B — includes test fixture update):**
+
+1. **`scripts/map_zones_migration.py`**: Updated all three functions to handle v2.0 (boxes as objects with
+   `id` + `absorbs` keys) while maintaining v1.x back-compat (boxes as plain strings + legacy `target_boxes[]`).
+   Each function now does `isinstance(box, dict)` / `isinstance(box, str)` branching.
+
+2. **`scripts/tests/test_map_zones_migration.py`**: Updated `SYSTEM_MAP_MINIMAL` fixture from v1.1 schema
+   (boxes as plain strings + `target_boxes[]`) to v2.0 schema (boxes as objects with `id + absorbs`,
+   no `target_boxes[]`). The fixture now matches the real SYSTEM-MAP structure that the script runs against.
+
+**Acceptance gates — ALL GREEN:**
+
+| Gate | Result |
+|---|---|
+| `pytest scripts/tests/test_map_zones_migration.py -q` | 9/9 PASS |
+| `python scripts/map_zones_migration.py --brand vitalia --dry-run` | 69 ok · 0 updated · 0 unmapped · no crash |
+| `git diff --quiet vitalia/docs/product/capabilities/ && echo NOOP` | NOOP (SC-4 idempotency confirmed) |
+| `ruff check scripts/map_zones_migration.py scripts/tests/...` | All checks passed |
+| `ruff format --check` | 2 files already formatted |
+| `scripts/reconcile_capabilities.py --brand vitalia` | exit 0 · all capabilities consistent |
+| `scripts/validate_system_map.py --brand vitalia` | PASS · cero issues |
+
+**Commit:** `17adec9f` — `fix(vitalia/scripts): update map_zones_migration for SYSTEM-MAP v2.0 schema`
+**Files touched:** 2 (`scripts/map_zones_migration.py` · `scripts/tests/test_map_zones_migration.py`)
+**Scope discipline:** cero caps modified · cero SYSTEM-MAP.yaml touched · cero frontend · cero core/
