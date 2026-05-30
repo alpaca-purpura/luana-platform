@@ -5,7 +5,7 @@ type: infra-migration
 title: "Migración del mapa a 3 zonas (PARADIGM/ADR-010) + reorganización del backlog"
 agent_owner: infra
 module: platform
-state: developing
+state: developed
 architecture_pattern: ADR-010-orquestacion-agentica + ADR-vitalia-005-capability-model-4-dimensions (extiende → 5ª dim: zona)
 last_modified: 2026-05-30
 ratified_by_chris: true
