@@ -21,6 +21,7 @@ Si invocado vía `/pm-{brand}` handoff, el brand viene en el handoff. Si invocad
 | Tipo story | Skill |
 |---|---|
 | **Service-only** (BE endpoint, no UI, no agentic) | **`/po` (este skill)** |
+| **`bugfix` BE/servicio** (arreglo/completion quirúrgico, sin diseño nuevo) | **`/po` modo lite** — spec corto con scenarios de regresión, sin `02-design-*`, `repro_verified: true` obligatorio, `cap_change_type: fix`/`extend` (ADR-011) |
 | **Agentic-only** (conversational flow) | **`/po` (spec) → `/ux-agentico` (flow design)** |
 | **UI standard** (CRUD/list/detail/form/dashboard) | **`/po-ux` (fusión)** |
 | **UI mixed** (UI std + tool calls agentic) | `/po-ux` para spec UI + sección agentic-handoff → `/ux-agentico` para flow |

@@ -11,7 +11,7 @@ release: F2                                       # release ID · ver {brand}/do
 
 # Capability lineage (v2 cement 2026-05-27)
 cap_target: lisa.marca                            # null si cap nueva sin nombre aún · sino slug existente o nuevo
-cap_change_type: extend                           # new | fix | extend | derive
+cap_change_type: extend                           # new | fix | extend | derive (story type:bugfix → fix, o extend si completa cap)
 parent_story: null                                # opcional · si story spawned desde otra done (parent.id)
 
 state: refining                                   # 10 estados v4 — ver tabla abajo
@@ -29,7 +29,7 @@ defer_audit: false                                # escape valve story-closure-g
 defer_audit_reason: null
 parked_reason: null                               # mandatory cuando state=parked (≥10 chars)
 dropped_reason: null                              # mandatory cuando state=dropped (≥10 chars)
-hotfix_metadata:                                  # opcional, solo hot-fix tickets (R26)
+hotfix_metadata:                                  # opcional, hot-fix tickets (R26) + story type:bugfix (ADR-011 · repro_verified REQUIRED true antes de developing)
   repro_verified: false
   repro_command: null
   diagnosis_validates_handoff: null
