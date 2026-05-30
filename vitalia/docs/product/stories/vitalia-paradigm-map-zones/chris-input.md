@@ -73,3 +73,6 @@ T-3 completado (F5 docs). **7 docs/rules/skills actualizados** con nueva taxonom
 
 ### 2026-05-30 · 🤖 claude · `builder-backend` · ✓ APLICADO (T-4)
 T-4 completado (F0 rename backlog Fase 2 + map_box). **5 story dirs renombrados** via git mv: config-cuenta/conexiones/avanzado → configuracion-*, config-onboarding-clinica → onboarding-clinica, valeria-pacientes → mateo-pacientes. **22 checkpoints Fase 2 actualizados** con `map_zone:` + `map_box:` + story_id/agent_owner/cap_target coherentes con nueva taxonomía. F2.yaml + F4.yaml refs actualizadas. Acceptance validators: grep -L map_box → 0 / grep fase2-config- → 0 / grep cap_target:config./valeria. → 0 / reconcile_capabilities.py → exit 0. Todos GREEN.
+
+### 2026-05-30 · 🤖 claude · `/dev-team` · ✓ APLICADO (T-5)
+T-5 (F6 shell UI) completado. agent-catalog.ts: Ribbon = [lisa,mateo,adrian,lucas,camila], Mateo=Operar (agenda+pacientes ex-valeria), Valeria fuera del ribbon. **Valeria sidebar/chat/rail PRESERVADO** (supervisora). git mv routing valeria/→mateo/ + features/valeria→mateo. ConfigTab→Plataforma. El builder quedó a una falla (budget); cerré yo el bug (`PacientesPlaceholder` leía `RIBBON_SUBTABS.valeria` ahora vacío → `.mateo`, Carril A gate-verified). tsc 0 · eslint 0 · **vitest 2319/2319 PASS**. Falta T-6 (e2e) → auditor → merge.

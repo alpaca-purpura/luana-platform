@@ -40,14 +40,15 @@ describe("SubtabPage", () => {
   });
 
   describe("happy path — agent y subtab válidos", () => {
-    it("renderiza SubTabContent para valeria/agenda", async () => {
+    it("renderiza SubTabContent para mateo/pacientes (v1.2 — pacientes migrado a mateo)", async () => {
+      // v1.2 (2026-05-30): mateo.pacientes is a valid subtab (agenda is shipped static)
       render(
         await SubtabPage({
-          params: makeParams("clinic-x", "valeria", "agenda"),
+          params: makeParams("clinic-x", "mateo", "pacientes"),
         }),
       );
       expect(
-        screen.getByTestId("subtab-content-valeria-agenda"),
+        screen.getByTestId("subtab-content-mateo-pacientes"),
       ).toBeInTheDocument();
     });
 
@@ -111,7 +112,7 @@ describe("SubtabPage", () => {
       expect(mockNotFound).toHaveBeenCalledTimes(1);
     });
 
-    it("llama notFound() cuando subtab es inválido para lisa (agenda — de valeria, no lisa)", async () => {
+    it("llama notFound() cuando subtab es inválido para lisa (agenda — de mateo, no lisa)", async () => {
       await expect(
         SubtabPage({ params: makeParams("clinic-x", "lisa", "agenda") }),
       ).rejects.toThrow("NEXT_NOT_FOUND");
@@ -120,16 +121,17 @@ describe("SubtabPage", () => {
 
     it("llama notFound() cuando subtab vacío", async () => {
       await expect(
-        SubtabPage({ params: makeParams("clinic-x", "valeria", "") }),
+        SubtabPage({ params: makeParams("clinic-x", "mateo", "") }),
       ).rejects.toThrow("NEXT_NOT_FOUND");
       expect(mockNotFound).toHaveBeenCalledTimes(1);
     });
   });
 
   describe("error path — agent inválido → notFound()", () => {
-    it("llama notFound() cuando agent es inválido (mateo — transversal)", async () => {
+    it("llama notFound() cuando agent es inválido (valeria — supervisor sidebar, no ribbon v1.2)", async () => {
+      // v1.2 (2026-05-30): valeria is NOT a valid ribbon agent (isValidAgent('valeria') = false)
       await expect(
-        SubtabPage({ params: makeParams("clinic-x", "mateo", "ia") }),
+        SubtabPage({ params: makeParams("clinic-x", "valeria", "agenda") }),
       ).rejects.toThrow("NEXT_NOT_FOUND");
       expect(mockNotFound).toHaveBeenCalledTimes(1);
     });

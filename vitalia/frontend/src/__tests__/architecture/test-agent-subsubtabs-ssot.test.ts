@@ -90,8 +90,11 @@ describe("Architecture: AGENT_SUBSUBTABS catalog — shell-routes.ts SSoT", () =
     expect(SHIPPED_STATIC_SUBTABS.has("lisa.marca")).toBe(true);
   });
 
-  it("SHIPPED_STATIC_SUBTABS still includes 'valeria.agenda' (regression guard)", () => {
-    expect(SHIPPED_STATIC_SUBTABS.has("valeria.agenda")).toBe(true);
+  it("SHIPPED_STATIC_SUBTABS includes 'mateo.agenda' (paradigm-map-zones T-5 — migrated from valeria.agenda)", () => {
+    // v1.2 (2026-05-30): valeria.agenda → mateo.agenda (Mateo=Operar, Valeria=sidebar)
+    expect(SHIPPED_STATIC_SUBTABS.has("mateo.agenda")).toBe(true);
+    // valeria.agenda was removed from SHIPPED_STATIC_SUBTABS (valeria is sidebar-only now)
+    expect(SHIPPED_STATIC_SUBTABS.has("valeria.agenda")).toBe(false);
   });
 });
 

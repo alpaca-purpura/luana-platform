@@ -70,8 +70,10 @@ describe("SubTabsBar — renders nav + N SubTabs (SC-1)", () => {
     expect(tabs).toHaveLength(5);
   });
 
-  it("mock usePathname '/tenant-x/valeria/agenda' → 2 SubTabs (caso mínimo)", () => {
-    mockPathname.mockReturnValue("/tenant-x/valeria/agenda");
+  it("mock usePathname '/tenant-x/mateo/agenda' → 2 SubTabs (caso mínimo — v1.2 mateo has agenda+pacientes)", () => {
+    // v1.2 (2026-05-30): Mateo is Operar with 2 subtabs [agenda, pacientes]
+    // (valeria now has 0 subtabs — is sidebar-only)
+    mockPathname.mockReturnValue("/tenant-x/mateo/agenda");
     render(<SubTabsBar />);
     const tabs = screen.getAllByRole("tab");
     expect(tabs).toHaveLength(2);
@@ -402,11 +404,12 @@ describe("SubTabsBar — aria-label dynamic Spanish neutro (SC-9 i18n)", () => {
     );
   });
 
-  it("activeAgent='valeria' → aria-label='Sub-secciones Valeria'", () => {
-    mockPathname.mockReturnValue("/tenant-x/valeria/agenda");
+  it("activeAgent='mateo' → aria-label='Sub-secciones Mateo' (v1.2 — Mateo is Operar ribbon agent)", () => {
+    // v1.2 (2026-05-30): Mateo is now a ribbon agent with subtabs
+    mockPathname.mockReturnValue("/tenant-x/mateo/agenda");
     render(<SubTabsBar />);
     expect(screen.getByRole("tablist").getAttribute("aria-label")).toBe(
-      "Sub-secciones Valeria",
+      "Sub-secciones Mateo",
     );
   });
 

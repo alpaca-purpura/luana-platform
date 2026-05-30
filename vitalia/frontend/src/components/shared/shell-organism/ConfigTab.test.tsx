@@ -47,7 +47,7 @@ describe("ConfigTab — render básico (SC-3 happy)", () => {
       />,
     );
     const btn = screen.getByRole("tab");
-    expect(btn.getAttribute("aria-label")).toBe("Configurar");
+    expect(btn.getAttribute("aria-label")).toBe("Plataforma");
   });
 
   it("renders <button role='tab'>", () => {
@@ -249,8 +249,9 @@ describe("ConfigTab — forwardRef", () => {
   });
 });
 
-describe("ConfigTab — Tooltip 'Configurar' content", () => {
-  it("Tooltip content 'Configurar' present in DOM", () => {
+describe("ConfigTab — Tooltip 'Plataforma' content (v1.2 — renamed from Configurar)", () => {
+  it("Tooltip content 'Plataforma' present in DOM", () => {
+    // v1.2 (2026-05-30): ConfigTab label renamed 'Configurar' → 'Plataforma'
     // Radix TooltipContent renders in a portal. In happy-dom environment
     // Radix portals attach to document.body. We verify the text is rendered
     // when the tooltip is mounted (Radix renders even if not visually visible).
@@ -267,6 +268,6 @@ describe("ConfigTab — Tooltip 'Configurar' content", () => {
     fireEvent.focus(tab);
     // Radix may render tooltip in portal — check baseElement (full document)
     // In test env with happy-dom, Radix portals are accessible via baseElement
-    expect(baseElement.textContent).toContain("Configurar");
+    expect(baseElement.textContent).toContain("Plataforma");
   });
 });

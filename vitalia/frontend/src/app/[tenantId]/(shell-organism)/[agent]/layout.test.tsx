@@ -65,11 +65,12 @@ describe("AgentLayout", () => {
     expect(container.textContent).toContain("hijo");
   });
 
-  it("renderiza children cuando agent slug es válido (valeria)", async () => {
+  it("renderiza children cuando agent slug es válido (mateo — v1.2 Operar en ribbon)", async () => {
+    // v1.2 (2026-05-30): mateo IS a valid ribbon agent now
     render(
       await AgentLayout({
-        children: <div data-testid="child-v">valeria</div>,
-        params: makeParams("valeria"),
+        children: <div data-testid="child-v">mateo</div>,
+        params: makeParams("mateo"),
       }),
     );
     expect(screen.getByTestId("child-v")).toBeInTheDocument();
@@ -95,11 +96,12 @@ describe("AgentLayout", () => {
     expect(mockNotFound).toHaveBeenCalledTimes(1);
   });
 
-  it("llama notFound() cuando agent slug es 'mateo' (transversal — excluido)", async () => {
+  it("llama notFound() cuando agent slug es 'valeria' (v1.2 — supervisor sidebar, no ribbon tab)", async () => {
+    // v1.2 (2026-05-30): valeria is NOT a valid ribbon agent — isValidAgent('valeria') = false
     await expect(
       AgentLayout({
-        children: <div>mateo</div>,
-        params: makeParams("mateo"),
+        children: <div>valeria</div>,
+        params: makeParams("valeria"),
       }),
     ).rejects.toThrow("NEXT_NOT_FOUND");
     expect(mockNotFound).toHaveBeenCalledTimes(1);
