@@ -52,6 +52,14 @@ change_log:
     summary: "Implementación inicial · migración legacy a schema v2"
     merge_sha: null
     status: done
+  - story_id: vitalia-stub-caps-scenario-backfill
+    date: 2026-05-30
+    type: extend
+    summary: "backfill scenario+e2e → verified-live (deployed-visible); WRITE-thin spec para ruta pública sin auth"
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    status: done
+
+last_modified: 2026-05-30
 
 access:
   entry_points:
@@ -100,6 +108,19 @@ scenarios:
       - "Slot seleccionado ya ocupado por otro paciente concurrente → advisory lock devuelve error de disponibilidad"
     added_in_story: luana-vitalia-bootstrap
     added_date: 2026-05-15
+  - id: ruta-publica-carga-sin-auth
+    name: "Ruta /public/{slug} es accesible sin sesión Clerk (middleware lista la ruta como pública)"
+    actor: patient
+    status: live
+    given: "Paciente sin sesión Clerk activa accede a /public/aurora-dental-ba"
+    when: "Browser carga la URL directamente (sin token)"
+    then: "No hay redirección a /sign-in · la respuesta HTTP es 200 · el elemento <main> es visible · el slug aparece en la página (ruta pública per proxy.ts createRouteMatcher)"
+    e2e_test: "vitalia/frontend/e2e/public/public-clinic-landing.smoke.spec.ts"
+    verification_method: dev-app
+    story_spec_ref: "vitalia/docs/product/capabilities/public_landing/public-clinic-landing.yaml"
+    atomic_ref: null
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    added_date: 2026-05-30
 
 business_rules:
   - id: public-route-no-auth

@@ -57,6 +57,29 @@ change_log:
     summary: "Implementación inicial · migración legacy a schema v2"
     merge_sha: null
     status: done
+  - story_id: vitalia-stub-caps-scenario-backfill
+    date: 2026-05-30
+    type: extend
+    summary: "backfill scenario+e2e → verified-live (deployed-visible)"
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    status: done
+
+last_modified: 2026-05-30
+
+scenarios:
+  - id: theme-toggle-alterna-claro-oscuro
+    name: "ThemeToggle alterna el tema entre claro y oscuro con persistencia en localStorage"
+    actor: doctor
+    status: live
+    given: "Usuario autenticado en la app con tema claro activo (data-theme no seteado)"
+    when: "Hace clic en el botón ThemeToggle (data-testid=theme-toggle)"
+    then: "El atributo data-theme del elemento html cambia a 'dark' · localStorage['vitalia-theme'] = 'dark' · aria-pressed = true · aria-label indica 'oscuro'"
+    e2e_test: "vitalia/frontend/e2e/regression/design-tokens-theme/theme-toggle-interaction.smoke.spec.ts"
+    verification_method: dev-app
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase1-design-tokens-theme/01-spec.md"
+    atomic_ref: null
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    added_date: 2026-05-30
 ---
 
 # vitalia-design-tokens-theme

@@ -56,6 +56,29 @@ change_log:
     summary: "Implementación inicial · migración legacy a schema v2"
     merge_sha: null
     status: done
+  - story_id: vitalia-stub-caps-scenario-backfill
+    date: 2026-05-30
+    type: extend
+    summary: "backfill scenario+e2e → verified-live (deployed-visible)"
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    status: done
+
+last_modified: 2026-05-30
+
+scenarios:
+  - id: shell-primitivas-shadcn-renderizan
+    name: "Primitivas Shadcn (Button, Avatar, etc.) renderizan correctamente en el shell organism"
+    actor: sistema
+    status: live
+    given: "Stack Tailwind v4 + Shadcn UI instalado en vitalia/frontend con postcss.config.mjs + 8 primitivos vendored"
+    when: "El shell visual check carga rutas autenticadas del shell (/valeria/agenda, /lisa/marca/identidad)"
+    then: "No aparece el texto placeholder 'AppPanelSlot' en ninguna ruta · las rutas cargan sin errores de consola relacionados con Tailwind/Shadcn · screenshots de las rutas capturan el layout real"
+    e2e_test: "vitalia/frontend/e2e/regression/shell-visual-check/shell-visual-check.spec.ts"
+    verification_method: dev-app
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase1-stack-stability/01-spec.md"
+    atomic_ref: null
+    added_in_story: vitalia-stub-caps-scenario-backfill
+    added_date: 2026-05-30
 ---
 
 # vitalia-shell-foundation-shadcn-tailwind-v4
