@@ -5,7 +5,7 @@ agent_owner: config
 module: platform
 cap_target: multi-cap-backfill            # 20 caps existentes — extend (append scenario+e2e); NO crea caps nuevas
 cap_change_type: extend                    # agrega scenarios a caps live existentes (cross_check_3 → verified-live)
-state: ready                            # ⬅ ROLLBACK refined→refining 2026-05-29: DONE cambió (bar deployed-visible de Chris)
+state: developed                            # ⬅ ROLLBACK refined→refining 2026-05-29: DONE cambió (bar deployed-visible de Chris)
 release: F2
 architecture_pattern: ADR-vitalia-004
 adr_004_compliance: n/a-with-rationale    # no es story sub-tab/feature; es backfill de verificación (como cockpit-live-reconciliation)
@@ -13,11 +13,11 @@ priority: medium
 ratified_by_chris: true  # v2 ratificado-por-extensión (decisiones pre-ratificadas 2026-05-29 + AskUserQuestion 2026-05-30)                   # spec v1 ratificado, pero DONE en revisión v2 (bar deployed-visible)
 parallel_safe: false                       # toca 20 cap YAMLs + tests cross-módulo
 last_modified: 2026-05-30
-phase: READY_PACKAGE_CLOSED           # esperando decisiones Chris (verificación deployed + política caps rotos)
+phase: HANDOFF_TO_AUDITOR           # esperando decisiones Chris (verificación deployed + política caps rotos)
 prior_art_scan_done: true                  # 2026-05-29 — ver § Prior art scan (sección abajo)
 prior_story: vitalia-cockpit-live-reconciliation   # esta nace del hallazgo de aquella (done 2026-05-29)
 last_artifact: 06-tickets.yaml                  # architect parcial (solo 03-arch.md) — pausado al cambiar DONE
-next_action: "/dev-team build autónomo T-0→T-C, T-A∥T-B, T-D final. Verificación dev-app hands-on (orchestrator) post-build, pre-auditor."
+next_action: "/auditor review (anti-teatro + relevancia + fix-to-green db-state exception). APPROVED → /pm-vitalia merge → done. Luego Slice 2 PHI (story propia)."
 
 # Autonomous mode — PAUSADO 2026-05-29 (DONE cambió post-ratify · bar deployed-visible)
 autonomous_mode: false                     # ⬅ era true; pausado porque la definición de DONE cambió materialmente

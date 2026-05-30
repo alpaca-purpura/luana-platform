@@ -114,7 +114,7 @@ Verdict analysis:
 
 ## commit SHA
 
-To be filled after commit by git-haiku-delegation.
+`6163a930` — pushed to `wip/vitalia` (fast-forward, non-force).
 
 ---
 
