@@ -3,8 +3,8 @@
  *
  * 4 ramas según `cap_change_type`:
  *   - new      → crea cap YAML inicial + change_log[0]
- *   - fix      → append change_log entry · NO toca atomics
- *   - extend   → append change_log + append nuevos atomics
+ *   - fix      → append change_log entry
+ *   - extend   → append change_log entry (scenarios se materializan vía skill al merge)
  *   - derive   → crea cap hijo declarando parent_cap + actualiza derives_capabilities[] del padre
  *
  * Doc canónico: docs/process/capability-protocol.md.
@@ -14,7 +14,6 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import matter from 'gray-matter';
 import type {
-  Atomic,
   Capability,
   ChangeLogEntry,
   CapChangeType,
@@ -50,7 +49,6 @@ export async function readCapability(absPath: string): Promise<Capability> {
     hipaa_lite_overlay: cap.hipaa_lite_overlay ?? false,
     parent_cap: cap.parent_cap ?? cap.extends_capability ?? null,
     derives_capabilities: cap.derives_capabilities ?? [],
-    atomics: (cap.atomics ?? []) as Atomic[],
     change_log: (cap.change_log ?? []) as ChangeLogEntry[],
     date_introduced: cap.date_introduced ?? null,
     story_introduced: cap.story_introduced ?? null,
@@ -88,8 +86,6 @@ export interface ApplyCapChangeOptions {
   capPath: string;
   /** Entry a appendear al change_log */
   entry: ChangeLogEntry;
-  /** Atomics nuevos para appendear (solo type=extend o type=new) */
-  newAtomics?: Atomic[];
   /**
    * Capability inicial · solo se usa cuando type=new (file no existe aún)
    * Debe incluir capability_id, module, slug, license, etc.
@@ -100,13 +96,13 @@ export interface ApplyCapChangeOptions {
 /**
  * Aplica un cambio al cap YAML según el `entry.type`.
  *
- * - new    → crea archivo + change_log[0] + atomics iniciales
- * - fix    → append change_log · NO toca atomics
- * - extend → append change_log + append atomics nuevos
+ * - new    → crea archivo + change_log[0]
+ * - fix    → append change_log
+ * - extend → append change_log (scenarios se materializan vía skill al merge)
  * - derive → caso especial: usa `createDerivedCap` en lugar de esta función
  */
 export async function applyCapChange(options: ApplyCapChangeOptions): Promise<void> {
-  const { capPath, entry, newAtomics, initialCap } = options;
+  const { capPath, entry, initialCap } = options;
 
   if (entry.type === 'derive') {
     throw new Error(
@@ -119,7 +115,6 @@ export async function applyCapChange(options: ApplyCapChangeOptions): Promise<vo
     if (!initialCap) {
       throw new Error("type='new' requiere initialCap con metadata mínima");
     }
-    const atomics = newAtomics ?? [];
     const cap: Capability = {
       capability_id: initialCap.capability_id ?? '',
       module: initialCap.module ?? '',
@@ -135,11 +130,10 @@ export async function applyCapChange(options: ApplyCapChangeOptions): Promise<vo
       hipaa_lite_overlay: initialCap.hipaa_lite_overlay ?? false,
       parent_cap: initialCap.parent_cap ?? null,
       derives_capabilities: initialCap.derives_capabilities ?? [],
-      atomics,
       change_log: [
         {
           ...entry,
-          atomics_added: atomics.map((a) => a.label),
+          scenarios_added: entry.scenarios_added ?? [],
         },
       ],
       body: initialCap.body ?? `# ${initialCap.capability_id ?? initialCap.slug ?? ''}\n`,
@@ -152,23 +146,13 @@ export async function applyCapChange(options: ApplyCapChangeOptions): Promise<vo
   // fix o extend · cap target debe existir
   const cap = await readCapability(capPath);
 
-  if (entry.type === 'fix') {
-    // NO toca atomics
-    cap.change_log.push({
-      ...entry,
-      atomics_added: [],
-      atomics_modified: entry.atomics_modified ?? [],
-    });
-  } else if (entry.type === 'extend') {
-    // Append atomics nuevos + entry con labels listados
-    const atomics = newAtomics ?? [];
-    cap.atomics.push(...atomics);
-    cap.change_log.push({
-      ...entry,
-      atomics_added: atomics.map((a) => a.label),
-      atomics_modified: entry.atomics_modified ?? [],
-    });
-  }
+  // Ni fix ni extend tocan scenarios desde el cockpit: los scenarios se
+  // materializan vía la skill al merge (Fase F.3). El cockpit solo registra
+  // la intención en el change_log.
+  cap.change_log.push({
+    ...entry,
+    scenarios_added: entry.scenarios_added ?? [],
+  });
 
   cap.last_modified = entry.date;
   await writeCapability(cap);
@@ -193,8 +177,6 @@ export interface CreateDerivedCapOptions {
   spawnedFromStory: string;
   /** Fecha del cambio · default today */
   date?: string;
-  /** Atomics iniciales del cap hijo (opcional) */
-  initialAtomics?: Atomic[];
   /** Summary del change_log[0] del hijo · default genérico */
   summary?: string;
   /** SHA del merge · opcional */
@@ -218,7 +200,6 @@ export async function createDerivedCap(options: CreateDerivedCapOptions): Promis
     childCap,
     spawnedFromStory,
     date,
-    initialAtomics,
     summary,
     mergeSha,
   } = options;
@@ -230,7 +211,6 @@ export async function createDerivedCap(options: CreateDerivedCapOptions): Promis
   }
 
   const effectiveDate = date ?? todayIso();
-  const atomics = initialAtomics ?? [];
 
   // 2. Crear cap hijo
   const child: Capability = {
@@ -248,7 +228,6 @@ export async function createDerivedCap(options: CreateDerivedCapOptions): Promis
     hipaa_lite_overlay: childCap.hipaa_lite_overlay ?? parent.hipaa_lite_overlay ?? false,
     parent_cap: parent.slug,
     derives_capabilities: childCap.derives_capabilities ?? [],
-    atomics,
     change_log: [
       {
         story_id: spawnedFromStory,
@@ -257,8 +236,7 @@ export async function createDerivedCap(options: CreateDerivedCapOptions): Promis
         summary:
           summary ??
           `Cap derivada de ${parent.slug} · scope diferenciado · cementada en story ${spawnedFromStory}`,
-        atomics_added: atomics.map((a) => a.label),
-        atomics_modified: [],
+        scenarios_added: [],
         merge_sha: mergeSha ?? null,
         status: 'done',
       },

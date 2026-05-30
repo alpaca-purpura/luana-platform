@@ -3,16 +3,15 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { mkdtemp, rm, readFile } from 'node:fs/promises';
+import { mkdtemp, rm } from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
-import matter from 'gray-matter';
 import {
   applyCapChange,
   createDerivedCap,
   readCapability,
 } from '../cap-ledger.js';
-import type { Atomic, ChangeLogEntry } from '../types.js';
+import type { ChangeLogEntry } from '../types.js';
 
 let tmpDir: string;
 
@@ -25,27 +24,14 @@ afterEach(async () => {
 });
 
 describe('applyCapChange', () => {
-  it('type=new crea archivo con change_log[0] y atomics iniciales', async () => {
+  it('type=new crea archivo con change_log[0] y scenarios_added', async () => {
     const capPath = path.join(tmpDir, 'caps', 'scheduling', 'valeria-agenda.yaml');
-    const initialAtomics: Atomic[] = [
-      {
-        label: 'Vista calendario semanal',
-        added_in_story: 'vitalia-fase2-valeria-agenda',
-        added_date: '2026-05-27',
-      },
-      {
-        label: 'Drag-to-reschedule',
-        added_in_story: 'vitalia-fase2-valeria-agenda',
-        added_date: '2026-05-27',
-      },
-    ];
     const entry: ChangeLogEntry = {
       story_id: 'vitalia-fase2-valeria-agenda',
       date: '2026-05-27',
       type: 'new',
       summary: 'Implementación inicial · vista calendario + drag-to-reschedule',
-      atomics_added: [], // Será sobreescrito por applyCapChange
-      atomics_modified: [],
+      scenarios_added: ['Vista calendario semanal', 'Drag-to-reschedule'],
       merge_sha: '4562140c',
       status: 'done',
     };
@@ -53,7 +39,6 @@ describe('applyCapChange', () => {
     await applyCapChange({
       capPath,
       entry,
-      newAtomics: initialAtomics,
       initialCap: {
         capability_id: 'vitalia.scheduling.valeria-agenda',
         module: 'scheduling',
@@ -71,20 +56,18 @@ describe('applyCapChange', () => {
     expect(cap.created_in_story).toBe('vitalia-fase2-valeria-agenda');
     expect(cap.created_date).toBe('2026-05-27');
     expect(cap.last_modified).toBe('2026-05-27');
-    expect(cap.atomics).toHaveLength(2);
-    expect(cap.atomics[0].label).toBe('Vista calendario semanal');
     expect(cap.change_log).toHaveLength(1);
     expect(cap.change_log[0].type).toBe('new');
-    expect(cap.change_log[0].atomics_added).toEqual([
+    expect(cap.change_log[0].scenarios_added).toEqual([
       'Vista calendario semanal',
       'Drag-to-reschedule',
     ]);
     expect(cap.change_log[0].merge_sha).toBe('4562140c');
   });
 
-  it('type=fix appendea change_log SIN tocar atomics', async () => {
+  it('type=fix appendea change_log con scenarios_added vacío', async () => {
     const capPath = path.join(tmpDir, 'caps', 'shell', 'layout-5050.yaml');
-    // Seed: crear cap con atomics existentes
+    // Seed: crear cap base
     await applyCapChange({
       capPath,
       entry: {
@@ -92,17 +75,9 @@ describe('applyCapChange', () => {
         date: '2026-05-20',
         type: 'new',
         summary: 'Layout shell 50/50 inicial',
-        atomics_added: [],
-        atomics_modified: [],
+        scenarios_added: ['split 50/50'],
         status: 'done',
       },
-      newAtomics: [
-        {
-          label: 'split 50/50',
-          added_in_story: 'vitalia-fase1-shell-layout-5050',
-          added_date: '2026-05-20',
-        },
-      ],
       initialCap: {
         capability_id: 'vitalia.shell.layout-5050',
         module: 'shell',
@@ -118,22 +93,19 @@ describe('applyCapChange', () => {
         date: '2026-05-25',
         type: 'fix',
         summary: 'Fix race condition on resize',
-        atomics_added: [],
-        atomics_modified: [],
+        scenarios_added: [],
         status: 'done',
       },
     });
 
     const cap = await readCapability(capPath);
-    expect(cap.atomics).toHaveLength(1);
-    expect(cap.atomics[0].label).toBe('split 50/50');
     expect(cap.change_log).toHaveLength(2);
     expect(cap.change_log[1].type).toBe('fix');
-    expect(cap.change_log[1].atomics_added).toEqual([]);
+    expect(cap.change_log[1].scenarios_added).toEqual([]);
     expect(cap.last_modified).toBe('2026-05-25');
   });
 
-  it('type=extend appendea change_log + atomics nuevos', async () => {
+  it('type=extend appendea change_log con scenarios_added listados', async () => {
     const capPath = path.join(tmpDir, 'caps', 'lisa', 'marca.yaml');
     // Seed: cap base lisa.marca
     await applyCapChange({
@@ -143,17 +115,9 @@ describe('applyCapChange', () => {
         date: '2026-05-24',
         type: 'new',
         summary: 'Lisa marca · skin tokens + voice',
-        atomics_added: [],
-        atomics_modified: [],
+        scenarios_added: ['Skin tokens'],
         status: 'done',
       },
-      newAtomics: [
-        {
-          label: 'Skin tokens',
-          added_in_story: 'vitalia-fase2-lisa-marca',
-          added_date: '2026-05-24',
-        },
-      ],
       initialCap: {
         capability_id: 'vitalia.lisa.marca',
         module: 'lisa',
@@ -162,18 +126,6 @@ describe('applyCapChange', () => {
     });
 
     // Extend
-    const newAtomics: Atomic[] = [
-      {
-        label: 'Color extractor',
-        added_in_story: 'vitalia-fase2-lisa-marca-v2',
-        added_date: '2026-05-27',
-      },
-      {
-        label: 'Logo upload',
-        added_in_story: 'vitalia-fase2-lisa-marca-v2',
-        added_date: '2026-05-27',
-      },
-    ];
     await applyCapChange({
       capPath,
       entry: {
@@ -181,23 +133,16 @@ describe('applyCapChange', () => {
         date: '2026-05-27',
         type: 'extend',
         summary: 'Color extractor + logo upload',
-        atomics_added: [],
-        atomics_modified: [],
+        scenarios_added: ['Color extractor', 'Logo upload'],
         status: 'done',
       },
-      newAtomics,
     });
 
     const cap = await readCapability(capPath);
-    expect(cap.atomics).toHaveLength(3);
-    expect(cap.atomics.map((a) => a.label)).toEqual([
-      'Skin tokens',
-      'Color extractor',
-      'Logo upload',
-    ]);
     expect(cap.change_log).toHaveLength(2);
     expect(cap.change_log[1].type).toBe('extend');
-    expect(cap.change_log[1].atomics_added).toEqual(['Color extractor', 'Logo upload']);
+    expect(cap.change_log[1].scenarios_added).toEqual(['Color extractor', 'Logo upload']);
+    expect(cap.last_modified).toBe('2026-05-27');
   });
 });
 
@@ -212,17 +157,9 @@ describe('createDerivedCap', () => {
         date: '2026-05-27',
         type: 'new',
         summary: 'Valeria agenda base',
-        atomics_added: [],
-        atomics_modified: [],
+        scenarios_added: ['Calendar view'],
         status: 'done',
       },
-      newAtomics: [
-        {
-          label: 'Calendar view',
-          added_in_story: 'vitalia-fase2-valeria-agenda',
-          added_date: '2026-05-27',
-        },
-      ],
       initialCap: {
         capability_id: 'vitalia.scheduling.valeria-agenda',
         module: 'scheduling',
@@ -244,13 +181,6 @@ describe('createDerivedCap', () => {
       },
       spawnedFromStory: 'vitalia-fase3-valeria-agenda-mobile',
       date: '2026-06-15',
-      initialAtomics: [
-        {
-          label: 'Touch-friendly drag',
-          added_in_story: 'vitalia-fase3-valeria-agenda-mobile',
-          added_date: '2026-06-15',
-        },
-      ],
     });
 
     // 3. Verificar hijo
@@ -259,6 +189,7 @@ describe('createDerivedCap', () => {
     expect(child.slug).toBe('valeria-agenda-mobile');
     expect(child.change_log).toHaveLength(1);
     expect(child.change_log[0].type).toBe('derive');
+    expect(child.change_log[0].scenarios_added).toEqual([]);
     expect(child.created_in_story).toBe('vitalia-fase3-valeria-agenda-mobile');
     expect(child.architecture_pattern).toBe('ADR-vitalia-004'); // heredado del padre
 

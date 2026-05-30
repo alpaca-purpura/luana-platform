@@ -102,6 +102,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     created_at: nowIso,
     created_by: 'chris',
     stories: data.stories ?? [],
+    verified_by: null,
+    verified_at: null,
+    verification_note: null,
+    production_status: 'not_deployed',
+    production_version: null,
+    production_scheduled_at: null,
+    deployed_at: null,
+    release_branch: null,
     maps_legacy_outcome: null,
     maps_legacy_phase: null,
     body: `# ${data.release_id} · ${data.name}\n\n> ${data.description}\n\n## Stories incluidas\n\n## Notas del release\n\n(libre · Chris escribe aquí contexto adicional · decisiones · gotchas)\n`,
@@ -153,6 +161,16 @@ export async function PUT(req: NextRequest): Promise<NextResponse> {
     release = await readRelease(brand, releaseId);
   } catch {
     return errorResponse('release no encontrado', 404, { release_id: releaseId, brand });
+  }
+
+  // Releases shipped son inmutables (entregados · base sólida). No se editan
+  // nombre/descripción/etc. Correcciones excepcionales van por /pm-{brand}.
+  if (release.status === 'shipped') {
+    return errorResponse('no se puede editar un release shipped', 403, {
+      release_id: releaseId,
+      reason:
+        'releases ya entregados son inmutables. Usa /pm-{brand} para correcciones excepcionales.',
+    });
   }
 
   const updated: Release = {

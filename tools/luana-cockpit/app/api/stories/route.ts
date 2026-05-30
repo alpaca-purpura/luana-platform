@@ -7,10 +7,10 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import path from 'node:path';
-import { readdir } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import { errorResponse } from '../_lib/responses';
 import { readMarkdownWithFrontmatter } from '@/lib/fs-reader';
-import { storiesPath, archivePath, getBrands } from '@/lib/workspace';
+import { storiesPath, archiveRootPath, getBrands } from '@/lib/workspace';
 import type { Story } from '@/lib/types';
 
 interface StoryWithArchive extends Story {
@@ -49,8 +49,32 @@ async function readCheckpoint(
       body: parsed.content,
       is_archived: isArchived,
     };
-  } catch {
-    return null;
+  } catch (err) {
+    // Frontmatter malformado (ej. key duplicada → YAML inválido). NO silenciar:
+    // rescatamos `state` via regex para ubicar la card en su columna real y
+    // marcamos parse_error → el board muestra un badge rojo "⚠ checkpoint inválido".
+    // Antes esto retornaba null (la story desaparecía) o caía a state=idea
+    // (la story aparecía en la columna equivocada sin avisar) — confusión silenciosa.
+    let raw = '';
+    try {
+      raw = await readFile(ckptPath, 'utf-8');
+    } catch {
+      return null; // checkpoint.md ni siquiera existe/legible → no es una story
+    }
+    const stateMatch = raw.match(/^state:[ \t]*([a-z]+)/m);
+    return {
+      story_id: path.basename(storyDir),
+      path: storyDir,
+      brand,
+      release: null,
+      cap_target: null,
+      cap_change_type: null,
+      parent_story: null,
+      state: (stateMatch?.[1] as Story['state']) ?? 'idea',
+      body: raw,
+      is_archived: isArchived,
+      parse_error: (err as Error).message.split('\n')[0],
+    };
   }
 }
 
@@ -74,8 +98,8 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       liveDirs.map((d) => readCheckpoint(d, brand, false))
     );
 
-    // Stories archivadas (escanea todos los años presentes)
-    const archiveRoot = path.dirname(archivePath(brand, '0000'));
+    // Stories archivadas (escanea todos los años presentes bajo {brand}/docs/archive/)
+    const archiveRoot = archiveRootPath(brand);
     let archivedDirs: string[] = [];
     try {
       const years = await readdir(archiveRoot, { withFileTypes: true });
@@ -94,9 +118,31 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       archivedDirs.map((d) => readCheckpoint(d, brand, true))
     );
 
-    const stories = [...liveStories, ...archivedStories].filter(
+    const all = [...liveStories, ...archivedStories].filter(
       (s): s is StoryWithArchive => s !== null
     );
+
+    // Dedup por story_id (un id puede existir live + archivado por colisión de data,
+    // ej. un stub re-creado con el id de una story ya done). React/dnd exigen ids
+    // únicos → sin dedup la UI crashea. Preferimos la copia archivada (terminal/
+    // canónica) y marcamos `dup_collision` para que la UI lo haga visible.
+    const byId = new Map<string, StoryWithArchive>();
+    const collisions = new Set<string>();
+    for (const s of all) {
+      const prev = byId.get(s.story_id);
+      if (!prev) {
+        byId.set(s.story_id, s);
+        continue;
+      }
+      collisions.add(s.story_id);
+      // archivada gana sobre live; si ya teníamos archivada, la mantenemos.
+      if (s.is_archived && !prev.is_archived) byId.set(s.story_id, s);
+    }
+    for (const id of collisions) {
+      const s = byId.get(id);
+      if (s) s.dup_collision = true;
+    }
+    const stories = [...byId.values()];
 
     return NextResponse.json({ stories });
   } catch (err) {

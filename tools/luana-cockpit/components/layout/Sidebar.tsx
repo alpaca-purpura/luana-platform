@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Map, ClipboardList, Compass, BookOpen, Network } from 'lucide-react';
+import { Map, ClipboardList, Compass, BookOpen, Network, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
 const NAV_ITEMS = [
@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { href: '/board', label: 'Backlog Board', Icon: ClipboardList },
   { href: '/map', label: 'Mapa Implementado', Icon: Compass },
   { href: '/arquitectura', label: 'Arquitectura', Icon: Network },
+  { href: '/drift', label: 'Drift', Icon: AlertTriangle },
   { href: '/learnings', label: 'Learnings', Icon: BookOpen },
 ];
 

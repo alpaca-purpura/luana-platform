@@ -33,13 +33,13 @@ const TYPE_CARDS: Array<{
     key: 'fix',
     emoji: '🔧',
     title: 'Fix',
-    desc: 'corrige bug · no agrega atomics nuevos · mismo cap',
+    desc: 'corrige bug · no agrega scenarios nuevos · mismo cap',
   },
   {
     key: 'extend',
     emoji: '➕',
     title: 'Extend',
-    desc: 'agrega atomic nuevo al cap actual · misma identidad',
+    desc: 'agrega scenario nuevo al cap actual · misma identidad',
   },
   {
     key: 'derive',

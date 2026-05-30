@@ -1,10 +1,14 @@
 'use client';
 
 import { MarkdownView } from './MarkdownView';
+import { YamlEditor } from '@/components/ui/YamlEditor';
 import { storyArtifactRel } from '@/lib/story-paths';
+import type { StoryState } from '@/lib/types';
 
 interface ArtifactTabProps {
   storyPath: string;
+  storyState: StoryState;
+  isArchived: boolean;
   /** Lista ordenada de artifacts candidatos · primero encontrado se renderiza */
   candidates: string[];
   missingMessage?: string;
@@ -12,12 +16,11 @@ interface ArtifactTabProps {
 
 export function ArtifactTab({
   storyPath,
+  storyState,
+  isArchived,
   candidates,
   missingMessage,
 }: ArtifactTabProps) {
-  // Por ahora rendereamos el primer candidato. Si falla 404, el MarkdownView
-  // muestra missingMessage. UX podría mejorar testando existencia HEAD vía
-  // /api/file para encontrar el primero existente — Phase 6 quizás.
   const rel = storyArtifactRel(storyPath, candidates[0]);
   if (!rel) {
     return (
@@ -26,5 +29,25 @@ export function ArtifactTab({
       </div>
     );
   }
-  return <MarkdownView relPath={rel} missingMessage={missingMessage} />;
+
+  // .yaml/.yml → YamlEditor con sintaxis + validación
+  if (/\.(ya?ml)$/i.test(rel)) {
+    return (
+      <YamlEditor
+        relPath={rel}
+        storyState={storyState}
+        isArchived={isArchived}
+        missingMessage={missingMessage}
+      />
+    );
+  }
+
+  return (
+    <MarkdownView
+      relPath={rel}
+      storyState={storyState}
+      isArchived={isArchived}
+      missingMessage={missingMessage}
+    />
+  );
 }

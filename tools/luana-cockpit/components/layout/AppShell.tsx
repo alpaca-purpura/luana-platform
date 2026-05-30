@@ -28,12 +28,14 @@ function ShellInner({ children }: { children: ReactNode }) {
 export function AppShell({
   children,
   brands,
+  defaultBrand,
 }: {
   children: ReactNode;
   brands: string[];
+  defaultBrand?: string;
 }) {
   return (
-    <BrandProvider brands={brands}>
+    <BrandProvider brands={brands} defaultBrand={defaultBrand}>
       <FileWatchProvider>
         <DrawerProvider>
           <ShellInner>{children}</ShellInner>

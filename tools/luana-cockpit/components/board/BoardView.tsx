@@ -20,12 +20,14 @@ import { useBrand } from '@/components/providers/BrandProvider';
 import { useFileWatchEvents } from '@/components/providers/FileWatchProvider';
 import {
   listReleases,
+  listSessions,
   listStories,
   postTransition,
   type StoryWithArchive,
 } from '@/lib/api-client';
 import {
   CHRIS_ALLOWED_TRANSITIONS,
+  type ActiveSession,
   type Release,
   type StoryState,
 } from '@/lib/types';
@@ -56,6 +58,9 @@ export function BoardView() {
   const { brand } = useBrand();
   const [stories, setStories] = useState<StoryWithArchive[]>([]);
   const [releases, setReleases] = useState<Release[]>([]);
+  const [sessionsByStory, setSessionsByStory] = useState<
+    Record<string, ActiveSession>
+  >({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -85,6 +90,26 @@ export function BoardView() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Build-claims vivos (ADR-009): `.session-locks/` es runtime gitignored → el
+  // file-watcher de docs no los cubre. Poll liviano cada 5s + carga inicial.
+  useEffect(() => {
+    let cancelled = false;
+    const refresh = () =>
+      listSessions()
+        .then((r) => {
+          if (!cancelled) setSessionsByStory(r.by_story);
+        })
+        .catch(() => {
+          /* sin .session-locks/ → mapa vacío, no es error */
+        });
+    refresh();
+    const id = setInterval(refresh, 5000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, []);
 
   // Live reload cuando un checkpoint o release del brand cambia
   useFileWatchEvents((event) => {
@@ -264,6 +289,20 @@ export function BoardView() {
         </div>
       </div>
 
+      {Object.keys(sessionsByStory).length > 0 && (
+        <div className="flex items-center gap-2 mb-3 flex-wrap text-[11px]">
+          <span className="text-[var(--color-muted)]">🔨 Construyendo ahora:</span>
+          {Object.values(sessionsByStory).map((s) => (
+            <Badge
+              key={s.storyId}
+              className="bg-amber-900/30 text-amber-300 border border-amber-700/50 font-mono"
+            >
+              {s.lane ?? `pid${s.pid}`} → {s.storyId}
+            </Badge>
+          ))}
+        </div>
+      )}
+
       <DndContext
         sensors={sensors}
         onDragStart={handleDragStart}
@@ -277,6 +316,7 @@ export function BoardView() {
               stories={filtered.filter((s) => s.state === state)}
               draggingFromState={draggingState}
               wipCap={WIP_CAPS[state]}
+              sessions={sessionsByStory}
             />
           ))}
         </div>

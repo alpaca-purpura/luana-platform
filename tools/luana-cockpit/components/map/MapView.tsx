@@ -5,11 +5,36 @@ import { cn } from '@/lib/cn';
 import { Spinner, ErrorBanner, EmptyState } from '@/components/ui/Spinner';
 import { Card } from '@/components/ui/Card';
 import { Pill } from '@/components/ui/Badge';
+import { Tooltip } from '@/components/ui/Tooltip';
+import { TOOLTIPS } from '@/lib/tooltips';
 import { useDrawer } from '@/components/providers/DrawerProvider';
 import { useBrand } from '@/components/providers/BrandProvider';
 import { useFileWatchEvents } from '@/components/providers/FileWatchProvider';
-import { listCapabilities, getSystemMap, openInEditor } from '@/lib/api-client';
-import type { Capability, SystemMap, AreaStatus, AgentDefinition, FunctionalArea } from '@/lib/types';
+import { ProductHealthBanner } from './ProductHealthBanner';
+import { listCapabilities, getSystemMap, openInEditor, getCapabilityStatus } from '@/lib/api-client';
+import type {
+  Capability,
+  SystemMap,
+  AreaStatus,
+  AgentDefinition,
+  FunctionalArea,
+  ComputedStatusReport,
+  CapStatusComputed,
+} from '@/lib/types';
+import { getStatusBadge } from '@/lib/types';
+
+// Roles canónicos vitalia (per HIPAA-lite + IAM)
+const VITALIA_ROLES = [
+  'doctor',
+  'nurse',
+  'admin_clinic',
+  'marketing',
+  'receptionist',
+  'patient',
+  'staff_vitalia',
+] as const;
+
+type VitaliaRole = (typeof VITALIA_ROLES)[number];
 
 const STATUS_CLASSES: Record<string, string> = {
   live: 'bg-[#14532d] text-[#86efac]',
@@ -29,6 +54,8 @@ export function MapView() {
   const { brand } = useBrand();
   const [caps, setCaps] = useState<Capability[]>([]);
   const [systemMap, setSystemMap] = useState<SystemMap | null>(null);
+  const [statusReport, setStatusReport] = useState<ComputedStatusReport | null>(null);
+  const [statusHint, setStatusHint] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showLive, setShowLive] = useState(true);
@@ -36,13 +63,24 @@ export function MapView() {
   const [showInfra, setShowInfra] = useState(false);
   const [showPlanned, setShowPlanned] = useState(true);
 
+  // R3.2 · filtros nuevos (search natural + onboarding rol + solo poblados v3.2)
+  const [searchTerm, setSearchTerm] = useState('');
+  const [roleFilter, setRoleFilter] = useState<VitaliaRole | 'all'>('all');
+  const [showOnlyPopulated, setShowOnlyPopulated] = useState(false);
+
   const load = useCallback(() => {
     setLoading(true);
     setError(null);
-    Promise.all([listCapabilities(brand), getSystemMap(brand)])
-      .then(([capsData, mapData]) => {
+    Promise.all([
+      listCapabilities(brand),
+      getSystemMap(brand),
+      getCapabilityStatus(brand),
+    ])
+      .then(([capsData, mapData, statusData]) => {
         setCaps(capsData);
         setSystemMap(mapData);
+        setStatusReport(statusData.status);
+        setStatusHint(statusData.hint ?? null);
       })
       .catch((err) => setError((err as Error).message))
       .finally(() => setLoading(false));
@@ -62,15 +100,49 @@ export function MapView() {
   });
 
   const filtered = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
     return caps.filter((c) => {
       if (c.status === 'live' && !showLive) return false;
       if (c.status === 'beta' && !showDraft) return false;
       if (c.status === 'deprecated' || c.status === 'sunset') return false;
       // v3 · ocultar infra (user_visible: false) salvo toggle
       if (c.user_visible === false && !showInfra) return false;
+
+      // R3.2 · "solo poblados v3.2"
+      if (showOnlyPopulated && !(c.scenarios && c.scenarios.length > 0)) return false;
+
+      // R3.2 · filtro por rol (onboarding)
+      if (roleFilter !== 'all') {
+        const eps = c.access?.entry_points ?? [];
+        const hasRole = eps.some((ep) =>
+          (ep.requires_role ?? []).includes(roleFilter)
+        );
+        if (!hasRole) return false;
+      }
+
+      // R3.2 · search natural
+      if (term) {
+        const haystacks: string[] = [
+          c.user_facing_name ?? '',
+          c.user_facing_description ?? '',
+          c.module ?? '',
+          c.slug ?? '',
+          c.functional_area ?? '',
+          ...(c.scenarios ?? []).flatMap((s) => [
+            s.name ?? '',
+            s.given ?? '',
+            s.when ?? '',
+            s.then ?? '',
+            ...(s.edge_cases ?? []),
+          ]),
+          ...(c.business_rules ?? []).map((r) => r.rule ?? ''),
+        ];
+        if (!haystacks.some((h) => h.toLowerCase().includes(term))) return false;
+      }
+
       return true;
     });
-  }, [caps, showLive, showDraft, showInfra]);
+  }, [caps, showLive, showDraft, showInfra, showOnlyPopulated, roleFilter, searchTerm]);
 
   const byAgentArea = useMemo(() => {
     if (!systemMap) return null;
@@ -124,26 +196,76 @@ export function MapView() {
 
   return (
     <div className="p-6">
-      <header className="flex items-start justify-between mb-4 gap-4 flex-wrap">
-        <div>
-          <h1 className="text-lg font-semibold">Mapa Implementado · capabilities live</h1>
-          <p className="text-[11px] text-[var(--color-muted)] italic mt-1">
-            Solo capabilities <b>cementadas (live)</b>. Las developing viven en
-            el Backlog Board.
-          </p>
-          {systemMap && (
-            <div className="text-[11px] text-[var(--color-muted)] mt-1">
-              Lee skeleton de{' '}
-              <button
-                onClick={() => openInEditor(systemMap._path ?? '')}
-                className="font-mono text-[var(--color-accent)] hover:underline"
-              >
-                SYSTEM-MAP.yaml
-              </button>
-              {' · '}
-              {systemMap.metadata.total_functional_areas} áreas · {systemMap.metadata.total_cross_agent_flows} flujos cross-agent
-            </div>
-          )}
+      {/* Salud de Producto · vista honesta del bosque (lee summary del JSON live) */}
+      <ProductHealthBanner report={statusReport} />
+
+      <header className="mb-4 space-y-2">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <h1 className="text-lg font-semibold">
+              <Tooltip content={TOOLTIPS.mapa_implementado} variant="header">
+                Mapa Implementado · capabilities live
+              </Tooltip>
+            </h1>
+            <p className="text-[11px] text-[var(--color-muted)] italic mt-1">
+              Solo capabilities <b>cementadas (live)</b>. Las developing viven en
+              el Backlog Board.
+            </p>
+            {systemMap && (
+              <div className="text-[11px] text-[var(--color-muted)] mt-1">
+                Lee skeleton de{' '}
+                <Tooltip content={TOOLTIPS.system_map}>
+                  <button
+                    onClick={() => openInEditor(systemMap._path ?? '')}
+                    className="font-mono text-[var(--color-accent)] hover:underline"
+                  >
+                    SYSTEM-MAP.yaml
+                  </button>
+                </Tooltip>
+                {' · '}
+                {systemMap.metadata.total_functional_areas} áreas · {systemMap.metadata.total_cross_agent_flows} flujos cross-agent
+              </div>
+            )}
+          </div>
+          <div className="text-[var(--color-muted)] text-xs shrink-0">
+            total: {caps.length} · mostrando: {filtered.length}
+          </div>
+        </div>
+
+        {/* Filtros R3.2 · search + onboarding rol + solo poblados + status checkboxes */}
+        <div className="flex flex-wrap gap-3 items-center text-xs">
+          <input
+            type="text"
+            placeholder="Buscar por scenarios, reglas, descripción…"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="px-3 py-1.5 rounded border border-[var(--color-border)] bg-[var(--color-panel)] text-[var(--color-text)] flex-1 min-w-[200px] max-w-[400px]"
+            aria-label="Buscar capabilities"
+          />
+          <select
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value as VitaliaRole | 'all')}
+            className="px-3 py-1.5 rounded border border-[var(--color-border)] bg-[var(--color-panel)] text-[var(--color-text)]"
+            aria-label="Modo onboarding por rol"
+          >
+            <option value="all">Todos los roles</option>
+            {VITALIA_ROLES.map((r) => (
+              <option key={r} value={r}>
+                Modo onboarding: {r}
+              </option>
+            ))}
+          </select>
+          <label className="flex items-center gap-1.5">
+            <input
+              type="checkbox"
+              className="!w-auto"
+              checked={showOnlyPopulated}
+              onChange={(e) => setShowOnlyPopulated(e.target.checked)}
+            />
+            <Tooltip content={TOOLTIPS.v3_2_badge}>
+              <span>solo poblados v3.2</span>
+            </Tooltip>
+          </label>
         </div>
         <div className="flex items-center gap-3 text-xs flex-wrap">
           <label className="flex items-center gap-1.5">
@@ -171,7 +293,11 @@ export function MapView() {
               checked={showInfra}
               onChange={(e) => setShowInfra(e.target.checked)}
             />
-            infra 🔧 ({caps.filter((c) => c.user_visible === false).length})
+            <Tooltip content={TOOLTIPS.infra_role}>
+              <span>infra 🔧</span>
+            </Tooltip>
+            {' '}
+            ({caps.filter((c) => c.user_visible === false).length})
           </label>
           <label className="flex items-center gap-1.5">
             <input
@@ -180,13 +306,22 @@ export function MapView() {
               checked={showPlanned}
               onChange={(e) => setShowPlanned(e.target.checked)}
             />
-            planned 📋
+            <Tooltip content={TOOLTIPS.planned_status}>
+              <span>planned 📋</span>
+            </Tooltip>
           </label>
-          <div className="text-[var(--color-muted)]">
-            total: {caps.length}
-          </div>
         </div>
       </header>
+
+      {!statusReport && statusHint && (
+        <div className="mb-3 text-[11px] text-amber-400 px-2 py-1 border border-amber-700 rounded flex items-center gap-1.5">
+          <span aria-hidden="true">⚠️</span>
+          <span>
+            Sin datos de verificación.{' '}
+            <span className="font-mono">{statusHint}</span>
+          </span>
+        </div>
+      )}
 
       {byAgentArea ? (
         <>
@@ -199,6 +334,7 @@ export function MapView() {
                   agent={agent}
                   areas={areas}
                   showPlanned={showPlanned}
+                  statusReport={statusReport}
                 />
               ))}
           </div>
@@ -213,13 +349,14 @@ export function MapView() {
                 areas={infraData.areas}
                 showPlanned={showPlanned}
                 fullWidth
+                statusReport={statusReport}
               />
             );
           })()}
         </>
       ) : (
         // Fallback si system-map no cargó: vista legacy por agent_owner
-        <LegacyFallbackView filtered={filtered} caps={caps} showInfra={showInfra} />
+        <LegacyFallbackView filtered={filtered} caps={caps} showInfra={showInfra} statusReport={statusReport} />
       )}
 
       {orphans.length > 0 && (
@@ -238,7 +375,7 @@ export function MapView() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
             {orphans.map((c, i) => (
-              <CapItem key={capKey(c, i)} cap={c} />
+              <CapItem key={capKey(c, i)} cap={c} statusReport={statusReport} />
             ))}
           </div>
         </Card>
@@ -252,11 +389,13 @@ function AgentSection({
   areas,
   showPlanned,
   fullWidth = false,
+  statusReport = null,
 }: {
   agent: AgentDefinition;
   areas: Array<{ area: FunctionalArea; fullId: string; caps: Capability[] }>;
   showPlanned: boolean;
   fullWidth?: boolean;
+  statusReport?: ComputedStatusReport | null;
 }) {
   const totalCaps = areas.reduce((n, a) => n + a.caps.length, 0);
 
@@ -310,7 +449,7 @@ function AgentSection({
                   )
                 ) : (
                   caps.map((c, i) => (
-                    <CapItem key={capKey(c, i)} cap={c} />
+                    <CapItem key={capKey(c, i)} cap={c} statusReport={statusReport} />
                   ))
                 )}
               </div>
@@ -336,20 +475,34 @@ function LegacyFallbackView({
   filtered,
   caps,
   showInfra,
+  statusReport = null,
 }: {
   filtered: Capability[];
   caps: Capability[];
   showInfra: boolean;
+  statusReport?: ComputedStatusReport | null;
 }) {
-  const FALLBACK_AGENTS = [
-    { id: 'lisa' as const, emoji: '🏥', name: 'Lisa', subtitle: 'Mi Clínica' },
-    { id: 'valeria' as const, emoji: '🗓', name: 'Valeria', subtitle: 'Mi Día' },
-    { id: 'adrian' as const, emoji: '💼', name: 'Adrián', subtitle: 'Vender' },
-    { id: 'lucas' as const, emoji: '📣', name: 'Lucas', subtitle: 'Marketing' },
-    { id: 'camila' as const, emoji: '🌟', name: 'Camila', subtitle: 'Reputación + cohortes' },
-    { id: 'config' as const, emoji: '⚙', name: 'Configurar', subtitle: 'tenant · iam · compliance' },
-  ];
-  const INFRA_FALLBACK = { id: 'infra' as const, emoji: '🔧', name: 'Infra Vitalia', subtitle: 'observability · platform · payment · scaffolding' };
+  const { brand } = useBrand();
+  const FALLBACK_AGENTS_BY_BRAND: Record<string, { id: string; emoji: string; name: string; subtitle: string }[]> = {
+    vitalia: [
+      { id: 'lisa', emoji: '🏥', name: 'Lisa', subtitle: 'Mi Clínica' },
+      { id: 'valeria', emoji: '🗓', name: 'Valeria', subtitle: 'Mi Día' },
+      { id: 'adrian', emoji: '💼', name: 'Adrián', subtitle: 'Vender' },
+      { id: 'lucas', emoji: '📣', name: 'Lucas', subtitle: 'Marketing' },
+      { id: 'camila', emoji: '🌟', name: 'Camila', subtitle: 'Reputación + cohortes' },
+      { id: 'config', emoji: '⚙', name: 'Configurar', subtitle: 'tenant · iam · compliance' },
+    ],
+    nicolify: [
+      { id: 'luana', emoji: '🧭', name: 'Luana', subtitle: 'Orquesta · único rostro' },
+      { id: 'abel', emoji: '🧠', name: 'Abel', subtitle: 'Estrategia · oferta' },
+      { id: 'brenda', emoji: '💰', name: 'Brenda', subtitle: 'Growth · presupuesto' },
+      { id: 'christian', emoji: '🏹', name: 'Christian', subtitle: 'SDR · outbound' },
+      { id: 'norvil', emoji: '🌱', name: 'Norvil', subtitle: 'Account mgr · retención' },
+      { id: 'config', emoji: '⚙', name: 'Configurar', subtitle: 'tenant · iam · tokens' },
+    ],
+  };
+  const FALLBACK_AGENTS = FALLBACK_AGENTS_BY_BRAND[brand] ?? FALLBACK_AGENTS_BY_BRAND.vitalia;
+  const INFRA_FALLBACK = { id: 'infra' as const, emoji: '🔧', name: 'Infra', subtitle: 'observability · platform · scaffolding' };
 
   const byAgent = useMemo(() => {
     const map = new Map<string, Capability[]>();
@@ -389,7 +542,7 @@ function LegacyFallbackView({
                 <EmptyState>Sin capabilities todavía.</EmptyState>
               ) : (
                 <div className="space-y-1.5">
-                  {agentCaps.map((c, i) => <CapItem key={capKey(c, i)} cap={c} />)}
+                  {agentCaps.map((c, i) => <CapItem key={capKey(c, i)} cap={c} statusReport={statusReport} />)}
                 </div>
               )}
             </Card>
@@ -406,7 +559,7 @@ function LegacyFallbackView({
             </div>
           </header>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
-            {(byAgent.map.get('infra') ?? []).map((c, i) => <CapItem key={capKey(c, i)} cap={c} />)}
+            {(byAgent.map.get('infra') ?? []).map((c, i) => <CapItem key={capKey(c, i)} cap={c} statusReport={statusReport} />)}
           </div>
         </Card>
       )}
@@ -416,7 +569,7 @@ function LegacyFallbackView({
             ⚠️ Capabilities sin agent_owner ({byAgent.orphans.length})
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
-            {byAgent.orphans.map((c, i) => <CapItem key={capKey(c, i)} cap={c} />)}
+            {byAgent.orphans.map((c, i) => <CapItem key={capKey(c, i)} cap={c} statusReport={statusReport} />)}
           </div>
         </Card>
       )}
@@ -424,47 +577,152 @@ function LegacyFallbackView({
   );
 }
 
-function CapItem({ cap }: { cap: Capability }) {
+function CapItem({
+  cap,
+  statusReport = null,
+}: {
+  cap: Capability;
+  statusReport?: ComputedStatusReport | null;
+}) {
   const { openCap } = useDrawer();
+  const [expanded, setExpanded] = useState(false);
 
   // Split functional_area en [agent].[area] si está set
   const [agentChip, areaChip] = (cap.functional_area ?? '').split('.', 2);
 
+  // Buscar computed status por slug del cap
+  const computed: CapStatusComputed | null =
+    statusReport?.capabilities[cap.slug] ?? null;
+  const badge = computed ? getStatusBadge(computed.computed_status) : null;
+
+  const scenarios = cap.scenarios ?? [];
+  const hasScenarios = scenarios.length > 0;
+  const isV32Populated = hasScenarios;
+
   return (
-    <button
-      type="button"
-      onClick={() => openCap(cap.module, cap.slug)}
+    <div
       className={cn(
-        'w-full text-left px-2 py-1.5 rounded border text-xs transition-colors',
-        'bg-[var(--color-panel)] border-[var(--color-border)]',
-        'hover:border-[#3a4358] hover:bg-[var(--color-panel2)]'
+        'rounded border text-xs transition-colors',
+        'bg-[var(--color-panel)] border-[var(--color-border)]'
       )}
     >
-      <div className="flex items-center gap-1.5 flex-wrap">
-        <Pill className={STATUS_CLASSES[cap.status] ?? 'bg-[#1f2937]'}>
-          {cap.status}
-        </Pill>
-        <div className="flex items-center gap-1 text-[11px] flex-1 truncate">
-          <span className="font-medium truncate">{cap.user_facing_name ?? `${cap.module}/${cap.slug}`}</span>
-          {agentChip && (
-            <Pill className="bg-[var(--color-panel)] border border-[var(--color-border)] text-[10px] py-0">
-              {agentChip}
-            </Pill>
+      {/* Row principal: click abre drawer o toggle scenarios */}
+      <div className="flex items-stretch">
+        <button
+          type="button"
+          onClick={() => openCap(cap.module, cap.slug)}
+          className={cn(
+            'flex-1 text-left px-2 py-1.5 transition-colors',
+            'hover:border-[#3a4358] hover:bg-[var(--color-panel2)] rounded-l'
           )}
-          {areaChip && (
-            <Pill className="bg-[var(--color-panel)] border border-[var(--color-border)] text-[10px] py-0 opacity-70">
-              {areaChip}
+        >
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <Pill className={STATUS_CLASSES[cap.status] ?? 'bg-[#1f2937]'}>
+              {cap.status}
             </Pill>
+            {badge && (
+              <span
+                className="text-[10px]"
+                title={`Computed: ${computed?.computed_status}`}
+              >
+                {badge.emoji}
+              </span>
+            )}
+            {isV32Populated && (
+              <Tooltip content={TOOLTIPS.v3_2_badge} variant="badge">
+                <Pill className="bg-[#1e3a5f] text-[#93c5fd] text-[9px] py-0">
+                  v3.2
+                </Pill>
+              </Tooltip>
+            )}
+            <div className="flex items-center gap-1 text-[11px] flex-1 truncate">
+              <span className="font-medium truncate">
+                {cap.user_facing_name ?? `${cap.module}/${cap.slug}`}
+              </span>
+              {agentChip && (
+                <Pill className="bg-[var(--color-panel)] border border-[var(--color-border)] text-[10px] py-0">
+                  {agentChip}
+                </Pill>
+              )}
+              {areaChip && (
+                <Pill className="bg-[var(--color-panel)] border border-[var(--color-border)] text-[10px] py-0 opacity-70">
+                  {areaChip}
+                </Pill>
+              )}
+            </div>
+          </div>
+          <div className="text-[10px] text-[var(--color-muted)] mt-0.5 font-mono truncate">
+            {cap.module}/{cap.slug}
+            {hasScenarios && (
+              <span className="ml-2">
+                · {scenarios.length} escenario{scenarios.length !== 1 ? 's' : ''}
+              </span>
+            )}
+          </div>
+        </button>
+
+        {/* Toggle expand scenarios */}
+        <button
+          type="button"
+          aria-label={expanded ? 'Ocultar escenarios' : 'Ver escenarios'}
+          onClick={() => setExpanded((v) => !v)}
+          className={cn(
+            'px-1.5 text-[var(--color-muted)] hover:text-[var(--color-fg)] transition-colors',
+            'border-l border-[var(--color-border)] rounded-r',
+            expanded && 'bg-[var(--color-panel2)]'
+          )}
+        >
+          <span aria-hidden="true" className="text-[10px]">
+            {expanded ? '▲' : '▼'}
+          </span>
+        </button>
+      </div>
+
+      {/* Scenarios drawer */}
+      {expanded && (
+        <div className="border-t border-[var(--color-border)] px-2 py-1.5">
+          {!hasScenarios ? (
+            <div className="text-[10px] text-[var(--color-muted)] italic">
+              Sin escenarios declarados (cap stub)
+            </div>
+          ) : (
+            <div className="space-y-0.5">
+              {scenarios.map((s, idx) => (
+                <div
+                  key={`${s.id ?? s.added_in_story}-${idx}`}
+                  className="text-[10px] text-[var(--color-muted)] flex items-center gap-1"
+                >
+                  <span
+                    className={cn(
+                      'w-1.5 h-1.5 rounded-full shrink-0',
+                      s.status === 'live'
+                        ? 'bg-green-500'
+                        : s.status === 'wip'
+                        ? 'bg-blue-500'
+                        : 'bg-gray-500'
+                    )}
+                    title={`status: ${s.status}`}
+                  />
+                  <span className="truncate">{s.name ?? '(sin nombre)'}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          {computed && (
+            <div className="mt-1 pt-1 border-t border-[var(--color-border)] text-[9px] text-[var(--color-muted)] font-mono">
+              {badge?.emoji} {computed.computed_status} · {computed.scenarios_total} escenario
+              {computed.scenarios_total !== 1 ? 's' : ''} · {computed.scenarios_verified} verificado
+              {computed.scenarios_verified !== 1 ? 's' : ''}
+              {computed.drift_reasons.length > 0 && (
+                <span className="text-red-400 ml-1" title={computed.drift_reasons.join('; ')}>
+                  · drift
+                </span>
+              )}
+            </div>
           )}
         </div>
-      </div>
-      <div className="text-[10px] text-[var(--color-muted)] mt-0.5 font-mono truncate">
-        {cap.module}/{cap.slug}
-        {cap.atomics.length > 0 && (
-          <span className="ml-2">· {cap.atomics.length} atomic{cap.atomics.length !== 1 ? 's' : ''}</span>
-        )}
-      </div>
-    </button>
+      )}
+    </div>
   );
 }
 

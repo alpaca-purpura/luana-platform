@@ -44,6 +44,14 @@ async function readReleaseFromPath(absPath: string): Promise<Release> {
     created_at: data.created_at ?? '',
     created_by: data.created_by ?? 'chris',
     stories: data.stories ?? [],
+    verified_by: data.verified_by ?? null,
+    verified_at: data.verified_at ?? null,
+    verification_note: data.verification_note ?? null,
+    production_status: data.production_status ?? null,
+    production_version: data.production_version ?? null,
+    production_scheduled_at: data.production_scheduled_at ?? null,
+    deployed_at: data.deployed_at ?? null,
+    release_branch: data.release_branch ?? null,
     maps_legacy_outcome: data.maps_legacy_outcome ?? null,
     maps_legacy_phase: data.maps_legacy_phase ?? null,
     body: parsed.content,
@@ -98,9 +106,14 @@ export function recomputeReleaseStatus(
   release: Pick<Release, 'status'>,
   storyStates: StoryState[]
 ): ReleaseStatus {
+  // shipped es TERMINAL en el eje de integración — nunca se demota (un release
+  // entregado es inmutable). Ver release-protocol.md § 2 + cockpit-permissions.md.
+  if (release.status === 'shipped') {
+    return 'shipped';
+  }
   if (storyStates.length === 0) {
     // Release sin stories asignadas
-    return release.status === 'shipped' ? 'shipped' : 'planning';
+    return 'planning';
   }
   if (storyStates.every((s) => TERMINAL_STATES.has(s))) {
     return 'ready_to_merge';

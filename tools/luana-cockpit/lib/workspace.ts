@@ -105,6 +105,17 @@ export function archivePath(brand: string, year: number | string): string {
   return path.join(root, brand, 'docs', 'archive', String(year), 'stories');
 }
 
+/**
+ * Path al root del archive del brand (`{brand}/docs/archive`), bajo el cual viven
+ * los subdirectorios por año (`2026/stories/...`). Usar para iterar todos los años
+ * de stories done — NO derivar via `path.dirname(archivePath(...))` (deja un nivel
+ * de más: `archive/{year}` en vez de `archive`).
+ */
+export function archiveRootPath(brand: string): string {
+  const root = getWorkspaceRoot();
+  return path.join(root, brand, 'docs', 'archive');
+}
+
 /** Path al directorio de capabilities del brand */
 export function capabilitiesPath(brand: string): string {
   return path.join(brandPath(brand), 'capabilities');

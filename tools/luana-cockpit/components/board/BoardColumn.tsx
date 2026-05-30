@@ -3,10 +3,25 @@
 import { useDroppable } from '@dnd-kit/core';
 import { cn } from '@/lib/cn';
 import { StateBadge } from '@/components/ui/Badge';
+import { Tooltip } from '@/components/ui/Tooltip';
+import { TOOLTIPS } from '@/lib/tooltips';
 import { BoardCard } from './BoardCard';
-import type { StoryState } from '@/lib/types';
+import type { ActiveSession, StoryState } from '@/lib/types';
 import type { StoryWithArchive } from '@/lib/api-client';
 import { CHRIS_ALLOWED_TRANSITIONS } from '@/lib/types';
+
+const STATE_TOOLTIPS: Record<StoryState, string> = {
+  idea: TOOLTIPS.state_idea,
+  refining: TOOLTIPS.state_refining,
+  refined: TOOLTIPS.state_refined,
+  ready: TOOLTIPS.state_ready,
+  developing: TOOLTIPS.state_developing,
+  developed: TOOLTIPS.state_developed,
+  reviewing: TOOLTIPS.state_reviewing,
+  done: TOOLTIPS.state_done,
+  parked: TOOLTIPS.state_parked,
+  dropped: TOOLTIPS.state_dropped,
+};
 
 interface BoardColumnProps {
   state: StoryState;
@@ -14,6 +29,8 @@ interface BoardColumnProps {
   /** Estado origen que se está dragging (para feedback drop allowed/forbidden) */
   draggingFromState: StoryState | null;
   wipCap?: number;
+  /** Build-claims vivos por story_id (ADR-009) → badge 🔨 en la card. */
+  sessions?: Record<string, ActiveSession>;
 }
 
 export function BoardColumn({
@@ -21,6 +38,7 @@ export function BoardColumn({
   stories,
   draggingFromState,
   wipCap,
+  sessions,
 }: BoardColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: `state:${state}`,
@@ -35,16 +53,46 @@ export function BoardColumn({
     dropFeedback = allowed ? 'allowed' : 'forbidden';
   }
 
+  // `done`: agrupar por release (release nuevo arriba) y dentro por entrega reciente
+  // (last_modified desc). Sin release → grupo al fondo. Resto de columnas: orden natural.
+  const releaseNum = (r: string | null | undefined): number => {
+    const m = r?.match(/(\d+)/);
+    return m ? Number.parseInt(m[1], 10) : -1;
+  };
+  const doneGroups =
+    state === 'done'
+      ? Object.values(
+          stories.reduce<
+            Record<string, { release: string | null; items: StoryWithArchive[] }>
+          >((acc, s) => {
+            const key = s.release ?? '∅';
+            (acc[key] ??= { release: s.release ?? null, items: [] }).items.push(s);
+            return acc;
+          }, {})
+        )
+          .map((g) => ({
+            release: g.release,
+            items: [...g.items].sort((a, b) =>
+              (b.last_modified ?? '').localeCompare(a.last_modified ?? '')
+            ),
+          }))
+          .sort((a, b) => releaseNum(b.release) - releaseNum(a.release))
+      : null;
+
   return (
     <div className="w-48 shrink-0 flex flex-col">
       <header className="flex items-center justify-between mb-2 px-1">
-        <StateBadge state={state} />
+        <Tooltip content={STATE_TOOLTIPS[state]} variant="badge">
+          <StateBadge state={state} />
+        </Tooltip>
         <div className="text-[10px] text-[var(--color-muted)] font-mono">
           {stories.length}
           {wipCap !== undefined && (
-            <span className={stories.length > wipCap ? 'text-orange-400' : ''}>
-              /{wipCap}
-            </span>
+            <Tooltip content={TOOLTIPS.wip_cap}>
+              <span className={stories.length > wipCap ? 'text-orange-400' : ''}>
+                /{wipCap}
+              </span>
+            </Tooltip>
           )}
         </div>
       </header>
@@ -61,10 +109,37 @@ export function BoardColumn({
           <div className="text-[10px] text-[var(--color-muted)] italic text-center mt-4">
             Sin stories.
           </div>
+        ) : doneGroups ? (
+          <div className="space-y-3">
+            {doneGroups.map((g) => (
+              <div key={g.release ?? '∅'} className="space-y-1.5">
+                <div className="flex items-center gap-1.5 px-0.5">
+                  <span className="text-[10px] font-bold text-[var(--color-text)]">
+                    {g.release ?? 'sin release'}
+                  </span>
+                  <span className="h-px flex-1 bg-[var(--color-border)]" />
+                  <span className="text-[9px] text-[var(--color-muted)] font-mono">
+                    {g.items.length}
+                  </span>
+                </div>
+                {g.items.map((s) => (
+                  <BoardCard
+                    key={s.story_id}
+                    story={s}
+                    session={sessions?.[s.story_id]}
+                  />
+                ))}
+              </div>
+            ))}
+          </div>
         ) : (
           <div className="space-y-1.5">
             {stories.map((s) => (
-              <BoardCard key={s.story_id} story={s} />
+              <BoardCard
+                key={s.story_id}
+                story={s}
+                session={sessions?.[s.story_id]}
+              />
             ))}
           </div>
         )}

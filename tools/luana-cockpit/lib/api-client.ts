@@ -16,6 +16,10 @@ import type {
   StoryState,
   CapChangeType,
   RefType,
+  ComputedStatusReport,
+  CodeIndexReport,
+  BidirectionalValidationReport,
+  ActiveSession,
 } from '@/lib/types';
 
 export class ApiClientError extends Error {
@@ -85,6 +89,20 @@ export async function updateStory(
 }
 
 // ────────────────────────────────────────────────────────────────────────────
+// Active sessions (build-claims · ADR-009 single-hub worktree)
+// ────────────────────────────────────────────────────────────────────────────
+
+export interface SessionsResponse {
+  sessions: ActiveSession[];
+  by_story: Record<string, ActiveSession>;
+}
+
+/** Sesiones Claude/opencode vivas trabajando sobre el hub (lee `.session-locks/`). */
+export async function listSessions(): Promise<SessionsResponse> {
+  return request<SessionsResponse>('/api/sessions');
+}
+
+// ────────────────────────────────────────────────────────────────────────────
 // Releases
 // ────────────────────────────────────────────────────────────────────────────
 
@@ -109,6 +127,27 @@ export async function createRelease(input: CreateReleaseInput): Promise<Release>
     method: 'POST',
     body: JSON.stringify(input),
   });
+  return data.release;
+}
+
+export interface UpdateReleaseInput {
+  name?: string;
+  description?: string;
+  target_date?: string | null;
+  order?: number;
+  stories?: string[];
+}
+
+/** Edita campos editables de un release (bloqueado server-side si está shipped). */
+export async function updateRelease(
+  releaseId: string,
+  brand: string,
+  patch: UpdateReleaseInput
+): Promise<Release> {
+  const data = await request<{ release: Release }>(
+    `/api/releases?id=${encodeURIComponent(releaseId)}&brand=${encodeURIComponent(brand)}`,
+    { method: 'PUT', body: JSON.stringify(patch) }
+  );
   return data.release;
 }
 
@@ -295,16 +334,24 @@ export interface MergeReleasePlan {
   executed: boolean;
   preview?: boolean;
   note?: string;
+  release?: Release;
 }
 
 export async function postMergeRelease(
   brand: string,
   releaseId: string,
-  confirmFinal: boolean
+  confirmFinal: boolean,
+  opts?: { verified?: boolean; verificationNote?: string }
 ): Promise<MergeReleasePlan> {
   return await request('/api/merge-release', {
     method: 'POST',
-    body: JSON.stringify({ brand, releaseId, confirmFinal }),
+    body: JSON.stringify({
+      brand,
+      releaseId,
+      confirmFinal,
+      verified: opts?.verified ?? false,
+      verificationNote: opts?.verificationNote,
+    }),
   });
 }
 
@@ -340,6 +387,53 @@ export async function getSystemMap(brand: string): Promise<SystemMap> {
     `/api/system-map?brand=${encodeURIComponent(brand)}`
   );
   return { ...data.system_map, _path: data.path };
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Capability computed status
+// ────────────────────────────────────────────────────────────────────────────
+
+export interface CapabilityStatusResponse {
+  status: ComputedStatusReport | null;
+  path: string;
+  brand: string;
+  hint?: string;
+}
+
+export async function getCapabilityStatus(
+  brand: string
+): Promise<CapabilityStatusResponse> {
+  return await request<CapabilityStatusResponse>(
+    `/api/capabilities/status?brand=${encodeURIComponent(brand)}`
+  );
+}
+
+export interface CodeIndexResponse {
+  index: CodeIndexReport | null;
+  path: string;
+  brand: string;
+  hint?: string;
+}
+
+export async function getCodeIndex(brand: string): Promise<CodeIndexResponse> {
+  return await request<CodeIndexResponse>(
+    `/api/capabilities/code-index?brand=${encodeURIComponent(brand)}`
+  );
+}
+
+export interface BidirectionalValidationResponse {
+  validation: BidirectionalValidationReport | null;
+  path: string;
+  brand: string;
+  hint?: string;
+}
+
+export async function getBidirectionalValidation(
+  brand: string
+): Promise<BidirectionalValidationResponse> {
+  return await request<BidirectionalValidationResponse>(
+    `/api/capabilities/bidirectional?brand=${encodeURIComponent(brand)}`
+  );
 }
 
 // Re-export type for convenience

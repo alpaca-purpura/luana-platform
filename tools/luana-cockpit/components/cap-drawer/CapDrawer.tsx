@@ -6,12 +6,29 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge, Pill } from '@/components/ui/Badge';
 import { Spinner, ErrorBanner, EmptyState } from '@/components/ui/Spinner';
+import { Tooltip } from '@/components/ui/Tooltip';
+import { TOOLTIPS } from '@/lib/tooltips';
 import { ExternalLink, Plus } from 'lucide-react';
 import { useDrawer } from '@/components/providers/DrawerProvider';
 import { useBrand } from '@/components/providers/BrandProvider';
-import { getCapability, openInEditor } from '@/lib/api-client';
+import {
+  getCapability,
+  openInEditor,
+  getCodeIndex,
+  getBidirectionalValidation,
+} from '@/lib/api-client';
 import { ExtendCapModal } from './ExtendCapModal';
-import type { Capability } from '@/lib/types';
+import { AccessSection } from './sections/AccessSection';
+import { ScenariosSection } from './sections/ScenariosSection';
+import { BusinessRulesSection } from './sections/BusinessRulesSection';
+import { RelatedCapsSection } from './sections/RelatedCapsSection';
+import { CodeFilesSection } from './sections/CodeFilesSection';
+import { BidirectionalSection } from './sections/BidirectionalSection';
+import type {
+  Capability,
+  CodeIndexReport,
+  BidirectionalValidationReport,
+} from '@/lib/types';
 import toast from 'react-hot-toast';
 
 const STATUS_CLASSES: Record<string, string> = {
@@ -29,6 +46,12 @@ export function CapDrawer() {
   const [error, setError] = useState<string | null>(null);
   const [extendOpen, setExtendOpen] = useState(false);
 
+  // v3.2 cross-refs (carga paralela una sola vez por sesión drawer)
+  const [codeIndex, setCodeIndex] = useState<CodeIndexReport | null>(null);
+  const [codeIndexHint, setCodeIndexHint] = useState<string | null>(null);
+  const [bidirReport, setBidirReport] = useState<BidirectionalValidationReport | null>(null);
+  const [bidirHint, setBidirHint] = useState<string | null>(null);
+
   useEffect(() => {
     if (!capRef) {
       setCap(null);
@@ -36,8 +59,18 @@ export function CapDrawer() {
     }
     setLoading(true);
     setError(null);
-    getCapability(capRef.module, capRef.slug, brand)
-      .then((c) => setCap(c))
+    Promise.all([
+      getCapability(capRef.module, capRef.slug, brand),
+      getCodeIndex(brand).catch(() => ({ index: null, hint: null })),
+      getBidirectionalValidation(brand).catch(() => ({ validation: null, hint: null })),
+    ])
+      .then(([c, ci, biv]) => {
+        setCap(c);
+        setCodeIndex(ci.index ?? null);
+        setCodeIndexHint(('hint' in ci ? ci.hint : null) ?? null);
+        setBidirReport(biv.validation ?? null);
+        setBidirHint(('hint' in biv ? biv.hint : null) ?? null);
+      })
       .catch((err) => setError((err as Error).message))
       .finally(() => setLoading(false));
   }, [capRef, brand]);
@@ -80,10 +113,14 @@ export function CapDrawer() {
       {error && <ErrorBanner message={error} />}
       {!loading && !error && cap && (
         <div className="space-y-5">
-          {/* YAML pointer */}
+          {/* YAML ledger */}
           <Card>
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold">YAML ledger</h3>
+              <h3 className="text-sm font-semibold">
+                <Tooltip content={TOOLTIPS.yaml_ledger} variant="header">
+                  YAML ledger
+                </Tooltip>
+              </h3>
               <div className="flex gap-2">
                 <Button size="sm" onClick={handleOpenYaml}>
                   <ExternalLink className="w-3 h-3" />
@@ -109,23 +146,53 @@ export function CapDrawer() {
                   {cap.license}
                 </Pill>
               </dd>
-              <dt className="text-[var(--color-muted)]">Created in story</dt>
+              <dt className="text-[var(--color-muted)]">
+                <Tooltip content={TOOLTIPS.created_in_story}>
+                  <span>Created in story</span>
+                </Tooltip>
+              </dt>
               <dd className="font-mono text-[11px]">{cap.created_in_story}</dd>
               <dt className="text-[var(--color-muted)]">Created date</dt>
               <dd>{cap.created_date}</dd>
               <dt className="text-[var(--color-muted)]">Last modified</dt>
               <dd>{cap.last_modified}</dd>
-              <dt className="text-[var(--color-muted)]">Parent cap</dt>
+              <dt className="text-[var(--color-muted)]">
+                <Tooltip content={TOOLTIPS.parent_cap}>
+                  <span>Parent cap</span>
+                </Tooltip>
+              </dt>
               <dd className="font-mono text-[11px]">{cap.parent_cap ?? '—'}</dd>
               {cap.architecture_pattern && (
                 <>
-                  <dt className="text-[var(--color-muted)]">Pattern</dt>
+                  <dt className="text-[var(--color-muted)]">
+                    <Tooltip content={TOOLTIPS.architecture_pattern}>
+                      <span>Pattern</span>
+                    </Tooltip>
+                  </dt>
                   <dd className="text-[11px]">{cap.architecture_pattern}</dd>
+                </>
+              )}
+              {cap.hipaa_lite_overlay && (
+                <>
+                  <dt className="text-[var(--color-muted)]">
+                    <Tooltip content={TOOLTIPS.hipaa_lite_overlay}>
+                      <span>HIPAA overlay</span>
+                    </Tooltip>
+                  </dt>
+                  <dd>
+                    <Pill className="bg-[#450a0a] text-[#fca5a5] text-[10px]">
+                      activo
+                    </Pill>
+                  </dd>
                 </>
               )}
               {cap.agent_owner && (
                 <>
-                  <dt className="text-[var(--color-muted)]">Agent owner</dt>
+                  <dt className="text-[var(--color-muted)]">
+                    <Tooltip content={TOOLTIPS.agent_owner}>
+                      <span>Agent owner</span>
+                    </Tooltip>
+                  </dt>
                   <dd>
                     <Pill className="bg-[var(--color-panel)] border border-[var(--color-border)]">
                       {cap.agent_owner}
@@ -135,7 +202,11 @@ export function CapDrawer() {
               )}
               {cap.functional_area && (
                 <>
-                  <dt className="text-[var(--color-muted)]">Functional area</dt>
+                  <dt className="text-[var(--color-muted)]">
+                    <Tooltip content={TOOLTIPS.functional_area}>
+                      <span>Functional area</span>
+                    </Tooltip>
+                  </dt>
                   <dd className="flex items-center gap-1">
                     {(() => {
                       const parts = cap.functional_area.split('.');
@@ -154,19 +225,31 @@ export function CapDrawer() {
               )}
               {cap.nature && (
                 <>
-                  <dt className="text-[var(--color-muted)]">Naturaleza</dt>
+                  <dt className="text-[var(--color-muted)]">
+                    <Tooltip content={TOOLTIPS.nature}>
+                      <span>Naturaleza</span>
+                    </Tooltip>
+                  </dt>
                   <dd className="text-[11px]">{cap.nature}</dd>
                 </>
               )}
-              <dt className="text-[var(--color-muted)]">User visible</dt>
+              <dt className="text-[var(--color-muted)]">
+                <Tooltip content={TOOLTIPS.user_visible}>
+                  <span>User visible</span>
+                </Tooltip>
+              </dt>
               <dd className="text-[11px]">{cap.user_visible !== false ? 'Sí' : 'No (infra)'}</dd>
             </dl>
           </Card>
 
-          {/* v3 · user facing + dev_preview */}
+          {/* Cómo verlo · v3 user-facing + dev_preview (con storybook/loom fix R3) */}
           {(cap.user_facing_name || cap.user_facing_description || cap.dev_preview) && (
             <Card>
-              <h3 className="text-sm font-semibold mb-2">📍 Cómo verlo</h3>
+              <h3 className="text-sm font-semibold mb-2">
+                <Tooltip content={TOOLTIPS.dev_preview} variant="header">
+                  📍 Cómo verlo
+                </Tooltip>
+              </h3>
               {cap.user_facing_name && (
                 <div className="text-sm font-medium mb-1">{cap.user_facing_name}</div>
               )}
@@ -209,7 +292,11 @@ export function CapDrawer() {
                   )}
                   {cap.dev_preview.e2e_test && (
                     <>
-                      <dt className="text-[var(--color-muted)]">Test E2E</dt>
+                      <dt className="text-[var(--color-muted)]">
+                        <Tooltip content={TOOLTIPS.e2e_test}>
+                          <span>Test E2E</span>
+                        </Tooltip>
+                      </dt>
                       <dd className="font-mono text-[10px] break-all">{cap.dev_preview.e2e_test}</dd>
                     </>
                   )}
@@ -219,55 +306,85 @@ export function CapDrawer() {
                       <dd className="text-[11px]">{cap.dev_preview.fixtures_required.join(', ')}</dd>
                     </>
                   )}
+                  {cap.dev_preview.storybook_url && (
+                    <>
+                      <dt className="text-[var(--color-muted)]">Storybook</dt>
+                      <dd>
+                        <a
+                          href={cap.dev_preview.storybook_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-mono text-[10px] text-[var(--color-accent)] hover:underline break-all"
+                        >
+                          {cap.dev_preview.storybook_url}
+                        </a>
+                      </dd>
+                    </>
+                  )}
+                  {cap.dev_preview.loom_demo && (
+                    <>
+                      <dt className="text-[var(--color-muted)]">Loom demo</dt>
+                      <dd>
+                        <a
+                          href={cap.dev_preview.loom_demo}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-mono text-[10px] text-[var(--color-accent)] hover:underline break-all"
+                        >
+                          {cap.dev_preview.loom_demo}
+                        </a>
+                      </dd>
+                    </>
+                  )}
                 </dl>
               )}
               {cap.superseded_by && (
                 <div className="mt-3 text-[11px] text-amber-400 bg-amber-950/30 px-2 py-1 rounded border border-amber-700">
-                  Esta capability fue mergeada a <strong>{cap.superseded_by}</strong>.
-                  Ver ese cap para la visión consolidada.
+                  <Tooltip content={TOOLTIPS.superseded_by}>
+                    <span>Esta capability fue mergeada</span>
+                  </Tooltip>{' '}
+                  a <strong>{cap.superseded_by}</strong>. Ver ese cap para la visión consolidada.
                 </div>
               )}
             </Card>
           )}
 
-          {/* Atomics */}
-          <section>
-            <h3 className="text-sm font-semibold mb-2">
-              Atomics ({cap.atomics.length})
-            </h3>
-            {cap.atomics.length === 0 ? (
-              <EmptyState>Sin atomics declarados.</EmptyState>
-            ) : (
-              <ul className="space-y-1.5">
-                {cap.atomics.map((a, i) => (
-                  <li
-                    key={i}
-                    className={
-                      a.deprecated_in_story
-                        ? 'flex items-start gap-2 text-xs text-[var(--color-muted)] line-through'
-                        : 'flex items-start gap-2 text-xs'
-                    }
-                  >
-                    <span className="font-mono text-[10px] text-[var(--color-muted)] shrink-0 w-24">
-                      {a.added_date}
-                    </span>
-                    <span className="flex-1">{a.label}</span>
-                    <button
-                      onClick={() => openStory(a.added_in_story)}
-                      className="text-[10px] text-[var(--color-accent)] hover:underline font-mono"
-                    >
-                      {a.added_in_story}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
+          {/* ✨ Scenarios · v3.2 — qué hace (unidad atómica de comportamiento) */}
+          <ScenariosSection scenarios={cap.scenarios ?? []} />
+
+          {/* 📁 Archivos código asociados · v3.2 cross-check — dónde vive */}
+          <CodeFilesSection
+            capId={`${cap.module}.${cap.slug}`}
+            codeIndex={codeIndex}
+            hint={codeIndexHint}
+          />
+
+          {/* 🔑 Acceso · v3.2 — quién entra y por dónde */}
+          {cap.access && <AccessSection access={cap.access} />}
+
+          {/* 📋 Reglas de negocio · v3.2 */}
+          {cap.business_rules && cap.business_rules.length > 0 && (
+            <BusinessRulesSection rules={cap.business_rules} />
+          )}
+
+          {/* 🔗 Capabilities relacionadas · v3.2 */}
+          {cap.related_capabilities && (
+            <RelatedCapsSection related={cap.related_capabilities} />
+          )}
+
+          {/* 🔍 Validación bidireccional · v3.2 cross-check */}
+          <BidirectionalSection
+            capId={`${cap.module}.${cap.slug}`}
+            report={bidirReport}
+            hint={bidirHint}
+          />
 
           {/* Changelog */}
           <section>
             <h3 className="text-sm font-semibold mb-2">
-              Historial · change log ({cap.change_log.length})
+              <Tooltip content={TOOLTIPS.change_log} variant="header">
+                Historial · change log ({cap.change_log.length})
+              </Tooltip>
             </h3>
             {cap.change_log.length === 0 ? (
               <EmptyState>Sin entries todavía.</EmptyState>

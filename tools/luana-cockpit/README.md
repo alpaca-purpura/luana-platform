@@ -62,7 +62,7 @@ corepack enable && corepack prepare pnpm@9.15.9 --activate
 pnpm dev          # dev server :4000 con hot reload + chokidar SSE
 pnpm build        # Next.js build standalone
 pnpm start        # producción :4000 (post-build)
-pnpm test         # vitest run · 6 tests (cap-ledger + chris-input-parser)
+pnpm test         # vitest run · ~67 tests en 6 files (cap-ledger · cap-status · chris-input-parser · drift-view · edit-permissions · tooltips)
 pnpm typecheck    # tsc --noEmit
 ```
 
@@ -93,17 +93,33 @@ Variables disponibles:
 |---|---|---|
 | `WORKSPACE_ROOT` | autodetect via `git rev-parse --show-toplevel` desde cwd | Si el cockpit corre afuera del repo (ej. instalación standalone apuntando a workspace remoto) |
 | `DEFAULT_BRAND` | `vitalia` | Si trabajás más con otra brand · usuario puede cambiarla en UI persiste en localStorage |
-| `EDITOR_BIN` | `xed` | **Mac: usá `code` · Windows: `code` · Linux Mint: `xed` (default) · otros: tu editor preferido** |
+| `EDITOR_BIN` | fallback chain: `xdg-open,code,xed,gnome-text-editor,nano` | Default: prueba `xdg-open` (delega al editor configurado del desktop), luego `code`, luego `xed`, etc. Override con un solo editor (`EDITOR_BIN=code`) o cadena propia (`EDITOR_BIN=cursor,code,xdg-open`). El editor inline del cockpit cubre 90% de casos · este botón es escape hatch. |
 | `PORT` | `4000` | Si el puerto está ocupado · ej. `PORT=4001 pnpm dev` |
 
-## Las 4 vistas
+## Las 6 vistas
 
 | Ruta | Vista | Funcionalidad clave |
 |---|---|---|
 | `/roadmap` (default) | Roadmap por releases | Drag stories entre releases F0..F8 (solo idea/refining/refined) · Merge release a main cuando todas done |
-| `/board` | Backlog kanban | 10 columnas estados macro v4 · drag CHRIS_ALLOWED only (idea↔refining + parked/dropped) · WIP badges + filtros |
-| `/map` | Mapa Implementado | Grid 3×2 agentes (Lisa/Valeria/Adrián/Lucas/Camila/Configurar) + sección Infra full-width · click cap → drawer |
+| `/board` | Backlog kanban | 10 columnas estados macro v4 · drag CHRIS_ALLOWED only (idea↔refining + parked/dropped) · WIP badges + filtros · **badge 🔨 {lane}** sobre stories en construcción (ADR-009 single-hub, ver abajo) |
+| `/map` | Mapa Implementado | Banner **Salud de Producto** (distribución de caps por status del JSON live) + grid agentes (Lisa/Valeria/Adrián/Lucas/Camila/Configurar) + sección Infra full-width · click cap → **Cap Drawer** |
+| `/arquitectura` | SYSTEM-MAP global | 7 agentes × functional_areas + flows cross-agent + data ownership |
+| `/drift` | Caps no verified-live | Lista priorizada por severidad (stub/wip/partial/drift) para saber qué arreglar |
 | `/learnings` | Timeline learnings | Cronológico desc · search + tags pills + xed open |
+
+> No existe un tab `/functionality`. La trazabilidad de una capability (scenarios → code files → access → business rules → changelog) se ve en el **Cap Drawer**, que se abre clickeando un cap en `/map`.
+
+## Session mapping (single-hub · ADR-009)
+
+Bajo el modelo **hub único** (N sesiones Claude/opencode sobre el mismo worktree de una marca), el `/board` muestra **qué sesión está construyendo qué story**:
+
+- `/dev-team` Step 0 hace build-claim: `scripts/git/session-lock.sh acquire code:{module} dev-team {story-id}`.
+- El claim queda en `.session-locks/*.lock` (gitignored, runtime). Formato: `PID SKILL TIMESTAMP STORY_ID LANE BUCKET`.
+- El cockpit (`GET /api/sessions` → `lib/sessions.ts`) lee esos locks cada 5s, **filtra PIDs muertos**, y pinta **"🔨 {lane}"** sobre la card de la story + una franja **"Construyendo ahora"** arriba del board.
+- **Lane** = `$LUANA_LANE` (export opcional por terminal: `export LUANA_LANE=A`) o fallback `pid<PID>`.
+- Al cerrar la story (`developing → developed`) `/dev-team` hace `release`; si la sesión muere, el lock auto-libera por PID muerto.
+
+SSoT: `docs/architecture/luana-platform/ADR-009-single-hub-worktree.md`.
 
 ## Story Drawer (slide-in 800px)
 
@@ -119,9 +135,17 @@ Variables disponibles:
 
 ## Cap Drawer
 
-- YAML pointer (path + xed button)
-- Atomics list + change_log timeline cronológico
-- ✚ Extender modal con 3 cards visuales (fix · extend · derive)
+Slide-in que muestra la traza completa de una capability (la unidad atómica es el **scenario**, no atomics — `atomic` murió en la consolidación 2026-05-28, ver `docs/process/lifecycle.md` § 2). Orden:
+
+1. **YAML ledger** — identity + status + path (xed button) + ✚ Extender
+2. **📍 Cómo verlo** — user-facing name/description + dev_preview (ruta, componente, endpoints, e2e_test)
+3. **✨ Scenarios** — qué hace, en Gherkin Given/When/Then (con edge cases + e2e_test + spec ref)
+4. **📁 Archivos de código** — cross-checked vía header `# cap:` (code-index)
+5. **🔑 Acceso** — entry points + roles + clinic scope (HIPAA)
+6. **📋 Reglas de negocio** + **🔗 Capabilities relacionadas**
+7. **🔍 Validación bidireccional** (cross-checks) + **Historial** (change_log cronológico)
+
+✚ **Extender** modal con 3 cards visuales (fix · extend · derive) → crea story que toca el cap.
 
 ## 6 modales
 
@@ -139,14 +163,14 @@ Variables disponibles:
 | Framework | Next.js 16 App Router (Turbopack dev) | SSR + API routes en mismo proceso · ideal para tool local |
 | UI | React 19 + Tailwind v4 | Tokens del mockup v0.5.2 cementados |
 | Drag-drop | @dnd-kit/{core,sortable,utilities} | Drag stories entre releases/columnas |
-| Markdown | gray-matter + (render mínimo `<pre>`) | Frontmatter parsing v2 schema |
+| Markdown | gray-matter (frontmatter) + react-markdown + remark-gfm + rehype-highlight (render) | Parseo frontmatter v2 + render GFM con syntax highlighting |
 | Editor MD | @uiw/react-md-editor | Edit inline chris-input.md |
 | FS watching | chokidar + SSE | Hot-reload cross-process (Chris edita en xed → UI refresh <2s) |
 | Git | simple-git | Status / SHA / diff metadata stories |
 | Validación | zod | Schemas runtime tipados |
 | Tests | vitest + @vitest/coverage-v8 | Fast ESM-native |
 
-## Endpoints API (14)
+## Endpoints API (19)
 
 Todos en `app/api/`. Reciben JSON · devuelven JSON · Zod validation · whitelist guards.
 
@@ -159,11 +183,15 @@ Todos en `app/api/`. Reciben JSON · devuelven JSON · Zod validation · whiteli
 | `/api/chris-input/[storyId]` | GET/PATCH | CRUD secciones chris-input.md · conversación forces author=chris |
 | `/api/capabilities` | GET | Aggregate caps |
 | `/api/capabilities/[module]/[cap]` | GET/PATCH | Single cap + edit solo `status` con razón ≥10 chars |
+| `/api/capabilities/status` | GET | Lee `_status-computed.json` (summary + computed_status por cap) · alimenta Salud de Producto + badges del Mapa |
+| `/api/capabilities/code-index` | GET | Lee code-to-cap index (header `# cap:`) · archivos asociados por cap |
+| `/api/capabilities/bidirectional` | GET | Lee reporte de validación bidireccional (cross-checks cap↔código) |
+| `/api/system-map` | GET | Lee `SYSTEM-MAP.yaml` (agentes + functional_areas + flows) · esqueleto del Mapa + vista Arquitectura |
 | `/api/extend-cap` | POST | Crear story que toca cap (fix/extend/derive) |
 | `/api/from-done` | POST | Spawn story basada en parent done |
 | `/api/transition` | POST | Cambiar state SOLO whitelist CHRIS_ALLOWED_TRANSITIONS (403 otros) |
 | `/api/open` | POST | Spawn editor externo (`$EDITOR_BIN` env · default xed) · whitelist paths |
-| `/api/merge-release` | POST | Preview + dual-confirm merge release a main (v0.6 NO ejecuta git mv automático) |
+| `/api/merge-release` | POST | Preview + dual-confirm merge release a main (NO ejecuta git mv automático) |
 | `/api/refs/upload` | POST | Multipart upload binarios a `{brand}/docs/product/stories/{id}/refs/` |
 | `/api/watch` | GET | SSE stream (chokidar) push live cuando archivo .md/.yaml cambia |
 | `/api/learnings` | GET | Aggregate learnings cronológico |
@@ -175,7 +203,8 @@ Todo lee directo del filesystem:
 - `{brand}/docs/product/stories/{id}/checkpoint.md` (frontmatter YAML schema v2)
 - `{brand}/docs/product/stories/{id}/chris-input.md` (conversación asíncrona)
 - `{brand}/docs/archive/{year}/stories/{id}/` (stories done · read-only)
-- `{brand}/docs/product/capabilities/{module}/{cap}.yaml` (ledger v2 con `change_log[]` + atomics objects)
+- `{brand}/docs/product/capabilities/{module}/{cap}.yaml` (ledger v2 con `change_log[]` + `scenarios[]`)
+- `{brand}/docs/product/capabilities/_status-computed.json` (salud computada · summary + computed_status por cap)
 - `{brand}/docs/product/releases/{release_id}.yaml` (schema v2)
 - `{brand}/docs/learnings/{date}-{slug}.md`
 
@@ -197,7 +226,7 @@ Cuando Chris edita un `.md` o `.yaml` desde xed/code/CLI **externamente** al coc
 
 | Módulo | Responsabilidad |
 |---|---|
-| `lib/types.ts` | TypeScript interfaces (Story, Capability, Atomic, ChangeLogEntry, Release, ChrisInput, ConvEntry, ...) |
+| `lib/types.ts` | TypeScript interfaces (Story, Capability, CapScenario, ChangeLogEntry, Release, ChrisInput, ConvEntry, ComputedStatusReport, ...) |
 | `lib/workspace.ts` | Resolver `WORKSPACE_ROOT` (env → git rev-parse fallback) + detección brands del FS |
 | `lib/fs-reader.ts` | Read markdown con frontmatter + YAML + globPaths (** support sin lib externa) |
 | `lib/fs-writer.ts` | Atomic write (tmp + rename) · writeMarkdownWithFrontmatter · appendToFile · writeYamlAtomic |
@@ -249,17 +278,17 @@ Lo único que cambia entre máquinas es `EDITOR_BIN` (xed/code/etc.) si querés 
 
 - ✅ **5.1** workspace setup (Next.js 16 + Tailwind v4 + Vitest)
 - ✅ **5.2** library functions (12 archivos en lib/)
-- ✅ **5.3** 14 API routes Next.js + 2 helpers `_lib`
-- ✅ **5.4** 36 components React + 4 vistas funcionales + 7 tabs drawer + 6 modales
-- ✅ **5.5** chokidar SSE + WatchingIndicator + 4 vistas live refresh
+- ✅ **5.3** 19 API routes Next.js + helpers `_lib`
+- ✅ **5.4** components React + 6 vistas funcionales + 7 tabs Story Drawer + Cap Drawer + 6 modales
+- ✅ **5.5** chokidar SSE + WatchingIndicator + vistas live refresh
 
-Validación: `pnpm typecheck` clean · `pnpm build` ✓ 18 routes (4 static + 14 dynamic) · `pnpm test` 6/6 GREEN.
+Validación: `pnpm typecheck` clean · `pnpm test` ~67 tests GREEN (6 files).
 
 ## Pendiente Chris ratificación
 
 1. Smoke test browser interactivo (10 puntos del plan § Phase 6)
-2. Ratificar 10 stories con `cap_target: null` (warnings migrate-report)
-3. Ratificar 71 caps con `atomics: []` vacíos · poblar manual via cockpit Extender
+2. Ratificar stories con `cap_target: null` (warnings migrate-report)
+3. Poblar scenarios de las ~55 caps en `stub` (sin scenarios) · vía cockpit Extender o stories de refining
 4. Merge `wip/protocol-cockpit-v0-6 → main` (require `make ci-parity` GREEN)
 
 ## Próximos sprints (v0.7+)

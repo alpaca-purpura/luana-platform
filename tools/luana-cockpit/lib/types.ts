@@ -28,9 +28,90 @@ export type ReleaseStatus =
   | 'shipped'
   | 'backlog';
 
+/**
+ * Eje de DESPLIEGUE (separado del eje de integración `ReleaseStatus`).
+ * Un release `shipped` (base sólida en main + staging) puede pasarse a producción
+ * cuando Chris lo decida. FUTURO: hoy todo queda `not_deployed` · la mecánica real
+ * (merge a `release/{brand}-vX.Y.Z` → GH Actions) está deferred hasta servidor real.
+ * Ver `.claude/rules/github-actions-deferred.md` + `docs/process/release-protocol.md` § 8.
+ */
+export type ProductionStatus = 'not_deployed' | 'scheduled' | 'in_production';
+
 export type CapChangeType = 'new' | 'fix' | 'extend' | 'derive';
 export type CapStatus = 'live' | 'beta' | 'deprecated' | 'sunset';
 export type CapLicense = 'brand-local' | 'core-shared' | 'proprietary';
+
+// ────────────────────────────────────────────────────────────────────────────
+// Computed status — state-machine del cockpit (§ B decisions doc)
+// ────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Estado computado por `scripts/compute_capability_status.py`.
+ * NO es el declared status del YAML — es derivado del conjunto de scenarios
+ * + verification cross-check.
+ */
+export type ComputedStatus =
+  | 'verified-live'
+  | 'declared-live'
+  | 'partial'
+  | 'wip'
+  | 'stub'
+  | 'drift'
+  | 'deprecated'
+  | 'sunset';
+
+export interface CapStatusComputed {
+  declared_status: CapStatus;
+  computed_status: ComputedStatus;
+  scenarios_total: number;
+  scenarios_verified: number;
+  verification_total: number;
+  verification_pass: number;
+  drift_reasons: string[];
+}
+
+export interface ComputedStatusReport {
+  computed_at: string;
+  brand: string;
+  capabilities: Record<string, CapStatusComputed>; // key = capability slug
+  summary: {
+    total_caps: number;
+    verified_live: number;
+    declared_live: number;
+    partial: number;
+    wip: number;
+    stub: number;
+    drift: number;
+    deprecated: number;
+    sunset: number;
+  };
+}
+
+/** Devuelve emoji + label + color para pintar el badge de computed_status */
+export function getStatusBadge(s: ComputedStatus): {
+  emoji: string;
+  label: string;
+  color: string;
+} {
+  switch (s) {
+    case 'verified-live':
+      return { emoji: '🟢', label: 'verificado', color: 'green' };
+    case 'declared-live':
+      return { emoji: '🟡', label: 'declarado', color: 'yellow' };
+    case 'partial':
+      return { emoji: '🟠', label: 'parcial', color: 'orange' };
+    case 'wip':
+      return { emoji: '🔵', label: 'wip', color: 'blue' };
+    case 'stub':
+      return { emoji: '⚪', label: 'stub', color: 'gray' };
+    case 'drift':
+      return { emoji: '🔴', label: 'drift', color: 'red' };
+    case 'deprecated':
+      return { emoji: '⚫', label: 'deprecated', color: 'gray' };
+    case 'sunset':
+      return { emoji: '⚫', label: 'sunset', color: 'gray' };
+  }
+}
 
 // ────────────────────────────────────────────────────────────────────────────
 // v3 cement 2026-05-27 — 4 dimensiones + dev_preview (ADR-vitalia-005)
@@ -99,8 +180,24 @@ export interface Story {
   parked_reason?: string | null;
   dropped_reason?: string | null;
 
+  /**
+   * Si el frontmatter del checkpoint.md NO parsea (ej. key duplicada → YAML
+   * inválido), el reader NO silencia: rescata `state` via regex para ubicar la
+   * card y setea este campo con el mensaje del error. El board muestra badge rojo.
+   */
+  parse_error?: string | null;
+
+  /**
+   * `true` si este story_id existe en MÁS de un lugar (ej. una copia live en
+   * `product/stories/` y otra `done` en `archive/`). El API deduplica (prefiere la
+   * archivada/canónica) y marca este flag → la UI pinta un badge de advertencia
+   * para que se resuelva la colisión (rename/borrar el stub) vía `/pm-{brand}`.
+   */
+  dup_collision?: boolean | null;
+
   // Metadata cockpit (derivada o pre-seed)
   owner?: string | null;
+  agent_owner?: string | null;
   type?: StoryType | null;
   module?: string | null;
   surfaces?: Surface[] | null;
@@ -124,22 +221,12 @@ export interface Story {
 // Capability (YAML ledger v2)
 // ────────────────────────────────────────────────────────────────────────────
 
-export interface Atomic {
-  label: string;
-  added_in_story: string;
-  added_date: string; // ISO date YYYY-MM-DD
-  /** Si el atomic fue deprecado en una story posterior */
-  deprecated_in_story?: string | null;
-  deprecated_date?: string | null;
-}
-
 export interface ChangeLogEntry {
   story_id: string;
   date: string;
   type: CapChangeType;
   summary: string;
-  atomics_added: string[];
-  atomics_modified: string[];
+  scenarios_added: string[];
   merge_sha?: string | null;
   status?: 'in-progress' | 'done';
 }
@@ -166,8 +253,7 @@ export interface Capability {
   parent_cap: string | null;
   derives_capabilities: string[];
 
-  // Atomics + ledger
-  atomics: Atomic[];
+  // Ledger
   change_log: ChangeLogEntry[];
 
   // Legacy v1 fields (mantener durante migración)
@@ -186,6 +272,12 @@ export interface Capability {
   user_facing_description?: string | null;
   dev_preview?: DevPreview | null;
   superseded_by?: string | null;
+
+  // v3.2 cement 2026-05-28 — 4 bloques aditivos opcionales
+  access?: CapAccess | null;
+  scenarios?: CapScenario[] | null;
+  business_rules?: CapBusinessRule[] | null;
+  related_capabilities?: CapRelated | null;
 
   /** Body markdown opcional (después del frontmatter) */
   body?: string;
@@ -209,6 +301,20 @@ export interface Release {
   created_at: string;
   created_by: string;
   stories: string[];
+
+  // Gate de shipped (eje integración) — "prueba de comportamiento verde" registrada
+  // por Chris al cerrar el release. Ver release-protocol.md § 5.
+  verified_by?: string | null;       // 'chris' cuando confirmó el check de integración
+  verified_at?: string | null;       // ISO timestamp del check verde
+  verification_note?: string | null; // nota libre (qué corrió, resultado, gotchas)
+
+  // Eje DESPLIEGUE (FUTURO · placeholder reservado) — ver release-protocol.md § 8.
+  production_status?: ProductionStatus | null;  // not_deployed | scheduled | in_production
+  production_version?: string | null;           // semver del pase a prod, ej "v0.3.0"
+  production_scheduled_at?: string | null;       // ISO · inmediato (now) o fecha-hora futura
+  deployed_at?: string | null;                   // ISO · cuándo se completó el deploy real
+  release_branch?: string | null;                // ej "release/vitalia-v0.3.0"
+
   maps_legacy_outcome?: string | null;
   maps_legacy_phase?: string | null;
 
@@ -378,6 +484,107 @@ export interface DataEntityOwnership {
   description: string;
 }
 
+// ────────────────────────────────────────────────────────────────────────────
+// v3.2 cement 2026-05-28 — Code↔cap mapping types
+// ────────────────────────────────────────────────────────────────────────────
+
+export interface CodeIndexReport {
+  generated_at: string;
+  brand: string;
+  /** Map file_path → cap_id (or list if multi-cap) */
+  code_to_cap: Record<string, string | string[]>;
+  /** Reverse map: cap_id → list of file paths */
+  cap_to_files: Record<string, string[]>;
+  orphans: string[];
+  shared_files: string[];
+  multi_cap_files: Array<{ path: string; caps: string[] }>;
+  no_header: string[];
+  summary: {
+    total_files_scanned: number;
+    files_with_header: number;
+    files_no_header: number;
+    orphans: number;
+    shared_files: number;
+    multi_cap_files: number;
+    caps_with_files: number;
+  };
+}
+
+export type BidirectionalVerdict = 'CLEAN' | 'SOFT_DRIFT' | 'HARD_FAIL';
+
+export interface CrossCheckResult {
+  total: number;
+  pass: number;
+  drift: number;
+  details: Array<Record<string, unknown>>;
+}
+
+export interface BidirectionalValidationReport {
+  validated_at: string;
+  brand: string;
+  schema_version: string;
+  hard_checks: number[];
+  // cross_check_1/2 (atomics↔headers) eliminados 2026-05-28 (atomics killed · lifecycle.md)
+  cross_check_3: CrossCheckResult;
+  cross_check_4: CrossCheckResult;
+  summary: {
+    total_caps: number;
+    drift_total: number;
+    drift_in_hard: number;
+    verdict: BidirectionalVerdict;
+  };
+}
+
+// v3.2 cap blocks (access + scenarios + business_rules + related_capabilities)
+
+export interface AccessEntryPoint {
+  path: string;
+  navigation?: string;
+  requires_role?: string[];
+  requires_clinic_scope?: boolean;
+  entry_type?: 'ui' | 'api' | 'webhook' | 'event' | 'cli';
+}
+
+export interface CapAccess {
+  entry_points: AccessEntryPoint[];
+  forbidden_roles?: string[];
+  authentication?: 'required' | 'optional' | 'none';
+}
+
+export interface CapScenario {
+  id: string;
+  name: string;
+  actor: string;
+  status: 'live' | 'wip' | 'deprecated';
+  given: string;
+  when: string;
+  then: string;
+  e2e_test?: string | null;
+  story_spec_ref?: string | null;
+  atomic_ref?: string | null;
+  edge_cases?: string[];
+  added_in_story: string;
+  added_date: string;
+  deprecated_in_story?: string | null;
+  deprecated_date?: string | null;
+}
+
+export interface CapBusinessRule {
+  id: string;
+  rule: string;
+  enforcement: string[];
+  code_ref?: string | null;
+  severity: 'critical' | 'high' | 'medium' | 'low';
+  audit_trail?: boolean;
+}
+
+export interface CapRelated {
+  depends_on?: string[];
+  enables?: string[];
+  similar?: string[];
+  obsoletes?: string[];
+}
+
 export interface SystemMap {
   brand: string;
   version: string;
@@ -397,4 +604,25 @@ export interface SystemMap {
   };
   /** Opcional · populated por API route */
   _path?: string;
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Active sessions — build-claims vivos (ADR-009 single-hub worktree)
+// ────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Una sesión Claude/opencode trabajando sobre el hub, leída de `.session-locks/`.
+ * El board pinta "🔨 {lane}" sobre la story que esta sesión construye.
+ */
+export interface ActiveSession {
+  /** Bucket declarado por session-lock.sh (`code:scheduling`, `docs`, `tests`, …). */
+  bucket: string;
+  pid: number;
+  skill: string;
+  /** ISO timestamp del acquire. */
+  startedAt: string | null;
+  /** Story en construcción (build-claim). `null` si el lock no es un build. */
+  storyId: string | null;
+  /** Etiqueta humana (`$LUANA_LANE` o `pid<PID>`). */
+  lane: string | null;
 }
