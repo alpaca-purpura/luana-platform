@@ -116,7 +116,7 @@ scenarios:
     given: "doctor.demo con JWT real de Clerk (no stub) + X-Tenant-ID Sanaré + X-Clinic-ID; rol doctor en user_tenants (DB)"
     when: "GET a un endpoint PHI (crm)"
     then: "200 + data filtrada por tenant+clinic + rol resuelto desde user_tenants.role (no del token) + audit en path de paciente. JWKS real reusa luana_core_iam.verify_token_payload."
-    e2e_test: "vitalia/backend/tests/integration/test_phi_real_auth.py::test_doctor_jwt_real_sees_phi"
+    e2e_test: "vitalia/backend/tests/integration/test_phi_real_auth.py"
     verification_method: dev-app
     live_verification: "god-matrix JWT real Clerk → GET /crm/conversations HTTP 200 (VERIFICATION-godmatrix-live.md)"
     added_in_story: vitalia-iam-slice2-phi-real-auth
@@ -128,7 +128,7 @@ scenarios:
     given: "recepcion o marketing con JWT real válido; rol no-PHI en user_tenants (DB)"
     when: "GET endpoint PHI"
     then: "403 (rol sin PHI access vía @require_phi_access) + sin leak de data"
-    e2e_test: "vitalia/backend/tests/integration/test_phi_real_auth.py::test_marketing_403"
+    e2e_test: "vitalia/backend/tests/integration/test_phi_real_auth.py"
     verification_method: dev-app
     live_verification: "god-matrix marketing JWT real → HTTP 403"
     added_in_story: vitalia-iam-slice2-phi-real-auth
@@ -140,7 +140,7 @@ scenarios:
     given: "doctor con JWT real"
     when: "request con X-Tenant-ID de otro tenant (cross-tenant) o X-Clinic-ID de otra clínica (cross-clinic)"
     then: "cross-tenant → 404 (no leak); cross-clinic → 403 (dual filter tenant+clinic enforced)"
-    e2e_test: "vitalia/backend/tests/integration/test_phi_real_auth.py::test_cross_tenant_404"
+    e2e_test: "vitalia/backend/tests/integration/test_phi_real_auth.py"
     verification_method: dev-app
     added_in_story: vitalia-iam-slice2-phi-real-auth
     added_date: 2026-05-30
@@ -151,7 +151,7 @@ scenarios:
     given: "token inválido (firma mala / expirado / stub: legacy / Authorization ausente)"
     when: "request a endpoint PHI"
     then: "401 honesto vía JWKS verify; stub legacy NO aceptado en runtime (sin VITALIA_AUTH_STUB); sin leak en error body"
-    e2e_test: "vitalia/backend/tests/integration/test_phi_real_auth.py::test_invalid_token_401"
+    e2e_test: "vitalia/backend/tests/integration/test_phi_real_auth.py"
     verification_method: dev-app
     live_verification: "god-matrix forjado → 401 · stub legacy → 401"
     added_in_story: vitalia-iam-slice2-phi-real-auth
