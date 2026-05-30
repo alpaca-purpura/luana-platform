@@ -12,8 +12,10 @@ priority: high
 ratified_by_chris: true   # 2026-05-30 Q1-Q3 ratificadas
 parallel_safe: false
 last_modified: 2026-05-30
-state: reviewing
-phase: HANDOFF_TO_PM_MERGE
+state: done
+phase: MERGED_DONE
+merged_at: 2026-05-30
+merged_by: pm-vitalia
 audit_verdict: APPROVED
 gherkin_matrix: 06-audit/gherkin-matrix.md
 live_verification: "god-matrix JWT real 2026-05-30: doctor 200 / marketing 403 / forged+stub 401 (VERIFICATION-godmatrix-live.md). Gaps pre-existentes: vitalia_patients/vitalia_leads tablas faltan en dev (observed-bug)."

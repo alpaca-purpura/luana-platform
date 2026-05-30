@@ -222,3 +222,16 @@ Detalle completo: `T-5-result.md`.
 **Notas para el merge (`/pm-vitalia`):** (1) cap `valeria.shell` extend +1 scenario; (2) corregir cita ADR 005→006 en 01-spec frontmatter; (3) learning promotable `/pm-luana` (nicolify dismiss-store mismo hazard).
 
 → **AUTO-HANDOFF `/pm-vitalia` merge** (autonomous_mode:true). state reviewing → done.
+
+### 2026-05-28T22:10 · 🤖 claude · `/pm-vitalia` · ✓ APLICADO
+**MERGE — state `reviewing → done`.** Fase F completa.
+
+- **07-merge.md** escrito (5 secciones + build trail + flags).
+- **Cap ledger (extend):** `shell-organism/shell-vitalia.yaml` — change_log entry `vitalia-shell-state-persistence` + 2 scenarios nuevos (`shell-state-persists-reload`, `mobile-drawer-collapsed-pero-recuerda`), ambos con `e2e_test` existente (cumple Definición de DONE). `last_modified` 2026-05-28.
+- **ADR fix:** 01-spec frontmatter + body corregidos 005→006 (governing ADR-vitalia-006; 005 estaba ocupado por capability-model).
+- **Learning:** `vitalia/docs/learnings/2026-05-28-ssr-safe-zustand-persist.md` (promotable: candidate → `/pm-luana`; nicolify dismiss-store mismo hazard → lift del factory a `core/@luana/`).
+- **Archive (R2):** story dir → `vitalia/docs/archive/2026/stories/vitalia-shell-state-persistence/` en este commit.
+
+**★ Integración a main PENDIENTE (manual):** la squash-merge `wip/vitalia → main` es el paso de staging deploy MANUAL (per CLAUDE.md). `main` vive en el worktree PRINCIPAL (`~/Proyectos/luana-platform`) — no se ejecuta desde el canónico vitalia. Todo queda commiteado en `wip/vitalia` listo para integrar cuando quieras. Para integrar: desde `~/Proyectos/luana-platform` (main) → `git merge --squash wip/vitalia` → commit → `make ci-parity` → push.
+
+Bug resuelto end-to-end: causa raíz (boundary store-en-skeleton) + 4 stores SSR-safe + mobile collapsed-pero-recuerda + 28 E2E + cobertura SC-1..SC-8.

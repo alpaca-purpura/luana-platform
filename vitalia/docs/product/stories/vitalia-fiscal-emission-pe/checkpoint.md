@@ -1,26 +1,42 @@
 ---
 story_id: vitalia-fiscal-emission-pe
-state: refining
+state: idea
 last_artifact: checkpoint.md
-last_modified: 2026-05-22                                  # touched 2026-05-22 cross-story deps update
+last_modified: '2026-05-29T13:46:24.228Z'
 ratified_by_chris: false
-spawned_at: 2026-05-17
-transitioned_at: 2026-05-17
+spawned_at: 2026-05-17T00:00:00.000Z
+transitioned_at: 2026-05-17T00:00:00.000Z
 spawned_by: /pm-vitalia
 parallel_safe: true
-blocked_reason: "★ TIER reclassified 2026-05-27 (audit sweep): TIER 2 (post payment-adapter-mvp real). Si MVP NO launch Peru → bajar a TIER 7 DEFERRED hasta Fase 3 PE launch (skip Nubefact integration, otros países usan Stripe/MP invoicing). Si MVP SI Peru → mantener TIER 2 emparejado con payment-adapter (emit boleta inmediata post charge). SSoT orden: vitalia/docs/product/outcomes/vitalia-fase-2-tier-roadmap.md § TIER 2 + § TIER 7. Pre-condition Chris ratify: ¿Peru en MVP launch countries?"
+blocked_reason: >-
+  ★ TIER reclassified 2026-05-27 (audit sweep): TIER 2 (post payment-adapter-mvp
+  real). Si MVP NO launch Peru → bajar a TIER 7 DEFERRED hasta Fase 3 PE launch
+  (skip Nubefact integration, otros países usan Stripe/MP invoicing). Si MVP SI
+  Peru → mantener TIER 2 emparejado con payment-adapter (emit boleta inmediata
+  post charge). SSoT orden:
+  vitalia/docs/product/outcomes/vitalia-fase-2-tier-roadmap.md § TIER 2 + § TIER
+  7. Pre-condition Chris ratify: ¿Peru en MVP launch countries?
 priority: high
 estimated_dev_weeks: 1-2
-parent_spec: "vitalia/docs/product/stories/vitalia-ux-discovery/01-spec.md §§Capa 2 fiscal toggle Nubefact PE"
-cross_phase_2_consumers:                                   # ★ NEW post 2026-05-22 paradigm
-  - vitalia-fase2-valeria-agenda                           # F2-S1 — subform Cobrar saldo emite boleta inline
-next_action: "/po vitalia-fiscal-emission-pe — produce 01-spec.md service-story (sin UI dedicada Fase 2 más allá toggle inline subform Cobrar saldo F2-S1). UI configuración completa (NubefactConfigEditor) puede ir a F2-S22 config-avanzado o story dedicada futura. Inputs cementados: scope (~80 LOC) + 4 Gherkin + Capa 2 trigger flow + retry queue 8-step exponential backoff + secrets vault pgcrypto KEK rotada anualmente + CDR archive 10y retention. Open Chris: (1) Nubefact único PSE/OSE ó multi-provider Strategy? (2) Boleta + Factura ambos o solo Boleta? (3) Dead-letter alerta admin+Adrián? (4) Setup admin-only vía seed/script? Validate G6 batched (≤4) → refining→refined."
-
-# Schema v2 migration (cement 2026-05-27)
-release: F3   # release ID · ver releases/
-cap_target: null   # capability slug target (v2 cement 2026-05-27)
-cap_change_type: new   # new | fix | extend | derive
-parent_story: null   # story padre si spawned · null si independiente
+parent_spec: >-
+  vitalia/docs/product/stories/vitalia-ux-discovery/01-spec.md §§Capa 2 fiscal
+  toggle Nubefact PE
+cross_phase_2_consumers:
+  - vitalia-fase2-valeria-agenda
+next_action: >-
+  /po vitalia-fiscal-emission-pe — produce 01-spec.md service-story (sin UI
+  dedicada Fase 2 más allá toggle inline subform Cobrar saldo F2-S1). UI
+  configuración completa (NubefactConfigEditor) puede ir a F2-S22
+  config-avanzado o story dedicada futura. Inputs cementados: scope (~80 LOC) +
+  4 Gherkin + Capa 2 trigger flow + retry queue 8-step exponential backoff +
+  secrets vault pgcrypto KEK rotada anualmente + CDR archive 10y retention. Open
+  Chris: (1) Nubefact único PSE/OSE ó multi-provider Strategy? (2) Boleta +
+  Factura ambos o solo Boleta? (3) Dead-letter alerta admin+Adrián? (4) Setup
+  admin-only vía seed/script? Validate G6 batched (≤4) → refining→refined.
+release: F3
+cap_target: null
+cap_change_type: new
+parent_story: null
 ---
 
 # vitalia-fiscal-emission-pe — checkpoint

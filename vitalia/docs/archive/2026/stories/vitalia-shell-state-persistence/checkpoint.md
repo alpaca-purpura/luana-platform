@@ -8,10 +8,15 @@ cap_target: valeria.shell
 cap_change_type: extend
 architecture_pattern: ADR-vitalia-004
 new_adr_candidate: ADR-vitalia-006-ssr-safe-persisted-store   # ★ 005 ya ocupado (capability-model); architect autoró 006
-state: reviewing
-phase: HANDOFF_TO_PM_MERGE
+state: done
+phase: MERGED
 audit_verdict: APPROVED
 gherkin_matrix: 06-audit/gherkin-matrix.md
+merged_at: '2026-05-28T22:10:00-05:00'
+merge_artifact: 07-merge.md
+cap_updated: shell-organism/shell-vitalia.yaml (extend +2 scenarios)
+learning: vitalia/docs/learnings/2026-05-28-ssr-safe-zustand-persist.md (promotable candidate /pm-luana)
+main_integration: "PENDING — squash-merge wip/vitalia → main es manual desde worktree PRINCIPAL (main no accesible desde canónico vitalia)"
 last_artifact: gate-output.json
 build_commits: [da0602ea, 58a4ce5b, 54ffb8e4, 08fe0864, d6953264, bf03639c]
 gate_summary: "tsc 0 · eslint 0 · vitest 2310/2310 · arch 148/148 · E2E 28/28 — all GREEN"

@@ -26,7 +26,7 @@ next_action: "/po-ux refinar 01-spec.md con wireframes 3 secciones · /architect
 # Schema v2 migration (cement 2026-05-27)
 release: F4   # release ID · ver releases/
 cap_target: config.cuenta   # capability slug target (v2 cement 2026-05-27)
-cap_change_type: new   # new | fix | extend | derive
+cap_change_type: null   # (null en idea phase)
 parent_story: null   # story padre si spawned · null si independiente
 ---
 

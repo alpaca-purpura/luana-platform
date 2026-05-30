@@ -5,7 +5,7 @@ agent_owner: config
 module: platform
 cap_target: ops.live-reconciliation-sweep   # new — la matriz + metodología sweep como capability repetible
 cap_change_type: new                          # + acción de mantenimiento cross-cutting: corregir status de caps sobre-declaradas (documentar en 07-merge)
-state: reviewing
+state: done
 release: F2
 architecture_pattern: ADR-vitalia-004
 adr_004_compliance: n/a-with-rationale   # no es story sub-tab/feature (ver 03-arch § Architecture Decisions)
@@ -25,10 +25,11 @@ autonomous_mode_caps:
   max_wall_clock_minutes: 150
   on_cap_exceeded: "state=blocked + escalate Chris"
 last_modified: 2026-05-29
-phase: HANDOFF_TO_PM_MERGE
-last_artifact: CHECKPOINTS.md
+phase: DONE_MERGED_TO_WIP
+last_artifact: 07-merge.md
 gherkin_matrix: 06-audit/gherkin-matrix.md
 audit_verdict: APPROVED
+merge_to_main_gated: true   # squash-merge wip/vitalia→main pendiente Chris (sesión paralela activa + staging manual)
 t1_done: true
 t2_done: true
 t3_done: true
