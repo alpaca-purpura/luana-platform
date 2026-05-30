@@ -118,8 +118,10 @@ export function MapView() {
       if (c.status === 'live' && !showLive) return false;
       if (c.status === 'beta' && !showDraft) return false;
       if (c.status === 'deprecated' || c.status === 'sunset') return false;
-      // v3 · ocultar infra (user_visible: false) salvo toggle
-      if (c.user_visible === false && !showInfra) return false;
+      // NOTA: las caps infra (user_visible: false) NO se filtran acá — `showInfra`
+      // controla el COLAPSO VISUAL de la zona Infraestructura (ZoneBlock), no el
+      // filtrado de datos. Así el teaser colapsado muestra el conteo REAL de caps
+      // (antes mostraba "0 caps" engañoso porque se filtraban antes de contar).
 
       // R3.2 · "solo poblados v3.2"
       if (showOnlyPopulated && !(c.scenarios && c.scenarios.length > 0)) return false;
@@ -155,7 +157,7 @@ export function MapView() {
 
       return true;
     });
-  }, [caps, showLive, showDraft, showInfra, showOnlyPopulated, roleFilter, searchTerm]);
+  }, [caps, showLive, showDraft, showOnlyPopulated, roleFilter, searchTerm]);
 
   // Árbol zona → caja → área (SYSTEM-MAP v2.0). null si el map no trae `zones`.
   const zoneTree = useMemo<ZoneNode[] | null>(() => {
