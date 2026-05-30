@@ -54,8 +54,11 @@ from src.modules.vitalia.crm.infrastructure.persistence.message_repository impor
     MessageRepository,
 )
 from src.modules.vitalia.iam.application.services.clinic_resolver import (
+    ClinicContext,
     ClinicResolver,
     MissingAuthHeaderError,
+    RoleNotFoundError,
+    UserNotFoundError,
 )
 from src.modules.vitalia.iam.infrastructure.clerk_jwt_decoder import (
     ClerkJwtDecoder,
@@ -282,19 +285,39 @@ async def _get_activity_service(
 # ---------------------------------------------------------------------------
 
 
-def _resolve_context(authorization: str, resolver: ClinicResolver) -> object:
-    """Parse authorization header and resolve clinic context.
+async def _resolve_context(
+    authorization: str,
+    x_tenant_id: str,
+    x_clinic_id: str,
+    session: AsyncSession,
+) -> ClinicContext:
+    """Parse authorization header and resolve clinic context via DB role.
+
+    Slice 2 path: uses async_resolve() to get role from DB.
 
     Raises:
-        HTTPException(401): If token is missing or invalid.
+        HTTPException(401): Token missing, invalid, or user not found.
+        HTTPException(403): User has no active role in this tenant.
     """
     token = authorization.removeprefix("Bearer ").strip()
+    resolver = _get_resolver()
     try:
-        return resolver.resolve(token)
+        return await resolver.async_resolve(
+            token=token,
+            session=session,
+            tenant_id_str=x_tenant_id,
+            clinic_id_str=x_clinic_id,
+        )
     except MissingAuthHeaderError:
         raise HTTPException(status_code=401, detail="Token de autorización requerido.")
     except JwtDecodeError:
         raise HTTPException(status_code=401, detail="Token inválido o expirado.")
+    except UserNotFoundError:
+        raise HTTPException(status_code=401, detail="Usuario no encontrado.")
+    except RoleNotFoundError:
+        raise HTTPException(status_code=403, detail="El usuario no tiene un rol activo en este tenant.")
+    except ValueError:
+        raise HTTPException(status_code=422, detail="Identificadores de tenant o clínica inválidos.")
 
 
 def _assert_phi_access(user_role: str) -> None:
@@ -327,6 +350,7 @@ async def send_message(
     authorization: AuthorizationHeader,
     x_tenant_id: TenantIdHeader,
     x_clinic_id: ClinicIdHeader,
+    session: Annotated[AsyncSession, Depends(get_async_session)],
     service: Annotated[SendMessageService, Depends(_get_send_service)],
 ) -> MessageResponse:
     """Send an AI or human message to a conversation.
@@ -350,8 +374,7 @@ async def send_message(
         403: Role not permitted to access PHI conversations.
         404: Conversation not found.
     """
-    resolver = _get_resolver()
-    ctx = _resolve_context(authorization, resolver)
+    ctx = await _resolve_context(authorization, x_tenant_id, x_clinic_id, session)
 
     try:
         _assert_phi_access(ctx.role)
@@ -429,6 +452,7 @@ async def revert_message(
     authorization: AuthorizationHeader,
     x_tenant_id: TenantIdHeader,
     x_clinic_id: ClinicIdHeader,
+    session: Annotated[AsyncSession, Depends(get_async_session)],
     service: Annotated[RetractMessageService, Depends(_get_retract_service)],
 ) -> RetractMessageResponse:
     """Retract an AI message within the 5-minute action receipt window.
@@ -457,8 +481,7 @@ async def revert_message(
         409: Patient replied after the message.
         410: Action receipt expired (>5 min window).
     """
-    resolver = _get_resolver()
-    ctx = _resolve_context(authorization, resolver)
+    ctx = await _resolve_context(authorization, x_tenant_id, x_clinic_id, session)
 
     try:
         _assert_phi_access(ctx.role)
@@ -528,6 +551,7 @@ async def set_conversation_mode(
     authorization: AuthorizationHeader,
     x_tenant_id: TenantIdHeader,
     x_clinic_id: ClinicIdHeader,
+    session: Annotated[AsyncSession, Depends(get_async_session)],
     service: Annotated[SetModeService, Depends(_get_set_mode_service)],
 ) -> ConversationResponse:
     """Change handler mode (ai ↔ human) with OCC check.
@@ -553,8 +577,7 @@ async def set_conversation_mode(
         404: Conversation not found.
         409: OCC conflict (stale expected_updated_at).
     """
-    resolver = _get_resolver()
-    ctx = _resolve_context(authorization, resolver)
+    ctx = await _resolve_context(authorization, x_tenant_id, x_clinic_id, session)
 
     try:
         _assert_phi_access(ctx.role)
@@ -634,6 +657,7 @@ async def pause_adrian(
     authorization: AuthorizationHeader,
     x_tenant_id: TenantIdHeader,
     x_clinic_id: ClinicIdHeader,
+    session: Annotated[AsyncSession, Depends(get_async_session)],
     service: Annotated[PauseAdrianService, Depends(_get_pause_service)],
 ) -> ConversationResponse:
     """Pause the Adrián AI agent for 60 minutes (default).
@@ -658,8 +682,7 @@ async def pause_adrian(
         403: Role not permitted.
         404: Conversation not found.
     """
-    resolver = _get_resolver()
-    ctx = _resolve_context(authorization, resolver)
+    ctx = await _resolve_context(authorization, x_tenant_id, x_clinic_id, session)
 
     try:
         _assert_phi_access(ctx.role)
@@ -723,6 +746,7 @@ async def get_tools_state(
     authorization: AuthorizationHeader,
     x_tenant_id: TenantIdHeader,
     x_clinic_id: ClinicIdHeader,
+    session: Annotated[AsyncSession, Depends(get_async_session)],
 ) -> ToolsStateResponse:
     """Retrieve tool availability state for a conversation.
 
@@ -742,8 +766,7 @@ async def get_tools_state(
         401: Invalid/missing token.
         403: Role not permitted.
     """
-    resolver = _get_resolver()
-    ctx = _resolve_context(authorization, resolver)
+    ctx = await _resolve_context(authorization, x_tenant_id, x_clinic_id, session)
 
     try:
         _assert_phi_access(ctx.role)
@@ -793,6 +816,7 @@ async def get_activity_stream(
     authorization: AuthorizationHeader,
     x_tenant_id: TenantIdHeader,
     x_clinic_id: ClinicIdHeader,
+    session: Annotated[AsyncSession, Depends(get_async_session)],
     service: Annotated[ActivityEventService, Depends(_get_activity_service)],
     limit: int = Query(default=8, ge=1, le=50),
     since_minutes: int = Query(default=60, ge=1, le=1440),
@@ -818,8 +842,7 @@ async def get_activity_stream(
         401: Invalid/missing token.
         403: Role not permitted.
     """
-    resolver = _get_resolver()
-    ctx = _resolve_context(authorization, resolver)
+    ctx = await _resolve_context(authorization, x_tenant_id, x_clinic_id, session)
 
     try:
         _assert_phi_access(ctx.role)
@@ -877,6 +900,7 @@ async def send_proactive_outbound(
     authorization: AuthorizationHeader,
     x_tenant_id: TenantIdHeader,
     x_clinic_id: ClinicIdHeader,
+    session: Annotated[AsyncSession, Depends(get_async_session)],
     service: Annotated[ProactiveOutboundService, Depends(_get_proactive_service)],
 ) -> ProactiveOutboundResponse:
     """Send a proactive outbound message via an approved HSM template.
@@ -903,8 +927,7 @@ async def send_proactive_outbound(
         422: Template not found.
         429: Rate limit exceeded.
     """
-    resolver = _get_resolver()
-    ctx = _resolve_context(authorization, resolver)
+    ctx = await _resolve_context(authorization, x_tenant_id, x_clinic_id, session)
 
     try:
         _assert_phi_access(ctx.role)
@@ -994,6 +1017,7 @@ async def transcribe_audio(
     authorization: AuthorizationHeader,
     x_tenant_id: TenantIdHeader,
     x_clinic_id: ClinicIdHeader,
+    session: Annotated[AsyncSession, Depends(get_async_session)],
 ) -> _TranscribeResponse:
     """Transcribe an audio message via Whisper.
 
@@ -1014,8 +1038,7 @@ async def transcribe_audio(
         401: Invalid/missing token.
         403: Role not permitted.
     """
-    resolver = _get_resolver()
-    ctx = _resolve_context(authorization, resolver)
+    ctx = await _resolve_context(authorization, x_tenant_id, x_clinic_id, session)
 
     try:
         _assert_phi_access(ctx.role)

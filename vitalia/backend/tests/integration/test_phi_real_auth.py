@@ -31,6 +31,38 @@ from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 # ---------------------------------------------------------------------------
+# Minimal env vars required to import src.main (luana_core_platform settings)
+# Pattern from tests/test_main_iam_routes_mounted.py § _REQUIRED_ENV_VARS
+# ---------------------------------------------------------------------------
+
+_REQUIRED_ENV_VARS = {
+    "LOG_LEVEL": "DEBUG",
+    "DOMAIN_NAME": "localhost",
+    "TRAEFIK_NETWORK": "traefik",
+    "API_SECRET_KEY": "test-secret-key-for-phi-auth-test",
+    "WHATSAPP_API_TOKEN": "test-token",
+    "WHATSAPP_PHONE_NUMBER_ID": "1234567890",
+    "WHATSAPP_VERIFY_TOKEN": "test-verify",
+    "OPENAI_API_KEY": "sk-test-0000000000000000000000000000000000000000000000000",
+    "REDIS_URL": "redis://localhost:6379/0",
+    "QDRANT_URL": "http://localhost:6333",
+    "POSTGRES_USER": "postgres",
+    "POSTGRES_PASSWORD": "postgres",
+    "POSTGRES_DB": "vitalia_test",
+    "POSTGRES_HOST": "localhost",
+    "POSTGRES_PORT": "5432",
+    "API_URL": "http://localhost:8002",
+}
+
+
+@pytest.fixture(autouse=True, scope="module")
+def _set_env_for_app_import():
+    """Inject minimal env vars so src.main can be imported without real credentials."""
+    with patch.dict(os.environ, _REQUIRED_ENV_VARS):
+        yield
+
+
+# ---------------------------------------------------------------------------
 # Constants matching 04-validators.yaml § test_construction_plan
 # ---------------------------------------------------------------------------
 
@@ -317,34 +349,337 @@ class TestSC4InvalidToken401:
 
 
 # ---------------------------------------------------------------------------
-# SC-2 stubs (T-2 scope — skip here)
+# SC-2: role-based 403 (recepcion / marketing cannot access PHI)
+# T-2 — repos-wire ticket
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.skip(reason="SC-2 (recepcion/marketing 403) — T-2 scope (repos-wire ticket)")
-def test_recepcion_403() -> None:
-    """SC-2: recepcion role → 403. Implemented in T-2."""
-    pass
+class TestSC2RoleBased403:
+    """SC-2: recepcion and marketing roles → 403 on PHI endpoints.
 
+    Strategy:
+    - Use httpx.AsyncClient with the vitalia FastAPI app.
+    - Monkeypatch ClinicResolver.async_resolve to return ClinicContext with
+      role="recepcion" or role="marketing" (DB-sourced role in Slice 2).
+    - Assert HTTP 403 response.
+    - Assert response body does NOT contain PHI fields (no-leak).
 
-@pytest.mark.skip(reason="SC-2 (marketing 403) — T-2 scope")
-def test_marketing_403() -> None:
-    """SC-2: marketing role → 403. Implemented in T-2."""
-    pass
+    No real DB needed for role-gate tests (role check happens before repo access).
+    """
+
+    @pytest.mark.asyncio
+    async def test_recepcion_403_on_get_patient(self) -> None:
+        """SC-2: recepcion role → 403 on GET /api/v1/crm/patients/{id}.
+
+        Grader:
+        - HTTP 403 returned.
+        - Response body does not contain any PHI field names (no leak).
+
+        Strategy: override get_async_session with stub + mock async_resolve
+        so no real DB connection is attempted. Role check fires before repos.
+        """
+        from httpx import ASGITransport, AsyncClient
+
+        with patch.dict(os.environ, _REQUIRED_ENV_VARS):
+            from src.db import get_async_session
+            from src.main import app
+            from src.modules.vitalia.iam.application.services.clinic_resolver import (
+                ClinicContext,
+            )
+
+        _patient_id = uuid.uuid4()
+        ctx_recepcion = ClinicContext(
+            user_id=DOCTOR_CLERK_SUB,
+            tenant_id=TENANT_SANARE,
+            clinic_id=CLINIC_SANARE,
+            role="recepcion",
+            email="recepcion@sanare.vitalia.test",
+            name="Recepcion Demo",
+        )
+
+        # Stub session — not called because role check fires first (403 early exit)
+        stub_session = AsyncMock()
+
+        async def _override_session():
+            yield stub_session
+
+        app.dependency_overrides[get_async_session] = _override_session
+
+        async_resolve_mock = AsyncMock(return_value=ctx_recepcion)
+
+        try:
+            with patch(
+                "src.modules.vitalia.iam.application.services.clinic_resolver.ClinicResolver.async_resolve",
+                new=async_resolve_mock,
+            ):
+                async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+                    response = await client.get(
+                        f"/api/v1/crm/patients/{_patient_id}",
+                        headers={
+                            "Authorization": "Bearer stub:test:test:recepcion:user1",
+                            "X-Tenant-ID": str(TENANT_SANARE),
+                            "X-Clinic-ID": str(CLINIC_SANARE),
+                        },
+                    )
+        finally:
+            app.dependency_overrides.pop(get_async_session, None)
+
+        assert response.status_code == 403, (
+            f"recepcion role MUST get 403 on PHI endpoint, got {response.status_code}: {response.text}"
+        )
+        body_text = response.text.lower()
+        # PHI fields must NOT appear in the 403 response
+        for phi_field in ("date_of_birth", "diagnosis", "treatment"):
+            assert phi_field not in body_text, f"403 response must not leak PHI field '{phi_field}': {response.text}"
+
+    @pytest.mark.asyncio
+    async def test_marketing_403_on_marketing_opt_in(self) -> None:
+        """SC-2: marketing role → 403 on PATCH /api/v1/crm/patients/{id}/marketing-opt-in.
+
+        Grader:
+        - HTTP 403 returned.
+        - Response body does not contain PHI.
+        """
+        from httpx import ASGITransport, AsyncClient
+
+        with patch.dict(os.environ, _REQUIRED_ENV_VARS):
+            from src.db import get_async_session
+            from src.main import app
+            from src.modules.vitalia.iam.application.services.clinic_resolver import (
+                ClinicContext,
+            )
+
+        _patient_id = uuid.uuid4()
+        ctx_marketing = ClinicContext(
+            user_id=DOCTOR_CLERK_SUB,
+            tenant_id=TENANT_SANARE,
+            clinic_id=CLINIC_SANARE,
+            role="marketing",
+            email="marketing@sanare.vitalia.test",
+            name="Marketing Demo",
+        )
+
+        stub_session = AsyncMock()
+
+        async def _override_session():
+            yield stub_session
+
+        app.dependency_overrides[get_async_session] = _override_session
+
+        async_resolve_mock = AsyncMock(return_value=ctx_marketing)
+
+        try:
+            with patch(
+                "src.modules.vitalia.iam.application.services.clinic_resolver.ClinicResolver.async_resolve",
+                new=async_resolve_mock,
+            ):
+                async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+                    response = await client.patch(
+                        f"/api/v1/crm/patients/{_patient_id}/marketing-opt-in",
+                        json={"opt_in": True},
+                        headers={
+                            "Authorization": "Bearer stub:test:test:marketing:user2",
+                            "X-Tenant-ID": str(TENANT_SANARE),
+                            "X-Clinic-ID": str(CLINIC_SANARE),
+                        },
+                    )
+        finally:
+            app.dependency_overrides.pop(get_async_session, None)
+
+        assert response.status_code == 403, (
+            f"marketing role MUST get 403 on PHI consent endpoint, got {response.status_code}: {response.text}"
+        )
+        # Audit denial: response body is generic error message, not PHI
+        body_lower = response.text.lower()
+        for phi_field in ("date_of_birth", "diagnosis", "treatment_plan"):
+            assert phi_field not in body_lower, (
+                f"403 response must not contain PHI field '{phi_field}': {response.text}"
+            )
 
 
 # ---------------------------------------------------------------------------
-# SC-3 stubs (T-2 scope — skip here)
+# SC-3: cross-tenant 404 + cross-clinic 403 (no PHI leak)
+# T-2 — repos-wire ticket
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.skip(reason="SC-3 (cross-tenant 404) — T-2 scope (repos-wire ticket)")
-def test_cross_tenant_404() -> None:
-    """SC-3: cross-tenant request → 404. Implemented in T-2."""
-    pass
+class TestSC3CrossTenantCrossClinic:
+    """SC-3: cross-tenant 404 / cross-clinic 403 — no PHI leak.
 
+    Strategy:
+    - Cross-tenant: async_resolve returns ClinicContext with different tenant_id.
+      PatientRepository queries with that tenant_id → row not found → 404.
+      Assert no PHI in response body.
+    - Cross-clinic: async_resolve returns ClinicContext with same tenant but
+      different clinic_id. PatientRepository dual-filter returns None → 404.
+      (Or: service raises PHIAccessDeniedError → 403.)
+      Assert no PHI in response body.
 
-@pytest.mark.skip(reason="SC-3 (cross-clinic 403) — T-2 scope")
-def test_cross_clinic_403() -> None:
-    """SC-3: cross-clinic request → 403. Implemented in T-2."""
-    pass
+    In both cases, the key assertion is: response body does NOT contain
+    patient PHI fields (name, email, diagnosis, etc.).
+    """
+
+    _OTHER_TENANT = uuid.UUID("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee")
+    _OTHER_CLINIC = uuid.UUID("11111111-2222-3333-4444-555555555555")
+
+    @pytest.mark.asyncio
+    async def test_cross_tenant_404_no_phi_leak(self) -> None:
+        """SC-3: doctor from tenant B requests PHI of tenant A → 404, no PHI leak.
+
+        Grader:
+        - HTTP 404 returned (not 200 with wrong tenant's data).
+        - Response body does not contain any PHI field values.
+
+        Strategy: async_resolve returns cross-tenant ctx. PatientRepository stub
+        returns None → service returns None → endpoint raises 404.
+        """
+        from httpx import ASGITransport, AsyncClient
+
+        with patch.dict(os.environ, _REQUIRED_ENV_VARS):
+            from src.db import get_async_session
+            from src.main import app
+            from src.modules.vitalia.iam.application.services.clinic_resolver import (
+                ClinicContext,
+            )
+
+        _patient_id = uuid.uuid4()
+        # Doctor from a DIFFERENT tenant tries to access TENANT_SANARE patient
+        ctx_other_tenant = ClinicContext(
+            user_id="user_cross_tenant_attacker",
+            tenant_id=self._OTHER_TENANT,  # Different tenant!
+            clinic_id=self._OTHER_CLINIC,
+            role="doctor",  # Valid PHI role — but wrong tenant
+            email="attacker@other.test",
+            name="Cross Tenant Attacker",
+        )
+
+        # Stub session: PatientRepository raw SQL execute().fetchone() returns None
+        # simulate no rows found (cross-tenant) → patient = None → 404
+        from unittest.mock import MagicMock
+
+        stub_session = AsyncMock()
+        stub_execute_result = MagicMock()  # sync MagicMock (not AsyncMock) so .fetchone() returns sync None
+        stub_execute_result.fetchone.return_value = None
+        stub_session.execute = AsyncMock(return_value=stub_execute_result)
+        stub_session.flush = AsyncMock(return_value=None)  # AuditLogRepository.write calls flush
+
+        async def _override_session():
+            yield stub_session
+
+        app.dependency_overrides[get_async_session] = _override_session
+
+        async_resolve_mock = AsyncMock(return_value=ctx_other_tenant)
+
+        try:
+            with patch(
+                "src.modules.vitalia.iam.application.services.clinic_resolver.ClinicResolver.async_resolve",
+                new=async_resolve_mock,
+            ):
+                async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+                    response = await client.get(
+                        f"/api/v1/crm/patients/{_patient_id}",
+                        headers={
+                            "Authorization": "Bearer stub:test:test:doctor:cross_tenant",
+                            "X-Tenant-ID": str(self._OTHER_TENANT),
+                            "X-Clinic-ID": str(self._OTHER_CLINIC),
+                        },
+                    )
+        finally:
+            app.dependency_overrides.pop(get_async_session, None)
+
+        # Cross-tenant: must NOT return patient data → 404 (repo dual-filter isolates)
+        assert response.status_code == 404, (
+            f"Cross-tenant doctor MUST get 404, not {response.status_code}: {response.text}"
+        )
+        # PHI no-leak assertion: response body must not contain PHI field values
+        phi_sentinel_values = [
+            "date_of_birth",
+            "diagnosis",
+            "treatment_plan",
+            "medication",
+            "allergies",
+        ]
+        body_lower = response.text.lower()
+        for phi_value in phi_sentinel_values:
+            assert phi_value not in body_lower, (
+                f"SC-3 FAIL: cross-tenant 404 response must NOT contain PHI field '{phi_value}': {response.text}"
+            )
+
+    @pytest.mark.asyncio
+    async def test_cross_clinic_403_no_phi_leak(self) -> None:
+        """SC-3: doctor from clinic A requests PHI of clinic B (same tenant) → 403 or 404, no PHI leak.
+
+        Grader:
+        - HTTP 403 or 404 returned (not 200 with wrong clinic's data).
+        - Response body does not contain PHI field values.
+        """
+        from unittest.mock import AsyncMock, patch
+
+        from httpx import ASGITransport, AsyncClient
+
+        with patch.dict(os.environ, _REQUIRED_ENV_VARS):
+            from src.db import get_async_session
+            from src.main import app
+            from src.modules.vitalia.iam.application.services.clinic_resolver import (
+                ClinicContext,
+            )
+
+        _patient_id = uuid.uuid4()
+        # Doctor from clinic B tries to access CLINIC_SANARE (clinic A) patient
+        ctx_wrong_clinic = ClinicContext(
+            user_id=DOCTOR_CLERK_SUB,
+            tenant_id=TENANT_SANARE,  # Same tenant
+            clinic_id=self._OTHER_CLINIC,  # Wrong clinic!
+            role="doctor",
+            email="doctor@other_clinic.test",
+            name="Wrong Clinic Doctor",
+        )
+
+        # Stub session: PatientRepository query returns None (dual-filter: wrong clinic_id)
+        from unittest.mock import MagicMock
+
+        stub_session = AsyncMock()
+        stub_execute_result = MagicMock()
+        stub_execute_result.fetchone.return_value = None
+        stub_session.execute = AsyncMock(return_value=stub_execute_result)
+        stub_session.flush = AsyncMock(return_value=None)
+
+        async def _override_session():
+            yield stub_session
+
+        app.dependency_overrides[get_async_session] = _override_session
+
+        async_resolve_mock = AsyncMock(return_value=ctx_wrong_clinic)
+
+        try:
+            with patch(
+                "src.modules.vitalia.iam.application.services.clinic_resolver.ClinicResolver.async_resolve",
+                new=async_resolve_mock,
+            ):
+                async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+                    response = await client.get(
+                        f"/api/v1/crm/patients/{_patient_id}",
+                        headers={
+                            "Authorization": "Bearer stub:test:test:doctor:user1",
+                            "X-Tenant-ID": str(TENANT_SANARE),
+                            "X-Clinic-ID": str(self._OTHER_CLINIC),
+                        },
+                    )
+        finally:
+            app.dependency_overrides.pop(get_async_session, None)
+
+        # Cross-clinic: must NOT return patient data → 403 or 404 (dual-filter isolates)
+        assert response.status_code in (403, 404), (
+            f"Cross-clinic doctor MUST get 403 or 404, not {response.status_code}: {response.text}"
+        )
+        # PHI no-leak assertion
+        phi_sentinel_values = [
+            "date_of_birth",
+            "diagnosis",
+            "treatment_plan",
+        ]
+        body_lower = response.text.lower()
+        for phi_value in phi_sentinel_values:
+            assert phi_value not in body_lower, (
+                f"SC-3 FAIL: cross-clinic response must NOT contain PHI field '{phi_value}': {response.text}"
+            )

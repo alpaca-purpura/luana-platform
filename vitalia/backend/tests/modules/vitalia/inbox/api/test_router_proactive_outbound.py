@@ -24,12 +24,17 @@ from httpx import ASGITransport, AsyncClient
 
 
 def _make_app() -> FastAPI:
-    """Build minimal FastAPI test app with inbox router."""
+    """Build minimal FastAPI test app with inbox router.
+
+    Includes get_async_session stub override (Slice 2: endpoints have
+    session: Annotated[AsyncSession, Depends(get_async_session)]).
+    """
     from src.modules.vitalia.inbox.api.router import router as inbox_router
+    from tests.modules.vitalia.inbox.api.conftest import apply_session_stub
 
     app = FastAPI(redirect_slashes=False)
     app.include_router(inbox_router, prefix="/api/v1/vitalia/inbox")
-    return app
+    return apply_session_stub(app)
 
 
 # ---------------------------------------------------------------------------
@@ -105,8 +110,8 @@ async def test_proactive_outbound_201(
     proactive_svc.send_proactive.return_value = result
 
     monkeypatch.setattr(
-        "src.modules.vitalia.inbox.api.router._get_resolver",
-        lambda: MagicMock(**{"resolve.return_value": mock_clinic_ctx_doctor}),
+        "src.modules.vitalia.iam.application.services.clinic_resolver.ClinicResolver.async_resolve",
+        AsyncMock(return_value=mock_clinic_ctx_doctor),
     )
     monkeypatch.setattr(
         "src.modules.vitalia.inbox.api.router._get_proactive_service",
@@ -152,8 +157,8 @@ async def test_proactive_outbound_422_template_not_found(
     proactive_svc.send_proactive.side_effect = TemplateNotFoundError("nonexistent_template")
 
     monkeypatch.setattr(
-        "src.modules.vitalia.inbox.api.router._get_resolver",
-        lambda: MagicMock(**{"resolve.return_value": mock_clinic_ctx_doctor}),
+        "src.modules.vitalia.iam.application.services.clinic_resolver.ClinicResolver.async_resolve",
+        AsyncMock(return_value=mock_clinic_ctx_doctor),
     )
     monkeypatch.setattr(
         "src.modules.vitalia.inbox.api.router._get_proactive_service",
@@ -194,8 +199,8 @@ async def test_proactive_outbound_404_lead_not_found(
     proactive_svc.send_proactive.side_effect = LeadNotFoundError(LEAD_ID)
 
     monkeypatch.setattr(
-        "src.modules.vitalia.inbox.api.router._get_resolver",
-        lambda: MagicMock(**{"resolve.return_value": mock_clinic_ctx_doctor}),
+        "src.modules.vitalia.iam.application.services.clinic_resolver.ClinicResolver.async_resolve",
+        AsyncMock(return_value=mock_clinic_ctx_doctor),
     )
     monkeypatch.setattr(
         "src.modules.vitalia.inbox.api.router._get_proactive_service",
@@ -236,8 +241,8 @@ async def test_proactive_outbound_403_marketing_optin_missing(
     proactive_svc.send_proactive.side_effect = MarketingOptInRequiredError("marketing_campaign_v1", LEAD_ID)
 
     monkeypatch.setattr(
-        "src.modules.vitalia.inbox.api.router._get_resolver",
-        lambda: MagicMock(**{"resolve.return_value": mock_clinic_ctx_doctor}),
+        "src.modules.vitalia.iam.application.services.clinic_resolver.ClinicResolver.async_resolve",
+        AsyncMock(return_value=mock_clinic_ctx_doctor),
     )
     monkeypatch.setattr(
         "src.modules.vitalia.inbox.api.router._get_proactive_service",
@@ -278,8 +283,8 @@ async def test_proactive_outbound_429_rate_limit(
     proactive_svc.send_proactive.side_effect = RateLimitExceededError(TENANT_ID)
 
     monkeypatch.setattr(
-        "src.modules.vitalia.inbox.api.router._get_resolver",
-        lambda: MagicMock(**{"resolve.return_value": mock_clinic_ctx_doctor}),
+        "src.modules.vitalia.iam.application.services.clinic_resolver.ClinicResolver.async_resolve",
+        AsyncMock(return_value=mock_clinic_ctx_doctor),
     )
     monkeypatch.setattr(
         "src.modules.vitalia.inbox.api.router._get_proactive_service",
@@ -313,8 +318,8 @@ async def test_proactive_outbound_403_marketing_role(
 ) -> None:
     """Marketing role cannot send proactive outbound (PHI endpoint) → 403."""
     monkeypatch.setattr(
-        "src.modules.vitalia.inbox.api.router._get_resolver",
-        lambda: MagicMock(**{"resolve.return_value": mock_clinic_ctx_marketing}),
+        "src.modules.vitalia.iam.application.services.clinic_resolver.ClinicResolver.async_resolve",
+        AsyncMock(return_value=mock_clinic_ctx_marketing),
     )
 
     app = _make_app()
@@ -343,8 +348,8 @@ async def test_proactive_outbound_401(monkeypatch: pytest.MonkeyPatch) -> None:
     from src.modules.vitalia.iam.infrastructure.clerk_jwt_decoder import JwtDecodeError
 
     monkeypatch.setattr(
-        "src.modules.vitalia.inbox.api.router._get_resolver",
-        lambda: MagicMock(**{"resolve.side_effect": JwtDecodeError("bad token")}),
+        "src.modules.vitalia.iam.application.services.clinic_resolver.ClinicResolver.async_resolve",
+        AsyncMock(side_effect=JwtDecodeError("bad token")),
     )
 
     app = _make_app()

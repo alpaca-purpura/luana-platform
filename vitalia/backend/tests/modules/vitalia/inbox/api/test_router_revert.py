@@ -22,12 +22,17 @@ from httpx import ASGITransport, AsyncClient
 
 
 def _make_app() -> FastAPI:
-    """Build minimal FastAPI test app with inbox router."""
+    """Build minimal FastAPI test app with inbox router.
+
+    Includes get_async_session stub override (Slice 2: endpoints have
+    session: Annotated[AsyncSession, Depends(get_async_session)]).
+    """
     from src.modules.vitalia.inbox.api.router import router as inbox_router
+    from tests.modules.vitalia.inbox.api.conftest import apply_session_stub
 
     app = FastAPI(redirect_slashes=False)
     app.include_router(inbox_router, prefix="/api/v1/vitalia/inbox")
-    return app
+    return apply_session_stub(app)
 
 
 # ---------------------------------------------------------------------------
@@ -75,8 +80,8 @@ async def test_410_gone_after_5min(
     retract_svc.retract.side_effect = ActionReceiptExpiredError(MSG_ID, expired_at)
 
     monkeypatch.setattr(
-        "src.modules.vitalia.inbox.api.router._get_resolver",
-        lambda: MagicMock(**{"resolve.return_value": mock_clinic_ctx_doctor}),
+        "src.modules.vitalia.iam.application.services.clinic_resolver.ClinicResolver.async_resolve",
+        AsyncMock(return_value=mock_clinic_ctx_doctor),
     )
     monkeypatch.setattr(
         "src.modules.vitalia.inbox.api.router._get_retract_service",
@@ -126,8 +131,8 @@ async def test_revert_within_window_200(
     retract_svc.retract.return_value = result
 
     monkeypatch.setattr(
-        "src.modules.vitalia.inbox.api.router._get_resolver",
-        lambda: MagicMock(**{"resolve.return_value": mock_clinic_ctx_doctor}),
+        "src.modules.vitalia.iam.application.services.clinic_resolver.ClinicResolver.async_resolve",
+        AsyncMock(return_value=mock_clinic_ctx_doctor),
     )
     monkeypatch.setattr(
         "src.modules.vitalia.inbox.api.router._get_retract_service",
@@ -172,8 +177,8 @@ async def test_revert_409_patient_replied(
     retract_svc.retract.side_effect = PatientRepliedConflictError(MSG_ID)
 
     monkeypatch.setattr(
-        "src.modules.vitalia.inbox.api.router._get_resolver",
-        lambda: MagicMock(**{"resolve.return_value": mock_clinic_ctx_doctor}),
+        "src.modules.vitalia.iam.application.services.clinic_resolver.ClinicResolver.async_resolve",
+        AsyncMock(return_value=mock_clinic_ctx_doctor),
     )
     monkeypatch.setattr(
         "src.modules.vitalia.inbox.api.router._get_retract_service",
@@ -214,8 +219,8 @@ async def test_revert_404_no_receipt(
     retract_svc.retract.side_effect = MessageNotRetractableError(MSG_ID)
 
     monkeypatch.setattr(
-        "src.modules.vitalia.inbox.api.router._get_resolver",
-        lambda: MagicMock(**{"resolve.return_value": mock_clinic_ctx_doctor}),
+        "src.modules.vitalia.iam.application.services.clinic_resolver.ClinicResolver.async_resolve",
+        AsyncMock(return_value=mock_clinic_ctx_doctor),
     )
     monkeypatch.setattr(
         "src.modules.vitalia.inbox.api.router._get_retract_service",

@@ -18,6 +18,11 @@ Per .claude/rules/backend-ddd.md:
   - Routes thin: validate DTO → call service → map exception → response.
   - redirect_slashes=False is set on the FastAPI *app* in main.py, NOT here.
 
+Slice 2 changes:
+  - async_resolve() migration: role from DB (not token).
+  - Real PatientRepository wired via Depends(get_async_session).
+  - AsyncMock() inline blocks REMOVED from all runtime paths.
+
 downstream-regression-na: brand-local vitalia CRM consent API endpoints
 """
 
@@ -27,9 +32,14 @@ from typing import Annotated
 from uuid import UUID
 
 import structlog
-from fastapi import APIRouter, Header, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.db import get_async_session
 from src.modules.vitalia._shared.auth.rbac import PHIAccessDeniedError
+from src.modules.vitalia._shared.repositories.audit_log_repository import (
+    AuditLogRepository,
+)
 from src.modules.vitalia.crm.application.dto.consent_dtos import (
     MarketingOptInRequest,
     MarketingOptInResponse,
@@ -39,9 +49,15 @@ from src.modules.vitalia.crm.application.dto.consent_dtos import (
 from src.modules.vitalia.crm.application.services.patient_consent_service import (
     PatientConsentService,
 )
+from src.modules.vitalia.crm.infrastructure.persistence.patient_repository import (
+    PatientRepository,
+)
 from src.modules.vitalia.iam.application.services.clinic_resolver import (
+    ClinicContext,
     ClinicResolver,
     MissingAuthHeaderError,
+    RoleNotFoundError,
+    UserNotFoundError,
 )
 from src.modules.vitalia.iam.infrastructure.clerk_jwt_decoder import (
     ClerkJwtDecoder,
@@ -59,23 +75,41 @@ ClinicIdHeader = Annotated[str, Header(alias="X-Clinic-ID")]
 
 
 def _get_resolver() -> ClinicResolver:
-    """Create a ClinicResolver with the default stub decoder (Slice 1)."""
+    """Create a ClinicResolver with the Clerk JWT decoder."""
     return ClinicResolver(decoder=ClerkJwtDecoder())
 
 
-def _resolve_context(authorization: str, resolver: ClinicResolver) -> object:
-    """Parse authorization header and resolve clinic context.
+async def _resolve_context_async(
+    authorization: str,
+    x_tenant_id: str,
+    x_clinic_id: str,
+    session: AsyncSession,
+) -> ClinicContext:
+    """Parse authorization header and resolve clinic context via DB role.
 
     Raises:
-        HTTPException(401): If token is missing or invalid.
+        HTTPException(401): Token missing, invalid, or user not found.
+        HTTPException(403): User has no active role in this tenant.
     """
     token = authorization.removeprefix("Bearer ").strip()
+    resolver = _get_resolver()
     try:
-        return resolver.resolve(token)
+        return await resolver.async_resolve(
+            token=token,
+            session=session,
+            tenant_id_str=x_tenant_id,
+            clinic_id_str=x_clinic_id,
+        )
     except MissingAuthHeaderError:
         raise HTTPException(status_code=401, detail="Token de autorización requerido.")
     except JwtDecodeError:
         raise HTTPException(status_code=401, detail="Token inválido o expirado.")
+    except UserNotFoundError:
+        raise HTTPException(status_code=401, detail="Usuario no encontrado.")
+    except RoleNotFoundError:
+        raise HTTPException(status_code=403, detail="El usuario no tiene un rol activo en este tenant.")
+    except ValueError:
+        raise HTTPException(status_code=422, detail="Identificadores de tenant o clínica inválidos.")
 
 
 # ---------------------------------------------------------------------------
@@ -90,6 +124,7 @@ async def opt_out_patient(
     authorization: AuthorizationHeader,
     x_tenant_id: TenantIdHeader,
     x_clinic_id: ClinicIdHeader,
+    session: Annotated[AsyncSession, Depends(get_async_session)],
 ) -> OptOutResponse:
     """Opt patient out of marketing — admin_clinic role only.
 
@@ -103,6 +138,7 @@ async def opt_out_patient(
         authorization: Bearer token.
         x_tenant_id: Tenant ID header (root isolation).
         x_clinic_id: Clinic ID header (required — HIPAA-lite dual filter).
+        session: Async DB session (injected by FastAPI DI).
 
     Returns:
         OptOutResponse confirming the opt-out.
@@ -112,16 +148,10 @@ async def opt_out_patient(
         403: Role is not admin_clinic.
         422: Missing required headers or body fields.
     """
-    resolver = _get_resolver()
-    ctx = _resolve_context(authorization, resolver)
+    ctx = await _resolve_context_async(authorization, x_tenant_id, x_clinic_id, session)
 
-    # Slice 1: stub repos (no live DB). Slice 2: inject via FastAPI Depends.
-    from unittest.mock import AsyncMock  # noqa: PLC0415
-
-    patient_repo = AsyncMock()
-    patient_repo.opt_out.return_value = None
-    audit_repo = AsyncMock()
-    audit_repo.write.return_value = None
+    audit_repo = AuditLogRepository(session=session)
+    patient_repo = PatientRepository(session=session, audit_repo=audit_repo)
     service = PatientConsentService(patient_repo=patient_repo, audit_repo=audit_repo)
 
     try:
@@ -158,6 +188,7 @@ async def marketing_opt_in_patient(
     authorization: AuthorizationHeader,
     x_tenant_id: TenantIdHeader,
     x_clinic_id: ClinicIdHeader,
+    session: Annotated[AsyncSession, Depends(get_async_session)],
 ) -> MarketingOptInResponse:
     """Update patient marketing consent — doctor/nurse/admin_clinic roles.
 
@@ -170,6 +201,7 @@ async def marketing_opt_in_patient(
         authorization: Bearer token.
         x_tenant_id: Tenant ID header.
         x_clinic_id: Clinic ID header (required — HIPAA-lite dual filter).
+        session: Async DB session (injected by FastAPI DI).
 
     Returns:
         MarketingOptInResponse confirming the consent update.
@@ -179,16 +211,10 @@ async def marketing_opt_in_patient(
         403: Role not in [doctor, nurse, admin_clinic].
         422: Missing required headers or body fields.
     """
-    resolver = _get_resolver()
-    ctx = _resolve_context(authorization, resolver)
+    ctx = await _resolve_context_async(authorization, x_tenant_id, x_clinic_id, session)
 
-    # Slice 1: stub repos (no live DB). Slice 2: inject via FastAPI Depends.
-    from unittest.mock import AsyncMock  # noqa: PLC0415
-
-    patient_repo = AsyncMock()
-    patient_repo.marketing_opt_in.return_value = None
-    audit_repo = AsyncMock()
-    audit_repo.write.return_value = None
+    audit_repo = AuditLogRepository(session=session)
+    patient_repo = PatientRepository(session=session, audit_repo=audit_repo)
     service = PatientConsentService(patient_repo=patient_repo, audit_repo=audit_repo)
 
     try:

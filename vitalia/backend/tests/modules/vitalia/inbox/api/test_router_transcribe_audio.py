@@ -67,8 +67,8 @@ async def test_low_confidence_fallback(
     transcribe_svc.transcribe.return_value = result
 
     monkeypatch.setattr(
-        "src.modules.vitalia.inbox.api.router._get_resolver",
-        lambda: MagicMock(**{"resolve.return_value": mock_clinic_ctx_doctor}),
+        "src.modules.vitalia.iam.application.services.clinic_resolver.ClinicResolver.async_resolve",
+        AsyncMock(return_value=mock_clinic_ctx_doctor),
     )
     monkeypatch.setattr(
         "src.modules.vitalia.inbox.api.router._get_transcribe_service",
@@ -118,8 +118,8 @@ async def test_transcribe_high_confidence_200(
     transcribe_svc.transcribe.return_value = result
 
     monkeypatch.setattr(
-        "src.modules.vitalia.inbox.api.router._get_resolver",
-        lambda: MagicMock(**{"resolve.return_value": mock_clinic_ctx_doctor}),
+        "src.modules.vitalia.iam.application.services.clinic_resolver.ClinicResolver.async_resolve",
+        AsyncMock(return_value=mock_clinic_ctx_doctor),
     )
     monkeypatch.setattr(
         "src.modules.vitalia.inbox.api.router._get_transcribe_service",
@@ -158,8 +158,8 @@ async def test_transcribe_403_marketing_role(monkeypatch: pytest.MonkeyPatch) ->
     ctx.role = "marketing"
 
     monkeypatch.setattr(
-        "src.modules.vitalia.inbox.api.router._get_resolver",
-        lambda: MagicMock(**{"resolve.return_value": ctx}),
+        "src.modules.vitalia.iam.application.services.clinic_resolver.ClinicResolver.async_resolve",
+        AsyncMock(return_value=ctx),
     )
 
     app = _make_app()

@@ -47,10 +47,8 @@ from src.modules.vitalia.iam.application.services.clinic_resolver import (
     ClinicContext,
     ClinicResolver,
     MissingAuthHeaderError,
-)
-from src.modules.vitalia.iam.infrastructure.clerk_jwt_decoder import (
-    ClerkJwtDecoder,
-    JwtDecodeError,
+    RoleNotFoundError,
+    UserNotFoundError,
 )
 from src.modules.vitalia.marketing.application.dtos.marketing_dtos import (
     ApproveRecommendationRequest,
@@ -111,20 +109,48 @@ IdempotencyKeyHeader = Annotated[str | None, Header(alias="Idempotency-Key")]
 # ---------------------------------------------------------------------------
 
 
-def _resolve_context(authorization: str) -> ClinicContext:
-    """Resolve Bearer JWT to ClinicContext.
+async def _resolve_context(
+    authorization: str,
+    x_tenant_id: str,
+    x_clinic_id: str,
+    session: AsyncSession,
+) -> ClinicContext:
+    """Resolve Bearer JWT to ClinicContext via DB role (Slice 2 async path).
 
     Raises:
-        HTTPException(401): Token missing or invalid.
+        HTTPException(401): Token missing, invalid, or user not found.
+        HTTPException(403): User has no active role in this tenant.
     """
     token = authorization.removeprefix("Bearer ").strip()
-    resolver = ClinicResolver(decoder=ClerkJwtDecoder())
+    resolver = ClinicResolver(decoder=_get_decoder())
     try:
-        return resolver.resolve(token)
+        return await resolver.async_resolve(
+            token=token,
+            session=session,
+            tenant_id_str=x_tenant_id,
+            clinic_id_str=x_clinic_id,
+        )
     except MissingAuthHeaderError:
         raise HTTPException(status_code=401, detail="Token de autorización requerido.")
-    except JwtDecodeError:
-        raise HTTPException(status_code=401, detail="Token inválido o expirado.")
+    except Exception as exc:  # noqa: BLE001 — map remaining IAM errors to HTTP
+        from src.modules.vitalia.iam.infrastructure.clerk_jwt_decoder import JwtDecodeError  # noqa: PLC0415
+
+        if isinstance(exc, JwtDecodeError):
+            raise HTTPException(status_code=401, detail="Token inválido o expirado.")
+        if isinstance(exc, UserNotFoundError):
+            raise HTTPException(status_code=401, detail="Usuario no encontrado.")
+        if isinstance(exc, RoleNotFoundError):
+            raise HTTPException(status_code=403, detail="El usuario no tiene un rol activo en este tenant.")
+        if isinstance(exc, ValueError):
+            raise HTTPException(status_code=422, detail="Identificadores de tenant o clínica inválidos.")
+        raise
+
+
+def _get_decoder():
+    """Return a ClerkJwtDecoder instance. Module-level factory for testability."""
+    from src.modules.vitalia.iam.infrastructure.clerk_jwt_decoder import ClerkJwtDecoder  # noqa: PLC0415
+
+    return ClerkJwtDecoder()
 
 
 def _require_role(ctx: ClinicContext, allowed_roles: set[str]) -> None:
@@ -360,7 +386,7 @@ async def get_bowtie_summary(
 
     Roles: doctor, nurse, admin_clinic, recepcion.
     """
-    ctx = _resolve_context(authorization)
+    ctx = await _resolve_context(authorization, tenant_id, clinic_id, session)
     _require_role(ctx, _READ_ROLES)
 
     start, end = _default_period()
@@ -399,7 +425,7 @@ async def get_stage_detail(
     Raises:
         HTTPException(400): Invalid stage_slug value.
     """
-    ctx = _resolve_context(authorization)
+    ctx = await _resolve_context(authorization, tenant_id, clinic_id, session)
     _require_role(ctx, _READ_ROLES)
 
     try:
@@ -449,7 +475,7 @@ async def get_channel_detail(
     Raises:
         HTTPException(400): Invalid provider value.
     """
-    ctx = _resolve_context(authorization)
+    ctx = await _resolve_context(authorization, tenant_id, clinic_id, session)
     _require_role(ctx, _WRITE_ROLES)
 
     try:
@@ -499,6 +525,7 @@ async def connect_channel(
     authorization: AuthorizationHeader,
     tenant_id: TenantIdHeader,
     clinic_id: ClinicIdHeader,
+    session: Annotated[AsyncSession, Depends(get_async_session)],
 ) -> OAuthConnectResponse:
     """Initiate OAuth flow for an ad channel provider.
 
@@ -506,7 +533,7 @@ async def connect_channel(
 
     Roles: admin_clinic.
     """
-    ctx = _resolve_context(authorization)
+    ctx = await _resolve_context(authorization, tenant_id, clinic_id, session)
     _require_role(ctx, _WRITE_ROLES)
 
     try:
@@ -539,6 +566,7 @@ async def sync_channel(
     authorization: AuthorizationHeader,
     tenant_id: TenantIdHeader,
     clinic_id: ClinicIdHeader,
+    session: Annotated[AsyncSession, Depends(get_async_session)],
     idempotency_key: IdempotencyKeyHeader = None,
 ) -> SyncResponse:
     """Manually trigger OAuth sync for a channel provider.
@@ -547,7 +575,7 @@ async def sync_channel(
 
     Roles: admin_clinic.
     """
-    ctx = _resolve_context(authorization)
+    ctx = await _resolve_context(authorization, tenant_id, clinic_id, session)
     _require_role(ctx, _WRITE_ROLES)
     _require_idempotency_key(idempotency_key)
 
@@ -596,7 +624,7 @@ async def list_recommendations(
 
     Roles: doctor, nurse, admin_clinic, recepcion.
     """
-    ctx = _resolve_context(authorization)
+    ctx = await _resolve_context(authorization, tenant_id, clinic_id, session)
     _require_role(ctx, _READ_ROLES)
 
     bowtie_stage: BowtieStage | None = None
@@ -659,7 +687,7 @@ async def approve_recommendation(
         HTTPException(410): Recommendation expired.
         HTTPException(422): Idempotency-Key header missing.
     """
-    ctx = _resolve_context(authorization)
+    ctx = await _resolve_context(authorization, tenant_id, clinic_id, session)
     _require_role(ctx, _WRITE_ROLES)
     _require_idempotency_key(idempotency_key)
 
@@ -702,7 +730,7 @@ async def reject_recommendation(
         HTTPException(409): Recommendation already approved or rejected.
         HTTPException(422): Idempotency-Key header missing.
     """
-    ctx = _resolve_context(authorization)
+    ctx = await _resolve_context(authorization, tenant_id, clinic_id, session)
     _require_role(ctx, _WRITE_ROLES)
     _require_idempotency_key(idempotency_key)
 
@@ -745,7 +773,7 @@ async def undo_recommendation(
         HTTPException(410): Undo window has expired.
         HTTPException(422): Idempotency-Key header missing.
     """
-    ctx = _resolve_context(authorization)
+    ctx = await _resolve_context(authorization, tenant_id, clinic_id, session)
     _require_role(ctx, _WRITE_ROLES)
     _require_idempotency_key(idempotency_key)
 
@@ -782,7 +810,7 @@ async def get_attribution_matrix(
 
     Roles: admin_clinic.
     """
-    ctx = _resolve_context(authorization)
+    ctx = await _resolve_context(authorization, tenant_id, clinic_id, session)
     _require_role(ctx, _WRITE_ROLES)
 
     start, end = _default_period()
@@ -821,7 +849,7 @@ async def get_referrals(
 
     Roles: admin_clinic.
     """
-    ctx = _resolve_context(authorization)
+    ctx = await _resolve_context(authorization, tenant_id, clinic_id, session)
     _require_role(ctx, _WRITE_ROLES)
 
     start, end = _default_period()

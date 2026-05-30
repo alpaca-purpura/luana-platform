@@ -78,8 +78,8 @@ async def test_cross_tenant_conv_not_found(monkeypatch: pytest.MonkeyPatch) -> N
     # Inject ctx from tenant_A
     ctx_a = _make_ctx(tenant_id=TENANT_A, clinic_id=CLINIC_A)
     monkeypatch.setattr(
-        "src.modules.vitalia.inbox.api.router._get_resolver",
-        lambda: MagicMock(**{"resolve.return_value": ctx_a}),
+        "src.modules.vitalia.iam.application.services.clinic_resolver.ClinicResolver.async_resolve",
+        AsyncMock(return_value=ctx_a),
     )
 
     # Service raises ConversationNotFoundError (dual-filter excludes TENANT_B's conversation)
@@ -124,8 +124,8 @@ async def test_cross_tenant_marketing_role_still_403(monkeypatch: pytest.MonkeyP
     """
     ctx_marketing = _make_ctx(tenant_id=TENANT_A, clinic_id=CLINIC_A, role="marketing")
     monkeypatch.setattr(
-        "src.modules.vitalia.inbox.api.router._get_resolver",
-        lambda: MagicMock(**{"resolve.return_value": ctx_marketing}),
+        "src.modules.vitalia.iam.application.services.clinic_resolver.ClinicResolver.async_resolve",
+        AsyncMock(return_value=ctx_marketing),
     )
 
     app = _make_app()
@@ -162,8 +162,8 @@ async def test_cross_tenant_retract_404(monkeypatch: pytest.MonkeyPatch) -> None
     msg_id = uuid4()
     ctx_a = _make_ctx(tenant_id=TENANT_A, clinic_id=CLINIC_A)
     monkeypatch.setattr(
-        "src.modules.vitalia.inbox.api.router._get_resolver",
-        lambda: MagicMock(**{"resolve.return_value": ctx_a}),
+        "src.modules.vitalia.iam.application.services.clinic_resolver.ClinicResolver.async_resolve",
+        AsyncMock(return_value=ctx_a),
     )
 
     retract_svc = AsyncMock()
