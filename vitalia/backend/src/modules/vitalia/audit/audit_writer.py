@@ -102,8 +102,8 @@ def write_audit_log_sync(
                  resource_id, from_ip, user_agent, payload_redacted, occurred_at)
             VALUES
                 (gen_random_uuid(),
-                 :tenant_id::uuid, :clinic_id::uuid, :user_id::uuid,
-                 :action, :resource_type, :resource_id::uuid,
+                 CAST(:tenant_id AS uuid), CAST(:clinic_id AS uuid), CAST(:user_id AS uuid),
+                 :action, :resource_type, CAST(:resource_id AS uuid),
                  :from_ip, :user_agent, :payload, NOW())
         """),
         {
@@ -200,8 +200,8 @@ class AsyncAuditWriter:
                      resource_id, from_ip, user_agent, payload_redacted, occurred_at)
                 VALUES
                     (gen_random_uuid(),
-                     :tenant_id::uuid, :clinic_id::uuid, :user_id::uuid,
-                     :action, :resource_type, :resource_id::uuid,
+                     CAST(:tenant_id AS uuid), CAST(:clinic_id AS uuid), CAST(:user_id AS uuid),
+                     :action, :resource_type, CAST(:resource_id AS uuid),
                      :from_ip, :user_agent, :payload, NOW())
             """),
             {

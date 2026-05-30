@@ -4,13 +4,17 @@ TDD: RED tests defined per vitalia-adopt-luana-core-iam story.
 
 Tests verify:
 - Sync write to vitalia_audit_log table (INSERT)
-- Payload sanitized via luana_core_observability sanitize_payload
+- Payload sanitized via sanitize_phi_payload (vitalia brand-local wrapper)
 - No PHI fields in payload_redacted column
 - Caller is responsible for db.commit()
 
-Note: sanitize_payload is imported lazily inside the function body
-(PLC0415). Patch target is the source module:
-  luana_core_observability.recording.sanitization.sanitize_payload
+Note: After T-1 (arreglar-guardado-voz-y-tono), sanitize_phi_payload is the
+call site (not luana_core_observability.sanitize_payload directly). The patch
+target is the source module of sanitize_phi_payload so ALL call sites resolve
+to the mock through the lazy import.
+
+Patch target (T-1 + T-1.bis migration):
+  src.modules.vitalia.compliance.application.compliance_service_adapter.sanitize_phi_payload
 
 downstream-regression-na: brand-local audit log sync tests
 """
@@ -21,8 +25,10 @@ import json
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
-# Patch target for sanitize_payload (lazy import inside audit_writer fn body)
-_SANITIZE_PATCH = "luana_core_observability.recording.sanitization.sanitize_payload"
+# Patch target for sanitize_phi_payload — vitalia brand-local wrapper.
+# T-1 migrated from luana_core_observability.sanitize_payload (removed compliance_level
+# kwarg) to sanitize_phi_payload (simpler signature: payload -> dict).
+_SANITIZE_PATCH = "src.modules.vitalia.compliance.application.compliance_service_adapter.sanitize_phi_payload"
 
 
 class TestWriteAuditLogSync:
@@ -72,7 +78,13 @@ class TestWriteAuditLogSync:
         mock_db.commit.assert_not_called()
 
     def test_write_calls_sanitize_payload(self) -> None:
-        """Payload is always sanitized via luana_core_observability."""
+        """Payload is always sanitized via sanitize_phi_payload (vitalia wrapper).
+
+        T-1 migration: call site changed from
+          sanitize_payload(payload, compliance_level="hipaa_lite")
+        to
+          sanitize_phi_payload(payload)   ← no compliance_level kwarg
+        """
         from src.modules.vitalia.audit.audit_writer import write_audit_log_sync
 
         mock_db = MagicMock()
@@ -90,7 +102,8 @@ class TestWriteAuditLogSync:
                 payload=raw_payload,
             )
 
-        mock_sanitize.assert_called_once_with(raw_payload, compliance_level="hipaa_lite")
+        # T-1 migration: sanitize_phi_payload takes only the payload dict (no kwarg).
+        mock_sanitize.assert_called_once_with(raw_payload)
 
     def test_write_uses_empty_dict_when_payload_none(self) -> None:
         """When payload=None, sanitize_payload is called with empty dict."""
@@ -110,7 +123,8 @@ class TestWriteAuditLogSync:
                 payload=None,
             )
 
-        mock_sanitize.assert_called_once_with({}, compliance_level="hipaa_lite")
+        # T-1 migration: sanitize_phi_payload takes only the payload dict (no compliance_level kwarg).
+        mock_sanitize.assert_called_once_with({})
 
     def test_write_encodes_payload_as_bytes(self) -> None:
         """payload_redacted passed to INSERT must be bytes (JSON-encoded)."""

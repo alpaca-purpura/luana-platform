@@ -154,7 +154,7 @@ class GrowthStudioEmitter:
                         (id, tenant_id, clinic_id, user_id, event_name, props, occurred_at)
                     VALUES
                         (gen_random_uuid(), :tenant_id, :clinic_id, :user_id,
-                         :event_name, :props::jsonb, NOW())
+                         :event_name, CAST(:props AS jsonb), NOW())
                     """
                 ),
                 {

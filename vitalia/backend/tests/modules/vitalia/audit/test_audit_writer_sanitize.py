@@ -20,7 +20,10 @@ downstream-regression-na: brand-local regression tests for vitalia audit sanitiz
 from __future__ import annotations
 
 import asyncio
+import importlib
+import inspect
 import json
+import re
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
@@ -378,3 +381,129 @@ class TestAuditWriterPhiRedaction:
             )
 
         mock_session.execute.assert_called_once()
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# T-1.bis guard: SQLAlchemy text() bindparam broken by inline PostgreSQL cast
+#
+# ROOT CAUSE (T-1.bis): SQLAlchemy's text() bindparam regex uses a negative-
+# lookahead (?!:) to skip sequences like `::uuid`. When the SQL contains
+# `:tenant_id::uuid`, SQLAlchemy REFUSES to bind :tenant_id (it sees `::` and
+# stops). The literal colons reach Postgres → syntax error at ":".
+#
+# FIX: Replace `:param::type` with `CAST(:param AS type)`. SQLAlchemy parses
+# this correctly; behavior is identical at the Postgres level.
+#
+# These guard tests assert the source SQL text does NOT contain the broken
+# inline-cast pattern and that all expected bind param names are present.
+# They do not require a live DB — they inspect the SQL strings directly.
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+class TestInlineCastGuard:
+    """Guard against regression of T-1.bis: :param::type inline casts in SQL.
+
+    These tests read the source of audit_writer.py and growth_studio_emitter.py
+    and assert that NO `:word::word` pattern exists in the SQL strings.
+
+    The pattern `re.search(r':\\w+::', sql)` would match `:tenant_id::uuid`.
+    After the fix, CAST(:tenant_id AS uuid) is used instead — no match.
+
+    Per .claude/rules/test-design-doctrine.md § "verificación REAL":
+    reading source text is deterministic and does NOT require a live DB.
+    """
+
+    _INLINE_CAST_RE = re.compile(r":\w+::")
+
+    def _get_source(self, module_path: str) -> str:
+        """Return source code of the given dotted module path."""
+        mod = importlib.import_module(module_path)
+        return inspect.getsource(mod)
+
+    def test_audit_writer_no_inline_cast(self) -> None:
+        """audit_writer.py must NOT contain :param::type inline casts.
+
+        RED (before fix): grep finds :tenant_id::uuid, :clinic_id::uuid,
+          :user_id::uuid, :resource_id::uuid in the INSERT SQL strings.
+        GREEN (after fix): CAST(:tenant_id AS uuid) etc. are used instead.
+        """
+        source = self._get_source("src.modules.vitalia.audit.audit_writer")
+        matches = self._INLINE_CAST_RE.findall(source)
+        assert not matches, (
+            f"audit_writer.py contains broken inline SQLAlchemy cast(s): {matches}. "
+            "Replace :param::type with CAST(:param AS type) — "
+            "SQLAlchemy text() bindparam regex uses (?!:) negative-lookahead "
+            "and refuses to bind params immediately followed by ::"
+        )
+
+    def test_growth_studio_emitter_no_inline_cast(self) -> None:
+        """growth_studio_emitter.py must NOT contain :param::type inline casts.
+
+        RED (before fix): grep finds :props::jsonb in the INSERT SQL string.
+        GREEN (after fix): CAST(:props AS jsonb) is used instead.
+        """
+        source = self._get_source("src.modules.vitalia._shared.telemetry.growth_studio_emitter")
+        matches = self._INLINE_CAST_RE.findall(source)
+        assert not matches, (
+            f"growth_studio_emitter.py contains broken inline SQLAlchemy cast(s): {matches}. "
+            "Replace :param::type with CAST(:param AS type)."
+        )
+
+    def test_audit_writer_sync_insert_has_expected_bind_params(self) -> None:
+        """write_audit_log_sync INSERT SQL must declare all expected bind params.
+
+        SQLAlchemy only resolves bind params it can parse. If inline casts break
+        param recognition, the param silently becomes unbound — Postgres error.
+
+        We check that expected :param names appear in the source (CAST form).
+        """
+        source = self._get_source("src.modules.vitalia.audit.audit_writer")
+        expected_params = [
+            ":tenant_id",
+            ":clinic_id",
+            ":user_id",
+            ":resource_id",
+            ":action",
+            ":resource_type",
+            ":from_ip",
+            ":user_agent",
+            ":payload",
+        ]
+        for param in expected_params:
+            assert param in source, (
+                f"Expected bind param {param!r} not found in audit_writer.py. "
+                "The SQL may be missing the param after a refactor."
+            )
+
+    def test_audit_writer_async_cast_appears_twice(self) -> None:
+        """Both sync + async INSERT blocks in audit_writer.py must use CAST form.
+
+        Each CAST expression must appear at least twice: once in write_audit_log_sync
+        and once in AsyncAuditWriter.write.
+        """
+        source = self._get_source("src.modules.vitalia.audit.audit_writer")
+        cast_params = [
+            "CAST(:tenant_id AS uuid)",
+            "CAST(:clinic_id AS uuid)",
+            "CAST(:user_id AS uuid)",
+            "CAST(:resource_id AS uuid)",
+        ]
+        for cast_expr in cast_params:
+            count = source.count(cast_expr)
+            assert count >= 2, (  # noqa: PLR2004
+                f"Expected CAST expression {cast_expr!r} to appear at least twice "
+                f"in audit_writer.py (sync + async blocks), found {count} time(s). "
+                "Ensure both write_audit_log_sync and AsyncAuditWriter.write use CAST."
+            )
+
+    def test_growth_studio_emitter_has_cast_jsonb(self) -> None:
+        """growth_studio_emitter INSERT SQL must use CAST(:props AS jsonb).
+
+        RED (before fix): source has :props::jsonb — asyncpg syntax error.
+        GREEN (after fix): CAST(:props AS jsonb) — Postgres parses correctly.
+        """
+        source = self._get_source("src.modules.vitalia._shared.telemetry.growth_studio_emitter")
+        assert "CAST(:props AS jsonb)" in source, (
+            "growth_studio_emitter.py does not contain CAST(:props AS jsonb). "
+            "The :props::jsonb inline cast must be replaced with CAST(:props AS jsonb)."
+        )
