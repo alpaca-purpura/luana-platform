@@ -5,7 +5,7 @@ type: infra-migration
 title: "Migración del mapa a 3 zonas (PARADIGM/ADR-010) + reorganización del backlog"
 agent_owner: infra
 module: platform
-state: ready
+state: developing
 architecture_pattern: ADR-010-orquestacion-agentica + ADR-vitalia-005-capability-model-4-dimensions (extiende → 5ª dim: zona)
 last_modified: 2026-05-30
 ratified_by_chris: true
@@ -15,6 +15,10 @@ mockup_gate_waived: true
 mockup_gate_waived_by: chris
 ready_package_closed_by: architect
 ready_package_closed_at: 2026-05-30
+autonomous_mode: true
+autonomous_mode_authorized_by: chris
+autonomous_mode_authorized_at: 2026-05-30
+autonomous_mode_note: "Chris autorizó 'continua autonoma hasta el done' (2026-05-30) — override del default false del architect. Chain: /dev-team T-1..T-6 → /auditor → /pm-vitalia merge."
 ready_package_artifacts: [03-arch.md, 03-arch-be.md, 03-arch-fe.md, 04-validators.yaml, 05-guidelines.md, 06-tickets.yaml, dispatch-plan.md]
 mockup_gate_waived_reason: "Realineación Ribbon (5 tabs Lisa·Mateo·Adrián·Lucas·Camila + Plataforma; Valeria→sidebar). Sin componente nuevo → cambio mínimo. Chris ratificó skip ADR-vitalia-003 (2026-05-30)."
 parallel_safe: false        # toca SYSTEM-MAP + ~71 caps + cockpit (cross-brand tool) — serializar
@@ -60,7 +64,7 @@ scope_boundary_note: >
   /pm-vitalia NO la owna. Se ejecuta en la misma tanda (fase solo-bootstrap permite) pero se trackea como
   tool-scope, no como cap de producto vitalia. La parte vitalia-propia es F0+F1+F2 (data: caps + SYSTEM-MAP + reassign).
 
-next_action: "Ready package cerrado por /architect (2026-05-30): 03-arch(+be/fe) + 04-validators + 05-guidelines + 06-tickets(6 vitalia-scope) + dispatch-plan. state=refined → ready. DAG: T-1→T-2→T-5→T-6 · T-3 paralelo · T-4 dep T-2. TOOL-SCOPE (F3 cockpit + F4-consumer + capability-protocol §7) = dispatch separado SCOPE_GATE_SKIP. autonomous_mode:false. ⚠️ Merge wip/vitalia→main PENDIENTE decisión approach (main divergió)."
+next_action: "MERGE wip/vitalia→main DONE (58e652e0, preservando historia · cockpit v0.6 + nicolify intactos · 70 caps vitalia en main). autonomous_mode:true → /dev-team build T-1..T-6 → /auditor → merge. TOOL-SCOPE (cockpit F3 + capability-protocol §7) = dispatch separado post-build."
 ---
 
 # vitalia-paradigm-map-zones
