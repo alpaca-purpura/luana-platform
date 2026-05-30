@@ -17,7 +17,7 @@ La story `vitalia-paradigm-map-zones` cementó el paradigma de 3 planos (`PARADI
 
 ## Aprendizaje
 
-El mapa del producto se modela como **3 zonas fijas → cajas (per-brand) → áreas funcionales**, donde:
+El mapa del producto se modela como **3 zonas estables → cajas (per-brand) → áreas funcionales**, donde:
 - La capability declara su **caja** (`map_box`); su **zona** (`map_zone`) se **DERIVA** del registro `{brand}/docs/architecture/SYSTEM-MAP.yaml`, nunca se escribe a mano (evita campos desincronizados).
 - `agent_owner` aplica solo a la zona **Agentes** (lisa/valeria/adrian/lucas/camila/mateo + supervisora). Las caps NO-agénticas viven en Plataforma/Infraestructura vía `map_box`.
 - El cockpit es **lector** del registro: componentes `ZoneColumn`/`BoxCard`/`AreaGroup` + `MapView` (zonas + 2 lentes: trabajadores · proceso) son cross-brand y solo necesitan que cada marca provea su `SYSTEM-MAP.yaml`.

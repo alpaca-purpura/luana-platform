@@ -43,7 +43,7 @@ Emergió en **vitalia**, story `vitalia-paradigm-map-zones` (DONE 2026-05-30, co
 **Lift al protocolo compartido** `docs/process/capability-protocol.md`:
 
 1. **Dimensión `map_box` (declarada) + `map_zone` (derivada)** como 5ª/6ª dimensión de cap, junto a las 4 existentes (`tech_module`/`agent_owner`/`functional_area`/`user_visible`). `map_zone` NUNCA se escribe a mano — se deriva de `SYSTEM-MAP.yaml`.
-2. **Convención `{brand}/docs/architecture/SYSTEM-MAP.yaml`** como registro SSoT por marca (schema: `zones[].boxes[].{id,label,agent_owner?,functional_areas,supervisor}`). Las 3 zonas (agentes/plataforma/infraestructura) son fijas (del paradigma); las cajas/áreas son per-brand.
+2. **Convención `{brand}/docs/architecture/SYSTEM-MAP.yaml`** como registro SSoT por marca (schema: `zones[].boxes[].{id,label,agent_owner?,functional_areas,supervisor}`). Las 3 zonas (agentes/plataforma/infraestructura) son estables (del paradigma); las cajas/áreas son per-brand.
 3. **Enum `agent_owner`** restringido a la zona Agentes; `config`/`infra` **deprecados** (→ cajas de Plataforma/Infraestructura vía `map_box`).
 4. **Cockpit** `lib/system-map.ts` + componentes `ZoneColumn`/`BoxCard`/`AreaGroup` + `MapView` (zonas + 2 lentes) ya son **cross-brand** (el cockpit es tool cross-brand, lee el SYSTEM-MAP del worktree) — no requieren lift adicional, solo que cada marca provea su `SYSTEM-MAP.yaml`.
 
