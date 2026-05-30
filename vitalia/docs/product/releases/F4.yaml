@@ -19,10 +19,10 @@ stories:
   - vitalia-fase2-adrian-inbox
   - vitalia-fase2-adrian-outbound
   - vitalia-fase2-adrian-propuestas
-  - vitalia-fase2-config-avanzado
-  - vitalia-fase2-config-conexiones
-  - vitalia-fase2-config-cuenta
-  - vitalia-fase2-config-onboarding-clinica
+  - vitalia-fase2-configuracion-avanzado
+  - vitalia-fase2-configuracion-conexiones
+  - vitalia-fase2-configuracion-cuenta
+  - vitalia-fase2-onboarding-clinica
 ---
 
 # F4 · Adrián completo + Config tenant base

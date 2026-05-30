@@ -2,11 +2,13 @@
 story_id: vitalia-fase2-lucas-resultados
 type: ui-story
 agent_owner: lucas
+map_zone: agentes
+map_box: lucas
 module: analytics
 capability: lucas.resultados
 state: idea
 architecture_pattern: ADR-vitalia-004
-last_modified: 2026-05-22
+last_modified: 2026-05-30
 ratified_by_chris: false
 parallel_safe: true
 priority: high

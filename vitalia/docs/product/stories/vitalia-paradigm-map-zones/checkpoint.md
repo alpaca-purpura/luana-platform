@@ -64,7 +64,7 @@ scope_boundary_note: >
   /pm-vitalia NO la owna. Se ejecuta en la misma tanda (fase solo-bootstrap permite) pero se trackea como
   tool-scope, no como cap de producto vitalia. La parte vitalia-propia es F0+F1+F2 (data: caps + SYSTEM-MAP + reassign).
 
-next_action: "MERGE wip/vitalia→main DONE (58e652e0, preservando historia · cockpit v0.6 + nicolify intactos · 70 caps vitalia en main). autonomous_mode:true → /dev-team build T-1..T-6 → /auditor → merge. TOOL-SCOPE (cockpit F3 + capability-protocol §7) = dispatch separado post-build."
+next_action: "T-1 DONE · T-2 DONE · T-3 DONE · T-4 DONE (rename backlog Fase 2 + map_box en 22 checkpoints). Pendiente: T-5 (FE shell realign) + T-6 (e2e tests) → luego /auditor → /pm-vitalia merge."
 ---
 
 # vitalia-paradigm-map-zones

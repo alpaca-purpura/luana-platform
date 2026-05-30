@@ -6,7 +6,7 @@
 release_id: F2
 brand: vitalia
 name: "Migración progresiva · primer valor Valeria + Lisa"
-description: "Fase 2 inicial · primer valor end-to-end. F2-S1 valeria-agenda LIVE, F2-S7 lisa-marca LIVE. Sigue valeria-pacientes + adrián primer valor + config-onboarding-clinica + lisa-landing-public."
+description: "Fase 2 inicial · primer valor end-to-end. F2-S1 valeria-agenda LIVE, F2-S7 lisa-marca LIVE. Sigue mateo-pacientes + adrián primer valor + onboarding-clinica + lisa-landing-public."
 status: in_progress
 target_date: null
 shipped_date: null
@@ -18,13 +18,13 @@ stories:
   - vitalia-compliance-audit-rbac-gap
   - vitalia-fase2-lisa-marca
   - vitalia-fase2-valeria-agenda
-  - vitalia-fase2-valeria-pacientes
+  - vitalia-fase2-mateo-pacientes
   - vitalia-crm-phi-base-tables-migration   # done 2026-05-30 (PHI base tables + pgcrypto + commit-gap fix)
 ---
 
 # F2 · Migración progresiva · primer valor Valeria + Lisa
 
-> Fase 2 inicial · primer valor end-to-end. F2-S1 valeria-agenda LIVE, F2-S7 lisa-marca LIVE. Sigue valeria-pacientes + adrián primer valor + config-onboarding-clinica + lisa-landing-public.
+> Fase 2 inicial · primer valor end-to-end. F2-S1 valeria-agenda LIVE, F2-S7 lisa-marca LIVE. Sigue mateo-pacientes + adrián primer valor + onboarding-clinica + lisa-landing-public.
 
 ## Stories incluidas
 

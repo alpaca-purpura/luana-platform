@@ -2,11 +2,13 @@
 story_id: vitalia-fase2-camila-multiplicar
 type: ui-story
 agent_owner: camila
+map_zone: agentes
+map_box: camila
 module: referrals
 capability: camila.multiplicar
 state: idea
 architecture_pattern: ADR-vitalia-004
-last_modified: 2026-05-22
+last_modified: 2026-05-30
 ratified_by_chris: false
 parallel_safe: true
 priority: medium

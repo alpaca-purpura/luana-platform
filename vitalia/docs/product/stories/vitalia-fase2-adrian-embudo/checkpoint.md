@@ -2,11 +2,13 @@
 story_id: vitalia-fase2-adrian-embudo
 type: ui-story
 agent_owner: adrian
+map_zone: agentes
+map_box: adrian
 module: sales_pipeline
 capability: adrian.embudo
 state: idea
 architecture_pattern: ADR-vitalia-004
-last_modified: 2026-05-22
+last_modified: '2026-05-30'
 ratified_by_chris: false
 parallel_safe: true
 priority: critical
@@ -15,25 +17,27 @@ dependencies:
   hard:
     - vitalia-fase1-empty-states
     - vitalia-fase1-routing-shell
-    - vitalia-payment-adapter-mvp           # service-blocker BE para stage "reservado" (cobra depósito)
+    - vitalia-payment-adapter-mvp
   soft:
-    - vitalia-fase2-adrian-inbox            # leads de conv alimentan embudo
-    - vitalia-fase2-valeria-agenda          # stage "reservado" auto-crea slot
+    - vitalia-fase2-adrian-inbox
+    - vitalia-fase2-valeria-agenda
 blocks_hard: []
 blocks_soft:
-  - vitalia-fase2-adrian-propuestas         # propuesta puede crearse desde lead detail
-  - vitalia-fase2-camila-reactivar          # cohorte "propuesta sin firmar" lee leads embudo
-reuse_map_summary: "REFACTOR slice-1-pipeline (estructura draft) · TRANSPONER nicolify closer-studio ConversationPipelineBoard (@dnd-kit/core) · NEW 6 stages dental customizable per vertical · NEW lead detail workspace N3-dyn · NEW toggle Kanban|Lista"
-spawned_at: 2026-05-22
+  - vitalia-fase2-adrian-propuestas
+  - vitalia-fase2-camila-reactivar
+reuse_map_summary: >-
+  REFACTOR slice-1-pipeline (estructura draft) · TRANSPONER nicolify
+  closer-studio ConversationPipelineBoard (@dnd-kit/core) · NEW 6 stages dental
+  customizable per vertical · NEW lead detail workspace N3-dyn · NEW toggle
+  Kanban|Lista
+spawned_at: 2026-05-22T00:00:00.000Z
 supersedes:
-  - vitalia-slice-1-pipeline                # refactor target
-next_action: "/po-ux refinar 01-spec.md con wireframes Kanban + Lista + lead detail tabs"
-
-# Schema v2 migration (cement 2026-05-27)
-release: F4   # release ID · ver releases/
-cap_target: adrian.embudo   # capability slug target (v2 cement 2026-05-27)
-cap_change_type: new   # new | fix | extend | derive
-parent_story: null   # story padre si spawned · null si independiente
+  - vitalia-slice-1-pipeline
+next_action: /po-ux refinar 01-spec.md con wireframes Kanban + Lista + lead detail tabs
+release: F3
+cap_target: adrian.embudo
+cap_change_type: new
+parent_story: null
 ---
 
 # F2-S4 vitalia-fase2-adrian-embudo — checkpoint
