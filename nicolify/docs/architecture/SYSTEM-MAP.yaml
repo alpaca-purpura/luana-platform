@@ -1,0 +1,451 @@
+# ════════════════════════════════════════════════════════════════════════════
+# SYSTEM-MAP · Nicolify — mapa funcional del sistema agéntico
+# ════════════════════════════════════════════════════════════════════════════
+#
+# SSoT del "qué hace cada agente + cómo se conectan" para el cockpit (tab Map)
+# y para refinement/architecture. Editable a mano — seguí el schema de abajo.
+#
+# Nicolify = Agent-as-a-Service B2B agencias. 5 agentes Revenue/Ops:
+#   Luana (orquestadora · único rostro) + Abel + Brenda + Christian + Norvil,
+#   más Configurar (settings) + Infra (transversal).
+#   Ciclo: Atracción (Abel→Brenda inbound / Christian outbound) → Cierre → Retención (Norvil).
+#
+# ⚠️ Estado 2026-05-29: brand en REBUILD desde cero. TODO está `planned` con su
+#    `target_release` (R0..R4 · ver nicolify/docs/product/releases/ + vision.md §8).
+#    A medida que se mergean stories, cambiar el área a `beta`/`live`.
+#
+# ── schema ──────────────────────────────────────────────────────────────────
+# brand / version / cement_date     · metadata raíz
+# agents[]                          · {id, emoji, name, subtitle, description, functional_areas[]}
+#   functional_area                 · {id (kebab, sin prefijo agente), name, status, description, target_release?, notes?}
+#   status ∈ live | beta | planned | deprecated
+#     live    → área con ≥1 cap shipped + navegable
+#     beta    → cap WIP (story developing/developed/reviewing)
+#     planned → declarada, sin cap shipped todavía  ← todo Nicolify hoy
+#     deprecated → shipped que se retira
+# cross_agent_flows[]               · {id, trigger{agent,area,condition}, actions[]{agent,area,what}, mechanism, event_name?/endpoint?/table?, status, target_release?}
+#   mechanism ∈ domain_event | api_call | webhook | shared_db
+# data_ownership{Entity}            · {owner_module, owner_agent, consumed_by[], phi, description}
+# agent_orchestration[]             · reservado (Luana orquesta · se detalla en R0)
+# metadata                          · totales + last_modified
+# ════════════════════════════════════════════════════════════════════════════
+
+brand: nicolify
+version: 1.0
+cement_date: 2026-05-29
+
+# ────────────────────────────────────────────────────────────────────────────
+# AGENTES (5 Revenue/Ops + Config + Infra) + functional_areas
+# ────────────────────────────────────────────────────────────────────────────
+agents:
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # 🧭 LUANA — Orquestadora (único rostro · chat lateral · NO está en el Ribbon)
+  # ──────────────────────────────────────────────────────────────────────────
+  - id: luana
+    emoji: 🧭
+    name: Luana
+    subtitle: Orquestadora
+    description: >
+      Único punto de contacto conversacional. Traduce la intención del dueño
+      en comandos a los agentes expertos, orquesta dependencias y devuelve
+      reportes digeridos. NUNCA ejecuta acción de negocio sin delegar.
+    functional_areas:
+      - id: chat-orquestador
+        name: "Chat orquestador"
+        status: planned
+        target_release: R0
+        description: "Panel de chat persistente (3 estados: rail/history/full). El dueño le habla a Luana; ella rutea/resume/prioriza y delega al agente owner del territorio."
+      - id: reportes-digeridos
+        name: "Reportes digeridos"
+        status: planned
+        target_release: R1
+        description: "Resúmenes en lenguaje natural del ciclo Atracción→Cierre→Retención (no dashboards crudos): qué hizo cada agente + qué decisión necesita el dueño."
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # 🧠 ABEL — Estratega (Branding & Oferta)
+  # ──────────────────────────────────────────────────────────────────────────
+  - id: abel
+    emoji: 🧠
+    name: Abel
+    subtitle: Estrategia & Oferta
+    description: >
+      Absorbe la info de la agencia, define los ángulos de venta, estructura la
+      escalera de valor y crea la "materia prima" discursiva que consumen Brenda
+      (inbound) y Christian (outbound).
+    functional_areas:
+      - id: oferta
+        name: "Catálogo de oferta"
+        status: planned
+        target_release: R1
+        description: "Catálogo de servicios B2B de la agencia + packaging. Para minería: dossier de homologación (maquinaria operada / personal calificado)."
+      - id: angulos
+        name: "Ángulos de venta"
+        status: planned
+        target_release: R1
+        description: "Ángulos discursivos por segmento/ICP. Materia prima que consumen Brenda y Christian."
+      - id: escalera-valor
+        name: "Escalera de valor"
+        status: planned
+        target_release: R1
+        description: "Value ladder (lead-magnet → core → upsell) de los servicios de la agencia."
+      - id: marca
+        name: "Marca & posicionamiento"
+        status: planned
+        target_release: R1
+        description: "Posicionamiento, narrativa, identidad de la agencia tenant (Brand Studio)."
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # 💰 BRENDA — Growth (Guardiana del Presupuesto)
+  # ──────────────────────────────────────────────────────────────────────────
+  - id: brenda
+    emoji: 💰
+    name: Brenda
+    subtitle: Growth & Presupuesto
+    description: >
+      Toma la estrategia de Abel, recomienda qué contenido crear, distribuye y
+      gestiona la pauta. Autonomía de contingencia: apaga campañas perdedoras
+      según umbrales CAC/ROAS predefinidos por el dueño (kill-switch auditado).
+    functional_areas:
+      - id: campanas
+        name: "Campañas / pauta"
+        status: planned
+        target_release: R1
+        description: "Gestión de pauta (Meta/Google). Kill-switch autónomo de campañas perdedoras con audit row + reporte vía Luana."
+      - id: contenido
+        name: "Contenido"
+        status: planned
+        target_release: R1
+        description: "Recomendación + calendario de contenido a partir de la oferta/ángulos de Abel."
+      - id: presupuesto
+        name: "Presupuesto (CAC/ROAS)"
+        status: planned
+        target_release: R1
+        description: "Umbrales CAC/ROAS por tenant (config), monitoreo y contingencia. NUNCA hardcodeado. Encender/escalar budget requiere aprobación humana."
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # 🏹 CHRISTIAN — Cazador (SDR / Outbound)
+  # ──────────────────────────────────────────────────────────────────────────
+  - id: christian
+    emoji: 🏹
+    name: Christian
+    subtitle: SDR / Outbound
+    description: >
+      Prospección outbound con el LinkedIn real del fundador (la autoridad cierra
+      reuniones en B2B). Cold email, secuencias, seguimiento implacable, agenda
+      de reuniones. Escala a humano para el cierre.
+    functional_areas:
+      - id: prospectos
+        name: "Prospectos"
+        status: planned
+        target_release: R2
+        description: "ICP + listas + enrichment de cuentas/stakeholders objetivo."
+      - id: secuencias
+        name: "Secuencias outbound"
+        status: planned
+        target_release: R2
+        description: "Cold email + LinkedIn (perfil del fundador, con consentimiento + rate limits). Anti-spam + opt-out + pausa al responder."
+      - id: pipeline
+        name: "Pipeline"
+        status: planned
+        target_release: R2
+        description: "Deals por etapa (lead→qualified→opportunity→proposal→negotiation→won/lost) ligados a la Cuenta (no al contacto). Modelo Cuenta+Stakeholder."
+      - id: propuestas
+        name: "Propuestas"
+        status: planned
+        target_release: R2
+        description: "Generación de propuestas + seguimiento (viewed/accepted) + firma electrónica. accepted → Deal stage=won."
+      - id: licitaciones
+        name: "Licitaciones (minería)"
+        status: planned
+        target_release: R2
+        notes: "Vertical insignia Perú (contratas/proveedores mineros)."
+        description: "Tracking de RFI/RFQ/licitaciones invitadas + apoyo en preparación. Vinculado a homologación (MINDER/SAP Ariba) que mantiene Abel/Norvil."
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # 🌱 NORVIL — Cultivador (Account Manager)
+  # ──────────────────────────────────────────────────────────────────────────
+  - id: norvil
+    emoji: 🌱
+    name: Norvil
+    subtitle: Account Manager
+    description: >
+      Monitorea la salud de la cuenta (integra Notion/Jira/Slack), detecta
+      oportunidades de cross-sell/up-sell en la misma empresa y asegura la
+      renovación. Contacto comercial requiere aprobación humana.
+    functional_areas:
+      - id: cuentas
+        name: "Cartera de cuentas"
+        status: planned
+        target_release: R3
+        description: "Cuentas ganadas (clientes activos de la agencia). Onboarding post-cierre."
+      - id: salud-cuenta
+        name: "Salud de cuenta"
+        status: planned
+        target_release: R3
+        description: "Account health a partir de integraciones operativas (Notion/Jira/Slack). Señales de churn + oportunidad."
+      - id: renovaciones
+        name: "Renovaciones & upsell"
+        status: planned
+        target_release: R3
+        description: "Nurturing pre-renovación + detección cross/up-sell (nuevo departamento, nuevo servicio, nueva faena). Propone; el dueño aprueba el contacto."
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # ⚙ CONFIGURAR — Settings (tab del Ribbon)
+  # ──────────────────────────────────────────────────────────────────────────
+  - id: config
+    emoji: ⚙
+    name: Configurar
+    subtitle: Admin
+    description: >
+      Configuración del tenant (agencia), integraciones, economía de tokens y
+      autonomía de los agentes.
+    functional_areas:
+      - id: conexiones
+        name: "Conexiones / integraciones"
+        status: planned
+        target_release: R1
+        description: "LinkedIn, Meta, Google Ads, WhatsApp, email, Notion/Jira/Slack."
+      - id: preferencias
+        name: "Preferencias del tenant"
+        status: planned
+        target_release: R0
+        description: "Datos de la agencia, usuarios, roles, moneda, locale."
+      - id: tokens
+        name: "Tokens / Plan"
+        status: planned
+        target_release: R4
+        description: "Bolsa de tokens, plan/tier, alertas de recarga (80/95/100%). Funciones críticas nunca se cortan."
+      - id: agentes
+        name: "Autonomía de agentes"
+        status: planned
+        target_release: R4
+        description: "Umbrales CAC/ROAS de Brenda, consent del LinkedIn de Christian, aprobaciones de Norvil. Tier gating (qué agentes desbloquea el plan)."
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # 🔧 INFRA — Transversal (sin tab propia · scaffolding + engine + observabilidad)
+  # ──────────────────────────────────────────────────────────────────────────
+  - id: infra
+    emoji: 🔧
+    name: Infra
+    subtitle: Transversal
+    description: >
+      Cimientos que habilitan a todos los agentes: shell-organism, dev stack,
+      wiring del engine (copilot/sales-agent) vía Extension SDK, y economía de
+      tokens (observabilidad de costo).
+    functional_areas:
+      - id: shell-organism
+        name: "Shell-organism agéntico"
+        status: planned
+        target_release: R0
+        description: "TopBar + Luana chat orquestador (50/50 splitter) + Ribbon 4 agentes + sub-tabs. Reuse FE de Vitalia re-temizado (ADR-nicolify-001)."
+      - id: dev-stack
+        name: "Dev stack"
+        status: planned
+        target_release: R0
+        description: "BE :8001 + FE :3001 + health + alembic baseline + Clerk auth."
+      - id: engine-wiring
+        name: "Wiring del engine"
+        status: planned
+        target_release: R2
+        description: "Luana/Christian/Norvil/Brenda como brand-extensions de core/luana-core-{copilot,sales-agent,crm,offer-studio,channels} vía Extension SDK. NO recrear."
+      - id: token-economy
+        name: "Economía de tokens"
+        status: planned
+        target_release: R4
+        description: "Metering por agente/acción (core/luana-core-observability) + tier gating (core/luana-core-billing) + guardrails de funciones críticas."
+
+# ────────────────────────────────────────────────────────────────────────────
+# CROSS-AGENT FLOWS — el ciclo Atracción → Cierre → Retención
+# ────────────────────────────────────────────────────────────────────────────
+cross_agent_flows:
+
+  - id: oferta-lista-trigger-distribucion
+    trigger:
+      agent: abel
+      area: angulos
+      condition: "Oferta + ángulos definidos y ratificados por el dueño"
+    actions:
+      - agent: brenda
+        area: campanas
+        what: "Brenda arma contenido + pauta inbound con el ángulo."
+      - agent: christian
+        area: secuencias
+        what: "Christian arma secuencias outbound con el ángulo (LinkedIn del fundador)."
+    mechanism: domain_event
+    event_name: "OfferReady"
+    status: planned
+    target_release: R1
+
+  - id: cac-alto-trigger-pausa
+    trigger:
+      agent: brenda
+      area: presupuesto
+      condition: "CAC > umbral o ROAS < umbral configurado por el dueño"
+    actions:
+      - agent: brenda
+        area: campanas
+        what: "Brenda apaga la campaña perdedora (kill-switch autónomo) + audit row."
+      - agent: luana
+        area: reportes-digeridos
+        what: "Luana reporta la acción de contingencia al dueño en lenguaje natural."
+    mechanism: domain_event
+    event_name: "CampaignUnderperforming"
+    status: planned
+    target_release: R1
+
+  - id: licitacion-trigger-dossier
+    trigger:
+      agent: christian
+      area: licitaciones
+      condition: "RFI/licitación minera invitada"
+    actions:
+      - agent: abel
+        area: oferta
+        what: "Abel prepara/actualiza el dossier técnico de homologación para la licitación."
+    mechanism: domain_event
+    event_name: "TenderInvited"
+    status: planned
+    target_release: R2
+
+  - id: deal-ganado-trigger-cuenta
+    trigger:
+      agent: christian
+      area: pipeline
+      condition: "Deal pasa a stage=won (idempotency key = proposal_id)"
+    actions:
+      - agent: norvil
+        area: cuentas
+        what: "Norvil crea la cuenta + arranca onboarding y monitoreo de salud."
+    mechanism: domain_event
+    event_name: "DealWon"
+    status: planned
+    target_release: R3
+
+  - id: upsell-trigger-propuesta
+    trigger:
+      agent: norvil
+      area: salud-cuenta
+      condition: "Norvil detecta oportunidad de cross/up-sell en una cuenta"
+    actions:
+      - agent: christian
+        area: propuestas
+        what: "Christian arma propuesta de expansión (con aprobación humana para el contacto)."
+      - agent: luana
+        area: reportes-digeridos
+        what: "Luana reporta la oportunidad al dueño."
+    mechanism: domain_event
+    event_name: "ExpansionOpportunity"
+    status: planned
+    target_release: R3
+
+  - id: tokens-bajos-trigger-alerta
+    trigger:
+      agent: config
+      area: tokens
+      condition: "Bolsa de tokens < umbral (80/95/100%)"
+    actions:
+      - agent: luana
+        area: reportes-digeridos
+        what: "Luana alerta de recarga al dueño. Funciones críticas (recepción pasiva de leads) NUNCA se cortan; las proactivas se pausan."
+    mechanism: domain_event
+    event_name: "TokenBalanceLow"
+    status: planned
+    target_release: R4
+
+# ────────────────────────────────────────────────────────────────────────────
+# DATA OWNERSHIP — entidades + dueño + consumidores (Nicolify NO tiene PHI)
+# ────────────────────────────────────────────────────────────────────────────
+data_ownership:
+
+  Account:
+    owner_module: crm
+    owner_agent: christian
+    consumed_by: [christian, norvil, luana]
+    phi: false
+    description: "La empresa cliente/prospecto (minera, contrata, empresa B2B). Christian la trabaja en pipeline; Norvil la cultiva post-cierre."
+
+  Stakeholder:
+    owner_module: crm
+    owner_agent: christian
+    consumed_by: [christian, norvil]
+    phi: false
+    description: "Persona/contacto dentro de la Cuenta (jefe de logística, analista de contratos, superintendente). N stakeholders por cuenta — múltiples decisores."
+
+  Deal:
+    owner_module: crm
+    owner_agent: christian
+    consumed_by: [christian, norvil, luana]
+    phi: false
+    description: "Oportunidad ligada a la Cuenta (no al contacto). Stages lead→won/lost. accepted en propuesta → won."
+
+  Offer:
+    owner_module: offer
+    owner_agent: abel
+    consumed_by: [abel, brenda, christian]
+    phi: false
+    description: "Catálogo de servicios + ángulos + escalera de valor. Materia prima discursiva. Brenda (inbound) y Christian (outbound) la consumen."
+
+  Campaign:
+    owner_module: growth
+    owner_agent: brenda
+    consumed_by: [brenda, luana]
+    phi: false
+    description: "Campaña de pauta con métricas CAC/ROAS. Brenda la gestiona (kill-switch); Luana la reporta."
+
+  Sequence:
+    owner_module: sales_agent
+    owner_agent: christian
+    consumed_by: [christian]
+    phi: false
+    description: "Secuencia outbound (cold email + LinkedIn). Respeta consent + rate limits + opt-out."
+
+  Proposal:
+    owner_module: contracts
+    owner_agent: christian
+    consumed_by: [christian, norvil]
+    phi: false
+    description: "Propuesta comercial con lifecycle draft→sent→viewed→accepted/rejected/expired + firma electrónica."
+
+  AccountHealth:
+    owner_module: crm
+    owner_agent: norvil
+    consumed_by: [norvil, luana]
+    phi: false
+    description: "Salud de cuenta derivada de integraciones (Notion/Jira/Slack). Señales de churn + oportunidad de expansión."
+
+  Tender:
+    owner_module: crm
+    owner_agent: christian
+    consumed_by: [christian, abel]
+    phi: false
+    description: "Licitación/RFI minera (vertical Perú). Christian la trackea; Abel prepara el dossier de homologación."
+
+  Conversation:
+    owner_module: copilot
+    owner_agent: luana
+    consumed_by: [luana, abel, brenda, christian, norvil]
+    phi: false
+    description: "Hilo de chat dueño↔Luana (orquestación). Luana lo posee; los agentes reciben los comandos delegados."
+
+  TokenUsage:
+    owner_module: observability
+    owner_agent: config
+    consumed_by: [config, luana, abel, brenda, christian, norvil]
+    phi: false
+    description: "Metering de costo LLM por agente/acción/tenant (core/luana-core-observability). Base de la bolsa de tokens + alertas + tier gating."
+
+# Reservado · Luana orquesta el ciclo (se detalla en R0 con el shell agéntico).
+agent_orchestration: []
+
+# ────────────────────────────────────────────────────────────────────────────
+# METADATA
+# ────────────────────────────────────────────────────────────────────────────
+metadata:
+  last_modified: 2026-05-29
+  modified_by: pm-nicolify-r0-shell-organism
+  schema_version: 1.0
+  total_agents: 7
+  total_functional_areas: 25
+  total_cross_agent_flows: 6
+  total_data_entities: 11

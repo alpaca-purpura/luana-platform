@@ -1,46 +1,51 @@
-"""Alembic env (Story 10 T-10 simplified).
+"""Alembic env — nicolify brand (T-2 nicolify-r0-dev-stack AD-4).
 
-Post-consolidation, this env.py uses raw-SQL migrations (op.execute) and does
-NOT require SQLAlchemy Base.metadata model registration. The consolidated
-001_initial_snapshot.py contains the full schema as idempotent DDL; all future
-migrations from luana-platform onwards register Base via the canonical
-luana_core_*.infrastructure.models imports — but until that lift completes
-(post-T-10), this env.py keeps target_metadata=None to allow alembic upgrade
-without forcing every model package to be importable.
+DATABASE_URL priority (asyncpg DSN → converted to psycopg sync for alembic).
+Fallback: POSTGRES_* env vars.
 
-If autogenerate is needed in a future ticket, restore target_metadata via:
-    from luana_core_platform.domain.base_entity import Base
-    # ... model imports ...
-    target_metadata = Base.metadata
+Raw-SQL migrations use op.execute() with IF NOT EXISTS — target_metadata=None.
+Autogenerate not used (idempotent DDL pattern).
 """
-from logging.config import fileConfig
-import os
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
+from __future__ import annotations
+
+import os
+from logging.config import fileConfig
+
+from sqlalchemy import engine_from_config, pool
 
 from alembic import context
 
-# this is the Alembic Config object, which provides
-# access to the values within the .ini file in use.
+# Alembic Config object
 config = context.config
-
-# Build DB URL from POSTGRES_* env vars (matches src/core/config.py settings).
-db_url = (
-    f"postgresql://{os.environ.get('POSTGRES_USER', 'postgres')}"
-    f":{os.environ.get('POSTGRES_PASSWORD', 'password')}"
-    f"@{os.environ.get('POSTGRES_HOST', 'localhost')}"
-    f":{os.environ.get('POSTGRES_PORT', '5432')}"
-    f"/{os.environ.get('POSTGRES_DB', 'nicolify_dev')}"
-)
-config.set_main_option("sqlalchemy.url", db_url)
 
 # Interpret the config file for Python logging.
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
+# ── DSN resolution: DATABASE_URL priority → POSTGRES_* fallback ──────────────
+# docker-compose.dev.yml injects DATABASE_URL with asyncpg driver.
+# Alembic requires sync psycopg2 driver — swap asyncpg for postgresql.
+_database_url = os.environ.get("DATABASE_URL", "")
+
+if _database_url:
+    # Convert asyncpg DSN to psycopg2-compatible sync DSN for alembic
+    # asyncpg: postgresql+asyncpg://user:pass@host:port/db
+    # psycopg2: postgresql://user:pass@host:port/db
+    db_url = _database_url.replace("postgresql+asyncpg://", "postgresql://")
+else:
+    # Fallback: build from individual POSTGRES_* env vars
+    db_url = (
+        f"postgresql://{os.environ.get('POSTGRES_USER', 'postgres')}"
+        f":{os.environ.get('POSTGRES_PASSWORD', 'password')}"
+        f"@{os.environ.get('POSTGRES_HOST', 'localhost')}"
+        f":{os.environ.get('POSTGRES_PORT', '5432')}"
+        f"/{os.environ.get('POSTGRES_DB', 'nicolify_dev')}"
+    )
+
+config.set_main_option("sqlalchemy.url", db_url)
+
 # Raw-SQL migrations use op.execute(); metadata not required for upgrade/downgrade.
-# Autogenerate (alembic revision --autogenerate) requires this — see docstring.
 target_metadata = None
 
 
@@ -67,9 +72,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()

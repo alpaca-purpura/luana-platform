@@ -1,1 +1,0 @@
-"""Advertising infrastructure package."""

@@ -1,3 +1,28 @@
+[project]
+name = "luana-nicolify"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115",
+    "python-multipart>=0.0.20",
+    "starlette>=0.46",
+    "structlog>=25.1",
+    # Clerk SDK para seed --clerk-sync (graceful degradation si no está)
+    "clerk-backend-api>=1.0",
+]
+# NOTA (mirror del patrón vitalia/backend/pyproject.toml): las deps runtime
+# completas (uvicorn, sqlalchemy, asyncpg, luana_core_*) viven en el stub
+# workspace-visible. Este [project] minimal existe para que `uv run uvicorn`
+# (compose command) resuelva un proyecto válido. Sin él el container BE
+# crash-loopea: "No `project` table found in nicolify/backend/pyproject.toml".
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests", "src/tests"]
@@ -264,6 +289,7 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 "scripts/**/*.py" = [
     "INP001",  # scripts/ is a CLI folder, not a package
     "T201",    # CLI scripts legitimately use print() for output
+    "PLR0911",  # seed/CLI scripts with multi-branch Clerk API flows naturally have >6 returns
     "PLR0912",
     "PLR0915",
     "E402",    # sys.path manipulation precedes imports by design
@@ -323,6 +349,9 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
     "INP001",  # alembic/versions/ is not a package — no __init__.py by convention
     "D103",    # upgrade()/downgrade() don't need docstrings in migrations
     "D415",    # migration file docstrings follow alembic template (no trailing punctuation)
+]
+"alembic/*.py" = [
+    "INP001",  # alembic/ root files (env.py, env.pyc etc.) are not a package
 ]
 "src/modules/*/api/**/*.py" = [
     "TC001",   # FastAPI DI needs runtime types (Annotated[X, Depends(...)]); TYPE_CHECKING breaks get_type_hints

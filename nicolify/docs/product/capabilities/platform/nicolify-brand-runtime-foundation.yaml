@@ -1,0 +1,47 @@
+capability_id: nicolify-platform-brand-runtime-foundation
+module: platform
+slug: nicolify-brand-runtime-foundation
+status: live
+cap_change_type: new
+date_introduced: 2026-05-30
+story_introduced: nicolify-r0-dev-stack
+release: R0
+package_version: "0.1.0"
+package_path: nicolify/backend + nicolify/frontend
+license: proprietary
+last_modified: 2026-05-30
+
+summary: >
+  Nicolify corre como brand activa: BE FastAPI :8001 + FE Next.js 16 :3001 verdes,
+  con auth Clerk end-to-end (consume luana_core_iam, NO Clerk Organizations),
+  alembic baseline (3 tablas engine IAM), tenant isolation, y smoke Playwright.
+
+surfaces:
+  config: nicolify/config/brand.yaml · nicolify/.env.dev.template
+  backend: nicolify/backend/src/{main.py,db.py} · alembic/versions/001_nicolify_iam_baseline.py · scripts/seed_test_users_link.py
+  frontend: nicolify/frontend/src/{app/{providers,layout,page,page-client}.tsx,proxy.ts,lib/api/fetch-client.ts,app/sign-in,app/sign-up}
+  tests: nicolify/backend/tests/{architecture,modules/nicolify} · nicolify/frontend/e2e/{setup,auth,smoke}
+  docs: nicolify/docs/product/stories/nicolify-r0-dev-stack (archived)
+
+scenarios:
+  - { id: 1, name: stack-up-green, type: happy }
+  - { id: 2, name: protected-route-requires-auth, type: negative }
+  - { id: 3, name: migration-idempotency, type: edge }
+  - { id: 4, name: cross-tenant-isolation, type: adversarial }
+  - { id: 5, name: auth-vertical-slice, type: integration }
+  - { id: 6, name: smoke-green, type: ci }
+  - { id: 7, name: fe-network-failure, type: edge }
+
+e2e_test: nicolify/frontend/e2e/smoke/stack.smoke.spec.ts   # cross_check_3 HARD satisfied
+
+dependencies:
+  consumes_engine:
+    - luana-core-iam        # auth_router + JWT verify + tenants/users/user_tenants
+    - luana-core-platform   # Settings + db base
+    - luana-core-observability
+    - luana-core-extension-sdk
+  external:
+    - clerk (dev instance more-leech-83)
+
+change_log:
+  - { type: new, story: nicolify-r0-dev-stack, date: 2026-05-30, note: "Brand runtime foundation — BE+FE green + Clerk auth slice + alembic IAM baseline + seed" }

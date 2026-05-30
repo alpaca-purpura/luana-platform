@@ -1,67 +1,55 @@
+/**
+ * Clerk Proxy — Nicolify (T-3 nicolify-r0-dev-stack)
+ *
+ * Next.js 16 renamed the `middleware` file convention to `proxy` (deprecation
+ * v16.0.0). Same location (src/), same `config.matcher` API. The default export
+ * is now named `proxy`. Clerk's `clerkMiddleware()` SDK helper is unchanged —
+ * its name is historical, it just wraps a request handler that Next.js invokes
+ * via the proxy convention.
+ *
+ * Protege todas las rutas excepto las explícitamente públicas.
+ * Rutas públicas (allowlist AD-6, 03-arch.md § AD-5):
+ *   - /sign-in, /sign-up  — páginas auth Clerk
+ *   - /api/health         — liveness probe (smoke Playwright + allowlist Clerk)
+ *   - /__clerk/(.*)       — Clerk internal routes (account portal, OAuth callbacks)
+ *
+ * Root `/` está protegida — redirige a /sign-in sin sesión (Scenario 2).
+ *
+ * Auth delegada 100% a Clerk — sin redirect manual ni RBAC local.
+ * auth.protect() redirige a /sign-in automáticamente si no hay sesión.
+ *
+ * SC-01: request sin sesión a ruta protegida → Clerk redirige a /sign-in
+ * SC-02: request a ruta pública (/api/health) → 200, sin redirect
+ *
+ * Port from vitalia/frontend/src/proxy.ts re-temizado para nicolify.
+ * Eliminado: /public, /marketing, /api/v1/vitalia/webhooks, /test-stack
+ * — rutas vitalia-only, no aplican a nicolify B2B.
+ */
+
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
 
-import { matchLegacyFormRuntimeRedirect } from "@/lib/edge/legacy-redirects";
+const isPublicRoute = createRouteMatcher([
+  "/sign-in(.*)",
+  "/sign-up(.*)",
+  // Clerk internal routes (account portal, OAuth callbacks)
+  "/__clerk/(.*)",
+  // Health checks — liveness probe (smoke + allowlist Clerk proxy)
+  "/api/health",
+]);
 
-import type { NextRequest } from "next/server";
-
-const isPublicSiteRequest = (request: NextRequest) =>
-  request.headers.get("X-Public-Site") === "true";
-
-// Routes that never require auth (sign-in would loop otherwise)
-const isPublicRoute = createRouteMatcher(["/sign-in(.*)", "/sign-up(.*)", "/api/webhooks(.*)"]);
-
-// Dashboard routes — require Clerk auth
-const isDashboardRoute = createRouteMatcher(["/(main)(.*)", "/[tenantId](.*)", "/onboarding(.*)"]);
-
-export default clerkMiddleware(async (auth, request) => {
-  // 1. Form-runtime Phase 2 legacy URL redirects — cheap 308 before any
-  //    auth work so external bookmarks resolve to the canonical shape.
-  const legacy = matchLegacyFormRuntimeRedirect(request.nextUrl.pathname);
-  if (legacy) {
-    const url = request.nextUrl.clone();
-    url.pathname = legacy.pathname;
-    if (legacy.extraParams) {
-      for (const [k, v] of Object.entries(legacy.extraParams)) {
-        url.searchParams.set(k, v);
-      }
-    }
-    url.searchParams.set("field", legacy.field);
-    return NextResponse.redirect(url, 308);
-  }
-
-  // 2. Public site traffic (forwarded by Cloudflare Worker).
-  if (isPublicSiteRequest(request)) {
-    const url = request.nextUrl.clone();
-    if (!url.pathname.startsWith("/_public")) {
-      url.pathname = `/_public${url.pathname}`;
-    }
-    const response = NextResponse.rewrite(url);
-    const tenantId = request.headers.get("X-Tenant-ID") ?? "";
-    const originalHost = request.headers.get("X-Original-Host") ?? "";
-    response.headers.set("X-Tenant-ID", tenantId);
-    response.headers.set("X-Original-Host", originalHost);
-    return response;
-  }
-
-  // 3. Never protect sign-in/sign-up (would cause redirect loop).
-  if (isPublicRoute(request)) {
-    return NextResponse.next();
-  }
-
-  // 4. Dashboard routes — protect with Clerk.
-  if (isDashboardRoute(request)) {
+export const proxy = clerkMiddleware(async (auth, request) => {
+  if (!isPublicRoute(request)) {
     await auth.protect();
   }
-
-  return NextResponse.next();
 });
+
+export default proxy;
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and static files
+    // Incluir todas las rutas excepto archivos estáticos Next.js y assets
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    // Always run for API routes
+    // Incluir siempre rutas API y tRPC
     "/(api|trpc)(.*)",
   ],
 };

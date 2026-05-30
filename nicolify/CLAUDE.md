@@ -1,44 +1,72 @@
 # Nicolify — Brand overlay
 
-> **Auto-cargado** cuando cwd cae dentro `nicolify/...` o worktree `~/Proyectos/luana-nicolify*/`. Coexiste con root `CLAUDE.md`.
+> **Auto-cargado** cuando cwd cae dentro `nicolify/...` o worktree `~/Proyectos/luana-nicolify*/`. Coexiste con root `CLAUDE.md` (no duplica — extiende).
 
-**Brand:** Nicolify. **Vertical:** Agencias + Servicios B2B (CRM ciclo largo, portal cliente, propuestas/contratos, horas facturables).
+**Brand:** Nicolify. **Vertical:** Agent-as-a-Service para **agencias y servicios profesionales B2B LatAm**.
 
-**Status:** 🔵 frozen snapshot post-multibrand-reorg 2026-05-15. El brand-level `nicolify/docs/product/` está vacío. Las 24 stories shipped + 12 modules + 15 capabilities pre-reorg viven como **referencia arqueológica read-only** en `docs/archive/2026/snapshot-pre-multibrand-pm-redesign/`. **NO** es brand activamente desarrollada post-reorg (corrección audit 2026-05-27 — la asunción inicial "brand más madura ~80% prod" era pre-reorg).
-
-**Cross-brand learning source:** OK como referencia histórica pero NO source principal live (ver `docs/process/audits/2026-05-27-stories-sweep.md` § Hallazgo CRÍTICO #0 + `.claude/rules/anti-duplication-refining.md` § Tabla fuentes prior-art correcta).
+**Status:** 🟢 **brand activa en rebuild (2026-05-29).** Reseteada a esqueleto desde el producto monolítico original (legacy preservado en branch `legacy/nicolify-original` + worktree `~/Proyectos/luana-nicolify-legacy`). Se reconstruye desde cero con el paradigma **agentic-first** (equipo de agentes Revenue/Ops orquestados). Las 24 stories shipped pre-reorg viven como **referencia arqueológica read-only** en `docs/archive/2026/snapshot-pre-multibrand-pm-redesign/` (NO live work). El `nicolify/docs/product/` se repuebla story-by-story vía releases R0..RN.
 
 ## Product vision (pointer)
 
-→ `nicolify/docs/product/vision.md`.
+→ `nicolify/docs/product/vision.md` (full: ecosistema de agentes, nichos Tier 1-3, competidores, diferenciadores, personas, pricing tiers+tokens, GTM, roadmap).
 
-**TL;DR:** SaaS para agencias creativas/digital/consultoría B2B LatAm que manejan múltiples clientes con ciclos comerciales largos (3-12 meses), propuestas/contratos formales, horas facturables, deliverables documentados. Diferenciador: portal cliente white-label + CRM verticalizado + integración facturación (no es Asana ni Monday genérico).
+**TL;DR:** Nicolify NO es "otra herramienta" (CRM/pauta/email). Es **el equipo de Revenue & Operaciones que la agencia delega** — agentes IA orquestados bajo un único punto de contacto conversacional (Luana), que ejecutan **Atracción → Cierre → Retención**. Elimina la fragmentación de stack y la dependencia de personal junior. Pricing: suscripción base + tokens, con tiers que desbloquean agentes.
 
-## Verticales target
+### Los 5 agentes (SSoT de roles · detalle en vision.md)
 
-| Vertical | Ticket promedio | Recurrencia |
-|---|---|---|
-| Agencias creativas/marketing | USD 2K-15K/mes retainer | Mensual recurrente 6-24 meses |
-| Consultoría digital | USD 5K-30K proyecto | Per proyecto + upsell servicios |
-| Desarrollo software B2B | USD 10K-100K proyecto | Per proyecto + maintenance |
-| Estudios de diseño | USD 1K-10K proyecto | Per proyecto + retainer subset |
-| Servicios SEO/SEM | USD 800-5K/mes retainer | Mensual recurrente 6-12 meses |
+| Agente | Rol | Etapa | Autonomía clave |
+|---|---|---|---|
+| **Luana** | Orquestadora / único rostro | Transversal | Rutea/resume/prioriza · nunca ejecuta acción de negocio sin delegar |
+| **Abel** | Estratega (Branding & Oferta) | Pre-atracción | Define oferta + ángulos + escalera de valor |
+| **Brenda** | Guardiana del Presupuesto (Growth) | Atracción inbound | **Apaga campañas perdedoras** por umbral CAC/ROAS sin pedir permiso |
+| **Christian** | Cazador (SDR / outbound) | Atracción outbound | Prospecta con el **LinkedIn real del fundador** · escala humano para cierre |
+| **Norvil** | Cultivador (Account Manager) | Retención + Expansión | Salud de cuenta + cross/up-sell + renovación |
+
+> **Identidad agentic-first (cement 2026-05-29):** CRM/pipeline, pauta, propuestas, salud de cuenta = **superficies que los agentes operan**, NO features standalone. El framing legacy "billable-hours / time-tracking / client-portal" queda **descartado** (Nicolify es Revenue OS, no project-billing).
+
+## Verticales target (quick reference · detalle vision.md § 2)
+
+| Tier | Verticales | Modelo | Agente protagonista |
+|---|---|---|---|
+| **Tier 1 (MVP)** | Agencias marketing/publicidad · Boutiques de software | Retainer / proyecto alto | Brenda + Abel / Christian + Norvil |
+| **Tier 2 (6-12m)** | Consultoría estratégica · Headhunting/staffing · MSP/ciberseguridad | Consultivo / retención | Christian + Norvil |
+| **Tier 3 (a validar)** | Arquitectura/ingeniería/diseño industrial · SaaS vendors · contables/fiscal · PR/comunicación · brokers seguros · capacitación corporativa · logística | Account-based largo | Christian + Norvil |
+
+Filtro común: alto ticket + ciclo largo + separación Cuenta/Stakeholder + retención/upsell + atracción relacional/outbound. **DESCARTADOS:** B2C, retail, ciclo < 1 semana, salud (Vitalia), oficios/hogar (Fixia).
 
 ## Brand-specific gates
 
-### B2B contracts compliance
+### Token economy + protección de margen (HARD)
 
-- Propuestas/contratos con firma electrónica (eIDAS-like LatAm: AR Ley 25.506, MX FIEL, CO Ley 527, BR ICP-Brasil)
-- Facturación electrónica integración (AR AFIP / MX SAT / CO DIAN / CL SII / PE SUNAT / BR SEFAZ)
-- Retención de docs comerciales 5-10 años per jurisdicción
-- Confidencialidad contractual (NDA workflows)
+Nicolify es AaaS intensivo en LLM. El margen depende de medir y acotar el uso:
+1. **Metering por agente + acción** — toda llamada LLM registra costo (consume `core/luana-core-observability/` cost recording + FX resolver, NUNCA recrear).
+2. **Tier gating** — un tenant Básico no puede invocar a Christian/Norvil (feature flag por tier vía `core/luana-core-billing/` BudgetGuard).
+3. **Alertas de recarga** progresivas (80/95/100% de la bolsa de tokens).
+4. **Funciones críticas NUNCA se cortan** aunque la bolsa se agote: soporte + recepción pasiva de leads por WhatsApp siguen activos (no se pierde un lead entrante). Las funciones proactivas/intensivas (outbound masivo, generación de creatives) sí se pausan hasta recarga.
+
+### Autonomía de agentes con guardrails (HARD)
+
+- **Brenda kill-switch:** apaga campañas perdedoras según umbrales CAC/ROAS **predefinidos por el dueño** — toda acción de contingencia registra audit row + se reporta vía Luana. NUNCA umbral hardcodeado.
+- **Christian outbound con autoridad del fundador:** prospección usa el **perfil LinkedIn real del fundador/CEO** — requiere consentimiento explícito del dueño + respeto de límites de la plataforma (anti-spam, rate limits LinkedIn) + opt-in humano antes de escalar al cierre.
+- **Norvil contacto comercial:** propone cross/up-sell pero el contacto comercial real requiere **aprobación humana** (B2B exige control del Account Manager).
+- **Luana nunca ejecuta acción de negocio directamente** — siempre delega al agente owner del territorio.
+
+### B2B contracts / multi-currency (cuando aplique)
+
+- Propuestas/contratos con firma electrónica (eIDAS-like LatAm: AR Ley 25.506 · MX FIEL · CO Ley 527 · BR ICP-Brasil) — superficie que opera Christian/Norvil.
+- Multi-currency: la cuenta (cliente de la agencia) puede tener moneda distinta del tenant — preservar `account.currency`, NUNCA convertir on-write (ver `.claude/rules/currency-handling.md`).
+- Retención de docs comerciales 5-10 años per jurisdicción.
 
 ### Brand-specific anti-patterns
 
-- ❌ Asumir pago al contado (B2B casi siempre net-30/60/90)
-- ❌ Hardcodear monedas (multi-currency mandatory)
-- ❌ Notificaciones automáticas a cliente sin opt-in del Account Manager (B2B requiere control)
-- ❌ Voseo en UI (Nicolify es LatAm neutro, agencia rep multi-país)
+- ❌ Vender/diseñar Nicolify como "herramienta de features" en vez de "equipo de agentes delegable" (rompe la propuesta de valor)
+- ❌ Reintroducir billable-hours / time-tracking / client-portal como core (descartado 2026-05-29)
+- ❌ Hardcodear umbrales CAC/ROAS de Brenda (siempre desde config del tenant)
+- ❌ Outbound de Christian sin consentimiento explícito del dueño por su LinkedIn (riesgo reputacional + ToS LinkedIn)
+- ❌ Cortar recepción pasiva de leads por agotamiento de tokens (se pierde un lead = se rompe la confianza)
+- ❌ Hardcodear monedas (multi-currency mandatory — B2B net-30/60/90, no contado)
+- ❌ Recrear orquestación agéntica / CRM / observabilidad-costo en `nicolify/` (consumir `core/luana-core-*`)
+- ❌ Voseo en UI (Nicolify es LatAm neutro — voseo OK solo en output de sales_agent si tenant AR)
 
 ## Brand-specific commands
 
@@ -47,7 +75,10 @@ WS=$(git rev-parse --show-toplevel)
 
 make dev-nicolify                              # BE :8001 + FE :3001
 docker logs luana-nicolify-backend-dev --tail 100
+docker logs luana-nicolify-frontend-dev --tail 100
 cd ${WS}/nicolify/backend && ${WS}/.venv/bin/pytest tests/modules/nicolify/{module}/ -v
+cd ${WS}/nicolify/backend && ${WS}/.venv/bin/pytest tests/architecture/ -x -q
+cd ${WS}/nicolify/frontend && npx tsc --noEmit
 cd ${WS}/nicolify/frontend && E2E_BASE_URL=http://localhost:3001 npx playwright test --project=smoke
 docker exec luana-nicolify-backend-dev alembic upgrade head
 curl http://127.0.0.1:8001/health
@@ -55,43 +86,56 @@ curl http://127.0.0.1:8001/health
 
 ## Brand-specific skills
 
-- `/pm-nicolify` — owner SSoT funcional Nicolify
-- `/po-ux`, `/po`, `/ux-agentico` — refining stories nicolify
+- `/pm-nicolify` — owner SSoT funcional Nicolify (vision/releases/stories/capabilities/modules)
+- `/po-ux` — refining stories UI std nicolify
+- `/po` — refining stories service nicolify
+- `/ux-agentico` — refining stories conversacionales (Luana orquestadora, Christian outbound, Norvil retención, Brenda growth)
 - `/architect`, `/dev-team`, `/auditor` (con `<brand>: nicolify`)
-- `manychat-expert` — ManyChat flows (canal nicolify-specific)
-- `data-storyteller` — dashboards analytics (Growth Studio nicolify)
+- `copilot-expert` / `sales-agent-expert` — al tocar `nicolify/backend/src/modules/nicolify/{copilot,sales_agent}/`
 
-## Cross-brand reference (snapshot arqueológico)
+## Cross-brand learning sources (prior-art para refining)
 
-Nicolify es **referencia histórica frozen 2026-05-15**, NO source live. Cuando otras brands necesitan ver patterns shipped antes del reorg, consultar:
+Nicolify arranca de cero post-reset. **Cross-brand prior-art OBLIGATORIO** (`.claude/rules/anti-duplication-refining.md`):
 
-- `docs/archive/2026/snapshot-pre-multibrand-pm-redesign/stories/` — 24 stories pre-reorg done (CRM ciclo largo, B2B agencias)
-- `docs/archive/2026/snapshot-pre-multibrand-pm-redesign/capabilities/` — 15 capabilities históricas
-- `docs/archive/2026/snapshot-pre-multibrand-pm-redesign/modules/` — 12 modules docs
-- `docs/archive/2026/snapshot-pre-multibrand-pm-redesign/outcomes/` — outcomes históricos
-
-**Live cross-brand source** (post-reorg, brands ACTIVAS):
-- `vitalia/` — brand más activa actualmente (Fase 1 shell complete + Fase 2 in-progress + 27 archived done + 71 capabilities)
-- `comunify/` — bootstrap done con 2 stories shipped + 18 capabilities
-
-**Code en repo** (legacy nicolify-isms purgados via promotion proposals 2026-05-16/19): `core/luana-core-*/` packages tienen el código común consolidado. NO existe `nicolify/backend/` ni `nicolify/frontend/` activo post-reorg.
+| Source | Path | Cuándo consultar |
+|---|---|---|
+| `core/luana-core-*/` engine (26 packages) | `core/luana-core-*/src/luana_core_*/` | SIEMPRE — consumir vía import (copilot, sales-agent, crm, offer-studio, observability, channels, billing) |
+| `vitalia/` live | `vitalia/docs/{product/capabilities,learnings}/` + `vitalia/frontend/` | SIEMPRE — fuente del **paradigma shell-organism agéntico** + base FE madura a reusar |
+| `comunify/` live | `comunify/docs/{product/capabilities,learnings}/` | SIEMPRE — patterns creator/offer ladder |
+| `nicolify` snapshot (arqueológico) | `docs/archive/2026/snapshot-pre-multibrand-pm-redesign/` | Referencia histórica patterns B2B/CRM/propuestas shipped pre-reorg — **read-only frozen, NO live** |
 
 ## Brand checkpoint pointer
 
 ```bash
-cat nicolify/docs/product/checkpoint.md
-ls nicolify/docs/product/stories/
-ls nicolify/docs/archive/2026/stories/   # rich history shipped
+cat nicolify/docs/product/checkpoint.md            # State brand actual (rebuild)
+cat nicolify/docs/product/vision.md                # Visión de negocio
+ls  nicolify/docs/product/releases/                # R0..RN
+ls  nicolify/docs/product/stories/                 # stories activas
 ```
 
 ## Voz nicolify
 
-Spanish neutro LatAm (tuteo). Tono: profesional cercano. NUNCA jergoso, NUNCA frío corporativo. Sales_agent: voz tenant respect (puede ser voseo AR si tenant AR).
+Spanish neutro LatAm (**tuteo**, sin voseo). Tono: profesional cercano, directo, de "mano derecha que ejecuta" — NUNCA jergoso, NUNCA frío corporativo. Luana habla como un Chief of Staff competente. Sales_agent (Christian/outbound): respeta voz tenant (puede ser voseo AR si tenant AR). Ver `.claude/rules/spanish-text.md`.
+
+## Bootstrap nicolify (fresh clone)
+
+```bash
+WS=$(git rev-parse --show-toplevel)
+cd ${WS}
+cp nicolify/.env.dev.template nicolify/.env.dev
+make dev-nicolify
+docker exec luana-nicolify-backend-dev alembic upgrade head
+curl http://127.0.0.1:8001/health
+```
 
 ## Referencias
 
-- `nicolify/docs/product/vision.md`
-- `nicolify/docs/learnings/` — fuente principal cross-brand learnings
+- `nicolify/docs/product/vision.md` — full vision (agentes + nichos + competidores + personas + pricing + GTM)
+- `nicolify/docs/product/checkpoint.md` — state brand actual
+- `nicolify/.claude/rules/agent-revenue-engine.md` — overlay rule (autonomía + token economy + CRM account model + outbound compliance)
 - `nicolify/docs/architecture/` — ADRs brand-specific
-- `core/luana-core-*/` (engine compartido)
-- `.claude/rules/claude-md-overlay.md` — schema
+- `nicolify/docs/learnings/` — captured learnings nicolify
+- `core/luana-core-{copilot,sales-agent,crm,offer-studio,observability,channels,billing}/` — engine que Nicolify consume
+- `vitalia/` — brand de referencia (paradigma shell-organism agéntico + base FE madura)
+- `.claude/rules/anti-duplication-refining.md` — prior-art scan obligatorio refining
+- `.claude/rules/claude-md-overlay.md` — schema de este overlay

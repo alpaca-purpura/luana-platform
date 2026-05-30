@@ -41,9 +41,16 @@ FROM base AS dev
 # El .venv es protegido por named volume en compose file (D4).
 COPY pyproject.toml uv.lock ./
 COPY core/ ./core/
+# nicolify/pyproject.toml = workspace member (declara deps runtime backend incl. uvicorn/alembic/engine).
+# nicolify/backend/pyproject.toml = subproyecto aislado (mismo nombre luana-nicolify).
+COPY nicolify/pyproject.toml ./nicolify/pyproject.toml
 COPY nicolify/backend/pyproject.toml ./nicolify/backend/pyproject.toml
 
-RUN uv sync --frozen --no-dev 2>/dev/null || uv sync --no-dev
+# `--package luana-nicolify` filtra al member que importa las runtime deps backend
+# (uvicorn, sqlalchemy, asyncpg, alembic, luana_core_*). Sin --frozen porque el lock
+# puede regenerarse si un member referenciado no está en el build context.
+# Mismo patrón que vitalia/backend/Dockerfile.
+RUN uv sync --no-dev --package luana-nicolify 2>&1
 
 WORKDIR /workspace/nicolify/backend
 

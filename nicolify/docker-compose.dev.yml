@@ -26,6 +26,10 @@ services:
       QDRANT_HOST: "luana_qdrant_dev"
       QDRANT_COLLECTION_PREFIX: "nicolify_"
       PORT: "8001"
+      # uv usa el venv del workspace root (con uvicorn + engine instalados) en vez de
+      # crear uno local en nicolify/backend/.venv. Mismo patrón que vitalia (sin esto el
+      # container crash-loopea "Failed to spawn uvicorn"). SSoT: vitalia/docker-compose.dev.yml.
+      UV_PROJECT_ENVIRONMENT: "/workspace/.venv"
     volumes:
       - .:/workspace:rw  # bind mount monorepo completo (hot-reload)
       # Named volume protege el venv del container en la ruta donde el Dockerfile lo crea
@@ -39,15 +43,16 @@ services:
     depends_on:
       luana_postgres_dev:
         condition: service_healthy
+    # Invoca los binarios del venv root directamente (NO `uv run`). `uv run` desde
+    # nicolify/backend re-sincroniza el [project] local (sin uvicorn) y poda el venv
+    # → "Failed to spawn uvicorn". El venv root (image build `uv sync` del workspace)
+    # ya tiene uvicorn/alembic/engine. Alembic upgrade en boot (idempotente, baseline IAM).
     command: >
-      uv run uvicorn src.main:app
-      --host 0.0.0.0
-      --port 8001
-      --proxy-headers
-      --forwarded-allow-ips *
-      --reload
-      --reload-dir /workspace/nicolify/backend/src
-      --reload-dir /workspace/core
+      sh -c "cd /workspace/nicolify/backend &&
+      /workspace/.venv/bin/alembic upgrade head &&
+      exec /workspace/.venv/bin/uvicorn src.main:app
+      --host 0.0.0.0 --port 8001 --proxy-headers --forwarded-allow-ips '*'
+      --reload --reload-dir /workspace/nicolify/backend/src --reload-dir /workspace/core"
     deploy:
       resources:
         limits:
