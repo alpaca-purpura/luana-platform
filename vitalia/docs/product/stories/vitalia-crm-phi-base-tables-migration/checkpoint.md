@@ -11,12 +11,14 @@ adr_004_compliance: n/a-with-rationale   # BE migración pura, sin sub-tab UI
 priority: high
 parallel_safe: false
 last_modified: 2026-05-30
-state: refining
-phase: REFINING_SPEC
+state: refined
+phase: SPEC_RATIFIED
+ratified_by_chris: true
+pgcrypto_in_scope: true   # Chris ratificó 2026-05-30
 prior_art_scan_done: true
 prior_story: vitalia-iam-slice2-phi-real-auth   # nace del hallazgo live god-matrix de aquella
 
-next_action: "/po escribe 01-spec.md (service-story migración) → /architect → /dev-team build SUPERVISADO (migración + verificación live re-god-matrix patients/leads)."
+next_action: "/architect produce ready package (deriva schema canónico + pgcrypto DDL + repo decrypt wiring + KEK + 04-validators + 05-guidelines + 06-tickets). Build SUPERVISADO."
 
 # Autonomous mode — false por default (migración PHI tables, verificación live requerida)
 autonomous_mode: false

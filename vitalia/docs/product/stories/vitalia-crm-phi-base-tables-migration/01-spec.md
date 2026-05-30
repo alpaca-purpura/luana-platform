@@ -3,9 +3,10 @@ story_id: vitalia-crm-phi-base-tables-migration
 brand: vitalia
 type: service-story
 state: refining
-po_version: 1
+po_version: 2
 cap_target: iam-scaffold-slice-1
 cap_change_type: fix
+ratified_by_chris: true   # v2 2026-05-30: Chris ratificó incluir pgcrypto (PHI encryption at-rest)
 architecture_pattern: ADR-vitalia-004
 adr_004_compliance: n/a-with-rationale   # BE migración pura, sin sub-tab UI
 last_modified: 2026-05-30
@@ -43,18 +44,29 @@ Migración forward-only idempotente (`035`) que **reconcile el schema canónico 
 
 ## Schema esperado (borrador — architect deriva exacto de los repos)
 
-- **vitalia_patients** (PHI): `id, tenant_id, clinic_id, name, date_of_birth, dni, phone, email, address, marketing_opt_in, opt_out, opt_out_reason, opt_out_at, marketing_opt_out_at, deleted_at, created_at, updated_at`. PK `id`. Índices: `(tenant_id, clinic_id)` + opt_out/marketing partial (de 016). Columnas PHI sensibles candidatas a `pgcrypto` (hipaa-lite — architect decide si en scope o follow-up).
-- **vitalia_leads**: `id, tenant_id, name, email, phone, source, status, notes, deleted_at, created_at, updated_at`. PK `id`. Índice `(tenant_id)` + `(tenant_id, status)`. (Lead NO es dual-clinic per lead_repository — solo tenant_id; architect confirma.)
+> **★ v2 — pgcrypto in scope (ratificado Chris 2026-05-30):** las columnas PHI identitarias se almacenan **cifradas at-rest** vía `pgcrypto` (`pgp_sym_encrypt`/`pgp_sym_decrypt`, symmetric KEK). Greenfield: las tablas NO existen en dev y NO hay prod (deploy diferido) → se crean cifradas desde el inicio, **sin migración de datos plaintext existentes**. La migración corre `CREATE EXTENSION IF NOT EXISTS pgcrypto`.
+
+- **vitalia_patients**: `id, tenant_id, clinic_id` (claves, NO cifradas — se filtran), **PHI cifrado** `name, date_of_birth, dni, phone, email, address` (columnas `BYTEA`, `pgp_sym_encrypt` al escribir), `marketing_opt_in, opt_out, opt_out_reason, opt_out_at, marketing_opt_out_at` (flags/metadata, NO PHI sensible — plaintext OK), `deleted_at, created_at, updated_at`. PK `id`. Índices: `(tenant_id, clinic_id)` + opt_out/marketing partial. **NO indexar columnas cifradas** (búsqueda por dni/email cifrado = fuera de scope; si se necesita lookup → blind index = follow-up).
+- **vitalia_leads**: `id, tenant_id` (claves), **PHI/PII cifrado** `name, email, phone` (BYTEA), `source, status, notes` (notes puede contener PII → architect decide cifrar; default cifrar notes), `deleted_at, created_at, updated_at`. PK `id`. Índice `(tenant_id)` + `(tenant_id, status)`. Lead solo tenant_id (no dual-clinic per lead_repository — architect confirma).
+
+### Surface ampliada por pgcrypto (v2)
+
+El cifrado at-rest expande los archivos in-scope más allá de la migración:
+- **Repos** `patient_repository.py` + `lead_repository.py`: `SELECT pgp_sym_decrypt(name, :kek)::text AS name, ...` al leer + `pgp_sym_encrypt(:name, :kek)` al escribir. Hoy leen plaintext → deben descifrar.
+- **Key management (KEK):** la KEK simétrica viene de config (env `VITALIA_PHI_KEK` o KMS — architect decide, hipaa-lite.md pide "KEK rotada anualmente, backups con key separada"). NUNCA hardcodear la key. NUNCA loguear la key.
+- **Sanitization/traces:** el PHI descifrado NUNCA va a logs/traces sin `sanitize_payload` (hipaa-lite).
 
 ## Definición de DONE
 
-1. Migración `035_vitalia_crm_phi_base_tables.py` idempotente (IF NOT EXISTS / ADD COLUMN IF NOT EXISTS): reconcile `vitalia_patients` (full schema PHI) + crea `vitalia_leads` + índices. down_revision `034_vitalia`.
+1. Migración `035_vitalia_crm_phi_base_tables.py` idempotente (`CREATE EXTENSION IF NOT EXISTS pgcrypto` + `CREATE TABLE IF NOT EXISTS` / `ADD COLUMN IF NOT EXISTS`): crea `vitalia_patients` (full schema, **PHI columns cifradas BYTEA**) + `vitalia_leads` (PHI/PII cifrado) + índices (NO sobre columnas cifradas). down_revision `034_vitalia`.
 2. `alembic upgrade head` en dev → ambas tablas existen con todas las columnas que los repos leen (cero column-not-exist al ejercerlas).
-3. **Verificación live (anti-teatro, OBLIGATORIA):** JWT real doctor → `GET /crm/patients/{id}` **200 + audit row** en `vitalia_audit_log` + `GET /crm/leads` **200**. recepcion/marketing → **403**. cross-tenant → **404** (no leak). Logs backend leídos (sin 500/column-error). Cierra el grader audit-on-patient-live de la story previa.
-4. Test migration idempotency (re-run = no-op, sin error) + al menos 1 integration test que ejerza /patients y /leads contra DB real (no monkeypatch del repo).
-5. (Sub-scope documentado) decisión sobre las 5 migraciones legacy en `src/modules/vitalia/persistence/migrations/`: documentar como arqueológicas o flag follow-up (NO limpiar inline salvo trivial).
+3. **Repos descifran (pgcrypto):** `patient_repository.py` + `lead_repository.py` leen con `pgp_sym_decrypt` y escriben con `pgp_sym_encrypt` usando la KEK de config. La API devuelve plaintext al rol autorizado; la DB almacena ciphertext.
+4. **Verificación live (anti-teatro, OBLIGATORIA):** JWT real doctor → `GET /crm/patients/{id}` **200 + data descifrada + audit row** en `vitalia_audit_log` + `GET /crm/leads` **200**. recepcion/marketing → **403**. cross-tenant → **404** (no leak). Logs backend leídos (sin 500/column-error, sin la KEK ni PHI plaintext en logs). Cierra el grader audit-on-patient-live de la story previa.
+5. **Encryption at-rest verificada:** query SQL crudo a `vitalia_patients` muestra **ciphertext (bytea)** en las columnas PHI, NO plaintext. La API descifra solo para el rol autorizado.
+6. Tests: migration idempotency (re-run = no-op) + integration que ejerza /patients y /leads contra DB real (no monkeypatch del repo) + round-trip encrypt→DB→decrypt.
+7. (Sub-scope documentado) decisión sobre las 5 migraciones legacy en `src/modules/vitalia/persistence/migrations/`: documentar como arqueológicas o flag follow-up (NO limpiar inline salvo trivial).
 
-## Scenarios (4/4 obligatorios · graders ejecutables)
+## Scenarios (5 · happy + negative + edge + adversarial + security · graders ejecutables)
 
 ### SC-1 · happy — doctor con JWT real lee paciente (200 + audit row)
 - **given:** migración 035 aplicada en dev; doctor.demo con JWT real + X-Tenant-ID Sanaré + X-Clinic-ID; un paciente seed en `vitalia_patients` para ese tenant+clinic.
@@ -79,6 +91,15 @@ Migración forward-only idempotente (`035`) que **reconcile el schema canónico 
 - **then:** no-op sin error, sin pérdida de datos, sin DROP de columnas existentes (IF NOT EXISTS / ADD COLUMN IF NOT EXISTS lo garantizan).
 - **graders:** `{ type: contract_test, path: "vitalia/backend/tests/migrations/test_035_crm_phi_base_tables_idempotency.py" }`
 
+### SC-5 · security — PHI cifrado at-rest (pgcrypto round-trip)
+- **given:** migración 035 aplicada (pgcrypto + columnas BYTEA); un paciente escrito vía el repo (write con `pgp_sym_encrypt`).
+- **when:** (a) query SQL crudo `SELECT name FROM vitalia_patients` (sin descifrar); (b) `GET /crm/patients/{id}` con doctor JWT real.
+- **then:** (a) la columna `name` devuelve **ciphertext/bytea** (NO el nombre plaintext) → cifrado at-rest confirmado; (b) la API devuelve el nombre **descifrado** (plaintext) al rol autorizado. La KEK nunca aparece en logs.
+- **graders:**
+  - `{ type: integration, path: ".../test_crm_phi_real_tables.py::test_phi_encrypted_at_rest_decrypted_on_read" }`
+  - `{ type: state_check, target: db, query: "SELECT name FROM vitalia_patients LIMIT 1  -- debe ser bytea ciphertext, no plaintext" }`
+  - `{ type: manual_audit, expect: "raw DB = ciphertext ; API read = plaintext ; KEK no en logs" }`
+
 ### SC-4 · adversarial — cross-tenant / cross-clinic / JWT inválido sobre tablas ahora vivas
 - **given:** doctor JWT real (o token inválido).
 - **when:** `GET /crm/patients/{id}` con X-Tenant-ID de otro tenant (cross-tenant), o X-Clinic-ID de otra clínica (cross-clinic), o token forjado.
@@ -101,9 +122,11 @@ docker exec luana-dev-vitalia_backend_dev-1 bash -lc "cd /workspace/vitalia/back
 
 ## Open questions (para architect / Chris)
 
-- **OQ-1 (schema canónico):** el architect deriva el DDL exacto de `vitalia_patients` leyendo TODAS las queries de `patient_repository.py` (SELECT + UPDATE) + `lead_repository.py`, NO solo get_by_id. ¿Alguna columna PHI candidata a `pgcrypto` (hipaa-lite encryption at-rest) entra en scope, o follow-up? (Default propuesto: schema plano ahora; pgcrypto = follow-up separado, NO bloquea el unblock de los endpoints.)
+- **OQ-1 (schema canónico + columnas a cifrar):** el architect deriva el DDL exacto de `vitalia_patients` leyendo TODAS las queries de `patient_repository.py` (SELECT + UPDATE) + `lead_repository.py`. Confirma qué columnas cifrar: identitarias PHI (`name, date_of_birth, dni, phone, email, address`) cifradas; claves (`tenant_id, clinic_id, id`) y flags (`marketing_opt_in, opt_out*`) NO. Leads: `name, email, phone, notes` cifrado.
+- **OQ-1b (KEK source) ★ pgcrypto ratificado:** ¿de dónde sale la KEK simétrica? Propuesta: env `VITALIA_PHI_KEK` (dev) con doc de rotación anual + key de backup separada (hipaa-lite.md). ¿O preferís integrar un KMS/secret manager ya? (Default: env var dev + ADR documentando el path a KMS para prod. El architect lo cementa en 03-arch.)
 - **OQ-2 (legacy tree):** 5 migraciones en `src/modules/vitalia/persistence/migrations/` no corridas por el alembic.ini activo. ¿Documentar arqueológicas (default) o limpiar en este story? (Default: documentar, limpieza = follow-up.)
-- **OQ-3 (seed paciente):** SC-1 necesita un paciente seed en `vitalia_patients`. ¿Extender `seed_test_users_link.py` con 1 paciente god-matrix, o seed dedicado? (Default: extender el seed god-matrix con 1 paciente Sanaré.)
+- **OQ-3 (seed paciente):** SC-1/SC-5 necesitan un paciente seed (escrito vía el repo para que se cifre). ¿Extender `seed_test_users_link.py` con 1 paciente Sanaré (default) o seed dedicado?
+- **OQ-4 (prod data):** N/A confirmado — no hay prod (deploy diferido) ni datos plaintext existentes en dev → greenfield, se crea cifrado desde el inicio. Si en el futuro prod tuviera filas plaintext (Story 11), la migración de cifrado de datos existentes sería una story aparte (NO esta).
 
 ## Próximo paso
 
