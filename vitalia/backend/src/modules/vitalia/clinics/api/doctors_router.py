@@ -146,6 +146,7 @@ def _to_list_item(doctor: Doctor) -> DoctorListItemDTO:
     )
 
 
+@router.get("", response_model=DoctorListResponse, include_in_schema=False)
 @router.get("/", response_model=DoctorListResponse)
 async def list_doctors(
     tenant_id: str = Header(alias="X-Tenant-ID"),
@@ -174,6 +175,13 @@ async def list_doctors(
     return DoctorListResponse(items=items, total=total, page=page, page_size=page_size)
 
 
+@router.post(
+    "",
+    response_model=DoctorDetailDTO,
+    status_code=status.HTTP_201_CREATED,
+    include_in_schema=False,
+    dependencies=[Depends(require_brand_owner_access(roles=_ADMIN_CLINIC_ROLES))],
+)
 @router.post(
     "/",
     response_model=DoctorDetailDTO,

@@ -13,6 +13,7 @@
 
 "use client";
 
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { StaffDirectoryView } from "./StaffDirectoryView";
 import type { PaginatedDoctors } from "../../types/staff.types";
 
@@ -23,7 +24,14 @@ interface LisaStaffViewProps {
 /**
  * LisaStaffView — client root for lisa/staff directory.
  * Hydrates StaffDirectoryView with SSR initial data.
+ *
+ * NuqsAdapter wraps the tree so useStaffFilters (useQueryStates) can work
+ * without NUQS-404 error. Pattern mirrors InboxPageClient.tsx.
  */
 export function LisaStaffView({ initialData }: LisaStaffViewProps) {
-  return <StaffDirectoryView initialData={initialData} />;
+  return (
+    <NuqsAdapter>
+      <StaffDirectoryView initialData={initialData} />
+    </NuqsAdapter>
+  );
 }
