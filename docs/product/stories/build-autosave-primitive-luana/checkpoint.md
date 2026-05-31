@@ -2,20 +2,25 @@
 story_id: build-autosave-primitive-luana
 brand: platform
 type: ui-story
-state: refining
+state: refined
+phase: SPEC_RATIFIED
+last_artifact: 01-spec.md
 outcome: autosave-primitive-platform
 adr: docs/architecture/luana-platform/ADR-012-autosave-primitive-platform.md
 cap_target: null
 cap_change_type: new
 agent_owner: n/a
 module: luana-core-ui
-last_modified: '2026-05-31T01:20:00.000Z'
+autonomous_mode: true
+autonomous_mode_ratified_by: chris
+touches_brands: [nicolify]   # platform story: reescribe form-runtime de nicolify sobre useAutosave (ADR-012)
+last_modified: '2026-05-31T01:40:00.000Z'
 spawned_at: '2026-05-31'
 spawned_by: pm-luana-adr012
 ratified_by_chris: true
-ratified_by_chris_at: '2026-05-31T01:20:00-05:00'
+ratified_by_chris_at: '2026-05-31T01:40:00-05:00'
 parallel_safe: true
-next_action: /po-ux platform refina 01-spec (contrato + scenarios) desde ADR-012 → /architect → /dev-team → adopción brands
+next_action: /architect platform build-autosave-primitive-luana → ready package → /dev-team → /auditor → done
 goal: >-
   Construir la primitiva de autoguardado compartida en core/@luana: useAutosave (@luana/hooks)
   + <AutosaveBadge> (@luana/ui-kit) + AutosaveContract (@luana/schemas), con tests + un consumer

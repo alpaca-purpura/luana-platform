@@ -5,8 +5,8 @@ type: ui-story
 state: refining
 outcome: autosave-primitive-platform
 adr: docs/architecture/luana-platform/ADR-012-autosave-primitive-platform.md
-po_ux_version: 1
-ratified_by_chris: false
+po_ux_version: 2
+ratified_by_chris: true
 ---
 
 # 01-spec — build-autosave-primitive-luana (primitiva de autoguardado compartida)
@@ -18,12 +18,14 @@ ratified_by_chris: false
 
 - Outcome: `autosave-primitive-platform` · ADR-012.
 - Qué se construye: `useAutosave` (`@luana/hooks`) + `<AutosaveBadge>` (`@luana/ui-kit`) + tipos `AutosaveContract`
-  (`@luana/schemas`) + tests + un **consumer de referencia** (showcase mínimo, no de brand).
+  (`@luana/schemas`) + tests + un **consumer de referencia** (showcase mínimo, no de brand) + **reescritura del
+  `form-runtime` de nicolify sobre `useAutosave`** (decisión Chris 2026-05-31 — el form-runtime se monta encima
+  de la primitiva en esta misma story).
 - Dónde encaja: es infraestructura del design system compartido — la consumen los forms con autoguardado de
-  todas las brands.
-- **Out-of-scope (anti-creep):** NO migrar vitalia ni nicolify (stories consumer separadas). NO un framework
-  de forms (eso es el `form-runtime` de nicolify, que PODRÁ consumir esta primitiva). NO acoplar a Clerk (el
-  token entra inyectado). NO endpoints nuevos.
+  todas las brands. El `form-runtime` de nicolify pasa a ser el consumer de alto nivel canónico de `useAutosave`.
+- **Out-of-scope (anti-creep):** NO migrar las pantallas de vitalia (esa adopción es story consumer separada).
+  NO acoplar a Clerk (el token entra inyectado). NO endpoints nuevos. (El `form-runtime` de nicolify SÍ está en
+  scope — se reescribe sobre `useAutosave`.)
 
 ## § Prior art applied
 
@@ -52,7 +54,7 @@ interface UseAutosaveOptions<TValues> {
   getToken: () => Promise<string | null>;        // auth provider inyectado (Clerk u otro)
   onSaved?: () => void;                            // ej. invalidar React Query key (inyectado por el consumer)
   onError?: (err: unknown) => void;
-  debounceMs?: number;                             // default 600
+  debounceMs?: number;                             // default 2000 (Chris 2026-05-31)
   telemetry?: (event: { type: "saved" | "error"; durationMs: number }) => void;  // opt-in
   authReadyAttempts?: number;                      // default 10 (× 200ms ≈ 2s) — robustez getTokenReady
 }
@@ -73,8 +75,8 @@ interface UseAutosaveReturn<TValues> {
 scenarios:
   - id: debounce-coalesce
     type: happy
-    given: "Un consumer usa useAutosave (debounceMs=600)"
-    when: "El usuario dispara 5 cambios en <600ms"
+    given: "Un consumer usa useAutosave (debounceMs=2000 default)"
+    when: "El usuario dispara 5 cambios en <2000ms"
     then: "Se ejecuta UNA sola llamada a save (la última); status idle→dirty→saving→saved"
     playwright_required: false
     graders: [{ type: unit, path: "core/@luana/hooks/src/__tests__/useAutosave.test.ts" }]
@@ -154,6 +156,16 @@ scenarios:
     then: "telemetry({type:'saved'|'error', durationMs}) llamado · si NO se provee telemetry, no rompe (opt-in)"
     playwright_required: false
     graders: [{ type: unit, path: "core/@luana/hooks/src/__tests__/useAutosave.test.ts" }]
+
+  - id: nicolify-form-runtime-sin-regresion
+    type: edge
+    given: "El form-runtime de nicolify reescrito sobre useAutosave + AutosaveBadge"
+    when: "Se corren los tests existentes del form-runtime (FormRuntimeProvider/Context/AutosaveBanner) + sus consumers (offer-studio)"
+    then: "Comportamiento observable idéntico antes/después · tests existentes pasan · sin cambio de API pública del form-runtime que rompa consumers"
+    playwright_required: false
+    graders:
+      - { type: unit, path: "nicolify/frontend/src/components/form-runtime/__tests__/" }
+      - { type: shell, cmd: "cd nicolify/frontend && npx tsc --noEmit && npx vitest run src/components/form-runtime/" }
 ```
 
 > **Nota sobre Playwright:** esta story construye una **librería** — se verifica con Vitest unit/component
@@ -180,6 +192,7 @@ scenarios:
 | `AutosaveContract` types | `core/@luana/schemas` | NEW |
 | `useDebounce` | `core/@luana/hooks` | reuse/lift desde `nicolify/frontend/src/hooks/use-debounce.ts` si encaja |
 | consumer de referencia (showcase) | `core/@luana/ui-kit` (story/example) | NEW (mínimo, prueba el contrato end-to-end sin brand) |
+| `form-runtime` reescrito sobre `useAutosave` | `nicolify/frontend/src/components/form-runtime/` | MODIFY (FormRuntimeProvider/Context/AutosaveBanner pasan a consumir `useAutosave` + `<AutosaveBadge>` en vez de su lógica propia) |
 
 ## § Microcopy (Spanish neutro)
 
@@ -195,10 +208,15 @@ Ver tabla de estados. Sin voseo. El copy debe ser **inyectable** (default neutro
 `useAutosave` acepta `telemetry` opt-in (evento `saved`/`error` + duración). El consumer decide el sink (cada
 brand tiene su tabla). La primitiva NO importa ningún emitter brand-specific.
 
-## § Decisiones para /architect (a refinar en 03-arch)
+## § Decisiones para /architect (a refinar en 03-arch) — ratificadas Chris 2026-05-31
 
-- Reconciliar `useAutosave` (vitalia) ↔ `form-runtime` (nicolify): ¿el form-runtime se reescribe sobre `useAutosave`?
-  (recomendado, pero puede quedar para la story consumer de nicolify).
-- ¿`useDebounce` se lifta a `@luana/hooks` o se reimplementa interno?
-- Política de `retry`: ¿exponer `retry()` explícito + retry/backoff interno ante transitorios? (ADR-012 dice ambos).
+- **form-runtime de nicolify SE REESCRIBE sobre `useAutosave` en esta story** (decisión Chris). El
+  `FormRuntimeProvider/Context/AutosaveBanner` consume `useAutosave` + `<AutosaveBadge>` en vez de su lógica
+  propia. Arch debe: mapear el contrato actual del form-runtime → `useAutosave`, preservar el comportamiento
+  observable de nicolify (sus tests existentes pasan antes/después), y NO romper sus consumers (offer-studio, etc.).
+  → la story TOCA `nicolify/frontend/` (autorizado: platform story, /pm-luana via ADR-012).
+- **debounce default = 2000ms** (ratificado Chris). Override por consumer permitido.
+- `useDebounce`: liftar a `@luana/hooks` desde nicolify si encaja, o reimplementar interno (architect decide).
+- `retry`: exponer `retry()` explícito + retry/backoff interno ante transitorios (ADR-012 pide ambos).
 - Versionado: bump minor de `@luana/{hooks,ui-kit,schemas}`.
+- **autonomous_mode: true** (Chris pidió "encadena architect hasta el done").

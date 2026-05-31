@@ -49,3 +49,12 @@ las stories consumer).
    adopción de nicolify? (recomiendo: dejarlo para la adopción — esta story solo construye la primitiva + un
    showcase de referencia).
 2. ¿El contrato te cierra así, o querés cambiar algo (nombres, debounce default, retry explícito vs automático)?
+
+### 2026-05-31T01:40 · 🤖 claude · `/po-ux` · ✓ APLICADO
+Ratificaste: (1) el `form-runtime` de nicolify **se reescribe sobre `useAutosave` en ESTA story** (lo metí en
+scope: `nicolify/frontend/src/components/form-runtime/` MODIFY + scenario `nicolify-form-runtime-sin-regresion`
+que exige que sus tests existentes pasen antes/después), (2) **debounce default = 2000ms** (actualizado en el
+contrato + scenario), (3) resto OK. Spec v2 ratificado → `state: refined` · `autonomous_mode: true` ·
+`touches_brands: [nicolify]`. Encadeno a `/architect` (platform) hasta el done.
+**Nota de scope:** ahora la story TOCA nicolify (autorizado por ser platform story + ADR-012). El architect
+debe preservar el comportamiento observable del form-runtime (sus consumers como offer-studio no se rompen).
