@@ -20,12 +20,15 @@
  * - Panel → Panel (id, defaultSize, minSize)
  * - PanelResizeHandle → Separator (aria-label via rest passthrough)
  *
- * Single-main pattern (bugfix live-verification 2026-05-30):
- * ONE <main id="main-content"> wraps ALL layouts — desktop and mobile.
- * Inner chrome (agentic Group/Panel vs web grid vs mobile single-column)
- * switches based on shellMode + isDesktop viewport guard.
- * This guarantees a unique id="main-content" in the DOM at all times,
- * valid HTML, and no Playwright strict-mode-violation (1 element resolved).
+ * Layout responsive (CSS, no JS): el desktop layout (Group resizable o web grid)
+ * se monta SIEMPRE y se oculta en mobile vía `md:block`; el mobile layout se
+ * monta SIEMPRE y se oculta en desktop vía `md:hidden`. Montar/desmontar el
+ * <Group> condicionalmente (detrás de un useSyncExternalStore(isDesktop))
+ * disparaba "Rendered more hooks than during the previous render" — por eso el
+ * gate es CSS, no condicional de render.
+ *
+ * UN solo <main id="main-content"> envuelve ambos layouts (desktop + mobile)
+ * para garantizar id único en el DOM, HTML válido y sin strict-mode-violation.
  *
  * G2 (ADR-nicolify-001): SSR-safe store — useStoreHydration called ONCE
  * client-side inside this ssr:false boundary (same pattern as vitalia ADR-vitalia-006).
@@ -68,11 +71,6 @@ export interface ShellOrganismLayoutClientProps {
  * Long function is inherent: inner chrome variants (agentic/web/mobile)
  * + ResizeObserver + useGroupRef snap-up + useDefaultLayout all in one boundary.
  * Extracting each inner layout into sub-components would lose the shared state refs.
- *
- * Bugfix (live-verification 2026-05-30): replaced 3 conditional <main> elements with a
- * SINGLE <main id="main-content"> wrapper containing conditional inner chrome.
- * Previously the mobile <main> was always rendered (no guard) → duplicate id
- * + 2× subtab-content testids → Playwright strict-mode-violation.
  */
 // eslint-disable-next-line max-lines-per-function -- single-main shell layout: shared containerRef, groupRef, ResizeObserver, and layoutProps must live in one scope
 export function ShellOrganismLayoutClient({
@@ -183,15 +181,12 @@ export function ShellOrganismLayoutClient({
       </div>
 
       {/*
-       * SINGLE <main id="main-content"> — bugfix (live-verification 2026-05-30).
-       * Previously three separate <main id="main-content"> elements existed (agentic +
-       * web + mobile), with the mobile one ALWAYS rendered (no shellMode guard), causing:
-       *   - duplicate id="main-content" → invalid HTML → breaks skip-link a11y (F1)
-       *   - 2× {children} renders → Playwright strict-mode-violation on testid locators
-       *
-       * Now: ONE <main> wraps ALL variants. Inner chrome switches on shellMode + isDesktop.
-       * containerRef placed here (on the outer wrapper) — ResizeObserver reads total width.
-       * data-shell-ready reflects when agentic layout has settled (set by Fix A useEffect).
+       * UN solo <main id="main-content"> envuelve TODAS las variantes (desktop +
+       * mobile). El inner chrome se muestra/oculta con CSS responsive (md:block /
+       * md:hidden), no con render condicional — así el <Group> de resizable se
+       * monta una sola vez y no descuadra el conteo de hooks.
+       * containerRef en el wrapper — ResizeObserver lee el ancho total.
+       * data-shell-ready refleja cuándo el layout agentic se asentó (Fix A useEffect).
        */}
       <main
         id="main-content"
@@ -201,58 +196,59 @@ export function ShellOrganismLayoutClient({
         ref={containerRef}
         data-shell-ready={shellReady ? "true" : "false"}
       >
-        {/* ── Desktop: agentic (md+) ── */}
-        {isDesktop && shellMode === "agentic" && (
-          <Group
-            id={SHELL_GROUP_ID}
-            orientation="horizontal"
-            className="h-full"
-            groupRef={groupRef}
-            {...layoutProps}
-            onLayoutChanged={layoutProps.onLayoutChanged}
-          >
-            <Panel
-              id={LUANA_PANEL_ID}
-              defaultSize={defaultLuanaPct}
-              minSize={`${minLuanaPct}%`}
-              collapsible={false}
+        {/* ── Desktop (md+): SIEMPRE montado, oculto en mobile vía CSS ── */}
+        <div className="hidden h-full md:block">
+          {shellMode === "agentic" ? (
+            <Group
+              id={SHELL_GROUP_ID}
+              orientation="horizontal"
+              className="h-full"
+              groupRef={groupRef}
+              {...layoutProps}
+              onLayoutChanged={layoutProps.onLayoutChanged}
             >
+              <Panel
+                id={LUANA_PANEL_ID}
+                defaultSize={defaultLuanaPct}
+                minSize={`${minLuanaPct}%`}
+                collapsible={false}
+              >
+                <LuanaSidebar />
+              </Panel>
+
+              <Separator
+                id="shell-handle"
+                className={cn(
+                  // hit-area ≥8px: container transparente w-2 (8px) con ::after pseudo 1px centrado.
+                  "group relative w-2 shrink-0 bg-transparent cursor-col-resize outline-none",
+                  "after:absolute after:left-1/2 after:top-0 after:h-full after:w-px after:-translate-x-1/2",
+                  "after:bg-border after:transition-all after:duration-150",
+                  "hover:after:w-0.5 hover:after:bg-primary/60",
+                  "focus-visible:after:w-0.5 focus-visible:after:bg-primary",
+                )}
+                aria-label="Redimensionar paneles"
+              />
+
+              <Panel id={APP_PANEL_ID} defaultSize={100 - defaultLuanaPct} minSize={`${minAppPct}%`}>
+                <AppPanelSlot>{children}</AppPanelSlot>
+              </Panel>
+            </Group>
+          ) : (
+            // web mode — static CSS grid 60px / 1px / 1fr
+            <div className="h-full grid grid-cols-[60px_1px_1fr]">
               <LuanaSidebar />
-            </Panel>
-
-            <Separator
-              id="shell-handle"
-              className={cn(
-                // hit-area ≥8px: container transparente w-2 (8px) con ::after pseudo 1px centrado.
-                // Hover/focus expanden el indicator a 2px (sin cambiar hit area).
-                "group relative w-2 shrink-0 bg-transparent cursor-col-resize outline-none",
-                "after:absolute after:left-1/2 after:top-0 after:h-full after:w-px after:-translate-x-1/2",
-                "after:bg-border after:transition-all after:duration-150",
-                "hover:after:w-0.5 hover:after:bg-primary/60",
-                "focus-visible:after:w-0.5 focus-visible:after:bg-primary",
-              )}
-              aria-label="Redimensionar paneles"
-            />
-
-            <Panel id={APP_PANEL_ID} defaultSize={100 - defaultLuanaPct} minSize={`${minAppPct}%`}>
+              {/* Visual divider (1px) */}
+              <div className="bg-border" aria-hidden="true" />
               <AppPanelSlot>{children}</AppPanelSlot>
-            </Panel>
-          </Group>
-        )}
+            </div>
+          )}
+        </div>
 
-        {/* ── Desktop: web mode (md+) — static CSS grid 60px / 1px / 1fr ── */}
-        {isDesktop && shellMode === "web" && (
-          <div className="h-full grid grid-cols-[60px_1px_1fr]">
-            <LuanaSidebar />
-            {/* Visual divider (1px) */}
-            <div className="bg-border" aria-hidden="true" />
-            <AppPanelSlot>{children}</AppPanelSlot>
-          </div>
-        )}
-
-        {/* ── Mobile fallback (< md): single-column, no Luana visible ── */}
-        {/* Luana accessible via drawer trigger (T-4 adds burger button) */}
-        {!isDesktop && <AppPanelSlot>{children}</AppPanelSlot>}
+        {/* ── Mobile (< md): single-column, SIEMPRE montado, oculto en desktop ── */}
+        {/* Luana accesible vía drawer trigger (T-4 agrega botón hamburguesa) */}
+        <div className="h-full md:hidden">
+          <AppPanelSlot>{children}</AppPanelSlot>
+        </div>
       </main>
     </div>
   );
