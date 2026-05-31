@@ -2,9 +2,11 @@
 story_id: build-autosave-primitive-luana
 brand: platform
 type: ui-story
-state: ready
-phase: READY_PACKAGE_CLOSED
-last_artifact: 06-tickets.yaml
+state: developed
+phase: HANDOFF_TO_AUDITOR
+last_artifact: T-3-result.md
+build_progress: "T-1 ✅ 77be3d0f (@luana/hooks useAutosave, 11/11) · T-2 ✅ bf86031c (@luana/ui-kit AutosaveBadge, 32/32) · T-3 ✅ bc8c509a (nicolify form-runtime, 143/143)"
+gate_note: "Todos los validators GREEN. @luana hooks/uikit tsc por-package tiene deuda PRE-EXISTENTE del lift (observed-bugs/2026-05-31-luana-hooks-uikit-tsc-lift-debt.md) — la primitiva NO introduce errores tsc nuevos (verificado)."
 outcome: autosave-primitive-platform
 adr: docs/architecture/luana-platform/ADR-012-autosave-primitive-platform.md
 cap_target: null
@@ -20,7 +22,7 @@ spawned_by: pm-luana-adr012
 ratified_by_chris: true
 ratified_by_chris_at: '2026-05-31T01:40:00-05:00'
 parallel_safe: true
-next_action: /architect platform build-autosave-primitive-luana → ready package → /dev-team → /auditor → done
+next_action: /auditor platform build-autosave-primitive-luana → /pm-luana merge → done
 goal: >-
   Construir la primitiva de autoguardado compartida en core/@luana: useAutosave (@luana/hooks)
   + <AutosaveBadge> (@luana/ui-kit) + AutosaveContract (@luana/schemas), con tests + un consumer

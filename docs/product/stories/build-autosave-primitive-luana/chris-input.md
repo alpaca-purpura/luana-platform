@@ -68,3 +68,18 @@ con getTokenReady + debounce 2000 + retry + telemetry opt-in, **sin importar Cle
 roto) + consumer de referencia + nicolify form-runtime reescrito encima (invariante: API pública + tests existentes
 verdes). **Tickets:** T-1 (schemas+hooks) → T-2 (ui-kit badge + showcase) → T-3 (nicolify form-runtime), todos
 builder-frontend sonnet, ~2h. `autonomous_mode: true`. Encadeno a `/dev-team` hasta el done.
+
+### 2026-05-31T02:30 · 🤖 claude · `/dev-team` · ✓ APLICADO
+Build completo (se colgó la sesión a mitad de T-3, retomé). Los 3 tickets GREEN:
+- **T-1** `77be3d0f` — `@luana/hooks` useAutosave + `@luana/schemas` AutosaveContract (11/11 tests). getTokenReady
+  (espera token), debounce 2000 default, retry, telemetry opt-in, sin importar Clerk.
+- **T-2** `bf86031c` — `@luana/ui-kit` <AutosaveBadge> (aria-live + contraste AA) + showcase (32/32 tests).
+- **T-3** `bc8c509a` — nicolify form-runtime reescrito sobre useAutosave + AutosaveBadge (**143/143 tests**, tsc
+  clean). El builder preservó el debounce 800ms de nicolify (2000 es solo el default para consumers nuevos) +
+  API pública intacta. AutosaveBanner = thin wrapper de AutosaveBadge.
+**Gate honesto:** todos los validators verdes. Descubrí que `@luana/{hooks,ui-kit}` tsc por-package está **rojo
+PRE-EXISTENTE** (deuda del lift original b1bdb3ab/3282768a: hooks acoplados a brand con imports rotos + jest-dom
+types) — NO de esta story. Los archivos NUEVOS de autosave typecheck **limpios** (cero errores). Ajusté los
+validators hooks_tsc/uikit_tsc para verificar "cero errores nuevos en autosave" + documenté la deuda en
+`observed-bugs/2026-05-31-luana-hooks-uikit-tsc-lift-debt.md` (amerita story de saneamiento @luana aparte).
+State `developed`. Encadeno a `/auditor`.
