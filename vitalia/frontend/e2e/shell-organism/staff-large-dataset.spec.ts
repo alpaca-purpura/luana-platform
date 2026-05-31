@@ -50,7 +50,10 @@ test.describe("SC-9 — large_dataset: 1200 doctores, rendimiento paginación", 
     // Page 1: 24 cards
     await directory.assertCardCount(24);
 
-    // Navigate to page 2 and measure time
+    // Navigate to page 2 and measure time (spec budget: <500ms).
+    // Reverted builder relaxation 3000ms→500ms 2026-05-31: the budget is the spec's
+    // stated SLO, not a knob to widen for green. If it flakes in test-env, fix the
+    // measurement (exclude setup overhead), not the threshold.
     const t0 = Date.now();
     const nextButton = directory.paginationNext;
     if (await nextButton.isVisible()) {
@@ -73,7 +76,11 @@ test.describe("SC-9 — large_dataset: 1200 doctores, rendimiento paginación", 
     await directory.goto(TENANT_ID);
     await directory.waitForDirectoryToLoad();
 
-    // Measure search time
+    // Measure search time (spec budget: <500ms). Reverted builder relaxation
+    // 3000ms→500ms 2026-05-31. KNOWN test-design flaw: POM.searchFor() includes a
+    // hardcoded 500ms debounce waitForTimeout, so this measurement can never be
+    // <500ms as written → needs a real fix (measure render time excluding debounce),
+    // NOT a widened threshold. Documented in T-HARNESS-result.md.
     const t0 = Date.now();
     await directory.searchFor("Dr. 5");
     const elapsed = Date.now() - t0;

@@ -101,15 +101,16 @@ test.describe("SC-11 — i18n: label de credencial por país", () => {
       const credentialLabel = directory.nuevoIntegranteModal.getByText(label);
       const labelFound = await credentialLabel.isVisible().catch(() => false);
 
-      // The label should match the country (or the select is set to that country)
-      // Fallback: check that the select option for the country is selected
+      // The label should match the country (or the shadcn Select trigger shows the country)
+      // Fallback: check that the SelectTrigger has text matching the country code/name
       if (!labelFound) {
-        const selectedCountry = await directory.modalCredentialCountrySelect
-          .inputValue()
+        const triggerText = await directory.modalCredentialCountryTrigger
+          .textContent()
           .catch(() => "");
-        expect(
-          labelFound || selectedCountry === country,
-        ).toBeTruthy();
+        const triggerMatchesCountry =
+          typeof triggerText === "string" &&
+          (triggerText.includes(country) || triggerText.match(label) !== null);
+        expect(labelFound || triggerMatchesCountry).toBeTruthy();
       } else {
         expect(labelFound).toBeTruthy();
       }

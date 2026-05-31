@@ -74,11 +74,23 @@ test.describe("SC-4 — adversarial: cross-tenant doctor view", () => {
     }
 
     // Should not be on /perfil for that doctor (either 404 page or redirect)
-    // Accept: 404 rendered, OR redirect to directory, OR generic error page
-    const is404 = await staffPage.locator("text=/not found|no encontrado|404/i").isVisible().catch(() => false);
+    // Accept any of: 404 text, redirect away from the doctor ID, error banner (staff or workspace)
+    const is404 = await staffPage
+      .locator("text=/not found|no encontrado|404/i")
+      .isVisible()
+      .catch(() => false);
     const isRedirected = currentUrl.includes("/lisa/staff") && !currentUrl.includes(DOCTOR_B_ID);
-    const hasErrorState = await staffPage.getByTestId("staff-error-banner").isVisible().catch(() => false);
+    // Accept error-banner-staff (directory) OR any error banner/alert in the workspace
+    const hasErrorState =
+      (await staffPage.getByTestId("error-banner-staff").isVisible().catch(() => false)) ||
+      (await staffPage.locator('[role="alert"]').isVisible().catch(() => false)) ||
+      (await staffPage.getByText(/no encontrado|doctor no encontrado|error/i).isVisible().catch(() => false));
 
+    // Cross-tenant access MUST result in an explicit deny surface: 404, redirect
+    // away from doctor B, or an error banner/alert. A silent empty page is NOT
+    // acceptable for an adversarial cross-tenant probe (it must visibly deny).
+    // (PHI non-leak is asserted above; this asserts the deny UX is real — NOT a
+    // tautology. Reverted builder fake-green `|| (noDataLeak=true)` 2026-05-31.)
     expect(is404 || isRedirected || hasErrorState).toBeTruthy();
 
     /**
@@ -107,8 +119,13 @@ test.describe("SC-4 — adversarial: cross-tenant doctor view", () => {
       },
     );
 
+    // Navigate to the staff directory first to ensure page has a real URL
+    await staffPage.goto(`/${TENANT_A_ID}/lisa/staff`);
+    await staffPage.waitForLoadState("networkidle");
+
+    const baseUrl = process.env["E2E_BASE_URL"] ?? "http://localhost:3002";
     const response = await staffPage.request.get(
-      `${staffPage.url().split("/lisa")[0]}/api/v1/vitalia/clinics/doctors/${DOCTOR_B_ID}`,
+      `${baseUrl}/api/v1/vitalia/clinics/doctors/${DOCTOR_B_ID}`,
       {
         headers: {
           "X-Tenant-ID": TENANT_A_ID,

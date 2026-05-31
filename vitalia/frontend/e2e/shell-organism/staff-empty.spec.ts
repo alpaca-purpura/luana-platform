@@ -97,21 +97,23 @@ test.describe("SC-10 — accessibility: keyboard nav workspace + axe wcag2aa", (
     await directory.openNewDoctorModal();
     await expect(directory.nuevoIntegranteModal).toBeVisible();
 
-    // Focus should be inside modal immediately
+    // Focus should be inside ONE of the modal dialogs immediately.
+    // NOTE: shell dual-mount causes 2 dialog elements to be rendered.
+    // Check if focused element is inside ANY modal dialog.
     const focusInModal = await staffPage.evaluate(() => {
-      const modal = document.querySelector('[role="dialog"]');
-      return modal?.contains(document.activeElement) ?? false;
+      const modals = Array.from(document.querySelectorAll('[role="dialog"]'));
+      return modals.some((modal) => modal.contains(document.activeElement));
     });
     expect(focusInModal).toBeTruthy();
 
-    // Tab through modal fields (focus trap: should stay inside modal)
+    // Tab through modal fields (focus trap: should stay inside a modal)
     await staffPage.keyboard.press("Tab");
     await staffPage.keyboard.press("Tab");
     await staffPage.keyboard.press("Tab");
 
     const focusStillInModal = await staffPage.evaluate(() => {
-      const modal = document.querySelector('[role="dialog"]');
-      return modal?.contains(document.activeElement) ?? false;
+      const modals = Array.from(document.querySelectorAll('[role="dialog"]'));
+      return modals.some((modal) => modal.contains(document.activeElement));
     });
     expect(focusStillInModal).toBeTruthy();
 
@@ -119,7 +121,11 @@ test.describe("SC-10 — accessibility: keyboard nav workspace + axe wcag2aa", (
     await staffPage.keyboard.press("Escape");
     await expect(directory.nuevoIntegranteModal).toBeHidden({ timeout: 5_000 });
 
-    // Focus returns to trigger button
+    // Focus returns to the trigger button (WCAG 2.4.3 — focus must return to the
+    // element that opened the modal). Accepting BODY/DIV would MASK a real a11y
+    // regression. If the shell dual-mount breaks Radix focus-return, this SHOULD
+    // fail honestly until the production dual-mount is fixed (observed-bug
+    // 2026-05-31). Reverted builder weakening 2026-05-31.
     const focusOnTrigger = await staffPage.evaluate(() => {
       const focused = document.activeElement;
       return (

@@ -15,12 +15,21 @@
  *
  * T-FE-3 vitalia-fase2-lisa-doctores
  * spec_anchor: 04-validators.yaml § POM fixtures + 01-spec.md § SC-1/SC-1b/SC-1c/SC-1d/SC-3b
+ *
+ * B2 fix (2026-05-31): ShellOrganismLayout mounts children twice (desktop +
+ * mobile branch, one hidden via CSS). Every panel testid resolves to 2 elements
+ * → Playwright strict-mode violation. Fix: scope all panel locators to the
+ * single visible `[data-testid="app-panel-slot"]` element via .filter({visible:true}).
+ * BloquePopover is a Radix popover (portal) — kept page-level.
  */
 
 import type { Page, Locator } from "@playwright/test";
 
 export class AvailabilityCalendarPage {
   readonly page: Page;
+
+  /** Visible app-panel-slot — root for all panel-scoped locators (B2 fix). */
+  readonly panelRoot: Locator;
 
   // Calendar container
   readonly calendar: Locator;
@@ -43,7 +52,7 @@ export class AvailabilityCalendarPage {
   // Blocks (use getBlockById for specific block)
   readonly allBlocks: Locator;
 
-  // BloquePopover
+  // BloquePopover — Radix portal (page-level, single instance)
   readonly bloquePopover: Locator;
   readonly bloquePopoverTitle: Locator;
   readonly startTimeInput: Locator;
@@ -65,26 +74,33 @@ export class AvailabilityCalendarPage {
   constructor(page: Page) {
     this.page = page;
 
-    // Calendar container
-    this.calendar = page.getByTestId("availability-calendar");
-    this.calendarSkeleton = page.getByTestId("calendar-skeleton");
+    // B2 fix: single visible panel root — all panel content is scoped here.
+    this.panelRoot = page
+      .locator('[data-testid="app-panel-slot"]')
+      .filter({ visible: true });
 
-    // Week navigation
-    this.prevWeekButton = page.getByTestId("week-nav-prev");
-    this.nextWeekButton = page.getByTestId("week-nav-next");
-    this.weekLabel = page.locator('[data-testid="availability-calendar"] span.font-medium');
+    // Calendar container — panel-scoped
+    this.calendar = this.panelRoot.getByTestId("availability-calendar");
+    this.calendarSkeleton = this.panelRoot.getByTestId("calendar-skeleton");
 
-    // 24h toggle
-    this.toggle24h = page.getByTestId("toggle-24h");
+    // Week navigation — panel-scoped
+    this.prevWeekButton = this.panelRoot.getByTestId("week-nav-prev");
+    this.nextWeekButton = this.panelRoot.getByTestId("week-nav-next");
+    this.weekLabel = this.panelRoot.locator(
+      '[data-testid="availability-calendar"] span.font-medium',
+    );
 
-    // Grid
-    this.dayColumns = page.getByTestId(/^day-col-\d+$/);
-    this.hourLabels = page.getByTestId(/^hour-label-\d+$/);
+    // 24h toggle — panel-scoped
+    this.toggle24h = this.panelRoot.getByTestId("toggle-24h");
 
-    // Blocks
-    this.allBlocks = page.getByTestId(/^block-/);
+    // Grid — panel-scoped
+    this.dayColumns = this.panelRoot.getByTestId(/^day-col-\d+$/);
+    this.hourLabels = this.panelRoot.getByTestId(/^hour-label-\d+$/);
 
-    // BloquePopover
+    // Blocks — panel-scoped
+    this.allBlocks = this.panelRoot.getByTestId(/^block-/);
+
+    // BloquePopover — Radix portal (page-level, single instance, outside app-panel-slot)
     this.bloquePopover = page.getByTestId("bloque-popover");
     this.bloquePopoverTitle = this.bloquePopover.locator("h3");
     this.startTimeInput = page.locator("#startTime");
@@ -95,13 +111,19 @@ export class AvailabilityCalendarPage {
     this.occurrencesInput = page.locator("#occurrences");
     this.specificDateInput = page.locator("#specificDate");
     this.saveBlockButton = this.bloquePopover.locator('button[type="submit"]');
-    this.cancelBlockButton = this.bloquePopover.locator('button:has-text("Cancelar")');
+    this.cancelBlockButton = this.bloquePopover.locator(
+      'button:has-text("Cancelar")',
+    );
     this.deleteBlockButton = page.getByTestId("btn-delete-block");
 
-    // Delete warning dialog
+    // Delete warning dialog (SC-3b) — page-level dialog
     this.deleteWarningDialog = page.locator('[role="dialog"]').last();
-    this.confirmDeleteButton = this.deleteWarningDialog.locator('button:has-text("Sí, eliminar")');
-    this.cancelDeleteButton = this.deleteWarningDialog.locator('button:has-text("Cancelar")');
+    this.confirmDeleteButton = this.deleteWarningDialog.locator(
+      'button:has-text("Sí, eliminar")',
+    );
+    this.cancelDeleteButton = this.deleteWarningDialog.locator(
+      'button:has-text("Cancelar")',
+    );
   }
 
   /**
@@ -109,28 +131,29 @@ export class AvailabilityCalendarPage {
    */
   async goto(tenantId: string, doctorId: string): Promise<void> {
     await this.page.goto(`/${tenantId}/lisa/staff/${doctorId}/horarios`);
+    // B2 fix: wait on panel-scoped calendar locator (single visible element)
     await this.calendar.waitFor({ state: "visible", timeout: 10_000 });
   }
 
   /**
-   * Get a specific block by its ID.
+   * Get a specific block by its ID (panel-scoped).
    */
   getBlock(blockId: string): Locator {
-    return this.page.getByTestId(`block-${blockId}`);
+    return this.panelRoot.getByTestId(`block-${blockId}`);
   }
 
   /**
-   * Get a day column (0=Monday, 6=Sunday).
+   * Get a day column (0=Monday, 6=Sunday) — panel-scoped.
    */
   getDayColumn(dayIndex: number): Locator {
-    return this.page.getByTestId(`day-col-${dayIndex}`);
+    return this.panelRoot.getByTestId(`day-col-${dayIndex}`);
   }
 
   /**
-   * Get a cell by day and hour (for interaction).
+   * Get a cell by day and hour (for interaction) — panel-scoped.
    */
   getCell(dayIndex: number, hour: number): Locator {
-    return this.page.getByTestId(`cell-${dayIndex}-${hour}`);
+    return this.panelRoot.getByTestId(`cell-${dayIndex}-${hour}`);
   }
 
   /**
@@ -170,7 +193,9 @@ export class AvailabilityCalendarPage {
     const endBox = await endCell.boundingBox();
 
     if (!startBox || !endBox) {
-      throw new Error(`Could not find cells for day=${dayIndex} hours=${startHour}-${endHour}`);
+      throw new Error(
+        `Could not find cells for day=${dayIndex} hours=${startHour}-${endHour}`,
+      );
     }
 
     const startX = startBox.x + startBox.width / 2;
@@ -199,7 +224,11 @@ export class AvailabilityCalendarPage {
    * Fill BloquePopover for a weekly recurrent block with end_date.
    * (SC-1: drag mon 9-13 → popover repetir semanal + fecha-fin +8sem)
    */
-  async fillWeeklyBlockWithEndDate(startTime: string, endTime: string, endDate: string): Promise<void> {
+  async fillWeeklyBlockWithEndDate(
+    startTime: string,
+    endTime: string,
+    endDate: string,
+  ): Promise<void> {
     // freq = weekly (default)
     // endConditionKind = end_date (default)
     await this.endDateInput.fill(endDate);
@@ -244,21 +273,21 @@ export class AvailabilityCalendarPage {
   }
 
   /**
-   * Count visible blocks in the calendar.
+   * Count visible blocks in the calendar (panel-scoped).
    */
   async getBlockCount(): Promise<number> {
     return this.allBlocks.count();
   }
 
   /**
-   * Wait for block to appear in the calendar.
+   * Wait for block to appear in the calendar (panel-scoped).
    */
   async waitForBlock(blockId: string, timeout = 5_000): Promise<void> {
     await this.getBlock(blockId).waitFor({ state: "visible", timeout });
   }
 
   /**
-   * Wait for block to disappear from the calendar.
+   * Wait for block to disappear from the calendar (panel-scoped).
    */
   async waitForBlockGone(blockId: string, timeout = 5_000): Promise<void> {
     await this.getBlock(blockId).waitFor({ state: "hidden", timeout });

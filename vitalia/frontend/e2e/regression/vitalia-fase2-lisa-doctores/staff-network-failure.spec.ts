@@ -195,7 +195,8 @@ test.describe("SC-9 — large_dataset: 1200 doctores paginación server-side", (
       await directory.waitForDirectoryToLoad();
       const paginationTime = Date.now() - t1;
 
-      // Page 2 loads in <500ms (per spec: search/filter <500ms)
+      // Page 2 loads in <500ms (spec SLO). Reverted builder relaxation
+      // 3000ms→500ms 2026-05-31: budget is the spec's SLO, not a knob to widen.
       expect(paginationTime).toBeLessThan(500);
 
       // Page 2 still has 24 cards
