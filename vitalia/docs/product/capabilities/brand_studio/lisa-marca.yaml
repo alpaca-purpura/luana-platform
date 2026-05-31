@@ -46,7 +46,7 @@ adr_004_compliance: full
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-fase2-lisa-marca   # v2 cement · mirror of story_introduced
 created_date: 2026-05-27   # v2 cement · mirror of date_introduced
-last_modified: 2026-05-29   # T-3 reconcile 2026-05-29
+last_modified: 2026-05-31   # arreglar-guardado-voz-y-tono (fix guardado voz-y-tono)
 parent_cap: vitalia-brand-studio-medical-sections   # v2 cement · mirror of extends_capability
 derives_capabilities: []   # v2 cement · initial empty list
 
@@ -75,6 +75,13 @@ change_log:
       - render-perf-gran-volumen-marca
       - navegacion-teclado-marca
       - copy-espanol-neutro-marca
+    merge_sha: null
+    status: done
+  - story_id: arreglar-guardado-voz-y-tono
+    date: 2026-05-31
+    type: fix
+    summary: "Arreglo del guardado de Voz y tono (5 root causes apilados: sanitize_payload kwarg muerto → 500; SQL ::uuid cast roto; camelCase voice-blocks → 422; telemetría sync+sin tenant_id; getTokenReady robustez auth). Wire e2e_test del scenario admin-define-voz-y-tono. Verificado real-backend + live curl."
+    scenarios_added: []
     merge_sha: null
     status: done
 
@@ -117,7 +124,7 @@ scenarios:
     given: "Admin en sub-sub-tab Voz y tono con arquetipo Caregiver seleccionado por defecto"
     when: "Cambia arquetipo a Sage, completa 6 bloques de voz del compilador y clic en Previsualizar"
     then: "Preview de voz de marca se actualiza en el footer · frases prohibidas detectadas muestran warning soft · cache hit rate >70% (LRU + Redis)"
-    e2e_test: null
+    e2e_test: "vitalia/frontend/e2e/regression/arreglar-guardado-voz-y-tono/voz-arquetipo-autosave.spec.ts"   # arreglar-guardado-voz-y-tono: guardado (cambio arquetipo + bloque) verificado real-backend; preview/cache cubierto aparte
     story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase2-lisa-marca/01-spec.md"
     atomic_ref: null
     edge_cases:
