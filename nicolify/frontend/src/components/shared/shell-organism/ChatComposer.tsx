@@ -31,8 +31,12 @@ const TEXTAREA_MAX_HEIGHT_PX = 100;
 export function ChatComposer({ className }: { className?: string }) {
   const [localValue, setLocalValue] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  // Use arrow wrapper to avoid unbound-method — standard Zustand pattern
-  const sendMessage = useChatStore((s) => (content: string) => s.sendMessage(content));
+  // Select the stable store action directly. A selector returning a NEW arrow
+  // wrapper each call — `(s) => (c) => s.sendMessage(c)` — makes getSnapshot
+  // return a fresh value every render → "getSnapshot should be cached" infinite
+  // loop, which crashed once Luana mounts open by default. The action reference
+  // is already stable in the store, so select it as-is.
+  const sendMessage = useChatStore((s) => s.sendMessage);
 
   // Auto-resize
   useEffect(() => {

@@ -27,6 +27,9 @@
  */
 
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
+
+import { DEFAULT_LANDING } from "@/lib/routing/shell-routes";
 
 const isPublicRoute = createRouteMatcher([
   "/sign-in(.*)",
@@ -37,9 +40,26 @@ const isPublicRoute = createRouteMatcher([
   "/api/health",
 ]);
 
+// Bare tenant entry: exactly one path segment (e.g. /alpaca-purpura). Lo
+// redirigimos en el middleware al deep link canónico del shell
+// (/{tenant}/christian/pipeline) ANTES de montar el route-group shell, en vez
+// de dejar correr el redirect() del Server Component (shell-organism)/page.tsx,
+// que durante una navegación client-side disparaba "Rendered more hooks than
+// during the previous render" (Next 16 redirect + dynamic({ssr:false})).
+const isBareTenantRoute = createRouteMatcher(["/:tenantId"]);
+
 export const proxy = clerkMiddleware(async (auth, request) => {
   if (!isPublicRoute(request)) {
     await auth.protect();
+
+    if (isBareTenantRoute(request)) {
+      const tenantId = request.nextUrl.pathname.slice(1); // strip leading "/"
+      const dest = new URL(
+        `/${tenantId}/${DEFAULT_LANDING.agent}/${DEFAULT_LANDING.subtab}`,
+        request.url,
+      );
+      return NextResponse.redirect(dest);
+    }
   }
 });
 

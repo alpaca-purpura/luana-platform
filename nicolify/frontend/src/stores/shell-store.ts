@@ -24,8 +24,8 @@
  * - setters → NOT persisted (recreated on hydration)
  *
  * Default values (nicolify R0 shell design):
- * - luanaState: 'collapsed' ← Luana sidebar collapsed on load (shell skeleton)
- * - splitState: 'chat-collapsed' ← app panel full width initially
+ * - luanaState: 'full' ← Luana panel abierto (historial + chat) on load (mockup ratificado)
+ * - splitState: '50-50' ← Luana panel y app panel comparten el ancho
  * - shellMode: 'agentic' ← default mode for Nicolify R0
  * - mobileDrawerOpen: false ← default closed (mobile drawer starts closed)
  *
@@ -100,8 +100,13 @@ export const useShellStore = createSsrSafePersistedStore<ShellStore>(
     setHasHydrated: (v: boolean) => set({ _hasHydrated: v }),
 
     // ── Desktop State ────────────────────────────────────────────────────────
-    luanaState: "collapsed",
-    splitState: "chat-collapsed",
+    // Default luanaState: 'full' (Luana panel abierto: historial 280px + chat).
+    // Justificación: el mockup ratificado del shell muestra a Luana abierta como
+    // orquestadora. 'collapsed' dejaba una franja de 60px VACÍA en desktop (sin
+    // rail ni chat ni affordance de apertura — bug visual). Alineado con vitalia,
+    // cuyo default es 'full' por la misma razón (mockup con panel visible).
+    luanaState: "full",
+    splitState: "50-50",
     shellMode: "agentic",
 
     // ── Mobile State (independent slice) ────────────────────────────────────

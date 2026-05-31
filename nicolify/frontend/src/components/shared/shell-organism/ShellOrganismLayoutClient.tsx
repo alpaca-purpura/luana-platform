@@ -39,7 +39,7 @@
  */
 
 import { useStoreHydration } from "@luana/hooks/use-store-hydration";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Group, Panel, Separator, useDefaultLayout, useGroupRef } from "react-resizable-panels";
 
 import { cn } from "@/lib/utils";
@@ -57,25 +57,6 @@ const SHELL_GROUP_ID = "nicolify-shell-split-agentic";
 /** Panel IDs must be stable strings (used for layout persistence keying) */
 const LUANA_PANEL_ID = "luana-panel";
 const APP_PANEL_ID = "app-panel";
-
-/** MediaQuery for desktop breakpoint (md = 768px) */
-const DESKTOP_MQL = typeof window !== "undefined" ? window.matchMedia("(min-width: 768px)") : null;
-
-/**
- * useSyncExternalStore wrappers for the desktop MediaQueryList.
- * Avoids calling setState synchronously inside a useEffect body.
- */
-function subscribeToDesktopMql(callback: () => void) {
-  if (!DESKTOP_MQL) return () => undefined;
-  DESKTOP_MQL.addEventListener("change", callback);
-  return () => DESKTOP_MQL.removeEventListener("change", callback);
-}
-function getDesktopSnapshot() {
-  return DESKTOP_MQL?.matches ?? true;
-}
-function getDesktopServerSnapshot() {
-  return true; // assume desktop on server (safe: component is ssr:false)
-}
 
 export interface ShellOrganismLayoutClientProps {
   children: React.ReactNode;
@@ -119,16 +100,6 @@ export function ShellOrganismLayoutClient({
 
   // One-way viewport guard: forces 'full' → 'rail' when viewport [768, 1104)
   useViewportGuard();
-
-  // isDesktop: tracks whether the viewport is md+ (≥768px).
-  // Used inside this ssr:false dynamic chunk to switch inner chrome.
-  // Safe: no SSR, no hydration mismatch (component is ssr:false).
-  // Uses useSyncExternalStore to avoid calling setState synchronously in useEffect.
-  const isDesktop = useSyncExternalStore(
-    subscribeToDesktopMql,
-    getDesktopSnapshot,
-    getDesktopServerSnapshot,
-  );
 
   // ── Min pixels (01-spec.md §5 + §8 pattern from vitalia) ─────────────────
   // luanaState='full' → min Luana 580px (history 280 + chat 300)
