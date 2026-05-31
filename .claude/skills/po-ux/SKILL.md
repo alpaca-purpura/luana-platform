@@ -172,6 +172,21 @@ state: refining
 - User journey insertion point (dónde aparece en sidebar/flow)
 - Out-of-scope explícito (anti-creep)
 
+#### § Mapa funcional (★ v5 cement 2026-05-31 — capa humana, va ANTES del Gherkin)
+
+> El panorama en lenguaje humano que Chris lee para validar QUÉ se construye sin reconstruirlo desde el Gherkin.
+> NO compite con el Gherkin: vive a otra altitud. El Gherkin lo formaliza; la `§ Matriz de cobertura` los liga.
+> Profundidad proporcional al tipo de story (bugfix: happy path opcional, foco en repro+branch+RN).
+
+Cuatro sub-bloques obligatorios (estructura mandatory, profundidad proporcional):
+
+1. **Happy path** — el camino dorado narrado en prosa numerada (3-8 pasos). Lenguaje humano, no Gherkin.
+2. **Bifurcaciones** — **árbol** de decisión (no lista plana). Cada nodo: condición → resultado → `[SC-N]`. Acá Chris valida COMPLETITUD.
+3. **Reglas de negocio** — `RN-1..N`, invariantes del dominio en una frase. Se reflejan en `capability.business_rules`.
+4. **Criterios de aceptación** — `AC-1..N`, checklist "listo cuando…" a nivel feature-done (NO son los scenarios).
+
+Cada `Bif-N` y `RN-N` DEBE terminar mapeado a ≥1 scenario en la `§ Matriz de cobertura`. Un branch/RN sin SC = hueco → REFUSE refined.
+
 #### § Gherkin scenarios (4 base + 7 sub-categorías mandatory ★ v4.1)
 
 **Base obligatorios (4 — AI-resistant):**
@@ -210,6 +225,20 @@ Cada scenario tiene:
 - { type: visual_state, screen: "form-error", element: "input[name=email]", expect: "border-destructive" }
 - { type: axe, ruleset: "wcag2aa" }  # accessibility sub-category
 ```
+
+**★ v5 cement 2026-05-31:** cada scenario lleva `Covers: [Bif-N, RN-N, AC-N]` — los IDs del `§ Mapa funcional` que formaliza. Liga la capa humana con la verificable.
+
+#### § Matriz de cobertura (★ v5 cement 2026-05-31 — el puente humano ↔ verificación)
+
+Tabla que cierra el loop: cada `Bif-N` y cada `RN-N` del Mapa funcional → ≥1 SC → una **verificación REAL** (acción ejercida + efecto observado, NUNCA "GET 200" — ver `.claude/rules/test-design-doctrine.md` § Verificación REAL). Es la mitad delantera del `gherkin-matrix.md` que el `/auditor` completa en Phase D.
+
+| Ítem (Mapa funcional) | Tipo | Cubierto por | Verificación REAL (acción + efecto) |
+|---|---|---|---|
+| Bif-N · … | branch | SC-N | [write real → efecto DB/UI + log] |
+| RN-N · … | rule | SC-N | [write que viola la regla → 422 + estado sin cambio] |
+| AC-N · … | accept | SC-N | [flujo real + estado observable] |
+
+Cerrá con dos líneas explícitas: **Huecos detectados** (Bif/RN sin SC) y **SC huérfanos** (SC sin ítem del mapa). Ambas deben decir "ninguno" para pasar el gate.
 
 #### § Wireframes inline
 
@@ -347,8 +376,11 @@ Chris responde → editás 01-spec.md (no rebuild from scratch — Edit incremen
 
 ### Step 5 — Validate refined gate + Hand off (★ v4.1 expanded)
 
-**Pre-handoff gate (v4.1 cement 2026-05-19) — checklist antes ratificar refined:**
+**Pre-handoff gate (v4.1 cement 2026-05-19 + v5 2026-05-31) — checklist antes ratificar refined:**
 
+- [ ] **★ v5 § Mapa funcional presente** (happy path narrado + árbol de bifurcaciones + RN-N + AC-N)
+- [ ] **★ v5 § Matriz de cobertura sin huecos** — cada `Bif-N` y `RN-N` mapea a ≥1 SC; cada SC mapea a ≥1 ítem del mapa. Huecos detectados = "ninguno" + SC huérfanos = "ninguno". Branch/RN huérfano → STOP, NO refined
+- [ ] **★ v5 cada verificación de la matriz es REAL** (acción ejercida + efecto, no "GET 200")
 - [ ] 4 scenarios base presentes (happy + negative + edge + adversarial)
 - [ ] **★ Sub-categorías mandatory cubiertas (≥1 scenario cada una, o `not_applicable_reason` ratificado):**
   - [ ] race_condition (si tiene create/update con unique constraint)
@@ -500,3 +532,9 @@ Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
 - `.claude/skills/frontend-expert/` — Tailwind tokens + Shadcn reuse + form runtime
 - `.claude/skills/po/` — service-only spec workflow (sister skill)
 - `.claude/skills/ux-agentico/` — agentic flow design (sister skill)
+
+## Live verification contra dev-app (Critical Rule #37)
+
+**Uso (herramienta, no gate):** para revisar visualmente una pantalla/flujo que ya corre y diseñar sobre lo real, abrí dev-app con Chrome MCP.
+
+Levantar: `make dev-app-vitalia` → `https://dev-app.vitalialat.com` (login `dr.demo@vitalialat.com`, creds en `vitalia/.env.dev`). Herramientas: **Chrome DevTools MCP** (live) + **Playwright autenticado** (golden). Evidencia = acción real ejercida + efecto observado; NUNCA GET 200 ni e2e mockeado. SSoT: `.claude/rules/definition-of-done-live-verify.md`.

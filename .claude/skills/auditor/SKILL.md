@@ -151,6 +151,13 @@ Después de spawnar sub-auditores por ticket, EJECUTAR Phase D una vez por story
 (no por ticket). Phase D verifica que cada scenario Gherkin de `01-spec.md`
 tenga al menos un test PASS asociado.
 
+**★ v5 cement 2026-05-31 — cross-check con la `§ Matriz de cobertura` del spec.** Si el `01-spec.md` trae
+`§ Mapa funcional` + `§ Matriz de cobertura` (Opción A — ver `docs/process/spec-mapa-funcional.md`), Phase D
+es la **mitad trasera** de ese loop: verificá que NINGÚN `Bif-N` ni `RN-N` de la matriz del spec se haya
+quedado sin scenario/test al construir (un branch del mapa que el spec mapeaba a `SC-X` pero que no llegó a
+test = FAIL). Y que cada verificación sea REAL (acción ejercida + efecto, no "GET 200" — `test-design-doctrine.md`).
+Specs anteriores a 2026-05-31 sin estas secciones → solo verificación clásica scenario→test (WARN, no FAIL).
+
 ### Step 2.5a — Extraer Gherkin scenarios + tests mapeados
 
 ```bash
@@ -723,3 +730,9 @@ Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
 - `docs/architecture/luana-platform/ADR-007-paradigm-v4.1-autonomy.md` — decisión cementada 2026-05-19
 - `.claude/agents/auditor-{backend,agentic,frontend}.md` — sub-auditors specs
 - `.claude/agents/gate-runner.md` — gate-output.json producer (Haiku)
+
+## Live verification contra dev-app (Critical Rule #37)
+
+**Obligación:** si aplicás Carril A self-fix sobre superficie user-reachable, re-verificá live en dev-app que el fix funciona antes de audit-passed. Phase D señala evidencia faltante/insuficiente.
+
+Levantar: `make dev-app-vitalia` → `https://dev-app.vitalialat.com` (login `dr.demo@vitalialat.com`, creds en `vitalia/.env.dev`). Herramientas: **Chrome DevTools MCP** (live) + **Playwright autenticado** (golden). Evidencia = acción real ejercida + efecto observado; NUNCA GET 200 ni e2e mockeado. SSoT: `.claude/rules/definition-of-done-live-verify.md`.

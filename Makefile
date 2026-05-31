@@ -25,6 +25,7 @@ BRANDS := nicolify vitalia comunify lupulo
 .PHONY: dev-nicolify dev-vitalia dev-comunify dev-lupulo
 .PHONY: dev-vitalia-admin dev-vitalia-admin-down
 .PHONY: dev-nicolify-tunnel dev-vitalia-tunnel dev-comunify-tunnel dev-lupulo-tunnel
+.PHONY: dev-app-vitalia
 .PHONY: dev-all dev-all-vector dev-all-cache
 .PHONY: dev-down-nicolify dev-down-vitalia dev-down-comunify dev-down-lupulo dev-down-all
 .PHONY: dev-clean-nicolify dev-clean-vitalia dev-clean-comunify dev-clean-lupulo dev-clean-all
@@ -75,6 +76,15 @@ dev-comunify-tunnel:
 
 dev-lupulo-tunnel:
 	$(COMPOSE_BASE) -f lupulo/docker-compose.dev.yml --profile tunnel up -d
+
+# ── dev-app verified (stack + tunnel + live-verify readiness) ────────────────
+# Levanta stack + cloudflared y VERIFICA que dev-app.{brand}lat.com sirve la app
+# real, dejando todo listo para verificación live. SSoT: .claude/rules/definition-of-done-live-verify.md
+dev-app-vitalia:
+	bash scripts/dev-app-up.sh vitalia
+
+dev-app-%:
+	bash scripts/dev-app-up.sh $*
 
 # ── all-brands targets ───────────────────────────────────────────────────────
 dev-all:
@@ -244,6 +254,7 @@ help:
 	@echo "  Dev environment:"
 	@echo "  make dev-{brand}              Start {brand} dev environment (brand=nicolify|vitalia|comunify|lupulo)"
 	@echo "  make dev-{brand}-tunnel       Start {brand} + cloudflared tunnel (profile=tunnel)"
+	@echo "  make dev-app-vitalia          Start stack + tunnel + VERIFY dev-app ready for live-verify"
 	@echo "  make dev-all                  Start all 4 brands simultaneously"
 	@echo "  make dev-all-vector           Start all brands + qdrant (profile=vector)"
 	@echo "  make dev-all-cache            Start all brands + redis (profile=cache)"

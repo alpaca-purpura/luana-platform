@@ -908,3 +908,9 @@ Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
 - `.claude/rules/anti-duplication.md` — inventario shared abstractions
 - `.claude/rules/anti-default-flip-audit.md` — R31 default flag flips
 - `.claude/rules/auditor-downstream-regression.md` — surface→downstream test mapping
+
+## Live verification contra dev-app (Critical Rule #37)
+
+**Uso (recomendado):** si necesitás confirmar comportamiento actual antes de diseñar, inspeccioná en vivo contra dev-app en vez de asumir. Declará `playwright_visual_scope` en `04-validators.yaml` apuntando a dev-app cuando aplique.
+
+Levantar: `make dev-app-vitalia` → `https://dev-app.vitalialat.com` (login `dr.demo@vitalialat.com`, creds en `vitalia/.env.dev`). Herramientas: **Chrome DevTools MCP** (live) + **Playwright autenticado** (golden). Evidencia = acción real ejercida + efecto observado; NUNCA GET 200 ni e2e mockeado. SSoT: `.claude/rules/definition-of-done-live-verify.md`.

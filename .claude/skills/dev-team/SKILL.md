@@ -801,3 +801,9 @@ Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
 - `.claude/agents/builder-{backend,frontend,agentic}.md` — sub-builders specs
 - `.claude/agents/gate-runner.md` — gate-output.json producer (Haiku)
 - `.claude/agents/context-builder.md` — CONTEXT-BRIEF.md producer (Haiku)
+
+## Live verification contra dev-app (Critical Rule #37)
+
+**Obligación:** antes de cerrar `developing → developed`, por cada scenario que toca superficie user-reachable, ejerce la acción real en dev-app (Chrome MCP) + deja el golden Playwright, y registra `dev_app_verified.evidence` en `checkpoint.md`. No cerrar por tests verdes que mockean el backend.
+
+Levantar: `make dev-app-vitalia` → `https://dev-app.vitalialat.com` (login `dr.demo@vitalialat.com`, creds en `vitalia/.env.dev`). Herramientas: **Chrome DevTools MCP** (live) + **Playwright autenticado** (golden). Evidencia = acción real ejercida + efecto observado; NUNCA GET 200 ni e2e mockeado. SSoT: `.claude/rules/definition-of-done-live-verify.md`.

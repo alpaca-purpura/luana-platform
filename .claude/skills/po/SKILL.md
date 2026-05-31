@@ -129,6 +129,10 @@ sin repro_verified field. `/dev-team` refuses build. Defense in depth.
 
 Escribir `{brand}/docs/product/stories/{story-id}/01-spec.md` siguiendo template. Críticos:
 
+**★ v5 cement 2026-05-31 — § Mapa funcional + § Matriz de cobertura (capa humana, va ANTES del Gherkin):**
+
+Incluso en service-stories (sin UI), el spec abre con el panorama en lenguaje humano: **Happy path** (narrado), **Bifurcaciones** (árbol: condición → resultado → `[SC-N]`), **Reglas de negocio** (`RN-N`) y **Criterios de aceptación** (`AC-N`). Cada scenario lleva `Covers: [Bif-N, RN-N, AC-N]`. Cerrá con la `§ Matriz de cobertura` (cada Bif/RN → ≥1 SC → verificación REAL: acción ejercida + efecto, no "GET 200"). Branch/RN huérfano = STOP, NO refined. Para `bugfix` lite: happy path opcional, foco en repro + branch + RN. Ver template + `docs/process/spec-mapa-funcional.md`.
+
 **Frontmatter brand-aware obligatorio:**
 ```yaml
 ---
@@ -342,3 +346,9 @@ Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
 - `.claude/rules/hotfix-repro-mandatory.md` — R26 hot-fix gate
 - `.claude/skills/po-ux/` — UI std fusión (sister skill)
 - `.claude/skills/ux-agentico/` — agentic flow design (sister skill)
+
+## Live verification contra dev-app (Critical Rule #37)
+
+**Uso (herramienta, no gate):** para revisar algo que ya corre y refinar sobre lo real, abrí dev-app con Chrome MCP.
+
+Levantar: `make dev-app-vitalia` → `https://dev-app.vitalialat.com` (login `dr.demo@vitalialat.com`, creds en `vitalia/.env.dev`). Herramientas: **Chrome DevTools MCP** (live) + **Playwright autenticado** (golden). Evidencia = acción real ejercida + efecto observado; NUNCA GET 200 ni e2e mockeado. SSoT: `.claude/rules/definition-of-done-live-verify.md`.
