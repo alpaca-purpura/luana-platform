@@ -174,6 +174,7 @@ tickets:
 
   - id: T-FE-1
     title: "Staff directory: routes + LisaStaffView + StaffDirectoryView + StaffCard + filters + pagination + empty/error/loading + NuevoIntegranteModal + React Query hooks + MSW"
+    state: pushed
     group: "G1-doctor-crud"
     surface: frontend
     deliverables:
