@@ -30,17 +30,29 @@ from src.modules.vitalia._shared.phi_masking import mask_dni, mask_email, mask_p
 from src.modules.vitalia._shared.repositories.audit_log_repository import AuditLogRepository
 from src.modules.vitalia._shared.telemetry.growth_studio_emitter import GrowthStudioEmitter
 from src.modules.vitalia.clinics.api.dtos import (
+    AvailabilityBlockDTO,
+    AvailabilityBlocksResponse,
     BioPublicDTO,
+    DeleteBlockResponse,
     DoctorCreateRequest,
     DoctorDetailDTO,
     DoctorListItemDTO,
     DoctorListResponse,
     DoctorPatchRequest,
+    OneOffBlockCreateRequest,
+    RecurrentBlockCreateRequest,
+)
+from src.modules.vitalia.clinics.application.availability_block_service import (
+    AvailabilityBlockService,
 )
 from src.modules.vitalia.clinics.application.credential_validator import CredentialValidationError
 from src.modules.vitalia.clinics.application.doctor_service import DniConflictError, DoctorService
+from src.modules.vitalia.clinics.domain.availability_block import AvailabilityBlock
 from src.modules.vitalia.clinics.domain.bio import BioPublic
 from src.modules.vitalia.clinics.domain.doctor import Doctor
+from src.modules.vitalia.clinics.infrastructure.repositories.availability_block_repository import (
+    AvailabilityBlockRepository,
+)
 from src.modules.vitalia.clinics.infrastructure.repositories.doctor_repository import (
     DoctorRepository,
 )
@@ -67,6 +79,13 @@ def _build_service(db: AsyncSession) -> DoctorService:
     audit = AuditLogRepository(session=db)
     emitter = GrowthStudioEmitter(session=db)
     return DoctorService(doctor_repo=repo, audit_repo=audit, emitter=emitter)
+
+
+def _build_block_service(db: AsyncSession) -> AvailabilityBlockService:
+    """Build AvailabilityBlockService with injected repos."""
+    block_repo = AvailabilityBlockRepository(session=db)
+    audit = AuditLogRepository(session=db)
+    return AvailabilityBlockService(block_repo=block_repo, audit_repo=audit)
 
 
 def _to_detail_dto(doctor: Doctor) -> DoctorDetailDTO:
@@ -231,6 +250,27 @@ async def get_doctor(
     return _to_detail_dto(doctor)
 
 
+def _to_block_dto(block: AvailabilityBlock) -> AvailabilityBlockDTO:
+    """Map AvailabilityBlock domain entity -> AvailabilityBlockDTO."""
+    return AvailabilityBlockDTO(
+        id=block.id,
+        tenant_id=block.tenant_id,
+        clinic_id=block.clinic_id,
+        doctor_id=block.doctor_id,
+        kind=block.kind,
+        start_time=block.start_time,
+        end_time=block.end_time,
+        day_of_week=block.day_of_week,
+        freq=block.freq,
+        end_condition_kind=block.end_condition_kind,
+        end_date=block.end_date,
+        occurrences=block.occurrences,
+        specific_date=block.specific_date,
+        created_at=block.created_at,
+        updated_at=block.updated_at,
+    )
+
+
 @router.patch(
     "/{doctor_id}",
     response_model=DoctorDetailDTO,
@@ -281,3 +321,170 @@ async def patch_doctor(
         )
     await db.commit()
     return _to_detail_dto(doctor)
+
+
+# ── Availability blocks sub-routes (T-BE-3) ──────────────────────────────────
+
+
+@router.get("/{doctor_id}/availability-blocks", response_model=AvailabilityBlocksResponse)
+async def list_availability_blocks(
+    doctor_id: UUID,
+    tenant_id: str = Header(alias="X-Tenant-ID"),
+    clinic_id: str = Header(alias="X-Clinic-ID"),
+    db: AsyncSession = Depends(_get_db),
+) -> AvailabilityBlocksResponse:
+    """List availability blocks for a doctor (dual filter).
+
+    Returns all active (non-deleted) blocks for the specified doctor,
+    scoped to the tenant+clinic (dual filter per hipaa-lite.md).
+    """
+    svc = _build_block_service(db)
+    blocks = await svc.list_blocks(
+        doctor_id=doctor_id,
+        tenant_id=UUID(tenant_id),
+        clinic_id=UUID(clinic_id),
+    )
+    return AvailabilityBlocksResponse(blocks=[_to_block_dto(b) for b in blocks])
+
+
+@router.post(
+    "/{doctor_id}/availability-blocks",
+    response_model=AvailabilityBlockDTO,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_brand_owner_access(roles=_ADMIN_CLINIC_ROLES))],
+)
+async def create_availability_block(
+    doctor_id: UUID,
+    request: RecurrentBlockCreateRequest | OneOffBlockCreateRequest,
+    tenant_id: str = Header(alias="X-Tenant-ID"),
+    clinic_id: str = Header(alias="X-Clinic-ID"),
+    user_id: str = Header(alias="X-User-ID"),
+    db: AsyncSession = Depends(_get_db),
+) -> AvailabilityBlockDTO:
+    """Create a new availability block (recurrent or one-off) + materialize slots.
+
+    SC-1: recurrent weekly/biweekly + end condition -> expand via rrule -> vitalia_availability_slots.
+    SC-1b: biweekly occurrences=N -> exactly N occurrence dates.
+    SC-1c: one-off (specific_date) -> single day of slots.
+
+    Scheduling module reads vitalia_availability_slots to display available appointments.
+    No scheduling module edit required — slots table is brand-local, scheduling reads it.
+
+    Audit: doctor.availability_block_created (sync write pre-response, HIPAA-lite).
+    """
+    svc = _build_block_service(db)
+    try:
+        block = await svc.create_block(
+            tenant_id=UUID(tenant_id),
+            clinic_id=UUID(clinic_id),
+            doctor_id=doctor_id,
+            user_id=UUID(user_id),
+            kind=request.kind,
+            start_time=request.start_time,
+            end_time=request.end_time,
+            day_of_week=getattr(request, "day_of_week", None),
+            freq=getattr(request, "freq", None),
+            end_condition_kind=getattr(request, "end_condition_kind", None),
+            end_date=getattr(request, "end_date", None),
+            occurrences=getattr(request, "occurrences", None),
+            specific_date=getattr(request, "specific_date", None),
+        )
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={"error": "invalid_block", "message": str(exc)},
+        ) from exc
+
+    await db.commit()
+    return _to_block_dto(block)
+
+
+@router.patch(
+    "/{doctor_id}/availability-blocks/{block_id}",
+    response_model=AvailabilityBlockDTO,
+    dependencies=[Depends(require_brand_owner_access(roles=_ADMIN_CLINIC_ROLES))],
+)
+async def patch_availability_block(
+    doctor_id: UUID,
+    block_id: UUID,
+    request: RecurrentBlockCreateRequest | OneOffBlockCreateRequest,
+    tenant_id: str = Header(alias="X-Tenant-ID"),
+    clinic_id: str = Header(alias="X-Clinic-ID"),
+    user_id: str = Header(alias="X-User-ID"),
+    db: AsyncSession = Depends(_get_db),
+) -> AvailabilityBlockDTO:
+    """Edit a block (reproject-future-only invariant).
+
+    Only slots on or after today are re-projected. Past slots are never touched.
+    Confirmed future slots (has_confirmed_appointment=True) are preserved.
+    """
+    svc = _build_block_service(db)
+    try:
+        block = await svc.update_block(
+            block_id=block_id,
+            tenant_id=UUID(tenant_id),
+            clinic_id=UUID(clinic_id),
+            doctor_id=doctor_id,
+            user_id=UUID(user_id),
+            kind=request.kind,
+            start_time=request.start_time,
+            end_time=request.end_time,
+            day_of_week=getattr(request, "day_of_week", None),
+            freq=getattr(request, "freq", None),
+            end_condition_kind=getattr(request, "end_condition_kind", None),
+            end_date=getattr(request, "end_date", None),
+            occurrences=getattr(request, "occurrences", None),
+            specific_date=getattr(request, "specific_date", None),
+        )
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={"error": "invalid_block", "message": str(exc)},
+        ) from exc
+
+    if block is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "error": "availability_block_not_found",
+                "message": "Bloque de disponibilidad no encontrado.",
+            },
+        )
+    await db.commit()
+    return _to_block_dto(block)
+
+
+@router.delete(
+    "/{doctor_id}/availability-blocks/{block_id}",
+    response_model=DeleteBlockResponse,
+    dependencies=[Depends(require_brand_owner_access(roles=_ADMIN_CLINIC_ROLES))],
+)
+async def delete_availability_block(
+    doctor_id: UUID,
+    block_id: UUID,
+    tenant_id: str = Header(alias="X-Tenant-ID"),
+    clinic_id: str = Header(alias="X-Clinic-ID"),
+    user_id: str = Header(alias="X-User-ID"),
+    db: AsyncSession = Depends(_get_db),
+) -> DeleteBlockResponse:
+    """Retire future slots + soft-delete block.
+
+    CRITICAL INVARIANT (delete-block-preserves-confirmed-appointments):
+    Slots with has_confirmed_appointment=True are NEVER deleted.
+    The response includes the count of preserved slots.
+
+    SC-1d: delete block without appointments -> future slots retired, past untouched.
+    SC-3b: delete block with confirmed appt -> warning flow handled by FE;
+           this endpoint returns preserved_appointments=N so FE can show warning.
+
+    Audit: doctor.availability_block_deleted (sync write, HIPAA-lite).
+    """
+    svc = _build_block_service(db)
+    deleted, preserved = await svc.delete_block(
+        block_id=block_id,
+        tenant_id=UUID(tenant_id),
+        clinic_id=UUID(clinic_id),
+        user_id=UUID(user_id),
+    )
+    await db.commit()
+    return DeleteBlockResponse(deleted=deleted, preserved_appointments=preserved)

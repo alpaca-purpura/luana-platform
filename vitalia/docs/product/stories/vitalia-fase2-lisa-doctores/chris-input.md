@@ -302,6 +302,21 @@ Gates: 96/96 tests pass (clinics suite) · 319 arch tests pass · ruff 0 errors 
 Commit: 2f88b316 · Branch: wip/vitalia
 Pre-existing (no scope T-BE-2): `treatment_plans.notes` TEXT vs BYTEA (desde T-BE-1).
 
+### 2026-05-31 — 🤖 claude · `builder-backend` · ✓ APLICADO
+**T-BE-3 — Availability blocks endpoints (GET/POST/PATCH/DELETE) + slot materialization + audit**
+
+Implementado TDD (RED→GREEN). Deliverables:
+- `clinics/api/dtos.py` EXTENDED — `RecurrentBlockCreateRequest`, `OneOffBlockCreateRequest` (discriminated by kind), `AvailabilityBlockDTO`, `AvailabilityBlocksResponse`, `DeleteBlockResponse`
+- `clinics/application/availability_block_service.py` — NEW; orchestrates `AvailabilityProjectionService` (dateutil.rrule) + `AvailabilityBlockRepository` + audit SYNC writes; `delete_block` returns `(True, preserved_count)` (CRITICAL invariant: confirmed slots NEVER deleted)
+- `clinics/api/doctors_router.py` EXTENDED — 4 availability-blocks sub-routes: GET list, POST create (materialization→slots→audit), PATCH edit (reproject-future-only), DELETE retire (preserves confirmed, returns `{deleted, preserved_appointments}`)
+- `tests/modules/vitalia/clinics/test_availability_blocks_api.py` — 30 tests (TDD RED first): response_model= gates, DTO existence, RBAC dependencies, service unit tests (list/create/update/delete/preserve), biweekly occurrences, one-off materialization, delete-preserves-confirmed (CRITICAL SC-3b)
+
+Gates GREEN: 126/126 clinics tests pass · 333/333 arch tests pass (excluding pre-existing CRM debt `treatment_plans.notes TEXT vs BYTEA` — NOT introduced by this ticket) · 0 ruff lint errors · ruff format OK
+
+HIPAA-lite: dual filter (tenant_id+clinic_id) on all routes · RBAC `admin_clinic` on all mutations (POST/PATCH/DELETE) · audit sync write pre-response (`doctor.availability_block_created`, `doctor.availability_block_deleted`) · `response_model=` mandatory on all 4 routes
+
+Forbidden-touch respected: `core/luana-core-*/src/**` and `scheduling/**` NOT touched. Slots materialize to brand-local `vitalia_availability_slots` table — scheduling reads without modification.
+
 ### 2026-05-31 05:18 · 🤖 claude · `/pm-vitalia` · ✓ APLICADO
 **Arranco el tren autónomo `/architect → /dev-team → /auditor → merge` hasta `done`** (pedido explícito de Chris).
 - Step 0 GREEN: worktree CANÓNICO vitalia · sin stories en developing/developed/reviewing (closure gate limpio) · hard deps `vitalia-fase1-empty-states` + `vitalia-fase1-routing-shell` ambas en archive (done) · WIP caps libres (0 ready/developing).

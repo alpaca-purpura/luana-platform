@@ -10,7 +10,7 @@ All DTOs use ConfigDict(from_attributes=True) for SQLAlchemy model_validate.
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime, time
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -202,3 +202,87 @@ class PublicDoctorsResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     doctors: list[PublicDoctorDTO]
+
+
+# ── Availability Block DTOs (T-BE-3) ─────────────────────────────────────────
+
+
+class RecurrentBlockCreateRequest(BaseModel):
+    """Request body for recurrent availability block (discriminated union kind='recurrent').
+
+    Domain validation (03-arch-be.md § 1):
+    - end_condition_kind must be one of: end_date | occurrences | open_ended
+    - if end_condition_kind == 'end_date', end_date is required
+    - if end_condition_kind == 'occurrences', occurrences >= 1 is required
+    """
+
+    kind: str = Field(default="recurrent")
+    start_time: "time"
+    end_time: "time"
+    day_of_week: int = Field(ge=0, le=6, description="0=Monday .. 6=Sunday")
+    freq: str = Field(description="weekly | biweekly")
+    end_condition_kind: str = Field(description="end_date | occurrences | open_ended")
+    end_date: "date | None" = None
+    occurrences: int | None = Field(default=None, ge=1)
+    specific_date: "date | None" = None
+
+
+class OneOffBlockCreateRequest(BaseModel):
+    """Request body for one-off availability block (discriminated union kind='one_off').
+
+    SC-1c: a single specific date — no recurrence.
+    """
+
+    kind: str = Field(default="one_off")
+    start_time: "time"
+    end_time: "time"
+    specific_date: "date"
+
+
+class AvailabilityBlockDTO(BaseModel):
+    """Response DTO for a single availability block.
+
+    Not PHI — availability blocks are scheduling metadata (not patient data).
+    """
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    tenant_id: UUID
+    clinic_id: UUID
+    doctor_id: UUID
+    kind: str
+    start_time: "time"
+    end_time: "time"
+    # Recurrent fields (None for one_off)
+    day_of_week: int | None = None
+    freq: str | None = None
+    end_condition_kind: str | None = None
+    end_date: "date | None" = None
+    occurrences: int | None = None
+    # One-off field (None for recurrent)
+    specific_date: "date | None" = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+
+class AvailabilityBlocksResponse(BaseModel):
+    """Response for GET /{doctor_id}/availability-blocks — list of blocks."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    blocks: list[AvailabilityBlockDTO]
+
+
+class DeleteBlockResponse(BaseModel):
+    """Response for DELETE /{doctor_id}/availability-blocks/{block_id}.
+
+    SC-1d / SC-3b: delete retires future free slots; confirms preserved count.
+    CRITICAL: preserved_appointments indicates confirmed appointments NOT cancelled.
+    """
+
+    model_config = ConfigDict(from_attributes=True)
+
+    deleted: bool
+    preserved_appointments: int
+    """Count of future slots preserved because they have confirmed appointments."""

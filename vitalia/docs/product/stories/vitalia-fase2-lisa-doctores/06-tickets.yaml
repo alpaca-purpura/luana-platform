@@ -65,6 +65,7 @@ tickets:
 
   - id: T-BE-3
     title: "Availability blocks endpoints (GET/POST/PATCH/DELETE) + scheduling slot materialization + audit"
+    state: pushed
     group: "G2-horarios"
     surface: backend
     deliverables:
