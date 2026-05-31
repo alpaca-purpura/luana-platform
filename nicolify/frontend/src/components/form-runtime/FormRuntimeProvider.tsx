@@ -16,9 +16,8 @@
  *   - autosaveError: captured via onError callback (useAutosave doesn't return error)
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-
 import { useAutosave, type AutosaveStatus as LuanaAutosaveStatus } from "@luana/hooks";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 import { useCopilotStore } from "@/features/copilot/store/copilot-store";
 import { createFormRuntimeBridge, type FormRuntimeBridge } from "@/lib/form-runtime/copilot";
@@ -151,7 +150,9 @@ export function FormRuntimeProvider<TValues extends object>({
    */
   const luanaStatus: LuanaAutosaveStatus = autosave.status;
   const autosaveStatus: AutosaveStatus | null = isAutosave
-    ? (luanaStatus === "dirty" ? "idle" : (luanaStatus as AutosaveStatus))
+    ? luanaStatus === "dirty"
+      ? "idle"
+      : luanaStatus
     : null;
 
   const ctxValue: FormRuntimeContextValue = useMemo(

@@ -16,11 +16,9 @@
  * (The debounce window is invisible to the user, same as the prior bespoke impl.)
  */
 
-import { useEffect, useState } from "react";
-
-import { AutosaveBadge } from "@luana/ui-kit";
-import { Button } from "@luana/ui-kit";
 import { cn } from "@luana/format";
+import { AutosaveBadge, Button } from "@luana/ui-kit";
+import { useEffect, useState } from "react";
 
 /**
  * Nicolify banner-level autosave status.
@@ -55,10 +53,7 @@ function SavedBanner({ className }: { className?: string }) {
 
   return (
     <div
-      className={cn(
-        "flex items-center gap-2 rounded-md bg-green-50 px-3 py-2 text-xs",
-        className,
-      )}
+      className={cn("flex items-center gap-2 rounded-md bg-green-50 px-3 py-2 text-xs", className)}
     >
       <AutosaveBadge status="saved" />
     </div>
@@ -104,10 +99,7 @@ export function AutosaveBanner({ status, error, onRetry, className }: AutosaveBa
       )}
     >
       <div className="flex items-center gap-2">
-        <AutosaveBadge
-          status="error"
-          labels={{ error: error?.message ?? "Error al guardar" }}
-        />
+        <AutosaveBadge status="error" labels={{ error: error?.message ?? "Error al guardar" }} />
       </div>
       {onRetry && (
         <Button type="button" size="sm" variant="outline" onClick={onRetry}>

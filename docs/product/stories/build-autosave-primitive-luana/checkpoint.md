@@ -2,8 +2,8 @@
 story_id: build-autosave-primitive-luana
 brand: platform
 type: ui-story
-state: developed
-phase: HANDOFF_TO_AUDITOR
+state: reviewing
+phase: AUDIT_IN_PROGRESS
 last_artifact: T-3-result.md
 build_progress: "T-1 ✅ 77be3d0f (@luana/hooks useAutosave, 11/11) · T-2 ✅ bf86031c (@luana/ui-kit AutosaveBadge, 32/32) · T-3 ✅ bc8c509a (nicolify form-runtime, 143/143)"
 gate_note: "Todos los validators GREEN. @luana hooks/uikit tsc por-package tiene deuda PRE-EXISTENTE del lift (observed-bugs/2026-05-31-luana-hooks-uikit-tsc-lift-debt.md) — la primitiva NO introduce errores tsc nuevos (verificado)."
