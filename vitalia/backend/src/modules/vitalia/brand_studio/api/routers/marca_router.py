@@ -53,7 +53,7 @@ import structlog
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.db import get_async_session
+from src.db import get_async_session_committing
 from src.modules.vitalia._shared.auth.rbac import require_brand_owner_access
 from src.modules.vitalia._shared.telemetry.growth_studio_emitter import GrowthStudioEmitter
 from src.modules.vitalia.audit.audit_writer import AsyncAuditWriter
@@ -106,9 +106,15 @@ router = APIRouter(tags=["brand_studio"])
 
 
 async def _get_db(
-    session: Annotated[AsyncSession, Depends(get_async_session)],
+    session: Annotated[AsyncSession, Depends(get_async_session_committing)],
 ) -> AsyncSession:
-    """Pass-through DI for AsyncSession."""
+    """Pass-through DI for AsyncSession.
+
+    Uses get_async_session_committing so mutations (PATCH/POST/DELETE) are
+    committed at the end of each request. GET routes write nothing so committing
+    an empty transaction is a no-op.
+    Fix: arreglar-guardado-voz-y-tono T-3.bis — personality PATCH was not committed.
+    """
     return session
 
 

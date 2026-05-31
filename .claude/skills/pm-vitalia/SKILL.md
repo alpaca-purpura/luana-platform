@@ -169,7 +169,7 @@ Idéntico paradigm v4 de Luana core. Detalle: `docs/process/pm-redesign-2026-05.
 | "build" / "arranca dev" | Update state ready→developing. **Invocá `Skill(dev-team)`** con args `"vitalia {story-id}"` |
 | "validators GREEN" | Update state developing→developed |
 | "audita" / "QA" | Update state developed→reviewing. **Invocá `Skill(auditor)`** con args `"vitalia {story-id}"` |
-| "{story-id} merge" | Verificar APPROVED + CHECKPOINTS C1-C5 → escribir 07-merge.md → migrar capability → archive story → update state reviewing→done |
+| "{story-id} merge" | Verificar APPROVED + CHECKPOINTS C1-C5 + **dev-app gate** (ADR-008: si `dev_app_verified.required: true` y `evidence` vacío → REFUSE) → escribir 07-merge.md → migrar capability → archive story → update state reviewing→done |
 | "learning {tema}" | Crear `vitalia/docs/learnings/{date}-{slug}.md` con frontmatter promotable: yes/candidate/no |
 | "promotable {tema}" | Append learning con `promotable: candidate` + ping `/pm-luana` para evaluación |
 | "ADR" / "decision arquitectónica" | Crear `vitalia/docs/architecture/ADR-vitalia-NNN-{slug}.md` |
@@ -240,6 +240,8 @@ Al cerrar story `reviewing → done`, aplicar logic del `cap_change_type` al YAM
 Update también `last_modified: today` del cap. Doc: `docs/process/capability-protocol.md` § Sección 5.
 
 **★ Definición de DONE (cement 2026-05-28):** una capability NO puede ser `status=live` sin ≥1 scenario + e2e_test que exista (cross_check_3 HARD). Si no hay e2e aún → status=partial/declared-live, NO live. Ver `docs/process/lifecycle.md` § 4.
+
+**★ Dev-app live verification gate (cement 2026-05-31, ADR-vitalia-008):** ninguna story/bugfix vitalia pasa `reviewing → done` sin `dev_app_verified` válido en su `checkpoint.md`. Árbol: `required: true` por default en ui-story/agentic-story/bugfix (toca superficie que un usuario alcanza en dev-app); `required: false` SOLO interno puro (refactor/infra/migración-only/test-only) con `dev_app_verified_skip_reason`. Si `required: true` → `evidence` obligatorio = acción real ejercida (writes autenticados con `dr.demo@vitalialat.com` + `CLERK_TESTING_TOKEN_VITALIA`) + efecto observado (DB/log). **`GET 200` NO es evidencia; e2e mockeado NO es evidencia.** `/pm-vitalia merge` hace REFUSE si falta. SSoT: `vitalia/docs/architecture/ADR-vitalia-008-dev-app-live-verification-gate.md`.
 
 ## ★ Capability inventory post-merge (MANDATORIO)
 

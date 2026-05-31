@@ -76,6 +76,16 @@ Specs lisa-marca que heredan el mismo problema (mock + testids fantasma + tenant
 test, pero es un contrato FE↔BE roto del mismo módulo. Opciones: BE hace `X-User-ID` opcional en ese GET
 (es un read, no necesita user para listar por tenant+país), ó FE/api-layer lo inyecta. Recomiendo BE-opcional.
 
+## Sub-bug #2 — audit actor identity (HIPAA-lite, WARN del auditor 2026-05-31)
+
+`vitalia/frontend/src/features/lisa/api/marca-voice-api.ts` manda `X-User-ID: tenantId` (el UUID de la
+org) como actor del audit-log, en vez del **Clerk userId** real. → las filas de `vitalia_audit_log` de los
+PATCH de marca registran el actor equivocado (degrada fidelidad HIPAA-lite del "quién"). Es un mismatch
+platform-level Clerk-userId-vs-tenant-UUID (el userId real no está plumbeado al api-layer FE). Non-blocking
+para el bugfix del guardado (los headers son lo que hace funcionar el save), pero stake-asimétrico →
+arreglar acá: plumbear el Clerk userId real al header `X-User-ID` de los endpoints de marca. Mismo área que
+el sub-bug de prohibited-phrases (auth headers FE de los endpoints marca).
+
 ## Direcciones de fix candidatas (para /architect)
 
 1. **Gate de Clerk-ready en el harness:** fixture/POM espera a que Clerk esté plenamente autenticado

@@ -113,6 +113,14 @@ Turn 2
 
 Escribir 1 happy path completo + bullet list edges + adversarial.
 
+**★ v5 cement 2026-05-31 — sincronizar con el `§ Mapa funcional` del `01-spec.md` (capa humana).**
+El happy path turn-by-turn de acá ES la versión agéntica del happy path del mapa. Verificá que el
+`01-spec.md` (de `/po`) tenga el `§ Mapa funcional` completo: **árbol de bifurcaciones** (cada rama de la
+conversación: intent fuera de scope, loop, recovery, injection → resultado → `[SC-N]`), **reglas de negocio**
+(`RN-N`: límites de tool calls, datos que el agente nunca expone, etc.) y **criterios de aceptación** (`AC-N`).
+Si tu diseño descubre branches/RN nuevos → escribilos como `delta-spec.md` y `/po` los suma al Mapa funcional +
+`§ Matriz de cobertura` (cada Bif/RN → ≥1 scenario/eval → verificación REAL). Un branch agéntico sin eval = hueco.
+
 ### Step 3 — State machine agente
 
 Diagrama ASCII:
