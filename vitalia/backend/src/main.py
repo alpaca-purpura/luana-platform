@@ -24,6 +24,7 @@ from src.modules.vitalia.api.routes import router as vitalia_router
 from src.modules.vitalia.api.webhook_routes import webhook_router
 from src.modules.vitalia.brand_studio.api.routers.marca_router import router as marca_router
 from src.modules.vitalia.clinics.api.doctors_router import router as doctors_router
+from src.modules.vitalia.clinics.api.public_doctors_router import router as public_doctors_router
 from src.modules.vitalia.clinics.api.router import router as clinics_router
 from src.modules.vitalia.copilot.api.routes.wizard_onboarding_routes import (
     router as wizard_onboarding_router,
@@ -83,6 +84,8 @@ app.include_router(emit_router, prefix="/api/v1/fiscal")
 app.include_router(marca_router, prefix="/api/v1/lisa/marca", tags=["brand_studio"])
 # T-BE-1 F2-S8: Lisa Staff doctors router — CRUD + RBAC + pgcrypto dual-filter
 app.include_router(doctors_router, prefix="/api/v1/vitalia/clinics/doctors", tags=["staff"])
+# T-BE-5 F2-S8: Public doctors router — unauthenticated, allow-list channel guard
+app.include_router(public_doctors_router, prefix="/api/public/clinic", tags=["public"])
 
 
 class HealthResponse(BaseModel):

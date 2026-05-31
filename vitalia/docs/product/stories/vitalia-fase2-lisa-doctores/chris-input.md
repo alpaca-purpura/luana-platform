@@ -334,3 +334,27 @@ V-FN-9 (validator): 12/12 PASS
 - Step 0 GREEN: worktree CANÓNICO vitalia · sin stories en developing/developed/reviewing (closure gate limpio) · hard deps `vitalia-fase1-empty-states` + `vitalia-fase1-routing-shell` ambas en archive (done) · WIP caps libres (0 ready/developing).
 - Story `state: refined`, ratificada visual + funcional por Chris, prior-art scan hecho. Transición `refined → ready` vía `/architect` válida.
 - Encadeno `Skill(architect)` inline con `vitalia vitalia-fase2-lisa-doctores`. Le pido **declarar `autonomous_mode: true`** en el dispatch-plan para que el pipeline corra solo hasta el merge (Chris ratificó el modo autónomo en este turno).
+
+### 2026-05-31 — 🤖 claude · `builder-backend` · ✓ APLICADO
+**T-BE-5 — Public doctors endpoint (allow-list channel guard) + masking + new arch test**
+
+Implementado TDD (RED→GREEN). Deliverables completados:
+
+- `clinics/application/public_doctor_serializer.py` — NEW; `to_public_dto(doctor, *, credential_label=None) -> PublicDoctorDTO`; explicit allow-list of 7 fields: `display_name, specialty, avatar_key, years_experience, languages, bio_public, credential_label`; NEVER accesses `doctor.dni/.email/.phone/.credential`; allow-list is the security boundary (adding PHI to Doctor model does NOT leak it)
+- `clinics/api/public_doctors_router.py` — NEW; `GET /{tenant_slug}/doctors`; no auth (intentionally public); `response_model=PublicDoctorsResponse`; resolves clinic by slug via `ClinicRepository.get_by_slug_public()` (no tenant_id required for public lookup); fetches visible+active doctors via `DoctorRepository.list_public()`; channel guard via `to_public_dto()`
+- `clinics/infrastructure/repositories/clinic_repository.py` EXTENDED — added `get_by_slug_public(slug)` method (active+non-deleted lookup without tenant_id, for public endpoint only)
+- `main.py` — `include_router(public_doctors_router, prefix=/api/public/clinic, tags=["public"])`; route: `GET /api/public/clinic/{tenant_slug}/doctors`
+- `tests/architecture/test_public_doctors_allowlist.py` — SKIP resolved; was `pytest.skip("T-BE-5 scope")`, now PASSES: `test_public_doctor_serializer_exists` GREEN (was previously skipped)
+- `tests/modules/vitalia/clinics/test_public_doctors_endpoint.py` — NEW 29 tests TDD RED-first; covers V-FN-11 + V-ARCH-7: serializer import/return type/7-exact-fields/all-7-allowed-fields/no-PHI-leak (dni/email/phone/credential), router contract (GET route/response_model/PublicDoctorsResponse/no-auth), filtering (visible+active not in DTO/tenant_id not leaked/clinic_id not leaked), main.py registration
+
+Gates GREEN:
+- `vitalia/backend/tests/modules/vitalia/clinics/` — 172 passed · 0 failed · 1 warning (pre-existing core config deprecation)
+- `vitalia/backend/tests/architecture/test_public_doctors_allowlist.py` — 5 passed (was 4+1 skip; skip resolved)
+- ruff check: 0 errors
+- ruff format: 0 reformats needed
+
+HIPAA-lite compliance: channel guard via explicit allow-list (not deny-list) · `visible_en_landing AND active` double filter at SQL level · PHI fields (dni/email/phone/credential) never serialized · no X-Tenant-ID required (public endpoint) · `response_model=` mandatory (arch test V-ARCH-7)
+
+Pre-existing excluded: `treatment_plans.notes TEXT vs BYTEA` (from migration 021, NOT introduced by this ticket — per task spec "ignore pre-existing treatment_plans.notes CRM debt")
+
+V-FN-11: PASS · V-ARCH-7: PASS (arch test skip resolved, now 5/5)

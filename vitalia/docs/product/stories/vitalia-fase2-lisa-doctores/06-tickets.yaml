@@ -108,6 +108,7 @@ tickets:
 
   - id: T-BE-5
     title: "Public doctors endpoint (allow-list channel guard) + masking + new arch test"
+    state: pushed
     group: "G3-public-assets"
     surface: backend
     deliverables:
