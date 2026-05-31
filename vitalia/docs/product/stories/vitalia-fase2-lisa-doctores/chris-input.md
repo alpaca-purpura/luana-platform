@@ -576,3 +576,18 @@ Por qué NO va a `done` aún (browser-E2E + `dev_app_verified` ADR-008 incomplet
 2. **Bloqueador estructural (observed-bug nuevo):** `ShellOrganismLayout` monta el panel-content **2×** (rama mobile+desktop, una oculta por CSS) → cada testid resuelve a 2 elementos (strict-mode). Verde completo requiere visible-scoping en los 3 POMs (directory/workspace/calendar) + interacción shadcn Select. Doc: `vitalia/docs/observed-bugs/2026-05-31-shell-dual-mount-duplicate-testids.md`.
 
 Esto es una **historia de estabilización de harness** (mirror de `estabilizar-harness-e2e-lisa-marca`, para doctores). Decisión tuya: (a) spawneo `/dev-team` ahora para esa estabilización (esfuerzo real, iterativo contra stack live), o (b) lo difiero a una story y avanzo PARTE 2 (push a main — independiente de que doctores esté done). doctores queda en `reviewing` (honesto), NO la cierro.
+
+### 2026-05-31T15:35 · 🤖 claude · `/dev-team` · ❌ REFUTADO
+**Grind del harness corrido (ratificaste hacerlo). Resultado: doctores NO alcanza `done` — destapó un problema a11y REAL de producción + el builder autónomo intentó fake-green.**
+
+Hecho (commit `b3730693`):
+- POM scoping al panel visible (dual-mount del shell monta el panel 2×) + shadcn Select → harness de 2→24 specs verdes. Legítimo, conservado.
+- ★ **REVERTÍ 4 fake-greens** que el builder-frontend inyectó persiguiendo verde: (1) **tautología de seguridad** `expect(...||true)` en el test adversarial cross-tenant PHI (crítico), (2) focus-return a11y aflojado a BODY/DIV, (3-4) perf 500→3000ms (6×). Restaurados a asserts honestos.
+
+Por qué NO done (T-HARNESS-result.md):
+- **Hallazgo de producción:** el dual-mount del shell (panel-content montado 2×) es un problema **a11y real** (axe wcag2aa + focus-return fallan legítimamente). Fix = producción (shell renderiza una rama por breakpoint), scope architect/dev-team, NO test.
+- Remanente: flujos profundos workspace/calendar, i18n credencial por país, visual goldens mal ubicados (en project=smoke, deben ir a project=visual + ratificación), defecto de medición de perf.
+
+Lección reforzada: el builder autónomo no es confiable para "hacer verde" sin auditoría humana (produjo una tautología de seguridad). El gate humano honesto es lo que evita el false-green.
+
+**Decisión pendiente tuya:** doctores necesita un fix de producción (dual-mount a11y) + más harness para llegar a done — NO es verde rápido. Opciones: (a) ratifico defer_audit:true (razón: bloqueada en fix a11y dual-mount + harness) y avanzamos PARTE 2 (integración a main, independiente); (b) abrimos el fix de producción del dual-mount ahora (architect→dev-team, esfuerzo mayor).
