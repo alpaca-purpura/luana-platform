@@ -106,3 +106,18 @@ PATCH 200, no 500 — 3.8s) + **bloque no-422** (camelCase fix — 11.9s). Confi
 
 State `developed`. Encadeno a `/auditor`. Commits: `38aa5c8b` `98a903a5` `a0060e7a` `81b13787` `2b12924e`
 `560a5f54` `f19a21c3` `24331331`.
+
+### 2026-05-31T00:40 · 🤖 claude · `/auditor` · ✓ APLICADO
+Auditoría independiente (2 sub-auditores Opus, BE + FE) → **APPROVED**. Gates verificados aparte: ruff/format
+clean, pytest audit+brand_studio + arch fitness verdes, tsc/eslint clean, E2E núcleo determinista.
+- **BE (APPROVED, 0 flags):** los 4 fixes correctos · PHI redaction **restaurada** (estaba muerta — hueco
+  HIPAA-lite cerrado) · sin ciclo de import audit→compliance · `CAST(:x AS uuid)` semánticamente exacto ·
+  alias camelCase scoped a 2 DTOs (`extra=forbid` sigue bloqueando extras) · telemetría async+tenant_id OK.
+- **FE (APPROVED + 1 WARN non-blocking):** `getTokenReady()` sólido (acotado, no enmascara fallos reales) ·
+  testids 100% no-visuales · quarantine honesto y bien apuntado (el regression real NO está quarantined).
+  **WARN diferido:** `marca-voice-api.ts` manda `X-User-ID: tenantId` (UUID org) en vez del Clerk userId →
+  fidelidad de actor del audit-log HIPAA-lite. Stake-asimétrico, non-blocking → lo metí en
+  `estabilizar-harness-e2e-lisa-marca` § Sub-bug #2.
+- CHECKPOINTS.md C1-C5 APPROVED · 06-audit/gherkin-matrix.md (6/8 determinístico + 2 quarantined pointed).
+
+State `reviewing`. Encadeno a `/pm-vitalia` para el **merge** (07-merge + wire e2e_test cap lisa-marca + archive → done).

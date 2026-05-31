@@ -2,9 +2,12 @@
 story_id: arreglar-guardado-voz-y-tono
 brand: vitalia
 type: bugfix
-state: developed
-phase: HANDOFF_TO_AUDITOR
-last_artifact: T-3-result.md
+state: reviewing
+phase: HANDOFF_TO_PM_MERGE
+last_artifact: CHECKPOINTS.md
+gherkin_matrix: 06-audit/gherkin-matrix.md
+audit_verdict: APPROVED
+last_artifact_prev: T-3-result.md
 build_summary: >-
   4 root causes fixed + VERIFIED LIVE (curl real backend → 200 + audit + telemetry).
   T-1 38aa5c8b (sanitize TypeError) · T-1.bis a0060e7a (SQL ::uuid cast) ·
@@ -37,7 +40,7 @@ ratified_by_chris: true
 ratified_by_chris_at: '2026-05-30T22:10:00-05:00'
 repro_verified: true
 parallel_safe: true
-next_action: AUTO-HANDOFF /auditor vitalia arreglar-guardado-voz-y-tono → /pm-vitalia merge
+next_action: /pm-vitalia merge → 07-merge.md + wire e2e_test cap lisa-marca + git mv archive → state=reviewing→done
 goal: >-
   Cuando cambio de Arquetipo principal me sale un mensaje de error en el
   guardado automático. Corregirlo + revisar/crear la prueba E2E Playwright que
