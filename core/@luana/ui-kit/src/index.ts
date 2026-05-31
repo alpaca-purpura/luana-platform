@@ -1,3 +1,5 @@
+// AutosaveBadge — primitiva de autoguardado compartida (ADR-012, build-autosave-primitive-luana T-2)
+export * from "./AutosaveBadge";
 export * from "./accordion";
 export * from "./alert";
 export * from "./alert-dialog";
