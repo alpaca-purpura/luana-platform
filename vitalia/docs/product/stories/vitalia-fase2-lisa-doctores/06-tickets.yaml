@@ -151,7 +151,7 @@ tickets:
       forbidden_to_touch: ["core/luana-core-*/src/**", "core/luana-core-assets/**"]
       rationale: "CONSUME proxy upload (presign doesn't exist in engine, D-3). Copy nicolify main.py wiring. No engine edit — Sonnet. Tests use LocalStorageStrategy (live R2 = Chris manual in T-BE-7)."
 
-  - id: T-BE-7
+  - id: T-BE-7   # state: pushed (doc-only · chris_manual_action pending) 
     title: "R2 provisioning prep (Chris manual action gate) + env wiring doc"
     group: "G3-public-assets"
     surface: backend-ops
