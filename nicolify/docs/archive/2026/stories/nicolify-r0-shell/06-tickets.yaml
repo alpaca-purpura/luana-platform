@@ -1,0 +1,272 @@
+# 06-tickets — nicolify-r0-shell
+# FE + dev-stack boot · 7 work units · primary_agent SIEMPRE builder-frontend
+# DAG: T-0 (dev-stack boot, absorbido 2026-05-30) → T-1..T-6. La story termina con la app CORRIENDO live.
+schema_version: v4.1
+story_id: nicolify-r0-shell
+brand: nicolify
+architecture_pattern: ADR-nicolify-001
+surface: FE
+# external_precondition nicolify-r0-dev-stack ABSORBIDO como T-0 (2026-05-30, ratif. Chris) —
+# para que al término la app sea realmente funcional (BE+FE green + login + shell reachable live).
+
+tickets:
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: T-0
+    title: "Dev-stack boot: make dev-nicolify green (BE :8001 + FE :3001) + Clerk middleware tenant routes + live smoke"
+    surface: FE+infra        # ~90% del stack ya existe (BE main.py+health 200✓, alembic baseline 001✓, scaffold FE+Clerk, docker-compose, Makefile) — esto CABLEA el boot + verifica live
+    production_code: true
+    block: "Dev-stack (foundational · absorbido de nicolify-r0-dev-stack)"
+    depends_on: []
+    owner_eligibility: [opencode, sonnet, opus]
+    deliverables:
+      - "Verificar `make dev-nicolify` levanta BE :8001 (health 200 ✓ ya operativo) + FE :3001 green · documentar boot en T-0-impl-log"
+      - "Clerk middleware (nicolify/frontend/src/proxy.ts o middleware): protege `[tenantId]/**` (unauth → redirect /sign-in) + allowlist `/api/health` + `/sign-in` + `/sign-up`"
+      - "Verificar `.env.dev` completo desde `.env.dev.template` (Clerk keys + tenant defaults) + alembic baseline `001_nicolify_iam_baseline` aplicado (`alembic current`)"
+      - "react-resizable-panels@^4.11.1 instalado (coordina con T-1) + `pnpm/npm install` green"
+      - "smoke e2e LIVE (A0): make dev-nicolify up → Clerk testing-token login → redirect a DEFAULT_LANDING (christian/pipeline) → shell root responde HTTP 200 sin crash (con shell construido en T-1..T-6, este smoke se valida al final)"
+    gherkin_coverage: [A0]
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: sonnet
+      must_load_skills:
+        - nicolify-design-system
+        - frontend-expert
+        - playwright-expert
+        - .claude/rules/tenant-isolation.md
+        - .claude/rules/frontend-fsd.md
+      must_load_artifacts:
+        - "nicolify/docs/product/stories/nicolify-r0-shell/03-arch.md § Integration design (CONN) + § 16 (deps/IAM skeleton)"
+        - "nicolify/CLAUDE.md § Brand-specific commands (make dev-nicolify · curl :8001/health)"
+        - "nicolify/.env.dev.template"
+      forbidden_to_touch: ["core/@luana/**", "vitalia/**", "nicolify/backend/src/modules/nicolify/**"]
+      rationale: "Foundational — el stack ya está ~90% (BE health 200, alembic baseline, scaffold FE+Clerk). T-0 CABLEA el boot (middleware tenant routes + env + deps) y deja `make dev-nicolify` verde. NO toca código BE (main.py + IAM baseline ya existen). El smoke live A0 se cierra cuando el shell (T-1..T-6) está construido → garantiza app funcional al término."
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: T-1
+    title: "Tokens nicolify.com + globals.css + ThemeToggle + _agent-tw-classes + dep splitter"
+    surface: FE
+    production_code: true
+    block: "A (tokens) · Bloque B parcial (tema)"
+    depends_on: [T-0]
+    owner_eligibility: [opencode, sonnet, opus]
+    deliverables:
+      - "globals.css: tokens nicolify.com (Tailwind v4 @theme/@layer) :root + .dark · primario #635BFF + agent-colors + League Spartan/Bree Serif + Z_INDEX de @luana/design-tokens"
+      - "ThemeToggle.tsx (port) + script SSR inline en <head> (no FOUC) + suppressHydrationWarning en <html>"
+      - "_agent-tw-classes.ts (G3 static lookup · class literals por slug) + test"
+      - "package.json: + react-resizable-panels@^4.11.1 (gap detectado)"
+      - "arch test: _agent-tw-classes (no template literals) + spanish-neutro baseline"
+    gherkin_coverage: [B2]
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: sonnet
+      must_load_skills:
+        - nicolify-design-system
+        - frontend-expert
+        - tessl__tailwind
+        - tessl__vitest
+        - nicolify/.claude/rules/shell-feature-architecture.md
+        - .claude/rules/frontend-fsd.md
+        - .claude/rules/spanish-text.md
+      must_load_artifacts:
+        - "nicolify/docs/product/stories/nicolify-r0-shell/03-arch.md § 10 + § Architecture Decisions D3"
+        - "nicolify/docs/architecture/SHELL-DESIGN-CONTRACT.md § 2 Tokens + § 6 Catálogo agentes"
+      forbidden_to_touch: ["core/@luana/**", "vitalia/**", "nicolify/backend/**"]
+      rationale: "Tokens + tema = base de todo el shell. Tailwind v4 CSS-based (no config.ts). Sonnet sweet spot. G3 JIT-safe enforce."
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: T-2
+    title: "TopBarGlobal + LogoMark + TenantSwitcher (skeleton)"
+    surface: FE
+    production_code: true
+    block: "B (topbar)"
+    depends_on: [T-1]
+    owner_eligibility: [opencode, sonnet, opus]
+    deliverables:
+      - "TopBarGlobal.tsx (port · role=banner · LogoMark izq + [splitter ctrl · ThemeToggle · TenantSwitcher] der · h-12)"
+      - "LogoMark.tsx (port · svg claro/oscuro nicolify · aria-label 'Nicolify inicio') + copiar logos a public/nico-assets/"
+      - "TenantSwitcher.tsx + TenantBadge + TenantOption (port skeleton · placeholder 'Cambiar de agencia')"
+      - "visual golden: shell-desktop-light (header[role=banner])"
+    gherkin_coverage: [B1]
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: sonnet
+      must_load_skills:
+        - nicolify-design-system
+        - frontend-expert
+        - tessl__shadcn-ui
+        - tessl__react-patterns
+        - playwright-expert
+        - .claude/rules/frontend-visual-fidelity.md
+        - .claude/rules/spanish-text.md
+      must_load_artifacts:
+        - "nicolify/docs/product/stories/nicolify-r0-shell/01-spec.md § Microcopy + § Componentes"
+        - "nicolify/docs/architecture/SHELL-DESIGN-CONTRACT.md § 4 Organismos (TopBarGlobal)"
+      forbidden_to_touch: ["core/@luana/**", "vitalia/**", "nicolify/components/ui/**", "nicolify/backend/**"]
+      rationale: "Port verbatim re-tematizado de TopBarGlobal/LogoMark/TenantSwitcher. FE standard, Sonnet."
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: T-3
+    title: "Layout dual-mode + splitter 3 estados + useShellStore SSR-safe (G2)"
+    surface: FE
+    production_code: true
+    block: "C (layout + splitter)"
+    depends_on: [T-1]
+    owner_eligibility: [opencode, sonnet, opus]
+    deliverables:
+      - "shell-store.ts (port re-tematizado · LuanaState/ShellSplitState/mobileDrawerOpen · createSsrSafePersistedStore · key nicolify-shell-state) + tests (estados + hydration)"
+      - "ShellOrganismLayout.tsx (port · dynamic({ssr:false}) boundary · skeleton store-free)"
+      - "ShellOrganismLayoutClient.tsx (port · Group/Panel/Separator · useGroupRef snap-up · useStoreHydration · hit-area ≥8px · C/R/F · aria-label)"
+      - "AppPanelSlot.tsx (port · Ribbon+SubTabsBar+SubSubTabsBar+children slot) · useViewportGuard.ts (one-way rail <1104px)"
+      - "arch test: no-store-in-ssr-skeleton (G2)"
+    gherkin_coverage: [C1, C2, C3, B3]
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: sonnet
+      must_load_skills:
+        - nicolify-design-system
+        - frontend-expert
+        - tessl__react-patterns
+        - tessl__vitest
+        - playwright-expert
+        - .claude/rules/frontend-fsd.md
+        - .claude/rules/test-design-doctrine.md
+      must_load_artifacts:
+        - "nicolify/docs/product/stories/nicolify-r0-shell/03-arch.md § 5 (shell-store types) + § Architecture Decisions G2/G3"
+        - "nicolify/docs/product/stories/nicolify-r0-shell/01-spec.md § Bloque C (splitter scenarios C1-C3)"
+        - "nicolify/docs/architecture/ADR-nicolify-001-shell-feature-architecture.md § Gates G2"
+      forbidden_to_touch: ["core/@luana/**", "vitalia/**", "nicolify/components/ui/**", "nicolify/backend/**"]
+      rationale: "Pieza más sensible (SSR-safe store + splitter snap-up — bug Vitalia conocido C3). Port verbatim del store/layout vitalia + createSsrSafePersistedStore de @luana/hooks. Sonnet con port-fidelity estricta."
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: T-4
+    title: "Panel Luana (orquestador skeleton · LuanaSidebar 3 estados + chat skeleton)"
+    surface: FE
+    production_code: true
+    block: "D (panel Luana)"
+    depends_on: [T-3]
+    owner_eligibility: [opencode, sonnet, opus]
+    deliverables:
+      - "LuanaSidebar.tsx (port ValeriaSidebar→Luana · role=complementary · C/R/F · mobile drawer slice independiente)"
+      - "LuanaRail.tsx / LuanaHistory.tsx (lista + búsqueda · empty-state o _mock-conversations) / LuanaChat.tsx"
+      - "ChatHeader / ChatMessages / MessageBubble / ChatComposer (placeholder 'Escríbele a Luana…' NO-funcional) / TypingIndicator / HistoryGroup / HistoryItem (port) + _mock-{conversations,messages}.ts"
+      - "AgentAvatar.tsx (port · fallback inicial si 404) · avatar Luana #635BFF en header"
+      - "visual golden: luana-chat-skeleton + luana-rail · mobile drawer test (D2)"
+    gherkin_coverage: [D1, D2]
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: sonnet
+      must_load_skills:
+        - nicolify-design-system
+        - frontend-expert
+        - tessl__react-patterns
+        - tessl__shadcn-ui
+        - playwright-expert
+        - .claude/rules/frontend-visual-fidelity.md
+        - .claude/rules/spanish-text.md
+      must_load_artifacts:
+        - "nicolify/docs/product/stories/nicolify-r0-shell/01-spec.md § Bloque D + § Microcopy (composer)"
+        - "nicolify/docs/architecture/SHELL-DESIGN-CONTRACT.md § 4 (LuanaSidebar/Rail/History/Chat)"
+      forbidden_to_touch: ["core/@luana/**", "vitalia/**", "nicolify/components/ui/**", "nicolify/backend/**", "nicolify/backend/src/modules/nicolify/copilot/**"]
+      rationale: "Panel Luana = SKELETON no-funcional (cero runtime agéntico). Port re-tematizado de Valeria*→Luana*. Composer NO envía. Sonnet (NO builder-agentic — no hay lógica de agente, es chrome FE)."
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: T-5
+    title: "Ribbon 5 agentes + Config + SubTabsBar + shell-routes.ts (SSoT)"
+    surface: FE
+    production_code: true
+    block: "E (ribbon + sub-tabs)"
+    depends_on: [T-1, T-3]
+    owner_eligibility: [opencode, sonnet, opus]
+    deliverables:
+      - "shell-routes.ts (NEW SSoT · AGENT_CATALOG[abel,brenda,christian,sara,norvil,config] + DEFAULT_LANDING christian/pipeline + AGENT_SUBTABS del nav-tree + guards isValidAgent/isValidSubtab/getDefaultSubtab) + tests (incl. XSS/path-injection whitelist · cubre A4)"
+      - "Ribbon.tsx + RibbonTab.tsx + ConfigTab.tsx (port · 5 tabs + Config · agent-color border via _agent-tw-classes · roving tabindex · mobile overflow-x-auto + ConfigTab ml-auto)"
+      - "SubTabsBar.tsx + SubTab.tsx + SubSubTabsBar.tsx + SubSubTab.tsx (port · URL-derived active)"
+      - "avatares: copiar placeholders a public/agents/{abel,brenda,christian,sara,norvil}/avatar.svg"
+      - "arch test: shell-routes SSoT (no hardcode sub-tabs/agentes fuera del archivo) · visual golden ribbon-abel-active"
+    gherkin_coverage: [E1, E2, E3, E4, E5, A4]
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: sonnet
+      must_load_skills:
+        - nicolify-design-system
+        - frontend-expert
+        - tessl__react-patterns
+        - tessl__vitest
+        - playwright-expert
+        - .claude/rules/frontend-fsd.md
+        - .claude/rules/frontend-visual-fidelity.md
+      must_load_artifacts:
+        - "nicolify/docs/product/stories/nicolify-r0-shell/01-spec.md § Routing SSoT + § Bloque E"
+        - "nicolify/docs/product/stories/nicolify-r0-shell-organism/navigation-tree.md (★ Sara solo [proyectos] en R0)"
+        - "nicolify/docs/architecture/SHELL-DESIGN-CONTRACT.md § 5 Modelo navegación + § 6 Catálogo"
+      forbidden_to_touch: ["core/@luana/**", "vitalia/**", "nicolify/components/ui/**", "nicolify/backend/**"]
+      rationale: "Ribbon + SubTabsBar port re-tematizado + shell-routes SSoT (5 agentes nicolify, Sara solo proyectos). agent-color via _agent-tw-classes (T-1). Sonnet."
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: T-6
+    title: "Routing route-group + not-found jerárquico + empty-states + e2e regression"
+    surface: FE
+    production_code: true
+    block: "F (routing + empty-states)"
+    depends_on: [T-2, T-4, T-5]
+    owner_eligibility: [opencode, sonnet, opus]
+    deliverables:
+      - "app/[tenantId]/(shell-organism)/{layout.tsx (Server · tenant skeleton resolve · D1), page.tsx (redirect→DEFAULT_LANDING), not-found.tsx}"
+      - "[agent]/{page.tsx (redirect→getDefaultSubtab), not-found.tsx ('Ese agente no existe')}"
+      - "[agent]/[subtab]/{page.tsx (Server · valida agent+subtab → SubTabContent), not-found.tsx ('Esa sección no existe para este agente')}"
+      - "SubTabContent.tsx dispatcher (subtab → EmptyState) + EmptyState.tsx/EmptyStateInline/PlaceholderCard (port · copy nicolify tuteo)"
+      - "20 e2e regression specs (1:1 scenarios A1-A5/B1-B3/C1-C3/D1-D2/E1-E5/F1-F2) + axe wcag2aa + a11y keyboard (F1) + i18n spanish-neutro (F2)"
+      - "boot-live-smoke.spec.ts (CIERRA A0 · DoD): con make dev-nicolify up + shell construido → login Clerk → DEFAULT_LANDING → shell reachable HTTP 200. Es el gate 'app realmente funcional' que T-0 dejó preparado."
+    gherkin_coverage: [A1, A2, A3, A5, F1, F2, A0]
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: sonnet
+      must_load_skills:
+        - nicolify-design-system
+        - frontend-expert
+        - playwright-expert
+        - tessl__nextjs-app-router-modularization
+        - tessl__react-patterns
+        - .claude/rules/frontend-fsd.md
+        - .claude/rules/spanish-text.md
+        - .claude/rules/anti-orphan-integration.md
+        - .claude/rules/test-design-doctrine.md
+      must_load_artifacts:
+        - "nicolify/docs/product/stories/nicolify-r0-shell/01-spec.md § Bloque A + F + § Microcopy (404 + empty-states)"
+        - "nicolify/docs/product/stories/nicolify-r0-shell/03-arch.md § Integration design (CONN) + § Architecture Decisions D1"
+        - "nicolify/docs/product/stories/nicolify-r0-shell/04-validators.yaml § scenario_coverage + test_construction_plan"
+      forbidden_to_touch: ["core/@luana/**", "vitalia/**", "nicolify/components/ui/**", "nicolify/backend/**", "nicolify/frontend/src/app/{sign-in,sign-up,api}/**"]
+      rationale: "Cierre de integración (CONN): routing + not-found jerárquico + empty-states + e2e completo. Layout tenant-resolution skeleton (D1, no IAM completo). Server-First Next.js 16. Sonnet. E2E native :3001 (no Docker)."
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DAG dependencies
+# ─────────────────────────────────────────────────────────────────────────────
+dag:
+  edges:
+    - "T-0 → T-1"
+    - "T-1 → T-2"
+    - "T-1 → T-3"
+    - "T-1 → T-5"
+    - "T-3 → T-4"
+    - "T-3 → T-5"
+    - "T-2 → T-6"
+    - "T-4 → T-6"
+    - "T-5 → T-6"
+  critical_path: "T-0 → T-1 → T-3 → T-5 → T-6"
+  parallelizable: "T-2 ∥ (T-3→T-4) tras T-1 ; T-5 tras T-1+T-3"
+  definition_of_done: "App funcional LIVE — el smoke A0 (login Clerk → DEFAULT_LANDING → shell reachable) se valida tras T-6 con make dev-nicolify levantado. T-0 dejó el boot+middleware listos; T-6 construyó el shell que el smoke recorre."
+
+# ─────────────────────────────────────────────────────────────────────────────
+# gherkin_coverage (story-level rollup — 100% de los 20 scenarios A1-F2)
+# ─────────────────────────────────────────────────────────────────────────────
+gherkin_coverage:
+  total: 21
+  covered: 21
+  pct: 100
+  by_ticket:
+    T-0: [A0]
+    T-1: [B2]
+    T-2: [B1]
+    T-3: [C1, C2, C3, B3]
+    T-4: [D1, D2]
+    T-5: [E1, E2, E3, E4, E5, A4]
+    T-6: [A1, A2, A3, A5, F1, F2]

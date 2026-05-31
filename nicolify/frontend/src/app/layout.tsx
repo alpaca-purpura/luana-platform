@@ -1,17 +1,17 @@
+// cap: shell-organism.shell-nicolify
+// story-origin: nicolify-r0-shell T-1
 /**
  * RootLayout — Nicolify app root layout.
  *
- * Mounts ClerkProvider via Providers wrapper (foundational AD-1 exception —
- * this file is touched because ClerkProvider must wrap the entire app tree,
- * and layout.tsx is the entry point. AD-1 documents this as intentional:
- * "shell-feature-architecture NO aplica — esta es bootstrap auth, no sub-tab UI").
+ * T-1 additions (nicolify-r0-shell tokens/theme):
+ * - Google Fonts preconnect + preload (League Spartan + Bree Serif)
+ * - SSR anti-FOUC inline script en <head> (lee "nicolify-theme" de localStorage
+ *   y aplica class "dark" antes del primer render — evita flash of unstyled content)
+ * - suppressHydrationWarning en <html> (necesario cuando next-themes maneja la clase)
  *
- * NO shell, NO topbar — those are separate stories (nicolify-r0-topbar, etc).
- * NO design tokens — handled in nicolify-r0-design-system-tokens story.
+ * Mounts Providers (ThemeProvider + ClerkProvider + QueryClientProvider).
  *
  * lang="es" per spanish-text.md (Spanish neutro LatAm, tuteo, sin voseo).
- *
- * T-3 (nicolify-r0-dev-stack): FE Clerk wiring bootstrap.
  */
 import { Providers } from "./providers";
 
@@ -25,7 +25,31 @@ export const metadata: Metadata = {
 };
 
 /**
- * Root layout — wraps app with Providers (ClerkProvider + QueryClientProvider).
+ * SSR anti-FOUC script: lee "nicolify-theme" de localStorage en el cliente
+ * ANTES del hydration y aplica la clase "dark" en <html> si corresponde.
+ * Evita el parpadeo (flash of unstyled content) en modo oscuro.
+ *
+ * MUST be rendered as dangerouslySetInnerHTML (no JSX — evita escape de strings).
+ * suppressHydrationWarning en <html> cubre la diferencia server/client del atributo data-theme.
+ */
+const themeScript = `
+(function() {
+  try {
+    var theme = localStorage.getItem('nicolify-theme');
+    var isDark = theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+  } catch (e) {}
+})();
+`;
+
+/** Extracted to satisfy react-perf/jsx-no-new-object-as-prop — stable reference */
+const themeScriptInnerHtml = { __html: themeScript } as const;
+
+/**
+ * Root layout — wraps app with anti-FOUC script + Providers.
  */
 export default function RootLayout({
   children,
@@ -34,6 +58,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
+      <head>
+        {/* Google Fonts preconnect — DNS + TLS hints (fonts cargadas vía globals.css @import) */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* SSR anti-FOUC: aplica dark class antes del primer render */}
+        <script dangerouslySetInnerHTML={themeScriptInnerHtml} />
+      </head>
       <body className="min-h-screen bg-background font-sans antialiased">
         <Providers>{children}</Providers>
       </body>

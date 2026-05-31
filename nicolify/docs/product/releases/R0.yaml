@@ -18,13 +18,8 @@ created_by: chris
 # Drag stories entre releases en cockpit Roadmap actualiza esta lista + el `release:` field del checkpoint.md
 stories:
   - nicolify-r0-shell-organism              # design-story DONE · contrato + nav-tree + mockup ratificado + ADR-nicolify-001
-  - nicolify-r0-dev-stack                   # [1] blocker · BE:8001 + FE:3001 + health + alembic + Clerk
-  - nicolify-r0-design-system-tokens        # [2] globals.css paleta nicolify.com + League Spartan + dark + ThemeToggle
-  - nicolify-r0-topbar                      # [3] TopBarGlobal + LogoMark + TenantSwitcher (derecha) + ThemeToggle
-  - nicolify-r0-shell-layout-splitter       # [4] ShellOrganismLayout dual-mode 50/50 + splitter resizable + SSR-safe store
-  - nicolify-r0-luana-chat                  # [5] LuanaSidebar (rail/history/chat skeleton) orquestador
-  - nicolify-r0-ribbon-subtabs              # [6] Ribbon 4 agentes + Config + SubTabsBar + shell-routes.ts
-  - nicolify-r0-routing-empty-states        # [7] routing [agent]/[subtab]/page.tsx + empty states
+  - nicolify-r0-shell                       # [1] FUSION (2026-05-30, ratif. Chris) de 7 stories → shell-organism completo + dev-stack boot (T-0). Tokens+topbar+layout/splitter+panel Luana+ribbon/sub-tabs+routing/empty-states + boot live (BE:8001+FE:3001+Clerk). DoD: app funcional LIVE. Porta base FE de Vitalia re-tematizada.
+# Fusionadas en nicolify-r0-shell: design-system-tokens, topbar, shell-layout-splitter, luana-chat, ribbon-subtabs, routing-empty-states, dev-stack (T-0)
 
 # Legacy outcome mapping (net-new · no mapea a outcome legacy)
 maps_legacy_outcome: null

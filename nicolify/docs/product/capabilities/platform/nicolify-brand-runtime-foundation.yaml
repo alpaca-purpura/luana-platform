@@ -1,3 +1,4 @@
+---
 capability_id: nicolify-platform-brand-runtime-foundation
 module: platform
 slug: nicolify-brand-runtime-foundation
@@ -6,6 +7,8 @@ cap_change_type: new
 date_introduced: 2026-05-30
 story_introduced: nicolify-r0-dev-stack
 release: R0
+map_box: plataforma-tecnica       # paradigma 3 zonas (ADR-nicolify-002) · runtime foundation (BE+FE+auth)
+user_visible: false               # zona Infraestructura → no en el mapa de valor principal
 package_version: "0.1.0"
 package_path: nicolify/backend + nicolify/frontend
 license: proprietary
@@ -45,3 +48,4 @@ dependencies:
 
 change_log:
   - { type: new, story: nicolify-r0-dev-stack, date: 2026-05-30, note: "Brand runtime foundation — BE+FE green + Clerk auth slice + alembic IAM baseline + seed" }
+---

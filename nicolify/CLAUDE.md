@@ -12,7 +12,7 @@
 
 **TL;DR:** Nicolify NO es "otra herramienta" (CRM/pauta/email). Es **el equipo de Revenue & Operaciones que la agencia delega** — agentes IA orquestados bajo un único punto de contacto conversacional (Luana), que ejecutan **Atracción → Cierre → Retención**. Elimina la fragmentación de stack y la dependencia de personal junior. Pricing: suscripción base + tokens, con tiers que desbloquean agentes.
 
-### Los 5 agentes (SSoT de roles · detalle en vision.md)
+### Los 6 agentes (SSoT de roles · detalle en vision.md)
 
 | Agente | Rol | Etapa | Autonomía clave |
 |---|---|---|---|
@@ -20,9 +20,19 @@
 | **Abel** | Estratega (Branding & Oferta) | Pre-atracción | Define oferta + ángulos + escalera de valor |
 | **Brenda** | Guardiana del Presupuesto (Growth) | Atracción inbound | **Apaga campañas perdedoras** por umbral CAC/ROAS sin pedir permiso |
 | **Christian** | Cazador (SDR / outbound) | Atracción outbound | Prospecta con el **LinkedIn real del fundador** · escala humano para cierre |
+| **Sara** | Jefa de Proyectos (Operación / Delivery) | Delivery (día a día) | Opera el delivery de proyectos activos · **"Mi Día"** = landing operativo post-login |
 | **Norvil** | Cultivador (Account Manager) | Retención + Expansión | Salud de cuenta + cross/up-sell + renovación |
 
 > **Identidad agentic-first (cement 2026-05-29):** CRM/pipeline, pauta, propuestas, salud de cuenta = **superficies que los agentes operan**, NO features standalone. El framing legacy "billable-hours / time-tracking / client-portal" queda **descartado** (Nicolify es Revenue OS, no project-billing).
+
+## Paradigma — 3 planos / 3 zonas (cement 2026-05-30)
+
+Aterriza el modelo platform-wide (`docs/architecture/luana-platform/PARADIGM.md` + `ADR-010`, auto-load vía rule `paradigm-arquitectura.md` #36). Adaptación brand: `ADR-nicolify-002-paradigma-zonas.md`. Nicolify **nace bien** (no migra — cajas finales día 1).
+
+- **3 planos:** ① Sistema (capacidades B2B, operables a mano) · ② Capa de acción única (service layer — web y agentes invocan la MISMA acción) · ③ Trabajadores (Luana supervisora + 5 especialistas, **un solo engine por audiencia**).
+- **3 zonas** (`SYSTEM-MAP.yaml::zones` — la zona se DERIVA del registro): **Agentes** (core, visible: abel·brenda·christian·**sara**·norvil; **Luana supervisora fuera del grid**) · **Plataforma** (supporting, visible: acceso·onboarding·configuracion) · **Infraestructura** (enabling, oculta: seguridad-cumplimiento *sin PHI* · observabilidad · plataforma-tecnica · motor-agentico).
+- **Sara = "Operar / Mi Día"** (Jefa de Proyectos · equivalente a Mateo de vitalia con lógica de agencia): dueña de la operación del día a día (delivery de proyectos activos). Su `mi-dia` es el landing operativo post-login. NO se confunde con Norvil (salud comercial) ni con Luana (digest cross-ciclo).
+- **Audiencia:** internos (`copilot`→dueño) = Luana/Abel/Brenda/Sara/Norvil · **Christian = bifronte** (`copilot`+`sales_agent`: el dueño le pide reuniones / él contacta prospectos + recepción pasiva inbound). Toda cap declara su caja desde la **idea**.
 
 ## Verticales target (quick reference · detalle vision.md § 2)
 
@@ -132,8 +142,9 @@ curl http://127.0.0.1:8001/health
 
 - `nicolify/docs/product/vision.md` — full vision (agentes + nichos + competidores + personas + pricing + GTM)
 - `nicolify/docs/product/checkpoint.md` — state brand actual
-- `nicolify/.claude/rules/agent-revenue-engine.md` — overlay rule (autonomía + token economy + CRM account model + outbound compliance)
-- `nicolify/docs/architecture/` — ADRs brand-specific
+- `nicolify/.claude/rules/agent-revenue-engine.md` — overlay rule (autonomía + token economy + CRM account model + outbound compliance + § 0 encaje paradigma)
+- Paradigma: `docs/architecture/luana-platform/{PARADIGM.md, ADR-010}` (platform) + `nicolify/docs/architecture/ADR-nicolify-002-paradigma-zonas.md` (brand) + `SYSTEM-MAP.yaml::zones`
+- `nicolify/docs/architecture/` — ADRs brand-specific (001 shell-feature · 002 paradigma-zonas)
 - `nicolify/docs/learnings/` — captured learnings nicolify
 - `core/luana-core-{copilot,sales-agent,crm,offer-studio,observability,channels,billing}/` — engine que Nicolify consume
 - `vitalia/` — brand de referencia (paradigma shell-organism agéntico + base FE madura)

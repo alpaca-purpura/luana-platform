@@ -28,7 +28,7 @@
 
 ## 1. El ecosistema de agentes (la mecánica)
 
-Cinco agentes con roles, autonomía y "territorio" distintos. Mapean al ciclo comercial completo de una agencia B2B.
+Seis agentes con roles, autonomía y "territorio" distintos. Mapean al ciclo comercial completo de una agencia B2B (Atracción → Cierre → Delivery → Retención).
 
 | Agente | Rol | Etapa del ciclo | Territorio / superficie que opera | Autonomía |
 |---|---|---|---|---|
@@ -36,11 +36,12 @@ Cinco agentes con roles, autonomía y "territorio" distintos. Mapean al ciclo co
 | **Abel** | Estratega (Branding & Oferta) | Pre-Atracción (materia prima) | Absorbe info de la agencia; define ángulos de venta; estructura la escalera de valor; crea el discurso comercial | Media (propone estrategia; el dueño ratifica el posicionamiento) |
 | **Brenda** | Guardiana del Presupuesto (Growth) | Atracción inbound | Recomienda qué contenido crear; distribuye; gestiona la pauta publicitaria | **Alta con contingencia** — apaga campañas perdedoras según umbrales CAC/ROAS predefinidos sin pedir permiso |
 | **Christian** | Cazador (SDR) | Atracción outbound + Cierre temprano | Prospección outbound; **conectado al perfil real de LinkedIn del fundador/CEO** (la autoridad cierra reuniones en B2B); cold email; seguimiento implacable | Media-alta (ejecuta secuencias; agenda reuniones; escala a humano para el cierre) |
+| **Sara** | Jefa de Proyectos (Operación / Delivery) | Delivery (post-cierre, día a día) | **Operación del día a día**: delivery de los proyectos de clientes activos (tareas, milestones, deadlines, entregables). Su vista **"Mi Día"** es el landing operativo post-login. Integra el stack operativo (Notion/Jira/Slack) | Media (orquesta el delivery; alerta riesgos de entrega; escala a humano lo que requiere decisión) |
 | **Norvil** | Cultivador (Account Manager) | Retención + Expansión | Monitorea la salud de la cuenta (integra Notion/Jira/Slack); detecta oportunidades de cross-sell/up-sell en la misma empresa (ej. entrar a otro departamento); asegura la renovación | Media (alerta + propone; ejecuta nurturing; el dueño aprueba contacto comercial) |
 
 ### Principio de diseño cardinal — Luana es el único rostro
 
-El dueño de la agencia **nunca** habla directamente con Abel/Brenda/Christian/Norvil ni configura "pantallas de herramienta". Le habla a **Luana**. Luana:
+El dueño de la agencia **nunca** habla directamente con Abel/Brenda/Christian/Sara/Norvil ni configura "pantallas de herramienta". Le habla a **Luana**. Luana:
 1. Traduce la intención ("conseguime 10 reuniones con CTOs de fintech este mes") en comandos técnicos para el agente correcto (Christian).
 2. Orquesta dependencias (Christian necesita la oferta de Abel + el ICP que Brenda validó con la data inbound).
 3. Devuelve **reportes digeridos**, no dashboards crudos ("Christian agendó 7 reuniones, 3 confirmadas; el ángulo 'reducción de churn' convierte 2x mejor que 'ahorro de costos' — ¿lo escalamos?").
@@ -60,7 +61,10 @@ ABEL define oferta + ángulos  ──►  materia prima discursiva
         Leads calificados ──► reuniones ──► CIERRE (humano + asistencia Christian)
                 │
                 ▼
-        Cliente ganado ──► NORVIL: salud de cuenta + cross/up-sell + renovación
+        Cliente ganado ──► SARA: arranca delivery del proyecto (tareas, deadlines, entregables · "Mi Día")
+                │
+                ▼
+        NORVIL: salud de cuenta + cross/up-sell + renovación
                                     │
                                     └─► feedback de retención ──► ABEL refina oferta (loop)
 
@@ -269,6 +273,8 @@ Esta visión dicta la priorización de capacidades (el detalle vive en `nicolify
 ---
 
 ## 9. Implicaciones arquitectónicas (consumir engine, no recrear)
+
+> **Marco — el paradigma de 3 planos (cement 2026-05-30).** Nicolify encaja en el modelo operativo platform-wide (`docs/architecture/luana-platform/PARADIGM.md` + `ADR-010`; adaptación brand `ADR-nicolify-002`): **① Sistema** (las capacidades B2B reales — CRM, pauta, propuestas, salud de cuenta — operables a mano, funcionan sin agentes) · **② Capa de acción única** (cada caso de uso expuesto una vez en el service layer; la web y los agentes ejecutan la MISMA acción, nunca reimplementan) · **③ Trabajadores** (Luana supervisora + 4 especialistas sobre **un solo engine por audiencia**: `copilot` interno habla al dueño, `sales_agent` externo habla a los prospectos — **Christian es el bifronte**). El mapa del producto agrupa toda capability en **3 zonas** (Agentes · Plataforma · Infraestructura) — registro en `nicolify/docs/architecture/SYSTEM-MAP.yaml::zones`.
 
 Nicolify consume el engine compartido `core/luana-core-*` vía Extension SDK. Sistemas clave ya disponibles que los agentes Nicolify **deben reusar (no recrear)**:
 

@@ -5,10 +5,11 @@
 # SSoT del "qué hace cada agente + cómo se conectan" para el cockpit (tab Map)
 # y para refinement/architecture. Editable a mano — seguí el schema de abajo.
 #
-# Nicolify = Agent-as-a-Service B2B agencias. 5 agentes Revenue/Ops:
-#   Luana (orquestadora · único rostro) + Abel + Brenda + Christian + Norvil,
+# Nicolify = Agent-as-a-Service B2B agencias. 6 agentes Revenue/Ops:
+#   Luana (orquestadora · único rostro) + Abel + Brenda + Christian + Sara + Norvil,
 #   más Configurar (settings) + Infra (transversal).
-#   Ciclo: Atracción (Abel→Brenda inbound / Christian outbound) → Cierre → Retención (Norvil).
+#   Ciclo: Atracción (Abel→Brenda inbound / Christian outbound) → Cierre →
+#          Delivery/Operación (Sara) → Retención (Norvil).
 #
 # ⚠️ Estado 2026-05-29: brand en REBUILD desde cero. TODO está `planned` con su
 #    `target_release` (R0..R4 · ver nicolify/docs/product/releases/ + vision.md §8).
@@ -31,12 +32,134 @@
 # ════════════════════════════════════════════════════════════════════════════
 
 brand: nicolify
-version: 1.0
+version: 1.1
 cement_date: 2026-05-29
+paradigm_aligned: 2026-05-30        # alineado al modelo de 3 planos / 3 zonas (PARADIGM.md + ADR-010)
+
+# ════════════════════════════════════════════════════════════════════════════
+# ZONES — taxonomía de 3 zonas del mapa (cement 2026-05-30 · paradigma)
+# ════════════════════════════════════════════════════════════════════════════
+#
+# SSoT doctrina: docs/architecture/luana-platform/PARADIGM.md + ADR-010.
+# Adaptación a nicolify: nicolify/docs/architecture/ADR-nicolify-002-paradigma-zonas.md
+# Árbol de decisión "¿en qué caja va?": .claude/rules/paradigm-arquitectura.md
+#
+# Toda caja del mapa (un trabajador-agente O una superficie transversal)
+# pertenece a UNA zona. La zona de una cap se DERIVA de su caja (map_box) vía
+# este registro — NUNCA se escribe a mano por cap (evita drift).
+#
+# tier: core (valor user-facing) | supporting (transversal user-facing) |
+#       enabling (no-funcional / técnico).
+#
+# ★ NICOLIFY NACE BIEN (no migra): a diferencia de vitalia (que migró 71 caps con
+#   `target_boxes.absorbs`), nicolify está en rebuild desde cero — las cajas de
+#   abajo son las DEFINITIVAS de 1er nivel. `legacy_areas` documenta qué áreas de
+#   los pseudo-agentes `config`/`infra` de agents[] (shim de render del cockpit
+#   actual, que aún agrupa por agents[]) aterrizan en cada caja cuando el MapView
+#   migre a render por zona (tool-scope cross-brand pendiente, beneficia a ambas).
+
+zones:
+  - id: agentes
+    name: "Agentes"
+    tier: core
+    user_visible: true
+    description: "El valor user-facing que opera cada trabajador experto. Un agente lo hace por el dueño de la agencia."
+    boxes: [abel, brenda, christian, sara, norvil]
+    supervisor: luana
+    notes: >
+      Luana = supervisora transversal y ÚNICO rostro conversacional (chat sidebar,
+      NO está en el Ribbon, NO posee caja de proceso). Su runtime se documenta en
+      Infraestructura → motor-agentico. El Ribbon son los 5 especialistas.
+      ★ Sara = "Operar / Mi Día" (equivalente a Mateo de vitalia · ratificado Chris
+      2026-05-30): Jefa de Proyectos, dueña de la operación del día a día (delivery
+      de proyectos de clientes activos). Su área `mi-dia` es el landing operativo
+      post-login. NO se confunde con Norvil (account manager = salud comercial,
+      retención, upsell) ni con Luana (supervisora que entrega el digest cross-ciclo
+      Atracción→Cierre→Delivery→Retención vía reportes-digeridos). Orden del Ribbon =
+      ciclo: Abel(estrategia) → Brenda(inbound) → Christian(outbound/cierre) →
+      Sara(delivery/operación) → Norvil(retención/expansión).
+
+  - id: plataforma
+    name: "Plataforma"
+    tier: supporting
+    user_visible: true
+    description: "Superficies transversales que el usuario atraviesa pero NO son de ningún agente. Se operan a mano (sin agente)."
+    boxes: [acceso, onboarding, configuracion]
+    legacy_home: config
+    target_boxes:
+      - id: acceso
+        name: "Acceso"
+        legacy_areas: [config.auth, config.iam]
+        description: "Autenticación + autorización: Clerk, sesiones, RBAC, roles del staff de la agencia, scope. (auth slice ya shipped en R0 dev-stack)."
+      - id: onboarding
+        name: "Onboarding"
+        legacy_areas: [config.onboarding_agencia]
+        description: "Alta + activación de la agencia tenant: datos, brand mínimo, conexión de canales, provisioning. Luana puede conducirlo conversacionalmente."
+      - id: configuracion
+        name: "Configuración"
+        legacy_areas: [config.conexiones, config.preferencias, config.tokens, config.agentes]
+        description: "Ajustes del espacio: preferencias del tenant/usuarios/moneda/locale, conexiones (LinkedIn/Meta/Google/WhatsApp/Notion/Jira/Slack), bolsa de tokens/plan (vista del dueño), autonomía de agentes (umbrales CAC/ROAS, consent outbound, aprobaciones)."
+
+  - id: infraestructura
+    name: "Infraestructura"
+    tier: enabling
+    user_visible: false
+    description: "No-funcional / técnico (cross-cutting concepts + quality attributes, arc42 §8/§10). Mapeado para que nada quede huérfano; no en el mapa de valor principal."
+    boxes: [seguridad-cumplimiento, observabilidad, plataforma-tecnica, motor-agentico]
+    legacy_home: infra
+    target_boxes:
+      - id: seguridad-cumplimiento
+        name: "Seguridad & Cumplimiento"
+        legacy_areas: [config.compliance]
+        description: >
+          NICOLIFY NO TIENE PHI (no es Vitalia). Esta caja cubre: tenant isolation
+          (raíz), audit log de toda acción autónoma de agente (Brenda kill-switch,
+          Christian outbound, Norvil upsell), consentimiento outbound LinkedIn
+          (perfil del fundador), firma electrónica B2B eIDAS-like (AR/MX/CO/BR),
+          retención de docs comerciales 5-10 años, anti-spam/opt-out/rate-limits.
+      - id: observabilidad
+        name: "Observabilidad"
+        legacy_areas: [infra.token-economy]
+        description: "Trace events, llm_calls, cost recording, FX resolver, pricing snapshots — base del metering de tokens por (agente, acción, tenant). Consume core/luana-core-observability. OTel/Sentry."
+      - id: plataforma-tecnica
+        name: "Plataforma técnica"
+        legacy_areas: [infra.shell-organism, infra.dev-stack]
+        description: "Design tokens/shell-organism, dev stack (BE :8001/FE :3001), payment rails, idempotency, eventos/outbox, IAM engine adoption, tier gating enforcement (BudgetGuard), foundation."
+      - id: motor-agentico
+        name: "Motor agéntico"
+        legacy_areas: [infra.engine-wiring]
+        description: >
+          Engine compartido copilot (interno) / sales_agent (externo) + RAG/Qdrant +
+          prompt cache. RUNTIME de los trabajadores, NO caja de feature que compita
+          con los agentes. Aquí vive el grafo supervisor de Luana (orquestación).
 
 # ────────────────────────────────────────────────────────────────────────────
-# AGENTES (5 Revenue/Ops + Config + Infra) + functional_areas
+# AUDIENCIA interno/externo + engine (paradigma §3.2 · ADR-nicolify-002)
 # ────────────────────────────────────────────────────────────────────────────
+#
+# Internos (copilot) → hablan al DUEÑO de la agencia. Externo (sales_agent) →
+# habla a los PROSPECTOS/LEADS. Christian es el BIFRONTE (= Adrián en vitalia):
+# el dueño le pide reuniones (interno) y él contacta prospectos con la autoridad
+# del fundador + atiende la recepción pasiva de leads inbound (externo).
+audience:
+  luana:     { role: supervisora, engine: copilot,      audience: internal }
+  abel:      { role: especialista, engine: copilot,      audience: internal }
+  brenda:    { role: especialista, engine: copilot,      audience: internal }
+  sara:      { role: especialista, engine: copilot,      audience: internal,
+               note: "Jefa de Proyectos. Opera el día a día (delivery de proyectos de clientes activos). Su 'Mi Día' es el landing operativo post-login." }
+  norvil:    { role: especialista, engine: copilot,      audience: internal }
+  christian: { role: especialista, engine: [copilot, sales_agent], audience: bifronte,
+               note: "Interno: el dueño le pide outbound/reuniones. Externo: contacta prospectos (LinkedIn fundador + cold email) y atiende recepción pasiva de leads inbound por WhatsApp — front-line externo único (sales_agent)." }
+
+# ────────────────────────────────────────────────────────────────────────────
+# AGENTES (6 Revenue/Ops + Config + Infra) + functional_areas
+# ────────────────────────────────────────────────────────────────────────────
+#
+# ★ agents[] se mantiene como esqueleto que el cockpit actual (MapView.tsx) lee
+#   para render (aún agrupa por agents[], no por zones[]). config/infra son
+#   pseudo-agentes shim hasta que el MapView migre a render por zona (tool-scope).
+#   La doctrina SSoT es zones[] arriba. Cada functional_area mapea a una caja vía
+#   los `legacy_areas` de target_boxes.
 agents:
 
   # ──────────────────────────────────────────────────────────────────────────
@@ -161,6 +284,37 @@ agents:
         target_release: R2
         notes: "Vertical insignia Perú (contratas/proveedores mineros)."
         description: "Tracking de RFI/RFQ/licitaciones invitadas + apoyo en preparación. Vinculado a homologación (MINDER/SAP Ariba) que mantiene Abel/Norvil."
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # 📋 SARA — Jefa de Proyectos (Operación / Delivery · "Mi Día")
+  # ──────────────────────────────────────────────────────────────────────────
+  - id: sara
+    emoji: 📋
+    name: Sara
+    subtitle: Operar / Mi Día
+    description: >
+      Jefa de Proyectos. Dueña de la operación del día a día: orquesta la entrega
+      (delivery) de los proyectos de los clientes activos de la agencia — tareas,
+      milestones, deadlines y entregables. Su vista "Mi Día" es el landing operativo
+      post-login del dueño/equipo. Integra el stack operativo (Notion/Jira/Slack) y
+      escala a humano lo que requiere decisión. Equivalente a Mateo (vitalia), con
+      lógica de agencia B2B (delivery de proyectos, NO agenda clínica).
+    functional_areas:
+      - id: mi-dia
+        name: "Mi Día / Operar"
+        status: planned
+        target_release: R1
+        description: "Landing operativo post-login: tareas del día, proyectos activos, deadlines próximos y entregables que necesitan atención, en una vista accionable. Punto de entrada principal de la jornada. (El digest cross-ciclo lo da Luana vía reportes-digeridos; Mi Día es la vista operativa del trabajo vivo.)"
+      - id: proyectos
+        name: "Proyectos & entregables"
+        status: planned
+        target_release: R3
+        description: "Gestión de proyectos por cuenta (tareas, milestones, deadlines, entregables). Integra el stack operativo (Notion/Jira/Slack) — Sara lo OPERA; Norvil deriva señales de salud del mismo stack (lente distinta, misma integración)."
+      - id: entregas
+        name: "Estado de entregas & riesgos"
+        status: planned
+        target_release: R3
+        description: "Seguimiento de cumplimiento de deadlines + detección temprana de riesgo de incumplimiento (proyecto atrasado, entregable trabado) + reporte vía Luana. Señal de riesgo operativo que alimenta la salud de cuenta de Norvil."
 
   # ──────────────────────────────────────────────────────────────────────────
   # 🌱 NORVIL — Cultivador (Account Manager)
@@ -317,8 +471,28 @@ cross_agent_flows:
       - agent: norvil
         area: cuentas
         what: "Norvil crea la cuenta + arranca onboarding y monitoreo de salud."
+      - agent: sara
+        area: proyectos
+        what: "Sara crea el proyecto de delivery + arranca el plan de entregas (tareas/milestones)."
     mechanism: domain_event
     event_name: "DealWon"
+    status: planned
+    target_release: R3
+
+  - id: entrega-en-riesgo-trigger-alerta
+    trigger:
+      agent: sara
+      area: entregas
+      condition: "Proyecto atrasado o entregable trabado (deadline en riesgo)"
+    actions:
+      - agent: norvil
+        area: salud-cuenta
+        what: "Norvil incorpora el riesgo de entrega a la salud de cuenta (señal de churn)."
+      - agent: luana
+        area: reportes-digeridos
+        what: "Luana reporta el riesgo operativo al dueño en lenguaje natural."
+    mechanism: domain_event
+    event_name: "DeliveryAtRisk"
     status: planned
     target_release: R3
 
@@ -407,12 +581,19 @@ data_ownership:
     phi: false
     description: "Propuesta comercial con lifecycle draft→sent→viewed→accepted/rejected/expired + firma electrónica."
 
+  Project:
+    owner_module: delivery
+    owner_agent: sara
+    consumed_by: [sara, norvil, luana]
+    phi: false
+    description: "Proyecto de delivery de un cliente activo (tareas, milestones, deadlines, entregables). Sara lo opera (Mi Día); Norvil deriva señales de salud; Luana lo reporta. Integra Notion/Jira/Slack."
+
   AccountHealth:
     owner_module: crm
     owner_agent: norvil
     consumed_by: [norvil, luana]
     phi: false
-    description: "Salud de cuenta derivada de integraciones (Notion/Jira/Slack). Señales de churn + oportunidad de expansión."
+    description: "Salud de cuenta derivada de integraciones (Notion/Jira/Slack) + señales de riesgo de entrega de Sara (proyectos atrasados). Señales de churn + oportunidad de expansión."
 
   Tender:
     owner_module: crm
@@ -442,10 +623,15 @@ agent_orchestration: []
 # METADATA
 # ────────────────────────────────────────────────────────────────────────────
 metadata:
-  last_modified: 2026-05-29
-  modified_by: pm-nicolify-r0-shell-organism
-  schema_version: 1.0
-  total_agents: 7
-  total_functional_areas: 25
-  total_cross_agent_flows: 6
-  total_data_entities: 11
+  last_modified: 2026-05-30
+  modified_by: add-sara-jefa-proyectos
+  schema_version: 1.1
+  total_agents: 8              # 6 Revenue/Ops (luana+abel+brenda+christian+sara+norvil) + config + infra (render shim cockpit actual)
+  total_functional_areas: 28
+  total_cross_agent_flows: 7
+  total_data_entities: 12
+  total_zones: 3              # agentes (5 cajas + Luana supervisora) · plataforma (3) · infraestructura (4)
+  total_boxes: 12             # 5 agentes + 3 plataforma + 4 infra (Luana = supervisora, fuera del grid)
+  paradigm_doc: docs/architecture/luana-platform/PARADIGM.md
+  paradigm_adr_platform: docs/architecture/luana-platform/ADR-010-orquestacion-agentica.md
+  paradigm_adr_brand: nicolify/docs/architecture/ADR-nicolify-002-paradigma-zonas.md

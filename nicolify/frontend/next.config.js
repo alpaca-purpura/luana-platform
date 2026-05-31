@@ -37,9 +37,7 @@ const imageRemotePatterns = [
 
 const nextConfig = {
   output: 'standalone',
-  devIndicators: {
-    position: 'bottom-left',
-  },
+  devIndicators: false,
   allowedDevOrigins: allowedOrigins,
   images: {
     remotePatterns: imageRemotePatterns,

@@ -3,7 +3,7 @@
 **Overlay:** extiende `.claude/rules/` raíz Luana platform (refuerza `tenant-isolation.md` + `currency-handling.md` + `anti-duplication.md`).
 **Brand:** nicolify (Agent-as-a-Service para agencias y servicios profesionales B2B LatAm).
 **Cement-date:** 2026-05-29. **Reemplaza:** `b2b-billable-hours.md` (legacy framing project-billing descartado).
-**Scope:** stories que tocan los agentes (Luana/Abel/Brenda/Christian/Norvil), su autonomía, el metering de tokens, el modelo CRM cuenta/stakeholder, y el outbound.
+**Scope:** stories que tocan los agentes (Luana/Abel/Brenda/Christian/Sara/Norvil), su autonomía, el metering de tokens, el modelo CRM cuenta/stakeholder, el delivery de proyectos, y el outbound.
 
 ## Regla cardinal
 
@@ -14,6 +14,22 @@ En Nicolify, **el producto es el equipo de agentes**, no un set de herramientas.
 3. **Token economy protege el margen sin romper confianza.** Toda llamada LLM se mide y atribuye a (agente, acción, tenant). Las funciones críticas (soporte + recepción pasiva de leads) nunca se cortan por agotamiento de bolsa.
 4. **Consumir engine, no recrear.** Orquestación agéntica, observabilidad/costo, CRM, canales, billing viven en `core/luana-core-*` — Nicolify extiende vía Extension SDK, jamás mirror.
 
+## 0. Encaje con el paradigma (3 planos / 3 zonas)
+
+Esta rule es el aterrizaje brand-specific del **paradigma platform-wide** (`docs/architecture/luana-platform/PARADIGM.md` + `ADR-010`, adaptado a nicolify en `ADR-nicolify-002`). Las 4 invariantes de arriba SON las invariantes del paradigma vistas desde Nicolify:
+
+| Invariante nicolify (arriba) | Plano del paradigma |
+|---|---|
+| "Luana orquesta, los agentes ejecutan" | **Plano 3** — supervisora única + especialistas scoped (un solo engine por audiencia) |
+| "Consumir engine, no recrear" + acción de negocio invocada (pautar/prospectar/contactar) | **Plano 2** — capa de acción única (service layer DDD); web y agentes ejecutan la misma acción, jamás reimplementan |
+| Las capacidades B2B reales (CRM, pauta, propuestas, salud de cuenta) | **Plano 1** — el sistema; funciona sin agentes, operable a mano |
+
+**Audiencia (PARADIGM §3.2 · ADR-nicolify-002 D-B):** internos (`copilot`, hablan al **dueño**) = Luana, Abel, Brenda, Sara, Norvil. **Christian es el bifronte** (`copilot` + `sales_agent`): el dueño le pide reuniones (interno) y él contacta prospectos + atiende la recepción pasiva de leads inbound (externo, front-line único).
+
+**Sara (Jefa de Proyectos · ADR-nicolify-002 D-D):** dueña de la operación del día a día (delivery de proyectos de clientes activos). Su `mi-dia` es el landing operativo post-login (equivalente a Mateo de vitalia con lógica de agencia). Separación: Sara = ejecución/delivery del trabajo · Norvil = salud comercial/retención · Luana = digest cross-ciclo.
+
+**Hogar de toda cap (3 zonas · `SYSTEM-MAP.yaml::zones`):** Agentes (abel/brenda/christian/norvil — Luana supervisora fuera del grid) · Plataforma (acceso/onboarding/configuracion) · Infraestructura (seguridad-cumplimiento/observabilidad/plataforma-tecnica/motor-agentico). La caja se declara desde la **idea** vía el árbol de decisión de `.claude/rules/paradigm-arquitectura.md`; la zona se **deriva** del registro.
+
 ## 1. Modelo de agentes (territorio + autonomía)
 
 | Agente | Owner module (brand-extension) | Engine consumido | Autonomía máxima |
@@ -22,6 +38,7 @@ En Nicolify, **el producto es el equipo de agentes**, no un set de herramientas.
 | **Abel** | `.../copilot/` (workflow estrategia) + `.../offer/` | `core/luana-core-offer-studio/` | Propone oferta/ángulos · dueño ratifica posicionamiento |
 | **Brenda** | `.../sales_agent/` (growth workflow) | `core/luana-core-channels/` + billing guards | **Apaga campañas** por umbral CAC/ROAS (config tenant) · reporta |
 | **Christian** | `.../sales_agent/` (outbound workflow) | `core/luana-core-sales-agent/` + channels | Ejecuta secuencias · **escala humano para cierre** |
+| **Sara** | `.../copilot/` (delivery workflow) + `.../delivery/` | `core/luana-core-crm/` + `core/luana-core-channels/` (Notion/Jira/Slack) + events | Orquesta el delivery de proyectos activos · alerta riesgos de entrega · **escala humano lo que requiere decisión** |
 | **Norvil** | `.../copilot/` (account-health workflow) + `.../crm/` | `core/luana-core-crm/` | Propone cross/up-sell · **contacto comercial requiere aprobación humana** |
 
 ### Anti-patterns

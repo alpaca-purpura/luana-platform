@@ -2,7 +2,7 @@
 <!--
   Nicolify — Shell Organism (mockup navegable · 2026-05-29)
   ──────────────────────────────────────────────────────────
-  Agentes: Luana (orquestadora, sidebar izq) · Abel · Brenda · Christian · Norvil · Configurar (ribbon der)
+  Agentes: Luana (orquestadora, sidebar izq) · Abel · Brenda · Christian · Sara · Norvil · Configurar (ribbon der)
   Tokens agente:
     --agent-luana:    #635BFF  (indigo-violeta · firma nicolify.com)
     --agent-abel:     #A855F7  (púrpura estratega)
@@ -22,7 +22,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Nicolify — Shell Organism agéntico (mockup navegable)</title>
-  <meta name="description" content="Mockup interactivo shell-organism Nicolify: modo agentic 50/50 con panel Luana (orquestadora) izquierdo + panel App derecho con ribbon 4 agentes expertos.">
+  <meta name="description" content="Mockup interactivo shell-organism Nicolify: modo agentic 50/50 con panel Luana (orquestadora) izquierdo + panel App derecho con ribbon 5 agentes expertos.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700;800&family=Bree+Serif&display=swap" rel="stylesheet">
@@ -58,6 +58,7 @@
       --agent-abel:          #A855F7;
       --agent-brenda:        #22C55E;
       --agent-christian:     #3B82F6;
+      --agent-sara:          #F59E0B;
       --agent-norvil:        #EC4899;
       --agent-config:        #64748b;
 
@@ -66,6 +67,7 @@
       --agent-abel-soft:     #F5EBFE;
       --agent-brenda-soft:   #DCFCE7;
       --agent-christian-soft:#DBEAFE;
+      --agent-sara-soft:     #FEF3C7;
       --agent-norvil-soft:   #FCE7F3;
       --agent-config-soft:   #f1f5f9;
 
@@ -102,6 +104,7 @@
       --agent-abel-soft:     #3a1f56;
       --agent-brenda-soft:   #0d3320;
       --agent-christian-soft:#14224d;
+      --agent-sara-soft:     #3d2c08;
       --agent-norvil-soft:   #45163a;
       --agent-config-soft:   #1e2535;
 
@@ -741,7 +744,7 @@
       min-width: 0;
     }
 
-    /* Ribbon N1 — 4 agentes expertos + Config */
+    /* Ribbon N1 — 5 agentes expertos + Config */
     .ribbon {
       background: var(--bg-panel);
       border-bottom: 1px solid var(--border);
@@ -774,6 +777,7 @@
     .ribbon-tab.active[data-color="abel"]      { border-bottom-color: var(--agent-abel); }
     .ribbon-tab.active[data-color="brenda"]    { border-bottom-color: var(--agent-brenda); }
     .ribbon-tab.active[data-color="christian"] { border-bottom-color: var(--agent-christian); }
+    .ribbon-tab.active[data-color="sara"]      { border-bottom-color: var(--agent-sara); }
     .ribbon-tab.active[data-color="norvil"]    { border-bottom-color: var(--agent-norvil); }
     .ribbon-tab.active[data-color="config"]    { border-bottom-color: var(--agent-config); }
 
@@ -837,6 +841,7 @@
     .sub-tab.active[data-color="abel"]      { background: var(--agent-abel-soft);      color: var(--agent-abel); }
     .sub-tab.active[data-color="brenda"]    { background: var(--agent-brenda-soft);    color: var(--agent-brenda); }
     .sub-tab.active[data-color="christian"] { background: var(--agent-christian-soft); color: var(--agent-christian); }
+    .sub-tab.active[data-color="sara"]      { background: var(--agent-sara-soft);      color: var(--agent-sara); }
     .sub-tab.active[data-color="norvil"]    { background: var(--agent-norvil-soft);    color: var(--agent-norvil); }
     .sub-tab.active[data-color="config"]    { background: var(--agent-config-soft);    color: var(--text-primary); }
 
@@ -1387,6 +1392,13 @@
             <span class="ribbon-tab-role">Cazador · SDR / Outbound</span>
           </span>
         </button>
+        <button class="ribbon-tab" data-tab="sara" data-color="sara">
+          <span class="ribbon-agent-av"><img src="assets/agents/sara.svg" alt=""></span>
+          <span class="ribbon-tab-labels">
+            <span>Sara</span>
+            <span class="ribbon-tab-role">Jefa de Proyectos · Operación</span>
+          </span>
+        </button>
         <button class="ribbon-tab" data-tab="norvil" data-color="norvil">
           <span class="ribbon-agent-av"><img src="assets/agents/norvil.svg" alt=""></span>
           <span class="ribbon-tab-labels">
@@ -1461,6 +1473,14 @@
           { id: 'pipeline',    label: '🗂️ Pipeline',    desc: 'Deals por etapa · modelo Cuenta / Stakeholder' },
           { id: 'propuestas',  label: '📄 Propuestas',  desc: 'Propuestas + seguimiento + firma' },
           { id: 'licitaciones',label: '⛏️ Licitaciones', desc: 'RFI / RFQ / licitaciones públicas minería PE' },
+        ]
+      },
+      sara: {
+        label: 'Sara',
+        role: 'Jefa de Proyectos · Operacion',
+        color: 'sara',
+        subtabs: [
+          { id: 'proyectos', label: 'Proyectos', desc: 'Delivery de proyectos activos de clientes' },
         ]
       },
       norvil: {
@@ -1771,7 +1791,7 @@
     function emptyState(icon, title, desc, agentSlug, actionLabel) {
       const colors = {
         abel:'var(--agent-abel)', brenda:'var(--agent-brenda)', christian:'var(--agent-christian)',
-        norvil:'var(--agent-norvil)', config:'var(--agent-config)'
+        sara:'var(--agent-sara)', norvil:'var(--agent-norvil)', config:'var(--agent-config)'
       };
       const col = colors[agentSlug] || 'var(--primary)';
       const actionHtml = actionLabel

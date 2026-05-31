@@ -1,6 +1,6 @@
 ---
 name: nicolify-design-system
-description: SSoT cargable del sistema de diseño + shell-organism de Nicolify (índice narrado sobre los docs + código — NO duplica). Cargá ANTES de tocar cualquier `nicolify/frontend/src/**` UI. Cubre autoridad de tokens (globals.css + tailwind.config.ts brand-local), átomos/moléculas/organism consumidos de `@luana/ui-kit` + locales, el shell de Luana-orquestador + Ribbon de 4 agentes expertos (Abel/Brenda/Christian/Norvil) + Config, catálogo de agentes (colores hex), gates ADR-nicolify-001 (hereda ADR-vitalia-003/004) + SSR-safe store (ADR-vitalia-006), fidelidad del wrapper (portar verbatim de Vitalia re-temizado), y guardrails agénticos (tier gating + audit autonomía) en vez de PHI. Triggers: 'pantalla nicolify', 'componente nicolify', 'shell organism nicolify', 'átomos nicolify', 'colores de marca nicolify', 'agent color', 'ribbon', 'sub-tab', 'LuanaSidebar', 'tokens nicolify', 'cómo se hace este módulo en nicolify', 'fidelidad visual nicolify'. Es brand-scoped (instancia de la clase `{brand}-design-system`).
+description: SSoT cargable del sistema de diseño + shell-organism de Nicolify (índice narrado sobre los docs + código — NO duplica). Cargá ANTES de tocar cualquier `nicolify/frontend/src/**` UI. Cubre autoridad de tokens (globals.css + tailwind.config.ts brand-local), átomos/moléculas/organism consumidos de `@luana/ui-kit` + locales, el shell de Luana-orquestador + Ribbon de 5 agentes expertos (Abel/Brenda/Christian/Sara/Norvil) + Config, catálogo de agentes (colores hex), gates ADR-nicolify-001 (hereda ADR-vitalia-003/004) + SSR-safe store (ADR-vitalia-006), fidelidad del wrapper (portar verbatim de Vitalia re-temizado), y guardrails agénticos (tier gating + audit autonomía) en vez de PHI. Triggers: 'pantalla nicolify', 'componente nicolify', 'shell organism nicolify', 'átomos nicolify', 'colores de marca nicolify', 'agent color', 'ribbon', 'sub-tab', 'LuanaSidebar', 'tokens nicolify', 'cómo se hace este módulo en nicolify', 'fidelidad visual nicolify'. Es brand-scoped (instancia de la clase `{brand}-design-system`).
 ---
 
 <!-- voseo-allowed: internal skill doc (instrucciones al agente builder/architect), no user-facing -->
@@ -54,11 +54,11 @@ description: SSoT cargable del sistema de diseño + shell-organism de Nicolify (
 
 **★ Modelo de navegación cardinal:** son **3 niveles de tabs que GUÍAN hasta la hoja**. La **hoja = el contenido** (lo que renderiza el `page.tsx` del último tab) y **es lo único que cambia**. Una **hoja NUNCA contiene tabs/subtabs**. Si el contenido parece necesitar sub-secciones tabuladas → eso es otro nivel de tab (N3-static via SubSubTabsBar), NO `Tabs` de Shadcn dentro de la hoja (anti-pattern, ADR-vitalia-004 §3.1.1).
 
-**Diferencia clave vs Vitalia:** en Vitalia el chat lateral izquierdo es de **Valeria** (una agente con tab). En Nicolify el chat lateral es de **Luana** (orquestadora, único rostro) y **NO tiene tab en el Ribbon** — le hablás a Luana, ella delega. El Ribbon son los 4 agentes expertos + Config.
+**Diferencia clave vs Vitalia:** en Vitalia el chat lateral izquierdo es de **Valeria** (una agente con tab). En Nicolify el chat lateral es de **Luana** (orquestadora, único rostro) y **NO tiene tab en el Ribbon** — le hablás a Luana, ella delega. El Ribbon son los 5 agentes expertos + Config.
 
 Los 3 niveles de tab (SSoT: `nicolify/docs/architecture/SHELL-DESIGN-CONTRACT.md` **(a crear en R0)**):
 
-- **N1 — Ribbon de 4 agentes expertos + Config** (tab nivel 1): `Ribbon.tsx` + `RibbonTab.tsx` + `ConfigTab.tsx`. Tabs: **Abel · Brenda · Christian · Norvil · Configurar**. Cada tab con su agent-color border.
+- **N1 — Ribbon de 5 agentes expertos + Config** (tab nivel 1): `Ribbon.tsx` + `RibbonTab.tsx` + `ConfigTab.tsx`. Tabs: **Abel · Brenda · Christian · Sara · Norvil · Configurar**. Cada tab con su agent-color border. (Sara = Jefa de Proyectos · `--agent-sara` ámbar `#F59E0B` ratificado Chris 2026-05-30.)
 - **N2 — SubTabsBar** (tab nivel 2): `SubTabsBar.tsx` + `SubTab.tsx`. Whitelist `AGENT_SUBTABS` (ver §5).
 - **N3 — SubSubTabsBar** (tab nivel 3, opcional): `SubSubTabsBar.tsx` cuando el destino agrupa 3+ vistas discretas (ej. Christian→propuestas→`borrador/revisión/firmado`). **N3-static, NO Shadcn Tabs internas.**
 - **Hoja (contenido)**: lo que renderiza el `page.tsx` del último tab. Destino, NO contiene más tabs.
@@ -84,7 +84,7 @@ Cuando un componente/sub-tab aterriza dentro del shell, el wrapper de contexto (
 
 > Worktree de Vitalia al día: `~/Proyectos/luana-vitalia/`.
 
-## 5 · Catálogo de agentes (5) — roles + nav (colores a definir en R0)
+## 5 · Catálogo de agentes (6) — roles + nav (colores a definir en R0)
 
 | Agente | slug | rol corto | en Ribbon? | sub-tabs (N2, ratificadas 2026-05-29) |
 |---|---|---|---|---|
@@ -92,6 +92,7 @@ Cuando un componente/sub-tab aterriza dentro del shell, el wrapper de contexto (
 | **Abel** | `abel` | estratega · branding & oferta | sí | Oferta · Ángulos · Escalera de valor · Marca |
 | **Brenda** | `brenda` | growth · guardiana del presupuesto | sí | Campañas (pauta) · Contenido · Presupuesto (CAC/ROAS) |
 | **Christian** | `christian` | cazador · SDR/outbound | sí | Prospectos · Secuencias · Pipeline · Propuestas · Licitaciones (minería) |
+| **Sara** | `sara` | jefa de proyectos · operación/delivery | sí | Mi Día · Proyectos & entregables · Estado de entregas (sub-tabs a ratificar) |
 | **Norvil** | `norvil` | cultivador · account manager | sí | Cuentas · Salud de cuenta · Renovaciones/Upsell |
 | **(Configurar)** | `config` | settings | sí | Conexiones · Preferencias · Tokens/Plan · Agentes (autonomía/umbrales) |
 
@@ -105,6 +106,7 @@ Cada agente con tab: `--agent-{slug}` + `--agent-{slug}-soft` en `globals.css`. 
 | abel | `#A855F7` (púrpura) | `…/abel/avatar.svg` |
 | brenda | `#22C55E` (verde) | `…/brenda/avatar.svg` |
 | christian | `#3B82F6` (azul) | `…/christian/avatar.svg` |
+| sara | `#F59E0B` (ámbar · **ratificado Chris 2026-05-30**) | `…/sara/avatar.svg` **(pendiente)** |
 | norvil | `#EC4899` (rosa) | `…/norvil/avatar.svg` |
 | config | `#64748b` (slate) | — |
 
