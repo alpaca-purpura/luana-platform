@@ -125,6 +125,9 @@ scenarios:
     when: "Cambia arquetipo a Sage, completa 6 bloques de voz del compilador y clic en Previsualizar"
     then: "Preview de voz de marca se actualiza en el footer · frases prohibidas detectadas muestran warning soft · cache hit rate >70% (LRU + Redis)"
     e2e_test: "vitalia/frontend/e2e/regression/arreglar-guardado-voz-y-tono/voz-arquetipo-autosave.spec.ts"   # arreglar-guardado-voz-y-tono: guardado (cambio arquetipo + bloque) verificado real-backend; preview/cache cubierto aparte
+    verified_real:
+      at: "2026-05-31T18:28:55Z"
+      how: "e2e voz-arquetipo-autosave GREEN contra backend real (localhost:3002 FE + BE :8002, sesión Clerk + storageState, 0 mocks): PATCH /api/v1/lisa/marca/personality → 200 + write observado en DB personality_profiles.updated_at=2026-05-31T18:28:55Z + badge 'guardado'. Corrió contra localhost (no tunnel dev-app) porque el storageState de Clerk está scoped a localhost — verificación REAL igual (fallback permitido por definition-of-done-live-verify.md)."
     story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase2-lisa-marca/01-spec.md"
     atomic_ref: null
     edge_cases:
