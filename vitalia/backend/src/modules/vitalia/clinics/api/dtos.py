@@ -14,6 +14,7 @@ from datetime import date, datetime, time
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
+from pydantic.alias_generators import to_camel
 
 # cap: clinics.lisa.doctores — doctor DTOs added in T-BE-1
 
@@ -66,7 +67,13 @@ class DoctorCreateRequest(BaseModel):
     """Request body for POST /api/v1/vitalia/clinics/doctors/.
 
     All PII fields are handled server-side (encrypted at rest via pgcrypto).
+    Accepts both camelCase (from FE) and snake_case (API clients / tests) via populate_by_name=True.
     """
+
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+    )
 
     first_name: str = Field(min_length=1, max_length=128)
     last_name: str = Field(min_length=1, max_length=128)
@@ -85,13 +92,25 @@ class DoctorListItemDTO(BaseModel):
 
     Per hipaa-lite.md: list responses must mask DNI/email/phone.
     Use masked_dni/masked_email/masked_phone fields (never raw PHI).
+
+    camelCase wire contract: alias_generator=to_camel + populate_by_name=True.
+    Routes must set response_model_by_alias=True (or use model.model_dump(by_alias=True)).
+    03-arch-fe § TypeScript Types mandates camelCase (firstName, lastName, avatarUrl, etc.).
     """
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+        from_attributes=True,
+    )
 
     id: UUID
     tenant_id: UUID
     clinic_id: UUID
+    first_name: str = ""
+    """Staff card: firstName required by FE StaffCard (03-arch-fe § TypeScript Types)."""
+    last_name: str = ""
+    """Staff card: lastName required by FE StaffCard."""
     display_name: str
     specialty: str | None
     active: bool
@@ -99,6 +118,11 @@ class DoctorListItemDTO(BaseModel):
     years_experience: int | None = None
     languages: list[str] = Field(default_factory=list)
     avatar_key: str | None = None
+    # FE StaffCard stats — nullable until appointments/analytics are wired (post-MVP)
+    patients_count: int | None = None
+    """Populated later by appointments module. FE null-guards this field."""
+    nps_score: float | None = None
+    """Populated later by analytics module. FE null-guards this field."""
     # PHI masked versions (never raw dni/email/phone)
     masked_dni: str | None = None
     masked_email: str | None = None
@@ -107,9 +131,16 @@ class DoctorListItemDTO(BaseModel):
 
 
 class DoctorListResponse(BaseModel):
-    """Paginated list response for GET /doctors/."""
+    """Paginated list response for GET /doctors/.
 
-    model_config = ConfigDict(from_attributes=True)
+    camelCase wire contract aligned with 03-arch-fe § TypeScript Types.
+    """
+
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+        from_attributes=True,
+    )
 
     items: list[DoctorListItemDTO]
     total: int
@@ -121,9 +152,16 @@ class DoctorDetailDTO(BaseModel):
     """Full doctor detail for admin workspace (admin_clinic role only).
 
     Exposes decrypted PII fields — only available to admin_clinic.
+
+    camelCase wire contract: alias_generator=to_camel + populate_by_name=True.
+    03-arch-fe § TypeScript Types: DoctorDetail interface uses camelCase keys.
     """
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+        from_attributes=True,
+    )
 
     id: UUID
     tenant_id: UUID
@@ -163,8 +201,18 @@ class DoctorPatchRequest(BaseModel):
     """Request body for PATCH /doctors/{id} — partial update.
 
     All fields are optional (patch semantics: only send fields to update).
+    Accepts camelCase from FE (yearsExperience, bioInputsNotes, etc.) via alias_generator.
+    extra="forbid" ensures unknown keys are rejected loudly (audit fix — silent drops caught).
+    phone added: FE can update phone via PATCH (was missing, causing silent drop on camelCase).
     """
 
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+        extra="forbid",
+    )
+
+    phone: str | None = Field(default=None, max_length=32, description="Mobile phone (PHI)")
     bio_inputs_notes: str | None = None
     bio_links: list[str] | None = None
     bio_public: BioPublicDTO | None = None
@@ -214,7 +262,14 @@ class RecurrentBlockCreateRequest(BaseModel):
     - end_condition_kind must be one of: end_date | occurrences | open_ended
     - if end_condition_kind == 'end_date', end_date is required
     - if end_condition_kind == 'occurrences', occurrences >= 1 is required
+
+    Accepts camelCase from FE (startTime, endTime, dayOfWeek, etc.) via alias_generator.
     """
+
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+    )
 
     kind: str = Field(default="recurrent")
     start_time: "time"
@@ -231,7 +286,13 @@ class OneOffBlockCreateRequest(BaseModel):
     """Request body for one-off availability block (discriminated union kind='one_off').
 
     SC-1c: a single specific date — no recurrence.
+    Accepts camelCase from FE (startTime, endTime, specificDate) via alias_generator.
     """
+
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+    )
 
     kind: str = Field(default="one_off")
     start_time: "time"
@@ -243,9 +304,14 @@ class AvailabilityBlockDTO(BaseModel):
     """Response DTO for a single availability block.
 
     Not PHI — availability blocks are scheduling metadata (not patient data).
+    camelCase wire contract aligned with 03-arch-fe § TypeScript Types (AvailabilityBlock).
     """
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+        from_attributes=True,
+    )
 
     id: UUID
     tenant_id: UUID

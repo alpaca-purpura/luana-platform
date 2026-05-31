@@ -26,7 +26,7 @@ Content-type allow-list (spec 01-spec.md § Business rules avatar-presigned-dire
 from __future__ import annotations
 
 import structlog
-from fastapi import APIRouter, File, Form, Header, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, UploadFile, status
 
 from src.modules.vitalia._shared.auth.rbac import require_brand_owner_access
 from src.modules.vitalia.clinics.api.dtos import AssetUploadResponse
@@ -34,6 +34,9 @@ from src.modules.vitalia.clinics.api.dtos import AssetUploadResponse
 logger = structlog.get_logger()
 
 router = APIRouter()
+
+# Allowed roles for upload mutations — admin_clinic only (hipaa-lite.md § RBAC)
+_ADMIN_CLINIC_ROLES: frozenset[str] = frozenset(["admin_clinic"])
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -113,13 +116,17 @@ async def _read_and_validate_size(file: UploadFile) -> bytes:
 # ── Route ─────────────────────────────────────────────────────────────────────
 
 
-@router.post("/upload", response_model=AssetUploadResponse, status_code=status.HTTP_200_OK)
+@router.post(
+    "/upload",
+    response_model=AssetUploadResponse,
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(require_brand_owner_access(roles=_ADMIN_CLINIC_ROLES))],
+)
 async def upload_asset_proxy(
     file: UploadFile = File(..., description="Archivo a subir (avatar o documento de credencial)"),
     kind: str = Form(..., description="Tipo de asset: 'avatar' | 'credential_doc'"),
     tenant_id: str = Header(alias="X-Tenant-ID"),
     user_id: str = Header(alias="X-User-ID"),
-    user_role: str = Header(alias="X-User-Role"),
 ) -> AssetUploadResponse:
     """Proxy asset upload to AssetsService.upload_asset → R2.
 
@@ -133,11 +140,9 @@ async def upload_asset_proxy(
     Consume AssetsService.upload_asset (proxy) — never edit engine.
     Live R2 = T-BE-7 Chris manual action. Tests use LocalStorageStrategy.
 
-    RBAC: admin_clinic required.
+    RBAC: admin_clinic required — wired as route dependency via Depends().
     response_model=AssetUploadResponse (PII gate — no PHI fields).
     """
-    # ── RBAC: admin_clinic ────────────────────────────────────────────────────
-    require_brand_owner_access(user_role)
 
     # ── Validate kind ─────────────────────────────────────────────────────────
     _validate_kind(kind)

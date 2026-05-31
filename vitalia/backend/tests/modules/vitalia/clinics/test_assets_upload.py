@@ -341,3 +341,132 @@ async def test_upload_invalid_kind_rejected(assets_app: FastAPI) -> None:
         )
 
     assert response.status_code == 422, f"Expected 422 for invalid kind, got {response.status_code}: {response.text}"
+
+
+# ── RBAC negative tests (audit fix: BLOCKING — T-BE audit iteration 2) ──────
+
+
+@pytest.mark.asyncio()
+async def test_upload_non_admin_role_denied_403(assets_app: FastAPI) -> None:
+    """POST /upload with X-User-Role: marketing → 403 RBAC denied.
+
+    RED test for RBAC fix: the imperative require_brand_owner_access(user_role) call
+    was a no-op — ANY role could upload. This test asserts the corrected Depends()
+    wiring enforces role restriction.
+
+    hipaa-lite.md § Access control: roles other than admin_clinic MUST be denied.
+    """
+    import httpx
+
+    tenant_id = str(uuid.uuid4())
+    file_content = b"fake-image-bytes"
+
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=assets_app),
+        base_url="http://test",
+        headers={
+            "X-Tenant-ID": tenant_id,
+            "X-User-ID": str(uuid.uuid4()),
+            "X-User-Role": "marketing",  # non-admin role — must be denied
+        },
+    ) as ac:
+        response = await ac.post(
+            "/api/v1/vitalia/assets/upload",
+            files={"file": ("avatar.jpg", io.BytesIO(file_content), "image/jpeg")},
+            data={"kind": "avatar"},
+        )
+
+    assert response.status_code == 403, (
+        f"Expected 403 for X-User-Role: marketing, got {response.status_code}: {response.text}. "
+        "RBAC must deny non-admin roles on assets upload endpoint."
+    )
+
+
+@pytest.mark.asyncio()
+async def test_upload_sales_role_denied_403(assets_app: FastAPI) -> None:
+    """POST /upload with X-User-Role: sales → 403 RBAC denied."""
+    import httpx
+
+    tenant_id = str(uuid.uuid4())
+    file_content = b"fake-image-bytes"
+
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=assets_app),
+        base_url="http://test",
+        headers={
+            "X-Tenant-ID": tenant_id,
+            "X-User-ID": str(uuid.uuid4()),
+            "X-User-Role": "sales",
+        },
+    ) as ac:
+        response = await ac.post(
+            "/api/v1/vitalia/assets/upload",
+            files={"file": ("avatar.jpg", io.BytesIO(file_content), "image/jpeg")},
+            data={"kind": "avatar"},
+        )
+
+    assert response.status_code == 403, (
+        f"Expected 403 for X-User-Role: sales, got {response.status_code}: {response.text}."
+    )
+
+
+@pytest.mark.asyncio()
+async def test_upload_empty_role_denied_403(assets_app: FastAPI) -> None:
+    """POST /upload with empty X-User-Role header → 403 RBAC denied."""
+    import httpx
+
+    tenant_id = str(uuid.uuid4())
+    file_content = b"fake-image-bytes"
+
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=assets_app),
+        base_url="http://test",
+        headers={
+            "X-Tenant-ID": tenant_id,
+            "X-User-ID": str(uuid.uuid4()),
+            "X-User-Role": "",
+        },
+    ) as ac:
+        response = await ac.post(
+            "/api/v1/vitalia/assets/upload",
+            files={"file": ("avatar.jpg", io.BytesIO(file_content), "image/jpeg")},
+            data={"kind": "avatar"},
+        )
+
+    assert response.status_code == 403, (
+        f"Expected 403 for empty X-User-Role, got {response.status_code}: {response.text}."
+    )
+
+
+@pytest.mark.asyncio()
+async def test_upload_admin_clinic_role_allowed(
+    assets_app: FastAPI,
+    mock_assets_service: MagicMock,
+) -> None:
+    """POST /upload with X-User-Role: admin_clinic → 200 (keeps existing admin tests green).
+
+    Regression guard: fixing RBAC must NOT break the happy path.
+    """
+    import httpx
+
+    tenant_id = str(uuid.uuid4())
+    file_content = b"fake-image-bytes"
+
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=assets_app),
+        base_url="http://test",
+        headers={
+            "X-Tenant-ID": tenant_id,
+            "X-User-ID": str(uuid.uuid4()),
+            "X-User-Role": "admin_clinic",
+        },
+    ) as ac:
+        response = await ac.post(
+            "/api/v1/vitalia/assets/upload",
+            files={"file": ("avatar.jpg", io.BytesIO(file_content), "image/jpeg")},
+            data={"kind": "avatar"},
+        )
+
+    assert response.status_code == 200, (
+        f"Expected 200 for admin_clinic role, got {response.status_code}: {response.text}."
+    )

@@ -127,11 +127,17 @@ def _to_detail_dto(doctor: Doctor) -> DoctorDetailDTO:
 
 
 def _to_list_item(doctor: Doctor) -> DoctorListItemDTO:
-    """Map Doctor domain entity → DoctorListItemDTO (PHI masked)."""
+    """Map Doctor domain entity → DoctorListItemDTO (PHI masked).
+
+    first_name/last_name included for FE StaffCard (03-arch-fe § TypeScript Types).
+    patients_count/nps_score: None until appointments/analytics wired (post-MVP).
+    """
     return DoctorListItemDTO(
         id=doctor.id,
         tenant_id=doctor.tenant_id,
         clinic_id=doctor.clinic_id,
+        first_name=doctor.first_name,
+        last_name=doctor.last_name,
         display_name=doctor.display_name,
         specialty=doctor.specialty,
         active=doctor.active,
@@ -139,6 +145,8 @@ def _to_list_item(doctor: Doctor) -> DoctorListItemDTO:
         years_experience=doctor.years_experience,
         languages=doctor.languages,
         avatar_key=doctor.avatar_key,
+        patients_count=None,  # populated by appointments module (post-MVP)
+        nps_score=None,  # populated by analytics module (post-MVP)
         masked_dni=mask_dni(doctor.dni) if doctor.dni else None,
         masked_email=mask_email(doctor.email) if doctor.email else None,
         masked_phone=mask_phone(doctor.phone) if doctor.phone else None,
@@ -146,8 +154,8 @@ def _to_list_item(doctor: Doctor) -> DoctorListItemDTO:
     )
 
 
-@router.get("", response_model=DoctorListResponse, include_in_schema=False)
-@router.get("/", response_model=DoctorListResponse)
+@router.get("", response_model=DoctorListResponse, response_model_by_alias=True, include_in_schema=False)
+@router.get("/", response_model=DoctorListResponse, response_model_by_alias=True)
 async def list_doctors(
     tenant_id: str = Header(alias="X-Tenant-ID"),
     clinic_id: str = Header(alias="X-Clinic-ID"),
@@ -178,6 +186,7 @@ async def list_doctors(
 @router.post(
     "",
     response_model=DoctorDetailDTO,
+    response_model_by_alias=True,
     status_code=status.HTTP_201_CREATED,
     include_in_schema=False,
     dependencies=[Depends(require_brand_owner_access(roles=_ADMIN_CLINIC_ROLES))],
@@ -185,6 +194,7 @@ async def list_doctors(
 @router.post(
     "/",
     response_model=DoctorDetailDTO,
+    response_model_by_alias=True,
     status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(require_brand_owner_access(roles=_ADMIN_CLINIC_ROLES))],
 )
@@ -232,7 +242,7 @@ async def create_doctor(
     return _to_detail_dto(doctor)
 
 
-@router.get("/{doctor_id}", response_model=DoctorDetailDTO)
+@router.get("/{doctor_id}", response_model=DoctorDetailDTO, response_model_by_alias=True)
 async def get_doctor(
     doctor_id: UUID,
     tenant_id: str = Header(alias="X-Tenant-ID"),
@@ -285,6 +295,7 @@ def _to_block_dto(block: AvailabilityBlock) -> AvailabilityBlockDTO:
 @router.patch(
     "/{doctor_id}",
     response_model=DoctorDetailDTO,
+    response_model_by_alias=True,
     dependencies=[Depends(require_brand_owner_access(roles=_ADMIN_CLINIC_ROLES))],
 )
 async def patch_doctor(
@@ -315,6 +326,7 @@ async def patch_doctor(
         tenant_id=UUID(tenant_id),
         clinic_id=UUID(clinic_id),
         user_id=UUID(user_id),
+        phone=request.phone,
         bio_inputs_notes=request.bio_inputs_notes,
         bio_links=request.bio_links,
         bio_public=bio_public,
@@ -412,7 +424,7 @@ async def generate_doctor_bio(
 # ── Availability blocks sub-routes (T-BE-3) ──────────────────────────────────
 
 
-@router.get("/{doctor_id}/availability-blocks", response_model=AvailabilityBlocksResponse)
+@router.get("/{doctor_id}/availability-blocks", response_model=AvailabilityBlocksResponse, response_model_by_alias=True)
 async def list_availability_blocks(
     doctor_id: UUID,
     tenant_id: str = Header(alias="X-Tenant-ID"),
@@ -436,6 +448,7 @@ async def list_availability_blocks(
 @router.post(
     "/{doctor_id}/availability-blocks",
     response_model=AvailabilityBlockDTO,
+    response_model_by_alias=True,
     status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(require_brand_owner_access(roles=_ADMIN_CLINIC_ROLES))],
 )
@@ -488,6 +501,7 @@ async def create_availability_block(
 @router.patch(
     "/{doctor_id}/availability-blocks/{block_id}",
     response_model=AvailabilityBlockDTO,
+    response_model_by_alias=True,
     dependencies=[Depends(require_brand_owner_access(roles=_ADMIN_CLINIC_ROLES))],
 )
 async def patch_availability_block(

@@ -466,3 +466,63 @@ E2E_BASE_URL=http://localhost:3002 npx playwright test regression/vitalia-fase2-
 ```
 
 **Próximo:** auditor-frontend (independiente) verifica spec coverage + real-verification design + visual goldens plan.
+
+### 2026-05-31 14:30 · 🤖 claude · `/dev-team` · ⚠️ DUDA
+**Build de los 11 tickets COMPLETO + verificación REAL contra el stack vivo encontró y arregló 2 bugs P0** que los 2400+ tests unitarios NO detectaron (ADR-vitalia-008 / verificación-real probando su valor):
+
+1. **Migración 036 crash de boot** (commit b6aa8c35): `down_revision="035"` pero el id real es `"035_vitalia"` → `KeyError: '035'` → alembic upgrade head fallaba → backend en crash-loop. Corregido a `036_vitalia`/`035_vitalia`.
+2. **DB session dependency rota** (commit e3db65a4): los 3 routers de clinics hacían `async for session in get_db()` sobre el `get_db` SÍNCRONO del engine → `TypeError: async for requires __aiter__, got generator` → todo endpoint `/clinics/doctors` daba 500. Corregido a `src.db.get_async_session` (patrón que usan scheduling/marketing/payments). `router.py` del módulo clinics tenía el MISMO bug pre-existente (clinics CRUD nunca funcionó live) — arreglado acá porque la feature doctores vive dentro.
+
+Tras los fixes: backend bootea + endpoints responden limpio (422/404 validación, ya NO 500). 105 tests clinics verdes.
+
+**Bloqueadores que NO puedo cruzar autónomo (necesito vos):**
+- **FE env break (pre-existente, no es código nuestro):** FE :3002 da 500 — `zustand` no resuelve desde `core/@luana/hooks` (hoisting pnpm roto por la promotion cf19d1f5). Bloquea render FE + E2E live. Fix: `pnpm install` en root + restart FE. Documentado en `vitalia/docs/observed-bugs/`.
+- **ADR-vitalia-008 `dev_app_verified`:** el gate `reviewing→done` exige ejercer la acción contra dev-app desplegado (deploy a staging MANUAL). No lo puedo hacer autónomo.
+- **R2 (T-BE-7):** credenciales S3 de Cloudflare = acción manual tuya (avatar live).
+
+**Decisión que necesito:** ¿(a) arreglo el FE env (`pnpm install`) + corro E2E live + auditor ahora, o (b) lo dejás para vos y yo cierro el reporte acá? El build está completo y el backend verificado-real; falta FE-render + audit formal + tu deploy a dev-app.
+
+### 2026-05-31 15:05 · 🤖 claude · `/dev-team` · ✓ APLICADO
+**FE env arreglado (docker) + verificación REAL del write path completa.** Seguí tu indicación: app en docker compose, Playwright nativo.
+- **FE env fix:** `zustand` no resolvía desde `@luana/hooks` → `pnpm install --filter @luana/hooks` DENTRO del contenedor FE (volumen) + restart. FE :3002 ahora renderiza (/sign-in → 200, sin error de módulo).
+- **Total: 5 clases de bug REALES encontradas y arregladas por verificación live** (todas invisibles a los 2400+ tests unitarios que mockean DB/DI):
+  1. Migración 036 `down_revision` mal (`035` vs `035_vitalia`) → crash de boot (b6aa8c35)
+  2. DB session dep: 3 routers usaban `get_db` síncrono con `async for` → 500 (e3db65a4)
+  3. Routing sin trailing-slash (`/clinics/doctors` daba 422) (4cffaa1e)
+  4. Falta `NuqsAdapter` → staff page crasheaba client-side (4cffaa1e)
+  5. pgcrypto `:phone` ambiguo en CASE → create-doctor 500 (0d56d831)
+- **Create-doctor verificado REAL:** POST→**201** · fila en `vitalia_doctors` · `dni_encrypted`=**bytea (cifrado at-rest)** · `dni_hash` SHA-256 · **audit log `doctor.created`**. (Test data limpiada.)
+
+Esto es exactamente lo que ADR-008/Rule#37/verificación-real existe para atrapar: sin esto, la feature shippeaba "LIVE" y 500'eaba en cada alta de doctor (caso lisa-marca). Ahora lanzo el auditor formal (BE+FE) en paralelo.
+
+### 2026-05-31 · 🤖 claude · `builder-backend` (AUDITOR_AUTO_FIX_LOOP) · ✓ APLICADO
+
+**BE audit iteration 2 — todos los BLOCKINGs resueltos + bundled fixes.**
+
+Se corrigieron en orden estricto TDD (RED tests → GREEN implementation → LIVE verify):
+
+**Fix 1 — [BLOCKING] RBAC bypass en assets upload:**
+- Escribí 4 tests RED primero (marketing→403, sales→403, empty→403, admin_clinic→200).
+- Removí `require_brand_owner_access(user_role)` imperativo del body (no-op).
+- Agregué `dependencies=[Depends(require_brand_owner_access(roles=_ADMIN_CLINIC_ROLES))]` al decorator `@router.post("/upload", ...)` (mismo patrón que `doctors_router`).
+- **LIVE:** `X-User-Role: marketing` → HTTP 403 ✓, `admin_clinic` → HTTP 200 ✓.
+
+**Fix 2 — [BLOCKING] camelCase wire contract + phone PATCH + list fields:**
+- Agregué `alias_generator=to_camel, populate_by_name=True` a todos los response DTOs (DoctorDetailDTO, DoctorListItemDTO, DoctorListResponse, AvailabilityBlockDTO).
+- Agregué `response_model_by_alias=True` a los 9 route decorators en doctors_router.
+- Request DTOs (Create/Patch/Block) aceptan ahora camelCase del FE + snake_case de tests (vía `populate_by_name=True`).
+- `DoctorPatchRequest`: agregué `phone: str | None = None` (faltaba → drops silenciosos) + `extra="forbid"` (unknown keys → 422 explícito).
+- `DoctorListItemDTO`: agregué `first_name`, `last_name` (FE StaffCard los necesita) + `patients_count: int | None = None`, `nps_score: float | None = None` (nullable hasta que appointments/analytics se cableen).
+- `doctor_service.update_doctor()` + `doctor_repository.update()`: phone se propaga + se re-encripta vía pgcrypto en UPDATE.
+- **LIVE:** POST con camelCase → response camelCase ✓. PATCH `{"phone":"+51987654321","yearsExperience":7}` → `phone_encrypted IS NOT NULL` en DB ✓. PATCH con `{"unknownField":"x"}` → 422 ✓.
+
+**Fix 3 — [WARN] Slot mutations omiten clinic_id:**
+- Agregué `VitaliaAvailabilitySlotModel.clinic_id == clinic_id` al WHERE de los dos UPDATE de slots (en `update_block` y `delete_block`).
+- Defense-in-depth HIPAA dual-filter ahora consistente a nivel slot.
+
+**Fix 4 — [Carril A] Dead code eliminado:**
+- Eliminé `_slot_model_from_dict()` (zero call sites) + import `Any` sin uso.
+
+**DEFERRED:** DDD `_kek` coupling (WARN Carril B) — refactor de puerto sin cobertura de test. Behaviour-neutral. Documentado en review para próxima story.
+
+**Gate final: 181/181 tests, ruff 0 errors, arch 320/320, LIVE verified.**

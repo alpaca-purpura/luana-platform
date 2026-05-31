@@ -438,6 +438,11 @@ class DoctorRepository(CompoundScopeRepositoryBase[VitaliaDoctorModel, UUID]):
               avatar_key = :avatar_key,
               visible_en_landing = :visible_en_landing,
               active = :active,
+              phone_encrypted = CASE
+                WHEN CAST(:phone AS text) IS NOT NULL
+                  THEN pgp_sym_encrypt(CAST(:phone AS text), :kek)
+                ELSE phone_encrypted
+              END,
               updated_at = NOW()
             WHERE id = :doctor_id
               AND tenant_id = :tenant_id
@@ -463,6 +468,8 @@ class DoctorRepository(CompoundScopeRepositoryBase[VitaliaDoctorModel, UUID]):
                 "avatar_key": doctor.avatar_key,
                 "visible_en_landing": doctor.visible_en_landing,
                 "active": doctor.active,
+                "phone": doctor.phone,
+                "kek": self._kek.get_key(),
             },
         )
         await self._session.flush()

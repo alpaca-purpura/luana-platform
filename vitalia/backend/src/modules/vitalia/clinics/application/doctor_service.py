@@ -297,6 +297,7 @@ class DoctorService:
         clinic_id: UUID,
         user_id: UUID,
         # Patchable fields
+        phone: str | None = None,
         bio_inputs_notes: str | None = None,
         bio_links: list[str] | None = None,
         bio_public: BioPublic | None = None,
@@ -327,6 +328,7 @@ class DoctorService:
 
         updated = dataclasses.replace(
             existing,
+            phone=phone if phone is not None else existing.phone,
             bio_inputs_notes=bio_inputs_notes if bio_inputs_notes is not None else existing.bio_inputs_notes,
             bio_links=bio_links if bio_links is not None else existing.bio_links,
             bio_public=bio_public if bio_public is not None else existing.bio_public,

@@ -17,7 +17,6 @@ delete_block preserves slots with has_confirmed_appointment=True (SC-1d, SC-3b).
 from __future__ import annotations
 
 from datetime import date, datetime, timezone
-from typing import Any
 from uuid import UUID
 
 import structlog
@@ -226,12 +225,13 @@ class AvailabilityBlockRepository(CompoundScopeRepositoryBase[VitaliaAvailabilit
         )
         await self._session.execute(update_stmt)
 
-        # Soft-delete future free slots
+        # Soft-delete future free slots (dual-filter: tenant_id + clinic_id)
         delete_future_free_stmt = (
             update(VitaliaAvailabilitySlotModel)
             .where(
                 VitaliaAvailabilitySlotModel.block_id == block.id,
                 VitaliaAvailabilitySlotModel.tenant_id == tenant_id,
+                VitaliaAvailabilitySlotModel.clinic_id == clinic_id,
                 VitaliaAvailabilitySlotModel.slot_date >= today,
                 VitaliaAvailabilitySlotModel.has_confirmed_appointment.is_(False),
                 VitaliaAvailabilitySlotModel.deleted_at.is_(None),
@@ -271,12 +271,13 @@ class AvailabilityBlockRepository(CompoundScopeRepositoryBase[VitaliaAvailabilit
         # Count confirmed future slots before deletion
         confirmed_count = await self.count_future_confirmed(block_id, tenant_id=tenant_id, clinic_id=clinic_id)
 
-        # Soft-delete future non-confirmed slots
+        # Soft-delete future non-confirmed slots (dual-filter: tenant_id + clinic_id)
         delete_free_stmt = (
             update(VitaliaAvailabilitySlotModel)
             .where(
                 VitaliaAvailabilitySlotModel.block_id == block_id,
                 VitaliaAvailabilitySlotModel.tenant_id == tenant_id,
+                VitaliaAvailabilitySlotModel.clinic_id == clinic_id,
                 VitaliaAvailabilitySlotModel.slot_date >= today,
                 VitaliaAvailabilitySlotModel.has_confirmed_appointment.is_(False),
                 VitaliaAvailabilitySlotModel.deleted_at.is_(None),
@@ -376,19 +377,4 @@ def _block_to_model(block: AvailabilityBlock) -> VitaliaAvailabilityBlockModel:
         end_date=block.end_date,
         occurrences=block.occurrences,
         specific_date=block.specific_date,
-    )
-
-
-def _slot_model_from_dict(data: dict[str, Any]) -> VitaliaAvailabilitySlotModel:
-    """Build a VitaliaAvailabilitySlotModel from a projection dict."""
-    return VitaliaAvailabilitySlotModel(
-        id=data["id"],
-        tenant_id=data["tenant_id"],
-        clinic_id=data["clinic_id"],
-        doctor_id=data["doctor_id"],
-        block_id=data["block_id"],
-        slot_date=data["slot_date"],
-        start_ts=data["start_ts"],
-        end_ts=data["end_ts"],
-        has_confirmed_appointment=False,
     )
