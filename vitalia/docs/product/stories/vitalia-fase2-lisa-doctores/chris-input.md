@@ -288,6 +288,20 @@ Implementado y testeado. Deliverables completados:
 
 **HIPAA-lite compliance:** dual filter (tenant_id+clinic_id) via CompoundScopeRepositoryBase · pgcrypto BYTEA for dni/email/phone/credential · HMAC-SHA256 dni_hash unique constraint · audit sync writes (doctor.created/updated/deactivated/cross_tenant_attempt) · PHI masking in list responses · PublicDoctorDTO channel guard (7 allow-listed fields, no PHI) · Spanish neutro error messages
 
+### 2026-05-31 — 🤖 claude · `builder-backend` · ✓ APLICADO
+**T-BE-2 — AvailabilityBlock models + AvailabilityProjectionService (dateutil.rrule) + AvailabilityBlockRepository**
+
+Implementado TDD (RED→GREEN). Deliverables:
+- `clinics/infrastructure/models/{availability_block_model.py, availability_slot_model.py}` — SQLA 2.0, mapean a tablas de migration 036 (sin migración nueva)
+- `clinics/infrastructure/repositories/availability_block_repository.py` — hereda `CompoundScopeRepositoryBase(scope_field="clinic_id")`, soft deletes, SC-1d/SC-3b preserva citas confirmadas en delete
+- `clinics/application/ports/availability_repo_port.py` — ABC con 6 métodos abstractos
+- `clinics/application/availability_projection_service.py` — `dateutil.rrule` (v2.9.0): weekly interval=1, biweekly interval=2, end_date→until, occurrences→count, open_ended→90d horizon; `classify_future_slots_for_deletion` separa free vs confirmed
+- `test_availability_projection.py` (12 tests) + `test_availability_block_mutable.py` (17 tests) — TDD RED primero
+
+Gates: 96/96 tests pass (clinics suite) · 319 arch tests pass · ruff 0 errors · format OK
+Commit: 2f88b316 · Branch: wip/vitalia
+Pre-existing (no scope T-BE-2): `treatment_plans.notes` TEXT vs BYTEA (desde T-BE-1).
+
 ### 2026-05-31 05:18 · 🤖 claude · `/pm-vitalia` · ✓ APLICADO
 **Arranco el tren autónomo `/architect → /dev-team → /auditor → merge` hasta `done`** (pedido explícito de Chris).
 - Step 0 GREEN: worktree CANÓNICO vitalia · sin stories en developing/developed/reviewing (closure gate limpio) · hard deps `vitalia-fase1-empty-states` + `vitalia-fase1-routing-shell` ambas en archive (done) · WIP caps libres (0 ready/developing).
