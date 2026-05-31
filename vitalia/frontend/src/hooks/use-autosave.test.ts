@@ -144,4 +144,59 @@ describe("useAutosave", () => {
 
     expect(result.current.status).toBe("error");
   });
+
+  // F3 fix: autosave coalescing — two rapid field edits within the debounce window
+  // must produce a single merged PATCH containing both fields (not lose the first one).
+  it("coalesces two rapid object field edits into a single merged PATCH", async () => {
+    const saveFn = vi.fn().mockResolvedValue(undefined);
+    const { result } = renderHook(() =>
+      useAutosave<Record<string, unknown>>({ saveFn, debounceMs: 600 }),
+    );
+
+    // Field A edit at t=0
+    act(() => {
+      result.current.schedule({ specialty: "Odontología" });
+    });
+
+    // Field B edit at t=300ms (within the debounce window)
+    vi.advanceTimersByTime(300);
+    act(() => {
+      result.current.schedule({ phone: "+51 999 000 111" });
+    });
+
+    // Debounce fires at t=300+600=900ms from start
+    await act(async () => {
+      vi.advanceTimersByTime(600);
+    });
+
+    // saveFn called exactly once with BOTH fields merged
+    expect(saveFn).toHaveBeenCalledTimes(1);
+    expect(saveFn).toHaveBeenCalledWith({
+      specialty: "Odontología",
+      phone: "+51 999 000 111",
+    });
+  });
+
+  it("later field value wins when same field edited twice within window", async () => {
+    const saveFn = vi.fn().mockResolvedValue(undefined);
+    const { result } = renderHook(() =>
+      useAutosave<Record<string, unknown>>({ saveFn, debounceMs: 600 }),
+    );
+
+    act(() => {
+      result.current.schedule({ specialty: "Primera especialidad" });
+    });
+    vi.advanceTimersByTime(200);
+
+    act(() => {
+      result.current.schedule({ specialty: "Especialidad final" });
+    });
+
+    await act(async () => {
+      vi.advanceTimersByTime(600);
+    });
+
+    expect(saveFn).toHaveBeenCalledTimes(1);
+    expect(saveFn).toHaveBeenCalledWith({ specialty: "Especialidad final" });
+  });
 });

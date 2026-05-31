@@ -105,10 +105,22 @@ export function useAutosave<T>({
     }
   }, []);
 
-  // schedule — debounced
+  // schedule — debounced with payload coalescing.
+  // Merging pending payloads prevents rapid edits to different fields from
+  // replacing each other: editing field A then B within the debounce window
+  // produces a single merged PATCH containing both fields (F3 fix).
   const schedule = useCallback(
     (payload: T) => {
-      pendingPayloadRef.current = payload;
+      // Coalesce: merge incoming payload with any already-pending payload
+      // so that two rapid field edits produce one merged PATCH with both fields.
+      if (pendingPayloadRef.current !== null && typeof payload === "object" && payload !== null) {
+        pendingPayloadRef.current = {
+          ...(pendingPayloadRef.current as object),
+          ...(payload as object),
+        } as T;
+      } else {
+        pendingPayloadRef.current = payload;
+      }
 
       // Reset existing timer
       if (timerRef.current) {

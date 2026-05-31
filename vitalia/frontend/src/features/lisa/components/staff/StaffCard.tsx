@@ -32,7 +32,9 @@ interface StaffCardProps {
  * data-testid="staff-card-{id}" for Playwright selectors.
  */
 export function StaffCard({ doctor, tenantId }: StaffCardProps) {
-  const displayName = `${doctor.firstName} ${doctor.lastName}`;
+  // F1 follow-through: null-guard firstName/lastName — BE may return null
+  // (stats fields patientsCount/npsScore/avatarUrl are already null-guarded below with "—")
+  const displayName = [doctor.firstName, doctor.lastName].filter(Boolean).join(" ") || "—";
   const profileHref = `/${tenantId}/lisa/staff/${doctor.id}/perfil`;
 
   return (

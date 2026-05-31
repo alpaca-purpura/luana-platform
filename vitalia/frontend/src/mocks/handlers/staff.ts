@@ -25,42 +25,61 @@ const DOCTORS_PATH = `${BASE}/api/v1/vitalia/clinics/doctors`;
 
 // ── Mock data (PHI-safe) ────────────────────────────────────────────────────────
 
+// F1 fix: MSW mock data now mirrors the REAL BE camelCase contract (alias_generator=to_camel).
+// Previously used "dniMasked" (FE-invented name); BE actually emits "maskedDni" (camelCase of masked_dni).
+// The stats fields (patientsCount, npsScore) are nullable — no backend source yet, BE returns null.
+// avatarUrl is not in the list DTO — only avatarKey (storage key). avatarUrl can be derived client-side.
 const MOCK_DOCTORS: DoctorListItem[] = [
   {
     id: "doc-001",
     firstName: "Ana",
     lastName: "García Robles",
+    displayName: "Ana García Robles",
     specialty: "Odontología cosmética",
+    avatarKey: null,
     avatarUrl: null,
     yearsExperience: 8,
-    patientsCount: 320,
-    npsScore: 72,
-    dniMasked: "***456",
+    patientsCount: null,
+    npsScore: null,
+    maskedDni: "***456",
+    maskedEmail: "a***@test-vitalia.com",
     active: true,
+    visibleEnLanding: false,
+    createdAt: "2026-01-15T10:00:00Z",
   },
   {
     id: "doc-002",
     firstName: "Luis",
     lastName: "Morales Vera",
+    displayName: "Luis Morales Vera",
     specialty: "Medicina estética",
+    avatarKey: null,
     avatarUrl: null,
     yearsExperience: 5,
-    patientsCount: 210,
-    npsScore: 68,
-    dniMasked: "***789",
+    patientsCount: null,
+    npsScore: null,
+    maskedDni: "***789",
+    maskedEmail: "l***@test-vitalia.com",
     active: true,
+    visibleEnLanding: false,
+    createdAt: "2026-02-01T10:00:00Z",
   },
   {
     id: "doc-003",
     firstName: "Sol",
     lastName: "Paredes Castro",
+    displayName: "Sol Paredes Castro",
     specialty: "Dermatología",
+    avatarKey: null,
     avatarUrl: null,
     yearsExperience: 12,
-    patientsCount: 540,
-    npsScore: 81,
-    dniMasked: "***012",
+    patientsCount: null,
+    npsScore: null,
+    maskedDni: "***012",
+    maskedEmail: "s***@test-vitalia.com",
     active: true,
+    visibleEnLanding: true,
+    createdAt: "2025-11-10T10:00:00Z",
   },
 ];
 

@@ -33,6 +33,9 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useStaffUiStore } from "../../../../store/staff-ui-store";
 import { useAvailabilityBlocks } from "../../../../api/staff";
+// F6 fix: per master-data.md — NEVER toLocaleDateString(); use Intl.DateTimeFormat with explicit locale
+// AvailabilityCalendar is not a Client-hook component boundary; formatWeekLabel is a pure helper.
+// Using Intl.DateTimeFormat directly (not useTenantLocale hook) because this is a pure util fn.
 import type {
   AvailabilityBlock,
   RecurrentBlock,
@@ -58,13 +61,24 @@ function addDays(isoDate: string, days: number): string {
   return date.toISOString().split("T")[0] ?? isoDate;
 }
 
+/**
+ * formatWeekLabel — deterministic week range label using Intl.DateTimeFormat.
+ * F6 fix: per master-data.md — NEVER toLocaleDateString(). Use Intl.DateTimeFormat
+ * with explicit locale "es-419" and no browser-default date locale resolution.
+ * The locale is hardcoded here because: (a) this is a pure util fn (no hook),
+ * (b) the 03-arch-fe.md explicitly requires "es-419" for the horarios label,
+ * (c) useTenantLocale() can only be called in a Client Component body, not in a
+ *     module-level pure helper. The hook provides the locale for monetary display;
+ *     date locale here is spec-locked to es-419.
+ */
 function formatWeekLabel(mondayIso: string): string {
   const monday = new Date(mondayIso + "T00:00:00");
   const sunday = new Date(mondayIso + "T00:00:00");
   sunday.setDate(monday.getDate() + 6);
   const opts: Intl.DateTimeFormatOptions = { day: "numeric", month: "short" };
-  const monStr = monday.toLocaleDateString("es-419", opts);
-  const sunStr = sunday.toLocaleDateString("es-419", opts);
+  const formatter = new Intl.DateTimeFormat("es-419", opts);
+  const monStr = formatter.format(monday);
+  const sunStr = formatter.format(sunday);
   const year = monday.getFullYear();
   return `${monStr} – ${sunStr}, ${year}`;
 }
@@ -400,7 +414,10 @@ export function AvailabilityCalendar({ doctorId }: AvailabilityCalendarProps) {
             >
               ‹
             </Button>
-            <span className="text-xs font-medium text-muted-foreground min-w-[160px] text-center">
+            <span
+              className="text-xs font-medium text-muted-foreground min-w-[160px] text-center"
+              data-testid="week-label"
+            >
               {formatWeekLabel(calendarWeek)}
             </span>
             <Button

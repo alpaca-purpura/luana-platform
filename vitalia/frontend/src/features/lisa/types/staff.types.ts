@@ -4,10 +4,13 @@
  * staff.types.ts — TypeScript types for Lisa Staff sub-tab.
  *
  * Mirrors Pydantic DTOs from clinics API (camelCase, ISO 8601 datetimes as string).
- * PHI fields masked in list responses (dniMasked, not full dni).
+ * PHI fields masked in list responses (maskedDni, maskedEmail, maskedPhone).
  *
  * Per ADR-vitalia-004 § 3: RQ + Zustand split.
  * Per vitalia/.claude/rules/hipaa-lite.md: PHI dual-filter tenant+clinic.
+ *
+ * F1 follow-through (audit fix): field names mirror real BE camelCase contract.
+ * BE DoctorListItemDTO uses maskedDni (not dniMasked) per alias_generator=to_camel.
  *
  * T-FE-1 vitalia-fase2-lisa-doctores
  * spec_anchor: 03-arch-fe.md § TypeScript Types + 03-arch-be.md § DTOs
@@ -18,18 +21,33 @@
 
 export interface DoctorListItem {
   id: string;
+  /** camelCase from BE alias_generator=to_camel */
+  tenantId?: string;
+  clinicId?: string;
   firstName: string;
   lastName: string;
+  displayName?: string | null;
   specialty?: string | null;
-  avatarUrl?: string | null;
+  active: boolean;
+  visibleEnLanding?: boolean;
   yearsExperience?: number | null;
+  languages?: string[];
+  /** Avatar storage key — no direct URL in list item */
+  avatarKey?: string | null;
   /** Patient count — anonymous aggregate, no PHI */
   patientsCount?: number | null;
   /** NPS score — anonymous aggregate, no PHI */
   npsScore?: number | null;
-  /** Masked DNI — e.g. "***567" */
-  dniMasked: string;
-  active: boolean;
+  /**
+   * Masked DNI — e.g. "***567".
+   * F1 fix: BE returns maskedDni (to_camel of masked_dni), not dniMasked.
+   */
+  maskedDni?: string | null;
+  maskedEmail?: string | null;
+  maskedPhone?: string | null;
+  createdAt?: string;
+  /** avatarUrl is not in list response — only avatarKey. Derived client-side if needed. */
+  avatarUrl?: string | null;
 }
 
 // ── Doctor detail (full profile, PHI fields shown only to admin_clinic role) ──

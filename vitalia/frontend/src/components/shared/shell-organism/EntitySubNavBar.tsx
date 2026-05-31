@@ -36,6 +36,7 @@ import {
 } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/cn";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -86,6 +87,10 @@ export function EntitySubNavBar({
   activeLeaf,
   className,
 }: EntitySubNavBarProps) {
+  // F4 fix: client-side router so leaf nav doesn't force a full page reload.
+  // SubSubTabsBar (sibling component) uses router.push — mirroring that pattern.
+  // Using router.push preserves the React Query cache and avoids SC-1c full-reload.
+  const router = useRouter();
   const isDisabled = entity === null;
   const totalTabs = leaves.length;
 
@@ -220,8 +225,10 @@ export function EntitySubNavBar({
               onClick={() => {
                 if (!isDisabled) {
                   setFocusedIdx(idx);
-                  // Navigation is handled by Link — this button wraps in a link
-                  window.location.href = leaf.href;
+                  // F4 fix: use Next.js router.push instead of window.location.href
+                  // to preserve client-side navigation, RQ cache, and SC-1c deep-link.
+                  // Mirrors SubSubTabsBar pattern per ADR-vitalia-004.
+                  router.push(leaf.href);
                 }
               }}
               onFocus={() => {

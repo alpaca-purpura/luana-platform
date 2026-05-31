@@ -106,6 +106,8 @@ describe("StaffErrorBanner", () => {
 
 // ── StaffCard ──────────────────────────────────────────────────────────────────
 
+// F1 follow-through: mock mirrors real BE camelCase contract.
+// BE emits maskedDni (to_camel of masked_dni), patientsCount/npsScore nullable.
 const MOCK_DOCTOR: DoctorListItem = {
   id: "doc-test-001",
   firstName: "Ana",
@@ -115,7 +117,7 @@ const MOCK_DOCTOR: DoctorListItem = {
   yearsExperience: 8,
   patientsCount: 320,
   npsScore: 72,
-  dniMasked: "***456",
+  maskedDni: "***456",
   active: true,
 };
 

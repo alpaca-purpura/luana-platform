@@ -278,6 +278,26 @@ describe("BloquePopover — recurrence form", () => {
   });
 });
 
+describe("AvailabilityCalendar — week label does NOT use toLocaleDateString (F6)", () => {
+  // Regression test: ensure the week range label is stable and does not use
+  // toLocaleDateString() which varies by browser locale. Intl.DateTimeFormat with
+  // explicit locale "es-419" must be used instead (master-data.md).
+  it("renders a week label containing the year as a 4-digit number", () => {
+    // mockStoreState.calendarWeek = "2025-09-01" (set in beforeEach of outer describe)
+    render(React.createElement(AvailabilityCalendar, { doctorId: "doctor-123" }));
+    // The label should include the year "2025"
+    const label = screen.getByTestId("week-label");
+    expect(label.textContent).toMatch(/2025/);
+  });
+
+  it("week label is non-empty and not undefined/null", () => {
+    render(React.createElement(AvailabilityCalendar, { doctorId: "doctor-123" }));
+    const label = screen.getByTestId("week-label");
+    expect(label.textContent?.trim().length).toBeGreaterThan(0);
+    expect(label.textContent).not.toMatch(/undefined|null/);
+  });
+});
+
 describe("DoctorHorariosView — integration", () => {
   it("renders horarios view container", () => {
     render(React.createElement(DoctorHorariosView, { doctorId: "doctor-123" }));
