@@ -58,3 +58,13 @@ contrato + scenario), (3) resto OK. Spec v2 ratificado → `state: refined` · `
 `touches_brands: [nicolify]`. Encadeno a `/architect` (platform) hasta el done.
 **Nota de scope:** ahora la story TOCA nicolify (autorizado por ser platform story + ADR-012). El architect
 debe preservar el comportamiento observable del form-runtime (sus consumers como offer-studio no se rompen).
+
+### 2026-05-31T01:50 · 🤖 claude · `/architect` · ✓ APLICADO
+Ready package cerrado (lo produje directo, tengo el prior-art de ambas brands + estructura @luana confirmada).
+Artifacts: `03-arch.md` · `04-validators.yaml` (11 scenarios → Vitest, librería) · `06-tickets.yaml` (3 tickets) ·
+`dispatch-plan.md`. Story → `ready`. Diseño: `@luana/schemas` (AutosaveContract) + `@luana/hooks` (useAutosave
+con getTokenReady + debounce 2000 + retry + telemetry opt-in, **sin importar Clerk** — getToken inyectado) +
+`@luana/ui-kit` (<AutosaveBadge> componiendo el badge.tsx existente, aria-live + contraste AA — NO el verde
+roto) + consumer de referencia + nicolify form-runtime reescrito encima (invariante: API pública + tests existentes
+verdes). **Tickets:** T-1 (schemas+hooks) → T-2 (ui-kit badge + showcase) → T-3 (nicolify form-runtime), todos
+builder-frontend sonnet, ~2h. `autonomous_mode: true`. Encadeno a `/dev-team` hasta el done.

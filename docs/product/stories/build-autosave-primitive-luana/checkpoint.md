@@ -2,9 +2,9 @@
 story_id: build-autosave-primitive-luana
 brand: platform
 type: ui-story
-state: refined
-phase: SPEC_RATIFIED
-last_artifact: 01-spec.md
+state: ready
+phase: READY_PACKAGE_CLOSED
+last_artifact: 06-tickets.yaml
 outcome: autosave-primitive-platform
 adr: docs/architecture/luana-platform/ADR-012-autosave-primitive-platform.md
 cap_target: null
