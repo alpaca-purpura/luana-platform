@@ -61,26 +61,10 @@ WS=`$(git rev-parse --show-toplevel)` (root del workspace `luana-platform/`).
 - ❌ Re-implementar PII sanitization local — usar shared `sanitization`
 - ❌ Mirror channel format dispatch — usar shared `format_for_channel`
 
-## Enforcement layers
+## Enforcement + penalizaciones
 
-| Layer | Mecanismo | Owner |
-|---|---|---|
-| 1 PM PR.md | Bloque "Existing systems audit" mandatory grep evidence | `/pm` skill |
-| 2 Builder Step 0 | Prompt template Step 0 grep + escalate match | builder agent |
-| 3 Auditor Cat 12 | Mirror detection scan archivo nuevo PR vs otros módulos | auditor |
-| 4 Architect mandatory | Tocar `core/luana-core-*/` o subsystem cross-brand → architect Opus pre builder | `/pm-luana` orchestration |
-| 5 Skills | copilot-expert + sales-agent-expert cargan rule frontmatter | skills |
+PM PR.md "Existing systems audit" grep evidence · Builder Step 0 grep + escalate · Auditor Cat 12 mirror scan · Architect Opus pre-builder si toca `core/` o subsystem cross-brand. **Penalizaciones:** builder sin Step 0 grep → REVERT · auditor sin Cat 12 → re-audit · PM skip architect → process-learnings case study.
 
-## Penalizaciones
+## Multibrand awareness
 
-- Builder sin Step 0 grep → REVERT
-- Auditor sin Cat 12 → re-audit
-- PM skip architect → process-learnings.md case study
-
-## Multibrand awareness (post reorg 2026-05-15)
-
-- Engine SSoT: `core/luana-core-*/src/luana_core_*/` (26 packages). Modificar requiere `/pm-luana` promotion gate (ver `docs/promotion-protocol/README.md`).
-- Brand extensions: `{brand}/backend/src/modules/{brand}/{copilot,sales_agent,...}/`. Heredan/registran vía Extension SDK EP-1..EP-18.
-- 4 brands activas: nicolify, vitalia, comunify, lupulo. Cada una opta-in via `{brand}/config/brand.yaml`.
-- Cross-brand mirror ban: si dos brands replican mismo patrón en `{brand}/backend/src/modules/{brand}/X/` → lift a `core/luana-core-{pkg}/` (promotion candidate).
-- Bootstrap brands futuras: saasora, inmoflow, retailly, fixia, guestly, fitflow (vía `_pm-brand-template/`).
+Engine SSoT `core/luana-core-*/` (26 pkgs) — modificar requiere `/pm-luana` promotion gate. Brand extensions `{brand}/backend/src/modules/{brand}/...` heredan/registran vía Extension SDK EP-1..EP-18. Cross-brand mirror ban: dos brands replican mismo patrón → lift a `core/luana-core-{pkg}/`.

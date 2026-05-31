@@ -140,6 +140,19 @@ Esto está mencionado en cada `pm-{brand}/SKILL.md` § "Capability promotion (al
 
 **Anti-pattern:** editar `BACKLOG.md` para "agregar TODO list" o cambiar prioridades manualmente — esos cambios viven en `checkpoint.md` o en outcomes/stories, no en el output consolidado. Ahora además los cambios manuales se pierden silenciosamente porque ni siquiera se commitean.
 
+## R4 — chris-input.md nace con la idea (state=idea) — v3 cement 2026-05-28
+
+Toda story creada (desde `state: idea`) MUST tener `chris-input.md` en su directorio, **junto con `checkpoint.md`**. Nace con la idea — NO se espera a `refining`. Es el buzón donde Chris vuelca lo que desea; Claude lo puede rebatir (verdict ❌ REFUTADO) durante el ciclo de vida.
+
+**How to apply:**
+- `/pm-{brand}` al CREAR la story (`state: idea`) crea `checkpoint.md` + `chris-input.md` juntos (desde template `docs/specs/templates/00-chris-input-template.md`). El cockpit (`extend-cap`, `from-done`) ya lo hace vía `createNewStoryDocs`.
+- `/pm-{brand}` Fase F MERGE (`reviewing → done`) ejecuta `git mv` de chris-input.md junto con el resto de la story al `archive/{year}/stories/{id}/`
+- Pre-commit hook (Section 16) bloquea commit de checkpoint.md con `state ∈ {idea, refining...reviewing}` si chris-input.md ausente (magic comment `# chris-input-skip: razón` permite override puntual).
+
+**Anti-pattern:** Chris invoca `/po-ux <story>` sin que exista chris-input.md → skill debe rechazar. Story creada en `idea` sin chris-input.md.
+
+Doc canónico: `docs/process/chris-input-protocol.md`.
+
 ## Enforcement layers
 
 | Layer | Mecanismo | Status |

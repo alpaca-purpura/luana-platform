@@ -48,30 +48,14 @@ Reglas de desempate:
 | **developed → reviewing** | `/auditor` | Categoría Connectivity: verifica zona/caja válida + cap↔código + cero isla + cero engine duplicado. |
 | **reviewing → done** | `/pm-{brand}` | Fase F.3: la cap refleja su zona/caja en SYSTEM-MAP; `dev_preview` apunta a código real. |
 
-## Anti-patterns prohibidos
+## Anti-patterns prohibidos (top 4 — lista completa en PARADIGM.md)
 
 - ❌ Un trabajador (agente) que reimplementa lógica de negocio en vez de invocar la acción del Plano 2
 - ❌ Crear un engine agéntico por agente o por marca (debe ser un solo engine en `core/`; lift vía `/pm-luana`)
-- ❌ Tratar "motor agéntico" como caja de feature que compite con los agentes (es runtime → Infraestructura)
-- ❌ Meter Auth o Onboarding dentro de la caja "Configuración"
-- ❌ Cap que llega a `developing` sin caja/zona declarada desde la idea
-- ❌ Escribir `zone` a mano por cap en vez de derivarla del registro SYSTEM-MAP
-- ❌ Confundir invariante con implementación (ej. "usamos MCP" como si fuera doctrina — es swappable; la doctrina es "acción única descubrible")
-- ❌ Exponer un MCP "gordo" con todos los tools al contexto (quema tokens — usar progressive disclosure / code-execution interno)
-- ❌ El cockpit "generando" datos en vez de leer archivos estructurados
-- ❌ Navegar la solución a grep-azo en vez de seguir cap↔código (`dev_preview` + header `# cap:`)
+- ❌ Cap que llega a `developing` sin caja/zona declarada desde la idea; o escribir `zone` a mano en vez de derivarla del registro SYSTEM-MAP
+- ❌ Confundir invariante con implementación (MCP es swappable; la doctrina es "acción única descubrible") · exponer un MCP "gordo" al contexto (usar progressive disclosure)
 
-## Enforcement layers
-
-| Layer | Mecanismo | Status |
-|---|---|---|
-| 1 | Pointer en root `CLAUDE.md` § Paradigma + Critical Rule #36 (auto-load cada sesión) | ✅ |
-| 2 | `capability-protocol.md` deriva zona del registro + cita esta rule en el schema cap | ✅ |
-| 3 | `/pm-{brand}`, `/po-ux`, `/po`, `/ux-agentico` aplican el árbol al refinar (Referencias + step de cap) | ✅ pointer |
-| 4 | `/architect` § Integration design (CONN) cita planos + hogar-zona | ✅ pointer |
-| 5 | `/auditor` Connectivity verifica zona/caja + engine único | ✅ pointer |
-| 6 | `SYSTEM-MAP.yaml` (`zones`) = registro que el cockpit lee | ✅ vitalia |
-| 7 | Migración caps `config/infra`→cajas nuevas + render cockpit por zona | ⏳ story dedicada |
+**Enforcement layers** (7, detalle en PARADIGM.md): auto-load Critical Rule #36 · `capability-protocol.md` deriva zona · refining aplica el árbol · `/architect` § Integration design (CONN) · `/auditor` Connectivity · `SYSTEM-MAP.yaml` registro que lee el cockpit · ⏳ migración caps config/infra→cajas.
 
 ## Referencias
 

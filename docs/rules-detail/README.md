@@ -55,6 +55,29 @@ leé docs/rules-detail/{story-closure-gate,brand-docs-schema}.md.
 | `anti-default-flip-audit.md` | `docs/rules-detail/anti-default-flip-audit.md` | Ejemplos CORRECTO/INCORRECTO commit body |
 | `_CLAUDE-original-backup.md` | `docs/rules-detail/_CLAUDE-original-backup.md` | CLAUDE.md pre-slim (31KB) — federate docs schema, paradigm v4 full, 10 brands catalog detail, cost-routing, bootstrap completo |
 | `_AGENTS-original-backup.md` | `docs/rules-detail/_AGENTS-original-backup.md` | AGENTS.md pre-slim (8.5KB) — skills SSoT, modules detail, defaults legacy single-brand |
+| `learning-capture.md` | `docs/rules-detail/learning-capture.md` | Template canónico + clasificación por tipo + promotion path learning→rule + cleanup MEMORY.md |
+| `github-actions-deferred.md` | `docs/rules-detail/github-actions-deferred.md` | Tabla workflows status + 13 secciones pre-commit hook + test invocation manual + reactivación procedure |
+| `claude-md-overlay.md` | `docs/rules-detail/claude-md-overlay.md` | Estructura root (15 secciones) + overlay (10 secciones) + tabla detection por cwd + bootstrap brand nueva |
+| `git-safety.md` | `docs/rules-detail/git-safety.md` | Flujo completo + procedimiento sync wip↔main + Fase solo-bootstrap detalle + tabla CI/CD |
+| `anti-duplication-refining.md` | `docs/rules-detail/anti-duplication-refining.md` | Scan verbatim ejecutable + decision matrices (prior-art + cap_change_type) + tabla fuentes + enforcement |
+| `spanish-text.md` | `docs/rules-detail/spanish-glossary.md` | Glosario voseo→neutro completo (50+) + magic comment detalle |
+
+## Variante skill-owned (context-rot pass 2026-05-30)
+
+Reglas phase-specific cuyo cuerpo vive en el skill DUEÑO (carga sólo cuando ese skill se activa), no en `docs/rules-detail/`. La rule en `.claude/rules/` queda como stub que apunta a:
+
+| Slim rule | Cuerpo en skill |
+|---|---|
+| `architect-autonomous-mode.md` | `.claude/skills/architect/references/autonomous-mode.md` |
+| `anti-orphan-integration.md` | `.claude/skills/architect/references/anti-orphan-integration.md` |
+| `test-design-doctrine.md` | `.claude/skills/dev-team/references/test-design-doctrine.md` |
+| `frontend-visual-fidelity.md` | `.claude/skills/frontend-expert/references/visual-fidelity.md` |
+| `git-haiku-delegation.md` | `.claude/skills/commit-push/references/haiku-delegation.md` |
+| `worktree-dual-strategy.md` | `.claude/skills/worktree-protocol/references/dual-strategy.md` |
+| `backend-ddd.md` (§ schema-mirror) | `.claude/skills/backend-expert/references/schema-mirror-exception.md` |
+| `pm-skill-chaining.md` | ya replicado en `.claude/skills/pm-*/SKILL.md § Auto-chain rule` |
+
+Resultado pass 2026-05-30: `.claude/rules/` 3484 → 1584 líneas (−55%, ~52k tokens menos always-loaded). Cuerpos preservados verbatim.
 
 ## Mantenimiento
 
