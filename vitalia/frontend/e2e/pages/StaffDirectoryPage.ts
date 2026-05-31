@@ -64,37 +64,33 @@ export class StaffDirectoryPage {
   constructor(page: Page) {
     this.page = page;
 
-    // Container
-    this.staffDirectoryView = page.getByTestId("staff-directory-view");
+    // Container — component renders data-testid="staff-directory"
+    this.staffDirectoryView = page.getByTestId("staff-directory");
 
-    // Header
-    this.addDoctorButton = page.getByRole("button", { name: /Nuevo doctor/i });
+    // Header — shipped UI uses "integrante" terminology + dedicated testid
+    this.addDoctorButton = page.getByTestId("btn-nuevo-integrante");
     this.searchInput = page.getByPlaceholder(/Buscar/i);
     this.specialtyFilter = page.getByLabel(/Especialidad/i).first();
     this.activeFilter = page.getByLabel(/Activo/i).first();
 
-    // Grid
-    this.doctorCards = page.getByTestId("staff-card");
+    // Grid — each card is data-testid="staff-card-{id}"; match by prefix
+    this.doctorCards = page.locator('[data-testid^="staff-card-"]');
     this.firstDoctorCard = this.doctorCards.first();
 
-    // Pagination
-    this.paginationPrev = page.getByTestId("pagination-prev");
-    this.paginationNext = page.getByTestId("pagination-next");
-    this.paginationInfo = page.getByTestId("pagination-info");
+    // Pagination — wrapper data-testid="staff-pagination"; buttons by aria-label
+    this.paginationPrev = page.getByRole("button", { name: /Página anterior/i });
+    this.paginationNext = page.getByRole("button", { name: /Página siguiente/i });
+    this.paginationInfo = page.getByTestId("staff-pagination");
 
     // States
-    this.loadingSkeleton = page.getByTestId("staff-loading-skeleton");
+    this.loadingSkeleton = page.getByTestId("staff-skeleton");
     this.emptyState = page.getByTestId("empty-doctores");
-    this.emptyStateCtaButton = this.emptyState.getByRole("button", {
-      name: /Agregar primer doctor/i,
-    });
-    this.errorBanner = page.getByTestId("staff-error-banner");
-    this.retryButton = page.getByRole("button", { name: /Reintentar/i });
+    this.emptyStateCtaButton = page.getByTestId("btn-agregar-primer-integrante");
+    this.errorBanner = page.getByTestId("error-banner-staff");
+    this.retryButton = page.getByTestId("btn-reintentar");
 
-    // Modal
-    this.nuevoIntegranteModal = page.getByRole("dialog", {
-      name: /Nuevo doctor/i,
-    });
+    // Modal — data-testid="modal-nuevo-integrante", title "Nuevo integrante"
+    this.nuevoIntegranteModal = page.getByTestId("modal-nuevo-integrante");
     this.modalFirstNameInput = this.nuevoIntegranteModal.getByLabel(/Nombre/i);
     this.modalLastNameInput = this.nuevoIntegranteModal.getByLabel(/Apellido/i);
     this.modalDniInput = this.nuevoIntegranteModal.getByLabel(/DNI|Documento/i);
@@ -104,12 +100,11 @@ export class StaffDirectoryPage {
       /Especialidad/i,
     );
     this.modalCredentialInput =
-      this.nuevoIntegranteModal.getByLabel(/Credencial/i);
+      this.nuevoIntegranteModal.getByTestId("input-credential");
     this.modalCredentialCountrySelect =
-      this.nuevoIntegranteModal.getByLabel(/País de credencial/i);
-    this.modalSubmitButton = this.nuevoIntegranteModal.getByRole("button", {
-      name: /Guardar|Crear/i,
-    });
+      this.nuevoIntegranteModal.getByLabel(/País de registro/i);
+    this.modalSubmitButton =
+      this.nuevoIntegranteModal.getByTestId("btn-crear-integrante");
     this.modalCancelButton = this.nuevoIntegranteModal.getByRole("button", {
       name: /Cancelar/i,
     });
@@ -183,7 +178,7 @@ export class StaffDirectoryPage {
       .waitFor({ state: "hidden", timeout: 15_000 })
       .catch(() => {/* Skeleton may not be rendered for instant mocks */});
     await this.page.waitForSelector(
-      "[data-testid='staff-directory-view']",
+      "[data-testid='staff-directory']",
       { timeout: 10_000 },
     );
   }
