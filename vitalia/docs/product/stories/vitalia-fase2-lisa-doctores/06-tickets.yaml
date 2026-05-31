@@ -249,6 +249,7 @@ tickets:
       rationale: "Custom week-grid calendar + @dnd-kit (columna angosta, recurrence popover custom). 24h format, UTC slots, tenant tz display. Sonnet."
 
   - id: T-E2E
+    state: specs-written
     title: "Playwright e2e SC-1..SC-11 (real backend writes) + axe wcag2aa (SC-10) + visual goldens (6+1) + i18n credencial multi-locale (SC-11)"
     group: "cross-cutting"
     surface: frontend-e2e

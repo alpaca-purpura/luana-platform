@@ -429,3 +429,40 @@ V-FN-10: PASS
 **Live verification:** Dev stack not running. Manual steps in T-FE-2-impl-log.md. Escalate to Chris staging gate before auditor.
 
 **Next:** T-FE-3 (horarios calendar) → T-E2E → auditor-frontend
+
+---
+
+### Turn T-E2E · builder-frontend · 2026-05-31
+
+**⚠️ DUDA — T-E2E: spec suite completa escrita, live run PENDIENTE por stack DOWN**
+
+**Deliverable:** Suite E2E completa para SC-1..SC-11 (41 tests descubiertos por playwright --list).
+
+**Files escritos:**
+- `e2e/fixtures/vitalia-fase2-lisa-doctores.fixture.ts` — Clerk auth + mocks (Tenant A/B seeds, 503, empty, large dataset)
+- `e2e/pages/StaffDirectoryPage.ts` — POM nuevo (directorio + modal + states)
+- 5 specs en `e2e/regression/vitalia-fase2-lisa-doctores/`: crear-happy, week-nav-oneoff, credencial-invalida, network-failure, i18n-credencial
+- 5 specs en `e2e/shell-organism/`: cross-tenant-adversarial, deactivate, delete-block-preserve, empty (+ axe), large-dataset (+ visual goldens)
+- `playwright.config.ts` — testMatch extended con `shell-organism/staff-.*`
+- `06-tickets.yaml` T-E2E state: `specs-written`
+
+**Gates estáticos PASS:**
+- `tsc --noEmit`: 0 errors
+- `eslint e2e/...`: 0 errors
+- `playwright --list`: 41 tests descubiertos y parseados sin errores
+
+**Duda central:** Stack vitalia DOWN (BE:8002 + FE:3002 retorna 500 por bug pre-existente zustand/workspace). NO se puede correr live. NO se generaron baselines de visual goldens. Verificación real (writes + state_check DB) pendiente.
+
+**Doctrina respetada (test-design-doctrine.md § verificación REAL):**
+- Happy-path writes (SC-1, SC-1b, SC-1c, SC-1d) son NOT mocked para el backend → van a hit BE:8002 cuando el stack sube.
+- state_check DB queries documentadas en cada spec grader comment.
+- SC-7 (503) usa page.route legítimamente (test del comportamiento de la UI ante error, no happy-path falso).
+- NO se generó ningún green falso.
+
+**Comando para correr cuando stack suba:**
+```bash
+cd vitalia/frontend
+E2E_BASE_URL=http://localhost:3002 npx playwright test regression/vitalia-fase2-lisa-doctores/ shell-organism/staff-*.spec.ts --project=smoke
+```
+
+**Próximo:** auditor-frontend (independiente) verifica spec coverage + real-verification design + visual goldens plan.

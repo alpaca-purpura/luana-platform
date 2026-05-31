@@ -77,6 +77,8 @@ export default defineConfig({
         /.*\/e2e\/regression\/.*\.spec\.ts/,
         // F1-S6 shell-organism behavior specs (public route /test-stack/shell-layout)
         /.*\/e2e\/shell-organism\/valeria-chat-.*\.spec\.ts/,
+        // F2-S8 vitalia-fase2-lisa-doctores staff shell-organism specs
+        /.*\/e2e\/shell-organism\/staff-.*\.spec\.ts/,
       ],
       // Exclude visual-goldens: corren EXCLUSIVAMENTE en project=visual que tiene
       // snapshotPathTemplate + maxDiffPixelRatio: 0.001 config. Sin esa config,
