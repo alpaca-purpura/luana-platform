@@ -376,3 +376,33 @@ Gates GREEN:
 - ruff format: 0 reformats needed
 
 V-FN-10: PASS
+
+---
+
+## T-FE-2 · builder-frontend · 2026-05-31 · TESTS PASSING
+
+**Commit:** 25cb9563 (wip/vitalia)
+**Files:** 23 files changed, 2857 insertions
+
+**Deliverables shipped:**
+- `EntitySubNavBar.tsx` — N3-dynamic WAI-ARIA tablist (NEW sibling of SubSubTabsBar per D-1)
+- `dropzone.tsx` — Shadcn-style native dropzone (no react-dropzone dep)
+- `[doctor-id]/` routes — layout + page (redirect→perfil) + perfil + horarios + servicios
+- `StaffWorkspaceShell.tsx` — layout wrapper with RQ doctor query
+- `DoctorPerfilView.tsx` — autosave form (RHF+Zod, 600ms debounce, no Guardar button)
+- `BioRepoInputs.tsx` — notes + dropzone + link chips (autosaved)
+- `GeneratedBioSections.tsx` — "✨ Generar bio" → 3 contenteditable sections (autosaved)
+- `DoctorServiciosView.tsx` — placeholder ("Servicios — pendiente")
+- `AvatarUploader.tsx` — proxy upload (D-3)
+- `use-autosave.ts` + tests — debounce 600ms hook
+- API hooks: useDoctor, usePatchDoctor, useGenerateBio, useAvatarUpload
+- `DoctorWorkspacePage.ts` — Playwright POM
+
+**Gates:**
+- tsc: 0 errors · eslint: 0 errors · vitest 817/817 PASS · arch 162/162 PASS
+
+**Advisory:** bidirectional validator HARD_FAIL drift=3 (new cap: headers need cap YAML update at merge F.3 — normal, not a blocker for wip/*)
+
+**Live verification:** Dev stack not running. Manual steps in T-FE-2-impl-log.md. Escalate to Chris staging gate before auditor.
+
+**Next:** T-FE-3 (horarios calendar) → T-E2E → auditor-frontend
