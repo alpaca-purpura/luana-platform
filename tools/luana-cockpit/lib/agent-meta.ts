@@ -1,22 +1,34 @@
 /**
- * Metadata visual por agente (Lisa/Valeria/Adrián/Lucas/Camila/Config/Infra) para
- * pintar las cards del board de un vistazo: franja de color + emoji + nombre.
+ * Metadata visual por agente para pintar las cards del board de un vistazo:
+ * franja de color + emoji + nombre. Brand-aware (superset cross-brand):
+ *   - Vitalia: Lisa/Valeria/Adrián/Lucas/Camila
+ *   - Nicolify: Luana/Abel/Brenda/Christian/Norvil
+ *   - Comunes: Config/Infra
  *
- * Colores alineados con el paradigma agéntico de Vitalia (memoria vitalia-agents-catalog).
+ * Cada worktree filtra por su brand (DEFAULT_BRAND) → nunca se muestran agentes
+ * de dos brands juntos, así que el superset no genera colisión visual.
  * Emojis espejados de components/map/MapView.tsx (FALLBACK_AGENTS).
  */
 
 import type { Story } from './types';
 
 export type AgentId =
+  // Vitalia
   | 'lisa'
   | 'valeria'
   | 'mateo'
   | 'adrian'
   | 'lucas'
   | 'camila'
-  | 'config' // DEPRECATED v2.0 (2026-05-30) — promovido a cajas zona plataforma
-  | 'infra'; // DEPRECATED v2.0 (2026-05-30) — promovido a cajas zona infraestructura
+  // Nicolify
+  | 'luana'
+  | 'abel'
+  | 'brenda'
+  | 'christian'
+  | 'norvil'
+  // Comunes cross-brand
+  | 'config'
+  | 'infra';
 
 export interface AgentMeta {
   emoji: string;
@@ -26,13 +38,20 @@ export interface AgentMeta {
 }
 
 export const AGENTS: Record<AgentId, AgentMeta> = {
+  // --- Vitalia ---
   lisa: { emoji: '🏥', name: 'Lisa', color: '#10b981' }, // emerald
   valeria: { emoji: '🗓', name: 'Valeria', color: '#a855f7' }, // purple — supervisora (sidebar)
   mateo: { emoji: '📅', name: 'Mateo', color: '#FEE209' }, // amarillo marca (--agent-mateo) — Operar/Mi Día
   adrian: { emoji: '💼', name: 'Adrián', color: '#3b82f6' }, // blue
   lucas: { emoji: '📣', name: 'Lucas', color: '#f59e0b' }, // amber
   camila: { emoji: '🌟', name: 'Camila', color: '#ec4899' }, // pink
-  // DEPRECATED v2.0 — back-compat para story cards viejas (agent_owner config/infra).
+  // --- Nicolify (Agent-as-a-Service · Revenue/Ops · paleta nicolify.com) ---
+  luana: { emoji: '🧭', name: 'Luana', color: '#635BFF' }, // indigo · orquestadora
+  abel: { emoji: '🧠', name: 'Abel', color: '#A855F7' }, // púrpura · estratega/oferta
+  brenda: { emoji: '💰', name: 'Brenda', color: '#22C55E' }, // verde · growth/presupuesto
+  christian: { emoji: '🏹', name: 'Christian', color: '#3B82F6' }, // azul · SDR/outbound
+  norvil: { emoji: '🌱', name: 'Norvil', color: '#EC4899' }, // rosa · account manager/retención
+  // --- Comunes cross-brand ---
   config: { emoji: '⚙', name: 'Config', color: '#64748b' }, // slate
   infra: { emoji: '🔧', name: 'Infra', color: '#06b6d4' }, // cyan
 };
@@ -59,7 +78,9 @@ export function agentOf(
     asAgent(story.cap_target?.includes('.') ? story.cap_target.split('.')[0] : null);
   if (direct) return direct;
 
-  const m = story.story_id?.match(/-(lisa|valeria|mateo|adrian|lucas|camila|config)-/);
+  const m = story.story_id?.match(
+    /-(lisa|valeria|mateo|adrian|lucas|camila|luana|abel|brenda|christian|norvil|config|infra)-/
+  );
   return m ? (m[1] as AgentId) : null;
 }
 

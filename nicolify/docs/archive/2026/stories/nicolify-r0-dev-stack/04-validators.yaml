@@ -1,0 +1,240 @@
+# 04-validators.yaml — nicolify-r0-dev-stack
+# Owner: /architect. Mapea cada scenario del 01-spec.md a validadores ejecutables.
+# Consumido por: gate-runner (Haiku) + auditor-{backend,frontend} (Opus).
+
+story_id: nicolify-r0-dev-stack
+brand: nicolify
+arch_version: 1
+scenario_coverage: "7/7"   # 100% de los 7 scenarios del 01-spec.md
+
+# ──────────────────────────────────────────────────────────────────────────
+# Categorías de validación
+# ──────────────────────────────────────────────────────────────────────────
+categories:
+
+  non_functional:
+    description: "Lint + type-check + arch fitness — calidad estructural."
+    validators:
+      - id: V-NF-1
+        name: ruff_clean
+        surface: BE
+        must_pass: true
+        cmd: "cd nicolify/backend && ${WS}/.venv/bin/ruff check src/ tests/ scripts/seed_test_users_link.py"
+      - id: V-NF-2
+        name: ruff_format_check
+        surface: BE
+        must_pass: true
+        cmd: "cd nicolify/backend && ${WS}/.venv/bin/ruff format --check src/ tests/"
+      - id: V-NF-3
+        name: tsc_noemit
+        surface: FE
+        must_pass: true
+        cmd: "cd nicolify/frontend && npx tsc --noEmit"
+      - id: V-NF-4
+        name: eslint_clean
+        surface: FE
+        must_pass: true
+        cmd: "cd nicolify/frontend && npx eslint src/ --cache"
+      - id: V-NF-5
+        name: arch_fitness_suite
+        surface: BE
+        must_pass: true
+        cmd: "cd nicolify/backend && ${WS}/.venv/bin/pytest tests/architecture/ -x -q --tb=short"
+
+  functional:
+    description: "Comportamiento end-to-end — auth gate, tenant isolation, e2e auth slice + smoke."
+    validators:
+      - id: V-FN-1
+        name: be_auth_gate_401
+        surface: BE
+        must_pass: true
+        scenario: 2
+        cmd: "cd nicolify/backend && ${WS}/.venv/bin/pytest tests/modules/nicolify/test_auth_gate.py::test_me_without_jwt_401 -x -q"
+      - id: V-FN-2
+        name: be_tenant_isolation_403
+        surface: BE
+        must_pass: true
+        scenario: 4
+        cmd: "cd nicolify/backend && ${WS}/.venv/bin/pytest tests/modules/nicolify/test_tenant_isolation.py::test_foreign_tenant_header_rejected -x -q"
+      - id: V-FN-3
+        name: stack_up_health_green
+        surface: INFRA
+        must_pass: true
+        scenario: 1
+        graders:
+          - { type: shell, cmd: "curl -fsS http://127.0.0.1:8001/health | grep '\"brand\":\"nicolify\"'" }
+          - { type: shell, cmd: "curl -fsS http://127.0.0.1:8001/api/health" }
+          - { type: shell, cmd: "curl -fsS -o /dev/null -w '%{http_code}' http://127.0.0.1:3001 | grep 200" }
+      - id: V-FN-4
+        name: migration_idempotency
+        surface: INFRA
+        must_pass: true
+        scenario: 3
+        graders:
+          - { type: shell, cmd: "docker exec luana-nicolify-backend-dev bash -c 'alembic upgrade head && alembic upgrade head'" }
+          - { type: state_check, target: db, query: "SELECT count(*) FROM users WHERE clerk_id IS NOT NULL AND email LIKE '%@nicolify%'", expect: "estable tras 2 corridas (sin crecer)" }
+      - id: V-FN-5
+        name: seed_idempotent
+        surface: BE
+        must_pass: true
+        scenario: 3
+        graders:
+          - { type: shell, cmd: "python nicolify/backend/scripts/seed_test_users_link.py && python nicolify/backend/scripts/seed_test_users_link.py" }
+          - { type: state_check, target: db, query: "SELECT count(*) FROM tenants WHERE slug='agencia-demo'", expect: "1 (idempotente tras 2 corridas)" }
+      - id: V-FN-6
+        name: e2e_protected_redirect
+        surface: E2E
+        must_pass: true
+        scenario: 2
+        playwright_required: true
+        cmd: "cd nicolify/frontend && E2E_BASE_URL=http://localhost:3001 npx playwright test e2e/auth/protected-redirect.spec.ts --project=smoke"
+      - id: V-FN-7
+        name: e2e_auth_slice
+        surface: E2E
+        must_pass: true
+        scenario: 5
+        playwright_required: true
+        cmd: "cd nicolify/frontend && E2E_BASE_URL=http://localhost:3001 npx playwright test e2e/auth/auth-slice.spec.ts --project=smoke"
+        note: "Corazón del DONE option-C. Verifica signin → root autenticado → fetchClient X-Tenant-ID == T_DEMO → /me 200."
+      - id: V-FN-8
+        name: e2e_root_network_failure
+        surface: E2E
+        must_pass: true
+        scenario: 7
+        playwright_required: true
+        cmd: "cd nicolify/frontend && E2E_BASE_URL=http://localhost:3001 npx playwright test e2e/auth/root-network-failure.spec.ts --project=smoke"
+      - id: V-FN-9
+        name: e2e_smoke_green
+        surface: E2E
+        must_pass: true
+        scenario: 6
+        playwright_required: true
+        cmd: "cd nicolify/frontend && E2E_BASE_URL=http://localhost:3001 npx playwright test --project=smoke"
+        note: "Project setup (clerk.setup.ts) autentica + guarda storageState. Project smoke corre verde."
+
+  visual:
+    description: "Visual goldens."
+    not_applicable: true
+    not_applicable_reason: >
+      Sin componentes de marca en esta story. Es infra/auth service-story: root placeholder
+      mínimo sin tokens de marca, sin sub-tab del shell, sin design-system aplicado. Los tokens
+      + componentes shell nacen en nicolify-r0-design-system-tokens + stories de shell. ADR-nicolify-001
+      (mockup-per-component) NO aplica (shell-feature-architecture.md § Scope lista esta story como
+      service-only). Visual goldens se introducen tras design-system-tokens.
+
+  architectural_validation:
+    description: "Arch fitness + tenant isolation grep + anti-dup + no-secret-leak."
+    validators:
+      - id: V-AV-1
+        name: redirect_slashes_and_response_model
+        surface: BE
+        must_pass: true
+        scenario: 1
+        cmd: "cd nicolify/backend && ${WS}/.venv/bin/pytest tests/architecture/test_main_app_config.py -x -q"
+      - id: V-AV-2
+        name: response_model_required
+        surface: BE
+        must_pass: true
+        cmd: "cd nicolify/backend && ${WS}/.venv/bin/pytest tests/architecture/test_response_model_required.py -x -q"
+      - id: V-AV-3
+        name: migrations_idempotent_static
+        surface: BE
+        must_pass: true
+        scenario: 3
+        cmd: "cd nicolify/backend && ${WS}/.venv/bin/pytest tests/architecture/test_migrations_idempotent.py -x -q"
+      - id: V-AV-4
+        name: no_secret_leak
+        surface: BE
+        must_pass: true
+        scenario: 4
+        cmd: "cd nicolify/backend && ${WS}/.venv/bin/pytest tests/architecture/test_no_secret_leak.py -x -q"
+      - id: V-AV-5
+        name: no_cross_brand_imports
+        surface: BE
+        must_pass: true
+        cmd: "cd nicolify/backend && ${WS}/.venv/bin/pytest tests/architecture/test_no_cross_brand_imports.py -x -q"
+      - id: V-AV-6
+        name: tenant_isolation_grep
+        surface: BE
+        must_pass: true
+        note: "Manual/grep: confirmar que ningún archivo nicolify reimplementa verify_clerk_token ni get_current_user (consumir engine iam). Auditor Cat 12."
+        cmd: "! grep -rn 'def get_current_user\\|def verify_clerk_token\\|PyJWKClient' nicolify/backend/src/"
+      - id: V-AV-7
+        name: anti_dup_scan
+        surface: BE
+        must_pass: true
+        note: "Auditor Cat 12 cross-brand mirror scan: ningún archivo nuevo nicolify mirrorea core/luana-core-iam ni otro brand."
+
+# ──────────────────────────────────────────────────────────────────────────
+# Scenario → test mapping (cobertura 100%)
+# ──────────────────────────────────────────────────────────────────────────
+scenario_coverage_map:
+  scenario_1_stack_up_green:        [V-FN-3, V-AV-1]
+  scenario_2_protected_route_auth:  [V-FN-1, V-FN-6]
+  scenario_3_migration_idempotency: [V-FN-4, V-FN-5, V-AV-3]
+  scenario_4_cross_tenant_isolation:[V-FN-2, V-AV-4, V-AV-6]
+  scenario_5_auth_vertical_slice:   [V-FN-7]
+  scenario_6_smoke_green:           [V-FN-9]
+  scenario_7_fe_network_failure:    [V-FN-8]
+
+# ──────────────────────────────────────────────────────────────────────────
+# Test construction plan (TDD RED-first · creation_order)
+# ──────────────────────────────────────────────────────────────────────────
+test_construction_plan:
+  playwright_required: true
+  creation_order:
+    # BE arch RED-first (antes de tocar main.py/migration)
+    - { step: 1,  test: "tests/architecture/test_main_app_config.py",        red_before: "src/main.py mount + HealthResponse", scenario: 1 }
+    - { step: 2,  test: "tests/architecture/test_migrations_idempotent.py",   red_before: "alembic baseline replace", scenario: 3 }
+    - { step: 3,  test: "tests/architecture/test_no_secret_leak.py",          red_before: "main.py /health payload", scenario: 4 }
+    - { step: 4,  test: "tests/architecture/test_no_cross_brand_imports.py",  red_before: "src/ imports", scenario: null }
+    - { step: 5,  test: "tests/architecture/test_response_model_required.py", red_before: "main.py routes", scenario: 1 }
+    # BE module RED-first
+    - { step: 6,  test: "tests/modules/nicolify/test_auth_gate.py",           red_before: "mount iam router", scenario: 2 }
+    - { step: 7,  test: "tests/modules/nicolify/test_tenant_isolation.py",    red_before: "seed + wire tenant gate", scenario: 4 }
+    # FE/E2E RED-first (antes de páginas)
+    - { step: 8,  test: "e2e/auth/protected-redirect.spec.ts",               red_before: "proxy.ts + sign-in page", scenario: 2 }
+    - { step: 9,  test: "e2e/auth/auth-slice.spec.ts",                       red_before: "layout ClerkProvider + page.tsx + fetchClient", scenario: 5 }
+    - { step: 10, test: "e2e/auth/root-network-failure.spec.ts",            red_before: "page.tsx error handling", scenario: 7 }
+    - { step: 11, test: "e2e/smoke/stack.smoke.spec.ts",                    red_before: "full stack wire", scenario: 6 }
+
+  scenario_to_test:
+    "1": ["V-FN-3","V-AV-1","V-AV-3 (idempotency static)"]
+    "2": ["test_auth_gate.py::test_me_without_jwt_401","protected-redirect.spec.ts"]
+    "3": ["test_migrations_idempotent.py","seed double-run grader"]
+    "4": ["test_tenant_isolation.py::test_foreign_tenant_header_rejected","test_no_secret_leak.py"]
+    "5": ["auth-slice.spec.ts::test_signin_then_authenticated_root_and_me"]
+    "6": ["smoke/stack.smoke.spec.ts","clerk.setup.ts"]
+    "7": ["root-network-failure.spec.ts::test_root_handles_be_500_gracefully"]
+
+  poms_and_fixtures:
+    - { type: setup_project, path: "e2e/setup/clerk.setup.ts", source: "port refinado ../luana-vitalia/vitalia/frontend/e2e/setup/clerk.setup.ts", note: "ticket strategy + freshness 4h + retry 2x + storageState playwright/.clerk/user.json" }
+    - { type: auth_fixture, path: "e2e/auth.fixture.ts", source: "port refinado ../luana-vitalia/vitalia/frontend/e2e/auth.fixture.ts", note: "testing-token re-inject + freshness + console error filter. NUNCA import directo de @playwright/test en specs autenticados." }
+    - { type: config, path: "playwright.config.ts", note: "REPLACED. Port 3001. Carga ../.env.dev. setup + smoke projects. required Clerk env vars (NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY, CLERK_SECRET_KEY, E2E_CLERK_USER_EMAIL/PASSWORD, E2E_TENANT_ID)." }
+
+  playwright_visual_scope:
+    story_scope_routes:
+      - "/"            # root placeholder autenticado
+      - "/sign-in"
+      - "/sign-up"
+    story_scope_components:
+      - "nicolify/frontend/src/app/page.tsx"
+      - "nicolify/frontend/src/app/layout.tsx"     # foundational — SE TOCA acá por excepción (ClerkProvider + Providers); ver AD-1
+      - "nicolify/frontend/src/app/providers.tsx"
+      - "nicolify/frontend/src/lib/api/fetchClient.ts"
+      - "nicolify/frontend/src/proxy.ts"
+    forbidden_visual_changes:
+      paths:
+        - "nicolify/frontend/src/components/ui/"        # Shadcn primitives (no existen aún; no crearlos en esta story)
+        - "nicolify/frontend/src/components/shared/"    # cross-feature shared
+      reasons:
+        - "Esta story NO introduce tokens de marca ni primitivos Shadcn — eso es nicolify-r0-design-system-tokens."
+        - "layout.tsx SÍ se toca (excepción foundational: ClerkProvider + Providers son base de todo R0). NO agregar shell/topbar/ribbon — eso son stories de shell."
+    non_egoismo_clause: >
+      Si el build observa un bug en código legacy fuera de scope (e2e/pages/* cruft, etc.), reportar en
+      T-{n}-impl-log.md sección 'Cross-story observed bugs'. NO arreglar inline. Si rompe tsc, documentar + escalar /pm-nicolify.
+
+  assertions_scope:
+    - "Assertions E2E SOLO sobre story_scope_routes."
+    - "Sin snapshot visual golden en esta story (visual category not_applicable)."
+    - "auth-slice.spec.ts verifica header X-Tenant-ID == E2E_TENANT_ID (uuid5 de 'agencia-demo') vía route interception."

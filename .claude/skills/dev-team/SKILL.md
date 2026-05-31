@@ -4,6 +4,7 @@ description: "Developer team router v4 (Conv 2 — autonomous build, post pm-red
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
 model: opus
 ---
+<!-- voseo-allowed: doc interno / buzón conversacional, no user-facing -->
 
 # /dev-team — Developer Team Router (Conv 2 autonomous build)
 

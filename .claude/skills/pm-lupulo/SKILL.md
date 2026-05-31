@@ -231,3 +231,5 @@ NUNCA dumps largos. Pointer-first. Si necesitás más detalle escribilo a archiv
 - `.claude/rules/story-closure-gate.md` — Fase F MERGE concreta R2 (archive como parte del 07-merge)
 - `lupulo/.claude/rules/` — rules brand-specific (overlay)
 - `lupulo/config/brand.yaml` — feature flags + opt-in core packages
+
+<!-- voseo-allowed: doc interno / buzón conversacional, no user-facing -->

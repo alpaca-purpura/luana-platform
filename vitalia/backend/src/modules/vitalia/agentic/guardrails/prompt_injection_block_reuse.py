@@ -344,3 +344,5 @@ __all__ = [
     "detect_prompt_injection",
     "prompt_injection_block_check",
 ]
+
+# voseo-allowed: doc/comentario interno citando glosario voseo, no user-facing

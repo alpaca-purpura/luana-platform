@@ -16,10 +16,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     brands = ['vitalia'];
   }
 
+  // Brand por defecto del worktree (cockpit-up.sh exporta DEFAULT_BRAND={brand}).
+  // 'cross-brand' (hub main) o vacío → sin preferencia, usa la primera detectada.
+  const envBrand = process.env.DEFAULT_BRAND;
+  const defaultBrand =
+    envBrand && envBrand !== 'cross-brand' ? envBrand : undefined;
+
   return (
     <html lang="es">
       <body>
-        <AppShell brands={brands}>{children}</AppShell>
+        <AppShell brands={brands} defaultBrand={defaultBrand}>
+          {children}
+        </AppShell>
       </body>
     </html>
   );

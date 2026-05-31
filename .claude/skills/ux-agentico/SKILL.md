@@ -349,3 +349,5 @@ Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
 - `.claude/skills/po-ux/` — UI std spec (sister skill)
 - `.claude/skills/sales-agent-expert/` — voz tenant + prompt cache
 - `.claude/skills/copilot-expert/` — runtime + observability
+
+<!-- voseo-allowed: doc interno / buzón conversacional, no user-facing -->

@@ -189,3 +189,5 @@ NUNCA dumps largos. Pointer-first. Si necesitás más detalle escribilo a archiv
 - `.claude/skills/pm-luana/SKILL.md` — core PM
 - `saasora/.claude/rules/` — rules brand-specific (overlay)
 - `saasora/config/brand.yaml` — feature flags + opt-in core packages
+
+<!-- voseo-allowed: doc interno / buzón conversacional, no user-facing -->

@@ -198,3 +198,5 @@ export const MICROCOPY_DISCLAIMER = {
   offer:
     "Esta oferta incluye servicios médicos. Consulta las condiciones con el profesional asignado.",
 } as const;
+
+// voseo-allowed: comentario interno cita glosario voseo (strings reales son tuteo), no user-facing

@@ -210,3 +210,5 @@ __all__ = [
     "as_anthropic_system_blocks",
     "compile_wizard_prompt",
 ]
+
+# voseo-allowed: doc/comentario interno citando glosario voseo, no user-facing

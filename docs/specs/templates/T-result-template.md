@@ -130,3 +130,5 @@ done -> {brand}/docs/product/stories/{story-id}/T-{n}-result.md
 state: pushed (commit def5678)
 ready for /auditor
 ```
+
+<!-- voseo-allowed: doc interno / buzón conversacional, no user-facing -->

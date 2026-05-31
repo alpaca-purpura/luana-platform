@@ -381,3 +381,5 @@ Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
     - **NO aplica** (solo tenant-isolation raíz basta): story toca únicamente `appointment_*`/`booking_*` sin tocar `patient_*`/`medical_*`/`treatment_*`.
 - `vitalia/.claude/rules/README.md` — index overlay rules brand
 - `vitalia/config/brand.yaml` — feature flags + opt-in core packages + `compliance_level: hipaa_lite` (interpretar como framework de referencia, no como claim de certificación)
+
+<!-- voseo-allowed: doc interno / buzón conversacional, no user-facing -->

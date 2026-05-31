@@ -512,3 +512,6 @@ async def _real_mp_charge(
         "status": data.get("status", "in_process"),
         "idempotency_key": idempotency_key,
     }
+
+
+# voseo-allowed: doc/comentario interno citando glosario voseo, no user-facing

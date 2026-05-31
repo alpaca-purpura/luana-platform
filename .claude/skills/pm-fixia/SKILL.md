@@ -194,3 +194,5 @@ NUNCA dumps largos. Pointer-first. Si necesitás más detalle escribilo a archiv
 - `fixia/.claude/rules/` — rules brand-specific (overlay)
 - `fixia/.claude/rules/field-services-and-local-seo.md` — regla cardinal vertical
 - `fixia/config/brand.yaml` — feature flags + opt-in core packages
+
+<!-- voseo-allowed: doc interno / buzón conversacional, no user-facing -->

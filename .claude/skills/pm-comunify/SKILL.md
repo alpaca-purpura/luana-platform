@@ -244,3 +244,5 @@ NUNCA dumps largos. Pointer-first. Si necesitás más detalle escribilo a archiv
 - `comunify/config/brand.yaml` — feature flags + opt-in core packages + `compliance_level:
   creator_economy` (D7 — NOT hipaa_lite vs Vitalia: OK auto-approve signup + community
   moderation rails + voice_cloning_enabled=true + offer_ladder_visualizer 4 niveles)
+
+<!-- voseo-allowed: doc interno / buzón conversacional, no user-facing -->

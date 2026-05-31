@@ -702,15 +702,28 @@ function LegacyFallbackView({
   showInfra: boolean;
   statusReport?: ComputedStatusReport | null;
 }) {
-  // v2.0: 5 especialistas (Valeria = supervisora sidebar, fuera del board) + Mateo Operar.
-  const FALLBACK_AGENTS = [
-    { id: 'lisa' as const, emoji: '🏥', name: 'Lisa', subtitle: 'Mi Clínica' },
-    { id: 'mateo' as const, emoji: '📅', name: 'Mateo', subtitle: 'Operar / Mi Día' },
-    { id: 'adrian' as const, emoji: '💼', name: 'Adrián', subtitle: 'Vender' },
-    { id: 'lucas' as const, emoji: '📣', name: 'Lucas', subtitle: 'Marketing' },
-    { id: 'camila' as const, emoji: '🌟', name: 'Camila', subtitle: 'Reputación + cohortes' },
-  ];
-  const INFRA_FALLBACK = { id: 'infra' as const, emoji: '🔧', name: 'Infra Vitalia', subtitle: 'observability · platform · payment · scaffolding' };
+  const { brand } = useBrand();
+  const FALLBACK_AGENTS_BY_BRAND: Record<string, { id: string; emoji: string; name: string; subtitle: string }[]> = {
+    vitalia: [
+      { id: 'lisa', emoji: '🏥', name: 'Lisa', subtitle: 'Mi Clínica' },
+      { id: 'mateo', emoji: '📅', name: 'Mateo', subtitle: 'Operar / Mi Día' },
+      { id: 'adrian', emoji: '💼', name: 'Adrián', subtitle: 'Vender' },
+      { id: 'lucas', emoji: '📣', name: 'Lucas', subtitle: 'Marketing' },
+      { id: 'camila', emoji: '🌟', name: 'Camila', subtitle: 'Reputación + cohortes' },
+      { id: 'config', emoji: '⚙', name: 'Configurar', subtitle: 'tenant · iam · compliance' },
+      { id: 'infra', emoji: '🔧', name: 'Infra', subtitle: 'observability · platform · scaffolding' },
+    ],
+    nicolify: [
+      { id: 'luana', emoji: '🧭', name: 'Luana', subtitle: 'Orquesta · único rostro' },
+      { id: 'abel', emoji: '🧠', name: 'Abel', subtitle: 'Estrategia · oferta' },
+      { id: 'brenda', emoji: '💰', name: 'Brenda', subtitle: 'Growth · presupuesto' },
+      { id: 'christian', emoji: '🏹', name: 'Christian', subtitle: 'SDR · outbound' },
+      { id: 'norvil', emoji: '🌱', name: 'Norvil', subtitle: 'Account mgr · retención' },
+      { id: 'config', emoji: '⚙', name: 'Configurar', subtitle: 'tenant · iam · tokens' },
+    ],
+  };
+  const FALLBACK_AGENTS = FALLBACK_AGENTS_BY_BRAND[brand] ?? FALLBACK_AGENTS_BY_BRAND.vitalia;
+  const INFRA_FALLBACK = { id: 'infra' as const, emoji: '🔧', name: 'Infra', subtitle: 'observability · platform · scaffolding' };
 
   const byAgent = useMemo(() => {
     const map = new Map<string, Capability[]>();

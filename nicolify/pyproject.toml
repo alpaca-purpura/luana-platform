@@ -1,15 +1,41 @@
 [project]
-name = "nicolify-app"
+name = "luana-nicolify"
 version = "0.1.0"
 requires-python = ">=3.12"
-dependencies = []
+# Workspace member stub para nicolify. Runtime deps consumidas por nicolify/backend/
+# pero declaradas aquí porque nicolify/backend/ NO es workspace member (mismo patrón
+# que vitalia/pyproject.toml — S-DOCKER-DEV-MULTIBRAND gap). Cuando nicolify/backend/
+# se promueva a workspace member, mover estas deps allí.
+dependencies = [
+    # ASGI server (dev compose llama `uv run uvicorn`)
+    "uvicorn[standard]>=0.34.0",
+    # FastAPI runtime
+    "fastapi>=0.115",
+    "python-multipart>=0.0.20",
+    "starlette>=0.46",
+    "structlog>=25.1",
+    # Persistence (nicolify/backend/src importa SQLAlchemy; alembic baseline IAM)
+    "sqlalchemy>=2.0",
+    "asyncpg>=0.29",
+    "alembic>=1.13",
+    "psycopg2-binary>=2.9",
+    # Engine core packages consumidos por nicolify/backend/src (foundation R0)
+    "luana-core-platform",
+    "luana-core-observability",
+    "luana-core-extension-sdk",
+    "luana-core-iam",
+    # Clerk SDK para seed --clerk-sync (graceful degradation si no está)
+    "clerk-backend-api>=1.0",
+]
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+# nicolify/src/ no existe (solo nicolify/backend/src/) — bypass-selection evita que
+# hatchling falle buscando packages. Mismo patrón que vitalia/pyproject.toml.
 [tool.hatch.build.targets.wheel]
-packages = ["src"]
+bypass-selection = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

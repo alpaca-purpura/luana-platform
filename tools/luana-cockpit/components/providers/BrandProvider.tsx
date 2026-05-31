@@ -18,18 +18,27 @@ interface BrandContextValue {
 const BrandContext = createContext<BrandContextValue | null>(null);
 
 const STORAGE_KEY = 'cockpit:brand';
-const DEFAULT_BRAND = 'vitalia';
+const FALLBACK_BRAND = 'vitalia';
 
 export function BrandProvider({
   children,
   brands,
+  defaultBrand,
 }: {
   children: ReactNode;
   brands: string[];
+  /** Brand inicial preferida (de `DEFAULT_BRAND` env · cockpit-up.sh por-worktree). */
+  defaultBrand?: string;
 }) {
+  // Brand inicial: env DEFAULT_BRAND (si es una brand real presente) → primera detectada → fallback.
+  const initialBrand =
+    defaultBrand && brands.includes(defaultBrand)
+      ? defaultBrand
+      : brands[0] ?? FALLBACK_BRAND;
+
   const [brand, setBrandState] = useState<string>(() => {
-    if (typeof window === 'undefined') return DEFAULT_BRAND;
-    return window.localStorage.getItem(STORAGE_KEY) ?? DEFAULT_BRAND;
+    if (typeof window === 'undefined') return initialBrand;
+    return window.localStorage.getItem(STORAGE_KEY) ?? initialBrand;
   });
 
   useEffect(() => {

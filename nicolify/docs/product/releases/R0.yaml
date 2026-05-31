@@ -1,0 +1,65 @@
+---
+# Release schema (v2 cement 2026-05-27)
+# Doc: docs/process/release-protocol.md
+# Path canónico: nicolify/docs/product/releases/R0.yaml
+
+release_id: R0
+brand: nicolify
+name: "Fundación + shell agéntico"
+description: "Primer release del rebuild agentic-first. Infra brand activa (BE :8001 / FE :3001) + shell-organism con Luana como chat orquestador + Ribbon de los 5 agentes (Luana/Abel/Brenda/Christian/Norvil), reusando la base FE madura de Vitalia. Habilita todo lo demás."
+status: in_progress                     # planning | in_progress | ready_to_merge | shipped | backlog
+target_date: null                      # Chris la llena
+shipped_date: null
+order: 0                                # primer release del roadmap nicolify
+created_at: 2026-05-29T19:19:27-05:00
+created_by: chris
+
+# Stories asignadas (denormalizada · source-of-truth = checkpoint.md de cada story)
+# Drag stories entre releases en cockpit Roadmap actualiza esta lista + el `release:` field del checkpoint.md
+stories:
+  - nicolify-r0-shell-organism              # design-story DONE · contrato + nav-tree + mockup ratificado + ADR-nicolify-001
+  - nicolify-r0-dev-stack                   # [1] blocker · BE:8001 + FE:3001 + health + alembic + Clerk
+  - nicolify-r0-design-system-tokens        # [2] globals.css paleta nicolify.com + League Spartan + dark + ThemeToggle
+  - nicolify-r0-topbar                      # [3] TopBarGlobal + LogoMark + TenantSwitcher (derecha) + ThemeToggle
+  - nicolify-r0-shell-layout-splitter       # [4] ShellOrganismLayout dual-mode 50/50 + splitter resizable + SSR-safe store
+  - nicolify-r0-luana-chat                  # [5] LuanaSidebar (rail/history/chat skeleton) orquestador
+  - nicolify-r0-ribbon-subtabs              # [6] Ribbon 4 agentes + Config + SubTabsBar + shell-routes.ts
+  - nicolify-r0-routing-empty-states        # [7] routing [agent]/[subtab]/page.tsx + empty states
+
+# Legacy outcome mapping (net-new · no mapea a outcome legacy)
+maps_legacy_outcome: null
+maps_legacy_phase: null
+---
+
+# R0 · Fundación + shell agéntico
+
+> Primer release del rebuild **agentic-first** de Nicolify. Levanta la marca como app activa y monta el esqueleto del shell-organism agéntico (Luana orquestadora + Ribbon de los 5 agentes), reusando la base FE madura de Vitalia. Sin este release no hay dónde "vivir" la lógica de Abel/Brenda/Christian/Norvil.
+
+## Outcome esperado
+
+- Stack dev de Nicolify levantado y verde (BE :8001 / FE :3001 / health OK / alembic baseline).
+- Shell-organism agéntico navegable: TopBar global + Ribbon de 5 agentes (Luana/Abel/Brenda/Christian/Norvil) + panel orquestador de Luana (chat lateral, skeleton).
+- Contrato de diseño del shell + árbol de navegación (sub-tabs por agente) cementado como SSoT para los releases siguientes (R1+).
+
+## Criterios de éxito (draft · a refinar en cada story)
+
+1. `make dev-nicolify` levanta BE+FE sin errores · `curl :8001/health` OK.
+2. Ruta raíz del tenant renderiza el shell con el Ribbon de 5 agentes + Luana chat skeleton.
+3. Navegación entre agentes (tabs) funciona · cada agente muestra su empty-state.
+4. Patrón de arquitectura del shell documentado (ADR-nicolify-001 candidato) reusando aprendizajes de ADR-vitalia-003/004.
+
+## Prior art (reuse, NO mirror)
+
+- **Vitalia** (`vitalia/frontend/` + ADR-vitalia-003 mockup-per-component + ADR-vitalia-004 shell-feature-architecture): fuente del paradigma shell-organism. Reuse del patrón, adaptado a los 5 agentes de Nicolify.
+- **Engine** `core/luana-core-copilot/` + `core/luana-core-sales-agent/`: Luana/Christian/Norvil/Brenda se construyen como brand-extensions, NO se recrean.
+- Detalle del scan se hace al refinar cada story (`.claude/rules/anti-duplication-refining.md`).
+
+## Stories incluidas
+
+<!-- Auto-poblado por cockpit · refleja stories[] del frontmatter -->
+
+## Notas del release
+
+- Pricing/planes NO definidos aún — R0 no los necesita (es infra + shell).
+- El paradigma UI (mirror shell-organism de Vitalia) se ratifica al refinar la primera story de diseño (`nicolify-r0-shell-organism`).
+- Releases siguientes (ver `nicolify/docs/product/vision.md` § 8): R1 Abel+Brenda (atracción inbound) · R2 Christian (outbound) · R3 Norvil (retención) · R4 token economy.
