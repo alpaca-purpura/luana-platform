@@ -178,3 +178,19 @@ export const availabilityBlockSchema = z.discriminatedUnion("kind", [
 export type AvailabilityBlockFormValues = z.infer<
   typeof availabilityBlockSchema
 >;
+
+// ── Doctor perfil autosave schema (T-FE-2) ──────────────────────────────────
+
+export const doctorPerfilSchema = z.object({
+  specialty: z.string().max(100, "Máximo 100 caracteres").optional().or(z.literal("")),
+  phone: z.string().max(30, "Máximo 30 caracteres").optional().or(z.literal("")),
+  yearsExperience: z
+    .string()
+    .regex(/^\d*$/, "Debe ser un número")
+    .optional()
+    .or(z.literal("")),
+  languages: z.string().max(200, "Máximo 200 caracteres").optional().or(z.literal("")),
+  visibleEnLanding: z.boolean(),
+});
+
+export type DoctorPerfilFormValues = z.infer<typeof doctorPerfilSchema>;

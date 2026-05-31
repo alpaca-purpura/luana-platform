@@ -164,6 +164,192 @@ export function useCreateDoctor() {
   });
 }
 
+// ── useDoctor ──────────────────────────────────────────────────────────────────
+
+/**
+ * useDoctor — fetches single doctor detail for workspace pages.
+ * Hydrated from SSR initialData (layout passes getDoctorInitialState result).
+ */
+export function useDoctor(
+  doctorId: string,
+  initialData?: DoctorDetail,
+) {
+  const { getToken, isLoaded, isSignedIn, orgId } = useAuth();
+  const clinicId = useClinicId();
+
+  return useQuery({
+    queryKey: staffKeys.detail(doctorId),
+    queryFn: async () => {
+      const token = await getToken();
+      if (!token || !orgId) throw new Error("Sin autenticación");
+      return fetchClient<DoctorDetail>(
+        `${API_BASE}/api/v1/vitalia/clinics/doctors/${doctorId}`,
+        { token, tenantId: orgId, clinicId },
+      );
+    },
+    enabled: isLoaded && !!isSignedIn,
+    initialData,
+    staleTime: 30_000,
+  });
+}
+
+// ── usePatchDoctor ─────────────────────────────────────────────────────────────
+
+export interface PatchDoctorPayload {
+  specialty?: string | null;
+  phone?: string | null;
+  yearsExperience?: number | null;
+  languages?: string[];
+  visibleEnLanding?: boolean;
+  bioInputsNotes?: string | null;
+  bioLinks?: string[];
+  bioPublic?: {
+    resumen?: string | null;
+    formacion?: string | null;
+    enfoque?: string | null;
+  } | null;
+  avatarKey?: string | null;
+}
+
+/**
+ * usePatchDoctor — mutation: PATCH /api/v1/vitalia/clinics/doctors/{id}
+ * Used for autosave on-change.
+ */
+export function usePatchDoctor(doctorId: string) {
+  const { getToken, orgId } = useAuth();
+  const clinicId = useClinicId();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: PatchDoctorPayload) => {
+      const token = await getToken();
+      if (!token || !orgId) throw new Error("Sin autenticación");
+      return fetchClient<DoctorDetail>(
+        `${API_BASE}/api/v1/vitalia/clinics/doctors/${doctorId}`,
+        {
+          method: "PATCH",
+          token,
+          tenantId: orgId,
+          clinicId,
+          body: JSON.stringify(payload),
+        },
+      );
+    },
+    onSuccess: (updated) => {
+      // Update the cache optimistically with the returned data
+      queryClient.setQueryData(staffKeys.detail(doctorId), updated);
+    },
+  });
+}
+
+// ── useGenerateBio ─────────────────────────────────────────────────────────────
+
+export interface GenerateBioResponse {
+  resumen: string;
+  formacion: string;
+  enfoque: string;
+}
+
+/**
+ * useGenerateBio — mutation: POST /api/v1/vitalia/clinics/doctors/{id}/generate-bio
+ * Sends bio inputs to BE; returns generated 3-section bio.
+ * No-invent guardrail handled by BE service (D-4).
+ */
+export function useGenerateBio(doctorId: string) {
+  const { getToken, orgId } = useAuth();
+  const clinicId = useClinicId();
+
+  return useMutation({
+    mutationFn: async () => {
+      const token = await getToken();
+      if (!token || !orgId) throw new Error("Sin autenticación");
+      return fetchClient<GenerateBioResponse>(
+        `${API_BASE}/api/v1/vitalia/clinics/doctors/${doctorId}/generate-bio`,
+        {
+          method: "POST",
+          token,
+          tenantId: orgId,
+          clinicId,
+          body: JSON.stringify({}),
+        },
+      );
+    },
+  });
+}
+
+// ── useAvatarUpload ────────────────────────────────────────────────────────────
+
+/**
+ * useAvatarUpload — mutation: POST /api/v1/vitalia/clinics/assets/upload (proxy)
+ * Per D-3: proxy upload (presigned not implemented in engine).
+ * After upload: PATCH doctor {avatarKey}.
+ */
+export function useAvatarUpload(doctorId: string) {
+  const { getToken, orgId } = useAuth();
+  const clinicId = useClinicId();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const token = await getToken();
+      if (!token || !orgId) throw new Error("Sin autenticación");
+
+      // Step 1: Upload file to assets proxy
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("kind", "avatar");
+
+      const uploadUrl = `${API_BASE}/api/v1/vitalia/clinics/assets/upload`;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60_000);
+
+      let uploadResponse: Response;
+      try {
+        uploadResponse = await fetch(uploadUrl, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "X-Tenant-ID": orgId,
+            ...(clinicId ? { "X-Clinic-ID": clinicId } : {}),
+          },
+          body: formData,
+          signal: controller.signal,
+        });
+      } finally {
+        clearTimeout(timeoutId);
+      }
+
+      if (!uploadResponse.ok) {
+        throw new Error(`Error al subir imagen: ${uploadResponse.status}`);
+      }
+
+      const { key, url } = (await uploadResponse.json()) as {
+        key: string;
+        url: string;
+      };
+
+      // Step 2: PATCH doctor with new avatar_key
+      await fetchClient<DoctorDetail>(
+        `${API_BASE}/api/v1/vitalia/clinics/doctors/${doctorId}`,
+        {
+          method: "PATCH",
+          token,
+          tenantId: orgId,
+          clinicId,
+          body: JSON.stringify({ avatar_key: key }),
+        },
+      );
+
+      return { key, url };
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: staffKeys.detail(doctorId),
+      });
+    },
+  });
+}
+
 // ── Type re-exports for consumers ──────────────────────────────────────────────
 
 export type { DoctorListItem, DoctorDetail, PaginatedDoctors };

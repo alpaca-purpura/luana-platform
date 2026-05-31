@@ -48,8 +48,16 @@ export { NuevoIntegranteModal } from "./components/staff/NuevoIntegranteModal";
 export { StaffEmptyState } from "./components/staff/StaffEmptyState";
 export { StaffErrorBanner } from "./components/staff/StaffErrorBanner";
 
+// ── Staff workspace (T-FE-2) ────────────────────────────────────────────────────
+export { StaffWorkspaceShell } from "./components/staff/workspace/StaffWorkspaceShell";
+export { DoctorPerfilView } from "./components/staff/workspace/perfil/DoctorPerfilView";
+export { BioRepoInputs } from "./components/staff/workspace/perfil/BioRepoInputs";
+export { GeneratedBioSections } from "./components/staff/workspace/perfil/GeneratedBioSections";
+export { DoctorServiciosView } from "./components/staff/workspace/servicios/DoctorServiciosView";
+export { AvatarUploader } from "./components/staff/workspace/AvatarUploader";
+
 // ── Staff API + types (T-FE-1) ─────────────────────────────────────────────────
-export { staffKeys, useStaffList, useCreateDoctor, mapDoctorCreateToPayload } from "./api/staff";
+export { staffKeys, useStaffList, useCreateDoctor, mapDoctorCreateToPayload, useDoctor, usePatchDoctor, useGenerateBio, useAvatarUpload } from "./api/staff";
 // Staff server-side fetch helpers (for Server Component pages)
 export { getStaffInitialState, getDoctorInitialState } from "./api/staff-server";
 export type { DoctorListItem, DoctorDetail, PaginatedDoctors, StaffFilters, AvailabilityBlock, BioPublic } from "./types/staff.types";

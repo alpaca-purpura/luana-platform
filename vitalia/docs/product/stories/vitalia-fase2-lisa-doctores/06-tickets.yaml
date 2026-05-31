@@ -199,6 +199,7 @@ tickets:
       rationale: "FE directory + CRUD, no agentic — Sonnet. Server-First page + RQ/Zustand split per ADR-004. Visual fidelity to mockups/doctores.html."
 
   - id: T-FE-2
+    state: pushed
     title: "EntitySubNavBar (N3-dynamic shell-organism component) + StaffWorkspaceShell layout + [doctor-id] routes (perfil/horarios/servicios) + DoctorPerfilView autosave + BioRepoInputs + GeneratedBioSections + AvatarUploader + Dropzone install"
     group: "G1-doctor-crud"
     surface: frontend
