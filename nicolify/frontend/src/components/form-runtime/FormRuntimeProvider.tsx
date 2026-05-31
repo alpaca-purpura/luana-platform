@@ -1,10 +1,28 @@
+// cap: platform.autosave-primitive-platform
+// story-origin: build-autosave-primitive-luana T-3
 "use client";
+
+/**
+ * FormRuntimeProvider — section editor state manager.
+ *
+ * Autosave internals replaced with useAutosave from @luana/hooks (ADR-012).
+ * Public API (props, context shape, observable behavior) is preserved 1:1.
+ *
+ * Mapping from @luana/hooks to nicolify API:
+ *   - debounceMs: 800  → preserves original 800ms debounce timing
+ *   - save: wraps onSave ignoring the token (auth is handled by caller's onSave)
+ *   - getToken: returns a stub non-null string (auth not needed here)
+ *   - status "dirty" → mapped to "idle" (debounce window not surfaced in banner)
+ *   - autosaveError: captured via onError callback (useAutosave doesn't return error)
+ */
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
+import { useAutosave, type AutosaveStatus as LuanaAutosaveStatus } from "@luana/hooks";
+
 import { useCopilotStore } from "@/features/copilot/store/copilot-store";
 import { createFormRuntimeBridge, type FormRuntimeBridge } from "@/lib/form-runtime/copilot";
-import { useActiveField, useAutoSave } from "@/lib/form-runtime/hooks";
+import { useActiveField } from "@/lib/form-runtime/hooks";
 import { setNestedPath } from "@/lib/form-runtime/utils";
 
 import { FormRuntimeContext, type FormRuntimeContextValue } from "./FormRuntimeContext";
@@ -48,8 +66,26 @@ export function FormRuntimeProvider<TValues extends object>({
 
   const isAutosave = saveMode !== "explicit";
 
-  const autosave = useAutoSave<TValues>({
-    saveFn: onSave,
+  // Track autosave error separately (useAutosave doesn't return error object).
+  const [autosaveError, setAutosaveError] = useState<Error | null>(null);
+
+  const autosave = useAutosave<TValues>({
+    // Wraps onSave — token is ignored since auth is handled by the caller's onSave.
+    save: async (vals, _ctx) => {
+      await onSave(vals);
+    },
+    // Stub token provider — getTokenReady exits on first attempt (non-null → immediate).
+    // The real auth token is managed by the onSave caller (fetchClient injects X-Tenant-ID).
+    getToken: async () => "form-runtime-no-auth",
+    // Preserve original 800ms debounce timing (form-runtime uses 800ms, not the 2000ms default).
+    debounceMs: 800,
+    onSaved: () => {
+      setAutosaveError(null);
+    },
+    onError: (err: unknown) => {
+      const normalised = err instanceof Error ? err : new Error("Error al guardar");
+      setAutosaveError(normalised);
+    },
   });
 
   const setFieldValue = useCallback(
@@ -57,7 +93,7 @@ export function FormRuntimeProvider<TValues extends object>({
       setValues((prev) => {
         const updated = setNestedPath(prev, path, next);
         if (isAutosave) {
-          autosave.trigger(updated);
+          autosave.scheduleSave(updated);
         }
         return updated;
       });
@@ -68,7 +104,7 @@ export function FormRuntimeProvider<TValues extends object>({
   const undoSession = useCallback(() => {
     setValues(snapshotRef.current);
     if (isAutosave) {
-      autosave.trigger(snapshotRef.current);
+      autosave.scheduleSave(snapshotRef.current);
     }
   }, [autosave, isAutosave]);
 
@@ -108,8 +144,14 @@ export function FormRuntimeProvider<TValues extends object>({
   // eslint-disable-next-line react-hooks/refs -- snapshotRef is set once at mount and never mutated
   const isDirty = values !== snapshotRef.current;
 
+  /**
+   * Map @luana/hooks AutosaveStatus to nicolify's banner-level AutosaveStatus.
+   * "dirty" (debounce window) is not surfaced in the banner — treated as "idle".
+   * This preserves the prior behavior where only saving/saved/error were shown.
+   */
+  const luanaStatus: LuanaAutosaveStatus = autosave.status;
   const autosaveStatus: AutosaveStatus | null = isAutosave
-    ? (autosave.state as AutosaveStatus)
+    ? (luanaStatus === "dirty" ? "idle" : (luanaStatus as AutosaveStatus))
     : null;
 
   const ctxValue: FormRuntimeContextValue = useMemo(
@@ -118,7 +160,7 @@ export function FormRuntimeProvider<TValues extends object>({
       values: values as unknown as Record<string, unknown>,
       saveMode,
       autosaveStatus,
-      autosaveError: autosave.error,
+      autosaveError,
       setFieldValue,
       undoSession,
       isDirty,
@@ -129,7 +171,7 @@ export function FormRuntimeProvider<TValues extends object>({
       values,
       saveMode,
       autosaveStatus,
-      autosave.error,
+      autosaveError,
       setFieldValue,
       undoSession,
       isDirty,
