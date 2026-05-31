@@ -2,7 +2,9 @@
 slug: autosave-primitive-platform
 kind: outcome
 owner: /pm-luana
-state: idea
+state: refining
+adr_status: accepted
+ratified_by_chris: true
 created: 2026-05-31
 priority: MEDIUM
 adr: docs/architecture/luana-platform/ADR-012-autosave-primitive-platform.md
