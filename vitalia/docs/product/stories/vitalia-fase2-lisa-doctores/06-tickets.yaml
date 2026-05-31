@@ -132,6 +132,7 @@ tickets:
 
   - id: T-BE-6
     title: "Assets proxy upload router (consume luana-core-assets, copy nicolify wiring)"
+    state: pushed
     group: "G3-public-assets"
     surface: backend
     deliverables:

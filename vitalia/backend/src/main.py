@@ -23,6 +23,7 @@ from src.modules.vitalia.admin.api.admin_helpers_router import router as admin_h
 from src.modules.vitalia.api.routes import router as vitalia_router
 from src.modules.vitalia.api.webhook_routes import webhook_router
 from src.modules.vitalia.brand_studio.api.routers.marca_router import router as marca_router
+from src.modules.vitalia.clinics.api.assets_proxy_router import router as assets_proxy_router
 from src.modules.vitalia.clinics.api.doctors_router import router as doctors_router
 from src.modules.vitalia.clinics.api.public_doctors_router import router as public_doctors_router
 from src.modules.vitalia.clinics.api.router import router as clinics_router
@@ -86,6 +87,8 @@ app.include_router(marca_router, prefix="/api/v1/lisa/marca", tags=["brand_studi
 app.include_router(doctors_router, prefix="/api/v1/vitalia/clinics/doctors", tags=["staff"])
 # T-BE-5 F2-S8: Public doctors router — unauthenticated, allow-list channel guard
 app.include_router(public_doctors_router, prefix="/api/public/clinic", tags=["public"])
+# T-BE-6 F2-S8: Assets proxy upload router — consume luana-core-assets AssetsService (D-3)
+app.include_router(assets_proxy_router, prefix="/api/v1/vitalia/assets", tags=["assets"])
 
 
 class HealthResponse(BaseModel):

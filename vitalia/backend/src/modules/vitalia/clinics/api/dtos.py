@@ -323,3 +323,29 @@ class GenerateBioResponse(BaseModel):
 
     error_message: str | None = None
     """Spanish neutro error message shown to user on LLM failure. None = success."""
+
+
+# ── Assets proxy DTOs (T-BE-6) ───────────────────────────────────────────────
+
+
+class AssetUploadResponse(BaseModel):
+    """Response for POST /api/v1/vitalia/assets/upload.
+
+    Returns R2 storage key (tenant-scoped path) and the public URL.
+
+    key:  Tenant-scoped path in R2 — {tenant_id}/{kind}/{uuid}-{filename}.
+          Frontend uses this key to PATCH avatar_key on the doctor record.
+    url:  Public URL (local path in dev/test; R2 public URL in prod).
+
+    D-3 (03-arch): presigned upload does NOT exist in luana-core-assets.
+    Consume AssetsService.upload_asset proxy. Live R2 = T-BE-7 Chris manual.
+    V-FN-10: returns {key, url} on valid upload.
+    """
+
+    model_config = ConfigDict(from_attributes=True)
+
+    key: str
+    """Tenant-scoped R2 storage key. Frontend PATCHes doctor.avatar_key with this."""
+
+    url: str
+    """Public URL for the uploaded file."""

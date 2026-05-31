@@ -358,3 +358,21 @@ HIPAA-lite compliance: channel guard via explicit allow-list (not deny-list) · 
 Pre-existing excluded: `treatment_plans.notes TEXT vs BYTEA` (from migration 021, NOT introduced by this ticket — per task spec "ignore pre-existing treatment_plans.notes CRM debt")
 
 V-FN-11: PASS · V-ARCH-7: PASS (arch test skip resolved, now 5/5)
+
+### 2026-05-31 — 🤖 claude · `builder-backend` · ✓ APLICADO
+**T-BE-6 — Assets proxy upload router (consume luana-core-assets, copy nicolify wiring)**
+
+Implementado TDD (RED→GREEN). Deliverables:
+- `clinics/api/assets_proxy_router.py` — NEW; `POST /upload` multipart; consumes `AssetsService.upload_asset` (proxy — D-3: presign NOT implemented in engine); RBAC `admin_clinic`; `response_model=AssetUploadResponse`; engine imports deferred to handler body (PLC0415 pattern per doctors_router); kind ∈ {avatar, credential_doc} validated; content-type allow-list: image/* for avatar; PDF/JPG/PNG/DOCX for credential_doc; 10MB max enforced brand-side before forwarding; returns `{key, url}`
+- `clinics/api/dtos.py` EXTENDED — `AssetUploadResponse {key: str, url: str}`
+- `main.py` — `include_router(assets_proxy_router, prefix=/api/v1/vitalia/assets, tags=["assets"])`
+- `tests/modules/vitalia/clinics/test_assets_upload.py` — NEW 10 tests TDD RED-first: structural (importable/POST-registered/response_model/DTO fields) + functional (valid avatar/10MB-enforce/avatar-wrong-type/credential-pdf-valid/credential-text-rejected/invalid-kind); mocking via `monkeypatch` minimal env vars + `patch(AssetsService)` + `patch(SessionLocal)` — NO live R2 needed (T-BE-7 Chris manual)
+
+Gates GREEN:
+- 10/10 test_assets_upload.py PASS
+- 177/177 clinics full suite PASS
+- 334 arch fitness tests PASS (1 deselected = pre-existing `treatment_plans.notes TEXT vs BYTEA` — NOT introduced by this ticket)
+- ruff check: 0 errors
+- ruff format: 0 reformats needed
+
+V-FN-10: PASS
