@@ -69,6 +69,7 @@
     "eslint-plugin-boundaries": "^6.0.2",
     "globals": "^17.5.0",
     "happy-dom": "^13.10.0",
+    "msw": "^2.14.6",
     "storybook": "^10.4.0",
     "tailwindcss": "^4.1.0",
     "typescript": "^5.9.3",

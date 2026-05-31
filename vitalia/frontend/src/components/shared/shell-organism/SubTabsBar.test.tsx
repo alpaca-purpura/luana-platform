@@ -100,11 +100,11 @@ describe("SubTabsBar — renders nav + N SubTabs (SC-1)", () => {
 // ──────────────────────────────────────────────────────────────────────────────
 
 describe("SubTabsBar — click SubTab → router.push (SC-1)", () => {
-  it("mock useParams returns {tenantId: 'tenant-x'} + usePathname='/tenant-x/lisa/marca' → click sub-tab-doctores → router.push called with '/tenant-x/lisa/doctores'", () => {
+  it("mock useParams returns {tenantId: 'tenant-x'} + usePathname='/tenant-x/lisa/marca' → click sub-tab-staff → router.push called with '/tenant-x/lisa/staff'", () => {
     render(<SubTabsBar />);
-    const doctoresTab = screen.getByTestId("sub-tab-doctores");
+    const doctoresTab = screen.getByTestId("sub-tab-staff");
     fireEvent.click(doctoresTab);
-    expect(mockPush).toHaveBeenCalledWith("/tenant-x/lisa/doctores");
+    expect(mockPush).toHaveBeenCalledWith("/tenant-x/lisa/staff");
   });
 
   it("usePathname='/tenant-x/camila/voz' → click sub-tab-reactivar → router.push('/tenant-x/camila/reactivar')", () => {
@@ -121,8 +121,8 @@ describe("SubTabsBar — click SubTab → router.push (SC-1)", () => {
 // ──────────────────────────────────────────────────────────────────────────────
 
 describe("SubTabsBar — agent change re-renders (SC-2)", () => {
-  it("initial mock usePathname '/tenant-x/lisa/doctores' → 4 SubTabs Lisa + nav aria-label='Sub-secciones Lisa'", () => {
-    mockPathname.mockReturnValue("/tenant-x/lisa/doctores");
+  it("initial mock usePathname '/tenant-x/lisa/staff' → 4 SubTabs Lisa + nav aria-label='Sub-secciones Lisa'", () => {
+    mockPathname.mockReturnValue("/tenant-x/lisa/staff");
     render(<SubTabsBar />);
     const nav = screen.getByRole("tablist");
     expect(nav.getAttribute("aria-label")).toBe("Sub-secciones Lisa");
@@ -130,7 +130,7 @@ describe("SubTabsBar — agent change re-renders (SC-2)", () => {
   });
 
   it("re-render with mock usePathname='/tenant-x/lucas/lanzar' → 5 SubTabs Lucas + nav aria-label='Sub-secciones Lucas'", () => {
-    mockPathname.mockReturnValue("/tenant-x/lisa/doctores");
+    mockPathname.mockReturnValue("/tenant-x/lisa/staff");
     const { rerender } = render(<SubTabsBar />);
 
     mockPathname.mockReturnValue("/tenant-x/lucas/lanzar");
@@ -257,7 +257,7 @@ describe("SubTabsBar — roving tabindex + keyboard navigation (SC-8 a11y)", () 
     const marcaTab = screen.getByTestId("sub-tab-marca");
     expect(marcaTab.getAttribute("tabindex")).toBe("0");
     // Others should be -1
-    const doctoresTab = screen.getByTestId("sub-tab-doctores");
+    const doctoresTab = screen.getByTestId("sub-tab-staff");
     expect(doctoresTab.getAttribute("tabindex")).toBe("-1");
   });
 
@@ -272,7 +272,7 @@ describe("SubTabsBar — roving tabindex + keyboard navigation (SC-8 a11y)", () 
     // Press Arrow Right → focusedIdx becomes 1 (doctores)
     fireEvent.keyDown(nav, { key: "ArrowRight" });
     expect(
-      screen.getByTestId("sub-tab-doctores").getAttribute("tabindex"),
+      screen.getByTestId("sub-tab-staff").getAttribute("tabindex"),
     ).toBe("0");
     expect(screen.getByTestId("sub-tab-marca").getAttribute("tabindex")).toBe(
       "-1",

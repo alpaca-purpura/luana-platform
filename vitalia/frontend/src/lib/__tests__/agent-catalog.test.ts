@@ -484,12 +484,13 @@ describe("RIBBON_SUBTABS — total count and distribution (F1-S8)", () => {
     expect(ribbonAndConfig).toBe(22);
   });
 
-  it("lisa has 4 sub-tabs in order: marca, doctores, servicios, compliance", () => {
+  it("lisa has 4 sub-tabs in order: marca, staff, servicios, compliance", () => {
+    // F2-S8 T-FE-1 (2026-05-31): sub-tab renamed 'doctores' → 'staff' per 01-spec.md v2
     const lisa = RIBBON_SUBTABS.lisa;
     expect(lisa).toHaveLength(4);
     expect(lisa.map((t) => t.id)).toEqual([
       "marca",
-      "doctores",
+      "staff",
       "servicios",
       "compliance",
     ]);
@@ -548,10 +549,11 @@ describe("RIBBON_SUBTABS — total count and distribution (F1-S8)", () => {
 });
 
 describe("RIBBON_SUBTABS — label strings Spanish neutro (F1-S8)", () => {
-  it("lisa labels are 'Marca', 'Doctores', 'Servicios', 'Compliance' verbatim", () => {
+  it("lisa labels are 'Marca', 'Staff', 'Servicios', 'Compliance' verbatim", () => {
+    // F2-S8 T-FE-1 (2026-05-31): sub-tab renamed 'Doctores' → 'Staff' per 01-spec.md v2
     expect(RIBBON_SUBTABS.lisa.map((t) => t.label)).toEqual([
       "Marca",
-      "Doctores",
+      "Staff",
       "Servicios",
       "Compliance",
     ]);
@@ -607,9 +609,10 @@ describe("RIBBON_SUBTABS — icon field (emojis, F1-S8)", () => {
     }
   });
 
-  it("lisa.doctores icon is '👨‍⚕️' (doctor emoji)", () => {
-    const doc = RIBBON_SUBTABS.lisa.find((t) => t.id === "doctores");
-    expect(doc!.icon).toBe("👨‍⚕️");
+  it("lisa.staff icon is '👨‍⚕️' (doctor emoji)", () => {
+    // F2-S8 T-FE-1 (2026-05-31): renamed from 'lisa.doctores' → 'lisa.staff' per 01-spec.md v2
+    const staff = RIBBON_SUBTABS.lisa.find((t) => t.id === "staff");
+    expect(staff!.icon).toBe("👨‍⚕️");
   });
 
   it("config.conexiones icon is '🔌' (plug emoji — conexiones)", () => {

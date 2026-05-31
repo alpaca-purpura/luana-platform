@@ -43,6 +43,8 @@ const ALLOWED_FILES = new Set([
   "__tests__/architecture/test-agent-subsubtabs-ssot.test.ts",
   // paradigm-map-zones T-5: ribbon taxonomy test verifies mateo.agenda + valeria.agenda as string literals
   "__tests__/architecture/agent-catalog-ribbon-taxonomy.test.ts",
+  // F2-S8 T-FE-1 (2026-05-31): agent-catalog unit tests reference composite keys to verify RIBBON_SUBTABS structure
+  "lib/__tests__/agent-catalog.test.ts",
 ]);
 
 /**

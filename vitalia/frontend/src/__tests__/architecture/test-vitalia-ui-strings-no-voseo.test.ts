@@ -288,7 +288,7 @@ describe("Vitalia UI strings — no voseo (A2)", () => {
       // Spot-check verbatim labels per spec
       const EXPECTED_LABELS = [
         "Marca",
-        "Doctores",
+        "Staff", // F2-S8 T-FE-1 (2026-05-31): renamed from "Doctores" per 01-spec.md v2
         "Servicios",
         "Compliance",
         "Lanzar",

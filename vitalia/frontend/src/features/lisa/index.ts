@@ -1,18 +1,19 @@
-// cap: brand_studio.lisa-marca
-// story-origin: vitalia-fase1-s10-TBD
+// cap: clinics.lisa.doctores
+// story-origin: vitalia-fase1-s10-TBD | vitalia-fase2-lisa-doctores
 /**
  * lisa/index.ts — Feature public API (FSD-Lite boundary matrix).
  * F1-S10 vitalia-fase1-empty-states
+ * F2-S8 vitalia-fase2-lisa-doctores (T-FE-1)
  *
- * Exposes placeholder components created in T-2.
- * Special placeholders (T-3: ServiciosPlaceholder) will be re-exported here by T-3.
+ * Exposes placeholder components + Staff directory components.
+ * DoctoresPlaceholder removed from barrel (lisa.staff now shipped as static route).
  *
  * downstream-regression-na: brand-local FE barrel; no cross-brand consumers
  */
 
 // ── Placeholder components (T-2 generic EmptyState wrappers) ──────────────────
+// NOTE: DoctoresPlaceholder REMOVED — lisa.staff is now a shipped static route (SHIPPED_STATIC_SUBTABS).
 export { MarcaPlaceholder } from "./components/placeholders/MarcaPlaceholder";
-export { DoctoresPlaceholder } from "./components/placeholders/DoctoresPlaceholder";
 export { CompliancePlaceholder } from "./components/placeholders/CompliancePlaceholder";
 
 // ── Special placeholders (T-3) ─────────────────────────────────────────────────
@@ -37,6 +38,26 @@ export { VoiceTextareaWithWarning } from "./components/marca/voz-y-tono/VoiceTex
 // ── Presencia sub-sub-tab (T-7) ───────────────────────────────────────────────
 export { PresenciaView } from "./components/marca/presencia/PresenciaView";
 export type { PresenciaViewProps } from "./components/marca/presencia/PresenciaView";
+
+// ── Staff directory (T-FE-1) ───────────────────────────────────────────────────
+export { LisaStaffView } from "./components/staff/LisaStaffView";
+export { StaffDirectoryView } from "./components/staff/StaffDirectoryView";
+export { StaffCard } from "./components/staff/StaffCard";
+export { StaffDirectoryHeader } from "./components/staff/StaffDirectoryHeader";
+export { NuevoIntegranteModal } from "./components/staff/NuevoIntegranteModal";
+export { StaffEmptyState } from "./components/staff/StaffEmptyState";
+export { StaffErrorBanner } from "./components/staff/StaffErrorBanner";
+
+// ── Staff API + types (T-FE-1) ─────────────────────────────────────────────────
+export { staffKeys, useStaffList, useCreateDoctor, mapDoctorCreateToPayload } from "./api/staff";
+// Staff server-side fetch helpers (for Server Component pages)
+export { getStaffInitialState, getDoctorInitialState } from "./api/staff-server";
+export type { DoctorListItem, DoctorDetail, PaginatedDoctors, StaffFilters, AvailabilityBlock, BioPublic } from "./types/staff.types";
+export type { DoctorCreateFormValues } from "./types/staff-schema";
+
+// ── Staff hooks + store (T-FE-1) ───────────────────────────────────────────────
+export { useStaffFilters } from "./hooks/use-staff-filters";
+export { useStaffUiStore } from "./store/staff-ui-store";
 
 // ── API (T-5 / T-6 / T-7) ──────────────────────────────────────────────────────
 export { marcaKeys } from "./api/marca";

@@ -224,7 +224,7 @@ export interface SubTabMeta {
 export const RIBBON_SUBTABS: Record<RibbonTabSlug, readonly SubTabMeta[]> = {
   lisa: [
     { id: "marca", label: "Marca", icon: "🏥" },
-    { id: "doctores", label: "Doctores", icon: "👨‍⚕️" },
+    { id: "staff", label: "Staff", icon: "👨‍⚕️" },
     { id: "servicios", label: "Servicios", icon: "🩺" },
     { id: "compliance", label: "Compliance", icon: "🛡️" },
   ],
@@ -285,6 +285,7 @@ export type RibbonSubtabKey = `${RibbonTabSlug}.${string}`;
 export const SHIPPED_STATIC_SUBTABS: ReadonlySet<RibbonSubtabKey> = new Set<RibbonSubtabKey>([
   "mateo.agenda",  // v1.2 (2026-05-30): migrated from valeria.agenda (paradigm-map-zones T-5)
   "lisa.marca",    // F2-S7 T-4 — N3-static subtab (identidad/voz-y-tono/presencia)
+  "lisa.staff",    // F2-S8 T-FE-1 — Staff directory + workspace (vitalia-fase2-lisa-doctores)
 ]);
 
 /**
