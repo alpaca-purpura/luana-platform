@@ -21,8 +21,8 @@ from __future__ import annotations
 from alembic import op
 
 # revision identifiers, used by Alembic
-revision = "036"
-down_revision = "035"
+revision = "036_vitalia"
+down_revision = "035_vitalia"
 branch_labels = None
 depends_on = None
 
