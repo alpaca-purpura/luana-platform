@@ -93,7 +93,7 @@ Pre-existing failures (NOT introduced by this ticket, confirmed by stash test):
 
 ## Commit SHA
 
-(pending commit — see git log after commit)
+`a4f7209a` — pushed to `origin wip/vitalia`
 
 ## Files modified/created
 
