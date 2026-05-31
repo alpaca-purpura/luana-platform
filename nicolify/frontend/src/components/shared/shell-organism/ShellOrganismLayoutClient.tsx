@@ -8,35 +8,19 @@
  * Renamed: Valeria → Luana, valeriaState → luanaState, ValeriaSidebar → LuanaSidebar.
  *
  * Importado dinámicamente via `next/dynamic({ ssr: false })` desde
- * ShellOrganismLayout.tsx para evitar el bug SSR de react-resizable-panels
- * v4.11.1 (bare-name `localStorage` default param en useDefaultLayout que
- * crashea durante el SSR pass).
+ * ShellOrganismLayout.tsx para evitar el bug SSR de react-resizable-panels.
  *
- * Este file NO se importa directamente desde ningún consumer — siempre
- * via el wrapper `ShellOrganismLayout` que aplica el dynamic guard.
+ * Layout responsive vía CSS (no JS): el desktop layout (Group resizable o web
+ * grid) se monta SIEMPRE y se oculta en mobile con `md:block`; el mobile layout
+ * se monta SIEMPRE y se oculta en desktop con `md:hidden`. Montar/desmontar el
+ * <Group> condicionalmente (detrás de useSyncExternalStore(isDesktop)) disparaba
+ * "Rendered more hooks than during the previous render" — por eso el gate es CSS.
  *
- * react-resizable-panels v4 API note:
- * - PanelGroup → Group (orientation="horizontal", useDefaultLayout for persist)
- * - Panel → Panel (id, defaultSize, minSize)
- * - PanelResizeHandle → Separator (aria-label via rest passthrough)
+ * UN solo <main id="main-content"> envuelve ambos layouts (id único, HTML válido).
  *
- * Layout responsive (CSS, no JS): el desktop layout (Group resizable o web grid)
- * se monta SIEMPRE y se oculta en mobile vía `md:block`; el mobile layout se
- * monta SIEMPRE y se oculta en desktop vía `md:hidden`. Montar/desmontar el
- * <Group> condicionalmente (detrás de un useSyncExternalStore(isDesktop))
- * disparaba "Rendered more hooks than during the previous render" — por eso el
- * gate es CSS, no condicional de render.
- *
- * UN solo <main id="main-content"> envuelve ambos layouts (desktop + mobile)
- * para garantizar id único en el DOM, HTML válido y sin strict-mode-violation.
- *
- * G2 (ADR-nicolify-001): SSR-safe store — useStoreHydration called ONCE
- * client-side inside this ssr:false boundary (same pattern as vitalia ADR-vitalia-006).
- *
- * C3 bug mitigation: useGroupRef snap-up on hydration + useDefaultLayout localStorage
- * persistence — spurious default write prevented by skeleton store-free (ShellOrganismLayout).
- *
- * Splitter shortcuts: C/R/F (collapsed/rail/full via setLuanaState). Hit-area ≥8px (w-2).
+ * G2 (ADR-nicolify-001): SSR-safe store — useStoreHydration once client-side.
+ * C3 mitigation: useGroupRef snap-up + useDefaultLayout localStorage persistence.
+ * Splitter shortcuts: C/R/F (collapsed/rail/full via setLuanaState).
  *
  * downstream-regression-na: brand-local shell component; no cross-brand consumers
  */
@@ -68,29 +52,16 @@ export interface ShellOrganismLayoutClientProps {
 
 /**
  * Shell organism layout client — agentic + web dual-mode panel.
- * Long function is inherent: inner chrome variants (agentic/web/mobile)
- * + ResizeObserver + useGroupRef snap-up + useDefaultLayout all in one boundary.
- * Extracting each inner layout into sub-components would lose the shared state refs.
+ * Long function is inherent: inner chrome variants + ResizeObserver + useGroupRef
+ * snap-up + useDefaultLayout all in one boundary (shared state refs).
  */
 // eslint-disable-next-line max-lines-per-function -- single-main shell layout: shared containerRef, groupRef, ResizeObserver, and layoutProps must live in one scope
 export function ShellOrganismLayoutClient({
   children,
   tenantId: _tenantId,
 }: ShellOrganismLayoutClientProps) {
-  // ADR-nicolify-001 G2 + ADR-vitalia-006 D3:
-  // Trigger useShellStore rehydration ONCE client-side, inside this ssr:false chunk.
-  // This is the ONLY place rehydrate() is called for the shell store.
-  //
-  // WHY HERE: This component is loaded via dynamic({ssr:false}) in ShellOrganismLayout.
-  // The skeleton renders TopBarGlobal variant="skeleton" (store-free, D4) to prevent
-  // the persist middleware from writing localStorage during SSR/pre-hydration (C3).
-  // Once THIS component mounts, useStoreHydration fires rehydrate() which:
-  //   1. Reads the saved value from localStorage (user's preference).
-  //   2. Flips _hasHydrated = true via onRehydrateStorage.
-  //   3. Enables storage writes (ssrSafeStorage setItem no longer no-ops).
-  //
-  // StrictMode-safe: useStoreHydration uses a ref guard — double-invoke does not
-  // trigger double rehydrate().
+  // ADR-nicolify-001 G2 + ADR-vitalia-006 D3: trigger rehydration ONCE client-side
+  // inside this ssr:false chunk. StrictMode-safe via ref guard in useStoreHydration.
   useStoreHydration(useShellStore);
 
   const shellMode = useShellStore((s) => s.shellMode);
@@ -100,18 +71,14 @@ export function ShellOrganismLayoutClient({
   useViewportGuard();
 
   // ── Min pixels (01-spec.md §5 + §8 pattern from vitalia) ─────────────────
-  // luanaState='full' → min Luana 580px (history 280 + chat 300)
-  // luanaState='rail'/'collapsed' → min Luana 360px
-  // App min constant 480px (ribbon 6 tabs + sub-tabs without overflow)
+  // luanaState='full' → min Luana 580px · 'rail'/'collapsed' → 360px · app 480px
   const MIN_LUANA_PX = luanaState === "full" ? 580 : 360;
   const MIN_APP_PX = 480;
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(1280); // sane default
 
-  // Deterministic readiness signal (Fix A snap-up settled).
-  // Exposed as `data-shell-ready` on the main element so consumers and E2E tests
-  // can await stable layout instead of racing dynamic({ssr:false}) + useDefaultLayout +
-  // ResizeObserver hydration sequence.
+  // Deterministic readiness signal (Fix A snap-up settled), exposed as
+  // data-shell-ready for consumers/E2E to await stable layout.
   const [shellReady, setShellReady] = useState(false);
 
   useEffect(() => {
@@ -127,8 +94,7 @@ export function ShellOrganismLayoutClient({
     return () => ro.disconnect();
   }, []);
 
-  // Convert min pixels → percent based on actual container width.
-  // Clamp to [10, 70] to avoid absurd values at extreme viewports.
+  // Convert min pixels → percent based on actual container width. Clamp [10, 70].
   const clampPct = (px: number, total: number) =>
     Math.max(10, Math.min(70, (px / Math.max(total, 1)) * 100));
   const minLuanaPct = clampPct(MIN_LUANA_PX, containerWidth);
@@ -136,18 +102,10 @@ export function ShellOrganismLayoutClient({
   const defaultLuanaPct = shellMode === "agentic" ? 50 : 5;
 
   // ── Imperative Group ref for snap-up (Fix A — C3 bug mitigation) ─────────
-  // Mechanisms:
-  // 1. minSize as string percent (primary, native v4 drag enforcement):
-  //    react-resizable-panels v4 treats STRING minSize ending in "%" as percent.
-  //    Passing `${minLuanaPct}%` makes v4 natively clamp drag to the pixel minimum.
-  // 2. Hydration / state-change snap-up (Fix A — useEffect):
-  //    useDefaultLayout reads localStorage on hydration. If persisted layout has
-  //    Luana below the current minLuanaPct, snap up imperatively.
   const groupRef = useGroupRef();
 
-  // Fix A: snap-up when containerWidth or minLuanaPct changes.
-  // Catches hydration race (localStorage restore below new minimum) and
-  // luanaState change cycle.
+  // Fix A: snap-up when containerWidth or minLuanaPct changes (hydration race +
+  // luanaState change cycle). Signals readiness once layout reconciled.
   useEffect(() => {
     if (containerWidth <= 0 || !groupRef.current) return;
     const layout = groupRef.current.getLayout();
@@ -158,12 +116,10 @@ export function ShellOrganismLayoutClient({
         [APP_PANEL_ID]: 100 - minLuanaPct,
       });
     }
-    // Layout reconciled — signal readiness for consumers/tests
     setShellReady(true);
   }, [containerWidth, minLuanaPct, groupRef]);
 
-  // Persist layout across page reloads via localStorage.
-  // Safe to call directly: this component is client-only via dynamic({ssr:false}).
+  // Persist layout across reloads via localStorage. Safe: client-only (ssr:false).
   const layoutProps = useDefaultLayout({
     id: SHELL_GROUP_ID,
     panelIds: [LUANA_PANEL_ID, APP_PANEL_ID],
@@ -181,12 +137,10 @@ export function ShellOrganismLayoutClient({
       </div>
 
       {/*
-       * UN solo <main id="main-content"> envuelve TODAS las variantes (desktop +
-       * mobile). El inner chrome se muestra/oculta con CSS responsive (md:block /
-       * md:hidden), no con render condicional — así el <Group> de resizable se
-       * monta una sola vez y no descuadra el conteo de hooks.
-       * containerRef en el wrapper — ResizeObserver lee el ancho total.
-       * data-shell-ready refleja cuándo el layout agentic se asentó (Fix A useEffect).
+       * UN solo <main id="main-content"> envuelve TODAS las variantes. El inner
+       * chrome se muestra/oculta con CSS responsive (md:block / md:hidden), NO con
+       * render condicional — así el <Group> de resizable se monta una sola vez y no
+       * descuadra el conteo de hooks. containerRef aquí; ResizeObserver lee el ancho.
        */}
       <main
         id="main-content"
@@ -219,7 +173,6 @@ export function ShellOrganismLayoutClient({
               <Separator
                 id="shell-handle"
                 className={cn(
-                  // hit-area ≥8px: container transparente w-2 (8px) con ::after pseudo 1px centrado.
                   "group relative w-2 shrink-0 bg-transparent cursor-col-resize outline-none",
                   "after:absolute after:left-1/2 after:top-0 after:h-full after:w-px after:-translate-x-1/2",
                   "after:bg-border after:transition-all after:duration-150",
@@ -237,7 +190,6 @@ export function ShellOrganismLayoutClient({
             // web mode — static CSS grid 60px / 1px / 1fr
             <div className="h-full grid grid-cols-[60px_1px_1fr]">
               <LuanaSidebar />
-              {/* Visual divider (1px) */}
               <div className="bg-border" aria-hidden="true" />
               <AppPanelSlot>{children}</AppPanelSlot>
             </div>
@@ -245,7 +197,6 @@ export function ShellOrganismLayoutClient({
         </div>
 
         {/* ── Mobile (< md): single-column, SIEMPRE montado, oculto en desktop ── */}
-        {/* Luana accesible vía drawer trigger (T-4 agrega botón hamburguesa) */}
         <div className="h-full md:hidden">
           <AppPanelSlot>{children}</AppPanelSlot>
         </div>
