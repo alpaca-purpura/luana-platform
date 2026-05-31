@@ -40,15 +40,47 @@ invisible (solo ve la rama visible), pero:
 - **No es bug de producto** funcional: la UI renderiza y funciona (verificado live: directorio
   con 3 doctores seed reales + botón "Nuevo integrante" + búsqueda + lista).
 
-## Fix sugerido (decidir en story dedicada)
+## ★ CAUSA RAÍZ CONFIRMADA (2026-05-31): "Triple-main pattern" deliberado
 
-Dos caminos, decidir con arquitectura:
-1. **Producción:** que el shell NO monte ambas ramas a la vez (render condicional por
-   breakpoint en vez de CSS-hide), eliminando los testids duplicados de raíz. Beneficia a11y+perf.
-2. **Harness:** POMs scopean al panel visible (`.filter({ visible: true })` / contenedor visible).
-   Más barato, no resuelve el smell de a11y/perf.
+`ShellOrganismLayoutClient.tsx` (líneas 24-27 doc + 196-274) implementa a propósito el
+**"Triple-main pattern"**: TRES elementos `<main id="main-content">` mutuamente excluyentes
+por CSS Tailwind:
+1. Agentic desktop — `shellMode === 'agentic' && ... hidden md:block` (resizable panels)
+2. Web desktop — `shellMode === 'web' && ... hidden md:grid` (grid estático)
+3. Mobile fallback — `... md:hidden` (single-column) — **SIEMPRE en el DOM**
 
-Recomendado: combinar — harness scoping para destrabar E2E ya, + evaluar (1) como mejora.
+`shellMode` es agentic XOR web (una de 1/2 renderiza), pero la rama **mobile (3) SIEMPRE
+se monta** (solo oculta por CSS en desktop). → en desktop hay **2 `<AppPanelSlot>` montados**
+(la desktop visible + la mobile oculta) → cada `data-testid` del panel existe 2× + **`id="main-content"`
+duplicado en 3 elementos (HTML inválido / a11y)**.
+
+**Esto NO es accidente — es un patrón con tests que lo asertan** (`ShellOrganismLayout.test.tsx`
+SC-1/SC-2/SC-4: "all 3 main branches have id='main-content'", "triple-main: appears in both
+desktop+mobile branches", `getAllByTestId` plural). Por eso fixearlo = **cambio de arquitectura**,
+no un parche.
+
+## Fix de producción (diseño — requiere /architect + re-verificación transversal)
+
+**Approach:** reemplazar el CSS-mutuamente-exclusivo por **render condicional por viewport** (JS),
+de modo que SOLO una rama exista en el DOM:
+1. Usar `useMediaQuery("(min-width: 768px)")` (`src/hooks/useMediaQuery.ts`) → `isDesktop`.
+   - ⚠️ El hook inicializa en `false` (useEffect) → causaría **flash mobile→desktop** + montaría
+     los resizable panels tarde. Fix: lazy synchronous initializer
+     (`useState(() => typeof window !== 'undefined' && window.matchMedia(query).matches)`) — seguro
+     porque el shell es `dynamic({ssr:false})` (client-only). Cambio backward-compatible para los
+     otros consumers (ValeriaSidebar, mateo/AppointmentDrawer).
+2. Render: `isDesktop ? (shellMode === 'agentic' ? <AgenticMain/> : <WebMain/>) : <MobileMain/>` —
+   NUNCA ambas. Un solo `<main id="main-content">` a la vez (resuelve también el id duplicado).
+3. **Tests a reescribir** (asertan el triple-main): `ShellOrganismLayout.test.tsx`
+   (SC-1/SC-2/SC-4 + "passes children to AppPanelSlot triple-main") + posible mock de
+   `window.matchMedia` en jsdom (hoy no se usa en el layout → habrá que mockearlo en el setup).
+4. **Re-verificación transversal OBLIGATORIA** (es shell compartido): los 5 agentes
+   (lisa/mateo/adrian/lucas/camila) + valeria en los 3 modos (agentic/web/mobile) — vitest shell
+   + axe wcag2aa + visual smoke. Un error rompe la UI de TODOS los agentes.
+
+**Costo/riesgo:** medio-alto (transversal). Recomendado: story dedicada `/architect` →
+`/dev-team` → re-verificación full, NO un edit apresurado. El harness scoping (`.filter({visible:true})`,
+ya aplicado en los POMs de doctores, commit b3730693) es el workaround temporal mientras tanto.
 
 ## Relacionado
 
