@@ -63,6 +63,18 @@ export interface VozTonoViewProps {
 export function VozTonoView({ tenantId, clinicId, className }: VozTonoViewProps) {
   const { getToken, isLoaded, isSignedIn } = useAuth();
 
+  // Clerk `getToken()` puede devolver null por un breve instante tras isSignedIn
+  // (token aún resolviéndose). En vez de tirar "Not authenticated" y dejar la
+  // pantalla en error permanente, esperamos hasta ~2s a que el token esté listo.
+  const getTokenReady = useCallback(async (): Promise<string> => {
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      const token = await getToken();
+      if (token) return token;
+      await new Promise((resolve) => setTimeout(resolve, 200));
+    }
+    throw new Error("Not authenticated");
+  }, [getToken]);
+
   // ── React Query: fetch personality profile ──────────────────────────────
   const {
     data: personality,
@@ -71,13 +83,10 @@ export function VozTonoView({ tenantId, clinicId, className }: VozTonoViewProps)
   } = useQuery({
     queryKey: marcaKeys.personality(tenantId),
     queryFn: async () => {
-      const token = await getToken();
-      if (!token) throw new Error("Not authenticated");
+      const token = await getTokenReady();
       return getPersonality({ token, tenantId, clinicId });
     },
     enabled: isLoaded && !!isSignedIn,
-    // El token de Clerk puede tardar un tick en estar disponible tras isSignedIn.
-    // Reintentar con backoff corto evita un estado de error transitorio en pantalla.
     retry: 5,
     retryDelay: (attempt) => Math.min(300 * 2 ** attempt, 2000),
   });
@@ -86,8 +95,7 @@ export function VozTonoView({ tenantId, clinicId, className }: VozTonoViewProps)
   const { data: phrasesData } = useQuery({
     queryKey: marcaKeys.prohibitedPhrases(tenantId),
     queryFn: async () => {
-      const token = await getToken();
-      if (!token) throw new Error("Not authenticated");
+      const token = await getTokenReady();
       return getProhibitedPhrases({ token, tenantId, clinicId });
     },
     enabled: isLoaded && !!isSignedIn,
