@@ -47,6 +47,29 @@ Sin notas todavía · Chris escribe aquí.
 >
 > Verdict labels: ✓ APLICADO · ⚠️ DUDA · ❌ REFUTADO · 💡 PROPONE.
 
+### 2026-05-31 · builder-frontend (T-FE-3)
+
+**Scope:** T-FE-3 — Horarios calendar: DoctorHorariosView + AvailabilityCalendar + BloquePopover + useAvailabilityBlocks
+
+**Build result:**
+- ✓ APLICADO: `AvailabilityCalendar.tsx` — custom week grid (day×hour, CSS Grid) + @dnd-kit drag-to-create + week nav (‹/›) + 24h toggle + block rendering with `data-testid`
+- ✓ APLICADO: `BloquePopover.tsx` — recurrence form (semanal/quincenal + end_date/N iteraciones/Solo esta semana) + delete flow with SC-3b warning dialog
+- ✓ APLICADO: `DoctorHorariosView.tsx` — "use client" root with autosave hint
+- ✓ APLICADO: `horarios/page.tsx` — Server Component importing from barrel (arch test compliant)
+- ✓ APLICADO: 4 new hooks in `staff.ts` (useAvailabilityBlocks, useCreateBlock, useUpdateBlock, useDeleteBlock)
+- ✓ APLICADO: `AvailabilityCalendarPage.ts` Playwright POM
+- ✓ APLICADO: 26 new tests (11 schema + 15 component), all GREEN
+- ✓ APLICADO: @dnd-kit/core + @dnd-kit/utilities installed
+
+**Quality gates:**
+- TSC: 0 errors · ESLint: 0 errors · Vitest: 2411/2411 PASS · Architecture: 162/162 PASS
+
+**Commit:** `29625988` on `wip/vitalia` · pushed to origin
+
+**Pending (Chris action):**
+- Live verification via `chrome-devtools-verify` requires T-BE-3 stack running at localhost:3002 (`make dev-vitalia`). NOT done (dev stack not running in this session).
+- T-E2E ticket for full Playwright specs SC-1..SC-11 remains open.
+
 ### 2026-05-27 18:25 · 🤖 claude · `scripts/migrate_to_release_schema.py` · ✓ APLICADO
 Story migrada al schema v2: `release=F2`, `cap_target=lisa.doctores`, `cap_change_type=new`. Legacy `outcome` + `phase` preservados durante deprecation gradual.
 
