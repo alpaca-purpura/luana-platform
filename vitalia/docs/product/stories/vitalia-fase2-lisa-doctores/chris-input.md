@@ -563,3 +563,16 @@ Se corrigieron en orden estricto TDD (RED tests → GREEN implementation → LIV
 
 **Commit:** `0ce5fe1b` on `wip/vitalia` · pushed to origin
 **Files touched:** 9 (EntitySubNavBar.tsx, StaffCard.tsx, horarios.test.tsx, staff.test.tsx, AvailabilityCalendar.tsx, staff.types.ts, use-autosave.test.ts, use-autosave.ts, mocks/handlers/staff.ts)
+
+### 2026-05-31T14:40 · 🤖 claude · `/pm-vitalia` · ⚠️ DUDA
+**Live-verify de doctores corrido (Chris pidió correrlo ahora). Resultado honesto: la feature FUNCIONA live, pero el harness E2E necesita una historia de estabilización dedicada — NO alcanza `done` todavía.**
+
+Qué se ejerció contra el stack real (BE :8002 + FE :3002, sesión Clerk + storageState, 0 mocks):
+- ✅ El directorio de doctores **renderiza correctamente**: 3 doctores seed reales (ana-001, luis-002, sol-003) con sus links a `/lisa/staff/{id}/perfil`, botón "Nuevo integrante", búsqueda y lista — todo presente en el snapshot ARIA de la sesión autenticada.
+- ✅ Capa API ya estaba verified-real por el auditor (POST→201 + fila DB + pgcrypto + audit `doctor.created` + RBAC 403 + 7 bugs cazados live).
+
+Por qué NO va a `done` aún (browser-E2E + `dev_app_verified` ADR-008 incompletos):
+1. **El POM nunca corrió en browser** — testids/terminología especulativos divergían de la UI shipped. Alineé `StaffDirectoryPage` a la realidad (commit `046160ec`).
+2. **Bloqueador estructural (observed-bug nuevo):** `ShellOrganismLayout` monta el panel-content **2×** (rama mobile+desktop, una oculta por CSS) → cada testid resuelve a 2 elementos (strict-mode). Verde completo requiere visible-scoping en los 3 POMs (directory/workspace/calendar) + interacción shadcn Select. Doc: `vitalia/docs/observed-bugs/2026-05-31-shell-dual-mount-duplicate-testids.md`.
+
+Esto es una **historia de estabilización de harness** (mirror de `estabilizar-harness-e2e-lisa-marca`, para doctores). Decisión tuya: (a) spawneo `/dev-team` ahora para esa estabilización (esfuerzo real, iterativo contra stack live), o (b) lo difiero a una story y avanzo PARTE 2 (push a main — independiente de que doctores esté done). doctores queda en `reviewing` (honesto), NO la cierro.
