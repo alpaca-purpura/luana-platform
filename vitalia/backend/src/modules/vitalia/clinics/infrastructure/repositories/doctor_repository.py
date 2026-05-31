@@ -356,7 +356,7 @@ class DoctorRepository(CompoundScopeRepositoryBase[VitaliaDoctorModel, UUID]):
               :first_name, :last_name,
               pgp_sym_encrypt(:dni, :kek),
               pgp_sym_encrypt(:email, :kek),
-              CASE WHEN :phone IS NOT NULL THEN pgp_sym_encrypt(:phone, :kek) ELSE NULL END,
+              CASE WHEN CAST(:phone AS text) IS NOT NULL THEN pgp_sym_encrypt(CAST(:phone AS text), :kek) ELSE NULL END,
               pgp_sym_encrypt(:credential, :kek),
               :dni_hash,
               :specialty, :credential_country, :years_experience,
