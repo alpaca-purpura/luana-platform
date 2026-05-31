@@ -40,7 +40,19 @@ merged_from:                         # fusión 2026-05-30 (ratificada Chris) —
 spawned_at: 2026-05-30T02:28:00.000Z
 spawned_by: pm-nicolify-r0-backlog
 ssot_owner: /pm-nicolify
-last_modified: '2026-05-30'
+last_modified: '2026-05-31'
+dod_live_verified: true
+dod_env: "dev-app.nicolify.com (cloudflared tunnel → localhost:3001) · Chrome incógnito + Playwright"
+dod_evidence:
+  - action: "Login (hola@alpacapurpura.lat) → redirect post-login"
+    observed: "root / → /alpaca-purpura/christian/pipeline (slug, no UUID) · GET 200 (server logs)"
+  - action: "Ingreso directo a /alpaca-purpura (bare tenant)"
+    observed: "proxy redirige a /alpaca-purpura/christian/pipeline · shell carga"
+  - action: "Render del shell (Ribbon + Luana + sub-tabs)"
+    observed: "Luana abierta (historial + chat), Ribbon Abel/Brenda/Christian/Sara/Norvil, sin bolita dev · 0 errores de hooks/getSnapshot (backend logs + Playwright)"
+dod_verified_by: chris
+dod_verified_at: '2026-05-31'
+dod_note: "Ratificado por Chris 2026-05-31 ('ya todo bien'). Fixes post-merge live-verify: shell more-hooks (CSS-responsive), landing post-login, bare-tenant redirect en proxy, Luana default full, ChatComposer getSnapshot loop, devIndicators off, tenant_slug en Clerk metadata."
 ---
 
 # nicolify-r0-shell — checkpoint
