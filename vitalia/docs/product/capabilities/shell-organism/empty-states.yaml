@@ -16,7 +16,7 @@ lift_candidate: cross-brand-when-2-brands-need-inbox-agentico-and-agenda-cockpit
 superseded_by: shell-vitalia
 tech_module: shell-organism
 agent_owner: valeria
-functional_area: valeria.shell
+functional_area: plataforma-tecnica.shell
 user_visible: false
 nature: feature
 dev_preview:
