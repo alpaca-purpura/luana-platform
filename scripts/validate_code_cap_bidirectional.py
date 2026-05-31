@@ -64,11 +64,30 @@ INLINE_ROLE_GATE_NAME_RE = re.compile(
     re.MULTILINE,
 )
 
-E2E_TEST_PATTERNS = ("test(", "test.describe(")
+# JS/TS Playwright test detection (cross_check_3, non-.py files).
+# Recognizes the plain runner AND fixture-extended runners. Playwright's
+# canonical pattern for authenticated suites is `const authTest = test.extend<...>()`
+# followed by `authTest(...)` / `authTest.describe(...)` — the derived runner never
+# literally contains the substring "test(" (capital T in "authTest"), so a naive
+# substring scan reports false drift on real, passing suites. We therefore match:
+#   - test(  /  test.describe(                 (plain Playwright runner)
+#   - test.extend<...>  /  test.extend(        (fixture definition ⇒ file has tests)
+#   - <name>Test(  /  <name>Test.describe(     (fixture-extended runner call, capital T)
+#   - <name>Test.extend<...>                   (chained fixture extension)
+# The plain-runner alternatives are a strict superset of the old substring check,
+# so no previously-passing file regresses. Capital-T anchoring avoids matching
+# innocuous identifiers like `latest(` / `fastest(`.
+JS_TEST_RE = re.compile(
+    r"\btest\s*\("  # test(
+    r"|\btest\s*\.\s*describe\s*\("  # test.describe(
+    r"|\btest\s*\.\s*extend\s*[<(]"  # test.extend<...>  /  test.extend(
+    r"|\b[A-Za-z_$][\w$]*Test\s*\("  # authTest(
+    r"|\b[A-Za-z_$][\w$]*Test\s*\.\s*(?:describe|extend)\s*[<(]"  # authTest.describe( / .extend(
+)
 
 # Pytest test pattern: matches 'def test_foo', 'def test(', 'def test_anything'.
 # Used by cross_check_3 when the declared e2e_test path has a .py extension.
-# JS patterns above are used for .ts / .tsx / any other extension.
+# JS_TEST_RE above is used for .ts / .tsx / any other extension.
 PYTEST_PATTERN = re.compile(r"\bdef test", re.MULTILINE)
 
 
@@ -188,11 +207,12 @@ def cross_check_3(
                 )
                 continue
 
-            # Path-aware pattern check: pytest for .py, JS patterns for others.
+            # Path-aware pattern check: pytest for .py, Playwright (incl.
+            # fixture-extended runners like authTest) for others.
             if full_path.suffix == ".py":
                 has_pattern = bool(PYTEST_PATTERN.search(content))
             else:
-                has_pattern = any(p in content for p in E2E_TEST_PATTERNS)
+                has_pattern = bool(JS_TEST_RE.search(content))
             if has_pattern:
                 passing += 1
             else:
@@ -205,7 +225,8 @@ def cross_check_3(
                         "status": "no_test_pattern",
                         "drift_reason": (
                             "file exists but contains no test pattern "
-                            "('def test' for .py, 'test(' or 'test.describe(' for .ts/.tsx)"
+                            "('def test' for .py; 'test('/'test.describe('/'test.extend' "
+                            "or a fixture-extended runner like 'authTest(' for .ts/.tsx)"
                         ),
                     }
                 )
