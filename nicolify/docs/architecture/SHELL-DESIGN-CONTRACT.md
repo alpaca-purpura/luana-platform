@@ -6,14 +6,16 @@
 
 ## 1. Visión del shell
 
-Shell **dual-mode agéntico**: panel izquierdo = **Luana** (chat orquestador persistente, único rostro, NO está en el Ribbon) · panel derecho = **App** (Ribbon de 4 agentes expertos + Configurar · sub-tabs · contenido). Layout 50/50 con splitter resizable de 3 estados.
+Shell **dual-mode agéntico**: panel izquierdo = **Luana** (chat orquestador persistente, único rostro, NO está en el Ribbon) · panel derecho = **App** (Ribbon de 5 agentes expertos + Configurar · sub-tabs · contenido). Layout 50/50 con splitter resizable de 3 estados.
+
+> **Encaje con el paradigma de 3 zonas** (`ADR-nicolify-002` · `SYSTEM-MAP.yaml::zones`): el **Ribbon = zona Agentes** (abel/brenda/christian/sara/norvil) · **Luana = supervisora** de la zona Agentes pero vive en el sidebar (fuera del grid de cajas) · el **ConfigTab = zona Plataforma** (agrupa acceso/onboarding/configuracion). La zona **Infraestructura** (motor-agentico, observabilidad, etc.) NO es user-facing → no tiene tab. Christian es el único **bifronte** (interno `copilot` + externo `sales_agent`).
 
 ```
 ┌────────────────────────────────────────────────────────────────┐
 │ TopBar:  [logo Nicolify]            [splitter][tema][agencia ▾]  │
 ├──────────────────────┬─────────── splitter (drag) ──────────────┤
-│  LUANA (orquestadora) │  N1 Ribbon: Abel·Brenda·Christian·Norvil·│
-│  chat persistente     │             Configurar                  │
+│  LUANA (orquestadora) │  N1 Ribbon: Abel·Brenda·Christian·       │
+│  chat persistente     │             Sara·Norvil·Configurar       │
 │  rail/history/chat     ├─────────────────────────────────────────┤
 │                       │  N2 SubTabsBar (del agente activo)      │
 │                       ├─────────────────────────────────────────┤
@@ -54,7 +56,7 @@ Shell **dual-mode agéntico**: panel izquierdo = **Luana** (chat orquestador per
 | `LuanaRail` | Modo colapsado (rail ~60px de íconos). |
 | `LuanaHistory` | Lista de conversaciones (React Query) + búsqueda. |
 | `LuanaChat` | ChatHeader + ChatMessages + ChatComposer + TypingIndicator. El orquestador: intención → delega → reporta. |
-| `Ribbon` | N1 · 4 RibbonTab (Abel/Brenda/Christian/Norvil) + ConfigTab. `role="tablist"`. agent-color border en active. |
+| `Ribbon` | N1 · 5 RibbonTab (Abel/Brenda/Christian/Sara/Norvil) + ConfigTab. `role="tablist"`. agent-color border en active. |
 | `SubTabsBar` | N2 · SubTab[] del agente activo (URL-derived). |
 | `SubSubTabsBar` | N3-static · render condicional si `AGENT_SUBSUBTABS[agent][subtab]?.length`. |
 | `ShellOrganismLayout` | Splitter resizable dual-mode (chat-collapsed/narrow/50-50) · `dynamic({ssr:false})` boundary · skeleton store-free. |
@@ -63,7 +65,7 @@ Shell **dual-mode agéntico**: panel izquierdo = **Luana** (chat orquestador per
 ## 5. Modelo de navegación
 
 3 niveles de tab que GUÍAN hasta la **hoja** (= contenido del `page.tsx`, lo único que cambia · NUNCA contiene tabs internas):
-- **N1 Ribbon** → `[agent]` (Abel/Brenda/Christian/Norvil/Config) · Luana NO es tab.
+- **N1 Ribbon** → `[agent]` (Abel/Brenda/Christian/Sara/Norvil/Config) · Luana NO es tab.
 - **N2 SubTabsBar** → `[agent]/[subtab]` (whitelist `AGENT_SUBTABS`).
 - **N3-static SubSubTabsBar** → `[agent]/[subtab]/[subsubtab]` (cuando ≥3 vistas discretas).
 - **N3-dynamic** → `[...slug]` (Sheet drawer · detalle de item).
@@ -86,10 +88,11 @@ TopBar + Ribbon + SubTabsBar + LuanaSidebar/chat se portan de las fuentes canón
 | Abel | `abel` | `#A855F7` púrpura | estrategia & oferta | sí | `…/abel/avatar.svg` |
 | Brenda | `brenda` | `#22C55E` verde | growth & presupuesto | sí | `…/brenda/avatar.svg` |
 | Christian | `christian` | `#3B82F6` azul | SDR / outbound | sí | `…/christian/avatar.svg` |
+| Sara | `sara` | `#F59E0B` ámbar **(ratificado Chris 2026-05-30)** | jefa de proyectos · operación/delivery | sí | `…/sara/avatar.svg` **(pendiente)** |
 | Norvil | `norvil` | `#EC4899` rosa | account manager | sí | `…/norvil/avatar.svg` |
 | (Config) | `config` | `#64748b` slate | settings | sí | — |
 
-Cada agente con tab: `--agent-{slug}` + `--agent-{slug}-soft`. Default chat = `luana`. **Avatares SVG placeholder temporales — Chris entrega finales en semanas (reemplazo 1:1).** Logos reales: `nico-assets/` (legacy worktree).
+Cada agente con tab: `--agent-{slug}` + `--agent-{slug}-soft`. Default chat = `luana`. **Avatares SVG placeholder temporales — Chris entrega finales en semanas (reemplazo 1:1).** Logos reales: `nico-assets/` (legacy worktree). **★ Sara (agregada 2026-05-30): color `--agent-sara` ámbar `#F59E0B` RATIFICADO Chris. Pendiente: avatar SVG (`…/sara/avatar.svg`) + refit del mockup del Ribbon (5ª tab) — gate G1 mockup-per-component.**
 
 ## 7. Gates de proceso (ver `ADR-nicolify-001`)
 

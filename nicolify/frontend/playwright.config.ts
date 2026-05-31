@@ -1,5 +1,5 @@
 /**
- * playwright.config.ts — Nicolify E2E (T-4 nicolify-r0-dev-stack)
+ * playwright.config.ts — Nicolify E2E (T-6 nicolify-r0-shell — extends T-4)
  *
  * Loads env vars from nicolify/.env.dev (sibling of frontend/).
  * Override per-test with .env.e2e (gitignored).
@@ -7,20 +7,20 @@
  * Fail-fast gate: si faltan vars Clerk esenciales → error antes del primer test.
  *
  * Projects:
- *   setup  — clerk.setup.ts (serial). Genera playwright/.clerk/user.json.
- *   smoke  — *.smoke.spec.ts (parallel, storageState). Depende de setup.
+ *   setup      — clerk.setup.ts (serial). Genera playwright/.clerk/user.json.
+ *   smoke      — *.smoke.spec.ts (parallel, storageState). Depende de setup.
+ *   regression — e2e/regression/**\/*.spec.ts (parallel, storageState). T-6 nicolify-r0-shell.
  *
  * Ejecución (nativa Linux, NUNCA Docker — .claude/rules/e2e-testing.md):
  *   cd nicolify/frontend
  *   E2E_BASE_URL=http://localhost:3001 npx playwright test --project=setup
  *   E2E_BASE_URL=http://localhost:3001 npx playwright test --project=smoke
+ *   E2E_BASE_URL=http://localhost:3001 npx playwright test --project=regression
  *
  * NO levantar webServer aquí — usar E2E_BASE_URL con stack ya corriendo.
  * Port nicolify: FE :3001, BE :8001.
  *
  * Port re-temizado desde vitalia/frontend/playwright.config.ts.
- * Eliminado: projects mobile/tablet/desktop/visual/a11y/live-recon/admin-smoke
- * — scope ADR-nicolify-001 (bootstrap auth only, no shell-feature stories).
  */
 
 import { defineConfig, devices } from "@playwright/test";
@@ -87,15 +87,26 @@ export default defineConfig({
     },
 
     // Smoke — specs en e2e/smoke/ y e2e/auth/ (parallel, pre-autenticado vía storageState).
-    // Excluye e2e/specs/smoke/* (legacy, no aplican al reset nicolify agentic-first).
     // Depende de setup para tener playwright/.clerk/user.json fresco.
     {
       name: "smoke",
       testMatch: [
-        // Nuevos specs bootstrap auth (T-4 nicolify-r0-dev-stack)
         /e2e\/smoke\/.*\.smoke\.spec\.ts/,
         /e2e\/auth\/.*\.spec\.ts/,
       ],
+      use: {
+        ...devices["Desktop Chrome"],
+        storageState: "playwright/.clerk/user.json",
+      },
+      dependencies: ["setup"],
+    },
+
+    // Regression — nicolify-r0-shell E2E regression suite (T-6).
+    // 20 specs + boot-live-smoke = 21 spec files. 1:1 con scenarios A1-F2.
+    // Depende de setup para tener playwright/.clerk/user.json fresco.
+    {
+      name: "regression",
+      testMatch: /e2e\/regression\/.*\.spec\.ts/,
       use: {
         ...devices["Desktop Chrome"],
         storageState: "playwright/.clerk/user.json",

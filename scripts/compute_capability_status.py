@@ -64,12 +64,15 @@ def _parse_frontmatter(path: Path) -> dict[str, Any] | None:
         break
 
     body = text[cursor:]
-    if not body.startswith("---"):
-        print(f"  [WARN] Sin frontmatter YAML en {path} — omitido", file=sys.stderr)
-        return None
-
-    after = body[3:].lstrip("\n")
-    yaml_text = after.split("\n---", 1)[0]
+    if body.startswith("---"):
+        # Markdown-style frontmatter: ``---\n<yaml>\n---``
+        after = body[3:].lstrip("\n")
+        yaml_text = after.split("\n---", 1)[0]
+    else:
+        # Bare YAML (sin fences ``---``) — parsear el archivo completo.
+        # yaml.safe_load ignora comentarios ``#`` nativamente. Antes esto se
+        # omitía silenciosamente con WARN (caps mal formateadas no contaban).
+        yaml_text = text
 
     try:
         data = yaml.safe_load(yaml_text)

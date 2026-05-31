@@ -177,6 +177,7 @@ Detail: `.claude/rules/git-safety.md` + `.claude/rules/parallel-safety.md` + `.c
 | 34 | Frontend visual fidelity (átomos/moléculas + mockup adherence + scope discipline + Playwright scoped) | `frontend-visual-fidelity.md` |
 | 35 | Test design doctrine (naturaleza del ticket → batería de tests · jscpd+arch-fitness first-class) | `test-design-doctrine.md` |
 | 36 | Paradigma arquitectura (3 planos · mapa = 3 zonas · trabajadores sobre un sistema · acción única · un engine) | `paradigm-arquitectura.md` + `docs/architecture/luana-platform/PARADIGM.md` |
+| 37 | Definition of Done live-verify (ninguna story `done` sin que Claude la ejerza live en el stack dev real + `dod_evidence`) | `definition-of-done-live-verify.md` |
 
 ## Conditional Rules (stub → skill on-demand)
 

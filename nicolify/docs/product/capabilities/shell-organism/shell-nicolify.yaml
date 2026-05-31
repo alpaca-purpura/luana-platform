@@ -1,0 +1,98 @@
+# capability schema v4 (cement 2026-05-28) — SSoT: docs/process/capability-protocol.md
+# Reconciled by scripts/reconcile_capabilities.py — DO NOT hand-edit the auto-gen blocks.
+capability_id: "shell-organism.shell-nicolify"
+module: "shell-organism"
+slug: "shell-nicolify"
+title: "Shell-organism agéntico Nicolify (contenedor navegable + Ribbon 5 agentes + Luana orquestador)"
+status: live
+user_visible: false                      # infra/technical container — el shell ES el mapa, no una caja de negocio
+
+# ── Zone/box (paradigma 3 zonas · SYSTEM-MAP.yaml::zones) ──
+zone: "infraestructura"
+box: "plataforma-tecnica"
+
+# ── Change log (append-only · one entry per story that touches this cap) ──
+change_log:
+  - story: "nicolify-r0-shell"
+    type: new
+    date: "2026-05-30"
+    scenarios_added: [A0, A1, A2, A3, A4, A5, B1, B2, B3, C1, C2, C3, D1, D2, E1, E2, E3, E4, E5, F1, F2]
+    summary: "Shell-organism skeleton portado re-tematizado de Vitalia: tokens nicolify.com + TopBar + layout dual-mode con splitter SSR-safe + panel Luana orquestador + Ribbon 5 agentes (Abel/Brenda/Christian/Sara/Norvil) + Config + routing route-group + not-found jerárquico + empty-states."
+
+# ── Scenarios (behavior units — the atomic unit of capability) ──
+scenarios:
+  - id: A0
+    title: "Boot-live-smoke (Definition of Done): login Clerk → DEFAULT_LANDING christian/pipeline → shell reachable"
+    e2e_test: "nicolify/frontend/e2e/regression/nicolify-r0-shell/boot-live-smoke.spec.ts"
+  - id: A1
+    title: "Bootstrap → redirige a default landing christian/pipeline"
+    e2e_test: "nicolify/frontend/e2e/regression/nicolify-r0-shell/bootstrap-default-landing.spec.ts"
+  - id: A2
+    title: "Slug de agente inválido → 404 contextual 'Ese agente no existe'"
+    e2e_test: "nicolify/frontend/e2e/regression/nicolify-r0-shell/invalid-agent-404.spec.ts"
+  - id: A3
+    title: "Sub-tab inválido → 404 contextual 'Esa sección no existe para este agente'"
+    e2e_test: "nicolify/frontend/e2e/regression/nicolify-r0-shell/invalid-subtab-404.spec.ts"
+  - id: A4
+    title: "Path XSS/injection en agent/subtab → whitelist guard rechaza (shell-routes SSoT)"
+    e2e_test: "nicolify/frontend/e2e/regression/nicolify-r0-shell/path-xss-guard.spec.ts"
+  - id: A5
+    title: "Empty-states en las 20 sub-tabs (sin blank, sin crash)"
+    e2e_test: "nicolify/frontend/e2e/regression/nicolify-r0-shell/empty-states-all-subtabs.spec.ts"
+  - id: B1
+    title: "TopBar render desktop (role=banner)"
+    e2e_test: "nicolify/frontend/e2e/regression/nicolify-r0-shell/topbar-render-desktop.spec.ts"
+  - id: B2
+    title: "Theme toggle light↔dark aplica a todo el shell (no FOUC)"
+    e2e_test: "nicolify/frontend/e2e/regression/nicolify-r0-shell/theme-toggle.spec.ts"
+  - id: B3
+    title: "Responsive breakpoints 375/768/1280"
+    e2e_test: "nicolify/frontend/e2e/regression/nicolify-r0-shell/responsive-breakpoints.spec.ts"
+  - id: C1
+    title: "Splitter drag → 3 estados (collapsed/narrow/50-50) + snaps + atajos C/R/F"
+    e2e_test: "nicolify/frontend/e2e/regression/nicolify-r0-shell/splitter-drag-snaps.spec.ts"
+  - id: C2
+    title: "Splitter snap-up en hidratación (edge case bug Vitalia)"
+    e2e_test: "nicolify/frontend/e2e/regression/nicolify-r0-shell/splitter-snap-up.spec.ts"
+  - id: C3
+    title: "Sin escritura espuria del default en SSR+hidratación (G2 SSR-safe store)"
+    e2e_test: "nicolify/frontend/e2e/regression/nicolify-r0-shell/no-spurious-default-write.spec.ts"
+  - id: D1
+    title: "LuanaSidebar 3 estados (rail/history/full skeleton)"
+    e2e_test: "nicolify/frontend/e2e/regression/nicolify-r0-shell/luana-sidebar-states.spec.ts"
+  - id: D2
+    title: "Mobile drawer Luana (cerrado default, burger abre, sobrevive reload)"
+    e2e_test: "nicolify/frontend/e2e/regression/nicolify-r0-shell/luana-mobile-drawer.spec.ts"
+  - id: E1
+    title: "Click agente → default subtab + tab activa + roving tabindex"
+    e2e_test: "nicolify/frontend/e2e/regression/nicolify-r0-shell/ribbon-nav.spec.ts"
+  - id: E2
+    title: "Deep-link marca la tab/subtab activa correcta"
+    e2e_test: "nicolify/frontend/e2e/regression/nicolify-r0-shell/ribbon-deeplink.spec.ts"
+  - id: E3
+    title: "ConfigTab navegación"
+    e2e_test: "nicolify/frontend/e2e/regression/nicolify-r0-shell/config-tab-nav.spec.ts"
+  - id: E4
+    title: "Avatar fallback a inicial si asset 404"
+    e2e_test: "nicolify/frontend/e2e/regression/nicolify-r0-shell/avatar-fallback.spec.ts"
+  - id: E5
+    title: "Ribbon mobile scroll horizontal"
+    e2e_test: "nicolify/frontend/e2e/regression/nicolify-r0-shell/ribbon-mobile-scroll.spec.ts"
+  - id: F1
+    title: "A11y keyboard + axe wcag2aa (tablist roving, skip-link, focus-ring)"
+    e2e_test: "nicolify/frontend/e2e/regression/nicolify-r0-shell/a11y-keyboard.spec.ts"
+  - id: F2
+    title: "i18n Spanish neutro (tuteo, sin voseo)"
+    e2e_test: "nicolify/frontend/e2e/regression/nicolify-r0-shell/i18n-spanish-neutro.spec.ts"
+
+# ── dev_preview (bidirectional code↔cap · cross_check_3) ──
+dev_preview:
+  entry_points:
+    - "/{tenantId} → redirect → /{tenantId}/christian/pipeline (DEFAULT_LANDING)"
+    - "/{tenantId}/[agent]/[subtab]"
+  main_component: "nicolify/frontend/src/components/shared/shell-organism/ShellOrganismLayout.tsx"
+  api_endpoints: []                      # FE-only skeleton, sin endpoints de negocio en R0
+  e2e_test: "nicolify/frontend/e2e/regression/nicolify-r0-shell/boot-live-smoke.spec.ts"
+
+# ── Reconciled auto-gen (DO NOT hand-edit below) ──
+reconciled: {}

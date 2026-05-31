@@ -4,6 +4,8 @@ brand: nicolify
 type: design-story                  # categoría especial — NO produce código, produce SSoT funcional + plan
 state: done                          # PLANNING-ONLY · planning completo + mockup ratificado 2026-05-29
 release: R0
+map_zone: infraestructura        # paradigma 3 zonas (ADR-nicolify-002) · design-story del shell-organism (contenedor)
+map_box: plataforma-tecnica
 phase: PLANNING_COMPLETE             # contrato + ADR + nav-tree + mockup ratificado + backlog R0 generado
 last_modified: 2026-05-29
 ratified_by_chris: true

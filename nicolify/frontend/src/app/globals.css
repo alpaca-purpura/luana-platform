@@ -1,39 +1,237 @@
-/**
- * globals.css — Nicolify base Tailwind stylesheet.
+/*
+ * globals.css — Nicolify design tokens + Tailwind v4 entry
  *
- * SCOPE (T-3 nicolify-r0-dev-stack): base Tailwind minimal ONLY.
- * NO brand tokens (colors, typography, radius) — those are in story
- * nicolify-r0-design-system-tokens (separate story, separate ticket).
+ * SSoT: nicolify/docs/architecture/SHELL-DESIGN-CONTRACT.md § 2 Tokens
+ * Story: nicolify-r0-shell T-1
+ * cap: shell-organism.shell-nicolify
  *
- * Provides:
- * - @tailwind directives (base, components, utilities)
- * - Minimal CSS custom properties for safe defaults
- *   (background, foreground, primary — plain values, not design system)
+ * Format: H S% L% (HSL channel values para Tailwind v4 + Shadcn pattern)
+ * Paleta: nicolify.com — indigo primario #635BFF + Revenue/Ops agent colors
  *
- * Spanish neutro: CSS comments en español técnico neutro.
+ * Tailwind v4 CSS-based (@theme/@layer en lugar de tailwind.config.ts)
+ * Dark mode: .dark class toggled en <html> vía next-themes
+ * (attribute="data-theme" → sets <html data-theme="dark"> también)
  */
 
 @import "tailwindcss";
 
-/* ─── Variables CSS base (bootstrap sin tokens de marca) ─────────────── */
-:root {
-  /* Colores base neutros — temporales hasta nicolify-r0-design-system-tokens */
-  --background: 0 0% 100%; /* blanco */
-  --foreground: 222.2 84% 4.9%; /* negro casi puro */
-  --primary: 222.2 47.4% 11.2%; /* azul oscuro neutro */
-  --primary-foreground: 210 40% 98%;
+/* ─── Tailwind v4 @theme — tokens que generan utilidades ─────────────────── */
+@theme {
+  /* Fuentes — League Spartan (display/UI) + Bree Serif (acento serif) */
+  --font-sans: "League Spartan", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Bree Serif", ui-serif, Georgia, serif;
+  --font-mono: ui-monospace, "SF Mono", Monaco, "Cascadia Code", monospace;
 
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
+  /* Paleta semántica Shadcn → utilidades bg-background, text-foreground, etc. */
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
 
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
+  /* Agent colors → utilidades bg-agent-*, text-agent-*, border-agent-* */
+  --color-agent-luana: hsl(var(--agent-luana));
+  --color-agent-luana-soft: hsl(var(--agent-luana-soft));
+  --color-agent-abel: hsl(var(--agent-abel));
+  --color-agent-abel-soft: hsl(var(--agent-abel-soft));
+  --color-agent-brenda: hsl(var(--agent-brenda));
+  --color-agent-brenda-soft: hsl(var(--agent-brenda-soft));
+  --color-agent-christian: hsl(var(--agent-christian));
+  --color-agent-christian-soft: hsl(var(--agent-christian-soft));
+  --color-agent-sara: hsl(var(--agent-sara));
+  --color-agent-sara-soft: hsl(var(--agent-sara-soft));
+  --color-agent-norvil: hsl(var(--agent-norvil));
+  --color-agent-norvil-soft: hsl(var(--agent-norvil-soft));
+  --color-agent-config: hsl(var(--agent-config));
+  --color-agent-config-soft: hsl(var(--agent-config-soft));
 
-  --border: 214.3 31.8% 91.4%;
-  --radius: 0.5rem;
+  /* Radius */
+  --radius: 0.625rem;
 }
 
-/* ─── Capas Tailwind ─────────────────────────────────────────────────── */
+/* ─── CSS custom properties (canal HSL — consumed by @theme + hsl()) ───────
+ * Modo claro (light) — paleta nicolify.com
+ * Primario: indigo #635BFF (HSL aprox. 243 100% 68%)
+ * Secundario/accent: púrpura #A855F7 (HSL 271 81% 65%)
+ */
+@layer base {
+  :root {
+    /* Superficie — Shadcn standard (slate frío) */
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    /* Primario indigo #635BFF */
+    --primary: 243 100% 68%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secundario — slate suave */
+    --secondary: 215 20% 96%;
+    --secondary-foreground: 222 47% 11%;
+
+    /* Muted */
+    --muted: 215 20% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    /* Accent púrpura #A855F7 */
+    --accent: 271 81% 65%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Destructivo */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    /* Border / Input */
+    --border: 215 20% 91%;
+    --input: 215 20% 91%;
+
+    /* Ring focus — primario indigo */
+    --ring: 243 100% 68%;
+
+    /* Radius */
+    --radius: 0.625rem;
+
+    /* ── Agent tokens — nicolify.com palette ────────────────────────────── */
+    /* Luana orquestadora — indigo primario #635BFF */
+    --agent-luana: 243 100% 68%;
+    --agent-luana-soft: 243 80% 93%;
+
+    /* Abel — estrategia & oferta — púrpura #A855F7 */
+    --agent-abel: 271 81% 65%;
+    --agent-abel-soft: 271 70% 93%;
+
+    /* Brenda — growth & presupuesto — verde #22C55E */
+    --agent-brenda: 142 71% 45%;
+    --agent-brenda-soft: 142 60% 90%;
+
+    /* Christian — SDR / outbound — azul #3B82F6 */
+    --agent-christian: 217 91% 60%;
+    --agent-christian-soft: 217 80% 92%;
+
+    /* Sara — jefa de proyectos — ámbar #F59E0B (ratificado Chris 2026-05-30) */
+    --agent-sara: 38 92% 50%;
+    --agent-sara-soft: 38 80% 90%;
+
+    /* Norvil — account manager — rosa #EC4899 */
+    --agent-norvil: 330 81% 60%;
+    --agent-norvil-soft: 330 70% 92%;
+
+    /* Config — slate neutral #64748b */
+    --agent-config: 215 16% 47%;
+    --agent-config-soft: 215 20% 94%;
+  }
+
+  /* ── Dark mode: deep-indigo nicolify ──────────────────────────────────── */
+  .dark,
+  [data-theme="dark"] {
+    /* Superficies dark — deep-indigo profundo */
+    --background: 240 20% 9%;
+    --foreground: 215 20% 95%;
+    --card: 240 16% 12%;
+    --card-foreground: 215 20% 95%;
+    --popover: 240 16% 12%;
+    --popover-foreground: 215 20% 95%;
+
+    /* Primario — indigo luminoso en dark */
+    --primary: 243 100% 72%;
+    --primary-foreground: 240 20% 9%;
+
+    /* Secundario */
+    --secondary: 240 12% 18%;
+    --secondary-foreground: 215 20% 95%;
+
+    /* Muted */
+    --muted: 240 12% 18%;
+    --muted-foreground: 215 12% 60%;
+
+    /* Accent púrpura */
+    --accent: 271 70% 68%;
+    --accent-foreground: 215 20% 95%;
+
+    /* Destructivo */
+    --destructive: 0 63% 35%;
+    --destructive-foreground: 0 0% 98%;
+
+    /* Border / Input */
+    --border: 240 10% 22%;
+    --input: 240 10% 22%;
+
+    /* Ring focus */
+    --ring: 243 100% 72%;
+
+    /* Agent soft variants — dark mode (evitar text con contraste pobre) */
+    --agent-luana-soft: 243 50% 22%;
+    --agent-abel-soft: 271 45% 22%;
+    --agent-brenda-soft: 142 40% 18%;
+    --agent-christian-soft: 217 50% 20%;
+    --agent-sara-soft: 38 55% 18%;
+    --agent-norvil-soft: 330 45% 20%;
+    --agent-config-soft: 215 12% 22%;
+  }
+}
+
+/* ─── Dark-mode a11y override (outside @layer — correct cascade) ────────────
+ * Mantiene contraste legible en dark para texto sobre soft-bg:
+ * sara ámbar (#F59E0B) sobre dark soft → luminosidad aumentada
+ */
+.dark,
+[data-theme="dark"] {
+  /* Sara ámbar → clara para contrastar con sara-soft dark (#F5C542 aprox) */
+  --agent-sara: 38 92% 70%;
+}
+
+/* ─── Nicolify semantic CSS utility classes ──────────────────────────────── */
+/* Todas las llamadas hsl() viven aquí (globals.css exempt de arch color test). */
+/* Componentes usan estas class names — NO hsl() en TSX. */
+
+/* Fondo de app */
+.nc-bg-app {
+  background-color: hsl(var(--background));
+}
+
+/* Fondo primario indigo */
+.nc-bg-primary {
+  background-color: hsl(var(--primary));
+}
+
+/* Gradiente de marca — indigo a púrpura */
+.nc-gradient-brand {
+  background: linear-gradient(135deg, #635bff 0%, #a855f7 100%);
+}
+
+/* Gradiente de marca invertido */
+.nc-gradient-brand-r {
+  background: linear-gradient(135deg, #a855f7 0%, #635bff 100%);
+}
+
+/* Texto primario sobre fondo app */
+.nc-text-primary {
+  color: hsl(var(--primary));
+}
+
+/* Borde primario */
+.nc-border-primary {
+  border-color: hsl(var(--primary));
+}
+
+/* ─── Base reset + font stack ─────────────────────────────────────────────── */
 @layer base {
   *,
   *::before,
@@ -43,11 +241,51 @@
   }
 
   html {
-    font-family: ui-sans-serif, system-ui, sans-serif;
+    color-scheme: light;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Dark mode color-scheme for browser UI (scrollbars, form controls) */
+  html.dark,
+  html[data-theme="dark"] {
+    color-scheme: dark;
   }
 
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
   }
+}
+
+/* ─── Google Fonts import — League Spartan + Bree Serif ────────────────────
+ * Loaded via <head> preconnect + preload in layout.tsx (Server Component).
+ * @font-face declaration aquí sirve como fallback.
+ */
+@import url("https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700;800&family=Bree+Serif&display=swap");
+
+/* ─── Typing indicator animation (LuanaChat — TypingIndicator) ─────────── */
+@keyframes typing-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+}
+
+.typing-dot {
+  animation: typing-dot 1.2s ease-in-out infinite;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
 }

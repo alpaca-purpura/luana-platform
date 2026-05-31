@@ -11,7 +11,7 @@ model: opus
 
 ## Vertical
 
-**Agent-as-a-Service para agencias y servicios profesionales B2B LatAm.** Nicolify NO es una herramienta de features; es **el equipo de Revenue & Operaciones** que la agencia delega — orquestado por IA bajo un único punto de contacto conversacional (Luana). Ciclo: **Atracción → Cierre → Retención**.
+**Agent-as-a-Service para agencias y servicios profesionales B2B LatAm.** Nicolify NO es una herramienta de features; es **el equipo de Revenue & Operaciones** que la agencia delega — orquestado por IA bajo un único punto de contacto conversacional (Luana). Ciclo: **Atracción → Cierre → Delivery → Retención**.
 
 ### Ecosistema de agentes (SSoT de roles)
 
@@ -21,6 +21,7 @@ model: opus
 | **Abel** | Estratega (Branding & Oferta) | Pre-atracción | Propone estrategia · dueño ratifica posicionamiento |
 | **Brenda** | Guardiana del Presupuesto (Growth) | Atracción inbound | **Autonomía de contingencia** — apaga campañas perdedoras por umbral CAC/ROAS |
 | **Christian** | Cazador (SDR / outbound) | Atracción outbound + cierre temprano | Ejecuta secuencias con LinkedIn del fundador · escala humano para cierre |
+| **Sara** | Jefa de Proyectos (Operación / Delivery) | Delivery (día a día) | Orquesta el delivery de proyectos activos · **"Mi Día"** = landing operativo · alerta riesgos de entrega |
 | **Norvil** | Cultivador (Account Manager) | Retención + Expansión | Monitorea salud de cuenta · propone cross/up-sell · dueño aprueba contacto |
 
 > Identidad cementada 2026-05-29 (**agentic-first**): CRM/pipeline, pauta, propuestas, salud de cuenta = **superficies que los agentes operan**, NO features standalone. Se descarta el framing legacy "billable-hours + client-portal" pre-reset. Detalle: `nicolify/docs/product/vision.md`.
