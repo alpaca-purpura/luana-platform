@@ -350,6 +350,170 @@ export function useAvatarUpload(doctorId: string) {
   });
 }
 
+// ── useAvailabilityBlocks ──────────────────────────────────────────────────────
+
+/**
+ * useAvailabilityBlocks — fetches availability blocks for a doctor.
+ * Key: ['lisa','staff',id,'blocks']
+ * Includes all block kinds (recurrent + one_off).
+ * T-FE-3 vitalia-fase2-lisa-doctores
+ */
+export function useAvailabilityBlocks(doctorId: string) {
+  const { getToken, isLoaded, isSignedIn, orgId } = useAuth();
+  const clinicId = useClinicId();
+
+  return useQuery({
+    queryKey: staffKeys.blocks(doctorId),
+    queryFn: async () => {
+      const token = await getToken();
+      if (!token || !orgId) throw new Error("Sin autenticación");
+      return fetchClient<import("../types/staff.types").AvailabilityBlock[]>(
+        `${API_BASE}/api/v1/vitalia/clinics/doctors/${doctorId}/availability-blocks`,
+        { token, tenantId: orgId, clinicId },
+      );
+    },
+    enabled: isLoaded && !!isSignedIn && !!doctorId,
+    staleTime: 30_000,
+  });
+}
+
+// ── useCreateBlock ─────────────────────────────────────────────────────────────
+
+export interface CreateBlockPayload {
+  kind: "recurrent" | "one_off";
+  day_of_week?: number | null;
+  start_time: string;
+  end_time: string;
+  freq?: "weekly" | "biweekly" | null;
+  end_condition_kind?: "end_date" | "occurrences" | "open_ended" | null;
+  end_date?: string | null;
+  occurrences?: number | null;
+  specific_date?: string | null;
+}
+
+/**
+ * useCreateBlock — mutation: POST /api/v1/vitalia/clinics/doctors/{id}/availability-blocks
+ * On success: invalidates blocks query so calendar refreshes.
+ * Recurrence is resolved by backend via dateutil.rrule (D-2).
+ * T-FE-3 vitalia-fase2-lisa-doctores
+ */
+export function useCreateBlock(doctorId: string) {
+  const { getToken, orgId } = useAuth();
+  const clinicId = useClinicId();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: CreateBlockPayload) => {
+      const token = await getToken();
+      if (!token || !orgId) throw new Error("Sin autenticación");
+      return fetchClient<import("../types/staff.types").AvailabilityBlock>(
+        `${API_BASE}/api/v1/vitalia/clinics/doctors/${doctorId}/availability-blocks`,
+        {
+          method: "POST",
+          token,
+          tenantId: orgId,
+          clinicId,
+          body: JSON.stringify(payload),
+        },
+      );
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: staffKeys.blocks(doctorId),
+      });
+    },
+  });
+}
+
+// ── useUpdateBlock ─────────────────────────────────────────────────────────────
+
+export interface UpdateBlockPayload {
+  freq?: "weekly" | "biweekly";
+  end_condition_kind?: "end_date" | "occurrences" | "open_ended";
+  end_date?: string | null;
+  occurrences?: number | null;
+  start_time?: string;
+  end_time?: string;
+}
+
+/**
+ * useUpdateBlock — mutation: PATCH /api/v1/vitalia/clinics/doctors/{doctorId}/availability-blocks/{blockId}
+ * T-FE-3 vitalia-fase2-lisa-doctores
+ */
+export function useUpdateBlock(doctorId: string) {
+  const { getToken, orgId } = useAuth();
+  const clinicId = useClinicId();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      blockId,
+      payload,
+    }: {
+      blockId: string;
+      payload: UpdateBlockPayload;
+    }) => {
+      const token = await getToken();
+      if (!token || !orgId) throw new Error("Sin autenticación");
+      return fetchClient<import("../types/staff.types").AvailabilityBlock>(
+        `${API_BASE}/api/v1/vitalia/clinics/doctors/${doctorId}/availability-blocks/${blockId}`,
+        {
+          method: "PATCH",
+          token,
+          tenantId: orgId,
+          clinicId,
+          body: JSON.stringify(payload),
+        },
+      );
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: staffKeys.blocks(doctorId),
+      });
+    },
+  });
+}
+
+// ── useDeleteBlock ─────────────────────────────────────────────────────────────
+
+export interface DeleteBlockResponse {
+  /** Number of confirmed appointments preserved (SC-3b) */
+  preservedAppointments: number;
+}
+
+/**
+ * useDeleteBlock — mutation: DELETE /api/v1/vitalia/clinics/doctors/{doctorId}/availability-blocks/{blockId}
+ * Returns count of preserved confirmed appointments (SC-3b warning).
+ * Future availability slots freed; past slots + confirmed appts preserved.
+ * T-FE-3 vitalia-fase2-lisa-doctores
+ */
+export function useDeleteBlock(doctorId: string) {
+  const { getToken, orgId } = useAuth();
+  const clinicId = useClinicId();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (blockId: string) => {
+      const token = await getToken();
+      if (!token || !orgId) throw new Error("Sin autenticación");
+      return fetchClient<DeleteBlockResponse>(
+        `${API_BASE}/api/v1/vitalia/clinics/doctors/${doctorId}/availability-blocks/${blockId}`,
+        {
+          method: "DELETE",
+          token,
+          tenantId: orgId,
+          clinicId,
+        },
+      );
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: staffKeys.blocks(doctorId),
+      });
+    },
+  });
+}
+
 // ── Type re-exports for consumers ──────────────────────────────────────────────
 
 export type { DoctorListItem, DoctorDetail, PaginatedDoctors };

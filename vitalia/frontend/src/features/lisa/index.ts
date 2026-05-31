@@ -56,8 +56,15 @@ export { GeneratedBioSections } from "./components/staff/workspace/perfil/Genera
 export { DoctorServiciosView } from "./components/staff/workspace/servicios/DoctorServiciosView";
 export { AvatarUploader } from "./components/staff/workspace/AvatarUploader";
 
+// ── Staff horarios workspace (T-FE-3) ───────────────────────────────────────────
+export { DoctorHorariosView } from "./components/staff/workspace/horarios/DoctorHorariosView";
+export { AvailabilityCalendar } from "./components/staff/workspace/horarios/AvailabilityCalendar";
+export { BloquePopover } from "./components/staff/workspace/horarios/BloquePopover";
+export type { BloquePopoverAnchor } from "./components/staff/workspace/horarios/BloquePopover";
+
 // ── Staff API + types (T-FE-1) ─────────────────────────────────────────────────
-export { staffKeys, useStaffList, useCreateDoctor, mapDoctorCreateToPayload, useDoctor, usePatchDoctor, useGenerateBio, useAvatarUpload } from "./api/staff";
+export { staffKeys, useStaffList, useCreateDoctor, mapDoctorCreateToPayload, useDoctor, usePatchDoctor, useGenerateBio, useAvatarUpload, useAvailabilityBlocks, useCreateBlock, useUpdateBlock, useDeleteBlock } from "./api/staff";
+export type { CreateBlockPayload, UpdateBlockPayload, DeleteBlockResponse } from "./api/staff";
 // Staff server-side fetch helpers (for Server Component pages)
 export { getStaffInitialState, getDoctorInitialState } from "./api/staff-server";
 export type { DoctorListItem, DoctorDetail, PaginatedDoctors, StaffFilters, AvailabilityBlock, BioPublic } from "./types/staff.types";

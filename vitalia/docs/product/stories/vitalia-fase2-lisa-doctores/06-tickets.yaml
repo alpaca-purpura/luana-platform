@@ -225,6 +225,7 @@ tickets:
 
   - id: T-FE-3
     title: "Horarios calendar: DoctorHorariosView + AvailabilityCalendar (week grid, drag-to-create, 24h toggle, week nav) + BloquePopover (recurrence) + useAvailabilityBlocks"
+    state: pushed
     group: "G2-horarios"
     surface: frontend
     deliverables:
