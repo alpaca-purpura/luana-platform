@@ -83,3 +83,12 @@ types) — NO de esta story. Los archivos NUEVOS de autosave typecheck **limpios
 validators hooks_tsc/uikit_tsc para verificar "cero errores nuevos en autosave" + documenté la deuda en
 `observed-bugs/2026-05-31-luana-hooks-uikit-tsc-lift-debt.md` (amerita story de saneamiento @luana aparte).
 State `developed`. Encadeno a `/auditor`.
+
+### 2026-05-31T03:00 · 🤖 claude · `/auditor` · ✓ APLICADO
+Auditoría independiente (auditor-frontend Opus) → **APPROVED**. Verificó aparte: gates GREEN, la deuda tsc del
+package @luana es PRE-EXISTENTE (git blame confirma lift b1bdb3ab/3282768a — el scoping del validator es legítimo,
+no enmascara regresión), el contraste del badge **evita el bug** (emerald-700 5.49:1, no el #009966 roto), nicolify
+preservado (143 tests, 800ms, API pública). **Carril A self-fix:** el builder había claimeado ESLint verde pero
+había 5 errores (import duplicado de @luana/ui-kit + prettier) en los archivos de nicolify → el auditor los arregló
+(gate-verified, re-verificó tsc 0 + 143/143 verde) · commit `4e728cef`. CHECKPOINTS C1-C5 APPROVED (1 WARN
+non-blocking: vite@^6 devDep). State `reviewing`. Encadeno a `/pm-luana` para el merge.
