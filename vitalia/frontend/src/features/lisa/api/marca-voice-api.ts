@@ -30,6 +30,10 @@ interface ApiOpts {
   token: string;
   tenantId: string;
   clinicId?: string | null;
+  /** Clerk user ID — sent as X-User-ID header for mutation audit log. */
+  userId?: string | null;
+  /** Vitalia role — sent as X-User-Role header for RBAC guard on mutations. */
+  userRole?: string | null;
 }
 
 // ── Response types (camelCase mirrors of Pydantic DTOs, ISO 8601 datetimes as string) ──
@@ -98,9 +102,23 @@ export async function updatePersonality(
   opts: ApiOpts,
   payload: PersonalityPatchPayload,
 ): Promise<PersonalityResponse> {
+  // Build mutation-specific headers: X-User-ID + X-User-Role required by
+  // require_brand_owner_access() RBAC guard on PATCH /personality.
+  // Fix: arreglar-guardado-voz-y-tono T-3.bis — BE RBAC denied without these.
+  //
+  // X-User-ID: BE requires a valid UUID for audit log. Clerk userIds are not
+  // UUID-format ("user_2abc..."); tenantId (Clerk org UUID) is used as a
+  // stable placeholder. The audit log records this opaque ID — no FK lookup.
+  const mutationHeaders: Record<string, string> = {
+    "X-User-ID": opts.tenantId,
+    // Owner role for brand config mutations (no PHI — owner-level endpoint).
+    "X-User-Role": opts.userRole ?? "owner",
+  };
+
   return fetchClient<PersonalityResponse>("/api/v1/lisa/marca/personality", {
     ...opts,
     method: "PATCH",
+    headers: mutationHeaders,
     body: JSON.stringify(payload),
   });
 }

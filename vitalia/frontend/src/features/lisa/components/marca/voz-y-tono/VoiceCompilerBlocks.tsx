@@ -45,9 +45,11 @@ interface PlainBlockProps {
   value: string;
   onChange: (val: string) => void;
   placeholder: string;
+  /** E2E test identifier — stable, semantic, non-visual. */
+  testId?: string;
 }
 
-function PlainBlock({ id, label, value, onChange, placeholder }: PlainBlockProps) {
+function PlainBlock({ id, label, value, onChange, placeholder, testId }: PlainBlockProps) {
   return (
     <div className="flex flex-col gap-1.5">
       <Label
@@ -58,6 +60,7 @@ function PlainBlock({ id, label, value, onChange, placeholder }: PlainBlockProps
       </Label>
       <Textarea
         id={id}
+        data-testid={testId}
         value={value ?? ""}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
@@ -83,6 +86,7 @@ export function VoiceCompilerBlocks({
       {/* Block 1: identity */}
       <PlainBlock
         id="voice-identity"
+        testId="tone-block-identity-textarea"
         label="Ancla de identidad"
         value={values.identity ?? ""}
         onChange={(v) => onChange("identity", v)}
@@ -92,6 +96,7 @@ export function VoiceCompilerBlocks({
       {/* Block 2: context */}
       <PlainBlock
         id="voice-context"
+        testId="tone-block-context-textarea"
         label="Contexto de dominio"
         value={values.context ?? ""}
         onChange={(v) => onChange("context", v)}
@@ -101,6 +106,7 @@ export function VoiceCompilerBlocks({
       {/* Block 3: asi_hablo — plain (no warning) */}
       <PlainBlock
         id="voice-asi-hablo"
+        testId="tone-block-asi-hablo-textarea"
         label="Así hablo"
         value={values.asi_hablo ?? ""}
         onChange={(v) => onChange("asi_hablo", v)}
@@ -110,6 +116,7 @@ export function VoiceCompilerBlocks({
       {/* Block 4: asi_no_hablo — with prohibited phrase detection */}
       <VoiceTextareaWithWarning
         id="voice-asi-no-hablo"
+        data-testid="tone-block-asi-no-hablo-textarea"
         label="Así no hablo"
         value={values.asi_no_hablo ?? ""}
         onChange={(v) => onChange("asi_no_hablo", v)}
@@ -122,6 +129,7 @@ export function VoiceCompilerBlocks({
       {/* Block 5: tech_context */}
       <PlainBlock
         id="voice-tech-context"
+        testId="tone-block-tech-context-textarea"
         label="Contexto técnico"
         value={values.tech_context ?? ""}
         onChange={(v) => onChange("tech_context", v)}
@@ -131,6 +139,7 @@ export function VoiceCompilerBlocks({
       {/* Block 6: format */}
       <PlainBlock
         id="voice-format"
+        testId="tone-block-format-textarea"
         label="Instrucciones de formato"
         value={values.format ?? ""}
         onChange={(v) => onChange("format", v)}

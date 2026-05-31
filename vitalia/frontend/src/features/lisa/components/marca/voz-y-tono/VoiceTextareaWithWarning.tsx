@@ -43,6 +43,8 @@ export interface VoiceTextareaWithWarningProps {
   onOverride?: (phraseId: string) => void;
   className?: string;
   id?: string;
+  /** E2E test identifier for the internal textarea. Non-visual, stable. */
+  "data-testid"?: string;
 }
 
 export function VoiceTextareaWithWarning({
@@ -55,6 +57,7 @@ export function VoiceTextareaWithWarning({
   onOverride,
   className,
   id: externalId,
+  "data-testid": testId,
 }: VoiceTextareaWithWarningProps) {
   const textareaId = externalId ?? `voice-textarea-${label.toLowerCase().replace(/\s+/g, "-")}`;
 
@@ -93,6 +96,7 @@ export function VoiceTextareaWithWarning({
       </Label>
       <Textarea
         id={textareaId}
+        data-testid={testId}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}

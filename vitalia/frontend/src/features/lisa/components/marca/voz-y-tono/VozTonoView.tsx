@@ -174,7 +174,10 @@ export function VozTonoView({ tenantId, clinicId, className }: VozTonoViewProps)
 
   // ── Render ───────────────────────────────────────────────────────────────
   return (
-    <div className={cn("flex flex-col gap-6 p-6", className)}>
+    <div
+      data-testid="voz-tono-section-root"
+      className={cn("flex flex-col gap-6 p-6", className)}
+    >
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-foreground">Voz y tono</h2>

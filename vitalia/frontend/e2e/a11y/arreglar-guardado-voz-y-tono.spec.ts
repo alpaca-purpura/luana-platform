@@ -45,7 +45,12 @@ const STORAGE_STATE_PATH = path.join(
   "../../playwright/.clerk/user.json",
 );
 
-const TENANT_ID = LISA_MARCA_FIXTURE.tenantId;
+// Use E2E_TENANT_ID (authed user's tenant UUID) so the route is reachable.
+// The a11y spec uses page.route mocks for PATCH — GET mocks from setupLisaMarcaMocks.
+const TENANT_ID =
+  process.env["E2E_TENANT_ID"] ??
+  process.env["VITALIA_PE_TENANT_ID"] ??
+  LISA_MARCA_FIXTURE.tenantId;
 
 /** WCAG 2.1 AA tags per spec */
 const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"] as const;
@@ -86,7 +91,7 @@ async function scanVozTonoContent(
 ): Promise<import("axe-core").Result[]> {
   const results = await new AxeBuilder({ page })
     .withTags([...WCAG_TAGS])
-    .include('[data-testid="lisa-marca-content"]')
+    .include('[data-testid="voz-tono-section-root"]')
     .exclude("#__nextjs-toast-errors") // Next.js dev overlay
     .exclude('[data-testid="lisa-marca-loading-skeleton"]')
     .analyze();

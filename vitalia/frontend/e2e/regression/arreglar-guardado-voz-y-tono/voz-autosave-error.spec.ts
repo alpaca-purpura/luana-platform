@@ -28,10 +28,7 @@ import { setupClerkTestingToken } from "@clerk/testing/playwright";
 import path from "path";
 import type { Route } from "@playwright/test";
 import { VozTonoSectionPom } from "./poms/voz-tono-section.pom";
-import {
-  setupLisaMarcaMocks,
-  LISA_MARCA_FIXTURE,
-} from "../vitalia-fase2-lisa-marca/fixtures/lisa-marca.fixture";
+import { LISA_MARCA_FIXTURE } from "../vitalia-fase2-lisa-marca/fixtures/lisa-marca.fixture";
 
 // ---------------------------------------------------------------------------
 // Auth + tenant constants
@@ -42,7 +39,13 @@ const STORAGE_STATE_PATH = path.join(
   "../../../playwright/.clerk/user.json",
 );
 
-const TENANT_ID = LISA_MARCA_FIXTURE.tenantId;
+// Use E2E_TENANT_ID (the UUID owned by the authed Clerk user) so the route
+// does not cross-tenant-block. The error spec uses page.route mocks so the
+// real BE personality row is not needed — only the route must be reachable.
+const TENANT_ID =
+  process.env["E2E_TENANT_ID"] ??
+  process.env["VITALIA_PE_TENANT_ID"] ??
+  LISA_MARCA_FIXTURE.tenantId;
 
 // ---------------------------------------------------------------------------
 // Fixture — authenticated page with mock mocks for GET, but 503 for PATCH personality
@@ -70,14 +73,11 @@ const authTest = test.extend<{ authedPage: import("@playwright/test").Page }>({
 
 async function setupErrorMocks(
   page: import("@playwright/test").Page,
-  tenantId: string,
+  _tenantId: string,
 ): Promise<void> {
-  // Set up all standard mocks first (GET personality, identity, etc.)
-  await setupLisaMarcaMocks(page, tenantId);
-
-  // Override PATCH personality to return 503 — this is the deliberate error scenario.
-  // NOTE: Playwright routes are matched LIFO, so this handler (registered last) wins
-  // over the PATCH handler in setupLisaMarcaMocks for the personality endpoint.
+  // Verificación REAL (test-design-doctrine.md): el GET /personality va al backend
+  // REAL (los arquetipos renderizan con datos reales). SOLO el PATCH se mockea a 503
+  // para ejercer deliberadamente el camino de error del autosave.
   await page.route(
     "**/api/v1/lisa/marca/personality",
     async (route: Route) => {
@@ -89,7 +89,7 @@ async function setupErrorMocks(
           body: JSON.stringify({ detail: "Service Unavailable" }),
         });
       } else {
-        // GET and other methods continue (handled by setupLisaMarcaMocks earlier)
+        // GET (y demás) → backend real → ArchetypeSelector renderiza las cards
         await route.continue();
       }
     },
@@ -105,9 +105,10 @@ async function waitForVozTonoInteractive(
   page: import("@playwright/test").Page,
   timeoutMs = 20_000,
 ): Promise<void> {
-  // Wait for either the standard content container OR the archetype selector
+  // Wait for the section root (voz-tono-section-root) which is the canonical
+  // "VozTonoView mounted" signal. Scope to first to avoid strict-mode violation.
   await page
-    .locator('[data-testid="archetype-selector"], [data-testid="lisa-marca-content"]')
+    .locator('[data-testid="voz-tono-section-root"]')
     .first()
     .waitFor({ state: "visible", timeout: timeoutMs });
 }
@@ -140,9 +141,11 @@ authTest.describe("SC-5 — Network failure: badge muestra error (mock route 503
       const finalStatus = await pom.getAutosaveStatus();
       expect(finalStatus, "Badge must show error state after 503").toBe("error");
 
-      // Verify UI has not crashed — archetype selector must still be visible
+      // Verify UI has not crashed — archetype selector must still be visible.
+      // Scope to section root (first instance) to avoid strict-mode violation.
       await expect(
-        authedPage.locator('[data-testid="archetype-selector"]'),
+        authedPage.locator('[data-testid="voz-tono-section-root"]').first()
+          .locator('[data-testid="archetype-selector"]'),
         "UI must not crash after autosave error — archetype selector must remain",
       ).toBeVisible();
 
@@ -227,10 +230,10 @@ authTest.describe("SC-5 — Network failure: badge muestra error (mock route 503
       await pom.selectArchetype("sage");
       await pom.waitForAutosaveError();
 
-      // Verify the archetype selector is still interactive (not frozen/disabled)
-      const archetypeCard = authedPage.locator(
-        '[data-testid="archetype-card-healer"]',
-      );
+      // Verify the archetype selector is still interactive (not frozen/disabled).
+      // Scope to first section root to avoid strict-mode violation.
+      const sectionFirst = authedPage.locator('[data-testid="voz-tono-section-root"]').first();
+      const archetypeCard = sectionFirst.locator('[data-testid="archetype-card-healer"]');
       await expect(
         archetypeCard,
         "Archetype card must remain clickable after autosave error",
@@ -239,7 +242,7 @@ authTest.describe("SC-5 — Network failure: badge muestra error (mock route 503
 
       // Page must not have frozen or shown a full-page error
       await expect(
-        authedPage.locator('[data-testid="voz-tono-section-root"]'),
+        sectionFirst,
         "Section root must remain visible after error",
       ).toBeVisible();
     },

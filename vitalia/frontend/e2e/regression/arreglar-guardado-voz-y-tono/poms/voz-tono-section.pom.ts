@@ -85,13 +85,17 @@ export class VozTonoSectionPom {
     this.page = page;
     this.tenantId = tenantId;
 
-    this.autosaveBadge = page.locator('[data-testid="autosave-badge"]');
-    this.archetypeSelector = page.locator('[data-testid="archetype-selector"]');
-    this.sectionRoot = page.locator('[data-testid="voz-tono-section-root"]');
-    this.marcaContent = page.locator('[data-testid="lisa-marca-content"]');
-    this.loadingSkeleton = page.locator(
-      '[data-testid="lisa-marca-loading-skeleton"]',
-    );
+    // The shell-organism layout may render multiple panels in the DOM.
+    // Scope everything to the first voz-tono-section-root to avoid strict-mode violations.
+    // We use .first() on the root and then scope children to it via .locator().
+    this.sectionRoot = page.locator('[data-testid="voz-tono-section-root"]').first();
+    this.marcaContent = page.locator('[data-testid="voz-tono-section-root"]').first();
+    this.loadingSkeleton = page.locator('[data-testid="lisa-marca-loading-skeleton"]').first();
+
+    // Scope badge and selector to within the section root to avoid duplicate matches
+    // when the shell renders other sections with their own AutosaveBadge instances.
+    this.autosaveBadge = this.sectionRoot.locator('[data-testid="autosave-badge"]');
+    this.archetypeSelector = this.sectionRoot.locator('[data-testid="archetype-selector"]');
   }
 
   // ---------------------------------------------------------------------------
@@ -118,16 +122,44 @@ export class VozTonoSectionPom {
 
   /**
    * Wait until the page content is fully loaded (skeleton hidden, content visible).
+   * Waits for voz-tono-section-root to appear (VozTonoView root div).
+   * The loading skeleton from page.tsx (Suspense fallback) should have disappeared by then.
+   *
+   * Also waits for ArchetypeSelector to hydrate: either an archetype card is selected
+   * (data-selected="true") OR the radiogroup is visible (empty/no-selection state).
+   * This prevents getSelectedArchetype() returning null due to query in-flight timing.
    */
   async waitForLoaded(timeoutMs = 15_000): Promise<void> {
-    await this.loadingSkeleton.waitFor({
-      state: "hidden",
-      timeout: timeoutMs,
-    });
-    await this.marcaContent.waitFor({
-      state: "visible",
-      timeout: timeoutMs,
-    });
+    // Skeleton is the Suspense fallback in page.tsx — it disappears when VozTonoView mounts.
+    // If it's already gone, this resolves immediately.
+    await this.loadingSkeleton
+      .waitFor({ state: "hidden", timeout: timeoutMs })
+      .catch(() => {
+        // Skeleton might not render at all if hydration is fast — that's OK.
+      });
+    // The VozTonoView root div — this is the canonical "content is mounted" signal.
+    await this.sectionRoot.waitFor({ state: "visible", timeout: timeoutMs });
+
+    // Wait for personality query hydration: archetype selector visible.
+    // Without this, getSelectedArchetype() may return null when React Query
+    // response arrives after waitForLoaded completes (timing race post-reload).
+    await this.sectionRoot
+      .locator('[data-testid="archetype-selector"]')
+      .waitFor({ state: "visible", timeout: timeoutMs })
+      .catch(() => {
+        // Archetype selector might not render if personality errored — OK (caller decides).
+      });
+
+    // Wait for archetype selection to hydrate (personality query completes → setArchetype fires).
+    // Polls until one archetype card has data-selected="true" OR timeout (5s grace).
+    // Needed post-reload: React Query is async — sectionRoot visible ≠ data arrived.
+    await this.sectionRoot
+      .locator('[data-testid^="archetype-card-"][data-selected="true"]')
+      .first()
+      .waitFor({ state: "visible", timeout: 5_000 })
+      .catch(() => {
+        // No selected archetype in time — proceed anyway (test assertions will check).
+      });
   }
 
   // ---------------------------------------------------------------------------
@@ -142,7 +174,8 @@ export class VozTonoSectionPom {
    */
   async selectArchetype(name: SaludArchetype): Promise<void> {
     const testid = ARCHETYPE_TESTID_MAP[name];
-    const card = this.page.locator(`[data-testid="${testid}"]`);
+    // Scope to sectionRoot to avoid strict-mode violation when shell has multiple panels.
+    const card = this.sectionRoot.locator(`[data-testid="${testid}"]`);
     await card.click();
   }
 
@@ -154,7 +187,7 @@ export class VozTonoSectionPom {
   async getSelectedArchetype(): Promise<SaludArchetype | null> {
     const archetypes = Object.keys(ARCHETYPE_TESTID_MAP) as SaludArchetype[];
     for (const archetype of archetypes) {
-      const card = this.page.locator(
+      const card = this.sectionRoot.locator(
         `[data-testid="${ARCHETYPE_TESTID_MAP[archetype]}"][data-selected="true"]`,
       );
       if ((await card.count()) > 0) return archetype;
@@ -175,7 +208,8 @@ export class VozTonoSectionPom {
    */
   async editVoiceBlock(block: VoiceBlockName, text: string): Promise<void> {
     const testid = BLOCK_TESTID_MAP[block];
-    const textarea = this.page.locator(`[data-testid="${testid}"]`);
+    // Scope to sectionRoot to avoid strict-mode violation.
+    const textarea = this.sectionRoot.locator(`[data-testid="${testid}"]`);
     await textarea.click();
     await textarea.fill(text);
   }
@@ -185,7 +219,7 @@ export class VozTonoSectionPom {
    */
   async getVoiceBlockValue(block: VoiceBlockName): Promise<string> {
     const testid = BLOCK_TESTID_MAP[block];
-    const textarea = this.page.locator(`[data-testid="${testid}"]`);
+    const textarea = this.sectionRoot.locator(`[data-testid="${testid}"]`);
     return textarea.inputValue();
   }
 
@@ -228,7 +262,7 @@ export class VozTonoSectionPom {
    * Throws if timeout exceeded.
    */
   async waitForAutosaveSaved(timeoutMs = 10_000): Promise<void> {
-    await this.page
+    await this.sectionRoot
       .locator('[data-testid="autosave-badge"][data-state="saved"]')
       .waitFor({ state: "visible", timeout: timeoutMs });
   }
@@ -237,7 +271,7 @@ export class VozTonoSectionPom {
    * Waits until autosave badge shows "saving" state.
    */
   async waitForAutosaveSaving(timeoutMs = 10_000): Promise<void> {
-    await this.page
+    await this.sectionRoot
       .locator('[data-testid="autosave-badge"][data-state="saving"]')
       .waitFor({ state: "visible", timeout: timeoutMs });
   }
@@ -246,7 +280,7 @@ export class VozTonoSectionPom {
    * Waits until autosave badge shows "error" state.
    */
   async waitForAutosaveError(timeoutMs = 10_000): Promise<void> {
-    await this.page
+    await this.sectionRoot
       .locator('[data-testid="autosave-badge"][data-state="error"]')
       .waitFor({ state: "visible", timeout: timeoutMs });
   }

@@ -25,6 +25,7 @@ interface VozTonoPageProps {
 function VozTonoSkeleton() {
   return (
     <div
+      data-testid="lisa-marca-loading-skeleton"
       aria-label="Cargando sección Voz y tono"
       aria-busy="true"
       className="flex flex-col gap-4 p-6"

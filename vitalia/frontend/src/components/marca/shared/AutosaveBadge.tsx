@@ -81,6 +81,8 @@ export function AutosaveBadge({ status, savedAt, className }: AutosaveBadgeProps
       role="status"
       aria-live="polite"
       aria-label={label ?? "Estado de guardado"}
+      data-testid="autosave-badge"
+      data-state={status}
       className={cn(
         "flex items-center gap-1.5 text-xs font-medium transition-all duration-300",
         STATUS_STYLES[status],

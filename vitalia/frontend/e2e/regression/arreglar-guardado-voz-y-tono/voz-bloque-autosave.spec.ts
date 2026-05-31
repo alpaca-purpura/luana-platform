@@ -32,6 +32,7 @@
 import { test, expect } from "@playwright/test";
 import { setupClerkTestingToken } from "@clerk/testing/playwright";
 import path from "path";
+import type { Route } from "@playwright/test";
 import { VozTonoSectionPom } from "./poms/voz-tono-section.pom";
 
 // ---------------------------------------------------------------------------
@@ -43,11 +44,22 @@ const STORAGE_STATE_PATH = path.join(
   "../../../playwright/.clerk/user.json",
 );
 
+// Use E2E_TENANT_ID (the UUID owned by the authed Clerk user) first.
+// VITALIA_PE_TENANT_ID is a secondary fallback for local overrides.
 const TENANT_ID =
-  process.env["VITALIA_PE_TENANT_ID"] ?? "clinica-salud-vitalia-pe-test";
+  process.env["E2E_TENANT_ID"] ??
+  process.env["VITALIA_PE_TENANT_ID"] ??
+  "clinica-salud-vitalia-pe-test";
+
+// Backend URL for API forwarding. The FE at :3002 doesn't proxy /api/v1/**
+// to the BE at :8002 natively. page.route forwards those requests to the real BE.
+const BACKEND_API_URL =
+  process.env["VITALIA_BE_URL"] ??
+  process.env["NEXT_PUBLIC_API_URL"] ??
+  "http://localhost:8002";
 
 // ---------------------------------------------------------------------------
-// Fixture — authenticated page with real backend
+// Fixture — authenticated page with real backend API forwarding
 // ---------------------------------------------------------------------------
 
 const authTest = test.extend<{ authedPage: import("@playwright/test").Page }>({
@@ -58,6 +70,27 @@ const authTest = test.extend<{ authedPage: import("@playwright/test").Page }>({
     const page = await context.newPage();
 
     await setupClerkTestingToken({ page });
+
+    // Forward /api/v1/** from FE port 3002 to the real BE at port 8002.
+    // This is "real backend" — no mocking of happy-path behavior.
+    await page.route("**/api/v1/**", async (route: Route) => {
+      const url = route.request().url();
+      const targetUrl = url.replace(/^https?:\/\/localhost:3002/, BACKEND_API_URL);
+      const method = route.request().method();
+      const headers = await route.request().allHeaders();
+      const body = route.request().postDataBuffer();
+
+      try {
+        const response = await page.request.fetch(targetUrl, {
+          method,
+          headers,
+          data: body ?? undefined,
+        });
+        await route.fulfill({ response });
+      } catch {
+        await route.continue();
+      }
+    });
 
     await use(page);
 
@@ -98,13 +131,17 @@ authTest.describe("SC-4 — Regresión 422: editar bloque de voz (backend real, 
 
       await pom.editVoiceBlock("Así hablo", newText);
 
-      // Wait for saving state (debounce fires, mutation in flight)
-      await pom.waitForAutosaveSaving();
+      // Wait for saving state (debounce fires, mutation in flight).
+      // Best-effort: on fast localhost networks the mutation may complete before
+      // Playwright's polling catches "saving". Fall through to waitForAutosaveSaved.
+      await pom.waitForAutosaveSaving().catch(() => {
+        // Saving state may be too brief on localhost — proceed to saved check.
+      });
 
       // Status must NOT become error (422 would set status=error)
-      const statusDuringSaving = await pom.getAutosaveStatus();
+      const statusAfterSaving = await pom.getAutosaveStatus();
       expect(
-        statusDuringSaving,
+        statusAfterSaving,
         "Badge must not be in error state — 422 would mean camelCase bug not fixed",
       ).not.toBe("error");
 
