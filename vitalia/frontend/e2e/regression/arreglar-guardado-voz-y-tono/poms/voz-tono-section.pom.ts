@@ -140,25 +140,18 @@ export class VozTonoSectionPom {
     // The VozTonoView root div — this is the canonical "content is mounted" signal.
     await this.sectionRoot.waitFor({ state: "visible", timeout: timeoutMs });
 
-    // Wait for personality query hydration: archetype selector visible.
-    // Without this, getSelectedArchetype() may return null when React Query
-    // response arrives after waitForLoaded completes (timing race post-reload).
+    // Wait for the GET /personality query to hydrate: an archetype CARD renders
+    // (cards + voice blocks share the same query). Tolerant (.catch) porque el
+    // harness de lisa-marca tiene una race conocida de auth-readiness de Clerk en
+    // el GET /personality in-browser (ver chris-input.md · pendiente harness-fix
+    // dedicado). La query reintenta (retry:5 en VozTonoView); cuando hidrata, el
+    // card aparece. Los asserts de cada spec usan polling (toHaveValue/waitFor).
     await this.sectionRoot
-      .locator('[data-testid="archetype-selector"]')
+      .locator('[data-testid^="archetype-card-"]')
+      .first()
       .waitFor({ state: "visible", timeout: timeoutMs })
       .catch(() => {
-        // Archetype selector might not render if personality errored — OK (caller decides).
-      });
-
-    // Wait for archetype selection to hydrate (personality query completes → setArchetype fires).
-    // Polls until one archetype card has data-selected="true" OR timeout (5s grace).
-    // Needed post-reload: React Query is async — sectionRoot visible ≠ data arrived.
-    await this.sectionRoot
-      .locator('[data-testid^="archetype-card-"][data-selected="true"]')
-      .first()
-      .waitFor({ state: "visible", timeout: 5_000 })
-      .catch(() => {
-        // No selected archetype in time — proceed anyway (test assertions will check).
+        // Personality GET aún no hidrató (race de Clerk) — el spec decide vía polling.
       });
   }
 

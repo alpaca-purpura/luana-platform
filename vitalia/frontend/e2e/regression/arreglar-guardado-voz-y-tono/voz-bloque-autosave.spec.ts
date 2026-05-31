@@ -166,15 +166,19 @@ authTest.describe("SC-4 — Regresión 422: editar bloque de voz (backend real, 
       const badgeText = await pom.getAutosaveBadgeText();
       expect(badgeText, "Badge must show Guardado").toMatch(/Guardado/i);
 
-      // Reload and verify text persists (round-trip DB verification)
+      // Reload and verify text persists (round-trip DB verification).
+      // Polling assertion (toHaveValue) auto-espera a que el GET /personality
+      // re-hidrate el textarea tras el reload — evita leer antes de que la query settle.
       await pom.reload();
       await pom.waitForLoaded();
 
-      const persistedValue = await pom.getVoiceBlockValue("Así hablo");
-      expect(
-        persistedValue,
+      await expect(
+        authedPage
+          .locator('[data-testid="voz-tono-section-root"]')
+          .first()
+          .locator('[data-testid="tone-block-asi-hablo-textarea"]'),
         "Text in 'Así hablo' block must persist after reload (DB round-trip)",
-      ).toBe(newText);
+      ).toHaveValue(newText, { timeout: 15_000 });
     },
   );
 

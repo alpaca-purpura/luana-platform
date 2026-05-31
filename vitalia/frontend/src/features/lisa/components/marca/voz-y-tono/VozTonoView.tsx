@@ -76,6 +76,10 @@ export function VozTonoView({ tenantId, clinicId, className }: VozTonoViewProps)
       return getPersonality({ token, tenantId, clinicId });
     },
     enabled: isLoaded && !!isSignedIn,
+    // El token de Clerk puede tardar un tick en estar disponible tras isSignedIn.
+    // Reintentar con backoff corto evita un estado de error transitorio en pantalla.
+    retry: 5,
+    retryDelay: (attempt) => Math.min(300 * 2 ** attempt, 2000),
   });
 
   // ── React Query: fetch prohibited phrases ───────────────────────────────
@@ -88,6 +92,8 @@ export function VozTonoView({ tenantId, clinicId, className }: VozTonoViewProps)
     },
     enabled: isLoaded && !!isSignedIn,
     staleTime: 5 * 60_000,
+    retry: 5,
+    retryDelay: (attempt) => Math.min(300 * 2 ** attempt, 2000),
   });
 
   const prohibitedPhrases = phrasesData?.items ?? [];
