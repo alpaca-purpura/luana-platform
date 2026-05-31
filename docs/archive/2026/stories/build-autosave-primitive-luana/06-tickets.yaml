@@ -1,0 +1,78 @@
+# 06-tickets.yaml — build-autosave-primitive-luana (platform · FE shared lib)
+story_id: build-autosave-primitive-luana
+brand: platform
+type: ui-story
+
+tickets:
+  - id: T-1
+    title: "@luana/schemas AutosaveContract + @luana/hooks useDebounce + useAutosave (+ tests)"
+    surface: FE
+    production_code: true
+    module: luana-hooks
+    deliverables:
+      - "core/@luana/schemas/src/autosave.ts — AutosaveStatus + UseAutosaveOptions<T> + UseAutosaveReturn<T> (export en src/index.ts)"
+      - "core/@luana/hooks/src/useDebounce.ts — liftar/reimplementar (genérico)"
+      - "core/@luana/hooks/src/useAutosave.ts — hook generalizado: getTokenReady (authReadyAttempts×200ms), debounce default 2000ms, estados idle/dirty/saving/saved/error, scheduleSave last-wins, retry(), telemetry opt-in, unmount cleanup. NO importa @clerk/* (getToken inyectado)."
+      - "core/@luana/hooks/src/index.ts — export useAutosave + useDebounce"
+      - "core/@luana/hooks/src/__tests__/useAutosave.test.ts — 8 scenarios (Vitest fake timers + mocks): debounce-coalesce, save-success, auth-ready (token null transitorio→espera), error+retry, concurrencia last-wins, network-failure, unmount-cancel, telemetry opt-in"
+      - "bump minor core/@luana/{schemas,hooks}/package.json + CHANGELOG.md"
+    depends_on: []
+    blocks: [T-2, T-3]
+    acceptance:
+      validator_ids: [schemas_tsc, hooks_tsc, useAutosave_unit, arch_no_clerk_in_luana, arch_luana_barrels_export]
+    gherkin_coverage: [debounce-coalesce, auth-ready-no-error-permanente, error-recovery-retry, concurrent-edits-last-wins, network-failure, unmount-cancels, telemetry-opt-in, save-success-badge]
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: sonnet
+      must_load_skills: [frontend-expert, tessl__react-patterns, tessl__vitest, ".claude/rules/tdd-mandatory.md", ".claude/rules/anti-duplication.md"]
+      forbidden_to_touch: ["core/luana-core-*/src/", "vitalia/frontend/", "core/@luana/hooks/src/index.ts::exports existentes (solo AGREGAR)"]
+      rationale: "FE lib hook + types, TDD Vitest. Sonnet. NO romper exports @luana/hooks existentes."
+
+  - id: T-2
+    title: "@luana/ui-kit <AutosaveBadge> (+ tests) + consumer de referencia (showcase)"
+    surface: FE
+    production_code: true
+    module: luana-ui-kit
+    deliverables:
+      - "core/@luana/ui-kit/src/AutosaveBadge.tsx — compone badge.tsx existente; props {status, savedAt?, labels?}; aria-live (polite/assertive), data-state, icono+texto, contraste AA ≥4.5:1 (NO verde #009966 a 12px), copy default neutro inyectable (export en src/index.ts)"
+      - "core/@luana/ui-kit/src/__tests__/AutosaveBadge.test.tsx — estados render + data-state + aria-live + axe (contraste AA) + i18n labels"
+      - "consumer de referencia (showcase mínimo) que monta useAutosave + AutosaveBadge end-to-end (sin brand) — prueba el contrato"
+      - "bump minor core/@luana/ui-kit/package.json + CHANGELOG.md"
+    depends_on: [T-1]
+    blocks: [T-3]
+    acceptance:
+      validator_ids: [uikit_tsc, autosaveBadge_component, arch_no_clerk_in_luana, arch_luana_barrels_export]
+    gherkin_coverage: [save-success-badge, badge-aria-live, badge-i18n-neutro]
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: sonnet
+      must_load_skills: [frontend-expert, tessl__shadcn-ui, tessl__tailwind, tessl__vitest, ".claude/rules/spanish-text.md", "vitalia-design-system"]
+      forbidden_to_touch: ["core/luana-core-*/src/", "vitalia/frontend/", "nicolify/frontend/"]
+      rationale: "Componente del design system compartido + a11y/contraste. Sonnet. Compone badge.tsx existente, no reinventa."
+
+  - id: T-3
+    title: "nicolify form-runtime reescrito sobre useAutosave + AutosaveBadge (sin regresión)"
+    surface: FE
+    production_code: true
+    module: nicolify-form-runtime
+    deliverables:
+      - "nicolify/frontend/src/components/form-runtime/{FormRuntimeProvider,FormRuntimeContext}.tsx — usan useAutosave (pasando su save + getToken Clerk) en vez de su lógica propia de debounce/estado"
+      - "nicolify/frontend/src/components/form-runtime/AutosaveBanner.tsx — thin wrapper de <AutosaveBadge> (o reemplazo) preservando su API pública"
+      - "Preservar API pública del form-runtime (offer-studio y otros consumers NO se rompen)"
+      - "Tests existentes del form-runtime + sus consumers verdes antes/después (regresión)"
+    depends_on: [T-1, T-2]
+    blocks: []
+    acceptance:
+      validator_ids: [nicolify_tsc, nicolify_form_runtime_regression]
+    gherkin_coverage: [nicolify-form-runtime-sin-regresion]
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: sonnet
+      must_load_skills: [frontend-expert, tessl__react-patterns, tessl__vitest, ".claude/rules/frontend-fsd.md", ".claude/rules/anti-duplication.md"]
+      forbidden_to_touch: ["core/luana-core-*/src/", "vitalia/frontend/", "core/@luana/*/src/ (ya construido en T-1/T-2 — solo consumir)"]
+      rationale: "Refactor de adopción in-place del form-runtime de nicolify sobre la primitiva. Sonnet. Invariante: comportamiento observable idéntico."
+
+dag: "T-1 → T-2 → T-3 (secuencial: badge necesita el tipo de T-1; nicolify necesita la primitiva publicada)"
+
+# Nota: la adopción de las pantallas de vitalia (consolidar use*Autosave → useAutosave) es story consumer
+# SEPARADA del outcome — NO en este PR.

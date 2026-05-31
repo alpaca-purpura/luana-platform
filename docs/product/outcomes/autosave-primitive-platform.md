@@ -28,9 +28,9 @@ homes:
   - core/@luana/ui-kit       # <AutosaveBadge>
   - core/@luana/schemas      # AutosaveContract types
 stories:
-  - build-autosave-primitive-luana          # @luana primitiva + tests + consumer ref (architect → dev-team)
-  - vitalia/adopt-autosave-primitive         # consumer (consolida 4 hooks → 1) · /pm-vitalia
-  - nicolify/adopt-autosave-primitive        # consumer · /pm-nicolify
+  - build-autosave-primitive-luana          # ✅ DONE 2026-05-31 — @luana primitiva (useAutosave + AutosaveBadge + contrato) + nicolify form-runtime reescrito encima. Auditor APPROVED.
+  - vitalia/adopt-autosave-primitive         # ⏳ pendiente — consumer (consolida 4 hooks lisa → useAutosave) · /pm-vitalia
+  - nicolify/adopt-autosave-primitive        # ⏳ pendiente — migrar pantallas restantes a la primitiva · /pm-nicolify
 related_outcome: luana-core-ui-foundation
 ---
 
