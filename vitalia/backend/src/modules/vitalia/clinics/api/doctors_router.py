@@ -70,9 +70,9 @@ _ADMIN_CLINIC_ROLES: frozenset[str] = frozenset(["admin_clinic"])
 
 async def _get_db() -> AsyncSession:
     """Async DB session dependency."""
-    from luana_core_platform.core.database import get_db  # noqa: PLC0415
+    from src.db import get_async_session  # noqa: PLC0415
 
-    async for session in get_db():
+    async for session in get_async_session():
         yield session
 
 
