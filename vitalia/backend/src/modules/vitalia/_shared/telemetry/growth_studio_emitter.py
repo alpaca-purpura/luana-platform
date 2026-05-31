@@ -85,6 +85,11 @@ _KNOWN_EVENT_NAMES: frozenset[str] = frozenset(
         "lisa_marca_clinic_config_edit_clicked",
         "lisa_marca_autosave_failed",
         "lisa_marca_trust_signal_added",
+        # F2-S8 lisa_staff_* doctor events (T-BE-1)
+        "lisa_staff_doctor_created",
+        "lisa_staff_doctor_updated",
+        "lisa_staff_doctor_deactivated",
+        "lisa_staff_doctor_viewed",
     }
 )
 
