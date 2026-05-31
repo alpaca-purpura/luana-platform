@@ -526,3 +526,40 @@ Se corrigieron en orden estricto TDD (RED tests → GREEN implementation → LIV
 **DEFERRED:** DDD `_kek` coupling (WARN Carril B) — refactor de puerto sin cobertura de test. Behaviour-neutral. Documentado en review para próxima story.
 
 **Gate final: 181/181 tests, ruff 0 errors, arch 320/320, LIVE verified.**
+
+### 2026-05-31 · auditor-frontend (AUDITOR_AUTO_FIX_LOOP iter 2)
+
+**Scope:** fixes for findings F1 follow-through / F3 / F4 / F6 from T-FE-review.md audit iteration 1.
+
+**F1 follow-through — null-guard stats + MSW contract alignment:**
+- ✓ APLICADO: `DoctorListItem` type updated to mirror real BE camelCase contract — `maskedDni` (not `dniMasked`), `avatarKey`, nullable `patientsCount`/`npsScore`, additional fields `maskedEmail`, `maskedPhone`, `displayName`, `visibleEnLanding`.
+- ✓ APLICADO: `StaffCard.tsx` `displayName` null-guarded: `[firstName, lastName].filter(Boolean).join(" ") || "—"` prevents "undefined undefined" if BE returns null for either field.
+- ✓ APLICADO: MSW handlers `staff.ts` updated to mirror real BE shape — `maskedDni` (not `dniMasked`), `patientsCount: null`/`npsScore: null` (nullable until appointments/analytics wired), `avatarKey` instead of `avatarUrl` in list item, added `maskedEmail`, `visibleEnLanding`, `displayName`, `createdAt`.
+- ✓ APLICADO: `staff.test.tsx` fixture updated to use `maskedDni`.
+- Live verified via curl: `GET /doctors` returns `pageSize`, `firstName`, `lastName`, `maskedDni`, `patientsCount: null` in camelCase ✓
+
+**F3 — autosave coalescing:**
+- ✓ APLICADO: `use-autosave.ts` `schedule()` now coalesces payloads via spread merge (`{ ...pending, ...incoming }`) instead of wholesale replace. Two rapid field edits to different fields within the debounce window produce a single merged PATCH with both fields.
+- ✓ APLICADO: Two new Vitest tests: "coalesces two rapid object field edits into a single merged PATCH" + "later field value wins when same field edited twice within window". Both GREEN.
+- Live verified via curl: `PATCH /doctors/:id {"specialty":"Cardiología","phone":"+51 999 111 222"}` → response shows both fields updated ✓
+
+**F6 — toLocaleDateString:**
+- ✓ APLICADO: `AvailabilityCalendar.tsx` `formatWeekLabel()` replaced `monday.toLocaleDateString("es-419", opts)` with `new Intl.DateTimeFormat("es-419", opts).format(monday)`. Explicit locale, no browser default resolution. Documented why hook not used (pure util fn, not hook boundary).
+- ✓ APLICADO: `data-testid="week-label"` added to the week range span.
+- ✓ APLICADO: Two new Vitest tests in horarios.test.tsx: "renders a week label containing the year as a 4-digit number" + "week label is non-empty and not undefined/null". Both GREEN.
+
+**F4 — EntitySubNavBar leaf nav:**
+- ✓ APLICADO: `EntitySubNavBar.tsx` imports `useRouter` from `next/navigation`. `window.location.href` replaced with `router.push(leaf.href)` in onClick handler. Mirrors SubSubTabsBar pattern per ADR-vitalia-004. Comment updated to remove inaccurate "this button wraps in a link".
+
+**F7 — @dnd-kit inert (noted, not patched in this loop):**
+- NOTE: @dnd-kit DndContext wrapper exists but drag creation uses raw mouse events. Not patched in this iteration — it's a behavioral decision requiring arch input (wire dnd-kit for keyboard a11y or remove it and document mouse-drag decision). Escalated to PM.
+
+**Quality gates:**
+- TSC: 0 errors (strict) ✓
+- ESLint: 0 errors ✓
+- Vitest: 2415/2415 PASS (218 test files) ✓
+- Architecture: 162/162 PASS ✓
+- Coverage: 82.57% statements (above 20% threshold) ✓
+
+**Commit:** `0ce5fe1b` on `wip/vitalia` · pushed to origin
+**Files touched:** 9 (EntitySubNavBar.tsx, StaffCard.tsx, horarios.test.tsx, staff.test.tsx, AvailabilityCalendar.tsx, staff.types.ts, use-autosave.test.ts, use-autosave.ts, mocks/handlers/staff.ts)
