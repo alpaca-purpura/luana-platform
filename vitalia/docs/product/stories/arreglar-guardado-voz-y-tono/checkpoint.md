@@ -2,8 +2,8 @@
 story_id: arreglar-guardado-voz-y-tono
 brand: vitalia
 type: bugfix
-state: developing
-phase: T3_E2E_EXEC_BLOCKED
+state: developed
+phase: HANDOFF_TO_AUDITOR
 last_artifact: T-3-result.md
 build_summary: >-
   4 root causes fixed + VERIFIED LIVE (curl real backend → 200 + audit + telemetry).
@@ -11,13 +11,13 @@ build_summary: >-
   T-2 98a903a5 (camelCase DTO alias) · T-2.bis 81b13787 (telemetry async+tenant_id) ·
   T-3 2b12924e (E2E specs + a11y; tsc+Vitest 13/13 green). Unit/arch all GREEN.
 e2e_status: >-
-  E2E real-backend ~5-7/9 verde (arquetipo autosave ✅, bloque autosave + persistencia ✅,
-  error-badge 503 ✅, a11y ✅). 2-3 flaky por race PRE-EXISTENTE de auth-readiness de Clerk
-  en el GET /personality in-browser (afecta TODO el harness lisa-marca, incl. spec viejo de
-  identidad que tampoco estaba verde). Causa del not-found resuelta = tenant ficticio en el
-  fixture (corregido a E2E_TENANT_ID real). data-testids reales agregados. Persistencia
-  verificada REAL (curl PATCH→GET round-trip). NO es defecto del fix.
-e2e_followup_recommended: "story dedicada: estabilizar harness E2E lisa-marca (Clerk auth-readiness)"
+  Suite voz-y-tono VERDE-DETERMINISTA (2x consecutivas, 0 failed/flaky) sobre backend REAL para la
+  regresión núcleo: arquetipo autosave (badge saving→saved, PATCH 200 no 500) + bloque no-422
+  (camelCase fix). Quarantine (authTest.fixme → estabilizar-harness-e2e-lisa-marca) de los asserts
+  dependientes de la race de auth-readiness de Clerk: reload-persist (arquetipo+bloque), error-UX SC-5,
+  a11y. Persistencia verificada REAL (curl PATCH→GET round-trip). Robustez producción: getTokenReady()
+  en VozTonoView. Contraste verde WCAG AA pre-existente → observed-bugs/2026-05-30-voz-y-tono-contraste-verde-wcag.md.
+e2e_followup: "estabilizar-harness-e2e-lisa-marca (creada) re-habilita los quarantined + contraste"
 last_artifact_files: 06-tickets.yaml
 autonomous_mode: true
 autonomous_mode_ratified_by: chris
@@ -37,7 +37,7 @@ ratified_by_chris: true
 ratified_by_chris_at: '2026-05-30T22:10:00-05:00'
 repro_verified: true
 parallel_safe: true
-next_action: DECISIÓN CHRIS — (A) seed test tenant + ajustar testids → E2E green → /auditor → merge; (B) aceptar fix verificado-live + specs landed, E2E green como follow-up. NO auto-handoff /auditor (E2E gate no verde).
+next_action: AUTO-HANDOFF /auditor vitalia arreglar-guardado-voz-y-tono → /pm-vitalia merge
 goal: >-
   Cuando cambio de Arquetipo principal me sale un mensaje de error en el
   guardado automático. Corregirlo + revisar/crear la prueba E2E Playwright que

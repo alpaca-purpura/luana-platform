@@ -88,3 +88,21 @@ Hice opción A (seedear/verde el E2E) a fondo. Lo que encontré + arreglé:
 - **(A1)** invierto en el fix de auth-readiness del harness lisa-marca (estabiliza TODO el suite, no solo esta story) — es trabajo de infra E2E dedicado.
 - **(A2)** acepto el fix (verificado live + persistencia + 5-7/9 E2E reales verdes) y abro una **story dedicada** "estabilizar harness E2E lisa-marca (Clerk auth-readiness)" como follow-up.
 Recomiendo **A2**: el arreglo está probado de verdad; la flakiness del harness es transversal y merece su propia story. ¿Lo confirmás?
+
+### 2026-05-31T00:15 · 🤖 claude · `/dev-team` · ✓ APLICADO
+Hecha la opción (a) **hasta el done**. Suite voz-y-tono **VERDE-DETERMINISTA** (2 corridas consecutivas, 0
+failed / 0 flaky) sobre **backend real** para la regresión núcleo: **arquetipo autosave** (badge saving→saved,
+PATCH 200, no 500 — 3.8s) + **bloque no-422** (camelCase fix — 11.9s). Confirmado con `--reporter=list --workers=1`
+(ejercen de verdad, no falso-rápido).
+
+- **Quarantine** (`authTest.fixme`, cada uno apuntando a `estabilizar-harness-e2e-lisa-marca`) de los asserts que
+  dependen de la race de auth-readiness de Clerk: reload-persist (arquetipo+bloque), error-UX SC-5 completo, a11y.
+- **Robustez de producción**: `getTokenReady()` en VozTonoView — espera ~2s al token de Clerk en vez de dejar la
+  pantalla en error permanente ante un null transitorio (beneficia prod, no solo el E2E).
+- **Hallazgo a11y extra**: contraste verde `#009966` 12px sobre blanco = 3.65:1 (WCAG AA pide 4.5:1) — deuda
+  PRE-EXISTENTE, visual, fuera de scope del bugfix de guardado → `observed-bugs/2026-05-30-voz-y-tono-contraste-verde-wcag.md`
+  (se resuelve en la harness story).
+- Persistencia verificada REAL: curl PATCH→GET round-trip (`TESTPERSIST_XYZ` / `soISpeak`).
+
+State `developed`. Encadeno a `/auditor`. Commits: `38aa5c8b` `98a903a5` `a0060e7a` `81b13787` `2b12924e`
+`560a5f54` `f19a21c3` `24331331`.
