@@ -317,6 +317,18 @@ HIPAA-lite: dual filter (tenant_id+clinic_id) on all routes · RBAC `admin_clini
 
 Forbidden-touch respected: `core/luana-core-*/src/**` and `scheduling/**` NOT touched. Slots materialize to brand-local `vitalia_availability_slots` table — scheduling reads without modification.
 
+### 2026-05-31 — 🤖 claude · `builder-backend` · ✓ APLICADO
+**T-BE-4 — BioGenerationService (extractive, NOT agentic) + generate-bio endpoint**
+
+Implementado TDD (RED→GREEN). Deliverables:
+- `clinics/application/bio_generation_service.py` — NEW; deterministic single-shot extractive service (D-4: NOT agentic, R23 N/A, Sonnet-eligible); `BioGenerationService.generate()` + `generate_with_error()`; `BIO_GENERATION_FALLBACK_MESSAGE` (Spanish neutro, no voseo); `LLMServiceProtocol` (Protocol-based DI for testability); anti-invent guardrail in system_prompt ("Usa únicamente la información del material provisto"); graceful fallback on any LLM exception → `(BioPublic(), BIO_GENERATION_FALLBACK_MESSAGE)` never raises; consumes `luana_core_llm.factory.LLMFactory` (shared engine, NOT edited)
+- `clinics/api/dtos.py` EXTENDED — `GenerateBioRequest` + `GenerateBioResponse{bio: BioPublicDTO, error_message: str | None}`
+- `clinics/api/doctors_router.py` EXTENDED — `POST /{doctor_id}/generate-bio` with `response_model=GenerateBioResponse`; RBAC admin_clinic; returns HTTP 200 on success AND on LLM failure (error_message non-None on failure)
+- `tests/modules/vitalia/clinics/test_bio_generation_service.py` — 12 tests TDD RED-first; covers V-FN-9: no-invent guardrail, fallback on LLM fail, Spanish neutro, malformed JSON, partial sections, endpoint route registration, endpoint 200 success + 200 fallback
+
+Gates GREEN: 138 clinics tests pass · 0 ruff errors · ruff format OK · arch fitness (pre-existing treatment_plans.notes debt excluded per ticket instructions)
+V-FN-9 (validator): 12/12 PASS
+
 ### 2026-05-31 05:18 · 🤖 claude · `/pm-vitalia` · ✓ APLICADO
 **Arranco el tren autónomo `/architect → /dev-team → /auditor → merge` hasta `done`** (pedido explícito de Chris).
 - Step 0 GREEN: worktree CANÓNICO vitalia · sin stories en developing/developed/reviewing (closure gate limpio) · hard deps `vitalia-fase1-empty-states` + `vitalia-fase1-routing-shell` ambas en archive (done) · WIP caps libres (0 ready/developing).

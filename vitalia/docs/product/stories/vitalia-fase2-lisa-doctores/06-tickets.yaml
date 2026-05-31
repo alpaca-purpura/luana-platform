@@ -87,6 +87,7 @@ tickets:
 
   - id: T-BE-4
     title: "BioGenerationService (extractive, NOT agentic) + generate-bio endpoint"
+    state: pushed
     group: "G1-doctor-crud"
     surface: backend
     deliverables:

@@ -39,12 +39,15 @@ from src.modules.vitalia.clinics.api.dtos import (
     DoctorListItemDTO,
     DoctorListResponse,
     DoctorPatchRequest,
+    GenerateBioRequest,
+    GenerateBioResponse,
     OneOffBlockCreateRequest,
     RecurrentBlockCreateRequest,
 )
 from src.modules.vitalia.clinics.application.availability_block_service import (
     AvailabilityBlockService,
 )
+from src.modules.vitalia.clinics.application.bio_generation_service import BioGenerationService
 from src.modules.vitalia.clinics.application.credential_validator import CredentialValidationError
 from src.modules.vitalia.clinics.application.doctor_service import DniConflictError, DoctorService
 from src.modules.vitalia.clinics.domain.availability_block import AvailabilityBlock
@@ -321,6 +324,81 @@ async def patch_doctor(
         )
     await db.commit()
     return _to_detail_dto(doctor)
+
+
+# ── Bio generation endpoint (T-BE-4) ─────────────────────────────────────────
+
+
+@router.post(
+    "/{doctor_id}/generate-bio",
+    response_model=GenerateBioResponse,
+    dependencies=[Depends(require_brand_owner_access(roles=_ADMIN_CLINIC_ROLES))],
+)
+async def generate_doctor_bio(
+    doctor_id: UUID,
+    request: GenerateBioRequest,  # noqa: ARG001 — empty body, kept for explicit schema
+    tenant_id: str = Header(alias="X-Tenant-ID"),
+    clinic_id: str = Header(alias="X-Clinic-ID"),
+    user_id: str = Header(alias="X-User-ID"),  # noqa: ARG001 — kept for RBAC audit trace
+    db: AsyncSession = Depends(_get_db),
+) -> GenerateBioResponse:
+    """Generate public bio from stored inputs (single-shot extractive, NOT agentic).
+
+    03-arch D-4: deterministic single-shot LLM call — uses ONLY provided material
+    (bio_inputs_notes + bio_links). Does NOT invent content.
+
+    Anti-invent guardrail: if info missing → section is empty, never hallucinated.
+    Output: 3 editable sections (resumen, formacion, enfoque) stored in bio_public.
+
+    Graceful fallback (tessl__graceful-degradation):
+      - LLM fail or timeout → returns empty sections + error_message (HTTP 200)
+      - Does NOT break autosave of rest of doctor profile
+      - FE shows error_message as toast notification
+
+    PHI note: bio_inputs_notes/bio_links are promotional material (CV/diploma),
+    NOT clinical patient PHI. Audit log NOT written (non-PHI endpoint).
+
+    V-FN-9: bio-gen produces sections ONLY from provided material; fallback on fail.
+    """
+    service = _build_service(db)
+    doctor = await service.get_doctor(
+        doctor_id=doctor_id,
+        tenant_id=UUID(tenant_id),
+        clinic_id=UUID(clinic_id),
+        user_id=UUID(user_id),
+    )
+    if doctor is None:
+        await db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"error": "doctor_not_found", "message": "Médico no encontrado."},
+        )
+
+    # BioGenerationService: deterministic extractive (D-4) — NOT copilot/sales_agent
+    bio_svc = BioGenerationService()
+    bio, error_message = bio_svc.generate_with_error(doctor)
+
+    if error_message is None:
+        logger.info(
+            "bio_generated",
+            doctor_id=str(doctor_id),
+            tenant_id=tenant_id,
+            sections_filled=sum(1 for s in [bio.resumen, bio.formacion, bio.enfoque] if s),
+        )
+    else:
+        logger.warning(
+            "bio_generation_fallback",
+            doctor_id=str(doctor_id),
+            tenant_id=tenant_id,
+        )
+
+    bio_dto = BioPublicDTO(
+        resumen=bio.resumen,
+        formacion=bio.formacion,
+        enfoque=bio.enfoque,
+    )
+    await db.commit()
+    return GenerateBioResponse(bio=bio_dto, error_message=error_message)
 
 
 # ── Availability blocks sub-routes (T-BE-3) ──────────────────────────────────

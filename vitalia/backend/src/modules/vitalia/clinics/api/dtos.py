@@ -286,3 +286,40 @@ class DeleteBlockResponse(BaseModel):
     deleted: bool
     preserved_appointments: int
     """Count of future slots preserved because they have confirmed appointments."""
+
+
+# ── Bio generation DTOs (T-BE-4) ─────────────────────────────────────────────
+
+
+class GenerateBioRequest(BaseModel):
+    """Request body for POST /doctors/{id}/generate-bio.
+
+    Body is empty — service uses the doctor's stored bio_inputs_notes + bio_links.
+    Defined as explicit DTO (not empty dict) to comply with response_model= mandate.
+
+    D-4 (03-arch): deterministic extractive service, NOT agentic.
+    Voice anchor is resolved server-side from PersonalityProfile (read-only).
+    """
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class GenerateBioResponse(BaseModel):
+    """Response for POST /doctors/{id}/generate-bio.
+
+    Returns 3 editable sections + optional error_message.
+
+    On LLM success: bio contains sections, error_message is None.
+    On LLM failure (timeout/error): bio is empty BioPublicDTO, error_message is set.
+    FE: shows error_message as toast; does NOT block autosave of rest of profile.
+
+    V-FN-9: bio-gen fallback on LLM fail -> empty sections + message.
+    """
+
+    model_config = ConfigDict(from_attributes=True)
+
+    bio: BioPublicDTO
+    """3 editable sections: resumen, formacion, enfoque (may be None if no material)."""
+
+    error_message: str | None = None
+    """Spanish neutro error message shown to user on LLM failure. None = success."""
