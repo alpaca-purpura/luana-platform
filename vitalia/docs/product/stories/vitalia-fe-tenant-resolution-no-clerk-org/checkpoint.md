@@ -11,8 +11,8 @@ cap_change_type: fix
 parent_story: null
 
 release: F2
-state: developing
-phase_workflow: T1_REFACTOR
+state: developed
+phase_workflow: HANDOFF_TO_AUDITOR
 architecture_pattern: N/A   # cross-cutting FE data-layer fix, no shell sub-tab
 adr_004_compliance: N/A
 autonomous_mode: true
@@ -36,7 +36,17 @@ hotfix_metadata:
 # Dev-app live verification gate (ADR-vitalia-008)
 dev_app_verified:
   required: true
-  evidence: []   # se llena tras refactor: features afectados (lisa/crm/fidelizacion/marketing/inbox) golpean backend real con X-Tenant-ID UUID → 200 (no 500)
+  env: "make dev-vitalia (FE :3002 + BE :8002), Clerk testing token, Playwright autenticado, SIN mocks. Chrome MCP no conectado → fallback Playwright-live (válido per definition-of-done-live-verify.md)."
+  verified_at: 2026-06-01
+  spec: vitalia/frontend/e2e/regression/vitalia-fe-tenant-resolution-no-clerk-org/systemic-live-check.spec.ts
+  evidence:
+    - action: "Navegación autenticada (dr.demo) a /lisa/staff + /mateo/agenda + /lisa/marca/identidad contra stack real, capturando X-Tenant-ID enviado"
+      observed: "X-Tenant-ID = 'e69a691d-070e-5caf-a053-6e74642ec100' (UUID NUESTRO) en todas las llamadas — NO 'org_3DzUI3...' (Clerk org). API_5XX=[] (cero 5xx). Antes del fix: X-Tenant-ID=org_ → 500."
+    - action: "GET /api/v1/vitalia/clinics/doctors (endpoint que daba el 500 original) ejercido live"
+      observed: "HTTP 200 (backend log) — era 500 'badly formed hexadecimal UUID string'. Backend sin ValueError/5xx en la ventana."
+    - action: "Borrado de la Clerk Organization org_3DzUI3... (drift) + re-navegación post-borrado"
+      observed: "org count Clerk = 0; re-run live → API_5XX=[], doctors 200, sign-in OK → confirma que NO dependemos de Clerk orgs (invariante restaurado)."
+  notes: "Refactor 79e27a3d: useTenantId() + 33 archivos + tightening arch test no-clerk-organizations (caza useAuth().orgId, 16/16). grep 'tenantId: orgId' src/ → 0 (solo refs en comments del arch test). Destraba doctores + todo el PHI FE-wide. 23 fallos cross-brand-mirror (nicolify) son PRE-EXISTENTES (Pendiente D)."
 ---
 
 # Remediación FE — resolver tenant_id de NUESTRA data, nunca de Clerk Organizations

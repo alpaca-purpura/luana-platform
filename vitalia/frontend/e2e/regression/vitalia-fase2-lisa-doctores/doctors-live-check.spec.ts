@@ -14,12 +14,13 @@ const TENANT_ID =
 test("LIVE: GET /clinics/doctors ya no da 500; reporta status + clinic header", async ({
   authedPage,
 }) => {
-  const calls: { status: number; clinicHeader: string | null; url: string }[] = [];
+  const calls: { status: number; tenantHeader: string | null; clinicHeader: string | null; url: string }[] = [];
   authedPage.on("response", async (res) => {
     if (res.url().includes("/clinics/doctors")) {
       const req = res.request();
       calls.push({
         status: res.status(),
+        tenantHeader: req.headers()["x-tenant-id"] ?? null,
         clinicHeader: req.headers()["x-clinic-id"] ?? null,
         url: res.url(),
       });
