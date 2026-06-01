@@ -38,6 +38,8 @@ vi.mock("@clerk/nextjs", () => ({
     isSignedIn: true,
   })),
 }));
+vi.mock("@/hooks/useTenantId", () => ({ useTenantId: () => "mock-tenant-id" }));
+
 
 // Mock CrearCitaForm to avoid deep form setup in button tests
 vi.mock("../CrearCitaForm", () => ({

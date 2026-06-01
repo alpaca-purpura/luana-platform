@@ -24,6 +24,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
+import { useTenantId } from "@/hooks/useTenantId";
 import { fetchClient } from "@/lib/api/fetchClient";
 import { useClinicId } from "@/hooks/useClinicId";
 import type {
@@ -59,14 +60,15 @@ export interface UseStaffListOptions {
  * Hydrated from SSR initialData (no refetch on mount when SSR data is fresh).
  */
 export function useStaffList({ filters, initialData }: UseStaffListOptions) {
-  const { getToken, isLoaded, isSignedIn, orgId } = useAuth();
+  const { getToken, isLoaded, isSignedIn } = useAuth();
+  const tenantId = useTenantId();
   const clinicId = useClinicId();
 
   return useQuery({
     queryKey: staffKeys.list(filters),
     queryFn: async () => {
       const token = await getToken();
-      if (!token || !orgId) throw new Error("Sin autenticación");
+      if (!token || !tenantId) throw new Error("Sin autenticación");
 
       const params = new URLSearchParams();
       params.set("page", String(filters.page ?? 1));
@@ -81,7 +83,7 @@ export function useStaffList({ filters, initialData }: UseStaffListOptions) {
         `${API_BASE}/api/v1/vitalia/clinics/doctors?${params.toString()}`,
         {
           token,
-          tenantId: orgId,
+          tenantId,
           clinicId,
         },
       );
@@ -137,21 +139,22 @@ export function mapDoctorCreateToPayload(
  * On 409: caller surfaces "Ya existe un doctor con ese documento" toast.
  */
 export function useCreateDoctor() {
-  const { getToken, orgId } = useAuth();
+  const { getToken } = useAuth();
+  const tenantId = useTenantId();
   const clinicId = useClinicId();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (payload: CreateDoctorPayload) => {
       const token = await getToken();
-      if (!token || !orgId) throw new Error("Sin autenticación");
+      if (!token || !tenantId) throw new Error("Sin autenticación");
 
       return fetchClient<DoctorDetail>(
         `${API_BASE}/api/v1/vitalia/clinics/doctors`,
         {
           method: "POST",
           token,
-          tenantId: orgId,
+          tenantId,
           clinicId,
           body: JSON.stringify(payload),
         },
@@ -174,17 +177,18 @@ export function useDoctor(
   doctorId: string,
   initialData?: DoctorDetail,
 ) {
-  const { getToken, isLoaded, isSignedIn, orgId } = useAuth();
+  const { getToken, isLoaded, isSignedIn } = useAuth();
+  const tenantId = useTenantId();
   const clinicId = useClinicId();
 
   return useQuery({
     queryKey: staffKeys.detail(doctorId),
     queryFn: async () => {
       const token = await getToken();
-      if (!token || !orgId) throw new Error("Sin autenticación");
+      if (!token || !tenantId) throw new Error("Sin autenticación");
       return fetchClient<DoctorDetail>(
         `${API_BASE}/api/v1/vitalia/clinics/doctors/${doctorId}`,
-        { token, tenantId: orgId, clinicId },
+        { token, tenantId, clinicId },
       );
     },
     enabled: isLoaded && !!isSignedIn,
@@ -216,20 +220,21 @@ export interface PatchDoctorPayload {
  * Used for autosave on-change.
  */
 export function usePatchDoctor(doctorId: string) {
-  const { getToken, orgId } = useAuth();
+  const { getToken } = useAuth();
+  const tenantId = useTenantId();
   const clinicId = useClinicId();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (payload: PatchDoctorPayload) => {
       const token = await getToken();
-      if (!token || !orgId) throw new Error("Sin autenticación");
+      if (!token || !tenantId) throw new Error("Sin autenticación");
       return fetchClient<DoctorDetail>(
         `${API_BASE}/api/v1/vitalia/clinics/doctors/${doctorId}`,
         {
           method: "PATCH",
           token,
-          tenantId: orgId,
+          tenantId,
           clinicId,
           body: JSON.stringify(payload),
         },
@@ -256,19 +261,20 @@ export interface GenerateBioResponse {
  * No-invent guardrail handled by BE service (D-4).
  */
 export function useGenerateBio(doctorId: string) {
-  const { getToken, orgId } = useAuth();
+  const { getToken } = useAuth();
+  const tenantId = useTenantId();
   const clinicId = useClinicId();
 
   return useMutation({
     mutationFn: async () => {
       const token = await getToken();
-      if (!token || !orgId) throw new Error("Sin autenticación");
+      if (!token || !tenantId) throw new Error("Sin autenticación");
       return fetchClient<GenerateBioResponse>(
         `${API_BASE}/api/v1/vitalia/clinics/doctors/${doctorId}/generate-bio`,
         {
           method: "POST",
           token,
-          tenantId: orgId,
+          tenantId,
           clinicId,
           body: JSON.stringify({}),
         },
@@ -285,14 +291,15 @@ export function useGenerateBio(doctorId: string) {
  * After upload: PATCH doctor {avatarKey}.
  */
 export function useAvatarUpload(doctorId: string) {
-  const { getToken, orgId } = useAuth();
+  const { getToken } = useAuth();
+  const tenantId = useTenantId();
   const clinicId = useClinicId();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (file: File) => {
       const token = await getToken();
-      if (!token || !orgId) throw new Error("Sin autenticación");
+      if (!token || !tenantId) throw new Error("Sin autenticación");
 
       // Step 1: Upload file to assets proxy
       const formData = new FormData();
@@ -309,7 +316,7 @@ export function useAvatarUpload(doctorId: string) {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
-            "X-Tenant-ID": orgId,
+            "X-Tenant-ID": tenantId,
             ...(clinicId ? { "X-Clinic-ID": clinicId } : {}),
           },
           body: formData,
@@ -334,7 +341,7 @@ export function useAvatarUpload(doctorId: string) {
         {
           method: "PATCH",
           token,
-          tenantId: orgId,
+          tenantId,
           clinicId,
           body: JSON.stringify({ avatar_key: key }),
         },
@@ -359,17 +366,18 @@ export function useAvatarUpload(doctorId: string) {
  * T-FE-3 vitalia-fase2-lisa-doctores
  */
 export function useAvailabilityBlocks(doctorId: string) {
-  const { getToken, isLoaded, isSignedIn, orgId } = useAuth();
+  const { getToken, isLoaded, isSignedIn } = useAuth();
+  const tenantId = useTenantId();
   const clinicId = useClinicId();
 
   return useQuery({
     queryKey: staffKeys.blocks(doctorId),
     queryFn: async () => {
       const token = await getToken();
-      if (!token || !orgId) throw new Error("Sin autenticación");
+      if (!token || !tenantId) throw new Error("Sin autenticación");
       return fetchClient<import("../types/staff.types").AvailabilityBlock[]>(
         `${API_BASE}/api/v1/vitalia/clinics/doctors/${doctorId}/availability-blocks`,
-        { token, tenantId: orgId, clinicId },
+        { token, tenantId, clinicId },
       );
     },
     enabled: isLoaded && !!isSignedIn && !!doctorId,
@@ -398,20 +406,21 @@ export interface CreateBlockPayload {
  * T-FE-3 vitalia-fase2-lisa-doctores
  */
 export function useCreateBlock(doctorId: string) {
-  const { getToken, orgId } = useAuth();
+  const { getToken } = useAuth();
+  const tenantId = useTenantId();
   const clinicId = useClinicId();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (payload: CreateBlockPayload) => {
       const token = await getToken();
-      if (!token || !orgId) throw new Error("Sin autenticación");
+      if (!token || !tenantId) throw new Error("Sin autenticación");
       return fetchClient<import("../types/staff.types").AvailabilityBlock>(
         `${API_BASE}/api/v1/vitalia/clinics/doctors/${doctorId}/availability-blocks`,
         {
           method: "POST",
           token,
-          tenantId: orgId,
+          tenantId,
           clinicId,
           body: JSON.stringify(payload),
         },
@@ -441,7 +450,8 @@ export interface UpdateBlockPayload {
  * T-FE-3 vitalia-fase2-lisa-doctores
  */
 export function useUpdateBlock(doctorId: string) {
-  const { getToken, orgId } = useAuth();
+  const { getToken } = useAuth();
+  const tenantId = useTenantId();
   const clinicId = useClinicId();
   const queryClient = useQueryClient();
 
@@ -454,13 +464,13 @@ export function useUpdateBlock(doctorId: string) {
       payload: UpdateBlockPayload;
     }) => {
       const token = await getToken();
-      if (!token || !orgId) throw new Error("Sin autenticación");
+      if (!token || !tenantId) throw new Error("Sin autenticación");
       return fetchClient<import("../types/staff.types").AvailabilityBlock>(
         `${API_BASE}/api/v1/vitalia/clinics/doctors/${doctorId}/availability-blocks/${blockId}`,
         {
           method: "PATCH",
           token,
-          tenantId: orgId,
+          tenantId,
           clinicId,
           body: JSON.stringify(payload),
         },
@@ -488,20 +498,21 @@ export interface DeleteBlockResponse {
  * T-FE-3 vitalia-fase2-lisa-doctores
  */
 export function useDeleteBlock(doctorId: string) {
-  const { getToken, orgId } = useAuth();
+  const { getToken } = useAuth();
+  const tenantId = useTenantId();
   const clinicId = useClinicId();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (blockId: string) => {
       const token = await getToken();
-      if (!token || !orgId) throw new Error("Sin autenticación");
+      if (!token || !tenantId) throw new Error("Sin autenticación");
       return fetchClient<DeleteBlockResponse>(
         `${API_BASE}/api/v1/vitalia/clinics/doctors/${doctorId}/availability-blocks/${blockId}`,
         {
           method: "DELETE",
           token,
-          tenantId: orgId,
+          tenantId,
           clinicId,
         },
       );

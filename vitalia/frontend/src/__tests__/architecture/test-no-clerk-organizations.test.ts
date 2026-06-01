@@ -321,6 +321,143 @@ const CLERK_ORG_IMPORT_EXCLUSIONS: ReadonlySet<string> = new Set<string>([
 /** Baseline cap for CLERK_ORG_IMPORT_EXCLUSIONS — shrink only, never grow */
 const MAX_CLERK_ORG_IMPORT_EXCLUSIONS = 7;
 
+/**
+ * T-1 vitalia-fe-tenant-resolution-no-clerk-org (2026-06-01)
+ *
+ * Tightened arch test: scan ALL production source files for orgId usage in
+ * non-comment code lines. This catches the systemic bug where 34 files were
+ * sending X-Tenant-ID: org_xxx (Clerk org id, NOT a UUID) to the backend,
+ * causing 500 errors on all PHI endpoints.
+ *
+ * The fix: use useTenantId() which reads user.publicMetadata.tenant_id (UUID).
+ *
+ * Files in ORGID_USAGE_EXCLUSIONS are exempt (shrink-only ratchet).
+ * After T-1 refactor: this list must be EMPTY (zero violations).
+ */
+
+/**
+ * Production source files that still use orgId (shrink-only ratchet).
+ * T-1 target: EMPTY set (all 34 files migrated to useTenantId).
+ * Add a file here ONLY if it has a legitimate non-tenant use of orgId
+ * (document the reason as a comment).
+ *
+ * ★ This list must shrink to 0 after T-1 refactor. DO NOT ADD entries.
+ */
+const ORGID_USAGE_EXCLUSIONS: ReadonlySet<string> = new Set<string>([
+  // After T-1 refactor this set must be empty.
+  // The useCurrentUser.ts test file uses orgId as a test fixture value (UUID),
+  // but the test file is excluded by the __tests__ directory filter.
+]);
+
+/** Baseline cap — must reach 0 after T-1. Never grow. */
+const MAX_ORGID_USAGE_EXCLUSIONS = 0;
+
+/**
+ * Directories to skip in the orgId scan:
+ * - __tests__: test files may use orgId as a mock value (UUID, not Clerk org)
+ * - architecture: this file itself
+ */
+const ORGID_SCAN_SKIP_DIRS = new Set(["__tests__"]);
+
+/**
+ * Recursively collect source files, skipping test directories.
+ */
+function collectProductionSourceFiles(dir: string): string[] {
+  const results: string[] = [];
+  let entries: string[];
+  try {
+    entries = readdirSync(dir);
+  } catch {
+    return results;
+  }
+  for (const entry of entries) {
+    if (entry === "node_modules") continue;
+    if (ORGID_SCAN_SKIP_DIRS.has(entry)) continue;
+    const full = join(dir, entry);
+    let stat;
+    try {
+      stat = statSync(full);
+    } catch {
+      continue;
+    }
+    if (stat.isDirectory()) {
+      results.push(...collectProductionSourceFiles(full));
+    } else if (entry.endsWith(".ts") || entry.endsWith(".tsx")) {
+      results.push(full);
+    }
+  }
+  return results;
+}
+
+describe("Architecture: T-1 — production source files must NOT use orgId from useAuth() (no-clerk-orgs tenant fix)", () => {
+  it("ORGID_USAGE_EXCLUSIONS count must not grow — target is 0 after T-1 (shrink-only)", () => {
+    expect(
+      ORGID_USAGE_EXCLUSIONS.size,
+      `ORGID_USAGE_EXCLUSIONS grew beyond ${MAX_ORGID_USAGE_EXCLUSIONS}. ` +
+        "This list must be EMPTY after T-1 refactor. Do NOT add new entries. " +
+        "Fix the violation: use useTenantId() instead of useAuth().orgId.",
+    ).toBeLessThanOrEqual(MAX_ORGID_USAGE_EXCLUSIONS);
+  });
+
+  it("No production source file uses orgId (must use useTenantId() instead)", () => {
+    const srcDir = resolve(ROOT, "src");
+    const allFiles = collectProductionSourceFiles(srcDir);
+
+    const violations: string[] = [];
+
+    for (const absolutePath of allFiles) {
+      const relPath = relative(ROOT, absolutePath);
+
+      // Skip exclusions list and this arch test file
+      if (ORGID_USAGE_EXCLUSIONS.has(relPath)) continue;
+      if (relPath.includes("test-no-clerk-organizations")) continue;
+
+      let content: string;
+      try {
+        content = readFileSync(absolutePath, "utf-8");
+      } catch {
+        continue;
+      }
+
+      // Check non-comment lines only (avoids false positives from JSDoc explaining what NOT to use)
+      const nonCommentLines = codeLines(content);
+      for (const line of nonCommentLines) {
+        // Detect: const { ..., orgId, ... } = useAuth() destructuring
+        // or tenantId: orgId usage
+        // or enabled: ... && !!orgId
+        // or if (!orgId)
+        // Pattern: orgId used as a variable in code (not in a comment)
+        if (/\borgId\b/.test(line)) {
+          violations.push(`  ${relPath}: found \`orgId\` usage → replace with useTenantId()`);
+          break; // one violation per file is enough
+        }
+      }
+    }
+
+    expect(
+      violations,
+      [
+        "orgId (Clerk Organization id, NOT a UUID) found in production source files.",
+        "Per MEMORY.md::no-clerk-organizations (2026-05-20 + 2026-06-01):",
+        "  Luana does NOT use Clerk Organizations.",
+        "  useAuth().orgId returns 'org_3DzUI3...' (NOT a UUID) → backend UUID() parse error → 500.",
+        "  The correct source is user.publicMetadata.tenant_id (our UUID, set by luana-core-iam).",
+        "",
+        "Fix (T-1 vitalia-fe-tenant-resolution-no-clerk-org):",
+        "  1. Import useTenantId from '@/hooks/useTenantId'",
+        "  2. const tenantId = useTenantId();",
+        "  3. Replace: tenantId: orgId → tenantId",
+        "  4. Replace: if (!orgId) → if (!tenantId)",
+        "  5. Replace: enabled: ... && !!orgId → !!tenantId",
+        "  6. Remove orgId from useAuth() destructuring when only used for tenant",
+        "",
+        "Violations found (must be ZERO after T-1 refactor):",
+        ...violations,
+      ].join("\n"),
+    ).toHaveLength(0);
+  });
+});
+
 describe("Architecture: full src/ scan — no @clerk org hook IMPORTS (T-FIX-1-FE)", () => {
   it("CLERK_ORG_IMPORT_EXCLUSIONS count must not grow (shrink-only ratchet — baseline 7, T-FIX-1-FE 2026-06-01)", () => {
     expect(

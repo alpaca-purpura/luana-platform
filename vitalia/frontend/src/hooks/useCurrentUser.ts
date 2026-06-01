@@ -28,6 +28,7 @@
 import { useAuth, useUser } from "@clerk/nextjs";
 import { useQuery } from "@tanstack/react-query";
 import { fetchClient } from "@/lib/api/fetchClient";
+import { useTenantId } from "@/hooks/useTenantId";
 
 export type VitaliaRole =
   | "doctor"
@@ -92,20 +93,21 @@ export const ME_QUERY_KEY = ["iam", "me"] as const;
  * Success state: role from user_tenants.role (1 fuente de verdad DB).
  */
 export function useCurrentUser(): CurrentUser {
-  const { getToken, orgId, isLoaded: authLoaded, isSignedIn } = useAuth();
+  const { getToken, isLoaded: authLoaded, isSignedIn } = useAuth();
   const { user, isLoaded: userLoaded } = useUser();
+  const tenantId = useTenantId();
 
   const query = useQuery<MeResponse, Error>({
-    queryKey: [...ME_QUERY_KEY, orgId],
+    queryKey: [...ME_QUERY_KEY, tenantId],
     queryFn: async () => {
       const token = await getToken();
-      if (!token || !orgId) throw new Error("Not authenticated");
+      if (!token || !tenantId) throw new Error("Not authenticated");
       return fetchClient<MeResponse>("/api/v1/iam/users/me", {
         token,
-        tenantId: orgId,
+        tenantId,
       });
     },
-    enabled: authLoaded && isSignedIn === true && Boolean(orgId),
+    enabled: authLoaded && isSignedIn === true && Boolean(tenantId),
     staleTime: 5 * 60 * 1000,   // 5 min — rol no cambia frecuentemente
     gcTime: 10 * 60 * 1000,
     retry: 2,

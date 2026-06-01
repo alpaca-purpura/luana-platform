@@ -8,6 +8,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
+import { useTenantId } from "@/hooks/useTenantId";
 import { useClinicId } from "@/hooks/useClinicId";
 import { fetchClient } from "@/lib/api/fetchClient";
 import type { BowtieSummaryResponse } from "../types/bowtie";
@@ -19,20 +20,20 @@ export type UseBowtieSummaryOptions = {
 export function useBowtieSummary({
   period = "30d",
 }: UseBowtieSummaryOptions = {}) {
-  const { getToken, orgId, isLoaded, isSignedIn } = useAuth();
+  const { getToken, isLoaded, isSignedIn } = useAuth();
+  const tenantId = useTenantId();
   const clinicId = useClinicId();
 
   return useQuery({
     queryKey: ["marketing", "bowtie", "summary", { period, clinicId }],
     queryFn: async () => {
       const token = await getToken();
-      if (!token || !orgId) throw new Error("Not authenticated");
+      if (!token || !tenantId) throw new Error("Not authenticated");
       return fetchClient<BowtieSummaryResponse>(
         `/api/v1/vitalia/marketing/bowtie/summary?period=${period}`,
         {
           token,
-          tenantId: orgId,
-          clinicId,
+          tenantId, clinicId,
         },
       );
     },

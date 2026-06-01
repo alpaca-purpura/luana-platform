@@ -21,6 +21,8 @@ import { INBOX_COPY } from "../../copy";
 vi.mock("@clerk/nextjs", () => ({
   useOrganization: () => ({ organization: null }),
 }));
+vi.mock("@/hooks/useTenantId", () => ({ useTenantId: () => "mock-tenant-id" }));
+
 
 // Track AuditedSection mount calls
 const mockAuditFire = vi.fn();

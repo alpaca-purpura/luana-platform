@@ -14,6 +14,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
+import { useTenantId } from "@/hooks/useTenantId";
 import { useClinicId } from "@/hooks/useClinicId";
 import { fetchClient } from "@/lib/api/fetchClient";
 import type { Lead } from "../types";
@@ -49,18 +50,18 @@ function buildLeadsUrl(filters: LeadsFilters): string {
  * @param filters - Optional filters
  */
 export function useLeads(filters: LeadsFilters = {}) {
-  const { getToken, orgId, isLoaded, isSignedIn } = useAuth();
+  const { getToken, isLoaded, isSignedIn } = useAuth();
+  const tenantId = useTenantId();
   const clinicId = useClinicId();
 
   return useQuery({
     queryKey: ["crm", "leads", filters],
     queryFn: async () => {
       const token = await getToken();
-      if (!token || !orgId) throw new Error("Not authenticated");
+      if (!token || !tenantId) throw new Error("Not authenticated");
       return fetchClient<LeadsResponse>(buildLeadsUrl(filters), {
         token,
-        tenantId: orgId,
-        clinicId,
+        tenantId, clinicId,
       });
     },
     enabled: isLoaded && isSignedIn === true,

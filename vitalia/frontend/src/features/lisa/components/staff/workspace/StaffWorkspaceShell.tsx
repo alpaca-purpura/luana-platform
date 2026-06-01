@@ -26,6 +26,7 @@ import type { EntitySubNavLeaf } from "@/components/shared/shell-organism/Entity
 import { staffKeys } from "../../../api/staff";
 import { fetchClient } from "@/lib/api/fetchClient";
 import { useClinicId } from "@/hooks/useClinicId";
+import { useTenantId } from "@/hooks/useTenantId";
 import type { DoctorDetail } from "../../../types/staff.types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8002";
@@ -61,8 +62,11 @@ export function StaffWorkspaceShell({
   children,
 }: StaffWorkspaceShellProps) {
   const pathname = usePathname();
-  const { getToken, isLoaded, isSignedIn, orgId } = useAuth();
+  const { getToken, isLoaded, isSignedIn } = useAuth();
   const clinicId = useClinicId();
+  // tenantId from useTenantId() for API calls (UUID from publicMetadata.tenant_id).
+  // The prop tenantId is used for URL routing only — may differ from the API tenant UUID.
+  const apiTenantId = useTenantId();
 
   // Build leaf hrefs
   const leaves: EntitySubNavLeaf[] = LEAF_DEFS.map((def) => ({
@@ -78,10 +82,10 @@ export function StaffWorkspaceShell({
     queryKey: staffKeys.detail(doctorId),
     queryFn: async () => {
       const token = await getToken();
-      if (!token || !orgId) throw new Error("Sin autenticación");
+      if (!token || !apiTenantId) throw new Error("Sin autenticación");
       return fetchClient<DoctorDetail>(
         `${API_BASE}/api/v1/vitalia/clinics/doctors/${doctorId}`,
-        { token, tenantId: orgId, clinicId },
+        { token, tenantId: apiTenantId, clinicId },
       );
     },
     enabled: isLoaded && !!isSignedIn,

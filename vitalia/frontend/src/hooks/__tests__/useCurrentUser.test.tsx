@@ -32,6 +32,8 @@ vi.mock("@clerk/nextjs", () => ({
   useAuth: vi.fn(),
   useUser: vi.fn(),
 }));
+vi.mock("@/hooks/useTenantId", () => ({ useTenantId: () => "mock-tenant-id" }));
+
 
 // Mock fetchClient — intercepta la llamada a /api/v1/iam/users/me
 vi.mock("@/lib/api/fetchClient", () => ({

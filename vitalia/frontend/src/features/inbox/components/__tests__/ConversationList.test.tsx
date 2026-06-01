@@ -17,6 +17,8 @@ import type { Conversation } from "@/features/crm-shared";
 vi.mock("@clerk/nextjs", () => ({
   useOrganization: () => ({ organization: null }),
 }));
+vi.mock("@/hooks/useTenantId", () => ({ useTenantId: () => "mock-tenant-id" }));
+
 
 // Minimal conversation factory
 function makeConversation(overrides: Partial<Conversation> = {}): Conversation {

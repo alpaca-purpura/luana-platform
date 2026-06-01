@@ -28,6 +28,8 @@ const mockUseUser = vi.fn();
 vi.mock("@clerk/nextjs", () => ({
   useUser: () => mockUseUser(),
 }));
+vi.mock("@/hooks/useTenantId", () => ({ useTenantId: () => "mock-tenant-id" }));
+
 
 import { useClinicId } from "../useClinicId";
 

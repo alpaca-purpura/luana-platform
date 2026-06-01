@@ -18,6 +18,8 @@ vi.mock("@clerk/nextjs", () => ({
     orgId: "mock-tenant-id",
   }),
 }));
+vi.mock("@/hooks/useTenantId", () => ({ useTenantId: () => "mock-tenant-id" }));
+
 
 vi.mock("@/lib/fetch-client", () => ({
   vitaliaFetch: vi.fn(),

@@ -16,6 +16,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
+import { useTenantId } from "@/hooks/useTenantId";
 import { vitaliaFetch } from "@/lib/fetch-client";
 
 export interface AvailabilitySlot {
@@ -46,20 +47,21 @@ export function useAvailabilitySlots({
   daysAhead = 14,
   enabled = true,
 }: UseAvailabilitySlotsArgs) {
-  const { getToken, orgId, isLoaded, isSignedIn } = useAuth();
+  const { getToken, isLoaded, isSignedIn } = useAuth();
+  const tenantId = useTenantId();
 
   return useQuery({
     queryKey: ["fidelizacion", "availability-slots", doctorId, daysAhead],
     queryFn: async () => {
       const token = await getToken();
-      if (!token || !orgId) throw new Error("Not authenticated");
+      if (!token || !tenantId) throw new Error("Not authenticated");
 
       const params = new URLSearchParams({ days: String(daysAhead) });
       if (doctorId) params.set("doctor_id", doctorId);
 
       return vitaliaFetch<AvailabilitySlotsResponse>(
         `/api/v1/vitalia/scheduling/availability?${params.toString()}`,
-        { token, tenantId: orgId },
+        { token, tenantId },
       );
     },
     enabled: isLoaded && isSignedIn === true && enabled,

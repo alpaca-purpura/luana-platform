@@ -12,6 +12,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
+import { useTenantId } from "@/hooks/useTenantId";
 import { vitaliaFetch } from "@/lib/fetch-client";
 
 export interface ActivityEvent {
@@ -37,17 +38,18 @@ export interface ActivityStreamResponse {
  * Uses anonymized descriptions (NO PHI patient names in this endpoint).
  */
 export function useActivityStream(limit: number = 20) {
-  const { getToken, orgId, isLoaded, isSignedIn } = useAuth();
+  const { getToken, isLoaded, isSignedIn } = useAuth();
+  const tenantId = useTenantId();
 
   return useQuery({
     queryKey: ["fidelizacion", "activity", limit],
     queryFn: async () => {
       const token = await getToken();
-      if (!token || !orgId) throw new Error("Not authenticated");
+      if (!token || !tenantId) throw new Error("Not authenticated");
 
       return vitaliaFetch<ActivityStreamResponse>(
         `/api/v1/vitalia/fidelization/activity?limit=${limit}`,
-        { token, tenantId: orgId },
+        { token, tenantId },
       );
     },
     enabled: isLoaded && isSignedIn === true,

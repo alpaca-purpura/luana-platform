@@ -12,6 +12,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
+import { useTenantId } from "@/hooks/useTenantId";
 import { vitaliaFetch } from "@/lib/fetch-client";
 import type {
   MarkExternalRequest,
@@ -28,19 +29,19 @@ interface MarkExternalArgs {
  */
 export function useMarkExternal() {
   const queryClient = useQueryClient();
-  const { getToken, orgId } = useAuth();
+  const { getToken} = useAuth();
+  const tenantId = useTenantId();
 
   return useMutation({
     mutationFn: async ({ patientId, payload }: MarkExternalArgs) => {
       const token = await getToken();
-      if (!token || !orgId) throw new Error("Not authenticated");
+      if (!token || !tenantId) throw new Error("Not authenticated");
 
       return vitaliaFetch<MarkExternalResponse>(
         `/api/v1/vitalia/fidelization/patients/${patientId}/mark-external`,
         {
           token,
-          tenantId: orgId,
-          method: "POST",
+          tenantId, method: "POST",
           body: JSON.stringify(payload),
         },
       );

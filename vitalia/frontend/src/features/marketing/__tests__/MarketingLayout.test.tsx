@@ -100,6 +100,8 @@ vi.mock("@clerk/nextjs", () => ({
     isSignedIn: true,
   }),
 }));
+vi.mock("@/hooks/useTenantId", () => ({ useTenantId: () => "mock-tenant-id" }));
+
 
 // Mock child components to isolate layout test
 vi.mock("../components/MarketingBowtieSVG", () => ({

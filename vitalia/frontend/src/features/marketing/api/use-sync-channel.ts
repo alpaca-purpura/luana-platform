@@ -9,6 +9,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
+import { useTenantId } from "@/hooks/useTenantId";
 import { useClinicId } from "@/hooks/useClinicId";
 import { fetchClient } from "@/lib/api/fetchClient";
 import type { ProviderSlug, SyncResponse } from "../types/channel";
@@ -18,21 +19,21 @@ export type UseSyncChannelVariables = {
 };
 
 export function useSyncChannel() {
-  const { getToken, orgId } = useAuth();
+  const { getToken} = useAuth();
+  const tenantId = useTenantId();
   const clinicId = useClinicId();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ provider }: UseSyncChannelVariables) => {
       const token = await getToken();
-      if (!token || !orgId) throw new Error("Not authenticated");
+      if (!token || !tenantId) throw new Error("Not authenticated");
       return fetchClient<SyncResponse>(
         `/api/v1/vitalia/marketing/channels/${encodeURIComponent(provider)}/sync`,
         {
           method: "POST",
           token,
-          tenantId: orgId,
-          clinicId,
+          tenantId, clinicId,
           headers: {
             "Idempotency-Key": crypto.randomUUID(),
           },

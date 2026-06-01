@@ -24,6 +24,8 @@ vi.mock("@clerk/nextjs", () => ({
     isSignedIn: true,
   }),
 }));
+vi.mock("@/hooks/useTenantId", () => ({ useTenantId: () => "mock-tenant-id" }));
+
 
 // Mock useClinicId
 vi.mock("@/hooks/useClinicId", () => ({
@@ -184,7 +186,7 @@ describe("useAttachMedia", () => {
 
     // Dual filter headers present (tenant + clinic per hipaa-lite.md)
     expect(headers["Authorization"]).toBe("Bearer mock-token");
-    expect(headers["X-Tenant-ID"]).toBe("org-test-tenant");
+    expect(headers["X-Tenant-ID"]).toBe("mock-tenant-id");
     expect(headers["X-Clinic-ID"]).toBe("clinic-abc");
 
     // No PHI in headers

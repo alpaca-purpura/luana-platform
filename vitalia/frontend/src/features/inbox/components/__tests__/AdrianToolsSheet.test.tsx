@@ -25,6 +25,8 @@ import type { ToolsState } from "../../types/tools-state";
 vi.mock("@clerk/nextjs", () => ({
   useOrganization: () => ({ organization: null }),
 }));
+vi.mock("@/hooks/useTenantId", () => ({ useTenantId: () => "mock-tenant-id" }));
+
 
 const mockOnClose = vi.fn();
 

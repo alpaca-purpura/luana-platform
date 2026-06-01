@@ -85,6 +85,8 @@ vi.mock("@clerk/nextjs", () => ({
     isSignedIn: true,
   }),
 }));
+vi.mock("@/hooks/useTenantId", () => ({ useTenantId: () => "mock-tenant-id" }));
+
 
 // Import the component (will fail until created — RED test)
 import { MarketingStageTabs } from "../components/MarketingStageTabs";

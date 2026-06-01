@@ -20,6 +20,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
+import { useTenantId } from "@/hooks/useTenantId";
 import { useClinicId } from "@/hooks/useClinicId";
 import { fetchClient } from "@/lib/api/fetchClient";
 import { activityStreamKey } from "./_keys";
@@ -42,18 +43,19 @@ export function useActivityStream(
   conversationId: string | null | undefined,
   enabled: boolean = false,
 ) {
-  const { getToken, orgId, isLoaded, isSignedIn } = useAuth();
+  const { getToken, isLoaded, isSignedIn } = useAuth();
+  const tenantId = useTenantId();
   const clinicId = useClinicId();
 
   return useQuery({
     queryKey: activityStreamKey(conversationId ?? ""),
     queryFn: async () => {
       const token = await getToken();
-      if (!token || !orgId) throw new Error("Not authenticated");
+      if (!token || !tenantId) throw new Error("Not authenticated");
       if (!conversationId) throw new Error("conversationId required");
       return fetchClient<ActivityStreamResponse>(
         `/api/v1/vitalia/inbox/conversations/${conversationId}/activity-stream`,
-        { token, tenantId: orgId, clinicId },
+        { token, tenantId, clinicId },
       );
     },
     enabled: isLoaded && isSignedIn === true && !!conversationId && enabled,

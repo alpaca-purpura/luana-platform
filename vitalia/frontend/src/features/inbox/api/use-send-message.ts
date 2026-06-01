@@ -20,6 +20,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
+import { useTenantId } from "@/hooks/useTenantId";
 import { useClinicId } from "@/hooks/useClinicId";
 import { fetchClient } from "@/lib/api/fetchClient";
 import { conversationDetailKey, conversationsListKey } from "./_keys";
@@ -42,22 +43,22 @@ export interface SendMessageInput {
  * Returns the persisted Message with action_receipt_expires_at for undo chip.
  */
 export function useSendMessage() {
-  const { getToken, orgId } = useAuth();
+  const { getToken} = useAuth();
+  const tenantId = useTenantId();
   const clinicId = useClinicId();
   const qc = useQueryClient();
 
   return useMutation({
     mutationFn: async (input: SendMessageInput): Promise<Message> => {
       const token = await getToken();
-      if (!token || !orgId) throw new Error("Not authenticated");
+      if (!token || !tenantId) throw new Error("Not authenticated");
 
       return fetchClient<Message>(
         `/api/v1/vitalia/inbox/conversations/${input.conversationId}/messages`,
         {
           method: "POST",
           token,
-          tenantId: orgId,
-          clinicId,
+          tenantId, clinicId,
           headers: {
             "Idempotency-Key": input.idempotencyKey,
           },

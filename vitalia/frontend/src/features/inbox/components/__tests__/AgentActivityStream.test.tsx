@@ -24,6 +24,8 @@ import type { ActivityEvent } from "../../types/activity-event";
 vi.mock("@clerk/nextjs", () => ({
   useOrganization: () => ({ organization: null }),
 }));
+vi.mock("@/hooks/useTenantId", () => ({ useTenantId: () => "mock-tenant-id" }));
+
 
 // Mock useInboxStore
 let mockExpanded = false;

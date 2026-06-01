@@ -39,6 +39,8 @@ vi.mock("@clerk/nextjs", () => ({
     orgId: "tenant-001",
   })),
 }));
+vi.mock("@/hooks/useTenantId", () => ({ useTenantId: () => "mock-tenant-id" }));
+
 
 vi.mock("@/hooks/useClinicId", () => ({
   useClinicId: vi.fn(() => "clinic-001"),
