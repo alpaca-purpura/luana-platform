@@ -5,7 +5,7 @@
 >
 > **Para quién:** para Claude (que es el cuerpo y las manos de Chris en este repo) y para todo skill/agente que orqueste trabajo. Debe estar **siempre cargado/claro** (pointer en root `CLAUDE.md` + rule `.claude/rules/paradigm-arquitectura.md` + MEMORY).
 >
-> **Estado:** cementado 2026-05-30. Decisión registrada en `ADR-010-orquestacion-agentica.md`. Cambiarlo requiere ratificación explícita de Chris + bump de ADR.
+> **Estado:** cementado 2026-05-30 (`ADR-010`). **Extendido 2026-06-01 (`ADR-013`):** auto-extensión runtime + cadena de valor comercial por puesto (§5b). Cambiarlo requiere ratificación explícita de Chris + bump de ADR.
 
 ---
 
@@ -93,6 +93,18 @@ El cockpit ("Mapa Implementado") agrupa toda capability en **una de tres zonas**
 
 ---
 
+## 5b. El sistema se auto-extiende + se comercializa por puesto (ADR-013 · 2026-06-01)
+
+Dos dimensiones que extienden los 3 planos. Detalle completo: `ADR-013` + `docs/product/stories/empleados-ia-auto-extension/00-research.md`.
+
+**(A) El motor se auto-extiende — "el usuario pide → lo creamos", gobernado.** Todo pedido del dueño se reduce a **12 primitivas (objetos)** en 3 familias (Ver/Hacer-Guardar/Gobernar), con **operaciones de ciclo de vida** ortogonales (incl. desactivar/eliminar). Se resuelve en **5 tiers**: T0 rechazo (refuse-with-reframe) · T1 orquestar/mostrar · T2 configurar sobre extension-points (sin código) · T3 construir (sandbox+humano+live-verify) · T3+ producto / **core invariante**. **Router de 2 niveles:** L1 supervisora (¿de qué dominio?) → L2 empleado dueño (¿T1/T2/T3 en mi dominio?). **Flywheel:** T3 frecuente → lift a EP nuevo → colapsa a T2. **El flujo es unidad durable de 1ª clase** (estado+seguimiento), distinto de la acción transaccional.
+
+**(B) El producto es un equipo vendido por puesto.** Base obligatoria (identidad + Configuración + supervisora) + **cadena de valor** (Atraer→Vender→Operar→Retener) como **SKUs** combinables. Cada empleado = cara (FE) · dominio acotado (un engine, no motor propio) · autonomía (tiers) · SKU. **Cross-brand 60/40 (Liskov):** la etapa = interfaz estable (core); roster + procesos = instancia por marca (extension).
+
+**Barandas SOLID (las que evitan el caos):** la supervisora **reenvía intención, no construye** en dominio ajeno (el dueño construye lo suyo); **orquestación fractal** (supervisora↔empleados = flujo↔acciones, siempre vía interfaces/eventos, nunca internals); **coordinación de 3 modos** (coreografía por eventos = default · supervisora para ambiguo/PHI · handoff directo = excepción medida); **read/write split** (reads componibles vía read-models, writes con dueño por outcome); **techo de auto-extensión** (core invariante → gate humano `/pm-luana`); **separación de poderes** (el agente pide autonomía, el humano la concede).
+
+---
+
 ## 6. Invariante vs implementación (para no confundir filosofía con tech del mes)
 
 Lo de la izquierda **no cambia**. Lo de la derecha es **swappable** sin tocar el paradigma.
@@ -126,7 +138,9 @@ Lo de la izquierda **no cambia**. Lo de la derecha es **swappable** sin tocar el
 
 ## 8. Referencias
 
-- `docs/architecture/luana-platform/ADR-010-orquestacion-agentica.md` — la decisión registrada
+- `docs/architecture/luana-platform/ADR-010-orquestacion-agentica.md` — la decisión registrada (3 planos)
+- `docs/architecture/luana-platform/ADR-013-empleados-ia-auto-extension.md` — extensión §5b (auto-extensión + SKU por puesto)
+- `docs/product/stories/empleados-ia-auto-extension/00-research.md` — investigación + panorama + casos borde
 - `.claude/rules/paradigm-arquitectura.md` — rule enforce-able + árbol de decisión zona/caja
 - `docs/process/capability-protocol.md` — schema cap + derivación de zona
 - `docs/process/lifecycle.md` — 4 ejes (Release→Story→Capability→Scenario) + hogar de la cap

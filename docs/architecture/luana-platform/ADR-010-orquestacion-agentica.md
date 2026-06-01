@@ -4,6 +4,7 @@
 - **Date:** 2026-05-30
 - **Scope:** platform-wide (10 marcas) — define el modelo operativo. SSoT vivo: `PARADIGM.md`.
 - **Supersedes/extends:** ADR-007 (paradigm v4.1 autonomy) en la dimensión de *cómo* trabajan los agentes. No toca el ciclo SDD (lifecycle.md).
+- **Extended by:** ADR-013 (empleados-IA + auto-extensión runtime + cadena de valor por puesto · 2026-06-01).
 
 ## Contexto
 
