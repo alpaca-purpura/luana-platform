@@ -10,9 +10,11 @@ cap_target: shell-vitalia                         # toca el shell-organism core 
 cap_change_type: fix                              # bugfix arquitectónico: elimina doble montaje + id duplicado (no agrega scenarios de producto nuevos)
 parent_story: null
 
-state: reviewing
-phase_workflow: HANDOFF_TO_PM_MERGE
+state: done
+phase_workflow: MERGED
 audit_verdict: APPROVED
+merged_at: 2026-06-01T12:05:00-05:00
+merged_by: /pm-vitalia
 last_artifact: e2e/regression/vitalia-shell-dual-mount-a11y-fix/single-slot-live.spec.ts
 last_modified: 2026-06-01T11:40:00-05:00
 

@@ -47,7 +47,7 @@ dev_preview:
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-shell-organism   # merge consolidado por ADR-vitalia-005
 created_date: 2026-05-27
-last_modified: 2026-05-29   # T-3 reconcile 2026-05-29
+last_modified: 2026-06-01   # bugfix dual-mount (single-main+single-slot)
 parent_cap: null
 derives_capabilities: []
 
@@ -127,6 +127,15 @@ change_log:
     atomics_added: []
     atomics_modified: [shell-layout-5050, shell-valeria-sidebar]
     scenarios_added: [shell-state-persists-reload, mobile-drawer-collapsed-pero-recuerda]
+    merge_sha: null
+    status: done
+  - story_id: vitalia-shell-dual-mount-a11y-fix
+    date: 2026-06-01
+    type: fix
+    summary: "Bugfix arquitectónico: elimina el triple-main / dual-slot. ShellOrganismLayoutClient reescrito a UN solo <main id='main-content'> + <AppPanelSlot> renderizado UNA vez por rama XOR (agentic/web); mobile = Valeria CSS-hidden (no segunda rama montada); <Group> siempre montado (hook-count estable, mata el crash 'rendered more hooks' — lección nicolify). Resuelve id duplicado (HTML inválido + landmark a11y) y testids duplicados (strict-mode E2E). NO agrega scenarios de producto."
+    atomics_added: []
+    atomics_modified: []
+    scenarios_added: []
     merge_sha: null
     status: done
 

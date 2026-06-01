@@ -96,3 +96,12 @@ Findings: C1 4/4 · C2 5/5 · C3 6/6 · C4 8/8 · C5 6/6.
 ⚠️ Finding cross-brand para `/pm-luana` (NO blocker de esta story): arch test `no-cross-brand-shell-mirror` falla por `SubTabMeta`/`extractSubtabFromPath` portados a nicolify (PRE-EXISTENTE en origin/main, este fix no los toca).
 
 CHECKPOINTS.md + T-1-review.md escritos. AUTO-HANDOFF `/pm-vitalia` para merge reviewing→done (07-merge.md + cap change_log fix + git mv archive).
+
+### 2026-06-01T12:05 · 🤖 claude · `/pm-vitalia` · ✓ APLICADO
+**MERGE reviewing→done.** Gate ADR-008 OK (`dev_app_verified.evidence` poblado), CHECKPOINTS C1-C5 verdes, auditor APPROVED. Apliqué:
+- `07-merge.md` (5 secciones) escrito.
+- `capabilities/shell-organism/shell-vitalia.yaml`: change_log entry type=**fix** (NO scenarios, es bugfix) + `last_modified: 2026-06-01`.
+- Story archivada: `git mv` a `vitalia/docs/archive/2026/stories/vitalia-shell-dual-mount-a11y-fix/` en este mismo commit (R2).
+- `state: done`.
+
+**Pendiente A CERRADO.** Esto destraba Pendiente B (vitalia-fase2-lisa-doctores): el workaround `.filter({visible:true})` ya no hace falta. Próximo: Pendiente B (harness doctores) — que además debe resolver el `GET /clinics/doctors` 500 (X-Clinic-ID) detectado en el live-verify para llegar a `done` con evidencia real.
