@@ -50,3 +50,16 @@ grep -rln "tenantId: orgId" vitalia/frontend/src/ → 34
 ## Learning candidate
 
 `promotable: candidate` — "Verificación real ≠ HTTP 200, a escala: e2e mockeado FE-wide ocultó que TODO el FE resolvía tenant desde Clerk Orgs (invariante prohibido) → 500 en todo PHI contra backend real. La live-verify de UNA story destapó deuda de plataforma." Aplica cross-brand (toda brand con e2e mockeado puede tener el mismo agujero). Ver `vitalia/docs/learnings/cobertura-tests-vs-realidad-2026-05-29.md`.
+
+---
+
+## Update 2026-06-01 — remediación T-1+T-2 mergeada (story vitalia-fe-tenant-resolution-no-clerk-org)
+
+- **RESUELTO el vector PHI-500:** useTenantId() + 33 archivos + AuditedSection + useTenantLocale. Live-verified
+  (X-Tenant-ID=UUID nuestro, API_5XX=[], doctors 500→200). Clerk org `org_3DzUI3...` borrada (count=0).
+- **Confirmado:** onboarding NO hace `createOrganization` → la deleción de la org NO se revierte.
+- **Follow-up remanente (NO blocker, menor prioridad):** `features/onboarding/*` (wizard, vía
+  `use-wizard-onboarding-state.ts`) aún LEE `useOrganization()` (READ, degrada a null — onboarding es flujo
+  one-time, no PHI runtime). `useSignOutCleanup.ts` limpia sesión org (inofensivo). Estos quedan en el allowlist
+  shrink-only del arch test. Migrarlos a tenant-resolution nuestra cierra el invariante al 100%. Owner sugerido:
+  story de onboarding o /pm-luana si se vuelve cross-brand.

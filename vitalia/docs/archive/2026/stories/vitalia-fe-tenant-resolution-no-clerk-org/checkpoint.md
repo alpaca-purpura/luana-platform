@@ -11,9 +11,11 @@ cap_change_type: fix
 parent_story: null
 
 release: F2
-state: developed
-phase_workflow: T2_DONE
+state: done
+phase_workflow: MERGED
 audit_t1_verdict: APPROVED
+merged_at: 2026-06-01T13:55:00-05:00
+merged_by: /pm-vitalia
 architecture_pattern: N/A   # cross-cutting FE data-layer fix, no shell sub-tab
 adr_004_compliance: N/A
 autonomous_mode: true

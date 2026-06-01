@@ -72,7 +72,7 @@ verification:
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-adopt-luana-core-iam   # v2 cement · mirror of story_introduced
 created_date: 2026-05-19   # v2 cement · mirror of date_introduced
-last_modified: 2026-05-29   # T-3 reconcile 2026-05-29
+last_modified: 2026-06-01   # fix tenant-resolution (no Clerk org)
 parent_cap: null   # v2 cement · mirror of extends_capability
 derives_capabilities: []   # v2 cement · initial empty list
 
@@ -80,6 +80,12 @@ derives_capabilities: []   # v2 cement · initial empty list
 
 # Capability change log v2 (cement 2026-05-27)
 change_log:
+  - story_id: vitalia-fe-tenant-resolution-no-clerk-org
+    date: 2026-06-01
+    type: fix
+    summary: "El FE resolvía tenant_id desde useAuth().orgId (Clerk Org, org_ no-UUID) en 34 archivos → 500 en todo PHI contra backend real (oculto por e2e mockeado). Fix: useTenantId() (lee public_metadata.tenant_id) + reemplazo en 33 archivos + sweep AuditedSection (audit PHI) + useTenantLocale + tightening arch test no-clerk-organizations. Clerk org drift borrada. Live-verified: X-Tenant-ID=UUID nuestro, API_5XX=[], doctors 500→200. Restaura invariante no-clerk-organizations."
+    merge_sha: null
+    status: done
   - story_id: vitalia-adopt-luana-core-iam
     date: 2026-05-19
     type: new

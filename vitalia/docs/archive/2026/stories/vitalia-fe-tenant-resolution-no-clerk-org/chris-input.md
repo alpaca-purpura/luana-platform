@@ -21,3 +21,12 @@ Arranco `/dev-team` → builder-frontend para el refactor.
 
 Evidencia en checkpoint `dev_app_verified.evidence`. state `developing → developed`. AUTO-HANDOFF `/auditor`.
 Esto destraba doctores (Pendiente B): su resolución tenant+clinic ya está fixed (staff.ts fue uno de los 33 archivos).
+
+### 2026-06-01T13:55 · 🤖 claude · `/auditor`→`/pm-vitalia` · ✓ APLICADO
+**APPROVED + MERGE reviewing→done.** auditor-frontend APPROVED T-1 (refactor 33 archivos, sin fake-green, scope limpio, live-verify honesta). T-2 (sweep AuditedSection PHI-audit + useTenantLocale) implementó la prescripción exacta del auditor + 39 tests + gates verificados → resuelve sus 2 findings flagueados. CHECKPOINTS C1-C5 verdes.
+
+Merge aplicado: 07-merge.md + cap `iam.luana-core-adoption` change_log type=fix + story archivada (git mv, R2) + state=done.
+
+**Follow-up tracked (NO blocker):** onboarding wizard aún LEE org state (READ, degrada a null; NO crea orgs → mi deleción holds). Migración = menor prioridad.
+
+**Esto destraba Pendiente B (doctores):** su resolución tenant+clinic ya está fixed (staff.ts + useClinicId incluidos). Próximo: re-verificar doctores live + completar su harness.
