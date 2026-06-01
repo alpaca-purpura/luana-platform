@@ -52,3 +52,14 @@ Ready package cerrado (`state: refined → ready`). 5 artifacts en el story-fold
 Tickets: **T-1** (builder-frontend **Sonnet** — FE no-agentic, R23 N/A — reescribir ShellOrganismLayoutClient + RED-first sus tests SC-1/2/4) + **T-2** (verificación transversal 5 agentes ×3 modos + axe + dev-app live ADR-008). `autonomous_mode: false` — lo propongo porque el blast-radius es transversal (un error rompe la UI de TODOS los agentes), conviene tu check antes del build.
 
 ⚠️ DUDA para Chris: ¿arranco `/dev-team` T-1 ahora (build con gates transversales protegiendo el blast-radius; el merge igual frena para vos por ADR-008), o querés revisar el ready package / mockear primero? Recomiendo arrancar el build — los validators RED-first + transversales son la red de seguridad.
+
+### 2026-06-01 10:25 · 🤖 claude · `/dev-team` · ✓ APLICADO
+**T-1 construido y GREEN** (builder-frontend Sonnet, commit `b65baae6`, 2 archivos). El fix implementa D1-D5:
+- `ShellOrganismLayoutClient.tsx` reescrito: UN solo `<main id="main-content">` + `<AppPanelSlot>{children}>` renderizado **una sola vez** (línea 280), hooks incondicionales al tope (D3), SIN useMediaQuery/isDesktop (D4), gate desktop↔mobile por CSS (D5). Header doc actualizado (borra Triple-main, documenta la lección nicolify).
+- `ShellOrganismLayout.test.tsx` reescrito (RED→GREEN): asserts triple-main → single-main + single-slot.
+
+**Verificación (Step 4):** ShellOrganismLayout 22/22 · AppPanelSlot 13/13 · skip-link arch 2/2 · **suite shell-organism completa 31 archivos / 501 tests ALL PASS** (regresión transversal: cero) · `tsc src/` 0 errores · eslint limpio.
+
+⚠️ **Finding pre-existente (NO de este fix, para /pm-luana):** el arch test `test-no-cross-brand-shell-mirror.test.ts` falla (4 matches `SubTabMeta`/`extractSubtabFromPath` en nicolify). Causa: el **rebuild de nicolify portó el shell de vitalia** (ya en origin/main) sin renombrar esos símbolos TS. Mi T-1 no lo introdujo (solo tocó 2 archivos vitalia). Es un mirror cross-brand que pide decisión /pm-luana (renombrar en nicolify, o aceptar el port + ajustar el arch test).
+
+**Pendiente T-2 (verificación transversal LIVE · ADR-008):** axe wcag2aa + dev-app live (ejercer lisa + valeria sidebar desktop+mobile, confirmar 1 main-content + 1 slot en DOM real, consola sin "more hooks") + prueba de fuego E2E doctores (getByTestId resuelve a 1 sin `.filter visible`). Esto llena `dev_app_verified.evidence` (requerido para developed→reviewing→done). `autonomous_mode:false` → checkpoint con Chris antes de T-2 live.

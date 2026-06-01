@@ -11,7 +11,7 @@ cap_change_type: fix                              # bugfix arquitectónico: elim
 parent_story: null
 
 state: developing
-phase_workflow: BUILD_T1
+phase_workflow: T1_DONE_T2_PENDING_LIVE
 last_artifact: 06-tickets.yaml
 last_modified: 2026-06-01T00:30:00-05:00
 
