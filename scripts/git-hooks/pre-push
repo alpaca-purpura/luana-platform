@@ -55,8 +55,28 @@ if [ -n "${CI_PARITY_OVERRIDE:-}" ]; then
 fi
 
 if [ ! -f "${MARKER}" ]; then
-  printf "\033[31m"
-  cat <<EOF
+  # ── Deferred phase (dev-only · sin CI/testing/prod) ──────────────
+  # github-actions-deferred.md: mientras no haya ambiente de testing/staging/prod
+  # provisionado, el Docker ci-parity mirror es ADVISORY (avisa, no bloquea).
+  # El gate real de calidad es el suite NATIVO (/test-all) que el dev corre.
+  # El check de bidirectional cross_check_3 (abajo) sí sigue HARD (barato + real).
+  # Cuando se provisione testing/prod → borrar el sentinel `.ci-parity-deferred`
+  # (+ reinstalar hooks) → el gate Docker vuelve a HARD. Triggers de reactivación
+  # listados en docs/rules-detail/github-actions-deferred.md.
+  if [ -f "${REPO_ROOT}/.ci-parity-deferred" ]; then
+    printf "\033[33m"
+    echo "─────────────────────────────────────────────────────────────"
+    echo "ADVISORY (fase dev-only · .ci-parity-deferred presente):"
+    echo "  ci-parity Docker mirror NO corrido — gate diferido (sin CI/prod)."
+    echo "  El gate real es el suite nativo: corré '/test-all' o 'make test-<brand>'."
+    echo "  Bidirectional cross_check_3 sigue HARD (se valida abajo)."
+    echo "  Al provisionar testing/prod: borrá .ci-parity-deferred + make install-hooks."
+    echo "─────────────────────────────────────────────────────────────"
+    printf "\033[0m"
+    # fall-through al check de bidirectional (NO exit 1)
+  else
+    printf "\033[31m"
+    cat <<EOF
 ─────────────────────────────────────────────────────────────
 PRE-PUSH BLOCKED: pushing to main without ci-parity green.
 
@@ -74,8 +94,9 @@ Emergency bypass (audited):
   CI_PARITY_OVERRIDE=1 git push origin main
 ─────────────────────────────────────────────────────────────
 EOF
-  printf "\033[0m"
-  exit 1
+    printf "\033[0m"
+    exit 1
+  fi
 fi
 
 # ─────────────────────────────────────────────────────────────────
