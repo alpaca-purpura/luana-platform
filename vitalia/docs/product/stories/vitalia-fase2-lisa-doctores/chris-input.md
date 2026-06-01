@@ -681,3 +681,10 @@ Auth GREEN (setup 2 passed / 3.8s). Items ejecutados:
 - ❌ SC-9 large-dataset pagination: mock race condition (0 cards loaded)
 
 **Pendiente para `done`:** (1) tu ratificación visual V-VIS-1..4 → (2) `/auditor` → merge.
+
+### 2026-06-01T14:45 · 🤖 claude · `/dev-team` · ⚠️ DUDA
+**Login ARREGLADO + app funcional. Esperando verificación live de Chris (decisión: "verifico yo primero").** Clerk fix aplicado (force_organization_selection=false vía Backend API) → dev-app.vitalialat.com/sign-in 200, setup auth 2/2 GREEN. 3 doctores reales seedeados (Ana/PE, Carlos/MX, Valentina/AR). a11y modal arreglada WCAG AA. 7 visual goldens regenerados (esperan ratificación ADR-vitalia-003).
+
+12 e2e RED honestos: mayoría mock-context (SC-1/SC-9/calendar SC-1b/c/d/3/3b — el comportamiento real está verificado live, el calendario renderiza), + 1 gap real menor SC-11 (modal no auto-detecta credencial por país AR/MX/CL).
+
+**Chris va a entrar a dev-app.vitalialat.com (dr.demo@vitalialat.com) y probar doctores/crear/calendario él mismo.** Pausa hasta su feedback: qué ve roto/faltante desde su perspectiva real → luego decidimos qué cerrar → /auditor → merge. Estado salvado en checkpoint (blocker RESUELTO, t_fix_2_progress, next_action).
