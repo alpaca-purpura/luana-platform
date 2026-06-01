@@ -611,3 +611,14 @@ Lección reforzada: el builder autónomo no es confiable para "hacer verde" sin 
 7. ⬜ Live-verify REAL (no mock) → `dev_app_verified.evidence` + crear cap `lisa.doctores` (new) + /auditor → merge (quitar defer_audit).
 
 Arranco por (1) keystone. Tras GREEN-real re-corro live-verify y reporto el estado real de (2)-(7).
+
+### 2026-06-01T12:45 · 🤖 claude · `/dev-team`→`/pm-vitalia` · ⚠️ DUDA
+**El live-verify destapó un bug SISTÉMICO mucho mayor que el doctores-500.** El keystone (BE 422 guard + FE useClinicId sin Clerk-org) está hecho y commiteado (BE `81a32173`, FE `99589cb2`) — el 500 desnudo murió. PERO el doctores no carga porque el problema real es otro y es FE-wide:
+
+**`tenantId: orgId` en 34 archivos del FE** (crm-shared, fidelizacion, marketing, inbox, lisa/staff, useCurrentUser). `orgId = useAuth().orgId` = el **Clerk Organization ID** (`org_3DzUI3...`, formato NO-UUID). Contra el backend real → `UUID("org_...")` → 500 en TODO endpoint PHI. Nunca se vio porque TODOS los harness mockean el backend (falso verde a escala de plataforma).
+
+Además: existe una **Clerk Organization** `org_3DzUI3lLjwX83Kth0j5enWrjIDY` ("Sanaré MX — Vitalia Test Tenant") y dr.demo es miembro — **drift**, no debería existir per [[no-clerk-organizations]]. La fuente correcta YA está en `public_metadata.tenant_id` (e69a691d-..., UUID válido).
+
+Doc completo: `vitalia/docs/observed-bugs/2026-06-01-fe-tenant-id-from-clerk-org-systemic.md`.
+
+**Esto excede la story de doctores.** El fix = `useTenantId()` (espejo de useClinicId) + reemplazar en 34 archivos + tightening arch test + borrar la Clerk org (outward-facing) + re-live-verify features afectados. Es remediación cross-cutting (story dedicada o /pm-luana), NO se entierra acá. **Doctores queda `developing` bloqueada en esta decisión.** Pregunto a Chris cómo proceder.
