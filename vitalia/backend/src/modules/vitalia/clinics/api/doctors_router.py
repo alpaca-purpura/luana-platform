@@ -157,8 +157,8 @@ def _to_list_item(doctor: Doctor) -> DoctorListItemDTO:
 @router.get("", response_model=DoctorListResponse, response_model_by_alias=True, include_in_schema=False)
 @router.get("/", response_model=DoctorListResponse, response_model_by_alias=True)
 async def list_doctors(
-    tenant_id: str = Header(alias="X-Tenant-ID"),
-    clinic_id: str = Header(alias="X-Clinic-ID"),
+    tenant_id: UUID = Header(alias="X-Tenant-ID"),
+    clinic_id: UUID = Header(alias="X-Clinic-ID"),
     specialty: str | None = Query(default=None),
     active: bool | None = Query(default=None),
     page: int = Query(default=1, ge=1),
@@ -169,11 +169,12 @@ async def list_doctors(
 
     SC-6: list scoped to tenant+clinic (dual filter).
     SC-9: large dataset — server-side pagination.
+    Headers typed as UUID — FastAPI validates and returns 422 for invalid values.
     """
     service = _build_service(db)
     doctors, total = await service.list_doctors(
-        tenant_id=UUID(tenant_id),
-        clinic_id=UUID(clinic_id),
+        tenant_id=tenant_id,
+        clinic_id=clinic_id,
         specialty=specialty,
         active=active,
         page=page,
@@ -200,22 +201,23 @@ async def list_doctors(
 )
 async def create_doctor(
     request: DoctorCreateRequest,
-    tenant_id: str = Header(alias="X-Tenant-ID"),
-    clinic_id: str = Header(alias="X-Clinic-ID"),
-    user_id: str = Header(alias="X-User-ID"),
+    tenant_id: UUID = Header(alias="X-Tenant-ID"),
+    clinic_id: UUID = Header(alias="X-Clinic-ID"),
+    user_id: UUID = Header(alias="X-User-ID"),
     db: AsyncSession = Depends(_get_db),
 ) -> DoctorDetailDTO:
     """Create a new doctor in the clinic staff directory.
 
     SC-2: invalid credential → 422 with Spanish neutro error message.
     SC-5: duplicate DNI → 409 Conflict.
+    Headers typed as UUID — FastAPI validates and returns 422 for invalid values.
     """
     service = _build_service(db)
     try:
         doctor = await service.create_doctor(
-            tenant_id=UUID(tenant_id),
-            clinic_id=UUID(clinic_id),
-            user_id=UUID(user_id),
+            tenant_id=tenant_id,
+            clinic_id=clinic_id,
+            user_id=user_id,
             first_name=request.first_name,
             last_name=request.last_name,
             dni=request.dni,
@@ -245,21 +247,22 @@ async def create_doctor(
 @router.get("/{doctor_id}", response_model=DoctorDetailDTO, response_model_by_alias=True)
 async def get_doctor(
     doctor_id: UUID,
-    tenant_id: str = Header(alias="X-Tenant-ID"),
-    clinic_id: str = Header(alias="X-Clinic-ID"),
-    user_id: str = Header(alias="X-User-ID"),
+    tenant_id: UUID = Header(alias="X-Tenant-ID"),
+    clinic_id: UUID = Header(alias="X-Clinic-ID"),
+    user_id: UUID = Header(alias="X-User-ID"),
     db: AsyncSession = Depends(_get_db),
 ) -> DoctorDetailDTO:
     """Get doctor detail (admin_clinic role required).
 
     SC-4: cross-tenant access → 404 generic (audit written internally).
+    Headers typed as UUID — FastAPI validates and returns 422 for invalid values.
     """
     service = _build_service(db)
     doctor = await service.get_doctor(
         doctor_id=doctor_id,
-        tenant_id=UUID(tenant_id),
-        clinic_id=UUID(clinic_id),
-        user_id=UUID(user_id),
+        tenant_id=tenant_id,
+        clinic_id=clinic_id,
+        user_id=user_id,
     )
     if doctor is None:
         await db.commit()  # flush audit log entry
@@ -301,15 +304,16 @@ def _to_block_dto(block: AvailabilityBlock) -> AvailabilityBlockDTO:
 async def patch_doctor(
     doctor_id: UUID,
     request: DoctorPatchRequest,
-    tenant_id: str = Header(alias="X-Tenant-ID"),
-    clinic_id: str = Header(alias="X-Clinic-ID"),
-    user_id: str = Header(alias="X-User-ID"),
+    tenant_id: UUID = Header(alias="X-Tenant-ID"),
+    clinic_id: UUID = Header(alias="X-Clinic-ID"),
+    user_id: UUID = Header(alias="X-User-ID"),
     db: AsyncSession = Depends(_get_db),
 ) -> DoctorDetailDTO:
     """Patch doctor mutable fields (bio, active, visible, avatar_key).
 
     Autosave-friendly: accepts partial payload.
     Audit: doctor.updated or doctor.deactivated.
+    Headers typed as UUID — FastAPI validates and returns 422 for invalid values.
     """
     # Map DTO bio to domain BioPublic if provided
     bio_public: BioPublic | None = None
@@ -323,9 +327,9 @@ async def patch_doctor(
     service = _build_service(db)
     doctor = await service.update_doctor(
         doctor_id=doctor_id,
-        tenant_id=UUID(tenant_id),
-        clinic_id=UUID(clinic_id),
-        user_id=UUID(user_id),
+        tenant_id=tenant_id,
+        clinic_id=clinic_id,
+        user_id=user_id,
         phone=request.phone,
         bio_inputs_notes=request.bio_inputs_notes,
         bio_links=request.bio_links,
@@ -357,9 +361,9 @@ async def patch_doctor(
 async def generate_doctor_bio(
     doctor_id: UUID,
     request: GenerateBioRequest,  # noqa: ARG001 — empty body, kept for explicit schema
-    tenant_id: str = Header(alias="X-Tenant-ID"),
-    clinic_id: str = Header(alias="X-Clinic-ID"),
-    user_id: str = Header(alias="X-User-ID"),  # noqa: ARG001 — kept for RBAC audit trace
+    tenant_id: UUID = Header(alias="X-Tenant-ID"),
+    clinic_id: UUID = Header(alias="X-Clinic-ID"),
+    user_id: UUID = Header(alias="X-User-ID"),  # noqa: ARG001 — kept for RBAC audit trace
     db: AsyncSession = Depends(_get_db),
 ) -> GenerateBioResponse:
     """Generate public bio from stored inputs (single-shot extractive, NOT agentic).
@@ -383,9 +387,9 @@ async def generate_doctor_bio(
     service = _build_service(db)
     doctor = await service.get_doctor(
         doctor_id=doctor_id,
-        tenant_id=UUID(tenant_id),
-        clinic_id=UUID(clinic_id),
-        user_id=UUID(user_id),
+        tenant_id=tenant_id,
+        clinic_id=clinic_id,
+        user_id=user_id,
     )
     if doctor is None:
         await db.commit()
@@ -427,20 +431,21 @@ async def generate_doctor_bio(
 @router.get("/{doctor_id}/availability-blocks", response_model=AvailabilityBlocksResponse, response_model_by_alias=True)
 async def list_availability_blocks(
     doctor_id: UUID,
-    tenant_id: str = Header(alias="X-Tenant-ID"),
-    clinic_id: str = Header(alias="X-Clinic-ID"),
+    tenant_id: UUID = Header(alias="X-Tenant-ID"),
+    clinic_id: UUID = Header(alias="X-Clinic-ID"),
     db: AsyncSession = Depends(_get_db),
 ) -> AvailabilityBlocksResponse:
     """List availability blocks for a doctor (dual filter).
 
     Returns all active (non-deleted) blocks for the specified doctor,
     scoped to the tenant+clinic (dual filter per hipaa-lite.md).
+    Headers typed as UUID — FastAPI validates and returns 422 for invalid values.
     """
     svc = _build_block_service(db)
     blocks = await svc.list_blocks(
         doctor_id=doctor_id,
-        tenant_id=UUID(tenant_id),
-        clinic_id=UUID(clinic_id),
+        tenant_id=tenant_id,
+        clinic_id=clinic_id,
     )
     return AvailabilityBlocksResponse(blocks=[_to_block_dto(b) for b in blocks])
 
@@ -455,9 +460,9 @@ async def list_availability_blocks(
 async def create_availability_block(
     doctor_id: UUID,
     request: RecurrentBlockCreateRequest | OneOffBlockCreateRequest,
-    tenant_id: str = Header(alias="X-Tenant-ID"),
-    clinic_id: str = Header(alias="X-Clinic-ID"),
-    user_id: str = Header(alias="X-User-ID"),
+    tenant_id: UUID = Header(alias="X-Tenant-ID"),
+    clinic_id: UUID = Header(alias="X-Clinic-ID"),
+    user_id: UUID = Header(alias="X-User-ID"),
     db: AsyncSession = Depends(_get_db),
 ) -> AvailabilityBlockDTO:
     """Create a new availability block (recurrent or one-off) + materialize slots.
@@ -470,14 +475,15 @@ async def create_availability_block(
     No scheduling module edit required — slots table is brand-local, scheduling reads it.
 
     Audit: doctor.availability_block_created (sync write pre-response, HIPAA-lite).
+    Headers typed as UUID — FastAPI validates and returns 422 for invalid values.
     """
     svc = _build_block_service(db)
     try:
         block = await svc.create_block(
-            tenant_id=UUID(tenant_id),
-            clinic_id=UUID(clinic_id),
+            tenant_id=tenant_id,
+            clinic_id=clinic_id,
             doctor_id=doctor_id,
-            user_id=UUID(user_id),
+            user_id=user_id,
             kind=request.kind,
             start_time=request.start_time,
             end_time=request.end_time,
@@ -508,24 +514,25 @@ async def patch_availability_block(
     doctor_id: UUID,
     block_id: UUID,
     request: RecurrentBlockCreateRequest | OneOffBlockCreateRequest,
-    tenant_id: str = Header(alias="X-Tenant-ID"),
-    clinic_id: str = Header(alias="X-Clinic-ID"),
-    user_id: str = Header(alias="X-User-ID"),
+    tenant_id: UUID = Header(alias="X-Tenant-ID"),
+    clinic_id: UUID = Header(alias="X-Clinic-ID"),
+    user_id: UUID = Header(alias="X-User-ID"),
     db: AsyncSession = Depends(_get_db),
 ) -> AvailabilityBlockDTO:
     """Edit a block (reproject-future-only invariant).
 
     Only slots on or after today are re-projected. Past slots are never touched.
     Confirmed future slots (has_confirmed_appointment=True) are preserved.
+    Headers typed as UUID — FastAPI validates and returns 422 for invalid values.
     """
     svc = _build_block_service(db)
     try:
         block = await svc.update_block(
             block_id=block_id,
-            tenant_id=UUID(tenant_id),
-            clinic_id=UUID(clinic_id),
+            tenant_id=tenant_id,
+            clinic_id=clinic_id,
             doctor_id=doctor_id,
-            user_id=UUID(user_id),
+            user_id=user_id,
             kind=request.kind,
             start_time=request.start_time,
             end_time=request.end_time,
@@ -562,9 +569,9 @@ async def patch_availability_block(
 async def delete_availability_block(
     doctor_id: UUID,
     block_id: UUID,
-    tenant_id: str = Header(alias="X-Tenant-ID"),
-    clinic_id: str = Header(alias="X-Clinic-ID"),
-    user_id: str = Header(alias="X-User-ID"),
+    tenant_id: UUID = Header(alias="X-Tenant-ID"),
+    clinic_id: UUID = Header(alias="X-Clinic-ID"),
+    user_id: UUID = Header(alias="X-User-ID"),
     db: AsyncSession = Depends(_get_db),
 ) -> DeleteBlockResponse:
     """Retire future slots + soft-delete block.
@@ -578,13 +585,14 @@ async def delete_availability_block(
            this endpoint returns preserved_appointments=N so FE can show warning.
 
     Audit: doctor.availability_block_deleted (sync write, HIPAA-lite).
+    Headers typed as UUID — FastAPI validates and returns 422 for invalid values.
     """
     svc = _build_block_service(db)
     deleted, preserved = await svc.delete_block(
         block_id=block_id,
-        tenant_id=UUID(tenant_id),
-        clinic_id=UUID(clinic_id),
-        user_id=UUID(user_id),
+        tenant_id=tenant_id,
+        clinic_id=clinic_id,
+        user_id=user_id,
     )
     await db.commit()
     return DeleteBlockResponse(deleted=deleted, preserved_appointments=preserved)
