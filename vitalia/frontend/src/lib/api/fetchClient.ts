@@ -5,21 +5,26 @@
  *
  * Auto-injects (per HIPAA-lite dual filter):
  *   - Authorization: Bearer <token>   (Clerk JWT)
- *   - X-Tenant-ID: <tenantId>          (from Clerk org metadata)
- *   - X-Clinic-ID: <clinicId>          (HIPAA-lite dual filter — vitalia-specific)
+ *   - X-Tenant-ID: <tenantId>          (our luana-core-iam tenant ID, from user.publicMetadata)
+ *   - X-Clinic-ID: <clinicId>          (HIPAA-lite dual filter — vitalia-specific, from user.publicMetadata)
  *   - Content-Type: application/json
  *
  * Design: plain async function (NOT a React hook).
  * Caller pattern in React Query queryFn:
- *   1. useAuth() → getToken() + orgId
- *   2. useClinicId() → clinicId
- *   3. queryFn calls fetchClient({ token, tenantId, clinicId })
+ *   1. useAuth() → getToken()
+ *   2. useTenantStore() → activeTenant.id (our luana-core-iam tenant_id)
+ *   3. useClinicId() → clinicId (from user.publicMetadata.clinicId, written by luana-core-iam)
+ *   4. queryFn calls fetchClient({ token, tenantId, clinicId })
  *
  * Per .claude/rules/tenant-isolation.md: EVERY request MUST include X-Tenant-ID.
  * Per vitalia/.claude/rules/hipaa-lite.md: EVERY PHI request MUST also include X-Clinic-ID.
  *
  * NOTE: This file intentionally does NOT use React hooks.
  * NEVER manually inject X-Tenant-ID in Client Components — this file handles it.
+ *
+ * Per MEMORY.md::no-clerk-organizations (2026-05-20):
+ *   tenant_id and clinic_id are OUR data from luana-core-iam, NOT from Clerk Organizations.
+ *   Clerk is used only as an identity provider (JWT + user.publicMetadata storage).
  */
 
 export class ApiError extends Error {
@@ -39,9 +44,9 @@ export class ApiError extends Error {
 export interface FetchClientOptions extends Omit<RequestInit, "headers"> {
   /** Clerk JWT obtained via useAuth().getToken() */
   token: string;
-  /** Clerk organization ID (X-Tenant-ID header) */
+  /** Luana-core-iam tenant ID (X-Tenant-ID header). From useTenantStore().activeTenant.id or user.publicMetadata.tenantId. NOT a Clerk organization ID. */
   tenantId: string;
-  /** Clinic ID for HIPAA-lite dual filter (X-Clinic-ID header). Required for PHI endpoints. */
+  /** Clinic ID for HIPAA-lite dual filter (X-Clinic-ID header). From useClinicId() → user.publicMetadata.clinicId (luana-core-iam). Required for PHI endpoints. */
   clinicId?: string | null;
   /** Additional headers to merge */
   headers?: Record<string, string>;
