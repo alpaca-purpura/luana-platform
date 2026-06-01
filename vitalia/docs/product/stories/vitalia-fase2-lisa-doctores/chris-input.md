@@ -646,3 +646,6 @@ Doc completo: `vitalia/docs/observed-bugs/2026-06-01-fe-tenant-id-from-clerk-org
 Esto bloquea: regen de baselines (c), flujos profundos (e), y re-verificar los asserts revertidos (b). **Fix = deshabilitar Organizations / la tarea `choose-organization` en la instancia Clerk** — la completitud correcta de no-clerk-organizations (borramos la org pero no apagamos la feature). Doc: `vitalia/docs/observed-bugs/2026-06-01-clerk-choose-organization-task-blocks-signin.md`.
 
 **Pregunto cómo proceder con el fix Clerk** (dashboard vos / `npx clerk` con tu auth / etc.). Sin eso, doctores no puede llegar a `done` honesto (DoD live + AC-9 goldens dependen de browser auth).
+
+### 2026-06-01T13:40 · 🤖 claude · `/pm-vitalia` · ✓ APLICADO
+**B en pausa esperando fix Clerk (decisión Chris).** Chris resuelve el blocker `choose-organization` él mismo en el Clerk Dashboard (Configure → Sessions → Tasks / Organizations). En cuanto esté: corro `npm run test:e2e:fresh` → regenero baselines V-VIS → te los muestro para ratificar (ADR-vitalia-003) → re-verifico asserts revertidos + flujos (e) → /auditor → merge B a done. Mientras tanto avanzo a **Pendiente D** (cross-brand /pm-luana: mirror nicolify de símbolos del shell vitalia). Estado B salvado en checkpoint (blocker_2026-06-01 + t_fix_2_progress). Commits: fd512f33 (b/d/c code) + 91e32015 (docs/blocker), pusheados.
