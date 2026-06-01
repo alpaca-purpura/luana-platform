@@ -10,8 +10,8 @@ cap_target: shell-vitalia                         # toca el shell-organism core 
 cap_change_type: fix                              # bugfix arquitectónico: elimina doble montaje + id duplicado (no agrega scenarios de producto nuevos)
 parent_story: null
 
-state: ready
-phase_workflow: READY_FOR_DEV
+state: developing
+phase_workflow: BUILD_T1
 last_artifact: 06-tickets.yaml
 last_modified: 2026-06-01T00:30:00-05:00
 
