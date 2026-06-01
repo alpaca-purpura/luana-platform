@@ -31,8 +31,7 @@ test("LIVE: GET /clinics/doctors ya no da 500; reporta status + clinic header", 
   await authedPage.goto(`/${TENANT_ID}/lisa/staff`, { waitUntil: "domcontentloaded" });
   await authedPage.waitForTimeout(3500); // dejar que el directorio dispare su query
 
-  // eslint-disable-next-line no-console
-  console.log("DOCTORS_CALLS=" + JSON.stringify(calls));
+  console.log("DOCTORS_CALLS=" + JSON.stringify(calls)); // diagnostic
 
   // El fix mata el 500 desnudo. 500 = regresión.
   const had500 = calls.some((c) => c.status === 500);
