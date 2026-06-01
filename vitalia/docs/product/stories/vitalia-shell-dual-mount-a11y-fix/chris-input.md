@@ -85,3 +85,14 @@ Nueva spec **live** (NO mockea backend): `e2e/regression/vitalia-shell-dual-moun
 ⚠️ **Hallazgo (bug de DATOS, NO del shell · para Pendiente B):** `GET /clinics/doctors` da **500** (`UUID(clinic_id)` con `X-Clinic-ID` no-UUID que el FE no envía válido). Nunca se vio porque el harness de doctores **mockea el backend** (mismo patrón lisa-marca). Registrado en `observed-bugs/2026-06-01-doctors-list-500-clinic-id-uuid.md`. El shell rindió single-estructura aún con el panel en error state, y lisa/marca (sin doctores) también verde → el dual-mount fix NO está afectado.
 
 Story `developing → developed`. AUTO-HANDOFF `/auditor` (auditor-frontend Opus). Build-claim `code:shell-organism` liberado.
+
+### 2026-06-01T11:58 · 🤖 claude · `/auditor` · ✓ APLICADO
+**APPROVED** (auditor-frontend Opus, 16 categorías). El fix elimina el triple-main/dual-slot vía single `<main>` (D1) + single `<AppPanelSlot>` por rama XOR (D2), hooks incondicionales al tope (D3), gating desktop/mobile por CSS (D4/D5) — sin reintroducir el crash "more hooks" de nicolify. Los tests reescritos **tightening real** (`toBeGreaterThanOrEqual(1)` → `.toBe(1)` estricto, NO debilitados). Live-verify honesta (stack real, sin mocks, DOM real ×3 modos + axe scoped). Scope limpio (solo el archivo prod + su test + la spec live; sin core/, sin cross-brand).
+
+Gates re-corridos independiente: tsc 0 · eslint 0 · vitest **501/501** · Playwright live **6 passed**.
+
+Findings: C1 4/4 · C2 5/5 · C3 6/6 · C4 8/8 · C5 6/6.
+
+⚠️ Finding cross-brand para `/pm-luana` (NO blocker de esta story): arch test `no-cross-brand-shell-mirror` falla por `SubTabMeta`/`extractSubtabFromPath` portados a nicolify (PRE-EXISTENTE en origin/main, este fix no los toca).
+
+CHECKPOINTS.md + T-1-review.md escritos. AUTO-HANDOFF `/pm-vitalia` para merge reviewing→done (07-merge.md + cap change_log fix + git mv archive).
