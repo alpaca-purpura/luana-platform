@@ -649,3 +649,14 @@ Esto bloquea: regen de baselines (c), flujos profundos (e), y re-verificar los a
 
 ### 2026-06-01T13:40 · 🤖 claude · `/pm-vitalia` · ✓ APLICADO
 **B en pausa esperando fix Clerk (decisión Chris).** Chris resuelve el blocker `choose-organization` él mismo en el Clerk Dashboard (Configure → Sessions → Tasks / Organizations). En cuanto esté: corro `npm run test:e2e:fresh` → regenero baselines V-VIS → te los muestro para ratificar (ADR-vitalia-003) → re-verifico asserts revertidos + flujos (e) → /auditor → merge B a done. Mientras tanto avanzo a **Pendiente D** (cross-brand /pm-luana: mirror nicolify de símbolos del shell vitalia). Estado B salvado en checkpoint (blocker_2026-06-01 + t_fix_2_progress). Commits: fd512f33 (b/d/c code) + 91e32015 (docs/blocker), pusheados.
+
+### 2026-06-01T14:05 · 🤖 claude · `/pm-luana` · ✓ APLICADO
+**Pendiente D resuelta (dirección ratificada: lift a core + ajustar test).** Diagnóstico: nicolify portó DELIBERADAMENTE el shell-organism de vitalia (ShellOrganismLayout ×7, SubTabsBar ×10, SubTab ×14, Ribbon ×18, useShellStore ×12, AGENT_CATALOG ×13 — copia independiente, NO importa de vitalia; pre-existente en origin/main). Es el caso anti-duplication "2 brands replican → lift a core" (lo que el propio arch-test línea 112 prescribía).
+
+Acciones:
+- **Proposal abierta** (`docs/promotion-protocol/proposals/2026-06-01-lift-shell-organism-to-core.md`, commit aefd33d2): liftear shell-organism a `core/luana-core-ui`. Parent = `2026-05-21-luana-core-ui-extraction` (organism estaba DEFERRED "pending Chris agentic idea" → desbloqueado por PARADIGM.md 2026-05-30). state=proposed; el lift completo (1-2 sem) es story/outcome aparte post-APPROVED formal.
+- **Arch-test reframeado** (commit 0a4238a8, builder-frontend, 31/31 GREEN): de zero-tolerance-por-nombre → (A) detección de IMPORTS cross-brand reales (la pollution de verdad, ambas direcciones) + (B) ratchet allowlist `KNOWN_SANCTIONED_SHELL_MIRROR` (24 símbolos sancionados → proposal, shrink-to-zero al liftear; 4 símbolos nunca-portados siguen zero-tolerance; mirrors NUEVOS no-sancionados siguen fallando). Verifiqué honestamente: NO es always-pass. Desbloquea los ~23 vitest fails.
+
+Deuda nicolify-r0 (6 stories sin chris-input + headers # cap:) NO la toco (dominio /pm-nicolify) — queda flageada.
+
+**Próximo:** espero tu fix de Clerk (dashboard) para retomar B. Avisame cuando esté y corro e2e:fresh → regenero baselines V-VIS → ratificás → /auditor → merge B.
