@@ -6,21 +6,21 @@ map_zone: agentes
 map_box: lisa
 module: clinics
 capability: lisa.doctores
-state: reviewing
-defer_audit: true
-defer_audit_ratified_by: chris
-defer_audit_ratified_at: '2026-05-31'
-defer_audit_reason: >-
-  Live-verify (2026-05-31) confirmó la feature funcionando + capa API verified-real
-  por el auditor, PERO el browser-E2E no alcanza done sin un fix de PRODUCCIÓN del
-  shell (dual-mount / Triple-main pattern → duplicación DOM + violaciones a11y axe +
-  focus-return). Ese fix es transversal (5 agentes × 3 modos) → historia /architect
-  dedicada (ver vitalia/docs/observed-bugs/2026-05-31-shell-dual-mount-duplicate-testids.md).
-  Harness scoping aplicado (commit b3730693, 2→24 verdes) + fake-green del builder
-  revertido. Auditoría diferida hasta el fix de producción del dual-mount + estabilización
-  de harness. Detalle: T-HARNESS-result.md.
+state: developing
+defer_audit: false
+defer_audit_resolved_at: '2026-06-01'
+defer_audit_resolution: >-
+  Blocker del defer (fix de producción del dual-mount del shell) RESUELTO y mergeado
+  a done 2026-06-01 (story vitalia-shell-dual-mount-a11y-fix, merge c9d2bd31:
+  single-main + single-slot, live-verify GREEN, axe 0 duplicate-id/landmark).
+  Reabierta reviewing→developing para el trabajo dev remanente: (1) fix doctors-500
+  keystone (BE 422 guard UUID headers + FE useClinicId sin fallback Clerk-org +
+  arch-test tightening — decisión Chris 2026-06-01), (2) quitar workaround POMs,
+  (3) verificar asserts reales destrabados, (4) fix perf, (5) flujos workspace/calendar
+  + i18n, (6) visual goldens → project=visual (requiere ratify Chris), (7) live-verify
+  real → cap lisa.doctores + auditor. Work order detallado en chris-input.md.
 architecture_pattern: ADR-vitalia-004
-last_modified: '2026-05-31'
+last_modified: '2026-06-01'
 ready_package_by: /architect (Opus 4.8)
 ready_package_at: '2026-05-31'
 autonomous_mode: true
@@ -55,7 +55,7 @@ reuse_map_summary: >-
   [doctor-id] · NEW personal-branding bio + horarios + KPIs · doctors-as-faces
   preview
 spawned_at: 2026-05-22T00:00:00.000Z
-next_action: /dev-team vitalia vitalia-fase2-lisa-doctores → build T-BE-1 (DAG root) → autonomous through APPROVED → /pm-vitalia merge
+next_action: /dev-team T-FIX-1 keystone (doctors-500 BE 422 guard + FE useClinicId sin Clerk-org + arch-test tightening + regression RED-first) → re-run live-verify → continuar work order (2)-(7) chris-input
 release: F2
 cap_target: lisa.doctores
 cap_change_type: new

@@ -1,0 +1,143 @@
+---
+capability_id: vitalia-lisa-doctores
+module: clinics
+slug: lisa-doctores
+status: partial          # in-development · NO live hasta scenarios+e2e GREEN-real (DoD cement 2026-05-28)
+date_introduced: null    # se setea al merge reviewing→done
+story_introduced: vitalia-fase2-lisa-doctores
+package_version: 0.2.0
+package_path: vitalia/backend/src/modules/vitalia/clinics/ + vitalia/frontend/src/features/lisa/components/doctores/
+license: proprietary
+
+# v3 cement 2026-05-27 · 4 dimensiones + dev_preview (ADR-vitalia-005)
+tech_module: clinics
+agent_owner: lisa
+functional_area: lisa.doctores
+user_visible: true
+nature: feature
+ui_paradigm: shell-organism
+
+user_facing_name: "Doctores de la clínica (directorio + perfil)"
+user_facing_description: >
+  El sub-tab de Lisa donde la clínica gestiona su equipo médico: directorio de
+  doctores (cards con foto, especialidad, credenciales, stats), alta de un nuevo
+  doctor con validación de credencial del colegio médico por país (CMP Perú,
+  matrícula AR, cédula MX, registro CL), y el workspace por doctor con pestañas
+  Bio · Horarios · Servicios · KPIs. Los horarios alimentan la disponibilidad que
+  consume la Agenda. Toggle "Visible en landing" controla el preview público.
+
+dev_preview:
+  route: "/lisa/staff"
+  how_to_navigate: "Login → ribbon avatar Lisa → sub-tab Doctores → card 'Ver perfil' → workspace [doctor-id] con tabs Bio/Horarios/Servicios/KPIs."
+  main_component: "vitalia/frontend/src/features/lisa/components/doctores/DoctorsDirectoryView.tsx"
+  api_endpoints:
+    - "GET /api/v1/vitalia/clinics/doctors"
+    - "POST /api/v1/vitalia/clinics/doctors"
+    - "GET /api/v1/vitalia/clinics/doctors/{id}"
+    - "PATCH /api/v1/vitalia/clinics/doctors/{id}"
+  e2e_test: null            # se ancla al cerrar live-verify real (no mock)
+  fixtures_required: ["3-clinic-fixture-latam"]
+  storybook_url: null
+  loom_demo: null
+
+architecture_pattern: ADR-vitalia-004 (N3-dynamic EntitySubNavBar [doctor-id])
+adr_004_compliance: full
+
+# Capability ledger v2 (cement 2026-05-27)
+created_in_story: vitalia-fase2-lisa-doctores
+created_date: null         # mirror de date_introduced · se setea al merge
+last_modified: 2026-06-01
+parent_cap: null
+derives_capabilities: []
+
+# Linaje: sucede a caps deprecated (prior-art scan 2026-05-30)
+supersedes_legacy:
+  - clinics-brand-extension            # replaced_by_story: vitalia-fase2-lisa-doctores
+  - booking/prepaid-booking-advisory-locks   # slots/locks se CONSUMEN, no se recrean
+consumes_engine:
+  - luana-core-scheduling
+  - luana-core-commercial-calendar
+
+# Pendientes para flip a status: live (DoD)
+done_blockers:
+  - "doctors-500 fix (BE 422 guard UUID headers + FE useClinicId sin fallback Clerk-org) — keystone"
+  - "live-verify REAL (no mock) de los scenarios contra dev-app + dev_app_verified.evidence"
+  - "visual goldens V-VIS-1..4 a project=visual + ratificación Chris (ADR-vitalia-003)"
+  - "flujos workspace/calendar (SC-1/1b/1c/1d/3/3b) + i18n credencial AR/MX/CL"
+
+change_log:
+  - story_id: vitalia-fase2-lisa-doctores
+    date: 2026-06-01
+    type: new
+    summary: >-
+      Nace la cap (status=partial) durante la reapertura developing post dual-mount.
+      Directorio + CRUD perfiles doctor + N3-dyn workspace (Bio/Horarios/Servicios/KPIs)
+      + validación credencial country-specific + doctors-as-faces preview público.
+      Backend extiende clinics + doctor_extension + CONSUME scheduling/engine (no recrea).
+      status=partial hasta live-verify real GREEN.
+    scenarios_added: [crear-doctor-horarios, credencial-invalida-422, doctor-desactivado-preserva-citas, cross-tenant-doctor-404, keyboard-a11y-tabs-workspace]
+    status: in-progress
+
+# Scenarios (Gherkin del 01-spec.md · verbatim) — verificación pendiente live-verify real
+scenarios:
+  - id: crear-doctor-horarios
+    title: "happy: crear doctor + horarios"
+    gherkin: >-
+      Given user admin_clinic en Lisa→Doctores
+      When + Nuevo doctor con fields obligatorios + CMP 12345 PE, submit, workspace tab Horarios marca L-V 9-13/15-19, save
+      Then doctor creado + audit log; horarios persisten + backend genera availability_slots 90d; Agenda reconoce el doctor
+    e2e_test: null            # pendiente live-verify real
+    status: pending
+  - id: credencial-invalida-422
+    title: "negative: credencial inválida"
+    gherkin: >-
+      Given form nuevo doctor con CMP 'abc' (no numérico)
+      When submit
+      Then validator BE rejecta 422 'Credencial CMP debe ser numérico'; UI error inline + foco; NO persiste
+    e2e_test: null
+    status: pending
+  - id: doctor-desactivado-preserva-citas
+    title: "edge: doctor desactivado preserva citas futuras"
+    gherkin: >-
+      Given doctor con citas futuras
+      When toggle Activo → off
+      Then doctor.active=false; slots futuros NO se cancelan pero se excluyen en crear-cita; alert UI re-asignar
+    e2e_test: null
+    status: pending
+  - id: cross-tenant-doctor-404
+    title: "adversarial: cross-tenant doctor view bloqueada"
+    gherkin: >-
+      Given adversarial intenta ver doctor de tenant B
+      When navega /{tenant-A}/lisa/.../{doctor_B_id}
+      Then dual filter bloquea; 404 genérico; audit log cross_tenant_attempt
+    e2e_test: null
+    status: pending
+  - id: keyboard-a11y-tabs-workspace
+    title: "a11y: keyboard nav tabs workspace"
+    gherkin: >-
+      Given foco en primer tab Bio
+      When Arrow → cycle tabs
+      Then aria-selected actualiza; screen reader anuncia; Tab fields ordenados
+    e2e_test: null
+    status: pending
+---
+
+# Capability: lisa.doctores (status: partial · in-development)
+
+Cap nacida 2026-06-01 al reabrir `vitalia-fase2-lisa-doctores` (developing) tras resolver el
+dual-mount del shell. **NO es `live`** todavía: pendientes en `done_blockers` (keystone
+doctors-500 + live-verify real + visual goldens ratificados + flujos profundos + i18n). Al
+cerrar `reviewing → done` se flipea a `status: live`, se setean `date_introduced`/`created_date`,
+y se anclan los `e2e_test` reales en cada scenario.
+
+## Linaje
+
+Sucede a `clinics-brand-extension` (deprecated, `replaced_by_story: vitalia-fase2-lisa-doctores`)
+y CONSUME (no recrea) `booking/prepaid-booking-advisory-locks` + engine `luana-core-scheduling` +
+`luana-core-commercial-calendar`. Detalle: prior-art scan en el checkpoint de la story.
+
+## Referencias
+
+- Story: `vitalia/docs/product/stories/vitalia-fase2-lisa-doctores/`
+- Spec: `01-spec.md` (5 Gherkin scenarios verbatim arriba)
+- HIPAA-lite: `vitalia/.claude/rules/hipaa-lite.md` (dual filter tenant+clinic)

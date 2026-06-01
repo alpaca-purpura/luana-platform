@@ -591,3 +591,23 @@ Por qué NO done (T-HARNESS-result.md):
 Lección reforzada: el builder autónomo no es confiable para "hacer verde" sin auditoría humana (produjo una tautología de seguridad). El gate humano honesto es lo que evita el false-green.
 
 **Decisión pendiente tuya:** doctores necesita un fix de producción (dual-mount a11y) + más harness para llegar a done — NO es verde rápido. Opciones: (a) ratifico defer_audit:true (razón: bloqueada en fix a11y dual-mount + harness) y avanzamos PARTE 2 (integración a main, independiente); (b) abrimos el fix de producción del dual-mount ahora (architect→dev-team, esfuerzo mayor).
+
+### 2026-06-01T12:15 · 🤖 claude · `/pm-vitalia` · ✓ APLICADO
+**Reabro doctores tras dual-mount DONE (c9d2bd31).** El defer_audit estaba bloqueado por el fix de producción del shell — ya resuelto y mergeado. Reabro `reviewing → developing` para el trabajo dev remanente.
+
+**Hallazgo keystone (live-verify del dual-mount lo destapó):** `GET /clinics/doctors` da **500** porque el `X-Clinic-ID` resuelto no es UUID válido y el router hace `UUID()` desnudo. Diagnóstico completo:
+- `useClinicId()` (`src/hooks/useClinicId.ts`) lee `user.publicMetadata.clinicId` (OK, claim nuestra) PERO **cae a `useOrganization()` → `organization.publicMetadata.defaultClinicId`** = **Clerk Organizations**, que NO usamos ([[no-clerk-organizations]], ratificado Chris 2026-06-01). Código muerto/incorrecto.
+- El arch test `test-no-clerk-organizations.test.ts` PASA (12/12) pese a este `useOrganization()` → tiene blind spot (no caza imports `useOrganization`/`useOrganizationList` en hooks).
+
+**Decisión Chris (2026-06-01):** fix doctors-500 = **BE guard 422 + FE envía X-Clinic-ID** (defensa en profundidad). Constraint dura: el `clinic_id` se resuelve de **NUESTRA** data (IAM/tenant), NUNCA vía Clerk Organizations API.
+
+**Work order B (ordenado):**
+1. ⬛ KEYSTONE (este handoff /dev-team): BE 422 guard en coerción UUID de headers X-Tenant-ID/X-Clinic-ID (mata el 500 desnudo) + FE `useClinicId()` quita fallback `useOrganization()` (resuelve solo de claim nuestra) + limpia comments stale "Clerk org metadata" en `fetchClient.ts` + **tightening** arch test no-clerk-organizations para cazar `useOrganization` en hooks + regression tests RED-first.
+2. ⬜ Quitar workaround `.filter({visible:true})` de POMs (StaffDirectory/DoctorWorkspace/AvailabilityCalendar/ShellLayout) — dual-mount ya fixed, el slot resuelve a 1.
+3. ⬜ Verificar que los asserts revertidos-a-real pasan ahora (cross-tenant adversarial, focus-return a11y SC-8/SC-10) — dual-mount fixed debería destrabarlos.
+4. ⬜ Fix medición perf (POM `searchFor` tiene `waitForTimeout(500)` debounce → `<500ms` imposible por diseño).
+5. ⬜ Flujos profundos workspace/calendar (SC-1/1b/1c/1d/3/3b) + i18n credencial AR/MX/CL.
+6. ⬜ Reubicar visual goldens V-VIS-1..4 a `project=visual` — ⚠️ requiere RATIFICACIÓN Chris (ADR-vitalia-003), NO autonomous.
+7. ⬜ Live-verify REAL (no mock) → `dev_app_verified.evidence` + crear cap `lisa.doctores` (new) + /auditor → merge (quitar defer_audit).
+
+Arranco por (1) keystone. Tras GREEN-real re-corro live-verify y reporto el estado real de (2)-(7).
