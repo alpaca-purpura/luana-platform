@@ -243,7 +243,10 @@ class TestPgcryptoPhiColumns:
 
         # For each PHI column that should be BYTEA, check it's NOT defined as TEXT/VARCHAR
         suspicious_patterns = [
-            (r"notes\s+TEXT", "treatment_plans.notes defined as TEXT instead of BYTEA"),
+            # \b word-boundary: match the bare PHI column `notes`, NOT compound
+            # non-PHI columns like `bio_inputs_notes` (staff bio, table vitalia_lisa_staff)
+            # which legitimately use TEXT and are not patient PHI.
+            (r"(?<![\w])notes\s+TEXT", "treatment_plans.notes defined as TEXT instead of BYTEA"),
             (r"payload_phi\s+TEXT", "re_engagement_events.payload_phi defined as TEXT"),
             (r"payload_phi\s+VARCHAR", "re_engagement_events.payload_phi defined as VARCHAR"),
             (r"oauth_token_encrypted\s+TEXT", "channel_sync_state.oauth_token_encrypted as TEXT"),
