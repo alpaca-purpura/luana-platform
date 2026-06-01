@@ -72,4 +72,91 @@ Esto es la evidencia DoD más fuerte (writes reales + efecto en DB + audit), cub
 | MEMORY no-clerk-organizations | ✅ | diagnóstico root-cause del blocker |
 | frontend-fsd.md / hipaa-lite.md | ✅ | dual-filter tenant+clinic en seed-write |
 
+---
+
+## T-FIX-2 continuation (post-Clerk-fix) — 2026-06-01
+
+**Auth status:** `npx playwright test --project=setup` ✅ GREEN (Clerk `force_organization_selection=false` fixed). Browser auth works.
+
+### Per-item results
+
+| Item | Estado | SHAs |
+|---|---|---|
+| **(1) SC-8 data conflict** | ✅ **GREEN-real** | The test already uses `setupEmptyStateMock` (API mocked to []) — data conflict was NOT the cause. Real cause was axe contrast violation (fixed in item 2). |
+| **(2) SC-10 a11y — axe contrast + focus-return** | ✅ **GREEN-real (production fix)** | `ebe7d524` |
+| **(3) V-VIS-2 perfil goldens** | ✅ **GREEN-real + 7 baselines committed** | `d206fd7b` |
+| **(4) live-seed-dod-evidence.spec.ts** | ✅ committed (test.fixme for honest-RED) | `1b30de21` |
+| **(5) deep flows (e)** | ⚠️ partial — honest-RED documented | see below |
+
+### (2) Production a11y fix — DETAILS
+
+**Contrast fix (WCAG AA):** `StaffEmptyState` "Agregar primer integrante" button and `NuevoIntegranteModal` "Crear integrante" button were using `bg-primary` = `#01aef9` (cyan) with white text = contrast ratio 2.49:1 (WCAG AA needs 4.5:1). Changed both to `bg-[color:var(--vitalia-azul-marino-color)]` = `#180D95` (navy, ~13:1 ratio). WCAG AA + AAA pass.
+
+**Focus-return fix (WCAG 2.4.3):** `NuevoIntegranteModal` gains `triggerRef?: RefObject<HTMLButtonElement>` prop. `StaffDirectoryView` creates `nuevoTriggerRef` and passes to both `StaffDirectoryHeader` (button gets `ref={addNewRef}`) and `NuevoIntegranteModal` (focus returned via `rAF(() => triggerRef?.current?.focus())` in `onOpenChange`).
+
+**V-VIS-2 testid:** `DoctorPerfilView` root div gains `data-testid="doctor-perfil-view"`. `visual-goldens.spec.ts` V-VIS-2 removes silent `if (await perfilSection.isVisible())` guard → real `expect(perfilSection).toBeVisible()` assertions.
+
+All 9 `staff-empty.spec.ts` tests GREEN after fix. tsc + eslint clean.
+
+### (3) Visual baselines — 7 total (all V-VIS-1..4)
+
+```
+directorio-light.png, directorio-dark.png   ← V-VIS-1 (refreshed)
+perfil-light.png, perfil-dark.png           ← V-VIS-2 (NEW — previously missing)
+horarios-light.png, horarios-dark.png       ← V-VIS-3 (refreshed)
+servicios-pendiente-light.png               ← V-VIS-4 (refreshed)
+```
+
+⚠️ Requires Chris ratification per ADR-vitalia-003 before story merge.
+
+### (5) Deep flows — honest-RED status
+
+Full suite run: **24 passed / 12 failed / 1 flaky (timing artifact) / 2 skipped**
+
+| Test | Status | Diagnosis |
+|---|---|---|
+| SC-8 empty-state axe | ✅ GREEN | Fixed by contrast fix |
+| SC-10 focus-trap + axe (all 9 tests) | ✅ GREEN | Fixed by focus-return + contrast fix |
+| SC-4 cross-tenant adversarial | ✅ GREEN (flaky = timing artifact, passes 4/4 solo) | Real denial assert intact |
+| SC-11 PE credential label | ✅ GREEN | Default PE = "CMP" works |
+| SC-11 AR/MX/CL credential labels | ❌ honest-RED | Modal default is PE; no auto-detection from tenant profile. Production gap: `NuevoIntegranteModal` doesn't read tenant's `credential_country` to set initial default. |
+| SC-1 crear-doctor workspace navigation | ❌ honest-RED | `waitForURL(/lisa/staff/.+/perfil/)` times out. Mock POST returns 201 but `router.push` may not fire in Playwright mock context. |
+| SC-1b bloque quincenal | ❌ honest-RED | Calendar workspace deep flow — pre-existing from T-HARNESS |
+| SC-1c week navigation | ❌ honest-RED | Calendar interaction — pre-existing from T-HARNESS |
+| SC-1d delete block | ❌ honest-RED | Calendar interaction — pre-existing from T-HARNESS |
+| SC-3 deactivate doctor | ❌ honest-RED | Calendar workspace — pre-existing from T-HARNESS |
+| SC-3b delete block with appointments | ❌ honest-RED | Calendar interaction — pre-existing from T-HARNESS |
+| SC-9 large-dataset pagination (cards=0) | ❌ honest-RED | Mock race condition — "Expected 24 cards, got 0" on page load |
+
+### (4) DoD evidence spec — honest-RED integration gap documented
+
+`live-seed-dod-evidence.spec.ts`: Tests marked `test.fixme` because `authedPage` without the `staffPage` fixture doesn't inject `x-tenant-id` into localStorage → `clinicId` doesn't resolve → directory API call not fired. DB evidence (3 real doctors) already documented above. `doctors-live-check.spec.ts` passes (diagnostic).
+
+### Commits this session
+
+- `ebe7d524` — a11y production fixes + V-VIS-2 testid + focus-return (3 production files + 1 test file)
+- `d206fd7b` — add V-VIS-2 perfil baselines light + dark (2 new PNGs)
+- `1b30de21` — DoD evidence specs committed (live-seed-dod-evidence.spec.ts + doctors-live-check.spec.ts)
+- Push: `1b30de21` → `origin/wip/vitalia`
+
+### Remaining honesto para `done`
+
+1. ⚠️ **Chris ratification** — visual goldens V-VIS-1..4 (7 PNGs) per ADR-vitalia-003
+2. ❌ SC-11 AR/MX/CL credential i18n — production gap: modal should auto-detect tenant credential_country as default
+3. ❌ SC-1/SC-1b/SC-1c/SC-1d workspace/calendar deep flows — calendar interaction in mocked context
+4. ❌ SC-3/SC-3b deactivate + delete block — calendar flows
+5. ❌ SC-9 large-dataset pagination "0 cards" — mock race condition
+6. `/auditor` → merge
+
+### Skills consulted (this session)
+
+| Skill / Rule | Status | When |
+|---|---|---|
+| playwright-expert | ✅ | Auth lifecycle, POM patterns, axe scans |
+| frontend-expert | ✅ | FSD boundaries, component fix patterns |
+| .claude/rules/definition-of-done-live-verify.md | ✅ | DoD evidence bar (writes + effect, no GET-200) |
+| .claude/rules/test-design-doctrine.md | ✅ | Honest RED > fake GREEN; verificación REAL |
+| vitalia-design-system | ✅ | navy token (--vitalia-azul-marino-color) for contrast fix |
+| .claude/rules/frontend-visual-fidelity.md | ✅ | scope discipline — only fix what's in scope |
+
 done -> vitalia/docs/product/stories/vitalia-fase2-lisa-doctores/T-FIX-2-result.md

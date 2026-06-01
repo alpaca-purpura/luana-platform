@@ -107,6 +107,21 @@ change_log:
       deshabilitar Organizations en la instancia Clerk.
     scenarios_added: []
     status: in-progress
+  - story_id: vitalia-fase2-lisa-doctores
+    date: 2026-06-01
+    type: fix
+    summary: >-
+      T-FIX-2 continuation (post-Clerk-fix). (2) A11y production fix: StaffEmptyState
+      + NuevoIntegranteModal buttons changed from bg-primary (cyan #01aef9, contrast 2.49)
+      to bg-vitalia-azul-marino (#180D95, ~13:1 ratio) — WCAG AA pass. Focus-return WCAG
+      2.4.3: NuevoIntegranteModal gains triggerRef + rAF focus return on close.
+      (3) V-VIS-2: DoctorPerfilView gains data-testid + visual-goldens removes silent guard.
+      7 baselines committed (incl. perfil-light/dark NEW). (4) DoD evidence spec committed
+      with test.fixme + honest integration gap documented. (5) 24 GREEN / 12 honest-RED:
+      SC-11 AR/MX/CL label gap (no auto-detect credential_country from tenant profile);
+      SC-1/1b/1c/1d/3/3b calendar deep flows; SC-9 pagination race remain honest-RED.
+    scenarios_added: []
+    status: in-progress
 
 # Scenarios (Gherkin del 01-spec.md · verbatim) — verificación pendiente live-verify real
 scenarios:

@@ -20,7 +20,7 @@ defer_audit_resolution: >-
   + i18n, (6) visual goldens → project=visual (requiere ratify Chris), (7) live-verify
   real → cap lisa.doctores + auditor. Work order detallado en chris-input.md.
 architecture_pattern: ADR-vitalia-004
-last_modified: '2026-06-01'
+last_modified: '2026-06-01T23:59:00Z'
 ready_package_by: /architect (Opus 4.8)
 ready_package_at: '2026-05-31'
 autonomous_mode: true
@@ -55,7 +55,7 @@ reuse_map_summary: >-
   [doctor-id] · NEW personal-branding bio + horarios + KPIs · doctors-as-faces
   preview
 spawned_at: 2026-05-22T00:00:00.000Z
-next_action: "[BLOQUEADO no-código] Fix instancia Clerk: deshabilitar Organizations / session-task choose-organization (rompe TODO sign-in browser post-deleción org sesión 1). Tras fix → npm run test:e2e:fresh → regen baselines V-VIS (project=visual) → ratificar Chris → re-verificar asserts revertidos + flujos (e) → /auditor → merge"
+next_action: "⚠️ PENDIENTE Chris ratificación V-VIS-1..4 (7 PNGs ADR-vitalia-003) → luego /auditor → merge. Remaining honest-RED: SC-11 AR/MX/CL (credential i18n modal default), SC-1/SC-1b/SC-1c/SC-1d workspace calendar deep flows, SC-9 large-dataset pagination, SC-3/SC-3b. Clerk fix resuelto (force_organization_selection=false)."
 blocker_2026-06-01:
   id: clerk-choose-organization-task
   kind: clerk-instance-config (no-código · dominio Chris)
@@ -70,8 +70,8 @@ t_fix_2_progress:
   a_seed_by_write: "✅ GREEN-real (3 doctores DB + 3 audit rows · evidencia DoD confirmada orchestrator)"
   b_pom_workarounds: "✅ committeado fd512f33 (re-verificación asserts bloqueada por Clerk)"
   d_perf_measurement: "✅ committeado fd512f33"
-  c_visual_goldens: "⚠️ relocación+junk-cleanup committeado fd512f33; regen baselines bloqueada por Clerk"
-  e_deep_flows: "⏸ bloqueado por Clerk"
+  c_visual_goldens: "✅ 7 baselines committed (directorio×2 + perfil×2 + horarios×2 + servicios×1) — commits d206fd7b+ebe7d524. Awaiting Chris ratification ADR-vitalia-003."
+  e_deep_flows: "⚠️ partial: 24 GREEN / 12 honest-RED documented (SC-11 i18n modal default, SC-1/SC-1b/SC-1c/SC-1d/SC-3/SC-3b workspace-calendar, SC-9 pagination race) — T-FIX-2-result.md § deep flows"
 chris_decisions_2026-06-01:
   - id: a-seed
     decision: seed-by-WRITE-real

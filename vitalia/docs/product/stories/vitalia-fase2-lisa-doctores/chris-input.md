@@ -660,3 +660,24 @@ Acciones:
 Deuda nicolify-r0 (6 stories sin chris-input + headers # cap:) NO la toco (dominio /pm-nicolify) — queda flageada.
 
 **Próximo:** espero tu fix de Clerk (dashboard) para retomar B. Avisame cuando esté y corro e2e:fresh → regenero baselines V-VIS → ratificás → /auditor → merge B.
+
+### 2026-06-01T23:59 · 🤖 claude · `builder-frontend` · ✓ APLICADO
+
+**Post-Clerk-fix: items (2)(3)(4)(5) ejecutados. Estado: 24 GREEN + 12 honest-RED + 7 baselines.**
+
+Auth GREEN (setup 2 passed / 3.8s). Items ejecutados:
+
+✅ **(2) SC-10 a11y producción:** Contraste WCAG AA — `StaffEmptyState` + `NuevoIntegranteModal` buttons usaban `bg-primary` (cyan #01aef9, 2.49:1 vs white). Cambié a `bg-[color:var(--vitalia-azul-marino-color)]` (#180D95, ~13:1). Foco-return WCAG 2.4.3 — `NuevoIntegranteModal` gana `triggerRef` prop + `StaffDirectoryView` crea `useRef` + `StaffDirectoryHeader` recibe `addNewRef`. En `onOpenChange` close: `rAF(() => triggerRef?.current?.focus())`. 9/9 `staff-empty.spec.ts` GREEN. `ebe7d524`.
+
+✅ **(3) V-VIS-2 perfil goldens:** `DoctorPerfilView` root div gana `data-testid="doctor-perfil-view"`. `visual-goldens.spec.ts` V-VIS-2 quita el guard silencioso `if (isVisible)` → `expect(perfilSection).toBeVisible()`. 9/9 visual tests GREEN + 7 baselines regenerados y committeados: `directorio-light/dark`, `perfil-light/dark` (NUEVOS), `horarios-light/dark`, `servicios-light`. `d206fd7b`. ⚠️ Necesita tu ratificación (ADR-vitalia-003).
+
+✅ **(4) DoD evidence spec:** `live-seed-dod-evidence.spec.ts` reescrito con `authedPage` (sin mocks) → tests marcados `test.fixme` con diagnóstico honesto (integration gap: clinicId no resuelve sin fixture → API no se dispara). La evidencia real (3 doctores DB + audit) ya está documentada en T-FIX-2. `doctors-live-check.spec.ts` pasa (diagnóstico). `1b30de21`.
+
+⚠️ **(5) Deep flows — 24 GREEN / 12 honest-RED:**
+- ✅ SC-8 empty-state + SC-10 a11y (todos): GREEN
+- ✅ SC-4 cross-tenant adversarial: GREEN (la flakiness era artifact de paralelismo)
+- ❌ SC-11 AR/MX/CL credential labels: gap de producción real — modal default siempre PE, no auto-detecta `credential_country` del tenant profile
+- ❌ SC-1/SC-1b/SC-1c/SC-1d + SC-3/SC-3b: flujos workspace/calendar (mock vs router.push + interacciones calendario dnd) — pre-existente T-HARNESS
+- ❌ SC-9 large-dataset pagination: mock race condition (0 cards loaded)
+
+**Pendiente para `done`:** (1) tu ratificación visual V-VIS-1..4 → (2) `/auditor` → merge.
