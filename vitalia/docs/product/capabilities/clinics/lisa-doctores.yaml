@@ -92,6 +92,21 @@ change_log:
       (POM workarounds + perf + flujos + i18n + seed-write + goldens) → /auditor → merge.
     scenarios_added: []
     status: in-progress
+  - story_id: vitalia-fase2-lisa-doctores
+    date: 2026-06-01
+    type: fix
+    summary: >-
+      T-FIX-2 batch. (a) seed-by-WRITE real VERIFICADO: 3 doctores creados vía POST
+      create real autenticado → 3 filas vitalia_doctors (cifradas pgcrypto) + 3
+      doctor.created en vitalia_audit_log (18:10 UTC) — evidencia DoD real (cubre
+      scenario crear-doctor-horarios + i18n PE/MX/AR). (b/d/c-relocación) committeados
+      fd512f33: workaround POMs removido, medición perf fix, V-VIS reubicados a
+      project=visual + junk borrado. BLOCKER no-código: Clerk session-task
+      choose-organization rompe todo browser auth tras borrar la org (sesión 1) →
+      regen baselines + flujos (e) + re-verificación asserts bloqueados hasta
+      deshabilitar Organizations en la instancia Clerk.
+    scenarios_added: []
+    status: in-progress
 
 # Scenarios (Gherkin del 01-spec.md · verbatim) — verificación pendiente live-verify real
 scenarios:

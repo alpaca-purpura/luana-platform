@@ -633,3 +633,16 @@ Doc completo: `vitalia/docs/observed-bugs/2026-06-01-fe-tenant-id-from-clerk-org
 - **(c) reubicar + regenerar + ratificar AHORA** — V-VIS-1..4 → project=visual (snapshotPathTemplate + maxDiffPixelRatio), regenerar baselines limpios, te los muestro para ratificar (ADR-vitalia-003) antes de merge. Borrar baselines basura untracked. doctores done incluye AC-9 completo.
 
 **Próximo:** encadeno `/dev-team` con el work order T-FIX-2 (b POM workarounds + d perf-measurement + e flujos+i18n + a seed-by-WRITE live + c goldens relocate+regen). Tras GREEN-real + goldens regenerados → te muestro goldens para ratificar → /auditor → merge.
+
+### 2026-06-01T13:30 · 🤖 claude · `/dev-team` · ⚠️ DUDA
+**Pendiente B avanzó fuerte PERO destapó un blocker de config Clerk (no-código) que frena el cierre.** Estado:
+
+**✅ (a) seed-by-WRITE real — DoD evidence VERIFICADA (lo más importante).** El builder creó 3 doctores vía el flujo create real autenticado (POST → 201); confirmé independientemente contra vitalia_dev: 3 filas en `vitalia_doctors` (Ana/PE, Carlos/MX, Valentina/AR — cifradas pgcrypto) + 3 `doctor.created` en `vitalia_audit_log` (18:10 UTC). Esto cubre Scenario 1 + i18n credencial 3 países. Evidencia real (writes + efecto + audit), no GET-200.
+
+**✅ (b)(d)(c-relocación) committeados (fd512f33):** quité el workaround `.filter({visible:true})` de los 4 POMs (single-slot confirmado en prod), arreglé la medición de perf (excluye el debounce, SLO 500ms intacto), reubiqué los visual goldens V-VIS-1..4 a `e2e/regression/vitalia-fase2-lisa-doctores/visual-goldens.spec.ts` (project=visual) y borré los baselines basura de smoke.
+
+**⏸ BLOCKER (no-código · tu dominio): Clerk `choose-organization` session-task.** Al regenerar los baselines, el setup de Clerk falla 3/3 con redirect a `/sign-in/tasks/choose-organization`. La instancia Clerk de Vitalia tiene **Organizations + tarea forzada de selección de org**. Cuando en sesión 1 borramos la Clerk org (correcto), dr.demo quedó sin org → el sign-in nunca completa → **TODO browser auth bloqueado** (e2e + login real a dev-app). El "GREEN" de sesión 1 usó un storageState capturado ANTES de borrar la org. El builder de hoy alcanzó a crear los doctores con un storageState cacheado; un setup fresco ya no pasa.
+
+Esto bloquea: regen de baselines (c), flujos profundos (e), y re-verificar los asserts revertidos (b). **Fix = deshabilitar Organizations / la tarea `choose-organization` en la instancia Clerk** — la completitud correcta de no-clerk-organizations (borramos la org pero no apagamos la feature). Doc: `vitalia/docs/observed-bugs/2026-06-01-clerk-choose-organization-task-blocks-signin.md`.
+
+**Pregunto cómo proceder con el fix Clerk** (dashboard vos / `npx clerk` con tu auth / etc.). Sin eso, doctores no puede llegar a `done` honesto (DoD live + AC-9 goldens dependen de browser auth).

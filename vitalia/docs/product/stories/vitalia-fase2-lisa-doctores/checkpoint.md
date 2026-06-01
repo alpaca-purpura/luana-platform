@@ -55,7 +55,23 @@ reuse_map_summary: >-
   [doctor-id] · NEW personal-branding bio + horarios + KPIs · doctors-as-faces
   preview
 spawned_at: 2026-05-22T00:00:00.000Z
-next_action: /dev-team T-FIX-2 batch (b POM workarounds quitar + d perf-measurement fix + e flujos profundos+i18n + a seed-by-WRITE real live + c visual goldens → project=visual regen) → ratificar goldens Chris → /auditor → /pm-vitalia merge
+next_action: "[BLOQUEADO no-código] Fix instancia Clerk: deshabilitar Organizations / session-task choose-organization (rompe TODO sign-in browser post-deleción org sesión 1). Tras fix → npm run test:e2e:fresh → regen baselines V-VIS (project=visual) → ratificar Chris → re-verificar asserts revertidos + flujos (e) → /auditor → merge"
+blocker_2026-06-01:
+  id: clerk-choose-organization-task
+  kind: clerk-instance-config (no-código · dominio Chris)
+  detail: >-
+    Clerk dev instance tiene Organizations + session-task forzada choose-organization.
+    Al borrar la Clerk org en sesión 1 (correcto per no-clerk-org), dr.demo quedó sin
+    org → sign-in redirige a /sign-in/tasks/choose-organization y nunca completa →
+    TODO browser auth bloqueado (e2e setup + login real dev-app). Fix: deshabilitar
+    Organizations / la tarea choose-organization en la instancia Clerk. Doc:
+    vitalia/docs/observed-bugs/2026-06-01-clerk-choose-organization-task-blocks-signin.md
+t_fix_2_progress:
+  a_seed_by_write: "✅ GREEN-real (3 doctores DB + 3 audit rows · evidencia DoD confirmada orchestrator)"
+  b_pom_workarounds: "✅ committeado fd512f33 (re-verificación asserts bloqueada por Clerk)"
+  d_perf_measurement: "✅ committeado fd512f33"
+  c_visual_goldens: "⚠️ relocación+junk-cleanup committeado fd512f33; regen baselines bloqueada por Clerk"
+  e_deep_flows: "⏸ bloqueado por Clerk"
 chris_decisions_2026-06-01:
   - id: a-seed
     decision: seed-by-WRITE-real
