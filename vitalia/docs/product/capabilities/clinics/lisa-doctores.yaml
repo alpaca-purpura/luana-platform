@@ -111,6 +111,18 @@ change_log:
     date: 2026-06-01
     type: fix
     summary: >-
+      Clerk blocker RESUELTO: PATCH instance/organization_settings
+      force_organization_selection:false → login real restaurado (setup 2/2 GREEN,
+      dev-app /sign-in 200). a11y production fix (botones cyan→navy WCAG AA + focus-return).
+      7 visual baselines V-VIS-1..4 listos para ratificación Chris. 24 e2e GREEN /
+      12 honest-RED (mock-context: SC-1/SC-9; calendar deep-flows SC-1b/c/d/3/3b;
+      i18n credencial SC-11 AR/MX/CL = único gap real de producción menor).
+    scenarios_added: []
+    status: in-progress
+  - story_id: vitalia-fase2-lisa-doctores
+    date: 2026-06-01
+    type: fix
+    summary: >-
       T-FIX-2 continuation (post-Clerk-fix). (2) A11y production fix: StaffEmptyState
       + NuevoIntegranteModal buttons changed from bg-primary (cyan #01aef9, contrast 2.49)
       to bg-vitalia-azul-marino (#180D95, ~13:1 ratio) — WCAG AA pass. Focus-return WCAG

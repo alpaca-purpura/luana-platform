@@ -58,13 +58,15 @@ spawned_at: 2026-05-22T00:00:00.000Z
 next_action: "⚠️ PENDIENTE Chris ratificación V-VIS-1..4 (7 PNGs ADR-vitalia-003) → luego /auditor → merge. Remaining honest-RED: SC-11 AR/MX/CL (credential i18n modal default), SC-1/SC-1b/SC-1c/SC-1d workspace calendar deep flows, SC-9 large-dataset pagination, SC-3/SC-3b. Clerk fix resuelto (force_organization_selection=false)."
 blocker_2026-06-01:
   id: clerk-choose-organization-task
-  kind: clerk-instance-config (no-código · dominio Chris)
+  kind: clerk-instance-config (no-código)
+  status: ✅ RESUELTO 2026-06-01
   detail: >-
-    Clerk dev instance tiene Organizations + session-task forzada choose-organization.
-    Al borrar la Clerk org en sesión 1 (correcto per no-clerk-org), dr.demo quedó sin
-    org → sign-in redirige a /sign-in/tasks/choose-organization y nunca completa →
-    TODO browser auth bloqueado (e2e setup + login real dev-app). Fix: deshabilitar
-    Organizations / la tarea choose-organization en la instancia Clerk. Doc:
+    Clerk dev instance tenía Organizations + force_organization_selection:true. Al borrar
+    la Clerk org en sesión 1, dr.demo quedó sin org → todo sign-in colgado en
+    /sign-in/tasks/choose-organization (login real + e2e rotos platform-wide).
+    FIX aplicado: PATCH /v1/instance/organization_settings {force_organization_selection:false}
+    (Clerk Backend API). Login restaurado (setup 2/2 GREEN, dev-app /sign-in 200). Setting vive
+    en la instancia Clerk, NO en git. Doc:
     vitalia/docs/observed-bugs/2026-06-01-clerk-choose-organization-task-blocks-signin.md
 t_fix_2_progress:
   a_seed_by_write: "✅ GREEN-real (3 doctores DB + 3 audit rows · evidencia DoD confirmada orchestrator)"
