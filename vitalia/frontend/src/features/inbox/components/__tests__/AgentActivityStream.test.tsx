@@ -19,10 +19,11 @@ import { AgentActivityStream } from "../AgentActivityStream";
 import { INBOX_COPY } from "../../copy";
 import type { ActivityEvent } from "../../types/activity-event";
 
-// Mock Clerk — AgentActivityStream calls useTenantLocale() → useOrganization()
-// organization: null triggers vitalia default locale (ARS / America/Argentina/Buenos_Aires / es-419)
+// Mock Clerk — AgentActivityStream calls useTenantLocale() → useUser()
+// T-2 fix (2026-06-01): useTenantLocale now uses useUser (not useOrganization).
+// user: null / isLoaded: true triggers vitalia default locale (ARS / America/Argentina/Buenos_Aires / es-419)
 vi.mock("@clerk/nextjs", () => ({
-  useOrganization: () => ({ organization: null }),
+  useUser: () => ({ user: null, isLoaded: true }),
 }));
 vi.mock("@/hooks/useTenantId", () => ({ useTenantId: () => "mock-tenant-id" }));
 

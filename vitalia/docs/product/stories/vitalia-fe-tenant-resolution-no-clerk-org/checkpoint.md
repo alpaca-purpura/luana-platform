@@ -12,7 +12,8 @@ parent_story: null
 
 release: F2
 state: developed
-phase_workflow: HANDOFF_TO_AUDITOR
+phase_workflow: T2_DONE
+audit_t1_verdict: APPROVED
 architecture_pattern: N/A   # cross-cutting FE data-layer fix, no shell sub-tab
 adr_004_compliance: N/A
 autonomous_mode: true

@@ -131,10 +131,10 @@ const F1_S3_FILES: ReadonlyArray<string> = [
 // These files use Clerk Organizations patterns from before the no-clerk-orgs decision.
 // Do NOT add new files here. This list must SHRINK, never grow.
 // T-FIX-1-FE 2026-06-01: useClinicId.ts removed (fixed to use only user.publicMetadata).
+// T-2 2026-06-01: useTenantLocale.ts removed (fixed to use useUser + publicMetadata).
 const LEGACY_EXCLUSIONS: ReadonlySet<string> = new Set<string>([
-  // Pre-F1-S3 hooks from F1-S0 / earlier stories (legacy Clerk Organizations usage)
-  // useClinicId.ts was fixed in T-FIX-1-FE — removed from exclusions.
-  "src/hooks/useTenantLocale.ts",
+  // All pre-F1-S3 hooks have been migrated away from Clerk Organizations.
+  // This list is now EMPTY — shrink-only ratchet baseline = 0.
 ]);
 
 describe("Architecture: F1-S3 files must NOT use Clerk Organizations (MEMORY no-clerk-orgs 2026-05-20)", () => {
@@ -187,9 +187,9 @@ describe("Architecture: F1-S3 files must NOT use Clerk Organizations (MEMORY no-
 
 describe("Architecture: legacy exclusions list must shrink (ratchet)", () => {
   it("LEGACY_EXCLUSIONS count must not grow (shrink-only ratchet)", () => {
-    // T-FIX-1-FE 2026-06-01: useClinicId.ts was fixed to remove useOrganization.
-    // Baseline reduced from 2 → 1 (shrink-only ratchet).
-    const MAX_LEGACY_EXCLUSIONS = 1; // shrink-only
+    // T-FIX-1-FE 2026-06-01: useClinicId.ts was fixed — baseline 2 → 1.
+    // T-2 2026-06-01: useTenantLocale.ts was fixed — baseline 1 → 0.
+    const MAX_LEGACY_EXCLUSIONS = 0; // shrink-only — all hooks migrated
 
     expect(
       LEGACY_EXCLUSIONS.size,
@@ -300,16 +300,15 @@ function isClerkOrgImportLine(
  * DO NOT add new entries — fix the violation instead.
  *
  * Baseline established at T-FIX-1-FE (2026-06-01):
- *   - useClinicId.ts: FIXED in T-FIX-1-FE (removed from exclusions)
- *   - AuditedSection.tsx: pre-existing, tracked for future cleanup
- *   - useTenantLocale.ts: pre-existing, tracked for future cleanup
- *   - onboarding hooks/components: pre-existing, tracked for migration
+ *   - useClinicId.ts: FIXED in T-FIX-1-FE (removed)
+ *   - AuditedSection.tsx: FIXED in T-2 (2026-06-01) — uses useTenantId() now
+ *   - useTenantLocale.ts: FIXED in T-2 (2026-06-01) — uses useUser() now
+ *   - onboarding hooks/components: pre-existing violations, tracked for migration
+ *
+ * T-2 (2026-06-01): AuditedSection.tsx + useTenantLocale.ts removed (fixed).
+ * Baseline: 7 → 5.
  */
 const CLERK_ORG_IMPORT_EXCLUSIONS: ReadonlySet<string> = new Set<string>([
-  // useTenantLocale.ts: pre-dates no-clerk-orgs decision; tracked for future cleanup
-  "src/hooks/useTenantLocale.ts",
-  // AuditedSection.tsx: pre-existing violation, tracked for cleanup
-  "src/components/shared/phi/AuditedSection.tsx",
   // onboarding hooks/components: pre-existing violations, tracked for migration
   "src/features/onboarding/components/WizardOnboardingLayout.tsx",
   "src/features/onboarding/hooks/use-wizard-completion.ts",
@@ -318,8 +317,9 @@ const CLERK_ORG_IMPORT_EXCLUSIONS: ReadonlySet<string> = new Set<string>([
   "src/features/onboarding/hooks/use-wizard-slot-extraction.ts",
 ]);
 
-/** Baseline cap for CLERK_ORG_IMPORT_EXCLUSIONS — shrink only, never grow */
-const MAX_CLERK_ORG_IMPORT_EXCLUSIONS = 7;
+/** Baseline cap for CLERK_ORG_IMPORT_EXCLUSIONS — shrink only, never grow.
+ * T-2 (2026-06-01): reduced from 7 to 5 (AuditedSection + useTenantLocale fixed). */
+const MAX_CLERK_ORG_IMPORT_EXCLUSIONS = 5;
 
 /**
  * T-1 vitalia-fe-tenant-resolution-no-clerk-org (2026-06-01)
@@ -459,7 +459,7 @@ describe("Architecture: T-1 — production source files must NOT use orgId from 
 });
 
 describe("Architecture: full src/ scan — no @clerk org hook IMPORTS (T-FIX-1-FE)", () => {
-  it("CLERK_ORG_IMPORT_EXCLUSIONS count must not grow (shrink-only ratchet — baseline 7, T-FIX-1-FE 2026-06-01)", () => {
+  it("CLERK_ORG_IMPORT_EXCLUSIONS count must not grow (shrink-only ratchet — baseline 5, T-2 2026-06-01)", () => {
     expect(
       CLERK_ORG_IMPORT_EXCLUSIONS.size,
       `CLERK_ORG_IMPORT_EXCLUSIONS grew beyond ${MAX_CLERK_ORG_IMPORT_EXCLUSIONS}. ` +

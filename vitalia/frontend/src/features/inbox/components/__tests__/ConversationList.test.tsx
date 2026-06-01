@@ -12,10 +12,11 @@ import { ConversationList } from "../ConversationList";
 import { ConversationItem } from "../ConversationItem";
 import type { Conversation } from "@/features/crm-shared";
 
-// Mock Clerk — ConversationItem calls useTenantLocale() → useOrganization()
-// organization: null triggers default locale (ARS / America/Argentina/Buenos_Aires / es-419)
+// Mock Clerk — ConversationItem calls useTenantLocale() → useUser()
+// T-2 fix (2026-06-01): useTenantLocale now uses useUser (not useOrganization).
+// user: null / isLoaded: true triggers default locale (ARS / America/Argentina/Buenos_Aires / es-419)
 vi.mock("@clerk/nextjs", () => ({
-  useOrganization: () => ({ organization: null }),
+  useUser: () => ({ user: null, isLoaded: true }),
 }));
 vi.mock("@/hooks/useTenantId", () => ({ useTenantId: () => "mock-tenant-id" }));
 
