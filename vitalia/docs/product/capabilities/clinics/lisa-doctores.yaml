@@ -60,10 +60,12 @@ consumes_engine:
 
 # Pendientes para flip a status: live (DoD)
 done_blockers:
-  - "doctors-500 fix (BE 422 guard UUID headers + FE useClinicId sin fallback Clerk-org) — keystone"
-  - "live-verify REAL (no mock) de los scenarios contra dev-app + dev_app_verified.evidence"
-  - "visual goldens V-VIS-1..4 a project=visual + ratificación Chris (ADR-vitalia-003)"
+  - "[RESUELTO 2026-06-01 · BE 81a32173 + FE 99589cb2] doctors-500 fix (BE 422 guard UUID headers + FE useClinicId sin fallback Clerk-org) — keystone"
+  - "[RESUELTO 2026-06-01 · merge 14af22b2] tenant-resolution FE-wide no-clerk-org (bug sistémico que ocultaba el 500 a escala plataforma)"
+  - "live-verify REAL (no mock) de los scenarios contra dev-app + dev_app_verified.evidence — vía seed-by-WRITE real (decisión Chris a)"
+  - "visual goldens V-VIS-1..4 a project=visual + regen baselines + ratificación Chris (ADR-vitalia-003) (decisión Chris c)"
   - "flujos workspace/calendar (SC-1/1b/1c/1d/3/3b) + i18n credencial AR/MX/CL"
+  - "quitar workaround .filter({visible:true}) de POMs (dual-mount fixed → slot resuelve a 1) + fix medición perf (debounce 500ms en POM searchFor)"
 
 change_log:
   - story_id: vitalia-fase2-lisa-doctores
@@ -76,6 +78,19 @@ change_log:
       Backend extiende clinics + doctor_extension + CONSUME scheduling/engine (no recrea).
       status=partial hasta live-verify real GREEN.
     scenarios_added: [crear-doctor-horarios, credencial-invalida-422, doctor-desactivado-preserva-citas, cross-tenant-doctor-404, keyboard-a11y-tabs-workspace]
+    status: in-progress
+  - story_id: vitalia-fase2-lisa-doctores
+    date: 2026-06-01
+    type: fix
+    summary: >-
+      Pendiente B (sesión cierre parte 2). Keystone doctors-500 RESUELTO (BE 422 UUID
+      header guard 81a32173 + FE useClinicId sin Clerk-org 99589cb2) + bug sistémico
+      tenant-resolution FE-wide ya cerrado (merge 14af22b2). Decisiones Chris ratificadas:
+      (a) seed-by-WRITE real para live-verify (POST create → 201 + fila cifrada + audit,
+      tenant e69a691d / clinic f035be5b Sanaré); (c) reubicar V-VIS-1..4 a project=visual
+      + regen baselines + ratificación Chris ANTES de merge. Resta /dev-team batch
+      (POM workarounds + perf + flujos + i18n + seed-write + goldens) → /auditor → merge.
+    scenarios_added: []
     status: in-progress
 
 # Scenarios (Gherkin del 01-spec.md · verbatim) — verificación pendiente live-verify real

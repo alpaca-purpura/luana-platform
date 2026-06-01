@@ -622,3 +622,14 @@ Además: existe una **Clerk Organization** `org_3DzUI3lLjwX83Kth0j5enWrjIDY` ("S
 Doc completo: `vitalia/docs/observed-bugs/2026-06-01-fe-tenant-id-from-clerk-org-systemic.md`.
 
 **Esto excede la story de doctores.** El fix = `useTenantId()` (espejo de useClinicId) + reemplazar en 34 archivos + tightening arch test + borrar la Clerk org (outward-facing) + re-live-verify features afectados. Es remediación cross-cutting (story dedicada o /pm-luana), NO se entierra acá. **Doctores queda `developing` bloqueada en esta decisión.** Pregunto a Chris cómo proceder.
+
+### 2026-06-01T12:55 · 🤖 claude · `/pm-vitalia` · ✓ APLICADO
+**Sesión de cierre parte 2 — arranca Pendiente B.** Step 0 GREEN: única story OPEN = esta (developing, defer_audit:false ya resuelto). Git verificado: wip/vitalia @ a2262397 (pusheado), origin/main @ 75b43824 (intacto). El bug sistémico de la DUDA anterior ya se cerró en sesión 1 (story `vitalia-fe-tenant-resolution-no-clerk-org` → done, merge 14af22b2). Keystone T-FIX-1 confirmado commiteado (BE 81a32173 + FE 99589cb2).
+
+**Grounding live de la DB real (vitalia_dev):** 0 doctores reales para tenant `e69a691d` / clinic `f035be5b` (los "3 seed" del T-HARNESS eran del harness mockeado; los 2 que hay viven bajo tenant placeholder 0000…0001). Clínica `f035be5b` (Sanaré LATAM — Sede Principal) **existe** → un WRITE real funcionará (sin 422). `vitalia_doctors` cifra PHI con pgcrypto BYTEA → seed raw-SQL sería frágil/incorrecto.
+
+**2 decisiones ratificadas por Chris:**
+- **(a) seed-by-WRITE real** — /dev-team ejerce el create real (POST → 201 + fila DB cifrada + audit) para 2-3 doctores. Doble propósito: seed + Scenario 1 happy-path + evidencia DoD más fuerte + datos para flujos (e).
+- **(c) reubicar + regenerar + ratificar AHORA** — V-VIS-1..4 → project=visual (snapshotPathTemplate + maxDiffPixelRatio), regenerar baselines limpios, te los muestro para ratificar (ADR-vitalia-003) antes de merge. Borrar baselines basura untracked. doctores done incluye AC-9 completo.
+
+**Próximo:** encadeno `/dev-team` con el work order T-FIX-2 (b POM workarounds + d perf-measurement + e flujos+i18n + a seed-by-WRITE live + c goldens relocate+regen). Tras GREEN-real + goldens regenerados → te muestro goldens para ratificar → /auditor → merge.

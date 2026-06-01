@@ -55,7 +55,23 @@ reuse_map_summary: >-
   [doctor-id] · NEW personal-branding bio + horarios + KPIs · doctors-as-faces
   preview
 spawned_at: 2026-05-22T00:00:00.000Z
-next_action: /dev-team T-FIX-1 keystone (doctors-500 BE 422 guard + FE useClinicId sin Clerk-org + arch-test tightening + regression RED-first) → re-run live-verify → continuar work order (2)-(7) chris-input
+next_action: /dev-team T-FIX-2 batch (b POM workarounds quitar + d perf-measurement fix + e flujos profundos+i18n + a seed-by-WRITE real live + c visual goldens → project=visual regen) → ratificar goldens Chris → /auditor → /pm-vitalia merge
+chris_decisions_2026-06-01:
+  - id: a-seed
+    decision: seed-by-WRITE-real
+    detail: >-
+      /dev-team ejerce el flujo create real (POST /doctors → 201 + fila DB cifrada
+      pgcrypto + audit) para 2-3 doctores en tenant e69a691d / clinic
+      f035be5b-0ac4-5210-8fc3-395650ca2b83 (Sanaré LATAM — Sede Principal, verificada
+      existe). Cuenta como Scenario 1 happy-path + evidencia DoD más fuerte + seedea
+      datos para flujos (e). NO raw-SQL (pgcrypto frágil).
+  - id: c-goldens
+    decision: relocate-regen-ratify-now
+    detail: >-
+      Reubicar V-VIS-1..4 (de staff-large-dataset.spec.ts smoke) a project=visual con
+      snapshotPathTemplate + maxDiffPixelRatio, regenerar baselines limpios, mostrar a
+      Chris para ratificación (ADR-vitalia-003) ANTES de merge. doctores done incluye
+      AC-9 completo. Borrar baselines basura untracked (staff-large-dataset.spec.ts-snapshots/ + _shots/).
 release: F2
 cap_target: lisa.doctores
 cap_change_type: new
