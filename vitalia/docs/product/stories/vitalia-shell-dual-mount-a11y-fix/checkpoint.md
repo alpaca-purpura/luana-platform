@@ -10,15 +10,15 @@ cap_target: shell-vitalia                         # toca el shell-organism core 
 cap_change_type: fix                              # bugfix arquitectónico: elimina doble montaje + id duplicado (no agrega scenarios de producto nuevos)
 parent_story: null
 
-state: developing
-phase_workflow: T1_DONE_T2_PENDING_LIVE
-last_artifact: 06-tickets.yaml
-last_modified: 2026-06-01T10:30:00-05:00
+state: developed
+phase_workflow: T2_DONE_HANDOFF_AUDITOR
+last_artifact: e2e/regression/vitalia-shell-dual-mount-a11y-fix/single-slot-live.spec.ts
+last_modified: 2026-06-01T11:40:00-05:00
 
 # Shell-feature arch gate (overlay shell-feature-architecture-mandatory.md)
 architecture_pattern: ADR-vitalia-004            # shell CORE (no sub-tab nueva); adr_004_compliance=partial-with-rationale en 03-arch (secciones 4-8 N/A: sin data layer/forms/BE/migrations/telemetría)
 autonomous_mode: false                           # architect propone false (bugfix transversal blast-radius alto); Chris ratifica
-next_action: "RETOMAR EN T-2 (verificación LIVE · ADR-008). T-1 DONE+GREEN (commit b65baae6: single-main+single-slot, 501 tests shell pass, regresión transversal=0, tsc src/ 0, eslint limpio). Falta: (a) make dev-app-vitalia DESDE este worktree (footgun cross-worktree); (b) ejercer lisa + valeria sidebar desktop+mobile (Chrome MCP / Playwright autenticado dr.demo@vitalialat.com) → confirmar querySelectorAll('#main-content').length===1 + [data-testid=app-panel-slot].length===1 + consola SIN 'Rendered more hooks'/hydration; (c) axe wcag2aa lisa+valeria; (d) prueba de fuego E2E doctores --project=smoke → getByTestId resuelve a 1 SIN .filter({visible:true}); (e) llenar dev_app_verified.evidence; luego developing→developed + AUTO /auditor (auditor-frontend Opus) → merge reviewing→done. Build-claim code:shell-organism liberado al cerrar."
+next_action: "T-2 DONE — live-verify GREEN contra stack real (no mocks). AUTO-HANDOFF /auditor (auditor-frontend Opus): leer single-slot-live.spec.ts + dev_app_verified.evidence + 501 tests shell + verificar single-main/single-slot. APPROVED → /pm-vitalia merge reviewing→done (git mv archive). NOTA para auditor: el doctors-list 500 (X-Clinic-ID UUID) es bug de DATOS de lisa-doctores (observed-bugs/2026-06-01-doctors-list-500-clinic-id-uuid.md), NO del shell — el shell renderizó single-main+single-slot+consola limpia aún con el panel en error state, y lisa/marca/identidad (sin doctores) también verde."
 ratified_by_chris: true                           # Chris ratificó arrancar Pendiente 2 (fix dual-mount) → scope WHAT confirmado; HOW lo cierra /architect
 spawned_at: 2026-06-01T00:00:00-05:00
 spawned_by: /pm-vitalia
@@ -45,7 +45,19 @@ hotfix_metadata:
 # Dev-app live verification gate (ADR-vitalia-008) — superficie user-reachable (el shell de TODOS los agentes)
 dev_app_verified:
   required: true
-  evidence: []                                    # se llena en developed→reviewing: ejercer los 5 agentes ×3 modos en dev-app + axe
+  env: "make dev-vitalia stack (FE :3002 + BE :8002), Clerk testing token (CLERK_TESTING_TOKEN_VITALIA), auth.fixture authedPage — Playwright autenticado, SIN backend mocks. Chrome DevTools MCP no conectado en esta sesión → fallback Playwright-autenticado-live (válido per definition-of-done-live-verify.md § Fallback localhost). Frontend container bind-mount confirmado a ESTE worktree (footgun NO disparado)."
+  verified_at: 2026-06-01
+  spec: vitalia/frontend/e2e/regression/vitalia-shell-dual-mount-a11y-fix/single-slot-live.spec.ts
+  evidence:
+    - action: "Navegación autenticada (real Clerk) a /{tenant}/lisa/staff en modo agentic, viewport desktop 1440×900, contra stack real"
+      observed: "document.querySelectorAll('#main-content').length === 1 + [data-testid=app-panel-slot].length === 1; consola SIN 'Rendered more hooks'/hydration. Backend REAL golpeado (GET /iam/users/me/tenants 200) — confirma no-mock."
+    - action: "Navegación autenticada a /{tenant}/lisa/marca/identidad en modo web, desktop"
+      observed: "1 main-content + 1 app-panel-slot; consola limpia (ruta sin endpoint doctores → panel sano)"
+    - action: "Navegación autenticada a /{tenant}/lisa/staff en modo agentic, viewport mobile 390×844"
+      observed: "1 main-content + 1 app-panel-slot; consola limpia (la rama mobile ya no duplica el slot — lección nicolify aplicada)"
+    - action: "axe wcag2aa scan del shell (lisa/staff, desktop)"
+      observed: "cero violaciones duplicate-id / duplicate-id-aria / landmark-unique / landmark-no-duplicate-banner (eran el síntoma a11y del triple-main)"
+  notes: "Resultado Playwright: 6 passed (2 setup + 4 live) en 18.5s. El doctors-list 500 (X-Clinic-ID) es bug de DATOS de lisa-doctores, NO del shell (observed-bugs/2026-06-01-doctors-list-500-clinic-id-uuid.md). El shell rindió single estructura aún con panel en error state."
 ---
 
 # Bugfix arquitectónico — shell-organism monta el panel-content 2× (testids duplicados + id="main-content" ×3)

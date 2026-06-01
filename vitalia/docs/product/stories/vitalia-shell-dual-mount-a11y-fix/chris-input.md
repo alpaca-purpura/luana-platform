@@ -63,3 +63,25 @@ Tickets: **T-1** (builder-frontend **Sonnet** — FE no-agentic, R23 N/A — ree
 ⚠️ **Finding pre-existente (NO de este fix, para /pm-luana):** el arch test `test-no-cross-brand-shell-mirror.test.ts` falla (4 matches `SubTabMeta`/`extractSubtabFromPath` en nicolify). Causa: el **rebuild de nicolify portó el shell de vitalia** (ya en origin/main) sin renombrar esos símbolos TS. Mi T-1 no lo introdujo (solo tocó 2 archivos vitalia). Es un mirror cross-brand que pide decisión /pm-luana (renombrar en nicolify, o aceptar el port + ajustar el arch test).
 
 **Pendiente T-2 (verificación transversal LIVE · ADR-008):** axe wcag2aa + dev-app live (ejercer lisa + valeria sidebar desktop+mobile, confirmar 1 main-content + 1 slot en DOM real, consola sin "more hooks") + prueba de fuego E2E doctores (getByTestId resuelve a 1 sin `.filter visible`). Esto llena `dev_app_verified.evidence` (requerido para developed→reviewing→done). `autonomous_mode:false` → checkpoint con Chris antes de T-2 live.
+
+### 2026-06-01T11:05 · 🤖 claude · `/pm-vitalia` · ✓ APLICADO
+**Sesión de cierre — arranco Pendiente A (dual-mount).** Step 0 GREEN verificado: wip/vitalia @ 2356bd26 (pusheado), origin/main @ 75b43824 intacto, squash stale 63b3adf1 en platform main local (NO se pushea). Story closure scan: 2 stories abiertas (esta `developing`; doctores `reviewing` defer_audit:true). Esta destraba doctores → prioridad.
+
+Stack dev vitalia UP (backend/frontend/cloudflared 18-26h) · dev-app.vitalialat.com responde 307 (auth redirect, esperado). ⚠️ Footgun cross-worktree activo: el frontend container lleva 18h up mientras T-1 (b65baae6) se commiteó esta sesión → dev-team debe re-correr `make dev-app-vitalia` DESDE este worktree antes de verificar, o servirá código stale.
+
+Encadeno `/dev-team` para T-2 (verificación LIVE transversal · ADR-008): los 5 agentes + valeria sidebar ×3 modos en dev-app, single-main+single-slot en DOM real, axe wcag2aa, prueba de fuego E2E doctores sin `.filter({visible:true})`. dev-team llena `dev_app_verified.evidence` → developing→developed → AUTO /auditor → vuelvo a /pm-vitalia para merge reviewing→done.
+
+### 2026-06-01T11:40 · 🤖 claude · `/dev-team` · ✓ APLICADO
+**T-2 (verificación LIVE · ADR-008) GREEN — dual-mount fix VERIFICADO en el stack real.** Chrome DevTools MCP no está conectado en esta sesión → usé el fallback canónico (Playwright autenticado live contra el stack real, válido per `definition-of-done-live-verify.md § Fallback`). Footgun NO disparado: confirmé que el frontend container bind-mountea ESTE worktree (`/home/chalreme/Proyectos/luana-vitalia/vitalia/frontend`), o sea ya servía el código del fix.
+
+Nueva spec **live** (NO mockea backend): `e2e/regression/vitalia-shell-dual-mount-a11y-fix/single-slot-live.spec.ts`. **6 passed (18.5s)** — setup (Clerk sign-in fresco) + 4 tests:
+- agentic-desktop · lisa.staff → 1 `#main-content` + 1 `app-panel-slot`, consola sin hooks/hydration
+- web-desktop · lisa.marca.identidad → 1 + 1, consola limpia
+- mobile · lisa.staff → 1 + 1, consola limpia (la rama mobile ya no duplica el slot)
+- axe wcag2aa → cero violaciones duplicate-id / landmark-unique (el síntoma a11y del triple-main)
+
+**Confirmación de que es LIVE real (no falso verde):** el backend REAL respondió en los logs (`GET /iam/users/me/tenants 200`). El `app-panel-slot` resuelve a **1** directamente → el workaround `.filter({visible:true})` ya no hace falta (prueba de fuego al nivel del shell).
+
+⚠️ **Hallazgo (bug de DATOS, NO del shell · para Pendiente B):** `GET /clinics/doctors` da **500** (`UUID(clinic_id)` con `X-Clinic-ID` no-UUID que el FE no envía válido). Nunca se vio porque el harness de doctores **mockea el backend** (mismo patrón lisa-marca). Registrado en `observed-bugs/2026-06-01-doctors-list-500-clinic-id-uuid.md`. El shell rindió single-estructura aún con el panel en error state, y lisa/marca (sin doctores) también verde → el dual-mount fix NO está afectado.
+
+Story `developing → developed`. AUTO-HANDOFF `/auditor` (auditor-frontend Opus). Build-claim `code:shell-organism` liberado.
