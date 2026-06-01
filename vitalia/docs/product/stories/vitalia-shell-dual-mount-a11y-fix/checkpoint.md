@@ -10,11 +10,15 @@ cap_target: shell-vitalia                         # toca el shell-organism core 
 cap_change_type: fix                              # bugfix arquitectónico: elimina doble montaje + id duplicado (no agrega scenarios de producto nuevos)
 parent_story: null
 
-state: refined
-phase_workflow: ARCHITECT_PENDING
-last_artifact: chris-input.md
-last_modified: 2026-06-01T00:05:00-05:00
-next_action: "/architect cierra ready package: 03-arch (reconciliar single-main nicolify + render del slot UNA vez) + 04-validators (re-verificación transversal 5 agentes ×3 modos + axe + dev-app) + 06-tickets (reescritura tests triple-main). Encadenado."
+state: ready
+phase_workflow: READY_FOR_DEV
+last_artifact: 06-tickets.yaml
+last_modified: 2026-06-01T00:30:00-05:00
+
+# Shell-feature arch gate (overlay shell-feature-architecture-mandatory.md)
+architecture_pattern: ADR-vitalia-004            # shell CORE (no sub-tab nueva); adr_004_compliance=partial-with-rationale en 03-arch (secciones 4-8 N/A: sin data layer/forms/BE/migrations/telemetría)
+autonomous_mode: false                           # architect propone false (bugfix transversal blast-radius alto); Chris ratifica
+next_action: "/dev-team T-1 (builder-frontend Sonnet): RED reescribir ShellOrganismLayout.test.tsx asertando single-main + single-slot → GREEN single <main id=main-content> + single <AppPanelSlot> + hook-count estable (D3) + sin useMediaQuery (D4). Luego T-2 verificación transversal 5 agentes ×3 modos + axe + dev-app live (ADR-008)."
 ratified_by_chris: true                           # Chris ratificó arrancar Pendiente 2 (fix dual-mount) → scope WHAT confirmado; HOW lo cierra /architect
 spawned_at: 2026-06-01T00:00:00-05:00
 spawned_by: /pm-vitalia

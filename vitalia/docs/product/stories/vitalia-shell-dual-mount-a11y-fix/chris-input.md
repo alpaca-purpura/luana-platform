@@ -41,3 +41,14 @@ Story creada (`state: idea → refined`, type=bugfix ADR-011, repro_verified=tru
 Encadeno a `/architect` para cerrar el ready package (03-arch reconciliando ambos approaches + 04-validators con el plan de re-verificación transversal 5 agentes ×3 modos + axe + dev-app, + 06-tickets con la reescritura de los tests del triple-main).
 
 ⚠️ DUDA para vos Chris (no bloqueante — /architect puede arrancar): ¿confirmás que el fix es shell brand-local de vitalia (NO lift a core / NO tocar el de nicolify)? Asumo que sí.
+
+### 2026-06-01 00:30 · 🤖 claude · `/architect` · ✓ APLICADO
+Ready package cerrado (`state: refined → ready`). 5 artifacts en el story-folder. Decisión arquitectónica central resuelta (reconciliación que el bug doc no tenía):
+- **D1** single `<main id="main-content">` (patrón nicolify) → mata id duplicado + a11y landmark.
+- **D2** `<AppPanelSlot>{children}>` renderizado **UNA sola vez** → mata testids duplicados. **Va más allá de nicolify** (cuyo single-main dejó los testids duplicados porque renderiza children en ambas ramas desktop+mobile).
+- **D3** hook-count estable (todos los hooks arriba, incondicionales) + **D4** NADA de mount condicional del `<Group>` detrás de isDesktop → evita el crash "more hooks" que sufrió nicolify.
+- Chrome responsive (resizable agentic / grid web / single-col mobile) rodea al MISMO slot vía CSS, no lo re-monta.
+
+Tickets: **T-1** (builder-frontend **Sonnet** — FE no-agentic, R23 N/A — reescribir ShellOrganismLayoutClient + RED-first sus tests SC-1/2/4) + **T-2** (verificación transversal 5 agentes ×3 modos + axe + dev-app live ADR-008). `autonomous_mode: false` — lo propongo porque el blast-radius es transversal (un error rompe la UI de TODOS los agentes), conviene tu check antes del build.
+
+⚠️ DUDA para Chris: ¿arranco `/dev-team` T-1 ahora (build con gates transversales protegiendo el blast-radius; el merge igual frena para vos por ADR-008), o querés revisar el ready package / mockear primero? Recomiendo arrancar el build — los validators RED-first + transversales son la red de seguridad.
