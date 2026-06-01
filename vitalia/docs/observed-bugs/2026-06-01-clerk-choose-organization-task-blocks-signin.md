@@ -1,9 +1,26 @@
 # Observed bug — Clerk `choose-organization` session-task bloquea TODO sign-in (e2e + real)
 
 **Fecha:** 2026-06-01
+**Estado:** ✅ **RESUELTO 2026-06-01** (ver § Resolución abajo).
 **Detectado por:** `/dev-team` (cierre Pendiente B, story `vitalia-fase2-lisa-doctores`) al regenerar visual goldens.
-**Severidad:** ALTA — bloquea toda verificación browser-based (e2e completo + login real a dev-app).
-**Conexión:** consecuencia directa de [[no-clerk-organizations]] aplicado a medias (se borró la Clerk org, NO se deshabilitó Organizations a nivel instancia).
+**Severidad:** ALTA — bloqueaba toda verificación browser-based (e2e completo + login real a dev-app).
+**Conexión:** consecuencia directa de [[no-clerk-organizations]] aplicado a medias (se borró la Clerk org, NO se deshabilitó la tarea de org a nivel instancia).
+
+## ✅ Resolución (2026-06-01)
+
+Causa exacta confirmada vía Clerk Backend API (`GET /v1/instance/organization_settings`):
+`enabled: true` + **`force_organization_selection: true`** + **0 organizations** (la borrada) + sin auto-creación → todo sign-in forzaba la tarea `choose-organization` sin org que elegir → sesión nunca activa.
+
+**Fix aplicado** (Clerk Backend API, instancia test `pk_test_...`):
+```
+PATCH https://api.clerk.com/v1/instance/organization_settings
+{ "force_organization_selection": false }   → HTTP 200
+```
+Verificado: `enabled: true | force_organization_selection: false`. Login real restaurado — `npx playwright test --project=setup` GREEN (2/2, auth state saved attempt 1).
+
+**Por qué `force_organization_selection: false` (y no `enabled: false`):** es el fix quirúrgico que elimina la tarea forzada sin tocar más. Con 0 orgs + sin auto-creación + sin force, **nunca se requiere ni se lee una org** → satisface no-clerk-organizations en la práctica (el FE ya no lee `orgId` post sesión 1). Deshabilitar Organizations por completo (`enabled: false`) queda como alineación opcional futura (más agresivo; innecesario para funcionar).
+
+> ⚠️ **Config de instancia, NO en git.** Este setting vive en la instancia Clerk (no en el repo). Si se restaura un backup de instancia o se re-habilita force-org, el bug vuelve. Registrado también en `[[no-clerk-organizations]]` (MEMORY) + learning `2026-06-01-fe-tenant-from-clerk-org-systemic.md`.
 
 ## Síntoma
 
