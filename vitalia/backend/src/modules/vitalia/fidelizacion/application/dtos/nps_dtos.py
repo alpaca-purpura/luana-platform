@@ -1,3 +1,5 @@
+# cap: patients.nps-tracking
+# story-origin: TBD
 """DTOs de NPS — capa API para fidelización vitalia.
 
 PHI: comment (texto libre del paciente) excluido de respuestas API.

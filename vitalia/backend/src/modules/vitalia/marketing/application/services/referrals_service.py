@@ -1,3 +1,5 @@
+# cap: marketing.referrals-leaderboard
+# story-origin: TBD
 """ReferralsService — patient referral leaderboard + code generation.
 
 Application layer — proxies to LucasReferralsService snapshot reads

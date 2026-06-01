@@ -1,3 +1,5 @@
+# cap: marketing.lucas-stage-recommendations
+# story-origin: TBD
 """LucasRecommendationRepository — dual-scope async repository.
 
 Subclasses ``CompoundScopeRepositoryBase`` from engine (luana-core-platform v0.4.0).

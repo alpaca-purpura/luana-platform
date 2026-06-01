@@ -1,3 +1,5 @@
+# cap: scheduling.valeria-agenda
+# story-origin: vitalia-fase2-s1-TBD
 """Slot payment status enum — visual color coding for the agenda cockpit.
 
 Drives the 4-color matrix on each slot cell in the calendar grid:

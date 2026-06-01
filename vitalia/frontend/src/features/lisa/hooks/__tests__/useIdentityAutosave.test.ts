@@ -41,6 +41,8 @@ vi.mock("@clerk/nextjs", () => ({
     isSignedIn: true,
   }),
 }));
+vi.mock("@/hooks/useTenantId", () => ({ useTenantId: () => "mock-tenant-id" }));
+
 
 vi.mock("../../api/marca", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../../api/marca")>();

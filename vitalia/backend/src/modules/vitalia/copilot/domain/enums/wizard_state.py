@@ -1,3 +1,5 @@
+# cap: copilot.valeria-wizard-onboarding-agentic
+# story-origin: TBD
 """WizardState — enum for Valeria onboarding wizard progression state."""
 
 from __future__ import annotations

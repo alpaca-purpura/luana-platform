@@ -1,3 +1,5 @@
+# cap: booking.booking-widget-embed
+# story-origin: TBD
 """BookingService — atomic slot reservation with pg_advisory_lock + idempotency.
 
 Per 03-arch-be.md § 9.2:

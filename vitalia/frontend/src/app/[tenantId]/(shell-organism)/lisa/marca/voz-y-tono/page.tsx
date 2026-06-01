@@ -1,3 +1,5 @@
+// cap: brand_studio.lisa-marca
+// story-origin: vitalia-fase2-s7-TBD
 /**
  * lisa/marca/voz-y-tono/page.tsx — Voz y tono sub-sub-tab Server Component.
  *
@@ -23,6 +25,7 @@ interface VozTonoPageProps {
 function VozTonoSkeleton() {
   return (
     <div
+      data-testid="lisa-marca-loading-skeleton"
       aria-label="Cargando sección Voz y tono"
       aria-busy="true"
       className="flex flex-col gap-4 p-6"

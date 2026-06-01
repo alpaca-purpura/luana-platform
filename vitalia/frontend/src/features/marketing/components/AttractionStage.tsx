@@ -1,3 +1,5 @@
+// cap: public_landing.public-clinic-landing
+// story-origin: TBD
 /**
  * AttractionStage — attraction funnel stage panel.
  * Renders: Lucas recommendations card + KPI hero cards + channel breakdown placeholder.

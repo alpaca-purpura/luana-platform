@@ -168,12 +168,21 @@ export function buildMockVisualsResponse(
 export function buildMockPersonalityResponse(
   tenantId: string = LISA_MARCA_FIXTURE.tenantId,
 ) {
+  // Returns shape matching PersonalityResponse interface (camelCase, BrandPersonalityDTO mirror).
+  // Fix: arreglar-guardado-voz-y-tono T-3.bis — old shape (toneBlocks/languageStyle) caused
+  // VozTonoView to fail to hydrate archetype correctly (missing personalityProfileId + soISpeak
+  // fields). Now matches the real BE BrandPersonalityDTO with alias_generator=to_camel.
   return {
     tenantId,
+    personalityProfileId: "mock-personality-profile-id-001",
     archetype: LISA_MARCA_FIXTURE.personality.archetype,
-    toneBlocks: LISA_MARCA_FIXTURE.personality.toneBlocks,
-    languageStyle: LISA_MARCA_FIXTURE.personality.languageStyle,
-    prohibitedPhrases: LISA_MARCA_FIXTURE.personality.prohibitedPhrases,
+    soISpeak: LISA_MARCA_FIXTURE.personality.toneBlocks.mainBody,
+    soIDontSpeak: "",
+    technicalContext: "",
+    formatInstructions: "",
+    identityAnchor: LISA_MARCA_FIXTURE.identity.tagline,
+    domainContext: LISA_MARCA_FIXTURE.identity.description,
+    compiledAt: null,
     compilerVersion: "v2",
     updatedAt: "2026-05-27T18:00:00.000Z",
   };

@@ -144,6 +144,10 @@ recently_done:
   - vitalia-slice-1-infra-cross-cutting  # 2026-05-18 cerrada reviewing→done · squashes 50143d57 + cc4fcd68 mergeados main · 8 capability YAMLs live + 7 modules MD refreshed + 2 promotion candidates · archive/2026/stories/vitalia-slice-1-infra-cross-cutting/07-merge.md
   - vitalia-dev-stack-functional         # 2026-05-17T17:00 cerrada refining→done · receta 12 pasos en archive/2026/stories/vitalia-dev-stack-functional/07-merge.md
 ssot_owner: /pm-vitalia
+
+# Schema v2 migration (cement 2026-05-27)
+current_release: F2
+releases_active: [F2, F3, F4, F5, F6, F7, F8]
 ---
 
 # Vitalia — checkpoint
@@ -371,3 +375,14 @@ Story 11 (`luana-vitalia-bootstrap`, mergeada 2026-05-15) shipped **16 capabilit
   - **Estado actual brand:** 2 stories ready (Ola 1) · 3 stories refined Slice 1 awaiting /architect refresh (pipeline + marketing + agenda) · 2 side stories refining awaiting /po draft (payment + fiscal) · 1 idea (pricing).
   - **Próximo paso natural**: Ola 1 puede arrancar /dev-team build (paralelo inbox + fidelización). Ola 2-3 + side stories pueden arrancar /architect refresh en sesión separada (prompt copy-paste handoff a Chris provisto fin sesión).
 - **2026-05-20 corrección post-feedback Chris (NO Clerk Organizations)**: Chris ratificó que Luana NUNCA usó/usará Clerk Organizations en esta etapa — multi-tenancy via tenants+users propios engine `luana-core-iam` (tablas `tenants` + `users` + `user_tenants` junction). Webhook Clerk user.created sync → engine `_handle_user_sync` crea row users + vitalia ClerkWebhookAdapter dispara `OnboardingService.create_clinic_profile` que crea tenant + user_tenant junction. Memoria `~/.claude/projects/.../memory/no-clerk-organizations.md` cementada. Docs corregidos: PRE-FLIGHT-CHECKLIST-slice-1 (Bloque A simplificado a token+webhook · Bloque B sin org-create + sin add-member) + HANDOFF-cross-story.md (sin orgRole) + 5 sub-stories checkpoints (preflight_gates_required `clerk_test_token_fresh_and_webhook_secret_configured` reemplaza `clerk_organizations_enabled`).
+
+- **2026-05-27 audit sweep cross-brand + TIER reordering ratified Chris** (Paso 1+2):
+  - **Master audit doc** producido: `docs/process/audits/2026-05-27-stories-sweep.md` — 31 hallazgos cross-brand, 1 CRITICAL (anti-duplication-refining pivot nicolify→vitalia+comunify live), 6 compliance gaps, 3 lift candidates, 22 Fase 2 stories organized en TIERS.
+  - **★ TIER pivot ratificado Chris**: service-deps (payment-adapter + fiscal-emission + pricing-decision) NO son TIER 0 gating ALL Fase 2 (asunción inicial incorrecta). TIER 0 REAL = onboarding (config-onboarding-clinica + lisa-servicios-seed + lisa-doctores-minimal + lisa-compliance-minimal). Razón: valeria-agenda DONE con Option A stubs+MSW prueba que booking real es viable PRE payment-adapter real.
+  - **SSoT roadmap creado**: `vitalia/docs/product/outcomes/vitalia-fase-2-tier-roadmap.md` (refined directo) — 7 TIERS + sprint plan A-F + stories deprioritized + pre-conditions Chris ratify.
+  - **4 checkpoints updated** con TIER reclassification notes verbatim: payment-adapter-mvp (TIER 2 — defer architect hasta TIER 1 developed), fiscal-emission-pe (TIER 2 si PE en MVP launch, sino TIER 7), pricing-decision (TIER 7 DEFERRED — placeholders válidos MVP), lucas-lanzar (TIER 6 HIGH RISK scope ambiguity — defer hasta TIER 3 Adrian completo + Chris decide A/B).
+  - **V1 cleanup**: 3 dirs leftover gate-logs Fase 1 removidas de active (`vitalia-fase1-{ribbon-6-tabs,sub-tabs-line2,valeria-chat-skeleton}`) — stories ya en `vitalia/docs/archive/2026/stories/` con 07-merge.md cementado.
+  - **V3 stub creado**: `vitalia/docs/product/stories/vitalia-adopt-luana-core-iam/checkpoint.md` (state=idea) — outcome admin-iam-adopt ya tenía 7 tickets canónicos, ahora story directory existe para handoff `/po`.
+  - **PR principal (Paso 1)**: `wip/protocol-claude-management-tuning` (rules nuevas + CLAUDE.md hierarchy + visions + hooks + skills + chrome-devtools + audit doc + 2 new platform outcomes). Push origin done. Squash-merge a main ratificado Chris — pendiente ejecución.
+  - **Next session pickup**: Sprint A — TIER 0 onboarding. Pre-condition Chris ratify: (1) Stripe account setup, (2) verticales seed templates (dental/estética/oftalmología confirmadas), (3) ¿Peru en launch countries?, (4) pricing placeholders mantener vs nuevos.
+  - **Multi-brand local isolation verificada**: vitalia 8002/3002/8502 + 127.0.0.1 binding + shared postgres `luana_postgres_dev` via init script + 4 docker-compose.dev.yml separados. Cargar vitalia NO afecta a otras brands localmente.

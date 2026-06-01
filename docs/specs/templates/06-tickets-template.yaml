@@ -136,6 +136,17 @@
 #    con tabla skill/rule + status + when consulted. Auditor verifica.
 #
 #    Origen: conversación 2026-05-19 ratificada Chris (autonomy v4.1).
+#
+# 8. assignment block MANDATORY (R: .claude/rules/architect-autonomous-mode.md Step 7.5):
+#    Cada ticket DECLARA un bloque `assignment` con el dispatch explícito que /dev-team respeta:
+#      assignment:
+#        primary_agent: builder-backend            # builder-backend | builder-frontend | builder-agentic (NUNCA general-purpose)
+#        model_preference: sonnet                  # sonnet | opus | qwen-opencode · AGENTIC production_code → opus HARD (R23)
+#        forbidden_to_touch: [...]                 # paths explícitos que el builder NO toca
+#        rationale: "why this agent + this model"
+#    NO duplicar `must_load_skills` ni `inputs` dentro de assignment — esos son los campos
+#    ticket-level de arriba (assignment los referencia, no los copia → evita drift).
+#    /architect además produce dispatch-plan.md (ver docs/specs/templates/dispatch-plan-template.md).
 
 ---
 story_id: STORY_ID
@@ -211,6 +222,16 @@ T1:
     - .claude/rules/tdd-mandatory.md
     - tessl__fastapi
     - tessl__pytest-api-testing
+  # ★ assignment block (R: architect-autonomous-mode.md Step 7.5) — dispatch explícito
+  assignment:
+    primary_agent: builder-backend                 # NUNCA general-purpose
+    model_preference: sonnet                        # qwen-opencode fallback ok; opus_required:false
+    # must_load_skills + must_load_artifacts → campos `must_load_skills` + `inputs` arriba (NO duplicar)
+    forbidden_to_touch:
+      - "core/luana-core-*/src/"                    # engine → /pm-luana lift gate
+      - "{other_brand}/"                            # cross-brand prohibido
+      - "{brand}/backend/src/modules/{brand}/{copilot,sales_agent}/"  # agentic → builder-agentic
+    rationale: "BE CRUD non-agentic — Sonnet sweet spot; opus_required:false"
   deliverables:
     - "DTO RequestDTO + ResponseDTO en {brand}/backend/src/modules/{brand}/copilot/api/dtos.py"
     - "Endpoint @router.post('/brand-audit') en {brand}/backend/src/modules/{brand}/copilot/api/routes.py"
@@ -265,6 +286,15 @@ T2:
     rules: [".claude/rules/sales-agent-brand-voice.md"]
     tessl_skills: ["tessl__langgraph", "claude-api"]
     domain_skills: ["copilot-expert"]
+  # ★ assignment block — AGENTIC production_code → Opus HARD (R23)
+  assignment:
+    primary_agent: builder-agentic                 # NUNCA general-purpose
+    model_preference: opus                          # ⛔ HARD — qwen/sonnet PROHIBIDOS (R23)
+    forbidden_to_touch:
+      - "core/luana-core-copilot/src/"             # engine → /pm-luana lift gate
+      - "core/luana-core-sales-agent/src/"
+      - "{other_brand}/"
+    rationale: "AGENTIC production code R23 → Opus obligatorio. NUNCA opencode/sonnet."
   deliverables:
     - "Tool definition en backend/src/modules/copilot/tools/brand_audit_tool.py con @tool decorator"
     - "Tool registry update en agents/copilot_agent.py"
@@ -326,6 +356,15 @@ T3:
     rules: [".claude/rules/frontend-fsd.md", ".claude/rules/spanish-text.md"]
     tessl_skills: ["tessl__shadcn-ui", "tessl__tailwind", "tessl__react-patterns", "tessl__zod"]
     domain_skills: ["frontend-expert", "copilot-expert"]
+  # ★ assignment block — FE standard
+  assignment:
+    primary_agent: builder-frontend                # NUNCA general-purpose
+    model_preference: sonnet                        # qwen-opencode fallback ok
+    forbidden_to_touch:
+      - "{brand}/frontend/src/components/ui/"       # Shadcn primitives (escalate /pm-{brand})
+      - "{brand}/frontend/src/lib/api/fetchClient.ts"
+      - "{other_brand}/"
+    rationale: "FE standard form/button — Sonnet sweet spot"
   deliverables:
     - "Botón 'Auditar marca' en frontend/src/features/copilot/components/CopilotDrawer.tsx"
     - "Mutation hook useBrandAuditMutation en api/use-brand-audit.ts"

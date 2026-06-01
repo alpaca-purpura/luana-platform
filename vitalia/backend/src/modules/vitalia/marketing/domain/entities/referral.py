@@ -1,3 +1,5 @@
+# cap: marketing.attribution-matrix-4-origins
+# story-origin: TBD
 """Referral domain entity — patient referral program tracking.
 
 Per HIPAA-lite: patient_id is stored as UUID reference (no name/DNI/PHI).

@@ -1,3 +1,5 @@
+# cap: copilot.inbox-tools-extensions
+# story-origin: TBD
 """Vitalia AGENTIC extractor — `DentalHistoryExtractor` (R23 Opus 4.7).
 
 Story 11 T-extractors-2.

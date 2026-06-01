@@ -1,3 +1,5 @@
+// cap: sales_agent.inbox-handler-mode-occ
+// story-origin: TBD
 /**
  * ImageAnalysisCard.stories.tsx — Storybook stories for the Slice 1 image stub card.
  *

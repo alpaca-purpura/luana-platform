@@ -151,6 +151,12 @@ architect_decisions_iter_1:                       # ★ NEW architect 2026-05-27
   A12: "vitalia_appointment_clinic_map brand-local FK to engine appointments.id (NO engine modify)"
   A13: "Service-blocker pattern Option A (stub + MSW) por default — unblocks parallel work"
   A14: "Module scheduling registers via Extension SDK opt-in EPs (existing extensions.py)"
+
+# Schema v2 migration (cement 2026-05-27)
+release: F2   # release ID · ver releases/
+cap_target: valeria-agenda   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # F2-S1 vitalia-fase2-valeria-agenda — checkpoint

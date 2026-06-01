@@ -1,3 +1,5 @@
+// cap: fidelizacion.re-engagement
+// story-origin: TBD
 /**
  * re-engagement-event.ts — Zod schemas for re-engagement pattern API responses.
  *

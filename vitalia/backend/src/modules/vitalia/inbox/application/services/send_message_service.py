@@ -1,3 +1,5 @@
+# cap: sales_agent.inbox-handler-mode-occ
+# story-origin: TBD
 """SendMessageService — vitalia inbox application layer.
 
 SC-01 happy path: human/ai message send with idempotency + audit log + outbox event.

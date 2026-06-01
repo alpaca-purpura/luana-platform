@@ -1,3 +1,5 @@
+// cap: shell-organism.shell-vitalia
+// story-origin: TBD
 import { z } from "zod";
 
 export const consentSignSchema = z.object({

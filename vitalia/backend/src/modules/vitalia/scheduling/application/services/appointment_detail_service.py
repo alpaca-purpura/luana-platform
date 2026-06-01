@@ -1,3 +1,5 @@
+# cap: scheduling.valeria-agenda
+# story-origin: vitalia-fase2-s1-TBD
 """Appointment Detail Service — PHI-masked drawer detail + audit log.
 
 Rule (hipaa-lite.md § Regla cardinal):

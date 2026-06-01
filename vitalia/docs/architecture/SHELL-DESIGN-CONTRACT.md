@@ -128,7 +128,8 @@ vitalia/frontend/src/
 | `.valeria-rail` 60px | `ValeriaRail` | RailIconButtons + divider | — (recibe state) | (delegado a parent) | `components/shared/shell-organism/ValeriaRail.tsx` |
 | `.valeria-history` 280px | `ValeriaHistory` | Header + Search + HistoryGroup[] | React Query convs · search local | — | `components/shared/shell-organism/ValeriaHistory.tsx` |
 | `.valeria-chat` | `ValeriaChat` | ChatHeader + Messages + Composer | zustand `chatStore.messages` · WebSocket | (delegado) | `components/shared/shell-organism/ValeriaChat.tsx` |
-| `.ribbon` 6 tabs | `Ribbon` | RibbonTab[] + ConfigTab | router state (active from URL) | — | `components/shared/shell-organism/Ribbon.tsx` |
+| `.ribbon` 5 especialistas + Plataforma | `Ribbon` | RibbonTab[] + PlataformaTab | router state (active from URL) | — | `components/shared/shell-organism/Ribbon.tsx` |
+|  ↳ ★★ v1.2 (2026-05-30) | Antes: 6 tabs (con Valeria + "Configurar"). Ahora: 5 especialistas (sin Valeria) + "Plataforma" | — | — | — |
 | `.sub-tabs` línea 2 | `SubTabsBar` | SubTab[] (dinámico per tab) | router state | — | `components/shared/shell-organism/SubTabsBar.tsx` |
 | `.content` body derecho | `ContentArea` | slot — children = page actual | — (Next.js routing) | — | (es el `{children}` del layout) |
 
@@ -462,10 +463,14 @@ export const AGENT_SUBSUBTABS: Partial<Record<AgentKey, Partial<Record<string, r
 } as const
 ```
 
-### § 7.2.1 — Niveles de navegación (★ v1.1 cementación 2026-05-27)
+### § 7.2.1 — Niveles de navegación (★ v1.1 cementación 2026-05-27 · ★★ v1.2 addendum 2026-05-30)
 
 ```
-N1 (Ribbon)           → [agent]                                    → 6 agentes fijos
+N1 (Ribbon)           → [agent]                                    → 5 especialistas + tab Plataforma
+                                                                      ★★ v1.2: Lisa · Mateo · Adrián · Lucas · Camila + Plataforma
+                                                                      (antes: Lisa · Lucas · Adrián · Valeria · Camila + Configurar)
+                                                                      Valeria = ValeriaSidebar (supervisora, NO en Ribbon)
+                                                                      Mateo = Operar/Mi Día (agenda + bookings + pacientes del día)
 N2 (SubTabsBar)       → [agent]/[subtab]                           → AGENT_SUBTABS whitelist
 N3-static (NEW)       → [agent]/[subtab]/[subsubtab]               → AGENT_SUBSUBTABS opcional
 N3-dynamic            → [agent]/[subtab]/[...slug]                 → workspace detalle item (catch-all)
@@ -479,21 +484,37 @@ N3-dynamic            → [agent]/[subtab]/[...slug]                 → workspa
 
 **Source decisión:** ADR-vitalia-004 v1.1 § 3.1.1 (cementación 2026-05-27 origen lisa-marca refinement).
 
-### § 7.3 — Static metadata catalog
+### § 7.3 — Static metadata catalog (★★ v1.2 addendum 2026-05-30)
 
 ```ts
-// vitalia/frontend/src/lib/agents/catalog.ts
+// vitalia/frontend/src/lib/agent-catalog.ts  (SSoT actual)
+// ★★ v1.2: Valeria removida del Ribbon; Mateo = Operar; config → Plataforma
+export const AGENT_RIBBON_ORDER = ['lisa', 'mateo', 'adrian', 'lucas', 'camila'] as const
+// (ConfigTab/PlataformaTab va aparte, no en el ribbon order de especialistas)
+
 export const AGENT_CATALOG = {
+  // 5 especialistas del Ribbon
   lisa:    { tabLabel: 'Mi Clínica', role: 'Lisa',    color: 'lisa',    avatarSrc: '/agents/lisa/thumbnail.png' },
-  lucas:   { tabLabel: 'Atraer',     role: 'Lucas',   color: 'lucas',   avatarSrc: '/agents/lucas/thumbnail.png' },
+  mateo:   { tabLabel: 'Operar',     role: 'Mateo',   color: 'mateo',   avatarSrc: '/agents/mateo/thumbnail.png' },  // ★★ v1.2: Mateo = Operar (reemplaza Valeria en Ribbon)
   adrian:  { tabLabel: 'Vender',     role: 'Adrián',  color: 'adrian',  avatarSrc: '/agents/adrian/thumbnail.png' },
-  valeria: { tabLabel: 'Operar',     role: 'Valeria', color: 'valeria', avatarSrc: '/agents/valeria/thumbnail.png' },
+  lucas:   { tabLabel: 'Atraer',     role: 'Lucas',   color: 'lucas',   avatarSrc: '/agents/lucas/thumbnail.png' },
   camila:  { tabLabel: 'Mantener',   role: 'Camila',  color: 'camila',  avatarSrc: '/agents/camila/thumbnail.png' },
-  config:  { tabLabel: 'Configurar', role: 'Admin',   color: 'config',  iconName: 'Settings' },
+  // Sidebar (NO en Ribbon)
+  valeria: { role: 'Valeria', color: 'valeria', avatarSrc: '/agents/valeria/thumbnail.png', isSidebar: true },  // ★★ v1.2: solo sidebar, NO tab Ribbon
+  // Tab Plataforma (reemplaza Configurar)
+  plataforma: { tabLabel: 'Plataforma', role: 'Admin', color: 'config', iconName: 'Layers' },  // ★★ v1.2: antes { tabLabel: 'Configurar' }
+} as const
+
+export const RIBBON_SUBTABS = {
+  lisa:   ['marca', 'servicios', 'doctores'],
+  mateo:  ['agenda', 'pacientes'],  // ★★ v1.2: Mateo hereda agenda y pacientes de Valeria
+  adrian: ['embudo', 'inbox', 'crm'],
+  lucas:  ['bowtie', 'recomendaciones'],
+  camila: ['reputacion', 'reactivar'],
 } as const
 ```
 
-PNGs ya en `vitalia/frontend/public/agents/{agent}/thumbnail.png` — verificado por inventario.
+PNGs ya en `vitalia/frontend/public/agents/{agent}/thumbnail.png` — verificado por inventario. Mateo ya tiene `thumbnail.png` desde bootstrap inicial.
 
 ---
 

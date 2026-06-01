@@ -210,6 +210,20 @@ Step 0 skill (`/pm-{brand}` o `/pm-luana`) ejecuta `sync-from-main.sh` activo si
 - Cierre sin commit/reporte
 - Lift core sin promotion proposal `state >= accepted` (D11/D12)
 
+## M14 v2 — N sesiones con bucket module-scoped (cement 2026-05-28 · ADR-009)
+
+El bucket `code` se sub-divide: `code:{module}` (ej. `code:scheduling`, `code:crm`). Dos builds de módulos distintos corren en paralelo; mismo módulo se serializa. `code` (whole) bloquea cross-módulo (refactor).
+
+Auto-acquire por skill step 0: `scripts/git/session-lock.sh acquire {bucket} {skill} [story-id]`. Build-claim registra `story_id + $LUANA_LANE` → cockpit pinta 🔨 lane sobre la story. Índice git compartido → commit por pathspec (`git commit <ruta-exacta>`, nunca `git add .`).
+
+## Worktree EFÍMERO protocol (cross-cutting · cementado 2026-05-28)
+
+`~/Proyectos/luana-protocol-{slug}/` con branch `wip/protocol-{slug}`. Scope permitido: `tools/**`, `.claude/**`, `docs/process/**`, `docs/specs/templates/**`, `CLAUDE.md`, `scripts/git-hooks/**`, `Makefile`, multi-brand `{brand}/docs/**`. Commits requieren `SCOPE_GATE_SKIP=1` con razón documentada en commit body.
+
+## Fase solo-bootstrap — SCOPE_GATE_SKIP relajado (cement 2026-05-28)
+
+Durante construcción activa de reglas/cockpit (solo dev, sin CI), `SCOPE_GATE_SKIP=1` está PERMITIDO para edición intencional cross-cutting desde cualquier worktree cuando Chris está seguro, con razón documentada en commit body. El worktree `protocol` sigue siendo lo recomendado-prolijo pero no obligatorio. Guardrails que se mantienen: `--no-verify` sigue prohibido; razón obligatoria en commit body; `--force`/`git pull`/amend de pusheados siguen prohibidos. Re-endurecer cuando: entra 2º developer, Chris declara reglas estables, o se activa CI/CD real. SSoT: `.claude/rules/git-safety.md` § Fase solo-bootstrap.
+
 ## Conflict resolution
 
 Si encontras archivo modificado por otra sesion (en wip propio o al mergear a main):

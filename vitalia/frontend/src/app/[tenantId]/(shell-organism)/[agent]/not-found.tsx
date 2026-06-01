@@ -1,3 +1,5 @@
+// cap: shell-organism.shell-vitalia
+// story-origin: vitalia-fase1-s9-TBD
 "use client";
 /**
  * NotFoundAgent — Inner 404 page (Client Component).

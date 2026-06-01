@@ -1,17 +1,17 @@
 ---
 story_id: vitalia-fase2-lisa-landing-public
-outcome: vitalia-mvp-ui-foundation
-phase: fase-2
 type: ui-story
 state: idea
 architecture_pattern: ADR-vitalia-004
 agent_owner: lisa
+map_zone: agentes
+map_box: lisa
 module: brand_studio
 capability: lisa.landing_public
 spawned_at: 2026-05-27
 spawned_by: /pm-vitalia (via /po-ux session lisa-marca v2)
 spawn_reason: "Landing pública editor descoped de lisa-marca por decisión Chris 2026-05-27 ('no sé dónde va aún'). Refinement pendiente cuando Chris decida ubicación (sub-tab dedicada de Lisa, sub-sub-tab de Configurar, o feature standalone)."
-last_modified: 2026-05-27
+last_modified: 2026-05-30
 ratified_by_chris: false
 ratified_visual_by_chris: false
 parallel_safe: true
@@ -26,6 +26,12 @@ dependencies:
 blocks_hard: []
 blocks_soft: []
 next_action: "Pendiente decisión Chris sobre ubicación. Opciones: (a) sub-tab dedicada Lisa→Landing (extender AGENT_SUBTABS), (b) sub-sub-tab de Configurar (config→presencia-publica), (c) feature standalone fuera del shell-organism agéntico (settings global). Hasta entonces, story queda parked en `idea` sin refinement activo."
+
+# Schema v2 migration (cement 2026-05-27)
+release: F6   # release ID · ver releases/
+cap_target: lisa.landing_public   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # F2-Sx vitalia-fase2-lisa-landing-public — checkpoint (idea state)

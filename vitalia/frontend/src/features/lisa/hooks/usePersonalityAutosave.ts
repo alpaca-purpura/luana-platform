@@ -1,9 +1,11 @@
+// cap: brand_studio.lisa-marca
+// story-origin: vitalia-fase2-s7-TBD
 "use client";
 
 /**
  * usePersonalityAutosave.ts — Autosave hook for brand personality (Voz y tono).
  *
- * Debounce 600ms on form change → useMutation PUT /lisa/marca/personality.
+ * Debounce 600ms on form change → useMutation PATCH /lisa/marca/personality.
  * React Query invalidation on success.
  * AutosaveStatus propagated to AutosaveBadge.
  *
@@ -45,7 +47,7 @@ export function usePersonalityAutosave({
   tenantId,
   clinicId,
 }: UsePersonalityAutosaveOptions): UsePersonalityAutosaveReturn {
-  const { getToken } = useAuth();
+  const { getToken, userId } = useAuth();
   const queryClient = useQueryClient();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -56,7 +58,7 @@ export function usePersonalityAutosave({
     mutationFn: async (values: PersonalityPatchPayload) => {
       const token = await getToken();
       if (!token) throw new Error("Not authenticated");
-      return updatePersonality({ token, tenantId, clinicId }, values);
+      return updatePersonality({ token, tenantId, clinicId, userId }, values);
     },
     onMutate: () => {
       setAutosaveStatus("saving");

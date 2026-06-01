@@ -1,3 +1,5 @@
+# cap: fidelizacion.re-engagement
+# story-origin: TBD
 """OptOutService — dar de baja a un paciente del sistema de fidelización.
 
 Cascade cancel: cancela todos los eventos de re-engagement pendientes del paciente.

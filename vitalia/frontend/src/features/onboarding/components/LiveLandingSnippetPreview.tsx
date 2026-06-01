@@ -1,3 +1,5 @@
+// cap: onboarding.clinic-onboarding-3step
+// story-origin: TBD
 "use client";
 /**
  * LiveLandingSnippetPreview — right panel preview of the clinic's landing page hero.

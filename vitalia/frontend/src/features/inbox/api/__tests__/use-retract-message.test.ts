@@ -24,6 +24,8 @@ vi.mock("@clerk/nextjs", () => ({
     isSignedIn: true,
   }),
 }));
+vi.mock("@/hooks/useTenantId", () => ({ useTenantId: () => "mock-tenant-id" }));
+
 
 vi.mock("@/hooks/useClinicId", () => ({
   useClinicId: () => "clinic-abc",

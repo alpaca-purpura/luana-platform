@@ -1,3 +1,5 @@
+# cap: __shared__
+# story-origin: TBD
 """PHI Repository base class — dual filter enforcement.
 
 Every repository that accesses PHI (Protected Health Information) MUST

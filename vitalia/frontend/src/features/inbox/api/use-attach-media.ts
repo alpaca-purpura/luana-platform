@@ -1,3 +1,5 @@
+// cap: sales_agent.inbox-handler-mode-occ
+// story-origin: TBD
 "use client";
 
 /**
@@ -18,6 +20,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
 import { useClinicId } from "@/hooks/useClinicId";
+import { useTenantId } from "@/hooks/useTenantId";
 
 export interface AttachMediaInput {
   conversationId: string;
@@ -40,20 +43,21 @@ export interface AttachMediaResult {
  * Returns media_url for use in useSendMessage.
  */
 export function useAttachMedia() {
-  const { getToken, orgId } = useAuth();
+  const { getToken } = useAuth();
   const clinicId = useClinicId();
+  const tenantId = useTenantId();
 
   return useMutation({
     mutationFn: async (input: AttachMediaInput): Promise<AttachMediaResult> => {
       const token = await getToken();
-      if (!token || !orgId) throw new Error("Not authenticated");
+      if (!token || !tenantId) throw new Error("Not authenticated");
 
       const formData = new FormData();
       formData.append("file", input.file);
 
       const headers: Record<string, string> = {
         Authorization: `Bearer ${token}`,
-        "X-Tenant-ID": orgId,
+        "X-Tenant-ID": tenantId,
       };
       if (clinicId) {
         headers["X-Clinic-ID"] = clinicId;

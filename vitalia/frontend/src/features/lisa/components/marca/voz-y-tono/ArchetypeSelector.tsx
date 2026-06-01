@@ -1,3 +1,5 @@
+// cap: brand_studio.lisa-marca
+// story-origin: vitalia-fase2-s7-TBD
 "use client";
 
 /**
@@ -101,6 +103,7 @@ export function ArchetypeSelector({
       <p className="text-sm font-semibold text-foreground">Arquetipo principal</p>
       <div
         role="radiogroup"
+        data-testid="archetype-selector"
         aria-label="Selecciona el arquetipo de tu clínica"
         className="grid grid-cols-2 gap-3 sm:grid-cols-4"
       >
@@ -112,6 +115,8 @@ export function ArchetypeSelector({
             <button
               key={card.value}
               role="radio"
+              data-testid={`archetype-card-${card.value}`}
+              data-selected={isSelected}
               aria-checked={isSelected}
               aria-label={card.label}
               onClick={() => onSelect(card.value)}

@@ -1,8 +1,6 @@
 ---
 story_id: vitalia-payment-adapter-mvp
-outcome: vitalia-mvp-ui-foundation
 state: refined                                       # ★ spec v3 ratificado Chris 2026-05-22T14:30Z (heredado de sesión efímera, absorbido 2026-05-22T15:30Z)
-phase: SPEC_RATIFIED_DEFERRED_ARCHITECT              # spec v3 ratificado, /architect handoff deferred (next: cuando Fase 2 lo requiera)
 last_artifact: 01-spec.md (v3)
 last_modified: 2026-05-22
 ratified_by_chris: true                              # ★ spec v3 ratificado 2026-05-22T14:30Z (4 batches de ratificación)
@@ -12,7 +10,7 @@ transitioned_at: 2026-05-22T14:30:00Z
 last_session_resume: 2026-05-22T15:30:00Z            # absorción wip/vitalia ← ephemeral worktree
 spawned_by: /pm-vitalia
 parallel_safe: true
-blocked_reason: "Bloqueante de Fase 2 (F2-S1 valeria-agenda + F2-S4 adrian-embudo stage reservado + F2-S6 adrian-propuestas payment plans + F2-S20 config-cuenta plan Luana)"
+blocked_reason: "★ TIER reclassified 2026-05-27 (audit sweep): NO es TIER 0 gating ALL Fase 2 — es TIER 2 (post agendamiento real con stubs MSW). valeria-agenda DONE prueba que Option A stubs es viable para unblock TIER 1 booking flow. Adrian-embudo (stage reservado) + adrian-propuestas (payment plans) son TIER 3 que SÍ requiere TIER 2 real. config-cuenta plan Luana es TIER 7 DEFERRED. SSoT orden: vitalia/docs/product/outcomes/vitalia-fase-2-tier-roadmap.md § TIER 2. Architect spawn deferido hasta TIER 1 (config-onboarding + valeria-pacientes + lisa-landing-public) developed."
 priority: high
 estimated_dev_weeks: 3-4                              # bump 2026-05-22 por multi-gateway scope (MercadoPago + Stripe MVP)
 parent_spec: "vitalia/docs/product/stories/vitalia-ux-discovery/03-arch-be.md § Payment Provider Adapter + EP-8 payment_adapters registry"
@@ -55,6 +53,12 @@ shell_organism_alignment:                             # ★ alignment paradigm 2
   paradigm_p5_respected: true                         # backend invariante al paradigma agéntico FE
   fe_consumers_per_spec_§1.5_match_cross_phase_2_consumers: true   # § 1.5 spec v3 = cross_phase_2_consumers verbatim
 next_action: "Próxima sesión retoma con `/architect <brand>: vitalia <story-id>: vitalia-payment-adapter-mvp` para producir 03-arch + 04-validators + 05-guidelines + 06-tickets. Recommended trigger: cuando F1 (Fase 1) entre `developing` — para que `developed` esté ANTES de F2-S1/F2-S4/F2-S6 arrancar. Spec v3 ratificado covers backend-only + FE consumers map § 1.5 alineado con cross_phase_2_consumers (paradigm shell-organism P5)."
+
+# Schema v2 migration (cement 2026-05-27)
+release: F3   # release ID · ver releases/
+cap_target: null   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # vitalia-payment-adapter-mvp — checkpoint

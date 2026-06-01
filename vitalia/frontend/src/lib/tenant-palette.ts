@@ -1,3 +1,5 @@
+// cap: platform.design-tokens-foundation
+// story-origin: vitalia-fase1-s3-TBD
 /**
  * tenant-palette.ts — deterministic color palette for tenant badges.
  * F1-S3 vitalia-fase1-tenant-switcher — T-1

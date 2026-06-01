@@ -1,3 +1,5 @@
+# cap: sales_agent.inbox-handler-mode-occ
+# story-origin: TBD
 """HSM Template definitions — vitalia inbox proactive outbound.
 
 5 Meta-approved templates hardcoded for Slice 1 per 03-arch-be.md § 6.6.

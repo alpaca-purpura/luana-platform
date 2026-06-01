@@ -1,3 +1,5 @@
+# cap: booking.prepaid-booking-advisory-locks
+# story-origin: TBD
 """Vitalia ManyChat webhook adapter — IG DM inbound → sales_agent dispatch.
 
 Per 03-arch-be.md § 6.8 + ticket T-be-8:

@@ -1,3 +1,5 @@
+// cap: brand_studio.lisa-marca
+// story-origin: vitalia-fase2-s7-TBD
 /**
  * personality-schema.ts — Zod schema for brand personality (ADAPT salud overlay).
  *

@@ -1,3 +1,5 @@
+// cap: auth.clerk-middleware
+// story-origin: TBD
 /**
  * Clerk Proxy — Vitalia (T-1 vitalia-auth-base-functional)
  *

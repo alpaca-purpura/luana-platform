@@ -57,6 +57,12 @@ quality_gates:
 e2e_status: "Playwright specs created (SC-01..SC-08) — require dev server port 3002 for execution"
 live_verification: "chrome-devtools-verify DEPRECATED Linux Mint 2026-05-15 — escalated to Chris staging gate"
 next_action: "DONE — archived. Próximo chain: F1-S2 vitalia-fase1-topbar-global ready→developing → /dev-team build."
+
+# Schema v2 migration (cement 2026-05-27)
+release: F1   # release ID · ver releases/
+cap_target: design-tokens-theme   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # F1-S1 vitalia-fase1-design-tokens-theme — checkpoint

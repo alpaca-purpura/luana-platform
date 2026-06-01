@@ -1,3 +1,5 @@
+// cap: patients.nps-tracking
+// story-origin: TBD
 "use client";
 
 /**
@@ -10,6 +12,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
+import { useTenantId } from "@/hooks/useTenantId";
 import { vitaliaFetch } from "@/lib/fetch-client";
 import type {
   PausePatientRequest,
@@ -26,19 +29,19 @@ interface PausePatientArgs {
  */
 export function usePausePatient() {
   const queryClient = useQueryClient();
-  const { getToken, orgId } = useAuth();
+  const { getToken} = useAuth();
+  const tenantId = useTenantId();
 
   return useMutation({
     mutationFn: async ({ patientId, payload }: PausePatientArgs) => {
       const token = await getToken();
-      if (!token || !orgId) throw new Error("Not authenticated");
+      if (!token || !tenantId) throw new Error("Not authenticated");
 
       return vitaliaFetch<PausePatientResponse>(
         `/api/v1/vitalia/fidelization/patients/${patientId}/pause`,
         {
           token,
-          tenantId: orgId,
-          method: "POST",
+          tenantId, method: "POST",
           body: JSON.stringify(payload),
         },
       );

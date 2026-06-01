@@ -1,3 +1,5 @@
+# cap: crm.crm-consent-optout
+# story-origin: TBD
 """Lead DTOs — non-PHI, all authenticated roles can read.
 
 Extended by T-inbox-be-5: LeadListResponse, LeadCreateRequest, LeadUpdateRequest.

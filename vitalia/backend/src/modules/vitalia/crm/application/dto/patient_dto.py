@@ -1,3 +1,5 @@
+# cap: crm.crm-consent-optout
+# story-origin: TBD
 """Patient DTOs — PII allowlist enforced via response_model= on all routes.
 
 Only fields listed in PatientResponse are returned to clients.

@@ -1,59 +1,58 @@
 "use client";
 
-import "../../sentry.client.config";
-import { useUser } from "@clerk/nextjs";
-import * as Sentry from "@sentry/nextjs";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+// cap: shell-organism.shell-nicolify
+// story-origin: nicolify-r0-shell T-1
+/**
+ * Providers — Nicolify root providers wrapper.
+ *
+ * Wraps the app with:
+ *   1. ThemeProvider (next-themes) — attribute="data-theme", dark mode .dark class
+ *   2. ClerkProvider — Clerk authentication (Clerk auth delegada 100%)
+ *   3. QueryClientProvider — React Query (data fetching)
+ *
+ * ThemeProvider added in T-1 (nicolify-r0-shell tokens/theme).
+ * storageKey: "nicolify-theme" (brand-scoped to avoid collision with vitalia).
+ *
+ * Spanish neutro: comentarios técnicos en español neutro.
+ */
 
-import { ThemeProvider } from "@/components/providers/theme-provider";
-import { DevelopmentTools } from "@/components/shared/DevelopmentTools";
-import { NavigationProvider, NavigationOverlay } from "@/components/shared/navigation";
-import { Toaster } from "@luana/ui-kit";
-import { TenantLocaleProvider } from "@/features/tenant/context/tenant-locale-context";
+import { ClerkProvider } from "@clerk/nextjs";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ThemeProvider } from "next-themes";
+import { useState } from "react";
+
+interface ProvidersProps {
+  children: React.ReactNode;
+}
 
 /**
- *
+ * Root providers — ThemeProvider + ClerkProvider + QueryClientProvider.
  */
-export function Providers({ children }: { children: React.ReactNode }) {
+export function Providers({ children }: ProvidersProps) {
   const [queryClient] = useState(
     () =>
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 5 * 60 * 1000, // 5 min — data considered fresh
-            gcTime: 10 * 60 * 1000, // 10 min — cache kept after unmount
-            refetchOnWindowFocus: false, // Prevent cascade refetch on tab switch
-            retry: 1, // Single retry on failure
+            staleTime: 1000 * 60 * 5, // 5 min stale time default
+            retry: 2,
+            refetchOnWindowFocus: false,
           },
         },
       }),
   );
-  const { user } = useUser();
-
-  useEffect(() => {
-    if (user?.publicMetadata?.tenant_id) {
-      const tenantId = user.publicMetadata.tenant_id as string;
-      localStorage.setItem("x-tenant-id", tenantId);
-      Sentry.setTag("tenant_id", tenantId);
-    }
-    if (user) {
-      Sentry.setUser({ id: user.id, email: user.primaryEmailAddress?.emailAddress });
-    } else {
-      Sentry.setUser(null);
-    }
-  }, [user]);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-        <NavigationProvider>
-          <NavigationOverlay />
-          <TenantLocaleProvider>{children}</TenantLocaleProvider>
-        </NavigationProvider>
-        <Toaster />
-      </ThemeProvider>
-      <DevelopmentTools />
-    </QueryClientProvider>
+    <ThemeProvider
+      attribute="data-theme"
+      defaultTheme="system"
+      enableSystem
+      storageKey="nicolify-theme"
+      disableTransitionOnChange
+    >
+      <ClerkProvider>
+        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      </ClerkProvider>
+    </ThemeProvider>
   );
 }

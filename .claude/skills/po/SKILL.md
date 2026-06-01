@@ -21,6 +21,7 @@ Si invocado vía `/pm-{brand}` handoff, el brand viene en el handoff. Si invocad
 | Tipo story | Skill |
 |---|---|
 | **Service-only** (BE endpoint, no UI, no agentic) | **`/po` (este skill)** |
+| **`bugfix` BE/servicio** (arreglo/completion quirúrgico, sin diseño nuevo) | **`/po` modo lite** — spec corto con scenarios de regresión, sin `02-design-*`, `repro_verified: true` obligatorio, `cap_change_type: fix`/`extend` (ADR-011) |
 | **Agentic-only** (conversational flow) | **`/po` (spec) → `/ux-agentico` (flow design)** |
 | **UI standard** (CRUD/list/detail/form/dashboard) | **`/po-ux` (fusión)** |
 | **UI mixed** (UI std + tool calls agentic) | `/po-ux` para spec UI + sección agentic-handoff → `/ux-agentico` para flow |
@@ -128,6 +129,10 @@ sin repro_verified field. `/dev-team` refuses build. Defense in depth.
 
 Escribir `{brand}/docs/product/stories/{story-id}/01-spec.md` siguiendo template. Críticos:
 
+**★ v5 cement 2026-05-31 — § Mapa funcional + § Matriz de cobertura (capa humana, va ANTES del Gherkin):**
+
+Incluso en service-stories (sin UI), el spec abre con el panorama en lenguaje humano: **Happy path** (narrado), **Bifurcaciones** (árbol: condición → resultado → `[SC-N]`), **Reglas de negocio** (`RN-N`) y **Criterios de aceptación** (`AC-N`). Cada scenario lleva `Covers: [Bif-N, RN-N, AC-N]`. Cerrá con la `§ Matriz de cobertura` (cada Bif/RN → ≥1 SC → verificación REAL: acción ejercida + efecto, no "GET 200"). Branch/RN huérfano = STOP, NO refined. Para `bugfix` lite: happy path opcional, foco en repro + branch + RN. Ver template + `docs/process/spec-mapa-funcional.md`.
+
 **Frontmatter brand-aware obligatorio:**
 ```yaml
 ---
@@ -232,6 +237,10 @@ Si Chris dice "single-shot" → invocar `/ux-agentico` o `/architect` como Skill
 
 ### Step 7 — Update checkpoint (transition refining → refined)
 
+**Validation cap lineage (v2 cement 2026-05-27):** antes de cerrar state=refined, verificar checkpoint.md tiene `cap_target` (no null) + `cap_change_type` ∈ {new, fix, extend, derive}. Si Chris no los declaró en chris-input.md, skill propone valores como verdict `💡 PROPONE` y espera ratificación. Doc: `docs/process/capability-protocol.md` § Sección 3.
+
+**Validation caja del mapa (paradigma · cement 2026-05-30):** verificar también que la **caja** de la cap esté declarada (`agent_owner`) aplicando el árbol de `.claude/rules/paradigm-arquitectura.md` (zona **Agentes** / **Plataforma** / **Infraestructura**; zona derivada de `SYSTEM-MAP.yaml`). Para service/agentic-stories: confirmar que NO se crea un engine nuevo — un solo engine compartido, el trabajador agrega scope+persona (Plano 3). Sin caja válida → NO refined. Doctrina: `docs/architecture/luana-platform/PARADIGM.md`.
+
 **Service-story:** spec ratificada → directo a `state: refined`.
 
 **Agentic-story:** spec ratificada pero falta diseño conversacional. Mantener `state: refining` hasta que `/ux-agentico` produzca `02-design-agentic.md` ratificado por Chris. Recién ahí transition a `refined`.
@@ -277,7 +286,7 @@ Si `/ux-agentico` (después que tu spec ratificó) descubre edge case nuevo dura
 
 ## Anti cross-brand pollution
 
-- ❌ NUNCA editar `{other_brand}/...` cuando trabajás en `{brand}`. Si la story necesita tocar otra brand → STOP, escalate `/pm-luana` (outcome cross-brand).
+- ❌ NUNCA editar `{other_brand}/...` cuando trabajás en `{brand}`. Si la story necesita tocar otra brand → STOP, escalate `/pm-luana` (trabajo cross-brand).
 - ❌ NUNCA editar `core/luana-core-*/src/` directamente. Requiere lift via `/pm-luana` (promotion gate).
 - ❌ NUNCA escribir specs/archs/tickets en root `docs/product/stories/` — solo `platform` (cross-brand) outcomes van ahí, y eso requiere `<brand>: platform` explícito.
 - ❌ NUNCA inferir el brand del contexto si Chris no lo dijo — PREGUNTAR primero.
@@ -292,11 +301,54 @@ Cada response:
 
 NUNCA dumps. Cita paths para que Chris pueda leer.
 
+## Output protocol · chris-input.md append (v2 cement 2026-05-27)
+
+Al cierre de cada turn de esta skill, MUST appendear una entry a la sección 💬 Conversación del `chris-input.md` de la story activa.
+
+**Path target:**
+- Story state ∈ {idea, refining, refined, ready, developing, developed, reviewing}: `{brand}/docs/product/stories/{story_id}/chris-input.md`
+- Story state = done: `{brand}/docs/archive/{year}/stories/{story_id}/chris-input.md` (read-only post-merge)
+
+**Formato verbatim del block markdown a appendear:**
+
+```markdown
+### YYYY-MM-DDTHH:MM · 🤖 claude · `/po` · {emoji} {VERDICT-LABEL}
+{texto 2-30 líneas · descripción de qué hizo + decisiones tomadas + qué necesita Chris responder}
+```
+
+**Verdict labels (4 valores):**
+
+| Emoji | Label | Cuándo usar |
+|---|---|---|
+| ✓ | APLICADO | Cambios concretos aplicados al spec/design/arch/test (citar paths) |
+| ⚠️ | DUDA | Pregunta a Chris antes de seguir. State queda esperando respuesta |
+| ❌ | REFUTADO | Razón por la que NO se aplica algo que Chris pidió (con justificación) |
+| 💡 | PROPONE | Opción nueva sugerida por Claude · Chris ratifica o descarta |
+
+**Anti-patterns prohibidos:**
+
+- ❌ Skill termina turn sin appendear (silent escape) — siempre appendear, aunque sea `✓ APLICADO · sin cambios sustantivos`
+- ❌ Verdict sin texto sustantivo (1 palabra no informa)
+- ❌ Path hardcoded con brand fija — debe ser `{brand}` dinámico (de checkpoint.md o args del invoke)
+- ❌ Múltiples verdicts en un solo entry — si hay 2 cosas, son 2 entries consecutivas
+- ❌ Entry sin emoji + label de verdict (parser falla)
+
+Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
+
 ## Referencias
 
 - `docs/process/pm-redesign-2026-05.md` — paradigma 3 conversaciones + ready package + § Punto 4 (10 estados)
+- `docs/process/capability-protocol.md` — schema cap YAML v2 + cap_target + cap_change_type
+- `docs/architecture/luana-platform/PARADIGM.md` + `.claude/rules/paradigm-arquitectura.md` — ★ 3 planos + caja/zona (un solo engine; trabajador = scope+persona)
+- `docs/process/chris-input-protocol.md` — output protocol per skill
 - `docs/specs/templates/01-spec-template.md` — template base
 - `.claude/rules/spanish-text.md` — voseo glosario
 - `.claude/rules/hotfix-repro-mandatory.md` — R26 hot-fix gate
 - `.claude/skills/po-ux/` — UI std fusión (sister skill)
 - `.claude/skills/ux-agentico/` — agentic flow design (sister skill)
+
+## Live verification contra dev-app (Critical Rule #37)
+
+**Uso (herramienta, no gate):** para revisar algo que ya corre y refinar sobre lo real, abrí dev-app con Chrome MCP.
+
+Levantar: `make dev-app-vitalia` → `https://dev-app.vitalialat.com` (login `dr.demo@vitalialat.com`, creds en `vitalia/.env.dev`). Herramientas: **Chrome DevTools MCP** (live) + **Playwright autenticado** (golden). Evidencia = acción real ejercida + efecto observado; NUNCA GET 200 ni e2e mockeado. SSoT: `.claude/rules/definition-of-done-live-verify.md`.

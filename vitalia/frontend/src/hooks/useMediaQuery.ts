@@ -1,3 +1,5 @@
+// cap: platform.design-tokens-foundation
+// story-origin: vitalia-fase2-s1-TBD
 "use client";
 
 /**

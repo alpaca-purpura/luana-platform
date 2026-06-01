@@ -1,3 +1,5 @@
+# cap: booking.prepaid-booking-advisory-locks
+# story-origin: TBD
 """Async repository — VitaliaBookingModel.
 
 All queries filter by tenant_id (mandatory, per tenant-isolation.md).

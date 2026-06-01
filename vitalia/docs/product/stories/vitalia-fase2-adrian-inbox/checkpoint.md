@@ -1,14 +1,14 @@
 ---
 story_id: vitalia-fase2-adrian-inbox
-outcome: vitalia-mvp-ui-foundation
-phase: fase-2
 type: ui-story
 agent_owner: adrian
+map_zone: agentes
+map_box: adrian
 module: inbox
 capability: adrian.inbox
 state: idea
 architecture_pattern: ADR-vitalia-004
-last_modified: 2026-05-22
+last_modified: '2026-05-30'
 ratified_by_chris: false
 parallel_safe: true
 priority: critical
@@ -18,17 +18,26 @@ dependencies:
     - vitalia-fase1-empty-states
     - vitalia-fase1-routing-shell
   soft:
-    - vitalia-fase2-adrian-embudo            # link "Ver lead en Embudo" desde conv
-    - vitalia-fase2-valeria-pacientes        # link "Promover a paciente" desde conv
+    - vitalia-fase2-adrian-embudo
+    - vitalia-fase2-valeria-pacientes
 blocks_hard: []
 blocks_soft:
-  - vitalia-fase2-adrian-embudo              # leads del Inbox alimentan embudo
-  - vitalia-fase2-camila-voz                 # mensajes con voice-of-customer dispara triggers
-reuse_map_summary: "REUSE 95% inbox+sales_agent shipped (LangGraph + tools + canales) · NEW UI 3-panel (Lista convs · Thread · ContactSidebar) · NEW 3-modos toggle (Decide solo · Consulta · Manual) · NEW Activity stream + tools registry view"
-spawned_at: 2026-05-22
+  - vitalia-fase2-adrian-embudo
+  - vitalia-fase2-camila-voz
+reuse_map_summary: >-
+  REUSE 95% inbox+sales_agent shipped (LangGraph + tools + canales) · NEW UI
+  3-panel (Lista convs · Thread · ContactSidebar) · NEW 3-modos toggle (Decide
+  solo · Consulta · Manual) · NEW Activity stream + tools registry view
+spawned_at: 2026-05-22T00:00:00.000Z
 supersedes:
-  - vitalia-slice-1-inbox                    # archived 2026 — superseded por este
-next_action: "/po-ux refinar 01-spec.md con wireframes 3-panel + 3-modos toggle + activity stream"
+  - vitalia-slice-1-inbox
+next_action: >-
+  /po-ux refinar 01-spec.md con wireframes 3-panel + 3-modos toggle + activity
+  stream
+release: F3
+cap_target: adrian.inbox
+cap_change_type: new
+parent_story: null
 ---
 
 # F2-S3 vitalia-fase2-adrian-inbox — checkpoint

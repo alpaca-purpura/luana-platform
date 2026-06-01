@@ -1,3 +1,5 @@
+# cap: sales_agent.adrian-3-tools-mvp
+# story-origin: TBD
 """WhatsApp Business API adapter for Vitalia Adrián sales_agent.
 
 Sends approved template messages via WhatsApp Cloud API.

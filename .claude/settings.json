@@ -18,6 +18,23 @@
             "type": "command",
             "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/auto-chain-detect.sh",
             "timeout": 3
+          },
+          {
+            "type": "command",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/learning-detect.sh",
+            "timeout": 3
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/claude-md-overlay-check.sh",
+            "timeout": 3
           }
         ]
       }

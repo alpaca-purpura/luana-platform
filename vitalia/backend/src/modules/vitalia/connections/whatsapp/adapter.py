@@ -1,3 +1,5 @@
+# cap: connections.oauth-meta-google-ads
+# story-origin: TBD
 """WhatsApp Cloud API adapter — vitalia connections module.
 
 Provides retract_message_id via Meta Graph API with:

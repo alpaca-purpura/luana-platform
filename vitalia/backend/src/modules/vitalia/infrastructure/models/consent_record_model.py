@@ -1,3 +1,5 @@
+# cap: booking.prepaid-booking-advisory-locks
+# story-origin: TBD
 """SQLAlchemy 2.0 ORM model — VitaliaConsentRecordModel.
 
 Maps to `vitalia_consent_records` table.

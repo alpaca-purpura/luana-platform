@@ -1,3 +1,5 @@
+# cap: copilot.valeria-wizard-onboarding-agentic
+# story-origin: TBD
 """DTOs for Valeria wizard onboarding API endpoints.
 
 Pydantic v2 models with ConfigDict(from_attributes=True).

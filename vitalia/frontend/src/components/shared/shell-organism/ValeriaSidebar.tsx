@@ -1,8 +1,11 @@
+// cap: shell-organism.shell-vitalia
+// story-origin: vitalia-fase1-s5-TBD
 "use client";
 
 /**
  * ValeriaSidebar — shell organism root (Valeria panel)
  * T-5 of vitalia-fase1-valeria-rail-history (F1-S5)
+ * Updated vitalia-shell-state-persistence T-4: mobile drawer reads mobileDrawerOpen (D5).
  *
  * Architecture decisions:
  * - D1 Layout: `full` = [History 280px | Chat 1fr], `rail` = [Rail 60px | Chat 1fr].
@@ -11,8 +14,12 @@
  *   Effect runs after valeriaState update (useEffect dependency).
  * - D4 Keyboard shortcuts: c/r/f/n + Esc + Cmd/Ctrl+K via useKeyboardShortcuts hook.
  *   Hardened guard on hook side (IME + input context bypass).
- * - D7 Mobile drawer: <md viewport renders fixed drawer with backdrop + focus trap.
- *   Mobile close DOES NOT call setShellMode (preserves previous mode).
+ * - D5 Mobile drawer (T-4 vitalia-shell-state-persistence ADR-vitalia-006):
+ *   Mobile drawer open/closed is governed SOLELY by `mobileDrawerOpen` (independent slice).
+ *   Does NOT derive from valeriaState — desktop 'full' NEVER auto-opens mobile drawer
+ *   (that was Bug #2 coupling). Burger sets mobileDrawerOpen=true (in TopBarGlobal T-2).
+ *   Close (backdrop/X) calls setMobileDrawerOpen(false). valeriaState is NEVER touched
+ *   by mobile drawer actions.
  *
  * Adversarial guard:
  * - Invalid valeriaState → console.warn + fallback to 'rail' (no crash).
@@ -21,8 +28,8 @@
  * No default export (FSD-Lite arch test enforce).
  * No hex colors — semantic tokens only.
  *
- * spec: 01-spec.md § 0 D1+D2+D4 + § 1 Scenarios 1-5 + § 5 handlers
- * arch: 03-arch.md § 2.5 ValeriaSidebar + § 2.7 mobile drawer
+ * spec: 01-spec.md § Decisión usabilidad + SC-4/SC-5/SC-5b + 03-arch.md § 2 D5
+ * arch: 03-arch.md § 2 D5 (mobile slice independent)
  *
  * downstream-regression-na: brand-local shell-organism; no cross-brand consumers
  */
@@ -57,6 +64,9 @@ export function ValeriaSidebar() {
   const valeriaState = useShellStore((s) => s.valeriaState);
   const setValeriaState = useShellStore((s) => s.setValeriaState);
   const setShellMode = useShellStore((s) => s.setShellMode);
+  // D5 (T-4): mobile drawer independent slice — NOT derived from valeriaState
+  const mobileDrawerOpen = useShellStore((s) => s.mobileDrawerOpen);
+  const setMobileDrawerOpen = useShellStore((s) => s.setMobileDrawerOpen);
 
   // ── Adversarial guard: invalid state fallback ─────────────────────────────
   const safeState: ValeriaState = VALID_STATES.includes(
@@ -102,7 +112,14 @@ export function ValeriaSidebar() {
     r: () => setValeriaState("rail"),
     f: () => setValeriaState("full"),
     n: handleNewConversation,
-    Escape: () => setValeriaState("collapsed"),
+    // T-5 impl-fix: Escape closes desktop Valeria (collapsed) AND mobile drawer
+    // (mobileDrawerOpen=false via independent slice — D5 ADR-vitalia-006).
+    // The bug: Escape only called setValeriaState('collapsed') which doesn't close
+    // the mobile drawer (mobileDrawerOpen is an independent slice, not derived from valeriaState).
+    Escape: () => {
+      setValeriaState("collapsed");
+      setMobileDrawerOpen(false);
+    },
     "mod+k": handleFocusComposer,
   });
 
@@ -136,8 +153,9 @@ export function ValeriaSidebar() {
   const hamburgerRef = useRef<HTMLButtonElement>(null);
 
   // ── Mobile drawer close handler ───────────────────────────────────────────
-  // NOTE: does NOT call setShellMode — mobile close preserves previous mode.
-  const handleMobileClose = () => setValeriaState("collapsed");
+  // D5 (T-4): close uses independent mobile slice — does NOT touch valeriaState.
+  // valeriaState (desktop) is preserved. This decouples Bug #2 coupling.
+  const handleMobileClose = () => setMobileDrawerOpen(false);
 
   // ── Mobile drawer render ──────────────────────────────────────────────────
   // ★ FIX T-5.bis: ValeriaSidebar is nested inside <main className="hidden md:block">
@@ -145,7 +163,11 @@ export function ValeriaSidebar() {
   // render/paint, even position:fixed children. Portal mounts the drawer directly on
   // document.body — escaping the hidden parent while keeping the React tree intact.
   // ShellOrganismLayoutClient.tsx is NOT modified (regression risk = 0).
-  if (isMobile && isExpanded) {
+  //
+  // D5 (T-4): drawer visibility governed SOLELY by mobileDrawerOpen (independent slice).
+  // isExpanded (valeriaState) is NOT used for mobile drawer — prevents Bug #2 coupling
+  // where desktop valeriaState='full' would auto-open the mobile drawer.
+  if (isMobile && mobileDrawerOpen) {
     // SSR guard: document is undefined during server render
     if (typeof document === "undefined") return null;
 

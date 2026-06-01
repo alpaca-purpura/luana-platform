@@ -1,3 +1,5 @@
+# cap: agentic.eval-goldens-slice-1
+# story-origin: TBD
 """Vitalia prompt slot architecture — 10 slots per 02-design-agentic § 10.
 
 Skeleton package created Story 11 T-extensions-1. Real prompt MDs land in T-prompts-1:

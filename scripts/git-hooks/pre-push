@@ -78,4 +78,74 @@ EOF
   exit 1
 fi
 
+# ─────────────────────────────────────────────────────────────────
+# 4d. Bidirectional validator HARD (cement 2026-05-28 · Fase B)
+# ─────────────────────────────────────────────────────────────────
+# Pre-push hook block en main/release/* si cross_check_3 (scenarios e2e_test
+# paths) tiene drift > 0. (atomics killed 2026-05-28 · ver lifecycle.md)
+#
+# cross_check_4 (access roles ↔ @require_phi_access) corre como ADVISORY/WARN
+# por ahora — Fase 5 lo flipea a HARD para vitalia DESPUÉS de resolver el drift
+# de acceso existente (6 al 2026-05-28). No se prende gate HARD con fallas
+# conocidas. Ver docs/process/lifecycle.md § roadmap Fase 5.
+#
+# Por qué cross_check_3 HARD: detecta cap declarando e2e_test path que no existe
+# (broken trazabilidad scenario→test).
+#
+# Override (audit):
+#   * env: BIDIRECTIONAL_PUSH_OVERRIDE=1 git push ...
+# ─────────────────────────────────────────────────────────────────
+
+if [ "${BIDIRECTIONAL_PUSH_OVERRIDE:-0}" != "1" ]; then
+  BIDIR_SCRIPT="${REPO_ROOT}/scripts/validate_code_cap_bidirectional.py"
+  if [ -x "${REPO_ROOT}/.venv/bin/python" ] && [ -f "${BIDIR_SCRIPT}" ]; then
+    VENV_BIDIR="${REPO_ROOT}/.venv/bin/python"
+    BRANDS_ALL="vitalia nicolify comunify lupulo"
+    HARD_DRIFT_TOTAL=0
+    HARD_DRIFT_BRANDS=""
+
+    for B_PUSH in ${BRANDS_ALL}; do
+      if [ ! -d "${REPO_ROOT}/${B_PUSH}/docs/product/capabilities" ]; then
+        continue
+      fi
+      PUSH_OUT=$("${VENV_BIDIR}" "${BIDIR_SCRIPT}" --brand "${B_PUSH}" 2>&1 || true)
+      HARD_COUNT=$(echo "${PUSH_OUT}" | grep -oE 'in HARD checks .*: [0-9]+' | head -1 | grep -oE '[0-9]+$' || true)
+      if [ -n "${HARD_COUNT}" ] && [ "${HARD_COUNT}" -gt 0 ]; then
+        HARD_DRIFT_TOTAL=$((HARD_DRIFT_TOTAL + HARD_COUNT))
+        HARD_DRIFT_BRANDS="${HARD_DRIFT_BRANDS} ${B_PUSH}(${HARD_COUNT})"
+      fi
+    done
+
+    if [ "${HARD_DRIFT_TOTAL}" -gt 0 ]; then
+      printf "\033[31m"
+      cat <<EOF
+─────────────────────────────────────────────────────────────
+PRE-PUSH BLOCKED: bidirectional validator HARD drift detected
+(Section 4d · cement 2026-05-28)
+
+Brands con drift: ${HARD_DRIFT_BRANDS}
+Total HARD drift: ${HARD_DRIFT_TOTAL}
+
+Cross-checks afectados (HARD set: 3 siempre · 4 para vitalia):
+  cross_check_3: cap.scenarios[*].e2e_test path no existe O no contiene
+                 test pattern Playwright
+  cross_check_4: (vitalia) roles declarados en access.entry_points no
+                 coinciden con @require_phi_access del código
+
+Para arreglar:
+  python3 scripts/validate_code_cap_bidirectional.py --brand <brand> --verbose
+  # luego corregir caps o aplicar headers correctos
+
+Override emergencia (audit):
+  BIDIRECTIONAL_PUSH_OVERRIDE=1 git push ...
+
+SSoT: docs/process/capability-protocol.md § Sección 13
+─────────────────────────────────────────────────────────────
+EOF
+      printf "\033[0m"
+      exit 1
+    fi
+  fi
+fi
+
 exit 0

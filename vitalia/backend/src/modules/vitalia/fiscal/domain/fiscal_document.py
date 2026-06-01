@@ -1,3 +1,5 @@
+# cap: fiscal.fiscal-emission-pe
+# story-origin: TBD
 """FiscalDocument — brand-local fiscal record (boleta/factura/CFDI).
 
 Stub-friendly domain entity for fiscal emission.

@@ -60,6 +60,12 @@ ratified_decisions_2026_05_18:
   - OQ-3: Whisper STT audio path → RATIFIED DEFER Slice 2 (audio_transcriber.py REMOVED from T-2 scope; re-evaluate post Slice 1 + tenant feedback)
   - OQ-4: FE feature path → RATIFIED features/onboarding/ verbatim per spec (NOT nested under features/vitalia/)
 unblocked_for_spawn: true
+
+# Schema v2 migration (cement 2026-05-27)
+release: F0   # release ID · ver releases/
+cap_target: wizard-brand-studio-slice-1   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # vitalia-slice-1-onboarding-wizard — checkpoint

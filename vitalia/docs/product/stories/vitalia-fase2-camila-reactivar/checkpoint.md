@@ -1,14 +1,14 @@
 ---
 story_id: vitalia-fase2-camila-reactivar
-outcome: vitalia-mvp-ui-foundation
-phase: fase-2
 type: ui-story
 agent_owner: camila
+map_zone: agentes
+map_box: camila
 module: reengagement
 capability: camila.reactivar
 state: idea
 architecture_pattern: ADR-vitalia-004
-last_modified: 2026-05-22
+last_modified: 2026-05-30
 ratified_by_chris: false
 parallel_safe: true
 priority: high
@@ -25,6 +25,12 @@ blocks_soft: []
 reuse_map_summary: "REUSE sales_agent reengagement_tool shipped · REUSE fidelización engine · REUSE F2-S5 outbound campaigns wizard pattern · audience PACIENTES EXISTENTES (no leads — territorio Adrián) · NEW 5 listas dinámicas + recovery flow wizard"
 spawned_at: 2026-05-22
 next_action: "/po-ux refinar 01-spec.md con wireframes listas + recovery wizard"
+
+# Schema v2 migration (cement 2026-05-27)
+release: F7   # release ID · ver releases/
+cap_target: camila.reactivar   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # F2-S12 vitalia-fase2-camila-reactivar — checkpoint

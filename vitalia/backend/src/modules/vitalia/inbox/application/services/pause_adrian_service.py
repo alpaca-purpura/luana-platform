@@ -1,3 +1,5 @@
+# cap: sales_agent.adrian-3-tools-mvp
+# story-origin: TBD
 """PauseAdrianService — vitalia inbox application layer.
 
 60-minute pause: sets DB pause_until + Redis TTL for fast check.

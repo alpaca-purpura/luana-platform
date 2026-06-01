@@ -1,3 +1,5 @@
+# cap: __shared__
+# story-origin: TBD
 """ARQ cron job: reactivation_45d — 45-day patient reactivation.
 
 Schedule: every 6h

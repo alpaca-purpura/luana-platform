@@ -1,3 +1,5 @@
+// cap: sales_agent.inbox-handler-mode-occ
+// story-origin: TBD
 "use client";
 
 /**
@@ -16,6 +18,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
+import { useTenantId } from "@/hooks/useTenantId";
 import { useClinicId } from "@/hooks/useClinicId";
 import { fetchClient } from "@/lib/api/fetchClient";
 import { conversationsListKey } from "./_keys";
@@ -41,7 +44,8 @@ export interface ProactiveOutboundResult {
  * Blocked by ComplianceService if channel is unencrypted + medical content.
  */
 export function useProactiveOutbound() {
-  const { getToken, orgId } = useAuth();
+  const { getToken} = useAuth();
+  const tenantId = useTenantId();
   const clinicId = useClinicId();
   const qc = useQueryClient();
 
@@ -50,15 +54,14 @@ export function useProactiveOutbound() {
       input: ProactiveOutboundInput,
     ): Promise<ProactiveOutboundResult> => {
       const token = await getToken();
-      if (!token || !orgId) throw new Error("Not authenticated");
+      if (!token || !tenantId) throw new Error("Not authenticated");
 
       return fetchClient<ProactiveOutboundResult>(
         "/api/v1/vitalia/inbox/proactive-outbound",
         {
           method: "POST",
           token,
-          tenantId: orgId,
-          clinicId,
+          tenantId, clinicId,
           body: JSON.stringify({
             lead_id: input.leadId,
             template_id: input.templateId,

@@ -21,6 +21,8 @@ vi.mock("@clerk/nextjs", () => ({
     isSignedIn: true,
   }),
 }));
+vi.mock("@/hooks/useTenantId", () => ({ useTenantId: () => "mock-tenant-id" }));
+
 
 vi.mock("../../../../api/marca-voice-api", () => ({
   getPersonality: vi.fn().mockResolvedValue({

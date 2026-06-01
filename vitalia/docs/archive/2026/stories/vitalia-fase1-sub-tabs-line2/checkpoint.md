@@ -60,6 +60,12 @@ blocks_hard: [vitalia-fase1-routing-shell]
 reuse_map_summary: "NEW · consume AGENT_SUBTABS whitelist · routing Next.js"
 spawned_at: 2026-05-22
 next_action: "DONE — story merged + archived. Next: F1-S9 vitalia-fase1-routing-shell (blocks_hard ya unblocked)."
+
+# Schema v2 migration (cement 2026-05-27)
+release: F1   # release ID · ver releases/
+cap_target: sub-tabs   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # F1-S8 vitalia-fase1-sub-tabs-line2 — checkpoint

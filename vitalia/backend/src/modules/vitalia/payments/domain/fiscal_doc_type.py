@@ -1,3 +1,5 @@
+# cap: payment.payment-gateways-latam-recurring
+# story-origin: vitalia-fase2-s1-TBD
 """FiscalDocType enum — fiscal document types per LatAm territory.
 
 Covers PE/AR/MX territories confirmed in CONTEXT-BRIEF § 11

@@ -8,10 +8,314 @@ story_introduced: vitalia-fase2-lisa-marca
 package_version: 0.2.0
 package_path: vitalia/backend/src/modules/vitalia/brand_studio/ + vitalia/frontend/src/features/lisa/components/marca/
 license: proprietary
+
+# v3 cement 2026-05-27 · 4 dimensiones + dev_preview (ADR-vitalia-005)
+tech_module: brand_studio
+agent_owner: lisa
+functional_area: lisa.marca
+user_visible: true
+nature: feature
+ui_paradigm: shell-organism  # T-3 reconcile 2026-05-29
+
+user_facing_name: "Identidad de marca de Lisa"
+user_facing_description: >
+  El workspace donde la clínica configura su identidad completa: nombre, logo,
+  paleta de colores, tipografía y equipo médico (sub-tab Identidad); voz y tono
+  con los 4 arquetipos de salud y frases prohibidas (sub-tab Voz y tono); y
+  presencia web, redes sociales y certificaciones de confianza (sub-tab Presencia).
+  Lisa guía el proceso paso a paso desde el panel de Configurar.
+
+dev_preview:
+  route: "/lisa/marca"
+  how_to_navigate: "Login → ribbon clic en avatar Lisa → sub-tab Marca → N3-static sub-sub-tabs Identidad / Voz y tono / Presencia."
+  main_component: "vitalia/frontend/src/features/lisa/components/marca/identidad/IdentidadView.tsx"
+  api_endpoints:
+    - "GET /api/v1/lisa/marca/identity"
+    - "PATCH /api/v1/lisa/marca/identity"
+    - "POST /api/v1/lisa/marca/voice-preview"
+  e2e_test: null
+  fixtures_required: ["3-clinic-fixture-latam"]
+  storybook_url: null
+  loom_demo: null
+
 extends_capability: vitalia-brand-studio-medical-sections
 replaces_legacy: vitalia/frontend/src/app/(dashboard)/brand-studio/[section]/page.tsx
 architecture_pattern: ADR-vitalia-004 v1.1 (N3-static SubSubTabsBar cabecera)
 adr_004_compliance: full
+
+# Capability ledger v2 (cement 2026-05-27)
+created_in_story: vitalia-fase2-lisa-marca   # v2 cement · mirror of story_introduced
+created_date: 2026-05-27   # v2 cement · mirror of date_introduced
+last_modified: 2026-05-31   # arreglar-guardado-voz-y-tono (fix guardado voz-y-tono)
+parent_cap: vitalia-brand-studio-medical-sections   # v2 cement · mirror of extends_capability
+derives_capabilities: []   # v2 cement · initial empty list
+
+# Capability ledger v2 (cement 2026-05-27)
+
+# Capability change log v2 (cement 2026-05-27)
+change_log:
+  - story_id: vitalia-fase2-lisa-marca
+    date: 2026-05-27
+    type: new
+    summary: "Implementación inicial · migración legacy a schema v2"
+    merge_sha: null
+    status: done
+  - story_id: vitalia-fase2-lisa-marca
+    date: 2026-05-28
+    type: extend
+    summary: "backfill scenarios desde spec archivado"
+    scenarios_added:
+      - voz-frase-prohibida-warning-soft
+      - logo-excede-tamano-maximo
+      - edicion-cross-tenant-bloqueada
+      - autosave-concurrente-dos-tabs
+      - edicion-concurrente-dos-owners
+      - autosave-timeout-con-reintento
+      - tenant-nuevo-empty-state
+      - render-perf-gran-volumen-marca
+      - navegacion-teclado-marca
+      - copy-espanol-neutro-marca
+    merge_sha: null
+    status: done
+  - story_id: arreglar-guardado-voz-y-tono
+    date: 2026-05-31
+    type: fix
+    summary: "Arreglo del guardado de Voz y tono (5 root causes apilados: sanitize_payload kwarg muerto → 500; SQL ::uuid cast roto; camelCase voice-blocks → 422; telemetría sync+sin tenant_id; getTokenReady robustez auth). Wire e2e_test del scenario admin-define-voz-y-tono. Verificado real-backend + live curl."
+    scenarios_added: []
+    merge_sha: null
+    status: done
+
+access:
+  entry_points:
+    - path: "/lisa/marca"
+      navigation: "Login → ribbon clic en avatar Lisa → sub-tab Marca → N3-static sub-sub-tabs Identidad / Voz y tono / Presencia"
+      requires_role: [doctor, admin_clinic]
+      requires_clinic_scope: true
+      entry_type: ui
+    - path: "/api/v1/lisa/marca/identity"
+      navigation: "API directa con JWT Clerk + X-Tenant-ID para leer o actualizar identidad de marca"
+      requires_role: [admin_clinic]  # require_brand_owner_access() → owner, admin_clinic (marca_router.py:98)
+      requires_clinic_scope: true
+      entry_type: api
+  forbidden_roles: [nurse, receptionist, patient, marketing]
+  authentication: required
+
+scenarios:
+  - id: admin-configura-identidad-clinica
+    name: "Administrador configura la identidad visual de la clínica"
+    actor: admin_clinic
+    status: live
+    given: "Admin autenticado en sub-sub-tab Identidad con datos de clínica ya cargados"
+    when: "Edita nombre, logo, paleta de colores y guarda con autosave (debounce 600ms)"
+    then: "Cambios persisten en engine brand-studio · autosave badge confirma guardado · vertical clínico (read-only) no cambia"
+    e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase2-lisa-marca/lisa-marca-identidad-autosave.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase2-lisa-marca/01-spec.md"
+    atomic_ref: null
+    edge_cases:
+      - "Logo > 5MB → validación client-side rechaza antes del upload"
+      - "Autosave durante typing rápido → debounce evita múltiples requests"
+      - "Red lenta / 503 → banner de reintento visible sin perder cambios locales"
+    added_in_story: vitalia-fase2-lisa-marca
+    added_date: 2026-05-27
+  - id: admin-define-voz-y-tono
+    name: "Administrador define la voz y tono de la clínica"
+    actor: admin_clinic
+    status: live
+    given: "Admin en sub-sub-tab Voz y tono con arquetipo Caregiver seleccionado por defecto"
+    when: "Cambia arquetipo a Sage, completa 6 bloques de voz del compilador y clic en Previsualizar"
+    then: "Preview de voz de marca se actualiza en el footer · frases prohibidas detectadas muestran warning soft · cache hit rate >70% (LRU + Redis)"
+    e2e_test: "vitalia/frontend/e2e/regression/arreglar-guardado-voz-y-tono/voz-arquetipo-autosave.spec.ts"   # arreglar-guardado-voz-y-tono: guardado (cambio arquetipo + bloque) verificado real-backend; preview/cache cubierto aparte
+    verified_real:
+      at: "2026-05-31T18:28:55Z"
+      how: "e2e voz-arquetipo-autosave GREEN contra backend real (localhost:3002 FE + BE :8002, sesión Clerk + storageState, 0 mocks): PATCH /api/v1/lisa/marca/personality → 200 + write observado en DB personality_profiles.updated_at=2026-05-31T18:28:55Z + badge 'guardado'. Corrió contra localhost (no tunnel dev-app) porque el storageState de Clerk está scoped a localhost — verificación REAL igual (fallback permitido por definition-of-done-live-verify.md)."
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase2-lisa-marca/01-spec.md"
+    atomic_ref: null
+    edge_cases:
+      - "Frase 'garantizamos curar' detectada → warning soft sin bloquear guardado"
+      - "Timeout de preview endpoint → botón Previsualizar muestra error inline"
+    added_in_story: vitalia-fase2-lisa-marca
+    added_date: 2026-05-27
+  - id: admin-configura-presencia-web
+    name: "Administrador configura la presencia web y certificaciones"
+    actor: admin_clinic
+    status: live
+    given: "Admin en sub-sub-tab Presencia con campos vacíos"
+    when: "Agrega URL de sitio web, vincula redes sociales y selecciona certificaciones del catálogo cerrado (MINSA/SUSALUD PE)"
+    then: "Datos persisten · certificaciones muestran íconos oficiales · free-text 'Otra' disponible para certificaciones no listadas"
+    e2e_test: null
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase2-lisa-marca/01-spec.md"
+    atomic_ref: null
+    edge_cases:
+      - "URL malformada → validación Zod rechaza con mensaje descriptivo"
+      - "Sin certificaciones configuradas → empty state con CTA para agregar"
+    added_in_story: vitalia-fase2-lisa-marca
+    added_date: 2026-05-27
+  - id: voz-frase-prohibida-warning-soft
+    name: "Una frase prohibida en la voz dispara una advertencia que no bloquea"
+    actor: admin_clinic
+    status: live
+    given: "Admin editando un bloque de voz en Voz y tono"
+    when: "Agrega una frase con lenguaje prohibido (ej. 'Garantizamos curar') y espera el debounce"
+    then: "Alert de advertencia inline con sugerencia de alternativa · botón 'Guardar igual con esta frase' aparece · al confirmar persiste y registra audit log voice_warning_overridden · sin bloquear el guardado"
+    e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase2-lisa-marca/lisa-marca-voice-warning.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase2-lisa-marca/01-spec.md"
+    atomic_ref: null
+    edge_cases: []
+    added_in_story: vitalia-fase2-lisa-marca
+    added_date: 2026-05-27
+  - id: logo-excede-tamano-maximo
+    name: "Un logo que supera el tamaño máximo se rechaza antes de subir"
+    actor: admin_clinic
+    status: live
+    given: "Admin en Identidad seleccionando un archivo de logo de más de 5 MB"
+    when: "Selecciona el archivo grande"
+    then: "Validación client-side bloquea antes del request · error inline 'Logo máximo 5 MB' con sugerencia de comprimir · input file se resetea · sin request al endpoint de logos · una imagen comprimida sí procede con preview live y autosave"
+    e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase2-lisa-marca/lisa-marca-logo-upload-size.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase2-lisa-marca/01-spec.md"
+    atomic_ref: null
+    edge_cases: []
+    added_in_story: vitalia-fase2-lisa-marca
+    added_date: 2026-05-27
+  - id: edicion-cross-tenant-bloqueada
+    name: "Un tenant no puede editar la marca de otro tenant"
+    actor: admin_clinic
+    status: live
+    given: "Admin del tenant A con un payload PATCH adulterado que apunta al tenant B"
+    when: "Envía el PATCH de identidad con el tenant_id manipulado"
+    then: "Backend retorna 403 · la fila de marca del tenant B no se modifica · audit log del tenant A registra cross_tenant_brand_edit_attempt · sin fuga de PHI en el response"
+    e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase2-lisa-marca/lisa-marca-cross-tenant.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase2-lisa-marca/01-spec.md"
+    atomic_ref: null
+    edge_cases: []
+    added_in_story: vitalia-fase2-lisa-marca
+    added_date: 2026-05-27
+  - id: autosave-concurrente-dos-tabs
+    name: "Autosave simultáneo desde dos pestañas resuelve last-write-wins"
+    actor: admin_clinic
+    status: live
+    given: "Admin con dos pestañas abiertas en Identidad mostrando el mismo nombre"
+    when: "Ambas pestañas editan el nombre y disparan autosave casi simultáneamente"
+    then: "Backend resuelve last-write-wins por timestamp server-side · audit log registra dos rows distintos · sin corrupción ni dato perdido silencioso · re-fetch muestra el valor server-side correcto"
+    e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase2-lisa-marca/lisa-marca-race-autosave.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase2-lisa-marca/01-spec.md"
+    atomic_ref: null
+    edge_cases: []
+    added_in_story: vitalia-fase2-lisa-marca
+    added_date: 2026-05-27
+  - id: edicion-concurrente-dos-owners
+    name: "Dos owners del mismo tenant editan la misma sección a la vez"
+    actor: admin_clinic
+    status: live
+    given: "Owner A y Owner B (mismo tenant, distintos usuarios) editando Voz y tono"
+    when: "Los autosaves de ambos disparan con diferencia de milisegundos"
+    then: "Backend persiste ambos intentos secuencialmente (last-write-wins) · cada audit log row con user_id distinto · UI de owner A muestra notificación no bloqueante de que otro usuario editó la sección"
+    e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase2-lisa-marca/lisa-marca-concurrent-owners.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase2-lisa-marca/01-spec.md"
+    atomic_ref: null
+    edge_cases: []
+    added_in_story: vitalia-fase2-lisa-marca
+    added_date: 2026-05-27
+  - id: autosave-timeout-con-reintento
+    name: "Un timeout de autosave ofrece reintentar sin perder los cambios"
+    actor: admin_clinic
+    status: live
+    given: "Admin editando un campo en Identidad con el backend simulando timeout"
+    when: "El autosave dispara tras el debounce y el backend no responde"
+    then: "Spinner 'Guardando...' durante el intento · tras el timeout, alert de error inline con botón Reintentar · reintento exitoso muestra toast Guardado · hasta 3 reintentos + opción Cancelar cambios (rollback local)"
+    e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase2-lisa-marca/lisa-marca-autosave-timeout.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase2-lisa-marca/01-spec.md"
+    atomic_ref: null
+    edge_cases: []
+    added_in_story: vitalia-fase2-lisa-marca
+    added_date: 2026-05-27
+  - id: tenant-nuevo-empty-state
+    name: "Un tenant nuevo sin datos de marca ve el estado vacío de onboarding"
+    actor: admin_clinic
+    status: live
+    given: "Tenant recién creado sin filas de identidad, visuals, personalidad ni contacto"
+    when: "Navega a /lisa/marca por primera vez"
+    then: "Empty state hero 'Configurá tu identidad de marca' con CTA Empezar · al iniciar muestra form con valores por defecto sugeridos · autosave dispara al primer cambio · progreso por sub-secciones completas"
+    e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase2-lisa-marca/lisa-marca-empty-state.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase2-lisa-marca/01-spec.md"
+    atomic_ref: null
+    edge_cases: []
+    added_in_story: vitalia-fase2-lisa-marca
+    added_date: 2026-05-27
+  - id: render-perf-gran-volumen-marca
+    name: "La marca con muchos testimonios y equipo renderiza con buen rendimiento"
+    actor: admin_clinic
+    status: live
+    given: "Tenant con datos de marca extensos (50+ testimonios, 30+ miembros de equipo en preview read-only)"
+    when: "Admin navega a /lisa/marca"
+    then: "La página renderiza dentro del presupuesto de LCP · listas usan virtualización (react-window) · scroll fluido sin jank · footprint de memoria acotado"
+    e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase2-lisa-marca/lisa-marca-large-dataset.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase2-lisa-marca/01-spec.md"
+    atomic_ref: null
+    edge_cases: []
+    added_in_story: vitalia-fase2-lisa-marca
+    added_date: 2026-05-27
+  - id: navegacion-teclado-marca
+    name: "La configuración de marca es navegable solo por teclado y accesible"
+    actor: admin_clinic
+    status: live
+    given: "Usuario sin mouse navegando con teclado y lector de pantalla"
+    when: "Navega con Tab entre sub-sub-tabs y campos, edita y avanza con Tab"
+    then: "aria-selected correcto en la sub-sub-tab activa · focus ring visible · autosave respeta la navegación por teclado · toast Guardado anunciado con aria-live · 0 violations WCAG AA en cada estado"
+    e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase2-lisa-marca/lisa-marca-keyboard.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase2-lisa-marca/01-spec.md"
+    atomic_ref: null
+    edge_cases: []
+    added_in_story: vitalia-fase2-lisa-marca
+    added_date: 2026-05-27
+  - id: copy-espanol-neutro-marca
+    name: "El copy de la configuración de marca es español neutro sin voseo"
+    actor: admin_clinic
+    status: live
+    given: "Todos los strings user-facing de la configuración de marca de Lisa"
+    when: "Se audita el copy contra el glosario de voseo y léxico regional"
+    then: "0 coincidencias de voseo y léxico regional · tildes, ñ y signos de apertura presentes · copy comprensible para MX, CO, PE, CL y AR"
+    e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase2-lisa-marca/lisa-marca-i18n.spec.ts"
+    story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase2-lisa-marca/01-spec.md"
+    atomic_ref: null
+    edge_cases: []
+    added_in_story: vitalia-fase2-lisa-marca
+    added_date: 2026-05-27
+
+business_rules:
+  - id: brand-owner-access-only
+    rule: "Solo roles doctor y admin_clinic acceden a la configuración de marca · nurse/receptionist/patient excluidos"
+    enforcement:
+      - ".claude/rules/tenant-isolation.md"
+    code_ref: "vitalia/backend/src/modules/vitalia/brand_studio/_shared/auth/rbac.py"
+    severity: high
+    audit_trail: false
+  - id: no-health-voice-validator
+    rule: "No existe tabla health_voice_validator ni mirror LLM-distilled de voz · el compilador v2 de sales-agent es el SSoT"
+    enforcement:
+      - "vitalia/backend/tests/architecture/test_no_health_voice_validator.py"
+    code_ref: "vitalia/backend/src/modules/vitalia/brand_studio/application/services/"
+    severity: high
+    audit_trail: false
+  - id: clinic-vertical-read-only
+    rule: "El campo clinic_vertical y primary_specialties provienen del onboarding-clinica y son read-only en Brand Studio · no editables"
+    enforcement:
+      - "vitalia/docs/architecture/ADR-vitalia-004.md"
+    code_ref: "vitalia/frontend/src/features/lisa/components/marca/identidad/ClinicVerticalReadOnly.tsx"
+    severity: medium
+    audit_trail: false
+
+related_capabilities:
+  depends_on:
+    - shell-organism.shell-vitalia
+    - auth.clerk-middleware
+    - iam.luana-core-adoption
+  enables:
+    - public_landing.public-clinic-landing
+    - sales_agent.inbox-handler-mode-occ
+  similar: []
+  obsoletes: []
+map_box: lisa
+
 ---
 
 # vitalia-lisa-marca

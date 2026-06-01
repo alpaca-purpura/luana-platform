@@ -1,3 +1,5 @@
+# cap: scheduling.valeria-agenda
+# story-origin: vitalia-fase2-s1-TBD
 """Date range utilities for the Agenda API.
 
 Translates view+date parameters into (date_from, date_to) UTC datetime tuples.

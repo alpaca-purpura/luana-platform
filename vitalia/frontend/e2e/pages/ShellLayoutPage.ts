@@ -2,6 +2,11 @@
  * ShellLayoutPage.ts — Page Object Model para ShellOrganismLayout
  *
  * F1-S4 vitalia-fase1-shell-layout-5050 — T-7
+ * Extended vitalia-shell-state-persistence T-5:
+ *   - openMobileDrawerViaBurger(): tap burger, waits for role=dialog
+ *   - isMobileDrawerOpen(): check if mobile drawer (role=dialog) present
+ *   - getMobileDrawerSlice(): read mobileDrawerOpen from localStorage
+ *   - instrumentSetItem(): install spy; getSetItemWrites(): collect writes
  *
  * Locators: data-testid first, ARIA como fallback.
  * Sin assertions en métodos POM — solo acciones + locators.
@@ -53,7 +58,7 @@ export class ShellLayoutPage {
   /** The visible <main id="main-content"> element (CSS-gated triple pattern) */
   readonly main: Locator;
 
-  /** Valeria sidebar slot aside[data-testid="valeria-sidebar-slot"] */
+  /** Valeria sidebar aside[data-testid="valeria-sidebar"] (real component since F1-S5) */
   readonly valeriaSlot: Locator;
 
   /** Application panel slot section[data-testid="app-panel-slot"] */
@@ -86,18 +91,12 @@ export class ShellLayoutPage {
       .locator("main#main-content")
       .filter({ hasText: "" })
       .first();
-    // Triple-main pattern: multiple testid instances exist in DOM (one per CSS branch:
-    // agentic md:block, web md:grid, mobile md:hidden). Only ONE is visible per viewport.
-    // Filter por visibility para que assertions toBeVisible() resuelvan el correcto en
-    // CADA viewport sin asumir DOM order (mobile fallback es el último, no el primero).
-    this.valeriaSlot = page
-      .getByTestId("valeria-sidebar-slot")
-      .filter({ visible: true })
-      .first();
-    this.appSlot = page
-      .getByTestId("app-panel-slot")
-      .filter({ visible: true })
-      .first();
+    // Single-slot pattern post vitalia-shell-dual-mount-a11y-fix (c9d2bd31):
+    // ShellOrganismLayoutClient now renders exactly one valeria-sidebar and
+    // one app-panel-slot regardless of viewport. F1-S5 replaced the
+    // ValeriaSidebarSlot placeholder with the real ValeriaSidebar component.
+    this.valeriaSlot = page.getByTestId("valeria-sidebar");
+    this.appSlot = page.getByTestId("app-panel-slot");
     this.resizeHandle = page.locator('[aria-label="Redimensionar paneles"]');
     this.logoMark = page.locator('header a[aria-label*="Vitalia"]').first();
     this.themeToggle = page
@@ -135,6 +134,75 @@ export class ShellLayoutPage {
     }
     // Wait for shell to hydrate — topBar must be visible
     await this.topBar.waitFor({ state: "visible", timeout: 30_000 });
+  }
+
+  /**
+   * Await a stable post-hydration layout in agentic desktop mode.
+   *
+   * topBar visibility alone fires at the SSR-skeleton stage — BEFORE the
+   * dynamic({ssr:false}) client chunk mounts, the ResizeObserver measures, and
+   * the Fix A snap-up reconciles. Measuring panel widths before this settles is
+   * the SC-3 transition+drag-immediately race (F1-S4b). The agentic main exposes
+   * `data-shell-ready="true"` once reconciliation completes; await it for a
+   * deterministic measurement point.
+   *
+   * No-op outside agentic desktop (web/mobile mains carry no readiness attribute).
+   */
+  async waitForShellReady(): Promise<void> {
+    await this.page
+      .locator('main#main-content[data-shell-ready="true"]')
+      .first()
+      .waitFor({ state: "visible", timeout: 30_000 });
+  }
+
+  /**
+   * Anchor the browser's *sequential focus navigation starting point* to the
+   * very top of the document, so the NEXT `keyboard.press("Tab")` lands on the
+   * first focusable element in DOM order (the WCAG skip-link).
+   *
+   * ─── WHY THIS EXISTS (read before touching focus-order assertions) ─────────
+   * The shell mounts via `dynamic({ ssr: false })`: an SSR skeleton is swapped
+   * for the real client shell after hydration. When Chromium replaces that
+   * <main> subtree, the *sequential focus navigation starting point* (a browser
+   * concept SEPARATE from `document.activeElement`) is left anchored INSIDE the
+   * new subtree (≈ the chat composer), NOT at the document start — even though
+   * `document.activeElement` is still <body> and nothing stole focus
+   * (verified: `focusin` trace empty during mount, no focus trap, no `inert`,
+   * no `aria-hidden`, all controls `tabIndex=0`, DOM order is correct).
+   *
+   * Net effect in tests: a bare `keyboard.press("Tab")` right after load jumps
+   * mid-shell and SKIPS the skip-link — a Chromium + dynamic-SSR artifact, NOT
+   * a real focus-order defect in the components (a real keyboard user arriving
+   * from the URL bar, or after any click/scroll, gets the correct order).
+   *
+   * This helper neutralizes that artifact deterministically by focusing <body>
+   * with a transient `tabindex="-1"` then clearing it — leaving the page in the
+   * exact "fresh, no prior interaction" state with the starting point at the top.
+   *
+   * ─── WHEN TO USE ───────────────────────────────────────────────────────────
+   * Call it AFTER `gotoShell()` / `waitForShellReady()` and BEFORE the first
+   * `keyboard.press("Tab")` in ANY test that asserts tab ORDER or skip-link
+   * reachability on the dynamically-mounted shell.
+   *
+   * ─── WHAT NOT TO DO (anti-patterns) ────────────────────────────────────────
+   * - Do NOT "fix" this by adding `autoFocus`/`.focus()` in the shell component
+   *   — auto-focusing a control on mount is itself a WCAG anti-pattern and would
+   *   steal focus from real users. The DOM/tabindex are already correct.
+   * - Do NOT use `body.focus()` alone — <body> isn't focusable without a
+   *   tabindex, so it does NOT re-anchor the starting point (verified: still
+   *   lands on the composer).
+   * - Do NOT use `activeElement.blur()` — that leaves the stale starting point
+   *   untouched (verified: still lands on the composer).
+   *
+   * Learning SSoT: vitalia/docs/learnings/2026-05-28-dynamic-ssr-tab-start-anchor.md
+   */
+  async resetTabSequenceToStart(): Promise<void> {
+    await this.page.evaluate(() => {
+      const b = document.body;
+      b.setAttribute("tabindex", "-1");
+      b.focus();
+      b.removeAttribute("tabindex");
+    });
   }
 
   // ── Store manipulation (via localStorage pre-navigation) ───────────────────
@@ -301,5 +369,114 @@ export class ShellLayoutPage {
     const valeriaBox = await this.valeriaSlot.boundingBox();
     const appBox = await this.appSlot.boundingBox();
     return (valeriaBox?.width ?? 0) + (appBox?.width ?? 0);
+  }
+
+  // ── Mobile drawer helpers (T-5 vitalia-shell-state-persistence) ───────────
+
+  /**
+   * Tap the hamburger burger button (data-testid="topbar-hamburger") to open
+   * the mobile Valeria drawer. Waits for the drawer dialog to appear.
+   *
+   * Precondition: page must be loaded at a mobile viewport (<768px).
+   */
+  async openMobileDrawerViaBurger(): Promise<void> {
+    const burger = this.page.getByTestId("topbar-hamburger");
+    await burger.waitFor({ state: "visible", timeout: 15_000 });
+    await burger.click();
+    // Wait for the drawer to appear
+    await this.page
+      .locator('[role="dialog"][data-testid="valeria-sidebar"]')
+      .waitFor({ state: "visible", timeout: 15_000 });
+  }
+
+  /**
+   * Close the mobile Valeria drawer via the close button (X inside the drawer).
+   *
+   * Precondition: mobile drawer must be open (role=dialog visible).
+   */
+  async closeMobileDrawer(): Promise<void> {
+    const closeBtn = this.page.getByTestId("valeria-drawer-close");
+    await closeBtn.click();
+    // Wait for dialog to disappear
+    await this.page
+      .locator('[role="dialog"][data-testid="valeria-sidebar"]')
+      .waitFor({ state: "hidden", timeout: 15_000 });
+  }
+
+  /**
+   * Returns true if the mobile Valeria drawer (role=dialog) is currently visible.
+   * Uses a short timeout to avoid flakiness on transitions.
+   */
+  async isMobileDrawerOpen(): Promise<boolean> {
+    try {
+      const drawer = this.page.locator(
+        '[role="dialog"][data-testid="valeria-sidebar"]',
+      );
+      await drawer.waitFor({ state: "visible", timeout: 3_000 });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Read the `mobileDrawerOpen` field from the shell store's localStorage slice.
+   * Returns null if the key is absent or parse fails.
+   */
+  async getMobileDrawerSlice(): Promise<boolean | null> {
+    return await this.page.evaluate((key) => {
+      try {
+        const raw = localStorage.getItem(key);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw) as {
+          state?: { mobileDrawerOpen?: boolean };
+        };
+        const val = parsed.state?.mobileDrawerOpen;
+        if (typeof val !== "boolean") return null;
+        return val;
+      } catch {
+        return null;
+      }
+    }, SHELL_STORAGE_KEY);
+  }
+
+  /**
+   * Install a localStorage.setItem spy via page.addInitScript-equivalent at runtime.
+   * Call BEFORE navigation so all writes are captured from the start.
+   *
+   * After calling this, use getSetItemWrites() to retrieve all captured calls.
+   *
+   * HOW IT WORKS:
+   *   Overrides localStorage.setItem with a wrapper that pushes each call into
+   *   window.__setItemWrites (key, value). The original setItem is still called —
+   *   this is non-destructive spy, not a mock.
+   *
+   * USE CASE (SC-3 adversarial):
+   *   Prove that 'full' is NEVER written to the shell storage key when 'rail' was saved.
+   */
+  async instrumentSetItem(): Promise<void> {
+    await this.page.evaluate(() => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const w = window as any;
+      if (w.__setItemInstrumented) return; // idempotent
+      w.__setItemWrites = [] as Array<{ key: string; value: string }>;
+      const orig = localStorage.setItem.bind(localStorage);
+      localStorage.setItem = (key: string, value: string) => {
+        w.__setItemWrites.push({ key, value });
+        orig(key, value);
+      };
+      w.__setItemInstrumented = true;
+    });
+  }
+
+  /**
+   * Retrieve all localStorage.setItem calls captured since instrumentSetItem().
+   * Each entry is { key, value } as passed to setItem.
+   */
+  async getSetItemWrites(): Promise<Array<{ key: string; value: string }>> {
+    return await this.page.evaluate(() => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (window as any).__setItemWrites ?? [];
+    });
   }
 }

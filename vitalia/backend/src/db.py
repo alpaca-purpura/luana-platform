@@ -1,3 +1,5 @@
+# cap: platform.migrations-slice-1-schema
+# story-origin: TBD
 """Vitalia database session factory — FastAPI DI dependency.
 
 Provides ``get_async_session`` async generator for use with ``Depends()``.
@@ -66,3 +68,28 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
     """
     async with _AsyncSessionLocal() as session:
         yield session
+
+
+async def get_async_session_committing() -> AsyncGenerator[AsyncSession, None]:
+    """FastAPI DI async generator that COMMITS on success, rolls back on error.
+
+    Same per-request session as ``get_async_session`` but owns the unit-of-work:
+    on a clean handler return it commits (persisting writes + sync audit-log
+    rows), and on any raised exception (incl. HTTPException 403/404) it rolls
+    back. Use for endpoints that write — or that read PHI and therefore write a
+    mandatory audit-log row (hipaa-lite.md § Audit log: sync write pre-response).
+
+    Why this exists: ``get_async_session`` never commits (it delegates to the
+    caller), but the CRM endpoints never committed either — so PHI audit rows
+    and writes were flushed-then-rolled-back at session close (HTTP 200/201 with
+    no DB row). Surfaced by live god-matrix verification of
+    vitalia-crm-phi-base-tables-migration. Additive + opt-in: existing
+    ``get_async_session`` consumers are unchanged.
+    """
+    async with _AsyncSessionLocal() as session:
+        try:
+            yield session
+            await session.commit()
+        except Exception:
+            await session.rollback()
+            raise

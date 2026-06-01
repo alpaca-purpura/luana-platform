@@ -1,3 +1,5 @@
+// cap: iam.luana-core-adoption
+// story-origin: vitalia-fe-tenant-resolution-no-clerk-org (T-2)
 "use client";
 
 /**
@@ -11,6 +13,15 @@
  * This component fires a beacon to the audit log API on mount.
  * Use around any section that renders PHI fields.
  *
+ * T-2 fix (2026-06-01): replaced useOrganization() + organization.id with
+ * useTenantId() which reads user.publicMetadata.tenant_id (our UUID, written
+ * by luana-core-iam). The Clerk Organization org_3DzUI3... was deleted;
+ * organization?.id was returning null → audit log NEVER fired (HIPAA-lite
+ * violation). Now uses our real tenant UUID directly from publicMetadata.
+ *
+ * Per MEMORY.md::no-clerk-organizations: Luana does NOT use Clerk Organizations.
+ * tenant_id comes from user.publicMetadata, NOT from Clerk org APIs.
+ *
  * Usage:
  *   <AuditedSection
  *     resourceType="patient_profile"
@@ -23,8 +34,9 @@
 
 import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
-import { useAuth, useOrganization } from "@clerk/nextjs";
+import { useAuth } from "@clerk/nextjs";
 import { useClinicId } from "@/hooks/useClinicId";
+import { useTenantId } from "@/hooks/useTenantId";
 
 export interface AuditedSectionProps {
   /** Resource type being viewed (e.g. "patient_profile", "treatment_record") */
@@ -48,7 +60,7 @@ export function AuditedSection({
   children,
 }: AuditedSectionProps) {
   const { getToken, userId } = useAuth();
-  const { organization } = useOrganization();
+  const tenantId = useTenantId();
   const clinicId = useClinicId();
   const auditFired = useRef(false);
 
@@ -57,7 +69,11 @@ export function AuditedSection({
     auditFired.current = true;
 
     const fireAudit = async () => {
-      if (!userId || !organization?.id) return;
+      // Guard: require both userId and our real tenant UUID.
+      // tenantId comes from user.publicMetadata.tenant_id (luana-core-iam UUID).
+      // With the Clerk org deleted, organization?.id was null → audit never fired.
+      // Now tenantId is our UUID (or null if not yet loaded) — explicit guard.
+      if (!userId || !tenantId) return;
 
       try {
         const token = await getToken();
@@ -66,7 +82,7 @@ export function AuditedSection({
         const headers: Record<string, string> = {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
-          "X-Tenant-ID": organization.id,
+          "X-Tenant-ID": tenantId,
         };
 
         if (clinicId) {
@@ -100,7 +116,7 @@ export function AuditedSection({
     action,
     clinicId,
     getToken,
-    organization?.id,
+    tenantId,
     resourceId,
     resourceType,
     userId,

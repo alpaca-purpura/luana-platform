@@ -80,6 +80,12 @@ ready_package:
   playwright_required: true
   hipaa_lite_audit_required: true
 next_action: "/dev-team vitalia vitalia-fase1-routing-shell"
+
+# Schema v2 migration (cement 2026-05-27)
+release: F1   # release ID · ver releases/
+cap_target: routing   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # F1-S9 vitalia-fase1-routing-shell — checkpoint (state=ready)

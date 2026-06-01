@@ -1,1 +1,0 @@
-"""Advertising module package."""

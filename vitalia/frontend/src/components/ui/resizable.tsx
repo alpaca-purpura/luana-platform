@@ -1,3 +1,5 @@
+// cap: __shared__
+// story-origin: TBD
 "use client";
 
 import { GripVertical } from "lucide-react";

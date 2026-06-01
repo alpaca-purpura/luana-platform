@@ -1,3 +1,5 @@
+# cap: __shared__
+# story-origin: TBD
 """Vitalia Extension SDK registration — single entry point.
 
 Story 11 T-extensions-1 (R23 Opus 4.7 production AGENTIC code).

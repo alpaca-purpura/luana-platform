@@ -2,18 +2,21 @@
  * ribbon-config-nav.spec.ts — SC-3 happy · click ConfigTab navega a /config/cuenta
  *
  * F1-S7 vitalia-fase1-ribbon-6-tabs — T-5
+ * UPDATED: paradigm-map-zones T-6 (2026-05-30) — starting point changed to mateo/agenda.
+ *   Valeria ya NO es tab del ribbon (supervisor sidebar only v1.2).
+ *   SC-3-1 ahora empieza en mateo/agenda (antes: valeria/agenda).
  *
  * Gherkin: 01-spec.md § Gherkin SC-3
  *
- * Given: usuario en /{tenantId}/valeria/agenda, active tab Valeria visible
- * When:  click ConfigTab "Configurar"
+ * Given: usuario en /{tenantId}/mateo/agenda, active tab Mateo visible
+ * When:  click ConfigTab "Plataforma"
  * Then:  router.push("/{tenantId}/config/cuenta") se invoca
  * And:   ConfigTab renderiza data-active="true" + aria-selected="true"
- * And:   tooltip "Configurar" NO es visible post-click
+ * And:   tooltip NO es visible post-click
  * And:   todos los agent tabs quedan data-active="false"
  *
  * gherkin_coverage:
- *   - SC-3-1: click ConfigTab desde active=valeria → URL /config/cuenta + ConfigTab active
+ *   - SC-3-1 (UPDATED): click ConfigTab desde active=mateo → URL /config/cuenta + ConfigTab active
  *   - SC-3-2: ConfigTab tooltip NOT visible after click (tooltip hidden on active state)
  *
  * downstream-regression-na: brand-local E2E spec; no cross-brand consumers
@@ -27,28 +30,31 @@ import type { AgentSlug } from "@/lib/agent-catalog";
 const DESKTOP_VIEWPORT = { width: 1280, height: 800 };
 const TENANT_ID = process.env["E2E_TENANT_ID"] ?? "vitalia-test-tenant";
 
+// v1.2 (paradigm-map-zones T-6): Valeria removed from ribbon, Mateo added.
 const ALL_AGENT_SLUGS: AgentSlug[] = [
   "lisa",
-  "lucas",
+  "mateo",
   "adrian",
-  "valeria",
+  "lucas",
   "camila",
 ];
 
 test.describe("SC-3 — click ConfigTab navega a /config/cuenta", () => {
   test.use({ viewport: DESKTOP_VIEWPORT });
 
-  test("SC-3-1: click ConfigTab desde active=valeria → URL /config/cuenta + ConfigTab active", async ({
+  test("SC-3-1 (UPDATED v1.2): click ConfigTab desde active=mateo → URL /config/cuenta + ConfigTab active", async ({
     shellPage,
   }) => {
+    // UPDATED: paradigm-map-zones T-6 (2026-05-30)
+    // Start at mateo/agenda (Valeria no longer a ribbon tab — was valeria/agenda pre-v1.2)
     const pom = new RibbonPage(shellPage);
 
-    // Start at valeria/agenda
-    await pom.goto({ tenantId: TENANT_ID, agent: "valeria", subtab: "agenda" });
+    // Start at mateo/agenda
+    await pom.goto({ tenantId: TENANT_ID, agent: "mateo", subtab: "agenda" });
 
-    // Verify initial state: Valeria is active
+    // Verify initial state: Mateo is active
     const initialActive = await pom.getActiveSlug();
-    expect(initialActive).toBe("valeria");
+    expect(initialActive).toBe("mateo");
 
     // Click ConfigTab
     await pom.clickConfigTab();
@@ -74,7 +80,8 @@ test.describe("SC-3 — click ConfigTab navega a /config/cuenta", () => {
   }) => {
     const pom = new RibbonPage(shellPage);
 
-    await pom.goto({ tenantId: TENANT_ID, agent: "valeria", subtab: "agenda" });
+    // UPDATED: use mateo/agenda (Valeria no longer a ribbon tab — v1.2)
+    await pom.goto({ tenantId: TENANT_ID, agent: "mateo", subtab: "agenda" });
 
     // Click ConfigTab
     await pom.clickConfigTab();

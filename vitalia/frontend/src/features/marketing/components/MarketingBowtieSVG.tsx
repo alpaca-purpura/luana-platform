@@ -1,3 +1,5 @@
+// cap: public_landing.public-clinic-landing
+// story-origin: TBD
 /**
  * MarketingBowtieSVG — SVG bowtie funnel visualization (pixel-invariante per mockup v1 Batch 6).
  * Renders 5 ellipse stages connected by arrows using vitalia CSS var color tokens.

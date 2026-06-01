@@ -1,3 +1,5 @@
+// cap: public_landing.public-clinic-landing
+// story-origin: TBD
 import type { Metadata } from "next";
 
 interface ClinicPublicPageProps {

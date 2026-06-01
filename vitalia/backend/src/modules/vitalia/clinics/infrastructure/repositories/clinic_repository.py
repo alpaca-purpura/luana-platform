@@ -1,3 +1,5 @@
+# cap: clinics.clinics-brand-extension
+# story-origin: TBD
 """Vitalia Clinic repository — concrete implementation with HIPAA dual filter.
 
 Every method takes (tenant_id, ...) as first filter AND clinic_id as second
@@ -65,6 +67,30 @@ class ClinicRepository:
             select(ClinicModel)
             .where(ClinicModel.tenant_id == tenant_id)
             .where(ClinicModel.slug == slug)
+            .where(ClinicModel.deleted_at.is_(None))
+        )
+        model = result.scalars().first()
+        return Clinic.model_validate(model) if model else None
+
+    async def get_by_slug_public(self, slug: str) -> Clinic | None:
+        """Retrieve an active clinic by slug for public endpoints.
+
+        Used ONLY by the unauthenticated public doctors endpoint
+        (/api/public/clinic/{slug}/doctors). Does NOT require tenant_id
+        because the slug is the public-facing identifier (no PHI exposed).
+
+        Returns only is_active=True clinics (deactivated clinics are hidden from public).
+
+        Args:
+            slug: URL-safe clinic slug (public-facing identifier).
+
+        Returns:
+            Clinic entity or None if not found / inactive / soft-deleted.
+        """
+        result = await self.db.execute(
+            select(ClinicModel)
+            .where(ClinicModel.slug == slug)
+            .where(ClinicModel.is_active.is_(True))
             .where(ClinicModel.deleted_at.is_(None))
         )
         model = result.scalars().first()

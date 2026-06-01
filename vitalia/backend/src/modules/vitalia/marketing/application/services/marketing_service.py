@@ -1,3 +1,5 @@
+# cap: marketing.attribution-matrix-4-origins
+# story-origin: TBD
 """MarketingService — bowtie funnel KPI snapshots.
 
 Application layer — reads channel metrics persisted by the Lucas cron

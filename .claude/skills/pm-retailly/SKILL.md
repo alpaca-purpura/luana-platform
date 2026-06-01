@@ -1,6 +1,6 @@
 ---
 name: pm-retailly
-description: "PM Retailly — owner del SSoT funcional brand Retailly (E-commerce / D2C (catálogos dinámicos, cart recovery, integración logística, cross-selling checkout)). Pointer-first: carga retailly/docs/product/checkpoint.md + BACKLOG.md en bootstrap. Owner: retailly/docs/product/{outcomes,stories,capabilities,modules}/, retailly/docs/learnings/, retailly/docs/architecture/, retailly/docs/domains/. Hereda paradigm v4 (10 estados macro) de Luana core. Activa: '/pm-retailly', 'estado retailly', 'retailly backlog', 'retailly story', 'retailly outcome', 'retailly capability', 'retailly learning', 'ecommerce', 'D2C', 'carrito', 'cart recovery', 'Shopify', 'WooCommerce', 'cross-selling', 'logística', 'envío', 'checkout abandonado'."
+description: "PM Retailly — owner del SSoT funcional brand Retailly (E-commerce / D2C (catálogos dinámicos, cart recovery, integración logística, cross-selling checkout)). Pointer-first: carga retailly/docs/product/checkpoint.md + BACKLOG.md en bootstrap. Owner: retailly/docs/product/{releases,stories,capabilities,modules}/, retailly/docs/learnings/, retailly/docs/architecture/, retailly/docs/domains/. Hereda paradigm v4 (10 estados macro) de Luana core. Activa: '/pm-retailly', 'estado retailly', 'retailly backlog', 'retailly story', 'retailly release', 'retailly capability', 'retailly learning', 'ecommerce', 'D2C', 'carrito', 'cart recovery', 'Shopify', 'WooCommerce', 'cross-selling', 'logística', 'envío', 'checkout abandonado'."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
 model: opus
 ---
@@ -19,7 +19,7 @@ E-commerce / D2C (catálogos dinámicos, cart recovery, integración logística,
 |---|---|---|
 | `retailly/docs/product/BACKLOG.md` | auto-gen vista 10 estados | `make portfolio` |
 | `retailly/docs/product/checkpoint.md` | state global brand | `/pm-retailly` |
-| `retailly/docs/product/outcomes/{slug}.md` | épicas brand-specific | `/pm-retailly` |
+| `retailly/docs/product/releases/{id}.yaml` | contenedor temporal (F0..FN) | `/pm-retailly` |
 | `retailly/docs/product/stories/{id}/checkpoint.md` | per-story state | `/pm-retailly` + handoffs |
 | `retailly/docs/product/stories/{id}/00-research.md` | research opcional state=idea | `/pm-retailly` |
 | `retailly/docs/product/stories/{id}/07-merge.md` | merge artifact state=done | `/pm-retailly` |
@@ -74,7 +74,7 @@ cat retailly/docs/product/BACKLOG.md         # vista 10 estados
 
 ### Step 2 — Menú (solo si Step 0 GREEN)
 
-Pregunta a Chris: **"¿qué hacemos en Retailly? (a) idea/story nueva / (b) continúa story X / (c) outcome nuevo / (d) capability / (e) learning / (f) drill-down a {drill-target}"**
+Pregunta a Chris: **"¿qué hacemos en Retailly? (a) idea/story nueva / (b) continúa story X / (c) capability / (d) learning / (e) drill-down a {drill-target}"**
 
 ## Vocabulary — 10 estados macro (heredado Luana core)
 

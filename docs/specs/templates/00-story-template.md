@@ -5,7 +5,7 @@
 
 ---
 story_id: STORY_ID_KEBAB
-type: ui-story                                    # ui-story | agentic-story | service-story
+type: ui-story                                    # ui-story | agentic-story | service-story | bugfix (lite, ADR-011)
 module: MODULE_NAME
 capability: CAPABILITY_ID
 links:

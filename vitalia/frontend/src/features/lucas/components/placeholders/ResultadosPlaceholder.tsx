@@ -1,3 +1,5 @@
+// cap: marketing.lucas-stage-recommendations
+// story-origin: vitalia-fase1-s10-TBD
 /**
  * ResultadosPlaceholder — EmptyState genérico para Lucas/Resultados.
  * F1-S10 vitalia-fase1-empty-states — T-2

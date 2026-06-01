@@ -1,14 +1,14 @@
 ---
 story_id: vitalia-fase2-lucas-mercado
-outcome: vitalia-mvp-ui-foundation
-phase: fase-2
 type: ui-story
 agent_owner: lucas
+map_zone: agentes
+map_box: lucas
 module: market_intel
 capability: lucas.mercado
 state: idea
 architecture_pattern: ADR-vitalia-004
-last_modified: 2026-05-22
+last_modified: 2026-05-30
 ratified_by_chris: false
 parallel_safe: true
 priority: medium
@@ -24,6 +24,12 @@ blocks_soft: []
 reuse_map_summary: "NEW (trends mining no shipped) · NEW tendencias rubro + hashtags + competencia + sugerencias Lucas · CONSUME engine sales-agent intent_detector + core/luana-core-* observability"
 spawned_at: 2026-05-22
 next_action: "/po-ux refinar 01-spec.md con wireframes 4 sub-secciones · /architect evaluar trends mining sources"
+
+# Schema v2 migration (cement 2026-05-27)
+release: F6   # release ID · ver releases/
+cap_target: lucas.mercado   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # F2-S19 vitalia-fase2-lucas-mercado — checkpoint

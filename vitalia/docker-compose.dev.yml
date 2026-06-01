@@ -30,6 +30,7 @@ services:
       # su propio .venv local. Forzamos el venv workspace root donde sí están las deps
       # runtime (uvicorn, sqlalchemy, asyncpg, alembic, luana_core_*).
       UV_PROJECT_ENVIRONMENT: "/workspace/.venv"
+      VITALIA_PHI_KEK: "${VITALIA_PHI_KEK}"
     volumes:
       - .:/workspace:rw  # bind mount monorepo completo (hot-reload)
       # Named volume protege el venv del container en la ruta donde el Dockerfile lo crea
@@ -75,9 +76,14 @@ services:
       # Bind mount al path donde el Dockerfile pone WORKDIR + pnpm install (/app/vitalia/frontend),
       # NO en /app raíz (eso sobrescribiría /app/node_modules + /app/pnpm-workspace.yaml del image).
       - ./vitalia/frontend:/app/vitalia/frontend:rw
-      # Anonymous volume enmascara node_modules del host (con symlinks pnpm host-only)
-      # exponiendo los node_modules del image (pnpm install --filter "@luana/vitalia-web").
+      # ★ vitalia-cockpit-live-reconciliation T-1 (2026-05-29): montar core/ workspace para que el
+      # linking pnpm de @luana/* resuelva fresco (los paquetes @luana/* horneados en la imagen quedan
+      # stale al bump de versión, ej. @luana/hooks@0.2.0 → export use-store-hydration → 500 en :3002).
+      # Causa raíz: el container nunca montó core/, así futuros bumps rompían silenciosamente.
+      - ./core:/app/core:rw
+      # Anonymous volumes enmascaran node_modules host-only (symlinks pnpm) exponiendo los del image.
       - /app/vitalia/frontend/node_modules
+      - /app/core/node_modules
     ports:
       - "127.0.0.1:3002:3002"
     networks:

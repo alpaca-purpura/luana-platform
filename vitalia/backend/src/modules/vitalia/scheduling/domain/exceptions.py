@@ -1,3 +1,5 @@
+# cap: scheduling.valeria-agenda
+# story-origin: TBD
 """Scheduling domain exceptions — vitalia brand-local.
 
 Pure domain layer: no framework imports.

@@ -1,3 +1,5 @@
+// cap: public_landing.public-clinic-landing
+// story-origin: TBD
 /**
  * MARKETING_COPY — Spanish neutro LatAm (tuteo, no voseo)
  * All user-facing strings for the marketing feature.

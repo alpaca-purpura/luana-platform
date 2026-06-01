@@ -1,14 +1,14 @@
 ---
 story_id: vitalia-fase2-lucas-lanzar
-outcome: vitalia-mvp-ui-foundation
-phase: fase-2
 type: ui-story
 agent_owner: lucas
+map_zone: agentes
+map_box: lucas
 module: campaigns_growth
 capability: lucas.lanzar
 state: idea
 architecture_pattern: ADR-vitalia-004
-last_modified: 2026-05-22
+last_modified: 2026-05-30
 ratified_by_chris: false
 parallel_safe: true
 priority: high
@@ -26,7 +26,13 @@ blocks_soft:
   - vitalia-fase2-lucas-resultados             # campañas data → bowtie
 reuse_map_summary: "NEW workspace P4 campaign (paid + orgánica) · model ciclo-temporal-v2 per navigation-tree · NEW wizard adaptivo paga/orgánica · NEW quick-post · NEW borradores + pendientes aprobación · CONSUME core/luana-core-campaigns engine"
 spawned_at: 2026-05-22
-next_action: "/po-ux refinar 01-spec.md con wireframes wizard adaptivo + quick-post + borradores · /architect evaluar P4 campaign model"
+next_action: "★ TIER reclassified 2026-05-27 (audit sweep): TIER 6 HIGH RISK scope ambiguity. Audience definition NO clara — 'prospects NOT patients' overlap directo con adrian-outbound (campaigns a leads en embudo). DEFER refinement hasta TIER 3 Adrian COMPLETO (post adrian-outbound shipped). Después revaluar con data real adrian-outbound usage: (A) si Lucas-Lanzar = new-customer ACQUISITION (anuncios Meta/Google fuera embudo) → keep, build. (B) si Lucas-Lanzar = re-engagement leads existentes → KILL, fusionar con adrian-outbound. Recommendation: Opción A — defer decision a post-TIER-3. SSoT orden: vitalia/docs/product/outcomes/vitalia-fase-2-tier-roadmap.md § TIER 6 + § Stories deprioritized."
+
+# Schema v2 migration (cement 2026-05-27)
+release: F6   # release ID · ver releases/
+cap_target: lucas.lanzar   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # F2-S15 vitalia-fase2-lucas-lanzar — checkpoint

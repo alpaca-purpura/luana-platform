@@ -161,9 +161,10 @@ describe("AGENT_CATALOG — tabLabel + defaultSubtab (F1-S7 new fields)", () => 
     expect(AGENT_CATALOG.adrian.defaultSubtab).toBe("inbox");
   });
 
-  it("AGENT_CATALOG.valeria.tabLabel === 'Operar' + defaultSubtab === 'agenda'", () => {
-    expect(AGENT_CATALOG.valeria.tabLabel).toBe("Operar");
-    expect(AGENT_CATALOG.valeria.defaultSubtab).toBe("agenda");
+  it("AGENT_CATALOG.valeria.tabLabel + defaultSubtab present (shape-complete though valeria is sidebar-only v1.2)", () => {
+    // v1.2: valeria is sidebar supervisor, not in ribbon — tabLabel/defaultSubtab kept for completeness
+    expect(AGENT_CATALOG.valeria.tabLabel).toBeTruthy();
+    expect(AGENT_CATALOG.valeria.defaultSubtab).toBeTruthy();
   });
 
   it("AGENT_CATALOG.camila.tabLabel === 'Mantener' + defaultSubtab === 'voz'", () => {
@@ -171,9 +172,10 @@ describe("AGENT_CATALOG — tabLabel + defaultSubtab (F1-S7 new fields)", () => 
     expect(AGENT_CATALOG.camila.defaultSubtab).toBe("voz");
   });
 
-  it("AGENT_CATALOG.mateo.tabLabel + defaultSubtab present (shape-complete though excluded from ribbon order)", () => {
-    expect(AGENT_CATALOG.mateo.tabLabel).toBeTruthy();
-    expect(AGENT_CATALOG.mateo.defaultSubtab).toBeTruthy();
+  it("AGENT_CATALOG.mateo.tabLabel === 'Operar' + defaultSubtab === 'agenda' (v1.2 — Mateo is now Operar)", () => {
+    // v1.2 (2026-05-30): Mateo is the Operar specialist (agenda + pacientes del día)
+    expect(AGENT_CATALOG.mateo.tabLabel).toBe("Operar");
+    expect(AGENT_CATALOG.mateo.defaultSubtab).toBe("agenda");
   });
 
   it("existing F1-S6 fields (name, role, colorToken, hex, thumbnail, transparent, initial) preserved verbatim (no regression)", () => {
@@ -208,33 +210,38 @@ describe("AGENT_CATALOG — tabLabel + defaultSubtab (F1-S7 new fields)", () => 
 // SC-2 — AGENT_RIBBON_ORDER constant
 // ──────────────────────────────────────────────────────────────────────────────
 
-describe("AGENT_RIBBON_ORDER — canonical ribbon tab order (F1-S7)", () => {
-  it("AGENT_RIBBON_ORDER deep-equals ['lisa', 'lucas', 'adrian', 'valeria', 'camila'] in canonical order", () => {
+describe("AGENT_RIBBON_ORDER — canonical ribbon tab order (v1.2 paradigm-map-zones T-5)", () => {
+  it("AGENT_RIBBON_ORDER deep-equals ['lisa', 'mateo', 'adrian', 'lucas', 'camila'] in canonical order (v1.2)", () => {
+    // v1.2 (2026-05-30): Mateo IN (Operar), Valeria OUT (supervisor sidebar)
     expect(AGENT_RIBBON_ORDER).toEqual([
       "lisa",
-      "lucas",
+      "mateo",
       "adrian",
-      "valeria",
+      "lucas",
       "camila",
     ]);
   });
 
-  it("AGENT_RIBBON_ORDER.length === 5 (Mateo excluded — transversal agent per spec § 0)", () => {
+  it("AGENT_RIBBON_ORDER.length === 5 (5 specialist ribbon tabs)", () => {
     expect(AGENT_RIBBON_ORDER).toHaveLength(5);
   });
 
-  it("AGENT_RIBBON_ORDER does not contain 'mateo'", () => {
-    expect(AGENT_RIBBON_ORDER).not.toContain("mateo");
+  it("AGENT_RIBBON_ORDER contains 'mateo' (Operar — v1.2)", () => {
+    expect(AGENT_RIBBON_ORDER).toContain("mateo");
+  });
+
+  it("AGENT_RIBBON_ORDER does not contain 'valeria' (supervisor sidebar — v1.2)", () => {
+    expect(AGENT_RIBBON_ORDER).not.toContain("valeria");
   });
 
   it("AGENT_RIBBON_ORDER is readonly tuple (TypeScript const assertion — runtime shape check)", () => {
     // Runtime check: verify it's array-like and not mutable via normal API
     // (TypeScript const assertion enforces readonly at compile time; here we verify shape at runtime)
     expect(Array.isArray(AGENT_RIBBON_ORDER)).toBe(true);
-    // Verify immutability idiom: Object.isFrozen checks don't apply to const arrays,
-    // but we verify the values are exactly the canonical 5
+    // Verify the canonical 5 v1.2 values
     expect(AGENT_RIBBON_ORDER[0]).toBe("lisa");
     expect(AGENT_RIBBON_ORDER[4]).toBe("camila");
+    expect(AGENT_RIBBON_ORDER[1]).toBe("mateo");
   });
 
   it("all entries in AGENT_RIBBON_ORDER exist in AGENT_CATALOG", () => {
@@ -361,15 +368,16 @@ describe("extractAgentFromPath — XSS payload sanitization (SC-6)", () => {
 // ──────────────────────────────────────────────────────────────────────────────
 
 describe("tabLabel — Spanish neutro LatAm verbatim (SC-8)", () => {
-  it("all 5 ribbon tabLabels are short Spanish neutro strings (1-3 words, no accented imperatives)", () => {
+  it("all 5 ribbon tabLabels are short Spanish neutro strings (1-3 words, no accented imperatives) — v1.2 order", () => {
+    // v1.2 (2026-05-30): AGENT_RIBBON_ORDER = [lisa, mateo, adrian, lucas, camila]
     // Verify tabLabels are the expected exact strings (Spanish neutro LatAm per spec § Microcopy)
     // Each is a noun/infinitive verb — no imperative voseo forms
     const expectedLabels: string[] = [
-      "Mi Clínica",
-      "Atraer",
-      "Vender",
-      "Operar",
-      "Mantener",
+      "Mi Clínica",  // lisa
+      "Operar",      // mateo (v1.2)
+      "Vender",      // adrian
+      "Atraer",      // lucas
+      "Mantener",    // camila
     ];
     const ribbonLabels = AGENT_RIBBON_ORDER.map(
       (slug) => AGENT_CATALOG[slug].tabLabel,
@@ -400,8 +408,9 @@ describe("tabLabel — Spanish neutro LatAm verbatim (SC-8)", () => {
     expect(AGENT_CATALOG.adrian.tabLabel).toBe("Vender");
   });
 
-  it("valeria tabLabel is exactly 'Operar'", () => {
-    expect(AGENT_CATALOG.valeria.tabLabel).toBe("Operar");
+  it("mateo tabLabel is exactly 'Operar' (v1.2 — Mateo is the Operar specialist)", () => {
+    // v1.2 (2026-05-30): Mateo took the 'Operar' label (was valeria's label before v1.2)
+    expect(AGENT_CATALOG.mateo.tabLabel).toBe("Operar");
   });
 
   it("camila tabLabel is exactly 'Mantener'", () => {
@@ -455,24 +464,33 @@ describe("RIBBON_SUBTABS — total count and distribution (F1-S8)", () => {
     }
   });
 
-  it("mateo subtabs is empty array (transversal agent — not in ribbon UI)", () => {
-    expect(RIBBON_SUBTABS.mateo).toHaveLength(0);
+  it("mateo subtabs has 2 entries: agenda + pacientes (v1.2 — migrated from valeria)", () => {
+    // v1.2 (2026-05-30): Mateo is Operar specialist with agenda + pacientes
+    expect(RIBBON_SUBTABS.mateo).toHaveLength(2);
+    expect(RIBBON_SUBTABS.mateo.map((t) => t.id)).toEqual(["agenda", "pacientes"]);
   });
 
-  it("total sub-tabs across 5 ribbon agents + config equals 22 (4+5+4+2+4+3)", () => {
-    // Mateo excluded from count (transversal agent, empty array)
+  it("valeria subtabs is empty array (v1.2 — valeria is sidebar supervisor, not ribbon tab)", () => {
+    // v1.2 (2026-05-30): Valeria is supervisor sidebar only, 0 ribbon subtabs
+    expect(RIBBON_SUBTABS.valeria).toHaveLength(0);
+  });
+
+  it("total sub-tabs across 5 ribbon agents + config equals 22 (4+2+5+4+4+3)", () => {
+    // v1.2: lisa(4) + mateo(2) + lucas(5) + adrian(4) + camila(4) + config(3) = 22
+    // Valeria=0 (sidebar-only)
     const ribbonAndConfig = (
-      ["lisa", "lucas", "adrian", "valeria", "camila", "config"] as const
+      ["lisa", "mateo", "lucas", "adrian", "camila", "config"] as const
     ).reduce((acc, key) => acc + RIBBON_SUBTABS[key].length, 0);
     expect(ribbonAndConfig).toBe(22);
   });
 
-  it("lisa has 4 sub-tabs in order: marca, doctores, servicios, compliance", () => {
+  it("lisa has 4 sub-tabs in order: marca, staff, servicios, compliance", () => {
+    // F2-S8 T-FE-1 (2026-05-31): sub-tab renamed 'doctores' → 'staff' per 01-spec.md v2
     const lisa = RIBBON_SUBTABS.lisa;
     expect(lisa).toHaveLength(4);
     expect(lisa.map((t) => t.id)).toEqual([
       "marca",
-      "doctores",
+      "staff",
       "servicios",
       "compliance",
     ]);
@@ -501,10 +519,11 @@ describe("RIBBON_SUBTABS — total count and distribution (F1-S8)", () => {
     ]);
   });
 
-  it("valeria has 2 sub-tabs in order: agenda, pacientes", () => {
+  it("valeria has 0 sub-tabs (v1.2 — sidebar supervisor only, not ribbon tab)", () => {
+    // v1.2 (2026-05-30): valeria is supervisor sidebar, agenda/pacientes moved to mateo
     const valeria = RIBBON_SUBTABS.valeria;
-    expect(valeria).toHaveLength(2);
-    expect(valeria.map((t) => t.id)).toEqual(["agenda", "pacientes"]);
+    expect(valeria).toHaveLength(0);
+    expect(valeria.map((t) => t.id)).toEqual([]);
   });
 
   it("camila has 4 sub-tabs in order: voz, reactivar, multiplicar, reputacion", () => {
@@ -530,10 +549,11 @@ describe("RIBBON_SUBTABS — total count and distribution (F1-S8)", () => {
 });
 
 describe("RIBBON_SUBTABS — label strings Spanish neutro (F1-S8)", () => {
-  it("lisa labels are 'Marca', 'Doctores', 'Servicios', 'Compliance' verbatim", () => {
+  it("lisa labels are 'Marca', 'Staff', 'Servicios', 'Compliance' verbatim", () => {
+    // F2-S8 T-FE-1 (2026-05-31): sub-tab renamed 'Doctores' → 'Staff' per 01-spec.md v2
     expect(RIBBON_SUBTABS.lisa.map((t) => t.label)).toEqual([
       "Marca",
-      "Doctores",
+      "Staff",
       "Servicios",
       "Compliance",
     ]);
@@ -589,9 +609,10 @@ describe("RIBBON_SUBTABS — icon field (emojis, F1-S8)", () => {
     }
   });
 
-  it("lisa.doctores icon is '👨‍⚕️' (doctor emoji)", () => {
-    const doc = RIBBON_SUBTABS.lisa.find((t) => t.id === "doctores");
-    expect(doc!.icon).toBe("👨‍⚕️");
+  it("lisa.staff icon is '👨‍⚕️' (doctor emoji)", () => {
+    // F2-S8 T-FE-1 (2026-05-31): renamed from 'lisa.doctores' → 'lisa.staff' per 01-spec.md v2
+    const staff = RIBBON_SUBTABS.lisa.find((t) => t.id === "staff");
+    expect(staff!.icon).toBe("👨‍⚕️");
   });
 
   it("config.conexiones icon is '🔌' (plug emoji — conexiones)", () => {
@@ -670,8 +691,9 @@ describe("isValidAgent — type guard SC-1 happy path (F1-S9)", () => {
     expect(isValidAgent("lisa")).toBe(true);
   });
 
-  it("isValidAgent('valeria') returns true", () => {
-    expect(isValidAgent("valeria")).toBe(true);
+  it("isValidAgent('mateo') returns true (v1.2 — Mateo is now Operar ribbon specialist)", () => {
+    // v1.2 (2026-05-30): mateo is now in AGENT_RIBBON_ORDER
+    expect(isValidAgent("mateo")).toBe(true);
   });
 
   it("isValidAgent('adrian') returns true", () => {
@@ -692,8 +714,9 @@ describe("isValidAgent — type guard SC-1 happy path (F1-S9)", () => {
 });
 
 describe("isValidAgent — type guard SC-2 negative (F1-S9)", () => {
-  it("isValidAgent('mateo') returns false (transversal agent — not in Ribbon)", () => {
-    expect(isValidAgent("mateo")).toBe(false);
+  it("isValidAgent('valeria') returns false (v1.2 — supervisor sidebar, not ribbon agent)", () => {
+    // v1.2 (2026-05-30): valeria is supervisor sidebar only, not in AGENT_RIBBON_ORDER
+    expect(isValidAgent("valeria")).toBe(false);
   });
 
   it("isValidAgent('foo') returns false (unknown slug)", () => {
@@ -722,8 +745,13 @@ describe("isValidSubtab — type guard SC-3 happy path (F1-S9)", () => {
     expect(isValidSubtab("lisa", "marca")).toBe(true);
   });
 
-  it("isValidSubtab('valeria', 'agenda') returns true", () => {
-    expect(isValidSubtab("valeria", "agenda")).toBe(true);
+  it("isValidSubtab('mateo', 'agenda') returns true (v1.2 — agenda migrated to mateo)", () => {
+    // v1.2 (2026-05-30): agenda is a mateo subtab now
+    expect(isValidSubtab("mateo", "agenda")).toBe(true);
+  });
+
+  it("isValidSubtab('mateo', 'pacientes') returns true (v1.2 — pacientes migrated to mateo)", () => {
+    expect(isValidSubtab("mateo", "pacientes")).toBe(true);
   });
 
   it("isValidSubtab('camila', 'reputacion') returns true", () => {
@@ -748,7 +776,8 @@ describe("isValidSubtab — type guard SC-3 negative (F1-S9)", () => {
     expect(isValidSubtab("camila", "foo")).toBe(false);
   });
 
-  it("isValidSubtab('mateo', 'any') returns false (mateo subtabs is empty array)", () => {
+  it("isValidSubtab('mateo', 'any') returns false (not a valid mateo subtab — only agenda/pacientes valid)", () => {
+    // v1.2: mateo has [agenda, pacientes] — 'any' is not a subtab of mateo
     expect(isValidSubtab("mateo", "any")).toBe(false);
   });
 

@@ -1,3 +1,5 @@
+# cap: marketing.lucas-stage-recommendations
+# story-origin: TBD
 """LucasRecommendation domain entity — pure Python, no framework imports.
 
 Business invariants:

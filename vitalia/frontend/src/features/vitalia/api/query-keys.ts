@@ -1,3 +1,5 @@
+// cap: shell-organism.shell-vitalia
+// story-origin: TBD
 /**
  * vitaliaQueryKeys — SSoT for React Query cache key management.
  *

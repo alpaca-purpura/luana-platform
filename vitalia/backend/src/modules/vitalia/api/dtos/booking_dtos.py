@@ -1,3 +1,5 @@
+# cap: booking.booking-widget-embed
+# story-origin: TBD
 """Booking DTOs — Pydantic v2 request/response models.
 
 Per 03-arch-be.md § 6.4 + § 7.1 + Tessl pii-sanitisation:

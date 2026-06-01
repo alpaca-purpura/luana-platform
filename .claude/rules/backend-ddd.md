@@ -28,39 +28,9 @@ Aplica al engine (`core/luana-core-*/src/luana_core_*/`) y a cada brand (`{brand
 ## Extraction orchestrators
 Wave-based LLM extraction (brand/offer/buyer_persona/landing) MUST subclass `luana_core_extraction.base_orchestrator.BaseExtractionOrchestrator` (engine package `core/luana-core-extraction/`). Subclass: wave composition + `_merge_and_save` + `run()`. Arch gate `test_extraction_orchestrator_inheritance.py` (corre en cada brand).
 
-## Schema-mirror exception (origen R5 process-improvement 2026-05-05)
+## Schema-mirror exception (origen R5 2026-05-05) — resumen
 
-`builder-backend` MAY touch `{brand}/backend/src/modules/{brand}/copilot/persistence/models/` AND
-`{brand}/backend/src/modules/{brand}/sales_agent/persistence/models/` SOLO para schema mirror desde
-engine migration (`core/luana-core-observability/`, `core/luana-core-copilot/`, etc.). Cero juicio caso-a-caso auditor.
-
-**Contexto:** business engine packages (`core/luana-core-observability/src/luana_core_observability/persistence/`)
-introducen tabla → SQLAlchemy model class debe vivir en módulo consumer per-brand
-(`{brand}/backend/src/modules/{brand}/{copilot,sales_agent}/persistence/models/`) para mantener domain ownership por brand. Builder-backend
-genera/modifica esos archivos para reflejar DDL nuevo SIN tocar `domain/`, `application/`, ni `api/`
-del módulo agentic per-brand.
-
-**Permitido bajo esta exception:**
-- Add/modify SQLAlchemy `Mapped[]` columns matching engine migration DDL
-- Add/modify table indexes matching engine migration
-- Add/modify foreign keys hacia tablas creadas por engine migration
-- Mark deprecated columns con `# DEPRECATED:` comment
-
-**NO permitido bajo esta exception:**
-- Tocar `{brand}/backend/src/modules/{brand}/{copilot,sales_agent}/{domain,application,api,observability}/` — sigue jurisdicción `builder-agentic`
-- Cambiar comportamiento runtime del módulo agentic per-brand (sólo schema)
-- Crear nueva tabla SOLO en módulo agentic per-brand (debe nacer en engine `core/luana-core-*/` con consumer mirror per brand, no al revés)
-- Modificar `personality_profiles.system_instruction` o cualquier otro field semantic-load del módulo
-
-**Audit:** auditor-backend debe APPROVE estos cambios sin escalate.
-Auditor-agentic NO audita schema mirror (es business migration ripple,
-no agentic logic). Si schema change introduce regression cross-surface
-→ R3 downstream regression scope captura.
-
-**Caso origen:** PI-12 S1 T-1 (cost_recorder canonicalization). Builder
-necesitaba mirror nuevas columnas `cost_usd`, `cache_read_tokens`,
-`provider_canonical` en `modules/{copilot,sales_agent}/persistence/models/copilot_llm_call.py` (era single-brand; post-reorg vive en cada `{brand}/backend/src/modules/{brand}/copilot/persistence/models/`). Auditor inicialmente flagged "out-of-scope" — Chris
-ratificó exception. Codificada aquí para evitar re-litigation.
+`builder-backend` MAY touch `{brand}/backend/src/modules/{brand}/{copilot,sales_agent}/persistence/models/` SOLO para schema mirror desde engine migration (add/modify `Mapped[]` columns/indexes/FKs matching DDL). NO toca `domain/application/api/observability` del módulo agentic ni cambia runtime/semantic fields. auditor-backend APPROVE sin escalate. **Detalle completo (qué permite/prohíbe + caso origen PI-12 S1 T-1):** `.claude/skills/backend-expert/references/schema-mirror-exception.md`.
 
 ## Multibrand awareness (post reorg 2026-05-15)
 

@@ -1,3 +1,5 @@
+// cap: sales_agent.inbox-handler-mode-occ
+// story-origin: TBD
 /**
  * ListEmptyState.tsx — 4 empty state variants for the conversation list.
  *

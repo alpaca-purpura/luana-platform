@@ -1,3 +1,5 @@
+// cap: public_landing.public-clinic-landing
+// story-origin: TBD
 /**
  * MarketingActivityFooter — activity/sync status footer row.
  *

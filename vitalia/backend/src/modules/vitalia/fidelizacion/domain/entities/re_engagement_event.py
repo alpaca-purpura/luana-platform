@@ -1,3 +1,5 @@
+# cap: fidelizacion.re-engagement
+# story-origin: TBD
 """Entidad de dominio: ReEngagementEvent (Evento de Re-engagement).
 
 PHI — payload_phi contiene datos sensibles cifrados (pgcrypto BYTEA).

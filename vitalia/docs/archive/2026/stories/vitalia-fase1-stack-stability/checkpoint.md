@@ -54,6 +54,12 @@ reuse_map_summary: "infra-only — verifica Tailwind v4 + instala Shadcn + plan 
 spawned_at: 2026-05-22
 spawned_by: /pm-vitalia (post shell-organism cement)
 next_action: "DONE — story archived. Próximo en chain: F1-S1 vitalia-fase1-design-tokens-theme transición ready → developing → /dev-team build."
+
+# Schema v2 migration (cement 2026-05-27)
+release: F1   # release ID · ver releases/
+cap_target: shell-foundation-shadcn-tailwind-v4   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # vitalia-fase1-stack-stability — checkpoint

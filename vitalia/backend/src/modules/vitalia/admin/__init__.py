@@ -1,3 +1,5 @@
+# cap: admin.admin-streamlit-service
+# story-origin: TBD
 """Vitalia admin Streamlit application.
 
 Entry point: src.modules.vitalia.admin.app (run via streamlit run app.py).

@@ -1,3 +1,5 @@
+# cap: copilot.inbox-tools-extensions
+# story-origin: TBD
 """Vitalia copilot observability — schema mirror + recording subclasses.
 
 Per .claude/rules/anti-duplication.md § 0 cardinal:

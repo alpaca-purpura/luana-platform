@@ -1,3 +1,5 @@
+# cap: admin.streamlit-tenants-users
+# story-origin: TBD
 """Admin module — Tenant management for Vitalia.
 
 REWRITE: vitalia-adopt-luana-core-iam T-be-admin-rewrite (2026-05-19).

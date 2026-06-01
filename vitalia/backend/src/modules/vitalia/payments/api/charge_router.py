@@ -1,3 +1,5 @@
+# cap: payment.payment-gateways-latam-recurring
+# story-origin: vitalia-fase2-s1-TBD
 """Vitalia Payments — Charge API Router.
 
 POST /api/v1/payments/charge — CobrarSaldo endpoint.

@@ -4,10 +4,11 @@ description: "Developer team router v4 (Conv 2 — autonomous build, post pm-red
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
 model: opus
 ---
+<!-- voseo-allowed: doc interno / buzón conversacional, no user-facing -->
 
 # /dev-team — Developer Team Router (Conv 2 autonomous build)
 
-> Owner: `T-{n}-impl-log.md` + `T-{n}-result.md` en `{brand}/docs/product/stories/{story-id}/`. Toma 1 ticket → ejecuta TDD + iteración contra `04-validators.yaml` → push. On pickup: state=ready→developing. On GREEN all tickets → state=developing→developed + **AUTO-HANDOFF a `/auditor`** (default post 2026-05-18 — story-closure-gate). Escape valve explícita: `checkpoint.md::defer_audit: true` con razón documentada + ratificación Chris. **REFUSE pickup nueva story si current worktree tiene story en state ∈ {developing, developed, reviewing} sin `defer_audit: true`** (defense-in-depth Layer 2 del story-closure-gate).
+> Owner: `T-{n}-impl-log.md` + `T-{n}-result.md` en `{brand}/docs/product/stories/{story-id}/`. Toma 1 ticket → ejecuta TDD + iteración contra `04-validators.yaml` → push. On pickup: state=ready→developing. On GREEN all tickets → state=developing→developed + **AUTO-HANDOFF a `/auditor`** (default post 2026-05-18 — story-closure-gate). Escape valve explícita: `checkpoint.md::defer_audit: true` con razón documentada + ratificación Chris. **REFUSE pickup si otra story DEL MISMO MÓDULO está en state ∈ {developing, developed, reviewing} sin `defer_audit: true`** (defense-in-depth Layer 2 del story-closure-gate, ★ v2 module-scoped post ADR-009: stories de OTROS módulos developing en paralelo sobre el mismo hub = OK). Build-claim: Step 0 hace `session-lock.sh acquire code:{module}` → cockpit pinta 🔨 lane.
 
 ## REQUIRED first input: `<brand>`
 
@@ -45,45 +46,58 @@ state: developing   # ★ TRANSITION ready → developing ★
 phase: BUILD_T1
 ```
 
-WIP cap check: `developing` ≤ 1 por worktree (post 2026-05-18 story-closure-gate). Si excedido → escala Chris antes proceder.
+WIP cap check (★ v2 2026-05-28 · ADR-009 single-hub): bajo el modelo hub único, N builds corren en el MISMO worktree sobre módulos distintos. Por eso el cap `developing` ya **NO es por worktree** — es **≤ 1 por `code:{module}` bucket** (un build en vuelo por módulo). Stories `developing` concurrentes en módulos DISTINTOS = OK (lo que Chris busca paralelizar). El bucket lock serializa solo el mismo módulo. SSoT: `.claude/rules/parallel-safety.md` M14 + `worktree-dual-strategy.md` § Regla cardinal v2.
 
-### Step 0.4 — Story-closure gate (story-closure-gate.md Layer 2)
+### Step 0.4 — Build-claim + story-closure gate module-scoped (story-closure-gate.md Layer 2 · ADR-009)
 
-ANTES de pickup este ticket (o cualquier ticket de esta story), verificar que NO hay otra story abierta en el mismo worktree pendiente de cierre:
+ANTES de pickup, (a) computar el módulo de esta story, (b) verificar que NO haya otra story del **mismo módulo** abierta sin cerrar, (c) adquirir el build-claim (lock module-scoped + registro para el cockpit):
 
 ```bash
 WS=$(git rev-parse --show-toplevel)
 BRAND={brand}
+STORY_DIR=${WS}/${BRAND}/docs/product/stories/{story-id}
+MODULE=$(grep -E "^module:" ${STORY_DIR}/checkpoint.md | head -1 | awk '{print $2}')
+MODULE=${MODULE:-_nomodule}
 
-# Listar todos los checkpoints stories del brand
+# (b) Gate module-scoped: bloquea SOLO si otra story del MISMO módulo está abierta
+#     sin defer_audit (cross-módulo concurrente = permitido bajo hub único).
 for cp in ${WS}/${BRAND}/docs/product/stories/*/checkpoint.md; do
-  STORY_ID=$(basename $(dirname $cp))
+  OTHER_ID=$(basename $(dirname $cp))
+  [[ "$OTHER_ID" == "{story-id}" ]] && continue
+  OTHER_MOD=$(grep -E "^module:" $cp | head -1 | awk '{print $2}')
   STATE=$(grep -E "^state:" $cp | head -1 | awk '{print $2}')
   DEFER=$(grep -E "^defer_audit:" $cp 2>/dev/null | awk '{print $2}')
-  if [[ "$STATE" =~ ^(developing|developed|reviewing)$ ]] && [[ "$DEFER" != "true" ]]; then
-    echo "BLOCK: story $STORY_ID en state=$STATE sin defer_audit"
+  if [[ "$OTHER_MOD" == "$MODULE" ]] && [[ "$STATE" =~ ^(developing|developed|reviewing)$ ]] && [[ "$DEFER" != "true" ]]; then
+    echo "BLOCK: story $OTHER_ID (módulo $MODULE) en state=$STATE sin defer_audit"
   fi
 done
+
+# (c) Build-claim: lock module-scoped + registra story_id + lane → cockpit pinta 🔨.
+#     Si el bucket está tomado por otra sesión (mismo módulo) → serializa (esperar/escalar).
+bash ${WS}/scripts/git/session-lock.sh acquire code:${MODULE} dev-team {story-id} \
+  || { echo "Bucket code:${MODULE} ocupado por otra sesión — build del mismo módulo en vuelo. Esperar o escalar Chris."; exit 1; }
 ```
 
-Si encuentro otra story open (developing/developed/reviewing) en el mismo worktree
-SIN `defer_audit: true` ratificado por Chris → REFUSE pickup. Output verbatim:
+`$LUANA_LANE` (export opcional por terminal, ej. `export LUANA_LANE=A`) da nombre humano a la sesión en el cockpit; sin él, cae a `pid<PID>`.
+
+Si encuentro otra story open del **mismo módulo** (developing/developed/reviewing) SIN `defer_audit: true` → REFUSE pickup. Output verbatim:
 
 ```
-❌ Story closure gate: cannot pickup ticket T-{n} de story {new-story-id}
-   porque story {open-story-id} está en state={state} sin defer_audit.
+❌ Story closure gate (module-scoped): cannot pickup ticket T-{n} de story {new-story-id}
+   porque story {open-story-id} del MISMO módulo {module} está en state={state} sin defer_audit.
+   (Stories de OTROS módulos developing en paralelo = OK bajo ADR-009 single-hub.)
 
    Acciones disponibles:
    1. Continuar story {open-story-id} hasta state=done (default forward-motion)
-   2. Ratificar defer_audit:true en {open-story-id}/checkpoint.md con razón
-      documentada + Chris explícito
-   3. Cleanup-session el worktree actual y crear nuevo
-      (scripts/git/new-session.sh --story-id {new-story-id})
+   2. Ratificar defer_audit:true en {open-story-id}/checkpoint.md con razón + Chris explícito
+   3. Tomar una story de OTRO módulo (bucket code:{otro} libre)
 
-   SSoT regla: .claude/rules/story-closure-gate.md (Layer 2)
+   SSoT regla: .claude/rules/story-closure-gate.md (Layer 2) + ADR-009 § 2.2
 ```
 
-NO arrancar el ticket. Esperar acción explícita Chris.
+NO arrancar el ticket si el gate bloquea. Esperar acción explícita Chris.
+
+**Release del build-claim:** al cerrar la story (transition `developing → developed`, handoff `/auditor`) o si se aborta el pickup, ejecutar `bash ${WS}/scripts/git/session-lock.sh release code:${MODULE}` para liberar el módulo. Si la sesión muere, el lock auto-libera por PID muerto en el próximo `acquire`.
 
 ## Step 0.5 — Phase 0: Context pre-flight (MANDATORY antes Step 1)
 
@@ -136,6 +150,31 @@ Run repro command first, document evidence, then proceed.
 ```
 
 Detalle workflow Step 1-3 (reproduce → diagnóstico → cite evidence) en rule SSoT.
+
+## Step 0.7 — Dispatch plan + autonomous_mode (NEW 2026-05-27)
+
+> SSoT: `.claude/rules/architect-autonomous-mode.md`.
+
+Si `{brand}/docs/product/stories/{story-id}/dispatch-plan.md` existe (producido por `/architect` Step 7), **leerlo + respetar verbatim**:
+
+1. **`assignment` block en cada ticket de `06-tickets.yaml`** dicta:
+   - `primary_agent`: el sub-agent type EXACTO a spawnar (NO usar `general-purpose` default — usar el agente nombrado: `builder-backend`, `builder-frontend`, `builder-agentic`)
+   - `model_preference`: el modelo (sonnet | opus | opencode) — respetar salvo override hard de R23
+   - `must_load_skills`: lista verbatim a citar en spawn prompt
+   - `forbidden_to_touch`: pasar al builder como guardrail explícito
+   - `rationale`: respeta razón (no override silencioso)
+
+2. **`autonomous_mode` en `checkpoint.md`**:
+   - `false` (default) → `/dev-team` para después de cada ticket completo + espera ratificación Chris para próximo. Auto-handoff a `/auditor` cuando ALL tickets GREEN (story-closure-gate Layer 1).
+   - `true` (Chris opt-in explícito) → encadenar TODOS los tickets seguidos sin pausa + auto-handoff `/auditor` + auto-handoff `/pm-{brand}` merge si APPROVED. Respetar `autonomous_mode_caps` (max_iterations, max_audit_iterations, max_total_cost_usd, max_wall_clock_minutes).
+   - Si caps excedidos durante autonomous_mode → halt + state=blocked + escalate Chris (NO continuar a ciegas).
+
+3. **`playwright_visual_scope` en `04-validators.yaml`**:
+   - `story_scope_routes` + `story_scope_components` definen DÓNDE puede tocar visualmente
+   - `forbidden_visual_changes.paths` definen DÓNDE NO (Shadcn primitives, shared, app shell)
+   - Si builder necesita cambio visual fuera scope → STOP + documentar en `T-{n}-impl-log.md § Cross-story observed bugs` + escalate Chris (anti-egoísmo per `.claude/rules/worktree-dual-strategy.md`)
+
+**Si `dispatch-plan.md` NO existe** (architect skill viejo pre-2026-05-27): inferir assignments del `06-tickets.yaml` legacy + warning al user "story produced sin dispatch-plan — usando defaults (puede ser sub-óptimo)". NO bloquear.
 
 ## Step 1 — Tomar ticket + decidir owner
 
@@ -282,6 +321,8 @@ Output al terminar:
 - T-{n}-result.md con diff resumen + validator gates output literal + commit SHA
 - Estado ticket: pushed (en 06-tickets.yaml)
 - Last line del response: "done -> T-{n}-result.md"
+
+**Output protocol · chris-input.md per ticket (v2 cement 2026-05-27):** al cerrar cada ticket T-{n} (`T-{n}-result.md` escrito + commit pushed), appendear entry al chris-input.md de la story con verdict `✓ APLICADO` listando paths modified + decisión técnicas tomadas + reference al gate-output.json result. NO validar cap_change_type (eso es responsabilidad de `/architect`).
 
 Si cap_reached (10 iter sin GREEN):
 - T-{n}-impl-log.md sección "Cap reached — escalating"
@@ -484,7 +525,11 @@ Si `defer_audit` no está set o es `false` → EMITIR handoff verbatim, NO arran
 
 Quality gates: validators all GREEN.
 Story state: developing → developed.
-WIP cap check: developing (was 1) now 0; developed (was 0) now 1 / cap 1.
+WIP cap check (module-scoped · ADR-009): bucket code:{module} liberado; otras stories
+de OTROS módulos pueden seguir developing en paralelo en el hub.
+
+→ Release build-claim: bash ${WS}/scripts/git/session-lock.sh release code:{module}
+  (libera el módulo + saca el badge 🔨 del cockpit)
 
 → AUTO-HANDOFF /auditor <brand>: {brand} story={story-id}
 
@@ -516,10 +561,12 @@ STOP la sesión `/dev-team`.
 ### Anti-pattern bloqueado (caso vitalia 2026-05-18 origen)
 
 ```
-❌ NUNCA: cerrar state=developed + pickup ticket de otra story en el mismo worktree.
-   Layer 2 enforcement: si Step 0.4 detecta otra story abierta sin defer_audit,
-   REFUSE pickup. Si esta story (la actual) acaba de cerrar developed, ANTES
-   de cualquier nueva story el worktree debe llegar a state=done (auditor → merge → archive).
+❌ NUNCA: cerrar state=developed + pickup ticket de otra story DEL MISMO MÓDULO en el mismo worktree.
+   Layer 2 enforcement (★ v2 module-scoped · ADR-009): si Step 0.4 detecta otra story
+   abierta DEL MISMO módulo sin defer_audit, REFUSE pickup. Una story developed del módulo X
+   debe llegar a state=done (auditor → merge → archive) antes de arrancar otra del módulo X.
+   ✅ SÍ permitido: pickup de una story de OTRO módulo (bucket code:{otro} libre) en una
+   sesión paralela del MISMO hub — eso es exactamente lo que ADR-009 habilita.
 ```
 
 ## Step 5.5 — R12 layer 1: emit process metric
@@ -697,7 +744,7 @@ Orchestrator DELEGA via Agent tool:
 
 ## Anti cross-brand pollution
 
-- ❌ NUNCA editar `{other_brand}/...` cuando trabajás en `{brand}`. Si la story necesita tocar otra brand → STOP, escalate `/pm-luana` (outcome cross-brand).
+- ❌ NUNCA editar `{other_brand}/...` cuando trabajás en `{brand}`. Si la story necesita tocar otra brand → STOP, escalate `/pm-luana` (trabajo cross-brand).
 - ❌ NUNCA editar `core/luana-core-*/src/` directamente. Requiere lift via `/pm-luana` (promotion gate).
 - ❌ NUNCA escribir/leer archivos en root `docs/product/stories/` — solo `<brand>: platform` (cross-brand) outcomes van ahí, y eso requiere autorización explícita `/pm-luana`.
 - ❌ Spawn sub-agent sin propagar `<brand>: {brand}` en el prompt — sub-agent puede editar fuera del scope brand.
@@ -710,13 +757,54 @@ Cada update al user/PM:
 - Próximo paso
 - NO dump de diff o tests output (cita paths)
 
+## Output protocol · chris-input.md append (v2 cement 2026-05-27)
+
+Al cierre de cada turn de esta skill, MUST appendear una entry a la sección 💬 Conversación del `chris-input.md` de la story activa.
+
+**Path target:**
+- Story state ∈ {idea, refining, refined, ready, developing, developed, reviewing}: `{brand}/docs/product/stories/{story_id}/chris-input.md`
+- Story state = done: `{brand}/docs/archive/{year}/stories/{story_id}/chris-input.md` (read-only post-merge)
+
+**Formato verbatim del block markdown a appendear:**
+
+```markdown
+### YYYY-MM-DDTHH:MM · 🤖 claude · `/dev-team` · {emoji} {VERDICT-LABEL}
+{texto 2-30 líneas · descripción de qué hizo + decisiones tomadas + qué necesita Chris responder}
+```
+
+**Verdict labels (4 valores):**
+
+| Emoji | Label | Cuándo usar |
+|---|---|---|
+| ✓ | APLICADO | Cambios concretos aplicados al spec/design/arch/test (citar paths) |
+| ⚠️ | DUDA | Pregunta a Chris antes de seguir. State queda esperando respuesta |
+| ❌ | REFUTADO | Razón por la que NO se aplica algo que Chris pidió (con justificación) |
+| 💡 | PROPONE | Opción nueva sugerida por Claude · Chris ratifica o descarta |
+
+**Anti-patterns prohibidos:**
+
+- ❌ Skill termina turn sin appendear (silent escape) — siempre appendear, aunque sea `✓ APLICADO · sin cambios sustantivos`
+- ❌ Verdict sin texto sustantivo (1 palabra no informa)
+- ❌ Path hardcoded con brand fija — debe ser `{brand}` dinámico (de checkpoint.md o args del invoke)
+- ❌ Múltiples verdicts en un solo entry — si hay 2 cosas, son 2 entries consecutivas
+- ❌ Entry sin emoji + label de verdict (parser falla)
+
+Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
+
 ## Referencias
 
 - `docs/process/pm-redesign-2026-05.md` — paradigma 3 conversaciones + autonomous build
 - `.claude/rules/tdd-mandatory.md` — TDD obligatorio + R31 default flag flips
 - `.claude/rules/anti-duplication.md` — inventario shared abstractions
+- `docs/architecture/luana-platform/PARADIGM.md` + `.claude/rules/paradigm-arquitectura.md` — ★ 3 planos: el trabajador invoca la acción única (Plano 2), no reimplementa; un solo engine; no cruzar de plano sin escalar
 - `.claude/rules/hotfix-repro-mandatory.md` — R26 hot-fix gate
 - `.claude/rules/parallel-safety.md` — M1-M8 multi-session
 - `.claude/agents/builder-{backend,frontend,agentic}.md` — sub-builders specs
 - `.claude/agents/gate-runner.md` — gate-output.json producer (Haiku)
 - `.claude/agents/context-builder.md` — CONTEXT-BRIEF.md producer (Haiku)
+
+## Live verification contra dev-app (Critical Rule #37)
+
+**Obligación:** antes de cerrar `developing → developed`, por cada scenario que toca superficie user-reachable, ejerce la acción real en dev-app (Chrome MCP) + deja el golden Playwright, y registra `dev_app_verified.evidence` en `checkpoint.md`. No cerrar por tests verdes que mockean el backend.
+
+Levantar: `make dev-app-vitalia` → `https://dev-app.vitalialat.com` (login `dr.demo@vitalialat.com`, creds en `vitalia/.env.dev`). Herramientas: **Chrome DevTools MCP** (live) + **Playwright autenticado** (golden). Evidencia = acción real ejercida + efecto observado; NUNCA GET 200 ni e2e mockeado. SSoT: `.claude/rules/definition-of-done-live-verify.md`.

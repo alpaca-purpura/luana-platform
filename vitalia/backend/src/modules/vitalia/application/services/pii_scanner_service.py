@@ -1,3 +1,5 @@
+# cap: __shared__
+# story-origin: TBD
 """PiiScannerService — pre-persist PII detection for offer descriptions + testimonial inputs.
 
 Vitalia medical vertical extension of the AISALESHT shared PII patterns.

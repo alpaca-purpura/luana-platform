@@ -2,18 +2,24 @@
  * Arch fitness test: SubTabContent PLACEHOLDER_MAP uses RIBBON_SUBTABS as SSoT.
  * F1-S10 vitalia-fase1-empty-states — T-9
  * F2-S1 vitalia-fase2-valeria-agenda — 07-merge.md W3 cleanup
+ * paradigm-map-zones T-5 — mateo.pacientes added (mateo is now a ribbon agent)
  *
  * Invariants verified:
  *   1. Every key in PLACEHOLDER_MAP is present in RIBBON_SUBTABS (no orphan placeholders)
  *   2. Every RIBBON_SUBTABS entry NOT shipped as static route has a PLACEHOLDER_MAP key
  *   3. PLACEHOLDER_MAP === RIBBON_SUBTABS keys minus SHIPPED_STATIC_SUBTABS
- *   4. No 'mateo.*' keys (RIBBON_SUBTABS.mateo === [])
+ *   4. No 'valeria.*' keys (RIBBON_SUBTABS.valeria === [] since v1.2)
  *   5. SHIPPED_STATIC_SUBTABS keys are NOT in PLACEHOLDER_MAP (no overlap)
+ *
+ * Note (v1.2): mateo now has 2 subtabs [agenda, pacientes].
+ *   mateo.agenda is in SHIPPED_STATIC_SUBTABS → excluded from PLACEHOLDER_MAP.
+ *   mateo.pacientes is NOT shipped → MUST be in PLACEHOLDER_MAP.
  *
  * Method: parse SubTabContent.tsx source + read RIBBON_SUBTABS + SHIPPED_STATIC_SUBTABS at runtime.
  *
  * spec_anchor: 03-arch.md § 4 + 06-tickets.yaml T-9 val-fe-arch-subtab-content-ssot
  *              + archive/.../vitalia-fase2-valeria-agenda/07-merge.md W3
+ *              + paradigm-map-zones/03-arch-fe.md § F6
  * downstream-regression-na: brand-local arch test; no cross-brand consumers
  */
 
@@ -86,8 +92,9 @@ describe("Architecture: SubTabContent PLACEHOLDER_MAP ↔ RIBBON_SUBTABS SSoT", 
   const ribbonKeys = getRibbonSubtabsKeys();
   const dispatcherCovered = getDispatcherCoveredKeys();
 
-  it("RIBBON_SUBTABS has exactly 22 valid sub-tab entries (mateo excluded)", () => {
-    // Verify our fixture against agent-catalog.ts runtime values
+  it("RIBBON_SUBTABS has exactly 22 valid sub-tab entries (valeria excluded — v1.2 sidebar-only)", () => {
+    // v1.2 (2026-05-30): mateo gains 2 subtabs [agenda, pacientes], valeria=0 (sidebar).
+    // Total stays 22: lisa(4) + mateo(2) + lucas(5) + adrian(4) + camila(4) + config(3) = 22.
     expect(ribbonKeys.size).toBe(22);
   });
 
@@ -115,11 +122,13 @@ describe("Architecture: SubTabContent PLACEHOLDER_MAP ↔ RIBBON_SUBTABS SSoT", 
     expect(missing).toEqual([]);
   });
 
-  it("no 'mateo.*' keys exist in PLACEHOLDER_MAP", () => {
-    const mateoKeys = [...placeholderKeys].filter((k) =>
-      k.startsWith("mateo."),
+  it("no 'valeria.*' keys exist in PLACEHOLDER_MAP (valeria is sidebar-only — v1.2)", () => {
+    // v1.2 (2026-05-30): valeria has 0 subtabs in RIBBON_SUBTABS (sidebar supervisor).
+    // mateo.pacientes IS valid (mateo has 2 subtabs now; only mateo.agenda is shipped static).
+    const valeriaKeys = [...placeholderKeys].filter((k) =>
+      k.startsWith("valeria."),
     );
-    expect(mateoKeys).toEqual([]);
+    expect(valeriaKeys).toEqual([]);
   });
 
   it("SHIPPED_STATIC_SUBTABS keys are NOT in PLACEHOLDER_MAP (no overlap)", () => {

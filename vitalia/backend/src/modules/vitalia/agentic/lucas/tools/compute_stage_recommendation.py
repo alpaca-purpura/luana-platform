@@ -1,3 +1,5 @@
+# cap: agentic.lucas-recommendation-tool
+# story-origin: TBD
 """Vitalia AGENTIC tool — `compute_stage_recommendation` (Lucas growth setter).
 
 R23: production_code=True AGENTIC tool. Opus 4.7 EXCLUSIVE.

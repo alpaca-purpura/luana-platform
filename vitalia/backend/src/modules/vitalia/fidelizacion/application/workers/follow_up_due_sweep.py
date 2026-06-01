@@ -1,3 +1,5 @@
+# cap: fidelizacion.re-engagement
+# story-origin: TBD
 """Worker cron: follow_up_due_sweep.
 
 Detecta pacientes con seguimiento post-tratamiento vencido y dispara

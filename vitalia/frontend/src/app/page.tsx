@@ -1,3 +1,5 @@
+// cap: __shared__
+// story-origin: TBD
 /**
  * Root Landing — Server Component redirect.
  * Post-merge fix (2026-05-27) — Clerk afterSignIn redirige a "/" por default,

@@ -1,3 +1,5 @@
+# cap: copilot.inbox-tools-extensions
+# story-origin: TBD
 """ExtractTenantContextService — extract clinic identity from website/documents.
 
 Orchestrates LLM-based extraction of tenant context:

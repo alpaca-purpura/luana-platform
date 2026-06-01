@@ -52,6 +52,12 @@ estimated_dev_weeks: 3-4
 architect_refresh_date: 2026-05-20
 architect_model: claude-opus-4-7
 next_action: "/auditor toma story para Conv 3 review+merge (AUTO-HANDOFF default post 2026-05-18). Lee T-mk-*-result.md + 06-audit/ + ejecuta Phase D gherkin verification matrix + CHECKPOINTS.md C1-C5. NO arrancar nueva story hasta state=done."
+
+# Schema v2 migration (cement 2026-05-27)
+release: F0   # release ID · ver releases/
+cap_target: lucas-stage-recommendations   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # vitalia-slice-1-marketing — checkpoint

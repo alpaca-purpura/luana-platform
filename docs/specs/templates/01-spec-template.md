@@ -6,7 +6,7 @@
 
 ---
 story_id: STORY_ID_KEBAB
-type: ui-story | agentic-story | service-story
+type: ui-story | agentic-story | service-story | bugfix
 module: MODULE_NAME
 capability: CAPABILITY_ID
 po_version: 1                                     # bump cuando cambies post-handoff
@@ -21,13 +21,62 @@ links:
 
 [1 párrafo: qué se construye, para quién, outcome esperado.]
 
+## § Mapa funcional (capa humana — ratifica Chris ANTES de UX/architect)
+
+> **v5 cement 2026-05-31 (Opción A).** Esta sección es el **panorama en lenguaje humano**: lo que Chris
+> lee para validar QUÉ se va a construir, sin tener que reconstruir el flujo desde el Gherkin.
+> NO compite con el Gherkin — vive a otra altitud. El Gherkin de abajo es la *formalización* de esto;
+> la `§ Matriz de cobertura` los liga (cada bifurcación/RN/AC → ≥1 SC). Se renderiza nativo en el cockpit.
+> **Profundidad proporcional al tipo de story** (bugfix: happy path opcional, foco en repro+branch+RN).
+
+### 1. Happy path (el camino dorado, narrado)
+
+[Prosa numerada del flujo exitoso end-to-end. 3-8 pasos. Lenguaje humano, no Gherkin.]
+
+1. El usuario [entra a / abre] ___ y ve ___.
+2. [Acción] ___ → el sistema ___.
+3. [Confirmación / efecto observable] ___.
+
+### 2. Bifurcaciones (árbol de decisión — TODOS los branch points)
+
+> Árbol, no lista plana. Cada nodo: **condición → resultado → [SC que lo cubre]**.
+> Acá Chris valida COMPLETITUD: un branch sin SC = hueco visible.
+
+```
+Happy path
+├─ Bif-1 · ¿[condición]?
+│   ├─ sí → [resultado]                         → SC-1
+│   └─ no → [resultado alterno]                  → SC-2
+├─ Bif-2 · ¿[condición de borde/error]?         → [resultado]  → SC-3
+└─ Bif-3 · ¿[condición adversarial/duplicado]?  → [resultado]  → SC-4
+```
+
+### 3. Reglas de negocio (RN — invariantes en lenguaje humano)
+
+> Constraints transversales del dominio. Numeradas. Se reflejan en la cap (`capability.business_rules`).
+
+- **RN-1** — [invariante en una frase. Ej: "No se puede desactivar un doctor con citas futuras confirmadas."]
+- **RN-2** — [...]
+
+### 4. Criterios de aceptación (AC — checklist "listo cuando…")
+
+> Nivel feature-done (NO son los scenarios; son el checklist de cierre que Chris tilda).
+
+- [ ] **AC-1** — [condición observable de que la feature está completa]
+- [ ] **AC-2** — [...]
+
 ## Acceptance Criteria (Gherkin AI-resistant)
 
 > **v4.1 cement 2026-05-19:** Mínimo 4 scenarios base + sub-categorías mandatory aplicables.
 > Cada scenario es testeable + tiene grader explícito + `playwright_required` flag.
 > /po-ux REFUSE ratificar refined si falta cobertura de sub-categorías aplicables.
+> **v5 cement 2026-05-31:** cada scenario lleva `Covers:` con los IDs del `§ Mapa funcional`
+> que formaliza (`Bif-N` / `RN-N` / `AC-N`). La `§ Matriz de cobertura` valida que no quede
+> ningún branch/RN huérfano ni ningún SC sin hogar en el mapa.
 
 ### Scenario 1 — `happy-path` (`type: happy`)
+
+**Covers:** [Bif-1, AC-1]                          # IDs del § Mapa funcional que este SC formaliza
 
 **Given:**
 - [precondición concreta y verificable]
@@ -227,6 +276,26 @@ links:
 `not_applicable_reason: <razón si NO aplica>`
 
 ---
+
+## § Matriz de cobertura (el puente humano ↔ verificación)
+
+> **v5 cement 2026-05-31 (Opción A).** Cierra el loop: cada **bifurcación** y cada **regla de negocio**
+> del `§ Mapa funcional` mapea a ≥1 scenario Gherkin, y cada scenario tiene una **verificación REAL**
+> (acción real ejercida + efecto observado — NUNCA "GET 200"). Es la mitad delantera del
+> `gherkin-matrix.md` que el `/auditor` completa en Phase D.
+>
+> **Gate /po-ux:** REFUSE cerrar `refined` si hay un `Bif-N` o `RN-N` sin SC (hueco), o un SC sin
+> ítem del mapa (scope creep). Ver `.claude/rules/test-design-doctrine.md` § Verificación REAL.
+
+| Ítem (Mapa funcional) | Tipo | Cubierto por | Verificación REAL (acción + efecto, no HTTP 200) |
+|---|---|---|---|
+| Bif-1 · [condición] | branch | SC-1 | [POST/PATCH real → efecto en DB/UI + log] |
+| Bif-3 · [duplicado/adversarial] | branch | SC-4 | [acción hostil → 409/403 + row intacta] |
+| RN-1 · [invariante] | rule | SC-3, SC-3b | [write que viola la regla → 422 + estado sin cambio] |
+| AC-1 · [criterio cierre] | accept | SC-1, SC-8 | [flujo real + empty state] |
+
+**Huecos detectados:** [ninguno | lista de Bif/RN sin SC — bloquea refined]
+**SC huérfanos (sin ítem del mapa):** [ninguno | lista — revisar scope creep]
 
 ## Non-functional requirements
 

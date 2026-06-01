@@ -1,3 +1,5 @@
+# cap: sales_agent.adrian-3-tools-mvp
+# story-origin: TBD
 """Vitalia Adrián sales_agent prompt slots (compiler v2 layout).
 
 Story T-ag-tools-2 — Slot 2 (medical_vertical) + Slot 4 (medical_safety_rails)

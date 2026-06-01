@@ -1,3 +1,5 @@
+# cap: __shared__
+# story-origin: TBD
 """Vitalia brand-local observability utilities.
 
 Provides OpenTelemetry tracing setup + span helpers for:

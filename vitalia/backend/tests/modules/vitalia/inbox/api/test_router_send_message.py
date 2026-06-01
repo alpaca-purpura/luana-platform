@@ -129,8 +129,8 @@ async def test_send_ai_message_201(
     """SC-01: Doctor sends a text message to conversation → 201 + MessageResponse body."""
     # Patch ClinicResolver and SendMessageService at the router level
     monkeypatch.setattr(
-        "src.modules.vitalia.inbox.api.router._get_resolver",
-        lambda: MagicMock(**{"resolve.return_value": mock_clinic_ctx_doctor}),
+        "src.modules.vitalia.iam.application.services.clinic_resolver.ClinicResolver.async_resolve",
+        AsyncMock(return_value=mock_clinic_ctx_doctor),
     )
     monkeypatch.setattr(
         "src.modules.vitalia.inbox.api.router._get_send_service",
@@ -174,8 +174,8 @@ async def test_marketing_role_403(
 ) -> None:
     """SC-04: Marketing role cannot send messages to PHI conversations → 403."""
     monkeypatch.setattr(
-        "src.modules.vitalia.inbox.api.router._get_resolver",
-        lambda: MagicMock(**{"resolve.return_value": mock_clinic_ctx_marketing}),
+        "src.modules.vitalia.iam.application.services.clinic_resolver.ClinicResolver.async_resolve",
+        AsyncMock(return_value=mock_clinic_ctx_marketing),
     )
 
     app = _make_app()
@@ -206,8 +206,8 @@ async def test_send_message_401_invalid_token(monkeypatch: pytest.MonkeyPatch) -
     from src.modules.vitalia.iam.infrastructure.clerk_jwt_decoder import JwtDecodeError
 
     monkeypatch.setattr(
-        "src.modules.vitalia.inbox.api.router._get_resolver",
-        lambda: MagicMock(**{"resolve.side_effect": JwtDecodeError("bad token")}),
+        "src.modules.vitalia.iam.application.services.clinic_resolver.ClinicResolver.async_resolve",
+        AsyncMock(side_effect=JwtDecodeError("bad token")),
     )
 
     app = _make_app()
@@ -244,8 +244,8 @@ async def test_send_message_404_conv_not_found(
     send_svc.send.side_effect = ConversationNotFoundError(CONV_ID)
 
     monkeypatch.setattr(
-        "src.modules.vitalia.inbox.api.router._get_resolver",
-        lambda: MagicMock(**{"resolve.return_value": mock_clinic_ctx_doctor}),
+        "src.modules.vitalia.iam.application.services.clinic_resolver.ClinicResolver.async_resolve",
+        AsyncMock(return_value=mock_clinic_ctx_doctor),
     )
     monkeypatch.setattr(
         "src.modules.vitalia.inbox.api.router._get_send_service",

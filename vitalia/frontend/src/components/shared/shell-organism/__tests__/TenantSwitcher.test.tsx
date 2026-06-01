@@ -176,6 +176,8 @@ vi.mock("@clerk/nextjs", () => ({
     getToken: vi.fn().mockResolvedValue("mock-token"),
   }),
 }));
+vi.mock("@/hooks/useTenantId", () => ({ useTenantId: () => "mock-tenant-id" }));
+
 
 // ── Fixtures ──────────────────────────────────────────────────────────────
 

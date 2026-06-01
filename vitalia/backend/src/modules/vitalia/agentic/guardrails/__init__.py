@@ -1,3 +1,5 @@
+# cap: agentic.eval-goldens-slice-1
+# story-origin: TBD
 """Vitalia agentic guardrails — registered via EP-13 in extensions.py.
 
 Skeleton package created Story 11 T-extensions-1. Guardrail implementations land in:

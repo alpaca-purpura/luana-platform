@@ -1,3 +1,5 @@
+// cap: onboarding.clinic-onboarding-3step
+// story-origin: TBD
 "use client";
 /**
  * WizardCompletionTransition — morph 400ms transition on onboarding completion.

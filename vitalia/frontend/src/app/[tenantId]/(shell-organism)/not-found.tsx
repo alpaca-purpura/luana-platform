@@ -1,3 +1,5 @@
+// cap: __shared__
+// story-origin: TBD
 /**
  * NotFoundShell — Outer 404 page (Server Component).
  * F1-S9 vitalia-fase1-routing-shell — T-4

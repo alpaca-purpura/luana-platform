@@ -1,3 +1,5 @@
+# cap: payment.payment-gateways-latam-recurring
+# story-origin: TBD
 """Vitalia Stripe Connect adapter — booking-deposit payment intents.
 
 Per Story 11 03-arch-be.md § 11.1 + ticket T-payment-2:

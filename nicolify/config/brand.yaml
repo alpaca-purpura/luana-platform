@@ -7,21 +7,37 @@
 
 brand_slug: nicolify
 brand_name: "Nicolify"
-brand_description: "Vertical B2B brand app for LatAm agencies, software boutiques and consultancies"
+brand_description: "Agent-as-a-Service — equipo de agentes Revenue/Ops orquestados (Luana+Abel+Brenda+Christian+Norvil) para agencias y servicios profesionales B2B LatAm. Ciclo Atracción→Cierre→Retención."
 brand_segment: agencies_b2b
 compliance_level: standard
 voice_cloning_enabled: false
 multi_language_ui: false
 
+# ★ Paradigma agentic-first (cement 2026-05-29). Identidad = equipo de agentes.
+# CRM/pauta/propuestas/account-health = superficies que LOS AGENTES operan, NO features standalone.
+# Framing legacy (billable_hours/client_portal) DESCARTADO — Nicolify es Revenue OS, no project-billing.
+# SSoT: nicolify/docs/product/vision.md + nicolify/.claude/rules/agent-revenue-engine.md
 features:
-  brand_studio_full: true
-  offer_studio_b2b: true
-  crm_long_cycle: true
-  client_portal: true
-  proposals_contracts: true
-  billable_hours: true
-  sales_agent_vertical_b2b: true
-  copilot_b2b_extractors: true
+  # --- Agentes (capacidades; gating por tier vía core/luana-core-billing) ---
+  agent_luana_orchestrator: true        # orquestadora / único rostro conversacional (todos los tiers)
+  agent_abel_strategy_offer: true       # estratega branding & oferta (tier Básico+)
+  agent_brenda_growth_budget: true      # growth + pauta con autonomía de contingencia CAC/ROAS (tier Básico+)
+  agent_christian_sdr_outbound: true    # SDR outbound + LinkedIn del fundador (tier Pro+)
+  agent_norvil_account_manager: true    # account health + cross/up-sell + retención (tier Enterprise+)
+  # --- Superficies que los agentes operan ---
+  brand_studio_full: true               # Abel: oferta + ángulos + escalera de valor
+  offer_studio_b2b: true                # Abel: catálogo de servicios B2B
+  crm_account_stakeholder: true         # Christian/Norvil: cuenta vs stakeholder (multi tomador de decisión)
+  growth_paid_ads: true                 # Brenda: gestión de pauta
+  outbound_sequences: true              # Christian: secuencias outbound + cold email
+  account_health_integrations: true     # Norvil: Notion/Jira/Slack salud de cuenta
+  proposals_contracts: true             # Christian/Norvil: propuestas + firma electrónica
+  sales_agent_vertical_b2b: true        # voz vertical B2B
+  copilot_b2b_extractors: true          # copilot extractors B2B
+  # --- Token economy (protección de margen, H5) ---
+  token_metering: true                  # metering por agente/acción (core/luana-core-observability)
+  token_recharge_alerts: true           # alertas 80/95/100% bolsa
+  critical_functions_never_cut: true    # soporte + recepción pasiva WhatsApp nunca se cortan por tokens
 
 # SSoT infra metadata por entorno.
 # Auto-indexado en docs/portfolio/INFRA-MATRIX.md via make infra-matrix.

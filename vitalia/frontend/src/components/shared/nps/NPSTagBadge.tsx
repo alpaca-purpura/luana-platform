@@ -1,3 +1,5 @@
+// cap: platform.shell-foundation-shadcn-tailwind-v4
+// story-origin: TBD
 /**
  * NPSTagBadge — NPS score category badge (cross-feature shared component).
  *

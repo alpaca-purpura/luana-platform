@@ -1,3 +1,5 @@
+// cap: brand_studio.lisa-marca
+// story-origin: vitalia-fase2-s7-TBD
 "use client";
 
 /**
@@ -61,6 +63,18 @@ export interface VozTonoViewProps {
 export function VozTonoView({ tenantId, clinicId, className }: VozTonoViewProps) {
   const { getToken, isLoaded, isSignedIn } = useAuth();
 
+  // Clerk `getToken()` puede devolver null por un breve instante tras isSignedIn
+  // (token aún resolviéndose). En vez de tirar "Not authenticated" y dejar la
+  // pantalla en error permanente, esperamos hasta ~2s a que el token esté listo.
+  const getTokenReady = useCallback(async (): Promise<string> => {
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      const token = await getToken();
+      if (token) return token;
+      await new Promise((resolve) => setTimeout(resolve, 200));
+    }
+    throw new Error("Not authenticated");
+  }, [getToken]);
+
   // ── React Query: fetch personality profile ──────────────────────────────
   const {
     data: personality,
@@ -69,23 +83,25 @@ export function VozTonoView({ tenantId, clinicId, className }: VozTonoViewProps)
   } = useQuery({
     queryKey: marcaKeys.personality(tenantId),
     queryFn: async () => {
-      const token = await getToken();
-      if (!token) throw new Error("Not authenticated");
+      const token = await getTokenReady();
       return getPersonality({ token, tenantId, clinicId });
     },
     enabled: isLoaded && !!isSignedIn,
+    retry: 5,
+    retryDelay: (attempt) => Math.min(300 * 2 ** attempt, 2000),
   });
 
   // ── React Query: fetch prohibited phrases ───────────────────────────────
   const { data: phrasesData } = useQuery({
     queryKey: marcaKeys.prohibitedPhrases(tenantId),
     queryFn: async () => {
-      const token = await getToken();
-      if (!token) throw new Error("Not authenticated");
+      const token = await getTokenReady();
       return getProhibitedPhrases({ token, tenantId, clinicId });
     },
     enabled: isLoaded && !!isSignedIn,
     staleTime: 5 * 60_000,
+    retry: 5,
+    retryDelay: (attempt) => Math.min(300 * 2 ** attempt, 2000),
   });
 
   const prohibitedPhrases = phrasesData?.items ?? [];
@@ -172,7 +188,10 @@ export function VozTonoView({ tenantId, clinicId, className }: VozTonoViewProps)
 
   // ── Render ───────────────────────────────────────────────────────────────
   return (
-    <div className={cn("flex flex-col gap-6 p-6", className)}>
+    <div
+      data-testid="voz-tono-section-root"
+      className={cn("flex flex-col gap-6 p-6", className)}
+    >
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-foreground">Voz y tono</h2>

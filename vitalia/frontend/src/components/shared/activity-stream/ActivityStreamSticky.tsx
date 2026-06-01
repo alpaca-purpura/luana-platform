@@ -1,3 +1,5 @@
+// cap: agentic.lucas-daily-analysis
+// story-origin: TBD
 "use client";
 
 /**

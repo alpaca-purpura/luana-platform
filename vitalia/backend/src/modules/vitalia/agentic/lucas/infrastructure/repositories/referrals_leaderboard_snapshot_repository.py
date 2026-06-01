@@ -1,3 +1,5 @@
+# cap: agentic.eval-goldens-slice-1
+# story-origin: TBD
 """Lucas infrastructure — ReferralsLeaderboardSnapshotRepository.
 
 SQLAlchemy 2.0 async repository for ReferralsLeaderboardSnapshotModel.

@@ -1,3 +1,4 @@
+import os
 import sys
 import uuid
 from unittest.mock import MagicMock
@@ -12,6 +13,33 @@ from sqlalchemy.pool import StaticPool
 for mod_name in ("passlib", "passlib.context", "passlib.hash"):
     if mod_name not in sys.modules:
         sys.modules[mod_name] = MagicMock()
+
+# --- Provide minimal env vars to satisfy luana_core_platform.core.config.Settings ---
+# Settings validates on module import — we must set these BEFORE any luana_core_* import.
+# nicolify reset 2026-05-29: the legacy monolith required all 16 vars.
+# New brands set only what's needed; arch tests (AST-based) don't need real values.
+_SETTINGS_DEFAULTS: dict[str, str] = {
+    "LOG_LEVEL": "INFO",
+    "DOMAIN_NAME": "localhost",
+    "TRAEFIK_NETWORK": "test_network",
+    "API_SECRET_KEY": "test-secret-key",
+    "WHATSAPP_API_TOKEN": "test-wa-token",
+    "WHATSAPP_PHONE_NUMBER_ID": "test-phone-id",
+    "WHATSAPP_VERIFY_TOKEN": "test-verify-token",
+    "OPENAI_API_KEY": "sk-test-openai",
+    "REDIS_URL": "redis://localhost:6379/0",
+    "QDRANT_URL": "http://localhost:6333",
+    "POSTGRES_USER": "postgres",
+    "POSTGRES_PASSWORD": "password",
+    "POSTGRES_DB": "nicolify_test",
+    "POSTGRES_HOST": "localhost",
+    "POSTGRES_PORT": "5432",
+    "API_URL": "http://localhost:8001",
+    # Suppress autosave scheduler in tests
+    "PROMPT_SOURCE": "file",
+}
+for _k, _v in _SETTINGS_DEFAULTS.items():
+    os.environ.setdefault(_k, _v)
 
 # --- Monkeypatch PostgreSQL Types for SQLite ---
 from sqlalchemy.dialects import postgresql
@@ -106,8 +134,16 @@ postgresql.UUID = MockUUID
 # crashea con ``InvalidRequestError`` (ej. ``LeadModel`` →
 # ``AppointmentModel``). Patrón canónico exigido en ``main.py`` y
 # ``admin/app.py``.
-import luana_core_platform.infrastructure.agent_observability_bootstrap
-import src.modules.nicolify.persistence.model_registry
+import contextlib
+
+with contextlib.suppress(Exception):
+    # Optional bootstrap — requires copilot engine deps + env vars not present in arch tests.
+    import luana_core_platform.infrastructure.agent_observability_bootstrap
+
+with contextlib.suppress(ImportError, ModuleNotFoundError):
+    # nicolify reset 2026-05-29: legacy persistence modules removed.
+    # New modules ship story-by-story. conftest still functions for new tests.
+    import src.modules.nicolify.persistence.model_registry  # type: ignore[import-not-found]
 
 # --- Fixtures ---
 

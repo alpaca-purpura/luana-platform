@@ -32,22 +32,18 @@ Knowledge cutoff Opus 4.7 = Jan 2026. Para LangGraph 2.0 / deepagents / Anthropi
 ### Step 1 — Cross-module audit
 
 ```bash
-grep -rn "<keyword>" backend/src/shared/agent_observability/
-grep -rn "<keyword>" backend/src/shared/infrastructure/llm/
-grep -rn "<keyword>" backend/src/modules/{copilot,sales_agent}/
+# WS = $(git rev-parse --show-toplevel) · BRAND = brand activa de la story
+grep -rn "<keyword>" ${WS}/core/luana-core-observability/src/
+grep -rn "<keyword>" ${WS}/core/luana-core-llm/src/
+grep -rn "<keyword>" ${WS}/core/luana-core-copilot/src/ ${WS}/core/luana-core-sales-agent/src/
+grep -rn "<keyword>" ${WS}/${BRAND}/backend/src/modules/${BRAND}/{copilot,sales_agent}/
+# Detectar mirror en OTRA brand (lift candidate):
+for B in vitalia nicolify comunify lupulo; do [ "$B" = "$BRAND" ] && continue; grep -rln "<keyword>" ${WS}/$B/backend/src 2>/dev/null; done
 ```
 
-Inventario shared abstractions (`.claude/rules/anti-duplication.md`):
-- Observability turn envelope → `shared/agent_observability/recording/turn_envelope.py`
-- Callback handler → `BaseAgentCallbackHandler`
-- PII sanitization → `shared/agent_observability/recording/sanitization.py`
-- FX resolver → `FXResolver.default()`
-- Pricing resolver → `shared/agent_observability/cost/`
-- LLM router + providers → `shared/infrastructure/llm/router.py` + `providers/`
-- Tenant billing config → `shared/agent_observability/persistence/`
-- Channel format registry → `shared/agent_observability/channels/`
+**Inventario engine abstractions: NO duplicar acá — SSoT en `.claude/rules/anti-duplication.md` § "Inventario engine abstractions (SSoT)"** (turn envelope, callback handler, PII sanitization, FX/pricing resolver, LLM router+providers, tenant billing, channel format registry → todos en `core/luana-core-{observability,llm,channels,billing}/`). Consumir vía `from luana_core_*` import.
 
-Si tu propuesta requiere nuevo provider / nueva abstraction cross-module → EXTEND, NO mirror local.
+Si tu propuesta requiere nuevo provider / nueva abstraction cross-module → EXTEND desde engine, NO mirror local. Match en OTRA brand → ESCALATE `/pm-luana` (lift gate brand→core).
 
 ### Step 2 — Diseño técnico
 
@@ -56,7 +52,7 @@ Seguir template `docs/specs/templates/03-arch-template.md` con surface=AGENTIC. 
 **Tool definitions:**
 
 ```python
-# backend/src/modules/{m}/tools/{tool_name}.py
+# {brand}/backend/src/modules/{brand}/{m}/tools/{tool_name}.py
 class FetchOfferInput(BaseModel):
     offer_id: str
     tenant_id: str  # ALWAYS

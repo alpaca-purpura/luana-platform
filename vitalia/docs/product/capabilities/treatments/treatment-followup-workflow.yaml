@@ -2,13 +2,65 @@
 capability_id: vitalia-treatment-followup-workflow
 module: treatments
 slug: treatment-followup-workflow
-status: live
+status: deprecated
 date_introduced: 2026-05-15
 story_introduced: luana-vitalia-bootstrap
 package_version: 0.1.0
 package_path: vitalia/backend/src/modules/vitalia/copilot/workflows
 fe_planned_phase2: vitalia-fase2-valeria-pacientes
 license: proprietary
+
+# v3 cement 2026-05-27 · 4 dimensiones + dev_preview (ADR-vitalia-005)
+tech_module: treatments
+agent_owner: camila
+functional_area: camila.reactivar
+user_visible: true
+nature: feature
+ui_paradigm: slice-1-superseded  # T-3 reconcile 2026-05-29
+replaced_by_story: vitalia-fase2-camila-reactivar  # T-3: story F2 que reconstruye esta cap
+
+user_facing_name: "Camila · workflow de seguimiento de tratamientos"
+user_facing_description: >
+  Flujo LangGraph cron-driven que acompaña a los pacientes durante su
+  plan de tratamiento: verifica el balance prepago, solicita consentimientos
+  para el próximo procedimiento, detecta necesidad de reagendar y realiza
+  el seguimiento clínico en 7 dimensiones (estado, constantes, adherencia,
+  efectos adversos, satisfacción, próximos pasos y escalada al médico).
+
+dev_preview:
+  route: "/camila/followup"
+  how_to_navigate: "Login → ribbon clic en avatar Camila → sub-tab Seguimiento para ver el dashboard de follow-ups activos y el historial del paciente."
+  main_component: "vitalia/frontend/src/features/vitalia/components/treatment-followup-dashboard-client.tsx"
+  api_endpoints:
+    - "GET /api/v1/vitalia/treatments"
+    - "GET /api/v1/vitalia/treatments/{id}/followup"
+    - "POST /api/v1/vitalia/treatments/{id}/start-followup"
+    - "POST /api/v1/vitalia/treatments/{id}/manual-handoff"
+    - "POST /api/v1/vitalia/treatments/{id}/release-handoff"
+  e2e_test: null
+  fixtures_required: ["3-clinic-fixture-latam"]
+  storybook_url: null
+  loom_demo: null
+
+# Capability ledger v2 (cement 2026-05-27)
+created_in_story: luana-vitalia-bootstrap   # v2 cement · mirror of story_introduced
+created_date: 2026-05-15   # v2 cement · mirror of date_introduced
+last_modified: 2026-05-29   # T-3 reconcile 2026-05-29
+parent_cap: null   # v2 cement · mirror of extends_capability
+derives_capabilities: []   # v2 cement · initial empty list
+
+# Capability ledger v2 (cement 2026-05-27)
+
+# Capability change log v2 (cement 2026-05-27)
+change_log:
+  - story_id: vitalia-bootstrap-inventory-2026-05-15
+    date: 2026-05-15
+    type: new
+    summary: "Implementación inicial · migración legacy a schema v2"
+    merge_sha: null
+    status: done
+map_box: camila
+
 ---
 
 # vitalia-treatment-followup-workflow

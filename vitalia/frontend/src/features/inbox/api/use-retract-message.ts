@@ -1,3 +1,5 @@
+// cap: sales_agent.inbox-handler-mode-occ
+// story-origin: TBD
 "use client";
 
 /**
@@ -16,6 +18,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
+import { useTenantId } from "@/hooks/useTenantId";
 import { useClinicId } from "@/hooks/useClinicId";
 import { fetchClient, ApiError } from "@/lib/api/fetchClient";
 import { conversationDetailKey, conversationsListKey } from "./_keys";
@@ -37,7 +40,8 @@ export interface RetractMessageResult {
  * Mutation to retract (undo) a sent message within the 5-minute action receipt window.
  */
 export function useRetractMessage() {
-  const { getToken, orgId } = useAuth();
+  const { getToken} = useAuth();
+  const tenantId = useTenantId();
   const clinicId = useClinicId();
   const qc = useQueryClient();
 
@@ -46,15 +50,14 @@ export function useRetractMessage() {
       input: RetractMessageInput,
     ): Promise<RetractMessageResult> => {
       const token = await getToken();
-      if (!token || !orgId) throw new Error("Not authenticated");
+      if (!token || !tenantId) throw new Error("Not authenticated");
 
       return fetchClient<RetractMessageResult>(
         `/api/v1/vitalia/inbox/conversations/${input.conversationId}/messages/${input.messageId}/revert`,
         {
           method: "POST",
           token,
-          tenantId: orgId,
-          clinicId,
+          tenantId, clinicId,
           headers: {
             "If-Match": input.expectedUpdatedAt,
           },

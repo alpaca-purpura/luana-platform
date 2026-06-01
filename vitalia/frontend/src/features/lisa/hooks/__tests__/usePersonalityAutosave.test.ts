@@ -35,6 +35,8 @@ vi.mock("@clerk/nextjs", () => ({
     isSignedIn: true,
   }),
 }));
+vi.mock("@/hooks/useTenantId", () => ({ useTenantId: () => "mock-tenant-id" }));
+
 
 vi.mock("../../api/marca-voice-api", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../../api/marca-voice-api")>();
@@ -288,5 +290,144 @@ describe("usePersonalityAutosave — cancelAutosave", () => {
     });
 
     expect(mockUpdatePersonality).not.toHaveBeenCalled();
+  });
+});
+
+// ── camelCase payload assertion (T-3 arreglar-guardado-voz-y-tono) ─────────────
+//
+// Regression guard: PersonalityPatchPayload uses camelCase fields (soISpeak, soIDontSpeak,
+// technicalContext, formatInstructions, identityAnchor, domainContext).
+// The bug in T-2 was that FE sent camelCase and BE had extra="forbid" without alias_generator.
+// This test verifies that:
+// 1. The hook calls updatePersonality with the camelCase payload shape.
+// 2. No snake_case field names appear in the payload (so_i_speak, etc.).
+//
+// @see 06-tickets.yaml T-3 deliverables (Ampliar usePersonalityAutosave.test.ts)
+// @see 01-spec.md § voz-bloque-edita-no-422
+
+describe("usePersonalityAutosave — camelCase payload (T-3 regresión 422)", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    mockUpdatePersonality.mockResolvedValue(PERSONALITY_RESPONSE);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.clearAllMocks();
+  });
+
+  it("scheduleAutosave envía payload camelCase (soISpeak, no so_i_speak)", async () => {
+    const { result } = renderHook(
+      () => usePersonalityAutosave({ tenantId: "t1", clinicId: "c1" }),
+      { wrapper: makeWrapper() },
+    );
+
+    const camelCasePayload = {
+      soISpeak: "Con calidez y empatía clínica.",
+      soIDontSpeak: "Sin jerga sin explicación.",
+      technicalContext: "Clínica familiar Lima.",
+      formatInstructions: "Párrafos cortos.",
+      identityAnchor: "Somos la clínica del barrio.",
+      domainContext: "Medicina primaria Perú.",
+    };
+
+    act(() => {
+      result.current.scheduleAutosave(camelCasePayload);
+    });
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(600);
+    });
+
+    expect(mockUpdatePersonality).toHaveBeenCalledTimes(1);
+
+    // Verify camelCase field names are used (not snake_case)
+    const [, payload] = mockUpdatePersonality.mock.calls[0] as [
+      unknown,
+      typeof camelCasePayload,
+    ];
+
+    // camelCase fields MUST be present
+    expect(payload).toHaveProperty("soISpeak", camelCasePayload.soISpeak);
+    expect(payload).toHaveProperty(
+      "soIDontSpeak",
+      camelCasePayload.soIDontSpeak,
+    );
+    expect(payload).toHaveProperty(
+      "technicalContext",
+      camelCasePayload.technicalContext,
+    );
+    expect(payload).toHaveProperty(
+      "formatInstructions",
+      camelCasePayload.formatInstructions,
+    );
+    expect(payload).toHaveProperty(
+      "identityAnchor",
+      camelCasePayload.identityAnchor,
+    );
+    expect(payload).toHaveProperty(
+      "domainContext",
+      camelCasePayload.domainContext,
+    );
+
+    // snake_case fields must NOT appear (would cause 422 extra_forbidden)
+    expect(payload).not.toHaveProperty("so_i_speak");
+    expect(payload).not.toHaveProperty("so_i_dont_speak");
+    expect(payload).not.toHaveProperty("technical_context");
+    expect(payload).not.toHaveProperty("format_instructions");
+    expect(payload).not.toHaveProperty("identity_anchor");
+    expect(payload).not.toHaveProperty("domain_context");
+  });
+
+  it("scheduleAutosave con solo archetype: payload contiene 'archetype' en camelCase-safe (no cambia)", async () => {
+    const { result } = renderHook(
+      () => usePersonalityAutosave({ tenantId: "t1", clinicId: "c1" }),
+      { wrapper: makeWrapper() },
+    );
+
+    act(() => {
+      result.current.scheduleAutosave({ archetype: "sage" });
+    });
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(600);
+    });
+
+    expect(mockUpdatePersonality).toHaveBeenCalledTimes(1);
+
+    const [, payload] = mockUpdatePersonality.mock.calls[0] as [
+      unknown,
+      { archetype?: string },
+    ];
+
+    expect(payload).toHaveProperty("archetype", "sage");
+    // archetype is not a compound camelCase field — no snake_case equivalent expected
+  });
+
+  it("payload combinado archetype + soISpeak contiene ambos en camelCase", async () => {
+    const { result } = renderHook(
+      () => usePersonalityAutosave({ tenantId: "t1", clinicId: "c1" }),
+      { wrapper: makeWrapper() },
+    );
+
+    act(() => {
+      result.current.scheduleAutosave({
+        archetype: "caregiver",
+        soISpeak: "Con calidez y empatía.",
+      });
+    });
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(600);
+    });
+
+    const [, payload] = mockUpdatePersonality.mock.calls[0] as [
+      unknown,
+      { archetype?: string; soISpeak?: string },
+    ];
+
+    expect(payload).toHaveProperty("archetype", "caregiver");
+    expect(payload).toHaveProperty("soISpeak", "Con calidez y empatía.");
+    expect(payload).not.toHaveProperty("so_i_speak");
   });
 });

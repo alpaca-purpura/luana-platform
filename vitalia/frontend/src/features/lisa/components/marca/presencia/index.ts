@@ -1,3 +1,5 @@
+// cap: brand_studio.lisa-marca
+// story-origin: vitalia-fase2-s7-TBD
 /**
  * presencia/index.ts — Public API for Presencia sub-sub-tab components.
  *

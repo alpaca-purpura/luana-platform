@@ -1,0 +1,266 @@
+# 04-validators — nicolify-r0-shell
+# Surface: FE-only · ui-story · skeleton estático
+# Categorías: non_functional / functional / visual / architectural_validation (NO agentic_eval)
+# scenario_coverage: 100% de A1-A5 / B1-B3 / C1-C3 / D1-D2 / E1-E5 / F1-F2
+schema_version: v4.1
+story_id: nicolify-r0-shell
+brand: nicolify
+architecture_pattern: ADR-nicolify-001
+
+# ─────────────────────────────────────────────────────────────────────────────
+# scenario_coverage — mapeo scenario → grader/test (100%)
+# ─────────────────────────────────────────────────────────────────────────────
+scenario_coverage:
+  total_scenarios: 21
+  covered: 21
+  coverage_pct: 100
+  map:
+    A0: { type: functional,  live: true, shell: "curl :8001/health == 200", e2e: "e2e/regression/nicolify-r0-shell/boot-live-smoke.spec.ts", ticket: "T-0 (verificado tras T-6)" }
+    A1: { type: functional,  e2e: "e2e/regression/nicolify-r0-shell/bootstrap-default-landing.spec.ts", visual: "shell-default" }
+    A2: { type: functional,  e2e: "e2e/regression/nicolify-r0-shell/invalid-agent-404.spec.ts" }
+    A3: { type: functional,  e2e: "e2e/regression/nicolify-r0-shell/invalid-subtab-404.spec.ts" }
+    A4: { type: adversarial, e2e: "e2e/regression/nicolify-r0-shell/path-xss-guard.spec.ts" }
+    A5: { type: empty_state, e2e: "e2e/regression/nicolify-r0-shell/empty-states-all-subtabs.spec.ts" }
+    B1: { type: functional,  e2e: "e2e/regression/nicolify-r0-shell/topbar-render-desktop.spec.ts", visual: "shell-desktop-light" }
+    B2: { type: functional,  e2e: "e2e/regression/nicolify-r0-shell/theme-toggle.spec.ts", state_check: "localStorage:nicolify-theme" }
+    B3: { type: functional,  e2e: "e2e/regression/nicolify-r0-shell/responsive-breakpoints.spec.ts" }
+    C1: { type: functional,  e2e: "e2e/regression/nicolify-r0-shell/splitter-drag-snaps.spec.ts", visual: "shell-luana-rail" }
+    C2: { type: edge,        e2e: "e2e/regression/nicolify-r0-shell/splitter-snap-up.spec.ts" }
+    C3: { type: adversarial, e2e: "e2e/regression/nicolify-r0-shell/no-spurious-default-write.spec.ts", state_check: "localStorage:nicolify-shell-state" }
+    D1: { type: functional,  e2e: "e2e/regression/nicolify-r0-shell/luana-sidebar-states.spec.ts", visual: "luana-chat-skeleton" }
+    D2: { type: functional,  e2e: "e2e/regression/nicolify-r0-shell/luana-mobile-drawer.spec.ts" }
+    E1: { type: functional,  e2e: "e2e/regression/nicolify-r0-shell/ribbon-nav.spec.ts", visual: "ribbon-abel-active" }
+    E2: { type: functional,  e2e: "e2e/regression/nicolify-r0-shell/ribbon-deeplink.spec.ts" }
+    E3: { type: functional,  e2e: "e2e/regression/nicolify-r0-shell/config-tab-nav.spec.ts" }
+    E4: { type: edge,        e2e: "e2e/regression/nicolify-r0-shell/avatar-fallback.spec.ts" }
+    E5: { type: edge,        e2e: "e2e/regression/nicolify-r0-shell/ribbon-mobile-scroll.spec.ts" }
+    F1: { type: accessibility, e2e: "e2e/regression/nicolify-r0-shell/a11y-keyboard.spec.ts", axe: "wcag2aa" }
+    F2: { type: i18n,        e2e: "e2e/regression/nicolify-r0-shell/i18n-spanish-neutro.spec.ts" }
+
+# ─────────────────────────────────────────────────────────────────────────────
+# non_functional
+# ─────────────────────────────────────────────────────────────────────────────
+non_functional:
+  - id: NF-1
+    desc: "SSR-safe: cero write espurio del default en ciclo SSR+hydration (G2)"
+    must_pass: true
+    covers: [C3]
+    grader: { type: e2e, path: "e2e/regression/nicolify-r0-shell/no-spurious-default-write.spec.ts" }
+  - id: NF-2
+    desc: "Sin FOUC en theme (script SSR inline en <head> + suppressHydrationWarning en <html>)"
+    must_pass: true
+    covers: [B2]
+    grader: { type: e2e, path: "e2e/regression/nicolify-r0-shell/theme-toggle.spec.ts" }
+  - id: NF-3
+    desc: "Responsive sin overflow horizontal (salvo scroll intencional del Ribbon mobile)"
+    must_pass: true
+    covers: [B3, E5]
+  - id: NF-4
+    desc: "Hit-area del splitter handle ≥8px aunque la línea visible sea 4px (learning vitalia)"
+    must_pass: true
+    covers: [C1]
+  - id: NF-5
+    desc: "Skeleton del boundary dynamic({ssr:false}) NO suscribe stores (arch test no-store-in-ssr-skeleton)"
+    must_pass: true
+    covers: [C3]
+    grader: { type: arch_fitness, path: "src/__tests__/architecture/no-store-in-ssr-skeleton.test.tsx" }
+
+# ─────────────────────────────────────────────────────────────────────────────
+# functional
+# ─────────────────────────────────────────────────────────────────────────────
+functional:
+  - id: F-A0
+    desc: "Dev-stack boot LIVE (Definition of Done): make dev-nicolify → BE :8001/health 200 + FE :3001 sirve + Clerk middleware (unauth→/sign-in) + login → redirect DEFAULT_LANDING → shell root HTTP 200 sin crash. Ticket T-0; verificado al final tras T-6 con el shell construido."
+    must_pass: true
+    covers: [A0]
+    live: true
+    grader: { type: e2e, path: "e2e/regression/nicolify-r0-shell/boot-live-smoke.spec.ts" }
+    note: "Requiere make dev-nicolify levantado (native, no Docker para e2e). Smoke es el gate de 'app realmente funcional'."
+  - id: F-A1
+    desc: "Bootstrap raíz → redirect a christian/pipeline + shell completo + empty-state pipeline"
+    must_pass: true
+    covers: [A1]
+  - id: F-A2
+    desc: "Slug de agente inválido → not-found jerárquico [agent] · shell chrome intacto"
+    must_pass: true
+    covers: [A2]
+  - id: F-A3
+    desc: "Sub-tab inválida (agente válido) → not-found [subtab] · Ribbon marca agente"
+    must_pass: true
+    covers: [A3]
+  - id: F-A5
+    desc: "Cada sub-tab del whitelist (abel 4 + brenda 3 + christian 5 + sara 1 + norvil 3 + config 4 = 20) renderiza EmptyState, nunca blank/crash"
+    must_pass: true
+    covers: [A5]
+  - id: F-B1
+    desc: "Render desktop ≥1280 light: TopBar h-12 + grid dual 50/50 + Ribbon christian active azul + tokens nicolify resueltos"
+    must_pass: true
+    covers: [B1]
+  - id: F-B2
+    desc: "Theme toggle light↔dark aplica a todo el shell + LogoMark swap + agent-soft dark + persiste localStorage"
+    must_pass: true
+    covers: [B2]
+  - id: F-C1
+    desc: "Splitter drag + snaps (collapsed/narrow/50-50) + atajos C/R/F + clamp a mínimos + aria-label"
+    must_pass: true
+    covers: [C1]
+  - id: F-D1
+    desc: "LuanaSidebar 3 estados (rail/history/full) skeleton · role=complementary · C/R/F · composer no-funcional"
+    must_pass: true
+    covers: [D1]
+  - id: F-D2
+    desc: "Mobile drawer Luana cerrado default · burger abre · estado sobrevive reload (slice mobile independiente)"
+    must_pass: true
+    covers: [D2]
+  - id: F-E1
+    desc: "Click tab agente → navega a su default subtab + marca active (agent-color border + font-semibold) + roving tabindex"
+    must_pass: true
+    covers: [E1]
+  - id: F-E2
+    desc: "Deep-link en frío marca active correcto (URL-derived) · Ribbon + SubTabsBar + empty-state"
+    must_pass: true
+    covers: [E2]
+  - id: F-E3
+    desc: "ConfigTab navega a config/conexiones · active"
+    must_pass: true
+    covers: [E3]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# visual (goldens side-by-side vs mockup shell.html ratificado · 3 secciones × 2 themes)
+# ─────────────────────────────────────────────────────────────────────────────
+visual:
+  golden_source: "nicolify/docs/product/stories/nicolify-r0-shell-organism/mockups/shell.html"
+  max_diff_pixel_ratio: 0.001
+  ratchet: shrink-only-post-ratification
+  goldens:
+    - { screen: "shell-default-light", element: "[data-testid=shell-root]", expect: "dual-mode 50/50 + Ribbon 5 tabs + Luana full + empty-state pipeline", covers: [A1, B1] }
+    - { screen: "shell-default-dark",  element: "[data-testid=shell-root]", expect: ".dark vars deep-indigo + LogoMark dark + agent-soft dark", covers: [B2] }
+    - { screen: "luana-rail-light",    element: "[data-testid=luana-sidebar]", expect: "rail 60px íconos", covers: [C1] }
+    - { screen: "luana-rail-dark",     element: "[data-testid=luana-sidebar]", expect: "rail 60px íconos dark", covers: [C1] }
+    - { screen: "ribbon-abel-active-light", element: "[role=tablist]", expect: "Abel active púrpura #A855F7 border + font-semibold", covers: [E1] }
+    - { screen: "ribbon-abel-active-dark",  element: "[role=tablist]", expect: "Abel active dark", covers: [E1] }
+  state_visual:
+    - { screen: "luana-chat-skeleton", element: "[data-testid=chat-composer]", expect: "placeholder 'Escríbele a Luana…' visible, botón enviar sin efecto", covers: [D1] }
+    - { screen: "empty-state",         element: "[data-testid=app-panel]", expect: "icono + heading + sub-copy + CTA placeholder", covers: [A1, A5] }
+
+# ─────────────────────────────────────────────────────────────────────────────
+# architectural_validation (arch fitness + gates ADR-nicolify-001 G1/G2/G3)
+# ─────────────────────────────────────────────────────────────────────────────
+architectural_validation:
+  - id: AV-G1
+    desc: "Mockup ratificado (shell.html 5 tabs) · ratified_visual_by_chris: true"
+    status: satisfied
+  - id: AV-G2
+    desc: "SSR-safe store: createSsrSafePersistedStore + useStoreHydration + skeleton store-free"
+    must_pass: true
+    grader: { type: arch_fitness, path: "src/__tests__/architecture/no-store-in-ssr-skeleton.test.tsx" }
+  - id: AV-G3
+    desc: "Tailwind JIT-safe: _agent-tw-classes.ts static lookup, NUNCA template literals en class strings"
+    must_pass: true
+    grader: { type: arch_fitness, path: "src/components/shared/shell-organism/__tests__/_agent-tw-classes.test.ts" }
+  - id: AV-FSD
+    desc: "FSD-Lite: features no-cross-imports · organismos shell en components/shared/ no en features/"
+    must_pass: true
+    grader: { type: arch_fitness, path: "src/__tests__/architecture/test_features_no_cross_imports.test.ts" }
+  - id: AV-ROUTES
+    desc: "shell-routes.ts SSoT: sub-tabs/agentes hardcodeados prohibidos fuera de shell-routes.ts"
+    must_pass: true
+    grader: { type: arch_fitness, path: "src/__tests__/architecture/test_shell_routes_ssot.test.ts" }
+  - id: AV-I18N
+    desc: "Spanish neutro (tuteo, sin voseo) en strings user-facing del shell"
+    must_pass: true
+    covers: [F2]
+    grader: { type: arch_fitness, path: "src/__tests__/architecture/test_spanish_neutro.test.ts" }
+  - id: AV-A11Y
+    desc: "axe wcag2aa clean + roving tabindex tablist + skip-link + focus ring"
+    must_pass: true
+    covers: [F1]
+    grader: { type: axe, ruleset: "wcag2aa" }
+  - id: AV-DEP
+    desc: "react-resizable-panels@^4.11.1 agregado a package.json (gap detectado)"
+    must_pass: true
+  - id: AV-NOMIRROR
+    desc: "Cero import cross-brand (nicolify NUNCA importa de vitalia/frontend) · port = filesystem copy re-tematizado"
+    must_pass: true
+  - id: AV-NOAGENTIC
+    desc: "Cero código en backend/ ni modules/{copilot,sales_agent}/ · Luana panel = skeleton no-funcional"
+    must_pass: true
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Sub-categorías v4.1 — cobertura (ratificada Chris al refined)
+# ─────────────────────────────────────────────────────────────────────────────
+v41_subcategories:
+  race_condition:    { status: not_applicable, reason: "shell estático, sin create/update con unique constraint en R0" }
+  concurrent_users:  { status: not_applicable, reason: "sin data fetch filterable (empty-states); multitenancy lo cubre dev-stack" }
+  network_failure:   { status: not_applicable, reason: "R0 no hace fetch de datos (sin endpoints nuevos)" }
+  empty_state:       { status: covered, scenario: A5 }
+  large_dataset:     { status: not_applicable, reason: "sin listas con paginación en R0" }
+  accessibility:     { status: covered, scenario: F1 }
+  i18n:              { status: covered, scenario: F2 }
+
+# ─────────────────────────────────────────────────────────────────────────────
+# test_construction_plan — qué tests escribir (RED first · TDD)
+# ─────────────────────────────────────────────────────────────────────────────
+test_construction_plan:
+  nature: "FE route/page nueva + componentes shell organism (port re-tematizado)"
+  order: "Vitest unit (store + lib + componente) RED → E2E regression RED → visual goldens → axe"
+  unit_vitest:
+    - target: "stores/shell-store.ts"
+      tests: ["3 estados luana (collapsed/history/full)", "shellSplitState snaps", "mobileDrawerOpen slice independiente", "SSR-safe hydration: skipHydration + no write pre-rehydrate", "partialize (sin setters, sin _hasHydrated)"]
+      path: "src/stores/__tests__/shell-store.test.ts + shell-store-hydration.test.ts"
+    - target: "lib/routing/shell-routes.ts"
+      tests: ["isValidAgent (whitelist)", "isValidSubtab por agente", "getDefaultSubtab", "XSS/path-injection segment → false (cubre A4)", "AGENT_CATALOG 6 entradas", "DEFAULT_LANDING christian/pipeline"]
+      path: "src/lib/routing/__tests__/shell-routes.test.ts"
+    - target: "components/shared/shell-organism/_agent-tw-classes.ts"
+      tests: ["lookup retorna class literals completas por slug", "NUNCA template literal (G3)"]
+      path: "src/components/shared/shell-organism/__tests__/_agent-tw-classes.test.ts"
+    - target: "Ribbon / RibbonTab / ConfigTab"
+      tests: ["render 5 agentes + Config desde AGENT_CATALOG", "active state agent-color border", "roving tabindex (solo active tabindex=0)", "mobile overflow-x-auto + ConfigTab ml-auto"]
+    - target: "LuanaSidebar (+ LuanaRail/History/Chat)"
+      tests: ["3 estados render", "role=complementary", "C/R/F shortcuts", "composer placeholder no-funcional", "mobile drawer cerrado default"]
+    - target: "TopBarGlobal / LogoMark / ThemeToggle / TenantSwitcher"
+      tests: ["role=banner", "LogoMark swap light/dark", "ThemeToggle aplica .dark + persiste", "controles a la derecha"]
+    - target: "SubTabsBar / SubTab / SubTabContent / EmptyState / AgentAvatar"
+      tests: ["SubTabsBar URL-derived active", "SubTabContent → EmptyState por subtab", "AgentAvatar fallback inicial si 404 (cubre E4 + gap Sara)"]
+  e2e_playwright:
+    project: regression
+    base_url: "http://localhost:3001"
+    native: true
+    specs: 20  # 1:1 con scenarios (ver scenario_coverage.map)
+    note: "E2E DEFERRED = STOP en developed (no-blocker dejó escapar bugs en vitalia — verificación visual manual antes de auditor)"
+  visual_goldens:
+    source: "nicolify-r0-shell-organism/mockups/shell.html"
+    pairs: "3 secciones (shell-default · luana-rail · ribbon-abel-active) × 2 themes (light/dark) = 6"
+    tolerance: 0.001
+  axe:
+    ruleset: wcag2aa
+    scope: "shell-root completo (TopBar + Ribbon + LuanaSidebar + splitter + composer)"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# playwright_visual_scope — disciplina de scope (R0 = todo el shell es nuevo)
+# ─────────────────────────────────────────────────────────────────────────────
+playwright_visual_scope:
+  story_scope_routes:
+    - "/{tenantId}"                                  # bootstrap redirect
+    - "/{tenantId}/[agent]/[subtab]"                 # todas las hojas del whitelist
+  story_scope_components:
+    - "nicolify/frontend/src/components/shared/shell-organism/**"   # TODO el shell organism (R0 lo crea entero)
+    - "nicolify/frontend/src/app/[tenantId]/(shell-organism)/**"
+    - "nicolify/frontend/src/stores/shell-store.ts"
+    - "nicolify/frontend/src/lib/routing/shell-routes.ts"
+    - "nicolify/frontend/src/app/globals.css"        # tokens (R0 los define)
+  forbidden_visual_changes:
+    paths:
+      - "nicolify/frontend/src/components/ui/"        # primitivas @luana/ui-kit (escalate /pm-luana si falta una)
+      - "core/@luana/**"                              # engine packages (lift via /pm-luana, NUNCA editar directo)
+      - "vitalia/**"                                  # cross-brand (LEER para portar, NUNCA escribir)
+    reasons:
+      - "Primitivas viven en @luana/ui-kit — recrear/editar rompe el engine compartido"
+      - "Editar @luana/* o vitalia/* viola anti-duplication + cross-brand ban"
+  if_visual_change_needed_outside_scope:
+    action: "STOP. Documentar en T-{n}-impl-log.md § Cross-story observed bugs. Escalate /pm-nicolify. Si falta primitiva @luana → escalate /pm-luana."
+  playwright_assertions_scope:
+    - "Goldens side-by-side SOLO sobre story_scope_components vs shell.html"
+    - "NUNCA snapshot global de página fuera del shell (R0 no tiene nada previo — todo el shell ES story scope)"
+  non_egoismo_clause:
+    description: "R0 es greenfield del shell — no hay features previos que romper. Si durante el build se detecta un bug en el esqueleto base nicolify (page.tsx/providers/proxy.ts) NO tocado por esta story, reportar en T-{n}-impl-log § Cross-story observed bugs, NO fixear inline."

@@ -1,3 +1,5 @@
+# cap: fidelizacion.re-engagement
+# story-origin: TBD
 """ReEngagementService — detección y orquestación de re-engagement.
 
 Detecta brechas en tratamientos multi-sesión, genera eventos de seguimiento,

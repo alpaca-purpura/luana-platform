@@ -1,3 +1,5 @@
+# cap: copilot.inbox-tools-extensions
+# story-origin: TBD
 """LangChain @tool — complete_onboarding (Valeria wizard).
 
 Wraps :class:`CompleteOnboardingService` (T-be-services-1 produced) which:

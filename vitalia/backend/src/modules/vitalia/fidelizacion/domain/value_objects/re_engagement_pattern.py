@@ -1,3 +1,5 @@
+# cap: fidelizacion.re-engagement
+# story-origin: TBD
 """Patrón de re-engagement del paciente — value object StrEnum."""
 
 from enum import StrEnum

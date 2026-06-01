@@ -57,6 +57,12 @@ blocks_hard: []                                    # último átomo Fase 1 — F
 reuse_map_summary: "NEW 17 moléculas + 8 organismos + 1 page MODIFY + 3 arch tests + 11 Playwright specs + ~70 visual goldens. SubTabContent dispatcher consume RIBBON_SUBTABS SSoT. Sales_studio parity inbox brand-local (NO cross-brand mirror). Takeover UX visual con local React useState (Zustand documented F2-S3). Agenda enriquecida 5 moléculas (toolbar+filters+dayHeader+slot+summaryFooter)."
 spawned_at: 2026-05-22
 next_action: "AUTO-HANDOFF /auditor — story state=developed. All 11 tickets pushed. Visual goldens pending_chris_visual_ratify: true (live generation on stack required)."
+
+# Schema v2 migration (cement 2026-05-27)
+release: F1   # release ID · ver releases/
+cap_target: empty-states   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # F1-S10 vitalia-fase1-empty-states — checkpoint

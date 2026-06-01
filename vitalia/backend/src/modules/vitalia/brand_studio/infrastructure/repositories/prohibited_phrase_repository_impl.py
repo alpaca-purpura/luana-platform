@@ -1,3 +1,5 @@
+# cap: brand_studio.brand-studio-medical-sections
+# story-origin: vitalia-fase2-s7-TBD
 """ProhibitedPhraseRepositoryImpl — SQLA 2.0 async implementation.
 
 Tenant isolation: every query filters tenant_id (or IS NULL for seeds).

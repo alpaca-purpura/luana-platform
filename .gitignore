@@ -173,8 +173,51 @@ docs/portfolio/retailly.md
 docs/portfolio/saasora.md
 docs/portfolio/vitalia.md
 
+# Per-brand capabilities index user-facing (auto-gen scripts/generate_capability_index.py · ADR-vitalia-005 v3 cement 2026-05-27)
+docs/portfolio/comunify-capabilities.md
+docs/portfolio/fitflow-capabilities.md
+docs/portfolio/fixia-capabilities.md
+docs/portfolio/guestly-capabilities.md
+docs/portfolio/inmoflow-capabilities.md
+docs/portfolio/lupulo-capabilities.md
+docs/portfolio/nicolify-capabilities.md
+docs/portfolio/retailly-capabilities.md
+docs/portfolio/saasora-capabilities.md
+docs/portfolio/vitalia-capabilities.md
+
+# Per-brand areas/ user-facing (auto-gen scripts/generate_capability_index.py · 1 file por agent_owner)
+*/docs/product/areas/*.md
+
 # Promotion-protocol dated scans (re-run cada vez con `make scan-promotables`)
 docs/promotion-protocol/scan-*.yaml
 
 # Frontend generated code (offer-field-paths + futuros __generated__)
 **/__generated__/
+
+# Story refs (chris-input.md binarios · v2 cement 2026-05-27)
+# Mantenemos chris-input.md tracked (cita paths) pero binarios uploaded vía /api/refs/upload no inflan repo.
+# Si Chris necesita compartir refs cross-machine → mover a {brand}/docs/product/stories/{id}/refs-shared/ (tracked manual opt-in).
+**/docs/product/stories/**/refs/*
+!**/docs/product/stories/**/refs/*.md
+!**/docs/product/stories/**/refs/.gitkeep
+
+# Phase execution log (autonomous /goal runs · ephemeral)
+.phase-execution-log.md
+
+# Cockpit local artifacts (Next.js standalone build)
+tools/luana-cockpit/.next/
+tools/luana-cockpit/node_modules/
+tools/luana-cockpit/.env.local
+tools/luana-cockpit/migrate-report-*.json
+
+# Cap verification outputs (auto-gen R3 v2)
+**/docs/product/capabilities/_status-computed.json
+**/docs/product/capabilities/_atomics-verification.json
+**/docs/product/capabilities/_code-index.json
+**/docs/product/capabilities/_bidirectional-validation.json
+**/docs/product/capabilities/_actions-index.json
+
+# Sweep harness evidence + findings (HIPAA-lite: screenshots pueden contener datos mock de pacientes)
+# vitalia-cockpit-live-reconciliation T-2
+vitalia/frontend/e2e/regression/live-reconciliation/.evidence/
+vitalia/frontend/e2e/regression/live-reconciliation/.sweep-findings.json

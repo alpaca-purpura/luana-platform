@@ -1,14 +1,14 @@
 ---
 story_id: vitalia-fase2-lucas-envuelo
-outcome: vitalia-mvp-ui-foundation
-phase: fase-2
 type: ui-story
 agent_owner: lucas
+map_zone: agentes
+map_box: lucas
 module: campaigns_growth
 capability: lucas.envuelo
 state: idea
 architecture_pattern: ADR-vitalia-004
-last_modified: 2026-05-22
+last_modified: 2026-05-30
 ratified_by_chris: false
 parallel_safe: true
 priority: high
@@ -25,6 +25,12 @@ blocks_soft:
 reuse_map_summary: "NEW workspace campañas LIVE · NEW posts programados monitor · NEW performance live (Meta Insights API + Google Ads API + IG Insights) · NEW N3-dyn workspace detalle campaign + post"
 spawned_at: 2026-05-22
 next_action: "/po-ux refinar 01-spec.md con wireframes live monitor + N3-dyn workspace"
+
+# Schema v2 migration (cement 2026-05-27)
+release: F6   # release ID · ver releases/
+cap_target: lucas.envuelo   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # F2-S16 vitalia-fase2-lucas-envuelo — checkpoint

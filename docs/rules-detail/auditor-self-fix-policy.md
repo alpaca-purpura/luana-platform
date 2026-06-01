@@ -1,4 +1,7 @@
-# Auditor Self-Fix Policy (paradigm v4.1 cement 2026-05-19)
+# Auditor Self-Fix Policy (paradigm v4.1 → v4.2)
+<!-- voseo-allowed: glosario/doctrina reference verbatim (no user-facing) -->
+
+> **★ SUPERSEDED por v4.2 (cement 2026-05-28).** El SSoT cardinal vigente es `.claude/rules/auditor-self-fix-policy.md` v4.2 (3 carriles por NATURALEZA DE LA VERIFICACIÓN, no por tamaño). Cambios clave: (1) eliminado el cap "≤2 files/≤10 líneas" — el criterio de self-fix ahora es "¿lo verifica un test/gate EXISTENTE?"; (2) Carril A lo ejecuta el **sub-auditor mismo** (auditor-{be,fe,agentic} con tool `Edit`), sin re-spawn full; (3) caps `self_fix_iter: 5` + `audit_iterations: 4`; (4) AGENTIC Carril A solo mecánico. La whitelist de 17 categorías de abajo sigue siendo un subconjunto VÁLIDO de Carril A (todas no requieren test nuevo). El workflow Caso B/C/D de abajo aplica con esos números actualizados. Análisis: `docs/process/audits/2026-05-28-agentic-machinery-audit.md` § 1.
 
 **Origen:** Conversación 2026-05-19 ratificada por Chris. Amplificación autonomy post-refinamiento del paradigm v4 (10 estados macro + story-closure-gate). Decisión clave: cuando auditor encuentra CHANGES_REQUESTED, ¿auditor lo arregla (Opus single-mind) o spawnea dev-team autónomo? **Híbrido por NATURALEZA DEL FIX, no tamaño.**
 
@@ -101,7 +104,12 @@ Agent({
            
            GUARDRAILS:
            - Only edit files cited en T-{n}-review.md § Findings
-           - NO new tests added (auditor verifica fix vs scenarios existentes)
+           - TESTS (condicional según motivo del spawn):
+               · Si el finding ES "falta test / cobertura insuficiente" (NUNCA-self-fix #1) →
+                 ESCRIBÍ el test nuevo RED→GREEN (ése es EL motivo del spawn — dev-team es
+                 dueño del TDD).
+               · Para cualquier otro finding estructural ya cubierto por tests existentes →
+                 NO agregues tests nuevos (auditor verifica el fix vs scenarios existentes).
            - NO refactor outside findings scope
            - Spanish neutro respected
            - Push branch ACTUAL (wip/{brand}-{story-padre-id})
@@ -217,3 +225,65 @@ Auditor que itera 4+ veces indica que findings son síntoma, no root cause. Desp
 - `.claude/rules/story-closure-gate.md` — Fase B AUDIT + Fase C FIX-LOOP
 - `docs/architecture/luana-platform/ADR-007-paradigm-v4.1-autonomy.md` — decisión cementada
 - `docs/process/pm-redesign-2026-05.md` § v4.1 amplificación autonomy 2026-05-19 — append
+
+---
+
+## ★ v4.2 Rediseño — 3 carriles por NATURALEZA DE LA VERIFICACIÓN (cement 2026-05-28)
+
+> **SSoT vigente:** esta sección + stub `.claude/rules/auditor-self-fix-policy.md`. El árbol v4.1 de arriba sigue siendo válido como referencia histórica; v4.2 reemplaza la lógica de decisión cardinal. Análisis: `docs/process/audits/2026-05-28-agentic-machinery-audit.md` § 1.
+
+**Insight cardinal v4.2:** el riesgo del self-fix NO es de capacidad del modelo — es **estructural** (sesgo de confirmación). PERO los gates mecánicos (lint, mypy strict, arch-fitness ratchet, coverage, jscpd, tests EXISTENTES) son verificación independiente del actor. Por lo tanto:
+
+> El sesgo de confirmación solo muerde donde la corrección **requiere un test NUEVO**. Si el fix está totalmente verificado por gates + tests existentes → self-fix + re-correr gates ES verificación independiente. Esa es la línea correcta — no el tamaño del fix.
+
+### Decision tree v4.2
+
+```
+¿El fix requiere ESCRIBIR un test NUEVO? (comportamiento NO cubierto por un test existente)
+├─ SÍ  → CARRIL B: SPAWN dev-team (TDD RED→GREEN). Auditor NUNCA escribe tests.
+└─ NO  → ¿Categoría STAKE-ASIMÉTRICO? (security/auth/tenant_id/PII/migration/
+         prompt-slot/eval-goldens/state-machine/engine core/cross-brand/meta-paradigm)
+        ├─ SÍ  → CARRIL C: ESCALATE Chris (o dev-team, o 2º auditor independiente)
+        └─ NO  → CARRIL A: SELF-FIX gate-verified.
+                 Aplicar fix → re-correr gate-runner COMPLETO (mecánico, independiente).
+                 ALL GREEN → audit-passed (SIN re-spawn full del sub-auditor).
+                 RED tras cap → CARRIL B.
+```
+
+**Cambio clave vs v4.1:** eliminado el cap "≤2 files/≤10 líneas" y la rama "≥3 archivos O lógica de negocio → spawn". El criterio de Carril A es **"¿lo verifica un gate/test existente?"** — el tamaño era un proxy malo.
+
+### Carril A — gate-verified self-fix (sub-auditor mismo, con Edit)
+
+Aplica cuando TODAS:
+1. NO hace falta test nuevo — el comportamiento afectado YA está ejercitado por un test existente (auditor lo cita: `path::test_fn`). Si no encuentra → NO es Carril A → va a B.
+2. NO es categoría stake-asimétrico (ver Carril C).
+3. El fix vive en el surface del sub-auditor (BE/FE/agentic) — NUNCA cross-surface.
+
+Verificación = gate-runner completo re-corrido (lint + format + mypy + arch-fitness + coverage + jscpd + tests asociados). El sub-auditor NO se re-audita a sí mismo categoría-por-categoría.
+
+Ejemplos típicos Carril A: empty/error-state UI faltante con test de componente existente · condición invertida cubierta por test que ejercita ambas ramas · `response_model=` no cableado con DTO ya definido · off-by-one cubierto por test de borde · import/lint/format/typo/docstring/spanish-neutro/currency-locale.
+
+**Caveat AGENTIC:** Carril A en agentic se limita a **mecánico** (lint/format/typo/import/docstring/observability-write faltante con `try/except`). TODO lo que toque comportamiento del agente — prompt slots, eval goldens, state machine, tool logic, voice — va a **Carril B (builder-agentic)**. Razón: los gates agénticos (eval goldens, pass^k) son no-deterministas → self-fix podría sobre-ajustar el golden.
+
+### Carril B — needs-new-test (spawn dev-team)
+
+Cuando el fix requiere un test nuevo → spawn dev-team `mode: AUDITOR_AUTO_FIX_LOOP`. dev-team es dueño del TDD (escribe test RED→GREEN + el fix). También entra cualquier refactor estructural genuino que ningún test existente cubra.
+
+### Carril C — stake-asimétrico (escalate)
+
+NUNCA self-fix: security/auth · `tenant_id` filter · PII (`response_model` que expone) · migrations · prompt slots · eval goldens · state machine agéntica · `core/luana-core-*/src/` (→ `/pm-luana`) · `{other_brand}/...` · `.claude/{skills,rules}/` o `docs/{process,architecture,specs}/`. Acción: ESCALATE Chris. Opción: 2º auditor Opus independiente como verifier.
+
+### Caps absolutos v4.2
+
+| Métrica | Cap | Acción al exceder |
+|---|---|---|
+| `self_fix_iter` (Carril A) por ticket | 5 | → Carril B (spawn dev-team) |
+| `audit_iterations` totales por ticket | 4 | ESCALATE Chris |
+| Tiempo wall-clock audit cycle | 30 min | escalate "stuck" |
+| ~~Files/líneas por iter~~ | **ELIMINADO** | el verificador es el gate, no el tamaño |
+
+### Por qué v4.2 da más confianza (no menos)
+
+- **Verificación independiente preservada** donde importa: los gates mecánicos no son cómplices del auditor. Donde los gates NO bastan (test nuevo, seguridad) → sigue el round-trip / escalate.
+- **Menos round-trips** = menos pérdida de información + menos costo (~30-60% por finding) + más rápido.
+- **Sub-auditor Opus produce mejor fix** que dev-team Sonnet en findings que ya tiene en su modelo mental — sin re-acquirir contexto.

@@ -1,3 +1,5 @@
+// cap: sales_agent.inbox-handler-mode-occ
+// story-origin: TBD
 /**
  * ContactSidebar — patient contact details panel for clinical workflows.
  *

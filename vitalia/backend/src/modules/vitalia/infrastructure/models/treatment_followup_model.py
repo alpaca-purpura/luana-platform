@@ -1,3 +1,5 @@
+# cap: booking.prepaid-booking-advisory-locks
+# story-origin: TBD
 """SQLAlchemy 2.0 ORM model — VitaliaTreatmentFollowupModel.
 
 Maps to `vitalia_treatment_followups` table.

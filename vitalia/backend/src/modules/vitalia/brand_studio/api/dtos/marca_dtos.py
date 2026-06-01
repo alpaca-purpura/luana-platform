@@ -1,3 +1,5 @@
+# cap: brand_studio.lisa-marca
+# story-origin: vitalia-fase2-s7-TBD
 """Marca DTOs — 18 Pydantic v2 DTOs for brand_studio API endpoints.
 
 PII policy: response_model= mandatory on every endpoint (arch test enforces).
@@ -13,6 +15,7 @@ from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
+from pydantic.alias_generators import to_camel
 
 # ---------------------------------------------------------------------------
 # § 4.1 Identity DTOs (sub-sub-tab Identidad)
@@ -88,9 +91,17 @@ class LogoUploadResponseDTO(BaseModel):
 
 
 class BrandPersonalityDTO(BaseModel):
-    """GET /lisa/marca/personality response."""
+    """GET /lisa/marca/personality response.
 
-    model_config = ConfigDict(from_attributes=True)
+    alias_generator=to_camel: response serializes with camelCase keys (soISpeak,
+    identityAnchor, etc.) so the FE fetchClient (no case-transform) reads them
+    correctly. populate_by_name=True keeps internal snake_case construction working
+    (from_attributes + keyword args in tests).
+
+    Fix: arreglar-guardado-voz-y-tono / T-2 — BE-2 camelCase contract.
+    """
+
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True, alias_generator=to_camel)
 
     tenant_id: UUID
     personality_profile_id: UUID
@@ -106,9 +117,17 @@ class BrandPersonalityDTO(BaseModel):
 
 
 class BrandPersonalityPatchDTO(BaseModel):
-    """PATCH /lisa/marca/personality — partial update of compiler v2 6 blocks."""
+    """PATCH /lisa/marca/personality — partial update of compiler v2 6 blocks.
 
-    model_config = ConfigDict(extra="forbid")
+    alias_generator=to_camel: FE sends camelCase (soISpeak, identityAnchor, etc.).
+    populate_by_name=True: internal code and tests can still use snake_case.
+    extra="forbid": genuinely-unknown fields are still rejected (only known
+    snake/camel pairs are valid — they share the same field).
+
+    Fix: arreglar-guardado-voz-y-tono / T-2 — BE-2 camelCase contract.
+    """
+
+    model_config = ConfigDict(extra="forbid", populate_by_name=True, alias_generator=to_camel)
 
     archetype: Literal["caregiver", "sage", "healer", "hero"] | None = None
     so_i_speak: str | None = Field(None, max_length=4000)

@@ -1,3 +1,5 @@
+// cap: __shared__
+// story-origin: TBD
 "use client";
 
 /**
@@ -13,6 +15,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
+import { useTenantId } from "@/hooks/useTenantId";
 import { useClinicId } from "@/hooks/useClinicId";
 import { fetchClient } from "@/lib/api/fetchClient";
 import type { ConversationDetail } from "@/features/inbox/types/conversation-detail";
@@ -25,18 +28,19 @@ import type { ConversationDetail } from "@/features/inbox/types/conversation-det
 export function useConversationDetail(
   conversationId: string | null | undefined,
 ) {
-  const { getToken, orgId, isLoaded, isSignedIn } = useAuth();
+  const { getToken, isLoaded, isSignedIn } = useAuth();
+  const tenantId = useTenantId();
   const clinicId = useClinicId();
 
   return useQuery({
     queryKey: ["crm", "conversation", conversationId],
     queryFn: async () => {
       const token = await getToken();
-      if (!token || !orgId) throw new Error("Not authenticated");
+      if (!token || !tenantId) throw new Error("Not authenticated");
       if (!conversationId) throw new Error("conversationId required");
       return fetchClient<ConversationDetail>(
         `/api/v1/vitalia/crm/conversations/${conversationId}`,
-        { token, tenantId: orgId, clinicId },
+        { token, tenantId, clinicId },
       );
     },
     enabled: isLoaded && isSignedIn === true && !!conversationId,

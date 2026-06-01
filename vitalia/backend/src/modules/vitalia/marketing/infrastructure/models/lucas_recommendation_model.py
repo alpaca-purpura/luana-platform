@@ -1,3 +1,5 @@
+# cap: marketing.lucas-stage-recommendations
+# story-origin: TBD
 """SQLAlchemy 2.0 model — LucasRecommendationModel.
 
 Maps to ``vitalia_lucas_recommendations`` table (base columns from 007_vitalia_initial_tables.py,

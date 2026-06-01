@@ -1,3 +1,5 @@
+// cap: iam.iam-scaffold-slice-1
+// story-origin: vitalia-fase1-s10-TBD
 /**
  * AvanzadoPlaceholder — EmptyState genérico para Config/Avanzado.
  * F1-S10 vitalia-fase1-empty-states — T-2

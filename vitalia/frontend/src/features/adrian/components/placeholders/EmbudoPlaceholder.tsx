@@ -1,3 +1,5 @@
+// cap: sales_agent.adrian-3-tools-mvp
+// story-origin: vitalia-fase1-s10-TBD
 /**
  * EmbudoPlaceholder — Kanban 6 columnas Pipeline + toggle Kanban|Lista.
  * F1-S10 vitalia-fase1-empty-states — T-4

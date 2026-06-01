@@ -1,3 +1,5 @@
+# cap: scheduling.valeria-agenda
+# story-origin: TBD
 """AppointmentDetailRepository — appointment detail view with PHI masking.
 
 Returns full detail projection for the appointment drawer (right panel):

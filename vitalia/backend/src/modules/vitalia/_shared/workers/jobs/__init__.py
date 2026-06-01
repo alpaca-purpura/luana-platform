@@ -1,3 +1,5 @@
+# cap: __shared__
+# story-origin: TBD
 """Vitalia ARQ cron job functions (11 scaffolds).
 
 Each function is a placeholder raising NotImplementedError with a story citation.

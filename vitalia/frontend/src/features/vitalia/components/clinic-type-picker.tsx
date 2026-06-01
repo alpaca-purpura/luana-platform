@@ -1,3 +1,5 @@
+// cap: shell-organism.shell-vitalia
+// story-origin: TBD
 /**
  * ClinicTypePicker — medical-vertical clinic type selector.
  *

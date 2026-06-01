@@ -1,3 +1,5 @@
+// cap: onboarding.clinic-onboarding-3step
+// story-origin: TBD
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {

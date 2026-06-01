@@ -1,3 +1,5 @@
+// cap: public_landing.public-clinic-landing
+// story-origin: TBD
 /**
  * marketingStore — Zustand store for ephemeral UI state (not URL-serializable)
  * URL state (tabs, period, selected rec, modals) lives in nuqs (url-state.ts)

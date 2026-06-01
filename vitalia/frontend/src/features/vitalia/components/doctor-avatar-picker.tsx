@@ -1,3 +1,5 @@
+// cap: shell-organism.shell-vitalia
+// story-origin: TBD
 /**
  * DoctorAvatarPicker — doctor selection grid for offer wizard step 5 + booking widget.
  *

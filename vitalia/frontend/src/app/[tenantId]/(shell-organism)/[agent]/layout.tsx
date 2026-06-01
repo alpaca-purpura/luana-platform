@@ -1,3 +1,5 @@
+// cap: shell-organism.shell-vitalia
+// story-origin: vitalia-fase1-s9-TBD
 /**
  * Agent Layout — Server Component.
  * F1-S9 vitalia-fase1-routing-shell — T-4

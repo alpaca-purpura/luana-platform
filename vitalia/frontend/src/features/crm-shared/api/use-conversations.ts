@@ -1,3 +1,5 @@
+// cap: __shared__
+// story-origin: TBD
 "use client";
 
 /**
@@ -14,6 +16,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
+import { useTenantId } from "@/hooks/useTenantId";
 import { useClinicId } from "@/hooks/useClinicId";
 import { fetchClient } from "@/lib/api/fetchClient";
 import type { Conversation } from "../types";
@@ -63,20 +66,20 @@ function buildConversationsUrl(filters: ConversationsFilters): string {
  * @param filters - Optional URL-state derived filters (from useInboxUrlState)
  */
 export function useConversations(filters: ConversationsFilters = {}) {
-  const { getToken, orgId, isLoaded, isSignedIn } = useAuth();
+  const { getToken, isLoaded, isSignedIn } = useAuth();
+  const tenantId = useTenantId();
   const clinicId = useClinicId();
 
   return useQuery({
     queryKey: ["crm", "conversations", filters],
     queryFn: async () => {
       const token = await getToken();
-      if (!token || !orgId) throw new Error("Not authenticated");
+      if (!token || !tenantId) throw new Error("Not authenticated");
       return fetchClient<ConversationsResponse>(
         buildConversationsUrl(filters),
         {
           token,
-          tenantId: orgId,
-          clinicId,
+          tenantId, clinicId,
         },
       );
     },

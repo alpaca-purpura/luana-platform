@@ -1,3 +1,5 @@
+# cap: crm.crm-consent-optout
+# story-origin: TBD
 """CRM infrastructure models — 4 inbox tables (T-inbox-be-2).
 
 Exports SQLAlchemy 2.0 mapped models for:

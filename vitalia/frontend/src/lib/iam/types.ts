@@ -1,3 +1,5 @@
+// cap: iam.luana-core-adoption
+// story-origin: vitalia-fase1-s9-TBD
 /**
  * lib/iam/types.ts — TypeScript types for IAM module (F1-S9 T-2).
  *

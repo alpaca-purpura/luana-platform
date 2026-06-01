@@ -1,14 +1,14 @@
 ---
 story_id: vitalia-fase2-camila-voz
-outcome: vitalia-mvp-ui-foundation
-phase: fase-2
 type: ui-story
 agent_owner: camila
+map_zone: agentes
+map_box: camila
 module: voice_of_customer
 capability: camila.voz
 state: idea
 architecture_pattern: ADR-vitalia-004
-last_modified: 2026-05-22
+last_modified: 2026-05-30
 ratified_by_chris: false
 parallel_safe: true
 priority: high
@@ -29,6 +29,12 @@ blocks_soft:
 reuse_map_summary: "REUSE fidelización+NPS shipped · REUSE 12-triggers SSoT (cementado 2026-05-21 shell-organism baseline) · NEW UI 3-sub-vistas (Entrante · Curaduría · Activos vivos) FUSIONADAS · NEW paradigma 3-modos Camila (Decide-solo / Consulta / Manual) idéntico Adrián"
 spawned_at: 2026-05-22
 next_action: "/po-ux refinar 01-spec.md con wireframes 3-sub-vistas UN flujo · /ux-agentico diseñar conversación Camila si aplica"
+
+# Schema v2 migration (cement 2026-05-27)
+release: F7   # release ID · ver releases/
+cap_target: camila.voz   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # F2-S11 vitalia-fase2-camila-voz — checkpoint

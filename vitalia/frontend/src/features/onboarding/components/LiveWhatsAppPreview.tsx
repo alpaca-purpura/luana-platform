@@ -1,3 +1,5 @@
+// cap: onboarding.clinic-onboarding-3step
+// story-origin: TBD
 "use client";
 /**
  * LiveWhatsAppPreview — right panel preview of how the agent writes on WhatsApp.

@@ -50,6 +50,22 @@ docs/projects/active/PI-12-{theme}/
 
 > Nota: el hook `post-edit-checkpoint.sh` fue removido 2026-05-06. La actualización de `last_artifact` + `last_modified` ahora es responsabilidad explícita del skill que cierra el handoff (escribe el campo en el frontmatter del checkpoint).
 
+### Frontmatter edit discipline (cement 2026-05-28 — causa raíz "story no aparece en cockpit")
+
+Cuando una IA (skill/agente) edita el frontmatter de `checkpoint.md`, MUST:
+
+1. **Actualizar la key EXISTENTE en su lugar — NUNCA appendear una key nueva con el mismo nombre.** Antes de escribir `phase: X`, buscar si ya hay un `phase:` en la cabecera y reemplazar ESE valor. Una key top-level duplicada (ej. `phase:` dos veces) produce **YAML inválido** → `gray-matter`/`js-yaml` tiran `duplicated mapping key` → el cockpit no puede parsear el checkpoint y la story desaparece del board (o cae a `state: idea`).
+2. **Migrar keys legacy borrando la vieja.** Si encuentras cruft legacy (`outcome:`, un segundo `phase:` de templates pre-consolidación-SDD), elimina la línea vieja en el mismo edit — no convivan dos.
+3. **Preferir reescritura estructurada del bloque** sobre `Edit` quirúrgico que inserta líneas sueltas (writers del cockpit serializan un objeto → keys únicas por diseño). Si editas a mano, relee la cabecera completa primero.
+
+**Defensa-en-profundidad (no depende de que la IA recuerde):**
+- **Cockpit fail-loud:** `app/api/stories/route.ts` ya NO silencia un checkpoint malformado — muestra badge rojo "⚠ checkpoint inválido" en la card con el mensaje del error YAML.
+- **Pre-commit Section 17:** bloquea el commit de cualquier `checkpoint.md` con keys top-level duplicadas (override emergencia `CHECKPOINT_DUPKEY_SKIP=1`).
+
+Estas dos capas mecánicas garantizan que el fallo no vuelva a ser **silencioso** (cockpit) ni llegue a **committearse** (hook), independientemente de qué agente o cómo escribió la cabecera.
+
+**Campo `type` (cement 2026-05-30, ADR-011):** `type ∈ {ui-story, service-story, agentic-story, bugfix}`. `bugfix` = tipo lite (arreglo/completion quirúrgico, repro-first, sin diseño nuevo) — requiere `repro_verified: true` antes de `developing`. Ver `docs/process/lifecycle.md` § Tipos de story.
+
 ## Resume protocol — paso a paso
 
 Cuando cualquier agent/sesión arranca o retoma:

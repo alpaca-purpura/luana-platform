@@ -1,3 +1,5 @@
+// cap: sales_agent.inbox-handler-mode-occ
+// story-origin: TBD
 "use client";
 
 /**
@@ -16,6 +18,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
+import { useTenantId } from "@/hooks/useTenantId";
 import { useClinicId } from "@/hooks/useClinicId";
 import { fetchClient, ApiError } from "@/lib/api/fetchClient";
 import { conversationDetailKey, conversationsListKey } from "./_keys";
@@ -41,22 +44,22 @@ export interface SetModeResult {
  * @param conversationId - The conversation to update.
  */
 export function useSetMode(conversationId: string) {
-  const { getToken, orgId } = useAuth();
+  const { getToken} = useAuth();
+  const tenantId = useTenantId();
   const clinicId = useClinicId();
   const qc = useQueryClient();
 
   return useMutation({
     mutationFn: async (input: SetModeInput): Promise<SetModeResult> => {
       const token = await getToken();
-      if (!token || !orgId) throw new Error("Not authenticated");
+      if (!token || !tenantId) throw new Error("Not authenticated");
 
       return fetchClient<SetModeResult>(
         `/api/v1/vitalia/inbox/conversations/${conversationId}/mode`,
         {
           method: "POST",
           token,
-          tenantId: orgId,
-          clinicId,
+          tenantId, clinicId,
           headers: {
             "If-Match": input.expectedUpdatedAt,
           },

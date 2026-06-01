@@ -51,7 +51,52 @@ Si invocado vía `/pm-{brand}` handoff, el brand viene en el handoff. Si invocad
 - `tessl__tailwind` — semantic tokens (no hardcoded hex)
 - Domain skill módulo (`brand-expert` / `offer-expert` / `metrics-expert` / etc.)
 - `playwright-expert` (si scenarios tienen E2E grader)
-- `chrome-devtools-verify` (live verify post-design opcional)
+- `chrome-devtools-verify` (live verify post-design opcional, Linux nativo Chrome MCP)
+
+## ★ Step 0.5 — Anti-duplication refining (MANDATORY 2026-05-27)
+
+> SSoT: `.claude/rules/anti-duplication-refining.md`.
+
+ANTES de drafting `01-spec.md` / wireframes, ejecutar **prior-art-scan** cross-brand:
+
+```bash
+WS=$(git rev-parse --show-toplevel)
+BRAND="${BRAND}"           # provisto por handoff /pm-{brand}
+KW="${STORY_KEYWORDS}"      # ej: "agenda paciente reserva slot"
+
+echo "=== Engine packages ==="
+ls ${WS}/core/ | grep -iE "$(echo $KW | tr ' ' '|')"
+
+echo "=== Brands shipped (nicolify es source principal) ==="
+for B in nicolify vitalia comunify lupulo; do
+  [ "$B" = "$BRAND" ] && continue
+  find ${WS}/${B}/frontend/src/features/ -maxdepth 1 -type d 2>/dev/null | grep -iE "$(echo $KW | tr ' ' '|')"
+done
+
+echo "=== Stories archivadas con feature paralelo ==="
+for B in nicolify vitalia comunify lupulo; do
+  find ${WS}/${B}/docs/archive/*/stories/ -maxdepth 1 -type d 2>/dev/null | grep -iE "$(echo $KW | tr ' ' '|')"
+done
+
+echo "=== Learnings tags relacionados ==="
+grep -rln -iE "$(echo $KW | tr ' ' '|')" ${WS}/docs/learnings/ ${WS}/${BRAND}/docs/learnings/ ${WS}/nicolify/docs/learnings/ 2>/dev/null
+```
+
+**Output mandatory en `01-spec.md` sección `## Prior art applied`**:
+
+```markdown
+## Prior art applied
+
+- **Engine consumed:** `core/luana-core-X` (importé Y para Z)
+- **Reused from nicolify:** `nicolify/frontend/src/features/scheduling/components/SlotPicker.tsx` (componente base + adaptación HIPAA-lite)
+- **Learnings aplicados:**
+  - `docs/learnings/2026-04-15-tanstack-query-cache-invalidation.md` (cache key pattern)
+  - `nicolify/docs/learnings/2026-03-22-agenda-overbooking-edge-case.md` (concurrency lock)
+- **Lift candidates detectados:** patrón `SlotPicker` candidate engine — escalate /pm-luana para promotion proposal
+- **Net-new justificado:** sección `consentimiento informado paciente` HIPAA-lite — nicolify no aplica (B2B agencias)
+```
+
+**SIN esta sección documentada con resultados verbatim del scan, `/po-ux` REFUSE cerrar state=refining→refined.** Auditor Cat 12 verifica que `## Prior art applied` exista.
 
 ## Communication style — batched questions (G6 enforcement)
 
@@ -122,10 +167,25 @@ state: refining
 
 #### § Context
 
-- Outcome al que pertenece (`outcomes/{id}.md`)
+- Release al que pertenece (`releases/{id}.yaml`)
 - Módulo afectado
 - User journey insertion point (dónde aparece en sidebar/flow)
 - Out-of-scope explícito (anti-creep)
+
+#### § Mapa funcional (★ v5 cement 2026-05-31 — capa humana, va ANTES del Gherkin)
+
+> El panorama en lenguaje humano que Chris lee para validar QUÉ se construye sin reconstruirlo desde el Gherkin.
+> NO compite con el Gherkin: vive a otra altitud. El Gherkin lo formaliza; la `§ Matriz de cobertura` los liga.
+> Profundidad proporcional al tipo de story (bugfix: happy path opcional, foco en repro+branch+RN).
+
+Cuatro sub-bloques obligatorios (estructura mandatory, profundidad proporcional):
+
+1. **Happy path** — el camino dorado narrado en prosa numerada (3-8 pasos). Lenguaje humano, no Gherkin.
+2. **Bifurcaciones** — **árbol** de decisión (no lista plana). Cada nodo: condición → resultado → `[SC-N]`. Acá Chris valida COMPLETITUD.
+3. **Reglas de negocio** — `RN-1..N`, invariantes del dominio en una frase. Se reflejan en `capability.business_rules`.
+4. **Criterios de aceptación** — `AC-1..N`, checklist "listo cuando…" a nivel feature-done (NO son los scenarios).
+
+Cada `Bif-N` y `RN-N` DEBE terminar mapeado a ≥1 scenario en la `§ Matriz de cobertura`. Un branch/RN sin SC = hueco → REFUSE refined.
 
 #### § Gherkin scenarios (4 base + 7 sub-categorías mandatory ★ v4.1)
 
@@ -165,6 +225,20 @@ Cada scenario tiene:
 - { type: visual_state, screen: "form-error", element: "input[name=email]", expect: "border-destructive" }
 - { type: axe, ruleset: "wcag2aa" }  # accessibility sub-category
 ```
+
+**★ v5 cement 2026-05-31:** cada scenario lleva `Covers: [Bif-N, RN-N, AC-N]` — los IDs del `§ Mapa funcional` que formaliza. Liga la capa humana con la verificable.
+
+#### § Matriz de cobertura (★ v5 cement 2026-05-31 — el puente humano ↔ verificación)
+
+Tabla que cierra el loop: cada `Bif-N` y cada `RN-N` del Mapa funcional → ≥1 SC → una **verificación REAL** (acción ejercida + efecto observado, NUNCA "GET 200" — ver `.claude/rules/test-design-doctrine.md` § Verificación REAL). Es la mitad delantera del `gherkin-matrix.md` que el `/auditor` completa en Phase D.
+
+| Ítem (Mapa funcional) | Tipo | Cubierto por | Verificación REAL (acción + efecto) |
+|---|---|---|---|
+| Bif-N · … | branch | SC-N | [write real → efecto DB/UI + log] |
+| RN-N · … | rule | SC-N | [write que viola la regla → 422 + estado sin cambio] |
+| AC-N · … | accept | SC-N | [flujo real + estado observable] |
+
+Cerrá con dos líneas explícitas: **Huecos detectados** (Bif/RN sin SC) y **SC huérfanos** (SC sin ítem del mapa). Ambas deben decir "ninguno" para pasar el gate.
 
 #### § Wireframes inline
 
@@ -302,8 +376,11 @@ Chris responde → editás 01-spec.md (no rebuild from scratch — Edit incremen
 
 ### Step 5 — Validate refined gate + Hand off (★ v4.1 expanded)
 
-**Pre-handoff gate (v4.1 cement 2026-05-19) — checklist antes ratificar refined:**
+**Pre-handoff gate (v4.1 cement 2026-05-19 + v5 2026-05-31) — checklist antes ratificar refined:**
 
+- [ ] **★ v5 § Mapa funcional presente** (happy path narrado + árbol de bifurcaciones + RN-N + AC-N)
+- [ ] **★ v5 § Matriz de cobertura sin huecos** — cada `Bif-N` y `RN-N` mapea a ≥1 SC; cada SC mapea a ≥1 ítem del mapa. Huecos detectados = "ninguno" + SC huérfanos = "ninguno". Branch/RN huérfano → STOP, NO refined
+- [ ] **★ v5 cada verificación de la matriz es REAL** (acción ejercida + efecto, no "GET 200")
 - [ ] 4 scenarios base presentes (happy + negative + edge + adversarial)
 - [ ] **★ Sub-categorías mandatory cubiertas (≥1 scenario cada una, o `not_applicable_reason` ratificado):**
   - [ ] race_condition (si tiene create/update con unique constraint)
@@ -322,6 +399,10 @@ Chris responde → editás 01-spec.md (no rebuild from scratch — Edit incremen
 - [ ] Componentes reuse > new (cada NEW justificado inline)
 - [ ] Responsive breakpoints declarados
 - [ ] Accessibility section presente
+
+**Validation cap lineage (v2 cement 2026-05-27):** antes de cerrar state=refined, verificar checkpoint.md tiene `cap_target` (no null) + `cap_change_type` ∈ {new, fix, extend, derive}. Si Chris no los declaró en chris-input.md, skill propone valores como verdict `💡 PROPONE` y espera ratificación. Doc: `docs/process/capability-protocol.md` § Sección 3.
+
+**Validation caja del mapa (paradigma · cement 2026-05-30):** verificar también que la **caja** de la cap esté declarada (`agent_owner`) aplicando el árbol de decisión de `.claude/rules/paradigm-arquitectura.md`: ¿es valor de un agente (zona **Agentes**) · superficie transversal sin agente — Acceso/Onboarding/Configuración (zona **Plataforma**) · o no-funcional/técnico (zona **Infraestructura**)? La zona se deriva del registro `SYSTEM-MAP.yaml`. Sin caja válida → NO transition refining→refined. Doctrina: `docs/architecture/luana-platform/PARADIGM.md`.
 
 Si gate FAIL → STOP, NO transition refining→refined. Iterá con Chris hasta cobertura completa.
 
@@ -360,10 +441,10 @@ next_action: "/architect <brand>: {brand} lee 01-spec.md → produce ready packa
 
 ## Scope expansion durante diseño
 
-Si durante mockup/iteración descubrís edge case que el outcome no contemplaba:
+Si durante mockup/iteración descubrís edge case que la story no contemplaba:
 
 - **Pequeño** (1 estado UI extra, 1 microcopy faltante) → agregar inline + bumpear `po_ux_version` en frontmatter spec.md
-- **Medio** (scenario nuevo necesario, refactoring scope) → STOP, escala `/pm-{brand}`: "scope crece, requiere ratificar outcome"
+- **Medio** (scenario nuevo necesario, refactoring scope) → STOP, escala `/pm-{brand}`: "scope crece, requiere ratificar alcance de la story"
 - **Grande** (story se vuelve épica, > 5d trabajo) → STOP, `/pm-{brand}` decompose en N stories
 
 ## Anti-patterns
@@ -389,7 +470,7 @@ Si durante mockup/iteración descubrís edge case que el outcome no contemplaba:
 
 ## Anti cross-brand pollution
 
-- ❌ NUNCA editar `{other_brand}/...` cuando trabajás en `{brand}`. Si la story necesita tocar otra brand → STOP, escalate `/pm-luana` (outcome cross-brand).
+- ❌ NUNCA editar `{other_brand}/...` cuando trabajás en `{brand}`. Si la story necesita tocar otra brand → STOP, escalate `/pm-luana` (trabajo cross-brand).
 - ❌ NUNCA editar `core/luana-core-*/src/` directamente. Requiere lift via `/pm-luana` (promotion gate). Si el patrón UI aparece ≥2 brands → escalá como promotion candidate.
 - ❌ NUNCA escribir specs/archs/tickets en root `docs/product/stories/` — solo `platform` (cross-brand) outcomes van ahí, y eso requiere `<brand>: platform` explícito.
 - ❌ NUNCA referenciar `frontend/src/` sin el prefix `{brand}/` — post reorg 2026-05-15 no existe root `frontend/`.
@@ -405,12 +486,55 @@ Cada response a Chris:
 
 NUNCA dumps largos. Cita paths para que Chris pueda leer.
 
+## Output protocol · chris-input.md append (v2 cement 2026-05-27)
+
+Al cierre de cada turn de esta skill, MUST appendear una entry a la sección 💬 Conversación del `chris-input.md` de la story activa.
+
+**Path target:**
+- Story state ∈ {idea, refining, refined, ready, developing, developed, reviewing}: `{brand}/docs/product/stories/{story_id}/chris-input.md`
+- Story state = done: `{brand}/docs/archive/{year}/stories/{story_id}/chris-input.md` (read-only post-merge)
+
+**Formato verbatim del block markdown a appendear:**
+
+```markdown
+### YYYY-MM-DDTHH:MM · 🤖 claude · `/po-ux` · {emoji} {VERDICT-LABEL}
+{texto 2-30 líneas · descripción de qué hizo + decisiones tomadas + qué necesita Chris responder}
+```
+
+**Verdict labels (4 valores):**
+
+| Emoji | Label | Cuándo usar |
+|---|---|---|
+| ✓ | APLICADO | Cambios concretos aplicados al spec/design/arch/test (citar paths) |
+| ⚠️ | DUDA | Pregunta a Chris antes de seguir. State queda esperando respuesta |
+| ❌ | REFUTADO | Razón por la que NO se aplica algo que Chris pidió (con justificación) |
+| 💡 | PROPONE | Opción nueva sugerida por Claude · Chris ratifica o descarta |
+
+**Anti-patterns prohibidos:**
+
+- ❌ Skill termina turn sin appendear (silent escape) — siempre appendear, aunque sea `✓ APLICADO · sin cambios sustantivos`
+- ❌ Verdict sin texto sustantivo (1 palabra no informa)
+- ❌ Path hardcoded con brand fija — debe ser `{brand}` dinámico (de checkpoint.md o args del invoke)
+- ❌ Múltiples verdicts en un solo entry — si hay 2 cosas, son 2 entries consecutivas
+- ❌ Entry sin emoji + label de verdict (parser falla)
+
+Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
+
 ## Referencias
 
 - `docs/process/pm-redesign-2026-05.md` — paradigma 3 conversaciones + ready package
+- `docs/process/capability-protocol.md` — schema cap YAML v2 + cap_target + cap_change_type
+- `docs/architecture/luana-platform/PARADIGM.md` + `.claude/rules/paradigm-arquitectura.md` — ★ árbol caja/zona del mapa (declarar desde la idea)
+- `docs/process/chris-input-protocol.md` — output protocol per skill
 - `docs/specs/templates/01-spec-template.md` — template base
 - `.claude/rules/spanish-text.md` — voseo glosario + magic comment escape
 - `.claude/rules/frontend-fsd.md` — FSD-Lite boundaries
 - `.claude/skills/frontend-expert/` — Tailwind tokens + Shadcn reuse + form runtime
 - `.claude/skills/po/` — service-only spec workflow (sister skill)
 - `.claude/skills/ux-agentico/` — agentic flow design (sister skill)
+
+## Live verification contra dev-app (Critical Rule #37)
+
+**Uso (herramienta, no gate):** para revisar visualmente una pantalla/flujo que ya corre y diseñar sobre lo real, abrí dev-app con Chrome MCP.
+
+Levantar: `make dev-app-vitalia` → `https://dev-app.vitalialat.com` (login `dr.demo@vitalialat.com`, creds en `vitalia/.env.dev`). Herramientas: **Chrome DevTools MCP** (live) + **Playwright autenticado** (golden). Evidencia = acción real ejercida + efecto observado; NUNCA GET 200 ni e2e mockeado. SSoT: `.claude/rules/definition-of-done-live-verify.md`.

@@ -1,3 +1,5 @@
+// cap: brand_studio.lisa-marca
+// story-origin: vitalia-fase2-s7-TBD
 /**
  * prohibitedPhraseDetector.ts — Client-side scan of prohibited phrases.
  *

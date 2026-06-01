@@ -1,3 +1,5 @@
+// cap: sales_agent.inbox-handler-mode-occ
+// story-origin: TBD
 "use client";
 
 /**
@@ -13,6 +15,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
+import { useTenantId } from "@/hooks/useTenantId";
 import { useClinicId } from "@/hooks/useClinicId";
 import { fetchClient } from "@/lib/api/fetchClient";
 import { conversationDetailKey, conversationsListKey } from "./_keys";
@@ -32,22 +35,22 @@ export interface PauseAdrianResult {
  * Mutation to pause Adrián for 60 minutes in the given conversation.
  */
 export function usePauseAdrian() {
-  const { getToken, orgId } = useAuth();
+  const { getToken} = useAuth();
+  const tenantId = useTenantId();
   const clinicId = useClinicId();
   const qc = useQueryClient();
 
   return useMutation({
     mutationFn: async (input: PauseAdrianInput): Promise<PauseAdrianResult> => {
       const token = await getToken();
-      if (!token || !orgId) throw new Error("Not authenticated");
+      if (!token || !tenantId) throw new Error("Not authenticated");
 
       return fetchClient<PauseAdrianResult>(
         `/api/v1/vitalia/inbox/conversations/${input.conversationId}/pause-adrian`,
         {
           method: "POST",
           token,
-          tenantId: orgId,
-          clinicId,
+          tenantId, clinicId,
           body: JSON.stringify({
             reason: input.reason ?? null,
           }),

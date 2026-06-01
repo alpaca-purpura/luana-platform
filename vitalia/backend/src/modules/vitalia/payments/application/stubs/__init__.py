@@ -1,3 +1,5 @@
+# cap: payment.payment-gateways-latam-recurring
+# story-origin: vitalia-fase2-s1-TBD
 """Stub implementations for service-blocker pattern (Option A).
 
 # DEPRECATED: Replace when vitalia-payment-adapter-mvp state=done.

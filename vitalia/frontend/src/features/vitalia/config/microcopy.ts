@@ -1,3 +1,5 @@
+// cap: shell-organism.shell-vitalia
+// story-origin: TBD
 /**
  * microcopy.ts — SSoT for all vitalia user-facing strings.
  * Source: 01-spec.md § 8 (immutable). Spanish neutro LatAm.
@@ -196,3 +198,5 @@ export const MICROCOPY_DISCLAIMER = {
   offer:
     "Esta oferta incluye servicios médicos. Consulta las condiciones con el profesional asignado.",
 } as const;
+
+// voseo-allowed: comentario interno cita glosario voseo (strings reales son tuteo), no user-facing

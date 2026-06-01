@@ -1,3 +1,5 @@
+# cap: connections.oauth-meta-google-ads
+# story-origin: TBD
 """Whisper STT connection adapter — vitalia connections module.
 
 Provides async transcription via OpenAI Whisper API with graceful degradation.

@@ -1,3 +1,5 @@
+# cap: connections.oauth-meta-google-ads
+# story-origin: TBD
 """MetaAdsAdapter — OAuth + Insights integration for Meta Ads (Facebook).
 
 Resilience:

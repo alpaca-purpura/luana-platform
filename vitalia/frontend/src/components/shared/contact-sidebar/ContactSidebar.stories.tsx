@@ -1,3 +1,5 @@
+// cap: sales_agent.inbox-handler-mode-occ
+// story-origin: TBD
 import type { Meta, StoryObj } from "@storybook/nextjs";
 import { ContactSidebar } from "./ContactSidebar";
 

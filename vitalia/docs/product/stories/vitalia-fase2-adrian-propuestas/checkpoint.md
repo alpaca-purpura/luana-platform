@@ -1,14 +1,14 @@
 ---
 story_id: vitalia-fase2-adrian-propuestas
-outcome: vitalia-mvp-ui-foundation
-phase: fase-2
 type: ui-story
 agent_owner: adrian
+map_zone: agentes
+map_box: adrian
 module: proposals
 capability: adrian.propuestas
 state: idea
 architecture_pattern: ADR-vitalia-004
-last_modified: 2026-05-22
+last_modified: 2026-05-30
 ratified_by_chris: false
 parallel_safe: true
 priority: high
@@ -28,6 +28,12 @@ blocks_soft:
 reuse_map_summary: "NEW workspace propuestas (no shipped prior) · REUSE treatments shipped · REUSE Stripe/MP shipped via payment-adapter-mvp · NEW firma digital embebida (canvas + audit hash) · NEW opt-in flag per vertical (dental/estética yes · psicología/psiquiatría no)"
 spawned_at: 2026-05-22
 next_action: "/po-ux refinar 01-spec.md con wireframes builder + plan pago + firma digital · /architect evaluar canvas/PDF embedded"
+
+# Schema v2 migration (cement 2026-05-27)
+release: F4   # release ID · ver releases/
+cap_target: adrian.propuestas   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # F2-S6 vitalia-fase2-adrian-propuestas — checkpoint

@@ -1,3 +1,5 @@
+# cap: copilot.inbox-tools-extensions
+# story-origin: TBD
 """LangChain @tool — simulate_personality (Valeria wizard).
 
 Wraps :class:`SimulatePersonalityService` (T-be-services-1 produced) which

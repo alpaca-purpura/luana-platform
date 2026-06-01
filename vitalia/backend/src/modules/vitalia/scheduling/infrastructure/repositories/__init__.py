@@ -1,3 +1,5 @@
+# cap: scheduling.valeria-agenda
+# story-origin: TBD
 """Scheduling infrastructure repositories."""
 
 from src.modules.vitalia.scheduling.infrastructure.repositories.agenda_grid_repository import (

@@ -1,3 +1,5 @@
+// cap: sales_agent.inbox-handler-mode-occ
+// story-origin: vitalia-fase1-s10-TBD
 "use client";
 
 /**

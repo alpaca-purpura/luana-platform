@@ -1,3 +1,5 @@
+# cap: copilot.inbox-tools-extensions
+# story-origin: TBD
 """LangChain @tool — confirm_slot (Valeria wizard).
 
 Wraps :meth:`OnboardingDraftService.update_slot` (T-be-services-1 produced) to

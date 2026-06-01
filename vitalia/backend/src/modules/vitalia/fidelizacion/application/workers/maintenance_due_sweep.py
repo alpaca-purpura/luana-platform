@@ -1,3 +1,5 @@
+# cap: fidelizacion.re-engagement
+# story-origin: TBD
 """Worker cron: maintenance_due_sweep.
 
 Detecta pacientes con mantenimiento programado vencido y dispara

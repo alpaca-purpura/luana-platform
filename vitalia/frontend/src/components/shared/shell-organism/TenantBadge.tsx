@@ -1,3 +1,5 @@
+// cap: shell-organism.shell-vitalia
+// story-origin: vitalia-fase1-s3-TBD
 /**
  * TenantBadge — tenant initials badge atom.
  * F1-S3 vitalia-fase1-tenant-switcher — T-2

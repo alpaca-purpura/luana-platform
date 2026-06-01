@@ -1,3 +1,5 @@
+# cap: sales_agent.adrian-3-tools-mvp
+# story-origin: TBD
 """Vitalia Adrián sales_agent observability recording subclasses.
 
 Re-exports the brand-specific callback handler + turn envelope.

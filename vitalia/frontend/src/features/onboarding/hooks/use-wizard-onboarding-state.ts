@@ -1,3 +1,5 @@
+// cap: onboarding.clinic-onboarding-3step
+// story-origin: TBD
 "use client";
 /**
  * use-wizard-onboarding-state.ts — Main React Query hook for wizard draft state.

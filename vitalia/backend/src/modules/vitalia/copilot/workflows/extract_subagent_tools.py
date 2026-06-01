@@ -1,3 +1,5 @@
+# cap: copilot.inbox-tools-extensions
+# story-origin: TBD
 """Sandbox tools available to the wizard extract_subagent.
 
 Per 03-arch-agentic.md § 3.2 + § 4.1 + tessl__deepagents:

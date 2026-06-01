@@ -16,7 +16,7 @@ Sin esta cita en `01-spec.md` frontmatter (`architecture_pattern: ADR-vitalia-00
 
 ### Aplica (gate bloqueante)
 
-- Toda story Fase 2 sub-tab con UI (`lisa-*`, `valeria-*` excepto agenda ya cementada, `adrian-*`, `lucas-*`, `camila-*`, `config-*`)
+- Toda story Fase 2 sub-tab con UI (`lisa-*`, `mateo-*`, `adrian-*`, `lucas-*`, `camila-*`, `plataforma-*`, `onboarding-*`) — ★★ v1.2 (2026-05-30): `valeria-*` de valor migradas a `mateo-*`; `config-*` renombradas a `plataforma-*` (excepto `config-onboarding-clinica` → `onboarding-clinica`)
 - Stories Fase 1 que construyan componente con data fetching/persistencia (las restantes ya están `done`)
 - Stories `state ∈ {idea, refining, refined}` actualmente abiertas
 

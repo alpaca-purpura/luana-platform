@@ -1,3 +1,5 @@
+// cap: public_landing.public-clinic-landing
+// story-origin: TBD
 /**
  * ChannelBreakdownRow — per-provider row in AttractionStage channel breakdown.
  * Renders sync state badge + last metrics timestamp + retry button on error.

@@ -1,3 +1,5 @@
+// cap: sales_agent.inbox-handler-mode-occ
+// story-origin: TBD
 "use client";
 /**
  * SearchInput.tsx — Debounced search input for the conversation list.

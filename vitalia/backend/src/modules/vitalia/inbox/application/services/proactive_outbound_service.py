@@ -1,3 +1,5 @@
+# cap: sales_agent.inbox-handler-mode-occ
+# story-origin: TBD
 """ProactiveOutboundService — vitalia inbox application layer.
 
 HSM template picker with ComplianceService gate + marketing opt-in enforcement.

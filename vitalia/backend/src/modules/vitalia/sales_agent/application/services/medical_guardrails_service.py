@@ -1,3 +1,5 @@
+# cap: sales_agent.medical-guardrails
+# story-origin: TBD
 """Vitalia Adrián MedicalGuardrailsService — orchestrates 4 guardrails.
 
 Story T-ag-tools-2 — R23 production_code=true. Opus 4.7 EXCLUSIVE.

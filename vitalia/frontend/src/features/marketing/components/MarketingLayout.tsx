@@ -1,3 +1,5 @@
+// cap: public_landing.public-clinic-landing
+// story-origin: TBD
 /**
  * MarketingLayout — orchestrates the marketing page layout.
  *

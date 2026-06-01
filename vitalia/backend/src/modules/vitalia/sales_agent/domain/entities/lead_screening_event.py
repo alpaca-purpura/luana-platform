@@ -1,3 +1,5 @@
+# cap: sales_agent.adrian-3-tools-mvp
+# story-origin: TBD
 """LeadScreeningEvent domain entity.
 
 Pure Python dataclass — NO SQLAlchemy, NO Pydantic, NO framework imports.

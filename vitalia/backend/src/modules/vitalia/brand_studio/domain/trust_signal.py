@@ -1,3 +1,5 @@
+# cap: brand_studio.brand-studio-medical-sections
+# story-origin: vitalia-fase2-s7-TBD
 """TrustSignal domain entity — certifications/authority tenant-specific.
 
 Hybrid catalog per country (OQ-D resolution 2026-05-27):

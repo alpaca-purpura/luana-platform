@@ -1,3 +1,5 @@
+# cap: sales_agent.inbox-handler-mode-occ
+# story-origin: TBD
 """ActivityEventService — vitalia inbox application layer.
 
 Read-only service for the activity stream (≤8 events, ≤5min window).

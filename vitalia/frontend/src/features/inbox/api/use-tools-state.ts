@@ -1,3 +1,5 @@
+// cap: sales_agent.inbox-handler-mode-occ
+// story-origin: TBD
 "use client";
 
 /**
@@ -13,6 +15,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
+import { useTenantId } from "@/hooks/useTenantId";
 import { useClinicId } from "@/hooks/useClinicId";
 import { fetchClient } from "@/lib/api/fetchClient";
 import { toolsStateKey } from "./_keys";
@@ -24,18 +27,19 @@ import type { ToolsState } from "../types/tools-state";
  * @param conversationId - The conversation to fetch tools for. Pass null to disable.
  */
 export function useToolsState(conversationId: string | null | undefined) {
-  const { getToken, orgId, isLoaded, isSignedIn } = useAuth();
+  const { getToken, isLoaded, isSignedIn } = useAuth();
+  const tenantId = useTenantId();
   const clinicId = useClinicId();
 
   return useQuery({
     queryKey: toolsStateKey(conversationId ?? ""),
     queryFn: async () => {
       const token = await getToken();
-      if (!token || !orgId) throw new Error("Not authenticated");
+      if (!token || !tenantId) throw new Error("Not authenticated");
       if (!conversationId) throw new Error("conversationId required");
       return fetchClient<ToolsState>(
         `/api/v1/vitalia/inbox/conversations/${conversationId}/tools`,
-        { token, tenantId: orgId, clinicId },
+        { token, tenantId, clinicId },
       );
     },
     enabled: isLoaded && isSignedIn === true && !!conversationId,

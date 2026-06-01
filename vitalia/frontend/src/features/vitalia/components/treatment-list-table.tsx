@@ -1,3 +1,5 @@
+// cap: shell-organism.shell-vitalia
+// story-origin: TBD
 /**
  * TreatmentListTable — paginated table of active treatments.
  *

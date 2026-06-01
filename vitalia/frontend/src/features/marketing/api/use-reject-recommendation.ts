@@ -1,3 +1,5 @@
+// cap: public_landing.public-clinic-landing
+// story-origin: TBD
 /**
  * useRejectRecommendation — mutation: reject a Lucas recommendation with reason
  * Requires Idempotency-Key header (BE enforced for POST mutations)
@@ -7,6 +9,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
+import { useTenantId } from "@/hooks/useTenantId";
 import { useClinicId } from "@/hooks/useClinicId";
 import { fetchClient } from "@/lib/api/fetchClient";
 import type {
@@ -21,7 +24,8 @@ export type RejectRecommendationVariables = {
 };
 
 export function useRejectRecommendation() {
-  const { getToken, orgId } = useAuth();
+  const { getToken} = useAuth();
+  const tenantId = useTenantId();
   const clinicId = useClinicId();
   const queryClient = useQueryClient();
 
@@ -32,14 +36,13 @@ export function useRejectRecommendation() {
       reasonOtherText,
     }: RejectRecommendationVariables) => {
       const token = await getToken();
-      if (!token || !orgId) throw new Error("Not authenticated");
+      if (!token || !tenantId) throw new Error("Not authenticated");
       return fetchClient<RejectRecommendationResponse>(
         `/api/v1/vitalia/marketing/recommendations/${encodeURIComponent(recId)}/reject`,
         {
           method: "POST",
           token,
-          tenantId: orgId,
-          clinicId,
+          tenantId, clinicId,
           headers: {
             "Content-Type": "application/json",
             "Idempotency-Key": crypto.randomUUID(),

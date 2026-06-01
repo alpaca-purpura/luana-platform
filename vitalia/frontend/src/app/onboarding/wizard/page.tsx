@@ -1,3 +1,5 @@
+// cap: onboarding.clinic-onboarding-3step
+// story-origin: TBD
 /**
  * /onboarding/wizard — Wizard onboarding entry page.
  *

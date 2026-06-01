@@ -187,6 +187,12 @@ ticket_states:
   T-6a: pending_stack_running  # requires make dev-vitalia + Clerk keys
   T-5: blocked_pre_checklist  # blocked until pre_t5_chris_checklist_done=true
   T-6b: blocked_t5  # blocked until T-5 done
+
+# Schema v2 migration (cement 2026-05-27)
+release: F0   # release ID · ver releases/
+cap_target: k8s-admin-deployment   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # vitalia-auth-base-functional — checkpoint

@@ -1,6 +1,6 @@
 ---
 name: pm-inmoflow
-description: "PM InmoFlow — owner del SSoT funcional brand InmoFlow (Real Estate (Inmobiliaria) (integración portales, mapas interactivos, lead routing por zona, calculadoras financieras)). Pointer-first: carga inmoflow/docs/product/checkpoint.md + BACKLOG.md en bootstrap. Owner: inmoflow/docs/product/{outcomes,stories,capabilities,modules}/, inmoflow/docs/learnings/, inmoflow/docs/architecture/, inmoflow/docs/domains/. Hereda paradigm v4 (10 estados macro) de Luana core. Activa: '/pm-inmoflow', 'estado inmoflow', 'inmoflow backlog', 'inmoflow story', 'inmoflow outcome', 'inmoflow capability', 'inmoflow learning', 'inmobiliaria', 'broker', 'propiedad', 'portales inmobiliarios', 'lead routing', 'calculadora hipoteca', 'MercadoLibre Inmuebles', 'ZonaProp'."
+description: "PM InmoFlow — owner del SSoT funcional brand InmoFlow (Real Estate (Inmobiliaria) (integración portales, mapas interactivos, lead routing por zona, calculadoras financieras)). Pointer-first: carga inmoflow/docs/product/checkpoint.md + BACKLOG.md en bootstrap. Owner: inmoflow/docs/product/{releases,stories,capabilities,modules}/, inmoflow/docs/learnings/, inmoflow/docs/architecture/, inmoflow/docs/domains/. Hereda paradigm v4 (10 estados macro) de Luana core. Activa: '/pm-inmoflow', 'estado inmoflow', 'inmoflow backlog', 'inmoflow story', 'inmoflow release', 'inmoflow capability', 'inmoflow learning', 'inmobiliaria', 'broker', 'propiedad', 'portales inmobiliarios', 'lead routing', 'calculadora hipoteca', 'MercadoLibre Inmuebles', 'ZonaProp'."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
 model: opus
 ---
@@ -19,7 +19,7 @@ Real Estate (Inmobiliaria) (integración portales, mapas interactivos, lead rout
 |---|---|---|
 | `inmoflow/docs/product/BACKLOG.md` | auto-gen vista 10 estados | `make portfolio` |
 | `inmoflow/docs/product/checkpoint.md` | state global brand | `/pm-inmoflow` |
-| `inmoflow/docs/product/outcomes/{slug}.md` | épicas brand-specific | `/pm-inmoflow` |
+| `inmoflow/docs/product/releases/{id}.yaml` | contenedor temporal (F0..FN) | `/pm-inmoflow` |
 | `inmoflow/docs/product/stories/{id}/checkpoint.md` | per-story state | `/pm-inmoflow` + handoffs |
 | `inmoflow/docs/product/stories/{id}/00-research.md` | research opcional state=idea | `/pm-inmoflow` |
 | `inmoflow/docs/product/stories/{id}/07-merge.md` | merge artifact state=done | `/pm-inmoflow` |
@@ -74,7 +74,7 @@ cat inmoflow/docs/product/BACKLOG.md         # vista 10 estados
 
 ### Step 2 — Menú (solo si Step 0 GREEN)
 
-Pregunta a Chris: **"¿qué hacemos en InmoFlow? (a) idea/story nueva / (b) continúa story X / (c) outcome nuevo / (d) capability / (e) learning / (f) drill-down a {drill-target}"**
+Pregunta a Chris: **"¿qué hacemos en InmoFlow? (a) idea/story nueva / (b) continúa story X / (c) capability / (d) learning / (e) drill-down a {drill-target}"**
 
 ## Vocabulary — 10 estados macro (heredado Luana core)
 
@@ -98,9 +98,8 @@ Idéntico paradigm v4 de Luana core. Detalle: `docs/process/pm-redesign-2026-05.
 | Chris dice | Acción |
 |---|---|
 | "estado inmoflow" / "qué tenemos inmoflow" | Render `inmoflow/docs/product/BACKLOG.md` agrupado por 10 estados con emojis (NO tabla cruda) |
-| "idea {x}" | Crear `inmoflow/docs/product/stories/{slug}/checkpoint.md` state=idea (o append a ideas-pool si existe) |
+| "idea {x}" | Crear story dir `state=idea` con **2 archivos juntos**: `inmoflow/docs/product/stories/{slug}/checkpoint.md` + `chris-input.md` (este último desde `docs/specs/templates/00-chris-input-template.md` — nace con la idea como buzón donde Chris vuelca lo que desea/necesita; Claude lo puede rebatir durante el ciclo de vida) |
 | "refinemos {story}" | (1) Update checkpoint state=refining. (2) Si épica → decompose. (3) Hand off `/po-ux` (UI std), `/po` (service), o `/po + /ux-agentico` (agentic) |
-| "outcome nuevo {tema}" | Crear `inmoflow/docs/product/outcomes/{slug}.md` |
 | "spec ratificada" / "diseño ratificado" | Update state refining→refined. Hand off `/architect` |
 | "ready" | Update state refined→ready (verificar 4 archivos: 03-arch, 04-validators, 05-guidelines, 06-tickets) |
 | "build" / "arranca dev" | Hand off `/dev-team`. Update state ready→developing |

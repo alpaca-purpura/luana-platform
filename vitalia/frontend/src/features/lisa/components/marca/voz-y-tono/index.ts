@@ -1,3 +1,5 @@
+// cap: brand_studio.lisa-marca
+// story-origin: vitalia-fase2-s7-TBD
 /**
  * voz-y-tono/index.ts — Public barrel for Voz y tono sub-sub-tab components.
  *

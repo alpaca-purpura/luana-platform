@@ -1,3 +1,5 @@
+// cap: __shared__
+// story-origin: TBD
 /**
  * marketing-shared — types re-exported for cross-story consumption (T-mk-fe-2..5)
  * downstream-regression-na: brand-local FE shared types; no cross-brand consumers

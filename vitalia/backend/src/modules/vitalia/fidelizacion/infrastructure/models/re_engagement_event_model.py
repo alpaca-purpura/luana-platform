@@ -1,3 +1,5 @@
+# cap: fidelizacion.re-engagement
+# story-origin: TBD
 """SQLAlchemy 2.0 model — vitalia_re_engagement_events.
 
 Mapea la tabla particionada creada en migration 021.

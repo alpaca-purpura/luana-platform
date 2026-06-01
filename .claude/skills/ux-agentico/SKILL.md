@@ -28,6 +28,8 @@ Post multibrand reorg 2026-05-15, los módulos agentic son SPLIT engine + brand 
 
 Si el flow diseñado requiere modificar engine (`core/luana-core-*/`) → STOP, escalá `/pm-luana`. Este skill SOLO diseña sobre brand extensions a menos que `<brand>: platform` esté explícito.
 
+**Paradigma (cement 2026-05-30 · `docs/architecture/luana-platform/PARADIGM.md`):** hay **un solo engine** por audiencia (`copilot` interno habla al dueño · `sales_agent` externo habla a leads). El trabajador agéntico se diferencia por **scope + persona + guardrails**, NUNCA por un engine nuevo (eso es Plano 3 sobre Plano 2: invoca acciones únicas, no reimplementa). **Valeria = supervisora** (orquesta + compone multi-paso); especialistas scoped; la pestaña web es **sesgo de ruteo**, no un chat aislado. **Adrián = bifronte** (interno+externo). Árbol caja/zona: `.claude/rules/paradigm-arquitectura.md`.
+
 ## Cuándo usar — decision matrix
 
 | Tipo story | Skill |
@@ -110,6 +112,14 @@ Turn 2
 ```
 
 Escribir 1 happy path completo + bullet list edges + adversarial.
+
+**★ v5 cement 2026-05-31 — sincronizar con el `§ Mapa funcional` del `01-spec.md` (capa humana).**
+El happy path turn-by-turn de acá ES la versión agéntica del happy path del mapa. Verificá que el
+`01-spec.md` (de `/po`) tenga el `§ Mapa funcional` completo: **árbol de bifurcaciones** (cada rama de la
+conversación: intent fuera de scope, loop, recovery, injection → resultado → `[SC-N]`), **reglas de negocio**
+(`RN-N`: límites de tool calls, datos que el agente nunca expone, etc.) y **criterios de aceptación** (`AC-N`).
+Si tu diseño descubre branches/RN nuevos → escribilos como `delta-spec.md` y `/po` los suma al Mapa funcional +
+`§ Matriz de cobertura` (cada Bif/RN → ≥1 scenario/eval → verificación REAL). Un branch agéntico sin eval = hueco.
 
 ### Step 3 — State machine agente
 
@@ -259,6 +269,8 @@ Próximo: /architect (con <brand>: {brand}) → spawn /architect-agentic + (BE s
    Story state transitions: refining → refined al ratificar diseño. /architect después transición refined → ready al cerrar package.
 ```
 
+**Validation cap lineage (v2 cement 2026-05-27):** antes de cerrar state=refined, verificar checkpoint.md tiene `cap_target` (no null) + `cap_change_type` ∈ {new, fix, extend, derive}. Si Chris no los declaró en chris-input.md, skill propone valores como verdict `💡 PROPONE` y espera ratificación. Doc: `docs/process/capability-protocol.md` § Sección 3.
+
 Update `{brand}/docs/product/stories/{story-id}/checkpoint.md` (al ratificar diseño con Chris):
 ```yaml
 brand: {brand}         # ★ REQUIRED — multibrand scope
@@ -287,7 +299,55 @@ Conversaciones en code blocks. Tablas para state machines, tools, recovery. Mét
 
 ## Anti cross-brand pollution
 
-- ❌ NUNCA editar `{other_brand}/...` cuando trabajás en `{brand}`. Si la story necesita tocar otra brand → STOP, escalate `/pm-luana` (outcome cross-brand).
+- ❌ NUNCA editar `{other_brand}/...` cuando trabajás en `{brand}`. Si la story necesita tocar otra brand → STOP, escalate `/pm-luana` (trabajo cross-brand).
 - ❌ NUNCA editar `core/luana-core-*/src/` directamente (engine copilot/sales-agent). Requiere lift via `/pm-luana` (promotion gate). Brand-extension surface (`{brand}/backend/src/modules/{brand}/{copilot,sales_agent}/`) SÍ es editable per-brand.
 - ❌ NUNCA escribir specs/designs/tickets en root `docs/product/stories/` — solo `platform` (cross-brand) outcomes van ahí, y eso requiere `<brand>: platform` explícito + `/pm-luana` ratificación.
 - ❌ NUNCA reutilizar personas/rubrics de `{other_brand}/docs/specs/` sin verificar que la voz/contexto aplica. Default: usar core `docs/specs/` o crear bajo `{brand}/docs/specs/` si necesitás override.
+
+## Output protocol · chris-input.md append (v2 cement 2026-05-27)
+
+Al cierre de cada turn de esta skill, MUST appendear una entry a la sección 💬 Conversación del `chris-input.md` de la story activa.
+
+**Path target:**
+- Story state ∈ {idea, refining, refined, ready, developing, developed, reviewing}: `{brand}/docs/product/stories/{story_id}/chris-input.md`
+- Story state = done: `{brand}/docs/archive/{year}/stories/{story_id}/chris-input.md` (read-only post-merge)
+
+**Formato verbatim del block markdown a appendear:**
+
+```markdown
+### YYYY-MM-DDTHH:MM · 🤖 claude · `/ux-agentico` · {emoji} {VERDICT-LABEL}
+{texto 2-30 líneas · descripción de qué hizo + decisiones tomadas + qué necesita Chris responder}
+```
+
+**Verdict labels (4 valores):**
+
+| Emoji | Label | Cuándo usar |
+|---|---|---|
+| ✓ | APLICADO | Cambios concretos aplicados al spec/design/arch/test (citar paths) |
+| ⚠️ | DUDA | Pregunta a Chris antes de seguir. State queda esperando respuesta |
+| ❌ | REFUTADO | Razón por la que NO se aplica algo que Chris pidió (con justificación) |
+| 💡 | PROPONE | Opción nueva sugerida por Claude · Chris ratifica o descarta |
+
+**Anti-patterns prohibidos:**
+
+- ❌ Skill termina turn sin appendear (silent escape) — siempre appendear, aunque sea `✓ APLICADO · sin cambios sustantivos`
+- ❌ Verdict sin texto sustantivo (1 palabra no informa)
+- ❌ Path hardcoded con brand fija — debe ser `{brand}` dinámico (de checkpoint.md o args del invoke)
+- ❌ Múltiples verdicts en un solo entry — si hay 2 cosas, son 2 entries consecutivas
+- ❌ Entry sin emoji + label de verdict (parser falla)
+
+Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
+
+## Referencias
+
+- `docs/process/pm-redesign-2026-05.md` — paradigma 3 conversaciones + ready package
+- `docs/process/capability-protocol.md` — schema cap YAML v2 + cap_target + cap_change_type
+- `docs/architecture/luana-platform/PARADIGM.md` + `ADR-010-orquestacion-agentica.md` — ★ 3 planos · supervisora Valeria · un engine · Adrián bifronte · `.claude/rules/paradigm-arquitectura.md`
+- `docs/process/chris-input-protocol.md` — output protocol per skill
+- `docs/specs/templates/02-design-agentic-template.md` — template diseño agentic
+- `.claude/skills/po/` — service-story spec (sister skill)
+- `.claude/skills/po-ux/` — UI std spec (sister skill)
+- `.claude/skills/sales-agent-expert/` — voz tenant + prompt cache
+- `.claude/skills/copilot-expert/` — runtime + observability
+
+<!-- voseo-allowed: doc interno / buzón conversacional, no user-facing -->

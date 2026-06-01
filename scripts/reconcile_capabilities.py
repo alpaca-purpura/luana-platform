@@ -28,7 +28,7 @@ Scope flags (mutually exclusive):
   * ``--all-brands``→ iterate every dir with ``{brand}/config/brand.yaml`` + root
 
 Run via ``python scripts/reconcile_capabilities.py [--check] [--require-capabilities-exist]
-[--brand SLUG | --all-brands] [--repo PATH]``.
+[--validate-ledger] [--strict] [--brand SLUG | --all-brands] [--repo PATH]``.
 
 Coverage gate (``--require-capabilities-exist``)
 ================================================
@@ -48,6 +48,11 @@ SDD merge phase with deterministic gate.
 
 Coverage gate added 2026-05-16 via proposal ``2026-05-16-capability-inventory-
 enforcement`` (origen vitalia/docs/learnings/2026-05-16-capabilities-inventory-gap.md).
+
+Atomics killed 2026-05-28 (``docs/process/lifecycle.md``). The unit of behavior
+is now ``scenario`` (Gherkin), not atomic. The ``--validate-atomics`` flag was
+removed; ``atomics[]``/``atomics_added`` fields in cap YAML are inert historical
+data left untouched.
 """
 
 from __future__ import annotations
@@ -88,6 +93,50 @@ class CapCoverageGap:
     checkpoint_path: Path
     caps_dir: Path
     yaml_count: int  # excluding README.md / non-YAML files
+
+
+@dataclass
+class CapLedgerError:
+    """Ledger-validation error (schema v2 cement 2026-05-27).
+
+    Raised by ``--validate-ledger`` when a capability YAML's ``change_log``,
+    ``atomics``, or ``parent_cap`` / ``derives_capabilities`` cross-references
+    are inconsistent.
+
+    Categories
+    ----------
+    * ``missing_story_checkpoint`` — change_log entry references story_id that
+      lacks both an active and an archived checkpoint.md
+    * ``atomic_story_mismatch`` — atomics[].added_in_story not found in any
+      change_log[].story_id
+    * ``parent_cap_missing`` — parent_cap declared but file does not exist
+    * ``parent_cap_inverse_missing`` — parent cap file exists but does NOT list
+      this capability in its derives_capabilities[]
+    """
+
+    cap_path: Path
+    category: str
+    detail: str
+
+
+@dataclass
+class CapLedgerWarning:
+    """Ledger-validation WARNING (advisory by default, error under --strict).
+
+    Categories
+    ----------
+    * ``live_without_scenarios`` — cap is ``status: live``/``beta`` but declares
+      0 ``scenarios[]`` → not verifiable. WARN (no e2e coverage anchor).
+    * ``live_created_in_story_unresolved`` — a ``live``/``beta`` cap whose
+      ``created_in_story`` does not resolve to a checkpoint.md. Loud WARN
+      (a shipped cap MUST trace to a real story). NOTE: ``planned`` caps with
+      unresolved ``created_in_story`` are EXPECTED (forward-declared) and are
+      NOT warned.
+    """
+
+    cap_path: Path
+    category: str
+    detail: str
 
 
 class FrontmatterError(ValueError):
@@ -202,6 +251,250 @@ def check_capability_coverage(repo: Path, brand: str) -> CapCoverageGap | None:
     return None
 
 
+def _story_checkpoint_exists(repo: Path, brand: str, story_id: str) -> bool:
+    """Return True if a checkpoint.md exists for the story (active or archived).
+
+    Searches:
+      * ``{repo}/{brand}/docs/product/stories/{story_id}/checkpoint.md`` (active)
+      * ``{repo}/{brand}/docs/archive/{year}/stories/{story_id}/checkpoint.md`` (archived)
+
+    Archive scan iterates every ``{year}`` directory present (forward-compat with
+    multi-year archive growth).
+    """
+    active = repo / brand / "docs" / "product" / "stories" / story_id / "checkpoint.md"
+    if active.exists():
+        return True
+    archive_root = repo / brand / "docs" / "archive"
+    if archive_root.exists():
+        for year_dir in archive_root.iterdir():
+            if not year_dir.is_dir():
+                continue
+            archived = year_dir / "stories" / story_id / "checkpoint.md"
+            if archived.exists():
+                return True
+    return False
+
+
+def _resolve_parent_cap(caps_dir: Path, parent_cap: str) -> Path | None:
+    """Resolve parent_cap reference to a YAML path under caps_dir.
+
+    parent_cap may be either:
+      * Full capability_id (e.g. ``vitalia-booking-widget-embed``) — resolved by
+        scanning caps_dir for matching ``capability_id`` frontmatter field
+      * Module/slug form (e.g. ``booking/booking-widget-embed``) — resolved
+        directly as a path under caps_dir
+    """
+    candidate = caps_dir / f"{parent_cap}.yaml"
+    if candidate.exists():
+        return candidate
+    for cap_file in caps_dir.rglob("*.yaml"):
+        try:
+            data = load_frontmatter(cap_file)
+        except (FrontmatterError, yaml.YAMLError):
+            continue
+        if data.get("capability_id") == parent_cap or data.get("slug") == parent_cap:
+            return cap_file
+    return None
+
+
+def validate_ledger(repo: Path, brand: str | None) -> list[CapLedgerError]:
+    """Validate cap ledger schema v2 cement 2026-05-27.
+
+    Three validations per capability YAML that has ``change_log:`` field:
+
+    1. Each ``change_log[].story_id`` references a story whose checkpoint.md
+       exists (active or archived). Missing → ``missing_story_checkpoint``.
+    2. Each ``atomics[].added_in_story`` matches a ``change_log[].story_id``.
+       Mismatch → ``atomic_story_mismatch``.
+    3. If ``parent_cap`` is not null, the parent capability exists AND lists
+       the current capability in its ``derives_capabilities[]``. Missing/
+       inconsistent → ``parent_cap_missing`` or ``parent_cap_inverse_missing``.
+
+    Returns list of errors (empty list = OK).
+    """
+    base = repo / brand if brand else repo
+    caps_dir = base / "docs" / "product" / "capabilities"
+    if not caps_dir.exists():
+        return []
+    if not brand:
+        # Ledger schema v2 is brand-scoped — root scope has no story checkpoints
+        # to cross-reference against. Skip gracefully.
+        return []
+
+    errors: list[CapLedgerError] = []
+
+    for cap_file in sorted(caps_dir.rglob("*.yaml")):
+        try:
+            cap = load_frontmatter(cap_file)
+        except (FrontmatterError, yaml.YAMLError) as exc:
+            sys.stderr.write(f"SKIP {cap_file}: {exc}\n")
+            continue
+
+        change_log = cap.get("change_log")
+        # Skip caps without change_log (pre-v2 schema, not yet migrated)
+        if not change_log or not isinstance(change_log, list):
+            continue
+
+        cap_id = cap.get("capability_id") or cap.get("slug") or cap_file.stem
+
+        # Validation 1: change_log[].story_id → checkpoint exists
+        change_log_story_ids: list[str] = []
+        for idx, entry in enumerate(change_log):
+            if not isinstance(entry, dict):
+                continue
+            story_id = entry.get("story_id")
+            if not story_id:
+                continue
+            change_log_story_ids.append(story_id)
+            if not _story_checkpoint_exists(repo, brand, story_id):
+                errors.append(
+                    CapLedgerError(
+                        cap_path=cap_file,
+                        category="missing_story_checkpoint",
+                        detail=(
+                            f"change_log[{idx}].story_id={story_id!r} has no checkpoint.md "
+                            f"at {brand}/docs/product/stories/{story_id}/checkpoint.md "
+                            f"nor at {brand}/docs/archive/*/stories/{story_id}/checkpoint.md"
+                        ),
+                    )
+                )
+
+        # Validation 2: atomics[].added_in_story → must match a change_log story_id
+        atomics = cap.get("atomics") or []
+        if isinstance(atomics, list):
+            for idx, atomic in enumerate(atomics):
+                if not isinstance(atomic, dict):
+                    continue
+                added_in = atomic.get("added_in_story")
+                if not added_in:
+                    continue
+                if added_in not in change_log_story_ids:
+                    label = atomic.get("label") or atomic.get("id") or f"atomic[{idx}]"
+                    errors.append(
+                        CapLedgerError(
+                            cap_path=cap_file,
+                            category="atomic_story_mismatch",
+                            detail=(
+                                f"atomic {label!r} (atomics[{idx}].added_in_story={added_in!r}) "
+                                f"not found in any change_log[].story_id "
+                                f"(declared: {change_log_story_ids})"
+                            ),
+                        )
+                    )
+
+        # Validation 3: parent_cap consistency
+        parent_cap = cap.get("parent_cap")
+        if parent_cap:  # not None, not empty string
+            parent_path = _resolve_parent_cap(caps_dir, parent_cap)
+            if parent_path is None:
+                errors.append(
+                    CapLedgerError(
+                        cap_path=cap_file,
+                        category="parent_cap_missing",
+                        detail=(
+                            f"parent_cap={parent_cap!r} declared but no capability YAML "
+                            f"with that capability_id/slug exists under {caps_dir.relative_to(repo)}"
+                        ),
+                    )
+                )
+            else:
+                try:
+                    parent_data = load_frontmatter(parent_path)
+                except (FrontmatterError, yaml.YAMLError):
+                    parent_data = {}
+                derives = parent_data.get("derives_capabilities") or []
+                if cap_id not in derives:
+                    errors.append(
+                        CapLedgerError(
+                            cap_path=cap_file,
+                            category="parent_cap_inverse_missing",
+                            detail=(
+                                f"parent_cap={parent_cap!r} resolved to {parent_path.relative_to(repo)} "
+                                f"but its derives_capabilities[] does NOT list {cap_id!r} "
+                                f"(found: {derives})"
+                            ),
+                        )
+                    )
+
+    return errors
+
+
+# Statuses that imply the capability is shipped/usable and therefore should be
+# verifiable + traceable to a real story.
+_LIVE_STATUSES = frozenset({"live", "beta"})
+
+
+def validate_live_evidence(repo: Path, brand: str | None) -> list[CapLedgerWarning]:
+    """Validate live⟹evidence invariants. Returns WARNINGS (advisory by default).
+
+    Two checks per capability YAML:
+
+    1. ``status: live``/``beta`` but 0 ``scenarios[]`` → ``live_without_scenarios``
+       (cap live sin scenarios = no verificable).
+    2. ``status: live``/``beta`` whose ``created_in_story`` does NOT resolve to a
+       checkpoint.md → ``live_created_in_story_unresolved`` (loud — shipped cap
+       must trace to a real story). ``planned`` caps with unresolved
+       ``created_in_story`` are EXPECTED (forward-declared) and skipped silently.
+
+    These are WARNINGS — they do not fail the build unless ``--strict`` is set.
+    """
+    base = repo / brand if brand else repo
+    caps_dir = base / "docs" / "product" / "capabilities"
+    if not caps_dir.exists() or not brand:
+        # Brand-scoped: root scope has no story checkpoints to resolve against.
+        return []
+
+    warnings: list[CapLedgerWarning] = []
+
+    for cap_file in sorted(caps_dir.rglob("*.yaml")):
+        try:
+            cap = load_frontmatter(cap_file)
+        except (FrontmatterError, yaml.YAMLError) as exc:
+            sys.stderr.write(f"SKIP {cap_file}: {exc}\n")
+            continue
+
+        status = str(cap.get("status") or "").strip().lower()
+        cap_id = cap.get("capability_id") or cap.get("slug") or cap_file.stem
+
+        # Check 1: live/beta cap with 0 scenarios → not verifiable
+        if status in _LIVE_STATUSES:
+            scenarios = cap.get("scenarios")
+            n_scenarios = len(scenarios) if isinstance(scenarios, list) else 0
+            if n_scenarios == 0:
+                warnings.append(
+                    CapLedgerWarning(
+                        cap_path=cap_file,
+                        category="live_without_scenarios",
+                        detail=(
+                            f"cap {cap_id!r} is status={status!r} but declares 0 scenarios "
+                            f"(cap live sin scenarios = no verificable). Add scenarios[] with "
+                            f"e2e_test anchors so the live claim can be verified."
+                        ),
+                    )
+                )
+
+        # Check 2: created_in_story resolution. planned → expected (skip).
+        #          live/beta → loud WARN if unresolved.
+        created_in_story = cap.get("created_in_story")
+        if created_in_story and status in _LIVE_STATUSES:
+            if not _story_checkpoint_exists(repo, brand, created_in_story):
+                warnings.append(
+                    CapLedgerWarning(
+                        cap_path=cap_file,
+                        category="live_created_in_story_unresolved",
+                        detail=(
+                            f"cap {cap_id!r} is status={status!r} but created_in_story="
+                            f"{created_in_story!r} has no checkpoint.md at "
+                            f"{brand}/docs/product/stories/{created_in_story}/ nor "
+                            f"{brand}/docs/archive/*/stories/{created_in_story}/ "
+                            f"(a shipped cap must trace to a real story)."
+                        ),
+                    )
+                )
+
+    return warnings
+
+
 def discover_brands(repo: Path) -> list[str]:
     """Return sorted list of brand slugs (dirs containing ``config/brand.yaml``).
 
@@ -304,6 +597,20 @@ def main() -> int:
         "Origen: proposal 2026-05-16-capability-inventory-enforcement.",
     )
     parser.add_argument(
+        "--validate-ledger",
+        action="store_true",
+        help="Validate capability ledger schema v2 (cement 2026-05-27): "
+        "change_log[].story_id has checkpoint.md (active or archive); "
+        "atomics[].added_in_story matches a change_log[].story_id; "
+        "parent_cap (if non-null) exists and lists current cap in derives_capabilities[]. "
+        "Exit 1 on any error. Combine with --brand or --all-brands.",
+    )
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="Reserved for future use (promote advisory warnings to errors).",
+    )
+    parser.add_argument(
         "--repo",
         type=Path,
         default=Path(__file__).resolve().parents[1],
@@ -361,7 +668,46 @@ def main() -> int:
             if gap is not None:
                 coverage_gaps.append(gap)
 
-    if not all_drifts and not coverage_gaps:
+    # Ledger validation (schema v2 cement 2026-05-27).
+    # Opt-in via --validate-ledger. Brand-scoped (root scope skipped — no story checkpoints).
+    ledger_errors: list[tuple[str, CapLedgerError]] = []
+    if args.validate_ledger:
+        for label, brand_arg in scopes:
+            if brand_arg is None:
+                continue  # root scope has no brand-scoped stories
+            for e in validate_ledger(args.repo, brand_arg):
+                ledger_errors.append((label, e))
+
+    # live⟹evidence advisory checks (WARN by default; error only under --strict).
+    # Runs alongside --validate-ledger and --check so the pre-commit gate surfaces
+    # them without silently skipping. Brand-scoped (root has no story checkpoints).
+    ledger_warnings: list[tuple[str, CapLedgerWarning]] = []
+    if args.validate_ledger or args.check:
+        for label, brand_arg in scopes:
+            if brand_arg is None:
+                continue
+            for w in validate_live_evidence(args.repo, brand_arg):
+                ledger_warnings.append((label, w))
+
+    # Under --strict, live⟹evidence warnings are promoted to blocking errors.
+    strict_promotes_warnings = bool(args.strict and ledger_warnings)
+
+    def _print_warnings() -> None:
+        if not ledger_warnings:
+            return
+        label_word = "ERROR" if strict_promotes_warnings else "WARN"
+        print(f"\nLIVE⟹EVIDENCE {label_word}S in {len(ledger_warnings)} cap(s):")  # noqa: T201
+        for label, w in ledger_warnings:
+            rel = w.cap_path.relative_to(args.repo)
+            print(f"\n  [{label}] {rel}")  # noqa: T201
+            print(f"    category: {w.category}")  # noqa: T201
+            print(f"    detail:   {w.detail}")  # noqa: T201
+        if strict_promotes_warnings:
+            print("\n--strict: live⟹evidence warnings promoted to blocking errors.")  # noqa: T201
+        else:
+            print("\n(advisory — non-blocking. Run with --strict to make these errors.)")  # noqa: T201
+
+    if not all_drifts and not coverage_gaps and not ledger_errors:
         scope_desc = ", ".join(label for label, _ in scopes)
         print(f"OK — all capabilities consistent with stories. Scope: {scope_desc}.")  # noqa: T201
         if args.require_capabilities_exist:
@@ -370,7 +716,11 @@ def main() -> int:
                 else ([args.brand] if args.brand else [])
             )) or "(none — pass --brand or --all-brands to enable)"
             print(f"Capability coverage check: PASS. Brands checked: {checked}.")  # noqa: T201
-        return 0
+        if args.validate_ledger:
+            ledger_scopes = ", ".join(label for label, b in scopes if b is not None) or "(none — pass --brand or --all-brands)"
+            print(f"Capability ledger check: PASS. Scopes: {ledger_scopes}.")  # noqa: T201
+        _print_warnings()
+        return 1 if strict_promotes_warnings else 0
 
     if all_drifts:
         print(f"DRIFT detected in {len(all_drifts)} capability file(s):")  # noqa: T201
@@ -390,13 +740,31 @@ def main() -> int:
             print(f"    fix: poblar capabilities/{{module}}/{{cap}}.yaml leyendo código vivo + rules + archive")  # noqa: T201
             print(f"    ref: docs/promotion-protocol/proposals/2026-05-16-capability-inventory-enforcement.md")  # noqa: T201
 
-    if args.check or coverage_gaps:
-        # Coverage gaps are always blocking (no auto-fix possible — requires manual inventory).
+    if ledger_errors:
+        print(f"\nCAPABILITY LEDGER ERRORS in {len(ledger_errors)} entry/entries:")  # noqa: T201
+        for label, e in ledger_errors:
+            rel = e.cap_path.relative_to(args.repo)
+            print(f"\n  [{label}] {rel}")  # noqa: T201
+            print(f"    category: {e.category}")  # noqa: T201
+            print(f"    detail:   {e.detail}")  # noqa: T201
+        print("\nLedger schema v2 cement: 2026-05-27. Fix by editing change_log/parent_cap/derives_capabilities in cap YAML.")  # noqa: T201
+
+    _print_warnings()
+
+    has_blocking_errors = bool(coverage_gaps or ledger_errors or strict_promotes_warnings)
+    if args.check or has_blocking_errors:
+        # Coverage gaps + ledger errors are always blocking
+        # (no auto-fix possible — manual edit required).
         if all_drifts and args.check:
-            print("\nRun without --check to fix drifts in place. Coverage gaps require manual inventory.")  # noqa: T201
-        elif coverage_gaps:
+            print("\nRun without --check to fix drifts in place. Coverage gaps + ledger errors require manual edits.")  # noqa: T201
+        elif coverage_gaps and not ledger_errors:
             print("\nCoverage gaps require manual capability YAML authoring (no auto-fix).")  # noqa: T201
+        elif ledger_errors and not coverage_gaps:
+            print("\nLedger errors require manual edits to capability YAML frontmatter.")  # noqa: T201
         return 1
+
+    if not all_drifts:
+        return 0
 
     print(f"\nFixed {len(all_drifts)} file(s).")  # noqa: T201
     return 0

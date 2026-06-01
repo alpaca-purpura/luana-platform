@@ -1,96 +1,46 @@
 # Story Closure Gate
 
-**Origen:** caso vitalia 2026-05-18 — story `developed` quedó abandonada + 2nda story arrancada en mismo worktree. **Cement-date:** 2026-05-18.
-
-**Detalle completo (6 fases workflow + 07-merge.md schema verbatim 5 secciones + gherkin_coverage field + 7 enforcement layers + anti-patterns examples + caso origen verbatim):** `docs/rules-detail/story-closure-gate.md`.
+> **Slim stub (context-rot pass 2026-05-30).** Detalle completo (07-merge schema verbatim · gherkin_coverage · F.3 cap ledger · v3.1/v3.2 enforce tables · WIP cap v2 · defer_audit schema · 7 enforcement layers · caso origen) en `docs/rules-detail/story-closure-gate.md` — load on-demand. **Origen:** caso vitalia 2026-05-18.
 
 ## Regla cardinal
 
-Una story en `state: developed` o `reviewing` **NO puede abandonarse** para arrancar trabajo en otra story. Ciclo:
+Story en `state: developed` o `reviewing` **NO puede abandonarse** para arrancar otra story (mismo módulo). Ciclo único:
 
 ```
 ready → developing → developed → reviewing → done
-                         │           │
-                         └─ AUTO ─→  └─ APPROVED ─→ merge ─→ done
+                         └─ AUTO→/auditor    └─ APPROVED→/pm-{brand} merge
 ```
 
-`/dev-team` cerrar `developed` → **AUTO-HANDOFF** `/auditor`. APPROVED → **AUTO-HANDOFF** `/pm-{brand}` merge.
+`/dev-team` cierra `developed` → AUTO-HANDOFF `/auditor`. APPROVED → AUTO-HANDOFF `/pm-{brand}` merge. Sin Chris-trigger manual. Sin `defer_audit: true` el gate es ABSOLUTO.
 
-## Las 6 fases por worktree
+## 6 fases (resumen)
 
-| Fase | Owner | Output / artifact | Transition |
-|---|---|---|---|
-| **A — DEV** | `/dev-team` | `T-{n}-result.md` + `gate-output.json` GREEN + commits pushed | `ready → developing → developed` |
-| **B — AUDIT** | `/auditor` (auto-handoff) | `T-{n}-review.md` + `CHECKPOINTS.md` (C1-C5) | `developed → reviewing` |
-| **C — FIX-LOOP** | `/dev-team` (si CHANGES_REQUESTED) | fix commits + re-audit | cap 2 iter · excede → ESCALATED |
-| **D — GHERKIN** | `/auditor` (Phase D dentro audit) | `06-audit/gherkin-matrix.md` (scenario → test → status) | embedded en B |
-| **E — DOCS** | `/pm-{brand}` | `capabilities/{m}/{c}.yaml` + `modules/{m}.md` auto-list | embedded en F prep |
-| **F — MERGE** | `/pm-{brand}` | `07-merge.md` 5 secciones cementadas + squash-merge + archive story | `reviewing → done` |
+| Fase | Owner | Transition |
+|---|---|---|
+| A — DEV | `/dev-team` | `ready → developing → developed` |
+| B — AUDIT | `/auditor` (auto-handoff) | `developed → reviewing` |
+| C — FIX-LOOP | `/dev-team` si CHANGES_REQUESTED | cap 2 iter |
+| D — GHERKIN | `/auditor` Phase D (embedded en B) | gherkin-matrix.md |
+| E — DOCS | `/pm-{brand}` | cap YAML + modules MD |
+| F — MERGE | `/pm-{brand}` | `reviewing → done` · 07-merge.md 5 secciones · archive story R2 |
 
-Schema `07-merge.md` 5 secciones + `gherkin_coverage` field en `06-tickets.yaml` (verbatim ejemplos): ver detail doc.
+**WIP cap v2 (module-scoped):** ≤ 1 story en `developing/developed/reviewing` por `code:{module}` bucket. Módulos distintos paralelos = OK. `defer_audit: true` (ratificado Chris) = única excepción.
 
-## Escape valve — `defer_audit: true`
+## Cuándo carga el detalle
 
-Caso de uso: Chris pausa auditoría por razón explícita. Schema en `checkpoint.md`:
+- `/pm-{brand}` Fase F.3 (cap_change_type: new/fix/extend/derive → lógica + v3.1/v3.2 enforce tables)
+- Necesitás el schema verbatim de `07-merge.md` 5 secciones o `defer_audit` en checkpoint.md
+- Troubleshoot enforcement layers (hooks · cleanup-session · templates)
 
-```yaml
-state: developed
-phase: AWAIT_AUDIT_DEFERRED
-defer_audit: true
-defer_audit_reason: "ratificó pausa 2026-MM-DD: razón X"
-defer_audit_ratified_by: chris
-defer_audit_at: 2026-MM-DDTHH:MM:SS-05:00
-```
+## Anti-patterns (top 3 — lista completa en el detalle)
 
-Mientras true: `/dev-team` NO auto-handoff. `/pm-{brand}` bootstrap pingea deuda. WIP cap relax. Para nueva story requiere Chris ratify explícito.
-
-Sin `defer_audit: true` el gate es ABSOLUTO.
-
-## WIP cap post-decreto (hard rule)
-
-| Estado | Cap default |
-|---|---|
-| `developing` | ≤ 1 por worktree |
-| `developed` | ≤ 1 por worktree |
-| `reviewing` | ≤ 1 por worktree |
-| `done` | ∞ (rolling 90d) |
-
-Sub-stories del mismo outcome pueden compartir worktree pero secuenciales (A `done` ANTES de B arrancar).
-
-## Naming convention worktree
-
-```
-wip/{brand}-{story-padre-id}   # canónico
-```
-
-**NO** `wip/{brand}-slice-N-shipping` ni `wip/{brand}-misc` (ambiguos). `scripts/git/new-session.sh` valida story exista.
-
-## Enforcement layers (defense-in-depth)
-
-| Layer | Mecanismo |
-|---|---|
-| 1 | `/pm-{brand}` bootstrap Step 0 escanea stories developed/reviewing sin defer_audit |
-| 2 | `/dev-team` Step 5 final auto-handoff explícito a `/auditor` |
-| 3 | `/auditor` Phase D + Step 5 auto-handoff a `/pm-{brand}` merge |
-| 4 | Hook `scripts/git-hooks/pre-commit` Section 12 bloquea stage files cross-story |
-| 5 | `scripts/git/cleanup-session.sh` refuse remove worktree si stories no `done` |
-| 6 | Template `06-tickets-template.yaml` `gherkin_coverage` mandatory |
-| 7 | Template `07-merge-template.md` 5 secciones REFUSE merge si missing |
-
-## Anti-patterns (top 5)
-
-- ❌ `/dev-team` cierra ticket final + state=developed + arranca otro ticket de story distinta en mismo worktree (este es el bug origen)
-- ❌ `/pm-{brand}` ofrece menú "nueva story" cuando hay story pendiente audit sin defer_audit
-- ❌ `/auditor` cierra APPROVED sin emitir handoff explícito a `/pm-{brand}` merge
-- ❌ Worktree branch nombrado ambiguo (hospedó 2 stories)
-- ❌ `defer_audit: true` sin razón documentada + ratificación Chris
-
-Lista completa (10 items) + ejemplos caso origen + cross-reference brand-docs-schema R2 archive: `docs/rules-detail/story-closure-gate.md`.
+- ❌ `/dev-team` cierra `developed` + arranca ticket de otra story sin defer_audit (bug origen)
+- ❌ `/pm-{brand}` ofrece "nueva story" con story pendiente audit sin defer_audit
+- ❌ `/auditor` cierra APPROVED sin handoff explícito a `/pm-{brand}` merge
 
 ## Referencias
 
-- `docs/rules-detail/story-closure-gate.md` — **detalle completo** (07-merge schema, gherkin_coverage, examples)
+- `docs/rules-detail/story-closure-gate.md` — **detalle completo**
 - `docs/process/story-closure-gate.md` — rationale + case study
 - `docs/architecture/luana-platform/ADR-006-story-closure-gate.md` — decisión
-- `docs/process/pm-redesign-2026-05.md` — paradigm v4 (Conv 3 auto-default)
 - `.claude/rules/brand-docs-schema.md` § R2 — archive path canónico

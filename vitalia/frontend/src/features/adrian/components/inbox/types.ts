@@ -1,3 +1,5 @@
+// cap: sales_agent.inbox-handler-mode-occ
+// story-origin: vitalia-fase1-s10-TBD
 /**
  * inbox/types.ts — Shared types for Adrián Inbox molecules.
  * F1-S10 vitalia-fase1-empty-states — T-5

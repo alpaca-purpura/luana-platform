@@ -1,3 +1,5 @@
+# cap: fidelizacion.re-engagement
+# story-origin: TBD
 """DTOs de resumen de fidelización — capa API para fidelización vitalia.
 
 Agregados de estado de fidelización para dashboards y reportes.

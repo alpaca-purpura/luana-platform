@@ -1,3 +1,5 @@
+# cap: __shared__
+# story-origin: TBD
 """Sentry alert rule configurations (declarative) for Vitalia.
 
 Defines alert thresholds as dataclasses for documentation + runtime config.

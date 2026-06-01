@@ -1,3 +1,5 @@
+# cap: admin.clinics-crud
+# story-origin: TBD
 """Admin module — Clinic branches management for Vitalia.
 
 Uses ClinicService (application layer) indirectly via raw sync query

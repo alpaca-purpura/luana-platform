@@ -1,3 +1,5 @@
+// cap: shell-organism.shell-vitalia
+// story-origin: vitalia-fase1-s7-TBD
 "use client";
 
 import { forwardRef } from "react";
@@ -18,11 +20,12 @@ export interface ConfigTabProps {
 
 /**
  * ConfigTab — Vitalia shell molécula (F1-S7).
+ * v1.2 (2026-05-30 paradigm-map-zones T-5): label "Configurar" → "Plataforma".
  *
  * IconButton 40x40 right-aligned (`ml-auto`) con icon ⚙ Settings (Lucide).
  * Active state: bg-muted + ring-1 ring-border + data-active="true".
  * Inactive: bg-muted + text-muted-foreground.
- * Hover inactive: bg-muted/80 + text-foreground + Tooltip "Configurar" visible.
+ * Hover inactive: bg-muted/80 + text-foreground + Tooltip "Plataforma" visible.
  * Focus visible: ring-2 ring-ring ring-offset-1.
  *
  * Q13 cement: role="tab" + aria-selected como peer del tablist en Ribbon.
@@ -31,9 +34,9 @@ export interface ConfigTabProps {
  *
  * D20: size-10 (40x40) — NO Shadcn Button size="icon" (size-9=36px conflict).
  * D21: ml-auto right-align en flex container del Ribbon.
- * D22: aria-label="Configurar" mandatory (sin texto visible → screen reader).
+ * D22: aria-label="Plataforma" mandatory (sin texto visible → screen reader).
  *
- * spec_anchor: 01-spec.md § Estados visuales ConfigTab · 03-arch.md § 2.4 D18-D22
+ * spec_anchor: 03-arch-fe.md § F6 + 06-tickets.yaml T-5
  * downstream-regression-na: brand-local shell-organism; no cross-brand consumers
  */
 export const ConfigTab = forwardRef<HTMLButtonElement, ConfigTabProps>(
@@ -45,7 +48,7 @@ export const ConfigTab = forwardRef<HTMLButtonElement, ConfigTabProps>(
             ref={ref}
             type="button"
             role="tab"
-            aria-label="Configurar"
+            aria-label="Plataforma"
             aria-selected={active}
             tabIndex={tabIndex}
             data-testid="ribbon-config-tab"
@@ -64,7 +67,7 @@ export const ConfigTab = forwardRef<HTMLButtonElement, ConfigTabProps>(
           </button>
         </TooltipTrigger>
         <TooltipContent side="bottom" sideOffset={4}>
-          Configurar
+          Plataforma
         </TooltipContent>
       </Tooltip>
     );

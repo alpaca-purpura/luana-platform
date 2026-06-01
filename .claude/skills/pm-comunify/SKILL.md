@@ -1,6 +1,6 @@
 ---
 name: pm-comunify
-description: "PM Comunify — owner del SSoT funcional brand Comunify (Creator Economy + Educación (escalera de valor, bóveda autoridad, motor comunidades, embudos venta)). Pointer-first: carga comunify/docs/product/checkpoint.md + BACKLOG.md en bootstrap. Owner: comunify/docs/product/{outcomes,stories,capabilities,modules}/, comunify/docs/learnings/, comunify/docs/architecture/, comunify/docs/domains/. Hereda paradigm v4 (10 estados macro) de Luana core. Activa: '/pm-comunify', 'estado comunify', 'comunify backlog', 'comunify story', 'comunify outcome', 'comunify capability', 'comunify learning', 'creator', 'cohort', 'community', 'voice cloning', 'authority vault', 'offer ladder', 'creador', 'curso', 'comunidad'."
+description: "PM Comunify — owner del SSoT funcional brand Comunify (Creator Economy + Educación (escalera de valor, bóveda autoridad, motor comunidades, embudos venta)). Pointer-first: carga comunify/docs/product/checkpoint.md + BACKLOG.md en bootstrap. Owner: comunify/docs/product/{releases,stories,capabilities,modules}/, comunify/docs/learnings/, comunify/docs/architecture/, comunify/docs/domains/. Hereda paradigm v4 (10 estados macro) de Luana core. Activa: '/pm-comunify', 'estado comunify', 'comunify backlog', 'comunify story', 'comunify release', 'comunify capability', 'comunify learning', 'creator', 'cohort', 'community', 'voice cloning', 'authority vault', 'offer ladder', 'creador', 'curso', 'comunidad'."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
 model: opus
 ---
@@ -19,7 +19,7 @@ Creator Economy + Educación (escalera de valor, bóveda autoridad, motor comuni
 |---|---|---|
 | `comunify/docs/product/BACKLOG.md` | auto-gen vista 10 estados | `make portfolio` |
 | `comunify/docs/product/checkpoint.md` | state global brand | `/pm-comunify` |
-| `comunify/docs/product/outcomes/{slug}.md` | épicas brand-specific | `/pm-comunify` |
+| `comunify/docs/product/releases/{id}.yaml` | contenedor temporal (F0..FN) | `/pm-comunify` |
 | `comunify/docs/product/stories/{id}/checkpoint.md` | per-story state | `/pm-comunify` + handoffs |
 | `comunify/docs/product/stories/{id}/00-research.md` | research opcional state=idea | `/pm-comunify` |
 | `comunify/docs/product/stories/{id}/07-merge.md` | merge artifact state=done | `/pm-comunify` |
@@ -43,7 +43,7 @@ Toda escritura a `comunify/docs/` debe cumplir:
 
 - **R1 — No MDs sueltos en `comunify/docs/` raíz.** Solo sub-dirs (`product/`, `archive/`, `learnings/`, `architecture/`, `domains/`). Contenido ad-hoc → al sub-dir apropiado (ADR a `architecture/`, decisión proceso a `domains/`, learning a `learnings/`).
 - **R2 — Stories `state: done` auto-move a `comunify/docs/archive/{year}/stories/`** en el commit del 07-merge. NUNCA quedan en `product/stories/` indefinidamente. Referencia: § "Capability promotion (al merge)" abajo.
-- **R3 — Auto-gen files NO se editan manual.** `BACKLOG.md`, `BACKLOG-TLDR.md`, `BACKLOG.yaml`, `modules/{m}.md` (sección auto-list). Editar la SOURCE (checkpoint/outcomes/stories/capabilities), luego regen via `make portfolio` / `python scripts/generate_backlog.py --brand comunify`.
+- **R3 — Auto-gen files NO se editan manual.** `BACKLOG.md`, `BACKLOG-TLDR.md`, `BACKLOG.yaml`, `modules/{m}.md` (sección auto-list). Editar la SOURCE (checkpoint/releases/stories/capabilities), luego regen via `make portfolio` / `python scripts/generate_backlog.py --brand comunify`.
 
 Si `/pm-comunify` detecta violación durante una sesión → STOP + redirect a la ubicación canónica.
 
@@ -86,7 +86,7 @@ cat comunify/docs/product/BACKLOG.md         # vista 10 estados
 
 ### Step 2 — Menú (solo si Step 0 GREEN)
 
-Pregunta a Chris: **"¿qué hacemos en Comunify? (a) idea/story nueva / (b) continúa story X / (c) outcome nuevo / (d) capability / (e) learning / (f) drill-down a {drill-target}"**
+Pregunta a Chris: **"¿qué hacemos en Comunify? (a) idea/story nueva / (b) continúa story X / (c) capability / (d) learning / (e) drill-down a {drill-target}"**
 
 ## Vocabulary — 10 estados macro (heredado Luana core)
 
@@ -110,9 +110,8 @@ Idéntico paradigm v4 de Luana core. Detalle: `docs/process/pm-redesign-2026-05.
 | Chris dice | Acción |
 |---|---|
 | "estado comunify" / "qué tenemos comunify" | Render `comunify/docs/product/BACKLOG.md` agrupado por 10 estados con emojis (NO tabla cruda) |
-| "idea {x}" | Crear `comunify/docs/product/stories/{slug}/checkpoint.md` state=idea (o append a ideas-pool si existe) |
+| "idea {x}" | Crear story dir `state=idea` con **2 archivos juntos**: `comunify/docs/product/stories/{slug}/checkpoint.md` + `chris-input.md` (este último desde `docs/specs/templates/00-chris-input-template.md` — nace con la idea como buzón donde Chris vuelca lo que desea/necesita; Claude lo puede rebatir durante el ciclo de vida) |
 | "refinemos {story}" | (1) Update checkpoint state=refining. (2) Si épica → decompose. (3) Hand off `/po-ux` (UI std), `/po` (service), o `/po + /ux-agentico` (agentic) |
-| "outcome nuevo {tema}" | Crear `comunify/docs/product/outcomes/{slug}.md` |
 | "spec ratificada" / "diseño ratificado" | Update state refining→refined. Hand off `/architect` |
 | "ready" | Update state refined→ready (verificar 4 archivos: 03-arch, 04-validators, 05-guidelines, 06-tickets) |
 | "build" / "arranca dev" | Hand off `/dev-team`. Update state ready→developing |
@@ -139,7 +138,7 @@ Cuando aplicás `07-merge.md` para una story brand:
 5. Archive `comunify/docs/product/stories/{id}/` → `comunify/docs/archive/{year}/stories/{id}/` (snapshot inmutable brand-local)
 6. Append entry en `comunify/docs/learnings/` si aplica (decisión cardinal)
 7. **Si learning tiene `promotable: candidate|yes` → ping `/pm-luana` para evaluación lift a core**
-8. Update outcome story_ids (mark story done)
+8. Update `release.yaml.stories[]` (mark story done — el release recomputa su state machine)
 
 ## ★ Capability inventory post-merge (MANDATORIO)
 
@@ -184,7 +183,7 @@ target_core_package: core/luana-core-X (sugerencia)
 
 **Qué aprendimos:** ...
 
-**Origen:** story {id} / outcome {slug} / incident YYYY-MM-DD
+**Origen:** story {id} / release {id} / incident YYYY-MM-DD
 
 **Why:** razón behind
 
@@ -245,3 +244,5 @@ NUNCA dumps largos. Pointer-first. Si necesitás más detalle escribilo a archiv
 - `comunify/config/brand.yaml` — feature flags + opt-in core packages + `compliance_level:
   creator_economy` (D7 — NOT hipaa_lite vs Vitalia: OK auto-approve signup + community
   moderation rails + voice_cloning_enabled=true + offer_ladder_visualizer 4 niveles)
+
+<!-- voseo-allowed: doc interno / buzón conversacional, no user-facing -->

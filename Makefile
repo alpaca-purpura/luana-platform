@@ -9,6 +9,15 @@
 # Stories 11-13 (vitalia, comunify, lupulo) heredan automatico.
 
 # ════════════════════════════════════════════════════════════════
+# Workspace root (used by Phase 4b targets — schema v2 ledger + releases)
+# ════════════════════════════════════════════════════════════════
+WS := $(shell git rev-parse --show-toplevel)
+
+# Python venv resolver: prefer worktree-local .venv, fallback a luana-platform principal
+# (worktrees efímeros como protocol-* no tienen .venv propio)
+PYTHON := $(shell test -x $(WS)/.venv/bin/python && echo $(WS)/.venv/bin/python || echo /home/chalreme/Proyectos/luana-platform/.venv/bin/python)
+
+# ════════════════════════════════════════════════════════════════
 # BRANDS — append future brand slugs as their migration stories close
 # ════════════════════════════════════════════════════════════════
 BRANDS := nicolify vitalia comunify lupulo
@@ -16,11 +25,13 @@ BRANDS := nicolify vitalia comunify lupulo
 .PHONY: dev-nicolify dev-vitalia dev-comunify dev-lupulo
 .PHONY: dev-vitalia-admin dev-vitalia-admin-down
 .PHONY: dev-nicolify-tunnel dev-vitalia-tunnel dev-comunify-tunnel dev-lupulo-tunnel
+.PHONY: dev-app-vitalia
 .PHONY: dev-all dev-all-vector dev-all-cache
 .PHONY: dev-down-nicolify dev-down-vitalia dev-down-comunify dev-down-lupulo dev-down-all
 .PHONY: dev-clean-nicolify dev-clean-vitalia dev-clean-comunify dev-clean-lupulo dev-clean-all
 .PHONY: infra-matrix portfolio portfolio-check scan-promotables
 .PHONY: ci-parity $(BRANDS:%=ci-parity-%) ci-parity-be ci-parity-fe
+.PHONY: releases-vitalia capability-ledger-check migrate-vitalia-schema cockpit-up
 .PHONY: install-hooks help
 
 COMPOSE_BASE := docker compose -f docker-compose.dev.yml
@@ -65,6 +76,15 @@ dev-comunify-tunnel:
 
 dev-lupulo-tunnel:
 	$(COMPOSE_BASE) -f lupulo/docker-compose.dev.yml --profile tunnel up -d
+
+# ── dev-app verified (stack + tunnel + live-verify readiness) ────────────────
+# Levanta stack + cloudflared y VERIFICA que dev-app.{brand}lat.com sirve la app
+# real, dejando todo listo para verificación live. SSoT: .claude/rules/definition-of-done-live-verify.md
+dev-app-vitalia:
+	bash scripts/dev-app-up.sh vitalia
+
+dev-app-%:
+	bash scripts/dev-app-up.sh $*
 
 # ── all-brands targets ───────────────────────────────────────────────────────
 dev-all:
@@ -149,6 +169,27 @@ portfolio-check:
 scan-promotables:
 	python3 scripts/scan_promotables.py
 
+# machinery hardening anti-drift (auditoría 2026-05-28) — doctrina↔templates↔agentes consistentes
+machinery-check:
+	python3 scripts/validate_machinery_consistency.py
+
+# v3 cement 2026-05-27 · ADR-vitalia-005 · capability index user-facing
+capability-index:
+	python3 scripts/generate_capability_index.py --brand vitalia
+
+capability-index-check:
+	python3 scripts/generate_capability_index.py --brand vitalia --check
+
+capability-index-all:
+	python3 scripts/generate_capability_index.py --all-brands
+
+# v3 cement 2026-05-27 · ADR-vitalia-005 · SYSTEM-MAP cross-vocabulary validation
+system-map-validate:
+	python3 scripts/validate_system_map.py --brand vitalia
+
+system-map-validate-all:
+	python3 scripts/validate_system_map.py --all-brands
+
 # ════════════════════════════════════════════════════════════════
 # CI parity gate (cross-brand)
 # ════════════════════════════════════════════════════════════════
@@ -169,6 +210,37 @@ ci-parity-fe:
 		bash scripts/ci-parity.sh --brand=$$brand --skip-be; \
 	done
 
+# ════════════════════════════════════════════════════════════════
+# Phase 4b — Release schema v2 + capability ledger (cement 2026-05-27)
+# ════════════════════════════════════════════════════════════════
+
+releases-vitalia:  ## Generate BACKLOG by release for vitalia + show stats
+	$(PYTHON) scripts/generate_backlog.py --brand vitalia
+	@echo ""
+	@echo "=== Vitalia releases status ==="
+	@for f in vitalia/docs/product/releases/F*.yaml; do \
+		release_id=$$(basename $$f .yaml); \
+		status=$$(grep -E "^status:" $$f | awk '{print $$2}'); \
+		stories_count=$$(grep -cE "^  - " $$f || echo 0); \
+		echo "$$release_id · status=$$status · stories=$$stories_count"; \
+	done
+
+capability-ledger-check:  ## Run reconcile --validate-ledger across all active brands
+	@for b in vitalia nicolify comunify lupulo; do \
+		echo "=== $$b cap ledger check ==="; \
+		$(PYTHON) scripts/reconcile_capabilities.py --brand $$b --validate-ledger || exit 1; \
+	done
+
+migrate-vitalia-schema:  ## One-shot · migrate vitalia to schema v2 (releases + cap ledger) · idempotent
+	$(PYTHON) scripts/migrate_to_release_schema.py --brand vitalia
+	$(PYTHON) scripts/migrate_capability_ledger.py --brand vitalia
+
+# ════════════════════════════════════════════════════════════════
+# Tools operativas (cross-brand · cockpit SDD visualizer)
+# ════════════════════════════════════════════════════════════════
+cockpit-up:  ## Levantar luana-cockpit Next.js en localhost:4000 (auto-install + port check)
+	@bash scripts/cockpit-up.sh
+
 # ── hooks ────────────────────────────────────────────────────────────────────
 install-hooks:
 	@mkdir -p .git/hooks
@@ -182,6 +254,7 @@ help:
 	@echo "  Dev environment:"
 	@echo "  make dev-{brand}              Start {brand} dev environment (brand=nicolify|vitalia|comunify|lupulo)"
 	@echo "  make dev-{brand}-tunnel       Start {brand} + cloudflared tunnel (profile=tunnel)"
+	@echo "  make dev-app-vitalia          Start stack + tunnel + VERIFY dev-app ready for live-verify"
 	@echo "  make dev-all                  Start all 4 brands simultaneously"
 	@echo "  make dev-all-vector           Start all brands + qdrant (profile=vector)"
 	@echo "  make dev-all-cache            Start all brands + redis (profile=cache)"

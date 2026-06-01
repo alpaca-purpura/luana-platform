@@ -1,3 +1,5 @@
+// cap: platform.design-tokens-theme
+// story-origin: TBD
 "use client";
 
 /**

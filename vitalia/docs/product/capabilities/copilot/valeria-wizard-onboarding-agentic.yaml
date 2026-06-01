@@ -2,12 +2,62 @@
 capability_id: vitalia-valeria-wizard-onboarding-agentic
 module: copilot
 slug: valeria-wizard-onboarding-agentic
-status: live
+status: deprecated
 date_introduced: 2026-05-18
 story_introduced: vitalia-copilot-tools-impl
 package_version: 0.2.0
 package_path: vitalia/backend/src/modules/vitalia/copilot/{tools,workflows,prompts}
 license: proprietary
+
+# v3 cement 2026-05-27 · 4 dimensiones + dev_preview (ADR-vitalia-005)
+tech_module: copilot
+agent_owner: onboarding
+functional_area: onboarding.onboarding_clinic
+user_visible: true
+nature: feature
+ui_paradigm: slice-1-superseded  # T-3 reconcile 2026-05-29
+replaced_by_story: vitalia-fase2-valeria-pacientes  # T-3: story F2 que reconstruye esta cap
+
+user_facing_name: "Wizard de Valeria agéntico para onboarding"
+user_facing_description: >
+  Motor agentic LangGraph que hace correr al wizard de onboarding. Valeria conduce
+  conversacionalmente al dueño de la clínica extrayendo datos clave (nombre, vertical,
+  ubicación, tono de voz) con extracción desde URL o documento adjunto. Confirma
+  cada dato con el usuario, simula una vista previa de la personalidad del agente y
+  completa el onboarding cuando todos los campos están confirmados.
+
+dev_preview:
+  route: "/onboarding/wizard"
+  how_to_navigate: "Completar onboarding 3-pasos → el sistema redirige a /onboarding/wizard con Valeria activa conversando"
+  main_component: "vitalia/frontend/src/features/onboarding/components/WizardChatThread.tsx"
+  api_endpoints:
+    - "GET /api/v1/vitalia/copilot/wizard/drafts/{draft_id}/stream"
+    - "POST /api/v1/vitalia/copilot/wizard/drafts/{id}/extract"
+    - "POST /api/v1/vitalia/copilot/wizard/drafts/{id}/complete"
+  e2e_test: "vitalia/frontend/e2e/specs/vitalia/wizard-onboarding.smoke.spec.ts"
+  fixtures_required: []
+  storybook_url: null
+  loom_demo: null
+
+# Capability ledger v2 (cement 2026-05-27)
+created_in_story: vitalia-copilot-tools-impl   # v2 cement · mirror of story_introduced
+created_date: 2026-05-18   # v2 cement · mirror of date_introduced
+last_modified: 2026-05-29   # T-3 reconcile 2026-05-29
+parent_cap: null   # v2 cement · mirror of extends_capability
+derives_capabilities: []   # v2 cement · initial empty list
+
+# Capability ledger v2 (cement 2026-05-27)
+
+# Capability change log v2 (cement 2026-05-27)
+change_log:
+  - story_id: vitalia-copilot-tools-impl
+    date: 2026-05-18
+    type: new
+    summary: "Implementación inicial · migración legacy a schema v2"
+    merge_sha: null
+    status: done
+map_box: onboarding
+
 ---
 
 # vitalia-valeria-wizard-onboarding-agentic

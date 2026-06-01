@@ -1,7 +1,5 @@
 ---
 story_id: vitalia-fase1-shell-layout-5050-race-fix
-outcome: vitalia-mvp-ui-foundation
-phase: fase-1
 type: ui-story-followup
 agent_owner: shell
 module: shell-organism
@@ -17,6 +15,11 @@ parallel_safe: true
 priority: low
 estimated_dev_days: 0.5-1
 hipaa_lite_scope: not_applicable
+
+# Schema v2 migration (cement 2026-05-27)
+release: F1   # release ID · ver releases/
+cap_target: plataforma-tecnica.shell   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: extend   # new | fix | extend | derive
 ---
 
 # F1-S4b vitalia-fase1-shell-layout-5050-race-fix — checkpoint

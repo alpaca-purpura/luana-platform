@@ -1,0 +1,225 @@
+# 06-tickets.yaml — nicolify-r0-dev-stack
+# Owner: /architect. Tickets atómicos con assignment block explícito (architect-autonomous-mode.md R24).
+# Consumido por: /dev-team (spawn builders) + /auditor (verifica forbidden_to_touch).
+
+story_id: nicolify-r0-dev-stack
+brand: nicolify
+arch_version: 1
+autonomous_mode: false       # default — Chris opt-in al ratificar ready (ver dispatch-plan.md)
+total_tickets: 5
+agentic_tickets: 0           # NINGUNO toca copilot/ ni sales_agent/
+engine_edit_tickets: 0       # NINGUNO edita core/luana-core-*/src/
+
+tickets:
+
+  # ───────────────────────────────────────────────────────────────────────
+  - id: T-1
+    title: "BE app foundation — main.py (redirect_slashes=False + HealthResponse + mount engine IAM router) + db.py async + modules/nicolify skeleton"
+    surface: BE
+    production_code: true
+    owner_eligibility: [opencode, sonnet, opus]
+    depends_on: []
+    gherkin_coverage:
+      scenarios: [1, 2]
+      validator_ids: [V-AV-1, V-AV-2, V-FN-1, V-NF-1, V-NF-2]
+    acceptance:
+      - "main.py: FastAPI(redirect_slashes=False), HealthResponse DTO con response_model=, /health + /api/health (mismo payload {status,brand:'nicolify',version})."
+      - "Monta luana_core_iam auth_router en prefix /api/v1/iam/users (verbatim, NO /me local)."
+      - "db.py: get_async_session (SQLA 2.0, DATABASE_URL priority) portado de vitalia re-temizado."
+      - "modules/nicolify/__init__.py: paquete skeleton vacío (docstring, sin business)."
+      - "test_main_app_config.py + test_response_model_required.py + test_auth_gate.py (/me sin JWT → 401) RED-first → GREEN."
+      validator_ids: [V-AV-1, V-AV-2, V-FN-1]
+    assignment:
+      primary_agent: builder-backend
+      model_preference: sonnet
+      must_load_skills:
+        - backend-expert
+        - tessl__fastapi
+        - tessl__pytest-api-testing
+        - .claude/rules/tenant-isolation.md
+        - .claude/rules/backend-ddd.md
+        - .claude/rules/anti-duplication.md
+        - .claude/rules/tdd-mandatory.md
+      must_load_artifacts:
+        - "nicolify/docs/product/stories/nicolify-r0-dev-stack/01-spec.md § Scenario 1, 2"
+        - "nicolify/docs/product/stories/nicolify-r0-dev-stack/03-arch.md § AD-2, § 3, § 4, § 10"
+        - "nicolify/docs/product/stories/nicolify-r0-dev-stack/04-validators.yaml § test_construction_plan"
+      forbidden_to_touch:
+        - "core/luana-core-*/src/"
+        - "vitalia/"
+        - "comunify/"
+        - "lupulo/"
+        - "../luana-vitalia/"
+        - "nicolify/backend/src/modules/nicolify/{copilot,sales_agent}/"
+      rationale: "BE bootstrap non-agentic + consumo engine vía import. Sonnet sweet spot. NO recrear auth (anti-duplication HARD)."
+
+  # ───────────────────────────────────────────────────────────────────────
+  - id: T-2
+    title: "BE alembic shallow baseline (REEMPLAZAR legacy snapshot → mirror engine IAM tables) + env.py DATABASE_URL + seed_test_users_link.py (Agencia Demo)"
+    surface: BE
+    production_code: true
+    owner_eligibility: [opencode, sonnet, opus]
+    depends_on: [T-1]
+    gherkin_coverage:
+      scenarios: [1, 3, 4]
+      validator_ids: [V-AV-3, V-AV-4, V-FN-2, V-FN-4, V-FN-5]
+    acceptance:
+      - "BORRAR alembic/versions/001_initial_snapshot.py (legacy visionarias 115 tablas)."
+      - "CREAR 001_nicolify_iam_baseline.py (down_revision=None): pgcrypto + tenants/users/user_tenants idempotentes (clon DDL de vitalia 022_vitalia_add_engine_iam_tables.py)."
+      - "env.py: prioridad DATABASE_URL (asyncpg→psycopg sync) + fallback POSTGRES_*, target_metadata=None."
+      - "seed_test_users_link.py: 1 tenant 'Agencia Demo'/agencia-demo/PEN/PE + owner.demo@nicolify.com (role owner) + user_tenants(owner) + --clerk-sync (publicMetadata). uuid5 determinístico. Idempotente (ON CONFLICT). Sin clinic branch."
+      - "test_migrations_idempotent.py + test_tenant_isolation.py (X-Tenant-ID ajeno → 403) + test_no_secret_leak.py RED-first → GREEN."
+      - "alembic upgrade head ×2 = no-op limpio. seed ×2 = sin duplicados."
+      validator_ids: [V-AV-3, V-AV-4, V-FN-2, V-FN-4, V-FN-5]
+    assignment:
+      primary_agent: builder-backend
+      model_preference: sonnet
+      must_load_skills:
+        - backend-expert
+        - .claude/rules/backend-migrations.md
+        - .claude/rules/tenant-isolation.md
+        - .claude/rules/anti-duplication.md
+        - .claude/rules/tdd-mandatory.md
+      must_load_artifacts:
+        - "nicolify/docs/product/stories/nicolify-r0-dev-stack/03-arch.md § AD-3, § AD-4, § 9"
+        - "vitalia/backend/alembic/versions/022_vitalia_add_engine_iam_tables.py (referencia DDL — NO editar)"
+        - "../luana-vitalia/vitalia/backend/scripts/seed_test_users_link.py (referencia — NO editar)"
+      forbidden_to_touch:
+        - "core/luana-core-*/src/"
+        - "vitalia/"
+        - "comunify/"
+        - "lupulo/"
+        - "../luana-vitalia/"
+      rationale: "Migración idempotente + seed. Sonnet sweet spot. Schema-mirror exception (backend-ddd.md) permite crear las 3 tablas engine. CERO tablas nicolify_*."
+
+  # ───────────────────────────────────────────────────────────────────────
+  - id: T-3
+    title: "FE Clerk wiring — layout ClerkProvider + providers + proxy.ts (Next 16) + fetchClient (sin X-Clinic-ID) + root placeholder autenticado + sign-in/sign-up + globals.css"
+    surface: FE
+    production_code: true
+    owner_eligibility: [opencode, sonnet, opus]
+    depends_on: [T-1]
+    gherkin_coverage:
+      scenarios: [2, 5, 7]
+      validator_ids: [V-NF-3, V-NF-4]
+    acceptance:
+      - "providers.tsx ('use client'): ClerkProvider envuelve QueryClientProvider."
+      - "layout.tsx: monta Providers (excepción foundational AD-1), lang es, metadata. NO shell/topbar."
+      - "proxy.ts (Next 16, NO middleware.ts): clerkMiddleware + public allowlist (/sign-in,/sign-up,/api/health,/__clerk). Root protegida."
+      - "fetchClient.ts: port re-temizado SIN X-Clinic-ID (Authorization Bearer + X-Tenant-ID + Content-Type, ApiError, timeout 30s)."
+      - "page.tsx: root placeholder autenticado del tenant (Server shell + Client island con fetchClient). Maneja BE 500 con mensaje español TUTEO sin white-screen."
+      - "sign-in/[[...sign-in]]/page.tsx + sign-up/[[...sign-up]]/page.tsx: Clerk <SignIn/>/<SignUp/>."
+      - "globals.css: base Tailwind minimal (sin tokens de marca)."
+      - "tsc --noEmit + eslint clean."
+      validator_ids: [V-NF-3, V-NF-4]
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: sonnet
+      must_load_skills:
+        - frontend-expert
+        - tessl__react-patterns
+        - tessl__nextjs-app-router-modularization
+        - tessl__shadcn-ui
+        - tessl__tailwind
+        - tessl__zod
+        - .claude/rules/frontend-fsd.md
+        - .claude/rules/spanish-text.md
+        - .claude/rules/tenant-isolation.md
+      must_load_artifacts:
+        - "nicolify/docs/product/stories/nicolify-r0-dev-stack/01-spec.md § Scenario 2, 5, 7"
+        - "nicolify/docs/product/stories/nicolify-r0-dev-stack/03-arch.md § AD-5, § 5, § 10"
+        - "vitalia/frontend/src/{proxy.ts,lib/api/fetchClient.ts,app/layout.tsx} (referencia — NO editar)"
+      forbidden_to_touch:
+        - "core/luana-core-*/src/"
+        - "vitalia/"
+        - "comunify/"
+        - "lupulo/"
+        - "../luana-vitalia/"
+        - "nicolify/frontend/src/components/ui/"
+        - "nicolify/frontend/src/components/shared/"
+      rationale: "FE Clerk wiring standard non-agentic. Sonnet sweet spot. layout.tsx tocado por excepción foundational documentada (AD-1). Sin tokens de marca (design-system story)."
+
+  # ───────────────────────────────────────────────────────────────────────
+  - id: T-4
+    title: "E2E Clerk↔Playwright — clerk.setup.ts + auth.fixture.ts (port refinado ../luana-vitalia) + specs (protected-redirect, auth-slice, root-network-failure, smoke) + playwright.config REPLACED"
+    surface: E2E
+    production_code: true
+    owner_eligibility: [opencode, sonnet, opus]
+    depends_on: [T-2, T-3]
+    gherkin_coverage:
+      scenarios: [2, 5, 6, 7]
+      validator_ids: [V-FN-6, V-FN-7, V-FN-8, V-FN-9]
+    acceptance:
+      - "playwright.config.ts REPLACED: port 3001, dotenv ../.env.dev, required Clerk env vars fail-fast, projects setup(serial)+smoke(storageState). SIN refs /home/chris/AISALESHT."
+      - "e2e/setup/clerk.setup.ts: port refinado (ticket strategy + freshness 4h + cf_bm + retry 2x + storageState playwright/.clerk/user.json). Re-tematizado nicolify."
+      - "e2e/auth.fixture.ts: port refinado (testing-token re-inject + console filter). NO import @playwright/test directo en specs autenticados."
+      - "protected-redirect.spec.ts: anon → /sign-in (Scenario 2)."
+      - "auth-slice.spec.ts: signin → root autenticado → fetchClient X-Tenant-ID == E2E_TENANT_ID → /me 200 (Scenario 5 — corazón DONE)."
+      - "root-network-failure.spec.ts: BE 500 graceful, sin white-screen (Scenario 7)."
+      - "smoke/stack.smoke.spec.ts: /health reachable + root autenticado render (Scenario 6)."
+      - "npx playwright test --project=smoke verde (requiere Clerk dev instance + keys + seed --clerk-sync)."
+      validator_ids: [V-FN-6, V-FN-7, V-FN-8, V-FN-9]
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: sonnet
+      must_load_skills:
+        - frontend-expert
+        - playwright-expert
+        - .claude/rules/e2e-testing.md
+        - .claude/rules/tdd-mandatory.md
+        - .claude/rules/spanish-text.md
+      must_load_artifacts:
+        - "nicolify/docs/product/stories/nicolify-r0-dev-stack/01-spec.md § Scenario 2,5,6,7"
+        - "nicolify/docs/product/stories/nicolify-r0-dev-stack/04-validators.yaml § poms_and_fixtures + playwright_visual_scope"
+        - "../luana-vitalia/vitalia/frontend/e2e/{setup/clerk.setup.ts,auth.fixture.ts} + playwright.config.ts (referencia refinada — NO editar)"
+      forbidden_to_touch:
+        - "core/luana-core-*/src/"
+        - "vitalia/"
+        - "../luana-vitalia/"
+        - "nicolify/frontend/src/components/ui/"
+      rationale: "E2E Clerk auth standard. Sonnet con playwright-expert. Port refinado del worktree hermano (Chris pidió código en disco). Gated por Clerk dev instance (dependencia Chris)."
+
+  # ───────────────────────────────────────────────────────────────────────
+  - id: T-5
+    title: "INFRA verify — make dev-nicolify verde + DB nicolify_dev asegurada + .env.dev.template completo (bloque E2E_*)"
+    surface: INFRA
+    production_code: false
+    owner_eligibility: [opencode, sonnet, opus]
+    depends_on: [T-1, T-2, T-3, T-4]
+    gherkin_coverage:
+      scenarios: [1, 3]
+      validator_ids: [V-FN-3, V-FN-4]
+    acceptance:
+      - ".env.dev.template: agregar bloque E2E_* (E2E_CLERK_USER_EMAIL=owner.demo@nicolify.com, E2E_CLERK_USER_PASSWORD placeholder, E2E_TENANT_ID=<uuid5 agencia-demo>, E2E_BASE_URL=http://localhost:3001)."
+      - "make dev-nicolify levanta luana-nicolify-{backend,frontend}-dev running+healthy."
+      - "DB nicolify_dev asegurada (postgres :5435). Documentar init si falta (doc o init script)."
+      - "curl /health + /api/health + :3001 → 200. alembic upgrade head verde."
+      - "Documentar en impl-log la dependencia externa Chris (Clerk dev instance + keys + seed --clerk-sync)."
+      validator_ids: [V-FN-3, V-FN-4]
+    assignment:
+      primary_agent: builder-backend
+      model_preference: sonnet
+      must_load_skills:
+        - backend-expert
+        - .claude/rules/backend-migrations.md
+        - nicolify/.claude/rules/agent-revenue-engine.md
+      must_load_artifacts:
+        - "nicolify/docs/product/stories/nicolify-r0-dev-stack/03-arch.md § 10, § 11"
+        - "nicolify/config/brand.yaml (puertos 8001/3001) + nicolify/docker-compose.dev.yml (referencia)"
+        - "nicolify/.env.dev.template (modificar)"
+      forbidden_to_touch:
+        - "core/luana-core-*/src/"
+        - "vitalia/"
+        - "comunify/"
+        - "lupulo/"
+        - "nicolify/docker-compose.dev.yml"   # ya correcto — solo verificar, no editar salvo bug
+        - "nicolify/backend/Dockerfile"        # ya correcto
+      rationale: "INFRA verify + .env template. production_code:false (config). Sonnet OK. docker-compose + Dockerfile ya correctos (prior-art scan) — solo wirea + verifica verde."
+
+# ──────────────────────────────────────────────────────────────────────────
+# DAG dependencies
+# ──────────────────────────────────────────────────────────────────────────
+dag: |
+  T-1 (BE app + iam mount + db) ─┬─→ T-2 (alembic baseline + seed) ─┐
+                                 └─→ T-3 (FE Clerk wiring) ─────────┴─→ T-4 (E2E) ─→ T-5 (INFRA verify)
+  # T-2 y T-3 paralelizables tras T-1. T-4 requiere ambos. T-5 cierra.

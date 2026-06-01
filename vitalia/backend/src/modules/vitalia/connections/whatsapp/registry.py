@@ -1,3 +1,5 @@
+# cap: connections.oauth-meta-google-ads
+# story-origin: TBD
 """Vitalia WhatsApp HSM template registry — brand-local config (T-8).
 
 5 Meta-approved templates for patient fidelización workflows:

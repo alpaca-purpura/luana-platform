@@ -1,3 +1,5 @@
+# cap: crm.crm-consent-optout
+# story-origin: TBD
 """ActivityEvent domain entity — UI-tuned projection of copilot_trace_event.
 
 Domain layer — pure Python dataclass, no ORM imports.

@@ -1,3 +1,5 @@
+// cap: __skip__
+// story-origin: TBD
 /**
  * agenda-handlers.ts — Fetch mock handlers for Valeria Agenda API endpoints.
  * T-12 vitalia-fase2-valeria-agenda
@@ -23,8 +25,8 @@
  * spec_anchor: 06-tickets.yaml T-12 (A4)
  */
 
-import type { AgendaGridResponseDTO } from "../../../features/valeria/types/agenda-schema";
-import type { Appointment } from "../../../features/valeria/types/agenda.types";
+import type { AgendaGridResponseDTO } from "../../../features/mateo/types/agenda-schema";
+import type { Appointment } from "../../../features/mateo/types/agenda.types";
 
 // ── Mock data fixtures ─────────────────────────────────────────────────────────
 

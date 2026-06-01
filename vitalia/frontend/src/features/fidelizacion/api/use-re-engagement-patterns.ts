@@ -1,3 +1,5 @@
+// cap: patients.nps-tracking
+// story-origin: TBD
 "use client";
 
 /**
@@ -11,6 +13,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
+import { useTenantId } from "@/hooks/useTenantId";
 import { vitaliaFetch } from "@/lib/fetch-client";
 import type {
   PatternListResponse,
@@ -31,7 +34,8 @@ interface UseReEngagementPatternsArgs {
  * Fetches re-engagement pattern rows for the active tab.
  */
 export function useReEngagementPatterns(args: UseReEngagementPatternsArgs) {
-  const { getToken, orgId, isLoaded, isSignedIn } = useAuth();
+  const { getToken, isLoaded, isSignedIn } = useAuth();
+  const tenantId = useTenantId();
 
   return useQuery({
     queryKey: [
@@ -45,7 +49,7 @@ export function useReEngagementPatterns(args: UseReEngagementPatternsArgs) {
     ],
     queryFn: async () => {
       const token = await getToken();
-      if (!token || !orgId) throw new Error("Not authenticated");
+      if (!token || !tenantId) throw new Error("Not authenticated");
 
       const params = new URLSearchParams({
         pattern: args.pattern,
@@ -60,7 +64,7 @@ export function useReEngagementPatterns(args: UseReEngagementPatternsArgs) {
 
       return vitaliaFetch<PatternListResponse>(
         `/api/v1/vitalia/fidelization/re-engagement/patterns?${params.toString()}`,
-        { token, tenantId: orgId },
+        { token, tenantId },
       );
     },
     enabled: isLoaded && isSignedIn === true,

@@ -1,3 +1,5 @@
+# cap: __shared__
+# story-origin: TBD
 """ARQ cron job: deposit_reminder_24h — 24h pre-appointment deposit reminder.
 
 Schedule: every 1h

@@ -28,6 +28,8 @@ vi.mock("@clerk/nextjs", () => ({
     isLoaded: true,
   }),
 }));
+vi.mock("@/hooks/useTenantId", () => ({ useTenantId: () => "mock-tenant-id" }));
+
 
 const mockMultiSessionRow: PatternRow = {
   reEngagementEventId: "evt-1",

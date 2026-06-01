@@ -71,11 +71,14 @@ describe("Ribbon — render structure (SC-1 happy)", () => {
     expect(nav.className).toContain("bg-card");
   });
 
-  it("renders 5 RibbonTabs in AGENT_RIBBON_ORDER (lisa/lucas/adrian/valeria/camila)", () => {
+  it("renders 5 RibbonTabs in AGENT_RIBBON_ORDER (lisa/mateo/adrian/lucas/camila — v1.2)", () => {
+    // v1.2 (2026-05-30): AGENT_RIBBON_ORDER = [lisa, mateo, adrian, lucas, camila]
     render(<Ribbon />);
     AGENT_RIBBON_ORDER.forEach((slug) => {
       expect(screen.getByTestId(`ribbon-tab-${slug}`)).toBeDefined();
     });
+    // Valeria is NOT in the ribbon (supervisor sidebar only)
+    expect(screen.queryByTestId("ribbon-tab-valeria")).toBeNull();
   });
 
   it("renders 1 ConfigTab at the end (data-testid='ribbon-config-tab')", () => {
@@ -131,10 +134,11 @@ describe("Ribbon — click navigation (SC-1 happy)", () => {
     expect(mockPush).toHaveBeenCalledWith("/tenant-x/adrian/inbox");
   });
 
-  it("click ribbon-tab-valeria → router.push called with '/tenant-x/valeria/agenda'", () => {
+  it("click ribbon-tab-mateo → router.push called with '/tenant-x/mateo/agenda' (v1.2 — Mateo=Operar)", () => {
+    // v1.2 (2026-05-30): Mateo is now Operar specialist with defaultSubtab=agenda
     render(<Ribbon />);
-    fireEvent.click(screen.getByTestId("ribbon-tab-valeria"));
-    expect(mockPush).toHaveBeenCalledWith("/tenant-x/valeria/agenda");
+    fireEvent.click(screen.getByTestId("ribbon-tab-mateo"));
+    expect(mockPush).toHaveBeenCalledWith(`/${mockParams().tenantId}/mateo/${AGENT_CATALOG.mateo.defaultSubtab}`);
   });
 
   it("click ribbon-tab-lisa → router.push called with '/tenant-x/lisa/marca'", () => {
@@ -265,15 +269,16 @@ describe("Ribbon — roving tabindex (SC-7 a11y)", () => {
     expect(lisaTab.getAttribute("tabindex")).toBe("0");
   });
 
-  it("Arrow Right on ribbon → focus moves to next tab (Lisa→Lucas)", () => {
+  it("Arrow Right on ribbon → focus moves to next tab (Lisa→Mateo — v1.2 order)", () => {
+    // v1.2 AGENT_RIBBON_ORDER = [lisa, mateo, adrian, lucas, camila]
     mockPathname.mockReturnValue("/tenant-x/lisa/marca");
     render(<Ribbon />);
     const ribbon = screen.getByTestId("ribbon");
     // Lisa is at focusedIdx=0 initially (active)
     fireEvent.keyDown(ribbon, { key: "ArrowRight" });
-    // After Arrow Right, focusedIdx should be 1 (lucas)
-    const lucasTab = screen.getByTestId("ribbon-tab-lucas");
-    expect(lucasTab.getAttribute("tabindex")).toBe("0");
+    // After Arrow Right, focusedIdx should be 1 (mateo in v1.2)
+    const mateoTab = screen.getByTestId("ribbon-tab-mateo");
+    expect(mateoTab.getAttribute("tabindex")).toBe("0");
     const lisaTab = screen.getByTestId("ribbon-tab-lisa");
     expect(lisaTab.getAttribute("tabindex")).toBe("-1");
   });
@@ -427,13 +432,17 @@ describe("Ribbon — ARIA (SC-7 a11y)", () => {
     expect(nav.getAttribute("aria-label")).toBe("Agentes");
   });
 
-  it("active tab aria-selected='true', inactive aria-selected='false'", () => {
-    mockPathname.mockReturnValue("/tenant-x/valeria/agenda");
+  it("active tab aria-selected='true', inactive aria-selected='false' (v1.2 — mateo replaces valeria)", () => {
+    // v1.2: mateo is the Operar ribbon tab (valeria is sidebar-only)
+    mockPathname.mockReturnValue("/tenant-x/mateo/agenda");
     render(<Ribbon />);
-    const valeriaTab = screen.getByTestId("ribbon-tab-valeria");
-    expect(valeriaTab.getAttribute("aria-selected")).toBe("true");
+    const mateoTab = screen.getByTestId("ribbon-tab-mateo");
+    expect(mateoTab.getAttribute("aria-selected")).toBe("true");
 
     const lisaTab = screen.getByTestId("ribbon-tab-lisa");
     expect(lisaTab.getAttribute("aria-selected")).toBe("false");
+
+    // Valeria tab does not exist in the ribbon
+    expect(screen.queryByTestId("ribbon-tab-valeria")).toBeNull();
   });
 });

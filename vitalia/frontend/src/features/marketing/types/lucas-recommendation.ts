@@ -1,3 +1,5 @@
+// cap: public_landing.public-clinic-landing
+// story-origin: TBD
 /**
  * Lucas recommendation domain types — mirror of BE LucasRecommendationResponse (camelCase)
  * downstream-regression-na: brand-local FE type; consumed by marketing feature only

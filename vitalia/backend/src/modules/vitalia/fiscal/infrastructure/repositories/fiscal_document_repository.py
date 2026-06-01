@@ -1,3 +1,5 @@
+# cap: fiscal.fiscal-emission-pe
+# story-origin: TBD
 """FiscalDocumentRepository — CRUD for fiscal documents (saga compensation).
 
 Charge saga compensation (03-arch A6):

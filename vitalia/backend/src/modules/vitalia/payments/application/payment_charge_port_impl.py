@@ -1,3 +1,5 @@
+# cap: payment.payment-gateways-latam-recurring
+# story-origin: vitalia-fase2-s1-TBD
 """PaymentChargePortImpl — tenant gateway selector wrapping existing scaffolds.
 
 Rule (03-arch § 7 + service-blocker pattern):

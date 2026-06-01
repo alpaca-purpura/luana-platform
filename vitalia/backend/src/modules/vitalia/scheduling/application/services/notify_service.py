@@ -1,3 +1,5 @@
+# cap: scheduling.valeria-agenda
+# story-origin: vitalia-fase2-s1-TBD
 """Notify Service — template-only WhatsApp notification with ComplianceService guard.
 
 Rule (hipaa-lite.md + 03-arch § 5):

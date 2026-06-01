@@ -1,3 +1,5 @@
+// cap: marketing.attribution-matrix-4-origins
+// story-origin: TBD
 /**
  * AttributionMatrixWidget — attribution matrix per spec.
  *

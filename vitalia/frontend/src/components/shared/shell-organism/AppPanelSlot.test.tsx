@@ -26,7 +26,7 @@ import { AppPanelSlot } from "./AppPanelSlot";
 
 // Mock next/navigation — Ribbon + SubTabsBar use usePathname, useRouter, useParams
 vi.mock("next/navigation", () => ({
-  usePathname: vi.fn(() => "/test-tenant/valeria/agenda"),
+  usePathname: vi.fn(() => "/test-tenant/mateo/agenda"),
   useRouter: vi.fn(() => ({ push: vi.fn() })),
   useParams: vi.fn(() => ({ tenantId: "test-tenant" })),
 }));
@@ -60,12 +60,12 @@ describe("AppPanelSlot — integration with Ribbon + SubTabsBar (F1-S8 T-5)", ()
 
   it("renders [data-testid=sub-tabs-bar] from <SubTabsBar /> — real organism (not skeleton)", () => {
     render(<AppPanelSlot />);
-    // SubTabsBar renders with usePathname '/test-tenant/valeria/agenda' → 2 valeria subtabs
+    // SubTabsBar renders with usePathname '/test-tenant/mateo/agenda' → 2 mateo subtabs (v1.2)
     const subTabsBar = screen.getByTestId("sub-tabs-bar");
     expect(subTabsBar).toBeDefined();
     expect(subTabsBar.tagName.toLowerCase()).toBe("nav");
     expect(subTabsBar.getAttribute("role")).toBe("tablist");
-    expect(subTabsBar.getAttribute("aria-label")).toBe("Sub-secciones Valeria");
+    expect(subTabsBar.getAttribute("aria-label")).toBe("Sub-secciones Mateo");
   });
 
   it("skeleton sub-tabs placeholder (opacity-45 bars inside h-10 div) REMOVED from DOM after F1-S8 swap", () => {
@@ -84,16 +84,15 @@ describe("AppPanelSlot — integration with Ribbon + SubTabsBar (F1-S8 T-5)", ()
     expect(skeletonCircles.length).toBe(0);
   });
 
-  it("slot label text is 'AppPanelSlot · F1-S10' (S8 done — removed from label)", () => {
+  it("NO renderiza el label placeholder de debug (removido 2026-05-29 — leakeaba 'AppPanelSlot' encima del contenido real)", () => {
     const { container } = render(<AppPanelSlot />);
+    // El span placeholder absoluto/z-20 fue removido: el contenido real (o su skeleton)
+    // ya no debe tener un label de debug flotando encima en ninguna ruta del shell.
     const labelSpan = container.querySelector(
       "span.tracking-wider[aria-hidden='true']",
     );
-    expect(labelSpan).not.toBeNull();
-    expect(labelSpan?.textContent).toBe("AppPanelSlot · F1-S10");
-    // F1-S7 and F1-S8 should NOT be in label (already done)
-    expect(labelSpan?.textContent).not.toContain("S7");
-    expect(labelSpan?.textContent).not.toContain("S8");
+    expect(labelSpan).toBeNull();
+    expect(container.textContent ?? "").not.toContain("AppPanelSlot");
   });
 
   it("aria-label is 'Panel aplicación' (preserved)", () => {
@@ -125,7 +124,7 @@ describe("AppPanelSlot — integration with Ribbon + SubTabsBar (F1-S8 T-5)", ()
   it("AppPanelSlot does not crash when SubTabsBar returns null (Q5 guard defensive integration)", () => {
     // The actual null guard (invalid agent path) is covered by SubTabsBar.test.tsx.
     // Here we verify AppPanelSlot renders stably in normal operation (valid agent).
-    // Mock is set to /test-tenant/valeria/agenda → SubTabsBar renders 2 valeria subtabs.
+    // Mock is set to /test-tenant/mateo/agenda → SubTabsBar renders 2 mateo subtabs (v1.2).
     render(<AppPanelSlot />);
     expect(screen.getByTestId("app-panel-slot")).toBeDefined();
     expect(screen.getByTestId("ribbon")).toBeDefined();

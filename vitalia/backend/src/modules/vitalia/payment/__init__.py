@@ -1,3 +1,5 @@
+# cap: payment.payment-gateways-latam-recurring
+# story-origin: TBD
 """Vitalia payment channel adapters — EXTEND `@luana/core/channels.payment`.
 
 Per Story 11 03-arch-be.md § 11.2 (D4 ratified) — vitalia subclasses base

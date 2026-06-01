@@ -1,3 +1,5 @@
+# cap: marketing.lucas-stage-recommendations
+# story-origin: TBD
 """lucas_daily_analysis_sweep — ARQ cron job, daily 06:00 UTC.
 
 Regenerates Lucas AI marketing recommendations for every active tenant+clinic.

@@ -239,6 +239,69 @@ fe0fbad docs(vitalia): T-be-migrations-1 SHA pin 3adea2c
 
 Post-decreto: el mismo escenario falla en Layer 2 (`/dev-team` refuse pickup) Y Layer 4 (pre-commit hook bloquea stage de files de story B con story A pending).
 
+## Fase F.3 — Capability ledger update (v2 cement 2026-05-27)
+
+> **★ v4 alignment (cement 2026-05-28):** `atomics` MUERTO — `scenario` es la unidad atómica de comportamiento. SSoT del schema cap: `docs/process/capability-protocol.md` + `docs/process/lifecycle.md`.
+
+`/pm-{brand}` aplica logic del `cap_change_type` (declarado en checkpoint.md de la story) al cap YAML target:
+
+| `cap_change_type` | Acción sobre cap YAML |
+|---|---|
+| `new` | Crear `{brand}/docs/product/capabilities/{module}/{slug}.yaml` con schema v4 completo · `change_log[0]` con `type: new` + scenarios iniciales |
+| `fix` | Append `change_log` entry con `type: fix` · `scenarios_added: []` · NO toca `scenarios[]` |
+| `extend` | Append `change_log` entry con `type: extend` + scenarios nuevos · Append al array `scenarios[]` con `added_in_story: {story_id}` |
+| `derive` | Crear cap YAML hijo con `parent_cap: {origen_slug}` + `change_log[0] type: derive` · Update cap padre: append `derives_capabilities: [hijo_slug]`. Crear hijo primero, luego actualizar padre. |
+
+Actualizar también: `last_modified` del cap = today.
+
+### Enforce reglas v3.1 — cap verification (cement 2026-05-28)
+
+| `cap_change_type` | `scenarios_added.length` | Otros checks |
+|---|---|---|
+| `new` | `>= 1` REQUIRED | `scenarios[]` overall ≥1 scenario con shape válido |
+| `extend` | `>= 1` REQUIRED | `scenarios[]` debió crecer vs commit anterior |
+| `fix` | `>= 0` (opcional) | NO requiere scenario nuevo |
+| `derive` | `>= 1` REQUIRED en cap hijo | `parent_cap.derives_capabilities[]` lista hijo |
+
+Enforce: `scripts/reconcile_capabilities.py --validate-ledger`. Pre-commit hook HARD en `main/release/*` + WARN en `wip/*`.
+
+### Enforce reglas v3.2 — bidirectional code↔cap (cement 2026-05-28)
+
+Cross-checks Fase F.3 adicionales:
+1. **Scenarios → e2e_test paths:** todos los `scenarios[*].e2e_test` declarados existen en filesystem (cross-check 3 · HARD)
+2. **Access → roles:** roles en `access.entry_points[*].requires_role` coinciden con `@require_phi_access` decorators (cross-check 4 · advisory hasta resolver gap RBAC)
+
+Enforce: `scripts/validate_code_cap_bidirectional.py`. Pre-push hook HARD bloquea si cross_check_3 drift > 0.
+
+Doc canónico: `docs/process/capability-protocol.md` § Sección 11 (v3.2) + § Sección 13 (bidirectional validator).
+
+## WIP cap v2 — module-scoped (cement 2026-05-28 · ADR-009)
+
+Bajo el modelo **hub único** (N sesiones / un worktree por marca), el cap es **por `code:{module}` bucket**: un build en vuelo por módulo. Stories de módulos distintos `developing` en paralelo = OK.
+
+| Estado | Cap default (v2) |
+|---|---|
+| `developing` | ≤ 1 por **`code:{module}`** (no por worktree) |
+| `developed` | ≤ 1 por módulo (cerrar antes de otra del mismo módulo) |
+| `reviewing` | ≤ 1 por módulo |
+| `done` | ∞ (rolling 90d) |
+
+Stories del MISMO módulo siguen secuenciales (A `done` ANTES de B del mismo módulo). `defer_audit: true` documentado es la única excepción. SSoT: `.claude/rules/parallel-safety.md` M14 + `docs/architecture/luana-platform/ADR-009-single-hub-worktree.md`.
+
+## defer_audit — schema verbatim en checkpoint.md
+
+```yaml
+state: developed
+phase: AWAIT_AUDIT_DEFERRED
+defer_audit: true
+defer_audit_reason: "Chris ratificó pausa 2026-MM-DD: razón X"
+defer_audit_ratified_by: chris
+defer_audit_at: 2026-MM-DDTHH:MM:SS-05:00
+defer_audit_until: 2026-MM-DD   # opcional, hint bootstrap ping
+```
+
+Mientras `defer_audit: true`: `/dev-team` NO auto-handoff · `/pm-{brand}` pingea deuda en bootstrap · WIP cap relax (no cuenta contra `developed ≤ 1`). Para arrancar nueva story requiere Chris ratify explícito. Sin `defer_audit: true` el gate es ABSOLUTO.
+
 ## Referencias
 
 - `docs/process/story-closure-gate.md` — rationale + workflow detail (case study + ratchet)

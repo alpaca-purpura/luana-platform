@@ -1,3 +1,5 @@
+# cap: patients.nps-tracking
+# story-origin: TBD
 """Repositorio de respuestas NPS — fidelización vitalia.
 
 Hereda CompoundScopeRepositoryBase (engine) con scope_field="clinic_id".

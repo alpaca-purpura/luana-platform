@@ -1,3 +1,5 @@
+# cap: compliance.compliance-hipaa-lite-audit
+# story-origin: TBD
 """Compliance DTOs — Pydantic v2 request/response models.
 
 Per 03-arch-be.md § 6.7 + § 7.1 + Tessl pii-sanitisation:

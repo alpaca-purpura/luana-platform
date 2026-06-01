@@ -1,3 +1,5 @@
+// cap: sales_agent.inbox-handler-mode-occ
+// story-origin: TBD
 "use client";
 
 /**
@@ -17,6 +19,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
 import { useClinicId } from "@/hooks/useClinicId";
+import { useTenantId } from "@/hooks/useTenantId";
 
 export interface TranscribeAudioInput {
   conversationId: string;
@@ -39,15 +42,16 @@ export interface TranscribeAudioResult {
  * On success, caller uses media_url + transcription_text for message send.
  */
 export function useTranscribeAudio() {
-  const { getToken, orgId } = useAuth();
+  const { getToken } = useAuth();
   const clinicId = useClinicId();
+  const tenantId = useTenantId();
 
   return useMutation({
     mutationFn: async (
       input: TranscribeAudioInput,
     ): Promise<TranscribeAudioResult> => {
       const token = await getToken();
-      if (!token || !orgId) throw new Error("Not authenticated");
+      if (!token || !tenantId) throw new Error("Not authenticated");
 
       const formData = new FormData();
       const filename = `recording-${Date.now()}.${input.mimeType?.includes("webm") ? "webm" : "ogg"}`;
@@ -59,7 +63,6 @@ export function useTranscribeAudio() {
       // Note: fetchClient sets Content-Type: application/json by default;
       // for multipart we must override with no Content-Type (browser sets boundary).
       const requestToken = token;
-      const tenantId = orgId;
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 60_000); // longer for audio
 

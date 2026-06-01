@@ -1,3 +1,5 @@
+// cap: sales_agent.inbox-handler-mode-occ
+// story-origin: TBD
 /**
  * conversation-detail.ts — TS interfaces mirroring Pydantic ConversationDetailResponse.
  *

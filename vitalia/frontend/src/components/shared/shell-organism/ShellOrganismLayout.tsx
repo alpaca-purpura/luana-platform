@@ -1,3 +1,5 @@
+// cap: shell-organism.shell-vitalia
+// story-origin: vitalia-fase1-s4-TBD
 /**
  * ShellOrganismLayout — main shell layout (SSR-safe wrapper).
  * F1-S4 vitalia-fase1-shell-layout-5050 — T-3 + T-7 SSR fix
@@ -33,14 +35,30 @@ export interface ShellOrganismLayoutProps {
   tenantId: string;
 }
 
-/** SSR skeleton: TopBarGlobal + empty main (skip-link target preserved). */
+/**
+ * SSR skeleton: TopBarGlobal (store-free variant) + empty main (skip-link target preserved).
+ *
+ * WHY variant="skeleton":
+ * This skeleton renders OUTSIDE the dynamic({ssr:false}) boundary. If we rendered
+ * <TopBarGlobal /> (interactive default), it would subscribe useShellStore — causing the
+ * Zustand persist middleware to evaluate in SSR/pre-hydration context, write the default
+ * value to localStorage, and clobber user preferences on every reload (Bug #1 PROD REAL).
+ *
+ * variant="skeleton" renders an inert, store-free TopBar with the same visual appearance
+ * (h-12, burger placeholder) but NO store subscription. The rehydration happens in
+ * ShellOrganismLayoutClient (inside the ssr:false boundary) via useStoreHydration().
+ *
+ * A11y preserved: #main-content skip-link target is still rendered immediately.
+ * See 03-arch.md § 2 Decision D4 and ADR-vitalia-006.
+ */
 function ShellOrganismLayoutSkeleton() {
   return (
     <div
       className="flex h-screen flex-col overflow-hidden bg-background text-foreground"
       data-shell-ssr-skeleton="true"
     >
-      <TopBarGlobal />
+      {/* variant="skeleton" = store-free — does NOT subscribe useShellStore (D4) */}
+      <TopBarGlobal variant="skeleton" />
       <main
         id="main-content"
         tabIndex={-1}

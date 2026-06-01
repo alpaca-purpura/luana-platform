@@ -2,9 +2,27 @@
 
 **luana-platform** — Multi-brand multitenant SaaS. Modular Monolith DDD + uv/pnpm workspace + Docker-First. **10 brand verticals** consumen engine compartido `core/` (Luana, 26 paquetes `luana-core-*`).
 
+**Objetivo agentic dev:** Chris orquesta /pm-{brand} → /po-ux|/po → /architect → /dev-team → /auditor. Paradigm v4 con auto-handoffs. Cross-brand learning automático. Cost-routing optimizado (Haiku para mecánico, Sonnet para BE/FE no-agentic, Opus para agentic prod + estratégico).
+
+## ★ Brand overlay auto-load
+
+**Cuando trabajés dentro de `{brand}/...` o worktree `~/Proyectos/luana-{brand}*/`, Claude Code carga AUTO el overlay `{brand}/CLAUDE.md`** (walking ancestors built-in). Root + overlay coexisten — NO duplicar contenido. Detalle: `.claude/rules/claude-md-overlay.md`.
+
+| Brand | Overlay | Vision |
+|---|---|---|
+| vitalia | `vitalia/CLAUDE.md` | `vitalia/docs/product/vision.md` |
+| nicolify | `nicolify/CLAUDE.md` | `nicolify/docs/product/vision.md` |
+| comunify | `comunify/CLAUDE.md` | `comunify/docs/product/vision.md` |
+| lupulo | `lupulo/CLAUDE.md` | `lupulo/docs/product/vision.md` |
+| (6 futuras) | TBD post-bootstrap | TBD |
+
 @AGENTS.md cubre stack/commands/native-first/skills/quality/constraints. Este file = overlay project-specific.
 
 **Topología completa + workspace tooling + paradigm v4 detail + 10 brand verticals catalog + cost-routing + bootstrap completo + skills detail:** ver `docs/rules-detail/_CLAUDE-original-backup.md` (load con Read on-demand).
+
+## ★ Paradigma de trabajo (norte arquitectónico — por encima de features y de la tech)
+
+Luana = **equipo de trabajadores digitales** que operan un sistema de Go-To-Market (NO un SaaS-herramienta). **3 planos:** Sistema (capacidades de negocio) · Capa de acción (acción única, web + agentes comparten) · Trabajadores (supervisora **Valeria** + especialistas scoped, **UN engine**). El **mapa del producto = 3 zonas**: **Agentes** · **Plataforma** (Acceso · Onboarding · Configuración) · **Infraestructura** (no-funcional). Toda capability declara su **caja desde la idea** + la zona se **deriva** del registro `SYSTEM-MAP.yaml`. La tech (MCP/code-mode) es implementación **swappable**; el invariante es "acción única descubrible + un solo engine + cero isla". SSoT: `docs/architecture/luana-platform/PARADIGM.md` (+ `ADR-010-orquestacion-agentica.md` + rule `paradigm-arquitectura.md`).
 
 ## Topology (1-liner)
 
@@ -29,7 +47,41 @@ Por-brand: `{brand}/docs/` = SSoT autónomo. Vista master cross-brand: `docs/por
 
 **Venv at workspace root** — `.venv/bin/{python,pytest,ruff}`. NUNCA `cd {brand}/backend && python -m venv .venv` (rompe resolución `luana_core_*`).
 
-**Port allocation:** nicolify=8001/3001, vitalia=8002/3002, comunify=8003/3003, lupulo=8004/3004.
+**Port allocation:** nicolify=8001/3001, vitalia=8002/3002, comunify=8003/3003, lupulo=8004/3004. **Cockpit per-worktree (Paradigma A):** main=4000, nicolify=4001, vitalia=4002, comunify=4003, lupulo=4004.
+
+## Tools operativas (cross-brand · no son código de producto)
+
+| Tool | Path | Trigger conversacional | Cómo levantar |
+|---|---|---|---|
+| **Luana Cockpit** (SDD visualizer + editor · **per-worktree** Paradigma A) | `tools/luana-cockpit/` | usuario pide "levantar cockpit", "abrir luana-cockpit", "arrancar la tool cockpit" (variantes coloquiales aceptadas) | **Comando único: `make cockpit-up`** desde el worktree actual (auto-install deps + brand detection + port asignado + arranca dev). README: `tools/luana-cockpit/README.md`. Standalone Next.js 16 + filesystem-as-DB · NO Docker · NO PG. |
+
+### Cockpit · Paradigma A · per-worktree (cement 2026-05-28)
+
+El cockpit es **filesystem-as-DB**: lee/escribe directo de `.md`/`.yaml` del worktree donde corre. Por eso vive con uno en CADA worktree (no es un servicio compartido).
+
+**Convención puertos** (alineada con backend/frontend brand allocation):
+
+| Worktree | Brand inferido | Puerto cockpit | Backend brand | Frontend brand |
+|---|---|---|---|---|
+| `~/Proyectos/luana-platform/` (main) | cross-brand (vista consolidada) | 4000 | n/a | n/a |
+| `~/Proyectos/luana-nicolify/` | nicolify | 4001 | 8001 | 3001 |
+| `~/Proyectos/luana-vitalia/` | vitalia | 4002 | 8002 | 3002 |
+| `~/Proyectos/luana-comunify/` | comunify | 4003 | 8003 | 3003 |
+| `~/Proyectos/luana-lupulo/` | lupulo | 4004 | 8004 | 3004 |
+| `~/Proyectos/luana-protocol-*/` (efímero) | cross-brand | 4000 | n/a | n/a |
+| `~/Proyectos/luana-core-*/` (efímero lift) | cross-brand | 4000 | n/a | n/a |
+
+`scripts/cockpit-up.sh` detecta el worktree via `git rev-parse --show-toplevel`, infiere brand del basename, asigna puerto + `WORKSPACE_ROOT` + `DEFAULT_BRAND` envs antes de `exec pnpm dev`. Override puerto manual: `PORT=4099 make cockpit-up`.
+
+**Por qué per-worktree:** cuando Chris edita un story en `~/Proyectos/luana-vitalia/` (wip/vitalia), esos cambios viven SOLO en ese filesystem hasta squash-merge a main. Un cockpit central apuntando a main NO los vería. Cada worktree levanta SU propio cockpit que ve sus cambios live.
+
+**Cross-brand views**: cuando se necesita ver el estado consolidado de las 4 brands (Roadmap cross-brand, learnings comparativos), levanta el cockpit desde `~/Proyectos/luana-platform/` (worktree main) en `:4000`.
+
+**Múltiples cockpits coexisten** sin colisión: si hay sesiones paralelas en vitalia + comunify, ambos cockpits corren simultáneo en `:4002` y `:4003` respectivamente.
+
+**Session mapping (single-hub · ADR-009):** con N sesiones sobre el hub de una marca, el cockpit de ese hub lee `.session-locks/*.lock` y pinta **"🔨 {lane}"** sobre la story que cada sesión está construyendo (board + franja "Construyendo ahora"). Lane = `$LUANA_LANE` (export opcional por terminal, ej. `export LUANA_LANE=A`) o `pid<PID>`. Así Chris ve mapeado qué sesión construye qué sin salir del cockpit.
+
+**Detener:** Ctrl+C en pnpm dev (foreground) o `lsof -ti:400X | xargs kill` por puerto.
 
 ## SDD Level 3 — vocabulario v4 (cementado 2026-05-06)
 
@@ -79,11 +131,11 @@ Extension SDK SSoT: `core/luana-core-extension-sdk/src/luana_core_extension_sdk/
 
 **Triple-branch:** `wip/{slug}` (autosave per worktree) → `main` (integración, **staging deploy MANUAL**) → `release/{brand}-vX.Y.Z` (único auto-deploy prod).
 
-**Worktrees obligatorios** para sesiones paralelas: `scripts/git/new-session.sh {brand} story {slug} [lane]`. Dashboard: `scripts/git/status-all.sh`. Cleanup: `scripts/git/cleanup-session.sh`. M11: nunca >30 min sin push.
+**Single-hub por marca (default · ADR-009):** N sesiones paralelas (refinar + builds) corren sobre el **mismo worktree canónico** `~/Proyectos/luana-{brand}` coordinadas por bucket locks (`session-lock.sh acquire docs|code:{module}`). Un solo filesystem = un solo SSoT de estado = el cockpit ve TODO + builds ven refinadas al instante. Índice git compartido → commit por pathspec. Worktree dedicado (`new-session.sh`) = **excepción** (lift core, protocol, exp, hotfix, otra marca). Dashboard: `scripts/git/status-all.sh`. M11: nunca >30 min sin push.
 
 **Forbidden:** `git pull`, `git fetch && merge`, `git push --force`, `git revert` sin aprobación, `git add .` / `-A`, `git commit --no-verify`. Push non-fast-forward → STOP.
 
-Detail: `.claude/rules/git-safety.md` + `.claude/rules/parallel-safety.md` + `docs/architecture/luana-platform/ADR-{004,005}*.md`.
+Detail: `.claude/rules/git-safety.md` + `.claude/rules/parallel-safety.md` + `.claude/rules/worktree-dual-strategy.md` + `docs/architecture/luana-platform/ADR-{004,005,009}*.md`.
 
 ## Critical Rules (auto-loaded de `.claude/rules/`)
 
@@ -110,6 +162,22 @@ Detail: `.claude/rules/git-safety.md` + `.claude/rules/parallel-safety.md` + `do
 | 19 | Auditor self-fix policy | `auditor-self-fix-policy.md` |
 | 20 | Anti default-flip audit | `anti-default-flip-audit.md` |
 | 21 | PM skill chaining (Skill tool inline) | `pm-skill-chaining.md` |
+| 22 | Learning capture (técnicos→core, negocio→brand, MEMORY pointer-only) | `learning-capture.md` |
+| 23 | Anti-duplication refining (PM/PO/Architect grep core+nicolify+brands) | `anti-duplication-refining.md` |
+| 24 | Architect autonomous mode + explicit agent_assignment per ticket | `architect-autonomous-mode.md` |
+| 25 | CLAUDE.md hierarchy (root liviano + brand overlay auto-load) | `claude-md-overlay.md` |
+| 26 | Worktree dual strategy (refine+build paralelos sin egoísmo) | `worktree-dual-strategy.md` |
+| 27 | GitHub Actions deferred (pre-commit/pre-push hooks SSoT) | `github-actions-deferred.md` |
+| 28 | Capability protocol v3.2 (story↔cap doctrine + scenarios + access + business_rules + header `# cap:` en código) | `docs/process/capability-protocol.md` |
+| 29 | Release protocol (entity SSoT · reemplaza outcome+phase legacy) | `docs/process/release-protocol.md` |
+| 30 | chris-input.md protocol (output verbatim per skill) | `docs/process/chris-input-protocol.md` |
+| 31 | Cockpit permissions (whitelist transitions Chris vs Claude) | `docs/process/cockpit-permissions.md` |
+| 32 | Bidirectional code↔cap mapping (cockpit `/functionality` tab · validator 4 cross-checks · pre-commit/pre-push) | `docs/process/capability-protocol.md` § Sec 12-13 |
+| 33 | Anti-orphan integration (CONN: nada llega a `done` como isla — Consumed/On-map/Navigable/Notarized) | `anti-orphan-integration.md` |
+| 34 | Frontend visual fidelity (átomos/moléculas + mockup adherence + scope discipline + Playwright scoped) | `frontend-visual-fidelity.md` |
+| 35 | Test design doctrine (naturaleza del ticket → batería de tests · jscpd+arch-fitness first-class) | `test-design-doctrine.md` |
+| 36 | Paradigma arquitectura (3 planos · mapa = 3 zonas · trabajadores sobre un sistema · acción única · un engine) | `paradigm-arquitectura.md` + `docs/architecture/luana-platform/PARADIGM.md` |
+| 37 | Definition of Done live-verify (ninguna story `done` sin que Claude la ejerza live en el stack dev real + `dod_evidence`) | `definition-of-done-live-verify.md` |
 
 ## Conditional Rules (stub → skill on-demand)
 
@@ -143,6 +211,8 @@ git status --short && git branch --show-current && git log --oneline -3
 cat docs/portfolio/PORTFOLIO.md             # Vista master 11 universos
 cat {brand}/docs/product/checkpoint.md      # State brand
 cat {brand}/docs/product/stories/{id}/checkpoint.md   # Story específica
+ls {brand}/docs/product/releases/           # 9 releases F0..F8 (vitalia)
+cat {brand}/docs/product/releases/F2.yaml   # Release activo brand
 ```
 
 Schema checkpoint: `docs/process/checkpoint-protocol.md`. Paradigma v4: `docs/process/pm-redesign-2026-05.md`. Promotion workflow: `docs/promotion-protocol/README.md`.
@@ -175,6 +245,13 @@ Cada subagent (builder-*, auditor-*, gate-runner, context-builder) MUST devolver
 
 ## Vision
 
-`docs/product/vision.md` (snapshot legacy hasta `/pm-luana` regenere). Glossary: `docs/product/glossary.md`. Plan multibrand: `docs/architecture/luana-platform/01-core-audit.md` + ADR-001.
+- Platform-level: `docs/product/vision.md` — qué es luana-platform multibrand + filosofía cross-brand learning.
+- Per-brand: `{brand}/docs/product/vision.md` (auto-load via overlay) — vertical + verticales target + GTM + buyer personas.
+- Glossary: `docs/product/glossary.md`.
+- Plan multibrand: `docs/architecture/luana-platform/01-core-audit.md` + ADR-001.
+
+## Learning capture (1-liner)
+
+Trigger: Chris dice **"aprendamos de esto"** o el hook `learning-detect.sh` sugiere. Captura → archivo `.md` en path canónico (técnico→`docs/learnings/`, negocio→`{brand}/docs/learnings/`, process→`docs/process/learnings.md` append) + MEMORY.md pointer 1 línea. Detalle: `.claude/rules/learning-capture.md`.
 
 @AGENTS.md

@@ -1,10 +1,10 @@
+// cap: shell-organism.shell-vitalia
+// story-origin: vitalia-shell-dual-mount-a11y-fix T-1
 "use client";
 
 /**
  * ShellOrganismLayoutClient — actual shell layout implementation.
- * F1-S4 vitalia-fase1-shell-layout-5050 — T-3 + T-7 SSR fix
- *
- * 03-arch.md § 2.2, § 2.9
+ * vitalia-shell-dual-mount-a11y-fix T-1 (bugfix: triple-main → single-main + single-slot)
  *
  * Importado dinámicamente via `next/dynamic({ ssr: false })` desde
  * ShellOrganismLayout.tsx para evitar el bug SSR de react-resizable-panels
@@ -19,10 +19,41 @@
  * - Panel → Panel (id, defaultSize, minSize)
  * - PanelResizeHandle → Separator (aria-label via ...rest passthrough)
  *
- * Triple-main pattern (03-arch.md § 2.2 implementation note):
- * Three <main id="main-content"> elements — CSS mutually exclusive via Tailwind.
- * Only ONE main is visible at any viewport. Skip-link #main-content resolves
- * to the visible one.
+ * ─── Single-main + single-slot pattern (vitalia-shell-dual-mount-a11y-fix) ───
+ *
+ * PROBLEMA PREVIO — "Triple-main pattern":
+ * Había 3 <main id="main-content"> mutuamente excluyentes por CSS, con
+ * <AppPanelSlot> en CADA rama. La rama mobile (md:hidden) se montaba SIEMPRE
+ * → en desktop había 2 AppPanelSlot en el DOM → cada data-testid duplicado.
+ *
+ * SOLUCIÓN ELEGIDA — Opción A (03-arch.md § D2):
+ * Un ÚNICO <main id="main-content"> envuelve TODAS las variantes de chrome.
+ * <AppPanelSlot> se renderiza UNA SOLA VEZ dentro del app-panel del chrome
+ * desktop (Group Panel id="app-panel" para agentic; grid col para web).
+ * La diferencia desktop↔mobile es CSS sobre los CONTENEDORES (Valeria panel +
+ * separador se ocultan en mobile), NO sobre el slot. El <Group> resizable se
+ * monta SIEMPRE — nunca condicional por viewport JS.
+ *
+ * Concretamente:
+ * - Agentic: <Group> SIEMPRE montado; panel "valeria-panel" con className
+ *   "hidden md:flex" oculta Valeria en mobile; app-panel visible siempre.
+ * - Web: grid-cols dinámico — columnas Valeria+separador con "hidden md:block",
+ *   columna app con "min-w-0" siempre visible.
+ * - Mobile collapsa automáticamente mostrando sólo el AppPanelSlot (ya visible
+ *   porque el app-panel no tiene `hidden` propio).
+ *
+ * Lección nicolify (prior art live, leída 2026-06-01):
+ * Montar/desmontar <Group> condicionalmente detrás de isDesktop/useMediaQuery
+ * dispara "Rendered more hooks than during the previous render" (React crash).
+ * Por eso el gate desktop↔mobile es CSS, nunca JS. Nicolify aplicó single-main
+ * pero dejó AppPanelSlot en la rama mobile también; vitalia va un paso más allá
+ * con single-slot (0 branches → 1 slot en el DOM).
+ *
+ * Invariantes:
+ * - document.querySelectorAll('#main-content').length === 1 (cualquier viewport/mode)
+ * - document.querySelectorAll('[data-testid="app-panel-slot"]').length === 1
+ * - Cero console.error "Rendered more hooks than during the previous render"
+ * - axe wcag2aa: 0 violaciones duplicate-id / landmark-unique
  *
  * HIPAA-lite: not applicable — chrome UI, no PHI.
  * downstream-regression-na: brand-local shell component; no cross-brand consumers
@@ -38,6 +69,7 @@ import {
 } from "react-resizable-panels";
 import { cn } from "@/lib/utils";
 import { useShellStore } from "@/stores/shell-store";
+import { useStoreHydration } from "@luana/hooks/use-store-hydration";
 import { useViewportGuard } from "./useViewportGuard";
 import { TopBarGlobal } from "./TopBarGlobal";
 import { ValeriaSidebar } from "./ValeriaSidebar";
@@ -60,6 +92,12 @@ export function ShellOrganismLayoutClient({
   children,
   tenantId: _tenantId,
 }: ShellOrganismLayoutClientProps) {
+  // D3 (ADR-vitalia-006): Trigger useShellStore rehydration exactly ONCE client-side,
+  // inside this ssr:false chunk. This is the ONLY place rehydrate() is called for the
+  // shell store. StrictMode-safe via ref guard in useStoreHydration.
+  // ── ALL hooks called UNCONDITIONALLY at the top before any branch/early-return (D3) ──
+  useStoreHydration(useShellStore);
+
   const shellMode = useShellStore((s) => s.shellMode);
   const valeriaState = useShellStore((s) => s.valeriaState);
 
@@ -68,18 +106,21 @@ export function ShellOrganismLayoutClient({
 
   // ── Min pixels cementados (01-spec.md §5 + §8) ─────────────────────────────
   // valeriaState='full' → min Valeria 580px (history 280 + chat 300) — D3 F1-S5
-  //   (rail XOR history mutuamente exclusivos: 3-col model obsoleto, nuevo 2-col)
   // valeriaState='rail' → min Valeria 360px (rail 60 + chat 300)
   // App min constante 480px (ribbon 6 tabs + sub-tabs sin overflow)
   //
-  // react-resizable-panels v4 minSize: numeric values are treated as PIXELS (not percent).
-  // STRING values ending in "%" ARE treated as percent. We compute the % dynamically
-  // with ResizeObserver on the container so the pixel minimum is always respected,
-  // then pass it as `"${minValeriaPct}%"` string to trigger v4's native percent enforcement.
+  // react-resizable-panels v4 minSize: STRING values ending in "%" are treated as
+  // percent. We compute the % dynamically with ResizeObserver on the container so
+  // the pixel minimum is always respected, then pass it as `"${minValeriaPct}%"`.
   const MIN_VALERIA_PX = valeriaState === "full" ? 580 : 360;
   const MIN_APP_PX = 480;
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(1280); // sane default
+
+  // Deterministic readiness signal: set true after the first post-mount layout
+  // reconciliation (Fix A snap-up settled). Exposed as `data-shell-ready` for
+  // consumers and E2E tests to await a stable layout.
+  const [shellReady, setShellReady] = useState(false);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -102,33 +143,11 @@ export function ShellOrganismLayoutClient({
   const minAppPct = clampPct(MIN_APP_PX, containerWidth);
   const defaultValeriaPct = shellMode === "agentic" ? 50 : 5;
 
-  // ── Imperative Group ref for snap-up (F13 fix) ───────────────────────────────
-  // Two mechanisms enforce the pixel minimum:
-  //
-  // 1. minSize as string percent (primary, native v4 drag enforcement):
-  //    react-resizable-panels v4 treats NUMERIC minSize as pixels (tiny, useless for
-  //    our layout). STRING minSize ending in "%" is treated as percent (enforced during
-  //    drag). Passing `minValeriaPct + "%"` (e.g., "48.4375%") makes v4 natively clamp
-  //    drag to the correct pixel minimum. This eliminates the need for a manual
-  //    snap-up in onLayoutChanged for the drag case.
-  //
-  // 2. Hydration / state-change snap-up (Fix A — useEffect):
-  //    useDefaultLayout reads localStorage on hydration. If the persisted layout has
-  //    Valeria below the current minValeriaPct (e.g., after valeriaState full→rail→full
-  //    cycle), the panel starts below the current minimum. Fix A snaps it up imperatively.
-  //    Also catches the valeriaState change case (full→rail lowers min — panel stays;
-  //    rail→full raises min — snap up needed).
-  //
-  // API note (react-resizable-panels v4):
-  //   groupRef prop (NOT std ref) → GroupImperativeHandle
-  //   getLayout() → { [panelId: string]: number } (map by panel id, percent 0..100)
-  //   setLayout({ [panelId]: pct }) → applied Layout
-  //   onLayoutChanged(layout) → fires after pointer released (not on each move)
+  // ── Imperative Group ref for snap-up (Fix A — C3 bug mitigation) ─────────
   const groupRef = useGroupRef();
 
-  // Fix A: snap-up when containerWidth or minValeriaPct changes.
-  // Catches hydration race (localStorage restore below new minimum) and
-  // valeriaState change (full→rail→full cycle where panel is below new min).
+  // Fix A: snap-up when containerWidth or minValeriaPct changes (hydration race +
+  // valeriaState change cycle). Signals readiness once layout reconciled.
   useEffect(() => {
     if (containerWidth <= 0 || !groupRef.current) return;
     const layout = groupRef.current.getLayout();
@@ -139,6 +158,7 @@ export function ShellOrganismLayoutClient({
         [APP_PANEL_ID]: 100 - minValeriaPct,
       });
     }
+    setShellReady(true);
   }, [containerWidth, minValeriaPct, groupRef]);
 
   // Persist layout across page reloads via localStorage.
@@ -149,25 +169,62 @@ export function ShellOrganismLayoutClient({
     storage: window.localStorage,
   });
 
+  // ── End of unconditional hooks (D3) ────────────────────────────────────────
+  // JSX below may branch by shellMode — that's fine because no hooks live inside
+  // the branches. Hook count is identical across all renders.
+
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background text-foreground">
       {/* Top bar — always visible (48px) */}
       <TopBarGlobal />
 
-      {/* Shell mode toggle chip — disabled placeholder (F1-S5/S7 activates) */}
+      {/* Shell mode toggle chip — disabled placeholder */}
       <div className="absolute top-1.5 left-1/2 -translate-x-1/2 z-50 pointer-events-auto">
         <ShellModeToggle />
       </div>
 
-      {/* ── Agentic desktop layout (md+): resizable 2-panel via react-resizable-panels v4 ── */}
-      {shellMode === "agentic" && (
-        <main
-          id="main-content"
-          tabIndex={-1}
-          className="flex-1 min-h-0 overflow-hidden hidden md:block"
-          aria-label="Contenido principal"
-          ref={containerRef}
-        >
+      {/*
+       * ── SINGLE <main id="main-content"> (D1) ──────────────────────────────
+       *
+       * ONE main element wraps ALL chrome variants. containerRef lives here so
+       * ResizeObserver measures the correct element in all modes (D5).
+       *
+       * single-slot (D2): <AppPanelSlot>{children}</AppPanelSlot> is rendered
+       * EXACTLY ONCE — inside the app-panel area. Mobile responsiveness is
+       * achieved by hiding the VALERIA containers (panel + separator) via CSS
+       * classes (`hidden md:flex`, `hidden md:block`), NOT by unmounting the
+       * slot or adding a second slot in a separate mobile branch.
+       *
+       * <Group> is ALWAYS mounted (never gated by isDesktop/useMediaQuery — D4).
+       * On mobile the Valeria panel container is `hidden md:flex` so it's invisible
+       * but the Group itself stays mounted → hook-count stable (D3).
+       *
+       * CSS responsive breakdown:
+       * - ≥ md (768px): Valeria panel visible + app-panel visible
+       * - < md (mobile): Valeria panel hidden (className "hidden md:flex"),
+       *   app-panel takes full width — single slot still in DOM exactly once
+       */}
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="flex-1 min-h-0 overflow-hidden"
+        aria-label="Contenido principal"
+        ref={containerRef}
+        data-shell-ready={shellReady ? "true" : "false"}
+      >
+        {shellMode === "agentic" ? (
+          /*
+           * ── Agentic mode: resizable 2-panel via react-resizable-panels v4 ──
+           *
+           * The Group is ALWAYS mounted — no `hidden md:block` on the Group
+           * wrapper itself. Instead:
+           * - `panel-valeria-panel` wrapper: `hidden md:flex h-full`
+           *   → Valeria is hidden on mobile, visible on desktop (md+)
+           * - `panel-app-panel` wrapper: `h-full min-w-0`
+           *   → app-panel + AppPanelSlot always visible on any viewport
+           *
+           * This gives us a single slot in the DOM for all viewports.
+           */
           <Group
             id={SHELL_GROUP_ID}
             orientation="horizontal"
@@ -176,23 +233,31 @@ export function ShellOrganismLayoutClient({
             {...layoutProps}
             onLayoutChanged={layoutProps.onLayoutChanged}
           >
+            {/*
+             * Valeria panel — hidden on mobile via CSS (not via conditional mount).
+             * The `hidden md:flex` wrapper means react-resizable-panels still
+             * mounts the Panel but its container is invisible on mobile (height=0).
+             */}
             <Panel
               id={VALERIA_PANEL_ID}
               defaultSize={defaultValeriaPct}
               minSize={`${minValeriaPct}%`}
               collapsible={false}
             >
-              <ValeriaSidebar />
+              <div className="hidden h-full md:flex">
+                <ValeriaSidebar />
+              </div>
             </Panel>
 
+            {/*
+             * Separator — hidden on mobile (no resize handle needed when Valeria
+             * panel container is invisible).
+             */}
             <Separator
               id="shell-handle"
               className={cn(
+                "hidden md:block",
                 // ★ Fix 2026-05-24: 1px visible (mockup parity) pero 8px hit area.
-                // Antes: w-px directo → handle 1 pixel apenas grabbable + border-r del aside
-                // adyacente confundía hit zone (usuario clickeaba el border no interactivo).
-                // Ahora: container transparente w-2 (8px) con ::after pseudo 1px centrado.
-                // Hover/focus expanden el indicator a 2px (sin cambiar hit area).
                 "group relative w-2 shrink-0 bg-transparent cursor-col-resize outline-none",
                 "after:absolute after:left-1/2 after:top-0 after:h-full after:w-px after:-translate-x-1/2",
                 "after:bg-border after:transition-all after:duration-150",
@@ -202,6 +267,11 @@ export function ShellOrganismLayoutClient({
               aria-label="Redimensionar paneles"
             />
 
+            {/*
+             * App panel — ALWAYS visible (no hidden prefix).
+             * On mobile: takes full width since Valeria container is CSS-hidden.
+             * Contains the single <AppPanelSlot> — the ONLY slot in the DOM.
+             */}
             <Panel
               id={APP_PANEL_ID}
               defaultSize={100 - defaultValeriaPct}
@@ -210,33 +280,26 @@ export function ShellOrganismLayoutClient({
               <AppPanelSlot>{children}</AppPanelSlot>
             </Panel>
           </Group>
-        </main>
-      )}
-
-      {/* ── Web desktop layout (md+): static CSS grid 60px / 1px / 1fr ── */}
-      {shellMode === "web" && (
-        <main
-          id="main-content"
-          tabIndex={-1}
-          className="flex-1 min-h-0 overflow-hidden hidden md:grid grid-cols-[60px_1px_1fr]"
-          aria-label="Contenido principal"
-        >
-          <ValeriaSidebar />
-          {/* Visual divider (1px) */}
-          <div className="bg-border" aria-hidden="true" />
-          <AppPanelSlot>{children}</AppPanelSlot>
-        </main>
-      )}
-
-      {/* ── Mobile fallback (< md): single-column, no Valeria visible ── */}
-      {/* Valeria accessible via drawer trigger (F1-S5 will add burger button) */}
-      <main
-        id="main-content"
-        tabIndex={-1}
-        className="flex-1 min-h-0 overflow-hidden md:hidden"
-        aria-label="Contenido principal"
-      >
-        <AppPanelSlot>{children}</AppPanelSlot>
+        ) : (
+          /*
+           * ── Web mode: static CSS grid 60px / 1px / 1fr ──
+           *
+           * The grid uses `grid` (not `hidden md:grid`) so it's always active.
+           * Valeria sidebar + divider columns use `hidden md:block` so they
+           * are invisible on mobile. The app-panel column (1fr) is always
+           * visible → single AppPanelSlot in the DOM.
+           */
+          <div className="grid h-full grid-cols-[auto_auto_1fr]">
+            {/* Valeria sidebar — hidden on mobile */}
+            <div className="hidden w-[60px] md:block">
+              <ValeriaSidebar />
+            </div>
+            {/* Visual divider (1px) — hidden on mobile */}
+            <div className="hidden w-px bg-border md:block" aria-hidden="true" />
+            {/* App panel — always visible; single slot */}
+            <AppPanelSlot>{children}</AppPanelSlot>
+          </div>
+        )}
       </main>
     </div>
   );

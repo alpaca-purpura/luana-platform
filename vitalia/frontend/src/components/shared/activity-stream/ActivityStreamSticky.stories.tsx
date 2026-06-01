@@ -1,3 +1,5 @@
+// cap: agentic.lucas-daily-analysis
+// story-origin: TBD
 import type { Meta, StoryObj } from "@storybook/nextjs";
 import { ActivityStreamSticky } from "./ActivityStreamSticky";
 import type { ActivityItem } from "./ActivityStreamSticky";

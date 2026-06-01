@@ -1,3 +1,5 @@
+# cap: sales_agent.inbox-handler-mode-occ
+# story-origin: TBD
 """SendMessage DTOs — vitalia inbox application layer.
 
 Pydantic v2 DTOs for send-message endpoint.

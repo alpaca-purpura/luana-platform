@@ -1,3 +1,5 @@
+# cap: copilot.inbox-tools-extensions
+# story-origin: TBD
 """OnboardingDraft — mutable domain entity for Valeria wizard onboarding state.
 
 Tracks the complete state of a tenant's wizard onboarding session, including

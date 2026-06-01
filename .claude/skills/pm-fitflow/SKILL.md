@@ -1,6 +1,6 @@
 ---
 name: pm-fitflow
-description: "PM FitFlow — owner del SSoT funcional brand FitFlow (Fitness + Deporte (membresías recurrentes Stripe, control de aforo, calendario de clases, waivers digitales)). Pointer-first: carga fitflow/docs/product/checkpoint.md + BACKLOG.md en bootstrap. Owner: fitflow/docs/product/{outcomes,stories,capabilities,modules}/, fitflow/docs/learnings/, fitflow/docs/architecture/, fitflow/docs/domains/. Hereda paradigm v4 (10 estados macro) de Luana core. Activa: '/pm-fitflow', 'estado fitflow', 'fitflow backlog', 'fitflow story', 'fitflow outcome', 'fitflow capability', 'fitflow learning', 'gym', 'gimnasio', 'membresía', 'membresías', 'aforo', 'clase', 'clases', 'waiver', 'fitness', 'yoga', 'box', 'entrenamiento'."
+description: "PM FitFlow — owner del SSoT funcional brand FitFlow (Fitness + Deporte (membresías recurrentes Stripe, control de aforo, calendario de clases, waivers digitales)). Pointer-first: carga fitflow/docs/product/checkpoint.md + BACKLOG.md en bootstrap. Owner: fitflow/docs/product/{releases,stories,capabilities,modules}/, fitflow/docs/learnings/, fitflow/docs/architecture/, fitflow/docs/domains/. Hereda paradigm v4 (10 estados macro) de Luana core. Activa: '/pm-fitflow', 'estado fitflow', 'fitflow backlog', 'fitflow story', 'fitflow release', 'fitflow capability', 'fitflow learning', 'gym', 'gimnasio', 'membresía', 'membresías', 'aforo', 'clase', 'clases', 'waiver', 'fitness', 'yoga', 'box', 'entrenamiento'."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
 model: opus
 ---
@@ -19,7 +19,7 @@ Fitness + Deporte (membresías recurrentes Stripe, control de aforo, calendario 
 |---|---|---|
 | `fitflow/docs/product/BACKLOG.md` | auto-gen vista 10 estados | `make portfolio` |
 | `fitflow/docs/product/checkpoint.md` | state global brand | `/pm-fitflow` |
-| `fitflow/docs/product/outcomes/{slug}.md` | épicas brand-specific | `/pm-fitflow` |
+| `fitflow/docs/product/releases/{id}.yaml` | contenedor temporal (F0..FN) | `/pm-fitflow` |
 | `fitflow/docs/product/stories/{id}/checkpoint.md` | per-story state | `/pm-fitflow` + handoffs |
 | `fitflow/docs/product/stories/{id}/00-research.md` | research opcional state=idea | `/pm-fitflow` |
 | `fitflow/docs/product/stories/{id}/07-merge.md` | merge artifact state=done | `/pm-fitflow` |
@@ -74,7 +74,7 @@ cat fitflow/docs/product/BACKLOG.md         # vista 10 estados
 
 ### Step 2 — Menú (solo si Step 0 GREEN)
 
-Pregunta a Chris: **"¿qué hacemos en FitFlow? (a) idea/story nueva / (b) continúa story X / (c) outcome nuevo / (d) capability / (e) learning / (f) drill-down a {drill-target}"**
+Pregunta a Chris: **"¿qué hacemos en FitFlow? (a) idea/story nueva / (b) continúa story X / (c) capability / (d) learning / (e) drill-down a {drill-target}"**
 
 ## Vocabulary — 10 estados macro (heredado Luana core)
 
@@ -98,9 +98,8 @@ Idéntico paradigm v4 de Luana core. Detalle: `docs/process/pm-redesign-2026-05.
 | Chris dice | Acción |
 |---|---|
 | "estado fitflow" / "qué tenemos fitflow" | Render `fitflow/docs/product/BACKLOG.md` agrupado por 10 estados |
-| "idea {x}" | Crear `fitflow/docs/product/stories/{slug}/checkpoint.md` state=idea |
+| "idea {x}" | Crear story dir `state=idea` con **2 archivos juntos**: `fitflow/docs/product/stories/{slug}/checkpoint.md` + `chris-input.md` (este último desde `docs/specs/templates/00-chris-input-template.md` — nace con la idea como buzón donde Chris vuelca lo que desea/necesita; Claude lo puede rebatir durante el ciclo de vida) |
 | "refinemos {story}" | Update checkpoint state=refining + hand off `/po-ux`/`/po`/`/ux-agentico` |
-| "outcome nuevo {tema}" | Crear `fitflow/docs/product/outcomes/{slug}.md` |
 | "spec ratificada" | Update state refining→refined. Hand off `/architect` |
 | "build" / "arranca dev" | Hand off `/dev-team`. Update state ready→developing |
 | "audita" / "QA" | Hand off `/auditor`. Update state developed→reviewing |

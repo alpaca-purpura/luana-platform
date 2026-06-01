@@ -1,3 +1,5 @@
+# cap: agentic.eval-goldens-slice-1
+# story-origin: TBD
 r"""Vitalia AGENTIC guardrail — `prompt_injection_block` (Story E reuse).
 
 R23: production_code=True AGENTIC code. Opus 4.7 EXCLUSIVE.
@@ -342,3 +344,5 @@ __all__ = [
     "detect_prompt_injection",
     "prompt_injection_block_check",
 ]
+
+# voseo-allowed: doc/comentario interno citando glosario voseo, no user-facing

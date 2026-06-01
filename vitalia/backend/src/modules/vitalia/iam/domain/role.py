@@ -1,3 +1,5 @@
+# cap: iam.iam-scaffold-slice-1
+# story-origin: TBD
 """Vitalia role definitions and PHI access control.
 
 Domain layer — pure Python, no framework imports.

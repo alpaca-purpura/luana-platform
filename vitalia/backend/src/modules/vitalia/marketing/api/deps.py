@@ -1,16 +1,22 @@
+# cap: marketing.attribution-matrix-4-origins
+# story-origin: TBD
 """FastAPI dependencies for the vitalia marketing API.
 
 Provides:
   - TenantIdHeader / ClinicIdHeader — typed Annotated header aliases
   - verify_role() — dependency factory for RBAC enforcement (raises HTTP 403)
   - idempotency_key_dep() — dependency that reads Idempotency-Key header (raises HTTP 422)
-  - get_clinic_context() — resolves Bearer JWT to ClinicContext (raises HTTP 401)
+  - get_clinic_context_async() — resolves Bearer JWT to ClinicContext via DB role (raises HTTP 401)
 
 HIPAA-lite:
   - All marketing endpoints require X-Tenant-ID + X-Clinic-ID (dual filter).
-  - Role enforcement uses JWT claims (role field from Clerk token).
+  - Role enforcement uses DB role from user_tenants table (Slice 2: async_resolve).
   - Marketing data is NOT PHI — roles allowed: doctor/nurse/admin_clinic/recepcion
     for reads; admin_clinic/owner_clinic for mutations.
+
+Slice 2 changes:
+  - get_clinic_context() replaced with get_clinic_context_async() using async_resolve.
+  - verify_role() updated to use async_resolve.
 
 downstream-regression-na: brand-local marketing API deps (vitalia-only)
 """
@@ -20,12 +26,16 @@ from __future__ import annotations
 from typing import Annotated
 
 import structlog
-from fastapi import Header, HTTPException
+from fastapi import Depends, Header, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.db import get_async_session
 from src.modules.vitalia.iam.application.services.clinic_resolver import (
     ClinicContext,
     ClinicResolver,
     MissingAuthHeaderError,
+    RoleNotFoundError,
+    UserNotFoundError,
 )
 from src.modules.vitalia.iam.infrastructure.clerk_jwt_decoder import (
     ClerkJwtDecoder,
@@ -49,16 +59,27 @@ def _build_resolver() -> ClinicResolver:
     return ClinicResolver(decoder=ClerkJwtDecoder())
 
 
-def get_clinic_context(authorization: AuthorizationHeader) -> ClinicContext:
-    """Resolve Bearer token to ClinicContext.
+async def get_clinic_context_async(
+    authorization: AuthorizationHeader,
+    x_tenant_id: TenantIdHeader,
+    x_clinic_id: ClinicIdHeader,
+    session: Annotated[AsyncSession, Depends(get_async_session)],
+) -> ClinicContext:
+    """Resolve Bearer token to ClinicContext via DB role (Slice 2 async path).
 
     Raises:
-        HTTPException(401): Token missing or invalid.
+        HTTPException(401): Token missing, invalid, or user not found in DB.
+        HTTPException(403): User has no active role in this tenant.
     """
     token = authorization.removeprefix("Bearer ").strip()
     resolver = _build_resolver()
     try:
-        return resolver.resolve(token)
+        return await resolver.async_resolve(
+            token=token,
+            session=session,
+            tenant_id_str=x_tenant_id,
+            clinic_id_str=x_clinic_id,
+        )
     except MissingAuthHeaderError:
         raise HTTPException(
             status_code=401,
@@ -69,6 +90,27 @@ def get_clinic_context(authorization: AuthorizationHeader) -> ClinicContext:
             status_code=401,
             detail="Token inválido o expirado.",
         )
+    except UserNotFoundError:
+        raise HTTPException(
+            status_code=401,
+            detail="Usuario no encontrado.",
+        )
+    except RoleNotFoundError:
+        raise HTTPException(
+            status_code=403,
+            detail="El usuario no tiene un rol activo en este tenant.",
+        )
+    except ValueError:
+        raise HTTPException(
+            status_code=422,
+            detail="Identificadores de tenant o clínica inválidos.",
+        )
+
+
+# Backward-compat alias (routes.py uses get_clinic_context_async directly)
+# Keeping the original sync name as a pointer to the async version for any
+# test that might reference it by name.
+get_clinic_context = get_clinic_context_async  # noqa: E305 — alias for compat
 
 
 def verify_role(*allowed_roles: str):
@@ -81,33 +123,24 @@ def verify_role(*allowed_roles: str):
         *allowed_roles: Roles allowed to access the endpoint.
 
     Returns:
-        A sync dependency function that raises HTTP 403 when the caller role
+        An async dependency function that raises HTTP 403 when the caller role
         is not in the allowed set.
     """
 
-    def _check(ctx: Annotated[ClinicContext, None] = None, authorization: AuthorizationHeader = None) -> None:  # type: ignore[assignment]
-        """Inner dependency — resolves JWT and checks role."""
-        if authorization is None:
-            raise HTTPException(status_code=401, detail="Token de autorización requerido.")
-        token = authorization.removeprefix("Bearer ").strip()
-        resolver = _build_resolver()
-        try:
-            context = resolver.resolve(token)
-        except MissingAuthHeaderError:
-            raise HTTPException(status_code=401, detail="Token de autorización requerido.")
-        except JwtDecodeError:
-            raise HTTPException(status_code=401, detail="Token inválido o expirado.")
-
-        if context.role not in allowed_roles:
+    async def _check(
+        ctx: Annotated[ClinicContext, Depends(get_clinic_context_async)],
+    ) -> None:
+        """Inner dependency — checks role from resolved ClinicContext."""
+        if ctx.role not in allowed_roles:
             logger.warning(
                 "marketing_api.role_denied",
-                role=context.role,
+                role=ctx.role,
                 allowed=list(allowed_roles),
             )
             raise HTTPException(
                 status_code=403,
                 detail=(
-                    f"Acceso no autorizado. Tu rol '{context.role}' no tiene permisos "
+                    f"Acceso no autorizado. Tu rol '{ctx.role}' no tiene permisos "
                     f"para esta acción. Se requiere uno de: {list(allowed_roles)}."
                 ),
             )

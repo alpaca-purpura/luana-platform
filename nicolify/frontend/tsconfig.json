@@ -21,12 +21,24 @@
         "name": "next"
       }
     ],
+    "target": "ES2017",
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@luana/hooks": [
+        "../../core/@luana/hooks/src/index.ts"
+      ],
+      "@luana/hooks/*": [
+        "../../core/@luana/hooks/src/*"
+      ],
+      "zustand": [
+        "./node_modules/zustand/index.d.ts"
+      ],
+      "zustand/middleware": [
+        "./node_modules/zustand/middleware.d.ts"
       ]
-    },
-    "target": "ES2017"
+    }
   },
   "include": [
     "next-env.d.ts",
@@ -36,6 +48,7 @@
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "e2e/**"
   ]
 }

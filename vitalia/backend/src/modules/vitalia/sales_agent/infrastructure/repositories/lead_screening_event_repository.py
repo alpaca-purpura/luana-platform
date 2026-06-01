@@ -1,3 +1,5 @@
+# cap: sales_agent.adrian-3-tools-mvp
+# story-origin: TBD
 """LeadScreeningEventRepository — SQLAlchemy 2.0 async implementation.
 
 PHI repository — inherits PhiRepositoryBase for dual-filter enforcement.

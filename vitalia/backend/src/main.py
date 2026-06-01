@@ -1,3 +1,5 @@
+# cap: observability.api-health-endpoint
+# story-origin: TBD
 """Vitalia FastAPI application entry point.
 
 Per 03-arch-be.md § 3 + 05-guidelines § 1.1:
@@ -21,6 +23,9 @@ from src.modules.vitalia.admin.api.admin_helpers_router import router as admin_h
 from src.modules.vitalia.api.routes import router as vitalia_router
 from src.modules.vitalia.api.webhook_routes import webhook_router
 from src.modules.vitalia.brand_studio.api.routers.marca_router import router as marca_router
+from src.modules.vitalia.clinics.api.assets_proxy_router import router as assets_proxy_router
+from src.modules.vitalia.clinics.api.doctors_router import router as doctors_router
+from src.modules.vitalia.clinics.api.public_doctors_router import router as public_doctors_router
 from src.modules.vitalia.clinics.api.router import router as clinics_router
 from src.modules.vitalia.copilot.api.routes.wizard_onboarding_routes import (
     router as wizard_onboarding_router,
@@ -58,6 +63,10 @@ app.include_router(
 app.include_router(crm_router, prefix="/api/v1/crm")
 # T-be-services-1: Valeria wizard onboarding (copilot)
 app.include_router(wizard_onboarding_router, prefix="/api/v1/vitalia/onboarding")
+# T-BE-1 F2-S8: Lisa Staff doctors router — registered BEFORE clinics_router to prevent
+# route shadowing: clinics_router has GET /{clinic_id} which would capture /clinics/doctors
+# as clinic_id="doctors" if registered first. FastAPI matches in registration order.
+app.include_router(doctors_router, prefix="/api/v1/vitalia/clinics/doctors", tags=["staff"])
 # T-be-clinics-extension: Clinic branches CRUD (brand extension)
 app.include_router(clinics_router, prefix="/api/v1/vitalia/clinics")
 # T-be-clinics-extension: Admin helper API (internal, not in OpenAPI schema)
@@ -78,6 +87,10 @@ app.include_router(charge_router, prefix="/api/v1/payments")
 app.include_router(emit_router, prefix="/api/v1/fiscal")
 # T-2 F2-S7: Brand Studio marca router — 21 endpoints Lisa > Marca sub-tab
 app.include_router(marca_router, prefix="/api/v1/lisa/marca", tags=["brand_studio"])
+# T-BE-5 F2-S8: Public doctors router — unauthenticated, allow-list channel guard
+app.include_router(public_doctors_router, prefix="/api/public/clinic", tags=["public"])
+# T-BE-6 F2-S8: Assets proxy upload router — consume luana-core-assets AssetsService (D-3)
+app.include_router(assets_proxy_router, prefix="/api/v1/vitalia/assets", tags=["assets"])
 
 
 class HealthResponse(BaseModel):

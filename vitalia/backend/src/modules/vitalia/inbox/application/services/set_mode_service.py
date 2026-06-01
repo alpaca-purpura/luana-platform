@@ -1,3 +1,5 @@
+# cap: sales_agent.inbox-handler-mode-occ
+# story-origin: TBD
 """SetModeService — vitalia inbox application layer.
 
 SC-03 OCC: mode change with If-Match optimistic concurrency control.

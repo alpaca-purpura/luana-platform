@@ -1,3 +1,5 @@
+# cap: agentic.eval-goldens-slice-1
+# story-origin: TBD
 """Lucas growth setter persona YAML SSoT.
 
 See `lucas_growth_setter.yaml` for the canonical persona definition consumed

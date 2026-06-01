@@ -1,3 +1,5 @@
+// cap: shell-organism.shell-vitalia
+// story-origin: vitalia-fase1-s10-TBD
 /**
  * SubTabContent — dispatcher organismo.
  * F1-S10 vitalia-fase1-empty-states — T-9 (PLACEHOLDER_MAP fully populated)
@@ -33,8 +35,8 @@ import { EmptyState } from "./EmptyState";
 
 // ── Lisa placeholders — via public API (T-2 generic + T-3 special) ───────────────
 // lisa.marca is EXCLUDED: shipped as N3-static route (F2-S7 T-4) — see SHIPPED_STATIC_SUBTABS.
+// lisa.staff is EXCLUDED: shipped as static route (F2-S8 T-FE-1) — see SHIPPED_STATIC_SUBTABS.
 import {
-  DoctoresPlaceholder,
   ServiciosPlaceholder,
   CompliancePlaceholder,
 } from "@/features/lisa";
@@ -56,9 +58,10 @@ import {
   PropuestasPlaceholder,
 } from "@/features/adrian";
 
-// ── Valeria placeholders — via public API (T-2 generic) ─────────────────────────
-// valeria.agenda no figura: ya tiene ruta estática shipped (F2-S1) — ver SHIPPED_STATIC_SUBTABS.
-import { PacientesPlaceholder } from "@/features/valeria";
+// ── Mateo placeholders — via public API (T-2 generic) ───────────────────────────
+// mateo.agenda no figura: ya tiene ruta estática shipped (v1.2 migrado de valeria — paradigm-map-zones T-5).
+// PacientesPlaceholder viene del feature mateo (migrado de valeria).
+import { PacientesPlaceholder } from "@/features/mateo";
 
 // ── Camila placeholders — via public API (T-2 generic + T-8 special) ─────────────
 import {
@@ -79,15 +82,17 @@ import {
 type PlaceholderComponent = ComponentType;
 type SubTabKey = `${RibbonTabSlug}.${string}`;
 
-// ── PLACEHOLDER_MAP — 20 keys (RIBBON_SUBTABS - SHIPPED_STATIC_SUBTABS) ──────────
+// ── PLACEHOLDER_MAP — 19 keys (RIBBON_SUBTABS - SHIPPED_STATIC_SUBTABS) ──────────
 // Architecture test verifies this map === RIBBON_SUBTABS minus SHIPPED_STATIC_SUBTABS.
-// Keys: 'lisa.doctores' | ... (no 'mateo.*', no 'valeria.agenda' shipped, no 'lisa.marca' shipped)
+// v1.2 (2026-05-30): mateo.pacientes replaces valeria.pacientes (paradigm-map-zones T-5).
+// F2-S8 T-FE-1 (2026-05-31): lisa.staff shipped as static route → removed from PLACEHOLDER_MAP.
 // DO NOT hardcode these keys elsewhere — arch test enforces this file as SSoT.
 const PLACEHOLDER_MAP = {
-  // lisa (3) — T-2 generic + T-3 servicios special (lisa.marca shipped N3-static F2-S7 T-4)
-  "lisa.doctores": DoctoresPlaceholder,
+  // lisa (2) — lisa.marca shipped N3-static (F2-S7 T-4), lisa.staff shipped static (F2-S8 T-FE-1)
   "lisa.servicios": ServiciosPlaceholder,
   "lisa.compliance": CompliancePlaceholder,
+  // mateo (1) — T-2 generic (agenda shipped static v1.2 paradigm-map-zones T-5 — ver SHIPPED_STATIC_SUBTABS)
+  "mateo.pacientes": PacientesPlaceholder,
   // lucas (5) — T-2 generic
   "lucas.lanzar": LanzarPlaceholder,
   "lucas.envuelo": EnvueloPlaceholder,
@@ -99,8 +104,6 @@ const PLACEHOLDER_MAP = {
   "adrian.embudo": EmbudoPlaceholder,
   "adrian.outbound": OutboundPlaceholder,
   "adrian.propuestas": PropuestasPlaceholder,
-  // valeria (1) — T-2 generic (agenda shipped static F2-S1 — ver SHIPPED_STATIC_SUBTABS, lisa.marca shipped F2-S7)
-  "valeria.pacientes": PacientesPlaceholder,
   // camila (4) — T-2 generic + T-8 voz
   "camila.voz": VozPlaceholder,
   "camila.reactivar": ReactivarPlaceholder,

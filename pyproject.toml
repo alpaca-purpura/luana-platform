@@ -102,4 +102,5 @@ dev = [
     "aiosqlite>=0.19",
     "pytest-randomly>=4.1.0",
     "pytest-timeout>=2.4.0",
+    "factory-boy>=3.3.3",
 ]

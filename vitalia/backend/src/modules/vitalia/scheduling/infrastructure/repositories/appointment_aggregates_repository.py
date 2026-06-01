@@ -1,3 +1,5 @@
+# cap: scheduling.valeria-agenda
+# story-origin: TBD
 """AppointmentAggregatesRepository — monthly slot counts for virtualized calendar.
 
 Provides server-side aggregates for react-window month view.

@@ -21,6 +21,8 @@ vi.mock("@clerk/nextjs", () => ({
     isLoaded: true,
   }),
 }));
+vi.mock("@/hooks/useTenantId", () => ({ useTenantId: () => "mock-tenant-id" }));
+
 
 vi.mock("@tanstack/react-query", () => ({
   useQuery: vi.fn(() => ({

@@ -1,3 +1,5 @@
+// cap: __shared__
+// story-origin: TBD
 /**
  * crm-shared/types.ts — Shared CRM type contracts (PRODUCER · Ola 1+).
  *

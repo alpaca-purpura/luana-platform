@@ -1,3 +1,5 @@
+// cap: shell-organism.shell-vitalia
+// story-origin: vitalia-fase1-s9-TBD
 /**
  * Agent Root Page — Server Component redirect.
  * F1-S9 vitalia-fase1-routing-shell — T-4

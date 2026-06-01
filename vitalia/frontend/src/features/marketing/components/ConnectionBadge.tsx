@@ -1,3 +1,5 @@
+// cap: public_landing.public-clinic-landing
+// story-origin: TBD
 /**
  * ConnectionBadge — 4-state sync status badge with CSS token coloring.
  * States: idle | running | error | disconnected

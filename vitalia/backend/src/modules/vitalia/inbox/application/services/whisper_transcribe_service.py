@@ -1,3 +1,5 @@
+# cap: sales_agent.inbox-handler-mode-occ
+# story-origin: TBD
 """WhisperTranscribeService — vitalia inbox application layer.
 
 Wraps WhisperAdapter with confidence threshold + fallback.

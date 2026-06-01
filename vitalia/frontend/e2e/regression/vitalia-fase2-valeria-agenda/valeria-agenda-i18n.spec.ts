@@ -94,7 +94,8 @@ test.describe("SC-11 — currency override USD on AR tenant + locale", () => {
   }) => {
     // Switch to AR tenant mock
     await setupAgendaGridMock(agendaPage, "tenant_b");
-    await agendaPage.goto(`/${AR_TENANT_ID}/valeria/agenda?view=semana`);
+    // UPDATED: paradigm-map-zones T-6 — route migrated to mateo/agenda
+    await agendaPage.goto(`/${AR_TENANT_ID}/mateo/agenda?view=semana`);
     await agendaPage.waitForLoadState("domcontentloaded");
 
     const agendaViewAR = new AgendaViewPage(agendaPage, AR_TENANT_ID);

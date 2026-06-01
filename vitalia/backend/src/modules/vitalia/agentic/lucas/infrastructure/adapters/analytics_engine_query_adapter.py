@@ -1,3 +1,5 @@
+# cap: agentic.eval-goldens-slice-1
+# story-origin: TBD
 """Lucas infrastructure — AnalyticsEngineQueryAdapter.
 
 Wraps luana_core_analytics_engine reads for Lucas growth setter services.

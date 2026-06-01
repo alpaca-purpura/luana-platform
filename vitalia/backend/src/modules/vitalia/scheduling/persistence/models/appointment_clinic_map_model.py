@@ -1,3 +1,5 @@
+# cap: scheduling.valeria-agenda
+# story-origin: TBD
 """SQLAlchemy 2.0 model — vitalia_appointment_clinic_map.
 
 Brand-local extension for appointment metadata (03-arch A12).

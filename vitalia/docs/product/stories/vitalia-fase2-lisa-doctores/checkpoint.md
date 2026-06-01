@@ -1,15 +1,42 @@
 ---
 story_id: vitalia-fase2-lisa-doctores
-outcome: vitalia-mvp-ui-foundation
-phase: fase-2
 type: ui-story
 agent_owner: lisa
-module: staff
+map_zone: agentes
+map_box: lisa
+module: clinics
 capability: lisa.doctores
-state: idea
+state: developing
+defer_audit: false
+defer_audit_resolved_at: '2026-06-01'
+defer_audit_resolution: >-
+  Blocker del defer (fix de producción del dual-mount del shell) RESUELTO y mergeado
+  a done 2026-06-01 (story vitalia-shell-dual-mount-a11y-fix, merge c9d2bd31:
+  single-main + single-slot, live-verify GREEN, axe 0 duplicate-id/landmark).
+  Reabierta reviewing→developing para el trabajo dev remanente: (1) fix doctors-500
+  keystone (BE 422 guard UUID headers + FE useClinicId sin fallback Clerk-org +
+  arch-test tightening — decisión Chris 2026-06-01), (2) quitar workaround POMs,
+  (3) verificar asserts reales destrabados, (4) fix perf, (5) flujos workspace/calendar
+  + i18n, (6) visual goldens → project=visual (requiere ratify Chris), (7) live-verify
+  real → cap lisa.doctores + auditor. Work order detallado en chris-input.md.
 architecture_pattern: ADR-vitalia-004
-last_modified: 2026-05-22
-ratified_by_chris: false
+last_modified: '2026-06-01T23:59:00Z'
+ready_package_by: /architect (Opus 4.8)
+ready_package_at: '2026-05-31'
+autonomous_mode: true
+e2e_live_run: pending_stack  # specs written (3bce844c); live verify needs stack up + zustand fix + ADR-008 dev_app deploy
+adr_004_compliance: full
+ready_artifacts:
+  - 03-arch.md
+  - 03-arch-be.md
+  - 03-arch-fe.md
+  - 04-validators.yaml
+  - 05-guidelines.md
+  - 06-tickets.yaml
+  - dispatch-plan.md
+prior_art_scan_done: true
+ratified_by_chris: true
+ratified_visual_by_chris: true
 parallel_safe: true
 priority: high
 estimated_dev_days: 3-4
@@ -18,14 +45,55 @@ dependencies:
     - vitalia-fase1-empty-states
     - vitalia-fase1-routing-shell
   soft:
-    - vitalia-fase2-lisa-marca               # voice brand alimenta bio default
+    - vitalia-fase2-lisa-marca
 blocks_hard: []
 blocks_soft:
-  - vitalia-fase2-valeria-agenda             # doctor selector en form crear cita
-  - vitalia-fase2-lisa-servicios             # doctor-treatment assignment
-reuse_map_summary: "REUSE patients+staff models shipped · NEW UI CRUD perfiles + N3-dyn workspace [doctor-id] · NEW personal-branding bio + horarios + KPIs · doctors-as-faces preview"
-spawned_at: 2026-05-22
-next_action: "/po-ux refinar 01-spec.md con wireframes directorio + workspace doctor tabs"
+  - vitalia-fase2-valeria-agenda
+  - vitalia-fase2-lisa-servicios
+reuse_map_summary: >-
+  REUSE patients+staff models shipped · NEW UI CRUD perfiles + N3-dyn workspace
+  [doctor-id] · NEW personal-branding bio + horarios + KPIs · doctors-as-faces
+  preview
+spawned_at: 2026-05-22T00:00:00.000Z
+next_action: "⚠️ PENDIENTE Chris ratificación V-VIS-1..4 (7 PNGs ADR-vitalia-003) → luego /auditor → merge. Remaining honest-RED: SC-11 AR/MX/CL (credential i18n modal default), SC-1/SC-1b/SC-1c/SC-1d workspace calendar deep flows, SC-9 large-dataset pagination, SC-3/SC-3b. Clerk fix resuelto (force_organization_selection=false)."
+blocker_2026-06-01:
+  id: clerk-choose-organization-task
+  kind: clerk-instance-config (no-código)
+  status: ✅ RESUELTO 2026-06-01
+  detail: >-
+    Clerk dev instance tenía Organizations + force_organization_selection:true. Al borrar
+    la Clerk org en sesión 1, dr.demo quedó sin org → todo sign-in colgado en
+    /sign-in/tasks/choose-organization (login real + e2e rotos platform-wide).
+    FIX aplicado: PATCH /v1/instance/organization_settings {force_organization_selection:false}
+    (Clerk Backend API). Login restaurado (setup 2/2 GREEN, dev-app /sign-in 200). Setting vive
+    en la instancia Clerk, NO en git. Doc:
+    vitalia/docs/observed-bugs/2026-06-01-clerk-choose-organization-task-blocks-signin.md
+t_fix_2_progress:
+  a_seed_by_write: "✅ GREEN-real (3 doctores DB + 3 audit rows · evidencia DoD confirmada orchestrator)"
+  b_pom_workarounds: "✅ committeado fd512f33 (re-verificación asserts bloqueada por Clerk)"
+  d_perf_measurement: "✅ committeado fd512f33"
+  c_visual_goldens: "✅ 7 baselines committed (directorio×2 + perfil×2 + horarios×2 + servicios×1) — commits d206fd7b+ebe7d524. Awaiting Chris ratification ADR-vitalia-003."
+  e_deep_flows: "⚠️ partial: 24 GREEN / 12 honest-RED documented (SC-11 i18n modal default, SC-1/SC-1b/SC-1c/SC-1d/SC-3/SC-3b workspace-calendar, SC-9 pagination race) — T-FIX-2-result.md § deep flows"
+chris_decisions_2026-06-01:
+  - id: a-seed
+    decision: seed-by-WRITE-real
+    detail: >-
+      /dev-team ejerce el flujo create real (POST /doctors → 201 + fila DB cifrada
+      pgcrypto + audit) para 2-3 doctores en tenant e69a691d / clinic
+      f035be5b-0ac4-5210-8fc3-395650ca2b83 (Sanaré LATAM — Sede Principal, verificada
+      existe). Cuenta como Scenario 1 happy-path + evidencia DoD más fuerte + seedea
+      datos para flujos (e). NO raw-SQL (pgcrypto frágil).
+  - id: c-goldens
+    decision: relocate-regen-ratify-now
+    detail: >-
+      Reubicar V-VIS-1..4 (de staff-large-dataset.spec.ts smoke) a project=visual con
+      snapshotPathTemplate + maxDiffPixelRatio, regenerar baselines limpios, mostrar a
+      Chris para ratificación (ADR-vitalia-003) ANTES de merge. doctores done incluye
+      AC-9 completo. Borrar baselines basura untracked (staff-large-dataset.spec.ts-snapshots/ + _shots/).
+release: F2
+cap_target: lisa.doctores
+cap_change_type: new
+parent_story: null
 ---
 
 # F2-S8 vitalia-fase2-lisa-doctores — checkpoke
@@ -230,8 +298,54 @@ Backend valida credencial colegio médico format country-specific:
 - F2-S1 valeria-agenda consume doctors disponibles
 - F2-S9 lisa-servicios mapea treatments → doctors
 
+## Prior art scan (2026-05-30 · `/pm-vitalia`)
+
+> Ejecutado per `.claude/rules/anti-duplication-refining.md`. Corrige asunciones del scope original.
+
+### Correcciones al scope original (el checkpoint asumía paths que no existen)
+
+| Asunción original | Realidad en código | Acción para `/po-ux` + `/architect` |
+|---|---|---|
+| `module: staff` · Doctor model en `vitalia/backend/src/modules/vitalia/staff/` | **NO existe `staff/`**. Doctor vive como `VitaliaDoctorExtensionModel` en `infrastructure/models/doctor_extension_model.py` + `DoctorExtensionRepository` (`# cap: booking.prepaid-booking-advisory-locks`). El módulo de negocio salud es **`clinics`**. | Corregido `module: clinics`. El backend de perfiles doctor **extiende `clinics` + doctor-extension existente**, NO crea `staff/`. |
+| "Horarios → genera `availability_slots` para Agenda Valeria" (parecía build nuevo) | **`scheduling/` ya tiene** `agenda_slot` (domain), `create_appointment_service`, `agenda_grid_service`, `agenda_router`, appointment repos. + engine `luana-core-scheduling` + `luana-core-commercial-calendar`. | Horarios del doctor **cablea hacia `scheduling/` + engine existente** (CONSUME, no recrea). Tab Horarios → escribe availability que `scheduling` ya consume. |
+| Reuse "patients PHI masking utils" genérico | `booking/prepaid-booking-advisory-locks.yaml` (deprecated) define `advisory_locks` + slots por doctor + consent modal ya shipped. | KPIs tab + slots disponibles reusan endpoints `bookings/available-slots` existentes. |
+
+### Engine a consumir (NO recrear)
+- `luana-core-scheduling` — availability/slots base.
+- `luana-core-commercial-calendar` — calendario comercial.
+
+### Capability decision (ratificada Chris 2026-05-30)
+- `cap_target: lisa.doctores` · `cap_change_type: new` (mapa: zona **Agentes → Lisa**).
+- Caps relacionadas **deprecated** que esta story sucede:
+  - `clinics/clinics-brand-extension.yaml` (`replaced_by_story: vitalia-fase2-lisa-doctores`).
+  - `booking/prepaid-booking-advisory-locks.yaml` (slots/locks — se consume, no se recrea).
+- En Fase F.3: crear `capabilities/staff/` NO — la cap vive bajo agente Lisa. Doc el linaje (clinics-brand-extension → sucedida por lisa.doctores) en el change_log de la cap nueva.
+
+### Decisión: net-new UI + extend backend
+- **NEW**: UI `features/lisa/components/doctores/` + rutas `lisa/doctores/` + `lisa/doctores/[doctor-id]` (hoy `features/lisa/` solo tiene `marca` + `placeholders`).
+- **EXTEND**: backend doctor profiles sobre `clinics` + `doctor_extension` + CONSUME `scheduling`/engine para horarios.
+
 ## Referencias
 
 - **Design Contract:** `vitalia/docs/architecture/SHELL-DESIGN-CONTRACT.md`
 - **Navigation tree:** § lisa.doctores
 - **HIPAA-lite:** `vitalia/.claude/rules/hipaa-lite.md`
+- **Prior art:** `clinics/` module · `scheduling/` module · `infrastructure/models/doctor_extension_model.py` · engine `luana-core-scheduling`
+
+## Ready package (`/architect` Opus 4.8 · 2026-05-31)
+
+`refined → ready`. 7 artefactos. `adr_004_compliance: full`. 11 tickets, DAG sin ciclos, `autonomous_mode: true`.
+
+**4 decisiones arquitectónicas resueltas (03-arch § Architecture Decisions):**
+- **D-1** `EntitySubNavBar` (N3-dynamic) = componente nuevo sibling de `SubSubTabsBar` (no lo modifica). Addendum ADR-004 § 3.1.1 → owner `/pm-vitalia` F.3.
+- **D-2** ⚠️ `commercial-calendar` NO expande recurrencia (es calendario marketing). Proyección = brand-local `dateutil.rrule`. La business rule `availability-projection-via-engine` parte de premisa errónea → corregir wording al merge.
+- **D-3** ⚠️ presigned upload NO existe en `luana-core-assets` (solo proxy `upload_asset`). Se consume proxy upload; presign diferido a `/pm-luana` lift futuro.
+- **D-4** bio-gen = servicio determinista BE (`clinics/application`), NO agentic → R23 NO aplica → Sonnet.
+- **D-5** NEW tabla `vitalia_doctors` (no existía perfil; `vitalia_doctor_extensions` solo guarda extensiones).
+- **D-6** NO split (11 tickets DAG cohesivo).
+
+**Chris manual action (T-BE-7):** generar R2 S3 creds + bucket + CORS + rotar `cfat_`. Code/tests proceden mockeados.
+
+**Open questions for PM:** ver `03-arch.md § 16` (5 ítems — addendum ADR, corrección business rule, presign lift, open_ended horizon, R2 creds).
+
+**Next:** `/dev-team vitalia vitalia-fase2-lisa-doctores` → T-BE-1.

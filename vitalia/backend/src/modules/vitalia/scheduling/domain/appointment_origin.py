@@ -1,3 +1,5 @@
+# cap: scheduling.valeria-agenda
+# story-origin: vitalia-fase2-s1-TBD
 """Appointment origin enum — vitalia-brand-local.
 
 Indicates how the appointment was created. Used to render the origin badge

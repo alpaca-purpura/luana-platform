@@ -1,3 +1,5 @@
+# cap: brand_studio.brand-studio-medical-sections
+# story-origin: vitalia-fase2-s7-TBD
 """VoicePreviewService — compile slot 5 BRAND_VOICE preview (deterministic, no LLM dispatch).
 
 OQ-C resolution 2026-05-27:

@@ -37,6 +37,12 @@ estimated_dev_weeks: 2-3
 estimated_total_tickets: 16
 agentic_opus_required_tickets: [T-9, T-10]                  # R23 hard — agentic production_code=true
 next_action: "Pre-flight gates GREEN → /dev-team picks T-1 (migrations). DAG Stage 1 → 8 per 06-tickets.yaml. Auto-handoff /auditor al cierre state=developed."
+
+# Schema v2 migration (cement 2026-05-27)
+release: F0   # release ID · ver releases/
+cap_target: nps-tracking   # capability slug target (v2 cement 2026-05-27)
+cap_change_type: new   # new | fix | extend | derive
+parent_story: null   # story padre si spawned · null si independiente
 ---
 
 # vitalia-slice-1-fidelizacion — checkpoint

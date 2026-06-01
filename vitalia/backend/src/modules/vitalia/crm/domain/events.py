@@ -1,3 +1,5 @@
+# cap: crm.crm-consent-optout
+# story-origin: TBD
 """Vitalia CRM domain events — 6 events per 03-arch-be.md § 3.5.
 
 Domain layer — pure Python dataclasses, no ORM imports.

@@ -1,3 +1,5 @@
+# cap: scheduling.valeria-agenda
+# story-origin: vitalia-fase2-s1-TBD
 """Create Appointment Service — create engine appointment + brand-local clinic_map.
 
 Rule (03-arch A12 + hipaa-lite.md):

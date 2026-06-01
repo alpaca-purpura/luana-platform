@@ -1,3 +1,5 @@
+// cap: __shared__
+// story-origin: TBD
 /**
  * formatTenantRelative — relative time formatter ("hace 3 minutos").
  *

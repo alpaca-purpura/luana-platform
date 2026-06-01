@@ -37,9 +37,7 @@ const imageRemotePatterns = [
 
 const nextConfig = {
   output: 'standalone',
-  devIndicators: {
-    position: 'bottom-left',
-  },
+  devIndicators: false,
   allowedDevOrigins: allowedOrigins,
   images: {
     remotePatterns: imageRemotePatterns,
@@ -61,6 +59,12 @@ const nextConfig = {
   async rewrites() {
     if (!internalApiUrl) return [];
     return [
+      // Health check — liveness probe (smoke Playwright + Clerk allowlist).
+      // Must come before /api/v1/* so the exact path matches first.
+      {
+        source: '/api/health',
+        destination: `${internalApiUrl}/health`,
+      },
       {
         source: '/api/webhooks/:path*',
         destination: `${internalApiUrl}/api/v1/webhooks/:path*`,

@@ -1,3 +1,5 @@
+// cap: brand_studio.lisa-marca
+// story-origin: vitalia-fase1-s10-TBD
 /**
  * CompliancePlaceholder — EmptyState genérico para Lisa/Compliance.
  * F1-S10 vitalia-fase1-empty-states — T-2

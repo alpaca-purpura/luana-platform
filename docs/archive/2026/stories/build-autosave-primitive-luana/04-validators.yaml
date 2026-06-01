@@ -1,0 +1,113 @@
+# 04-validators.yaml — build-autosave-primitive-luana (librería @luana · Vitest)
+# Paths relativos al workspace root. ${WS} = git rev-parse --show-toplevel.
+
+validators:
+  # ─── NON-FUNCTIONAL ───────────────────────────────────────────────────────
+  - id: schemas_tsc
+    category: non_functional
+    type: shell
+    cmd: "cd core/@luana/schemas && npx tsc --noEmit"
+    must_pass: true
+    timeout_sec: 60
+  # NOTA: los packages @luana/{hooks,ui-kit} tienen tsc rojo PRE-EXISTENTE (deuda del lift
+  # b1bdb3ab/3282768a — hooks acoplados a brand con imports rotos + jest-dom types). Ver
+  # observed-bugs/2026-05-31-luana-hooks-uikit-tsc-lift-debt.md. Esta story NO debe arrastrar esa
+  # deuda → el gate verifica que la primitiva de autosave NO introduce errores tsc nuevos.
+  - id: hooks_tsc
+    category: non_functional
+    type: shell
+    cmd: "cd core/@luana/hooks && ! (npx tsc --noEmit 2>&1 | grep -iE 'useAutosave|autosave\\.ts')"
+    must_pass: true
+    timeout_sec: 90
+    description: "Cero errores tsc en los archivos de autosave (la deuda pre-existente del package es ortogonal — observed-bug)"
+  - id: uikit_tsc
+    category: non_functional
+    type: shell
+    cmd: "cd core/@luana/ui-kit && ! (npx tsc --noEmit 2>&1 | grep -iE 'AutosaveBadge|AutosaveShowcase')"
+    must_pass: true
+    timeout_sec: 90
+    description: "Cero errores tsc en AutosaveBadge/showcase (deuda pre-existente ui-kit ortogonal — observed-bug)"
+  - id: nicolify_tsc
+    category: non_functional
+    type: shell
+    cmd: "cd nicolify/frontend && npx tsc --noEmit"
+    must_pass: true
+    timeout_sec: 120
+
+  # ─── FUNCTIONAL ───────────────────────────────────────────────────────────
+  - id: useAutosave_unit
+    category: functional
+    type: shell
+    cmd: "cd core/@luana/hooks && npx vitest run src/__tests__/useAutosave.test.ts"
+    must_pass: true
+    timeout_sec: 120
+    description: "debounce-coalesce · save-success · auth-ready (token null transitorio→espera) · error+retry · concurrencia last-wins · network-failure · unmount-cancel · telemetry opt-in"
+  - id: autosaveBadge_component
+    category: functional
+    type: shell
+    cmd: "cd core/@luana/ui-kit && npx vitest run src/__tests__/AutosaveBadge.test.tsx"
+    must_pass: true
+    timeout_sec: 120
+    description: "estados render + data-state + aria-live + i18n labels + axe contraste AA"
+  - id: nicolify_form_runtime_regression
+    category: functional
+    type: shell
+    cmd: "cd nicolify/frontend && npx vitest run src/components/form-runtime/"
+    must_pass: true
+    timeout_sec: 120
+    description: "form-runtime reescrito sobre useAutosave → comportamiento observable idéntico (tests existentes verdes)"
+
+  # ─── ARCHITECTURAL VALIDATION ─────────────────────────────────────────────
+  - id: arch_no_clerk_in_luana
+    category: architectural_validation
+    type: shell
+    cmd: "! grep -rnE \"from ['\\\"]@clerk/\" core/@luana/hooks/src core/@luana/ui-kit/src core/@luana/schemas/src 2>/dev/null"
+    must_pass: true
+    timeout_sec: 10
+    description: "La primitiva NO acopla a Clerk (getToken inyectado)"
+  - id: arch_no_autosave_dup
+    category: architectural_validation
+    type: shell
+    cmd: "test -f core/@luana/hooks/src/useAutosave.ts && test -f core/@luana/ui-kit/src/AutosaveBadge.tsx"
+    must_pass: true
+    timeout_sec: 10
+    description: "La primitiva existe en @luana (SSoT único)"
+  - id: arch_luana_barrels_export
+    category: architectural_validation
+    type: shell
+    cmd: "grep -q 'useAutosave' core/@luana/hooks/src/index.ts && grep -q 'AutosaveBadge' core/@luana/ui-kit/src/index.ts && grep -qiE 'AutosaveStatus|AutosaveContract|UseAutosave' core/@luana/schemas/src/index.ts"
+    must_pass: true
+    timeout_sec: 10
+    description: "Exports en barrels (cero isla — consumibles)"
+
+scenario_coverage:
+  - { scenario_id: debounce-coalesce, validators: [useAutosave_unit] }
+  - { scenario_id: save-success-badge, validators: [useAutosave_unit, autosaveBadge_component] }
+  - { scenario_id: auth-ready-no-error-permanente, validators: [useAutosave_unit] }
+  - { scenario_id: error-recovery-retry, validators: [useAutosave_unit] }
+  - { scenario_id: concurrent-edits-last-wins, validators: [useAutosave_unit] }
+  - { scenario_id: network-failure, validators: [useAutosave_unit] }
+  - { scenario_id: unmount-cancels, validators: [useAutosave_unit] }
+  - { scenario_id: badge-aria-live, validators: [autosaveBadge_component] }
+  - { scenario_id: badge-i18n-neutro, validators: [autosaveBadge_component] }
+  - { scenario_id: telemetry-opt-in, validators: [useAutosave_unit] }
+  - { scenario_id: nicolify-form-runtime-sin-regresion, validators: [nicolify_form_runtime_regression, nicolify_tsc] }
+
+test_construction_plan:
+  playwright_required: false
+  not_applicable_reason: "Librería primitiva (@luana) — se verifica con Vitest unit/component (determinista, sin backend). El E2E real-backend vive en las stories de adopción de brand (doctrina Verificación REAL)."
+  vitest_first: true
+  creation_order:
+    - { step: 1, file: "core/@luana/schemas/src/autosave.ts (+ export en index.ts)", content: "AutosaveStatus + UseAutosaveOptions/Return types", depends_on: [] }
+    - { step: 2, file: "core/@luana/hooks/src/__tests__/useAutosave.test.ts", content: "RED: los 8 scenarios del hook con fake timers + mocks", depends_on: [1] }
+    - { step: 3, file: "core/@luana/hooks/src/{useDebounce.ts,useAutosave.ts} (+ index.ts)", content: "GREEN: implementación", depends_on: [2] }
+    - { step: 4, file: "core/@luana/ui-kit/src/__tests__/AutosaveBadge.test.tsx", content: "RED: estados + aria-live + axe + i18n", depends_on: [1] }
+    - { step: 5, file: "core/@luana/ui-kit/src/AutosaveBadge.tsx (+ index.ts)", content: "GREEN: componente (compone badge.tsx)", depends_on: [4] }
+    - { step: 6, file: "consumer de referencia (showcase mínimo en @luana/ui-kit examples o story)", content: "prueba el contrato end-to-end sin brand", depends_on: [3, 5] }
+    - { step: 7, file: "nicolify/frontend/src/components/form-runtime/* (rewrite) + tests existentes verdes", content: "form-runtime sobre useAutosave + AutosaveBadge, sin regresión", depends_on: [3, 5] }
+
+iteration:
+  max_iterations: 10
+  on_fail: "fix targeted file based on test output, re-run failing validator only"
+  on_all_pass: "set state=developing→developed, append iteration_log a T-{n}-impl-log.md"
+  on_cap_reached: "set state=developing→blocked, escalate Chris"

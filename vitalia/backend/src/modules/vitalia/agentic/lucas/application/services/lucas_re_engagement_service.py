@@ -1,3 +1,5 @@
+# cap: agentic.lucas-daily-analysis
+# story-origin: TBD
 """Lucas application service — LucasReEngagementService.
 
 T-10 Slice 1 fidelización agentic. R23 production_code=True (Opus 4.7 exclusive).

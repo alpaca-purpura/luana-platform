@@ -1,3 +1,5 @@
+# cap: __shared__
+# story-origin: TBD
 """Agent turn span context manager for Vitalia agentic workers.
 
 Wraps agent turn execution (Adrián, Lucas, Valeria) with OTel spans.

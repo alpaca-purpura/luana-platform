@@ -1,3 +1,5 @@
+// cap: public_landing.public-clinic-landing
+// story-origin: TBD
 /**
  * LucasApprovalModal — confirmation dialog before approving a Lucas recommendation
  * Warning: reversible (5-min undo window). Idempotency-Key per mutation call.
