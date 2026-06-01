@@ -13,12 +13,12 @@ parent_story: null
 state: developing
 phase_workflow: T1_DONE_T2_PENDING_LIVE
 last_artifact: 06-tickets.yaml
-last_modified: 2026-06-01T00:30:00-05:00
+last_modified: 2026-06-01T10:30:00-05:00
 
 # Shell-feature arch gate (overlay shell-feature-architecture-mandatory.md)
 architecture_pattern: ADR-vitalia-004            # shell CORE (no sub-tab nueva); adr_004_compliance=partial-with-rationale en 03-arch (secciones 4-8 N/A: sin data layer/forms/BE/migrations/telemetría)
 autonomous_mode: false                           # architect propone false (bugfix transversal blast-radius alto); Chris ratifica
-next_action: "/dev-team T-1 (builder-frontend Sonnet): RED reescribir ShellOrganismLayout.test.tsx asertando single-main + single-slot → GREEN single <main id=main-content> + single <AppPanelSlot> + hook-count estable (D3) + sin useMediaQuery (D4). Luego T-2 verificación transversal 5 agentes ×3 modos + axe + dev-app live (ADR-008)."
+next_action: "RETOMAR EN T-2 (verificación LIVE · ADR-008). T-1 DONE+GREEN (commit b65baae6: single-main+single-slot, 501 tests shell pass, regresión transversal=0, tsc src/ 0, eslint limpio). Falta: (a) make dev-app-vitalia DESDE este worktree (footgun cross-worktree); (b) ejercer lisa + valeria sidebar desktop+mobile (Chrome MCP / Playwright autenticado dr.demo@vitalialat.com) → confirmar querySelectorAll('#main-content').length===1 + [data-testid=app-panel-slot].length===1 + consola SIN 'Rendered more hooks'/hydration; (c) axe wcag2aa lisa+valeria; (d) prueba de fuego E2E doctores --project=smoke → getByTestId resuelve a 1 SIN .filter({visible:true}); (e) llenar dev_app_verified.evidence; luego developing→developed + AUTO /auditor (auditor-frontend Opus) → merge reviewing→done. Build-claim code:shell-organism liberado al cerrar."
 ratified_by_chris: true                           # Chris ratificó arrancar Pendiente 2 (fix dual-mount) → scope WHAT confirmado; HOW lo cierra /architect
 spawned_at: 2026-06-01T00:00:00-05:00
 spawned_by: /pm-vitalia
