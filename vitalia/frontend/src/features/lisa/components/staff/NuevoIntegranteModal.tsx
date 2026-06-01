@@ -20,7 +20,7 @@
 
 "use client";
 
-import { type MutableRefObject, useEffect, useRef } from "react";
+import { type MutableRefObject, type RefObject, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -64,6 +64,13 @@ import {
 interface NuevoIntegranteModalProps {
   open: boolean;
   onClose: () => void;
+  /**
+   * Ref to the trigger button so Radix Dialog can return focus to it on close.
+   * Required for WCAG 2.4.3 focus-return (SC-10).
+   * Radix Dialog only auto-returns focus when using the built-in DialogTrigger —
+   * since we use a standalone Button + state, we must manage focus manually.
+   */
+  triggerRef?: RefObject<HTMLButtonElement | null>;
 }
 
 /**
@@ -73,6 +80,7 @@ interface NuevoIntegranteModalProps {
 export function NuevoIntegranteModal({
   open,
   onClose,
+  triggerRef,
 }: NuevoIntegranteModalProps) {
   const router = useRouter();
   const params = useParams<{ tenantId: string }>();
@@ -147,7 +155,21 @@ export function NuevoIntegranteModal({
   }
 
   return (
-    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        if (!v) {
+          onClose();
+          // WCAG 2.4.3: Return focus to the trigger button after modal closes.
+          // Radix Dialog auto-returns focus only when using <DialogTrigger>;
+          // since we manage open state externally, we must do it manually.
+          // rAF ensures the dialog has unmounted before we attempt to focus.
+          requestAnimationFrame(() => {
+            triggerRef?.current?.focus();
+          });
+        }
+      }}
+    >
       <DialogContent
         className="sm:max-w-lg"
         data-testid="modal-nuevo-integrante"
@@ -353,9 +375,11 @@ export function NuevoIntegranteModal({
               >
                 Cancelar
               </Button>
+              {/* Navy bg: #180D95 on white = 13:1 contrast (WCAG AA/AAA pass). */}
               <Button
                 type="submit"
                 disabled={createDoctor.isPending}
+                className="bg-[color:var(--vitalia-azul-marino-color)] text-white hover:opacity-90 dark:bg-[color:var(--vitalia-azul-marino-color)] dark:text-white"
                 data-testid="btn-crear-integrante"
               >
                 {createDoctor.isPending ? "Creando…" : "Crear integrante"}

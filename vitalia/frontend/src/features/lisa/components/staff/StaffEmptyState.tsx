@@ -50,9 +50,10 @@ export function StaffEmptyState({ onAddClick }: StaffEmptyStateProps) {
         </p>
       </div>
 
+      {/* Navy bg: #180D95 on white = 13:1 contrast (WCAG AA/AAA pass). */}
       <Button
         onClick={onAddClick}
-        className="mt-2"
+        className="mt-2 bg-[color:var(--vitalia-azul-marino-color)] text-white hover:opacity-90 dark:bg-[color:var(--vitalia-azul-marino-color)] dark:text-white"
         data-testid="btn-agregar-primer-integrante"
       >
         Agregar primer integrante

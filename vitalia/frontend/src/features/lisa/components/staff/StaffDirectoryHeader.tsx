@@ -16,6 +16,7 @@
 
 "use client";
 
+import { type RefObject } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -46,6 +47,8 @@ interface StaffDirectoryHeaderProps {
   onSpecialty: (specialty: string) => void;
   onActive: (active: "true" | "false" | "") => void;
   onAddNew: () => void;
+  /** Ref forwarded to the "+ Nuevo integrante" button for focus-return (WCAG 2.4.3). */
+  addNewRef?: RefObject<HTMLButtonElement | null>;
 }
 
 /**
@@ -57,6 +60,7 @@ export function StaffDirectoryHeader({
   onSpecialty,
   onActive,
   onAddNew,
+  addNewRef,
 }: StaffDirectoryHeaderProps) {
   return (
     <div className="space-y-3">
@@ -69,6 +73,7 @@ export function StaffDirectoryHeader({
           </p>
         </div>
         <Button
+          ref={addNewRef}
           onClick={onAddNew}
           size="sm"
           data-testid="btn-nuevo-integrante"

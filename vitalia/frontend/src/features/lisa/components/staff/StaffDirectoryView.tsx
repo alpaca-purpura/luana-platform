@@ -23,6 +23,7 @@
 
 "use client";
 
+import { useRef } from "react";
 import { useParams } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -50,6 +51,10 @@ export function StaffDirectoryView({ initialData }: StaffDirectoryViewProps) {
   const params = useParams<{ tenantId: string }>();
   const tenantId = params?.tenantId ?? "";
 
+  // triggerRef: track the "+ Nuevo integrante" button so the modal can
+  // return focus to it on close (WCAG 2.4.3 SC-10).
+  const nuevoTriggerRef = useRef<HTMLButtonElement>(null);
+
   const { filters, setQ, setSpecialty, setActive, setPage } =
     useStaffFilters();
   const { nuevoIntegranteOpen, openNuevoIntegrante, closeNuevoIntegrante } =
@@ -76,6 +81,7 @@ export function StaffDirectoryView({ initialData }: StaffDirectoryViewProps) {
         onSpecialty={setSpecialty}
         onActive={setActive}
         onAddNew={openNuevoIntegrante}
+        addNewRef={nuevoTriggerRef}
       />
 
       {/* Loading state: skeleton ×6 */}
@@ -171,10 +177,11 @@ export function StaffDirectoryView({ initialData }: StaffDirectoryViewProps) {
         </>
       )}
 
-      {/* NuevoIntegrante modal */}
+      {/* NuevoIntegrante modal — triggerRef enables WCAG 2.4.3 focus-return on close. */}
       <NuevoIntegranteModal
         open={nuevoIntegranteOpen}
         onClose={closeNuevoIntegrante}
+        triggerRef={nuevoTriggerRef}
       />
     </div>
   );

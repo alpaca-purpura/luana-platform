@@ -138,7 +138,7 @@ export function DoctorPerfilView({ doctorId }: DoctorPerfilViewProps) {
   }
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-6 max-w-2xl" data-testid="doctor-perfil-view">
       {/* Autosave hint */}
       <div
         className={cn(

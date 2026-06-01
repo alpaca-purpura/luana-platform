@@ -86,10 +86,11 @@ test.describe("V-VIS-2 — hoja Perfil visual golden", () => {
 
     await staffPage.emulateMedia({ colorScheme: "light" });
 
+    // Real assert: if doctor-perfil-view doesn't render, test should FAIL honestly
+    // (not silently skip). If testid is missing from DoctorPerfilView, that's a bug.
     const perfilSection = staffPage.getByTestId("doctor-perfil-view");
-    if (await perfilSection.isVisible()) {
-      await expect(perfilSection).toHaveScreenshot("perfil-light.png");
-    }
+    await expect(perfilSection).toBeVisible({ timeout: 8_000 });
+    await expect(perfilSection).toHaveScreenshot("perfil-light.png");
   });
 
   test("perfil dark mode", async ({ staffPage }) => {
@@ -103,9 +104,8 @@ test.describe("V-VIS-2 — hoja Perfil visual golden", () => {
     );
 
     const perfilSection = staffPage.getByTestId("doctor-perfil-view");
-    if (await perfilSection.isVisible()) {
-      await expect(perfilSection).toHaveScreenshot("perfil-dark.png");
-    }
+    await expect(perfilSection).toBeVisible({ timeout: 8_000 });
+    await expect(perfilSection).toHaveScreenshot("perfil-dark.png");
   });
 });
 
