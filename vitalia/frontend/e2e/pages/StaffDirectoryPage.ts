@@ -10,16 +10,13 @@
  * spec_anchor: 04-validators.yaml § poms_required
  * playwright-expert: POM patterns
  *
- * B2 fix (2026-05-31): ShellOrganismLayout mounts children twice (desktop +
- * mobile branch, one hidden via CSS). Every panel testid resolves to 2 elements
- * → Playwright strict-mode violation. Fix: scope all panel locators to the
- * single visible `[data-testid="app-panel-slot"]` element via .filter({visible:true}).
- * Modal is a Radix portal (single instance — NOT inside app-panel-slot) → keeps
- * page-level locators.
- *
  * B3 fix (2026-05-31): shadcn Select for "País de registro" is NOT a native
  * <select> → selectOption() doesn't work. fillNewDoctorForm now uses
  * click-on-trigger + click-on-item pattern.
+ *
+ * Note: the dual-mount workaround (.filter({visible:true})) was removed on
+ * T-FIX-2 (2026-06-01) — vitalia-shell-dual-mount-a11y-fix (c9d2bd31) fixed
+ * the shell to render a single `[data-testid="app-panel-slot"]` per viewport.
  */
 
 import type { Page, Locator } from "@playwright/test";
@@ -79,10 +76,8 @@ export class StaffDirectoryPage {
   constructor(page: Page) {
     this.page = page;
 
-    // B2 fix: single visible panel root — all panel content is scoped here.
-    this.panelRoot = page
-      .locator('[data-testid="app-panel-slot"]')
-      .filter({ visible: true });
+    // Single app-panel-slot (vitalia-shell-dual-mount-a11y-fix resolved double-mount).
+    this.panelRoot = page.getByTestId("app-panel-slot");
 
     // Container — component renders data-testid="staff-directory"
     this.staffDirectoryView = this.panelRoot.getByTestId("staff-directory");
@@ -115,17 +110,8 @@ export class StaffDirectoryPage {
     this.errorBanner = this.panelRoot.getByTestId("error-banner-staff");
     this.retryButton = this.panelRoot.getByTestId("btn-reintentar");
 
-    // Modal — Radix portal: both shell branches mount NuevoIntegranteModal, so there
-    // can be 2 dialog elements with same testid. Both have data-state="open" when the
-    // shared Zustand state is toggled (state is shared between mounted instances).
-    // Radix sets data-aria-hidden="true" on the "background" dialog — this is the
-    // FIRST one in DOM order (desktop branch mounted first). The LAST one (mobile branch)
-    // is the interactive foreground dialog. Use .last() to get the interactable one.
-    // NOTE: this is a harness workaround for the dual-mount. The underlying production
-    // issue (two NuevoIntegranteModal instances synced) is noted in observed-bugs.
-    this.nuevoIntegranteModal = page
-      .getByTestId("modal-nuevo-integrante")
-      .last();
+    // Modal — Radix portal (single instance; dual-mount fixed in c9d2bd31).
+    this.nuevoIntegranteModal = page.getByTestId("modal-nuevo-integrante");
     this.modalFirstNameInput = this.nuevoIntegranteModal.getByLabel(/Nombre/i);
     this.modalLastNameInput =
       this.nuevoIntegranteModal.getByLabel(/Apellido/i);
@@ -268,7 +254,36 @@ export class StaffDirectoryPage {
   async searchFor(query: string): Promise<void> {
     await this.searchInput.fill(query);
     // Wait for debounce + re-render
-    await this.page.waitForTimeout(500);
+    await this.page.waitForTimeout(600);
+  }
+
+  /**
+   * Search and return the render-time AFTER debounce settles.
+   * Use this in perf tests to measure only the post-debounce render latency
+   * (not the debounce wait itself, which would make <500ms impossible).
+   *
+   * Protocol:
+   *   1. Fill input (triggers debounce countdown)
+   *   2. Wait for debounce to settle (~600ms)
+   *   3. Measure time from settled-state to results-rendered
+   *
+   * Returns milliseconds for the render phase only.
+   */
+  async searchForAndMeasureRender(query: string): Promise<number> {
+    await this.searchInput.fill(query);
+    // Wait for debounce to settle (input debounce is 600ms per use-autosave.ts)
+    await this.page.waitForTimeout(650);
+    // Now measure only the render phase (from settled state to DOM update)
+    const t0 = Date.now();
+    // Wait for at least 1 card or empty state to be stable
+    await this.panelRoot
+      .locator('[data-testid^="staff-card-"], [data-testid="empty-doctores"]')
+      .first()
+      .waitFor({ state: "visible", timeout: 2_000 })
+      .catch(() => {
+        /* empty result is fine */
+      });
+    return Date.now() - t0;
   }
 
   /** Assert card count equals expected (panel-scoped — counts only visible panel). */

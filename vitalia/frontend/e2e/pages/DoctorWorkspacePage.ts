@@ -10,10 +10,9 @@
  * T-FE-2 vitalia-fase2-lisa-doctores
  * spec_anchor: 04-validators.yaml § POM fixtures
  *
- * B2 fix (2026-05-31): ShellOrganismLayout mounts children twice (desktop +
- * mobile branch, one hidden via CSS). Every panel testid resolves to 2 elements
- * → Playwright strict-mode violation. Fix: scope all panel locators to the
- * single visible `[data-testid="app-panel-slot"]` element via .filter({visible:true}).
+ * Note: the dual-mount workaround (.filter({visible:true})) was removed on
+ * T-FIX-2 (2026-06-01) — vitalia-shell-dual-mount-a11y-fix (c9d2bd31) fixed
+ * the shell to render a single `[data-testid="app-panel-slot"]` per viewport.
  */
 
 import type { Page, Locator } from "@playwright/test";
@@ -56,10 +55,8 @@ export class DoctorWorkspacePage {
   constructor(page: Page) {
     this.page = page;
 
-    // B2 fix: single visible panel root — all panel content is scoped here.
-    this.panelRoot = page
-      .locator('[data-testid="app-panel-slot"]')
-      .filter({ visible: true });
+    // Single app-panel-slot (vitalia-shell-dual-mount-a11y-fix resolved double-mount).
+    this.panelRoot = page.getByTestId("app-panel-slot");
 
     // Nav — panel-scoped
     this.entitySubNavBar = this.panelRoot.getByTestId("entity-sub-nav-bar");

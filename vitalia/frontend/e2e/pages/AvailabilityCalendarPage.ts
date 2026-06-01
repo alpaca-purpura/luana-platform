@@ -16,10 +16,9 @@
  * T-FE-3 vitalia-fase2-lisa-doctores
  * spec_anchor: 04-validators.yaml § POM fixtures + 01-spec.md § SC-1/SC-1b/SC-1c/SC-1d/SC-3b
  *
- * B2 fix (2026-05-31): ShellOrganismLayout mounts children twice (desktop +
- * mobile branch, one hidden via CSS). Every panel testid resolves to 2 elements
- * → Playwright strict-mode violation. Fix: scope all panel locators to the
- * single visible `[data-testid="app-panel-slot"]` element via .filter({visible:true}).
+ * Note: the dual-mount workaround (.filter({visible:true})) was removed on
+ * T-FIX-2 (2026-06-01) — vitalia-shell-dual-mount-a11y-fix (c9d2bd31) fixed
+ * the shell to render a single `[data-testid="app-panel-slot"]` per viewport.
  * BloquePopover is a Radix popover (portal) — kept page-level.
  */
 
@@ -74,10 +73,8 @@ export class AvailabilityCalendarPage {
   constructor(page: Page) {
     this.page = page;
 
-    // B2 fix: single visible panel root — all panel content is scoped here.
-    this.panelRoot = page
-      .locator('[data-testid="app-panel-slot"]')
-      .filter({ visible: true });
+    // Single app-panel-slot (vitalia-shell-dual-mount-a11y-fix resolved double-mount).
+    this.panelRoot = page.getByTestId("app-panel-slot");
 
     // Calendar container — panel-scoped
     this.calendar = this.panelRoot.getByTestId("availability-calendar");
@@ -131,7 +128,6 @@ export class AvailabilityCalendarPage {
    */
   async goto(tenantId: string, doctorId: string): Promise<void> {
     await this.page.goto(`/${tenantId}/lisa/staff/${doctorId}/horarios`);
-    // B2 fix: wait on panel-scoped calendar locator (single visible element)
     await this.calendar.waitFor({ state: "visible", timeout: 10_000 });
   }
 

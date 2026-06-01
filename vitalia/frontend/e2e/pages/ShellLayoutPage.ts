@@ -91,21 +91,12 @@ export class ShellLayoutPage {
       .locator("main#main-content")
       .filter({ hasText: "" })
       .first();
-    // Triple-main pattern: multiple testid instances exist in DOM (one per CSS branch:
-    // agentic md:block, web md:grid, mobile md:hidden). Only ONE is visible per viewport.
-    // Filter por visibility para que assertions toBeVisible() resuelvan el correcto en
-    // CADA viewport sin asumir DOM order (mobile fallback es el último, no el primero).
-    // F1-S5 replaced the ValeriaSidebarSlot placeholder with the real ValeriaSidebar
-    // component (testid "valeria-sidebar"). Updated 2026-05-28 (F1-S4b race-fix) — the
-    // old "valeria-sidebar-slot" testid no longer exists in the DOM.
-    this.valeriaSlot = page
-      .getByTestId("valeria-sidebar")
-      .filter({ visible: true })
-      .first();
-    this.appSlot = page
-      .getByTestId("app-panel-slot")
-      .filter({ visible: true })
-      .first();
+    // Single-slot pattern post vitalia-shell-dual-mount-a11y-fix (c9d2bd31):
+    // ShellOrganismLayoutClient now renders exactly one valeria-sidebar and
+    // one app-panel-slot regardless of viewport. F1-S5 replaced the
+    // ValeriaSidebarSlot placeholder with the real ValeriaSidebar component.
+    this.valeriaSlot = page.getByTestId("valeria-sidebar");
+    this.appSlot = page.getByTestId("app-panel-slot");
     this.resizeHandle = page.locator('[aria-label="Redimensionar paneles"]');
     this.logoMark = page.locator('header a[aria-label*="Vitalia"]').first();
     this.themeToggle = page
