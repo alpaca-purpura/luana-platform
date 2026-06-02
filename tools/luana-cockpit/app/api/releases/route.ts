@@ -17,7 +17,7 @@ import { z } from 'zod';
 import { errorResponse, safeJson } from '../_lib/responses';
 import { listReleases, readRelease, writeRelease } from '@/lib/release-resolver';
 import { writeFileAtomic } from '@/lib/fs-writer';
-import { releasesPath, getBrands } from '@/lib/workspace';
+import { releasesPath, getBrands, getSelectableBrands } from '@/lib/workspace';
 import type { Release, ReleaseStatus } from '@/lib/types';
 
 const CreateBodySchema = z.object({
@@ -50,7 +50,8 @@ const READ_ONLY_FIELDS = [
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const brand = req.nextUrl.searchParams.get('brand');
   if (!brand) return errorResponse('query param "brand" requerido', 400);
-  if (!getBrands().includes(brand)) {
+  // platform aceptado en GET (read-only): no tiene releases → lista vacía graceful.
+  if (!getSelectableBrands().includes(brand)) {
     return errorResponse(`brand desconocida: ${brand}`, 400);
   }
 

@@ -18,6 +18,7 @@ import { Badge } from '@/components/ui/Badge';
 import { BoardColumn } from './BoardColumn';
 import { useBrand } from '@/components/providers/BrandProvider';
 import { useFileWatchEvents } from '@/components/providers/FileWatchProvider';
+import { isPlatform } from '@/lib/platform-context';
 import {
   listReleases,
   listSessions,
@@ -151,6 +152,13 @@ export function BoardView() {
 
   async function handleDragEnd(event: DragEndEvent) {
     setDraggingState(null);
+    // Platform es solo-lectura: sus transiciones las hace /pm-luana (vía ADR).
+    if (isPlatform(brand)) {
+      toast('Platform es solo lectura · las transiciones las hace /pm-luana.', {
+        icon: '🔒',
+      });
+      return;
+    }
     const { active, over } = event;
     if (!over) return;
     const overId = over.id as string;
@@ -217,10 +225,26 @@ export function BoardView() {
   return (
     <div className="p-6">
       <header className="mb-4">
-        <h1 className="text-lg font-semibold">Backlog Board · 10 estados v4</h1>
+        <h1 className="text-lg font-semibold flex items-center gap-2">
+          Backlog Board · 10 estados v4
+          {isPlatform(brand) && (
+            <Badge className="bg-amber-900/30 text-amber-300 border border-amber-700/50">
+              CORE · solo lectura
+            </Badge>
+          )}
+        </h1>
         <p className="text-[11px] text-[var(--color-muted)] italic mt-1">
-          Arrastra entre <b>idea ↔ refining</b> para priorizar. El resto las
-          mueve Claude vía /po-ux · /architect · /dev-team · /auditor.
+          {isPlatform(brand) ? (
+            <>
+              Stories platform-level (owner <span className="font-mono">/pm-luana</span>).
+              Solo lectura: las transiciones se hacen vía skill, no acá.
+            </>
+          ) : (
+            <>
+              Arrastra entre <b>idea ↔ refining</b> para priorizar. El resto las
+              mueve Claude vía /po-ux · /architect · /dev-team · /auditor.
+            </>
+          )}
         </p>
       </header>
 

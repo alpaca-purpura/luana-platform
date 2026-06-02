@@ -10,6 +10,8 @@ import { TOOLTIPS } from '@/lib/tooltips';
 import { useDrawer } from '@/components/providers/DrawerProvider';
 import { useBrand } from '@/components/providers/BrandProvider';
 import { useFileWatchEvents } from '@/components/providers/FileWatchProvider';
+import { isPlatform } from '@/lib/platform-context';
+import { NotApplicableForPlatform } from '@/components/platform/NotApplicableForPlatform';
 import { ProductHealthBanner } from './ProductHealthBanner';
 import { listCapabilities, getSystemMap, openInEditor, getCapabilityStatus } from '@/lib/api-client';
 import type {
@@ -82,6 +84,10 @@ export function MapView() {
   const [showOnlyPopulated, setShowOnlyPopulated] = useState(false);
 
   const load = useCallback(() => {
+    if (isPlatform(brand)) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
     Promise.all([
@@ -179,6 +185,8 @@ export function MapView() {
     () => (zoneTree ? findOrphanCaps(filtered, zoneTree) : []),
     [zoneTree, filtered]
   );
+
+  if (isPlatform(brand)) return <NotApplicableForPlatform view="Mapa Implementado" />;
 
   if (loading) {
     return (

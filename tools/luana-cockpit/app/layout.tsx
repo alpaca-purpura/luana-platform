@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getBrands } from '@/lib/workspace';
+import { getSelectableBrands } from '@/lib/workspace';
 import { AppShell } from '@/components/layout/AppShell';
 import './globals.css';
 
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   let brands: string[] = [];
   try {
-    brands = getBrands();
+    brands = getSelectableBrands();
   } catch {
     brands = ['vitalia'];
   }

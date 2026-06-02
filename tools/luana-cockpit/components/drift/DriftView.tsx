@@ -9,6 +9,8 @@ import { Tooltip } from '@/components/ui/Tooltip';
 import { TOOLTIPS } from '@/lib/tooltips';
 import { useBrand } from '@/components/providers/BrandProvider';
 import { useFileWatchEvents } from '@/components/providers/FileWatchProvider';
+import { isPlatform } from '@/lib/platform-context';
+import { NotApplicableForPlatform } from '@/components/platform/NotApplicableForPlatform';
 import { getCapabilityStatus } from '@/lib/api-client';
 import { getStatusBadge, type ComputedStatus, type ComputedStatusReport } from '@/lib/types';
 
@@ -197,6 +199,10 @@ export function DriftView() {
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(() => {
+    if (isPlatform(brand)) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
     getCapabilityStatus(brand)
@@ -221,6 +227,8 @@ export function DriftView() {
   });
 
   // ── Estados de carga ──────────────────────────────────────────────────────
+
+  if (isPlatform(brand)) return <NotApplicableForPlatform view="Drift" />;
 
   if (loading) {
     return (

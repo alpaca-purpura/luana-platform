@@ -12,6 +12,17 @@
 import { EventEmitter } from 'node:events';
 import path from 'node:path';
 import chokidar, { type FSWatcher } from 'chokidar';
+import { PLATFORM_SLUG } from './platform-context';
+
+/**
+ * Raíz de docs a observar para un contexto. Marca real → `{root}/{brand}/docs`.
+ * Pseudo-marca `platform` → `{root}/docs` (docs platform-level, Vía A).
+ */
+function docsBaseFor(workspaceRoot: string, brand: string): string {
+  return brand === PLATFORM_SLUG
+    ? path.join(workspaceRoot, 'docs')
+    : path.join(workspaceRoot, brand, 'docs');
+}
 
 export type WatcherAction = 'change' | 'add' | 'unlink';
 
@@ -63,12 +74,15 @@ export function setupWatcher(options: WatcherOptions): EventEmitter & { close: (
   const { workspaceRoot, brands, debounceMs = DEBOUNCE_MS } = options;
   const emitter = new EventEmitter() as EventEmitter & { close: () => Promise<void> };
 
-  // Paths a observar
-  const watchPaths = brands.flatMap((brand) => [
-    path.join(workspaceRoot, brand, 'docs', 'product'),
-    path.join(workspaceRoot, brand, 'docs', 'archive'),
-    path.join(workspaceRoot, brand, 'docs', 'learnings'),
-  ]);
+  // Paths a observar (platform → docs/ raíz vía docsBaseFor)
+  const watchPaths = brands.flatMap((brand) => {
+    const base = docsBaseFor(workspaceRoot, brand);
+    return [
+      path.join(base, 'product'),
+      path.join(base, 'archive'),
+      path.join(base, 'learnings'),
+    ];
+  });
 
   const watcher: FSWatcher = chokidar.watch(watchPaths, {
     ignored: (p: string) => IGNORED_PATTERNS.some((re) => re.test(p)),
@@ -117,7 +131,10 @@ export function setupWatcher(options: WatcherOptions): EventEmitter & { close: (
 function inferBrand(absPath: string, workspaceRoot: string, brands: string[]): string | undefined {
   const rel = path.relative(workspaceRoot, absPath);
   const firstSegment = rel.split(path.sep)[0];
-  return brands.includes(firstSegment) ? firstSegment : undefined;
+  if (brands.includes(firstSegment)) return firstSegment;
+  // Paths bajo el `docs/` raíz pertenecen a la pseudo-marca platform (Vía A).
+  if (firstSegment === 'docs' && brands.includes(PLATFORM_SLUG)) return PLATFORM_SLUG;
+  return undefined;
 }
 
 function inferDocType(absPath: string): WatcherEvent['docType'] {

@@ -10,6 +10,7 @@
 import { execSync } from 'node:child_process';
 import { existsSync, statSync } from 'node:fs';
 import path from 'node:path';
+import { PLATFORM_SLUG } from './platform-context';
 
 const KNOWN_BRAND_SLUGS = [
   'vitalia',
@@ -86,23 +87,45 @@ export function getBrands(): string[] {
   });
 }
 
-/** Path al directorio `{brand}/docs/product/`. Valida brand existe. */
-export function brandPath(brand: string): string {
-  if (!KNOWN_BRAND_SLUGS.includes(brand)) {
-    throw new Error(`brand desconocida: ${brand} · válidas: ${KNOWN_BRAND_SLUGS.join(', ')}`);
-  }
+/**
+ * Marcas seleccionables en el cockpit = marcas reales bootstrapeadas + la
+ * pseudo-marca `platform` (Vía A) si el `docs/product/` raíz existe. Platform va
+ * AL FINAL (las reales primero, para no robar el default del worktree).
+ */
+export function getSelectableBrands(): string[] {
+  const real = getBrands();
   const root = getWorkspaceRoot();
-  const p = path.join(root, brand, 'docs', 'product');
+  const hasPlatform = existsSync(path.join(root, 'docs', 'product'));
+  return hasPlatform ? [...real, PLATFORM_SLUG] : real;
+}
+
+/**
+ * Raíz de docs de un contexto. Marca real → `{root}/{brand}/docs`. Pseudo-marca
+ * `platform` → `{root}/docs` (docs platform-level, owner /pm-luana). Punto único
+ * de reruteo: todos los path-builders de abajo derivan de acá.
+ */
+export function brandDocsRoot(brand: string): string {
+  const root = getWorkspaceRoot();
+  return brand === PLATFORM_SLUG
+    ? path.join(root, 'docs')
+    : path.join(root, brand, 'docs');
+}
+
+/** Path al directorio `docs/product/` del contexto. Valida que el slug sea conocido. */
+export function brandPath(brand: string): string {
+  if (brand !== PLATFORM_SLUG && !KNOWN_BRAND_SLUGS.includes(brand)) {
+    throw new Error(`brand desconocida: ${brand} · válidas: ${KNOWN_BRAND_SLUGS.join(', ')}, ${PLATFORM_SLUG}`);
+  }
+  const p = path.join(brandDocsRoot(brand), 'product');
   if (!existsSync(p)) {
-    throw new Error(`Brand ${brand} no bootstrapeada · falta ${p}`);
+    throw new Error(`Contexto ${brand} no bootstrapeado · falta ${p}`);
   }
   return p;
 }
 
 /** Path al directorio archive de stories done del año dado */
 export function archivePath(brand: string, year: number | string): string {
-  const root = getWorkspaceRoot();
-  return path.join(root, brand, 'docs', 'archive', String(year), 'stories');
+  return path.join(brandDocsRoot(brand), 'archive', String(year), 'stories');
 }
 
 /**
@@ -112,8 +135,7 @@ export function archivePath(brand: string, year: number | string): string {
  * de más: `archive/{year}` en vez de `archive`).
  */
 export function archiveRootPath(brand: string): string {
-  const root = getWorkspaceRoot();
-  return path.join(root, brand, 'docs', 'archive');
+  return path.join(brandDocsRoot(brand), 'archive');
 }
 
 /** Path al directorio de capabilities del brand */
@@ -133,6 +155,5 @@ export function storiesPath(brand: string): string {
 
 /** Path al directorio de learnings del brand */
 export function learningsPath(brand: string): string {
-  const root = getWorkspaceRoot();
-  return path.join(root, brand, 'docs', 'learnings');
+  return path.join(brandDocsRoot(brand), 'learnings');
 }

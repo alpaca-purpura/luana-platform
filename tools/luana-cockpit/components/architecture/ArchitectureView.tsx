@@ -9,6 +9,8 @@ import { Spinner, ErrorBanner, EmptyState } from '@/components/ui/Spinner';
 import { Button } from '@/components/ui/Button';
 import { useBrand } from '@/components/providers/BrandProvider';
 import { useFileWatchEvents } from '@/components/providers/FileWatchProvider';
+import { isPlatform } from '@/lib/platform-context';
+import { NotApplicableForPlatform } from '@/components/platform/NotApplicableForPlatform';
 import { getSystemMap, openInEditor } from '@/lib/api-client';
 import type { SystemMap, AreaStatus, CrossAgentFlow, AgentOwner } from '@/lib/types';
 
@@ -26,6 +28,10 @@ export function ArchitectureView() {
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(() => {
+    if (isPlatform(brand)) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
     getSystemMap(brand)
@@ -55,6 +61,8 @@ export function ArchitectureView() {
       toast.error((err as Error).message);
     }
   }
+
+  if (isPlatform(brand)) return <NotApplicableForPlatform view="Arquitectura" />;
 
   if (loading) {
     return (

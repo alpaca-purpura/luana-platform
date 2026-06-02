@@ -2,6 +2,12 @@
 
 import { Select } from '@/components/ui/Select';
 import { useBrand } from '@/components/providers/BrandProvider';
+import { PLATFORM_SLUG, PLATFORM_LABEL } from '@/lib/platform-context';
+
+/** Label visible por contexto: platform se distingue de las marcas reales. */
+function brandOptionLabel(b: string): string {
+  return b === PLATFORM_SLUG ? `⬡ ${PLATFORM_LABEL}` : b;
+}
 
 export function BrandSwitcher() {
   const { brand, setBrand, brands } = useBrand();
@@ -27,7 +33,7 @@ export function BrandSwitcher() {
       >
         {brands.map((b) => (
           <option key={b} value={b}>
-            {b}
+            {brandOptionLabel(b)}
           </option>
         ))}
       </Select>

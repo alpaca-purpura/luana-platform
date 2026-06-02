@@ -10,7 +10,7 @@ import path from 'node:path';
 import { readdir, readFile } from 'node:fs/promises';
 import { errorResponse } from '../_lib/responses';
 import { readMarkdownWithFrontmatter } from '@/lib/fs-reader';
-import { storiesPath, archiveRootPath, getBrands } from '@/lib/workspace';
+import { storiesPath, archiveRootPath, getSelectableBrands } from '@/lib/workspace';
 import type { Story } from '@/lib/types';
 
 interface StoryWithArchive extends Story {
@@ -84,7 +84,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     return errorResponse('query param "brand" requerido', 400);
   }
 
-  const validBrands = getBrands();
+  const validBrands = getSelectableBrands();
   if (!validBrands.includes(brand)) {
     return errorResponse(`brand desconocida: ${brand}`, 400, {
       valid_brands: validBrands,

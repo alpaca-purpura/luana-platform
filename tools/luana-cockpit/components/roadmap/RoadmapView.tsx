@@ -22,6 +22,8 @@ import { EditReleaseModal } from '@/components/modals/EditReleaseModal';
 import { MergeReleaseModal } from '@/components/modals/MergeReleaseModal';
 import { useBrand } from '@/components/providers/BrandProvider';
 import { useFileWatchEvents } from '@/components/providers/FileWatchProvider';
+import { isPlatform } from '@/lib/platform-context';
+import { NotApplicableForPlatform } from '@/components/platform/NotApplicableForPlatform';
 import {
   listReleases,
   listStories,
@@ -46,6 +48,10 @@ export function RoadmapView() {
   );
 
   const load = useCallback(() => {
+    if (isPlatform(brand)) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
     Promise.all([listReleases(brand), listStories(brand)])
@@ -96,6 +102,8 @@ export function RoadmapView() {
       load(); // revertir desde server
     }
   }
+
+  if (isPlatform(brand)) return <NotApplicableForPlatform view="Roadmap" />;
 
   if (loading) {
     return (

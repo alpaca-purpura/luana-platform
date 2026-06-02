@@ -20,7 +20,7 @@
 
 import { NextRequest } from 'next/server';
 import { setupWatcher, type WatcherEvent } from '@/lib/chokidar-watcher';
-import { getWorkspaceRoot, getBrands } from '@/lib/workspace';
+import { getWorkspaceRoot, getSelectableBrands } from '@/lib/workspace';
 import { errorResponse } from '../_lib/responses';
 
 // Force Node.js runtime (chokidar requiere fs nativo · no Edge)
@@ -33,7 +33,7 @@ export async function GET(req: NextRequest): Promise<Response> {
   const brandParam = req.nextUrl.searchParams.get('brand');
 
   // Si no se especifica brand, observamos todas las brands activas
-  const validBrands = getBrands();
+  const validBrands = getSelectableBrands();
   let brandsToWatch: string[];
 
   if (brandParam) {
