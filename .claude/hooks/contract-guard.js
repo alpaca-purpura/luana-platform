@@ -81,7 +81,7 @@ const RULES = [
   {
     name: 'offer-catalogs-engine',
     patterns: [
-      /^core\/luana-core-offer-studio\/src\/luana_core_offer_studio\/domain\/(archetype|value_level|format)_catalog\.py$/,
+      /^core\/luana-core-offer-studio\/src\/luana_core_offer_studio\/domain\/(archetype|format|offer_type_preset|section|value_level|variant_structure)_catalog\.py$/,
       /^core\/luana-core-extension-sdk\/src\/luana_core_extension_sdk\/.*\/expert_business_type\.py$/,
       /^core\/luana-core-platform\/src\/luana_core_platform\/.*\/expert_business_type\.py$/,
     ],

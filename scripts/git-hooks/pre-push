@@ -121,6 +121,9 @@ if [ "${BIDIRECTIONAL_PUSH_OVERRIDE:-0}" != "1" ]; then
   BIDIR_SCRIPT="${REPO_ROOT}/scripts/validate_code_cap_bidirectional.py"
   if [ -x "${REPO_ROOT}/.venv/bin/python" ] && [ -f "${BIDIR_SCRIPT}" ]; then
     VENV_BIDIR="${REPO_ROOT}/.venv/bin/python"
+    # Brands activas con capabilities reales. Las 6 futuras tienen dir capabilities/ vacío
+    # (placeholders) → discovery dinámica las incluiría sin beneficio; hardcoded = correcto.
+    # Al bootstrapear una marca nueva, agregarla acá (cambio deliberado de 1 línea).
     BRANDS_ALL="vitalia nicolify comunify lupulo"
     HARD_DRIFT_TOTAL=0
     HARD_DRIFT_BRANDS=""

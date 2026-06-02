@@ -1983,7 +1983,7 @@ EOF
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 13. Machinery consistency (anti-drift doctrina↔templates↔agentes — 2026-05-28)
+# Section 18 — Machinery consistency (anti-drift doctrina↔templates↔agentes — 2026-05-28)
 # ─────────────────────────────────────────────────────────────────────────────
 # SSoT: scripts/validate_machinery_consistency.py + docs/process/audits/2026-05-28-*.
 # Corre (ambos gate levels — barato, sin red) cuando el commit toca la maquinaria
@@ -1995,11 +1995,12 @@ MACHINERY_STAGED=$(git diff --cached --name-only --diff-filter=ACM \
 if [ -n "${MACHINERY_STAGED}" ] && [ "${MACHINERY_CHECK_SKIP:-0}" != "1" ]; then
   REPO_ROOT_MC=$(git rev-parse --show-toplevel)
   if [ -f "${REPO_ROOT_MC}/scripts/validate_machinery_consistency.py" ]; then
-    echo "→ machinery-check (anti-drift, Section 13)…"
-    if ! python3 "${REPO_ROOT_MC}/scripts/validate_machinery_consistency.py"; then
+    echo "→ machinery-check (anti-drift, Section 18)…"
+    PY_MC="${REPO_ROOT_MC}/.venv/bin/python"; [ -x "${PY_MC}" ] || PY_MC=python3
+    if ! "${PY_MC}" "${REPO_ROOT_MC}/scripts/validate_machinery_consistency.py"; then
       printf "\033[31m"
       cat <<'EOF'
-❌ MACHINERY DRIFT detectado (Section 13)
+❌ MACHINERY DRIFT detectado (Section 18)
 La doctrina (rules/skills) y los templates/agentes que la materializan divergieron.
 Corré: make machinery-check  (o python3 scripts/validate_machinery_consistency.py)
 y corregí los CHECK en rojo antes de commitear.

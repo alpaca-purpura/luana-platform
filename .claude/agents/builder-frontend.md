@@ -416,7 +416,7 @@ Run all of it:
 
 <step name="live_verify">
 For any user-facing change, before claiming "done", invoke `chrome-devtools-verify` skill:
-- Navigate to brand dev URL — `dev-app.{brand}.com` (e.g., `dev-app.vitalia.com`, `dev-app.nicolify.com`) or read from `${WS}/${BRAND}/config/brand.yaml::domains.dev`
+- Navigate to brand dev URL — `dev-app.{brand}.com` (e.g., `dev-app.vitalialat.com`, `dev-app.nicolify.com`) or read from `${WS}/${BRAND}/config/brand.yaml::domains.dev`
 - Reproduce the golden path + edge cases for the feature
 - Monitor console (no new errors), network (no 4xx/5xx), DOM state, SSE/polling behavior
 - If you can't live-verify (no browser access, env down, or skill deprecated for Linux), say so explicitly + escalate to Chris staging gate — DO NOT claim success.

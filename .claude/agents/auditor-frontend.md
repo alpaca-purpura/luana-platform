@@ -389,7 +389,7 @@ Para CADA file nuevo en este PR (status `??` en git):
 ### Category 14: Decisions honored cite (origen R6 process-improvement 2026-05-05)
 
 > Cuando ticket tiene `decisions_applicable: [D1, D3, X2]` field en
-> `04-tickets.yaml`, el builder commit body MUST incluir sección
+> `06-tickets.yaml`, el builder commit body MUST incluir sección
 > "Decisions honored" citando cómo cada D# fue respetada en el código.
 > Auditor verifica cite presente.
 
@@ -414,7 +414,7 @@ Verifica:
 ignorada silenciosamente por builder frontend. R6 cierra el camino para PR FE.
 
 Referencias:
-- `docs/specs/templates/04-tickets-template.yaml` § decisions_applicable
+- `docs/specs/templates/06-tickets-template.yaml` § decisions_applicable
 - `docs/process/learnings.md` 2026-05-05 entry — R6 + B2 closure
 - `.claude/agents/auditor-backend.md` Cat 11 — pattern paralelo (BE)
 - `.claude/agents/auditor-agentic.md` Cat 15 — pattern paralelo (agentic)

@@ -57,7 +57,7 @@ Override magic ack: `# context-validator-skipped: <reason>` in caller prompt.
 
 ## Step 0 — Current date check (MANDATORY first action)
 
-**Run this BEFORE any research or design.** The underlying model has a static knowledge cutoff (Opus 4.7 = January 2026); for state-of-the-art questions, you MUST anchor on the actual current date and supplement with live WebSearch/WebFetch.
+**Run this BEFORE any research or design.** The underlying model has a static knowledge cutoff (Opus 4.8 = January 2026); for state-of-the-art questions, you MUST anchor on the actual current date and supplement with live WebSearch/WebFetch.
 
 ```bash
 date -u +%Y-%m-%d        # → today
@@ -69,7 +69,7 @@ Capture the output. Use it everywhere:
 - WebSearch queries: `"LangGraph multi-agent supervisor production patterns {current_year}"` NOT `"... 2026"` hardcoded
 - 03-arch.md § Research Notes: cite source as `accessed {YYYY-MM-DD}` using the date you captured
 - When discussing "latest" anything: say "as of {today}" — never "as of April 2026" or "as of May 2026" hardcoded
-- Mention model knowledge cutoff explicitly when relevant: "Opus 4.7 cutoff is Jan 2026; for {topic} after that I rely on WebSearch evidence captured today"
+- Mention model knowledge cutoff explicitly when relevant: "Opus 4.8 cutoff is Jan 2026; for {topic} after that I rely on WebSearch evidence captured today"
 
 **Anti-pattern:** hardcoded year/month strings in your output (e.g., "best practices 2026"). Always interpolate the live date.
 
@@ -165,10 +165,11 @@ Before designing patterns the codebase has no precedent for, research current be
 - **WebFetch the canonical docs URL** (or the `tessl-context` skill if Tessl tiles are installed) — for version-pinned library docs. Verify the library version against the canonical docs URL if you suspect the tile is stale vs current upstream.
 - **`mcp__google-dev-knowledge__search_documents`** — Google APIs (GA4, Ads, Search Console)
 - **`mcp__shopify-dev-mcp__search_docs_chunks`** — Shopify (e-commerce extensions)
+- **MCP fallback:** if any of the above MCP servers (`mcp__clerk__`, `mcp__google-dev-knowledge__`, `mcp__shopify-dev-mcp__`) is not configured for this session, fall back to `WebFetch` of the canonical official docs URL for that provider instead (e.g., `https://clerk.com/docs`, `https://developers.google.com/`, `https://shopify.dev/docs`).
 
 **Cite sources in `03-arch.md` § Research Notes:** URL + `accessed {YYYY-MM-DD}` (use Step 0 date) + key takeaway + why over alternatives. Builders + PM + agentic-auditor will audit your citations against current canonical docs.
 
-**Knowledge cutoff disclosure:** if topic is post-cutoff (Opus 4.7 cutoff = Jan 2026), state explicitly: "Knowledge cutoff Jan 2026; researched live via WebSearch on {today} for current state." This protects against the model confabulating "remembered" patterns that don't exist.
+**Knowledge cutoff disclosure:** if topic is post-cutoff (Opus 4.8 cutoff = Jan 2026), state explicitly: "Knowledge cutoff Jan 2026; researched live via WebSearch on {today} for current state." This protects against the model confabulating "remembered" patterns that don't exist.
 
 </project_context>
 
@@ -516,7 +517,7 @@ Si 03-arch.md NO flipea defaults: marcar `[x] No aplica — 03-arch.md no flipea
 - Source URL (canonical official docs preferred)
 - `accessed {YYYY-MM-DD}` ← from Step 0 `date -u +%Y-%m-%d`
 - Library version (verify the library version against the canonical docs URL)
-- Knowledge cutoff disclosure if topic post-Jan 2026 (model cutoff): "Topic researched live on {today} via WebSearch — Opus 4.7 cutoff is Jan 2026"
+- Knowledge cutoff disclosure if topic post-Jan 2026 (model cutoff): "Topic researched live on {today} via WebSearch — Opus 4.8 cutoff is Jan 2026"
 - Key takeaway
 - Why this pattern over alternatives
 
