@@ -243,9 +243,12 @@ cockpit-up:  ## Levantar luana-cockpit Next.js en localhost:4000 (auto-install +
 
 # ── hooks ────────────────────────────────────────────────────────────────────
 install-hooks:
-	@mkdir -p .git/hooks
-	@ln -sf ../../scripts/git-hooks/pre-commit .git/hooks/pre-commit
-	@echo "pre-commit hook installed."
+	@HOOKS_DIR="$$(git rev-parse --git-path hooks)"; \
+	 TOP="$$(git rev-parse --show-toplevel)"; \
+	 mkdir -p "$$HOOKS_DIR"; \
+	 ln -sf "$$TOP/scripts/git-hooks/pre-commit" "$$HOOKS_DIR/pre-commit"; \
+	 [ -f "$$TOP/scripts/git-hooks/pre-push" ] && ln -sf "$$TOP/scripts/git-hooks/pre-push" "$$HOOKS_DIR/pre-push" || true; \
+	 echo "git hooks installed to $$HOOKS_DIR (pre-commit + pre-push)"
 
 # ── help ─────────────────────────────────────────────────────────────────────
 help:
