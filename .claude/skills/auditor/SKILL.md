@@ -220,6 +220,17 @@ Verificar que `chris-input.md` existe para stories `state ∈ {refining, refined
 
 Inconsistencia → verdict `CHANGES_REQUESTED` con findings citados. Doc: `docs/process/capability-protocol.md` § Sección 5.
 
+## Phase D — DoD endurecida (Critical Rule #37)
+
+Además de ejercer scenarios críticos live:
+- Producir la **gherkin-matrix** (regla → scenario → PASS/FAIL/**MISSING**): cualquier MISSING → CHANGES_REQUESTED.
+- Verificar que los specs FE **importan de `fixtures/base.ts`** (no `@playwright/test` directo) — sin el gate anti-burbuja la verificación es insuficiente.
+- En stories de **modificación**: verificar que los `regression_guard` quedaron PASS sin modificarse y que los snapshots actualizados tienen diff revisado por humano.
+- Verificar que existe `demo-script.md` si `demo_required: true`.
+
+Sin evidencia live / con MISSING / sin base.ts importado / con regression_guard roto → CHANGES_REQUESTED.
+Ref: `.claude/rules/definition-of-done-live-verify.md`.
+
 ## Step 3 — Procesar veredicto por ticket
 
 > **Política v4.2 cement 2026-05-28:** decisión por NATURALEZA DE LA VERIFICACIÓN (3 carriles), no por tamaño.

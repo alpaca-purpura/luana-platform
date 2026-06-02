@@ -243,6 +243,16 @@ Update también `last_modified: today` del cap. Doc: `docs/process/capability-pr
 
 **★ Dev-app live verification gate (cement 2026-05-31, ADR-vitalia-008):** ninguna story/bugfix vitalia pasa `reviewing → done` sin `dev_app_verified` válido en su `checkpoint.md`. Árbol: `required: true` por default en ui-story/agentic-story/bugfix (toca superficie que un usuario alcanza en dev-app); `required: false` SOLO interno puro (refactor/infra/migración-only/test-only) con `dev_app_verified_skip_reason`. Si `required: true` → `evidence` obligatorio = acción real ejercida (writes autenticados con `dr.demo@vitalialat.com` + `CLERK_TESTING_TOKEN_VITALIA`) + efecto observado (DB/log). **`GET 200` NO es evidencia; e2e mockeado NO es evidencia.** `/pm-vitalia merge` hace REFUSE si falta. SSoT: `vitalia/docs/architecture/ADR-vitalia-008-dev-app-live-verification-gate.md`.
 
+## Gate DoD endurecida (Critical Rule #37) — Fase F merge→done
+
+En Fase F (merge a `done`), `/pm-vitalia` REFUSE si:
+- falta `dod_evidence` (writes ejercidos + efecto observado); o
+- la gherkin-matrix tiene `MISSING` (regla de negocio sin test); o
+- `demo_required: true` y falta `demo_signoff` con `result ∈ {APPROVED, APPROVED_WITH_NOTES(severity≤medium)}`.
+
+El sign-off de Chris (negocio · product demo paso a paso ejecutado contra dev-app) es **SEPARADO** del auditor (técnico) — **ambos** requeridos para `done`.
+Ref: `.claude/rules/definition-of-done-live-verify.md` §5.
+
 ## ★ Capability inventory post-merge (MANDATORIO)
 
 > Origen: proposal `docs/promotion-protocol/proposals/2026-05-16-capability-inventory-enforcement.md` (gap detectado en vitalia Story 11 — ver `vitalia/docs/learnings/2026-05-16-capabilities-inventory-gap.md`).

@@ -21,6 +21,28 @@ story_id: STORY_ID
 brand: BRAND_SLUG                                  # ★ v4.1 — vitalia | nicolify | comunify | lupulo
 schema_version: v4.1
 
+# ═══════════════════════════════════════════════════════════════
+# VERIFICATION (Critical Rule #37) — el architect DECLARA por capability/ticket
+# ═══════════════════════════════════════════════════════════════
+verification:
+  nature: functional            # technical | functional | both (técnica=sin UI; funcional=user-reachable)
+  technical_gates:
+    baseline: [tsc_strict, mypy_strict, ruff, eslint_max_warnings_0, arch_fitness]   # SIEMPRE, bloqueante
+    opt_in:                     # activar SOLO por naturaleza de la capability (NO en toda story)
+      schemathesis: false       # true → endpoint nuevo (contrato FE↔BE antes del runtime de Next)
+      hypothesis: false         # true → domain logic con invariantes (pricing/PHI/scheduling/validaciones)
+      mutmut: false             # true → módulo crítico, pre-merge ("tests pasan pero no matan mutantes")
+  runtime_error_gate: required  # FE: {brand}/frontend/e2e/fixtures/base.ts (pageerror/console/hydration/api-4xx5xx/Next-dialog) + scripts/verify-no-backend-errors.sh
+  business_rules:               # functional: cada regla de negocio del spec → tag → scenario (happy + ≥1 negative/edge)
+    - rule: "<RN-1 descripción>"
+      tag: "@rule-<slug>"
+      scenario_id: "<SC-N>"
+  demo_required: true           # toca frontend/ o endpoint con consumer FE → true; solo tests/migrations/config/core sin cambio de contrato → false
+  demo_skip_reason: null
+  regression_guard: []          # modificación: tests EXISTENTES que NO deben cambiar (siguen verdes sin tocarse)
+  coverage_update: []           # tests del comportamiento cambiado a actualizar (revisando el diff, nunca vitest -u mecánico)
+  new_coverage: []              # tests nuevos para lo nuevo (TDD RED primero)
+
 validators:
   # ═══════════════════════════════════════════════════════════════
   # NON-FUNCTIONAL — code quality (lint, format, type-check, arch fitness)

@@ -32,6 +32,18 @@ El builder NO improvisa los tests. Diseña la **batería de tests apropiada a la
 
 **Anti-patrón estrella (prohibido):** declarar una funcionalidad "verificada"/"verified-live"/"funciona" porque un `GET` dio 200, sin ejercer la acción real ni leer logs. El 200 de un read es necesario pero **nunca suficiente**.
 
+## Verificación por naturaleza + gate anti-burbuja + modificación (Critical Rule #37)
+
+**Naturaleza de la capability define la batería:**
+- **técnica** (sin UI): gates automáticos — tsc/mypy strict → ruff/eslint --max-warnings 0 → arch-fitness → unit/integration. Opt-in por naturaleza: Schemathesis (endpoint nuevo), Hypothesis (domain logic), mutmut (crítico, pre-merge). "Tests verdes" ≠ done: coverage es el piso, no el objetivo — ¿un test fallaría si revierto el comportamiento principal?
+- **funcional** (user-reachable): cada **regla de negocio** del spec → scenario Gherkin `@rule-ID` (happy + ≥1 negative/edge) + **gate anti-burbuja** + demo manual.
+
+**★ Gate anti-burbuja (runtime-error gate):** el `GET 200` mide SOLO el servidor; la burbuja de Next vive en el cliente post-hidratación. Los specs FE usan `{brand}/frontend/e2e/fixtures/base.ts` (pageerror + console.error + hidratación + `/api/` 4xx-5xx + diálogo de error Next, asertados vacíos al teardown) + `scripts/verify-no-backend-errors.sh` (grep `docker logs` backend). Importar de `base.ts`, NO de `@playwright/test`.
+
+**Modificación (no rehacer):** `regression_guard` (tests viejos verdes sin tocarse) + `coverage_update` (revisando el diff del snapshot — nunca `vitest -u` mecánico = "documentación mentirosa") + `new_coverage` (TDD RED primero). Bug fix → test que reproduce el bug PRIMERO. Blast radius por dependencias (TIA); `make ci-parity` = gate final.
+
+Ref: `.claude/rules/definition-of-done-live-verify.md` §1-§6.
+
 ## Matriz: naturaleza del ticket → tests requeridos
 
 | Naturaleza del ticket | Tests obligatorios (RED primero, por capa) |

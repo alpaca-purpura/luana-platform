@@ -803,8 +803,15 @@ Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
 - `.claude/agents/gate-runner.md` — gate-output.json producer (Haiku)
 - `.claude/agents/context-builder.md` — CONTEXT-BRIEF.md producer (Haiku)
 
-## Live verification contra dev-app (Critical Rule #37)
+## DoD endurecida — obligaciones del builder (Critical Rule #37)
 
-**Obligación:** antes de cerrar `developing → developed`, por cada scenario que toca superficie user-reachable, ejerce la acción real en dev-app (Chrome MCP) + deja el golden Playwright, y registra `dev_app_verified.evidence` en `checkpoint.md`. No cerrar por tests verdes que mockean el backend.
+Antes de cerrar `developing → developed`:
+- Correr los `technical_gates` declarados en `04-validators` (baseline + opt-in por naturaleza).
+- **Superficies FE**: usar `{brand}/frontend/e2e/fixtures/base.ts` (gate anti-burbuja: pageerror=burbuja Next, hidratación, console.error con allowlist tight, `/api/` 4xx-5xx, diálogo de error Next) en los specs nuevos; correr `scripts/verify-no-backend-errors.sh {brand} "$SINCE"` tras ejercer writes.
+- **Live-verify con Chrome DevTools MCP**: ejercer la acción real + LEER el panel **Console** (0 errores rojos) + Network + logs + confirmar efecto.
+- Cubrir **cada regla de negocio** (gherkin-matrix sin MISSING).
+- **Modificación**: respetar `regression_guard` (tests viejos verdes sin tocarse); snapshot/characterization se actualiza revisando el diff (nunca `vitest -u`/`--update-snapshots` mecánico).
+- Producir `demo-script.md` (template `docs/specs/templates/demo-script-template.md`) para stories `demo_required: true`.
+- Registrar `dod_evidence` en `checkpoint.md`. NO cerrar por "tests verdes" mockeados.
 
-Levantar: `make dev-app-vitalia` → `https://dev-app.vitalialat.com` (login `dr.demo@vitalialat.com`, creds en `vitalia/.env.dev`). Herramientas: **Chrome DevTools MCP** (live) + **Playwright autenticado** (golden). Evidencia = acción real ejercida + efecto observado; NUNCA GET 200 ni e2e mockeado. SSoT: `.claude/rules/definition-of-done-live-verify.md`.
+Ref: `.claude/rules/definition-of-done-live-verify.md`.

@@ -201,6 +201,16 @@ Al cerrar story `reviewing → done`, aplicar logic del `cap_change_type` al YAM
 
 Update también `last_modified: today` del cap. Doc: `docs/process/capability-protocol.md` § Sección 5.
 
+### Gate DoD endurecida (Critical Rule #37) — Fase F merge→done
+
+En Fase F (merge a `done`), `/pm-{brand}` REFUSE si:
+- falta `dod_evidence` (writes ejercidos + efecto observado); o
+- la gherkin-matrix tiene `MISSING` (regla de negocio sin test); o
+- `demo_required: true` y falta `demo_signoff` con `result ∈ {APPROVED, APPROVED_WITH_NOTES(severity≤medium)}`.
+
+El sign-off de Chris (negocio · product demo paso a paso ejecutado contra dev-app) es **SEPARADO** del auditor (técnico) — **ambos** requeridos para `done`.
+Ref: `.claude/rules/definition-of-done-live-verify.md` §5.
+
 ### Verification gate
 
 Pre-commit hook + CI deben correr:

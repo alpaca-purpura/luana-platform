@@ -190,6 +190,18 @@ Template estructura mínima:
 ### Home: cap_target + cap_change_type (dev_preview se actualiza al merge)
 ```
 
+## Verificación: clasificar por naturaleza + declarar gates (Critical Rule #37)
+
+Al producir `04-validators.yaml`, el architect DECLARA por capability/ticket (sección `verification:`):
+- `nature`: **technical** (sin UI) · **functional** (user-reachable) · **both**.
+- `technical_gates.baseline` siempre (tsc/mypy strict · ruff/eslint --max-warnings 0 · arch-fitness) + `opt_in` **por naturaleza** (NO en toda story): Schemathesis (endpoint nuevo), Hypothesis (domain logic con invariantes), mutmut (módulo crítico pre-merge).
+- `business_rules` matriz `regla → @rule-tag → scenario_id` (cada regla con ≥1 happy + ≥1 negative/edge — Example Mapping) para stories funcionales.
+- `runtime_error_gate: required` para toda superficie FE (builder usa `base.ts` + `verify-no-backend-errors.sh`).
+- `demo_required` (árbol: toca frontend/ o endpoint con consumer FE → true; solo tests/migrations/config/core sin cambio de contrato → false + `demo_skip_reason`).
+- `regression_guard` (modificación: tests existentes que NO deben cambiar) + `coverage_update` + `new_coverage`.
+
+Ref: `.claude/rules/definition-of-done-live-verify.md` §1-§6.
+
 ### Step 5 — Producir 04-validators.yaml + Test Construction Plan ★ CRITICAL ★
 
 Este es el **corazón del autonomous build**. Sonnet en Conv 2 itera contra estos hasta GREEN.

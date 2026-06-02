@@ -39,6 +39,15 @@ dod_env: null                                     # ej "make dev-app-{brand} →
 dod_evidence: []                                  # [{action, observed, backend_log}] — writes ejercidos (POST/PATCH/PUT/DELETE) + efecto observado en DB/UI
 dod_verified_at: null                             # YYYY-MM-DD
 dod_live_verified_skip_reason: null               # solo si la story es config/docs/tooling puro (sin UI ni endpoint)
+# Demo manual (Critical Rule #37 §5) — solo stories funcionales (demo_required: true)
+demo_required: true                               # false para técnico puro (+ demo_skip_reason)
+demo_skip_reason: null
+demo_signoff:                                     # lo llena Chris tras ejercer demo-script.md contra el mismo dev-app
+  signed_by: null                                 # "Chris" al firmar
+  date: null                                      # YYYY-MM-DD
+  result: null                                    # APPROVED | APPROVED_WITH_NOTES | REJECTED
+  notes: null
+  open_items: []                                  # [{item, severity, disposition}]
 ---
 
 ## Estados v4 (10 macro)
