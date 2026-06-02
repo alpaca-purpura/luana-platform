@@ -9,11 +9,17 @@ cap_target: null                                  # paradigma platform-level · 
 cap_change_type: new
 parent_story: null
 
-state: idea                                       # research bundle · pendiente decisión Chris: refining | ADR-evolution
-phase_workflow: PM_DRAFT
-last_artifact: ADR-013 (docs/architecture/luana-platform/) + outcome-platform
-last_modified: 2026-06-01T17:30:00-05:00
-next_action: "Promovido (vía a). ADR-013 + outcome-platform creados + PARADIGM.md §5b. Próximo: spike motor de flujos durables (/architect platform) + stories derivadas (/pm-vitalia, /pm-nicolify). Implementación = fase B→A separada."
+state: developing                                 # 2026-06-02 /dev-team arrancó build L1 (DAG T-flows-1..5). autonomous chain ratificado Chris (flujo excepcional).
+phase_workflow: BUILD_L1_DAG
+last_artifact: "03-arch.md + 03-arch-{agentic,be}.md + 04-validators.yaml + 05-guidelines.md + 06-tickets.yaml + dispatch-plan.md (L1 accionable + L2 design-only)"
+last_modified: 2026-06-02T12:30:00-05:00
+ready_package_note: >
+  Story platform de ENGINE INFRA, spike-derived (sin 01-spec/mockups/FE — NO aplican gates UI). Pasó de `refining`
+  directo a `ready` SIN `refined` formal: es válido para una engine-spike-story autorizada por la proposal accepted
+  (2026-06-02-durable-flows-engine.md). El "refinamiento" fue el spike + el drift map + ADR-013. Ready-package completo
+  cubre L1 (build esta conversación: provider core/luana-core-flows + cablear 5 grafos + borrar mirror brand + migraciones
+  + downstream regression vitalia+comunify + live-verify DoD #37) + L2 (DISEÑO: FlowCompiler/FlowDefinition/EP-19, build siguiente).
+next_action: "Ready-package L1 completo. Hand-off /dev-team (DAG secuencial T-flows-1..5; builder-agentic Opus para provider/wiring/verify, builder-backend Sonnet para scaffold/migraciones). Editar core/ AUTORIZADO por proposal accepted (citada en cada ticket engine). L2 = deferred-next-story (NO build). MATERIAL: L1 NO requiere bump langgraph (uv.lock ya resuelve langgraph 1.2.0 / checkpoint 4.1.0 → langgraph-checkpoint-postgres 3.1.0 compatible directo). Open questions O-1..O-3 builder-resolvable; O-4/O-5 Chris-decision NON-blocking L1."
 ratified_by_chris: true                            # Chris ratificó vía (a) 2026-06-01: promover a ADR-platform
 spawned_at: 2026-06-01T16:00:00-05:00
 spawned_by: /pm-luana
@@ -48,3 +54,5 @@ Story **platform-level** (`/pm-luana`, cross-brand) que cementa la **visión de 
 
 - 2026-06-01 16:00 — /pm-luana creó folder + checkpoint + chris-input + 00-story + 00-research (state=idea). Visión ratificada conversacionalmente + estrés-testeada (4 casos borde). Pendiente decisión Chris sobre vía de promoción.
 - 2026-06-01 17:30 — Chris ratificó vía (a). /pm-luana creó `ADR-013-empleados-ia-auto-extension.md` + `docs/product/outcomes/empleados-ia-auto-extension-platform.md` + evolucionó `PARADIGM.md` §5b + puntero en ADR-010. Trabajo derivado (spike flujos durables + stories por marca) queda como handoffs en el outcome. NO se tocó implementación.
+- 2026-06-02 11:10 — /pm-luana levantó estado verificado (cero código, story `idea`, motor Fase B inexistente en `core/`). Chris eligió **arrancar Fase B**. Transición `idea→refining` + handoff `/architect` (platform) para el spike del motor de flujos durables (cornerstone B). Respeta el orden ratificado B→Vitalia→A→replicar.
+- 2026-06-02 12:30 — /architect (platform) cerró el **ready-package L1+L2-design** (single-shot, autorizado por proposal `accepted`). Transición `refining → ready` (sin `refined` formal — válido para engine-spike-story autorizada). Entregables: `03-arch.md` consolidado + `03-arch-{agentic,be}.md` + `04-validators.yaml` + `05-guidelines.md` + `06-tickets.yaml` + `dispatch-plan.md`. **Decisiones clave:** (1) hogar = NUEVO paquete `core/luana-core-flows` (no módulo en platform — L2 lo necesita + aísla la dep pesada checkpoint-postgres). (2) **L1 NO requiere bump langgraph** — uv.lock YA resuelve langgraph 1.2.0 / langgraph-checkpoint 4.1.0; `langgraph-checkpoint-postgres 3.1.0` (requires `langgraph-checkpoint>=4.1.0`) compatible directo (refina spike §2.3/proposal §3 — el pin `>=0.2` es floor, no ceiling). (3) provider `make_durable_checkpointer` (AsyncPostgresSaver + EncryptedSerializer PHI vitalia + setup() idempotente + thread_id tenant-scoped) lifteado a core; **borrar el factory mirror brand** (`wizard_checkpoint_config.py` vitalia + equivalentes comunify — nunca invocado en prod, dead swap surface). (4) 5 grafos ya aceptan checkpointer vía DI → solo se recablean los composition roots (NO se tocan signatures/topología). (5) migraciones híbridas (LangGraph `.setup()` owns DDL + alembic prereq idempotente). (6) EP-19 = NEW EP (no ensanchar EP-4) — **L2 design-only**. **Live-verify DoD #37:** wizard_onboarding durable thread → psql confirma checkpoints en Postgres (no MemorySaver) + sobrevive restart (resume). DAG secuencial T-flows-1..5 (Opus agentic / Sonnet scaffold+migraciones). L2 (FlowCompiler/EP-19) = `deferred-next-story`. Hand-off `/dev-team`.

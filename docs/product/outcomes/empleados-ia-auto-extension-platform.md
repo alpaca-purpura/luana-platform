@@ -26,8 +26,10 @@ Luana = sistema operativo de **empleados-IA vendidos por puesto** (cadena de val
 
 | # | Trabajo | Owner | Estado |
 |---|---|---|---|
-| 1 | **Spike: motor de flujos durables** (Cloudflare DW vs Temporal vs LangGraph+durabilidad) → decidir el EP T2 de composición de flujos | `/architect` (platform) | pendiente |
-| 2 | Story derivada vitalia: instanciar el modelo sobre el SYSTEM-MAP existente (roster Lisa/Lucas/Adrián/Mateo/Camila + Valeria; primer flujo durable real) | `/pm-vitalia` | pendiente |
+| 1 | **Spike: motor de flujos durables** → recomendación LangGraph durable + Temporal escape + Cloudflare descartado | `/architect` (platform) | ✅ **DONE** 2026-06-02 (`spike-durable-flows.md`, ratificado Chris) |
+| 1b | **L1 — motor durable real (un-defer):** lift checkpointer provider a `core/luana-core-flows` + instalar `langgraph-checkpoint-postgres` + cablear 5 grafos (vitalia ×3, comunify ×2) + migraciones + downstream regression + live-verify. Proposal `2026-06-02-durable-flows-engine` (accepted). | `/architect` → `/dev-team` → `/auditor` | 🔨 **EN CURSO** (flujo excepcional Chris: cero deuda esta conversación) |
+| 1c | **L2 — `FlowCompiler`/`FlowDefinition`/EP-19** (compositor declarativo): diseño ready-package esta conversación, **build siguiente** | `/architect` (diseño) → `/dev-team` (build futuro) | 🎨 diseño en curso |
+| 2 | Story derivada vitalia: instanciar el modelo sobre el SYSTEM-MAP existente (roster + primer flujo durable real sobre L1) | `/pm-vitalia` | pendiente (post L1+L2) |
 | 3 | Story derivada nicolify: instanciar sobre su roster (Abel/Brenda/Christian/Sara/Norvil + Luana) | `/pm-nicolify` | pendiente |
 | 4 | Read-models publicados por dominio (requisito del read/write split, caso borde 1) | `/architect` + builders | pendiente |
 | 5 | Entitlement por empleado + medición de outcomes (soporte de packaging — pricing exacto TBD Chris) | `/pm-luana` + `/architect` | pendiente |
