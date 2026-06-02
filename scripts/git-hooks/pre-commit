@@ -99,7 +99,11 @@ STAGED_MD=$(git diff --cached --name-only --diff-filter=ACM \
   | grep -E '\.md$' \
   | grep -vE '(node_modules/)' || true)
 
-ALL_TEXT_STAGED=$(printf '%s\n%s\n%s\n' "${STAGED_PY}" "${STAGED_TS}" "${STAGED_MD}" \
+# Voseo/neutro aplica SOLO a interfaces de usuario (web UI / agentic output),
+# NUNCA a docs ni al harness. Markdown (.md) = docs/instrucciones internas →
+# queda FUERA del scan de voseo. (Chris 2026-06-01: voseo solo en UI, no en harness.)
+# STAGED_MD se mantiene definido por si otra sección lo necesita, pero no se escanea por voseo.
+ALL_TEXT_STAGED=$(printf '%s\n%s\n' "${STAGED_PY}" "${STAGED_TS}" \
   | grep -v '^$' || true)
 
 # ─────────────────────────────────────────────────────────────────
@@ -114,6 +118,16 @@ VOSEO_HITS=""
 if [ -n "${ALL_TEXT_STAGED}" ]; then
   while IFS= read -r FILE; do
     [ -z "${FILE}" ] && continue
+
+    # Voseo neutro aplica SOLO a interfaces de usuario (web UI / agentic output).
+    # NUNCA al harness interno (.claude/), docs, tooling (tools/, scripts/), ni
+    # tests. (Chris 2026-06-01: el voseo solo molesta cuando se mete en lo interno.)
+    case "${FILE}" in
+      .claude/*|docs/*|scripts/*|tools/*|\
+      */tests/*|*/__tests__/*|*/e2e/*|*.test.*|*test_*.py)
+        continue
+        ;;
+    esac
 
     # Per spanish-text.md exception: sales_agent voice output respects tenant
     # voice (puede ser voseo si AR). Skip personality compiler / specialist
