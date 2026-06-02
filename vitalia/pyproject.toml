@@ -24,6 +24,8 @@ dependencies = [
     "luana-core-channels",
     "luana-core-extraction",
     "luana-core-iam",
+    # Durable flows engine (checkpointer durable compartido) — proposal 2026-06-02
+    "luana-core-flows",
     "apscheduler>=3.10",
     # Admin Streamlit panel (vitalia/backend/src/modules/vitalia/admin/)
     "streamlit>=1.40",

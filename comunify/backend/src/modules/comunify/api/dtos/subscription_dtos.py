@@ -12,7 +12,6 @@ from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-
 # ── Subscription list + detail ────────────────────────────────────────────────
 
 

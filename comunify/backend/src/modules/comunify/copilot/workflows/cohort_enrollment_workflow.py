@@ -155,18 +155,20 @@ class CohortEnrollmentState(TypedDict, total=False):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# Checkpointer protocol — RedisSaver swap surface (D10)
+# Checkpointer protocol — durable AsyncPostgresSaver via shared engine provider
 # ════════════════════════════════════════════════════════════════════════════
 
 
 class CheckpointerProtocol(Protocol):
-    """Structural protocol — accepts MemorySaver, RedisSaver (future),
-    AsyncPostgresSaver, or any LangGraph-compatible checkpointer.
+    """Structural protocol — accepts MemorySaver (tests), AsyncPostgresSaver
+    (production), or any LangGraph-compatible checkpointer.
 
-    Production swap (D10):
-        from langgraph.checkpoint.redis import RedisSaver
-        checkpointer = RedisSaver.from_conn_string(settings.REDIS_URL)
-        workflow = build_cohort_enrollment_workflow(checkpointer=checkpointer)
+    Production: the durable ``AsyncPostgresSaver`` is built by the shared engine
+    provider ``luana_core_flows.make_durable_checkpointer`` and resolved at the
+    cron composition root via
+    ``copilot.workflows.durable_checkpointer.get_comunify_durable_checkpointer``
+    (replaces the former per-site RedisSaver swap stub). Tests inject
+    ``InMemorySaver`` directly into ``build_cohort_enrollment_workflow``.
     """
 
     ...  # LangGraph compile() validates the actual interface at runtime

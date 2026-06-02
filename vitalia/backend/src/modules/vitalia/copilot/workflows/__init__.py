@@ -15,12 +15,10 @@ Public surface — Treatment followup (Wave 2):
 Public surface — Wizard onboarding (Wave 4 — T-ag-workflows-1):
   - WizardOnboardingState — wizard supervisor state TypedDict
   - build_wizard_onboarding_graph — factory (LangGraph supervisor + deepagents
-    extract_subagent + CheckpointerProtocol)
+    extract_subagent; production checkpointer = luana_core_flows durable provider)
   - build_initial_state — initial state factory
   - build_extract_subagent_spec — deepagents SubAgent TypedDict
   - EXTRACT_SUBAGENT_NAME — public subagent name constant
-  - WizardCheckpointerProtocol — checkpointer structural protocol for wizard
-  - WIZARD_CHECKPOINT_TABLE_PREFIX — Postgres table prefix
   - compile_wizard_prompt + CompiledWizardPrompt + as_anthropic_system_blocks —
     5-slot cache-safe prompt compiler
 
@@ -56,12 +54,6 @@ from src.modules.vitalia.copilot.workflows.treatment_followup_workflow import (
 )
 
 # Wave 4 — wizard supervisor + subagent
-from src.modules.vitalia.copilot.workflows.wizard_checkpoint_config import (
-    WIZARD_CHECKPOINT_TABLE_PREFIX,
-)
-from src.modules.vitalia.copilot.workflows.wizard_checkpoint_config import (
-    CheckpointerProtocol as WizardCheckpointerProtocol,
-)
 from src.modules.vitalia.copilot.workflows.wizard_onboarding_graph import (
     build_wizard_onboarding_graph,
 )
@@ -77,11 +69,9 @@ from src.modules.vitalia.copilot.workflows.wizard_prompt_compiler import (
 
 __all__ = [
     "EXTRACT_SUBAGENT_NAME",
-    "WIZARD_CHECKPOINT_TABLE_PREFIX",
     "CheckpointerProtocol",
     "CompiledWizardPrompt",
     "TreatmentFollowupState",
-    "WizardCheckpointerProtocol",
     "WizardOnboardingState",
     "as_anthropic_system_blocks",
     "build_extract_subagent_spec",

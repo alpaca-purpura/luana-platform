@@ -24,6 +24,8 @@ dependencies = [
     "luana-core-extension-sdk",
     "luana-core-channels",
     "luana-core-extraction",
+    # Durable flows engine (checkpointer durable compartido) — proposal 2026-06-02
+    "luana-core-flows",
 ]
 
 [build-system]

@@ -122,13 +122,16 @@ def _get_rec_repo() -> LucasRecommendationRepository:
     return LucasRecommendationRepository(session=get_sync_session())
 
 
-def _get_orchestrator() -> Any:
+async def _get_orchestrator() -> Any:
     """Return LucasOrchestratorService instance (patchable in tests).
 
     Uses the `make_orchestrator()` factory from the agentic services module,
-    which wires no-op handlers + MemorySaver checkpointer — sufficient for
-    the daily sweep cron that consumes AnalysisReport.stage_recommendations
-    as structured dicts.
+    which wires no-op handlers + the brand-wide DURABLE checkpointer
+    (``AsyncPostgresSaver`` via ``luana_core_flows.make_durable_checkpointer``)
+    so the daily-analysis graph persists its LangGraph state to Postgres.
+
+    Async because the durable checkpointer is constructed asynchronously
+    (connection pool + ``.setup()``).
 
     In Slice 2, this factory will be upgraded to inject real
     LucasStageRecommendationService / AttributionService / ReferralsService
@@ -138,7 +141,7 @@ def _get_orchestrator() -> Any:
         make_orchestrator,
     )
 
-    return make_orchestrator()
+    return await make_orchestrator()
 
 
 # ---------------------------------------------------------------------------
@@ -159,7 +162,7 @@ async def lucas_daily_analysis_sweep(ctx: dict[str, Any]) -> None:
 
     active_clinics = await _get_active_clinics()
     rec_repo = _get_rec_repo()
-    orchestrator = _get_orchestrator()
+    orchestrator = await _get_orchestrator()
     locale = _FallbackLocale()
 
     swept = 0

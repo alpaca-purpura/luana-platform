@@ -48,7 +48,6 @@ from src.modules.comunify.api.dtos.authority_vault_dtos import (
     ValidateUrlResponse,
     VaultItemResponse,  # noqa: F401 — used in vault item detail response T-be-10
 )
-
 from src.modules.comunify.api.dtos.cohort_dtos import (
     BroadcastListResponse,
     CohortDetailResponse,
@@ -106,22 +105,22 @@ from src.modules.comunify.api.dtos.voice_cloning_dtos import (
     UploadSamplesRequest,
     UploadSamplesResponse,
 )
+from src.modules.comunify.application.services.authority_vault_service import (
+    AuthorityVaultItemNotFoundError,  # noqa: F401 — used when stubs wired in T-be-10
+)
 from src.modules.comunify.application.services.cohort_service import (
     CohortEnrollmentRaceError,  # noqa: F401 — used when stubs wired in T-be-10
     CohortNotFoundError,  # noqa: F401 — used when stubs wired in T-be-10
-)
-from src.modules.comunify.application.services.voice_cloning_service import (
-    DistillationJobNotFoundError,  # noqa: F401 — used when stubs wired in T-be-10
-    DistillationNotCompletedError,  # noqa: F401 — used when stubs wired in T-be-10
-    InsufficientSamplesError,  # noqa: F401 — used when stubs wired in T-be-10
 )
 from src.modules.comunify.application.services.onboarding_service import (
     DuplicateHandleError,  # noqa: F401 — used when stubs wired in T-be-10
     InvalidNicheError,  # noqa: F401 — used when stubs wired in T-be-10
     InvalidPlanTierError,  # noqa: F401 — used when stubs wired in T-be-10
 )
-from src.modules.comunify.application.services.authority_vault_service import (
-    AuthorityVaultItemNotFoundError,  # noqa: F401 — used when stubs wired in T-be-10
+from src.modules.comunify.application.services.voice_cloning_service import (
+    DistillationJobNotFoundError,  # noqa: F401 — used when stubs wired in T-be-10
+    DistillationNotCompletedError,  # noqa: F401 — used when stubs wired in T-be-10
+    InsufficientSamplesError,  # noqa: F401 — used when stubs wired in T-be-10
 )
 
 logger = structlog.get_logger()
