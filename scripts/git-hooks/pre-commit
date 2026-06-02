@@ -1064,9 +1064,8 @@ fi  # end GATE_LEVEL=full guard (section 7)
 # completo correspondiente (no solo el diff), para catch PII en archivos
 # que cambiaron previamente clean.
 #
-# Scanner path: backend/scripts/scan_seed_pii.py (legacy). TODO multibrand:
-# scanner aún no migrado a core/luana-core-extraction/scripts/ — si falta,
-# hook warning + skip. Verificar futura migración engine.
+# Scanner path: scripts/scan_seed_pii.py (workspace, multibrand — HB-18 2026-06-01).
+# Legacy fallback: backend/scripts/scan_seed_pii.py. Si ninguno existe → warning + skip.
 #
 # Scanner exit codes: 0=clean, 1=PII detected, 2=error.
 # Bypass: NEVER use --no-verify. Whitelist por brand:
@@ -1088,10 +1087,10 @@ if [ -n "${STAGED_SEED_YAMLS}" ]; then
     VENV_PY=""
   fi
 
-  # Resolver scanner: legacy primero, futuro engine como TODO.
-  # TODO multibrand: si scanner migra a core/luana-core-extraction/scripts/
-  # scan_seed_pii.py, agregar aquí como primera opción.
-  if [ -f "${REPO_ROOT}/backend/scripts/scan_seed_pii.py" ]; then
+  # Resolver scanner: scripts/ (workspace, multibrand HB-18) primero, legacy fallback.
+  if [ -f "${REPO_ROOT}/scripts/scan_seed_pii.py" ]; then
+    SCANNER_PY="${REPO_ROOT}/scripts/scan_seed_pii.py"
+  elif [ -f "${REPO_ROOT}/backend/scripts/scan_seed_pii.py" ]; then
     SCANNER_PY="${REPO_ROOT}/backend/scripts/scan_seed_pii.py"
   else
     SCANNER_PY=""
@@ -1103,8 +1102,7 @@ if [ -n "${STAGED_SEED_YAMLS}" ]; then
     printf "\033[0m"
   elif [ -z "${SCANNER_PY}" ]; then
     printf "\033[33m"
-    echo "WARNING: scan_seed_pii.py not found en backend/scripts/ — skipping PII scan (Section 8)."
-    echo "  TODO multibrand: verificar si migró a core/luana-core-extraction/scripts/"
+    echo "WARNING: scan_seed_pii.py not found en scripts/ ni backend/scripts/ — skipping PII scan (Section 8)."
     printf "\033[0m"
   else
     # Derivar dirs a scanear desde paths staged (uno por brand + legacy raíz).
@@ -1171,9 +1169,8 @@ fi  # end GATE_LEVEL=full guard (section 8)
 # Strict block — NO whitelist (spec D10). Synthetic-first invariant:
 # all PII in goldens is a bug, no legitimate exceptions.
 #
-# Scanner path: backend/scripts/scan_goldens_pii.py (legacy). TODO multibrand:
-# si scanner migra a core/luana-core-sales-agent/scripts/ o similar, agregar
-# como primera opción.
+# Scanner path: scripts/scan_goldens_pii.py (workspace, multibrand — HB-18 2026-06-01).
+# Legacy fallback: backend/scripts/scan_goldens_pii.py. Si ninguno existe → warning + skip.
 #
 # Scanner exit codes: 0=clean, 1=PII detected, 2=error.
 # Bypass: NEVER use --no-verify.
@@ -1194,10 +1191,10 @@ if [ -n "${STAGED_GOLDEN_YAMLS}" ]; then
     VENV_PY=""
   fi
 
-  # Resolver scanner: legacy primero, futuro engine como TODO.
-  # TODO multibrand: si scanner migra a core/luana-core-sales-agent/scripts/
-  # scan_goldens_pii.py, agregar aquí como primera opción.
-  if [ -f "${REPO_ROOT}/backend/scripts/scan_goldens_pii.py" ]; then
+  # Resolver scanner: scripts/ (workspace, multibrand HB-18) primero, legacy fallback.
+  if [ -f "${REPO_ROOT}/scripts/scan_goldens_pii.py" ]; then
+    GOLDEN_SCANNER_PY="${REPO_ROOT}/scripts/scan_goldens_pii.py"
+  elif [ -f "${REPO_ROOT}/backend/scripts/scan_goldens_pii.py" ]; then
     GOLDEN_SCANNER_PY="${REPO_ROOT}/backend/scripts/scan_goldens_pii.py"
   else
     GOLDEN_SCANNER_PY=""
@@ -1209,8 +1206,7 @@ if [ -n "${STAGED_GOLDEN_YAMLS}" ]; then
     printf "\033[0m"
   elif [ -z "${GOLDEN_SCANNER_PY}" ]; then
     printf "\033[33m"
-    echo "WARNING: scan_goldens_pii.py not found en backend/scripts/ — skipping (Section 9)."
-    echo "  TODO multibrand: verificar si migró a core/luana-core-sales-agent/scripts/"
+    echo "WARNING: scan_goldens_pii.py not found en scripts/ ni backend/scripts/ — skipping (Section 9)."
     printf "\033[0m"
   else
     # Derivar dirs a scanear desde paths staged (uno por brand + legacy raíz).
