@@ -9,7 +9,9 @@ status: accepted
 created: 2026-06-01
 owner: /pm-luana
 adr: ADR-013-empleados-ia-auto-extension
-source_story: docs/product/stories/empleados-ia-auto-extension/
+source_story: docs/archive/2026/stories/empleados-ia-auto-extension/   # archivada 2026-06-02 (una user-story no es SSoT)
+ssot_research: docs/architecture/luana-platform/empleados-ia-research.md   # SSoT vivo graduado
+ssot_l2_design: docs/architecture/luana-platform/durable-flows-L2-design.md
 consumers: [vitalia, nicolify]   # primeras instancias · resto hereda al bootstrap
 ---
 
