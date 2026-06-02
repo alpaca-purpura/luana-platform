@@ -78,6 +78,17 @@ Documentar en `dod_evidence` que la auth se ejerció con un usuario real verific
 - ❌ Declarar `DEV_APP_TEST_PASSWORD` seteado sin `verify_password`→true.
 - ❌ Nombres de key distintos por marca (los NOMBRES son cross-brand; los VALORES son per-brand).
 
+### Estado del arming por marca (2026-06-02)
+
+| Marca | Test user | Chris cross-check | Estado | Nota |
+|---|---|---|---|---|
+| **vitalia** | `dr.demo@vitalialat.com` (role owner) | `hola@alpacapurpura.lat` | ✅ **full** | ambos `verify_password`→true; metadata real (role+clinicId+tenant_id); dev-app live (307+/api/health 200) |
+| **nicolify** | `owner.demo@nicolify.com` (role owner) | `hola@alpacapurpura.lat` | ✅ **full** | password seteado vía API + verified; metadata real (role+tenant_id `7f464ab7…`); creds en `luana-nicolify/.env.dev` |
+| **comunify** | `owner.demo@comunifyagents.com` (role owner) | `hola@alpacapurpura.lat` | 🟡 **Clerk-level** | usuarios creados + passwords verified; **tenant binding PENDIENTE** (comunify_dev sin tabla `tenants` seedeada → correr seed comunify + setear `public_metadata.tenant_id`). Login Clerk OK; tenant resolution incompleta hasta el seed |
+| lupulo | — | — | ⬜ placeholder | sin bootstrap |
+
+`CLERK_TESTING_TOKEN_{BRAND}` (Playwright bot-bypass): presente en vitalia; nicolify/comunify lo mintean en runtime vía `@clerk/testing` con el `CLERK_SECRET_KEY` (no requiere setearlo a mano). El password-login (Chrome MCP + Playwright) funciona sin él.
+
 ## Las dos herramientas (se usan AMBAS, según el momento)
 
 | Herramienta | Cuándo | Para qué |
