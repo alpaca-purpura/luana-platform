@@ -1,8 +1,39 @@
 # Harness Close-out — auditoría reconciliada contra FS (2026-06-02)
 
-> **Estado:** PROPUESTA — pendiente ratificación/priorización de Chris. NADA aplicado aún.
+> **Estado:** ✅ **EJECUTADO** (cont. 5, 2026-06-02) — B1-B6 cerrados, 7 commits, re-audit verde (0 regresiones), 20/20 residuales cerrados. Ver § CIERRE EJECUTADO abajo.
 > **Cómo se hizo:** 6 agentes read-only reconciliaron el catálogo (`harness-audit-2026-06-01.md`) + backlog (HB-1..22) + waves (1-5 + cont.2/3/4) contra el **filesystem real**. El catálogo sobreestima ~30% → cada finding verificado.
-> **Lectura honesta:** el harness **root** quedó funcionalmente sólido tras Waves 1-5 (los silent-killers originales se cerraron). Lo que queda = **~10 bugs funcionales reales** que las waves saltearon + una **cola larga de staleness de docs** (MEDIUM/LOW) + la **capa brand-overlay** (no entró en ninguna wave).
+> **Lectura honesta:** el harness **root** quedó funcionalmente sólido tras Waves 1-5 (los silent-killers originales se cerraron). Lo que quedaba = **~10 bugs funcionales reales** que las waves saltearon + una **cola larga de staleness de docs** (MEDIUM/LOW) + la **capa brand-overlay** — TODO cerrado en B1-B6.
+
+---
+
+## ✅ CIERRE EJECUTADO (cont. 5 · 2026-06-02 · apply-pipeline §6 end-to-end)
+
+7 commits en `wip/vitalia` (0/0 con origin), commit por pathspec (Haiku), `SCOPE_GATE_SKIP=1`:
+
+| Batch | Commit | Qué | Motor |
+|---|---|---|---|
+| **B1** | `aaf1041e` | 10 bugs funcionales (commit-push branch · architect 03-arch.md+paths · content-hunter engine paths · eslint scope · anti-dup inventario · tenant Clerk-org · arch-test cmd · parallel-safety D4 · ideas-pool · live-verify {brand}) | opus directo (verify-first) |
+| **B2** | `316f8ce8` | brand-overlay rules: banners ASPIRACIONAL (comunify/nicolify/lupulo) + vitalia hipaa-lite 5 path/cron fixes | opus directo |
+| **B3** | `42c52a78` | quick-wins (model IDs 4.8 · 04→06 · maxTurns · cockpit counts · MCP guard) + hooks (contract-guard regex 6 catálogos · pre-commit Section 18+venv · pre-push comment) | hooks opus + texto workflow sonnet (9 ag) |
+| **B4a** | `ea9ad657` | 19 templates (T-handoff/T-review/REVIEW-final/04-validators/story-*/banners DEPRECADO/etc.) | workflow sonnet (16 ag) |
+| **B4b** | `65e573fe` | 18 process+rules (extension-points apps/→brand · warp ADR-009 · vocab · MISSING markers · analytics/offer paths) | workflow sonnet (18 ag) |
+| **B5** | `9cd049d6` | skills HIGH: pase-produccion banner DEFERRED+QW-14 · chrome-devtools DoD #37 · brand-offer-auditor de-Nicolify+template creado · PM backport ×6 (Auto-chain+Fase F.3) | opus + workflow sonnet (6 ag) |
+| **B6** | `1f162789` | residual: 20 OPEN del re-audit (playwright/metrics references/ de-Nicolify · data-reliability · story fields · stragglers 04→06/Opus-4.7 · banners) | workflow sonnet (16 ag) |
+
+**RE-AUDIT (6 agentes read-only, una superficie c/u):** B1-B5 todos **DONE-verified contra FS**, **0 regresiones** en las 6 superficies, 47 skills frontmatter L1 OK. 20 OPEN residuales surfaceados (capa `references/` + stragglers fuera del file-list) → **20/20 cerrados en B6**.
+
+**OPEN-count final por superficie:** Skills 0 · Agents+Hooks+Cockpit 0 · Rules+brand 0 · Process 0 · Templates+ADR 0 · Quick-wins 0 → **0 OPEN** (todo lo del catálogo/re-audit cerrado).
+
+**Quedó FUERA (registrado, no es regresión):**
+- **HB-24** (nuevo, deferred): skill file-size extraction (architect/auditor/dev-team/po-ux → references/) — refactor de skills core, riesgo de romper carga, sesión dedicada.
+- **HB-11** (deferred): voseo cleanup (380 archivos, alto-churn/cero-beneficio).
+- **HB-21 / B6-Cloudflare** (operacional Chris): provisión túnel + `DEV_APP_TEST_PASSWORD`. Live-verify hoy vía localhost (fallback válido).
+- **settings.json StopFailure** (DECISIÓN Chris: cambia comportamiento).
+- 17 "Opus 4.7" + menciones residuales = **históricos/append-only/explicativos** (metrics/runs.jsonl, learnings.md tombstone, process-improvement banner'd, ticket-template deprecated self-name, architect SKILL "antes era 04-tickets") — NO se reescribe historia.
+
+**Overestimates del catálogo confirmados cont. 5:** "8-gate FE" mito · pre-push dynamic-brands sin beneficio · offer catalogs=6 no 8 · dev-team live-verify ya parametrizado · context-builder sin mcp__ · cockpit BrandSwitcher no implementado · T-impl-log/T-result/T-review-Cat12-14/REVIEW-final-Verif-live ya estaban · bidirectional dedup intencional.
+
+---
 
 ## Tally por superficie (verificado FS)
 

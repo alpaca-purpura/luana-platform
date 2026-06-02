@@ -194,4 +194,30 @@ La **modernización del harness** es enabler transversal que corre primero/al ma
 
 **Archivos:** NEW `scripts/{_pii_scan_lib,scan_seed_pii,scan_goldens_pii}.py` + `.claude/rules/pii-sanitisation.md`; MOD 4 skills + 4 agents + auditor SKILL + rules-detail/auditor-self-fix-policy + pre-commit + CLAUDE.md + workflows/harness-audit.js + cockpit README + backlog + este file.
 
-### Estado: continuación 4 = working tree listo, **commit PENDIENTE ratificación Chris**. Story `vitalia-fase2-lisa-doctores` (developing) NO tocada. base.ts rollout NO ejecutado (espera cierre de esa story).
+### Estado: continuación 4 = committeada (`28eb797f` HB-18 + `b29a12b0` HB-17b/c/19/20/22). Story `vitalia-fase2-lisa-doctores` (developing) NO tocada.
+
+---
+
+## Sesión 2026-06-02 (continuación 5) — CIERRE B1-B6 (closeout ejecutado punta a punta)
+
+> Motor: apply-pipeline §6 verbatim sobre el plan `harness-closeout-2026-06-02.md`. Cadena por batch: verify-first opus contra FS → editar (opus directo para comportamiento/hooks · workflows JS sonnet file-per-agent para mecánico/docs, sin commit, sin worktree-isolation) → verificación independiente opus del `git diff` (NO confiar en reportes de sub-agents) → commit Haiku por pathspec (`SCOPE_GATE_SKIP=1`). Re-audit final read-only antes de declarar cerrado. **Autonomía ratificada por Chris** ("resolve todo de forma autónoma") — commit por batch sin pausa interactiva; el contrapeso fue verify-first + verificación-de-diff + re-audit.
+
+**7 commits (`wip/vitalia`, 0/0 origin):**
+
+| # | SHA | Batch | Qué |
+|---|---|---|---|
+| 1 | `aaf1041e` | B1 | 10 bugs funcionales (incl. el plan closeout) — opus directo |
+| 2 | `316f8ce8` | B2 | brand-overlay rules HB-23 (banners aspiracional + hipaa-lite paths) — opus |
+| 3 | `42c52a78` | B3 | quick-wins + hooks — hooks opus + workflow sonnet (9 ag) |
+| 4 | `ea9ad657` | B4a | 19 templates — workflow sonnet (16 ag) |
+| 5 | `65e573fe` | B4b | 18 process+rules — workflow sonnet (18 ag) |
+| 6 | `9cd049d6` | B5 | skills HIGH (pase-produccion/chrome-devtools/brand-offer-auditor + PM backport ×6) — opus + workflow (6 ag) |
+| 7 | `1f162789` | B6-residual | 20 OPEN del re-audit cerrados — workflow sonnet (16 ag) |
+
+**Re-audit (6 agentes read-only, 1 superficie c/u):** B1-B5 DONE-verified contra FS · **0 regresiones** · 47 skills frontmatter L1 OK · 20 OPEN residuales → 20/20 cerrados en B6 → **OPEN-count final = 0**.
+
+**Aprendizaje del apply-pipeline a escala:** verify-first cazó ~12 overestimates/desviaciones del catálogo (8-gate mito · pre-push dynamic-brands sin beneficio · offer catalogs 6≠8 · dev-team ya parametrizado · varios "ya estaban" de waves previas · 17 Opus-4.7 = históricos). El catálogo sobreestima incluso a nivel finding individual — la verificación-de-diff opus (no el reporte del sub-agent) fue la red real. Workflows sonnet file-per-agent (un archivo = un agente) evitaron races en el working tree compartido del hub.
+
+**Abierto (post-cierre):** HB-24 file-size extraction (deferred-dedicada) · HB-11 voseo (deferred) · HB-21/B6-Cloudflare + settings.json StopFailure (Chris). `/harness-audit-2026` fresco cuando "huela a drift".
+
+### Estado: continuación 5 = **closeout B1-B6 CERRADO** (7 commits, re-audit verde, 0 regresiones, 0 OPEN). HLP probado end-to-end a escala (88 OPEN reconciliados → cerrados/deferred/overestimate). Story `vitalia-fase2-lisa-doctores` (developing) NO tocada en toda la línea. base.ts rollout NO ejecutado (espera cierre de esa story).
