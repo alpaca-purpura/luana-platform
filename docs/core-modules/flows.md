@@ -42,7 +42,7 @@ async def make_durable_checkpointer(
 ## Extension points
 
 - **EP-19 `durable_flow_register`** — DESIGN ONLY (L2, deferred-next-story). See
-  `docs/product/stories/empleados-ia-auto-extension/03-arch.md § L2.3`. NOT in
+  `docs/architecture/luana-platform/durable-flows-L2-design.md § L2.3`. NOT in
   `extension_points.py::_EP_IDS` yet.
 
 ## Brands consumidoras
@@ -65,4 +65,4 @@ Each brand consumes the provider via a per-brand durable-checkpointer accessor
 - Code: `core/luana-core-flows/src/luana_core_flows/checkpointer/{provider,thread_id}.py`
 - Tests: `core/luana-core-flows/tests/checkpointer/` (+ brand durable-resume integration tests)
 - CHANGELOG: `core/luana-core-flows/CHANGELOG.md`
-- L2 design seed: `docs/product/stories/empleados-ia-auto-extension/03-arch.md § L2`
+- L2 design SSoT: `docs/architecture/luana-platform/durable-flows-L2-design.md`

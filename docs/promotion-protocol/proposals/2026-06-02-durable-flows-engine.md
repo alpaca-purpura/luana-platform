@@ -19,7 +19,7 @@ migration_note: >
 
 # Origen
 origin_learnings:
-  - docs/product/stories/empleados-ia-auto-extension/spike-durable-flows.md   # decision spike (ADR-013 cornerstone B)
+  - docs/archive/2026/stories/empleados-ia-auto-extension/spike-durable-flows.md   # decision spike (ADR-013 cornerstone B) — story archivada 2026-06-02; diseño L2 graduado a docs/architecture/luana-platform/durable-flows-L2-design.md
 origin_brands: [vitalia, comunify]   # ambas tienen grafos durables stubbed + factory brand-mirror
 
 # Target
@@ -48,7 +48,7 @@ Un **motor de flujos durables brand-agnostic** en `core/`, en 2 capas:
 - **L2 — `FlowCompiler` + `FlowDefinition` + EP-19 (diseño en esta proposal, build siguiente):** compositor declarativo de flujos durables (el cornerstone empleados-IA de ADR-013 D2). Net-new — no existe hoy (verificado: `luana-core-events/outbox` es coreografía de evento único; no hay compositor de flujos).
 
 **Origen story/incident:**
-- Spike de decisión: `docs/product/stories/empleados-ia-auto-extension/spike-durable-flows.md` (recomendación LangGraph durable + Temporal escape + Cloudflare descartado, research date-aware 2026-06-02, ratificada por Chris).
+- Spike de decisión: `docs/archive/2026/stories/empleados-ia-auto-extension/spike-durable-flows.md` (recomendación LangGraph durable + Temporal escape + Cloudflare descartado, research date-aware 2026-06-02, ratificada por Chris; story archivada 2026-06-02).
 - ADR: `docs/architecture/luana-platform/ADR-013-empleados-ia-auto-extension.md` (D2 flujo durable de 1ª clase).
 
 ## 2. Por qué cross-brand

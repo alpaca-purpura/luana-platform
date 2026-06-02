@@ -9,10 +9,15 @@ cap_target: null                                  # paradigma platform-level · 
 cap_change_type: new
 parent_story: null
 
-state: developing                                 # umbrella CONTINÚA — item 1b (L1 durable) DONE 2026-06-02; items 1c-design DONE; items 2-5 pendientes. ⚠️ archive/estado-final pendiente decisión Chris (NO archivar: es el SSoT vivo del paraguas empleados-IA con derivadas abiertas).
-phase_workflow: L1_DONE_UMBRELLA_CONTINUES         # T-flows-1..5 done+committed+verified+merged-to-wip + auditor APPROVED. L2 build + items 2-5 = stories siguientes.
-last_artifact: "07-merge.md + REVIEW-agentic.md (L1 durable-flows merged a wip/vitalia, APPROVED, DoD #37 live-verified)"
-last_modified: 2026-06-02T14:05:00-05:00
+state: done                                       # 2026-06-02 ARCHIVADA (Chris: "una user-story no debe ser SSoT"). Deliverable L1 durable-flows DONE+APPROVED+merged. El SSoT vivo del paraguas empleados-IA se GRADUÓ a arquitectura (ver § Graduación SSoT abajo); el paraguas CONTINÚA vía outcome (items 1c/2/3/4/5) + ADR-013, NO vía esta story.
+phase_workflow: ARCHIVED_SSOT_GRADUATED            # T-flows-1..5 done+committed+verified+merged + auditor APPROVED. Story archivada; research + L2 design graduados a docs/architecture/luana-platform/.
+last_artifact: "07-merge.md + REVIEW-agentic.md (L1 durable-flows merged a wip/vitalia, APPROVED, DoD #37 live-verified) + graduación SSoT a arquitectura"
+last_modified: 2026-06-02T14:20:00-05:00
+ssot_graduated:                                    # ★ una user-story no es SSoT (Chris 2026-06-02) — el conocimiento durable vive en arquitectura
+  - "docs/architecture/luana-platform/empleados-ia-research.md  (← 00-research.md, SSoT vivo investigación/visión)"
+  - "docs/architecture/luana-platform/durable-flows-L2-design.md  (← 03-arch.md § L2 + spike §4, SSoT diseño L2)"
+  - "roadmap vivo = docs/product/outcomes/empleados-ia-auto-extension-platform.md (outcome, no story) + ADR-013 + PARADIGM.md §5b"
+  - "L1 contract = docs/core-modules/flows.md + core/luana-core-flows/CHANGELOG.md"
 ready_package_note: >
   Story platform de ENGINE INFRA, spike-derived (sin 01-spec/mockups/FE — NO aplican gates UI). Pasó de `refining`
   directo a `ready` SIN `refined` formal: es válido para una engine-spike-story autorizada por la proposal accepted

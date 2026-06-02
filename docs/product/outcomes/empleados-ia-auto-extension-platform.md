@@ -15,7 +15,7 @@ consumers: [vitalia, nicolify]   # primeras instancias · resto hereda al bootst
 
 ## Qué cementa
 
-Luana = sistema operativo de **empleados-IA vendidos por puesto** (cadena de valor: Base + Atraer/Vender/Operar/Retener) sobre **un solo motor que se auto-extiende** (12 primitivas × 5 tiers + router 2-niveles + flywheel + flujo durable de 1ª clase), coordinado por **3 modos** (coreografía / supervisora / handoff medido), con disciplina **SOLID** y **techo de auto-extensión** al core. Detalle: ADR-013 + `00-research.md`.
+Luana = sistema operativo de **empleados-IA vendidos por puesto** (cadena de valor: Base + Atraer/Vender/Operar/Retener) sobre **un solo motor que se auto-extiende** (12 primitivas × 5 tiers + router 2-niveles + flywheel + flujo durable de 1ª clase), coordinado por **3 modos** (coreografía / supervisora / handoff medido), con disciplina **SOLID** y **techo de auto-extensión** al core. Detalle: ADR-013 + `docs/architecture/luana-platform/empleados-ia-research.md` (SSoT vivo).
 
 ## Trayectoria B → A
 
@@ -26,9 +26,9 @@ Luana = sistema operativo de **empleados-IA vendidos por puesto** (cadena de val
 
 | # | Trabajo | Owner | Estado |
 |---|---|---|---|
-| 1 | **Spike: motor de flujos durables** → recomendación LangGraph durable + Temporal escape + Cloudflare descartado | `/architect` (platform) | ✅ **DONE** 2026-06-02 (`spike-durable-flows.md`, ratificado Chris) |
+| 1 | **Spike: motor de flujos durables** → recomendación LangGraph durable + Temporal escape + Cloudflare descartado | `/architect` (platform) | ✅ **DONE** 2026-06-02 (`docs/archive/2026/stories/empleados-ia-auto-extension/spike-durable-flows.md`, ratificado Chris; diseño L2 graduado a `docs/architecture/luana-platform/durable-flows-L2-design.md`) |
 | 1b | **L1 — motor durable real (un-defer):** lift checkpointer provider a `core/luana-core-flows` + instalar `langgraph-checkpoint-postgres` + cablear 5 grafos (vitalia ×3, comunify ×2) + migraciones + downstream regression + live-verify. Proposal `2026-06-02-durable-flows-engine` (migrated). | `/architect` → `/dev-team` → `/auditor` | ✅ **DONE** 2026-06-02 (T-flows-1..5 wip/vitalia `c8551ed7..335ed390`; proposal migrated; downstream verde 463+182; live-verify DoD #37: persist+resume real en Postgres — vitalia 3 filas, comunify 8 filas; `07-merge.md` + `REVIEW-agentic.md`) |
-| 1c | **L2 — `FlowCompiler`/`FlowDefinition`/EP-19** (compositor declarativo): diseño ready-package esta conversación, **build siguiente** | `/architect` (diseño) → `/dev-team` (build futuro) | ✅ diseño DONE (`03-arch.md § L2` + `04-validators l2_design_validators` + `06-tickets l2_tickets`) · build = story siguiente |
+| 1c | **L2 — `FlowCompiler`/`FlowDefinition`/EP-19** (compositor declarativo): diseño ready-package esta conversación, **build siguiente** | `/architect` (diseño) → `/dev-team` (build futuro) | ✅ diseño DONE · SSoT vivo: `docs/architecture/luana-platform/durable-flows-L2-design.md` (graduado de la story archivada) · build = story siguiente |
 | 2 | Story derivada vitalia: instanciar el modelo sobre el SYSTEM-MAP existente (roster + primer flujo durable real sobre L1) | `/pm-vitalia` | pendiente (post L1+L2) |
 | 3 | Story derivada nicolify: instanciar sobre su roster (Abel/Brenda/Christian/Sara/Norvil + Luana) | `/pm-nicolify` | pendiente |
 | 4 | Read-models publicados por dominio (requisito del read/write split, caso borde 1) | `/architect` + builders | pendiente |

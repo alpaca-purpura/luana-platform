@@ -4,7 +4,7 @@
 - **Status:** accepted (ratificado Chris 2026-06-01 — "vamos con la (a)")
 - **Implementation state:** ⚠️ dirección ratificada, stories aún en `idea` / refinamiento (2026-06-01). Las stories derivadas listadas en "Consecuencias" NO arrancaron (`developing`). El MEMORY pointer `luana-empleados-ia-vision` refleja este estado ("NO ADR/spec aún" era pre-ratificación; este ADR es el primero post-ratificación). No confundir "ADR accepted" con "implementación iniciada".
 - **Date:** 2026-06-01
-- **Scope:** platform-wide (10 marcas). SSoT vivo: `PARADIGM.md` (§5b). Detalle/investigación: `docs/product/stories/empleados-ia-auto-extension/00-research.md`.
+- **Scope:** platform-wide (10 marcas). SSoT vivo: `PARADIGM.md` (§5b). Detalle/investigación: `docs/architecture/luana-platform/empleados-ia-research.md` (graduado de la story archivada 2026-06-02 — una user-story no es SSoT).
 - **Extends:** ADR-010 (orquestación agéntica — 3 planos) + ADR-007 (paradigm v4.1 autonomy). No toca el ciclo SDD (lifecycle.md).
 - **Reset:** nace en `/pm-luana` y se propaga a todas las marcas; vitalia (SYSTEM-MAP 3 zonas/12 cajas) y nicolify (roster/shell) pasan a ser las 2 primeras INSTANCIAS del modelo (no se descartan).
 
@@ -15,7 +15,7 @@ ADR-010 cementó el modelo estático (3 planos · supervisora · un engine · ac
 1. **Cómo el sistema se auto-extiende en runtime** — qué pasa cuando el dueño pide algo que el sistema todavía no hace ("el usuario pide → lo creamos"), de forma gobernada y sin volverse un caos de islas.
 2. **Cómo se comercializa y coordina** — el producto como equipo de empleados-IA vendido por puesto, y cómo coordinan entre sí sin romper SOLID.
 
-Investigación 2026 consultada (detalle + sources en `00-research.md`): AgentSkillOS (árbol de capacidades + DAG, valida la estructura), Agent Skills standard / Pydantic Capabilities (formato de "chunk"), AG-UI/A2UI (generative UI), Cloudflare Dynamic Workflows / Temporal / LangGraph (durable execution), E2B/Modal (sandbox), multi-agent topologías (orchestrator-worker 70% prod; coordination failures 37%; choreography = loose coupling), pricing agent-employee (híbrido base+overage estándar; outcome-based), WhatsApp Flows LatAm.
+Investigación 2026 consultada (detalle + sources en `empleados-ia-research.md`): AgentSkillOS (árbol de capacidades + DAG, valida la estructura), Agent Skills standard / Pydantic Capabilities (formato de "chunk"), AG-UI/A2UI (generative UI), Cloudflare Dynamic Workflows / Temporal / LangGraph (durable execution), E2B/Modal (sandbox), multi-agent topologías (orchestrator-worker 70% prod; coordination failures 37%; choreography = loose coupling), pricing agent-employee (híbrido base+overage estándar; outcome-based), WhatsApp Flows LatAm.
 
 ## Decisión
 
@@ -75,7 +75,8 @@ Las acciones son verbos transaccionales sin estado; un **flujo (#7)** es orquest
 ## Referencias
 
 - `PARADIGM.md` §5b — SSoT vivo (extensión de este ADR)
-- `docs/product/stories/empleados-ia-auto-extension/00-research.md` — investigación + panorama + 4 casos borde (detalle completo)
+- `docs/architecture/luana-platform/empleados-ia-research.md` — investigación + panorama + 4 casos borde (SSoT vivo; graduado de la story archivada 2026-06-02)
+- `docs/architecture/luana-platform/durable-flows-L2-design.md` — diseño L2 del motor de flujos durables (FlowCompiler/FlowDefinition/EP-19; L1 ya migrated)
 - `docs/product/outcomes/empleados-ia-auto-extension-platform.md` — outcome platform + stories derivadas
 - `ADR-010-orquestacion-agentica.md` (extiende) · `ADR-vitalia-005` (Valeria no es caja de valor) · `ADR-009` (single-hub)
 - `.claude/rules/paradigm-arquitectura.md` · `anti-duplication.md` · `anti-orphan-integration.md`
