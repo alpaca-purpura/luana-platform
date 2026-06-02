@@ -21,6 +21,7 @@ import type {
   BidirectionalValidationReport,
   ActiveSession,
 } from '@/lib/types';
+import type { HarnessItem } from '@/lib/harness-backlog';
 
 export class ApiClientError extends Error {
   status: number;
@@ -257,6 +258,22 @@ export async function openInEditor(
     method: 'POST',
     body: JSON.stringify({ path: absOrRelPath }),
   });
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Harness backlog (read-only · transversal, no brand-scoped)
+// ────────────────────────────────────────────────────────────────────────────
+
+export async function listHarnessItems(): Promise<{
+  items: HarnessItem[];
+  counts: Record<string, number>;
+  source: string;
+}> {
+  return await request<{
+    items: HarnessItem[];
+    counts: Record<string, number>;
+    source: string;
+  }>('/api/harness');
 }
 
 // ────────────────────────────────────────────────────────────────────────────

@@ -71,6 +71,14 @@ const REQUIRED_KEYS = [
   'state_parked',
   'state_dropped',
   'wip_cap',
+  // Harness Backlog estados (BoardView core/transversal)
+  'harness_reported',
+  'harness_triaged',
+  'harness_ratified',
+  'harness_applied',
+  'harness_verified',
+  'harness_deferred',
+  'harness_otro',
   // Cockpit-specific
   'system_map',
   'product_health',
