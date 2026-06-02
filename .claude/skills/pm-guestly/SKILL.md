@@ -76,6 +76,35 @@ cat guestly/docs/product/BACKLOG.md         # vista 10 estados
 
 Pregunta a Chris: **"¿qué hacemos en Guestly? (a) idea/story nueva / (b) continúa story X / (c) capability / (d) learning / (e) drill-down a {drill-target}"**
 
+### Auto-chain rule (cementada 2026-05-23)
+
+**Regla cardinal:** si Chris nombra explícitamente una skill secundaria
+(`/po-ux`, `/po`, `/ux-agentico`, `/architect`, `/dev-team`, `/auditor`)
+dentro de los args del `/pm-guestly`, o el contexto determina la skill
+siguiente unívocamente, **invocá `Skill` tool inline en el mismo turn
+post-Step 0**. NO devuelvas handoff textual.
+
+Triggers:
+1. Chris escribió literal `/po-ux` (o equivalente) en args.
+2. Chris escribió "invocá /skill-X", "arranca /skill-X", "continúa con /skill-X".
+3. Step 0 GREEN + state-machine permite una sola transición.
+
+Excepciones (NO encadenar):
+- WIP cap destino agotado
+- Deps hard faltantes
+- Story OPEN sin defer_audit detectada en Step 0
+- Scope gate bloquea (`.claude/rules/parallel-safety.md` M13)
+
+Cómo encadenar (verbatim):
+1. Step 0 GREEN + Step 1 contexto cargado
+2. 2-4 bullets resumen
+3. `Skill(skill: "<name>", args: "guestly {story-id}")` inline
+4. NO devolver "Chris, invocá /...".
+
+Anti-pattern origen: caso F1-S4 vitalia 2026-05-23 — `/pm-vitalia` hizo
+Step 0 + bullets + handoff textual → estancamiento (Chris asume disparo
+automático, requiere tipear manual). Ver `.claude/rules/pm-skill-chaining.md`.
+
 ## Vocabulary — 10 estados macro (heredado Luana core)
 
 Idéntico paradigm v4 de Luana core. Detalle: `docs/process/pm-redesign-2026-05.md` § Punto 4.
@@ -115,6 +144,35 @@ Idéntico paradigm v4 de Luana core. Detalle: `docs/process/pm-redesign-2026-05.
 - ❌ Pricing hardcodeado (ver `guestly/.claude/rules/ota-sync-and-seasonal-pricing.md`)
 - ❌ Auto-publicar comunicaciones de marketing sin `guest_marketing_consent`
 - ❌ Loggear PII de huéspedes sin `sanitize_payload()`
+
+## Capability inventory post-merge (MANDATORIO)
+
+Cuando una story guestly transiciona a `status: live` / `done`, `/pm-guestly` MUST ejecutar el paso de capability promotion (R32) ANTES de cerrar la sesión:
+
+1. Para cada feature shipped en la story → escribir `guestly/docs/product/capabilities/{module}/{cap}.yaml`
+2. Frontmatter mínimo: `capability_id, module, slug, status: live, date_introduced, story_introduced, package_version, package_path, license`
+3. Cuerpo: surfaces (config, backend, frontend, tests, docs) + KPIs si aplica + dependencies cross-package
+
+### Fase F.3 · Capability ledger update (v2 cement 2026-05-27)
+
+Al cerrar story `reviewing → done`, aplicar logic del `cap_change_type` al YAML target. 4 ramas:
+
+- `new` → crear `guestly/docs/product/capabilities/{module}/{cap_slug}.yaml` con schema completo + change_log[0] type=new + scenarios iniciales
+- `fix` → append change_log entry type=fix · NO toca scenarios
+- `extend` → append change_log entry type=extend + append nuevos scenarios al array con `added_in_story: {story_id}`
+- `derive` → crear cap YAML hijo con `parent_cap: {origen_slug}` + change_log[0] type=derive · update padre append `derives_capabilities: [hijo_slug]`
+
+Update también `last_modified: today` del cap. Doc: `docs/process/capability-protocol.md` § Sección 5.
+
+### Gate DoD endurecida (Critical Rule #37) — Fase F merge→done
+
+En Fase F (merge a `done`), `/pm-guestly` REFUSE si:
+- falta `dod_evidence` (writes ejercidos + efecto observado); o
+- la gherkin-matrix tiene `MISSING` (regla de negocio sin test); o
+- `demo_required: true` y falta `demo_signoff` con `result ∈ {APPROVED, APPROVED_WITH_NOTES(severity≤medium)}`.
+
+El sign-off de Chris (negocio · product demo paso a paso ejecutado contra dev-app) es **SEPARADO** del auditor (técnico) — **ambos** requeridos para `done`.
+Ref: `.claude/rules/definition-of-done-live-verify.md` §5.
 
 ## Output format
 

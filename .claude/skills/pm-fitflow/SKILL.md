@@ -65,6 +65,35 @@ done
 
 Detalle SSoT: `.claude/rules/story-closure-gate.md` (Layer 1).
 
+### Auto-chain rule (cementada 2026-05-23)
+
+**Regla cardinal:** si Chris nombra explícitamente una skill secundaria
+(`/po-ux`, `/po`, `/ux-agentico`, `/architect`, `/dev-team`, `/auditor`)
+dentro de los args del `/pm-fitflow`, o el contexto determina la skill
+siguiente unívocamente, **invocá `Skill` tool inline en el mismo turn
+post-Step 0**. NO devuelvas handoff textual.
+
+Triggers:
+1. Chris escribió literal `/po-ux` (o equivalente) en args.
+2. Chris escribió "invocá /skill-X", "arranca /skill-X", "continúa con /skill-X".
+3. Step 0 GREEN + state-machine permite una sola transición.
+
+Excepciones (NO encadenar):
+- WIP cap destino agotado
+- Deps hard faltantes
+- Story OPEN sin defer_audit detectada en Step 0
+- Scope gate bloquea (`.claude/rules/parallel-safety.md` M13)
+
+Cómo encadenar (verbatim):
+1. Step 0 GREEN + Step 1 contexto cargado
+2. 2-4 bullets resumen
+3. `Skill(skill: "<name>", args: "fitflow {story-id}")` inline
+4. NO devolver "Chris, invocá /...".
+
+Anti-pattern origen: caso F1-S4 vitalia 2026-05-23 — `/pm-vitalia` hizo
+Step 0 + bullets + handoff textual → estancamiento (Chris asume disparo
+automático, requiere tipear manual). Ver `.claude/rules/pm-skill-chaining.md`.
+
 ### Step 1 — Carga estado brand
 
 ```bash
@@ -121,6 +150,49 @@ Idéntico paradigm v4 de Luana core. Detalle: `docs/process/pm-redesign-2026-05.
 
 - 1 línea resumen + 1-3 bullets cambios (paths con prefijo `fitflow/`) + 1 línea next step.
 - NUNCA dumps largos. Pointer-first.
+
+## Capability inventory post-merge (MANDATORIO)
+
+> Origen: proposal `2026-05-16-capability-inventory-enforcement` (gap detectado en vitalia Story 11).
+
+Cuando una story fitflow transiciona a `status: live` / `done` y la brand pasa a
+`status: shipped` en su `checkpoint.md`, `/pm-fitflow` MUST ejecutar el paso 2 del
+capability promotion (R32) ANTES de cerrar la sesión:
+
+1. Para cada feature shipped en la story → escribir `fitflow/docs/product/capabilities/{module}/{cap}.yaml`
+2. Frontmatter mínimo: `capability_id, module, slug, status: live, date_introduced,
+   story_introduced, package_version, package_path, license`
+3. Cuerpo: surfaces (config, backend, frontend, tests, docs) + KPIs si aplica + dependencies cross-package
+
+### Fase F.3 · Capability ledger update (v2 cement 2026-05-27)
+
+Al cerrar story `reviewing → done`, aplicar logic del `cap_change_type` al YAML target. 4 ramas:
+
+- `new` → crear `fitflow/docs/product/capabilities/{module}/{cap_slug}.yaml` con schema completo + change_log[0] type=new + scenarios iniciales
+- `fix` → append change_log entry type=fix · NO toca scenarios
+- `extend` → append change_log entry type=extend + append nuevos scenarios al array con `added_in_story: {story_id}`
+- `derive` → crear cap YAML hijo con `parent_cap: {origen_slug}` + change_log[0] type=derive · update padre append `derives_capabilities: [hijo_slug]`
+
+Update también `last_modified: today` del cap. Doc: `docs/process/capability-protocol.md` § Sección 5.
+
+### Gate DoD endurecida (Critical Rule #37) — Fase F merge→done
+
+En Fase F (merge a `done`), `/pm-fitflow` REFUSE si:
+- falta `dod_evidence` (writes ejercidos + efecto observado); o
+- la gherkin-matrix tiene `MISSING` (regla de negocio sin test); o
+- `demo_required: true` y falta `demo_signoff` con `result ∈ {APPROVED, APPROVED_WITH_NOTES(severity≤medium)}`.
+
+El sign-off de Chris (negocio · product demo paso a paso ejecutado contra dev-app) es **SEPARADO** del auditor (técnico) — **ambos** requeridos para `done`.
+Ref: `.claude/rules/definition-of-done-live-verify.md` §5.
+
+### Anti-pattern
+
+Mergear story con `status: live` sin actualizar `capabilities/` = brand SSoT funcional
+desincronizada del código. "¿Qué tenemos?" no se contesta leyendo docs sino
+inspeccionando código + rules + archive. Toda regen futura del portfolio + audits
++ promotion candidate detection operan ciegos.
+
+Ver también: `vitalia/docs/learnings/2026-05-16-capabilities-inventory-gap.md`.
 
 ## Referencias
 

@@ -182,6 +182,15 @@ Detalle completo: `https://github.com/ChromeDevTools/chrome-devtools-mcp/blob/ma
 - ❌ Asumir que `--no-sandbox` es OK en prod (NUNCA — sólo dev local)
 - ❌ Tocar componentes shared/ vía Chrome MCP "para arreglar bug visual rápido" sin escalate (rompe `playwright_visual_scope` de la story per `.claude/rules/architect-autonomous-mode.md`)
 
+## DoD Live Verification Gate (Critical Rule #37)
+
+Cuando uso Chrome DevTools MCP para **cerrar la verificación live de una story** (no solo debugging ad-hoc), el resultado alimenta el **gate DoD #37** (`.claude/rules/definition-of-done-live-verify.md`): ninguna story user-reachable llega a `done` sin que la acción real se ejerza en el stack corriendo. Obligaciones:
+- Ejercer la **acción real del usuario** (sobre todo writes: crear/editar/guardar/eliminar) — NUNCA un `GET 200` sobre un placeholder.
+- Leer el panel **Console** (0 errores rojos = burbuja Next / hidratación) + **Network** (sin 4xx/5xx en `/api/`) + confirmar el **efecto** (toast OK, fila aparece, valor persiste al recargar) + logs del backend sin traceback.
+- Registrar evidencia en `checkpoint.md::dod_evidence` (action + observed + backend_log). Verde de gates ≠ verificado.
+
+Dev-app por marca: `make dev-app-{brand}` (o `localhost:300X` fallback). Tabla SSoT + usuario de prueba: `definition-of-done-live-verify.md § Infra por brand`.
+
 ## Coexistencia con playwright-expert
 
 - **Chrome MCP** = debugging interactivo + verificación ad-hoc + performance live
@@ -196,5 +205,6 @@ Profiles separados (Chrome MCP usa `--isolated` o user-data-dir custom; Playwrig
 - [Tool reference (41 tools full)](https://github.com/ChromeDevTools/chrome-devtools-mcp/blob/main/docs/tool-reference.md)
 - [Playwright vs Chrome DevTools MCP: Driving vs Debugging — Steve Kinney](https://stevekinney.com/writing/driving-vs-debugging-the-browser)
 - [Setting up Chrome DevTools MCP with Claude Code on Linux (Wayland)](https://alexanderzeitler.com/articles/chrome-devtools-mcp-with-claude-code-on-linux-wayland/)
+- `.claude/rules/definition-of-done-live-verify.md` — DoD live-verify gate (#37) que esta verificación alimenta (Chrome MCP = live; Playwright = golden persistido)
 - `.claude/skills/playwright-expert/SKILL.md` — counterpart para tests automatizados
 - `.claude/rules/architect-autonomous-mode.md` — `playwright_visual_scope` discipline (aplica también cuando uso Chrome MCP para verificar)
