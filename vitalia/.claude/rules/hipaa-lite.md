@@ -10,14 +10,14 @@ Toda lectura/escritura/transmisión de PHI (Protected Health Information) MUST c
 
 ## PHI fields canónicos (lista SSoT para PII scanner vitalia)
 
-Campos considerados PHI en vitalia — escaneados por `shared/agent_observability/recording/sanitization.py` con perfil `compliance_level: hipaa_lite`:
+Campos considerados PHI en vitalia — escaneados por `core/luana-core-observability/src/luana_core_observability/recording/sanitization.py` con perfil `compliance_level: hipaa_lite`:
 
 - Identidad paciente: `patient.name`, `patient.dni`, `patient.cuit`, `patient.date_of_birth`, `patient.phone`, `patient.email`, `patient.address`
 - Datos clínicos: `diagnosis`, `treatment_plan`, `medication`, `dosage`, `allergies`, `symptoms`, `medical_notes`, `lab_results`, `vital_signs`
 - Imagenología: `imaging_url`, `xray_filename`, `ultrasound_report`
 - Histórico: `previous_treatments`, `family_history`, `surgical_history`
 
-Cualquier campo nuevo con semántica médica → agregar a esta lista mismo PR + actualizar `vitalia/backend/src/modules/vitalia/compliance/phi_fields.py`.
+Cualquier campo nuevo con semántica médica → agregar a esta lista mismo PR + actualizar `vitalia/backend/src/modules/vitalia/compliance/domain/phi_fields.py`.
 
 ## Constraints
 
@@ -38,7 +38,7 @@ Cualquier campo nuevo con semántica médica → agregar a esta lista mismo PR +
 
 ### Retention policy PHI
 - PHI retenida 10 años post último acceso paciente (regulación Ley 25.326 Argentina, Ley 1581 Colombia, Ley 19.628 Chile, Ley 29733 Perú, LGPD Brasil).
-- Cron `vitalia_phi_retention_sweep` mensual: detecta `last_access_at > 10y` → flag para anonymize.
+- Cron `audit_log_retention_sweep_monthly` (en `vitalia/backend/src/modules/vitalia/_shared/workers/jobs/`, ARQ mensual 1º 02:00 UTC; stub — aún no implementado): detecta `last_access_at > 10y` → flag para anonymize.
 - Anonymization: replace identifiers con hash determinístico, mantener stats agregadas. Hard delete solo bajo derecho al olvido explícito.
 
 ### Access control (RBAC strict)
@@ -61,7 +61,7 @@ Cualquier campo nuevo con semántica médica → agregar a esta lista mismo PR +
 - Trace events que necesitan referencia paciente usan `patient_id` hash (UUID), no nombre.
 
 ### Compliance gates
-- `shared/compliance/` (engine core) activado en vitalia con perfil `compliance_level: hipaa_lite` en `vitalia/config/brand.yaml`.
+- `core/luana-core-compliance/` (engine core) activado en vitalia con perfil `compliance_level: hipaa_lite` en `vitalia/config/brand.yaml`.
 - `ComplianceService.validate_outbound_message(message, channel)` bloquea mensajes con PHI por canales no-encriptados.
 
 ## Tests requeridos
@@ -91,7 +91,7 @@ Todo PR vitalia tocando tablas/módulos `patient_*`, `medical_*`, `treatment_*`,
 - Raíz: `.claude/rules/tenant-isolation.md`, `.claude/rules/auditor-downstream-regression.md`, `.claude/rules/anti-duplication.md`
 - Brand config: `vitalia/config/brand.yaml` (compliance_level: hipaa_lite)
 - Brand module home: `vitalia/backend/src/modules/vitalia/`
-- PHI fields SSoT: `vitalia/backend/src/modules/vitalia/compliance/phi_fields.py`
+- PHI fields SSoT: `vitalia/backend/src/modules/vitalia/compliance/domain/phi_fields.py`
 - Compliance engine: `core/luana-core-compliance/`
 - Sanitization: `core/luana-core-observability/src/luana_core_observability/recording/sanitization.py`
 - Regulaciones: Ley 25.326 (AR), LGPD (BR), Ley 1581 (CO), Ley 19.628 (CL), Ley 29733 (PE), HIPAA §164.312 (US reference best-practice)
