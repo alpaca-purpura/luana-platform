@@ -29,7 +29,7 @@ _BRAND_TS_APPS = frozenset({"nicolify", "vitalia", "comunify", "lupulo"})
 _ROOT_META = frozenset({"core"})
 _EXCLUDE = _BRAND_TS_APPS | _ROOT_META
 
-_EXPECTED_COUNT = 27  # post 2026-05-16 carve-out: +1 luana-core-scheduling (ADR-003 Proposal #4)
+_EXPECTED_COUNT = 28  # post 2026-06-02: +1 luana-core-flows (durable-flows-engine proposal 2026-06-02)
 _EXPECTED_TS_COUNT = 7
 _TS_PACKAGES_DIR = ROOT / "core" / "@luana"
 
@@ -42,16 +42,17 @@ def _python_members() -> list[str]:
 
 
 def test_python_member_count_is_27() -> None:
-    """V-NF-1: exactly 27 Python workspace members post 2026-05-16 carve-out.
+    """V-NF-1: exactly 28 Python workspace members post 2026-06-02.
 
     Story 8 baseline was 26. ADR-003 Proposal #4 (scheduling lift) added
-    luana-core-scheduling = 27 total.
+    luana-core-scheduling = 27. Durable-flows-engine proposal 2026-06-02 added
+    luana-core-flows = 28 total.
     """
     members = _python_members()
     assert len(members) == _EXPECTED_COUNT, (
         f"Expected {_EXPECTED_COUNT} Python workspace members, got {len(members)}.\n"
         f"Current members: {members}\n\n"
-        "2026-05-16 baseline: 27 = Story-8 baseline 26 + 1 NEW (luana-core-scheduling)."
+        "2026-06-02 baseline: 28 = 27 (scheduling) + 1 NEW (luana-core-flows, durable-flows-engine)."
     )
 
 

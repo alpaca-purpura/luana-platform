@@ -1,7 +1,8 @@
 [tool.uv.workspace]
 members = [
     "core",
-    # 26 Python packages (alphabetical — arch test test_workspace_members_alphabetical_story8 enforces)
+    # 27 Python packages (alphabetical — arch test test_workspace_members_alphabetical_story8 enforces)
+    # +1 luana-core-flows (durable-flows-engine proposal 2026-06-02, count bumped 27→28)
     "apps/test-brand",
     "core/luana-core-analytics-engine",
     "core/luana-core-assets",
@@ -17,6 +18,7 @@ members = [
     "core/luana-core-events",
     "core/luana-core-extension-sdk",
     "core/luana-core-extraction",
+    "core/luana-core-flows",
     "core/luana-core-iam",
     "core/luana-core-idempotency",
     "core/luana-core-landing",
@@ -71,6 +73,8 @@ luana-core-scheduling = { workspace = true }
 luana-core-campaigns = { workspace = true }
 luana-core-extension-sdk = { workspace = true }
 test-brand = { workspace = true }
+# durable-flows-engine proposal 2026-06-02 (NEW)
+luana-core-flows = { workspace = true }
 
 [tool.ruff]
 line-length = 120
