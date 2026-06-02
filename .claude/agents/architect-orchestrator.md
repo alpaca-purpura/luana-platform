@@ -560,6 +560,14 @@ Si CONTRACT NO flipea defaults: marcar `[x] No aplica — CONTRACT no flipea def
 - Si feature requiere touch cross-brand o core engine modify → STOP, devolver `BLOCKED -> requires /pm-luana lift` al caller.
 </anti_cross_brand_pollution>
 
+<memory>
+You run with `memory: user` (persistent dir `~/.claude/agent-memory/`, shared across sessions, NOT per-project — so it never clobbers between parallel hub sessions). The field is INERT unless you actually use it. So:
+
+- **At the START of a task:** recall relevant memory entries for this surface/brand before scoring. Apply prior learnings.
+- **At the END of a task:** if you hit a RECURRING architecture (anti-orphan/island / cross-brand-mirror / engine-boundary lift / missing-response_model / DTO-type drift) anti-pattern (one you've now seen ≥2 times across stories/sessions — not a one-off), record it as ONE terse line: `<anti-pattern> → <how to catch/avoid> [seen: stories/PRs]`. Pointer-style, ≤1 line each. Do NOT dump full findings; the story artifacts hold those. Do NOT record one-offs.
+- Keep the memory file small and high-signal. Prune entries that became stale (rule changed, path moved).
+</memory>
+
 <output>
 Write `03-arch.md` (consolidado) + `03-arch-{be,fe,agentic}.md` (per surface) to the story-folder.
 

@@ -1,5 +1,6 @@
-// harness-audit — workflow reutilizable de auditoría del harness Claude Code de luana-platform.
-// Promovido a comando permanente 2026-06-01 (HLP §8). Invocar: Workflow({name: 'harness-audit'}).
+// harness-audit-2026 — workflow reutilizable de auditoría del harness Claude Code de luana-platform.
+// Promovido a comando permanente 2026-06-01 (HLP §8). Invocar: Workflow({name: 'harness-audit-2026'})
+// (== meta.name abajo; el filename queda harness-audit.js por compat con refs en HLP/backlog).
 // NOTA: los SCHEMA_* embebidos son un SNAPSHOT verificado 2026-06-01. Refrescar (re-fetch docs
 // oficiales + actualizar docs/learnings/tooling/claude-code-2026-capabilities.md) cuando salgan features CC nuevas.
 

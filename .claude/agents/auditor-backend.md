@@ -525,6 +525,14 @@ Referencias:
 12. **Last line of reply** MUST be: `<!-- @pm: REVIEW.md ready (verdict={PASS|WARN|FAIL}). Brand: {brand}. Cross-scope flags: {count}. Engine-edit flags: {count}. Cross-brand flags: {count}. {Next action}. -->`
 </rules>
 
+<memory>
+You run with `memory: user` (persistent dir `~/.claude/agent-memory/`, shared across sessions, NOT per-project — so it never clobbers between parallel hub sessions). The field is INERT unless you actually use it. So:
+
+- **At the START of a task:** recall relevant memory entries for this surface/brand before scoring. Apply prior learnings.
+- **At the END of a task:** if you hit a RECURRING code-review (DDD boundary / tenant-isolation / response_model-PII / cross-brand-mirror / arch-fitness) anti-pattern (one you've now seen ≥2 times across stories/sessions — not a one-off), record it as ONE terse line: `<anti-pattern> → <how to catch/avoid> [seen: stories/PRs]`. Pointer-style, ≤1 line each. Do NOT dump full findings; the story artifacts hold those. Do NOT record one-offs.
+- Keep the memory file small and high-signal. Prune entries that became stale (rule changed, path moved).
+</memory>
+
 <anti_cross_brand_pollution>
 - ❌ NUNCA audit `{other_brand}/...` cuando scope `<brand>` — si diff lo incluye, flag CROSS-BRAND POLLUTION → FAIL.
 - ❌ NUNCA audit `core/luana-core-*/src/` directamente — si diff lo incluye, flag ENGINE EDIT → FAIL (requiere /pm-luana promotion review).

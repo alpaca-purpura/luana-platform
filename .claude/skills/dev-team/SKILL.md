@@ -1,6 +1,7 @@
 ---
 name: dev-team
-description: "Developer team router v4 (Conv 2 — autonomous build, post pm-redesign 2026-05 Punto 4 + story-closure-gate 2026-05-18). Reads ready package (01-spec.md + 03-arch.md + 04-validators.yaml + 05-guidelines.md + 06-tickets.yaml) en {brand}/docs/product/stories/{story-id}/ state=ready. Itera ticket-por-ticket: implement → run validators (4 categorías: non_functional/functional/visual/agentic_eval) → fix targeted file → repeat hasta GREEN o cap_reached. Decide owner según owner_eligibility + production_code flag (R23). qwen-opencode/Sonnet preferido para BE/FE no-agentic + tests/docs sobre agentic. Opus 4.8 obligatorio para AGENTIC production code. Mantiene T-{n}-impl-log.md vivo. TDD obligatorio. On pickup: state=ready→developing. On all GREEN all tickets: state=developing→developed + AUTO-HANDOFF /auditor (default, salvo defer_audit:true en checkpoint con razón documentada). REFUSE pickup nueva story si current worktree tiene story en state ∈ {developing, developed, reviewing} sin defer_audit. On cap reached: state=developing→blocked, escalate. Activa cuando user dice: '/dev-team', 'toma ticket T-N', 'implementa T-N', 'arranca build', 'autonomous build'."
+description: "Developer team router v4 (Conv 2 autonomous build) — lee ready package, itera ticket-por-ticket implement→validators→fix hasta GREEN, decide owner (R23, Opus obligatorio para agentic prod), TDD, mantiene impl-log, ready→developing→developed + auto-handoff /auditor."
+when_to_use: "Activa cuando user dice: '/dev-team', 'toma ticket T-N', 'implementa T-N', 'arranca build', 'autonomous build'."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
 model: opus
 ---

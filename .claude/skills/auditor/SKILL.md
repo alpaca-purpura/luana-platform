@@ -1,6 +1,7 @@
 ---
 name: auditor
-description: "Auditor independiente v4 (Conv 3 — Review+Merge, post pm-redesign 2026-05 Punto 4 + story-closure-gate 2026-05-18). Toma story state=developed (AUTO-HANDOFF /dev-team default; manual opt-in via defer_audit:true) → transition state=developed→reviewing → spawna auditor-{be,fe,agentic} según surface. Phase D NEW: gherkin verification matrix (cada scenario 01-spec.md → test path → status, escribe 06-audit/gherkin-matrix.md). Veredicto: APPROVED | CHANGES_REQUESTED | ESCALATED. Self-fix v4.2 por 3 carriles: Carril A (gate-verified, lo hace el sub-auditor con Edit, cap 5 iter), Carril B (test nuevo → dev-team), Carril C (stake-asimétrico → escala). audit_iterations cap 4. Cuando todos tickets audit-passed, escribe CHECKPOINTS.md (C1-C5 grid: Code | Spec | Architecture | Cross-cutting | Trace) + AUTO-HANDOFF /pm-{brand} merge. Activa cuando user dice: '/auditor', 'audita story', 'revisa tickets', 'verdict', 'review final', 'CHECKPOINTS'."
+description: "Auditor independiente v4 (Conv 3 Review+Merge) — toma story developed, spawna auditor-{be,fe,agentic}, Phase D gherkin matrix, veredicto APPROVED|CHANGES_REQUESTED|ESCALATED, self-fix v4.2 (3 carriles), escribe CHECKPOINTS.md + auto-handoff /pm-{brand} merge."
+when_to_use: "Activa cuando user dice: '/auditor', 'audita story', 'revisa tickets', 'verdict', 'review final', 'CHECKPOINTS', 'story developed lista para audit', 'chequeá los tickets', 'revisá el código', 'hacé el review'."
 allowed-tools: Read, Edit, Bash, Grep, Glob, Agent
 model: opus
 ---
@@ -416,8 +417,8 @@ ESCALATED — auditor cannot self-fix ni spawn dev-team autónomo.
 
 Razón: <categoría exacta de auditor-self-fix-policy.md § ESCALATED>
 Detalle: T-{n}-review.md § Audit iteration {N} § Findings
-audit_iterations: {N}/3
-self_fix_iter: {M}/4
+audit_iterations: {N}/4
+self_fix_iter: {M}/5
 
 Próximo: Chris ratifica acción —
   (a) refinar spec/arch (back to /po-ux o /architect)
@@ -613,6 +614,8 @@ STOP la sesión `/auditor` aquí. Chris (o auto-handoff harness) invoca `/pm-{br
 
 ## Self-fix policy detallada (v4.1 cement 2026-05-19)
 
+> ★ SUPERSEDED por v4.2 (cement 2026-05-28). Caps reales: self_fix_iter 5 / audit_iterations 4. La lógica vigente es por NATURALEZA DE LA VERIFICACIÓN (3 carriles), no whitelist por tamaño. Esta sección queda como referencia histórica — ver § v4.2 arriba + `.claude/rules/auditor-self-fix-policy.md`.
+
 > SSoT exhaustivo: `.claude/rules/auditor-self-fix-policy.md`. Whitelist verbatim
 > 17 categorías. Decision tree por NATURALEZA del fix (no tamaño).
 
@@ -643,8 +646,8 @@ STOP la sesión `/auditor` aquí. Chris (o auto-handoff harness) invoca `/pm-{br
 
 | Métrica | Cap | Acción al exceder |
 |---|---|---|
-| `self_fix_iter` por ticket | 4 | Spawn dev-team (Caso B) |
-| `audit_iterations` por ticket | 3 | ESCALATE Chris (Caso D) |
+| `self_fix_iter` por ticket | 4 (v4.1 — v4.2: 5) | Spawn dev-team (Caso B) |
+| `audit_iterations` por ticket | 3 (v4.1 — v4.2: 4) | ESCALATE Chris (Caso D) |
 | Files modificados por self-fix iter | 2 | Caso B (refactor camuflado) |
 | Líneas modificadas por self-fix iter | 10 | Caso B idem |
 
@@ -729,7 +732,7 @@ Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
 ## Referencias
 
 - `docs/process/pm-redesign-2026-05.md` — paradigma 3 conversaciones + CHECKPOINTS.md C1-C5 + § v4.1 autonomy amplification 2026-05-19
-- `.claude/rules/auditor-self-fix-policy.md` — **★ SSoT exhaustivo v4.1 ★** whitelist 17 categorías + decision tree por naturaleza del fix
+- `.claude/rules/auditor-self-fix-policy.md` — **★ SSoT exhaustivo v4.2 ★** whitelist 17 categorías + decision tree por naturaleza del fix
 - `.claude/rules/auditor-downstream-regression.md` — surface→downstream test mapping
 - `.claude/rules/anti-default-flip-audit.md` — R31 default flag flips
 - `.claude/rules/anti-duplication.md` — inventario shared abstractions

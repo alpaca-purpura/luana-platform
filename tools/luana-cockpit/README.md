@@ -300,7 +300,7 @@ Validación: `pnpm typecheck` clean · `pnpm test` ~67 tests GREEN (6 files).
 
 ## Plan completo
 
-Ver `/home/chalreme/.claude/plans/ok-lo-apruebo-realiza-cheeky-harbor.md` (autoportable) + memory file `cockpit-luana-state.md`.
+Ver el memory file `cockpit-luana-state.md` (pointer-first, portable — SSoT del estado del cockpit).
 
 Doctrina cementada (Phase 1):
 - `docs/process/capability-protocol.md` · schema cap YAML v2 + cap_change_type ledger

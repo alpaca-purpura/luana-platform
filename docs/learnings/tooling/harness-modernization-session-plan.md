@@ -172,3 +172,26 @@ La **modernización del harness** es enabler transversal que corre primero/al ma
 **Abierto (drenar por cadencia HLP, NO urgente):** HB-17 (Wave 5b: context:fork análisis + when_to_use migración + activar memory:user con body-instructions) · HB-18 (PII scanners) · HB-19 (D-10 verify) · HB-11 (voseo cleanup) · HB-20 (workflow name inconsistency) · HB-22 (cola MEDIUM/LOW). **Operacional Chris:** HB-21 (provisión tunnel `cloudflared-setup.sh`). **Producto:** base.ts rollout (solo cuando cierre `vitalia-fase2-lisa-doctores`); refinar historia B.
 
 ### Estado: continuación 3 = 4 commits (cbc736ce, 22dacb4c, 2119d0c1 + item 4). **Item 4 (HLP) CERRADO** — proceso documentado + probado punta a punta + backlog reconciliado. Story en vuelo `vitalia-fase2-lisa-doctores` (developing) NO tocada en toda la línea de trabajo.
+
+## Sesión 2026-06-02 (continuación 4) — drenaje backlog HB-17/18/19/20/22 por cadencia HLP
+
+> Motor: apply-pipeline §6 verbatim. **Verify-first** (opus lee FS, confirma findings — catálogo sobreestima) → **autoría directa opus** para infra-crítico (PII scanners + pre-commit surgery, no-parallel, precedente D-5) + **workflow JS `harness-wave5b-apply`** (11 editores sonnet, lotes DISJUNTOS por fase-barrier, sin commit, sin worktree-isolation) para edits de docs/frontmatter → **verificación independiente opus** (git diff real + spot-check claims, NO confiar en reportes de sub-agents) → present-diff → **ratify Chris (PENDIENTE)** → commit Haiku por pathspec. Verificación de campos CC-2026 dudosos (`when_to_use`/`context:fork`) vía `claude-code-guide` ANTES de mass-edit.
+
+**Cambios en working tree (uncommitted — esperando ratificación):**
+
+| HB | Qué | Mecanismo | Verif |
+|---|---|---|---|
+| 17a | `context:fork` análisis | claude-code-guide vs docs CC | **DEFERRED** — 0 candidatos limpios (interactivos/Haiku-delegated/reference-sin-task) |
+| 17b | `when_to_use` pilot ×4 skills (architect/auditor/dev-team/playwright) | workflow sonnet | registry re-renderizó OK, triggers preservados, playwright Nicolify→Luana en frontmatter |
+| 17c | `memory:user` activación ×4 agents | workflow sonnet | `<memory>` body-instructions (read-start/write-recurring), tailored per role |
+| 18 | PII scanners + rule stub + pre-commit §8/§9 + CLAUDE.md #11 | autoría opus | **live-tested** exit 0/1 + whitelist + ruff + `bash -n` |
+| 19 | self-fix v4.2 propagación (auditor SKILL + rules-detail) | workflow sonnet | ADR-007 = overestimate (ya tenía bitácora) |
+| 20 | workflow name align | autoría opus | comment → `harness-audit-2026` |
+| 22 | cockpit README path absoluto | autoría opus | → pointer memory |
+| 11 | voseo cleanup | — | **DEFERRED** count real 380 ≠ ~73 |
+
+**Verificación CC-2026 (`claude-code-guide` vs code.claude.com/docs/en/skills.md):** `when_to_use` = campo válido, se **appendea** a `description` (combined truncado 1536 chars — el win es orden/claridad, NO reducción de budget). `context:fork` = válido pero el subagent **pierde acceso al historial de conversación** + reference-skill sin task retorna vacío → inadecuado para todo skill interactivo/ratify (= todos los del harness) → HB-17a deferred.
+
+**Archivos:** NEW `scripts/{_pii_scan_lib,scan_seed_pii,scan_goldens_pii}.py` + `.claude/rules/pii-sanitisation.md`; MOD 4 skills + 4 agents + auditor SKILL + rules-detail/auditor-self-fix-policy + pre-commit + CLAUDE.md + workflows/harness-audit.js + cockpit README + backlog + este file.
+
+### Estado: continuación 4 = working tree listo, **commit PENDIENTE ratificación Chris**. Story `vitalia-fase2-lisa-doctores` (developing) NO tocada. base.ts rollout NO ejecutado (espera cierre de esa story).

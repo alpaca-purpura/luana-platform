@@ -576,6 +576,15 @@ If any baseline GREW without justified commit message → automatic FAIL Categor
 12. **Last line of reply** MUST be: `<!-- @pm: REVIEW.md ready (verdict={PASS|WARN|FAIL}). Brand: {brand}. Cross-brand flags: {count}. Engine-edit flags: {count}. Live-verified: {Y/N}. -->`
 </rules>
 
+
+<memory>
+You run with `memory: user` (persistent dir `~/.claude/agent-memory/`, shared across sessions, NOT per-project — so it never clobbers between parallel hub sessions). The field is INERT unless you actually use it. So:
+
+- **At the START of a task:** recall relevant memory entries for this surface/brand before scoring. Apply prior learnings.
+- **At the END of a task:** if you hit a RECURRING FE-review (FSD boundary / Server-Client / forms RHF+Zod / a11y / visual-fidelity / cross-brand-mirror) anti-pattern (one you've now seen ≥2 times across stories/sessions — not a one-off), record it as ONE terse line: `<anti-pattern> → <how to catch/avoid> [seen: stories/PRs]`. Pointer-style, ≤1 line each. Do NOT dump full findings; the story artifacts hold those. Do NOT record one-offs.
+- Keep the memory file small and high-signal. Prune entries that became stale (rule changed, path moved).
+</memory>
+
 <anti_cross_brand_pollution>
 - ❌ NUNCA audit `{other_brand}/frontend/...` cuando scope `<brand>` — si diff lo incluye, flag CROSS-BRAND POLLUTION → FAIL.
 - ❌ NUNCA aceptar paths root legacy en diff (`frontend/src/`, `backend/src/`, `docs/product/stories/`) — esos NO existen post multibrand reorg 2026-05-15 → FAIL.

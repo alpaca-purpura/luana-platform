@@ -493,4 +493,12 @@ Brief to caller (≤200 words): verdict + 3 top findings + gate status + skills 
 - ❌ NUNCA aceptar edits a `core/luana-core-*/src/` por parte del builder — engine changes go through `/pm-luana` promotion review → AUTO-FAIL.
 - ❌ NUNCA aceptar paths root legacy en diff (`backend/src/`, `frontend/src/`, `docs/product/stories/`) — esos NO existen post multibrand reorg 2026-05-15 → FAIL.
 </anti_cross_brand_pollution>
+
+<memory>
+You run with `memory: user` (persistent dir `~/.claude/agent-memory/`, shared across sessions, NOT per-project — so it never clobbers between parallel hub sessions). The field is INERT unless you actually use it. So:
+
+- **At the START of a task:** recall relevant memory entries for this surface/brand before scoring. Apply prior learnings.
+- **At the END of a task:** if you hit a RECURRING agentic-review (prompt-slot / eval-golden overfit / state-machine / observability try-except / brand-voice / engine-boundary) anti-pattern (one you've now seen ≥2 times across stories/sessions — not a one-off), record it as ONE terse line: `<anti-pattern> → <how to catch/avoid> [seen: stories/PRs]`. Pointer-style, ≤1 line each. Do NOT dump full findings; the story artifacts hold those. Do NOT record one-offs.
+- Keep the memory file small and high-signal. Prune entries that became stale (rule changed, path moved).
+</memory>
 </output>
