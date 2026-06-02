@@ -20,12 +20,12 @@ El entorno canónico de live-verify es **`dev-app.{brand}lat.com`** = **cloudfla
 
 | Brand | dev-app | Levantar | localhost (FE/BE) | Backend logs | Estado |
 |---|---|---|---|---|---|
-| **vitalia** | `dev-app.vitalialat.com` | `make dev-app-vitalia` (idempotente · `scripts/dev-app-up.sh`) | `:3002` / `:8002` (`/api/*`→BE) | `docker logs luana-dev-vitalia_backend_dev-1` | 🟡 tunnel configurado (`dev-config.yml` `737ae13f-…`); **falta** `vitalia/deploy/cloudflared/.credentials/dev-tunnel.json` → correr `cloudflared-setup.sh vitalia`. Live-verify HOY vía **localhost:3002** (fallback válido) |
-| **nicolify** | `dev-app.nicolify.com` | `make dev-nicolify` + `make dev-nicolify-tunnel` | `:3001` / `:8001` | `docker logs luana-dev-nicolify_backend_dev-1` | ⚠️ tunnel ID real en `dev-config.yml` (`be33b8dd-5218-46d2-b8b5-1ee65f2dee8e`); falta solo `nicolify/deploy/cloudflared/.credentials/dev-tunnel.json` (keys de Chris) |
-| comunify | `dev-app.comunify.com` | `make dev-comunify` + `make dev-comunify-tunnel` | `:3003` / `:8003` | `docker logs luana-dev-comunify_backend_dev-1` | ⚠️ verificar |
+| **vitalia** | `dev-app.vitalialat.com` | `make dev-app-vitalia` (idempotente · `scripts/dev-app-up.sh`) | `:3002` / `:8002` (`/api/*`→BE) | `docker logs luana-dev-vitalia_backend_dev-1` | ✅ **tunnel OPERATIVO** (verificado live 2026-06-02: `/`→307 sign-in + `/api/health`→200 vía dev-app.vitalialat.com). Locally-managed (connector docker + credencial gitignored per-worktree) |
+| **nicolify** | `dev-app.nicolify.com` | `make dev-nicolify` + `make dev-nicolify-tunnel` | `:3001` / `:8001` | `docker logs luana-dev-nicolify_backend_dev-1` | ✅ **tunnel provisto + connector docker UP** (`be33b8dd…`, credencial en worktree `luana-nicolify`, DNS routed). dev-app responde cuando el stack sirve (hoy skeleton → 000 si FE/BE no levanta) |
+| comunify | `dev-app.comunifyagents.com` | `make dev-comunify` + `make dev-comunify-tunnel` | `:3003` / `:8003` | `docker logs luana-dev-comunify_backend_dev-1` | ✅ **tunnel provisto + connector docker UP** (`999f4a24…`, zona `comunifyagents.com`, credencial en worktree `luana-comunify`, DNS routed) |
 | lupulo | `dev-app.lupulo.com` | `make dev-lupulo` + `make dev-lupulo-tunnel` | `:3004` / `:8004` | `docker logs luana-dev-lupulo_backend_dev-1` | ⚠️ verificar |
 
-**Vitalia (referencia más completa — config de túnel provista; credencial pendiente → live-verify vía localhost hasta correr `cloudflared-setup.sh vitalia`):**
+**Vitalia (referencia — túnel OPERATIVO, verificado live 2026-06-02 vía dominio público):**
 
 | Pieza | Valor | Nota |
 |---|---|---|
@@ -35,7 +35,7 @@ El entorno canónico de live-verify es **`dev-app.{brand}lat.com`** = **cloudfla
 | Password / token | `CLERK_TESTING_TOKEN_VITALIA` (presente) · `DEV_APP_TEST_PASSWORD` (pendiente de setear) | en `vitalia/.env.dev` (**gitignored**) |
 | Clerk origins | `dev-app.vitalialat.com` + `localhost:3002` | ya seteados en la instancia (`allowed_origins`) |
 
-> **Provisión del túnel por brand (one-time):** `scripts/cloudflared-setup.sh {brand}` (login Cloudflare interactivo + crea tunnel + DNS CNAME + `deploy/cloudflared/.credentials/dev-tunnel.json` gitignored + resuelve `<TUNNEL_ID>` en `dev-config.yml`). Requiere auth de Chris (no automatizable headless). **Nicolify:** el tunnel ID ya está resuelto en `dev-config.yml` (`be33b8dd-5218-46d2-b8b5-1ee65f2dee8e`, hostname `dev-app.nicolify.com`) — solo falta dejar el `dev-tunnel.json` en `nicolify/deploy/cloudflared/.credentials/` (montado a `/etc/cloudflared/dev-tunnel.json`).
+> **Provisión del túnel por brand:** `scripts/cloudflared-setup.sh {brand}` — **NO-INTERACTIVO** (reescrito 2026-06-02): usa un API token de cuenta (cfat_) en `{brand}/deploy/cloudflared/.credentials/cf-api.env` (gitignored, fallback `.env.dev`), sin login browser ni binario cloudflared host. Idempotente + no-destructivo: detecta tunnel existente (reusa) o crea locally-managed con secret + escribe credencial JSON + asegura el CNAME. `--recreate` fuerza recreación (DESTRUCTIVO). **Estado 2026-06-02:** los 3 túneles (vitalia/nicolify/comunify) están provistos + connector docker UP + DNS routed; las credenciales locally-managed viven **per-worktree** (cada marca en su worktree canónico — footgun cross-worktree abajo). El secret de un tunnel existente NO se recupera vía API → copiar el `dev-tunnel.json` del worktree origen o `--recreate`. **lupulo:** placeholder (sin deploy/cloudflared).
 >
 > **Fallback localhost:** mientras el túnel de una brand no esté provisto, la live-verify se hace contra `localhost:300X` directo (mismo Chrome DevTools MCP / Playwright autenticado, misma acción real, mismos logs) — es verificación válida; lo único que falta es el dominio público + JWT Clerk del dominio real. Documentar en la evidencia que se verificó en localhost (no en dev-app) cuando aplique.
 
