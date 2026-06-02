@@ -9,12 +9,10 @@ type: ui-story                                    # ui-story | agentic-story | s
 module: MODULE_NAME
 capability: CAPABILITY_ID
 links:
-  story_yaml: "../../../../../product/stories/{module}/{story-id}.yaml"
-  capability_yaml: "../../../../../product/capabilities/{module}/{capability}.yaml"
-  module_doc: "../../../../../product/modules/{module}.md"
-  opportunity: "../../../../../product/opportunities/{slug}.md"   # si origina de discovery
-  pi: "../../../PI.md"
-  sprint: "../../sprint.md"
+  story_yaml: "../../stories/{module}/{story-id}.yaml"
+  capability_yaml: "../../capabilities/{module}/{capability}.yaml"
+  module_doc: "../../modules/{module}.md"
+  release_yaml: "../../releases/{release-id}.yaml"               # release que la contiene (reemplaza PI/sprint)
 ---
 
 ## Job-To-Be-Done
@@ -36,7 +34,7 @@ links:
 ## Antecedentes / Contexto
 
 - [Story relacionada o capability previa]
-- [Decisión cardinal del PI]
+- [Decisión cardinal del Release]
 - [Restricción técnica conocida]
 - [Stakeholder que pidió esto]
 

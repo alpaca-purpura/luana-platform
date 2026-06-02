@@ -8,8 +8,10 @@ brand: BRAND                          # vitalia | nicolify | comunify | lupulo |
 name: "Nombre corto del release"      # ej "Migración progresiva · primer valor Valeria + Lisa"
 description: "Descripción 1-2 líneas que explican el bloque de trabajo + outcome esperado"
 status: planning                       # planning | in_progress | ready_to_merge | shipped | backlog
+production_status: not_deployed        # not_deployed | staged | deployed · eje deployment v4 (independiente de status)
 target_date: null                      # ISO date YYYY-MM-DD · null hasta que Chris la llene
 shipped_date: null                      # ISO date · solo al cerrar status=shipped
+shipped_gate_evidence: null            # link o path al artefacto de evidencia DoD (#37) · requerido antes de status=shipped
 order: 0                                # int (menor = primero en Roadmap)
 created_at: YYYY-MM-DDTHH:MM:SS-05:00
 created_by: chris

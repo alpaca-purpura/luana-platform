@@ -1,3 +1,4 @@
+# ⚠️ DEPRECADO — usar docs/specs/templates/06-tickets-template.yaml
 # Ticket Template — atómico ejecutable por dev-team
 # Vive en: docs/projects/active/PI-N/sprints/SN/stories/{story-id}/04-tickets.yaml
 # Owner: /architect (escribe) · /dev-team (toma + actualiza state) · /auditor (review)

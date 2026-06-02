@@ -1,5 +1,5 @@
 # Agentic Story Template — Schema SSoT atómico
-# Vive en: docs/product/stories/{module}/{story-id}.yaml
+# Vive en: {brand}/docs/product/stories/{module}/{story-id}.yaml
 # Owner: /po (redacta) + /ux-agentico (refina) · /pm (ratifica al merge)
 # Eval policy: transcripts + LLM-rubric + simulated-user + tool_calls + voice_fidelity + pass^k
 

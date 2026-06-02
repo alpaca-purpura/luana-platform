@@ -1,3 +1,5 @@
+> ⚠️ DEPRECADO — metodología PI/Sprint reemplazada por Release (docs/process/release-protocol.md + docs/specs/templates/release-template.yaml).
+
 # PI.md — Template (Project Increment)
 
 > Owner: `/pm`. Vive en `docs/projects/active/PI-N-{theme}/PI.md`.

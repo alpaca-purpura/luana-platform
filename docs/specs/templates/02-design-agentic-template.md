@@ -126,9 +126,9 @@ SYSTEM PROMPT (cacheado, slot 1, TTL 1h)
 - **Trial policy** (del story YAML):
   - `trials_per_scenario: 3`
   - `pass_k_threshold: 0.5` (pass^3 >= 0.5 para promotion capability→regression)
-- **Personas a usar** (de `specs/personas/`):
-  - `tenant-novato-tech.yaml` (happy)
-  - `lead-frio-impaciente.yaml` (adversarial)
+- **Personas a usar** (de `specs/personas/archetype-aware/` — ejemplos; elegir las más relevantes al vertical):
+  - `referido-calido-co.yaml` (happy path)
+  - `lead-frio-impaciente-pe.yaml` (adversarial)
 - **Rubrics a aplicar** (de `specs/rubrics/`):
   - `voice-fidelity.md`
   - `no-hallucination.md`

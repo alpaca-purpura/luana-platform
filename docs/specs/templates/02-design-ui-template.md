@@ -10,15 +10,15 @@
 ---
 story_id: STORY_ID
 type: ui-story
-designer: /ux-ui
+designer: /po-ux  # histórico: era /ux-ui (no existe en paradigma v4)
 ux_version: 1
 last_modified: 2026-05-04T15:00Z
 ratified_by_chris: false
 links:
   spec: "01-spec.md"
-  story_yaml: "../../../../../product/stories/{module}/{story-id}.yaml"
-  brand_studio: "../../../../../product/modules/brand.md"          # si toca tokens marca
-  design_tokens: "frontend/src/lib/tokens.ts"
+  story_yaml: "../../product/stories/{module}/{story-id}.yaml"  # relativo a {brand}/docs/specs/templates/
+  brand_studio: "{brand}/docs/product/modules/brand.md"            # si toca tokens marca (path absoluto relativo al workspace)
+  design_tokens: "core/@luana/design-tokens"  # era frontend/src/lib/tokens.ts (stale)
 ---
 
 ## Resumen UX
@@ -143,4 +143,4 @@ User input
 
 ## Próximo paso
 
-`→ /architect lee 01+02 → spawn /architect-{be,fe} paralelo (architect-agentic si mixed) → produce 03-arch-* y 04-tickets.yaml`
+`→ /architect lee 01+02 → spawn /architect-{be,fe} paralelo (architect-agentic si mixed) → produce 03-arch-* y 06-tickets.yaml`

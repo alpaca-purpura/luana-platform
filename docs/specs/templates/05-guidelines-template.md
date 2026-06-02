@@ -30,8 +30,13 @@ required:
   - id: playwright-expert
     when: "test_construction_plan.playwright_required=true"
     purpose: "POM patterns, Clerk auth fixture, network mocking, smoke debugging"
+  - id: chrome-devtools-verify
+    when: "surface=FE o AGENTIC (live verification durante build/audit)"
+    purpose: "Live-verify en dev-app — ejercer acción real, leer Console + Network + logs (DoD Critical Rule #37)"
 
   # Rules obligatorias siempre
+  - id: ".claude/rules/definition-of-done-live-verify.md"
+    purpose: "DoD Critical Rule #37 — ninguna story done sin ejercer la acción real en dev-app + dod_evidence"
   - id: ".claude/rules/tenant-isolation.md"
     purpose: "Every query filter tenant_id"
   - id: ".claude/rules/backend-ddd.md o frontend-fsd.md"
@@ -158,3 +163,4 @@ reference_artifacts:
 
 - v1 2026-05-06 — paradigm v4 inicial (post pm-redesign)
 - v2 2026-05-19 — ★ v4.1 cement: must_load_skills enforceable + reference_artifacts explícito + paths brand-scoped
+- v3 2026-06-02 — DoD #37: agrega `chrome-devtools-verify` skill + `.claude/rules/definition-of-done-live-verify.md` a must_load_skills

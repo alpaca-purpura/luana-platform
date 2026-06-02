@@ -2,12 +2,12 @@
 
 > Owner: `/auditor` (Opus 4.8). Verdict por ticket.
 > Auditor lee `T-{n}-handoff.md` + `T-{n}-result.md` + corre tests él mismo (no se fía).
-> Self-fix permitido SOLO en triviales (lint, format, typo). Diseño/security/arch → escala.
+> Self-fix v4.2 — 3 carriles por NATURALEZA: **A** self-fix gate-verified (mecánico, self_fix_iter<=5) · **B** spawn dev-team TDD si requiere test nuevo · **C** escalate Chris si stake-asimétrico (security/tenant/PII/migration/engine). audit_iterations<=4 total, wall-clock<=30 min.
 
 ---
 ticket_id: T-1
 story_id: STORY_ID
-auditor_run: 1                                   # 1, 2, ... cap 2 → escala Chris
+auditor_run: 1                                   # 1..4 (audit_iterations<=4 total · self_fix_iter<=5 por Carril A)
 audited_at: 2026-05-04T17:30Z
 auditor_model: claude-opus-4-8
 verdict: APPROVED                                # APPROVED | CHANGES_REQUESTED | ESCALATED
@@ -60,7 +60,7 @@ $ /test-backend
 
 - ✅ Idempotente (`IF NOT EXISTS`).
 - ✅ No `sa.Enum()` en `create_table`.
-- ✅ Verificada con `make verify-migration-idempotency`.
+- ✅ Verificada ejecutando `alembic upgrade head` x2 en DB limpia (ver Cat 2 acceptance row A3). # `make verify-migration-idempotency` MISSING — create before use
 
 ### Cat 5 — Spanish neutro UI
 
@@ -133,10 +133,10 @@ dod_evidence:
 
 ## Self-fix log (si self_fix_applied = true)
 
-> Solo TRIVIALES: lint, format, typo. NUNCA diseño/seguridad/arch.
+> Carril A (self-fix gate-verified): lint, format, typo, import order — self_fix_iter<=5. Carril B si requiere test nuevo (spawn dev-team). Carril C si stake-asimétrico (security/tenant/PII/migration/engine/cross-brand → escala Chris).
 
 - ❌ N/A para esta auditoría
-- O: `fixed: ruff format src/modules/{m}/api/routes.py — 2 lines reformatted`
+- O: `fixed: ruff format {brand}/backend/src/modules/{brand}/{m}/api/routes.py — 2 lines reformatted`
 
 ## Findings
 
@@ -156,16 +156,16 @@ Razón: todos los acceptance criteria verificados, quality gates verde, code rev
 > O:
 > **CHANGES_REQUESTED** ❌
 > Razón: A2 falla (test_tenant_isolation devuelve 200 en vez de 403). Service no filtra tenant_id en repo.get(...). Ver finding #1.
-> Iteración 1/2.
+> Iteración 1/4 (audit_iterations<=4 · Carril A self_fix_iter<=5 si mecánico / Carril B si requiere test nuevo).
 
 > O:
 > **ESCALATED** 🚨
-> Razón: tras 2 iteraciones, dev no logra cumplir A4 (coverage). Sospecho que diseño del service requiere refactor mayor.
-> escalation_reason: "Service tiene complejidad ciclomática 18, requiere split en 2 use cases. Pasa fuera de mi autoridad."
+> Razón: tras audit_iterations cap alcanzado o finding stake-asimétrico (Carril C). Diseño del service requiere refactor mayor → fuera de autoridad del auditor.
+> escalation_reason: "Service tiene complejidad ciclomática 18, requiere split en 2 use cases. Escala a Chris (Carril C)."
 
 ## Output al orchestrator
 
 ```
 APPROVED -> ver T-{n}-review.md
-ticket state: audit-passed
+ticket state: reviewing  # → done vía /pm-{brand} merge (state: audit-passed es vocab MUERTO)
 ```

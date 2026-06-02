@@ -1,5 +1,5 @@
 # Service Story Template — endpoints/jobs sin UI
-# Vive en: docs/product/stories/{module}/{story-id}.yaml
+# Vive en: {brand}/docs/product/stories/{module}/{story-id}.yaml
 # Owner: /po · /pm
 # Eval policy: contract test + state_check + (opcional) load test
 

@@ -328,7 +328,7 @@ Happy path
 
 ## Próximo paso
 
-- Si `type=ui-story` → `/ux-ui` lee `01-spec.md` → produce `02-design-ui.md`
+- Si `type=ui-story` → ya producido por `/po-ux` (01-spec unificado); `/architect` consume este doc directo
 - Si `type=agentic-story` → `/ux-agentico` lee `01-spec.md` → produce `02-design-agentic.md`
 - Si `type=service-story` → skip UX → `/architect` directo
 
