@@ -65,3 +65,24 @@ La **modernización del harness** es enabler transversal que corre primero/al ma
 - Commit por pathspec de los fixes (sin commitear aún).
 - Prompt de sesión fresca para Wave 1 workflow.
 - Proceso de ciclo de vida de harnesses (deliverable final).
+
+## D-1..D-11 — RATIFICADAS por Chris (2026-06-01, "todas como recomendaste")
+
+| # | Resolución ratificada |
+|---|---|
+| D-1 | `model: opus` en skills → **mantener**, verificar campo contra doc en Wave 2 (no remover: campo desconocido se ignora) |
+| D-2 | `git-manager` → **RETIRAR** (deprecar: `disable-model-invocation:true`+`user-invocable:false` + banner → `commit-push`) |
+| D-3 | `ux-disruptivo` + `ux-flow-architect` + `02-design-ui-template.md` → **DEPRECAR los 3** (stub → `/po-ux`) |
+| D-4 | GitHub Actions → **seguir DEFERRED** + banners en docs que asumen GA activo |
+| D-5 | scripts faltantes → **HÍBRIDO**: crear los del DoD live-verify (`dev-app-up.sh`,`cloudflared-setup.sh`,`e2e-preflight.sh`) si faltan; resto `⏳ PENDING` honesto |
+| D-6 | cap líneas CLAUDE.md → **bumpear caps a 270/165** ahora + trim oportunista Wave 3 |
+| D-7 | migración paradigm ADR-010 (config/infra→cajas) → **DIFERIR** (pista B/Vitalia, NO harness) |
+| D-8 | audit docs históricos post nicolify-reset → **banners HISTORICAL in-place** (Wave 3) |
+| D-9 | dirs faltantes (observed-bugs, allowlist 6 brands) → **on-demand** |
+| D-10 | self-fix policy → **v4.2 canónico** (self_fix≤5, audit≤4), tachar v4.1 en todos lados |
+| D-11 | tessl `tessl__*` refs → **reemplazar por guía inline / `tessl-context`** (salvo que Chris decida instalar plugin/MCP Tessl) |
+
+### Nuevo bug detectado esta sesión (agregar a Wave 1/2)
+- `make install-hooks` ROTO en worktrees: asume `.git` directorio (`mkdir .git/hooks` falla). Fix: usar `git rev-parse --git-path hooks` para el dir común. Workaround usado hoy: `cp scripts/git-hooks/pre-commit "$(git rev-parse --git-path hooks)/"`.
+
+### Estado: silent-killers + voseo descope = COMMITEADOS (17bf3c62). Hook nuevo instalado en dir común (todos los worktrees).
