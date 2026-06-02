@@ -9,17 +9,17 @@ cap_target: null                                  # paradigma platform-level · 
 cap_change_type: new
 parent_story: null
 
-state: developing                                 # 2026-06-02 /dev-team arrancó build L1 (DAG T-flows-1..5). autonomous chain ratificado Chris (flujo excepcional).
-phase_workflow: BUILD_L1_DAG
+state: developing                                 # 2026-06-02 L1 build EN CURSO. T-flows-1+2 done+committed. T-flows-3/4/5 → HANDOFF a sesión fresca.
+phase_workflow: BUILD_L1_DAG_HANDOFF                # T-flows-3 (wire+delete mirror) + T-flows-4 (migraciones) + T-flows-5 (downstream+live-verify) pendientes
 last_artifact: "03-arch.md + 03-arch-{agentic,be}.md + 04-validators.yaml + 05-guidelines.md + 06-tickets.yaml + dispatch-plan.md (L1 accionable + L2 design-only)"
-last_modified: 2026-06-02T12:30:00-05:00
+last_modified: 2026-06-02T13:45:00-05:00
 ready_package_note: >
   Story platform de ENGINE INFRA, spike-derived (sin 01-spec/mockups/FE — NO aplican gates UI). Pasó de `refining`
   directo a `ready` SIN `refined` formal: es válido para una engine-spike-story autorizada por la proposal accepted
   (2026-06-02-durable-flows-engine.md). El "refinamiento" fue el spike + el drift map + ADR-013. Ready-package completo
   cubre L1 (build esta conversación: provider core/luana-core-flows + cablear 5 grafos + borrar mirror brand + migraciones
   + downstream regression vitalia+comunify + live-verify DoD #37) + L2 (DISEÑO: FlowCompiler/FlowDefinition/EP-19, build siguiente).
-next_action: "Ready-package L1 completo. Hand-off /dev-team (DAG secuencial T-flows-1..5; builder-agentic Opus para provider/wiring/verify, builder-backend Sonnet para scaffold/migraciones). Editar core/ AUTORIZADO por proposal accepted (citada en cada ticket engine). L2 = deferred-next-story (NO build). MATERIAL: L1 NO requiere bump langgraph (uv.lock ya resuelve langgraph 1.2.0 / checkpoint 4.1.0 → langgraph-checkpoint-postgres 3.1.0 compatible directo). Open questions O-1..O-3 builder-resolvable; O-4/O-5 Chris-decision NON-blocking L1."
+next_action: "★ HANDOFF a sesión fresca — SSoT del traspaso = `HANDOFF-L1-build.md`. Done+committed (wip/vitalia @ 98006df8): gobernanza + ready-package + T-flows-1 scaffold + T-flows-2 provider (13 tests verdes). PENDIENTE: T-flows-3 (wire 5 grafos IN-PLACE + DELETE mirror — NO sub-builders, se aíslan en worktree brancheado de main y rompen el DAG) + T-flows-4 (migraciones idempotentes 037/002) + T-flows-5 (downstream regression vitalia+comunify + live-verify DoD #37 con make dev-vitalia + psql) → auditor-agentic → /pm-luana close (proposal accepted→migrated + archive R2 en docs/archive). Gotchas críticos en HANDOFF §2: SCOPE_GATE_SKIP para core/, venv compartido (uv sync desde vitalia), libpq → psycopg[binary] o contenedor, table_prefix N/A, comunify dev-app bug (live-verify en vitalia)."
 ratified_by_chris: true                            # Chris ratificó vía (a) 2026-06-01: promover a ADR-platform
 spawned_at: 2026-06-01T16:00:00-05:00
 spawned_by: /pm-luana
