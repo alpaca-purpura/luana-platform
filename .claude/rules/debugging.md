@@ -9,24 +9,24 @@ Docker-compose ahora **per-brand** (post 2026-05-15 reorg, S-DOCKER-DEV-MULTIBRA
 
 ## Diagnóstico
 
-Containers naming convention: `luana-{brand}-{service}-dev` (ej: `luana-nicolify-backend-dev`, `luana-vitalia-frontend-dev`).
+Containers naming convention: `luana-dev-{brand}_{service}_dev-1` (ej: `luana-dev-nicolify_backend_dev-1`, `luana-dev-vitalia_frontend_dev-1`).
 
 ```bash
 WS=$(git rev-parse --show-toplevel)
 BRAND=nicolify   # o vitalia/comunify/lupulo
 
 # BE logs
-docker logs luana-${BRAND}-backend-dev --tail 100
-docker logs luana-${BRAND}-backend-dev --tail 200 2>&1 | grep -iE 'error|traceback|exception'
+docker logs luana-dev-${BRAND}_backend_dev-1 --tail 100
+docker logs luana-dev-${BRAND}_backend_dev-1 --tail 200 2>&1 | grep -iE 'error|traceback|exception'
 
 # FE logs
-docker logs luana-${BRAND}-frontend-dev --tail 100
+docker logs luana-dev-${BRAND}_frontend_dev-1 --tail 100
 
 # Health stack per brand
 docker compose -f ${WS}/${BRAND}/docker-compose.dev.yml ps
 
 # Migration (per brand alembic config)
-docker exec -t luana-${BRAND}-backend-dev bash -c "cd /app && alembic current"
+docker exec -t luana-dev-${BRAND}_backend_dev-1 bash -c "cd /app && alembic current"
 ```
 
 - TSC/lint/tests: ver CLAUDE.md (native, `${WS}/.venv/bin/...` o `npx`).

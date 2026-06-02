@@ -12,7 +12,7 @@ Before starting:
 - [ ] The page/feature you want to test exists in `frontend/src/app/**` and renders successfully under `dev-app.nicolify.com` or `localhost:3000`.
 - [ ] You can manually navigate to the URL in a browser (you know the route works).
 - [ ] You can describe in one sentence what the test asserts. ("The page renders with the expected H1 and the primary CTA is clickable.")
-- [ ] Dev container is running (`make dev` or `docker compose ps` shows `visionarias_client_dev` healthy).
+- [ ] Dev container is running (`make dev-{brand}` or `docker compose ps` shows `luana-dev-{brand}_frontend_dev-1` healthy).
 
 If any precondition is unmet, fix it before writing the test.
 

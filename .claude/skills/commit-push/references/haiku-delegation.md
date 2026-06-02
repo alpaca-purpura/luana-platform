@@ -1,10 +1,10 @@
 # Git Haiku Delegation — operational detail (moved from .claude/rules/ 2026-05-30)
 
-**Origen:** 2026-05-09 — análisis report.html. `git status/add/commit/push` = ~10709 Bash tool uses (top tool). Operación mecánica + repetitiva = waste de Opus 4.7.
+**Origen:** 2026-05-09 — análisis report.html. `git status/add/commit/push` = ~10709 Bash tool uses (top tool). Operación mecánica + repetitiva = waste de Opus 4.8.
 
 ## Regla cardinal
 
-Cuando orchestrator (Opus 4.7) llega a fase commit+push, MUST delegar la ejecución a un sub-agent Haiku 4.5 via Agent tool. Opus prepara el plan (qué archivos, qué mensaje, qué guardrails); Haiku ejecuta el git workflow.
+Cuando orchestrator (Opus 4.8) llega a fase commit+push, MUST delegar la ejecución a un sub-agent Haiku 4.5 via Agent tool. Opus prepara el plan (qué archivos, qué mensaje, qué guardrails); Haiku ejecuta el git workflow.
 
 **Exception:** delegación NO aplica si:
 
@@ -84,7 +84,7 @@ Antes de spawn Haiku worker, Opus orchestrator MUST:
    - Conventional Commits format (`feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`, `perf:`, `ci:`)
    - Body explica "why" (1-3 lines), no "what"
    - Referencias a tickets/origen si aplica
-   - `Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>` line al cierre
+   - `Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>` line al cierre
 4. **Reject pre-spawn si:**
    - User pidió commit pero hay archivos secret-likely (`.env*`, `credentials*`, `*.pem`) en stage list → STOP, escalate
    - Branch es legacy o desconocido (no wip/*, main, release/*) → STOP, switch first

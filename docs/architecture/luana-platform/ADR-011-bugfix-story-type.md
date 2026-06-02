@@ -33,7 +33,7 @@ Se agrega un cuarto tipo de story de primera clase: **`bugfix`** (lightweight).
 
 - `docs/process/lifecycle.md` § Tipos de story (+ subsección `bugfix` lite) — **SSoT**
 - `docs/process/capability-protocol.md` § Sección 3 (bugfix → cap_change_type fix/extend)
-- `docs/specs/templates/00-checkpoint-template.md` (`type` enum + `repro_verified` field)
+- `docs/specs/templates/checkpoint-template.md` (`type` enum + `repro_verified` field)
 - `.claude/skills/{po,po-ux,architect}/SKILL.md` (scope decision + ready lite)
 - `.claude/skills/{pm-vitalia,pm-comunify,pm-nicolify,pm-lupulo}/SKILL.md` + `_pm-brand-template/SKILL.md` (tabla tipos + auto-chain)
 - `CLAUDE.md` § SDD Level 3 (pointer)

@@ -1,6 +1,6 @@
 # T-{n}-review.md — Template (auditor verdict)
 
-> Owner: `/auditor` (Opus 4.7). Verdict por ticket.
+> Owner: `/auditor` (Opus 4.8). Verdict por ticket.
 > Auditor lee `T-{n}-handoff.md` + `T-{n}-result.md` + corre tests él mismo (no se fía).
 > Self-fix permitido SOLO en triviales (lint, format, typo). Diseño/security/arch → escala.
 
@@ -9,7 +9,7 @@ ticket_id: T-1
 story_id: STORY_ID
 auditor_run: 1                                   # 1, 2, ... cap 2 → escala Chris
 audited_at: 2026-05-04T17:30Z
-auditor_model: claude-opus-4-7
+auditor_model: claude-opus-4-8
 verdict: APPROVED                                # APPROVED | CHANGES_REQUESTED | ESCALATED
 self_fix_applied: false
 escalation_reason: null

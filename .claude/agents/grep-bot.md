@@ -3,7 +3,7 @@ name: grep-bot
 description: One-shot lookup worker for trivial codebase queries — symbol existence, file counts, regex matches, pattern occurrences in a diff. Cheap Haiku 4.5 replacement for spawning Sonnet Explore on questions that need grep+report, not reasoning. Auto-escalates to "RECOMMEND_SONNET_EXPLORE" if the query requires cross-file reasoning, semantic interpretation, or multi-step investigation. Use when caller knows EXACTLY what to grep but wants to keep the result out of its own context.
 tools: Read, Grep, Glob, Bash
 maxTurns: 10
-color: orange
+color: cyan
 model: haiku
 ---
 

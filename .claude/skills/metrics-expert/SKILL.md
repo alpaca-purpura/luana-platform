@@ -188,7 +188,7 @@ Checklist (in order):
 1. **Channel in registry?** → Check `STAGE_CHANNEL_MAP` in `channel_registry.py`
 2. **Provider connected?** → Check `PROVIDER_TO_CHANNEL_TYPES` + tenant's `channel_connections` table
 3. **Group mapping exists?** → Check `constants.py` for the `channel_type` → group mapping
-4. **Cache stale?** → `docker exec visionarias_redis redis-cli DEL "metrics:{tenant_id}:{stage}:last_30_days"`
+4. **Cache stale?** → `docker exec luana_redis_dev redis-cli DEL "metrics:{tenant_id}:{stage}:last_30_days"`
 5. **Stage service uses constants.py?** → Verify import, never local copy
 6. **Overview reads the group?** → Check `STAGE_GROUPS` in `constants.py` includes the group
 7. **Frontend filters include it?** → Check detail panel's `useMemo` filter for `groupKey`

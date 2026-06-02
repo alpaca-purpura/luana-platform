@@ -1,6 +1,6 @@
 ---
 name: dev-team
-description: "Developer team router v4 (Conv 2 — autonomous build, post pm-redesign 2026-05 Punto 4 + story-closure-gate 2026-05-18). Reads ready package (01-spec.md + 03-arch.md + 04-validators.yaml + 05-guidelines.md + 06-tickets.yaml) en {brand}/docs/product/stories/{story-id}/ state=ready. Itera ticket-por-ticket: implement → run validators (4 categorías: non_functional/functional/visual/agentic_eval) → fix targeted file → repeat hasta GREEN o cap_reached. Decide owner según owner_eligibility + production_code flag (R23). qwen-opencode/Sonnet preferido para BE/FE no-agentic + tests/docs sobre agentic. Opus 4.7 obligatorio para AGENTIC production code. Mantiene T-{n}-impl-log.md vivo. TDD obligatorio. On pickup: state=ready→developing. On all GREEN all tickets: state=developing→developed + AUTO-HANDOFF /auditor (default, salvo defer_audit:true en checkpoint con razón documentada). REFUSE pickup nueva story si current worktree tiene story en state ∈ {developing, developed, reviewing} sin defer_audit. On cap reached: state=developing→blocked, escalate. Activa cuando user dice: '/dev-team', 'toma ticket T-N', 'implementa T-N', 'arranca build', 'autonomous build'."
+description: "Developer team router v4 (Conv 2 — autonomous build, post pm-redesign 2026-05 Punto 4 + story-closure-gate 2026-05-18). Reads ready package (01-spec.md + 03-arch.md + 04-validators.yaml + 05-guidelines.md + 06-tickets.yaml) en {brand}/docs/product/stories/{story-id}/ state=ready. Itera ticket-por-ticket: implement → run validators (4 categorías: non_functional/functional/visual/agentic_eval) → fix targeted file → repeat hasta GREEN o cap_reached. Decide owner según owner_eligibility + production_code flag (R23). qwen-opencode/Sonnet preferido para BE/FE no-agentic + tests/docs sobre agentic. Opus 4.8 obligatorio para AGENTIC production code. Mantiene T-{n}-impl-log.md vivo. TDD obligatorio. On pickup: state=ready→developing. On all GREEN all tickets: state=developing→developed + AUTO-HANDOFF /auditor (default, salvo defer_audit:true en checkpoint con razón documentada). REFUSE pickup nueva story si current worktree tiene story en state ∈ {developing, developed, reviewing} sin defer_audit. On cap reached: state=developing→blocked, escalate. Activa cuando user dice: '/dev-team', 'toma ticket T-N', 'implementa T-N', 'arranca build', 'autonomous build'."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
 model: opus
 ---
@@ -192,11 +192,11 @@ Filtrar tickets con `state: ready` (deps cumplidas). Decidir owner según `owner
 | Cross-module shared | true | claude-sonnet o opus | complexity |
 
 **Reglas hard:**
-- AGENTIC ticket + `production_code: true` → SIEMPRE Opus 4.7. Esto se ejecuta en MISMA sesión Claude Code (tú como `/dev-team` con Opus).
+- AGENTIC ticket + `production_code: true` → SIEMPRE Opus 4.8. Esto se ejecuta en MISMA sesión Claude Code (tú como `/dev-team` con Opus).
 - AGENTIC ticket + `production_code: false` → Sonnet OK. Tests/docs/tooling
   sobre `modules/{copilot,sales_agent}/` no requieren Opus reasoning.
 - Si no estás en Opus y ticket=AGENTIC + production_code=true → STOP, escala
-  Chris: "necesito Opus 4.7 para este ticket. Cambiame de modelo."
+  Chris: "necesito Opus 4.8 para este ticket. Cambiame de modelo."
 
 Update `06-tickets.yaml` ticket `T-{n}`:
 ```yaml
@@ -349,7 +349,7 @@ Mientras qwen trabaja → tú NO interfieres. Cuando termina:
 
 ### Step 2B — Owner = claude-opus (AGENTIC production code)
 
-Spawnás agent `builder-agentic` (Opus 4.7) via Agent tool. REQUIRED: pasá `<brand>: {brand}` en prompt.
+Spawnás agent `builder-agentic` (Opus 4.8) via Agent tool. REQUIRED: pasá `<brand>: {brand}` en prompt.
 
 ```
 Agent({
@@ -663,7 +663,7 @@ Si 2 tickets independientes (no `depends_on`) están `ready` simultáneamente:
 |---|---|---|
 | Implementar BE ticket | `builder-backend` (Sonnet/Opus) | DDD/FastAPI/SA patterns embedded en su system prompt |
 | Implementar FE ticket | `builder-frontend` (Sonnet/Opus) | FSD-Lite/React Query/RHF patterns embedded |
-| Implementar AGENTIC ticket production_code:true | `builder-agentic` (Opus 4.7 OBLIGATORIO) | LangGraph + prompt cache + voice + observability |
+| Implementar AGENTIC ticket production_code:true | `builder-agentic` (Opus 4.8 OBLIGATORIO) | LangGraph + prompt cache + voice + observability |
 | Run quality gates + write gate-output.json | `gate-runner` (Haiku) | Specialized para ruff+pytest+playwright+JSON output |
 | Build CONTEXT-BRIEF.md (Phase 0 pre-flight) | `context-builder` (Haiku) | Specialized compression spec+arch+rules → 5-8k tokens |
 | Validate CONTEXT-BRIEF.md adversarially | `context-validator` (Haiku) | Specialized re-scan + spot-check + verdict |

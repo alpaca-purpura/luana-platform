@@ -1,7 +1,7 @@
 # 03-arch-{be|fe|agentic}.md — Template
 
 > Owner: `/architect-{be|fe|agentic}`. Documento técnico de UNA capa.
-> Lo escribe el sub-architect correspondiente. El orchestrator `/architect` los reúne en `04-tickets.yaml`.
+> Lo escribe el sub-architect correspondiente. El orchestrator `/architect` los reúne en `06-tickets.yaml`.
 
 ---
 story_id: STORY_ID
@@ -87,7 +87,7 @@ alembic/versions/XXXX_{description}.py
 - `tests/modules/{m}/test_{name}_service.py` — domain logic + happy/negative
 - `tests/modules/{m}/test_{name}_endpoint.py` — contract test + tenant isolation
 - `tests/modules/{m}/test_{name}_migration.py` — migration idempotency
-- Coverage minimum: 60% del módulo (no debe bajar)
+- Coverage minimum: 43% (workspace threshold, no debe bajar)
 
 ## Surface diff (FE)
 
@@ -110,7 +110,7 @@ frontend/src/features/{module}/
 └── config/{module}.config.ts
 ```
 
-### Stado / data flow
+### Estado / data flow
 
 - React Query keys: `['{module}', '{action}', tenant_id]`
 - Mutations: `use{Module}{Action}Mutation` con invalidate keys

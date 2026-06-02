@@ -8,7 +8,7 @@
 ticket_id: T-1
 story_id: STORY_ID
 state: building                                  # ver process/ticket-states.md
-assigned_to: qwen-opencode                       # qwen-opencode | claude-opus-4-7 | claude-sonnet-4-6
+assigned_to: qwen-opencode                       # qwen-opencode | claude-opus-4-8 | claude-sonnet-4-6
 started_at: 2026-05-04T16:00Z
 last_update: 2026-05-04T16:23Z
 current_step: "Implementando service layer"
@@ -94,6 +94,6 @@ $ /test-backend
 ## Si bloqueas
 
 Si encontraste un bloqueo que NO podés resolver:
-1. Estado ticket → `blocked` en `04-tickets.yaml`
+1. Estado ticket → `blocked` en `06-tickets.yaml`
 2. Documentá razón en `blocker:` arriba
 3. Salida al orchestrator: `blocked -> ver T-{n}-impl-log.md`

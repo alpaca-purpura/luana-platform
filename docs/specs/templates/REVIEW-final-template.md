@@ -8,7 +8,7 @@ story_id: STORY_ID
 sprint: SN
 pi: PI-N
 audited_at: 2026-05-04T18:30Z
-auditor_model: claude-opus-4-7
+auditor_model: claude-opus-4-8
 verdict: APPROVED                                # APPROVED | CHANGES_REQUESTED
 ready_to_merge: true
 ---
@@ -18,7 +18,7 @@ ready_to_merge: true
 | Ticket | Tipo | Owner | Verdict | SHA |
 |---|---|---|---|---|
 | T-1 | backend | qwen-opencode | APPROVED | abc1234 |
-| T-2 | agentic | claude-opus-4-7 | APPROVED | def5678 |
+| T-2 | agentic | claude-opus-4-8 | APPROVED | def5678 |
 | T-3 | frontend | qwen-opencode | APPROVED | 9876fed |
 
 ## End-to-end verification

@@ -124,7 +124,7 @@ Stories de outcomes distintos = worktrees distintos. Razón: cero cohesión sem�
 - `.claude/skills/auditor/SKILL.md` — frontmatter + Phase D + Step 5 merge handoff
 - `.claude/skills/pm-{vitalia,nicolify,comunify,lupulo,luana,saasora,inmoflow,retailly,fixia,guestly,fitflow}/SKILL.md` — bootstrap Step 0
 - `.claude/skills/_pm-brand-template/SKILL.md` — scaffold incluye gate
-- `docs/specs/templates/04-tickets-template.yaml` — `gherkin_coverage` field
+- `docs/specs/templates/06-tickets-template.yaml` — `gherkin_coverage` field
 - `docs/specs/templates/07-merge-template.md` — 5 secciones cementadas
 - `scripts/git-hooks/pre-commit` — Section 12 story-closure-gate
 - `scripts/git/new-session.sh` — `--story-id` flag required

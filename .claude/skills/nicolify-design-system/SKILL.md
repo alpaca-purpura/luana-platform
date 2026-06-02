@@ -66,7 +66,7 @@ Los 3 niveles de tab (SSoT: `nicolify/docs/architecture/SHELL-DESIGN-CONTRACT.md
 - **TopBar global**: `TopBarGlobal.tsx` + `LogoMark.tsx` + `TenantSwitcher.tsx` (agencia/tenant) + `ThemeToggle.tsx`.
 - **Layout**: `ShellOrganismLayout.tsx` — dual-mode **50/50 con splitter resizable de 3 estados** (chat-collapsed / narrow / 50-50). NO 50/50 hardcoded (race condition: learning `2026-05-23-shell-layout-race-condition-defer` → usar `useGroupRef()` + `setLayout()` imperativo). El chunk client va en `dynamic({ssr:false})` con skeleton **store-free**.
 
-**Routing** (SSoT: `nicolify/frontend/src/lib/routing/shell-routes.ts` **(a crear en R0)** → `AGENT_CATALOG` + `AGENT_SUBTABS` + `AGENT_SUBSUBTABS`):
+**Routing** (SSoT: `nicolify/frontend/src/lib/shell-routes.ts` **(a crear en R0)** → `AGENT_CATALOG` + `AGENT_SUBTABS` + `AGENT_SUBSUBTABS`):
 ```
 app/[tenantId]/(shell-organism)/[agent]/[subtab]/[subsubtab]/page.tsx
 ```
@@ -148,6 +148,6 @@ Nicolify NO tiene HIPAA/PHI. En su lugar, los guardrails agénticos (SSoT: `nico
 - `nicolify/docs/product/stories/nicolify-r0-shell-organism/` — design-story + nav-tree + fe-architecture-review
 - `nicolify/.claude/rules/agent-revenue-engine.md` — guardrails autonomía + tier + token economy
 - `core/@luana/{ui-kit,format,hooks,design-tokens,api-client,extension-sdk}/` — engine FE compartido (consumir)
-- **Vitalia (brand de referencia, worktree `~/Proyectos/luana-vitalia/`):** `vitalia/docs/architecture/{SHELL-DESIGN-CONTRACT.md, ADR-vitalia-003/004/006, design-system.md}` + `vitalia/.claude/skills/vitalia-design-system/SKILL.md` (este skill es su análogo) + `vitalia/frontend/src/{app/globals.css, lib/routing/shell-routes.ts, components/shared/shell-organism/}`
+- **Vitalia (brand de referencia, worktree `~/Proyectos/luana-vitalia/`):** `vitalia/docs/architecture/{SHELL-DESIGN-CONTRACT.md, ADR-vitalia-003/004/006, design-system.md}` + `vitalia/.claude/skills/vitalia-design-system/SKILL.md` (este skill es su análogo) + `vitalia/frontend/src/{app/globals.css, lib/shell-routes.ts, components/shared/shell-organism/}`
 - `docs/architecture/luana-platform/ADR-008-luana-core-ui-shadcn-cli-pattern.md` — futuro hogar de los organismos del shell (lift post-R0)
 - `.claude/rules/frontend-fsd.md` · `.claude/rules/anti-duplication.md` · `.claude/rules/spanish-text.md`

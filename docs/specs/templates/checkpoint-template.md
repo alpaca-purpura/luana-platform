@@ -24,7 +24,7 @@ spawned_at: 2026-05-06T14:00:00Z
 spawned_by: /pm
 parallel_safe: true                               # ¿otra sesión puede tocar artefactos de esta story sin conflict?
 blocked_reason: null
-audit_iterations: 0                               # cap 2 → escala automática
+audit_iterations: 0                               # cap 4 → escala automática
 defer_audit: false                                # escape valve story-closure-gate
 defer_audit_reason: null
 parked_reason: null                               # mandatory cuando state=parked (≥10 chars)
@@ -44,8 +44,8 @@ hotfix_metadata:                                  # opcional, hot-fix tickets (R
 | 3 | `refined` | Spec + UX/diseño ratificados Chris. Listo para architects | `/pm` cierra | ≤ 5 |
 | 4 | `ready` | Paquete autocontenido completo (4 archivos canónicos) | `/architect` | ≤ 5 |
 | 5 | `developing` | Autonomous build activo iterando vs validators | opencode/Sonnet/Opus (R23) | ≤ 3 |
-| 6 | `developed` | Validators GREEN. Build cerrado, awaiting QA | `/dev-team` | ≤ 2 |
-| 7 | `reviewing` | Auditor QA en curso (Opus C1-C3 + Sonnet tests) | `/auditor` | ≤ 2 |
+| 6 | `developed` | Validators GREEN. Build cerrado, awaiting QA | `/dev-team` | ≤ 1 |
+| 7 | `reviewing` | Auditor QA en curso (Opus C1-C3 + Sonnet tests) | `/auditor` | ≤ 1 |
 | 8 | `done` | Auditor APPROVED + merge + capability promovida + docs | `/pm` | rolling 90d |
 | 9 | `parked` | De-prioritized, NO abandonado | Chris | ∞ |
 | 10 | `dropped` | Won't do (terminal) | Chris | ∞ |
@@ -79,7 +79,7 @@ hotfix_metadata:                                  # opcional, hot-fix tickets (R
 
 - Si `parallel_safe=false`, otra sesión NO debe tocar artefactos hasta `next_action` complete.
 - Si `blocked_reason != null`, ningún agent procede hasta Chris/PM resuelva.
-- `audit_iterations >= 2` → escala automática a Chris (no más self-fix loops).
+- `audit_iterations >= 4` → escala automática a Chris (no más self-fix loops).
 - Para hot-fix tickets (R26): `hotfix_metadata.repro_verified` MUST ser `true` antes spawn builder.
 
 ## Capability lineage (v2 cement 2026-05-27)

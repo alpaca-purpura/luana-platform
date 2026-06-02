@@ -87,8 +87,8 @@ Idéntico paradigm v4 de Luana core. Detalle: `docs/process/pm-redesign-2026-05.
 | 3 | `refined` | Spec + UX/diseño ratificados Chris | `/pm-saasora` cierra | ≤ 5 |
 | 4 | `ready` | Paquete autocontenido (`03-arch` + `04-validators` + `05-guidelines` + `06-tickets`) | `/architect` cierra | ≤ 5 |
 | 5 | `developing` | Autonomous build activo | `/dev-team` | ≤ 3 |
-| 6 | `developed` | Validators GREEN | `/dev-team` | ≤ 2 |
-| 7 | `reviewing` | Auditor QA | `/auditor` | ≤ 2 |
+| 6 | `developed` | Validators GREEN | `/dev-team` | ≤ 1 |
+| 7 | `reviewing` | Auditor QA | `/auditor` | ≤ 1 |
 | 8 | `done` | Auditor APPROVED + merge + capability promovida | `/pm-saasora` | rolling 90d |
 | 9 | `parked` | De-prioritized | Chris | ∞ |
 | 10 | `dropped` | Won't do | Chris | ∞ |

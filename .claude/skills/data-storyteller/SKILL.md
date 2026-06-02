@@ -71,7 +71,7 @@ Announce the detected mode to the user before proceeding.
    ```
 4. Audit installed chart libraries:
    ```
-   Bash: docker exec -t visionarias_client_dev npm ls 2>/dev/null | grep -iE "chart|recharts|visx|tremor|nivo|apex"
+   Bash: docker exec -t luana-dev-{brand}_frontend_dev-1 npm ls 2>/dev/null | grep -iE "chart|recharts|visx|tremor|nivo|apex"
    Glob: frontend/src/components/ui/chart*.tsx
    ```
 

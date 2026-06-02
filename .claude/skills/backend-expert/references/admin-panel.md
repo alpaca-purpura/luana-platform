@@ -58,4 +58,4 @@ El panel rompía en cada refactor cross-module porque sus imports viven dentro d
 - `memory: 1024M` (antes 128M → OOM silencioso al navegar).
 - `cpus: '1.0'` (antes 0.50 → renders lentos).
 
-Si vuelve a hang sin error: `docker events --filter container=visionarias_admin_dev` → si aparece `oom`, subir `memory:`.
+Si vuelve a hang sin error: `docker events --filter container=luana-dev-{brand}_admin_dev-1` → si aparece `oom`, subir `memory:`.

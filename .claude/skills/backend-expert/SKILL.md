@@ -1,6 +1,6 @@
 ---
 name: backend-expert
-description: "Implements FastAPI endpoints, creates SQLAlchemy 2.0 async models, generates idempotent Alembic migrations, structures bounded contexts following DDD (domain→infrastructure→application→api), and produces typed Pydantic v2 DTOs. Runs inside Docker (visionarias_brain_dev). Use when: 'create an endpoint', 'modify the backend', 'create a new entity', 'update a service', 'database logic', 'fix a backend bug', 'add a migration', 'create a repository', 'agrega un campo', 'nueva ruta API', 'corrige el servicio', or any Python/FastAPI/SQLAlchemy/Alembic task."
+description: "Implements FastAPI endpoints, creates SQLAlchemy 2.0 async models, generates idempotent Alembic migrations, structures bounded contexts following DDD (domain→infrastructure→application→api), and produces typed Pydantic v2 DTOs. Runs inside Docker (luana-dev-{brand}_backend_dev-1). Use when: 'create an endpoint', 'modify the backend', 'create a new entity', 'update a service', 'database logic', 'fix a backend bug', 'add a migration', 'create a repository', 'agrega un campo', 'nueva ruta API', 'corrige el servicio', or any Python/FastAPI/SQLAlchemy/Alembic task."
 ---
 
 # SOP — Flujo de Trabajo

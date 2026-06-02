@@ -16,7 +16,7 @@ allowed-tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch, WebFetch
 date -u +%Y-%m-%d   # captura para WebSearch + Research Notes
 ```
 
-Knowledge cutoff Opus 4.7 = Jan 2026. Para LangGraph 2.0 / deepagents / Anthropic prompt caching state-of-the-art post-cutoff → WebSearch con `{current_year}` interpolated o WebFetch canonical docs.
+Knowledge cutoff Opus 4.8 = Aug 2025. Para LangGraph 2.0 / deepagents / Anthropic prompt caching state-of-the-art post-cutoff → WebSearch con `{current_year}` interpolated o WebFetch canonical docs.
 
 ## Skills cargados (HARD GATE)
 
@@ -208,7 +208,7 @@ async def call_llm_with_observability(client, model, messages, tenant_id, conver
 
 ### Step 3 — Default-flip detection
 
-Si tu propuesta toca `core/config.py` defaults agentic-controlled (`USE_OUTBOX_PATTERN_*`, `LITELLM_PROXY_ENABLED`, `USE_DEEPAGENTS_*`):
+Si tu propuesta toca `core/config.py` defaults agentic-controlled (`USE_OUTBOX_PATTERN_*`, `USE_DEEPAGENTS_*`):
 
 → Llenar § 9.5 Tests audit en 03-arch-agentic.md (igual que /architect-be).
 

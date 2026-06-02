@@ -17,7 +17,7 @@ estimate_hours: 2
 owner_eligibility:
   qwen_opencode: true                            # acepta opencode/qwen
   claude_sonnet: true                            # acepta Claude Code Sonnet
-  claude_opus_required: false                    # FORZAR Opus 4.7 (true para AGENTIC)
+  claude_opus_required: false                    # FORZAR Opus 4.8 (true para AGENTIC)
 assigned_to: null                                # rellena /dev-team al tomar
 assigned_at: null
 ---
@@ -77,7 +77,7 @@ cd backend
 .venv/bin/ruff format --check src/modules/{m}/ tests/modules/{m}/
 .venv/bin/pytest tests/architecture/ -v --override-ini="addopts="
 .venv/bin/pytest tests/modules/{m}/ --cov=src/modules/{m} --cov-report=term-missing -x -q
-docker exec visionarias_brain_dev alembic upgrade head
+docker exec luana-dev-{brand}_backend_dev-1 alembic upgrade head
 ```
 
 O atajo: `/test-backend` slash-skill.

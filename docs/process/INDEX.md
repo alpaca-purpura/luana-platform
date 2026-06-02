@@ -6,7 +6,7 @@
 
 | Archivo | Owner | Cuándo leer |
 |---|---|---|
-| `migration-plan.md` | `/pm` | Resume migración SDD; consultar si phase incompleta |
+| `lifecycle.md` | `/pm` | Roadmap de fases SDD (consultar si una fase está incompleta) |
 | `ticket-states.md` | `/architect` + `/dev-team` + `/auditor` | Antes mover ticket de estado |
 | `checkpoint-protocol.md` | todos | Resume cualquier sesión |
 | `parallel-sessions-protocol.md` | todos | Multi-instancia Claude (M1-M8) |

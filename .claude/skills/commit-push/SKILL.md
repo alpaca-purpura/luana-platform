@@ -46,7 +46,7 @@ Reject pre-spawn si:
 Conventional Commits format:
 - Subject: `<type>(<scope>): <desc>` (≤ 70 chars). Types: feat/fix/refactor/docs/test/chore/perf/ci.
 - Body: 1-3 lines explican "why", no "what". Referencias tickets/origen si aplica.
-- Footer: `Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>`
+- Footer: `Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>`
 
 ### Step 3 — Spawn Haiku worker
 

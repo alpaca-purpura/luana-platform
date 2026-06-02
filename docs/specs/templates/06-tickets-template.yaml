@@ -274,7 +274,7 @@ T2:
   owner_eligibility:
     qwen_opencode: false                          # ⛔
     claude_sonnet: false                          # ⛔
-    claude_opus_required: true                    # ✅ Opus 4.7 OBLIGATORIO (production_code AGENTIC HARD rule)
+    claude_opus_required: true                    # ✅ Opus 4.8 OBLIGATORIO (production_code AGENTIC HARD rule)
   priority: 1
   estimate_hours: 3
   decisions_applicable: [D5, A2, A4]              # ⚠️ R6 — agentic decisions (slot architecture, voice fidelity, cost budget)

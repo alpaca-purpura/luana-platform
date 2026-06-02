@@ -42,7 +42,7 @@ Copilot = "Claude Code de marketing": deep_agent harness sobre LangGraph, discov
 7. copilot_routing_log (tier/classifier/confidence/tools_available)
 8. copilot_mutation_journal (cambios via propose_field_updates)
 9. Streamlit admin /trazas /copilot-routing /costo-copilot /copilot-quality /marketing-kb
-10. docker logs visionarias_brain_dev SOLO si trazas no alcanzan
+10. docker logs luana-dev-{brand}_backend_dev-1 SOLO si trazas no alcanzan
 ```
 
 Queries esenciales: ver `.claude/rules/copilot-resilience.md` §"Debug copilot".
@@ -339,13 +339,13 @@ cd backend && .venv/bin/pytest tests/architecture/test_copilot_*.py tests/archit
 RUN_LLM_JUDGE=1 .venv/bin/pytest tests/quality/golden/ -q
 
 # Trazas de una conv específica
-docker exec visionarias_postgres psql -U postgres -d visionarias_logs -c "
+docker exec luana-dev-luana_postgres_dev-1 psql -U postgres -d visionarias_logs -c "
 SELECT created_at, event_type, name, status, duration_ms, LEFT(data::text, 300)
 FROM copilot_trace_event WHERE conversation_id = ':conv_id'
 ORDER BY created_at;"
 
 # Cost por ciclo billing 25-25
-docker exec visionarias_postgres psql -U postgres -d visionarias_logs -c "
+docker exec luana-dev-luana_postgres_dev-1 psql -U postgres -d visionarias_logs -c "
 SELECT compute_cycle_start(:tenant_id, CURRENT_DATE) AS cycle_start,
        SUM(cost_usd) AS cycle_cost, COUNT(*) AS calls
 FROM copilot_llm_call
