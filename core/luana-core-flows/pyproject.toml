@@ -16,3 +16,12 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/luana_core_flows"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.pytest.ini_options]
+markers = [
+    "integration: requires real Postgres + libpq (dev stack); skipped natively when unavailable",
+]
