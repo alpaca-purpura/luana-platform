@@ -63,15 +63,72 @@ El compose usa project compartido `luana-dev`. El container `cloudflared` + FE/B
 
 **Trampa estrella prohibida:** declarar algo verificado porque un GET dio 200 (caso lisa-marca: suite mockeaba el backend → falso verde → 3 bugs a "LIVE"). Una e2e que **mockea el backend del surface bajo prueba** NO cuenta como live-verify.
 
+## DoD endurecida (cement 2026-06-01) — verificación por naturaleza + anti-burbuja + demo manual
+
+> **Origen:** Chris detectó el patrón recurrente *"digo listo, entrás y hay una burbuja de error de Next"*. **Causa raíz:** `GET 200` mide SOLO el servidor; la burbuja vive en el **cliente DESPUÉS de la hidratación** (60-80% de la experiencia). Research 2026 (Checkly, alexop.dev, Fowler, Cucumber/Example-Mapping, Katalon) → este modelo. Decisiones ratificadas por Chris 2026-06-01: demo manual para toda story user-reachable · verificación técnica avanzada opt-in por naturaleza · fixture anti-burbuja implementado.
+
+### 1 · Clasificar la verificación por NATURALEZA (lo declara `/architect` en `04-validators § verification_nature`)
+
+- **técnica** (sin UI, sin superficie user-reachable): service/domain logic, migración, cálculo, ETL → **gates automáticos** (§2). NO requiere demo manual.
+- **funcional** (user-reachable: página, flujo, mensaje visible, email, endpoint que la UI llama) → e2e que cubre **cada regla de negocio** (§4) + **gate anti-burbuja** (§3) + **demo manual** de Chris (§5).
+- **ambas** → aplica todo.
+
+### 2 · Verificación TÉCNICA — gates automáticos, en orden rápido→lento
+
+Baseline SIEMPRE (bloqueante · architect declara · dev ejecuta · auditor verifica): `tsc --noEmit --strict` / `mypy --strict` → `ruff check` / `eslint --max-warnings 0` → arch-fitness (`pytest tests/architecture/`) → unit/integration. **Opt-in POR NATURALEZA** (architect activa según la capability, NO en toda story): **Schemathesis** (`schemathesis run --checks all .../openapi.json`) → todo endpoint nuevo (atrapa el contrato FE↔BE roto ANTES del runtime de Next) · **Hypothesis** (`@given`) → domain logic con invariantes (pricing/PHI/scheduling/validaciones) · **mutmut** (mutation, pre-merge, módulos críticos) → cuando "tests pasan pero no matan mutantes".
+
+> **"Tests verdes" ≠ done.** Coverage (43%) es el PISO, no el objetivo (Fowler). El bar: *¿un test fallaría si revierto el comportamiento principal?* Si todos son mocks sobre mocks → CHANGES_REQUESTED.
+
+### 3 · El GATE ANTI-BURBUJA (runtime-error gate) — funcional, OBLIGATORIO ★
+
+El `GET 200` oculta el error de cliente. Toda superficie FE se verifica con el fixture Playwright canónico `{brand}/frontend/e2e/fixtures/base.ts` que, durante la acción real, colecta y asserta vacío al teardown:
+
+- `page.on('pageerror')` → excepción JS no atrapada = **la burbuja de Next**
+- `page.on('console')` `type==='error'` (allowlist que SOLO shrink) → React / **hidratación** (`Hydration failed…`)
+- `page.on('response')` status ≥400 en `/api/` → 500 que la UI traga en un catch
+- `expect(page.locator('nextjs-portal')).toHaveCount(0)` → overlay de Next NO en DOM
+
+Todos los specs importan de `base.ts`, **NO** de `@playwright/test`. + script post-acción `scripts/verify-no-backend-errors.sh`: `docker logs {brand}_backend_dev-1 --since $TS | grep -E 'ERROR|Traceback|Exception'` → falla si el backend logueó traceback aunque la UI no lo muestre. La live-verify con **Chrome DevTools MCP** DEBE leer el panel **Console** (0 errores rojos) + confirmar overlay ausente, además del efecto.
+
+### 4 · Cobertura de REGLAS DE NEGOCIO — funcional
+
+Cada regla de `01-spec.md § Business rules` → scenario Gherkin con tag `@rule-ID` → test (happy + ≥1 negative/edge · Example Mapping). El auditor Phase D produce la **gherkin-matrix** (regla → scenario → PASS/FAIL/**MISSING**): cualquier `MISSING` = regla sin test → CHANGES_REQUESTED, NO `done`.
+
+### 5 · Gate de DEMO MANUAL (product demo · Chris = sign-off final) ★
+
+Para toda story **funcional/user-reachable** (técnico puro → auto-skip con razón): recién cuando §2+§3+§4 pasan, el dev produce `demo-script.md` en la story (4 secciones: **SETUP** contra el MISMO dev-app que usó el dev / **HAPPY PATH** numerado en lenguaje de usuario / **EDGE CASES** = reglas de negocio negativas / **TEARDOWN**), derivado de los scenarios Gherkin (no escrito aparte). Claude **le avisa a Chris** → Chris ejecuta el guion → firma:
+
+```yaml
+demo_required: true        # árbol: toca frontend/ o endpoint con consumer FE → true; solo tests/migrations/config/core sin cambio de contrato → false (+ demo_skip_reason)
+demo_signoff:
+  signed_by: Chris
+  date: <YYYY-MM-DD>
+  result: APPROVED | APPROVED_WITH_NOTES | REJECTED
+  notes: "..."
+  open_items: [{item, severity, disposition}]
+```
+
+`/pm-{brand}` Fase F: **REFUSE merge→done** si `demo_required: true` y `demo_signoff.result ∉ {APPROVED, APPROVED_WITH_NOTES(severity≤medium)}`. El sign-off de Chris (negocio) es SEPARADO del auditor (técnico) — **ambos** requeridos.
+
+### 6 · MODIFICACIÓN de feature (no rehacer todo)
+
+La story que modifica algo existente NO reescribe la suite. 3 niveles (architect los declara en `04-validators § regression_guard`):
+
+- **regression_guard**: los tests de comportamientos NO tocados siguen verdes **sin modificarse** (si cambian → revisión explícita, nunca mecánica).
+- **coverage_update**: los tests del comportamiento cambiado se actualizan **revisando el diff** del snapshot/characterization — nunca `vitest -u`/`--update-snapshots` mecánico (= "documentación mentirosa").
+- **new_coverage**: tests nuevos para lo nuevo (TDD RED primero). Bug fix → test que reproduce el bug PRIMERO (RED), luego fix (GREEN).
+
+Blast radius por dependencias (TIA `tach`); `make ci-parity` sigue siendo el gate final. El auditor verifica que los `regression_guard` quedaron intactos y que los snapshots actualizados tienen diff revisado por humano.
+
 ## Obligación por skill (quién verifica qué)
 
 | Skill | Obligación live-verify |
 |---|---|
-| **`/dev-team`** (builder-*) | **Auto-verificación obligatoria** antes de cerrar `developing → developed`: por cada scenario que toca una superficie user-reachable, ejercer la acción real en dev-app (Chrome MCP) + dejar el golden Playwright. Registrar evidencia en `checkpoint.md`. NO cerrar por "tests verdes" si los tests mockean el backend. |
-| **`/auditor`** | Phase D: además de la gherkin-matrix, **ejerce los scenarios críticos live** o exige la evidencia. Si aplica Carril A self-fix sobre superficie user-reachable → re-verificar live antes de audit-passed. Sin evidencia live → CHANGES_REQUESTED. |
-| **`/architect`** | **Opcional pero recomendado**: si necesita confirmar comportamiento actual antes de diseñar, inspecciona en vivo contra dev-app en vez de asumir. Declara el `playwright_visual_scope` en `04-validators.yaml` apuntando a dev-app. |
-| **`/po`, `/po-ux`** | Cuando quieren revisar visualmente algo que ya corre para refinar/diseñar sobre lo real → abrir dev-app con Chrome MCP. Herramienta de inspección, no gate. |
-| **`/pm-{brand}`** | Owner del **gate**: en `merge` hace REFUSE si la evidencia live falta o es insuficiente. No verifica él mismo; exige la evidencia producida por dev-team/auditor. |
+| **`/architect`** | Clasifica la **naturaleza** (técnica/funcional/ambas) de cada capability y declara en `04-validators.yaml`: `verification_nature`, `technical_gates` (baseline + opt-in Schemathesis/Hypothesis/mutmut por naturaleza), `business_rules` matrix (regla→`@tag`→scenario), `demo_required`, `regression_guard`, `runtime_error_gate`. Si necesita confirmar comportamiento actual, inspecciona live contra dev-app (no asume). |
+| **`/dev-team`** (builder-*) | Antes de cerrar `developing → developed`: corre los **gates técnicos** (§2); para superficies FE implementa/usa `base.ts` (**gate anti-burbuja** §3) + corre `verify-no-backend-errors.sh`; ejerce la acción real en dev-app con Chrome MCP **leyendo Console + Network + logs**; cubre cada **regla de negocio** (§4); en modificaciones respeta el `regression_guard` (§6); produce `demo-script.md` para stories funcionales. Registra `dod_evidence` en `checkpoint.md`. NO cierra por "tests verdes" mockeados. |
+| **`/auditor`** | Phase D: produce la **gherkin-matrix** (cualquier `MISSING` bloquea); verifica que los specs importan `base.ts` (no `@playwright/test` directo), que el `regression_guard` quedó intacto, que los snapshots actualizados tienen diff revisado, y que existe `demo-script.md` si `demo_required`. Ejerce scenarios críticos live o exige evidencia. Sin evidencia / con MISSING → CHANGES_REQUESTED. |
+| **`/po`, `/po-ux`** | Co-escriben la sección `## Business rules` (bullets) + `## Demo script` (lenguaje de usuario) del `01-spec.md`. Para revisar algo que ya corre → abrir dev-app con Chrome MCP (inspección, no gate). |
+| **`/pm-{brand}`** | Owner del **gate**: en `merge` REFUSE si falta `dod_evidence`, si la gherkin-matrix tiene `MISSING`, o si `demo_required: true` y `demo_signoff.result ∉ {APPROVED, APPROVED_WITH_NOTES(severity≤medium)}`. No verifica él mismo; exige la evidencia de dev-team/auditor **+ el sign-off de Chris**. |
 
 ## Registro obligatorio (evidencia, no palabra)
 
@@ -87,12 +144,12 @@ dod_evidence:
 verified_at: 2026-05-31
 ```
 
-Sin `dod_live_verified: true` + `dod_evidence` (writes ejercidos + efecto observado), la story **NO** pasa a `done`.
+Sin `dod_live_verified: true` + `dod_evidence` (writes ejercidos + efecto observado), la story **NO** pasa a `done`. Para stories funcionales (`demo_required: true`) además se registra `demo_signoff` (§5).
 
 ## Cuándo NO aplica
 
-- Tickets de **config / docs / tooling puro** (sin UI ni endpoint ejecutable) — igual corren lint/format. En vitalia: `required: false` + `dev_app_verified_skip_reason`.
-- Refactor / infra / migración-only / test-only sin cambio de comportamiento observable — los tests existentes pasan antes y después.
+- Tickets de **config / docs / tooling puro** (sin UI ni endpoint ejecutable) — igual corren lint/format. En vitalia: `required: false` + `dev_app_verified_skip_reason`. Estos son **`demo_required: false`** (auto-skip del demo manual, con `demo_skip_reason`).
+- Refactor / infra / migración-only / test-only sin cambio de comportamiento observable — los tests existentes pasan antes y después; la naturaleza es **técnica** (sin gate anti-burbuja ni demo manual, pero SÍ los gates técnicos §2 + `regression_guard` §6).
 
 ## Gate en el ciclo de vida (dónde se enforce)
 
@@ -128,11 +185,14 @@ Runbook completo (vitalia): `vitalia/docs/domains/dev-app/live-verification.md`.
 | Layer | Mecanismo | Status |
 |---|---|---|
 | 1 | Pointer en root `CLAUDE.md` § Critical Rules #37 (auto-load cada sesión) | ✅ 2026-05-31 |
-| 2 | `/auditor` Phase D ejerce/exige live verify (Chrome DevTools MCP) antes de APPROVED | ⏳ auditor SKILL update |
-| 3 | `/pm-{brand}` Fase F REFUSE merge→done sin `dod_live_verified: true` + evidencia | ✅ vitalia (ADR-008) · ⏳ resto |
-| 4 | `07-merge-template.md` incluye sección `§ Verificación live` obligatoria con `dod_evidence` | ⏳ template update |
+| 2 | `/auditor` Phase D: gherkin-matrix + verifica `base.ts` importado + `regression_guard` intacto + `demo-script.md` existe | ⏳ auditor SKILL update |
+| 3 | `/pm-{brand}` Fase F REFUSE merge→done sin `dod_evidence` / con gherkin MISSING / sin `demo_signoff` | ✅ vitalia (ADR-008) · ⏳ resto |
+| 4 | `07-merge` § Verificación live + `04-validators`/`checkpoint`/`T-review` con campos DoD | ✅ Wave 2A (dc6a94fa) |
 | 5 | `chrome-devtools-verify` + `playwright-expert` skills = mecanismo canónico de live-verify | ✅ existe |
 | 6 | Pre-commit: bloquea checkpoint con `state: done` si `dod_live_verified: false` presente | ⏳ hook TBD |
+| 7 | **Gate anti-burbuja**: `{brand}/frontend/e2e/fixtures/base.ts` (pageerror/console/response + Next overlay) + `scripts/verify-no-backend-errors.sh` | ⏳ vitalia (implementando) · resto hereda |
+| 8 | `04-validators` declara `verification_nature` + `technical_gates` (opt-in) + `business_rules` matrix + `demo_required` + `regression_guard` | ⏳ template + `/architect` SKILL |
+| 9 | **Gate demo manual**: `demo-script.md` (4 secciones) + `demo_signoff` (Chris) en checkpoint · `/pm-{brand}` REFUSE sin APPROVED | ⏳ template + `/dev-team` + `/pm-{brand}` |
 
 ## Referencias
 
