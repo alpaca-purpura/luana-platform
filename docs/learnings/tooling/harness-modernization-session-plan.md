@@ -113,3 +113,37 @@ La **modernización del harness** es enabler transversal que corre primero/al ma
 - Wave 2 quick-wins NO aplicados aún: QW-14 version field (parte de D-2 git-manager retiro).
 
 ### Estado: 5 commits aplicados. DoD endurecida cementada punta a punta. Story en vuelo `vitalia-fase2-lisa-doctores` (developing) NO tocada en toda la sesión.
+
+---
+
+## Sesión 2026-06-01 (continuación 2) — Wave 3 + D-2/D-3 + bugs aplicados
+
+> Motor: workflow JS `harness-wave3-retire-bugs` (run `wf_dceae010-5be`, 31 editores sonnet verify-first + 1 síntesis opus, lotes DISJUNTOS, sin commit). Catalog+propose → diff → ratify Chris → commit Haiku por pathspec (`SCOPE_GATE_SKIP=1`). Verificación independiente del orchestrator antes de presentar (frontmatter línea-1, bash -n + 3 casos funcionales del hook, make -n, **lift offer/analytics confirmado real en `core/luana-core-*`**).
+
+**Commits (todos en `wip/vitalia`, pushed, origin 0/0):**
+
+| # | SHA | Qué |
+|---|---|---|
+| 1 | `96aa9559` | **Wave 3 docs** (23 files): 6 process docs (paths multibrand `{brand}/docs/product/stories/` + triple-branch hub-first ADR-009 + GA deferred + sin `git pull`) · ADR-001 PROPOSED→ACCEPTED+addendum monorepo · ADR-005/007/008/012/013 status+bitácoras · 00-overview topology real (26 luana-core-* + @luana) · 6 audit docs banners HISTORICAL/SUPERSEDED/ARCHIVED (D-8) · story templates `state`/`cap_target`/`cap_change_type` · 02-design-ui DEPRECATED |
+| 2 | `ab647839` | **Wave 3 skills + D-2/D-3** (10 files): 7 domain-expert skills remapeadas a paths multibrand+engine · **D-2** git-manager RETIRADO (stub→`/commit-push`, `disable-model-invocation`+`user-invocable:false`, `version` removido) · **D-3** ux-disruptivo + ux-flow-architect DEPRECADOS (stub→`/po-ux`) · copilot-expert seed KB corregido al pack real |
+| 3 | `1a0dc598` | **Bugs** (2 files): auto-chain-detect.sh (intent-gate: verbo imperativo o ≥2 slash-commands + **cláusula anti-stale** "aplica solo al turno actual" + warning jq ausente) · Makefile install-hooks worktree-safe (`git rev-parse --git-path hooks` + instala pre-push) |
+
+**Catalog overestimates confirmados contra FS** (lo que NO era real — Chris pidió capturarlo):
+- `parallel-sessions-protocol`: mecanismos NO estaban "todos pending" — A,B,D,E,F,H,I,J,L,M,N implementados; solo G+K pendientes.
+- `pm-redesign`: solo 1 `/architect`=Sonnet era incorrecto (los otros describen al builder).
+- `copilot-expert`: `references/copilot-*.md` SÍ existen; `luana-dev-luana_postgres_dev-1` es correcto.
+- `metrics-expert`: `visionarias_redis` ya no estaba. `ADR-001`: links ya marcados `(pending)`.
+- **Lift offer/analytics SÍ ocurrió**: catálogos `*_catalog.py` en `core/luana-core-offer-studio/`, `metric_catalog.py`/`extraction_contract.py` en `core/luana-core-analytics-engine/` (ya NO en brand backend) → paths de offer/metrics-expert correctos.
+
+**Follow-ups abiertos (NO aplicados — necesitan criterio Chris):**
+- `offer-type-preset-expert` cita `test_offer_type_preset_catalog_completeness.py` (no existe; el real cargado es `core/luana-core-offer-studio/tests/test_catalogs_dag_smoke.py`). Staleness pre-existente preservada por el agente. El "187 arch tests" sugiere que ese test quizá nunca se lifteó. Decidir: apuntar a dag_smoke o nombre real.
+- ADR-013 quedó coherente pero el pointer MEMORY `luana-empleados-ia-vision` aún dice "NO ADR/spec aún" — actualizar (archivo del orchestrator).
+
+**Pendiente (próximos chunks):**
+- **base.ts rollout** a specs autenticados existentes (`mergeTests(base, auth)` + reemplazar `auth.fixture.ts::collectConsoleErrors`) — SOLO cuando cierre la story `vitalia-fase2-lisa-doctores` (NO tocar mid-flight).
+- **Wave 4 resto** — ADR-002/003/004/010/011 (minor: addenda, ports cockpit, M14, story-tracking) + PARADIGM.md §7 + decisiones D-1/D-4/D-5/D-7/D-9 (varias ya ratificadas/deferred).
+- **Wave 5 CC-2026** (oportunidades, no defectos): `when_to_use` (reducir listing budget), `context: fork`, `isolation: worktree` (builders write-capable), `background: true` (gate-runner/grep-bot), `memory: project`, plugin packaging.
+- **Deliverable final**: diseñar el PROCESO de gestión del ciclo de vida de harnesses (solo-operador, report+fix on-the-fly ordenado).
+- Refinar historia B (`empleados-ia-auto-extension`).
+
+### Estado: 8 commits aplicados en total esta línea de trabajo (5 previos + 3 esta sesión). Wave 3 + D-2/D-3 + 2 bugs CERRADOS. Story en vuelo `vitalia-fase2-lisa-doctores` (developing) NO tocada.
