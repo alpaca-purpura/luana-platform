@@ -86,3 +86,30 @@ La **modernización del harness** es enabler transversal que corre primero/al ma
 - `make install-hooks` ROTO en worktrees: asume `.git` directorio (`mkdir .git/hooks` falla). Fix: usar `git rev-parse --git-path hooks` para el dir común. Workaround usado hoy: `cp scripts/git-hooks/pre-commit "$(git rev-parse --git-path hooks)/"`.
 
 ### Estado: silent-killers + voseo descope = COMMITEADOS (17bf3c62). Hook nuevo instalado en dir común (todos los worktrees).
+
+---
+
+## Sesión 2026-06-01 (continuación) — Waves 1+2A+2B + DoD ENDURECIDA aplicadas
+
+> Motor: workflows JS (catalog+propose → diff → ratify Chris → commit Haiku por pathspec, SCOPE_GATE_SKIP=1). Verify-first (varias findings del catálogo resultaron sobreestimadas: globs analytics/offer ya correctos, tessl HARD-GATE era graceful-ignore, `<nextjs-portal>` siempre existe en dev).
+
+**Commits (todos en `wip/vitalia`, pushed):**
+
+| # | SHA | Qué |
+|---|---|---|
+| 1 | `2388a13a` | **Wave 1 mecánico** QW-3..QW-20: overlay caps 270/165 (D-6), containers reales `luana-dev-{brand}_{service}_dev-1`, IDs Opus 4.7→4.8, 04-tickets→06-tickets, WIP caps developed/reviewing ≤1, audit_iterations cap 4, `_OVERLAY-template`→`vitalia/CLAUDE.md`, `lib/routing/shell-routes`→`lib/shell-routes`, LITELLM fuera de flags activos, grep-bot color cyan |
+| 2 | `dc6a94fa` | **Wave 2A** gates: #37 DoD en 6 templates (07-merge §6 REFUSE, checkpoint dod_*, 04-validators live_verify, T-* + Cat 12/13/14 en T-review) + #33 CONN+Prior-art en 03-arch + 5 globs de rules a paths reales |
+| 3 | `32c01fcd` | **DoD keystone**: rule #37 endurecida (6 secciones) + `vitalia/frontend/e2e/fixtures/base.ts` (gate anti-burbuja, **live-verified 4 passed** localhost:3002) + `scripts/verify-no-backend-errors.sh` |
+| 4 | `4663371` | **DoD propagación**: 04-validators (bloque `verification:`) + checkpoint (`demo_signoff`) + `demo-script-template.md` (nuevo) + test-design-doctrine + skills architect/dev-team/auditor/pm-vitalia+template |
+| 5 | `3a9c53f2` | **Wave 2B tessl cleanup** (D-11): refs muertas `tessl__*` → docs canónicos/patrón inline en 8 agents + 9 skills + 7 templates (gates preservados) + QW-15 (Cat 13/16 verdict math) + builder containers |
+
+**DoD ENDURECIDA = el gran entregable de la sesión** (Chris detectó "digo listo y hay burbuja de Next"). Research 6 frentes web-grounded → 6-section model: (1) `/architect` clasifica naturaleza técnica/funcional en `04-validators § verification`; (2) gates técnicos baseline + opt-in por naturaleza (Schemathesis/Hypothesis/mutmut); (3) ★ gate anti-burbuja `base.ts` (pageerror/console/hidratación/`/api/`-4xx5xx/diálogo-Next) + `verify-no-backend-errors.sh`; (4) cobertura reglas-de-negocio (gherkin-matrix MISSING bloquea); (5) ★ demo manual Chris (`demo-script.md` → `demo_signoff` APPROVED/REJECTED → `/pm` Fase F REFUSE); (6) modificación `regression_guard`. SSoT `.claude/rules/definition-of-done-live-verify.md`. MEMORY `dod-live-verify` actualizado. 3 decisiones ratificadas Chris (demo toda story user-reachable · técnica avanzada opt-in · base.ts implementado).
+
+**Pendiente (próximos chunks):**
+- **Wave 3** — staleness masiva clases A+F: process docs (`checkpoint-protocol.md` resume protocol a `{brand}/docs/...`, `contributing.md`, `git-workflow-multibrand.md`, `cicd-multibrand-runbook.md`, `parallel-sessions-protocol.md`, `pm-redesign-2026-05.md` banner SUPERSEDED) + ADRs (ADR-001 addendum monorepo, ADR-005/007/008/012/013 status+bitácoras, 00-overview topology, audit docs HISTORICAL banners D-8) + skills domain-expert path remapping + story templates cap_target/state vocab.
+- **D-2** retirar `git-manager` (deprecar → `commit-push`). **D-3** deprecar `ux-disruptivo`+`ux-flow-architect`+`02-design-ui-template` (stub → `/po-ux`).
+- **Bug nuevo**: `auto-chain-detect.sh` false-positive (saltó "auto-chain /pm-vitalia+/dev-team" cuando Chris solo dijo "avanzá, ratificado" — el hook misfira; ver catálogo § hooks, fallback sed lossy sin jq).
+- **base.ts rollout**: hoy es opt-in (specs nuevos importan de `base.ts`). Migrar specs autenticados existentes (compose `mergeTests(base, auth)`) cuando cierre la story lisa-doctores en vuelo (NO tocar mid-flight). El legacy `auth.fixture.ts::collectConsoleErrors` ignora Hydration/500/404 — reemplazar por base.ts al migrar.
+- Wave 2 quick-wins NO aplicados aún: QW-14 version field (parte de D-2 git-manager retiro).
+
+### Estado: 5 commits aplicados. DoD endurecida cementada punta a punta. Story en vuelo `vitalia-fase2-lisa-doctores` (developing) NO tocada en toda la sesión.
