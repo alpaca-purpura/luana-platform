@@ -126,11 +126,11 @@ make dev-vitalia        # recrea
 
 ### 3. Build falla con "COPY failed: file not found in build context"
 
-El build context DEBE ser la raiz del monorepo. Asegurate de ejecutar desde `/home/chalreme/Proyectos/luana-platform/`, no desde `vitalia/`.
+El build context DEBE ser la raiz del monorepo. Asegurate de ejecutar desde la raiz del worktree (`git rev-parse --show-toplevel`), no desde `vitalia/`.
 
 ```bash
 # CORRECTO — desde la raiz
-cd /home/chalreme/Proyectos/luana-platform
+cd $(git rev-parse --show-toplevel)
 make dev-vitalia
 
 # INCORRECTO — desde la brand folder
@@ -142,8 +142,9 @@ cd vitalia && docker compose up -d  # pierde acceso a core/
 Verificar que el compose file tiene el bind mount correcto:
 
 ```bash
+WS=$(git rev-parse --show-toplevel)
 docker inspect luana-dev-vitalia_backend_dev-1 | grep -A5 "Mounts"
-# Debe mostrar: "Source": "/home/chalreme/Proyectos/luana-platform"
+# Debe mostrar: "Source": "${WS}"
 ```
 
 Si `.venv` del host esta sobreescribiendo el del container, limpiar:

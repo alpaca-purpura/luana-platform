@@ -1,10 +1,12 @@
+> ⚠️ v0.1.0 one-time — superseded by docs/process/release-protocol.md
+
 # Releases — Luana Platform
 
 ## Release v0.1.0 (2026-05-12) — first publication
 
 **Luana Platform v0.1.0 — first production-grade alpha release.**
 
-Stories 1-9 complete. 33 packages published to GitHub Packages (private).
+Stories 1-9 complete. 26 packages published to GitHub Packages (private).
 Cross-package SemVer cement. See [CHANGELOG.md](../CHANGELOG.md) for full story summary.
 
 ### Procedure to publish v0.1.0 (manual first-tag)
@@ -12,7 +14,7 @@ Cross-package SemVer cement. See [CHANGELOG.md](../CHANGELOG.md) for full story 
 release-please takes over for v0.2.0+. For v0.1.0, the first tag is manual:
 
 ```bash
-# 1. Verify all 33 packages are at 0.1.0 (no -alpha)
+# 1. Verify all 26 packages are at 0.1.0 (no -alpha)
 grep -r 'version = "0.1.0"' core/*/pyproject.toml | wc -l  # expect 26
 
 # 2. Verify tests pass
@@ -112,7 +114,7 @@ From v0.2.0 onwards, release-please will automatically open a PR with version bu
 `feat:` or `fix:` commits land on `main`.
 
 ```bash
-# Manual tag command (run once, after all 33 packages are at 0.1.0)
+# Manual tag command (run once, after all 26 packages are at 0.1.0)
 git tag v0.1.0
 git push origin v0.1.0
 # This triggers .github/workflows/release.yml automatically

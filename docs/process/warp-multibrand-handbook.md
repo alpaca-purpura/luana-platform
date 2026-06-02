@@ -6,13 +6,15 @@
 > SSoT del modelo: `docs/process/parallel-sessions-protocol.md` (D1-D14) + ADR-005.
 > Audiencia: Chris (workflow Warp Terminal + Claude Code + opencode).
 
+> ⚠️ **ADR-009 SINGLE-HUB (2026-05-28):** El default cambió. Cada brand tiene UN worktree canónico (`~/Proyectos/luana-{brand}/`) sobre el que corren N sesiones paralelas coordinadas por bucket locks M14. Los worktrees efímeros multi-lane (§3.4) son la **excepción** (lift core, hotfix aislado, spike), no la norma diaria. Para sincronizar con main, usar EXCLUSIVAMENTE `bash scripts/git/sync-from-main.sh` — `git pull`, `git fetch && merge` están **PROHIBIDOS**. Ver `docs/architecture/luana-platform/ADR-009-single-hub-worktree.md` + `.claude/rules/parallel-safety.md`.
+
 ## 0. Topología visual
 
 ```
 ~/Proyectos/
   luana-platform/                  ← PRINCIPAL (main, no editar código brand)
                                      ↓ Warp tab: "luana-main"
-  luana-vitalia/                   ← CANÓNICO Vitalia (rota story)
+  luana-vitalia/                   ← CANÓNICO Vitalia — hub único (N sesiones, ADR-009)
                                      ↓ Warp tab: "luana-vitalia"
   luana-nicolify/                  ← CANÓNICO Nicolify
                                      ↓ Warp tab: "luana-nicolify"
@@ -101,7 +103,6 @@ Instala `scripts/git-hooks/pre-commit` (incluye Section 11 — main-direct-commi
 
 ```bash
 cd ~/Proyectos/luana-platform/   # principal
-git fetch origin main
 bash scripts/git/status-all.sh   # ver qué quedó vivo de ayer
 ```
 
@@ -133,11 +134,11 @@ T1 output (típico):
 [step 0 OK]
 ```
 
-Si `sync:` muestra ↑ N commits behind con CORE label → mergear antes de seguir:
+Si `sync:` muestra ↑ N commits behind con CORE label → sincronizar antes de seguir:
 
 ```bash
 # Si tree clean + FF puro → ya lo hizo auto. Si advisory:
-git fetch origin main && git merge origin/main
+bash scripts/git/sync-from-main.sh
 ```
 
 ### 2.3 Arrancar nueva story (canónico ya existe)
@@ -180,7 +181,7 @@ T-push hook (Claude) o script (manual) imprime advisory si origin/main adelantó
 ```
 ⚠ origin/main adelantó 3 commits desde tu HEAD
   ⚠ 1 archivos en core/luana-core-*/src/ cambiaron
-  Recomendado antes de push: git fetch origin main && git merge origin/main
+  Recomendado antes de push: bash scripts/git/sync-from-main.sh
 ```
 
 NO bloquea push. Decidís acción.
@@ -199,8 +200,7 @@ O manual:
 
 ```bash
 cd ~/Proyectos/luana-platform/
-git fetch origin main
-git merge --ff-only origin/main
+bash scripts/git/sync-from-main.sh   # sincroniza con main (FF puro o advisory)
 git merge --squash wip/vitalia-X
 git commit -m "feat(vitalia): X shipped — short summary"
 git push origin main
@@ -233,7 +233,7 @@ claude
 
 # Squash-merge bypass auditor formal (D11):
 cd ~/Proyectos/luana-platform/
-git fetch origin main
+bash scripts/git/sync-from-main.sh   # sincroniza antes de squash
 git merge --squash hotfix/vitalia-payment-broken
 git commit -m "fix(vitalia): payment broken — repro verified in .session.yaml"
 git push origin main
@@ -275,8 +275,10 @@ bash scripts/git/cleanup-session.sh core-extract-callback-handler --delete-branc
 
 ### 3.4 Multi-lane (misma story, lanes simultáneas)
 
+> **ADR-009 EXCEPCIÓN:** El patrón de worktrees separados por lane es la **excepción**, no el default. Para builds paralelos dentro de la misma marca, el default es el hub único con bucket locks M14 (`code:{module}`). Crear worktrees multi-lane solo cuando los módulos comparten estado de filesystem que lo justifique (ej. lift core simultáneo BE+FE en brands distintas). Ver `.claude/rules/worktree-dual-strategy.md`.
+
 ```bash
-# Lane BE:
+# Lane BE (excepción — solo si hub único no aplica):
 bash scripts/git/new-session.sh vitalia story copilot-tools be
 # → ~/Proyectos/luana-vitalia-copilot-tools-be/ on wip/vitalia-copilot-tools-be
 
@@ -323,10 +325,9 @@ Causa: alguien (vos en otra sesión / colaborador / squash-merge a main) pusheó
 
 Fix:
 ```bash
-# Regla M5: NUNCA git pull
-git fetch origin main
-git merge origin/main      # mergea cambios upstream a tu wip
-# Resolver conflictos si hay
+# Regla M5: NUNCA git pull / git fetch + merge manual
+bash scripts/git/sync-from-main.sh   # FF puro o advisory con conflict detection
+# Resolver conflictos si los hay, luego:
 git push origin wip/<branch>
 ```
 
@@ -336,7 +337,7 @@ Causa: tree dirty + origin/main mergeó cambios al `core/luana-core-*/`.
 
 Fix:
 1. Terminar WIP actual (commit + push lo que tengas)
-2. `git fetch origin main && git merge origin/main`
+2. `bash scripts/git/sync-from-main.sh`
 3. Resolver conflicts si hay (probable si tu WIP toca mismos archivos)
 4. Continuar
 

@@ -62,7 +62,10 @@ duplicación de oraciones. Una sola fuente, dos lecturas.
 
 1. **Cierra el loop idea→done.** La `§ Matriz de cobertura` es la **mitad delantera** del `gherkin-matrix.md`
    que el `/auditor` completa en Phase D (scenario → test path → status). El humano ve el mismo eje al
-   principio, en lenguaje humano, antes de gastar en construir.
+   principio, en lenguaje humano, antes de gastar en construir. La DoD live-verify (Critical Rule #37,
+   `.claude/rules/definition-of-done-live-verify.md`) cierra el otro extremo: los scenarios declarados en
+   la matriz DEBEN ser ejercidos en el stack real antes de `done` — no basta que el Gherkin esté verde en
+   un entorno mockeado.
 2. **Verificación REAL** (`test-design-doctrine.md`, cement 2026-05-29): la columna de verificación obliga a
    declarar la acción real + efecto, no un código HTTP.
 3. **Eje Scenario** del modelo 4-ejes (`lifecycle.md`): el árbol + matriz son la vista humana de los scenarios
@@ -78,5 +81,7 @@ duplicación de oraciones. Una sola fuente, dos lecturas.
 - `.claude/skills/ux-agentico/SKILL.md` § Step 2 — sincroniza turn-by-turn con el mapa
 - `.claude/rules/test-design-doctrine.md` § Verificación REAL — la R4
 - `.claude/skills/auditor/SKILL.md` Phase D — `gherkin-matrix.md` (mitad trasera del loop)
+- `.claude/rules/definition-of-done-live-verify.md` — Critical Rule #37: los scenarios de la matriz deben ejercerse LIVE antes de `done`; la gherkin-matrix Phase D es la mitad trasera; el mapa funcional + matriz es la mitad delantera
+- `.claude/rules/story-closure-gate.md` § Fase F — gate merge `reviewing → done` (exige `dod_evidence` + demo_signoff cuando `demo_required: true`)
 - `docs/process/capability-protocol.md` — `business_rules` (RN) viven en la cap
 - `docs/process/lifecycle.md` — modelo 4-ejes (eje Scenario)

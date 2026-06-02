@@ -1,7 +1,9 @@
 # Ticket State Machine
 
 > Owner: `/architect` (escribe), `/dev-team` (transitions), `/auditor` (verdict).
-> SSoT estados ticket. Cualquier cambio de estado debe loguear transition en `04-tickets.yaml::tickets[].transitions[]`.
+> SSoT estados ticket. Cualquier cambio de estado debe loguear transition en `06-tickets.yaml::tickets[].transitions[]`.
+
+> **Relación con los 10 estados macro de story:** los estados de este doc son a nivel *ticket* (unidad de trabajo dentro de una story). Los 10 estados macro (`idea → refining → refined → ready → developing → developed → reviewing → done → parked → dropped`) viven en `checkpoint.md` de la story. Una story transita `developing → developed` cuando **todos sus tickets** llegan a `closed`. No confundir los estados de ticket con los estados de story.
 
 ## Estados (12)
 
@@ -72,7 +74,7 @@
 |---|---|---|---|
 | `draft` | (initial) | `/architect` → `ready` | Architect creando ticket. Aún no tiene handoff completo. |
 | `ready` | `/architect` | `/dev-team` → `assigned` | Handoff completo, dependencies cumplidas (depends_on todos audit-passed). En queue. |
-| `assigned` | `/dev-team` | dev → `building` | Owner concreto asignado (qwen-opencode | claude-opus | claude-sonnet). |
+| `assigned` | `/dev-team` | dev → `building` | Owner concreto asignado (claude-opus-4.8 | claude-sonnet | claude-haiku). |
 | `building` | dev | dev → `tests-failing` o `tests-passing` | TDD activo. Bitácora viva en `T-{n}-impl-log.md`. |
 | `tests-failing` | dev | dev → `building` | Local quality gates rojo. Cap 5 iteraciones → escala blocked. |
 | `tests-passing` | dev | dev → `pushed` | Local 100% verde. git push pendiente. |
@@ -91,27 +93,27 @@
 
 ## Owner eligibility por surface
 
-| Surface | qwen-opencode | claude-sonnet | claude-opus |
+| Surface | claude-haiku | claude-sonnet | claude-opus-4.8 |
 |---|---|---|---|
 | BE (no agentic) | ✅ | ✅ | ✅ |
 | FE (no agentic) | ✅ | ✅ | ✅ |
 | AGENTIC | ⛔ PROHIBIDO | ⛔ PROHIBIDO | ✅ OBLIGATORIO |
 | INFRA / migration | ✅ | ✅ | ✅ |
 
-> Razón qwen ban en AGENTIC: skills `sales-agent-expert`/`copilot-expert` + brand-voice + protected surfaces requieren Opus 4.7 con prompt eng. específico.
+> Razón Haiku/Sonnet ban en AGENTIC: skills `sales-agent-expert`/`copilot-expert` + brand-voice + protected surfaces requieren Opus 4.8 con prompt eng. específico.
 
 ## Transiciones — quién las escribe
 
-Cada transition append-only en `04-tickets.yaml::tickets[].transitions[]`:
+Cada transition append-only en `06-tickets.yaml::tickets[].transitions[]`:
 
 ```yaml
 transitions:
   - { state: draft, at: "2026-05-04T15:00Z", by: "/architect" }
   - { state: ready, at: "2026-05-04T15:30Z", by: "/architect", note: "deps OK" }
-  - { state: assigned, at: "2026-05-04T16:00Z", by: "/dev-team", to: "qwen-opencode" }
-  - { state: building, at: "2026-05-04T16:05Z", by: "qwen-opencode" }
-  - { state: tests-passing, at: "2026-05-04T17:00Z", by: "qwen-opencode" }
-  - { state: pushed, at: "2026-05-04T17:05Z", by: "qwen-opencode", commit: "abc1234" }
+  - { state: assigned, at: "2026-05-04T16:00Z", by: "/dev-team", to: "claude-sonnet" }
+  - { state: building, at: "2026-05-04T16:05Z", by: "claude-sonnet" }
+  - { state: tests-passing, at: "2026-05-04T17:00Z", by: "claude-sonnet" }
+  - { state: pushed, at: "2026-05-04T17:05Z", by: "claude-sonnet", commit: "abc1234" }
   - { state: auditing, at: "2026-05-04T17:30Z", by: "/auditor" }
   - { state: audit-passed, at: "2026-05-04T18:00Z", by: "/auditor" }
   - { state: merged, at: "2026-05-04T18:30Z", by: "/pm" }

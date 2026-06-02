@@ -3,7 +3,7 @@
 <!-- voseo-allowed: doc contains verbatim example conversations showing Chris's voseo notes + Claude tuteo responses · escape per spanish-text.md R25 -->
 
 **Cement-date:** 2026-05-27. **v2 (nace con la idea):** 2026-05-28.
-**Origen:** plan `/home/chalreme/.claude/plans/ok-lo-apruebo-realiza-cheeky-harbor.md` § Phase 1.1.C. **v2:** sesión 2026-05-28 — Chris ratificó que el archivo nazca con la idea (buzón de inputs desde `state: idea`, no desde refining).
+**Origen:** sesión 2026-05-27 — Phase 1.1.C (plan local). **v2:** sesión 2026-05-28 — Chris ratificó que el archivo nazca con la idea (buzón de inputs desde `state: idea`, no desde refining).
 
 > **chris-input.md** es el artifact oficial donde Chris escribe notas + referencias + Claude responde con verdicts. **Nace junto con la idea** (`state: idea`) y vive 1 archivo per story a lo largo de toda su vida. Es el buzón donde Chris vuelca lo que desea / cree que necesita; Claude lo puede rebatir (verdict ❌ REFUTADO) durante el ciclo de vida y se refina en conjunto. Skills appendean al cierre de cada turno. Habilita loop conversacional asíncrono entre cockpit + Claude Code.
 
@@ -219,4 +219,4 @@ Tabla de tipos de referencia en sección 📎 Referencias:
 - `.claude/rules/brand-docs-schema.md` § R4 — chris-input.md nace con la idea (mandatory desde `state: idea`)
 - `tools/luana-cockpit/lib/chris-input-parser.ts` — implementación parser markdown
 - `tools/luana-cockpit/app/api/chris-input/[storyId]/route.ts` — CRUD endpoint cockpit
-- `.claude/skills/{po-ux,po,ux-agentico,architect,auditor,pm-vitalia,pm-luana,dev-team}/SKILL.md` § Output protocol — cómo cada skill appendea
+- `.claude/skills/{po-ux,po,ux-agentico,architect,auditor,pm-{brand},pm-luana,dev-team}/SKILL.md` § Output protocol — cómo cada skill appendea

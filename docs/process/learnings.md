@@ -3,6 +3,8 @@
 > Owner: `/pm`. NUNCA editar entries históricas. Solo append.
 > Cada incident / decisión cardinal / surprise / case study agrega entry.
 
+> **TOMBSTONE 2026-06-02:** entradas pre-reorg conservan vocab/model-IDs de su época (outcome/atomics/PI/qwen/Opus 4.7/04-tickets — append-only); doctrina vigente: `CLAUDE.md`.
+
 ---
 
 ## 2026-05-04 — Migración a SDD Level 3 / Spec-Driven Harness

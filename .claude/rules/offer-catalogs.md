@@ -1,5 +1,5 @@
 ---
-globs: "core/luana-core-offer-studio/src/**/*_catalog.py,**/frontend/src/features/offer-studio/**"
+globs: "core/luana-core-offer-studio/src/**/*_catalog.py,**/frontend/src/features/offer-studio/**,**/frontend/src/features/marketing/**"
 description: Stub — invoca offer-expert / offer-type-preset-expert
 ---
 
@@ -9,11 +9,11 @@ Offer Studio es **ENGINE + BRAND-CONFIG** (CLAUDE.md tabla mapping):
 
 | Surface | Path | Owner |
 |---|---|---|
-| Engine catalogs (canónicos) | `core/luana-core-offer-studio/src/luana_core_offer_studio/domain/{archetype,value_level,section,variant,biz_type,format,ladder_hints,preset}_catalog.py` | `/pm-luana` |
+| Engine catalogs (canónicos) | `core/luana-core-offer-studio/src/luana_core_offer_studio/domain/{archetype,value_level,section,variant_structure,format,offer_type_preset}_catalog.py` | `/pm-luana` |
 | Brand preset packs | Registrados via Extension SDK EP-2 en `{brand}/backend/src/modules/{brand}/offer/extensions.py` | `/pm-{brand}` |
 | Offer Studio FE per brand | `{brand}/frontend/src/features/offer-studio/` | `/pm-{brand}` |
 
-7 catalogs DAG: ExpertBusinessType + OfferValueLevel + SectionCatalog + VariantStructure (base) → OfferArchetype (intermediate) → OfferFormat + OfferLadderHints + OfferTypePreset (composites). 21 sections post-consolidación.
+6 catalogs DAG: OfferValueLevel + SectionCatalog + VariantStructure (base) → OfferArchetype (intermediate) → OfferFormat + OfferTypePreset (composites). 21 sections post-consolidación.
 
 Detalle (DAG, BE→FE flow, hooks por axis, workflow agregar, anti-patterns) en `offer-expert` skill → `references/offer-catalogs.md`. Para presets específicamente: `offer-type-preset-expert`.
 
