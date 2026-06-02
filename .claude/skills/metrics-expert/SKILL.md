@@ -11,8 +11,8 @@ Two files together describe the analytics system. **Both must stay in sync**:
 
 | File | Role |
 |---|---|
-| `backend/src/modules/analytics/domain/metric_catalog.py` | Semantic catalog: what each metric means, its aggregation type, unit, providers that *can* emit it. **Used at runtime.** |
-| `backend/src/modules/analytics/domain/extraction_contract.py` | Extraction contract: which provider actually emits which metric, from which API endpoint, into which channel slug, when, and where it lands. **Documentation + tests.** |
+| `core/luana-core-analytics-engine/src/luana_core_analytics_engine/domain/metric_catalog.py` | Semantic catalog: what each metric means, its aggregation type, unit, providers that *can* emit it. **Used at runtime.** |
+| `core/luana-core-analytics-engine/src/luana_core_analytics_engine/domain/extraction_contract.py` | Extraction contract: which provider actually emits which metric, from which API endpoint, into which channel slug, when, and where it lands. **Documentation + tests.** |
 | `docs/etl/extraction-contract.md` | Auto-generated human-readable rendering of the contract. **Read this FIRST when answering "where does X come from".** |
 
 **Workflow rules** for any change to the analytics module live in `.claude/rules/etl-extraction-contract.md`. Read it before you start.
@@ -21,7 +21,7 @@ Two files together describe the analytics system. **Both must stay in sync**:
 
 ```bash
 make extraction-contract                                                # regenerate the markdown
-cd backend && .venv/bin/pytest tests/architecture/test_extraction_contract.py -x -q  # verify no drift
+WS=$(git rev-parse --show-toplevel) && cd ${WS}/core/luana-core-analytics-engine && ${WS}/.venv/bin/pytest tests/architecture/test_extraction_contract.py -x -q  # verify no drift
 ```
 
 Both must pass. The provider/pipeline change, the contract update, AND the regenerated Markdown go in the same commit.
@@ -42,17 +42,21 @@ Cache warming: overview miss → _warm_stage_cache() → stage service
 
 ## Critical Files
 
+> Prefijo engine: `core/luana-core-analytics-engine/src/luana_core_analytics_engine/`
+> Prefijo brand: `{brand}/backend/src/modules/{brand}/analytics/` (opt-in extensions)
+> Prefijo FE brand: `{brand}/frontend/src/features/growth-studio/`
+
 | File | Role |
 |---|---|
-| `stage_services/constants.py` | Single source of truth for ALL shared constants |
-| `channel_registry.py` | Channel definitions per stage + provider mapping |
-| `stage_services/{stage}_stage.py` | One per stage — computes metrics, writes cache |
-| `stage_services/overview_stage.py` | Thin cache reader for Tier 1 |
-| `stage_services/group_detail.py` | Thin cache reader for Tier 2 |
-| `api/metrics.py` | API routes — uses stage services directly |
-| `metrics_service.py` | Legacy (sankey, bowtie summary, timeseries ONLY) |
-| `frontend/.../config/channel-display-registry.ts` | Frontend channel display config |
-| `frontend/.../config/dashboard-sections.ts` | Deep-link section registry |
+| `[engine]/stage_services/constants.py` | Single source of truth for ALL shared constants |
+| `[engine]/channel_registry.py` | Channel definitions per stage + provider mapping |
+| `[engine]/stage_services/{stage}_stage.py` | One per stage — computes metrics, writes cache |
+| `[engine]/stage_services/overview_stage.py` | Thin cache reader for Tier 1 |
+| `[engine]/stage_services/group_detail.py` | Thin cache reader for Tier 2 |
+| `[engine]/api/metrics.py` | API routes — uses stage services directly |
+| `[engine]/metrics_service.py` | Legacy (sankey, bowtie summary, timeseries ONLY) |
+| `[brand FE]/config/channel-display-registry.ts` | Frontend channel display config (per brand) |
+| `[brand FE]/config/dashboard-sections.ts` | Deep-link section registry (per brand) |
 
 ## SOP: Adding a New Channel
 

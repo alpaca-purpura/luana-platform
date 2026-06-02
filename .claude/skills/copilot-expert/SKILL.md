@@ -9,7 +9,7 @@ Copilot = "Claude Code de marketing": deep_agent harness sobre LangGraph, discov
 
 **Regla cero:** verificá que algo existe (grep + schema + registry + repo) ANTES de declarar "falta X" o "hay que crear Y". Si decís "no existe", grepeá primero.
 
-**Regla anti-duplicación cardinal:** observability/cost/pricing/channel-format/callback-handler patterns son **shared abstractions** que viven (o deben vivir) en `shared/agent_observability/`. Copilot **canónica** las define o consume. NUNCA mirror en `modules/copilot/observability/recording/<X>.py` cuando existe equivalente en `shared/` o cuando se vuelve cross-agent (sales_agent + copilot necesitan misma cosa). Inventario completo en `rules/anti-duplication.md`. Origen rule PR-1 PI-1.1 hotfix 2026-05-01 — builder duplicó `turn_envelope.py` cross-module, REVERT obligatorio.
+**Regla anti-duplicación cardinal:** observability/cost/pricing/channel-format/callback-handler patterns son **shared abstractions** que viven (o deben vivir) en `core/luana-core-observability/src/luana_core_observability/`. Copilot **canónica** las define o consume. NUNCA mirror en `{brand}/backend/src/modules/{brand}/copilot/observability/recording/<X>.py` cuando existe equivalente en el engine o cuando se vuelve cross-agent (sales_agent + copilot necesitan misma cosa). Inventario completo en `.claude/rules/anti-duplication.md`. Origen rule PR-1 PI-1.1 hotfix 2026-05-01 — builder duplicó `turn_envelope.py` cross-module, REVERT obligatorio.
 
 ---
 
@@ -101,7 +101,7 @@ Reordenar = romper cache + cascada en goldens (`test_system_prompt_order.py`, `t
 
 2. **Alta cohesión.** Cada subpaquete una sola responsabilidad. Lógica nueva va donde corresponde semánticamente, no donde es cómodo. Ej: brand_summary repo vive en `brand/`, no en `copilot/` — es cache derivado de brand (F3).
 
-3. **Bajo acoplamiento.** Cross-module imports prohibidos fuera de `shared/links/` o `_PROVIDER_CONTRACT_IMPORTS`. Necesitás data de otro módulo → port en `shared/links/` o domain event. Provider pattern existe para no acoplar.
+3. **Bajo acoplamiento.** Cross-module imports prohibidos fuera de `core/luana-core-platform/src/luana_core_platform/links/` o `_PROVIDER_CONTRACT_IMPORTS`. Necesitás data de otro módulo → port en `links/ports/` o domain event. Provider pattern existe para no acoplar.
 
 4. **No premature refactor.** Bug se arregla con N líneas → fix con N líneas. Refactor paralelo va a `docs/mejoras-proceso/to-do.md`. Cada fase entrega UNA cosa.
 
@@ -221,7 +221,7 @@ Block types canónicos: `text`, `image`, `audio`, `document`, `video`, `citation
 
 | Quiero agregar | Pasos cementados |
 |---|---|
-| Nuevo módulo Nicolify al copilot | (1) `src/modules/{name}/copilot_provider/__init__.py:provider` heredando `BaseCopilotProvider`. (2) Discovery lo encuentra automático. (3) NO editar `copilot/`. |
+| Nuevo módulo al copilot | (1) `{brand}/backend/src/modules/{brand}/{name}/copilot_provider/__init__.py:provider` heredando `BaseCopilotProvider`. (2) Discovery lo encuentra automático. (3) NO editar `copilot/`. |
 | Tool transversal (cross-route) | (1) `copilot/application/tools/{name}.py` con `@tool`. (2) Agregar a `_BASE_TOOL_GROUPS["{group}"]`. (3) Si transversal, agregar group a `ALWAYS_AVAILABLE_GROUPS`. (4) Update goldens `route_tool_selection.json` con `UPDATE_GOLDEN=1`. |
 | Tool de un módulo | Provider expone via `tool_provider().tool_groups()`. NO editar `copilot/tools/registry.py`. |
 | Nuevo `kind` para `ask_tenant_data` | (1) Agregar a `intent_classifier.SUPPORTED_KINDS`. (2) Update system prompt classifier. (3) `{module}/copilot_provider/data_access.py` con `supports(new_kind)`. |
@@ -231,7 +231,7 @@ Block types canónicos: `text`, `image`, `audio`, `document`, `video`, `citation
 | Nuevo subagent | (1) `subagents/{name}.py` con `SubAgent` TypedDict. (2) **Declarar `tools=[explicit_list]`** — sandbox. (3) Exportar desde `subagents/__init__.py`. (4) `deep_agent.py` lo agrega via `extend()`. |
 | Nuevo `[COPILOT-*]` anchor | Agregar a `tests/architecture/test_copilot_anchors.py::ANCHOR_REGISTRY`. Cap actual 36 — bumpear si supera. |
 | Nuevo dominio event | `copilot/domain/events.py` subclass `DomainEvent` + classmethod `create()` + literal `EVENT_*`. Publish via `event_bus.publish(..., session=None)` (no `db=`). Subscriber opcional en `observability/recording/domain_subscribers.py`. |
-| Nuevo chunk de KB | `backend/data/marketing_kb/{nuevo}.md` con front-matter válido. `python scripts/seed_nicolify_marketing_kb.py --only nuevo.md`. |
+| Nuevo chunk de KB | Agregá el `.md` (front-matter válido) al pack en `{brand}/backend/src/modules/{brand}/copilot/kb/{pack_id}/` (listado en su `manifest.yaml`). Re-seed: `python {brand}/backend/scripts/seed_{vertical}_kb.py` (ej. `seed_medical_kb.py` vitalia, `seed_creator_economy_kb.py` comunify). |
 
 ---
 
@@ -318,41 +318,44 @@ Block types canónicos: `text`, `image`, `audio`, `document`, `video`, `citation
 ## Comandos cementados
 
 ```bash
+WS=$(git rev-parse --show-toplevel)
+BRAND=nicolify   # o vitalia/comunify/lupulo — el brand que tiene el módulo copilot
+
 # Suite copilot completa (sin flakies aislados)
-cd backend && .venv/bin/pytest tests/modules/copilot/ tests/architecture/ tests/admin/ tests/quality/ \
+cd ${WS}/${BRAND}/backend && ${WS}/.venv/bin/pytest tests/modules/copilot/ tests/architecture/ tests/admin/ tests/quality/ \
   -q -o addopts="" --timeout=120 \
   --ignore=tests/modules/copilot/test_streaming_integration.py
 
 # Streaming aislado (heredado flaky F0+)
-cd backend && .venv/bin/pytest tests/modules/copilot/test_streaming_integration.py -q
+cd ${WS}/${BRAND}/backend && ${WS}/.venv/bin/pytest tests/modules/copilot/test_streaming_integration.py -q
 
 # Goldens
-cd backend && .venv/bin/pytest tests/modules/copilot/golden/ -q
+cd ${WS}/${BRAND}/backend && ${WS}/.venv/bin/pytest tests/modules/copilot/golden/ -q
 
 # Regenerar goldens (cambio intencional)
-cd backend && UPDATE_GOLDEN=1 .venv/bin/pytest tests/modules/copilot/golden/ -q
+cd ${WS}/${BRAND}/backend && UPDATE_GOLDEN=1 ${WS}/.venv/bin/pytest tests/modules/copilot/golden/ -q
 
 # Arch tests fitness
-cd backend && .venv/bin/pytest tests/architecture/test_copilot_*.py tests/architecture/test_no_new_copilot_module_imports.py tests/architecture/test_workflow_compliance.py tests/architecture/test_channel_formatter_compliance.py -q
+cd ${WS}/${BRAND}/backend && ${WS}/.venv/bin/pytest tests/architecture/test_copilot_*.py tests/architecture/test_no_new_copilot_module_imports.py tests/architecture/test_workflow_compliance.py tests/architecture/test_channel_formatter_compliance.py -q
 
 # Real LLM judge (weekly opt-in)
-RUN_LLM_JUDGE=1 .venv/bin/pytest tests/quality/golden/ -q
+cd ${WS}/${BRAND}/backend && RUN_LLM_JUDGE=1 ${WS}/.venv/bin/pytest tests/quality/golden/ -q
 
 # Trazas de una conv específica
-docker exec luana-dev-luana_postgres_dev-1 psql -U postgres -d visionarias_logs -c "
+docker exec luana-dev-luana_postgres_dev-1 psql -U postgres -d ${BRAND}_dev -c "
 SELECT created_at, event_type, name, status, duration_ms, LEFT(data::text, 300)
 FROM copilot_trace_event WHERE conversation_id = ':conv_id'
 ORDER BY created_at;"
 
 # Cost por ciclo billing 25-25
-docker exec luana-dev-luana_postgres_dev-1 psql -U postgres -d visionarias_logs -c "
+docker exec luana-dev-luana_postgres_dev-1 psql -U postgres -d ${BRAND}_dev -c "
 SELECT compute_cycle_start(:tenant_id, CURRENT_DATE) AS cycle_start,
        SUM(cost_usd) AS cycle_cost, COUNT(*) AS calls
 FROM copilot_llm_call
 WHERE tenant_id = :tenant_id AND occurred_on >= compute_cycle_start(:tenant_id, CURRENT_DATE);"
 
 # Reload backend post-edit
-docker compose restart api_dev
+docker compose -f ${WS}/${BRAND}/docker-compose.dev.yml restart ${BRAND}_backend_dev
 ```
 
 ---
@@ -376,7 +379,7 @@ Sin esos 6 pasos cumplidos, no toco código.
 
 ## Budget Gating (PI-1 S0 PR-2)
 
-Copilot LLM calls están **subject a `BudgetGuard.check`** del módulo `shared/billing/` (PI-1 S0 PR-2 — wiring orchestrator pre-LLM-call diferido a S2; primitivas expuestas hoy).
+Copilot LLM calls están **subject a `BudgetGuard.check`** del engine `core/luana-core-billing/` (PI-1 S0 PR-2 — wiring orchestrator pre-LLM-call diferido a S2; primitivas expuestas hoy).
 
 **Gate signature:**
 ```python

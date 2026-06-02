@@ -44,18 +44,28 @@ PersonalityProfile (motor 3-pilar)
                                         compila a 5-block system_instruction (PersonalityCompiler)
 ```
 
+## Convención de paths (multibrand post-reorg 2026-05-15)
+
+- Engine brand-studio: `core/luana-core-brand-studio/src/luana_core_brand_studio/`
+- Brand extension: `{brand}/backend/src/modules/{brand}/brand_studio/` (cada brand activa: vitalia, nicolify, comunify, lupulo)
+- Engine tests: `core/luana-core-brand-studio/tests/`
+- Brand tests: `{brand}/backend/tests/modules/{brand}/brand_studio/`
+- FE (feature-scoped per brand): `{brand}/frontend/src/features/{brand}/` y/o `{brand}/frontend/src/features/lisa/types/marca/`
+- `WS=$(git rev-parse --show-toplevel)` · venv único: `${WS}/.venv/bin/pytest`
+
 ## Files canon SSoT
 
 | Layer | File |
 |---|---|
-| L0 raíz | `backend/src/modules/brand/domain/aggregates.py` (BrandSettings) |
-| L0 sub-models | `identity.py`, `visuals.py` (en identity.py), `story.py`, `strategy.py`, `positioning.py`, `narrative.py`, `team.py` (BrandContact + KeyFigure + BrandTestimonial + BrandAuthorityItem), `personality.py` (BrandPersonality + PersonalityCompiler), `communication_assets.py`, `buyer_persona.py` |
-| L1 FieldContract | `brand/domain/field_contract.py` (BRAND_SECTION_MAP + BRAND_FIELD_OVERRIDES) |
-| L1 Buyer | `brand/domain/buyer_persona_field_contract.py` (BUYER_PERSONA_SECTION_MAP + dict_subkeys) |
-| Personality | `brand/domain/personality.py` (DimensionContract, PersonalityCompiler) |
-| Repos | `brand/infrastructure/repositories/{brand,buyer_persona,personality,avatar}_repository.py` |
-| Cross-module port | `shared/links/ports/brand.py` (`BrandDataPort`, `create_brand_data_port`) — **única forma** cross-module read |
-| Schema FE | `frontend/src/features/brand-studio/schemas/*.schema.ts` (no se deriva auto, manual mirror) |
+| L0 raíz | `core/luana-core-brand-studio/src/luana_core_brand_studio/domain/aggregates.py` (BrandSettings) |
+| L0 sub-models | `identity.py`, `visuals.py` (en identity.py), `story.py`, `strategy.py`, `positioning.py`, `narrative.py`, `team.py` (BrandContact + KeyFigure + BrandTestimonial + BrandAuthorityItem), `personality.py` (BrandPersonality + PersonalityCompiler), `communication_assets.py`, `buyer_persona.py` — todos en `core/luana-core-brand-studio/src/luana_core_brand_studio/domain/` |
+| L1 FieldContract | `core/luana-core-brand-studio/src/luana_core_brand_studio/domain/field_contract.py` (BRAND_SECTION_MAP + BRAND_FIELD_OVERRIDES) |
+| L1 Buyer | `core/luana-core-brand-studio/src/luana_core_brand_studio/domain/buyer_persona_field_contract.py` (BUYER_PERSONA_SECTION_MAP + dict_subkeys) |
+| Personality | `core/luana-core-brand-studio/src/luana_core_brand_studio/domain/personality.py` (DimensionContract, PersonalityCompiler) |
+| Repos (engine) | `core/luana-core-brand-studio/src/luana_core_brand_studio/infrastructure/repositories/{brand,buyer_persona,personality,avatar}_repository.py` |
+| Brand extension | `{brand}/backend/src/modules/{brand}/brand_studio/` — extensiones brand-specific (ej. vitalia: trust_signals, prohibited_phrases) |
+| Cross-module port | `core/luana-core-platform/src/luana_core_platform/links/ports/brand.py` (`BrandDataPort`, `create_brand_data_port`) — **única forma** cross-module read |
+| Schema FE | `{brand}/frontend/src/features/{brand}/` y/o `{brand}/frontend/src/features/lisa/types/marca/*.schema.ts` (no se deriva auto, manual mirror) |
 
 ## BrandIdentity — 30+ fields
 
@@ -127,7 +137,7 @@ personality_traits[]                   — 3-5 adjetivos
 
 ## BuyerPersona — multi-persona
 
-Vive en `brand/domain/buyer_persona.py` (módulo brand, registra como `"buyer_persona"` en FieldContract registry).
+Vive en `core/luana-core-brand-studio/src/luana_core_brand_studio/domain/buyer_persona.py` (engine brand-studio, registra como `"buyer_persona"` en FieldContract registry).
 
 ```
 identity:        name, tagline, scope (GLOBAL | offer_scoped), offer_id, is_primary
@@ -156,7 +166,7 @@ User dice "quiero que el copilot suene más cálido / más serio / con más humo
    - Add `sample_exchanges[]` con tone target (mínimo 3 con contexts distintos: `greeting`, `objection`, `closing`).
    - Si dim < 0.3 → constraint negativo auto generado por compiler.
 3. Si tone para landing/copy estática → `BrandPersonality.archetype` + `core_values`. Cambia voice subyacente.
-4. **`identity.voice_tone` está DEPRECATED** (`brand/domain/field_contract.py:255`). NUNCA tocar.
+4. **`identity.voice_tone` está DEPRECATED** (`luana_core_brand_studio/domain/field_contract.py:255`). NUNCA tocar.
 5. PersonalityCompiler regenera `system_instruction` runtime — sin cache invalidation manual.
 6. **Web search**: "brand voice 2026 [arquetipo]" si user duda en arquetipo.
 7. Test: ejecutar conversación con sales-agent post cambio (qualitative).
@@ -200,7 +210,7 @@ Multi-persona. Cada persona puede ser:
 - `scope=offer_scoped` con `offer_id=<UUID>` (specific to one offer).
 - `is_primary=True` (primary avatar).
 
-CRUD via `BuyerPersonaRepository`. Fields validados via `buyer_persona_field_contract.py`. JSONB sub-keys (demographics.age_range etc) registradas en `dict_subkeys`.
+CRUD via `BuyerPersonaRepository` (engine: `luana_core_brand_studio.infrastructure.repositories.buyer_persona_repository`). Fields validados via `buyer_persona_field_contract.py`. JSONB sub-keys (demographics.age_range etc) registradas en `dict_subkeys`.
 
 Add new persona:
 1. POST `/api/v1/brand/buyer-personas` con `name` + `scope` + (opcional) `offer_id`.
@@ -227,7 +237,7 @@ Ya hay `scope: str` field con values "GLOBAL" + "offer_scoped". Para nuevo scope
 Workflow refactor field-contract-platform (post-Fase-09):
 1. Decidir sub-model (identity / story / positioning / narrative / etc.).
 2. Add field a Pydantic model.
-3. **Add path → section** en `BRAND_SECTION_MAP` (`brand/domain/field_contract.py`).
+3. **Add path → section** en `BRAND_SECTION_MAP` (`core/luana-core-brand-studio/src/luana_core_brand_studio/domain/field_contract.py`).
 4. **Add Override** en `BRAND_FIELD_OVERRIDES`:
    ```python
    "narrative.tag_anchor": Override(
@@ -241,8 +251,8 @@ Workflow refactor field-contract-platform (post-Fase-09):
    ```
 5. Walker `dict_subkeys` arg si el field es JSONB sub-key (buyer_persona pattern).
 6. Migration NO requerida (BrandSettings vive en `Tenant.config_json` JSONB).
-7. Run `tests/architecture/test_brand_editable_fields_baseline.py` + `test_field_contract_platform.py`. Pydantic ⊆ FieldContract enforced.
-8. **FE schema** `frontend/src/features/brand-studio/schemas/<section>.schema.ts` — alineá manual.
+7. Run `{brand}/backend/tests/architecture/test_brand_editable_fields_baseline.py` + `test_field_contract_platform.py` (vía `${WS}/.venv/bin/pytest`). Pydantic ⊆ FieldContract enforced.
+8. **FE schema** `{brand}/frontend/src/features/{brand}/` o `features/lisa/types/marca/<section>.schema.ts` — alineá manual según la brand.
 9. **Copilot: zero-touch.** `propose_field_updates`, `next_question`, `extract_structured` ya consumen FieldContract.
 10. Si descripción visible al copilot system prompt → check baseline `description_preserved` test (puede fallar — actualizar intencionalmente).
 
@@ -261,7 +271,7 @@ Collections con M:N placement vía `social_proof` BC:
 - `authority_vault[]` (BrandAuthorityItem) — certificaciones, premios, prensa.
 - `team[]` (KeyFigure) — miembros activos del equipo.
 
-CRUD via repos individuales en `brand/infrastructure/repositories/`. Placements (qual offer/landing usa cuál) viven en `social_proof` (M:N table). NO duplicar testimonio per offer — placement decide visibilidad.
+CRUD via repos individuales en `core/luana-core-brand-studio/src/luana_core_brand_studio/infrastructure/repositories/`. Placements (qual offer/landing usa cuál) viven en `social_proof` (M:N table). NO duplicar testimonio per offer — placement decide visibilidad.
 
 **Fusionar testimonios duplicados**: API CRUD + script si volume.
 
@@ -332,7 +342,7 @@ User dice "no se entiende" / "muy genérico" / "querés que pregunte mejor":
 
 ## Limitantes arquitectónicas (no romper)
 
-- ❌ Nunca importar `brand.domain` directo cross-module — usá `shared/links/ports/brand.py::BrandDataPort`. DDD arch test falla.
+- ❌ Nunca importar `luana_core_brand_studio.domain` directo cross-module — usá `core/luana-core-platform/src/luana_core_platform/links/ports/brand.py::BrandDataPort`. DDD arch test falla.
 - ❌ Nunca tocar `identity.voice_tone` — DEPRECATED desde 2026-04-24 (Fase 06). Use `brand_personality` / `PersonalityProfile`.
 - ❌ Nunca duplicar metadata FE — consumá hook + catalog.
 - ❌ Nunca add new sub-model sin entry en `BRAND_SECTION_MAP`. Arch test cross-cutting `Pydantic ⊆ FieldContract` falla.
@@ -341,17 +351,22 @@ User dice "no se entiende" / "muy genérico" / "querés que pregunte mejor":
 - ❌ Nunca PersonalityProfile sin las 3 capas (dimensions + patterns + exchanges). Solo dimensions = sales-agent suena robótico (feedback memo `feedback_personality_3_pillars`).
 - ❌ Nunca edit `BrandStrategy.unique_value_proposition` o `competitors` (DEPRECATED — model_validator migra a positioning). Edit positioning directo.
 - ❌ Nunca duplicar testimonios per offer. Use M:N placement via `social_proof` BC.
-- ❌ Nunca buyer_persona como aggregate separado en módulo BE distinto. Vive bajo `brand/domain/`, registra como `"buyer_persona"` en FieldContract.
+- ❌ Nunca buyer_persona como aggregate separado en módulo BE distinto. Vive bajo `luana_core_brand_studio.domain` (engine), registra como `"buyer_persona"` en FieldContract.
 
 ## Tests gates (correr siempre tras cambio)
 
 ```bash
-cd backend && .venv/bin/pytest tests/architecture/ -x -q --tb=short
-cd backend && .venv/bin/pytest tests/architecture/test_brand_editable_fields_baseline.py tests/architecture/test_buyer_persona_editable_fields_baseline.py -x -q
-cd backend && .venv/bin/pytest tests/modules/copilot/test_conversational_questioning.py -x -q
-cd backend && .venv/bin/pytest tests/modules/brand/ -x -q
-cd frontend && npx vitest run src/__tests__/architecture/
-cd frontend && npx vitest run src/features/brand-studio/
+WS=$(git rev-parse --show-toplevel)
+BRAND=vitalia   # reemplazá según brand activa (vitalia/nicolify/comunify/lupulo)
+
+# Engine brand-studio arch tests
+cd ${WS}/core/luana-core-brand-studio && ${WS}/.venv/bin/pytest tests/ -x -q --tb=short
+
+# Brand-specific arch tests
+cd ${WS}/${BRAND}/backend && ${WS}/.venv/bin/pytest tests/architecture/ -x -q --tb=short
+cd ${WS}/${BRAND}/backend && ${WS}/.venv/bin/pytest tests/architecture/test_brand_editable_fields_baseline.py tests/architecture/test_buyer_persona_editable_fields_baseline.py -x -q
+cd ${WS}/${BRAND}/backend && ${WS}/.venv/bin/pytest tests/modules/${BRAND}/brand_studio/ -x -q
+cd ${WS}/${BRAND}/frontend && npx vitest run src/__tests__/architecture/
 ```
 
 507 BE arch + 38 FE arch baseline post-Fase-09. Sin regression.
