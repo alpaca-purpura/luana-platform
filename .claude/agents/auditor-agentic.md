@@ -6,6 +6,7 @@ maxTurns: 80
 skills: [copilot-expert, sales-agent-expert]
 color: purple
 model: opus
+memory: user
 ---
 
 ## Return format (anti-telephone-game)

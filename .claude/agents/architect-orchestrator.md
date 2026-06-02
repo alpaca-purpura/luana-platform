@@ -6,6 +6,7 @@ maxTurns: 80
 skills: [backend-expert, frontend-expert, copilot-expert, sales-agent-expert, brand-expert, offer-expert, offer-type-preset-expert, metrics-expert]
 color: blue
 model: opus
+memory: user
 ---
 
 ## Return format (anti-telephone-game)

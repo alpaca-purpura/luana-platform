@@ -6,6 +6,7 @@ maxTurns: 120
 skills: [frontend-expert, brand-expert, offer-expert, offer-type-preset-expert, copilot-expert, sales-agent-expert, metrics-expert, chrome-devtools-verify]
 color: orange
 model: sonnet
+isolation: worktree
 ---
 <!-- voseo-allowed: doc interno de maquinaria (no user-facing) -->
 

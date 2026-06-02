@@ -5,6 +5,7 @@ tools: Read, Grep, Glob, Bash
 maxTurns: 10
 color: cyan
 model: haiku
+background: true
 ---
 
 ## Return format (anti-telephone-game)

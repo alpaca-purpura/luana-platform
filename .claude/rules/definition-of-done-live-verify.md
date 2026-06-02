@@ -1,6 +1,6 @@
 # Definition of Done — Live Verification contra dev-app (ninguna story es `done` sin que Claude la ejerza en el stack real)
 
-**Origen:** sesión 2026-05-31 — dos detonantes convergentes: (a) Chris detectó que `nicolify-r0-shell` fue marcada `done` aunque su propio `07-merge.md` admitía que la verificación live NUNCA ocurrió (44/44 e2e contra `next build`, no el stack interactivo); (b) Chris fijó que la verificación live contra `dev-app.{brand}lat.com` (Clerk real + usuarios de prueba) debe ser parte ESTABLE del proceso de todos los skills, no algo que falla a cada rato. Chris: *"jamás me digas que algo está done sin que tú lo hayas verificado en nuestro ambiente de desarrollo."* **Cement-date:** 2026-05-31. **Critical Rule #37.** **Aplica a:** TODAS las brands (vitalia, nicolify, comunify, lupulo + futuras) — una sola DoD cross-brand; cada marca usa su propio `dev-app` (vitalia es la referencia completamente provista; las demás heredan el patrón — `promotable: candidate`). **Complementa:** `test-design-doctrine.md § Verificación REAL ≠ HTTP 200` (la doctrina) + `story-closure-gate.md` (Fase F merge) + `vitalia/docs/architecture/ADR-vitalia-008-dev-app-live-verification-gate.md` (el GATE concreto en vitalia).
+**Origen:** sesión 2026-05-31 — dos detonantes convergentes: (a) Chris detectó que `nicolify-r0-shell` fue marcada `done` aunque su propio `07-merge.md` admitía que la verificación live NUNCA ocurrió (44/44 e2e contra `next build`, no el stack interactivo); (b) Chris fijó que la verificación live contra `dev-app.{brand}lat.com` (Clerk real + usuarios de prueba) debe ser parte ESTABLE del proceso de todos los skills, no algo que falla a cada rato. Chris: *"jamás me digas que algo está done sin que tú lo hayas verificado en nuestro ambiente de desarrollo."* **Cement-date:** 2026-05-31. **Critical Rule #37.** **Aplica a:** TODAS las brands (vitalia, nicolify, comunify, lupulo + futuras) — una sola DoD cross-brand; cada marca usa su propio `dev-app` (vitalia es la referencia más completa — config de túnel provista, credencial pendiente; las demás heredan el patrón — `promotable: candidate`). **Complementa:** `test-design-doctrine.md § Verificación REAL ≠ HTTP 200` (la doctrina) + `story-closure-gate.md` (Fase F merge) + `vitalia/docs/architecture/ADR-vitalia-008-dev-app-live-verification-gate.md` (el GATE concreto en vitalia).
 
 ## Por qué existe (la división de responsabilidades)
 
@@ -20,19 +20,19 @@ El entorno canónico de live-verify es **`dev-app.{brand}lat.com`** = **cloudfla
 
 | Brand | dev-app | Levantar | localhost (FE/BE) | Backend logs | Estado |
 |---|---|---|---|---|---|
-| **vitalia** | `dev-app.vitalialat.com` | `make dev-app-vitalia` (idempotente · `scripts/dev-app-up.sh`) | `:3002` / `:8002` (`/api/*`→BE) | `docker logs luana-dev-vitalia_backend_dev-1` | ✅ provisto + probado live |
+| **vitalia** | `dev-app.vitalialat.com` | `make dev-app-vitalia` (idempotente · `scripts/dev-app-up.sh`) | `:3002` / `:8002` (`/api/*`→BE) | `docker logs luana-dev-vitalia_backend_dev-1` | 🟡 tunnel configurado (`dev-config.yml` `737ae13f-…`); **falta** `vitalia/deploy/cloudflared/.credentials/dev-tunnel.json` → correr `cloudflared-setup.sh vitalia`. Live-verify HOY vía **localhost:3002** (fallback válido) |
 | **nicolify** | `dev-app.nicolify.com` | `make dev-nicolify` + `make dev-nicolify-tunnel` | `:3001` / `:8001` | `docker logs luana-dev-nicolify_backend_dev-1` | ⚠️ tunnel ID real en `dev-config.yml` (`be33b8dd-5218-46d2-b8b5-1ee65f2dee8e`); falta solo `nicolify/deploy/cloudflared/.credentials/dev-tunnel.json` (keys de Chris) |
 | comunify | `dev-app.comunify.com` | `make dev-comunify` + `make dev-comunify-tunnel` | `:3003` / `:8003` | `docker logs luana-dev-comunify_backend_dev-1` | ⚠️ verificar |
 | lupulo | `dev-app.lupulo.com` | `make dev-lupulo` + `make dev-lupulo-tunnel` | `:3004` / `:8004` | `docker logs luana-dev-lupulo_backend_dev-1` | ⚠️ verificar |
 
-**Vitalia (referencia completamente provista — todo probado live 2026-05-31):**
+**Vitalia (referencia más completa — config de túnel provista; credencial pendiente → live-verify vía localhost hasta correr `cloudflared-setup.sh vitalia`):**
 
 | Pieza | Valor | Nota |
 |---|---|---|
 | URL | `https://dev-app.vitalialat.com` | Cloudflare Tunnel → FE :3002 (`/api/*` → BE :8002) |
 | Levantar | `make dev-app-vitalia` | stack + tunnel + verifica + imprime URL/creds. **Idempotente.** |
 | Usuario de prueba | `dr.demo@vitalialat.com` | owner tenant Sanaré (role=owner + clinicId + tenant_id en `public_metadata`) |
-| Password / token | `DEV_APP_TEST_PASSWORD` + `CLERK_TESTING_TOKEN_VITALIA` | en `vitalia/.env.dev` (**gitignored**) |
+| Password / token | `CLERK_TESTING_TOKEN_VITALIA` (presente) · `DEV_APP_TEST_PASSWORD` (pendiente de setear) | en `vitalia/.env.dev` (**gitignored**) |
 | Clerk origins | `dev-app.vitalialat.com` + `localhost:3002` | ya seteados en la instancia (`allowed_origins`) |
 
 > **Provisión del túnel por brand (one-time):** `scripts/cloudflared-setup.sh {brand}` (login Cloudflare interactivo + crea tunnel + DNS CNAME + `deploy/cloudflared/.credentials/dev-tunnel.json` gitignored + resuelve `<TUNNEL_ID>` en `dev-config.yml`). Requiere auth de Chris (no automatizable headless). **Nicolify:** el tunnel ID ya está resuelto en `dev-config.yml` (`be33b8dd-5218-46d2-b8b5-1ee65f2dee8e`, hostname `dev-app.nicolify.com`) — solo falta dejar el `dev-tunnel.json` en `nicolify/deploy/cloudflared/.credentials/` (montado a `/etc/cloudflared/dev-tunnel.json`).
