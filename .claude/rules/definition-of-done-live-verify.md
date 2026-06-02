@@ -32,7 +32,7 @@ El entorno canónico de live-verify es **`dev-app.{brand}lat.com`** = **cloudfla
 | URL | `https://dev-app.vitalialat.com` | Cloudflare Tunnel → FE :3002 (`/api/*` → BE :8002) |
 | Levantar | `make dev-app-vitalia` | stack + tunnel + verifica + imprime URL/creds. **Idempotente.** |
 | Usuario de prueba | `dr.demo@vitalialat.com` | owner tenant Sanaré (role=owner + clinicId + tenant_id en `public_metadata`) |
-| Password / token | `CLERK_TESTING_TOKEN_VITALIA` (presente) · `DEV_APP_TEST_PASSWORD` (pendiente de setear) | en `vitalia/.env.dev` (**gitignored**) |
+| Password / token | `CLERK_TESTING_TOKEN_VITALIA` + `DEV_APP_TEST_PASSWORD` + `DEV_APP_CHRIS_*` (todos seteados 2026-06-02; password verificado vía Clerk `verify_password`→true) | en `vitalia/.env.dev` (**gitignored**) |
 | Clerk origins | `dev-app.vitalialat.com` + `localhost:3002` | ya seteados en la instancia (`allowed_origins`) |
 
 > **Provisión del túnel por brand:** `scripts/cloudflared-setup.sh {brand}` — **NO-INTERACTIVO** (reescrito 2026-06-02): usa un API token de cuenta (cfat_) en `{brand}/deploy/cloudflared/.credentials/cf-api.env` (gitignored, fallback `.env.dev`), sin login browser ni binario cloudflared host. Idempotente + no-destructivo: detecta tunnel existente (reusa) o crea locally-managed con secret + escribe credencial JSON + asegura el CNAME. `--recreate` fuerza recreación (DESTRUCTIVO). **Estado 2026-06-02:** los 3 túneles (vitalia/nicolify/comunify) están provistos + connector docker UP + DNS routed; las credenciales locally-managed viven **per-worktree** (cada marca en su worktree canónico — footgun cross-worktree abajo). El secret de un tunnel existente NO se recupera vía API → copiar el `dev-tunnel.json` del worktree origen o `--recreate`. **lupulo:** placeholder (sin deploy/cloudflared).
@@ -42,6 +42,41 @@ El entorno canónico de live-verify es **`dev-app.{brand}lat.com`** = **cloudfla
 ### ⚠️ Footgun cross-worktree (leer una vez)
 
 El compose usa project compartido `luana-dev`. El container `cloudflared` + FE/BE bind-montan el código del **worktree desde el que se corrió `up` por última vez**. Si construís en `~/Proyectos/luana-vitalia` pero el stack se levantó desde `~/Proyectos/luana-platform`, **dev-app puede estar sirviendo el código del otro worktree.** Regla: corré `make dev-app-{brand}` **desde el worktree donde estás construyendo** antes de verificar.
+
+## Política de usuarios + claves de prueba (cross-brand · cement 2026-06-02)
+
+**Compartida por TODAS las marcas** — cada marca tiene sus propios usuarios/roles/tenants, pero la **política de creación + almacenamiento + verificación es única**. Origen: Chris 2026-06-02.
+
+### Creación
+- Cada marca corre su **instancia Clerk dev propia** (`pk_test_…`, NUNCA `pk_live_`). Usuarios + roles + tenants son **brand-specific** (vitalia: owner/doctor/recepcion/super_admin sobre Sanaré-MX/Aurora-AR/Mindful-CL; nicolify/comunify/… definen los suyos).
+- Sembrar AL MENOS **un usuario de prueba primario** (rol más alto, ej. owner) con `public_metadata` completa que la marca necesite para auth real (mínimo `role` + `tenant_id`; vitalia agrega `clinicId`). Documentar la tabla de usuarios/roles/tenants seeded en `{brand}/docs/architecture/` (pre-flight checklist per brand).
+- Naturaleza: creds de **DESARROLLO** (instancia `pk_test_`). OK en `.env.dev` gitignored + en el historial de sesión (ratificado Chris 2026-06-02 — son dev). **NUNCA** prod, **NUNCA** en archivo tracked.
+
+### Almacenamiento (keys canónicas — MISMOS nombres cross-brand, VALORES per-brand)
+En `{brand}/.env.dev` (**gitignored** — patrón `*.env.dev` en `.gitignore`):
+
+| Key | Qué |
+|---|---|
+| `DEV_APP_TEST_EMAIL` / `DEV_APP_TEST_PASSWORD` | usuario de prueba primario que usan `dev-app-up.sh` + Playwright autenticado + Chrome MCP |
+| `DEV_APP_CHRIS_EMAIL` / `DEV_APP_CHRIS_PASSWORD` | login propio de Chris — para **cross-check** (lo que ve él vs lo que veo yo en live-verify; cuando difieren, reproduzco su vista exacta) |
+| `CLERK_TESTING_TOKEN_{BRAND}` | testing token Clerk (bypass bot-detection en Playwright) |
+| `CLERK_SECRET_KEY` / `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | keys de la instancia dev de la marca |
+
+(Las API keys del túnel Cloudflare van aparte en `{brand}/deploy/cloudflared/.credentials/cf-api.env`, gitignored — ver § Provisión del túnel.)
+
+### Verificación (verify-real, OBLIGATORIO)
+Antes de declarar una credencial "seteada", **confirmarla contra Clerk** — NO asumir (skill `clerk-backend-api` o curl con `CLERK_SECRET_KEY` de `{brand}/.env.dev`):
+```
+GET  /v1/users?email_address={email}              → existe + public_metadata (role/tenant) correctos
+POST /v1/users/{user_id}/verify_password  {"password":"…"}  → "verified": true
+```
+Documentar en `dod_evidence` que la auth se ejerció con un usuario real verificado.
+
+### Prohibido
+- ❌ Creds test en archivo tracked (solo `.env.dev` gitignored).
+- ❌ Instancia `pk_live_` (prod) para live-verify.
+- ❌ Declarar `DEV_APP_TEST_PASSWORD` seteado sin `verify_password`→true.
+- ❌ Nombres de key distintos por marca (los NOMBRES son cross-brand; los VALORES son per-brand).
 
 ## Las dos herramientas (se usan AMBAS, según el momento)
 
