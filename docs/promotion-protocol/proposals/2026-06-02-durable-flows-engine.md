@@ -1,10 +1,21 @@
 ---
 proposal_id: 2026-06-02-durable-flows-engine
-state: accepted                # proposed | under_review | accepted | rejected | migrated
+state: migrated                # proposed | under_review | accepted | rejected | migrated
 opened_date: 2026-06-02
 opened_by: /pm-luana
 ratified_by: Chris             # "confirmá la recomendación y arrancá la story platform del motor" + "L1 completo + L2 diseñado"
 ratified_date: 2026-06-02
+migrated_date: 2026-06-02       # L1 lifted + wired + verified live (durable persist + resume, both brands)
+migrated_commits: [c8551ed7, 98006df8, 88175663, 76f9e55b, 335ed390]   # T-flows-1..5 (wip/vitalia)
+migration_note: >
+  L1 COMPLETE. core/luana-core-flows shipped (provider make_durable_checkpointer +
+  build_flow_thread_id/build_phi_flow_thread_id, 13 unit tests). 5 brand graphs wired to the
+  core provider via per-brand durable accessors; brand mirror wizard_checkpoint_config.py DELETED
+  (anti-dup satisfied: grep build_production_checkpointer = 0). Idempotent migrations vitalia 037 +
+  comunify 002 (LangGraph-owned fixed-name tables via setup()). Downstream regression GREEN (vitalia
+  463 + comunify 182). Live-verify (DoD #37): durable persist + resume proven in Postgres — vitalia 3
+  rows (vitalia.wizard:*), comunify 8 rows (comunify.community:*). L2 (FlowCompiler/FlowDefinition/EP-19)
+  remains design-only (deferred-next-story) — NOT migrated, see 03-arch.md § L2.
 
 # Origen
 origin_learnings:

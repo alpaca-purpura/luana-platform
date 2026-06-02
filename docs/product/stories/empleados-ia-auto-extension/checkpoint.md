@@ -9,17 +9,17 @@ cap_target: null                                  # paradigma platform-level · 
 cap_change_type: new
 parent_story: null
 
-state: developing                                 # 2026-06-02 L1 build EN CURSO. T-flows-1+2 done+committed. T-flows-3/4/5 → HANDOFF a sesión fresca.
-phase_workflow: BUILD_L1_DAG_HANDOFF                # T-flows-3 (wire+delete mirror) + T-flows-4 (migraciones) + T-flows-5 (downstream+live-verify) pendientes
-last_artifact: "03-arch.md + 03-arch-{agentic,be}.md + 04-validators.yaml + 05-guidelines.md + 06-tickets.yaml + dispatch-plan.md (L1 accionable + L2 design-only)"
-last_modified: 2026-06-02T13:45:00-05:00
+state: developing                                 # umbrella CONTINÚA — item 1b (L1 durable) DONE 2026-06-02; items 1c-design DONE; items 2-5 pendientes. ⚠️ archive/estado-final pendiente decisión Chris (NO archivar: es el SSoT vivo del paraguas empleados-IA con derivadas abiertas).
+phase_workflow: L1_DONE_UMBRELLA_CONTINUES         # T-flows-1..5 done+committed+verified+merged-to-wip + auditor APPROVED. L2 build + items 2-5 = stories siguientes.
+last_artifact: "07-merge.md + REVIEW-agentic.md (L1 durable-flows merged a wip/vitalia, APPROVED, DoD #37 live-verified)"
+last_modified: 2026-06-02T14:05:00-05:00
 ready_package_note: >
   Story platform de ENGINE INFRA, spike-derived (sin 01-spec/mockups/FE — NO aplican gates UI). Pasó de `refining`
   directo a `ready` SIN `refined` formal: es válido para una engine-spike-story autorizada por la proposal accepted
   (2026-06-02-durable-flows-engine.md). El "refinamiento" fue el spike + el drift map + ADR-013. Ready-package completo
   cubre L1 (build esta conversación: provider core/luana-core-flows + cablear 5 grafos + borrar mirror brand + migraciones
   + downstream regression vitalia+comunify + live-verify DoD #37) + L2 (DISEÑO: FlowCompiler/FlowDefinition/EP-19, build siguiente).
-next_action: "★ HANDOFF a sesión fresca — SSoT del traspaso = `HANDOFF-L1-build.md`. Done+committed (wip/vitalia @ 98006df8): gobernanza + ready-package + T-flows-1 scaffold + T-flows-2 provider (13 tests verdes). PENDIENTE: T-flows-3 (wire 5 grafos IN-PLACE + DELETE mirror — NO sub-builders, se aíslan en worktree brancheado de main y rompen el DAG) + T-flows-4 (migraciones idempotentes 037/002) + T-flows-5 (downstream regression vitalia+comunify + live-verify DoD #37 con make dev-vitalia + psql) → auditor-agentic → /pm-luana close (proposal accepted→migrated + archive R2 en docs/archive). Gotchas críticos en HANDOFF §2: SCOPE_GATE_SKIP para core/, venv compartido (uv sync desde vitalia), libpq → psycopg[binary] o contenedor, table_prefix N/A, comunify dev-app bug (live-verify en vitalia)."
+next_action: "L1 durable-flows CERRADO (T-flows-1..5, proposal migrated, CHANGELOG + docs/core-modules/flows.md, 07-merge + REVIEW-agentic APPROVED, downstream 463+182 verde, DoD #37 persist+resume real en Postgres). ⚠️ DECISIÓN CHRIS PENDIENTE: ¿archivar el folder umbrella a docs/archive/2026/stories/ (HANDOFF lo decía) o mantenerlo VIVO? Recomendación: mantener VIVO — este folder es el SSoT del paraguas empleados-IA (00-research + visión + L2 design seed) y el outcome tiene items 1c/2/3/4/5 abiertos 'post L1+L2'. Próximo trabajo real: L2 story (FlowCompiler/EP-19) + item 2 (story derivada vitalia: primer flujo durable real sobre L1)."
 ratified_by_chris: true                            # Chris ratificó vía (a) 2026-06-01: promover a ADR-platform
 spawned_at: 2026-06-01T16:00:00-05:00
 spawned_by: /pm-luana
