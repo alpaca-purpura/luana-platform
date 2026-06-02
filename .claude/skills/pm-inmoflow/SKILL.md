@@ -188,6 +188,8 @@ Mergear story con `status: live` sin actualizar `capabilities/` = brand SSoT fun
 desincronizada del código. Toda regen futura del portfolio + audits
 + promotion candidate detection operan ciegos.
 
+Ver también: `vitalia/docs/learnings/2026-05-16-capabilities-inventory-gap.md`.
+
 ## Referencias
 
 - `docs/portfolio/inmoflow.md` — 1-pager brand

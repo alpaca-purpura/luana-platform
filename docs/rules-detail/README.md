@@ -2,7 +2,7 @@
 
 **Cement-date:** 2026-05-23.
 
-**Por qué existe:** Claude Code auto-carga `.claude/rules/*.md` y `.claude/rules/references/*.md` como project memory en cada sesión (~28 archivos, ~85KB total pre-slim). El detalle exhaustivo (workflows verbatim, ejemplos casos origen, anti-patterns completos, layers enforcement detail) NO necesita estar en context siempre — solo cuando un auditor o builder lo pide.
+**Por qué existe:** Claude Code auto-carga `.claude/rules/*.md` como project memory en cada sesión (el directorio `.claude/rules/references/` fue eliminado en el context-rot pass 2026-05-30 — ya no existe). El detalle exhaustivo (workflows verbatim, ejemplos casos origen, anti-patterns completos, layers enforcement detail) NO necesita estar en context siempre — se carga on-demand vía `Read` tool o `@ref` cuando un auditor, builder o PM lo solicita.
 
 **Cómo funciona:**
 

@@ -250,7 +250,7 @@ T1:
   acceptance:
     - { id: A1, description: "POST happy → 200 + ResponseDTO shape", verifier: { type: pytest, path: "tests/modules/copilot/test_brand_audit_endpoint.py::test_happy" } }
     - { id: A2, description: "Cross-tenant → 403", verifier: { type: pytest, path: "...::test_tenant_isolation" } }
-    - { id: A3, description: "Migration idempotente", verifier: { type: bash, cmd: "make verify-migration-idempotency" } }
+    - { id: A3, description: "Migration idempotente", verifier: { type: bash, cmd: "docker exec luana-dev-{brand}_backend_dev-1 alembic upgrade head && docker exec luana-dev-{brand}_backend_dev-1 alembic upgrade head" } }
   # ★ gherkin_coverage MANDATORY post-cement-date 2026-05-18 (story-closure-gate)
   gherkin_coverage:
     - scenario: "SC-01 POST /brand-audit con tenant válido retorna 200 + análisis"

@@ -44,7 +44,7 @@ copilot-brand-audit
 ## Cierre del sprint
 
 Criterios:
-- [ ] Todas las stories `audit-passed` o movidas a próximo sprint
+- [ ] Todas las stories `done` o movidas a próximo sprint
 - [ ] Métricas: pass^k stories agentic >= threshold, coverage no bajó
 - [ ] `checkpoint.md` sprint marcado `done`
 - [ ] Retrospective brief al final

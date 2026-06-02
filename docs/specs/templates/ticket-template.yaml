@@ -16,7 +16,7 @@ tickets:
     title: "Endpoint POST /api/v1/{module}/{action}"
     type: backend                                # backend | frontend | agentic | infra | migration
     surface: BE                                  # BE | FE | AGENTIC | DB | INFRA
-    state: draft                                 # draft|ready|assigned|building|tests-failing|tests-passing|pushed|auditing|changes-requested|audit-passed|merged|blocked
+    state: draft                                 # draft|ready|assigned|building|tests-failing|tests-passing|pushed|auditing|changes-requested|reviewing|done|blocked
     owner_eligibility:
       qwen_opencode: true                        # ¿qwen via opencode puede tomarlo?
       claude_sonnet: true                        # ¿Claude Code Sonnet?
@@ -67,7 +67,7 @@ tickets:
         description: "Migration aplica idempotente (correr 2x sin error)"
         verifier:
           type: bash
-          cmd: "docker exec visionarias_brain_dev alembic upgrade head && alembic upgrade head"
+          cmd: "docker exec luana-dev-{brand}_backend_dev-1 alembic upgrade head && alembic upgrade head"
 
     # ── Quality gates obligatorios ────────────
     quality_gates:
@@ -78,7 +78,7 @@ tickets:
       - "Arch fitness tests pasan"
 
     # ── Dependencies ──────────────────────────
-    depends_on: []                               # IDs de tickets que deben estar audit-passed antes
+    depends_on: []                               # IDs de tickets que deben estar reviewing/done antes
     blocks: []                                   # IDs de tickets que esperan a este
 
     # ── State machine fields (auto-update) ────
@@ -99,7 +99,7 @@ tickets:
     owner_eligibility:
       qwen_opencode: false                       # ⛔ qwen prohibido en agentic
       claude_sonnet: false                       # ⛔ Sonnet también — agentic exige Opus
-      claude_opus_required: true                 # ✅ Opus 4.7 mandatory
+      claude_opus_required: true                 # ✅ Opus 4.8 mandatory
     priority: 1
     estimate_hours: 3
     decisions_applicable: []                     # ⚠️ R6 — agentic decisions (slot architecture, voice fidelity, cost budget)

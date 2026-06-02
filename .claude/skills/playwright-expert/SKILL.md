@@ -4,9 +4,9 @@ description: "Playwright E2E expert (multibrand Luana) — Clerk auth lifecycle 
 when_to_use: "Use ANY time you write, debug, run, audit, extend, or think about Playwright E2E tests in the platform. Trigger when user mentions: 'smoke test', 'e2e', 'playwright', 'tests E2E', 'agreguemos un smoke', 'el smoke falla', 'auth de Clerk en tests', 'test:e2e', 'spec.ts', 'storageState', 'auth.fixture', 'POM', 'page object', 'browser test', 'test integral', 'preflight', 'test que abra el navegador', 'verificar el flujo X end-to-end', 'CI de Playwright', 'fixtures de Playwright', '/test-all flake', 'playwright report', 'trace viewer', 'visual regression Playwright', 'verify project', 'Clerk testing token', 'CLERK_TESTING_TOKEN', 'playwright/.clerk/user.json', 'Bot traffic detected', 'Clerk Frontend API URL is required', 'session expired Playwright'. Also trigger proactively before any commit/PR that touches `frontend/e2e/**` or any UI flow that could affect smoke tests, and before any GH Actions change to `e2e-tests.yml`. When in doubt, USE this skill — under-triggering Playwright knowledge is the #1 cause of broken E2E suites in Luana."
 ---
 
-# Playwright Expert (Nicolify)
+# Playwright Expert (Luana multibrand)
 
-Single source of truth for E2E testing in Nicolify. Anchors on Playwright 1.59+, `@clerk/testing` 2.x, `@clerk/nextjs` 6.36+, native Linux (host) execution, and the multi-tenant + Clerk + Cloudflare Turnstile reality of this codebase.
+Single source of truth for E2E testing in Luana (multibrand). Anchors on Playwright 1.59+, `@clerk/testing` 2.x, `@clerk/nextjs` 6.36+, native Linux (host) execution, and the multi-tenant + Clerk + Cloudflare Turnstile reality of this codebase.
 
 > **Mantra:** *"E2E tests are not flaky. Auth is flaky. Networks are flaky. Mocks are flaky. The test runner is deterministic — fix the substrate, not the test."*
 
@@ -22,7 +22,7 @@ Before changing anything in `frontend/e2e/**`, the architect-level mental model 
 | **Clerk auth — full lifecycle** (testing token, cf_bm cookie, freshness gate, retry, sanity check, multi-worker) | `references/clerk-auth-deep-dive.md` | Auth fails, "Bot traffic detected", "Clerk Frontend API URL is required", session expired, signIn flake, storageState corruption |
 | **Recipe: add a new smoke test** (the most common future task) | `references/adding-smoke-test.md` | User asks "agreguemos un smoke para X", "necesito test de Y", "smoke de la nueva ruta", or any new UI page lands |
 | **Page Object Models — patterns + locator priority** | `references/pom-patterns.md` | Writing/refactoring a POM, choosing a locator, debugging "element not found" |
-| **Fixtures + network mocks** | `references/fixtures-and-mocks.md` | `auth.fixture.ts`, growth-studio mocks, Copilot SSE mocks, mocking external APIs (Meta/IG/YT/Email) |
+| **Fixtures + network mocks** | `references/fixtures-and-mocks.md` | `auth.fixture.ts`, analytics/marketing mocks, Copilot SSE mocks, mocking external APIs (Meta/IG/YT/Email) |
 | **CI + flaky test debugging** | `references/ci-and-flaky-tests.md` | Test passes locally fails CI, trace viewer, sharding, retry tuning, GH Actions changes |
 | **Anti-patterns — what NEVER to do** | `references/anti-patterns.md` | Reviewing a PR that touches e2e, before merging, when about to write something that "feels off" |
 | **Project-specific Spanish neutro** | `.claude/rules/spanish-text.md` | Any user-visible string asserted in tests (`getByText('Configura...')`) |
@@ -125,7 +125,7 @@ bash $(git rev-parse --show-toplevel)/scripts/e2e-preflight.sh
 **Always set `E2E_BASE_URL`** if you don't want Playwright to spawn its own `next dev`:
 
 ```bash
-E2E_BASE_URL=http://localhost:3000 npx playwright test --project=smoke
+E2E_BASE_URL=http://localhost:300X npx playwright test --project=smoke  # X = brand port (nicolify=1, vitalia=2, comunify=3, lupulo=4)
 ```
 
 The `playwright.config.ts` will SKIP its `webServer` block when `E2E_BASE_URL` is set — this is what you want when the dev container is already running.
@@ -230,7 +230,7 @@ If you are seeing this skill for the first time:
 3. Read `references/clerk-auth-deep-dive.md` end-to-end. 90% of failures live there.
 4. Open `frontend/e2e/specs/smoke/navigation.smoke.spec.ts` and `frontend/e2e/pages/navigation.page.ts` side by side — they are the gold-standard pair.
 5. The next time you write a test, follow `references/adding-smoke-test.md` literally for the first 5 tests.
-6. Subscribe to `.github/workflows/e2e-tests.yml` notifications — when smoke fails on `development`, page yourself.
+6. Subscribe to `.github/workflows/e2e-tests.yml` notifications — when smoke fails on `wip/{brand}`, page yourself.
 
 ---
 

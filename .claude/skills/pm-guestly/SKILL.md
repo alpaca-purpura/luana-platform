@@ -174,6 +174,15 @@ En Fase F (merge a `done`), `/pm-guestly` REFUSE si:
 El sign-off de Chris (negocio · product demo paso a paso ejecutado contra dev-app) es **SEPARADO** del auditor (técnico) — **ambos** requeridos para `done`.
 Ref: `.claude/rules/definition-of-done-live-verify.md` §5.
 
+### Anti-pattern
+
+Mergear story con `status: live` sin actualizar `capabilities/` = brand SSoT funcional
+desincronizada del código. "¿Qué tenemos?" no se contesta leyendo docs sino
+inspeccionando código + rules + archive. Toda regen futura del portfolio + audits
++ promotion candidate detection operan ciegos.
+
+Ver también: `vitalia/docs/learnings/2026-05-16-capabilities-inventory-gap.md`.
+
 ## Output format
 
 - 1 línea resumen + 1-3 bullets cambios (paths con prefijo `guestly/`) + 1 línea next step.

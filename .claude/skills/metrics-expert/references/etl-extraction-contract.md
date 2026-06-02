@@ -1,6 +1,6 @@
 ---
-globs: "backend/src/modules/analytics/**/*.py"
-description: ETL extraction contract workflow — read/update/verify cycle
+globs: "{core/luana-core-analytics-engine/**,{nicolify,vitalia,comunify,lupulo}/backend/src/modules/*/analytics/**}/*.py"
+description: ETL extraction contract workflow — read/update/verify cycle (multibrand)
 ---
 
 # ETL Extraction Contract
@@ -11,8 +11,8 @@ description: ETL extraction contract workflow — read/update/verify cycle
 
 | File | Answers | Runtime? |
 |---|---|---|
-| `backend/src/modules/analytics/domain/metric_catalog.py` | "Metric `X` means? ADDITIVE/WEIGHTED_AVG/NON_AGG/SNAPSHOT/DERIVED? Unit, display, interpretation, benchmarks?" | **Yes** — `MetricResolver`, `aggregations.py`, stage services, `/metrics/catalog` |
-| `backend/src/modules/analytics/domain/extraction_contract.py` | "Which provider extracts `X`? From which endpoint? When? Credentials? Channel slug? Issues?" | **No** — docs + test enforcement |
+| `core/luana-core-analytics-engine/src/luana_core_analytics_engine/domain/metric_catalog.py` | "Metric `X` means? ADDITIVE/WEIGHTED_AVG/NON_AGG/SNAPSHOT/DERIVED? Unit, display, interpretation, benchmarks?" | **Yes** — `MetricResolver`, `aggregations.py`, stage services, `/metrics/catalog` |
+| `core/luana-core-analytics-engine/src/luana_core_analytics_engine/domain/extraction_contract.py` | "Which provider extracts `X`? From which endpoint? When? Credentials? Channel slug? Issues?" | **No** — docs + test enforcement |
 
 Catalog = semantics. Contract = extraction reality. Arch test `tests/architecture/test_extraction_contract.py` keeps aligned: every catalog metric w/ `providers` tuple listing `X` MUST appear in `X`'s `ChannelOutput` OR allowlisted in `KNOWN_CATALOG_CONTRACT_GAPS` w/ audit ref.
 
@@ -21,26 +21,32 @@ Catalog = semantics. Contract = extraction reality. Arch test `tests/architectur
 Questions like "what ETL extracts for `<provider>`?", "where `<metric>` comes from?", "when `<provider>` runs?", "why `<channel>` empty?":
 
 **Step 1 (mandatory):** Read `docs/etl/extraction-contract.md` first. Auto-gen MD.
-**Step 2 (si falta):** `backend/src/modules/analytics/domain/extraction_contract.py` — `known_issues`, `last_verified`, `notes`, `required_credentials`.
+**Step 2 (si falta):** `core/luana-core-analytics-engine/src/luana_core_analytics_engine/domain/extraction_contract.py` — `known_issues`, `last_verified`, `notes`, `required_credentials`.
 **Step 3 (si step 2 insuficiente):** Actual provider source. Si contract wrong/incomplete, **MUST update before finishing**.
 
 ## When UPDATING
 
-Trigger: any change to:
-- `backend/src/modules/analytics/infrastructure/providers/*.py`
-- `backend/src/modules/analytics/infrastructure/etl/pipeline.py`
-- `backend/src/modules/analytics/infrastructure/etl/period_pipeline.py`
-- `backend/src/modules/analytics/infrastructure/etl/aggregations.py`
-- `backend/src/modules/analytics/application/services/etl_service.py`
-- `backend/src/modules/analytics/workers/scheduler.py`
-- `backend/src/modules/analytics/workers/tasks.py`
-- `backend/src/modules/analytics/domain/metric_catalog.py`
-- `backend/src/workers/settings.py`
+Trigger: any change to (engine paths require `/pm-luana` promotion gate; brand opt-ins are brand-scoped):
+
+**Engine (cross-brand — `core/luana-core-analytics-engine/src/luana_core_analytics_engine/`):**
+- `.../infrastructure/providers/*.py`
+- `.../infrastructure/etl/pipeline.py`
+- `.../infrastructure/etl/period_pipeline.py`
+- `.../infrastructure/etl/aggregations.py`
+- `.../application/services/etl_service.py`
+- `.../workers/scheduler.py`
+- `.../workers/tasks.py`
+- `.../domain/metric_catalog.py`
+- `.../workers/settings.py`
+
+**Brand opt-in (`{brand}/backend/src/modules/{brand}/analytics/`):**
+- `.../providers/*.py` (brand-specific provider adapters registered via Extension SDK)
+- `.../extensions.py` (enabled_metrics, channel_groups opt-in)
 
 ### 5-step workflow
 
 1. **Implement** en provider/pipeline/catalog.
-2. **Update contract** en `extraction_contract.py`:
+2. **Update contract** en `core/luana-core-analytics-engine/src/luana_core_analytics_engine/domain/extraction_contract.py`:
    - Nueva metric → `MetricMapping` en right `ChannelOutput`
    - Nuevo channel → `ChannelOutput` en contract entry
    - Nuevo provider → `_<name>_contract()` factory + register `EXTRACTION_CONTRACTS`
@@ -50,13 +56,18 @@ Trigger: any change to:
 3. **Si catalog cambió**, re-check metric w/ `providers=("X",)` listed en X's contract.
 4. **Regen MD** (mandatory, FINAL):
    ```bash
-   cd backend && .venv/bin/python scripts/generate_extraction_contract_doc.py
-   # or
+   # from workspace root (WS = git rev-parse --show-toplevel)
    make extraction-contract
+   # or: ${WS}/.venv/bin/python core/luana-core-analytics-engine/scripts/generate_extraction_contract_doc.py
    ```
-5. **Arch test**:
+5. **Arch test** (engine + every brand consumer):
    ```bash
-   cd backend && .venv/bin/pytest tests/architecture/test_extraction_contract.py -x -q
+   WS=$(git rev-parse --show-toplevel)
+   cd ${WS}/core/luana-core-analytics-engine && ${WS}/.venv/bin/pytest tests/architecture/test_extraction_contract.py -x -q
+   # also per brand:
+   for B in nicolify vitalia comunify lupulo; do
+     cd ${WS}/${B}/backend && ${WS}/.venv/bin/pytest tests/architecture/test_extraction_contract.py -x -q 2>/dev/null || true
+   done
    ```
 
 ### Commit
@@ -111,28 +122,32 @@ Every change invalidates piece. Test will fail. Update.
 ## Quick commands
 
 ```bash
+WS=$(git rev-parse --show-toplevel)
+
 # Read
 cat docs/etl/extraction-contract.md | less
 
-# Edit
-$EDITOR backend/src/modules/analytics/domain/extraction_contract.py
+# Edit (engine SSoT)
+$EDITOR ${WS}/core/luana-core-analytics-engine/src/luana_core_analytics_engine/domain/extraction_contract.py
 
 # Regen
-cd backend && .venv/bin/python scripts/generate_extraction_contract_doc.py
-# or: make extraction-contract
+make extraction-contract   # from workspace root
 
-# Verify
-cd backend && .venv/bin/pytest tests/architecture/test_extraction_contract.py -x -q
+# Verify (engine + brand consumers)
+cd ${WS}/core/luana-core-analytics-engine && ${WS}/.venv/bin/pytest tests/architecture/test_extraction_contract.py -x -q
 
-# Sample prod (Visionarias)
-ssh -i ~/.ssh/id_rsa -p 22022 root@161.132.41.191 \
-  'docker exec visionarias_postgres psql -U postgres -d visionarias_logs --pset=pager=off \
-   -c "SELECT provider, channel_slug, metric_name, COUNT(*) c, MIN(metric_date) min_d, MAX(metric_date) max_d \
-       FROM official_metrics \
-       WHERE tenant_id='\''9831cfbe-3912-429e-a944-40f3e7bf1372'\'' \
-       GROUP BY provider, channel_slug, metric_name ORDER BY provider, channel_slug;"'
+# Sample dev query per brand (multibrand)
+# Replace {BRAND} and {TENANT_ID} as needed:
+docker exec luana-dev-{BRAND}_postgres_dev-1 psql -U postgres -d luana_dev --pset=pager=off \
+  -c "SELECT provider, channel_slug, metric_name, COUNT(*) c, MIN(metric_date) min_d, MAX(metric_date) max_d \
+      FROM official_metrics \
+      WHERE tenant_id='{TENANT_ID}' \
+      GROUP BY provider, channel_slug, metric_name ORDER BY provider, channel_slug;"
+
+# LEGACY — pre-reorg (historical reference only, do NOT use):
+# ssh root@161.132.41.191 'docker exec visionarias_postgres psql ...'
 ```
 
 ## Anchor
 
-Future Claude: ETL question → **first action** read `docs/etl/extraction-contract.md`. Before writing en `backend/src/modules/analytics/` → **first action** read this + contract. After modifying → **last action** `make extraction-contract && pytest tests/architecture/test_extraction_contract.py`. Sin excepciones.
+Future Claude: ETL question → **first action** read `docs/etl/extraction-contract.md`. Before writing en `core/luana-core-analytics-engine/src/luana_core_analytics_engine/` (or brand opt-in `{brand}/backend/src/modules/{brand}/analytics/`) → **first action** read this + contract. After modifying → **last action** `make extraction-contract && pytest tests/architecture/test_extraction_contract.py`. Sin excepciones.

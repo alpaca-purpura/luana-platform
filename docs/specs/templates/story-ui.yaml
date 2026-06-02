@@ -12,6 +12,10 @@ capability: CAPABILITY_ID                       # FK → product/capabilities/{m
 cap_target: "{module}/{cap-id}"                 # FK → product/capabilities/{module}/{cap}.yaml (mandatorio desde idea)
 cap_change_type: new                            # new | fix | extend | derive (mandatorio desde idea)
 capability_status: planned                      # planned | in-progress | live | deprecated (estado de la capability, NO de la story)
+agent_owner: null                               # n/a para ui-story (no es superficie ZONA AGENTES); completar si la UI es la cara de un trabajador específico: lisa | valeria | adrian | lucas | camila | mateo
+map_zone: plataforma                            # zona derivada del SYSTEM-MAP: agentes | plataforma | infraestructura
+map_box: null                                   # caja concreta en la zona (ej: acceso | onboarding | configuracion | seguridad-cumplimiento | observabilidad | plataforma-tecnica)
+release: null                                   # FK → product/releases/{F0..FN}.yaml
 slice: MVP                                      # MVP | V1 | V2 | V3
 last_audit: 2026-05-04                          # YYYY-MM-DD última verificación contra código real
 date_introduced: null                           # YYYY-MM-DD cuando capability_status → live

@@ -60,7 +60,7 @@ $ /test-backend
 
 - ✅ Idempotente (`IF NOT EXISTS`).
 - ✅ No `sa.Enum()` en `create_table`.
-- ✅ Verificada ejecutando `alembic upgrade head` x2 en DB limpia (ver Cat 2 acceptance row A3). # `make verify-migration-idempotency` MISSING — create before use
+- ✅ Verificada ejecutando `alembic upgrade head` x2 en DB limpia (ver Cat 2 acceptance row A3).
 
 ### Cat 5 — Spanish neutro UI
 

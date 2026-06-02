@@ -280,12 +280,12 @@ idea ─→ refining ─→ refined ─→ ready ─→ developing ─→ develo
 
 | Phase | Modelo | Razón |
 |---|---|---|
-| `idea`/`refining` (research, decomposition, decisión coherencia) | **Opus 4.7** | Pensamiento estratégico, alto valor, baja frecuencia |
-| `/po-ux` + `/po` + `/ux-agentico` (specs + designs) | **Opus 4.7** | Calidad spec define todo downstream |
-| `/architect` orchestrator + sub-architects | **Opus 4.7** | Decisiones arquitectónicas, ROI altísimo |
+| `idea`/`refining` (research, decomposition, decisión coherencia) | **Opus 4.8** | Pensamiento estratégico, alto valor, baja frecuencia |
+| `/po-ux` + `/po` + `/ux-agentico` (specs + designs) | **Opus 4.8** | Calidad spec define todo downstream |
+| `/architect` orchestrator + sub-architects | **Opus 4.8** | Decisiones arquitectónicas, ROI altísimo |
 | `/dev-team` BE/FE no-agentic | **Sonnet/opencode** | Ejecución contra validators, barato |
-| `/dev-team` agentic production code (R23 hard rule) | **Opus 4.7** | Calidad agentic = experiencia usuario directa |
-| `/auditor` categorías críticas (C1 código + C2 spec + C3 arch) | **Opus 4.7** | Juicio cualitativo |
+| `/dev-team` agentic production code (R23 hard rule) | **Opus 4.8** | Calidad agentic = experiencia usuario directa |
+| `/auditor` categorías críticas (C1 código + C2 spec + C3 arch) | **Opus 4.8** | Juicio cualitativo |
 | `/auditor` tests/lint/format runs | **Sonnet** | Determinístico, barato |
 | `gate-runner` ejecutor `make ci-parity` etc. | **Haiku** | Solo ejecuta + parsea JSON |
 | `context-builder` lecturas previas | **Haiku** | Solo agrega contexto |
