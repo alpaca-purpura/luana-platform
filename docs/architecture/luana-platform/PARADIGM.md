@@ -132,7 +132,8 @@ Lo de la izquierda **no cambia**. Lo de la derecha es **swappable** sin tocar el
 | **Build** | `builder-*` no cruzan plano sin escalar; acción única, no mirror |
 | **Review** | `/auditor` categoría Connectivity (anti-isla) verifica zona/caja + cap↔código |
 | **Cap home** | `docs/process/capability-protocol.md` deriva la zona del registro SYSTEM-MAP |
-| **Cockpit** | `vitalia/docs/architecture/SYSTEM-MAP.yaml` (`zones`) es el esqueleto que el mapa lee |
+| **Cockpit** | `{brand}/docs/architecture/SYSTEM-MAP.yaml` (`zones`) es el esqueleto que el mapa lee |
+| **DoD live-verify** | `.claude/rules/definition-of-done-live-verify.md` (Critical Rule #37) — ninguna capability user-reachable llega a `done` sin ejercerse live en el stack dev real de la marca + `dod_evidence` registrado |
 
 ---
 

@@ -2,7 +2,7 @@
 
 > **Status:** ACCEPTED
 > **Date:** 2026-05-15
-> **Decision-makers:** Chris (alpacapurpura@) + Claude Opus 4.7 (advisory)
+> **Decision-makers:** Chris (alpacapurpura@) + claude-opus-4-8 (advisory)
 > **Supersedes:** politica legacy "Single branch = development, main = prod only, no worktrees" (AGENTS.md pre-2026-05-15)
 > **Superseded by:** none
 > **Related docs:**
@@ -183,7 +183,7 @@ hay autosave automatico, stashes pueden perderse en garbage collection).
 
 - `docs/product/outcomes/git-strategy-revised.md` — decisiones tecnicas originales + trade-offs
 - `.claude/rules/git-safety.md` — triple-branch policy completa + prohibiciones
-- `.claude/rules/parallel-safety.md` — reglas M1-M11 para sesiones paralelas
+- `.claude/rules/parallel-safety.md` — reglas M1-M14 para sesiones paralelas
 - `.claude/rules/git-haiku-delegation.md` — delegacion commit+push a Haiku (3 destinos)
 - `scripts/git/new-session.sh` — helper creacion worktree + branch wip/*
 - `scripts/git/cleanup-session.sh` — helper push final + remocion worktree
@@ -193,4 +193,53 @@ hay autosave automatico, stashes pueden perderse en garbage collection).
 
 | Version | Fecha | Cambio | Autor |
 |---|---|---|---|
-| 1.0 | 2026-05-15 | ADR inicial. Status ACCEPTED (Chris ratifico en outcome doc). | Claude Opus 4.7 + /architect |
+| 1.0 | 2026-05-15 | ADR inicial. Status ACCEPTED (Chris ratifico en outcome doc). | claude-opus-4-8 + /architect |
+| 1.1 | 2026-06-01 | Addendum: M-range M1-M14, single-hub ADR-009, ci-wip/cleanup-wip deferred. | claude-opus-4-8 |
+
+## Addendum (2026-06-01)
+
+> Append-only. El texto de decisión original (Secciones 1–6) se preserva intacto.
+
+### A1 — Rango de reglas paralelas: M1-M14 (no M1-M11)
+
+La referencia original de Sección 6 citaba "M1-M11". Desde el cement 2026-05-18 (D1-D14),
+el rango activo es **M1-M14**. Las reglas añadidas relevantes para este ADR:
+
+- **M12:** `wip/{brand}` es ESTABLE — no rota story-by-story. Branch efímera solo por
+  pedido explícito de Chris. Antes se asumía un `wip/` por historia; ahora hay un único
+  `wip/{brand}` canónico por marca (hub único).
+- **M13:** Scope por branch enforced (pre-commit §13). Cross-brand mixing PROHIBIDO.
+- **M14:** N sesiones sobre el mismo cwd coordinadas por bucket locks
+  (`docs`/`tests`/`code`/`code:{module}`). Commit siempre por pathspec (índice compartido).
+  Módulos distintos pueden paralelizarse; mismo módulo serializa.
+
+SSoT actualizado: `.claude/rules/parallel-safety.md` § "Reglas M1-M14".
+
+### A2 — Topología single-hub (ADR-009 2026-05-28)
+
+La Sección 2.2 describía "cada sesión paralela usa su propio worktree físico dedicado"
+como patrón general. ADR-009 (2026-05-28) invirtió el default:
+
+- **Default actual:** N sesiones sobre el **worktree canónico único** (`~/Proyectos/luana-{brand}/`)
+  coordinadas por bucket locks M14. Un solo filesystem = un solo SSoT = el cockpit ve todo.
+- **Worktree dedicado:** excepción para lift core, cross-cutting protocol, hot-fix aislado,
+  u otra marca. No es la operación diaria.
+
+Referencias: `docs/architecture/luana-platform/ADR-009-single-hub-worktree.md` +
+`.claude/rules/worktree-dual-strategy.md`.
+
+### A3 — ci-wip.yml y cleanup-wip.yml: DEFERRED
+
+Los workflows `ci-wip.yml` (mencionado en Sección 2.1) y `cleanup-wip.yml` (mencionado en
+Sección 5.2) están en modo **deferred** — no se garantiza que corran. La calidad se
+enforce 100% vía hooks locales:
+
+- `scripts/git-hooks/pre-commit` — SSoT calidad por commit (light en `wip/*`, full en `main`/`release/*`).
+- `scripts/git-hooks/pre-push` — tests + tsc + arch fitness.
+- `make ci-parity` — full suite local, obligatorio antes de squash-merge `wip→main`.
+
+La limpieza de branches `wip/*` vencidas (TTL 30 días) queda como tarea manual hasta que
+se provisione un servidor CI real. Reactivar cuando: servidor staging provisionado,
+primera release vX.Y.Z, o segundo desarrollador.
+
+SSoT: `.claude/rules/github-actions-deferred.md` + `docs/rules-detail/github-actions-deferred.md`.

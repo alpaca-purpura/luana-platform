@@ -11,7 +11,7 @@ The preset catalog is the **7th SSoT axis** of the offer-studio system.
 It hides `OfferArchetype` behind user-vocabulary presets so Latam
 microempresarios don't have to classify their own offers.
 
-**Current state (2026-04-20):** 84 presets · 7 questions · 6 flags · 187 arch tests.
+**Current state (2026-04-20):** 84 presets · 7 questions · 6 flags · smoke test del DAG de catálogos (8 funciones).
 **Important (2026-04-20):** tenant `business_types` no longer lives on
 `BrandIdentity`. Read via `core/luana-core-platform/src/luana_core_platform/links/ports/tenant_profile.py`
 (`get_tenant_business_types(db, tenant_id)`) in backend or
@@ -25,7 +25,7 @@ Flags: `SUPPORTS_CAPACITY`, `REQUIRES_START_DATE`, `DELIVERY_HYBRID`, `IS_LEAD_M
 |---|---|
 | `core/luana-core-offer-studio/src/luana_core_offer_studio/domain/offer_type_preset_catalog.py` | Canonical catalog — 84 presets, 7 questions, 6 flags. **Single source of truth.** |
 | `core/luana-core-offer-studio/src/luana_core_offer_studio/api/offer_type_presets.py` | API `/api/v1/offer/type-presets/catalog` + `/catalog/all`. Contains `_CATALOG_VERSION`. |
-| `core/luana-core-offer-studio/tests/test_offer_type_preset_catalog_completeness.py` | 187 arch test cases — enforces all invariants. |
+| `core/luana-core-offer-studio/tests/test_catalogs_dag_smoke.py` | smoke test del DAG de catálogos (8 funciones) — enforces all invariants. |
 
 ### Persistence + DDD bridge
 | File | Role |
@@ -172,7 +172,7 @@ Format: `YYYY-MM-DD.N` where N increments per same-day bump.
 ```bash
 WS=$(git rev-parse --show-toplevel)
 cd ${WS}/core/luana-core-offer-studio && ${WS}/.venv/bin/pytest \
-  tests/test_offer_type_preset_catalog_completeness.py -x -q
+  tests/test_catalogs_dag_smoke.py -x -q
 ```
 
 All 187 (or more, now 188 with the new preset) must pass. Common
@@ -289,7 +289,7 @@ Specific to preset catalog:
 1. After the new `ExpertBusinessType` is in `core/luana-core-platform/src/luana_core_platform/domain/expert_business_type.py`
    and arch tests for that catalog pass…
 2. Add its slug to `_BUSINESS_TYPE_SLUG` in
-   `core/luana-core-offer-studio/tests/test_offer_type_preset_catalog_completeness.py`.
+   `core/luana-core-offer-studio/tests/test_catalogs_dag_smoke.py`.
 3. Add **at least 3 presets** for the new business_type (arch test
    requirement). Typically aim for 5-8.
 4. Update the distribution table in `offer-type-preset-catalog.md`.
@@ -380,7 +380,7 @@ for p in OFFER_TYPE_PRESET_CATALOG.values():
 
 - [ ] Backend catalog change in a single commit.
 - [ ] `_CATALOG_VERSION` bumped.
-- [ ] `tests/architecture/test_offer_type_preset_catalog_completeness.py` passes.
+- [ ] `tests/test_catalogs_dag_smoke.py` passes.
 - [ ] `offer-type-preset-catalog.md` updated (distribution + decisions).
 - [ ] If you changed questions or flags: downstream consumers reviewed.
 - [ ] `working tree clean`, commits pushed to `wip/{brand}`.
