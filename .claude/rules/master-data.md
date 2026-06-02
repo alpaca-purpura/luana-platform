@@ -1,5 +1,5 @@
 ---
-globs: "{backend/src/shared/domain/locale*,backend/src/shared/domain/currency*,frontend/src/features/tenant/**/*.{ts,tsx},frontend/src/lib/format-date*,frontend/src/lib/format-money*}"
+globs: "{core/luana-core-platform/src/**/domain/locale*,core/luana-core-platform/src/**/domain/currency*,**/frontend/src/features/tenant/**/*.{ts,tsx},**/frontend/src/hooks/useTenantLocale*,**/frontend/src/lib/format/**}"
 description: Stub — invoca backend-expert skill
 ---
 

@@ -99,6 +99,38 @@ $ /test-backend
 - ✅ Docstrings en funciones públicas.
 - ✅ `product/modules/{m}.md` actualizado si aplica (en `07-merge.md`).
 
+### Cat 12 — Cross-brand mirror (anti-duplicación cross-marca)
+
+- ¿El diff replica un patrón que ya vive en `core/luana-core-*` (debió consumirse vía import) o en otra brand (`{brand}/backend|frontend/src`)?
+- Match >50% con código de otra brand → **FAIL** (lift a engine vía `/pm-luana`, no mirror).
+- Ver `.claude/rules/anti-duplication.md` + `.claude/rules/auditor-downstream-regression.md`.
+
+### Cat 13 — Connectivity (anti-isla · Critical Rule #33)
+
+- ¿La salida cumple las 4 contenciones CONN? **C**onsumed (≥1 consumidor real) · **O**n the map (cap YAML con hogar) · **N**avigable (reachability path concreto) · **N**otarized (cableado: `include_router`/nav/tool registry/EP-N/DI).
+- Falta alguna de las 4 → isla → **FAIL** (no llega a `done`). Ver `.claude/rules/anti-orphan-integration.md`.
+
+### Categoría 14 — Verificación live (DoD · Critical Rule #37)
+
+- ¿Los scenarios críticos user-reachable se ejercieron LIVE contra dev-app (Chrome DevTools MCP) o hay evidencia `dod_evidence` registrada?
+- ¿Los writes (POST/PATCH/PUT/DELETE) se ejercieron de verdad + se leyeron logs + se confirmó efecto en DB/UI?
+- e2e que mockea el backend del surface bajo prueba = NO cuenta como live-verify (falso verde).
+- **Ausencia de evidencia live en story con UI/endpoint → CHANGES_REQUESTED (no APPROVED).**
+
+## Verificación live (Critical Rule #37 · `definition-of-done-live-verify.md`)
+
+Los scenarios user-reachable de este ticket se ejercieron contra el stack dev real (`make dev-app-{brand}` / `localhost:300X`), no solo tests verdes:
+
+```yaml
+dod_live_verified: true|false
+dod_env: "<make dev-app-{brand} → dev-app.{brand}lat.com (Chrome DevTools MCP) | localhost:300X>"
+dod_evidence:
+  - action: "<write/flujo real ejercido>"
+    observed: "<efecto visible>"
+    backend_log: "<status + sin traceback + efecto DB>"
+```
+> Un `GET 200` sobre un placeholder NO es verificación. Una e2e que mockea el backend del surface = falso verde.
+
 ## Self-fix log (si self_fix_applied = true)
 
 > Solo TRIVIALES: lint, format, typo. NUNCA diseño/seguridad/arch.
@@ -115,9 +147,11 @@ $ /test-backend
 
 ## Verdict
 
+> **CHANGES_REQUESTED triggers automáticos:** ausencia de evidencia live (Categoría 14) en story con UI/endpoint → CHANGES_REQUESTED (no APPROVED).
+
 **APPROVED** ✅
 
-Razón: todos los acceptance criteria verificados, quality gates verde, code review 11 categorías OK, no hallazgos bloqueantes.
+Razón: todos los acceptance criteria verificados, quality gates verde, code review 14 categorías OK, no hallazgos bloqueantes.
 
 > O:
 > **CHANGES_REQUESTED** ❌

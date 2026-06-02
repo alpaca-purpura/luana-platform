@@ -1,5 +1,5 @@
 ---
-globs: "{backend/src/modules/analytics/**/*.py,frontend/src/lib/format-money*}"
+globs: "{**/backend/src/modules/*/analytics/**/*.py,core/@luana/format/src/format-money*,**/frontend/src/lib/format/**}"
 description: Stub — invoca backend-expert skill
 ---
 

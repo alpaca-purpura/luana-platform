@@ -21,6 +21,15 @@ links:
     - ".claude/rules/backend-migrations.md"
 ---
 
+## Prior art audit (`anti-duplication-refining.md`)
+
+Scan cross-brand + core ANTES de diseñar (grep `core/` + brands activas):
+- ¿Engine cubre el patrón? → consumir vía import `luana_core_*` (NO recrear).
+- ¿Otra brand tiene algo parecido? → lift candidate → escalar `/pm-luana`.
+- ¿Learning previo aplicable?
+
+Resultado del scan (evidencia grep + decisión `consume | extend | lift | net-new`): `<...>`
+
 ## Decisión arquitectónica clave
 
 [1 párrafo: qué se decidió, por qué (con tradeoffs).]
@@ -177,6 +186,17 @@ graph.add_conditional_edges("reason", route_after_reason, {
 - `copilot_llm_call` per LLM call con `cost_usd`, `model`, `cache_hit`
 - PII: `sanitize_payload` ANTES de persistir
 - LangSmith / langfuse traces (si configurado)
+
+## Integration design (CONN) — anti-isla (Critical Rule #33 · `anti-orphan-integration.md`)
+
+> Ninguna salida de esta story llega a `done` como isla. Declarar las 4 contenciones CONN con valores CONCRETOS:
+
+- **C — Consumed:** ≥1 consumidor real. Quién consume esta salida: `<...>`
+- **O — On the map:** vive en un `capability` YAML con hogar declarado. `cap_target: <...>` · zona derivada (Agentes | Plataforma | Infraestructura): `<...>`
+- **N — Navigable/reachable:** camino de acceso explícito (reachability path CONCRETO, no abstracto): `<entrada → … → salida>`
+- **N — Notarized/registered:** punto donde el runtime lo descubre: `<include_router | nav tree | tool registry | Extension SDK EP-N | DI provider>`
+
+Sin esta sección con un reachability path concreto, `/architect` NO cierra `state: ready`.
 
 ## Cross-cutting concerns
 

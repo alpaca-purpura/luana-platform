@@ -1,5 +1,5 @@
 ---
-globs: "backend/src/modules/sales_agent/**/*.py,backend/src/modules/brand/domain/personality.py"
+globs: "**/backend/src/modules/*/sales_agent/**/*.py,core/luana-core-brand-studio/src/**/domain/personality.py"
 description: Stub — invoca sales-agent-expert skill
 ---
 

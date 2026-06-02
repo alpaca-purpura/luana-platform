@@ -119,6 +119,21 @@ validators:
     timeout_sec: 240
     description: "Smoke E2E, Clerk auth, full flow"
 
+  - id: live_verify
+    category: functional
+    type: manual_live_verify                      # ★ NOT a shell command — gate manual ejecutado por Claude via Chrome DevTools MCP
+    must_pass: true
+    description: >
+      Definition of Done — Critical Rule #37 (`definition-of-done-live-verify.md`).
+      Claude MUST exercise the real user action (especially writes: POST/PATCH/PUT/DELETE)
+      against the brand dev stack (`make dev-app-{brand}` → `dev-app.{brand}lat.com` or
+      `localhost:300X`), read backend logs, and confirm DB effect.
+      Evidence recorded in checkpoint.md `dod_evidence` field.
+      Suite green / build OK / GET-200 are NECESSARY but NEVER SUFFICIENT.
+      Skippable only for config/docs/tooling-only tickets via `dod_live_verified_skip_reason`.
+    evidence_field: "checkpoint.md::dod_evidence"
+    ref: ".claude/rules/definition-of-done-live-verify.md"
+
   # ═══════════════════════════════════════════════════════════════
   # VISUAL — UI fidelity + responsive (Playwright + screenshots)
   # Apply: SOLO si story toca UI (FE components, layouts, forms, dashboards)

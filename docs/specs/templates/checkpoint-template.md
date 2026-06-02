@@ -33,6 +33,12 @@ hotfix_metadata:                                  # opcional, hot-fix tickets (R
   repro_verified: false
   repro_command: null
   diagnosis_validates_handoff: null
+# Definition of Done — Live verification (Critical Rule #37 · definition-of-done-live-verify.md)
+dod_live_verified: false                          # true SOLO cuando Claude ejerció la acción real del usuario en dev-app + leyó logs + confirmó efecto. Verde de gates/build/GET-200 NO basta.
+dod_env: null                                     # ej "make dev-app-{brand} → dev-app.{brand}lat.com (Chrome DevTools MCP)" o "localhost:300X"
+dod_evidence: []                                  # [{action, observed, backend_log}] — writes ejercidos (POST/PATCH/PUT/DELETE) + efecto observado en DB/UI
+dod_verified_at: null                             # YYYY-MM-DD
+dod_live_verified_skip_reason: null               # solo si la story es config/docs/tooling puro (sin UI ni endpoint)
 ---
 
 ## Estados v4 (10 macro)

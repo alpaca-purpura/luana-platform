@@ -1,5 +1,5 @@
 ---
-globs: "{frontend/src/lib/form-runtime/**,frontend/src/features/{brand,offer}-studio/schemas/**}"
+globs: "{**/frontend/src/lib/form-runtime/**,**/frontend/src/features/{brand,offer}-studio/schemas/**}"
 description: Stub — invoca brand-expert / offer-expert
 ---
 
