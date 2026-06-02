@@ -11,6 +11,8 @@
 | `checkpoint-protocol.md` | todos | Resume cualquier sesión |
 | `parallel-sessions-protocol.md` | todos | Multi-instancia Claude (M1-M8) |
 | `learnings.md` | `/pm` | Append-only post-incident |
+| `harness-lifecycle.md` (HLP) | Chris + Claude | Mantener el harness (skills/rules/agents/hooks/cockpit/templates) — captura sin fricción + lotes + auditoría periódica |
+| `harness-backlog.md` | Chris + Claude (`/harness-issue`) | Tracker vivo de deficiencias del harness (HB-N) |
 
 ## Reglas globales
 

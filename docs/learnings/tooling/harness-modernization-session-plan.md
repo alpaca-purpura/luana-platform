@@ -147,3 +147,28 @@ La **modernización del harness** es enabler transversal que corre primero/al ma
 - Refinar historia B (`empleados-ia-auto-extension`).
 
 ### Estado: 8 commits aplicados en total esta línea de trabajo (5 previos + 3 esta sesión). Wave 3 + D-2/D-3 + 2 bugs CERRADOS. Story en vuelo `vitalia-fase2-lisa-doctores` (developing) NO tocada.
+
+---
+
+## Sesión 2026-06-01 (continuación 3) — Wave 4 + D-5 + Wave 5 + item 4 (HLP cerrado)
+
+> Motor: workflow JS `harness-wave4-adr-reconcile` (8 editores sonnet verify-first + síntesis opus, lotes disjuntos, sin commit, sin worktree-isolation) + autoría directa opus para los scripts D-5 (infra-crítico, no parallel) + edits frontmatter Wave 5 + agente `claude-code-guide` (verificación de campos CC-2026 contra docs oficiales ANTES de mass-edit). Cadena: catalog+propose → diff → ratify Chris → commit Haiku por pathspec (`SCOPE_GATE_SKIP=1`). Verify-first confirmó overestimates (ADR-011 ya correcto) y findings reales (scripts D-5 SÍ faltaban aunque la rule decía "probado live" — `make dev-app-vitalia` estaba roto).
+
+**Commits (todos en `wip/vitalia`, pushed, origin 0/0):**
+
+| # | SHA | Qué |
+|---|---|---|
+| 1 | `cbc736ce` | **Wave 4** (7 files): ADR-002/003/004/010 addenda (GA-deferred + trigger real workflow_dispatch + cockpit ports 4000-4004 + M1-M14 + bitácora D-7) · PARADIGM §7 (SYSTEM-MAP `{brand}/` + fila Critical #37) · D-4 banner github-environments-setup · fix offer-preset test ref → `test_catalogs_dag_smoke.py` (8 funcs). ADR-011 = overestimate. **Reconciliación ADR COMPLETA** (001-013, el resto fue Wave 3) |
+| 2 | `22dacb4c` | **D-5 scripts** (3 new): `dev-app-up.sh` + `cloudflared-setup.sh` + `e2e-preflight.sh` (referenciados, nunca existieron). Validados bash -n + shellcheck + `e2e-preflight` verde live. Fallback localhost honesto cuando falta credencial tunnel |
+| 3 | `2119d0c1` | **Wave 5** (9 files): `isolation:worktree` (3 builders) + `background:true` (grep-bot) + `memory:user` (4 auditores/architect) + rule #37 honesty (vitalia tunnel credencial pendiente → localhost). Campos verificados vs docs oficiales |
+| 4 | (este commit) | **item 4**: HLP endurecida (apply-pipeline + verify-first + cost-routing + `memory:user`) + backlog reconciliado HB-1..HB-22 + INDEX pointer. (2b MEMORY pointer empleados-ia = fuera del repo) |
+
+**Decisiones cerradas:** D-1 (`model:` en skills = válido turn-scoped → mantener) · D-4 (banner) · D-5 (scripts creados) · D-7 (config/infra→cajas DEFERRED track B/Vitalia → bitácora ADR-010) · D-9 (dirs on-demand, sin acción).
+
+**Verificación CC-2026 (`claude-code-guide` vs docs oficiales):** los 6 campos Wave 5 son REALES. Correcciones al catálogo: `memory: user` (NO `project` — clobber en hub compartido); `context:fork` NO es candidato limpio (handoff ya delega a Haiku, ai-docs es interactivo) → Wave 5b. `when_to_use` = campo separado real.
+
+**Follow-ups:** 2a offer-preset test ref (cbc736ce). 2b MEMORY pointer empleados-ia actualizado (índice + detalle: ADR-013 accepted + story `empleados-ia-auto-extension` en `idea`).
+
+**Abierto (drenar por cadencia HLP, NO urgente):** HB-17 (Wave 5b: context:fork análisis + when_to_use migración + activar memory:user con body-instructions) · HB-18 (PII scanners) · HB-19 (D-10 verify) · HB-11 (voseo cleanup) · HB-20 (workflow name inconsistency) · HB-22 (cola MEDIUM/LOW). **Operacional Chris:** HB-21 (provisión tunnel `cloudflared-setup.sh`). **Producto:** base.ts rollout (solo cuando cierre `vitalia-fase2-lisa-doctores`); refinar historia B.
+
+### Estado: continuación 3 = 4 commits (cbc736ce, 22dacb4c, 2119d0c1 + item 4). **Item 4 (HLP) CERRADO** — proceso documentado + probado punta a punta + backlog reconciliado. Story en vuelo `vitalia-fase2-lisa-doctores` (developing) NO tocada en toda la línea de trabajo.
