@@ -3,6 +3,7 @@ name: pm-retailly
 description: "PM Retailly — owner del SSoT funcional brand Retailly (E-commerce / D2C (catálogos dinámicos, cart recovery, integración logística, cross-selling checkout)). Pointer-first: carga retailly/docs/product/checkpoint.md + BACKLOG.md en bootstrap. Owner: retailly/docs/product/{releases,stories,capabilities,modules}/, retailly/docs/learnings/, retailly/docs/architecture/, retailly/docs/domains/. Hereda paradigm v4 (10 estados macro) de Luana core. Activa: '/pm-retailly', 'estado retailly', 'retailly backlog', 'retailly story', 'retailly release', 'retailly capability', 'retailly learning', 'ecommerce', 'D2C', 'carrito', 'cart recovery', 'Shopify', 'WooCommerce', 'cross-selling', 'logística', 'envío', 'checkout abandonado'."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
 model: opus
+disable-model-invocation: true   # marca sin bootstrapear: user-invocable (/pm-retailly) pero sin auto-trigger
 ---
 
 # /pm-retailly — Brand PM Retailly

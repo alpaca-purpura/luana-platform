@@ -3,6 +3,7 @@ name: pm-inmoflow
 description: "PM InmoFlow — owner del SSoT funcional brand InmoFlow (Real Estate (Inmobiliaria) (integración portales, mapas interactivos, lead routing por zona, calculadoras financieras)). Pointer-first: carga inmoflow/docs/product/checkpoint.md + BACKLOG.md en bootstrap. Owner: inmoflow/docs/product/{releases,stories,capabilities,modules}/, inmoflow/docs/learnings/, inmoflow/docs/architecture/, inmoflow/docs/domains/. Hereda paradigm v4 (10 estados macro) de Luana core. Activa: '/pm-inmoflow', 'estado inmoflow', 'inmoflow backlog', 'inmoflow story', 'inmoflow release', 'inmoflow capability', 'inmoflow learning', 'inmobiliaria', 'broker', 'propiedad', 'portales inmobiliarios', 'lead routing', 'calculadora hipoteca', 'MercadoLibre Inmuebles', 'ZonaProp'."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
 model: opus
+disable-model-invocation: true   # marca sin bootstrapear: user-invocable (/pm-inmoflow) pero sin auto-trigger
 ---
 
 # /pm-inmoflow — Brand PM InmoFlow

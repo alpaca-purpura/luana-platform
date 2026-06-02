@@ -3,6 +3,7 @@ name: pm-saasora
 description: "PM SaaSora — owner del SSoT funcional brand SaaSora (SaaS y Productos Digitales (onboarding automatizado, subscripciones Stripe, dashboards Churn/MRR, changelogs)). Pointer-first: carga saasora/docs/product/checkpoint.md + BACKLOG.md en bootstrap. Owner: saasora/docs/product/{releases,stories,capabilities,modules}/, saasora/docs/learnings/, saasora/docs/architecture/, saasora/docs/domains/. Hereda paradigm v4 (10 estados macro) de Luana core. Activa: '/pm-saasora', 'estado saasora', 'saasora backlog', 'saasora story', 'saasora release', 'saasora capability', 'saasora learning', 'SaaS', 'subscription', 'churn', 'MRR', 'Stripe', 'changelog', 'onboarding tech'."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
 model: opus
+disable-model-invocation: true   # marca sin bootstrapear: user-invocable (/pm-saasora) pero sin auto-trigger
 ---
 
 # /pm-saasora — Brand PM SaaSora

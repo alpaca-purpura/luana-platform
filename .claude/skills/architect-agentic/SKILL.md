@@ -2,6 +2,7 @@
 name: architect-agentic
 description: "Instruction doc Agentic (NO es agent type spawnable — es contexto que `architect-orchestrator` carga cuando story toca copilot/sales_agent). Define qué debe contener la sección AGENTIC de 03-arch.md: tools defs (Pydantic schema), prompt slot architecture, LangGraph state, eval suite path, personas/rubrics asignados, observabilidad (trace + cost), trial policy. Skills cargadas: sales-agent-expert, copilot-expert, LangGraph canonical docs, claude-api. NUNCA invocar como subagent_type — el orchestrator lee este SKILL.md como guidance contextual."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch, WebFetch
+disable-model-invocation: true   # instruction-doc: architect-orchestrator lo LEE por path, no auto-trigger
 ---
 
 # /architect-agentic — Agentic instruction doc (contextual guidance for architect-orchestrator)

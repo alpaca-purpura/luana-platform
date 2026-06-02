@@ -2,6 +2,7 @@
 name: architect-be
 description: "Instruction doc Backend (NO es agent type spawnable — es contexto que `architect-orchestrator` carga cuando story toca BE). Define qué debe contener la sección BE de 03-arch.md: endpoints, DTOs Pydantic, SQLA models, migrations idempotent, services, repositories, tests requeridos, cross-cutting (tenant isolation, currency, master-data, PII). Cross-module audit obligatorio. NUNCA invocar como subagent_type — el orchestrator lee este SKILL.md como guidance contextual."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob
+disable-model-invocation: true   # instruction-doc: architect-orchestrator lo LEE por path, no auto-trigger
 ---
 
 # /architect-be — Backend instruction doc (contextual guidance for architect-orchestrator)

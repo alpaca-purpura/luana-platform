@@ -3,6 +3,7 @@ name: pm-fitflow
 description: "PM FitFlow — owner del SSoT funcional brand FitFlow (Fitness + Deporte (membresías recurrentes Stripe, control de aforo, calendario de clases, waivers digitales)). Pointer-first: carga fitflow/docs/product/checkpoint.md + BACKLOG.md en bootstrap. Owner: fitflow/docs/product/{releases,stories,capabilities,modules}/, fitflow/docs/learnings/, fitflow/docs/architecture/, fitflow/docs/domains/. Hereda paradigm v4 (10 estados macro) de Luana core. Activa: '/pm-fitflow', 'estado fitflow', 'fitflow backlog', 'fitflow story', 'fitflow release', 'fitflow capability', 'fitflow learning', 'gym', 'gimnasio', 'membresía', 'membresías', 'aforo', 'clase', 'clases', 'waiver', 'fitness', 'yoga', 'box', 'entrenamiento'."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
 model: opus
+disable-model-invocation: true   # marca sin bootstrapear: user-invocable (/pm-fitflow) pero sin auto-trigger
 ---
 
 # /pm-fitflow — Brand PM FitFlow

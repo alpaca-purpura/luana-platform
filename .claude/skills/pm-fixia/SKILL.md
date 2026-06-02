@@ -3,6 +3,7 @@ name: pm-fixia
 description: "PM Fixia — owner del SSoT funcional brand Fixia (Servicios Hogar + Oficios (técnicos en campo, cotización on-site mobile, reseñas locales SEO)). Pointer-first: carga fixia/docs/product/checkpoint.md + BACKLOG.md en bootstrap. Owner: fixia/docs/product/{releases,stories,capabilities,modules}/, fixia/docs/learnings/, fixia/docs/architecture/, fixia/docs/domains/. Hereda paradigm v4 (10 estados macro) de Luana core. Activa: '/pm-fixia', 'estado fixia', 'fixia backlog', 'fixia story', 'fixia release', 'fixia capability', 'fixia learning', 'técnico', 'despacho', 'cotización on-site', 'reseña local', 'campo', 'hogar', 'oficio', 'plomero', 'electricista'."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
 model: opus
+disable-model-invocation: true   # marca sin bootstrapear: user-invocable (/pm-fixia) pero sin auto-trigger
 ---
 
 # /pm-fixia — Brand PM Fixia

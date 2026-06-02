@@ -2,6 +2,7 @@
 name: architect-fe
 description: "Instruction doc Frontend (NO es agent type spawnable — es contexto que `architect-orchestrator` carga cuando story toca FE). Define qué debe contener la sección FE de 03-arch.md: routes, components FSD-Lite, hooks React Query, Zod schemas, types TS, tests Vitest+Playwright, server-first boundaries. NUNCA invocar como subagent_type — el orchestrator lee este SKILL.md como guidance contextual."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob
+disable-model-invocation: true   # instruction-doc: architect-orchestrator lo LEE por path, no auto-trigger
 ---
 
 # /architect-fe — Frontend instruction doc (contextual guidance for architect-orchestrator)
