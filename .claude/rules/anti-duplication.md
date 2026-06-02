@@ -21,8 +21,7 @@ Patrón canónico vive en `core/luana-core-*/` packages. Brands consumen via Pyt
 | LLM call repo base | `core/luana-core-observability/src/luana_core_observability/persistence/base_llm_call_repo.py` | copilot · sales_agent |
 | Channel format registry | `core/luana-core-channels/src/luana_core_channels/format_for_channel.py` | sales_agent · copilot |
 | Intent detector | `core/luana-core-channels/src/luana_core_channels/intent_detector.py` | sales_agent · futuros |
-| Tenant billing config | `core/luana-core-billing/src/luana_core_billing/persistence/tenant_billing_config_repository.py` | todos cobran |
-| Currency resolver tenant | `core/luana-core-observability/src/luana_core_observability/cost/_resolve_tenant_currency` | todos agentes |
+| Tenant billing config | `core/luana-core-observability/src/luana_core_observability/persistence/tenant_billing_config_repository.py` | todos cobran |
 | Extraction orchestrator | `core/luana-core-extraction/src/luana_core_extraction/base_orchestrator.py::BaseExtractionOrchestrator` | brand · offer · buyer_persona · landing |
 | Locale VO | `core/luana-core-platform/src/luana_core_platform/domain/locale.py::TenantLocale` | todos UI/timezone |
 | LLM router + providers | `core/luana-core-llm/src/luana_core_llm/router.py` + `providers/` | todos llaman LLMs |
@@ -56,7 +55,7 @@ WS=`$(git rev-parse --show-toplevel)` (root del workspace `luana-platform/`).
 - ❌ Mirror callback handler — heredar `BaseAgentCallbackHandler`
 - ❌ Re-implementar `FXResolver(http_client_factory=...)` N módulos — `FXResolver.default()`
 - ❌ Copy-paste `lambda: httpx.Client(timeout=10)` — encapsular classmethod
-- ❌ Mirror `_resolve_tenant_currency` — lift shared
+- ❌ Re-resolver currency del tenant local — usar `TenantLocale.currency` (locale VO) + `FXResolver.default()` (engine observability)
 - ❌ Mirror PricingResolver setup — extract factory shared
 - ❌ Re-implementar PII sanitization local — usar shared `sanitization`
 - ❌ Mirror channel format dispatch — usar shared `format_for_channel`

@@ -216,7 +216,7 @@ Si tu propuesta toca `core/config.py` defaults agentic-controlled (`USE_OUTBOX_P
 
 Output al orchestrator:
 ```
-done -> docs/product/stories/{story-id}/03-arch-agentic.md
+done -> {brand}/docs/product/stories/{story-id}/03-arch-agentic.md
 ```
 
 ## Anti-patterns

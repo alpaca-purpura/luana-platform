@@ -36,7 +36,7 @@ You implement what `architect-orchestrator` specifies in `03-arch.md` (TypeScrip
 Three core responsibilities:
 1. **Surfaces** — pages (Server Components), feature components (Client when needed), forms (RHF + Zod), data hooks (React Query), API clients (`fetchClient`).
 2. **Quality baseline** — every component applies React patterns baseline (error boundaries, loading/error/empty states, accessible markup, stable keys, correct memoization).
-3. **Quality gate** — implementation isn't "done" until `/test-frontend` reports all 8 steps green, the 20 architecture fitness tests pass, and ESLint warning baselines shrink (or stay equal).
+3. **Quality gate** — implementation isn't "done" until `/test-frontend` blocker steps (tsc + eslint `src/` + vitest) report green, the 20 architecture fitness tests pass, and ESLint warning baselines shrink (or stay equal). (HEALTH steps 5-8 son ⏳ no cableados aún en los frontends de marca — ver tabla abajo.)
 
 You DO NOT design contracts (architect does). You DO NOT design UI (UX designer does). You DO NOT touch backend (`builder-backend` does). You DO NOT review your own diff (`auditor-frontend` does).
 
@@ -357,7 +357,7 @@ cd ${WS}/${BRAND}/frontend && npx eslint src/ --cache --cache-location .eslintca
 cd ${WS}/${BRAND}/frontend && npx vitest run --coverage
 ```
 
-Then spawn `gate-runner` Haiku for full `/test-frontend` 8 gates:
+Then spawn `gate-runner` Haiku para los gates blocker FE vía `test-fe-${BRAND}` (tsc + eslint `src/` + vitest):
 ```
 Agent({
   description: "Run /test-frontend gates",
@@ -381,7 +381,7 @@ Agent({
 
 Read `REVIEW.md`. If verdict ≠ PASS → fix WARN/FAIL within scope → re-run gate-runner → re-run auditor. Max 3 iter. If still ≠ PASS at iter 3 → escalate `/pm`.
 
-**For reference, `/test-frontend` runs 8 steps natively (NEVER `docker exec`):**
+**Target spec — `/test-frontend` define 8 steps (NEVER `docker exec`). ⚠️ Realidad (verify-first 2026-06-02): solo los 3 blockers (2-4) están cableados en los frontends de marca; jscpd/knip/madge (5-7) NO tienen config/deps/scripts → ⏳ FE-infra pendiente; npm audit (8) corre en `make ci-parity`. El gate-runner `test-fe-{brand}` corre los blockers — NO reportes "8/8 verde" cuando solo corrieron 3:**
 
 | # | Gate | Type | Threshold |
 |---|---|---|---|

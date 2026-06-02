@@ -135,7 +135,7 @@ Elegí + respondeme; mando batch 2 (estados visuales)."
 WS=$(git rev-parse --show-toplevel)
 BRAND={brand}                                                  # vitalia | nicolify | comunify | lupulo | platform
 cat ${WS}/${BRAND}/docs/product/BACKLOG.md                     # ver estado overall brand
-cat ${WS}/${BRAND}/docs/product/ideas-pool.yaml                # buscar idea origen
+cat ${WS}/${BRAND}/docs/product/stories/{story-id}/chris-input.md   # idea origen (R4: nace con la story)
 cat ${WS}/${BRAND}/docs/product/modules/{m}.md                 # estado funcional per-brand
 ls ${WS}/${BRAND}/docs/product/stories/                        # stories existentes (no duplicar)
 ls ${WS}/${BRAND}/docs/product/capabilities/{m}/               # capabilities live per-brand
@@ -537,4 +537,4 @@ Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
 
 **Uso (herramienta, no gate):** para revisar visualmente una pantalla/flujo que ya corre y diseñar sobre lo real, abrí dev-app con Chrome MCP.
 
-Levantar: `make dev-app-vitalia` → `https://dev-app.vitalialat.com` (login `dr.demo@vitalialat.com`, creds en `vitalia/.env.dev`). Herramientas: **Chrome DevTools MCP** (live) + **Playwright autenticado** (golden). Evidencia = acción real ejercida + efecto observado; NUNCA GET 200 ni e2e mockeado. SSoT: `.claude/rules/definition-of-done-live-verify.md`.
+Levantar: `make dev-app-{brand}` → dev-app de la marca (URL + usuario de prueba per brand en la tabla `§ Infra por brand` de `.claude/rules/definition-of-done-live-verify.md`; ej. vitalia: `https://dev-app.vitalialat.com` / `dr.demo@vitalialat.com`, creds en `{brand}/.env.dev`). Si el túnel de la marca aún no está provisto → fallback `localhost:300X` (válido). Herramientas: **Chrome DevTools MCP** (live) + **Playwright autenticado** (golden). Evidencia = acción real ejercida + efecto observado; NUNCA GET 200 ni e2e mockeado. SSoT: `.claude/rules/definition-of-done-live-verify.md`.

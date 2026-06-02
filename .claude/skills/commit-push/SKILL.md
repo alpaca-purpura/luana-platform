@@ -28,7 +28,7 @@ model: opus
 
 ```bash
 git status --short            # categorizar files MINE vs OTHERS
-git branch --show-current     # MUST = development
+git branch --show-current     # captura BRANCH; debe ser wip/* (autosave per worktree, ADR-009)
 git log --oneline -3          # contexto reciente
 ```
 
@@ -37,7 +37,7 @@ Categoriza output `git status --short`:
 - Files con prefix de otras sessions (deletions ajenas, untracked ajenos) → `OTHERS` list (leave alone)
 
 Reject pre-spawn si:
-- Branch ≠ `development` → STOP, switch first
+- Branch no es `wip/*` (ej. estás en `main` / `release/*`) → STOP, no commitear acá
 - Hay match `.env*` / `credentials*` / `*.pem` en MINE list → STOP, escalate Chris (security)
 - Tree limpio (nada para commitear) → STOP, no spawn
 
@@ -62,10 +62,10 @@ Agent({
 ### Prompt template (verbatim — no improvise)
 
 ```
-You are a git workflow worker. Perform commit + push for Nicolify project.
+You are a git workflow worker. Perform commit + push for the Luana platform monorepo.
 
 ## Working directory
-$(git rev-parse --show-toplevel) (current branch: development)
+$(git rev-parse --show-toplevel) (current branch: $(git branch --show-current) — debe ser wip/*)
 
 ## Critical safety rules (HARD — origen .claude/rules/git-haiku-delegation.md)
 - NEVER `git add .` / `git add -A` / `git add -u` — parallel sessions WIP en tree
@@ -74,9 +74,9 @@ $(git rev-parse --show-toplevel) (current branch: development)
 - NEVER `git pull` / `git fetch && merge` — banned per parallel-safety.md
 - NEVER `git push --force` / `--force-with-lease` — banned
 - NEVER `git revert` sin aprobación explícita
-- Si `git push origin development` fails non-fast-forward → STOP, report. NO pull.
+- Si `git push origin "$(git branch --show-current)"` fails non-fast-forward → STOP, report. NO pull.
 - Si pre-commit hook fails → fix and create NEW commit (never `--amend` pushed commits)
-- Working branch = `development`. NUNCA push a `main`.
+- Working branch = `wip/{brand}` (autosave per worktree). NUNCA push directo a `main` ni `release/*`.
 
 ## Files to stage (exact names — these belong to MY session)
 <exact list from MINE>
@@ -94,7 +94,7 @@ $(git rev-parse --show-toplevel) (current branch: development)
 2. `git add <space-separated MINE files>` — stage by exact name (NEVER `add .`)
 3. `git status --short` — verify OTHERS files still unstaged + intact
 4. Commit using HEREDOC syntax with message above
-5. `git push origin development`
+5. `BRANCH=$(git branch --show-current); git push origin "$BRANCH"`
 6. `git log --oneline -2` — confirm commit landed
 7. Report final commit SHA + push result
 
@@ -123,7 +123,7 @@ Haiku worker last-line:
 
 Después delegación exitosa:
 ```
-✅ Commit `<sha>` pushed a origin/development.
+✅ Commit `<sha>` pushed a origin/<branch>.
 - <N> files staged: <comma list>
 - Pre-commit hook: passed
 - Tree: clean
