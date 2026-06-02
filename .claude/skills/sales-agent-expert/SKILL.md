@@ -188,7 +188,7 @@ if not allowed:
 
 - Sliding window Redis (24h) con cap `plan_config.max_outbound_msg_per_day`.
 - `None` cap → unlimited (subject a budget).
-- Soft-fail: Redis unavailable → fail-open (per `tessl__graceful-degradation`).
+- Soft-fail: Redis unavailable → fail-open (graceful-degradation: timeout + fallback + circuit breaker).
 
 ### Plan defaults (editable Streamlit `/planes-billing` — 1 UPDATE row, 0 migration)
 

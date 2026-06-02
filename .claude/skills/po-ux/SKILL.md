@@ -47,8 +47,8 @@ Si invocado vía `/pm-{brand}` handoff, el brand viene en el handoff. Si invocad
 ## Skills cargados (HARD GATE antes de redactar)
 
 - `frontend-expert` — FSD-Lite, Tailwind tokens, Shadcn primitives reuse
-- `tessl__shadcn-ui` — component selection
-- `tessl__tailwind` — semantic tokens (no hardcoded hex)
+- Shadcn UI conventions — component selection
+- Tailwind conventions — semantic tokens (no hardcoded hex)
 - Domain skill módulo (`brand-expert` / `offer-expert` / `metrics-expert` / etc.)
 - `playwright-expert` (si scenarios tienen E2E grader)
 - `chrome-devtools-verify` (live verify post-design opcional, Linux nativo Chrome MCP)

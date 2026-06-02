@@ -312,7 +312,7 @@ Happy path
 ## Constraints técnicos heredados
 
 - [De `.claude/rules/*` que aplican: backend-ddd, tenant-isolation, etc.]
-- [Tessl skills relevantes a citar: tessl__fastapi, tessl__zod, ...]
+- [Canonical docs relevantes: FastAPI canonical patterns, Zod validation — WebFetch the canonical docs URL (or `tessl-context` skill if Tessl tiles are installed)]
 
 ## Cross-module impact
 

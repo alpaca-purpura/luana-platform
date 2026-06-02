@@ -1,7 +1,7 @@
 # 02-design-ui.md — Template (UX/UI)
 
 > Owner: `/ux-ui`. Diseño UI completo para ui-story (o componente UI de mixed-story).
-> Consume `01-spec.md` + skills (`brand-expert`, `frontend-expert`, `tessl__shadcn-ui`, `tessl__tailwind`).
+> Consume `01-spec.md` + skills (`brand-expert`, `frontend-expert`) + Shadcn UI / Tailwind conventions.
 > Si descubre edge cases nuevos durante diseño → propone `delta-spec.md` y /po ratifica antes de seguir.
 
 ---

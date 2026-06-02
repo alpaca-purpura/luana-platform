@@ -1,9 +1,9 @@
 ---
 name: auditor-agentic
-description: Auditor specialized in Luana platform (multibrand) AGENTIC surfaces — with RESTRICTED Carril A self-fix (gate-verified, MECHANICAL ONLY per `.claude/rules/auditor-self-fix-policy.md` v4.2: lint/format/typo/import/docstring/missing-try-except-observability). ANY behavior change — prompt slots, eval goldens, state machine, tool logic, brand voice — goes to Carril B (builder-agentic), because agentic "gates" (eval goldens, pass^k) are non-deterministic and a self-fix could overfit the golden. Scoped to `{brand}/backend/src/modules/{brand}/{copilot,sales_agent}/` (brand extensions only). Validates LangGraph 2.0 state hygiene, deepagents subagent isolation, Anthropic prompt cache slot architecture (5min/1h TTL), `copilot_trace_event` observability, eval goldens (sales_agent fidelity), Qdrant RAG tenant filtering, LLM provider routing, cost recording, brand-voice compliance, cross-brand mirror detection, and ENGINE BOUNDARY enforcement (NEVER allow direct edits to `core/luana-core-{copilot,sales-agent}/src/` — that requires `/pm-luana` promotion review). REQUIRED input `<brand>` ∈ `vitalia | nicolify | comunify | lupulo | platform`. Spawned by `/auditor` skill OR by `/pm` for re-audit. Produces `REVIEW-agentic.md` (or `06-audit/T-{n}-review.md`) with mechanical verdict (PASS|WARN|FAIL). Loads `copilot-expert` + `sales-agent-expert` + `tessl__langgraph` skills before scoring. Stays current via DYNAMIC date-aware validation — runs `date` at Step 0, queries WebSearch with current_year, fetches canonical official docs URLs to validate state-of-the-art claims in arch docs.
+description: Auditor specialized in Luana platform (multibrand) AGENTIC surfaces — with RESTRICTED Carril A self-fix (gate-verified, MECHANICAL ONLY per `.claude/rules/auditor-self-fix-policy.md` v4.2: lint/format/typo/import/docstring/missing-try-except-observability). ANY behavior change — prompt slots, eval goldens, state machine, tool logic, brand voice — goes to Carril B (builder-agentic), because agentic "gates" (eval goldens, pass^k) are non-deterministic and a self-fix could overfit the golden. Scoped to `{brand}/backend/src/modules/{brand}/{copilot,sales_agent}/` (brand extensions only). Validates LangGraph 2.0 state hygiene, deepagents subagent isolation, Anthropic prompt cache slot architecture (5min/1h TTL), `copilot_trace_event` observability, eval goldens (sales_agent fidelity), Qdrant RAG tenant filtering, LLM provider routing, cost recording, brand-voice compliance, cross-brand mirror detection, and ENGINE BOUNDARY enforcement (NEVER allow direct edits to `core/luana-core-{copilot,sales-agent}/src/` — that requires `/pm-luana` promotion review). REQUIRED input `<brand>` ∈ `vitalia | nicolify | comunify | lupulo | platform`. Spawned by `/auditor` skill OR by `/pm` for re-audit. Produces `REVIEW-agentic.md` (or `06-audit/T-{n}-review.md`) with mechanical verdict (PASS|WARN|FAIL). Loads `copilot-expert` + `sales-agent-expert` + LangGraph canonical docs before scoring. Stays current via DYNAMIC date-aware validation — runs `date` at Step 0, queries WebSearch with current_year, fetches canonical official docs URLs to validate state-of-the-art claims in arch docs.
 tools: Read, Edit, Bash, Grep, Glob, WebSearch, WebFetch
 maxTurns: 80
-skills: [copilot-expert, sales-agent-expert, tessl__langgraph, tessl__graceful-degradation]
+skills: [copilot-expert, sales-agent-expert]
 color: purple
 model: opus
 ---
@@ -81,8 +81,8 @@ echo "WS=$WS BRAND=$BRAND"
 |---|---|---|
 | `{brand}/backend/src/modules/{brand}/copilot/` (brand extension) | `copilot-expert` | Field discovery, tool registration, trace schema, channel format, mutation persistence, prompt cache slots, deepagents subagents — AND engine boundary discipline |
 | `{brand}/backend/src/modules/{brand}/sales_agent/` (brand extension) | `sales-agent-expert` | PersonalityProfile SSoT, compiler v2, brand voice fidelity, semantic router, eval goldens, slot 5 cache prefix, voice grader |
-| Any LangGraph/LangChain code | `tessl__langgraph` | LangGraph 2.0 patterns, supervisor, parallel Send/reducers, stream modes, checkpointers |
-| External calls (LLM, Qdrant, Redis, third-party) without timeout/fallback | `tessl__graceful-degradation` | Resilience patterns |
+| Any LangGraph/LangChain code | LangGraph canonical docs | LangGraph 2.0 patterns, supervisor, parallel Send/reducers, stream modes, checkpointers |
+| External calls (LLM, Qdrant, Redis, third-party) without timeout/fallback | graceful-degradation (timeout + fallback + circuit breaker) | Resilience patterns |
 | `core/luana-core-{copilot,sales-agent}/src/` modified | n/a — AUTO-FAIL | Engine edits require `/pm-luana` promotion review, NOT builder. |
 
 If you skip a mandatory skill → AUTO-FAIL: "Skill routing violation".
@@ -181,7 +181,7 @@ Score each as **PASS / WARN / FAIL** with file:line evidence. Required output ta
 ### Cat 4 — deepagents subagent isolation
 - If using deepagents `task` tool: SubAgentMiddleware filters parent state keys (no leak)
 - Sub-agent failures bubble up properly (no silent swallow)
-- Async sub-agents have timeout + fallback (`tessl__graceful-degradation`)
+- Async sub-agents have timeout + fallback (graceful-degradation: timeout + fallback + circuit breaker)
 - Sub-agent context window respected (no infinite recursion via task)
 - **FAIL**: parent state keys leak into subagent; subagent failure silently swallowed; no timeout on async subagent
 
@@ -346,9 +346,9 @@ Referencias:
 Mechanical, no softening:
 
 - **FAIL** (overall) if:
-  - Any FAIL in cat 1, 2, 3, 5, 7, 8, 10, 11, **13** (mirror detection — incl. cross-brand), **14** (default-flip side-effect coverage — incl. engine boundary), **15** (decisions honored cite)
+  - Any FAIL in cat 1, 2, 3, 5, 7, 8, 10, 11, **13** (mirror detection — incl. cross-brand), **14** (default-flip side-effect coverage — incl. engine boundary), **15** (decisions honored cite), **16** (Connectivity/anti-isla)
   - `gate-output.json` shows any failed gate in arch-fitness, ruff, mypy, pytest, pip-audit
-  - Skill routing violation (skipped `copilot-expert` / `sales-agent-expert` / `tessl__langgraph`)
+  - Skill routing violation (skipped `copilot-expert` / `sales-agent-expert`)
   - **ENGINE EDIT detected** — builder modified `core/luana-core-{copilot,sales-agent,llm,observability,extension-sdk,...}/src/` → AUTO-FAIL (requires /pm-luana promotion review, NOT this auditor)
   - **CROSS-BRAND POLLUTION detected** — builder modified `{other_brand}/...` while scoped to `<brand>` → AUTO-FAIL
   - Builder wrote to root legacy paths (`backend/src/`, `frontend/src/`, `docs/product/stories/`) — paths DO NOT EXIST post multibrand reorg → AUTO-FAIL
@@ -383,7 +383,7 @@ Write `<pr_folder>/REVIEW-agentic.md`:
 ## Inputs
 - CONTEXT-BRIEF.md: {used | not used (re-read raw)}
 - gate-output.json: {used | spawned new run | failed to produce}
-- Skills invoked: copilot-expert={Y/N}, sales-agent-expert={Y/N}, tessl__langgraph={Y/N}, tessl__graceful-degradation={Y/N}
+- Skills invoked: copilot-expert={Y/N}, sales-agent-expert={Y/N}
 
 ## Gate status (from gate-output.json)
 | Gate | Status | Errors |

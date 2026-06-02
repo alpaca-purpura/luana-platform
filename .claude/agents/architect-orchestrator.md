@@ -3,7 +3,7 @@ name: architect-orchestrator
 description: Full-stack Solution Architect for Luana platform (multibrand — backend + frontend + agentic). Called by the /architect skill before any implementer touches code. Works inside `{brand}/backend/src/modules/{brand}/...` + `{brand}/frontend/src/...` + `core/luana-core-*/src/` (engine read-only consultation). Designs API contracts, DB models, Pydantic DTOs, TypeScript types, FE component contracts, and agentic surfaces (LangGraph state, deepagents subagents, prompt cache slots, observability) ALL scoped to brand-extension surfaces. Engine-level changes routed via `/pm-luana` promotion proposals. Produces `03-arch.md` consolidated + `03-arch-{be,fe,agentic}.md` per surface as single source of truth for `builder-backend` + `builder-frontend` + `builder-agentic`. REQUIRED input `<brand>` ∈ `vitalia | nicolify | comunify | lupulo | platform`. Stays current via DYNAMIC date-aware research — runs `date -u +%Y-%m-%d` at Step 0, queries WebSearch with current_year/month, fetches official docs URLs (canonical, never obsolete) for LangGraph, Anthropic SDK, FastAPI, Next.js, etc. Knowledge cutoff of underlying model is supplemented by live research, never trusted in isolation for state-of-the-art questions.
 tools: Read, Bash, Grep, Glob, WebSearch, WebFetch
 maxTurns: 80
-skills: [backend-expert, frontend-expert, copilot-expert, sales-agent-expert, brand-expert, offer-expert, offer-type-preset-expert, metrics-expert, tessl__langgraph, tessl__fastapi, tessl__graceful-degradation]
+skills: [backend-expert, frontend-expert, copilot-expert, sales-agent-expert, brand-expert, offer-expert, offer-type-preset-expert, metrics-expert]
 color: blue
 model: opus
 ---
@@ -124,8 +124,8 @@ When the feature touches a domain with a dedicated expert skill, **invoke that s
 
 | Surface | Builder owner | Auditor owner | Skills to invoke |
 |---|---|---|---|
-| `{brand}/backend/src/modules/{brand}/copilot/{extractors,tools,workflows,kb}/` (brand extension) | **`builder-agentic`** (Opus) | **`auditor-agentic`** (Opus) | `copilot-expert` + `tessl__langgraph` |
-| `{brand}/backend/src/modules/{brand}/sales_agent/{tools,personas,goldens}/` (brand extension) | **`builder-agentic`** (Opus) | **`auditor-agentic`** (Opus) | `sales-agent-expert` + `tessl__langgraph` |
+| `{brand}/backend/src/modules/{brand}/copilot/{extractors,tools,workflows,kb}/` (brand extension) | **`builder-agentic`** (Opus) | **`auditor-agentic`** (Opus) | `copilot-expert` + LangGraph canonical docs |
+| `{brand}/backend/src/modules/{brand}/sales_agent/{tools,personas,goldens}/` (brand extension) | **`builder-agentic`** (Opus) | **`auditor-agentic`** (Opus) | `sales-agent-expert` + LangGraph canonical docs |
 | `core/luana-core-{copilot,sales-agent,extension-sdk}/src/` (ENGINE) | **`/pm-luana` promotion gate** (NOT a builder) | n/a | escalate `BLOCKED -> requires /pm-luana lift` |
 | `{brand}/backend/src/modules/{brand}/brand/` (identity, story, positioning, buyer personas, voice/tone, authority vault, communication assets, team, testimonials) | `builder-backend` (Sonnet) | `auditor-backend` (Opus) | `brand-expert` |
 | `{brand}/backend/src/modules/{brand}/offer/` (offer ladder, archetypes, value levels, sections, variant structures, conditional questions, lead-magnet/upsell/downsell) | `builder-backend` (Sonnet) | `auditor-backend` (Opus) | `offer-expert` |
@@ -161,7 +161,7 @@ Before designing patterns the codebase has no precedent for, research current be
   - Pydantic v2: `https://docs.pydantic.dev/latest/`
   - SQLAlchemy 2.0: `https://docs.sqlalchemy.org/en/20/`
   - Clerk: via `mcp__clerk__list_clerk_sdk_snippets`
-- **`mcp__tessl__query_library_docs`** — version-pinned library docs vendored in `.tessl/tiles/`. Prefer this over WebFetch when a tile exists for the library. Run `mcp__tessl__outdated` first if you suspect tile is stale vs current upstream.
+- **WebFetch the canonical docs URL** (or the `tessl-context` skill if Tessl tiles are installed) — for version-pinned library docs. Verify the library version against the canonical docs URL if you suspect the tile is stale vs current upstream.
 - **`mcp__google-dev-knowledge__search_documents`** — Google APIs (GA4, Ads, Search Console)
 - **`mcp__shopify-dev-mcp__search_docs_chunks`** — Shopify (e-commerce extensions)
 
@@ -405,7 +405,7 @@ Conditional edges total — every branch reaches `END` or named node. Max-iter e
 | Tool | Path | Pydantic input schema | Returns | Tenant-scoped? | External calls? |
 |---|---|---|---|---|---|
 | `fetch_offer` | `application/tools/offer.py` | `FetchOfferInput(offer_id, tenant_id)` | `str` (offer summary) | YES | none |
-| `send_whatsapp` | `application/tools/messaging.py` | `SendWhatsAppInput(...)` | `str` | YES | YES — wrap timeout+fallback (`tessl__graceful-degradation`) |
+| `send_whatsapp` | `application/tools/messaging.py` | `SendWhatsAppInput(...)` | `str` | YES | YES — wrap timeout+fallback (graceful-degradation: timeout+fallback+circuit breaker) |
 
 All tools `@tool` decorated, async, call SERVICES (never raw repos), `tenant_id` mandatory.
 
@@ -460,8 +460,8 @@ List which of the 6 LangGraph 2.0 modes the API will emit:
 ### 8.11 Skill decisions referenced
 - `copilot-expert`: [decision 1, decision 2]
 - `sales-agent-expert`: [decision 1, decision 2]
-- `tessl__langgraph`: [pattern X chosen because Y]
-- `tessl__graceful-degradation`: [timeout/fallback strategy for external calls]
+- LangGraph canonical docs: [pattern X chosen because Y]
+- graceful-degradation (timeout+fallback+circuit breaker): [timeout/fallback strategy for external calls]
 
 ## 9. Migration Notes
 [Idempotent raw SQL, IF NOT EXISTS, indexes, enum reuse, prod-clone test command]
@@ -495,7 +495,7 @@ Si CONTRACT NO flipea defaults: marcar `[x] No aplica — CONTRACT no flipea def
 - **Currency** — DTOs with monetary fields include `currency: str | None`. FE consumes via `formatMoney(amount, currency)`
 - **Master data** — `DateTime(timezone=True)`, store UTC, display via `useTenantLocale()` / `formatTenantDate*()`
 - **Spanish neutro LatAm** — UI strings, schemas, prompts (exception: sales_agent output respects tenant voice)
-- **PII** — `response_model=` allowlist, mask/remove/justify fields per `.tessl/.../pii-sanitisation.md`
+- **PII** — `response_model=` allowlist, mask/remove/justify fields (see `core/luana-core-observability/src/luana_core_observability/recording/sanitization.py::sanitize_payload`)
 - **Native-first dev** — lint/tests run native Linux (host), never `docker exec ruff/pytest/tsc/vitest`
 
 ## 12. Architecture Fitness Impact
@@ -514,7 +514,7 @@ Si CONTRACT NO flipea defaults: marcar `[x] No aplica — CONTRACT no flipea def
 ## 15. Research Notes (DATE-AWARE — use Step 0 captured date)
 - Source URL (canonical official docs preferred)
 - `accessed {YYYY-MM-DD}` ← from Step 0 `date -u +%Y-%m-%d`
-- Library version (run `mcp__tessl__outdated` if tile exists, else verify on canonical URL)
+- Library version (verify the library version against the canonical docs URL)
 - Knowledge cutoff disclosure if topic post-Jan 2026 (model cutoff): "Topic researched live on {today} via WebSearch — Opus 4.7 cutoff is Jan 2026"
 - Key takeaway
 - Why this pattern over alternatives

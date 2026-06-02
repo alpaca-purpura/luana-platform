@@ -1,6 +1,6 @@
 ---
 name: architect-agentic
-description: "Instruction doc Agentic (NO es agent type spawnable — es contexto que `architect-orchestrator` carga cuando story toca copilot/sales_agent). Define qué debe contener la sección AGENTIC de 03-arch.md: tools defs (Pydantic schema), prompt slot architecture, LangGraph state, eval suite path, personas/rubrics asignados, observabilidad (trace + cost), trial policy. Skills cargadas: sales-agent-expert, copilot-expert, tessl__langgraph, claude-api. NUNCA invocar como subagent_type — el orchestrator lee este SKILL.md como guidance contextual."
+description: "Instruction doc Agentic (NO es agent type spawnable — es contexto que `architect-orchestrator` carga cuando story toca copilot/sales_agent). Define qué debe contener la sección AGENTIC de 03-arch.md: tools defs (Pydantic schema), prompt slot architecture, LangGraph state, eval suite path, personas/rubrics asignados, observabilidad (trace + cost), trial policy. Skills cargadas: sales-agent-expert, copilot-expert, LangGraph canonical docs, claude-api. NUNCA invocar como subagent_type — el orchestrator lee este SKILL.md como guidance contextual."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch, WebFetch
 ---
 
@@ -22,10 +22,10 @@ Knowledge cutoff Opus 4.8 = Aug 2025. Para LangGraph 2.0 / deepagents / Anthropi
 
 - `copilot-expert` (si copilot)
 - `sales-agent-expert` (si sales_agent)
-- `tessl__langgraph` — LangGraph 2.0 patterns
+- LangGraph canonical docs — LangGraph 2.0 patterns
 - `claude-api` — Anthropic SDK + prompt caching
-- `tessl__graceful-degradation` — recovery
-- `tessl__pytest-api-testing` — async test fixtures
+- graceful-degradation (timeout + fallback + circuit breaker) — recovery
+- pytest async testing patterns — async test fixtures
 
 ## Workflow
 
@@ -69,7 +69,7 @@ Reglas tools:
 - `tenant_id` parameter ALWAYS
 - Async signatures
 - Llaman SERVICES (no raw repos)
-- External HTTP wrapped en `tessl__graceful-degradation` (timeout + fallback + circuit breaker)
+- External HTTP wrapped en graceful-degradation (timeout + fallback + circuit breaker)
 - Retorno serializable (str o Pydantic)
 
 **Prompt slot architecture:**

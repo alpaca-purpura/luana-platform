@@ -13,9 +13,9 @@ allowed-tools: Read, Write, Edit, Bash, Grep, Glob
 ## Skills cargados (HARD GATE)
 
 - `backend-expert` — DDD, conventions, anti-patterns
-- `tessl__fastapi` — async, response_model, DI
-- `tessl__pytest-api-testing` — async client, fixtures
-- `tessl__graceful-degradation` — timeout/fallback
+- FastAPI canonical patterns — async, response_model, DI
+- pytest async testing patterns — async client, fixtures
+- graceful-degradation (timeout + fallback + circuit breaker) — timeout/fallback
 - Domain skill según módulo (`brand-expert`, `offer-expert`, `metrics-expert`, etc.)
 
 ## Workflow

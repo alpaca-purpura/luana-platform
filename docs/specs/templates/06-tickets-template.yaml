@@ -128,8 +128,8 @@
 #        - .claude/rules/tenant-isolation.md
 #        - .claude/rules/spanish-text.md
 #        - .claude/rules/auditor-self-fix-policy.md
-#        - tessl__fastapi
-#        - tessl__pytest-api-testing
+#        - FastAPI canonical patterns
+#        - pytest async testing patterns
 #
 #    /dev-team Step 2 cita esta lista verbatim en builder spawn prompt.
 #    Builder T-{n}-result.md DEBE incluir sección "Skills consulted (must_load enforcement v4.1)"
@@ -208,7 +208,7 @@ T1:
     arch_doc: "../03-arch-be.md"
     story_yaml: "../../../../../product/stories/copilot/brand-audit.yaml"
     rules: [".claude/rules/backend-ddd.md", ".claude/rules/tenant-isolation.md", ".claude/rules/backend-migrations.md"]
-    tessl_skills: ["tessl__fastapi", "tessl__pytest-api-testing"]
+    canonical_docs: ["FastAPI canonical patterns", "pytest async testing patterns"]
     domain_skills: ["backend-expert", "copilot-expert"]
   # ★ v4.1 enforceable — lista resuelta must_load aplicable a este ticket (subset de 05-guidelines.md)
   must_load_skills:
@@ -220,8 +220,6 @@ T1:
     - .claude/rules/spanish-text.md
     - .claude/rules/auditor-self-fix-policy.md
     - .claude/rules/tdd-mandatory.md
-    - tessl__fastapi
-    - tessl__pytest-api-testing
   # ★ assignment block (R: architect-autonomous-mode.md Step 7.5) — dispatch explícito
   assignment:
     primary_agent: builder-backend                 # NUNCA general-purpose
@@ -284,7 +282,7 @@ T2:
     agentic_design: "../02-design-agentic.md"
     story_yaml: "../../../../../product/stories/copilot/brand-audit.yaml"
     rules: [".claude/rules/sales-agent-brand-voice.md"]
-    tessl_skills: ["tessl__langgraph", "claude-api"]
+    canonical_docs: ["LangGraph canonical docs", "claude-api"]
     domain_skills: ["copilot-expert"]
   # ★ assignment block — AGENTIC production_code → Opus HARD (R23)
   assignment:
@@ -354,7 +352,7 @@ T3:
     arch_doc: "../03-arch-fe.md"
     story_yaml: "../../../../../product/stories/copilot/brand-audit.yaml"
     rules: [".claude/rules/frontend-fsd.md", ".claude/rules/spanish-text.md"]
-    tessl_skills: ["tessl__shadcn-ui", "tessl__tailwind", "tessl__react-patterns", "tessl__zod"]
+    canonical_docs: ["Shadcn UI conventions", "Tailwind conventions", "React patterns baseline", "Zod validation"]
     domain_skills: ["frontend-expert", "copilot-expert"]
   # ★ assignment block — FE standard
   assignment:
@@ -415,7 +413,7 @@ T4_example_test_only:
     spec: "../01-spec.md"
     arch_doc: "../03-arch-be.md"
     rules: [".claude/rules/tdd-mandatory.md"]
-    tessl_skills: ["tessl__pytest-api-testing"]
+    canonical_docs: ["pytest async testing patterns"]
     domain_skills: ["sales-agent-expert", "copilot-expert"]
   deliverables:
     - "MODIFY tests/modules/{copilot,sales_agent}/observability/test_callback_handler*.py — bridge cost via _stash + litellm_call_id injection"

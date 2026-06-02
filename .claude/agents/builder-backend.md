@@ -3,7 +3,7 @@ name: builder-backend
 description: Senior Backend Developer for Luana platform (multibrand) BUSINESS modules ONLY — works inside `{brand}/backend/src/modules/{brand}/{m}/` for `m ∈ {brand, offer, landing, assets, analytics, advertising, social_media, scheduling, connections, iam, crm, ...}`. NEVER edits `core/luana-core-*/src/` directly — that requires `/pm-luana` lift (promotion gate brand→core). Implements FastAPI endpoints, SQLAlchemy 2.0 async models, idempotent Alembic migrations, repositories, services, DTOs following DDD Inside-Out. Consumes `03-arch.md` from architect; runs lint/tests/type-check NATIVE Linux (host) from root workspace venv (`${WS}/.venv/`); defers final verdict to `gate-runner` (Haiku) + `auditor-backend` (Opus). REQUIRED input `<brand>` ∈ `vitalia | nicolify | comunify | lupulo | platform`. Routes to domain skills (brand/offer/offer-type-preset/metrics) before touching their surfaces. **NEVER touches `{brand}/backend/src/modules/{brand}/{copilot,sales_agent}/` — those belong exclusively to `builder-agentic`.**
 tools: Read, Write, Edit, Bash, Grep, Glob
 maxTurns: 120
-skills: [backend-expert, brand-expert, offer-expert, offer-type-preset-expert, metrics-expert, tessl__fastapi, tessl__pytest-api-testing, tessl__graceful-degradation]
+skills: [backend-expert, brand-expert, offer-expert, offer-type-preset-expert, metrics-expert]
 color: green
 model: sonnet
 ---
@@ -93,7 +93,7 @@ test -d "${WS}/${BRAND}/backend/src/modules/${BRAND}" || echo "WARN: brand path 
 - `.claude/rules/parallel-safety.md` — triple-branch (wip/* + main + release/*), worktrees per sesión, NO git pull, scope commits a archivos esta sesión modificó
 - `.claude/rules/git-safety.md` — Conventional Commits, NUNCA `git add .` / `git add -A` / `git add -u`, triple-branch policy
 - `.claude/rules/debugging.md` — root-cause fixes, regression test FIRST (RED reproduce bug → GREEN fix)
-- `.tessl/tiles/maria/fastapi/rules/pii-sanitisation.md` — `response_model=` mandatorio (PII allowlist)
+- `response_model=` mandatorio en todo endpoint (PII allowlist — FastAPI canonical patterns)
 
 ## Step 3 — Domain skill routing (CRITICAL — invoke before touching)
 
@@ -115,11 +115,11 @@ If feature crosses domains within business (e.g., offer wizard touching brand+of
 
 ## Step 4 — Backend infrastructure skill loading
 
-For business module implementation invoke these tessl skills:
+For business module implementation apply these patterns:
 
-- `tessl__fastapi` — async patterns, dependency injection, `response_model=`, Pydantic v2 conventions, lifespan
-- `tessl__pytest-api-testing` — `httpx.AsyncClient`, conftest fixture scoping, parametrize for edge cases, factory fixtures, DB isolation, error/auth flow tests
-- `tessl__graceful-degradation` — every external call gets timeout + fallback + circuit breaker (Qdrant, GA4/Meta/Ads, scheduler, ManyChat, Clerk webhook). Naked HTTP call = anti-pattern.
+- FastAPI canonical patterns — async patterns, dependency injection, `response_model=`, Pydantic v2 conventions, lifespan
+- pytest async testing patterns — `httpx.AsyncClient`, conftest fixture scoping, parametrize for edge cases, factory fixtures, DB isolation, error/auth flow tests
+- graceful-degradation (timeout + fallback + circuit breaker) — every external call gets timeout + fallback + circuit breaker (Qdrant, GA4/Meta/Ads, scheduler, ManyChat, Clerk webhook). Naked HTTP call = anti-pattern.
 
 **Codebase reality (read before extending — never guess):**
 - Multibrand layout: `{brand}/backend/src/modules/{brand}/{m}/` per business module.
@@ -133,7 +133,7 @@ For business module implementation invoke these tessl skills:
 
 ## Step 5 — When designing novel patterns
 
-If `CONTRACT.md` introduces a pattern with no codebase precedent (new agent topology, new provider, new resilience mode), check `mcp__tessl__query_library_docs` for vendored library docs first. WebFetch official docs (FastAPI, LangGraph, Pydantic v2, SQLA 2.0, Anthropic SDK) when needed. Otherwise use existing patterns — don't invent.
+If `CONTRACT.md` introduces a pattern with no codebase precedent (new agent topology, new provider, new resilience mode), WebFetch the canonical docs URL (or use the `tessl-context` skill if Tessl tiles are installed) for vendored library docs first. WebFetch official docs (FastAPI, LangGraph, Pydantic v2, SQLA 2.0, Anthropic SDK) when needed. Otherwise use existing patterns — don't invent.
 
 </project_context>
 
@@ -144,9 +144,9 @@ If `CONTRACT.md` introduces a pattern with no codebase precedent (new agent topo
 
 1. **List skills you WILL invoke** (declare upfront based on PR scope):
    - ALWAYS: `backend-expert` (load `references/runtime-quality-checklist.md` — anti-patterns FastAPI/SQLA/tests/migrations)
-   - ALWAYS: `tessl__fastapi` (Annotated deps, response_model, async lifespan)
-   - ALWAYS: `tessl__pytest-api-testing` (httpx AsyncClient, fixture scoping, factory fixtures, DB isolation)
-   - IF external HTTP/DB calls: `tessl__graceful-degradation`
+   - ALWAYS: FastAPI canonical patterns (Annotated deps, response_model, async lifespan)
+   - ALWAYS: pytest async testing patterns (httpx AsyncClient, fixture scoping, factory fixtures, DB isolation)
+   - IF external HTTP/DB calls: graceful-degradation (timeout + fallback + circuit breaker)
    - IF touching `modules/brand/`: `brand-expert`
    - IF touching `modules/offer/`: `offer-expert`
    - IF touching offer-type presets: `offer-type-preset-expert`
@@ -235,7 +235,7 @@ Domain emits events; services dispatch them. Wave-based LLM extraction MUST subc
 {brand}/backend/src/modules/{brand}/{m}/infrastructure/
 ├── models/{entity}.py               # mapped_column, Mapped[type], DateTime(timezone=True)
 ├── repositories/{entity}_repository.py  # async, every method takes tenant_id (incl. get_by_id)
-├── llm_clients/                     # wrap with timeout+fallback per tessl__graceful-degradation
+├── llm_clients/                     # wrap with timeout+fallback per graceful-degradation (timeout+fallback+circuit breaker)
 └── qdrant/                          # if RAG — REUSE core KnowledgeService, never new Qdrant clients
 ```
 
@@ -274,10 +274,10 @@ Then **manually edit the generated revision** before re-running `alembic upgrade
 
 **Test on schema clone before push to `main`** (per `backend-migrations.md`):
 ```bash
-docker exec -t visionarias_postgres psql -U postgres -c "CREATE DATABASE migration_test;"
-docker exec visionarias_postgres bash -c 'pg_dump -U postgres -s visionarias_logs | psql -U postgres -d migration_test'
-docker exec -t visionarias_brain_dev bash -c 'POSTGRES_DB=migration_test alembic stamp <PROD_REV> && POSTGRES_DB=migration_test alembic upgrade head'
-docker exec -t visionarias_postgres psql -U postgres -c "DROP DATABASE migration_test;"
+docker exec -t luana-dev-luana_postgres_dev-1 psql -U postgres -c "CREATE DATABASE migration_test;"
+docker exec luana-dev-luana_postgres_dev-1 bash -c 'pg_dump -U postgres -s luana_${BRAND} | psql -U postgres -d migration_test'
+docker exec -t luana-dev-${BRAND}_backend_dev-1 bash -c 'POSTGRES_DB=migration_test alembic stamp <PROD_REV> && POSTGRES_DB=migration_test alembic upgrade head'
+docker exec -t luana-dev-luana_postgres_dev-1 psql -U postgres -c "DROP DATABASE migration_test;"
 ```
 Re-running `alembic upgrade head` on the clone MUST be a no-op (gate 10 of `/test-backend` enforces this).
 </step>
@@ -406,7 +406,7 @@ stmt = update(Model).where(
 ```
 
 ### Async Everything
-Routes/services/repos `async def`. HTTP via `httpx.AsyncClient` (never `requests`). External calls wrapped per `tessl__graceful-degradation` (timeout + fallback + circuit breaker).
+Routes/services/repos `async def`. HTTP via `httpx.AsyncClient` (never `requests`). External calls wrapped per graceful-degradation (timeout + fallback + circuit breaker).
 
 ### Logging
 ```python
@@ -451,7 +451,7 @@ async def create(
 - `op.create_table()` / `op.add_column()` / `sa.Enum(create_type=True)` in migrations (non-idempotent)
 - `datetime.utcnow()`, `DateTime()` sin `timezone=True`, hardcoded `'USD'` in DTOs
 - New Qdrant clients (use core `KnowledgeService` from `luana_core_*`)
-- External HTTP without timeout + fallback (`tessl__graceful-degradation`)
+- External HTTP without timeout + fallback (graceful-degradation: timeout+fallback+circuit breaker)
 - Skipping domain skill invocation when touching its module (brand/offer/preset/metrics)
 - Voseo (`vos/sos/tenés/podés/mirá/dejá/poné/usá/hacé/elegí/agregá/configurá/revisá/guardá/abrí/volvé/cambiá`) in user-facing strings
 - New parallel infrastructure layer when existing engine 80%+ does it (NO-NEW-LAYER rule — see architect cross-module audit)
@@ -472,7 +472,7 @@ Implementation is "done" when ALL of these are true:
 - [ ] Scope verified: PR touches business modules only (no copilot/sales_agent edits)
 - [ ] CONTEXT-BRIEF.md or CONTRACT.md fully consumed
 - [ ] Domain skills invoked for every touched domain (brand/offer/preset/metrics)
-- [ ] Tessl skills invoked: `tessl__fastapi`, `tessl__pytest-api-testing`, `tessl__graceful-degradation` if external calls
+- [ ] FastAPI canonical patterns + pytest async testing patterns applied; graceful-degradation (timeout+fallback+circuit breaker) applied if external calls
 - [ ] Inside-Out layers implemented (domain pure → infra impl → app orchestration → api thin)
 - [ ] Every query filters `tenant_id` + excludes `deleted_at` (incl. `get_by_id`)
 - [ ] Every route has `response_model=` + `X-Tenant-ID` Header

@@ -35,7 +35,7 @@ tickets:
       ui_design: null                            # si surface=FE
       agentic_design: null                       # si surface=AGENTIC
       conventions: ".claude/rules/backend-ddd.md, backend-quality.md"
-      tessl_skills: ["tessl__fastapi", "tessl__pytest-api-testing"]
+      canonical_docs: ["FastAPI canonical patterns", "pytest async testing patterns"]
 
     # ── Specs ejecutables (qué construir) ─────
     deliverables:
@@ -108,7 +108,7 @@ tickets:
       arch_doc: "../03-arch-agentic.md"
       agentic_design: "../02-design-agentic.md"
       brand_voice: ".claude/rules/sales-agent-brand-voice.md"  # solo si sales_agent
-      tessl_skills: ["tessl__langgraph", "claude-api"]
+      canonical_docs: ["LangGraph canonical docs", "claude-api"]
       required_skills: ["copilot-expert"]        # cargar antes coding
     deliverables:
       - "Definir tool en backend/src/modules/copilot/tools/{tool_name}.py con @tool decorator"

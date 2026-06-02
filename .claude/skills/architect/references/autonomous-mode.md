@@ -65,8 +65,6 @@ Cada ticket en `06-tickets.yaml` MUST incluir bloque `assignment`:
     model_preference: sonnet              # default; opencode fallback ok
     must_load_skills:                     # verbatim, builder spawn cita estos
       - backend-expert
-      - tessl__fastapi
-      - tessl__pytest-api-testing
       - .claude/rules/tenant-isolation.md
       - .claude/rules/backend-ddd.md
       - .claude/rules/tdd-mandatory.md
@@ -90,7 +88,6 @@ Cada ticket en `06-tickets.yaml` MUST incluir bloque `assignment`:
     model_preference: opus                  # HARD per R23
     must_load_skills:
       - sales-agent-expert | copilot-expert  # según módulo
-      - tessl__langgraph
       - claude-api
       - .claude/rules/anti-duplication.md
     must_load_artifacts:
@@ -112,11 +109,6 @@ Cada ticket en `06-tickets.yaml` MUST incluir bloque `assignment`:
     must_load_skills:
       - frontend-expert
       - playwright-expert                   # SI test_construction_plan.playwright_required=true
-      - tessl__react-patterns
-      - tessl__shadcn-ui
-      - tessl__tailwind
-      - tessl__vitest
-      - tessl__zod
       - .claude/rules/frontend-fsd.md
       - .claude/rules/spanish-text.md
     must_load_artifacts:

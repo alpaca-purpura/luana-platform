@@ -277,7 +277,7 @@ Lee TAMBIÉN estos archivos del READY PACKAGE (si brief insuficiente):
 - .claude/rules/anti-duplication.md
 - .claude/rules/spanish-text.md
 - .claude/rules/auditor-self-fix-policy.md (saber qué auditor self-fix vs spawn dev-team)
-- tessl__fastapi (si BE endpoint nuevo)
+- FastAPI canonical patterns (si BE endpoint nuevo)
 - ... (extractar verbatim según ticket surface + module)
 
 AUTONOMOUS LOOP:
@@ -359,7 +359,7 @@ Agent({
            <pr_folder>: {brand}/docs/product/stories/{story-id}/
            PRIORITY READ: {brand}/docs/product/stories/{story-id}/CONTEXT-BRIEF.md (Haiku-built, 5-8k tokens compresses spec+arch+rules+anti-dup+canonical docs)
            READY PACKAGE (todos bajo {brand}/docs/product/stories/{story-id}/): 01-spec.md + 02-design-agentic.md + 03-arch.md (★ v4.1: incluye § Test Construction Plan) + 03-arch-agentic.md + 04-validators.yaml (★ v4.1: 5 categorías + test_construction_plan + scenario_coverage sub-categorías) + 05-guidelines.md (★ v4.1: must_load_skills enforceable) + 06-tickets.yaml (gherkin_coverage por ticket)
-           ★ MUST_LOAD SKILLS (v4.1 enforceable): <list extracted from 05-guidelines.md § must_load_skills resolved per ticket surface — typical agentic: copilot-expert/sales-agent-expert + tessl__langgraph + claude-api + graceful-degradation + auditor-self-fix-policy.md + tenant-isolation.md + spanish-text.md>
+           ★ MUST_LOAD SKILLS (v4.1 enforceable): <list extracted from 05-guidelines.md § must_load_skills resolved per ticket surface — typical agentic: copilot-expert/sales-agent-expert + LangGraph canonical docs + claude-api + graceful-degradation (timeout+fallback+circuit breaker) + auditor-self-fix-policy.md + tenant-isolation.md + spanish-text.md>
            ★ MUST DELIVER in T-{n}-result.md: sección "Skills consulted (must_load enforcement v4.1)" con tabla skill/rule + status + when. Auditor flag CHANGES_REQUESTED si missing.
            Surface scope: SOLO {brand}/backend/src/modules/{brand}/{copilot,sales_agent}/{tools,extractors,workflows,personas,goldens,kb}/ (brand-extension). NUNCA core/luana-core-*/src/ (engine — requires /pm-luana lift).
            AUTONOMOUS LOOP: implement → run validators (acceptance.validator_ids) → fix → repeat hasta GREEN o cap_reached

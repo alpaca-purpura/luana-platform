@@ -1,7 +1,7 @@
 # 02-design-agentic.md — Template (UX agéntico)
 
 > Owner: `/ux-agentico`. Diseño del flujo conversacional para agentic-story.
-> Consume `01-spec.md` + skills (`sales-agent-expert`, `copilot-expert`, `tessl__langgraph`, `claude-api`).
+> Consume `01-spec.md` + skills (`sales-agent-expert`, `copilot-expert`, `claude-api`) + LangGraph canonical docs (WebFetch canonical docs URL or `tessl-context` skill if Tessl tiles are installed).
 > Si descubre edge cases nuevos → propone delta-spec, /po ratifica.
 
 ---

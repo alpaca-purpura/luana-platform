@@ -107,10 +107,10 @@ Agent({
            7. Stories archivadas relacionadas (predecesores) en {brand}/docs/archive/
 
            LOAD SKILLS contextualmente según surface:
-           - BE: backend-expert + tessl__fastapi + tessl__pytest-api-testing
-           - FE: frontend-expert + tessl__react-patterns + tessl__zod + tessl__shadcn-ui + tessl__tailwind + tessl__vitest + tessl__nextjs-app-router-modularization
-           - AGENTIC: sales-agent-expert / copilot-expert + tessl__langgraph + claude-api
-           - Cross-cutting: tessl__graceful-degradation + domain skills (brand/offer/preset/metrics)
+           - BE: backend-expert + FastAPI canonical patterns + pytest async testing patterns
+           - FE: frontend-expert + React patterns baseline + Zod validation + Shadcn UI conventions + Tailwind conventions + Vitest conventions + Next.js App Router Server/Client split
+           - AGENTIC: sales-agent-expert / copilot-expert + LangGraph canonical docs + claude-api
+           - Cross-cutting: graceful-degradation (timeout + fallback + circuit breaker) + domain skills (brand/offer/preset/metrics)
 
            DELIVERABLES (4-5 files, todos bajo {brand}/docs/product/stories/{id}/):
            1. 03-arch.md (consolidado, secciones por surface — incluye § Test Construction Plan ★ v4.1)
@@ -565,18 +565,18 @@ required:
   - id: ".claude/rules/auditor-self-fix-policy.md"
     purpose: "Conocer qué findings auditor self-fix vs spawn dev-team (forward motion)"
 
-  # Tessl skills (versioned canonical docs) si aplica
-  - id: "tessl__fastapi"
+  # Canonical docs / patterns si aplica
+  - id: "FastAPI canonical patterns"
     when: "BE endpoint nuevo"
-  - id: "tessl__pytest-api-testing"
+  - id: "pytest async testing patterns"
     when: "BE tests nuevos"
-  - id: "tessl__react-patterns + tessl__shadcn-ui + tessl__tailwind"
+  - id: "React patterns baseline + Shadcn UI conventions + Tailwind conventions"
     when: "FE component nuevo"
-  - id: "tessl__zod"
+  - id: "Zod validation"
     when: "FE form con validation"
-  - id: "tessl__vitest"
+  - id: "Vitest conventions"
     when: "FE tests nuevos"
-  - id: "tessl__langgraph + claude-api"
+  - id: "LangGraph canonical docs + claude-api"
     when: "AGENTIC surface"
 
 reference_artifacts:
@@ -680,7 +680,7 @@ Ejemplo:
   assignment:
     primary_agent: builder-backend
     model_preference: sonnet
-    must_load_skills: [backend-expert, tessl__fastapi, .claude/rules/tenant-isolation.md, .claude/rules/backend-ddd.md]
+    must_load_skills: [backend-expert, "FastAPI canonical patterns", .claude/rules/tenant-isolation.md, .claude/rules/backend-ddd.md]
     forbidden_to_touch: ["core/luana-core-*/src/", "{other_brand}/", "{brand}/backend/src/modules/{brand}/{copilot,sales_agent}/"]
     rationale: "BE CRUD non-agentic, Sonnet sweet spot"
 
@@ -692,7 +692,7 @@ Ejemplo:
   assignment:
     primary_agent: builder-agentic
     model_preference: opus    # HARD per R23
-    must_load_skills: [sales-agent-expert, tessl__langgraph, claude-api]
+    must_load_skills: [sales-agent-expert, "LangGraph canonical docs", claude-api]
     forbidden_to_touch: ["core/luana-core-{copilot,sales-agent}/src/"]
     rationale: "AGENTIC production R23 → Opus obligatorio"
 ```

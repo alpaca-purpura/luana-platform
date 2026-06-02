@@ -13,12 +13,12 @@ allowed-tools: Read, Write, Edit, Bash, Grep, Glob
 ## Skills cargados (HARD GATE)
 
 - `frontend-expert` — FSD-Lite, conventions
-- `tessl__react-patterns` — error boundaries, states, accessibility
-- `tessl__zod` — schemas validation
-- `tessl__shadcn-ui` — primitives reuse
-- `tessl__tailwind` — tokens
-- `tessl__nextjs-app-router-modularization` — Server/Client split
-- `tessl__graceful-degradation` — timeout/fallback fetch
+- React patterns baseline — error boundaries, states, accessibility
+- Zod validation — schemas validation
+- Shadcn UI conventions — primitives reuse
+- Tailwind conventions — tokens
+- Next.js App Router Server/Client split — Server/Client split
+- graceful-degradation (timeout + fallback + circuit breaker) — timeout/fallback fetch
 - Domain skill según módulo (`brand-expert`, `offer-expert`, `copilot-expert`, etc.)
 - `{brand}-design-system` si existe (ej. `vitalia-design-system`) — inventario átomos/moléculas/shell + autoridad de tokens. ★ Además, inclúyelo en `assignment.must_load_skills` de CADA ticket FE de esa brand: es el único canal por el que el `builder-frontend` (sub-agente) recibe el design system. Sin esto se pierde en build (`anti-orphan-integration.md` + `frontend-visual-fidelity.md § D0`).
 
@@ -84,7 +84,7 @@ type FormData = z.infer<typeof schema>;
 **Server vs Client boundaries:**
 - Server default
 - `"use client"` SOLO cuando state/effects/event handlers/browser APIs
-- Page con metadata + interactivity → split per `tessl__nextjs-app-router-modularization`
+- Page con metadata + interactivity → split per Next.js App Router Server/Client split
 
 **Accessibility:**
 - Semantic HTML (`<button>`, `<nav>`, `<main>`)

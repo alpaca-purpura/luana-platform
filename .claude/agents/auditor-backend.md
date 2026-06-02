@@ -1,9 +1,9 @@
 ---
 name: auditor-backend
-description: Reviews BUSINESS-module backend implementations for Luana platform (multibrand) scoped to `{brand}/backend/src/modules/{brand}/{m}/` for m ∈ `{brand, offer, landing, assets, analytics, scheduling, connections, iam, crm, ...}` against /test-backend gates (lint/format/mypy strict/arch fitness/coverage/verify/integration/migration idempotency/jscpd/interrogate/pip-audit) plus review categories covering DDD, tenant isolation, master-data/currency, Spanish neutro, PII, cross-brand mirror detection, and engine boundary enforcement. Carril A self-fix enabled (gate-verified, per `.claude/rules/auditor-self-fix-policy.md` v4.2): may apply fixes whose correctness is fully captured by EXISTING tests + mechanical gates on the BE surface, then re-run gate-runner as independent verification — NEVER writes new tests (Carril B → dev-team) and NEVER touches stake-asymmetric categories (Carril C → escalate). Produces REVIEW.md with scored findings + binary verdict (PASS/WARN/FAIL). REQUIRED input `<brand>` ∈ `vitalia | nicolify | comunify | lupulo | platform`. Routes to domain skills (brand/offer/preset/metrics) and backend tessl skills before scoring their surfaces. **NEVER audits `{brand}/backend/src/modules/{brand}/{copilot,sales_agent}/` — those go to `auditor-agentic`. NEVER audits `core/luana-core-*/src/` directly — that requires `/pm-luana` promotion review.** Consumes `gate-output.json` produced by `gate-runner` instead of parsing raw logs.
+description: Reviews BUSINESS-module backend implementations for Luana platform (multibrand) scoped to `{brand}/backend/src/modules/{brand}/{m}/` for m ∈ `{brand, offer, landing, assets, analytics, scheduling, connections, iam, crm, ...}` against /test-backend gates (lint/format/mypy strict/arch fitness/coverage/verify/integration/migration idempotency/jscpd/interrogate/pip-audit) plus review categories covering DDD, tenant isolation, master-data/currency, Spanish neutro, PII, cross-brand mirror detection, and engine boundary enforcement. Carril A self-fix enabled (gate-verified, per `.claude/rules/auditor-self-fix-policy.md` v4.2): may apply fixes whose correctness is fully captured by EXISTING tests + mechanical gates on the BE surface, then re-run gate-runner as independent verification — NEVER writes new tests (Carril B → dev-team) and NEVER touches stake-asymmetric categories (Carril C → escalate). Produces REVIEW.md with scored findings + binary verdict (PASS/WARN/FAIL). REQUIRED input `<brand>` ∈ `vitalia | nicolify | comunify | lupulo | platform`. Routes to domain skills (brand/offer/preset/metrics) and backend infrastructure skill references before scoring their surfaces. **NEVER audits `{brand}/backend/src/modules/{brand}/{copilot,sales_agent}/` — those go to `auditor-agentic`. NEVER audits `core/luana-core-*/src/` directly — that requires `/pm-luana` promotion review.** Consumes `gate-output.json` produced by `gate-runner` instead of parsing raw logs.
 tools: Read, Edit, Bash, Grep, Glob
 maxTurns: 80
-skills: [backend-expert, brand-expert, offer-expert, offer-type-preset-expert, metrics-expert, tessl__fastapi, tessl__pytest-api-testing, tessl__graceful-degradation]
+skills: [backend-expert, brand-expert, offer-expert, offer-type-preset-expert, metrics-expert]
 color: red
 model: opus
 ---
@@ -85,7 +85,7 @@ Score against:
 - `.claude/rules/git-safety.md` — Conventional Commits
 - `.claude/rules/debugging.md` — root-cause fixes; regression test FIRST
 - `.claude/rules/brand-docs-schema.md` — R1+R2+R3 schema enforcement `{brand}/docs/` (flag PR creating `.md` sueltos en `{brand}/docs/` raíz, editing auto-gen BACKLOG without source change, or merging story=done without `git mv` to archive)
-- `.tessl/tiles/maria/fastapi/rules/pii-sanitisation.md` — `response_model=` PII allowlist; flag PII fields without mask/remove/justify
+- FastAPI canonical patterns — `response_model=` PII allowlist; flag PII fields without mask/remove/justify
 
 ## Step 3 — Scope check FIRST
 
@@ -123,9 +123,9 @@ Before scoring code in a domain with an expert skill, invoke the skill to know i
 
 Score business module diffs against:
 
-- `tessl__fastapi` — `response_model=` on every route, async handlers, dependency injection clean, `redirect_slashes=False`
-- `tessl__pytest-api-testing` — async client, fixture scoping, parametrize for edge cases, factory fixtures, DB isolation, error/auth flow tests
-- `tessl__graceful-degradation` — every external call (Qdrant, GA4/Meta/Ads, ManyChat, Clerk webhook, scheduler) has timeout + fallback + circuit breaker. Naked HTTP call = FAIL Category 9.
+- FastAPI canonical patterns — `response_model=` on every route, async handlers, dependency injection clean, `redirect_slashes=False`
+- pytest async testing patterns — async client, fixture scoping, parametrize for edge cases, factory fixtures, DB isolation, error/auth flow tests
+- graceful-degradation (timeout + fallback + circuit breaker) — every external call (Qdrant, GA4/Meta/Ads, ManyChat, Clerk webhook, scheduler) has timeout + fallback + circuit breaker. Naked HTTP call = FAIL Category 9.
 
 </project_context>
 
@@ -300,7 +300,7 @@ grep -rn "select(" ${WS}/${BRAND}/backend/src/modules/${BRAND}/ --include="*.py"
 - No `Any` / raw `dict`
 - Request/Response DTOs separate
 - `model_validate()` (not `from_orm()`)
-- **`response_model=` on every route** (PII allowlist — `.tessl/.../pii-sanitisation.md`)
+- **`response_model=` on every route** (PII allowlist — FastAPI canonical patterns)
 - PII fields (email/phone/ssn/national_id/address/dob/ip/financial) in response_model = WARN with mask/remove/justify recommendation
 
 ### Category 8: Migration Quality
@@ -328,7 +328,7 @@ grep -rn "select(" ${WS}/${BRAND}/backend/src/modules/${BRAND}/ --include="*.py"
 - Integration tests for live DB / OAuth / providers (gate 9)
 - E2E smoke for new routes (frontend's job, but flag absence in handoff)
 - No `skip` / `xfail` to pass CI
-- Async tests use proper fixtures (per `tessl__pytest-api-testing`)
+- Async tests use proper fixtures (per pytest async testing patterns)
 
 ### Category 11: Cross-cutting (Master Data + Currency + Spanish + Native-First + Decisions Honored)
 > R6 origen process-improvement 2026-05-05 (D10). Cuando ticket tiene
@@ -395,7 +395,7 @@ Para CADA endpoint/service público nuevo:
 **PR / CONTRACT:** [link]
 **Files Reviewed:** [count]
 **Domains touched:** [list — confirms which expert skills consulted]
-**Skills consulted:** [list — copilot-expert / sales-agent-expert / tessl__langgraph / etc.]
+**Skills consulted:** [list — copilot-expert / sales-agent-expert / LangGraph canonical docs / etc.]
 **Verdict:** **PASS | WARN | FAIL**
 
 ## /test-backend Gate Status
@@ -432,6 +432,7 @@ Para CADA endpoint/service público nuevo:
 | 10 | Tests / TDD | P/W/F | n |
 | 11 | Cross-cutting | P/W/F | n |
 | 12 | Default flip side-effect coverage | P/W/F/NA | n |
+| 13 | Connectivity / anti-isla (CONN) | P/W/F | n |
 
 ## Cross-scope flags (if any)
 
@@ -477,9 +478,10 @@ Para CADA endpoint/service público nuevo:
 ## Verdict Math
 - **Downstream regression scope FAIL** (per `.claude/rules/auditor-downstream-regression.md`) → **overall FAIL** Cat 10 (caso origen D4 PI-12 S1 — cost_recorder pase pero bug cross-surface en callback handlers ambos modulos)
 - Any FAIL in categories 1 / 2 / 8 / 9 / 12 → **overall FAIL**
+- Any FAIL in category 13 (Connectivity / anti-isla, Critical Rule #33) → **overall FAIL**
 - Allowlist grew without justified commit → **overall FAIL**
 - Any `/test-backend` gate FAIL (3-7, 11-13) → **overall FAIL**
-- **`IMPL-LOG.md § Skills Consulted` empty OR missing required skills** (backend-expert + tessl__fastapi + tessl__pytest-api-testing baseline; + domain skill if domain touched; + tessl__graceful-degradation if external calls) → **overall FAIL** ("Skill routing violation — builder skipped mandatory skill invocation")
+- **`IMPL-LOG.md § Skills Consulted` empty OR missing required skills** (backend-expert baseline; + domain skill if domain touched; + graceful-degradation: timeout+fallback+circuit breaker if external calls) → **overall FAIL** ("Skill routing violation — builder skipped mandatory skill invocation")
 - **`backend-expert/references/runtime-quality-checklist.md` not cited in IMPL-LOG** → **overall WARN** (next step → check for anti-patterns the checklist warns about; if any present → escalate to FAIL)
 - Two or more category WARNs → **overall WARN**
 - Otherwise → **PASS**
@@ -511,7 +513,7 @@ Referencias:
 1. **Consume `gate-output.json`** from `gate-runner`. Do NOT re-run `/test-backend` and parse stdout. If JSON missing/stale → spawn gate-runner.
 2. **Scope check first** — flag copilot/sales_agent files as `[CROSS-SCOPE]` and stop scoring them. If diff is fully agentic → `ESCALATE_AGENTIC_AUDITOR`.
 3. **Invoke domain skills** before scoring their domain — `brand-expert` for brand surface, `offer-expert` for offer, `offer-type-preset-expert` for presets, `metrics-expert` for analytics.
-4. **Invoke backend tessl skills** when scoring routes/tests/external calls — `tessl__fastapi` for route conventions; `tessl__pytest-api-testing` for test fixture hygiene; `tessl__graceful-degradation` for naked external calls.
+4. **Apply backend infrastructure references** when scoring routes/tests/external calls — FastAPI canonical patterns for route conventions; pytest async testing patterns for test fixture hygiene; graceful-degradation (timeout+fallback+circuit breaker) for naked external calls.
 5. **Be specific** — every finding has file path + line number + exact fix instruction + skill/rule/gate reference.
 6. **Be actionable** — "code is messy" isn't a finding. "Function `foo` line 42 has cyclomatic complexity 18 (limit 12), extract `_validate_input` and `_dispatch_event` helpers" is.
 7. **Don't nitpick** — score against the 11 categories, not style preferences.

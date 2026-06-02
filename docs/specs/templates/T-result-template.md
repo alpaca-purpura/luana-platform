@@ -31,8 +31,8 @@ schema_version: v4.1
 | .claude/rules/spanish-text.md | ✅ loaded | pre-commit — Spanish neutro check (`grep voseo`) |
 | .claude/rules/auditor-self-fix-policy.md | ✅ loaded | Step 0 — saber qué auditor self-fix vs spawn dev-team |
 | .claude/rules/tdd-mandatory.md | ✅ loaded | Step 0 — TDD RED→GREEN discipline |
-| tessl__fastapi | ✅ loaded | endpoint nuevo |
-| tessl__pytest-api-testing | ✅ loaded | endpoint test patterns |
+| FastAPI canonical patterns | ✅ loaded | endpoint nuevo |
+| pytest async testing patterns | ✅ loaded | endpoint test patterns |
 | frontend-expert | n/a | surface=BE only |
 | playwright-expert | n/a | playwright_required=false (este ticket no toca FE) |
 
