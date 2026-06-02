@@ -1,11 +1,11 @@
 # Checkpoint Protocol — Resume sessions
 
-> Cada nivel (PI / sprint / story) tiene `checkpoint.md` propio.
+> Cada story tiene `checkpoint.md` propio (vive junto al resto de artefactos de la story).
 > Cualquier sesión nueva lee checkpoints PRIMERO antes de hacer nada.
 
 ## Por qué existe
 
-Multi-instancia Claude Code (Chris) + sesiones que mueren mid-build + 6+ PIs activos = perder contexto es caro.
+Multi-instancia Claude Code (Chris) + sesiones que mueren mid-build + múltiples stories activas = perder contexto es caro.
 
 `checkpoint.md` resuelve:
 1. Qué sesión está activa en este nivel
@@ -26,25 +26,28 @@ Campos críticos:
 - `parallel_safe` — ¿otra sesión puede tocar?
 - `audit_iterations` — para cap (story-level)
 
-## Niveles + ubicación
+## Ubicación canónica
 
 ```
-docs/projects/active/PI-12-{theme}/
-├── checkpoint.md                          ← PI-level
-└── sprints/S1-{slug}/
-    ├── checkpoint.md                       ← sprint-level
-    └── stories/{story-id}/
-        └── checkpoint.md                   ← story-level
+{brand}/docs/product/stories/{story-id}/
+├── checkpoint.md          ← story-level (única granularidad)
+├── chris-input.md
+├── 01-spec.md
+├── 03-arch.md
+├── 04-validators.yaml
+├── 05-guidelines.md
+├── 06-tickets.yaml
+└── 07-merge.md
 ```
 
 ## Reglas de update
 
 | Quién toca | Cuándo updatea |
 |---|---|
-| `/pm` | Crear PI/sprint/story. Cerrar phases. Aplicar merge. |
+| `/pm` | Crear story. Cerrar phases. Aplicar merge. |
 | `/po` | Tras aprobar `01-spec.md`. |
 | `/ux-{ui,agentico}` | Tras escribir `02-design-*.md`. |
-| `/architect` | Tras escribir `04-tickets.yaml`. |
+| `/architect` | Tras escribir `06-tickets.yaml`. |
 | `/dev-team` | Por ticket: cambio state. |
 | `/auditor` | Tras escribir `T-{n}-review.md` y `REVIEW-final.md`. |
 
@@ -71,25 +74,21 @@ Estas dos capas mecánicas garantizan que el fallo no vuelva a ser **silencioso*
 Cuando cualquier agent/sesión arranca o retoma:
 
 ```bash
-# 1. Identificar trabajo activo
-ls docs/projects/active/                   # PIs activos
-cat docs/projects/active/PI-{N}/checkpoint.md  # PI-level state
+# 1. Identificar brand + story activa
+git status --short && git branch --show-current && git log --oneline -3
+cat {brand}/docs/product/checkpoint.md          # brand-level state
 
-# 2. Identificar sprint activo
-ls docs/projects/active/PI-{N}/sprints/    # sprints del PI
-cat docs/projects/active/PI-{N}/sprints/S{n}/checkpoint.md
+# 2. Ver stories en curso (developing/developed/reviewing)
+ls {brand}/docs/product/stories/
+cat {brand}/docs/product/stories/{id}/checkpoint.md
 
-# 3. Identificar story activa
-ls docs/projects/active/PI-{N}/sprints/S{n}/stories/
-cat docs/projects/active/PI-{N}/sprints/S{n}/stories/{id}/checkpoint.md
-
-# 4. Verificar parallel_safe
+# 3. Verificar parallel_safe
 # si parallel_safe=false → otra sesión está activa, NO TOCAR sin coordinar
 
-# 5. Verificar blocked_reason
+# 4. Verificar blocked_reason
 # si blocked → escala a Chris, no proceder
 
-# 6. Ejecutar next_action
+# 5. Ejecutar next_action
 # leer artefacto previo (last_artifact) → producir siguiente
 ```
 
@@ -128,10 +127,10 @@ Cada subagent escribe su output a disco apenas tiene contenido suficiente
 `/dev-team` + `/auditor` orchestrator (Claude main session) MUST:
 
 - Commit cada artefacto downstream apenas terminado (never batch ≥3 artefactos)
-- `git push origin development` después de cada commit (no acumular >2 commits unpushed)
+- `git push origin wip/{brand}` después de cada commit (no acumular >2 commits unpushed)
 - Update `checkpoint.md` story-level con `last_artifact` + `last_modified` + `next_action`
 
-Razón: crash recovery = `git pull || git fetch` + leer `checkpoint.md` =
+Razón: crash recovery = `git log --oneline -5` + leer `checkpoint.md` =
 contexto restaurado en <30 seconds. Sin push frecuente, perdés horas de
 work si crash + machine no boots.
 
@@ -141,25 +140,25 @@ Sesión nueva post-crash:
 
 ```bash
 # 1. State estable
-git status --short                                   # debe estar limpio
-git log --oneline -5                                 # confirmar commits llegaron remoto
+git status --short                                        # debe estar limpio
+git log --oneline -5                                      # confirmar commits llegaron remoto
 
-# 2. Identificar último ticket en progreso
-ls docs/projects/active/                             # PIs activos
-cat docs/projects/active/PI-N/checkpoint.md          # PI-level
-ls docs/projects/active/PI-N/sprints/SN/stories/     # sprints + stories
-cat docs/projects/active/PI-N/sprints/SN/stories/{id}/checkpoint.md
+# 2. Identificar brand + story en progreso
+WS=$(git rev-parse --show-toplevel)
+BRAND=vitalia   # o nicolify/comunify/lupulo
+cat ${WS}/${BRAND}/docs/product/checkpoint.md             # brand-level state
+ls ${WS}/${BRAND}/docs/product/stories/                   # stories activas
+cat ${WS}/${BRAND}/docs/product/stories/{id}/checkpoint.md
 
 # 3. Verificar artefactos del ticket interrumpido
-ls -lt docs/projects/active/PI-N/sprints/SN/stories/{id}/05-impl/  # builder outputs
-ls -lt docs/projects/active/PI-N/sprints/SN/stories/{id}/06-audit/ # auditor outputs
+ls -lt ${WS}/${BRAND}/docs/product/stories/{id}/          # artefactos presentes
 
 # 4. Consultar gate-output.json freshness (R22 post-condition)
-GATE=docs/projects/active/PI-N/sprints/SN/stories/{id}/gate-output.json
+GATE=${WS}/${BRAND}/docs/product/stories/{id}/gate-output.json
 [ -f $GATE ] && jq '.overall.any_fail, .iter' $GATE
 
 # 5. Re-run scoped tests para confirm state consistente
-cd backend && .venv/bin/pytest <ticket scope tests> -v
+cd ${WS} && .venv/bin/pytest <ticket scope tests> -v
 
 # 6. Continue from `next_action` field of checkpoint.md
 ```

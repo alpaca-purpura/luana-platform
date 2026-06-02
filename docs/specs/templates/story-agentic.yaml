@@ -6,9 +6,16 @@
 ---
 id: STORY_ID_KEBAB
 type: agentic-story
+state: idea                                     # 10 estados macro: idea | refining | refined | ready | developing | developed | reviewing | done | parked | dropped
 module: MODULE_NAME                             # típicamente copilot | sales_agent
 capability: CAPABILITY_ID
-status: planned
+cap_target: "{module}/{cap-id}"                 # FK → product/capabilities/{module}/{cap}.yaml (mandatorio desde idea)
+cap_change_type: new                            # new | fix | extend | derive (mandatorio desde idea)
+capability_status: planned                      # planned | in-progress | live | deprecated (estado de la capability, NO de la story)
+agent_owner: null                               # trabajador dueño: lisa | valeria | adrian | lucas | camila | mateo (ZONA AGENTES)
+map_zone: agentes                               # zona derivada del SYSTEM-MAP: agentes | plataforma | infraestructura
+map_box: null                                   # caja concreta en la zona (ej: lisa, valeria, mateo, motor-agentico…)
+release: null                                   # FK → product/releases/{F0..FN}.yaml
 slice: MVP
 last_audit: 2026-05-04
 date_introduced: null

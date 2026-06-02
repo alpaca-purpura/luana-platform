@@ -1,7 +1,7 @@
 # ADR-001 — Luana Platform: Multi-Brand Vertical SaaS Architecture
 
-> **Status:** PROPOSED — awaiting Chris ratification
-> **Date:** 2026-05-09
+> **Status:** ACCEPTED — decisión original PROPOSED (2026-05-09); adoptada en la práctica como monorepo (ver Addendum 2026-06-01)
+> **Date:** 2026-05-09 · **Accepted:** 2026-06-01
 > **Decision-makers:** Chris (alpacapurpura@) + Claude Opus 4.7 (CTO advisory)
 > **Supersedes:** none
 > **Superseded by:** none
@@ -225,7 +225,70 @@ The following rules are cemented and not subject to revision without superseding
 | Version | Date | Change | Author |
 |---|---|---|---|
 | 0.1 | 2026-05-09 | Initial draft. PROPOSED status. | Claude Opus 4.7 |
+| 0.2 | 2026-06-01 | Status → ACCEPTED. Addendum: monorepo adoptado en la práctica (Alternativa D). | Claude Opus 4.8 |
 
 ---
 
 **Next docs:** `02-extension-points.md`, `03-migration-plan.md`, `04-brand-config-spec.md`, `05-cross-repo-tooling.md`.
+
+---
+
+## Addendum (2026-06-01) — Monorepo adoptado en la práctica
+
+### Qué ocurrió
+
+La decisión original (§2.1) prescribía **5 repositorios separados** (`luana-core` + 4 brand repos). En la práctica, la arquitectura que se ejecutó y está en producción es **un único monorepo** (`luana-platform/`), que corresponde a la **Alternativa D** que este ADR rechazaba (§3.4).
+
+### Topología real adoptada
+
+```
+luana-platform/                          ← monorepo único
+├── core/
+│   ├── luana-core-{26 paquetes}/        ← engine SSoT (Python, uv workspace editable)
+│   └── @luana/{ui-kit,design-tokens,format,hooks,schemas,api-client,extension-sdk}/  ← TS packages
+├── vitalia/{backend,frontend,config}/
+├── nicolify/{backend,frontend,config}/
+├── comunify/{backend,frontend,config}/
+├── lupulo/{backend,frontend,config}/
+└── {saasora,inmoflow,retailly,fixia,guestly,fitflow}/  ← 6 brands bootstrap pendiente
+```
+
+Los paquetes de engine **no se publican a GitHub Packages**: se consumen via `uv workspace` editable installs (Python) y `pnpm workspace` (TypeScript), con un único venv en la raíz del workspace. Esto elimina el ciclo publish/bump que el plan original requería.
+
+### Por qué se adoptó el monorepo
+
+1. **Solo-operador:** con un único desarrollador humano (Chris) + Claude Code, la fricción de 5 repositorios (pull de cambios cross-repo, semver publish, CI por repo) supera ampliamente el beneficio. El monorepo permite refactors atómicos cross-package sin ceremonia.
+2. **Refactor cross-package atómico:** modificar un extension point del engine y el consumer brand en el mismo commit es trivial en monorepo, imposible en multi-repo sin danza publish → bump → PR.
+3. **uv/pnpm workspace:** las herramientas de workspace modernas resuelven el problema de resolución de dependencias localmente sin registry, eliminando la razón técnica principal para los 5 repos.
+4. **Parallel-safety resuelta via worktrees + bucket locks (ADR-009):** la "amplificación 5x del parallel-safety pain" que §3.4 citaba como motivo de rechazo se resolvió con la estrategia de hub único por marca + bucket locks module-scoped (`code:{module}`) + commit por pathspec. El índice compartido ya no es un problema.
+5. **Deployments siguen siendo brand-aislados:** cada brand tiene su `docker-compose.dev.yml` propio, su VPS separado y Cloudflare Tunnel independiente. El aislamiento operativo se mantiene; sólo el código fuente vive en un repositorio compartido.
+
+### Qué sigue vigente de la decisión original
+
+Las siguientes decisiones de §2 y §5 se mantienen intactas independientemente de la topología de repo:
+
+- **Tres capas lógicas:** engine core / vertical extensions / brand apps (§2.2) — sigue siendo el modelo; los paths cambian pero la separación existe.
+- **Extension SDK y EPs** (§2.3, EP-1..EP-18 en `core/luana-core-extension-sdk/`) — vigentes y expandidos a 18 extension points.
+- **BrandConfig declarativo** (§2.3) — implementado en `{brand}/config/brand.yaml`.
+- **Multi-tenancy isolation** (§2.5) — cada brand tiene su propio Clerk Application, Postgres, Redis y Qdrant. No hay cross-brand data sharing.
+- **Anti-cross-brand import** (§5 regla 3) — `{brand_A}/backend/` NUNCA importa `{brand_B}/backend/`. Enforcement via arch fitness tests.
+- **Brand voice contract** (§5 regla 9) — `personality_profiles.system_instruction` + Slot 5 BRAND_VOICE semántica estable.
+
+### Consecuencias de la divergencia
+
+| Punto del ADR original | Estado real |
+|---|---|
+| 5 repos en GitHub Org | 1 monorepo `luana-platform` |
+| Packages publicados a GitHub Packages | editable installs via uv/pnpm workspace |
+| `semantic-release` + semver publish | semver tracking manual vía promotion gate (`docs/promotion-protocol/`) |
+| `apps/{brand}/vertical-{niche}/` | `{brand}/backend/src/modules/{brand}/` + Extension SDK |
+| Kubernetes per brand | Docker Compose per brand + VPS + Cloudflare Tunnel |
+| `05-cross-repo-tooling.md` (pending) | `.claude/` compartido en la raíz del monorepo (no subtree pull) |
+| Rollout 9 semanas Sem 0→9+ | Ejecutado de forma evolutiva continua desde 2026-05-09 |
+
+### Referencias
+
+- `docs/architecture/luana-platform/ADR-009-single-hub-worktree.md` — parallel-safety monorepo (hub único por marca)
+- `docs/promotion-protocol/README.md` — gate brand→core (reemplaza semver publish workflow)
+- `.claude/rules/anti-duplication.md` — inventario engine abstractions + cross-brand mirror ban
+- `CLAUDE.md` § Topology — topología actual de referencia

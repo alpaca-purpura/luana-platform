@@ -1,6 +1,9 @@
 # 02-design-ui.md — Template (UX/UI)
 
-> Owner: `/ux-ui`. Diseño UI completo para ui-story (o componente UI de mixed-story).
+> **[DEPRECADO — `/po-ux` produce `01-spec.md` unificado y lo prohíbe explícitamente. Conservado por trazabilidad.]**
+> El owner `/ux-ui` mencionado abajo no existe en el paradigma v4. Usá `/po-ux` para UI stories (produce `01-spec.md` con wireframes + Gherkin + estados + microcopy + graders Playwright integrados). Este template `02-design-ui.md` como artefacto separado quedó obsoleto: todo el contenido de diseño UI vive en `01-spec.md` unificado desde el paradigma v4 (2026-05-06).
+
+> ~~Owner: `/ux-ui`.~~ Diseño UI completo para ui-story (o componente UI de mixed-story).
 > Consume `01-spec.md` + skills (`brand-expert`, `frontend-expert`) + Shadcn UI / Tailwind conventions.
 > Si descubre edge cases nuevos durante diseño → propone `delta-spec.md` y /po ratifica antes de seguir.
 

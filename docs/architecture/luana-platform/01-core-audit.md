@@ -2,6 +2,8 @@
 
 # Luana Core — Module Audit
 
+> [HISTÓRICO — auditoría de planificación del carve-out core, pre/durante reorg multibrand 2026-05-15. Los paths `apps/` y los nombres de docs prometidos NO reflejan la estructura actual (ver `00-overview.md`). Conservado por trazabilidad; no usar como guía operativa.]
+
 > **Status:** Draft v0.1 — 2026-05-09
 > **Owner:** Chris (alpacapurpura@) + Claude Opus 4.7
 > **Purpose:** Inventario módulo-por-módulo de qué va a Luana core (transversal, compartido por las 4 marcas) vs qué queda como vertical-specific en cada brand app.

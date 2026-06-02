@@ -1,3 +1,5 @@
+> [ARCHIVADO — read-only. Guía de migración desde el monolito nicolify previa al nicolify-reset (2026-05-29). Los ejemplos de SDK/API y el código fuente referenciado ya no aplican (copy-paste produciría errores). Conservado por trazabilidad.]
+
 # Migración desde Nicolify (AISALESHT) a Luana Platform v0.1.0
 
 ## §1 Audiencia

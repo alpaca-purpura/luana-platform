@@ -10,28 +10,43 @@ AI para ventas y marketing (`core`) y las aplicaciones SaaS de cada brand vertic
 ```
 luana-platform/                          ← monorepo raíz
 ├── core/                                ← Motor SSoT (engine)
-│   ├── copilot/                         ← Módulo AI Copilot (Story 2)
-│   ├── sales-agent/                     ← Agente AI de ventas (Story 3)
-│   └── shared/                          ← Abstracciones compartidas (Story 2)
-├── nicolify/                            ← Brand: SaaS marketing (flagship)
-├── vitalia/                             ← Brand: salud/medical (Story 11)
-├── comunify/                            ← Brand: creator economy (Story 12)
-├── lupulo/                              ← Brand: gastronomía (Story 13)
-├── .claude-shared/                      ← Reglas + skills Claude Code (de AISALESHT)
-├── .claude/                             ← Copia de .claude-shared (Windows-compat)
+│   ├── luana-core-{26 paquetes}/        ← Paquetes Python engine (luana_core_*)
+│   └── @luana/                          ← Paquetes TS compartidos (@luana/*)
+│       ├── api-client/
+│       ├── design-tokens/
+│       ├── extension-sdk/
+│       ├── format/
+│       ├── hooks/
+│       ├── schemas/
+│       └── ui-kit/
+├── nicolify/                            ← Brand: agencias + servicios B2B (flagship)
+│   ├── backend/                         ← FastAPI DDD (módulos nicolify/*)
+│   ├── frontend/                        ← Next.js FSD-Lite
+│   └── config/                          ← brand.yaml + secrets template
+├── vitalia/                             ← Brand: salud/bienestar (HIPAA-lite)
+│   ├── backend/
+│   ├── frontend/
+│   └── config/
+├── comunify/                            ← Brand: creator economy + educación
+│   ├── backend/
+│   ├── frontend/
+│   └── config/
+├── lupulo/                              ← Brand: gastronomía (KDS + reservas)
+│   ├── backend/
+│   ├── frontend/
+│   └── config/
+├── .claude-shared/                      ← Reglas + skills Claude Code (harness)
+├── .claude/                             ← Config local Claude Code
 ├── .github/
 │   ├── CODEOWNERS                       ← Anti-island gate: paths críticos protegidos
 │   ├── PULL_REQUEST_TEMPLATE.md         ← Template PR obligatorio
 │   └── workflows/
-│       └── ci.yml                       ← CI: python-lint + python-test + ts-lint + ts-test
+│       └── ci.yml                       ← CI: python-lint + python-test + ts-lint + ts-test (deferred)
 ├── docs/
-│   ├── ARCHITECTURE.md                  ← Este archivo
-│   ├── CONTRIBUTING.md                  ← Guía de contribución
-│   ├── RELEASES.md                      ← Pipeline de releases (Story 9)
 │   └── architecture/
-│       └── ADR/                         ← Architecture Decision Records
+│       └── luana-platform/              ← ADRs + overviews (este directorio)
 ├── pyproject.toml                       ← uv workspace root
-├── package.json                         ← pnpm workspace root + turbo
+├── package.json                         ← pnpm workspace root
 ├── pnpm-workspace.yaml                  ← workspace packages
 └── turbo.json                           ← pipeline de tareas
 ```
@@ -40,11 +55,42 @@ luana-platform/                          ← monorepo raíz
 
 ### Python (uv)
 
-Declarados en `pyproject.toml`:
+Declarados en `pyproject.toml` — 26 paquetes engine + 4 brand backends:
 ```toml
 [tool.uv.workspace]
-members = ["core", "nicolify", "vitalia", "comunify", "lupulo"]
+members = [
+    "core/luana-core-analytics-engine",
+    "core/luana-core-assets",
+    "core/luana-core-billing",
+    "core/luana-core-brand-studio",
+    "core/luana-core-campaigns",
+    "core/luana-core-channels",
+    "core/luana-core-commercial-calendar",
+    "core/luana-core-compliance",
+    "core/luana-core-connections",
+    "core/luana-core-copilot",
+    "core/luana-core-crm",
+    "core/luana-core-events",
+    "core/luana-core-extension-sdk",
+    "core/luana-core-extraction",
+    "core/luana-core-iam",
+    "core/luana-core-idempotency",
+    "core/luana-core-landing",
+    "core/luana-core-llm",
+    "core/luana-core-observability",
+    "core/luana-core-offer-studio",
+    "core/luana-core-platform",
+    "core/luana-core-sales-agent",
+    "core/luana-core-scheduling",
+    "core/luana-core-social-proof",
+    "core/luana-core-tenant-domains",
+    "core/luana-core-tenant-profile",
+    # Brand apps
+    "nicolify", "vitalia", "comunify", "lupulo",
+]
 ```
+
+**Venv canónico en la raíz:** `${WS}/.venv/bin/{python,pytest,ruff}`. NUNCA `cd {brand}/backend && python -m venv`.
 
 ### TypeScript (pnpm)
 
@@ -52,9 +98,14 @@ Declarados en `pnpm-workspace.yaml`:
 ```yaml
 packages:
   - core
+  - core/@luana/*
   - nicolify
+  - nicolify/frontend
   - vitalia
+  - vitalia/frontend
+  - vitalia/frontend/widget
   - comunify
+  - comunify/frontend
   - lupulo
 ```
 
@@ -62,59 +113,48 @@ packages:
 
 ### `core/`
 
-Motor SSoT de la plataforma. Contiene todo el código compartido entre brands:
-- **copilot/**: Módulo AI de asistencia al vendedor humano
-- **sales-agent/**: Agente autónomo de ventas (SDR + closer)
-- **shared/**: Observabilidad, billing, compliance, eventos de dominio
+Motor SSoT de la plataforma. Todo el código compartido cross-brand vive aquí.
 
-Poblado en Stories 2-9. Toda abstracción cross-brand nace aquí.
+**26 paquetes Python** (`luana_core_*`): analytics-engine, assets, billing, brand-studio,
+campaigns, channels, commercial-calendar, compliance, connections, copilot, crm, events,
+extension-sdk, extraction, iam, idempotency, landing, llm, observability, offer-studio,
+platform, sales-agent, scheduling, social-proof, tenant-domains, tenant-profile.
+
+**7 paquetes TS** (`@luana/*`): api-client, design-tokens, extension-sdk, format, hooks,
+schemas, ui-kit.
 
 **Governance:** CODEOWNERS protege `core/**` — requiere review de Chris.
-Cambios arquitectónicos requieren ADR (ver `docs/architecture/ADR/`).
+Cambios arquitectónicos requieren ADR (ver `docs/architecture/luana-platform/`).
+Lift de brand a engine: ver `docs/promotion-protocol/README.md`.
 
-### `nicolify/`
+### `{brand}/`
 
-Aplicación SaaS de marketing y ventas para el brand Nicolify.
-Es la implementación de referencia (flagship) sobre el motor `core`.
+Cada brand activa (nicolify, vitalia, comunify, lupulo) tiene:
+- **backend/**: FastAPI async, DDD modular monolith — `src/modules/{brand}/{módulo}/`
+- **frontend/**: Next.js 16 FSD-Lite — `src/{app,components,features,lib}/`
+- **config/**: `brand.yaml` (opt-in métricas/canales) + templates `.env`
 
-Story 10 levanta el codebase completo de AISALESHT aquí, preservando la
-estructura DDD modular monolith (FastAPI BE + Next.js FE).
-
-### `vitalia/`
-
-Brand vertical: salud y medicina. Placeholder hasta Story 11.
-Hereda todas las capacidades AI de `core/`.
-
-### `comunify/`
-
-Brand vertical: creator economy. Placeholder hasta Story 12.
-Hereda todas las capacidades AI de `core/`.
-
-### `lupulo/`
-
-Brand vertical: gastronomía. Placeholder hasta Story 13.
-Hereda todas las capacidades AI de `core/`.
+Cross-brand mirror prohibido — dos brands replican lógica → lift a `core/`.
+Ver `.claude/rules/anti-duplication.md`.
 
 ## Stack tecnológico
 
 | Capa | Elección | Razón |
 |---|---|---|
 | Python package manager | **uv** (Astral) | Workspaces nativos, 2026 standard |
-| TS package manager | **pnpm** | Workspaces + `workspace:*` protocol |
+| TS package manager | **pnpm 9.15.9** | Workspaces + `workspace:*` protocol |
 | Monorepo orchestrator | **Turborepo 2.x** | Task pipeline + caching |
-| CI | **GitHub Actions** | Native GitHub, 2000min/mo free |
-| Versionado | **manual SemVer** (Story 1) | Pre-publish era |
-| Registro packages | **none Story 1** | Story 9 introduce GH Packages |
+| CI | **GitHub Actions** (deferred) | Calidad se enforce via hooks locales + `make ci-parity` |
+| Runtime | **Docker Compose** per brand | `make dev-{brand}` o `make dev-all` |
+| Versionado | **SemVer** per brand | `release/{brand}-vX.Y.Z` |
 
 ## ADR de referencia
 
 | ADR | Decisión | Link |
 |---|---|---|
-| 001 | Topología monorepo (monorepo vs multi-repo) | [ADR-001](architecture/ADR/001-luana-platform-monorepo-topology.md) |
+| 001 | Topología monorepo (monorepo vs multi-repo) | [ADR-001](ADR-001-luana-platform.md) |
+| 004 | Git branching + environments | [ADR-004](ADR-004-git-branching-and-environments.md) |
+| 009 | Single-hub worktree (N sesiones, 1 árbol) | [ADR-009](ADR-009-single-hub-worktree.md) |
+| 010 | Orquestación agéntica (3 planos, trabajadores) | [ADR-010](ADR-010-orquestacion-agentica.md) |
 
-Ver [docs/architecture/ADR/README.md](architecture/ADR/README.md) para el índice completo
-y el template para nuevos ADRs.
-
-## Outcome doc de referencia
-
-[luana-platform-migration](../../../AISALESHT/docs/product/outcomes/luana-platform-migration.md)
+Índice completo: `docs/architecture/luana-platform/README.md`.

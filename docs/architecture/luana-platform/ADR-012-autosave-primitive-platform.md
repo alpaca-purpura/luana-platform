@@ -23,7 +23,7 @@ Elevar el autoguardado a **primitiva de primera clase del design system comparti
 | `<AutosaveBadge>` | `core/@luana/ui-kit` | UI única del estado (tokens del design system · aria-live · WCAG AA) |
 | Contrato `AutosaveContract` | `core/@luana/schemas` (o `hooks`) | tipos: `{ load, save, debounceMs?, getToken, onError?, telemetryEvent? }` |
 
-**Contrato propuesto (a refinar en /architect):**
+**Contrato propuesto al momento de la decisión (ver § Bitácora 2026-06-01 para el as-built real):**
 - **Debounce** configurable (default 600ms).
 - **Estados** estándar: `idle → dirty → saving → saved | error`.
 - **Auth-ready**: espera robusta al token (no `throw` ante null transitorio — el bug que arreglamos).
@@ -56,6 +56,44 @@ Elevar el autoguardado a **primitiva de primera clase del design system comparti
 - `docs/architecture/luana-platform/ADR-012-autosave-primitive-platform.md` (este doc · SSoT de la decisión)
 - `docs/product/outcomes/autosave-primitive-platform.md` (el outcome/initiative)
 - Origen: story `vitalia/docs/archive/2026/stories/arreglar-guardado-voz-y-tono/` + learning `vitalia/docs/learnings/2026-05-31-e2e-mockeado-verde-falso.md`
+
+## Bitácora (2026-06-01)
+
+**`useAutosave` SHIPPED** — la primitiva está construida y en producción como parte de la story `build-autosave-primitive-luana`. Los tres artefactos prometidos existen en el monorepo:
+
+| Pieza | Path real | Estado |
+|---|---|---|
+| `useAutosave<TValues>` | `core/@luana/hooks/src/useAutosave.ts` | ✅ shipped + tests |
+| `<AutosaveBadge>` | `core/@luana/ui-kit/src/AutosaveBadge.tsx` | ✅ shipped + tests |
+| Tipos `AutosaveStatus / UseAutosaveOptions / UseAutosaveReturn` | `core/@luana/schemas/src/autosave.ts` | ✅ shipped |
+
+**Contract as-built (diverge del borrador de arriba — leer código como SSoT):**
+
+```ts
+// UseAutosaveOptions<TValues>
+{
+  save: (values: TValues, ctx: { token: string }) => Promise<unknown>; // mutación inyectada
+  getToken: () => Promise<string | null>;                               // auth desacoplado
+  onSaved?: () => void;       // consumer invalida React Query si quiere — NO hay RQ interno
+  onError?: (err: unknown) => void;
+  debounceMs?: number;        // default 2000 ms (NO 600 ms como decía el borrador)
+  telemetry?: (event: { type: "saved" | "error"; durationMs: number }) => void;
+  authReadyAttempts?: number; // default 10 (≈ 2 s)
+}
+
+// UseAutosaveReturn<TValues>
+{ status, savedAt, scheduleSave, cancel, retry }
+// NO hay `load` — el hook NO carga datos, solo escribe.
+// React Query es responsabilidad del consumer (vía onSaved para invalidar keys).
+```
+
+**Diferencias respecto al borrador:**
+- `load` — eliminado del contrato: el hook es write-only; el consumer usa sus propios mecanismos de fetching.
+- React Query interno — eliminado: estado manejado con `useRef + useState` (sin dependencia pesada). El consumer inyecta `onSaved` si quiere invalidar queries.
+- `debounceMs` default — **2000 ms** en la implementación real (el borrador decía 600 ms).
+- `AutosaveContract` como type alias — los tipos viven directamente en `@luana/schemas` como interfaces nombradas (`UseAutosaveOptions`, `UseAutosaveReturn`), no como un objeto `AutosaveContract`.
+
+**Stories de adopción:** las stories `adopt-autosave-primitive` para vitalia y nicolify citadas en el Plan de ejecución **no existen aún** en los backlogs. Cuando se creen, cada `/pm-{brand}` las linkea aquí.
 
 ## Referencias
 

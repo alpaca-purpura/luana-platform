@@ -4,7 +4,7 @@
 > **Date:** 2026-05-18
 > **Decision-makers:** Chris (alpacapurpura@) + Claude Opus 4.7 (advisory)
 > **Supersedes:** none
-> **Superseded by:** none
+> **Superseded by:** ADR-009 (single-hub canonical topology, parcial)
 > **Builds on:** [ADR-004](./ADR-004-git-branching-and-environments.md) (triple-branch policy + worktrees revocó ban legacy)
 > **Related docs:**
 >
@@ -54,7 +54,7 @@ Adoptar el modelo cementado en `docs/process/parallel-sessions-protocol.md` D1-D
 | Path | Tipo | Branch | Editar código |
 |---|---|---|---|
 | `~/Proyectos/luana-platform/` | PRINCIPAL | `main` | ❌ NO (solo merges + read cross-brand) |
-| `~/Proyectos/luana-{brand}/` | CANÓNICO long-lived | rota `wip/{brand}-{slug}` según story activa | ✅ SÍ |
+| `~/Proyectos/luana-{brand}/` | CANÓNICO long-lived | `wip/{brand}` ESTABLE (nunca rota por story — ver Addendum v2 §7.2) | ✅ SÍ |
 | `~/Proyectos/luana-{brand}-{slug}/` | EFÍMERO brand | `wip/{brand}-{slug}[-{lane}]` | ✅ SÍ |
 | `~/Proyectos/luana-{brand}-hotfix-{slug}/` | EFÍMERO hotfix | `hotfix/{brand}-{slug}` | ✅ SÍ |
 | `~/Proyectos/luana-{brand}-exp-{slug}/` | EFÍMERO experimento | `exp/{brand}-{slug}` | ✅ SÍ (NUNCA mergea) |

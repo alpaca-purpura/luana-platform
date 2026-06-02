@@ -6,9 +6,12 @@
 ---
 id: STORY_ID_KEBAB                              # único, kebab-case, ej: brand-identity-edit
 type: ui-story                                  # fixed: ui-story
+state: idea                                     # 10 estados macro: idea | refining | refined | ready | developing | developed | reviewing | done | parked | dropped
 module: MODULE_NAME                             # match backend/src/modules/{name} y frontend/src/features/{name}
 capability: CAPABILITY_ID                       # FK → product/capabilities/{module}/{cap}.yaml
-status: planned                                 # planned | in-progress | live | deprecated
+cap_target: "{module}/{cap-id}"                 # FK → product/capabilities/{module}/{cap}.yaml (mandatorio desde idea)
+cap_change_type: new                            # new | fix | extend | derive (mandatorio desde idea)
+capability_status: planned                      # planned | in-progress | live | deprecated (estado de la capability, NO de la story)
 slice: MVP                                      # MVP | V1 | V2 | V3
 last_audit: 2026-05-04                          # YYYY-MM-DD última verificación contra código real
 date_introduced: null                           # YYYY-MM-DD cuando capability_status → live

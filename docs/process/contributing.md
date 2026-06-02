@@ -41,23 +41,22 @@ docs: actualizar ARCHITECTURE con topología de subfolders
 chore(ci): actualizar pnpm/action-setup a v4
 ```
 
-## Flujo de trabajo con Pull Requests
+## Flujo de trabajo (solo-operador · Triple-Branch)
 
-1. Clonar el repositorio: `git clone https://github.com/alpacapurpura/luana-platform.git`
-2. Crear rama desde `main`: `git checkout -b feat/mi-cambio`
-3. Desarrollar con TDD (tests primero, implementación después)
-4. Hacer commits frecuentes con Conventional Commits
-5. Abrir PR hacia `main` con el template completo
-6. Esperar CI verde (python-lint + python-test + ts-lint + ts-test)
-7. Solicitar review (requerido: `required_approving_review_count=1`)
-8. Merge squash (preserve clean history)
+Chris trabaja solo. No hay reviews multi-developer ni ramas `feat/`. El flujo es:
 
-## Branch protection
+1. Desarrollar en `wip/{brand}` (autosave, commits frecuentes con Conventional Commits)
+2. TDD obligatorio: tests primero, implementación después
+3. Push frecuente a `wip/{brand}` — nunca más de 30 min sin push si hay cambios significativos
+4. Squash-merge a `main` cuando la story cierra (`reviewing → done`) — gatekeado por `/pm-{brand}`
+5. `release/{brand}-vX.Y.Z` se crea desde `main` validado para cada despliegue a producción
 
-La rama `main` tiene las siguientes protecciones:
-- Review obligatorio (mínimo 1 aprobación)
-- Sin force pushes permitidos
-- CI debe pasar antes de merge
+**Prohibido:** `git pull`, `git fetch && merge` automático, `git push --force`, ramas `feat/` sueltas, `git add .` / `-A`.
+Sync `wip/{brand} ↔ main` SOLO vía `scripts/git/sync-from-main.sh`.
+
+GitHub Actions están en modo **deferred** (sentinel `.ci-parity-deferred`). La calidad se enforce con hooks locales (`scripts/git-hooks/pre-commit` + `pre-push`) y `make ci-parity`.
+
+Ver detalle completo en `.claude/rules/git-safety.md` y `.claude/rules/parallel-safety.md`.
 
 ## Reglas ADR (Architecture Decision Records)
 
@@ -68,7 +67,7 @@ Ver el proceso completo en [docs/architecture/ADR/README.md](architecture/ADR/RE
 
 ### Cuándo es obligatorio un ADR
 
-- Nuevo abstract en `core/shared/` consumido cross-brand
+- Nuevo abstract en `core/luana-core-*/` consumido cross-brand
 - Cambio de contrato API que rompe consumidores
 - Schema migration con impacto cross-módulo
 - Nueva abstracción cross-brand
@@ -78,25 +77,6 @@ Ver el proceso completo en [docs/architecture/ADR/README.md](architecture/ADR/RE
 - Bug fix con scope local (un módulo, sin contrato cambiado)
 - Refactor interno sin cambio de contrato
 - Documentación, config, o CI
-
-## Workflow `.claude-shared/`
-
-El directorio `.claude-shared/` contiene las reglas y skills de Claude Code
-sincronizadas desde AISALESHT (fuente maestra).
-
-- `.claude-shared/rules/`: reglas de codificación y arquitectura
-- `.claude-shared/skills/`: skills del asistente de desarrollo
-- `.claude-shared/agents/`: definiciones de agentes
-
-`.claude/` es una copia de `.claude-shared/` (no symlink, para compatibilidad Windows).
-
-Para actualizar estas reglas en futuras versiones, copiar manualmente desde AISALESHT:
-```bash
-cp -r /path/to/AISALESHT/.claude/rules .claude-shared/
-cp -r /path/to/AISALESHT/.claude/skills .claude-shared/
-cp -r /path/to/AISALESHT/.claude/agents .claude-shared/
-cp -r .claude-shared .claude
-```
 
 ## Español neutro LatAm
 
@@ -112,17 +92,23 @@ Ver `.claude/rules/spanish-text.md` para el glosario completo.
 Antes de abrir PR, verificar localmente:
 
 ```bash
-# Python lint
-uv run ruff check core nicolify vitalia comunify lupulo
+WS=$(git rev-parse --show-toplevel)
+BRAND=vitalia  # o nicolify / comunify / lupulo
+
+# Python lint (venv raíz)
+cd ${WS}/${BRAND}/backend && ${WS}/.venv/bin/ruff check src/ tests/
 
 # Python tests
-uv run pytest -x -q --tb=short
+cd ${WS}/${BRAND}/backend && ${WS}/.venv/bin/pytest -x -q --tb=short
 
-# TS lint
-pnpm lint
+# TS lint + type-check
+cd ${WS}/${BRAND}/frontend && npx tsc --noEmit && npx eslint src/ --cache
 
 # TS tests
-pnpm test
+cd ${WS}/${BRAND}/frontend && npx vitest run --coverage
+
+# Full CI gate (obligatorio pre squash-merge a main)
+make ci-parity
 ```
 
 ## Licencia

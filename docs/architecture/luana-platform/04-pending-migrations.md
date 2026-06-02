@@ -11,6 +11,8 @@ related:
   - docs/process/learnings.md (entry 2026-05-16 ap_sales_agent diff)
 ---
 
+> [HISTÓRICO — read-only. Lista de migraciones planificada durante el reorg multibrand; varias ya completadas o supersedidas. No usar como tracker vigente. Conservado por trazabilidad.]
+
 # Pending migrations — código en `/home/chalreme/Documentos/ap_sales_agent/`
 
 > **Snapshot referencial:** `/home/chalreme/Documentos/ap_sales_agent/` es el monolito Nicolify pre-reorg (`luana-platform/` multimarca cementada 2026-05-15). Está **fuera del repo `luana-platform/`** y se usa como **museo read-only** hasta que todo lo útil esté migrado.

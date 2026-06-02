@@ -8,6 +8,37 @@
 
 ---
 
+## 0. Estado: DEFERRED (leer antes de seguir)
+
+> **GitHub Actions está en modo `deferred`** — los workflows de este runbook NO se garantizan activos.
+> La calidad se enforce 100 % via hooks locales y gate nativo (ver `.claude/rules/github-actions-deferred.md`).
+
+| Item | Realidad actual |
+|---|---|
+| **Gate de calidad** | `scripts/git-hooks/pre-commit` + `scripts/git-hooks/pre-push` (hooks locales SSoT) |
+| **CI parity** | `make ci-parity` — obligatorio antes de squash-merge wip→main; advisory en fase dev-only (sentinel `.ci-parity-deferred` tracked) |
+| **GitHub Actions** | Archivos en `.github/workflows/` preservados para reactivación rápida, pero NO corren de forma garantizada |
+| **Infra real** | **VPS-per-brand + docker-compose + Cloudflare Tunnel** (NO Kubernetes). `make dev-{brand}` levanta el stack local; `dev-app.{brand}lat.com` expone via `cloudflared` |
+| **Deploy staging** | MANUAL — `main` es integración deployable manualmente, NO auto-deploy |
+| **Deploy producción** | `release/{brand}-vX.Y.Z` — branch trigger para auto-deploy cuando la infra prod esté provisionada |
+| **Reactivar Actions** | Cuando haya servidor real / primer contrato pagador / 2do developer. Procedimiento: `docs/rules-detail/github-actions-deferred.md` |
+
+**Comandos reales de gate (sustituyen los pasos de GH Actions de este doc):**
+```bash
+WS=$(git rev-parse --show-toplevel)
+
+# Gate nativo completo (pre-push-to-main equivalente):
+make ci-parity
+
+# Sync wip con main (NUNCA git pull):
+bash ${WS}/scripts/git/sync-from-main.sh
+
+# Status cross-brand:
+bash ${WS}/scripts/git/status-all.sh
+```
+
+---
+
 ## 1. Setup inicial — GitHub Environments
 
 Ver instrucciones detalladas en `docs/process/github-environments-setup.md`.
@@ -41,8 +72,12 @@ Usar cuando una brand tiene cambios listos para produccion y paso por staging.
 ```bash
 # Formato: release/{brand}-vX.Y.Z
 # Ejemplos:
+
+# Sync main con el remoto (NUNCA git pull — ver git-safety.md):
+WS=$(git rev-parse --show-toplevel)
 git checkout main
-git pull  # solo aqui es valido git pull (checkout fresh)
+bash ${WS}/scripts/git/sync-from-main.sh   # fast-forward puro; conflict → STOP
+
 git checkout -b release/vitalia-v0.3.0
 git push origin release/vitalia-v0.3.0
 ```
@@ -97,6 +132,8 @@ no apunta a un cluster real. El flujo de deteccion de cambios funciona igual.
 
 ## 4. Verificar rollout manualmente
 
+> ⚠️ **Infra real = VPS + docker-compose (NO K8s).** Los comandos `kubectl` de abajo son aspiracionales para cuando se migre a K8s. Hoy, verificar via `docker compose -f ${WS}/{brand}/docker-compose.dev.yml ps` y `docker logs luana-dev-{brand}_backend_dev-1`.
+
 ```bash
 # Verificar rollout de un deployment especifico
 kubectl rollout status deployment/{brand}-app -n {brand} --timeout=120s
@@ -114,6 +151,8 @@ kubectl get pods -n {brand}
 ---
 
 ## 5. Proceso de rollback
+
+> ⚠️ **Infra real = VPS + docker-compose.** La Opcion A (`kubectl rollout undo`) aplica cuando se use K8s. Hoy el rollback es via Opcion B (re-deploy del release anterior) o reiniciando el container con la imagen previa via docker-compose.
 
 Para hacer rollback a una version anterior:
 

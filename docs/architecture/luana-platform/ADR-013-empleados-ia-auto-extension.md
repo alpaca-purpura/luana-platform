@@ -2,6 +2,7 @@
 # ADR-013 — Empleados-IA + auto-extensión: el producto es un equipo, el motor se auto-extiende
 
 - **Status:** accepted (ratificado Chris 2026-06-01 — "vamos con la (a)")
+- **Implementation state:** ⚠️ dirección ratificada, stories aún en `idea` / refinamiento (2026-06-01). Las stories derivadas listadas en "Consecuencias" NO arrancaron (`developing`). El MEMORY pointer `luana-empleados-ia-vision` refleja este estado ("NO ADR/spec aún" era pre-ratificación; este ADR es el primero post-ratificación). No confundir "ADR accepted" con "implementación iniciada".
 - **Date:** 2026-06-01
 - **Scope:** platform-wide (10 marcas). SSoT vivo: `PARADIGM.md` (§5b). Detalle/investigación: `docs/product/stories/empleados-ia-auto-extension/00-research.md`.
 - **Extends:** ADR-010 (orquestación agéntica — 3 planos) + ADR-007 (paradigm v4.1 autonomy). No toca el ciclo SDD (lifecycle.md).
