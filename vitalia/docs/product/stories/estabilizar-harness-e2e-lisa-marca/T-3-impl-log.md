@@ -62,3 +62,9 @@ El brief (§11 M1) detectó que `sc2_no_mock_backend_bajo_prueba` matchea single
 - `tests/modules/vitalia/iam/` → 44 passed (sin regresión).
 - ruff check + format → clean. mypy: ver § limitación de entorno en T-3-result.md (mypy no instalado en venv local; iam file pasa `--strict` vía uvx; los errores `untyped-decorator` del router son artefacto de stubs FastAPI ausentes en uvx, pre-existentes a nivel whole-file, NO de mis líneas).
 - Scope guards: cero core / cross-brand / copilot / sales_agent / frontend.
+
+### Integración (handoff al orchestrator)
+
+- Construido en worktree aislado de agente `worktree-agent-ac076fb4683d383dc` (base `09e12ae9`). El commit T-3 es **`e1bdc6e0`** (7 archivos), pusheado a `origin/worktree-agent-ac076fb4683d383dc`.
+- **NO se pusheó a `wip/vitalia` directo:** el worktree `wip/vitalia` (`~/Proyectos/luana-vitalia`) está en `22f25e4d`, divergente de mi base `09e12ae9` (mi base lo incluye y va adelante con `7b9f7289`/`ab8621e7`/`09e12ae9`) → push directo sería non-fast-forward (prohibido por parallel-safety M5 / git-safety). El orchestrator integra `e1bdc6e0` a `wip/vitalia` (cherry-pick/merge) según su política de branches.
+- `git status` limpio; HEAD == origin del branch de agente.
