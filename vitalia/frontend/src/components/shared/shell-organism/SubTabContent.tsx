@@ -50,9 +50,9 @@ import {
   MercadoPlaceholder,
 } from "@/features/lucas";
 
-// ── Adrián placeholders — via public API (T-2 generic + T-4 + T-6 special) ───────
+// ── Adrián placeholders — via public API (T-4 embudo + T-6 special) ────────────
+// adrian.inbox is EXCLUDED: shipped as static route (F3-T-3 vitalia-fase2-adrian-inbox) — see SHIPPED_STATIC_SUBTABS.
 import {
-  InboxPlaceholder,
   EmbudoPlaceholder,
   OutboundPlaceholder,
   PropuestasPlaceholder,
@@ -82,10 +82,11 @@ import {
 type PlaceholderComponent = ComponentType;
 type SubTabKey = `${RibbonTabSlug}.${string}`;
 
-// ── PLACEHOLDER_MAP — 19 keys (RIBBON_SUBTABS - SHIPPED_STATIC_SUBTABS) ──────────
+// ── PLACEHOLDER_MAP — 18 keys (RIBBON_SUBTABS - SHIPPED_STATIC_SUBTABS) ──────────
 // Architecture test verifies this map === RIBBON_SUBTABS minus SHIPPED_STATIC_SUBTABS.
 // v1.2 (2026-05-30): mateo.pacientes replaces valeria.pacientes (paradigm-map-zones T-5).
 // F2-S8 T-FE-1 (2026-05-31): lisa.staff shipped as static route → removed from PLACEHOLDER_MAP.
+// F3-T-3 (2026-06-03): adrian.inbox shipped as static route → removed from PLACEHOLDER_MAP.
 // DO NOT hardcode these keys elsewhere — arch test enforces this file as SSoT.
 const PLACEHOLDER_MAP = {
   // lisa (2) — lisa.marca shipped N3-static (F2-S7 T-4), lisa.staff shipped static (F2-S8 T-FE-1)
@@ -99,8 +100,7 @@ const PLACEHOLDER_MAP = {
   "lucas.recursos": RecursosPlaceholder,
   "lucas.resultados": ResultadosPlaceholder,
   "lucas.mercado": MercadoPlaceholder,
-  // adrian (4) — T-2 generic + T-4 embudo + T-6 inbox
-  "adrian.inbox": InboxPlaceholder,
+  // adrian (3) — inbox shipped static (F3-T-3 2026-06-03 — ver SHIPPED_STATIC_SUBTABS)
   "adrian.embudo": EmbudoPlaceholder,
   "adrian.outbound": OutboundPlaceholder,
   "adrian.propuestas": PropuestasPlaceholder,

@@ -286,6 +286,7 @@ export const SHIPPED_STATIC_SUBTABS: ReadonlySet<RibbonSubtabKey> = new Set<Ribb
   "mateo.agenda",  // v1.2 (2026-05-30): migrated from valeria.agenda (paradigm-map-zones T-5)
   "lisa.marca",    // F2-S7 T-4 — N3-static subtab (identidad/voz-y-tono/presencia)
   "lisa.staff",    // F2-S8 T-FE-1 — Staff directory + workspace (vitalia-fase2-lisa-doctores)
+  "adrian.inbox",  // F3-T-3 (2026-06-03): Adrián Inbox route shipped — vitalia-fase2-adrian-inbox T-3
 ]);
 
 /**
