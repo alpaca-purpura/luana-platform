@@ -46,7 +46,8 @@ test.describe("E4 — avatar fallback a inicial", () => {
     page,
     tenantId,
   }) => {
-    await page.goto(`/${tenantId}/sara/proyectos`, { waitUntil: "load" });
+    // v3 slug fix (T-2): sara/proyectos → sara/proximamente
+    await page.goto(`/${tenantId}/sara/proximamente`, { waitUntil: "load" });
     await expect(page.locator("[data-shell-ready='true']")).toBeVisible({
       timeout: 20_000,
     });
