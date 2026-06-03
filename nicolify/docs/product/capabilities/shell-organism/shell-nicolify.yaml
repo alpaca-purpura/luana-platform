@@ -18,6 +18,11 @@ change_log:
     date: "2026-05-30"
     scenarios_added: [A0, A1, A2, A3, A4, A5, B1, B2, B3, C1, C2, C3, D1, D2, E1, E2, E3, E4, E5, F1, F2]
     summary: "Shell-organism skeleton portado re-tematizado de Vitalia: tokens nicolify.com + TopBar + layout dual-mode con splitter SSR-safe + panel Luana orquestador + Ribbon 5 agentes (Abel/Brenda/Christian/Sara/Norvil) + Config + routing route-group + not-found jerárquico + empty-states."
+  - story: "nicolify-r0-sitemap-completo"
+    type: extend
+    date: "2026-06-03"
+    scenarios_added: [G1, G2, G3, G4]
+    summary: "Árbol de nav v3 (DATOS en shell-routes.ts · maquinaria del shell NO tocada): AGENT_SUBTABS reestructurado a SYSTEM-MAP v2.0 (21 sub-tabs N2 · 6 agentes) + AGENT_SUBSUBTABS (8 leaves N3: abel.oferta, christian.propuestas, norvil.fidelizacion) + ruta N3 NUEVA [subsubtab]/page.tsx (cierra el 404-island) + guard isValidSubSubTab (whitelist · XSS/traversal/__proto__) + redirect server-side N2-con-leaves→primer-leaf (Amendment 03-arch §17, ratificado Chris live) + Sara = subtab único 'proximamente' (deferred). Empty-states navegables por hoja. Cero lógica de negocio."
 
 # ── Scenarios (behavior units — the atomic unit of capability) ──
 scenarios:
@@ -84,12 +89,28 @@ scenarios:
   - id: F2
     title: "i18n Spanish neutro (tuteo, sin voseo)"
     e2e_test: "nicolify/frontend/e2e/regression/nicolify-r0-shell/i18n-spanish-neutro.spec.ts"
+  # ── v3 sitemap (nicolify-r0-sitemap-completo · extend 2026-06-03) ──
+  - id: G1
+    title: "Árbol nav v3 (N2 + 8 leaves N3) refleja SYSTEM-MAP v2.0 slug-a-slug · recorrido completo navegable"
+    e2e_test: "nicolify/frontend/e2e/regression/nicolify-r0-shell/nav-walk-v3.spec.ts"
+  - id: G2
+    title: "Leaf N3 navegable (ruta [subsubtab]/page.tsx cierra el 404-island) → SubSubTabsBar + empty-state del leaf"
+    e2e_test: "nicolify/frontend/e2e/regression/nicolify-r0-shell/nav-walk-v3.spec.ts"
+  - id: G3
+    title: "N2-con-leaves → redirect server-side al primer leaf (Amendment §17 · sin empty-state vacío del padre · leaf marcado activo)"
+    e2e_test: "nicolify/frontend/e2e/regression/nicolify-r0-shell/nav-walk-v3.spec.ts"
+  - id: G4
+    title: "Sara = tab visible con subtab único 'proximamente' → empty-state 'Próximamente' (deferred · marca el lugar del árbol)"
+    e2e_test: "nicolify/frontend/e2e/regression/nicolify-r0-shell/nav-walk-v3.spec.ts"
 
 # ── dev_preview (bidirectional code↔cap · cross_check_3) ──
 dev_preview:
   entry_points:
     - "/{tenantId} → redirect → /{tenantId}/christian/pipeline (DEFAULT_LANDING)"
     - "/{tenantId}/[agent]/[subtab]"
+    - "/{tenantId}/[agent]/[subtab]/[subsubtab]  (N3 · v3 sitemap · 8 leaves: abel.oferta·christian.propuestas·norvil.fidelizacion)"
+    - "/{tenantId}/[agent]/[subtab] con leaves → redirect server-side → primer leaf (Amendment §17)"
+  nav_ssot: "nicolify/frontend/src/lib/routing/shell-routes.ts  (AGENT_SUBTABS N2 + AGENT_SUBSUBTABS N3 + isValidSubSubTab guard · árbol v3)"
   main_component: "nicolify/frontend/src/components/shared/shell-organism/ShellOrganismLayout.tsx"
   api_endpoints: []                      # FE-only skeleton, sin endpoints de negocio en R0
   e2e_test: "nicolify/frontend/e2e/regression/nicolify-r0-shell/boot-live-smoke.spec.ts"

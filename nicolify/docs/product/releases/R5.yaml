@@ -1,0 +1,39 @@
+---
+# Release schema (v2 cement 2026-05-27) · Doc: docs/process/release-protocol.md
+release_id: R5
+brand: nicolify
+name: "Norvil · Motor de fidelización (+ Sara cuando se decida)"
+description: "El motor de fidelización B2B novedoso para agencias SMB sin gran área de marketing: momentos que importan, champion-shield (la joya), value-proof/QBR y gifting orquestado. Reusa el social-listening de Brenda (Apify) + crm + commercial-calendar. Sara (operación/ERP) se evalúa para reactivar acá si se prioriza."
+status: backlog
+target_date: null
+shipped_date: null
+order: 5
+created_at: 2026-06-02T00:00:00-05:00
+created_by: pm-nicolify
+source_sitemap: nicolify-r0-sitemap-completo
+
+areas:
+  - norvil.fidelizacion          # leaves: momentos · champion-shield · value-proof-qbr · gifting
+
+deferred_candidates:
+  - sara.proximamente            # reactivar la operación/ERP si se prioriza (supersede ADR-nicolify-002 D-D pendiente)
+
+stories: []
+maps_legacy_outcome: null
+maps_legacy_phase: null
+---
+
+# R5 · Motor de fidelización Norvil
+
+> Hacer que una agencia de 3 personas se sienta como si tuviera un equipo de account management que **nunca olvida un cliente y siempre aparece en el momento justo con lo correcto.** Útil + novedoso para SMB B2B.
+
+## Outcome esperado (4 hojas N3 de norvil.fidelizacion)
+- **Momentos que importan:** señales del cliente vía Apify (cumpleaños/aniversario/ronda/prensa/hito/inactividad) → touch contextual, no genérico.
+- **Champion-shield (la joya):** el champion cambia de empresa → alerta churn + intro caliente en su nueva empresa (+114% win con champion previo).
+- **Value-proof / QBR:** reporte trimestral "esto logramos para vos" → justifica retainer + dispara renovación.
+- **Gifting orquestado:** mensaje/correo/regalo timed; el dueño aprueba.
+
+## Notas
+- Net-new real: account-health compuesto B2B + champion-tracking + QBR-gen + gifting-orchestration.
+- Reusa infra existente (social-listening Brenda/Apify, crm, commercial-calendar) → barato + alto valor.
+- **Sara:** diferida (Próximamente). Reevaluar reactivar la capa operación/ERP en este release si se prioriza — requiere enmienda a ADR-nicolify-002 D-D.

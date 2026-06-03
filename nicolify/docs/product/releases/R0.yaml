@@ -19,6 +19,7 @@ created_by: chris
 stories:
   - nicolify-r0-shell-organism              # design-story DONE · contrato + nav-tree + mockup ratificado + ADR-nicolify-001
   - nicolify-r0-shell                       # [1] FUSION (2026-05-30, ratif. Chris) de 7 stories → shell-organism completo + dev-stack boot (T-0). Tokens+topbar+layout/splitter+panel Luana+ribbon/sub-tabs+routing/empty-states + boot live (BE:8001+FE:3001+Clerk). DoD: app funcional LIVE. Porta base FE de Vitalia re-tematizada.
+  - nicolify-r0-sitemap-completo            # DONE 2026-06-03 · thin nav-skeleton: árbol v3 (N2 + 8 leaves N3) en shell-routes.ts + ruta N3 + redirect §17 + Sara proximamente + SYSTEM-MAP v2.0 + roadmap R1-R5. cap extend shell-organism.shell-nicolify (G1-G4). Cierra "el árbol" para ir hoja por hoja en R1+.
 # Fusionadas en nicolify-r0-shell: design-system-tokens, topbar, shell-layout-splitter, luana-chat, ribbon-subtabs, routing-empty-states, dev-stack (T-0)
 
 # Legacy outcome mapping (net-new · no mapea a outcome legacy)

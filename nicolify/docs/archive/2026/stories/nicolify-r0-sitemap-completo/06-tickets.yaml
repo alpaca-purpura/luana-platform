@@ -1,0 +1,139 @@
+---
+story_id: nicolify-r0-sitemap-completo
+brand: nicolify
+schema_version: v4.1
+architecture_pattern: ADR-nicolify-001
+adr_001_compliance: partial-with-rationale
+story_type: ui-story-thin            # THIN nav-skeleton — NO diseña hojas
+surfaces: [frontend]
+generated_by: /architect
+generated_on: 2026-06-03
+total_tickets: 2
+dag: "T-1 → T-2"                      # T-2 (e2e nav-walk) depende de que T-1 cree la ruta N3 + el árbol v3
+---
+
+# ════════════════════════════════════════════════════════════════════════════
+# 06-tickets — Nicolify R0 sitemap (thin nav-skeleton build · FE-only · 2 tickets)
+# NINGÚN ticket AGENTIC. Todos builder-frontend (Sonnet).
+# ════════════════════════════════════════════════════════════════════════════
+
+tickets:
+
+  # ──────────────────────────────────────────────────────────────────────────
+  - id: T-1
+    title: "Reescribir shell-routes.ts al árbol v3 + ruta N3 + empty-states + tests de datos"
+    type: frontend
+    production_code: true
+    surface: frontend
+    depends_on: []
+    estimated_effort: M
+
+    deliverables:
+      - "MODIFY src/lib/routing/shell-routes.ts — AGENT_CATALOG.defaultSubtab (abel→icp, brenda→contenido-presencia, christian→pipeline, sara→proximamente, norvil→cartera, config→conexiones) + tabLabel sara='Próximamente' · AGENT_SUBTABS (árbol v3 exacto · 6 agentes) · AGENT_SUBSUBTABS (3 leaves: abel.oferta, christian.propuestas, norvil.fidelizacion) · DEFAULT_LANDING SIN cambio (christian/pipeline) · agregar guard isValidSubSubTab(agent,subtab,subsubtab)."
+      - "MODIFY src/lib/agent-catalog.ts — AGENT_CATALOG (panel Luana): defaultSubtab por agente al árbol v3 + role/label Sara → 'Próximamente'."
+      - "MODIFY src/components/shared/shell-organism/SubTabContent.tsx — SUBTAB_CONTENT_MAP al árbol v3 (N2) + aceptar subsubtab? opcional y mapear las 8 leaves N3 (key {agent}.{subtab}.{subsubtab}). Reusa EmptyState. Copy neutro tuteo. Sara='Próximamente'."
+      - "NEW src/app/[tenantId]/(shell-organism)/[agent]/[subtab]/[subsubtab]/page.tsx — Server Component, await params, valida isValidSubSubTab → notFound() · delega a SubTabContent con subsubtab. (Clon verbatim del patrón [subtab]/page.tsx.)"
+      - "NEW src/app/[tenantId]/(shell-organism)/[agent]/[subtab]/[subsubtab]/not-found.tsx — 404 contextual N3 (clon de [subtab]/not-found.tsx)."
+      - "MODIFY src/lib/routing/__tests__/shell-routes.test.ts — arrays v3 por agente + getDefaultSubtab esperados + asserts AGENT_SUBSUBTABS (3 leaves) + isValidSubSubTab (válido/inválido/XSS)."
+      - "MODIFY src/__tests__/architecture/test_shell_routes_ssot.test.ts — bloque Sara: 'proyectos' → 'proximamente' (sigue exactamente 1 subtab). Resto sin tocar."
+
+    acceptance:
+      validator_ids: [tsc_strict, eslint_zero, vitest_unit, invalid_guard_n2_n3, default_landing, arch_shell_routes_ssot, arch_fsd_boundaries, arch_no_engine_no_cross_brand]
+      criteria:
+        - "AGENT_SUBTABS == SYSTEM-MAP v2.0 slug-a-slug (N2) + AGENT_SUBSUBTABS == 8 leaves slug-a-slug (N3)."
+        - "DEFAULT_LANDING sigue christian/pipeline · AGENT_CATALOG.christian.defaultSubtab=='pipeline'."
+        - "Sara: tabLabel 'Próximamente' + AGENT_SUBTABS.sara == ['proximamente'] (exactamente 1)."
+        - "isValidSubSubTab rechaza leaf inexistente + XSS + path-traversal → false."
+        - "Ruta [subsubtab]/page.tsx: leaf válido → empty-state del leaf · leaf inválido → notFound()."
+        - "tsc strict + eslint 0/0 · vitest GREEN · arch SSoT + FSD GREEN · 0 imports engine/cross-brand."
+
+    gherkin_coverage: [F-NAV-WALK, F-SARA-PROXIMAMENTE, F-INVALID-GUARD, F-DEFAULT-LANDING, F-EMPTY-STATES]
+    gherkin_coverage_note: "T-1 entrega el árbol + guards + ruta N3 + content-map (data layer). El recorrido LIVE de todos los combos + el gate anti-burbuja los verifica T-2 (e2e)."
+
+    must_load_skills: [frontend-expert, nicolify-design-system]
+    must_load_artifacts: [03-arch.md, 03-arch-fe.md, 05-guidelines.md, "nicolify/docs/architecture/SYSTEM-MAP.yaml (árbol canónico)"]
+
+    owner_eligibility:
+      production_code: true
+      surface: frontend                # FE non-agentic → pool [sonnet, qwen-opencode] (opus no requerido)
+      claude_opus_required: false
+      pool: [sonnet, qwen-opencode]
+
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: sonnet
+      must_load_skills: [frontend-expert, nicolify-design-system]
+      must_load_artifacts: [03-arch.md, 03-arch-fe.md, 05-guidelines.md]
+      forbidden_to_touch:
+        - "core/luana-core-*/  (engine boundary)"
+        - "vitalia/ · comunify/ · lupulo/  (cross-brand)"
+        - "components/shared/shell-organism/{Ribbon,RibbonTab,SubTabsBar,SubTab,SubSubTabsBar,SubSubTab,EmptyState}.tsx  (maquinaria shipped · data-driven · NO editar)"
+        - "components/shared/shell-organism/{ShellOrganismLayout*,LuanaSidebar,Luana*,TopBarGlobal*}.tsx"
+        - "app/[tenantId]/(shell-organism)/[agent]/page.tsx · [subtab]/page.tsx  (se LEEN para clonar el patrón N3, NO se editan)"
+        - "components/ui/*"
+      rationale: >
+        FE non-agentic routing-data sobre maquinaria shipped → builder-frontend Sonnet (R23 no aplica: sin
+        agentic). El cambio es de DATOS (slugs/labels/content-map) + 1 ruta nueva clonada de un patrón
+        existente — no requiere Opus. forbidden_to_touch protege la maquinaria del shell (que es 100%
+        data-driven desde el SSoT) y el engine boundary.
+
+  # ──────────────────────────────────────────────────────────────────────────
+  - id: T-2
+    title: "E2E nav-walk del árbol v3 completo + fixture anti-burbuja (DoD #37)"
+    type: tests                        # production_code: false (es test surface · NO src/ runtime)
+    production_code: false
+    surface: frontend
+    depends_on: [T-1]                  # necesita el árbol v3 + la ruta N3 ya creados
+    estimated_effort: S
+
+    deliverables:
+      - "NEW e2e/fixtures/base.ts — fixture anti-burbuja extendiendo auth.fixture (Clerk token): collectors pageerror + console.error (allowlist shrink-only) + response≥400 en /api/ + assert nextjs-portal ausente al teardown. (Patrón canónico rule #37 · referencia vitalia e2e/fixtures/base.ts.)"
+      - "NEW e2e/regression/nicolify-r0-shell/nav-walk-v3.spec.ts — importa base.ts · recorre TODO el árbol v3: cada Ribbon tab (5 + config) → cada N2 subtab → para abel.oferta/christian.propuestas/norvil.fidelizacion hace click en cada SubSubTab (N3) → assert subtab-content/leaf visible + empty-state visible + (gate base.ts) 0 errores."
+      - "MODIFY e2e/regression/nicolify-r0-shell/empty-states-all-subtabs.spec.ts — ALL_SUBTABS → árbol v3 (data) + agregar las 8 leaves N3."
+      - "MODIFY (condicional) e2e/.../ribbon-nav.spec.ts + ribbon-deeplink.spec.ts — SOLO si referencian slugs viejos: actualizar la data (URLs/slugs), NUNCA la mecánica de aserción."
+
+    acceptance:
+      validator_ids: [nav_walk_v3, empty_states_all, visual_empty_state_n3]
+      criteria:
+        - "nav-walk recorre los 6 N2-sets + los 3 árboles N3 (8 leaves) · cada hoja navegable muestra empty-state."
+        - "Gate anti-burbuja: 0 pageerror + 0 console.error (allowlist) + 0 /api 4xx/5xx + 0 nextjs-portal overlay en TODO el recorrido."
+        - "Ruta N3 navegable (no 404) — confirma que T-1 cerró el gap [subsubtab]/page.tsx."
+        - "regression_guard (splitter/theme/luana/topbar/responsive/a11y/xss-guard) intactos sin tocarse."
+        - "Specs nativos (host · npx playwright · NUNCA make e2e Docker)."
+
+    gherkin_coverage: [F-NAV-WALK, F-EMPTY-STATES, F-SARA-PROXIMAMENTE]
+    gherkin_coverage_note: "T-2 cierra el recorrido LIVE + el gate anti-burbuja de todos los combos del árbol v3."
+
+    must_load_skills: [playwright-expert, frontend-expert]
+    must_load_artifacts: [03-arch.md, 04-validators.yaml, 05-guidelines.md]
+
+    owner_eligibility:
+      production_code: false           # test surface → pool [sonnet, qwen-opencode]
+      surface: frontend
+      claude_opus_required: false
+      pool: [sonnet, qwen-opencode]
+
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: sonnet
+      must_load_skills: [playwright-expert, frontend-expert]
+      must_load_artifacts: [03-arch.md, 04-validators.yaml, 05-guidelines.md]
+      forbidden_to_touch:
+        - "core/luana-core-*/ · vitalia/ · comunify/ · lupulo/"
+        - "src/ (esta es la fase de tests · el código lo entregó T-1 · NO re-editar runtime)"
+        - "regression_guard specs (splitter/theme/luana/topbar/responsive/a11y/xss-guard · intactos)"
+        - "maquinaria del shell-organism (components)"
+      rationale: >
+        Test surface (production_code: false) → builder-frontend Sonnet, pool [sonnet, qwen-opencode].
+        Crea el fixture anti-burbuja + el nav-walk que ejerce TODO el árbol (DoD #37). Depende de T-1
+        (ruta N3 + árbol v3). NO toca src/ runtime ni la maquinaria del shell.
+
+# ════════════════════════════════════════════════════════════════════════════
+# NOTAS DE DISPATCH
+# ════════════════════════════════════════════════════════════════════════════
+notes:
+  - "Ambos tickets son builder-frontend (Sonnet). NINGUNO es AGENTIC — R23 (Opus para agentic) NO aplica."
+  - "DAG: T-1 → T-2 (T-2 verifica live la ruta N3 + el árbol que T-1 construye). Serializar: T-1 GREEN antes de T-2."
+  - "Story-closure-gate: bucket code:shell-organism (1 a la vez). T-1 y T-2 son el mismo módulo → serie, no paralelo."
+  - "DoD #37: la story NO pasa a done sin recorrer el menú v3 LIVE en localhost:3001 (Chrome MCP) + demo_signoff de Chris (demo-script.md)."
+  - "Cross-cutting: sin tenant isolation (FE routing puro · sin queries) · sin currency/master-data · español neutro tuteo en labels/copy."

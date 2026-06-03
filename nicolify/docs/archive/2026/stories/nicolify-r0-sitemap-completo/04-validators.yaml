@@ -1,0 +1,225 @@
+---
+story_id: nicolify-r0-sitemap-completo
+brand: nicolify
+schema_version: v4.1
+architecture_pattern: ADR-nicolify-001
+adr_001_compliance: partial-with-rationale
+story_type: ui-story-thin            # THIN nav-skeleton — NO diseña hojas
+surfaces: [frontend]
+generated_by: /architect
+generated_on: 2026-06-03
+---
+
+# ════════════════════════════════════════════════════════════════════════════
+# 04-validators — Nicolify R0 sitemap (thin nav-skeleton build · FE only)
+# Reescribe los DATOS de navegación (shell-routes.ts) al árbol v3 + agrega ruta N3
+# + empty-states navegables. Maquinaria del shell NO se toca (ya shipped).
+# ════════════════════════════════════════════════════════════════════════════
+
+verification:
+  nature: functional                  # UI nav (rutas navegables + empty-states visibles)
+  technical_gates:
+    baseline:                         # SIEMPRE (bloqueante)
+      - tsc_strict                    # npx tsc --noEmit  (strict)
+      - eslint_zero                   # npx eslint src/ --max-warnings 0
+      - vitest_unit                   # guards + SSoT data + AGENT_SUBSUBTABS
+      - arch_fitness                  # test_shell_routes_ssot + FSD boundaries
+    opt_in: []                        # sin Schemathesis/Hypothesis/mutmut (FE routing-data, no domain logic, no endpoint)
+  runtime_error_gate: required        # ★ DoD #37 — e2e/fixtures/base.ts (pageerror/console.error/api-4xx5xx/nextjs-portal overlay) en el nav-walk que recorre TODO el árbol
+  business_rules:                     # reglas de nav (cada una → tag → scenario happy + ≥1 negative)
+    - id: RN-1
+      rule: "El árbol de nav refleja SYSTEM-MAP v2.0 slug-a-slug (N2 + 8 leaves N3)."
+      tag: "@rule-RN-1"
+      scenario: F-NAV-WALK
+    - id: RN-2
+      rule: "Cada hoja navegable (N2 sin leaves + cada leaf N3) renderiza su empty-state — nunca pantalla en blanco ni 404."
+      tag: "@rule-RN-2"
+      scenario: F-EMPTY-STATES
+    - id: RN-3
+      rule: "Sara = tab visible con subtab único 'proximamente' → empty-state 'Próximamente' (deferred · marca el lugar del árbol)."
+      tag: "@rule-RN-3"
+      scenario: F-SARA-PROXIMAMENTE
+    - id: RN-4
+      rule: "Slug/leaf inválido (incl. XSS/path-traversal) en N2 o N3 → notFound() contextual, shell chrome intacto."
+      tag: "@rule-RN-4"
+      scenario: F-INVALID-GUARD
+    - id: RN-5
+      rule: "DEFAULT_LANDING = christian/pipeline se mantiene (post-login + coherente con AGENT_CATALOG.christian.defaultSubtab)."
+      tag: "@rule-RN-5"
+      scenario: F-DEFAULT-LANDING
+  demo_required: true                 # toca frontend/ navegable → demo manual (recorrer el menú v3 en localhost:3001)
+  demo_skip_reason: null
+  regression_guard:                   # tests EXISTENTES que NO deben cambiar de comportamiento (solo data si referencian slugs)
+    - "e2e/.../splitter-drag-snaps.spec.ts"
+    - "e2e/.../splitter-snap-up.spec.ts"
+    - "e2e/.../theme-toggle.spec.ts"
+    - "e2e/.../luana-sidebar-states.spec.ts"
+    - "e2e/.../luana-mobile-drawer.spec.ts"
+    - "e2e/.../topbar-render-desktop.spec.ts"
+    - "e2e/.../responsive-breakpoints.spec.ts"
+    - "e2e/.../a11y-keyboard.spec.ts"
+    - "e2e/.../path-xss-guard.spec.ts"
+    - "e2e/.../avatar-fallback.spec.ts"
+    - "e2e/.../no-spurious-default-write.spec.ts"
+    - "src/components/shared/shell-organism/__tests__/*.test.tsx"   # co-located machinery units — intactos
+  coverage_update:                    # tests del comportamiento que CAMBIA — actualizar revisando diff (no -u mecánico)
+    - "src/lib/routing/__tests__/shell-routes.test.ts"             # arrays v3 + AGENT_SUBSUBTABS
+    - "src/__tests__/architecture/test_shell_routes_ssot.test.ts"  # Sara block: proyectos→proximamente
+    - "src/components/shared/shell-organism/__tests__/... (si alguno snapshotea subtabs)"
+    - "e2e/.../empty-states-all-subtabs.spec.ts"                   # ALL_SUBTABS → v3
+    - "e2e/.../ribbon-nav.spec.ts"                                 # solo si referencia slugs viejos (data)
+    - "e2e/.../ribbon-deeplink.spec.ts"                            # idem
+
+# ════════════════════════════════════════════════════════════════════════════
+# VALIDATORS
+# ════════════════════════════════════════════════════════════════════════════
+validators:
+
+  # ── NON_FUNCTIONAL (baseline · bloqueante) ────────────────────────────────
+  - id: tsc_strict
+    category: non_functional
+    cmd: "cd nicolify/frontend && npx tsc --noEmit"
+    expect: "0 errors"
+    blocking: true
+
+  - id: eslint_zero
+    category: non_functional
+    cmd: "cd nicolify/frontend && npx eslint src/ --max-warnings 0 --cache"
+    expect: "0 errors / 0 warnings"
+    blocking: true
+
+  - id: vitest_unit
+    category: non_functional
+    cmd: "cd nicolify/frontend && npx vitest run src/lib/routing/ --coverage"
+    expect: "shell-routes.test.ts GREEN — arrays v3 + guards + AGENT_SUBSUBTABS (3 leaves)"
+    blocking: true
+
+  # ── FUNCTIONAL (nav-navigability + anti-burbuja) ──────────────────────────
+  - id: nav_walk_v3
+    category: functional
+    cmd: "cd nicolify/frontend && E2E_BASE_URL=http://localhost:3001 npx playwright test e2e/regression/nicolify-r0-shell/nav-walk-v3.spec.ts --project=smoke"
+    expect: >
+      Recorre TODO el árbol v3 (Ribbon 5 agentes + config → cada N2 subtab → los 3 N3 con leaves).
+      Cada hoja: subtab-content visible + empty-state visible + 0 pageerror + 0 console.error
+      (allowlist) + 0 nextjs-portal overlay + 0 responses 4xx/5xx en /api/. Importa fixtures/base.ts.
+    covers: [RN-1, RN-2, RN-3]
+    blocking: true
+
+  - id: empty_states_all
+    category: functional
+    cmd: "cd nicolify/frontend && E2E_BASE_URL=http://localhost:3001 npx playwright test e2e/regression/nicolify-r0-shell/empty-states-all-subtabs.spec.ts --project=smoke"
+    expect: "Cada combo del árbol v3 renderiza EmptyState (icono+heading+sub-copy) · nunca blank/crash."
+    covers: [RN-2]
+    blocking: true
+
+  - id: invalid_guard_n2_n3
+    category: functional
+    cmd: "cd nicolify/frontend && npx vitest run src/lib/routing/__tests__/shell-routes.test.ts"
+    expect: >
+      isValidSubtab + isValidSubSubTab rechazan slugs inexistentes + XSS (<script>) + path-traversal
+      (../../) + prototype (__proto__) → false. Unit cubre el guard que la ruta N3 usa para notFound().
+    covers: [RN-4]
+    blocking: true
+
+  - id: default_landing
+    category: functional
+    cmd: "cd nicolify/frontend && npx vitest run src/lib/routing/__tests__/shell-routes.test.ts -t 'DEFAULT_LANDING'"
+    expect: "DEFAULT_LANDING.agent==='christian' && subtab==='pipeline' (sin cambio) + AGENT_CATALOG.christian.defaultSubtab==='pipeline'."
+    covers: [RN-5]
+    blocking: true
+
+  # ── VISUAL (opcional liviano — NO diseña hoja, reusa molécula golden-ada) ──
+  - id: visual_empty_state_n3
+    category: visual
+    cmd: "cd nicolify/frontend && E2E_BASE_URL=http://localhost:3001 npx playwright test e2e/regression/nicolify-r0-shell/nav-walk-v3.spec.ts --project=smoke -g 'N3'"
+    expect: "Los 3 leaves N3 (abel.oferta, christian.propuestas, norvil.fidelizacion) muestran SubSubTabsBar + empty-state del leaf seleccionado."
+    blocking: false                    # opcional · EmptyState ya golden-ado en nicolify-r0-shell · sin goldens nuevos
+
+  # ── ARCHITECTURAL_VALIDATION ──────────────────────────────────────────────
+  - id: arch_shell_routes_ssot
+    category: architectural_validation
+    cmd: "cd nicolify/frontend && npx vitest run src/__tests__/architecture/test_shell_routes_ssot.test.ts"
+    expect: >
+      SSoT enforce GREEN con el árbol v3: exports presentes · DEFAULT_LANDING christian/pipeline ·
+      no-hardcode de slugs fuera de shell-routes.ts · Sara block = exactamente 1 subtab ('proximamente').
+      (Builder actualiza la assertion 'proyectos'→'proximamente'; resto sin tocar.)
+    blocking: true
+
+  - id: arch_fsd_boundaries
+    category: architectural_validation
+    cmd: "cd nicolify/frontend && npx vitest run src/__tests__/architecture/"
+    expect: "FSD-Lite boundaries verdes — la ruta N3 nueva importa solo del SSoT (lib/routing) + dispatcher (components/shared). 0 cross-feature."
+    blocking: true
+
+  - id: arch_no_engine_no_cross_brand
+    category: architectural_validation
+    cmd: "grep -rn 'luana-core\\|vitalia/\\|comunify/\\|lupulo/' nicolify/frontend/src/lib/routing/ nicolify/frontend/src/app/'[tenantId]'/'(shell-organism)'/'[agent]'/'[subtab]'/'[subsubtab]'/ 2>/dev/null || true"
+    expect: "0 matches — sin imports de engine ni de otro brand (engine boundary)."
+    blocking: true
+
+# ════════════════════════════════════════════════════════════════════════════
+# SCENARIO COVERAGE (gherkin matrix · Phase D auditor)
+# ════════════════════════════════════════════════════════════════════════════
+scenario_coverage:
+  F-NAV-WALK:           { rule: RN-1, validators: [nav_walk_v3, arch_shell_routes_ssot] }
+  F-EMPTY-STATES:       { rule: RN-2, validators: [empty_states_all, nav_walk_v3] }
+  F-SARA-PROXIMAMENTE:  { rule: RN-3, validators: [nav_walk_v3, vitest_unit] }
+  F-INVALID-GUARD:      { rule: RN-4, validators: [invalid_guard_n2_n3] }
+  F-DEFAULT-LANDING:    { rule: RN-5, validators: [default_landing] }
+
+# ════════════════════════════════════════════════════════════════════════════
+# PLAYWRIGHT VISUAL SCOPE (D3 scope discipline)
+# ════════════════════════════════════════════════════════════════════════════
+playwright_visual_scope:
+  story_scope_routes:                 # SOLO las rutas del árbol nuevo
+    - "/{tenantId}/abel/{icp,oferta,marca}"
+    - "/{tenantId}/abel/oferta/{catalogo-escalera,dossier-mineria}"          # N3
+    - "/{tenantId}/brenda/{contenido-presencia,pauta,inteligencia-asesoria}"
+    - "/{tenantId}/christian/{contactos,inbox,pipeline,equipo-comercial,agenda,propuestas}"
+    - "/{tenantId}/christian/propuestas/{propuestas,licitaciones}"           # N3
+    - "/{tenantId}/sara/proximamente"
+    - "/{tenantId}/norvil/{cartera,renovaciones,fidelizacion}"
+    - "/{tenantId}/norvil/fidelizacion/{momentos,champion-shield,value-proof-qbr,gifting}"  # N3
+    - "/{tenantId}/config/{conexiones,preferencias,tokens,autonomia-agentes}"
+  story_scope_components:
+    - "SubTabContent.tsx (content-map · dispatcher)"
+    - "[subsubtab]/page.tsx (NEW · ruta N3)"
+    - "EmptyState (reuso · NO modificar)"
+  forbidden_to_touch:                 # maquinaria shipped + engine + cross-brand
+    - "Ribbon.tsx · RibbonTab.tsx · SubTabsBar.tsx · SubTab.tsx · SubSubTabsBar.tsx · SubSubTab.tsx"
+    - "EmptyState.tsx (se reusa, NO se edita)"
+    - "ShellOrganismLayout* · LuanaSidebar* · Luana* · TopBarGlobal*"
+    - "[agent]/page.tsx · [subtab]/page.tsx (se LEE para clonar el patrón N3, NO se edita)"
+    - "components/ui/*"
+    - "core/luana-core-*/ · vitalia/ · comunify/ · lupulo/"
+  out_of_mockup_scope: >
+    NO diseñar ninguna hoja real (ICP screen, inbox, cartera detail, pauta, etc.) — son stories R1..R5.
+    Solo empty-states navegables (reuso de la molécula). Sin toHaveScreenshot de página completa.
+
+# ════════════════════════════════════════════════════════════════════════════
+# TEST CONSTRUCTION PLAN (orden TDD · POMs · fixtures)
+# ════════════════════════════════════════════════════════════════════════════
+test_construction_plan:
+  order:
+    - "1. RED unit: shell-routes.test.ts — reescribir arrays al árbol v3 (falla contra datos viejos) → GREEN al implementar shell-routes.ts."
+    - "2. RED arch: test_shell_routes_ssot.test.ts — assertion Sara 'proyectos'→'proximamente' (falla) → GREEN al actualizar."
+    - "3. GREEN data: implementar shell-routes.ts (AGENT_CATALOG/AGENT_SUBTABS/AGENT_SUBSUBTABS + isValidSubSubTab) + agent-catalog.ts + SubTabContent content-map."
+    - "4. NEW route: [subsubtab]/page.tsx + not-found.tsx (clon verbatim del patrón [subtab]/)."
+    - "5. NEW fixture: e2e/fixtures/base.ts (anti-burbuja extendiendo auth.fixture)."
+    - "6. RED→GREEN e2e: nav-walk-v3.spec.ts (recorre todo el árbol + 0 errores) + actualizar empty-states-all-subtabs.spec.ts data."
+    - "7. Gates: tsc + eslint + vitest + arch + playwright nativos (host)."
+  poms: []                            # sin POM nuevo — nav-walk navega por URL directa (data-testid de la maquinaria existente)
+  fixtures:
+    - "e2e/fixtures/base.ts (NEW · anti-burbuja) — extiende auth.fixture.ts (Clerk testing token + tenantId)"
+    - "e2e/auth.fixture.ts (EXISTENTE · base del Clerk token) — base.ts lo extiende"
+  data_testids_existentes:
+    - "[data-testid='subtab-content-{agent}-{subtab}'] (SubTabContent)"
+    - "[data-testid='empty-state'] + [data-testid='empty-state-icon'] (EmptyState)"
+    - "[data-testid='sub-sub-tabs-bar'] (SubSubTabsBar · aparece en los 3 leaves)"
+  notes: >
+    El nav-walk debe seleccionar cada leaf N3 (no solo navegar al N2): para abel/oferta, christian/propuestas,
+    norvil/fidelizacion, hacer click en cada SubSubTab → URL /{t}/{agent}/{subtab}/{leaf} → assert empty-state.
+    Sin ruta [subsubtab]/page.tsx esto da 404 (= el gap que la story cierra). El builder crea la ruta PRIMERO,
+    luego el e2e la verifica GREEN.
+
+iteration: 1

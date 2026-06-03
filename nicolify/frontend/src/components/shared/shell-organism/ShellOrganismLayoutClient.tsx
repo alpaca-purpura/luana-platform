@@ -182,7 +182,11 @@ export function ShellOrganismLayoutClient({
                 aria-label="Redimensionar paneles"
               />
 
-              <Panel id={APP_PANEL_ID} defaultSize={100 - defaultLuanaPct} minSize={`${minAppPct}%`}>
+              <Panel
+                id={APP_PANEL_ID}
+                defaultSize={100 - defaultLuanaPct}
+                minSize={`${minAppPct}%`}
+              >
                 <AppPanelSlot>{children}</AppPanelSlot>
               </Panel>
             </Group>

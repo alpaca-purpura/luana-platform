@@ -36,7 +36,7 @@ Seis agentes con roles, autonomía y "territorio" distintos. Mapean al ciclo com
 | **Abel** | Estratega (Branding & Oferta) | Pre-Atracción (materia prima) | Absorbe info de la agencia; define ángulos de venta; estructura la escalera de valor; crea el discurso comercial | Media (propone estrategia; el dueño ratifica el posicionamiento) |
 | **Brenda** | Guardiana del Presupuesto (Growth) | Atracción inbound | Recomienda qué contenido crear; distribuye; gestiona la pauta publicitaria | **Alta con contingencia** — apaga campañas perdedoras según umbrales CAC/ROAS predefinidos sin pedir permiso |
 | **Christian** | Cazador (SDR) | Atracción outbound + Cierre temprano | Prospección outbound; **conectado al perfil real de LinkedIn del fundador/CEO** (la autoridad cierra reuniones en B2B); cold email; seguimiento implacable | Media-alta (ejecuta secuencias; agenda reuniones; escala a humano para el cierre) |
-| **Sara** | Jefa de Proyectos (Operación / Delivery) | Delivery (post-cierre, día a día) | **Operación del día a día**: delivery de los proyectos de clientes activos (tareas, milestones, deadlines, entregables). Su vista **"Mi Día"** es el landing operativo post-login. Integra el stack operativo (Notion/Jira/Slack) | Media (orquesta el delivery; alerta riesgos de entrega; escala a humano lo que requiere decisión) |
+| **Sara** | Jefa de Proyectos (Operación / Delivery) — ⏳ **DIFERIDA "Próximamente"** (Chris 2026-06-02) | Delivery (post-cierre) — *fuera del roadmap activo R0-R5* | **Norte futuro:** hub de contexto (ERPs/Notion/Jira/Slack) para que los OTROS agentes estén enterados. De momento = tab "Próximamente" sin funcionalidad. El landing post-login ya **no** es "Mi Día" sino `christian/pipeline`. | — (diferida · ver ADR-nicolify-002 § Amendment) |
 | **Norvil** | Cultivador (Account Manager) | Retención + Expansión | Monitorea la salud de la cuenta (integra Notion/Jira/Slack); detecta oportunidades de cross-sell/up-sell en la misma empresa (ej. entrar a otro departamento); asegura la renovación | Media (alerta + propone; ejecuta nurturing; el dueño aprueba contacto comercial) |
 
 ### Principio de diseño cardinal — Luana es el único rostro
@@ -70,6 +70,27 @@ ABEL define oferta + ángulos  ──►  materia prima discursiva
 
   LUANA orquesta todo el ciclo y es el único punto de contacto del dueño.
 ```
+
+> ⏳ **Nota (2026-06-02):** el paso de **Sara** (delivery) está **diferido** ("Próximamente"); en el ciclo actual el flujo va de Cierre directo a Norvil (retención). Se reactiva cuando Sara se priorice (candidata R5).
+
+### La intención del dueño por agente — SSoT del producto
+
+> **Graduado** de la story `nicolify-r0-sitemap-completo` (2026-06-02 · `promote_to_vision`). Fija **qué espera el dueño** (CEO/Gerente de la agencia que paga) de cada agente — el norte que manda sobre el árbol de funcionalidades. El **perfil del que paga:** un CEO/Gerente **NO-marketinero** con el know-how, la dirección y la visión (el cerebro), SIN tiempo ni equipo. **Quiere empleados, no herramientas** — le habla a Luana y delega. Cada cliente vale muchísimo (cerrar UNO recupera toda la inversión de marketing) → todo alto-toque, relacional, con la **voz/imagen del fundador** como activo central.
+
+| Agente | Lo que el dueño espera (intención) |
+|---|---|
+| **Luana** *(★ CORE platform)* | Que le entienda la **intención** y **jamás pierda el hilo**; que **hablando haga todo** por él. **Jamás propone sola: va con los especialistas.** Es la capa conversacional compartida cross-brand — lo nicolify-único empieza en Abel. |
+| **Abel** | Su **estratega**: que absorba y **sostenga** su visión/dirección (él no sabe de marketing, pero da el norte) y la vuelva **ICP/buyer + oferta empaquetada (escalera de valor = catálogo en tiers) + marca**. |
+| **Brenda** | El trabajo de una **agencia de marketing B2B in-house**: mantenerlo vigente (LinkedIn), decir **cuánto invertir para reuniones de valor**, **proponer temas y postear por él** (dos frentes: empresa + fundador), y qué pega **con sustento** (Apify) + recomendaciones/alternativas. |
+| **Christian** | Su **alfil de batalla**: **filtra las reuniones** (quién atiende: ejecutivo o el dueño), **no pierde NINGÚN lead**, **prospecta** y **habla por él clonando su voz**. Parte operativa de ventas (aún-no-clientes). |
+| **Sara** ⏳ | *(diferida)* Norte futuro: hub de contexto ERP para que los otros agentes estén enterados. |
+| **Norvil** | Un **CRM de los clientes ACTUALES** (Christian los trajo): **cumpleaños, mensajes, correos, regalos** — fidelizar. Arranca liviano + **motor de fidelización novedoso** para agencias SMB sin área de marketing (momentos · champion-shield · QBR · gifting). |
+
+**Capability compartida — voz/autoridad del fundador:** NO se duplica. **Brenda la usa para publicar** (post-by-proxy) · **Christian la clona para conversar 1:1**. Regla: *voz personal del fundador → Christian · voz de la marca → Brenda · publicar siempre Brenda.*
+
+**Estrategia de canales (research jun-2026):** **LinkedIn #1** (la casa del B2B) · **Meta #2** (demand-gen, atribución a pipeline + kill-switch CAC) · **Email sí** (personalizado/signal-based) · **TikTok NO ahora**.
+
+**El árbol de funcionalidades (nav de 4 niveles · Agente → Área → Subárea → Hoja):** el inventario canónico vive en **`nicolify/docs/architecture/SYSTEM-MAP.yaml` v2.0** (zonas → cajas → áreas → hojas N3) — es el SSoT que el cockpit lee. El roadmap por release (qué hoja en qué release) en `nicolify/docs/product/releases/R0..R5.yaml`. El refinamiento completo (con la intención embebida por hoja) se archiva con la story en `nicolify/docs/archive/2026/stories/nicolify-r0-sitemap-completo/`.
 
 ---
 

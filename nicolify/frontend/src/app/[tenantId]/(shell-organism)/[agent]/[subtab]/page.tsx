@@ -22,25 +22,36 @@
  * downstream-regression-na: brand-local route; no cross-brand consumers.
  */
 
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { SubTabContent } from "@/components/shared/shell-organism/SubTabContent";
-import { isValidAgent, isValidSubtab, type RibbonTabSlug } from "@/lib/routing/shell-routes";
+import { getSubSubTabs, isValidAgent, isValidSubtab } from "@/lib/routing/shell-routes";
 
 interface PageProps {
   params: Promise<{ tenantId: string; agent: string; subtab: string }>;
 }
 
 /**
- *
+ * N2 sub-tab route. Validates [agent]+[subtab] against the SSoT whitelist.
+ * If the sub-tab HAS N3 leaves, redirects to the first leaf so the page never
+ * shows an empty N2 placeholder when a sub-sub-tab exists (the SubSubTabsBar
+ * marks the first leaf active via URL-derived state). Otherwise renders the
+ * N2 empty-state dispatcher.
  */
 export default async function SubtabPage({ params }: PageProps) {
-  const { agent, subtab } = await params;
+  const { tenantId, agent, subtab } = await params;
 
   // Whitelist validation (A4): any invalid segment → 404 contextual (shell chrome intact).
   // Covers: XSS payloads (<script>...), path traversals (../../), SQL fragments, etc.
   if (!isValidAgent(agent) || !isValidSubtab(agent, subtab)) {
     notFound();
+  }
+
+  // If this sub-tab has N3 leaves, land on the first one so the leaf is selected
+  // (no empty N2 page when a third level exists). URL-derived → SubSubTab active.
+  const leaves = getSubSubTabs(agent, subtab);
+  if (leaves && leaves.length > 0) {
+    redirect(`/${tenantId}/${agent}/${subtab}/${leaves[0].id}`);
   }
 
   return <SubTabContent agent={agent} subtab={subtab} />;

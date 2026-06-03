@@ -1,29 +1,32 @@
 // cap: shell-organism.shell-nicolify
-// story-origin: nicolify-r0-shell T-5
+// story-origin: nicolify-r0-sitemap-completo T-1 (rewrite v3 from nicolify-r0-shell T-5)
 /**
  * shell-routes.ts — Nicolify shell routing SSoT.
  *
  * Single source of truth for:
  *   - AGENT_CATALOG (5 Revenue/Ops agents + config — Luana is sidebar, NOT a tab)
  *   - AGENT_RIBBON_ORDER (Ribbon tab order: abel, brenda, christian, sara, norvil)
- *   - AGENT_SUBTABS (sub-tab definitions per agent, from navigation-tree.md ratificado)
- *   - DEFAULT_LANDING (christian/pipeline — ratificado 2026-05-30)
- *   - Guards: isValidAgent · isValidSubtab · getDefaultSubtab
+ *   - AGENT_SUBTABS (sub-tab definitions per agent, v3 from SYSTEM-MAP v2.0)
+ *   - AGENT_SUBSUBTABS (N3 leaves — 3 populated combos: abel.oferta, christian.propuestas, norvil.fidelizacion)
+ *   - DEFAULT_LANDING (christian/pipeline — ratificado 2026-05-30, SIN cambio)
+ *   - Guards: isValidAgent · isValidSubtab · isValidSubSubTab · getDefaultSubtab
  *   - URL extractors: extractAgentFromPath · extractSubtabFromPath
  *
  * ANTI-PATTERN GUARD (XSS / path-injection A4):
  * Guards use whitelist-only validation. ANY input not in the catalog → false/null.
  * This covers: <script> injections, ../../ path traversals, SQL fragments, prototype pollution.
  *
- * N3 sub-sub-tabs (R0-static empty):
- * In R0 no N3 routes exist. AGENT_SUBSUBTABS = {} (empty).
- * Imported by SubSubTabsBar — returns null for all combos → no N3 bar rendered.
+ * N3 sub-sub-tabs (populated in sitemap-completo T-1):
+ *   - "abel.oferta":          [catalogo-escalera, dossier-mineria]
+ *   - "christian.propuestas": [propuestas, licitaciones]
+ *   - "norvil.fidelizacion":  [momentos, champion-shield, value-proof-qbr, gifting]
+ * All other combos return null → SubSubTabsBar renders no N3 bar.
  *
  * Architecture fitness: test_shell_routes_ssot.test.ts enforces this file as SSoT.
  * No other file may define AGENT_CATALOG or AGENT_SUBTABS arrays.
  *
- * spec_anchor: 01-spec.md § Routing SSoT + navigation-tree.md + 04-validators.yaml T-5
- * gherkin_coverage: E1 E2 E3 E4 E5 A4
+ * spec_anchor: SYSTEM-MAP.yaml v2.0 + 01-sitemap.md v3 + 06-tickets.yaml T-1
+ * gherkin_coverage: E1 E2 E3 E4 E5 A4 F-NAV-WALK F-SARA-PROXIMAMENTE F-INVALID-GUARD
  * downstream-regression-na: brand-local nicolify shell; no cross-brand consumers
  */
 
@@ -54,7 +57,7 @@ export interface RibbonAgentDescriptor {
   defaultSubtab: string;
 }
 
-/** N3 sub-sub-tab descriptor (empty in R0, populated in future releases). */
+/** N3 sub-sub-tab descriptor. */
 export interface SubSubTabMeta {
   /** URL segment identifier — kebab-case static segment. */
   id: string;
@@ -73,6 +76,7 @@ export interface LandingAnchor {
 // ─────────────────────────────────────────────────────────────────────────────
 // AGENT_CATALOG — 5 Revenue/Ops agents + config
 // Luana = orchestrator sidebar, NOT in AGENT_CATALOG (NOT a ribbon tab).
+// defaultSubtab per agent = SYSTEM-MAP v2.0 (sitemap-completo T-1).
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const AGENT_CATALOG: Record<RibbonTabSlug, RibbonAgentDescriptor> = {
@@ -80,31 +84,33 @@ export const AGENT_CATALOG: Record<RibbonTabSlug, RibbonAgentDescriptor> = {
     slug: "abel",
     name: "Abel",
     tabLabel: "Estrategia",
-    defaultSubtab: "oferta",
+    defaultSubtab: "icp",
   },
   brenda: {
     slug: "brenda",
     name: "Brenda",
     tabLabel: "Growth",
-    defaultSubtab: "campanas",
+    defaultSubtab: "contenido-presencia",
   },
   christian: {
     slug: "christian",
     name: "Christian",
     tabLabel: "Ventas",
-    defaultSubtab: "prospectos",
+    defaultSubtab: "pipeline",
   },
   sara: {
     slug: "sara",
     name: "Sara",
-    tabLabel: "Proyectos",
-    defaultSubtab: "proyectos",
+    // Sara deferred (Chris OI-C 2026-06-02 · ADR-nicolify-002 D-D amendment).
+    // tabLabel reflects the deferred state for the user.
+    tabLabel: "Próximamente",
+    defaultSubtab: "proximamente",
   },
   norvil: {
     slug: "norvil",
     name: "Norvil",
     tabLabel: "Cuentas",
-    defaultSubtab: "cuentas",
+    defaultSubtab: "cartera",
   },
   config: {
     slug: "config",
@@ -137,60 +143,73 @@ export const DEFAULT_LANDING: LandingAnchor = {
 } as const;
 
 // ─────────────────────────────────────────────────────────────────────────────
-// AGENT_SUBTABS — sub-tab definitions per agent (from navigation-tree.md)
-// Sara ONLY has [proyectos] in R0 — navigation-tree.md constraint.
+// AGENT_SUBTABS — sub-tab definitions per agent (v3 · SYSTEM-MAP v2.0)
+// Sara has ONLY [proximamente] — deferred (ADR-nicolify-002 D-D amendment).
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const AGENT_SUBTABS: Record<RibbonTabSlug, readonly SubTabMeta[]> = {
   abel: [
+    { id: "icp", label: "ICP & buyer", icon: "🎯" },
     { id: "oferta", label: "Oferta", icon: "📦" },
-    { id: "angulos", label: "Ángulos", icon: "🎯" },
-    { id: "escalera-valor", label: "Escalera de valor", icon: "📈" },
     { id: "marca", label: "Marca", icon: "🏷️" },
   ],
   brenda: [
-    { id: "campanas", label: "Campañas", icon: "📢" },
-    { id: "contenido", label: "Contenido", icon: "✍️" },
-    { id: "presupuesto", label: "Presupuesto", icon: "💰" },
+    { id: "contenido-presencia", label: "Contenido & Presencia", icon: "✍️" },
+    { id: "pauta", label: "Pauta", icon: "📢" },
+    { id: "inteligencia-asesoria", label: "Inteligencia & Asesoría", icon: "🧠" },
   ],
   christian: [
-    { id: "prospectos", label: "Prospectos", icon: "🔍" },
-    { id: "secuencias", label: "Secuencias", icon: "📧" },
+    { id: "contactos", label: "Contactos", icon: "👥" },
+    { id: "inbox", label: "Inbox", icon: "📥" },
     { id: "pipeline", label: "Pipeline", icon: "📊" },
+    { id: "equipo-comercial", label: "Equipo comercial", icon: "🧑‍💼" },
+    { id: "agenda", label: "Agenda", icon: "📅" },
     { id: "propuestas", label: "Propuestas", icon: "📝" },
-    { id: "licitaciones", label: "Licitaciones", icon: "⛏️" },
   ],
   sara: [
-    // R0: Sara tiene ÚNICAMENTE [proyectos] (navigation-tree.md constraint)
-    // Expandir en R1+ con más subtabs según spec
-    { id: "proyectos", label: "Proyectos", icon: "📋" },
+    // Sara deferred (Chris OI-C 2026-06-02 · ADR-nicolify-002 D-D amendment).
+    // Exactly 1 placeholder subtab — SSoT arch test enforces idMatches.length===1.
+    { id: "proximamente", label: "Próximamente", icon: "⏳" },
   ],
   norvil: [
-    { id: "cuentas", label: "Cuentas", icon: "🏢" },
-    { id: "salud-cuenta", label: "Salud de cuenta", icon: "💚" },
+    { id: "cartera", label: "Cartera", icon: "🗂️" },
     { id: "renovaciones", label: "Renovaciones", icon: "🔄" },
+    { id: "fidelizacion", label: "Fidelización", icon: "💚" },
   ],
   config: [
     { id: "conexiones", label: "Conexiones", icon: "🔌" },
     { id: "preferencias", label: "Preferencias", icon: "⚙️" },
     { id: "tokens", label: "Tokens", icon: "🪙" },
-    { id: "agentes", label: "Agentes", icon: "🤖" },
+    { id: "autonomia-agentes", label: "Autonomía de agentes", icon: "🤖" },
   ],
 } as const;
 
 // ─────────────────────────────────────────────────────────────────────────────
-// AGENT_SUBSUBTABS — N3-static sub-sub-tabs (empty in R0)
-// Consumed by SubSubTabsBar — returns null for all combos in R0 → no N3 bar rendered.
-// Populate in future stories when N3-static routing is needed per navigation-tree.md.
+// AGENT_SUBSUBTABS — N3-static sub-sub-tabs (sitemap-completo T-1)
+// 3 populated combos: abel.oferta / christian.propuestas / norvil.fidelizacion
+// All other combos return null → SubSubTabsBar renders no N3 bar.
+// Key pattern: "{agent}.{subtab}" — avoids collision (christian.propuestas.propuestas is valid).
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const AGENT_SUBSUBTABS: Partial<Record<`${string}.${string}`, readonly SubSubTabMeta[]>> = {
-  // R0: empty — no N3-static routes yet.
-  // Future: "christian.pipeline": [...], "christian.propuestas": [...], etc.
+  "abel.oferta": [
+    { id: "catalogo-escalera", label: "Catálogo & escalera", icon: "📦" },
+    { id: "dossier-mineria", label: "Dossier (minería)", icon: "⛏️" },
+  ],
+  "christian.propuestas": [
+    { id: "propuestas", label: "Propuestas", icon: "📝" },
+    { id: "licitaciones", label: "Licitaciones", icon: "⛏️" },
+  ],
+  "norvil.fidelizacion": [
+    { id: "momentos", label: "Momentos", icon: "🎂" },
+    { id: "champion-shield", label: "Champion-shield", icon: "🛡️" },
+    { id: "value-proof-qbr", label: "Value-proof / QBR", icon: "📈" },
+    { id: "gifting", label: "Gifting", icon: "🎁" },
+  ],
 } as const;
 
 /**
- * Returns sub-sub-tabs for a given agent.subtab combo, or null if none (R0 = always null).
+ * Returns sub-sub-tabs for a given agent.subtab combo, or null if none.
  * Used by SubSubTabsBar.
  */
 export function getSubSubTabs(agent: string, subtab: string): readonly SubSubTabMeta[] | null {
@@ -239,8 +258,28 @@ export function isValidSubtab(agent: unknown, subtab: unknown): boolean {
 }
 
 /**
+ * Returns true iff `subsubtab` is a valid N3 leaf for the given agent+subtab combo.
+ * All three inputs (agent, subtab, subsubtab) must be whitelisted.
+ *
+ * Symmetric to isValidSubtab — covers A4 XSS/path-injection at N3.
+ * Covers: <script> injections, ../../ path traversals, __proto__, empty strings.
+ *
+ * spec_anchor: A4 scenario guard N3 · 03-arch-fe.md § Whitelist guard N3
+ */
+export function isValidSubSubTab(agent: unknown, subtab: unknown, subsubtab: unknown): boolean {
+  if (!isValidSubtab(agent, subtab)) return false;
+  if (typeof subsubtab !== "string" || subsubtab.length === 0) return false;
+  const leaves = getSubSubTabs(agent as string, subtab as string);
+  return leaves?.some((l) => l.id === subsubtab) ?? false;
+}
+
+/**
  * Returns the default (first) sub-tab id for a valid agent, or null.
  * Returns null for invalid agent slugs (including 'luana').
+ *
+ * NOTE: getDefaultSubtab returns AGENT_SUBTABS[agent][0].id (first array element).
+ * christian's first element is "contactos" (not "pipeline").
+ * AGENT_CATALOG.christian.defaultSubtab="pipeline" + DEFAULT_LANDING is the session landing default.
  *
  * spec_anchor: E1 scenario (click agent → default subtab)
  */
@@ -260,7 +299,7 @@ export function getDefaultSubtab(agent: unknown): string | null {
  * XSS guard: whitelist check via isValidAgent.
  *
  * Examples:
- *   /tenant-x/abel/oferta        → "abel"
+ *   /tenant-x/abel/icp           → "abel"
  *   /tenant-x/config/conexiones  → "config"
  *   /tenant-x/luana/chat         → null (orchestrator, not ribbon tab)
  *   /tenant-x/<script>/anything  → null (XSS guard)

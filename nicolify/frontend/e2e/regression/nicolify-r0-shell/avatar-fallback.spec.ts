@@ -46,15 +46,17 @@ test.describe("E4 — avatar fallback a inicial", () => {
     page,
     tenantId,
   }) => {
-    await page.goto(`/${tenantId}/sara/proyectos`, { waitUntil: "load" });
+    // v3 slug fix (T-2): sara/proyectos → sara/proximamente
+    await page.goto(`/${tenantId}/sara/proximamente`, { waitUntil: "load" });
     await expect(page.locator("[data-shell-ready='true']")).toBeVisible({
       timeout: 20_000,
     });
 
-    // Sara's avatar tab in ribbon should render (either image or fallback)
-    const saraTab = page.locator(
-      "[role='tab'][data-agent='sara'], [data-testid='ribbon-tab-sara']",
-    );
+    // Sara's avatar tab in ribbon should render (either image or fallback).
+    // .first() = desktop Ribbon copy (shell monta desktop+mobile SIEMPRE; visible a 1280).
+    const saraTab = page
+      .locator("[role='tab'][data-agent='sara'], [data-testid='ribbon-tab-sara']")
+      .first();
     await expect(saraTab).toBeVisible({ timeout: 10_000 });
 
     // No broken image element
@@ -80,10 +82,10 @@ test.describe("E4 — avatar fallback a inicial", () => {
       timeout: 20_000,
     });
 
-    // Abel tab still renders (fallback to initial "A" or similar)
-    const abelTab = page.locator(
-      "[role='tab'][data-agent='abel'], [data-testid='ribbon-tab-abel']",
-    );
+    // Abel tab still renders (fallback to initial "A" or similar). .first() = desktop Ribbon copy.
+    const abelTab = page
+      .locator("[role='tab'][data-agent='abel'], [data-testid='ribbon-tab-abel']")
+      .first();
     await expect(abelTab).toBeVisible({ timeout: 10_000 });
 
     // The AgentAvatar fallback (data-testid or aria attribute)
