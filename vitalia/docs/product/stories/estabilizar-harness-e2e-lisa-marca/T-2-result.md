@@ -68,7 +68,7 @@ $ vitest run src/__tests__/architecture/
 
 ## Commit
 
-- SHA: `__COMMIT_SHA__` (ver línea final / git log — Haiku commit-push por pathspec)
+- SHA: `e51432dd` (commit por pathspec, 5 files, +357/-5)
 - Branch: `wip/vitalia` (hub canónico ADR-009)
 - Archivos staged (pathspec exacto, NUNCA `git add .`):
   - `vitalia/frontend/src/features/lisa/api/marca-voice-api.ts`
