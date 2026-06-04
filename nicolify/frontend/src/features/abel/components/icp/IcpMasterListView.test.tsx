@@ -81,6 +81,13 @@ vi.mock("../../store/abel-ui-store", () => ({
   ABEL_UI_STORAGE_KEY: "nicolify-abel-ui-state",
 }));
 
+// Mock IcpIntakeOverlay — the overlay is tested in its own unit test.
+// IcpMasterListView unit tests scope to the list view behavior only.
+// The overlay integration is covered by E2E (Journey 5: intake modal open).
+vi.mock("./IcpIntakeOverlay", () => ({
+  IcpIntakeOverlay: () => null,
+}));
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function makeWrapper(queryClient: QueryClient) {

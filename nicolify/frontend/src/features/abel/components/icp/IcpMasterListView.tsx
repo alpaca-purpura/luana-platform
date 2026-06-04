@@ -45,6 +45,7 @@ import { useIcps } from "../../hooks/use-icps";
 import { useCreateIcp } from "../../hooks/use-icp-mutations";
 import { useAbelUiStore } from "../../store/abel-ui-store";
 import { IcpCard } from "./IcpCard";
+import { IcpIntakeOverlay } from "./IcpIntakeOverlay";
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
@@ -98,18 +99,30 @@ export function IcpMasterListView() {
     }
   }, [createIcp, isStartingBlank, router, tenantId]);
 
+  // ── Overlay — mounted once, self-gates on store flag ─────────────────────
+  // IcpIntakeOverlay reads intakeOverlayOpen from store and renders the
+  // UniversalIntake Dialog only when the flag is true. It covers BOTH empty
+  // and list states by being rendered at the component root (before branches).
+  //
+  // NOTE: We use a wrapper div pattern instead of React.Fragment so we can
+  // return conditional JSX from early-return branches while still having the
+  // overlay available in all states.
+
   // ── Loading state ──────────────────────────────────────────────────────────
 
   if (isLoading) {
     return (
-      <div
-        className="flex-1 overflow-auto p-6"
-        aria-busy="true"
-        aria-label="Cargando perfiles de cliente ideal"
-        data-testid="icp-master-loading"
-      >
-        <IcpGridSkeleton />
-      </div>
+      <>
+        <IcpIntakeOverlay />
+        <div
+          className="flex-1 overflow-auto p-6"
+          aria-busy="true"
+          aria-label="Cargando perfiles de cliente ideal"
+          data-testid="icp-master-loading"
+        >
+          <IcpGridSkeleton />
+        </div>
+      </>
     );
   }
 
@@ -117,27 +130,30 @@ export function IcpMasterListView() {
 
   if (error) {
     return (
-      <div
-        className="flex-1 overflow-auto p-6 flex flex-col items-center justify-center gap-4"
-        data-testid="icp-master-error"
-        role="alert"
-      >
-        <div className="text-4xl" aria-hidden="true">
-          ⚠️
-        </div>
-        <p className="text-sm text-muted-foreground text-center max-w-xs">
-          No se pudieron cargar los perfiles de cliente. Verifica tu conexión e intenta de nuevo.
-        </p>
-        <button
-          onClick={() => void refetch()}
-          className={cn(
-            "text-sm text-agent-abel hover:underline",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm",
-          )}
+      <>
+        <IcpIntakeOverlay />
+        <div
+          className="flex-1 overflow-auto p-6 flex flex-col items-center justify-center gap-4"
+          data-testid="icp-master-error"
+          role="alert"
         >
-          Reintentar
-        </button>
-      </div>
+          <div className="text-4xl" aria-hidden="true">
+            ⚠️
+          </div>
+          <p className="text-sm text-muted-foreground text-center max-w-xs">
+            No se pudieron cargar los perfiles de cliente. Verifica tu conexión e intenta de nuevo.
+          </p>
+          <button
+            onClick={() => void refetch()}
+            className={cn(
+              "text-sm text-agent-abel hover:underline",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm",
+            )}
+          >
+            Reintentar
+          </button>
+        </div>
+      </>
     );
   }
 
@@ -145,63 +161,69 @@ export function IcpMasterListView() {
 
   if (!icps || icps.length === 0) {
     return (
-      <div className="flex-1 overflow-auto" data-testid="icp-master-empty">
-        <DraftFirstStarter
-          onGenerateDraft={handleGenerateDraft}
-          onStartBlank={handleStartBlank}
-          agentName="Abel"
-        />
-      </div>
+      <>
+        <IcpIntakeOverlay />
+        <div className="flex-1 overflow-auto" data-testid="icp-master-empty">
+          <DraftFirstStarter
+            onGenerateDraft={handleGenerateDraft}
+            onStartBlank={handleStartBlank}
+            agentName="Abel"
+          />
+        </div>
+      </>
     );
   }
 
   // ── List state (≥1 ICP) ────────────────────────────────────────────────────
 
   return (
-    <div
-      className="flex-1 overflow-auto p-6"
-      data-testid="icp-master-list"
-      aria-label={`${icps.length} perfiles de cliente ideal`}
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-base font-semibold text-foreground">Perfiles de cliente ideal</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {icps.length === 1 ? "1 perfil" : `${icps.length} perfiles`}
-          </p>
+    <>
+      <IcpIntakeOverlay />
+      <div
+        className="flex-1 overflow-auto p-6"
+        data-testid="icp-master-list"
+        aria-label={`${icps.length} perfiles de cliente ideal`}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-base font-semibold text-foreground">Perfiles de cliente ideal</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {icps.length === 1 ? "1 perfil" : `${icps.length} perfiles`}
+            </p>
+          </div>
+
+          {/* Add new ICP button — triggers draft-first generate (same as DraftFirstStarter) */}
+          <button
+            onClick={handleGenerateDraft}
+            className={cn(
+              "inline-flex items-center gap-1.5 text-sm font-medium",
+              "px-3 py-1.5 rounded-md",
+              "bg-agent-abel text-white hover:bg-agent-abel/90",
+              "transition-colors",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+            )}
+            data-testid="icp-master-add-btn"
+          >
+            <span aria-hidden="true">✨</span>
+            Nuevo ICP
+          </button>
         </div>
 
-        {/* Add new ICP button */}
-        <button
-          onClick={handleGenerateDraft}
-          className={cn(
-            "inline-flex items-center gap-1.5 text-sm font-medium",
-            "px-3 py-1.5 rounded-md",
-            "bg-agent-abel text-white hover:bg-agent-abel/90",
-            "transition-colors",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-          )}
-          data-testid="icp-master-add-btn"
+        {/* ICP grid — CSS grid, SC-large: 200 ICPs scroll natively */}
+        <ul
+          className={cn("grid gap-3", "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4")}
+          aria-label="Lista de perfiles de cliente ideal"
+          data-testid="icp-card-grid"
         >
-          <span aria-hidden="true">✨</span>
-          Nuevo ICP
-        </button>
+          {icps.map((icp) => (
+            <li key={icp.id}>
+              <IcpCard icp={icp} />
+            </li>
+          ))}
+        </ul>
       </div>
-
-      {/* ICP grid — CSS grid, SC-large: 200 ICPs scroll natively */}
-      <ul
-        className={cn("grid gap-3", "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4")}
-        aria-label="Lista de perfiles de cliente ideal"
-        data-testid="icp-card-grid"
-      >
-        {icps.map((icp) => (
-          <li key={icp.id}>
-            <IcpCard icp={icp} />
-          </li>
-        ))}
-      </ul>
-    </div>
+    </>
   );
 }
 

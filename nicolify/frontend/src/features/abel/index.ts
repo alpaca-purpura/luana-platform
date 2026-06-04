@@ -69,6 +69,8 @@ export type { IcpFormValues, BuyerFormValues, IcpCreateFormValues } from "./type
 // ── T-FE-3: Components ────────────────────────────────────────────────────────
 export { IcpCard } from "./components/icp/IcpCard";
 export { IcpMasterListView } from "./components/icp/IcpMasterListView";
+// T-FE-FIX-intake: overlay wiring (Bug A fix — orphan integration)
+export { IcpIntakeOverlay } from "./components/icp/IcpIntakeOverlay";
 
 // ── T-FE-4: Detail forms ──────────────────────────────────────────────────────
 export { IcpWorkspaceView } from "./components/icp/IcpWorkspaceView";

@@ -740,8 +740,21 @@ test.describe("Journey: negatives/edge — isolación, a11y, i18n", () => {
   /**
    * SC-network: intercept extract API → 503 → UI handles gracefully (no burbuja).
    * Self-provisions 1 ICP to reach empty state with DraftFirstStarter.
+   *
+   * failOnRuntimeError: false because this test intentionally exercises a 503
+   * error path. The browser will emit a console.error for the failed resource
+   * (this is expected behavior for a network error test). The key invariants are:
+   * - No Next.js error overlay (no runtime JS exception)
+   * - Shell does not crash or hang
+   * - UI shows graceful error state (no infinite spinner)
+   *
+   * The base fixture's consoleErrors gate would catch the 503 console.error
+   * as a false-positive here since the 503 is intentional (route intercept).
    */
-  test("SC-network: intake con URL fake → 503 interceptado → sin overlay de Next", async ({
+  test.describe("SC-network: intake con error de red (failOnRuntimeError desactivado)", () => {
+    test.use({ failOnRuntimeError: false });
+
+    test("SC-network: intake con URL fake → 503 interceptado → sin overlay de Next", async ({
     page,
     tenantId,
     request,
@@ -833,7 +846,96 @@ test.describe("Journey: negatives/edge — isolación, a11y, i18n", () => {
     expect(shellStuck, "Shell no debe quedar atascado tras error de red").toBe(
       false,
     );
-  });
+  }); // end SC-network test
+
+  }); // end SC-network sub-describe (failOnRuntimeError: false)
+}); // end Journey 4
+
+// ===========================================================================
+// Journey 5: INTAKE MODAL OPEN (Bug A regression guard)
+// Asserts the UniversalIntake Dialog actually opens when the CTA is clicked.
+// This was the orphan-integration bug: setIntakeOverlayOpen(true) was called but
+// nothing rendered the overlay. This test prevents regression.
+// ===========================================================================
+test.describe("Journey: intake modal open (Bug A regression guard)", () => {
+  test.use({ viewport: { width: 1280, height: 800 } });
+
+  /**
+   * @rule-draft-first (RN-2)
+   * Empty state: clicking "Abel te arma un borrador" CTA MUST open
+   * the UniversalIntake Dialog with 4 mode tabs visible.
+   * Cancelling the dialog must close it.
+   *
+   * This test FAILS if the modal doesn't open (orphan-integration regression).
+   * NO weakened fallback — if the modal doesn't open, the test is HONEST about it.
+   */
+  test(
+    "SC-happy intake: 'Abel te arma un borrador' → modal abre con 4 tabs → cancel cierra",
+    async ({ page, tenantId, request }) => {
+      // Ensure empty state
+      await deleteAllIcps(request, tenantId);
+
+      // Cold-start: clear ICP/abel localStorage
+      await page.addInitScript(() => {
+        Object.keys(localStorage)
+          .filter((k) => k.includes("icp") || k.includes("abel"))
+          .forEach((k) => localStorage.removeItem(k));
+      });
+
+      const masterPage = new AbelIcpMasterPage(page);
+      await masterPage.goto(tenantId);
+
+      // Must be in empty state
+      await expect(
+        masterPage.emptyState,
+        "icp-master-empty visible (0 ICPs en DB)",
+      ).toBeVisible({ timeout: 15_000 });
+
+      // Click "Abel te arma un borrador" CTA
+      await masterPage.generateWithAbelBtn.click();
+
+      // REAL assertion: the UniversalIntake Dialog MUST be visible
+      // (data-testid="universal-intake" is the root of UniversalIntake)
+      const intake = new UniversalIntakeModal(page);
+      await expect(
+        intake.container,
+        'UniversalIntake dialog DEBE abrirse tras clic en "Abel te arma un borrador" (Bug A regression guard)',
+      ).toBeVisible({ timeout: 5_000 });
+
+      // The 4 mode tabs must be present
+      await expect(
+        intake.modeTabs,
+        "intake-mode-tabs visible",
+      ).toBeVisible();
+
+      await expect(intake.modeTab("url"), "tab URL presente").toBeVisible();
+      await expect(
+        intake.modeTab("archivo"),
+        "tab Archivo presente",
+      ).toBeVisible();
+      await expect(
+        intake.modeTab("texto"),
+        "tab Texto presente",
+      ).toBeVisible();
+      await expect(
+        intake.modeTab("conectar"),
+        "tab Conectar presente (disabled)",
+      ).toBeVisible();
+
+      // Cancel closes the dialog
+      await intake.cancel();
+
+      await expect(
+        intake.container,
+        "UniversalIntake dialog cerrado tras Cancelar",
+      ).toHaveCount(0, { timeout: 3_000 });
+
+      // Anti-burbuja
+      await expect(
+        page.locator("[data-nextjs-dialog], [data-nextjs-error-overlay]"),
+      ).toHaveCount(0);
+    },
+  );
 });
 
 // ===========================================================================
