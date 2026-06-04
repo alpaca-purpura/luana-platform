@@ -152,9 +152,51 @@ export interface AutonomyInfo {
   needsOk: string[];
 }
 
+/**
+ * LeadDetailLeadDTO — full lead data for the Resumen tab detail view.
+ *
+ * Mirrors BE `lead_dto.LeadResponse` (camelCase). Includes phone + email
+ * (non-PHI marketing fields the sales rep needs to contact the lead).
+ * LeadCardDTO (board projection) explicitly omits phone/email — the
+ * contract-parity gate (test_fe_be_contract_parity.py) enforces FE⊆BE for
+ * BOTH pairs independently.
+ *
+ * U2 fix (2026-06-04): replacing `LeadCardDTO` in LeadDetailResponse
+ * with this mirror so ResumenView can show Nombre + Teléfono + Correo.
+ * ContractPair(LeadResponse ↔ LeadDetailLeadDTO) registered in
+ * vitalia/backend/tests/architecture/test_fe_be_contract_parity.py (U2/HB-44).
+ */
+export interface LeadDetailLeadDTO {
+  id: string;
+  tenantId: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  source: string | null;
+  status: string;
+  createdAt: string; // ISO 8601
+  stage: LeadFunnelStage;
+  score: number | null;
+  temperature: LeadTemperature | null;
+  operatedBy: "agent" | "human";
+  channel: string | null;
+  estimatedValue: number | null;
+  /** ISO 4217 — NEVER hardcode 'USD'. Fallback: useTenantLocale().currency */
+  currency: string | null;
+  serviceInterest: string | null;
+  buyingSignals: BuyingSignal[];
+  stageEnteredAt: string | null; // ISO 8601
+  isFrozen: boolean;
+  frozenReason: FrozenReason | null;
+  depositStatus: "pending" | "received" | null;
+  version: number;
+  assignedDoctorId: string | null;
+}
+
 /** Full lead detail response (Resumen view) */
 export interface LeadDetailResponse {
-  lead: LeadCardDTO;
+  /** U2: typed as LeadDetailLeadDTO (mirrors LeadResponse with email+phone) */
+  lead: LeadDetailLeadDTO;
   scoreBreakdown: ScoreFactor[];
   autonomy: AutonomyInfo;
 }

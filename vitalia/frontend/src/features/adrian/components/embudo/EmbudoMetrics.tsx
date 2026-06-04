@@ -9,8 +9,11 @@
  *
  * Server Component: YES — no state, pure display.
  * spec_anchor: 01-spec.md § V1 KPI strip
+ *
+ * B1 fix (2026-06-04): frozen-kpi-badge uses hard-nav (<a>) instead of Next
+ * <Link> to avoid the "Rendered more hooks" hang caused by the shell
+ * dynamic({ssr:false}) layout on soft-nav (learning 2026-06-03-next16-softnav).
  */
-import Link from "next/link";
 import { cn } from "@/lib/utils";
 import type { BoardKpis } from "../../types/embudo.types";
 
@@ -74,7 +77,9 @@ export function EmbudoMetrics({ kpis, tenantId, className }: EmbudoMetricsProps)
 
         if (chip.href) {
           return (
-            <Link
+            // Hard-nav via <a> (not Next <Link>) — intentional: avoids "Rendered more hooks"
+            // hang from shell dynamic({ssr:false}) on soft-nav. See learning 2026-06-03-next16-softnav.
+            <a
               key={chip.label}
               href={chip.href}
               className="inline-flex"
@@ -82,7 +87,7 @@ export function EmbudoMetrics({ kpis, tenantId, className }: EmbudoMetricsProps)
               data-testid="frozen-kpi-badge"
             >
               {content}
-            </Link>
+            </a>
           );
         }
 
