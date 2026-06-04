@@ -56,12 +56,36 @@ export interface EntitySubNavLeaf {
    * aria-disabled in directory mode same as other leaves.
    */
   isAddAffordance?: boolean;
+  /**
+   * B1 fix: optional emoji/text prefix rendered before the label.
+   * Used for the "datos" leaf (📋) to distinguish the entity-mother leaf from buyer leaves.
+   * MUST be a static string — not a dynamic icon component (G3 JIT-safe).
+   */
+  prefixEmoji?: string;
+  /**
+   * B1 fix: when true, renders a colored avatar circle (leaf-av) before the label.
+   * Used for buyer leaves to give them visual identity.
+   * The color is the Tailwind class for the buyer's avatar background (from _agent-tw-classes).
+   * MUST be a full static class string (G3 JIT-safe — no template literals).
+   */
+  avatarBgClass?: string;
+  /**
+   * B1 fix: when true, renders a ★ star after the label (marks the primary buyer).
+   * Only meaningful when avatarBgClass is also set.
+   */
+  isPrimary?: boolean;
 }
 
 export interface EntitySubNavEntity {
   id: string;
   name: string;
   avatarUrl?: string | null;
+  /**
+   * B1 fix: optional icon/emoji rendered in the entity identity section before the name.
+   * Matches mockup entitynav-entity-icon (bg-agent-abel-soft circle with emoji inside).
+   * Static string (G3 JIT-safe).
+   */
+  icon?: string;
 }
 
 export interface EntitySubNavBarProps {
@@ -88,6 +112,91 @@ export interface EntitySubNavBarProps {
   onAddAffordance?: () => void;
   /** Additional className for the wrapper */
   className?: string;
+}
+
+// ── LeafTabButton (sub-component — extracted to reduce EntitySubNavBar cognitive complexity) ──
+
+interface LeafTabButtonProps {
+  leaf: EntitySubNavLeaf;
+  idx: number;
+  isActive: boolean;
+  isFocused: boolean;
+  isDisabled: boolean;
+  agentText: string;
+  tabRef: (el: HTMLButtonElement | null) => void;
+  onLeafClick: (idx: number, isAdd: boolean, href: string) => void;
+  onLeafFocus: (idx: number) => void;
+}
+
+function leafStateClass(
+  isDisabled: boolean,
+  isAdd: boolean,
+  isActive: boolean,
+  agentText: string,
+): string {
+  if (isDisabled) return "opacity-45 cursor-not-allowed";
+  if (isAdd)
+    return "border border-dashed border-border text-muted-foreground hover:border-agent-abel hover:text-agent-abel";
+  if (isActive) return cn("font-medium bg-agent-abel-soft border border-agent-abel/30", agentText);
+  return "text-muted-foreground hover:text-foreground hover:bg-muted/50";
+}
+
+const LEAF_BASE =
+  "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md transition-colors whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1";
+
+function LeafTabButton({
+  leaf,
+  idx,
+  isActive,
+  isFocused,
+  isDisabled,
+  agentText,
+  tabRef,
+  onLeafClick,
+  onLeafFocus,
+}: LeafTabButtonProps) {
+  const isAdd = leaf.isAddAffordance === true;
+  const tabIdx = isDisabled ? -1 : isFocused ? 0 : -1;
+  const testId = isAdd ? "entity-leaf-add-affordance" : `entity-leaf-${leaf.id}`;
+  const showPrefix = Boolean(leaf.prefixEmoji) && !isAdd;
+  const showAvatar = Boolean(leaf.avatarBgClass) && !isAdd;
+  const showStar = Boolean(leaf.isPrimary) && !isAdd;
+
+  return (
+    <button
+      ref={tabRef}
+      role="tab"
+      aria-selected={isActive}
+      aria-disabled={isDisabled || undefined}
+      aria-current={isActive ? "page" : undefined}
+      tabIndex={tabIdx}
+      data-testid={testId}
+      data-add-affordance={isAdd ? "true" : undefined}
+      disabled={isDisabled}
+      onClick={() => onLeafClick(idx, isAdd, leaf.href)}
+      onFocus={() => onLeafFocus(idx)}
+      className={cn(LEAF_BASE, leafStateClass(isDisabled, isAdd, isActive, agentText))}
+    >
+      {showPrefix && <span aria-hidden="true">{leaf.prefixEmoji}</span>}
+      {showAvatar && (
+        <span
+          className={cn(
+            "w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-white flex-shrink-0",
+            leaf.avatarBgClass,
+          )}
+          aria-hidden="true"
+        >
+          {leaf.label.charAt(0).toUpperCase()}
+        </span>
+      )}
+      {leaf.label}
+      {showStar && (
+        <span className="text-[10px] text-agent-abel ml-0.5" aria-label="buyer primario">
+          ★
+        </span>
+      )}
+    </button>
+  );
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -165,6 +274,28 @@ export function EntitySubNavBar({
   const agentBg = agentBgClass(agentSlug);
   const agentText = agentTextClass(agentSlug);
 
+  // Stable leaf click handler — extracted to reduce cognitive complexity of render function
+  const handleLeafClick = useCallback(
+    (idx: number, isAdd: boolean, href: string) => {
+      if (isDisabled) return;
+      setFocusedIdx(idx);
+      if (isAdd && onAddAffordance) {
+        onAddAffordance();
+      } else {
+        router.push(href);
+      }
+    },
+    [isDisabled, onAddAffordance, router],
+  );
+
+  // Stable leaf focus handler
+  const handleLeafFocus = useCallback(
+    (idx: number) => {
+      if (!isDisabled) setFocusedIdx(idx);
+    },
+    [isDisabled],
+  );
+
   return (
     <div
       className={cn(
@@ -174,24 +305,24 @@ export function EntitySubNavBar({
       )}
       data-testid="entity-sub-nav-bar"
     >
-      {/* Back link — ‹ ICPs */}
+      {/* Back link — ‹ ICPs (B1: separator via entity section border-l) */}
       <Link
         href={rootHref}
         className={cn(
-          "inline-flex items-center gap-1 text-sm text-muted-foreground",
-          "hover:text-foreground transition-colors whitespace-nowrap",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 rounded-sm",
-          "pr-3 border-r border-border/50 mr-3 flex-shrink-0",
+          "inline-flex items-center gap-1.5 text-sm text-muted-foreground",
+          "px-2.5 py-1.5 rounded-lg hover:bg-agent-abel-soft hover:text-agent-abel transition-colors whitespace-nowrap",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+          "flex-shrink-0",
         )}
         aria-label={`Volver a ${rootLabel}`}
       >
         <span aria-hidden="true">‹</span>
-        <span>{rootLabel}</span>
+        <span className="font-semibold">{rootLabel}</span>
       </Link>
 
-      {/* Entity identity — avatar + name */}
+      {/* Entity identity — icon + name (B1 fix: entity icon before name, sep from back link) */}
       <div
-        className="flex items-center gap-2 min-w-0 flex-shrink-0 mr-3 max-w-[180px]"
+        className="flex items-center gap-2 min-w-0 flex-shrink-0 mr-3 border-l border-border/50 pl-3 max-w-[200px]"
         aria-label={entity ? `Editando: ${entity.name}` : "Selecciona un perfil de cliente ideal"}
       >
         {entity ? (
@@ -204,6 +335,17 @@ export function EntitySubNavBar({
                 height={24}
                 className="rounded-full object-cover flex-shrink-0"
               />
+            ) : entity.icon ? (
+              /* B1 fix: entity icon circle (mockup entitynav-entity-icon) — bg-agent-abel-soft */
+              <span
+                className={cn(
+                  "w-[30px] h-[30px] rounded-lg flex items-center justify-center",
+                  "bg-agent-abel-soft text-agent-abel text-sm flex-shrink-0",
+                )}
+                aria-hidden="true"
+              >
+                {entity.icon}
+              </span>
             ) : (
               <span
                 className={cn(
@@ -216,7 +358,7 @@ export function EntitySubNavBar({
                 {entity.name.charAt(0).toUpperCase()}
               </span>
             )}
-            <span className="text-sm font-medium truncate">{entity.name}</span>
+            <span className="text-sm font-bold truncate">{entity.name}</span>
           </>
         ) : (
           <span className="text-sm text-muted-foreground/60">—</span>
@@ -235,53 +377,22 @@ export function EntitySubNavBar({
           {leaves.map((leaf, idx) => {
             const isActive = !isDisabled && leaf.id === activeLeaf;
             const isFocused = focusedIdx === idx;
-            const isAdd = leaf.isAddAffordance === true;
 
             return (
-              <button
+              <LeafTabButton
                 key={leaf.id}
-                ref={(el) => {
+                leaf={leaf}
+                idx={idx}
+                isActive={isActive}
+                isFocused={isFocused}
+                isDisabled={isDisabled}
+                agentText={agentText}
+                tabRef={(el) => {
                   tabRefs.current[idx] = el;
                 }}
-                role="tab"
-                aria-selected={isActive}
-                aria-disabled={isDisabled ? true : undefined}
-                aria-current={isActive ? "page" : undefined}
-                tabIndex={isDisabled ? -1 : isFocused ? 0 : -1}
-                data-testid={isAdd ? "entity-leaf-add-affordance" : `entity-leaf-${leaf.id}`}
-                data-add-affordance={isAdd ? "true" : undefined}
-                disabled={isDisabled}
-                onClick={() => {
-                  if (!isDisabled) {
-                    setFocusedIdx(idx);
-                    if (isAdd && onAddAffordance) {
-                      onAddAffordance();
-                    } else {
-                      router.push(leaf.href);
-                    }
-                  }
-                }}
-                onFocus={() => {
-                  if (!isDisabled) setFocusedIdx(idx);
-                }}
-                className={cn(
-                  "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md transition-colors whitespace-nowrap",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
-                  isDisabled && "opacity-45 cursor-not-allowed",
-                  // "+ buyer" affordance: dotted border style
-                  isAdd &&
-                    !isDisabled &&
-                    "border border-dashed border-border text-muted-foreground hover:border-agent-abel hover:text-agent-abel",
-                  // Active leaf: agent-abel themed
-                  !isDisabled && isActive && !isAdd
-                    ? cn("font-medium", agentText, "bg-agent-abel-soft border border-agent-abel/30")
-                    : !isDisabled && !isAdd
-                      ? "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                      : "",
-                )}
-              >
-                {leaf.label}
-              </button>
+                onLeafClick={handleLeafClick}
+                onLeafFocus={handleLeafFocus}
+              />
             );
           })}
         </nav>

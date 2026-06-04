@@ -66,55 +66,58 @@ export function ProposalBanner({
   const isLoading = isRatificando || isDescartando;
 
   return (
+    /*
+     * B2 fix: wide strip anatomy matching mockup —
+     *   border-left:4px solid agent-abel + bg-agent-abel-soft + generous padding + full message visible (≤2 lines)
+     * Previously: compressed banner with truncated text ("Revisa los datos y confirma cuan...")
+     */
     <div
       role="status"
       aria-label={`${agentName} propone este borrador. Revisa y ratifica o descarta.`}
       className={cn(
-        "flex items-center gap-3 px-4 py-2.5",
-        "border-b border-agent-abel/30 bg-agent-abel/5",
-        "text-sm",
+        "flex items-center gap-3 px-4 py-3",
+        "border border-agent-abel/40 border-l-4 border-l-agent-abel",
+        "bg-agent-abel-soft rounded-xl",
+        "mb-4",
         className,
       )}
       data-testid="proposal-banner"
     >
-      {/* Agent attribution */}
-      <span
-        className={cn("flex items-center gap-1.5 font-medium text-agent-abel flex-shrink-0")}
-        aria-hidden="true"
-      >
-        <span className="text-base">✨</span>
-        {agentName} propuso este borrador
+      {/* Icon */}
+      <span className="text-xl flex-shrink-0" aria-hidden="true">
+        ✨
       </span>
 
-      <span className="text-muted-foreground/60 flex-shrink-0" aria-hidden="true">
-        —
-      </span>
+      {/* Text — full message visible (≤2 lines, no mid-sentence truncation) */}
+      <p className="text-sm text-foreground leading-snug flex-1 min-w-0">
+        <strong className="text-agent-abel">{agentName}</strong> propuso este ICP + sus buyers.{" "}
+        <span className="text-muted-foreground">
+          Revisa los datos y confirma cuando estés listo.
+        </span>
+      </p>
 
-      {/* Explanation */}
-      <span className="text-muted-foreground text-xs flex-1 min-w-0 truncate">
-        Revisa los datos y confirma cuando estés listo.
-      </span>
-
-      {/* Actions */}
+      {/* Actions — well separated per mockup .pb-actions */}
       <div className="flex items-center gap-2 flex-shrink-0">
         <Button
+          type="button"
           variant="ghost"
           size="sm"
           onClick={onDescartar}
           disabled={isLoading}
           aria-busy={isDescartando}
           data-testid="proposal-banner-descartar"
-          className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-7 px-2.5 text-xs"
+          className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-8 px-3 text-xs font-medium border border-border bg-background"
         >
           Descartar
         </Button>
         <Button
+          type="button"
           size="sm"
           onClick={onRatificar}
           disabled={isLoading}
           aria-busy={isRatificando}
           data-testid="proposal-banner-ratificar"
-          className="bg-agent-abel hover:bg-agent-abel/90 text-white h-7 px-3 text-xs"
+          className="bg-agent-abel hover:bg-agent-abel/90 text-white h-8 px-3 text-xs font-medium"
         >
           {isRatificando ? "Guardando…" : "Ratificar"}
         </Button>

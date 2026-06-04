@@ -91,9 +91,10 @@ export function DraftFirstStarter({
 
       {/* 2-path CTAs */}
       <div className="flex flex-col gap-3 w-full max-w-xs" data-testid="draft-first-paths">
-        {/* Path A: primary — draft-first */}
+        {/* Path A: primary — draft-first
+            M2/C3 fix: agent-abel (purple) not --primary (indigo) — Abel owns this surface */}
         <Button
-          className="w-full gap-2"
+          className="w-full gap-2 bg-agent-abel hover:bg-agent-abel/90 text-white"
           onClick={onGenerateDraft}
           data-testid="draft-first-generate-btn"
         >

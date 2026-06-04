@@ -220,11 +220,12 @@ export function UniversalIntake({
   return (
     <div className={cn("flex flex-col gap-4", className)} data-testid="universal-intake">
       {/* Mode selector — tablist pattern (WAI-ARIA) */}
+      {/* C1 fix: pill/segmented selector (mockup intake-mode pattern) — NOT underline */}
       <div
         role="tablist"
         aria-label="Tipo de fuente"
         onKeyDown={handleModeKeyDown}
-        className="flex gap-1 border-b border-border"
+        className="flex gap-1 bg-muted rounded-lg p-1"
         data-testid="intake-mode-tabs"
       >
         {MODES.map((mode, idx) => {
@@ -240,7 +241,7 @@ export function UniversalIntake({
               }}
               role="tab"
               aria-selected={isActive}
-              aria-disabled={mode.disabled ? true : undefined}
+              aria-disabled={mode.disabled ? "true" : undefined}
               tabIndex={mode.disabled ? -1 : isFocused && !mode.disabled ? 0 : -1}
               disabled={mode.disabled}
               onClick={() => handleSelectMode(mode.id)}
@@ -254,13 +255,14 @@ export function UniversalIntake({
               }}
               data-testid={`intake-tab-${mode.id}`}
               className={cn(
-                "px-3 py-2 text-sm rounded-t-md transition-colors border-b-2 -mb-px",
+                "flex-1 px-3 py-1.5 text-sm rounded-md transition-colors text-center",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+                // C2 fix: disabled tab — opacity-50 + cursor-not-allowed (aria-disabled already set)
                 mode.disabled
-                  ? "text-muted-foreground/40 cursor-not-allowed border-transparent"
+                  ? "text-muted-foreground opacity-50 cursor-not-allowed"
                   : isActive
-                    ? "border-agent-abel text-agent-abel font-medium"
-                    : "border-transparent text-muted-foreground hover:text-foreground",
+                    ? "bg-background text-agent-abel font-semibold shadow-sm"
+                    : "text-muted-foreground hover:text-foreground",
               )}
             >
               {mode.label}
@@ -406,11 +408,13 @@ export function UniversalIntake({
         >
           Cancelar
         </Button>
+        {/* C3 fix: agent-abel (purple) not --primary (indigo) — Abel owns this surface */}
         <Button
           onClick={() => void handleSubmit()}
           disabled={!canSubmit()}
           aria-busy={isSubmitting}
           data-testid="intake-submit-btn"
+          className="bg-agent-abel hover:bg-agent-abel/90 text-white"
         >
           {isSubmitting ? "Analizando…" : "Analizar"}
         </Button>

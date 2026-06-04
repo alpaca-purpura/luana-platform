@@ -60,6 +60,24 @@ interface IcpEntityLayoutClientProps {
   children: ReactNode;
 }
 
+// ── Constants ─────────────────────────────────────────────────────────────────
+
+/**
+ * B1 fix: deterministic buyer avatar colors (G3 JIT-safe — static class strings, no templates).
+ * Buyers rotate through a palette of agent-color backgrounds for leaf-av circles.
+ * These are the same agent-color tokens defined in globals.css/@theme.
+ * Module-level constant to avoid re-creation on every render (react-perf).
+ */
+const BUYER_AVATAR_BG_CLASSES = [
+  "bg-agent-christian",
+  "bg-agent-brenda",
+  "bg-agent-sara",
+  "bg-agent-norvil",
+  "bg-agent-luana",
+  "bg-agent-abel",
+  "bg-agent-config",
+] as const;
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 /**
@@ -114,17 +132,22 @@ export function IcpEntityLayoutClient({
     const basePath = `/${tenantId}/abel/icp/${icpId}`;
 
     // "Datos del ICP" — the entity mother leaf (always first)
+    // B1 fix: prefixEmoji 📋 distinguishes the entity-mother leaf from buyer leaves
     const datosLeaf: EntitySubNavLeaf = {
       id: "datos",
       label: "Datos del ICP",
       href: `${basePath}/datos`,
+      prefixEmoji: "📋",
     };
 
     // One leaf per buyer (dynamic — from useBuyers)
-    const buyerLeaves: EntitySubNavLeaf[] = buyers.map((buyer) => ({
+    // B1 fix: colored leaf-av avatar + ★ star for primary buyer
+    const buyerLeaves: EntitySubNavLeaf[] = buyers.map((buyer, idx) => ({
       id: buyer.id,
       label: buyer.name,
       href: `${basePath}/${buyer.id}`,
+      avatarBgClass: BUYER_AVATAR_BG_CLASSES[idx % BUYER_AVATAR_BG_CLASSES.length],
+      isPrimary: buyer.isPrimary,
     }));
 
     // "+ buyer" add affordance — always last.
@@ -142,7 +165,10 @@ export function IcpEntityLayoutClient({
   }, [tenantId, icpId, buyers]);
 
   // Entity descriptor for EntitySubNavBar (null while loading = directory mode)
-  const entity: EntitySubNavEntity | null = icp ? { id: icp.id, name: icp.label } : null;
+  // B1 fix: entity icon 🎯 renders entitynav-entity-icon circle per mockup
+  const entity: EntitySubNavEntity | null = icp
+    ? { id: icp.id, name: icp.label, icon: "🎯" }
+    : null;
 
   // Handle "+ buyer" click: create blank buyer → navigate to its new leaf (RN-5).
   // This callback is passed to EntityWorkspaceLayout → EntitySubNavBar → onAddAffordance.
