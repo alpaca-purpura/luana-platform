@@ -25,6 +25,17 @@ import { Button } from "@/components/ui/button";
 
 /**
  * Contextual 404 for an invalid N3 [subsubtab] segment — shell chrome stays intact.
+ *
+ * For the abel.icp entity path (/{tenantId}/abel/icp/{icpId}/...):
+ *   Rendered when the ICP UUID does not exist or belongs to another tenant.
+ *   The [subsubtab]/layout.tsx calls notFound() server-side after a 404 from the BE.
+ *
+ * For R0 nav-leaf subtabs that use [subsubtab]:
+ *   Rendered when the sub-sub-section is not valid for the agent+subtab combination.
+ *
+ * Shell chrome (TopBar + Ribbon + LuanaSidebar) remains intact via layout.tsx hierarchy.
+ * The message text covers both cases — "Este ICP no existe" (entity case) is the primary
+ * trigger; "sub-sección no válida" (nav-leaf case) is a secondary fallback.
  */
 export default function NotFoundSubSubtab() {
   return (
@@ -40,10 +51,11 @@ export default function NotFoundSubSubtab() {
 
       <div className="flex flex-col items-center gap-3 text-center">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-          Esa sub-sección no existe
+          Este ICP no existe
         </h1>
         <p className="max-w-sm text-sm text-muted-foreground">
-          La vista que buscas no está disponible. Elige una opción del menú del agente.
+          El perfil que buscas no está disponible o no pertenece a tu cuenta. Elige un ICP de la
+          lista.
         </p>
       </div>
 

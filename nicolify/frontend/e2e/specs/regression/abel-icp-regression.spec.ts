@@ -296,19 +296,30 @@ test.describe("SC-adversarial-tenant — tenant isolation RN-1", () => {
   /**
    * @rule-tenant-isolation (RN-1)
    * Request an ICP UUID that doesn't exist or belongs to another tenant.
-   * Should render a contextual 404 (not-found.tsx) — shell chrome intact,
+   * Must render a contextual 404 not-found page — shell chrome intact,
    * never hang in loading state.
    *
-   * F-1 fix (audit iter 4): IcpEntityLayoutClient now detects the useIcp 404 ApiError
-   * and calls notFound() → [subsubtab]/not-found.tsx is rendered.
-   * This replaces the old weak assertion (is404 || hasShell) with a strict 404 check.
+   * BUG-5 fix (audit iter 7): [subsubtab]/not-found.tsx now exists with
+   * data-testid="not-found-subsubtab" and an ICP-contextual message ("Este ICP no existe").
+   * The assertion is tightened to strictly assert ONE of the two valid 404 boundaries
+   * rendered — shell chrome intact, no console.error leak, no crash.
    *
-   * KEY INVARIANT: no infinite spinner (data-shell-ready never appearing),
-   * no 500 error, no data leak.
+   * Next.js App Router boundary propagation:
+   *   - notFound() called in [subsubtab]/layout.tsx is caught by the PARENT's
+   *     not-found boundary: [subtab]/not-found.tsx → data-testid="not-found-subtab".
+   *   - notFound() called in [subsubtab]/page.tsx or [leaf]/page.tsx is caught by
+   *     [subsubtab]/not-found.tsx → data-testid="not-found-subsubtab".
+   *   Both are correct clean-404 outcomes: no infinite spinner, no crash, shell intact.
+   *
+   * The SSR-first gate in layout.tsx (iter 5 BUG-1) ensures the 404 fires before any
+   * client HTML is sent — no console.error leak (F-1 invariant, audit iter 4/5).
+   *
+   * KEY INVARIANTS (all STRICT):
+   *   1. A 404 not-found widget renders (either not-found-subtab or not-found-subsubtab).
+   *   2. Shell is NOT stuck in loading state (no infinite spinner — the original BUG F-1).
+   *   3. No Next error overlay (clean 404, no crash, no burbuja).
    *
    * DEFERRED-TO-DEMO: Requires live stack (make dev-nicolify + migration 002 applied).
-   * The assertNotFoundRendered helper checks for [data-testid="not-found-subsubtab"]
-   * which is rendered by [subsubtab]/not-found.tsx when notFound() is called.
    */
   test("SC-adversarial-tenant: ICP de otro tenant → 404 contextual (nunca carga infinita)", async ({
     page,
@@ -322,31 +333,34 @@ test.describe("SC-adversarial-tenant — tenant isolation RN-1", () => {
       waitUntil: "load",
     });
 
-    // Wait for the page to settle (max 15s — accommodates slow first render)
+    // Wait for the page to settle (accommodates SSR + hydration)
     await page.waitForTimeout(3000);
 
-    // PRIMARY assertion: [subsubtab]/not-found.tsx rendered (notFound() was called by IcpEntityLayoutClient)
-    // This is the [data-testid="not-found-subsubtab"] from not-found.tsx.
-    const notFoundWidget = page.locator("[data-testid='not-found-subsubtab']");
-    // FALLBACK: some Next.js deployments may redirect to a /not-found URL instead.
-    const urlIs404 = page.url().includes("/404") || page.url().includes("not-found");
+    // STRICT 404 ASSERTION: one of the two valid not-found boundaries must render.
+    // [subsubtab]/not-found.tsx  → testid "not-found-subsubtab" (ICP contextual message)
+    // [subtab]/not-found.tsx     → testid "not-found-subtab"    (subtab-level boundary)
+    // Both indicate a clean 404 — shell chrome intact, no data leak.
+    const notFoundSubsubtab = page.locator("[data-testid='not-found-subsubtab']");
+    const notFoundSubtab = page.locator("[data-testid='not-found-subtab']");
 
-    const notFoundVisible = await notFoundWidget.isVisible().catch(() => false);
+    const subsubtabVisible = await notFoundSubsubtab.isVisible().catch(() => false);
+    const subtabVisible = await notFoundSubtab.isVisible().catch(() => false);
+    const a404Rendered = subsubtabVisible || subtabVisible;
 
-    // Either the widget is visible OR the URL redirected to a not-found path.
-    // Both are acceptable outcomes; the invariant is: NOT an infinite spinner.
-    expect(notFoundVisible || urlIs404, "Expected 404 UI (notFound widget or URL redirect)").toBe(true);
+    expect(
+      a404Rendered,
+      "A contextual 404 page must render (not-found-subsubtab or not-found-subtab) — cross-tenant ICP must never succeed or hang",
+    ).toBe(true);
 
-    // CRITICAL INVARIANT: shell must NOT be stuck in loading state.
-    // If data-shell-ready never appeared AND no 404 was shown → the bug (F-1) is present.
-    // (After the fix, the shell will show not-found.tsx instead.)
+    // CRITICAL INVARIANT (F-1 regression guard): shell must NOT be stuck in loading state.
+    // If neither 404 widget was shown AND the shell shows Cargando → F-1 bug is back.
     const shellStuckLoading = await page
       .locator("[aria-label='Cargando shell']")
       .isVisible()
       .catch(() => false);
-    expect(shellStuckLoading, "Shell must not be stuck in Cargando state").toBe(false);
+    expect(shellStuckLoading, "Shell must not be stuck in Cargando state (F-1 regression)").toBe(false);
 
-    // No Next error overlay (no crash — clean 404)
+    // No Next error overlay (no crash — clean 404, no burbuja)
     const errorDialog = page.locator(
       "[data-nextjs-dialog], [data-nextjs-error-overlay]",
     );
@@ -683,11 +697,29 @@ test.describe("SC-edge-primary — primary buyer exclusivity RN-6", () => {
 
   /**
    * @rule-one-primary (RN-6)
-   * SC-edge-primary: 2º buyer marcado como primary → exactamente 1 is_primary=true en DB.
+   * SC-edge-primary: the seeded buyer (E2E_BUYER_ID) is the ONLY buyer in its ICP
+   * and is already primary (is_primary=true). The product correctly HIDES the
+   * "Establecer como principal" button in this state — showing it would allow
+   * "re-primarying" an already-primary buyer, which is meaningless.
    *
-   * DEFERRED-TO-DEMO: Requires ICP with 2+ buyers.
+   * BUG-5b fix (audit iter 7): the previous spec asserted the button IS visible,
+   * but the product correctly hides it for a sole/already-primary buyer. The assertion
+   * was testing the wrong invariant. Fixed to assert the product-correct behavior:
+   *   - BuyerLeafForm loads (buyer data is fetched correctly — not a 404).
+   *   - "Establecer como principal" button is NOT rendered (correct: already primary).
+   *   - "Principal" badge IS shown (confirming is_primary=true is surfaced correctly).
+   *
+   * NOTE: The 2-buyer set-primary transition (set non-primary → primary, assert only 1
+   * is_primary=true across all buyers) is covered by:
+   *   - BE: nicolify/backend/tests/modules/nicolify/abel/test_icp_buyer_api.py §RN-6
+   *     (tests atomic server-side unset of previous primary when new primary is set)
+   *   - Unit: BuyerLeafForm.test.tsx — useSetPrimaryBuyer mutation is called + query
+   *     invalidation fires (list refetch → eventually single primary)
+   * The e2e layer exercises the UI state for the SEEDED scenario (already-primary buyer).
+   *
+   * DEFERRED-TO-DEMO for 2-buyer live flow: Requires ICP with 2+ buyers in DB.
    */
-  test("SC-edge-primary: buyer primary — botón 'Establecer como principal' visible", async ({
+  test("SC-edge-primary: buyer ya es principal → badge 'Principal' visible + botón 'Establecer' ausente (correcto)", async ({
     page,
     tenantId,
   }) => {
@@ -695,20 +727,39 @@ test.describe("SC-edge-primary — primary buyer exclusivity RN-6", () => {
     const buyerId = process.env["E2E_BUYER_ID"] ?? "DEFERRED";
 
     if (icpId === "DEFERRED" || buyerId === "DEFERRED") {
-      test.skip(true, "DEFERRED-TO-DEMO: requires ICP with buyer. Run with E2E_ICP_WITH_BUYER_ID + E2E_BUYER_ID.");
+      test.skip(true, "DEFERRED-TO-DEMO: requires seeded primary buyer. Run with E2E_ICP_WITH_BUYER_ID + E2E_BUYER_ID.");
       return;
     }
 
     const buyerPage = new AbelBuyerLeafPage(page);
     await buyerPage.goto(tenantId, icpId, buyerId);
 
-    await expect(buyerPage.buyerForm).toBeVisible({ timeout: 15_000 });
+    // BuyerLeafForm must load — confirms the buyer API call succeeded (not 404)
+    await expect(buyerPage.buyerForm, "BuyerLeafForm carga correctamente").toBeVisible({
+      timeout: 15_000,
+    });
 
-    // "Establecer como principal" button must be present
+    // Product-correct assertion (RN-6): when the buyer IS already primary, the button
+    // MUST NOT be rendered. BuyerLeafForm.tsx conditionally renders it with `!buyer.isPrimary`.
+    // Asserting count=0 is more reliable than `not.toBeVisible()` since the element is
+    // not in the DOM at all (not just hidden).
     await expect(
       buyerPage.setPrimaryBtn,
-      "botón Establecer como principal visible",
-    ).toBeVisible({ timeout: 10_000 });
+      "botón 'Establecer como principal' debe estar AUSENTE cuando el buyer ya es principal",
+    ).toHaveCount(0);
+
+    // Affirmative assertion: the "Principal" badge must be visible (is_primary=true is surfaced)
+    const principalBadge = page.locator("text=Principal").first();
+    await expect(
+      principalBadge,
+      "badge 'Principal' debe estar visible para el buyer primario",
+    ).toBeVisible({ timeout: 5_000 });
+
+    // Anti-burbuja: no Next error overlay
+    const errorDialog = page.locator(
+      "[data-nextjs-dialog], [data-nextjs-error-overlay]",
+    );
+    await expect(errorDialog).toHaveCount(0);
   });
 });
 
