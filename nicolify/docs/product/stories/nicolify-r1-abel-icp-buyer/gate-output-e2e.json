@@ -1,0 +1,97 @@
+{
+  "ticket": "T-E2E-1",
+  "story": "nicolify-r1-abel-icp-buyer",
+  "brand": "nicolify",
+  "run_date": "2026-06-03",
+  "executor": "builder-frontend (Sonnet 4.6)",
+  "overall": {
+    "any_fail": false,
+    "verdict": "E2E-AUTHORED-STATIC-GREEN"
+  },
+  "gates": {
+    "tsc_noemit": {
+      "status": "PASS",
+      "errors": 0,
+      "notes": "No TypeScript errors in e2e/ or src/"
+    },
+    "eslint_e2e": {
+      "status": "N/A",
+      "notes": "e2e/ dir is intentionally excluded from prod ESLint config (eslint.config.mjs ignores: ['e2e/**']) — standard for Playwright suites"
+    },
+    "playwright_test_list": {
+      "status": "PASS",
+      "total_tests": 175,
+      "abel_icp_tests": 31,
+      "new_tests_breakdown": {
+        "smoke_abel_icp": 4,
+        "regression_abel_icp": 19,
+        "visual_goldens_abel_icp": 8
+      },
+      "parse_errors": 0,
+      "import_errors": 0,
+      "notes": "All 31 new specs parse and resolve. No import path errors."
+    }
+  },
+  "deferred_to_demo": {
+    "live_suite_execution": true,
+    "visual_baseline_capture": true,
+    "dod_evidence_population": true,
+    "demo_signoff_by_chris": true,
+    "reason": "Stack stale (12h old, pre-abel). Migration 002_abel_icp_buyer NOT applied. Chrome MCP disconnected. Per task constraint: STATIC gates only (tsc + playwright --list)."
+  },
+  "sc_coverage": {
+    "playwright_true_authored": [
+      "SC-happy",
+      "SC-negative",
+      "SC-adversarial-tenant",
+      "SC-empty",
+      "SC-network",
+      "SC-a11y",
+      "SC-i18n",
+      "SC-happy-buyer",
+      "SC-add-buyer",
+      "SC-edge-primary"
+    ],
+    "playwright_false_referenced": [
+      "SC-edge-concurrent",
+      "SC-race-unique",
+      "SC-concurrent",
+      "SC-large",
+      "SC-adversarial-injection",
+      "SC-edge-thin-seed"
+    ],
+    "missing": []
+  },
+  "files_created": [
+    "nicolify/frontend/e2e/poms/AbelIcpMasterPage.ts",
+    "nicolify/frontend/e2e/poms/AbelIcpDetailPage.ts",
+    "nicolify/frontend/e2e/poms/AbelBuyerLeafPage.ts",
+    "nicolify/frontend/e2e/poms/UniversalIntakeModal.ts",
+    "nicolify/frontend/e2e/specs/smoke/abel-icp.smoke.spec.ts",
+    "nicolify/frontend/e2e/specs/regression/abel-icp-regression.spec.ts",
+    "nicolify/frontend/e2e/specs/regression/abel-icp-visual-goldens.spec.ts",
+    "nicolify/docs/product/stories/nicolify-r1-abel-icp-buyer/demo-script.md",
+    "nicolify/docs/product/stories/nicolify-r1-abel-icp-buyer/T-E2E-1-result.md",
+    "nicolify/docs/product/stories/nicolify-r1-abel-icp-buyer/gate-output-e2e.json"
+  ],
+  "files_modified": [
+    "nicolify/frontend/playwright.config.ts"
+  ],
+  "anti_burbuja_gate": {
+    "base_ts_used": true,
+    "all_specs_import_from_fixtures_base": true,
+    "never_import_from_playwright_test_directly": true,
+    "collectors": [
+      "pageerror (JS exceptions / Next burbuja)",
+      "console.error (hydration + allowlisted infra)",
+      "response ≥400 on /api/ (silent API failures)",
+      "nextjs-dialog overlay DOM count=0"
+    ]
+  },
+  "clerk_auth": {
+    "setup_clerk_testing_token": "injected via auth.fixture.ts (inherited by base.ts)",
+    "storage_state": "playwright/.clerk/user.json",
+    "test_user": "owner.demo@nicolify.com",
+    "tenant_id_source": "E2E_TENANT_ID env var from nicolify/.env.dev"
+  }
+}
