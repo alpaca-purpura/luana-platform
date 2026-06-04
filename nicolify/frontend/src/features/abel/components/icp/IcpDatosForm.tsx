@@ -12,8 +12,8 @@
  *   5. Anti-patrón       → antiPattern
  *
  * Each group header has a WhatForChip showing the consuming agent(s) (RN-4).
- * Autosave on-change debounced 600ms via usePatchIcp (RN-8 — never blocks).
- * Toast "Guardado." on success.
+ * Autosave on-change debounced 600ms via useAutosave<IcpPatchPayload> (RN-8 — never blocks).
+ * AutosaveBadge renders status in form header — NO "Guardar" button.
  *
  * "Marcar listo" button: on 422 renders the missing[] inline next to the
  * offending groups — NO completeness bar (spec RN-8 / 03-arch-fe.md §9 D2 note).
@@ -26,20 +26,23 @@
  * validators_gate: RN-8 (mark-ready missing[] inline) + RN-11 (no USD hardcode)
  */
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 
+import { AutosaveBadge } from "@/components/shared/AutosaveBadge";
 import { WhatForChip } from "@/components/shared/WhatForChip";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAutosave } from "@/hooks/use-autosave";
 import { cn } from "@/lib/utils";
 
 import { usePatchIcp, useMarkReadyIcp } from "../../hooks/use-icp-mutations";
 import { icpFormSchema, type IcpFormValues } from "../../types/icp-schema";
-import type { Icp } from "../../types/icp";
+
 import type { BuyerListItem } from "../../types/buyer";
+import type { Icp, IcpPatchPayload } from "../../types/icp";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -159,13 +162,32 @@ function Group({ children, hasMissing }: { children: React.ReactNode; hasMissing
   );
 }
 
+// ── IcpFormValues → IcpPatchPayload mapper ─────────────────────────────────────
+
+/**
+ * Maps a partial IcpFormValues object (single changed field) to an IcpPatchPayload.
+ * IcpPatchPayload uses the SAME camelCase keys as IcpFormValues because
+ * icpApi.patch calls toSnakePayload internally before the HTTP request.
+ * Returns a partial payload containing only the changed field — minimal PATCH.
+ */
+function mapFieldToPatch(
+  fieldName: keyof IcpFormValues,
+  values: Partial<IcpFormValues>,
+): IcpPatchPayload {
+  // IcpPatchPayload = Partial<IcpCreatePayload> — all keys are camelCase.
+  // The snake_case conversion happens in icpApi.patch (toSnakePayload).
+  // Map: form field name → IcpPatchPayload key (1:1 since they share the same camelCase shape).
+  const value = values[fieldName];
+  return { [fieldName]: value };
+}
+
 // ── Main Component ─────────────────────────────────────────────────────────────
 
 /**
  * IcpDatosForm — full ICP editing form with grouped fields.
  *
  * Five groups with WhatForChip (RN-4).
- * Autosave 600ms. Mark-ready 422 → missing[] inline per group (no bar, RN-8).
+ * Autosave 600ms via useAutosave (ref-based, no stale closure). Mark-ready 422 → missing[] inline per group (no bar, RN-8).
  */
 export function IcpDatosForm({ icpId, icp, buyers }: IcpDatosFormProps) {
   const patchIcp = usePatchIcp(icpId);
@@ -174,13 +196,21 @@ export function IcpDatosForm({ icpId, icp, buyers }: IcpDatosFormProps) {
   const [missingFields, setMissingFields] = useState<string[]>([]);
   const [markReadyAttempted, setMarkReadyAttempted] = useState(false);
   const [signalInput, setSignalInput] = useState("");
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // ── Autosave via canonical useAutosave hook (ref-based, no stale closure) ────
+  const {
+    schedule,
+    flush,
+    status: autosaveStatus,
+  } = useAutosave<IcpPatchPayload>({
+    saveFn: (payload) => patchIcp.mutateAsync(payload),
+  });
 
   const {
     register,
     watch,
     setValue,
-    formState: { errors, isDirty },
+    formState: { errors },
   } = useForm<IcpFormValues>({
     resolver: zodResolver(icpFormSchema),
     defaultValues: {
@@ -200,38 +230,31 @@ export function IcpDatosForm({ icpId, icp, buyers }: IcpDatosFormProps) {
     },
   });
 
-  // Autosave on change (debounce 600ms)
-  const scheduleAutosave = useCallback(
-    (values: IcpFormValues) => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => {
-        patchIcp.mutate(values, {
-          onSuccess: () => {
-            toast.success("Guardado.", { duration: 1800 });
-          },
-          onError: () => {
-            toast.error("Error al guardar. Intenta de nuevo.");
-          },
-        });
-      }, 600);
-    },
-    [patchIcp],
-  );
-
+  // ── Wire RHF watch → useAutosave (no stale closure) ──────────────────────────
+  // The `name` arg from watch() tells us which field changed — we send a minimal
+  // PATCH containing only that field (payload coalescing in useAutosave merges
+  // multiple rapid changes into one PATCH).
   useEffect(() => {
-    const subscription = watch((values) => {
-      if (isDirty) {
-        scheduleAutosave(values as IcpFormValues);
+    const subscription = watch((values, { name }) => {
+      if (name) {
+        // name is a specific field key — build a minimal patch for it
+        const patch = mapFieldToPatch(name as keyof IcpFormValues, values);
+        schedule(patch);
       }
     });
     return () => {
       subscription.unsubscribe();
-      if (debounceRef.current) clearTimeout(debounceRef.current);
+      // Flush any pending save on unmount
+      void flush();
     };
-  }, [watch, isDirty, scheduleAutosave]);
+    // flush and schedule are stable refs from useAutosave (useCallback)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watch]);
 
   // Mark-ready handler
   const handleMarkReady = useCallback(async () => {
+    // Flush pending autosave before marking ready to ensure latest data is persisted
+    await flush();
     setMarkReadyAttempted(true);
     setMissingFields([]);
     try {
@@ -254,7 +277,7 @@ export function IcpDatosForm({ icpId, icp, buyers }: IcpDatosFormProps) {
       }
       toast.error("No se pudo marcar como listo.");
     }
-  }, [markReady]);
+  }, [flush, markReady]);
 
   // Signal helpers — use getValues() to avoid stale closure + useMemo stabilisation
   const currentSignals = useMemo(
@@ -311,6 +334,12 @@ export function IcpDatosForm({ icpId, icp, buyers }: IcpDatosFormProps) {
       data-testid="icp-datos-form"
       aria-label="Datos del perfil de cliente ideal"
     >
+      {/* ── Form header: autosave status ─────────────────────────────────────── */}
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-xs text-muted-foreground">Los cambios se guardan automáticamente.</p>
+        <AutosaveBadge status={autosaveStatus} data-testid="icp-autosave-badge" />
+      </div>
+
       {/* ── Grupo 1: Identidad ───────────────────────────────────────────────── */}
       <Group hasMissing={missingForIdentidad.length > 0}>
         <GroupHeader

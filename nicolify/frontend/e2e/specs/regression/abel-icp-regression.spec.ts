@@ -182,39 +182,127 @@ test.describe("Journey: ICP lifecycle — create → datos → buyer → mark-re
 
   /**
    * @rule-draft-first (RN-2) @rule-field-consumer (RN-4)
-   * Edit vertical + main_pain via autosave → reload → values persist.
+   * REAL autosave persist test (ICP form):
+   *   Type a unique value into the vertical field →
+   *   Wait for AutosaveBadge to show "Guardado" (or PATCH 200 response) →
+   *   page.reload() →
+   *   Assert typed value PERSISTED in the field.
+   *
+   * This test FAILS if autosave is broken (stale closure, no debounce fire, no persist).
+   * NO weakened fallback — if it doesn't persist, the test is honest about it.
    */
   test("SC-happy: editar vertical + main_pain → autosave → persiste al recargar", async ({
     page,
     tenantId,
-    request,
   }) => {
-    // Patch directly via API to test round-trip persistence
-    const uniqueMainPain = `Rotación de junior E2E ${Date.now()}`;
-    await patchIcp(request, tenantId, icpId, {
-      vertical: "Agencias de marketing digital",
-      main_pain: uniqueMainPain,
-    });
+    const uniqueVertical = `Agencia E2E-${Date.now()}`;
 
-    // Verify the PATCH persisted
-    const fetched = await getIcp(request, tenantId, icpId);
-    expect(fetched.vertical, "vertical persistido").toBe(
-      "Agencias de marketing digital",
-    );
-    expect(fetched.main_pain, "main_pain persistido").toBe(uniqueMainPain);
-
-    // Now exercise from the UI: navigate to form, verify field has value
+    // Navigate to the ICP datos form
     const detailPage = new AbelIcpDetailPage(page);
     await detailPage.goto(tenantId, icpId);
-
     await expect(detailPage.datosForm).toBeVisible({ timeout: 15_000 });
 
-    // Reload and verify shell doesn't crash
+    // TYPE into the vertical field (triggers RHF watch → useAutosave schedule)
+    await detailPage.fieldVertical.fill(uniqueVertical);
+
+    // Wait for the PATCH 200 to confirm autosave persisted to the backend.
+    // We wait for the network response rather than the badge to be reliable
+    // regardless of badge timing. Timeout 8s covers 600ms debounce + HTTP round-trip.
+    await page.waitForResponse(
+      (resp) =>
+        resp.url().includes(`/api/v1/abel/icp/${icpId}`) &&
+        resp.request().method() === "PATCH" &&
+        resp.status() === 200,
+      { timeout: 8_000 },
+    );
+
+    // Optionally also wait for the AutosaveBadge to confirm "Guardado" in the UI
+    const autosaveBadge = page.getByTestId("icp-autosave-badge");
+    // Badge is accessible — wait for state=saved text "Guardado"
+    await expect(autosaveBadge).toHaveAttribute("data-state", "saved", { timeout: 3_000 });
+
+    // RELOAD: now verify the value persisted across page loads
     await page.reload({ waitUntil: "load" });
     await page.locator("[data-shell-ready='true']").waitFor({
       state: "visible",
       timeout: 20_000,
     });
+    await expect(detailPage.datosForm).toBeVisible({ timeout: 15_000 });
+
+    // ASSERT: the typed value must be present in the field after reload
+    await expect(
+      detailPage.fieldVertical,
+      `vertical "${uniqueVertical}" debe persistir tras reload (autosave real)`,
+    ).toHaveValue(uniqueVertical);
+
+    // Anti-burbuja after reload
+    await expect(
+      page.locator("[data-nextjs-dialog], [data-nextjs-error-overlay]"),
+    ).toHaveCount(0);
+  });
+
+  /**
+   * @rule-buyer-autosave (RN-8)
+   * REAL autosave persist test (Buyer form):
+   *   Type a unique role value into the buyer role field →
+   *   Wait for PATCH 200 response →
+   *   page.reload() →
+   *   Assert typed value PERSISTED in the field.
+   *
+   * This test FAILS if buyer autosave is broken (BuyerLeafForm had NO autosave before fix).
+   * NO weakened fallback.
+   */
+  test("SC-happy-buyer: editar rol del buyer → autosave → persiste al recargar", async ({
+    page,
+    tenantId,
+    request,
+  }) => {
+    // Self-provision a buyer for this autosave test
+    const buyer = await createBuyer(
+      request,
+      tenantId,
+      icpId,
+      "[e2e] BuyerAutosave",
+      "Analista",
+    );
+    const autosaveBuyerId = buyer.id;
+
+    const uniqueRole = `Dir. Marketing E2E-${Date.now()}`;
+
+    // Navigate to the buyer leaf form
+    const buyerPage = new AbelBuyerLeafPage(page);
+    await buyerPage.goto(tenantId, icpId, autosaveBuyerId);
+    await expect(buyerPage.buyerForm).toBeVisible({ timeout: 15_000 });
+
+    // TYPE into the buyer role field (triggers RHF watch → useAutosave schedule)
+    await buyerPage.fieldRole.fill(uniqueRole);
+
+    // Wait for the PATCH 200 to confirm autosave persisted to the backend.
+    await page.waitForResponse(
+      (resp) =>
+        resp.url().includes(`/api/v1/abel/buyer/${autosaveBuyerId}`) &&
+        resp.request().method() === "PATCH" &&
+        resp.status() === 200,
+      { timeout: 8_000 },
+    );
+
+    // Optionally also wait for the AutosaveBadge state=saved
+    const autosaveBadge = page.getByTestId("buyer-autosave-badge");
+    await expect(autosaveBadge).toHaveAttribute("data-state", "saved", { timeout: 3_000 });
+
+    // RELOAD: now verify the value persisted across page loads
+    await page.reload({ waitUntil: "load" });
+    await page.locator("[data-shell-ready='true']").waitFor({
+      state: "visible",
+      timeout: 20_000,
+    });
+    await expect(buyerPage.buyerForm).toBeVisible({ timeout: 15_000 });
+
+    // ASSERT: the typed value must be present in the field after reload
+    await expect(
+      buyerPage.fieldRole,
+      `rol "${uniqueRole}" debe persistir tras reload (buyer autosave real)`,
+    ).toHaveValue(uniqueRole);
 
     // Anti-burbuja after reload
     await expect(

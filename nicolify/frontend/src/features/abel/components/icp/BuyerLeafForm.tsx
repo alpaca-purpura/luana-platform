@@ -14,7 +14,8 @@
  *   7. Canales preferidos    → preferredChannels list[dict]
  *   8. Viaje del comprador   → buyerJourney JSONB (awareness/consideration/decision)
  *
- * Autosave on-change debounced 600ms via usePatchBuyer (RN-8).
+ * Autosave on-change debounced 600ms via useAutosave<BuyerPatchPayload> (RN-8).
+ * AutosaveBadge renders status in form header — NO "Guardar" button.
  * set-primary: "Establecer como principal" (RN-6 — clears others server-side).
  *
  * Named export (NO default) per FSD-Lite enforce.
@@ -22,20 +23,24 @@
  * validators_gate: RN-6 (set-primary ≤1) + autosave 600ms
  */
 
-import { useCallback, useEffect, useRef } from "react";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useCallback, useEffect } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
+import { AutosaveBadge } from "@/components/shared/AutosaveBadge";
 import { WhatForChip } from "@/components/shared/WhatForChip";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAutosave } from "@/hooks/use-autosave";
 import { cn } from "@/lib/utils";
 
-import { useBuyer } from "../../hooks/use-buyers";
 import { usePatchBuyer, useSetPrimaryBuyer } from "../../hooks/use-buyer-mutations";
+import { useBuyer } from "../../hooks/use-buyers";
 import { buyerFormSchema, type BuyerFormValues } from "../../types/icp-schema";
+
+import type { BuyerPatchPayload } from "../../api/buyer-api";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -114,8 +119,8 @@ function FieldRow({
 
 interface ListDictFieldProps {
   label: string;
-  value: Array<Record<string, unknown>>;
-  onChange: (value: Array<Record<string, unknown>>) => void;
+  value: Record<string, unknown>[];
+  onChange: (value: Record<string, unknown>[]) => void;
   singleFieldKey: string;
   placeholder: string;
   "data-testid"?: string;
@@ -153,8 +158,7 @@ function ListDictField({
     <div className="flex flex-col gap-2" data-testid={testId}>
       <span className="text-xs font-medium text-muted-foreground sr-only">{label}</span>
       {value.map((item, idx) => {
-        const text =
-          typeof item[singleFieldKey] === "string" ? (item[singleFieldKey] as string) : "";
+        const text = typeof item[singleFieldKey] === "string" ? item[singleFieldKey] : "";
         return (
           <div key={idx} className="flex items-center gap-2">
             <Input
@@ -196,6 +200,30 @@ const DECISION_POWER_OPTIONS: { value: string; label: string }[] = [
   { value: "influencer", label: "Influenciador — sin poder formal" },
 ];
 
+// ── BuyerFormValues → BuyerPatchPayload mapper ─────────────────────────────────
+
+/**
+ * Maps a partial BuyerFormValues object to a BuyerPatchPayload.
+ * camelCase form values → camelCase API payload (buyer-api.ts handles
+ * the toSnakePayload conversion before the actual HTTP call).
+ */
+function mapFormValuesToPatch(values: Partial<BuyerFormValues>): BuyerPatchPayload {
+  const patch: BuyerPatchPayload = {};
+  if (values.name !== undefined) patch.name = values.name;
+  if (values.role !== undefined) patch.role = values.role;
+  if (values.decisionPower !== undefined) patch.decisionPower = values.decisionPower;
+  if (values.isPrimary !== undefined) patch.isPrimary = values.isPrimary;
+  if (values.demographics !== undefined) patch.demographics = values.demographics;
+  if (values.psychographics !== undefined) patch.psychographics = values.psychographics;
+  if (values.painPoints !== undefined) patch.painPoints = values.painPoints;
+  if (values.desires !== undefined) patch.desires = values.desires;
+  if (values.objections !== undefined) patch.objections = values.objections;
+  if (values.buyerJourney !== undefined) patch.buyerJourney = values.buyerJourney;
+  if (values.purchaseTriggers !== undefined) patch.purchaseTriggers = values.purchaseTriggers;
+  if (values.preferredChannels !== undefined) patch.preferredChannels = values.preferredChannels;
+  return patch;
+}
+
 // ── Main Component ─────────────────────────────────────────────────────────────
 
 /**
@@ -206,15 +234,16 @@ export function BuyerLeafForm({ buyerId, icpId }: BuyerLeafFormProps) {
   const patchBuyer = usePatchBuyer(buyerId, icpId);
   const setPrimary = useSetPrimaryBuyer(buyerId, icpId);
 
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
+  // ── Autosave via canonical useAutosave hook (ref-based, no stale closure) ────
   const {
-    register,
-    watch,
-    setValue,
-    reset,
-    formState: { isDirty },
-  } = useForm<BuyerFormValues>({
+    schedule,
+    flush,
+    status: autosaveStatus,
+  } = useAutosave<BuyerPatchPayload>({
+    saveFn: (payload) => patchBuyer.mutateAsync(payload),
+  });
+
+  const { register, watch, setValue, reset } = useForm<BuyerFormValues>({
     resolver: zodResolver(buyerFormSchema),
     defaultValues: {
       name: "",
@@ -252,35 +281,27 @@ export function BuyerLeafForm({ buyerId, icpId }: BuyerLeafFormProps) {
     }
   }, [buyer, reset]);
 
-  // Autosave on change (debounce 600ms)
-  const scheduleAutosave = useCallback(
-    (values: BuyerFormValues) => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => {
-        patchBuyer.mutate(values as Parameters<typeof patchBuyer.mutate>[0], {
-          onSuccess: () => {
-            toast.success("Guardado.", { duration: 1800 });
-          },
-          onError: () => {
-            toast.error("Error al guardar. Intenta de nuevo.");
-          },
-        });
-      }, 600);
-    },
-    [patchBuyer],
-  );
-
+  // ── Wire RHF watch → useAutosave (no stale closure) ──────────────────────────
+  // The `name` arg from watch() tells us which field changed — we build a minimal
+  // patch for that specific field (payload coalescing in useAutosave merges
+  // multiple rapid changes into one PATCH).
   useEffect(() => {
-    const subscription = watch((values) => {
-      if (isDirty) {
-        scheduleAutosave(values as BuyerFormValues);
+    const subscription = watch((values, { name: fieldName }) => {
+      if (fieldName) {
+        const patch = mapFormValuesToPatch({
+          [fieldName]: values[fieldName as keyof BuyerFormValues],
+        });
+        schedule(patch);
       }
     });
     return () => {
       subscription.unsubscribe();
-      if (debounceRef.current) clearTimeout(debounceRef.current);
+      // Flush any pending save on unmount
+      void flush();
     };
-  }, [watch, isDirty, scheduleAutosave]);
+    // flush and schedule are stable refs from useAutosave (useCallback)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watch]);
 
   // set-primary handler (RN-6)
   const handleSetPrimary = useCallback(async () => {
@@ -325,9 +346,13 @@ export function BuyerLeafForm({ buyerId, icpId }: BuyerLeafFormProps) {
 
   const updateJsonb = (field: keyof BuyerFormValues, key: string, val: string) => {
     const current = (watch(field) as Record<string, unknown>) ?? {};
-    setValue(field, { ...current, [key]: val } as BuyerFormValues[typeof field], {
-      shouldDirty: true,
-    });
+    setValue(
+      field,
+      { ...current, [key]: val },
+      {
+        shouldDirty: true,
+      },
+    );
   };
 
   return (
@@ -337,6 +362,12 @@ export function BuyerLeafForm({ buyerId, icpId }: BuyerLeafFormProps) {
       data-testid="buyer-leaf-form"
       aria-label={`Perfil de buyer: ${buyer.name}`}
     >
+      {/* ── Form header: autosave status ─────────────────────────────────────── */}
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-xs text-muted-foreground">Los cambios se guardan automáticamente.</p>
+        <AutosaveBadge status={autosaveStatus} data-testid="buyer-autosave-badge" />
+      </div>
+
       {/* ── Grupo 1: Identidad ───────────────────────────────────────────────── */}
       <Group>
         <GroupHeader title="Identidad del buyer" consumers={["christian", "norvil"]} />
@@ -455,7 +486,7 @@ export function BuyerLeafForm({ buyerId, icpId }: BuyerLeafFormProps) {
             <FieldRow key={key} label={label} htmlFor={id}>
               <Input
                 id={id}
-                value={typeof watchedDemo[key] === "string" ? (watchedDemo[key] as string) : ""}
+                value={typeof watchedDemo[key] === "string" ? watchedDemo[key] : ""}
                 onChange={(e) => updateJsonb("demographics", key, e.target.value)}
                 placeholder={placeholder}
                 data-testid={id}
@@ -495,7 +526,7 @@ export function BuyerLeafForm({ buyerId, icpId }: BuyerLeafFormProps) {
             <FieldRow key={key} label={label} htmlFor={id}>
               <Textarea
                 id={id}
-                value={typeof watchedPsycho[key] === "string" ? (watchedPsycho[key] as string) : ""}
+                value={typeof watchedPsycho[key] === "string" ? watchedPsycho[key] : ""}
                 onChange={(e) => updateJsonb("psychographics", key, e.target.value)}
                 placeholder={placeholder}
                 data-testid={id}
@@ -587,9 +618,7 @@ export function BuyerLeafForm({ buyerId, icpId }: BuyerLeafFormProps) {
             <FieldRow key={key} label={label} htmlFor={id}>
               <Textarea
                 id={id}
-                value={
-                  typeof watchedJourney[key] === "string" ? (watchedJourney[key] as string) : ""
-                }
+                value={typeof watchedJourney[key] === "string" ? watchedJourney[key] : ""}
                 onChange={(e) => updateJsonb("buyerJourney", key, e.target.value)}
                 placeholder={placeholder}
                 data-testid={id}
@@ -599,16 +628,6 @@ export function BuyerLeafForm({ buyerId, icpId }: BuyerLeafFormProps) {
           ))}
         </div>
       </Group>
-
-      {patchBuyer.isPending && (
-        <p
-          aria-live="polite"
-          className="text-xs text-muted-foreground text-right"
-          data-testid="buyer-autosave-indicator"
-        >
-          Guardando…
-        </p>
-      )}
     </form>
   );
 }
