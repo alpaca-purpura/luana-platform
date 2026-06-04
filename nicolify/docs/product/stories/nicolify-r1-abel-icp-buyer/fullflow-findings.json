@@ -1,0 +1,33 @@
+{
+  "modal_open": true,
+  "submit_label": "",
+  "final_url": "http://localhost:3001/alpaca-purpura/abel/icp/9d9c8733-b821-4720-ae99-96456d3185b8/datos",
+  "navigated_to_detail": true,
+  "proposal_banner_visible": false,
+  "detail_testids": [
+    "sub-tab-icp",
+    "icp-workspace-view",
+    "proposal-banner",
+    "proposal-banner-descartar",
+    "proposal-banner-ratificar",
+    "icp-datos-form",
+    "icp-field-label",
+    "icp-field-description",
+    "icp-field-vertical",
+    "icp-field-company-size",
+    "icp-field-geo",
+    "icp-field-business-model",
+    "icp-field-avg-ticket",
+    "icp-field-avg-ticket-currency",
+    "icp-field-sales-cycle",
+    "icp-field-main-pain",
+    "icp-field-sales-angle",
+    "icp-signals-container",
+    "icp-signal-input",
+    "icp-signal-add-btn",
+    "icp-field-anti-pattern",
+    "icp-mark-ready-btn"
+  ],
+  "console_errors": [],
+  "page_errors": []
+}

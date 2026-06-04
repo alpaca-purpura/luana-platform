@@ -535,13 +535,24 @@ test.describe("Journey: negatives/edge — isolación, a11y, i18n", () => {
   /**
    * @rule-tenant-isolation (RN-1) — UI 404 navigation tests
    *
-   * failOnRuntimeError: false because Next.js dev mode may trigger the
-   * data-nextjs-dialog issues overlay when a not-found boundary fires.
-   * This is a known Next.js dev-mode behavior (not a production bug).
-   * The key invariants are: 404 boundary renders + no infinite spinner.
+   * Gate anti-burbuja ACTIVO (failOnRuntimeError: true). NO se desactiva.
+   * Se permite UN solo pageError de ORIGEN FRAMEWORK VERIFICADO vía
+   * `allowedPageErrors` (tight opt-in): Next 16 en `next dev` emite
+   * `TypeError: Failed to execute 'measure' on 'Performance': 'SubsubtabLayout'
+   * cannot have a negative time stamp` al hacer `notFound()` desde un layout
+   * async. Verificado framework-origin (cero `performance.measure` en src/, ruta
+   * compila, navs válidas limpias, stack = frames ignore-listed de Next) +
+   * dev-only (ausente en next build+start). NO es bug de app. Cualquier OTRO
+   * pageError (de app) SIGUE fallando el gate. SSoT:
+   * docs/learnings/2026-06-04-next16-notfound-async-layout-perf-measure.md
    */
-  test.describe("SC-adversarial-tenant: UI 404 (failOnRuntimeError desactivado)", () => {
-    test.use({ failOnRuntimeError: false });
+  test.describe("SC-adversarial-tenant: UI 404 (gate ON · allowance framework-only)", () => {
+    test.use({
+      failOnRuntimeError: true,
+      allowedPageErrors: [
+        /Failed to execute 'measure' on 'Performance'.*negative time ?stamp/i,
+      ],
+    });
 
     test("ICP inexistente en UI → 404 contextual (nunca spinner infinito)", async ({
       page,
@@ -597,16 +608,25 @@ test.describe("Journey: negatives/edge — isolación, a11y, i18n", () => {
       });
       await page.waitForTimeout(3_000);
 
-      // Shell must NOT be stuck in loading state — that's the main invariant
+      // STRICT: a contextual 404 boundary must render (invalid UUID → notFound()).
+      const notFoundVisible =
+        (await page.locator("[data-testid='not-found-subsubtab']").isVisible().catch(() => false)) ||
+        (await page.locator("[data-testid='not-found-subtab']").isVisible().catch(() => false));
+      expect(
+        notFoundVisible,
+        "UUID inválido debe renderizar una página 404 contextual",
+      ).toBe(true);
+
+      // Shell must NOT be stuck in loading state (F-1 regression guard)
       const shellStuck = await page
         .locator("[aria-label='Cargando shell']")
         .isVisible()
         .catch(() => false);
       expect(shellStuck, "Shell no debe quedar atascado cargando con UUID inválido").toBe(false);
 
-      // NOTE: data-nextjs-dialog is NOT checked here. Next.js dev mode may show
-      // the issues overlay for invalid UUID paths. The key invariant:
-      // shell must not crash or hang — the product correctly handles bad input.
+      // El gate anti-burbuja (failOnRuntimeError: true) corre en teardown y
+      // FALLA si aparece cualquier pageError de app. El único permitido es el
+      // perf-measure framework de Next dev (allowedPageErrors, arriba).
     });
   }); // end SC-adversarial-tenant UI 404 describe
 
@@ -798,32 +818,15 @@ test.describe("Journey: negatives/edge — isolación, a11y, i18n", () => {
 
     await expect(masterPage.emptyState).toBeVisible({ timeout: 5_000 });
 
-    // Try to open intake modal via "Generar con Abel" / "Abel te arma un borrador"
+    // Open intake modal via "Abel te arma un borrador". Post Bug A fix the modal
+    // MUST open (Journey 5 is the dedicated strict guard). NO weakened fallback:
+    // if it doesn't open, this test FAILS (the 503-handling it verifies needs it open).
     const intake = new UniversalIntakeModal(page);
     await masterPage.openIntakeViaGenerate();
-
-    // Wait for modal with generous timeout — product may have renamed the testid
-    const intakeVisible = await intake.container
-      .waitFor({ state: "visible", timeout: 8_000 })
-      .then(() => true)
-      .catch(() => false);
-
-    if (!intakeVisible) {
-      // Modal didn't open — validate at least that the shell didn't crash
-      // (This could be a product behavior change — documented as SC-network note)
-      const shellStuck = await page
-        .locator("[aria-label='Cargando shell']")
-        .isVisible()
-        .catch(() => false);
-      expect(shellStuck, "Shell no debe quedar atascado (incluso si el modal no abrió)").toBe(false);
-
-      // Anti-burbuja: no Next error overlay on the page
-      await expect(
-        page.locator("[data-nextjs-dialog], [data-nextjs-error-overlay]"),
-        "Sin overlay de error de Next.js en el estado vacío",
-      ).toHaveCount(0);
-      return; // test passes — the shell is stable
-    }
+    await expect(
+      intake.container,
+      "El modal de intake debe abrir (Bug A fix) para poder ejercer el 503",
+    ).toBeVisible({ timeout: 8_000 });
 
     // Modal is visible — fill URL and submit (will get 503 from intercepted route)
     await intake.fillUrl("https://example-fake-test-e2e.com");

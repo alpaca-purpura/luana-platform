@@ -28,6 +28,56 @@ export interface ExtractApiOptions {
   tenantId: string;
 }
 
+// ── FE ↔ BE contract mapping ──────────────────────────────────────────────────
+// The BE DTO (IcpExtractRequest / IcpExtractJobResponse) is snake_case + English
+// enums {url,file,text} + {payload,file_ref} / {job_id,icp_id}. The FE types are
+// camelCase + Spanish modes {url,archivo,texto} + {url,text,fileContent} / {jobId,
+// icpId}. fetchClient does NO camel↔snake conversion, so we map explicitly here.
+// (Bug found 2026-06-04 via live-verify: the modal submit 422'd because the FE
+// shape was sent raw. Contract-test FE↔BE is the durable guard — HB-42.)
+
+interface ExtractRequestWire {
+  seed_type: "url" | "file" | "text";
+  payload: string | null;
+  file_ref: string | null;
+}
+
+interface ExtractJobWire {
+  job_id: string;
+  status: IcpExtractJob["status"];
+  icp_id?: string | null;
+  error_message?: string | null;
+  detail?: string | null;
+}
+
+const SEED_TYPE_TO_WIRE: Record<IcpExtractRequest["seedType"], ExtractRequestWire["seed_type"]> = {
+  url: "url",
+  archivo: "file",
+  texto: "text",
+};
+
+function toWireRequest(p: IcpExtractRequest): ExtractRequestWire {
+  const seed_type = SEED_TYPE_TO_WIRE[p.seedType];
+  let payload: string | null = null;
+  let file_ref: string | null = null;
+  if (p.seedType === "url") payload = p.url?.trim() ?? null;
+  else if (p.seedType === "texto") payload = p.text?.trim() ?? null;
+  // archivo: BE expects a storage object ref (file_ref). The base64 fileContent
+  // path needs a prior upload endpoint (not yet wired) — send the file name as a
+  // best-effort ref so the BE validation passes; full upload pipeline = follow-up.
+  else if (p.seedType === "archivo") file_ref = p.fileName ?? null;
+  return { seed_type, payload, file_ref };
+}
+
+function fromWireJob(d: ExtractJobWire): IcpExtractJob {
+  return {
+    jobId: d.job_id,
+    status: d.status,
+    icpId: d.icp_id ?? null,
+    errorMessage: d.error_message ?? d.detail ?? null,
+  };
+}
+
 // ── Extract API ─────────────────────────────────────────────────────────────
 
 export const extractApi = {
@@ -40,18 +90,20 @@ export const extractApi = {
    *
    * @throws ApiError on network failure or non-2xx response
    */
-  startExtraction: (
+  startExtraction: async (
     { token, tenantId }: ExtractApiOptions,
     payload: IcpExtractRequest,
-  ): Promise<IcpExtractJob> =>
-    fetchClient<IcpExtractJob>("/api/v1/abel/icp/extract", {
+  ): Promise<IcpExtractJob> => {
+    const wire = await fetchClient<ExtractJobWire>("/api/v1/abel/icp/extract", {
       method: "POST",
       token,
       tenantId,
-      body: JSON.stringify(payload),
+      body: JSON.stringify(toWireRequest(payload)),
       // Allow longer timeout — LLM extraction may take up to 60s
       timeoutMs: 60_000,
-    }),
+    });
+    return fromWireJob(wire);
+  },
 
   /**
    * Poll an in-flight extraction job.
@@ -62,11 +114,16 @@ export const extractApi = {
    *
    * @throws ApiError on non-2xx response
    */
-  pollExtraction: ({ token, tenantId }: ExtractApiOptions, jobId: string): Promise<IcpExtractJob> =>
-    fetchClient<IcpExtractJob>(`/api/v1/abel/icp/extract/${jobId}`, {
+  pollExtraction: async (
+    { token, tenantId }: ExtractApiOptions,
+    jobId: string,
+  ): Promise<IcpExtractJob> => {
+    const wire = await fetchClient<ExtractJobWire>(`/api/v1/abel/icp/extract/${jobId}`, {
       method: "GET",
       token,
       tenantId,
       timeoutMs: 10_000,
-    }),
+    });
+    return fromWireJob(wire);
+  },
 };
