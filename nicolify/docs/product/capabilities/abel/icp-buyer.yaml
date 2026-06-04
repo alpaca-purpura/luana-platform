@@ -7,6 +7,7 @@ module: "abel"
 slug: "icp-buyer"
 title: "ICP & Buyer de Abel (perfil de cliente ideal a nivel cuenta + N buyer personas) — draft-first"
 status: wip                              # wip = construido, no live aún (pendiente DoD #37 + merge). /pm-nicolify → live en Fase F.3
+# audit 2026-06-03: /auditor APPROVED (BE+AG+FE) · gherkin-matrix 0 MISSING/0 FAIL · pendiente solo DoD #37 live-verify
 user_visible: true                       # hoja user-reachable del shell (Abel → ICP & buyer)
 
 # ── Zone/box (paradigma 3 zonas · SYSTEM-MAP.yaml::zones · ADR-nicolify-002) ──

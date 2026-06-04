@@ -2,7 +2,7 @@
 story_id: nicolify-r1-abel-icp-buyer
 brand: nicolify
 type: ui-story                       # hoja del shell (Abel → ICP & buyer) operable a mano + invocable por Abel (2 modos)
-state: developed                     # idea → refining → refined → ready → developing → developed → reviewing → done · developed 2026-06-03 (8/8 tickets GREEN · /dev-team autónomo) → AUTO-HANDOFF /auditor
+state: reviewing                     # idea → refining → refined → ready → developing → developed → reviewing → done · reviewing 2026-06-03 (/auditor APPROVED code · BE+AG+FE) → GATE #37 demo de Chris antes de done
 release: R1                          # Abel + Brenda · Atracción inbound (1er vendible)
 map_zone: agentes                    # paradigma 3 zonas (ADR-nicolify-002) — derivada de SYSTEM-MAP::zones
 map_box: abel                        # caja = agente Abel (Estrategia & Oferta)
@@ -13,7 +13,7 @@ cap_target: abel/icp-buyer
 cap_change_type: new
 route: /{tenantId}/abel/icp
 last_modified: 2026-06-03
-phase: BUILD_COMPLETE_AWAITING_AUDIT
+phase: AUDIT_APPROVED_AWAITING_DEMO_GATE_37
 last_artifact: 06-tickets.yaml
 adr_001_compliance: full
 ready_package: [03-arch.md, "03-arch-{be,fe,agentic}.md", 04-validators.yaml, 05-guidelines.md, 06-tickets.yaml, dispatch-plan.md]
@@ -47,10 +47,19 @@ build_status_2026_06_03:
 dod_status:
   dod_live_verified: false   # ⏳ PENDIENTE — gate #37 (reviewing→done). stack nicolify stale (12h pre-abel, BE health vacío, FE 500, migración 002 sin aplicar) + Chrome MCP desconectado
   blocking_done: "live-verify dev-app con dod_evidence (extract→borrador, patch→persist, mark-ready→422, cross-tenant→404) + demo-script sign-off Chris. /pm-nicolify REFUSE merge sin esto."
+audit_summary_2026_06_03:
+  verdict_code: "APPROVED — BE auditor-backend APPROVED (2 WARN no-bloqueantes) · AG auditor-agentic PASS · FE auditor-frontend APPROVED iter 2"
+  audit_iterations: "2/4 — 1 Caso B resuelto: '+ buyer' create flow estaba muerto (navegaba a ruta __add_buyer__ → error, useCreateBuyer no disparaba) → fix d5ee83e0 (callback onAddBuyer threaded + createBuyer + nav al leaf nuevo + test integración nuevo). Cierra SC-add-buyer/RN-5."
+  carril_a: "auditor-frontend: 2 test files prettier (a3a7fad0)"
+  gherkin_matrix: "06-audit/gherkin-matrix.md — 0 MISSING / 0 FAIL (15/15 SC con test verde a nivel código · 9 con leg e2e/axe/visual LIVE-PENDING #37)"
+  warns_carried:
+    w1_security: "rutas abel confían en header X-Tenant-ID sin Bearer/auth app-layer (aislamiento query HOLDS, sin leak). Ratificar Chris/pm-nicolify antes de exposición non-localhost. No bloquea dev/demo (Clerk en edge FE)."
+    w2_antidup: "GrowthStudioEmitter telemetría brand-local legítima (no mirror) + lift candidate N=2 → /pm-luana post-merge."
+  pre_existing_r0: "2 vitest reds ShellOrganismLayoutClient (AppPanelSlot 2×) = bug R0 fuera de scope → observed-bugs/2026-06-03-shell-layout-apppanelslot-duplicated.md (non_egoismo). Abrir bugfix R0."
 next_action: >
-  AUTO-HANDOFF /auditor (auditor-backend + auditor-agentic + auditor-frontend según surface · dispatch-plan §auditor routing).
-  Phase D gherkin-matrix (sin MISSING). Tras APPROVED → STOP en gate #37: refrescar stack (make dev-nicolify + migrar 002),
-  reconectar Chrome MCP, live-verify writes + capturar visual baselines + demo de Chris (demo_signoff APPROVED) → /pm-nicolify merge.
+  ⏸ STOP en GATE DoD #37 (HARD · reviewing→done). Chris + Claude: refrescar stack (make dev-nicolify + migrar 002 + verificar BE :8001/health + FE :3001) + reconectar Chrome MCP →
+  live-verify writes reales (extract→borrador · patch→persist · mark-ready→422 sin mínimo · cross-tenant→404) + capturar visual baselines + ejercer demo-script.md → demo_signoff de Chris (APPROVED).
+  Recién entonces /pm-nicolify merge (07-merge.md 5 secciones · cap status→live · modules/abel.md · archive R2 · state reviewing→done). /pm-nicolify REFUSE merge sin dod_live_verified:true + dod_evidence.
 parallel_safe: true
 ---
 
