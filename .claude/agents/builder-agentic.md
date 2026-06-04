@@ -6,7 +6,6 @@ maxTurns: 150
 skills: [copilot-expert, sales-agent-expert]
 color: purple
 model: opus
-isolation: worktree
 ---
 <!-- voseo-allowed: doc interno de maquinaria (no user-facing) -->
 

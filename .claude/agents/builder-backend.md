@@ -6,7 +6,6 @@ maxTurns: 120
 skills: [backend-expert, brand-expert, offer-expert, offer-type-preset-expert, metrics-expert]
 color: green
 model: sonnet
-isolation: worktree
 ---
 <!-- voseo-allowed: doc interno de maquinaria (no user-facing) -->
 
