@@ -2,7 +2,7 @@
 story_id: nicolify-r1-abel-icp-buyer
 brand: nicolify
 type: ui-story                       # hoja del shell (Abel → ICP & buyer) operable a mano + invocable por Abel (2 modos)
-state: developing                    # idea → refining → refined → ready → developing → developed → reviewing → done · developing 2026-06-03 (/dev-team autónomo · lock code:abel)
+state: developed                     # idea → refining → refined → ready → developing → developed → reviewing → done · developed 2026-06-03 (8/8 tickets GREEN · /dev-team autónomo) → AUTO-HANDOFF /auditor
 release: R1                          # Abel + Brenda · Atracción inbound (1er vendible)
 map_zone: agentes                    # paradigma 3 zonas (ADR-nicolify-002) — derivada de SYSTEM-MAP::zones
 map_box: abel                        # caja = agente Abel (Estrategia & Oferta)
@@ -13,7 +13,7 @@ cap_target: abel/icp-buyer
 cap_change_type: new
 route: /{tenantId}/abel/icp
 last_modified: 2026-06-03
-phase: READY_PACKAGE_CLOSED
+phase: BUILD_COMPLETE_AWAITING_AUDIT
 last_artifact: 06-tickets.yaml
 adr_001_compliance: full
 ready_package: [03-arch.md, "03-arch-{be,fe,agentic}.md", 04-validators.yaml, 05-guidelines.md, 06-tickets.yaml, dispatch-plan.md]
@@ -37,16 +37,20 @@ decisions_ratified_2026_06_03:
   enrichment: "DIFERIDO (waterfall firmográfico desde dominio = story posterior; esta extrae de lo aportado)"
   field_justification: "cada campo muestra su agente-consumidor (display mode a mockear por /po-ux)"
 build_status_2026_06_03:
-  autonomous: PAUSED   # blocker estructural: builder agents corren en worktree aislado (contra ADR-009 single-hub)
-  t_be_1: "PARTIAL — builder-backend construyó módulo abel completo (domain icp/buyer/exceptions, repos icp/buyer, models icp/buyer/growth_studio_event, api/router, dtos, telemetry emitter, migration 002_abel_icp_buyer, tests, arch test growth_studio_event_no_pii, main.py include_router) PERO en worktree aislado agent-a2dcc99f56154fd50 (luana-platform/.claude/worktrees/), UNCOMMITTED, y se cortó en cleanup ERA001 (9 lint en tests/arch) sin línea done. Trabajo recuperable, NO en el hub wip/nicolify."
-  blocker: "builder-* agents se aíslan en worktree propio → trabajo no aterriza en el hub + chain autónomo vararía 8 veces + SendMessage no disponible para continuar agente cortado."
-  fix_B_done: "HB-31: removido isolation:worktree de los 3 builders (reconcilia M9 v2 + ADR-009). ⚠️ registry snapshot → efecto en sesión NUEVA."
-  fix_A_done: "T-BE-1 consolidado al hub: módulo abel (26 .py) + migration 002 + arch test + tests + main.py copiados del worktree aislado a wip/nicolify (UNCOMMITTED — falta finish ERA001 + gates + commit). Worktree aislado agent-a2dcc99f56154fd50 conservado como red de seguridad (cleanup tras verificar)."
+  autonomous: COMPLETE   # sesión nueva post-HB-31 fix: builders escriben in-place al hub (sin consolidación manual)
+  tickets_green: "8/8 — T-BE-1+T-BE-2 (034b67c6) · T-AG-1 Opus R23 (036f9fc6) · T-FE-1 (58952787) · T-FE-2 (3f3c006a) · T-FE-3 (8afb9476) · T-FE-4 (680658c2) · T-E2E-1 static (6f7aee47)"
+  be_gate: "ruff clean · pytest abel 70/70 · arch fitness 20/20 (response_model, no-cross-brand, main_app_config, migrations idempotent, growth_studio_event_no_pii)"
+  fe_gate: "tsc 0 · vitest 359/361 — 2 reds = bug PRE-EXISTENTE R0 ShellOrganismLayoutClient (AppPanelSlot 2×), fuera de scope, doc en nicolify/docs/observed-bugs/2026-06-03-shell-layout-apppanelslot-duplicated.md (non_egoismo)"
+  agentic_gate: "T-AG-1 Opus: 18 tests agentic (EV-1..EV-6 + sanitizer + API), draft-first least-privilege, sanitize_payload, audit RN-10, cost via engine observability"
+  e2e_status: "AUTHORED + static GREEN (tsc/eslint/--list). base.ts anti-burbuja, 4 POMs, cold-start variant, visual goldens 4×2. LIVE RUN + baselines + dod_evidence = DEFERIDO al demo gate #37 (stack stale + Chrome MCP down)"
+  harness_fix: "HB-31 commiteado (f734a1f1): isolation:worktree removido de los 3 builders → builders in-place. Worktree huérfano agent-a2dcc99f removido (verificado 0 orphan-only)."
+dod_status:
+  dod_live_verified: false   # ⏳ PENDIENTE — gate #37 (reviewing→done). stack nicolify stale (12h pre-abel, BE health vacío, FE 500, migración 002 sin aplicar) + Chrome MCP desconectado
+  blocking_done: "live-verify dev-app con dod_evidence (extract→borrador, patch→persist, mark-ready→422, cross-tenant→404) + demo-script sign-off Chris. /pm-nicolify REFUSE merge sin esto."
 next_action: >
-  ⏸ Recomendado: REINICIAR sesión (para que el fix de isolation tome efecto) → reanudar /dev-team:
-  un builder-backend fresco FINALIZA T-BE-1 in-place en el hub (lee el partial consolidado: ERA001 + gates + commit)
-  y sigue el DAG (T-BE-2→T-AG-1→…) con todos los builders escribiendo al hub (sin consolidación por-ticket).
-  Lock code:abel sigue tomado. Alternativa: continuar ESTA sesión consolidando ticket-por-ticket (builders aún aíslan).
+  AUTO-HANDOFF /auditor (auditor-backend + auditor-agentic + auditor-frontend según surface · dispatch-plan §auditor routing).
+  Phase D gherkin-matrix (sin MISSING). Tras APPROVED → STOP en gate #37: refrescar stack (make dev-nicolify + migrar 002),
+  reconectar Chrome MCP, live-verify writes + capturar visual baselines + demo de Chris (demo_signoff APPROVED) → /pm-nicolify merge.
 parallel_safe: true
 ---
 
@@ -83,3 +87,4 @@ Primera hoja real de Abel en el shell. SYSTEM-MAP la registra como `abel.icp` (1
 - 2026-06-03: `/pm-nicolify` crea story (idea). Research legacy + ARQ + storymap → 00-research.md. Decisión ICP-vs-Buyer flagueada para Chris.
 - 2026-06-03: `/po-ux` cierra refining→refined. 01-spec.md v2 + mockup G1 ratificados Chris (patrón list→detail EntitySubNavBar · 1 ICP→N buyers · draft-first · sin barra completitud).
 - 2026-06-03: `/architect` cierra refined→ready. READY package (6 artifacts): 03-arch consolidado + 3 per-surface (be/fe/agentic) + 04-validators + 05-guidelines + 06-tickets + dispatch-plan. 8 tickets (DAG · T-AG-1 Opus R23). adr_001_compliance: full. **Decisión engine-boundary cementada:** ICP=NET-NEW brand-local (no engine, no cross-brand mirror — grep verificado) · Buyer=replicate brand-local async (engine `buyer_personas` es sync+engine-IAM, sin `icp_id` → boundary mismatch, consume esquema por referencia) · EntitySubNavBar=port vitalia (lift candidate @luana/ui-kit N=2 — flag, no lift). Ningún ticket edita core/. 3 Open Questions informativas para PM (03-arch §16).
+- 2026-06-03: `/dev-team` cierra developing→developed (autónomo, sesión nueva post-HB-31). **8/8 tickets GREEN**: harness HB-31 (f734a1f1) → T-BE-1+T-BE-2 (034b67c6, 70/70 + 20 arch) → T-AG-1 Opus R23 (036f9fc6, 18 agentic) → T-FE-1 (58952787, 27 comp) → T-FE-2 (3f3c006a, 72) → T-FE-3 (8afb9476, dispatcher) → T-FE-4 (680658c2, draft-first e2e) → T-E2E-1 (6f7aee47, suite static-green). BE ruff+pytest+arch GREEN. FE tsc 0 + vitest 359/361 (2 reds = bug PRE-EXISTENTE R0 ShellOrganismLayoutClient, fuera de scope → observed-bugs). Worktree huérfano removido. **E2E live-run + visual baselines + dod_evidence DEFERIDOS al gate #37** (stack stale + Chrome MCP down). → AUTO-HANDOFF `/auditor`.
