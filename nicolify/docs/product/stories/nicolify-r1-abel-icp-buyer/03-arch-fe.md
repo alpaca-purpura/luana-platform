@@ -8,22 +8,30 @@
 
 ## 0. Routing (ADR-nicolify-001 §1 · nav N3-dynamic EntitySubNavBar · SHELL-DESIGN-CONTRACT §5.1)
 
-El shell R0 ya tiene rutas dinámicas genéricas `[agent]/[subtab]/[subsubtab]`. Esta story agrega el nivel **detalle** (`[entityId]/[leaf]`) bajo el segmento existente:
+> **CORRECCIÓN DE DISEÑO (audit iter 3 — 2026-06-04):** El diseño original colocaba la ruta de detalle bajo un segmento `[entityId]/` (hermano de `[subsubtab]/` del R0). Next.js 16 prohíbe dos nombres de slug distintos a la misma profundidad: `"You cannot use different slug names for the same dynamic path ('entityId' !== 'subsubtab')"`. El error solo aparece al inicio del servidor/build — tsc/eslint/vitest/playwright list NO lo detectan. **Fix:** unificar bajo el slug R0 incumbente `[subsubtab]`, absorbiendo el comportamiento R1 via dispatch en el layout. Las URLs públicas NO cambian (`/{tenantId}/abel/icp/{icpId}/datos` sigue igual — solo el nombre del param Next.js cambia `entityId→subsubtab`).
+
+El shell R0 ya tiene rutas dinámicas genéricas `[agent]/[subtab]/[subsubtab]`. Esta story agrega el nivel **detalle** bajo el mismo segmento `[subsubtab]` via dispatch condicional:
 
 ```
 app/[tenantId]/(shell-organism)/[agent]/[subtab]/
-  ├── page.tsx                       # MODIFIED-via-dispatcher: abel.icp → IcpMasterListView (lista). Resto sin cambio.
-  └── [entityId]/                    # NEW (solo aplica cuando agent=abel, subtab=icp; otros subtabs no tienen detalle aún)
-      ├── layout.tsx                 # NEW · EntityWorkspaceLayout: valida agent/subtab/entityId, hidrata ICP (SSR), monta EntitySubNavBar (slot N3) + {children}
-      ├── page.tsx                   # NEW · redirect → ./datos (entityId sin leaf → primer leaf)
+  ├── page.tsx                         # MODIFIED-via-dispatcher: abel.icp → IcpMasterListView (lista). Resto sin cambio.
+  └── [subsubtab]/                     # R0 incumbente (renaming a [entityId] era ILEGAL — Next.js slug conflict)
+      ├── layout.tsx                   # NEW (R1) · Dispatch:
+      │                                #   abel.icp → IcpEntityLayoutClient (icpId = subsubtab param)
+      │                                #   otros subtabs → pass-through {children} (R0 no tenía layout aquí)
+      ├── page.tsx                     # MERGED (R0+R1) · Dispatch:
+      │                                #   abel.icp → redirect → ./datos (icpId sin leaf → primer leaf)
+      │                                #   otros subtabs → whitelist validate → SubTabContent (R0 verbatim)
       └── [leaf]/
-          └── page.tsx               # NEW · leaf ∈ {datos | buyerId}: datos→IcpDatosForm, else→BuyerLeafForm
+          └── page.tsx                 # NEW (R1) · leaf ∈ {datos | buyerId}: datos→IcpDatosForm, else→BuyerLeafForm
+                                       # Solo alcanzable cuando agent=abel, subtab=icp
 ```
 
-- **Master** se sirve por el dispatcher `SubTabContent` existente (no nueva ruta): reemplazar el `EmptyState` de `"abel.icp"` por `<IcpMasterListView/>`. Las rutas detalle son nuevos segmentos.
+- **Master** se sirve por el dispatcher `SubTabContent` existente (no nueva ruta): reemplazar el `EmptyState` de `"abel.icp"` por `<IcpMasterListView/>`. Las rutas detalle son nuevos niveles bajo `[subsubtab]`.
 - `params` / `searchParams` son `Promise<>` (Next.js 16) → `await` antes de usar.
-- **Whitelist guard (defense-in-depth):** `layout.tsx` valida `agent==='abel' && subtab==='icp'` (vía shell-routes `isValidAgent/isValidSubtab`); `entityId` se valida server-side fetcheando el ICP (404 si no es del tenant → cross-tenant defense). Datos sensibles nunca en URL (solo `icpId`/`buyerId` opacos).
-- Server Component default · SSR initial state vía fetch del ICP + buyers en `layout.tsx` → hidrata React Query.
+- **Whitelist guard (defense-in-depth):** `[subsubtab]/layout.tsx` valida `agent/subtab` via shell-routes SSoT; para `abel.icp` valida que `subsubtab` (= icpId) sea UUID-shaped. Datos sensibles nunca en URL (solo `icpId`/`buyerId` opacos).
+- **Param key rename (interno, sin impacto en URLs):** el valor del icpId fluye igual por props; el Server layout extrae `subsubtab` (antes `entityId`) del `Promise<params>` y lo pasa como `icpId` prop a `IcpEntityLayoutClient`. `EntityWorkspaceLayout` y `IcpEntityLayoutClient` leen `icpId` por prop (no de `useParams`) → cero impacto en componentes Client.
+- Server Component default · SSR initial state vía layout → hidrata React Query.
 
 ## 1. FSD-Lite layout (ADR-nicolify-001 §2)
 

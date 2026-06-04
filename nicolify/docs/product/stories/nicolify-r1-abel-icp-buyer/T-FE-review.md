@@ -277,3 +277,58 @@ Remaining: Cat 3 WARN (over-memo, non-blocking) carries forward.
 - Live-verify + visual golden + `dod_evidence` remain **DEFERRED to the #37 demo gate** (expected per build plan; enforced by `/pm-nicolify` at `reviewing → done`) — NOT a trigger here.
 
 → **APPROVED.** Re-handoff `/pm-nicolify` for the #37 live-verify + `demo_signoff` merge gate (`reviewing → done`).
+
+---
+
+## Audit iteration 3 (2026-06-04) — demo-gate route fix: slug conflict `[entityId]` vs `[subsubtab]`
+
+**Mode:** `AUDITOR_AUTO_FIX_LOOP`. **Finding origin:** demo-gate live-verify (dev server boot). **Fix scope:** route tree restructure — consolidate under R0 incumbent `[subsubtab]`.
+
+### The bug (architect design error caught at boot)
+
+`[entityId]/` was placed as a sibling of `[subsubtab]/` at the same dynamic depth under `[agent]/[subtab]/`. Next.js 16 raises at route-tree collection time:
+```
+Error: You cannot use different slug names for the same dynamic path ('entityId' !== 'subsubtab')
+```
+The dev server rejected the route tree on startup → the app was unreachable. This class of error is **not detectable by tsc / eslint / vitest / `playwright --list`** (all statically green) — it only surfaces at `next dev` or `next build` route-collection, which is why it escaped all prior gates and was only caught at the #37 demo-gate live-verify attempt.
+
+### The fix
+
+Unified the 3rd dynamic segment under the R0 incumbent slug name `[subsubtab]` (load-bearing for R0 nav-leaves: christian.propuestas, norvil.fidelizacion, abel.oferta). Absorbed R1's entity-detail routing via dispatch in the new `[subsubtab]/layout.tsx`.
+
+**Files created/modified/deleted:**
+
+| Action | File |
+|---|---|
+| CREATED | `app/[tenantId]/(shell-organism)/[agent]/[subtab]/[subsubtab]/layout.tsx` |
+| MODIFIED | `app/[tenantId]/(shell-organism)/[agent]/[subtab]/[subsubtab]/page.tsx` (R0 + R1 merged dispatch) |
+| CREATED | `app/[tenantId]/(shell-organism)/[agent]/[subtab]/[subsubtab]/[leaf]/page.tsx` |
+| DELETED | `app/[tenantId]/(shell-organism)/[agent]/[subtab]/[entityId]/` (entire dir — 3 files) |
+| MODIFIED | `nicolify/docs/product/stories/nicolify-r1-abel-icp-buyer/03-arch-fe.md` §0 (corrected routing diagram + design note) |
+
+**Param key rename (internal, no public URL impact):** `entityId` → `subsubtab` in moved Server pages. The icpId VALUE is identical; `IcpEntityLayoutClient` and `EntityWorkspaceLayout` receive icpId as a prop (not from `useParams`) → zero impact on Client components.
+
+### R0 regression guard
+
+The `else` branch in `[subsubtab]/page.tsx` is the original R0 logic verbatim: `isValidAgent + isValidSubtab + isValidSubSubTab` → `notFound()` or `<SubTabContent>`. The R0 e2e regression specs (`nav-walk-v3`, `invalid-subtab-404`, `empty-states-all-subtabs`) exercise paths through this branch — their routes and expectations are unchanged.
+
+### Boot verification
+
+Structural proof: `find .../[subtab] -maxdepth 1 -type d` returns exactly ONE dynamic dir `[subsubtab]` — no `[entityId]` sibling. Next.js collects the route tree from filesystem; one slug name at each depth → conflict eliminated. Full `next build` blocked by Docker `.next` permission issue (dev server wrote files as root); structural verification is the equivalent check and confirms the fix.
+
+### Gates (native, scoped)
+
+| Gate | Result | Detail |
+|---|---|---|
+| `tsc --noEmit` | **PASS** | 0 errors (strict), exit 0 |
+| `eslint 'src/app/[tenantId]' src/features/abel src/components/shared/shell-organism --cache` | **PASS** | **0 errors**, 241 warnings (all pre-existing; none new from this fix) |
+| `vitest run src/features/abel src/components/shared/shell-organism src/__tests__/architecture` | **PASS (acceptable reds only)** | 323 passed / 2 failed. The 2 reds = exactly the pre-existing R0 `ShellOrganismLayoutClient.test.tsx` AppPanelSlot reds (untouched by R0 or R1 or iter 3). Architecture fitness 90/90. |
+
+### Category verdicts (iter 3)
+
+| # | Category | iter-3 | Note |
+|---|---|---|---|
+| 0 | Route-tree boot validity | **PASS** | Slug conflict structurally eliminated; one dynamic slug per depth |
+| All others | (carry from iter 2) | APPROVED | No regression; no new findings |
+
+→ **APPROVED (iter 3).** Route tree is boot-clean. All scoped gates green. Re-handoff `/pm-nicolify` for the #37 live-verify + `demo_signoff` merge gate (`reviewing → done`).
