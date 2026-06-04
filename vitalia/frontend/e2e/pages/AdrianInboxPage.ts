@@ -1,18 +1,23 @@
+// cap: adrian.inbox
 /**
- * AdrianInboxPage — POM for Adrián Inbox placeholder (3-col layout + Takeover UX A↔B).
- * F1-S10 vitalia-fase1-empty-states — T-10
+ * AdrianInboxPage — POM for Adrián Inbox (3-pane shell + 3-modos + nudge + Valeria-collapse).
  *
- * Wraps the InboxPlaceholder at /{tenantId}/adrian/inbox.
- * Encapsulates all aria-labels and data-testids from:
- *   - InboxPlaceholder.tsx (data-sidebar, data-testid="inbox-global-mode-toggle")
- *   - ThreadHeader.tsx (aria-label="Tomar el control..." | aria-label="Cerrar panel de detalles")
- *   - TakeoverBanner.tsx (aria-label="Devolver el control a Adrián en esta conversación")
- *   - ConversationItem.tsx (aria-label="Conversación con {name}...")
- *   - MessageInput.tsx (placeholder text changes on state)
+ * vitalia-fase2-adrian-inbox — T-6
+ * Extends: F1-S10 vitalia-fase1-empty-states (legacy placeholder locators preserved for compat)
  *
- * Takeover UX states:
- *   A = "Adrián maneja" → chip visible + botón "✋ Tomar el control" + MessageInput disabled
- *   B = "Usuario en control" → TakeoverBanner visible + MessageInput enabled + chip oculto
+ * Covers SC-1..SC-10 from 01-spec.md:
+ *   SC-1  happy: Decide mode + tool-calls + Valeria reacciona
+ *   SC-2  Consulta: human edits draft before send
+ *   SC-3  PHI firewall redirect (ComplianceService blocks clinical data on WhatsApp)
+ *   SC-4  Concurrent mode-change / takeover (OCC 409)
+ *   SC-5  "Modo conversación" collapses Valeria to full canvas
+ *   SC-6  Nudge to stalled active conversation
+ *   SC-7  Empty state (no convs / no filter results)
+ *   SC-8  Network failure loading thread
+ *   SC-9  Accessibility (tab order, aria-current/selected, Esc)
+ *   SC-10 Cross-tenant blocked + Spanish neutro
+ *
+ * Route: /{tenantId}/adrian/inbox  (shell-organism RSC · ADR-vitalia-004)
  *
  * downstream-regression-na: brand-local vitalia e2e POM; no cross-brand consumers
  */
@@ -24,19 +29,63 @@ export class AdrianInboxPage {
   readonly page: Page;
   readonly tenantId: string;
 
-  // ── Main layout locators ──────────────────────────────────────────────
-  readonly globalModeToggle: Locator;
+  // ── Main 3-pane layout ────────────────────────────────────────────────────
   readonly conversationList: Locator;
   readonly threadSection: Locator;
   readonly contactSidebar: Locator;
+  readonly activityStream: Locator;
 
-  // ── Takeover UX locators ──────────────────────────────────────────────
+  // ── Conversation list controls ────────────────────────────────────────────
+  readonly searchInput: Locator;
+  readonly filterChips: Locator;
+
+  // ── 3-modos toggle (SegmentedControl — NOT Shadcn Tabs) ───────────────────
+  readonly modeToggle: Locator;
+  readonly modeDecideOption: Locator;     // 🤖 Adrián decide
+  readonly modeConsultaOption: Locator;   // 🤝 Adrián consulta
+  readonly modeManualOption: Locator;     // 👤 Yo escribo
+
+  // ── Takeover UX ───────────────────────────────────────────────────────────
   readonly takeControlButton: Locator;
   readonly returnControlButton: Locator;
   readonly takeoverBanner: Locator;
-  readonly adrianModeChip: Locator;
+  readonly autonomyBanner: Locator;
 
-  // ── Sidebar control ───────────────────────────────────────────────────
+  // ── Consulta draft controls ───────────────────────────────────────────────
+  readonly consultaBanner: Locator;
+  readonly approveButton: Locator;
+  readonly editDraftButton: Locator;
+  readonly discardDraftButton: Locator;
+
+  // ── Agent state indicators ────────────────────────────────────────────────
+  readonly typingIndicator: Locator;
+  readonly agentFailedBanner: Locator;
+
+  // ── Full-canvas toggle (RN-11/RN-12) ─────────────────────────────────────
+  readonly conversationModeButton: Locator;
+
+  // ── Composer ──────────────────────────────────────────────────────────────
+  readonly composerInput: Locator;
+  readonly sendButton: Locator;
+
+  // ── Nudge (RN-13) ─────────────────────────────────────────────────────────
+  readonly nudgeButton: Locator;
+  readonly nudgeConfirmButton: Locator;
+  readonly nudgeToast: Locator;
+
+  // ── Tool-calls / glass-box (RN-6) ─────────────────────────────────────────
+  readonly toolCallCards: Locator;
+
+  // ── Empty / error states ──────────────────────────────────────────────────
+  readonly emptyState: Locator;
+  readonly errorBanner: Locator;
+  readonly retryButton: Locator;
+
+  // ── Legacy compat (F1-S10 placeholder — preserved for existing specs) ─────
+  /** @deprecated use modeToggle for 3-modos */
+  readonly globalModeToggle: Locator;
+  /** @deprecated use modeDecideOption chip instead */
+  readonly adrianModeChip: Locator;
   readonly closeSidebarButton: Locator;
   readonly sidebarContainer: Locator;
 
@@ -44,197 +93,305 @@ export class AdrianInboxPage {
     this.page = page;
     this.tenantId = tenantId;
 
-    this.globalModeToggle = page.locator(
-      '[data-testid="inbox-global-mode-toggle"]',
-    );
-    this.conversationList = page.locator(
-      '[aria-label="Lista de conversaciones"]',
-    );
-    this.threadSection = page.locator(
-      'section[aria-label*="Conversación con"]',
-    );
-    // ContactSidebar container — the 3rd col
-    this.contactSidebar = page
-      .locator("[data-sidebar]")
-      .locator("aside")
-      .last();
+    // 3-pane layout
+    this.conversationList = page.locator('[aria-label="Lista de conversaciones"]');
+    this.threadSection = page.locator('section[aria-label*="Conversación con"]');
+    this.contactSidebar = page.locator("[data-sidebar]").locator("aside").last();
+    this.activityStream = page.locator('[data-testid="activity-stream"]');
 
-    // Takeover UX — aria-labels verbatim from ThreadHeader.tsx
+    // Conversation list controls
+    this.searchInput = page.locator('[data-testid="inbox-search"], [placeholder*="Buscar"]').first();
+    this.filterChips = page.locator('[data-testid="inbox-filter-chips"]');
+
+    // 3-modos toggle (spec: SegmentedControl, NOT Shadcn Tabs — ADR-vitalia-004 §1)
+    this.modeToggle = page.locator('[data-testid="inbox-mode-toggle"]');
+    this.modeDecideOption = page.locator('[data-testid="mode-decide"], [aria-label*="Adrián decide"]').first();
+    this.modeConsultaOption = page.locator('[data-testid="mode-consulta"], [aria-label*="Adrián consulta"]').first();
+    this.modeManualOption = page.locator('[data-testid="mode-manual"], [aria-label*="Yo escribo"]').first();
+
+    // Takeover UX
     this.takeControlButton = page.locator(
-      '[aria-label="Tomar el control de esta conversación · Adrián pausará aquí"]',
-    );
-    // TakeoverBanner return button — aria-label from TakeoverBanner.tsx
+      '[aria-label="Tomar el control de esta conversación · Adrián pausará aquí"], [data-testid="take-control-button"]',
+    ).first();
     this.returnControlButton = page.locator(
-      '[aria-label="Devolver el control a Adrián en esta conversación"]',
-    );
-    // TakeoverBanner wrapper — detect by the banner's role + content
+      '[aria-label="Devolver el control a Adrián en esta conversación"], [data-testid="return-control-button"]',
+    ).first();
     this.takeoverBanner = page
       .locator('[role="alert"], [role="status"]')
       .filter({ hasText: /Adrián|Devolver/ });
+    this.autonomyBanner = page.locator('[data-testid="autonomy-banner"]');
 
-    // Adrian mode chip — aria-label from ThreadHeader.tsx state A
-    this.adrianModeChip = page.locator(
-      '[aria-label="Adrián está manejando esta conversación"]',
-    );
+    // Consulta draft controls
+    this.consultaBanner = page.locator('[data-testid="consulta-banner"]').first();
+    this.approveButton = page.locator('button[data-testid="approve-draft"]').first();
+    this.editDraftButton = page.locator('button[data-testid="edit-draft"]').first();
+    this.discardDraftButton = page.locator('button[data-testid="discard-draft"]').first();
 
-    // Sidebar close button — aria-label from ThreadHeader.tsx state A
-    this.closeSidebarButton = page.locator(
-      '[aria-label="Cerrar panel de detalles"]',
-    );
+    // Agent state
+    this.typingIndicator = page.locator('[data-testid="typing-indicator"]');
+    this.agentFailedBanner = page.locator('[data-testid="agent-failed-banner"]');
 
-    // The 3-col grid container with data-sidebar attribute
+    // Full-canvas toggle (RN-12)
+    this.conversationModeButton = page.locator(
+      '[data-testid="conversation-mode-button"], [aria-label*="Modo conversación"]',
+    ).first();
+
+    // Composer
+    this.composerInput = page.locator(
+      '[data-testid="composer-input"], textarea[aria-label*="Mensaje"], [placeholder*="Escribir"]',
+    ).first();
+    this.sendButton = page.locator(
+      '[data-testid="composer-send"], button[aria-label*="Enviar"]',
+    ).first();
+
+    // Nudge (RN-13)
+    this.nudgeButton = page.locator(
+      '[data-testid="nudge-button"], button[aria-label*="empujón"], button[aria-label*="Dar empujón"]',
+    ).first();
+    this.nudgeConfirmButton = page.locator(
+      '[data-testid="nudge-confirm"], button[aria-label*="Confirmar empujón"]',
+    ).first();
+    this.nudgeToast = page.locator('[role="status"]').filter({ hasText: /Empujón enviado/ }).first();
+
+    // Tool-calls (RN-6)
+    this.toolCallCards = page.locator('[data-testid^="tool-call-card"]');
+
+    // Empty / error
+    this.emptyState = page.locator('[data-testid="inbox-empty-state"]');
+    this.errorBanner = page.locator('[data-testid="thread-error-banner"]');
+    this.retryButton = page.locator('button[data-testid="thread-retry"]').first();
+
+    // Legacy compat (preserve F1-S10 placeholder locators)
+    this.globalModeToggle = page.locator('[data-testid="inbox-global-mode-toggle"]');
+    this.adrianModeChip = page.locator('[aria-label="Adrián está manejando esta conversación"]');
+    this.closeSidebarButton = page.locator('[aria-label="Cerrar panel de detalles"]');
     this.sidebarContainer = page.locator("[data-sidebar]").first();
   }
 
-  // ── Navigation ────────────────────────────────────────────────────────
+  // ── Navigation ─────────────────────────────────────────────────────────────
 
   async goto(): Promise<void> {
     await this.page.goto(`/${this.tenantId}/adrian/inbox`);
     await this.page.waitForLoadState("networkidle");
   }
 
-  // ── Conversation list ─────────────────────────────────────────────────
+  async gotoWithConversation(convId: string): Promise<void> {
+    await this.page.goto(`/${this.tenantId}/adrian/inbox?conv=${convId}`);
+    await this.page.waitForLoadState("networkidle");
+  }
 
-  /**
-   * Click a conversation by display name.
-   * Locates the conversation item by its aria-label which includes the name.
-   */
-  async clickConversation(displayName: string): Promise<void> {
+  // ── Conversation list ──────────────────────────────────────────────────────
+
+  async openConversation(displayName: string): Promise<void> {
     await this.page
       .locator(`[aria-label*="Conversación con ${displayName}"]`)
       .first()
       .click();
+    await this.page.waitForSelector('[aria-live="polite"]', { state: "visible" });
   }
 
-  /**
-   * Get all conversation items visible in the list.
-   */
+  /** @deprecated use openConversation */
+  async clickConversation(displayName: string): Promise<void> {
+    return this.openConversation(displayName);
+  }
+
   getConversationItems(): Locator {
     return this.page.locator(
       '[aria-label="Lista de conversaciones"] [aria-label*="Conversación con"]',
     );
   }
 
-  /**
-   * Get the YouChip element for a human-handled conversation.
-   * YouChip renders "✋ Tú" text per ConversationItem.tsx.
-   */
+  async searchConversations(query: string): Promise<void> {
+    await this.searchInput.fill(query);
+  }
+
   getYouChip(): Locator {
     return this.page.locator(
       'span[title="Tomaste el control · Adrián pausado en esta conversación"]',
     );
   }
 
-  /**
-   * Assert that a conversation item shows the green border (human-handled).
-   * The ConversationItem with leadId="cp" (Carlos Pérez) has handlerMode="human".
-   */
-  async expectHumanHandledConversationVisible(
-    displayName: string,
-  ): Promise<void> {
+  async expectHumanHandledConversationVisible(displayName: string): Promise<void> {
     await expect(
-      this.page
-        .locator(`[aria-label*="Conversación con ${displayName}"]`)
-        .first(),
+      this.page.locator(`[aria-label*="Conversación con ${displayName}"]`).first(),
     ).toBeVisible();
     await expect(this.getYouChip().first()).toBeVisible();
   }
 
-  // ── Takeover UX A↔B ──────────────────────────────────────────────────
+  // ── Mode toggle (3-modos) ──────────────────────────────────────────────────
 
-  /**
-   * Transition from state A (Adrián maneja) to state B (user takeover).
-   * Clicks the "✋ Tomar el control" button.
-   */
+  async toggleMode(mode: "decide" | "consulta" | "manual"): Promise<void> {
+    const map = { decide: this.modeDecideOption, consulta: this.modeConsultaOption, manual: this.modeManualOption };
+    await map[mode].click();
+  }
+
   async takeControl(): Promise<void> {
     await this.takeControlButton.click();
   }
 
-  /**
-   * Transition from state B (user takeover) back to state A.
-   * Clicks the "🤖 Devolver a Adrián" button in TakeoverBanner.
-   */
   async returnControl(): Promise<void> {
     await this.returnControlButton.click();
   }
 
-  /**
-   * Assert state A is active:
-   *   - "Adrián está manejando" chip visible
-   *   - "✋ Tomar el control" button visible
-   *   - MessageInput textarea has disabled-state placeholder
-   *   - TakeoverBanner NOT visible
-   */
+  // ── Consulta draft ─────────────────────────────────────────────────────────
+
+  async approveDraft(): Promise<void> {
+    await this.approveButton.click();
+  }
+
+  async editDraft(newText: string): Promise<void> {
+    await this.editDraftButton.click();
+    await this.composerInput.clear();
+    await this.composerInput.fill(newText);
+    await this.sendButton.click();
+  }
+
+  async discardDraft(): Promise<void> {
+    await this.discardDraftButton.click();
+  }
+
+  // ── Composer ──────────────────────────────────────────────────────────────
+
+  async sendMessage(text: string): Promise<void> {
+    await this.composerInput.fill(text);
+    await this.sendButton.click();
+  }
+
+  // ── Full-canvas (modo conversación · RN-11/12) ────────────────────────────
+
+  async clickModoConversacion(): Promise<void> {
+    await this.conversationModeButton.click();
+  }
+
+  async expectValeriaCollapsed(): Promise<void> {
+    const valeriaPanel = this.page.locator('[data-valeria-state="collapsed"]');
+    await expect(valeriaPanel).toBeVisible();
+  }
+
+  async expectValeriaExpanded(): Promise<void> {
+    const valeriaPanel = this.page.locator('[data-valeria-state="rail"], [data-valeria-state="full"]');
+    await expect(valeriaPanel).toBeVisible();
+  }
+
+  // ── Nudge (RN-13) ─────────────────────────────────────────────────────────
+
+  async clickNudge(): Promise<void> {
+    await this.nudgeButton.click();
+  }
+
+  async confirmNudge(): Promise<void> {
+    await this.nudgeConfirmButton.click();
+  }
+
+  async expectNudgeSuccess(): Promise<void> {
+    await expect(this.nudgeToast).toBeVisible({ timeout: 5000 });
+  }
+
+  // ── Activity stream ────────────────────────────────────────────────────────
+
+  getActivityStream(): Locator {
+    return this.activityStream;
+  }
+
+  getActivityEvents(): Locator {
+    return this.activityStream.locator('[data-testid^="activity-event"]');
+  }
+
+  async expectActivityContains(text: string): Promise<void> {
+    await expect(this.activityStream).toContainText(text);
+  }
+
+  // ── Tool-calls (RN-6) ─────────────────────────────────────────────────────
+
+  getToolCallCards(): Locator {
+    return this.toolCallCards;
+  }
+
+  async expandToolCallCard(index: number): Promise<void> {
+    await this.toolCallCards.nth(index).click();
+  }
+
+  // ── State assertions ───────────────────────────────────────────────────────
+
+  async expectDecideMode(): Promise<void> {
+    await expect(this.modeDecideOption).toHaveAttribute("aria-selected", "true");
+  }
+
+  async expectConsultaMode(): Promise<void> {
+    await expect(this.modeConsultaOption).toHaveAttribute("aria-selected", "true");
+  }
+
+  async expectManualMode(): Promise<void> {
+    await expect(this.modeManualOption).toHaveAttribute("aria-selected", "true");
+  }
+
+  async expectEmptyState(): Promise<void> {
+    await expect(this.emptyState).toBeVisible();
+    await expect(this.emptyState).toContainText(/Aún no hay conversaciones|Sin resultados/);
+  }
+
+  async expectErrorState(): Promise<void> {
+    await expect(this.errorBanner).toBeVisible();
+    await expect(this.errorBanner).toContainText(/No pudimos cargar/);
+    await expect(this.retryButton).toBeVisible();
+  }
+
+  async expectThreadVisible(): Promise<void> {
+    await expect(
+      this.page.locator('[aria-live="polite"][aria-label="Mensajes de la conversación"]'),
+    ).toBeVisible();
+  }
+
+  async expectPhiRedirectMessage(): Promise<void> {
+    // RN-7: PHI redirect — response must mention portal, must NOT include clinical data
+    await expect(this.threadSection).toContainText(/portal/i);
+    await expect(this.threadSection).not.toContainText(/diagnóstico|resultados clínicos|lab_results/i);
+  }
+
+  async expectNoPhiInUrl(): Promise<void> {
+    const url = this.page.url();
+    // RN-14: only ?conv={uuid} allowed — no patient names or clinical data in URL
+    expect(url).not.toMatch(/nombre|dni|paciente|diagnostico|diagnosis/i);
+    if (url.includes("conv=")) {
+      expect(url).toMatch(/conv=[0-9a-f-]{36}/);
+    }
+  }
+
+  async expectDeepLinkConversation(convId: string): Promise<void> {
+    await expect(this.page).toHaveURL(new RegExp(`conv=${convId}`));
+    await this.expectThreadVisible();
+  }
+
+  async expectGlobalModeToggleVisible(): Promise<void> {
+    await expect(this.globalModeToggle).toBeVisible();
+  }
+
+  // ── Legacy compat assertions (F1-S10) ─────────────────────────────────────
+
+  /** @deprecated use expectDecideMode + autonomyBanner */
   async expectStateA(): Promise<void> {
     await expect(this.adrianModeChip).toBeVisible();
     await expect(this.takeControlButton).toBeVisible();
-    // TakeoverBanner should not be present or visible
-    await expect(
-      this.page.locator("text=🤖 Devolver a Adrián").first(),
-    ).not.toBeVisible();
-    // MessageInput placeholder in state A
-    await expect(
-      this.page.locator('[placeholder*="Adrián decide automáticamente"]'),
-    ).toBeVisible();
+    await expect(this.page.locator("text=🤖 Devolver a Adrián").first()).not.toBeVisible();
+    await expect(this.page.locator('[placeholder*="Adrián decide automáticamente"]')).toBeVisible();
   }
 
-  /**
-   * Assert state B is active:
-   *   - TakeoverBanner visible with "Devolver a Adrián" button
-   *   - MessageInput enabled (no disabled placeholder)
-   *   - "Adrián está manejando" chip NOT visible
-   */
+  /** @deprecated use expectManualMode + takeoverBanner */
   async expectStateB(): Promise<void> {
     await expect(this.returnControlButton).toBeVisible();
-    await expect(
-      this.page.locator('[placeholder*="Escribir como tú"]'),
-    ).toBeVisible();
-    // The chip for state A must be hidden
+    await expect(this.page.locator('[placeholder*="Escribir como tú"]')).toBeVisible();
     await expect(this.adrianModeChip).not.toBeVisible();
   }
 
-  // ── Sidebar toggle ────────────────────────────────────────────────────
-
-  /**
-   * Close the contact sidebar by clicking the × button.
-   * After click, data-sidebar attribute becomes "closed".
-   */
   async closeSidebar(): Promise<void> {
     await this.closeSidebarButton.first().click();
   }
 
-  /**
-   * Assert sidebar is open (data-sidebar="open").
-   */
   async expectSidebarOpen(): Promise<void> {
     await expect(this.page.locator('[data-sidebar="open"]')).toBeVisible();
   }
 
-  /**
-   * Assert sidebar is closed (data-sidebar="closed").
-   * The grid col-3 collapses to 0 width.
-   */
   async expectSidebarClosed(): Promise<void> {
     await expect(this.page.locator('[data-sidebar="closed"]')).toBeVisible();
-  }
-
-  // ── Thread assertions ─────────────────────────────────────────────────
-
-  /**
-   * Assert the message thread section is visible with live region.
-   */
-  async expectThreadVisible(): Promise<void> {
-    await expect(
-      this.page.locator(
-        '[aria-live="polite"][aria-label="Mensajes de la conversación"]',
-      ),
-    ).toBeVisible();
-  }
-
-  /**
-   * Assert global mode toggle is rendered with all 3 options.
-   */
-  async expectGlobalModeToggleVisible(): Promise<void> {
-    await expect(this.globalModeToggle).toBeVisible();
   }
 }
