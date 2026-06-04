@@ -31,3 +31,13 @@ Levantar `AppPanelSlot`/`{children}` a un único punto bajo el `<main>` y conmut
 ## Impacto en R1 (esta story)
 
 Ninguno funcional para `/abel/icp**`. Las 2 reds son del wrapper R0 y NO bloquean las superficies de R1 (BE 70/70, agentic, FE abel 131/131 + 90/90 arch verdes). Flag para `/auditor` (no atribuir a R1) + para `/pm-nicolify` (abrir bugfix R0 antes de cerrar el shell).
+
+## RESOLVED — 2026-06-04
+
+**Fix aplicado:** folded into `nicolify-r1-abel-icp-buyer` por autorización de Chris (bug bloqueaba baseline visual de R1).
+
+**Cómo:** eliminado el div mobile separado (`<div className="h-full md:hidden"><AppPanelSlot>{children}</AppPanelSlot></div>`) que era la segunda instancia de `AppPanelSlot`. El wrapper interno del `<main>` pasó de `hidden h-full md:block` (que sólo se veía en md+) a `h-full w-full` (siempre montado). Los usuarios mobile ven ahora el branch de desktop con el sidebar colapsado/rail (gestionado por `useViewportGuard` + D5 mobile drawer de `LuanaSidebar`), eliminando la duplicación de `{children}` en el DOM.
+
+**Resultado:** 7/7 tests en `ShellOrganismLayoutClient.test.tsx` PASS (incluyendo los 2 previamente RED). 189/189 tests totales (shell-organism + arch fitness) PASS. `tsc --noEmit` y `eslint` 0 errors.
+
+**Archivos modificados:** `nicolify/frontend/src/components/shared/shell-organism/ShellOrganismLayoutClient.tsx` (no se tocó ningún otro archivo de scope).
