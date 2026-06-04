@@ -466,3 +466,61 @@ New tests added RED-first to `IcpEntityLayoutClient.test.tsx` (before the fix, a
 - Warning baseline: 152 warnings (scoped run). Below full-suite baseline. Did not grow.
 
 → **LIVE2-FIX-GREEN-READY.**
+
+---
+
+## Audit iteration 6 (BUG-1b: fetchClient SSR absolute URL)
+
+**Date:** 2026-06-04
+**Mode:** AUDITOR_AUTO_FIX_LOOP. **Trigger:** BUG-1b regression introduced by iter-5 SSR-404 gate commit (`1c7f0005`).
+
+### The regression (BUG-1b)
+
+The iter-5 SSR-404 gate in `[subsubtab]/layout.tsx` (Server Component) calls `icpApi.get()` → `fetchClient()` → `fetch("/api/v1/abel/icp/{id}", ...)` with a **relative URL**. Node.js `fetch` in a Server Component cannot parse relative URLs — it throws `TypeError: Failed to parse URL from /api/v1/...` before the request is made. The detail route was broken for ALL ICP navigation (valid and invalid alike), not just invalid UUIDs. The root issue is that `fetchClient` was browser-first: it relied on the Next.js `/api/v1/*` → `INTERNAL_API_URL` proxy, which only applies to browser requests — never to server-side `fetch()` calls.
+
+### The fix — `resolveUrl()` in `fetchClient`
+
+**Files touched:**
+- `nicolify/frontend/src/lib/api/fetch-client.ts` — added exported `resolveUrl(url)` helper + wired it inside `fetchClient` (additive branch before `fetch()`).
+- `nicolify/frontend/src/lib/api/fetch-client.test.ts` — NEW: 13 tests covering all `resolveUrl` branches (browser/server × relative/absolute × env-set/env-unset).
+
+**`resolveUrl` logic:**
+- `typeof window !== "undefined"` (browser): return URL unchanged — Next.js proxy handles `/api/v1/*` transparently.
+- `typeof window === "undefined"` (server) + absolute URL (`http://` / `https://`): return unchanged.
+- `typeof window === "undefined"` (server) + relative URL (`/...`) + `INTERNAL_API_URL` set: prefix base, stripping trailing slash to avoid double-slash.
+- `typeof window === "undefined"` (server) + relative URL + `INTERNAL_API_URL` unset: throw `Error` with clear message including the offending path (misconfiguration, not silent).
+
+**Zero change to browser behavior.** All existing `fetchClient` callers in `features/abel/api/` are invoked from React Query hooks (Client Components — browser) → they hit the unchanged browser branch. The only server-side caller is `[subsubtab]/layout.tsx::icpApi.get()`, which now resolves correctly.
+
+### TDD (RED first)
+
+Tests in `fetch-client.test.ts` were written before the fix and verified RED (resolveUrl didn't exist yet). After the fix all 13 are GREEN:
+- 4 browser-mode tests (window defined → relative + absolute URLs returned unchanged)
+- 5 server-mode + env set (relative prefixed, absolute not double-prefixed, trailing-slash stripped)
+- 4 server-mode + env unset (relative throws w/ message, absolute does not throw)
+
+### Carril classification
+
+Carril A — no new behavior test *required* by policy (the fix is an additive branch in a library function; all 13 tests are for the NEW `resolveUrl` helper which had no existing tests). Self-fix authority: (1) pure library function, no stake-asymmetric surface; (2) tests cover the new code; (3) browser callers unchanged. Within Carril A gate-verified bounds (1 iter ≤ 5 cap; ≤ 30 min wall-clock).
+
+### Other Server Component fetchClient callers
+
+`grep -rn "fetchClient" src/app src/features --include="*.ts" --include="*.tsx"` (excluding tests): **all 20 call sites are in `features/abel/api/*.ts`**, invoked exclusively from React Query hooks (Client Components). None in `src/app/**` (the only server-side `fetchClient` usage goes through `icpApi.get`). The fix is safe for all callers.
+
+### Gates (native, scoped — iter 6)
+
+| Gate | Result | Detail |
+|---|---|---|
+| `tsc --noEmit` | **PASS** | 0 errors (strict), exit 0 |
+| `eslint src/lib --cache` | **PASS** | **0 errors**, 4 warnings (all pre-existing sonarjs/no-duplicate-string in shell-routes.test + tenant-palette; none new from this fix) |
+| `vitest run src/lib src/features/abel src/components/shared/shell-organism src/__tests__/architecture` | **PASS** | **391 passed / 0 failed** (28 files). 13 new fetch-client tests: **GREEN**. Architecture 90/90. Note: the 2 pre-existing R0 ShellOrganismLayoutClient reds from earlier iterations are also now GREEN (resolved by a prior commit — further improvement, no regression). |
+
+### Regression guard (iter 6)
+
+- All 391 tests GREEN — no regressions vs iter 5.
+- Browser `fetchClient` behavior unchanged (server branch only activates server-side).
+- `[subsubtab]/layout.tsx` Server Component unchanged — it still calls `icpApi.get()` exactly as written in iter 5; the fix is transparent at the call site.
+- `IcpEntityLayoutClient` client-side notFound secondary backstop intact.
+- No new ESLint errors; no arch-fitness allowlist changes; no warning baseline growth.
+
+→ **BUG1B-FIX-GREEN-READY.**
