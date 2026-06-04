@@ -6,6 +6,9 @@
  * Covers:
  *   - Empty state (0 ICPs) → renders DraftFirstStarter (RN-2)
  *   - "generar" path → calls setIntakeOverlayOpen(true)
+ *   - "Empezar en blanco" path → calls createIcp.mutateAsync({label:"Nuevo ICP"})
+ *     and navigates to /{tenantId}/abel/icp/{newId}/datos (NOT /nuevo) — BUG FIX
+ *   - "Empezar en blanco" error path → shows toast error (no nav)
  *   - Loading state → shows skeleton (aria-busy)
  *   - Error state → shows error banner with retry
  *   - List state (≥1 ICP) → shows grid of IcpCards
@@ -27,10 +30,19 @@ import { resolve } from "path";
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
+const mockRouterPush = vi.fn();
+
 vi.mock("next/navigation", () => ({
   useParams: () => ({ tenantId: "tenant-test" }),
-  useRouter: () => ({ push: vi.fn() }),
+  useRouter: () => ({ push: mockRouterPush }),
   usePathname: () => "/tenant-test/abel/icp",
+}));
+
+vi.mock("sonner", () => ({
+  toast: {
+    error: vi.fn(),
+    success: vi.fn(),
+  },
 }));
 
 vi.mock("@clerk/nextjs", () => ({
@@ -49,6 +61,15 @@ vi.mock("../../hooks/use-icps", () => ({
     list: () => ["abel", "icp", "list"],
     detail: (id: string) => ["abel", "icp", id],
   },
+}));
+
+// Mock useCreateIcp mutation hook
+const mockMutateAsync = vi.fn();
+vi.mock("../../hooks/use-icp-mutations", () => ({
+  useCreateIcp: () => ({ mutateAsync: mockMutateAsync }),
+  usePatchIcp: () => ({ mutateAsync: vi.fn() }),
+  useMarkReadyIcp: () => ({ mutateAsync: vi.fn() }),
+  useDeleteIcp: () => ({ mutateAsync: vi.fn() }),
 }));
 
 // Mock the abel-ui-store
@@ -89,6 +110,8 @@ const sampleIcps: IcpListItem[] = [
 describe("IcpMasterListView — empty state (0 ICPs)", () => {
   beforeEach(() => {
     mockSetIntakeOverlayOpen.mockClear();
+    mockRouterPush.mockClear();
+    mockMutateAsync.mockClear();
     mockUseIcps.mockReturnValue({ data: [], isLoading: false, error: null, refetch: vi.fn() });
   });
 
@@ -108,6 +131,8 @@ describe("IcpMasterListView — empty state (0 ICPs)", () => {
 describe("IcpMasterListView — 'generar' path (UniversalIntake)", () => {
   beforeEach(() => {
     mockSetIntakeOverlayOpen.mockClear();
+    mockRouterPush.mockClear();
+    mockMutateAsync.mockClear();
     mockUseIcps.mockReturnValue({ data: [], isLoading: false, error: null, refetch: vi.fn() });
   });
 
@@ -118,6 +143,52 @@ describe("IcpMasterListView — 'generar' path (UniversalIntake)", () => {
     const generateBtn = screen.getByTestId("draft-first-generate-btn");
     await user.click(generateBtn);
     expect(mockSetIntakeOverlayOpen).toHaveBeenCalledWith(true);
+  });
+});
+
+describe("IcpMasterListView — 'Empezar en blanco' path (create + navigate fix)", () => {
+  beforeEach(() => {
+    mockSetIntakeOverlayOpen.mockClear();
+    mockRouterPush.mockClear();
+    mockMutateAsync.mockClear();
+    mockUseIcps.mockReturnValue({ data: [], isLoading: false, error: null, refetch: vi.fn() });
+  });
+
+  it("calls createIcp.mutateAsync with {label:'Nuevo ICP'} when 'Empezar en blanco' is clicked", async () => {
+    mockMutateAsync.mockResolvedValue({ id: "new-icp-uuid-123", label: "Nuevo ICP" });
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const user = userEvent.setup();
+    render(<IcpMasterListView />, { wrapper: makeWrapper(qc) });
+    const blankBtn = screen.getByTestId("draft-first-blank-btn");
+    await user.click(blankBtn);
+    expect(mockMutateAsync).toHaveBeenCalledWith({ label: "Nuevo ICP" });
+  });
+
+  it("navigates to /{tenantId}/abel/icp/{newId}/datos on success — NOT to a /nuevo literal", async () => {
+    const newId = "new-icp-uuid-123";
+    mockMutateAsync.mockResolvedValue({ id: newId, label: "Nuevo ICP" });
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const user = userEvent.setup();
+    render(<IcpMasterListView />, { wrapper: makeWrapper(qc) });
+    const blankBtn = screen.getByTestId("draft-first-blank-btn");
+    await user.click(blankBtn);
+    // Success: must navigate to /datos leaf
+    expect(mockRouterPush).toHaveBeenCalledWith(`/tenant-test/abel/icp/${newId}/datos`);
+    // Must NOT navigate to the dead literal /nuevo route
+    const pushedArgs = mockRouterPush.mock.calls.map((c: string[]) => c[0]);
+    expect(pushedArgs.some((url: string) => url.endsWith("/nuevo"))).toBe(false);
+  });
+
+  it("shows toast error and does NOT navigate when createIcp fails", async () => {
+    const { toast } = await import("sonner");
+    mockMutateAsync.mockRejectedValue(new Error("Network error"));
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const user = userEvent.setup();
+    render(<IcpMasterListView />, { wrapper: makeWrapper(qc) });
+    const blankBtn = screen.getByTestId("draft-first-blank-btn");
+    await user.click(blankBtn);
+    expect(toast.error).toHaveBeenCalledWith("No se pudo crear. Intenta de nuevo.");
+    expect(mockRouterPush).not.toHaveBeenCalled();
   });
 });
 
@@ -244,5 +315,23 @@ describe("IcpMasterListView — fetchClient tenant isolation", () => {
     const src = readFileSync(COMPONENT_PATH, "utf-8");
     expect(src).toContain("useParams");
     expect(src).toContain("tenantId");
+  });
+});
+
+describe("IcpMasterListView — source scan: no dead /nuevo literal route", () => {
+  const COMPONENT_PATH = resolve(__dirname, "./IcpMasterListView.tsx");
+
+  it("does NOT contain the dead /nuevo literal route (regression guard)", () => {
+    const src = readFileSync(COMPONENT_PATH, "utf-8");
+    // The fix replaces the dead literal with create-then-navigate
+    expect(src).not.toContain('"/nuevo"');
+    expect(src).not.toContain("`/${tenantId}/abel/icp/nuevo`");
+  });
+
+  it("navigates via created.id (source scan)", () => {
+    const src = readFileSync(COMPONENT_PATH, "utf-8");
+    // Must use the created ICP id in the navigation path
+    expect(src).toContain("created.id");
+    expect(src).toContain("/datos");
   });
 });

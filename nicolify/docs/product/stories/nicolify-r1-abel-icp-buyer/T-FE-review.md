@@ -605,3 +605,48 @@ No POM changes needed (existing `AbelBuyerLeafPage.setPrimaryBtn` and count asse
 (1) No new test required — `not-found-subtab` testid already present in `[subtab]/not-found.tsx`; spec correction only accepts the existing behavior. (2) Not stake-asymmetric — spec/copy changes, no security/auth/tenant/PII surface. (3) FE surface only. Within Carril A bounds.
 
 → **POLISH-GREEN-READY.** Both SC-adversarial-tenant and SC-edge-primary pass live. Quality gates green. No new ESLint errors. Architecture fitness 90/90. Working tree dirty (no commit per instructions).
+
+---
+
+## Audit iteration 9 (Empezar-en-blanco → create+navigate · Chris dev-app finding)
+
+**Date:** 2026-06-04
+**Mode:** AUDITOR_AUTO_FIX_LOOP (DoD #37 — bug found on real dev-app)
+**Bug:** `handleStartBlank` in `IcpMasterListView.tsx` navigated to `/${tenantId}/abel/icp/nuevo` — a dead literal route. `"nuevo"` is not UUID-shaped so the SSR-404/whitelist gate correctly 404s it.
+**Fix pattern:** Create blank ICP via `useCreateIcp().mutateAsync({label:"Nuevo ICP"})` then navigate to `/${tenantId}/abel/icp/${created.id}/datos` (same draft-first pattern used by other ICP entry points). Handles pending state (double-submit guard) + error toast.
+
+### Root cause
+
+```
+// BEFORE (dead literal route):
+router.push(`/${tenantId}/abel/icp/nuevo`);
+
+// AFTER (create-then-navigate):
+const created = await createIcp.mutateAsync({ label: "Nuevo ICP" });
+router.push(`/${tenantId}/abel/icp/${created.id}/datos`);
+```
+
+### Changes (scope-compliant — ONLY touched IcpMasterListView + its test)
+
+| File | Change |
+|---|---|
+| `src/features/abel/components/icp/IcpMasterListView.tsx` | Import `useCreateIcp` + `useState` + `toast`. `handleStartBlank` now async: creates blank ICP, navigates to `/datos` leaf on success, shows `toast.error` on failure. Double-submit guard via `isStartingBlank` state. |
+| `src/features/abel/components/icp/IcpMasterListView.test.tsx` | Added mocks for `useCreateIcp`, `sonner` toast, `mockRouterPush`. Added 6 new tests: mutateAsync called with correct payload, navigation to `/datos` NOT `/nuevo`, error path shows toast without nav, source-scan regression guards (no `/nuevo` literal, uses `created.id`). |
+
+### Tests added (19 total, was 13)
+
+- `calls createIcp.mutateAsync with {label:'Nuevo ICP'} when 'Empezar en blanco' is clicked`
+- `navigates to /{tenantId}/abel/icp/{newId}/datos on success — NOT to a /nuevo literal`
+- `shows toast error and does NOT navigate when createIcp fails`
+- `does NOT contain the dead /nuevo literal route (regression guard)` — source scan
+- `navigates via created.id (source scan)`
+
+### Gates (native, scoped — iter 9)
+
+| Gate | Result | Detail |
+|---|---|---|
+| `tsc --noEmit` | **PASS** | 0 errors strict |
+| `eslint src/features/abel` | **PASS** | 0 errors, 148 warnings (pre-existing baseline, no new) |
+| `vitest run src/features/abel src/__tests__/architecture` | **PASS** | **279/279 passed** (18 test files) |
+
+→ **BLANK-FIX-GREEN-READY.** Working tree dirty (no commit per instructions).

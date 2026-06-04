@@ -32,15 +32,17 @@
  * validators_gate: RN-2 (draft-first) + SC-empty + SC-large
  */
 
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 
 import { useRouter, useParams } from "next/navigation";
+import { toast } from "sonner";
 
 import { DraftFirstStarter } from "@/components/shared/DraftFirstStarter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 import { useIcps } from "../../hooks/use-icps";
+import { useCreateIcp } from "../../hooks/use-icp-mutations";
 import { useAbelUiStore } from "../../store/abel-ui-store";
 import { IcpCard } from "./IcpCard";
 
@@ -60,6 +62,12 @@ export function IcpMasterListView() {
   // ── Data ───────────────────────────────────────────────────────────────────
   const { data: icps, isLoading, error, refetch } = useIcps();
 
+  // ── Mutations ──────────────────────────────────────────────────────────────
+  const createIcp = useCreateIcp();
+
+  // ── Local UI state ─────────────────────────────────────────────────────────
+  const [isStartingBlank, setIsStartingBlank] = useState(false);
+
   // ── Store (G2 SSR-safe — called after ssr:false boundary) ─────────────────
   const setIntakeOverlayOpen = useAbelUiStore((s) => s.setIntakeOverlayOpen);
 
@@ -70,10 +78,25 @@ export function IcpMasterListView() {
     setIntakeOverlayOpen(true);
   }, [setIntakeOverlayOpen]);
 
-  /** Path B: "Lo armo yo" → navigate to blank ICP create form */
-  const handleStartBlank = useCallback(() => {
-    router.push(`/${tenantId}/abel/icp/nuevo`);
-  }, [router, tenantId]);
+  /**
+   * Path B: "Lo armo yo" → create a blank ICP then navigate to its detail.
+   *
+   * Draft-first: creates with label "Nuevo ICP" (minimum required field),
+   * then navigates to the datos leaf so the user fills the rest inline.
+   * NEVER push a literal `/nuevo` route (not UUID-shaped → SSR-404).
+   */
+  const handleStartBlank = useCallback(async () => {
+    if (isStartingBlank) return; // debounce — prevent double-submit
+    setIsStartingBlank(true);
+    try {
+      const created = await createIcp.mutateAsync({ label: "Nuevo ICP" });
+      router.push(`/${tenantId}/abel/icp/${created.id}/datos`);
+    } catch {
+      toast.error("No se pudo crear. Intenta de nuevo.");
+    } finally {
+      setIsStartingBlank(false);
+    }
+  }, [createIcp, isStartingBlank, router, tenantId]);
 
   // ── Loading state ──────────────────────────────────────────────────────────
 
