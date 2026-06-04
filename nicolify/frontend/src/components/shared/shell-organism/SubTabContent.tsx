@@ -1,12 +1,15 @@
 // cap: shell-organism.shell-nicolify
 // story-origin: nicolify-r0-sitemap-completo T-1 (rewrite v3 from nicolify-r0-shell T-6)
+// T-FE-3: abel.icp → IcpMasterListView (R1 first real feature content)
 /**
  * SubTabContent — dispatcher organismo para Nicolify sitemap-completo.
  * Updated in T-1 (sitemap-completo): v3 N2 tree + 8 N3 leaves + subsubtab? prop.
+ * Updated in T-FE-3 (abel-icp-buyer): "abel.icp" dispatches to IcpMasterListView
+ *   instead of EmptyState. Other combos remain unchanged (regression_guard).
  *
- * Maps {agent}.{subtab} and {agent}.{subtab}.{subsubtab} combos to EmptyState.
- * R0-sitemap design: NO feature imports (no `features/{agent}/` dir exists yet).
- * The dispatcher maps all v3 N2 sub-tab combos + 8 N3 leaf combos to EmptyState messages.
+ * Maps {agent}.{subtab} and {agent}.{subtab}.{subsubtab} combos to content.
+ * "abel.icp" → IcpMasterListView ("use client" — must be dynamically imported).
+ * All other combos → EmptyState (server-side pure).
  *
  * Key pattern for N3: "{agent}.{subtab}.{subsubtab}" — avoids collision
  * (christian.propuestas.propuestas vs christian.propuestas.licitaciones).
@@ -14,26 +17,26 @@
  * When subsubtab present: looks up key `{agent}.{subtab}.{subsubtab}` → N3 empty-state.
  * When absent: current N2 behavior `{agent}.{subtab}` → N2 empty-state.
  *
- * R1+ evolution: When a sub-tab gets real content, replace the EmptyState entry
- * with the feature component import (same pattern as vitalia SubTabContent).
- *
  * Architecture invariants (shell-routes SSoT):
  *   - All EmptyState keys derive from AGENT_SUBTABS / AGENT_SUBSUBTABS
- *   - SubTabContent is the only file mapping agent.subtab(.subsubtab) to content
+ *   - SubTabContent is the ONLY file mapping agent.subtab(.subsubtab) to content
+ *   - abel.icp already in shell-routes SSoT — DO NOT duplicate
  *
- * Server Component default — no "use client" (all EmptyState are pure Server).
+ * "use client" required: IcpMasterListView is a client component.
  * Named export (NO default) per FSD-Lite enforce.
  *
  * spec_anchor: 06-tickets.yaml T-1 · 01-sitemap.md v3 · SYSTEM-MAP.yaml v2.0
+ * spec_anchor: 03-arch-fe.md §11 Registration (CONN) → SubTabContent dispatcher
  * gherkin_coverage: A1 A5 F-EMPTY-STATES F-SARA-PROXIMAMENTE
  * downstream-regression-na: brand-local shell-organism; no cross-brand consumers
  */
+"use client";
 
+import { IcpMasterListView } from "@/features/abel/components/icp/IcpMasterListView";
 import { AGENT_SUBTABS } from "@/lib/routing/shell-routes";
+import type { RibbonTabSlug } from "@/lib/routing/shell-routes";
 
 import { EmptyState } from "./EmptyState";
-
-import type { RibbonTabSlug } from "@/lib/routing/shell-routes";
 
 // ── Component Props ────────────────────────────────────────────────────────────
 export interface SubTabContentProps {
@@ -242,11 +245,14 @@ const SUBTAB_CONTENT_MAP: Record<ContentMapKey, SubTabEmptyContent> = {
 } as const;
 
 /**
- * SubTabContent — dispatches EmptyState for each agent.subtab(.subsubtab) combo.
- * Server Component (no "use client" — EmptyState is pure Server).
+ * SubTabContent — dispatches content for each agent.subtab(.subsubtab) combo.
+ * "use client" required (IcpMasterListView is client-side).
+ *
+ * Special case: "abel.icp" → <IcpMasterListView /> (real feature — T-FE-3).
+ * All other combos → EmptyState (regression_guard: other subtabs stay EmptyState).
  *
  * When subsubtab is present: looks up key "{agent}.{subtab}.{subsubtab}" → N3 leaf empty-state.
- * When absent: current N2 behavior "{agent}.{subtab}" → N2 empty-state.
+ * When absent: current N2 behavior "{agent}.{subtab}" → N2 or feature component.
  * data-testid: "subtab-content-{agent}-{subtab}" (N2) or "subtab-content-{agent}-{subtab}-{subsubtab}" (N3).
  */
 export function SubTabContent({ agent, subtab, subsubtab }: SubTabContentProps) {
@@ -258,6 +264,17 @@ export function SubTabContent({ agent, subtab, subsubtab }: SubTabContentProps) 
     ? `subtab-content-${agent}-${subtab}-${subsubtab}`
     : `subtab-content-${agent}-${subtab}`;
 
+  // ── T-FE-3: abel.icp → real feature (CONN registration — notarized) ────────
+  // Only at N2 level (no subsubtab). The IcpMasterListView handles its own state.
+  if (key === "abel.icp") {
+    return (
+      <div className="flex flex-1 min-h-0 overflow-hidden" data-testid={testId}>
+        <IcpMasterListView />
+      </div>
+    );
+  }
+
+  // ── All other combos: EmptyState (regression_guard) ────────────────────────
   const content = (SUBTAB_CONTENT_MAP as Record<string, SubTabEmptyContent | undefined>)[key] ?? {
     icon: subtabMeta?.icon ?? "📄",
     title: "Todavía no hay nada por aquí",

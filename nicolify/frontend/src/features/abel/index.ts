@@ -37,3 +37,35 @@ export type { UseIcpExtractReturn } from "./hooks/use-icp-extract";
 // ── T-FE-2: Abel UI store ─────────────────────────────────────────────────────
 export { useAbelUiStore, ABEL_UI_STORAGE_KEY } from "./store/abel-ui-store";
 export type { IntakeMode } from "./store/abel-ui-store";
+
+// ── T-FE-3: ICP API ───────────────────────────────────────────────────────────
+export { icpApi } from "./api/icp-api";
+export type { IcpApiOptions } from "./api/icp-api";
+
+// ── T-FE-3: Buyer API ─────────────────────────────────────────────────────────
+export { buyerApi } from "./api/buyer-api";
+export type { BuyerApiOptions, BuyerCreatePayload, BuyerPatchPayload } from "./api/buyer-api";
+
+// ── T-FE-3: ICP hooks ─────────────────────────────────────────────────────────
+export { useIcps, useIcp, icpQueryKeys } from "./hooks/use-icps";
+export { useBuyers, useBuyer, buyerQueryKeys } from "./hooks/use-buyers";
+export {
+  useCreateIcp,
+  usePatchIcp,
+  useMarkReadyIcp,
+  useDeleteIcp,
+} from "./hooks/use-icp-mutations";
+export {
+  useCreateBuyer,
+  usePatchBuyer,
+  useSetPrimaryBuyer,
+  useDeleteBuyer,
+} from "./hooks/use-buyer-mutations";
+
+// ── T-FE-3: Zod schemas ───────────────────────────────────────────────────────
+export { icpFormSchema, buyerFormSchema, icpCreateSchema } from "./types/icp-schema";
+export type { IcpFormValues, BuyerFormValues, IcpCreateFormValues } from "./types/icp-schema";
+
+// ── T-FE-3: Components ────────────────────────────────────────────────────────
+export { IcpCard } from "./components/icp/IcpCard";
+export { IcpMasterListView } from "./components/icp/IcpMasterListView";
