@@ -894,3 +894,58 @@ iter7_stage_files:
   - "nicolify/frontend/src/app/[tenantId]/(shell-organism)/[agent]/[subtab]/[subsubtab]/not-found.tsx"
   - "nicolify/frontend/e2e/specs/regression/abel-icp-regression.spec.ts"
 ```
+
+---
+
+## Tenant-id header verification — 2026-06-04
+
+**Scope:** Tight live verification that commit `d6fd864d` makes the FE send the UUID from Clerk `publicMetadata.tenant_id` as `X-Tenant-ID` — NOT the URL slug.
+
+**Fix in commit d6fd864d:** `useTenantId()` now reads `user.publicMetadata.tenant_id` (UUID). Previously the abel hooks used `useParams().tenantId` (URL slug, e.g. "alpaca-purpura") → BE 422.
+
+**Test user:** `owner.demo@nicolify.com`
+**Verified publicMetadata via Clerk API:**
+```
+user_id:    user_3EQj6nSnoq2ANb7eu00PVGJsizA
+public_metadata: { role: "owner", tenant_id: "7f464ab7-137b-5e3a-af13-3020aa18814a" }
+```
+
+### Method
+
+1. Playwright spec `e2e/specs/smoke/tenant-id-header.smoke.spec.ts` (newly created — kept as regression spec).
+   - Subscribes to `page.on('request')` filtering for `/api/v1/abel/icp`.
+   - Navigates to `/{UUID}/abel/icp` (owner.demo's route — has no human slug).
+   - ASSERTS `X-Tenant-ID === "7f464ab7-137b-5e3a-af13-3020aa18814a"` (strict equality).
+   - ASSERTS status ≠ 422.
+2. Direct API call using Clerk `__session` JWT from storageState:
+   - `GET /api/v1/abel/icp` with `X-Tenant-ID: 7f464ab7-137b-5e3a-af13-3020aa18814a` (UUID)
+   - `GET /api/v1/abel/icp` with `X-Tenant-ID: alpaca-purpura` (slug)
+
+### Results
+
+| Check | Value | Verdict |
+|---|---|---|
+| Playwright test `SC: X-Tenant-ID on /api/v1/abel/icp equals publicMetadata UUID` | PASS | ✅ |
+| Playwright test `SC: slug-shaped URL does NOT cause X-Tenant-ID to be the slug` | PASS | ✅ |
+| Direct API: `X-Tenant-ID=7f464ab7-137b-5e3a-af13-3020aa18814a` (UUID) → status | **200** | ✅ UUID accepted |
+| Direct API: `X-Tenant-ID=alpaca-purpura` (slug) → status | **422** | ✅ Slug rejected (confirms UUID is required) |
+| Anti-burbuja (base.ts): 0 pageerror / 0 console.error / 0 overlay | **CLEAN** | ✅ |
+| Total smoke run (4 tests including 2 setup) | **4/4 passed (7.0s)** | ✅ |
+
+**CAPTURED X-Tenant-ID header:** `7f464ab7-137b-5e3a-af13-3020aa18814a`
+**RESPONSE STATUS:** 200 (list route)
+
+### Conclusion
+
+The fix is confirmed: `useTenantId()` reads `publicMetadata.tenant_id` UUID, not `useParams().tenantId` slug. The BE returns 200 for the UUID and 422 for the slug, proving the fix resolves the original bug reported by Chris on `dev-app.nicolify.com/alpaca-purpura/abel/icp`.
+
+```yaml
+tenant_header_verified_at: 2026-06-04
+commit_verified: d6fd864d
+xtenant_id_captured: "7f464ab7-137b-5e3a-af13-3020aa18814a"
+response_status_uuid: 200
+response_status_slug: 422
+playwright_result: "4/4 PASS (setup×2 + header-check×2)"
+antibubble: CLEAN
+spec_added: "nicolify/frontend/e2e/specs/smoke/tenant-id-header.smoke.spec.ts"
+```

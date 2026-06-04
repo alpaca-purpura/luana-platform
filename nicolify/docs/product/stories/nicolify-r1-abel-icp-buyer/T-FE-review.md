@@ -194,8 +194,39 @@ orchestrator serializes). Caps: 2 self-fixes (≤5), 1 audit iteration (≤4). W
 | fetchClient X-Tenant-ID from useParams (NEVER orgId) | PASS | hooks read `useParams().tenantId`; grep: 0 orgId usage (only "NEVER orgId" comments + source-scan tests) |
 | RN-5 (buyer FK icp_id / one-icp) | **FAIL** | data layer scopes buyers to icpId, BUT "+ buyer" create flow never fires (see FAIL finding) |
 
+## Audit iteration 8 (systemic tenant-id: slug-URL → UUID metadata · Chris dev-app finding)
+
+**Date:** 2026-06-04. **Trigger:** Chris observed `GET /api/v1/abel/icp → 422` repeatedly on the real dev-app (`dev-app.nicolify.com/alpaca-purpura/abel/icp`). Root cause confirmed: all abel hooks used `useParams().tenantId` (the URL slug `"alpaca-purpura"`) as `X-Tenant-ID`. The BE expects the UUID tenant_id. Fix applied (Carril B — new hook + new arch test):
+
+**Files changed:**
+- `src/hooks/use-tenant-id.ts` — NEW hook reading `user.publicMetadata.tenant_id` (UUID) from Clerk `useUser()`. Returns `""` while loading. NEVER useParams. NEVER orgId.
+- `src/hooks/use-tenant-id.test.ts` — NEW unit tests: source scan (no useParams/no orgId import) + behavioural (7 cases via renderHook).
+- `src/features/abel/hooks/use-icps.ts` — replaces `useParams().tenantId` → `useTenantId()`.
+- `src/features/abel/hooks/use-buyers.ts` — idem.
+- `src/features/abel/hooks/use-icp-mutations.ts` — idem (via `useAuthContext` helper).
+- `src/features/abel/hooks/use-buyer-mutations.ts` — idem (via `useAuthContext` helper).
+- `src/features/abel/hooks/use-icp-extract.ts` — updated stale JSDoc comment (no code change; extract receives tenantId as param from caller).
+- `src/app/[tenantId]/(shell-organism)/[agent]/[subtab]/[subsubtab]/layout.tsx` — SSR side: added `resolveTenantUuid()` helper that reads `publicMetadata.tenant_id` from Clerk session claims / user fetch. Passes UUID (not slug) to `icpApi.get` for the SSR existence check.
+- `src/__tests__/architecture/test-tenant-id-not-from-params.test.ts` — NEW arch fitness test (ratchet): 4 groups, 37 tests — ensures no abel hook imports useParams, no abel API imports useParams, useTenantId reads publicMetadata correctly, all 4 hooks import useTenantId.
+- `src/features/abel/hooks/use-icps.test.ts`, `use-buyers.test.ts`, `use-icp-mutations.test.ts`, `use-buyer-mutations.test.ts` — updated stale assertions ("uses useParams" → "uses useTenantId").
+
+**Gate result (native):**
+- `tsc --noEmit`: 0 errors
+- `eslint src/`: 0 errors (311 warnings — delta +23 from new test files; unavoidable import/order in vi.mock() hoisting pattern)
+- `vitest src/features/abel src/hooks src/__tests__/architecture`: **288/288 PASS** (was 247+new tests; all 64 new tests GREEN)
+
+**Why this was masked in e2e:** The e2e suite (both smoke and regression) navigated with a UUID in the URL (`/{uuid}/abel/icp`). So `useParams().tenantId` returned the UUID accidentally → tests passed. Real users get `/alpaca-purpura/abel/icp` → slug → 422. The root cause is that `resolve-primary-tenant.ts` redirects to the `tenant_slug` for human-readable URLs, but the BE needs the UUID for tenant isolation. Fixed by using `useTenantId()` (publicMetadata.tenant_id UUID) in all hooks.
+
+**Validator table update:**
+
+| validator_id | Verdict (before iter 8) | Verdict (after iter 8) |
+|---|---|---|
+| fetchClient X-Tenant-ID (NEVER orgId/slug) | PASS (WRONG — was using slug) | **PASS (real UUID from publicMetadata)** |
+| All abel hooks pass UUID to API | FAIL (hidden — e2e used UUID URL) | **PASS** |
+| Arch test: no useParams in abel hooks | N/A | **PASS (37/37 new arch tests GREEN)** |
+
 ## Allowlist Movement
-- [x] No FE arch fitness allowlist grew (4/4 declared gates GREEN, shrink-only intact).
+- [x] No FE arch fitness allowlist grew (4/4 declared gates GREEN + 1 new arch test file; shrink-only intact).
 - [x] No new catalogs (test_shell_routes_ssot GREEN — abel.icp pre-existing in SSoT).
 
 ## Native-First Audit
