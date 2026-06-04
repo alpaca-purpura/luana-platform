@@ -24,6 +24,9 @@ dependencies = [
     "luana-core-observability",
     "luana-core-extension-sdk",
     "luana-core-iam",
+    # R1 abel: extractor draft-first (T-AG-1) consume engine extraction + llm por import
+    "luana-core-extraction",
+    "luana-core-llm",
     # Clerk SDK para seed --clerk-sync (graceful degradation si no está)
     "clerk-backend-api>=1.0",
 ]
