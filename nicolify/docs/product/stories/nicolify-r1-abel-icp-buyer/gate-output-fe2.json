@@ -1,0 +1,76 @@
+{
+  "ticket": "T-FE-2",
+  "story": "nicolify-r1-abel-icp-buyer",
+  "brand": "nicolify",
+  "date": "2026-06-03",
+  "overall": {
+    "any_fail": false,
+    "verdict": "FE2-GREEN-READY"
+  },
+  "gates": {
+    "tsc_noEmit": {
+      "status": "PASS",
+      "errors": 0,
+      "notes": "0 TypeScript errors across all T-FE-2 files"
+    },
+    "eslint_errors": {
+      "status": "PASS",
+      "errors": 0,
+      "warnings": 16,
+      "notes": "0 errors in T-FE-2 scope. Warnings are react-perf/jsx-no-new-function-as-prop (handlers) and import/order (cosmetic) — pre-existing baseline category"
+    },
+    "vitest_t_fe_2": {
+      "status": "PASS",
+      "tests_pass": 72,
+      "tests_fail": 0,
+      "files": [
+        "src/components/shared/intake/UniversalIntake.test.tsx (17 tests)",
+        "src/components/shared/DraftFirstStarter.test.tsx (8 tests)",
+        "src/components/shared/ProposalBanner.test.tsx (10 tests)",
+        "src/components/shared/WhatForChip.test.tsx (9 tests)",
+        "src/features/abel/hooks/use-icp-extract.test.ts (11 tests)",
+        "src/features/abel/store/abel-ui-store.test.ts (17 tests)"
+      ]
+    },
+    "architecture_fitness": {
+      "status": "PASS",
+      "tests_pass": 90,
+      "tests_fail": 0,
+      "files": [
+        "test_agent_tw_classes.test.ts (5 tests)",
+        "test_shell_routes_ssot.test.ts (13 tests)",
+        "no-store-in-ssr-skeleton.test.tsx (30 tests)",
+        "test_spanish_neutro.test.ts (42 tests)"
+      ]
+    },
+    "pre_existing_failures": {
+      "count": 2,
+      "file": "src/components/shared/shell-organism/__tests__/ShellOrganismLayoutClient.test.tsx",
+      "confirmed_pre_existing": true,
+      "note": "Verified via git stash — 2 failures existed before T-FE-2. Not caused by this ticket. Not in T-FE-2 scope."
+    }
+  },
+  "files_created": [
+    "nicolify/frontend/src/components/shared/intake/UniversalIntake.tsx",
+    "nicolify/frontend/src/components/shared/intake/UniversalIntake.test.tsx",
+    "nicolify/frontend/src/components/shared/DraftFirstStarter.tsx",
+    "nicolify/frontend/src/components/shared/DraftFirstStarter.test.tsx",
+    "nicolify/frontend/src/components/shared/ProposalBanner.tsx",
+    "nicolify/frontend/src/components/shared/ProposalBanner.test.tsx",
+    "nicolify/frontend/src/components/shared/WhatForChip.tsx",
+    "nicolify/frontend/src/components/shared/WhatForChip.test.tsx",
+    "nicolify/frontend/src/features/abel/api/extract-api.ts",
+    "nicolify/frontend/src/features/abel/hooks/use-icp-extract.ts",
+    "nicolify/frontend/src/features/abel/hooks/use-icp-extract.test.ts",
+    "nicolify/frontend/src/features/abel/store/abel-ui-store.ts",
+    "nicolify/frontend/src/features/abel/store/abel-ui-store.test.ts",
+    "nicolify/frontend/src/features/abel/types/icp.ts",
+    "nicolify/frontend/src/features/abel/types/buyer.ts",
+    "nicolify/frontend/src/features/abel/types/extract.ts",
+    "nicolify/docs/product/stories/nicolify-r1-abel-icp-buyer/T-FE-2-result.md",
+    "nicolify/docs/product/stories/nicolify-r1-abel-icp-buyer/gate-output-fe2.json"
+  ],
+  "files_modified": [
+    "nicolify/frontend/src/features/abel/index.ts"
+  ]
+}
