@@ -29,6 +29,8 @@ export interface AutosaveBadgeProps {
   /** Timestamp of last successful save (shown as "Guardado hace Xs"). */
   savedAt?: Date | null;
   className?: string;
+  /** Override the data-testid (forms pass per-form ids, e.g. icp-autosave-badge). */
+  "data-testid"?: string;
 }
 
 function relativeTime(date: Date): string {
@@ -58,7 +60,12 @@ const STATUS_DOTS: Record<AutosaveStatus, string> = {
  * AutosaveBadge — displays autosave state as a small inline status indicator.
  * Role="status" with aria-live="polite" so screen readers announce changes.
  */
-export function AutosaveBadge({ status, savedAt, className }: AutosaveBadgeProps) {
+export function AutosaveBadge({
+  status,
+  savedAt,
+  className,
+  "data-testid": testId = "autosave-badge",
+}: AutosaveBadgeProps) {
   const label = (() => {
     switch (status) {
       case "saving":
@@ -78,7 +85,7 @@ export function AutosaveBadge({ status, savedAt, className }: AutosaveBadgeProps
       role="status"
       aria-live="polite"
       aria-label={label ?? "Estado de guardado"}
-      data-testid="autosave-badge"
+      data-testid={testId}
       data-state={status}
       className={cn(
         "flex items-center gap-1.5 text-xs font-medium transition-all duration-300",
