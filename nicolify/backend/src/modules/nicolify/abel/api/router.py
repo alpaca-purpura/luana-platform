@@ -1,5 +1,5 @@
 # cap: abel/icp-buyer  # noqa: ERA001
-"""Abel API router — ICP + Buyer CRUD + mark-ready + extract stubs.
+"""Abel API router — ICP + Buyer CRUD + mark-ready + draft-first extraction.
 
 FastAPI thin pattern: validate DTO → call service → map domain exception → HTTPException.
 NO business logic in routes.
@@ -8,14 +8,13 @@ response_model= MANDATORY on every route (PII gate · arch test enforces).
 X-Tenant-ID Header (Annotated) + Authorization (from engine auth dep).
 
 Extraction routes (POST /icp/extract, GET /icp/extract/{job_id}):
-Stub implementations — real logic in T-AG-1 (IcpExtractionService).
+Real draft-first extractor (T-AG-1 · IcpExtractionService, process-singleton job store).
 
 redirect_slashes=False set at app level (main.py — arch test test_main_app_config).
 """
 
 from __future__ import annotations
 
-import uuid
 from typing import Annotated
 from uuid import UUID
 
@@ -41,6 +40,12 @@ from src.modules.nicolify.abel.application.dtos.icp_dtos import (
     IcpResponse,
 )
 from src.modules.nicolify.abel.application.services.buyer_service import BuyerService
+from src.modules.nicolify.abel.application.services.extraction_service_holder import (
+    get_extraction_service,
+)
+from src.modules.nicolify.abel.application.services.icp_extraction_service import (
+    IcpExtractionService,
+)
 from src.modules.nicolify.abel.application.services.icp_service import IcpService
 from src.modules.nicolify.abel.domain.exceptions import (
     BuyerNotInIcp,
@@ -275,40 +280,40 @@ async def delete_buyer(
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Extraction routes — stubs (T-AG-1 will implement IcpExtractionService)
+# Extraction routes — draft-first extractor (T-AG-1 · IcpExtractionService)
 # ─────────────────────────────────────────────────────────────────────────────
+
+
+def _get_extraction_service() -> IcpExtractionService:
+    """Provide the process-singleton IcpExtractionService (job store survives requests).
+
+    DI seam: tests override this dependency with a hermetic service.
+    """
+    return get_extraction_service()
 
 
 @router.post("/icp/extract", response_model=IcpExtractJobResponse)
 async def extract_icp(
     request: IcpExtractRequest,
     tenant_id: Annotated[UUID, Depends(_get_tenant_id)],
+    service: Annotated[IcpExtractionService, Depends(_get_extraction_service)],
 ) -> IcpExtractJobResponse:
-    """Draft-first extraction — T-AG-1 scope (IcpExtractionService).
+    """Draft-first extraction: start async job → return {job_id, status=analizando} (RN-1/RN-3).
 
-    Stub: returns job_id=analizando. T-AG-1 will wire real IcpExtractionService.
+    Least-privilege: the extractor only PROPOSES a borrador (RN-3). The seed is treated
+    as untrusted data (RN-9 — wrapped + sanitized in the orchestrator).
     """
-    # Stub implementation — T-AG-1 replaces with real async extraction
-    job_id = uuid.uuid4()
-    return IcpExtractJobResponse(
-        job_id=job_id,
-        status="analizando",
-        icp_id=None,
-    )
+    return await service.start(tenant_id, request)
 
 
 @router.get("/icp/extract/{job_id}", response_model=IcpExtractJobResponse)
 async def get_extract_job(
     job_id: UUID,
     tenant_id: Annotated[UUID, Depends(_get_tenant_id)],
+    service: Annotated[IcpExtractionService, Depends(_get_extraction_service)],
 ) -> IcpExtractJobResponse:
-    """Poll extraction job status — T-AG-1 scope.
-
-    Stub: returns failed to signal T-AG-1 pending. Real poll in T-AG-1.
-    """
-    # Stub implementation — T-AG-1 replaces with real job status lookup
-    return IcpExtractJobResponse(
-        job_id=job_id,
-        status="failed",
-        icp_id=None,
-    )
+    """Poll extraction job status (analizando|done|failed). 404 if not the owning tenant (RN-1)."""
+    result = await service.get_job(tenant_id, job_id)
+    if result is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job de extracción no encontrado.")
+    return result
