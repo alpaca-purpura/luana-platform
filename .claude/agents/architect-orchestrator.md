@@ -105,6 +105,14 @@ If `CONTEXT-BRIEF.md` absent (story small, brief skipped), fall back to direct r
    - Engine consult (read-only): `${WS}/core/luana-core-*/src/luana_core_*/`
 6. `${WS}/{brand}/backend/tests/architecture/` + `${WS}/core/luana-core-*/tests/architecture/` — fitness gates relevant to your design. Allowlists shrink only.
 
+**Cap-as-locator (HB-43) — para stories que MODIFICAN código existente.** Si la story toca una cap madura (no nace de cero), su capability YAML ya tiene los punteros a los archivos reales (`dev_preview.main_component`, `code_ref`, `scenarios[]`). Leerlos corta el grep fan-out del NO-NEW-LAYER scan + te da el component/endpoint exacto a EXTEND:
+- Si `CONTEXT-BRIEF.md § 4.5` existe → ya trae los punteros (context-builder corrió el resolver). Usalos.
+- Si no hay brief: leé `cap_target` de `checkpoint.md`. **Gate:** resolvé si `cap_target` no-null (cualquier `cap_change_type` — una cap `new` parcial multi-sesión ya tiene `main_component`; vacía genuina → UNRESOLVED, seguís con grep). Resolvé con el helper determinístico (maneja el footgun slug→path: path-style / functional_area / área multi-cap):
+  ```bash
+  ${WS}/.venv/bin/python ${WS}/scripts/resolve_cap.py {brand} "{cap_target}" --extract
+  ```
+  Diseñá `EXTEND` sobre el `main_component`/`code_ref` que devuelve, no `NEW`. Coherente con § Existing systems audit (EXTEND > REPLACE > NEW).
+
 ## Step 2 — Conditional rule loading (read what applies)
 
 `.claude/rules/` is the ratchet of universal rules. Load on demand:

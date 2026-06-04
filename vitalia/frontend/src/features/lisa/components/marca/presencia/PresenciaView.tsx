@@ -10,11 +10,14 @@
  *
  * Composition (in render order):
  *   1. Section header + AutosaveBadge
- *   2. InfoBannerLandingDescoped  — landing pública deferred
- *   3. WebsiteCard                — URL input + conn-status
- *   4. SocialMediaLinksEditor     — 5 social rows
- *   5. TrustSignalsEditor         — OQ-D hybrid catalog
- *   6. LocationsCard              — read-only sedes from clinics module
+ *   2. WebsiteCard                — URL input + conn-status
+ *   3. SocialMediaLinksEditor     — 5 social rows
+ *   4. TrustSignalsEditor         — OQ-D hybrid catalog
+ *   5. LocationsCard              — read-only sedes from clinics module
+ *
+ * (Bug #5 vitalia-bugfix-shell-nav-scroll-errors T-5: se removió el banner
+ *  "Editor de landing pública — próximamente" — InfoBannerLandingDescoped. El
+ *  editor de landing NO se construye acá; eso es otra story.)
  *
  * Data layer:
  *   - useQuery contact            — GET /lisa/marca/contact
@@ -41,7 +44,6 @@ import { AutosaveBadge } from "@/components/marca/shared/AutosaveBadge";
 import { marcaKeys } from "../../../api/marca";
 import { getContact } from "../../../api/marca-presence-api";
 import { useContactAutosave } from "../../../hooks/useContactAutosave";
-import { InfoBannerLandingDescoped } from "./InfoBannerLandingDescoped";
 import { WebsiteCard } from "./WebsiteCard";
 import { SocialMediaLinksEditor } from "./SocialMediaLinksEditor";
 import { TrustSignalsEditor } from "./TrustSignalsEditor";
@@ -120,10 +122,11 @@ export function PresenciaView({ tenantId, clinicId, className }: PresenciaViewPr
 
   // ── Render ───────────────────────────────────────────────────────────────
   return (
-    <div className={cn("flex flex-col gap-6 p-6", className)}>
-      {/* Section header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-foreground">Presencia</h2>
+    <div data-testid="presencia-view" className={cn("flex flex-col gap-6 p-6", className)}>
+      {/* Section header — Bug #3 fix (vitalia-bugfix-shell-nav-scroll-errors T-6):
+          se removió el h2 "Presencia" (eco del SubSubTab activo). Se conserva el
+          AutosaveBadge, re-alineado a la derecha. */}
+      <div className="flex items-center justify-end">
         <AutosaveBadge status={autosaveStatus} savedAt={savedAt} />
       </div>
 
@@ -142,18 +145,13 @@ export function PresenciaView({ tenantId, clinicId, className }: PresenciaViewPr
       {/* Content — rendered once data loads (skeleton hides it) */}
       {!isContactLoading && (
         <div className="flex flex-col gap-4">
-          {/* 1. Info banner — landing pública deferred */}
-          <InfoBannerLandingDescoped
-            publicLandingUrl={contact?.publicLandingUrl}
-          />
-
-          {/* 2. Website URL */}
+          {/* 1. Website URL */}
           <WebsiteCard
             websiteUrl={contact?.websiteUrl}
             onScheduleAutosave={handleScheduleAutosave}
           />
 
-          {/* 3. Social media links */}
+          {/* 2. Social media links */}
           <SocialMediaLinksEditor
             instagram={contact?.instagramHandle}
             tiktok={contact?.tiktokHandle}
@@ -162,14 +160,14 @@ export function PresenciaView({ tenantId, clinicId, className }: PresenciaViewPr
             onScheduleAutosave={handleScheduleAutosave}
           />
 
-          {/* 4. Trust signals (OQ-D hybrid catalog) */}
+          {/* 3. Trust signals (OQ-D hybrid catalog) */}
           <TrustSignalsEditor
             tenantId={tenantId}
             clinicId={clinicId}
             onScheduleAutosave={handleScheduleAutosave}
           />
 
-          {/* 5. Locations (read-only from clinics module) */}
+          {/* 4. Locations (read-only from clinics module) */}
           <LocationsCard
             tenantId={tenantId}
             clinicId={clinicId}

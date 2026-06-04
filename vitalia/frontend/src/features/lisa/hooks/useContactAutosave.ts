@@ -48,7 +48,7 @@ export function useContactAutosave({
   tenantId,
   clinicId,
 }: UseContactAutosaveOptions): UseContactAutosaveReturn {
-  const { getToken } = useAuth();
+  const { getToken, userId } = useAuth();
   const queryClient = useQueryClient();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -59,7 +59,7 @@ export function useContactAutosave({
     mutationFn: async (values: ContactPatchPayload) => {
       const token = await getToken();
       if (!token) throw new Error("Not authenticated");
-      return updateContact({ token, tenantId, clinicId }, values);
+      return updateContact({ token, tenantId, clinicId, userId }, values);
     },
     onMutate: () => {
       setAutosaveStatus("saving");

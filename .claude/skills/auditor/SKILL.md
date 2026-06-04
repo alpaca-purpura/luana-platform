@@ -232,6 +232,29 @@ Además de ejercer scenarios críticos live:
 Sin evidencia live / con MISSING / sin base.ts importado / con regression_guard roto → CHANGES_REQUESTED.
 Ref: `.claude/rules/definition-of-done-live-verify.md`.
 
+### `LIVE_VERIFY_MISSING` — auto-FAIL (cement 2026-06-03)
+
+Para stories `verification_nature ∈ {funcional, ambas}` o `demo_required: true`, el auditor MUST, **ANTES de emitir cualquier verdict**:
+
+1. **Ejercer ≥1 write crítico LIVE** contra `dev-app.{brand}.com` usando Chrome DevTools MCP (skill `chrome-devtools-verify`): ejecutar la acción real del usuario (POST/PATCH/PUT/DELETE), leer el panel Console (0 errores rojos), leer Network + backend logs (`docker logs luana-dev-{brand}_backend_dev-1 --since $TS`), confirmar el efecto (fila en DB / estado persistido al recargar). **NO confiar en el self-report del dev.** NO aceptar GET 200 como evidencia.
+2. **Verificar `dod_live_verified: true`** + `dod_evidence` (writes reales + efecto observado) en `checkpoint.md` de la story.
+3. **Grep specs FE:**
+   ```bash
+   WS=$(git rev-parse --show-toplevel)
+   grep -rl "@playwright/test" ${WS}/{brand}/frontend/e2e/specs/ | grep -v fixtures/base.ts
+   ```
+   Cualquier spec que importa `@playwright/test` directo (en vez de `fixtures/base.ts`) = gate anti-burbuja ausente → auto-FAIL.
+4. **Verificar `demo-script.md`** en la carpeta de la story si `demo_required: true`.
+
+**Condiciones de auto-FAIL `LIVE_VERIFY_MISSING`** (cualquiera basta):
+- `dod_live_verified` ausente o `false` en checkpoint
+- `dod_evidence` ausente o contiene solo GETs / no documenta efecto real
+- e2e que mockea el backend del surface bajo prueba (falso verde)
+- specs FE importan `@playwright/test` directo (sin `fixtures/base.ts`)
+- `demo-script.md` ausente con `demo_required: true`
+
+Ante auto-FAIL `LIVE_VERIFY_MISSING`: el auditor lo arregla él mismo aplicando **Carril R** (ver § Auditor Responsable v5 abajo) — ejerce la verificación live, registra `dod_evidence`, y OWNS el verde. Solo si el ambiente dev no responde (stack caído + no se puede levantar en < 10 min) → ESCALATE Chris con estado del entorno.
+
 ## Step 3 — Procesar veredicto por ticket
 
 > **Política v4.2 cement 2026-05-28:** decisión por NATURALEZA DE LA VERIFICACIÓN (3 carriles), no por tamaño.
@@ -650,6 +673,55 @@ STOP la sesión `/auditor` aquí. Chris (o auto-handoff harness) invoca `/pm-{br
 | `audit_iterations` por ticket | 3 (v4.1 — v4.2: 4) | ESCALATE Chris (Caso D) |
 | Files modificados por self-fix iter | 2 | Caso B (refactor camuflado) |
 | Líneas modificadas por self-fix iter | 10 | Caso B idem |
+
+## Auditor Responsable v5 (cement 2026-06-03)
+
+El auditor es el **último adulto responsable del PR**. NO rebota hallazgos a dev-team por default — los **arregla él mismo** y entrega el verde, INCLUYENDO bugs de build (endpoints no cableados, wiring roto, AC roto, live-verify faltante, test faltante). SSoT: `.claude/rules/auditor-self-fix-policy.md` (este skill resume). Carriles:
+
+- **Carril A (mecánico)** — lint/format/typo/import/docstring (igual v4.2).
+- **Carril R (RESPONSABLE · default nuevo para bugs funcionales)** — bug funcional / build roto / wiring / live-verify faltante / test faltante → el auditor lo arregla él mismo siguiendo TDD (regression test RED que reproduce el bug → fix GREEN), re-corre gate-runner COMPLETO + live-verify dev-app (≥1 write real, leer logs, confirmar efecto en DB), y **OWNS el verde**. **PUEDE escribir tests** (override del "auditor NUNCA escribe tests" de v4.2 — Chris ratificó 2026-06-03): los escribe él mismo antes de aplicar el fix (TDD discipline), no los delega.
+- **Carril C (ESCALATE) — solo 2 casos:**
+  1. Categoría **stake-asimétrico** (security/auth/tenant_id/PII/migration/prompt-slot/eval-goldens/state-machine/engine-core/cross-brand/meta-paradigm) → ratificación Chris. **Invariante de seguridad, NO override.**
+  2. El "fix" es una **feature entera nunca diseñada** (> ~2 archivos nuevos de producto o > ~120 LOC nuevas) → el auditor escribe el PLAN del fix + lo entrega CHANGES_REQUESTED a dev-team. NO reconstruye media feature.
+
+**Caps v5:** `responsible_fix_iter` ≤ 6 · `audit_iterations` ≤ 4 · wall-clock ≤ 40 min → si supera, escala a Chris con estado actual documentado.
+
+> Relación con Carril B (v4.2): Carril B (spawn dev-team) queda como fallback de Carril C caso 2 (feature entera) o cuando el auditor alcanzó cap de `responsible_fix_iter`. No es el default ante bugs funcionales.
+
+## Responsabilizar upstream + reflex de auto-hardening (OBLIGATORIO)
+
+Cuando el root cause de un hallazgo es **upstream** (architect no declaró `verification_nature` / `demo_required` / no cableó `must_load_skills` en dispatch-plan; o dev-team saltó un gate obligatorio), el auditor MUST, **antes de cerrar el turn**, ejecutar estos dos pasos:
+
+### Paso 1 — Upstream deficiency finding
+
+Escribir en `T-{n}-review.md` (o `CHECKPOINTS.md`) la sección:
+
+```markdown
+## Upstream deficiency
+- Artefacto culpable: `{brand}/docs/product/stories/{id}/04-validators.yaml` línea {N} — falta campo `verification_nature`
+  (o: dispatch-plan.md — ticket T-{n} sin `must_load_skills`; o: dev-team saltó gate live-verify en Step X)
+- Impacto: {descripción del hallazgo que generó el defecto upstream}
+- Acción sugerida: actualizar template + agregar ejemplo en `docs/specs/templates/04-validators-template.yaml`
+```
+
+Esto es **"resondrar al architect"**: el finding queda nombrado, con artefacto + línea exacta, como señal para el siguiente ciclo de mejora del harness.
+
+### Paso 2 — Reflex de auto-hardening (loop de mejora)
+
+Appendear entry en `docs/process/harness-backlog.md` (tabla):
+
+```markdown
+| HB-{N} | {YYYY-MM-DD} | {sev: HIGH/MED/LOW} | {descripción 1-línea del gap del harness} | /auditor story {brand}/{id} | {artefacto culpable} |
+```
+
+Si el **mismo patrón de defecto upstream se repitió ≥2 veces** (grep en harness-backlog.md o en learnings), agregar además un learning en `docs/learnings/tooling/{YYYY-MM-DD}-{slug}.md` con:
+- Qué falló (root cause)
+- Qué artefacto del harness necesita update
+- Ejemplo de fix sugerido
+
+Este reflex es **autocontenido** — el loop de mejora del harness no depende de que Chris lo detecte manualmente; el auditor cierra el ciclo.
+
+Ref: `.claude/rules/auditor-self-fix-policy.md` + `.claude/rules/definition-of-done-live-verify.md` + `docs/process/harness-backlog.md`.
 
 ## Anti-patterns
 

@@ -85,7 +85,8 @@ describe("NotFoundShell (outer not-found)", () => {
   it("el CTA apunta a la raíz del tenantId (no hardcoded)", () => {
     render(<NotFoundShell />);
     // El not-found outer no tiene acceso al tenantId de la URL (Server Component).
-    // El CTA navega a "/" — el root page hará redirect a /{tenantId}/valeria/agenda.
+    // El CTA navega a "/" — el root page hará redirect a /{tenantId}/mateo/agenda
+    // (DEFAULT_LANDING_SUBPATH; antes valeria/agenda — Bug #1 T-1).
     // O según spec, puede apuntar al home raíz que redirect.
     const link = screen.getByRole("link", { name: "Volver al inicio" });
     expect(link).toHaveAttribute("href");

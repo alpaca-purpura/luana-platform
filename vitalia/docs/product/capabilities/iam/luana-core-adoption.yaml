@@ -72,7 +72,7 @@ verification:
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-adopt-luana-core-iam   # v2 cement · mirror of story_introduced
 created_date: 2026-05-19   # v2 cement · mirror of date_introduced
-last_modified: 2026-06-01   # fix tenant-resolution (no Clerk org)
+last_modified: 2026-06-03   # bugfix shell-nav-scroll-errors #2 (useTenants → endpoint real /me/tenants)
 parent_cap: null   # v2 cement · mirror of extends_capability
 derives_capabilities: []   # v2 cement · initial empty list
 
@@ -80,6 +80,12 @@ derives_capabilities: []   # v2 cement · initial empty list
 
 # Capability change log v2 (cement 2026-05-27)
 change_log:
+  - story_id: vitalia-bugfix-shell-nav-scroll-errors
+    date: 2026-06-03
+    type: fix
+    summary: "Bug#2 (story bugfix shell): el selector de tenant no aparecía en el stack real porque useTenants pegaba a /api/tenants (404 — no existe en el BE) → availableTenants vacío → TenantSwitcher oculto; el e2e lo enmascaraba sembrando activeTenant vía storageState (verificación-real-≠-200). Fix: useTenants → GET /api/v1/iam/users/me/tenants (endpoint real user-scoped, core-iam auth_router → list[TenantSchema]) + Tenant type alineado al contrato BE (city opt, +slug/role) + e2e bug2 cold-start honesto. Live dev-app: /me/tenants 200 → 'Sanaré LATAM' visible (cero /api/tenants). NO usa el admin list_tenants (sin cross-tenant leak)."
+    merge_sha: null
+    status: done
   - story_id: vitalia-fe-tenant-resolution-no-clerk-org
     date: 2026-06-01
     type: fix

@@ -171,8 +171,8 @@ Blast radius por dependencias (TIA `tach`); `make ci-parity` sigue siendo el gat
 | Skill | Obligación live-verify |
 |---|---|
 | **`/architect`** | Clasifica la **naturaleza** (técnica/funcional/ambas) de cada capability y declara en `04-validators.yaml`: `verification_nature`, `technical_gates` (baseline + opt-in Schemathesis/Hypothesis/mutmut por naturaleza), `business_rules` matrix (regla→`@tag`→scenario), `demo_required`, `regression_guard`, `runtime_error_gate`. Si necesita confirmar comportamiento actual, inspecciona live contra dev-app (no asume). |
-| **`/dev-team`** (builder-*) | Antes de cerrar `developing → developed`: corre los **gates técnicos** (§2); para superficies FE implementa/usa `base.ts` (**gate anti-burbuja** §3) + corre `verify-no-backend-errors.sh`; ejerce la acción real en dev-app con Chrome MCP **leyendo Console + Network + logs**; cubre cada **regla de negocio** (§4); en modificaciones respeta el `regression_guard` (§6); produce `demo-script.md` para stories funcionales. Registra `dod_evidence` en `checkpoint.md`. NO cierra por "tests verdes" mockeados. |
-| **`/auditor`** | Phase D: produce la **gherkin-matrix** (cualquier `MISSING` bloquea); verifica que los specs importan `base.ts` (no `@playwright/test` directo), que el `regression_guard` quedó intacto, que los snapshots actualizados tienen diff revisado, y que existe `demo-script.md` si `demo_required`. Ejerce scenarios críticos live o exige evidencia. Sin evidencia / con MISSING → CHANGES_REQUESTED. |
+| **`/dev-team`** (builder-*) | **HARD gate developed-boundary**: REFUSE `developing→developed` sin `dod_live_verified` + `dod_evidence` (writes ejercidos + efecto observado). Corre los **gates técnicos** (§2); para superficies FE implementa/usa `base.ts` (**gate anti-burbuja** §3) + corre `verify-no-backend-errors.sh`; ejerce la acción real en dev-app con Chrome MCP **leyendo Console + Network + logs**; cubre cada **regla de negocio** (§4); en modificaciones respeta el `regression_guard` (§6); produce `demo-script.md` para stories funcionales. Registra `dod_evidence` en `checkpoint.md`. NO cierra por "tests verdes" mockeados. |
+| **`/auditor`** | Phase D: **auto-FAIL LIVE_VERIFY_MISSING** si falta `dod_evidence`; ejerce ≥1 write live (Chrome MCP) sobre el surface bajo prueba; produce la **gherkin-matrix** (cualquier `MISSING` bloquea); verifica que los specs importan `base.ts` (no `@playwright/test` directo), que el `regression_guard` quedó intacto, que los snapshots actualizados tienen diff revisado, y que existe `demo-script.md` si `demo_required`. Finding **Upstream deficiency** (Carril R fix-and-own): si detecta que el gate de Critical Rule fue saltado, captura HB + learning antes de cerrar turn. Sin evidencia / con MISSING → CHANGES_REQUESTED. |
 | **`/po`, `/po-ux`** | Co-escriben la sección `## Business rules` (bullets) + `## Demo script` (lenguaje de usuario) del `01-spec.md`. Para revisar algo que ya corre → abrir dev-app con Chrome MCP (inspección, no gate). |
 | **`/pm-{brand}`** | Owner del **gate**: en `merge` REFUSE si falta `dod_evidence`, si la gherkin-matrix tiene `MISSING`, o si `demo_required: true` y `demo_signoff.result ∉ {APPROVED, APPROVED_WITH_NOTES(severity≤medium)}`. No verifica él mismo; exige la evidencia de dev-team/auditor **+ el sign-off de Chris**. |
 
@@ -231,17 +231,20 @@ Runbook completo (vitalia): `vitalia/docs/domains/dev-app/live-verification.md`.
 | Layer | Mecanismo | Status |
 |---|---|---|
 | 1 | Pointer en root `CLAUDE.md` § Critical Rules #37 (auto-load cada sesión) | ✅ 2026-05-31 |
-| 2 | `/auditor` Phase D: gherkin-matrix + verifica `base.ts` importado + `regression_guard` intacto + `demo-script.md` existe | ⏳ auditor SKILL update |
+| 2 | `/auditor` Phase D: gherkin-matrix + verifica `base.ts` importado + `regression_guard` intacto + `demo-script.md` existe | ✅ 2026-06-03 (auto-FAIL LIVE_VERIFY_MISSING en auditor SKILL + auditor-frontend/backend.md; auditor ejerce ≥1 write live) |
 | 3 | `/pm-{brand}` Fase F REFUSE merge→done sin `dod_evidence` / con gherkin MISSING / sin `demo_signoff` | ✅ vitalia (ADR-008) · ⏳ resto |
 | 4 | `07-merge` § Verificación live + `04-validators`/`checkpoint`/`T-review` con campos DoD | ✅ Wave 2A (dc6a94fa) |
 | 5 | `chrome-devtools-verify` + `playwright-expert` skills = mecanismo canónico de live-verify | ✅ existe |
-| 6 | Pre-commit: bloquea checkpoint con `state: done` si `dod_live_verified: false` presente | ⏳ hook TBD |
+| 6 | **Pre-commit MECÁNICO: bloquea commitear una transición a `state: developed|done` (story funcional) sin `dod_live_verified: true` + `dod_evidence`(≥1 action)** — `scripts/git/dod-evidence-gate.sh` cableado al pre-commit (symlink, activo). Exención: `dod_live_verified_skip_reason`. Fail-OPEN + `DOD_GATE_ACK=1`. 5/5 tests. **Es presence-enforcement, no truth** (la verdad la dan demo_signoff humano + auditor live) | ✅ 2026-06-04 |
 | 7 | **Gate anti-burbuja**: `{brand}/frontend/e2e/fixtures/base.ts` (pageerror/console/response + Next overlay) + `scripts/verify-no-backend-errors.sh` | ⏳ vitalia (implementando) · resto hereda |
-| 8 | `04-validators` declara `verification_nature` + `technical_gates` (opt-in) + `business_rules` matrix + `demo_required` + `regression_guard` | ⏳ template + `/architect` SKILL |
-| 9 | **Gate demo manual**: `demo-script.md` (4 secciones) + `demo_signoff` (Chris) en checkpoint · `/pm-{brand}` REFUSE sin APPROVED | ⏳ template + `/dev-team` + `/pm-{brand}` |
+| 8 | `04-validators` declara `verification_nature` + `technical_gates` (opt-in) + `business_rules` matrix + `demo_required` + `regression_guard` | ✅ 2026-06-03 (playwright_visual_scope portado al template + architect hard-step) |
+| 9 | **Gate demo manual**: `demo-script.md` (4 secciones) + `demo_signoff` (Chris) en checkpoint · `/pm-{brand}` REFUSE sin APPROVED | ⏳ demo_signoff hook TBD · `/dev-team` ya REQUIRE demo-script.md al cerrar developed (2026-06-03) |
+| 10 | **Dev-team developed-boundary HARD gate**: REFUSE `developing→developed` sin `dod_live_verified` + `dod_evidence` + `demo-script.md` para stories funcionales (espejo del gherkin-Phase-D-local) | ✅ 2026-06-03 |
+| 11 | **Reflex de auto-hardening**: auditor (y dev-team/pm) que detecta un gate de Critical Rule saltado MUST auto-capturar HB en `docs/process/harness-backlog.md` + learning antes de cerrar turn | ✅ 2026-06-03 (auditor SKILL + self-fix-policy v5) |
 
 ## Referencias
 
+- El modelo de ownership del auditor (fix-and-own + responsabilizar al architect + reflex) vive en `.claude/rules/auditor-self-fix-policy.md` § Auditor Responsable v5 (cement 2026-06-03).
 - `vitalia/docs/architecture/ADR-vitalia-008-dev-app-live-verification-gate.md` — el GATE concreto (`reviewing → done`) en vitalia
 - `vitalia/docs/domains/dev-app/live-verification.md` — runbook operativo (cómo levantar + verificar paso a paso)
 - `.claude/rules/test-design-doctrine.md § Verificación REAL ≠ HTTP 200` — la doctrina + el bar honesto

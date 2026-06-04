@@ -20,9 +20,9 @@
  * @see 04-validators.yaml § test_construction_plan step 19
  */
 
-import { expect } from "@playwright/test";
 import {
   test,
+  expect,
   gotoMarca,
   LISA_MARCA_FIXTURE,
 } from "./fixtures/lisa-marca.fixture";
@@ -239,7 +239,7 @@ test.describe("SC-11 — Español neutro LatAm: verificación de voseo en la UI"
 
     // Trigger a validation error by filling an invalid value and blurring
     const nameInput = marcaPage.locator(
-      '[data-testid="identity-brand-name-input"]',
+      '#brand-name-input',
     );
 
     // Clear the field to trigger required validation

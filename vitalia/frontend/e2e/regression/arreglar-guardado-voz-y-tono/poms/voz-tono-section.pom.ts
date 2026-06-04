@@ -19,6 +19,7 @@
  * @see 06-tickets.yaml T-3 deliverables
  */
 
+import { expect } from "@playwright/test";
 import type { Page, Locator } from "@playwright/test";
 
 // Voice block names as shown in the UI and mapped to the textarea data-testid.
@@ -173,9 +174,11 @@ export class VozTonoSectionPom {
   }
 
   /**
-   * Returns the currently selected archetype slug.
-   * Reads data-selected="true" from archetype cards.
-   * Returns null if none selected.
+   * Returns the currently selected archetype slug (ONCE-READ — diagnostics only).
+   * Reads data-selected="true" from archetype cards. Returns null if none.
+   *
+   * ⚠️ NO usar para aserciones de estado hidratado (devuelve null si el GET
+   * /personality aún no hidrató). Para aserciones usar `waitForSelectedArchetype`.
    */
   async getSelectedArchetype(): Promise<SaludArchetype | null> {
     const archetypes = Object.keys(ARCHETYPE_TESTID_MAP) as SaludArchetype[];
@@ -186,6 +189,25 @@ export class VozTonoSectionPom {
       if ((await card.count()) > 0) return archetype;
     }
     return null;
+  }
+
+  /**
+   * Web-first wait: asserts the given archetype card reaches
+   * `data-selected="true"`, re-checking until met or timeout. ESTE es el fix de
+   * determinismo (B3) para los specs reload-persist des-quarantined.
+   *
+   * @param archetype - The archetype slug expected to be selected.
+   */
+  async waitForSelectedArchetype(
+    archetype: SaludArchetype,
+    timeoutMs = 15_000,
+  ): Promise<void> {
+    const card = this.sectionRoot.locator(
+      `[data-testid="${ARCHETYPE_TESTID_MAP[archetype]}"]`,
+    );
+    await expect(card).toHaveAttribute("data-selected", "true", {
+      timeout: timeoutMs,
+    });
   }
 
   // ---------------------------------------------------------------------------

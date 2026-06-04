@@ -32,6 +32,8 @@ po_version: 1
 last_modified: ISO_TIMESTAMP
 ratified_by_chris: false
 ratified_visual_by_chris: false                   # ★ gate ADR-vitalia-003 mockup-per-component
+input_spec_signed: false                          # ★ RONDA 1 (intención) firmada · cement 2026-06-03 · ver spec-mapa-funcional.md § Dos rondas
+mockup_final_signed: false                        # ★ mockup FINAL firmado (antes del GO a RONDA 2/Gherkin)
 parallel_safe: true | false
 dependencies:                                       # stories que DEBEN estar done antes
   hard: []                                          # bloquean implementación (ej. F1-S1 design-tokens → F1-S2 topbar)
@@ -51,6 +53,10 @@ links:
 
 ---
 
+<!-- ═══ RONDA 1 · input-spec (intención + forma) · ✍ FIRMA 1 — Chris "esto es lo que quiero" (checkpoint.input_spec_signed: true) ═══ -->
+<!-- Espejo del template raíz docs/specs/templates/01-spec-template.md · doctrina: docs/process/spec-mapa-funcional.md § Dos rondas, dos firmas. -->
+<!-- RONDA 1 (firma1) = §1 Resumen + § Dónde vive (§2) + §3 Atomic Design + §4 Reuse Map + mockup BORRADOR. RONDA 2 (firma2, antes del GO) = §6 Gherkin + §7 Visual Goldens (mockup FINAL). -->
+
 ## § 1 — Resumen ejecutivo
 
 [1 párrafo · ≤4 líneas: qué se construye, qué problema resuelve, outcome del usuario después de esta historia merged.]
@@ -69,6 +75,12 @@ links:
 **Agente owner:** {emoji} {nombre agente} ({rol})  
 **Color oficial:** `#XXXXXX` (token CSS `--agent-{name}`)  
 **Avatar PNG:** `vitalia/frontend/public/agents/{name}/thumbnail.png`
+
+**Dónde vive (RONDA 1 · cement 2026-06-03):**
+- **Zona/caja:** [Agentes {agente} | Plataforma {acceso/onboarding/configuración} | Infraestructura] — derivada del árbol `.claude/rules/paradigm-arquitectura.md` + `SYSTEM-MAP.yaml`
+- **Shell:** shell-organism Vitalia · átomos/moléculas/organismos del `SHELL-DESIGN-CONTRACT.md` (ver § 3) · si falta un componente → se genera con el design-system actual
+- **Ruta del user:** `/[tenantId]/(shell-organism)/{agent}/{subtab}[/{subsubtab} | /[entityId]/[leaf]]` donde el user aterriza (N3-static vs N3-dynamic list→detail · ver SHELL-DESIGN-CONTRACT § 7.2.2)
+- **Mockup BORRADOR:** [link `mockups/{component}.html` — la FORMA, se itera en RONDA 1 antes de cerrar reglas; gate per-component ADR-vitalia-003]
 
 ---
 
@@ -171,6 +183,40 @@ export interface Tenant {
 ```
 
 ---
+
+## § 5.5 — Mapa funcional (capa humana · RONDA 1 · cement 2026-06-03 — espejo del template raíz)
+
+> El panorama en lenguaje humano que Chris lee para validar QUÉ se construye sin reconstruirlo desde el Gherkin (§6). NO compite con el Gherkin — vive a otra altitud; la § 6.5 Matriz de cobertura (RONDA 2) los liga. SSoT doctrina: `docs/process/spec-mapa-funcional.md`.
+
+### § 5.5.1 — Happy path (el camino dorado, narrado)
+
+[Prosa numerada del flujo exitoso end-to-end dentro del shell. 3-8 pasos. Lenguaje humano, no Gherkin.]
+
+### § 5.5.2 — Bifurcaciones (árbol de decisión — TODOS los branch points)
+
+> Árbol, no lista plana. Cada nodo: condición → resultado → [SC-N]. Incluí las ramas N3-static vs N3-dynamic list→detail si aplica (SHELL-DESIGN-CONTRACT § 7.2.2).
+
+```
+Happy path
+├─ Bif-1 · ¿[condición]?        → [resultado]       → SC-N
+└─ Bif-2 · ¿[borde/error]?      → [resultado]       → SC-N
+```
+
+### § 5.5.3 — Reglas de negocio (RN — invariantes en lenguaje humano)
+
+- **RN-1** — [invariante en una frase · si toca PHI, citar dual filter tenant+clinic de hipaa-lite]
+- **RN-2** — [...]
+
+### § 5.5.4 — Criterios de aceptación (AC — checklist "listo cuando…")
+
+- [ ] **AC-1** — [condición observable de feature-done]
+- [ ] **AC-2** — [...]
+
+Cada `Bif-N` y `RN-N` DEBE mapear a ≥1 scenario en la § 6.5 Matriz de cobertura. Hueco → REFUSE refined.
+
+---
+
+<!-- ═══ RONDA 2 · spec ejecutable · ✍ FIRMA 2 → refining→refined (incluye mockup FINAL §7 + graders) · checkpoint.mockup_final_signed: true ═══ -->
 
 ## § 6 — Acceptance Criteria (Gherkin AI-resistant)
 
@@ -337,6 +383,20 @@ export interface Tenant {
 
 **playwright_required:** true  
 **Graders:** E2E con MSW mock error · visual golden error state
+
+---
+
+## § 6.5 — Matriz de cobertura (RONDA 2 · cement 2026-06-03 — el puente humano ↔ verificación)
+
+> Cierra el loop: cada `Bif-N`/`RN-N` del § 5.5 Mapa funcional → ≥1 SC (§6) → verificación REAL (acción ejercida + efecto observado, NUNCA "GET 200" — `.claude/rules/test-design-doctrine.md` § Verificación REAL). En shell stories la verificación REAL incluye el visual golden (§7) + el ejercicio live en dev-app (Critical Rule #37). Mitad delantera del `gherkin-matrix.md` que /auditor completa en Phase D.
+
+| Ítem (Mapa funcional) | Tipo | Cubierto por | Verificación REAL (acción + efecto) |
+|---|---|---|---|
+| Bif-N · … | branch | SC-N | [write real → efecto DB/UI + log + golden §7] |
+| RN-N · … | rule | SC-N | [acción que viola la regla → rechazo + estado sin cambio] |
+| AC-N · … | accept | SC-N | [flujo real + estado observable] |
+
+Cerrá con **Huecos detectados** (Bif/RN sin SC) y **SC huérfanos** (SC sin ítem del mapa). Ambos = "ninguno" para pasar el gate refined.
 
 ---
 

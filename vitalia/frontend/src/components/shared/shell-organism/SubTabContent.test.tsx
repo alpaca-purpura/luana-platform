@@ -6,7 +6,7 @@
  * Tests:
  *   - renders correct data-testid for agent.subtab combos
  *   - renders EmptyState fallback for unknown key
- *   - renders SubTabHeader with subtab label
+ *   - NO renderiza un título-eco de la nav (Bug #3 T-6 — SubTabHeader removido)
  *   - valid combo renders placeholder (not EmptyState fallback)
  *   - EmptyState title includes subtab label for fallback
  *   - invalid agent renders EmptyState
@@ -46,11 +46,15 @@ describe("SubTabContent dispatcher", () => {
     expect(screen.getByTestId("empty-state-icon")).toBeInTheDocument();
   });
 
-  it("renders SubTabHeader with agent context", () => {
+  it("coverage_update Bug #3 (T-6): NO renderiza el título-eco de la nav (SubTabHeader removido)", () => {
+    // El dispatcher ya NO renderiza <SubTabHeader> (h2 que eco-aba el label de la
+    // sub-tab activa). lisa.marca es N3-static (shadowea el dispatcher) → cae al
+    // EmptyState fallback, que usa h3 (su propio título contextual), NO un h2-eco.
     render(<SubTabContent agent="lisa" subtab="marca" />);
-    // SubTabHeader contains a heading
-    const heading = screen.getByRole("heading", { level: 2 });
-    expect(heading).toBeInTheDocument();
+    // El testid del SubTabHeader removido no debe existir.
+    expect(screen.queryByTestId("subtab-header-lisa-marca")).toBeNull();
+    // No hay h2-eco de la nav en el dispatcher.
+    expect(screen.queryByRole("heading", { level: 2 })).toBeNull();
   });
 
   it("EmptyState fallback title uses subtab label or slug", () => {

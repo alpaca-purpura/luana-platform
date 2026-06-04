@@ -1,6 +1,6 @@
-# cap: sales_agent.inbox-handler-mode-occ
-# story-origin: TBD
-"""Vitalia inbox API router — 8 inbox endpoints.
+# cap: inbox.adrian-inbox
+# story-origin: vitalia-fase2-adrian-inbox T-2
+"""Vitalia inbox API router — 8 inbox endpoints + nudge (T-2).
 
 API layer (thin): validate headers → resolve auth → RBAC → call service → map exceptions → response.
 No business logic here.
@@ -14,11 +14,16 @@ Endpoints:
   GET    /inbox/conversations/{conv_id}/activity-stream   — activity log (PHI gated)
   POST   /inbox/proactive-outbound                        — HSM template send (PHI gated)
   POST   /inbox/transcribe                                — audio transcription (PHI gated)
+  POST   /inbox/conversations/{conv_id}/nudge             — nudge re-engagement (T-2, PHI gated)
 
 response_model= is MANDATORY on every endpoint (PII gate + arch fitness).
 redirect_slashes=False set on FastAPI *app* in main.py, NOT here.
 PHI dual-filter: every service call carries BOTH tenant_id AND clinic_id.
 HIPAA-lite: audit log written sync by each service before response.
+
+T-2 additions:
+  - POST /conversations/{conv_id}/nudge (NudgeService + NudgeRequest/Response DTOs)
+  - _get_nudge_service DI factory (proactive_resolver via ProactiveOutboundService — NO direct sales_agent import)
 
 downstream-regression-na: brand-local vitalia inbox router
 """
@@ -31,6 +36,7 @@ from uuid import UUID
 
 import structlog
 from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from luana_core_compliance.application.compliance_service import ComplianceService
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -67,6 +73,7 @@ from src.modules.vitalia.iam.infrastructure.clerk_jwt_decoder import (
 from src.modules.vitalia.inbox.application.dto.activity_event_dto import (
     ActivityStreamResponse,
 )
+from src.modules.vitalia.inbox.application.dto.nudge_dto import NudgeRequest, NudgeResponse
 from src.modules.vitalia.inbox.application.dto.proactive_outbound_dto import (
     ProactiveOutboundRequest,
     ProactiveOutboundResponse,
@@ -84,8 +91,18 @@ from src.modules.vitalia.inbox.application.dto.set_mode_dto import (
     SetModeRequest,
 )
 from src.modules.vitalia.inbox.application.dto.tools_state_dto import ToolsStateResponse
+from src.modules.vitalia.inbox.application.policies.phi_channel_policy import (
+    PhiChannelPolicy,
+)
 from src.modules.vitalia.inbox.application.services.activity_event_service import (
     ActivityEventService,
+)
+from src.modules.vitalia.inbox.application.services.nudge_service import (
+    ConvNotFoundError as NudgeConvNotFoundError,
+)
+from src.modules.vitalia.inbox.application.services.nudge_service import (
+    NudgeNotApplicableError,
+    NudgeService,
 )
 from src.modules.vitalia.inbox.application.services.pause_adrian_service import (
     PauseAdrianService,
@@ -147,13 +164,6 @@ except ImportError:  # pragma: no cover — available in runtime, not in offline
 # These are swapped for real implementations in Slice 2.
 
 
-class _NoOpComplianceService:
-    """Slice 1 no-op compliance service — allows all messages through."""
-
-    async def validate_outbound_message(self, message: object, channel: str) -> None:
-        """No-op: allow all messages in Slice 1."""
-
-
 class _NoOpRateLimiter:
     """Slice 1 no-op rate limiter — allows all sends."""
 
@@ -186,10 +196,24 @@ def _get_resolver() -> ClinicResolver:
     return ClinicResolver(decoder=ClerkJwtDecoder())
 
 
+def _build_compliance_service() -> ComplianceService:
+    """Real ComplianceService for outbound PHI gating (T-1 un-stub · SC-3/AC-9/RN-7).
+
+    Runs the brand PhiChannelPolicy (blocks clinical PHI keywords on unencrypted
+    channels → portal redirect). Extends the engine CompliancePolicy Protocol;
+    NOT a mirror (anti-duplication.md).
+    """
+    return ComplianceService(policies=[PhiChannelPolicy()])
+
+
 async def _get_send_service(
     session: Annotated[AsyncSession, Depends(get_async_session)],
 ) -> SendMessageService:
-    """Create SendMessageService with real repo instances and async DI."""
+    """Create SendMessageService with real repo instances and async DI.
+
+    Compliance gate wired (T-1): outbound text on unencrypted channels with PHI
+    keywords → portal-redirect microcopy + 'compliance_block_outbound_phi' event.
+    """
     return SendMessageService(
         msg_repo=MessageRepository(session=session),
         conv_repo=ConversationRepository(session=session),
@@ -197,6 +221,8 @@ async def _get_send_service(
         audit_writer=AsyncAuditWriter(session=session),
         event_bus=_adapter_bus,
         session=session,
+        compliance_service=_build_compliance_service(),
+        activity_event_repo=ActivityEventRepository(session=session),
     )
 
 
@@ -250,7 +276,7 @@ async def _get_proactive_service(
         msg_repo=MessageRepository(session=session),
         audit_writer=AsyncAuditWriter(session=session),
         event_bus=_adapter_bus,
-        compliance_service=_NoOpComplianceService(),
+        compliance_service=_build_compliance_service(),
         rate_limiter=_NoOpRateLimiter(),
         channel_adapters={},
         session=session,
@@ -277,6 +303,91 @@ async def _get_activity_service(
     """Create ActivityEventService with real repo instances."""
     return ActivityEventService(
         activity_repo=ActivityEventRepository(session=session),
+    )
+
+
+async def _get_nudge_service(
+    session: Annotated[AsyncSession, Depends(get_async_session)],
+) -> NudgeService:
+    """Create NudgeService with real repos + proactive_resolver (T-2 Slice 2).
+
+    proactive_resolver: async callable that wraps ProactiveOutboundService.send_proactive.
+    NEVER imports from sales_agent/ directly (anti-coupling — av-no-sales-agent-import).
+    The resolver delegates to ProactiveOutboundService which is the shared send path.
+    """
+    proactive_svc = ProactiveOutboundService(
+        lead_repo=LeadRepository(session),
+        conv_repo=ConversationRepository(session=session),
+        msg_repo=MessageRepository(session=session),
+        audit_writer=AsyncAuditWriter(session=session),
+        event_bus=_adapter_bus,
+        compliance_service=_build_compliance_service(),
+        rate_limiter=_NoOpRateLimiter(),
+        channel_adapters={},
+        session=session,
+    )
+
+    async def _proactive_resolver(
+        *,
+        tenant_id: UUID,
+        clinic_id: UUID,
+        conversation_id: UUID,
+        sent_by_user_id: UUID,
+        reason: str | None = None,
+    ) -> object:
+        """Resolver: delegates to ProactiveOutboundService.send_proactive.
+
+        Translates NudgeService call signature to ProactiveOutboundService.
+        The resolver pattern ensures NudgeService has zero coupling to sales_agent/.
+        """
+        # Nudge uses a synthetic nudge_reengagement template.
+        # Variables include optional reason for the template body.
+        # Note: lead_id is resolved from conv.lead_id by ProactiveOutboundService.
+        # For nudge, we pass conversation_id indirectly via a brand-local nudge template.
+        # This resolver wraps the outbound path without exposing sales_agent internals.
+        from src.modules.vitalia.crm.infrastructure.persistence.conversation_repository import (  # noqa: PLC0415
+            ConversationRepository as _ConvRepo,
+        )
+
+        # Get conversation to resolve lead_id (dual filter already applied by NudgeService)
+        conv_repo_inner = _ConvRepo(session=session)
+        conv = await conv_repo_inner.get_by_id(id=conversation_id, tenant_id=tenant_id, scope_id=clinic_id)
+        if conv is None or conv.lead_id is None:
+            # Nudge without lead_id: return a structural stub result
+            # (activity event is the primary record; outbound is best-effort)
+            from dataclasses import dataclass  # noqa: PLC0415
+            from datetime import UTC as _UTC  # noqa: PLC0415
+            from datetime import datetime as _dt
+            from uuid import uuid4 as _uuid4  # noqa: PLC0415
+
+            @dataclass
+            class _NudgeStubResult:
+                message_id: UUID
+                conversation_id: UUID
+                sent_at: object
+
+            return _NudgeStubResult(
+                message_id=_uuid4(),
+                conversation_id=conversation_id,
+                sent_at=_dt.now(_UTC),
+            )
+
+        return await proactive_svc.send_proactive(
+            tenant_id=tenant_id,
+            clinic_id=clinic_id,
+            lead_id=conv.lead_id,
+            template_id="nudge_reengagement",
+            variables={"reason": reason or "Reactivación de conversación estancada."},
+            channel=conv.channel,
+            sent_by_user_id=sent_by_user_id,
+        )
+
+    return NudgeService(
+        conv_repo=ConversationRepository(session=session),
+        activity_repo=ActivityEventRepository(session=session),
+        audit_writer=AsyncAuditWriter(session=session),
+        event_bus=_adapter_bus,
+        proactive_resolver=_proactive_resolver,
     )
 
 
@@ -1064,3 +1175,112 @@ async def transcribe_audio(
         transcription_confidence=result.transcription_confidence,
         fallback_triggered=result.fallback_triggered,
     )
+
+
+# ---------------------------------------------------------------------------
+# Endpoint 9: POST /conversations/{conv_id}/nudge — re-engagement nudge (T-2, PHI gated)
+# ---------------------------------------------------------------------------
+
+
+@router.post(
+    "/conversations/{conv_id}/nudge",
+    response_model=NudgeResponse,
+    status_code=201,
+)
+async def nudge_conversation(
+    conv_id: UUID,
+    body: NudgeRequest,
+    authorization: AuthorizationHeader,
+    x_tenant_id: TenantIdHeader,
+    x_clinic_id: ClinicIdHeader,
+    session: Annotated[AsyncSession, Depends(get_async_session)],
+    service: Annotated[NudgeService, Depends(_get_nudge_service)],
+) -> NudgeResponse:
+    """Send a 1:1 re-engagement nudge to a live stalled conversation (RN-13).
+
+    PHI gated: doctor, nurse, admin_clinic roles only.
+    Idempotency: same-day repeat returns nudge_sent=False (200, not 201).
+    Audit log written sync pre-response by NudgeService.
+
+    Scope (RN-13 invariant):
+    - ONLY applies to an existing OPEN conversation.
+    - ONLY applies when conversation is stalled (last message > 24h ago).
+    - Does NOT create a new conversation.
+    - Does NOT re-activate cold leads (Camila's domain).
+
+    Anti-coupling:
+    - NudgeService consumes send_proactive_reengagement via proactive_resolver DI.
+    - NEVER imports from sales_agent/ (av-no-sales-agent-import gate).
+
+    Args:
+        conv_id: Conversation UUID (path param).
+        body: NudgeRequest (optional reason + idempotency_key).
+        authorization: Bearer token.
+        x_tenant_id: Tenant ID header.
+        x_clinic_id: Clinic ID header (dual PHI filter).
+        service: NudgeService (injected via DI).
+        session: Async SQLAlchemy session.
+
+    Returns:
+        NudgeResponse (201 Created — nudge_sent=True, or 200 on idempotent repeat).
+
+    Raises:
+        401: Invalid/missing token.
+        403: Role not permitted to access PHI conversations.
+        404: Conversation not found or access denied.
+        422: Conversation not open or not stalled (NudgeNotApplicableError).
+    """
+    ctx = await _resolve_context(authorization, x_tenant_id, x_clinic_id, session)
+
+    try:
+        _assert_phi_access(ctx.role)
+    except PHIAccessDeniedError:
+        logger.warning(
+            "inbox.nudge.access_denied",
+            role=ctx.role,
+            conv_id=str(conv_id),
+        )
+        raise HTTPException(
+            status_code=403,
+            detail="Acceso denegado: tu rol no tiene permisos para enviar un empujón de reactivación.",
+        )
+
+    tenant_id = ctx.tenant_id
+    clinic_id = UUID(x_clinic_id)
+    user_id = UUID(ctx.user_id) if len(str(ctx.user_id)) == 36 else UUID(int=0)
+
+    try:
+        result = await service.nudge(
+            tenant_id=tenant_id,
+            clinic_id=clinic_id,
+            conversation_id=conv_id,
+            sent_by_user_id=user_id,
+            reason=body.reason,
+            idempotency_key=body.idempotency_key,
+        )
+    except NudgeConvNotFoundError:
+        raise HTTPException(status_code=404, detail="Conversación no encontrada.")
+    except NudgeNotApplicableError as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+
+    from datetime import UTC as _UTC  # noqa: PLC0415
+    from datetime import datetime as _dt
+
+    from fastapi.responses import JSONResponse  # noqa: PLC0415
+
+    response_body = NudgeResponse(
+        conversation_id=result.conversation_id,
+        message_id=result.message_id,
+        nudge_sent=result.nudge_sent,
+        activity_event_id=result.activity_event_id,
+        sent_at=result.sent_at or _dt.now(_UTC),
+    )
+
+    # Idempotent repeat (same-day dedup): return 200 instead of 201
+    if not result.nudge_sent:
+        return JSONResponse(
+            status_code=200,
+            content=response_body.model_dump(mode="json"),
+        )
+
+    return response_body

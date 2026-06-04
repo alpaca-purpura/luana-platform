@@ -21,6 +21,17 @@ links:
 
 [1 párrafo: qué se construye, para quién, outcome esperado.]
 
+<!-- ═══ RONDA 1 · input-spec (intención) · ✍ FIRMA 1 — solo /po-ux UI · ver spec-mapa-funcional.md § Dos rondas ═══ -->
+
+## § Dónde vive (RONDA 1 · cement 2026-06-03 · solo /po-ux)
+
+> Zona/caja del sistema + shell + ruta donde el user aterriza. Derivada del árbol de `.claude/rules/paradigm-arquitectura.md`. (Para service/agentic stories esta sección es opcional.)
+
+- **Zona/caja:** [Agentes {agente} | Plataforma {acceso/onboarding/configuración} | Infraestructura {...}] — derivada del `SYSTEM-MAP.yaml`
+- **Shell:** [qué shell aplica · del `{brand}/docs/architecture/SHELL-DESIGN-CONTRACT.md` · si no existe → generar con el design-system actual]
+- **Ruta del user:** [`/[tenantId]/(shell-organism)/{agent}/{subtab}/...` donde el user aterriza]
+- **Mockup borrador:** [link `mockups/{screen}.html` o ASCII — la FORMA, se itera antes de cerrar reglas]
+
 ## § Mapa funcional (capa humana — ratifica Chris ANTES de UX/architect)
 
 > **v5 cement 2026-05-31 (Opción A).** Esta sección es el **panorama en lenguaje humano**: lo que Chris
@@ -64,6 +75,8 @@ Happy path
 
 - [ ] **AC-1** — [condición observable de que la feature está completa]
 - [ ] **AC-2** — [...]
+
+<!-- ═══ RONDA 2 · spec ejecutable · ✍ FIRMA 2 → refining→refined (incluye mockup FINAL + graders) ═══ -->
 
 ## Acceptance Criteria (Gherkin AI-resistant)
 

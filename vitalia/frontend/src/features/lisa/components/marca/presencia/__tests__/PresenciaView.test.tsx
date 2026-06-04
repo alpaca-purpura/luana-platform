@@ -81,9 +81,14 @@ describe("PresenciaView", () => {
     vi.clearAllMocks();
   });
 
-  it("renders section heading 'Presencia'", async () => {
+  // coverage_update Bug #3 (vitalia-bugfix-shell-nav-scroll-errors T-6): se removió
+  // el h2-eco "Presencia" (duplicaba el SubSubTab activo de la nav). Se conserva el
+  // AutosaveBadge. La vista ya NO debe renderizar ese h2 superior.
+  it("ya NO renderiza el h2-eco 'Presencia' (Bug #3 removido), conserva el AutosaveBadge", async () => {
     await renderPresenciaView();
-    expect(screen.getByRole("heading", { name: "Presencia" })).toBeDefined();
+    expect(screen.queryByRole("heading", { name: "Presencia" })).toBeNull();
+    // AutosaveBadge (role status) sigue presente.
+    expect(screen.getByRole("status")).toBeDefined();
   });
 
   it("renders AutosaveBadge status element", async () => {
@@ -114,16 +119,27 @@ describe("PresenciaView", () => {
     });
   });
 
-  it("renders landing info banner when publicLandingUrl present", async () => {
+  // coverage_update Bug #5 (vitalia-bugfix-shell-nav-scroll-errors T-5): el banner
+  // InfoBannerLandingDescoped ("Editor de landing pública — próximamente") fue
+  // ELIMINADO de Presencia. Presencia NO debe renderizar ningún callout role="note"
+  // de landing pública.
+  it("ya NO renderiza el banner de landing pública (Bug #5 removido)", async () => {
     await renderPresenciaView();
     await waitFor(() => {
-      expect(screen.getByRole("note")).toBeDefined();
+      expect(screen.getByText("Sitio web")).toBeDefined();
     });
+    expect(screen.queryByRole("note")).toBeNull();
+    expect(
+      screen.queryByText(/Editor de landing pública/i),
+    ).toBeNull();
   });
 
-  it("heading uses Spanish neutro — no voseo", async () => {
+  it("usa Spanish neutro — no voseo (texto renderizado)", async () => {
     await renderPresenciaView();
-    const heading = screen.getByRole("heading", { name: "Presencia" });
-    expect(heading.textContent).not.toMatch(/configurá|ingresá|guardá/);
+    await waitFor(() => {
+      expect(screen.getByText("Sitio web")).toBeDefined();
+    });
+    const body = document.body.textContent ?? "";
+    expect(body).not.toMatch(/configurá|ingresá|guardá/);
   });
 });

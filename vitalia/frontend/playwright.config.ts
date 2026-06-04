@@ -79,6 +79,9 @@ export default defineConfig({
         /.*\/e2e\/shell-organism\/valeria-chat-.*\.spec\.ts/,
         // F2-S8 vitalia-fase2-lisa-doctores staff shell-organism specs
         /.*\/e2e\/shell-organism\/staff-.*\.spec\.ts/,
+        // F3 vitalia-fase2-adrian-inbox behavioral specs (modes/nudge/phi/tenant/states).
+        // a11y → project=a11y, visual → project=visual (excluded below).
+        /.*\/e2e\/shell-organism\/adrian-inbox-(modes|nudge|phi-redirect|tenant|states)\.spec\.ts/,
       ],
       // Exclude visual-goldens: corren EXCLUSIVAMENTE en project=visual que tiene
       // snapshotPathTemplate + maxDiffPixelRatio: 0.001 config. Sin esa config,

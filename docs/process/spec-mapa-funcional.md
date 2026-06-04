@@ -31,16 +31,53 @@ duplicación de oraciones. Una sola fuente, dos lecturas.
 
 ```
 § Resumen ejecutivo
-§ Mapa funcional            ← NUEVO (capa humana — ratifica Chris)
+
+══ RONDA 1 · input-spec (intención) · ✍ FIRMA 1 (solo /po-ux · ver § Dos rondas) ══
+§ Dónde vive                ← zona/caja (árbol paradigma) + shell + ruta del user
+§ Mapa funcional            ← capa humana — ratifica Chris
    1. Happy path             → prosa numerada, camino dorado
    2. Bifurcaciones           → ÁRBOL: condición → resultado → [SC-N]
    3. Reglas de negocio       → RN-1..N (→ capability.business_rules)
    4. Criterios de aceptación → AC-1..N (checklist "listo cuando…")
+§ Pantallas                 ← mockup BORRADOR + tabla de campos
+§ Dudas abiertas            ← Chris las cierra ANTES del GO
+
+══ RONDA 2 · spec ejecutable · ✍ FIRMA 2 → refining→refined ══
 § Gherkin scenarios          ← cada SC con `Covers: [Bif-N, RN-N, AC-N]`
-§ Matriz de cobertura        ← NUEVO: cada Bif/RN → ≥1 SC → verificación REAL
+§ Matriz de cobertura        ← cada Bif/RN → ≥1 SC → verificación REAL
    + "Huecos detectados" + "SC huérfanos" (ambos = "ninguno" para pasar gate)
-§ … (wireframes, estados, microcopy — sin cambios)
+§ Mockup FINAL + estados + microcopy + átomos finales + graders
 ```
+
+## Dos rondas, dos firmas — UI deep refinement (★ cement 2026-06-03 · solo `/po-ux`)
+
+> **Origen:** Chris pidió ser más profundo en historias con UI. El mismo `01-spec.md` se escribe + se firma
+> en DOS rondas sobre el MISMO archivo (NO dos archivos — un solo SSoT). Atrapa errores ANTES de gastar en el Gherkin.
+> **Aplica solo a `/po-ux` (UI).** `/po` y `/ux-agentico` mantienen la pasada única (el § Mapa funcional de arriba).
+
+**Flujo 6 pasos / 2 firmas:**
+
+1. **Conversar** — po-ux escucha + pregunta; levanta qué/por qué + **dónde vive** (zona/caja).
+2. **Mockup borrador** — la FORMA dentro del shell real (cita el `SHELL-DESIGN-CONTRACT` de la marca) + átomos reales. Iterás la forma.
+3. **Interrogatorio (gate duro)** — po-ux camina el checklist ANTES de armar la RONDA 1:
+   dato-por-campo (de dónde sale / entidad nueva o existente) · validación · estados (vacío/cargando/error/éxito) ·
+   roles/permisos · qué pasa si falla + recuperación · edge cases · qué NO entra. Sin esto → no hay RONDA 1.
+4. **RONDA 1 (input-spec) · ✍ FIRMA 1** — § Dónde vive + § Mapa funcional + § Pantallas (borrador) + § Dudas.
+   Chris lee, itera, firma "esto es lo que quiero". `checkpoint.input_spec_signed: true`.
+5. **Mockup final · ✍ FIRMA 2** — el mockup con TODO (estados + validaciones + microcopy + átomos finales).
+   Lo que ves = lo que se programa. `checkpoint.mockup_final_signed: true`.
+6. **GO → RONDA 2** — po-ux deriva § Gherkin + § Matriz + graders. transition `refining → refined`.
+
+**Por qué un solo archivo:** la RONDA 1 son las secciones humanas (arriba), la RONDA 2 las ejecutables (abajo).
+La intención humana vive arriba del `01-spec.md` y sobrevive como el "porqué". NO se crea un `input-spec.md` aparte
+(evita drift + un tipo de archivo nuevo). Las dos firmas son **gates internos del `refining`** — el estado NO cambia
+hasta el GO de la RONDA 2.
+
+**Disciplina de mockup:** antes de dibujar, po-ux declara la **zona/caja** (árbol de `paradigm-arquitectura.md`) →
+de ahí sale el **shell**; lo toma del `{brand}/docs/architecture/SHELL-DESIGN-CONTRACT.md` (si el shell no existe, se
+genera con el design-system actual). El mockup vive DENTRO del shell, en la ruta donde el user aterriza, con **átomos
+reales escogidos y nombrados** (`components/ui/` + `@luana/ui-kit`) — disciplina D1 de `frontend-visual-fidelity.md`.
+Esto garantiza "lo que veo = lo que se programa".
 
 ## Reglas duras (gate `/po-ux` y `/po`)
 

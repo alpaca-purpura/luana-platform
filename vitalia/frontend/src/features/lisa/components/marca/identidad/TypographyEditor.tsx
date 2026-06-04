@@ -19,8 +19,28 @@
  */
 
 
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { cn } from "@/lib/utils";
+
+/**
+ * Carga una familia de Google Fonts on-demand para que la vista previa pueda
+ * renderizarla. Sin esto, el `font-family` del preview cae a sans-serif (la fuente
+ * no está cargada) y el texto se ve igual elijas la que elijas. Idempotente por
+ * familia. `display=swap` evita el flash de texto invisible.
+ *
+ * Nota prod (HIPAA-lite): es config de marca (no PHI). Para prod conviene
+ * self-hostear las fuentes (next/font) en vez del CDN de Google.
+ */
+function ensureGoogleFont(family: string): void {
+  if (typeof document === "undefined") return;
+  const id = `gfont-${family.replace(/\s+/g, "-").toLowerCase()}`;
+  if (document.getElementById(id)) return;
+  const link = document.createElement("link");
+  link.id = id;
+  link.rel = "stylesheet";
+  link.href = `https://fonts.googleapis.com/css2?family=${family.replace(/ /g, "+")}:wght@400;600&display=swap`;
+  document.head.appendChild(link);
+}
 
 const FONT_OPTIONS = [
   { value: "Inter", label: "Inter" },
@@ -69,6 +89,12 @@ export function TypographyEditor({
 
   const displayHeading = headingFont ?? FONT_OPTIONS[0].value;
   const displayBody = bodyFont ?? FONT_OPTIONS[0].value;
+
+  // Carga las fuentes seleccionadas para que el preview las renderice de verdad.
+  useEffect(() => {
+    ensureGoogleFont(displayHeading);
+    ensureGoogleFont(displayBody);
+  }, [displayHeading, displayBody]);
 
   return (
     <section

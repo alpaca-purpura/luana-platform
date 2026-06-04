@@ -36,6 +36,7 @@ description: "Seguridad multi-sesion paralela Claude Code/opencode — worktree-
 | M12 | `wip/{brand}` ESTABLE (no rota story-by-story). Efímero SOLO por pedido explícito Chris |
 | M13 | Scope per branch enforced (pre-commit §13). Cross-brand mixing PROHIBIDO |
 | M14 | N sesiones mismo cwd con lock por bucket `docs`/`tests`/`code`/`code:{module}`. Módulos distintos paralelos = OK; mismo módulo serializa. Commit por pathspec (índice compartido) |
+| M15 | **Sweep-guard (HB-31, cement 2026-06-04):** `scripts/git/multi-session-scope-guard.sh` (pre-commit) BLOQUEA un commit que stagea el scope EXCLUSIVO de ≥2 sesiones VIVAS distintas (story-folder + módulo). Paralelo varias sesiones same-hub = **PERMITIDO** (Chris revocó "no 2 /dev-team" para acelerar); lo prohibido es la contaminación cross-sesión (`git add -A/-u/.` que barre lo ajeno). Fail-OPEN + override `MULTI_SESSION_ACK=1` |
 
 ## Session start / cierre
 

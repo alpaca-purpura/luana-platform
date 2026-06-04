@@ -29,15 +29,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { identitySchema } from "../../../types/marca/identity-schema";
 import type { IdentityFormValues } from "../../../types/marca/identity-schema";
-import { AutosaveBadge } from "./AutosaveBadge";
 import { cn } from "@/lib/utils";
 
 export interface IdentityCardProps {
   defaultValues?: Partial<IdentityFormValues>;
   /** Called on each debounced change (autosave). No manual save button. */
   onSave: (values: IdentityFormValues) => void;
-  autosaveStatus?: "idle" | "dirty" | "saving" | "saved" | "error";
-  savedAt?: Date | null;
   className?: string;
 }
 
@@ -57,8 +54,6 @@ function FieldError({ message }: { message: string | undefined }) {
 export function IdentityCard({
   defaultValues,
   onSave,
-  autosaveStatus = "idle",
-  savedAt,
   className,
 }: IdentityCardProps) {
   const {
@@ -88,7 +83,16 @@ export function IdentityCard({
   const valuesJson = JSON.stringify(values);
   const onSaveRef = useRef(onSave);
   onSaveRef.current = onSave;
+  // Skip the FIRST effect run: the initial render hydrates the form from server
+  // data and must NOT trigger an autosave (that PUT-on-mount made the badge show
+  // "Guardado ahora mismo" on every load + wrote identical data needlessly).
+  // Only user-initiated changes (subsequent valuesJson changes) autosave.
+  const isHydrated = useRef(false);
   useEffect(() => {
+    if (!isHydrated.current) {
+      isHydrated.current = true;
+      return;
+    }
     if (isValid) {
       onSaveRef.current(values);
     }
@@ -106,17 +110,15 @@ export function IdentityCard({
         className,
       )}
     >
-      {/* Header */}
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <h3 className="text-sm font-semibold text-foreground">
-            Identidad de la clínica
-          </h3>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Nombre, tagline y sitio web de tu clínica.
-          </p>
-        </div>
-        <AutosaveBadge status={autosaveStatus} savedAt={savedAt} />
+      {/* Header — el estado de guardado vive a nivel página (IdentidadView header),
+          no por-card, para que el usuario vea UN solo indicador de toda la pantalla. */}
+      <div>
+        <h3 className="text-sm font-semibold text-foreground">
+          Identidad de la clínica
+        </h3>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          Nombre, tagline y sitio web de tu clínica.
+        </p>
       </div>
 
       {/* brand_name */}

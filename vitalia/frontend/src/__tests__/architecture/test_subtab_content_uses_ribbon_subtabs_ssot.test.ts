@@ -92,10 +92,11 @@ describe("Architecture: SubTabContent PLACEHOLDER_MAP ↔ RIBBON_SUBTABS SSoT", 
   const ribbonKeys = getRibbonSubtabsKeys();
   const dispatcherCovered = getDispatcherCoveredKeys();
 
-  it("RIBBON_SUBTABS has exactly 22 valid sub-tab entries (valeria excluded — v1.2 sidebar-only)", () => {
+  it("RIBBON_SUBTABS has exactly 23 valid sub-tab entries (valeria excluded — v1.2 sidebar-only)", () => {
     // v1.2 (2026-05-30): mateo gains 2 subtabs [agenda, pacientes], valeria=0 (sidebar).
-    // Total stays 22: lisa(4) + mateo(2) + lucas(5) + adrian(4) + camila(4) + config(3) = 22.
-    expect(ribbonKeys.size).toBe(22);
+    // T-FE-1 (2026-06-03): Adrián gains +1 sub-tab "recuperar" → 5 total (RN-19 v3.1).
+    // Total is 23: lisa(4) + mateo(2) + lucas(5) + adrian(5) + camila(4) + config(3) = 23.
+    expect(ribbonKeys.size).toBe(23);
   });
 
   it("PLACEHOLDER_MAP parses RIBBON_SUBTABS - SHIPPED_STATIC_SUBTABS keys from source", () => {

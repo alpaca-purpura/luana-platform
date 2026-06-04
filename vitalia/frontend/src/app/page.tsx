@@ -8,8 +8,9 @@
  *
  * Comportamiento:
  *   1. Si no hay sesión Clerk → redirect a /sign-in (defense-in-depth con proxy.ts).
- *   2. Si hay sesión + user tiene tenants → redirect a /{firstTenant.id}/valeria/agenda
- *      (default landing per F1-S9 § 2 — Q1_default_landing decision Chris 2026-05-25).
+ *   2. Si hay sesión + user tiene tenants → redirect a /{firstTenant.id}/{DEFAULT_LANDING_SUBPATH}
+ *      (= mateo/agenda v1.2; antes valeria/agenda, que 404eaba — Bug #1
+ *      vitalia-bugfix-shell-nav-scroll-errors T-1). SSoT en lib/shell-routes.ts.
  *   3. Si user no tiene tenants → redirect a /sign-in?error=no_tenants_assigned
  *      (SC-8 surface already implemented in sign-in/page.tsx).
  *   4. Si fetch tenants falla → redirect a /sign-in?error=no_tenants_assigned
@@ -23,6 +24,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { fetchUserTenants, IamApiError } from "@/lib/iam/api";
+import { DEFAULT_LANDING_SUBPATH } from "@/lib/shell-routes";
 
 export default async function RootLandingPage() {
   const { userId } = await auth();
@@ -46,5 +48,5 @@ export default async function RootLandingPage() {
     redirect("/sign-in?error=no_tenants_assigned");
   }
 
-  redirect(`/${tenants[0].id}/valeria/agenda`);
+  redirect(`/${tenants[0].id}/${DEFAULT_LANDING_SUBPATH}`);
 }

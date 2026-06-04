@@ -104,13 +104,21 @@ export async function updatePersonality(
 ): Promise<PersonalityResponse> {
   // Build mutation-specific headers: X-User-ID + X-User-Role required by
   // require_brand_owner_access() RBAC guard on PATCH /personality.
-  // Fix: arreglar-guardado-voz-y-tono T-3.bis — BE RBAC denied without these.
   //
-  // X-User-ID: BE requires a valid UUID for audit log. Clerk userIds are not
-  // UUID-format ("user_2abc..."); tenantId (Clerk org UUID) is used as a
-  // stable placeholder. The audit log records this opaque ID — no FK lookup.
+  // X-User-ID = the REAL Clerk userId of the authenticated owner. The BE
+  // (story estabilizar-harness-e2e-lisa-marca, T-3 #2b) resolves the audit
+  // actor from the JWT clerk_sub → users.id UUID, so the FE just forwards the
+  // real Clerk userId — NEVER the tenantId (the tenant as audit actor was the
+  // HIPAA-lite "quién" bug, sub-bug #2). No fallback to tenantId: a missing
+  // userId means an anonymous mutation, which we refuse rather than mislabel.
+  if (!opts.userId) {
+    throw new Error(
+      "updatePersonality requires an authenticated Clerk userId (X-User-ID audit actor)",
+    );
+  }
+
   const mutationHeaders: Record<string, string> = {
-    "X-User-ID": opts.tenantId,
+    "X-User-ID": opts.userId,
     // Owner role for brand config mutations (no PHI — owner-level endpoint).
     "X-User-Role": opts.userRole ?? "owner",
   };

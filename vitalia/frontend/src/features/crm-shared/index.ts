@@ -1,5 +1,5 @@
-// cap: __shared__
-// story-origin: TBD
+// cap: crm.adrian-embudo
+// story-origin: vitalia-fase2-adrian-embudo
 /**
  * crm-shared — Public API barrel (PRODUCER · Ola 1+).
  *
@@ -15,7 +15,13 @@
 export type {
   Lead,
   LeadStage,
+  LeadFunnelStage,
   LeadOrigin,
+  LeadTemperature,
+  LeadOperatedBy,
+  BuyingSignal,
+  DepositStatus,
+  FrozenReason,
   Conversation,
   ConversationChannel,
   ConversationStatus,

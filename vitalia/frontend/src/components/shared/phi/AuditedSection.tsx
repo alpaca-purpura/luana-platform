@@ -35,6 +35,7 @@
 import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
 import { useAuth } from "@clerk/nextjs";
+import { fetchClient } from "@/lib/api/fetchClient";
 import { useClinicId } from "@/hooks/useClinicId";
 import { useTenantId } from "@/hooks/useTenantId";
 
@@ -69,30 +70,25 @@ export function AuditedSection({
     auditFired.current = true;
 
     const fireAudit = async () => {
-      // Guard: require both userId and our real tenant UUID.
+      // Guard: require userId, tenant UUID, clinicId (dual filter), and resourceId.
       // tenantId comes from user.publicMetadata.tenant_id (luana-core-iam UUID).
-      // With the Clerk org deleted, organization?.id was null → audit never fired.
-      // Now tenantId is our UUID (or null if not yet loaded) — explicit guard.
-      if (!userId || !tenantId) return;
+      // The BE audit endpoint is PHI dual-filtered (clinic required) and CASTs
+      // resourceId AS uuid — skip the beacon when any is absent (e.g. a 404 detail
+      // with no resolved contact, or clinic not yet loaded) so we never POST an
+      // incomplete body (would 422 + trip the anti-burbuja gate).
+      if (!userId || !tenantId || !clinicId || !resourceId) return;
 
       try {
         const token = await getToken();
         if (!token) return;
 
-        const headers: Record<string, string> = {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          "X-Tenant-ID": tenantId,
-        };
-
-        if (clinicId) {
-          headers["X-Clinic-ID"] = clinicId;
-        }
-
-        // Fire audit log — best-effort (UI continues regardless)
-        await fetch("/api/v1/vitalia/audit-log", {
+        // fetchClient injects Authorization + X-Tenant-ID + X-Clinic-ID (dual filter).
+        // The BE persists the audit row sync (pre-response) on the committing session.
+        await fetchClient<{ recorded: boolean }>("/api/v1/vitalia/audit-log", {
           method: "POST",
-          headers,
+          token,
+          tenantId,
+          clinicId,
           body: JSON.stringify({
             action,
             resourceType,

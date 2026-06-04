@@ -19,9 +19,11 @@ from fastapi import FastAPI
 from luana_core_iam.api.routers import auth_router as iam_users
 from pydantic import BaseModel
 
+from src.modules.vitalia._shared.telemetry.api.telemetry_router import router as telemetry_router
 from src.modules.vitalia.admin.api.admin_helpers_router import router as admin_helpers_router
 from src.modules.vitalia.api.routes import router as vitalia_router
 from src.modules.vitalia.api.webhook_routes import webhook_router
+from src.modules.vitalia.audit.api.audit_log_router import router as audit_log_router
 from src.modules.vitalia.brand_studio.api.routers.marca_router import router as marca_router
 from src.modules.vitalia.clinics.api.assets_proxy_router import router as assets_proxy_router
 from src.modules.vitalia.clinics.api.doctors_router import router as doctors_router
@@ -91,6 +93,12 @@ app.include_router(marca_router, prefix="/api/v1/lisa/marca", tags=["brand_studi
 app.include_router(public_doctors_router, prefix="/api/public/clinic", tags=["public"])
 # T-BE-6 F2-S8: Assets proxy upload router — consume luana-core-assets AssetsService (D-3)
 app.include_router(assets_proxy_router, prefix="/api/v1/vitalia/assets", tags=["assets"])
+# vitalia-fase2-adrian-inbox (telemetry-404 side-fix): FE growth-studio telemetry ingestion.
+# Path is /api/telemetry/* (NOT /api/v1/*) — matches mateo/lib/telemetry.ts + dev-app tunnel ^/api/.* → BE.
+app.include_router(telemetry_router, prefix="/api/telemetry", tags=["telemetry"])
+# vitalia-fase2-adrian-inbox (audit-log-404 twin-fix): FE PHI-read audit ingestion (AuditedSection).
+# Serves /api/v1/vitalia/audit-log — wires the FE beacon to AsyncAuditWriter (hipaa-lite dual filter).
+app.include_router(audit_log_router, prefix="/api/v1/vitalia", tags=["audit"])
 
 
 class HealthResponse(BaseModel):

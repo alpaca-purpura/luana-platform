@@ -37,7 +37,7 @@ dev_preview:
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-auth-base-functional   # v2 cement · mirror of story_introduced
 created_date: 2026-05-18   # v2 cement · mirror of date_introduced
-last_modified: 2026-05-29   # T-3 reconcile 2026-05-29
+last_modified: 2026-06-03   # bugfix shell-nav-scroll-errors #1 (edge-redirect /{tenant}→landing en proxy)
 parent_cap: null   # v2 cement · mirror of extends_capability
 derives_capabilities: []   # v2 cement · initial empty list
 
@@ -45,6 +45,12 @@ derives_capabilities: []   # v2 cement · initial empty list
 
 # Capability change log v2 (cement 2026-05-27)
 change_log:
+  - story_id: vitalia-bugfix-shell-nav-scroll-errors
+    date: 2026-06-03
+    type: fix
+    summary: "Bug#1 hardening (story bugfix shell): el proxy ahora hace edge-redirect HTTP 307 de bare /{tenant} → /{tenant}/{DEFAULT_LANDING_SUBPATH} vía bareTenantLandingRedirect() (UUID-only, no toca sign-in/sign-out/marketing). Evita que el Server Component (shell-organism)/page.tsx haga una soft-navigation intra-route-group que dispara 'Rendered more hooks' en el Router de Next 16.2.3 (~40% flake en el landing). Live-verified dev-app: /{tenant} → mateo/agenda limpio."
+    merge_sha: null
+    status: done
   - story_id: vitalia-auth-base-functional
     date: 2026-05-18
     type: new

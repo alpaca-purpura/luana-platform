@@ -12,9 +12,6 @@
 export { PresenciaView } from "./PresenciaView";
 export type { PresenciaViewProps } from "./PresenciaView";
 
-export { InfoBannerLandingDescoped } from "./InfoBannerLandingDescoped";
-export type { InfoBannerLandingDescopedProps } from "./InfoBannerLandingDescoped";
-
 export { WebsiteCard } from "./WebsiteCard";
 export type { WebsiteCardProps } from "./WebsiteCard";
 

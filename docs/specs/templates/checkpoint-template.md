@@ -20,6 +20,8 @@ last_artifact: 01-spec.md                         # último archivo escrito
 last_modified: 2026-05-06T15:23:00Z
 next_action: "Chris ratifica spec → invocar /architect"
 ratified_by_chris: false                          # true cuando spec + diseño ratificados
+input_spec_signed: false                          # ★ /po-ux UI deep (cement 2026-06-03) — RONDA 1 (intención: dónde vive + mapa funcional + pantallas-borrador + dudas) firmada por Chris. Gate interno del refining; el cockpit lo pinta como ✍firma1
+mockup_final_signed: false                        # ★ /po-ux UI deep — mockup FINAL firmado por Chris (estados+validaciones+microcopy+átomos finales) ANTES del GO a RONDA 2 (Gherkin). Cockpit ✍firma2
 spawned_at: 2026-05-06T14:00:00Z
 spawned_by: /pm
 parallel_safe: true                               # ¿otra sesión puede tocar artefactos de esta story sin conflict?

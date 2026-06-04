@@ -23,6 +23,9 @@
  */
 
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
+
+import { bareTenantLandingRedirect } from "@/lib/shell-routes";
 
 const isPublicRoute = createRouteMatcher([
   "/sign-in(.*)",
@@ -43,6 +46,22 @@ const isPublicRoute = createRouteMatcher([
 export const proxy = clerkMiddleware(async (auth, request) => {
   if (!isPublicRoute(request)) {
     await auth.protect();
+  }
+
+  // Bug #1 hardening (vitalia-bugfix-shell-nav-scroll-errors): el redirect de
+  // /{tenant} → /{tenant}/{DEFAULT_LANDING_SUBPATH} hecho por el Server Component
+  // (shell-organism)/page.tsx queda DENTRO del mismo route group (shell-organism)
+  // → Next.js 16.2.3 hace una soft-navigation parcial que dispara
+  // "Rendered more hooks than during the previous render" en su Router interno
+  // (~40% flake en navegación a /{tenant} bare; el landing queda colgado en
+  // /{tenant} en vez de mateo/agenda). Hacer el redirect en el EDGE (307 HTTP)
+  // elimina la soft-nav: el browser pide la ruta destino con un fetch fresco →
+  // el Router monta limpio. Solo para usuarios ya autenticados (auth.protect
+  // arriba ya mandó a sign-in a los anónimos). Server Component redirect queda
+  // como defensa para tenants no-UUID (raro). Lógica de match en lib/shell-routes.ts.
+  const landingRedirect = bareTenantLandingRedirect(request.nextUrl.pathname);
+  if (landingRedirect) {
+    return NextResponse.redirect(new URL(landingRedirect, request.url));
   }
 });
 

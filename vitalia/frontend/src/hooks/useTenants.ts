@@ -6,7 +6,9 @@
  * useTenants — React Query hook to fetch available tenants for the authenticated user.
  * F1-S3 vitalia-fase1-tenant-switcher — T-5
  *
- * Fetches GET /api/tenants — returns list of clinics/tenants accessible to the user.
+ * Fetches GET /api/v1/iam/users/me/tenants — returns list of clinics/tenants
+ * accessible to the user (core/luana-core-iam auth_router). El path viejo
+ * /api/tenants NO existe en el BE (404 en el stack real → bug#2 selector oculto).
  * This is a non-PHI bootstrap call: it lists business entities (clinics), not patient data.
  *
  * After data arrives, hydrates the Zustand store via setAvailableTenants (useEffect).
@@ -51,10 +53,12 @@ export function useTenants() {
     queryFn: async () => {
       const token = await getToken();
       if (!token || !userId) throw new Error("Not authenticated");
-      // /api/tenants is a user-level endpoint — userId serves as tenantId
-      // to satisfy the X-Tenant-ID header requirement. The backend derives
-      // accessible tenants from the JWT claims.
-      return fetchClient<TenantsApiResponse>("/api/tenants", {
+      // Endpoint real del BE (core/luana-core-iam auth_router → /me/tenants,
+      // montado en /api/v1/iam/users). Devuelve list[TenantSchema] (array plano).
+      // El path viejo /api/tenants NO existe en el BE → 404 → lista vacía →
+      // TenantSwitcher oculto (bug#2 live). userId va como X-Tenant-ID (user-level
+      // endpoint; el BE deriva los tenants accesibles del JWT).
+      return fetchClient<TenantsApiResponse>("/api/v1/iam/users/me/tenants", {
         token,
         tenantId: userId,
       });
@@ -66,10 +70,11 @@ export function useTenants() {
     retry: 2,
   });
 
-  // Hydrate store when data arrives (React Query v5 — onSuccess deprecated)
+  // Hydrate store when data arrives (React Query v5 — onSuccess deprecated).
+  // query.data es el array plano (list[TenantSchema]) del BE — NO `.tenants`.
   useEffect(() => {
     if (query.data) {
-      setAvailableTenants(query.data.tenants);
+      setAvailableTenants(query.data);
     }
   }, [query.data, setAvailableTenants]);
 

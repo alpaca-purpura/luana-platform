@@ -109,8 +109,9 @@ describe("Architecture: no hardcoded sub-tab key strings outside SubTabContent",
   const regex = buildCompositeKeyRegex(compositeKeys);
   const allSourceFiles = collectSourceFiles(SRC_ROOT);
 
-  it("composite key set has 22 entries (fixture sanity check)", () => {
-    expect(compositeKeys).toHaveLength(22);
+  it("composite key set has 23 entries (fixture sanity check)", () => {
+    // T-FE-1 (2026-06-03): Adrián gains +1 sub-tab "recuperar" → 23 total.
+    expect(compositeKeys).toHaveLength(23);
   });
 
   it("no source file outside allowlist contains hardcoded composite sub-tab keys", () => {

@@ -45,6 +45,8 @@ import type { IdentityFormValues } from "../../../types/marca/identity-schema";
 import type { ClinicVisualsFormValues } from "../../../types/marca/visuals-schema";
 import { useIdentityAutosave } from "../../../hooks/useIdentityAutosave";
 import { useVisualsAutosave } from "../../../hooks/useVisualsAutosave";
+import { AutosaveBadge } from "@/components/marca/shared/AutosaveBadge";
+import { aggregateAutosaveStatus } from "../../../utils/marca/aggregateAutosave";
 import { useMarcaIdentidadStore } from "../../../store/marca-identidad-store";
 import { IdentityCard } from "./IdentityCard";
 import { ClinicVerticalReadOnly } from "./ClinicVerticalReadOnly";
@@ -111,11 +113,13 @@ export function IdentidadView({
   clinicId,
   className,
 }: IdentidadViewProps) {
-  const { getToken, isLoaded, isSignedIn } = useAuth();
+  const { getToken, isLoaded, isSignedIn, userId } = useAuth();
   const queryClient = useQueryClient();
   const { setLogoUploading, logoUploading } = useMarcaIdentidadStore();
 
-  const authOpts = { tenantId, clinicId };
+  // userId (Clerk) se plumbea al upload de logo: el BE POST /logos exige X-User-ID
+  // + rol brand_owner (igual que las mutaciones PATCH).
+  const authOpts = { tenantId, clinicId, userId };
   const enabled = isLoaded && !!isSignedIn;
 
   // ── Server data queries ──────────────────────────────────────────────────────
@@ -152,6 +156,13 @@ export function IdentidadView({
   // ── Autosave hooks ───────────────────────────────────────────────────────────
   const identityAutosave = useIdentityAutosave({ tenantId, clinicId });
   const visualsAutosave = useVisualsAutosave({ tenantId, clinicId });
+
+  // Page-level autosave indicator: aggregate identity + visuals (colores/tipografía)
+  // so el usuario ve UN solo estado de guardado para toda la sub-tab (feedback Chris).
+  const pageAutosave = aggregateAutosaveStatus([
+    { status: identityAutosave.autosaveStatus, savedAt: identityAutosave.savedAt },
+    { status: visualsAutosave.autosaveStatus, savedAt: visualsAutosave.savedAt },
+  ]);
 
   // ── Logo upload mutation ─────────────────────────────────────────────────────
   const logoUploadMutation = useMutation({
@@ -230,12 +241,21 @@ export function IdentidadView({
       className={cn("flex flex-col gap-6 p-6", className)}
       data-testid="identidad-view"
     >
-      <div>
-        <h2 className="text-lg font-semibold text-foreground">Identidad</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
+      {/* Bug #3 fix (vitalia-bugfix-shell-nav-scroll-errors T-6): se removió el
+          h2 "Identidad" (eco del SubSubTab activo). Se conserva la descripción
+          contextual (helper text, no es eco de la nav). */}
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-sm text-muted-foreground">
           Define la identidad visual y descriptiva de tu clínica — nombre,
           tagline, colores, tipografía y equipo.
         </p>
+        {/* Indicador de guardado a nivel PÁGINA: refleja todas las secciones
+            (identidad + colores + tipografía), no solo una. */}
+        <AutosaveBadge
+          status={pageAutosave.status}
+          savedAt={pageAutosave.savedAt}
+          className="shrink-0 pt-0.5"
+        />
       </div>
 
       {/* ── Cards grid ──────────────────────────────────────────────────────── */}
@@ -255,8 +275,6 @@ export function IdentidadView({
             onSave={(values: IdentityFormValues) => {
               identityAutosave.scheduleAutosave(values);
             }}
-            autosaveStatus={identityAutosave.autosaveStatus}
-            savedAt={identityAutosave.savedAt}
           />
         )}
 
@@ -279,6 +297,8 @@ export function IdentidadView({
           logoUrl={visuals?.logo_url ?? null}
           onUpload={(file) => logoUploadMutation.mutate(file)}
           isUploading={logoUploading}
+          onDelete={() => logoDeleteMutation.mutate()}
+          isDeleting={logoDeleteMutation.isPending}
         />
 
         {/* Color triad editor */}
@@ -319,19 +339,6 @@ export function IdentidadView({
           className="sm:col-span-2"
         />
       </div>
-
-      {/* Logo delete link */}
-      {visuals?.logo_url && !logoUploading && (
-        <button
-          type="button"
-          onClick={() => logoDeleteMutation.mutate()}
-          disabled={logoDeleteMutation.isPending}
-          className="self-start text-xs text-destructive hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
-          aria-label="Eliminar logo de la clínica"
-        >
-          {logoDeleteMutation.isPending ? "Eliminando..." : "Eliminar logo"}
-        </button>
-      )}
     </div>
   );
 }

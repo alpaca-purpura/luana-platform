@@ -22,6 +22,7 @@
  */
 
 import { z } from "zod";
+import { fetchClient } from "@/lib/api/fetchClient";
 
 // ── 1. Event type enum (7 canónicos per 03-arch § telemetry) ──────────────────
 
@@ -156,22 +157,56 @@ export interface TelemetryPayload {
 // ── 5. trackEvent — main export ───────────────────────────────────────────────
 
 /**
- * Envía un evento de telemetría al endpoint growth-studio-event.
+ * Contexto de autenticación tenant-aware para el POST de telemetría.
+ *
+ * El endpoint BE (`/api/telemetry/growth-studio-event`) es tenant-scoped: resuelve
+ * y verifica la membresía vía ClinicResolver, así que el POST DEBE llevar token +
+ * X-Tenant-ID (y X-Clinic-ID para el dual filter HIPAA-lite). Por eso `trackEvent`
+ * ya NO usa `fetch` crudo (que iba sin headers → 404/401) sino `fetchClient`.
+ *
+ * Obtener en el caller (Client Component):
+ *   - token: `useAuth().getToken()`
+ *   - tenantId: `useTenantId()` o el `tenantId` de props
+ *   - clinicId: `useClinicId()`
+ */
+export interface TelemetryAuth {
+  /** Clerk JWT (`useAuth().getToken()`). Null mientras Clerk carga → se omite el evento. */
+  token: string | null;
+  /** Luana-core-iam tenant ID (X-Tenant-ID). Null → se omite el evento. */
+  tenantId: string | null;
+  /** Clinic ID (X-Clinic-ID, dual filter). Opcional. */
+  clinicId?: string | null;
+}
+
+/**
+ * Envía un evento de telemetría al endpoint growth-studio-event vía `fetchClient`.
  *
  * Garantías:
- * - Fire-and-forget: NUNCA lanza error al caller.
+ * - Fire-and-forget: NUNCA lanza error al caller (auxiliar, no bloquea la UI).
  * - PII-safe: sanitiza el payload antes del POST (elimina campos PHI).
- * - No-blocking: el flujo principal de la UI no se interrumpe si falla.
+ * - Tenant-aware: `fetchClient` inyecta Authorization + X-Tenant-ID + X-Clinic-ID.
+ * - Skip silencioso: si falta token o tenantId (Clerk aún cargando), NO hace el POST
+ *   (evita 401/404 que ensuciarían la consola / dispararían el gate anti-burbuja).
  * - Timestamp ISO 8601 auto-generado en el cliente (server normaliza con su reloj).
  *
  * @param eventType - Tipo de evento (TrackEventType enum)
  * @param payload - Datos del evento (PII-free: solo IDs hash + buckets semánticos)
+ * @param auth - Contexto tenant/auth (token + tenantId + clinicId)
  * @returns Promise<void> — siempre resuelve, nunca rechaza
  */
 export async function trackEvent(
   eventType: TrackEventType,
   payload: TelemetryPayload | Record<string, unknown>,
+  auth: TelemetryAuth,
 ): Promise<void> {
+  // Fire-forget: sin auth resuelta (token + tenant + clinic) no hay POST.
+  // El endpoint es clinic-scoped (dual filter) → sin clinicId el POST sería 422.
+  // Telemetría es auxiliar: si el contexto aún no cargó, se omite el evento
+  // (no 401/404/422, no ruido en consola, no trip del gate anti-burbuja).
+  if (!auth.token || !auth.tenantId || !auth.clinicId) {
+    return;
+  }
+
   try {
     const sanitized = sanitizePayload(payload as Record<string, unknown>);
 
@@ -181,23 +216,15 @@ export async function trackEvent(
       payload: sanitized,
     };
 
-    const response = await fetch("/api/telemetry/growth-studio-event", {
+    await fetchClient<{ accepted: boolean }>("/api/telemetry/growth-studio-event", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      token: auth.token,
+      tenantId: auth.tenantId,
+      clinicId: auth.clinicId ?? null,
       body: JSON.stringify(body),
     });
-
-    if (!response.ok) {
-      // Log a warning pero NO lanza — telemetría es auxiliar
-      console.warn(
-        `[telemetry] POST growth-studio-event falló: ${response.status} ${response.statusText}`,
-        { event_type: eventType },
-      );
-    }
   } catch (err) {
-    // Network error, abort, u otro fallo — log y silenciar
+    // Error de red / 4xx-5xx (fetchClient lanza ApiError) — log y silenciar.
     console.warn("[telemetry] Error al enviar evento de telemetría:", err, {
       event_type: eventType,
     });
