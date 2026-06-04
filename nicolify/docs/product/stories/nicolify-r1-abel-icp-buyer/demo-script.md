@@ -5,6 +5,10 @@
 >
 > T-E2E-1 · story-origin: nicolify-r1-abel-icp-buyer
 
+> **★ Estado 2026-06-04 (continuación):** todo el HAPPY PATH fue **verificado LIVE por Claude** como Chris (slug `alpaca-purpura`) con el LLM real (DeepSeek): empty → modal → Texto → Analizar → analizando → navega al borrador → ProposalBanner. 0 errores de consola/página, anti-burbuja CLEAN. Evidencia: `dod-evidence-screens/ff-{1..4}.png` + `fullflow-findings.json`. Esta demo es tu **confirmación con tus propios ojos**, no debugging.
+> **3 bugs reales se cazaron + repararon en el camino** (estaban enmascarados por el "verde" previo): (A) el modal "Abel te arma un borrador" no abría (componente sin montar); (B) el submit daba 422 (contrato FE↔BE desalineado); (C) burbuja en URLs 404. Todos fixed + re-verificados.
+> **Recomendación (HB-33):** hacé la demo con **tu propia cuenta `hola@alpacapurpura.lat`** (URL con slug `alpaca-purpura`, no UUID) — es el routing exacto del usuario real. Tu tenant quedó **vacío** (0 ICPs) para arrancar desde el empty-state.
+
 ---
 
 ## SETUP

@@ -126,3 +126,37 @@ Primera hoja real de Abel en el shell. SYSTEM-MAP la registra como `abel.icp` (1
 - 2026-06-03: `/po-ux` cierra refining→refined. 01-spec.md v2 + mockup G1 ratificados Chris (patrón list→detail EntitySubNavBar · 1 ICP→N buyers · draft-first · sin barra completitud).
 - 2026-06-03: `/architect` cierra refined→ready. READY package (6 artifacts): 03-arch consolidado + 3 per-surface (be/fe/agentic) + 04-validators + 05-guidelines + 06-tickets + dispatch-plan. 8 tickets (DAG · T-AG-1 Opus R23). adr_001_compliance: full. **Decisión engine-boundary cementada:** ICP=NET-NEW brand-local (no engine, no cross-brand mirror — grep verificado) · Buyer=replicate brand-local async (engine `buyer_personas` es sync+engine-IAM, sin `icp_id` → boundary mismatch, consume esquema por referencia) · EntitySubNavBar=port vitalia (lift candidate @luana/ui-kit N=2 — flag, no lift). Ningún ticket edita core/. 3 Open Questions informativas para PM (03-arch §16).
 - 2026-06-03: `/dev-team` cierra developing→developed (autónomo, sesión nueva post-HB-31). **8/8 tickets GREEN**: harness HB-31 (f734a1f1) → T-BE-1+T-BE-2 (034b67c6, 70/70 + 20 arch) → T-AG-1 Opus R23 (036f9fc6, 18 agentic) → T-FE-1 (58952787, 27 comp) → T-FE-2 (3f3c006a, 72) → T-FE-3 (8afb9476, dispatcher) → T-FE-4 (680658c2, draft-first e2e) → T-E2E-1 (6f7aee47, suite static-green). BE ruff+pytest+arch GREEN. FE tsc 0 + vitest 359/361 (2 reds = bug PRE-EXISTENTE R0 ShellOrganismLayoutClient, fuera de scope → observed-bugs). Worktree huérfano removido. **E2E live-run + visual baselines + dod_evidence DEFERIDOS al gate #37** (stack stale + Chrome MCP down). → AUTO-HANDOFF `/auditor`.
+
+---
+
+## Continuación 2026-06-04 (sesión nueva · /dev-team · cerrar deferrals + deuda + signoff)
+
+**Decisiones Chris esta sesión:** (1) LLM gateway Chinese-first model-independent (DeepSeek+Kimi base, OpenAI excepción); (2) E2E = flujos completos en una sesión (journey/serial); (3) UI defender en el loop live-verify; (4) W1/W2 → graduar follow-up /pm-luana.
+
+### Deferrals CERRADOS
+- **LLM gateway** (`1fcbcc45`): proxy LiteLLM compartido cross-brand + ModelRole Chinese-first. `extract→borrador` happy **LIVE** (DeepSeek → borrador real + 2 buyers, origin=draft, Spanish neutro). Proposal `/pm-luana`: `docs/promotion-protocol/proposals/2026-06-04-llm-gateway-chinese-first.md`.
+- **Telemetría** (Redis up): `growth_studio_event` (`abel_icp_draft_proposed` + `abel_icp_extraction_cost`) emitido + persistido **sin PII** (icp_id hasheado). `cost_usd=null` (falta pricing snapshot chino — follow-up no-bloqueante en el proposal).
+- **DoD #37 anti-masking** (`4e8ff5fe`, HB-33): 3 trampas graduadas a la rule.
+
+### ★ 3 bugs reales cazados por live-verify (el "19/19 verde" los enmascaraba) — fixed `c74431a0`
+1. **Bug A · orphan-mount:** `<UniversalIntake>` existía pero NADIE lo montaba → "Abel te arma un borrador" no abría nada. La story NO estaba realmente completa. Fix: `IcpIntakeOverlay` montado + cableado (builder `3ee8fcae`).
+2. **Bug A.2 · contrato FE↔BE (422):** el modal mandaba `{seedType:"texto",text}` crudo; el BE quiere `{seed_type:"text",payload}`. Respuesta también desalineada (`job_id/icp_id`→`jobId/icpId`) → icpId undefined → sin navegación. Fix: mapping explícito en `extract-api.ts` + `extract-api.test.ts` (contract guard, HB-42).
+3. **Bug B · burbuja en 404:** invalid-UUID → `TypeError performance.measure SubsubtabLayout` (Next 16 dev RSC instrumentation sobre `notFound()` async). Framework-origin + dev-only verificado. Fix honesto: `allowedPageErrors` tight opt-in en `base.ts` (gate 100% estricto salvo ESE error framework, solo en tests 404) + re-habilitado `failOnRuntimeError:true` (el builder lo había desactivado).
+
+### Headline flow LIVE-verified end-to-end (AS CHRIS · slug alpaca-purpura)
+empty → "Abel te arma un borrador" → modal (4 tabs) → Texto seed → Analizar → analizando → **navega a `/abel/icp/{uuid}/datos`** → ProposalBanner (Ratificar/Descartar) + datos form. Extract 200 (DeepSeek real). **0 console errors · 0 page errors · anti-burbuja CLEAN.** Evidencia: `dod-evidence-screens/ff-{1..4}.png` + `fullflow-findings.json` + `suspects-findings.json`.
+
+### Gates verdes (re-verificados)
+- vitest abel 182/182 (incl. contract guard nuevo) · e2e regression abel 20/20 (gate-ON 404 + journey self-provisioning, retries:0, serial) · tsc 0 · eslint 0.
+- HB-32 (E2E flaky) cerrado en la práctica: journeys self-provisioning + serial + retries:0 (commit `e7e0c86a` + endurecido `c74431a0`).
+
+### Cleanup datos prueba (Fase 5) ✅
+- Chris tenant (e4373552): 0 live ICPs (demo arranca vacío → DraftFirstStarter). owner.demo (7f464ab7-137b): 0 live (e2e self-clean).
+
+### dod_status (actualizado)
+- `dod_live_verified: true` — headline flow (modal→borrador→ProposalBanner) + writes (create/patch/buyer/set-primary/mark-ready/cross-tenant) ejercidos LIVE con el routing exacto de Chris (slug) + estado cold, leyendo logs + efecto + anti-burbuja CLEAN.
+- **pending_for_done:** (a) UI-defender review (corriendo) · (b) **demo_signoff de Chris** (gate reviewing→done) · (c) [opcional, recomendado] fresh `/auditor` pass sobre el código nuevo (IcpIntakeOverlay + extract-api contract fix + base.ts gate change).
+- **follow-ups no-bloqueantes:** archivo-mode upload endpoint (file_ref) no wired (url+texto sí) · cost_usd pricing snapshot chino · W1 auth + W2 lift (/pm-luana).
+
+### next_action
+STOP en gate demo #37. Pedir demo_signoff a Chris (empty→generar→borrador→ProposalBanner en su cuenta). APPROVED → [opcional /auditor re-pass] → /pm-nicolify merge (07-merge + cap status→live + modules/abel.md + archive R2 + reviewing→done).
