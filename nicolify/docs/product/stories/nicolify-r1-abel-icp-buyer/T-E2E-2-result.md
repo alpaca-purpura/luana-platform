@@ -82,4 +82,4 @@ eslint src/ --cache: 0 errors, 313 warnings (baseline unchanged)
 
 ## Commit SHA
 
-(see next commit on wip/nicolify)
+`e7e0c86a` — pushed to wip/nicolify
