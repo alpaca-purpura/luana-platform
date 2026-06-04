@@ -45,8 +45,27 @@ build_status_2026_06_03:
   e2e_status: "AUTHORED + static GREEN (tsc/eslint/--list). base.ts anti-burbuja, 4 POMs, cold-start variant, visual goldens 4×2. LIVE RUN + baselines + dod_evidence = DEFERIDO al demo gate #37 (stack stale + Chrome MCP down)"
   harness_fix: "HB-31 commiteado (f734a1f1): isolation:worktree removido de los 3 builders → builders in-place. Worktree huérfano agent-a2dcc99f removido (verificado 0 orphan-only)."
 dod_status:
-  dod_live_verified: false   # ⏳ PENDIENTE — gate #37 (reviewing→done). stack nicolify stale (12h pre-abel, BE health vacío, FE 500, migración 002 sin aplicar) + Chrome MCP desconectado
-  blocking_done: "live-verify dev-app con dod_evidence (extract→borrador, patch→persist, mark-ready→422, cross-tenant→404) + demo-script sign-off Chris. /pm-nicolify REFUSE merge sin esto."
+  dod_live_verified: partial   # BE writes ejercidos live (2026-06-04) · falta FE-UI live + demo_signoff Chris
+  dod_env: "make dev-nicolify refrescado → BE :8001 health 200 (migración 002 aplicada) · FE :3001 compila (307 auth). Stack stale + 2 bugs reparados (ver below). Chrome MCP desconectado → BE-writes vía curl header-auth (W1)."
+  bugs_caught_by_37:
+    be_dep_gap: "luana-core-extraction/llm no declaradas en nicolify/pyproject.toml → container BE crash-loop (host tests verdes ocultaban). FIX d13ecc14 + uv sync → BE up. (los tests host pasaban porque el venv root tiene los 26 core pkgs)"
+    fe_route_conflict: "T-FE-1 agregó [entityId] hermano de [subsubtab] R0 → Next.js 500 'different slug names', app inalcanzable (tsc/vitest no lo cazan). FIX 9b5b1eb0: unificado bajo [subsubtab] con dispatch entity vs nav-leaf · 03-arch-fe §0 corregido · boot-verified FE limpio."
+  dod_evidence:
+    - { action: "POST /api/v1/abel/icp (X-Tenant-ID A)", observed: "201 status=borrador (draft-first RN-3) · row en abel_icps confirmada", verdict: PASS }
+    - { action: "PATCH /icp/{id} vertical+main_pain", observed: "200 · persiste al recargar (GET muestra los valores)", verdict: PASS }
+    - { action: "POST /icp/{id}/buyers (name+role) + POST /buyer/{id}/set-primary", observed: "buyer creado (RN-5) · set-primary 200 · primary count=1 (RN-6)", verdict: PASS }
+    - { action: "POST /icp/{id}/mark-ready (sin buyer)", observed: "422 {missing:[buyer_with_role]} · ICP sigue borrador (RN-8 sin barra)", verdict: PASS }
+    - { action: "POST /icp/{id}/mark-ready (con buyer+vertical+pain+angle)", observed: "200 {status:listo, missing:[]} (RN-8 happy)", verdict: PASS }
+    - { action: "GET /icp/{id} con X-Tenant-ID B (cross-tenant)", observed: "404 (RN-1, no revela existencia)", verdict: PASS }
+    - { action: "POST /icp/extract (seed text)", observed: "200 job analizando → failed GRACEFUL (sin LLM en dev: 'Connection error' → warning + job failed, 0 traceback = NF-res-extract resiliencia OK). Happy extract→borrador requiere LLM creds.", verdict: "PASS (resiliencia) · happy-path LLM-pendiente" }
+    - { action: "BE logs durante toda la secuencia", observed: "0 traceback/500 (sólo redis_unavailable warning benigno)", verdict: PASS }
+  caveats:
+    - "extract→borrador (happy) requiere LLM provider configurado en dev (hoy 'Connection error' → failed graceful). Demostrable con creds LLM."
+    - "growth_studio_event: 0 filas tras mark-ready (telemetría best-effort · Redis down en dev). Verificar emisión con Redis up — follow-up no-bloqueante."
+  pending_for_done:
+    - "FE-UI live-verify (click real por la app + gate anti-burbuja base.ts + visual baselines) vía Chrome MCP (reconectar) o Playwright autenticado contra :3001."
+    - "demo_signoff de Chris (APPROVED) sobre demo-script.md."
+  blocking_done: "/pm-nicolify REFUSE merge sin dod_live_verified:true (FE-UI + signoff) + dod_evidence completo."
 audit_summary_2026_06_03:
   verdict_code: "APPROVED — BE auditor-backend APPROVED (2 WARN no-bloqueantes) · AG auditor-agentic PASS · FE auditor-frontend APPROVED iter 2"
   audit_iterations: "2/4 — 1 Caso B resuelto: '+ buyer' create flow estaba muerto (navegaba a ruta __add_buyer__ → error, useCreateBuyer no disparaba) → fix d5ee83e0 (callback onAddBuyer threaded + createBuyer + nav al leaf nuevo + test integración nuevo). Cierra SC-add-buyer/RN-5."
