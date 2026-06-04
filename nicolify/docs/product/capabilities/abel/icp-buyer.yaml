@@ -8,6 +8,7 @@ slug: "icp-buyer"
 title: "ICP & Buyer de Abel (perfil de cliente ideal a nivel cuenta + N buyer personas) — draft-first"
 status: wip                              # wip = construido, no live aún (pendiente DoD #37 + merge). /pm-nicolify → live en Fase F.3
 # audit 2026-06-03: /auditor APPROVED (BE+AG+FE) · gherkin-matrix 0 MISSING/0 FAIL · pendiente solo DoD #37 live-verify
+# fe-ui 2026-06-04: anti-burbuja CLEAN + empty/intake/i18n verificados live · F-1 (UUID inválido→404) FIXED a323bd5d · workspace UI + baselines pendientes (seed + R0 bug)
 # dod #37 2026-06-04: BE writes live-verified (create→borrador·patch→persist·mark-ready 422/200·cross-tenant 404·buyer+set-primary). 2 bugs reparados (BE dep gap d13ecc14 · FE route slug 9b5b1eb0). Falta FE-UI + demo_signoff Chris.
 user_visible: true                       # hoja user-reachable del shell (Abel → ICP & buyer)
 

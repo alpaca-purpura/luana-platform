@@ -62,10 +62,18 @@ dod_status:
   caveats:
     - "extract→borrador (happy) requiere LLM provider configurado en dev (hoy 'Connection error' → failed graceful). Demostrable con creds LLM."
     - "growth_studio_event: 0 filas tras mark-ready (telemetría best-effort · Redis down en dev). Verificar emisión con Redis up — follow-up no-bloqueante."
+  fe_ui_live_2026_06_04:   # Playwright autenticado contra :3001 (storageState fresco · evidencia: dod-fe-ui-evidence.md)
+    verified_pass: "routing /abel/icp reachable + shell hydrates · DraftFirstStarter empty + 2 CTAs · UniversalIntakeModal abre (4 tabs) · copy neutro anti-voseo · ANTI-BURBUJA CLEAN (0 pageerror/console/overlay)"
+    f1_real_bug_FIXED: "ICP UUID inválido/cross-tenant → shell colgaba en 'Cargando shell' (BE 404eaba, FE no manejaba) → FIX a323bd5d (notFound() guard client-side). Pendiente re-confirmar live."
+    f2_blocked_baselines: "visual baselines arranque/lista NO capturados — bug R0 AppPanelSlot 2× duplica data-testid (strict-mode). El bug R0 ahora BLOQUEA un deliverable R1 → fortalece el caso de arreglar R0 (observed-bugs/2026-06-03). Decisión scope Chris."
+    f3_workspace_unverified: "19 tests workspace SKIP — la suite consume E2E_*_ID (ICP/buyer seeded) por env var; el tenant demo está empty. Los flujos detalle/form/buyer/mark-ready están BE-verificados (dod_evidence arriba) pero NO UI-verificados live. Camino: seed ICPs en tenant de owner.demo + re-run con env vars."
+    llm_pending: "extract→borrador happy requiere LLM creds en dev (resiliencia failed-graceful verificada)."
   pending_for_done:
-    - "FE-UI live-verify (click real por la app + gate anti-burbuja base.ts + visual baselines) vía Chrome MCP (reconectar) o Playwright autenticado contra :3001."
+    - "Re-confirmar F-1 live (Playwright SC-adversarial-tenant tras el fix)."
+    - "UI-verificar los flujos workspace (detalle/form/buyer/mark-ready) live → seed ICPs en tenant owner.demo + env vars, o e2e que cree en-test."
+    - "Visual baselines: desbloquear (fix R0 AppPanelSlot 2× — decisión scope) o diferir con rationale."
     - "demo_signoff de Chris (APPROVED) sobre demo-script.md."
-  blocking_done: "/pm-nicolify REFUSE merge sin dod_live_verified:true (FE-UI + signoff) + dod_evidence completo."
+  blocking_done: "/pm-nicolify REFUSE merge sin dod_live_verified:true (FE-UI workspace + F-1 reconfirm + signoff). NO done-ready aún."
 audit_summary_2026_06_03:
   verdict_code: "APPROVED — BE auditor-backend APPROVED (2 WARN no-bloqueantes) · AG auditor-agentic PASS · FE auditor-frontend APPROVED iter 2"
   audit_iterations: "2/4 — 1 Caso B resuelto: '+ buyer' create flow estaba muerto (navegaba a ruta __add_buyer__ → error, useCreateBuyer no disparaba) → fix d5ee83e0 (callback onAddBuyer threaded + createBuyer + nav al leaf nuevo + test integración nuevo). Cierra SC-add-buyer/RN-5."
