@@ -26,7 +26,7 @@ import { icpQueryKeys } from "./use-icps";
 
 const HOOK_PATH = resolve(__dirname, "./use-icps.ts");
 
-describe("use-icps tenant isolation (NEVER Clerk orgId)", () => {
+describe("use-icps tenant isolation (NEVER Clerk orgId, NEVER useParams slug)", () => {
   it("does NOT call useAuth().orgId as tenantId", () => {
     const src = readFileSync(HOOK_PATH, "utf-8");
     // Ensure orgId is not used as a value (only allowed in comment "NEVER orgId")
@@ -37,10 +37,18 @@ describe("use-icps tenant isolation (NEVER Clerk orgId)", () => {
     expect(src).not.toMatch(/tenantId\s*=\s*.*orgId/);
   });
 
-  it("uses useParams() to extract tenantId from URL", () => {
+  it("does NOT import useParams (DoD #37 systemic bug fix — slug → 422 on BE)", () => {
+    // useParams().tenantId returns the URL slug (e.g. "alpaca-purpura"),
+    // NOT the UUID. BE expects UUID → 422 with slug. Fixed to use useTenantId().
+    // Comments mentioning useParams are OK; check there's no IMPORT.
     const src = readFileSync(HOOK_PATH, "utf-8");
-    expect(src).toContain("useParams");
-    expect(src).toContain("tenantId");
+    expect(src).not.toMatch(/import\s*\{[^}]*useParams[^}]*\}\s*from/);
+  });
+
+  it("uses useTenantId() for UUID from publicMetadata (NOT URL slug)", () => {
+    const src = readFileSync(HOOK_PATH, "utf-8");
+    expect(src).toContain("useTenantId");
+    expect(src).toContain("use-tenant-id");
   });
 
   it("has no hardcoded USD or currency", () => {

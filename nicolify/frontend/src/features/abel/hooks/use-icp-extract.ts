@@ -17,7 +17,7 @@
  *
  * G2 SSR-safe: uses useAuth only client-side (no store subscription in skeleton).
  * RN-1 tenant isolation: fetchClient auto-injects X-Tenant-ID.
- * NEVER useAuth().orgId — use useParams() for tenantId from URL.
+ * NEVER useAuth().orgId — caller must pass UUID tenantId from useTenantId() (publicMetadata), NOT useParams() slug.
  *
  * Named export (NO default) per FSD-Lite enforce.
  * spec_anchor: 03-arch-fe.md §1 FSD-Lite layout / hooks/use-icp-extract.ts

@@ -25,19 +25,22 @@ import { buyerQueryKeys } from "./use-buyers";
 
 const HOOK_PATH = resolve(__dirname, "./use-buyers.ts");
 
-describe("use-buyers tenant isolation (NEVER Clerk orgId)", () => {
+describe("use-buyers tenant isolation (NEVER Clerk orgId, NEVER useParams slug)", () => {
   it("does NOT assign orgId as tenantId", () => {
     const src = readFileSync(HOOK_PATH, "utf-8");
     expect(src).not.toContain("useOrganization");
-    // orgId must not be used as the value for tenantId
-    expect(src).not.toMatch(/tenantId\s*=\s*.*orgId/);
+    // orgId must not be used as the value for tenantId (comments OK)
+    expect(src).not.toMatch(/tenantId\s*=\s*.*\.orgId/);
     expect(src).not.toContain("X-Tenant-ID: orgId");
   });
 
-  it("uses useParams() to extract tenantId from URL", () => {
+  it("uses useTenantId() for UUID (NOT useParams slug — DoD #37 systemic fix)", () => {
+    // useParams().tenantId returns the URL slug → 422 on BE. Fixed to use useTenantId().
     const src = readFileSync(HOOK_PATH, "utf-8");
-    expect(src).toContain("useParams");
-    expect(src).toContain("tenantId");
+    expect(src).toContain("useTenantId");
+    expect(src).toContain("@/hooks/use-tenant-id");
+    // No import of useParams
+    expect(src).not.toMatch(/import\s*\{[^}]*useParams[^}]*\}\s*from/);
   });
 });
 

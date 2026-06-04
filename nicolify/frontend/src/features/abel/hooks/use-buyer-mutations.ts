@@ -25,8 +25,8 @@
 
 import { useAuth } from "@clerk/nextjs";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
 
+import { useTenantId } from "@/hooks/use-tenant-id";
 import type { Buyer } from "../types/buyer";
 import { buyerApi, type BuyerCreatePayload, type BuyerPatchPayload } from "../api/buyer-api";
 import { buyerQueryKeys } from "./use-buyers";
@@ -35,8 +35,8 @@ import { buyerQueryKeys } from "./use-buyers";
 
 function useAuthContext() {
   const { getToken } = useAuth();
-  const params = useParams<{ tenantId?: string }>();
-  const tenantId = params.tenantId ?? "";
+  // UUID from publicMetadata — NOT the URL slug (slug → 422 on BE)
+  const tenantId = useTenantId();
   return { getToken, tenantId };
 }
 

@@ -25,16 +25,18 @@ import { buyerQueryKeys } from "./use-buyers";
 
 const MUTATIONS_PATH = resolve(__dirname, "./use-buyer-mutations.ts");
 
-describe("use-buyer-mutations tenant isolation (NEVER Clerk orgId)", () => {
+describe("use-buyer-mutations tenant isolation (NEVER Clerk orgId, NEVER useParams slug)", () => {
   it("does NOT assign orgId as tenantId", () => {
     const src = readFileSync(MUTATIONS_PATH, "utf-8");
     expect(src).not.toContain("useOrganization");
-    expect(src).not.toMatch(/tenantId\s*=\s*.*orgId/);
+    // Comments mentioning orgId are OK; check no runtime usage
+    expect(src).not.toMatch(/tenantId\s*=\s*.*\.orgId/);
   });
 
-  it("uses useParams() for tenantId", () => {
+  it("uses useTenantId() for UUID (NOT useParams slug — DoD #37 systemic fix)", () => {
     const src = readFileSync(MUTATIONS_PATH, "utf-8");
-    expect(src).toContain("useParams");
+    expect(src).toContain("useTenantId");
+    expect(src).not.toMatch(/import\s*\{[^}]*useParams[^}]*\}\s*from/);
   });
 });
 

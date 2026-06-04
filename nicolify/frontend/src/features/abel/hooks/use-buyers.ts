@@ -18,8 +18,8 @@
 
 import { useAuth } from "@clerk/nextjs";
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
 
+import { useTenantId } from "@/hooks/use-tenant-id";
 import { buyerApi } from "../api/buyer-api";
 import type { Buyer, BuyerListItem } from "../types/buyer";
 
@@ -49,8 +49,8 @@ export function useBuyers(
   icpId: string | null,
 ): ReturnType<typeof useQuery<BuyerListItem[], Error>> {
   const { getToken, isLoaded, isSignedIn } = useAuth();
-  const params = useParams<{ tenantId?: string }>();
-  const tenantId = params.tenantId ?? "";
+  // UUID from publicMetadata — NOT the URL slug (slug → 422 on BE)
+  const tenantId = useTenantId();
 
   return useQuery<BuyerListItem[], Error>({
     queryKey: icpId ? buyerQueryKeys.listByIcp(icpId) : ["abel", "buyer", "__none__"],
@@ -81,8 +81,8 @@ export function useBuyers(
  */
 export function useBuyer(buyerId: string | null): ReturnType<typeof useQuery<Buyer, Error>> {
   const { getToken, isLoaded, isSignedIn } = useAuth();
-  const params = useParams<{ tenantId?: string }>();
-  const tenantId = params.tenantId ?? "";
+  // UUID from publicMetadata — NOT the URL slug (slug → 422 on BE)
+  const tenantId = useTenantId();
 
   return useQuery<Buyer, Error>({
     queryKey: buyerId ? buyerQueryKeys.detail(buyerId) : ["abel", "buyer", "__none__"],

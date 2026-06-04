@@ -10,9 +10,11 @@
  *
  * Both hooks are tenant-aware:
  *   - token from useAuth().getToken()
- *   - tenantId from useParams() — NEVER useAuth().orgId (no-clerk-organizations rule)
+ *   - tenantId from useTenantId() — UUID from Clerk publicMetadata.tenant_id
+ *     NEVER useParams().tenantId (that is the slug, not the UUID — BE returns 422)
+ *     NEVER useAuth().orgId (no-clerk-organizations rule)
  *
- * Enabled only when Clerk is loaded + user is signed in.
+ * Enabled only when Clerk is loaded + user is signed in + tenantId UUID resolved.
  * Error boundaries handle API errors at the route level.
  *
  * Named exports only (NO default exports) per FSD-Lite enforce.
@@ -22,8 +24,8 @@
 
 import { useAuth } from "@clerk/nextjs";
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
 
+import { useTenantId } from "@/hooks/use-tenant-id";
 import { icpApi } from "../api/icp-api";
 import type { Icp, IcpListItem } from "../types/icp";
 
@@ -51,8 +53,8 @@ export const icpQueryKeys = {
  */
 export function useIcps(): ReturnType<typeof useQuery<IcpListItem[], Error>> {
   const { getToken, isLoaded, isSignedIn } = useAuth();
-  const params = useParams<{ tenantId?: string }>();
-  const tenantId = params.tenantId ?? "";
+  // UUID from publicMetadata — NOT the URL slug (slug → 422 on BE)
+  const tenantId = useTenantId();
 
   return useQuery<IcpListItem[], Error>({
     queryKey: icpQueryKeys.list(),
@@ -82,8 +84,8 @@ export function useIcps(): ReturnType<typeof useQuery<IcpListItem[], Error>> {
  */
 export function useIcp(icpId: string | null): ReturnType<typeof useQuery<Icp, Error>> {
   const { getToken, isLoaded, isSignedIn } = useAuth();
-  const params = useParams<{ tenantId?: string }>();
-  const tenantId = params.tenantId ?? "";
+  // UUID from publicMetadata — NOT the URL slug (slug → 422 on BE)
+  const tenantId = useTenantId();
 
   return useQuery<Icp, Error>({
     queryKey: icpId ? icpQueryKeys.detail(icpId) : ["abel", "icp", "__none__"],

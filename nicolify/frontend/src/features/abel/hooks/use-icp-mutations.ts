@@ -25,8 +25,8 @@
 
 import { useAuth } from "@clerk/nextjs";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
 
+import { useTenantId } from "@/hooks/use-tenant-id";
 import { icpApi } from "../api/icp-api";
 import { icpQueryKeys } from "./use-icps";
 import type { IcpCreatePayload, IcpPatchPayload, Icp } from "../types/icp";
@@ -35,8 +35,8 @@ import type { IcpCreatePayload, IcpPatchPayload, Icp } from "../types/icp";
 
 function useAuthContext() {
   const { getToken, isLoaded, isSignedIn } = useAuth();
-  const params = useParams<{ tenantId?: string }>();
-  const tenantId = params.tenantId ?? "";
+  // UUID from publicMetadata — NOT the URL slug (slug → 422 on BE)
+  const tenantId = useTenantId();
   return { getToken, isLoaded, isSignedIn, tenantId };
 }
 
