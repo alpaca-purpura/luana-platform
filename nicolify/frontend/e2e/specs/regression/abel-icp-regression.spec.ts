@@ -450,9 +450,11 @@ test.describe("SC-a11y — accesibilidad EntitySubNavBar", () => {
     const tabCount = await tabs.count();
     expect(tabCount, "Al menos 1 hoja (datos)").toBeGreaterThanOrEqual(1);
 
-    // Active tab must have aria-selected=true
-    const activeTab = page.locator("[role='tab'][aria-selected='true']");
-    await expect(activeTab, "Una tab activa").toBeVisible({ timeout: 5_000 });
+    // Active tab must have aria-selected=true — scoped to the EntitySubNavBar tablist
+    // to avoid matching the ribbon tab or the sub-tab tablist at higher levels.
+    // BUG-3 fix: use detailPage.activeLeafTab (scoped to entity-sub-nav-tablist container).
+    const activeTab = detailPage.activeLeafTab;
+    await expect(activeTab, "Una tab activa en EntitySubNavBar").toBeVisible({ timeout: 5_000 });
   });
 
   /**
@@ -476,8 +478,9 @@ test.describe("SC-a11y — accesibilidad EntitySubNavBar", () => {
 
     await expect(detailPage.subNavBar).toBeVisible({ timeout: 15_000 });
 
-    // Focus the active tab and press ArrowRight to move to next leaf
-    const activeTab = page.locator("[role='tab'][aria-selected='true']");
+    // Focus the active tab and press ArrowRight to move to next leaf.
+    // BUG-3 fix: use detailPage.activeLeafTab (scoped to EntitySubNavBar container).
+    const activeTab = detailPage.activeLeafTab;
     await activeTab.focus();
     await page.keyboard.press("ArrowRight");
 

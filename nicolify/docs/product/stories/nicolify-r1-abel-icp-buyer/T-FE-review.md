@@ -393,3 +393,76 @@ New tests added RED-first to `IcpEntityLayoutClient.test.tsx` (before the fix, a
 - Warning baseline: 243 warnings in scoped run (below 288 full-suite baseline). Did not grow.
 
 → **F1-FIX-GREEN-READY.** Approach: client-side `notFound()` on 404 `ApiError` in `IcpEntityLayoutClient`. Gates pass. Working tree dirty (no commit per instructions). Awaiting `STAGE` delivery.
+
+---
+
+## Audit iteration 5 (live-verify round 2: BUG-1 SSR-404 + BUG-2 buyer-api + BUG-3 a11y scope)
+
+**Date:** 2026-06-04
+**Trigger:** DoD #37 live-verify round 2 workspace run findings (dod-fe-ui-evidence.md § Workspace run).
+**Mode:** AUDITOR_AUTO_FIX_LOOP (Carril A — no new tests for behavior not yet covered, mechanical path fix + scope fix + SSR upgrade).
+
+### BUG-2 — buyer-api path mismatch FE↔BE (HIGH · product bug)
+
+**Root cause:** `buyer-api.ts` single-resource operations (`get`, `patch`, `setPrimary`, `delete`) called PLURAL `/api/v1/abel/buyers/{id}` but the BE openapi exposes SINGULAR `/api/v1/abel/buyer/{buyer_id}`. The collection endpoint (`/api/v1/abel/icp/{icp_id}/buyers`) is PLURAL and was already correct.
+
+**Fix applied:** In `nicolify/frontend/src/features/abel/api/buyer-api.ts`, changed 4 call sites:
+- `get`: `/api/v1/abel/buyers/${id}` → `/api/v1/abel/buyer/${id}`
+- `patch`: `/api/v1/abel/buyers/${id}` → `/api/v1/abel/buyer/${id}`
+- `setPrimary`: `/api/v1/abel/buyers/${id}/set-primary` → `/api/v1/abel/buyer/${id}/set-primary`
+- `delete`: `/api/v1/abel/buyers/${id}` → `/api/v1/abel/buyer/${id}`
+- Updated JSDoc comments to match actual paths.
+
+**Test added:** `src/features/abel/api/buyer-api.test.ts` — 7 tests locking:
+- Each single-resource method calls SINGULAR `/api/v1/abel/buyer/{id}` (not plural).
+- Each method asserts `url` does NOT contain `/buyers/`.
+- Collection methods (`listByIcp`, `create`) still use PLURAL path (regression guard).
+- `get` mapper test: snake_case → camelCase mapping correctness.
+
+### BUG-1 — invalid/cross-tenant UUID must render 404 (SSR-reliable)
+
+**Root cause (incomplete fix from iter 4):** The iter-4 fix added client-side `notFound()` in `IcpEntityLayoutClient` when `useIcp` returns a 404 `ApiError`. This is functional but unreliable: the Client Component renders first with React Query in error state (causing console.error), then notFound() is called. The server-side layout has no 404 gate.
+
+**Fix applied:** In `nicolify/frontend/src/app/[tenantId]/(shell-organism)/[agent]/[subtab]/[subsubtab]/layout.tsx` (Server Component), added a server-side ICP existence check for the `agent==="abel" && subtab==="icp"` branch:
+1. Get Clerk JWT token via `auth().getToken()` (Clerk server helpers).
+2. Fetch `GET /api/v1/abel/icp/{icpId}` via `icpApi.get({ token, tenantId }, subsubtab)`.
+3. On 404 (`err.status === 404`) → `notFound()` **server-side** (renders `[subsubtab]/not-found.tsx` before any client HTML).
+4. On non-404 error → re-throw (propagates to error boundary).
+5. On `getToken()` null → `notFound()` (defensive guard).
+- The existing client-side `notFound()` in `IcpEntityLayoutClient` is kept as secondary backstop.
+
+**Approach confirmation:**
+- Server-side `notFound()` in `[subsubtab]/layout.tsx` is the primary 404 gate.
+- `[subsubtab]/not-found.tsx` exists and has `data-testid="not-found-subsubtab"`.
+- The SC-adversarial-tenant e2e assertion (already from iter 4) checks for `[data-testid='not-found-subsubtab']`.
+- `IcpEntityLayoutClient` client-side guard kept as defense-in-depth.
+
+**Test note:** The iter-4 test in `IcpEntityLayoutClient.test.tsx` (`[F-1] useIcp 404 ApiError → calls notFound()`) continues to pass and covers the client-side secondary backstop. The server-side primary gate is an async Server Component function — covered by the Playwright e2e test `SC-adversarial-tenant` (DEFERRED-TO-DEMO as per build plan). No new Vitest unit test added for the server layout (Server Component functions without `"use client"` cannot be unit-tested in jsdom; the Playwright test is the correct vehicle).
+
+### BUG-3 — SC-a11y strict-mode tab query scope
+
+**Root cause:** `page.locator("[role='tab'][aria-selected='true']")` in the SC-a11y test matched 2+ elements (ribbon tab + sub-tab tablist + EntitySubNavBar tabs). Playwright strict mode throws if `expect(locator)` finds more than 1 element.
+
+**Fix applied:**
+- `AbelIcpDetailPage.ts`: added `get activeLeafTab(): Locator` property — returns `this.tabList.locator("[role='tab'][aria-selected='true']")` (scoped to `entity-sub-nav-tablist` data-testid container).
+- `abel-icp-regression.spec.ts` SC-a11y test: replaced 2 usages of `page.locator("[role='tab'][aria-selected='true']")` with `detailPage.activeLeafTab`. Assertion NOT weakened — still verifies aria-selected=true on the active entity sub-nav tab.
+
+### Gates (scoped — native, iter 5)
+
+| Gate | Result | Detail |
+|---|---|---|
+| `tsc --noEmit` | **PASS** | 0 errors, exit 0 |
+| `eslint 'src/app/[tenantId]' src/features/abel --cache --max-warnings=9999` | **PASS** | 0 errors, 152 warnings (scoped to modified paths; all pre-existing; none new from these fixes) |
+| `vitest run src/features/abel src/components/shared/shell-organism src/__tests__/architecture` | **PASS** | 146 + 99 + 90 = 335 tests. **7 new buyer-api tests: GREEN**. 8 IcpEntityLayoutClient tests (incl. 3 F-1 from iter 4): **GREEN**. Architecture 90/90. |
+| `playwright test --list` (e2e parse) | Expect **PASS** — a11y spec now uses `detailPage.activeLeafTab` |
+
+### Regression guard (iter 5)
+
+- All 146 abel feature tests GREEN (7 new buyer-api tests + 8 IcpEntityLayoutClient including F-1 iter-4 tests).
+- All 99 shell-organism tests GREEN (untouched — R0 wrapper preserved).
+- All 90 architecture fitness tests GREEN (no new allowlist entries).
+- `IcpEntityLayoutClient` secondary backstop intact (client-side notFound on 404 ApiError still in place).
+- No new ESLint errors introduced.
+- Warning baseline: 152 warnings (scoped run). Below full-suite baseline. Did not grow.
+
+→ **LIVE2-FIX-GREEN-READY.**

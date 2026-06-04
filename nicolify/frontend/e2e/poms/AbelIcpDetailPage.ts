@@ -216,4 +216,21 @@ export class AbelIcpDetailPage {
   async pressKey(key: string): Promise<void> {
     await this.tabList.press(key);
   }
+
+  /**
+   * Get the currently active leaf tab WITHIN the EntitySubNavBar tablist.
+   *
+   * BUG-3 fix: scopes the aria-selected=true query to the EntitySubNavBar
+   * container (data-testid="entity-sub-nav-tablist"), preventing it from
+   * matching the ribbon tab or sub-tab tablist tabs at higher levels.
+   *
+   * Use this instead of page.locator("[role='tab'][aria-selected='true']")
+   * for SC-a11y assertions — that unscoped query returns 2+ elements.
+   */
+  get activeLeafTab(): Locator {
+    // Scope to the entity-sub-nav-tablist container only.
+    // The ribbon tab and sub-tab tablist live in separate DOM subtrees
+    // (outside data-testid="entity-sub-nav-tablist"), so they cannot match.
+    return this.tabList.locator("[role='tab'][aria-selected='true']");
+  }
 }

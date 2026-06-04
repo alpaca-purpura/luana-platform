@@ -3,13 +3,13 @@
 /**
  * buyer-api.ts — API client for Buyer CRUD operations (Abel).
  *
- * Endpoints:
- *   GET    /api/v1/abel/icp/{icpId}/buyers       → list buyers for an ICP
- *   GET    /api/v1/abel/buyers/{id}               → get buyer detail
- *   POST   /api/v1/abel/icp/{icpId}/buyers        → create buyer under ICP
- *   PATCH  /api/v1/abel/buyers/{id}               → partial update
- *   POST   /api/v1/abel/buyers/{id}/set-primary   → set as primary (RN-6)
- *   DELETE /api/v1/abel/buyers/{id}               → soft-delete
+ * Endpoints (BUG-2 fix: single-resource paths are SINGULAR per BE openapi):
+ *   GET    /api/v1/abel/icp/{icpId}/buyers       → list buyers for an ICP (PLURAL collection)
+ *   GET    /api/v1/abel/buyer/{id}               → get buyer detail (SINGULAR resource)
+ *   POST   /api/v1/abel/icp/{icpId}/buyers        → create buyer under ICP (PLURAL collection)
+ *   PATCH  /api/v1/abel/buyer/{id}               → partial update (SINGULAR resource)
+ *   POST   /api/v1/abel/buyer/{id}/set-primary   → set as primary (SINGULAR resource, RN-6)
+ *   DELETE /api/v1/abel/buyer/{id}               → soft-delete (SINGULAR resource)
  *
  * Buyer is always scoped to an ICP (FK icp_id — RN-5).
  * fetchClient auto-injects X-Tenant-ID (RN-1 tenant isolation).
@@ -158,10 +158,10 @@ export const buyerApi = {
 
   /**
    * Get full buyer detail.
-   * GET /api/v1/abel/buyers/{id}
+   * GET /api/v1/abel/buyer/{id}  ← SINGULAR (BUG-2 fix)
    */
   get: async ({ token, tenantId }: BuyerApiOptions, id: string): Promise<Buyer> => {
-    const raw = await fetchClient<RawBuyer>(`/api/v1/abel/buyers/${id}`, {
+    const raw = await fetchClient<RawBuyer>(`/api/v1/abel/buyer/${id}`, {
       method: "GET",
       token,
       tenantId,
@@ -191,14 +191,14 @@ export const buyerApi = {
 
   /**
    * Partial update a buyer.
-   * PATCH /api/v1/abel/buyers/{id}
+   * PATCH /api/v1/abel/buyer/{id}  ← SINGULAR (BUG-2 fix)
    */
   patch: async (
     { token, tenantId }: BuyerApiOptions,
     id: string,
     payload: BuyerPatchPayload,
   ): Promise<Buyer> => {
-    const raw = await fetchClient<RawBuyer>(`/api/v1/abel/buyers/${id}`, {
+    const raw = await fetchClient<RawBuyer>(`/api/v1/abel/buyer/${id}`, {
       method: "PATCH",
       token,
       tenantId,
@@ -209,10 +209,10 @@ export const buyerApi = {
 
   /**
    * Set a buyer as the primary buyer for its ICP (≤1 primary per ICP — RN-6).
-   * POST /api/v1/abel/buyers/{id}/set-primary
+   * POST /api/v1/abel/buyer/{id}/set-primary  ← SINGULAR (BUG-2 fix)
    */
   setPrimary: async ({ token, tenantId }: BuyerApiOptions, id: string): Promise<Buyer> => {
-    const raw = await fetchClient<RawBuyer>(`/api/v1/abel/buyers/${id}/set-primary`, {
+    const raw = await fetchClient<RawBuyer>(`/api/v1/abel/buyer/${id}/set-primary`, {
       method: "POST",
       token,
       tenantId,
@@ -223,10 +223,10 @@ export const buyerApi = {
 
   /**
    * Soft-delete a buyer.
-   * DELETE /api/v1/abel/buyers/{id}
+   * DELETE /api/v1/abel/buyer/{id}  ← SINGULAR (BUG-2 fix)
    */
   delete: async ({ token, tenantId }: BuyerApiOptions, id: string): Promise<void> => {
-    await fetchClient<void>(`/api/v1/abel/buyers/${id}`, {
+    await fetchClient<void>(`/api/v1/abel/buyer/${id}`, {
       method: "DELETE",
       token,
       tenantId,
