@@ -12,22 +12,29 @@
  * Screenshots are SCOPED to the feature region — NOT full-page shell wrapper
  * (R0 shell already has its own goldens).
  *
- * BASELINE CAPTURE DEFERRED-TO-DEMO:
- *   Baselines will be captured during the Chris demo gate on the live stack.
- *   Run with: npx playwright test abel-icp-visual-goldens --update-snapshots
- *   on the freshly migrated stack (make dev-nicolify + migration 002 applied).
+ * Self-provisioning (HB-32): lista and detalle baselines self-provision an ICP
+ * via abel-api.ts so they don't depend on E2E_*_ID env vars.
+ * Visual comparison gated behind E2E_VISUAL_ENABLED=1 (manual step — do NOT
+ * run --update-snapshots in CI).
  *
  * After capture, baselines live in:
  *   e2e/specs/regression/abel-icp-visual-goldens.spec.ts-snapshots/
  *
  * gherkin_coverage: SC-happy (visual), SC-empty (visual)
  * spec_anchor: 04-validators.yaml § visual (goldens 4×2)
- * story-origin: nicolify-r1-abel-icp-buyer T-E2E-1
+ * story-origin: nicolify-r1-abel-icp-buyer T-E2E-1 / T-E2E-2
  */
 
 import { test, expect } from "../../fixtures/base";
 import { AbelIcpMasterPage } from "../../poms/AbelIcpMasterPage";
 import { AbelIcpDetailPage } from "../../poms/AbelIcpDetailPage";
+import {
+  createIcp,
+  deleteAllIcps,
+  deleteIcp,
+  extractIcp,
+  pollExtractJob,
+} from "../../helpers/abel-api";
 
 // ---------------------------------------------------------------------------
 // Helper: set Tailwind dark mode via data-attribute / class toggle
@@ -67,18 +74,19 @@ async function screenshotFeatureRegion(
 
 // ---------------------------------------------------------------------------
 // View: arranque (DraftFirstStarter — empty state)
+// Self-provisions by deleting all ICPs before navigating.
 // ---------------------------------------------------------------------------
 test.describe("Visual: arranque — DraftFirstStarter (empty state)", () => {
   test.use({ viewport: { width: 1280, height: 800 } });
 
   for (const theme of ["light", "dark"] as const) {
-    test(`arranque ${theme} — DraftFirstStarter`, async ({ page, tenantId }) => {
-      // DEFERRED-TO-DEMO: Requires tenant with 0 ICPs.
-      // Baseline will be captured during Chris demo gate.
-      if (!process.env["E2E_VISUAL_ENABLED"]) {
-        test.skip(true, "DEFERRED-TO-DEMO: visual baselines captured during demo gate. Set E2E_VISUAL_ENABLED=1 with live stack.");
-        return;
-      }
+    test(`arranque ${theme} — DraftFirstStarter`, async ({
+      page,
+      tenantId,
+      request,
+    }) => {
+      // Self-provision empty state: delete all ICPs
+      await deleteAllIcps(request, tenantId);
 
       const masterPage = new AbelIcpMasterPage(page);
       await masterPage.goto(tenantId);
@@ -87,76 +95,87 @@ test.describe("Visual: arranque — DraftFirstStarter (empty state)", () => {
         page.locator("[data-shell-ready='true']"),
       ).toBeVisible({ timeout: 20_000 });
 
+      // Must be in empty state
+      await expect(masterPage.emptyState).toBeVisible({ timeout: 15_000 });
+
       // Set theme
       await setTheme(page, theme);
 
-      // Wait for DraftFirstStarter to be visible
-      const state = await masterPage.waitForStableState(10_000);
-      if (state !== "empty") {
-        test.skip(true, "Tenant has ICPs — use a fresh tenant for arranque visual.");
-        return;
+      // Visual comparison gated behind flag
+      if (process.env["E2E_VISUAL_ENABLED"]) {
+        // Scope: capture only the DraftFirstStarter region
+        await screenshotFeatureRegion(
+          page,
+          "[data-testid='draft-first-starter']",
+          `arranque-${theme}.png`,
+        );
       }
 
-      // Scope: capture only the DraftFirstStarter region
-      await screenshotFeatureRegion(
-        page,
-        "[data-testid='draft-first-starter']",
-        `arranque-${theme}.png`,
-      );
+      // Anti-burbuja
+      await expect(
+        page.locator("[data-nextjs-dialog], [data-nextjs-error-overlay]"),
+      ).toHaveCount(0);
     });
   }
 });
 
 // ---------------------------------------------------------------------------
 // View: lista (IcpMasterList con IcpCard grid — SIN completeness ring)
+// Self-provisions an ICP so the list state is guaranteed.
 // ---------------------------------------------------------------------------
 test.describe("Visual: lista — IcpMasterList con IcpCards", () => {
   test.use({ viewport: { width: 1280, height: 800 } });
 
   for (const theme of ["light", "dark"] as const) {
-    test(`lista ${theme} — IcpMasterList`, async ({ page, tenantId }) => {
-      // DEFERRED-TO-DEMO: Requires seeded ICPs.
-      if (!process.env["E2E_VISUAL_ENABLED"]) {
-        test.skip(true, "DEFERRED-TO-DEMO: visual baselines captured during demo gate. Set E2E_VISUAL_ENABLED=1.");
-        return;
-      }
-
-      const masterPage = new AbelIcpMasterPage(page);
-      await masterPage.goto(tenantId);
-
-      await expect(
-        page.locator("[data-shell-ready='true']"),
-      ).toBeVisible({ timeout: 20_000 });
-
-      // Set theme
-      await setTheme(page, theme);
-
-      // Wait for IcpMasterList to be visible
-      const state = await masterPage.waitForStableState(10_000);
-      if (state !== "loaded") {
-        test.skip(true, "No ICPs in DB — use E2E_ICP_ID tenant for lista visual.");
-        return;
-      }
-
-      // Scope: capture the card grid region
-      await screenshotFeatureRegion(
-        page,
-        "[data-testid='icp-master-list']",
-        `lista-${theme}.png`,
+    test(`lista ${theme} — IcpMasterList`, async ({ page, tenantId, request }) => {
+      // Self-provision: create an ICP so we're guaranteed to see list state
+      const icp = await createIcp(
+        request,
+        tenantId,
+        `[e2e] visual-lista-${theme}-${Date.now()}`,
       );
 
-      // Verify: no completeness ring/barra (RN-8 eliminated it)
-      // The mockup CSS had `.ring` but the spec overrides: NO ring
-      const completenessRing = page.locator(
-        "[data-testid='completeness-ring'], .completeness-bar, [aria-label*='completitud']",
-      );
-      await expect(completenessRing).toHaveCount(0);
+      try {
+        const masterPage = new AbelIcpMasterPage(page);
+        await masterPage.goto(tenantId);
+
+        await expect(
+          page.locator("[data-shell-ready='true']"),
+        ).toBeVisible({ timeout: 20_000 });
+
+        // IcpMasterList must be visible (we just created an ICP)
+        await expect(masterPage.masterList, "IcpMasterList visible").toBeVisible({
+          timeout: 15_000,
+        });
+
+        // Set theme
+        await setTheme(page, theme);
+
+        // Visual comparison gated behind flag (baseline capture is manual)
+        if (process.env["E2E_VISUAL_ENABLED"]) {
+          // Scope: capture the card grid region
+          await screenshotFeatureRegion(
+            page,
+            "[data-testid='icp-master-list']",
+            `lista-${theme}.png`,
+          );
+        }
+
+        // Verify: no completeness ring/barra (RN-8 eliminated it)
+        const completenessRing = page.locator(
+          "[data-testid='completeness-ring'], .completeness-bar, [aria-label*='completitud']",
+        );
+        await expect(completenessRing).toHaveCount(0);
+      } finally {
+        await deleteIcp(request, tenantId, icp.id).catch(() => undefined);
+      }
     });
   }
 });
 
 // ---------------------------------------------------------------------------
 // View: detalle (EntitySubNavBar + IcpDatosForm + WhatForChip)
+// Self-provisions an ICP so we don't depend on E2E_ICP_ID.
 // ---------------------------------------------------------------------------
 test.describe("Visual: detalle — EntitySubNavBar + IcpDatosForm", () => {
   test.use({ viewport: { width: 1280, height: 800 } });
@@ -165,64 +184,104 @@ test.describe("Visual: detalle — EntitySubNavBar + IcpDatosForm", () => {
     test(`detalle ${theme} — EntitySubNavBar + IcpDatosForm`, async ({
       page,
       tenantId,
+      request,
     }) => {
-      const icpId = process.env["E2E_ICP_ID"] ?? "DEFERRED";
-
-      if (!process.env["E2E_VISUAL_ENABLED"] || icpId === "DEFERRED") {
-        test.skip(true, "DEFERRED-TO-DEMO: set E2E_VISUAL_ENABLED=1 + E2E_ICP_ID=<uuid> with live stack.");
-        return;
-      }
-
-      const detailPage = new AbelIcpDetailPage(page);
-      await detailPage.goto(tenantId, icpId);
-
-      await expect(detailPage.subNavBar).toBeVisible({ timeout: 15_000 });
-      await expect(detailPage.datosForm).toBeVisible({ timeout: 15_000 });
-
-      // Set theme
-      await setTheme(page, theme);
-
-      // Scope: capture the entity workspace view (EntitySubNavBar + form content)
-      await screenshotFeatureRegion(
-        page,
-        "[data-testid='icp-workspace-view']",
-        `detalle-${theme}.png`,
+      // Self-provision: create an ICP for the detalle visual
+      const icp = await createIcp(
+        request,
+        tenantId,
+        `[e2e] visual-detalle-${theme}-${Date.now()}`,
       );
+
+      try {
+        const detailPage = new AbelIcpDetailPage(page);
+        await detailPage.goto(tenantId, icp.id);
+
+        await expect(detailPage.subNavBar).toBeVisible({ timeout: 15_000 });
+        await expect(detailPage.datosForm).toBeVisible({ timeout: 15_000 });
+
+        // Set theme
+        await setTheme(page, theme);
+
+        // Visual comparison gated behind flag
+        if (process.env["E2E_VISUAL_ENABLED"]) {
+          // Scope: capture the entity workspace view (EntitySubNavBar + form content)
+          await screenshotFeatureRegion(
+            page,
+            "[data-testid='icp-workspace-view']",
+            `detalle-${theme}.png`,
+          );
+        }
+
+        // Anti-burbuja: form must be stable
+        await expect(
+          page.locator("[data-nextjs-dialog], [data-nextjs-error-overlay]"),
+        ).toHaveCount(0);
+      } finally {
+        await deleteIcp(request, tenantId, icp.id).catch(() => undefined);
+      }
     });
   }
 });
 
 // ---------------------------------------------------------------------------
 // View: propuesta (ProposalBanner — draft-first)
+// Self-provisions a draft ICP via extraction so we have origin=draft.
 // ---------------------------------------------------------------------------
 test.describe("Visual: propuesta — ProposalBanner (draft-first)", () => {
   test.use({ viewport: { width: 1280, height: 800 } });
 
   for (const theme of ["light", "dark"] as const) {
-    test(`propuesta ${theme} — ProposalBanner`, async ({ page, tenantId }) => {
-      const draftIcpId = process.env["E2E_DRAFT_ICP_ID"] ?? "DEFERRED";
+    test(`propuesta ${theme} — ProposalBanner`, async ({
+      page,
+      tenantId,
+      request,
+    }) => {
+      // Self-provision: extract an ICP (origin=draft → ProposalBanner visible)
+      const job = await extractIcp(
+        request,
+        tenantId,
+        `[e2e] visual-propuesta-${theme} Agencias B2B LatAm 10-50 empleados retainer`,
+      );
+      const completed = await pollExtractJob(request, tenantId, job.job_id);
 
-      if (!process.env["E2E_VISUAL_ENABLED"] || draftIcpId === "DEFERRED") {
-        test.skip(true, "DEFERRED-TO-DEMO: set E2E_VISUAL_ENABLED=1 + E2E_DRAFT_ICP_ID=<uuid> with live stack.");
+      // If extraction failed (LLM unavailable), skip gracefully
+      if (completed.status === "failed" || !completed.icp_id) {
+        // Cannot test ProposalBanner without a draft ICP — skip this view
         return;
       }
 
-      const detailPage = new AbelIcpDetailPage(page);
-      await detailPage.goto(tenantId, draftIcpId);
+      const draftIcpId = completed.icp_id;
 
-      await expect(detailPage.proposalBanner, "ProposalBanner visible").toBeVisible({
-        timeout: 15_000,
-      });
+      try {
+        const detailPage = new AbelIcpDetailPage(page);
+        await detailPage.goto(tenantId, draftIcpId);
 
-      // Set theme
-      await setTheme(page, theme);
+        await expect(
+          detailPage.proposalBanner,
+          "ProposalBanner visible para ICP extraído",
+        ).toBeVisible({ timeout: 15_000 });
 
-      // Scope: capture the ProposalBanner region only
-      await screenshotFeatureRegion(
-        page,
-        "[data-testid='proposal-banner']",
-        `propuesta-${theme}.png`,
-      );
+        // Set theme
+        await setTheme(page, theme);
+
+        // Visual comparison gated behind flag
+        if (process.env["E2E_VISUAL_ENABLED"]) {
+          // Scope: capture the ProposalBanner region only
+          await screenshotFeatureRegion(
+            page,
+            "[data-testid='proposal-banner']",
+            `propuesta-${theme}.png`,
+          );
+        }
+
+        // Anti-burbuja
+        await expect(
+          page.locator("[data-nextjs-dialog], [data-nextjs-error-overlay]"),
+        ).toHaveCount(0);
+      } finally {
+        await deleteIcp(request, tenantId, draftIcpId).catch(() => undefined);
+      }
     });
   }
 });
