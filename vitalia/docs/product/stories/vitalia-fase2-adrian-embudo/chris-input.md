@@ -314,3 +314,16 @@ Mientras esperábamos a la inbox, pegaste un crash en `/adrian/embudo/{leadId}/r
 - **Verificado LIVE dev-app real:** navegué a TU lead exacto `0d2313ff...` → `GET /api/v1/crm/leads/.../detail 200` + ResumenView render SIN burbuja Next + `base.ts` teardown verde (0 pageerror/console/4xx). Backend log limpio (`lead_score_computed`, sin Traceback). tsc 0 · contract 4/4 · vitest 29/29.
 - **Honestidad:** esto prueba que el `dod_live_verified: true` previo era **INCOMPLETO** (cubría board+writes, no el detail). Lo registré en checkpoint `dod_evidence` + HB-44 (reflex auto-hardening). Sistémico abierto: contract-parity es registry MANUAL + la live-verify debe cubrir **toda** superficie user-reachable, no solo la principal.
 - **No toqué inbox.** Commit por pathspec exacto. **Blocker 1 SIGUE:** el gate FE compartido sigue RED por la sesión inbox → `done` sigue esperando que aterrice + tu `demo_signoff`. Seguí probando el resto del embudo si querés — voy registrando lo que pegues.
+
+### 2026-06-04 · 🤖 claude · `/dev-team` · ✓ APLICADO (fix-loop B1+U1+U2 aplicado · commit 20c66eb3)
+Fix-loop FE sobre hallazgos sesión 4 + impl-log B1/U1/U2. Lane `code:crm` (embudo). NO toqué: shell, inbox, core.
+
+**B1 — hard-nav recuperar (band-aid lane-safe):** `EmbudoMetrics.tsx` frozen-kpi-badge convertido de `<Link>` a `<a>` (hard-nav). Elimina el trigger del "Rendered more hooks" del shell `dynamic({ssr:false})` en soft-nav (learning 2026-06-03-next16-softnav). Nav dura no lo trippea. Root cause del shell ssr:false queda escalado a la sesión inbox/shell.
+
+**U1 — nombre sin máscara (3 surfaces):** `PiiMaskedSpan` removido de `LeadCard.tsx`, `FrozenLeadRow.tsx`, `ResumenView.tsx`. Lead = non_phi marketing prospect (Chris ratificó). El vendedor necesita distinguir el lead en tablero, lista y resumen.
+
+**U2 — teléfono + email en Resumen + tipo correcto:** Nueva interface `LeadDetailLeadDTO` en `embudo.types.ts` (mirror BE `LeadResponse` — incluye `email`, `phone`, `assignedDoctorId`). `LeadDetailResponse.lead` retipad de `LeadCardDTO` a `LeadDetailLeadDTO`. `ResumenView` ahora muestra Nombre + Teléfono + Correo con empty-states. `test_fe_be_contract_parity.py` recibe `ContractPair(LeadResponse ↔ LeadDetailLeadDTO)` como 3er par. `lead_dto.py` recibe `assigned_doctor_id` (alineado con commit BE 78a7ba52 de wip/vitalia).
+
+**Gates:** tsc 0 · eslint 0 · vitest 339/345 (6 fallas pre-existentes inbox-lane) · contract_parity 5/5. SHA: `20c66eb3`. Files: 10 (9M + 1A).
+
+**Nota:** live-verify R-1 (recuperar-live.spec.ts) delegado a Chris staging gate manual — dev-app no disponible en sesión worktree. B1 es band-aid; root cause shell ssr:false sigue escalado.
