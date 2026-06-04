@@ -295,41 +295,58 @@ test.describe("SC-adversarial-tenant — tenant isolation RN-1", () => {
 
   /**
    * @rule-tenant-isolation (RN-1)
-   * Request a ICP UUID that belongs to another tenant.
-   * Should return 404 — not reveal the ICP's existence.
+   * Request an ICP UUID that doesn't exist or belongs to another tenant.
+   * Should render a contextual 404 (not-found.tsx) — shell chrome intact,
+   * never hang in loading state.
    *
-   * NOTE: SC-adversarial-tenant is primarily a BE test (no FE UI for cross-tenant).
-   * The E2E aspect: navigating to a cross-tenant icpId results in a 404 page
-   * (not a 500 or data leak).
+   * F-1 fix (audit iter 4): IcpEntityLayoutClient now detects the useIcp 404 ApiError
+   * and calls notFound() → [subsubtab]/not-found.tsx is rendered.
+   * This replaces the old weak assertion (is404 || hasShell) with a strict 404 check.
    *
-   * DEFERRED-TO-DEMO: Requires a real cross-tenant ICP UUID.
+   * KEY INVARIANT: no infinite spinner (data-shell-ready never appearing),
+   * no 500 error, no data leak.
+   *
+   * DEFERRED-TO-DEMO: Requires live stack (make dev-nicolify + migration 002 applied).
+   * The assertNotFoundRendered helper checks for [data-testid="not-found-subsubtab"]
+   * which is rendered by [subsubtab]/not-found.tsx when notFound() is called.
    */
-  test("SC-adversarial-tenant: ICP de otro tenant → 404 (sin revelar existencia)", async ({
+  test("SC-adversarial-tenant: ICP de otro tenant → 404 contextual (nunca carga infinita)", async ({
     page,
     tenantId,
   }) => {
-    // Use a syntactically-valid but non-existent UUID
+    // Use a syntactically-valid UUID that will 404 on the tenant's DB (cross-tenant / non-existent)
     const foreignIcpId = "00000000-dead-beef-cafe-000000000000";
 
-    // Navigate to a cross-tenant ICP detail route
+    // Navigate to the cross-tenant ICP detail route
     await page.goto(`/${tenantId}/abel/icp/${foreignIcpId}/datos`, {
       waitUntil: "load",
     });
 
-    // Should either redirect to 404 page or show notFound()
-    // The key invariant: no 500 error + no data leak
-    const is404 = page.url().includes("/404") || page.url().includes("not-found");
-    const hasShell = await page
-      .locator("[data-shell-ready='true']")
+    // Wait for the page to settle (max 15s — accommodates slow first render)
+    await page.waitForTimeout(3000);
+
+    // PRIMARY assertion: [subsubtab]/not-found.tsx rendered (notFound() was called by IcpEntityLayoutClient)
+    // This is the [data-testid="not-found-subsubtab"] from not-found.tsx.
+    const notFoundWidget = page.locator("[data-testid='not-found-subsubtab']");
+    // FALLBACK: some Next.js deployments may redirect to a /not-found URL instead.
+    const urlIs404 = page.url().includes("/404") || page.url().includes("not-found");
+
+    const notFoundVisible = await notFoundWidget.isVisible().catch(() => false);
+
+    // Either the widget is visible OR the URL redirected to a not-found path.
+    // Both are acceptable outcomes; the invariant is: NOT an infinite spinner.
+    expect(notFoundVisible || urlIs404, "Expected 404 UI (notFound widget or URL redirect)").toBe(true);
+
+    // CRITICAL INVARIANT: shell must NOT be stuck in loading state.
+    // If data-shell-ready never appeared AND no 404 was shown → the bug (F-1) is present.
+    // (After the fix, the shell will show not-found.tsx instead.)
+    const shellStuckLoading = await page
+      .locator("[aria-label='Cargando shell']")
       .isVisible()
       .catch(() => false);
+    expect(shellStuckLoading, "Shell must not be stuck in Cargando state").toBe(false);
 
-    // Either the route 404s cleanly OR the shell loads with an empty state
-    // (layout server validates UUID shape, IcpEntityLayoutClient returns 404 on fetch)
-    // DEFERRED-TO-DEMO: verify with real cross-tenant UUID
-    expect(is404 || hasShell).toBe(true);
-
-    // No Next error overlay
+    // No Next error overlay (no crash — clean 404)
     const errorDialog = page.locator(
       "[data-nextjs-dialog], [data-nextjs-error-overlay]",
     );

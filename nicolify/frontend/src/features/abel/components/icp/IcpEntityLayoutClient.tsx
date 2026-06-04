@@ -1,5 +1,5 @@
 // cap: abel.icp-buyer
-// story-origin: nicolify-r1-abel-icp-buyer T-FE-1 (updated T-FE-4: real hooks wired; T-FE-4 auto-fix iter 1: onAddAffordance wired)
+// story-origin: nicolify-r1-abel-icp-buyer T-FE-1 (updated T-FE-4: real hooks wired; T-FE-4 auto-fix iter 1: onAddAffordance wired; audit iter 4: F-1 404 notFound)
 "use client";
 /**
  * IcpEntityLayoutClient.tsx — Client Component for ICP entity detail workspace.
@@ -17,19 +17,28 @@
  *   - handleAddBuyer: calls useCreateBuyer.mutateAsync → on success navigates to new buyer leaf
  *   - Dead __add_buyer__ href removed from leaf definition
  *
+ * Audit iter 4 (F-1 — DoD #37 live-verify gate):
+ *   - useIcp 404 → notFound() (cross-tenant or invalid UUID → shell shows contextual 404, never hangs)
+ *   - Fixes SC-adversarial-tenant + RN-1: cross-tenant UUID must 404 at UI level, never
+ *     leave the user stuck on <main aria-label="Cargando shell"> forever.
+ *   - ApiError.status === 404 → notFound() (renders [subsubtab]/not-found.tsx via Next.js)
+ *   - Any other API error is re-thrown → propagates to the route-level error boundary.
+ *
  * G2 SSR-safe: store-free — does NOT import useShellStore.
  * The ssr:false boundary lives in ShellOrganismLayout, not here.
  *
  * Named export (NO default) per FSD-Lite enforce.
  *
- * spec_anchor: 03-arch-fe.md §2 Client root + data layer + §1 FSD-Lite layout
- * validators_gate: G2 store-free + FSD-Lite boundaries
+ * spec_anchor: 03-arch-fe.md §0 §2 Client root + data layer + §1 FSD-Lite layout
+ * validators_gate: G2 store-free + FSD-Lite boundaries + SC-adversarial-tenant (RN-1)
  * downstream-regression-na: brand-local abel/icp feature; no cross-brand consumers
  */
 
 import { type ReactNode, useMemo, useCallback } from "react";
 
-import { useRouter } from "next/navigation";
+import { useRouter, notFound } from "next/navigation";
+
+import { ApiError } from "@/lib/api/fetch-client";
 
 import { useIcp } from "../../hooks/use-icps";
 import { useBuyers } from "../../hooks/use-buyers";
@@ -72,9 +81,28 @@ export function IcpEntityLayoutClient({
   const router = useRouter();
 
   // Real hooks (T-FE-4 wiring — replaces T-FE-1 stubs)
-  const { data: icp, isLoading: icpLoading } = useIcp(icpId);
+  const { data: icp, isLoading: icpLoading, error: icpError } = useIcp(icpId);
   const { data: buyers = [], isLoading: buyersLoading } = useBuyers(icpId);
   const createBuyer = useCreateBuyer(icpId);
+
+  // F-1 fix (audit iter 4): ICP not found (404) or cross-tenant access → render notFound().
+  // notFound() from next/navigation can be called in Client Components — Next.js App Router
+  // catches the thrown NEXT_NOT_FOUND error and renders the nearest not-found.tsx boundary
+  // ([subsubtab]/not-found.tsx), preserving the shell chrome (TopBar + Ribbon).
+  //
+  // This prevents the infinite loading state (the bug): when the BE returns 404 for an
+  // invalid/cross-tenant UUID, useIcp transitions from isLoading→error, not isLoading→data.
+  // Without this guard the component stayed in loading state forever (isLoading never false
+  // via data, data never resolves, entity stays null, shell shows <main aria-label="Cargando shell">).
+  //
+  // Any non-404 error is re-thrown to the nearest Error Boundary.
+  if (icpError !== null && icpError !== undefined) {
+    if (icpError instanceof ApiError && icpError.status === 404) {
+      notFound();
+    }
+    // Non-404 error: re-throw to the route-level error boundary.
+    throw icpError;
+  }
 
   const isLoading = icpLoading || buyersLoading;
 

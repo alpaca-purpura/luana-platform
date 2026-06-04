@@ -332,3 +332,64 @@ Structural proof: `find .../[subtab] -maxdepth 1 -type d` returns exactly ONE dy
 | All others | (carry from iter 2) | APPROVED | No regression; no new findings |
 
 → **APPROVED (iter 3).** Route tree is boot-clean. All scoped gates green. Re-handoff `/pm-nicolify` for the #37 live-verify + `demo_signoff` merge gate (`reviewing → done`).
+
+---
+
+## Audit iteration 4 (2026-06-04) — F-1: invalid/cross-tenant UUID → 404 notFound (never infinite spinner)
+
+**Mode:** `AUDITOR_AUTO_FIX_LOOP`. **iter:** 4. **Finding origin:** DoD #37 live-verify gate (F-1 from `HANDOFF-resume.md`).
+
+### The bug (F-1)
+
+Navigating to `/{tenantId}/abel/icp/00000000-dead-beef-cafe-000000000000/datos` (non-existent or cross-tenant UUID) caused the shell to hang **forever** on `<main aria-label="Cargando shell">`. The backend correctly returned 404 for the ICP fetch, but `IcpEntityLayoutClient` did not check the `error` from `useIcp` — it only checked `isLoading`. Since a 404 puts the query in `error` state (not loading), `isLoading` became false and `data` stayed `undefined`, leaving `entity = null`. `EntityWorkspaceLayout` rendered its skeleton indefinitely. The shell never showed a 404 page. This broke **SC-adversarial-tenant** + **RN-1** (cross-tenant isolation must surface as 404, not reveal or hang).
+
+### The fix
+
+**Approach: client-side `notFound()` on 404 `ApiError`.**
+
+In `IcpEntityLayoutClient.tsx`, after `useIcp()`, check `icpError`:
+- If `icpError instanceof ApiError && icpError.status === 404` → call `notFound()` from `next/navigation`. In Next.js App Router, `notFound()` can be called from Client Components — it throws a special `NEXT_NOT_FOUND` error that Next.js catches and renders the nearest `not-found.tsx` boundary (`[subsubtab]/not-found.tsx`), preserving the shell chrome.
+- If `icpError` is any other error → re-throw to the route-level error boundary.
+- If `icpError === null` → normal loading or data path, no change.
+
+**Files modified:**
+
+| File | Change |
+|---|---|
+| `src/features/abel/components/icp/IcpEntityLayoutClient.tsx` | Import `notFound` + `ApiError`; add 404 guard after `useIcp()` |
+| `src/features/abel/components/icp/IcpEntityLayoutClient.test.tsx` | 3 new tests: 404→notFound, 500→rethrow, loading→no-notFound; updated mock to support per-test `icpError` override |
+| `e2e/specs/regression/abel-icp-regression.spec.ts` | SC-adversarial-tenant: updated assertion from weak `is404 || hasShell` to strict: `not-found-subsubtab` widget visible OR URL redirect; added CRITICAL INVARIANT: shell NOT stuck in loading |
+
+### TDD
+
+New tests added RED-first to `IcpEntityLayoutClient.test.tsx` (before the fix, all 3 were RED):
+- `[F-1] useIcp 404 ApiError → calls notFound() (never hangs in loading)` — verified notFound called.
+- `[F-1] useIcp non-404 error → re-throws to error boundary (NOT notFound)` — verified 500 throws original error.
+- `[F-1] useIcp loading (no error) → renders normally, no notFound called` — regression guard (loading path unchanged).
+
+### Gates (scoped — native)
+
+| Gate | Result | Detail |
+|---|---|---|
+| `tsc --noEmit` | **PASS** | 0 errors, exit 0 |
+| `eslint 'src/app/[tenantId]' src/features/abel src/components/shared/shell-organism --cache` | **PASS** | **0 errors**, 243 warnings (all pre-existing; none new from this fix) |
+| `vitest run src/features/abel src/components/shared/shell-organism src/__tests__/architecture` | **PASS (acceptable reds only)** | 326 passed / 2 failed. The 2 reds = exactly the pre-existing R0 `ShellOrganismLayoutClient` AppPanelSlot reds (file untouched by R1 or this fix). New 3 F-1 tests: **GREEN**. Architecture 90/90. |
+| `playwright test --list` | **PASS** | SC-adversarial-tenant test listed correctly; parses clean. |
+
+### Regression guard
+
+- a11y preserved (no changes to EntitySubNavBar or its tablist/roving-tabindex).
+- `+ buyer` create flow from iter-2 unchanged (onAddAffordance wiring untouched).
+- Route dispatch from iter-3 unchanged (`[subsubtab]/layout.tsx` not touched).
+- G2 SSR-safe preserved (no store import added).
+- No new allowlist entries; no new arch-fitness violations.
+
+### Verdict (iteration 4)
+
+- F-1 bug fixed: 404 ApiError from `useIcp` → `notFound()` → `[subsubtab]/not-found.tsx` renders → never infinite spinner.
+- SC-adversarial-tenant e2e assertion tightened to assert 404 widget rendered (not just `is404 || hasShell`).
+- All `/test-frontend` blockers PASS. 3 new F-1 tests GREEN. 0 new errors.
+- Pre-existing R0 reds + live-verify-deferred remain = NOT triggers (documented per iter 1/2/3).
+- Warning baseline: 243 warnings in scoped run (below 288 full-suite baseline). Did not grow.
+
+→ **F1-FIX-GREEN-READY.** Approach: client-side `notFound()` on 404 `ApiError` in `IcpEntityLayoutClient`. Gates pass. Working tree dirty (no commit per instructions). Awaiting `STAGE` delivery.
