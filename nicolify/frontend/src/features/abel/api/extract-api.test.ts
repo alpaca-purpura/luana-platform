@@ -56,8 +56,17 @@ describe("extractApi — response maps BE→FE (job_id→jobId, icp_id→icpId)"
   });
 
   it("poll failed → errorMessage surfaced", async () => {
-    mockFetchClient.mockResolvedValueOnce({ job_id: "j10", status: "failed", error_message: "no se pudo leer" });
+    mockFetchClient.mockResolvedValueOnce({
+      job_id: "j10",
+      status: "failed",
+      error_message: "no se pudo leer",
+    });
     const job = await extractApi.pollExtraction(opts, "j10");
-    expect(job).toEqual({ jobId: "j10", status: "failed", icpId: null, errorMessage: "no se pudo leer" });
+    expect(job).toEqual({
+      jobId: "j10",
+      status: "failed",
+      icpId: null,
+      errorMessage: "no se pudo leer",
+    });
   });
 });
