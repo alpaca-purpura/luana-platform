@@ -407,5 +407,60 @@ describe("EntitySubNavBar (nicolify — dynamic leaves ICP/buyer)", () => {
         expect(tab).toHaveAttribute("aria-disabled", "true");
       });
     });
+
+    // RED test (auto-fix iter 1): clicking + buyer must call onAddAffordance,
+    // NOT router.push to the literal "__add_buyer__" route (SC-add-buyer + RN-5).
+    it("calls onAddAffordance when + buyer affordance is clicked (NOT router.push)", () => {
+      mockPush.mockClear();
+      const onAddAffordance = vi.fn();
+      render(
+        <EntitySubNavBar
+          rootHref="/tenant-abc/abel/icp"
+          rootLabel="ICPs"
+          entity={icpEntity}
+          leaves={allLeaves}
+          activeLeaf="datos"
+          agentSlug="abel"
+          onAddAffordance={onAddAffordance}
+        />,
+      );
+      const addBtn = screen.getByTestId("entity-leaf-add-affordance");
+      fireEvent.click(addBtn);
+      expect(onAddAffordance).toHaveBeenCalledTimes(1);
+      expect(mockPush).not.toHaveBeenCalledWith(expect.stringContaining("__add_buyer__"));
+    });
+
+    it("renders + buyer with data-add-affordance=true (e2e locator stability)", () => {
+      render(
+        <EntitySubNavBar
+          rootHref="/tenant-abc/abel/icp"
+          rootLabel="ICPs"
+          entity={icpEntity}
+          leaves={allLeaves}
+          activeLeaf="datos"
+          agentSlug="abel"
+        />,
+      );
+      const addBtn = screen.getByTestId("entity-leaf-add-affordance");
+      expect(addBtn).toHaveAttribute("data-add-affordance", "true");
+    });
+
+    it("does NOT call onAddAffordance when + buyer clicked in directory mode", () => {
+      const onAddAffordance = vi.fn();
+      render(
+        <EntitySubNavBar
+          rootHref="/tenant-abc/abel/icp"
+          rootLabel="ICPs"
+          entity={null}
+          leaves={allLeaves}
+          activeLeaf={null}
+          agentSlug="abel"
+          onAddAffordance={onAddAffordance}
+        />,
+      );
+      const addBtn = screen.getByTestId("entity-leaf-add-affordance");
+      fireEvent.click(addBtn);
+      expect(onAddAffordance).not.toHaveBeenCalled();
+    });
   });
 });

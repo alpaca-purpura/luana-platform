@@ -640,15 +640,18 @@ test.describe("SC-add-buyer — agregar nuevo buyer", () => {
 
     await expect(detailPage.subNavBar).toBeVisible({ timeout: 15_000 });
 
-    // The "+ agregar" add affordance must be present in the EntitySubNavBar
-    // (leaf with isAddAffordance=true)
-    const addAffordance = page.locator(
-      "[data-testid^='entity-leaf-'][data-add-affordance='true'], [data-testid^='entity-leaf-add']"
-    ).first();
+    // "+ buyer" add affordance must be present in EntitySubNavBar (auto-fix iter 1).
+    // Matches: data-testid="entity-leaf-add-affordance" + data-add-affordance="true"
+    const addAffordance = page.locator("[data-testid='entity-leaf-add-affordance']");
+    await expect(addAffordance).toBeVisible({ timeout: 10_000 });
 
-    // DEFERRED-TO-DEMO: verify add affordance present and functional
-    // await expect(addAffordance).toBeVisible();
-    void addAffordance; // reference to prevent unused warning
+    // Clicking the affordance must NOT navigate to __add_buyer__ literal route.
+    // It should trigger useCreateBuyer and navigate to the new buyer leaf.
+    // DEFERRED-TO-DEMO: live click→create→new-leaf is the Chris demo gate.
+    // The assertion below verifies the button is functional (not disabled) —
+    // the full create→navigate flow is exercised live at the demo gate.
+    await expect(addAffordance).toBeEnabled();
+    await expect(addAffordance).not.toHaveAttribute("aria-disabled", "true");
   });
 });
 

@@ -47,6 +47,13 @@ export interface EntityWorkspaceLayoutProps {
   rootLabel: string;
   /** Whether entity data is still loading (shows skeleton) */
   isLoading?: boolean;
+  /**
+   * Callback fired when the add-affordance leaf is clicked in EntitySubNavBar.
+   * Forwarded verbatim to EntitySubNavBar.onAddAffordance.
+   * Allows IcpEntityLayoutClient to trigger useCreateBuyer without routing
+   * to a literal "__add_buyer__" path.
+   */
+  onAddAffordance?: () => void;
   /** Leaf content — the active leaf page component */
   children: ReactNode;
   /** Additional className for the outer wrapper */
@@ -70,6 +77,7 @@ export function EntityWorkspaceLayout({
   rootHref,
   rootLabel,
   isLoading = false,
+  onAddAffordance,
   children,
   className,
 }: EntityWorkspaceLayoutProps) {
@@ -109,6 +117,7 @@ export function EntityWorkspaceLayout({
           leaves={leaves}
           activeLeaf={activeLeaf}
           agentSlug="abel"
+          onAddAffordance={onAddAffordance}
         />
       )}
 

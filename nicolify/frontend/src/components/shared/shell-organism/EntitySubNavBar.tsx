@@ -77,6 +77,15 @@ export interface EntitySubNavBarProps {
   activeLeaf: string | null;
   /** Agent slug for agent-abel color theming (G3 JIT-safe) */
   agentSlug: AgentSlug;
+  /**
+   * Callback fired when the add-affordance leaf (isAddAffordance=true) is clicked.
+   * When provided, the affordance leaf calls this INSTEAD of router.push(href).
+   * This allows the parent to trigger a mutation (e.g., useCreateBuyer) and then
+   * navigate to the resulting entity leaf programmatically.
+   *
+   * If not provided, add-affordance leaves behave like normal leaves (router.push).
+   */
+  onAddAffordance?: () => void;
   /** Additional className for the wrapper */
   className?: string;
 }
@@ -96,6 +105,7 @@ export function EntitySubNavBar({
   leaves,
   activeLeaf,
   agentSlug,
+  onAddAffordance,
   className,
 }: EntitySubNavBarProps) {
   const router = useRouter();
@@ -238,12 +248,17 @@ export function EntitySubNavBar({
                 aria-disabled={isDisabled ? true : undefined}
                 aria-current={isActive ? "page" : undefined}
                 tabIndex={isDisabled ? -1 : isFocused ? 0 : -1}
-                data-testid={`entity-leaf-${leaf.id}`}
+                data-testid={isAdd ? "entity-leaf-add-affordance" : `entity-leaf-${leaf.id}`}
+                data-add-affordance={isAdd ? "true" : undefined}
                 disabled={isDisabled}
                 onClick={() => {
                   if (!isDisabled) {
                     setFocusedIdx(idx);
-                    router.push(leaf.href);
+                    if (isAdd && onAddAffordance) {
+                      onAddAffordance();
+                    } else {
+                      router.push(leaf.href);
+                    }
                   }
                 }}
                 onFocus={() => {
