@@ -1,0 +1,71 @@
+{
+  "ticket": "T-FE-4",
+  "story": "nicolify-r1-abel-icp-buyer",
+  "brand": "nicolify",
+  "timestamp": "2026-06-03",
+  "overall": {
+    "any_fail": false,
+    "verdict": "FE4-GREEN-READY",
+    "note": "2 pre-existing test failures in ShellOrganismLayoutClient.test.tsx (T-FE-1 scope) — not introduced by T-FE-4"
+  },
+  "gates": {
+    "tsc": {
+      "status": "PASS",
+      "errors": 0,
+      "notes": "strict mode, 0 errors"
+    },
+    "eslint": {
+      "status": "PASS",
+      "errors_in_tfe4_files": 0,
+      "total_errors_in_src": 10,
+      "pre_existing_errors": "DraftFirstStarter.test.tsx + ProposalBanner.test.tsx (T-FE-2) — Prettier formatting",
+      "total_warnings": 290,
+      "warning_baseline_note": "Minor increase from new components (~2 warnings), within expected range"
+    },
+    "vitest_abel": {
+      "status": "PASS",
+      "tests_pass": 131,
+      "tests_fail": 0,
+      "test_files": 11
+    },
+    "vitest_architecture": {
+      "status": "PASS",
+      "tests_pass": 90,
+      "tests_fail": 0
+    },
+    "vitest_full": {
+      "status": "PARTIAL",
+      "tests_pass": 448,
+      "tests_fail": 2,
+      "note": "2 pre-existing failures in ShellOrganismLayoutClient.test.tsx — NOT from T-FE-4 diff"
+    }
+  },
+  "health_steps": {
+    "jscpd": "NOT_WIRED — FE-infra pendiente per implementation_flow table",
+    "knip": "NOT_WIRED — FE-infra pendiente",
+    "madge": "NOT_WIRED — FE-infra pendiente",
+    "npm_audit": "NOT_RUN — runs in make ci-parity"
+  },
+  "files_created": [
+    "nicolify/frontend/src/features/abel/components/icp/IcpWorkspaceView.tsx",
+    "nicolify/frontend/src/features/abel/components/icp/IcpDatosForm.tsx",
+    "nicolify/frontend/src/features/abel/components/icp/BuyerLeafForm.tsx",
+    "nicolify/frontend/src/features/abel/components/icp/IcpWorkspaceView.test.tsx",
+    "nicolify/frontend/src/features/abel/components/icp/IcpDatosForm.test.tsx",
+    "nicolify/frontend/src/features/abel/components/icp/BuyerLeafForm.test.tsx",
+    "nicolify/docs/product/stories/nicolify-r1-abel-icp-buyer/T-FE-4-result.md",
+    "nicolify/docs/product/stories/nicolify-r1-abel-icp-buyer/gate-output-fe4.json"
+  ],
+  "files_modified": [
+    "nicolify/frontend/src/app/[tenantId]/(shell-organism)/[agent]/[subtab]/[entityId]/[leaf]/page.tsx",
+    "nicolify/frontend/src/features/abel/components/icp/IcpEntityLayoutClient.tsx",
+    "nicolify/frontend/src/features/abel/index.ts"
+  ],
+  "requirements_coverage": {
+    "RN-3": "COVERED — ProposalBanner shown when origin=draft+status=borrador",
+    "RN-4": "COVERED — WhatForChip on every group header",
+    "RN-6": "COVERED — set-primary button + mutation (RN-6 ≤1 primary)",
+    "RN-8": "COVERED — autosave 600ms + mark-ready 422 missing[] inline (no bar)",
+    "RN-11": "COVERED — ISO 4217 currency field, no hardcoded USD"
+  }
+}

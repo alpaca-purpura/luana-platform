@@ -69,3 +69,8 @@ export type { IcpFormValues, BuyerFormValues, IcpCreateFormValues } from "./type
 // ── T-FE-3: Components ────────────────────────────────────────────────────────
 export { IcpCard } from "./components/icp/IcpCard";
 export { IcpMasterListView } from "./components/icp/IcpMasterListView";
+
+// ── T-FE-4: Detail forms ──────────────────────────────────────────────────────
+export { IcpWorkspaceView } from "./components/icp/IcpWorkspaceView";
+export { IcpDatosForm } from "./components/icp/IcpDatosForm";
+export { BuyerLeafForm } from "./components/icp/BuyerLeafForm";
