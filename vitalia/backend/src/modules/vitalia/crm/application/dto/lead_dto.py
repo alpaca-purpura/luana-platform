@@ -48,6 +48,7 @@ class LeadResponse(BaseModel):
     estimated_value: Decimal | None = None
     currency: str | None = None  # tenant locale — NEVER hardcoded 'USD' or 'MXN'
     service_interest: str | None = None
+    assigned_doctor_id: UUID | None = None  # U2: detail shows assigned doctor (FE Resumen Doctor row)
     buying_signals: list[str] = Field(default_factory=list)
     stage_entered_at: datetime | None = None
     is_frozen: bool = False

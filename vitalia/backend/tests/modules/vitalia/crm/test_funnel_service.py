@@ -454,3 +454,83 @@ async def test_transition_stale_version_raises_error() -> None:
             triggered_by="manual_override",
             actor_user_id=USER_ID,
         )
+
+
+# ---------------------------------------------------------------------------
+# B2: get_lead_detail returns COMPUTED score, not STORED score
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_get_lead_detail_score_is_computed_not_stored() -> None:
+    """B2: LeadDetailResponse.lead.score must reflect the computed score.
+
+    Lead has score=0 stored (new lead, no transitions yet) but scorer.compute
+    returns (10, [ScoreFactor(label='Etapa: interesado', delta=10)]) because
+    the base for 'interesado' stage is 10 points.
+    Expect: result.lead.score == 10 (computed), NOT 0 (stored).
+    Expect: sum(f.delta for f in result.score_breakdown) == result.lead.score.
+
+    RED before fix: _lead_to_response(lead) serialises lead.score (0 stored).
+    GREEN after: detail response overrides .score with the computed value.
+    """
+    service, lead_repo, transition_repo, activity_repo, emitter, event_bus = _make_service()
+
+    # Lead with score=0 STORED (new lead, never transitioned)
+    lead = _make_lead(stage="interesado", score=0, buying_signals=[])
+    lead_repo.get_by_id = AsyncMock(return_value=lead)
+
+    result = await service.get_lead_detail(
+        lead_id=LEAD_ID,
+        tenant_id=TENANT_ID,
+    )
+
+    assert result is not None
+    # Computed score must be > 0 (base for "interesado" = 10, not stored 0)
+    assert result.lead.score != 0, "B2: detail.lead.score still 0 (stored) — must use computed value"
+    # The score breakdown must be non-empty and sum to the reported score
+    assert len(result.score_breakdown) > 0, "score_breakdown must not be empty"
+    total = sum(f.delta for f in result.score_breakdown)
+    assert result.lead.score == total, f"B2: detail.lead.score ({result.lead.score}) != sum(breakdown) ({total})"
+
+
+# ---------------------------------------------------------------------------
+# U2-BE: LeadResponse exposes assigned_doctor_id
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_get_lead_detail_exposes_assigned_doctor_id() -> None:
+    """U2-BE: LeadDetailResponse.lead.assigned_doctor_id must be populated.
+
+    Lead has assigned_doctor_id set.  The detail endpoint must forward it so
+    the FE Resumen view can show the Doctor row (currently always blank).
+
+    RED before fix: LeadResponse.assigned_doctor_id field missing.
+    GREEN after: field present and matches lead's value.
+    """
+    from uuid import uuid4 as _uuid4
+
+    service, lead_repo, transition_repo, activity_repo, emitter, event_bus = _make_service()
+
+    doctor_id = _uuid4()
+    lead = Lead(
+        id=LEAD_ID,
+        tenant_id=TENANT_ID,
+        name="Carlos Ruiz",
+        stage="interesado",
+        score=0,
+        version=1,
+        assigned_doctor_id=doctor_id,
+    )
+    lead_repo.get_by_id = AsyncMock(return_value=lead)
+
+    result = await service.get_lead_detail(
+        lead_id=LEAD_ID,
+        tenant_id=TENANT_ID,
+    )
+
+    assert result is not None
+    assert result.lead.assigned_doctor_id == doctor_id, (
+        "U2-BE: assigned_doctor_id not forwarded in LeadDetailResponse.lead"
+    )
