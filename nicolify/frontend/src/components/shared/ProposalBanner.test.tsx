@@ -15,8 +15,8 @@
  * spec_anchor: 03-arch-fe.md §7 borrador-propuesto + RN-3 (propone/ratifica)
  */
 
-import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
 
 import { ProposalBanner } from "./ProposalBanner";
 
@@ -70,9 +70,7 @@ describe("ProposalBanner — draft ratification gate", () => {
   });
 
   it("shows 'Guardando…' and disables buttons when isRatificando=true", () => {
-    render(
-      <ProposalBanner onRatificar={noop} onDescartar={noop} isRatificando={true} />,
-    );
+    render(<ProposalBanner onRatificar={noop} onDescartar={noop} isRatificando={true} />);
 
     const ratificarBtn = screen.getByTestId("proposal-banner-ratificar");
     const descartarBtn = screen.getByTestId("proposal-banner-descartar");
@@ -83,9 +81,7 @@ describe("ProposalBanner — draft ratification gate", () => {
   });
 
   it("disables both buttons when isDescartando=true", () => {
-    render(
-      <ProposalBanner onRatificar={noop} onDescartar={noop} isDescartando={true} />,
-    );
+    render(<ProposalBanner onRatificar={noop} onDescartar={noop} isDescartando={true} />);
 
     expect(screen.getByTestId("proposal-banner-ratificar")).toBeDisabled();
     expect(screen.getByTestId("proposal-banner-descartar")).toBeDisabled();
