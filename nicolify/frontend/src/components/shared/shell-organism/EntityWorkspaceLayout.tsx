@@ -1,5 +1,6 @@
 // cap: abel.icp-buyer
 // story-origin: nicolify-r1-abel-icp-buyer T-FE-1
+// T-FE-NAVBAR: skeleton updated for root-as-leaf (no separate back-link skeleton)
 "use client";
 /**
  * EntityWorkspaceLayout.tsx — N3-dynamic workspace layout for entity detail pages.
@@ -41,9 +42,9 @@ export interface EntityWorkspaceLayoutProps {
   entity: EntitySubNavEntity | null;
   /** Ordered leaves for the N3 nav bar (datos + buyers + "+ buyer") */
   leaves: EntitySubNavLeaf[];
-  /** Href for the back link (root list, e.g., /{tenantId}/abel/icp) */
+  /** Href for the root leaf (root list, e.g., /{tenantId}/abel/icp) */
   rootHref: string;
-  /** Label for the back link (e.g., "ICPs") */
+  /** Label for the root leaf (e.g., "ICPs") */
   rootLabel: string;
   /** Whether entity data is still loading (shows skeleton) */
   isLoading?: boolean;
@@ -98,9 +99,8 @@ export function EntityWorkspaceLayout({
           aria-busy="true"
           data-testid="entity-sub-nav-skeleton"
         >
-          {/* Back link skeleton */}
-          <Skeleton className="h-4 w-14 rounded-sm flex-shrink-0" />
-          <div className="w-px h-4 bg-border/50 flex-shrink-0" />
+          {/* Root leaf skeleton */}
+          <Skeleton className="h-7 w-14 rounded-md flex-shrink-0" />
           {/* Entity identity skeleton */}
           <Skeleton className="h-6 w-6 rounded-full flex-shrink-0" />
           <Skeleton className="h-4 w-32 rounded-sm" />

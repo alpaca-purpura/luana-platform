@@ -147,10 +147,14 @@ export class AbelIcpDetailPage {
    * Uses role=link with text matching "ICPs" or the back arrow.
    */
   async goBack(): Promise<void> {
-    const backLink = this.page.locator(
-      "[data-testid='entity-sub-nav-back'], a[aria-label*='ICPs'], a[aria-label*='volver']"
-    ).first();
-    await backLink.click();
+    // T-FE-NAVBAR: "ICPs" is now a tab button (entity-leaf-root), not a Link back-link.
+    // Aliases: data-testid="entity-leaf-root" (stable) OR data-testid="entity-sub-nav-back" (legacy).
+    const backBtn = this.page
+      .locator(
+        "[data-testid='entity-leaf-root'], [data-testid='entity-sub-nav-back']",
+      )
+      .first();
+    await backBtn.click();
   }
 
   // ── IcpDatosForm interaction ───────────────────────────────────────────────

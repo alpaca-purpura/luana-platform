@@ -1,5 +1,6 @@
 // cap: abel.icp-buyer
 // story-origin: nicolify-r1-abel-icp-buyer T-FE-1
+// T-FE-NAVBAR: root-as-leaf refactor (Chris round 4) — ICPs becomes a peer leaf
 "use client";
 /**
  * EntitySubNavBar.tsx — Shell-organism N3-dynamic entity workspace navigation bar (nicolify).
@@ -7,16 +8,27 @@
  * Port of vitalia EntitySubNavBar re-themed for Nicolify (agent-abel #A855F7).
  * Supports both fixed leaves and DYNAMIC leaves (datos + N buyers + "+ buyer").
  *
- * Layout: [‹ {rootLabel}] | [{avatar} {entityName}] | [{leaf tabs…}]
+ * Layout (T-FE-NAVBAR refactor):
+ *   MASTER (no ICP):  [ ICPs ] <-- root leaf active | "Selecciona un ICP" placeholder
+ *   DETAIL (ICP X):   [ ICPs ] (inactive peer leaf) | 🎯 Agencias… | [ 📋 Datos ] | [buyers] | [+ buyer]
+ *
+ * The "‹ back-link" is removed. The root (e.g. "ICPs") is now the FIRST entry in the
+ * tablist as a special peer leaf — same LeafTabButton pill shape as buyer leaves.
  *
  * States:
- *   - entity=null (directory mode): all leaves disabled (aria-disabled, tabIndex=-1, opacity .45)
- *   - entity present (workspace mode): leaves enabled, activeLeaf derived from URL
+ *   - entity=null (master/no-selection mode):
+ *       Root leaf is ACTIVE (aria-selected=true). Only the root leaf renders.
+ *       Placeholder text "Selecciona un ICP" shown in identity slot.
+ *       No buyer leaves, no Datos leaf, no "+ buyer" affordance.
+ *   - entity present (workspace mode):
+ *       Root leaf is INACTIVE (same pill shape, clickable → rootHref navigation).
+ *       Entity identity (icon + name) shown.
+ *       Full leaves rendered (datos + buyers + add affordance).
  *
  * Accessibility (WAI-ARIA tablist pattern — SC-a11y):
  *   - role="tablist" on <nav>
  *   - role="tab" + aria-selected + aria-disabled per leaf
- *   - Roving tabindex: only focused tab has tabIndex=0
+ *   - Root leaf is included in the tablist; roving tabindex covers it too
  *   - Arrow key navigation (Left/Right/Home/End)
  *   - focus() called on programmatic focus changes
  *
@@ -34,7 +46,6 @@
  */
 
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useRef, useCallback, type KeyboardEvent } from "react";
 
@@ -74,6 +85,12 @@ export interface EntitySubNavLeaf {
    * Only meaningful when avatarBgClass is also set.
    */
   isPrimary?: boolean;
+  /**
+   * T-FE-NAVBAR: when true, this leaf is the root "ICPs" leaf (first in tablist).
+   * Used internally to distinguish root leaf from regular leaves; callers set this
+   * via the rootHref/rootLabel props (not by adding a leaf directly to `leaves`).
+   */
+  isRootLeaf?: boolean;
 }
 
 export interface EntitySubNavEntity {
@@ -89,15 +106,23 @@ export interface EntitySubNavEntity {
 }
 
 export interface EntitySubNavBarProps {
-  /** Href for the back link (root list) */
+  /** Href for the root leaf (list navigation) */
   rootHref: string;
-  /** Label for the back link (e.g., "ICPs") */
+  /** Label for the root leaf (e.g., "ICPs") */
   rootLabel: string;
-  /** Entity descriptor — null = directory mode (leaves disabled) */
+  /**
+   * Stable id for the root leaf testid — used by e2e (entity-leaf-root).
+   * Defaults to "root".
+   */
+  rootLeafId?: string;
+  /** Entity descriptor — null = master/no-selection mode (root leaf active) */
   entity: EntitySubNavEntity | null;
-  /** Ordered list of leaf tabs — may include isAddAffordance entry */
+  /**
+   * Ordered list of leaf tabs for the DETAIL state (datos + buyers + add affordance).
+   * NOT rendered in master mode (entity=null) — only the root leaf is shown.
+   */
   leaves: EntitySubNavLeaf[];
-  /** Active leaf id — null when entity=null */
+  /** Active leaf id — null in master mode (root leaf is active instead) */
   activeLeaf: string | null;
   /** Agent slug for agent-abel color theming (G3 JIT-safe) */
   agentSlug: AgentSlug;
@@ -156,11 +181,19 @@ function LeafTabButton({
   onLeafFocus,
 }: LeafTabButtonProps) {
   const isAdd = leaf.isAddAffordance === true;
+  const isRoot = leaf.isRootLeaf === true;
+  // Testid: root leaf → "entity-leaf-root" (stable, e2e-safe)
+  //         add affordance → "entity-leaf-add-affordance"
+  //         regular leaf → "entity-leaf-{id}"
+  const testId = isRoot
+    ? "entity-leaf-root"
+    : isAdd
+      ? "entity-leaf-add-affordance"
+      : `entity-leaf-${leaf.id}`;
   const tabIdx = isDisabled ? -1 : isFocused ? 0 : -1;
-  const testId = isAdd ? "entity-leaf-add-affordance" : `entity-leaf-${leaf.id}`;
-  const showPrefix = Boolean(leaf.prefixEmoji) && !isAdd;
-  const showAvatar = Boolean(leaf.avatarBgClass) && !isAdd;
-  const showStar = Boolean(leaf.isPrimary) && !isAdd;
+  const showPrefix = Boolean(leaf.prefixEmoji) && !isAdd && !isRoot;
+  const showAvatar = Boolean(leaf.avatarBgClass) && !isAdd && !isRoot;
+  const showStar = Boolean(leaf.isPrimary) && !isAdd && !isRoot;
 
   return (
     <button
@@ -172,6 +205,7 @@ function LeafTabButton({
       tabIndex={tabIdx}
       data-testid={testId}
       data-add-affordance={isAdd ? "true" : undefined}
+      data-root-leaf={isRoot ? "true" : undefined}
       disabled={isDisabled}
       onClick={() => onLeafClick(idx, isAdd, leaf.href)}
       onFocus={() => onLeafFocus(idx)}
@@ -204,12 +238,18 @@ function LeafTabButton({
 /**
  * EntitySubNavBar — sticky N3-dynamic workspace navigation bar (nicolify, dynamic leaves).
  *
- * Renders above workspace content. Provides back navigation to root list,
- * entity identity (avatar + name), and leaf tab navigation (datos + buyers + "+ buyer").
+ * T-FE-NAVBAR: The root ("ICPs") is now a peer leaf in the tablist (first entry).
+ * No ‹ back-link. In master mode (entity=null), only the root leaf renders (active).
+ * In workspace mode (entity present), the root leaf is inactive and the full leaf
+ * set (datos + buyers + add) renders alongside it.
+ *
+ * Renders above workspace content. Entity identity (icon + name or placeholder) shown
+ * between the root leaf and the leaf tabs.
  */
 export function EntitySubNavBar({
   rootHref,
   rootLabel,
+  rootLeafId = "root",
   entity,
   leaves,
   activeLeaf,
@@ -218,34 +258,47 @@ export function EntitySubNavBar({
   className,
 }: EntitySubNavBarProps) {
   const router = useRouter();
-  const isDisabled = entity === null;
-  const totalTabs = leaves.length;
+  const isMasterMode = entity === null;
 
-  // Initial focus index: index of active leaf, or 0
-  const initialFocusIdx = (() => {
-    if (!activeLeaf || isDisabled) return 0;
-    const idx = leaves.findIndex((l) => l.id === activeLeaf);
+  // Build the full tablist: [rootLeaf, ...contentLeaves]
+  // In master mode, contentLeaves is empty (only root leaf shown, active).
+  // In workspace mode, contentLeaves = leaves (datos + buyers + add affordance).
+  const rootLeaf: EntitySubNavLeaf = {
+    id: rootLeafId,
+    label: rootLabel,
+    href: rootHref,
+    isRootLeaf: true,
+  };
+  const allTabs: EntitySubNavLeaf[] = isMasterMode ? [rootLeaf] : [rootLeaf, ...leaves];
+  const totalTabs = allTabs.length;
+
+  // In master mode: root leaf is active (index 0).
+  // In workspace mode: active is the leaf matching activeLeaf (skip root at 0).
+  const activeTabIdx = (() => {
+    if (isMasterMode) return 0; // root leaf always active in master mode
+    if (!activeLeaf) return 0; // root leaf active if no specific leaf
+    // Find in allTabs (offset by 1 for root)
+    const idx = allTabs.findIndex((l) => l.id === activeLeaf);
     return idx >= 0 ? idx : 0;
   })();
 
-  const [focusedIdx, setFocusedIdx] = useState<number>(initialFocusIdx);
+  const [focusedIdx, setFocusedIdx] = useState<number>(activeTabIdx);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   // Move focus to idx (circular wrap)
   const focusTab = useCallback(
     (idx: number) => {
-      if (totalTabs === 0 || isDisabled) return;
+      if (totalTabs === 0) return;
       const safeIdx = ((idx % totalTabs) + totalTabs) % totalTabs;
       setFocusedIdx(safeIdx);
       tabRefs.current[safeIdx]?.focus();
     },
-    [totalTabs, isDisabled],
+    [totalTabs],
   );
 
   // Keyboard handler on <nav> — events bubble from child buttons
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLElement>) => {
-      if (isDisabled) return;
       switch (e.key) {
         case "ArrowRight":
           e.preventDefault();
@@ -267,7 +320,7 @@ export function EntitySubNavBar({
           break;
       }
     },
-    [focusedIdx, focusTab, isDisabled, totalTabs],
+    [focusedIdx, focusTab, totalTabs],
   );
 
   // Agent color classes (G3 JIT-safe — static lookup via switch/case in _agent-tw-classes)
@@ -277,24 +330,20 @@ export function EntitySubNavBar({
   // Stable leaf click handler — extracted to reduce cognitive complexity of render function
   const handleLeafClick = useCallback(
     (idx: number, isAdd: boolean, href: string) => {
-      if (isDisabled) return;
       setFocusedIdx(idx);
       if (isAdd && onAddAffordance) {
         onAddAffordance();
-      } else {
+      } else if (href) {
         router.push(href);
       }
     },
-    [isDisabled, onAddAffordance, router],
+    [onAddAffordance, router],
   );
 
   // Stable leaf focus handler
-  const handleLeafFocus = useCallback(
-    (idx: number) => {
-      if (!isDisabled) setFocusedIdx(idx);
-    },
-    [isDisabled],
-  );
+  const handleLeafFocus = useCallback((idx: number) => {
+    setFocusedIdx(idx);
+  }, []);
 
   return (
     <div
@@ -305,67 +354,7 @@ export function EntitySubNavBar({
       )}
       data-testid="entity-sub-nav-bar"
     >
-      {/* Back link — ‹ ICPs (B1: separator via entity section border-l) */}
-      <Link
-        href={rootHref}
-        className={cn(
-          "inline-flex items-center gap-1.5 text-sm text-muted-foreground",
-          "px-2.5 py-1.5 rounded-lg hover:bg-agent-abel-soft hover:text-agent-abel transition-colors whitespace-nowrap",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
-          "flex-shrink-0",
-        )}
-        aria-label={`Volver a ${rootLabel}`}
-      >
-        <span aria-hidden="true">‹</span>
-        <span className="font-semibold">{rootLabel}</span>
-      </Link>
-
-      {/* Entity identity — icon + name (B1 fix: entity icon before name, sep from back link) */}
-      <div
-        className="flex items-center gap-2 min-w-0 flex-shrink-0 mr-3 border-l border-border/50 pl-3 max-w-[200px]"
-        aria-label={entity ? `Editando: ${entity.name}` : "Selecciona un perfil de cliente ideal"}
-      >
-        {entity ? (
-          <>
-            {entity.avatarUrl ? (
-              <Image
-                src={entity.avatarUrl}
-                alt={entity.name}
-                width={24}
-                height={24}
-                className="rounded-full object-cover flex-shrink-0"
-              />
-            ) : entity.icon ? (
-              /* B1 fix: entity icon circle (mockup entitynav-entity-icon) — bg-agent-abel-soft */
-              <span
-                className={cn(
-                  "w-[30px] h-[30px] rounded-lg flex items-center justify-center",
-                  "bg-agent-abel-soft text-agent-abel text-sm flex-shrink-0",
-                )}
-                aria-hidden="true"
-              >
-                {entity.icon}
-              </span>
-            ) : (
-              <span
-                className={cn(
-                  "w-6 h-6 rounded-full flex items-center justify-center",
-                  "text-xs font-medium text-white flex-shrink-0",
-                  agentBg,
-                )}
-                aria-hidden="true"
-              >
-                {entity.name.charAt(0).toUpperCase()}
-              </span>
-            )}
-            <span className="text-sm font-bold truncate">{entity.name}</span>
-          </>
-        ) : (
-          <span className="text-sm text-muted-foreground/60">—</span>
-        )}
-      </div>
-
-      {/* Leaf tabs — scrollable when many buyers (SC-large) */}
+      {/* Tablist — root leaf + (in workspace mode) entity identity + content leaves */}
       <div className="flex-1 overflow-x-auto scrollbar-none min-w-0">
         <nav
           role="tablist"
@@ -374,27 +363,97 @@ export function EntitySubNavBar({
           onKeyDown={handleKeyDown}
           className="flex items-center gap-0.5 min-w-max"
         >
-          {leaves.map((leaf, idx) => {
-            const isActive = !isDisabled && leaf.id === activeLeaf;
-            const isFocused = focusedIdx === idx;
+          {/* Root leaf (first tab — "ICPs") — always rendered */}
+          <LeafTabButton
+            key={rootLeaf.id}
+            leaf={rootLeaf}
+            idx={0}
+            isActive={activeTabIdx === 0}
+            isFocused={focusedIdx === 0}
+            isDisabled={false}
+            agentText={agentText}
+            tabRef={(el) => {
+              tabRefs.current[0] = el;
+            }}
+            onLeafClick={handleLeafClick}
+            onLeafFocus={handleLeafFocus}
+          />
 
-            return (
-              <LeafTabButton
-                key={leaf.id}
-                leaf={leaf}
-                idx={idx}
-                isActive={isActive}
-                isFocused={isFocused}
-                isDisabled={isDisabled}
-                agentText={agentText}
-                tabRef={(el) => {
-                  tabRefs.current[idx] = el;
-                }}
-                onLeafClick={handleLeafClick}
-                onLeafFocus={handleLeafFocus}
-              />
-            );
-          })}
+          {/* Entity identity — shown only in workspace mode (entity present) */}
+          {!isMasterMode && entity && (
+            <div
+              className="flex items-center gap-2 min-w-0 flex-shrink-0 mx-3 max-w-[200px]"
+              aria-label={`Editando: ${entity.name}`}
+            >
+              {entity.avatarUrl ? (
+                <Image
+                  src={entity.avatarUrl}
+                  alt={entity.name}
+                  width={24}
+                  height={24}
+                  className="rounded-full object-cover flex-shrink-0"
+                />
+              ) : entity.icon ? (
+                /* B1 fix: entity icon circle (mockup entitynav-entity-icon) — bg-agent-abel-soft */
+                <span
+                  className={cn(
+                    "w-[30px] h-[30px] rounded-lg flex items-center justify-center",
+                    "bg-agent-abel-soft text-agent-abel text-sm flex-shrink-0",
+                  )}
+                  aria-hidden="true"
+                >
+                  {entity.icon}
+                </span>
+              ) : (
+                <span
+                  className={cn(
+                    "w-6 h-6 rounded-full flex items-center justify-center",
+                    "text-xs font-medium text-white flex-shrink-0",
+                    agentBg,
+                  )}
+                  aria-hidden="true"
+                >
+                  {entity.name.charAt(0).toUpperCase()}
+                </span>
+              )}
+              <span className="text-sm font-bold truncate">{entity.name}</span>
+            </div>
+          )}
+
+          {/* Placeholder — shown only in master mode (no entity selected) */}
+          {isMasterMode && (
+            <span
+              className="text-sm text-muted-foreground/60 ml-3 whitespace-nowrap"
+              aria-label="Selecciona un ICP para ver sus opciones"
+            >
+              Selecciona un ICP
+            </span>
+          )}
+
+          {/* Content leaves (datos + buyers + add affordance) — workspace mode only */}
+          {!isMasterMode &&
+            leaves.map((leaf, idx) => {
+              const tabIdx = idx + 1; // offset by 1 for root leaf at index 0
+              const isActive = leaf.id === activeLeaf;
+              const isFocused = focusedIdx === tabIdx;
+
+              return (
+                <LeafTabButton
+                  key={leaf.id}
+                  leaf={leaf}
+                  idx={tabIdx}
+                  isActive={isActive}
+                  isFocused={isFocused}
+                  isDisabled={false}
+                  agentText={agentText}
+                  tabRef={(el) => {
+                    tabRefs.current[tabIdx] = el;
+                  }}
+                  onLeafClick={handleLeafClick}
+                  onLeafFocus={handleLeafFocus}
+                />
+              );
+            })}
         </nav>
       </div>
     </div>
