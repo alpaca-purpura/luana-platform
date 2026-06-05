@@ -1,0 +1,263 @@
+# 06-tickets · nicolify-r1-abel-icp-buyer
+# Work units (≤10) con assignment block per ticket (NUNCA general-purpose).
+# DAG + acceptance.validator_ids + gherkin_coverage + notes_for_downstream cross-stack.
+---
+story_id: nicolify-r1-abel-icp-buyer
+brand: nicolify
+architecture_pattern: ADR-nicolify-001
+total_tickets: 8
+forbidden_to_touch_all:        # aplica a TODOS los tickets
+  - "core/luana-core-*/src/**"   # engine — lift = /pm-luana
+  - "vitalia/**"
+  - "comunify/**"
+  - "lupulo/**"
+  - "nicolify/frontend/src/lib/routing/shell-routes.ts"   # SSoT — abel.icp ya existe
+
+tickets:
+
+  # ───────────────────────────────────── BACKEND ─────────────────────────────
+  - id: T-BE-1
+    title: "ICP + Buyer domain + models + migration + repos (brand-local async)"
+    surface: be
+    summary: >
+      Entidades Icp/Buyer (domain), models SQLA 2.0 (abel_icps, abel_buyers,
+      nicolify_growth_studio_event), migración 002 raw SQL idempotente, repos
+      async tenant-scoped (RN-1) con unique label (RN-7) + clear_primary (RN-6).
+    deliverables:
+      - "abel/domain/{icp,buyer,exceptions}.py"
+      - "abel/infrastructure/models/{icp_model,buyer_model,growth_studio_event_model}.py"
+      - "abel/infrastructure/repositories/{icp_repository,buyer_repository}.py"
+      - "alembic/versions/002_abel_icp_buyer.py"
+    depends_on: []
+    assignment:
+      primary_agent: builder-backend
+      model_preference: sonnet
+      production_code: true
+      must_load_skills: [backend-expert, brand-expert]
+      must_load_artifacts: [03-arch.md, 03-arch-be.md, 05-guidelines.md]
+      forbidden_to_touch: ["abel/extraction/**", "nicolify/frontend/**"]
+      rationale: "BE no-agentic, DDD estándar. brand-expert = referencia esquema BuyerPersona engine."
+    gherkin_coverage: [SC-adversarial-tenant, SC-race-unique, SC-edge-primary, SC-edge-concurrent]
+    acceptance:
+      validator_ids: [NF-sec-tenant, "RN-1", "RN-5", "RN-6", "RN-7"]
+      tests: ["domain invariants", "repo tenant-scoped cross-tenant→None", "unique label", "clear_primary", "migration idempotent (prod-clone)"]
+    notes_for_downstream: "T-BE-2 consume estos repos. FE (T-FE-*) consume los DTOs de T-BE-2. icp_id FK es la columna que el engine NO tiene."
+
+  - id: T-BE-2
+    title: "DTOs + services (IcpService mark-ready RN-8, BuyerService set-primary RN-6) + telemetría + router"
+    surface: be
+    summary: >
+      DTOs Pydantic v2 (response_model), IcpService (CRUD + mark_ready valida
+      mínimo RN-8 sin barra, label conflict RN-7 idempotente), BuyerService
+      (CRUD + set_primary RN-6), GrowthStudioEmitter (account_id, best-effort,
+      no PII), router /api/v1/abel + include_router en main.py.
+    deliverables:
+      - "abel/application/dtos/{icp_dtos,buyer_dtos,extraction_dtos}.py"
+      - "abel/application/services/{icp_service,buyer_service}.py"
+      - "abel/application/telemetry/growth_studio_emitter.py"
+      - "abel/api/router.py + main.py include_router"
+      - "tests/architecture/test_growth_studio_event_no_pii.py (NEW)"
+    depends_on: [T-BE-1]
+    assignment:
+      primary_agent: builder-backend
+      model_preference: sonnet
+      production_code: true
+      must_load_skills: [backend-expert]
+      must_load_artifacts: [03-arch.md, 03-arch-be.md, 05-guidelines.md]
+      forbidden_to_touch: ["abel/extraction/**", "nicolify/frontend/**"]
+      rationale: "Application/API layer no-agentic. extraction_dtos definidos acá pero el service de extracción vive en T-AG-1."
+    gherkin_coverage: [SC-negative, SC-i18n, SC-happy-buyer, SC-add-buyer]
+    acceptance:
+      validator_ids: [NF-sec-pii, "RN-8", "RN-11", test_response_model_required, test_growth_studio_event_no_pii]
+      tests: ["mark_ready missing[]", "label conflict 409", "set_primary", "response_model shape", "Bearer/X-Tenant-ID required", "cross-tenant 404", "growth_studio_event no PII"]
+    notes_for_downstream: "FE consume estos DTOs (camelCase mirror). extraction_dtos compartidos con T-AG-1. mark-ready devuelve 422-shaped missing[] (no raise)."
+
+  # ───────────────────────────────────── AGENTIC ─────────────────────────────
+  - id: T-AG-1
+    title: "Draft-first extractor (seed→propose) + sanitizer RN-9 + audit RN-10 + IcpExtractionService"
+    surface: agentic
+    summary: >
+      Extractor one-shot seed→draft (subclass/replica BaseExtractionOrchestrator),
+      seed_sanitizer (delimiter-wrap + sanitize_payload RN-9 · least-privilege:
+      solo propone borrador), prompt j2 (ref buyer_persona_doc_extraction.j2),
+      structured-output schema, IcpExtractionService (start async + persist
+      borrador RN-3 + audit row RN-10 + cost recording engine + trace best-effort),
+      timeout+fallback (SC-network), thin-seed no-halluc.
+    deliverables:
+      - "abel/extraction/{__init__,orchestrator,seed_sanitizer,schema}.py + prompts/icp_extraction.j2"
+      - "abel/application/services/icp_extraction_service.py"
+      - "abel/api/router.py: POST /icp/extract + GET /icp/extract/{job_id}"
+      - "tests agentic: sanitization, draft status, thin-seed, timeout, audit, tenant-isolation"
+    depends_on: [T-BE-1, T-BE-2]
+    assignment:
+      primary_agent: builder-agentic
+      model_preference: opus       # R23 HARD — production_code:true agentic → Opus, NUNCA Sonnet/opencode
+      production_code: true
+      must_load_skills: [copilot-expert, claude-api]
+      must_load_artifacts: [03-arch.md, 03-arch-agentic.md, 05-guidelines.md]
+      forbidden_to_touch: ["core/luana-core-copilot/src/**", "nicolify/frontend/**"]
+      rationale: "Extractor draft-first = production agentic code → R23 Opus obligatorio. Consume patrón engine + sanitize_payload + cost recorder por import, NUNCA edita core/. NO es LangGraph multiturno (one-shot wave)."
+    gherkin_coverage: [SC-happy, SC-network, SC-adversarial-injection, SC-edge-thin-seed]
+    acceptance:
+      validator_ids: [NF-sec-injection, NF-res-extract, "RN-3", "RN-9", "RN-10", "EV-1", "EV-2", "EV-3", "EV-4", "EV-5", "EV-6"]
+      tests: ["seed inyección no ejecuta (RN-9)", "draft nace borrador (RN-3)", "thin-seed no alucina", "timeout→failed", "audit row (RN-10)", "tenant-isolation extract"]
+    notes_for_downstream: "FE (T-FE-2 UniversalIntake) llama POST /icp/extract + poll. on success invalida ['abel','icp','list']. Job status: analizando→done/failed. Cost via engine observability (token economy nicolify §4)."
+
+  # ───────────────────────────────────── FRONTEND ────────────────────────────
+  - id: T-FE-1
+    title: "EntitySubNavBar + EntityWorkspaceLayout (port vitalia · variante leaves-dinámicos) + detalle routing"
+    surface: fe
+    summary: >
+      Port re-temizado de vitalia EntitySubNavBar a components/shared/shell-organism/
+      (agent-abel #A855F7, leaves dinámicos = datos + buyers + '+ buyer'), EntityWorkspaceLayout
+      (hidrata ICP SSR, monta barra N3 + slot), rutas detalle [entityId]/{layout,page,[leaf]/page}.
+      a11y role=tablist + roving tabindex + flechas + directory-disabled. G3 _agent-tw-classes.
+    deliverables:
+      - "components/shared/shell-organism/{EntitySubNavBar,EntityWorkspaceLayout}.tsx (+ tests)"
+      - "app/[tenantId]/(shell-organism)/[agent]/[subtab]/[entityId]/{layout,page}.tsx + [leaf]/page.tsx"
+    depends_on: [T-BE-2]
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: sonnet
+      production_code: true
+      must_load_skills: [nicolify-design-system, frontend-expert, playwright-expert]
+      must_load_artifacts: [03-arch.md, 03-arch-fe.md, 05-guidelines.md, mockups/icp-buyer.html]
+      forbidden_to_touch: ["components/ui/**", "components/shared/shell-organism/{TopBarGlobal,Ribbon,SubTabsBar,LuanaSidebar,ShellOrganismLayout}.tsx", "lib/routing/shell-routes.ts"]
+      rationale: "Port shell pattern (no reinventar). EntitySubNavBar = lift candidate @luana/ui-kit (N=2) → flag, NO lift acá. Base de T-FE-3/T-FE-4."
+    gherkin_coverage: [SC-a11y, SC-happy-buyer, SC-large]
+    acceptance:
+      validator_ids: [test_agent_tw_classes, no-store-in-ssr-skeleton, "SC-a11y", "SC-large"]
+      tests: ["EntitySubNavBar leaves dinámicos + roving tabindex + directory-disabled", "EntityWorkspaceLayout skeleton store-free (G2)", "router.push sin reload", "axe wcag2aa"]
+    notes_for_downstream: "T-FE-3 (master) navega a estas rutas. T-FE-4 (forms) son los children del leaf. activeLeaf URL-derived."
+
+  - id: T-FE-2
+    title: "Reusables fundacionales: UniversalIntake + DraftFirstStarter + ProposalBanner + WhatForChip"
+    surface: fe
+    summary: >
+      Componentes shared reusables (base para Oferta/Marca): UniversalIntake (4 modos
+      URL/Archivo/Texto/Conectar — Conectar disabled+CTA Config), DraftFirstStarter
+      (arranque 2-caminos), ProposalBanner (Abel propone · ratificar/descartar),
+      WhatForChip (¿para qué sirve? + agente consumidor). Hooks api/extract + analizando overlay.
+    deliverables:
+      - "components/shared/intake/UniversalIntake.tsx"
+      - "components/shared/{DraftFirstStarter,ProposalBanner,WhatForChip}.tsx (+ tests)"
+      - "features/abel/api/extract-api.ts + hooks/use-icp-extract.ts + store/abel-ui-store.ts (SSR-safe)"
+    depends_on: [T-AG-1]
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: sonnet
+      production_code: true
+      must_load_skills: [nicolify-design-system, frontend-expert]
+      must_load_artifacts: [03-arch.md, 03-arch-fe.md, 05-guidelines.md, mockups/icp-buyer.html]
+      forbidden_to_touch: ["components/ui/**", "core/**"]
+      rationale: "Reusables fundacionales → components/shared/, NO features/abel/. Consumen POST /icp/extract de T-AG-1. abel-ui-store SSR-safe G2."
+    gherkin_coverage: [SC-empty, SC-network]
+    acceptance:
+      validator_ids: ["RN-2", "RN-4", NF-res-extract, no-store-in-ssr-skeleton, test_spanish_neutro]
+      tests: ["UniversalIntake 4 modos (Conectar disabled+CTA)", "DraftFirstStarter 2-caminos", "ProposalBanner ratificar/descartar", "WhatForChip consumer+tooltip", "extract hook poll analizando→done/failed", "store SSR-safe"]
+    notes_for_downstream: "T-FE-3 usa DraftFirstStarter (empty) + UniversalIntake (generar). T-FE-4 usa WhatForChip por grupo + ProposalBanner (draft-first)."
+
+  - id: T-FE-3
+    title: "Master list: IcpMasterListView + IcpCard + dispatcher wiring + icp/buyer hooks+api"
+    surface: fe
+    summary: >
+      Vista master (lista de ICPs): IcpMasterListView (client root, hidrata RQ),
+      IcpCard (icono+nombre+vertical+estado+#buyers, SIN completeness ring),
+      empty→DraftFirstStarter, generar→UniversalIntake. Wiring en SubTabContent
+      (abel.icp → IcpMasterListView). icp-api/buyer-api + hooks + types (camelCase) + Zod schema.
+    deliverables:
+      - "features/abel/components/icp/{IcpMasterListView,IcpCard}.tsx"
+      - "features/abel/api/{icp-api,buyer-api}.ts + hooks/{use-icps,use-buyers,use-icp-mutations,use-buyer-mutations}.ts"
+      - "features/abel/types/{icp,buyer,extract,icp-schema}.ts"
+      - "components/shared/shell-organism/SubTabContent.tsx (MODIFIED: abel.icp)"
+    depends_on: [T-BE-2, T-FE-2]
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: sonnet
+      production_code: true
+      must_load_skills: [nicolify-design-system, frontend-expert, playwright-expert]
+      must_load_artifacts: [03-arch.md, 03-arch-fe.md, 05-guidelines.md, mockups/icp-buyer.html]
+      forbidden_to_touch: ["components/ui/**", "lib/routing/shell-routes.ts", "core/**"]
+      rationale: "Master = dispatcher wiring (no nueva ruta). SubTabContent es el único punto donde abel.icp deja de ser EmptyState. CONN: notarized."
+    gherkin_coverage: [SC-empty, SC-happy, SC-large, SC-i18n]
+    acceptance:
+      validator_ids: [test_shell_routes_ssot, "SC-empty", "SC-large", visual_lista]
+      tests: ["IcpCard (sin comp-ring)", "lista vacía → DraftFirstStarter", "hooks RQ keys+invalidation", "200 ICPs pagina", "visual golden lista 2 themes", "fetchClient X-Tenant-ID de useTenantId (no orgId)"]
+    notes_for_downstream: "Navega a T-FE-1 rutas detalle. Consume DTOs T-BE-2 + extract T-AG-1."
+
+  - id: T-FE-4
+    title: "Detalle: IcpDatosForm (grupos + WhatForChip + mark-ready RN-8) + BuyerLeafForm + IcpWorkspaceView"
+    surface: fe
+    summary: >
+      Forms del detalle: IcpDatosForm (grupos Identidad/Firmográficos/Dolor&ángulo/
+      Señales/Anti-patrón, cada grupo con WhatForChip, autosave 600ms, botón Marcar
+      listo → 422 missing[] inline RN-8), BuyerLeafForm (rol/poder/demo/psico/pains/
+      desires/objeciones/canales, set-primary RN-6), IcpWorkspaceView (client root del
+      leaf). ProposalBanner cuando origin=draft. Currency RN-11.
+    deliverables:
+      - "features/abel/components/icp/{IcpWorkspaceView,IcpDatosForm,BuyerLeafForm}.tsx (+ tests)"
+      - "render del leaf en [entityId]/[leaf]/page.tsx (datos→IcpDatosForm, buyerId→BuyerLeafForm)"
+    depends_on: [T-FE-1, T-FE-3]
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: sonnet
+      production_code: true
+      must_load_skills: [nicolify-design-system, frontend-expert, playwright-expert]
+      must_load_artifacts: [03-arch.md, 03-arch-fe.md, 05-guidelines.md, mockups/icp-buyer.html]
+      forbidden_to_touch: ["components/ui/**", "lib/routing/shell-routes.ts", "core/**"]
+      rationale: "Forms del leaf activo. SIN completeness ring (RN-8 · mockup CSS residual ignorado). ProposalBanner = draft-first integration."
+    gherkin_coverage: [SC-happy, SC-negative, SC-happy-buyer, SC-add-buyer, SC-edge-primary, SC-i18n]
+    acceptance:
+      validator_ids: ["RN-3", "RN-4", "RN-6", "RN-8", "RN-11", visual_detalle, visual_propuesta]
+      tests: ["IcpDatosForm autosave + WhatForChip por grupo", "mark-ready missing[] inline (sin barra)", "BuyerLeafForm + set-primary", "ProposalBanner ratificar→listo", "currency no-hardcoded", "visual goldens detalle+propuesta 2 themes"]
+    notes_for_downstream: "Cierra el flujo draft-first end-to-end. Es el ticket que el demo manual de Chris ejerce."
+
+  # ───────────────────────────────────── E2E (cross-stack) ────────────────────
+  - id: T-E2E-1
+    title: "E2E Playwright (15 SC · base.ts anti-burbuja) + visual goldens + demo-script.md"
+    surface: fe
+    summary: >
+      Suite e2e cubriendo los 15 SC vía fixture base.ts (pageerror/console/response/
+      next-overlay), POMs (master/detalle/buyer/intake), visual goldens 4 vistas×2
+      themes vs mockup, axe wcag2aa, cold-start variant. demo-script.md (4 secciones)
+      para el sign-off de Chris. Live-verify dev-app (Chrome MCP).
+    deliverables:
+      - "nicolify/frontend/e2e/specs/{smoke,regression}/abel-icp*.spec.ts + POMs + base.ts import"
+      - "visual goldens 4 vistas × 2 themes"
+      - "nicolify/docs/product/stories/nicolify-r1-abel-icp-buyer/demo-script.md"
+    depends_on: [T-FE-4, T-AG-1]
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: sonnet
+      production_code: true
+      must_load_skills: [playwright-expert, frontend-expert, nicolify-design-system]
+      must_load_artifacts: [03-arch.md, 04-validators.yaml, 05-guidelines.md, mockups/icp-buyer.html]
+      forbidden_to_touch: ["core/**", "components/ui/**", "lib/routing/shell-routes.ts"]
+      rationale: "E2E cross-stack final. base.ts OBLIGATORIO (no @playwright/test). Cold-start variant (no seeded-state mask). demo-script para gate demo manual (DoD #37)."
+    gherkin_coverage: [SC-happy, SC-negative, SC-empty, SC-network, SC-a11y, SC-i18n, SC-adversarial-tenant, SC-happy-buyer, SC-add-buyer, SC-edge-primary, SC-large]
+    acceptance:
+      validator_ids: [runtime_error_gate, demo_required, "todos los SC playwright:true"]
+      tests: ["15 SC verde (los playwright:false cubiertos en BE/agentic)", "gate anti-burbuja vacío", "visual goldens vs mockup", "axe wcag2aa", "live-verify dev-app dod_evidence"]
+    notes_for_downstream: "/auditor Phase D produce gherkin-matrix (cualquier MISSING bloquea). /pm-nicolify Fase F exige demo_signoff de Chris."
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DAG
+# ─────────────────────────────────────────────────────────────────────────────
+dag:
+  - "T-BE-1 → T-BE-2 → T-AG-1"
+  - "T-BE-2 → T-FE-1"
+  - "T-AG-1 → T-FE-2"
+  - "T-BE-2 + T-FE-2 → T-FE-3"
+  - "T-FE-1 + T-FE-3 → T-FE-4"
+  - "T-FE-4 + T-AG-1 → T-E2E-1"
+  critical_path: "T-BE-1 → T-BE-2 → T-AG-1 → T-FE-2 → T-FE-3 → T-FE-4 → T-E2E-1"
+  parallelizable:
+    - "T-FE-1 ∥ T-AG-1 (ambos tras T-BE-2; T-FE-1 no necesita extractor)"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SPLIT CHECK
+# ─────────────────────────────────────────────────────────────────────────────
+split_check:
+  ticket_count: 8
+  within_cap: true   # ≤10 · no requiere split
+  notes: "8 tickets (2 BE + 1 AGENTIC + 4 FE + 1 E2E). AGENTIC separado de BE/FE (R23). Story cohesiva, no split."

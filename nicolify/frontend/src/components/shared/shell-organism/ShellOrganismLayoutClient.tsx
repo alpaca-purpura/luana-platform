@@ -141,6 +141,11 @@ export function ShellOrganismLayoutClient({
        * chrome se muestra/oculta con CSS responsive (md:block / md:hidden), NO con
        * render condicional — así el <Group> de resizable se monta una sola vez y no
        * descuadra el conteo de hooks. containerRef aquí; ResizeObserver lee el ancho.
+       *
+       * AppPanelSlot ({children}) se renderiza EXACTAMENTE UNA VEZ dentro del branch
+       * correcto de desktop. En mobile el sidebar se oculta vía CSS y el AppPanelSlot
+       * del branch desktop ocupa el ancho completo disponible. El div mobile separado
+       * fue eliminado para evitar la duplicación (bug 2026-06-03).
        */}
       <main
         id="main-content"
@@ -150,8 +155,8 @@ export function ShellOrganismLayoutClient({
         ref={containerRef}
         data-shell-ready={shellReady ? "true" : "false"}
       >
-        {/* ── Desktop (md+): SIEMPRE montado, oculto en mobile vía CSS ── */}
-        <div className="hidden h-full md:block">
+        {/* ── Chrome inner: SIEMPRE montado (CSS gate para md+ sidebar) ── */}
+        <div className="h-full w-full">
           {shellMode === "agentic" ? (
             <Group
               id={SHELL_GROUP_ID}
@@ -191,18 +196,13 @@ export function ShellOrganismLayoutClient({
               </Panel>
             </Group>
           ) : (
-            // web mode — static CSS grid 60px / 1px / 1fr
+            // web mode — static CSS grid 60px / 1px / 1fr (sidebar always present; mobile sees rail via D5 drawer)
             <div className="h-full grid grid-cols-[60px_1px_1fr]">
               <LuanaSidebar />
               <div className="bg-border" aria-hidden="true" />
               <AppPanelSlot>{children}</AppPanelSlot>
             </div>
           )}
-        </div>
-
-        {/* ── Mobile (< md): single-column, SIEMPRE montado, oculto en desktop ── */}
-        <div className="h-full md:hidden">
-          <AppPanelSlot>{children}</AppPanelSlot>
         </div>
       </main>
     </div>

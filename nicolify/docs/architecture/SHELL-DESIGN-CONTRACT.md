@@ -3,6 +3,8 @@
 > **SSoT atomic-design del shell-organism agéntico de Nicolify.** Qué componentes existen, sus tokens, el modelo de navegación y el catálogo de agentes. Ratificado por Chris 2026-05-29 (mockup `nicolify/docs/product/stories/nicolify-r0-shell-organism/mockups/shell.html`).
 >
 > Reuse del patrón de Vitalia (`vitalia/docs/architecture/SHELL-DESIGN-CONTRACT.md`) re-temizado a la marca Nicolify (nicolify.com). Arquitectura del patrón por sub-tab: `ADR-nicolify-001`. Carga el skill `nicolify-design-system` antes de tocar `nicolify/frontend/src/**`.
+>
+> **Extensión 2026-06-03 (ratificada Chris):** formalizado el patrón **list→detail `EntitySubNavBar`** (§ 5 + § 5.1 + § 4) — soporta leaves fijos (staff vitalia) y dinámicos poblados por hijos + agregar (ICP→buyers nicolify). Reemplaza la noción "N3-dynamic = Sheet drawer". Mockup de referencia: `nicolify/docs/product/stories/nicolify-r1-abel-icp-buyer/mockups/icp-buyer.html`.
 
 ## 1. Visión del shell
 
@@ -42,7 +44,7 @@ Shell **dual-mode agéntico**: panel izquierdo = **Luana** (chat orquestador per
 
 `Accordion · Alert · AlertDialog · Avatar · Badge · Button · Calendar · Card · Chart · Checkbox · Collapsible · Command · CurrencySelector · DetailPanel · Dialog · DropdownMenu · Form · Input · Label · LoadingButton · Popover · Progress · RadioGroup · RichSelect · ScrollArea · Select · Separator · Sheet · Skeleton · Slider · SmartDatetimePicker · Sonner · Switch · Table · Tabs · Textarea · TimezoneSelect · Tooltip` (+ más).
 
-→ Si falta una primitiva, agregar Shadcn estándar en `components/ui/` (no `<div>` crudo). `Tabs` NO se usa para sub-secciones de una hoja (eso es N3-static).
+→ Si falta una primitiva, agregar Shadcn estándar en `components/ui/` (no `<div>` crudo). `Tabs` NO se usa para sub-secciones de una hoja (eso es N3-static `SubSubTabsBar`) ni para el detalle de un item (eso es N3-dynamic `EntitySubNavBar`); en ambos casos las leaves son **rutas**, no `Tabs`.
 
 ## 4. Moléculas + Organismos (a crear en R0 · `components/shared/shell-organism/`)
 
@@ -59,6 +61,8 @@ Shell **dual-mode agéntico**: panel izquierdo = **Luana** (chat orquestador per
 | `Ribbon` | N1 · 5 RibbonTab (Abel/Brenda/Christian/Sara/Norvil) + ConfigTab. `role="tablist"`. agent-color border en active. |
 | `SubTabsBar` | N2 · SubTab[] del agente activo (URL-derived). |
 | `SubSubTabsBar` | N3-static · render condicional si `AGENT_SUBSUBTABS[agent][subtab]?.length`. |
+| `EntitySubNavBar` | N3-dynamic · barra de workspace del **detalle** (patrón list→detail). `‹ rootLabel` + identidad (avatar+nombre) + leaves **a la izquierda**. Directory mode (entity=null) → leaves disabled. `role="tablist"` + roving tabindex + flechas · `router.push` (sin full reload). Leaves **fijas** (por tipo) o **dinámicas** (colección hija + `+ agregar`). Ver § 5.1. **Port re-temizado de vitalia · lift candidate a `@luana/ui-kit`.** |
+| `EntityWorkspaceLayout` | `[entityId]/layout.tsx` del detalle: monta `EntitySubNavBar` + hidrata la entidad (SSR) + slot `{children}` (el leaf activo). |
 | `ShellOrganismLayout` | Splitter resizable dual-mode (chat-collapsed/narrow/50-50) · `dynamic({ssr:false})` boundary · skeleton store-free. |
 | `AppPanelSlot` | Contiene Ribbon + SubTabsBar + SubSubTabsBar + `{children}`. |
 
@@ -67,15 +71,48 @@ Shell **dual-mode agéntico**: panel izquierdo = **Luana** (chat orquestador per
 3 niveles de tab que GUÍAN hasta la **hoja** (= contenido del `page.tsx`, lo único que cambia · NUNCA contiene tabs internas):
 - **N1 Ribbon** → `[agent]` (Abel/Brenda/Christian/Sara/Norvil/Config) · Luana NO es tab.
 - **N2 SubTabsBar** → `[agent]/[subtab]` (whitelist `AGENT_SUBTABS`).
-- **N3-static SubSubTabsBar** → `[agent]/[subtab]/[subsubtab]` (cuando ≥3 vistas discretas).
-- **N3-dynamic** → `[...slug]` (Sheet drawer · detalle de item).
+- **N3-static (`SubSubTabsBar`)** → `[agent]/[subtab]/[subsubtab]` · sub-vistas **fijas** de UNA hoja (≥3 vistas discretas, del catálogo `AGENT_SUBSUBTABS`). Ej: Christian→propuestas→{borrador·revisión·firmado}.
+- **N3-dynamic (`EntitySubNavBar` · patrón list→detail)** → el sub-tab es una **lista** de entidades; al entrar a una, su **detalle** es un workspace con back + identidad (avatar+nombre) + leaves. La **entidad** es dinámica (item elegido en runtime); sus **leaves** pueden ser fijos o dinámicos (ver § 5.1). **Reemplaza** la vieja noción "Sheet drawer" — el `Sheet` queda SOLO para paneles transitorios livianos, NUNCA para el detalle canónico de un item.
+
+| Modo N3 | Componente | Fuente de las leaves | Caso |
+|---|---|---|---|
+| **static** | `SubSubTabsBar` | catálogo `AGENT_SUBSUBTABS` (fijas) | Christian→propuestas→{borrador·revisión·firmado} |
+| **dynamic · leaves fijos** | `EntitySubNavBar` | sub-vistas fijas por **tipo** de entidad | **staff/doctor** (vitalia): Perfil·Horarios·Servicios |
+| **dynamic · leaves dinámicos** | `EntitySubNavBar` | colección **hija** en runtime **+ botón agregar** | **ICP→buyers** (nicolify): [Datos del ICP][buyers…][+ buyer] |
 
 Routing SSoT: `nicolify/frontend/src/lib/routing/shell-routes.ts` (`AGENT_CATALOG` + `AGENT_SUBTABS` + `AGENT_SUBSUBTABS`). Sub-tabs ratificadas: ver `nicolify/docs/product/stories/nicolify-r0-shell-organism/navigation-tree.md`.
 
 ```
-app/[tenantId]/(shell-organism)/[agent]/[subtab]/[subsubtab]/page.tsx
+N3-static:   app/[tenantId]/(shell-organism)/[agent]/[subtab]/[subsubtab]/page.tsx
+N3-dynamic:  app/[tenantId]/(shell-organism)/[agent]/[subtab]/page.tsx              (lista/master)
+             app/[tenantId]/(shell-organism)/[agent]/[subtab]/[entityId]/layout.tsx (monta EntitySubNavBar + slot)
+             app/[tenantId]/(shell-organism)/[agent]/[subtab]/[entityId]/[leaf]/page.tsx (detalle del leaf)
 ```
-Server Component default · SSR initial state · datos sensibles nunca en URL.
+Server Component default · SSR initial state · datos sensibles nunca en URL · `[entityId]` redirige al primer leaf.
+
+### 5.1 Patrón list→detail (`EntitySubNavBar`) — ★ canónico para todo "lista → detalle"
+
+> **Origen:** inventado en vitalia (`lisa/staff/doctores`, `ADR-vitalia-004 § D-1`). Adoptado cross-brand 2026-06-03 (Chris). Reference impl: `vitalia/frontend/src/components/shared/shell-organism/EntitySubNavBar.tsx` (+ `StaffWorkspaceShell.tsx` + `[doctor-id]/layout.tsx`).
+
+Cuando un sub-tab N2 **es una colección de entidades** (ICPs, staff, cuentas, contactos…) que se **listan** y luego se **entra al detalle** de una, se usa `EntitySubNavBar`:
+
+- **Master (lista):** `[agent]/[subtab]/page.tsx` — grid/lista de cards. SIN `EntitySubNavBar` (es la lista).
+- **Detalle (workspace):** al hacer click en un item → `[agent]/[subtab]/[entityId]/[leaf]`. El `layout.tsx` monta la **`EntitySubNavBar` como barra N3 superior** (parte del stack Ribbon→SubTabs→**EntitySubNavBar**→contenido — NO un card flotante dentro del contenido).
+- **Anatomía de la barra:** `[‹ {rootLabel}]  |  {avatar} {nombre entidad}  |  {leaves…}` — leaves **pegadas a la izquierda** (después de la identidad), no a la derecha.
+- **Back link** (`rootLabel`) = nombre de la lista: `‹ ICPs` · `‹ Staff` · `‹ Buyers`.
+- **Directory mode** (entity=null, p.ej. lista sin selección): las leaves se renderizan **deshabilitadas/atenuadas** (aria-disabled, opacity ~.45) — el "dummy" hasta que hay entidad.
+- **Las leaves son RUTAS, NO Shadcn `Tabs`.** a11y: `role="tablist"` + roving tabindex + navegación por flechas (Left/Right/Home/End). `router.push` (no full reload — preserva React Query cache).
+
+**Dos fuentes de leaves (misma barra, distinto origen):**
+
+| Variante | Leaves | Botón agregar | Routing del leaf | Ejemplo |
+|---|---|---|---|---|
+| **leaves fijos** | definidos por tipo de entidad (constante `LEAF_DEFS`) | no | `[entityId]/{perfil\|horarios\|servicios}` | staff/doctor (vitalia) |
+| **leaves dinámicos** | la colección **hija** de la entidad (runtime) + `+ agregar` | sí | `[entityId]/{datos\|[childId]}` | ICP→buyers (nicolify): leaf `datos` (la entidad madre) + un leaf por buyer + `+ buyer` |
+
+> En la variante dinámica, la **entidad madre** (sus propios campos) vive en un leaf inicial (ej. `📋 Datos del ICP`) y los **hijos** son los leaves siguientes; el `+ agregar` crea un hijo nuevo.
+
+**Lift candidate (★):** `EntitySubNavBar` ya tiene **N=2 consumers** (staff vitalia + ICP nicolify) → candidato fuerte a lift a `core/@luana/ui-kit` vía `/pm-luana` (promotion gate). Mientras tanto, cada brand lo porta re-temizado desde vitalia (no reinventar).
 
 ### ★ Fidelidad del wrapper — portar verbatim de Vitalia + re-temizar
 TopBar + Ribbon + SubTabsBar + LuanaSidebar/chat se portan de las fuentes canónicas de Vitalia (`~/Proyectos/luana-vitalia/vitalia/docs/archive/2026/stories/vitalia-shell-organism/mockups/dual-mode-shell.html` + `valeria-chat-sample.html` + `valeria-rail.html`) y se re-temizan a Nicolify — NO se reinventan simplificados. Referencia visual ratificada: el mockup `nicolify-r0-shell-organism/mockups/shell.html`.

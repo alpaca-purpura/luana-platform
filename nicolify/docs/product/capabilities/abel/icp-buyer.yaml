@@ -1,0 +1,96 @@
+# capability schema v4 (cement 2026-05-28) — SSoT: docs/process/capability-protocol.md
+# Reconciled by scripts/reconcile_capabilities.py — DO NOT hand-edit the auto-gen blocks.
+# NOTA: creada por /dev-team al cierre developed (anti-orphan CONN "O" + gate pre-commit 5b).
+#       /pm-nicolify FINALIZA (status→live + reconciled) en Fase F.3 tras demo #37 + merge.
+capability_id: "abel.icp-buyer"
+module: "abel"
+slug: "icp-buyer"
+title: "ICP & Buyer de Abel (perfil de cliente ideal a nivel cuenta + N buyer personas) — draft-first"
+status: wip                              # wip = construido, no live aún (pendiente DoD #37 + merge). /pm-nicolify → live en Fase F.3
+# audit 2026-06-03: /auditor APPROVED (BE+AG+FE) · gherkin-matrix 0 MISSING/0 FAIL · pendiente solo DoD #37 live-verify
+# tenant-id 2026-06-04: ★ Chris cazó EL blocker del dev-app real (X-Tenant-ID mandaba slug, no UUID) → fix useTenantId() publicMetadata d6fd864d, confirmado live (header=UUID→200)
+# converged 2026-06-04: FE-UI core flows live-verificados (detalle/autosave/buyer/set-primary/mark-ready/404/a11y) · anti-burbuja CLEAN · 4 baselines · 7 bugs #37 reparados · pendiente solo demo_signoff Chris
+# fe-ui 2026-06-04: anti-burbuja CLEAN + empty/intake/i18n verificados live · F-1 (UUID inválido→404) FIXED a323bd5d · workspace UI + baselines pendientes (seed + R0 bug)
+# dod #37 2026-06-04: BE writes live-verified (create→borrador·patch→persist·mark-ready 422/200·cross-tenant 404·buyer+set-primary). 2 bugs reparados (BE dep gap d13ecc14 · FE route slug 9b5b1eb0). Falta FE-UI + demo_signoff Chris.
+user_visible: true                       # hoja user-reachable del shell (Abel → ICP & buyer)
+
+# ── Zone/box (paradigma 3 zonas · SYSTEM-MAP.yaml::zones · ADR-nicolify-002) ──
+zone: "agentes"
+box: "abel"
+
+# ── Change log (append-only · one entry per story that touches this cap) ──
+change_log:
+  - story: "nicolify-r1-abel-icp-buyer"
+    type: new
+    date: "2026-06-03"
+    scenarios_added: [SC-happy, SC-negative, SC-edge-concurrent, SC-adversarial-tenant, SC-empty, SC-network, SC-race-unique, SC-concurrent, SC-large, SC-a11y, SC-i18n, SC-happy-buyer, SC-add-buyer, SC-edge-primary, SC-adversarial-injection, SC-edge-thin-seed]
+    summary: "Primera hoja real de Abel: ICP (net-new brand-local, nivel cuenta — industria/tamaño/geo/dolor/ángulo) + N buyer personas por ICP (replica brand-local async de BuyerPersona engine, con icp_id). Captura draft-first invertida (seed→extract→borrador→ratificar) vía extractor agentic one-shot (T-AG-1 Opus, seed untrusted RN-9 + audit RN-10 + cost engine). Nav N3-dynamic EntitySubNavBar (port vitalia · leaves = datos + buyers + '+buyer'). Sin barra de completitud (RN-8 mark-ready valida mínimo → 422 missing[]). WhatForChip (campo→agente consumidor). Intake universal (URL/Archivo/Texto activos · Conectar disabled+CTA Config)."
+
+# ── Scenarios (behavior units — the atomic unit of capability) ──
+scenarios:
+  - id: SC-happy
+    title: "Intake URL → analizando → borrador (ProposalBanner) → ratificar → estado listo"
+    e2e_test: "nicolify/frontend/e2e/specs/smoke/abel-icp.smoke.spec.ts"
+  - id: SC-negative
+    title: "Marcar listo sin mínimo → 422 missing[] inline (sin barra) + ICP sigue borrador"
+    e2e_test: "nicolify/frontend/e2e/specs/regression/abel-icp-regression.spec.ts"
+  - id: SC-edge-concurrent
+    title: "2 PATCH casi-simultáneos → ICP íntegro (merge por campo / last-write+aviso)"
+    test: "nicolify/backend/tests/modules/nicolify/abel/api/test_icp_api.py"
+  - id: SC-adversarial-tenant
+    title: "GET/PATCH icp_id de otro tenant → 404 (no revela existencia · RN-1)"
+    e2e_test: "nicolify/frontend/e2e/specs/regression/abel-icp-regression.spec.ts"
+  - id: SC-empty
+    title: "Tenant sin ICPs → DraftFirstStarter (2 caminos), sin EntitySubNavBar"
+    e2e_test: "nicolify/frontend/e2e/specs/smoke/abel-icp.smoke.spec.ts"
+  - id: SC-network
+    title: "Timeout extract → job.status=failed → reintento+fallback, sin spinner infinito ni next-overlay"
+    e2e_test: "nicolify/frontend/e2e/specs/regression/abel-icp-regression.spec.ts"
+  - id: SC-race-unique
+    title: "2 POST misma etiqueta → 1 creado + 1×409 (RN-7 idempotente)"
+    test: "nicolify/backend/tests/modules/nicolify/abel/infrastructure/test_icp_repository.py"
+  - id: SC-concurrent
+    title: "2 tenants listando/creando → cada uno ve lo suyo (RN-1)"
+    test: "nicolify/backend/tests/modules/nicolify/abel/api/test_icp_api.py"
+  - id: SC-large
+    title: "200 ICPs + 30 buyers → pagina/virtualiza + EntitySubNavBar overflow"
+    test: "nicolify/frontend/src/features/abel/components/icp/IcpMasterListView.test.tsx"
+  - id: SC-a11y
+    title: "EntitySubNavBar role=tablist + roving tabindex + flechas · directory aria-disabled · axe wcag2aa"
+    e2e_test: "nicolify/frontend/e2e/specs/smoke/abel-icp.smoke.spec.ts"
+  - id: SC-i18n
+    title: "Copy neutro tuteo + monto en moneda del locale (no hardcoded · RN-11)"
+    e2e_test: "nicolify/frontend/e2e/specs/regression/abel-icp-regression.spec.ts"
+  - id: SC-happy-buyer
+    title: "Click buyer-leaf → detalle buyer + URL /{icpId}/{buyerId} sin reload"
+    e2e_test: "nicolify/frontend/e2e/specs/smoke/abel-icp.smoke.spec.ts"
+  - id: SC-add-buyer
+    title: "+ buyer → buyer hijo + leaf nuevo (RN-5 buyer pertenece a 1 ICP)"
+    e2e_test: "nicolify/frontend/e2e/specs/regression/abel-icp-regression.spec.ts"
+  - id: SC-edge-primary
+    title: "2º primary → exactamente 1 is_primary=true en DB (RN-6)"
+    e2e_test: "nicolify/frontend/e2e/specs/regression/abel-icp-regression.spec.ts"
+  - id: SC-adversarial-injection
+    title: "Seed con inyección → tratada como dato, no ejecuta orden destructiva, audit log (RN-9)"
+    test: "nicolify/backend/tests/modules/nicolify/abel/extraction/test_seed_sanitizer.py"
+  - id: SC-edge-thin-seed
+    title: "Seed pobre → esqueleto + pide vertical+dolor, sin cifras inventadas"
+    test: "nicolify/backend/tests/modules/nicolify/abel/extraction/test_extraction.py"
+
+# ── dev_preview (bidirectional code↔cap · cross_check_3) ──
+dev_preview:
+  entry_points:
+    - "/{tenantId}/abel/icp                      (master · IcpMasterListView vía SubTabContent)"
+    - "/{tenantId}/abel/icp/{icpId}/datos         (detalle · IcpDatosForm · leaf inicial)"
+    - "/{tenantId}/abel/icp/{icpId}/{buyerId}     (detalle buyer · BuyerLeafForm)"
+  nav_ssot: "nicolify/frontend/src/lib/routing/shell-routes.ts  (abel.icp — ya en SSoT R0 v3)"
+  main_component: "nicolify/frontend/src/features/abel/components/icp/IcpMasterListView.tsx"
+  api_endpoints:
+    - "GET/POST/PATCH /api/v1/abel/icp · /api/v1/abel/icp/{id}/mark-ready"
+    - "GET/POST/PATCH /api/v1/abel/buyer · set-primary"
+    - "POST /api/v1/abel/icp/extract · GET /api/v1/abel/icp/extract/{jobId}  (draft-first extractor)"
+  backend_module: "nicolify/backend/src/modules/nicolify/abel/  (domain/infrastructure/application/extraction/api)"
+  e2e_test: "nicolify/frontend/e2e/specs/smoke/abel-icp.smoke.spec.ts"
+
+# ── Reconciled auto-gen (DO NOT hand-edit below · /pm-nicolify reconcilia en Fase F.3) ──
+reconciled: {}

@@ -8,6 +8,7 @@ Architecture decisions (03-arch.md):
   - Engine IAM router montado verbatim en /api/v1/iam/users (AD-2 anti-duplication).
   - CERO /me local, CERO JWT verify local (consume luana_core_iam).
   - HealthResponse DTO con response_model= (PII gate, arch test enforces).
+  - Abel router: /api/v1/abel (R1 · story nicolify-r1-abel-icp-buyer · T-BE-1)
 """
 
 from __future__ import annotations
@@ -15,6 +16,9 @@ from __future__ import annotations
 from fastapi import FastAPI
 from luana_core_iam.api.routers import auth_router as iam_users
 from pydantic import BaseModel
+
+# R1 T-BE-1: Abel module (ICP + Buyer + draft-first extraction stubs)
+from src.modules.nicolify.abel.api.router import router as abel_router
 
 # redirect_slashes=False es OBLIGATORIO — arch test test_main_app_config.py lo verifica.
 # Default True → 307 POST → Next.js drops body (backend-ddd.md rule).
@@ -36,6 +40,14 @@ app.include_router(
     iam_users.router,
     prefix="/api/v1/iam/users",
     tags=["IAM - Users"],
+)
+
+# R1 T-BE-1 · CONN notarized — abel module ICP + Buyer endpoints.
+# Story: nicolify-r1-abel-icp-buyer · cap: abel/icp-buyer
+app.include_router(
+    abel_router,
+    prefix="/api/v1/abel",
+    tags=["abel"],
 )
 
 

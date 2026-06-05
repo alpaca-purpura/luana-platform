@@ -55,7 +55,7 @@ export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : process.env.E2E_BASE_URL ? 1 : 0,
+  retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : 4,
   reporter: process.env.CI
     ? [["html", { open: "never" }], ["github"]]
@@ -86,12 +86,14 @@ export default defineConfig({
       timeout: 180_000,
     },
 
-    // Smoke — specs en e2e/smoke/ y e2e/auth/ (parallel, pre-autenticado vía storageState).
-    // Depende de setup para tener playwright/.clerk/user.json fresco.
+    // Smoke — specs en e2e/smoke/, e2e/specs/smoke/, y e2e/auth/.
+    // (parallel, pre-autenticado vía storageState). Depende de setup.
+    // T-6 nicolify-r0-shell + T-E2E-1 abel-icp smoke.
     {
       name: "smoke",
       testMatch: [
         /e2e\/smoke\/.*\.smoke\.spec\.ts/,
+        /e2e\/specs\/smoke\/.*\.smoke\.spec\.ts/,
         /e2e\/auth\/.*\.spec\.ts/,
       ],
       use: {
@@ -101,12 +103,15 @@ export default defineConfig({
       dependencies: ["setup"],
     },
 
-    // Regression — nicolify-r0-shell E2E regression suite (T-6).
-    // 20 specs + boot-live-smoke = 21 spec files. 1:1 con scenarios A1-F2.
+    // Regression — E2E regression suite (T-6 nicolify-r0-shell + T-E2E-1 abel-icp).
+    // Includes e2e/regression/**/*.spec.ts + e2e/specs/regression/**/*.spec.ts.
     // Depende de setup para tener playwright/.clerk/user.json fresco.
     {
       name: "regression",
-      testMatch: /e2e\/regression\/.*\.spec\.ts/,
+      testMatch: [
+        /e2e\/regression\/.*\.spec\.ts/,
+        /e2e\/specs\/regression\/.*\.spec\.ts/,
+      ],
       use: {
         ...devices["Desktop Chrome"],
         storageState: "playwright/.clerk/user.json",

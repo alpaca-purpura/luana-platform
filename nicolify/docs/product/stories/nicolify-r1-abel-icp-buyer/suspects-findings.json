@@ -1,0 +1,81 @@
+{
+  "icps_before": 0,
+  "empty_state_visible": true,
+  "empty_state_buttons": [
+    "🎯\nDefine tu cliente ideal\n\nUn Perfil de Cliente Ideal (ICP) describe exactamente qué tipo de empresa o persona es tu cliente más valioso. Abel puede armar uno desde una URL, archivo o texto.\n\n✨\nAbel te arma un borrador\n📝\nEmpezar en blanco\n\nPuedes tener múltiples perfiles (por segmento de mercado o tipo de cliente).",
+    "✨\nAbel te arma un borrador\n📝\nEmpezar en blanco",
+    "✨\nAbel te arma un borrador",
+    "📝\nEmpezar en blanco"
+  ],
+  "empty_state_testids": [
+    "draft-first-starter",
+    "draft-first-paths",
+    "draft-first-generate-btn",
+    "draft-first-blank-btn"
+  ],
+  "generate_btn_found": 1,
+  "generate_btn_text": "✨\nAbel te arma un borrador",
+  "modal_visible_after_click": true,
+  "modal_testids_in_dom": [
+    {
+      "testid": "icp-intake-overlay",
+      "role": "dialog",
+      "text": "📥Dale material a AbelAbel leerá esto y propondrá tu ICP. Tú ratificas. Lo que p"
+    },
+    {
+      "testid": "universal-intake",
+      "role": null,
+      "text": "URLArchivoTextoConectar fuentePega una URLAbel analizará el contenido y propondr"
+    },
+    {
+      "testid": "intake-mode-tabs",
+      "role": "tablist",
+      "text": "URLArchivoTextoConectar fuente"
+    },
+    {
+      "testid": "intake-tab-url",
+      "role": "tab",
+      "text": "URL"
+    },
+    {
+      "testid": "intake-tab-archivo",
+      "role": "tab",
+      "text": "Archivo"
+    },
+    {
+      "testid": "intake-tab-texto",
+      "role": "tab",
+      "text": "Texto"
+    },
+    {
+      "testid": "intake-tab-conectar",
+      "role": "tab",
+      "text": "Conectar fuente"
+    },
+    {
+      "testid": "intake-url-input",
+      "role": null,
+      "text": ""
+    },
+    {
+      "testid": "intake-cancel-btn",
+      "role": null,
+      "text": "Cancelar"
+    },
+    {
+      "testid": "intake-submit-btn",
+      "role": null,
+      "text": "Analizar"
+    }
+  ],
+  "b_dialog_count": 1,
+  "b_error_overlay_count": 0,
+  "b_dialog_text": "Runtime TypeErrorFailed to execute 'measure' on 'Performance': '​SubsubtabLayout' cannot have a negative time stamp.Call Stack 3Show 3 ignore-listed frame(s)12",
+  "b_notfound_visible": true,
+  "b_page_errors": [
+    "TypeError: Failed to execute 'measure' on 'Performance': '​SubsubtabLayout' cannot have a negative time stamp."
+  ],
+  "b_console_errors": [],
+  "b_body_snippet": "Agencia\nCambiar tema\nLuana con historial\nConversaciones\n\nHOY\n\nRevisión pipeline de ventas semana\n\n14:32 · 8 mensajes\n\nCampaña LinkedIn Tier 1 agencias\n\n11:18 · 12 mensajes\n\nPropuesta cliente Merkado Digital\n\n09:45 · 5 mensajes\n\nAYER\n\nSalud de cuenta Innovacom Group\n\nAyer 19:02 · 4 msgs\n\nSecuencia ou",
+  "failedApi": []
+}

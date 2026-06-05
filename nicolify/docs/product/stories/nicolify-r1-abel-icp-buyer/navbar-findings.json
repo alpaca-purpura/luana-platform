@@ -1,0 +1,131 @@
+{
+  "master": {
+    "bar_present": true,
+    "bar_text": "EstrategiaAbelGrowthBrendaVentasChristianPróximamenteSaraCuentasNorvil",
+    "leaves": [
+      {
+        "testid": "ribbon-tab-abel",
+        "text": "EstrategiaAbel",
+        "selected": "true"
+      },
+      {
+        "testid": "ribbon-tab-brenda",
+        "text": "GrowthBrenda",
+        "selected": "false"
+      },
+      {
+        "testid": "ribbon-tab-christian",
+        "text": "VentasChristian",
+        "selected": "false"
+      },
+      {
+        "testid": "ribbon-tab-sara",
+        "text": "PróximamenteSara",
+        "selected": "false"
+      },
+      {
+        "testid": "ribbon-tab-norvil",
+        "text": "CuentasNorvil",
+        "selected": "false"
+      },
+      {
+        "testid": "ribbon-config-tab",
+        "text": "",
+        "selected": "false"
+      },
+      {
+        "testid": "sub-tab-icp",
+        "text": "🎯ICP & buyer",
+        "selected": "true"
+      },
+      {
+        "testid": "sub-tab-oferta",
+        "text": "📦Oferta",
+        "selected": "false"
+      },
+      {
+        "testid": "sub-tab-marca",
+        "text": "🏷️Marca",
+        "selected": "false"
+      },
+      {
+        "testid": "entity-leaf-root",
+        "text": "ICPs",
+        "selected": "true"
+      }
+    ],
+    "placeholder_present": true
+  },
+  "detail": {
+    "bar_present": true,
+    "bar_text": "EstrategiaAbelGrowthBrendaVentasChristianPróximamenteSaraCuentasNorvil",
+    "leaves": [
+      {
+        "testid": "ribbon-tab-abel",
+        "text": "EstrategiaAbel",
+        "selected": "true"
+      },
+      {
+        "testid": "ribbon-tab-brenda",
+        "text": "GrowthBrenda",
+        "selected": "false"
+      },
+      {
+        "testid": "ribbon-tab-christian",
+        "text": "VentasChristian",
+        "selected": "false"
+      },
+      {
+        "testid": "ribbon-tab-sara",
+        "text": "PróximamenteSara",
+        "selected": "false"
+      },
+      {
+        "testid": "ribbon-tab-norvil",
+        "text": "CuentasNorvil",
+        "selected": "false"
+      },
+      {
+        "testid": "ribbon-config-tab",
+        "text": "",
+        "selected": "false"
+      },
+      {
+        "testid": "sub-tab-icp",
+        "text": "🎯ICP & buyer",
+        "selected": "true"
+      },
+      {
+        "testid": "sub-tab-oferta",
+        "text": "📦Oferta",
+        "selected": "false"
+      },
+      {
+        "testid": "sub-tab-marca",
+        "text": "🏷️Marca",
+        "selected": "false"
+      },
+      {
+        "testid": "entity-leaf-root",
+        "text": "ICPs",
+        "selected": "false"
+      },
+      {
+        "testid": "entity-leaf-datos",
+        "text": "📋Datos del ICP",
+        "selected": "true"
+      },
+      {
+        "testid": "entity-leaf-f050faa2-3436-4cf6-a1ee-5db67ed7c607",
+        "text": "FFundador",
+        "selected": "false"
+      },
+      {
+        "testid": "entity-leaf-add-affordance",
+        "text": "+ buyer",
+        "selected": "false"
+      }
+    ],
+    "placeholder_present": false
+  }
+}

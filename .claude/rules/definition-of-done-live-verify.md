@@ -109,6 +109,18 @@ Documentar en `dod_evidence` que la auth se ejerció con un usuario real verific
 
 **Trampa estrella prohibida:** declarar algo verificado porque un GET dio 200 (caso lisa-marca: suite mockeaba el backend → falso verde → 3 bugs a "LIVE"). Una e2e que **mockea el backend del surface bajo prueba** NO cuenta como live-verify.
 
+### Anti-masking — 3 trampas más, todas prohibidas (cement 2026-06-04 · HB-33 · caso nicolify-r1-abel-icp-buyer)
+
+Origen: la live-verify "verde" de `nicolify-r1-abel-icp-buyer` enmascaró ~7 bugs reales (5 destapados por Chris a mano + 2 destapados al endurecer la verificación). Las trampas concretas, cementadas como prohibiciones:
+
+1. **Routing de conveniencia ≠ routing del usuario real (slug, no UUID).** Verificar con un usuario/tenant cuya URL usa el **UUID** (ej. `owner.demo` sin slug) OCULTA bugs que TODO usuario real con `tenant_slug` sufre (el header `X-Tenant-ID` debe ser el UUID de `publicMetadata.tenant_id`, NO el slug de la URL). **Obligatorio:** la live-verify de una superficie user-reachable se ejerce con la cuenta de cross-check `DEV_APP_CHRIS_*` (slug real, ej. `alpaca-purpura`), reproduciendo el **routing exacto** del usuario — no solo el UUID-en-URL de conveniencia.
+
+2. **Estado sembrado ≠ cold-start/empty.** Verificar solo los happy-paths **sembrados** oculta los bugs del **estado vacío / primer uso** (ej. el empty-state `DraftFirstStarter`, el create-blank del usuario nuevo). **Obligatorio:** ejercer también el **cold-start** (tenant vacío, `localStorage` limpio) — el camino que recorre un usuario que recién entra. (Extiende `e2e-seeded-state-masks-cold-start`.)
+
+3. **Componente construido ≠ componente enchufado (orphan-mount).** Que un componente EXISTA + tenga tests unitarios NO significa que esté **montado/cableado** en la página. Un handler que setea un flag de store que **nadie lee** = flujo muerto (caso abel: `<UniversalIntake>` existía, `intakeOverlayOpen` se prendía, pero ningún consumidor lo renderizaba → la CTA "Abel te arma un borrador" no abría nada). **Obligatorio:** la live-verify **ejerce el clic real del usuario** sobre el affordance y confirma el **efecto visible** (el modal abre, la fila aparece) — NO basta con un test de API directo ni con asserts unitarios del componente aislado. Esto es la **O de CONN** (`anti-orphan-integration.md`) verificada en vivo.
+
+**Regla operativa derivada:** para cada superficie user-reachable, la evidencia `dod_evidence` debe cubrir, como mínimo: (a) la acción ejercida vía el **affordance UI real** (clic, no solo API), (b) con la **cuenta cross-check de Chris** (routing slug), (c) desde el **estado cold/vacío** cuando aplique. Si los tres no están, la verificación está incompleta → NO `done`. Un sub-agent builder que **debilita un assert** ("el test pasa si el shell no crashea") o **desactiva el gate anti-burbuja** (`failOnRuntimeError:false`) sin reemplazarlo por un assert específico y justificado = **masking → CHANGES_REQUESTED automático**; el revisor re-verifica en vivo.
+
 ## DoD endurecida (cement 2026-06-01) — verificación por naturaleza + anti-burbuja + demo manual
 
 > **Origen:** Chris detectó el patrón recurrente *"digo listo, entrás y hay una burbuja de error de Next"*. **Causa raíz:** `GET 200` mide SOLO el servidor; la burbuja vive en el **cliente DESPUÉS de la hidratación** (60-80% de la experiencia). Research 2026 (Checkly, alexop.dev, Fowler, Cucumber/Example-Mapping, Katalon) → este modelo. Decisiones ratificadas por Chris 2026-06-01: demo manual para toda story user-reachable · verificación técnica avanzada opt-in por naturaleza · fixture anti-burbuja implementado.

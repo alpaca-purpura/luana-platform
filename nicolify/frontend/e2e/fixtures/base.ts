@@ -67,6 +67,24 @@ const HYDRATION_ERROR_PATTERNS: RegExp[] = [
 export type RuntimeErrorFixtures = {
   /** Apagar el gate para tests que ejercen un error a propósito. Default true. */
   failOnRuntimeError: boolean;
+  /**
+   * Opt-in TIGHT allowlist para pageErrors (excepciones JS no atrapadas) de
+   * ORIGEN FRAMEWORK verificado — NUNCA para errores de app. Default [].
+   *
+   * El gate sigue 100% estricto en todos los specs (default vacío). Un spec
+   * solo puede permitir un pageError específico si demuestra que es del
+   * framework (no de nuestro código) y dev-only. Cada entrada exige
+   * justificación verbatim en el `test.use({...})` del spec.
+   *
+   * Caso fundacional (2026-06-04): Next 16 en `next dev` emite
+   * `TypeError: Failed to execute 'measure' on 'Performance': 'SubsubtabLayout'
+   * cannot have a negative time stamp` al hacer `notFound()` desde un layout
+   * async. Verificado framework-origin: (a) cero `performance.measure` en src/,
+   * (b) la ruta compila, (c) navegaciones válidas limpias, (d) stack = frames
+   * ignore-listed (Next interno). Ausente en `next build`+`next start`. NO es
+   * un bug de app. SSoT: docs/learnings/2026-06-04-next16-notfound-async-layout-perf-measure.md
+   */
+  allowedPageErrors: RegExp[];
 };
 
 export type RuntimeErrorCollections = {
@@ -150,10 +168,17 @@ export async function expectNoNextErrorOverlay(page: Page): Promise<void> {
 // ---------------------------------------------------------------------------
 // Aserta que ninguna colección tiene errores. Llamar al final del test (teardown).
 // ---------------------------------------------------------------------------
-export function assertNoRuntimeErrors(c: RuntimeErrorCollections): void {
+export function assertNoRuntimeErrors(
+  c: RuntimeErrorCollections,
+  allowedPageErrors: RegExp[] = [],
+): void {
+  // Filtrar SOLO pageErrors de origen framework verificado (opt-in tight).
+  const realPageErrors = c.pageErrors.filter(
+    (e) => !allowedPageErrors.some((re) => re.test(e)),
+  );
   expect(
-    c.pageErrors,
-    `Excepciones JS no atrapadas (la burbuja de Next): ${c.pageErrors.join(" | ")}`,
+    realPageErrors,
+    `Excepciones JS no atrapadas (la burbuja de Next): ${realPageErrors.join(" | ")}`,
   ).toEqual([]);
   expect(
     c.hydrationErrors,
@@ -178,8 +203,9 @@ export function assertNoRuntimeErrors(c: RuntimeErrorCollections): void {
 // ---------------------------------------------------------------------------
 export const test = authBase.extend<RuntimeErrorFixtures>({
   failOnRuntimeError: [true, { option: true }],
+  allowedPageErrors: [[], { option: true }],
 
-  page: async ({ page, failOnRuntimeError }, use) => {
+  page: async ({ page, failOnRuntimeError, allowedPageErrors }, use) => {
     // Adjuntar colectores ANTES de que el test navegue a cualquier URL.
     // auth.fixture ya inyectó setupClerkTestingToken en la page.
     const collected = attachRuntimeErrorGuards(page);
@@ -189,9 +215,14 @@ export const test = authBase.extend<RuntimeErrorFixtures>({
     // Teardown: aserta vacío si el gate está activo.
     if (!failOnRuntimeError) return;
     if (!page.isClosed()) {
-      await expectNoNextErrorOverlay(page);
+      // Si el spec permite un pageError framework específico, el overlay de Next
+      // dev puede estar presente por ESE error — no por uno de app. Solo
+      // chequeamos el overlay cuando no hay allowlist de pageErrors.
+      if (allowedPageErrors.length === 0) {
+        await expectNoNextErrorOverlay(page);
+      }
     }
-    assertNoRuntimeErrors(collected);
+    assertNoRuntimeErrors(collected, allowedPageErrors);
   },
 });
 

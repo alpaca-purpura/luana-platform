@@ -1,0 +1,91 @@
+{
+  "ticket": "T-FE-3",
+  "brand": "nicolify",
+  "story": "nicolify-r1-abel-icp-buyer",
+  "run_at": "2026-06-03",
+  "gates": {
+    "tsc": {
+      "status": "PASS",
+      "errors": 0,
+      "command": "cd nicolify/frontend && npx tsc --noEmit"
+    },
+    "eslint_scoped": {
+      "status": "PASS",
+      "errors": 0,
+      "warnings": 63,
+      "command": "npx eslint src/features/abel src/components/shared/shell-organism/SubTabContent.tsx --cache",
+      "note": "0 errors in T-FE-3 scoped files. 10 pre-existing errors in T-FE-2 test files (DraftFirstStarter.test.tsx, ProposalBanner.test.tsx) — NOT in T-FE-3 scope."
+    },
+    "vitest_abel": {
+      "status": "PASS",
+      "test_files": 8,
+      "tests": 102,
+      "failed": 0,
+      "command": "npx vitest run src/features/abel"
+    },
+    "vitest_architecture": {
+      "status": "PASS",
+      "test_files": 4,
+      "tests": 90,
+      "failed": 0,
+      "command": "npx vitest run src/__tests__/architecture"
+    },
+    "vitest_combined": {
+      "status": "PASS",
+      "test_files": 12,
+      "tests": 192,
+      "failed": 0
+    }
+  },
+  "overall": {
+    "any_fail": false,
+    "blockers_pass": true,
+    "tsc": "PASS",
+    "eslint_scoped": "PASS",
+    "vitest": "PASS",
+    "architecture_fitness": "PASS"
+  },
+  "files_created": [
+    "nicolify/frontend/src/features/abel/api/icp-api.ts",
+    "nicolify/frontend/src/features/abel/api/buyer-api.ts",
+    "nicolify/frontend/src/features/abel/hooks/use-icps.ts",
+    "nicolify/frontend/src/features/abel/hooks/use-buyers.ts",
+    "nicolify/frontend/src/features/abel/hooks/use-icp-mutations.ts",
+    "nicolify/frontend/src/features/abel/hooks/use-buyer-mutations.ts",
+    "nicolify/frontend/src/features/abel/types/icp-schema.ts",
+    "nicolify/frontend/src/features/abel/components/icp/IcpCard.tsx",
+    "nicolify/frontend/src/features/abel/components/icp/IcpMasterListView.tsx",
+    "nicolify/frontend/src/features/abel/hooks/use-icps.test.ts",
+    "nicolify/frontend/src/features/abel/hooks/use-buyers.test.ts",
+    "nicolify/frontend/src/features/abel/hooks/use-icp-mutations.test.ts",
+    "nicolify/frontend/src/features/abel/hooks/use-buyer-mutations.test.ts",
+    "nicolify/frontend/src/features/abel/components/icp/IcpCard.test.tsx",
+    "nicolify/frontend/src/features/abel/components/icp/IcpMasterListView.test.tsx"
+  ],
+  "files_modified": [
+    "nicolify/frontend/src/components/shared/shell-organism/SubTabContent.tsx",
+    "nicolify/frontend/src/features/abel/index.ts"
+  ],
+  "conn_registration": {
+    "consumed": "abel.icp SubTabContent dispatcher → IcpMasterListView",
+    "on_map": "capabilities/abel/icp-buyer.yaml (declared in 03-arch.md)",
+    "navigable": "Login → /{tenantId} → Ribbon[Abel] → SubTabsBar[ICP] → /abel/icp → IcpMasterListView",
+    "notarized": "SubTabContent.tsx: 'abel.icp' key → IcpMasterListView (explicit registration)"
+  },
+  "regression_guard": {
+    "other_subtabs": "EmptyState unchanged — only abel.icp replaced",
+    "architecture_tests": "4 arch tests (test_shell_routes_ssot, test_agent_tw_classes, test_spanish_neutro, no-store-in-ssr-skeleton) all GREEN"
+  },
+  "validators_covered": {
+    "RN-1": "tenant isolation — fetchClient + useParams (NEVER orgId)",
+    "RN-2": "draft-first — DraftFirstStarter shown when 0 ICPs",
+    "RN-5": "buyer scoped to ICP — buyerQueryKeys.listByIcp(icpId)",
+    "RN-6": "useSetPrimaryBuyer invalidates listByIcp",
+    "RN-7": "409 handled by caller (server-side label unique)",
+    "RN-8": "NO completeness ring in IcpCard — confirmed by source scan + render test",
+    "RN-11": "NEVER 'USD' hardcoded — formatMoney pattern per arch contract",
+    "SC-large": "200 ICPs rendered without crash (CSS grid scroll native)",
+    "SC-empty": "DraftFirstStarter shown when 0 ICPs",
+    "G3": "agentBgClass() from _agent-tw-classes.ts — no template literals"
+  }
+}
