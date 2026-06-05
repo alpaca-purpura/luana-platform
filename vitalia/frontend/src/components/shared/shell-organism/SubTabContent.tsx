@@ -1,9 +1,11 @@
-// cap: shell-organism.shell-vitalia
-// story-origin: vitalia-fase1-s10-TBD
+// cap: crm.adrian-embudo
+// story-origin: vitalia-fase2-adrian-embudo
 /**
  * SubTabContent — dispatcher organismo.
  * F1-S10 vitalia-fase1-empty-states — T-9 (PLACEHOLDER_MAP fully populated)
  * F2-S1 vitalia-fase2-valeria-agenda — 07-merge.md W3 cleanup
+ * F3-T-3 (2026-06-03): adrian.inbox shipped → excluded from PLACEHOLDER_MAP + added to SHIPPED_STATIC_SUBTABS.
+ * T-FE-1 (2026-06-03): +adrian.recuperar placeholder (real page: T-FE-3) + RIBBON_SUBTABS count 4→5 (Adrián).
  *
  * Maps {agent}.{subtab} combos NOT shipped como static route → placeholder
  * component or EmptyState fallback. Static routes (ver SHIPPED_STATIC_SUBTABS
@@ -30,7 +32,6 @@
 import type { ComponentType } from "react";
 import type { RibbonTabSlug } from "@/lib/agent-catalog";
 import { RIBBON_SUBTABS } from "@/lib/agent-catalog";
-import { SubTabHeader } from "./SubTabHeader";
 import { EmptyState } from "./EmptyState";
 
 // ── Lisa placeholders — via public API (T-2 generic + T-3 special) ───────────────
@@ -50,10 +51,12 @@ import {
   MercadoPlaceholder,
 } from "@/features/lucas";
 
-// ── Adrián placeholders — via public API (T-2 generic + T-4 + T-6 special) ───────
+// ── Adrián placeholders — via public API (T-4 embudo + T-FE-1 special) ──────────
+// adrian.inbox EXCLUDED: shipped as static route (F3-T-3 vitalia-fase2-adrian-inbox) — see SHIPPED_STATIC_SUBTABS.
+// T-FE-1 (2026-06-03): +RecuperarPlaceholder — real page ships in T-FE-3 (recuperar V4).
 import {
-  InboxPlaceholder,
   EmbudoPlaceholder,
+  RecuperarPlaceholder,
   OutboundPlaceholder,
   PropuestasPlaceholder,
 } from "@/features/adrian";
@@ -86,6 +89,9 @@ type SubTabKey = `${RibbonTabSlug}.${string}`;
 // Architecture test verifies this map === RIBBON_SUBTABS minus SHIPPED_STATIC_SUBTABS.
 // v1.2 (2026-05-30): mateo.pacientes replaces valeria.pacientes (paradigm-map-zones T-5).
 // F2-S8 T-FE-1 (2026-05-31): lisa.staff shipped as static route → removed from PLACEHOLDER_MAP.
+// F3-T-3 (2026-06-03): adrian.inbox shipped as static route → removed from PLACEHOLDER_MAP.
+// T-FE-1 (2026-06-03): +adrian.recuperar (placeholder; real page ships in T-FE-3).
+// RIBBON_SUBTABS.adrian count: 4→5 (+recuperar). SHIPPED_STATIC_SUBTABS+adrian.inbox = net 0 change in PLACEHOLDER_MAP.adrian count: 3→4 (+recuperar, -inbox).
 // DO NOT hardcode these keys elsewhere — arch test enforces this file as SSoT.
 const PLACEHOLDER_MAP = {
   // lisa (2) — lisa.marca shipped N3-static (F2-S7 T-4), lisa.staff shipped static (F2-S8 T-FE-1)
@@ -99,9 +105,9 @@ const PLACEHOLDER_MAP = {
   "lucas.recursos": RecursosPlaceholder,
   "lucas.resultados": ResultadosPlaceholder,
   "lucas.mercado": MercadoPlaceholder,
-  // adrian (4) — T-2 generic + T-4 embudo + T-6 inbox
-  "adrian.inbox": InboxPlaceholder,
+  // adrian (4) — T-4 embudo + T-FE-1 recuperar (inbox shipped static F3-T-3 — see SHIPPED_STATIC_SUBTABS)
   "adrian.embudo": EmbudoPlaceholder,
+  "adrian.recuperar": RecuperarPlaceholder,
   "adrian.outbound": OutboundPlaceholder,
   "adrian.propuestas": PropuestasPlaceholder,
   // camila (4) — T-2 generic + T-8 voz
@@ -134,7 +140,6 @@ export function SubTabContent({ agent, subtab }: SubTabContentProps) {
 
   return (
     <div className="p-7" data-testid={`subtab-content-${agent}-${subtab}`}>
-      <SubTabHeader agent={agent} subtab={subtab} meta={subtabMeta} />
       {Placeholder ? (
         <Placeholder />
       ) : (

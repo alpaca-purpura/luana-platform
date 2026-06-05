@@ -28,9 +28,12 @@ const { mockUpdatePersonality } = vi.hoisted(() => ({
   mockUpdatePersonality: vi.fn(),
 }));
 
+const MOCK_CLERK_USER_ID = "user_2personalityAutosaveTest";
+
 vi.mock("@clerk/nextjs", () => ({
   useAuth: () => ({
     getToken: vi.fn().mockResolvedValue("mock-token-personality"),
+    userId: MOCK_CLERK_USER_ID,
     isLoaded: true,
     isSignedIn: true,
   }),
@@ -429,5 +432,67 @@ describe("usePersonalityAutosave — camelCase payload (T-3 regresión 422)", ()
     expect(payload).toHaveProperty("archetype", "caregiver");
     expect(payload).toHaveProperty("soISpeak", "Con calidez y empatía.");
     expect(payload).not.toHaveProperty("so_i_speak");
+  });
+});
+
+// ── Actor de audit real (sub-bug #2, story estabilizar-harness-e2e-lisa-marca) ─
+//
+// El hook DEBE pasar el Clerk userId real (de useAuth().userId) en opts a
+// updatePersonality — NUNCA el tenantId. El header X-User-ID se construye en la
+// api-fn (ver marca-voice-api.test.ts), pero el ORIGEN del actor es este hook.
+// Aquí verificamos que las opts llevan userId === Clerk userId y ≠ tenantId.
+//
+// @see 06-tickets.yaml T-2 deliverables (coverage_update usePersonalityAutosave.test.ts)
+// @see 04-validators SC-6 (actor real HIPAA-lite "quién")
+
+describe("usePersonalityAutosave — actor de audit real (opts.userId, no tenantId)", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    mockUpdatePersonality.mockResolvedValue(PERSONALITY_RESPONSE);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.clearAllMocks();
+  });
+
+  it("pasa opts.userId === Clerk userId real (de useAuth) a updatePersonality", async () => {
+    const { result } = renderHook(
+      () => usePersonalityAutosave({ tenantId: "t1", clinicId: "c1" }),
+      { wrapper: makeWrapper() },
+    );
+
+    act(() => {
+      result.current.scheduleAutosave(PERSONALITY_VALUES);
+    });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(600);
+    });
+
+    expect(mockUpdatePersonality).toHaveBeenCalledTimes(1);
+    const [opts] = mockUpdatePersonality.mock.calls[0] as [
+      { userId?: string | null; tenantId: string },
+    ];
+    expect(opts.userId).toBe(MOCK_CLERK_USER_ID);
+  });
+
+  it("NUNCA pasa el tenantId como userId (el bug sub-bug #2)", async () => {
+    const { result } = renderHook(
+      () => usePersonalityAutosave({ tenantId: "t1", clinicId: "c1" }),
+      { wrapper: makeWrapper() },
+    );
+
+    act(() => {
+      result.current.scheduleAutosave(PERSONALITY_VALUES);
+    });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(600);
+    });
+
+    const [opts] = mockUpdatePersonality.mock.calls[0] as [
+      { userId?: string | null; tenantId: string },
+    ];
+    expect(opts.userId).not.toBe(opts.tenantId);
+    expect(opts.userId).not.toBe("t1");
   });
 });

@@ -57,7 +57,7 @@ function buildConversationsUrl(filters: ConversationsFilters): string {
   if (filters.pageSize != null)
     params.set("page_size", String(filters.pageSize));
   const qs = params.toString();
-  return `/api/v1/vitalia/crm/conversations${qs ? `?${qs}` : ""}`;
+  return `/api/v1/crm/conversations${qs ? `?${qs}` : ""}`;
 }
 
 /**
@@ -75,13 +75,24 @@ export function useConversations(filters: ConversationsFilters = {}) {
     queryFn: async () => {
       const token = await getToken();
       if (!token || !tenantId) throw new Error("Not authenticated");
-      return fetchClient<ConversationsResponse>(
-        buildConversationsUrl(filters),
-        {
-          token,
-          tenantId, clinicId,
-        },
-      );
+      // BE (crm ConversationListResponse) returns { items, total, limit, offset }.
+      // Adapt to the FE ConversationsResponse shape { conversations, total, page, page_size }.
+      const res = await fetchClient<{
+        items: Conversation[];
+        total: number;
+        limit: number;
+        offset: number;
+      }>(buildConversationsUrl(filters), {
+        token,
+        tenantId,
+        clinicId,
+      });
+      return {
+        conversations: res.items,
+        total: res.total,
+        page: res.limit > 0 ? Math.floor(res.offset / res.limit) + 1 : 1,
+        page_size: res.limit,
+      } satisfies ConversationsResponse;
     },
     enabled: isLoaded && isSignedIn === true,
     staleTime: 15_000,

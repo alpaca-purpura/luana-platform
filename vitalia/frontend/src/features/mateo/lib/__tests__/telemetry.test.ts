@@ -1,26 +1,35 @@
 /**
- * telemetry.test.ts — Tests para vitalia/features/valeria/lib/telemetry.ts
+ * telemetry.test.ts — Tests para vitalia/features/mateo/lib/telemetry.ts
  *
- * TDD RED→GREEN: tests escritos ANTES de la implementación (tdd-mandatory.md).
- * Cubre: TrackEventType enum, telemetryPayloadSchema, trackEvent PII-safe,
- *        error handling (non-blocking), tenant isolation (X-Tenant-ID).
+ * TDD RED→GREEN: tests actualizados al contrato tenant-aware (fetchClient).
+ * Cubre: TrackEventType enum, trackEvent PII-safe, tenant headers (Authorization +
+ *        X-Tenant-ID), skip-sin-auth, error handling (non-blocking).
+ *
+ * Contrato nuevo (vitalia-fase2-adrian-inbox · telemetry-404 fix):
+ *   trackEvent(eventType, payload, auth) usa `fetchClient` (NO `fetch` crudo) →
+ *   inyecta Authorization + X-Tenant-ID + X-Clinic-ID. Sin token/tenant → skip (no POST).
  *
  * HIPAA-lite: verifica que PHI (patient.name, DNI) NUNCA aparezca en payload.
- * PII-safe: payload solo contiene IDs hash + buckets (no datos identificables).
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { TrackEventType, trackEvent } from "../telemetry";
+import { TrackEventType, trackEvent, type TelemetryAuth } from "../telemetry";
 
-// ── Mock global fetch ──────────────────────────────────────────────────────────
+// ── Mock global fetch (fetchClient lo usa por debajo) ───────────────────────────
 const mockFetch = vi.fn();
+
+const AUTH: TelemetryAuth = {
+  token: "test-jwt-token",
+  tenantId: "tenant-123",
+  clinicId: "clinic-456",
+};
 
 beforeEach(() => {
   vi.stubGlobal("fetch", mockFetch);
   mockFetch.mockResolvedValue({
     ok: true,
-    status: 200,
-    json: async () => ({ received: true }),
+    status: 202,
+    json: async () => ({ accepted: true }),
   } as Response);
 });
 
@@ -52,10 +61,7 @@ describe("TrackEventType enum", () => {
 
 describe("trackEvent — happy path", () => {
   it("debe hacer POST a /api/telemetry/growth-studio-event", async () => {
-    await trackEvent(TrackEventType.AGENDA_VIEWED, {
-      tenant_id: "tenant-123",
-      view_mode: "semana",
-    });
+    await trackEvent(TrackEventType.AGENDA_VIEWED, { view_mode: "semana" }, AUTH);
 
     expect(mockFetch).toHaveBeenCalledOnce();
     const [url, init] = mockFetch.mock.calls[0] as [string, RequestInit];
@@ -63,10 +69,19 @@ describe("trackEvent — happy path", () => {
     expect(init.method).toBe("POST");
   });
 
+  it("debe inyectar Authorization + X-Tenant-ID (tenant-aware vía fetchClient)", async () => {
+    await trackEvent(TrackEventType.AGENDA_VIEWED, { view_mode: "semana" }, AUTH);
+
+    const [, init] = mockFetch.mock.calls[0] as [string, RequestInit];
+    const headers = init.headers as Record<string, string>;
+    expect(headers["Authorization"]).toBe("Bearer test-jwt-token");
+    expect(headers["X-Tenant-ID"]).toBe("tenant-123");
+    expect(headers["X-Clinic-ID"]).toBe("clinic-456");
+    expect(headers["Content-Type"]).toBe("application/json");
+  });
+
   it("debe incluir event_type en el cuerpo JSON", async () => {
-    await trackEvent(TrackEventType.SLOT_DRAWER_OPENED, {
-      appointment_id_hash: "abc123",
-    });
+    await trackEvent(TrackEventType.SLOT_DRAWER_OPENED, { appointment_id_hash: "abc123" }, AUTH);
 
     const [, init] = mockFetch.mock.calls[0] as [string, RequestInit];
     const body = JSON.parse(init.body as string);
@@ -74,28 +89,17 @@ describe("trackEvent — happy path", () => {
   });
 
   it("debe incluir timestamp ISO 8601 en el cuerpo", async () => {
-    await trackEvent(TrackEventType.CHARGE_INITIATED, {
-      idempotency_key: "idem-uuid-123",
-    });
+    await trackEvent(TrackEventType.CHARGE_INITIATED, { idempotency_key: "idem-uuid-123" }, AUTH);
 
     const [, init] = mockFetch.mock.calls[0] as [string, RequestInit];
     const body = JSON.parse(init.body as string);
     expect(body.occurred_at).toBeDefined();
-    // Verifica formato ISO 8601 básico
     expect(new Date(body.occurred_at).toString()).not.toBe("Invalid Date");
-  });
-
-  it("debe incluir Content-Type application/json", async () => {
-    await trackEvent(TrackEventType.CHARGE_SUCCEEDED, {});
-
-    const [, init] = mockFetch.mock.calls[0] as [string, RequestInit];
-    const headers = init.headers as Record<string, string>;
-    expect(headers["Content-Type"]).toBe("application/json");
   });
 
   it("debe pasar el payload al cuerpo JSON", async () => {
     const payload = { appointment_id_hash: "hash-abc", payment_bucket: "saldo" };
-    await trackEvent(TrackEventType.CHARGE_SUCCEEDED, payload);
+    await trackEvent(TrackEventType.CHARGE_SUCCEEDED, payload, AUTH);
 
     const [, init] = mockFetch.mock.calls[0] as [string, RequestInit];
     const body = JSON.parse(init.body as string);
@@ -103,28 +107,52 @@ describe("trackEvent — happy path", () => {
   });
 });
 
-// ── 3. PII safety — HIPAA-lite ─────────────────────────────────────────────────
+// ── 3. Skip sin auth (fire-forget — evita 401/404) ──────────────────────────────
+
+describe("trackEvent — skip sin auth", () => {
+  it("NO debe hacer POST si falta el token", async () => {
+    await trackEvent(TrackEventType.AGENDA_VIEWED, { view_mode: "semana" }, {
+      token: null,
+      tenantId: "tenant-123",
+    });
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  it("NO debe hacer POST si falta el tenantId", async () => {
+    await trackEvent(TrackEventType.AGENDA_VIEWED, { view_mode: "semana" }, {
+      token: "tk",
+      tenantId: null,
+    });
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  it("NO debe hacer POST si falta el clinicId (endpoint clinic-scoped → evita 422)", async () => {
+    await trackEvent(TrackEventType.AGENDA_VIEWED, { view_mode: "semana" }, {
+      token: "tk",
+      tenantId: "tenant-123",
+      clinicId: null,
+    });
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+});
+
+// ── 4. PII safety — HIPAA-lite ─────────────────────────────────────────────────
 
 describe("trackEvent — PII safety (HIPAA-lite)", () => {
   it("NO debe incluir patient_name en el payload enviado", async () => {
-    // Simula un error del desarrollador: pasar PHI en el payload genérico
-    // El tipo Record<string, unknown> acepta cualquier key — el sanitizer debe strips PHI
     const unsafePayload: Record<string, unknown> = {
       appointment_id_hash: "hash-123",
       patient_name: "María González",
     };
 
-    await trackEvent(TrackEventType.SLOT_DRAWER_OPENED, unsafePayload);
+    await trackEvent(TrackEventType.SLOT_DRAWER_OPENED, unsafePayload, AUTH);
 
     const [, init] = mockFetch.mock.calls[0] as [string, RequestInit];
     const body = JSON.parse(init.body as string);
     const bodyStr = JSON.stringify(body);
 
-    // Verifica que el nombre real no aparece en el payload enviado
     expect(bodyStr).not.toContain("María González");
-    // El campo PHI debe estar eliminado del payload
     expect(body.payload).not.toHaveProperty("patient_name");
-    // El campo seguro debe seguir presente
     expect(body.payload).toHaveProperty("appointment_id_hash", "hash-123");
   });
 
@@ -134,7 +162,7 @@ describe("trackEvent — PII safety (HIPAA-lite)", () => {
       patient_dni: "12345678",
     };
 
-    await trackEvent(TrackEventType.INVOICE_EMITTED, unsafePayload);
+    await trackEvent(TrackEventType.INVOICE_EMITTED, unsafePayload, AUTH);
 
     const [, init] = mockFetch.mock.calls[0] as [string, RequestInit];
     const body = JSON.parse(init.body as string);
@@ -150,7 +178,7 @@ describe("trackEvent — PII safety (HIPAA-lite)", () => {
       diagnosis: "Hipertensión arterial grado II",
     };
 
-    await trackEvent(TrackEventType.SLOT_DRAWER_OPENED, unsafePayload);
+    await trackEvent(TrackEventType.SLOT_DRAWER_OPENED, unsafePayload, AUTH);
 
     const [, init] = mockFetch.mock.calls[0] as [string, RequestInit];
     const body = JSON.parse(init.body as string);
@@ -160,15 +188,14 @@ describe("trackEvent — PII safety (HIPAA-lite)", () => {
   });
 });
 
-// ── 4. Error handling — non-blocking ──────────────────────────────────────────
+// ── 5. Error handling — non-blocking ──────────────────────────────────────────
 
 describe("trackEvent — error handling (non-blocking)", () => {
   it("NO debe lanzar error si fetch falla (fire-and-forget)", async () => {
     mockFetch.mockRejectedValueOnce(new Error("Network error"));
 
-    // No debe lanzar — telemetry nunca bloquea el flujo principal
     await expect(
-      trackEvent(TrackEventType.REMINDER_SENT, { appointment_id_hash: "hash-789" })
+      trackEvent(TrackEventType.REMINDER_SENT, { appointment_id_hash: "hash-789" }, AUTH),
     ).resolves.not.toThrow();
   });
 
@@ -177,10 +204,11 @@ describe("trackEvent — error handling (non-blocking)", () => {
       ok: false,
       status: 422,
       statusText: "Unprocessable Entity",
+      json: async () => ({}),
     } as Response);
 
     await expect(
-      trackEvent(TrackEventType.CHARGE_FAILED, { error_bucket: "payment_declined" })
+      trackEvent(TrackEventType.CHARGE_FAILED, { error_bucket: "payment_declined" }, AUTH),
     ).resolves.not.toThrow();
   });
 
@@ -189,19 +217,20 @@ describe("trackEvent — error handling (non-blocking)", () => {
       ok: false,
       status: 500,
       statusText: "Internal Server Error",
+      json: async () => ({}),
     } as Response);
 
     await expect(
-      trackEvent(TrackEventType.AGENDA_VIEWED, { view_mode: "mes" })
+      trackEvent(TrackEventType.AGENDA_VIEWED, { view_mode: "mes" }, AUTH),
     ).resolves.not.toThrow();
   });
 });
 
-// ── 5. trackEvent returns void (fire-and-forget) ───────────────────────────────
+// ── 6. trackEvent returns void (fire-and-forget) ───────────────────────────────
 
 describe("trackEvent — return type", () => {
   it("debe retornar Promise<void>", async () => {
-    const result = await trackEvent(TrackEventType.AGENDA_VIEWED, {});
+    const result = await trackEvent(TrackEventType.AGENDA_VIEWED, {}, AUTH);
     expect(result).toBeUndefined();
   });
 });

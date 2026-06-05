@@ -28,6 +28,7 @@
  */
 
 import { useEffect } from "react";
+import { useAuth } from "@clerk/nextjs";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/cn";
@@ -82,6 +83,7 @@ export function ValeriaAgendaView({
   const { freshnessLabel, updateFreshness } = useFreshness();
   const { currency, timezone, locale } = useTenantLocale();
   const clinicId = useClinicId();
+  const { getToken } = useAuth();
 
   // Resolve effective view/date (URL overrides initial props after mount)
   const effectiveView = view ?? initialView;
@@ -105,12 +107,17 @@ export function ValeriaAgendaView({
 
   // Track AGENDA_VIEWED on mount (fire-and-forget, PHI-safe).
   // Intentionally empty deps — run once on mount only.
+  // tenant/clinic ride as headers via fetchClient (tenant_id no longer in payload).
   useEffect(
     () => {
-      void trackEvent(TrackEventType.AGENDA_VIEWED, {
-        tenant_id: tenantId,
-        view_mode: effectiveView,
-      });
+      void (async () => {
+        const token = await getToken();
+        void trackEvent(
+          TrackEventType.AGENDA_VIEWED,
+          { view_mode: effectiveView },
+          { token, tenantId, clinicId },
+        );
+      })();
     },
     // biome-ignore lint: intentional empty deps for mount-once telemetry
     [],

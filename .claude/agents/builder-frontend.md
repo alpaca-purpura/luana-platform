@@ -181,7 +181,11 @@ ls ${WS}/${BRAND}/frontend/src/components/ui/   # existing Shadcn components —
 ls ${WS}/${BRAND}/frontend/src/components/shared/   # existing molecules — reuse before building
 find ${WS}/${BRAND}/frontend/src/app/ -name "page.tsx" | head -10
 ```
-5. **If `06-tickets.yaml` declares `cap_target`** → read `{brand}/docs/product/capabilities/{module}/{cap}.yaml`: `dev_preview.main_component` (qué componente ya existe) + `scenarios[]`. Navegás por punteros.
+5. **Cap-as-locator (navegás por punteros · HB-43).** Leé `cap_target` + `cap_change_type` de **`checkpoint.md`** (ahí viven — NO en `06-tickets.yaml`). Si `cap_target` no-null (cualquier `cap_change_type` — NO gatees por `new`: una cap `new` parcial multi-sesión ya tiene `main_component`; vacía genuina → UNRESOLVED → caés a grep, inofensivo), resolvé con el helper determinístico (footgun slug→path: `lisa.doctores` functional_area no mapea a dir `lisa/`):
+   ```bash
+   ${WS}/.venv/bin/python ${WS}/scripts/resolve_cap.py {brand} "{cap_target}" --extract
+   ```
+   Imprime `dev_preview.main_component` (componente ya existente) + route + `scenarios[]` — reutilizás el componente real en vez de recrearlo. ÁREA → N caps. Si `CONTEXT-BRIEF.md` trae § Cap pointers, usá eso (context-builder ya lo corrió).
 </step>
 
 <step name="technical_design">

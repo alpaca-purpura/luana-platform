@@ -69,6 +69,7 @@ import {
 } from "react-resizable-panels";
 import { cn } from "@/lib/utils";
 import { useShellStore } from "@/stores/shell-store";
+import { useTenantStore } from "@/stores/tenant-store";
 import { useStoreHydration } from "@luana/hooks/use-store-hydration";
 import { useViewportGuard } from "./useViewportGuard";
 import { TopBarGlobal } from "./TopBarGlobal";
@@ -92,11 +93,19 @@ export function ShellOrganismLayoutClient({
   children,
   tenantId: _tenantId,
 }: ShellOrganismLayoutClientProps) {
-  // D3 (ADR-vitalia-006): Trigger useShellStore rehydration exactly ONCE client-side,
+  // D3 (ADR-vitalia-006): Trigger store rehydration exactly ONCE client-side,
   // inside this ssr:false chunk. This is the ONLY place rehydrate() is called for the
-  // shell store. StrictMode-safe via ref guard in useStoreHydration.
+  // shell + tenant stores. StrictMode-safe via ref guard in useStoreHydration.
   // ── ALL hooks called UNCONDITIONALLY at the top before any branch/early-return (D3) ──
   useStoreHydration(useShellStore);
+  // Bug #2 fix (vitalia-bugfix-shell-nav-scroll-errors T-4): el tenant-store usa
+  // createSsrSafePersistedStore con skipHydration:true; su doc pide rehidratarlo
+  // desde el primer componente cliente que lo consume — y nadie lo hacía. Sin esto,
+  // el activeTenant persistido nunca se restaura y el TenantSwitcher dependía 100%
+  // del auto-pick de useTenants, dejando una ventana con activeTenant=null →
+  // selector invisible. Llamado acá (junto a useShellStore, ANTES de cualquier
+  // branch — invariante D3, hook-count estable).
+  useStoreHydration(useTenantStore);
 
   const shellMode = useShellStore((s) => s.shellMode);
   const valeriaState = useShellStore((s) => s.valeriaState);

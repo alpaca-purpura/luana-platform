@@ -106,6 +106,11 @@ Agent({
            5. {brand}/docs/product/releases/{release-id}.yaml
            6. {brand}/docs/product/modules/{m}.md
            7. Stories archivadas relacionadas (predecesores) en {brand}/docs/archive/
+           8. CAP-AS-LOCATOR (HB-43) — si checkpoint.md tiene cap_target no-null
+              (cualquier cap_change_type): corré
+              `${WS}/.venv/bin/python ${WS}/scripts/resolve_cap.py {brand} "{cap_target}" --extract`
+              → dev_preview.main_component/code_ref/scenarios del código YA existente.
+              Diseñá EXTEND sobre eso, no re-descubras por grep. (cap nueva vacía → UNRESOLVED → caés a grep)
 
            LOAD SKILLS contextualmente según surface:
            - BE: backend-expert + FastAPI canonical patterns + pytest async testing patterns
@@ -924,6 +929,39 @@ Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
 
 ## Live verification contra dev-app (Critical Rule #37)
 
-**Uso (recomendado):** si necesitás confirmar comportamiento actual antes de diseñar, inspeccioná en vivo contra dev-app en vez de asumir. Declará `playwright_visual_scope` en `04-validators.yaml` apuntando a dev-app cuando aplique.
+**Uso (previo al diseño, opcional):** si necesitás confirmar comportamiento actual antes de diseñar, inspeccioná en vivo contra dev-app en vez de asumir.
 
 Levantar: `make dev-app-vitalia` → `https://dev-app.vitalialat.com` (login `dr.demo@vitalialat.com`, creds en `vitalia/.env.dev`). Herramientas: **Chrome DevTools MCP** (live) + **Playwright autenticado** (golden). Evidencia = acción real ejercida + efecto observado; NUNCA GET 200 ni e2e mockeado. SSoT: `.claude/rules/definition-of-done-live-verify.md`.
+
+### Live-verify gate — instrucción DURA al dev-team (Critical Rule #37)
+
+**ESTO NO ES OPCIONAL** para stories con `verification_nature ∈ {funcional, ambas}` o `demo_required: true`. El architect MUST declarar y el dev-team MUST cumplir antes de cerrar `developing → developed`.
+
+**Obligaciones del architect al producir el ready package:**
+
+1. **En `06-tickets.yaml`** — todo ticket FE o endpoint-con-consumer-FE lleva en `assignment.must_load_skills`:
+   - `chrome-devtools-verify` (verificación live conversacional SIEMPRE)
+   - `playwright-expert` si hay golden visual o flujo crítico persistido
+   El exit-criterion del ticket DEBE decir: **"live-verify en dev-app + `dod_evidence` (≥1 write real + leer logs BE + confirmar efecto en DB) + `demo-script.md`"** — NUNCA "tests verdes" ni "GET 200".
+
+2. **En `04-validators.yaml`** — declarar explícitamente:
+   - `playwright_visual_scope` (sub-keys: `story_scope_routes`, `story_scope_components`, `forbidden_visual_changes`, `non_egoismo_clause`) — delimita qué rutas/componentes puede tocar el builder; fuera de scope → STOP y escalar.
+   - `dev_app_verified: { required: true, evidence: "" }` — el campo no puede quedar vacío de intención; dev-team lo completa con evidencia real al cerrar el ticket.
+
+3. **Sin estas declaraciones**, el auditor auto-FAILea (`LIVE_VERIFY_MISSING`) y devuelve `CHANGES_REQUESTED` — no hay apelación para stories funcionales.
+
+**Árbol rápido (para saber cuándo aplica):**
+```
+¿La story toca frontend/ O endpoint que la UI llama?
+  SÍ → verification_nature: functional | both
+       demo_required: true
+       chrome-devtools-verify en must_load_skills
+       playwright_visual_scope en 04-validators.yaml
+       dev_app_verified.required: true
+  NO (solo tests/migrations/config/core sin contrato UI) →
+       verification_nature: technical
+       demo_required: false + demo_skip_reason
+       live_verify: skippable con dod_live_verified_skip_reason
+```
+
+Ref completa: `.claude/rules/definition-of-done-live-verify.md` §1-§6 + ADR-vitalia-008.

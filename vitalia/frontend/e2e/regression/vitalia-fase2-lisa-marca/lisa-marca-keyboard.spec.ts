@@ -21,9 +21,9 @@
  * @see 04-validators.yaml § test_construction_plan step 18
  */
 
-import { expect } from "@playwright/test";
 import {
   test,
+  expect,
   gotoMarca,
   LISA_MARCA_FIXTURE,
 } from "./fixtures/lisa-marca.fixture";
@@ -84,9 +84,10 @@ test.describe("SC-10 — Navegación por teclado: accesibilidad WCAG 2.1 AA", ()
 
     await marcaPagePom.waitForLoaded();
 
-    // Focus the SubSubTabsBar
+    // Focus el primer tab REAL (un <button> dentro del <nav>). El <nav> no es
+    // focuseable per se; el SubSubTabsBar es navegable porque sus tabs son botones.
     const subsubtabsBar = marcaPagePom.subsubtabsBar;
-    await subsubtabsBar.focus();
+    await marcaPagePom.tabIdentidad.focus();
 
     // Verify the bar has focus or contains focused element
     const isFocused = await subsubtabsBar.evaluate((el) => {
@@ -108,7 +109,7 @@ test.describe("SC-10 — Navegación por teclado: accesibilidad WCAG 2.1 AA", ()
 
     await marcaPagePom.waitForLoaded();
 
-    const dropZone = marcaPage.locator('[data-testid="logo-drop-zone"]');
+    const dropZone = marcaPage.getByRole("button", { name: /logo de la cl.nica/i });
     const isVisible = await dropZone.isVisible();
 
     if (isVisible) {
@@ -171,9 +172,8 @@ test.describe("SC-10 — Navegación por teclado: accesibilidad WCAG 2.1 AA", ()
     await marcaPage.keyboard.press("Enter");
     await marcaPage.waitForLoadState("domcontentloaded");
 
-    // Active tab should now be voz-y-tono
-    const activeTab = await marcaPagePom.getActiveSubsubtab();
-    expect(activeTab).toBe("voz-y-tono");
+    // Web-first: active tab is now voz-y-tono.
+    await marcaPagePom.waitForActiveSubsubtab("voz-y-tono");
   });
 
   test("los selectores de arquetipo son accesibles como radiogroup", async ({
@@ -214,14 +214,12 @@ test.describe("SC-10 — Navegación por teclado: accesibilidad WCAG 2.1 AA", ()
 
     // Focus the brand name input
     const nameInput = marcaPage.locator(
-      '[data-testid="identity-brand-name-input"]',
+      '#brand-name-input',
     );
     await nameInput.focus();
 
-    // Verify it has focus (browser focus state)
-    const isFocused = await nameInput.evaluate(
-      (el) => el === document.activeElement,
-    );
-    expect(isFocused).toBe(true);
+    // Web-first: el input recibe foco (pollea — robusto ante re-renders del dev
+    // server durante la suite larga, a diferencia del one-shot activeElement).
+    await expect(nameInput).toBeFocused({ timeout: 5_000 });
   });
 });

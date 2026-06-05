@@ -192,9 +192,10 @@ export function VozTonoView({ tenantId, clinicId, className }: VozTonoViewProps)
       data-testid="voz-tono-section-root"
       className={cn("flex flex-col gap-6 p-6", className)}
     >
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-foreground">Voz y tono</h2>
+      {/* Header — Bug #3 fix (vitalia-bugfix-shell-nav-scroll-errors T-6): se
+          removió el h2 "Voz y tono" (eco del SubSubTab activo). Se conserva el
+          AutosaveBadge, re-alineado a la derecha. */}
+      <div className="flex items-center justify-end">
         <AutosaveBadge status={autosaveStatus} savedAt={savedAt} />
       </div>
 

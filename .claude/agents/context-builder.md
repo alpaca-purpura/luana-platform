@@ -114,6 +114,9 @@ _pending_
 ## 4. Module current-state extracts
 _pending_
 
+## 4.5 Cap pointers (cap-as-locator · HB-43)
+_pending_
+
 ## 5. Relevant rules
 _pending_
 
@@ -209,6 +212,20 @@ Append to audit log: `auto_inferred_keywords: <list>` + `final_keyword_set: <lis
 - `${WS}/docs/core-modules/{module}.md` if exists — engine package public contract
 
 After reads → Edit `CONTEXT-BRIEF.md` § 4 with all module extracts.
+</step>
+
+<step name="step_3b_resolve_cap_pointers">
+**Cap-as-locator (HB-43) — para `<phase>` = architect o builder.** Una story que TOCA código existente declara dónde vive ese código en su capability YAML (`dev_preview.main_component`, `code_ref`, `scenarios[]`). Inyectarlo al brief evita que architect/builders re-descubran por grep fan-out.
+
+1. Leé `cap_target` + `cap_change_type` de `<pr_folder>/checkpoint.md` (ahí viven — NO en `06-tickets.yaml`).
+2. **Gate:** resolvé si `cap_target` no-null (cualquier `cap_change_type`). NO gatees por `new`: una cap `new` parcialmente construida multi-sesión YA tiene `main_component` poblado; si está genuinamente vacía el resolver devuelve UNRESOLVED (paso 4) y no pasa nada.
+3. Resolvé con el helper determinístico (mata el footgun slug→path; maneja path-style `crm/adrian-embudo`, functional_area `lisa.doctores`, y ÁREA multi-cap `adrian.inbox`):
+   ```bash
+   ${WS}/.venv/bin/python ${WS}/scripts/resolve_cap.py ${BRAND} "{cap_target}" --extract
+   ```
+4. Pegá la salida (compacta: component/endpoints/code_ref/scenarios existentes) en `CONTEXT-BRIEF.md § 4.5`. Si resuelve a UNRESOLVED (exit 2), anotá "§4.5: cap_target '{x}' no resolvió — verificar slug" (NO bloquees el brief por esto).
+
+Append a audit log: `cap_resolve: {cap_target} -> [paths]`.
 </step>
 
 <step name="step_4_read_relevant_rules">

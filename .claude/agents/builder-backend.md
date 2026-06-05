@@ -202,7 +202,11 @@ Tree dirty with someone else's WIP → STOP, report, do NOT stage ajenos. M8 rul
 2. **Verify scope**: confirm CONTRACT touches business modules only. If `## 8. Agentic Surfaces` is non-empty AND touches copilot/sales_agent → escalate PM (cross-scope PR; spawn builder-agentic in parallel).
 3. List domains touched (within your scope). For each, invoke the matching domain skill (Step 3 routing).
 4. Read existing module code for naming/structure precedent before writing new files.
-5. **If `06-tickets.yaml` declares `cap_target`** → read `{brand}/docs/product/capabilities/{module}/{cap}.yaml`: `dev_preview` (qué ya existe: endpoints/component) + `scenarios[]` (comportamiento a preservar). Navegás por punteros, no a ciegas.
+5. **Cap-as-locator (navegás por punteros, no a ciegas · HB-43).** Leé `cap_target` + `cap_change_type` de **`checkpoint.md`** (ahí viven — NO en `06-tickets.yaml`). Si `cap_target` no-null (cualquier `cap_change_type` — NO gatees por `new`: una cap `new` parcialmente construida multi-sesión YA tiene `main_component` poblado; si está genuinamente vacía el resolver devuelve UNRESOLVED y caés a grep, inofensivo), resolvé la cap con el helper determinístico (mata el footgun slug→path: `crm/adrian-embudo` path-style · `lisa.doctores` functional_area · `adrian.inbox` área multi-cap):
+   ```bash
+   ${WS}/.venv/bin/python ${WS}/scripts/resolve_cap.py {brand} "{cap_target}" --extract
+   ```
+   Te imprime `dev_preview` (component/endpoints ya existentes) + `code_ref` + `scenarios[]` a preservar. Si `cap_target` es un ÁREA, resuelve a N caps → navegás los punteros de todas. Si `CONTEXT-BRIEF.md` ya trae § Cap pointers, usá eso (context-builder ya corrió el resolver).
 </step>
 
 <step name="technical_design">

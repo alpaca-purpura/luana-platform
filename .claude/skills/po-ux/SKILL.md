@@ -155,6 +155,23 @@ Si esta story es hot-fix (originada en handoff doc/incident/regression), aplica 
 
 Crear `{brand}/docs/product/stories/{story-id}/01-spec.md` con TODAS estas secciones (no separar en design.md):
 
+> **★ Flujo de 2 rondas / 2 firmas (cement 2026-06-03 · UI deep refinement).** El `01-spec.md` se escribe + se firma en DOS rondas sobre el MISMO archivo (no dos archivos). SSoT del proceso: `docs/process/spec-mapa-funcional.md § Dos rondas, dos firmas`.
+>
+> **6 pasos:** (1) conversar + levantar **dónde vive** · (2) mockup BORRADOR dentro del shell real (cita `SHELL-DESIGN-CONTRACT`) + átomos reales · (3) **interrogatorio gate duro** (checklist abajo) · (4) **RONDA 1 ✍FIRMA 1** = § Dónde vive + § Mapa funcional + § Pantallas-borrador + § Dudas → Chris firma "esto es lo que quiero" (`checkpoint.input_spec_signed: true`) · (5) **mockup FINAL ✍FIRMA 2** (estados+validaciones+microcopy+átomos finales · `checkpoint.mockup_final_signed: true`) · (6) **GO → RONDA 2** = § Gherkin + § Matriz + graders → transition refining→refined.
+>
+> Las firmas son **gates internos del `refining`** — el estado NO cambia hasta el GO.
+>
+> **Interrogatorio gate (paso 3 · HARD — sin esto NO se arma la RONDA 1):**
+> - [ ] Dato por campo: ¿de dónde sale? ¿entidad nueva o existente?
+> - [ ] Validación por campo
+> - [ ] Estados por pantalla: vacío / cargando / error / éxito
+> - [ ] Roles/permisos: ¿quién puede qué?
+> - [ ] Qué pasa si falla (errores) + recuperación
+> - [ ] Edge cases (límites, vacíos, concurrencia, datos raros)
+> - [ ] Qué NO entra (recorte explícito de scope)
+>
+> **Mapeo secciones → ronda:** RONDA 1 = § Context/§ Dónde vive + § Mapa funcional + § Wireframes (borrador) + open questions. RONDA 2 = § Gherkin + § Matriz + § Estados + § Componentes + § Microcopy + mockup FINAL.
+
 **Frontmatter brand-aware obligatorio:**
 ```yaml
 ---
@@ -170,6 +187,7 @@ state: refining
 - Release al que pertenece (`releases/{id}.yaml`)
 - Módulo afectado
 - User journey insertion point (dónde aparece en sidebar/flow)
+- **Dónde vive (RONDA 1 · cement 2026-06-03)** — zona/caja (árbol `paradigm-arquitectura.md`) → shell que aplica (del `{brand}/docs/architecture/SHELL-DESIGN-CONTRACT.md`; si no existe, se genera con el design-system actual) → ruta concreta donde el user aterriza
 - Out-of-scope explícito (anti-creep)
 
 #### § Mapa funcional (★ v5 cement 2026-05-31 — capa humana, va ANTES del Gherkin)
@@ -241,6 +259,10 @@ Tabla que cierra el loop: cada `Bif-N` y cada `RN-N` del Mapa funcional → ≥1
 Cerrá con dos líneas explícitas: **Huecos detectados** (Bif/RN sin SC) y **SC huérfanos** (SC sin ítem del mapa). Ambas deben decir "ninguno" para pasar el gate.
 
 #### § Wireframes inline
+
+> **★ Antes de dibujar (cement 2026-06-03 · disciplina mockup):** declarar la **zona/caja** (árbol `paradigm-arquitectura.md`) → el **shell** que aplica (del `{brand}/docs/architecture/SHELL-DESIGN-CONTRACT.md`; shell inexistente → generarlo con el design-system actual). El mockup vive DENTRO del shell, en la ruta real del user, con **átomos reales escogidos y nombrados** (`components/ui/` + `@luana/ui-kit`, ver § Componentes) — NO inventar primitivas (disciplina D1 `frontend-visual-fidelity.md`). "Lo que ves = lo que se programa".
+>
+> **Dos pasadas:** mockup **BORRADOR** en RONDA 1 (la forma, para alinear antes de cerrar reglas) → mockup **FINAL** en RONDA 2 (con estados + validaciones + microcopy + átomos finales). En stories shell Vitalia aplica además el gate mockup-per-component (`vitalia/.claude/rules/shell-mockup-per-component.md`).
 
 UNO de los siguientes (no requiere los tres):
 
@@ -381,6 +403,7 @@ Chris responde → editás 01-spec.md (no rebuild from scratch — Edit incremen
 - [ ] **★ v5 § Mapa funcional presente** (happy path narrado + árbol de bifurcaciones + RN-N + AC-N)
 - [ ] **★ v5 § Matriz de cobertura sin huecos** — cada `Bif-N` y `RN-N` mapea a ≥1 SC; cada SC mapea a ≥1 ítem del mapa. Huecos detectados = "ninguno" + SC huérfanos = "ninguno". Branch/RN huérfano → STOP, NO refined
 - [ ] **★ v5 cada verificación de la matriz es REAL** (acción ejercida + efecto, no "GET 200")
+- [ ] **★ 2 firmas (cement 2026-06-03 · UI deep) — `checkpoint.input_spec_signed: true` (RONDA 1 intención firmada) + `checkpoint.mockup_final_signed: true` (mockup FINAL firmado).** Sin ambas → NO refined
 - [ ] 4 scenarios base presentes (happy + negative + edge + adversarial)
 - [ ] **★ Sub-categorías mandatory cubiertas (≥1 scenario cada una, o `not_applicable_reason` ratificado):**
   - [ ] race_condition (si tiene create/update con unique constraint)
@@ -436,6 +459,8 @@ phase: SPEC_RATIFIED
 last_artifact: 01-spec.md
 last_modified: 2026-05-06T...
 ratified_by_chris: true
+input_spec_signed: true        # ★ RONDA 1 (intención) firmada (cement 2026-06-03)
+mockup_final_signed: true      # ★ mockup FINAL firmado (cement 2026-06-03)
 next_action: "/architect <brand>: {brand} lee 01-spec.md → produce ready package (state=refined → ready)"
 ```
 
@@ -467,6 +492,8 @@ Si durante mockup/iteración descubrís edge case que la story no contemplaba:
 - ❌ Rebuilds from scratch en cada iter → Edit incremental
 - ❌ Producir `02-design-ui.md` separado (legacy paradigma — fusión es el punto del skill)
 - ❌ Inferir el brand del contexto si Chris no lo dijo — PREGUNTAR primero
+- ❌ **★ Firmar la RONDA 2 (Gherkin/GO) sin la RONDA 1 firmada** (`input_spec_signed`) — se saltea el gate de intención (cement 2026-06-03)
+- ❌ **★ Mockup que no cita el `SHELL-DESIGN-CONTRACT` de la marca** ni declara zona/caja + átomos reales — rompe "lo que veo = lo que se programa"
 
 ## Anti cross-brand pollution
 

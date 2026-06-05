@@ -20,13 +20,20 @@
 export interface Tenant {
   readonly id: string;
   readonly name: string;
-  readonly city: string;
+  /** Subtítulo opcional en el dropdown — el endpoint real /me/tenants NO lo devuelve. */
+  readonly city?: string;
+  /** Slug del tenant (BE TenantSchema). */
+  readonly slug?: string;
+  /** Rol del usuario en ese tenant (BE TenantSchema). */
+  readonly role?: string;
 }
 
-/** API response shape for GET /api/tenants */
-export interface TenantsApiResponse {
-  readonly tenants: ReadonlyArray<Tenant>;
-}
+/**
+ * API response del BE `GET /api/v1/iam/users/me/tenants` → `list[TenantSchema]`
+ * (array plano, NO `{ tenants: [...] }`). El path viejo `/api/tenants` 404eaba en
+ * el stack real (bug#2 live): el selector quedaba sin datos → oculto.
+ */
+export type TenantsApiResponse = ReadonlyArray<Tenant>;
 
 /** Zustand store state */
 export interface TenantStoreState {

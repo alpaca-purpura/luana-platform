@@ -13,7 +13,8 @@
  *
  * Server Component puro — sin hooks, sin "use client".
  * No recibe params como función arg (Next.js no-found.tsx convention).
- * Para navegar back → href "/" que el root page redirige a /{tenantId}/valeria/agenda.
+ * Para navegar back → href "/" que el root page redirige a /{tenantId}/{DEFAULT_LANDING_SUBPATH}
+ * (= mateo/agenda v1.2; antes valeria/agenda → 404, Bug #1 T-1).
  *
  * Microcopy spec: 01-spec.md § 10 (Spanish neutro LatAm — sin voseo).
  * A11y: role="main" + aria-hidden en emoji + focus visible via Shadcn Button.

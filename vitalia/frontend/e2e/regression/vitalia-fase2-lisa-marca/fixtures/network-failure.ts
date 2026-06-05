@@ -64,10 +64,12 @@ export async function abortAutosaveRoute(
 
   for (const p of patterns) {
     await page.route(p, async (route: Route) => {
-      // Only intercept mutation methods (PATCH/POST/DELETE)
+      // Only intercept mutation methods (PATCH/POST/DELETE). Reads delegate via
+      // route.fallback() to the next handler (the real-backend forwarding fixture)
+      // so GET /<endpoint> hits the REAL backend (RN-1: no mock of reads).
       const method = route.request().method();
       if (!["PATCH", "POST", "DELETE"].includes(method)) {
-        await route.continue();
+        await route.fallback();
         return;
       }
 
@@ -174,7 +176,8 @@ export async function simulateFlakyNetwork(
     await page.route(p, async (route: Route) => {
       const method = route.request().method();
       if (!["PATCH", "POST", "DELETE"].includes(method)) {
-        await route.continue();
+        // Reads delegate to the real-backend forwarding fixture (RN-1).
+        await route.fallback();
         return;
       }
 

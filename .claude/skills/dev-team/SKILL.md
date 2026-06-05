@@ -484,6 +484,52 @@ Si Phase D local detecta gap → `/dev-team` REFUSE auto-handoff. Update `T-{n}-
 
 **Justificación:** auditor Phase D antes detectaba gaps post-handoff → CHANGES_REQUESTED round-trip. Pre-check local en dev-team cierra el loop sin desperdiciar audit cycle Opus.
 
+## Step 4.6 — Gate live-verify (Critical Rule #37) — BLOQUEANTE antes de developed
+
+> Mismo rango imperativo que el Phase D local de gherkin. Si falla → NO se escribe `state: developed` y NO se emite el auto-handoff a `/auditor`.
+
+```bash
+WS=$(git rev-parse --show-toplevel)
+STORY_DIR=${WS}/{brand}/docs/product/stories/{story-id}
+
+NATURE=$(grep -E "^verification_nature:" ${STORY_DIR}/04-validators.yaml 2>/dev/null | head -1 | awk '{print $2}')
+DEMO_REQ=$(grep -E "^demo_required:" ${STORY_DIR}/04-validators.yaml 2>/dev/null | head -1 | awk '{print $2}')
+
+# Auto-skip para stories puramente técnicas (sin UI ni superficie user-reachable)
+if [[ "$NATURE" == "técnica" && "$DEMO_REQ" != "true" ]]; then
+  echo "✅ Live-verify gate auto-skip: verification_nature=técnica, demo_required=false"
+  # Registrar la razón en checkpoint si aún no está
+  grep -q "dod_live_verified_skip_reason:" ${STORY_DIR}/checkpoint.md || \
+    echo "  (agregar dod_live_verified_skip_reason en checkpoint.md antes del handoff)"
+else
+  # GATE DURO — verificar los 3 requisitos en checkpoint.md
+  DOD_FLAG=$(grep -E "^dod_live_verified:" ${STORY_DIR}/checkpoint.md 2>/dev/null | awk '{print $2}')
+  DOD_EVIDENCE=$(grep -A 2 "^dod_evidence:" ${STORY_DIR}/checkpoint.md 2>/dev/null | grep -c "action:")
+  DEMO_SCRIPT=$(ls ${STORY_DIR}/demo-script.md 2>/dev/null | wc -l)
+
+  GATE_OK=true
+  [[ "$DOD_FLAG" != "true" ]] && GATE_OK=false
+  [[ "$DOD_EVIDENCE" -lt 1 ]] && GATE_OK=false
+  [[ "$DEMO_REQ" == "true" && "$DEMO_SCRIPT" -lt 1 ]] && GATE_OK=false
+
+  if [[ "$GATE_OK" != "true" ]]; then
+    echo "❌ Gate live-verify BLOQUEADO (Critical Rule #37):"
+    echo "   Story funcional/UI sin live-verify real. Antes de cerrar developed:"
+    echo "   1. Ejercé la acción REAL en dev-app (POST/PATCH/PUT/DELETE) con Chrome DevTools MCP"
+    echo "      → skill chrome-devtools-verify; leer Console (0 errores) + Network + logs"
+    echo "   2. Registrá en checkpoint.md: dod_live_verified: true + dod_evidence (≥1 entry con"
+    echo "      action/observed/backend_log — GET 200 NO basta)"
+    echo "   3. Creá demo-script.md en la carpeta de la story (si demo_required: true)"
+    echo "   NO marcar state: developed hasta que los 3 pasen."
+    echo "   Ref: .claude/rules/definition-of-done-live-verify.md"
+    exit 1
+  fi
+  echo "✅ Gate live-verify: dod_live_verified=true, dod_evidence OK, demo-script OK"
+fi
+```
+
+Si el gate falla → STOP. Volvé a Step 2/3 para ejercer la acción real con Chrome DevTools MCP antes de avanzar.
+
 ## Step 5 — Avanzar a siguiente ticket o cerrar story
 
 Update `06-tickets.yaml`:
@@ -497,7 +543,7 @@ transitions:
 
 Si quedan tickets `ready` → continuar Step 1 con next ticket.
 
-Si TODOS tickets pushed → transition story a developed + AUTO-HANDOFF /auditor (Conv 3 default post 2026-05-18):
+Si TODOS tickets pushed → (1) verificar Phase D local (Step 4.5) + (2) verificar gate live-verify (Step 4.6) → recién entonces transition story a developed + AUTO-HANDOFF /auditor (Conv 3 default post 2026-05-18):
 
 ```yaml
 # {brand}/docs/product/stories/{story-id}/checkpoint.md
@@ -814,5 +860,4 @@ Antes de cerrar `developing → developed`:
 - **Modificación**: respetar `regression_guard` (tests viejos verdes sin tocarse); snapshot/characterization se actualiza revisando el diff (nunca `vitest -u`/`--update-snapshots` mecánico).
 - Producir `demo-script.md` (template `docs/specs/templates/demo-script-template.md`) para stories `demo_required: true`.
 - Registrar `dod_evidence` en `checkpoint.md`. NO cerrar por "tests verdes" mockeados.
-
-Ref: `.claude/rules/definition-of-done-live-verify.md`.
+- ★ **HARD GATE**: para stories `verification_nature ∈ {funcional, ambas}` o `demo_required: true`, el **Step 4.6** es BLOQUEANTE — la transición `developing → developed` (y el auto-handoff a `/auditor`) se REFUSE hasta que `dod_live_verified: true` + `dod_evidence` (write real ejercido) + `demo-script.md` estén en el checkpoint. No es una obligación soft: es el mismo nivel imperativo que el Phase D local de gherkin. Ref: `.claude/rules/definition-of-done-live-verify.md` (Critical Rule #37).

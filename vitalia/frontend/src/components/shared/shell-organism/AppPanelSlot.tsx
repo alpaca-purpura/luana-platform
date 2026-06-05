@@ -57,8 +57,12 @@ export function AppPanelSlot({ children }: AppPanelSlotProps) {
           Only visible when current route has an AGENT_SUBSUBTABS entry (e.g. lisa/marca). */}
       <SubSubTabsBar />
 
-      {/* Content area — children from route group pass-through (F1-S10 will fill skeleton) */}
-      <div className="flex-1 min-h-0 overflow-hidden">
+      {/* Content area — children from route group pass-through (F1-S10 will fill skeleton).
+          overflow-y-auto: ESTE es el único contenedor scrolleable de la hoja. El <section>
+          y el <main> del shell quedan overflow-hidden (marco fijo). Bug #4 fix
+          (vitalia-bugfix-shell-nav-scroll-errors T-2): antes overflow-hidden recortaba
+          el contenido largo de toda hoja → ni rueda ni barra. */}
+      <div className="flex-1 min-h-0 overflow-y-auto">
         {children !== undefined ? (
           children
         ) : (

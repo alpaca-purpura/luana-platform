@@ -43,6 +43,42 @@ verification:
   coverage_update: []           # tests del comportamiento cambiado a actualizar (revisando el diff, nunca vitest -u mecánico)
   new_coverage: []              # tests nuevos para lo nuevo (TDD RED primero)
 
+  # ── Live-verify gate (Critical Rule #37) ─────────────────────────
+  # OBLIGATORIO cuando verification_nature ∈ {funcional, ambas}.
+  # dev-team completa evidence al cerrar developing → developed.
+  # Auditor auto-FAILea si ausente o evidence vacío (LIVE_VERIFY_MISSING).
+  dev_app_verified:
+    required: true              # false SOLO si demo_required: false + dod_live_verified_skip_reason provisto
+    evidence: ""                # dev-team completa: "acción real ejercida · efecto observado · sin traceback BE"
+
+  # ── Playwright visual scope (D3 — Critical Rule #34 + #37) ───────
+  # OBLIGATORIO para toda story ui-story o ui-mixed (toca frontend/).
+  # Delimita qué rutas y componentes puede modificar visualmente el builder.
+  # Fuera de scope → STOP + doc en T-{n}-impl-log.md + escalar /pm-{brand}.
+  # Sub-keys de referencia: autonomous-mode.md § Playwright visual scope discipline.
+  playwright_visual_scope:
+    story_scope_routes:
+      - "/{feature}/{sub-route}"       # ÚNICA(S) ruta(s) donde aplicar visual changes
+      # - "/{feature}/[id]/edit"       # añadir rutas adicionales si aplica
+    story_scope_components:
+      - "{brand}/frontend/src/features/{m}/components/{ComponentName}.tsx"
+      # - "{brand}/frontend/src/features/{m}/components/{OtherComponent}.tsx"
+    forbidden_visual_changes:
+      paths:
+        - "{brand}/frontend/src/components/ui/"       # Shadcn primitives — escalar /pm-{brand}
+        - "{brand}/frontend/src/components/shared/"   # cross-feature shared — escalar /pm-{brand}
+        - "{brand}/frontend/src/app/layout.tsx"       # app shell — escalar /pm-{brand}
+      reasons:
+        - "Cambios en primitivas Shadcn impactan TODA la app"
+        - "Cambios en shared afectan features fuera del scope de esta story"
+        - "Cambios en layout romperían navegación global"
+      if_change_needed_outside_scope: "STOP · documentar en T-{n}-impl-log.md · escalar /pm-{brand} para spec extension o story cross-cutting separada"
+    playwright_assertions_scope:
+      - "Assertions visuales SOLO sobre story_scope_routes + story_scope_components"
+      - "NUNCA toHaveScreenshot() de página completa fuera del scope (usar bounded locators)"
+      - "Si snapshot diverge en área no relacionada (toolbar, sidebar) → flag baseline drift; NO arreglar inline"
+    non_egoismo_clause: "Bug real visible en otra ruta NO tocada por esta story → reportar en T-{n}-impl-log.md § 'Cross-story observed bugs'. NO arreglar inline (rompe scope discipline)."
+
 validators:
   # ═══════════════════════════════════════════════════════════════
   # NON-FUNCTIONAL — code quality (lint, format, type-check, arch fitness)

@@ -1,35 +1,31 @@
 /**
- * large-dataset.fixture.ts — F2-S7 vitalia-fase2-lisa-marca
+ * large-dataset.fixture.ts — F2-S7 vitalia-fase2-lisa-marca (HONEST · backend real)
  *
- * DB seed for SC-9 large dataset performance test:
- * - 50 trust signals (simulating Presencia trust signals list render)
- * - 30 team members (simulating sub-tab linked list view)
+ * Fixture para el spec de rendimiento SC-9. El mock canned de 50 trust-signals
+ * fue ELIMINADO (era mock del backend-bajo-prueba, RN-1; el grep-gate SC-2 ahora
+ * cubre trust-signals). El `largeDatasetPage` compone el transporte honesto
+ * (auth + forwarding a :8002 + anti-burbuja base.ts) — renderiza los datos REALES
+ * del tenant. Los builders `buildLargeTrustSignals/Team` quedan como data para
+ * aserciones unit-style del propio builder (in-memory, no de la página).
  *
  * Usage in specs:
- *   import { test, expect, buildLargeTrustSignals } from '../fixtures/large-dataset.fixture';
+ *   import { test, expect, buildLargeTrustSignals } from './fixtures/large-dataset.fixture';
  *
  * downstream-regression-na: brand-local vitalia e2e fixture F2-S7 perf test
  *
- * @see 04-validators.yaml § test_construction_plan step 3
+ * @see e2e/fixtures/real-backend-forward.fixture.ts
+ * @see 04-validators.yaml § scenario_coverage (large_dataset: de-mockeado)
  */
 
-import path from "path";
-import { test as base, expect } from "@playwright/test";
-import type { Page, BrowserContext, Route } from "@playwright/test";
-import { setupClerkTestingToken } from "@clerk/testing/playwright";
-import { LISA_MARCA_FIXTURE, setupLisaMarcaMocks } from "./lisa-marca.fixture";
+import type { Page } from "@playwright/test";
+import {
+  test as realBackendTest,
+  expect,
+} from "../../../fixtures/real-backend-forward.fixture";
+import { LISA_MARCA_FIXTURE } from "./lisa-marca.fixture";
 
 // ---------------------------------------------------------------------------
-// Storage state
-// ---------------------------------------------------------------------------
-
-const STORAGE_STATE_PATH = path.join(
-  __dirname,
-  "../../../../playwright/.clerk/user.json",
-);
-
-// ---------------------------------------------------------------------------
-// Large dataset builders
+// Large dataset builders (in-memory test data for builder unit assertions)
 // ---------------------------------------------------------------------------
 
 export interface TrustSignalItem {
@@ -122,97 +118,47 @@ export function buildLargeTeamMembers(count: number = 30): TeamMemberItem[] {
 }
 
 // ---------------------------------------------------------------------------
-// Setup large dataset mocks on page
-// ---------------------------------------------------------------------------
-
-export async function setupLargeDatasetMocks(
-  page: Page,
-  tenantId: string = LISA_MARCA_FIXTURE.tenantId,
-): Promise<void> {
-  // First wire base mocks
-  await setupLisaMarcaMocks(page, tenantId);
-
-  // Override trust-signals with large dataset (50 items)
-  await page.unroute("**/api/v1/lisa/marca/trust-signals");
-  const largeTrustSignals = buildLargeTrustSignals(50);
-
-  await page.route(
-    "**/api/v1/lisa/marca/trust-signals",
-    async (route: Route) => {
-      if (route.request().method() === "GET") {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({
-            tenantId,
-            items: largeTrustSignals,
-            total: largeTrustSignals.length,
-          }),
-        });
-      } else {
-        await route.continue();
-      }
-    },
-  );
-}
-
-// ---------------------------------------------------------------------------
 // Fixture types
 // ---------------------------------------------------------------------------
 
 export type LargeDatasetFixtures = {
-  /** Authenticated page with large dataset mocks wired */
+  /** Authenticated page with real-backend forwarding (renders real data) */
   largeDatasetPage: Page;
-  /** Authenticated BrowserContext */
-  largeDatasetContext: BrowserContext;
-  /** 50 trust signal items */
+  /** 50 trust signal items (in-memory builder data for unit assertions) */
   largeTrustSignals: TrustSignalItem[];
-  /** 30 team member items */
+  /** 30 team member items (in-memory builder data for unit assertions) */
   largeTeamMembers: TeamMemberItem[];
   /** Base fixture constants */
   fixture: typeof LISA_MARCA_FIXTURE;
 };
 
 // ---------------------------------------------------------------------------
-// Fixture extension
+// Fixture extension — composed on the honest real-backend transport
 // ---------------------------------------------------------------------------
 
-export const test = base.extend<LargeDatasetFixtures>({
-  // eslint-disable-next-line no-empty-pattern
+export const test = realBackendTest.extend<LargeDatasetFixtures>({
+  // eslint-disable-next-line no-empty-pattern -- Playwright fixture API requires the empty destructure
   fixture: async ({}, use) => {
     await use(LISA_MARCA_FIXTURE);
   },
 
-  // eslint-disable-next-line no-empty-pattern
+  // eslint-disable-next-line no-empty-pattern -- Playwright fixture API requires the empty destructure
   largeTrustSignals: async ({}, use) => {
     await use(buildLargeTrustSignals(50));
   },
 
-  // eslint-disable-next-line no-empty-pattern
+  // eslint-disable-next-line no-empty-pattern -- Playwright fixture API requires the empty destructure
   largeTeamMembers: async ({}, use) => {
     await use(buildLargeTeamMembers(30));
   },
 
-  largeDatasetContext: async ({ browser }, use) => {
-    const context = await browser.newContext({
-      storageState: STORAGE_STATE_PATH,
-    });
-    await use(context);
-    await context.close();
-  },
-
-  largeDatasetPage: async ({ largeDatasetContext }, use) => {
-    const page = await largeDatasetContext.newPage();
-
-    // Clerk testing token injection
-    await setupClerkTestingToken({ page });
-
-    // Wire large dataset API mocks
-    await setupLargeDatasetMocks(page, LISA_MARCA_FIXTURE.tenantId);
-
+  // The honest, forwarded, authenticated page IS the large-dataset page.
+  largeDatasetPage: async ({ page }, use) => {
     await use(page);
-    await page.close();
   },
 });
 
 export { expect };
+
+// Re-export gotoMarca for spec ergonomics.
+export { gotoMarca } from "./lisa-marca.fixture";

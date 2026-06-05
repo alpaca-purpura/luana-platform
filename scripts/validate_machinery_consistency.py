@@ -59,6 +59,31 @@ REQUIRED_RULES = [
     "test-design-doctrine.md",
 ]
 
+# Conceptos obligatorios que TODO spec-template (raíz + overrides por marca) debe llevar.
+# El template raíz docs/specs/templates/01-spec-template.md es el SSoT de la estructura del
+# 01-spec; cuando se cementa un concepto ahí, los overrides por marca deben sincronizarse o
+# generan drift silencioso (HB-29 2026-06-04: shell-template sin § Mapa funcional/§ Matriz).
+# Concept-based (substring, NO header-exact) porque los overrides re-estructuran las secciones.
+# Agregá un concepto cuando cementes uno nuevo en el raíz (y propagalo a los overrides).
+MANDATORY_SPEC_CONCEPTS = [
+    "Mapa funcional",       # capa humana del refinamiento (cement 2026-05-31)
+    "Matriz de cobertura",  # puente humano↔verificación (cement 2026-05-31)
+    "FIRMA 1",              # RONDA 1 input-spec gate (cement 2026-06-03)
+    "FIRMA 2",              # RONDA 2 ejecutable gate (cement 2026-06-03)
+]
+
+# HB-43 (cap-as-locator): el resolver `resolve_cap.py` cablea la lectura de las caps
+# (dev_preview/code_ref) en el pipeline. El bug original fue que el cable estaba ROTO
+# (builder keyeaba 06-tickets vacío) → locator dormido. Este CHECK evita que vuelva a
+# desconectarse silenciosamente: cada superficie del pipeline DEBE referenciar el resolver.
+CAP_LOCATOR_WIRED_FILES = [
+    ".claude/agents/builder-backend.md",
+    ".claude/agents/builder-frontend.md",
+    ".claude/agents/context-builder.md",
+    ".claude/agents/architect-orchestrator.md",
+    ".claude/skills/architect/SKILL.md",
+]
+
 failures: list[str] = []
 checks_run = 0
 
@@ -208,6 +233,55 @@ def check_self_wired_in_precommit() -> None:
     )
 
 
+# ── CHECK 9 — spec-template overrides sin drift vs raíz (HB-29/30) ───────────
+def check_spec_template_drift() -> None:
+    root = WS / "docs/specs/templates/01-spec-template.md"
+    if not root.exists():
+        check(
+            "CHECK 9 · spec-template raíz existe",
+            False,
+            "falta docs/specs/templates/01-spec-template.md (SSoT estructura 01-spec)",
+        )
+        return
+    # overrides por marca: {brand}/docs/specs/templates/01-spec-*-template.md
+    overrides = sorted(WS.glob("*/docs/specs/templates/01-spec-*-template.md"))
+    for tpl in [root, *overrides]:
+        text = tpl.read_text(encoding="utf-8", errors="ignore")
+        missing = [c for c in MANDATORY_SPEC_CONCEPTS if c not in text]
+        rel = tpl.relative_to(WS)
+        check(
+            f"CHECK 9 · spec-template sin drift: {rel}",
+            not missing,
+            f"falta(n) concepto(s) cementado(s) {missing} — sincronizá con el raíz "
+            "(HB-30: drift override↔raíz). Si cementaste un concepto nuevo en el raíz, "
+            "propagalo a los overrides + agregalo a MANDATORY_SPEC_CONCEPTS.",
+        )
+
+
+# ── CHECK 10 — cap-as-locator cableado (HB-43) ───────────────────────────────
+def check_cap_locator_wired() -> None:
+    resolver = WS / "scripts/resolve_cap.py"
+    check(
+        "CHECK 10 · resolve_cap.py existe (cap-as-locator · HB-43)",
+        resolver.is_file(),
+        "falta scripts/resolve_cap.py — el resolver determinístico cap_target→YAML.",
+    )
+    if not resolver.is_file():
+        return
+    for rel in CAP_LOCATOR_WIRED_FILES:
+        p = WS / rel
+        if not p.exists():
+            check(f"CHECK 10 · superficie existe: {rel}", False, f"falta {rel}")
+            continue
+        text = p.read_text(encoding="utf-8", errors="ignore")
+        check(
+            f"CHECK 10 · cap-locator cableado: {rel}",
+            "resolve_cap.py" in text,
+            f"{rel} NO referencia resolve_cap.py — el cable cap-as-locator se desconectó "
+            "(HB-43: el locator vuelve a quedar dormido). Re-cableá la lectura de la cap.",
+        )
+
+
 def main() -> int:
     print("validate_machinery_consistency.py — anti-drift lock-in\n")
     check_atomics_dead()
@@ -218,6 +292,8 @@ def main() -> int:
     check_rule_refs_resolve()
     check_auditors_have_edit()
     check_self_wired_in_precommit()
+    check_spec_template_drift()
+    check_cap_locator_wired()
     print(f"\n{checks_run} checks · {len(failures)} fallos")
     if failures:
         print("\nFALLOS (drift detectado):")

@@ -32,6 +32,7 @@ import { redirect } from "next/navigation";
 import { ShellOrganismLayout } from "@/components/shared/shell-organism/ShellOrganismLayout";
 import { fetchUserTenants } from "@/lib/iam/api";
 import { logCrossTenantAttempt, logNoTenantsAssigned } from "@/lib/iam/audit";
+import { DEFAULT_LANDING_SUBPATH } from "@/lib/shell-routes";
 import { NetworkErrorFallback } from "./_components/NetworkErrorFallback";
 
 interface LayoutProps {
@@ -69,11 +70,13 @@ export default async function Layout({ children, params }: LayoutProps) {
     redirect("/sign-out?next=/sign-in?error=no_tenants_assigned");
   }
 
-  // SC-4, SC-5: tenantId de URL no pertenece al usuario → redirect al primero válido
+  // SC-4, SC-5: tenantId de URL no pertenece al usuario → redirect al primero válido.
+  // Bug #1 fix (vitalia-bugfix-shell-nav-scroll-errors T-1): destino vía SSoT
+  // DEFAULT_LANDING_SUBPATH (= mateo/agenda); antes valeria/agenda → 404.
   const isValidTenant = tenants.some((t) => t.id === tenantId);
   if (!isValidTenant) {
     logCrossTenantAttempt({ userId, attemptedTenant: tenantId });
-    redirect(`/${tenants[0].id}/valeria/agenda`);
+    redirect(`/${tenants[0].id}/${DEFAULT_LANDING_SUBPATH}`);
   }
 
   // Happy path: tenant válido → render shell

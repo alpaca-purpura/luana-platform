@@ -24,6 +24,54 @@
  * downstream-regression-na: brand-local vitalia shell catalog; no cross-brand consumers
  */
 
+/**
+ * DEFAULT_LANDING_SUBPATH — SSoT del subpath de aterrizaje post-login del shell.
+ *
+ * Bug #1 fix (vitalia-bugfix-shell-nav-scroll-errors T-1): la agenda migró de
+ * `valeria/agenda` → `mateo/agenda` (paradigm-map-zones T-5, v1.2 2026-05-30) pero
+ * 3 redirects siguieron apuntando a `valeria/agenda`. Como `isValidAgent('valeria')
+ * === false` (Valeria es supervisora sidebar, NO ribbon agent), esa ruta cae en el
+ * dinámico `[agent]/layout.tsx` → `notFound()` → 404.
+ *
+ * `mateo/agenda` SÍ es ruta estática real (SHIPPED_STATIC_SUBTABS en agent-catalog.ts)
+ * que renderiza `mateo/agenda/page.tsx` directamente sin pasar por isValidAgent.
+ *
+ * Un único const consumido por los 3 redirects evita que vuelva a driftear:
+ *   - app/page.tsx (root landing post-login)
+ *   - (shell-organism)/page.tsx (/{tenantId} → default)
+ *   - (shell-organism)/layout.tsx (redirect cross-tenant inválido → primer tenant válido)
+ *
+ * NOTA: NO incluye el `/{tenantId}` prefix — el caller lo antepone
+ * (`/${tenantId}/${DEFAULT_LANDING_SUBPATH}`).
+ */
+export const DEFAULT_LANDING_SUBPATH = "mateo/agenda" as const;
+
+/**
+ * BARE_TENANT_PATH — matches a path that is EXACTLY one tenant-UUID segment
+ * (e.g. `/e69a691d-070e-5caf-a053-6e74642ec100`), optional trailing slash.
+ *
+ * UUID-only on purpose: never matches `/sign-in`, `/sign-out`, `/marketing`,
+ * `/public`, etc. (those are non-UUID single segments).
+ */
+export const BARE_TENANT_PATH = /^\/([0-9a-f-]{36})\/?$/i;
+
+/**
+ * Returns the edge-redirect target for a BARE tenant path
+ * (`/{uuid}` → `/{uuid}/${DEFAULT_LANDING_SUBPATH}`), or `null` if `pathname`
+ * is not a bare tenant path.
+ *
+ * Bug #1 hardening (vitalia-bugfix-shell-nav-scroll-errors): proxy.ts consumes
+ * this to redirect at the EDGE (HTTP 307) instead of letting the Server Component
+ * `(shell-organism)/page.tsx` do an in-route-group `redirect()`. That in-group
+ * redirect triggers a Next.js 16.2.3 client-Router soft-navigation that throws
+ * "Rendered more hooks than during the previous render" (~40% flake). A fresh
+ * edge redirect makes the browser load the destination cleanly. See proxy.ts.
+ */
+export function bareTenantLandingRedirect(pathname: string): string | null {
+  const match = pathname.match(BARE_TENANT_PATH);
+  return match ? `/${match[1]}/${DEFAULT_LANDING_SUBPATH}` : null;
+}
+
 export interface SubSubTabMeta {
   /** URL segment identifier — kebab-case static segment (e.g., "identidad", "voz-y-tono"). */
   id: string;

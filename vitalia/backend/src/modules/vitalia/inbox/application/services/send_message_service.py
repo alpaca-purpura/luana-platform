@@ -1,8 +1,14 @@
-# cap: sales_agent.inbox-handler-mode-occ
-# story-origin: TBD
+# cap: inbox.adrian-inbox
+# story-origin: vitalia-fase2-adrian-inbox T-1
 """SendMessageService — vitalia inbox application layer.
 
 SC-01 happy path: human/ai message send with idempotency + audit log + outbox event.
+SC-3 (T-1 Slice 2): PHI compliance gate via optional ComplianceService(PhiChannelPolicy).
+  When compliance blocks outbound PHI on unencrypted channel:
+  - Replaces PHI body_text with portal-redirect microcopy
+  - Writes activity event 'compliance_block_outbound_phi' (no raw PHI in description_es)
+  - Writes audit row 'compliance_block_outbound_phi' pre-response
+  The agent voice instruction is the primary guard; this service check is the infra fallback.
 
 PHI obligations (hipaa-lite.md § Regla cardinal):
 1. tenant_id + clinic_id dual filter mandatory (via repos)
@@ -31,6 +37,9 @@ if TYPE_CHECKING:
     from src.modules.vitalia.crm.infrastructure.persistence.action_receipt_repository import (
         ActionReceiptRepository,
     )
+    from src.modules.vitalia.crm.infrastructure.persistence.activity_event_repository import (
+        ActivityEventRepository,
+    )
     from src.modules.vitalia.crm.infrastructure.persistence.conversation_repository import (
         ConversationRepository,
     )
@@ -42,6 +51,13 @@ logger = structlog.get_logger()
 
 # 5-minute action receipt window (per arch spec §6.3)
 _ACTION_RECEIPT_WINDOW_MINUTES = 5
+
+# Portal redirect microcopy SSoT (SC-3/RN-7 hipaa-lite.md § Voice patterns).
+# Spanish neutro LatAm — no voseo (spanish-text.md).
+_PORTAL_REDIRECT_MICROCOPY = (
+    "Por seguridad, tus resultados y datos clínicos están disponibles en tu portal. "
+    "Ingresa en el enlace que te compartimos al registrarte."
+)
 
 
 class ConversationNotFoundError(Exception):
@@ -126,6 +142,10 @@ class SendMessageService:
     Writes audit log row sync pre-response (HIPAA-lite requirement).
     Emits MessageSent domain event via outbox bus.
     Supports idempotency dedup via optional idempotency_store.
+
+    Slice 2 (T-1): Optional compliance_service runs PHI channel gate before outbound.
+    When compliance blocks: portal-redirect microcopy replaces body_text + activity event
+    'compliance_block_outbound_phi' written (no raw PHI in description_es per RN-10).
     """
 
     def __init__(
@@ -138,6 +158,8 @@ class SendMessageService:
         event_bus: _EventBusProtocol,
         session: AsyncSession,
         idempotency_store: IdempotencyStore | None = None,
+        compliance_service: object | None = None,
+        activity_event_repo: ActivityEventRepository | None = None,
     ) -> None:
         """Initialize SendMessageService.
 
@@ -149,6 +171,8 @@ class SendMessageService:
             event_bus: Outbox event bus.
             session: AsyncSession for transaction coordination.
             idempotency_store: Optional idempotency store for dedup.
+            compliance_service: Optional ComplianceService for PHI channel gate (T-1 Slice 2).
+            activity_event_repo: Optional ActivityEventRepository for compliance activity events.
         """
         self._conv_repo = conv_repo
         self._msg_repo = msg_repo
@@ -157,6 +181,8 @@ class SendMessageService:
         self._event_bus = event_bus
         self._session = session
         self._idempotency_store = idempotency_store
+        self._compliance_service = compliance_service
+        self._activity_event_repo = activity_event_repo
 
     async def send(
         self,
@@ -241,6 +267,71 @@ class SendMessageService:
             raise ConversationNotFoundError(conversation_id)
 
         now = datetime.now(UTC)
+
+        # PHI compliance gate (T-1 Slice 2 — SC-3/RN-7 hipaa-lite.md).
+        # Applies only when compliance_service is wired (optional for backward compat).
+        # Checks outbound text messages against PHI keywords on unencrypted channels.
+        # When blocked: replaces body_text with portal-redirect microcopy + writes
+        # activity event + audit row 'compliance_block_outbound_phi'.
+        # lead_id is not available in the send path — pass conversation_id as sentinel
+        # (PhiChannelPolicy only uses channel + identifier, not lead_id).
+        if self._compliance_service is not None and body_text is not None:
+            compliance_result = await self._compliance_service.check(
+                tenant_id=tenant_id,
+                lead_id=conversation_id,  # sentinel: PhiChannelPolicy ignores lead_id
+                channel=conv.channel,
+                identifier=body_text,
+                campaign_id=None,
+            )
+            if not compliance_result.allowed:
+                # Replace body_text with portal-redirect microcopy (no PHI in response)
+                body_text = _PORTAL_REDIRECT_MICROCOPY
+                logger.info(
+                    "send_message.phi_compliance_blocked",
+                    channel=conv.channel,
+                    failed_policy=compliance_result.failed_policy,
+                    tenant_id=str(tenant_id),
+                    conversation_id=str(conversation_id),
+                )
+                # Write activity event (no raw PHI in description_es — RN-10)
+                if self._activity_event_repo is not None:
+                    from src.modules.vitalia.crm.infrastructure.persistence.models.activity_event_model import (  # noqa: PLC0415
+                        ActivityEventModel,
+                    )
+
+                    activity_model = ActivityEventModel(
+                        id=uuid4(),
+                        tenant_id=tenant_id,
+                        clinic_id=clinic_id,
+                        conversation_id=conversation_id,
+                        source_trace_event_id=None,
+                        event_kind="compliance_block_outbound_phi",
+                        description_es=("Adrián detectó contenido clínico en canal no cifrado y redirigió al portal."),
+                        agent_id="adrian",
+                        occurred_at=now,
+                        payload_sanitized={
+                            "channel": conv.channel,
+                            "failed_policy": compliance_result.failed_policy,
+                            "action": "portal_redirect",
+                        },
+                        created_at=now,
+                    )
+                    self._activity_event_repo._session.add(activity_model)
+                    await self._activity_event_repo._session.flush()
+                # Write audit row sync pre-response (HIPAA-lite)
+                await self._audit_writer.write(
+                    tenant_id=tenant_id,
+                    clinic_id=clinic_id,
+                    user_id=user_id,
+                    action="compliance_block_outbound_phi",
+                    resource_type="inbox.compliance_block",
+                    resource_id=conversation_id,
+                    payload={
+                        "channel": conv.channel,
+                        "failed_policy": compliance_result.failed_policy,
+                        "action": "portal_redirect",
+                    },
+                )
 
         # Apply handler_mode_override if provided (Medium #5)
         effective_mode = handler_mode_override if handler_mode_override is not None else conv.handler_mode

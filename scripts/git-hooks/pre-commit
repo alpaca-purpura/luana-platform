@@ -48,6 +48,29 @@ REPO_ROOT="$(git rev-parse --show-toplevel)"
 cd "${REPO_ROOT}"
 
 # ─────────────────────────────────────────────────────────────────
+# MULTI-SESSION SWEEP GUARD (HB-31 · cement 2026-06-04)
+# Chris permitió paralelo de varias sesiones sobre el MISMO hub (aceleramos);
+# este guard impide la contaminación cross-sesión (una sesión que barre los
+# archivos de otra, típico de `git add -A/-u/.`). Bloquea si el set staged toca
+# el scope EXCLUSIVO de ≥2 sesiones VIVAS distintas. Fail-OPEN ante error propio.
+# Override intencional: MULTI_SESSION_ACK=1. SSoT: scripts/git/multi-session-scope-guard.sh
+# ─────────────────────────────────────────────────────────────────
+if [ -x "${REPO_ROOT}/scripts/git/multi-session-scope-guard.sh" ]; then
+  "${REPO_ROOT}/scripts/git/multi-session-scope-guard.sh" || exit 1
+fi
+
+# ─────────────────────────────────────────────────────────────────
+# DoD LIVE-VERIFY GATE (Layer 6 · Critical Rule #37 · cement 2026-06-04)
+# Backstop MECÁNICO del live-verify: bloquea commitear una TRANSICIÓN de checkpoint
+# a `state: developed|done` (story funcional) sin `dod_live_verified: true` +
+# `dod_evidence` (≥1 action). Exención técnica: `dod_live_verified_skip_reason`.
+# Fail-OPEN. Override: DOD_GATE_ACK=1. SSoT: scripts/git/dod-evidence-gate.sh
+# ─────────────────────────────────────────────────────────────────
+if [ -x "${REPO_ROOT}/scripts/git/dod-evidence-gate.sh" ]; then
+  "${REPO_ROOT}/scripts/git/dod-evidence-gate.sh" || exit 1
+fi
+
+# ─────────────────────────────────────────────────────────────────
 # BRANCH DETECTION — added T-9 S-GIT-STRATEGY-CORE (2026-05-15)
 # Triple-branch policy: wip/* → light gates, main/release/* → full gates.
 #

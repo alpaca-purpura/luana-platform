@@ -52,9 +52,11 @@ export function TenantOption({ tenant, active }: TenantOptionProps) {
         <span className="truncate text-sm font-medium text-foreground">
           {tenant.name}
         </span>
-        <span className="truncate text-xs text-muted-foreground">
-          {tenant.city}
-        </span>
+        {tenant.city ? (
+          <span className="truncate text-xs text-muted-foreground">
+            {tenant.city}
+          </span>
+        ) : null}
       </div>
 
       {/* Active indicator */}

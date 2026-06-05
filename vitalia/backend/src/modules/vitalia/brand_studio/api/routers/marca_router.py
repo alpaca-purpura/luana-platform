@@ -9,7 +9,7 @@ Endpoints served under /api/v1/lisa/marca/:
   GET  /visuals                        — Get brand visuals
   PATCH /visuals                       — Update visuals (audit)
   POST /logos                          — Upload logo (≤ 5 MB)
-  DELETE /logos/{logo_id}              — Delete logo (soft)
+  DELETE /logos                        — Delete logo (soft · una marca = un logo)
   GET  /personality                    — Get personality compiler v2 blocks
   PATCH /personality                   — Update personality (audit + cache invalidate)
   GET  /contact                        — Get contact + social media
@@ -87,11 +87,47 @@ from src.modules.vitalia.brand_studio.infrastructure.repositories.prohibited_phr
 from src.modules.vitalia.brand_studio.infrastructure.repositories.trust_signal_repository_impl import (
     TrustSignalRepositoryImpl,
 )
+from src.modules.vitalia.iam.application.services.clinic_resolver import UserNotFoundError
+from src.modules.vitalia.iam.application.services.user_resolver import resolve_user_uuid_from_clerk_id
 
 logger = structlog.get_logger()
 
 # ---- Sentinel clinic_id for brand_studio (owner-level config, no clinic context) ----
 _NULL_CLINIC_ID = UUID(int=0)
+
+
+async def _resolve_audit_actor(session: AsyncSession, user_id_header: str) -> UUID:
+    """Resolve the X-User-ID header value to an IAM users.id UUID for the audit actor.
+
+    Header-trust path (no JWT — this router auths via X-User-ID + X-User-Role headers):
+      - If the value parses as a UUID → use it as-is (back-compat: internal callers /
+        legacy tests that already send users.id).
+      - Otherwise (= a Clerk userId string like "user_2abc...") → resolve clerk_id →
+        users.id via the public iam resolver. No match → 422.
+
+    Centralizes the if-UUID-else-resolve so every auditing endpoint uses one path
+    (DRY — origin estabilizar-harness-e2e-lisa-marca / T-3 sub-bug #2b).
+
+    Args:
+        session: AsyncSession for the iam lookup.
+        user_id_header: Raw X-User-ID header value (users.id UUID or Clerk userId).
+
+    Returns:
+        The IAM users.id UUID to record as the audit actor.
+
+    Raises:
+        HTTPException: 422 if the value is neither a valid UUID nor a known Clerk id.
+    """
+    try:
+        return UUID(user_id_header)
+    except ValueError:
+        pass
+
+    try:
+        return await resolve_user_uuid_from_clerk_id(session, user_id_header)
+    except UserNotFoundError as exc:
+        raise HTTPException(status_code=422, detail="Invalid user_id") from exc
+
 
 # ---- RBAC dependencies ----
 # Mutation guard: owner + admin_clinic only
@@ -184,12 +220,16 @@ async def get_initial_state(
     """Return full hydration payload for a sub-sub-tab page (Server Component SSR).
 
     Per 03-arch § 5.1: SSR initial state is read-only and allows owner + admin_clinic.
+
+    user_id is resolved via _resolve_audit_actor so SSR tolerates the real Clerk
+    userId (T-2) the same way the auditing PATCH/POST/DELETE endpoints do — keeps the
+    actor contract uniform even though this read writes no audit row.
     """
     try:
         tenant_uuid = UUID(tenant_id)
-        user_uuid = UUID(user_id)
     except ValueError as exc:
-        raise HTTPException(status_code=422, detail="Invalid tenant_id or user_id") from exc
+        raise HTTPException(status_code=422, detail="Invalid tenant_id") from exc
+    user_uuid = await _resolve_audit_actor(session, user_id)
 
     bundle = _build_service(session)
     return await bundle.marca.get_initial_state(
@@ -238,9 +278,9 @@ async def patch_identity(
     """Update brand name or tagline. Writes audit log row pre-response."""
     try:
         tenant_uuid = UUID(tenant_id)
-        user_uuid = UUID(user_id)
     except ValueError as exc:
-        raise HTTPException(status_code=422, detail="Invalid tenant_id or user_id") from exc
+        raise HTTPException(status_code=422, detail="Invalid tenant_id") from exc
+    user_uuid = await _resolve_audit_actor(session, user_id)
 
     bundle = _build_service(session)
     return await bundle.marca.patch_identity(
@@ -289,9 +329,9 @@ async def patch_visuals(
     """Update brand colors or fonts. Writes audit log row pre-response."""
     try:
         tenant_uuid = UUID(tenant_id)
-        user_uuid = UUID(user_id)
     except ValueError as exc:
-        raise HTTPException(status_code=422, detail="Invalid tenant_id or user_id") from exc
+        raise HTTPException(status_code=422, detail="Invalid tenant_id") from exc
+    user_uuid = await _resolve_audit_actor(session, user_id)
 
     bundle = _build_service(session)
     return await bundle.marca.patch_visuals(
@@ -322,9 +362,9 @@ async def upload_logo(
 
     try:
         tenant_uuid = UUID(tenant_id)
-        user_uuid = UUID(user_id)
     except ValueError as exc:
-        raise HTTPException(status_code=422, detail="Invalid tenant_id or user_id") from exc
+        raise HTTPException(status_code=422, detail="Invalid tenant_id") from exc
+    user_uuid = await _resolve_audit_actor(session, user_id)
 
     if file.content_type not in ("image/png", "image/jpeg", "image/jpg", "image/webp"):
         raise HTTPException(
@@ -359,30 +399,32 @@ async def upload_logo(
 
 
 @router.delete(
-    "/logos/{logo_id}",
+    "/logos",
     response_model=None,
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete brand logo (soft delete)",
 )
 async def delete_logo(
-    logo_id: UUID,
     tenant_id: str = Header(alias="X-Tenant-ID"),
     user_id: str = Header(alias="X-User-ID"),
     _role: str = _brand_owner_required,
     session: AsyncSession = Depends(_get_db),
 ) -> None:
-    """Soft-delete a brand logo. Clears logo_url from brand config."""
+    """Soft-delete the brand logo. Clears logo_url from brand config.
+
+    Una marca tiene UN solo logo (visuals.logo_url) → la ruta no necesita {logo_id}
+    en el path; el servicio lo desreferencia + lo borra del object storage por tenant.
+    """
     try:
         tenant_uuid = UUID(tenant_id)
-        user_uuid = UUID(user_id)
     except ValueError as exc:
-        raise HTTPException(status_code=422, detail="Invalid tenant_id or user_id") from exc
+        raise HTTPException(status_code=422, detail="Invalid tenant_id") from exc
+    user_uuid = await _resolve_audit_actor(session, user_id)
 
     bundle = _build_service(session)
     await bundle.marca.delete_logo(
         tenant_id=tenant_uuid,
         user_id=user_uuid,
-        logo_id=logo_id,
     )
 
 
@@ -425,9 +467,9 @@ async def patch_personality(
     """Update one or more compiler v2 blocks. Writes audit log + invalidates voice preview cache."""
     try:
         tenant_uuid = UUID(tenant_id)
-        user_uuid = UUID(user_id)
     except ValueError as exc:
-        raise HTTPException(status_code=422, detail="Invalid tenant_id or user_id") from exc
+        raise HTTPException(status_code=422, detail="Invalid tenant_id") from exc
+    user_uuid = await _resolve_audit_actor(session, user_id)
 
     bundle = _build_service(session)
     return await bundle.marca.patch_personality(
@@ -476,9 +518,9 @@ async def patch_contact(
     """Update website URL or social handles. Writes audit log row pre-response."""
     try:
         tenant_uuid = UUID(tenant_id)
-        user_uuid = UUID(user_id)
     except ValueError as exc:
-        raise HTTPException(status_code=422, detail="Invalid tenant_id or user_id") from exc
+        raise HTTPException(status_code=422, detail="Invalid tenant_id") from exc
+    user_uuid = await _resolve_audit_actor(session, user_id)
 
     bundle = _build_service(session)
     return await bundle.marca.patch_contact(
@@ -581,7 +623,7 @@ async def get_voice_preview(
 )
 async def get_prohibited_phrases(
     tenant_id: str = Header(alias="X-Tenant-ID"),
-    user_id: str = Header(alias="X-User-ID"),
+    user_id: str | None = Header(alias="X-User-ID", default=None),
     country: str | None = Query(default=None, max_length=2, description="ISO 3166-1 alpha-2 (e.g. PE)"),
     session: AsyncSession = Depends(_get_db),
 ) -> ProhibitedPhrasesListDTO:
@@ -589,7 +631,13 @@ async def get_prohibited_phrases(
 
     Per anti-creep rule: NO LLM validator — soft warning only.
     UI shows warning + suggested_alternative + allows override with audit log.
+
+    X-User-ID is OPTIONAL here (sub-bug #1, T-3): this is a read keyed by tenant +
+    country, it writes no audit row, so no actor is needed. The browser's fetchClient
+    never injects X-User-ID → it must not 422. X-Tenant-ID stays required
+    (tenant-isolation). `user_id` is intentionally not parsed nor used.
     """
+    del user_id  # accepted-but-unused: read keyed by tenant + country (no audit, no actor)
     try:
         tenant_uuid = UUID(tenant_id)
     except ValueError as exc:
@@ -620,9 +668,9 @@ async def post_voice_warning_override(
     """
     try:
         tenant_uuid = UUID(tenant_id)
-        user_uuid = UUID(user_id)
     except ValueError as exc:
-        raise HTTPException(status_code=422, detail="Invalid tenant_id or user_id") from exc
+        raise HTTPException(status_code=422, detail="Invalid tenant_id") from exc
+    user_uuid = await _resolve_audit_actor(session, user_id)
 
     bundle = _build_service(session)
     audit_id = await bundle.voice_blocklist.log_warning_override(
@@ -658,15 +706,20 @@ async def post_voice_warning_override(
 )
 async def get_trust_signals(
     tenant_id: str = Header(alias="X-Tenant-ID"),
-    user_id: str = Header(alias="X-User-ID"),
+    user_id: str | None = Header(alias="X-User-ID", default=None),
     session: AsyncSession = Depends(_get_db),
 ) -> list[TrustSignalDTO]:
-    """Return all non-deleted trust signals for the tenant."""
+    """Return all non-deleted trust signals for the tenant.
+
+    Read endpoint — X-User-ID optional (fetchClient no lo inyecta en GETs). Resuelve
+    el actor sólo si viene; el read es tenant-scoped (origin sub-bug #1 extendido,
+    estabilizar-harness-e2e-lisa-marca: el de-mock reveló el 422 en browser real).
+    """
     try:
         tenant_uuid = UUID(tenant_id)
-        user_uuid = UUID(user_id)
     except ValueError as exc:
-        raise HTTPException(status_code=422, detail="Invalid tenant_id or user_id") from exc
+        raise HTTPException(status_code=422, detail="Invalid tenant_id") from exc
+    user_uuid = await _resolve_audit_actor(session, user_id) if user_id else None
 
     bundle = _build_service(session)
     return await bundle.marca.get_trust_signals(tenant_id=tenant_uuid, user_id=user_uuid)  # type: ignore[return-value]
@@ -688,9 +741,9 @@ async def create_trust_signal(
     """Add a new trust signal (from hybrid catalog or free-text). Writes audit log."""
     try:
         tenant_uuid = UUID(tenant_id)
-        user_uuid = UUID(user_id)
     except ValueError as exc:
-        raise HTTPException(status_code=422, detail="Invalid tenant_id or user_id") from exc
+        raise HTTPException(status_code=422, detail="Invalid tenant_id") from exc
+    user_uuid = await _resolve_audit_actor(session, user_id)
 
     bundle = _build_service(session)
     return await bundle.marca.create_trust_signal(
@@ -716,9 +769,9 @@ async def delete_trust_signal(
     """Soft-delete (set deleted_at) a trust signal. Writes audit log."""
     try:
         tenant_uuid = UUID(tenant_id)
-        user_uuid = UUID(user_id)
     except ValueError as exc:
-        raise HTTPException(status_code=422, detail="Invalid tenant_id or user_id") from exc
+        raise HTTPException(status_code=422, detail="Invalid tenant_id") from exc
+    user_uuid = await _resolve_audit_actor(session, user_id)
 
     bundle = _build_service(session)
     await bundle.marca.delete_trust_signal(
@@ -740,7 +793,7 @@ async def delete_trust_signal(
 )
 async def get_trust_catalog(
     tenant_id: str = Header(alias="X-Tenant-ID"),
-    user_id: str = Header(alias="X-User-ID"),
+    user_id: str | None = Header(alias="X-User-ID", default=None),  # noqa: ARG001 — read, X-User-ID opcional (no se usa)
     country: str = Query(default="PE", max_length=2, description="ISO 3166-1 alpha-2 (e.g. PE)"),
     session: AsyncSession = Depends(_get_db),
 ) -> TrustSignalsCatalogDTO:
@@ -748,6 +801,9 @@ async def get_trust_catalog(
 
     PE: 8 entries (DIGESA, MINSA, SUSALUD, COP_ODONTO, CMP, SUNAT, ISO_9001, ESSALUD).
     AR/CL/CO/MX/BR: empty (populated in future stories).
+
+    Read endpoint — X-User-ID opcional e ignorado (origin sub-bug #1 extendido,
+    estabilizar-harness-e2e-lisa-marca: el de-mock reveló el 422 en browser real).
     """
     try:
         UUID(tenant_id)
