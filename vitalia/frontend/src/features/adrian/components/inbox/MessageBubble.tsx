@@ -28,7 +28,10 @@
  * downstream-regression-na: brand-local FE component; no cross-brand consumers
  */
 
+import { Check, CheckCheck } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { useTenantLocale } from "@/hooks/useTenantLocale";
+import { getSocialChannel } from "@/lib/channels/social-channels";
 import { VoiceMessagePlayer } from "./VoiceMessagePlayer";
 import { ImageAnalysisCard } from "./ImageAnalysisCard";
 import { ActionReceiptUndoChip } from "./ActionReceiptUndoChip";
@@ -41,41 +44,9 @@ export interface MessageBubbleProps {
   conversationUpdatedAt: string;
   /** Patient first name (for system message context) */
   patientName?: string | null;
+  /** Conversation channel — tints the outgoing bubble with the network color (#2c). */
+  channel?: string;
   className?: string;
-}
-
-// ─── Avatar sub-components ────────────────────────────────────────────────────
-
-function AdrianAvatar() {
-  return (
-    <div
-      className={cn(
-        "flex-shrink-0 w-7 h-7 rounded-full",
-        "vitalia-agent-gradient-adrian",
-        "flex items-center justify-center",
-        "text-white text-[10px] font-bold select-none",
-      )}
-      aria-label="Adrián"
-    >
-      A
-    </div>
-  );
-}
-
-function HumanAvatar() {
-  return (
-    <div
-      className={cn(
-        "flex-shrink-0 w-7 h-7 rounded-full",
-        "vt-bg-azul-marino",
-        "flex items-center justify-center",
-        "text-white text-[10px] font-bold select-none",
-      )}
-      aria-label="Agente humano"
-    >
-      H
-    </div>
-  );
 }
 
 // ─── Media content renderer ───────────────────────────────────────────────────
@@ -158,21 +129,75 @@ function SystemMessage({ message }: { message: Message }) {
   );
 }
 
+// ─── Timestamp helper (WhatsApp-style per-bubble hour) ────────────────────────
+
+/** Formats a message timestamp as HH:mm in the tenant timezone/locale (UI-AUDIT #3). */
+function formatBubbleTime(
+  iso: string,
+  timezone: string,
+  locale: string,
+): string {
+  try {
+    return new Intl.DateTimeFormat(locale, {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: timezone,
+    }).format(new Date(iso));
+  } catch {
+    return "";
+  }
+}
+
+// ─── Delivery receipt (WhatsApp-style ✓ / ✓✓) ────────────────────────────────
+
+/** Outgoing-only delivery receipt: ✓ sent · ✓✓ delivered · ✓✓ (cian) read. */
+function DeliveryReceipt({
+  status,
+}: {
+  status: "sent" | "delivered" | "read";
+}) {
+  if (status === "sent") {
+    return (
+      <Check className="h-3 w-3 vt-text-muted" aria-label="Enviado" focusable={false} />
+    );
+  }
+  const isRead = status === "read";
+  return (
+    <CheckCheck
+      className={cn("h-3 w-3", isRead ? "vt-text-cian" : "vt-text-muted")}
+      aria-label={isRead ? "Leído" : "Entregado"}
+      focusable={false}
+    />
+  );
+}
+
 // ─── Main MessageBubble ───────────────────────────────────────────────────────
 
 /**
  * MessageBubble — renders one message with correct layout per sender_type.
+ *
+ * Orientation (UI-AUDIT #4 — WhatsApp business inbox convention):
+ *   - patient (the customer, incoming)         → LEFT, clear surface bubble
+ *   - agent_ai / agent_human (us, outgoing)    → RIGHT, brand-filled bubble
+ * Each bubble carries its own HH:mm timestamp (UI-AUDIT #3).
+ *
+ * No per-bubble avatar (UI-AUDIT-2 #2 — saves precious horizontal width). The
+ * "who sent this turn" label (Adrián · Auto / Tú · Manual / patient name) is
+ * rendered once above each turn block by InboxThread.
  */
 export function MessageBubble({
   message,
   conversationUpdatedAt,
+  channel,
   className,
 }: MessageBubbleProps) {
+  const { timezone, locale } = useTenantLocale();
   const {
     sender_type,
     retracted_at,
     action_receipt_expires_at,
     conversation_id,
+    sent_at,
   } = message;
 
   // System messages get special centered pill layout
@@ -182,7 +207,7 @@ export function MessageBubble({
 
   const isPatient = sender_type === "patient";
   const isAI = sender_type === "agent_ai";
-  // isHuman = sender_type === "agent_human" (implicit)
+  const isHuman = sender_type === "agent_human";
 
   const isRetracted = retracted_at !== null;
 
@@ -190,72 +215,86 @@ export function MessageBubble({
   const showUndoChip =
     isAI && action_receipt_expires_at !== null && !isRetracted;
 
+  const timeLabel = formatBubbleTime(sent_at, timezone, locale);
+
+  // Outgoing (Adrián/human) bubble = SOLID surface tinted with the channel color
+  // (#2c — combines with the channel-tinted wallpaper). Opaque via --vt-bubble-base.
+  const isOutgoing = isAI || isHuman;
+  const outgoingBg =
+    isOutgoing && !isRetracted && channel
+      ? `color-mix(in srgb, ${getSocialChannel(channel).brandColorVar} 14%, var(--vt-bubble-base))`
+      : undefined;
+
   return (
     <div
       className={cn(
         "flex gap-2 max-w-[85%]",
-        isPatient ? "ml-auto flex-row-reverse" : "mr-auto flex-row",
+        // Patient on the LEFT (incoming); Adrián/human on the RIGHT (outgoing).
+        isPatient ? "mr-auto flex-row" : "ml-auto flex-row-reverse",
         className,
       )}
       data-testid="message-bubble"
       data-sender={sender_type}
     >
-      {/* Avatar for agent messages */}
-      {isAI && <AdrianAvatar />}
-      {sender_type === "agent_human" && <HumanAvatar />}
-
-      {/* Bubble body */}
-      <div className="flex flex-col gap-1 min-w-0">
-        {/* Agent type chip (AI only) */}
-        {isAI && !isRetracted && (
-          <div className="flex items-center gap-1.5 mb-0.5">
-            <span
-              className={cn(
-                "text-[10px] font-semibold px-1.5 py-0.5 rounded-full",
-                "vt-bg-gradient-agent text-white",
-              )}
-              aria-label="Adrián responde automáticamente"
-            >
-              ✨ auto
-            </span>
-          </div>
+      {/* Bubble body (no avatar — turn label is rendered by InboxThread) */}
+      <div
+        className={cn(
+          "flex flex-col gap-1 min-w-0",
+          isPatient ? "items-start" : "items-end",
         )}
-
+      >
         {/* Message content bubble */}
         <div
           className={cn(
-            "rounded-2xl px-3 py-2 text-sm",
-            // Patient: right-aligned, azul marino
-            isPatient && !isRetracted && "vt-bg-azul-marino text-white",
-            // AI: light cian bg
-            isAI &&
+            // shadow-sm lifts every bubble off the wallpaper so none reads as
+            // "transparent" (UI-AUDIT-3 — WhatsApp-style elevation).
+            "rounded-2xl px-3 py-2 text-sm shadow-sm",
+            // Patient (incoming, left): clear white surface bubble — easy to read
+            isPatient &&
               !isRetracted &&
-              "vt-bg-cian-8 vt-text border vt-border-soft",
-            // Human agent: surface bg
-            sender_type === "agent_human" &&
+              "vt-bg-surface vt-text-foreground border vt-border rounded-tl-sm",
+            // Outgoing (Adrián/human, right): solid channel-tinted bubble (bg via style)
+            isOutgoing &&
               !isRetracted &&
-              "vt-bg-surface vt-text border vt-border",
+              "vt-text-foreground border vt-border-soft rounded-tr-sm",
             // Retracted: muted strikethrough
             isRetracted &&
               "vt-bg-muted vt-text-muted border vt-border-soft line-through opacity-60",
-            // Patient side rounding
-            isPatient && "rounded-tr-sm",
-            // Agent side rounding
-            !isPatient && "rounded-tl-sm",
+            isRetracted && (isPatient ? "rounded-tl-sm" : "rounded-tr-sm"),
           )}
+          style={outgoingBg ? { backgroundColor: outgoingBg } : undefined}
         >
           {isRetracted ? (
             <span className="text-xs italic" aria-label="Mensaje revertido">
               [Mensaje revertido]
             </span>
           ) : (
-            <MessageContent message={message} />
+            <>
+              <MessageContent message={message} />
+              {/* WhatsApp-style hour + delivery receipt (✓/✓✓) for outgoing (UI-AUDIT #3) */}
+              {timeLabel && (
+                <div className="mt-0.5 flex items-center justify-end gap-1">
+                  <time
+                    dateTime={sent_at}
+                    className="text-[10px] tabular-nums vt-text-muted"
+                    data-testid="message-bubble-time"
+                  >
+                    {timeLabel}
+                  </time>
+                  {isOutgoing && (
+                    <DeliveryReceipt
+                      status={message.delivery_status ?? "sent"}
+                    />
+                  )}
+                </div>
+              )}
+            </>
           )}
         </div>
 
         {/* ActionReceiptUndoChip — only for AI messages within 5-min window */}
         {showUndoChip && (
-          <div className="flex justify-start">
+          <div className="flex justify-end">
             <ActionReceiptUndoChip
               messageId={message.id}
               conversationId={conversation_id}

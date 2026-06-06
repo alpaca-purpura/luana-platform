@@ -41,7 +41,24 @@ dod_evidence:
   - action: "GET lead-detail Resumen — navegar /{tenant}/adrian/embudo/0d2313ff.../resumen (Playwright authed dr.demo, backend REAL, sin MSW) — repro exacto del crash que pegó Chris"
     observed: "ResumenView renderiza, bloque 'Estado del agente' visible, SIN burbuja Next; base.ts teardown verde (0 pageerror / console.error / /api 4xx-5xx). resumen-live.spec 3/3 (setup+test)."
     backend_log: "GET /api/v1/crm/leads/0d2313ff-72fa-45be-9e8e-e14eb0c3633e/detail HTTP/1.1 200 OK · lead_score_computed score=10 stage=interesado · sin Traceback"
-verified_at: 2026-06-04T06:31:39Z
+  - action: "B1 — click chip 'congelados' (board → /adrian/recuperar) ×15 ciclos (recuperar-live.spec R-1, Playwright authed dr.demo, backend REAL)"
+    observed: "5/5 PASS. Recuperar monta (recuperar-view/empty) SIN quedar en 'Cargando shell'; base.ts teardown verde (0 pageerror/console/4xx, sin Next overlay). El hard-nav elimina el hang del shell ssr:false en soft-nav."
+    backend_log: "GET /api/v1/crm/board + frozen list 200 · sin Traceback"
+  - action: "B2/U1/U2 — abrir Resumen del lead (resumen-live.spec E, Playwright authed, backend REAL)"
+    observed: "score grande == Σ(deltas del breakdown) (B2, ya no miente 0-vs-10) · 0 elementos data-phi[type=name] → nombre completo (U1) · filas Teléfono + Correo presentes (U2). base.ts teardown verde."
+    backend_log: "GET /api/v1/crm/leads/{id}/detail 200 · lead_score_computed · sin Traceback"
+verified_at: 2026-06-04T14:40:00Z
+open_findings:                         # ★ 2026-06-04 sesión 5 — B1/B2/U1/U2 RESUELTOS + live-verified (commits 78a7ba52 BE + b1d32f83 FE)
+  bugs:                                # defectos reales, embudo lane (code:crm)
+    - {id: B1, sev: P0, surface: recuperar, status: RESOLVED, fix_commit: b1d32f83, detail: "RESUELTO (band-aid lane-safe): el chip frozen-kpi-badge (único entry point a /adrian/recuperar) pasa a hard-nav (<a>) → reload completo → el shell ssr:false monta limpio. Live: recuperar-live.spec R-1 ×3 (15 ciclos) 5/5 PASS. ★ ROOT CAUSE = shell dynamic({ssr:false}) cuelga en soft-nav (NO era orden de hooks del componente recuperar como asumía el handoff — RecuperarView/FrozenLeadRow tienen hooks limpios). El flake del shell en OTROS soft-navs (goBack/otros tabs) sigue latente → ESCALADO shell/inbox lane (junto a U3)."}
+    - {id: B2, sev: P1, surface: resumen, status: RESOLVED, fix_commit: 78a7ba52, detail: "RESUELTO: get_lead_detail ahora devuelve el score COMPUTADO en el response (override sobre _lead_to_response). Fix read-side en mi lane crm (el write-side/create vive en lead_service lane inbox). TDD: test_funnel_service 12/12. Live: resumen-live.spec E (score == Σfactores) PASS."}
+  ux_product_decision:                 # U1/U2 RESUELTOS; U3 → story shell aparte
+    - {id: U1, surface: board+resumen+recuperar, status: RESOLVED, decision: "nombre completo (Chris 2026-06-04)", fix_commit: b1d32f83, detail: "RESUELTO: PiiMaskedSpan removido del nombre en LeadCard + ResumenView + FrozenLeadRow (3 surfaces) → nombre completo. non_phi marketing lead; masking PHI aplica al convertir lead→paciente. Live: resumen-live.spec E (0 elementos data-phi[name]) PASS."}
+    - {id: U2, surface: resumen, status: RESOLVED, fix_commit: b1d32f83, detail: "RESUELTO: ResumenView muestra Nombre + Teléfono + Correo (plain, non_phi). Contract-safe: nuevo FE LeadDetailLeadDTO mirror de BE LeadResponse (no se widenó LeadCardDTO/board) + ContractPair registrado (contract-parity 5/5). BE assigned_doctor_id agregado a LeadResponse. Live: resumen-live.spec E (filas Teléfono+Correo) PASS."}
+    - {id: U3, surface: shell, status: OPEN_SEPARATE_STORY, detail: "Splitter chat 55% fijo castiga el board. Shell-level cross-cutting → story aparte (junto al root-cause shell ssr:false de B1)."}
+  polish_separate_story: [P1-KPIs-cripticos, P2-empty-states, P3-chips-truncados, P4-nuevo-lead-perdido, P5-tab-jerarquia]
+  forensic:                            # pedido Chris — al final, antes de cerrar todo
+    detail: "dod_live_verified=true previo fue FALSO para sub-vistas (solo board+writes ejercidos). Raíz: live-verify NO per-surface + auditor confió en self-report + contract-parity manual. Entregable: learning tooling/ + fix gate per-surface live-verify. Ancla HB-44."
 architecture_pattern: ADR-vitalia-004
 adr_004_compliance: full               # ★ 03-arch.md § Architecture Decisions
 autonomous_mode: true                  # ★ Chris ratificó (architect→dev-team→auditor→[demo_signoff]→merge)
@@ -78,7 +95,7 @@ reuse_map_summary: >-
 spawned_at: 2026-05-22T00:00:00.000Z
 supersedes:
   - vitalia-slice-1-pipeline
-next_action: "WRITES LIVE GREEN (T-DEMO-2). dod_live_verified=true. state=developed. T-E2E-1 mocked-smoke+goldens DEFERRED (fixture-overlay infra, NO producto; Chris ratificó proceed-on-live-verify 2026-06-04). → /auditor Phase D sobre la verificación REAL: board-live.spec 9/9 (writes+DB) + BE units (test_funnel_service) + demo-script EDGE para 409/422/freeze. NO re-grindear el overlay del fixture (1 builder 279k ya se colgó; follow-up trackeado en T-E2E-1-result.md). Gate humano: demo_signoff Chris."
+next_action: "★ 2026-06-04 sesión 5 (/dev-team fix-loop COMPLETO + live-verified): B1+B2+U1+U2 RESUELTOS (commits 78a7ba52 BE + b1d32f83 FE, lane code:crm) y LIVE-VERIFIED contra dev-app (recuperar-live R-1 5/5 · resumen-live D+E 4/4 · contract-parity 5/5 · embudo vitest 20/20). NO se tocó shell/inbox. BLOQUEO ESTRUCTURAL SIGUE: la sesión inbox NO aterrizó (state=developing) → gate FE compartido RED (6 unit AdrianInboxView/ChannelBadge + arch-tests FSD sin commitear) → NO se puede correr /auditor con gate verde NI mergear. Orden restante: (1) inbox aterriza primero (su gate verde + commitea sus arch-tests) → agregar entry embudo a KNOWN_CROSS_FEATURE_INTERNAL_IMPORTS → gate-runner test-frontend any_fail=false; (2) /auditor vitalia (gate verde) Phase D sobre la verificación REAL; (3) demo_signoff Chris; (4) /pm-vitalia merge + cap crm/adrian-embudo + git mv archive; (5) FORENSE proceso (dod_live_verified falso · gate per-surface live-verify · ancla HB-44). Escalado a story shell aparte: B1 root-cause (shell ssr:false soft-nav hang, afecta otros soft-navs) + U3 splitter + P1-P5 pulido. SSoT cierre = HANDOFF-next-session.md."
 spec_artifact: 01-spec.md             # ★ SSoT funcional (v3). El detalle vive AQUÍ, no en este checkpoint.
 po_ux_version: 3
 detail_pattern: page_entitysubnavbar  # opción C ratificada UX (Chris 2026-06-03)

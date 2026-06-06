@@ -62,9 +62,11 @@ export function ComposerArea({
   const clearAttachQueue = useInboxStore((s) => s.clearAttachQueue);
   const attachQueue = useInboxStore((s) => s.attachQueue);
 
-  const { handler_mode, id: conversationId } = conversation;
-  const isAgentThinking =
-    conversation.status === "active" && handler_mode === "ai";
+  // The operator always writes as a human here (the textarea is THEIR voice). The
+  // "send as Adrián" path is the proposal-approval flow (ProposalCardBanner). The
+  // box is always usable; whether Adrián also auto-replies is governed by Pausar
+  // in ThreadComposerDock (Chris UI #2 + #3).
+  const { id: conversationId } = conversation;
 
   const canSend =
     (text.trim().length > 0 || voiceReady !== null || attachQueue.length > 0) &&
@@ -135,9 +137,7 @@ export function ComposerArea({
   }, [pendingProposalText]);
 
   return (
-    <div
-      className={cn("flex flex-col gap-2 p-3 border-t vt-border", className)}
-    >
+    <div className={cn("flex flex-col gap-2 p-3", className)}>
       {/* Proposal banner for Adrián consulta state */}
       {pendingProposalText && (
         <ProposalCardBanner
@@ -180,25 +180,25 @@ export function ComposerArea({
           value={text}
           onChange={setText}
           onSubmit={handleSend}
-          handlerMode={handler_mode}
+          handlerMode="human"
           patientName={patientName}
-          disabled={isAgentThinking || sendMessage.isPending}
+          disabled={sendMessage.isPending}
           className="flex-1"
         />
 
         <ComposerAttachButton
           conversationId={conversationId}
-          disabled={isAgentThinking || sendMessage.isPending}
+          disabled={sendMessage.isPending}
         />
 
         <ComposerVoiceButton
           conversationId={conversationId}
           onVoiceReady={handleVoiceReady}
-          disabled={isAgentThinking || sendMessage.isPending}
+          disabled={sendMessage.isPending}
         />
 
         <SendButton
-          handlerMode={handler_mode}
+          handlerMode="human"
           onClick={handleSend}
           disabled={!canSend}
           isPending={sendMessage.isPending}

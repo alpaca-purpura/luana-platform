@@ -66,7 +66,7 @@ describe("INBOX_COPY", () => {
       "empty",
       "filters",
       "segmentedMode",
-      "voiceStyleChip",
+      "composerDock",
       "pauseAgent",
       "composer",
       "multimedia",
@@ -93,10 +93,9 @@ describe("INBOX_COPY", () => {
     expect(INBOX_COPY.empty.noResultsFilter.cta).toBeTruthy();
   });
 
-  it("segmentedMode has all 3 mode labels", () => {
+  it("segmentedMode has both mode labels (2 modos · Chris UI #3)", () => {
     expect(INBOX_COPY.segmentedMode.adrianDecide).toBeTruthy();
     expect(INBOX_COPY.segmentedMode.adrianConsulta).toBeTruthy();
-    expect(INBOX_COPY.segmentedMode.yoEscribo).toBeTruthy();
   });
 
   it("activityStream.eventKinds has all 10 event kind labels", () => {

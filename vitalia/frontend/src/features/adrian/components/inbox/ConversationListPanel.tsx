@@ -23,9 +23,14 @@
  */
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import { useParams } from "next/navigation";
 import { useInboxUrlState } from "../../lib/url-state";
 import { useInboxStore } from "../../store/inbox-store";
+import {
+  getLastViewedConv,
+  setLastViewedConv,
+} from "../../lib/last-viewed-conv";
 import { useConversationFilters } from "../../hooks/use-conversation-filters";
 import { useConversations, useLeads } from "@/features/crm-shared";
 import { SearchInput } from "./SearchInput";
@@ -50,11 +55,32 @@ export function ConversationListPanel({
 }: ConversationListPanelProps) {
   const [urlState, setUrlState] = useInboxUrlState();
   const setActiveConvId = useInboxStore((s) => s.setActiveConvId);
+  const activeConvId = useInboxStore((s) => s.activeConvId);
+  const params = useParams();
+  const tenantId =
+    typeof params?.tenantId === "string" ? params.tenantId : "";
   const filters = useConversationFilters();
   const { data, isLoading, isError } = useConversations(filters);
   const { data: leadsData } = useLeads();
 
   const conversations = data?.conversations ?? [];
+
+  // Auto-select on entry (UI-AUDIT #1): re-open the last conversation the operator
+  // was viewing (persisted UUID) or, on a first visit, the newest one. Skips if a
+  // conversation is already chosen (URL ?conv= or store) or the list is empty.
+  useEffect(() => {
+    if (isLoading) return;
+    if (urlState.conv || activeConvId || conversations.length === 0) return;
+    const persisted = tenantId ? getLastViewedConv(tenantId) : null;
+    const target =
+      persisted && conversations.some((c) => c.id === persisted)
+        ? persisted
+        : conversations[0]!.id;
+    setActiveConvId(target);
+    void setUrlState({ conv: target });
+    if (tenantId) setLastViewedConv(tenantId, target);
+    // setActiveConvId / setUrlState are stable; resolve only from the inputs below.
+  }, [isLoading, urlState.conv, activeConvId, conversations, tenantId]);
 
   // Resolve patient names from leads (operator triage view). Names come from the
   // leads endpoint (server-side decrypted) and are shown to authorized operators.
@@ -117,6 +143,8 @@ export function ConversationListPanel({
     // selection shareable + highlights the active row.
     setActiveConvId(conversationId);
     void setUrlState({ conv: conversationId });
+    // Remember it so the next visit re-opens this conversation (UI-AUDIT #1).
+    if (tenantId) setLastViewedConv(tenantId, conversationId);
   }
 
   // Derive current FilterChipsValue from URL state
@@ -164,7 +192,7 @@ export function ConversationListPanel({
       <div className="min-h-0 flex-1 overflow-hidden">
         <InboxConvList
           conversations={conversations}
-          selectedId={urlState.conv ?? null}
+          selectedId={urlState.conv ?? activeConvId ?? null}
           onSelect={handleSelect}
           isLoading={isLoading}
           emptyVariant={getEmptyVariant()}

@@ -115,6 +115,23 @@ CONTRACT_PAIRS: list[ContractPair] = [
             ]
         ),
     ),
+    # -- Lead detail full DTO (U2 / HB-44: ResumenView needs phone+email+assignedDoctorId) --
+    # BE:  vitalia/backend/src/modules/vitalia/crm/application/dto/lead_dto.py :: LeadResponse
+    # FE:  vitalia/frontend/src/features/adrian/types/embudo.types.ts :: LeadDetailLeadDTO
+    #
+    # Context (U2 / 2026-06-04):
+    #   LeadDetailResponse.lead was typed as LeadCardDTO (board projection, no phone/email).
+    #   The Resumen tab needs phone + email to display contact info, and assignedDoctorId so
+    #   the Doctor row is populated. Fix: new LeadDetailLeadDTO mirrors LeadResponse (which
+    #   already exposes email, phone, assigned_doctor_id post T-BE-2 + U2-BE fix).
+    #   LeadCardDTO remains unchanged (board projection, deliberately excludes PII).
+    ContractPair(
+        be_module="src.modules.vitalia.crm.application.dto.lead_dto",
+        be_class="LeadResponse",
+        fe_file="vitalia/frontend/src/features/adrian/types/embudo.types.ts",
+        fe_interface="LeadDetailLeadDTO",
+        fe_only_allowlist=frozenset(),  # mirror puro ⊆ BE LeadResponse
+    ),
 ]
 
 

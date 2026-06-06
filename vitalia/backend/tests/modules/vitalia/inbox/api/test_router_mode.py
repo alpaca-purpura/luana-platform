@@ -221,6 +221,75 @@ async def test_pause_adrian_200(
 
 
 # ---------------------------------------------------------------------------
+# RBAC regression — owner (front-desk operator) may change mode (Chris UI #8)
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture()
+def mock_clinic_ctx_owner() -> MagicMock:
+    """Owner context — front-desk operator, NOT a strict clinical PHI role."""
+    ctx = MagicMock()
+    ctx.user_id = str(USER_ID)
+    ctx.tenant_id = TENANT_ID
+    ctx.clinic_id = CLINIC_ID
+    ctx.role = "owner"
+    ctx.email = "owner@vitalia.test"
+    ctx.name = "Clinic Owner"
+    return ctx
+
+
+@pytest.mark.asyncio
+async def test_set_mode_200_owner_operator(
+    mock_clinic_ctx_owner: MagicMock,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Regression: owner is an inbox operator → set_mode allowed (was 403)."""
+    from src.modules.vitalia.inbox.application.services.set_mode_service import (
+        SetModeResult,
+    )
+
+    result = SetModeResult(
+        conversation_id=CONV_ID,
+        handler_mode="ai",
+        proposal_required=True,
+        status="open",
+        pause_until=None,
+        help_needed=False,
+        updated_at=NOW,
+    )
+    mode_svc = AsyncMock()
+    mode_svc.set_mode.return_value = result
+
+    monkeypatch.setattr(
+        "src.modules.vitalia.iam.application.services.clinic_resolver.ClinicResolver.async_resolve",
+        AsyncMock(return_value=mock_clinic_ctx_owner),
+    )
+    monkeypatch.setattr(
+        "src.modules.vitalia.inbox.api.router._get_set_mode_service",
+        lambda: mode_svc,
+    )
+
+    app = _make_app()
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        resp = await client.patch(
+            f"/api/v1/vitalia/inbox/conversations/{CONV_ID}/mode",
+            json={
+                "mode": "ai",
+                "proposal_required": True,
+                "expected_updated_at": NOW.isoformat(),
+            },
+            headers={
+                "Authorization": VALID_TOKEN,
+                "X-Tenant-ID": str(TENANT_ID),
+                "X-Clinic-ID": str(CLINIC_ID),
+            },
+        )
+
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["proposal_required"] is True
+
+
+# ---------------------------------------------------------------------------
 # 404 — conversation not found in set_mode
 # ---------------------------------------------------------------------------
 

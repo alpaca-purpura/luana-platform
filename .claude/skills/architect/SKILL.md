@@ -200,7 +200,8 @@ Template estructura mínima:
 
 Al producir `04-validators.yaml`, el architect DECLARA por capability/ticket (sección `verification:`):
 - `nature`: **technical** (sin UI) · **functional** (user-reachable) · **both**.
-- `technical_gates.baseline` siempre (tsc/mypy strict · ruff/eslint --max-warnings 0 · arch-fitness) + `opt_in` **por naturaleza** (NO en toda story): Schemathesis (endpoint nuevo), Hypothesis (domain logic con invariantes), mutmut (módulo crítico pre-merge).
+- `technical_gates.baseline` siempre (tsc/mypy strict · ruff/eslint --max-warnings 0 · arch-fitness) + `opt_in` **por naturaleza** (NO en toda story): Schemathesis (endpoint nuevo), Hypothesis (domain logic con invariantes).
+- ★ **`technical_gates.mutation`** (proceso v5 §5.6 · HB-54): el architect MARCA las superficies **mutation-críticas** por `verification_nature` — commit/persistencia (HB-50), dinero/pricing, gates PHI, state-machines, transforms-contrato (HB-42/44) → `mutation: {enabled: true, mode: hard, surfaces: [...]}`; el resto `advisory` (anti-costo). Corre `scripts/mutation_gate.py` diff-scoped (mutmut/Stryker); degrada advisory si el tool no está instalado.
 - `business_rules` matriz `regla → @rule-tag → scenario_id` (cada regla con ≥1 happy + ≥1 negative/edge — Example Mapping) para stories funcionales.
 - `runtime_error_gate: required` para toda superficie FE (builder usa `base.ts` + `verify-no-backend-errors.sh`).
 - `demo_required` (árbol: toca frontend/ o endpoint con consumer FE → true; solo tests/migrations/config/core sin cambio de contrato → false + `demo_skip_reason`).

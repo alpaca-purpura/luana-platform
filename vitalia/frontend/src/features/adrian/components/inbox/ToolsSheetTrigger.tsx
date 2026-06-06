@@ -39,7 +39,7 @@ export function ToolsSheetTrigger({
       aria-expanded={isOpen}
       title={INBOX_COPY.toolsSheet.ariaLabel}
       className={cn(
-        "inline-flex items-center justify-center rounded-lg",
+        "inline-flex items-center justify-center rounded-lg cursor-pointer",
         "p-2 transition-colors",
         "focus-visible:outline focus-visible:outline-2",
         "focus-visible:outline-[var(--vitalia-cian)]",

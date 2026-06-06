@@ -46,6 +46,16 @@ vi.mock("../../../store/inbox-store", () => ({
   ),
 }));
 
+// Mock crm-shared conversation detail (AdrianInboxView reads it for the contact
+// sidebar). Unmocked it pulls in Clerk useAuth → "useAuth within ClerkProvider".
+vi.mock("@/features/crm-shared", () => ({
+  useConversationDetail: () => ({
+    data: undefined,
+    isLoading: false,
+    isError: false,
+  }),
+}));
+
 // Mock useValeriaReaccion
 vi.mock("../../../hooks/useValeriaReaccion", () => ({
   useValeriaReaccion: vi.fn(() => ({

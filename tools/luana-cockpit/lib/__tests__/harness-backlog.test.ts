@@ -13,6 +13,7 @@ import {
   parseHarnessBacklog,
   ESTADO_ORDER,
   countByEstado,
+  countByCarril,
   type HarnessItem,
 } from '../harness-backlog.js';
 
@@ -110,6 +111,41 @@ describe('parseHarnessBacklog', () => {
       'verified',
       'deferred',
     ]);
+  });
+});
+
+describe('parseHarnessBacklog · carril CIL (proceso v5 · additive, no rompe severidad)', () => {
+  const CARRIL_FIXTURE = `| id | fecha | sev | item | estado | ref |
+|---|---|---|---|---|---|
+| HB-1 | 2026-06-01 | 🔴 | item sin tag de carril | **verified** | abc |
+| HB-2 | 2026-06-01 | 🟡 | item de producto [L2] | reported | def |
+| HB-3 | 2026-06-01 | 🔵 | deuda técnica [L3] | reported | ghi |
+| HB-4 | 2026-06-01 | 🟣 | cap stale [L4] | reported | jkl |
+`;
+
+  it('default carril = L1 (el backlog ES el carril L1) sin tag', () => {
+    const hb1 = parseHarnessBacklog(CARRIL_FIXTURE).find((i) => i.id === 'HB-1') as HarnessItem;
+    expect(hb1.carril).toBe('L1');
+  });
+
+  it('un tag [Ln] en el texto overridea el carril', () => {
+    const items = parseHarnessBacklog(CARRIL_FIXTURE);
+    expect(items.find((i) => i.id === 'HB-2')?.carril).toBe('L2');
+    expect(items.find((i) => i.id === 'HB-3')?.carril).toBe('L3');
+    expect(items.find((i) => i.id === 'HB-4')?.carril).toBe('L4');
+  });
+
+  it('carril es ORTOGONAL a severidad (additive · severidad sigue parseando)', () => {
+    const items = parseHarnessBacklog(CARRIL_FIXTURE);
+    // mismo item: carril Y severidad coexisten (D-C — no se reemplazó nada)
+    const hb2 = items.find((i) => i.id === 'HB-2') as HarnessItem;
+    expect(hb2.carril).toBe('L2');
+    expect(hb2.sevLabel).toBe('quick-win'); // 🟡 sigue mapeando
+  });
+
+  it('countByCarril agrupa por carril (L1 default + tags)', () => {
+    const counts = countByCarril(parseHarnessBacklog(CARRIL_FIXTURE));
+    expect(counts).toEqual({ L1: 1, L2: 1, L3: 1, L4: 1 });
   });
 });
 

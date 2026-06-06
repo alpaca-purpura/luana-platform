@@ -21,6 +21,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import re
 import subprocess
@@ -30,6 +31,20 @@ from pathlib import Path
 from typing import Any
 
 import yaml
+
+
+# ── Resolver único (HB-51 · Capa 1/5) — SSoT de "qué cap es este header" ──────
+# Importado por path para no depender de sys.path (scripts/ no es un paquete).
+def _import_sibling(name: str):
+    spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parent / f"{name}.py")
+    mod = importlib.util.module_from_spec(spec)  # type: ignore[arg-type]
+    spec.loader.exec_module(mod)  # type: ignore[union-attr]
+    return mod
+
+
+resolve_cap = _import_sibling("resolve_cap")
+validate_system_map = _import_sibling("validate_system_map")
+validate_caps_schema = _import_sibling("validate_caps_schema")
 
 # Header regex (kept for cross-check 4 file association via code-index)
 HEADER_PY_CAP = re.compile(r"^\s*#\s*cap:\s*(.+?)\s*$", re.MULTILINE)
@@ -113,11 +128,15 @@ def _parse_frontmatter(path: Path) -> dict[str, Any] | None:
         break
 
     body = text[cursor:]
-    if not body.startswith("---"):
-        return None
-
-    after = body[3:].lstrip("\n")
-    yaml_text = after.split("\n---", 1)[0]
+    if body.startswith("---"):
+        after = body[3:].lstrip("\n")
+        yaml_text = after.split("\n---", 1)[0]
+    else:
+        # Caps reconciladas (reconcile_capabilities.py) NO traen fence `---` de apertura:
+        # comentarios + key:values. YAML = hasta el primer separador `---` o EOF. Sin esto
+        # 2/3 caps de nicolify quedaban invisibles a los gates (las veía el resolver pero no
+        # load_capabilities → inconsistencia).
+        yaml_text = re.split(r"(?m)^---[ \t]*$", body, maxsplit=1)[0]
 
     try:
         data = yaml.safe_load(yaml_text)
@@ -434,6 +453,402 @@ def cross_check_4(
     }
 
 
+# ═══════════════════════════════════════════════════════════════════════════
+# HB-51 · Gates determinísticos G1-G6 (cap-format enforcement máximo)
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# G1-G6 corren sobre el resolver único (resolve_cap.py). Cada uno devuelve el
+# mismo shape {total,pass,drift,details} que los cross_checks. Negative tests:
+# scripts/tests/test_validate_code_cap_bidirectional.py. ADVISORY hasta backfill
+# (slice 8), después HARD via --cap-gates-hard (pre-commit 5c/5d + pre-push 4d).
+
+# Captura SOLO el cap-token (charset cap-id) o una lista `[...]`. Frena en el
+# primer carácter ajeno (espacio, `#` de un comentario inline tipo lint-ignore,
+# `"`/`)`/`;` de un header embebido en un string literal) → robusto contra ruido inline.
+_CAP_TOKEN = r"(\[[^\]]*\]|[A-Za-z0-9._/-]+)"
+_HEADER_PY = re.compile(r"^\s*#\s*cap:\s*" + _CAP_TOKEN, re.MULTILINE)
+_HEADER_TS = re.compile(r"^\s*//\s*cap:\s*" + _CAP_TOKEN, re.MULTILINE)
+_SPECIAL = frozenset({"__shared__", "__orphan__", "__skip__", "TBD"})
+
+
+def _scan_code_headers(brand: str, workspace_root: Path) -> dict[str, list[str]]:
+    """Escanea backend/src + frontend/src → {header_token: [sample_file, ...]}.
+
+    Gate-self-contained: NO depende de `_code-index.json` (que puede estar stale en
+    pre-push). Lee solo las primeras 20 líneas (el header vive arriba).
+    """
+    out: dict[str, list[str]] = {}
+    targets = [
+        (workspace_root / brand / "backend" / "src", "*.py", _HEADER_PY),
+        (workspace_root / brand / "frontend" / "src", "*.ts", _HEADER_TS),
+        (workspace_root / brand / "frontend" / "src", "*.tsx", _HEADER_TS),
+    ]
+    for root, ext, pat in targets:
+        if not root.is_dir():
+            continue
+        for p in root.rglob(ext):
+            if "__pycache__" in p.parts:
+                continue
+            name = p.name
+            if name.endswith((".test.ts", ".test.tsx", ".spec.ts", ".spec.tsx")):
+                continue
+            if any(part == "__tests__" for part in p.parts):
+                continue
+            try:
+                with p.open(encoding="utf-8") as fh:
+                    head = "".join(fh.readline() for _ in range(20))
+            except (OSError, UnicodeDecodeError):
+                continue
+            m = pat.search(head)
+            if not m:
+                continue
+            raw = m.group(1).strip()
+            # Notación multi-cap `[a.b, c.d]` → cada token por separado
+            tokens = (
+                [t.strip() for t in raw[1:-1].split(",") if t.strip()]
+                if raw.startswith("[") and raw.endswith("]")
+                else [raw]
+            )
+            for tok in tokens:
+                if tok in _SPECIAL:
+                    continue
+                out.setdefault(tok, []).append(str(p.relative_to(workspace_root)))
+    return out
+
+
+def gate_g1_header_resolves(brand: str, workspace_root: Path) -> dict[str, Any]:
+    """G1 — todo header `# cap:`/`// cap:` resuelve a ≥1 cap REAL (cap_id o alias).
+
+    Header → cap inexistente = FAIL (caza el incidente origen: `inbox.adrian-inbox`
+    huérfano). Usa resolve_cap.resolve_cap_ids (≥1 ⇒ resuelve · functional_area es
+    área 1:N, por eso ≥1, no ==1).
+    """
+    headers = _scan_code_headers(brand, workspace_root)
+    results: list[dict] = []
+    total = 0
+    passing = 0
+    drift = 0
+    for token, files in sorted(headers.items()):
+        total += 1
+        ids = resolve_cap.resolve_cap_ids(
+            brand, token, root=workspace_root / brand / "docs" / "product" / "capabilities"
+        )
+        if ids:
+            passing += 1
+        else:
+            drift += 1
+            results.append(
+                {
+                    "header": token,
+                    "status": "orphan_header",
+                    "sample_files": files[:3],
+                    "drift_reason": f"header `# cap: {token}` no resuelve a ninguna cap (cap_id ni functional_area)",
+                }
+            )
+    return {"total": total, "pass": passing, "drift": drift, "details": results}
+
+
+def _system_map_live_areas(brand: str, workspace_root: Path) -> list[str]:
+    """functional_areas `status:live` que el COCKPIT RENDERIZA (mirror de buildZoneTree).
+
+    Recorre `zones[].boxes` (no `agents[]` crudo): un box string → su agente en `agents[]`;
+    un box objeto → sus functional_areas. Así excluye los pseudo-agentes legacy `config`/`infra`
+    (NO referenciados por ninguna zona → invisibles en el cockpit), cuyas áreas migraron a las
+    cajas v2.0 (acceso/configuracion/observabilidad/…). Sin esto, G2 reportaría 15 áreas
+    legacy huérfanas que el cockpit nunca muestra (falso drift).
+    """
+    sm = _load_system_map(brand, workspace_root)
+    if sm is None:
+        return []
+    agents_by_id = {a.get("id"): a for a in (sm.get("agents") or []) if isinstance(a, dict)}
+    live: list[str] = []
+    for zone in sm.get("zones") or []:
+        for box in zone.get("boxes") or []:
+            if isinstance(box, str):  # ref a un agente especialista
+                agent = agents_by_id.get(box)
+                bid = box
+                areas = (agent.get("functional_areas") if agent else []) or []
+            elif isinstance(box, dict):
+                bid = box.get("id")
+                areas = box.get("functional_areas") or []
+            else:
+                continue
+            for area in areas:
+                if isinstance(area, dict) and area.get("status") == "live" and bid and area.get("id"):
+                    live.append(f"{bid}.{area['id']}")
+    return live
+
+
+def gate_g2_live_area_has_cap(brand: str, workspace_root: Path, caps: dict[str, dict]) -> dict[str, Any]:
+    """G2 — toda functional_area `status:live` (que el cockpit renderiza) tiene ≥1 cap
+    NON-SUPERSEDED (cualquier status).
+
+    0 caps = FAIL (caza "la caja Inbox vacía en el cockpit"). El umbral es non-superseded
+    (cualquier status), NO live: un área con una cap `partial`/`planned` NO está visualmente
+    vacía (el cockpit la pinta). El bug origen era 0 caps (el YAML no existía).
+    """
+    # fa exacta → caps non-superseded (cualquier status). Mismo criterio que el cockpit
+    # (capsByFunctionalArea excluye solo superseded_by).
+    from collections import defaultdict
+
+    by_fa: dict[str, list[str]] = defaultdict(list)
+    for cap_id, cap_data in caps.items():
+        if cap_data.get("superseded_by"):
+            continue
+        fa = cap_data.get("functional_area")
+        if fa:
+            by_fa[fa].append(cap_id)
+
+    live_areas = _system_map_live_areas(brand, workspace_root)
+    results: list[dict] = []
+    total = passing = drift = 0
+    for area in live_areas:
+        total += 1
+        if by_fa.get(area):
+            passing += 1
+        else:
+            drift += 1
+            results.append(
+                {
+                    "functional_area": area,
+                    "status": "live_area_no_cap",
+                    "drift_reason": (
+                        f"área live '{area}' en SYSTEM-MAP sin ninguna cap non-superseded (caja vacía en el cockpit)"
+                    ),
+                }
+            )
+    return {"total": total, "pass": passing, "drift": drift, "details": results}
+
+
+def _load_system_map(brand: str, workspace_root: Path) -> dict[str, Any] | None:
+    sm_path = workspace_root / brand / "docs" / "architecture" / "SYSTEM-MAP.yaml"
+    if not sm_path.exists():
+        return None
+    try:
+        sm = yaml.safe_load(sm_path.read_text(encoding="utf-8"))
+        return sm if isinstance(sm, dict) else None
+    except yaml.YAMLError:
+        return None
+
+
+# Paths-no (no son archivos en disco): endpoints, rutas Next, comandos, vars.
+_NOT_A_PATH = re.compile(r"^\s*(GET|POST|PUT|PATCH|DELETE)\b|/\{|\$\{|^/api/|\s")
+
+
+def _collect_cap_paths(cap_data: dict) -> list[str]:
+    """Extrae paths repo-relativos declarados en un cap (anti-hallucination · G4).
+
+    Conservador: solo strings que parecen archivos del repo (sin espacios, sin
+    ${WS}, sin `/{param}`, con extensión de código). Tolera sufijo `::symbol`.
+    """
+    found: list[str] = []
+
+    def _emit(val: Any) -> None:
+        if not isinstance(val, str):
+            return
+        s = val.split("::", 1)[0].strip()  # db.py::symbol → db.py
+        if not s or _NOT_A_PATH.search(s):
+            return
+        if not s.endswith((".py", ".ts", ".tsx", ".sql", ".yaml", ".yml", ".md")):
+            return
+        found.append(s)
+
+    def _walk(node: Any) -> None:
+        if isinstance(node, str):
+            _emit(node)
+        elif isinstance(node, list):
+            for x in node:
+                _walk(x)
+        elif isinstance(node, dict):
+            for x in node.values():
+                _walk(x)
+
+    dp = cap_data.get("dev_preview")
+    if isinstance(dp, dict):
+        _emit(dp.get("main_component"))
+        _emit(dp.get("e2e_test"))
+    _walk(cap_data.get("code_pointers"))
+    for br in cap_data.get("business_rules") or []:
+        if isinstance(br, dict):
+            _emit(br.get("code_ref"))
+    # dedup preservando orden
+    seen: set[str] = set()
+    return [p for p in found if not (p in seen or seen.add(p))]
+
+
+def gate_g3_cap_has_home(brand: str, workspace_root: Path, caps: dict[str, dict]) -> dict[str, Any]:
+    """G3 — toda functional_area declarada por un cap mapea a un box.area REAL del SYSTEM-MAP."""
+    sm = _load_system_map(brand, workspace_root)
+    if sm is None:
+        return {"total": 0, "pass": 0, "drift": 0, "details": [], "skipped_reason": "no SYSTEM-MAP"}
+    valid_areas = validate_system_map.extract_valid_areas(sm)
+    results: list[dict] = []
+    total = passing = drift = 0
+    for cap_id, cap_data in caps.items():
+        fa = cap_data.get("functional_area")
+        if not fa:
+            continue
+        total += 1
+        if validate_system_map.is_valid_area(fa, valid_areas):
+            passing += 1
+        else:
+            drift += 1
+            results.append(
+                {
+                    "cap_id": cap_id,
+                    "functional_area": fa,
+                    "status": "fa_not_in_system_map",
+                    "drift_reason": f"functional_area '{fa}' no existe en SYSTEM-MAP (cap sin hogar en el mapa)",
+                }
+            )
+    return {"total": total, "pass": passing, "drift": drift, "details": results}
+
+
+def gate_g4_paths_exist(brand: str, workspace_root: Path, caps: dict[str, dict]) -> dict[str, Any]:
+    """G4 — todos los paths declarados por un cap LIVE/BETA (main_component, e2e_test,
+    code_pointers, business_rules.code_ref) existen en disco. Path inventado = FAIL
+    (anti-hallucination con dientes).
+
+    Scope live/beta: una cap `deprecated`/`sunset` puede declarar paths cuyo código YA se
+    removió, y una `partial`/`planned` paths AÚN no creados — exigirles existencia sería
+    falso drift. La claim fuerte "acá vive el código shipped" la hacen las caps live/beta.
+    """
+    results: list[dict] = []
+    total = passing = drift = 0
+    for cap_id, cap_data in caps.items():
+        if (cap_data.get("status") or "").lower() not in ("live", "beta"):
+            continue
+        for rel in _collect_cap_paths(cap_data):
+            total += 1
+            if (workspace_root / rel).exists():
+                passing += 1
+            else:
+                drift += 1
+                results.append(
+                    {
+                        "cap_id": cap_id,
+                        "declared_path": rel,
+                        "status": "path_missing",
+                        "drift_reason": f"path declarado '{rel}' no existe en disco (¿inventado / movido?)",
+                    }
+                )
+    return {"total": total, "pass": passing, "drift": drift, "details": results}
+
+
+def gate_g5_superseded_valid(brand: str, workspace_root: Path, caps: dict[str, dict]) -> dict[str, Any]:
+    """G5 — `superseded_by` (scalar) + `supersedes` (list) referencian caps REALES."""
+    caps_root = workspace_root / brand / "docs" / "product" / "capabilities"
+    results: list[dict] = []
+    total = passing = drift = 0
+
+    def _check(cap_id: str, ref: str, field: str) -> None:
+        nonlocal total, passing, drift
+        if not ref or not isinstance(ref, str):
+            return
+        total += 1
+        if resolve_cap.resolve_cap_ids(brand, ref, root=caps_root):
+            passing += 1
+        else:
+            drift += 1
+            results.append(
+                {
+                    "cap_id": cap_id,
+                    field: ref,
+                    "status": "broken_supersession",
+                    "drift_reason": f"{field} '{ref}' no resuelve a ninguna cap real (cadena de supersesión rota)",
+                }
+            )
+
+    for cap_id, cap_data in caps.items():
+        _check(cap_id, cap_data.get("superseded_by"), "superseded_by")
+        sup = cap_data.get("supersedes")
+        if isinstance(sup, list):
+            for ref in sup:
+                _check(cap_id, ref, "supersedes")
+        elif isinstance(sup, str):
+            _check(cap_id, sup, "supersedes")
+    return {"total": total, "pass": passing, "drift": drift, "details": results}
+
+
+def gate_g6_map_coverage(brand: str, workspace_root: Path, caps: dict[str, dict]) -> dict[str, Any]:
+    """G6 — toda cap LIVE non-superseded tiene functional_area cubierta por una caja del mapa
+    (si no, es invisible en el cockpit)."""
+    sm = _load_system_map(brand, workspace_root)
+    if sm is None:
+        return {"total": 0, "pass": 0, "drift": 0, "details": [], "skipped_reason": "no SYSTEM-MAP"}
+    valid_areas = validate_system_map.extract_valid_areas(sm)
+    results: list[dict] = []
+    total = passing = drift = 0
+    for cap_id, cap_data in caps.items():
+        status = (cap_data.get("status") or "").lower()
+        superseded = cap_data.get("superseded_by")
+        if status not in ("live", "beta") or superseded:
+            continue
+        total += 1
+        fa = cap_data.get("functional_area")
+        if fa and validate_system_map.is_valid_area(fa, valid_areas):
+            passing += 1
+        else:
+            drift += 1
+            results.append(
+                {
+                    "cap_id": cap_id,
+                    "functional_area": fa,
+                    "status": "live_cap_not_on_map",
+                    "drift_reason": (
+                        f"cap live '{cap_id}' con functional_area={fa!r} no cubierta por ninguna caja del mapa "
+                        "(invisible en el cockpit)"
+                    ),
+                }
+            )
+    return {"total": total, "pass": passing, "drift": drift, "details": results}
+
+
+def gate_g7_cockpit_readable(brand: str, workspace_root: Path) -> dict[str, Any]:
+    """G7 — toda cap parsea bajo YAML ESTRICTO (igual que gray-matter/js-yaml del cockpit).
+
+    Claves duplicadas (`map_box`/`last_modified` ×2, etc.) pasan en PyYAML (tolerante)
+    pero el cockpit TIRA YAMLException → la cap queda INVISIBLE en el mapa (caja vacía,
+    error silencioso · caso 15 caps vitalia 2026-06-05, la caja Inbox entre ellas). Este
+    gate hace al validador tan estricto como el consumidor real."""
+    caps_root = workspace_root / brand / "docs" / "product" / "capabilities"
+    results: list[dict] = []
+    total = passing = drift = 0
+    if not caps_root.is_dir():
+        return {"total": 0, "pass": 0, "drift": 0, "details": []}
+    for f in sorted(caps_root.rglob("*.yaml")):
+        if f.name.startswith("_") or f.name == "README.md":
+            continue
+        total += 1
+        err = validate_caps_schema.strict_parse_error(f)
+        if err is None:
+            passing += 1
+        else:
+            drift += 1
+            results.append(
+                {
+                    "cap_id": f"{f.parent.name}.{f.stem}",
+                    "path": str(f.relative_to(workspace_root)),
+                    "status": "cockpit_unreadable",
+                    "drift_reason": f"el cockpit no puede leer esta cap → invisible en el mapa: {err}",
+                }
+            )
+    return {"total": total, "pass": passing, "drift": drift, "details": results}
+
+
+def run_cap_gates(brand: str, workspace_root: Path, caps: dict[str, dict]) -> dict[str, dict[str, Any]]:
+    """Dispatcher de los gates G1-G7 (HB-51). Devuelve {gate_id: result}."""
+    return {
+        "G1": gate_g1_header_resolves(brand, workspace_root),
+        "G2": gate_g2_live_area_has_cap(brand, workspace_root, caps),
+        "G3": gate_g3_cap_has_home(brand, workspace_root, caps),
+        "G4": gate_g4_paths_exist(brand, workspace_root, caps),
+        "G5": gate_g5_superseded_valid(brand, workspace_root, caps),
+        "G6": gate_g6_map_coverage(brand, workspace_root, caps),
+        "G7": gate_g7_cockpit_readable(brand, workspace_root),
+    }
+
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
@@ -450,6 +865,12 @@ def main() -> None:
         help="Exit 1 if any HARD cross-check has drift > 0",
     )
     parser.add_argument("--repo", default=None)
+    parser.add_argument(
+        "--cap-gates-hard",
+        action="store_true",
+        help="HB-51: incluir gates G1-G6 (cap-format) en el set HARD (exit 1 si drift). "
+        "ADVISORY por default hasta el backfill (slice 8).",
+    )
     args = parser.parse_args()
 
     if args.repo:
@@ -496,8 +917,20 @@ def main() -> None:
     cc4 = cross_check_4(caps, workspace_root, args.brand)
     print(f"  total={cc4['total']} pass={cc4['pass']} drift={cc4['drift']}")
 
-    drift_total = cc3["drift"] + cc4["drift"]
+    # ── HB-51 · cap-format gates G1-G6 (resolver-backed) ────────────────────
+    # Limpia el cache del resolver para reflejar caps recién staged/modificadas.
+    resolve_cap.clear_resolver_cache()
+    print("Running cap-format gates G1-G6 (HB-51)...")
+    cap_gates = run_cap_gates(args.brand, workspace_root, caps)
+    for gid in sorted(cap_gates):
+        g = cap_gates[gid]
+        print(f"  {gid}: total={g['total']} pass={g['pass']} drift={g['drift']}")
+    cap_gate_drift = sum(g["drift"] for g in cap_gates.values())
+
+    drift_total = cc3["drift"] + cc4["drift"] + cap_gate_drift
     hard_drift = sum(cc["drift"] for i, cc in [(3, cc3), (4, cc4)] if i in hard_set)
+    if args.cap_gates_hard:
+        hard_drift += cap_gate_drift
 
     verdict = "CLEAN" if drift_total == 0 else ("HARD_FAIL" if hard_drift > 0 else "SOFT_DRIFT")
 
@@ -505,13 +938,16 @@ def main() -> None:
     output: dict[str, Any] = {
         "validated_at": now_iso,
         "brand": args.brand,
-        "schema_version": "v4",
+        "schema_version": "v5",
         "hard_checks": sorted(hard_set),
+        "cap_gates_hard": bool(args.cap_gates_hard),
         "cross_check_3": cc3,
         "cross_check_4": cc4,
+        "cap_gates": cap_gates,
         "summary": {
             "total_caps": len(caps),
             "drift_total": drift_total,
+            "cap_gate_drift": cap_gate_drift,
             "drift_in_hard": hard_drift,
             "verdict": verdict,
         },
@@ -523,7 +959,7 @@ def main() -> None:
         fh.write("\n")
 
     print(f"\nVerdict: {verdict}")
-    print(f"Drift total: {drift_total} · in HARD checks ({sorted(hard_set)}): {hard_drift}")
+    print(f"Drift total: {drift_total} · cap-gate drift: {cap_gate_drift} · in HARD checks: {hard_drift}")
     print(f"Saved to: {out_path}")
 
     if args.strict and hard_drift > 0:

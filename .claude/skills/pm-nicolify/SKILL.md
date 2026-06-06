@@ -182,8 +182,9 @@ Idéntico paradigm v4 de Luana core. Detalle: `docs/process/pm-redesign-2026-05.
 | "spec ratificada" / "diseño ratificado" | Update state refining→refined. **Invocá `Skill(architect)`** con args `"nicolify {story-id}"` |
 | "ready" | Update state refined→ready (verificar 4 archivos: 03-arch, 04-validators, 05-guidelines, 06-tickets) |
 | "build" / "arranca dev" | Update state ready→developing. **Invocá `Skill(dev-team)`** con args `"nicolify {story-id}"` |
-| "validators GREEN" | Update state developing→developed |
-| "audita" / "QA" | Update state developed→reviewing. **Invocá `Skill(auditor)`** con args `"nicolify {story-id}"` |
+| "validators GREEN" | Update state developing→developed (default: dev-team pausa en **G** `phase: AWAIT_CHRIS_VERIFY`) |
+| "reconcile {story}" / "Chris satisfecho" ★ proceso v5 | Verificar `chris_verify.signoff` → **R · reconcile** spec/arch/validators/cap ⟵ realidad + `chris_verify.rounds`; congelar ledger `deferred`; escribir `reconciled: true` → **Invocá `Skill(auditor)`** con args `"nicolify {story-id}"` (story-closure-gate Fase R) |
+| "audita" / "QA" | Update state developed→reviewing. Precondición: `reconciled: true` o `autonomous_mode: true`. **Invocá `Skill(auditor)`** con args `"nicolify {story-id}"` |
 | "{story-id} merge" | Verificar APPROVED + CHECKPOINTS C1-C5 → escribir 07-merge.md → migrar capability → archive story → update state reviewing→done |
 | "learning {tema}" | Crear `nicolify/docs/learnings/{date}-{slug}.md` con frontmatter promotable: yes/candidate/no |
 | "promotable {tema}" | Append learning con `promotable: candidate` + ping `/pm-luana` para evaluación |

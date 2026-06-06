@@ -39,6 +39,21 @@ export const ESTADO_ORDER: Exclude<HarnessEstado, 'otro'>[] = [
 
 export type HarnessSeveridad = 'silent-killer' | 'quick-win' | 'decision' | 'wave' | 'otro';
 
+/**
+ * Carril del CIL (proceso v5 §5.7 · docs/process/continuous-improvement.md). Este
+ * backlog ES el carril L1 (harness/proceso); un ítem puede taggear `[L2]`/`[L3]`/`[L4]`
+ * en su texto si excepcionalmente pertenece a otro carril. Default L1. Dimensión
+ * ORTOGONAL a la severidad (additive · no reemplaza nada — D-C).
+ */
+export type HarnessCarril = 'L1' | 'L2' | 'L3' | 'L4';
+
+export const CARRIL_LABELS: Record<HarnessCarril, string> = {
+  L1: 'harness',
+  L2: 'producto/skills-arq',
+  L3: 'deuda técnica',
+  L4: 'capability-desfasada',
+};
+
 export interface HarnessItem {
   /** Id literal de la tabla, ej. "HB-1". */
   id: string;
@@ -54,6 +69,8 @@ export interface HarnessItem {
   item: string;
   /** Item con marcadores de negrita removidos · para el título de la card. */
   title: string;
+  /** Carril del CIL (default L1 = harness; `[Ln]` tag en el texto lo overridea). */
+  carril: HarnessCarril;
   /** Estado canónico (primera palabra del campo estado, sin negrita ni sufijo). */
   estado: HarnessEstado;
   /** Campo estado crudo, ej. "**applied** (cont. 4)" · preserva el matiz. */
@@ -70,6 +87,14 @@ const SEV_MAP: Record<string, HarnessSeveridad> = {
 };
 
 const VALID_ESTADOS = new Set<HarnessEstado>(ESTADO_ORDER);
+
+/** Detecta un tag `[L2]`/`[L3]`/`[L4]` en el texto del item. Default L1 (backlog = carril L1). */
+const CARRIL_RE = /\[(L[234])\]/i;
+
+function deriveCarril(item: string): HarnessCarril {
+  const m = item.match(CARRIL_RE);
+  return (m?.[1]?.toUpperCase() as HarnessCarril) ?? 'L1';
+}
 
 /** Quita marcadores markdown de énfasis (`**`, `__`, `*`, `` ` ``) de un texto. */
 function stripEmphasis(s: string): string {
@@ -123,6 +148,7 @@ export function parseHarnessBacklog(md: string): HarnessItem[] {
       sevLabel: SEV_MAP[sevEmoji] ?? 'otro',
       item,
       title: stripEmphasis(item),
+      carril: deriveCarril(item),
       estado: normalizeEstado(estadoRaw),
       estadoRaw,
       ref,
@@ -138,5 +164,12 @@ export function countByEstado(items: HarnessItem[]): Record<string, number> {
   for (const it of items) {
     counts[it.estado] = (counts[it.estado] ?? 0) + 1;
   }
+  return counts;
+}
+
+/** Cuenta items por carril del CIL (L1-L4) · para el board 4-lanes del stop semanal. */
+export function countByCarril(items: HarnessItem[]): Record<HarnessCarril, number> {
+  const counts: Record<HarnessCarril, number> = { L1: 0, L2: 0, L3: 0, L4: 0 };
+  for (const it of items) counts[it.carril] += 1;
   return counts;
 }

@@ -325,7 +325,7 @@ business_rules:
     rule: "Solo roles doctor y admin_clinic acceden a la configuración de marca · nurse/receptionist/patient excluidos"
     enforcement:
       - ".claude/rules/tenant-isolation.md"
-    code_ref: "vitalia/backend/src/modules/vitalia/brand_studio/_shared/auth/rbac.py"
+    code_ref: "vitalia/backend/src/modules/vitalia/_shared/auth/rbac.py"
     severity: high
     audit_trail: false
   - id: no-health-voice-validator

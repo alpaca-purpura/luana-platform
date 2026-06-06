@@ -10,24 +10,42 @@ cap_target: null                    # higiene UX cross-cap del shell-organism (c
 cap_change_type: fix                # corrige el squeeze (BUG #1) + ajusta defaults responsive del shell
 parent_story: null
 
-state: idea
+state: developing                   # idea → developing directo (bugfix lite, Chris-directed "seguí con Track B"; sin /po-ux+/architect formal — 3 puntos ya especificados por Chris + tablet ratificado)
 module: shell
 agent_owner: null                   # shell-organism transversal (no es de un agente)
 map_zone: infraestructura           # superficie no-funcional del shell (wrapper), no una caja de agente
-last_modified: 2026-06-04T00:00:00-05:00
+last_modified: 2026-06-04T14:45:00-05:00
 
 # Naturaleza de verificación (DoD #37 / definition-of-done-live-verify)
 verification_nature: funcional      # user-reachable (layout visible) → demo manual + anti-burbuja + live-verify
 demo_required: true
 
+# Tablet decision (Point 3) — RATIFICADO Chris 2026-06-04: "Drawer en tablet, split ≥1024"
+tablet_decision: drawer-en-tablet-split-1024
+
 repro_evidence: vitalia/docs/observed-bugs/2026-06-04-shell-valeria-squeeze-plus-darkmode.md   # BUG #1 (responsive squeeze)
 
+# DoD #37 live-verify (Playwright vs dev-app.vitalialat.com — Chrome MCP crasheó; fallback)
+dod_live_verified: true
+dod_env: "dev-app.vitalialat.com — Playwright (smoke storageState, --no-deps), clear shell-state para probar fresh defaults"
+dod_evidence:
+  - action: "Desktop 1280, fresh: medir Valeria-panel + inbox thread"
+    observed: "Valeria 381px (29.8% ≈ 30% → Point 2 + rail default Point 1, ya que history+chat min=580px no cabría en 384) · inbox thread 250px (era 56px con 50/50 → squeeze RESUELTO, desbloquea AC-4/5/7)"
+  - action: "Tablet 800, fresh: Valeria inline + ancho del agente + burger"
+    observed: "Valeria NO inline (drawer) · inbox = 800px (FULL width — Panel colapsa a 0 < lg) · burger visible → click abre drawer (backdrop + valeria-sidebar visible)"
+  - action: "Cross-tab regression: lisa/marca/voz-y-tono desktop 1280"
+    observed: "Valeria 30% igual que adrian → el cambio del shell aplica uniforme a todas las tabs"
+verified_at: 2026-06-04
+commits:
+  - "29451ef6 — mount Sonner Toaster (orphan shell fix, toast() eran no-ops)"
+  - "614bfbd5 — Track B: rail default + 30/70 + tablet drawer (8 files, 146 shell unit tests green)"
+
 next_action: >-
-  Story en `idea`. Próximo: /po-ux (o /pm-vitalia) refina los 3 puntos de Chris en 01-spec
-  (RN + AC + mapa funcional + propuesta tablet) → /architect (toca shell-store + useViewportGuard
-  + ShellOrganismLayout + ValeriaSidebar/Rail) → /dev-team → live-verify (AC del shell + desbloquea
-  AC-4/5/7 del inbox) → demo Chris. Coordinar bucket lock `code:shell` (cross-tab). NO 2 stories
-  del shell en developing a la vez.
+  Code-complete + live-verified (3 puntos). **PARÁ — Chris prueba en dev-app + demo sign-off ANTES
+  de /auditor** (regla dura DoD #37). Falta: (a) Chris demo (hard-refresh dev-app, probar 1280/1024/800),
+  (b) /auditor (cross-tab shell + regression-guard de las stories shell ya done), (c) merge /pm-vitalia
+  → done + actualizar SYSTEM-MAP. NOTA: este story desbloquea AC-4/5/7 + AC-12 del inbox (thread usable)
+  → re-verificar esos AC del inbox tras el merge. Lock `code:shell` adquirido (liberar al cerrar).
 ---
 
 # vitalia-bugfix-shell-valeria-responsive — checkpoint

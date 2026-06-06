@@ -26,7 +26,7 @@
 
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { useInboxStore } from "../../store/inbox-store";
@@ -36,7 +36,24 @@ import type { InitialInboxState } from "@/features/adrian/api/inbox-server";
 import { ConversationListPanel } from "./ConversationListPanel";
 import { InboxThread } from "./InboxThread";
 import { ContactSidebar } from "./ContactSidebar";
+import { InboxEmptyPanel } from "./InboxEmptyPanel";
+import { getLastViewedConv } from "../../lib/last-viewed-conv";
 import { cn } from "@/lib/cn";
+
+/** Minimal pulse placeholder while auto-select resolves the first conversation. */
+function ThreadLoadingPlaceholder() {
+  return (
+    <div
+      className="flex h-full flex-col gap-3 p-6"
+      aria-hidden="true"
+      data-testid="inbox-thread-loading"
+    >
+      <div className="h-9 w-2/3 animate-pulse rounded-2xl rounded-tl-sm vt-bg-muted" />
+      <div className="h-9 w-1/2 animate-pulse self-end rounded-2xl rounded-tr-sm vt-bg-muted" />
+      <div className="h-14 w-3/5 animate-pulse rounded-2xl rounded-tl-sm vt-bg-muted" />
+    </div>
+  );
+}
 
 // ── Props ────────────────────────────────────────────────────────────────────
 
@@ -58,27 +75,62 @@ export interface AdrianInboxViewProps {
  * T-5: replaces the T-3 skeleton with ResizablePanelGroup + sub-panels.
  */
 export function AdrianInboxView({
-  initialData: _initialData,
+  initialData,
   initialConvId,
   initialFilter: _initialFilter,
-  tenantId: _tenantId,
+  tenantId,
 }: AdrianInboxViewProps) {
   const searchParams = useSearchParams();
 
   const activeConvId = useInboxStore((s) => s.activeConvId);
   const setActiveConvId = useInboxStore((s) => s.setActiveConvId);
   const contactSidebarOpen = useInboxStore((s) => s.contactSidebarOpen);
+  const setContactSidebarOpen = useInboxStore((s) => s.setContactSidebarOpen);
+
+  // Auto-collapse the contact sidebar when the agent panel gets too narrow, so the
+  // thread (and its crowded header) gets room (UI-AUDIT-3 #3). Only auto-COLLAPSES —
+  // never auto-opens — so it respects a manual toggle once the user acts.
+  const desktopRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = desktopRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const NARROW_PX = 960;
+    const ro = new ResizeObserver((entries) => {
+      const w = entries[0]?.contentRect.width ?? el.clientWidth;
+      if (w > 0 && w < NARROW_PX && useInboxStore.getState().contactSidebarOpen) {
+        setContactSidebarOpen(false);
+      }
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [setContactSidebarOpen]);
 
   // Resolve conv ID: store (click selection, guaranteed reactive) takes precedence;
   // fall back to the URL ?conv= param for deep-link/refresh (spec RN-14/AC-3).
   const convIdFromUrl = searchParams.get("conv");
   const resolvedConvId = activeConvId ?? convIdFromUrl;
 
-  // Sync initial convId from SSR deep-link (only on mount)
+  // The SSR list tells us whether any conversation exists — used to show a skeleton
+  // (while auto-select resolves) vs the real "no conversations" empty state, with no
+  // flash of the empty message on a normal load (UI-AUDIT #1).
+  const hasSsrConversations = initialData.conversations.length > 0;
+
+  // Auto-select on entry (UI-AUDIT #1): deep-link ?conv= → last-viewed (persisted) →
+  // newest from SSR. Runs once on mount; the client ConversationListPanel is the
+  // reliable fallback when SSR returned no list.
   useEffect(() => {
-    if (initialConvId && !activeConvId) {
+    if (activeConvId) return;
+    if (initialConvId) {
       setActiveConvId(initialConvId);
+      return;
     }
+    const persisted = getLastViewedConv(tenantId);
+    if (persisted && initialData.conversations.some((c) => c.id === persisted)) {
+      setActiveConvId(persisted);
+      return;
+    }
+    const newest = initialData.conversations[0]?.id;
+    if (newest) setActiveConvId(newest);
     // Run only on mount — intentionally omitting deps
   }, []);
 
@@ -103,6 +155,7 @@ export function AdrianInboxView({
           react-resizable-panels v4 sizing pitfall (defaultSize ignored without
           panel ids + useDefaultLayout). Resizable handles deferred. */}
       <div
+        ref={desktopRef}
         className="hidden md:flex h-full w-full overflow-hidden"
         data-testid="inbox-desktop"
       >
@@ -121,15 +174,14 @@ export function AdrianInboxView({
         >
           {resolvedConvId ? (
             <InboxThread conversationId={resolvedConvId} className="h-full" />
+          ) : hasSsrConversations ? (
+            <ThreadLoadingPlaceholder />
           ) : (
-            <div
-              className="flex h-full items-center justify-center"
+            <InboxEmptyPanel
+              variant="thread"
               data-testid="inbox-thread-empty"
-            >
-              <p className="text-sm vt-text-muted">
-                Selecciona una conversación para ver el hilo.
-              </p>
-            </div>
+              className="h-full"
+            />
           )}
         </div>
 
@@ -148,16 +200,15 @@ export function AdrianInboxView({
                   name: detailLead?.name ?? null,
                   phone: detailLead?.phone ?? null,
                   email: detailLead?.email ?? null,
+                  serviceInterest: detailLead?.service_interest ?? null,
                   statusTag: detailLead?.stage ?? null,
                 }}
                 className="h-full"
               />
+            ) : hasSsrConversations ? (
+              <ThreadLoadingPlaceholder />
             ) : (
-              <div className="flex h-full items-center justify-center p-4">
-                <p className="text-xs vt-text-muted text-center">
-                  Selecciona una conversación para ver la ficha.
-                </p>
-              </div>
+              <InboxEmptyPanel variant="contact" className="h-full" />
             )}
           </div>
         )}

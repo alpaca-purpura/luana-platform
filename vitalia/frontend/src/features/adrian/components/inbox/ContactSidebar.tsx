@@ -14,7 +14,10 @@
  * Per 03-arch-fe.md § 7 + hipaa-lite.md:
  *   - marketing, sales, patient roles NEVER see NPS history
  *   - AuditedSection fires audit log row on mount (resourceType=patient_profile)
- *   - PiiMaskedSpan masks phone/email/name by default (requires click to reveal)
+ *   - Lead contact (name/phone/email) is shown UNMASKED by default — these are
+ *     leads, not patients (Chris 2026-06-04 interim). The PiiMaskedSpan wrapper +
+ *     data-phi tagging stay (audit + FE-A6 gate); the future tenant "Máxima
+ *     seguridad" config will flip `masked` back on per tenant.
  *
  * "use client" required for:
  *   - useCurrentUser hook (reads Clerk user.publicMetadata.role)
@@ -24,7 +27,10 @@
  * downstream-regression-na: brand-local FE component; no cross-brand consumers
  */
 
+import { Stethoscope, X } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { StageBadge } from "./StageBadge";
+import { useInboxStore } from "../../store/inbox-store";
 import { PiiMaskedSpan } from "@/components/shared/phi/PiiMaskedSpan";
 import { RequireRole } from "@/components/shared/phi/RequireRole";
 import { AuditedSection } from "@/components/shared/phi/AuditedSection";
@@ -53,6 +59,11 @@ export interface InboxContactInfo {
   phone?: string | null;
   /** Patient email (PHI) */
   email?: string | null;
+  /**
+   * Service the lead expressed interest in, e.g. "Ortodoncia" (non-PHI).
+   * The primary thing an operator wants to see → rendered prominently on top.
+   */
+  serviceInterest?: string | null;
   /** Sales stage tag (non-PHI) */
   statusTag?: string | null;
   /** NPS history (role-gated — doctor/nurse/admin_clinic only) */
@@ -106,6 +117,7 @@ export function ContactSidebar({
 }: ContactSidebarProps) {
   const { role } = useCurrentUser();
   const { timezone, locale } = useTenantLocale();
+  const toggleContactSidebar = useInboxStore((s) => s.toggleContactSidebar);
 
   return (
     <aside
@@ -127,12 +139,66 @@ export function ContactSidebar({
           className="px-4 pt-4 pb-3 border-b vt-border-soft"
           aria-labelledby={`contact-section-${conversationId}`}
         >
-          <h3
-            id={`contact-section-${conversationId}`}
-            className="text-xs font-semibold vt-text-faint uppercase tracking-wide mb-3"
+          <div className="flex items-center justify-between mb-3">
+            <h3
+              id={`contact-section-${conversationId}`}
+              className="text-xs font-semibold vt-text-faint uppercase tracking-wide"
+            >
+              {INBOX_COPY.contactSidebar.sectionContact}
+            </h3>
+            {/* Collapse lives inside the detail (UI-AUDIT #1) — reachable even
+                when the thread is narrow */}
+            <button
+              type="button"
+              onClick={toggleContactSidebar}
+              data-testid="contact-sidebar-close"
+              aria-label={INBOX_COPY.contactSidebar.toggleClose}
+              title={INBOX_COPY.contactSidebar.toggleClose}
+              className={cn(
+                "inline-flex h-6 w-6 items-center justify-center rounded-md",
+                "vt-text-muted hover:vt-text-foreground hover:vt-bg-muted",
+                "transition-colors focus-visible:outline focus-visible:outline-2",
+                "focus-visible:outline-[var(--vitalia-cian)]",
+              )}
+            >
+              <X className="h-4 w-4" aria-hidden focusable={false} />
+            </button>
+          </div>
+
+          {/* Servicio de interés — SIEMPRE visible (Chris UI #6); sin servicio aún
+              detectado → cajita calma + "Aún no detectado" en vez de ocultarse. */}
+          <div
+            className={cn(
+              "mb-3 flex items-start gap-2 rounded-lg px-3 py-2",
+              contact.serviceInterest ? "vt-bg-cian-8" : "vt-bg-muted",
+            )}
+            data-testid="contact-service-interest"
           >
-            {INBOX_COPY.contactSidebar.sectionContact}
-          </h3>
+            <Stethoscope
+              className={cn(
+                "mt-0.5 h-4 w-4 shrink-0",
+                contact.serviceInterest ? "vt-text-cian" : "vt-text-faint",
+              )}
+              aria-hidden
+              focusable={false}
+            />
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold vt-text-faint uppercase tracking-wide">
+                {INBOX_COPY.contactSidebar.serviceInterest}
+              </p>
+              <p
+                className={cn(
+                  "text-sm truncate",
+                  contact.serviceInterest
+                    ? "font-semibold vt-text-cian"
+                    : "italic vt-text-muted",
+                )}
+              >
+                {contact.serviceInterest ||
+                  INBOX_COPY.contactSidebar.serviceInterestEmpty}
+              </p>
+            </div>
+          </div>
 
           <dl className="space-y-3">
             {/* Patient name (PHI — PiiMaskedSpan) */}
@@ -143,6 +209,7 @@ export function ContactSidebar({
                   <PiiMaskedSpan
                     value={contact.name}
                     fieldType="name"
+                    masked={false}
                     className="text-sm vt-text-foreground"
                   />
                 </dd>
@@ -157,6 +224,7 @@ export function ContactSidebar({
                   <PiiMaskedSpan
                     value={contact.phone}
                     fieldType="phone"
+                    masked={false}
                     className="text-sm vt-text-foreground"
                   />
                 ) : (
@@ -175,6 +243,7 @@ export function ContactSidebar({
                   <PiiMaskedSpan
                     value={contact.email}
                     fieldType="email"
+                    masked={false}
                     className="text-sm vt-text-foreground"
                   />
                 ) : (
@@ -185,22 +254,8 @@ export function ContactSidebar({
               </dd>
             </div>
 
-            {/* Status tag (non-PHI) */}
-            {contact.statusTag && (
-              <div className="flex flex-col gap-0.5">
-                <dt className="text-xs vt-text-faint">Estado</dt>
-                <dd>
-                  <span
-                    className={cn(
-                      "inline-flex px-2 py-0.5 text-xs font-medium rounded-[var(--radius-pill)]",
-                      "vt-bg-muted vt-text-muted vt-border border",
-                    )}
-                  >
-                    {contact.statusTag}
-                  </span>
-                </dd>
-              </div>
-            )}
+            {/* "Estado" removed (Chris UI #5) — it duplicated "Etapa de la venta"
+                below; the funnel stage lives there as the single source. */}
           </dl>
         </section>
       </AuditedSection>
@@ -257,9 +312,13 @@ export function ContactSidebar({
         <h3 className="text-xs font-semibold vt-text-faint uppercase tracking-wide mb-2">
           {INBOX_COPY.contactSidebar.sectionStage}
         </h3>
-        <p className="text-xs vt-text-muted" aria-label={`Lead ID: ${leadId}`}>
-          {contact.statusTag ?? "—"}
-        </p>
+        <div aria-label={`Lead ID: ${leadId}`}>
+          {contact.statusTag ? (
+            <StageBadge stage={contact.statusTag} />
+          ) : (
+            <span className="text-xs vt-text-muted">—</span>
+          )}
+        </div>
       </section>
     </aside>
   );

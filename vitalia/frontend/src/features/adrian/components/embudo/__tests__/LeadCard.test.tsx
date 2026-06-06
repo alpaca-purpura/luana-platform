@@ -61,9 +61,16 @@ const MOCK_LEAD: LeadCardDTO = {
 };
 
 describe("LeadCard", () => {
-  it("renders PiiMaskedSpan for lead name", () => {
+  // U1 fix (2026-06-04): lead name is now plain text — lead is non_phi marketing prospect.
+  // PiiMaskedSpan was removed from LeadCard; the vendor must identify the lead in the board.
+  it("renders lead name as plain text (not PiiMaskedSpan) in the link", () => {
     render(<LeadCard lead={MOCK_LEAD} onDragStart={vi.fn()} />);
-    expect(screen.getByTestId("pii-masked")).toBeInTheDocument();
+    // Name must appear in a link element as plain text
+    const nameLink = screen.getByRole("link", { name: /María García/i });
+    expect(nameLink).toBeInTheDocument();
+    expect(nameLink).toHaveTextContent("María García");
+    // data-testid pii-masked must NOT exist (it no longer wraps the name)
+    expect(screen.queryByTestId("pii-masked")).not.toBeInTheDocument();
   });
 
   it("renders ChannelBadge with correct channel (whatsapp)", () => {

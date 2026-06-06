@@ -236,3 +236,54 @@ guardrails:
   - "Tenant+clinic dual filter + audit sync write + response_model en todo endpoint."
   - "e2e importan e2e/fixtures/base.ts (anti-burbuja). NO mockear backend del surface (DoD #37)."
   - "Native Linux host (no docker exec). FE :3002 / BE :8002."
+
+# ═══════════════════════════════════════════════════════════════
+# Follow-ups (★ amendment 2026-06-04 · NO bloquean este `done` → /pm-vitalia backlog)
+# Origen: HANDOFF-audit-ready-r6-r8.md § 7. El scope se amplió a 2-modos durante el build;
+# estos quedan para stories aparte. Rutear a /pm-vitalia al merge.
+# ═══════════════════════════════════════════════════════════════
+follow_ups:
+  - id: FU-1
+    title: "Config tenant 'Máxima seguridad' (re-enmascarar leads)"
+    detail: "Flag BE + toggle en Plataforma/Configuración + ContactSidebar/PiiMaskedSpan leen el flag (ON → masked=true). Terreno listo (prop PiiMaskedSpan.masked). PHI/seguridad → pasa por /architect."
+    severity: medium
+    route: "/pm-vitalia (nueva story · PHI → /architect)"
+  - id: FU-2
+    title: "Migrar nudge/retract/proactive a query-keys crm-shared"
+    detail: "Mismo mismatch que mode/pause/send (ya fixeados): sus efectos no reflejan hasta migrar a ['crm','conversation',id]. 1 línea c/u."
+    severity: low
+    route: "/pm-vitalia backlog (bugfix lite)"
+  - id: FU-3
+    title: "Pausa permanente real (flag indefinido BE)"
+    detail: "Hoy 'permanente' = far-future (~100 años). Flag indefinido real = cambio BE (PauseAdrianService + _PauseRequest)."
+    severity: low
+    route: "/pm-vitalia backlog"
+  - id: FU-4
+    title: "Consolidar _INBOX_OPERATOR_ROLES a constante shared vitalia"
+    detail: "Hoy mirror en crm + inbox routers. Lift a un shared vitalia (no cross-brand)."
+    severity: low
+    route: "/pm-vitalia backlog (refactor)"
+  - id: FU-5
+    title: "Detalles estéticos menores diferidos (Chris)"
+    detail: "open_items de demo_signoff (severity low). Capturar la lista al hacer la demo final."
+    severity: low
+    route: "/pm-vitalia backlog"
+  - id: FU-6
+    title: "use-set-mode: refrescar updated_at del cache tras 200 (evitar 409 OCC en re-toggle rápido)"
+    detail: >-
+      onMutate optimistic actualiza handler_mode pero NO updated_at; tras un cambio que
+      ahora SÍ persiste (commit fix 2026-06-04), un segundo toggle inmediato manda el
+      expected_updated_at viejo → 409 OCC (la UI lo maneja: rollback + ring + refetch).
+      Fix: en onSuccess usar SetModeResult.conversation.updated_at para setear el cache.
+      No bloquea: en uso real single-toggle no ocurre; el golden espera el refetch entre toggles.
+    severity: low
+    route: "/pm-vitalia backlog (FE polish)"
+  - id: FU-7
+    title: "Live-verify del retract (POST .../revert) tras el commit-fix HB-50"
+    detail: >-
+      auditor-backend cazó que _get_retract_service tenía el mismo bug missing-commit y lo
+      arregló (Carril R) — gate-cubierto por 103 BE inbox tests. Falta ejercerlo LIVE (efecto
+      en DB) per DoD #37. NO bloquea este `done`: retract NO es un scenario de esta story
+      (sin Gherkin retract en el modelo 2-modos); el fix es sistémico (mismo patrón que mode/pause).
+    severity: low
+    route: "/pm-vitalia backlog (live-verify cuando retract entre a scope)"

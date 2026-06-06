@@ -17,6 +17,7 @@ user_visible: true
 nature: feature
 ui_paradigm: slice-1-superseded  # T-3 reconcile 2026-05-29
 replaced_by_story: vitalia-fase2-adrian-inbox  # T-3: story F2 que reconstruye esta cap
+superseded_by: inbox.adrian-inbox  # 2026-06-04: cap canónica del inbox shell-organism (2-modos). Esta queda como registro histórico slice-1.
 
 user_facing_name: "Adrián · inbox con modo handler (agente/humano/pausado) y OCC"
 user_facing_description: >
@@ -59,18 +60,16 @@ change_log:
     status: done
 
 access:
+  # ★ API entry_points MOVIDOS a la cap canónica inbox.adrian-inbox (2026-06-04). Esta cap
+  # slice-1 (deprecated/superseded) conserva solo la entrada UI como registro histórico;
+  # el enforcement real (_assert_phi_access / _INBOX_OPERATOR_ROLES) se valida en inbox.adrian-inbox.
   entry_points:
     - path: "/adrian/inbox"
-      navigation: "Login → ribbon clic en avatar Adrián → sub-tab Inbox para ver el listado de conversaciones"
+      navigation: "Login → ribbon clic en avatar Adrián → sub-tab Inbox (slice-1 · ver inbox.adrian-inbox)"
       requires_role: [marketing, admin_clinic]
       requires_clinic_scope: true
       entry_type: ui
-    - path: "/api/v1/vitalia/inbox/conversations/{id}/mode"
-      navigation: "API PATCH para cambiar el modo de atención de una conversación"
-      requires_role: [doctor, nurse, admin_clinic]  # real _PHI_ROLES (inbox/api/router.py:118)
-      requires_clinic_scope: true
-      entry_type: api
-  forbidden_roles: [patient, nurse, receptionist]
+  forbidden_roles: [patient]
   authentication: required
 
 scenarios:

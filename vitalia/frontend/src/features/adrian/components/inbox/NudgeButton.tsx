@@ -106,7 +106,7 @@ export function NudgeButton({
           disabled={isPending}
           data-testid="nudge-confirm-yes"
           className={cn(
-            "rounded px-2 py-0.5 text-xs font-semibold transition-colors",
+            "cursor-pointer rounded px-2 py-0.5 text-xs font-semibold transition-colors",
             "vt-bg-primary/12 vt-text-primary hover:vt-bg-primary/20",
             "focus-visible:outline focus-visible:outline-2",
             "focus-visible:outline-[var(--agent-adrian)]",
@@ -120,7 +120,7 @@ export function NudgeButton({
           onClick={handleCancel}
           data-testid="nudge-confirm-cancel"
           className={cn(
-            "rounded px-2 py-0.5 text-xs transition-colors",
+            "cursor-pointer rounded px-2 py-0.5 text-xs transition-colors",
             "vt-bg-muted vt-text-muted hover:vt-bg-muted/80",
             "focus-visible:outline focus-visible:outline-2",
             "focus-visible:outline-[var(--agent-adrian)]",
@@ -155,7 +155,7 @@ export function NudgeButton({
         "focus-visible:outline-[var(--agent-adrian)]",
         "disabled:opacity-40 disabled:cursor-not-allowed",
         isEnabled
-          ? "vt-bg-surface vt-text-muted hover:vt-bg-muted"
+          ? "cursor-pointer vt-bg-surface vt-text-muted hover:vt-bg-muted"
           : "vt-bg-muted vt-text-muted",
         className,
       )}

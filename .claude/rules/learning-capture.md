@@ -15,6 +15,8 @@ Cada aprendizaje vive en un archivo `.md` dedicado bajo un path canónico. **MEM
 
 **Naming:** `YYYY-MM-DD-{kebab-slug}.md`.
 
+**★ Ruteo al CIL (proceso v5 §5.7):** estos paths SON el **carril L2** del CIL (`docs/process/continuous-improvement.md`). Al cerrar story (`L · story-closure`), `/pm-{brand}` + `/auditor` rutean cada aprendizaje al carril: producto/arq → **L2** (estos paths, sin forkear la taxonomía) · proceso/tooling → **L1** (`harness-backlog.md` vía `/harness-issue`) · deuda código/infra → **L3** (`docs/process/tech-debt.md`) · cap stale → **L4** (auto-detect cap_doctor/survivors). El stop `/harnesses-improvement` los homologa. Relaja el `learnings.md` per-story a "un lugar donde se acumulen" — cero archivo huérfano.
+
 ## Cuándo carga el detalle
 
 - Chris dice "aprendamos de esto" / "capturá esto" / "/aprende" o equivalentes → **Trigger 1 mandatory**: STOP flujo actual, clasificar, proponer slug, escribir archivo, agregar pointer MEMORY.md.

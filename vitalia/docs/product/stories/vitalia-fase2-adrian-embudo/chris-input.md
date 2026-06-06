@@ -314,3 +314,47 @@ Mientras esperábamos a la inbox, pegaste un crash en `/adrian/embudo/{leadId}/r
 - **Verificado LIVE dev-app real:** navegué a TU lead exacto `0d2313ff...` → `GET /api/v1/crm/leads/.../detail 200` + ResumenView render SIN burbuja Next + `base.ts` teardown verde (0 pageerror/console/4xx). Backend log limpio (`lead_score_computed`, sin Traceback). tsc 0 · contract 4/4 · vitest 29/29.
 - **Honestidad:** esto prueba que el `dod_live_verified: true` previo era **INCOMPLETO** (cubría board+writes, no el detail). Lo registré en checkpoint `dod_evidence` + HB-44 (reflex auto-hardening). Sistémico abierto: contract-parity es registry MANUAL + la live-verify debe cubrir **toda** superficie user-reachable, no solo la principal.
 - **No toqué inbox.** Commit por pathspec exacto. **Blocker 1 SIGUE:** el gate FE compartido sigue RED por la sesión inbox → `done` sigue esperando que aterrice + tu `demo_signoff`. Seguí probando el resto del embudo si querés — voy registrando lo que pegues.
+
+### 2026-06-04T07:45 · 🤖 claude · `/pm-vitalia` · 💡 PROPONE (crash Juan Perez = bundle viejo en tu browser; + forense agendada)
+Pegaste crash en el detalle de Juan Perez (`ba41e886`). Diagnóstico:
+- **Backend OK:** `GET /api/v1/crm/leads/ba41e886.../detail 200`, sin Traceback (lo confirmé en docker logs). El crash es **client-side**.
+- **Mi fix YA está live + correcto:** corrí la live-verify (Playwright, bundle fresco del dev server) **apuntada a TU lead exacto `ba41e886`** (agent-operated → ejerce la rama de autonomía que crasheaba) → **verde, sin burbuja Next** (base.ts capta cualquier pageerror). El server sirve el código nuevo.
+- **Conclusión:** tu pestaña tiene el **bundle JS viejo** (cargado antes del fix ~06:35; Next App Router en soft-nav NO refetcha el bundle). **Hard-reload** (Cmd+Shift+R / Ctrl+Shift+R) y debería renderizar. Si el crash PERSISTE tras hard-reload → pasame el error de la **consola del browser** (no el docker log) porque sería un campo distinto y lo cazo.
+- **Forense (tu punto 1):** AGENDADA para el cierre. El `dod_live_verified: true` previo era falso para el detail — raíz preliminar: la live-verify se declaró sobre la superficie principal (board+writes) y NUNCA cubrió las sub-vistas (resumen/historial/recuperar); ni dev-team ni auditor enforced "toda superficie user-reachable". Eso + el contrato-imaginado = el agujero. Lo documento a fondo + fix de proceso al final (HB-44 ya abierto como ancla).
+
+### 2026-06-04T08:00 · 🤖 claude · `/pm-vitalia` · ✓ APLICADO (revisión UX live + handoff sesión 4)
+Revisión UX/UI live por Playwright authed (5 superficies del embudo, screenshots en `ux-shots/`). Lista completa + recomendación + handoff en **`HANDOFF-next-session.md`** (SSoT del cierre). Resumen de hallazgos:
+- 🔴 **B1** `Recuperar` crashea ("Rendered more hooks", Next-16 soft-nav) — superficie shippeada y rota. 🔴 **B2** score miente (dominio 10, Resumen pinta 0).
+- 🟠 **U1** nombre del prospecto enmascarado en un embudo de ventas (`non_phi` → masking sobre-aplicado; **ratificás vos** antes de tocar). **U2** Resumen sin teléfono/email. **U3** splitter 55% castiga el board (shell, story aparte).
+- 🟡 **P1-P5** pulido → story aparte. 🔬 **forense** del proceso agendada (gap de live-verify per-surface).
+`open_findings` cargado en checkpoint frontmatter. **Bloqueo estructural sin cambios** (gate FE compartido RED por inbox + `demo_signoff`). El crash del Resumen que pegaste = bundle viejo, ya está fixeado+verificado live (hard-reload). Te dejo el prompt de arranque para la conversación nueva.
+
+### 2026-06-04T13:30 · 🤖 claude · `/pm-vitalia` · ✓ APLICADO (Step 0 + U1 ratificado + chain a /dev-team)
+Retomé el cierre. Step 0: worktree CANÓNICO vitalia, branch `wip/vitalia` → OK. Estado confirmado:
+- **inbox SIGUE `developing`** (no aterrizó) → el gate FE compartido sigue **RED**. `done` sigue bloqueado estructuralmente. NO cruzo su lane.
+- **Lock crm stale limpiado:** `code__crm.lock` lo tenía un pid muerto (1619284, dev-team de la sesión anterior). Lo removí para que dev-team adquiera limpio.
+- demo-script.md ✓ existe · 5 ux-shots ✓.
+- **U1 RATIFICADO por vos = nombre completo.** Registrado en checkpoint `open_findings.U1` (status RATIFIED). dev-team quita el masking del nombre en LeadCard + ResumenView (es `non_phi`; el masking PHI real recién al convertir lead→paciente).
+- **`/auditor` NO dispara este turno:** gate RED (inbox) + bugs sin fixear + transición no permitida (excepción auto-chain). Tu plan pone /auditor en el paso 4, después de fixear bugs + gate verde. Correcto.
+**Encadeno `/dev-team`** (lane `code:crm`, independiente del gate inbox) para: **B1** recuperar crash (orden de hooks / Next-16 soft-nav), **B2** score computado en `get_lead_detail` (TDD BE), **U2** teléfono+email en Resumen, **U1** nombre completo. Live-verify cada superficie tocada contra dev-app + commit SOLO por pathspec. La forense del proceso (punto 7) queda agendada para el cierre, post-merge-gate.
+
+### 2026-06-04T14:45 · 🤖 claude · `/dev-team` · ✓ APLICADO (B1+B2+U1+U2 resueltos + LIVE-VERIFIED · falta inbox/auditor/demo/merge)
+Fix-loop completo en lane `code:crm`. NO toqué shell ni inbox (commits por pathspec; los builders corrieron en worktrees aislados → cherry-pick a wip/vitalia).
+- **B2 (BE, `78a7ba52`):** `get_lead_detail` ahora devuelve el score COMPUTADO (override sobre `_lead_to_response`). El write-side (create) vive en lane inbox → fix read-side en mi lane. TDD `test_funnel_service` 12/12. **+ assigned_doctor_id** agregado a `LeadResponse` (la fila Doctor del Resumen estaba siempre vacía).
+- **B1 (FE, `b1d32f83`):** ★ el handoff asumía "orden de hooks en recuperar" — **FALSO**. Reproduje el crash live: el shell `dynamic({ssr:false})` cuelga en soft-nav (queda en "Cargando shell"), NO es el componente recuperar (sus hooks están limpios). Fix lane-safe: el chip `congelados` (único acceso a /recuperar) pasa a **hard-nav** (`<a>`) → reload limpio. Live: `recuperar-live.spec` R-1 ×15 ciclos **5/5**. El root-cause del shell (afecta otros soft-navs: goBack, otros tabs) queda **escalado a story shell** (junto a U3).
+- **U1 (FE, `b1d32f83`):** quité `PiiMaskedSpan` del nombre en LeadCard + ResumenView + FrozenLeadRow (3 surfaces) → nombre completo. Es `non_phi`. Live: 0 elementos `data-phi[name]`.
+- **U2 (FE, `b1d32f83`):** Resumen muestra Nombre + Teléfono + Correo (plain). Contract-safe: NO widené `LeadCardDTO` (board excluye PII a propósito) — creé `LeadDetailLeadDTO` (mirror de `LeadResponse`) + registré el `ContractPair` (contract-parity 5/5).
+- **Gates (verify nativo en mi worktree):** tsc 0 · eslint adrian 0 · vitest embudo 20/20 · contract-parity 5/5 · BE funnel 12/12. Las 6 fallas FE restantes son **inbox-lane** (AdrianInboxView×5 + ChannelBadge×1) — el blocker, NO mías.
+- **Live-verify (dev-app real, Playwright authed):** recuperar-live R-1 5/5 · resumen-live D+E 4/4 (score==Σfactores · nombre completo · teléfono/correo). `dod_evidence` actualizado en checkpoint.
+
+**NO está done — falta (en orden):** (1) **la inbox debe aterrizar primero** (cerrar su gate FE compartido: 6 ClerkProvider + commitear sus 2 arch-tests) → recién ahí agrego el entry embudo a `KNOWN_CROSS_FEATURE_INTERNAL_IMPORTS` y el gate-runner test-frontend queda verde; (2) `/auditor`; (3) **tu demo + `demo_signoff: APPROVED`**; (4) merge. La forense del proceso queda para el cierre. **Avisame cuando quieras que probés el embudo** (board → Recuperar, Resumen de un lead: nombre completo + teléfono/correo + score correcto) antes del `/auditor`.
+
+### 2026-06-05T02:27 · 🤖 claude · `/pm-vitalia` · ✓ APLICADO
+Chris preguntó si hay historia de Adrián como agente de ventas (ex sales_agent nicolify legacy). Respondido: sí, Adrián = especialista de ventas vitalia (consume engine `core/luana-core-sales-agent`). 4 historias `agent_owner: adrian`: embudo (crm, developed), inbox (inbox, developing), outbound (campaigns, idea), propuestas (proposals, idea). Step 0 flaggeó closure gate: embudo+inbox OPEN sin defer_audit → bloqueante = inbox debe aterrizar primero. Sin cambios de scope; query informativa.
+
+### 2026-06-04T16:00 · 🤖 claude · `/pm-vitalia` · ⚠️ DUDA→PLAN (inbox merged · gate RED descubierto · A6 hecho · espero reconciliación de otra sesión)
+Inbox **merged+done** (`a5682bda`). Verifiqué el gate FE completo para arrancar el cierre embudo y apareció un bloqueo **más grande**: el FE arch-gate está RED por la consolidación inbox→adrian (el sync-merge dejó allowlists stale `features/inbox/*` borrados; una sesión MUERTA dejó WIP huérfano ~90% del fix). 3 fallas: **A4** cross-feature (entry embudo, vive en archivo compartido), **A6** PHI FrozenLeadRow (mío, U1), **A3** fsd AdrianInboxView (inbox).
+- **Hecho ahora (100% embudo-clean):** A6 → allowlist `FrozenLeadRow` (diagnosis = comercial, no clínico) en `test_phi_pii` (archivo limpio). Verde. Commit `88588d68` pushed.
+- **Tu decisión:** una **sesión viva** tiene la reconciliación fsd+cross-feature (inbox→adrian). NO toco esos archivos compartidos.
+- **Espero:** que esa sesión committee la reconciliación. Cuando aterrice, verifico que incluya el entry embudo `adrian/embudo/page.tsx → embudo-server` (si no, lo agrego yo con el archivo ya committed-clean) → `gate-runner test-frontend` verde → `/auditor` → tu demo → merge → forense.
+- **Decime "dale" / "ya reconcilió" cuando esa sesión committee** y sigo el tramo final.

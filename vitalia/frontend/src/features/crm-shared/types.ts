@@ -118,6 +118,13 @@ export interface Lead {
   phone: string | null;
   /** PHI: patient email — MUST use <PiiMaskedSpan kind="email"> */
   email: string | null;
+  /**
+   * Public profile picture URL from the messaging channel (WhatsApp/Instagram).
+   * FE renders it as the contact "thumbnail"; falls back to a monogram when null.
+   * TODO(BE): the inbox API does not populate this yet — the FE asks for it so the
+   * wiring is ready the moment the BE exposes it (UI-AUDIT-2 #1).
+   */
+  avatar_url?: string | null;
   /** Current CRM stage (legacy flat stage for inbox back-compat) */
   stage: LeadStage;
   /** How lead entered the system */

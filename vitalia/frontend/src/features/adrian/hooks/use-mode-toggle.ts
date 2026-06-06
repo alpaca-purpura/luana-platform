@@ -3,15 +3,15 @@
 "use client";
 
 /**
- * use-mode-toggle.ts — Orchestration hook for SegmentedControl3Modes.
+ * use-mode-toggle.ts — Orchestration hook for the Adrián mode toggle.
  *
- * Bridges the UI segmented control (3 values: adrian-decide / adrian-consulta / yo-escribo)
- * to the backend useSetMode mutation (which only knows "ai" | "human" + proposalRequired).
+ * Bridges the UI segmented control (2 values: adrian-decide / adrian-consulta) to
+ * the backend useSetMode mutation. Manual typing is no longer a mode — it is the
+ * "Pausar Adrián" state (composer enabled while paused), see ThreadComposerDock.
  *
  * URL mode → API mapping:
- *   "adrian-decide"  → { newMode: "ai",    proposalRequired: false }
- *   "adrian-consulta"→ { newMode: "ai",    proposalRequired: true  }
- *   "yo-escribo"     → { newMode: "human", proposalRequired: false }
+ *   "adrian-decide"  → { newMode: "ai", proposalRequired: false }
+ *   "adrian-consulta"→ { newMode: "ai", proposalRequired: true  }
  *
  * OCC: Uses conversation.updated_at as expectedUpdatedAt for If-Match header.
  * On 409: caller component should show conflict toast (INBOX_COPY.errors.sendConflict).
@@ -23,10 +23,7 @@ import { useCallback } from "react";
 import { useSetMode } from "../api/use-set-mode";
 import type { Conversation } from "@/features/crm-shared";
 
-export type SegmentedModeValue =
-  | "adrian-decide"
-  | "adrian-consulta"
-  | "yo-escribo";
+export type SegmentedModeValue = "adrian-decide" | "adrian-consulta";
 
 /** Map UI segment value → API mode input */
 const SEGMENT_TO_API: Record<
@@ -35,14 +32,13 @@ const SEGMENT_TO_API: Record<
 > = {
   "adrian-decide": { newMode: "ai", proposalRequired: false },
   "adrian-consulta": { newMode: "ai", proposalRequired: true },
-  "yo-escribo": { newMode: "human", proposalRequired: false },
 };
 
-/** Map API state → UI segment value (for controlled display) */
+/** Map API state → UI segment value (for controlled display).
+ *  Legacy human conversations fall back to "adrian-decide" (manual is now Pausar). */
 export function conversationToSegmentValue(
   conversation: Pick<Conversation, "handler_mode" | "proposal_required">,
 ): SegmentedModeValue {
-  if (conversation.handler_mode === "human") return "yo-escribo";
   if (conversation.proposal_required) return "adrian-consulta";
   return "adrian-decide";
 }

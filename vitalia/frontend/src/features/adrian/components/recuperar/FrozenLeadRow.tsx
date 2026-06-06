@@ -14,7 +14,6 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { PiiMaskedSpan } from "@/components/shared/phi/PiiMaskedSpan";
 import { ChannelBadge } from "@/components/shared/shell-organism/ChannelBadge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -91,7 +90,7 @@ export function FrozenLeadRow({ lead, segment, className }: FrozenLeadRowProps) 
         {/* Name + stage */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <PiiMaskedSpan value={lead.name} fieldType="name" className="text-sm font-medium" />
+            <span className="text-sm font-medium">{lead.name}</span>
             <Badge variant="secondary" className="text-xs">
               {STAGE_LABELS[lead.lastStage] ?? lead.lastStage}
             </Badge>

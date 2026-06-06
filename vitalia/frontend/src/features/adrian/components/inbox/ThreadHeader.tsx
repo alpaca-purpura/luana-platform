@@ -6,15 +6,15 @@
  * ThreadHeader.tsx — Header bar for the conversation thread pane.
  *
  * Assembly of:
- *   - PatientNameChannel: patient name (PHI-wrapped) + channel badge
- *   - ModeToggle: 3-state mode toggle via useModeToggle
- *   - VoiceStyleChip: read-only style indicator
- *   - PauseAdrianButton: 60min pause trigger (⏸)
- *   - ToolsSheetTrigger: opens tools sheet (🛠)
- *   - ContactSidebarToggle: toggles right sidebar (👤)
+ *   - Patient name (unmasked lead) + real channel logo
+ *   - ModeToggle: 2-state mode toggle (Adrián decide / consulta) via useModeToggle
+ *   - NudgeButton: re-engagement nudge ("Dar empujón")
+ *   - ContactSidebarToggle: toggles right sidebar (👤 Perfil)
  *
- * Uses useInboxStore for sidebar + tools sheet state.
- * Uses useModeToggle for OCC mode switching.
+ * (Pausar Adrián lives in ThreadComposerDock; the activity glass-box lives in the
+ *  bottom ActivityStream — neither is a header button anymore.)
+ *
+ * Uses useInboxStore for sidebar state. Uses useModeToggle for OCC mode switching.
  *
  * On mode conflict (409): shows conflict error state inline via isConflict.
  * Toast responsibility belongs to parent (ConversationThread).
@@ -29,41 +29,36 @@ import {
   conversationToSegmentValue,
 } from "../../hooks/use-mode-toggle";
 import type { ConversationDetail } from "../../types/inbox.types";
+import { SocialLogo } from "@/components/shared/channels/SocialLogo";
 import { ModeToggle } from "./ModeToggle";
-import { VoiceStyleChip } from "./VoiceStyleChip";
-import { PauseAdrianButton } from "./PauseAdrianButton";
+
+/** Initials for the contact monogram (fallback "thumbnail" — no BE photo yet). */
+function contactInitials(name: string | null | undefined): string {
+  const parts = (name ?? "").trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  const first = parts[0]?.[0] ?? "";
+  const second = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? "") : "";
+  return (first + second).toUpperCase() || "?";
+}
 import { NudgeButton } from "./NudgeButton";
-import { ToolsSheetTrigger } from "./ToolsSheetTrigger";
 import { ContactSidebarToggle } from "./ContactSidebarToggle";
 
 interface ThreadHeaderProps {
   /** Full conversation detail (conversation + lead) */
   detail: ConversationDetail;
-  /** Whether a brand voice style has been configured */
-  voiceConfigured?: boolean;
-  /** Display label for the configured voice style */
-  voiceStyleLabel?: string | null;
-  /** Called after a successful pause (for parent toast) */
-  onPauseSuccess?: () => void;
   className?: string;
 }
 
 /**
  * ThreadHeader — top bar for the conversation thread panel.
  * Client Component: owns mode toggle, store reads, and button callbacks.
+ * Pausar Adrián moved to ThreadComposerDock (at the foot of the thread); the
+ * VoiceStyleChip was removed (one-time config lives in Lisa › Marca › Voz y tono).
  */
-export function ThreadHeader({
-  detail,
-  voiceConfigured = false,
-  voiceStyleLabel,
-  onPauseSuccess,
-  className,
-}: ThreadHeaderProps) {
+export function ThreadHeader({ detail, className }: ThreadHeaderProps) {
   const { conversation, lead } = detail;
   const contactSidebarOpen = useInboxStore((s) => s.contactSidebarOpen);
   const toggleContactSidebar = useInboxStore((s) => s.toggleContactSidebar);
-  const expandedActivityStream = useInboxStore((s) => s.expandedActivityStream);
-  const toggleActivityStream = useInboxStore((s) => s.toggleActivityStream);
 
   const { toggle, isPending, isConflict } = useModeToggle(
     conversation.id,
@@ -83,34 +78,41 @@ export function ThreadHeader({
     >
       {/* Row 1: Patient name + channel + action buttons */}
       <div className="flex items-center justify-between gap-2">
-        {/* Patient name + channel */}
+        {/* Contact identity: real avatar (or monogram) + name + real channel logo. */}
         <div className="flex items-center gap-2 min-w-0">
+          {lead.avatar_url ? (
+            // Real WhatsApp/Instagram profile picture when the BE exposes it (#1).
+            <img
+              src={lead.avatar_url}
+              alt=""
+              className="h-9 w-9 shrink-0 rounded-full object-cover"
+              data-testid="thread-header-avatar"
+            />
+          ) : (
+            <span
+              className="flex h-9 w-9 shrink-0 select-none items-center justify-center rounded-full vt-bg-cian-8 text-xs font-semibold vt-text-cian"
+              aria-hidden
+              data-testid="thread-header-avatar"
+            >
+              {contactInitials(lead.name)}
+            </span>
+          )}
           <span
             className="truncate text-sm font-semibold vt-text-foreground"
             data-testid="thread-header-patient-name"
           >
             {lead.name}
           </span>
-          <span
-            className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium vt-bg-muted vt-text-muted uppercase"
-            data-testid="thread-header-channel"
-          >
-            {conversation.channel}
+          {/* Real social logo (SSoT social-channels). Keep testid for test + e2e POM;
+              the SVG <title> carries the channel name as textContent. */}
+          <span data-testid="thread-header-channel" className="shrink-0">
+            <SocialLogo channel={conversation.channel} size={16} />
           </span>
         </div>
 
-        {/* Action buttons: ⏸ 🛠 👤 */}
+        {/* Action buttons: empujón · 👤 perfil (Pausar = dock · actividad = bottom stream) */}
         <div className="flex items-center gap-1 shrink-0">
-          <PauseAdrianButton
-            conversationId={conversation.id}
-            pauseUntil={conversation.pause_until}
-            onPauseSuccess={onPauseSuccess}
-          />
           <NudgeButton conversationId={conversation.id} />
-          <ToolsSheetTrigger
-            isOpen={expandedActivityStream}
-            onClick={toggleActivityStream}
-          />
           <ContactSidebarToggle
             isOpen={contactSidebarOpen}
             onClick={toggleContactSidebar}
@@ -118,17 +120,13 @@ export function ThreadHeader({
         </div>
       </div>
 
-      {/* Row 2: ModeToggle + VoiceStyleChip */}
+      {/* Row 2: ModeToggle (2 modos) */}
       <div className="flex items-center gap-3 flex-wrap">
         <ModeToggle
           value={segmentValue}
           onChange={toggle}
           isPending={isPending}
           isConflict={isConflict}
-        />
-        <VoiceStyleChip
-          isConfigured={voiceConfigured}
-          styleLabel={voiceStyleLabel}
         />
       </div>
     </header>

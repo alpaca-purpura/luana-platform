@@ -30,6 +30,15 @@
 
 ## Sección 2 · Schema cap YAML v4
 
+> **★ HB-51 (cement 2026-06-05) — NUNCA hand-authores una cap.** El formato dejó de
+> salir del criterio del modelo y pasó a CÓDIGO determinístico. Para crear una cap:
+> **`make new-cap BRAND=<b> MODULE=<m> SLUG=<s> AREA=<box>.<area>`** (genera el YAML
+> schema-válido por construcción · REFUSE si el cap_id ya existe). Vos llenás el
+> **contenido** (`# TODO`), nunca el **formato**. El schema de abajo es la referencia
+> del modelo; el SSoT ejecutable es `scripts/new_cap.py` + `scripts/validate_caps_schema.py`
+> + los 6 gates G1-G6 (`make cap-doctor` reporta toda la deriva). Detalle: las 8 capas
+> en `docs/process/cap-deterministic-enforcement.md`.
+
 ```yaml
 ---
 capability_id: vitalia.scheduling.valeria-agenda
@@ -136,7 +145,7 @@ parent_story: vitalia-fase2-valeria-agenda
 Cuando una story pasa `reviewing → done` (Fase F MERGE), `/pm-{brand}` aplica logic del `cap_change_type` al YAML target:
 
 ### Rama A — `cap_change_type: new`
-1. Crear `{brand}/docs/product/capabilities/{module}/{slug}.yaml` con schema v4 completo
+1. Crear la cap con **`make new-cap BRAND=<b> MODULE=<module> SLUG=<slug> AREA=<box>.<area>`** (HB-51 · NUNCA hand-author el YAML — el generator lo produce schema-válido + REFUSE si ya existe), luego llenar el **contenido** (`# TODO`)
 2. `change_log[0]` con `type: new` + `summary` + `scenarios_added` listando scenarios iniciales
 3. `created_in_story` = story.id
 4. `created_date` = today

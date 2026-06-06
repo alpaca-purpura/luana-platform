@@ -164,6 +164,48 @@ class ConversationRepository(CompoundScopeRepositoryBase[ConversationModel, UUID
         )
         return success
 
+    async def set_pause_until(
+        self,
+        *,
+        conversation_id: UUID,
+        tenant_id: UUID,
+        clinic_id: UUID,
+        pause_until: datetime,
+    ) -> ConversationModel | None:
+        """Persist pause_until for a conversation and return the updated row.
+
+        Used by PauseAdrianService. PHI dual filter (tenant_id + clinic_id).
+        No OCC — pausing is idempotent (last writer wins). Returns the refreshed
+        row so the caller can build its response; None if the row is gone.
+        """
+        scope_attr = self._scope_attr()
+        now = datetime.now(tz=timezone.utc)
+
+        await self._session.execute(
+            update(ConversationModel)
+            .where(ConversationModel.id == conversation_id)
+            .where(ConversationModel.tenant_id == tenant_id)
+            .where(scope_attr == clinic_id)
+            .where(ConversationModel.deleted_at.is_(None))
+            .values(pause_until=pause_until, updated_at=now)
+        )
+        result = await self._session.execute(
+            select(ConversationModel)
+            .where(ConversationModel.id == conversation_id)
+            .where(ConversationModel.tenant_id == tenant_id)
+            .where(scope_attr == clinic_id)
+            .where(ConversationModel.deleted_at.is_(None))
+        )
+        conv = result.scalar_one_or_none()
+        logger.info(
+            "conversation_repo.set_pause_until",
+            conversation_id=str(conversation_id),
+            tenant_id=str(tenant_id),
+            clinic_id=str(clinic_id),
+            pause_until=pause_until.isoformat(),
+        )
+        return conv
+
     async def get_or_create_for_lead(
         self,
         *,

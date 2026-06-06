@@ -11,7 +11,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, waitFor, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createElement } from "react";
-import { usePauseAdrian } from "../use-pause-adrian";
+import { usePauseAdrian, PERMANENT_PAUSE_MINUTES } from "../use-pause-adrian";
 
 vi.mock("@clerk/nextjs", () => ({
   useAuth: () => ({
@@ -60,7 +60,7 @@ describe("usePauseAdrian", () => {
     vi.clearAllMocks();
   });
 
-  it("pauses Adrián with a reason and returns updated conversation", async () => {
+  it("pauses Adrián 60 minutes → POST /pause with duration_minutes", async () => {
     const pausedConversation = {
       id: CONVERSATION_ID,
       pause_until: "2026-01-01T11:00:00Z",
@@ -76,7 +76,7 @@ describe("usePauseAdrian", () => {
     await act(async () => {
       result.current.mutate({
         conversationId: CONVERSATION_ID,
-        reason: "Paciente fuera de horario, Adrián puede esperar",
+        durationMinutes: 60,
       });
     });
 
@@ -86,21 +86,19 @@ describe("usePauseAdrian", () => {
     });
 
     expect(fetchClient).toHaveBeenCalledWith(
-      expect.stringContaining("/pause-adrian"),
+      expect.stringContaining("/pause"),
       expect.objectContaining({
         method: "POST",
-        body: JSON.stringify({
-          reason: "Paciente fuera de horario, Adrián puede esperar",
-        }),
+        body: JSON.stringify({ duration_minutes: 60 }),
       }),
     );
   });
 
-  it("pauses without reason (null reason)", async () => {
+  it("permanent pause sends the far-future duration", async () => {
     vi.mocked(fetchClient).mockResolvedValue({
       conversation: {
         id: CONVERSATION_ID,
-        pause_until: "2026-01-01T11:00:00Z",
+        pause_until: "2126-01-01T11:00:00Z",
       },
     });
 
@@ -109,13 +107,18 @@ describe("usePauseAdrian", () => {
     });
 
     await act(async () => {
-      result.current.mutate({ conversationId: CONVERSATION_ID });
+      result.current.mutate({
+        conversationId: CONVERSATION_ID,
+        durationMinutes: PERMANENT_PAUSE_MINUTES,
+      });
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(fetchClient).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.objectContaining({ body: JSON.stringify({ reason: null }) }),
+      expect.stringContaining("/pause"),
+      expect.objectContaining({
+        body: JSON.stringify({ duration_minutes: PERMANENT_PAUSE_MINUTES }),
+      }),
     );
   });
 
@@ -131,17 +134,20 @@ describe("usePauseAdrian", () => {
     });
 
     await act(async () => {
-      result.current.mutate({ conversationId: CONVERSATION_ID, reason: null });
+      result.current.mutate({
+        conversationId: CONVERSATION_ID,
+        durationMinutes: 60,
+      });
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(invalidateSpy).toHaveBeenCalledWith(
       expect.objectContaining({
-        queryKey: ["adrian", "inbox", "conversation", CONVERSATION_ID],
+        queryKey: ["crm", "conversation", CONVERSATION_ID],
       }),
     );
     expect(invalidateSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ queryKey: ["adrian", "inbox", "conversations"] }),
+      expect.objectContaining({ queryKey: ["crm", "conversations"] }),
     );
   });
 });

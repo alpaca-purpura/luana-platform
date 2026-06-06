@@ -133,7 +133,7 @@ Origen: la live-verify "verde" de `nicolify-r1-abel-icp-buyer` enmascaró ~7 bug
 
 ### 2 · Verificación TÉCNICA — gates automáticos, en orden rápido→lento
 
-Baseline SIEMPRE (bloqueante · architect declara · dev ejecuta · auditor verifica): `tsc --noEmit --strict` / `mypy --strict` → `ruff check` / `eslint --max-warnings 0` → arch-fitness (`pytest tests/architecture/`) → unit/integration. **Opt-in POR NATURALEZA** (architect activa según la capability, NO en toda story): **Schemathesis** (`schemathesis run --checks all .../openapi.json`) → todo endpoint nuevo (atrapa el contrato FE↔BE roto ANTES del runtime de Next) · **Hypothesis** (`@given`) → domain logic con invariantes (pricing/PHI/scheduling/validaciones) · **mutmut** (mutation, pre-merge, módulos críticos) → cuando "tests pasan pero no matan mutantes".
+Baseline SIEMPRE (bloqueante · architect declara · dev ejecuta · auditor verifica): `tsc --noEmit --strict` / `mypy --strict` → `ruff check` / `eslint --max-warnings 0` → arch-fitness (`pytest tests/architecture/`) → unit/integration. **Opt-in POR NATURALEZA** (architect activa según la capability, NO en toda story): **Schemathesis** (`schemathesis run --checks all .../openapi.json`) → todo endpoint nuevo (atrapa el contrato FE↔BE roto ANTES del runtime de Next) · **Hypothesis** (`@given`) → domain logic con invariantes (pricing/PHI/scheduling/validaciones) · **★ MUTATION GATE diff-scoped** (`scripts/mutation_gate.py` · mutmut BE / Stryker FE · proceso v5 §5.6 · HB-54) → superficies mutation-críticas que `/architect` marca en `04-validators technical_gates.mutation` (commit/persistencia HB-50 · dinero/pricing · gates PHI · state-machines · transforms-contrato HB-42/44): umbral hard = 100% mutantes muertos sobre **líneas NUEVAS** + escape mutante-equivalente documentado; survivor líneas-nuevas → CHANGES_REQUESTED al fix-loop (mata "tests verdes mockeados"); survivor HEREDADO → CIL carril L4 (no bloquea); **DEGRADA advisory** si el tool no está instalado (no rompe ci-parity).
 
 > **"Tests verdes" ≠ done.** Coverage (43%) es el PISO, no el objetivo (Fowler). El bar: *¿un test fallaría si revierto el comportamiento principal?* Si todos son mocks sobre mocks → CHANGES_REQUESTED.
 
@@ -152,21 +152,25 @@ Todos los specs importan de `base.ts`, **NO** de `@playwright/test`. + script po
 
 Cada regla de `01-spec.md § Business rules` → scenario Gherkin con tag `@rule-ID` → test (happy + ≥1 negative/edge · Example Mapping). El auditor Phase D produce la **gherkin-matrix** (regla → scenario → PASS/FAIL/**MISSING**): cualquier `MISSING` = regla sin test → CHANGES_REQUESTED, NO `done`.
 
-### 5 · Gate de DEMO MANUAL (product demo · Chris = sign-off final) ★
+### 5 · Gate de DEMO MANUAL (product demo · Chris = sign-off final) ★ — se ejerce en G (proceso v5)
 
-Para toda story **funcional/user-reachable** (técnico puro → auto-skip con razón): recién cuando §2+§3+§4 pasan, el dev produce `demo-script.md` en la story (4 secciones: **SETUP** contra el MISMO dev-app que usó el dev / **HAPPY PATH** numerado en lenguaje de usuario / **EDGE CASES** = reglas de negocio negativas / **TEARDOWN**), derivado de los scenarios Gherkin (no escrito aparte). Claude **le avisa a Chris** → Chris ejecuta el guion → firma:
+> **★ proceso v5 (2026-06-05):** este gate se **MUEVE de F a G** (`story-closure-gate` Fase G · Chris-verify loop). El signoff se ejerce **ANTES del auditor**, no en el merge, y vive en **`chris_verify.signoff`** (UN solo campo — consolida el viejo `demo_signoff`, no se duplica). El merge (F) solo LO LEE.
+
+Para toda story **funcional/user-reachable** (técnico puro → auto-skip con razón): recién cuando §2+§3+§4 pasan, el dev produce `demo-script.md` en la story (4 secciones: **SETUP** contra el MISMO dev-app que usó el dev / **HAPPY PATH** numerado en lenguaje de usuario / **EDGE CASES** = reglas de negocio negativas / **TEARDOWN**), derivado de los scenarios Gherkin (no escrito aparte). En **G**, dev-team le entrega el kit a Chris → Chris ejerce el guion live → firma:
 
 ```yaml
 demo_required: true        # árbol: toca frontend/ o endpoint con consumer FE → true; solo tests/migrations/config/core sin cambio de contrato → false (+ demo_skip_reason)
-demo_signoff:
-  signed_by: Chris
-  date: <YYYY-MM-DD>
-  result: APPROVED | APPROVED_WITH_NOTES | REJECTED
-  notes: "..."
-  open_items: [{item, severity, disposition}]
+chris_verify:              # ★ proceso v5 — el signoff vive acá (G), no en demo_signoff (F)
+  signoff:
+    signed_by: Chris
+    date: <YYYY-MM-DD>
+    result: SATISFIED | SATISFIED_WITH_FOLLOWUPS | REJECTED
+    notes: "..."
+    open_items: [{item, severity, disposition}]
+  rounds: [...]           # correcciones del loop = allowlist de scope ratificado (lo lee el auditor)
 ```
 
-`/pm-{brand}` Fase F: **REFUSE merge→done** si `demo_required: true` y `demo_signoff.result ∉ {APPROVED, APPROVED_WITH_NOTES(severity≤medium)}`. El sign-off de Chris (negocio) es SEPARADO del auditor (técnico) — **ambos** requeridos.
+`/pm-{brand}` Fase F: **REFUSE merge→done** si `demo_required: true` y `chris_verify.signoff.result ∉ {SATISFIED, SATISFIED_WITH_FOLLOWUPS(severity≤medium)}`. El sign-off de Chris (negocio · ejercido live en G) es SEPARADO del auditor (técnico) — **ambos** requeridos. SSoT del flujo G/R: `.claude/rules/story-closure-gate.md`.
 
 ### 6 · MODIFICACIÓN de feature (no rehacer todo)
 
@@ -186,7 +190,7 @@ Blast radius por dependencias (TIA `tach`); `make ci-parity` sigue siendo el gat
 | **`/dev-team`** (builder-*) | **HARD gate developed-boundary**: REFUSE `developing→developed` sin `dod_live_verified` + `dod_evidence` (writes ejercidos + efecto observado). Corre los **gates técnicos** (§2); para superficies FE implementa/usa `base.ts` (**gate anti-burbuja** §3) + corre `verify-no-backend-errors.sh`; ejerce la acción real en dev-app con Chrome MCP **leyendo Console + Network + logs**; cubre cada **regla de negocio** (§4); en modificaciones respeta el `regression_guard` (§6); produce `demo-script.md` para stories funcionales. Registra `dod_evidence` en `checkpoint.md`. NO cierra por "tests verdes" mockeados. |
 | **`/auditor`** | Phase D: **auto-FAIL LIVE_VERIFY_MISSING** si falta `dod_evidence`; ejerce ≥1 write live (Chrome MCP) sobre el surface bajo prueba; produce la **gherkin-matrix** (cualquier `MISSING` bloquea); verifica que los specs importan `base.ts` (no `@playwright/test` directo), que el `regression_guard` quedó intacto, que los snapshots actualizados tienen diff revisado, y que existe `demo-script.md` si `demo_required`. Finding **Upstream deficiency** (Carril R fix-and-own): si detecta que el gate de Critical Rule fue saltado, captura HB + learning antes de cerrar turn. Sin evidencia / con MISSING → CHANGES_REQUESTED. |
 | **`/po`, `/po-ux`** | Co-escriben la sección `## Business rules` (bullets) + `## Demo script` (lenguaje de usuario) del `01-spec.md`. Para revisar algo que ya corre → abrir dev-app con Chrome MCP (inspección, no gate). |
-| **`/pm-{brand}`** | Owner del **gate**: en `merge` REFUSE si falta `dod_evidence`, si la gherkin-matrix tiene `MISSING`, o si `demo_required: true` y `demo_signoff.result ∉ {APPROVED, APPROVED_WITH_NOTES(severity≤medium)}`. No verifica él mismo; exige la evidencia de dev-team/auditor **+ el sign-off de Chris**. |
+| **`/pm-{brand}`** | Owner del **gate**: en `merge` REFUSE si falta `dod_evidence`, si la gherkin-matrix tiene `MISSING`, o si `demo_required: true` y `chris_verify.signoff.result ∉ {SATISFIED, SATISFIED_WITH_FOLLOWUPS(severity≤medium)}` (★ proceso v5 · firmado en G). No verifica él mismo; exige la evidencia de dev-team/auditor **+ el sign-off de Chris**. |
 
 ## Registro obligatorio (evidencia, no palabra)
 
@@ -202,7 +206,7 @@ dod_evidence:
 verified_at: 2026-05-31
 ```
 
-Sin `dod_live_verified: true` + `dod_evidence` (writes ejercidos + efecto observado), la story **NO** pasa a `done`. Para stories funcionales (`demo_required: true`) además se registra `demo_signoff` (§5).
+Sin `dod_live_verified: true` + `dod_evidence` (writes ejercidos + efecto observado), la story **NO** pasa a `done`. Para stories funcionales (`demo_required: true`) además se registra `chris_verify.signoff` (§5, ejercido en G antes del auditor · proceso v5).
 
 ## Cuándo NO aplica
 
@@ -244,13 +248,13 @@ Runbook completo (vitalia): `vitalia/docs/domains/dev-app/live-verification.md`.
 |---|---|---|
 | 1 | Pointer en root `CLAUDE.md` § Critical Rules #37 (auto-load cada sesión) | ✅ 2026-05-31 |
 | 2 | `/auditor` Phase D: gherkin-matrix + verifica `base.ts` importado + `regression_guard` intacto + `demo-script.md` existe | ✅ 2026-06-03 (auto-FAIL LIVE_VERIFY_MISSING en auditor SKILL + auditor-frontend/backend.md; auditor ejerce ≥1 write live) |
-| 3 | `/pm-{brand}` Fase F REFUSE merge→done sin `dod_evidence` / con gherkin MISSING / sin `demo_signoff` | ✅ vitalia (ADR-008) · ⏳ resto |
+| 3 | `/pm-{brand}` Fase F REFUSE merge→done sin `dod_evidence` / con gherkin MISSING / sin `chris_verify.signoff` (★ proceso v5) | ✅ vitalia (ADR-008) · ⏳ resto |
 | 4 | `07-merge` § Verificación live + `04-validators`/`checkpoint`/`T-review` con campos DoD | ✅ Wave 2A (dc6a94fa) |
 | 5 | `chrome-devtools-verify` + `playwright-expert` skills = mecanismo canónico de live-verify | ✅ existe |
-| 6 | **Pre-commit MECÁNICO: bloquea commitear una transición a `state: developed|done` (story funcional) sin `dod_live_verified: true` + `dod_evidence`(≥1 action)** — `scripts/git/dod-evidence-gate.sh` cableado al pre-commit (symlink, activo). Exención: `dod_live_verified_skip_reason`. Fail-OPEN + `DOD_GATE_ACK=1`. 5/5 tests. **Es presence-enforcement, no truth** (la verdad la dan demo_signoff humano + auditor live) | ✅ 2026-06-04 |
+| 6 | **Pre-commit MECÁNICO: bloquea commitear una transición a `state: developed|done` (story funcional) sin `dod_live_verified: true` + `dod_evidence`(≥1 action)** — `scripts/git/dod-evidence-gate.sh` cableado al pre-commit (symlink, activo). Exención: `dod_live_verified_skip_reason`. Fail-OPEN + `DOD_GATE_ACK=1`. 5/5 tests. **Es presence-enforcement, no truth** (la verdad la dan `chris_verify.signoff` humano en G + auditor live) | ✅ 2026-06-04 |
 | 7 | **Gate anti-burbuja**: `{brand}/frontend/e2e/fixtures/base.ts` (pageerror/console/response + Next overlay) + `scripts/verify-no-backend-errors.sh` | ⏳ vitalia (implementando) · resto hereda |
 | 8 | `04-validators` declara `verification_nature` + `technical_gates` (opt-in) + `business_rules` matrix + `demo_required` + `regression_guard` | ✅ 2026-06-03 (playwright_visual_scope portado al template + architect hard-step) |
-| 9 | **Gate demo manual**: `demo-script.md` (4 secciones) + `demo_signoff` (Chris) en checkpoint · `/pm-{brand}` REFUSE sin APPROVED | ⏳ demo_signoff hook TBD · `/dev-team` ya REQUIRE demo-script.md al cerrar developed (2026-06-03) |
+| 9 | **Gate demo manual (en G · proceso v5)**: `demo-script.md` (4 secciones) + `chris_verify.signoff` (Chris) en checkpoint · `/pm-{brand}` REFUSE sin SATISFIED | ⏳ signoff hook TBD · `/dev-team` ya REQUIRE demo-script.md + pausa en G (2026-06-05) |
 | 10 | **Dev-team developed-boundary HARD gate**: REFUSE `developing→developed` sin `dod_live_verified` + `dod_evidence` + `demo-script.md` para stories funcionales (espejo del gherkin-Phase-D-local) | ✅ 2026-06-03 |
 | 11 | **Reflex de auto-hardening**: auditor (y dev-team/pm) que detecta un gate de Critical Rule saltado MUST auto-capturar HB en `docs/process/harness-backlog.md` + learning antes de cerrar turn | ✅ 2026-06-03 (auditor SKILL + self-fix-policy v5) |
 

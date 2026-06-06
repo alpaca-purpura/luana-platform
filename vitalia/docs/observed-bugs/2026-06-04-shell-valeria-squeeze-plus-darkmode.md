@@ -48,6 +48,6 @@ Auditoría de tokens dark-mode del inbox (y barrido de features): toda clase/tok
 - Desbloquea los e2e modes/states del inbox (AC-4/5/7) que hoy fallan por el squeeze.
 
 ## Refs
-- `vitalia/docs/product/stories/vitalia-fase2-adrian-inbox/checkpoint.md` § `e2e_suite_status_2026_06_04_pm` (origen del hallazgo)
+- `vitalia/docs/archive/2026/stories/vitalia-fase2-adrian-inbox/checkpoint.md` § `e2e_suite_status_2026_06_04_pm` (origen del hallazgo · story archivada 2026-06-04 al merge)
 - `src/components/shared/shell-organism/useViewportGuard.ts` · `src/stores/shell-store.ts` · `src/app/globals.css` · `src/app/providers.tsx`
 - `src/features/adrian/components/inbox/{AdrianInboxView,ThreadHeader,ContactSidebarToggle}.tsx` · `src/features/adrian/store/inbox-store.ts`

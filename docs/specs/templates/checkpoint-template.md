@@ -16,6 +16,8 @@ parent_story: null                                # opcional · si story spawned
 
 state: refining                                   # 10 estados v4 — ver tabla abajo
 phase_workflow: PO_SPEC                           # ver tabla phase workflow abajo (informational · paso interno del pipeline SDD, NO un eje del modelo)
+phase: null                                       # runtime phase (ej AWAIT_CHRIS_VERIFY en G · HANDOFF_TO_AUDITOR). distinto de phase_workflow
+autonomous_mode: false                            # Chris opt-in explícito: true → G (Chris-verify) se SALTA, corre a /auditor sin pausa (story-closure-gate · proceso v5)
 last_artifact: 01-spec.md                         # último archivo escrito
 last_modified: 2026-05-06T15:23:00Z
 next_action: "Chris ratifica spec → invocar /architect"
@@ -44,12 +46,18 @@ dod_live_verified_skip_reason: null               # solo si la story es config/d
 # Demo manual (Critical Rule #37 §5) — solo stories funcionales (demo_required: true)
 demo_required: true                               # false para técnico puro (+ demo_skip_reason)
 demo_skip_reason: null
-demo_signoff:                                     # lo llena Chris tras ejercer demo-script.md contra el mismo dev-app
-  signed_by: null                                 # "Chris" al firmar
-  date: null                                      # YYYY-MM-DD
-  result: null                                    # APPROVED | APPROVED_WITH_NOTES | REJECTED
-  notes: null
-  open_items: []                                  # [{item, severity, disposition}]
+# G · Chris-verify loop (proceso v5 · story-closure-gate) — el signoff de Chris vive ACÁ.
+# Consolida el viejo demo_signoff: UN solo signoff, ANTES del auditor (en G, no en F).
+chris_verify:
+  required: true                                  # false sólo si autonomous_mode o bugfix sin pedido
+  signoff:                                        # lo llena Chris tras ejercer el kit (demo-script.md + dev-app) live
+    signed_by: null                               # "Chris" al firmar
+    date: null                                    # YYYY-MM-DD
+    result: null                                  # SATISFIED | SATISFIED_WITH_FOLLOWUPS | REJECTED
+    notes: null
+    open_items: []                                # [{item, severity, disposition}]
+  rounds: []                                      # [{round, observacion, resolucion|→historia}] = allowlist de scope ratificado (lo lee el auditor)
+reconciled: false                                 # /pm-{brand} → true en R (reconcile pre-auditor); el auditor lo LEE como precondición de B
 ---
 
 ## Estados v4 (10 macro)

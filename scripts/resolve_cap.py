@@ -124,6 +124,207 @@ def resolve(brand: str, cap_target: str, root: Path | None = None) -> list[Path]
     return tier1 if tier1 else tier2
 
 
+# ════════════════════════════════════════════════════════════════════════════
+# TWO-WAY canonical resolution (HB-51 · Capa 1 del enforcement determinístico)
+# ════════════════════════════════════════════════════════════════════════════
+#
+# `resolve()` arriba devuelve PATHS (navegación · área = N archivos). Las
+# funciones de abajo devuelven CAP_IDS CANÓNICOS (`{module}.{slug}`) y son la
+# pieza que unifica las DOS convenciones de header que rompían el bidirectional:
+#   · forma cap_id   `# cap: inbox.adrian-inbox`   (BE · resuelve directo)
+#   · forma alias/área `// cap: adrian.inbox`       (FE · functional_area)
+# Ambas → el MISMO cap_id canónico `inbox.adrian-inbox`. SSoT único de "qué cap
+# es este header" (Capa 5 — elimina la lógica de resolución paralela map-vs-índice).
+#
+# ★ Corrección de diseño verificada contra data (2026-06-05): `functional_area`
+# NO es un alias 1:1 de un cap — es la AREA del cockpit (`${box}.${area}`) y es
+# 1:N (ej. `configuracion.admin` → 5 caps live; `plataforma-tecnica.platform` → 5).
+# Por eso `resolve_cap_ids` devuelve un SET y G1 pasa con ≥1. El caso `adrian.inbox`
+# da 1 cap live por live-filter (las otras 2 son deprecated/superseded), por eso
+# `canonical_cap_id("adrian.inbox") == "inbox.adrian-inbox"`. Ver
+# docs/process/cap-deterministic-enforcement.md § Capa 1 (premisa "exactly one" corregida).
+
+# Tokens reservados que NO son caps (markers de header) — nunca resuelven.
+SPECIAL_MARKERS = frozenset({"__shared__", "__orphan__", "__skip__", "TBD", "null", "none", ""})
+
+_LIVE_STATUSES = frozenset({"", "live", "beta"})  # "no superseded" se chequea aparte
+
+
+def _cap_meta(path: Path) -> dict[str, str]:
+    """Identidad + status + superseded_by por line-scan robusto (tolera YAML malformado)."""
+    out: dict[str, str] = {}
+    wanted = (
+        "capability_id",
+        "slug",
+        "functional_area",
+        "module",
+        "tech_module",
+        "status",
+        "superseded_by",
+    )
+    for raw in path.read_text(encoding="utf-8", errors="ignore").splitlines():
+        line = raw.split("#", 1)[0].rstrip()
+        if line.strip() == "---" and out:
+            break  # fin del frontmatter
+        if ":" not in line:
+            continue
+        key, _, val = line.partition(":")
+        key = key.strip()
+        if key in wanted and key not in out:
+            v = val.strip().strip("'\"")
+            if v:
+                out[key] = v
+    return out
+
+
+class _CapRecord:
+    """Un cap normalizado: cap_id canónico + formas-alias + flags de vida."""
+
+    __slots__ = ("path", "cap_id", "functional_area", "status", "superseded_by", "is_live", "_meta", "_base")
+
+    def __init__(self, path: Path, base: Path) -> None:
+        meta = _cap_meta(path)
+        # cap_id canónico = `{parent-dir}.{slug-o-stem}` — MISMA regla que
+        # validate_code_cap_bidirectional.load_capabilities (un solo SSoT de cap_id).
+        module = path.parent.name
+        slug = meta.get("slug") or path.stem
+        self.path = path
+        self.cap_id = f"{module}.{slug}"
+        self.functional_area = meta.get("functional_area", "")
+        self.status = (meta.get("status") or "").lower()
+        self.superseded_by = meta.get("superseded_by", "")
+        self.is_live = (self.status in _LIVE_STATUSES) and not self.superseded_by
+        # Pre-computa las formas-alias (norm) → para indexar
+        self._meta = meta
+        self._base = base
+
+    def identity_forms(self) -> set[str]:
+        """Formas IDENTIDAD (tier 1 · exact-match gana sobre área): cap_id, capability_id, slug, relpath."""
+        m = self._meta
+        forms = {self.cap_id, m.get("capability_id", ""), m.get("slug", "")}
+        mod_field = m.get("module") or m.get("tech_module", "")
+        if mod_field and m.get("slug"):
+            forms.add(f"{mod_field}.{m['slug']}")  # cap_id vía campo module (si difiere del dir)
+        try:
+            forms.add(str(self.path.relative_to(self._base).with_suffix("")))  # crm/adrian-embudo
+        except ValueError:
+            pass
+        return {_norm(x) for x in forms if x}
+
+    def area_forms(self) -> set[str]:
+        """Formas ALIAS/ÁREA (tier 2): functional_area + variantes module-prefijadas/dashed."""
+        fa = self.functional_area
+        if not fa:
+            return set()
+        module = self.path.parent.name
+        mod_field = self._meta.get("module") or self._meta.get("tech_module") or module
+        fa_dashed = fa.replace(".", "-")  # mateo.agenda -> mateo-agenda
+        forms = {
+            fa,  # adrian.inbox · lisa.doctores
+            fa_dashed,  # mateo-agenda (bare)
+            f"{module}.{fa}",  # clinics.lisa.doctores ({module}.{fa})
+            f"{module}.{fa_dashed}",  # scheduling.mateo-agenda ({module}.{fa-dashed})
+            f"{mod_field}.{fa}",
+            f"{mod_field}.{fa_dashed}",
+        }
+        return {_norm(x) for x in forms if x}
+
+
+# Cache por (brand, root) → (records, identity_index, area_index).
+_RESOLVER_CACHE: dict[tuple[str, str], tuple[list[_CapRecord], dict[str, set[str]], dict[str, set[str]]]] = {}
+
+
+def _load_resolver(
+    brand: str, root: Path | None = None
+) -> tuple[list[_CapRecord], dict[str, set[str]], dict[str, set[str]]]:
+    key = (brand, str(root) if root is not None else "")
+    cached = _RESOLVER_CACHE.get(key)
+    if cached is not None:
+        return cached
+    base = _cap_root(brand, root)
+    records: list[_CapRecord] = []
+    identity_index: dict[str, set[str]] = {}
+    area_index: dict[str, set[str]] = {}
+    for f in cap_files(brand, root):
+        rec = _CapRecord(f, base)
+        records.append(rec)
+        for form in rec.identity_forms():
+            identity_index.setdefault(form, set()).add(rec.cap_id)
+        for form in rec.area_forms():
+            area_index.setdefault(form, set()).add(rec.cap_id)
+    result = (records, identity_index, area_index)
+    _RESOLVER_CACHE[key] = result
+    return result
+
+
+def clear_resolver_cache() -> None:
+    """Tests que mutan caps en tmp deben limpiar el cache entre asserts."""
+    _RESOLVER_CACHE.clear()
+
+
+def resolve_cap_ids(brand: str, token: str, *, live_only: bool = False, root: Path | None = None) -> set[str]:
+    """Resuelve un header/cap_target → set de cap_ids canónicos (`{module}.{slug}`).
+
+    Dos vías + tiers: las formas IDENTIDAD (cap_id/capability_id/slug/relpath) ganan
+    sobre las ÁREA (functional_area + variantes); si ninguna identidad matchea, se usa
+    la(s) cap(s) del área. `live_only=True` filtra a live non-superseded (la respuesta
+    CANÓNICA del alias). Token vacío/marker → set vacío. ≥1 ⇒ G1 pasa.
+    """
+    if token is None:
+        return set()
+    t = token.strip()
+    if t in SPECIAL_MARKERS or _norm(t) == "":
+        return set()
+    records, identity_index, area_index = _load_resolver(brand, root)
+    nt = _norm(t)
+    ids = identity_index.get(nt) or area_index.get(nt) or set()
+    if not ids:
+        return set()
+    if live_only:
+        by_id = {r.cap_id: r for r in records}
+        live = {c for c in ids if by_id.get(c) and by_id[c].is_live}
+        return live
+    return set(ids)
+
+
+def canonical_cap_id(brand: str, token: str, root: Path | None = None) -> str | None:
+    """El cap_id canónico ÚNICO de un token, o None si es ambiguo/no resuelve.
+
+    Prefiere la cap live non-superseded (alias → cap canónica). `adrian.inbox` y
+    `inbox.adrian-inbox` → ambos `"inbox.adrian-inbox"`.
+    """
+    live = resolve_cap_ids(brand, token, live_only=True, root=root)
+    if len(live) == 1:
+        return next(iter(live))
+    allids = resolve_cap_ids(brand, token, live_only=False, root=root)
+    if len(allids) == 1:
+        return next(iter(allids))
+    return None
+
+
+def functional_area_of(brand: str, cap_id: str, root: Path | None = None) -> str | None:
+    """cap_id canónico → su `functional_area` (alias secundario), o None."""
+    records, _, _ = _load_resolver(brand, root)
+    for r in records:
+        if r.cap_id == cap_id:
+            return r.functional_area or None
+    return None
+
+
+def cap_id_of(path: Path, brand: str | None = None, root: Path | None = None) -> str | None:
+    """Path de un cap YAML → su cap_id canónico. `brand`/`root` opcionales (deriva el base dir)."""
+    p = Path(path)
+    if root is not None:
+        base = root
+    elif brand is not None:
+        base = _cap_root(brand, None)
+    else:
+        # deriva: .../capabilities/{module}/{slug}.yaml → base = .../capabilities
+        base = p.parent.parent
+    rec = _CapRecord(p, base)
+    return rec.cap_id
+
+
 def _extract_block(f: Path) -> str:
     try:
         rel = f.relative_to(WS)

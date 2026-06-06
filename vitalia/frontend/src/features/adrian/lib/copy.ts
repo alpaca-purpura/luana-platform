@@ -36,12 +36,29 @@ export const INBOX_COPY = {
     },
   },
 
+  /** Thread pane — empty states + day separators (UI-AUDIT #1/#3) */
+  thread: {
+    emptyHeading: "Aquí va a aparecer la conversación",
+    emptyBody:
+      "Cuando un paciente escriba, Adrián lo recibe y el hilo aparece aquí.",
+    contactEmptyHeading: "Aquí va a aparecer la ficha del contacto",
+    contactEmptyBody:
+      "Vas a ver el nombre, el canal y el interés del paciente al abrir una conversación.",
+    dayToday: "Hoy",
+    dayYesterday: "Ayer",
+    turnAdrian: "Adrián · Auto",
+    turnYou: "Tú · Manual",
+  },
+
   /** FilterChips labels */
   filters: {
     all: "Todas",
     channels: {
       whatsapp: "WhatsApp",
       instagram: "Instagram",
+      telegram: "Telegram",
+      tiktok: "TikTok",
+      facebook: "Facebook",
       email: "Email",
     },
     status: {
@@ -77,20 +94,20 @@ export const INBOX_COPY = {
     searchPlaceholder: "Buscar conversación…",
   },
 
-  /** Segmented mode control */
+  /** Segmented mode control (2 modos · Chris UI #3) */
   segmentedMode: {
     adrianDecide: "Adrián decide",
     adrianConsulta: "Adrián consulta",
-    yoEscribo: "Yo escribo",
+    adrianDecideHint: "Adrián responde solo, automáticamente.",
+    adrianConsultaHint: "Adrián redacta y tú apruebas antes de enviar.",
     ariaLabel: "Modo de atención",
   },
 
-  /** Voice style chip */
-  voiceStyleChip: {
-    configured: "Estilo: consultivo · sin presión",
-    unconfigured: "Estilo: voz por defecto",
-    cta: "Configurar",
-    ariaLabel: "Estilo de voz de Adrián",
+  /** Composer dock — pause status bar above the message box (Chris UI #3) */
+  composerDock: {
+    activeHint: "Adrián está atendiendo esta conversación",
+    pausedHint: "Adrián pausado · escribes tú",
+    pausedRemaining: "Adrián pausado · {minutes} min restantes",
   },
 
   /** Pause agent button + modal */
@@ -99,11 +116,11 @@ export const INBOX_COPY = {
     buttonActive: "Adrián pausado",
     modalTitle: "Pausar a Adrián",
     modalBody:
-      "Adrián va a dejar de responder esta conversación durante 60 minutos. Puedes retomarlo en cualquier momento.",
-    reasonPlaceholder: "Razón (opcional, queda en el registro de auditoría)…",
-    confirmCta: "Pausar 60 minutos",
+      "Adrián deja de responder esta conversación y la atiendes tú. Elige por cuánto tiempo:",
+    confirmPermanent: "Pausar permanente",
+    confirm60: "Pausar 60 minutos",
     cancelCta: "Cancelar",
-    toastSuccess: "Adrián pausado por 60 minutos",
+    toastSuccess: "Adrián pausado",
     resumeCta: "Reanudar Adrián",
     resumeToast: "Adrián vuelve a atender esta conversación",
   },
@@ -178,7 +195,8 @@ export const INBOX_COPY = {
     ariaLabel: "Actividad reciente de Adrián",
     expandAriaLabel: "Expandir actividad",
     collapseAriaLabel: "Contraer actividad",
-    empty: "Sin actividad registrada todavía.",
+    empty:
+      "Aquí verás lo que hace Adrián: mensajes que envía, herramientas que usa y decisiones que toma.",
     loadMore: "Ver más actividad",
     eventKinds: {
       tool_call: "Usó herramienta",
@@ -215,6 +233,8 @@ export const INBOX_COPY = {
     ariaLabel: "Información del contacto",
     sectionContact: "Contacto",
     sectionStage: "Etapa de la venta",
+    serviceInterest: "Servicio de interés",
+    serviceInterestEmpty: "Aún no detectado",
     sectionOffer: "Oferta vinculada",
     sectionNpsHistory: "Historial NPS",
     revealField: "Revelar",

@@ -65,17 +65,31 @@ describe("FilterChips", () => {
     ).toBeDefined();
   });
 
-  it("renders status chips", () => {
+  // UI-AUDIT-2 #4 — status chips removed (too operational; conversation count small).
+  it("does NOT render status chips (removed)", () => {
     render(<FilterChips value={defaultFilters} onChange={vi.fn()} />);
     expect(
-      screen.getByRole("button", {
+      screen.queryByRole("button", {
         name: new RegExp(INBOX_COPY.filters.status.active, "i"),
       }),
-    ).toBeDefined();
+    ).toBeNull();
   });
 
-  it("renders helpNeeded and unreadMedia chip badges", () => {
+  // UI-AUDIT-2 #4 — helpNeeded/unreadMedia moved under "Más filtros".
+  it("renders helpNeeded and unreadMedia under Más filtros", () => {
     render(<FilterChips value={defaultFilters} onChange={vi.fn()} />);
+    // Collapsed → not visible in the primary line
+    expect(
+      screen.queryByRole("button", {
+        name: new RegExp(INBOX_COPY.filters.helpNeeded, "i"),
+      }),
+    ).toBeNull();
+    // Expand
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: new RegExp(INBOX_COPY.filters.moreFilters, "i"),
+      }),
+    );
     expect(
       screen.getByRole("button", {
         name: new RegExp(INBOX_COPY.filters.helpNeeded, "i"),

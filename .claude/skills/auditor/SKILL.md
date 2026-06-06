@@ -74,6 +74,20 @@ git log --oneline -10
 git diff <pre-build-sha>..HEAD --stat   # diff todos commits del story
 ```
 
+### ★ Step 1.0 — Precondición Fase R: docs reconciliados (proceso v5)
+
+> El auditor es **guardián de arquitectura sobre la verdad reconciliada**, NO juez de un spec stale (story-closure-gate Fase R+B).
+
+```bash
+RECONCILED=$(grep -E "^reconciled:" ${STORY_DIR}/checkpoint.md 2>/dev/null | awk '{print $2}')
+AUTONOMOUS=$(grep -E "^autonomous_mode:" ${STORY_DIR}/checkpoint.md 2>/dev/null | awk '{print $2}')
+```
+
+- `reconciled: true` (default, post-R) **o** `autonomous_mode: true` (rama autonomous, sin G/R) → **proceder**.
+- ninguno de los dos → **REFUSE**: el spec puede estar stale (no pasó R). Output: `"❌ Story {id}: falta reconcile (R). /pm-{brand} debe reconciliar 01-spec/03-arch/04-validators/cap a la realidad + chris_verify.signoff ANTES del auditor (proceso v5)."` → STOP.
+
+**Guardián, no literalista:** el auditor lee el spec **RECONCILIADO** + `chris_verify.signoff`. Un cambio de scope que Chris ratificó (registrado en `chris_verify.rounds`) **ES el spec ahora** — NO se revierte. Guardá los **invariantes** (DDD/tenant/PHI/anti-orphan CONN/contrato BE↔FE/no-mirror/arquitectura), NO "¿coincide con el spec pre-iteración?". ★ Pero un scope-delta que **NO** está en `chris_verify.rounds` (no ratificado) SIGUE siendo finding — la regla es "no revertir scope ratificado", no "no revertir NINGÚN scope".
+
 ## Step 2 — Decidir surface + verificar gate-output.json + spawn sub-auditor
 
 > **Origen R2 process-improvement 2026-05-05 (D2):** auditor consume `gate-output.json`
@@ -132,6 +146,7 @@ Agent({
            ticket: T-{n}
            PRIORITY READ: {brand}/docs/product/stories/{story-id}/CONTEXT-BRIEF.md (Haiku-built, 5-8k tokens)
            Then read T-{n}-result.md + T-{n}-impl-log.md + 01-spec.md + 03-arch.md + 04-validators.yaml + 05-guidelines.md (todos bajo {brand}/docs/product/stories/{story-id}/).
+           ★ proceso v5: el spec/arch están RECONCILIADOS (Fase R) + Chris firmó chris_verify.signoff. Un scope ratificado por Chris (en chris_verify.rounds) ES el spec — NO lo reviertas. Guardá invariantes (DDD/tenant/PHI/CONN/contrato BE↔FE), no '¿coincide con el spec pre-iteración?'. Un scope-delta FUERA de chris_verify.rounds = sí es finding.
            Run gate-runner if gate-output.json missing/stale.
            Score against your N categories.
            Apply downstream regression scope (.claude/rules/auditor-downstream-regression.md) — cross-brand mirror detection cuando aplique.
@@ -228,6 +243,8 @@ Además de ejercer scenarios críticos live:
 - Verificar que los specs FE **importan de `fixtures/base.ts`** (no `@playwright/test` directo) — sin el gate anti-burbuja la verificación es insuficiente.
 - En stories de **modificación**: verificar que los `regression_guard` quedaron PASS sin modificarse y que los snapshots actualizados tienen diff revisado por humano.
 - Verificar que existe `demo-script.md` si `demo_required: true`.
+- ★ **Mutation gate** (proceso v5 §5.6): si `04-validators technical_gates.mutation.enabled: true` (superficie crítica marcada por architect), verificar que corrió `scripts/mutation_gate.py` sobre el diff. Survivor en líneas-nuevas (mode hard) → CHANGES_REQUESTED al fix-loop (dev escribe el test RED). Survivor HEREDADO → rutear a CIL carril L4 (no bloquea). Tool ausente → advisory (no bloquea).
+- ★ **Ledger de cobertura** (proceso v5 §5.2): leer la columna `estado` de la `§ Matriz de cobertura` (`01-spec.md`) y **congelarla** — cada ítem `✅ construido` debe tener su test/ruta real; lo `→ historia {id}` debe linkear una story spawneada (no un gap mudo). **PISO HARD:** si `cap_change_type: new` y un ítem del happy-path NO está `✅` → CHANGES_REQUESTED (el core no se difiere).
 
 Sin evidencia live / con MISSING / sin base.ts importado / con regression_guard roto → CHANGES_REQUESTED.
 Ref: `.claude/rules/definition-of-done-live-verify.md`.

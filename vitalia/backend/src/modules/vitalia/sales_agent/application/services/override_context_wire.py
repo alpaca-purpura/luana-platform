@@ -1,4 +1,4 @@
-# cap: sales_agent.adrian-override-context
+# cap: crm.adrian-embudo
 # story-origin: vitalia-fase2-adrian-embudo
 """OverrideContextWire — RN-4.1 override-context wire (brand-extension, thin).
 

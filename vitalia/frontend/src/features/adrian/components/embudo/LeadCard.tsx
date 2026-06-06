@@ -13,7 +13,6 @@ import { useCallback, useMemo } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { PiiMaskedSpan } from "@/components/shared/phi/PiiMaskedSpan";
 import { ChannelBadge } from "@/components/shared/shell-organism/ChannelBadge";
 import { ScoreDonut } from "@/components/shared/score/ScoreDonut";
 import { useTenantId } from "@/hooks/useTenantId";
@@ -129,7 +128,7 @@ export function LeadCard({
           onClick={(e) => { if (isDragging) e.preventDefault(); }}
           tabIndex={isDragging ? -1 : 0}
         >
-          <PiiMaskedSpan value={lead.name} fieldType="name" />
+          {lead.name}
         </Link>
         <span
           className={cn(

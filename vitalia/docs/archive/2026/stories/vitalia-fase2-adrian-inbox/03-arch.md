@@ -125,6 +125,24 @@ Resumen (full en `03-arch-be.md`):
 
 ---
 
+## § 4b. Architecture Decisions (★ amendment 2026-06-04 · scope ampliado durante el build, live-verified + firmado por Chris)
+
+> El build cambió el paradigma de atención de **3 modos** a **2 modos** y destapó 2 bombas de wiring FE↔BE que nunca se habían ejercido (modo + pausa). Estas decisiones son **intencionales** y `adr_004_compliance` sigue `full`. El auditor NO debe revertirlas; la doc (01-spec/04-validators) ya está reconciliada. SSoT de evidencia: `checkpoint.md::ui_polish_dod_evidence_2026_06_04_pm7..pm9` + `HANDOFF-audit-ready-r6-r8.md`.
+
+| # | Decisión | Por qué | Surface |
+|---|---|---|---|
+| AD-1 | **2-modos** (`Adrián decide`/`Adrián consulta`), "Yo escribo" eliminado | Manual ≡ pausar (un solo concepto operativo, menos confusión). `ModeToggle` = `role=radiogroup` 2 segmentos; activo verde; OCC via `expected_updated_at` en **body** (no header). | FE `ModeToggle` + `use-mode-toggle` (`SEGMENT_TO_API`); BE `PATCH …/mode` |
+| AD-2 | **RBAC `_INBOX_OPERATOR_ROLES`** = `_PHI_ROLES ∪ {owner, receptionist}` para TODAS las mutaciones del inbox | El inbox es la herramienta del operador (dueño/recepción), no solo del clínico. `dr.demo`=owner debía poder actuar (antes 403). Mismo set que Chris ratificó para list/detail. marketing/sales/patient siguen 403. | BE `inbox/api/router.py::_assert_phi_access` |
+| AD-3 | **`ConversationRepository.set_pause_until`** (crm) + **`_NoOpRedisClient.setex`** (dev sin Redis) | La pausa nunca se había ejercido live → 500 latente (repo sin método + NoOp sin `setex`). El `pause_until` persiste en DB (fuente de verdad); Redis es solo fast-path. | BE `crm/infrastructure/persistence/conversation_repository.py` + `inbox/api/router.py` |
+| AD-4 | **Query-keys crm-shared** en mode/pause/send | El thread/lista leen `['crm','conversation',id]` / `['crm','conversations']`; las mutaciones invalidaban las legacy `['adrian','inbox',…]` que nadie renderiza → el 200 nunca reflejaba en UI. Migrados a las keys reales. | FE `use-set-mode` / `use-pause-adrian` / `use-send-message` |
+| AD-5 | **`PiiMaskedSpan.masked`** (default `true`) + `ContactSidebar masked={false}` | Leads visibles por defecto (interim ratificado Chris) sin romper el resto de la app ni el gate FE-A6: el wrapper + `data-phi` se conservan; solo se rinde el valor crudo en la ficha de lead. PHI clínica sigue fuera de Adrián (firewall RN-7). | FE `components/shared/phi/PiiMaskedSpan.tsx` + `ContactSidebar` |
+| AD-6 | **ThreadComposerDock** (composer siempre montado al pie) + Pausa 60/permanente sin reason | "No salía la caja" = `ComposerArea` existía pero `InboxThread` no la montaba. Ahora dock con barra de estado (dot verde intermitente) + `PauseAdrianButton`(rojo) + composer. Permanente = far-future (~100 años; flag indefinido real = follow-up BE). | FE `InboxThread` (dock) + `ComposerArea` + `PauseAdrianConfirmModal` (`pause-modal-60`/`pause-modal-permanent`) |
+| AD-7 | **UI**: wallpaper crema **fijo** (no scrollea), 🛠 tools fuera del header (actividad → `ActivityStream` inferior), "Estado" duplicado eliminado (queda "Etapa de la venta"), "Servicio de interés" siempre visible | Feedback de Chris r6–r8; el wallpaper en wrapper no-scrolleable evita el blanco bajo los mensajes; tools-icon redundante con el glass-box inferior. | FE `InboxThread`/`ThreadHeader`/`ContactSidebar` + `globals.css` (`--vt-watermark-ink`) |
+
+**No cambió:** `ADR-vitalia-004` (route group + FSD-Lite + Server-First + RQ + Zustand + `PhiRepositoryBase` dual filter + audit sync write + `vitalia_growth_studio_event` + tests 4 capas) sigue `full`. § 6 Integration design (CONN) sigue válida. § Cross-cutting (audit sync, sanitize, response_model) intacto. **Full-canvas/responsive (RN-11/12/AC-7/AC-12)** = spliteado a `vitalia-bugfix-shell-nav-scroll-errors` (`done`).
+
+---
+
 ## § 5. Prior art audit (NO-NEW-LAYER rule)
 
 ### Source of evidence

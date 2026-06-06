@@ -28,7 +28,7 @@ user_facing_description: >
 dev_preview:
   route: "/valeria/agenda"
   how_to_navigate: "Login → ribbon clic en avatar Valeria → sub-tab Agenda."
-  main_component: "vitalia/frontend/src/features/valeria/components/agenda/ValeriaAgendaView.tsx"
+  main_component: "vitalia/frontend/src/features/mateo/components/agenda/ValeriaAgendaView.tsx"
   api_endpoints:
     - "GET /api/v1/scheduling/appointments?week={iso}"
     - "POST /api/v1/scheduling/appointments"
@@ -349,7 +349,7 @@ Sub-tab Agenda de Valeria operativa. Calendario día/semana/mes con celdas-slot 
 ### Frontend (FSD-Lite, Server-First)
 - `vitalia/frontend/src/app/[tenantId]/(shell-organism)/valeria/agenda/page.tsx` — Server Component SSR initial state
 - `vitalia/frontend/src/app/[tenantId]/(shell-organism)/valeria/agenda/error.tsx` — route-level error boundary
-- `vitalia/frontend/src/features/valeria/components/agenda/ValeriaAgendaView.tsx` — Client root (composición 6 hijos)
+- `vitalia/frontend/src/features/mateo/components/agenda/ValeriaAgendaView.tsx` — Client root (composición 6 hijos)
 - `vitalia/frontend/src/features/valeria/components/agenda/AgendaCalendar.tsx` + DayCalendar + WeekCalendar + MonthCalendar (react-window virtualization mes)
 - `vitalia/frontend/src/features/valeria/components/agenda/AgendaSlot.tsx` — border-status + origin badge + PHI-mask title
 - `vitalia/frontend/src/features/valeria/components/agenda/AppointmentDrawer.tsx` — Sheet Shadcn responsive (side="bottom" mobile, side="right" desktop con useMediaQuery + resize 440-640px localStorage)

@@ -349,8 +349,12 @@ export function CapDrawer() {
             </Card>
           )}
 
-          {/* ✨ Scenarios · v3.2 — qué hace (unidad atómica de comportamiento) */}
-          <ScenariosSection scenarios={cap.scenarios ?? []} />
+          {/* ✨ Scenarios — qué hace; sin scenarios cae al texto funcional (HB-52) */}
+          <ScenariosSection
+            scenarios={cap.scenarios ?? []}
+            userFacingDescription={cap.user_facing_description}
+            devPreview={cap.dev_preview}
+          />
 
           {/* 📁 Archivos código asociados · v3.2 cross-check — dónde vive */}
           <CodeFilesSection
