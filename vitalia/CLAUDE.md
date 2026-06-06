@@ -78,7 +78,7 @@ curl http://127.0.0.1:8002/health
 
 ## Design system SSoT (★ cargar ANTES de tocar `vitalia/frontend/src/**`)
 
-Skill `vitalia-design-system` = índice cargable del shell-organism + átomos/moléculas + tokens + **5 especialistas + Valeria supervisora** (★ v1.2 2026-05-30: Lisa · Mateo · Adrián · Lucas · Camila en Ribbon; Valeria = sidebar supervisor; Mateo = Operar/Mi Día con `--agent-mateo: #FEE209`). NO duplica; apunta a fuentes. `/architect` lo lista en `must_load_skills` de todo ticket FE; `builder-frontend` lo carga (su único canal — no hereda este overlay); `auditor-frontend` lo usa en cat 9/13. SSoT que indexa: `vitalia/docs/architecture/{design-system.md, SHELL-DESIGN-CONTRACT.md}` + `vitalia/frontend/src/app/globals.css` + `tailwind.config.ts` + `src/lib/routing/shell-routes.ts`. ⚠️ `core/@luana/design-tokens` solo exporta z-index — tokens de color viven en `globals.css`.
+Skill `vitalia-design-system` = índice cargable del shell-organism + átomos/moléculas + tokens + **5 especialistas + Valeria supervisora** (★ v1.2 2026-05-30: Lisa · Mateo · Adrián · Lucas · Camila en Ribbon; Valeria = sidebar supervisor; Mateo = Operar/Mi Día con `--agent-mateo: #FEE209`). NO duplica; apunta a fuentes. `/architect` lo lista en `must_load_skills` de todo ticket FE; `builder-frontend` lo carga (su único canal — no hereda este overlay); `auditor-frontend` lo usa en cat 9/13. SSoT que indexa: `vitalia/docs/architecture/{design-system.md, SHELL-DESIGN-CONTRACT.md}` + `vitalia/frontend/src/app/globals.css` + `tailwind.config.ts` + `src/lib/shell-routes.ts`. ⚠️ `core/@luana/design-tokens` solo exporta z-index — tokens de color viven en `globals.css`.
 
 ## Brand-specific skills
 
@@ -122,13 +122,21 @@ Toda story que toque `cap_change_type ∈ {new, extend}` sobre cap user_visible:
 # Levantar cockpit y abrir tab Functionality (vista narrada del producto)
 make cockpit-up                                    # http://localhost:4002/functionality
 
-# Regenerar índices code↔cap (auto-corre en pre-commit Section 5c/5d)
-python3 scripts/generate_code_to_cap_index.py --brand vitalia
-python3 scripts/validate_code_cap_bidirectional.py --brand vitalia
+# Crear una cap NUEVA (HB-51 · NUNCA hand-author el YAML)
+make new-cap BRAND=vitalia MODULE=inbox SLUG=adrian-inbox AREA=adrian.inbox
+
+# Health report code↔cap de un vistazo (G1-G6 + schema · debe dar 0 antes del merge)
+make cap-doctor BRAND=vitalia
+
+# Regenerar índices code↔cap (auto-corre en pre-commit Section 5c/5d/5e)
+python3 scripts/generate_code_to_cap_index.py --brand vitalia        # + resolved_cap_to_files
+python3 scripts/validate_code_cap_bidirectional.py --brand vitalia   # G1-G6 HARD para vitalia (5e/4e)
 
 # Outputs gitignored R3 v2:
-ls vitalia/docs/product/capabilities/_*.json       # status + atomics + code-index + bidirectional
+ls vitalia/docs/product/capabilities/_*.json       # status + code-index + bidirectional
 ```
+
+> **HB-51 (cement 2026-06-05):** el formato/estado de una cap está enforced por 8 capas determinísticas (resolver two-way `cap_id↔functional_area` + `make new-cap` generator + schema pydantic + 6 gates G1-G6 HARD en pre-commit/pre-push + `make cap-doctor`). Un header `# cap:` → cap inexistente, o una caja del cockpit vacía, ahora **fallan el commit** (vitalia/comunify HARD; nicolify/lupulo advisory). SSoT: `docs/process/cap-deterministic-enforcement.md`.
 
 SSoT: `docs/process/capability-protocol.md` § Sec 11-13 (v3.2 cement).
 

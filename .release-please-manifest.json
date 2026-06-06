@@ -24,6 +24,7 @@
   "core/luana-core-sales-agent": "0.1.0",
   "core/luana-core-campaigns": "0.1.0",
   "core/luana-core-extension-sdk": "0.1.0",
+  "core/luana-core-flows": "0.1.0",
   "apps/test-brand": "0.1.0",
   "core/@luana/api-client": "0.1.0",
   "core/@luana/design-tokens": "0.1.0",

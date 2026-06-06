@@ -4,6 +4,8 @@
 **Brand:** lupulo (Gastronomía — restaurantes, bares, cafeterías)
 **Scope:** integridad bidireccional POS/KDS ↔ lupulo, lifecycle reservas multi-canal, sync menú con resolution conflict POS-wins, event stream cocina via outbox para sales agent realtime.
 
+> ⚠️ **ASPIRACIONAL (verify-first 2026-06-02)** — Lupulo es **placeholder, bootstrap pendiente**: NO existe `lupulo/backend/src/modules/lupulo/`. Los adapters POS/KDS (Toast/Square/Clover/Fudo), el reservation lifecycle y el contract `core/luana-core-connections/.../pos/base.py` descritos aquí son **diseño target** — esta rule reserva el slot; nada está implementado todavía.
+
 ## Regla cardinal
 
 POS es la única source of truth del restaurant (menú, precios, stock). Toda integración POS/KDS DEBE ser idempotente (webhooks pueden retry N veces) y usar outbox para eventos kitchen (perder evento `order_ready` = cliente esperando indefinidamente). Reservation duplicada por race condition webhook = problema operativo grave (mesa double-booked).

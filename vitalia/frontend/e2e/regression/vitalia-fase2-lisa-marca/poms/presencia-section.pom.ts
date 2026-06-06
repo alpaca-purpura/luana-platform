@@ -2,9 +2,35 @@
  * presencia-section.pom.ts — PresenciaSectionPage POM
  *
  * Page object for the Presencia sub-sub-tab within lisa/marca.
- * Covers: website + social media (instagram/tiktok/google-business) fields,
- * trust signals management (PE hybrid catalog + free-text "Otra"),
- * and address/phone contact fields.
+ * Covers: website URL + social media fields, trust signals management.
+ *
+ * REWRITE (estabilizar-harness-e2e-lisa-marca T-1b):
+ *   Real implementation:
+ *     - PresenciaView data-testid "presencia-view" (section root)
+ *     - WebsiteCard: <Input aria-label="URL del sitio web">
+ *     - SocialMediaLinksEditor: 5 rows with ariaLabel per channel
+ *         instagram → "Usuario de Instagram"
+ *         tiktok   → "Usuario de TikTok"
+ *         facebook → "Página de Facebook"
+ *         google_business → "URL de Google Business"
+ *         whatsapp → "Número de WhatsApp Business"
+ *     - TrustSignalsEditor: no testids → use role/text/heading
+ *         section heading: "Señales de autoridad"
+ *         "Agregar" button for free-text "Otra"
+ *         active certs: role="list" aria-label="Certificaciones activas"
+ *         remove chip: button aria-label="Quitar certificación {label}"
+ *
+ *   DELETED phantom locators:
+ *     - addressInput (contact-address-input — NOT implemented in FE)
+ *     - phoneInput (contact-phone-input — NOT implemented in FE)
+ *     - trustSignalsList (no testid; use role="list")
+ *     - trustCatalogTrigger (no combobox; catalog is a <details> expander)
+ *     - trustCatalogOptions (no testid; options inside <details>)
+ *     - customTrustSignalInput (no testid; use getByLabel/getByPlaceholder)
+ *     - addTrustSignalButton (no testid; use getByRole('button'))
+ *     - trustSignalsEmptyState (no testid; inline text)
+ *     - trustSignalsSection (no testid; use heading)
+ *     - trust-signals-loading-skeleton (NOT rendered; loading shown via aria-busy)
  *
  * No assertions in POM methods (assertions live in spec files).
  *
@@ -19,13 +45,15 @@ export class PresenciaSectionPage {
   readonly page: Page;
 
   // ---------------------------------------------------------------------------
-  // Section container
+  // Section container — real testid "presencia-view"
   // ---------------------------------------------------------------------------
 
   readonly sectionRoot: Locator;
 
   // ---------------------------------------------------------------------------
   // Digital presence fields
+  // WebsiteCard: aria-label "URL del sitio web"
+  // SocialMediaLinksEditor: each channel has ariaLabel per SOCIAL_CHANNELS config
   // ---------------------------------------------------------------------------
 
   /** Website URL input */
@@ -37,42 +65,37 @@ export class PresenciaSectionPage {
   /** TikTok handle input */
   readonly tiktokInput: Locator;
 
+  /** Facebook page input */
+  readonly facebookInput: Locator;
+
   /** Google Business URL input */
   readonly googleBusinessInput: Locator;
 
-  // ---------------------------------------------------------------------------
-  // Address / phone contact
-  // ---------------------------------------------------------------------------
-
-  /** Address input */
-  readonly addressInput: Locator;
-
-  /** Phone input */
-  readonly phoneInput: Locator;
+  /** WhatsApp Business number input */
+  readonly whatsappInput: Locator;
 
   // ---------------------------------------------------------------------------
   // Trust signals
+  // TrustSignalsEditor: no testids — use role/text/heading selectors
+  // Section heading: "Señales de autoridad"
+  // Active certs list: role="list" aria-label="Certificaciones activas"
+  // "Agregar" button: getByRole('button', {name:/Agregar certif/i})
+  // Empty state: inline text (no testid)
   // ---------------------------------------------------------------------------
 
-  /** Trust signals section container */
+  /** Trust signals card (scoped by heading "Señales de autoridad") */
   readonly trustSignalsSection: Locator;
 
-  /** Trust signals list (existing items) */
+  /** Active trust signals list (role="list" aria-label="Certificaciones activas") */
   readonly trustSignalsList: Locator;
 
-  /** Trust catalog dropdown/combobox trigger */
-  readonly trustCatalogTrigger: Locator;
-
-  /** Trust catalog options list */
-  readonly trustCatalogOptions: Locator;
-
-  /** Custom trust signal "Otra" free-text input */
-  readonly customTrustSignalInput: Locator;
-
-  /** Add trust signal confirm button */
+  /** "Agregar" button for free-text "Otra" certification input */
   readonly addTrustSignalButton: Locator;
 
-  /** Empty state for trust signals (no items yet) */
+  /** Free-text "Otra" certification input */
+  readonly customTrustSignalInput: Locator;
+
+  /** Empty state text (shown when no certs; no testid — text content check) */
   readonly trustSignalsEmptyState: Locator;
 
   // ---------------------------------------------------------------------------
@@ -82,47 +105,42 @@ export class PresenciaSectionPage {
   constructor(page: Page) {
     this.page = page;
 
-    this.sectionRoot = page.locator(
-      '[data-testid="presencia-section-root"]',
-    );
+    // Section root
+    this.sectionRoot = page.getByTestId("presencia-view");
 
-    // Digital presence
-    this.websiteInput = page.locator(
-      '[data-testid="contact-website-input"]',
-    );
-    this.instagramInput = page.locator(
-      '[data-testid="contact-instagram-input"]',
-    );
-    this.tiktokInput = page.locator('[data-testid="contact-tiktok-input"]');
-    this.googleBusinessInput = page.locator(
-      '[data-testid="contact-google-business-input"]',
-    );
+    // Website input (WebsiteCard uses FormLabel + Input with aria-label)
+    this.websiteInput = page.getByLabel(/URL del sitio web/i);
 
-    // Address / phone
-    this.addressInput = page.locator('[data-testid="contact-address-input"]');
-    this.phoneInput = page.locator('[data-testid="contact-phone-input"]');
+    // Social media inputs (SocialMediaLinksEditor ariaLabel per channel)
+    this.instagramInput = page.getByLabel(/Usuario de Instagram/i);
+    this.tiktokInput = page.getByLabel(/Usuario de TikTok/i);
+    this.facebookInput = page.getByLabel(/P[áa]gina de Facebook/i);
+    this.googleBusinessInput = page.getByLabel(/URL de Google Business/i);
+    this.whatsappInput = page.getByLabel(/N[úu]mero de WhatsApp Business/i);
 
-    // Trust signals
+    // Trust signals section: scoped to the card containing the heading
     this.trustSignalsSection = page.locator(
-      '[data-testid="trust-signals-section"]',
+      "div:has(> div > h3:text-is('Señales de autoridad'))",
     );
-    this.trustSignalsList = page.locator(
-      '[data-testid="trust-signals-list"]',
+
+    // Active certs list (role="list" aria-label="Certificaciones activas")
+    this.trustSignalsList = page.getByRole("list", {
+      name: /Certificaciones activas/i,
+    });
+
+    // "Agregar" button for free-text "Otra" (inside the <details> expander)
+    this.addTrustSignalButton = page.getByRole("button", {
+      name: /Agregar certif/i,
+    });
+
+    // "Otra certificación..." placeholder input
+    this.customTrustSignalInput = page.getByPlaceholder(
+      /Otra certif/i,
     );
-    this.trustCatalogTrigger = page.locator(
-      '[data-testid="trust-catalog-trigger"]',
-    );
-    this.trustCatalogOptions = page.locator(
-      '[data-testid="trust-catalog-options"]',
-    );
-    this.customTrustSignalInput = page.locator(
-      '[data-testid="trust-signal-custom-input"]',
-    );
-    this.addTrustSignalButton = page.locator(
-      '[data-testid="trust-signal-add-button"]',
-    );
-    this.trustSignalsEmptyState = page.locator(
-      '[data-testid="trust-signals-empty-state"]',
+
+    // Empty state: inline text paragraph (no testid)
+    this.trustSignalsEmptyState = page.getByText(
+      /Aún no se han agregado certificaciones/i,
     );
   }
 
@@ -130,40 +148,30 @@ export class PresenciaSectionPage {
   // Digital presence helpers
   // ---------------------------------------------------------------------------
 
-  /**
-   * Fills the website URL input.
-   */
+  /** Fills the website URL input and triggers autosave. */
   async fillWebsite(url: string): Promise<void> {
     await this.websiteInput.click();
     await this.websiteInput.fill(url);
   }
 
-  /**
-   * Returns the current website input value.
-   */
+  /** Returns the current website input value. */
   async getWebsiteValue(): Promise<string> {
     return this.websiteInput.inputValue();
   }
 
-  /**
-   * Fills the Instagram handle input.
-   */
+  /** Fills the Instagram handle input. */
   async fillInstagram(handle: string): Promise<void> {
     await this.instagramInput.click();
     await this.instagramInput.fill(handle);
   }
 
-  /**
-   * Fills the TikTok handle input.
-   */
+  /** Fills the TikTok handle input. */
   async fillTikTok(handle: string): Promise<void> {
     await this.tiktokInput.click();
     await this.tiktokInput.fill(handle);
   }
 
-  /**
-   * Fills the Google Business URL input.
-   */
+  /** Fills the Google Business URL input. */
   async fillGoogleBusiness(url: string): Promise<void> {
     await this.googleBusinessInput.click();
     await this.googleBusinessInput.fill(url);
@@ -174,88 +182,64 @@ export class PresenciaSectionPage {
   // ---------------------------------------------------------------------------
 
   /**
-   * Returns the number of trust signal items currently displayed.
+   * Returns the number of active trust signal chips currently displayed.
+   * Counts role="listitem" items inside the active certs list.
    */
   async getTrustSignalCount(): Promise<number> {
-    const items = this.trustSignalsList.locator(
-      '[data-testid^="trust-signal-item-"]',
-    );
-    return items.count();
-  }
-
-  /**
-   * Selects a trust signal from the PE catalog dropdown.
-   * @param catalogLabel - The label text of the catalog item to select.
-   */
-  async selectTrustSignal(catalogLabel: string): Promise<void> {
-    await this.trustCatalogTrigger.click();
-    await this.trustCatalogOptions
-      .locator(`text="${catalogLabel}"`)
-      .first()
-      .click();
+    const visible = await this.trustSignalsList.isVisible();
+    if (!visible) return 0;
+    return this.trustSignalsList.getByRole("listitem").count();
   }
 
   /**
    * Adds a custom (free-text "Otra") trust signal.
-   * @param customValue - The free text value for the custom signal.
+   * Assumes the <details> catalog is already expanded or will expand on interaction.
    */
   async addCustomTrustSignal(customValue: string): Promise<void> {
-    // Open catalog and select "Otra"
-    await this.trustCatalogTrigger.click();
-    await this.trustCatalogOptions.locator('text="Otra"').first().click();
-
-    // Fill custom input (appears after selecting "Otra")
     await this.customTrustSignalInput.fill(customValue);
     await this.addTrustSignalButton.click();
   }
 
   /**
-   * Removes a trust signal by its display position (0-indexed).
-   * Clicks the remove button for the item at the given index.
+   * Removes a trust signal by its display label.
+   * Clicks the "Quitar certificación {label}" button.
    */
-  async removeTrustSignal(index: number): Promise<void> {
-    const items = this.trustSignalsList.locator(
-      '[data-testid^="trust-signal-item-"]',
-    );
-    const item = items.nth(index);
-    await item
-      .locator('[data-testid="trust-signal-remove-button"]')
+  async removeTrustSignalByLabel(label: string): Promise<void> {
+    await this.page
+      .getByRole("button", { name: new RegExp(`Quitar certif.*${label}`, "i") })
       .click();
   }
 
   /**
-   * Returns an array of trust signal display values currently visible.
+   * Returns an array of trust signal label texts currently active.
    */
   async getTrustSignalValues(): Promise<string[]> {
-    const items = this.trustSignalsList.locator(
-      '[data-testid^="trust-signal-item-"]',
-    );
+    const visible = await this.trustSignalsList.isVisible();
+    if (!visible) return [];
+    const items = this.trustSignalsList.getByRole("listitem");
     const count = await items.count();
     const values: string[] = [];
     for (let i = 0; i < count; i++) {
-      const text = await items
-        .nth(i)
-        .locator('[data-testid="trust-signal-value"]')
-        .textContent();
-      values.push(text ?? "");
+      const text = await items.nth(i).textContent();
+      if (text) values.push(text.trim());
     }
     return values;
   }
 
   /**
-   * Returns whether the trust signals empty state is visible.
+   * Returns whether the trust signals empty state text is visible.
+   * (shown when no certifications have been added yet)
    */
   async isTrustSignalsEmptyStateVisible(): Promise<boolean> {
     return this.trustSignalsEmptyState.isVisible();
   }
 
   /**
-   * Waits until the trust signals list renders (skeleton gone).
+   * Waits until the trust signals section loads.
+   * TrustSignalsEditor fetches signals (React Query); wait until the section renders.
+   * No loading skeleton testid — wait for the section root to be visible.
    */
   async waitForTrustSignalsLoaded(timeoutMs: number = 10_000): Promise<void> {
-    await this.page
-      .locator('[data-testid="trust-signals-loading-skeleton"]')
-      .waitFor({ state: "hidden", timeout: timeoutMs });
     await this.trustSignalsSection.waitFor({
       state: "visible",
       timeout: timeoutMs,

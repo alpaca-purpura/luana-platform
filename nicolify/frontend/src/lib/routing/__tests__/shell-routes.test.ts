@@ -1,14 +1,14 @@
 // cap: shell-organism.shell-nicolify
-// story-origin: nicolify-r0-shell T-5
+// story-origin: nicolify-r0-sitemap-completo T-1 (coverage_update from nicolify-r0-shell T-5)
 // voseo-allowed: test file validates labels have no voseo — regex tests contain voseo patterns as detection targets
 /**
  * shell-routes.test.ts — Unit tests for shell-routes.ts SSoT
  *
- * TDD: Written RED before implementation (per tdd-mandatory.md).
- * Covers: AGENT_CATALOG · AGENT_SUBTABS · DEFAULT_LANDING · guards · XSS/injection (A4)
- * Scenarios: E1-E5 + A4 (T-5 gherkin coverage per 06-tickets.yaml)
+ * TDD: coverage_update per tdd-mandatory.md — updated to v3 tree (SYSTEM-MAP v2.0).
+ * Covers: AGENT_CATALOG · AGENT_SUBTABS · AGENT_SUBSUBTABS · DEFAULT_LANDING · guards · XSS/injection (A4)
+ * Scenarios: E1-E5 + A4 + AGENT_SUBSUBTABS (T-1 gherkin coverage per 06-tickets.yaml)
  *
- * spec_anchor: 04-validators.yaml T-5 · 01-spec.md § Routing SSoT
+ * spec_anchor: 06-tickets.yaml T-1 · 01-sitemap.md v3 · SYSTEM-MAP.yaml v2.0
  */
 import { describe, it, expect } from "vitest";
 
@@ -16,10 +16,13 @@ import {
   AGENT_CATALOG,
   AGENT_RIBBON_ORDER,
   AGENT_SUBTABS,
+  AGENT_SUBSUBTABS,
   DEFAULT_LANDING,
   isValidAgent,
   isValidSubtab,
+  isValidSubSubTab,
   getDefaultSubtab,
+  getSubSubTabs,
   extractAgentFromPath,
   extractSubtabFromPath,
   type RibbonTabSlug,
@@ -53,6 +56,19 @@ describe("AGENT_CATALOG", () => {
       expect(descriptor.defaultSubtab).toBeTruthy();
     }
   });
+
+  it("defaultSubtab per agent matches v3 tree (SYSTEM-MAP v2.0)", () => {
+    expect(AGENT_CATALOG.abel.defaultSubtab).toBe("icp");
+    expect(AGENT_CATALOG.brenda.defaultSubtab).toBe("contenido-presencia");
+    expect(AGENT_CATALOG.christian.defaultSubtab).toBe("pipeline");
+    expect(AGENT_CATALOG.sara.defaultSubtab).toBe("proximamente");
+    expect(AGENT_CATALOG.norvil.defaultSubtab).toBe("cartera");
+    expect(AGENT_CATALOG.config.defaultSubtab).toBe("conexiones");
+  });
+
+  it("sara tabLabel is 'Próximamente' (deferred ADR-nicolify-002 D-D v2)", () => {
+    expect(AGENT_CATALOG.sara.tabLabel).toBe("Próximamente");
+  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -78,45 +94,52 @@ describe("AGENT_RIBBON_ORDER", () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe("DEFAULT_LANDING", () => {
-  it("is christian/pipeline (ratificado en CONTEXT-BRIEF + 01-spec.md)", () => {
+  it("is christian/pipeline (ratificado · SIN cambio sitemap-completo T-1)", () => {
     expect(DEFAULT_LANDING.agent).toBe("christian");
     expect(DEFAULT_LANDING.subtab).toBe("pipeline");
   });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// AGENT_SUBTABS — per agent
+// AGENT_SUBTABS — per agent (v3 tree · SYSTEM-MAP v2.0)
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe("AGENT_SUBTABS", () => {
-  it("abel has [oferta, angulos, escalera-valor, marca] (4 subtabs)", () => {
+describe("AGENT_SUBTABS (v3 tree — SYSTEM-MAP v2.0)", () => {
+  it("abel has [icp, oferta, marca] (3 subtabs)", () => {
     const ids = AGENT_SUBTABS.abel.map((t) => t.id);
-    expect(ids).toEqual(["oferta", "angulos", "escalera-valor", "marca"]);
+    expect(ids).toEqual(["icp", "oferta", "marca"]);
   });
 
-  it("brenda has [campanas, contenido, presupuesto] (3 subtabs)", () => {
+  it("brenda has [contenido-presencia, pauta, inteligencia-asesoria] (3 subtabs)", () => {
     const ids = AGENT_SUBTABS.brenda.map((t) => t.id);
-    expect(ids).toEqual(["campanas", "contenido", "presupuesto"]);
+    expect(ids).toEqual(["contenido-presencia", "pauta", "inteligencia-asesoria"]);
   });
 
-  it("christian has [prospectos, secuencias, pipeline, propuestas, licitaciones] (5 subtabs)", () => {
+  it("christian has [contactos, inbox, pipeline, equipo-comercial, agenda, propuestas] (6 subtabs)", () => {
     const ids = AGENT_SUBTABS.christian.map((t) => t.id);
-    expect(ids).toEqual(["prospectos", "secuencias", "pipeline", "propuestas", "licitaciones"]);
+    expect(ids).toEqual([
+      "contactos",
+      "inbox",
+      "pipeline",
+      "equipo-comercial",
+      "agenda",
+      "propuestas",
+    ]);
   });
 
-  it("sara has ONLY [proyectos] in R0 (navigation-tree.md constraint)", () => {
+  it("sara has ONLY [proximamente] — deferred (ADR-nicolify-002 D-D)", () => {
     const ids = AGENT_SUBTABS.sara.map((t) => t.id);
-    expect(ids).toEqual(["proyectos"]);
+    expect(ids).toEqual(["proximamente"]);
   });
 
-  it("norvil has [cuentas, salud-cuenta, renovaciones] (3 subtabs)", () => {
+  it("norvil has [cartera, renovaciones, fidelizacion] (3 subtabs)", () => {
     const ids = AGENT_SUBTABS.norvil.map((t) => t.id);
-    expect(ids).toEqual(["cuentas", "salud-cuenta", "renovaciones"]);
+    expect(ids).toEqual(["cartera", "renovaciones", "fidelizacion"]);
   });
 
-  it("config has [conexiones, preferencias, tokens, agentes] (4 subtabs)", () => {
+  it("config has [conexiones, preferencias, tokens, autonomia-agentes] (4 subtabs)", () => {
     const ids = AGENT_SUBTABS.config.map((t) => t.id);
-    expect(ids).toEqual(["conexiones", "preferencias", "tokens", "agentes"]);
+    expect(ids).toEqual(["conexiones", "preferencias", "tokens", "autonomia-agentes"]);
   });
 
   it("each subtab has id, label (Spanish neutro) and icon", () => {
@@ -128,6 +151,73 @@ describe("AGENT_SUBTABS", () => {
         // Labels should not contain voseo (basic check)
         expect(subtab.label).not.toMatch(/\b(mirá|podés|tenés|querés)\b/i);
       }
+    }
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AGENT_SUBSUBTABS — 3 populated combos (N3 · sitemap-completo T-1)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const ABEL_OFERTA_KEY = "abel.oferta";
+const CHRISTIAN_PROPUESTAS_KEY = "christian.propuestas";
+const NORVIL_FIDELIZACION_KEY = "norvil.fidelizacion";
+
+describe("AGENT_SUBSUBTABS (N3 · 3 populated combos)", () => {
+  it("abel.oferta has [catalogo-escalera, dossier-mineria] (2 leaves)", () => {
+    const leaves = AGENT_SUBSUBTABS[ABEL_OFERTA_KEY];
+    expect(leaves).toBeDefined();
+    const ids = leaves?.map((l) => l.id) ?? [];
+    expect(ids).toEqual(["catalogo-escalera", "dossier-mineria"]);
+  });
+
+  it("christian.propuestas has [propuestas, licitaciones] (2 leaves)", () => {
+    const leaves = AGENT_SUBSUBTABS[CHRISTIAN_PROPUESTAS_KEY];
+    expect(leaves).toBeDefined();
+    const ids = leaves?.map((l) => l.id) ?? [];
+    expect(ids).toEqual(["propuestas", "licitaciones"]);
+  });
+
+  it("norvil.fidelizacion has [momentos, champion-shield, value-proof-qbr, gifting] (4 leaves)", () => {
+    const leaves = AGENT_SUBSUBTABS[NORVIL_FIDELIZACION_KEY];
+    expect(leaves).toBeDefined();
+    const ids = leaves?.map((l) => l.id) ?? [];
+    expect(ids).toEqual(["momentos", "champion-shield", "value-proof-qbr", "gifting"]);
+  });
+
+  it("total leaves across 3 combos = 8", () => {
+    const total =
+      (AGENT_SUBSUBTABS[ABEL_OFERTA_KEY]?.length ?? 0) +
+      (AGENT_SUBSUBTABS[CHRISTIAN_PROPUESTAS_KEY]?.length ?? 0) +
+      (AGENT_SUBSUBTABS[NORVIL_FIDELIZACION_KEY]?.length ?? 0);
+    expect(total).toBe(8);
+  });
+
+  it("getSubSubTabs returns leaves for populated combo", () => {
+    const leaves = getSubSubTabs("abel", "oferta");
+    expect(leaves).not.toBeNull();
+    expect(leaves?.length).toBe(2);
+  });
+
+  it("getSubSubTabs returns null for combo without leaves", () => {
+    expect(getSubSubTabs("abel", "icp")).toBeNull();
+    expect(getSubSubTabs("brenda", "pauta")).toBeNull();
+    expect(getSubSubTabs("christian", "inbox")).toBeNull();
+    expect(getSubSubTabs("sara", "proximamente")).toBeNull();
+    expect(getSubSubTabs("norvil", "cartera")).toBeNull();
+    expect(getSubSubTabs("config", "conexiones")).toBeNull();
+  });
+
+  it("each leaf has id, label (Spanish neutro) and icon", () => {
+    const allLeaves = [
+      ...(AGENT_SUBSUBTABS["abel.oferta"] ?? []),
+      ...(AGENT_SUBSUBTABS["christian.propuestas"] ?? []),
+      ...(AGENT_SUBSUBTABS["norvil.fidelizacion"] ?? []),
+    ];
+    for (const leaf of allLeaves) {
+      expect(leaf.id).toBeTruthy();
+      expect(leaf.label).toBeTruthy();
+      expect(leaf.icon).toBeTruthy();
     }
   });
 });
@@ -165,20 +255,49 @@ describe("isValidAgent (XSS/path-injection whitelist guard)", () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// isValidSubtab — whitelist guard per agent
+// isValidSubtab — whitelist guard per agent (v3 slugs)
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe("isValidSubtab", () => {
-  it("validates valid subtab for its agent", () => {
+describe("isValidSubtab (v3 slugs)", () => {
+  it("validates valid subtab for its agent (v3)", () => {
+    expect(isValidSubtab("abel", "icp")).toBe(true);
     expect(isValidSubtab("abel", "oferta")).toBe(true);
+    expect(isValidSubtab("abel", "marca")).toBe(true);
+    expect(isValidSubtab("brenda", "contenido-presencia")).toBe(true);
+    expect(isValidSubtab("brenda", "pauta")).toBe(true);
     expect(isValidSubtab("christian", "pipeline")).toBe(true);
-    expect(isValidSubtab("sara", "proyectos")).toBe(true);
+    expect(isValidSubtab("christian", "propuestas")).toBe(true);
+    expect(isValidSubtab("sara", "proximamente")).toBe(true);
+    expect(isValidSubtab("norvil", "cartera")).toBe(true);
+    expect(isValidSubtab("norvil", "fidelizacion")).toBe(true);
     expect(isValidSubtab("config", "conexiones")).toBe(true);
+    expect(isValidSubtab("config", "autonomia-agentes")).toBe(true);
+  });
+
+  it("returns false for legacy subtab slugs (v1/v2 tree, removed in v3)", () => {
+    // Old abel subtabs
+    expect(isValidSubtab("abel", "angulos")).toBe(false);
+    expect(isValidSubtab("abel", "escalera-valor")).toBe(false);
+    // Old brenda subtabs
+    expect(isValidSubtab("brenda", "campanas")).toBe(false);
+    expect(isValidSubtab("brenda", "contenido")).toBe(false);
+    expect(isValidSubtab("brenda", "presupuesto")).toBe(false);
+    // Old christian subtabs
+    expect(isValidSubtab("christian", "prospectos")).toBe(false);
+    expect(isValidSubtab("christian", "secuencias")).toBe(false);
+    expect(isValidSubtab("christian", "licitaciones")).toBe(false);
+    // Old sara subtab
+    expect(isValidSubtab("sara", "proyectos")).toBe(false);
+    // Old norvil subtabs
+    expect(isValidSubtab("norvil", "cuentas")).toBe(false);
+    expect(isValidSubtab("norvil", "salud-cuenta")).toBe(false);
+    // Old config subtab
+    expect(isValidSubtab("config", "agentes")).toBe(false);
   });
 
   it("returns false for subtab that does not belong to agent", () => {
     expect(isValidSubtab("abel", "pipeline")).toBe(false);
-    expect(isValidSubtab("sara", "campanas")).toBe(false);
+    expect(isValidSubtab("sara", "pauta")).toBe(false);
   });
 
   it("returns false for invalid agent slug", () => {
@@ -192,16 +311,65 @@ describe("isValidSubtab", () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// getDefaultSubtab
+// isValidSubSubTab — whitelist guard N3 (A4: XSS/path-injection)
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe("getDefaultSubtab", () => {
-  it("returns the first subtab id for each agent", () => {
-    expect(getDefaultSubtab("abel")).toBe("oferta");
-    expect(getDefaultSubtab("brenda")).toBe("campanas");
-    expect(getDefaultSubtab("christian")).toBe("prospectos");
-    expect(getDefaultSubtab("sara")).toBe("proyectos");
-    expect(getDefaultSubtab("norvil")).toBe("cuentas");
+describe("isValidSubSubTab (N3 whitelist guard · A4)", () => {
+  it("returns true for valid N3 leaves", () => {
+    expect(isValidSubSubTab("abel", "oferta", "catalogo-escalera")).toBe(true);
+    expect(isValidSubSubTab("abel", "oferta", "dossier-mineria")).toBe(true);
+    expect(isValidSubSubTab("christian", "propuestas", "propuestas")).toBe(true);
+    expect(isValidSubSubTab("christian", "propuestas", "licitaciones")).toBe(true);
+    expect(isValidSubSubTab("norvil", "fidelizacion", "momentos")).toBe(true);
+    expect(isValidSubSubTab("norvil", "fidelizacion", "champion-shield")).toBe(true);
+    expect(isValidSubSubTab("norvil", "fidelizacion", "value-proof-qbr")).toBe(true);
+    expect(isValidSubSubTab("norvil", "fidelizacion", "gifting")).toBe(true);
+  });
+
+  it("returns false for combo with no N3 leaves", () => {
+    expect(isValidSubSubTab("abel", "icp", "anything")).toBe(false);
+    expect(isValidSubSubTab("brenda", "pauta", "anything")).toBe(false);
+    expect(isValidSubSubTab("christian", "pipeline", "anything")).toBe(false);
+    expect(isValidSubSubTab("sara", "proximamente", "anything")).toBe(false);
+    expect(isValidSubSubTab("norvil", "cartera", "anything")).toBe(false);
+    expect(isValidSubSubTab("config", "conexiones", "anything")).toBe(false);
+  });
+
+  it("returns false for non-existent leaf in populated combo", () => {
+    expect(isValidSubSubTab("abel", "oferta", "non-existent")).toBe(false);
+    expect(isValidSubSubTab("christian", "propuestas", "unknown")).toBe(false);
+    expect(isValidSubSubTab("norvil", "fidelizacion", "fake-leaf")).toBe(false);
+  });
+
+  it("returns false for XSS/path-traversal/prototype injection (A4 guard)", () => {
+    expect(isValidSubSubTab("abel", "oferta", "<script>alert(1)</script>")).toBe(false);
+    expect(isValidSubSubTab("abel", "oferta", "../../etc/passwd")).toBe(false);
+    expect(isValidSubSubTab("abel", "oferta", "__proto__")).toBe(false);
+    expect(isValidSubSubTab("abel", "oferta", "")).toBe(false);
+  });
+
+  it("returns false when agent or subtab is invalid", () => {
+    expect(isValidSubSubTab("luana", "oferta", "catalogo-escalera")).toBe(false);
+    expect(isValidSubSubTab("abel", "non-existent-subtab", "catalogo-escalera")).toBe(false);
+    expect(isValidSubSubTab(null, "oferta", "catalogo-escalera")).toBe(false);
+    expect(isValidSubSubTab("abel", null, "catalogo-escalera")).toBe(false);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// getDefaultSubtab (v3 — first element per agent)
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("getDefaultSubtab (v3 — first array element)", () => {
+  it("returns the first subtab id for each agent (v3)", () => {
+    // NOTE: getDefaultSubtab returns AGENT_SUBTABS[agent][0].id (first array element).
+    // christian's first element is "contactos" (not "pipeline").
+    // AGENT_CATALOG.christian.defaultSubtab="pipeline" + DEFAULT_LANDING is the session default.
+    expect(getDefaultSubtab("abel")).toBe("icp");
+    expect(getDefaultSubtab("brenda")).toBe("contenido-presencia");
+    expect(getDefaultSubtab("christian")).toBe("contactos");
+    expect(getDefaultSubtab("sara")).toBe("proximamente");
+    expect(getDefaultSubtab("norvil")).toBe("cartera");
     expect(getDefaultSubtab("config")).toBe("conexiones");
   });
 
@@ -216,10 +384,12 @@ describe("getDefaultSubtab", () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe("extractAgentFromPath", () => {
-  it("extracts valid agent from path", () => {
-    expect(extractAgentFromPath("/tenant-x/abel/oferta")).toBe("abel");
+  it("extracts valid agent from path (v3 slugs)", () => {
+    expect(extractAgentFromPath("/tenant-x/abel/icp")).toBe("abel");
     expect(extractAgentFromPath("/tenant-x/christian/pipeline")).toBe("christian");
     expect(extractAgentFromPath("/tenant-x/config/conexiones")).toBe("config");
+    expect(extractAgentFromPath("/tenant-x/sara/proximamente")).toBe("sara");
+    expect(extractAgentFromPath("/tenant-x/norvil/cartera")).toBe("norvil");
   });
 
   it("returns null for paths without valid agent segment", () => {
@@ -241,10 +411,11 @@ describe("extractAgentFromPath", () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe("extractSubtabFromPath", () => {
-  it("extracts subtab segment from path", () => {
-    expect(extractSubtabFromPath("/tenant-x/abel/oferta")).toBe("oferta");
+  it("extracts subtab segment from path (v3 slugs)", () => {
+    expect(extractSubtabFromPath("/tenant-x/abel/icp")).toBe("icp");
     expect(extractSubtabFromPath("/tenant-x/christian/pipeline")).toBe("pipeline");
-    expect(extractSubtabFromPath("/tenant-x/sara/proyectos")).toBe("proyectos");
+    expect(extractSubtabFromPath("/tenant-x/sara/proximamente")).toBe("proximamente");
+    expect(extractSubtabFromPath("/tenant-x/norvil/cartera")).toBe("cartera");
   });
 
   it("returns null for paths without subtab segment", () => {

@@ -99,7 +99,7 @@ function TopBarGlobalInteractive({ className }: Pick<TopBarGlobalProps, "classNa
         <Button
           variant="ghost"
           size="icon"
-          className="md:hidden"
+          className="lg:hidden"
           onClick={handleOpenValeria}
           aria-label={mobileDrawerOpen ? "Cerrar panel Valeria" : "Abrir panel Valeria"}
           aria-expanded={mobileDrawerOpen}
@@ -107,8 +107,8 @@ function TopBarGlobalInteractive({ className }: Pick<TopBarGlobalProps, "classNa
         >
           <Menu className="h-5 w-5" aria-hidden="true" />
         </Button>
-        <LogoMark variant="full" size="md" className="hidden md:inline-flex" />
-        <LogoMark variant="mark" size="md" className="inline-flex md:hidden" />
+        <LogoMark variant="full" size="md" className="hidden lg:inline-flex" />
+        <LogoMark variant="mark" size="md" className="inline-flex lg:hidden" />
         <TenantSwitcher />
       </div>
 
@@ -166,7 +166,7 @@ function TopBarGlobalSkeleton({ className }: Pick<TopBarGlobalProps, "className"
         <Button
           variant="ghost"
           size="icon"
-          className="md:hidden"
+          className="lg:hidden"
           aria-label="Abrir panel Valeria"
           aria-disabled="true"
           tabIndex={-1}
@@ -176,8 +176,8 @@ function TopBarGlobalSkeleton({ className }: Pick<TopBarGlobalProps, "className"
         >
           <Menu className="h-5 w-5" aria-hidden="true" />
         </Button>
-        <LogoMark variant="full" size="md" className="hidden md:inline-flex" />
-        <LogoMark variant="mark" size="md" className="inline-flex md:hidden" />
+        <LogoMark variant="full" size="md" className="hidden lg:inline-flex" />
+        <LogoMark variant="mark" size="md" className="inline-flex lg:hidden" />
         <TenantSwitcher />
       </div>
 

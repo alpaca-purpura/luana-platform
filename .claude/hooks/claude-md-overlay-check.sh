@@ -71,21 +71,21 @@ if [[ ! -f "${OVERLAY}" ]]; then
 {
   "hookSpecificOutput": {
     "hookEventName": "SessionStart",
-    "additionalContext": "advisory CLAUDE.md overlay missing — cwd cae dentro brand ${BRAND} pero ${OVERLAY} no existe. Per .claude/rules/claude-md-overlay.md, cada brand activa debería tener su overlay. Para bootstrap brand nueva: cp _pm-brand-template/_OVERLAY-template.md ${WS}/${BRAND}/CLAUDE.md (cuando template exista). Mientras tanto: sesión continúa pero sin contexto brand-specific auto-cargado."
+    "additionalContext": "advisory CLAUDE.md overlay missing — cwd cae dentro brand ${BRAND} pero ${OVERLAY} no existe. Per .claude/rules/claude-md-overlay.md, cada brand activa debería tener su overlay. Para bootstrap brand nueva: tomar como referencia ${WS}/vitalia/CLAUDE.md (overlay canónico de ejemplo; no hay template dedicado aún). Mientras tanto: sesión continúa pero sin contexto brand-specific auto-cargado."
   }
 }
 EOF
   exit 0
 fi
 
-# Overlay exists — sanity check size (cap 150 líneas per rule)
+# Overlay exists — sanity check size (cap 165 líneas per rule)
 LINE_COUNT=$(wc -l < "${OVERLAY}" 2>/dev/null || echo 0)
-if [[ "${LINE_COUNT}" -gt 200 ]]; then
+if [[ "${LINE_COUNT}" -gt 165 ]]; then
   cat <<EOF
 {
   "hookSpecificOutput": {
     "hookEventName": "SessionStart",
-    "additionalContext": "advisory ${BRAND}/CLAUDE.md exceeds soft cap (${LINE_COUNT} líneas > 150). Per .claude/rules/claude-md-overlay.md, brand overlay debería ser ≤150 líneas. Considerá mover detalle a ${WS}/${BRAND}/docs/domains/ con pointer."
+    "additionalContext": "advisory ${BRAND}/CLAUDE.md exceeds soft cap (${LINE_COUNT} líneas > 165). Per .claude/rules/claude-md-overlay.md, brand overlay debería ser ≤165 líneas. Considerá mover detalle a ${WS}/${BRAND}/docs/domains/ con pointer."
   }
 }
 EOF

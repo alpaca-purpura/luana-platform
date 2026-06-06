@@ -1,6 +1,8 @@
 # Recipe — Adding a New Smoke Test
 
-> **Read when:** the user says "agreguemos un smoke", "necesito test E2E para X", "smoke de la nueva ruta", "test integral de Y", or any new UI page lands on `development`.
+> **Read when:** the user says "agreguemos un smoke", "necesito test E2E para X", "smoke de la nueva ruta", "test integral de Y", or any new UI page lands on `wip/{brand}`.
+>
+> **Nota multi-brand:** este doc es brand-agnostic. Reemplazá `{brand}` por la marca activa (vitalia/nicolify/comunify/lupulo) y `300X` por su puerto FE (vitalia=3002, nicolify=3001, comunify=3003, lupulo=3004) en todos los paths y URLs. Ver rule #37 para la tabla completa de puertos y URLs `dev-app.{brand}lat.com`.
 
 This is the most common task this skill is invoked for. Follow the steps in order. Do not skip the preflight or the dry-run; they catch 80% of mistakes before they hit CI.
 
@@ -9,10 +11,10 @@ This is the most common task this skill is invoked for. Follow the steps in orde
 ## Pre-conditions
 
 Before starting:
-- [ ] The page/feature you want to test exists in `frontend/src/app/**` and renders successfully under `dev-app.nicolify.com` or `localhost:3000`.
+- [ ] The page/feature you want to test exists in `{brand}/frontend/src/app/**` and renders successfully under `dev-app.{brand}lat.com` or `localhost:300X` (vitalia=3002, nicolify=3001, comunify=3003, lupulo=3004). Ver rule #37 para infra dev-app por marca.
 - [ ] You can manually navigate to the URL in a browser (you know the route works).
 - [ ] You can describe in one sentence what the test asserts. ("The page renders with the expected H1 and the primary CTA is clickable.")
-- [ ] Dev container is running (`make dev` or `docker compose ps` shows `visionarias_client_dev` healthy).
+- [ ] Dev container is running (`make dev-{brand}` or `docker compose ps` shows `luana-dev-{brand}_frontend_dev-1` healthy).
 
 If any precondition is unmet, fix it before writing the test.
 
@@ -48,19 +50,19 @@ For "agreguemos un smoke," the answer is almost always `smoke` + `.smoke.spec.ts
 
 ## Step 2 — Create or extend a Page Object Model (POM)
 
-POMs live in `frontend/e2e/pages/`. Pattern: one POM per page (or per closely related set of pages).
+POMs live in `{brand}/frontend/e2e/pages/`. Pattern: one POM per page (or per closely related set of pages).
 
 **Decision:** does a POM already cover this page?
 
 ```bash
-ls $(git rev-parse --show-toplevel)/frontend/e2e/pages/
+ls $(git rev-parse --show-toplevel)/{brand}/frontend/e2e/pages/
 ```
 
 - **If yes:** open it. Add a method for the new interaction. Skip to Step 3.
 - **If no:** create `<feature-name>.page.ts`. Use this template:
 
 ```typescript
-// frontend/e2e/pages/<feature-name>.page.ts
+// {brand}/frontend/e2e/pages/<feature-name>.page.ts
 import type { Page, Locator } from '@playwright/test';
 import { expect } from '@playwright/test';
 
@@ -101,7 +103,7 @@ export class <FeatureName>Page {
 
 ## Step 3 — Write the spec
 
-File: `frontend/e2e/specs/smoke/<feature-name>.smoke.spec.ts`
+File: `{brand}/frontend/e2e/specs/smoke/<feature-name>.smoke.spec.ts`
 
 ```typescript
 import { test, expect } from '../../fixtures/auth.fixture';
@@ -157,11 +159,13 @@ If any line says FAIL, fix it before continuing. The preflight messages tell you
 Run JUST your new test, with the browser visible, so you can see exactly what happens:
 
 ```bash
-cd $(git rev-parse --show-toplevel)/frontend
-E2E_BASE_URL=http://localhost:3000 npx playwright test \
+cd $(git rev-parse --show-toplevel)/{brand}/frontend
+E2E_BASE_URL=http://localhost:300X npx playwright test \
   e2e/specs/smoke/<feature-name>.smoke.spec.ts \
   --project=smoke --headed
 ```
+
+Reemplazá `300X` por el puerto de la marca: vitalia=3002, nicolify=3001, comunify=3003, lupulo=3004.
 
 Watch:
 - Does the browser navigate to the right URL?
@@ -172,7 +176,7 @@ Watch:
 Iterate locally until green. Then run without `--headed` to confirm it works headless too:
 
 ```bash
-E2E_BASE_URL=http://localhost:3000 npx playwright test \
+E2E_BASE_URL=http://localhost:300X npx playwright test \
   e2e/specs/smoke/<feature-name>.smoke.spec.ts \
   --project=smoke
 ```
@@ -184,8 +188,8 @@ E2E_BASE_URL=http://localhost:3000 npx playwright test \
 Just because your test passes in isolation does not mean it passes in parallel with 13 others. Other tests share the same Clerk session, possibly the same tenant data, possibly the same mock state.
 
 ```bash
-cd $(git rev-parse --show-toplevel)/frontend
-E2E_BASE_URL=http://localhost:3000 npx playwright test --project=smoke
+cd $(git rev-parse --show-toplevel)/{brand}/frontend
+E2E_BASE_URL=http://localhost:300X npx playwright test --project=smoke
 ```
 
 If your test passes in isolation but fails in parallel:
@@ -197,14 +201,14 @@ If your test passes in isolation but fails in parallel:
 
 ## Step 7 — Commit, push, watch CI
 
-Stage and commit ONLY your new files (per `parallel-safety.md`):
+Stage and commit ONLY your new files (per `parallel-safety.md`). Usá rutas por pathspec exacto; NUNCA `git add .`:
 
 ```bash
-git add frontend/e2e/specs/smoke/<feature-name>.smoke.spec.ts
-git add frontend/e2e/pages/<feature-name>.page.ts
+git add {brand}/frontend/e2e/specs/smoke/<feature-name>.smoke.spec.ts
+git add {brand}/frontend/e2e/pages/<feature-name>.page.ts
 git status   # confirm only your files are staged
 git commit -m "test(e2e): add smoke for <feature>"
-git push origin development
+git push origin wip/{brand}
 ```
 
 Watch CI:
@@ -227,7 +231,7 @@ If CI fails but local passes:
 ### Variant A — adding a smoke for a public (unauthenticated) route
 
 ```typescript
-// frontend/e2e/specs/public/<feature-name>.public.spec.ts
+// {brand}/frontend/e2e/specs/public/<feature-name>.public.spec.ts
 import { test, expect } from '@playwright/test';   // ← NO fixture; public routes don't need auth
 
 test('public landing renders', async ({ page }) => {
@@ -258,7 +262,7 @@ test('dashboard renders with mocked metrics', async ({ page, tenantId }) => {
 });
 ```
 
-For complex mock setups (Growth Studio, Copilot SSE, Meta/IG/YT providers), use the corresponding fixture in `frontend/e2e/fixtures/`. See `references/fixtures-and-mocks.md`.
+For complex mock setups (Growth Studio, Copilot SSE, Meta/IG/YT providers), use the corresponding fixture in `{brand}/frontend/e2e/fixtures/`. See `references/fixtures-and-mocks.md`.
 
 ### Variant C — adding a smoke for a flow that opens a modal/dialog
 
@@ -275,7 +279,7 @@ Note: `getByRole('dialog')` works because Shadcn UI's `Dialog` uses Radix primit
 
 ### Variant D — adding a smoke for a route inside a section with `[tenantId]` segment
 
-All authenticated routes in Nicolify nest under `/[tenantId]/...`. The `auth.fixture.ts` injects `tenantId` for you; use it:
+All authenticated routes nest under `/[tenantId]/...`. The `auth.fixture.ts` injects `tenantId` for you; use it:
 
 ```typescript
 await page.goto(`/${tenantId}/brand-studio/identidad`);
@@ -287,7 +291,7 @@ Never write `/123e4567-e89b-12d3-a456-426614174000/...`. Hardcoded tenants leak 
 
 ## What "good" looks like — a complete reference example
 
-Paired files: `frontend/e2e/specs/smoke/navigation.smoke.spec.ts` + `frontend/e2e/pages/navigation.page.ts`. Read these whenever you are unsure what a clean smoke + POM looks like in this codebase. They are the canonical pair.
+Paired files: `{brand}/frontend/e2e/specs/smoke/navigation.smoke.spec.ts` + `{brand}/frontend/e2e/pages/navigation.page.ts`. Read these whenever you are unsure what a clean smoke + POM looks like in this codebase. They are the canonical pair.
 
 ---
 
@@ -305,8 +309,8 @@ Paired files: `frontend/e2e/specs/smoke/navigation.smoke.spec.ts` + `frontend/e2
 
 ## Final checklist before opening the PR
 
-- [ ] One `*.smoke.spec.ts` added under `frontend/e2e/specs/smoke/`
-- [ ] POM added or extended in `frontend/e2e/pages/`
+- [ ] One `*.smoke.spec.ts` added under `{brand}/frontend/e2e/specs/smoke/`
+- [ ] POM added or extended in `{brand}/frontend/e2e/pages/`
 - [ ] Test imports `test` from `auth.fixture`, not `@playwright/test`
 - [ ] Locators are role/label/text-based; no CSS/XPath
 - [ ] Web-first assertions (`expect(locator).toBeVisible()`); no `waitForTimeout`

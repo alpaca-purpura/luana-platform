@@ -1,0 +1,51 @@
+---
+# Release schema (v2 cement 2026-05-27) · Doc: docs/process/release-protocol.md
+release_id: R1
+brand: nicolify
+name: "Abel + Brenda · Atracción inbound (1er vendible)"
+description: "Primer release con valor de negocio vendible: el dueño define su ICP + oferta (Abel) y Brenda hace de agencia de marketing B2B in-house (contenido/presencia + pauta con kill-switch + inteligencia/asesoría). Onboarding conduce el alta + Abel captura la visión del CEO. Habilita la voz-fundador compartida (Brenda publica) + conexiones (Meta/LinkedIn). Luana suma memoria/continuidad + reportes."
+status: backlog                         # planning | in_progress | ready_to_merge | shipped | backlog
+target_date: null
+shipped_date: null
+order: 1
+created_at: 2026-06-02T00:00:00-05:00
+created_by: pm-nicolify
+source_sitemap: nicolify-r0-sitemap-completo   # áreas derivadas del SYSTEM-MAP v2.0
+
+# Áreas (SYSTEM-MAP v2.0) que este release entrega. Stories se crean al refinar.
+areas:
+  - luana.memoria
+  - luana.orquestacion
+  - luana.reportes
+  - abel.icp
+  - abel.oferta            # leaf catalogo-escalera (dossier-mineria = R2)
+  - abel.marca
+  - brenda.contenido-presencia
+  - brenda.pauta
+  - brenda.inteligencia-asesoria
+  - infra.voz-fundador     # consumida por Brenda (publicar)
+  - plataforma.onboarding
+  - config.conexiones
+  - config.preferencias    # completar base
+
+stories: []                             # se pueblan al refinar (1 área = 1+ stories)
+maps_legacy_outcome: null
+maps_legacy_phase: null
+---
+
+# R1 · Abel + Brenda · Atracción inbound
+
+> Primer release **vendible**: estrategia (Abel) + marketing B2B in-house (Brenda). El dueño no-marketinero define a quién apunta (ICP), arma su oferta empaquetada en tiers, y Brenda lo mantiene vigente en LinkedIn (postea por él), gestiona pauta con kill-switch CAC/ROAS, y le dice qué pega con sustento.
+
+## Outcome esperado
+- **Abel:** ICP/buyer definible · catálogo & escalera de valor (packaging en tiers) · marca/posicionamiento.
+- **Brenda:** contenido & presencia (post-by-proxy del fundador, dos frentes) · pauta (atribución a pipeline + kill-switch) · inteligencia & asesoría (Apify + loop replicar-adaptar). Métricas reales a-la-mano.
+- **Voz-fundador** compartida operativa (Brenda publica como el fundador, con consent + aprobación humana).
+- **Onboarding** conduce el alta (Luana) + Abel captura la visión/dirección del CEO.
+- **Conexiones** Meta/LinkedIn (fuente de las métricas reales).
+- **Luana:** memoria/continuidad + reportes digeridos.
+
+## Notas
+- R1 es grande → se partirá en varias stories al refinar (1 área = 1+ stories).
+- Toda sub-tab nueva cita `ADR-nicolify-001` (shell-feature-architecture).
+- Pricing/SKU NO se deciden acá (vision §5).

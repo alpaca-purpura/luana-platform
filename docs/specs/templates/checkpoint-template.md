@@ -16,15 +16,19 @@ parent_story: null                                # opcional · si story spawned
 
 state: refining                                   # 10 estados v4 — ver tabla abajo
 phase_workflow: PO_SPEC                           # ver tabla phase workflow abajo (informational · paso interno del pipeline SDD, NO un eje del modelo)
+phase: null                                       # runtime phase (ej AWAIT_CHRIS_VERIFY en G · HANDOFF_TO_AUDITOR). distinto de phase_workflow
+autonomous_mode: false                            # Chris opt-in explícito: true → G (Chris-verify) se SALTA, corre a /auditor sin pausa (story-closure-gate · proceso v5)
 last_artifact: 01-spec.md                         # último archivo escrito
 last_modified: 2026-05-06T15:23:00Z
 next_action: "Chris ratifica spec → invocar /architect"
 ratified_by_chris: false                          # true cuando spec + diseño ratificados
+input_spec_signed: false                          # ★ /po-ux UI deep (cement 2026-06-03) — RONDA 1 (intención: dónde vive + mapa funcional + pantallas-borrador + dudas) firmada por Chris. Gate interno del refining; el cockpit lo pinta como ✍firma1
+mockup_final_signed: false                        # ★ /po-ux UI deep — mockup FINAL firmado por Chris (estados+validaciones+microcopy+átomos finales) ANTES del GO a RONDA 2 (Gherkin). Cockpit ✍firma2
 spawned_at: 2026-05-06T14:00:00Z
 spawned_by: /pm
 parallel_safe: true                               # ¿otra sesión puede tocar artefactos de esta story sin conflict?
 blocked_reason: null
-audit_iterations: 0                               # cap 2 → escala automática
+audit_iterations: 0                               # cap 4 → escala automática
 defer_audit: false                                # escape valve story-closure-gate
 defer_audit_reason: null
 parked_reason: null                               # mandatory cuando state=parked (≥10 chars)
@@ -33,6 +37,27 @@ hotfix_metadata:                                  # opcional, hot-fix tickets (R
   repro_verified: false
   repro_command: null
   diagnosis_validates_handoff: null
+# Definition of Done — Live verification (Critical Rule #37 · definition-of-done-live-verify.md)
+dod_live_verified: false                          # true SOLO cuando Claude ejerció la acción real del usuario en dev-app + leyó logs + confirmó efecto. Verde de gates/build/GET-200 NO basta.
+dod_env: null                                     # ej "make dev-app-{brand} → dev-app.{brand}lat.com (Chrome DevTools MCP)" o "localhost:300X"
+dod_evidence: []                                  # [{action, observed, backend_log}] — writes ejercidos (POST/PATCH/PUT/DELETE) + efecto observado en DB/UI
+dod_verified_at: null                             # YYYY-MM-DD
+dod_live_verified_skip_reason: null               # solo si la story es config/docs/tooling puro (sin UI ni endpoint)
+# Demo manual (Critical Rule #37 §5) — solo stories funcionales (demo_required: true)
+demo_required: true                               # false para técnico puro (+ demo_skip_reason)
+demo_skip_reason: null
+# G · Chris-verify loop (proceso v5 · story-closure-gate) — el signoff de Chris vive ACÁ.
+# Consolida el viejo demo_signoff: UN solo signoff, ANTES del auditor (en G, no en F).
+chris_verify:
+  required: true                                  # false sólo si autonomous_mode o bugfix sin pedido
+  signoff:                                        # lo llena Chris tras ejercer el kit (demo-script.md + dev-app) live
+    signed_by: null                               # "Chris" al firmar
+    date: null                                    # YYYY-MM-DD
+    result: null                                  # SATISFIED | SATISFIED_WITH_FOLLOWUPS | REJECTED
+    notes: null
+    open_items: []                                # [{item, severity, disposition}]
+  rounds: []                                      # [{round, observacion, resolucion|→historia}] = allowlist de scope ratificado (lo lee el auditor)
+reconciled: false                                 # /pm-{brand} → true en R (reconcile pre-auditor); el auditor lo LEE como precondición de B
 ---
 
 ## Estados v4 (10 macro)
@@ -44,8 +69,8 @@ hotfix_metadata:                                  # opcional, hot-fix tickets (R
 | 3 | `refined` | Spec + UX/diseño ratificados Chris. Listo para architects | `/pm` cierra | ≤ 5 |
 | 4 | `ready` | Paquete autocontenido completo (4 archivos canónicos) | `/architect` | ≤ 5 |
 | 5 | `developing` | Autonomous build activo iterando vs validators | opencode/Sonnet/Opus (R23) | ≤ 3 |
-| 6 | `developed` | Validators GREEN. Build cerrado, awaiting QA | `/dev-team` | ≤ 2 |
-| 7 | `reviewing` | Auditor QA en curso (Opus C1-C3 + Sonnet tests) | `/auditor` | ≤ 2 |
+| 6 | `developed` | Validators GREEN. Build cerrado, awaiting QA | `/dev-team` | ≤ 1 |
+| 7 | `reviewing` | Auditor QA en curso (Opus C1-C3 + Sonnet tests) | `/auditor` | ≤ 1 |
 | 8 | `done` | Auditor APPROVED + merge + capability promovida + docs | `/pm` | rolling 90d |
 | 9 | `parked` | De-prioritized, NO abandonado | Chris | ∞ |
 | 10 | `dropped` | Won't do (terminal) | Chris | ∞ |
@@ -79,7 +104,7 @@ hotfix_metadata:                                  # opcional, hot-fix tickets (R
 
 - Si `parallel_safe=false`, otra sesión NO debe tocar artefactos hasta `next_action` complete.
 - Si `blocked_reason != null`, ningún agent procede hasta Chris/PM resuelva.
-- `audit_iterations >= 2` → escala automática a Chris (no más self-fix loops).
+- `audit_iterations >= 4` → escala automática a Chris (no más self-fix loops).
 - Para hot-fix tickets (R26): `hotfix_metadata.repro_verified` MUST ser `true` antes spawn builder.
 
 ## Capability lineage (v2 cement 2026-05-27)

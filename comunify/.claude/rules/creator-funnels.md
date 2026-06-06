@@ -4,6 +4,8 @@
 **Brand:** comunify (Creator Economy + Educación — coaches, creators, infoproductores, cohort-based)
 **Scope:** integridad de funnel ladder, motor de comunidad multi-cohort, voice cloning sales_agent, authority vault.
 
+> ⚠️ **ASPIRACIONAL (verify-first 2026-06-02)** — Comunify está shipped a nivel base (Story 12), pero los módulos `community/`, `voice_profile/`, `vault/`, los validators de funnel-ladder (`core/luana-core-offer-studio/.../validators/ladder_integrity.py`) y el adapter `core/luana-core-connections/.../elevenlabs/` **NO existen aún** — son el diseño target de esta rule (bootstrap pendiente). Hoy `comunify/backend/src/modules/comunify/` = `agentic/ api/ application/ brand/ copilot/ payment/`. Los paths citados abajo aplican cuando se construyan; no asumas que ya existen.
+
 ## Regla cardinal
 
 Comunify opera con DOS dimensiones de aislamiento simultáneas: `tenant_id` (creator) + `cohort_id` (cohort within creator). Toda query sobre data community/cohort MUST aplicar el dual filter. Voice cloning requiere consent stored + voice_profile_id válido o fallback default — NUNCA voz raw sin consent.

@@ -11,54 +11,53 @@ The preset catalog is the **7th SSoT axis** of the offer-studio system.
 It hides `OfferArchetype` behind user-vocabulary presets so Latam
 microempresarios don't have to classify their own offers.
 
-**Current state (2026-04-20):** 84 presets · 7 questions · 6 flags · 187 arch tests.
+**Current state (2026-04-20):** 84 presets · 7 questions · 6 flags · smoke test del DAG de catálogos (8 funciones).
 **Important (2026-04-20):** tenant `business_types` no longer lives on
-`BrandIdentity`. Read via `shared/links/ports/tenant_profile.py`
+`BrandIdentity`. Read via `core/luana-core-platform/src/luana_core_platform/links/ports/tenant_profile.py`
 (`get_tenant_business_types(db, tenant_id)`) in backend or
 `useTenantProfile()` in frontend. See `docs/domains/tenant-profile/`.
 Distribución archetype: servicio=16 · programa=18 · membresia=22 · experiencia=13 · producto=15.
 Questions: `requires_physical_location`, `has_specific_dates`, `delivers_downloadable_materials`, `has_team_or_speakers`, `is_hybrid_modality`, `has_limited_capacity`, `has_portfolio_cases`.
 Flags: `SUPPORTS_CAPACITY`, `REQUIRES_START_DATE`, `DELIVERY_HYBRID`, `IS_LEAD_MAGNET`, `RECURRING_BILLING`, `HIGH_TICKET`.
 
-### Catalog + API + tests
+### Catalog + API + tests (ENGINE — `core/luana-core-offer-studio/`)
 | File | Role |
 |---|---|
-| `backend/src/modules/offer/domain/offer_type_preset_catalog.py` | Canonical catalog — 84 presets, 7 questions, 6 flags. **Single source of truth.** |
-| `backend/src/modules/offer/api/offer_type_presets.py` | API `/api/v1/offer/type-presets/catalog` + `/catalog/all`. Contains `_CATALOG_VERSION`. |
-| `backend/tests/architecture/test_offer_type_preset_catalog_completeness.py` | 187 arch test cases — enforces all invariants. |
+| `core/luana-core-offer-studio/src/luana_core_offer_studio/domain/offer_type_preset_catalog.py` | Canonical catalog — 84 presets, 7 questions, 6 flags. **Single source of truth.** |
+| `core/luana-core-offer-studio/src/luana_core_offer_studio/api/offer_type_presets.py` | API `/api/v1/offer/type-presets/catalog` + `/catalog/all`. Contains `_CATALOG_VERSION`. |
+| `core/luana-core-offer-studio/tests/test_catalogs_dag_smoke.py` | smoke test del DAG de catálogos (8 funciones) — enforces all invariants. |
 
-### Persistence + DDD bridge (Sprint 14)
+### Persistence + DDD bridge
 | File | Role |
 |---|---|
-| `backend/src/modules/offer/domain/offer.py` | `Offer.preset_id: str \| None` — persistence anchor. |
-| `backend/alembic/versions/050_add_offer_preset_id.py` | Migration adding `offers.preset_id` column + index. |
-| `backend/src/shared/links/ports/offer.py` | `get_offer_type_preset(id)` + `get_preset_flag_values()` — cross-module access without DDD boundary break. |
-| `backend/src/modules/offer/application/offer_service.py` | `create_offer(preset_id=..., conditional_answers=...)` — derives archetype from catalog (preset-primary). |
+| `core/luana-core-offer-studio/src/luana_core_offer_studio/domain/offer.py` | `Offer.preset_id: str \| None` — persistence anchor. |
+| `core/luana-core-platform/src/luana_core_platform/links/ports/offer.py` | `get_offer_type_preset(id)` + `get_preset_flag_values()` — cross-module access without DDD boundary break. |
+| `core/luana-core-offer-studio/src/luana_core_offer_studio/application/offer_service.py` | `create_offer(preset_id=..., conditional_answers=...)` — derives archetype from catalog (preset-primary). |
 
 ### Downstream consumers (MUST review when editing presets/flags)
 | File | Reads |
 |---|---|
-| `backend/src/modules/sales_agent/application/services/knowledge_builder.py` | `preset.label_es`, `description_es`, `default_flags` → feeds `agent_identity.j2` |
-| `backend/src/modules/sales_agent/infrastructure/prompts/templates/agent_identity.j2` | Renders `preset_label`, `preset_description`, `preset_flags` defensively |
-| `backend/src/modules/landing/application/landing_service.py::_select_landing_archetype_from_preset` | Branches template by flag: `IS_LEAD_MAGNET` / `REQUIRES_START_DATE` / `HIGH_TICKET` / `RECURRING_BILLING` |
-| `frontend/src/features/offer-studio/components/dashboard/PresetBadge.tsx` | Renders user-facing label on `OfferCatalogCard` |
+| `core/luana-core-sales-agent/src/luana_core_sales_agent/application/services/knowledge_builder.py` | `preset.label_es`, `description_es`, `default_flags` → feeds `agent_identity.j2` |
+| `core/luana-core-sales-agent/src/luana_core_sales_agent/infrastructure/prompts/templates/agent_identity.j2` | Renders `preset_label`, `preset_description`, `preset_flags` defensively |
+| `core/luana-core-landing/src/luana_core_landing/application/landing_service.py::_select_landing_archetype_from_preset` | Branches template by flag: `IS_LEAD_MAGNET` / `REQUIRES_START_DATE` / `HIGH_TICKET` / `RECURRING_BILLING` |
+| `{brand}/frontend/src/features/offer-studio/components/dashboard/PresetBadge.tsx` | Renders user-facing label on `OfferCatalogCard` (per brand) |
 
-### Frontend (wizard preset-first, Sprint 13)
+### Frontend (wizard preset-first — per brand: `{brand}/frontend/src/features/offer-studio/`)
 | File | Role |
 |---|---|
-| `frontend/src/features/offer-studio/api/offer-type-preset-catalog-api.ts` | Mirror types + `resolvePresetSections` / `resolvePresetFlags` pure functions. |
-| `frontend/src/features/offer-studio/hooks/use-offer-type-preset-catalog.ts` | React Query hooks. |
-| `frontend/src/features/offer-studio/components/wizard/PresetPickerStep.tsx` | Step 1 — preset grid filtered by `business_types` (from `useTenantProfile`). |
-| `frontend/src/features/offer-studio/components/wizard/ConditionalQuestionsStep.tsx` | Step 2 — renders 0-3 conditional questions; answers feed `resolvePresetSections`. |
-| `frontend/src/features/offer-studio/components/wizard/CreateOfferWizard.tsx` | Orchestrates preset-first flow. Reads `business_types` via `useTenantProfile()` — gating middleware guarantees non-empty. Passes `preset_id` + `conditional_answers` to `create_offer`. Archetype NO surfaced. |
+| `{brand}/frontend/src/features/offer-studio/api/offer-type-preset-catalog-api.ts` | Mirror types + `resolvePresetSections` / `resolvePresetFlags` pure functions. |
+| `{brand}/frontend/src/features/offer-studio/hooks/use-offer-type-preset-catalog.ts` | React Query hooks. |
+| `{brand}/frontend/src/features/offer-studio/components/wizard/PresetPickerStep.tsx` | Step 1 — preset grid filtered by `business_types` (from `useTenantProfile`). |
+| `{brand}/frontend/src/features/offer-studio/components/wizard/ConditionalQuestionsStep.tsx` | Step 2 — renders 0-3 conditional questions; answers feed `resolvePresetSections`. |
+| `{brand}/frontend/src/features/offer-studio/components/wizard/CreateOfferWizard.tsx` | Orchestrates preset-first flow. Reads `business_types` via `useTenantProfile()` — gating middleware guarantees non-empty. Passes `preset_id` + `conditional_answers` to `create_offer`. Archetype NO surfaced. |
 
 ### Tenant input — business_types (new 2026-04-20)
 | File | Role |
 |---|---|
-| `backend/src/shared/links/ports/tenant_profile.py` | `get_tenant_business_types(db, tenant_id)` — ONLY cross-module read. Never import `tenant_profile` directly. |
-| `backend/src/modules/tenant_profile/api/business_types_catalog.py` | `GET /api/v1/catalogs/business-types` (legacy `/api/v1/brand/expert-business-types/catalog` still 301s until 2026-05-04). |
-| `frontend/src/features/tenant-profile/hooks/use-tenant-profile.ts` | `useTenantProfile()` — returns `{business_types, is_complete, can_change_now, ...}`. |
-| `frontend/src/features/tenant-profile/hooks/use-business-types-catalog.ts` | `useBusinessTypesCatalog()` — replaces the retired `useExpertBusinessTypesCatalog`. |
+| `core/luana-core-platform/src/luana_core_platform/links/ports/tenant_profile.py` | `get_tenant_business_types(db, tenant_id)` — ONLY cross-module read. Never import `tenant_profile` directly. |
+| `{brand}/backend/src/modules/{brand}/tenant_profile/api/business_types_catalog.py` | `GET /api/v1/catalogs/business-types` (legacy `/api/v1/brand/expert-business-types/catalog` still 301s). |
+| `{brand}/frontend/src/features/tenant-profile/hooks/use-tenant-profile.ts` | `useTenantProfile()` — returns `{business_types, is_complete, can_change_now, ...}`. |
+| `{brand}/frontend/src/features/tenant-profile/hooks/use-business-types-catalog.ts` | `useBusinessTypesCatalog()` — replaces the retired `useExpertBusinessTypesCatalog`. |
 
 ### Docs + rules
 | File | Role |
@@ -68,7 +67,7 @@ Flags: `SUPPORTS_CAPACITY`, `REQUIRES_START_DATE`, `DELIVERY_HYBRID`, `IS_LEAD_M
 | `docs/domains/offer/sprint-13-wizard-preset-first.md` | Sprint 13 — wizard rehaul. |
 | `docs/domains/offer/schemas-latam-refinement.md` | Task B (2026-04-19) — 15 schemas Latam + ratchet tests. |
 | `.claude/rules/offer-catalogs.md` | DAG rules (eight catalogs). |
-| `frontend/src/features/offer-studio/schemas/__tests__/quality.test.ts` | 7 ratchet tests — hint coverage, no jargon, uniqueness, enum sanity, scope/owner coherence. |
+| `{brand}/frontend/src/features/offer-studio/schemas/__tests__/quality.test.ts` | 7 ratchet tests — hint coverage, no jargon, uniqueness, enum sanity, scope/owner coherence. |
 
 ## Mental model — the layered flow
 
@@ -76,7 +75,7 @@ Flags: `SUPPORTS_CAPACITY`, `REQUIRES_START_DATE`, `DELIVERY_HYBRID`, `IS_LEAD_M
 Step 1.  Tenant declares business_types in the tenant_profile BC
          (at /onboarding/perfil-negocio or /settings/perfil-negocio,
          e.g. PROFESIONAL_SALUD + NEGOCIO_LOCAL).
-         Backend reads via `shared/links/ports/tenant_profile.py`.
+         Backend reads via `luana_core_platform.links.ports.tenant_profile`.
          Frontend reads via `useTenantProfile()`.
               │
               ▼
@@ -111,9 +110,9 @@ segmentation, and the format catalog. **Never remove it.** The preset
 layer hides it from UX; Sprint 14 made preset the primary input to
 `create_offer` (archetype derived, not user-chosen).
 
-**Cross-module reads MUST go via `shared/links/ports/offer.py`** — never
-`from src.modules.offer.domain.offer_type_preset_catalog import …`
-outside the offer module. The DDD arch test ratchet will fail.
+**Cross-module reads MUST go via `core/luana-core-platform/src/luana_core_platform/links/ports/offer.py`** — never
+`from luana_core_offer_studio.domain.offer_type_preset_catalog import …`
+outside the offer-studio engine package. The DDD arch test ratchet will fail.
 
 ## SOP: Adding a new preset
 
@@ -122,7 +121,7 @@ outside the offer module. The DDD arch test ratchet will fail.
 Before touching code, answer:
 
 - **Which `ExpertBusinessType`?** Must be one of the 9 in
-  `src/shared/domain/expert_business_type.py`. If the answer is "all /
+  `core/luana-core-platform/src/luana_core_platform/domain/expert_business_type.py`. If the answer is "all /
   multiple", you're probably describing a generic pattern — skip the
   preset and rely on existing ones.
 - **Which `OfferArchetype` is the internal tag?** The preset is a façade;
@@ -165,14 +164,15 @@ Before touching code, answer:
 
 ### 3. Bump the catalog version
 
-Edit `_CATALOG_VERSION` in `backend/src/modules/offer/api/offer_type_presets.py`.
+Edit `_CATALOG_VERSION` in `core/luana-core-offer-studio/src/luana_core_offer_studio/api/offer_type_presets.py`.
 Format: `YYYY-MM-DD.N` where N increments per same-day bump.
 
 ### 4. Run the arch tests
 
 ```bash
-cd $(git rev-parse --show-toplevel)/backend && .venv/bin/pytest \
-  tests/architecture/test_offer_type_preset_catalog_completeness.py -x -q
+WS=$(git rev-parse --show-toplevel)
+cd ${WS}/core/luana-core-offer-studio && ${WS}/.venv/bin/pytest \
+  tests/test_catalogs_dag_smoke.py -x -q
 ```
 
 All 187 (or more, now 188 with the new preset) must pass. Common
@@ -210,9 +210,9 @@ sales-agent render). Otherwise the flag is dead weight.
 ### 7. Commit
 
 Single commit touching:
-- `offer_type_preset_catalog.py`
-- `offer_type_presets.py` (version bump)
-- `offer-type-preset-catalog.md` (doc)
+- `core/luana-core-offer-studio/src/luana_core_offer_studio/domain/offer_type_preset_catalog.py`
+- `core/luana-core-offer-studio/src/luana_core_offer_studio/api/offer_type_presets.py` (version bump)
+- `docs/domains/offer/offer-type-preset-catalog.md` (doc)
 
 ```
 feat(offer-studio): +preset {preset_id} — {short reason}
@@ -286,15 +286,15 @@ This is a **shared-domain** change with cross-cutting impact. Follow
 `.claude/rules/offer-catalogs.md` → "Extending the system" first.
 Specific to preset catalog:
 
-1. After the new `ExpertBusinessType` is in `expert_business_type.py`
+1. After the new `ExpertBusinessType` is in `core/luana-core-platform/src/luana_core_platform/domain/expert_business_type.py`
    and arch tests for that catalog pass…
 2. Add its slug to `_BUSINESS_TYPE_SLUG` in
-   `test_offer_type_preset_catalog_completeness.py`.
+   `core/luana-core-offer-studio/tests/test_catalogs_dag_smoke.py`.
 3. Add **at least 3 presets** for the new business_type (arch test
    requirement). Typically aim for 5-8.
 4. Update the distribution table in `offer-type-preset-catalog.md`.
 5. Regenerate the backend catalog version.
-6. **Update the tenant-profile frontend mirror.** `frontend/src/features/tenant-profile/types/tenant-profile.ts` declares `ExpertBusinessTypeSlug` as a string-literal union and `EXPERT_BUSINESS_TYPE_SLUGS` as the frozen array — both must mirror the backend enum verbatim. Miss this and the onboarding selector will hide the new type.
+6. **Update the tenant-profile frontend mirror.** `{brand}/frontend/src/features/tenant-profile/types/tenant-profile.ts` declares `ExpertBusinessTypeSlug` as a string-literal union and `EXPERT_BUSINESS_TYPE_SLUGS` as the frozen array — both must mirror the backend enum verbatim. Miss this and the onboarding selector will hide the new type.
 
 ## Debugging: "the tenant sees wrong presets"
 
@@ -302,7 +302,7 @@ Checklist (in order):
 
 1. **Tenant's `business_types` correct?** → `GET /api/v1/tenant/profile`
    (since 2026-04-20 — no longer on `BrandIdentity`). Or via port
-   `shared/links/ports/tenant_profile.get_tenant_business_types(db, tenant_id)`.
+   `core/luana-core-platform/.../links/ports/tenant_profile.get_tenant_business_types(db, tenant_id)`.
 2. **Catalog version fresh?** → Compare `response.version` vs
    `_CATALOG_VERSION`. Force-refresh if different.
 3. **Preset in catalog?** → Search
@@ -341,7 +341,7 @@ Checklist (in order):
   won't invalidate cached responses.
 - ❌ Importing `OFFER_TYPE_PRESET_CATALOG` or `PresetFlag` directly from
   another module (sales_agent, landing, analytics). Use the port
-  `src/shared/links/ports/offer.py` (`get_offer_type_preset`,
+  `core/luana-core-platform/src/luana_core_platform/links/ports/offer.py` (`get_offer_type_preset`,
   `get_preset_flag_values`) — DDD arch test fails otherwise.
 - ❌ Adding new `PresetFlag` without at least one consumer branching on
   it. Dead flag = catalog rot.
@@ -349,7 +349,7 @@ Checklist (in order):
   the preset-first wizard uses `PresetPickerStep` + `ConditionalQuestionsStep`).
 - ❌ Reading `business_types` from `BrandIdentity`, `settings.identity.business_types`,
   or `config_json['brand_settings']['identity']['business_types']`. The field
-  moved to the `tenant_profile` BC on 2026-04-20. Backend: `shared/links/ports/tenant_profile.get_tenant_business_types`.
+  moved to the `tenant_profile` BC on 2026-04-20. Backend: `core/luana-core-platform/.../links/ports/tenant_profile.get_tenant_business_types`.
   Frontend: `useTenantProfile()`. The arch test `test_business_types_ssot.py`
   fails the build if any module outside `tenant_profile` declares the field.
 
@@ -357,19 +357,20 @@ Checklist (in order):
 
 **"I want to see all presets for a business type":**
 ```bash
-curl 'http://localhost:8000/api/v1/offer/type-presets/catalog?business_types=profesional_salud' | jq '.presets[] | {preset_id, label_es, archetype}'
+# vitalia=8002, nicolify=8001, comunify=8003, lupulo=8004
+curl 'http://localhost:8002/api/v1/offer/type-presets/catalog?business_types=profesional_salud' | jq '.presets[] | {preset_id, label_es, archetype}'
 ```
 
 **"I want to see distribution per archetype":**
 ```python
 from collections import Counter
-from src.modules.offer.domain.offer_type_preset_catalog import OFFER_TYPE_PRESET_CATALOG
+from luana_core_offer_studio.domain.offer_type_preset_catalog import OFFER_TYPE_PRESET_CATALOG
 print(Counter(p.archetype.value for p in OFFER_TYPE_PRESET_CATALOG.values()))
 ```
 
 **"I want to see which presets use a question":**
 ```python
-from src.modules.offer.domain.offer_type_preset_catalog import OFFER_TYPE_PRESET_CATALOG
+from luana_core_offer_studio.domain.offer_type_preset_catalog import OFFER_TYPE_PRESET_CATALOG
 for p in OFFER_TYPE_PRESET_CATALOG.values():
     if "has_physical_deliverable" in p.conditional_question_ids:
         print(p.preset_id)
@@ -379,7 +380,7 @@ for p in OFFER_TYPE_PRESET_CATALOG.values():
 
 - [ ] Backend catalog change in a single commit.
 - [ ] `_CATALOG_VERSION` bumped.
-- [ ] `tests/architecture/test_offer_type_preset_catalog_completeness.py` passes.
+- [ ] `tests/test_catalogs_dag_smoke.py` passes.
 - [ ] `offer-type-preset-catalog.md` updated (distribution + decisions).
 - [ ] If you changed questions or flags: downstream consumers reviewed.
-- [ ] `working tree clean`, commits pushed to `development`.
+- [ ] `working tree clean`, commits pushed to `wip/{brand}`.

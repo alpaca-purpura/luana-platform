@@ -10,7 +10,8 @@
 ## autonomous_mode
 - value: false                      # default. Chris opt-in explícito al ratificar ready
 - chain_if_true: [/dev-team → /auditor → /pm-{brand} merge]
-- caps: { max_iterations_per_ticket: 10, max_audit_iterations: 3, max_total_cost_usd: 5.00, max_wall_clock_minutes: 90, on_cap_exceeded: "state=blocked + escalate Chris" }
+- caps: { max_iterations_per_ticket: 10, self_fix_iter: 5, audit_iterations: 4, max_total_cost_usd: 5.00, max_wall_clock_minutes: 90, on_cap_exceeded: "state=blocked + escalate Chris" }
+  # self_fix_iter<=5 (Carril A), audit_iterations<=4 total — v4.2 (`.claude/rules/auditor-self-fix-policy.md`)
 
 > Reglas HARD para `autonomous_mode: true` (ver architect-autonomous-mode.md):
 > NUNCA true si — algún ticket AGENTIC `production_code: true` · toca `core/luana-core-*` · toca cross-brand · validators con `pass_k` < 0.66 · hot-fix `repro_verified: false` · `defer_audit: true`.
@@ -32,6 +33,26 @@ T-1 → T-2 → T-3   (citar el grafo real de `06-tickets.yaml` blocks/blocked_b
 - story_scope_components: [{componentes en scope}]
 - forbidden_visual_changes: [`{brand}/frontend/src/components/ui/`, `components/shared/`, `app/layout.tsx`]
 - non_egoísmo: bug visible en feature/ruta NO tocada por esta story → reportar en `T-{n}-impl-log.md § Cross-story observed bugs`, NO arreglar inline.
+
+## DoD live-verify gate (Critical Rule #37)
+
+> Ref: `.claude/rules/definition-of-done-live-verify.md`
+
+- Para toda story **funcional/user-reachable** (FE page, endpoint con consumer FE, flujo agentic):
+  - `/dev-team` ejerce la acción real en `dev-app.{brand}lat.com` (o localhost:{port} fallback) via Chrome DevTools MCP antes de cerrar `developed`.
+  - Registra `dod_live_verified: true` + `dod_evidence` (writes ejercidos + efecto observado + backend logs sin traceback) en `checkpoint.md`.
+  - Gate anti-burbuja: specs importan `base.ts` (no `@playwright/test` directo); `pageerror`/`console[error]`/`response>=400` colectados en teardown.
+  - Demo manual (`demo-script.md` 4 secciones) + `demo_signoff` de Chris requerido si `demo_required: true`.
+- Para stories **técnicas puras** (config/docs/migration-only/tooling sin endpoint ejecutable): `demo_required: false` + `demo_skip_reason` en checkpoint.
+- `/pm-{brand}` REFUSE merge→done si falta `dod_live_verified: true` o `dod_evidence`, o si gherkin-matrix tiene `MISSING`, o si `demo_required: true` sin `demo_signoff.result ∈ {APPROVED, APPROVED_WITH_NOTES}`.
+
+## Nota para stories tipo `bugfix`
+
+Stories `bugfix` usan ceremonia reducida (sin diseño nuevo, sin spec completa):
+- Sin `01-spec.md` de diseño; basta `repro_evidence` en `04-validators` (ver `.claude/rules/hotfix-repro-mandatory.md`).
+- `cap_change_type: fix | extend` (nunca `new`).
+- El resto del flujo (TDD RED→GREEN, auditor, DoD live-verify) aplica igual — la reducción es de diseño, NO de verificación.
+- Ref: `MEMORY.md [[bugfix-story-type]]` + `docs/process/lifecycle.md § Tipos de story`.
 
 ## Invocación recomendada
 ```

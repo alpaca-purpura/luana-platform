@@ -15,7 +15,7 @@ T-3 F1 — vitalia-fase2-lisa-marca (F2-S7).
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID
 
 import pytest
@@ -293,3 +293,79 @@ class TestMarcaServiceTelemetry:
             patch=patch_dto,
         )
         assert isinstance(result, BrandIdentityDTO)
+
+
+class TestMarcaServiceLogoUpload:
+    """upload_logo / delete_logo — object storage real vía la StorageStrategy del engine.
+
+    Origen: estabilizar-harness-e2e-lisa-marca T-5 (logo R2). El upload deja de descartar
+    los bytes (`logo:{uuid}` stub) y consume la StorageStrategy del engine
+    (`luana_core_assets.infrastructure.storage.get_storage_strategy`) **directamente** — NO
+    `AssetsService.upload_asset` (su Asset DB entity tiene FK `assets.offer_id -> products.id`
+    que vitalia NUNCA migra → `NoReferencedTableError` 500; cazado por el demo de Chris). La
+    capa de storage no tiene dependencia de DB. El storage se mockea (ya testeado en core);
+    acá verificamos el punto de integración: que se sube vía `storage.save` y la URL pública
+    real se persiste en `visuals.logo_url` + se devuelve en el DTO.
+    """
+
+    @pytest.mark.asyncio
+    async def test_upload_logo_persists_real_public_url(self, service: MarcaService) -> None:
+        """upload_logo sube vía StorageStrategy y persiste la URL pública real (no 'logo:')."""
+        public_url = "https://pub-test.r2.dev/aaaaaaaa/logo/abc123.png"
+        with patch("luana_core_assets.infrastructure.storage.get_storage_strategy") as mock_gss:
+            mock_gss.return_value.save.return_value = ("aaaaaaaa/logo/abc123.png", public_url)
+            result = await service.upload_logo(
+                tenant_id=_TENANT_A,
+                user_id=_USER_A,
+                content=b"\x89PNG fake bytes",
+                ext="png",
+                size_bytes=15,
+            )
+
+        # DTO devuelve la URL pública real, no el stub "logo:{uuid}"
+        assert result.logo_url == public_url
+        assert not result.logo_url.startswith("logo:")
+
+        # storage.save(file_obj, filename, path_prefix) — path_prefix tenant-scoped + ext preservada
+        call = mock_gss.return_value.save.call_args
+        assert str(_TENANT_A) in call.args[2]
+        assert call.args[1].endswith(".png")
+
+    @pytest.mark.asyncio
+    async def test_upload_logo_writes_audit(self, service: MarcaService, mock_audit: AsyncMock) -> None:
+        """upload_logo sigue escribiendo audit log sync (HIPAA-lite) tras el storage real."""
+        with patch("luana_core_assets.infrastructure.storage.get_storage_strategy") as mock_gss:
+            mock_gss.return_value.save.return_value = ("x/logo/z.png", "https://pub-test.r2.dev/x/logo/z.png")
+            await service.upload_logo(
+                tenant_id=_TENANT_A,
+                user_id=_USER_A,
+                content=b"bytes",
+                ext="png",
+                size_bytes=5,
+            )
+
+        mock_audit.write.assert_called_once()
+        assert mock_audit.write.call_args.kwargs["action"] == "brand_logo_uploaded"
+
+    @pytest.mark.asyncio
+    async def test_delete_logo_removes_from_storage(self, service: MarcaService) -> None:
+        """delete_logo desreferencia el campo y borra el objeto del storage (key derivada de la URL).
+
+        Sin logo_id en la firma: una marca tiene UN solo logo.
+        """
+        # visuals viven anidados bajo identity (mismo lugar que patch_visuals/get_visuals)
+        fake_settings = MagicMock()
+        fake_settings.identity.visuals.logo_url = "https://pub-test.r2.dev/aaaaaaaa/logo/abc123.png"
+
+        with (
+            patch.object(service, "_get_brand_settings", new=AsyncMock(return_value=fake_settings)),
+            patch.object(service, "_save_brand_settings", new=AsyncMock(return_value=None)),
+            patch("luana_core_assets.infrastructure.storage.get_storage_strategy") as mock_gss,
+            patch("luana_core_platform.core.config.settings") as mock_cfg,
+        ):
+            mock_cfg.R2_PUBLIC_URL = "https://pub-test.r2.dev"
+            await service.delete_logo(tenant_id=_TENANT_A, user_id=_USER_A)
+
+        # campo desreferenciado en identity.visuals + objeto borrado con la key derivada
+        assert fake_settings.identity.visuals.logo_url is None
+        mock_gss.return_value.delete.assert_called_once_with("aaaaaaaa/logo/abc123.png")

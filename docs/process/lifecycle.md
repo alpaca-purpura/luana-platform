@@ -148,18 +148,20 @@ Release (cuándo) → Story-origin (por qué) → Scenarios (qué hace, humano)
 
 ```
 ┌─ COCKPIT (bosque · decidir) ────────────────┐      ┌─ CLAUDE CODE (ejecutar) ───────────────┐
-│ make cockpit-up   (→ :4002)                 │      │ /pm-vitalia                            │
+│ make cockpit-up   (→ :400X por brand)       │      │ /pm-{brand}                            │
 │ 1. Roadmap: ¿qué release toca?              │      │ 2. levanta story refining-ratificada   │
 │ 2. Salud de Producto: ¿qué caps stub/drift? │ ───► │ 3. encadena /po-ux → /architect →      │
 │ 3. Backlog Board: muevo idea→refining       │      │    /dev-team → /auditor (auto-chain)    │
-│ 4. dejo notas/scenarios draft en chris-input│      │ 4. /pm-vitalia merge (reviewing→done)  │
+│ 4. dejo notas/scenarios draft en chris-input│      │ 4. /pm-{brand} merge (reviewing→done)  │
 │ 5. priorizo / asigno release                │ ◄─── │ 5. cap se actualiza · traza se completa │
 └─────────────────────────────────────────────┘ SSE  └────────────────────────────────────────┘
 ```
 
-1. **Cockpit** (`make cockpit-up` → `:4002`): ves la Salud de Producto (cuántas caps stub/partial/live/drift), el Roadmap (releases F0..F8), y el Backlog Board (10 estados). Decidís qué sigue. Movés `idea→refining` (única transición que Chris hace en el cockpit), ajustás prioridad/release, dejás notas y scenarios-draft en `chris-input.md`.
-2. **Claude Code** (`/pm-vitalia`): levanta la story que marcaste, valida WIP caps (≤1), y encadena `Skill(po-ux)`→`Skill(architect)`→`Skill(dev-team)`→`Skill(auditor)` programáticamente. Ejecuta el build con TDD.
-3. **Merge** (`/pm-vitalia merge`): al APPROVED, escribe `07-merge.md`, promueve la capability (status + scenarios desde el spec), archiva la story, squash-merge.
+_(Puertos cockpit por brand: vitalia=:4002, nicolify=:4001, comunify=:4003, lupulo=:4004. Ver `CLAUDE.md` § Cockpit · Paradigma A.)_
+
+1. **Cockpit** (`make cockpit-up` → puerto de la brand): ves la Salud de Producto (cuántas caps stub/partial/live/drift), el Roadmap (releases F0..FN), y el Backlog Board (10 estados). Decidís qué sigue. Movés `idea→refining` (única transición que Chris hace en el cockpit), ajustás prioridad/release, dejás notas y scenarios-draft en `chris-input.md`.
+2. **Claude Code** (`/pm-{brand}`): levanta la story que marcaste, valida WIP caps (≤1), y encadena `Skill(po-ux)`→`Skill(architect)`→`Skill(dev-team)`→`Skill(auditor)` programáticamente. Ejecuta el build con TDD.
+3. **Merge** (`/pm-{brand} merge`): al APPROVED, escribe `07-merge.md`, promueve la capability (status + scenarios desde el spec), archiva la story, squash-merge.
 4. **Cockpit refleja en vivo** (SSE): la cap pasa de stub→partial→verified-live, la traza Release→Story→Scenarios→Code→Tests→Status se completa. El bosque se actualizó.
 
 **Regla de oro:** el cockpit nunca ejecuta git ni avanza estados de skill; Claude Code nunca decide priorización de bosque. El puente es `chris-input.md` + `checkpoint.md::state` + las APIs `transition`/`extend-cap`/`from-done` del cockpit que CREAN trabajo para que Claude lo levante.
@@ -181,7 +183,7 @@ Plan de migración del estado actual al modelo de este doc. Estado en tiempo rea
 | **5.1 — cc4 HARD flip** | Resolver el gap RBAC (story `vitalia-compliance-audit-rbac-gap`) → flipear cc4 a HARD vitalia | ⏳ bloqueado por la story de seguridad |
 | **6 — Manual diario** | § 7 de este doc es el manual operativo | ✅ DONE (§ 7) |
 
-**Estado post-consolidación (2026-05-28 · Fases 0-6 DONE):** atomics + outcome + phase MUERTOS. **67 caps · 0 huérfanos de código** · trazabilidad real Release→Story→Capability→Scenario. Status HONESTO: 55 stub / 6 declared-live / 5 partial / 1 verified-live. Validator no miente (cc4 7→1, el único drift es el gap de seguridad RBAC con story dedicada). Cockpit muestra Salud de Producto real. 52 tests scripts + 67 cockpit + FE tsc + ruff GREEN · cc3 HARD=0. **Pendiente:** Fase 5.1 (resolver gap seguridad → cc4 HARD) + backfill orgánico de los 55 stub cuando sus stories shippeen.
+**Estado post-consolidación (2026-05-28 · Fases 0-6 DONE):** atomics + outcome + phase MUERTOS. Trazabilidad real Release→Story→Capability→Scenario. Validator no miente (cc4 drift 7→1, el único drift era el gap de seguridad RBAC con story dedicada). Cockpit muestra Salud de Producto real. cc3 HARD=0. **Pendiente:** Fase 5.1 (resolver gap seguridad → cc4 HARD) + backfill orgánico de los caps stub cuando sus stories shippeen. _(Snapshot de caps/status en el momento de la consolidación — ver `scripts/compute_capability_status.py` para estado actual.)_
 
 ---
 
@@ -193,23 +195,23 @@ Plan de migración del estado actual al modelo de este doc. Estado en tiempo rea
 | 2 | nicolify "fuente prior-art principal ~80% prod" (es snapshot frozen) | Corregido: vitalia/comunify live, nicolify archivo | ✅ Fase 0 |
 | 3 | Conteo cap stale "16 caps" (son 72) | Corregido | ✅ Fase 0 |
 | 4 | outcome "reemplazado" vs "canónico" | Release único (decisión #2) | ✅ Fase 1 (6 outcomes borrados + maps_legacy_* quitados) |
-| 5 | F2.yaml referencia stories ausentes (valeria-agenda, lisa-marca) | Reconciliar | ⏳ Fase 2 |
-| 12 | 8 caps sin frontmatter YAML (reconcile saltea → 64/72 cargados) | Backfill frontmatter | ⏳ Fase 2 |
-| 13 | cc4 (PHI access) tiene 6 drifts → no se pudo flipear a HARD aún | Resolver drifts → flip HARD | ⏳ Fase 5 |
-| 6 | Hooks: docs dicen "Section 14", real es Section 16 | Actualizar refs en docs | ⏳ Fase 4 |
-| 7 | `/functionality` tab citado pero es Cap Drawer | Actualizar MEMORY + reglas | ⏳ Fase 3 |
-| 8 | README cockpit stale (14 rutas/4 vistas/6 tests) → real 19/6/53 | Sanear README | ⏳ Fase 3 |
-| 9 | `generate_release_notes.py` + `validate_chris_input.py` no existen | Crear o quitar refs | ⏳ Fase 3/5 |
+| 5 | F2.yaml referencia stories ausentes (valeria-agenda, lisa-marca) | F2.yaml actualizado; ambas stories archivadas como `done` | ✅ Fase 2 |
+| 6 | Hooks: docs dicen "Section 14", real es Section 16 | `brand-docs-schema.md` + `docs/rules-detail/brand-docs-schema.md` ya usan Section 16 | ✅ Fase 4 |
+| 7 | `/functionality` tab citado pero es Cap Drawer | cockpit README corregido (nota explícita: no existe `/functionality`, es Cap Drawer) | ✅ Fase 3 |
+| 8 | README cockpit stale (14 rutas/4 vistas/6 tests) → real 19/6/53 | README saneado (20 API routes · 6 vistas funcionales · stats actuales) | ✅ Fase 3 |
+| 9 | `generate_release_notes.py` + `validate_chris_input.py` no existen | **MISSING — no implementado.** Quitar refs a estos scripts hasta crearlos. | ⏳ abierto |
 | 10 | ADR path doble en pm-luana (`ADR/` vs `luana-platform/`) | Unificado | ✅ Fase 0 |
-| 11 | Validators saltean ~10 caps en silencio | Fallar ruidoso | ⏳ Fase 5 |
+| 11 | Validators saltean ~10 caps en silencio | `compute_capability_status.py` loguea WARN por parse error pero sigue iterando; caps con frontmatter inválido se omiten sin contar en total. Fallar ruidoso pendiente | ⏳ abierto |
+| 12 | 8 caps sin frontmatter YAML (reconcile saltea → 64/72 cargados) | Todas las caps tienen frontmatter válido (backfill completado) | ✅ Fase 2 |
+| 13 | cc4 (PHI access) tiene 6 drifts → no se pudo flipear a HARD aún | Story `vitalia-compliance-audit-rbac-gap` en `idea`; cc4 HARD flip sigue bloqueado | ⏳ Fase 5.1 |
 
 ---
 
 ## 10. Referencias
 
 - `docs/process/learnings.md` § 2026-05-28 — análisis origen + decisiones
-- `docs/process/capability-protocol.md` — schema cap (a corregir: quitar atomics en Fase 1)
-- `docs/process/release-protocol.md` — release (a corregir: outcome muerto)
+- `docs/process/capability-protocol.md` — schema cap (v4 · atomics eliminados, scenario es la unidad atómica)
+- `docs/process/release-protocol.md` — release (v3 · outcome+phase eliminados)
 - `docs/process/cockpit-permissions.md` — whitelist Chris vs Claude
-- `tools/luana-cockpit/README.md` — la tool (a sanear en Fase 3)
+- `tools/luana-cockpit/README.md` — la tool
 - `.claude/rules/story-closure-gate.md` — WIP caps ≤1 (SSoT)

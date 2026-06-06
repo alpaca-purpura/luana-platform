@@ -137,6 +137,22 @@ cd ${WS}/${BRAND}/backend && ${WS}/.venv/bin/pytest tests/agentic_evals/ --trial
 
 **Expected:** todos los comandos retornan exit code 0. Si alguno falla post-merge → regression, abrir hot-fix ticket per `.claude/rules/hotfix-repro-mandatory.md`.
 
+## § 6 — Verificación live — Definition of Done (Critical Rule #37 · `definition-of-done-live-verify.md`)
+
+> Ninguna story con UI o endpoint pasa a `state: done` sin que Claude la haya **ejercido contra el stack dev real** de la marca (`dev-app.{brand}lat.com` vía Cloudflare Tunnel, o `localhost:300X`), **leído los logs** y **confirmado el efecto**. Suite verde / build OK / `GET 200` son necesarios pero NUNCA suficientes.
+
+```yaml
+dod_live_verified: true
+dod_env: "make dev-app-{brand} → dev-app.{brand}lat.com (Chrome DevTools MCP)"   # o "localhost:300X"
+dod_evidence:
+  - action: "<acción real del usuario, incluido el write POST/PATCH/PUT/DELETE>"
+    observed: "<toast OK + fila aparece + valor persiste al recargar>"
+    backend_log: "<status correcto + sin traceback + efecto en DB confirmado>"
+dod_verified_at: <YYYY-MM-DD>
+```
+
+**REFUSE gate (`/pm-{brand}` Fase F):** si `dod_live_verified != true` o falta `dod_evidence` (writes ejercidos + efecto observado) → **NO** escribir `state: done`. Única excepción: tickets config/docs/tooling puro → `dod_live_verified_skip_reason`.
+
 ## Cross-references
 
 - `01-spec.md` § Gherkin scenarios — origen de la matrix § 1

@@ -36,6 +36,7 @@ export function ChatComposer({ className }: { className?: string }) {
   // return a fresh value every render → "getSnapshot should be cached" infinite
   // loop, which crashed once Luana mounts open by default. The action reference
   // is already stable in the store, so select it as-is.
+  // eslint-disable-next-line @typescript-eslint/unbound-method -- zustand action is bound/stable in the store; wrapping it in an arrow reintroduces the getSnapshot loop documented above.
   const sendMessage = useChatStore((s) => s.sendMessage);
 
   // Auto-resize

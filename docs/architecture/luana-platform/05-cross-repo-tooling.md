@@ -2,6 +2,8 @@
 
 # 05 — Cross-Repo Tooling + Sunday Playbook
 
+> **[SUPERSEDED — read-only. Este doc asume una topología de 5 repos en GitHub Org que NUNCA se ejecutó; se retuvo el MONOREPO (ver ADR-001 Addendum). El Sunday Playbook crearía org/repos fantasma — NO ejecutar. Conservado por trazabilidad.]**
+
 > **Status:** Draft v0.1 — 2026-05-09
 > **Purpose:** comandos exactos copy-paste para bootstrap GitHub Org + 5 repos + CI baseline + `.claude-shared/` subtree. Sunday playbook embebido §6.
 

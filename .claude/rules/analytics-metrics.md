@@ -1,5 +1,5 @@
 ---
-globs: "core/luana-core-analytics-engine/src/**/*.py,**/backend/src/modules/*/analytics/**/*.py,**/frontend/src/features/growth-studio/**/*.{ts,tsx}"
+globs: "core/luana-core-analytics-engine/src/**/*.py,**/backend/src/modules/*/analytics/**/*.py,**/frontend/src/features/marketing/**/*.{ts,tsx}"
 description: Stub — invoca metrics-expert skill
 ---
 
@@ -9,9 +9,9 @@ Analytics es **ENGINE + BRAND-CONFIG** (CLAUDE.md tabla mapping):
 
 | Surface | Path | Owner |
 |---|---|---|
-| Engine SSoT constants + registry | `core/luana-core-analytics-engine/src/luana_core_analytics_engine/stage_services/constants.py` + `channel_registry.py` | `/pm-luana` |
+| Engine SSoT constants + registry | `core/luana-core-analytics-engine/src/luana_core_analytics_engine/application/services/stage_services/constants.py` + `.../application/services/channel_registry.py` | `/pm-luana` |
 | Brand opt-in (enabled_metrics, channel_groups) | `{brand}/config/brand.yaml` + `{brand}/backend/src/modules/{brand}/analytics/extensions.py` | `/pm-{brand}` |
-| Growth Studio FE per brand | `{brand}/frontend/src/features/growth-studio/` | `/pm-{brand}` |
+| Analytics FE per brand | `{brand}/frontend/src/features/marketing/` | `/pm-{brand}` |
 
 Stage services SSoT data — MetricsService NO computa stage metrics.
 

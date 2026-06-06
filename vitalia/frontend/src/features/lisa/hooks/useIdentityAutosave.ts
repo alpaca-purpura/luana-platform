@@ -47,7 +47,7 @@ export function useIdentityAutosave({
   tenantId,
   clinicId,
 }: UseIdentityAutosaveOptions): UseIdentityAutosaveReturn {
-  const { getToken } = useAuth();
+  const { getToken, userId } = useAuth();
   const queryClient = useQueryClient();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -58,7 +58,7 @@ export function useIdentityAutosave({
     mutationFn: async (values: IdentityFormValues) => {
       const token = await getToken();
       if (!token) throw new Error("Not authenticated");
-      return updateIdentity({ token, tenantId, clinicId }, values);
+      return updateIdentity({ token, tenantId, clinicId, userId }, values);
     },
     onMutate: () => {
       setAutosaveStatus("saving");

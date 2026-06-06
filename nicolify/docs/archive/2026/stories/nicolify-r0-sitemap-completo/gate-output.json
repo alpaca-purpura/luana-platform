@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0",
+  "pr_folder": "/home/chalreme/Proyectos/luana-nicolify/nicolify/docs/product/stories/nicolify-r0-sitemap-completo",
+  "ticket": null,
+  "iter": 1,
+  "command": "fe-gates-nicolify-sitemap",
+  "command_alias": "test-fe-nicolify-routing-arch",
+  "started_at": "2026-06-02T00:00:00Z",
+  "finished_at": "2026-06-02T00:05:30Z",
+  "duration_ms": 330000,
+  "exit_code": 0,
+  "raw_log_path": "/home/chalreme/Proyectos/luana-nicolify/nicolify/docs/product/stories/nicolify-r0-sitemap-completo/gate-logs/iter-1-fe-gates-2026-06-02.log",
+  "gates": [
+    {
+      "name": "tsc_strict",
+      "status": "PASS",
+      "errors_count": 0,
+      "first_5_errors": []
+    },
+    {
+      "name": "eslint_real",
+      "status": "PASS",
+      "errors_count": 0,
+      "warnings_count": 102,
+      "first_5_errors": []
+    },
+    {
+      "name": "vitest_unit",
+      "status": "PASS",
+      "tests_passed": 131,
+      "test_files_passed": 5,
+      "first_5_errors": []
+    },
+    {
+      "name": "arch_no_engine",
+      "status": "PASS",
+      "cross_brand_imports_found": 0,
+      "first_5_errors": []
+    }
+  ],
+  "overall": {
+    "any_fail": false,
+    "fail_gate_names": [],
+    "summary": "✓ FE gates ALL GREEN: tsc strict 0 errors, eslint 0 errors (102 warnings baseline), vitest 131 tests passed (5 files), arch boundary clean (0 cross-brand imports)"
+  },
+  "notes": "Frontend-only story (nicolify-r0-sitemap-completo): shell-routes data structure + e2e navigation. No backend gates executed. ESLint warnings are pre-existing baseline debt per validator FLAG #1 (story does NOT introduce new warnings). All 4 gates passed."
+}

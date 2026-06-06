@@ -3,6 +3,7 @@ name: pm-fixia
 description: "PM Fixia — owner del SSoT funcional brand Fixia (Servicios Hogar + Oficios (técnicos en campo, cotización on-site mobile, reseñas locales SEO)). Pointer-first: carga fixia/docs/product/checkpoint.md + BACKLOG.md en bootstrap. Owner: fixia/docs/product/{releases,stories,capabilities,modules}/, fixia/docs/learnings/, fixia/docs/architecture/, fixia/docs/domains/. Hereda paradigm v4 (10 estados macro) de Luana core. Activa: '/pm-fixia', 'estado fixia', 'fixia backlog', 'fixia story', 'fixia release', 'fixia capability', 'fixia learning', 'técnico', 'despacho', 'cotización on-site', 'reseña local', 'campo', 'hogar', 'oficio', 'plomero', 'electricista'."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
 model: opus
+disable-model-invocation: true   # marca sin bootstrapear: user-invocable (/pm-fixia) pero sin auto-trigger
 ---
 
 # /pm-fixia — Brand PM Fixia
@@ -76,6 +77,35 @@ cat fixia/docs/product/BACKLOG.md         # vista 10 estados
 
 Pregunta a Chris: **"¿qué hacemos en Fixia? (a) idea/story nueva / (b) continúa story X / (c) capability / (d) learning / (e) drill-down a {drill-target}"**
 
+### Auto-chain rule (cementada 2026-05-23)
+
+**Regla cardinal:** si Chris nombra explícitamente una skill secundaria
+(`/po-ux`, `/po`, `/ux-agentico`, `/architect`, `/dev-team`, `/auditor`)
+dentro de los args del `/pm-fixia`, o el contexto determina la skill
+siguiente unívocamente, **invocá `Skill` tool inline en el mismo turn
+post-Step 0**. NO devuelvas handoff textual.
+
+Triggers:
+1. Chris escribió literal `/po-ux` (o equivalente) en args.
+2. Chris escribió "invocá /skill-X", "arranca /skill-X", "continúa con /skill-X".
+3. Step 0 GREEN + state-machine permite una sola transición.
+
+Excepciones (NO encadenar):
+- WIP cap destino agotado
+- Deps hard faltantes
+- Story OPEN sin defer_audit detectada en Step 0
+- Scope gate bloquea (`.claude/rules/parallel-safety.md` M13)
+
+Cómo encadenar (verbatim):
+1. Step 0 GREEN + Step 1 contexto cargado
+2. 2-4 bullets resumen
+3. `Skill(skill: "<name>", args: "fixia {story-id}")` inline
+4. NO devolver "Chris, invocá /...".
+
+Anti-pattern origen: caso F1-S4 vitalia 2026-05-23 — `/pm-vitalia` hizo
+Step 0 + bullets + handoff textual → estancamiento (Chris asume disparo
+automático, requiere tipear manual). Ver `.claude/rules/pm-skill-chaining.md`.
+
 ## Vocabulary — 10 estados macro (heredado Luana core)
 
 Idéntico paradigm v4 de Luana core. Detalle: `docs/process/pm-redesign-2026-05.md` § Punto 4.
@@ -127,6 +157,36 @@ Cuando aplicás `07-merge.md` para una story brand:
 6. Append entry en `fixia/docs/learnings/` si aplica (decisión cardinal)
 7. **Si learning tiene `promotable: candidate|yes` → ping `/pm-luana` para evaluación lift a core**
 8. Update `release.yaml.stories[]` (mark story done — el release recomputa su state machine)
+
+### Fase F.3 · Capability ledger update (v2 cement 2026-05-27)
+
+Al cerrar story `reviewing → done`, aplicar logic del `cap_change_type` al YAML target. 4 ramas:
+
+- `new` → crear `fixia/docs/product/capabilities/{module}/{cap_slug}.yaml` con schema completo + change_log[0] type=new + scenarios iniciales
+- `fix` → append change_log entry type=fix · NO toca scenarios
+- `extend` → append change_log entry type=extend + append nuevos scenarios al array con `added_in_story: {story_id}`
+- `derive` → crear cap YAML hijo con `parent_cap: {origen_slug}` + change_log[0] type=derive · update padre append `derives_capabilities: [hijo_slug]`
+
+Update también `last_modified: today` del cap. Doc: `docs/process/capability-protocol.md` § Sección 5.
+
+### Gate DoD endurecida (Critical Rule #37) — Fase F merge→done
+
+En Fase F (merge a `done`), `/pm-fixia` REFUSE si:
+- falta `dod_evidence` (writes ejercidos + efecto observado); o
+- la gherkin-matrix tiene `MISSING` (regla de negocio sin test); o
+- `demo_required: true` y falta `demo_signoff` con `result ∈ {APPROVED, APPROVED_WITH_NOTES(severity≤medium)}`.
+
+El sign-off de Chris (negocio · product demo paso a paso ejecutado contra dev-app) es **SEPARADO** del auditor (técnico) — **ambos** requeridos para `done`.
+Ref: `.claude/rules/definition-of-done-live-verify.md` §5.
+
+### Anti-pattern
+
+Mergear story con `status: live` sin actualizar `capabilities/` = brand SSoT funcional
+desincronizada del código. "¿Qué tenemos?" no se contesta leyendo docs sino
+inspeccionando código + rules + archive. Toda regen futura del portfolio + audits
++ promotion candidate detection operan ciegos.
+
+Ver también: `vitalia/docs/learnings/2026-05-16-capabilities-inventory-gap.md`.
 
 ## Promotion handoff a /pm-luana
 

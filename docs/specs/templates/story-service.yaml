@@ -1,14 +1,21 @@
 # Service Story Template — endpoints/jobs sin UI
-# Vive en: docs/product/stories/{module}/{story-id}.yaml
+# Vive en: {brand}/docs/product/stories/{module}/{story-id}.yaml
 # Owner: /po · /pm
 # Eval policy: contract test + state_check + (opcional) load test
 
 ---
 id: STORY_ID_KEBAB
 type: service-story
+state: idea                                     # 10 estados macro: idea | refining | refined | ready | developing | developed | reviewing | done | parked | dropped
 module: MODULE_NAME
 capability: CAPABILITY_ID
-status: planned
+cap_target: "{module}/{cap-id}"                 # FK → product/capabilities/{module}/{cap}.yaml (mandatorio desde idea)
+cap_change_type: new                            # new | fix | extend | derive (mandatorio desde idea)
+capability_status: planned                      # planned | in-progress | live | deprecated (estado de la capability, NO de la story)
+agent_owner: null                               # n/a para service-story (no es superficie ZONA AGENTES); completar si el servicio es llamado exclusivamente por un trabajador: lisa | valeria | adrian | lucas | camila | mateo
+map_zone: plataforma                            # zona derivada del SYSTEM-MAP: agentes | plataforma | infraestructura
+map_box: null                                   # caja concreta en la zona (ej: acceso | onboarding | configuracion | seguridad-cumplimiento | observabilidad | plataforma-tecnica)
+release: null                                   # FK → product/releases/{F0..FN}.yaml
 slice: MVP
 last_audit: 2026-05-04
 date_introduced: null

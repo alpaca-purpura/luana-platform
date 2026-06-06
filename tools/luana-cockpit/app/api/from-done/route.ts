@@ -19,7 +19,7 @@ import { stat, readdir } from 'node:fs/promises';
 import { z } from 'zod';
 import { errorResponse, safeJson } from '../_lib/responses';
 import { createNewStoryDocs, appendStoryRefToChrisInput } from '../_lib/story-templates';
-import { storiesPath, archivePath, getBrands } from '@/lib/workspace';
+import { storiesPath, archiveRootPath, getBrands } from '@/lib/workspace';
 import { readMarkdownWithFrontmatter } from '@/lib/fs-reader';
 import type { Story } from '@/lib/types';
 
@@ -39,7 +39,7 @@ async function findParentStory(
 ): Promise<{ dir: string; story: Partial<Story> } | null> {
   const candidates: string[] = [path.join(storiesPath(brand), parentId)];
 
-  const archiveRoot = path.dirname(archivePath(brand, '0000'));
+  const archiveRoot = archiveRootPath(brand); // = archive/ (NO path.dirname(archivePath) → archive/{year} bug)
   try {
     const years = await readdir(archiveRoot, { withFileTypes: true });
     for (const y of years) {

@@ -17,7 +17,8 @@ from __future__ import annotations
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-from src.modules.comunify.api.routes import offer_router, router as comunify_router
+from src.modules.comunify.api.routes import offer_router
+from src.modules.comunify.api.routes import router as comunify_router
 from src.modules.comunify.api.webhook_routes import webhook_router
 
 # redirect_slashes=False is MANDATORY — Default True → 307 POST → Next.js drops body (DDD rule).

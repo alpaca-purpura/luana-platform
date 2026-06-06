@@ -12,6 +12,8 @@ related:
   - nicolify/.claude/rules/b2b-billable-hours.md
 ---
 
+> [HISTÓRICO — read-only. Auditoría del carve-out de nicolify previa al nicolify-reset (2026-05-29). Las estructuras descritas fueron reseteadas; ver MEMORY nicolify-reset-2026-05-29. Conservado por trazabilidad.]
+
 # Nicolify — Carve-out audit (post multibrand reorg)
 
 > **Scope:** este doc es cross-brand (decisiones lift core ↔ nicolify) → vive en

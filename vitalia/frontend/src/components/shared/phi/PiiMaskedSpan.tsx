@@ -32,6 +32,13 @@ export interface PiiMaskedSpanProps {
   fieldType: PiiFieldType;
   /** Additional CSS classes */
   className?: string;
+  /**
+   * When false, render the raw value (still tagged `data-phi` so the FE-A6 arch
+   * gate + audit tooling keep treating it as a protected field). Default `true`
+   * (masked). The tenant "Máxima seguridad" config flips this per tenant — until
+   * that story lands, the inbox passes `masked={false}` for leads (not patients).
+   */
+  masked?: boolean;
 }
 
 /**
@@ -106,9 +113,21 @@ export function PiiMaskedSpan({
   value,
   fieldType,
   className,
+  masked = true,
 }: PiiMaskedSpanProps) {
   const raw = value ?? "";
-  const masked = raw ? maskValue(raw, fieldType) : "—";
+
+  // Revealed: show the real value but keep data-phi so the gate + audit still
+  // recognise this as a protected field (tenant "Máxima seguridad" off).
+  if (!masked) {
+    return (
+      <span data-phi data-phi-type={fieldType} className={cn(className)}>
+        {raw || "—"}
+      </span>
+    );
+  }
+
+  const maskedText = raw ? maskValue(raw, fieldType) : "—";
 
   return (
     <span
@@ -118,7 +137,7 @@ export function PiiMaskedSpan({
       aria-label={`Dato privado — ${fieldType}`}
       title="Información protegida"
     >
-      {masked}
+      {maskedText}
     </span>
   );
 }

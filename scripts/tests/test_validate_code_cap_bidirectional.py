@@ -636,3 +636,397 @@ def test_cross_check_4_ui_entry_lenient(tmp_path: Path):
     caps = mod.load_capabilities("vitalia", tmp_path)
     result = mod.cross_check_4(caps, tmp_path, "vitalia")
     assert result["pass"] == 1
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# HB-51 · Gates determinísticos G1-G6 — negative tests CON DIENTES + repro origen
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# Cada gate tiene un caso GREEN + un caso RED (drift>0). Sin negative test que lo
+# prueba en rojo, el gate es decorativo (handoff §0.3). El test estrella reproduce
+# el incidente origen: borrar la cap del inbox → G1+G2 RED.
+
+
+def _write_system_map(tmp_path: Path, brand: str, agents: list[dict], zones: list[dict]) -> None:
+    sm = tmp_path / brand / "docs" / "architecture" / "SYSTEM-MAP.yaml"
+    sm.parent.mkdir(parents=True, exist_ok=True)
+    sm.write_text(yaml.dump({"brand": brand, "agents": agents, "zones": zones}, allow_unicode=True), encoding="utf-8")
+
+
+def _adrian_inbox_map() -> tuple[list[dict], list[dict]]:
+    agents = [{"id": "adrian", "functional_areas": [{"id": "inbox", "name": "Inbox", "status": "live"}]}]
+    zones = [{"id": "agentes", "user_visible": True, "boxes": ["adrian"]}]
+    return agents, zones
+
+
+# ── G1 · header-resuelve ─────────────────────────────────────────────────────
+
+
+def test_g1_pass_header_resolves(tmp_path: Path):
+    mod = _load_module()
+    caps_root, be_root, fe_root, _ = _setup(tmp_path)
+    _write_cap(
+        caps_root,
+        "inbox",
+        "adrian-inbox",
+        {"slug": "adrian-inbox", "status": "live", "functional_area": "adrian.inbox"},
+    )
+    _write_code(be_root / "router.py", "# cap: inbox.adrian-inbox\ndef x(): pass\n")
+    _write_code(fe_root / "View.tsx", "// cap: adrian.inbox\nexport const x = 1;\n")
+    mod.resolve_cap.clear_resolver_cache()
+    g1 = mod.gate_g1_header_resolves("vitalia", tmp_path)
+    assert g1["total"] == 2 and g1["drift"] == 0
+
+
+def test_g1_red_orphan_header(tmp_path: Path):
+    """★ El bug origen: header → cap inexistente = drift (G1 RED)."""
+    mod = _load_module()
+    caps_root, be_root, _, _ = _setup(tmp_path)
+    _write_cap(caps_root, "inbox", "adrian-inbox", {"slug": "adrian-inbox", "status": "live"})
+    _write_code(be_root / "wire.py", "# cap: sales_agent.adrian-override-context\ndef x(): pass\n")
+    mod.resolve_cap.clear_resolver_cache()
+    g1 = mod.gate_g1_header_resolves("vitalia", tmp_path)
+    assert g1["drift"] == 1
+    assert g1["details"][0]["status"] == "orphan_header"
+
+
+def test_g1_ignores_special_markers(tmp_path: Path):
+    mod = _load_module()
+    caps_root, be_root, _, _ = _setup(tmp_path)
+    _write_cap(caps_root, "inbox", "adrian-inbox", {"slug": "adrian-inbox"})
+    _write_code(be_root / "shared.py", "# cap: __shared__\ndef x(): pass\n")
+    mod.resolve_cap.clear_resolver_cache()
+    g1 = mod.gate_g1_header_resolves("vitalia", tmp_path)
+    assert g1["total"] == 0 and g1["drift"] == 0
+
+
+def test_g1_strips_inline_noqa(tmp_path: Path):
+    """Header con `# noqa` inline → captura solo el cap-token (no falso orphan)."""
+    mod = _load_module()
+    caps_root, be_root, _, _ = _setup(tmp_path)
+    _write_cap(caps_root, "abel", "icp-buyer", {"slug": "icp-buyer", "status": "live"})
+    _write_code(be_root / "x.py", "# cap: abel.icp-buyer  # noqa: ERA001\ndef x(): pass\n")
+    mod.resolve_cap.clear_resolver_cache()
+    g1 = mod.gate_g1_header_resolves("vitalia", tmp_path)
+    assert g1["drift"] == 0
+
+
+# ── G2 · área-viva-tiene-cap ─────────────────────────────────────────────────
+
+
+def test_g2_pass_live_area_has_cap(tmp_path: Path):
+    mod = _load_module()
+    caps_root, _, _, _ = _setup(tmp_path)
+    _write_cap(
+        caps_root,
+        "inbox",
+        "adrian-inbox",
+        {"slug": "adrian-inbox", "status": "live", "functional_area": "adrian.inbox"},
+    )
+    agents, zones = _adrian_inbox_map()
+    _write_system_map(tmp_path, "vitalia", agents, zones)
+    caps = mod.load_capabilities("vitalia", tmp_path)
+    g2 = mod.gate_g2_live_area_has_cap("vitalia", tmp_path, caps)
+    assert g2["total"] == 1 and g2["drift"] == 0
+
+
+def test_g2_red_empty_live_area(tmp_path: Path):
+    """★ La caja Inbox vacía: área live en SYSTEM-MAP sin cap → G2 RED."""
+    mod = _load_module()
+    _setup(tmp_path)
+    agents, zones = _adrian_inbox_map()
+    _write_system_map(tmp_path, "vitalia", agents, zones)
+    caps = mod.load_capabilities("vitalia", tmp_path)  # vacío
+    g2 = mod.gate_g2_live_area_has_cap("vitalia", tmp_path, caps)
+    assert g2["drift"] == 1
+    assert g2["details"][0]["functional_area"] == "adrian.inbox"
+
+
+def test_g2_partial_cap_not_empty(tmp_path: Path):
+    """Área con una cap `partial` NO está vacía (el cockpit la pinta) → G2 pasa."""
+    mod = _load_module()
+    caps_root, _, _, _ = _setup(tmp_path)
+    _write_cap(
+        caps_root,
+        "inbox",
+        "adrian-inbox",
+        {"slug": "adrian-inbox", "status": "partial", "functional_area": "adrian.inbox"},
+    )
+    agents, zones = _adrian_inbox_map()
+    _write_system_map(tmp_path, "vitalia", agents, zones)
+    caps = mod.load_capabilities("vitalia", tmp_path)
+    g2 = mod.gate_g2_live_area_has_cap("vitalia", tmp_path, caps)
+    assert g2["drift"] == 0
+
+
+def test_g2_skips_legacy_pseudo_agents(tmp_path: Path):
+    """Áreas de agentes legacy NO referenciados por ninguna zona → no cuentan (mirror cockpit)."""
+    mod = _load_module()
+    _setup(tmp_path)
+    agents = [
+        {"id": "adrian", "functional_areas": [{"id": "inbox", "status": "live"}]},
+        {"id": "config", "functional_areas": [{"id": "auth", "status": "live"}]},  # legacy, no en zona
+    ]
+    zones = [{"id": "agentes", "boxes": ["adrian"]}]  # config NO está
+    _write_system_map(tmp_path, "vitalia", agents, zones)
+    caps = mod.load_capabilities("vitalia", tmp_path)
+    g2 = mod.gate_g2_live_area_has_cap("vitalia", tmp_path, caps)
+    # solo adrian.inbox cuenta (config.auth excluido) → 1 total
+    assert g2["total"] == 1
+
+
+# ── G3 · cap-tiene-hogar ─────────────────────────────────────────────────────
+
+
+def test_g3_red_fa_not_in_map(tmp_path: Path):
+    mod = _load_module()
+    caps_root, _, _, _ = _setup(tmp_path)
+    _write_cap(
+        caps_root,
+        "inbox",
+        "adrian-inbox",
+        {"slug": "adrian-inbox", "status": "live", "functional_area": "fantasma.inexistente"},
+    )
+    agents, zones = _adrian_inbox_map()
+    _write_system_map(tmp_path, "vitalia", agents, zones)
+    caps = mod.load_capabilities("vitalia", tmp_path)
+    g3 = mod.gate_g3_cap_has_home("vitalia", tmp_path, caps)
+    assert g3["drift"] == 1
+    assert g3["details"][0]["status"] == "fa_not_in_system_map"
+
+
+def test_g3_pass_fa_in_map(tmp_path: Path):
+    mod = _load_module()
+    caps_root, _, _, _ = _setup(tmp_path)
+    _write_cap(
+        caps_root,
+        "inbox",
+        "adrian-inbox",
+        {"slug": "adrian-inbox", "status": "live", "functional_area": "adrian.inbox"},
+    )
+    agents, zones = _adrian_inbox_map()
+    _write_system_map(tmp_path, "vitalia", agents, zones)
+    caps = mod.load_capabilities("vitalia", tmp_path)
+    g3 = mod.gate_g3_cap_has_home("vitalia", tmp_path, caps)
+    assert g3["drift"] == 0
+
+
+# ── G4 · paths-existen ───────────────────────────────────────────────────────
+
+
+def test_g4_red_missing_path_live_cap(tmp_path: Path):
+    mod = _load_module()
+    caps_root, _, _, _ = _setup(tmp_path)
+    _write_cap(
+        caps_root,
+        "inbox",
+        "adrian-inbox",
+        {
+            "slug": "adrian-inbox",
+            "status": "live",
+            "dev_preview": {"main_component": "vitalia/frontend/src/features/adrian/NoExiste.tsx"},
+        },
+    )
+    caps = mod.load_capabilities("vitalia", tmp_path)
+    g4 = mod.gate_g4_paths_exist("vitalia", tmp_path, caps)
+    assert g4["drift"] == 1
+    assert g4["details"][0]["status"] == "path_missing"
+
+
+def test_g4_pass_existing_path(tmp_path: Path):
+    mod = _load_module()
+    caps_root, _, fe_root, _ = _setup(tmp_path)
+    comp = fe_root / "features" / "adrian" / "View.tsx"
+    _write_code(comp, "export const x = 1;\n")
+    _write_cap(
+        caps_root,
+        "inbox",
+        "adrian-inbox",
+        {
+            "slug": "adrian-inbox",
+            "status": "live",
+            "dev_preview": {"main_component": str(comp.relative_to(tmp_path))},
+        },
+    )
+    caps = mod.load_capabilities("vitalia", tmp_path)
+    g4 = mod.gate_g4_paths_exist("vitalia", tmp_path, caps)
+    assert g4["total"] == 1 and g4["drift"] == 0
+
+
+def test_g4_skips_deprecated_cap(tmp_path: Path):
+    """Cap deprecated con path removido NO es drift (código legítimamente borrado)."""
+    mod = _load_module()
+    caps_root, _, _, _ = _setup(tmp_path)
+    _write_cap(
+        caps_root,
+        "inbox",
+        "old",
+        {
+            "slug": "old",
+            "status": "deprecated",
+            "dev_preview": {"main_component": "vitalia/frontend/src/features/Gone.tsx"},
+        },
+    )
+    caps = mod.load_capabilities("vitalia", tmp_path)
+    g4 = mod.gate_g4_paths_exist("vitalia", tmp_path, caps)
+    assert g4["total"] == 0 and g4["drift"] == 0
+
+
+def test_g4_strips_double_colon_symbol(tmp_path: Path):
+    """code_pointer `db.py::symbol` → valida solo `db.py`."""
+    mod = _load_module()
+    caps_root, be_root, _, _ = _setup(tmp_path)
+    db = be_root / "db.py"
+    _write_code(db, "def get(): pass\n")
+    _write_cap(
+        caps_root,
+        "inbox",
+        "adrian-inbox",
+        {
+            "slug": "adrian-inbox",
+            "status": "live",
+            "code_pointers": {"backend": {"session": str(db.relative_to(tmp_path)) + "::get_session"}},
+        },
+    )
+    caps = mod.load_capabilities("vitalia", tmp_path)
+    g4 = mod.gate_g4_paths_exist("vitalia", tmp_path, caps)
+    assert g4["total"] == 1 and g4["drift"] == 0
+
+
+# ── G5 · superseded-válido ───────────────────────────────────────────────────
+
+
+def test_g5_red_broken_superseded_by(tmp_path: Path):
+    mod = _load_module()
+    caps_root, _, _, _ = _setup(tmp_path)
+    _write_cap(
+        caps_root,
+        "inbox",
+        "adrian-inbox",
+        {"slug": "adrian-inbox", "status": "live", "superseded_by": "ghost.no-existe"},
+    )
+    mod.resolve_cap.clear_resolver_cache()
+    caps = mod.load_capabilities("vitalia", tmp_path)
+    g5 = mod.gate_g5_superseded_valid("vitalia", tmp_path, caps)
+    assert g5["drift"] == 1
+    assert g5["details"][0]["status"] == "broken_supersession"
+
+
+def test_g5_pass_valid_supersedes(tmp_path: Path):
+    mod = _load_module()
+    caps_root, _, _, _ = _setup(tmp_path)
+    _write_cap(
+        caps_root,
+        "inbox",
+        "adrian-inbox",
+        {"slug": "adrian-inbox", "status": "live", "supersedes": ["sales_agent.old-occ"]},
+    )
+    _write_cap(caps_root, "sales_agent", "old-occ", {"slug": "old-occ", "status": "deprecated"})
+    mod.resolve_cap.clear_resolver_cache()
+    caps = mod.load_capabilities("vitalia", tmp_path)
+    g5 = mod.gate_g5_superseded_valid("vitalia", tmp_path, caps)
+    assert g5["total"] == 1 and g5["drift"] == 0
+
+
+# ── G6 · map-coverage ────────────────────────────────────────────────────────
+
+
+def test_g6_red_live_cap_no_fa(tmp_path: Path):
+    mod = _load_module()
+    caps_root, _, _, _ = _setup(tmp_path)
+    _write_cap(caps_root, "platform", "foundation", {"slug": "foundation", "status": "live"})  # sin functional_area
+    agents, zones = _adrian_inbox_map()
+    _write_system_map(tmp_path, "vitalia", agents, zones)
+    caps = mod.load_capabilities("vitalia", tmp_path)
+    g6 = mod.gate_g6_map_coverage("vitalia", tmp_path, caps)
+    assert g6["drift"] == 1
+    assert g6["details"][0]["status"] == "live_cap_not_on_map"
+
+
+def test_g6_pass_live_cap_on_map(tmp_path: Path):
+    mod = _load_module()
+    caps_root, _, _, _ = _setup(tmp_path)
+    _write_cap(
+        caps_root,
+        "inbox",
+        "adrian-inbox",
+        {"slug": "adrian-inbox", "status": "live", "functional_area": "adrian.inbox"},
+    )
+    agents, zones = _adrian_inbox_map()
+    _write_system_map(tmp_path, "vitalia", agents, zones)
+    caps = mod.load_capabilities("vitalia", tmp_path)
+    g6 = mod.gate_g6_map_coverage("vitalia", tmp_path, caps)
+    assert g6["total"] == 1 and g6["drift"] == 0
+
+
+# ── G7 · cockpit-readable (YAML estricto · sin claves duplicadas) ────────────
+
+
+def test_g7_red_duplicate_key_cap(tmp_path: Path):
+    """★ Caso 2026-06-05: cap con clave duplicada (map_box ×2) → PyYAML la tolera pero
+    el cockpit (gray-matter) la dropea → caja vacía. G7 debe cazarla en ROJO."""
+    mod = _load_module()
+    caps_root, _, _, _ = _setup(tmp_path)
+    # _write_cap usa yaml.dump (no genera dups) → escribimos el YAML a mano con el dup
+    cap = caps_root / "inbox" / "adrian-inbox.yaml"
+    cap.parent.mkdir(parents=True, exist_ok=True)
+    cap.write_text(
+        "---\nslug: adrian-inbox\nstatus: live\nmodule: inbox\n"
+        "map_box: adrian\nfunctional_area: adrian.inbox\nmap_box: adrian\n---\n# body\n",
+        encoding="utf-8",
+    )
+    g7 = mod.gate_g7_cockpit_readable("vitalia", tmp_path)
+    assert g7["drift"] == 1
+    assert g7["details"][0]["status"] == "cockpit_unreadable"
+
+
+def test_g7_pass_clean_cap(tmp_path: Path):
+    mod = _load_module()
+    caps_root, _, _, _ = _setup(tmp_path)
+    _write_cap(
+        caps_root,
+        "inbox",
+        "adrian-inbox",
+        {"slug": "adrian-inbox", "status": "live", "functional_area": "adrian.inbox"},
+    )
+    g7 = mod.gate_g7_cockpit_readable("vitalia", tmp_path)
+    assert g7["total"] == 1 and g7["drift"] == 0
+
+
+# ── ★ REPRODUCCIÓN DEL INCIDENTE ORIGEN (borrar la cap inbox → G1+G2 RED) ─────
+
+
+def test_repro_delete_inbox_cap_trips_g1_and_g2(tmp_path: Path):
+    """★ El test que reproduce el incidente: con la cap inbox presente G1+G2 pasan;
+    al BORRARLA, los headers quedan huérfanos (G1 RED) y la caja Inbox queda vacía
+    (G2 RED). Antes de HB-51 esto pasaba SILENCIOSO."""
+    mod = _load_module()
+    caps_root, be_root, fe_root, _ = _setup(tmp_path)
+    cap_path = _write_cap(
+        caps_root,
+        "inbox",
+        "adrian-inbox",
+        {"slug": "adrian-inbox", "status": "live", "functional_area": "adrian.inbox"},
+    )
+    _write_code(be_root / "inbox" / "router.py", "# cap: inbox.adrian-inbox\ndef x(): pass\n")
+    _write_code(fe_root / "features" / "adrian" / "InboxView.tsx", "// cap: adrian.inbox\nexport const x = 1;\n")
+    agents, zones = _adrian_inbox_map()
+    _write_system_map(tmp_path, "vitalia", agents, zones)
+
+    # ── ANTES: todo verde ──
+    mod.resolve_cap.clear_resolver_cache()
+    caps = mod.load_capabilities("vitalia", tmp_path)
+    assert mod.gate_g1_header_resolves("vitalia", tmp_path)["drift"] == 0
+    assert mod.gate_g2_live_area_has_cap("vitalia", tmp_path, caps)["drift"] == 0
+
+    # ── BORRAR la cap canónica (el incidente) ──
+    cap_path.unlink()
+    mod.resolve_cap.clear_resolver_cache()
+    caps = mod.load_capabilities("vitalia", tmp_path)
+
+    # ── DESPUÉS: G1 (headers huérfanos) + G2 (caja vacía) en ROJO ──
+    g1 = mod.gate_g1_header_resolves("vitalia", tmp_path)
+    g2 = mod.gate_g2_live_area_has_cap("vitalia", tmp_path, caps)
+    assert g1["drift"] >= 1, "G1 debe cazar los headers huérfanos tras borrar la cap"
+    assert g2["drift"] == 1, "G2 debe cazar la caja Inbox vacía tras borrar la cap"
+    assert g2["details"][0]["functional_area"] == "adrian.inbox"

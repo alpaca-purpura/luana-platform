@@ -5,6 +5,8 @@
 **Cement-date:** 2026-05-29. **Reemplaza:** `b2b-billable-hours.md` (legacy framing project-billing descartado).
 **Scope:** stories que tocan los agentes (Luana/Abel/Brenda/Christian/Sara/Norvil), su autonomía, el metering de tokens, el modelo CRM cuenta/stakeholder, el delivery de proyectos, y el outbound.
 
+> ⚠️ **ASPIRACIONAL (verify-first 2026-06-02)** — Nicolify está en **rebuild agentic-first** (reset 2026-05-29): `nicolify/backend/src/modules/nicolify/` es esqueleto (solo `__init__.py`). Los agentes, el CRM cuenta/stakeholder, la token economy y los guardrails de autonomía descritos aquí son el **diseño target** — las invariantes aplican a medida que se construyen story-by-story (releases R0..RN). No asumas que los módulos ya existen.
+
 ## Regla cardinal
 
 En Nicolify, **el producto es el equipo de agentes**, no un set de herramientas. Toda story respeta 4 invariantes simultáneas:

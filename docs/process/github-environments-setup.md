@@ -1,5 +1,7 @@
 # Configuración de GitHub Environments — Luana Platform
 
+> ⚠️ **GitHub Actions DEFERRED** (ver `.claude/rules/github-actions-deferred.md`). El staging auto-deploy + Kubernetes descritos acá son **ASPIRACIONALES**. Infra real dev = VPS-per-brand + docker-compose + Cloudflare tunnel (`dev-app.{brand}lat.com`). Reactivar al provisionar staging real.
+
 > Documento para Chris. Los pasos descritos en este archivo se ejecutan una vez desde la interfaz de GitHub.
 > El equipo de desarrollo no tiene acceso a configurar Environments — es responsabilidad del propietario del repositorio.
 

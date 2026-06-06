@@ -6,7 +6,7 @@ status: live
 date_introduced: 2026-05-18
 story_introduced: vitalia-auth-base-functional
 package_version: vitalia-frontend@0.1.0
-package_path: vitalia/frontend/src/middleware.ts
+package_path: vitalia/frontend/src/proxy.ts
 license: proprietary
 
 # v3 cement 2026-05-27 · 4 dimensiones + dev_preview (ADR-vitalia-005)
@@ -27,7 +27,7 @@ user_facing_description: >
 dev_preview:
   route: "/sign-in"
   how_to_navigate: "Abrir cualquier ruta protegida sin sesión → el middleware redirige a /sign-in automáticamente"
-  main_component: "vitalia/frontend/src/middleware.ts"
+  main_component: "vitalia/frontend/src/proxy.ts"
   api_endpoints: []
   e2e_test: "vitalia/frontend/e2e/auth/sign-in-redirect.spec.ts"
   fixtures_required: []
@@ -37,7 +37,7 @@ dev_preview:
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-auth-base-functional   # v2 cement · mirror of story_introduced
 created_date: 2026-05-18   # v2 cement · mirror of date_introduced
-last_modified: 2026-05-29   # T-3 reconcile 2026-05-29
+last_modified: 2026-06-03   # bugfix shell-nav-scroll-errors #1 (edge-redirect /{tenant}→landing en proxy)
 parent_cap: null   # v2 cement · mirror of extends_capability
 derives_capabilities: []   # v2 cement · initial empty list
 
@@ -45,6 +45,12 @@ derives_capabilities: []   # v2 cement · initial empty list
 
 # Capability change log v2 (cement 2026-05-27)
 change_log:
+  - story_id: vitalia-bugfix-shell-nav-scroll-errors
+    date: 2026-06-03
+    type: fix
+    summary: "Bug#1 hardening (story bugfix shell): el proxy ahora hace edge-redirect HTTP 307 de bare /{tenant} → /{tenant}/{DEFAULT_LANDING_SUBPATH} vía bareTenantLandingRedirect() (UUID-only, no toca sign-in/sign-out/marketing). Evita que el Server Component (shell-organism)/page.tsx haga una soft-navigation intra-route-group que dispara 'Rendered more hooks' en el Router de Next 16.2.3 (~40% flake en el landing). Live-verified dev-app: /{tenant} → mateo/agenda limpio."
+    merge_sha: null
+    status: done
   - story_id: vitalia-auth-base-functional
     date: 2026-05-18
     type: new
@@ -100,21 +106,21 @@ business_rules:
     rule: "Todas las rutas son protegidas por defecto · solo las rutas explícitamente listadas en createRouteMatcher son públicas"
     enforcement:
       - ".claude/rules/tenant-isolation.md"
-    code_ref: "vitalia/frontend/src/middleware.ts"
+    code_ref: "vitalia/frontend/src/proxy.ts"
     severity: critical
     audit_trail: false
   - id: rbac-not-in-middleware
     rule: "El middleware NO realiza RBAC · auth.protect() delegado 100% a Clerk · RBAC se aplica en route handlers o page level"
     enforcement:
       - ".claude/rules/tenant-isolation.md"
-    code_ref: "vitalia/frontend/src/middleware.ts"
+    code_ref: "vitalia/frontend/src/proxy.ts"
     severity: high
     audit_trail: false
   - id: webhook-routes-public
     rule: "Rutas /api/v1/vitalia/webhooks/* son públicas en middleware · seguridad garantizada por HMAC signature + timestamp window 5min server-side"
     enforcement:
       - "vitalia/.claude/rules/hipaa-lite.md"
-    code_ref: "vitalia/frontend/src/middleware.ts"
+    code_ref: "vitalia/frontend/src/proxy.ts"
     severity: high
     audit_trail: false
 
@@ -139,9 +145,9 @@ Protección de rutas mediante `clerkMiddleware` + `createRouteMatcher`. Default 
 
 ## Surfaces
 
-- **Config:** `vitalia/frontend/src/middleware.ts`
+- **Config:** `vitalia/frontend/src/proxy.ts`
 - **Backend:** n/a (FE only)
-- **Frontend:** `vitalia/frontend/src/middleware.ts` ejecuta en edge runtime de Next.js 16
+- **Frontend:** `vitalia/frontend/src/proxy.ts` ejecuta en edge runtime de Next.js 16
 - **Tests:** `vitalia/frontend/src/__tests__/architecture/` (arch fitness ratchet)
 - **Docs:** Story 01-spec.md SC-01, SC-02
 

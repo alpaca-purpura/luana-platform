@@ -167,8 +167,9 @@ Idéntico paradigm v4 de Luana core. Detalle: `docs/process/pm-redesign-2026-05.
 | "spec ratificada" / "diseño ratificado" | Update state refining→refined. **Invocá `Skill(architect)`** con args `"vitalia {story-id}"` |
 | "ready" | Update state refined→ready (verificar 4 archivos: 03-arch, 04-validators, 05-guidelines, 06-tickets) |
 | "build" / "arranca dev" | Update state ready→developing. **Invocá `Skill(dev-team)`** con args `"vitalia {story-id}"` |
-| "validators GREEN" | Update state developing→developed |
-| "audita" / "QA" | Update state developed→reviewing. **Invocá `Skill(auditor)`** con args `"vitalia {story-id}"` |
+| "validators GREEN" | Update state developing→developed (default: dev-team pausa en **G** `phase: AWAIT_CHRIS_VERIFY`) |
+| "reconcile {story}" / "Chris satisfecho" ★ proceso v5 | Verificar `chris_verify.signoff` presente → **R · reconcile**: `01-spec`/`03-arch`/`04-validators`/cap ⟵ realidad construida + cambios en `chris_verify.rounds`; congelar ledger `deferred` (spawnear historias visibles); escribir `reconciled: true` → **Invocá `Skill(auditor)`** con args `"vitalia {story-id}"` (story-closure-gate Fase R) |
+| "audita" / "QA" | Update state developed→reviewing. Precondición: `reconciled: true` (default) o `autonomous_mode: true`. **Invocá `Skill(auditor)`** con args `"vitalia {story-id}"` |
 | "{story-id} merge" | Verificar APPROVED + CHECKPOINTS C1-C5 + **dev-app gate** (ADR-008: si `dev_app_verified.required: true` y `evidence` vacío → REFUSE) → escribir 07-merge.md → migrar capability → archive story → update state reviewing→done |
 | "learning {tema}" | Crear `vitalia/docs/learnings/{date}-{slug}.md` con frontmatter promotable: yes/candidate/no |
 | "promotable {tema}" | Append learning con `promotable: candidate` + ping `/pm-luana` para evaluación |
@@ -232,16 +233,26 @@ Cuando aplicás `07-merge.md` para una story brand:
 
 Al cerrar story `reviewing → done`, aplicar logic del `cap_change_type` al YAML target. 4 ramas:
 
-- `new` → crear `vitalia/docs/product/capabilities/{module}/{slug}.yaml` con schema completo + change_log[0] type=new + scenarios iniciales
+- `new` → **`make new-cap BRAND=vitalia MODULE={module} SLUG={slug} AREA={box}.{area}`** (HB-51 · NUNCA hand-author el YAML — el generator lo produce schema-válido + REFUSE si el cap_id ya existe), luego llenar contenido + change_log[0] type=new + scenarios iniciales
 - `fix` → append change_log entry type=fix · NO toca scenarios
 - `extend` → append change_log entry type=extend + append nuevos scenarios al array con `added_in_story: {story_id}`
-- `derive` → crear cap YAML hijo con `parent_cap: {origen_slug}` + change_log[0] type=derive · update padre append `derives_capabilities: [hijo_slug]`
+- `derive` → `make new-cap` el hijo + `parent_cap: {origen_slug}` + change_log[0] type=derive · update padre append `derives_capabilities: [hijo_slug]`
 
-Update también `last_modified: today` del cap. Doc: `docs/process/capability-protocol.md` § Sección 5.
+Update también `last_modified: today` del cap. **Antes de cerrar el merge: `make cap-doctor BRAND=vitalia` debe dar 0 deriva** (G1-G6 + schema). Doc: `docs/process/capability-protocol.md` § Sección 5 + `docs/process/cap-deterministic-enforcement.md`.
 
 **★ Definición de DONE (cement 2026-05-28):** una capability NO puede ser `status=live` sin ≥1 scenario + e2e_test que exista (cross_check_3 HARD). Si no hay e2e aún → status=partial/declared-live, NO live. Ver `docs/process/lifecycle.md` § 4.
 
 **★ Dev-app live verification gate (cement 2026-05-31, ADR-vitalia-008):** ninguna story/bugfix vitalia pasa `reviewing → done` sin `dev_app_verified` válido en su `checkpoint.md`. Árbol: `required: true` por default en ui-story/agentic-story/bugfix (toca superficie que un usuario alcanza en dev-app); `required: false` SOLO interno puro (refactor/infra/migración-only/test-only) con `dev_app_verified_skip_reason`. Si `required: true` → `evidence` obligatorio = acción real ejercida (writes autenticados con `dr.demo@vitalialat.com` + `CLERK_TESTING_TOKEN_VITALIA`) + efecto observado (DB/log). **`GET 200` NO es evidencia; e2e mockeado NO es evidencia.** `/pm-vitalia merge` hace REFUSE si falta. SSoT: `vitalia/docs/architecture/ADR-vitalia-008-dev-app-live-verification-gate.md`.
+
+## Gate DoD endurecida (Critical Rule #37) — Fase F merge→done
+
+En Fase F (merge a `done`), `/pm-vitalia` REFUSE si:
+- falta `dod_evidence` (writes ejercidos + efecto observado); o
+- la gherkin-matrix tiene `MISSING` (regla de negocio sin test); o
+- `demo_required: true` y falta `chris_verify.signoff` con `result ∈ {SATISFIED, SATISFIED_WITH_FOLLOWUPS(severity≤medium)}`.
+
+★ proceso v5: el signoff de Chris vive en `chris_verify.signoff` (firmado en **G**, antes del auditor — consolida el viejo `demo_signoff`, no se duplica). El sign-off de Chris (negocio · ejercido live contra dev-app en G) es **SEPARADO** del auditor (técnico) — **ambos** requeridos para `done`.
+Ref: `.claude/rules/story-closure-gate.md` (G/R/signoff) + `.claude/rules/definition-of-done-live-verify.md` §5.
 
 ## ★ Capability inventory post-merge (MANDATORIO)
 

@@ -62,7 +62,7 @@ corepack enable && corepack prepare pnpm@9.15.9 --activate
 pnpm dev          # dev server :4000 con hot reload + chokidar SSE
 pnpm build        # Next.js build standalone
 pnpm start        # producción :4000 (post-build)
-pnpm test         # vitest run · ~67 tests en 6 files (cap-ledger · cap-status · chris-input-parser · drift-view · edit-permissions · tooltips)
+pnpm test         # vitest run · 10 test files (cap-ledger · cap-status · chris-input-parser · drift-view · edit-permissions · tooltips · sessions · map-zones · extend-cap-route · stories-route)
 pnpm typecheck    # tsc --noEmit
 ```
 
@@ -102,7 +102,7 @@ Variables disponibles:
 |---|---|---|
 | `/roadmap` (default) | Roadmap por releases | Drag stories entre releases F0..F8 (solo idea/refining/refined) · Merge release a main cuando todas done |
 | `/board` | Backlog kanban | 10 columnas estados macro v4 · drag CHRIS_ALLOWED only (idea↔refining + parked/dropped) · WIP badges + filtros · **badge 🔨 {lane}** sobre stories en construcción (ADR-009 single-hub, ver abajo) |
-| `/map` | Mapa Implementado | Banner **Salud de Producto** (distribución de caps por status del JSON live) + grid agentes (Lisa/Valeria/Adrián/Lucas/Camila/Configurar) + sección Infra full-width · click cap → **Cap Drawer** |
+| `/map` | Mapa Implementado | Banner **Salud de Producto** (distribución de caps por status del JSON live) + grid 5 agentes (Lisa/Valeria/Adrián/Lucas/Camila) + zona **Configurar** (tab de plataforma, no agente) + sección Infra full-width · click cap → **Cap Drawer** |
 | `/arquitectura` | SYSTEM-MAP global | 7 agentes × functional_areas + flows cross-agent + data ownership |
 | `/drift` | Caps no verified-live | Lista priorizada por severidad (stub/wip/partial/drift) para saber qué arreglar |
 | `/learnings` | Timeline learnings | Cronológico desc · search + tags pills + xed open |
@@ -170,7 +170,7 @@ Slide-in que muestra la traza completa de una capability (la unidad atómica es 
 | Validación | zod | Schemas runtime tipados |
 | Tests | vitest + @vitest/coverage-v8 | Fast ESM-native |
 
-## Endpoints API (19)
+## Endpoints API (20)
 
 Todos en `app/api/`. Reciben JSON · devuelven JSON · Zod validation · whitelist guards.
 
@@ -194,6 +194,7 @@ Todos en `app/api/`. Reciben JSON · devuelven JSON · Zod validation · whiteli
 | `/api/merge-release` | POST | Preview + dual-confirm merge release a main (NO ejecuta git mv automático) |
 | `/api/refs/upload` | POST | Multipart upload binarios a `{brand}/docs/product/stories/{id}/refs/` |
 | `/api/watch` | GET | SSE stream (chokidar) push live cuando archivo .md/.yaml cambia |
+| `/api/sessions` | GET | Lee `.session-locks/*.lock` activos · filtra PIDs muertos · alimenta badge 🔨 {lane} en /board |
 | `/api/learnings` | GET | Aggregate learnings cronológico |
 
 ## Fuente de datos (filesystem-as-DB)
@@ -238,6 +239,12 @@ Cuando Chris edita un `.md` o `.yaml` desde xed/code/CLI **externamente** al coc
 | `lib/api-client.ts` | Cliente tipado para `/api/*` desde FE (332 LOC) |
 | `lib/cn.ts` | clsx + twMerge helper |
 | `lib/story-paths.ts` | Abs↔rel path helpers |
+| `lib/sessions.ts` | Lee `.session-locks/*.lock` · filtra PIDs muertos · computa lane por story |
+| `lib/edit-permissions.ts` | Whitelist CHRIS_ALLOWED_TRANSITIONS · guards para cockpit-permissions |
+| `lib/agent-meta.ts` | Metadata estática de agentes (slug, color, nombre display) |
+| `lib/map-zones.ts` | Helpers zonas del mapa (Agentes / Plataforma / Infraestructura) |
+| `lib/drift-helpers.ts` | Clasificación caps por severidad drift (stub/wip/partial/drift) |
+| `lib/tooltips.ts` | Textos tooltip reutilizables cross-componente |
 
 ## Permisos · ¿qué hace Chris vs Claude?
 
@@ -277,12 +284,12 @@ Lo único que cambia entre máquinas es `EDITOR_BIN` (xed/code/etc.) si querés 
 ## Status v0.6 (cement 2026-05-28)
 
 - ✅ **5.1** workspace setup (Next.js 16 + Tailwind v4 + Vitest)
-- ✅ **5.2** library functions (12 archivos en lib/)
-- ✅ **5.3** 19 API routes Next.js + helpers `_lib`
+- ✅ **5.2** library functions (18 archivos en lib/)
+- ✅ **5.3** 20 API routes Next.js + helpers `_lib`
 - ✅ **5.4** components React + 6 vistas funcionales + 7 tabs Story Drawer + Cap Drawer + 6 modales
 - ✅ **5.5** chokidar SSE + WatchingIndicator + vistas live refresh
 
-Validación: `pnpm typecheck` clean · `pnpm test` ~67 tests GREEN (6 files).
+Validación: `pnpm typecheck` clean · `pnpm test` GREEN (10 test files).
 
 ## Pendiente Chris ratificación
 
@@ -300,7 +307,7 @@ Validación: `pnpm typecheck` clean · `pnpm test` ~67 tests GREEN (6 files).
 
 ## Plan completo
 
-Ver `/home/chalreme/.claude/plans/ok-lo-apruebo-realiza-cheeky-harbor.md` (autoportable) + memory file `cockpit-luana-state.md`.
+Ver el memory file `cockpit-luana-state.md` (pointer-first, portable — SSoT del estado del cockpit).
 
 Doctrina cementada (Phase 1):
 - `docs/process/capability-protocol.md` · schema cap YAML v2 + cap_change_type ledger

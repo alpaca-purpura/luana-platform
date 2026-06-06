@@ -1,112 +1,74 @@
 /**
- * voz-autosave-error.spec.ts — SC-5 Network failure: badge error state (mock route)
+ * voz-autosave-error.spec.ts — SC-5 Network failure: badge error state (error injection)
  *
  * Gherkin scenario: autosave-error-muestra-badge
  *
- * Given:  Owner en Voz y tono; endpoint PATCH /personality responde 5xx/timeout (mock)
+ * Given:  Owner en Voz y tono; el PATCH /personality responde 503 (falla inyectada)
  * When:   Cambia arquetipo y dispara autosave
- * Then:   Badge muestra estado 'error' · UI no crashea · usuario puede reintentar
+ * Then:   Badge muestra estado 'error' · UI no crashea · el usuario puede reintentar
  *
- * NOTE: This is the ONLY spec in T-3 that uses page.route mock.
- * Reason: we deliberately want to test the error handling path without relying on
- * a real backend error condition. The other specs (arquetipo, bloque) use real backend.
+ * NOTA: este spec INYECTA una falla 503 en el PATCH (error-path deliberado), NO
+ * mockea el backend-bajo-prueba happy-path. El GET /personality va al backend
+ * REAL (las cards hidratan con datos reales). Como ejerce un error a propósito,
+ * el gate anti-burbuja se apaga con `failOnRuntimeError: false`.
+ *
+ * Transporte honesto (auth + forwarding GET → :8002 + base.ts) se compone desde
+ * `real-backend-forward.fixture`; el spec registra el 503 en PATCH con prioridad
+ * (las rutas registradas en el test corren ANTES que el forwarding del fixture)
+ * y usa `route.fallback()` en los métodos que no inyecta, para que GET forwardee.
  *
  * Run:
  *   cd vitalia/frontend
- *   E2E_BASE_URL=http://localhost:3002 npx playwright test \
+ *   E2E_BASE_URL=http://localhost:3002 npx playwright test --project=smoke \
  *     e2e/regression/arreglar-guardado-voz-y-tono/voz-autosave-error.spec.ts
  *
- * downstream-regression-na: brand-local vitalia e2e spec T-3 arreglar-guardado-voz-y-tono
+ * downstream-regression-na: brand-local vitalia e2e spec arreglar-guardado-voz-y-tono
  *
- * @see 04-validators.yaml § e2e_voz_autosave_error
- * @see 06-tickets.yaml T-3 deliverables
+ * @see e2e/fixtures/real-backend-forward.fixture.ts
+ * @see 06-tickets.yaml T-1 deliverable 6
  * @see 01-spec.md § autosave-error-muestra-badge
  */
 
-import { test, expect } from "@playwright/test";
-import { setupClerkTestingToken } from "@clerk/testing/playwright";
-import path from "path";
+import {
+  test as authTest,
+  expect,
+  TENANT_ID,
+} from "../../fixtures/real-backend-forward.fixture";
 import type { Route } from "@playwright/test";
 import { VozTonoSectionPom } from "./poms/voz-tono-section.pom";
-import { LISA_MARCA_FIXTURE } from "../vitalia-fase2-lisa-marca/fixtures/lisa-marca.fixture";
+
+// El gate anti-burbuja se apaga para toda la suite: estos tests ejercen un error
+// (503 inyectado + 4xx/5xx en /api/) a propósito.
+authTest.use({ failOnRuntimeError: false });
 
 // ---------------------------------------------------------------------------
-// Auth + tenant constants
+// Helper: inject 503 on PATCH personality; GET (y demás) → backend real.
+// route.fallback() delega al siguiente handler (el forwarding del fixture).
 // ---------------------------------------------------------------------------
 
-const STORAGE_STATE_PATH = path.join(
-  __dirname,
-  "../../../playwright/.clerk/user.json",
-);
-
-// Use E2E_TENANT_ID (the UUID owned by the authed Clerk user) so the route
-// does not cross-tenant-block. The error spec uses page.route mocks so the
-// real BE personality row is not needed — only the route must be reachable.
-const TENANT_ID =
-  process.env["E2E_TENANT_ID"] ??
-  process.env["VITALIA_PE_TENANT_ID"] ??
-  LISA_MARCA_FIXTURE.tenantId;
-
-// ---------------------------------------------------------------------------
-// Fixture — authenticated page with mock mocks for GET, but 503 for PATCH personality
-// ---------------------------------------------------------------------------
-
-const authTest = test.extend<{ authedPage: import("@playwright/test").Page }>({
-  authedPage: async ({ browser }, use) => {
-    const context = await browser.newContext({
-      storageState: STORAGE_STATE_PATH,
-    });
-    const page = await context.newPage();
-
-    await setupClerkTestingToken({ page });
-
-    await use(page);
-
-    await page.close();
-    await context.close();
-  },
-});
-
-// ---------------------------------------------------------------------------
-// Helper: setup mocks with PATCH personality returning 503
-// ---------------------------------------------------------------------------
-
-async function setupErrorMocks(
-  page: import("@playwright/test").Page,
-  _tenantId: string,
-): Promise<void> {
-  // Verificación REAL (test-design-doctrine.md): el GET /personality va al backend
-  // REAL (los arquetipos renderizan con datos reales). SOLO el PATCH se mockea a 503
-  // para ejercer deliberadamente el camino de error del autosave.
+async function injectPersonalityPatch503(page: import("@playwright/test").Page): Promise<void> {
   await page.route(
     "**/api/v1/lisa/marca/personality",
     async (route: Route) => {
       if (route.request().method() === "PATCH") {
-        // Simulate backend error (Service Unavailable)
         await route.fulfill({
           status: 503,
           contentType: "application/json",
           body: JSON.stringify({ detail: "Service Unavailable" }),
         });
       } else {
-        // GET (y demás) → backend real → ArchetypeSelector renderiza las cards
-        await route.continue();
+        // GET (y otros) → delegar al forwarding del fixture → backend real.
+        await route.fallback();
       }
     },
   );
 }
 
-/**
- * Wait for voz-y-tono page to render the interactive content.
- * More lenient than pom.waitForLoaded() — waits for archetype selector
- * which is the key interactive element for autosave tests.
- */
+/** Wait until voz-y-tono renders the interactive section root. */
 async function waitForVozTonoInteractive(
   page: import("@playwright/test").Page,
   timeoutMs = 20_000,
 ): Promise<void> {
-  // Wait for the section root (voz-tono-section-root) which is the canonical
-  // "VozTonoView mounted" signal. Scope to first to avoid strict-mode violation.
   await page
     .locator('[data-testid="voz-tono-section-root"]')
     .first()
@@ -117,53 +79,43 @@ async function waitForVozTonoInteractive(
 // Test suite — SC-5 network failure / error state
 // ---------------------------------------------------------------------------
 
-// QUARANTINE (suite completa SC-5) — el error-path requiere seleccionar un arquetipo (cards
-// hidratadas por el GET /personality in-browser) + el mock route; flaquea por la race de
-// auth-readiness de Clerk. La conducta del FIX (guardado OK + no-422 + no-error en cambio
-// válido) queda cubierta determinísticamente por voz-arquetipo + voz-bloque. Re-habilitar al
-// cerrar `estabilizar-harness-e2e-lisa-marca`.
-authTest.describe("SC-5 — Network failure: badge muestra error (mock route 503)", () => {
-  authTest.fixme(
-    "PATCH personality 503 → badge 'error', UI no crashea — BLOCKED: estabilizar-harness-e2e-lisa-marca",
+authTest.describe("SC-5 — Network failure: badge muestra error (503 inyectado en PATCH)", () => {
+  // DES-QUARANTINED (estabilizar-harness-e2e-lisa-marca): el error-path se asserta
+  // web-first (waitForAutosaveError + toBeVisible) sobre el GET real hidratado.
+  authTest(
+    "PATCH personality 503 → badge 'error', UI no crashea",
     async ({ authedPage }) => {
       const pom = new VozTonoSectionPom(authedPage, TENANT_ID);
 
-      // Setup mocks: GET personality from fixture, PATCH returns 503
-      await setupErrorMocks(authedPage, TENANT_ID);
+      await injectPersonalityPatch503(authedPage);
 
       await pom.goto();
       await waitForVozTonoInteractive(authedPage);
 
-      // Select archetype to trigger autosave
-      await pom.selectArchetype("sage");
+      // Switch to a target different from current to force the PATCH (→ 503).
+      const initial = await pom.getSelectedArchetype();
+      const target = initial === "sage" ? "healer" : "sage";
+      await pom.selectArchetype(target);
 
-      // Wait for saving state (debounce fires, mutation starts)
-      await pom.waitForAutosaveSaving();
-
-      // Wait for error state (PATCH returned 503 → onError handler → badge=error)
+      // Web-first: badge reaches error after the 503.
       await pom.waitForAutosaveError();
 
-      const finalStatus = await pom.getAutosaveStatus();
-      expect(finalStatus, "Badge must show error state after 503").toBe("error");
-
-      // Verify UI has not crashed — archetype selector must still be visible.
-      // Scope to section root (first instance) to avoid strict-mode violation.
+      // UI did not crash — archetype selector remains visible.
       await expect(
-        authedPage.locator('[data-testid="voz-tono-section-root"]').first()
+        authedPage
+          .locator('[data-testid="voz-tono-section-root"]')
+          .first()
           .locator('[data-testid="archetype-selector"]'),
         "UI must not crash after autosave error — archetype selector must remain",
       ).toBeVisible();
 
-      // Error boundary must NOT be visible (graceful error, not crash)
-      const errorBoundaryVisible = await authedPage
-        .locator('[data-testid="error-boundary-fallback"]')
-        .isVisible();
-      expect(
-        errorBoundaryVisible,
+      // Error boundary must NOT be visible (graceful error, only badge).
+      await expect(
+        authedPage.locator('[data-testid="error-boundary-fallback"]'),
         "Error boundary must NOT appear for autosave error (only badge)",
-      ).toBe(false);
+      ).toHaveCount(0);
 
-      // Badge text must show error copy (Spanish neutro)
+      // Badge text shows error copy (Spanish neutro).
       const badgeText = await pom.getAutosaveBadgeText();
       expect(
         badgeText,
@@ -172,90 +124,61 @@ authTest.describe("SC-5 — Network failure: badge muestra error (mock route 503
     },
   );
 
-  // QUARANTINE — el reintento re-selecciona un arquetipo tras el error, lo que depende de
-  // que las cards sigan hidratadas; flaquea por la race de auth-readiness de Clerk en el
-  // GET /personality in-browser. Re-habilitar al cerrar `estabilizar-harness-e2e-lisa-marca`.
-  authTest.fixme(
-    "tras error, el próximo cambio re-dispara el autosave (reintento posible) — BLOCKED: estabilizar-harness-e2e-lisa-marca",
+  // DES-QUARANTINED: retry path — tras error, el próximo cambio re-dispara autosave.
+  authTest(
+    "tras error, el próximo cambio re-dispara el autosave (reintento posible)",
     async ({ authedPage }) => {
       const pom = new VozTonoSectionPom(authedPage, TENANT_ID);
 
-      // Phase 1: PATCH returns 503 (error)
-      await setupErrorMocks(authedPage, TENANT_ID);
+      // Phase 1: PATCH → 503.
+      await injectPersonalityPatch503(authedPage);
       await pom.goto();
       await waitForVozTonoInteractive(authedPage);
 
-      await pom.selectArchetype("sage");
+      const initial = await pom.getSelectedArchetype();
+      const firstTarget = initial === "sage" ? "healer" : "sage";
+      await pom.selectArchetype(firstTarget);
       await pom.waitForAutosaveError();
 
-      const statusAfterError = await pom.getAutosaveStatus();
-      expect(statusAfterError, "Badge must be in error state").toBe("error");
+      // Phase 2: clear the 503 route → PATCH forwards to the real backend.
+      await authedPage.unroute("**/api/v1/lisa/marca/personality");
 
-      // Phase 2: Remove the error mock (allow the next PATCH to succeed via standard route)
-      // We can simulate retry by re-routing PATCH to succeed
-      await authedPage.route(
-        "**/api/v1/lisa/marca/personality",
-        async (route: Route) => {
-          if (route.request().method() === "PATCH") {
-            await route.fulfill({
-              status: 200,
-              contentType: "application/json",
-              body: JSON.stringify({
-                tenantId: TENANT_ID,
-                archetype: "healer",
-                updatedAt: new Date().toISOString(),
-              }),
-            });
-          } else {
-            await route.continue();
-          }
-        },
-      );
-
-      // Make a new change — this re-triggers autosave (retry)
-      await pom.selectArchetype("healer");
-
-      // The new attempt must be able to reach saved state
+      // A new change re-triggers autosave; the real PATCH now succeeds.
+      const secondTarget = firstTarget === "sage" ? "healer" : "sage";
+      await pom.selectArchetype(secondTarget);
       await pom.waitForAutosaveSaved();
-
-      const statusAfterRetry = await pom.getAutosaveStatus();
-      expect(
-        statusAfterRetry,
-        "After retry with working backend, badge must reach saved state",
-      ).toBe("saved");
     },
   );
 
-  authTest.fixme(
-    "UI permanece interactiva durante y después de error de autosave — BLOCKED: estabilizar-harness-e2e-lisa-marca",
+  // DES-QUARANTINED: UI stays interactive during/after the autosave error.
+  authTest(
+    "UI permanece interactiva durante y después de error de autosave",
     async ({ authedPage }) => {
       const pom = new VozTonoSectionPom(authedPage, TENANT_ID);
 
-      await setupErrorMocks(authedPage, TENANT_ID);
+      await injectPersonalityPatch503(authedPage);
       await pom.goto();
       await waitForVozTonoInteractive(authedPage);
 
-      await pom.selectArchetype("sage");
+      const initial = await pom.getSelectedArchetype();
+      const target = initial === "sage" ? "healer" : "sage";
+      await pom.selectArchetype(target);
       await pom.waitForAutosaveError();
 
-      // Verify the UI is NOT frozen/crashed after the autosave error.
-      // Assert on STABLE elements (section root + autosave badge + an editable voice
-      // textarea). The archetype cards can flicker if the personality GET query
-      // re-fetches transiently (separate Clerk-auth-readiness race, no aquí), so we
-      // assert interactivity via elements that don't depend on that query re-settling.
-      const sectionFirst = authedPage.locator('[data-testid="voz-tono-section-root"]').first();
+      // Assert interactivity via stable elements (section root + badge + textarea).
+      const sectionFirst = authedPage
+        .locator('[data-testid="voz-tono-section-root"]')
+        .first();
       await expect(
         sectionFirst,
         "Section root must remain visible after error (UI no crasheó)",
       ).toBeVisible();
 
-      // The error badge must still be present (graceful error surface, not a crash).
       await expect(
         authedPage.locator('[data-testid="autosave-badge"]').first(),
         "Autosave badge must remain visible (error surfaced gracefully)",
       ).toBeVisible();
 
-      // A voice block textarea must remain editable — proves the page is interactive.
       const voiceTextarea = sectionFirst
         .locator('[data-testid="tone-block-asi-hablo-textarea"]')
         .first();
@@ -264,14 +187,10 @@ authTest.describe("SC-5 — Network failure: badge muestra error (mock route 503
         "Voice block textarea must remain editable after autosave error",
       ).toBeEditable();
 
-      // Error boundary must NOT be visible (graceful error, not a full-page crash).
-      const errorBoundaryVisible = await authedPage
-        .locator('[data-testid="error-boundary-fallback"]')
-        .isVisible();
-      expect(
-        errorBoundaryVisible,
+      await expect(
+        authedPage.locator('[data-testid="error-boundary-fallback"]'),
         "Error boundary must NOT appear for autosave error (only badge)",
-      ).toBe(false);
+      ).toHaveCount(0);
     },
   );
 });

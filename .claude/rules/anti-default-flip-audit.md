@@ -4,7 +4,7 @@
 
 ## Regla cardinal
 
-ANTES de flipear default de feature flag (`USE_*_PATTERN_*`, `LITELLM_PROXY_ENABLED`, `USE_DEEPAGENTS_*`, `ENABLE_*`, etc.) que cambia call path side-effect → **OBLIGATORIO 4 STEPS:** (1) grep tests path viejo cross-codebase, (2) update mocks al path nuevo, (3) run full suite con AMBOS valores flag, (4) documentar commit body con sección `## Tests audited`. Si UNO falla → STOP.
+ANTES de flipear default de feature flag (`USE_*_PATTERN_*`, `USE_DEEPAGENTS_*`, `ENABLE_*`, etc.) que cambia call path side-effect → **OBLIGATORIO 4 STEPS:** (1) grep tests path viejo cross-codebase, (2) update mocks al path nuevo, (3) run full suite con AMBOS valores flag, (4) documentar commit body con sección `## Tests audited`. Si UNO falla → STOP.
 
 ## Inventario flags side-effect (SSoT — actualizar al agregar nuevos)
 

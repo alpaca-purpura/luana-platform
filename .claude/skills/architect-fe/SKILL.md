@@ -2,6 +2,7 @@
 name: architect-fe
 description: "Instruction doc Frontend (NO es agent type spawnable — es contexto que `architect-orchestrator` carga cuando story toca FE). Define qué debe contener la sección FE de 03-arch.md: routes, components FSD-Lite, hooks React Query, Zod schemas, types TS, tests Vitest+Playwright, server-first boundaries. NUNCA invocar como subagent_type — el orchestrator lee este SKILL.md como guidance contextual."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob
+disable-model-invocation: true   # instruction-doc: architect-orchestrator lo LEE por path, no auto-trigger
 ---
 
 # /architect-fe — Frontend instruction doc (contextual guidance for architect-orchestrator)
@@ -13,12 +14,12 @@ allowed-tools: Read, Write, Edit, Bash, Grep, Glob
 ## Skills cargados (HARD GATE)
 
 - `frontend-expert` — FSD-Lite, conventions
-- `tessl__react-patterns` — error boundaries, states, accessibility
-- `tessl__zod` — schemas validation
-- `tessl__shadcn-ui` — primitives reuse
-- `tessl__tailwind` — tokens
-- `tessl__nextjs-app-router-modularization` — Server/Client split
-- `tessl__graceful-degradation` — timeout/fallback fetch
+- React patterns baseline — error boundaries, states, accessibility
+- Zod validation — schemas validation
+- Shadcn UI conventions — primitives reuse
+- Tailwind conventions — tokens
+- Next.js App Router Server/Client split — Server/Client split
+- graceful-degradation (timeout + fallback + circuit breaker) — timeout/fallback fetch
 - Domain skill según módulo (`brand-expert`, `offer-expert`, `copilot-expert`, etc.)
 - `{brand}-design-system` si existe (ej. `vitalia-design-system`) — inventario átomos/moléculas/shell + autoridad de tokens. ★ Además, inclúyelo en `assignment.must_load_skills` de CADA ticket FE de esa brand: es el único canal por el que el `builder-frontend` (sub-agente) recibe el design system. Sin esto se pierde en build (`anti-orphan-integration.md` + `frontend-visual-fidelity.md § D0`).
 
@@ -84,7 +85,7 @@ type FormData = z.infer<typeof schema>;
 **Server vs Client boundaries:**
 - Server default
 - `"use client"` SOLO cuando state/effects/event handlers/browser APIs
-- Page con metadata + interactivity → split per `tessl__nextjs-app-router-modularization`
+- Page con metadata + interactivity → split per Next.js App Router Server/Client split
 
 **Accessibility:**
 - Semantic HTML (`<button>`, `<nav>`, `<main>`)
@@ -116,7 +117,7 @@ type FormData = z.infer<typeof schema>;
 
 Output al orchestrator:
 ```
-done -> docs/product/stories/{story-id}/03-arch-fe.md
+done -> {brand}/docs/product/stories/{story-id}/03-arch-fe.md
 ```
 
 ## Anti-patterns

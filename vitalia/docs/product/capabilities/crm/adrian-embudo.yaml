@@ -1,0 +1,122 @@
+---
+# Capability YAML · schema v3.2 (cement 2026-05-28)
+# SSoT: docs/process/capability-protocol.md § Sec 7-13
+# ADR: vitalia/docs/architecture/ADR-vitalia-005-capability-model-4-dimensions.md
+
+# ----------------------------------------------------------------------------
+# IDENTIDAD
+# ----------------------------------------------------------------------------
+capability_id: vitalia.crm.adrian-embudo
+slug: adrian-embudo
+status: planned                                 # declarado al refined; promueve a live al merge F.3 con scenarios + e2e (cross_check_3 HARD)
+license: brand-local
+
+# ----------------------------------------------------------------------------
+# DIMENSIÓN 1 · TÉCNICA
+# ----------------------------------------------------------------------------
+tech_module: crm
+module: crm                                     # EXTEND del módulo crm shipped (Lead/lead_service/lead_repository + FE crm-shared)
+
+# ----------------------------------------------------------------------------
+# DIMENSIÓN 2 · USER-FACING
+# ----------------------------------------------------------------------------
+agent_owner: adrian
+functional_area: adrian.embudo
+
+# ----------------------------------------------------------------------------
+# DIMENSIÓN 3 · VISIBILIDAD
+# ----------------------------------------------------------------------------
+user_visible: true
+
+# ----------------------------------------------------------------------------
+# DIMENSIÓN 4 · NATURALEZA
+# ----------------------------------------------------------------------------
+nature: feature
+
+user_facing_name: "Embudo de Adrián — pipeline de leads clínicos"
+user_facing_description: >
+  Sub-tab Embudo de Adrián = superficie de supervisión sobre Adrián (empleado-IA
+  que vende). Adrián conversa, califica, puntúa y mueve leads por un funnel clínico
+  dental de 6 etapas (Interesado → Calificando → Consulta agendada → Plan presentado
+  → Reservado=depósito → Decidió no); la coordinadora supervisa (tomar control,
+  instrucción oculta, override de etapa con justificación, recuperación de congelados);
+  Valeria coordina. Tablero Kanban/Lista (solo HOT) + sub-tab hermana "Recuperar"
+  (congelados + diagnose). Detalle del lead = página con URL propia (Resumen·Historial
+  en EntitySubNavBar). Alta de lead = ruta-hoja /nuevo. Lead = non-PHI (marketing prospect).
+
+dev_preview:
+  route: "/[tenantId]/adrian/embudo"
+  how_to_navigate: "Shell → Ribbon Adrián → sub-tab Embudo. Detalle: /adrian/embudo/[leadId]/{resumen|historial}. Alta: /adrian/embudo/nuevo. Recuperar: /adrian/recuperar."
+  main_component: "AdrianEmbudoView (features/crm/components/embudo/) — pendiente build"
+  api_endpoints:
+    - "GET /api/v1/crm/leads (funnel projection)"
+    - "PATCH /api/v1/crm/leads/{id}/stage (override etapa + razón, optimistic lock version)"
+    - "POST /api/v1/crm/leads (alta)"
+  e2e_test: null                                # se cablea en build/auditor; cross_check_3 exige ≥1 para status=live
+  fixtures_required: ["3-clinic-fixture-latam"]
+  storybook_url: null
+  loom_demo: null
+
+# ----------------------------------------------------------------------------
+# LEDGER v2
+# ----------------------------------------------------------------------------
+created_in_story: vitalia-fase2-adrian-embudo
+created_date: 2026-06-03
+last_modified: 2026-06-03   # build 6/8 tickets done (BE+agentic+FE); pending T-E2E-1 + T-DEMO-1 (live-verify)
+package_version: vitalia-fase2-v1.0.0
+package_path: vitalia/backend/src/modules/vitalia/crm/
+
+architecture_pattern: ADR-vitalia-004
+hipaa_lite_overlay: false                       # Lead = non-PHI (crm/domain/lead.py); aplica tenant-isolation + audit, NO full-set hipaa-lite
+
+parent_cap: null
+derives_capabilities: []
+superseded_by: null
+
+change_log:
+  - story_id: vitalia-fase2-adrian-embudo
+    date: 2026-06-03
+    type: new
+    summary: "Embudo de supervisión sobre Adrián: funnel clínico 6 etapas, override manual con justificación que alimenta al agente, auto-freeze por inactividad + Recuperar, página de lead con URL propia, alta ruta-hoja. EXTEND crm + CONSUME sustrato agéntico engine (closer_studio) vía Extension SDK."
+    scenarios_added: []                         # se pueblan al merge F.3 (SC-1..SC-11 + sub-cat del spec § Gherkin)
+    merge_sha: null
+    status: in-progress
+map_box: adrian
+
+---
+
+# Embudo de Adrián — pipeline de leads clínicos
+
+Capacidad brand-local de Vitalia (módulo `crm`, EXTEND) que materializa la sub-tab
+**Embudo** del empleado-IA vendedor (Adrián). Es una **superficie de supervisión**:
+Adrián opera el funnel (califica, puntúa, mueve), la coordinadora supervisa (tomar
+control, instrucción oculta, override de etapa con razón que alimenta al agente,
+recuperación de leads congelados). Valeria coordina.
+
+Sigue ADR-vitalia-004 (shell-feature architecture) + ADR-vitalia-003 (mockup-per-component,
+ratificado `embudo-v3.html`). Lead es **non-PHI** (prospecto de marketing) → tenant-isolation
++ audit log, sin full-set HIPAA-lite.
+
+## Estado
+
+`planned` — declarado al cerrar `refining → refined`; ready package cerrado por
+`/architect` (`refined → ready`, 2026-06-03, `adr_004_compliance: full`, 8 tickets DAG).
+Código + scenarios + e2e + verificación live se pueblan a lo largo del pipeline
+autónomo (`/architect → /dev-team → /auditor`) y se promueve a `live` al merge
+Fase F.3 (con scenarios SC-1..SC-11 verbatim del spec + e2e anchors + dev_app_verified).
+
+## Surface (confirmado por /architect — se materializa al build)
+
+- BE: `vitalia/backend/src/modules/vitalia/crm/` (EXTEND: Lead + lead_service + lead_repository
+  + FunnelService/ScoreService/DiagnoseService + transition con optimistic lock `version`→409 + activity/audit)
+- FE: `vitalia/frontend/src/features/crm/components/embudo/` (NEW) + reuse `crm-shared`/`use-leads`
+  + `EntitySubNavBar` (de doctores) + `ChannelBadge` **EXTEND** (ya existe de adrian-inbox, NO new) + `@dnd-kit/core`
+- Engine: CONSUME `core/luana-core-sales-agent/closer_studio` **read-only** (corre sync con su propia
+  auth — NO mount, NO edit de schema engine). Override-context (RN-4.1) = wire brand-local (event
+  subscriber a sales_agent) que escribe contexto del próximo turno — ticket agentic separado (T-AG-1, Opus R23).
+
+## Referencias
+
+- Story (SSoT funcional): `vitalia/docs/product/stories/vitalia-fase2-adrian-embudo/01-spec.md`
+- ADRs: ADR-vitalia-003 (mockup gate) · ADR-vitalia-004 (shell-feature) · ADR-vitalia-008 (dev-app live-verify)
+- Mockup ratificado: `vitalia/docs/product/stories/vitalia-fase2-adrian-embudo/mockups/embudo-v3.html`

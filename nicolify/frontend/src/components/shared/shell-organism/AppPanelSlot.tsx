@@ -49,8 +49,12 @@ export function AppPanelSlot({ children }: AppPanelSlotProps) {
       {/* N3 SubSubTabsBar — returns null for all R0 routes (AGENT_SUBSUBTABS empty) */}
       <SubSubTabsBar />
 
-      {/* Content area — children from route group pass-through (T-6 fills routing) */}
-      <div className="flex-1 min-h-0 overflow-hidden">
+      {/* Content area — children from route group pass-through (T-6 fills routing).
+          `flex flex-col` is REQUIRED so flex-1 children (e.g. the entity workspace)
+          fill this slot's height → the designed inner overflow-auto scroller actually
+          gets a bounded height and scrolls. Without it the child grows to content
+          height and gets clipped with no scrollbar (Chris demo bug 2026-06-04). */}
+      <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
         {children !== undefined ? (
           children
         ) : (

@@ -1,5 +1,5 @@
 // cap: shell-organism.shell-nicolify
-// story-origin: nicolify-r0-shell T-4
+// story-origin: nicolify-r0-sitemap-completo T-1 (updated defaultSubtab + Sara from nicolify-r0-shell T-4)
 /**
  * agent-catalog.ts — Nicolify canonical 6-agent registry.
  *
@@ -55,7 +55,7 @@ export const AGENT_CATALOG: Record<AgentSlug, AgentDescriptor> = {
     thumbnail: "/agents/abel/avatar.svg",
     initial: "A",
     tabLabel: "Estrategia",
-    defaultSubtab: "marca",
+    defaultSubtab: "icp",
   },
   brenda: {
     slug: "brenda",
@@ -67,7 +67,7 @@ export const AGENT_CATALOG: Record<AgentSlug, AgentDescriptor> = {
     thumbnail: "/agents/brenda/avatar.svg",
     initial: "B",
     tabLabel: "Growth",
-    defaultSubtab: "campanas",
+    defaultSubtab: "contenido-presencia",
   },
   christian: {
     slug: "christian",
@@ -84,14 +84,15 @@ export const AGENT_CATALOG: Record<AgentSlug, AgentDescriptor> = {
   sara: {
     slug: "sara",
     name: "Sara",
+    // Sara deferred (Chris OI-C 2026-06-02 · ADR-nicolify-002 D-D amendment).
     role: "Jefa de proyectos · operación y delivery",
     colorToken: "agent-sara",
     colorSoftToken: "agent-sara-soft",
     hex: "#F59E0B",
     thumbnail: "/agents/sara/avatar.svg",
     initial: "S",
-    tabLabel: "Proyectos",
-    defaultSubtab: "proyectos",
+    tabLabel: "Próximamente",
+    defaultSubtab: "proximamente",
   },
   norvil: {
     slug: "norvil",
@@ -103,7 +104,7 @@ export const AGENT_CATALOG: Record<AgentSlug, AgentDescriptor> = {
     thumbnail: "/agents/norvil/avatar.svg",
     initial: "N",
     tabLabel: "Cuentas",
-    defaultSubtab: "cuentas",
+    defaultSubtab: "cartera",
   },
 };
 

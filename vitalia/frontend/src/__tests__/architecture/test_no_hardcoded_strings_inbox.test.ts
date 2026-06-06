@@ -29,8 +29,8 @@ import { resolve, join, relative } from "path";
 import { readdirSync, statSync } from "fs";
 
 const ROOT = resolve(__dirname, "../../..");
-const INBOX_DIR = join(ROOT, "src", "features", "inbox");
-const COPY_PATH = join(ROOT, "src", "features", "inbox", "copy.ts");
+const INBOX_DIR = join(ROOT, "src", "features", "adrian", "components", "inbox");
+const COPY_PATH = join(ROOT, "src", "features", "adrian", "lib", "copy.ts");
 
 /**
  * Files allowed to have inline copy strings (explicit exceptions with justification).

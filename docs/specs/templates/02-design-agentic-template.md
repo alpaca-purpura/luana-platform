@@ -1,7 +1,7 @@
 # 02-design-agentic.md — Template (UX agéntico)
 
 > Owner: `/ux-agentico`. Diseño del flujo conversacional para agentic-story.
-> Consume `01-spec.md` + skills (`sales-agent-expert`, `copilot-expert`, `tessl__langgraph`, `claude-api`).
+> Consume `01-spec.md` + skills (`sales-agent-expert`, `copilot-expert`, `claude-api`) + LangGraph canonical docs (WebFetch canonical docs URL or `tessl-context` skill if Tessl tiles are installed).
 > Si descubre edge cases nuevos → propone delta-spec, /po ratifica.
 
 ---
@@ -126,9 +126,9 @@ SYSTEM PROMPT (cacheado, slot 1, TTL 1h)
 - **Trial policy** (del story YAML):
   - `trials_per_scenario: 3`
   - `pass_k_threshold: 0.5` (pass^3 >= 0.5 para promotion capability→regression)
-- **Personas a usar** (de `specs/personas/`):
-  - `tenant-novato-tech.yaml` (happy)
-  - `lead-frio-impaciente.yaml` (adversarial)
+- **Personas a usar** (de `specs/personas/archetype-aware/` — ejemplos; elegir las más relevantes al vertical):
+  - `referido-calido-co.yaml` (happy path)
+  - `lead-frio-impaciente-pe.yaml` (adversarial)
 - **Rubrics a aplicar** (de `specs/rubrics/`):
   - `voice-fidelity.md`
   - `no-hallucination.md`
@@ -161,4 +161,4 @@ SYSTEM PROMPT (cacheado, slot 1, TTL 1h)
 
 ## Próximo paso
 
-`→ /architect lee 01+02 → spawn /architect-agentic + (BE si tool nuevo, FE si trigger UI) en paralelo → produce 03-arch-* y 04-tickets.yaml`
+`→ /architect lee 01+02 → spawn /architect-agentic + (BE si tool nuevo, FE si trigger UI) en paralelo → produce 03-arch-* y 06-tickets.yaml`

@@ -1,0 +1,48 @@
+---
+# Release schema (v2 cement 2026-05-27) · Doc: docs/process/release-protocol.md
+release_id: R2
+brand: nicolify
+name: "Christian · Outbound + cierre"
+description: "El alfil de batalla: base de contactos (integra CRMs/import + contactos propios + enrichment), inbox omnicanal (sin pantalla de secuencias), pipeline con lead-routing, equipo comercial (skill-based routing), agenda y propuestas (+licitaciones minería). Habilita el wiring del engine sales_agent + la voz-fundador clonada para conversar 1:1 + seguridad (audit/consent/firma/compliance B2B)."
+status: backlog
+target_date: null
+shipped_date: null
+order: 2
+created_at: 2026-06-02T00:00:00-05:00
+created_by: pm-nicolify
+source_sitemap: nicolify-r0-sitemap-completo
+
+areas:
+  - christian.contactos          # + botón investigar (enrichment)
+  - christian.inbox              # omnicanal, filtrable por canal · sin secuencias
+  - christian.pipeline           # absorbe lead-routing
+  - christian.equipo-comercial   # skill-based routing
+  - christian.agenda
+  - christian.propuestas         # leaves: propuestas + licitaciones (minería)
+  - abel.oferta                  # leaf dossier-mineria (alimenta licitaciones)
+  - infra.engine-wiring          # sales_agent brand-extension
+  - infra.voz-fundador           # extendida: Christian clona para conversar 1:1
+  - infra.seguridad-cumplimiento # audit + consent outbound + firma + compliance B2B
+
+stories: []
+maps_legacy_outcome: null
+maps_legacy_phase: null
+---
+
+# R2 · Christian · Outbound + cierre
+
+> El motor de ventas operativo. Christian prospecta, atiende todo lo que entra (inbox), enruta cada lead al ejecutivo que mejor calza, y cierra con propuestas/licitaciones — hablando por el fundador (voz clonada) cuando hace falta.
+
+## Outcome esperado
+- **Base de contactos:** integra CRMs/sistemas + importa BDs + contactos propios + botón "investigar" (enrichment). El funnel aún-no-cliente (Cuenta+Stakeholder).
+- **Inbox omnicanal:** todos los DMs filtrables por canal (empresa/personal). Recepción pasiva nunca se corta. Responde comentarios personales del fundador. **Sin pantalla de secuencias** (el agente ejecuta el outbound; las respuestas caen acá).
+- **Pipeline + lead-routing:** deals ligados a la Cuenta + decide quién atiende.
+- **Equipo comercial:** carga ejecutivos + perfiles → derivación skill-based.
+- **Agenda** + **Propuestas** (+ Licitaciones minería · vinculadas al dossier de Abel).
+- **Engine sales_agent** cableado + **voz-fundador** clonada (consent + aprobación 1er envío).
+- **Seguridad:** audit de acciones autónomas + consent LinkedIn + firma electrónica eIDAS-like + compliance WABA/opt-in.
+
+## Notas
+- Inbox = réplica de vitalia (ver story `nicolify-r0-sitemap-completo/00-research.md`).
+- Christian es el agente bifronte (copilot + sales_agent).
+- Outbound respeta consent + rate limits + opt-out (rule `agent-revenue-engine.md`).

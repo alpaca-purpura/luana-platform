@@ -17,7 +17,7 @@ Código sin test. Commit con tests rotos. `skip`/`xfail` para pasar CI. Reducir 
 
 ## Default flag flips (origen PI-11 2026-05-04)
 
-Cuando flipeás default de feature flag side-effect (`USE_*_PATTERN_*`, `LITELLM_PROXY_ENABLED`, `USE_DEEPAGENTS_*`, etc.) → TDD NO basta. **OBLIGATORIO** workflow extra:
+Cuando flipeás default de feature flag side-effect (`USE_*_PATTERN_*`, `USE_DEEPAGENTS_*`, etc.) → TDD NO basta. **OBLIGATORIO** workflow extra:
 
 1. Tests pre-flip: grep tests mockean path viejo, listar
 2. Tests RED migración: adaptar tests AL PATH NUEVO antes flip

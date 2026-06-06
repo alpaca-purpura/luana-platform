@@ -151,7 +151,7 @@ Detail: `.claude/rules/git-safety.md` + `.claude/rules/parallel-safety.md` + `.c
 | 8 | TDD obligatorio | `tdd-mandatory.md` |
 | 9 | Debugging | `debugging.md` |
 | 10 | Spanish neutro LatAm | `spanish-text.md` |
-| 11 | PII (`response_model=`) | `@AGENTS.md` → Tessl pii-sanitisation |
+| 11 | PII (`response_model=`) | `pii-sanitisation.md` |
 | 12 | Anti-duplication (cross-brand mirror ban) | `anti-duplication.md` |
 | 13 | Ticket states + checkpoint protocol | `docs/process/{ticket-states,checkpoint-protocol}.md` |
 | 14 | Auditor downstream regression | `auditor-downstream-regression.md` |

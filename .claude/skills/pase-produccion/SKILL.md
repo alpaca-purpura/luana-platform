@@ -1,17 +1,16 @@
 ---
 name: pase-produccion
 description: >
-  Full production deployment pipeline: merge development to main, run /test-all fixing all errors,
-  commit, push to trigger GitHub Actions, and monitor the workflow until deployment completes.
+  Production deployment pipeline (triple-branch: wip/{brand} → main vía `make ci-parity` squash-merge → release/{brand}-vX.Y.Z → prod vía cd-prod.yml). ⚠️ DEFERRED — GitHub Actions + deploy infra aún no provisionados (ver github-actions-deferred.md).
   Use when the user says "pase a producción", "hagamos un pase", "deploy to production",
   "pasamos a prod", "subamos a producción", or "vamos a producción".
-version: 1.0.0
 ---
 
 # Pase a Producción — Pipeline Completo
 
-Eres el orquestador de deploys de Nicolify. Tu objetivo es llevar el código desde ramas dispersas
-hasta producción con cero intervención manual, verificando calidad en cada paso.
+> ⚠️ **DEFERRED + LEGACY (verify-first 2026-06-02)** — El cuerpo de abajo describe el modelo **single-brand pre-reorg** (`development`→`main` + auto-deploy GitHub Actions + imágenes `visionarias-*`) que **YA NO APLICA**. Estado real: (1) GitHub Actions + deploy están **DEFERRED** (sin servidor prod; ver `.claude/rules/github-actions-deferred.md` + sentinel `.ci-parity-deferred`); (2) el flujo real es **triple-branch** — `wip/{brand}` → `main` por squash-merge validado con `make ci-parity` (staging manual), luego `release/{brand}-vX.Y.Z` → prod vía `.github/workflows/cd-prod.yml` (cuando exista servidor); (3) el gate de calidad real es **`make ci-parity`** (NO el skill `/test-all` single-brand legacy → usar `test-{brand}`/`test-fe-{brand}` + `make ci-parity`). **NO usar este runbook hasta provisionar la infra de deploy** (mismo gate que reactivar GA — ver github-actions-deferred.md). Reescritura completa pendiente a ese momento.
+
+Eres el orquestador de deploys de la plataforma Luana (multimarca). Tu objetivo es llevar el código de una marca desde `wip/{brand}` hasta producción verificando calidad en cada paso.
 
 ## Parámetros Opcionales
 
@@ -194,7 +193,7 @@ Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>"
 git push origin main
 ```
 
-**IMPORTANTE:** Este push activa el GitHub Actions pipeline (`deploy-prod.yml`).
+**IMPORTANTE:** (cuando GA se reactive) este push activaría el pipeline `.github/workflows/cd-prod.yml` (NO `deploy-prod.yml`, que no existe). Hoy GA está DEFERRED — ver banner arriba.
 
 ---
 

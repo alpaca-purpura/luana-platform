@@ -41,7 +41,7 @@ function buildLeadsUrl(filters: LeadsFilters): string {
   if (filters.pageSize != null)
     params.set("page_size", String(filters.pageSize));
   const qs = params.toString();
-  return `/api/v1/vitalia/crm/leads${qs ? `?${qs}` : ""}`;
+  return `/api/v1/crm/leads${qs ? `?${qs}` : ""}`;
 }
 
 /**
@@ -59,10 +59,24 @@ export function useLeads(filters: LeadsFilters = {}) {
     queryFn: async () => {
       const token = await getToken();
       if (!token || !tenantId) throw new Error("Not authenticated");
-      return fetchClient<LeadsResponse>(buildLeadsUrl(filters), {
+      // BE (crm LeadListResponse) returns { items, total, limit, offset }.
+      // Adapt to the FE LeadsResponse shape { leads, total, page, page_size }.
+      const res = await fetchClient<{
+        items: Lead[];
+        total: number;
+        limit: number;
+        offset: number;
+      }>(buildLeadsUrl(filters), {
         token,
-        tenantId, clinicId,
+        tenantId,
+        clinicId,
       });
+      return {
+        leads: res.items,
+        total: res.total,
+        page: res.limit > 0 ? Math.floor(res.offset / res.limit) + 1 : 1,
+        page_size: res.limit,
+      } satisfies LeadsResponse;
     },
     enabled: isLoaded && isSignedIn === true,
     staleTime: 30_000,

@@ -1,10 +1,11 @@
-<!-- voseo-allowed: internal skill documentation, not user-facing -->
 ---
 name: handoff
 description: "Genera handoff doc al cierre de session — captura git log + uncommitted + last-checkpoint + bootstrap prompt para próxima session. Delegado a Haiku worker (token-cheap). Origen 2026-05-09 G4 — pattern recurring detectado en report. Activa: '/handoff', 'handoff', 'cierra con handoff', 'genera bootstrap', 'pase de mano'."
 allowed-tools: Read, Bash, Write, Agent
 model: opus
 ---
+
+<!-- voseo-allowed: internal skill documentation, not user-facing -->
 
 # /handoff — Session handoff doc generator
 

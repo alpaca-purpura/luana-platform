@@ -3,8 +3,9 @@
 "use client";
 
 /**
- * useViewportGuard — auto-force valeriaState 'rail' when viewport [768, 1104)
- * + state='full' won't fit (min 1104px required).
+ * useViewportGuard — auto-force valeriaState 'rail' when viewport [1024, 1104)
+ * + state='full' won't fit inline (min 1104px required). Below 1024 (tablet/mobile)
+ * Valeria is a drawer/overlay → this guard is a no-op there (Point 3, 2026-06-04).
  *
  * F1-S4 vitalia-fase1-shell-layout-5050 — T-3
  * Updated vitalia-shell-state-persistence T-4 (D5 formal documentation).
@@ -34,8 +35,16 @@ import { useShellStore } from "@/stores/shell-store";
  */
 export const FULL_STATE_MIN_VIEWPORT = 1104;
 
-/** Mobile breakpoint (Tailwind `md`). Below this, drawer pattern delegates to F1-S5+. */
+/** Mobile breakpoint (Tailwind `md`). */
 export const MOBILE_BREAKPOINT = 768;
+
+/**
+ * Inline-split breakpoint (Tailwind `lg`). At/above this, Valeria renders as an
+ * inline resizable split; below it (tablet + mobile) Valeria is a drawer/overlay
+ * and the agent panel takes full width — so this guard is a no-op there.
+ * vitalia-bugfix-shell-valeria-responsive Point 3 (Chris 2026-06-04).
+ */
+export const INLINE_SPLIT_MIN_VIEWPORT = 1024;
 
 /**
  * useViewportGuard — viewport-aware one-way guard for shell layout.
@@ -58,17 +67,17 @@ export function useViewportGuard(): void {
     const check = (): void => {
       const w = window.innerWidth;
 
-      // No-op: mobile viewport (< 768) — valeriaState is NOT touched here.
-      // D5 (ADR-vitalia-006): mobile drawer open/closed is governed SOLELY by
-      // `mobileDrawerOpen` (independent slice, default false = closed on fresh mount).
-      // This hook has zero role in mobileDrawerOpen — drawer state remembers via
-      // persistence (SC-5b). Burger (TopBarGlobal) opens, close handler closes.
-      if (w < MOBILE_BREAKPOINT) return;
+      // No-op: drawer zone (< lg / 1024) — tablet + mobile. Valeria is NOT inline
+      // here (it renders as a drawer/overlay), so valeriaState is irrelevant to the
+      // inline split and must NOT be touched (Point 3, 2026-06-04). The mobile/tablet
+      // drawer open/closed is governed SOLELY by `mobileDrawerOpen` (independent slice,
+      // D5 ADR-vitalia-006); the burger opens it, the close handler closes it.
+      if (w < INLINE_SPLIT_MIN_VIEWPORT) return;
 
       // No-op: wide desktop — full state fits without clamping
       if (w >= FULL_STATE_MIN_VIEWPORT) return;
 
-      // [768, 1104): one-way force 'full' → 'rail'
+      // [1024, 1104): inline but 'full' won't fit comfortably → one-way force 'full' → 'rail'
       // Read current state fresh each check to avoid stale closure
       const currentState = useShellStore.getState().valeriaState;
       if (currentState === "full") {

@@ -294,6 +294,24 @@ class MarcaService:
 
     # ---------- GET visuals -------------------------------------------------
 
+    @staticmethod
+    def _coerce_visuals(visuals_raw: Any) -> Any:
+        """Normaliza `identity.visuals` a un BrandVisuals para acceso por atributo.
+
+        El engine `BrandIdentity` NO declara `visuals` (atributo dinámico). El brand
+        repo lo PERSISTE y lo RECARGA como **dict** (JSON) → acceder `.primary_color`
+        en un dict da AttributeError 500. Acá unificamos: None → None; dict →
+        BrandVisuals(**dict); objeto → tal cual. Origen: estabilizar-harness-e2e
+        (el fix del PATCH visuals destapó el dict-reload).
+        """
+        if visuals_raw is None:
+            return None
+        if isinstance(visuals_raw, dict):
+            from luana_core_brand_studio.domain.identity import BrandVisuals  # noqa: PLC0415
+
+            return BrandVisuals(**visuals_raw)
+        return visuals_raw
+
     async def get_visuals(self, *, tenant_id: UUID) -> BrandVisualsDTO:
         """Get brand visuals for tenant.
 
@@ -304,7 +322,11 @@ class MarcaService:
             BrandVisualsDTO with colors, fonts, logo_url.
         """
         settings = await self._get_brand_settings(tenant_id)
-        visuals = settings.identity.visuals if settings and settings.identity and settings.identity.visuals else None
+        # El modelo de dominio del engine `BrandIdentity` NO declara `visuals`
+        # (atributo dinámico que puede faltar, o venir como dict tras recargar).
+        # getattr defensivo + coerción dict→BrandVisuals → nunca 500.
+        identity = settings.identity if settings else None
+        visuals = self._coerce_visuals(getattr(identity, "visuals", None)) if identity else None
 
         return BrandVisualsDTO(
             tenant_id=tenant_id,
@@ -346,10 +368,14 @@ class MarcaService:
 
             settings.identity = BrandIdentity()
 
-        if settings.identity.visuals is None:
+        # Normaliza: el atributo puede faltar, ser None, o venir como dict tras
+        # recargar. Coerción → BrandVisuals para poder hacer setattr de los campos.
+        existing_visuals = self._coerce_visuals(getattr(settings.identity, "visuals", None))
+        if existing_visuals is None:
             from luana_core_brand_studio.domain.identity import BrandVisuals  # noqa: PLC0415
 
-            settings.identity.visuals = BrandVisuals()
+            existing_visuals = BrandVisuals()
+        settings.identity.visuals = existing_visuals
 
         patch_data = patch.model_dump(exclude_none=True)
         for field_name, value in patch_data.items():
@@ -994,22 +1020,40 @@ class MarcaService:
         Returns:
             LogoUploadResponseDTO with generated logo_id and placeholder logo_url.
         """
-        import base64  # noqa: PLC0415
+        import io as _io  # noqa: PLC0415
         import uuid as _uuid  # noqa: PLC0415
 
-        logo_id = _uuid.uuid4()
-        # Logo ID stored as reference. Full base64 data URI stub for future S3 upload.
-        # Per 03-arch § 1.3: visual extraction pipeline is proposed (NOT accepted).
-        _ = f"data:image/{ext};base64," + base64.b64encode(content).decode("ascii")  # noqa: F841
+        from luana_core_assets.infrastructure.storage import get_storage_strategy  # noqa: PLC0415
 
-        # Persist to brand settings JSONB
+        # Real storage via the engine StorageStrategy (R2 in staging/prod, Local in dev).
+        # We consume the storage layer DIRECTLY (not AssetsService): a brand logo is
+        # referenced by visuals.logo_url and does NOT need the assets-catalog DB entity
+        # (AssetsService.upload_asset builds an Asset row whose FK assets.offer_id ->
+        # products.id requires the `assets`+`products` tables that vitalia never migrates
+        # -> NoReferencedTableError 500). The storage layer has no DB dependency. The
+        # previous stub discarded the bytes (`logo:{uuid}`); now the bytes are persisted
+        # to object storage and a real public URL is returned + saved.
+        logo_id = _uuid.uuid4()
+        storage = get_storage_strategy()
+        storage_path, logo_url = storage.save(
+            _io.BytesIO(content),
+            f"logo-{logo_id}.{ext}",
+            f"{tenant_id}/logo",
+        )
+
+        # Persist the real public URL to settings.identity.visuals (MISMO lugar que
+        # patch_visuals + get_visuals: visuals viven anidados bajo identity). El stub
+        # viejo escribía settings.visuals top-level, que NO es donde get_visuals lee →
+        # el logo subía pero no aparecía al recargar (bug cazado por el demo de Chris).
         settings = await self._get_brand_settings(tenant_id)
-        if settings is not None:
-            if settings.visuals is None:
+        if settings is not None and settings.identity is not None:
+            existing_visuals = self._coerce_visuals(getattr(settings.identity, "visuals", None))
+            if existing_visuals is None:
                 from luana_core_brand_studio.domain.identity import BrandVisuals  # noqa: PLC0415
 
-                settings.visuals = BrandVisuals()
-            settings.visuals.logo_url = f"logo:{logo_id}"
+                existing_visuals = BrandVisuals()
+            settings.identity.visuals = existing_visuals
+            settings.identity.visuals.logo_url = logo_url
             await self._save_brand_settings(tenant_id, settings)
 
         await self._audit.write(
@@ -1019,7 +1063,12 @@ class MarcaService:
             action="brand_logo_uploaded",
             resource_type="brand_visuals",
             resource_id=tenant_id,
-            payload={"logo_id": str(logo_id), "ext": ext, "size_bytes": size_bytes},
+            payload={
+                "logo_id": str(logo_id),
+                "ext": ext,
+                "size_bytes": size_bytes,
+                "storage_path": storage_path,
+            },
         )
 
         await self._emit_telemetry("lisa_marca_logo_uploaded", tenant_id=tenant_id, user_id=user_id)
@@ -1033,7 +1082,7 @@ class MarcaService:
 
         return LogoUploadResponseDTO(
             logo_id=logo_id,
-            logo_url=f"logo:{logo_id}",
+            logo_url=logo_url,
             size_bytes=size_bytes,
             format=literal_ext,  # type: ignore[arg-type]
         )
@@ -1043,19 +1092,40 @@ class MarcaService:
         *,
         tenant_id: UUID,
         user_id: UUID,
-        logo_id: UUID,
     ) -> None:
-        """Remove logo_url from brand visuals (soft delete — unset field).
+        """Remove the brand logo (soft delete — unset visuals.logo_url + storage cleanup).
+
+        Una marca tiene UN solo logo → no se necesita logo_id; se desreferencia el campo
+        visuals.logo_url y se borra el objeto del storage por tenant.
 
         Args:
             tenant_id: Tenant UUID.
-            user_id: Requesting user UUID.
-            logo_id: Logo UUID to remove.
+            user_id: Requesting user UUID (audit actor).
         """
         settings = await self._get_brand_settings(tenant_id)
-        if settings is not None and settings.visuals is not None:
-            settings.visuals.logo_url = None
-            await self._save_brand_settings(tenant_id, settings)
+        old_url: str | None = None
+        identity = getattr(settings, "identity", None) if settings is not None else None
+        if identity is not None:
+            existing_visuals = self._coerce_visuals(getattr(identity, "visuals", None))
+            if existing_visuals is not None:
+                old_url = existing_visuals.logo_url
+                existing_visuals.logo_url = None
+                identity.visuals = existing_visuals
+                await self._save_brand_settings(tenant_id, settings)
+
+        # Best-effort object-storage cleanup via the engine StorageStrategy (no DB).
+        # Must not block the field unset nor the HIPAA audit write. Derive the storage
+        # key from the stored public URL (strip the configured public base).
+        if old_url:
+            from luana_core_assets.infrastructure.storage import get_storage_strategy  # noqa: PLC0415
+            from luana_core_platform.core.config import settings as _cfg  # noqa: PLC0415
+
+            try:
+                public_base = (_cfg.R2_PUBLIC_URL or "").rstrip("/")
+                key = old_url[len(public_base) + 1 :] if public_base and old_url.startswith(public_base) else old_url
+                get_storage_strategy().delete(key)
+            except Exception as exc:  # noqa: BLE001 — storage cleanup is best-effort
+                logger.warning("brand_logo_storage_delete_failed", tenant_id=str(tenant_id), error=str(exc))
 
         await self._audit.write(
             tenant_id=tenant_id,
@@ -1064,13 +1134,13 @@ class MarcaService:
             action="brand_logo_deleted",
             resource_type="brand_visuals",
             resource_id=tenant_id,
-            payload={"logo_id": str(logo_id)},
+            payload={"logo_url_removed": old_url},
         )
 
         logger.info(
             "brand_logo_deleted",
             tenant_id=str(tenant_id),
-            logo_id=str(logo_id),
+            had_logo=old_url is not None,
         )
 
 

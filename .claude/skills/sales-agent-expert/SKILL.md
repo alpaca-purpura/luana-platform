@@ -9,20 +9,25 @@ Antes de codear: skill + plan + tech-debt-log. Plan: `docs/domains/sales-agent/r
 
 ## §0 — Anti-duplication cardinal (read first)
 
-> Origen: PR-1 PI-1.1 hotfix 2026-05-01. Builder agentic creó `modules/sales_agent/observability/recording/turn_envelope.py` mirror de `modules/copilot/observability/recording/turn_envelope.py` existente. REVERT obligatorio.
+> Origen: PR-1 PI-1.1 hotfix 2026-05-01. Builder agentic creó mirror de `turn_envelope.py` cross-módulo. REVERT obligatorio.
 
-Observability + cost + pricing + channel-format + callback-handler + FX + tenant-billing + PII patterns son **shared abstractions**. Vivien (o deben vivir) en `shared/agent_observability/`.
+Observability + cost + pricing + channel-format + callback-handler + FX + tenant-billing + PII patterns son **shared abstractions**. Viven en `core/luana-core-observability/src/luana_core_observability/` (engine); sales_agent engine en `core/luana-core-sales-agent/src/luana_core_sales_agent/`; brand extensions en `{brand}/backend/src/modules/{brand}/sales_agent/`.
 
-ANTES de crear archivo nuevo en `modules/sales_agent/observability/recording/<X>.py` o `modules/sales_agent/observability/<subsystem>/<X>.py`:
+ANTES de crear archivo nuevo en `{brand}/backend/src/modules/{brand}/sales_agent/observability/<subsystem>/<X>.py`:
 
 1. Consultá inventario canónico: `cat .claude/rules/anti-duplication.md` — buscá tu subsystem en tabla
-2. Grep cross-codebase: `find $(git rev-parse --show-toplevel)/backend/src -name "<basename>.py"` + `grep -rn "class <ClassName>" backend/src/shared/ backend/src/modules/`
-3. Si match en `modules/copilot/<same-path>` o `shared/<subsystem>` → STOP, escalate `/pm`. Tres opciones:
-   - **EXTEND**: heredar desde shared base
-   - **LIFT-TO-SHARED**: subir abstracción a shared, después sales_agent + copilot consumen
+2. Grep cross-codebase:
+   ```bash
+   WS=$(git rev-parse --show-toplevel)
+   find ${WS}/core ${WS}/{nicolify,vitalia,comunify,lupulo}/backend/src -name "<basename>.py" 2>/dev/null
+   grep -rn "class <ClassName>" ${WS}/core/ ${WS}/{nicolify,vitalia,comunify,lupulo}/backend/src/modules/ 2>/dev/null
+   ```
+3. Si match en `core/luana-core-*/` o en brand extension de otra brand → STOP, escalate `/pm-luana`. Tres opciones:
+   - **EXTEND**: heredar desde engine base (`luana_core_observability.*`)
+   - **LIFT-TO-ENGINE**: subir abstracción a `core/luana-core-observability/` vía `/pm-luana` promotion gate
    - **NEW** (último recurso): justificar path:line por qué existing no sirve
 
-NUNCA mirror `turn_envelope.py` / `callback_handler.py` / `cost_calculator.py` / `fx_resolver.py` / similar de copilot a sales_agent. Si copilot lo tiene Y sales_agent lo necesita → la SEGUNDA invocación dispara LIFT-TO-SHARED, no MIRROR.
+NUNCA mirror `turn_envelope.py` / `callback_handler.py` / `cost_calculator.py` / `fx_resolver.py` / similar cross-brand ni cross-módulo. Si el engine lo tiene Y la brand extension lo necesita → consumir vía import `luana_core_observability.*`, no copiar.
 
 ## §3 — NO se toca
 
@@ -55,21 +60,21 @@ Tocar §3 → **PARAR, preguntar al usuario**.
 - ❌ Subagents deepagents.
 - ❌ Hardcodear model wire-name strings en specialists. Usar `LLM_ROLE_BY_SITE` SSoT.
 - ❌ Hardcodear canales literales en `OutputManager`. Usar `get_channel_format(channel_type)`.
-- ❌ Importar `copilot/` desde `sales_agent/` (o viceversa). Ambos consumen `shared/`.
+- ❌ Importar `copilot/` desde `sales_agent/` (o viceversa). Ambos consumen `luana_core_observability` + `luana_core_billing` vía engine imports.
 - ❌ Tocar `PromptVersionModel`.
 - ❌ `from __future__ import annotations` en `*/orchestrator/graph.py` (rompe LangGraph runtime introspection).
 - ❌ Bypass `sanitize_payload` en writes a `*_trace_event` o `*_llm_call`.
 - ❌ Duplicar plumbing del `BaseAgentCallbackHandler` shared. Solo overrides agent-specific.
 - ❌ Bypass channel registry shared. Nuevo canal → `register_channel` en startup.
-- ❌ Crear feature branches/worktrees salvo instrucción explícita. Todo en `development`.
+- ❌ Crear feature branches/worktrees salvo instrucción explícita. Trabajar en el hub canónico `wip/{brand}` (ADR-009).
 - ❌ Aliases DeepSeek retired Jul 24 2026 (`deepseek-chat`, `deepseek-reasoner`). Usar `deepseek-v4-flash` / `deepseek-v4-pro`. Arch ratchet bloquea.
 - ❌ Tier pricing >200k tokens sin resolver. Si LiteLLM declara `input_cost_per_token_above_200k_tokens`, calculator debe split (`TIER_THRESHOLD = 200_000`). Arch ratchet.
 
 ## Decisiones cross-fase no obvias
 
-- **`BaseAgentCallbackHandler` Template Method (S0/S11A)** — subclase implementa solo `_persist_llm_call_row` + `_persist_trace_event_row`. DRY threshold = 2 consumers (sales + copilot).
+- **`BaseAgentCallbackHandler` Template Method (S0/S11A)** — subclase en `luana_core_sales_agent` implementa solo `_persist_llm_call_row` + `_persist_trace_event_row`. DRY threshold = 2 consumers (sales + copilot).
 - **`compose_system_prompt(fragments)` + `CACHE_BOUNDARY_MARKER` (S3)** — slots cacheable cross-tenant → cacheable per-tenant → volatile. Hit rate ≥60% si prefix ≥1024 tokens.
-- **`model_pricing_snapshot` cross-agent en `shared/`** — reference data global. Tier pricing >200k via raw_payload JSONB.
+- **`model_pricing_snapshot` cross-agent en engine** (`core/luana-core-observability/`) — reference data global. Tier pricing >200k via raw_payload JSONB.
 - **Dual-write 4 sem pre-cutover legacy** — reconciliation worker mide drift; cutover prematuro rompe `sales_audit.py` dual-read.
 - **`LLM_ROLE_BY_SITE` superset + `SPECIALIST_TO_ROLE` sub-view** — specialists back-compat; summary + nudge + safety centralizados.
 - **Tenant isolation en CADA query** (incluido `get_by_id`).
@@ -78,23 +83,21 @@ Tocar §3 → **PARAR, preguntar al usuario**.
 - **typing_simulation_cpm (S12)** — registry override per-canal, fallback `CPM_SPEED` cuando None / 0 / negativo.
 - **Voz del agente — voseo del tenant respetado** — `.claude/rules/spanish-text.md` NO aplica al output del agente. Voseo del tenant es feature.
 
-## Surfaces compartidas con copilot (consumers shared/agent_observability)
+## Surfaces compartidas con copilot (consumers luana_core_observability)
 
-Estas abstracciones viven en `shared/` y son consumidas por ambos módulos (sales_agent + copilot). NUNCA duplicar — extender desde shared.
+Estas abstracciones viven en el engine `core/luana-core-observability/src/luana_core_observability/` y son consumidas por el engine sales_agent (`core/luana-core-sales-agent/`) y por las brand extensions. NUNCA duplicar — extender desde engine.
 
-- `shared.agent_observability.recording.base_callback_handler.BaseAgentCallbackHandler` → consumed by `modules/sales_agent/observability/recording/callback_handler.py` (subclase `SalesAgentCallbackHandler`)
-- `shared.agent_observability.recording.turn_envelope.BaseObservabilityContext` → consumed by `modules/sales_agent/observability/recording/turn_envelope.py` (subclase `SalesAgentObservabilityContext`)
-- `shared.agent_observability.cost.fx_resolver.FXResolver` → consumed by `modules/sales_agent/observability/recording/factory.py` + `turn_envelope.py`
-- `shared.agent_observability.pricing.resolver.PricingResolver` → consumed by `modules/sales_agent/observability/recording/factory.py`
-- `shared.agent_observability.persistence.pricing_snapshot_repository.PricingSnapshotRepository` → consumed by `modules/sales_agent/observability/recording/factory.py`
-- `shared.agent_observability.persistence.tenant_billing_config_repository.TenantBillingConfigRepository` → consumed by `modules/sales_agent/observability/recording/factory.py`
-- `shared.agent_observability.persistence.base_trace_event_repo.BaseTraceEventRepoProtocol` → structural protocol, implemented by `modules/sales_agent/observability/persistence/trace_event_repository.py`
-- `shared.agent_observability.persistence.base_llm_call_repo.BaseLLMCallRepoProtocol` → structural protocol, implemented by `modules/sales_agent/observability/persistence/llm_call_repository.py`
-- `shared.agent_observability.channels.format.get_channel_format` + `CHANNEL_FORMATS` → consumed by `infrastructure/external/output_manager.py` + `application/prompts/compose.py`
-- `shared.agent_observability.channels.format_for_channel` (LangChain tool wrapper) → available for specialist use (deterministic, no LLM)
-- `shared.agent_observability.recording.sanitization.sanitize_payload` → consumed by `application/quality/judge.py` + `observability/domain_events/subscribers.py`
-- `shared.agent_observability.registry` → consumed by `modules/sales_agent/observability/__init__.py`
-- `shared.billing.application.llm_guards.BudgetGuardingLLMService` + `budget_guard.BudgetGuard` → consumed by `application/orchestrator/conversation_pipeline.py` + `outbound_orchestrator.py`
+- `luana_core_observability.recording.base_callback_handler.BaseAgentCallbackHandler` → consumed by `luana_core_sales_agent/observability/recording/callback_handler.py` (subclase `SalesAgentCallbackHandler`)
+- `luana_core_observability.recording.turn_envelope.BaseObservabilityContext` → consumed by `luana_core_sales_agent/observability/recording/turn_envelope.py` (subclase `SalesAgentObservabilityContext`)
+- `luana_core_observability.cost.fx_resolver.FXResolver` → consumed by `luana_core_sales_agent/observability/recording/factory.py` + `turn_envelope.py`
+- `luana_core_observability.pricing.resolver.PricingResolver` → consumed by `luana_core_sales_agent/observability/recording/factory.py`
+- `luana_core_observability.persistence.pricing_snapshot_repository.PricingSnapshotRepository` → consumed by `luana_core_sales_agent/observability/recording/factory.py`
+- `luana_core_billing.persistence.tenant_billing_config_repository.TenantBillingConfigRepository` → consumed by `luana_core_sales_agent/observability/recording/factory.py`
+- `luana_core_observability.persistence.base_trace_event_repo.BaseTraceEventRepoProtocol` → structural protocol, implemented by brand extension `{brand}/backend/src/modules/{brand}/sales_agent/persistence/`
+- `luana_core_observability.persistence.base_llm_call_repo.BaseLLMCallRepoProtocol` → structural protocol, implemented by brand extension `{brand}/backend/src/modules/{brand}/sales_agent/persistence/`
+- `luana_core_observability.channels.format_for_channel` (`get_channel_format` + `CHANNEL_FORMATS`) → consumed by engine `infrastructure/external/output_manager.py` + `application/prompts/compose.py`
+- `luana_core_observability.recording.sanitization.sanitize_payload` → consumed by engine `application/quality/judge.py` + `observability/domain_events/subscribers.py`
+- `luana_core_billing.application.llm_guards.BudgetGuardingLLMService` + `budget_guard.BudgetGuard` → consumed by engine `application/orchestrator/conversation_pipeline.py` + `outbound_orchestrator.py`
 
 Ver inventario canónico completo en `.claude/rules/anti-duplication.md`.
 
@@ -104,9 +107,9 @@ Decisiones arquitectónicas que impactan el módulo, ordenadas por fecha. Fuente
 
 - 2026-05-06 — `sales-agent-litellm-canonicalization` cerrado (review → done): LiteLLM es el único path de despacho LLM. Legacy adapters OpenAI/Kimi/DeepSeek directos eliminados en T-4. (`docs/archive/2026/stories/sales-agent-litellm-canonicalization/`)
 - 2026-05-06 — Reframe PI-12 a synthetic-first eval architecture: eval foundation prioriza datos sintéticos de 5 tenants antes de goldens humanos. (`learnings.md 2026-05-06`)
-- 2026-05-05 — `BaseObservabilityContext` + `FXResolver.default()` lifted a `shared/agent_observability/` (commit d80d15f5). Bug #2 + #8 resueltos: sales_agent ahora emite `turn_start` + `turn_end` rows vía `SalesAgentObservabilityContext`.
-- 2026-05-05 — R23 rule: agentic tickets `production_code=true` requieren Opus 4.7; `production_code=false` (tests/docs sobre agentic) → Sonnet OK. (`learnings.md R23`)
-- 2026-05-05 — `builder-backend` MAY touch `modules/{copilot,sales_agent}/persistence/models/` para schema mirror desde shared/ migration (exception codificada en `.claude/rules/backend-ddd.md`). (`learnings.md 2026-05-05`)
+- 2026-05-05 — `BaseObservabilityContext` + `FXResolver.default()` lifted a `core/luana-core-observability/` (commit d80d15f5). Bug #2 + #8 resueltos: sales_agent ahora emite `turn_start` + `turn_end` rows vía `SalesAgentObservabilityContext`.
+- 2026-05-05 — R23 rule: agentic tickets `production_code=true` requieren Opus 4.8; `production_code=false` (tests/docs sobre agentic) → Sonnet OK. (`learnings.md R23`)
+- 2026-05-05 — `builder-backend` MAY touch `{brand}/backend/src/modules/{brand}/{copilot,sales_agent}/persistence/models/` para schema mirror desde engine migration (exception codificada en `.claude/rules/backend-ddd.md`). (`learnings.md 2026-05-05`)
 - 2026-05-02 — Cost recorder LiteLLM canonicalization (commit 5856be4d, T-1 PI-12 S1): `cost_usd` ahora via `pop_cost(litellm_call_id)` desde CustomLogger bridge, no `calculate_cost()` runtime. Test fixtures deben incluir `litellm_call_id` en `response_metadata`.
 - 2026-04-30 — Outbox cutover ON (commit 7b2de359): `USE_OUTBOX_PATTERN_SALES_AGENT=True`. Event emission via `event_bus_adapter.adapter_bus.publish`. Tests deben mockear path nuevo, no `EventBus.publish` legacy.
 - 2026-04-28 — LiteLLM Proxy integration como motor multi-proveedor (commit 06065f6c, S3 PR-2). Antes: adaptadores separados por proveedor. Ahora: proxy unificado.
@@ -119,7 +122,7 @@ Decisiones arquitectónicas que impactan el módulo, ordenadas por fecha. Fuente
 |---|---|
 | Voz del agente | `personality_profiles.system_instruction` → slot 5 cache prefix |
 | Specialist→role | `domain/model_tier.py::SPECIALIST_TO_ROLE` + `LLM_ROLE_BY_SITE` |
-| Channel format | `shared/agent_observability/channels/format.py::CHANNEL_FORMATS` + `get_channel_format` |
+| Channel format | `luana_core_observability.channels.format_for_channel::CHANNEL_FORMATS` + `get_channel_format` |
 | Pricing | `model_pricing_snapshot` + `pricing/aliases.py` + `pricing/resolver.py` |
 | Tools | `application/tools/registry.py` + `STAGE_TOOL_SCOPE` |
 | Routing log | `sales_agent_routing_log` → Streamlit `/sales-routing` (S12) |
@@ -161,11 +164,12 @@ Decisiones arquitectónicas que impactan el módulo, ordenadas por fecha. Fuente
 
 ## Budget + Outbound Gating (PI-1 S0 PR-2)
 
-sales_agent está **subject a 2 gates** del módulo `shared/billing/` + `shared/compliance/` (PI-1 S0 PR-2 — wiring specialists diferido a S2; primitivas expuestas hoy).
+sales_agent está **subject a 2 gates** del engine `core/luana-core-billing/` + `core/luana-core-compliance/` (PI-1 S0 PR-2 — wiring specialists diferido a S2; primitivas expuestas hoy).
 
 ### Gate 1 — `BudgetGuard.check` (LLM cost, SA pool reservado)
 
 ```python
+# from luana_core_billing.application.budget_guard import BudgetGuard
 decision = await budget_guard.check(
     tenant_id=tenant_id,
     agent_kind="sales_agent",       # ← bucket SA (reserved pool)
@@ -188,7 +192,7 @@ if not allowed:
 
 - Sliding window Redis (24h) con cap `plan_config.max_outbound_msg_per_day`.
 - `None` cap → unlimited (subject a budget).
-- Soft-fail: Redis unavailable → fail-open (per `tessl__graceful-degradation`).
+- Soft-fail: Redis unavailable → fail-open (graceful-degradation: timeout + fallback + circuit breaker).
 
 ### Plan defaults (editable Streamlit `/planes-billing` — 1 UPDATE row, 0 migration)
 

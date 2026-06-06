@@ -66,9 +66,15 @@ async function renderVozTonoView(tenantId = "tenant-abc") {
 }
 
 describe("VozTonoView", () => {
-  it("renders section heading 'Voz y tono'", async () => {
+  // coverage_update Bug #3 (vitalia-bugfix-shell-nav-scroll-errors T-6): se removió
+  // el h2-eco "Voz y tono" (duplicaba el SubSubTab activo). Se conserva el AutosaveBadge.
+  it("ya NO renderiza el h2-eco 'Voz y tono' (Bug #3 removido), conserva el AutosaveBadge", async () => {
     await renderVozTonoView();
-    expect(screen.getByRole("heading", { name: /voz y tono/i })).toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: /^voz y tono$/i }),
+    ).toBeNull();
+    // AutosaveBadge (role status) sigue presente.
+    expect(screen.getByRole("status")).toBeInTheDocument();
   });
 
   it("renders ArchetypeSelector section", async () => {

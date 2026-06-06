@@ -1,5 +1,7 @@
 # Process Improvements Investigation 2026-05-05
 
+> ⚠️ HISTORICAL (read-only archaeology) — paths/vocab pre-reorg; los paths `docs/projects/active/` y `/home/chris/` son dead-paths de la arquitectura pre-2026-05-15; las stories viven ahora en `{brand}/docs/product/stories/{id}/`. Las recomendaciones aquí documentadas (R12-R20) forman parte del registro histórico del proceso SDD nivel 3. No editar este archivo — es registro histórico.
+
 > **Origen:** session 2026-05-05 implementing R1-R9 + A0 (context-builder hardening). Chris ratificó investigación adicional 4 áreas (de 10 sugeridas en `process-improvement-handoff-2026-05-05.md`).
 > **Owner próxima sesión:** PM ratifica R12-R20 — decide cuáles implementar PI-13.
 > **Goal:** producir R12+ recomendaciones priorizadas para evolución continua del proceso SDD nivel 3.

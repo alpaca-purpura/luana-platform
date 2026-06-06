@@ -38,7 +38,7 @@ export function useVisualsAutosave({
   tenantId,
   clinicId,
 }: UseVisualsAutosaveOptions): UseVisualsAutosaveReturn {
-  const { getToken } = useAuth();
+  const { getToken, userId } = useAuth();
   const queryClient = useQueryClient();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -49,7 +49,7 @@ export function useVisualsAutosave({
     mutationFn: async (values: ClinicVisualsFormValues) => {
       const token = await getToken();
       if (!token) throw new Error("Not authenticated");
-      return updateVisuals({ token, tenantId, clinicId }, values);
+      return updateVisuals({ token, tenantId, clinicId, userId }, values);
     },
     onMutate: () => {
       setAutosaveStatus("saving");

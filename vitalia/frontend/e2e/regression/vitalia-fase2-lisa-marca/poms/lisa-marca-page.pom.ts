@@ -14,6 +14,7 @@
  * @see 04-validators.yaml § test_construction_plan step 5
  */
 
+import { expect } from "@playwright/test";
 import type { Page, Locator } from "@playwright/test";
 
 export class LisaMarcaPage {
@@ -56,21 +57,22 @@ export class LisaMarcaPage {
     this.page = page;
     this.tenantId = tenantId;
 
-    this.subsubtabsBar = page.locator(
-      '[data-testid="shell-subsubtabs-bar"]',
-    );
+    // Phantom-testid fix (estabilizar-harness-e2e-lisa-marca): los testids reales
+    // del componente SubSubTabsBar son `sub-sub-tabs-bar` + `sub-sub-tab-{id}` (con
+    // aria-current="page" en el activo). Los POMs apuntaban a `shell-subsubtabs-bar`
+    // + `subsubtab-link-{id}` (fantasmas que el mock enmascaraba).
+    this.subsubtabsBar = page.locator('[data-testid="sub-sub-tabs-bar"]');
 
-    this.tabIdentidad = page.locator(
-      '[data-testid="subsubtab-link-identidad"]',
-    );
-    this.tabVozYTono = page.locator(
-      '[data-testid="subsubtab-link-voz-y-tono"]',
-    );
-    this.tabPresencia = page.locator(
-      '[data-testid="subsubtab-link-presencia"]',
-    );
+    this.tabIdentidad = page.locator('[data-testid="sub-sub-tab-identidad"]');
+    this.tabVozYTono = page.locator('[data-testid="sub-sub-tab-voz-y-tono"]');
+    this.tabPresencia = page.locator('[data-testid="sub-sub-tab-presencia"]');
 
-    this.marcaContent = page.locator('[data-testid="lisa-marca-content"]');
+    // Phantom-testid fix (estabilizar-harness-e2e-lisa-marca): el page NUNCA renderizó
+    // `lisa-marca-content` (data-testid fantasma que el mock enmascaraba). El contenido
+    // cargado es el root del subsubtab activo. Unión de los 3 roots reales (web-first).
+    this.marcaContent = page.locator(
+      '[data-testid="identidad-view"], [data-testid="voz-tono-section-root"], [data-testid="presencia-view"]',
+    );
 
     this.autosaveBadge = page.locator('[data-testid="autosave-badge"]');
 
@@ -128,15 +130,33 @@ export class LisaMarcaPage {
 
   /**
    * Returns the currently active sub-sub-tab slug from SubSubTabsBar.
-   * Reads aria-current="page" attribute.
+   * Reads aria-current="page" attribute (ONCE-READ — diagnostics only).
+   *
+   * ⚠️ Para aserciones determinísticas usar `waitForActiveSubsubtab`.
    */
   async getActiveSubsubtab(): Promise<string | null> {
-    const activeTab = this.subsubtabsBar.locator(
-      '[aria-current="page"]',
-    );
+    const activeTab = this.subsubtabsBar.locator('[aria-current="page"]');
     const count = await activeTab.count();
     if (count === 0) return null;
-    return activeTab.first().getAttribute("data-subsubtab");
+    // El id vive en el testid `sub-sub-tab-{id}` (no en un `data-subsubtab`).
+    const testid = await activeTab.first().getAttribute("data-testid");
+    return testid?.replace(/^sub-sub-tab-/, "") ?? null;
+  }
+
+  /**
+   * Web-first wait: asserts the SubSubTabsBar marks the given sub-sub-tab as
+   * active (`data-subsubtab=<slug>` with `aria-current="page"`), re-checking
+   * until met or timeout. Reemplaza el once-read de `getActiveSubsubtab` en las
+   * aserciones (determinismo, RN-3).
+   */
+  async waitForActiveSubsubtab(
+    subsubtab: "identidad" | "voz-y-tono" | "presencia",
+    timeoutMs = 15_000,
+  ): Promise<void> {
+    const activeTab = this.subsubtabsBar.locator(
+      `[data-testid="sub-sub-tab-${subsubtab}"][aria-current="page"]`,
+    );
+    await expect(activeTab).toBeVisible({ timeout: timeoutMs });
   }
 
   /**

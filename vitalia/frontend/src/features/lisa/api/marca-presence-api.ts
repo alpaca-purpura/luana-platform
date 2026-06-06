@@ -98,6 +98,27 @@ interface ApiOpts {
   token: string;
   tenantId: string;
   clinicId?: string | null;
+  /** Clerk userId real — se manda como X-User-ID (actor de audit) en mutaciones. */
+  userId?: string | null;
+  /** Rol vitalia — se manda como X-User-Role (RBAC) en mutaciones. */
+  userRole?: string | null;
+}
+
+/**
+ * Headers de mutación marca (audit actor + RBAC) — mismo contrato honesto que
+ * marca-voice-api::updatePersonality (origin estabilizar-harness-e2e-lisa-marca).
+ * X-User-ID = Clerk userId REAL (el BE lo resuelve a users.id); NO el tenantId.
+ */
+function buildMutationHeaders(opts: ApiOpts): Record<string, string> {
+  if (!opts.userId) {
+    throw new Error(
+      "marca mutation requires an authenticated Clerk userId (X-User-ID audit actor)",
+    );
+  }
+  return {
+    "X-User-ID": opts.userId,
+    "X-User-Role": opts.userRole ?? "owner",
+  };
 }
 
 // ── Contact endpoints ──────────────────────────────────────────────────────────
@@ -112,7 +133,8 @@ export async function updateContact(
 ): Promise<BrandContactResponse> {
   return fetchClient<BrandContactResponse>(`/api/v1/lisa/marca/contact`, {
     ...opts,
-    method: "PUT",
+    method: "PATCH",
+    headers: buildMutationHeaders(opts),
     body: JSON.stringify(payload),
   });
 }

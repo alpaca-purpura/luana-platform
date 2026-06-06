@@ -22,7 +22,7 @@ import {
   appendConversationEntry,
 } from '@/lib/chris-input-parser';
 import { writeFileAtomic } from '@/lib/fs-writer';
-import { storiesPath, archivePath, getBrands } from '@/lib/workspace';
+import { storiesPath, archiveRootPath, getBrands, getSelectableBrands } from '@/lib/workspace';
 import type { ChrisInput, ConvEntry, Note, Ref, RefType } from '@/lib/types';
 
 const NoteEntrySchema = z.object({
@@ -60,7 +60,7 @@ function nowTimestamp(): string {
 async function findChrisInputPath(brand: string, storyId: string): Promise<string | null> {
   const candidates: string[] = [path.join(storiesPath(brand), storyId, 'chris-input.md')];
 
-  const archiveRoot = path.dirname(archivePath(brand, '0000'));
+  const archiveRoot = archiveRootPath(brand); // = archive/ (NO path.dirname(archivePath) → archive/{year} bug)
   try {
     const years = await readdir(archiveRoot, { withFileTypes: true });
     for (const y of years) {
@@ -95,7 +95,7 @@ export async function GET(
   const { storyId } = await context.params;
   const brand = req.nextUrl.searchParams.get('brand');
   if (!brand) return errorResponse('query param "brand" requerido', 400);
-  if (!getBrands().includes(brand)) {
+  if (!getSelectableBrands().includes(brand)) {
     return errorResponse(`brand desconocida: ${brand}`, 400);
   }
 

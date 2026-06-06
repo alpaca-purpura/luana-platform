@@ -3,6 +3,8 @@
 > Owner: `/pm`. NUNCA editar entries históricas. Solo append.
 > Cada incident / decisión cardinal / surprise / case study agrega entry.
 
+> **TOMBSTONE 2026-06-02:** entradas pre-reorg conservan vocab/model-IDs de su época (outcome/atomics/PI/qwen/Opus 4.7/04-tickets — append-only); doctrina vigente: `CLAUDE.md`.
+
 ---
 
 ## 2026-05-04 — Migración a SDD Level 3 / Spec-Driven Harness
@@ -1207,6 +1209,36 @@ Cuando bootstrapees brand nueva:
 **Referencias:**
 - `docs/process/lifecycle.md` — SSoT del modelo + roadmap 7 fases + punch-list
 - Análisis origen: conversación 2026-05-28 (4 agentes exploración: skills, cockpit, protocolos, ground-truth disco)
+
+---
+
+## 2026-06-02 — Una user-story NO debe ser SSoT → graduar el conocimiento durable a arquitectura al cerrar
+
+**promotable: yes** (doctrina de proceso cross-brand · ratificada Chris)
+
+**Contexto:** Al cerrar el deliverable durable-flows **L1** (proposal `2026-06-02-durable-flows-engine`, item 1b del programa empleados-IA), el HANDOFF instruía "archive R2 la story `empleados-ia-auto-extension` a `docs/archive/`". Pero al inspeccionar, esa "story" era el **paraguas-SSoT** de toda la visión empleados-IA: su `00-research.md` era el SSoT de investigación, su `03-arch.md § L2` el SSoT del diseño L2, y **`ADR-013` literalmente apuntaba su "detalle/investigación" a un archivo DENTRO de la story folder**. El outcome del programa tenía items 1c/2/3/4/5 abiertos → archivar el folder habría dejado el SSoT vivo inmutable + huérfano. Chris zanjó: *"una historia de usuario no debería ser SSoT … archivar el story y hacer una copia y dejar como SSoT lo que sea necesario, como documento de arquitectura o lo que recomiendes"*.
+
+**Decisión cementada:** una **user-story es efímera** (registro de ejecución; se archiva al cerrar, R2). El **conocimiento durable** que sobrevive a la story (investigación, visión, diseño de un motor/contrato que futuras stories consumen) **NO vive en la story** — se **gradúa a un hogar SSoT propio** al cerrar:
+- Investigación/visión de un programa → `docs/architecture/luana-platform/{slug}-research.md` (o ADR si es decisión).
+- Diseño de un motor/contrato reutilizable (ej. L2 compositor) → `docs/architecture/luana-platform/{slug}-design.md`.
+- Contrato de un core package → `docs/core-modules/{pkg}.md` + `CHANGELOG.md`.
+- El **roadmap del programa** (secuencia de deliverables cross-story) NO va en la story. ⚠️ **Gap abierto:** hoy se usa un `docs/product/outcomes/*.md`, pero los `outcome` fueron deprecados en la consolidación 4-ejes 2026-05-28 (Release→Story→Capability→Scenario es **brand-scoped**; no hay contenedor para un **programa platform multi-story cross-brand**). **Pendiente /pm-luana:** definir el hogar canónico del roadmap de un programa platform (¿revivir `outcome` solo a nivel platform? ¿un `program.md` nuevo? ¿una sección en el ADR?). Mientras tanto el outcome cumple ese rol de facto.
+
+**Aplicado a empleados-IA (2026-06-02):** story archivada a `docs/archive/2026/stories/empleados-ia-auto-extension/`; SSoT graduado a `docs/architecture/luana-platform/{empleados-ia-research.md, durable-flows-L2-design.md}`; `ADR-013`/`PARADIGM §5b`/proposal/`docs/core-modules/flows.md` repointeados a los hogares de arquitectura; el outcome conserva el roadmap (con el gap arriba flaggeado).
+
+**How to apply (forward · /pm-{brand} + /pm-luana al cerrar una story):** antes de `git mv` a archive, preguntá *"¿algún artefacto de esta story es SSoT que otra story/ADR/ruleconsume?"*. Si sí → **graduarlo a un hogar durable** (architecture/core-modules/ADR) + repointar TODAS las referencias vivas ANTES de archivar (grep `product/stories/{id}` en `docs/` no-archive = 0 tras el cierre). Una story `done` no debe quedar como destino de ningún pointer vivo de SSoT. Señal de alarma: un ADR/PARADIGM/rule que cita `docs/product/stories/.../*.md` como "detalle/SSoT" → ese contenido está mal-homed, gradualo.
+
+**Anti-patterns:**
+- ❌ Archivar una story cuyo `00-research`/`03-arch §X` es citado como SSoT por un ADR/rule/proposal vivo (deja el SSoT inmutable + huérfano).
+- ❌ Dejar que un ADR apunte "detalle/investigación" a un archivo dentro de una story folder (la story es efímera; el ADR es durable).
+- ❌ Confundir "deliverable cerrado" con "programa cerrado": un item de un programa platform (item 1b) puede estar `done` sin que el programa (items 2-5) lo esté → no flipear toda la story a `done`/archive por un solo deliverable, salvo que ese deliverable graduó su SSoT y la story ya no es hogar de nada vivo.
+
+**Referencias:**
+- Caso origen: `docs/archive/2026/stories/empleados-ia-auto-extension/` (archivada) + commits `f6c8e5e5` (archive+graduación) + `d9f1fcb9` (close L1).
+- SSoT graduados: `docs/architecture/luana-platform/{empleados-ia-research.md, durable-flows-L2-design.md}`.
+- `.claude/rules/brand-docs-schema.md` § R2 (archive al cerrar) — esta doctrina la EXTIENDE (graduar SSoT ANTES de archivar).
+- `docs/process/lifecycle.md` (4-ejes brand-scoped) — el gap "contenedor de programa platform" se resuelve acá o en una rule nueva.
+- MEMORY: `[[user-story-no-es-ssot]]` · `[[luana-empleados-ia-vision]]`.
 
 ---
 

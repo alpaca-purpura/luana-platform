@@ -63,7 +63,7 @@ Los 3 niveles de tab (SSoT: `vitalia/docs/architecture/SHELL-DESIGN-CONTRACT.md`
 - **TopBar global**: `TopBarGlobal.tsx` + `LogoMark.tsx` + `TenantSwitcher.tsx`/`TenantBadge.tsx`/`TenantOption.tsx` + `ThemeToggle.tsx`/`ShellModeToggle.tsx`.
 - **Layout**: `ShellOrganismLayout.tsx` (splitter resizable, NO 50/50 hardcoded).
 
-**Routing** (SSoT: `vitalia/frontend/src/lib/routing/shell-routes.ts` → `AGENT_CATALOG` + `AGENT_SUBTABS` + `AGENT_SUBSUBTABS`):
+**Routing** (SSoT: `vitalia/frontend/src/lib/shell-routes.ts` → `AGENT_CATALOG` + `AGENT_SUBTABS` + `AGENT_SUBSUBTABS`):
 ```
 app/[tenantId]/(shell-organism)/[agent]/[subtab]/[subsubtab]/page.tsx
 ```
@@ -122,6 +122,6 @@ UI que muestra PHI → `PiiMaskedSpan` + `RequireRole` (roles `doctor`/`nurse`/`
 - `vitalia/docs/architecture/SHELL-DESIGN-CONTRACT.md` — atomic design + inventario + routing + testing (665 líneas)
 - `vitalia/docs/architecture/SYSTEM-MAP.yaml` — mapa del sistema
 - `vitalia/frontend/src/app/globals.css` + `tailwind.config.ts` — tokens vivos (SSoT runtime)
-- `vitalia/frontend/src/lib/routing/shell-routes.ts` — catálogo agentes/subtabs/subsubtabs
+- `vitalia/frontend/src/lib/shell-routes.ts` — catálogo agentes/subtabs/subsubtabs
 - `vitalia/.claude/rules/{shell-mockup-per-component,shell-feature-architecture-mandatory,hipaa-lite}.md`
 - `.claude/rules/frontend-visual-fidelity.md` (regla 34) · `.claude/rules/frontend-fsd.md` · `.claude/rules/anti-duplication.md`

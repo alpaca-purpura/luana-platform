@@ -12,13 +12,15 @@
 
 ### Punto 1 — Ready package + autonomous build (CERRADO 2026-05-05)
 
+> [SUPERSEDED por Punto 4] — La tabla de 7 estados y el vocabulario de este punto están reemplazados por los **10 estados macro** del Punto 4 (idea/refining/refined/ready/developing/developed/reviewing/done/parked/dropped). Mantener como audit trail histórico. NO usar como referencia operativa.
+
 **7 estados macro vocabulary unificado cross-nivel (idea/epic/story/capability):**
 
 | Estado | Significado | Trigger entry | Owner |
 |---|---|---|---|
 | `idea` | Spark crudo, no validado | Chris tira | Chris + `/pm` |
 | `validated` | Problem worth solving (OST aplicado) | `/pm` confirma | `/pm` + Chris |
-| `ready` | Paquete autocontenido completo para autonomous build | `/architect` cierra | `/architect` Sonnet |
+| `ready` | Paquete autocontenido completo para autonomous build | `/architect` cierra | `/architect` Opus |
 | `building` | Autonomous loop opencode + Sonnet iterando | opencode pickup | opencode |
 | `done` | Merged a development + scenarios migrados a capability | `/auditor` APPROVED | `/auditor` |
 | `parked` | De-prioritized, NO abandonado | manual | Chris |
@@ -27,7 +29,7 @@
 **`ready` = paquete autocontenido = 5 archivos:**
 
 ```
-docs/product/stories/{story-id}/
+{brand}/docs/product/stories/{story-id}/
 ├── 01-spec.md              # /po-ux fusión: Gherkin + wireframes inline (UI std)
 ├── 03-arch.md              # /architect: technical design
 ├── 04-validators.yaml      # ★ CRITICAL ★ tests ejecutables, must_pass:true cada uno
@@ -260,7 +262,7 @@ idea ─→ refining ─→ refined ─→ ready ─→ developing ─→ develo
 
 **Caps cambian:** sumando 3 estados nuevos, total WIP discovery+refinement+development capabilities sigue limitado pero distribuido más finamente. `idea` sin cap (capturar libre); `refining` ≤ 3 (focus deep work); `refined` ≤ 5 (queue para architects); `ready` ≤ 5 (queue para devs); `developing` ≤ 1 por worktree (forward motion); `developed` ≤ 1 por worktree (pending audit — no acumular, fix gap caso vitalia 2026-05-18); `reviewing` ≤ 1 por worktree (auditor en curso).
 
-**★ Update 2026-05-18 (story closure gate):** `developed ≤ 10` (cap original) era el incentivo perverso que permitió el caso vitalia (2 stories abiertas simultáneamente en worktree `wip/vitalia-slice-1-shipping`). Post-decreto el cap es **≤ 1 por worktree** con escape valve explícita `checkpoint.md::defer_audit: true` ratificada Chris. SSoT cambio: `.claude/rules/story-closure-gate.md` + `docs/process/story-closure-gate.md` + ADR-005.
+**★ Update 2026-05-18 (story closure gate):** `developed ≤ 10` (cap original) era el incentivo perverso que permitió el caso vitalia (2 stories abiertas simultáneamente en worktree `wip/vitalia-slice-1-shipping`). Post-decreto el cap es **≤ 1 por worktree** con escape valve explícita `checkpoint.md::defer_audit: true` ratificada Chris. SSoT cambio: `.claude/rules/story-closure-gate.md` + `docs/process/story-closure-gate.md` + ADR-006.
 
 #### Gates de transición
 
@@ -278,12 +280,12 @@ idea ─→ refining ─→ refined ─→ ready ─→ developing ─→ develo
 
 | Phase | Modelo | Razón |
 |---|---|---|
-| `idea`/`refining` (research, decomposition, decisión coherencia) | **Opus 4.7** | Pensamiento estratégico, alto valor, baja frecuencia |
-| `/po-ux` + `/po` + `/ux-agentico` (specs + designs) | **Opus 4.7** | Calidad spec define todo downstream |
-| `/architect` orchestrator + sub-architects | **Opus 4.7** | Decisiones arquitectónicas, ROI altísimo |
+| `idea`/`refining` (research, decomposition, decisión coherencia) | **Opus 4.8** | Pensamiento estratégico, alto valor, baja frecuencia |
+| `/po-ux` + `/po` + `/ux-agentico` (specs + designs) | **Opus 4.8** | Calidad spec define todo downstream |
+| `/architect` orchestrator + sub-architects | **Opus 4.8** | Decisiones arquitectónicas, ROI altísimo |
 | `/dev-team` BE/FE no-agentic | **Sonnet/opencode** | Ejecución contra validators, barato |
-| `/dev-team` agentic production code (R23 hard rule) | **Opus 4.7** | Calidad agentic = experiencia usuario directa |
-| `/auditor` categorías críticas (C1 código + C2 spec + C3 arch) | **Opus 4.7** | Juicio cualitativo |
+| `/dev-team` agentic production code (R23 hard rule) | **Opus 4.8** | Calidad agentic = experiencia usuario directa |
+| `/auditor` categorías críticas (C1 código + C2 spec + C3 arch) | **Opus 4.8** | Juicio cualitativo |
 | `/auditor` tests/lint/format runs | **Sonnet** | Determinístico, barato |
 | `gate-runner` ejecutor `make ci-parity` etc. | **Haiku** | Solo ejecuta + parsea JSON |
 | `context-builder` lecturas previas | **Haiku** | Solo agrega contexto |
@@ -320,7 +322,7 @@ idea ─→ refining ─→ refined ─→ ready ─→ developing ─→ develo
 #### Artefactos por estado (template carpeta canónico)
 
 ```
-docs/product/stories/{story-id}/
+{brand}/docs/product/stories/{story-id}/
 ├── checkpoint.md                       # state machine vivo (todo estado)
 ├── 00-research.md                      # estado=idea (OPCIONAL — research deep, competitive analysis, mockups HTML)
 ├── 00-story.md                         # estado=refining (brief decomposed)

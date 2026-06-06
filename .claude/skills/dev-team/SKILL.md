@@ -1,6 +1,7 @@
 ---
 name: dev-team
-description: "Developer team router v4 (Conv 2 — autonomous build, post pm-redesign 2026-05 Punto 4 + story-closure-gate 2026-05-18). Reads ready package (01-spec.md + 03-arch.md + 04-validators.yaml + 05-guidelines.md + 06-tickets.yaml) en {brand}/docs/product/stories/{story-id}/ state=ready. Itera ticket-por-ticket: implement → run validators (4 categorías: non_functional/functional/visual/agentic_eval) → fix targeted file → repeat hasta GREEN o cap_reached. Decide owner según owner_eligibility + production_code flag (R23). qwen-opencode/Sonnet preferido para BE/FE no-agentic + tests/docs sobre agentic. Opus 4.7 obligatorio para AGENTIC production code. Mantiene T-{n}-impl-log.md vivo. TDD obligatorio. On pickup: state=ready→developing. On all GREEN all tickets: state=developing→developed + AUTO-HANDOFF /auditor (default, salvo defer_audit:true en checkpoint con razón documentada). REFUSE pickup nueva story si current worktree tiene story en state ∈ {developing, developed, reviewing} sin defer_audit. On cap reached: state=developing→blocked, escalate. Activa cuando user dice: '/dev-team', 'toma ticket T-N', 'implementa T-N', 'arranca build', 'autonomous build'."
+description: "Developer team router v4 (Conv 2 autonomous build) — lee ready package, itera ticket-por-ticket implement→validators→fix hasta GREEN, decide owner (R23, Opus obligatorio para agentic prod), TDD, mantiene impl-log, ready→developing→developed + auto-handoff /auditor."
+when_to_use: "Activa cuando user dice: '/dev-team', 'toma ticket T-N', 'implementa T-N', 'arranca build', 'autonomous build'."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
 model: opus
 ---
@@ -8,7 +9,7 @@ model: opus
 
 # /dev-team — Developer Team Router (Conv 2 autonomous build)
 
-> Owner: `T-{n}-impl-log.md` + `T-{n}-result.md` en `{brand}/docs/product/stories/{story-id}/`. Toma 1 ticket → ejecuta TDD + iteración contra `04-validators.yaml` → push. On pickup: state=ready→developing. On GREEN all tickets → state=developing→developed + **AUTO-HANDOFF a `/auditor`** (default post 2026-05-18 — story-closure-gate). Escape valve explícita: `checkpoint.md::defer_audit: true` con razón documentada + ratificación Chris. **REFUSE pickup si otra story DEL MISMO MÓDULO está en state ∈ {developing, developed, reviewing} sin `defer_audit: true`** (defense-in-depth Layer 2 del story-closure-gate, ★ v2 module-scoped post ADR-009: stories de OTROS módulos developing en paralelo sobre el mismo hub = OK). Build-claim: Step 0 hace `session-lock.sh acquire code:{module}` → cockpit pinta 🔨 lane.
+> Owner: `T-{n}-impl-log.md` + `T-{n}-result.md` en `{brand}/docs/product/stories/{story-id}/`. Toma 1 ticket → ejecuta TDD + iteración contra `04-validators.yaml` → push. On pickup: state=ready→developing. On GREEN all tickets → state=developing→developed. **★ proceso v5:** default = **PAUSA en G (Chris-verify)** `phase: AWAIT_CHRIS_VERIFY` (NO auto-handoff); `autonomous_mode: true` → corre a `/auditor` sin pausa (story-closure-gate Fase G). Escape valve: `checkpoint.md::defer_audit: true` (razón + Chris). **REFUSE pickup si otra story DEL MISMO MÓDULO está en state ∈ {developing, developed, reviewing} sin `defer_audit: true` NI `phase: AWAIT_CHRIS_VERIFY`** (story en G no bloquea — exención WIP-cap; defense-in-depth Layer 2, ★ v2 module-scoped post ADR-009: stories de OTROS módulos developing en paralelo = OK). Build-claim: Step 0 hace `session-lock.sh acquire code:{module}` → cockpit pinta 🔨 lane.
 
 ## REQUIRED first input: `<brand>`
 
@@ -61,13 +62,17 @@ MODULE=${MODULE:-_nomodule}
 
 # (b) Gate module-scoped: bloquea SOLO si otra story del MISMO módulo está abierta
 #     sin defer_audit (cross-módulo concurrente = permitido bajo hub único).
+#     ★ proceso v5: phase AWAIT_CHRIS_VERIFY (story en G esperando a Chris) NO bloquea
+#     — si no, una story en verify deadlockea otra del mismo módulo (story-closure-gate).
 for cp in ${WS}/${BRAND}/docs/product/stories/*/checkpoint.md; do
   OTHER_ID=$(basename $(dirname $cp))
   [[ "$OTHER_ID" == "{story-id}" ]] && continue
   OTHER_MOD=$(grep -E "^module:" $cp | head -1 | awk '{print $2}')
   STATE=$(grep -E "^state:" $cp | head -1 | awk '{print $2}')
   DEFER=$(grep -E "^defer_audit:" $cp 2>/dev/null | awk '{print $2}')
-  if [[ "$OTHER_MOD" == "$MODULE" ]] && [[ "$STATE" =~ ^(developing|developed|reviewing)$ ]] && [[ "$DEFER" != "true" ]]; then
+  PHASE=$(grep -E "^phase:" $cp 2>/dev/null | head -1 | awk '{print $2}')
+  if [[ "$OTHER_MOD" == "$MODULE" ]] && [[ "$STATE" =~ ^(developing|developed|reviewing)$ ]] \
+     && [[ "$DEFER" != "true" ]] && [[ "$PHASE" != "AWAIT_CHRIS_VERIFY" ]]; then
     echo "BLOCK: story $OTHER_ID (módulo $MODULE) en state=$STATE sin defer_audit"
   fi
 done
@@ -192,11 +197,11 @@ Filtrar tickets con `state: ready` (deps cumplidas). Decidir owner según `owner
 | Cross-module shared | true | claude-sonnet o opus | complexity |
 
 **Reglas hard:**
-- AGENTIC ticket + `production_code: true` → SIEMPRE Opus 4.7. Esto se ejecuta en MISMA sesión Claude Code (tú como `/dev-team` con Opus).
+- AGENTIC ticket + `production_code: true` → SIEMPRE Opus 4.8. Esto se ejecuta en MISMA sesión Claude Code (tú como `/dev-team` con Opus).
 - AGENTIC ticket + `production_code: false` → Sonnet OK. Tests/docs/tooling
   sobre `modules/{copilot,sales_agent}/` no requieren Opus reasoning.
 - Si no estás en Opus y ticket=AGENTIC + production_code=true → STOP, escala
-  Chris: "necesito Opus 4.7 para este ticket. Cambiame de modelo."
+  Chris: "necesito Opus 4.8 para este ticket. Cambiame de modelo."
 
 Update `06-tickets.yaml` ticket `T-{n}`:
 ```yaml
@@ -277,7 +282,7 @@ Lee TAMBIÉN estos archivos del READY PACKAGE (si brief insuficiente):
 - .claude/rules/anti-duplication.md
 - .claude/rules/spanish-text.md
 - .claude/rules/auditor-self-fix-policy.md (saber qué auditor self-fix vs spawn dev-team)
-- tessl__fastapi (si BE endpoint nuevo)
+- FastAPI canonical patterns (si BE endpoint nuevo)
 - ... (extractar verbatim según ticket surface + module)
 
 AUTONOMOUS LOOP:
@@ -349,7 +354,7 @@ Mientras qwen trabaja → tú NO interfieres. Cuando termina:
 
 ### Step 2B — Owner = claude-opus (AGENTIC production code)
 
-Spawnás agent `builder-agentic` (Opus 4.7) via Agent tool. REQUIRED: pasá `<brand>: {brand}` en prompt.
+Spawnás agent `builder-agentic` (Opus 4.8) via Agent tool. REQUIRED: pasá `<brand>: {brand}` en prompt.
 
 ```
 Agent({
@@ -359,7 +364,7 @@ Agent({
            <pr_folder>: {brand}/docs/product/stories/{story-id}/
            PRIORITY READ: {brand}/docs/product/stories/{story-id}/CONTEXT-BRIEF.md (Haiku-built, 5-8k tokens compresses spec+arch+rules+anti-dup+canonical docs)
            READY PACKAGE (todos bajo {brand}/docs/product/stories/{story-id}/): 01-spec.md + 02-design-agentic.md + 03-arch.md (★ v4.1: incluye § Test Construction Plan) + 03-arch-agentic.md + 04-validators.yaml (★ v4.1: 5 categorías + test_construction_plan + scenario_coverage sub-categorías) + 05-guidelines.md (★ v4.1: must_load_skills enforceable) + 06-tickets.yaml (gherkin_coverage por ticket)
-           ★ MUST_LOAD SKILLS (v4.1 enforceable): <list extracted from 05-guidelines.md § must_load_skills resolved per ticket surface — typical agentic: copilot-expert/sales-agent-expert + tessl__langgraph + claude-api + graceful-degradation + auditor-self-fix-policy.md + tenant-isolation.md + spanish-text.md>
+           ★ MUST_LOAD SKILLS (v4.1 enforceable): <list extracted from 05-guidelines.md § must_load_skills resolved per ticket surface — typical agentic: copilot-expert/sales-agent-expert + LangGraph canonical docs + claude-api + graceful-degradation (timeout+fallback+circuit breaker) + auditor-self-fix-policy.md + tenant-isolation.md + spanish-text.md>
            ★ MUST DELIVER in T-{n}-result.md: sección "Skills consulted (must_load enforcement v4.1)" con tabla skill/rule + status + when. Auditor flag CHANGES_REQUESTED si missing.
            Surface scope: SOLO {brand}/backend/src/modules/{brand}/{copilot,sales_agent}/{tools,extractors,workflows,personas,goldens,kb}/ (brand-extension). NUNCA core/luana-core-*/src/ (engine — requires /pm-luana lift).
            AUTONOMOUS LOOP: implement → run validators (acceptance.validator_ids) → fix → repeat hasta GREEN o cap_reached
@@ -483,6 +488,60 @@ Si Phase D local detecta gap → `/dev-team` REFUSE auto-handoff. Update `T-{n}-
 
 **Justificación:** auditor Phase D antes detectaba gaps post-handoff → CHANGES_REQUESTED round-trip. Pre-check local en dev-team cierra el loop sin desperdiciar audit cycle Opus.
 
+### ★ Step 4.5b — Ledger de cobertura vivo: PRODUCTOR (proceso v5 §5.2)
+
+`/dev-team` es el **productor** que mantiene VIVA la columna `estado` de la `§ Matriz de cobertura` (`01-spec.md`). Cada vez que un ticket construye el comportamiento de un `Bif-N`/`RN-N`/`AC-N`, dev-team marca ese ítem `✅ construido` (con su test/ruta) en la matriz. Sin este paso el ledger nace en `refined` y llega STALE a G (Chris leería una foto vieja).
+
+- Ítem construido → `✅ construido` + test/ruta en la celda.
+- Ítem que NO se construirá en esta story → se deja `⬜ pendiente` (en G se decide `⏳ ahora` o `→ historia {id}`).
+- **PISO HARD:** si `cap_change_type: new`, los ítems del **happy path** DEBEN quedar `✅` antes de cerrar `developed` — el core no se difiere (REFUSE si un happy-path queda `⬜`/`→historia`).
+
+## Step 4.6 — Gate live-verify (Critical Rule #37) — BLOQUEANTE antes de developed
+
+> Mismo rango imperativo que el Phase D local de gherkin. Si falla → NO se escribe `state: developed` y NO se emite el auto-handoff a `/auditor`.
+
+```bash
+WS=$(git rev-parse --show-toplevel)
+STORY_DIR=${WS}/{brand}/docs/product/stories/{story-id}
+
+NATURE=$(grep -E "^verification_nature:" ${STORY_DIR}/04-validators.yaml 2>/dev/null | head -1 | awk '{print $2}')
+DEMO_REQ=$(grep -E "^demo_required:" ${STORY_DIR}/04-validators.yaml 2>/dev/null | head -1 | awk '{print $2}')
+
+# Auto-skip para stories puramente técnicas (sin UI ni superficie user-reachable)
+if [[ "$NATURE" == "técnica" && "$DEMO_REQ" != "true" ]]; then
+  echo "✅ Live-verify gate auto-skip: verification_nature=técnica, demo_required=false"
+  # Registrar la razón en checkpoint si aún no está
+  grep -q "dod_live_verified_skip_reason:" ${STORY_DIR}/checkpoint.md || \
+    echo "  (agregar dod_live_verified_skip_reason en checkpoint.md antes del handoff)"
+else
+  # GATE DURO — verificar los 3 requisitos en checkpoint.md
+  DOD_FLAG=$(grep -E "^dod_live_verified:" ${STORY_DIR}/checkpoint.md 2>/dev/null | awk '{print $2}')
+  DOD_EVIDENCE=$(grep -A 2 "^dod_evidence:" ${STORY_DIR}/checkpoint.md 2>/dev/null | grep -c "action:")
+  DEMO_SCRIPT=$(ls ${STORY_DIR}/demo-script.md 2>/dev/null | wc -l)
+
+  GATE_OK=true
+  [[ "$DOD_FLAG" != "true" ]] && GATE_OK=false
+  [[ "$DOD_EVIDENCE" -lt 1 ]] && GATE_OK=false
+  [[ "$DEMO_REQ" == "true" && "$DEMO_SCRIPT" -lt 1 ]] && GATE_OK=false
+
+  if [[ "$GATE_OK" != "true" ]]; then
+    echo "❌ Gate live-verify BLOQUEADO (Critical Rule #37):"
+    echo "   Story funcional/UI sin live-verify real. Antes de cerrar developed:"
+    echo "   1. Ejercé la acción REAL en dev-app (POST/PATCH/PUT/DELETE) con Chrome DevTools MCP"
+    echo "      → skill chrome-devtools-verify; leer Console (0 errores) + Network + logs"
+    echo "   2. Registrá en checkpoint.md: dod_live_verified: true + dod_evidence (≥1 entry con"
+    echo "      action/observed/backend_log — GET 200 NO basta)"
+    echo "   3. Creá demo-script.md en la carpeta de la story (si demo_required: true)"
+    echo "   NO marcar state: developed hasta que los 3 pasen."
+    echo "   Ref: .claude/rules/definition-of-done-live-verify.md"
+    exit 1
+  fi
+  echo "✅ Gate live-verify: dod_live_verified=true, dod_evidence OK, demo-script OK"
+fi
+```
+
+Si el gate falla → STOP. Volvé a Step 2/3 para ejercer la acción real con Chrome DevTools MCP antes de avanzar.
+
 ## Step 5 — Avanzar a siguiente ticket o cerrar story
 
 Update `06-tickets.yaml`:
@@ -496,49 +555,74 @@ transitions:
 
 Si quedan tickets `ready` → continuar Step 1 con next ticket.
 
-Si TODOS tickets pushed → transition story a developed + AUTO-HANDOFF /auditor (Conv 3 default post 2026-05-18):
+Si TODOS tickets pushed → (1) verificar Phase D local (Step 4.5) + (2) verificar gate live-verify (Step 4.6) → transition story a `developed`. **Recién entonces RAMA según `autonomous_mode` (★ proceso v5 · story-closure-gate Fase G — re-secuencia: el auto-handoff ya NO es incondicional):**
+
+```bash
+AUTONOMOUS=$(grep -E "^autonomous_mode:" ${STORY_DIR}/checkpoint.md 2>/dev/null | awk '{print $2}')
+DEFER=$(grep -E "^defer_audit:" ${STORY_DIR}/checkpoint.md 2>/dev/null | awk '{print $2}')
+```
+
+### Caso default — G · Chris-verify (pausa-y-ofrece) ★ proceso v5
+
+Si `autonomous_mode` NO es `true` y la story es funcional (`demo_required: true` / `verification_nature ∈ {funcional, ambas}`) → **NO auto-handoff a `/auditor`**. Pausá en **G**: Chris ejerce el kit ANTES del auditor. Sin estado nuevo (`state: developed` + `phase: AWAIT_CHRIS_VERIFY`).
 
 ```yaml
 # {brand}/docs/product/stories/{story-id}/checkpoint.md
 brand: {brand}     # ★ REQUIRED — multibrand scope
 state: developed   # ★ TRANSITION developing → developed ★
-phase: HANDOFF_TO_AUDITOR
+phase: AWAIT_CHRIS_VERIFY        # ★ G · NO HANDOFF_TO_AUDITOR todavía
+chris_verify: { required: true, signoff: null, rounds: [] }
 last_artifact: T-{N}-result.md (last ticket)
-next_action: "/auditor <brand>: {brand} toma story {id} para Conv 3 review+merge (AUTO-HANDOFF default)"
+next_action: "Chris ejerce el kit live → firma chris_verify.signoff → /pm-{brand} reconcile (R) → /auditor"
 ```
 
-**Verificar `defer_audit: true` en checkpoint:**
-
-```bash
-DEFER=$(grep -E "^defer_audit:" ${STORY_DIR}/checkpoint.md 2>/dev/null | awk '{print $2}')
-```
-
-### Caso default — auto-handoff a `/auditor`
-
-Si `defer_audit` no está set o es `false` → EMITIR handoff verbatim, NO arrancar nueva story:
+Liberá el build-claim + EMITIR el KIT verbatim (el kit ya lo produjo el developed-boundary, #37 Layer 10):
 
 ```
-✅ Story {brand}/{story-id} all tickets pushed.
-- T-1 (commit abc1234) ✅
-- T-2 (commit def5678) ✅
-- T-3 (commit 9876abc) ✅
-
-Quality gates: validators all GREEN.
-Story state: developing → developed.
-WIP cap check (module-scoped · ADR-009): bucket code:{module} liberado; otras stories
-de OTROS módulos pueden seguir developing en paralelo en el hub.
+✅ Story {brand}/{story-id} all tickets pushed · validators GREEN · live-verify OK.
+Story state: developing → developed · phase: AWAIT_CHRIS_VERIFY (G · Chris-verify).
 
 → Release build-claim: bash ${WS}/scripts/git/session-lock.sh release code:{module}
-  (libera el módulo + saca el badge 🔨 del cockpit)
+  (libera el módulo + saca el badge 🔨 del cockpit. WIP cap: phase AWAIT_CHRIS_VERIFY
+   NO cuenta contra developed≤1 → otra story del módulo puede avanzar mientras verificás.)
 
-→ AUTO-HANDOFF /auditor <brand>: {brand} story={story-id}
+🧪 KIT para que ejerzas vos (antes del auditor):
+- demo-script.md: {path}
+- dev-app live: make dev-app-{brand} → dev-app.{brand}lat.com (Chrome DevTools MCP)
+- dod_evidence: {N} writes ejercidos
+- 📊 LEDGER de cobertura: {X ✅ construido · Y → historia · Z ⏳ ahora}
 
-  (Conv 3 default post 2026-05-18 story-closure-gate.
-   Lee T-{n}-result.md + Phase D gherkin verification + CHECKPOINTS.md C1-C5.
-   No arrancar nueva story hasta state=done de esta.)
+→ Ejercé live → anotá correcciones/observaciones. Scope dinámico: fuera-de-scope →
+  implementar-ahora (corto+necesario) o spawneamos historia(s) visibles. PISO HARD:
+  funcionalidad nueva → core/happy-path construido sí o sí. Cada corrección entra a
+  chris_verify.rounds. Cuando estés satisfecho → firmás chris_verify.signoff.
+
+⏸  PAUSA en G. NO auto-handoff a /auditor hasta tu signoff + /pm-{brand} reconcile (R).
 ```
 
-STOP la sesión `/dev-team` aquí. Chris (o auto-handoff harness) invoca `/auditor` siguiente.
+STOP la sesión `/dev-team` aquí (G). Tras `chris_verify.signoff` → `/pm-{brand}` reconcile (R) → `/auditor`.
+
+### Caso autonomous_mode: true — corre a `/auditor` (G se salta)
+
+Si `autonomous_mode: true` ratificado por Chris → **G se salta** (corre a done sin pausa-verify · NO requiere reconcile: el auditor procede por la rama autonomous):
+
+```yaml
+state: developed
+phase: HANDOFF_TO_AUDITOR
+next_action: "/auditor <brand>: {brand} toma story {id} para Conv 3 (AUTONOMOUS · G saltada)"
+```
+
+```
+✅ Story {brand}/{story-id} all tickets pushed · validators GREEN.
+Story state: developing → developed · AUTONOMOUS (G saltada por opt-in Chris).
+
+→ Release build-claim: bash ${WS}/scripts/git/session-lock.sh release code:{module}
+→ AUTO-HANDOFF /auditor <brand>: {brand} story={story-id}
+  (el auditor procede por la rama autonomous: reconciled=false PERO autonomous_mode=true.
+   Lee T-{n}-result.md + Phase D gherkin + CHECKPOINTS.md C1-C5.)
+```
+
+STOP la sesión `/dev-team` aquí. (`defer_audit: true` → ver caso abajo.)
 
 ### Caso defer_audit:true — STOP + ping bootstrap
 
@@ -663,7 +747,7 @@ Si 2 tickets independientes (no `depends_on`) están `ready` simultáneamente:
 |---|---|---|
 | Implementar BE ticket | `builder-backend` (Sonnet/Opus) | DDD/FastAPI/SA patterns embedded en su system prompt |
 | Implementar FE ticket | `builder-frontend` (Sonnet/Opus) | FSD-Lite/React Query/RHF patterns embedded |
-| Implementar AGENTIC ticket production_code:true | `builder-agentic` (Opus 4.7 OBLIGATORIO) | LangGraph + prompt cache + voice + observability |
+| Implementar AGENTIC ticket production_code:true | `builder-agentic` (Opus 4.8 OBLIGATORIO) | LangGraph + prompt cache + voice + observability |
 | Run quality gates + write gate-output.json | `gate-runner` (Haiku) | Specialized para ruff+pytest+playwright+JSON output |
 | Build CONTEXT-BRIEF.md (Phase 0 pre-flight) | `context-builder` (Haiku) | Specialized compression spec+arch+rules → 5-8k tokens |
 | Validate CONTEXT-BRIEF.md adversarially | `context-validator` (Haiku) | Specialized re-scan + spot-check + verdict |
@@ -803,8 +887,14 @@ Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
 - `.claude/agents/gate-runner.md` — gate-output.json producer (Haiku)
 - `.claude/agents/context-builder.md` — CONTEXT-BRIEF.md producer (Haiku)
 
-## Live verification contra dev-app (Critical Rule #37)
+## DoD endurecida — obligaciones del builder (Critical Rule #37)
 
-**Obligación:** antes de cerrar `developing → developed`, por cada scenario que toca superficie user-reachable, ejerce la acción real en dev-app (Chrome MCP) + deja el golden Playwright, y registra `dev_app_verified.evidence` en `checkpoint.md`. No cerrar por tests verdes que mockean el backend.
-
-Levantar: `make dev-app-vitalia` → `https://dev-app.vitalialat.com` (login `dr.demo@vitalialat.com`, creds en `vitalia/.env.dev`). Herramientas: **Chrome DevTools MCP** (live) + **Playwright autenticado** (golden). Evidencia = acción real ejercida + efecto observado; NUNCA GET 200 ni e2e mockeado. SSoT: `.claude/rules/definition-of-done-live-verify.md`.
+Antes de cerrar `developing → developed`:
+- Correr los `technical_gates` declarados en `04-validators` (baseline + opt-in por naturaleza).
+- **Superficies FE**: usar `{brand}/frontend/e2e/fixtures/base.ts` (gate anti-burbuja: pageerror=burbuja Next, hidratación, console.error con allowlist tight, `/api/` 4xx-5xx, diálogo de error Next) en los specs nuevos; correr `scripts/verify-no-backend-errors.sh {brand} "$SINCE"` tras ejercer writes.
+- **Live-verify con Chrome DevTools MCP**: ejercer la acción real + LEER el panel **Console** (0 errores rojos) + Network + logs + confirmar efecto.
+- Cubrir **cada regla de negocio** (gherkin-matrix sin MISSING).
+- **Modificación**: respetar `regression_guard` (tests viejos verdes sin tocarse); snapshot/characterization se actualiza revisando el diff (nunca `vitest -u`/`--update-snapshots` mecánico).
+- Producir `demo-script.md` (template `docs/specs/templates/demo-script-template.md`) para stories `demo_required: true`.
+- Registrar `dod_evidence` en `checkpoint.md`. NO cerrar por "tests verdes" mockeados.
+- ★ **HARD GATE**: para stories `verification_nature ∈ {funcional, ambas}` o `demo_required: true`, el **Step 4.6** es BLOQUEANTE — la transición `developing → developed` (y el auto-handoff a `/auditor`) se REFUSE hasta que `dod_live_verified: true` + `dod_evidence` (write real ejercido) + `demo-script.md` estén en el checkpoint. No es una obligación soft: es el mismo nivel imperativo que el Phase D local de gherkin. Ref: `.claude/rules/definition-of-done-live-verify.md` (Critical Rule #37).

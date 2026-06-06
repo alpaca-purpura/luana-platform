@@ -3,6 +3,7 @@ name: pm-saasora
 description: "PM SaaSora — owner del SSoT funcional brand SaaSora (SaaS y Productos Digitales (onboarding automatizado, subscripciones Stripe, dashboards Churn/MRR, changelogs)). Pointer-first: carga saasora/docs/product/checkpoint.md + BACKLOG.md en bootstrap. Owner: saasora/docs/product/{releases,stories,capabilities,modules}/, saasora/docs/learnings/, saasora/docs/architecture/, saasora/docs/domains/. Hereda paradigm v4 (10 estados macro) de Luana core. Activa: '/pm-saasora', 'estado saasora', 'saasora backlog', 'saasora story', 'saasora release', 'saasora capability', 'saasora learning', 'SaaS', 'subscription', 'churn', 'MRR', 'Stripe', 'changelog', 'onboarding tech'."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
 model: opus
+disable-model-invocation: true   # marca sin bootstrapear: user-invocable (/pm-saasora) pero sin auto-trigger
 ---
 
 # /pm-saasora — Brand PM SaaSora
@@ -65,6 +66,35 @@ done
 
 Detalle SSoT: `.claude/rules/story-closure-gate.md` (Layer 1).
 
+### Auto-chain rule (cementada 2026-05-23)
+
+**Regla cardinal:** si Chris nombra explícitamente una skill secundaria
+(`/po-ux`, `/po`, `/ux-agentico`, `/architect`, `/dev-team`, `/auditor`)
+dentro de los args del `/pm-saasora`, o el contexto determina la skill
+siguiente unívocamente, **invocá `Skill` tool inline en el mismo turn
+post-Step 0**. NO devuelvas handoff textual.
+
+Triggers:
+1. Chris escribió literal `/po-ux` (o equivalente) en args.
+2. Chris escribió "invocá /skill-X", "arranca /skill-X", "continúa con /skill-X".
+3. Step 0 GREEN + state-machine permite una sola transición.
+
+Excepciones (NO encadenar):
+- WIP cap destino agotado
+- Deps hard faltantes
+- Story OPEN sin defer_audit detectada en Step 0
+- Scope gate bloquea (`.claude/rules/parallel-safety.md` M13)
+
+Cómo encadenar (verbatim):
+1. Step 0 GREEN + Step 1 contexto cargado
+2. 2-4 bullets resumen
+3. `Skill(skill: "<name>", args: "saasora {story-id}")` inline
+4. NO devolver "Chris, invocá /...".
+
+Anti-pattern origen: caso F1-S4 vitalia 2026-05-23 — `/pm-vitalia` hizo
+Step 0 + bullets + handoff textual → estancamiento (Chris asume disparo
+automático, requiere tipear manual). Ver `.claude/rules/pm-skill-chaining.md`.
+
 ### Step 1 — Carga estado brand
 
 ```bash
@@ -87,8 +117,8 @@ Idéntico paradigm v4 de Luana core. Detalle: `docs/process/pm-redesign-2026-05.
 | 3 | `refined` | Spec + UX/diseño ratificados Chris | `/pm-saasora` cierra | ≤ 5 |
 | 4 | `ready` | Paquete autocontenido (`03-arch` + `04-validators` + `05-guidelines` + `06-tickets`) | `/architect` cierra | ≤ 5 |
 | 5 | `developing` | Autonomous build activo | `/dev-team` | ≤ 3 |
-| 6 | `developed` | Validators GREEN | `/dev-team` | ≤ 2 |
-| 7 | `reviewing` | Auditor QA | `/auditor` | ≤ 2 |
+| 6 | `developed` | Validators GREEN | `/dev-team` | ≤ 1 |
+| 7 | `reviewing` | Auditor QA | `/auditor` | ≤ 1 |
 | 8 | `done` | Auditor APPROVED + merge + capability promovida | `/pm-saasora` | rolling 90d |
 | 9 | `parked` | De-prioritized | Chris | ∞ |
 | 10 | `dropped` | Won't do | Chris | ∞ |
@@ -127,6 +157,36 @@ Cuando aplicás `07-merge.md` para una story brand:
 6. Append entry en `saasora/docs/learnings/` si aplica (decisión cardinal)
 7. **Si learning tiene `promotable: candidate|yes` → ping `/pm-luana` para evaluación lift a core**
 8. Update `release.yaml.stories[]` (mark story done — el release recomputa su state machine)
+
+### Fase F.3 · Capability ledger update (v2 cement 2026-05-27)
+
+Al cerrar story `reviewing → done`, aplicar logic del `cap_change_type` al YAML target. 4 ramas:
+
+- `new` → crear `saasora/docs/product/capabilities/{module}/{cap_slug}.yaml` con schema completo + change_log[0] type=new + scenarios iniciales
+- `fix` → append change_log entry type=fix · NO toca scenarios
+- `extend` → append change_log entry type=extend + append nuevos scenarios al array con `added_in_story: {story_id}`
+- `derive` → crear cap YAML hijo con `parent_cap: {origen_slug}` + change_log[0] type=derive · update padre append `derives_capabilities: [hijo_slug]`
+
+Update también `last_modified: today` del cap. Doc: `docs/process/capability-protocol.md` § Sección 5.
+
+### Gate DoD endurecida (Critical Rule #37) — Fase F merge→done
+
+En Fase F (merge a `done`), `/pm-saasora` REFUSE si:
+- falta `dod_evidence` (writes ejercidos + efecto observado); o
+- la gherkin-matrix tiene `MISSING` (regla de negocio sin test); o
+- `demo_required: true` y falta `demo_signoff` con `result ∈ {APPROVED, APPROVED_WITH_NOTES(severity≤medium)}`.
+
+El sign-off de Chris (negocio · product demo paso a paso ejecutado contra dev-app) es **SEPARADO** del auditor (técnico) — **ambos** requeridos para `done`.
+Ref: `.claude/rules/definition-of-done-live-verify.md` §5.
+
+### Anti-pattern
+
+Mergear story con `status: live` sin actualizar `capabilities/` = brand SSoT funcional
+desincronizada del código. "¿Qué tenemos?" no se contesta leyendo docs sino
+inspeccionando código + rules + archive. Toda regen futura del portfolio + audits
++ promotion candidate detection operan ciegos.
+
+Ver también: `vitalia/docs/learnings/2026-05-16-capabilities-inventory-gap.md`.
 
 ## Promotion handoff a /pm-luana
 

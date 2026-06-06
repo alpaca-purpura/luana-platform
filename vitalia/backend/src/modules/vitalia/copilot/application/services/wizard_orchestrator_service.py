@@ -26,10 +26,9 @@ from typing import Any, AsyncIterator, Optional
 from uuid import UUID
 
 import structlog
+from langgraph.checkpoint.base import BaseCheckpointSaver
+from luana_core_flows.checkpointer import build_flow_thread_id
 
-from src.modules.vitalia.copilot.workflows.wizard_checkpoint_config import (
-    CheckpointerProtocol,
-)
 from src.modules.vitalia.copilot.workflows.wizard_onboarding_graph import (
     build_wizard_onboarding_graph,
 )
@@ -41,13 +40,21 @@ from src.modules.vitalia.copilot.workflows.wizard_onboarding_state import (
 logger = structlog.get_logger()
 
 
-def _thread_id_for(tenant_id: str, draft_id: str) -> str:
-    """Compose thread_id from (tenant_id, draft_id).
+_WIZARD_FLOW_ID = "vitalia.wizard"
 
-    Multi-tenant isolation cardinal — wizard sessions across tenants must
-    never collide on the checkpointer thread surface.
+
+def _thread_id_for(tenant_id: str, draft_id: str) -> str:
+    """Compose the durable thread_id from (tenant_id, draft_id).
+
+    Delegates to the shared engine helper ``build_flow_thread_id`` (lifted from
+    the per-site rules), keeping the tenant segment as the isolation cardinal —
+    wizard sessions across tenants never collide on the durable thread surface.
     """
-    return f"vitalia.wizard.{tenant_id}.{draft_id}"
+    return build_flow_thread_id(
+        flow_id=_WIZARD_FLOW_ID,
+        tenant_id=tenant_id,
+        instance_id=draft_id,
+    )
 
 
 class WizardOrchestratorService:
@@ -62,7 +69,7 @@ class WizardOrchestratorService:
     def __init__(
         self,
         *,
-        checkpointer: CheckpointerProtocol,
+        checkpointer: BaseCheckpointSaver,
         supervisor_model: Optional[Any] = None,
     ) -> None:
         """Initialize the service with a compiled graph.
@@ -176,6 +183,31 @@ class WizardOrchestratorService:
             yield event
 
 
+async def build_production_wizard_orchestrator(
+    *,
+    supervisor_model: Optional[Any] = None,
+) -> WizardOrchestratorService:
+    """Production composition root — wizard orchestrator on the durable checkpointer.
+
+    Constructs the ``WizardOrchestratorService`` with the brand-wide durable
+    ``AsyncPostgresSaver`` (via the shared engine provider). This is the
+    production swap surface that replaces the deleted brand factory mirror
+    (``wizard_checkpoint_config``, now removed); the wizard graph then persists
+    every supervisor step to Postgres and survives a process restart (resume),
+    instead of the in-memory ``MemorySaver`` used by tests.
+    """
+    from src.modules.vitalia._shared.workers.durable_checkpointer import (
+        get_vitalia_durable_checkpointer,
+    )
+
+    checkpointer = await get_vitalia_durable_checkpointer()
+    return WizardOrchestratorService(
+        checkpointer=checkpointer,
+        supervisor_model=supervisor_model,
+    )
+
+
 __all__ = [
     "WizardOrchestratorService",
+    "build_production_wizard_orchestrator",
 ]

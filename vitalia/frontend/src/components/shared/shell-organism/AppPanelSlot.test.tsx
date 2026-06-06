@@ -144,6 +144,33 @@ describe("AppPanelSlot — Tailwind layout classes preserved", () => {
   });
 });
 
+describe("AppPanelSlot — content wrapper scrollable (Bug #4 — vitalia-bugfix-shell-nav-scroll-errors T-2)", () => {
+  // RED→GREEN: el div interno de contenido (flex-1 min-h-0) debe permitir scroll
+  // vertical. Antes tenía overflow-hidden → recortaba toda hoja larga (Bug #4).
+  it("content wrapper has overflow-y-auto (NOT overflow-hidden) so long sheets scroll", () => {
+    render(
+      <AppPanelSlot>
+        <div data-testid="route-child">Contenido largo</div>
+      </AppPanelSlot>,
+    );
+    const child = screen.getByTestId("route-child");
+    // The immediate parent of children is the content wrapper.
+    const wrapper = child.parentElement;
+    expect(wrapper).not.toBeNull();
+    expect(wrapper?.className).toContain("flex-1");
+    expect(wrapper?.className).toContain("min-h-0");
+    expect(wrapper?.className).toContain("overflow-y-auto");
+    expect(wrapper?.className).not.toContain("overflow-hidden");
+  });
+
+  it("the <section> frame stays overflow-hidden (only the inner content scrolls)", () => {
+    render(<AppPanelSlot />);
+    const section = screen.getByTestId("app-panel-slot");
+    // Marco fijo del shell: no scrollea (solo el div interno).
+    expect(section.className).toContain("overflow-hidden");
+  });
+});
+
 describe("AppPanelSlot — named export contract", () => {
   it("is a named export (not default)", () => {
     expect(typeof AppPanelSlot).toBe("function");

@@ -1,16 +1,13 @@
 # REVIEW-final.md — Template (auditor del story completo)
 
-> Owner: `/auditor`. Solo después que TODOS los tickets del story estén `audit-passed`.
+> Owner: `/auditor`. Solo después que TODOS los tickets del story estén en `reviewing` (APPROVED por ticket).
 > Verificación end-to-end del story como un todo (no ticket-por-ticket).
 
 ---
 story_id: STORY_ID
-sprint: SN
-pi: PI-N
 audited_at: 2026-05-04T18:30Z
-auditor_model: claude-opus-4-7
+auditor_model: claude-opus-4-8
 verdict: APPROVED                                # APPROVED | CHANGES_REQUESTED
-ready_to_merge: true
 ---
 
 ## Tickets cubiertos
@@ -18,7 +15,7 @@ ready_to_merge: true
 | Ticket | Tipo | Owner | Verdict | SHA |
 |---|---|---|---|---|
 | T-1 | backend | qwen-opencode | APPROVED | abc1234 |
-| T-2 | agentic | claude-opus-4-7 | APPROVED | def5678 |
+| T-2 | agentic | claude-opus-4-8 | APPROVED | def5678 |
 | T-3 | frontend | qwen-opencode | APPROVED | 9876fed |
 
 ## End-to-end verification
@@ -28,21 +25,21 @@ ready_to_merge: true
 ### Test E2E (Playwright si ui-story, eval suite si agentic-story)
 
 ```
-$ cd frontend && npm run test:e2e:smoke -- --grep "{story-id}"
+$ cd {brand}/frontend && npm run test:e2e:smoke -- --grep "{story-id}"
 [paste output]
 ```
 
 > O agentic:
 ```
-$ cd backend && .venv/bin/pytest tests/agentic_evals/{module}/{story_id}_eval.py --trials=3
+$ WS=$(git rev-parse --show-toplevel) && ${WS}/.venv/bin/pytest {brand}/backend/tests/agentic_evals/{module}/{story_id}_eval.py --trials=3
 [paste output]
 pass^3 score: 0.83 (>= 0.5 threshold) ✅
 ```
 
 ### Smoke test manual (si aplica)
 
-- [ ] Dev server up (`make dev`)
-- [ ] Naveg `https://dev-app.nicolify.com/{path}`
+- [ ] Dev server up (`make dev-app-{brand}`)
+- [ ] Naveg `https://dev-app.{brand}lat.com/{path}` (o `localhost:300X` si túnel no provisto)
 - [ ] Acción reproducida → outcome esperado verificado
 - [ ] Edge cases: cross-tenant tested, mobile responsive verified
 
@@ -57,7 +54,7 @@ pass^3 score: 0.83 (>= 0.5 threshold) ✅
 
 ## Cross-cutting checks
 
-- ✅ Story YAML refleja realidad (status `live`, scenarios type=regression para los live)
+- ✅ Story YAML refleja realidad (state `done` post-merge, scenarios type=regression para los aprobados)
 - ✅ Capability YAML actualizado (status derivado de stories)
 - ✅ Module doc `product/modules/{m}.md` refleja capability nueva
 - ✅ Spanish neutro en strings user-facing
@@ -76,7 +73,7 @@ frontend/features/{m}   24.5%    29.8%    +5.3%
 
 | Story | Pass^3 antes | Pass^3 después | Status |
 |---|---|---|---|
-| `{story_id}` | N/A (planned) | 0.83 | promote → live + scenarios → regression |
+| `{story_id}` | N/A (planned) | 0.83 | promote → done + scenarios → regression |
 
 ## Findings residuales (post-merge)
 
@@ -86,14 +83,27 @@ frontend/features/{m}   24.5%    29.8%    +5.3%
 ## Verdict
 
 **APPROVED** ✅
-**ready_to_merge:** true
 
-> /pm puede proceder con `07-merge.md`: aplicar diff a `product/`, actualizar status en stories y capabilities, mover sprint si corresponde.
+> `/pm-{brand}` puede proceder con `07-merge.md`: aplicar diff a `product/`, actualizar state `reviewing → done` en story y capabilities, archivar story (`git mv` a `archive/YYYY/stories/`). Release se avanza si corresponde.
+
+## Verificación live (Critical Rule #37 · `definition-of-done-live-verify.md`)
+
+Los scenarios user-reachable de este ticket se ejercieron contra el stack dev real (`make dev-app-{brand}` / `localhost:300X`), no solo tests verdes:
+
+```yaml
+dod_live_verified: true|false
+dod_env: "<make dev-app-{brand} → dev-app.{brand}lat.com (Chrome DevTools MCP) | localhost:300X>"
+dod_evidence:
+  - action: "<write/flujo real ejercido>"
+    observed: "<efecto visible>"
+    backend_log: "<status + sin traceback + efecto DB>"
+```
+> Un `GET 200` sobre un placeholder NO es verificación. Una e2e que mockea el backend del surface = falso verde.
 
 ## Output al orchestrator
 
 ```
 APPROVED -> ver REVIEW-final.md
-story state: ready-to-merge
-next: /pm aplica merge
+story state: reviewing → done (via /pm-{brand} 07-merge)
+next: /pm-{brand} aplica merge
 ```

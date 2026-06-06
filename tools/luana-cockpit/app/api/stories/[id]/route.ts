@@ -13,7 +13,7 @@ import { z } from 'zod';
 import { errorResponse, safeJson } from '../../_lib/responses';
 import { readMarkdownWithFrontmatter } from '@/lib/fs-reader';
 import { writeMarkdownWithFrontmatter } from '@/lib/fs-writer';
-import { storiesPath, archivePath, getBrands } from '@/lib/workspace';
+import { storiesPath, archiveRootPath, getBrands, getSelectableBrands } from '@/lib/workspace';
 import { readdir } from 'node:fs/promises';
 import type { Story } from '@/lib/types';
 
@@ -44,8 +44,10 @@ async function findStoryPath(brand: string, storyId: string): Promise<string | n
     // continuar
   }
 
-  // 2. Buscar en archive (escanea años)
-  const archiveRoot = path.dirname(archivePath(brand, '0000'));
+  // 2. Buscar en archive (escanea años · {brand}/docs/archive/{year}/stories/{id}).
+  // Usar archiveRootPath (= archive/), NO path.dirname(archivePath(...)) que deja
+  // archive/{year} — bug que hacía 404 toda story done/archivada.
+  const archiveRoot = archiveRootPath(brand);
   try {
     const years = await readdir(archiveRoot, { withFileTypes: true });
     for (const y of years) {
@@ -89,7 +91,7 @@ export async function GET(
   const { id } = await context.params;
   const brand = req.nextUrl.searchParams.get('brand');
   if (!brand) return errorResponse('query param "brand" requerido', 400);
-  if (!getBrands().includes(brand)) {
+  if (!getSelectableBrands().includes(brand)) {
     return errorResponse(`brand desconocida: ${brand}`, 400);
   }
 

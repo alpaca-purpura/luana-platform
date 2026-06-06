@@ -18,7 +18,7 @@ import { useAuth } from "@clerk/nextjs";
 import { useTenantId } from "@/hooks/useTenantId";
 import { useClinicId } from "@/hooks/useClinicId";
 import { fetchClient } from "@/lib/api/fetchClient";
-import type { ConversationDetail } from "@/features/inbox/types/conversation-detail";
+import type { ConversationDetail } from "@/features/adrian/types/inbox.types";
 
 /**
  * Fetches the full compound conversation detail.
@@ -39,7 +39,7 @@ export function useConversationDetail(
       if (!token || !tenantId) throw new Error("Not authenticated");
       if (!conversationId) throw new Error("conversationId required");
       return fetchClient<ConversationDetail>(
-        `/api/v1/vitalia/crm/conversations/${conversationId}`,
+        `/api/v1/crm/conversations/${conversationId}`,
         { token, tenantId, clinicId },
       );
     },

@@ -81,7 +81,7 @@ const RULES = [
   {
     name: 'offer-catalogs-engine',
     patterns: [
-      /^core\/luana-core-offer-studio\/src\/luana_core_offer_studio\/domain\/(archetype|value_level|format)_catalog\.py$/,
+      /^core\/luana-core-offer-studio\/src\/luana_core_offer_studio\/domain\/(archetype|format|offer_type_preset|section|value_level|variant_structure)_catalog\.py$/,
       /^core\/luana-core-extension-sdk\/src\/luana_core_extension_sdk\/.*\/expert_business_type\.py$/,
       /^core\/luana-core-platform\/src\/luana_core_platform\/.*\/expert_business_type\.py$/,
     ],
@@ -155,19 +155,25 @@ async function main() {
 
   // Normalize to repo-relative path so the multibrand patterns (anchored with ^)
   // match consistently whether the hook receives an absolute or relative file_path.
-  // Strip everything up to and including the repo root marker if present.
-  // Repo root canonical: /home/chalreme/Proyectos/luana-platform/ (workspace path);
-  // also handle generic split on common prefixes that may precede repo-relative paths.
+  // WORKTREE-AGNOSTIC: must work from the main hub (luana-platform) AND from every
+  // per-worktree clone (luana-vitalia, luana-nicolify, luana-comunify, ...). Prefer
+  // CLAUDE_PROJECT_DIR (the actual project root); fall back to stripping up to and
+  // including the luana workspace-root dir (last occurrence).
   let relPath = filePath;
-  const repoMarker = '/luana-platform/';
-  const markerIdx = relPath.lastIndexOf(repoMarker);
-  if (markerIdx !== -1) {
-    relPath = relPath.slice(markerIdx + repoMarker.length);
-  } else if (relPath.startsWith('/')) {
-    // Absolute path not under known repo root — fall back to basename-relative
-    // by stripping leading slash so anchored patterns can still match if the
-    // tail matches (e.g. core/luana-core-X/...).
-    relPath = relPath.replace(/^\/+/, '');
+  const projDir = process.env.CLAUDE_PROJECT_DIR;
+  if (projDir && relPath.startsWith(projDir)) {
+    relPath = relPath.slice(projDir.length).replace(/^\/+/, '');
+  } else {
+    const re = /\/luana-[a-z0-9-]+\//g;
+    let lastEnd = -1, m;
+    while ((m = re.exec(relPath)) !== null) lastEnd = m.index + m[0].length;
+    if (lastEnd !== -1) {
+      relPath = relPath.slice(lastEnd);
+    } else if (relPath.startsWith('/')) {
+      // Path not under any recognizable luana root — strip leading slash so
+      // anchored patterns can still match on the tail (e.g. core/luana-core-X/...).
+      relPath = relPath.replace(/^\/+/, '');
+    }
   }
 
   for (const rule of RULES) {

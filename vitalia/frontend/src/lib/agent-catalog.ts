@@ -212,11 +212,13 @@ export interface SubTabMeta {
 }
 
 /**
- * Sub-tabs per ribbon tab — 22 sub-tabs distribuidos 4·2·5·4·4·3.
+ * Sub-tabs per ribbon tab — 23 sub-tabs distribuidos 4·2·5·5·4·3.
  * v1.2 (2026-05-30 paradigm-map-zones T-5):
  *   Mateo: 2 sub-tabs [agenda, pacientes] — migrated from valeria.
  *   Valeria: empty array — sidebar-only supervisor (NOT a ribbon tab).
- * Counts: Lisa 4 · Mateo 2 · Lucas 5 · Adrián 4 · Camila 4 · Config 3 = 22 total.
+ * T-FE-1 (2026-06-03 vitalia-fase2-adrian-embudo):
+ *   Adrián: +1 sub-tab "recuperar" → 5 sub-tabs [inbox, embudo, recuperar, outbound, propuestas].
+ *   Count updated: Lisa 4 · Mateo 2 · Lucas 5 · Adrián 5 · Camila 4 · Config 3 = 23 total.
  * Record<RibbonTabSlug, ...> requires both mateo and valeria keys since AgentSlug includes both.
  *
  * spec_anchor: 03-arch-fe.md § F6 + 02-impact.md § 5 + SHELL-DESIGN-CONTRACT.md § 7.2
@@ -240,9 +242,16 @@ export const RIBBON_SUBTABS: Record<RibbonTabSlug, readonly SubTabMeta[]> = {
     { id: "resultados", label: "Resultados", icon: "📈" },
     { id: "mercado", label: "Mercado", icon: "🌍" },
   ],
+  /**
+   * Adrián: Vender — inbox + embudo + recuperar + outbound + propuestas.
+   * T-FE-1 (2026-06-03): +recuperar sub-tab (sub-tab hermana de Embudo, RN-19 v3.1).
+   *   Route: /adrian/recuperar — congelados + diagnose (V4 spec).
+   *   Placeholder: RecuperarPlaceholder until T-FE-3 ships the real page.
+   */
   adrian: [
     { id: "inbox", label: "Inbox", icon: "💬" },
     { id: "embudo", label: "Embudo", icon: "🎯" },
+    { id: "recuperar", label: "Recuperar", icon: "🧊" },
     { id: "outbound", label: "Outbound", icon: "📣" },
     { id: "propuestas", label: "Propuestas", icon: "💼" },
   ],
@@ -283,9 +292,10 @@ export const RIBBON_SUBTABS: Record<RibbonTabSlug, readonly SubTabMeta[]> = {
 export type RibbonSubtabKey = `${RibbonTabSlug}.${string}`;
 
 export const SHIPPED_STATIC_SUBTABS: ReadonlySet<RibbonSubtabKey> = new Set<RibbonSubtabKey>([
-  "mateo.agenda",  // v1.2 (2026-05-30): migrated from valeria.agenda (paradigm-map-zones T-5)
-  "lisa.marca",    // F2-S7 T-4 — N3-static subtab (identidad/voz-y-tono/presencia)
-  "lisa.staff",    // F2-S8 T-FE-1 — Staff directory + workspace (vitalia-fase2-lisa-doctores)
+  "mateo.agenda",   // v1.2 (2026-05-30): migrated from valeria.agenda (paradigm-map-zones T-5)
+  "lisa.marca",     // F2-S7 T-4 — N3-static subtab (identidad/voz-y-tono/presencia)
+  "lisa.staff",     // F2-S8 T-FE-1 — Staff directory + workspace (vitalia-fase2-lisa-doctores)
+  "adrian.inbox",   // F3-T-3 (2026-06-03): Adrián Inbox shipped — vitalia-fase2-adrian-inbox T-3
 ]);
 
 /**

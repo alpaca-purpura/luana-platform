@@ -1,7 +1,7 @@
 <!-- voseo-allowed: ADR interno de arquitectura, no user-facing -->
 # ADR-nicolify-002 — Adaptación del paradigma (3 planos / 3 zonas) a Nicolify
 
-- **Status:** accepted (ratificado Chris 2026-05-30 — "arranca, entendiste todo")
+- **Status:** accepted (ratificado Chris 2026-05-30 — "arranca, entendiste todo") · **D-D enmendado 2026-06-02** (Sara DIFERIDA → ver § Amendment al final)
 - **Date:** 2026-05-30
 - **Scope:** brand nicolify. Aterriza el modelo operativo platform-wide en la marca.
 - **Hereda de (platform, NO se duplica):** `docs/architecture/luana-platform/PARADIGM.md` + `ADR-010-orquestacion-agentica.md`.
@@ -103,6 +103,18 @@ Regla de oro: ninguna cap existe sin caja, ninguna caja fuera de zona. La zona s
 - **Mantener Luana como caja en el Ribbon (espejo literal de Valeria):** descartado — nicolify ya nació con Luana en el sidebar; forzarla al Ribbon contradice `SHELL-DESIGN-CONTRACT`.
 - **Engine externo separado para inbound vs outbound:** descartado — un solo `sales_agent` (Christian front-line) cumple el invariante "un solo engine por audiencia".
 - **Migrar con scripts (como vitalia):** innecesario — nicolify no tiene caps shipped que migrar; nace bien.
+
+## Amendment 2026-06-02 — D-D: Sara DIFERIDA ("Próximamente")
+
+> **Origen:** refinamiento de la story `nicolify-r0-sitemap-completo` (PM-led · Chris). Al recorrer la intención agente-por-agente, Chris decidió (OI-C): *"no nos compliquemos — Sara de momento es 'Próximamente'."*
+
+**Qué cambia respecto a D-D (arriba):** D-D creó a Sara como **5ª caja ACTIVA** de la zona Agentes ("Jefa de Proyectos / Mi Día", `mi-dia` = landing operativo post-login, áreas `mi-dia`/`proyectos`/`entregas`). La enmienda la **difiere**: Sara queda como **tab en el Ribbon con empty-state "Próximamente"**, SIN funcionalidad este stage, FUERA del roadmap activo R0-R5.
+
+**Qué NO cambia:** Sara sigue siendo la 5ª caja del Ribbon (marca su lugar en el árbol) · su **norte futuro** sigue siendo la operación/delivery con lógica de agencia (ahora reorientado en el sitemap v3 a un **hub de contexto ERP** para que los otros agentes estén enterados — capa net-new sin engine). El **landing post-login** ya NO es Sara/"Mi Día" sino **`christian/pipeline`** (`DEFAULT_LANDING`, ratificado D2 del sitemap). Los demás territorios (D-A Luana supervisora, D-B Christian bifronte, D-C seguridad sin PHI) **intactos**.
+
+**Impacto en cross-flows:** `DeliveryAtRisk` (Sara→Norvil) queda `deferred` en `SYSTEM-MAP.yaml`; `DealWon` ya no dispara `sara.proyectos` (solo `norvil.cartera`). Reactivar cuando Sara se priorice (candidata en release R5 · ver `nicolify/docs/product/releases/R5.yaml`).
+
+**SSoT del cambio:** `nicolify/docs/architecture/SYSTEM-MAP.yaml` v2.0 (`sara_status: deferred`) + `nicolify/docs/product/stories/nicolify-r0-sitemap-completo/{01-sitemap.md,02-agent-intent.md}` (archivados al cerrar la story).
 
 ## Referencias
 

@@ -17,7 +17,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import path from 'node:path';
 import { mkdir, stat, writeFile, readdir } from 'node:fs/promises';
 import { errorResponse } from '../../_lib/responses';
-import { storiesPath, archivePath, getBrands } from '@/lib/workspace';
+import { storiesPath, archiveRootPath, getBrands } from '@/lib/workspace';
 import {
   parseChrisInput,
   serializeChrisInput,
@@ -77,7 +77,7 @@ async function findStoryDir(brand: string, storyId: string): Promise<string | nu
   } catch {
     // try archive
   }
-  const archiveRoot = path.dirname(archivePath(brand, '0000'));
+  const archiveRoot = archiveRootPath(brand); // = archive/ (NO path.dirname(archivePath) → archive/{year} bug)
   try {
     const years = await readdir(archiveRoot, { withFileTypes: true });
     for (const y of years) {

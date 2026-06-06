@@ -1,4 +1,4 @@
-# Playwright E2E Architecture (Nicolify)
+# Playwright E2E Architecture (Luana multibrand)
 
 > **Read order:** if this is your first contact with the suite, read top to bottom once. Otherwise jump to the section that matches your concern.
 
@@ -6,7 +6,7 @@
 
 E2E tests answer one question that unit tests cannot: **"Does the user actually get the experience we promised?"** They run the real browser, the real Clerk session, the real Next.js render pipeline, against the real (or carefully mocked) backend.
 
-In Nicolify the value is concentrated in three places:
+In Luana the value is concentrated in three places:
 1. **Auth flows** — Clerk + multi-tenant routing must not regress. A broken sign-in is a P0.
 2. **Critical UI primitives** — sidebar, navigation, copilot drawer, brand/offer studios. These are the spines of every other screen.
 3. **Data-driven dashboards** — Growth Studio renders depend on overview/summary endpoints. A missing channel card means a customer thinks their integration is broken.

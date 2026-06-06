@@ -4,14 +4,36 @@
 > Reemplaza politica legacy "solo development, main=prod auto".
 > Detalle tecnico: `.claude/rules/git-safety.md` + `.claude/rules/parallel-safety.md`.
 
-## Workflow 1: Sesion paralela nueva
+## Workflow 1: Sesion paralela (DEFAULT — hub único, ADR-009)
 
 ```bash
-# Desde el directorio raiz del monorepo
-cd /home/chalreme/Proyectos/luana-platform
+# N sesiones trabajan sobre el MISMO worktree canónico ~/Proyectos/luana-{brand}
+# coordinadas por bucket locks M14 (code:{module} / docs / tests).
+# Worktrees dedicados son la EXCEPCION (lift core, hotfix aislado, otra marca).
+WS=$(git rev-parse --show-toplevel)
+
+# Adquirir bucket lock para el módulo a trabajar
+bash ${WS}/scripts/git/session-lock.sh acquire code:docker
+
+# Trabajar + commitear frecuentemente por pathspec (índice compartido entre sesiones)
+git add src/archivo.py
+git commit -m "wip(docker): primera pasada base compose"
+git push origin wip/vitalia              # safety net (M11: max cada 30 min)
+
+# ... iteraciones ...
+git add src/otro.py
+git commit -m "wip(docker): compose multibrand vitalia + comunify"
+git push origin wip/vitalia
+```
+
+## Workflow 1b: Sesion dedicada (EXCEPCION — worktree separado)
+
+```bash
+# Solo para: lift core, cross-cutting protocol, hotfix aislado, u otra marca.
+WS=$(git rev-parse --show-toplevel)
 
 # Crear worktree dedicado + branch wip/*
-scripts/git/new-session.sh A-docker      # crea ../luana-A-docker + branch wip/A-docker
+bash ${WS}/scripts/git/new-session.sh A-docker   # crea ../luana-A-docker + branch wip/A-docker
 cd ../luana-A-docker
 
 # Trabajar + commitear frecuentemente
@@ -29,37 +51,41 @@ git push origin wip/A-docker
 
 ```bash
 # Cuando el trabajo en wip/* esta listo para staging
-cd /home/chalreme/Proyectos/luana-platform   # worktree principal
+# NOTA: staging deploy es MANUAL (GitHub Actions = DEFERRED, sentinel .ci-parity-deferred)
+WS=$(git rev-parse --show-toplevel)
+cd ${WS}    # worktree principal (PRINCIPAL branch main)
 
 git checkout main
 git merge --squash wip/A-docker             # squash todos los wip commits en uno
 git commit -m "feat(docker): T-N compose multibrand servicios base"
-git push origin main                         # AUTO DEPLOY A STAGING
+git push origin main                         # push a main; staging deploy = MANUAL (no auto)
 ```
 
 ## Workflow 3: Deploy a produccion (release branch)
 
 ```bash
-# Solo desde main validado post-staging
+# Solo desde main validado post-staging.
+# release/* es el ÚNICO auto-deploy a prod (cuando CI/CD prod este provisionado).
+# git pull esta PROHIBIDO; sync con main via scripts/git/sync-from-main.sh.
 git checkout main
-git pull --ff-only origin main               # exception: pull permitido SOLO en main post-staging
+# Si main local esta desactualizado, usar: bash scripts/git/sync-from-main.sh
 git checkout -b release/vitalia-v0.3.0
-git push origin release/vitalia-v0.3.0       # AUTO DEPLOY A PROD vitalia
-# Branch release/* se auto-elimina post-deploy (cd-prod.yml)
+git push origin release/vitalia-v0.3.0       # AUTO DEPLOY A PROD vitalia (via VPS + docker-compose)
+# Branch release/* inmutable post-deploy; borrar manual si ya no se necesita
 ```
 
-## Workflow 4: Cleanup de sesion terminada
+## Workflow 4: Cleanup de sesion terminada (worktree dedicado)
 
 ```bash
-# Desde el directorio raiz del monorepo
-cd /home/chalreme/Proyectos/luana-platform
+# Solo aplica para worktrees dedicados (Workflow 1b). El hub no se "limpia".
+WS=$(git rev-parse --show-toplevel)
 
 # Verificar que el worktree esta limpio antes de cleanup
 cd ../luana-A-docker && git status           # debe estar limpio
 
 # Cleanup: push final + remove worktree
-cd /home/chalreme/Proyectos/luana-platform
-scripts/git/cleanup-session.sh A-docker     # push + remove worktree ../luana-A-docker
+cd ${WS}
+bash ${WS}/scripts/git/cleanup-session.sh A-docker   # push + remove worktree ../luana-A-docker
 
 # La branch wip/A-docker sigue en el repo (no se borra) — merge o borrar manual
 # Si el trabajo ya fue squash-merged a main:
@@ -109,6 +135,7 @@ git log --oneline origin/wip/A-docker      # ver commits remotos
 ```bash
 # cleanup-session.sh da exit code 2 con mensaje explicito
 # Resolver antes de cleanup:
+WS=$(git rev-parse --show-toplevel)
 
 cd ../luana-A-docker
 git status                                   # ver que archivos estan sucios
@@ -121,8 +148,8 @@ git commit -m "wip: guardar estado antes de cleanup"
 git stash push -m "WIP: descripcion del cambio"
 
 # Luego volver al monorepo y cleanup
-cd /home/chalreme/Proyectos/luana-platform
-scripts/git/cleanup-session.sh A-docker
+cd ${WS}
+bash ${WS}/scripts/git/cleanup-session.sh A-docker
 ```
 
 ### Olvidaste hacer cleanup de una sesion vieja

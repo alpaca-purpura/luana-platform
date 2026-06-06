@@ -16,6 +16,7 @@
 | [extraction](./extraction.md) | CORE-FULL | base | — | active |
 | [llm](./llm.md) | CORE-FULL | base | — | active |
 | [idempotency](./idempotency.md) | CORE-FULL | base | — | active |
+| [flows](./flows.md) | CORE-FULL | durable-runtime | EP-19 (L2 deferred) | active |
 | [channels](./channels.md) | CORE-FULL | base | — | active |
 | [compliance](./compliance.md) | CORE-FULL | base | — | active |
 | [billing](./billing.md) | CORE-FULL | base | — | active |

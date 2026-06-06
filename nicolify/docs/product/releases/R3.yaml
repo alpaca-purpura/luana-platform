@@ -1,0 +1,35 @@
+---
+# Release schema (v2 cement 2026-05-27) · Doc: docs/process/release-protocol.md
+release_id: R3
+brand: nicolify
+name: "Norvil · Retención (liviano · client-first)"
+description: "CRM de los clientes ACTUALES: cartera master-detail (la salud de cuenta vive DENTRO del detalle del cliente, patrón staff/doctores) + renovaciones/upsell. Arranca liviano — el motor de fidelización completo es R5. Entry model: todo se entra a través de un cliente."
+status: backlog
+target_date: null
+shipped_date: null
+order: 3
+created_at: 2026-06-02T00:00:00-05:00
+created_by: pm-nicolify
+source_sitemap: nicolify-r0-sitemap-completo
+
+areas:
+  - norvil.cartera        # master-detail · salud en el detalle del cliente
+  - norvil.renovaciones   # se dispara desde el cliente
+
+stories: []
+maps_legacy_outcome: null
+maps_legacy_phase: null
+---
+
+# R3 · Norvil · Retención (liviano)
+
+> Norvil toma acciones con los clientes que Christian trajo. Arranca **liviano** y **client-first**: una cartera donde cada cliente abre su detalle (salud + stakeholders + historia en una página, sin tabs) y desde ahí se dispara la renovación/upsell.
+
+## Outcome esperado
+- **Cartera de clientes (master-detail):** lista → detalle del cliente. El detalle contiene la **salud de cuenta** (churn signals) + mapa multi-stakeholder + historia + touchpoints. La salud NO es área aparte.
+- **Renovaciones & upsell:** nurturing pre-renovación + cross/up-sell. Propone; el dueño aprueba el contacto.
+
+## Notas
+- El **motor de fidelización** (momentos · champion-shield · QBR · gifting) = **R5** (no acá).
+- Reusa `core/luana-core-crm` (NPS/referral/inactivity/lifecycle) + commercial-calendar.
+- DealWon (R2) → Norvil incorpora el cliente a la cartera (cross-flow).

@@ -1,3 +1,5 @@
+> ⚠️ DEPRECADO — metodología PI/Sprint reemplazada por Release (docs/process/release-protocol.md + docs/specs/templates/release-template.yaml).
+
 # sprint.md — Template (Sprint dentro de PI)
 
 > Owner: `/pm`. Vive en `docs/projects/active/PI-N/sprints/SN-{slug}/sprint.md`.
@@ -42,7 +44,7 @@ copilot-brand-audit
 ## Cierre del sprint
 
 Criterios:
-- [ ] Todas las stories `audit-passed` o movidas a próximo sprint
+- [ ] Todas las stories `done` o movidas a próximo sprint
 - [ ] Métricas: pass^k stories agentic >= threshold, coverage no bajó
 - [ ] `checkpoint.md` sprint marcado `done`
 - [ ] Retrospective brief al final

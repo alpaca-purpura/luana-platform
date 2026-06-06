@@ -31,8 +31,8 @@ schema_version: v4.1
 | .claude/rules/spanish-text.md | ✅ loaded | pre-commit — Spanish neutro check (`grep voseo`) |
 | .claude/rules/auditor-self-fix-policy.md | ✅ loaded | Step 0 — saber qué auditor self-fix vs spawn dev-team |
 | .claude/rules/tdd-mandatory.md | ✅ loaded | Step 0 — TDD RED→GREEN discipline |
-| tessl__fastapi | ✅ loaded | endpoint nuevo |
-| tessl__pytest-api-testing | ✅ loaded | endpoint test patterns |
+| FastAPI canonical patterns | ✅ loaded | endpoint nuevo |
+| pytest async testing patterns | ✅ loaded | endpoint test patterns |
 | frontend-expert | n/a | surface=BE only |
 | playwright-expert | n/a | playwright_required=false (este ticket no toca FE) |
 
@@ -130,5 +130,19 @@ done -> {brand}/docs/product/stories/{story-id}/T-{n}-result.md
 state: pushed (commit def5678)
 ready for /auditor
 ```
+
+## Verificación live (Critical Rule #37 · `definition-of-done-live-verify.md`)
+
+Los scenarios user-reachable de este ticket se ejercieron contra el stack dev real (`make dev-app-{brand}` / `localhost:300X`), no solo tests verdes:
+
+```yaml
+dod_live_verified: true|false
+dod_env: "<make dev-app-{brand} → dev-app.{brand}lat.com (Chrome DevTools MCP) | localhost:300X>"
+dod_evidence:
+  - action: "<write/flujo real ejercido>"
+    observed: "<efecto visible>"
+    backend_log: "<status + sin traceback + efecto DB>"
+```
+> Un `GET 200` sobre un placeholder NO es verificación. Una e2e que mockea el backend del surface = falso verde.
 
 <!-- voseo-allowed: doc interno / buzón conversacional, no user-facing -->

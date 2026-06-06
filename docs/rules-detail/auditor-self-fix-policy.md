@@ -19,13 +19,13 @@ Auditor decision tree ante hallazgo en review:
 └─ NO  → ¿El fix toca ≥3 archivos O cambia lógica de negocio?
         ├─ SÍ  → SPAWN dev-team autónomo.
         └─ NO  → ¿Está en la WHITELIST § self-fix permitido?
-                ├─ SÍ  → SELF-FIX (cap 4 iter).
+                ├─ SÍ  → SELF-FIX (cap 4 iter) [v4.1 — v4.2: 5/4].
                 └─ NO  → ESCALATE Chris (o /pm-luana si cross-brand/engine).
 ```
 
-Cap absoluto **3 audit_iterations** (no 2, ampliado para forward-motion autonomy). Después → ESCALATE.
+Cap absoluto **3 audit_iterations** [v4.1 — v4.2: 5/4] (no 2, ampliado para forward-motion autonomy). Después → ESCALATE.
 
-## Whitelist verbatim — self-fix permitido (cap 4 iter)
+## Whitelist verbatim — self-fix permitido (cap 4 iter) [v4.1 — v4.2: 5/4]
 
 Auditor PUEDE editar directo SOLO estos tipos de fix. Lista exhaustiva:
 
@@ -124,7 +124,7 @@ Agent({
 6. Si verdict nuevo = APPROVED → continuar Step 4 CHECKPOINTS.md
 7. Si verdict nuevo = CHANGES_REQUESTED Y `audit_iterations >= 3` → ESCALATE Chris (cap absoluto)
 
-### Step 3 Caso C — Self-fix whitelisted (cap 4 iter)
+### Step 3 Caso C — Self-fix whitelisted (cap 4 iter) [v4.1 — v4.2: 5/4]
 
 Cuando finding es de la lista whitelist:
 
@@ -193,8 +193,8 @@ APPROVED | CHANGES_REQUESTED (spawn dev-team) | CHANGES_REQUESTED (self-fix) | E
 
 | Métrica | Cap | Acción al exceder |
 |---|---|---|
-| `self_fix_iter` por ticket | 4 | Spawn dev-team Caso B |
-| `audit_iterations` por ticket | 3 | ESCALATE Chris |
+| `self_fix_iter` por ticket | 4 (v4.1 — v4.2: 5) | Spawn dev-team Caso B |
+| `audit_iterations` por ticket | 3 (v4.1 — v4.2: 4) | ESCALATE Chris |
 | Files modificados por self-fix iter | 2 | Refactor camuflado → spawn dev-team |
 | Líneas modificadas por self-fix iter | 10 | idem |
 | Tiempo wall-clock audit cycle | 30 min wall | escalate "stuck" |

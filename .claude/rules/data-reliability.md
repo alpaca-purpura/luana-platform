@@ -1,11 +1,11 @@
 ---
-globs: "core/luana-core-analytics-engine/src/**/*.py,**/backend/src/modules/*/analytics/**/*.py,**/frontend/src/features/growth-studio/**/*.{ts,tsx}"
+globs: "core/luana-core-analytics-engine/src/**/*.py,**/backend/src/modules/*/analytics/**/*.py,**/frontend/src/features/marketing/**/*.{ts,tsx}"
 description: Stub — invoca metrics-expert skill
 ---
 
 # Data Reliability Verification
 
-4 layers (Growth Studio per brand):
+4 layers (Analytics/Marketing per brand):
 - 0 ETL execution — `make verify-{brand}-etl provider={n}` (TODO: targets brand-scoped pendientes — hoy aún single-brand `make verify-etl`)
 - 1 Source Probe (API == DB) — `make verify-{brand}-probe-{p}` (TODO: brand-scoped)
 - 2 Pipeline (DB == DTO) — `make verify-{brand}-pipeline` (TODO: brand-scoped)

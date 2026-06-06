@@ -137,8 +137,10 @@ describe("SC-4: returns null for non-N3 agent.subtab", () => {
     expect(screen.queryByTestId("sub-sub-tabs-bar")).toBeNull();
   });
 
-  it("valeria.agenda (no N3) → no nav rendered", () => {
-    mockPathname.mockReturnValue("/tenant-x/valeria/agenda");
+  it("mateo.agenda (no N3) → no nav rendered", () => {
+    // coverage_update Bug #1 T-1: valeria/agenda → mateo/agenda (ruta viva, sigue
+    // siendo non-N3 → la aserción 'no nav' se mantiene; valeria/agenda ya no existe).
+    mockPathname.mockReturnValue("/tenant-x/mateo/agenda");
     render(<SubSubTabsBar />);
     expect(screen.queryByTestId("sub-sub-tabs-bar")).toBeNull();
   });

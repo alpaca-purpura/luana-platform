@@ -1,6 +1,7 @@
 ---
 name: architect
-description: "Architect orchestrator Luana v4 (post pm-redesign 2026-05 Punto 4). Lee 01-spec.md (de /po-ux o /po) + 02-design-agentic.md (si agentic) en stories state=refined. Decide qué surfaces toca (BE/FE/agentic). Spawna `architect-orchestrator` (single agent type, full-stack) que internamente carga las skills `architect-be` + `architect-fe` + `architect-agentic` según surface — produce 03-arch.md consolidado + 03-arch-{be,fe,agentic}.md por surface en una sola pasada. Reúne y produce el READY PACKAGE: 03-arch.md (consolidado) + 04-validators.yaml (★CRITICAL — pytest/playwright/shell commands must_pass:true ejecutables, 4 categories: non_functional/functional/visual/agentic_eval) + 05-guidelines.md (patterns required/forbidden + files in scope) + 06-tickets.yaml (work units atómicos). Cierra story state refined → ready. Activa cuando user dice: '/architect', 'diseñemos la arq', 'tickets', 'qué tickets salen', 'arquitectura técnica', 'cómo lo construimos técnicamente', 'cerrá el ready package'."
+description: "Architect orchestrator Luana v4 — lee 01-spec.md (+02-design-agentic.md si agentic) en stories state=refined, spawna architect-orchestrator full-stack y produce el READY PACKAGE (03-arch.md + 04-validators.yaml + 05-guidelines.md + 06-tickets.yaml), cierra refined→ready."
+when_to_use: "Activa cuando user dice: '/architect', 'diseñemos la arq', 'tickets', 'qué tickets salen', 'arquitectura técnica', 'cómo lo construimos técnicamente', 'cerrá el ready package', 'ready package', 'qué hay que buildear', 'dame los tickets', 'convertí el spec en tickets', story state=refined y el próximo paso es producir 03-arch+04-validators+05-guidelines+06-tickets."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
 model: opus
 ---
@@ -105,12 +106,17 @@ Agent({
            5. {brand}/docs/product/releases/{release-id}.yaml
            6. {brand}/docs/product/modules/{m}.md
            7. Stories archivadas relacionadas (predecesores) en {brand}/docs/archive/
+           8. CAP-AS-LOCATOR (HB-43) — si checkpoint.md tiene cap_target no-null
+              (cualquier cap_change_type): corré
+              `${WS}/.venv/bin/python ${WS}/scripts/resolve_cap.py {brand} "{cap_target}" --extract`
+              → dev_preview.main_component/code_ref/scenarios del código YA existente.
+              Diseñá EXTEND sobre eso, no re-descubras por grep. (cap nueva vacía → UNRESOLVED → caés a grep)
 
            LOAD SKILLS contextualmente según surface:
-           - BE: backend-expert + tessl__fastapi + tessl__pytest-api-testing
-           - FE: frontend-expert + tessl__react-patterns + tessl__zod + tessl__shadcn-ui + tessl__tailwind + tessl__vitest + tessl__nextjs-app-router-modularization
-           - AGENTIC: sales-agent-expert / copilot-expert + tessl__langgraph + claude-api
-           - Cross-cutting: tessl__graceful-degradation + domain skills (brand/offer/preset/metrics)
+           - BE: backend-expert + FastAPI canonical patterns + pytest async testing patterns
+           - FE: frontend-expert + React patterns baseline + Zod validation + Shadcn UI conventions + Tailwind conventions + Vitest conventions + Next.js App Router Server/Client split
+           - AGENTIC: sales-agent-expert / copilot-expert + LangGraph canonical docs + claude-api
+           - Cross-cutting: graceful-degradation (timeout + fallback + circuit breaker) + domain skills (brand/offer/preset/metrics)
 
            DELIVERABLES (4-5 files, todos bajo {brand}/docs/product/stories/{id}/):
            1. 03-arch.md (consolidado, secciones por surface — incluye § Test Construction Plan ★ v4.1)
@@ -189,6 +195,19 @@ Template estructura mínima:
 ### Registration points: include_router / nav tree / DI / tool registry (deliverables verificables)
 ### Home: cap_target + cap_change_type (dev_preview se actualiza al merge)
 ```
+
+## Verificación: clasificar por naturaleza + declarar gates (Critical Rule #37)
+
+Al producir `04-validators.yaml`, el architect DECLARA por capability/ticket (sección `verification:`):
+- `nature`: **technical** (sin UI) · **functional** (user-reachable) · **both**.
+- `technical_gates.baseline` siempre (tsc/mypy strict · ruff/eslint --max-warnings 0 · arch-fitness) + `opt_in` **por naturaleza** (NO en toda story): Schemathesis (endpoint nuevo), Hypothesis (domain logic con invariantes).
+- ★ **`technical_gates.mutation`** (proceso v5 §5.6 · HB-54): el architect MARCA las superficies **mutation-críticas** por `verification_nature` — commit/persistencia (HB-50), dinero/pricing, gates PHI, state-machines, transforms-contrato (HB-42/44) → `mutation: {enabled: true, mode: hard, surfaces: [...]}`; el resto `advisory` (anti-costo). Corre `scripts/mutation_gate.py` diff-scoped (mutmut/Stryker); degrada advisory si el tool no está instalado.
+- `business_rules` matriz `regla → @rule-tag → scenario_id` (cada regla con ≥1 happy + ≥1 negative/edge — Example Mapping) para stories funcionales.
+- `runtime_error_gate: required` para toda superficie FE (builder usa `base.ts` + `verify-no-backend-errors.sh`).
+- `demo_required` (árbol: toca frontend/ o endpoint con consumer FE → true; solo tests/migrations/config/core sin cambio de contrato → false + `demo_skip_reason`).
+- `regression_guard` (modificación: tests existentes que NO deben cambiar) + `coverage_update` + `new_coverage`.
+
+Ref: `.claude/rules/definition-of-done-live-verify.md` §1-§6.
 
 ### Step 5 — Producir 04-validators.yaml + Test Construction Plan ★ CRITICAL ★
 
@@ -553,18 +572,18 @@ required:
   - id: ".claude/rules/auditor-self-fix-policy.md"
     purpose: "Conocer qué findings auditor self-fix vs spawn dev-team (forward motion)"
 
-  # Tessl skills (versioned canonical docs) si aplica
-  - id: "tessl__fastapi"
+  # Canonical docs / patterns si aplica
+  - id: "FastAPI canonical patterns"
     when: "BE endpoint nuevo"
-  - id: "tessl__pytest-api-testing"
+  - id: "pytest async testing patterns"
     when: "BE tests nuevos"
-  - id: "tessl__react-patterns + tessl__shadcn-ui + tessl__tailwind"
+  - id: "React patterns baseline + Shadcn UI conventions + Tailwind conventions"
     when: "FE component nuevo"
-  - id: "tessl__zod"
+  - id: "Zod validation"
     when: "FE form con validation"
-  - id: "tessl__vitest"
+  - id: "Vitest conventions"
     when: "FE tests nuevos"
-  - id: "tessl__langgraph + claude-api"
+  - id: "LangGraph canonical docs + claude-api"
     when: "AGENTIC surface"
 
 reference_artifacts:
@@ -668,7 +687,7 @@ Ejemplo:
   assignment:
     primary_agent: builder-backend
     model_preference: sonnet
-    must_load_skills: [backend-expert, tessl__fastapi, .claude/rules/tenant-isolation.md, .claude/rules/backend-ddd.md]
+    must_load_skills: [backend-expert, "FastAPI canonical patterns", .claude/rules/tenant-isolation.md, .claude/rules/backend-ddd.md]
     forbidden_to_touch: ["core/luana-core-*/src/", "{other_brand}/", "{brand}/backend/src/modules/{brand}/{copilot,sales_agent}/"]
     rationale: "BE CRUD non-agentic, Sonnet sweet spot"
 
@@ -680,7 +699,7 @@ Ejemplo:
   assignment:
     primary_agent: builder-agentic
     model_preference: opus    # HARD per R23
-    must_load_skills: [sales-agent-expert, tessl__langgraph, claude-api]
+    must_load_skills: [sales-agent-expert, "LangGraph canonical docs", claude-api]
     forbidden_to_touch: ["core/luana-core-{copilot,sales-agent}/src/"]
     rationale: "AGENTIC production R23 → Opus obligatorio"
 ```
@@ -911,6 +930,39 @@ Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
 
 ## Live verification contra dev-app (Critical Rule #37)
 
-**Uso (recomendado):** si necesitás confirmar comportamiento actual antes de diseñar, inspeccioná en vivo contra dev-app en vez de asumir. Declará `playwright_visual_scope` en `04-validators.yaml` apuntando a dev-app cuando aplique.
+**Uso (previo al diseño, opcional):** si necesitás confirmar comportamiento actual antes de diseñar, inspeccioná en vivo contra dev-app en vez de asumir.
 
 Levantar: `make dev-app-vitalia` → `https://dev-app.vitalialat.com` (login `dr.demo@vitalialat.com`, creds en `vitalia/.env.dev`). Herramientas: **Chrome DevTools MCP** (live) + **Playwright autenticado** (golden). Evidencia = acción real ejercida + efecto observado; NUNCA GET 200 ni e2e mockeado. SSoT: `.claude/rules/definition-of-done-live-verify.md`.
+
+### Live-verify gate — instrucción DURA al dev-team (Critical Rule #37)
+
+**ESTO NO ES OPCIONAL** para stories con `verification_nature ∈ {funcional, ambas}` o `demo_required: true`. El architect MUST declarar y el dev-team MUST cumplir antes de cerrar `developing → developed`.
+
+**Obligaciones del architect al producir el ready package:**
+
+1. **En `06-tickets.yaml`** — todo ticket FE o endpoint-con-consumer-FE lleva en `assignment.must_load_skills`:
+   - `chrome-devtools-verify` (verificación live conversacional SIEMPRE)
+   - `playwright-expert` si hay golden visual o flujo crítico persistido
+   El exit-criterion del ticket DEBE decir: **"live-verify en dev-app + `dod_evidence` (≥1 write real + leer logs BE + confirmar efecto en DB) + `demo-script.md`"** — NUNCA "tests verdes" ni "GET 200".
+
+2. **En `04-validators.yaml`** — declarar explícitamente:
+   - `playwright_visual_scope` (sub-keys: `story_scope_routes`, `story_scope_components`, `forbidden_visual_changes`, `non_egoismo_clause`) — delimita qué rutas/componentes puede tocar el builder; fuera de scope → STOP y escalar.
+   - `dev_app_verified: { required: true, evidence: "" }` — el campo no puede quedar vacío de intención; dev-team lo completa con evidencia real al cerrar el ticket.
+
+3. **Sin estas declaraciones**, el auditor auto-FAILea (`LIVE_VERIFY_MISSING`) y devuelve `CHANGES_REQUESTED` — no hay apelación para stories funcionales.
+
+**Árbol rápido (para saber cuándo aplica):**
+```
+¿La story toca frontend/ O endpoint que la UI llama?
+  SÍ → verification_nature: functional | both
+       demo_required: true
+       chrome-devtools-verify en must_load_skills
+       playwright_visual_scope en 04-validators.yaml
+       dev_app_verified.required: true
+  NO (solo tests/migrations/config/core sin contrato UI) →
+       verification_nature: technical
+       demo_required: false + demo_skip_reason
+       live_verify: skippable con dod_live_verified_skip_reason
+```
+
+Ref completa: `.claude/rules/definition-of-done-live-verify.md` §1-§6 + ADR-vitalia-008.

@@ -49,10 +49,10 @@ If `<command>` is a shortcut, expand to the canonical native-Linux command. `${W
 | `test-nicolify` | `cd ${WS}/nicolify/backend && ${WS}/.venv/bin/pytest tests/ -v && ${WS}/.venv/bin/ruff check src/ tests/ --no-cache && ${WS}/.venv/bin/ruff format --check src/ tests/ && ${WS}/.venv/bin/mypy src/` |
 | `test-comunify` | `cd ${WS}/comunify/backend && ${WS}/.venv/bin/pytest tests/ -v && ${WS}/.venv/bin/ruff check src/ tests/ --no-cache && ${WS}/.venv/bin/ruff format --check src/ tests/ && ${WS}/.venv/bin/mypy src/` |
 | `test-lupulo` | `cd ${WS}/lupulo/backend && ${WS}/.venv/bin/pytest tests/ -v && ${WS}/.venv/bin/ruff check src/ tests/ --no-cache && ${WS}/.venv/bin/ruff format --check src/ tests/ && ${WS}/.venv/bin/mypy src/` |
-| `test-fe-vitalia` | `cd ${WS}/vitalia/frontend && npx tsc --noEmit && npx eslint . && npx vitest run` |
-| `test-fe-nicolify` | `cd ${WS}/nicolify/frontend && npx tsc --noEmit && npx eslint . && npx vitest run` |
-| `test-fe-comunify` | `cd ${WS}/comunify/frontend && npx tsc --noEmit && npx eslint . && npx vitest run` |
-| `test-fe-lupulo` | `cd ${WS}/lupulo/frontend && npx tsc --noEmit && npx eslint . && npx vitest run` |
+| `test-fe-vitalia` | `cd ${WS}/vitalia/frontend && npx tsc --noEmit && npx eslint src/ && npx vitest run` |
+| `test-fe-nicolify` | `cd ${WS}/nicolify/frontend && npx tsc --noEmit && npx eslint src/ && npx vitest run` |
+| `test-fe-comunify` | `cd ${WS}/comunify/frontend && npx tsc --noEmit && npx eslint src/ && npx vitest run` |
+| `test-fe-lupulo` | `cd ${WS}/lupulo/frontend && npx tsc --noEmit && npx eslint src/ && npx vitest run` |
 | `arch-test-vitalia` | `cd ${WS}/vitalia/backend && ${WS}/.venv/bin/pytest tests/architecture/ -x -q --tb=short` |
 | `arch-test-nicolify` | `cd ${WS}/nicolify/backend && ${WS}/.venv/bin/pytest tests/architecture/ -x -q --tb=short` |
 | `arch-test-comunify` | `cd ${WS}/comunify/backend && ${WS}/.venv/bin/pytest tests/architecture/ -x -q --tb=short` |

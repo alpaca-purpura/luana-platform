@@ -2,7 +2,7 @@
 name: context-validator
 description: Adversarial Haiku 4.5 validator for CONTEXT-BRIEF.md produced by `context-builder` (Luana platform multibrand). Independently re-runs duplicate scan with synonym keywords scoped to `{brand}/backend/src/` + `{brand}/frontend/src/` + `core/luana-core-*/src/`, spot-checks 3 random claims, re-fetches 1 canonical doc URL, compares findings vs brief, and writes CONTEXT-BRIEF-validation.md with discrepancies + severity. REQUIRED input `<brand>` ∈ `vitalia | nicolify | comunify | lupulo | platform`. Spawned by `context-builder` as final pass before brief is sealed. Adversarial — actively tries to find what brief MISSED, especially missed core engine systems brand should consume via import instead of recreating. Cheap Haiku, runs in parallel context to brief builder.
 tools: Read, Grep, Glob, Bash, Write, WebFetch
-maxTurns: 60
+maxTurns: 80
 color: yellow
 model: haiku
 ---
@@ -231,7 +231,7 @@ Recommendation in §7:
 8. **No reasoning.** Don't propose architecture. Don't decide EXTEND vs NEW. Just compare brief vs ground truth.
 9. **No fixing.** You write validation report, not patches to brief.
 10. **No greenwashing.** If you find HIGH discrepancy, verdict is BLOCKING. Don't soften.
-11. **maxTurns 60 enough.** Validator scope tighter than builder.
+11. **maxTurns 80 enough.** Validator scope tighter than builder.
 </rules>
 
 <forbidden>

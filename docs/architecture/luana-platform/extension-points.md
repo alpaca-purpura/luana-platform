@@ -13,8 +13,9 @@ para construir un agente vertical sobre `luana-core`.
 ### Qué es el Extension SDK
 
 El `luana-core-extension-sdk` es la capa de contrato entre `luana-core` (motor central,
-sin conocimiento de verticales) y las aplicaciones de marca (`apps/vitalia`, `apps/comunify`,
-`apps/lupulo`, `apps/nicolify`). Cada marca registra sus extensiones en un
+sin conocimiento de verticales) y los backends de marca (`vitalia/backend/src/modules/vitalia/`,
+`comunify/backend/src/modules/comunify/`, `lupulo/backend/src/modules/lupulo/`,
+`nicolify/backend/src/modules/nicolify/`). Cada marca registra sus extensiones en un
 `ExtensionPointRegistry` durante el arranque de la aplicación FastAPI, antes de que el
 servidor comience a recibir tráfico.
 
@@ -81,8 +82,11 @@ es estándar en frameworks de plugins maduros (Starlette, Django Apps, Gunicorn 
 ### CC-4 — Excepción estricta en duplicado + namespace obligatorio (prefijo brand_slug)
 
 Cada nombre registrado DEBE comenzar con el `brand_slug` de la marca, seguido de un punto
-y un identificador único. El `brand_slug` debe pertenecer al allowlist:
-`{"nicolify", "vitalia", "comunify", "lupulo", "test-brand"}`.
+y un identificador único. El `brand_slug` debe pertenecer al allowlist definido en el SDK:
+`_ALLOWED_BRAND_SLUGS` en
+`core/luana-core-extension-sdk/src/luana_core_extension_sdk/extension_points.py`
+(actualmente: `{"nicolify", "vitalia", "comunify", "lupulo", "test-brand"}`; las 6 brands
+bootstrap se agregarán al frozenset al incorporarlas, no en este doc).
 
 ```python
 # Correcto
@@ -140,7 +144,7 @@ def resolve_field_override(self, field: FieldDef, ctx: BrandContext) -> Optional
 **Ejemplo Vitalia (médico):**
 
 ```python
-# apps/vitalia/extensions.py
+# vitalia/backend/src/modules/vitalia/extensions.py
 def _vitalia_consent_field_override(
     field: FieldDef, ctx: BrandContext
 ) -> Optional[FieldOverride]:
@@ -1071,7 +1075,7 @@ guardrail en EP-13 y es obligatoria para cumplir con la Ley 26.529 (Argentina).
 ### Arquitectura del agente
 
 ```
-apps/vitalia/
+vitalia/backend/src/modules/vitalia/
 └── agents/
     └── treatment_agent/
         ├── __init__.py
@@ -1084,7 +1088,7 @@ apps/vitalia/
 ### Composición de paquetes luana-core
 
 ```python
-# apps/vitalia/agents/treatment_agent/callback_handler.py
+# vitalia/backend/src/modules/vitalia/agents/treatment_agent/callback_handler.py
 from luana_core_observability import BaseAgentCallbackHandler
 
 class VitaliaTreatmentCallbackHandler(BaseAgentCallbackHandler):
@@ -1098,7 +1102,7 @@ class VitaliaTreatmentCallbackHandler(BaseAgentCallbackHandler):
     pass
 
 
-# apps/vitalia/agents/treatment_agent/observability_context.py
+# vitalia/backend/src/modules/vitalia/agents/treatment_agent/observability_context.py
 from luana_core_observability import BaseObservabilityContext
 
 class VitaliaTreatmentObservabilityContext(BaseObservabilityContext):
@@ -1114,7 +1118,7 @@ class VitaliaTreatmentObservabilityContext(BaseObservabilityContext):
 ### Registro via Extension SDK (EP-3, EP-8, EP-13, EP-14)
 
 ```python
-# apps/vitalia/extensions.py
+# vitalia/backend/src/modules/vitalia/extensions.py
 from luana_core_extension_sdk import ExtensionPointRegistry
 from vitalia.agents.treatment_agent.tools import (
     _medical_consent_request,
@@ -1200,7 +1204,7 @@ def register_vitalia_extensions(registry: ExtensionPointRegistry) -> None:
 El treatment_agent usa el scheduler para enviar recordatorios automáticos:
 
 ```python
-# apps/vitalia/agents/treatment_agent/agent.py
+# vitalia/backend/src/modules/vitalia/agents/treatment_agent/agent.py
 from luana_core_scheduling import JobQueue
 
 class VitaliaTreatmentAgent:
@@ -1255,7 +1259,7 @@ system_instruction = await brand_voice_port.get_system_instruction()
 ### Lifespan de la app Vitalia
 
 ```python
-# apps/vitalia/main.py
+# vitalia/backend/src/modules/vitalia/main.py
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from luana_core_extension_sdk import ExtensionPointRegistry
@@ -1300,7 +1304,7 @@ X se prueba en producción (batalla real — pacientes, creadores, comensales)
 /pm evalúa: ¿X es generalizable a otras marcas?
   ↓
 Si sí → lift a luana-core-{domain} → marcas B, C, D consumen el mismo primitivo via SDK
-Si no → X queda en apps/vitalia/ como EP registrado o código interno de marca
+Si no → X queda en vitalia/backend/src/modules/vitalia/ como EP registrado o código interno de marca
 ```
 
 ### Ejemplo concreto: de Vitalia a luana-core
@@ -1314,7 +1318,7 @@ Si no → X queda en apps/vitalia/ como EP registrado o código interno de marca
    - Interfaz agnóstica de vertical
    - Marcas consumen via `JobQueue.enqueue("core.send_engagement_reminder", ...)`
    - Vitalia, Comunify, Lupulo usan el mismo primitivo sin saber de las otras marcas.
-5. **Si no** (uso muy específico al contexto médico): permanece en `apps/vitalia/`.
+5. **Si no** (uso muy específico al contexto médico): permanece en `vitalia/backend/src/modules/vitalia/`.
 
 ### Invariante fundamental: NO importación cross-brand
 
@@ -1351,4 +1355,4 @@ dispatch necesitan realmente.
 
 *Este documento es generado y mantenido por el equipo de arquitectura de Luana Platform.*
 *Ver `core/luana-core-extension-sdk/` para el código fuente del SDK.*
-*Ver `apps/test-brand/` para la implementación de referencia del smoke pack.*
+*Ver `core/luana-core-extension-sdk/tests/unit/` para el smoke pack de referencia (`test-brand`).*

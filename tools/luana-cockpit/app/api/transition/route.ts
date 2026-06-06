@@ -19,7 +19,7 @@ import { z } from 'zod';
 import { errorResponse, safeJson } from '../_lib/responses';
 import { readMarkdownWithFrontmatter } from '@/lib/fs-reader';
 import { writeMarkdownWithFrontmatter } from '@/lib/fs-writer';
-import { storiesPath, archivePath, getBrands } from '@/lib/workspace';
+import { storiesPath, archiveRootPath, getBrands } from '@/lib/workspace';
 import { isChrisAllowed, type StoryState } from '@/lib/types';
 
 const STATE_VALUES: readonly StoryState[] = [
@@ -60,7 +60,7 @@ async function findStoryDir(brand: string, storyId: string): Promise<string | nu
     // continuar
   }
 
-  const archiveRoot = path.dirname(archivePath(brand, '0000'));
+  const archiveRoot = archiveRootPath(brand); // = archive/ (NO path.dirname(archivePath) → archive/{year} bug)
   try {
     const years = await readdir(archiveRoot, { withFileTypes: true });
     for (const y of years) {

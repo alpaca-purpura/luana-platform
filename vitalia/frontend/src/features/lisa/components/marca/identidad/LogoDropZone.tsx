@@ -44,6 +44,9 @@ export interface LogoDropZoneProps {
   /** Called when client-side validation fails. Receives error message. */
   onValidationError?: (message: string) => void;
   isUploading?: boolean;
+  /** Called when the user removes the persisted logo. */
+  onDelete?: () => void;
+  isDeleting?: boolean;
   className?: string;
 }
 
@@ -55,6 +58,8 @@ export function LogoDropZone({
   onUpload,
   onValidationError,
   isUploading = false,
+  onDelete,
+  isDeleting = false,
   className,
 }: LogoDropZoneProps) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -218,17 +223,32 @@ export function LogoDropZone({
         </p>
       )}
 
-      {/* Remove / change button when logo exists */}
+      {/* Change / remove actions when a logo exists — juntas, no en el fondo de la página */}
       {displayUrl && !isUploading && (
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="self-start text-xs text-muted-foreground"
-          onClick={() => inputRef.current?.click()}
-        >
-          Cambiar logo
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="text-xs text-muted-foreground"
+            onClick={() => inputRef.current?.click()}
+          >
+            Cambiar logo
+          </Button>
+          {onDelete && logoUrl && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="text-xs text-destructive hover:text-destructive"
+              onClick={onDelete}
+              disabled={isDeleting}
+              aria-label="Eliminar logo de la clínica"
+            >
+              {isDeleting ? "Eliminando..." : "Eliminar logo"}
+            </Button>
+          )}
+        </div>
       )}
     </div>
   );

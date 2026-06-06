@@ -77,6 +77,18 @@ Hasta 2026-05-15, el monorepo tenia un `docker-compose.dev.yml` raiz legacy con 
 | lupulo | 8004 | 3004 | 3 |
 | (futuros) | 8005-8010 | 3005-3010 | 4-9 |
 
+**Cockpit per-worktree (Paradigma A):** el Luana Cockpit (visualizador SDD, filesystem-as-DB) corre por separado en cada worktree y usa el siguiente rango adicional:
+
+| Worktree | Brand inferido | Puerto cockpit |
+|---|---|---|
+| `luana-platform/` (main) | cross-brand | 4000 |
+| `luana-nicolify/` | nicolify | 4001 |
+| `luana-vitalia/` | vitalia | 4002 |
+| `luana-comunify/` | comunify | 4003 |
+| `luana-lupulo/` | lupulo | 4004 |
+
+Estos puertos son independientes del stack brand (backend/frontend). SSoT: root `CLAUDE.md` § Cockpit · Paradigma A.
+
 **Razon de eleccion:** Port collision entre brands levantadas simultaneamente es imposible. Los puertos estan documentados en `{brand}/config/brand.yaml::infra` y en `docs/portfolio/INFRA-MATRIX.md`.
 
 **Consecuencia:** Si los puertos 8001-8004 o 3001-3004 estan ocupados por otra app en el host, hay conflicto. Solucion: detener la otra app o reasignar (actualizar brand.yaml + infra-matrix).

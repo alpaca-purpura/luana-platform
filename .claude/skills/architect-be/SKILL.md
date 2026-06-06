@@ -2,6 +2,7 @@
 name: architect-be
 description: "Instruction doc Backend (NO es agent type spawnable — es contexto que `architect-orchestrator` carga cuando story toca BE). Define qué debe contener la sección BE de 03-arch.md: endpoints, DTOs Pydantic, SQLA models, migrations idempotent, services, repositories, tests requeridos, cross-cutting (tenant isolation, currency, master-data, PII). Cross-module audit obligatorio. NUNCA invocar como subagent_type — el orchestrator lee este SKILL.md como guidance contextual."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob
+disable-model-invocation: true   # instruction-doc: architect-orchestrator lo LEE por path, no auto-trigger
 ---
 
 # /architect-be — Backend instruction doc (contextual guidance for architect-orchestrator)
@@ -13,9 +14,9 @@ allowed-tools: Read, Write, Edit, Bash, Grep, Glob
 ## Skills cargados (HARD GATE)
 
 - `backend-expert` — DDD, conventions, anti-patterns
-- `tessl__fastapi` — async, response_model, DI
-- `tessl__pytest-api-testing` — async client, fixtures
-- `tessl__graceful-degradation` — timeout/fallback
+- FastAPI canonical patterns — async, response_model, DI
+- pytest async testing patterns — async client, fixtures
+- graceful-degradation (timeout + fallback + circuit breaker) — timeout/fallback
 - Domain skill según módulo (`brand-expert`, `offer-expert`, `metrics-expert`, etc.)
 
 ## Workflow
@@ -132,10 +133,10 @@ Sin esto + flip → builder REVIEW FAIL automático.
 
 Output al orchestrator:
 ```
-done -> docs/product/stories/{story-id}/03-arch-be.md
+done -> {brand}/docs/product/stories/{story-id}/03-arch-be.md
 ```
 
-NO esperás más. Orchestrator reúne con otros 03-arch-* y produce 04-tickets.yaml.
+NO esperás más. Orchestrator reúne con otros 03-arch-* y produce 06-tickets.yaml.
 
 ## Anti-patterns
 

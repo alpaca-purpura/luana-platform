@@ -8,7 +8,7 @@
 ticket_id: T-1
 story_id: STORY_ID
 state: building                                  # ver process/ticket-states.md
-assigned_to: qwen-opencode                       # qwen-opencode | claude-opus-4-7 | claude-sonnet-4-6
+assigned_to: qwen-opencode                       # qwen-opencode | claude-opus-4-8 | claude-sonnet-4-6
 started_at: 2026-05-04T16:00Z
 last_update: 2026-05-04T16:23Z
 current_step: "Implementando service layer"
@@ -91,9 +91,23 @@ $ /test-backend
 - ticket state: `tests-passing` → push imminente
 - Próximo paso: `git push origin development` y mover state a `pushed`
 
+## Verificación live (Critical Rule #37 · `definition-of-done-live-verify.md`)
+
+Los scenarios user-reachable de este ticket se ejercieron contra el stack dev real (`make dev-app-{brand}` / `localhost:300X`), no solo tests verdes:
+
+```yaml
+dod_live_verified: true|false
+dod_env: "<make dev-app-{brand} → dev-app.{brand}lat.com (Chrome DevTools MCP) | localhost:300X>"
+dod_evidence:
+  - action: "<write/flujo real ejercido>"
+    observed: "<efecto visible>"
+    backend_log: "<status + sin traceback + efecto DB>"
+```
+> Un `GET 200` sobre un placeholder NO es verificación. Una e2e que mockea el backend del surface = falso verde.
+
 ## Si bloqueas
 
 Si encontraste un bloqueo que NO podés resolver:
-1. Estado ticket → `blocked` en `04-tickets.yaml`
+1. Estado ticket → `blocked` en `06-tickets.yaml`
 2. Documentá razón en `blocker:` arriba
 3. Salida al orchestrator: `blocked -> ver T-{n}-impl-log.md`

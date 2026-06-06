@@ -164,3 +164,59 @@ Se adopta **Alternativa D**: GitHub Actions puro con reusable workflows y GitHub
 - ADR anterior: `docs/architecture/luana-platform/ADR-001-luana-platform.md`
 - Regla anti-duplication: `.claude/rules/anti-duplication.md`
 - Regla git safety: `.claude/rules/git-safety.md`
+
+---
+
+## Addendum (2026-06-01)
+
+### A — GitHub Actions DEFERRED (estado actual)
+
+GitHub Actions está en modo **deferred**: los workflows existen en `.github/workflows/` pero no tienen
+ejecuciones garantizadas (sin servidor CI provisionado). La calidad se enforce 100% vía hooks locales
+(`scripts/git-hooks/pre-commit` / `pre-push` / `make ci-parity`). Sentinel activo: `.ci-parity-deferred`
+(tracked en repo). Ver: `.claude/rules/github-actions-deferred.md`.
+
+Reactivar cuando: servidor staging provisionado · primera release vX.Y.Z · segundo desarrollador.
+
+### B — Trigger real de cd-staging.yml (diverge del body original)
+
+El body original de este ADR (Alternativa D / Consecuencias) dice que `cd-staging.yml` se activa en
+**push a `main`**. La decisión de diseño fue válida al momento de escritura (2026-05-15).
+
+**Policy change 2026-05-19 (ratificada Chris):** el trigger fue cambiado a `workflow_dispatch` manual.
+Auto-deploy a staging en push-to-main fue desactivado. El workflow real como está codificado:
+
+```yaml
+# .github/workflows/cd-staging.yml  (cabecera — líneas 22-32)
+on:
+  workflow_dispatch:
+    inputs:
+      force_all_brands:
+        description: 'Deploy todas las brands sin detección de paths (true) o solo brands afectadas (false)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+```
+
+Cómo invocar manualmente:
+```bash
+gh workflow run "CD — Staging multibrand (manual)" --ref main
+# o desde GitHub UI: Actions → workflow → Run workflow
+```
+
+El comentario en cabecera del workflow reza: *"Cambio policy 2026-05-19: push a main YA NO dispara
+staging auto-deploy."* El body de este ADR no fue actualizado en ese momento; este addendum corrige
+el registro.
+
+### C — Story S-CICD-DEPLOY archivada
+
+Las referencias de la sección "Referencias" apuntan a `docs/product/stories/S-CICD-DEPLOY/`. Esta
+story fue archivada (estado `done`). Las rutas correctas actuales son:
+
+| Ruta original (stale) | Ruta actual (archivada) |
+|---|---|
+| `docs/product/stories/S-CICD-DEPLOY/01-spec.md` | `docs/archive/2026/stories/S-CICD-DEPLOY/01-spec.md` |
+| `docs/product/stories/S-CICD-DEPLOY/03-arch.md` | `docs/archive/2026/stories/S-CICD-DEPLOY/03-arch.md` |

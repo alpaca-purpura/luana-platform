@@ -191,6 +191,25 @@ system-map-validate-all:
 	python3 scripts/validate_system_map.py --all-brands
 
 # ════════════════════════════════════════════════════════════════
+# HB-51 · cap-format enforcement determinístico (8 capas)
+# ════════════════════════════════════════════════════════════════
+new-cap:  ## Generar una cap schema-válida (Capa 2). Uso: make new-cap BRAND=vitalia MODULE=inbox SLUG=adrian-inbox [AREA=adrian.inbox] [AGENT=adrian] [NAME="..."] [STORY=...]
+	@test -n "$(BRAND)" || (echo "BRAND= requerido (ej: vitalia)"; exit 1)
+	@test -n "$(MODULE)" || (echo "MODULE= requerido (tech_module dir)"; exit 1)
+	@test -n "$(SLUG)" || (echo "SLUG= requerido (kebab)"; exit 1)
+	$(PYTHON) scripts/new_cap.py --brand $(BRAND) --module $(MODULE) --slug $(SLUG) \
+		--agent "$(or $(AGENT),TODO-agent)" --area "$(AREA)" --name "$(NAME)" --story "$(or $(STORY),TBD)"
+
+caps-schema-check:  ## Capa 3 · validar schema de las caps (advisory). BRAND= o todas
+	$(PYTHON) scripts/validate_caps_schema.py $(if $(BRAND),--brand $(BRAND),--all-brands)
+
+cap-gates:  ## Capa 4 · correr G1-G6 sobre un brand. BRAND= (default vitalia)
+	$(PYTHON) scripts/validate_code_cap_bidirectional.py --brand $(or $(BRAND),vitalia)
+
+cap-doctor:  ## Capa 8 · health report code↔cap de un vistazo (orphan headers · cajas vacías · paths rotos · supersesiones). BRAND= o todas
+	$(PYTHON) scripts/cap_doctor.py $(if $(BRAND),--brand $(BRAND),--all-brands)
+
+# ════════════════════════════════════════════════════════════════
 # CI parity gate (cross-brand)
 # ════════════════════════════════════════════════════════════════
 ci-parity: $(BRANDS:%=ci-parity-%)
@@ -243,9 +262,12 @@ cockpit-up:  ## Levantar luana-cockpit Next.js en localhost:4000 (auto-install +
 
 # ── hooks ────────────────────────────────────────────────────────────────────
 install-hooks:
-	@mkdir -p .git/hooks
-	@ln -sf ../../scripts/git-hooks/pre-commit .git/hooks/pre-commit
-	@echo "pre-commit hook installed."
+	@HOOKS_DIR="$$(git rev-parse --git-path hooks)"; \
+	 TOP="$$(git rev-parse --show-toplevel)"; \
+	 mkdir -p "$$HOOKS_DIR"; \
+	 ln -sf "$$TOP/scripts/git-hooks/pre-commit" "$$HOOKS_DIR/pre-commit"; \
+	 [ -f "$$TOP/scripts/git-hooks/pre-push" ] && ln -sf "$$TOP/scripts/git-hooks/pre-push" "$$HOOKS_DIR/pre-push" || true; \
+	 echo "git hooks installed to $$HOOKS_DIR (pre-commit + pre-push)"
 
 # ── help ─────────────────────────────────────────────────────────────────────
 help:

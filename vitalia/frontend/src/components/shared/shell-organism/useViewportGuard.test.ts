@@ -3,16 +3,16 @@
  * F1-S4 vitalia-fase1-shell-layout-5050 — T-3
  *
  * gherkin_coverage:
- * - SC-2 negative: viewport <768 (mobile) → no-op, ValeriaSidebar hidden via Tailwind
- * - SC-3 edge: viewport [768, 1104) + state='full' → forces 'rail' (one-way guard)
+ * - SC-2 negative: viewport <1024 (tablet/mobile = drawer) → no-op, Valeria is overlay
+ * - SC-3 edge: viewport [1024, 1104) + state='full' → forces 'rail' (one-way guard)
  * - SC-3 edge: no auto-restore when viewport grows back (one-way only)
  * - SC-3 edge: viewport >=1104 → no-op (full fits without clamp)
  *
- * 03-arch.md § 2.6 — useViewportGuard spec verbatim:
+ * Updated bugfix-shell-valeria-responsive Point 3 (Chris 2026-06-04):
  * - FULL_STATE_MIN_VIEWPORT = 1104 (valeria 620 + handle ~4 + app 480)
- * - MOBILE_BREAKPOINT = 768 (< md)
- * - One-way: full → rail when [768, 1104). No auto-restore to full.
- * - No-op when w < 768 (mobile delegate to drawer F1-S5+)
+ * - INLINE_SPLIT_MIN_VIEWPORT = 1024 (Tailwind `lg`) — below it Valeria is a drawer
+ * - One-way: full → rail when [1024, 1104). No auto-restore to full.
+ * - No-op when w < 1024 (tablet + mobile = drawer/overlay, full width agent)
  * - No-op when w >= 1104 (full fits)
  * - Cleans up: removeEventListener + cancelAnimationFrame on unmount
  *
@@ -59,13 +59,14 @@ describe("useViewportGuard — no-op when viewport >= 1104 (SC-3)", () => {
   });
 });
 
-describe("useViewportGuard — forces 'rail' when viewport [768, 1104) + state='full' (SC-3)", () => {
+describe("useViewportGuard — forces 'rail' when viewport [1024, 1104) + state='full' (SC-3 / Point 3)", () => {
   beforeEach(() => {
     useShellStore.setState({ valeriaState: "full", shellMode: "agentic" });
+    // 1050 is inline (>= lg 1024) but < FULL_STATE_MIN_VIEWPORT (1104) → 'full' won't fit
     Object.defineProperty(window, "innerWidth", {
       writable: true,
       configurable: true,
-      value: 900,
+      value: 1050,
     });
   });
 
@@ -73,7 +74,7 @@ describe("useViewportGuard — forces 'rail' when viewport [768, 1104) + state='
     vi.restoreAllMocks();
   });
 
-  it("forces valeriaState from 'full' to 'rail' at viewport=900", async () => {
+  it("forces valeriaState from 'full' to 'rail' at viewport=1050", async () => {
     const { useViewportGuard } = await import("./useViewportGuard");
 
     renderHook(() => useViewportGuard());
@@ -82,7 +83,7 @@ describe("useViewportGuard — forces 'rail' when viewport [768, 1104) + state='
     expect(useShellStore.getState().valeriaState).toBe("rail");
   });
 
-  it("no-op when state is already 'rail' at viewport=900", async () => {
+  it("no-op when state is already 'rail' at viewport=1050", async () => {
     useShellStore.setState({ valeriaState: "rail", shellMode: "agentic" });
     const { useViewportGuard } = await import("./useViewportGuard");
 
@@ -99,7 +100,7 @@ describe("useViewportGuard — no auto-restore on viewport grow (SC-3 edge)", ()
     Object.defineProperty(window, "innerWidth", {
       writable: true,
       configurable: true,
-      value: 900,
+      value: 1050,
     });
   });
 
@@ -107,12 +108,12 @@ describe("useViewportGuard — no auto-restore on viewport grow (SC-3 edge)", ()
     vi.restoreAllMocks();
   });
 
-  it("state stays 'rail' after viewport grows from 900 to 1280", async () => {
+  it("state stays 'rail' after viewport grows from 1050 to 1280", async () => {
     const { useViewportGuard } = await import("./useViewportGuard");
 
     renderHook(() => useViewportGuard());
 
-    // Guard forced 'rail' at w=900
+    // Guard forced 'rail' at w=1050
     expect(useShellStore.getState().valeriaState).toBe("rail");
 
     // Now simulate viewport resize to wide desktop
@@ -175,6 +176,30 @@ describe("useViewportGuard — no-op for valeriaState when mobile viewport < 768
 
     // Mobile drawer stays closed (fresh default) — desktop 'full' did NOT auto-open it
     expect(useShellStore.getState().mobileDrawerOpen).toBe(false);
+  });
+});
+
+describe("useViewportGuard — no-op in tablet drawer zone [768, 1024) (Point 3)", () => {
+  beforeEach(() => {
+    useShellStore.setState({ valeriaState: "full", shellMode: "agentic" });
+    Object.defineProperty(window, "innerWidth", {
+      writable: true,
+      configurable: true,
+      value: 800,
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("no-op for valeriaState when viewport=800 (tablet < lg) — Valeria is a drawer there", async () => {
+    const { useViewportGuard } = await import("./useViewportGuard");
+
+    renderHook(() => useViewportGuard());
+
+    // Tablet is drawer zone → the inline guard must NOT touch valeriaState
+    expect(useShellStore.getState().valeriaState).toBe("full");
   });
 });
 

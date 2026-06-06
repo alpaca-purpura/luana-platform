@@ -1,7 +1,9 @@
 # Spanish Text (UI user-facing)
 
+**Alcance (acotado 2026-06-01 — Chris):** el neutro/anti-voseo aplica **SOLO a interfaces de usuario** — web UI (frontend) + output agéntico (lo que el agente le dice al usuario final). **NUNCA** al harness interno, docs, instrucciones, tooling o tests. El enforcement automático (`scripts/git-hooks/pre-commit` §1) escanea solo código de producto `.py`/`.ts`/`.tsx`; **NO escanea markdown, `.claude/`, `docs/`, `scripts/`, `tools/` ni tests**. El output agéntico se valida aparte con arch tests en `core/` (`test_*_voseo_compliance.py`, `test_system_prompt_neutro_latam.py`).
+
 Aplica: React components, form-runtime schemas (labels/hints/placeholders), BE catalogs user-facing, DTOs messages, prompts LLM output user, emails, notificaciones.
-NO aplica: logs internos, errors técnicos, comentarios, variables, tests sin UI string.
+NO aplica (voseo LIBRE): el harness (`.claude/{skills,rules,agents,hooks}`), toda la documentación (`docs/`, `*.md`), `scripts/`, `tools/` (cockpit), logs internos, errores técnicos, comentarios, variables, tests. Chris escribe en voseo y el harness/docs lo reflejan — es interno, no se restringe.
 
 ## R1 — Ortografía
 Tildes + ñ + apertura `¿`/`¡`. Ej: días, Campaña, Inversión, Conversión, Configuración, Atracción, Nutrición, Adopción, Expansión, activación, adquisición, retención, ubicación.
@@ -27,8 +29,8 @@ Tuteo (`tú`). PROHIBIDO voseo (`vos/sos/tenés/podés/mirá/dejá`) + léxico m
 ## Excepción sales_agent
 Output sales_agent respeta voz tenant (puede tener voseo si tenant AR). Ver `sales-agent-expert`.
 
-## Magic comment escape (R25)
-Files que citan voseo como referencia técnica (rules MD, audit reports, test fixtures) → `# voseo-allowed` o `<!-- voseo-allowed -->` (con/sin razón). NUNCA en user-facing strings. Hook regex + 4 variantes detalladas en `docs/rules-detail/spanish-glossary.md § Magic comment`.
+## Magic comment escape (R25 — obsoleto para archivos internos desde 2026-06-01)
+Tras acotar el enforcement a UI/agentic, los archivos internos (markdown, `.claude/`, `docs/`, `scripts/`, `tools/`, tests) **ya NO se escanean** → **NO necesitan** comentario mágico. El `# voseo-allowed` / `<!-- voseo-allowed -->` queda solo como escape residual para el caso raro de un archivo de **código de producto user-facing** (`.py`/`.ts`/`.tsx`) que a propósito muestre voseo (ej. copy de un tenant AR). Los ~73 comentarios mágicos heredados en docs/skills son ahora ruido inofensivo (limpieza opcional, Wave 3). Variantes: `docs/rules-detail/spanish-glossary.md § Magic comment`.
 
 ## Referencias
 - `docs/rules-detail/spanish-glossary.md` — **glosario completo (50+ conversiones) + magic comment detalle**

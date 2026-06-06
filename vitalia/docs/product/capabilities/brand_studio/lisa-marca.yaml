@@ -46,7 +46,7 @@ adr_004_compliance: full
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-fase2-lisa-marca   # v2 cement · mirror of story_introduced
 created_date: 2026-05-27   # v2 cement · mirror of date_introduced
-last_modified: 2026-05-31   # arreglar-guardado-voz-y-tono (fix guardado voz-y-tono)
+last_modified: 2026-06-03   # bugfix shell-nav-scroll-errors (#3 h2-eco removido · #5 banner landing removido)
 parent_cap: vitalia-brand-studio-medical-sections   # v2 cement · mirror of extends_capability
 derives_capabilities: []   # v2 cement · initial empty list
 
@@ -54,6 +54,30 @@ derives_capabilities: []   # v2 cement · initial empty list
 
 # Capability change log v2 (cement 2026-05-27)
 change_log:
+  - story_id: estabilizar-harness-e2e-lisa-marca
+    date: 2026-06-03
+    type: fix
+    summary: >-
+      Harness e2e honesto + 4 guardados reales + logo R2. (1) De-mock: 11 specs lisa-marca dejaron de
+      mockear el backend-bajo-prueba (route.fulfill) → corren contra backend real con forwarding compartido +
+      asserts web-first + base.ts anti-burbuja. Suite 94% determinista ×3 (9/11 specs 100%); 2 residuales
+      (large-dataset, voice-warning) son throttle del Clerk dev-FAPI (infra externa, no bug) → aceptados con
+      retries=1 (decisión Chris) + HB-28 para scaling. (2) 4 guardados que el mock ocultaba como rotos contra
+      backend real, arreglados + verificados live: nombre/identidad (keystone — mismatch de contrato FE↔BE),
+      colores + tipografía (PATCH /visuals 422 whitelist), logo (403→201 headers de actor). (3) 2 sub-bugs de
+      auth: actor de audit real (Clerk userId, no tenantId) + prohibited-phrases X-User-ID opcional. (4) Logo R2:
+      upload dejó de ser stub → consume engine luana-core-assets → bytes reales en bucket vitalia-assets-dev +
+      URL pública renderable (verificado: upload → GET 200 image/png). cap re-cableado a specs honestos +
+      presencia-web → partial (sin spec happy-path; colores/tipografía/logo verificados live manual).
+    scenarios_added: []
+    merge_sha: 8d493dee
+    status: done
+  - story_id: vitalia-bugfix-shell-nav-scroll-errors
+    date: 2026-06-03
+    type: fix
+    summary: "Higiene visual de las vistas de marca (story bugfix shell): #3 removido el h2-eco redundante en Identidad/VozTono/Presencia (se preservan los headings de sección intra-form); #5 eliminado el callout InfoBannerLandingDescoped ('Editor de landing pública — próximamente') de Presencia. Resto de Presencia (website/redes/trust/sedes) intacto. Live dev-app OK."
+    merge_sha: null
+    status: done
   - story_id: vitalia-fase2-lisa-marca
     date: 2026-05-27
     type: new
@@ -109,6 +133,15 @@ scenarios:
     when: "Edita nombre, logo, paleta de colores y guarda con autosave (debounce 600ms)"
     then: "Cambios persisten en engine brand-studio · autosave badge confirma guardado · vertical clínico (read-only) no cambia"
     e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase2-lisa-marca/lisa-marca-identidad-autosave.spec.ts"
+    verified_real:
+      at: "2026-06-03T18:35:00Z"
+      how: >-
+        Backend real (stack dev UP, sesión Clerk + storageState). NOMBRE: lisa-marca-identidad-autosave.spec.ts
+        de-mockeado → PATCH /api/v1/lisa/marca/identity 200 + GET round-trip 200 (5 passed, 1 flaky-retry por
+        throttle Clerk). COLORES + TIPOGRAFÍA: PATCH /api/v1/lisa/marca/visuals 200 (whitelist fix) + GET 200
+        round-trip — verificado live (manual + BE integration test_marca_visuals_missing_attr 5/5 vs DB real).
+        LOGO: ahora storage R2 real (no stub) — upload → bucket vitalia-assets-dev → GET URL pública 200
+        image/png. Keystone (mismatch de contrato FE↔BE) cazado y arreglado por el de-mock.
     story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase2-lisa-marca/01-spec.md"
     atomic_ref: null
     edge_cases:
@@ -138,11 +171,11 @@ scenarios:
   - id: admin-configura-presencia-web
     name: "Administrador configura la presencia web y certificaciones"
     actor: admin_clinic
-    status: live
+    status: partial   # estabilizar-harness-e2e-lisa-marca: sin spec e2e happy-path honesto para website/redes/trust → partial (RN-7 cap honesto). El guardado real de visuals/identidad SÍ está cubierto (ver admin-configura-identidad-clinica)
     given: "Admin en sub-sub-tab Presencia con campos vacíos"
     when: "Agrega URL de sitio web, vincula redes sociales y selecciona certificaciones del catálogo cerrado (MINSA/SUSALUD PE)"
     then: "Datos persisten · certificaciones muestran íconos oficiales · free-text 'Otra' disponible para certificaciones no listadas"
-    e2e_test: null
+    e2e_test: null   # no hay spec happy-path de presencia de-mockeado; sólo el negative logo-upload-size cubre Identidad
     story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase2-lisa-marca/01-spec.md"
     atomic_ref: null
     edge_cases:
@@ -158,6 +191,9 @@ scenarios:
     when: "Agrega una frase con lenguaje prohibido (ej. 'Garantizamos curar') y espera el debounce"
     then: "Alert de advertencia inline con sugerencia de alternativa · botón 'Guardar igual con esta frase' aparece · al confirmar persiste y registra audit log voice_warning_overridden · sin bloquear el guardado"
     e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase2-lisa-marca/lisa-marca-voice-warning.spec.ts"
+    verified_real:
+      at: "2026-06-03T05:30:00Z"
+      how: "Spec de-mockeado contra backend real. Residual flaky por throttle del Clerk dev-FAPI bajo carga (corre 11º en la suite) → verde-con-retries=1 (aceptado como transient de infra externa, decisión Chris 2026-06-03; scaling → HB-28). Pasa aislado + temprano."
     story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase2-lisa-marca/01-spec.md"
     atomic_ref: null
     edge_cases: []
@@ -249,6 +285,9 @@ scenarios:
     when: "Admin navega a /lisa/marca"
     then: "La página renderiza dentro del presupuesto de LCP · listas usan virtualización (react-window) · scroll fluido sin jank · footprint de memoria acotado"
     e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase2-lisa-marca/lisa-marca-large-dataset.spec.ts"
+    verified_real:
+      at: "2026-06-03T05:30:00Z"
+      how: "Spec de-mockeado contra backend real. Residual flaky por throttle del Clerk dev-FAPI bajo carga (autosave de contacto corre 8º en la suite) → verde-con-retries=1 (aceptado como transient de infra externa, decisión Chris 2026-06-03; scaling → HB-28). Pasa aislado + temprano."
     story_spec_ref: "vitalia/docs/archive/2026/stories/vitalia-fase2-lisa-marca/01-spec.md"
     atomic_ref: null
     edge_cases: []
@@ -286,7 +325,7 @@ business_rules:
     rule: "Solo roles doctor y admin_clinic acceden a la configuración de marca · nurse/receptionist/patient excluidos"
     enforcement:
       - ".claude/rules/tenant-isolation.md"
-    code_ref: "vitalia/backend/src/modules/vitalia/brand_studio/_shared/auth/rbac.py"
+    code_ref: "vitalia/backend/src/modules/vitalia/_shared/auth/rbac.py"
     severity: high
     audit_trail: false
   - id: no-health-voice-validator

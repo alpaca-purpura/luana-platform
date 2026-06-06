@@ -70,6 +70,8 @@ services:
     environment:
       PORT: "3001"
       NEXT_PUBLIC_API_URL: "http://127.0.0.1:8001"
+      # Cap heap V8 de `next dev` (fuga en sesiones largas). 2048MB bajo el límite 3G.
+      NODE_OPTIONS: "--max-old-space-size=2048"
     volumes:
       # Bind mount al path donde el Dockerfile pone WORKDIR + pnpm install (/app/nicolify/frontend),
       # NO en /app raíz (eso sobrescribiría /app/node_modules + /app/pnpm-workspace.yaml del image).
@@ -87,8 +89,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 2G  # nicolify FE necesita más: webpack + React 19 + Sentry + workspace deps @luana/*
-                     # con 1G hace swap thrashing (block I/O 2.5GB+) y la compilación nunca termina.
+          memory: 3G  # nicolify FE necesita más: webpack + React 19 + Sentry + workspace deps @luana/*
+                     # con 2G se peg al cap (98%) compilando muchas rutas → GC thrashing/cuelgues.
+                     # 3G da headroom (host con vitalia parado). NODE_OPTIONS heap cap 2048.
 
   nicolify_cloudflared_dev:
     image: cloudflare/cloudflared:latest

@@ -172,7 +172,9 @@ describe("ValeriaAgendaView", () => {
     await waitFor(() => {
       expect(vi.mocked(trackEvent)).toHaveBeenCalledWith(
         "agenda_viewed",
-        expect.objectContaining({ tenant_id: "tenant-1" }),
+        expect.objectContaining({ view_mode: expect.any(String) }),
+        // tenant/clinic now ride as headers via fetchClient (auth ctx, 3rd arg)
+        expect.objectContaining({ token: "test-token", tenantId: "tenant-1", clinicId: "clinic-1" }),
       );
     });
   });

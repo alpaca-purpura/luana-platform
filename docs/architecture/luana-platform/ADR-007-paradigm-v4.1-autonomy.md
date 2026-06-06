@@ -146,3 +146,35 @@ Stories transicionadas a `state >= ready` ANTES de cement-date 2026-05-19 quedan
 - `.claude/rules/tdd-mandatory.md` — TDD discipline (auditor never breaks)
 - `docs/process/pm-redesign-2026-05.md` — paradigm v4 base
 - Conversación 2026-05-19 — propuesta Chris + 3 decisiones ratificadas (auditor híbrido + checklist mandatory + full v4.1 cement)
+
+---
+
+## Bitácora de versiones posteriores
+
+### v4.2 (cement 2026-05-28) — 3 carriles por naturaleza de verificación
+
+> **Este cuerpo (v4.1) queda SUPERSEDED en los caps de autonomy.** El resto del ADR (D1-D6, Forward-only enforcement, Consequences) permanece válido como contexto histórico. Las cifras que manda son las de v4.2.
+
+**Caps actualizados (v4.2 reemplaza v4.1):**
+
+| Cap | v4.1 (este ADR) | v4.2 (vigente) |
+|---|---|---|
+| `self_fix_iter` (Carril A) | 4 iter | **≤ 5** |
+| `audit_iterations` total | 3 | **≤ 4** |
+| Wall-clock conv 3 | no especificado | **≤ 30 min** |
+
+**Nuevo modelo 3 carriles (reemplaza tabla D1):**
+
+```
+¿Fix requiere ESCRIBIR test NUEVO?
+├─ SÍ  → Carril B: SPAWN dev-team (TDD RED→GREEN). Auditor NUNCA escribe tests.
+└─ NO  → ¿Categoría STAKE-ASIMÉTRICO? (security/auth/tenant_id/PII/migration/…)
+         ├─ SÍ  → Carril C: ESCALATE Chris
+         └─ NO  → Carril A: SELF-FIX gate-verified (cap ≤ 5 iter)
+```
+
+**Caveat agentic (v4.2):** Carril A solo para mecánico (lint/format/typo/import). Todo lo que toca comportamiento agéntico (prompt slots, eval goldens, state machine, voice) → Carril B siempre.
+
+**SSoT vigente:** `.claude/rules/auditor-self-fix-policy.md` (whitelist v4.1 17 categorías + 3 carriles v4.2 + caps v4.2). Ese archivo es la referencia canónica; este ADR es historia.
+
+**Deciders v4.2:** sesión 2026-05-28 — auditoría machinery + análisis costo/tensión → Chris ratificó los 3 carriles + caps ampliados.

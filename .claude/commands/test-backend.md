@@ -13,8 +13,8 @@ If missing: `.venv/bin/pip install -r requirements-dev.txt`
 
 ### Step 2: Postgres pre-flight (gates steps 7-9)
 ```bash
-docker ps --format '{{.Names}}' | grep -qx visionarias_postgres && echo "POSTGRES_UP=1" || echo "POSTGRES_UP=0"
-docker ps --format '{{.Names}}' | grep -qx visionarias_brain_dev && echo "BRAIN_UP=1" || echo "BRAIN_UP=0"
+docker ps --format '{{.Names}}' | grep -qx luana-dev-luana_postgres_dev-1 && echo "POSTGRES_UP=1" || echo "POSTGRES_UP=0"
+docker ps --format '{{.Names}}' | grep -q luana-dev-.*_backend_dev-1 && echo "BRAIN_UP=1" || echo "BRAIN_UP=0"
 ```
 Both up → run steps 7/8/9. Either down → SKIP 7/8/9 with WARNING (not a fail). Suggest user run `/dev-up` for full coverage.
 

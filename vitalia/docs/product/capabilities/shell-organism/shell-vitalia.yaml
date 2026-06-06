@@ -47,13 +47,21 @@ dev_preview:
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-shell-organism   # merge consolidado por ADR-vitalia-005
 created_date: 2026-05-27
-last_modified: 2026-06-01   # bugfix dual-mount (single-main+single-slot)
+last_modified: 2026-06-03   # bugfix shell-nav-scroll-errors (#1 routing #2 selector #3 título #4 scroll #7 error-boundary)
 parent_cap: null
 derives_capabilities: []
 
 # Capability ledger v2 (cement 2026-05-27)
 # Capability change log v2 (cement 2026-05-27)
 change_log:
+  - story_id: vitalia-bugfix-shell-nav-scroll-errors
+    date: 2026-06-03
+    type: fix
+    summary: "Higiene UX del chasis shell (6 bugs): #1 routing post-login → edge-redirect /{tenant}→mateo/agenda en proxy.ts (root cause real = Next 16.2.3 soft-nav intra-route-group, NO 'build artifact'); #2 selector tenant visible (useStoreHydration tenant-store + endpoint real /me/tenants); #3 SubTabHeader-eco removido del dispatcher; #4 AppPanelSlot content overflow-hidden→overflow-y-auto; #7 [agent]/error.tsx aísla el fallo al panel con nav viva. Live-verified 6/6 dev-app.vitalialat.com + e2e real-backend 15/15 (cold-start honesto)."
+    atomics_added: []
+    atomics_modified: [shell-layout-5050, shell-tenant-switcher, shell-app-panel-slot, shell-error-boundary]
+    merge_sha: null
+    status: done
   - story_id: vitalia-fase1-shell-layout-5050
     date: 2026-05-23
     type: new
@@ -502,7 +510,7 @@ business_rules:
     rule: "Rol patient nunca accede al shell clínico · roles válidos: doctor, admin_clinic, nurse, receptionist"
     enforcement:
       - ".claude/rules/tenant-isolation.md"
-    code_ref: "vitalia/frontend/src/middleware.ts"
+    code_ref: "vitalia/frontend/src/proxy.ts"
     severity: critical
     audit_trail: false
 

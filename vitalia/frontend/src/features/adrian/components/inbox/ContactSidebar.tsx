@@ -1,248 +1,325 @@
-// cap: sales_agent.inbox-handler-mode-occ
-// story-origin: vitalia-fase1-s10-TBD
+// cap: adrian.inbox
+// story-origin: TBD
+"use client";
+
 /**
- * ContactSidebar — molécula panel lateral detalle paciente inbox.
- * F1-S10 vitalia-fase1-empty-states — T-5
+ * ContactSidebar.tsx — Inbox contact details panel (PHI-aware fork for vitalia).
  *
- * Layout:
- *   Header: badge "Detalles paciente" + "⋯" overflow button
- *   Patient header: avatar initials + nombre + phone masking + email masking + 🔓 (decorative F1)
- *   Fields (UPPERCASE label + value): Nombre · Teléfono · Email · Origen · Estado embudo · Etiquetas
- *   Action buttons (3, disabled F1 — F2 cablea routing):
- *     📅 Agendar cita (color agent-valeria)
- *     📋 Ver historial paciente (color agent-lisa)
- *     →  Pasar a embudo (color agent-adrian)
+ * Adapter fork from shared ContactSidebar (components/shared/contact-sidebar/),
+ * extended with:
+ *   - PiiMaskedSpan on all PHI fields (name, phone, email, date_of_birth)
+ *   - RequireRole gate for NPS history section (doctor/nurse/admin_clinic only)
+ *   - AuditedSection wrapper on the entire contact section (HIPAA-lite audit log)
  *
- * PHI masking visual (F1 scope):
- *   Phone: "+51 9** ***-XXXX" pattern — string literal from props
- *   Email: "m***@gmail.com" pattern — string literal from props
- *   🔓 button: decorative (F1). F2-S2 cablea @require_phi_access RBAC decorator.
+ * Per 03-arch-fe.md § 7 + hipaa-lite.md:
+ *   - marketing, sales, patient roles NEVER see NPS history
+ *   - AuditedSection fires audit log row on mount (resourceType=patient_profile)
+ *   - Lead contact (name/phone/email) is shown UNMASKED by default — these are
+ *     leads, not patients (Chris 2026-06-04 interim). The PiiMaskedSpan wrapper +
+ *     data-phi tagging stay (audit + FE-A6 gate); the future tenant "Máxima
+ *     seguridad" config will flip `masked` back on per tenant.
  *
- * Mockup parity: adrian-inbox-placeholder.html .contact-sidebar
+ * "use client" required for:
+ *   - useCurrentUser hook (reads Clerk user.publicMetadata.role)
+ *   - AuditedSection (fires useEffect audit log)
+ *   - Reveal toggle state (useState)
  *
- * Server Component — pure presentational, no state.
- * Named export (NO default) per FSD-Lite enforce.
- * No hex colors — Tailwind semantic tokens only.
- * Spanish neutro — spec § 10 verbatim.
- *
- * spec_anchor: 03-arch.md § 3.3 + CONTEXT-BRIEF § 5 + hipaa-lite.md
- * downstream-regression-na: brand-local vitalia inbox; no cross-brand consumers
+ * downstream-regression-na: brand-local FE component; no cross-brand consumers
  */
 
-import { cn } from "@/lib/utils";
-import { CampaignTag } from "./CampaignTag";
-import { type ConversationListItem, STAGE_LABEL } from "./types";
+import { Stethoscope, X } from "lucide-react";
+import { cn } from "@/lib/cn";
+import { StageBadge } from "./StageBadge";
+import { useInboxStore } from "../../store/inbox-store";
+import { PiiMaskedSpan } from "@/components/shared/phi/PiiMaskedSpan";
+import { RequireRole } from "@/components/shared/phi/RequireRole";
+import { AuditedSection } from "@/components/shared/phi/AuditedSection";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useTenantLocale } from "@/hooks/useTenantLocale";
+import { formatTenantDate } from "@/lib/format/formatTenantDate";
+import { INBOX_COPY } from "../../lib/copy";
 
-export interface ContactSidebarProps {
-  /** Lead ID — F2 cablea to fetch real patient data */
+/** NPS history entry shape */
+export interface NpsEntry {
+  /** Score 0–10 */
+  score: number;
+  /** ISO 8601 timestamp */
+  recorded_at: string;
+  /** Optional patient comment */
+  comment?: string | null;
+}
+
+/** Contact info for the inbox sidebar */
+export interface InboxContactInfo {
+  /** Patient UUID hash (not PHI — safe to log) */
+  patientId: string;
+  /** Patient display name (PHI) */
+  name?: string | null;
+  /** Patient phone (PHI) */
+  phone?: string | null;
+  /** Patient email (PHI) */
+  email?: string | null;
+  /**
+   * Service the lead expressed interest in, e.g. "Ortodoncia" (non-PHI).
+   * The primary thing an operator wants to see → rendered prominently on top.
+   */
+  serviceInterest?: string | null;
+  /** Sales stage tag (non-PHI) */
+  statusTag?: string | null;
+  /** NPS history (role-gated — doctor/nurse/admin_clinic only) */
+  npsHistory?: NpsEntry[] | null;
+}
+
+interface ContactSidebarProps {
+  /** Conversation ID for audit log context */
+  conversationId: string;
+  /** Lead ID for linking */
   leadId: string;
-  /** Conversation data for contextual display */
-  conversation: ConversationListItem | null;
-  /** Callback to close/toggle sidebar */
-  onClose?: () => void;
+  /** Contact information to display */
+  contact: InboxContactInfo;
+  /** Additional CSS classes */
   className?: string;
 }
 
-// ── Mock patient detail (F1 — static from mockup SSoT) ──────────────────────
+/** NPS score color badge — vt-* semantic tokens per globals.css */
+function NpsScoreBadge({ score }: { score: number }) {
+  const color =
+    score >= 9
+      ? "vt-text-success vt-bg-success-soft vt-border-success-30"
+      : score >= 7
+        ? "vt-text-warning vt-bg-warning-12 vt-border-warning-30"
+        : "vt-text-danger vt-bg-danger-soft vt-border-danger-soft";
 
-interface PatientDetail {
-  name: string;
-  /** PHI masked phone — visual mask from origin, NOT real data */
-  phoneMasked: string;
-  /** PHI masked email — visual mask from origin */
-  emailMasked: string;
-  originChannel: string;
-  tags: string[];
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center justify-center w-8 h-8 rounded-full",
+        "text-sm font-bold border",
+        color,
+      )}
+      aria-label={`NPS ${score}`}
+    >
+      {score}
+    </span>
+  );
 }
 
-// F1 mock per spec § 10 + mockup SSoT
-// Variable named "mockDetail" (not "patient.*") to avoid PHI arch-test scanner
-// which enforces PiiMaskedSpan/RequireRole for real patient.* field access.
-// F2-S2: replace with real fetch gate (@require_phi_access RBAC, hipaa-lite.md).
-const CONTACT_MOCK_DETAIL: PatientDetail = {
-  name: "María González",
-  phoneMasked: "+51 9** ***-4321",
-  emailMasked: "m***@gmail.com",
-  originChannel: "📱 WhatsApp · Meta Ads",
-  tags: ["limpieza", "primera vez"],
-};
-
 /**
- * ContactSidebar — patient detail sidebar.
- * F1: mock data (visual-only masking). F2: wire to real patient fetch with PHI RBAC gate.
+ * Inbox ContactSidebar — PHI-aware patient contact panel.
+ * Wraps PHI fields with PiiMaskedSpan and gates NPS history behind RequireRole.
+ * AuditedSection fires audit log on mount (HIPAA-lite compliance).
  */
 export function ContactSidebar({
-  leadId: _leadId,
-  conversation,
-  onClose,
+  conversationId,
+  leadId,
+  contact,
   className,
 }: ContactSidebarProps) {
-  // F1: use mock detail. F2: fetch real data by leadId with @require_phi_access.
-  const detail = CONTACT_MOCK_DETAIL;
-  const stage = conversation?.stage ?? "rapport";
+  const { role } = useCurrentUser();
+  const { timezone, locale } = useTenantLocale();
+  const toggleContactSidebar = useInboxStore((s) => s.toggleContactSidebar);
 
   return (
     <aside
-      aria-label="Detalles del paciente"
+      role="complementary"
+      aria-label={INBOX_COPY.contactSidebar.ariaLabel}
       className={cn(
-        "flex flex-col overflow-y-auto border-l border-border bg-card",
+        "flex flex-col h-full overflow-y-auto vt-bg-surface border-l vt-border",
         className,
       )}
+      data-testid="inbox-contact-sidebar"
     >
-      {/* Header */}
-      <div className="flex shrink-0 items-center justify-between border-b border-border px-3 py-2.5">
-        <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
-          Detalles paciente
-        </span>
-        <button
-          type="button"
-          aria-label="Opciones del paciente"
-          onClick={onClose}
-          className="rounded border border-border px-2 py-0.5 text-xs text-muted-foreground hover:bg-muted transition-colors"
+      {/* Contact section — wrapped in AuditedSection for HIPAA-lite audit log */}
+      <AuditedSection
+        resourceType="patient_profile"
+        resourceId={contact.patientId}
+        action="view"
+      >
+        <section
+          className="px-4 pt-4 pb-3 border-b vt-border-soft"
+          aria-labelledby={`contact-section-${conversationId}`}
         >
-          ⋯
-        </button>
-      </div>
-
-      {/* Body */}
-      <div className="space-y-3 px-3 py-3 text-xs">
-        {/* Nombre */}
-        <Field label="Nombre">
-          <span className="text-sm font-semibold text-foreground">
-            {detail.name}
-          </span>
-        </Field>
-
-        {/* Teléfono — PHI masked visual (real value behind RBAC in F2) */}
-        <Field label="Teléfono">
-          <div className="flex items-center gap-1.5 text-foreground">
-            {/* Visual masked value — not real PHI; F2 gate: @require_phi_access */}
-            <span>{detail.phoneMasked}</span>
-            {/* Decorative unlock — F2: onPress reveals via @require_phi_access */}
+          <div className="flex items-center justify-between mb-3">
+            <h3
+              id={`contact-section-${conversationId}`}
+              className="text-xs font-semibold vt-text-faint uppercase tracking-wide"
+            >
+              {INBOX_COPY.contactSidebar.sectionContact}
+            </h3>
+            {/* Collapse lives inside the detail (UI-AUDIT #1) — reachable even
+                when the thread is narrow */}
             <button
               type="button"
-              aria-label="Desbloquear teléfono (requiere acceso PHI — Fase 2)"
-              disabled
-              className="cursor-not-allowed text-[10px] text-agent-adrian opacity-70 hover:underline"
+              onClick={toggleContactSidebar}
+              data-testid="contact-sidebar-close"
+              aria-label={INBOX_COPY.contactSidebar.toggleClose}
+              title={INBOX_COPY.contactSidebar.toggleClose}
+              className={cn(
+                "inline-flex h-6 w-6 items-center justify-center rounded-md",
+                "vt-text-muted hover:vt-text-foreground hover:vt-bg-muted",
+                "transition-colors focus-visible:outline focus-visible:outline-2",
+                "focus-visible:outline-[var(--vitalia-cian)]",
+              )}
             >
-              🔓
+              <X className="h-4 w-4" aria-hidden focusable={false} />
             </button>
           </div>
-        </Field>
 
-        {/* Email — PHI masked visual (real value behind RBAC in F2) */}
-        <Field label="Email">
-          <div className="flex items-center gap-1.5 text-foreground">
-            <span>{detail.emailMasked}</span>
-            <button
-              type="button"
-              aria-label="Desbloquear email (requiere acceso PHI — Fase 2)"
-              disabled
-              className="cursor-not-allowed text-[10px] text-agent-adrian opacity-70 hover:underline"
-            >
-              🔓
-            </button>
-          </div>
-        </Field>
-
-        {/* Origen */}
-        <Field label="Origen">
-          <div className="flex flex-col gap-1">
-            <span className="text-foreground">{detail.originChannel}</span>
-            {conversation?.campaign && (
-              <CampaignTag
-                campaignId={conversation.campaign.id}
-                campaignName={conversation.campaign.name}
-                variant="detail"
-              />
+          {/* Servicio de interés — SIEMPRE visible (Chris UI #6); sin servicio aún
+              detectado → cajita calma + "Aún no detectado" en vez de ocultarse. */}
+          <div
+            className={cn(
+              "mb-3 flex items-start gap-2 rounded-lg px-3 py-2",
+              contact.serviceInterest ? "vt-bg-cian-8" : "vt-bg-muted",
             )}
-          </div>
-        </Field>
-
-        {/* Estado embudo */}
-        <Field label="Estado embudo">
-          <span className="rounded bg-agent-adrian-soft px-1.5 py-px text-[9px] font-semibold uppercase tracking-[0.04em] text-agent-adrian">
-            🟢 {STAGE_LABEL[stage]}
-          </span>
-        </Field>
-
-        {/* Etiquetas */}
-        <Field label="Etiquetas">
-          <div className="flex flex-wrap gap-1">
-            {detail.tags.map((tag) => (
-              <span
-                key={tag}
-                className="rounded-full border border-agent-lisa bg-agent-lisa-soft px-2 py-px text-[10px] font-medium text-agent-lisa"
+            data-testid="contact-service-interest"
+          >
+            <Stethoscope
+              className={cn(
+                "mt-0.5 h-4 w-4 shrink-0",
+                contact.serviceInterest ? "vt-text-cian" : "vt-text-faint",
+              )}
+              aria-hidden
+              focusable={false}
+            />
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold vt-text-faint uppercase tracking-wide">
+                {INBOX_COPY.contactSidebar.serviceInterest}
+              </p>
+              <p
+                className={cn(
+                  "text-sm truncate",
+                  contact.serviceInterest
+                    ? "font-semibold vt-text-cian"
+                    : "italic vt-text-muted",
+                )}
               >
-                {tag}
-              </span>
-            ))}
+                {contact.serviceInterest ||
+                  INBOX_COPY.contactSidebar.serviceInterestEmpty}
+              </p>
+            </div>
           </div>
-        </Field>
 
-        {/* Action buttons — F1 visual only, F2 route to sub-features */}
-        <div className="space-y-1.5 border-t border-border pt-3">
-          {/* Agendar cita — links to /valeria/agenda (F2-S1) */}
-          <ActionButton
-            icon="📅"
-            label="Agendar cita"
-            iconColorClass="text-agent-valeria"
-          />
-          {/* Ver historial paciente — links to /valeria/pacientes/{leadId} (F2-S2) */}
-          <ActionButton
-            icon="📋"
-            label="Ver historial paciente"
-            iconColorClass="text-agent-lisa"
-          />
-          {/* Pasar a embudo — links to /adrian/embudo (F2-S3) */}
-          <ActionButton
-            icon="→"
-            label="Pasar a embudo"
-            iconColorClass="text-agent-adrian"
-          />
+          <dl className="space-y-3">
+            {/* Patient name (PHI — PiiMaskedSpan) */}
+            {contact.name !== undefined && contact.name !== null && (
+              <div className="flex flex-col gap-0.5">
+                <dt className="text-xs vt-text-faint">Nombre</dt>
+                <dd>
+                  <PiiMaskedSpan
+                    value={contact.name}
+                    fieldType="name"
+                    masked={false}
+                    className="text-sm vt-text-foreground"
+                  />
+                </dd>
+              </div>
+            )}
+
+            {/* Phone (PHI — PiiMaskedSpan) */}
+            <div className="flex flex-col gap-0.5">
+              <dt className="text-xs vt-text-faint">Teléfono</dt>
+              <dd>
+                {contact.phone ? (
+                  <PiiMaskedSpan
+                    value={contact.phone}
+                    fieldType="phone"
+                    masked={false}
+                    className="text-sm vt-text-foreground"
+                  />
+                ) : (
+                  <span className="text-sm vt-text-muted">
+                    {INBOX_COPY.contactSidebar.noPhone}
+                  </span>
+                )}
+              </dd>
+            </div>
+
+            {/* Email (PHI — PiiMaskedSpan) */}
+            <div className="flex flex-col gap-0.5">
+              <dt className="text-xs vt-text-faint">Correo</dt>
+              <dd>
+                {contact.email ? (
+                  <PiiMaskedSpan
+                    value={contact.email}
+                    fieldType="email"
+                    masked={false}
+                    className="text-sm vt-text-foreground"
+                  />
+                ) : (
+                  <span className="text-sm vt-text-muted">
+                    {INBOX_COPY.contactSidebar.noEmail}
+                  </span>
+                )}
+              </dd>
+            </div>
+
+            {/* "Estado" removed (Chris UI #5) — it duplicated "Etapa de la venta"
+                below; the funnel stage lives there as the single source. */}
+          </dl>
+        </section>
+      </AuditedSection>
+
+      {/* NPS History section — gated to doctor/nurse/admin_clinic */}
+      <RequireRole roles={["doctor", "nurse", "admin_clinic"]} userRole={role}>
+        <section
+          className="px-4 pt-4 pb-3"
+          aria-labelledby={`nps-section-${conversationId}`}
+          data-testid="nps-history-section"
+        >
+          <h3
+            id={`nps-section-${conversationId}`}
+            className="text-xs font-semibold vt-text-faint uppercase tracking-wide mb-3"
+          >
+            {INBOX_COPY.contactSidebar.sectionNpsHistory}
+          </h3>
+
+          {!contact.npsHistory || contact.npsHistory.length === 0 ? (
+            <p className="text-xs vt-text-muted">
+              {INBOX_COPY.contactSidebar.npsEmpty}
+            </p>
+          ) : (
+            <ul className="space-y-2">
+              {contact.npsHistory.map((entry, idx) => (
+                <li
+                  key={`${entry.recorded_at}-${idx}`}
+                  className="flex items-start gap-3"
+                >
+                  <NpsScoreBadge score={entry.score} />
+                  <div className="flex flex-col gap-0.5 min-w-0">
+                    {/* Per master-data.md: formatTenantDate (never toLocaleDateString) */}
+                    <time
+                      dateTime={entry.recorded_at}
+                      className="text-xs vt-text-faint"
+                    >
+                      {formatTenantDate(entry.recorded_at, timezone, locale)}
+                    </time>
+                    {entry.comment && (
+                      <p className="text-xs vt-text-muted truncate">
+                        {entry.comment}
+                      </p>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </RequireRole>
+
+      {/* Stage section — placeholder for Slice 2 */}
+      <section className="px-4 pt-3 pb-4 border-t vt-border-soft">
+        <h3 className="text-xs font-semibold vt-text-faint uppercase tracking-wide mb-2">
+          {INBOX_COPY.contactSidebar.sectionStage}
+        </h3>
+        <div aria-label={`Lead ID: ${leadId}`}>
+          {contact.statusTag ? (
+            <StageBadge stage={contact.statusTag} />
+          ) : (
+            <span className="text-xs vt-text-muted">—</span>
+          )}
         </div>
-      </div>
+      </section>
     </aside>
-  );
-}
-
-// ── Local sub-components ─────────────────────────────────────────────────────
-
-interface FieldProps {
-  label: string;
-  children: React.ReactNode;
-}
-
-function Field({ label, children }: FieldProps) {
-  return (
-    <div>
-      <div className="mb-1 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
-        {label}
-      </div>
-      {children}
-    </div>
-  );
-}
-
-interface ActionButtonProps {
-  icon: string;
-  label: string;
-  iconColorClass: string;
-}
-
-function ActionButton({ icon, label, iconColorClass }: ActionButtonProps) {
-  return (
-    // F1: disabled aria (no routing yet). F2: use Link or router.push per action.
-    <button
-      type="button"
-      disabled
-      aria-label={`${label} — disponible en Fase 2`}
-      className="flex w-full cursor-not-allowed items-center gap-2 rounded bg-muted px-2.5 py-2 text-xs text-foreground opacity-70 transition-colors hover:bg-muted/80"
-    >
-      <span aria-hidden="true" className={iconColorClass}>
-        {icon}
-      </span>
-      {label}
-    </button>
   );
 }

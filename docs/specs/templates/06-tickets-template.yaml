@@ -74,7 +74,7 @@
 #    - production_code: false + ANY surface → owner pool [qwen, sonnet] (Opus
 #      override-able pero NO required, even si surface AGENTIC)
 #
-#    Origen: T-1.bis 2026-05-05 forzó Opus 4.7 para test-only fix porque ticket
+#    Origen: T-1.bis 2026-05-05 forzó Opus 4.8 para test-only fix porque ticket
 #    heredó `claude_opus_required: true` de Story A surface=AGENTIC. Token waste
 #    ~$8 USD para test bridge migration que sonnet/qwen capable.
 #
@@ -128,8 +128,8 @@
 #        - .claude/rules/tenant-isolation.md
 #        - .claude/rules/spanish-text.md
 #        - .claude/rules/auditor-self-fix-policy.md
-#        - tessl__fastapi
-#        - tessl__pytest-api-testing
+#        - FastAPI canonical patterns
+#        - pytest async testing patterns
 #
 #    /dev-team Step 2 cita esta lista verbatim en builder spawn prompt.
 #    Builder T-{n}-result.md DEBE incluir sección "Skills consulted (must_load enforcement v4.1)"
@@ -149,10 +149,16 @@
 #    /architect además produce dispatch-plan.md (ver docs/specs/templates/dispatch-plan-template.md).
 
 ---
+# NOTE — two distinct state-spaces in this file:
+#   • TICKET states (field `state:` per ticket): draft | ready | developing | done | blocked
+#     → sub-states internal to this pila; owned by /dev-team; NOT the story-level macro-states.
+#   • STORY macro-states (10 estados): idea | refining | refined | ready | developing | developed |
+#     reviewing | done | parked | dropped  → live in {brand}/docs/product/stories/{id}/checkpoint.md
+#     owned by /pm-{brand}. Do NOT confuse the two.
 story_id: STORY_ID
 brand: BRAND_SLUG                                  # ★ v4.1 — vitalia | nicolify | comunify | lupulo
-sprint: SN-SLUG                                    # legacy — outcomes event-driven post pm-redesign (no PI/Sprint)
-pi: PI-N                                           # legacy idem
+sprint: SN-SLUG                                    # DEPRECATED — legacy field (no PI/Sprint vocab; event-driven releases post pm-redesign)
+pi: PI-N                                           # DEPRECATED — legacy field idem; remove when creating real stories
 generated_at: 2026-05-04T15:00Z
 generated_by: /architect
 schema_version: v4.1                               # ★ post 2026-05-19 — must_load_skills enforceable per ticket
@@ -208,7 +214,7 @@ T1:
     arch_doc: "../03-arch-be.md"
     story_yaml: "../../../../../product/stories/copilot/brand-audit.yaml"
     rules: [".claude/rules/backend-ddd.md", ".claude/rules/tenant-isolation.md", ".claude/rules/backend-migrations.md"]
-    tessl_skills: ["tessl__fastapi", "tessl__pytest-api-testing"]
+    canonical_docs: ["FastAPI canonical patterns", "pytest async testing patterns"]
     domain_skills: ["backend-expert", "copilot-expert"]
   # ★ v4.1 enforceable — lista resuelta must_load aplicable a este ticket (subset de 05-guidelines.md)
   must_load_skills:
@@ -220,8 +226,6 @@ T1:
     - .claude/rules/spanish-text.md
     - .claude/rules/auditor-self-fix-policy.md
     - .claude/rules/tdd-mandatory.md
-    - tessl__fastapi
-    - tessl__pytest-api-testing
   # ★ assignment block (R: architect-autonomous-mode.md Step 7.5) — dispatch explícito
   assignment:
     primary_agent: builder-backend                 # NUNCA general-purpose
@@ -246,7 +250,7 @@ T1:
   acceptance:
     - { id: A1, description: "POST happy → 200 + ResponseDTO shape", verifier: { type: pytest, path: "tests/modules/copilot/test_brand_audit_endpoint.py::test_happy" } }
     - { id: A2, description: "Cross-tenant → 403", verifier: { type: pytest, path: "...::test_tenant_isolation" } }
-    - { id: A3, description: "Migration idempotente", verifier: { type: bash, cmd: "make verify-migration-idempotency" } }
+    - { id: A3, description: "Migration idempotente", verifier: { type: bash, cmd: "docker exec luana-dev-{brand}_backend_dev-1 alembic upgrade head && docker exec luana-dev-{brand}_backend_dev-1 alembic upgrade head" } }
   # ★ gherkin_coverage MANDATORY post-cement-date 2026-05-18 (story-closure-gate)
   gherkin_coverage:
     - scenario: "SC-01 POST /brand-audit con tenant válido retorna 200 + análisis"
@@ -274,7 +278,7 @@ T2:
   owner_eligibility:
     qwen_opencode: false                          # ⛔
     claude_sonnet: false                          # ⛔
-    claude_opus_required: true                    # ✅ Opus 4.7 OBLIGATORIO (production_code AGENTIC HARD rule)
+    claude_opus_required: true                    # ✅ Opus 4.8 OBLIGATORIO (production_code AGENTIC HARD rule)
   priority: 1
   estimate_hours: 3
   decisions_applicable: [D5, A2, A4]              # ⚠️ R6 — agentic decisions (slot architecture, voice fidelity, cost budget)
@@ -284,7 +288,7 @@ T2:
     agentic_design: "../02-design-agentic.md"
     story_yaml: "../../../../../product/stories/copilot/brand-audit.yaml"
     rules: [".claude/rules/sales-agent-brand-voice.md"]
-    tessl_skills: ["tessl__langgraph", "claude-api"]
+    canonical_docs: ["LangGraph canonical docs", "claude-api"]
     domain_skills: ["copilot-expert"]
   # ★ assignment block — AGENTIC production_code → Opus HARD (R23)
   assignment:
@@ -354,7 +358,7 @@ T3:
     arch_doc: "../03-arch-fe.md"
     story_yaml: "../../../../../product/stories/copilot/brand-audit.yaml"
     rules: [".claude/rules/frontend-fsd.md", ".claude/rules/spanish-text.md"]
-    tessl_skills: ["tessl__shadcn-ui", "tessl__tailwind", "tessl__react-patterns", "tessl__zod"]
+    canonical_docs: ["Shadcn UI conventions", "Tailwind conventions", "React patterns baseline", "Zod validation"]
     domain_skills: ["frontend-expert", "copilot-expert"]
   # ★ assignment block — FE standard
   assignment:
@@ -415,7 +419,7 @@ T4_example_test_only:
     spec: "../01-spec.md"
     arch_doc: "../03-arch-be.md"
     rules: [".claude/rules/tdd-mandatory.md"]
-    tessl_skills: ["tessl__pytest-api-testing"]
+    canonical_docs: ["pytest async testing patterns"]
     domain_skills: ["sales-agent-expert", "copilot-expert"]
   deliverables:
     - "MODIFY tests/modules/{copilot,sales_agent}/observability/test_callback_handler*.py — bridge cost via _stash + litellm_call_id injection"

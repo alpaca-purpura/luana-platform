@@ -1,24 +1,24 @@
 ---
 name: backend-expert
-description: "Implements FastAPI endpoints, creates SQLAlchemy 2.0 async models, generates idempotent Alembic migrations, structures bounded contexts following DDD (domain→infrastructure→application→api), and produces typed Pydantic v2 DTOs. Runs inside Docker (visionarias_brain_dev). Use when: 'create an endpoint', 'modify the backend', 'create a new entity', 'update a service', 'database logic', 'fix a backend bug', 'add a migration', 'create a repository', 'agrega un campo', 'nueva ruta API', 'corrige el servicio', or any Python/FastAPI/SQLAlchemy/Alembic task."
+description: "Implements FastAPI endpoints, creates SQLAlchemy 2.0 async models, generates idempotent Alembic migrations, structures bounded contexts following DDD (domain→infrastructure→application→api), and produces typed Pydantic v2 DTOs. Runs inside Docker (luana-dev-{brand}_backend_dev-1). Use when: 'create an endpoint', 'modify the backend', 'create a new entity', 'update a service', 'database logic', 'fix a backend bug', 'add a migration', 'create a repository', 'agrega un campo', 'nueva ruta API', 'corrige el servicio', or any Python/FastAPI/SQLAlchemy/Alembic task."
 ---
 
 # SOP — Flujo de Trabajo
 
 Antes de escribir codigo, ubicar el modulo destino:
 
-1. **Ubicacion:** Leer `docs/domains/INDEX.md` → identificar bounded context. Leer el doc del modulo (reglas de negocio, restricciones, edge cases — no inventario de archivos).
-2. **Explorar codigo:** `ls backend/src/modules/{nombre}/` y leer archivos clave (router, service, models).
+1. **Ubicacion:** Leer `{brand}/docs/domains/INDEX.md` → identificar bounded context. Leer el doc del modulo (reglas de negocio, restricciones, edge cases — no inventario de archivos).
+2. **Explorar codigo:** `ls {brand}/backend/src/modules/{brand}/{nombre}/` y leer archivos clave (router, service, models). Engine: `core/luana-core-{pkg}/src/luana_core_{pkg}/`.
 3. Seguir el procedimiento segun el tipo de tarea:
 
-> **⚠️ Si vas a tocar `backend/src/modules/analytics/` (cualquier provider, ETL pipeline, scheduler, workers, o `metric_catalog.py`):**
+> **⚠️ Si vas a tocar `{brand}/backend/src/modules/{brand}/analytics/` (cualquier provider, ETL pipeline, scheduler, workers, o `metric_catalog.py`):**
 >
 > 1. Leer `.claude/rules/etl-extraction-contract.md` ANTES de empezar.
 > 2. Consultar `docs/etl/extraction-contract.md` para entender qué dice el contrato del provider/canal que vas a tocar.
 > 3. Después de implementar, los 3 pasos finales son OBLIGATORIOS:
->    - Actualizar `backend/src/modules/analytics/domain/extraction_contract.py` para reflejar el cambio.
+>    - Actualizar `{brand}/backend/src/modules/{brand}/analytics/domain/extraction_contract.py` para reflejar el cambio (o el engine en `core/luana-core-analytics-engine/` si aplica).
 >    - `make extraction-contract` para regenerar `docs/etl/extraction-contract.md`.
->    - `cd backend && .venv/bin/pytest tests/architecture/test_extraction_contract.py -x -q`.
+>    - `WS=$(git rev-parse --show-toplevel) && cd {brand}/backend && ${WS}/.venv/bin/pytest tests/architecture/test_extraction_contract.py -x -q`.
 > 4. El commit final incluye SIEMPRE: el código del provider/pipeline + la entrada del contrato + el Markdown regenerado, en un solo commit.
 >
 > El test arquitectural falla si saltas estos pasos. No es opcional.
@@ -98,7 +98,7 @@ def upgrade():
 - **Sin logica de negocio en `api/`** — todo va al `application/service`.
 - **Sin Hard Deletes** — siempre soft delete con `deleted_at` o `is_active`.
 - **SQLAlchemy 2.0 only** — `session.execute(select(Model))`, nunca `Session.query(Model)`.
-- **Fitness tests:** New code must pass `cd backend && .venv/bin/pytest tests/architecture/ -v`. These enforce DDD boundaries (no cross-module imports), API contracts (response_model= required), and conventions (no hard deletes, SA 2.0). Run `make arch-test` to verify. NEVER use docker exec for lint/tests.
+- **Fitness tests:** New code must pass `WS=$(git rev-parse --show-toplevel) && cd {brand}/backend && ${WS}/.venv/bin/pytest tests/architecture/ -v`. These enforce DDD boundaries (no cross-module imports), API contracts (response_model= required), and conventions (no hard deletes, SA 2.0). Run `make arch-test` to verify. NEVER use docker exec for lint/tests. Engine packages: `cd core/luana-core-{pkg} && ${WS}/.venv/bin/pytest tests/architecture/ -v`.
 
 ## Project invariants (read on demand)
 

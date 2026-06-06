@@ -1,0 +1,38 @@
+---
+# Release schema (v2 cement 2026-05-27) · Doc: docs/process/release-protocol.md
+release_id: R4
+brand: nicolify
+name: "Token economy + observabilidad"
+description: "Protección de margen: metering de costo LLM por (agente, acción, tenant), bolsa de tokens/plan con alertas 80/95/100%, tier gating server-side (qué agentes desbloquea el plan), y autonomía de agentes configurable (umbrales CAC/ROAS, consent outbound, aprobaciones). Funciones críticas (recepción pasiva de leads) nunca se cortan."
+status: backlog
+target_date: null
+shipped_date: null
+order: 4
+created_at: 2026-06-02T00:00:00-05:00
+created_by: pm-nicolify
+source_sitemap: nicolify-r0-sitemap-completo
+
+areas:
+  - config.tokens                # bolsa + plan + alertas recarga
+  - config.autonomia-agentes     # umbrales + consent + aprobaciones + tier gating
+  - infra.token-economy          # metering + guardrails
+  - infra.observabilidad         # trace/llm_calls/cost/FX/pricing (deriva de la caja Infra)
+
+stories: []
+maps_legacy_outcome: null
+maps_legacy_phase: null
+---
+
+# R4 · Token economy + observabilidad
+
+> Nicolify es AaaS intensivo en LLM; el margen depende de medir y acotar el uso. Este release hace visible y gobernable la economía de tokens + la autonomía de los agentes.
+
+## Outcome esperado
+- **Tokens / Plan:** bolsa por tenant según tier + alertas progresivas 80/95/100%.
+- **Autonomía de agentes:** umbrales CAC/ROAS (Brenda), consent LinkedIn (Christian), aprobaciones (Norvil) — todo config del tenant, nunca hardcodeado. **Tier gating server-side** (Básico no invoca Christian/Norvil).
+- **Metering:** costo LLM por (agente, acción, tenant) vía `core/luana-core-observability` (NUNCA recrear el recorder).
+- **Funciones críticas nunca se cortan** (recepción pasiva de leads sigue aunque la bolsa = 0).
+
+## Notas
+- Consume `core/luana-core-billing` (BudgetGuard) + `core/luana-core-observability` (cost + FX + pricing).
+- Gates de la rule `agent-revenue-engine.md § 4` (token economy).

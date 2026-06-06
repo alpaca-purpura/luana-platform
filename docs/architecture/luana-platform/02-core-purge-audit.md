@@ -1,5 +1,7 @@
 <!-- voseo-allowed: internal architectural audit doc, Chris-targeted, not user-facing UI -->
 
+> [HISTÓRICO — read-only. Auditoría previa al nicolify-reset (2026-05-29) y reorg multibrand. Estructuras/paths descritos pueden no existir hoy. Conservado por trazabilidad.]
+
 # Luana Core — Purge Audit
 
 > **Status:** Draft v0.1 — 2026-05-15 (F4 reorg multibrand)

@@ -129,7 +129,10 @@ export function ValeriaSidebar() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const mq = window.matchMedia("(max-width: 767px)");
+    // Drawer zone: < lg (1024). On tablet (768–1023) Valeria is a drawer/overlay
+    // (not inline split) so the agent panel gets full width
+    // (vitalia-bugfix-shell-valeria-responsive Point 3, Chris 2026-06-04).
+    const mq = window.matchMedia("(max-width: 1023px)");
     setIsMobile(mq.matches);
 
     const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
@@ -178,7 +181,7 @@ export function ValeriaSidebar() {
           data-testid="valeria-drawer-backdrop"
           aria-hidden="true"
           onClick={handleMobileClose}
-          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm md:hidden"
+          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
         />
 
         {/* Drawer — role="dialog" + aria-modal valid combo per WCAG/ARIA spec.
@@ -190,7 +193,7 @@ export function ValeriaSidebar() {
           aria-modal="true"
           aria-expanded="true"
           data-testid="valeria-sidebar"
-          className="fixed inset-y-0 left-0 z-50 flex w-full flex-col bg-card shadow-2xl md:hidden"
+          className="fixed inset-y-0 left-0 z-50 flex w-full flex-col bg-card shadow-2xl lg:hidden"
         >
           {/* Drawer header */}
           <div className="flex h-14 shrink-0 items-center justify-between border-b border-border px-3">
@@ -238,7 +241,7 @@ export function ValeriaSidebar() {
       aria-label="Panel Valeria"
       aria-expanded={isExpanded}
       data-testid="valeria-sidebar"
-      className="hidden h-full overflow-hidden bg-card motion-reduce:transition-none md:grid"
+      className="hidden h-full overflow-hidden bg-card motion-reduce:transition-none lg:grid"
       style={{
         gridTemplateColumns: `${railWidth}px 1fr`,
         gridTemplateRows: "minmax(0, 1fr)",

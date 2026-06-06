@@ -1,6 +1,7 @@
 ---
 name: auditor
-description: "Auditor independiente v4 (Conv 3 — Review+Merge, post pm-redesign 2026-05 Punto 4 + story-closure-gate 2026-05-18). Toma story state=developed (AUTO-HANDOFF /dev-team default; manual opt-in via defer_audit:true) → transition state=developed→reviewing → spawna auditor-{be,fe,agentic} según surface. Phase D NEW: gherkin verification matrix (cada scenario 01-spec.md → test path → status, escribe 06-audit/gherkin-matrix.md). Veredicto: APPROVED | CHANGES_REQUESTED | ESCALATED. Self-fix v4.2 por 3 carriles: Carril A (gate-verified, lo hace el sub-auditor con Edit, cap 5 iter), Carril B (test nuevo → dev-team), Carril C (stake-asimétrico → escala). audit_iterations cap 4. Cuando todos tickets audit-passed, escribe CHECKPOINTS.md (C1-C5 grid: Code | Spec | Architecture | Cross-cutting | Trace) + AUTO-HANDOFF /pm-{brand} merge. Activa cuando user dice: '/auditor', 'audita story', 'revisa tickets', 'verdict', 'review final', 'CHECKPOINTS'."
+description: "Auditor independiente v4 (Conv 3 Review+Merge) — toma story developed, spawna auditor-{be,fe,agentic}, Phase D gherkin matrix, veredicto APPROVED|CHANGES_REQUESTED|ESCALATED, self-fix v4.2 (3 carriles), escribe CHECKPOINTS.md + auto-handoff /pm-{brand} merge."
+when_to_use: "Activa cuando user dice: '/auditor', 'audita story', 'revisa tickets', 'verdict', 'review final', 'CHECKPOINTS', 'story developed lista para audit', 'chequeá los tickets', 'revisá el código', 'hacé el review'."
 allowed-tools: Read, Edit, Bash, Grep, Glob, Agent
 model: opus
 ---
@@ -73,6 +74,20 @@ git log --oneline -10
 git diff <pre-build-sha>..HEAD --stat   # diff todos commits del story
 ```
 
+### ★ Step 1.0 — Precondición Fase R: docs reconciliados (proceso v5)
+
+> El auditor es **guardián de arquitectura sobre la verdad reconciliada**, NO juez de un spec stale (story-closure-gate Fase R+B).
+
+```bash
+RECONCILED=$(grep -E "^reconciled:" ${STORY_DIR}/checkpoint.md 2>/dev/null | awk '{print $2}')
+AUTONOMOUS=$(grep -E "^autonomous_mode:" ${STORY_DIR}/checkpoint.md 2>/dev/null | awk '{print $2}')
+```
+
+- `reconciled: true` (default, post-R) **o** `autonomous_mode: true` (rama autonomous, sin G/R) → **proceder**.
+- ninguno de los dos → **REFUSE**: el spec puede estar stale (no pasó R). Output: `"❌ Story {id}: falta reconcile (R). /pm-{brand} debe reconciliar 01-spec/03-arch/04-validators/cap a la realidad + chris_verify.signoff ANTES del auditor (proceso v5)."` → STOP.
+
+**Guardián, no literalista:** el auditor lee el spec **RECONCILIADO** + `chris_verify.signoff`. Un cambio de scope que Chris ratificó (registrado en `chris_verify.rounds`) **ES el spec ahora** — NO se revierte. Guardá los **invariantes** (DDD/tenant/PHI/anti-orphan CONN/contrato BE↔FE/no-mirror/arquitectura), NO "¿coincide con el spec pre-iteración?". ★ Pero un scope-delta que **NO** está en `chris_verify.rounds` (no ratificado) SIGUE siendo finding — la regla es "no revertir scope ratificado", no "no revertir NINGÚN scope".
+
 ## Step 2 — Decidir surface + verificar gate-output.json + spawn sub-auditor
 
 > **Origen R2 process-improvement 2026-05-05 (D2):** auditor consume `gate-output.json`
@@ -131,6 +146,7 @@ Agent({
            ticket: T-{n}
            PRIORITY READ: {brand}/docs/product/stories/{story-id}/CONTEXT-BRIEF.md (Haiku-built, 5-8k tokens)
            Then read T-{n}-result.md + T-{n}-impl-log.md + 01-spec.md + 03-arch.md + 04-validators.yaml + 05-guidelines.md (todos bajo {brand}/docs/product/stories/{story-id}/).
+           ★ proceso v5: el spec/arch están RECONCILIADOS (Fase R) + Chris firmó chris_verify.signoff. Un scope ratificado por Chris (en chris_verify.rounds) ES el spec — NO lo reviertas. Guardá invariantes (DDD/tenant/PHI/CONN/contrato BE↔FE), no '¿coincide con el spec pre-iteración?'. Un scope-delta FUERA de chris_verify.rounds = sí es finding.
            Run gate-runner if gate-output.json missing/stale.
            Score against your N categories.
            Apply downstream regression scope (.claude/rules/auditor-downstream-regression.md) — cross-brand mirror detection cuando aplique.
@@ -219,6 +235,42 @@ Verificar que el cap YAML target post-Fase-F-merge refleja los AC/Gherkin scenar
 Verificar que `chris-input.md` existe para stories `state ∈ {refining, refined, ready, developing, developed, reviewing}` y el último append es de Claude (no Chris esperando respuesta · si Chris último + state ≠ refining flag WARN).
 
 Inconsistencia → verdict `CHANGES_REQUESTED` con findings citados. Doc: `docs/process/capability-protocol.md` § Sección 5.
+
+## Phase D — DoD endurecida (Critical Rule #37)
+
+Además de ejercer scenarios críticos live:
+- Producir la **gherkin-matrix** (regla → scenario → PASS/FAIL/**MISSING**): cualquier MISSING → CHANGES_REQUESTED.
+- Verificar que los specs FE **importan de `fixtures/base.ts`** (no `@playwright/test` directo) — sin el gate anti-burbuja la verificación es insuficiente.
+- En stories de **modificación**: verificar que los `regression_guard` quedaron PASS sin modificarse y que los snapshots actualizados tienen diff revisado por humano.
+- Verificar que existe `demo-script.md` si `demo_required: true`.
+- ★ **Mutation gate** (proceso v5 §5.6): si `04-validators technical_gates.mutation.enabled: true` (superficie crítica marcada por architect), verificar que corrió `scripts/mutation_gate.py` sobre el diff. Survivor en líneas-nuevas (mode hard) → CHANGES_REQUESTED al fix-loop (dev escribe el test RED). Survivor HEREDADO → rutear a CIL carril L4 (no bloquea). Tool ausente → advisory (no bloquea).
+- ★ **Ledger de cobertura** (proceso v5 §5.2): leer la columna `estado` de la `§ Matriz de cobertura` (`01-spec.md`) y **congelarla** — cada ítem `✅ construido` debe tener su test/ruta real; lo `→ historia {id}` debe linkear una story spawneada (no un gap mudo). **PISO HARD:** si `cap_change_type: new` y un ítem del happy-path NO está `✅` → CHANGES_REQUESTED (el core no se difiere).
+
+Sin evidencia live / con MISSING / sin base.ts importado / con regression_guard roto → CHANGES_REQUESTED.
+Ref: `.claude/rules/definition-of-done-live-verify.md`.
+
+### `LIVE_VERIFY_MISSING` — auto-FAIL (cement 2026-06-03)
+
+Para stories `verification_nature ∈ {funcional, ambas}` o `demo_required: true`, el auditor MUST, **ANTES de emitir cualquier verdict**:
+
+1. **Ejercer ≥1 write crítico LIVE** contra `dev-app.{brand}.com` usando Chrome DevTools MCP (skill `chrome-devtools-verify`): ejecutar la acción real del usuario (POST/PATCH/PUT/DELETE), leer el panel Console (0 errores rojos), leer Network + backend logs (`docker logs luana-dev-{brand}_backend_dev-1 --since $TS`), confirmar el efecto (fila en DB / estado persistido al recargar). **NO confiar en el self-report del dev.** NO aceptar GET 200 como evidencia.
+2. **Verificar `dod_live_verified: true`** + `dod_evidence` (writes reales + efecto observado) en `checkpoint.md` de la story.
+3. **Grep specs FE:**
+   ```bash
+   WS=$(git rev-parse --show-toplevel)
+   grep -rl "@playwright/test" ${WS}/{brand}/frontend/e2e/specs/ | grep -v fixtures/base.ts
+   ```
+   Cualquier spec que importa `@playwright/test` directo (en vez de `fixtures/base.ts`) = gate anti-burbuja ausente → auto-FAIL.
+4. **Verificar `demo-script.md`** en la carpeta de la story si `demo_required: true`.
+
+**Condiciones de auto-FAIL `LIVE_VERIFY_MISSING`** (cualquiera basta):
+- `dod_live_verified` ausente o `false` en checkpoint
+- `dod_evidence` ausente o contiene solo GETs / no documenta efecto real
+- e2e que mockea el backend del surface bajo prueba (falso verde)
+- specs FE importan `@playwright/test` directo (sin `fixtures/base.ts`)
+- `demo-script.md` ausente con `demo_required: true`
+
+Ante auto-FAIL `LIVE_VERIFY_MISSING`: el auditor lo arregla él mismo aplicando **Carril R** (ver § Auditor Responsable v5 abajo) — ejerce la verificación live, registra `dod_evidence`, y OWNS el verde. Solo si el ambiente dev no responde (stack caído + no se puede levantar en < 10 min) → ESCALATE Chris con estado del entorno.
 
 ## Step 3 — Procesar veredicto por ticket
 
@@ -405,8 +457,8 @@ ESCALATED — auditor cannot self-fix ni spawn dev-team autónomo.
 
 Razón: <categoría exacta de auditor-self-fix-policy.md § ESCALATED>
 Detalle: T-{n}-review.md § Audit iteration {N} § Findings
-audit_iterations: {N}/3
-self_fix_iter: {M}/4
+audit_iterations: {N}/4
+self_fix_iter: {M}/5
 
 Próximo: Chris ratifica acción —
   (a) refinar spec/arch (back to /po-ux o /architect)
@@ -602,6 +654,8 @@ STOP la sesión `/auditor` aquí. Chris (o auto-handoff harness) invoca `/pm-{br
 
 ## Self-fix policy detallada (v4.1 cement 2026-05-19)
 
+> ★ SUPERSEDED por v4.2 (cement 2026-05-28). Caps reales: self_fix_iter 5 / audit_iterations 4. La lógica vigente es por NATURALEZA DE LA VERIFICACIÓN (3 carriles), no whitelist por tamaño. Esta sección queda como referencia histórica — ver § v4.2 arriba + `.claude/rules/auditor-self-fix-policy.md`.
+
 > SSoT exhaustivo: `.claude/rules/auditor-self-fix-policy.md`. Whitelist verbatim
 > 17 categorías. Decision tree por NATURALEZA del fix (no tamaño).
 
@@ -632,10 +686,59 @@ STOP la sesión `/auditor` aquí. Chris (o auto-handoff harness) invoca `/pm-{br
 
 | Métrica | Cap | Acción al exceder |
 |---|---|---|
-| `self_fix_iter` por ticket | 4 | Spawn dev-team (Caso B) |
-| `audit_iterations` por ticket | 3 | ESCALATE Chris (Caso D) |
+| `self_fix_iter` por ticket | 4 (v4.1 — v4.2: 5) | Spawn dev-team (Caso B) |
+| `audit_iterations` por ticket | 3 (v4.1 — v4.2: 4) | ESCALATE Chris (Caso D) |
 | Files modificados por self-fix iter | 2 | Caso B (refactor camuflado) |
 | Líneas modificadas por self-fix iter | 10 | Caso B idem |
+
+## Auditor Responsable v5 (cement 2026-06-03)
+
+El auditor es el **último adulto responsable del PR**. NO rebota hallazgos a dev-team por default — los **arregla él mismo** y entrega el verde, INCLUYENDO bugs de build (endpoints no cableados, wiring roto, AC roto, live-verify faltante, test faltante). SSoT: `.claude/rules/auditor-self-fix-policy.md` (este skill resume). Carriles:
+
+- **Carril A (mecánico)** — lint/format/typo/import/docstring (igual v4.2).
+- **Carril R (RESPONSABLE · default nuevo para bugs funcionales)** — bug funcional / build roto / wiring / live-verify faltante / test faltante → el auditor lo arregla él mismo siguiendo TDD (regression test RED que reproduce el bug → fix GREEN), re-corre gate-runner COMPLETO + live-verify dev-app (≥1 write real, leer logs, confirmar efecto en DB), y **OWNS el verde**. **PUEDE escribir tests** (override del "auditor NUNCA escribe tests" de v4.2 — Chris ratificó 2026-06-03): los escribe él mismo antes de aplicar el fix (TDD discipline), no los delega.
+- **Carril C (ESCALATE) — solo 2 casos:**
+  1. Categoría **stake-asimétrico** (security/auth/tenant_id/PII/migration/prompt-slot/eval-goldens/state-machine/engine-core/cross-brand/meta-paradigm) → ratificación Chris. **Invariante de seguridad, NO override.**
+  2. El "fix" es una **feature entera nunca diseñada** (> ~2 archivos nuevos de producto o > ~120 LOC nuevas) → el auditor escribe el PLAN del fix + lo entrega CHANGES_REQUESTED a dev-team. NO reconstruye media feature.
+
+**Caps v5:** `responsible_fix_iter` ≤ 6 · `audit_iterations` ≤ 4 · wall-clock ≤ 40 min → si supera, escala a Chris con estado actual documentado.
+
+> Relación con Carril B (v4.2): Carril B (spawn dev-team) queda como fallback de Carril C caso 2 (feature entera) o cuando el auditor alcanzó cap de `responsible_fix_iter`. No es el default ante bugs funcionales.
+
+## Responsabilizar upstream + reflex de auto-hardening (OBLIGATORIO)
+
+Cuando el root cause de un hallazgo es **upstream** (architect no declaró `verification_nature` / `demo_required` / no cableó `must_load_skills` en dispatch-plan; o dev-team saltó un gate obligatorio), el auditor MUST, **antes de cerrar el turn**, ejecutar estos dos pasos:
+
+### Paso 1 — Upstream deficiency finding
+
+Escribir en `T-{n}-review.md` (o `CHECKPOINTS.md`) la sección:
+
+```markdown
+## Upstream deficiency
+- Artefacto culpable: `{brand}/docs/product/stories/{id}/04-validators.yaml` línea {N} — falta campo `verification_nature`
+  (o: dispatch-plan.md — ticket T-{n} sin `must_load_skills`; o: dev-team saltó gate live-verify en Step X)
+- Impacto: {descripción del hallazgo que generó el defecto upstream}
+- Acción sugerida: actualizar template + agregar ejemplo en `docs/specs/templates/04-validators-template.yaml`
+```
+
+Esto es **"resondrar al architect"**: el finding queda nombrado, con artefacto + línea exacta, como señal para el siguiente ciclo de mejora del harness.
+
+### Paso 2 — Reflex de auto-hardening (loop de mejora)
+
+Appendear entry en `docs/process/harness-backlog.md` (tabla):
+
+```markdown
+| HB-{N} | {YYYY-MM-DD} | {sev: HIGH/MED/LOW} | {descripción 1-línea del gap del harness} | /auditor story {brand}/{id} | {artefacto culpable} |
+```
+
+Si el **mismo patrón de defecto upstream se repitió ≥2 veces** (grep en harness-backlog.md o en learnings), agregar además un learning en `docs/learnings/tooling/{YYYY-MM-DD}-{slug}.md` con:
+- Qué falló (root cause)
+- Qué artefacto del harness necesita update
+- Ejemplo de fix sugerido
+
+Este reflex es **autocontenido** — el loop de mejora del harness no depende de que Chris lo detecte manualmente; el auditor cierra el ciclo.
+
+Ref: `.claude/rules/auditor-self-fix-policy.md` + `.claude/rules/definition-of-done-live-verify.md` + `docs/process/harness-backlog.md`.
 
 ## Anti-patterns
 
@@ -718,7 +821,7 @@ Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
 ## Referencias
 
 - `docs/process/pm-redesign-2026-05.md` — paradigma 3 conversaciones + CHECKPOINTS.md C1-C5 + § v4.1 autonomy amplification 2026-05-19
-- `.claude/rules/auditor-self-fix-policy.md` — **★ SSoT exhaustivo v4.1 ★** whitelist 17 categorías + decision tree por naturaleza del fix
+- `.claude/rules/auditor-self-fix-policy.md` — **★ SSoT exhaustivo v4.2 ★** whitelist 17 categorías + decision tree por naturaleza del fix
 - `.claude/rules/auditor-downstream-regression.md` — surface→downstream test mapping
 - `.claude/rules/anti-default-flip-audit.md` — R31 default flag flips
 - `.claude/rules/anti-duplication.md` — inventario shared abstractions
@@ -735,4 +838,4 @@ Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
 
 **Obligación:** si aplicás Carril A self-fix sobre superficie user-reachable, re-verificá live en dev-app que el fix funciona antes de audit-passed. Phase D señala evidencia faltante/insuficiente.
 
-Levantar: `make dev-app-vitalia` → `https://dev-app.vitalialat.com` (login `dr.demo@vitalialat.com`, creds en `vitalia/.env.dev`). Herramientas: **Chrome DevTools MCP** (live) + **Playwright autenticado** (golden). Evidencia = acción real ejercida + efecto observado; NUNCA GET 200 ni e2e mockeado. SSoT: `.claude/rules/definition-of-done-live-verify.md`.
+Levantar: `make dev-app-{brand}` → dev-app de la marca (URL + usuario de prueba per brand en la tabla `§ Infra por brand` de `.claude/rules/definition-of-done-live-verify.md`; ej. vitalia: `https://dev-app.vitalialat.com` / `dr.demo@vitalialat.com`, creds en `{brand}/.env.dev`). Si el túnel de la marca aún no está provisto → fallback `localhost:300X` (válido). Herramientas: **Chrome DevTools MCP** (live) + **Playwright autenticado** (golden). Evidencia = acción real ejercida + efecto observado; NUNCA GET 200 ni e2e mockeado. SSoT: `.claude/rules/definition-of-done-live-verify.md`.

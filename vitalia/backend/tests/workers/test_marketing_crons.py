@@ -634,7 +634,7 @@ class TestLucasDailyAnalysisSweep:
             ),
             patch(
                 "src.modules.vitalia.marketing.jobs.lucas_daily_analysis_sweep._get_orchestrator",
-                return_value=mock_orchestrator,
+                new=AsyncMock(return_value=mock_orchestrator),
             ),
             patch(
                 "src.modules.vitalia.marketing.jobs.lucas_daily_analysis_sweep.adapter_bus",
@@ -703,7 +703,7 @@ class TestLucasDailyAnalysisSweep:
             ),
             patch(
                 "src.modules.vitalia.marketing.jobs.lucas_daily_analysis_sweep._get_orchestrator",
-                return_value=mock_orchestrator,
+                new=AsyncMock(return_value=mock_orchestrator),
             ),
             patch(
                 "src.modules.vitalia.marketing.jobs.lucas_daily_analysis_sweep.adapter_bus",
@@ -773,7 +773,7 @@ class TestLucasDailyAnalysisSweep:
             ),
             patch(
                 "src.modules.vitalia.marketing.jobs.lucas_daily_analysis_sweep._get_orchestrator",
-                return_value=mock_orchestrator,
+                new=AsyncMock(return_value=mock_orchestrator),
             ),
             patch(
                 "src.modules.vitalia.marketing.jobs.lucas_daily_analysis_sweep.adapter_bus",
@@ -831,7 +831,7 @@ class TestLucasDailyAnalysisSweep:
             ),
             patch(
                 "src.modules.vitalia.marketing.jobs.lucas_daily_analysis_sweep._get_orchestrator",
-                return_value=mock_orchestrator,
+                new=AsyncMock(return_value=mock_orchestrator),
             ),
             patch(
                 "src.modules.vitalia.marketing.jobs.lucas_daily_analysis_sweep.adapter_bus",

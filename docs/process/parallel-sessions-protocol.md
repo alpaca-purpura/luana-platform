@@ -69,10 +69,12 @@
 
 ### D4. Política de merge
 
+> **⚠️ ADR-009 supersede el modelo de rotación canónico (cement 2026-05-28):** el canónico `wip/{brand}` es ESTABLE y NUNCA rota story-by-story. Lo que antes se describía como "canónico rota a nueva branch" quedó revocado por el modelo single-hub (ver `.claude/rules/parallel-safety.md` M12 + `docs/architecture/luana-platform/ADR-009-single-hub-worktree.md`). El tercer bullet (tachado abajo) se mantiene solo como referencia histórica.
+
 - **TODO va a main, NADA merge entre branches wip/*.**
 - Efímero termina story → squash-merge a `main` (desde worktree principal) + cleanup del worktree con `cleanup-session.sh` (branch remota queda hasta cron purge 30d).
-- Canónico termina story → squash-merge a `main` → rota a nueva `wip/{brand}-{slug-siguiente}` para próxima story.
-- Para que worktree B "vea" un cambio que A mergeó a main: `git fetch origin && git merge origin/main` desde su `wip/B` (NUNCA `git pull`).
+- ~~Canónico termina story → squash-merge a `main` → rota a nueva `wip/{brand}-{slug-siguiente}` para próxima story.~~ **REVOCADO por ADR-009:** el canónico `wip/{brand}` NUNCA rota — permanece estable; el squash-merge a main no cambia la branch del hub.
+- Para que worktree B "vea" un cambio que A mergeó a main: `scripts/git/sync-from-main.sh` (NUNCA `git pull` ni `git fetch && merge` manual sin script).
 - Efímeros nacen desde `origin/main` fresco siempre (NO desde HEAD del worktree donde se lanza el script).
 
 ### D5. Recursos compartidos (lo que NO se aísla)
@@ -115,17 +117,19 @@ luana-comunify-design-cement          wip/comunify-design-cement          clean 
 
 ### D9. Multi-lane (misma story, N sesiones simultáneas)
 
-Caso de uso: misma story, distintos esfuerzos paralelos (BE+FE+tests). Es **excepcional, no default** — la mayoría de stories viven en una sola branch sin sufijo lane.
+> **⚠️ ADR-009 supersede el modelo de "canónico como lane" (cement 2026-05-28):** el default actual es N sesiones sobre el MISMO hub canónico coordinadas por bucket locks M14 (`code:{module}`, `docs`, `tests`). Las lanes separadas (worktrees efímeros por lane) son **excepción explícita** solicitada por Chris, no el default operativo. Ver `.claude/rules/parallel-safety.md` M14 + `docs/architecture/luana-platform/ADR-009-single-hub-worktree.md`.
+
+Caso de uso: misma story, distintos esfuerzos paralelos (BE+FE+tests). Es **excepcional, no default** — la mayoría de stories corren en el hub canónico con bucket locks.
 
 | Decisión | Resultado |
 |---|---|
-| Cuándo usar | Solo cuando la misma story tiene 2+ sesiones simultáneas. Default = `wip/{brand}-{story-id}` sin lane |
+| Cuándo usar | Solo cuando la misma story tiene 2+ sesiones simultáneas Y Chris solicita explícitamente worktrees separados. Default ADR-009 = N sesiones sobre el mismo hub canónico con lock `code:{module}` |
 | Catálogo recomendado | `be`, `fe`, `tests`, `docs` (libres pero recomendados) |
 | Max lanes simultáneas por story | 3. Si llegás a 4 → escalar split de story (paradigm v4: >10 tickets = story demasiado grande) |
 | Merge order | Cada lane mergea a main por separado en su orden de cierre. NO consolidación entre lanes |
-| Cross-lane dependency | Ruta por main: lane BE mergea primero → lane FE hace `git fetch origin && git merge origin/main` en su wip |
+| Cross-lane dependency | Ruta por main: lane BE mergea primero → lane FE corre `scripts/git/sync-from-main.sh` en su wip |
 | Lane "principal" de una story | NO existe. Las lanes son peers |
-| Canónico puede ser una lane temporalmente | Sí (canónico vitalia en `wip/vitalia-X-be`, efímero en `wip/vitalia-X-fe`). Pero NUNCA 2 lanes en el mismo worktree |
+| ~~Canónico puede ser una lane temporalmente~~ | **REVOCADO por ADR-009.** El hub canónico NUNCA adquiere sufijo lane. Si se necesita efímero lane adicional → nace aparte; el canónico sigue siendo `wip/{brand}` sin slug. NUNCA 2 lanes en el mismo worktree |
 
 ### D8. Detección automática del modo worktree
 
@@ -292,7 +296,7 @@ Cualquier check falla → reporta + STOP. Nunca silenciar.
 | Manifest `.session.yaml::brand` | `core` (pseudo-brand reservado) |
 | Manifest `.session.yaml::worktree_type` | `ephemeral` |
 | D8 detection | `luana-core-{slug}/?$` → EFÍMERO type=core (no brand) |
-| Creator | `scripts/git/new-session.v2.sh core <type> {slug}` (script aceptará `BRAND=core` como excepción al validador actual) |
+| Creator | `scripts/git/new-session.sh core <type> {slug}` (script aceptará `BRAND=core` como excepción al validador actual) |
 | Cleanup | `scripts/git/cleanup-session.sh` (mismo que efímero brand) |
 
 D3 naming table extendida con row "Lift core / cambio engine". D8 detection table extendida con caso CORE.
@@ -306,7 +310,7 @@ D3 naming table extendida con row "Lift core / cambio engine". D8 detection tabl
 3. /pm-luana ratifica fit core → state=under_review
 4. Chris APPROVED → state=accepted
 5. /pm-luana imprime comando para Chris ejecutar en nueva Warp tab:
-     scripts/git/new-session.v2.sh core lift {slug}
+     scripts/git/new-session.sh core lift {slug}
      cd ../luana-core-{slug}/
      claude
 6. /dev-team en ese worktree:
@@ -419,7 +423,7 @@ Caso refuse:
 | new-session/cleanup-session (mec. B/C) | Bash scripts manuales | Idéntico |
 
 **Scripts portables canonical (SSoT):**
-- `scripts/git/new-session.v2.sh` (mec. B)
+- `scripts/git/new-session.sh` (mec. B)
 - `scripts/git/cleanup-session.sh` (mec. C)
 - `scripts/git/check-sync.sh` (T1 logic — Claude hook A + manual/opencode)
 - `scripts/git/push-wip.sh` (T-push logic — Claude hook L + manual/opencode)
@@ -455,24 +459,24 @@ Si (3) rompe → feature es Claude-exclusive, marcar como tal.
 
 ---
 
-## Mecanismos a codificar (estado: pending)
+## Mecanismos (estado verificado 2026-06-01)
 
 | # | Mecanismo | Dónde | Estado |
 |---|---|---|---|
-| A | Hook `SessionStart` Claude Code que detecta cwd + clasifica worktree + verifica symlink venv + imprime estado | `~/.claude/settings.json` | pending |
-| B | `new-session.sh` mejorado: nace de `origin/main` fresco + crea symlink `.venv` + copia `.env.dev.template` por brand + genera `.session.yaml` manifest | `scripts/git/new-session.v2.sh` (propuesta lista 2026-05-17, awaiting Chris validation antes de promover a `new-session.sh`) | **v2 implementada — falta promotion** |
-| C | `cleanup-session.sh` mejorado: verifica tree limpio + push final + prompt "¿mergee branch a main?" + remove worktree | `scripts/git/cleanup-session.sh` | pending |
-| D | Pre-commit hook checks nuevos: (i) bloquear commit directo en `main`; (ii) migration collision detection; (iii) lockfile root undeclared warning | `scripts/git-hooks/pre-commit` | pending |
-| E | `/pm-{brand}` step 0 obligatorio: detect worktree mode + verify branch wip + list cross-brand modified files + list otros worktrees vivos de la misma brand | `.claude/skills/pm-{brand}/SKILL.md` (×4 + template) | pending |
-| F | Wrapper `make dev-{brand}` con lock: aborta si `docker ps \| grep luana-{brand}-` ya hay containers vivos | `Makefile` o wrapper script | pending |
-| G | Wrapper alembic generate con lock: warning si remote tiene otra `wip/{brand}-*` con migrations recientes | `scripts/generate_migration.py` | pending |
-| H | Dashboard `scripts/git/status-all.sh`: enriquece `git worktree list` con dirty status + last commit + story-id (manifest) + Docker activo per brand | `scripts/git/status-all.sh` | pending |
-| I | PS1 customizado bash: `[luana-{suffix} {branch} {dirty}]$` integrado al `~/.bashrc` (o starship/oh-my-bash si Chris usa) | `~/.bashrc` o equivalente | pending |
-| J | `.session.yaml` manifest auto-generado por `new-session.sh` (parte de mecanismo B) + consumido por mecanismos E, H | dentro de B | pending |
-| K | **Warp Workflows** envolviendo B, C, H como atajos ejecutables desde palette Warp (alternativa visual a tipear el script bash). Scripts bash siguen siendo SSoT portable | Warp settings (yaml export per workflow) | pending (opcional, depende de B/C/H) |
-| L | **Pre-push sync check**: PreToolUse hook en Claude Code que intercepta `git push origin wip/*` + fetch + advisory si remoto adelantó. Wrapper portable `scripts/git/push-wip.sh` provee misma lógica para opencode/manual. NO bloquea (regla M5 sigue: si remoto rechaza → STOP) | `~/.claude/settings.json` PreToolUse + `scripts/git/push-wip.sh` | pending (cementado D10 2026-05-17) |
-| M | **`regenerate-manifest.sh`**: utility para worktrees creados a mano sin `new-session.v2.sh`. Lee path + branch + interactivamente pregunta story_id/tickets/created_by_skill + escribe `.session.yaml`. Idempotent | `scripts/git/regenerate-manifest.sh` | pending (cementado D13 2026-05-18) |
-| N | **Step 0 worktree SSoT**: `.claude/rules/step-0-worktree.md` consumido por `@import` desde cada `/pm-{brand}` y `/pm-luana`. Logic verbatim D13 (detection + enforcement matrix + output canónico) | `.claude/rules/step-0-worktree.md` | pending (cementado D13 2026-05-18) |
+| A | Hook `SessionStart` Claude Code que detecta cwd + clasifica worktree + verifica symlink venv + imprime estado | `~/.claude/settings.json` | ✅ **implementado** (SessionStart en settings.json confirmado) |
+| B | `new-session.sh`: nace de `origin/main` fresco + crea symlink `.venv` + copia `.env.dev.template` por brand + genera `.session.yaml` manifest | `scripts/git/new-session.sh` | ✅ **implementado** (`new-session.sh` existe y es el script canónico) |
+| C | `cleanup-session.sh`: verifica tree limpio + push final + prompt "¿mergee branch a main?" + remove worktree | `scripts/git/cleanup-session.sh` | ⚠️ **existe** — verificar si las mejoras descritas están completas |
+| D | Pre-commit hook checks: (i) bloquear commit directo en `main`; (ii) migration collision detection; (iii) lockfile root undeclared warning | `scripts/git-hooks/pre-commit` | ✅ **implementado** (sección "Block direct commit to main" confirmada en pre-commit) |
+| E | `/pm-{brand}` step 0 obligatorio: detect worktree mode + verify branch wip + list cross-brand modified files + list otros worktrees vivos de la misma brand | `.claude/skills/pm-{brand}/SKILL.md` (×4 + template) | ✅ **implementado** (step 0 confirmado en pm-vitalia/SKILL.md + consumido via `@.claude/rules/step-0-worktree.md`) |
+| F | Wrapper `make dev-{brand}` con lock: aborta si ya hay containers vivos de esa brand | `scripts/dev-lock-check.sh` + `Makefile` | ✅ **implementado** (`scripts/dev-lock-check.sh` existe, Makefile lo invoca) |
+| G | Wrapper alembic generate con lock: warning si remote tiene otra `wip/{brand}-*` con migrations recientes | `scripts/generate_migration.py` | ❌ **pendiente** (`scripts/generate_migration.py` no existe) |
+| H | Dashboard `scripts/git/status-all.sh`: enriquece `git worktree list` con dirty status + last commit + story-id (manifest) + Docker activo per brand | `scripts/git/status-all.sh` | ✅ **implementado** (113 líneas, existe en scripts/git/) |
+| I | PS1 customizado bash: `[luana-{suffix} {branch} {dirty}]$` | `scripts/git/ps1-luana.sh` | ✅ **implementado** (`scripts/git/ps1-luana.sh` existe — integración a `~/.bashrc` depende de Chris) |
+| J | `.session.yaml` manifest auto-generado por `new-session.sh` (parte de mecanismo B) + consumido por mecanismos E, H | dentro de B | ✅ **implementado** (parte de `new-session.sh`) |
+| K | **Warp Workflows** envolviendo B, C, H como atajos ejecutables desde palette Warp. Scripts bash siguen siendo SSoT portable | Warp settings (yaml export per workflow) | ⏳ **pending** (opcional, depende de Chris setup Warp) |
+| L | **Pre-push sync check**: PreToolUse hook en Claude Code + wrapper portable `scripts/git/push-wip.sh`. NO bloquea (si remoto rechaza → STOP per M5) | `~/.claude/settings.json` PreToolUse + `scripts/git/push-wip.sh` | ✅ **implementado** (PreToolUse en settings.json + `push-wip.sh` existe) |
+| M | **`regenerate-manifest.sh`**: utility para worktrees creados a mano sin `new-session.sh`. Idempotent. | `scripts/git/regenerate-manifest.sh` | ✅ **implementado** (`regenerate-manifest.sh` existe) |
+| N | **Step 0 worktree SSoT**: `.claude/rules/step-0-worktree.md` consumido por `@import` desde cada `/pm-{brand}` y `/pm-luana` | `.claude/rules/step-0-worktree.md` | ✅ **implementado** (file existe, skills cargan via `@.claude/rules/step-0-worktree.md`) |
 
 ---
 
@@ -488,15 +492,16 @@ Si (3) rompe → feature es Claude-exclusive, marcar como tal.
 
 Una vez cubiertos #4-#8 + cementadas las decisiones derivadas → este doc se promueve a `status: cemented`, se crea ADR-005, y arrancamos implementación A-K.
 
-### Entregables finales del proceso (post-cement)
+### Entregables finales del proceso (estado verificado 2026-06-01)
 
 | Entregable | Para | Status |
 |---|---|---|
-| Este doc en `status: cemented` | Owner /pm-luana | pending |
-| ADR-005 worktree policy | Decisión arquitectónica | pending |
-| `.claude/rules/parallel-safety.md` sincronizado con este doc | Runtime rule cargada en CLAUDE.md | pending |
+| Este doc en `status: cemented` | Owner /pm-luana | ⚠️ pending (actualizar ADR-009 addendum) |
+| ADR-005 worktree policy | Decisión arquitectónica | ✅ existe (`docs/architecture/luana-platform/ADR-005-worktree-policy.md`) |
+| ADR-009 single-hub (supersede D4/D9) | Decisión arquitectónica | ✅ cementado 2026-05-28 |
+| `.claude/rules/parallel-safety.md` sincronizado con este doc | Runtime rule cargada en CLAUDE.md | ✅ sincronizado (M1-M14 en parallel-safety.md) |
 | **Manual operativo Warp** (`docs/process/warp-multibrand-handbook.md` o equivalente) | Chris — cómo usar Warp día a día con el proceso completo: tabs, workflows, atajos, troubleshooting | **pending (Chris-explícito 2026-05-17)** |
-| Mecanismos A-K implementados | Sistema | pending |
+| Mecanismos A-N implementados (excepto G, K) | Sistema | ✅ mayoría implementados — ver tabla mecanismos arriba |
 
 ---
 
@@ -550,10 +555,11 @@ Si encontrás archivo modificado por otra sesión (en el branch wip propio o al 
 ## Referencias
 
 - `docs/architecture/luana-platform/ADR-004-git-branching-and-environments.md` — triple-branch policy (rationale)
-- `docs/architecture/luana-platform/ADR-005-worktree-policy.md` — **PENDIENTE crear cuando este doc se cemente**
-- `.claude/rules/parallel-safety.md` — runtime rules sintetizadas (a sincronizar con este doc al cementar)
+- `docs/architecture/luana-platform/ADR-005-worktree-policy.md` — worktree policy (existe)
+- `docs/architecture/luana-platform/ADR-009-single-hub-worktree.md` — **single-hub canonical topology (supersede D4/D9 rotación)**
+- `.claude/rules/parallel-safety.md` — runtime rules sintetizadas M1-M14 (sincronizadas)
 - `.claude/rules/git-safety.md` — triple-branch operacional
 - `.claude/rules/git-haiku-delegation.md` — commit+push delegation pattern
-- `scripts/git/new-session.sh` — creación worktree (mejora pendiente, mecanismo B)
-- `scripts/git/cleanup-session.sh` — cierre worktree (mejora pendiente, mecanismo C)
+- `scripts/git/new-session.sh` — creación worktree (mecanismo B, implementado)
+- `scripts/git/cleanup-session.sh` — cierre worktree (mecanismo C, existe)
 - `docs/process/git-workflow-multibrand.md` — workflow git multi-brand (verificar consistencia al cementar)

@@ -367,9 +367,7 @@ Builder MUST escribir en `IMPL-LOG.md § Skills Consulted` lista verbatim de ski
 ```md
 ## Skills Consulted
 
-- `backend-expert` — invoked Step 3 SOP routing. Loaded `runtime-quality-checklist.md` antes commit.
-- `tessl__fastapi` — invoked para FastAPI Annotated dep patterns + response_model
-- `tessl__pytest-api-testing` — invoked para httpx AsyncClient + fixture scoping
+- `backend-expert` — invoked Step 3 SOP routing. Loaded `runtime-quality-checklist.md` antes commit. FastAPI canonical patterns consulted para Annotated dep patterns + response_model. pytest async testing patterns consulted para httpx AsyncClient + fixture scoping.
 - `metrics-expert` — invoked porque PR toca `modules/analytics/` ETL pipeline
 ```
 

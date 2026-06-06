@@ -75,7 +75,7 @@ Fields que el cockpit muestra pero NO permite editar desde la UI:
 | Field | Owner | Por qué read-only |
 |---|---|---|
 | `owner` (agente) | Claude (`/po-ux`/`/po`/`/ux-agentico`/`/architect`) | Determinado por análisis del scope |
-| `type` (func/tech) | Claude (al refinar) | Inferido de spec |
+| `type` (ui/service/agentic/bugfix) | Claude (al refinar) | Inferido de spec |
 | `module` (ruta funcional) | Claude (al refinar) | Inferido de cap_target |
 | `capability` (slug) | Claude (al refinar) | = `cap_target` o derivado |
 | `surfaces` (BE/FE/AG) | Claude (`/architect`) | Determinado por scope técnico |
@@ -118,7 +118,7 @@ Fields que el cockpit muestra pero NO permite editar desde la UI:
 
 Chris puede editar cap YAMLs SOLO via cockpit "✚ Extender" modal o "+ Nueva story basada en cap" botón. Esto siempre dispara la creación de una story nueva con `cap_change_type` declarado. NUNCA edición directa del cap YAML.
 
-**Editar atomics/change_log manualmente está prohibido** (pre-commit hook + auditor flag). Para modificar un cap, crear story con cambio apropiado.
+**Editar scenarios[]/change_log manualmente está prohibido** (pre-commit hook + auditor flag). Para modificar un cap, crear story con cambio apropiado.
 
 ---
 
@@ -151,7 +151,7 @@ Chris puede editar cap YAMLs SOLO via cockpit "✚ Extender" modal o "+ Nueva st
 - ❌ Cockpit edita field read-only (owner, type, module, etc.) silenciosamente
 - ❌ `parked` o `dropped` sin razón documentada (cockpit valida ≥10 chars)
 - ❌ Chris edita entry Claude del chris-input.md (rompe trazabilidad conversación)
-- ❌ Chris edita atomics/change_log de cap YAML manualmente (debe ser via story con cap_change_type)
+- ❌ Chris edita scenarios[]/change_log de cap YAML manualmente (debe ser via story con cap_change_type)
 - ❌ Force-state via cockpit endpoint (debe ser via `/pm-{brand} force-state`)
 - ❌ Cockpit permite drag de story `developing+` entre releases (debe estar bloqueado · state demasiado avanzado para reasignar)
 

@@ -23,11 +23,11 @@ cd ${WS}/{brand}/backend && ${WS}/.venv/bin/pytest tests/architecture/ -x -q --t
 # Per core package:
 cd ${WS}/core/luana-core-{pkg} && ${WS}/.venv/bin/pytest tests/architecture/ -x -q --tb=short
 
-# Full cross-brand (todos los activos):
-make arch-test    # corre engine + nicolify + vitalia + comunify + lupulo
+# Full cross-brand (todos los activos) — NO existe `make arch-test`; usar:
+make ci-parity    # engine + nicolify + vitalia + comunify + lupulo (equivalente a CI; corre tests/architecture/ por marca)
 ```
 
-Auto en `/test-backend`, `/test-all`, `/pase-produccion`.
+Auto vía gate-runner shortcuts `arch-test-{brand}` / `test-{brand}` (corren `tests/architecture/`) + `make ci-parity` (mandatory pre-push-to-main) + `/pase-produccion`.
 
 Common fixes (cross-module/domain framework imports/missing response_model/hard deletes/SA 1.x query) en `backend-expert` skill → `references/architectural-fitness.md`.
 

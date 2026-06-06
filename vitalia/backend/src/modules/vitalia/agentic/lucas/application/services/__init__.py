@@ -28,11 +28,6 @@ from src.modules.vitalia.agentic.lucas.application.services.lucas_orchestrator_s
     TenantLocaleProtocol,
 )
 
-try:
-    from langgraph.checkpoint.memory import MemorySaver as _MemorySaver  # type: ignore[import]
-except ImportError:  # pragma: no cover
-    _MemorySaver = None  # type: ignore[assignment,misc]
-
 
 async def _noop_stage_handler(
     *,
@@ -68,27 +63,32 @@ async def _noop_referrals_handler(
     return {}
 
 
-def make_orchestrator() -> LucasOrchestratorService:
+async def make_orchestrator() -> LucasOrchestratorService:
     """Construct a `LucasOrchestratorService` with no-op handlers.
 
     Intended for callers (cron jobs) that run outside request-scoped DI.
-    Uses `MemorySaver` as the LangGraph checkpointer (in-memory, sufficient
-    for daily-sweep single-process runs).
+    Uses the brand-wide DURABLE checkpointer (``AsyncPostgresSaver`` via the
+    shared engine provider ``luana_core_flows.make_durable_checkpointer``) so
+    the daily-analysis graph persists its checkpoints to Postgres — never the
+    in-memory ``MemorySaver`` (tutorial-only; tests inject ``InMemorySaver``
+    directly at ``LucasOrchestratorService`` construction).
+
+    Async because the durable checkpointer opens a connection pool + runs
+    ``.setup()`` once at construction.
 
     Returns:
         Fully wired `LucasOrchestratorService` ready for `run_daily_analysis`.
-
-    Raises:
-        ImportError: If `langgraph` is not installed (should not happen in
-                     production — langgraph is a required dep).
     """
-    if _MemorySaver is None:  # pragma: no cover
-        raise ImportError("langgraph is required but not installed")
+    from src.modules.vitalia._shared.workers.durable_checkpointer import (
+        get_vitalia_durable_checkpointer,
+    )
+
+    checkpointer = await get_vitalia_durable_checkpointer()
     return LucasOrchestratorService(
         stage_handler=_noop_stage_handler,
         attribution_handler=_noop_attribution_handler,
         referrals_handler=_noop_referrals_handler,
-        checkpointer=_MemorySaver(),
+        checkpointer=checkpointer,
     )
 
 

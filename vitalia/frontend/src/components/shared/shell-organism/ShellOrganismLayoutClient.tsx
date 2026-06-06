@@ -69,12 +69,14 @@ import {
 } from "react-resizable-panels";
 import { cn } from "@/lib/utils";
 import { useShellStore } from "@/stores/shell-store";
+import { useTenantStore } from "@/stores/tenant-store";
 import { useStoreHydration } from "@luana/hooks/use-store-hydration";
 import { useViewportGuard } from "./useViewportGuard";
 import { TopBarGlobal } from "./TopBarGlobal";
 import { ValeriaSidebar } from "./ValeriaSidebar";
 import { AppPanelSlot } from "./AppPanelSlot";
 import { ShellModeToggle } from "./ShellModeToggle";
+import { Toaster } from "@/components/ui/sonner";
 
 /** Unique group ID for localStorage persistence via useDefaultLayout */
 const SHELL_GROUP_ID = "vitalia-shell-split-agentic";
@@ -92,11 +94,19 @@ export function ShellOrganismLayoutClient({
   children,
   tenantId: _tenantId,
 }: ShellOrganismLayoutClientProps) {
-  // D3 (ADR-vitalia-006): Trigger useShellStore rehydration exactly ONCE client-side,
+  // D3 (ADR-vitalia-006): Trigger store rehydration exactly ONCE client-side,
   // inside this ssr:false chunk. This is the ONLY place rehydrate() is called for the
-  // shell store. StrictMode-safe via ref guard in useStoreHydration.
+  // shell + tenant stores. StrictMode-safe via ref guard in useStoreHydration.
   // ── ALL hooks called UNCONDITIONALLY at the top before any branch/early-return (D3) ──
   useStoreHydration(useShellStore);
+  // Bug #2 fix (vitalia-bugfix-shell-nav-scroll-errors T-4): el tenant-store usa
+  // createSsrSafePersistedStore con skipHydration:true; su doc pide rehidratarlo
+  // desde el primer componente cliente que lo consume — y nadie lo hacía. Sin esto,
+  // el activeTenant persistido nunca se restaura y el TenantSwitcher dependía 100%
+  // del auto-pick de useTenants, dejando una ventana con activeTenant=null →
+  // selector invisible. Llamado acá (junto a useShellStore, ANTES de cualquier
+  // branch — invariante D3, hook-count estable).
+  useStoreHydration(useTenantStore);
 
   const shellMode = useShellStore((s) => s.shellMode);
   const valeriaState = useShellStore((s) => s.valeriaState);
@@ -122,6 +132,26 @@ export function ShellOrganismLayoutClient({
   // consumers and E2E tests to await a stable layout.
   const [shellReady, setShellReady] = useState(false);
 
+  // Point 3 (bugfix-shell-valeria-responsive, Chris 2026-06-04): inline split only
+  // at >= lg (1024). Below it, Valeria is a drawer/overlay → the Valeria Panel must
+  // collapse to 0 so the agent gets the FULL width (otherwise the Group reserves its
+  // 30% even though the panel content is CSS-hidden, leaving an empty gap).
+  // ValeriaSidebar stays mounted (inside the Panel) so its drawer portal still works.
+  // Synchronous init (client-only via ssr:false) → no flash.
+  const [isLg, setIsLg] = useState(
+    () =>
+      typeof window === "undefined" ||
+      window.matchMedia("(min-width: 1024px)").matches,
+  );
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const handler = (e: MediaQueryListEvent) => setIsLg(e.matches);
+    setIsLg(mq.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -141,7 +171,10 @@ export function ShellOrganismLayoutClient({
     Math.max(10, Math.min(70, (px / Math.max(total, 1)) * 100));
   const minValeriaPct = clampPct(MIN_VALERIA_PX, containerWidth);
   const minAppPct = clampPct(MIN_APP_PX, containerWidth);
-  const defaultValeriaPct = shellMode === "agentic" ? 50 : 5;
+  // Point 2 (vitalia-bugfix-shell-valeria-responsive, Chris 2026-06-04): default split
+  // 30% Valeria / 70% app (was 50/50) so the agent panel (inbox 3-pane, etc.) is usable.
+  // Still resizable + persisted (useDefaultLayout) — this is only the fresh default.
+  const defaultValeriaPct = shellMode === "agentic" ? 30 : 5;
 
   // ── Imperative Group ref for snap-up (Fix A — C3 bug mitigation) ─────────
   const groupRef = useGroupRef();
@@ -150,6 +183,17 @@ export function ShellOrganismLayoutClient({
   // valeriaState change cycle). Signals readiness once layout reconciled.
   useEffect(() => {
     if (containerWidth <= 0 || !groupRef.current) return;
+    // Point 3: below lg, collapse Valeria to 0 so the agent panel takes full width
+    // (Valeria renders as a drawer/overlay there, not inline). The Panel is
+    // `collapsible collapsedSize={0}` so this bypasses minSize.
+    if (!isLg) {
+      groupRef.current.setLayout({
+        [VALERIA_PANEL_ID]: 0,
+        [APP_PANEL_ID]: 100,
+      });
+      setShellReady(true);
+      return;
+    }
     const layout = groupRef.current.getLayout();
     const valeriaPct = layout[VALERIA_PANEL_ID];
     if (valeriaPct !== undefined && valeriaPct < minValeriaPct) {
@@ -159,7 +203,7 @@ export function ShellOrganismLayoutClient({
       });
     }
     setShellReady(true);
-  }, [containerWidth, minValeriaPct, groupRef]);
+  }, [containerWidth, minValeriaPct, groupRef, isLg]);
 
   // Persist layout across page reloads via localStorage.
   // Safe to call directly: this component is client-only via dynamic({ssr:false}).
@@ -240,11 +284,15 @@ export function ShellOrganismLayoutClient({
              */}
             <Panel
               id={VALERIA_PANEL_ID}
-              defaultSize={defaultValeriaPct}
+              defaultSize={isLg ? defaultValeriaPct : 0}
               minSize={`${minValeriaPct}%`}
-              collapsible={false}
+              collapsible={true}
+              collapsedSize={0}
             >
-              <div className="hidden h-full md:flex">
+              {/* ValeriaSidebar stays mounted at all widths (its drawer portals to
+                  document.body); the inline aside hides itself < lg (hidden lg:grid),
+                  and the Panel collapses to 0 < lg so the agent gets full width. */}
+              <div className="h-full">
                 <ValeriaSidebar />
               </div>
             </Panel>
@@ -256,7 +304,7 @@ export function ShellOrganismLayoutClient({
             <Separator
               id="shell-handle"
               className={cn(
-                "hidden md:block",
+                "hidden lg:block",
                 // ★ Fix 2026-05-24: 1px visible (mockup parity) pero 8px hit area.
                 "group relative w-2 shrink-0 bg-transparent cursor-col-resize outline-none",
                 "after:absolute after:left-1/2 after:top-0 after:h-full after:w-px after:-translate-x-1/2",
@@ -274,7 +322,7 @@ export function ShellOrganismLayoutClient({
              */}
             <Panel
               id={APP_PANEL_ID}
-              defaultSize={100 - defaultValeriaPct}
+              defaultSize={isLg ? 100 - defaultValeriaPct : 100}
               minSize={`${minAppPct}%`}
             >
               <AppPanelSlot>{children}</AppPanelSlot>
@@ -290,17 +338,21 @@ export function ShellOrganismLayoutClient({
            * visible → single AppPanelSlot in the DOM.
            */
           <div className="grid h-full grid-cols-[auto_auto_1fr]">
-            {/* Valeria sidebar — hidden on mobile */}
-            <div className="hidden w-[60px] md:block">
+            {/* Valeria sidebar — hidden < lg (drawer zone) */}
+            <div className="hidden w-[60px] lg:block">
               <ValeriaSidebar />
             </div>
-            {/* Visual divider (1px) — hidden on mobile */}
-            <div className="hidden w-px bg-border md:block" aria-hidden="true" />
+            {/* Visual divider (1px) — hidden < lg */}
+            <div className="hidden w-px bg-border lg:block" aria-hidden="true" />
             {/* App panel — always visible; single slot */}
             <AppPanelSlot>{children}</AppPanelSlot>
           </div>
         )}
       </main>
+      {/* Sonner toast portal — required for toast() calls throughout the shell.
+          Rendered here (inside client-only boundary) to avoid SSR issues.
+          If absent, all toast.error/success/info calls are no-ops. */}
+      <Toaster position="bottom-right" richColors />
     </div>
   );
 }

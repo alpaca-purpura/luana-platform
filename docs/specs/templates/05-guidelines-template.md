@@ -30,8 +30,13 @@ required:
   - id: playwright-expert
     when: "test_construction_plan.playwright_required=true"
     purpose: "POM patterns, Clerk auth fixture, network mocking, smoke debugging"
+  - id: chrome-devtools-verify
+    when: "surface=FE o AGENTIC (live verification durante build/audit)"
+    purpose: "Live-verify en dev-app — ejercer acción real, leer Console + Network + logs (DoD Critical Rule #37)"
 
   # Rules obligatorias siempre
+  - id: ".claude/rules/definition-of-done-live-verify.md"
+    purpose: "DoD Critical Rule #37 — ninguna story done sin ejercer la acción real en dev-app + dod_evidence"
   - id: ".claude/rules/tenant-isolation.md"
     purpose: "Every query filter tenant_id"
   - id: ".claude/rules/backend-ddd.md o frontend-fsd.md"
@@ -47,24 +52,24 @@ required:
   - id: ".claude/rules/git-safety.md"
     purpose: "Triple-branch policy + forbidden ops"
 
-  # Tessl skills (canonical version-pinned docs) si aplica
-  - id: "tessl__fastapi"
+  # Canonical docs / patterns (WebFetch the canonical docs URL, or `tessl-context` skill if Tessl tiles are installed)
+  - id: "FastAPI canonical patterns"
     when: "BE endpoint nuevo"
-  - id: "tessl__pytest-api-testing"
+  - id: "pytest async testing patterns"
     when: "BE tests nuevos"
-  - id: "tessl__react-patterns"
+  - id: "React patterns baseline"
     when: "FE component nuevo"
-  - id: "tessl__shadcn-ui"
+  - id: "Shadcn UI conventions"
     when: "FE component nuevo (Shadcn reuse)"
-  - id: "tessl__tailwind"
+  - id: "Tailwind conventions"
     when: "FE component nuevo (tokens)"
-  - id: "tessl__zod"
+  - id: "Zod validation"
     when: "FE form con validation"
-  - id: "tessl__vitest"
+  - id: "Vitest conventions"
     when: "FE tests nuevos"
-  - id: "tessl__nextjs-app-router-modularization"
+  - id: "Next.js App Router Server/Client split"
     when: "FE route nueva"
-  - id: "tessl__langgraph"
+  - id: "LangGraph canonical docs"
     when: "AGENTIC surface"
   - id: "claude-api"
     when: "AGENTIC surface"
@@ -158,3 +163,4 @@ reference_artifacts:
 
 - v1 2026-05-06 — paradigm v4 inicial (post pm-redesign)
 - v2 2026-05-19 — ★ v4.1 cement: must_load_skills enforceable + reference_artifacts explícito + paths brand-scoped
+- v3 2026-06-02 — DoD #37: agrega `chrome-devtools-verify` skill + `.claude/rules/definition-of-done-live-verify.md` a must_load_skills

@@ -2,9 +2,9 @@
 
 **Origen:** PI-12 S1 Story A T-1 (2026-05-04). Auditor `auditor-backend` aprobó cost_recorder canonicalization PASS — pero NO corrió tests downstream que mockean callback_handler en `modules/{copilot,sales_agent}/observability/`. Bug `litellm.get_llm_provider("kimi/kimi-k2.6")` raises BadRequestError llegó a S1 (T-1-bis micro-ticket nuevo). Severidad: **CRÍTICA**.
 
-**Multibrand update 2026-05-15:** post reorg, shared abstractions viven en `core/luana-core-*/src/luana_core_*/` (26 packages), no en `backend/src/shared/`. Tests viven en `core/luana-core-*/tests/` (engine consumers) Y en `{brand}/backend/tests/` (brand-specific consumers). Brands actuales: **vitalia · nicolify · comunify · lupulo** (4 activos; 6 pendientes bootstrap: saasora, inmoflow, retailly, fixia, guestly, fitflow). Workspace root: `/home/chalreme/Proyectos/luana-platform/` (variable `${WS}` en comandos).
+**Multibrand update 2026-05-15:** post reorg, shared abstractions viven en `core/luana-core-*/src/luana_core_*/` (26 packages), no en `backend/src/shared/`. Tests viven en `core/luana-core-*/tests/` (engine consumers) Y en `{brand}/backend/tests/` (brand-specific consumers). Brands actuales: **vitalia · nicolify · comunify · lupulo** (4 activos; 6 pendientes bootstrap: saasora, inmoflow, retailly, fixia, guestly, fitflow). Workspace root: `$(git rev-parse --show-toplevel)` (variable `${WS}` en comandos).
 
-**Split 2026-05-16:** tabla SSoT (secciones A-I, ~30k chars) movida a `.claude/rules/references/auditor-downstream-targets.md` para mantener rule principal <40k chars context budget. Auditores leen el reference doc on-demand (Read tool) durante Step `downstream_regression_scope`.
+**Split 2026-05-16:** tabla SSoT (secciones A-I, ~30k chars) movida a `docs/rules-detail/auditor-downstream-targets.md` para mantener rule principal <40k chars context budget. Auditores leen el reference doc on-demand (Read tool) durante Step `downstream_regression_scope`.
 
 ## Regla cardinal
 
@@ -16,13 +16,13 @@ Cuando auditor reviewing PR toca código `core/luana-core-*/` (engine), brand ex
 
 **Mecánica:** auditor lee diff `git diff --name-only HEAD~N..HEAD`. Para cada path tocado:
 - Infiere `BRAND` (primera componente path si match `^[a-z]+/(backend|frontend)/`, sino "engine")
-- Read `.claude/rules/references/auditor-downstream-targets.md` → lookup row por surface
+- Read `docs/rules-detail/auditor-downstream-targets.md` → lookup row por surface
 - Aggregate downstream_test_targets (engine + per-brand consumers)
 - Spawn gate-runner adicional con scope si no cubierto en gate-output.json original
 
 ## Tabla SSoT — surface → downstream test paths
 
-> **SSoT vive en** `.claude/rules/references/auditor-downstream-targets.md` (split 2026-05-16).
+> **SSoT vive en** `docs/rules-detail/auditor-downstream-targets.md` (split 2026-05-16).
 >
 > 9 secciones: **A** observability · **B** extraction+llm · **C** events+idempotency+billing+compliance · **D** extension-sdk+platform · **E** copilot+sales-agent · **F** agentic evals (simulator+grader+goldens) · **G** brand business modules (analytics/offer/landing) · **H** frontend per-brand · **I** brand overlay rules + extensions registry.
 >
@@ -34,7 +34,7 @@ Cuando auditor reviewing PR toca código `core/luana-core-*/` (engine), brand ex
 
 ```
 # Pseudocode auditor agent inserts post consume_gate_output, pre audit_categories.
-# WS = /home/chalreme/Proyectos/luana-platform
+# WS = $(git rev-parse --show-toplevel)
 # BRANDS = vitalia nicolify comunify lupulo
 
 1. List files modified in diff: git diff HEAD~N..HEAD --name-only
@@ -50,7 +50,7 @@ Cuando auditor reviewing PR toca código `core/luana-core-*/` (engine), brand ex
 2a. ENGINE scope (Step `engine_edit_detection`) — MANDATORY:
     - Verify `docs/promotion-protocol/proposals/*-{pkg}-*.md` exists with `state: accepted|migrated`
     - If NO proposal → FAIL with verdict: "engine edit sin promotion proposal. Escalar `/pm-luana` ANTES merge."
-    - Read `.claude/rules/references/auditor-downstream-targets.md` → downstream_test_targets includes engine tests + ALL ${BRANDS} consumers
+    - Read `docs/rules-detail/auditor-downstream-targets.md` → downstream_test_targets includes engine tests + ALL ${BRANDS} consumers
 
 2b. BRAND scope (Step `cross_brand_mirror_scan`) — MANDATORY for brand extensions
     bajo `{brand}/backend/src/modules/{brand}/{copilot,sales_agent}/`:
@@ -113,7 +113,7 @@ Cuando auditor reviewing PR toca código `core/luana-core-*/` (engine), brand ex
 **Algoritmo verbatim:**
 
 ```bash
-WS=/home/chalreme/Proyectos/luana-platform
+WS=$(git rev-parse --show-toplevel)
 BRAND_A=<brand inferido en Step 2>
 TARGET_PATH=<path tocado>
 BASENAME=$(basename "$TARGET_PATH")
@@ -266,12 +266,12 @@ Verdict: FAIL AUTOMÁTICO — "cross-brand mirror detected:
 
 ## Referencia cruzada
 
-- `.claude/rules/references/auditor-downstream-targets.md` — **tabla SSoT secciones A-I** (read on-demand)
+- `docs/rules-detail/auditor-downstream-targets.md` — **tabla SSoT secciones A-I** (read on-demand)
 - `.claude/rules/anti-duplication.md` — inventario shared abstractions engine (§ lift shared rule — base del cross-brand mirror detection)
 - `.claude/rules/anti-default-flip-audit.md` — Step 1 grep tests path viejo (ortogonal pero análogo: detect ripple)
 - `docs/promotion-protocol/README.md` — workflow brand→core lift gate (consumido por § Engine edit detection)
 - `docs/portfolio/PORTFOLIO.md` — vista master 11 universos (referencia ${BRANDS} catalog)
-- `docs/architecture/luana-platform/ADR-001-multibrand-carve-out.md` — rationale topología engine + brand
+- `docs/architecture/luana-platform/ADR-001-luana-platform.md` — rationale topología engine + brand
 - `.claude/agents/auditor-backend.md` — Step `downstream_regression_scope` (integrado 2026-05-05, multibrand-aware 2026-05-15)
 - `.claude/agents/auditor-agentic.md` — Step idem (integrado 2026-05-05)
 - `.claude/agents/auditor-frontend.md` — Step idem FE-side (integrado 2026-05-05, B1 parity)

@@ -1,21 +1,24 @@
 # 02-design-ui.md — Template (UX/UI)
 
-> Owner: `/ux-ui`. Diseño UI completo para ui-story (o componente UI de mixed-story).
-> Consume `01-spec.md` + skills (`brand-expert`, `frontend-expert`, `tessl__shadcn-ui`, `tessl__tailwind`).
+> **[DEPRECADO — `/po-ux` produce `01-spec.md` unificado y lo prohíbe explícitamente. Conservado por trazabilidad.]**
+> El owner `/ux-ui` mencionado abajo no existe en el paradigma v4. Usá `/po-ux` para UI stories (produce `01-spec.md` con wireframes + Gherkin + estados + microcopy + graders Playwright integrados). Este template `02-design-ui.md` como artefacto separado quedó obsoleto: todo el contenido de diseño UI vive en `01-spec.md` unificado desde el paradigma v4 (2026-05-06).
+
+> ~~Owner: `/ux-ui`.~~ Diseño UI completo para ui-story (o componente UI de mixed-story).
+> Consume `01-spec.md` + skills (`brand-expert`, `frontend-expert`) + Shadcn UI / Tailwind conventions.
 > Si descubre edge cases nuevos durante diseño → propone `delta-spec.md` y /po ratifica antes de seguir.
 
 ---
 story_id: STORY_ID
 type: ui-story
-designer: /ux-ui
+designer: /po-ux  # histórico: era /ux-ui (no existe en paradigma v4)
 ux_version: 1
 last_modified: 2026-05-04T15:00Z
 ratified_by_chris: false
 links:
   spec: "01-spec.md"
-  story_yaml: "../../../../../product/stories/{module}/{story-id}.yaml"
-  brand_studio: "../../../../../product/modules/brand.md"          # si toca tokens marca
-  design_tokens: "frontend/src/lib/tokens.ts"
+  story_yaml: "../../product/stories/{module}/{story-id}.yaml"  # relativo a {brand}/docs/specs/templates/
+  brand_studio: "{brand}/docs/product/modules/brand.md"            # si toca tokens marca (path absoluto relativo al workspace)
+  design_tokens: "core/@luana/design-tokens"  # era frontend/src/lib/tokens.ts (stale)
 ---
 
 ## Resumen UX
@@ -140,4 +143,4 @@ User input
 
 ## Próximo paso
 
-`→ /architect lee 01+02 → spawn /architect-{be,fe} paralelo (architect-agentic si mixed) → produce 03-arch-* y 04-tickets.yaml`
+`→ /architect lee 01+02 → spawn /architect-{be,fe} paralelo (architect-agentic si mixed) → produce 03-arch-* y 06-tickets.yaml`

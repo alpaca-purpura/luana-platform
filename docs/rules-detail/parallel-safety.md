@@ -5,14 +5,14 @@ description: "Seguridad multi-sesion paralela Claude Code/opencode — worktree-
 
 # Parallel Safety (OBLIGATORIO)
 
-Chris opera 2-3 sesiones Claude/opencode en paralelo en Linux Mint, frecuentemente en brands distintas + ocasional multi-lane dentro de brand. Cada sesion vive en su propio worktree fisico dedicado con branch `wip/*` (o `hotfix/*` o `exp/*` o `wip/core-*`). Modelo cementado en `docs/process/parallel-sessions-protocol.md` D1-D14 + `docs/architecture/luana-platform/ADR-005-worktree-policy.md`.
+Chris opera 2-3 sesiones Claude/opencode en paralelo en Linux Mint. **Default (ADR-009): single-hub** — N sesiones sobre el MISMO worktree canónico por marca (`~/Proyectos/luana-{brand}`, branch `wip/{brand}` ESTABLE), coordinadas por bucket locks M14. Worktree físico dedicado (`hotfix/*`/`exp/*`/`wip/core-*`/otra marca) = excepción. Modelo cementado en `docs/process/parallel-sessions-protocol.md` D1-D14 + `docs/architecture/luana-platform/ADR-{005,009}-worktree-policy.md`.
 
 ## Topologia filesystem (D2)
 
 | Path | Tipo | Branch | Editar codigo |
 |---|---|---|---|
 | `~/Proyectos/luana-platform/` | PRINCIPAL | `main` | ❌ NO (solo merges + read cross-brand) |
-| `~/Proyectos/luana-{brand}/` | CANONICO long-lived | rota `wip/{brand}-{slug}` segun story | ✅ SI (1 sesion a la vez) |
+| `~/Proyectos/luana-{brand}/` | CANÓNICO **HUB único** (ADR-009) | `wip/{brand}` ESTABLE (M12 — NO rota story-by-story) | ✅ SÍ · N sesiones con bucket locks M14 |
 | `~/Proyectos/luana-{brand}-{slug}/` | EFIMERO brand | `wip/{brand}-{slug}[-{lane}]` | ✅ SI |
 | `~/Proyectos/luana-{brand}-hotfix-{slug}/` | EFIMERO hotfix | `hotfix/{brand}-{slug}` | ✅ SI |
 | `~/Proyectos/luana-{brand}-exp-{slug}/` | EFIMERO exp | `exp/{brand}-{slug}` | ✅ SI (NUNCA mergea) |

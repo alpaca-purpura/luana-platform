@@ -17,7 +17,7 @@ estimate_hours: 2
 owner_eligibility:
   qwen_opencode: true                            # acepta opencode/qwen
   claude_sonnet: true                            # acepta Claude Code Sonnet
-  claude_opus_required: false                    # FORZAR Opus 4.7 (true para AGENTIC)
+  claude_opus_required: false                    # FORZAR Opus 4.8 (true para AGENTIC)
 assigned_to: null                                # rellena /dev-team al tomar
 assigned_at: null
 ---
@@ -65,19 +65,20 @@ assigned_at: null
 |---|---|---|
 | A1 | POST /api/v1/{path} con payload válido → 200 | `pytest tests/modules/{m}/test_{name}_endpoint.py::test_happy_path` |
 | A2 | Cross-tenant request → 403 | `pytest ... ::test_tenant_isolation` |
-| A3 | Migration idempotente | `make verify-migration-idempotency` |
+| A3 | Migration idempotente | re-run `docker exec luana-dev-{brand}_backend_dev-1 alembic upgrade head` (debe finalizar sin error) |
 | A4 | Coverage del módulo no baja | `/test-backend` gate coverage |
 | A5 | Spanish neutro en todos los strings user-facing | grep `voseo` patterns |
 
 ## Quality gates obligatorios (correr antes push)
 
 ```bash
-cd backend
-.venv/bin/ruff check src/modules/{m}/ tests/modules/{m}/
-.venv/bin/ruff format --check src/modules/{m}/ tests/modules/{m}/
-.venv/bin/pytest tests/architecture/ -v --override-ini="addopts="
-.venv/bin/pytest tests/modules/{m}/ --cov=src/modules/{m} --cov-report=term-missing -x -q
-docker exec visionarias_brain_dev alembic upgrade head
+WS=$(git rev-parse --show-toplevel)
+cd {brand}/backend
+${WS}/.venv/bin/ruff check src/modules/{m}/ tests/modules/{m}/
+${WS}/.venv/bin/ruff format --check src/modules/{m}/ tests/modules/{m}/
+${WS}/.venv/bin/pytest tests/architecture/ -v --override-ini="addopts="
+${WS}/.venv/bin/pytest tests/modules/{m}/ --cov=src/modules/{m} --cov-report=term-missing -x -q
+docker exec luana-dev-{brand}_backend_dev-1 alembic upgrade head
 ```
 
 O atajo: `/test-backend` slash-skill.
@@ -102,7 +103,7 @@ NO escribas código sin test asociado.
 ## Resume protocol
 
 Si la sesión muere mid-build:
-1. `cat docs/projects/active/PI-N/sprints/SN/stories/{story-id}/05-impl/T-{n}-impl-log.md` ← bitácora viva
+1. `cat {brand}/docs/product/stories/{story-id}/T-{n}-impl-log.md` ← bitácora viva
 2. `git status` → ver work-in-progress
 3. Continuar desde último checkpoint registrado en impl-log
 4. Re-correr quality gates antes de declarar done
@@ -117,5 +118,5 @@ Tras terminar, escribir `T-{n}-result.md` con:
 
 Y respuesta al orchestrator (single line):
 ```
-done -> docs/projects/active/PI-N/sprints/SN/stories/{story-id}/05-impl/T-{n}-result.md
+done -> {brand}/docs/product/stories/{story-id}/T-{n}-result.md
 ```

@@ -1,6 +1,8 @@
 # CI + Flaky Test Debugging
 
 > **Read when:** test passes locally but fails in CI, you need to shard the suite, you are debugging a `retries: 2` exhaustion, or you are about to change `.github/workflows/e2e-tests.yml`.
+>
+> **⚠️ GitHub Actions DEFERRED:** los workflows en `.github/workflows/` están en modo `deferred` hasta contar con servidor staging real. La calidad se enforce 100% via hooks locales (`pre-commit` / `pre-push`) y `make ci-parity`. Ver `.claude/rules/github-actions-deferred.md`.
 
 CI and flakes share an underlying skill: reading traces, isolating non-determinism, and choosing the right escalation (fix substrate vs fix test vs fix product). This document teaches both.
 
@@ -11,8 +13,8 @@ CI and flakes share an underlying skill: reading traces, isolating non-determini
 File: `.github/workflows/e2e-tests.yml`
 
 ```
-push to development (paths: frontend/**) ─────┐
-PR to development|main (paths: frontend/**) ──┤
+push to wip/{brand} (paths: frontend/**) ─────┐
+PR to wip/{brand}|main (paths: frontend/**) ──┤
 workflow_dispatch (manual w/ suite selector) ─┘
                                               ▼
                               ┌─────────────────────────┐
@@ -25,7 +27,7 @@ workflow_dispatch (manual w/ suite selector) ─┘
                   ▼                           ▼                           ▼
          Free disk + setup        Materialize .env from         docker compose up
          buildx (~25 GB)          GH Secrets + curl            postgres/redis/qdrant
-                                  CLERK_TESTING_TOKEN          /api_dev/client_dashboard_dev
+                                  CLERK_TESTING_TOKEN          luana-dev-{brand}_{backend,frontend}_dev-1
                                               │
                                               ▼
                                   alembic upgrade head
@@ -82,7 +84,7 @@ test fails in CI
 | `Bot traffic detected` in CI only | `CLERK_TESTING_TOKEN` step failed silently — curl returned `null` | Check workflow logs step "Generate Clerk testing token". If TOKEN is empty, GH Secret `CLERK_SECRET_KEY` is wrong |
 | `Tenant not found` 404 | Seed step failed | Check workflow log "Seed E2E tenant"; psql command must succeed |
 | "Cookies are missing for `*.clerk.accounts.dev`" | Setup project failed silently | Check setup project log; likely `clerk.signIn()` timed out due to Clerk dev throttle |
-| Different element exists locally vs CI | FE built differently — stale Docker layer cache | `docker compose build --no-cache client_dashboard_dev` (in workflow); rerun |
+| Different element exists locally vs CI | FE built differently — stale Docker layer cache | `docker compose build --no-cache` per brand (in workflow); rerun |
 | Test passes 9/10 in CI but always fails the 10th | Genuine flake — see next section |
 
 ---
@@ -206,7 +208,7 @@ Runner has 14 GB initial free; we boost to ~40 GB via cleanup step.
 
 | Consumer | Approx | Notes |
 |---|---|---|
-| Docker images (postgres, qdrant, redis, api_dev, client_dashboard_dev) | 8 GB | builds from scratch each run |
+| Docker images (postgres, qdrant, redis, luana-dev-{brand}_backend_dev-1, luana-dev-{brand}_frontend_dev-1) | 8 GB | builds from scratch each run |
 | `node_modules` (frontend) | 1.5 GB | |
 | Playwright browsers | 1 GB | only Chromium; `--with-deps` adds OS libs |
 | FE build output (`.next/standalone`) | 500 MB | |
@@ -234,10 +236,12 @@ If CI is broken at the workflow level (not test level), do not push fixes blind 
 
 ---
 
-## 10. Runbook — "smoke is failing on development"
+## 10. Runbook — "smoke is failing on wip/{brand}"
+
+> **Nota:** GitHub Actions está en modo `deferred` — los workflows no corren automáticamente hasta contar con servidor staging. Este runbook aplica cuando se reactive o cuando se dispare manualmente via `workflow_dispatch`. Mientras tanto, correr la suite localmente con `make ci-parity` o `npx playwright test --project=smoke`. Ver `.claude/rules/github-actions-deferred.md`.
 
 ```
-1. gh run list --workflow=e2e-tests.yml --branch=development --limit=5
+1. gh run list --workflow=e2e-tests.yml --branch=wip/{brand} --limit=5
 2. gh run view <run-id> --log-failed | head -200
 3. gh run download <run-id> --name playwright-report-smoke
 4. cd /tmp && npx playwright show-report ./playwright-report
@@ -245,12 +249,12 @@ If CI is broken at the workflow level (not test level), do not push fixes blind 
 6. Reproduce locally:
    bash scripts/e2e-preflight.sh
    npm run test:e2e:fresh   # if auth was the failure
-   cd frontend && npx playwright test path/to/file.spec.ts --project=smoke
+   cd {brand}/frontend && npx playwright test path/to/file.spec.ts --project=smoke
 7. Fix; commit; push; watch
 8. If still flaky → see Section 4 above
 ```
 
-For the on-call rotation: when smoke fails on development, it blocks deploys. Treat it as P1.
+For the on-call rotation: when smoke fails on the active wip/{brand} branch and CI is active, it blocks staging validation. Treat it as P1.
 
 ---
 

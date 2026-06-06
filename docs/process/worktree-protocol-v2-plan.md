@@ -1,5 +1,7 @@
 <!-- voseo-allowed: internal protocol redesign documentation for Chris, not user-facing -->
 
+> ✅ IMPLEMENTADO (histórico) — el plan se ejecutó; ver ADR-009 + parallel-safety.md
+
 # Worktree Protocol v2 — plan ejecutable
 
 > **Cement-date target:** 2026-05-18
@@ -78,7 +80,7 @@ worktree fantasma `luana-vitalia-infra-cross-cutting` que nunca cleanup +
 sin manifest. Resultado: rama huérfana con commits valiosos que casi se pierden.
 ```
 
-**Arch fitness test NEW:** `scripts/test_no_subagent_worktree.sh` — grep `isolation:\s*['"]?worktree['"]?` en `.claude/agents/*.md` → fail si encuentra.
+**Arch fitness test NEW:** `scripts/test_no_subagent_worktree.sh` (MISSING — create before use) — grep `isolation:\s*['"]?worktree['"]?` en `.claude/agents/*.md` → fail si encuentra.
 
 ### CORE #3 — Sync KISS activo
 

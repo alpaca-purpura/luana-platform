@@ -1,5 +1,7 @@
 # SDD Process Improvement — Handoff Doc
 
+> ⚠️ HISTORICAL (read-only archaeology) — paths/vocab pre-reorg; R3/R18 ya implementados. Los paths `docs/projects/active/PI-12/` y `/home/chris/AISALESHT/` son dead-paths de la arquitectura pre-2026-05-15; las stories viven ahora en `{brand}/docs/product/stories/{id}/`. Las recomendaciones R3 (anti-duplication) y R18 (story-closure-gate) están cementadas en `.claude/rules/`. No editar este archivo — es registro histórico.
+
 > **Origen:** sesión Chris + Claude Opus 4.7 del 2026-05-04 → 2026-05-05.  
 > **Owner próxima sesión:** session nueva clean-context, leer este archivo PRIMERO + la sección "Mandatory reads" antes ejecutar.  
 > **Goal:** implementar las 11 recomendaciones (R1..R11) que transforman 13 debilidades (D1..D13) del proceso SDD nivel 3 en oportunidades de mejora. Plus investigar mejoras adicionales.

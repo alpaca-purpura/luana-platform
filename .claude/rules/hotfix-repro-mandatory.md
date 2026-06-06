@@ -8,7 +8,7 @@ ANTES de spawn `builder-{backend|agentic|frontend}` para hot-fix ticket originad
 
 **Señales hot-fix** (AL MENOS UNA): título contiene `bug/hot-fix/regression/incident/bis/revert/fix forward` · origin menciona `handoff doc/pase-producción-failed/auditor-escalation` · sub-número `T-N.bis`.
 
-**4 steps obligatorios:** (1) reproducir localmente + capturar output, (2) validar diagnosis handoff vs symptom real (match/mismatch/no-repro), (3) citar `repro_evidence` en `04-tickets.yaml`, (4) spawn builder citando `repro_verified: true`.
+**4 steps obligatorios:** (1) reproducir localmente + capturar output, (2) validar diagnosis handoff vs symptom real (match/mismatch/no-repro), (3) citar `repro_evidence` en `06-tickets.yaml`, (4) spawn builder citando `repro_verified: true`.
 
 ## Cuándo carga el detalle
 
@@ -27,4 +27,4 @@ ANTES de spawn `builder-{backend|agentic|frontend}` para hot-fix ticket originad
 - `docs/rules-detail/hotfix-repro-mandatory.md` — **detalle completo** (caso origen verbatim, workflow 4 steps, schema)
 - `docs/process/process-improvement-handoff-2026-05-05.md` — handoff misdiagnosis case
 - `.claude/skills/{dev-team,po}/SKILL.md` — enforcement points
-- `docs/specs/templates/04-tickets-template.yaml` § repro_verified
+- `docs/specs/templates/06-tickets-template.yaml` § repro_verified

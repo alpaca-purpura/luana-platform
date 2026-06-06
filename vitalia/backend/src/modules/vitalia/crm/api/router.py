@@ -44,6 +44,18 @@ from src.modules.vitalia._shared.repositories.audit_log_repository import (
     AuditLogRepository,
 )
 from src.modules.vitalia.crm.api.consent_endpoints import router as consent_router
+from src.modules.vitalia.crm.application.dto.board_dto import BoardResponse
+from src.modules.vitalia.crm.application.dto.conversation_detail_dto import (
+    ConversationDetailConversation,
+    ConversationDetailMessage,
+    ConversationDetailResponse,
+)
+from src.modules.vitalia.crm.application.dto.frozen_dto import (
+    DiagnoseResponse,
+    FrozenListResponse,
+    ReactivateRequest,
+)
+from src.modules.vitalia.crm.application.dto.lead_detail_dto import LeadDetailResponse
 from src.modules.vitalia.crm.application.dto.lead_dto import (
     LeadCreateRequest,
     LeadListResponse,
@@ -54,13 +66,37 @@ from src.modules.vitalia.crm.application.dto.patient_dto import (
     PatientPatchRequest,
     PatientResponse,
 )
+from src.modules.vitalia.crm.application.dto.transition_dto import (
+    StageTransitionRequest,
+    StageTransitionResponse,
+    TimelineResponse,
+)
+from src.modules.vitalia.crm.application.services.funnel_service import FunnelService
 from src.modules.vitalia.crm.application.services.lead_service import (
     LeadNotFoundError,
     LeadService,
 )
 from src.modules.vitalia.crm.application.services.patient_service import PatientService
+from src.modules.vitalia.crm.domain.exceptions import (
+    InvalidTransitionError,
+    ManualReservadoForbiddenError,
+    ReasonRequiredError,
+    StaleStateError,
+)
+from src.modules.vitalia.crm.infrastructure.persistence.conversation_repository import (
+    ConversationRepository,
+)
+from src.modules.vitalia.crm.infrastructure.persistence.lead_activity_repository import (
+    LeadActivityRepository,
+)
 from src.modules.vitalia.crm.infrastructure.persistence.lead_repository import (
     LeadRepository,
+)
+from src.modules.vitalia.crm.infrastructure.persistence.lead_stage_transition_repository import (
+    LeadStageTransitionRepository,
+)
+from src.modules.vitalia.crm.infrastructure.persistence.message_repository import (
+    MessageRepository,
 )
 from src.modules.vitalia.crm.infrastructure.persistence.patient_repository import (
     PatientRepository,
@@ -569,10 +605,442 @@ async def update_lead(
 
 
 # ---------------------------------------------------------------------------
+# Funnel service builder (DI helper)
+# ---------------------------------------------------------------------------
+
+
+def _build_funnel_service(session: AsyncSession) -> FunnelService:
+    """Build FunnelService with all dependencies wired.
+
+    Separated from endpoints to allow patching in tests.
+    """
+    from src.modules.vitalia._shared.telemetry.growth_studio_emitter import (  # noqa: PLC0415
+        GrowthStudioEmitter,
+    )
+
+    lead_repo = LeadRepository(session=session, kek=KEKClient.from_env())
+    transition_repo = LeadStageTransitionRepository(session=session)
+    activity_repo = LeadActivityRepository(session=session)
+    emitter = GrowthStudioEmitter(session=session)
+
+    # event_bus: use luana_core_events OutboxEventBus if available, else stub
+    try:
+        from luana_core_events.outbox.adapter_bus import OutboxEventBus  # noqa: PLC0415
+
+        event_bus = OutboxEventBus(session=session)
+    except ImportError:
+        # Stub for tests / environments where outbox is not wired yet
+        class _StubBus:
+            async def publish(self, event: dict) -> None:  # noqa: ANN001
+                logger.debug("outbox_event_stub", event_type=event.get("event_type"))
+
+        event_bus = _StubBus()
+
+    return FunnelService(
+        lead_repo=lead_repo,
+        transition_repo=transition_repo,
+        activity_repo=activity_repo,
+        emitter=emitter,
+        event_bus=event_bus,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Funnel board endpoints — T-BE-2 (vitalia-fase2-adrian-embudo)
+# ---------------------------------------------------------------------------
+
+
+@router.get("/board", response_model=BoardResponse)
+async def get_board(
+    authorization: AuthorizationHeader,
+    x_tenant_id: TenantIdHeader,
+    session: Annotated[AsyncSession, Depends(get_async_session_committing)],
+    x_clinic_id: OptionalClinicIdHeader = None,
+    sort: str | None = Query(default=None),
+) -> BoardResponse:
+    """Get funnel board with HOT_BOARD_STAGES columns + KPI strip.
+
+    Non-PHI lead data. All authenticated roles can access.
+    Board shows only active stages (interesado/calificando/consulta/plan + reservado).
+    Frozen leads and decidio_no → GET /crm/frozen.
+
+    Args:
+        authorization: Bearer token.
+        x_tenant_id: Tenant ID header.
+        session: Async DB session.
+        x_clinic_id: Optional clinic ID (not required for non-PHI leads).
+        sort: Sort mode (stage_age_desc | score_desc | value_desc | activity_desc).
+
+    Returns:
+        BoardResponse (200 OK).
+
+    Raises:
+        401: Invalid/missing token.
+    """
+    ctx = _resolve_context_sync(authorization, x_tenant_id)
+    service = _build_funnel_service(session)
+
+    result = await service.get_board(
+        tenant_id=ctx.tenant_id,
+        stage_filter=None,
+        sort=sort or "stage_age_desc",
+    )
+    return result
+
+
+@router.patch("/leads/{lead_id}/stage", response_model=StageTransitionResponse)
+async def patch_lead_stage(
+    lead_id: UUID,
+    body: StageTransitionRequest,
+    authorization: AuthorizationHeader,
+    x_tenant_id: TenantIdHeader,
+    session: Annotated[AsyncSession, Depends(get_async_session_committing)],
+    x_clinic_id: OptionalClinicIdHeader = None,
+) -> StageTransitionResponse:
+    """Transition a lead's funnel stage with optimistic lock + audit trail.
+
+    SC-2: invalid transition → 422 {detail, allowed_next}.
+    SC-4: lead not found → 404 (no info leak cross-tenant).
+    SC-5: version conflict → 409 Conflict.
+    RN-4: manual reservado → 403 Forbidden.
+    RN-4.1: reason persisted in transition + emits outbox event for T-AG-1.
+
+    Args:
+        lead_id: Lead UUID (path param).
+        body: StageTransitionRequest.
+        authorization: Bearer token.
+        x_tenant_id: Tenant ID header.
+        session: Async DB session.
+        x_clinic_id: Optional clinic ID.
+
+    Returns:
+        StageTransitionResponse (200 OK).
+
+    Raises:
+        401: Invalid/missing token.
+        403: Manual reservado attempt (RN-4).
+        404: Lead not found (cross-tenant or deleted).
+        409: Optimistic lock conflict (SC-5).
+        422: Invalid stage transition (SC-2) — body includes allowed_next list.
+    """
+    ctx = _resolve_context_sync(authorization, x_tenant_id)
+    service = _build_funnel_service(session)
+
+    actor_user_id: UUID | None = None
+    try:
+        if len(ctx.user_id) == 36:
+            actor_user_id = UUID(ctx.user_id)
+    except ValueError:
+        pass
+
+    try:
+        result = await service.transition_stage(
+            lead_id=lead_id,
+            tenant_id=ctx.tenant_id,
+            to_stage=body.to_stage,
+            version=body.version,
+            reason=body.reason,
+            triggered_by=body.triggered_by,
+            actor_user_id=actor_user_id,
+        )
+    except InvalidTransitionError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "detail": f"Transición inválida: {exc.from_stage} → {exc.to_stage}.",
+                "allowed_next": exc.allowed_next,
+            },
+        ) from exc
+    except ManualReservadoForbiddenError as exc:
+        raise HTTPException(
+            status_code=403,
+            detail="La etapa 'Reservado' solo puede establecerse mediante confirmación de pago.",
+        ) from exc
+    except ReasonRequiredError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail="Se requiere una razón para este cambio de etapa.",
+        ) from exc
+    except StaleStateError as exc:
+        raise HTTPException(
+            status_code=409,
+            detail="Conflicto de versión: el prospecto fue modificado simultáneamente. Recarga y reintenta.",
+        ) from exc
+
+    if result is None:
+        raise HTTPException(status_code=404, detail="Prospecto no encontrado.")
+
+    return result
+
+
+@router.get("/leads/{lead_id}/detail", response_model=LeadDetailResponse)
+async def get_lead_detail(
+    lead_id: UUID,
+    authorization: AuthorizationHeader,
+    x_tenant_id: TenantIdHeader,
+    session: Annotated[AsyncSession, Depends(get_async_session_committing)],
+    x_clinic_id: OptionalClinicIdHeader = None,
+) -> LeadDetailResponse:
+    """Get full lead detail for workspace Resumen tab.
+
+    PHI firewall: no clinical fields (RN-2). Historial tab = separate endpoint.
+    Includes: lead record + glass-box score breakdown + autonomy info.
+
+    Args:
+        lead_id: Lead UUID.
+        authorization: Bearer token.
+        x_tenant_id: Tenant ID header.
+        session: Async DB session.
+        x_clinic_id: Optional clinic ID.
+
+    Returns:
+        LeadDetailResponse (200 OK).
+
+    Raises:
+        401: Invalid/missing token.
+        404: Lead not found.
+    """
+    ctx = _resolve_context_sync(authorization, x_tenant_id)
+    service = _build_funnel_service(session)
+
+    result = await service.get_lead_detail(
+        lead_id=lead_id,
+        tenant_id=ctx.tenant_id,
+    )
+    if result is None:
+        raise HTTPException(status_code=404, detail="Prospecto no encontrado.")
+    return result
+
+
+@router.get("/leads/{lead_id}/transitions", response_model=TimelineResponse)
+async def get_lead_transitions(
+    lead_id: UUID,
+    authorization: AuthorizationHeader,
+    x_tenant_id: TenantIdHeader,
+    session: Annotated[AsyncSession, Depends(get_async_session_committing)],
+    x_clinic_id: OptionalClinicIdHeader = None,
+) -> TimelineResponse:
+    """Get commercial activity timeline for lead Historial tab.
+
+    PHI firewall: NON-PHI commercial micro-log only (RN-2).
+    Clinical data stays in PHI-gated Inbox.
+
+    Args:
+        lead_id: Lead UUID.
+        authorization: Bearer token.
+        x_tenant_id: Tenant ID header.
+        session: Async DB session.
+        x_clinic_id: Optional clinic ID.
+
+    Returns:
+        TimelineResponse (200 OK).
+
+    Raises:
+        401: Invalid/missing token.
+        404: Lead not found.
+    """
+    ctx = _resolve_context_sync(authorization, x_tenant_id)
+    service = _build_funnel_service(session)
+
+    result = await service.get_timeline(
+        lead_id=lead_id,
+        tenant_id=ctx.tenant_id,
+    )
+    if result is None:
+        raise HTTPException(status_code=404, detail="Prospecto no encontrado.")
+    return result
+
+
+@router.get("/frozen", response_model=FrozenListResponse)
+async def get_frozen_leads(
+    authorization: AuthorizationHeader,
+    x_tenant_id: TenantIdHeader,
+    session: Annotated[AsyncSession, Depends(get_async_session_committing)],
+    x_clinic_id: OptionalClinicIdHeader = None,
+) -> FrozenListResponse:
+    """Get frozen leads + decidio_no leads for Recuperar sub-tab.
+
+    Returns two lists:
+    - recien_congelados: leads with is_frozen=True
+    - decidio_no: leads with stage=decidio_no
+
+    Args:
+        authorization: Bearer token.
+        x_tenant_id: Tenant ID header.
+        session: Async DB session.
+        x_clinic_id: Optional clinic ID.
+
+    Returns:
+        FrozenListResponse (200 OK).
+
+    Raises:
+        401: Invalid/missing token.
+    """
+    ctx = _resolve_context_sync(authorization, x_tenant_id)
+    service = _build_funnel_service(session)
+
+    return await service.get_frozen_list(tenant_id=ctx.tenant_id)
+
+
+@router.post("/leads/{lead_id}/diagnose", response_model=DiagnoseResponse)
+async def diagnose_lead(
+    lead_id: UUID,
+    authorization: AuthorizationHeader,
+    x_tenant_id: TenantIdHeader,
+    session: Annotated[AsyncSession, Depends(get_async_session_committing)],
+    x_clinic_id: OptionalClinicIdHeader = None,
+) -> DiagnoseResponse:
+    """Diagnose a frozen lead and return reactivation recommendation.
+
+    Deterministic rules (no ML). Based on frozen_reason + stage + buying signals.
+
+    Args:
+        lead_id: Lead UUID.
+        authorization: Bearer token.
+        x_tenant_id: Tenant ID header.
+        session: Async DB session.
+        x_clinic_id: Optional clinic ID.
+
+    Returns:
+        DiagnoseResponse with recommendation_es + suggested_action.
+
+    Raises:
+        401: Invalid/missing token.
+        404: Lead not found.
+    """
+    ctx = _resolve_context_sync(authorization, x_tenant_id)
+    service = _build_funnel_service(session)
+
+    result = await service.diagnose(lead_id=lead_id, tenant_id=ctx.tenant_id)
+    if result is None:
+        raise HTTPException(status_code=404, detail="Prospecto no encontrado.")
+    return result
+
+
+@router.post("/leads/{lead_id}/reactivate", response_model=LeadResponse)
+async def reactivate_lead(
+    lead_id: UUID,
+    authorization: AuthorizationHeader,
+    x_tenant_id: TenantIdHeader,
+    session: Annotated[AsyncSession, Depends(get_async_session_committing)],
+    x_clinic_id: OptionalClinicIdHeader = None,
+    body: ReactivateRequest | None = None,
+) -> LeadResponse:
+    """Reactivate a frozen lead — clear frozen state.
+
+    Records a reactivation activity in the commercial micro-log.
+
+    Args:
+        lead_id: Lead UUID.
+        authorization: Bearer token.
+        x_tenant_id: Tenant ID header.
+        session: Async DB session.
+        x_clinic_id: Optional clinic ID.
+        body: Optional reactivation context (NON-PHI objective).
+
+    Returns:
+        Updated LeadResponse (200 OK).
+
+    Raises:
+        401: Invalid/missing token.
+        404: Lead not found.
+    """
+    ctx = _resolve_context_sync(authorization, x_tenant_id)
+    service = _build_funnel_service(session)
+
+    lead = await service.reactivate(
+        lead_id=lead_id,
+        tenant_id=ctx.tenant_id,
+        objective=body.objective if body else None,
+    )
+    if lead is None:
+        raise HTTPException(status_code=404, detail="Prospecto no encontrado.")
+
+    from src.modules.vitalia.crm.application.services.funnel_service import _lead_to_response  # noqa: PLC0415
+
+    return _lead_to_response(lead)
+
+
+@router.post("/leads/{lead_id}/reservado-side-effect", response_model=LeadResponse)
+async def reservado_side_effect_stub(
+    lead_id: UUID,
+    authorization: AuthorizationHeader,
+    x_tenant_id: TenantIdHeader,
+    session: Annotated[AsyncSession, Depends(get_async_session_committing)],
+    x_clinic_id: OptionalClinicIdHeader = None,
+) -> LeadResponse:
+    """Stub for reservado side-effect webhook (payment confirmation).
+
+    RN-5: reservado stage can ONLY be set via this webhook (not manual drag/dropdown).
+    Currently stubbed via MSW for this story — real payment integration in future story.
+    Idempotent: if deposit_status already 'received', returns current lead unchanged.
+
+    Args:
+        lead_id: Lead UUID.
+        authorization: Bearer token.
+        x_tenant_id: Tenant ID header.
+        session: Async DB session.
+        x_clinic_id: Optional clinic ID.
+
+    Returns:
+        LeadResponse (200 OK — stub always succeeds or 404 if not found).
+
+    Raises:
+        401: Invalid/missing token.
+        404: Lead not found.
+    """
+    ctx = _resolve_context_sync(authorization, x_tenant_id)
+
+    lead_repo = LeadRepository(session=session, kek=KEKClient.from_env())
+    lead = await lead_repo.get_by_id(lead_id, tenant_id=ctx.tenant_id)
+    if lead is None:
+        raise HTTPException(status_code=404, detail="Prospecto no encontrado.")
+
+    logger.info(
+        "reservado_side_effect_stub",
+        lead_id=str(lead_id),
+        tenant_id=str(ctx.tenant_id),
+        deposit_status=lead.deposit_status,
+    )
+
+    # Stub: return current lead (real webhook logic in future story)
+    return LeadResponse(
+        id=lead.id,
+        tenant_id=lead.tenant_id,
+        name=lead.name,
+        email=lead.email,
+        phone=lead.phone,
+        source=lead.source,
+        status=lead.status,
+        created_at=lead.created_at,
+        stage=lead.stage,
+        score=lead.score,
+        temperature=lead.temperature,
+        operated_by=lead.operated_by,
+        channel=lead.channel,
+        estimated_value=lead.estimated_value,
+        currency=lead.currency,
+        service_interest=lead.service_interest,
+        buying_signals=list(lead.buying_signals),
+        stage_entered_at=lead.stage_entered_at,
+        is_frozen=lead.is_frozen,
+        frozen_reason=lead.frozen_reason,
+        deposit_status=lead.deposit_status,
+        version=lead.version,
+    )
+
+
+# ---------------------------------------------------------------------------
 # Conversation list + detail — T-inbox-be-5 extension (PHI gated)
 # ---------------------------------------------------------------------------
 
 _PHI_ROLES = frozenset({"doctor", "nurse", "admin_clinic"})
+
+# Commercial inbox triage (Chris 2026-06-04): the conversation list/thread is the
+# operator's tool (front desk + owner), not strict clinical PHI. Owner + receptionist
+# may list/open conversations. Patient clinical PHI (medical record, ContactSidebar
+# reveal — patient_service) stays gated to _PHI_ROLES.
+_INBOX_OPERATOR_ROLES = _PHI_ROLES | frozenset({"owner", "receptionist"})
 
 
 @router.get("/conversations", response_model=ConversationListResponse)
@@ -616,31 +1084,49 @@ async def list_conversations(
     """
     ctx = await _resolve_context_async(authorization, x_tenant_id, x_clinic_id, session)
 
-    if ctx.role not in _PHI_ROLES:
+    if ctx.role not in _INBOX_OPERATOR_ROLES:
         logger.warning(
             "crm.list_conversations.access_denied",
             role=ctx.role,
         )
         raise HTTPException(
             status_code=403,
-            detail="Acceso denegado: tu rol no tiene permisos para ver conversaciones clínicas.",
+            detail="Acceso denegado: tu rol no tiene permisos para ver la bandeja.",
         )
 
-    # Slice 1 stub: return empty list (ConversationRepository wired in Slice 2)
-    return ConversationListResponse(items=[], total=0, limit=limit, offset=offset)
+    repo = ConversationRepository(session=session)
+    rows = await repo.list_for_inbox(
+        tenant_id=ctx.tenant_id,
+        clinic_id=ctx.clinic_id,
+        status=status,
+        channel=channel,
+        handler_mode=handler_mode,
+        limit=limit,
+        offset=offset,
+    )
+    items = [ConversationListItem.model_validate(row) for row in rows]
+    # NOTE: total is the page count (no separate COUNT query yet — fine for MVP page sizes).
+    return ConversationListResponse(
+        items=items,
+        total=len(items),
+        limit=limit,
+        offset=offset,
+    )
 
 
-@router.get("/conversations/{conv_id}", response_model=ConversationListItem)
+@router.get("/conversations/{conv_id}", response_model=ConversationDetailResponse)
 async def get_conversation_detail(
     conv_id: UUID,
     authorization: AuthorizationHeader,
     x_tenant_id: TenantIdHeader,
     x_clinic_id: ClinicIdHeader,
     session: Annotated[AsyncSession, Depends(get_async_session_committing)],
-) -> ConversationListItem:
-    """Get conversation detail — PHI gated.
+) -> ConversationDetailResponse:
+    """Get the compound conversation detail (thread) — PHI gated.
 
-    Dual PHI filter: tenant_id + clinic_id required.
+    Returns the full compound the inbox thread consumes:
+    ``{ conversation, lead, messages, action_receipts, tools_state }``
+    (FE ``ConversationDetail``). Dual PHI filter: tenant_id + clinic_id.
 
     Args:
         conv_id: Conversation UUID.
@@ -650,7 +1136,7 @@ async def get_conversation_detail(
         session: Async DB session (injected by FastAPI DI).
 
     Returns:
-        ConversationListItem (200 OK).
+        ConversationDetailResponse (200 OK).
 
     Raises:
         401: Invalid/missing token.
@@ -659,7 +1145,7 @@ async def get_conversation_detail(
     """
     ctx = await _resolve_context_async(authorization, x_tenant_id, x_clinic_id, session)
 
-    if ctx.role not in _PHI_ROLES:
+    if ctx.role not in _INBOX_OPERATOR_ROLES:
         logger.warning(
             "crm.get_conversation_detail.access_denied",
             role=ctx.role,
@@ -670,5 +1156,56 @@ async def get_conversation_detail(
             detail="Acceso denegado: tu rol no tiene permisos para ver esta conversación.",
         )
 
-    # Slice 1: always 404 (no live conversation repo yet)
-    raise HTTPException(status_code=404, detail="Conversación no encontrada.")
+    conv_repo = ConversationRepository(session=session)
+    conv = await conv_repo.get_by_id(id=conv_id, tenant_id=ctx.tenant_id, scope_id=ctx.clinic_id)
+    if conv is None:
+        raise HTTPException(status_code=404, detail="Conversación no encontrada.")
+
+    # Messages (dual-filter, chronological)
+    msg_repo = MessageRepository(session=session)
+    raw_messages = await msg_repo.list_for_conversation(
+        conversation_id=conv_id,
+        tenant_id=ctx.tenant_id,
+        clinic_id=ctx.clinic_id,
+        limit=50,
+    )
+    messages = [ConversationDetailMessage.model_validate(m) for m in raw_messages]
+
+    # Lead (decrypted PHI name/email/phone — single tenant filter; Lead is the contact)
+    lead_response: LeadResponse | None = None
+    if conv.lead_id is not None:
+        lead_repo = LeadRepository(session=session, kek=KEKClient.from_env())
+        lead = await lead_repo.get_by_id(conv.lead_id, tenant_id=ctx.tenant_id)
+        if lead is not None:
+            lead_response = LeadResponse(
+                id=lead.id,
+                tenant_id=lead.tenant_id,
+                name=lead.name,
+                email=lead.email,
+                phone=lead.phone,
+                source=lead.source,
+                status=lead.status,
+                created_at=lead.created_at,
+                stage=lead.stage,
+                score=lead.score,
+                temperature=lead.temperature,
+                operated_by=lead.operated_by,
+                channel=lead.channel,
+                estimated_value=lead.estimated_value,
+                currency=lead.currency,
+                service_interest=lead.service_interest,
+                buying_signals=lead.buying_signals,
+                stage_entered_at=lead.stage_entered_at,
+                is_frozen=lead.is_frozen,
+                frozen_reason=lead.frozen_reason,
+                deposit_status=lead.deposit_status,
+                version=lead.version,
+            )
+
+    return ConversationDetailResponse(
+        conversation=ConversationDetailConversation.model_validate(conv),
+        lead=lead_response,
+        messages=messages,
+        action_receipts=[],
+        tools_state=None,
+    )

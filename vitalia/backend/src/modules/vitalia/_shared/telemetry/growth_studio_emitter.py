@@ -90,6 +90,11 @@ _KNOWN_EVENT_NAMES: frozenset[str] = frozenset(
         "lisa_staff_doctor_updated",
         "lisa_staff_doctor_deactivated",
         "lisa_staff_doctor_viewed",
+        # T-BE-2 adrian_embudo events (vitalia-fase2-adrian-embudo)
+        "embudo_stage_changed",
+        "embudo_lead_created",
+        "embudo_lead_reactivated",
+        "embudo_lead_frozen",
     }
 )
 

@@ -2,7 +2,7 @@
 
 > **OPCIONAL.** Solo para ideas grandes (>5d trabajo estimado, novedad, alto riesgo, o impacto cross-módulo). Ideas pequeñas pueden saltar directo a refining.
 >
-> **Owner:** Chris + `/pm`. NO `/po` (research es pre-spec, no spec).
+> **Owner:** Chris + `/pm-{brand}` (o `/pm-luana` si es cross-brand). NO `/po` (research es pre-spec, no spec).
 >
 > **Estado de la story:** `idea` (post research puede dropear, parkear o promover a `refining`).
 >
@@ -12,7 +12,7 @@
 story_id: STORY_ID
 state: idea
 created: YYYY-MM-DD
-researcher: chris + /pm
+researcher: chris + /pm-{brand}
 last_modified: YYYY-MM-DD
 research_iterations: 1
 decision_pending: true
@@ -92,7 +92,7 @@ decision_options: ["refining", "parked", "dropped"]
 ### Hipótesis driver
 
 - **H1:** Diferenciamos en X porque ...
-- **H2:** Aprovechamos Y de Nicolify (multitenant + voice fidelity) ...
+- **H2:** Aprovechamos Y de {brand} (multitenant + voice fidelity) ...
 - **H3:** Iteramos faster porque ...
 
 ### Propuesta(s) de solución

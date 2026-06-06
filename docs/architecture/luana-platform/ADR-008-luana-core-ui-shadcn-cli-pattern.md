@@ -1,9 +1,9 @@
 # ADR-008 — Luana Core UI: shadcn copy-paste con CLI compartida
 
-**Status:** proposed
+**Status:** accepted-partial *(CLI generator descartado — ver § Bitácora / As-built)*
 **Date:** 2026-05-21
 **Deciders:** Chris (ratificación inicial 2026-05-21) + /pm-luana (modo Core Engineering)
-**Scope:** Engine TS package nuevo `core/luana-core-ui/` + brand consumers `{brand}/frontend/src/components/ui/`
+**Scope:** Engine TS package `core/@luana/ui-kit` (implementado) + brand consumers `{brand}/frontend/src/components/ui/`
 
 ## Context
 
@@ -113,7 +113,8 @@ Detalles operativos en promotion proposal `docs/promotion-protocol/proposals/202
 - Vitalia learning origen: `vitalia/docs/learnings/2026-05-21-auto-handoff-deferred-e2e-blocker.md`
 - Shadcn upstream filosofía: https://ui.shadcn.com/docs (referencia externa para pattern "copy don't import")
 
-## Bitácora
+## Bitácora / As-built (2026-06-01)
 
 - 2026-05-21: opened state=proposed (Chris ratificó pattern shadcn copy-paste con CLI compartida en /pm-luana modo Core)
-- Pending: ratificación Chris formal post-lectura ADR → state=accepted
+- **2026-06-01 — As-built:** el patrón CLI generator (`npx @luana/ui add/update/diff`) quedó **descartado**. Lo que se implementó es `core/@luana/ui-kit` — paquete flat sin CLI, distribuido como dependencia pnpm workspace estándar (`@luana/ui-kit`). El directorio `core/luana-core-ui/` con su `cli/` **no existe** en el repo. Un builder NO debe scaffoldearlo. Si se necesita retomar el patrón CLI o la carpeta `core/luana-core-ui/`, requiere ratificación Chris + promotion proposal nueva.
+- state final: accepted-partial (filosofía shadcn copy-paste preservada; CLI = no implementado)

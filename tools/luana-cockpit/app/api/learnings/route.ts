@@ -11,7 +11,7 @@ import path from 'node:path';
 import { readdir } from 'node:fs/promises';
 import { errorResponse } from '../_lib/responses';
 import { readMarkdownWithFrontmatter } from '@/lib/fs-reader';
-import { learningsPath, getBrands } from '@/lib/workspace';
+import { learningsPath, getSelectableBrands } from '@/lib/workspace';
 
 interface LearningEntry {
   slug: string;
@@ -28,7 +28,7 @@ interface LearningEntry {
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const brand = req.nextUrl.searchParams.get('brand');
   if (!brand) return errorResponse('query param "brand" requerido', 400);
-  if (!getBrands().includes(brand)) {
+  if (!getSelectableBrands().includes(brand)) {
     return errorResponse(`brand desconocida: ${brand}`, 400);
   }
 

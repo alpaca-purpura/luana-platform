@@ -80,6 +80,15 @@ const KNOWN_PHI_WRAPPER_VIOLATIONS: ReadonlySet<string> = new Set<string>([
   "src/features/vitalia/components/treatment-list-table.tsx",
   "src/features/vitalia/components/treatment-timeline.tsx",
   "src/features/vitalia/components/patient-medical-pdf-upload.tsx",
+  // vitalia-fase2-adrian-embudo (U1): FrozenLeadRow renderiza `diagnosis` de
+  // DiagnoseResponse {recommendation, suggestedAction} — el diagnóstico COMERCIAL
+  // de Adrián (por qué el lead se enfrió + qué acción tomar), NO un diagnóstico
+  // clínico de paciente. El scanner FE-A6 matchea el nombre de campo `diagnosis`
+  // (que SÍ es PHI clínico en otro contexto), pero acá es lead non_phi (marketing).
+  // Justificado: no se enmascara consejo de reactivación que el vendedor debe leer.
+  // (Antes pasaba por el import de PiiMaskedSpan en el componente; U1 lo removió del
+  // nombre del prospecto — non_phi — exponiendo este match de campo.)
+  "src/features/adrian/components/recuperar/FrozenLeadRow.tsx",
 ]);
 
 function collectTsxFiles(dir: string): string[] {

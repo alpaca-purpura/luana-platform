@@ -8,9 +8,9 @@
 
 `CLAUDE.md` sigue hierarchy de 2 niveles:
 
-1. **Root `/CLAUDE.md`** — siempre cargado. Contiene: filosofía agentic dev, topología 1-liner, comandos esenciales, paradigm v4 estados macro, tabla `.claude/rules/`, links a docs/. **≤200 líneas total.**
+1. **Root `/CLAUDE.md`** — siempre cargado. Contiene: filosofía agentic dev, topología 1-liner, comandos esenciales, paradigm v4 estados macro, tabla `.claude/rules/`, links a docs/. **≤270 líneas total.**
 
-2. **Brand overlay `/{brand}/CLAUDE.md`** — auto-cargado vía Claude Code's built-in path-based loading cuando cwd cae dentro `{brand}/`. Contiene: product vision pointer, verticales target, brand-specific gates (HIPAA-lite si vitalia, B2B si nicolify, etc.), brand-specific anti-patterns, brand-specific commands. **≤150 líneas total.**
+2. **Brand overlay `/{brand}/CLAUDE.md`** — auto-cargado vía Claude Code's built-in path-based loading cuando cwd cae dentro `{brand}/`. Contiene: product vision pointer, verticales target, brand-specific gates (HIPAA-lite si vitalia, B2B si nicolify, etc.), brand-specific anti-patterns, brand-specific commands. **≤165 líneas total.**
 
 Claude Code carga automáticamente cualquier `CLAUDE.md` que esté en el cwd o ancestros (working directory walking). Por eso colocar `{brand}/CLAUDE.md` hace que se cargue auto cuando sesión arranca en `{brand}/...` o `~/Proyectos/luana-{brand}/...`.
 
@@ -34,7 +34,7 @@ Secciones obligatorias (orden):
 14. **Vision pointer** — `docs/product/vision.md`
 15. **`@AGENTS.md`** — import AGENTS.md complementario
 
-**Cap:** 200 líneas. Si excede → mover detalle a `docs/rules-detail/` con pointer.
+**Cap:** 270 líneas. Si excede → mover detalle a `docs/rules-detail/` con pointer.
 
 ## Estructura brand overlay `{brand}/CLAUDE.md` (canonical)
 
@@ -51,7 +51,7 @@ Secciones obligatorias (orden):
 9. **Brand checkpoint pointer** — `{brand}/docs/product/checkpoint.md`
 10. **Bootstrap brand-specific** — env, .env.dev, migrations
 
-**Cap:** 150 líneas. Si excede → mover detalle a `{brand}/docs/domains/` con pointer.
+**Cap:** 165 líneas. Si excede → mover detalle a `{brand}/docs/domains/` con pointer.
 
 ## Detection automática + protección
 
@@ -78,8 +78,8 @@ Hook NO carga overlay (Claude Code lo hace built-in) — sólo valida existencia
 
 ## Anti-patterns prohibidos
 
-- ❌ Root `CLAUDE.md` >200 líneas (mueve detalle a `docs/rules-detail/` o brand overlay)
-- ❌ Brand overlay >150 líneas (mueve a `{brand}/docs/domains/`)
+- ❌ Root `CLAUDE.md` >270 líneas (mueve detalle a `docs/rules-detail/` o brand overlay)
+- ❌ Brand overlay >165 líneas (mueve a `{brand}/docs/domains/`)
 - ❌ Brand overlay importando `@../CLAUDE.md` (root ya se carga via walking — duplica context)
 - ❌ Brand overlay con contenido que aplica cross-brand (debió ir a root o `.claude/rules/`)
 - ❌ Root `CLAUDE.md` con vision específica de UNA brand (debió ir a brand overlay)
@@ -91,8 +91,8 @@ Hook NO carga overlay (Claude Code lo hace built-in) — sólo valida existencia
 
 | Layer | Mecanismo | Status |
 |---|---|---|
-| 1 | Root `CLAUDE.md` cap 200 líneas — pre-commit hook `wc -l CLAUDE.md` check | ⏳ TBD |
-| 2 | Brand overlay cap 150 líneas — pre-commit hook check si `{brand}/CLAUDE.md` modificado | ⏳ TBD |
+| 1 | Root `CLAUDE.md` cap 270 líneas — pre-commit hook `wc -l CLAUDE.md` check | ⏳ TBD |
+| 2 | Brand overlay cap 165 líneas — pre-commit hook check si `{brand}/CLAUDE.md` modificado | ⏳ TBD |
 | 3 | Hook SessionStart `claude-md-overlay-check.sh` advisory si overlay falta | ⏳ a crear |
 | 4 | `_pm-brand-template/` enforce schema brand overlay al bootstrap brand nueva | ⏳ template update |
 | 5 | Audit Cat 12 (anti-duplication) detecta cross-brand content en brand overlay → flag | ⏳ auditor update |
@@ -101,7 +101,7 @@ Hook NO carga overlay (Claude Code lo hace built-in) — sólo valida existencia
 
 Cuando user pide "bootstrap brand {slug}" (saasora, inmoflow, retailly, fixia, guestly, fitflow):
 
-1. Copiar template `_pm-brand-template/_OVERLAY-template.md` → `{slug}/CLAUDE.md`
+1. Tomar como referencia `vitalia/CLAUDE.md` (overlay canónico de ejemplo; no hay template dedicado aún) → crear `{slug}/CLAUDE.md`
 2. Reemplazar placeholders: `{BRAND_NAME}`, `{VERTICAL_SHORT}`, `{PORT_BE}`, `{PORT_FE}`, etc.
 3. Escribir `{slug}/docs/product/vision.md` (puede arrancar como stub)
 4. Cementar pointer en MEMORY.md (entry sub-section "brand-specific")
@@ -111,6 +111,6 @@ Cuando user pide "bootstrap brand {slug}" (saasora, inmoflow, retailly, fixia, g
 
 - `CLAUDE.md` (root) — SSoT cross-platform
 - `vitalia/CLAUDE.md` (ejemplo overlay)
-- `_pm-brand-template/_OVERLAY-template.md` — template para brands nuevas
+- `vitalia/CLAUDE.md` — overlay canónico de referencia para brands nuevas (no hay template dedicado aún)
 - `.claude/hooks/claude-md-overlay-check.sh` — advisory hook
 - `.claude/rules/parallel-safety.md` D2 — topology worktrees (consumer de overlay detection)

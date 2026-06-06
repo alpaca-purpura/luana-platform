@@ -142,25 +142,28 @@ describe("No hardcoded agent slug arrays outside shell-routes.ts", () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 4. sara has ONLY [proyectos] in R0 (navigation-tree.md constraint)
+// 4. sara has ONLY [proximamente] — deferred (sitemap-completo T-1 · ADR-nicolify-002 D-D)
 // ─────────────────────────────────────────────────────────────────────────────
+// coverage_update: "proyectos" → "proximamente" (SYSTEM-MAP v2.0 · Chris OI-C 2026-06-02).
+// Sara was deferred (Próximamente). idMatches.length===1 stays (still exactly 1 subtab).
+// R7 ratchet: SSoT test reflects the tree, not relaxing a gate.
 
-describe("Sara constraint: ONLY [proyectos] in R0", () => {
-  it("AGENT_SUBTABS sara is exactly ['proyectos'] in shell-routes.ts", () => {
+describe("Sara constraint: ONLY [proximamente] — deferred", () => {
+  it("AGENT_SUBTABS sara is exactly ['proximamente'] in shell-routes.ts", () => {
     const content = readFileSync(SHELL_ROUTES_PATH, "utf-8");
-    // Should contain sara with only proyectos
-    expect(content).toContain('"proyectos"');
-    // Extract sara block from AGENT_SUBTABS (from "sara:" up to "norvil:")
+    // Should contain sara with only proximamente
+    expect(content).toContain('"proximamente"');
+    // Extract sara block from AGENT_SUBTABS (from "sara: [" up to "norvil: [")
     // This is a positional slice approach — robust against multiline content
     const saraStart = content.indexOf("sara: [");
     const norvilStart = content.indexOf("norvil: [");
     expect(saraStart).toBeGreaterThan(-1);
     expect(norvilStart).toBeGreaterThan(saraStart);
     const saraSection = content.slice(saraStart, norvilStart);
-    // Count id entries in sara block — should be exactly 1 in R0
+    // Count id entries in sara block — should be exactly 1 (deferred = 1 placeholder)
     const idMatches = saraSection.match(/id\s*:\s*["'][^"']+["']/g) ?? [];
     expect(idMatches.length).toBe(1);
-    // Confirm that id is "proyectos"
-    expect(saraSection).toContain('"proyectos"');
+    // Confirm that id is "proximamente" (not "proyectos")
+    expect(saraSection).toContain('"proximamente"');
   });
 });

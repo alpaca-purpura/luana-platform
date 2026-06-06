@@ -51,11 +51,9 @@ from __future__ import annotations
 from typing import Any, Optional
 
 import structlog
+from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.graph import END, START, StateGraph
 
-from src.modules.vitalia.copilot.workflows.wizard_checkpoint_config import (
-    CheckpointerProtocol,
-)
 from src.modules.vitalia.copilot.workflows.wizard_onboarding_state import (
     MAX_ITERATIONS,
     WizardOnboardingState,
@@ -257,15 +255,16 @@ def completion_node(state: WizardOnboardingState) -> dict:
 
 def build_wizard_onboarding_graph(
     *,
-    checkpointer: CheckpointerProtocol,
+    checkpointer: BaseCheckpointSaver,
     supervisor_model: Optional[Any] = None,
 ) -> Any:
     """Construct + compile the wizard onboarding LangGraph.
 
     Args:
-        checkpointer: Any LangGraph-compatible checkpointer. Production uses
-            ``AsyncPostgresSaver`` via ``build_production_checkpointer``;
-            tests use ``InMemorySaver``.
+        checkpointer: Any LangGraph-compatible checkpointer. Production builds
+            the durable ``AsyncPostgresSaver`` via the shared engine provider
+            ``luana_core_flows.checkpointer.make_durable_checkpointer`` (lifted
+            from the deleted brand mirror); tests use ``InMemorySaver``.
         supervisor_model: Optional LLM model identifier or BaseChatModel for
             the supervisor LLM binding (used when the composition root binds
             the 4 wizard tools to a model). Slice 1: not used inside this

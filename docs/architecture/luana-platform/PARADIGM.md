@@ -95,7 +95,7 @@ El cockpit ("Mapa Implementado") agrupa toda capability en **una de tres zonas**
 
 ## 5b. El sistema se auto-extiende + se comercializa por puesto (ADR-013 · 2026-06-01)
 
-Dos dimensiones que extienden los 3 planos. Detalle completo: `ADR-013` + `docs/product/stories/empleados-ia-auto-extension/00-research.md`.
+Dos dimensiones que extienden los 3 planos. Detalle completo: `ADR-013` + `docs/architecture/luana-platform/empleados-ia-research.md`.
 
 **(A) El motor se auto-extiende — "el usuario pide → lo creamos", gobernado.** Todo pedido del dueño se reduce a **12 primitivas (objetos)** en 3 familias (Ver/Hacer-Guardar/Gobernar), con **operaciones de ciclo de vida** ortogonales (incl. desactivar/eliminar). Se resuelve en **5 tiers**: T0 rechazo (refuse-with-reframe) · T1 orquestar/mostrar · T2 configurar sobre extension-points (sin código) · T3 construir (sandbox+humano+live-verify) · T3+ producto / **core invariante**. **Router de 2 niveles:** L1 supervisora (¿de qué dominio?) → L2 empleado dueño (¿T1/T2/T3 en mi dominio?). **Flywheel:** T3 frecuente → lift a EP nuevo → colapsa a T2. **El flujo es unidad durable de 1ª clase** (estado+seguimiento), distinto de la acción transaccional.
 
@@ -132,7 +132,8 @@ Lo de la izquierda **no cambia**. Lo de la derecha es **swappable** sin tocar el
 | **Build** | `builder-*` no cruzan plano sin escalar; acción única, no mirror |
 | **Review** | `/auditor` categoría Connectivity (anti-isla) verifica zona/caja + cap↔código |
 | **Cap home** | `docs/process/capability-protocol.md` deriva la zona del registro SYSTEM-MAP |
-| **Cockpit** | `vitalia/docs/architecture/SYSTEM-MAP.yaml` (`zones`) es el esqueleto que el mapa lee |
+| **Cockpit** | `{brand}/docs/architecture/SYSTEM-MAP.yaml` (`zones`) es el esqueleto que el mapa lee |
+| **DoD live-verify** | `.claude/rules/definition-of-done-live-verify.md` (Critical Rule #37) — ninguna capability user-reachable llega a `done` sin ejercerse live en el stack dev real de la marca + `dod_evidence` registrado |
 
 ---
 
@@ -140,7 +141,8 @@ Lo de la izquierda **no cambia**. Lo de la derecha es **swappable** sin tocar el
 
 - `docs/architecture/luana-platform/ADR-010-orquestacion-agentica.md` — la decisión registrada (3 planos)
 - `docs/architecture/luana-platform/ADR-013-empleados-ia-auto-extension.md` — extensión §5b (auto-extensión + SKU por puesto)
-- `docs/product/stories/empleados-ia-auto-extension/00-research.md` — investigación + panorama + casos borde
+- `docs/architecture/luana-platform/empleados-ia-research.md` — investigación + panorama + casos borde (SSoT vivo)
+- `docs/architecture/luana-platform/durable-flows-L2-design.md` — diseño L2 motor de flujos durables (L1 migrated)
 - `.claude/rules/paradigm-arquitectura.md` — rule enforce-able + árbol de decisión zona/caja
 - `docs/process/capability-protocol.md` — schema cap + derivación de zona
 - `docs/process/lifecycle.md` — 4 ejes (Release→Story→Capability→Scenario) + hogar de la cap

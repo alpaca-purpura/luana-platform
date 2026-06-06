@@ -139,6 +139,22 @@ export const TOOLTIPS = {
   release_concept:
     'Agrupación temporal de stories hacia un milestone (F0, F1, F2...). Las stories se mueven entre releases con drag&drop.',
 
+  // ── Harness Backlog estados (BoardView core/transversal · qué significa + qué hacer) ──
+  harness_reported:
+    'Recién capturado con /harness-issue, sin clasificar. Acción: ninguna urgente; se evalúa en el próximo lote de triage, donde decides si entra al harness o se descarta.',
+  harness_triaged:
+    'Ya revisado y dimensionado (severidad, alcance, esfuerzo), pero sin tu aprobación. Acción: revísalo y decide si lo apruebas (pasa a ratified) o lo dejas/descartas.',
+  harness_ratified:
+    'Aprobado por ti para aplicar, pero todavía sin implementar. Acción: ninguna de tu parte; queda en cola para que Claude lo ejecute en un lote (apply-pipeline).',
+  harness_applied:
+    'Implementado y commiteado, pero el efecto no se verificó aparte todavía (típico en cambios de docs). Acción: si quieres cerrarlo, pide verificar el efecto (gate, re-lectura o live) para moverlo a verified.',
+  harness_verified:
+    'Aplicado y con efecto confirmado (gate, live o re-lectura independiente). Acción: ninguna; está cerrado. Es el estado terminal sano del item.',
+  harness_deferred:
+    'Decidido pero pospuesto a propósito (alto costo, bajo beneficio o requiere sesión dedicada). Acción: ninguna ahora; revísalo si cambian las prioridades o el contexto que lo bloqueaba.',
+  harness_otro:
+    'Estado fuera del lifecycle del harness (typo o estado nuevo sin registrar). Acción: abre el archivo y corrige cómo está escrito el campo estado de ese item.',
+
   // ── Cockpit-specific (visibles en headers / breadcrumbs) ─────────────────
   system_map:
     'Archivo YAML manual editado por Chris (tracked) que define la taxonomía completa del producto: 7 agentes × N functional_areas + flows cross-agent + data ownership. El cockpit lo usa como esqueleto del Mapa Implementado.',

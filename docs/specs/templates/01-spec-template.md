@@ -21,6 +21,17 @@ links:
 
 [1 párrafo: qué se construye, para quién, outcome esperado.]
 
+<!-- ═══ RONDA 1 · input-spec (intención) · ✍ FIRMA 1 — solo /po-ux UI · ver spec-mapa-funcional.md § Dos rondas ═══ -->
+
+## § Dónde vive (RONDA 1 · cement 2026-06-03 · solo /po-ux)
+
+> Zona/caja del sistema + shell + ruta donde el user aterriza. Derivada del árbol de `.claude/rules/paradigm-arquitectura.md`. (Para service/agentic stories esta sección es opcional.)
+
+- **Zona/caja:** [Agentes {agente} | Plataforma {acceso/onboarding/configuración} | Infraestructura {...}] — derivada del `SYSTEM-MAP.yaml`
+- **Shell:** [qué shell aplica · del `{brand}/docs/architecture/SHELL-DESIGN-CONTRACT.md` · si no existe → generar con el design-system actual]
+- **Ruta del user:** [`/[tenantId]/(shell-organism)/{agent}/{subtab}/...` donde el user aterriza]
+- **Mockup borrador:** [link `mockups/{screen}.html` o ASCII — la FORMA, se itera antes de cerrar reglas]
+
 ## § Mapa funcional (capa humana — ratifica Chris ANTES de UX/architect)
 
 > **v5 cement 2026-05-31 (Opción A).** Esta sección es el **panorama en lenguaje humano**: lo que Chris
@@ -64,6 +75,8 @@ Happy path
 
 - [ ] **AC-1** — [condición observable de que la feature está completa]
 - [ ] **AC-2** — [...]
+
+<!-- ═══ RONDA 2 · spec ejecutable · ✍ FIRMA 2 → refining→refined (incluye mockup FINAL + graders) ═══ -->
 
 ## Acceptance Criteria (Gherkin AI-resistant)
 
@@ -286,16 +299,25 @@ Happy path
 >
 > **Gate /po-ux:** REFUSE cerrar `refined` si hay un `Bif-N` o `RN-N` sin SC (hueco), o un SC sin
 > ítem del mapa (scope creep). Ver `.claude/rules/test-design-doctrine.md` § Verificación REAL.
+>
+> **★ LEDGER DE COBERTURA VIVO (proceso v5 §5.2).** La columna `estado` hace esta matriz VIVA:
+> po-ux la **siembra** en `refined` (todo `⬜ pendiente`); **dev-team la mantiene viva** durante
+> developing (`✅ construido` con su test/ruta); en **G** lo no-construido se decide ítem-por-ítem
+> (`⏳ ahora` corto+necesario · `→ historia {id}` spawn); **R** la congela; el **auditor** la verifica
+> en Phase D. La columna `→ historia` ES la lista visible de lo NO construido (mata el gap invisible).
+> **PISO HARD:** si `cap_change_type: new`, los ítems del **happy path** DEBEN estar `✅` antes de `done`
+> (no se difiere el core). Estados: `✅ construido` · `⏳ ahora` · `→ historia {id}` · `⬜ pendiente`.
 
-| Ítem (Mapa funcional) | Tipo | Cubierto por | Verificación REAL (acción + efecto, no HTTP 200) |
-|---|---|---|---|
-| Bif-1 · [condición] | branch | SC-1 | [POST/PATCH real → efecto en DB/UI + log] |
-| Bif-3 · [duplicado/adversarial] | branch | SC-4 | [acción hostil → 409/403 + row intacta] |
-| RN-1 · [invariante] | rule | SC-3, SC-3b | [write que viola la regla → 422 + estado sin cambio] |
-| AC-1 · [criterio cierre] | accept | SC-1, SC-8 | [flujo real + empty state] |
+| Ítem (Mapa funcional) | Tipo | estado | Cubierto por | Verificación REAL (acción + efecto, no HTTP 200) |
+|---|---|---|---|---|
+| Bif-1 · [condición] | branch | ⬜ pendiente | SC-1 | [POST/PATCH real → efecto en DB/UI + log] |
+| Bif-3 · [duplicado/adversarial] | branch | ⬜ pendiente | SC-4 | [acción hostil → 409/403 + row intacta] |
+| RN-1 · [invariante] | rule | ⬜ pendiente | SC-3, SC-3b | [write que viola la regla → 422 + estado sin cambio] |
+| AC-1 · [criterio cierre] | accept | ⬜ pendiente | SC-1, SC-8 | [flujo real + empty state] |
 
 **Huecos detectados:** [ninguno | lista de Bif/RN sin SC — bloquea refined]
 **SC huérfanos (sin ítem del mapa):** [ninguno | lista — revisar scope creep]
+**Diferido (ledger · lo NO construido, visible):** [ninguno | `Bif-N → historia {brand}-{slug}` con razón]
 
 ## Non-functional requirements
 
@@ -312,7 +334,7 @@ Happy path
 ## Constraints técnicos heredados
 
 - [De `.claude/rules/*` que aplican: backend-ddd, tenant-isolation, etc.]
-- [Tessl skills relevantes a citar: tessl__fastapi, tessl__zod, ...]
+- [Canonical docs relevantes: FastAPI canonical patterns, Zod validation — WebFetch the canonical docs URL (or `tessl-context` skill if Tessl tiles are installed)]
 
 ## Cross-module impact
 
@@ -328,7 +350,7 @@ Happy path
 
 ## Próximo paso
 
-- Si `type=ui-story` → `/ux-ui` lee `01-spec.md` → produce `02-design-ui.md`
+- Si `type=ui-story` → ya producido por `/po-ux` (01-spec unificado); `/architect` consume este doc directo
 - Si `type=agentic-story` → `/ux-agentico` lee `01-spec.md` → produce `02-design-agentic.md`
 - Si `type=service-story` → skip UX → `/architect` directo
 

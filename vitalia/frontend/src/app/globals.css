@@ -193,10 +193,75 @@
   --social-google-bg: #4285f4;
   --social-whatsapp-bg: #25d366;
 
+  /* ─── Channel badge brand colors (T-FE-1 vitalia-fase2-adrian-embudo) ──── */
+  /* Social/channel brand palette consumed by channel-meta.ts registry.        */
+  /* Hex values defined here (globals.css exempt from arch color test).         */
+  /* Components consume via var(--channel-{slug}-{modifier}) — NO hardcode.   */
+  /* lift candidate: /pm-luana → @luana/ui-kit when ≥2 brands need it.        */
+  --channel-whatsapp-bg: #25d366;        /* WhatsApp brand green */
+  --channel-whatsapp-text: #128C7E;      /* WhatsApp dark green for text */
+  --channel-whatsapp-soft: #dcfce7;      /* emerald-100 tone, Tailwind-aligned */
+  --channel-instagram-bg: #ee2a7b;       /* Instagram pink — reuses --social-instagram-bg */
+  --channel-instagram-soft: #fce7f3;     /* pink-100 tone */
+  --channel-meta-bg: #1877f2;           /* Meta blue — reuses --social-facebook-bg */
+  --channel-meta-soft: #dbeafe;         /* blue-100 tone */
+  --channel-referido-bg: #d97706;       /* amber brand — Vitalia warning token aligned */
+  --channel-referido-soft: #fef3c7;     /* amber-100 tone */
+  --channel-tiktok-bg: #000000;         /* TikTok black — reuses --social-tiktok-bg */
+  --channel-tiktok-soft: #f1f5f9;       /* slate-100 tone (neutral soft for dark channel) */
+  --channel-email-bg: #0ea5e9;          /* sky-500 — Vitalia info aligned */
+  --channel-email-soft: #e0f2fe;        /* sky-100 tone */
+  --channel-web-bg: #6b7280;            /* gray-500 — neutral channel */
+  --channel-web-soft: #f3f4f6;          /* gray-100 tone */
+  --channel-telegram-bg: #2AABEE;       /* Telegram brand blue */
+  --channel-telegram-soft: #dbeafe;     /* blue-100 tone */
+
   /* Soft semantic tones (Storybook role-gate demos + future success/danger UIs) */
   --vitalia-success-soft-bg: hsl(142 76% 96%);
   --vitalia-danger-soft-bg: hsl(0 73% 97%);
   --vitalia-danger-soft-border: hsl(0 73% 88%);
+}
+
+/* ─── Dark mode overrides for LEGACY --vitalia-* tokens ─────────────────────────
+ * BUG (2026-06-04, vitalia-bugfix-shell-valeria-responsive sibling / Chris "resuelve
+ * dark mode"): the `.vt-*` utility classes (§ below) map to legacy `--vitalia-*`
+ * tokens. Those were defined ONLY for light (in :root above) and had NO dark
+ * override → in dark mode the shell (which uses `--background`/`--card`/etc., which
+ * DO switch) went dark while ALL `.vt-*` consumers (the inbox + most feature UI)
+ * stayed light → "dark mode half-applied / se ve mal".
+ *
+ * Fix: redefine the neutral/text/border/soft `--vitalia-*` tokens under dark so the
+ * `.vt-*` classes switch app-wide. Mirrors the canonical dark scale
+ * (--background 240 10% 4% · --card 240 8% 8% · --foreground 0 0% 98% · --border 240 4% 20%).
+ * Lives OUTSIDE @layer base (like the agent a11y override) for correct cascade.
+ * Brand hues (cian/púrpura/etc.) are intentionally NOT re-toned here — they read on
+ * dark; status hue brightening tracked as follow-up in the UI audit.
+ */
+.dark,
+[data-theme="dark"] {
+  --vitalia-bg: 240 10% 6%; /* app background (just above canonical --background) */
+  --vitalia-surface: 240 8% 9%; /* cards / sidebar / panels */
+  --vitalia-surface-alt: 240 8% 11%; /* subtle zone differentiation */
+  --vitalia-muted: 240 5% 15%; /* chips, tool-calls, empty states */
+  --vitalia-text: 0 0% 96%; /* body text */
+  --vitalia-text-muted: 240 5% 65%; /* secondary / metadata */
+  --vitalia-text-faint: 240 5% 45%; /* disabled / hints */
+  --vitalia-border: 240 4% 20%; /* default borders */
+  --vitalia-border-soft: 240 4% 15%; /* subtle separators */
+
+  /* Wrapped color vars (TSX inline-style / SVG attr consumption) — keep in sync */
+  --vitalia-text-color: hsl(0 0% 96%);
+  --vitalia-text-muted-color: hsl(240 5% 65%);
+  --vitalia-text-faint-color: hsl(240 5% 45%);
+  --vitalia-border-color: hsl(240 4% 20%);
+
+  /* Soft semantic tones — darker fills so success/danger surfaces read on dark */
+  --vitalia-success-soft-bg: hsl(142 40% 13%);
+  --vitalia-danger-soft-bg: hsl(0 45% 15%);
+  --vitalia-danger-soft-border: hsl(0 45% 28%);
+
+  /* Chat-wallpaper watermark ink in dark: warm near-white logos on the dark wash. */
+  --vt-watermark-ink: hsl(40 22% 82%);
 }
 
 /* ─── Vitalia semantic CSS utility classes ─────────────────────────────────── */
@@ -206,6 +271,14 @@
 /* Backgrounds */
 .vt-bg-app {
   background-color: hsl(var(--vitalia-bg));
+}
+/* Opaque bubble base (flips with --vitalia-surface in dark) — lets channel-tinted
+   outgoing bubbles stay SOLID via color-mix without a raw hsl() in the TSX. */
+:root {
+  --vt-bubble-base: hsl(var(--vitalia-surface));
+  /* Chat-wallpaper logo watermark ink (Chris UI #1): warm cream instead of the
+     per-channel brand tint, so the tiled real logos read on the light wash. */
+  --vt-watermark-ink: hsl(40 45% 90%);
 }
 .vt-bg-surface {
   background-color: hsl(var(--vitalia-surface));
@@ -227,6 +300,14 @@
 }
 .vt-bg-azul-marino {
   background-color: hsl(var(--vitalia-azul-marino));
+}
+/* Adrián AI outgoing bubble (dark-aware soft cian) — inbox thread (UI-AUDIT #4). */
+.vt-bg-adrian-soft {
+  background-color: hsl(var(--agent-adrian-soft));
+}
+/* Friendly chat wallpaper wash behind the inbox thread (UI-AUDIT-2 #5). */
+.vt-bg-chat-wash {
+  background-color: hsl(var(--vitalia-muted) / 0.5);
 }
 .vt-bg-danger-12 {
   background-color: hsl(var(--vitalia-danger) / 0.12);
@@ -376,6 +457,20 @@ body {
   color: hsl(var(--vitalia-text));
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Pointer affordance on every interactive element (Chris UI #4) ─────────── */
+/* Native <button> defaults to the arrow cursor; make all enabled clickables show
+   the hand so operators know what's actionable (buttons, role=button/radio, links,
+   labelled controls). Disabled elements keep their own not-allowed cursor. */
+button:not(:disabled):not([aria-disabled="true"]),
+[role="button"]:not([aria-disabled="true"]),
+[role="radio"]:not([aria-disabled="true"]),
+[role="tab"]:not([aria-disabled="true"]),
+label[for],
+summary,
+a[href] {
+  cursor: pointer;
 }
 
 /* ─── Typing indicator animation (F1-S6 ValeriaChat) ──────────────────────── */

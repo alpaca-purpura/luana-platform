@@ -30,26 +30,31 @@ DAG completo en `.claude/rules/offer-catalogs.md`. Lectura obligatoria primer tu
 
 ## Files canon SSoT
 
+Engine (catálogos L2-L10): `core/luana-core-offer-studio/src/luana_core_offer_studio/domain/`
+Brand extensions/presets: `{brand}/backend/src/modules/{brand}/offer/extensions.py` (EP-2)
+Brand aggregate root L0: `{brand}/backend/src/modules/{brand}/offer/domain/`
+FE per brand: `{brand}/frontend/src/features/offer-studio/`
+
 | Capa | File |
 |---|---|
-| L0 | `backend/src/modules/offer/domain/offer.py` (Offer aggregate root) |
-| L0 | `backend/src/modules/offer/domain/details.py` (specific_details polymorphic) |
-| L0 | `backend/src/modules/offer/domain/assets.py` (deliverables/instructors/etc) |
-| L0 | `backend/src/modules/offer/domain/launch_edition.py` (variant editions) |
-| L1 | `backend/src/modules/offer/domain/field_contract.py` (OFFER_SECTION_MAP + OFFER_FIELD_OVERRIDES + derive) |
-| L1 | `shared/domain/field_contract.py` (platform: walker, override merge, registry) |
-| L2 | `offer/domain/section_catalog.py` (SectionKey enum + SECTION_CATALOG dict) |
-| L3 | `offer/domain/archetype_catalog.py` (5 archetypes + sections per archetype) |
-| L4 | `offer/domain/format_catalog.py` (composite, suitable_for[EBT]=0..1) |
-| L5 | `offer/domain/value_level_catalog.py` |
-| L6 | `offer/domain/offer_ladder_hints.py` (tuple key (EBT, ValueLevel) → hint) |
-| L7 | `offer/domain/offer_type_preset_catalog.py` (84 presets) |
-| L7 | `offer/api/offer_type_presets.py` (`_CATALOG_VERSION`) |
-| L8 | `QUESTION_REGISTRY` en preset_catalog.py top |
-| L9 | `PresetFlag` enum en preset_catalog.py |
-| L10 | `offer/domain/variant_structure_catalog.py` (pure base, no FK out) |
-| L11 | `shared/domain/expert_business_type.py` (9 EBTs + metadata) |
-| L11 | `shared/links/ports/tenant_profile.py` (`get_tenant_business_types`) — **NUNCA** importar `tenant_profile` directo |
+| L0 | `{brand}/backend/src/modules/{brand}/offer/domain/offer.py` (Offer aggregate root) |
+| L0 | `{brand}/backend/src/modules/{brand}/offer/domain/details.py` (specific_details polymorphic) |
+| L0 | `{brand}/backend/src/modules/{brand}/offer/domain/assets.py` (deliverables/instructors/etc) |
+| L0 | `{brand}/backend/src/modules/{brand}/offer/domain/launch_edition.py` (variant editions) |
+| L1 | `{brand}/backend/src/modules/{brand}/offer/domain/field_contract.py` (OFFER_SECTION_MAP + OFFER_FIELD_OVERRIDES + derive) |
+| L1 | `core/luana-core-offer-studio/src/luana_core_offer_studio/domain/field_contract.py` (platform: walker, override merge, registry) |
+| L2 | `core/luana-core-offer-studio/src/luana_core_offer_studio/domain/section_catalog.py` (SectionKey enum + SECTION_CATALOG dict) |
+| L3 | `core/luana-core-offer-studio/src/luana_core_offer_studio/domain/archetype_catalog.py` (5 archetypes + sections per archetype) |
+| L4 | `core/luana-core-offer-studio/src/luana_core_offer_studio/domain/format_catalog.py` (composite, suitable_for[EBT]=0..1) |
+| L5 | `core/luana-core-offer-studio/src/luana_core_offer_studio/domain/value_level_catalog.py` |
+| L6 | `core/luana-core-offer-studio/src/luana_core_offer_studio/domain/offer_ladder_hints.py` (tuple key (EBT, ValueLevel) → hint) |
+| L7 | `core/luana-core-offer-studio/src/luana_core_offer_studio/domain/offer_type_preset_catalog.py` (84 presets) |
+| L7 | `{brand}/backend/src/modules/{brand}/offer/api/offer_type_presets.py` (`_CATALOG_VERSION`) |
+| L8 | `QUESTION_REGISTRY` en preset_catalog.py top (engine) |
+| L9 | `PresetFlag` enum en preset_catalog.py (engine) |
+| L10 | `core/luana-core-offer-studio/src/luana_core_offer_studio/domain/variant_structure_catalog.py` (pure base, no FK out) |
+| L11 | `core/luana-core-platform/src/luana_core_platform/domain/expert_business_type.py` (9 EBTs + metadata) |
+| L11 | `core/luana-core-platform/src/luana_core_platform/links/ports/tenant_profile.py` (`get_tenant_business_types`) — **NUNCA** importar `tenant_profile` directo |
 
 ## ExpertBusinessType (9 EBTs)
 
@@ -120,7 +125,7 @@ Eliminadas: `METHODOLOGY`, `CREDENTIALS` (duplicaban brand).
 → Skill **offer-type-preset-expert** (peer skill). Usa esa para presets puros. Si trabaja también field-level, ambas. Pasos canon:
 1. Decidir EBT + archetype (preset = facade del archetype).
 2. Editar `OFFER_TYPE_PRESET_CATALOG` en `offer_type_preset_catalog.py`.
-3. Bump `_CATALOG_VERSION` en `offer/api/offer_type_presets.py`.
+3. Bump `_CATALOG_VERSION` en `{brand}/backend/src/modules/{brand}/offer/api/offer_type_presets.py`.
 4. Run arch tests (187+) en `tests/architecture/test_offer_type_preset_catalog_completeness.py`.
 5. Update doc `docs/domains/offer/offer-type-preset-catalog.md`.
 6. Review consumers: `sales_agent.knowledge_builder` + `landing_service._select_landing_archetype_from_preset` + `PresetBadge.tsx`.
@@ -134,10 +139,10 @@ Decisión PRODUCTO. Antes:
 3. Si overlap <50% → mantener 2, agregar **conditional question** que bridges.
 
 Si user persiste fusión:
-- Drop EBT en `expert_business_type.py` enum + tests.
+- Drop EBT en `core/luana-core-platform/src/luana_core_platform/domain/expert_business_type.py` enum + tests.
 - Migrar presets del EBT eliminado: cambiar `business_type=` al EBT consolidador.
 - Migrar tenants existentes con ese EBT en `tenant_profile.business_types` (script + Alembic data migration).
-- Update `frontend/src/features/tenant-profile/types/tenant-profile.ts` (string-literal union mirror).
+- Update `{brand}/frontend/src/features/tenant-profile/types/tenant-profile.ts` (string-literal union mirror).
 - Bump catalog version.
 
 **Riesgo alto**: tenants con offers persisted en `preset_id` cuyo preset asume EBT viejo se quiebran. **Pregunta primero**: ¿hay tenants en prod con ese EBT?
@@ -145,11 +150,11 @@ Si user persiste fusión:
 ### "Quiero crear un nuevo expertise (EBT)"
 
 Cross-cutting. Sigue `.claude/rules/offer-catalogs.md` → "Extending the system". Pasos:
-1. Add enum value + metadata en `expert_business_type.py`.
+1. Add enum value + metadata en `core/luana-core-platform/src/luana_core_platform/domain/expert_business_type.py`.
 2. **Mínimo 3 presets** para nuevo EBT (arch test enforce).
 3. Update `_BUSINESS_TYPE_SLUG` en preset completeness test.
 4. Distribución table en `offer-type-preset-catalog.md`.
-5. **FE mirror** `frontend/src/features/tenant-profile/types/tenant-profile.ts` (string-literal union + frozen array).
+5. **FE mirror** `{brand}/frontend/src/features/tenant-profile/types/tenant-profile.ts` (string-literal union + frozen array).
 6. Update wizard preset picker filter (auto si registry agnóstico).
 7. Considerá ladder hints: `offer_ladder_hints.py` — agregá entries `(NEW_EBT, value_level)` para cada nivel típico.
 
@@ -165,9 +170,9 @@ Si zero tenants: drop enum, drop presets de ese EBT, drop tests. Bump catalog ve
 ### "Quiero modificar/agregar un field a una sección"
 
 Workflow refactor field-contract-platform:
-1. Decidir si Pydantic model nuevo / extender existente. Files: `offer/domain/offer.py`, `details.py`, `assets.py`, `launch_edition.py`.
+1. Decidir si Pydantic model nuevo / extender existente. Files: `{brand}/backend/src/modules/{brand}/offer/domain/{offer,details,assets,launch_edition}.py`.
 2. Agregar field a Pydantic model (estructura).
-3. **Add path → section** en `OFFER_SECTION_MAP` (`offer/domain/field_contract.py`).
+3. **Add path → section** en `OFFER_SECTION_MAP` (`{brand}/backend/src/modules/{brand}/offer/domain/field_contract.py`).
 4. **Add Override** en `OFFER_FIELD_OVERRIDES` con metadata semántica:
    ```python
    "specific_details.<field>": Override(
@@ -182,7 +187,7 @@ Workflow refactor field-contract-platform:
    ```
 5. Migration Alembic idempotente (`ADD COLUMN IF NOT EXISTS`) si Pydantic field se persiste como column. Si vive en JSONB (specific_details, platform_details), zero migration.
 6. Run arch tests `tests/architecture/test_field_contract_platform.py` + `tests/architecture/test_field_contract_completeness.py`. Pydantic ⊆ FieldContract enforced.
-7. **FE schema** (`frontend/src/features/offer-studio/schemas/<section>.schema.ts`) — agregar field declaración Zod. Schema FE NO se deriva auto; debe alinearse manual.
+7. **FE schema** (`{brand}/frontend/src/features/offer-studio/schemas/<section>.schema.ts`) — agregar field declaración Zod. Schema FE NO se deriva auto; debe alinearse manual.
 8. **Copilot: zero-touch** si solo agregás. `propose_field_updates` valida con catalog derivado, picks up auto. `next_question` algoritmo Fase 09 ranking deja entrar el field auto. Si gate / priority te interesa = setealo en Override.
 9. Documentar en `docs/domains/offer/`.
 
@@ -266,7 +271,7 @@ Bump version + tests.
 
 ### "Quiero nueva variant structure"
 
-`offer/domain/variant_structure_catalog.py` es **pure base** (zero outbound FK refs — arch test bloquea). 4 estructuras hoy: PERIOD (cohorts fechadas) / SCOPE (alcance customizable) / TIER (basic/pro/premium) / PACK (cantidades).
+`core/luana-core-offer-studio/src/luana_core_offer_studio/domain/variant_structure_catalog.py` es **pure base** (zero outbound FK refs — arch test bloquea). 4 estructuras hoy: PERIOD (cohorts fechadas) / SCOPE (alcance customizable) / TIER (basic/pro/premium) / PACK (cantidades).
 
 Agregar:
 1. New enum value + metadata.
@@ -308,10 +313,15 @@ Agregar:
 ## Tests gates (correr siempre tras cambio)
 
 ```bash
-cd backend && .venv/bin/pytest tests/architecture/ -x -q --tb=short
-cd backend && .venv/bin/pytest tests/architecture/test_offer_type_preset_catalog_completeness.py -x -q
-cd backend && .venv/bin/pytest tests/modules/copilot/test_conversational_questioning.py tests/modules/copilot/test_guided_question_hint.py -x -q
-cd frontend && npx vitest run src/__tests__/architecture/
+WS=$(git rev-parse --show-toplevel)
+# Engine (L2-L10 catalogs):
+cd ${WS}/core/luana-core-offer-studio && ${WS}/.venv/bin/pytest tests/architecture/ -x -q --tb=short
+cd ${WS}/core/luana-core-offer-studio && ${WS}/.venv/bin/pytest tests/architecture/test_offer_type_preset_catalog_completeness.py -x -q
+# Brand backend (L0-L1 + copilot):
+cd ${WS}/{brand}/backend && ${WS}/.venv/bin/pytest tests/architecture/ -x -q --tb=short
+cd ${WS}/{brand}/backend && ${WS}/.venv/bin/pytest tests/modules/{brand}/copilot/test_conversational_questioning.py tests/modules/{brand}/copilot/test_guided_question_hint.py -x -q
+# Brand frontend:
+cd ${WS}/{brand}/frontend && npx vitest run src/__tests__/architecture/
 ```
 
 507 BE arch + 38 FE arch baseline post-Fase-09. Sin regression.

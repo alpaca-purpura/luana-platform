@@ -1,4 +1,3 @@
-<!-- voseo-allowed: internal skill documentation, not user-facing -->
 ---
 name: po
 description: "Product Owner Luana v4 (post pm-redesign 2026-05 Punto 4). SCOPE: service-stories only (BE endpoint sin UI, sin agentic) o agentic-stories spec (que después /ux-agentico diseña flow). Para UI std (CRUD/list/form/dashboard) → use /po-ux fusión. Toma 1 user story state=refining → produce 01-spec.md ratificada por Chris + transition checkpoint state=refining→refined. Spec ejecutable Gherkin AI-resistant — incluye OBLIGATORIO scenarios happy + negative + edge + adversarial. Loop iterativo. Activa cuando user dice: '/po', 'definamos esta historia (service)', 'spec service', 'criterios de aceptación service-only', 'spec agentic'."
@@ -84,7 +83,7 @@ WS=$(git rev-parse --show-toplevel)
 BRAND={brand}                                                  # vitalia | nicolify | comunify | lupulo | platform
 cat ${WS}/${BRAND}/docs/product/BACKLOG.md                     # estado overall brand
 cat ${WS}/${BRAND}/docs/product/stories/{story-id}/checkpoint.md  # state=refining requerido
-cat ${WS}/${BRAND}/docs/product/ideas-pool.yaml | grep -A5 {idea} # contexto idea origen
+cat ${WS}/${BRAND}/docs/product/stories/{story-id}/chris-input.md  # idea/contexto origen (R4: nace con la story)
 ls ${WS}/${BRAND}/docs/product/capabilities/{m}/               # caps existentes (no duplicar)
 ```
 
@@ -351,4 +350,4 @@ Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
 
 **Uso (herramienta, no gate):** para revisar algo que ya corre y refinar sobre lo real, abrí dev-app con Chrome MCP.
 
-Levantar: `make dev-app-vitalia` → `https://dev-app.vitalialat.com` (login `dr.demo@vitalialat.com`, creds en `vitalia/.env.dev`). Herramientas: **Chrome DevTools MCP** (live) + **Playwright autenticado** (golden). Evidencia = acción real ejercida + efecto observado; NUNCA GET 200 ni e2e mockeado. SSoT: `.claude/rules/definition-of-done-live-verify.md`.
+Levantar: `make dev-app-{brand}` → dev-app de la marca (URL + usuario de prueba per brand en la tabla `§ Infra por brand` de `.claude/rules/definition-of-done-live-verify.md`; ej. vitalia: `https://dev-app.vitalialat.com` / `dr.demo@vitalialat.com`, creds en `{brand}/.env.dev`). Si el túnel de la marca aún no está provisto → fallback `localhost:300X` (válido). Herramientas: **Chrome DevTools MCP** (live) + **Playwright autenticado** (golden). Evidencia = acción real ejercida + efecto observado; NUNCA GET 200 ni e2e mockeado. SSoT: `.claude/rules/definition-of-done-live-verify.md`.

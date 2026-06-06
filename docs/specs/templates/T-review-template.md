@@ -1,15 +1,15 @@
 # T-{n}-review.md — Template (auditor verdict)
 
-> Owner: `/auditor` (Opus 4.7). Verdict por ticket.
+> Owner: `/auditor` (Opus 4.8). Verdict por ticket.
 > Auditor lee `T-{n}-handoff.md` + `T-{n}-result.md` + corre tests él mismo (no se fía).
-> Self-fix permitido SOLO en triviales (lint, format, typo). Diseño/security/arch → escala.
+> Self-fix v4.2 — 3 carriles por NATURALEZA: **A** self-fix gate-verified (mecánico, self_fix_iter<=5) · **B** spawn dev-team TDD si requiere test nuevo · **C** escalate Chris si stake-asimétrico (security/tenant/PII/migration/engine). audit_iterations<=4 total, wall-clock<=30 min.
 
 ---
 ticket_id: T-1
 story_id: STORY_ID
-auditor_run: 1                                   # 1, 2, ... cap 2 → escala Chris
+auditor_run: 1                                   # 1..4 (audit_iterations<=4 total · self_fix_iter<=5 por Carril A)
 audited_at: 2026-05-04T17:30Z
-auditor_model: claude-opus-4-7
+auditor_model: claude-opus-4-8
 verdict: APPROVED                                # APPROVED | CHANGES_REQUESTED | ESCALATED
 self_fix_applied: false
 escalation_reason: null
@@ -60,7 +60,7 @@ $ /test-backend
 
 - ✅ Idempotente (`IF NOT EXISTS`).
 - ✅ No `sa.Enum()` en `create_table`.
-- ✅ Verificada con `make verify-migration-idempotency`.
+- ✅ Verificada ejecutando `alembic upgrade head` x2 en DB limpia (ver Cat 2 acceptance row A3).
 
 ### Cat 5 — Spanish neutro UI
 
@@ -99,12 +99,44 @@ $ /test-backend
 - ✅ Docstrings en funciones públicas.
 - ✅ `product/modules/{m}.md` actualizado si aplica (en `07-merge.md`).
 
+### Cat 12 — Cross-brand mirror (anti-duplicación cross-marca)
+
+- ¿El diff replica un patrón que ya vive en `core/luana-core-*` (debió consumirse vía import) o en otra brand (`{brand}/backend|frontend/src`)?
+- Match >50% con código de otra brand → **FAIL** (lift a engine vía `/pm-luana`, no mirror).
+- Ver `.claude/rules/anti-duplication.md` + `.claude/rules/auditor-downstream-regression.md`.
+
+### Cat 13 — Connectivity (anti-isla · Critical Rule #33)
+
+- ¿La salida cumple las 4 contenciones CONN? **C**onsumed (≥1 consumidor real) · **O**n the map (cap YAML con hogar) · **N**avigable (reachability path concreto) · **N**otarized (cableado: `include_router`/nav/tool registry/EP-N/DI).
+- Falta alguna de las 4 → isla → **FAIL** (no llega a `done`). Ver `.claude/rules/anti-orphan-integration.md`.
+
+### Categoría 14 — Verificación live (DoD · Critical Rule #37)
+
+- ¿Los scenarios críticos user-reachable se ejercieron LIVE contra dev-app (Chrome DevTools MCP) o hay evidencia `dod_evidence` registrada?
+- ¿Los writes (POST/PATCH/PUT/DELETE) se ejercieron de verdad + se leyeron logs + se confirmó efecto en DB/UI?
+- e2e que mockea el backend del surface bajo prueba = NO cuenta como live-verify (falso verde).
+- **Ausencia de evidencia live en story con UI/endpoint → CHANGES_REQUESTED (no APPROVED).**
+
+## Verificación live (Critical Rule #37 · `definition-of-done-live-verify.md`)
+
+Los scenarios user-reachable de este ticket se ejercieron contra el stack dev real (`make dev-app-{brand}` / `localhost:300X`), no solo tests verdes:
+
+```yaml
+dod_live_verified: true|false
+dod_env: "<make dev-app-{brand} → dev-app.{brand}lat.com (Chrome DevTools MCP) | localhost:300X>"
+dod_evidence:
+  - action: "<write/flujo real ejercido>"
+    observed: "<efecto visible>"
+    backend_log: "<status + sin traceback + efecto DB>"
+```
+> Un `GET 200` sobre un placeholder NO es verificación. Una e2e que mockea el backend del surface = falso verde.
+
 ## Self-fix log (si self_fix_applied = true)
 
-> Solo TRIVIALES: lint, format, typo. NUNCA diseño/seguridad/arch.
+> Carril A (self-fix gate-verified): lint, format, typo, import order — self_fix_iter<=5. Carril B si requiere test nuevo (spawn dev-team). Carril C si stake-asimétrico (security/tenant/PII/migration/engine/cross-brand → escala Chris).
 
 - ❌ N/A para esta auditoría
-- O: `fixed: ruff format src/modules/{m}/api/routes.py — 2 lines reformatted`
+- O: `fixed: ruff format {brand}/backend/src/modules/{brand}/{m}/api/routes.py — 2 lines reformatted`
 
 ## Findings
 
@@ -115,23 +147,25 @@ $ /test-backend
 
 ## Verdict
 
+> **CHANGES_REQUESTED triggers automáticos:** ausencia de evidencia live (Categoría 14) en story con UI/endpoint → CHANGES_REQUESTED (no APPROVED).
+
 **APPROVED** ✅
 
-Razón: todos los acceptance criteria verificados, quality gates verde, code review 11 categorías OK, no hallazgos bloqueantes.
+Razón: todos los acceptance criteria verificados, quality gates verde, code review 14 categorías OK, no hallazgos bloqueantes.
 
 > O:
 > **CHANGES_REQUESTED** ❌
 > Razón: A2 falla (test_tenant_isolation devuelve 200 en vez de 403). Service no filtra tenant_id en repo.get(...). Ver finding #1.
-> Iteración 1/2.
+> Iteración 1/4 (audit_iterations<=4 · Carril A self_fix_iter<=5 si mecánico / Carril B si requiere test nuevo).
 
 > O:
 > **ESCALATED** 🚨
-> Razón: tras 2 iteraciones, dev no logra cumplir A4 (coverage). Sospecho que diseño del service requiere refactor mayor.
-> escalation_reason: "Service tiene complejidad ciclomática 18, requiere split en 2 use cases. Pasa fuera de mi autoridad."
+> Razón: tras audit_iterations cap alcanzado o finding stake-asimétrico (Carril C). Diseño del service requiere refactor mayor → fuera de autoridad del auditor.
+> escalation_reason: "Service tiene complejidad ciclomática 18, requiere split en 2 use cases. Escala a Chris (Carril C)."
 
 ## Output al orchestrator
 
 ```
 APPROVED -> ver T-{n}-review.md
-ticket state: audit-passed
+ticket state: reviewing  # → done vía /pm-{brand} merge (state: audit-passed es vocab MUERTO)
 ```

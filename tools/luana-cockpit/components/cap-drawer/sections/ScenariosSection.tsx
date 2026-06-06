@@ -6,10 +6,22 @@
 import { Pill } from '@/components/ui/Badge';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { TOOLTIPS } from '@/lib/tooltips';
-import type { CapScenario } from '@/lib/types';
+import type { CapScenario, DevPreview } from '@/lib/types';
 
-export function ScenariosSection({ scenarios }: { scenarios: CapScenario[] }) {
+export function ScenariosSection({
+  scenarios,
+  userFacingDescription,
+  devPreview,
+}: {
+  scenarios: CapScenario[];
+  userFacingDescription?: string | null;
+  devPreview?: DevPreview | null;
+}) {
   if (scenarios.length === 0) {
+    // HB-52: «✨ Qué puedo hacer» SIEMPRE responde QUÉ HAGO, nunca la versión interna
+    // del SDD. Sin scenarios materializados, caemos al texto funcional de la cap
+    // (user_facing_description) + dónde se usa — sin jerga de versión del SDD.
+    const navigate = devPreview?.how_to_navigate ?? devPreview?.route ?? null;
     return (
       <section>
         <h3 className="text-sm font-semibold mb-2">
@@ -17,9 +29,22 @@ export function ScenariosSection({ scenarios }: { scenarios: CapScenario[] }) {
             ✨ Qué puedo hacer
           </Tooltip>
         </h3>
-        <div className="text-[11px] text-[var(--color-muted)] italic px-2 py-1 border border-dashed border-[var(--color-border)] rounded">
-          Cap todavía v3.1 · migrará a v3.2 cuando la próxima story la toque (Fase F.3 enforce).
-        </div>
+        {userFacingDescription ? (
+          <div className="text-[11px] px-2 py-1 border border-[var(--color-border)] rounded">
+            {userFacingDescription}
+            {navigate && (
+              <div className="mt-1 text-[10px] text-[var(--color-muted)]">Disponible en: {navigate}</div>
+            )}
+          </div>
+        ) : navigate ? (
+          <div className="text-[11px] text-[var(--color-muted)] px-2 py-1 border border-dashed border-[var(--color-border)] rounded">
+            Disponible en: {navigate}
+          </div>
+        ) : (
+          <div className="text-[11px] text-[var(--color-muted)] italic px-2 py-1 border border-dashed border-[var(--color-border)] rounded">
+            Esta capability todavía no tiene escenarios documentados.
+          </div>
+        )}
       </section>
     );
   }

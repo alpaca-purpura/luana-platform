@@ -2,7 +2,7 @@
 
 # Shell-Organism Design Contract — SSoT
 
-> **Versión:** 1.0 · **Fecha:** 2026-05-22 · **Estado:** ratificado por Chris · **Branch:** wip/vitalia
+> **Versión:** 1.3 · **Fecha:** 2026-06-03 (base 1.0 2026-05-22) · **Estado:** ratificado por Chris · **Branch:** wip/vitalia
 >
 > **Propósito:** documento canónico que cementa CADA átomo · molécula · organismo · template del shell-organism agéntico Vitalia. TODA historia de usuario Fase 1 y Fase 2 cita este doc como referencia técnica. Sin este doc, las historias serían textos sueltos sin contrato visual ni funcional verificable.
 >
@@ -131,6 +131,8 @@ vitalia/frontend/src/
 | `.ribbon` 5 especialistas + Plataforma | `Ribbon` | RibbonTab[] + PlataformaTab | router state (active from URL) | — | `components/shared/shell-organism/Ribbon.tsx` |
 |  ↳ ★★ v1.2 (2026-05-30) | Antes: 6 tabs (con Valeria + "Configurar"). Ahora: 5 especialistas (sin Valeria) + "Plataforma" | — | — | — |
 | `.sub-tabs` línea 2 | `SubTabsBar` | SubTab[] (dinámico per tab) | router state | — | `components/shared/shell-organism/SubTabsBar.tsx` |
+| barra N3-dynamic del detalle (patrón list→detail · § 7.2.2) | `EntitySubNavBar` | Back `‹ {rootLabel}` + identidad (avatar+nombre) + leaves (rutas) | prop `entity` (null=directory mode → leaves disabled) · `activeLeaf` · NO en `AGENT_SUBSUBTABS` | roving tabindex + flechas L/R/Home/End | `components/shared/shell-organism/EntitySubNavBar.tsx` |
+| `[doctor-id]/layout.tsx` workspace del detalle | `StaffWorkspaceShell` | `EntitySubNavBar` (sticky) + content slot · construye hrefs de leaves · `usePathname` → activeLeaf | React Query doctor · zustand `staff-ui-store` | (delegado) | `features/lisa/components/staff/workspace/StaffWorkspaceShell.tsx` |
 | `.content` body derecho | `ContentArea` | slot — children = page actual | — (Next.js routing) | — | (es el `{children}` del layout) |
 
 ### § 3.4 — Templates (layouts)
@@ -147,7 +149,8 @@ vitalia/frontend/src/
 | `/[tenantId]/(shell-organism)/page.tsx` | landing del shell | redirige a `/[tenantId]/(shell-organism)/lisa/marca` (default Lisa→Marca) |
 | `/[tenantId]/(shell-organism)/[agent]/page.tsx` | landing del agente | redirige a primera sub-tab del agente |
 | `/[tenantId]/(shell-organism)/[agent]/[subtab]/page.tsx` | sub-tab específica | renderiza componente per agente+subtab |
-| `/[tenantId]/(shell-organism)/[agent]/[subtab]/[...slug]/page.tsx` | N3-dyn workspace (detalle item) | renderiza detalle workspace |
+| `/[tenantId]/(shell-organism)/[agent]/[subtab]/[entityId]/layout.tsx` | N3-dynamic DETALLE — monta `EntitySubNavBar` + SSR entidad + slot `{children}` (patrón list→detail · § 7.2.2 · staff usa `[doctor-id]`) | la lista/master es el `[subtab]/page.tsx` de arriba |
+| `/[tenantId]/(shell-organism)/[agent]/[subtab]/[entityId]/[leaf]/page.tsx` | leaf activo del detalle (ej. staff: `perfil`·`horarios`·`servicios`) | `[entityId]` redirige al 1er leaf |
 
 ---
 
@@ -419,7 +422,9 @@ app/
 │   │       └── [subtab]/
 │   │           ├── page.tsx                 # sub-tab content (single panel) o redirect a primera subsubtab
 │   │           ├── [subsubtab]/page.tsx     # ★ N3-static (sub-sub-tabs cabecera, opcional per AGENT_SUBSUBTABS)
-│   │           └── [...slug]/page.tsx       # N3-dynamic workspaces (catch-all, detalle item)
+│   │           └── [entityId]/              # ★ N3-dynamic (list→detail · § 7.2.2 · staff: [doctor-id])
+│   │               ├── layout.tsx           #     monta EntitySubNavBar + SSR entidad + slot
+│   │               └── [leaf]/page.tsx      #     leaf activo (ej. perfil·horarios·servicios)
 │   └── ... (otras rutas legacy bajo [tenantId] si las hubiera)
 └── layout.tsx (root)                       # Providers globales
 ```
@@ -473,16 +478,50 @@ N1 (Ribbon)           → [agent]                                    → 5 espec
                                                                       Mateo = Operar/Mi Día (agenda + bookings + pacientes del día)
 N2 (SubTabsBar)       → [agent]/[subtab]                           → AGENT_SUBTABS whitelist
 N3-static (NEW)       → [agent]/[subtab]/[subsubtab]               → AGENT_SUBSUBTABS opcional
-N3-dynamic            → [agent]/[subtab]/[...slug]                 → workspace detalle item (catch-all)
+N3-dynamic            → [agent]/[subtab]/[entityId]/[leaf]         → detalle de entidad (patrón list→detail · EntitySubNavBar · § 7.2.2)
 ```
 
 **Reglas:**
-- N3-static y N3-dynamic **coexisten** en misma sub-tab — Next.js prioriza static segment sobre catch-all
+- N3-static y N3-dynamic son **modos alternativos** de una sub-tab (vistas fijas de UNA hoja **O** colección de entidades list→detail — no ambas en el mismo segmento, porque `[subsubtab]` y `[entityId]` colisionarían)
 - N3-static es **opcional** — solo cuando la sub-tab agrupa 3+ vistas discretas (Anti-pattern: Shadcn `Tabs` body en lugar de cabecera N3-static)
-- N3-dynamic se renderiza típicamente vía Sheet drawer (Shadcn) con URL state opcional (patrón valeria-agenda `AppointmentDrawer`)
+- N3-dynamic usa el patrón **list→detail** (`EntitySubNavBar`, ver § 7.2.2) — el sub-tab es una **lista** de entidades; al entrar a una, su **detalle** es un workspace con back + identidad + leaves (rutas). El `Sheet` (Shadcn) queda SOLO para paneles transitorios livianos (ej. valeria-agenda `AppointmentDrawer`), **NUNCA** para el detalle canónico de un item
 - **Anti-pattern PROHIBIDO:** content tab nav fuera de la cabecera shell (sería "Nivel 4" implícito)
 
 **Source decisión:** ADR-vitalia-004 v1.1 § 3.1.1 (cementación 2026-05-27 origen lisa-marca refinement).
+
+### § 7.2.2 — Patrón list→detail (`EntitySubNavBar`) — ★ canónico para todo "lista → detalle" (cement 2026-06-03)
+
+> **Origen:** inventado en Vitalia (`lisa/staff` doctores · `ADR-vitalia-004 § D-1`). Adoptado cross-brand 2026-06-03 (Chris) — Nicolify lo portó re-temizado (ICP→buyers). **Reemplaza la noción stale "N3-dynamic = Sheet drawer / `[...slug]` catch-all".** Reference impl: `components/shared/shell-organism/EntitySubNavBar.tsx` + `features/lisa/components/staff/workspace/StaffWorkspaceShell.tsx` + `app/[tenantId]/(shell-organism)/lisa/staff/[doctor-id]/layout.tsx`.
+
+Cuando un sub-tab N2 **es una colección de entidades** (staff/doctores, pacientes, cuentas…) que se **listan** y luego se **entra al detalle** de una, se usa `EntitySubNavBar` (NO Sheet, NO catch-all):
+
+- **Master (lista):** `[agent]/[subtab]/page.tsx` — grid/lista de cards. SIN `EntitySubNavBar` (es la lista).
+- **Detalle (workspace):** click en un item → `[agent]/[subtab]/[entityId]/[leaf]` (staff: `[doctor-id]`). El `layout.tsx` monta `EntitySubNavBar` como **barra N3 superior** (stack Ribbon→SubTabsBar→**EntitySubNavBar**→contenido — NO un card flotante dentro del contenido).
+- **Anatomía:** `[‹ {rootLabel}]  |  {avatar} {nombre}  |  {leaves…}` — leaves **pegadas a la izquierda** (después de la identidad).
+- **Back link** (`rootLabel`) = nombre de la lista: `‹ Doctores` · `‹ Staff`.
+- **Directory mode** (`entity=null`): leaves **deshabilitadas/atenuadas** (aria-disabled, tabIndex=-1, opacity ~.45) hasta que hay entidad.
+- **Las leaves son RUTAS, NO Shadcn `Tabs`.** a11y (WAI-ARIA tablist · SC-10): `role="tablist"` + `role="tab"`/`aria-selected`/`aria-disabled` + roving tabindex + flechas (Left/Right/Home/End). `router.push` (no full reload — preserva React Query cache). NO registrado en `AGENT_SUBSUBTABS` (driven by `entity` prop).
+
+**Props** (`EntitySubNavBarProps`): `rootHref` · `rootLabel` · `entity: {id, name, avatarUrl?}|null` · `leaves: {id, label, href}[]` · `activeLeaf: string|null`.
+
+**Dos fuentes de leaves (misma barra, distinto origen):**
+
+| Variante | Leaves | + agregar | Routing del leaf | Ejemplo | Live en Vitalia |
+|---|---|---|---|---|---|
+| **leaves fijos** | definidos por tipo de entidad (constante) | no | `[entityId]/{perfil\|horarios\|servicios}` | **staff/doctor** | ✅ sí (`lisa/staff`) |
+| **leaves dinámicos** | colección **hija** en runtime + `+ agregar` | sí | `[entityId]/{datos\|[childId]}` | ICP→buyers (Nicolify) | ⏳ patrón disponible, sin consumer Vitalia aún |
+
+> En la variante dinámica, la **entidad madre** (sus propios campos) vive en un leaf inicial (ej. `📋 Datos`) y los **hijos** son los leaves siguientes; el `+ agregar` crea un hijo nuevo.
+
+**Routing:**
+```
+master:   app/[tenantId]/(shell-organism)/[agent]/[subtab]/page.tsx                       (lista)
+detalle:  app/[tenantId]/(shell-organism)/[agent]/[subtab]/[entityId]/layout.tsx           (monta EntitySubNavBar + SSR entidad + slot)
+          app/[tenantId]/(shell-organism)/[agent]/[subtab]/[entityId]/[leaf]/page.tsx      (leaf activo · [entityId] redirige al 1er leaf)
+```
+PHI/datos sensibles NUNCA en URL — `[entityId]` es UUID, no PHI.
+
+**Lift candidate (★):** `EntitySubNavBar` ya tiene **N=2 consumers** (staff Vitalia + ICP Nicolify) → candidato fuerte a lift a `core/@luana/ui-kit` vía `/pm-luana` (promotion gate). Mientras tanto cada brand lo porta re-temizado desde Vitalia (no reinventar). Proposal relacionada: `docs/promotion-protocol/proposals/2026-06-01-lift-shell-organism-to-core.md`.
 
 ### § 7.3 — Static metadata catalog (★★ v1.2 addendum 2026-05-30)
 
@@ -683,3 +722,4 @@ Toda historia DEBE pasar ANTES de merge:
 | Versión | Fecha | Cambio |
 |---|---|---|
 | 1.0 | 2026-05-22 | Snapshot inicial post-ratificación Chris. 5 decisiones cementadas (D1-D6). 13 secciones. SSoT para todas las stories Fase 1. |
+| 1.3 | 2026-06-03 | Formalizado patrón **list→detail (`EntitySubNavBar`)** como contrato (§ 3.3 organismos + § 3.5 pages + § 7.2.1 + nueva § 7.2.2). Reemplaza noción stale "N3-dynamic = Sheet drawer / `[...slug]` catch-all" por el patrón real ya implementado en `lisa/staff` (ADR-vitalia-004 § D-1). Back-port re-temizado del contract de Nicolify (que a su vez lo acreditó a Vitalia como origen). Lift candidate a `@luana/ui-kit` (N=2 consumers: staff Vitalia + ICP Nicolify). (v1.1/v1.2 fueron addenda inline sin row de changelog.) |

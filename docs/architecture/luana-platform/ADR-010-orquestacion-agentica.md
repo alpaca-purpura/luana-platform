@@ -50,3 +50,16 @@ Investigación 2026 consultada: business capability maps (TOGAF: tiers core/supp
 - `.claude/rules/paradigm-arquitectura.md` — rule enforce-able + árbol de decisión zona/caja
 - `.claude/rules/anti-duplication.md` · `.claude/rules/anti-orphan-integration.md`
 - ADR-007 (paradigm v4.1) · ADR-009 (single-hub worktree)
+
+## Bitácora (2026-06-01)
+
+Estado de las 4 tareas derivadas listadas en Consecuencias (ninguna tenía story de tracking al cierre de esta sesión):
+
+| Tarea derivada | Status |
+|---|---|
+| Migración `agent_owner: config/infra` → cajas nuevas (~71 caps vitalia) | **DEFERRED** — asignada a track B/Vitalia. Ratificada por Chris (D-7, 2026-06-01). NO es deliverable del harness; se ejecuta como story incremental dentro del backlog de vitalia cuando se retome track B. |
+| Reorganizar `MapView.tsx` (render por zona + 2 lentes) | Sin story de tracking — on-demand cuando se retome el cockpit. |
+| Construir/generar índice de acciones (Plano 2) desde service layer + `# cap:` headers | Sin story de tracking — on-demand. |
+| Promover Valeria→supervisora / Mateo→Operar en SYSTEM-MAP + caps afectadas | Sin story de tracking — on-demand. |
+
+Cross-ref: **ADR-013** (`docs/architecture/luana-platform/ADR-013-empleados-ia-auto-extension.md`) extiende este ADR en la dimensión empleados-IA + auto-extensión runtime + cadena de valor por puesto.

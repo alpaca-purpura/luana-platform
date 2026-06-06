@@ -101,9 +101,15 @@ export function TenantSwitcher() {
   }
 
   // ── Determine what to show in trigger ─────────────────────────────────
-  // Even in loading/error state, show a placeholder trigger if activeTenant
-  // is available from localStorage persist
-  if (!activeTenant && !isLoading) {
+  // Bug #2 fix (vitalia-bugfix-shell-nav-scroll-errors T-4): el trigger debe
+  // verse SIEMPRE que haya ≥1 tenant disponible (RN-2), aunque activeTenant aún
+  // no esté resuelto (ventana pre-rehydration / pre-auto-pick). Antes esta guarda
+  // retornaba null en esa ventana → con 1 tenant el selector quedaba invisible.
+  // Solo ocultamos cuando NO hay activeTenant, NO estamos cargando, Y tampoco hay
+  // tenants disponibles (defensa redundante con la guarda :99 — mantiene la
+  // semántica de "≥1 tenant ⇒ trigger visible"). El trigger ya muestra un Skeleton
+  // interno mientras activeTenant es null.
+  if (!activeTenant && !isLoading && availableTenants.length === 0) {
     return null;
   }
 
