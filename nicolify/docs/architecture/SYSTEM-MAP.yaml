@@ -352,7 +352,7 @@ agents:
     functional_areas:
       - id: proximamente
         name: "Próximamente"
-        status: deferred
+        status: planned       # semánticamente diferida (Sara · Chris OI-C 2026-06-02); 'planned' hasta que el cockpit soporte 'deferred'
         target_release: null
         description: "Tab en el Ribbon con empty-state 'Próximamente'. Marca el lugar del árbol; sin funcionalidad este stage (fuera de R0-R5)."
 
@@ -606,7 +606,7 @@ cross_agent_flows:
         what: "(DEFERRED) Norvil incorpora el riesgo de entrega a la salud de cuenta."
     mechanism: domain_event
     event_name: "DeliveryAtRisk"
-    status: deferred
+    status: planned       # semánticamente diferida (Sara · Chris OI-C 2026-06-02); 'planned' hasta que el cockpit soporte 'deferred'
     target_release: null
 
 # ────────────────────────────────────────────────────────────────────────────
