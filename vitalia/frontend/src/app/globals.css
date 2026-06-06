@@ -259,6 +259,9 @@
   --vitalia-success-soft-bg: hsl(142 40% 13%);
   --vitalia-danger-soft-bg: hsl(0 45% 15%);
   --vitalia-danger-soft-border: hsl(0 45% 28%);
+
+  /* Chat-wallpaper watermark ink in dark: warm near-white logos on the dark wash. */
+  --vt-watermark-ink: hsl(40 22% 82%);
 }
 
 /* ─── Vitalia semantic CSS utility classes ─────────────────────────────────── */
@@ -268,6 +271,14 @@
 /* Backgrounds */
 .vt-bg-app {
   background-color: hsl(var(--vitalia-bg));
+}
+/* Opaque bubble base (flips with --vitalia-surface in dark) — lets channel-tinted
+   outgoing bubbles stay SOLID via color-mix without a raw hsl() in the TSX. */
+:root {
+  --vt-bubble-base: hsl(var(--vitalia-surface));
+  /* Chat-wallpaper logo watermark ink (Chris UI #1): warm cream instead of the
+     per-channel brand tint, so the tiled real logos read on the light wash. */
+  --vt-watermark-ink: hsl(40 45% 90%);
 }
 .vt-bg-surface {
   background-color: hsl(var(--vitalia-surface));
@@ -289,6 +300,14 @@
 }
 .vt-bg-azul-marino {
   background-color: hsl(var(--vitalia-azul-marino));
+}
+/* Adrián AI outgoing bubble (dark-aware soft cian) — inbox thread (UI-AUDIT #4). */
+.vt-bg-adrian-soft {
+  background-color: hsl(var(--agent-adrian-soft));
+}
+/* Friendly chat wallpaper wash behind the inbox thread (UI-AUDIT-2 #5). */
+.vt-bg-chat-wash {
+  background-color: hsl(var(--vitalia-muted) / 0.5);
 }
 .vt-bg-danger-12 {
   background-color: hsl(var(--vitalia-danger) / 0.12);
@@ -438,6 +457,20 @@ body {
   color: hsl(var(--vitalia-text));
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Pointer affordance on every interactive element (Chris UI #4) ─────────── */
+/* Native <button> defaults to the arrow cursor; make all enabled clickables show
+   the hand so operators know what's actionable (buttons, role=button/radio, links,
+   labelled controls). Disabled elements keep their own not-allowed cursor. */
+button:not(:disabled):not([aria-disabled="true"]),
+[role="button"]:not([aria-disabled="true"]),
+[role="radio"]:not([aria-disabled="true"]),
+[role="tab"]:not([aria-disabled="true"]),
+label[for],
+summary,
+a[href] {
+  cursor: pointer;
 }
 
 /* ─── Typing indicator animation (F1-S6 ValeriaChat) ──────────────────────── */

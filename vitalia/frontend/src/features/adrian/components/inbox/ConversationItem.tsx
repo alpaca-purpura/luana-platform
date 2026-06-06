@@ -22,28 +22,13 @@
 import { memo } from "react";
 import { cn } from "@/lib/cn";
 import { useTenantLocale } from "@/hooks/useTenantLocale";
+import { SocialLogo } from "@/components/shared/channels/SocialLogo";
+import {
+  brandColorAlpha,
+  getSocialChannel,
+} from "@/lib/channels/social-channels";
+import { StageBadge } from "./StageBadge";
 import type { Conversation } from "@/features/crm-shared";
-import type { LeadStage } from "@/features/crm-shared";
-
-/** Channel icon map (accessible emoji with aria-hidden) */
-const CHANNEL_ICONS: Record<string, string> = {
-  whatsapp: "💬",
-  instagram: "📸",
-  facebook_messenger: "💙",
-  web: "🌐",
-  walk_in: "🚶",
-  phone: "📞",
-};
-
-/** Stage label map for chip display */
-const STAGE_LABELS: Record<LeadStage, string> = {
-  interesado: "Interesado",
-  calificando: "Calificando",
-  considerando: "Considerando",
-  listo: "Listo",
-  reservado_deposito: "Con depósito",
-  decidio_no: "Decidió no",
-};
 
 /**
  * Formats ISO 8601 date to relative label (hoy/ayer/dd MMM).
@@ -105,7 +90,6 @@ export const ConversationItem = memo(function ConversationItem({
     handler_mode,
   } = conversation;
 
-  const channelIcon = CHANNEL_ICONS[channel] ?? "💬";
   // Per master-data.md: pass tenant timezone+locale — never hardcoded locale
   const relTime = formatRelativeTime(last_message_at, timezone, locale);
   const isAiMode = handler_mode === "ai";
@@ -125,22 +109,34 @@ export const ConversationItem = memo(function ConversationItem({
       tabIndex={0}
       className={cn(
         "flex cursor-pointer flex-col gap-1 px-4 py-3",
-        "border-b vt-border transition-colors",
-        "hover:vt-bg-muted focus-visible:outline focus-visible:outline-2",
+        // Constant 3px left rail (transparent until selected) — avoids layout shift.
+        "border-b vt-border border-l-[3px] transition-colors",
+        "focus-visible:outline focus-visible:outline-2",
         "focus-visible:outline-inset focus-visible:vt-outline-primary",
-        isSelected && "vt-bg-primary/5 border-l-2 vt-border-primary",
+        !isSelected && "border-l-transparent hover:vt-bg-muted",
         className,
       )}
+      // Selected (UI-AUDIT-2 #3): the mini-card wears the SOCIAL NETWORK color
+      // (soft fill + brand rail) so you see at a glance which channel + which conv.
+      style={
+        isSelected
+          ? {
+              backgroundColor: brandColorAlpha(channel, 0.12),
+              borderLeftColor: getSocialChannel(channel).brandColorVar,
+            }
+          : undefined
+      }
     >
-      {/* Row 1: Name + time + badges */}
+      {/* Row 1: Name + time + badges (channel logo moved to bottom-right, UI-AUDIT-2 #3) */}
       <div className="flex items-center gap-2">
-        {/* Channel icon */}
-        <span aria-hidden="true" className="shrink-0 text-sm">
-          {channelIcon}
-        </span>
-
-        {/* Patient name */}
-        <span className="min-w-0 flex-1 truncate text-sm font-medium vt-text-foreground">
+        {/* Patient name — bolder when selected; foreground color so it reads on
+            ANY channel-tinted selected bg (UI-AUDIT-3 — cian clashed with green/pink). */}
+        <span
+          className={cn(
+            "min-w-0 flex-1 truncate text-sm vt-text-foreground",
+            isSelected ? "font-semibold" : "font-medium",
+          )}
+        >
           {patientName}
         </span>
 
@@ -190,25 +186,25 @@ export const ConversationItem = memo(function ConversationItem({
 
       {/* Row 2: Last message preview */}
       {last_message_preview && (
-        <p className="truncate text-xs vt-text-muted pl-5">
+        <p className="truncate text-xs vt-text-muted">
           {last_message_preview}
         </p>
       )}
 
-      {/* Row 3: Stage chip (when set) */}
-      {stage_decision && (
-        <div className="pl-5">
-          <span
-            data-testid="stage-chip"
-            className={cn(
-              "inline-flex items-center rounded-full px-2 py-0.5",
-              "text-[10px] font-medium vt-bg-muted vt-text-muted",
-            )}
-          >
-            {STAGE_LABELS[stage_decision]}
-          </span>
-        </div>
-      )}
+      {/* Row 3: Stage chip (left) + REAL social logo bottom-right (UI-AUDIT-2 #3) */}
+      <div className="flex items-center justify-between gap-2">
+        {stage_decision ? (
+          <StageBadge stage={stage_decision} data-testid="stage-chip" />
+        ) : (
+          <span aria-hidden />
+        )}
+        <SocialLogo
+          channel={channel}
+          size={16}
+          title={getSocialChannel(channel).label}
+          className="shrink-0"
+        />
+      </div>
     </li>
   );
 });

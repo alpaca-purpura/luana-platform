@@ -23,6 +23,14 @@ vi.mock("@clerk/nextjs", () => ({
   }),
 }));
 vi.mock("@/hooks/useTenantId", () => ({ useTenantId: () => "mock-tenant-id" }));
+// MessageBubble formats per-bubble timestamps via useTenantLocale (UI-AUDIT #3).
+vi.mock("@/hooks/useTenantLocale", () => ({
+  useTenantLocale: () => ({
+    currency: "PEN",
+    timezone: "America/Lima",
+    locale: "es-PE",
+  }),
+}));
 
 
 vi.mock("@/hooks/useClinicId", () => ({
@@ -86,9 +94,8 @@ describe("MessageBubble", () => {
       { wrapper },
     );
 
-    // AI chip "✨ auto" visible
-    expect(screen.getByText(/auto/)).toBeInTheDocument();
-    // Undo chip visible with "Revertir"
+    // Undo chip visible with "Revertir" (the "✨ auto" marker moved to the
+    // per-turn header rendered by InboxThread — no longer on the bubble, #2).
     expect(screen.getByText("Revertir")).toBeInTheDocument();
     // Timer role exists
     expect(screen.getByRole("timer")).toBeInTheDocument();
@@ -148,7 +155,9 @@ describe("MessageBubble", () => {
     expect(container.querySelector("script")).toBeNull();
   });
 
-  it("renders patient message right-aligned (data-sender=patient)", () => {
+  // UI-AUDIT #4 — WhatsApp business inbox orientation: the patient (incoming) is on
+  // the LEFT; Adrián / human (outgoing) is on the RIGHT.
+  it("renders patient message left-aligned (incoming · data-sender=patient)", () => {
     const msg = makeMessage({ sender_type: "patient", body_text: "Hola" });
     const { container } = render(
       <MessageBubble
@@ -159,8 +168,38 @@ describe("MessageBubble", () => {
     );
     const bubble = container.querySelector("[data-sender='patient']");
     expect(bubble).toBeInTheDocument();
-    // Should have ml-auto class for right alignment
+    // Should have mr-auto class for left alignment
+    expect(bubble?.className).toContain("mr-auto");
+  });
+
+  it("renders agent_ai message right-aligned (outgoing · data-sender=agent_ai)", () => {
+    const msg = makeMessage({ sender_type: "agent_ai", body_text: "Hola" });
+    const { container } = render(
+      <MessageBubble
+        message={msg}
+        conversationUpdatedAt="2026-01-01T00:00:00Z"
+      />,
+      { wrapper },
+    );
+    const bubble = container.querySelector("[data-sender='agent_ai']");
     expect(bubble?.className).toContain("ml-auto");
+  });
+
+  // UI-AUDIT #3 — every message bubble shows its own HH:mm timestamp.
+  it("shows a per-bubble timestamp", () => {
+    const msg = makeMessage({
+      sender_type: "patient",
+      body_text: "Hola",
+      sent_at: "2026-01-01T15:30:00Z",
+    });
+    render(
+      <MessageBubble
+        message={msg}
+        conversationUpdatedAt="2026-01-01T00:00:00Z"
+      />,
+      { wrapper },
+    );
+    expect(screen.getByTestId("message-bubble-time")).toBeInTheDocument();
   });
 
   it("renders system message as centered pill", () => {

@@ -22,9 +22,11 @@ Special markers:
 Usage:
   python3 scripts/generate_code_to_cap_index.py --brand vitalia [--out PATH] [--verbose] [--strict]
 """
+
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import re
 import subprocess
@@ -33,6 +35,12 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+# Resolver único (HB-51 · Capa 5): unifica las DOS convenciones de header
+# (`inbox.adrian-inbox` cap_id + `adrian.inbox` functional_area) → mismo cap_id canónico.
+_RC_SPEC = importlib.util.spec_from_file_location("resolve_cap", Path(__file__).resolve().parent / "resolve_cap.py")
+resolve_cap = importlib.util.module_from_spec(_RC_SPEC)  # type: ignore[arg-type]
+_RC_SPEC.loader.exec_module(resolve_cap)  # type: ignore[union-attr]
 
 # Regex para parsear `# cap:` / `// cap:` headers
 HEADER_PY = re.compile(r"^\s*#\s*cap:\s*(.+?)\s*$", re.MULTILINE)
@@ -158,9 +166,30 @@ def process_brand(brand: str, workspace_root: Path, verbose: bool) -> dict[str, 
     # Convert defaultdicts
     cap_to_files_final = {k: sorted(v) for k, v in cap_to_files.items()}
 
+    # ── HB-51 · Capa 5: índice RESUELTO por cap_id canónico ──────────────────
+    # `cap_to_files` keyea el header literal (`adrian.inbox` ≠ `inbox.adrian-inbox`).
+    # `resolved_cap_to_files` keyea el cap_id CANÓNICO → ambas convenciones merge bajo el
+    # mismo cap (esto es lo que el architect grepea + el cockpit consume). Los headers que
+    # NO resuelven a ninguna cap caen en `unresolved_headers` (orphans · input de G1/cap-doctor).
+    resolve_cap.clear_resolver_cache()
+    caps_root = workspace_root / brand / "docs" / "product" / "capabilities"
+    resolved_cap_to_files: dict[str, set[str]] = defaultdict(set)
+    unresolved_headers: dict[str, list[str]] = defaultdict(list)
+    for header, files in cap_to_files_final.items():
+        canon_ids = resolve_cap.resolve_cap_ids(brand, header, root=caps_root)
+        if canon_ids:
+            for cid in canon_ids:
+                resolved_cap_to_files[cid].update(files)
+        else:
+            unresolved_headers[header].extend(files)
+    resolved_final = {k: sorted(v) for k, v in resolved_cap_to_files.items()}
+    unresolved_final = {k: sorted(v) for k, v in unresolved_headers.items()}
+
     return {
         "code_to_cap": code_to_cap,
         "cap_to_files": cap_to_files_final,
+        "resolved_cap_to_files": resolved_final,
+        "unresolved_headers": unresolved_final,
         "orphans": sorted(orphans),
         "shared_files": sorted(shared_files),
         "multi_cap_files": multi_cap_files,
@@ -173,6 +202,8 @@ def process_brand(brand: str, workspace_root: Path, verbose: bool) -> dict[str, 
             "shared_files": len(shared_files),
             "multi_cap_files": len(multi_cap_files),
             "caps_with_files": len(cap_to_files_final),
+            "resolved_caps": len(resolved_final),
+            "unresolved_headers": len(unresolved_final),
         },
     }
 

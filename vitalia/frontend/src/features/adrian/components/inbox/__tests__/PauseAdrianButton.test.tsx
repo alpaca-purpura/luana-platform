@@ -24,6 +24,7 @@ vi.mock("../../../api/use-pause-adrian", () => ({
     mutate: mockMutate,
     isPending: false,
   }),
+  PERMANENT_PAUSE_MINUTES: 52_560_000,
 }));
 
 describe("PauseAdrianButton — not paused state", () => {
@@ -63,15 +64,28 @@ describe("PauseAdrianButton — not paused state", () => {
     expect(mockMutate).not.toHaveBeenCalled();
   });
 
-  it("modal confirm calls mutate with conversationId", () => {
+  it("modal '60 min' calls mutate with conversationId + duration", () => {
     render(<PauseAdrianButton conversationId="conv-1" pauseUntil={null} />);
     fireEvent.click(screen.getByTestId("pause-adrian-button"));
-    fireEvent.click(screen.getByTestId("pause-modal-confirm"));
+    fireEvent.click(screen.getByTestId("pause-modal-60"));
+    expect(mockMutate).toHaveBeenCalledTimes(1);
+    expect(mockMutate).toHaveBeenCalledWith(
+      expect.objectContaining({ conversationId: "conv-1", durationMinutes: 60 }),
+      expect.anything(),
+    );
+  });
+
+  it("modal 'permanente' calls mutate with a large duration", () => {
+    render(<PauseAdrianButton conversationId="conv-1" pauseUntil={null} />);
+    fireEvent.click(screen.getByTestId("pause-adrian-button"));
+    fireEvent.click(screen.getByTestId("pause-modal-permanent"));
     expect(mockMutate).toHaveBeenCalledTimes(1);
     expect(mockMutate).toHaveBeenCalledWith(
       expect.objectContaining({ conversationId: "conv-1" }),
       expect.anything(),
     );
+    const arg = mockMutate.mock.calls[0][0] as { durationMinutes: number };
+    expect(arg.durationMinutes).toBeGreaterThan(60);
   });
 });
 

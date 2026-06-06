@@ -103,6 +103,7 @@ function InboxPageContent() {
                 name: convDetail.lead.name,
                 phone: convDetail.lead.phone,
                 email: convDetail.lead.email,
+                serviceInterest: convDetail.lead.service_interest,
                 statusTag: convDetail.conversation.stage_decision,
                 npsHistory: undefined,
               }}

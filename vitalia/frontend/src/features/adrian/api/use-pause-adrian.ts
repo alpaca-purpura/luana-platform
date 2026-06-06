@@ -3,12 +3,14 @@
 "use client";
 
 /**
- * use-pause-adrian.ts — Mutation hook to pause Adrián for 60 minutes.
+ * use-pause-adrian.ts — Mutation hook to pause Adrián (60 min or permanent).
  *
- * Endpoint: POST /api/v1/vitalia/inbox/conversations/{conversationId}/pause-adrian
+ * Endpoint: POST /api/v1/vitalia/inbox/conversations/{conversationId}/pause
  *
- * Pausing sets conversation.pause_until = now + 60min on the server.
- * Invalidates conversation detail to refresh the paused state in UI.
+ * Pausing sets conversation.pause_until = now + duration_minutes on the server.
+ * 60 min → duration_minutes=60. "Permanent" → a far-future duration (the BE has
+ * no indefinite flag yet; PERMANENT_PAUSE_MINUTES ≈ 100 years is effectively
+ * permanent for a conversation). Invalidates detail to refresh the paused state.
  *
  * downstream-regression-na: brand-local FE hook; no cross-brand consumers
  */
@@ -18,13 +20,19 @@ import { useAuth } from "@clerk/nextjs";
 import { useTenantId } from "@/hooks/useTenantId";
 import { useClinicId } from "@/hooks/useClinicId";
 import { fetchClient } from "@/lib/api/fetchClient";
-import { conversationDetailKey, conversationsListKey } from "./_keys";
 import type { Conversation } from "@/features/crm-shared";
+
+// Invalidate the crm-shared keys the thread/list actually read (see use-set-mode).
+const crmDetailKey = (id: string) => ["crm", "conversation", id] as const;
+const crmListKey = ["crm", "conversations"] as const;
+
+/** Far-future duration used for "Pausar permanente" (BE has no indefinite flag). */
+export const PERMANENT_PAUSE_MINUTES = 52_560_000; // ~100 years
 
 export interface PauseAdrianInput {
   conversationId: string;
-  /** Optional operator-provided reason (logged in audit trail) */
-  reason?: string | null;
+  /** Pause duration in minutes (60 = 1h · PERMANENT_PAUSE_MINUTES = permanent) */
+  durationMinutes: number;
 }
 
 export interface PauseAdrianResult {
@@ -46,22 +54,23 @@ export function usePauseAdrian() {
       if (!token || !tenantId) throw new Error("Not authenticated");
 
       return fetchClient<PauseAdrianResult>(
-        `/api/v1/vitalia/inbox/conversations/${input.conversationId}/pause-adrian`,
+        `/api/v1/vitalia/inbox/conversations/${input.conversationId}/pause`,
         {
           method: "POST",
           token,
-          tenantId, clinicId,
+          tenantId,
+          clinicId,
           body: JSON.stringify({
-            reason: input.reason ?? null,
+            duration_minutes: input.durationMinutes,
           }),
         },
       );
     },
     onSettled: (_data, _err, input) => {
       void qc.invalidateQueries({
-        queryKey: conversationDetailKey(input.conversationId),
+        queryKey: crmDetailKey(input.conversationId),
       });
-      void qc.invalidateQueries({ queryKey: conversationsListKey() });
+      void qc.invalidateQueries({ queryKey: crmListKey });
     },
   });
 }

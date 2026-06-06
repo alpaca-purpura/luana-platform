@@ -299,16 +299,25 @@ Happy path
 >
 > **Gate /po-ux:** REFUSE cerrar `refined` si hay un `Bif-N` o `RN-N` sin SC (hueco), o un SC sin
 > ítem del mapa (scope creep). Ver `.claude/rules/test-design-doctrine.md` § Verificación REAL.
+>
+> **★ LEDGER DE COBERTURA VIVO (proceso v5 §5.2).** La columna `estado` hace esta matriz VIVA:
+> po-ux la **siembra** en `refined` (todo `⬜ pendiente`); **dev-team la mantiene viva** durante
+> developing (`✅ construido` con su test/ruta); en **G** lo no-construido se decide ítem-por-ítem
+> (`⏳ ahora` corto+necesario · `→ historia {id}` spawn); **R** la congela; el **auditor** la verifica
+> en Phase D. La columna `→ historia` ES la lista visible de lo NO construido (mata el gap invisible).
+> **PISO HARD:** si `cap_change_type: new`, los ítems del **happy path** DEBEN estar `✅` antes de `done`
+> (no se difiere el core). Estados: `✅ construido` · `⏳ ahora` · `→ historia {id}` · `⬜ pendiente`.
 
-| Ítem (Mapa funcional) | Tipo | Cubierto por | Verificación REAL (acción + efecto, no HTTP 200) |
-|---|---|---|---|
-| Bif-1 · [condición] | branch | SC-1 | [POST/PATCH real → efecto en DB/UI + log] |
-| Bif-3 · [duplicado/adversarial] | branch | SC-4 | [acción hostil → 409/403 + row intacta] |
-| RN-1 · [invariante] | rule | SC-3, SC-3b | [write que viola la regla → 422 + estado sin cambio] |
-| AC-1 · [criterio cierre] | accept | SC-1, SC-8 | [flujo real + empty state] |
+| Ítem (Mapa funcional) | Tipo | estado | Cubierto por | Verificación REAL (acción + efecto, no HTTP 200) |
+|---|---|---|---|---|
+| Bif-1 · [condición] | branch | ⬜ pendiente | SC-1 | [POST/PATCH real → efecto en DB/UI + log] |
+| Bif-3 · [duplicado/adversarial] | branch | ⬜ pendiente | SC-4 | [acción hostil → 409/403 + row intacta] |
+| RN-1 · [invariante] | rule | ⬜ pendiente | SC-3, SC-3b | [write que viola la regla → 422 + estado sin cambio] |
+| AC-1 · [criterio cierre] | accept | ⬜ pendiente | SC-1, SC-8 | [flujo real + empty state] |
 
 **Huecos detectados:** [ninguno | lista de Bif/RN sin SC — bloquea refined]
 **SC huérfanos (sin ítem del mapa):** [ninguno | lista — revisar scope creep]
+**Diferido (ledger · lo NO construido, visible):** [ninguno | `Bif-N → historia {brand}-{slug}` con razón]
 
 ## Non-functional requirements
 

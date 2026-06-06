@@ -37,9 +37,16 @@ import { useLeadDetail, useLeadTimeline } from "../lead";
 
 const MOCK_LEAD_DETAIL = {
   lead: {
+    // LeadDetailLeadDTO shape — mirrors BE LeadResponse (U2 fix: includes phone/email/assignedDoctorId).
+    // isBlacklisted removed: not part of LeadResponse (it was a LeadCardDTO board field).
     id: "lead-001",
     tenantId: "tenant-lead-test",
-    name: "María G███",
+    name: "María García López",
+    email: "maria@example.com",
+    phone: "+51 1 234 5678",
+    source: "instagram",
+    status: "active",
+    createdAt: "2026-06-01T10:00:00Z",
     stage: "calificando",
     score: 64,
     temperature: "warm",
@@ -47,13 +54,14 @@ const MOCK_LEAD_DETAIL = {
     channel: "whatsapp",
     estimatedValue: 8000,
     currency: "PEN",
+    serviceInterest: "Ortodoncia",
     buyingSignals: ["urgencia", "presupuesto_ok"],
     stageEnteredAt: "2026-06-03T09:00:00Z",
     isFrozen: false,
     frozenReason: null,
     depositStatus: null,
     version: 1,
-    isBlacklisted: false,
+    assignedDoctorId: "doc-001",
   },
   scoreBreakdown: [
     { label: "Preguntó precio", delta: 25, icon: null },

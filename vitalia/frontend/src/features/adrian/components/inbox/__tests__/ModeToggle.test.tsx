@@ -1,8 +1,8 @@
 /**
- * ModeToggle.test.tsx — Unit tests for ModeToggle.
+ * ModeToggle.test.tsx — Unit tests for ModeToggle (2 modos · Chris UI #3).
  *
  * Gherkin coverage per 06-tickets.yaml:
- *   SC-01: test_3_states_aria_radiogroup — renders 3 buttons, role=radiogroup,
+ *   SC-01: test_2_states_aria_radiogroup — renders 2 buttons, role=radiogroup,
  *           each button has role=radio + aria-checked.
  *   SC-01: test_onchange_dispatches_set_mode — clicking segment calls onChange.
  *   SC-03: test_optimistic_rollback_on_409 — isConflict=true shows conflict state.
@@ -15,12 +15,10 @@ import { ModeToggle } from "../ModeToggle";
 import { INBOX_COPY } from "../../../lib/copy";
 import type { SegmentedModeValue } from "../../../hooks/use-mode-toggle";
 
-describe("ModeToggle — SC-01 3-state aria-radiogroup", () => {
-  it("test_3_states_aria_radiogroup: renders container with role=radiogroup", () => {
+describe("ModeToggle — SC-01 2-state aria-radiogroup", () => {
+  it("test_2_states_aria_radiogroup: renders container with role=radiogroup", () => {
     const onChange = vi.fn();
-    render(
-      <ModeToggle value="adrian-decide" onChange={onChange} />,
-    );
+    render(<ModeToggle value="adrian-decide" onChange={onChange} />);
     const group = screen.getByRole("radiogroup");
     expect(group).toBeDefined();
     expect(group.getAttribute("aria-label")).toBe(
@@ -28,46 +26,39 @@ describe("ModeToggle — SC-01 3-state aria-radiogroup", () => {
     );
   });
 
-  it("test_3_states_aria_radiogroup: renders 3 radio buttons", () => {
+  it("test_2_states_aria_radiogroup: renders 2 radio buttons", () => {
     const onChange = vi.fn();
-    render(
-      <ModeToggle value="adrian-decide" onChange={onChange} />,
-    );
+    render(<ModeToggle value="adrian-decide" onChange={onChange} />);
     const radios = screen.getAllByRole("radio");
-    expect(radios).toHaveLength(3);
+    expect(radios).toHaveLength(2);
   });
 
-  it("test_3_states_aria_radiogroup: active segment has aria-checked=true, others false", () => {
+  it("test_2_states_aria_radiogroup: active segment has aria-checked=true, other false", () => {
     const onChange = vi.fn();
-    render(
-      <ModeToggle value="adrian-consulta" onChange={onChange} />,
-    );
+    render(<ModeToggle value="adrian-consulta" onChange={onChange} />);
     const radios = screen.getAllByRole("radio");
     const checkedStates = radios.map((r) => r.getAttribute("aria-checked"));
     // Only "adrian-consulta" (index 1) should be checked
     expect(checkedStates[0]).toBe("false");
     expect(checkedStates[1]).toBe("true");
-    expect(checkedStates[2]).toBe("false");
   });
 
-  it("test_3_states_aria_radiogroup: segment labels match INBOX_COPY", () => {
+  it("test_2_states_aria_radiogroup: segment labels match INBOX_COPY", () => {
     const onChange = vi.fn();
-    render(<ModeToggle value="yo-escribo" onChange={onChange} />);
+    render(<ModeToggle value="adrian-decide" onChange={onChange} />);
     expect(screen.getByTestId("segment-adrian-decide")).toBeDefined();
     expect(screen.getByTestId("segment-adrian-consulta")).toBeDefined();
-    expect(screen.getByTestId("segment-yo-escribo")).toBeDefined();
-    // Check label text via INBOX_COPY
     expect(screen.getByTestId("segment-adrian-decide").textContent).toContain(
       INBOX_COPY.segmentedMode.adrianDecide,
+    );
+    expect(screen.getByTestId("segment-adrian-consulta").textContent).toContain(
+      INBOX_COPY.segmentedMode.adrianConsulta,
     );
   });
 
   it("test_onchange_dispatches_set_mode: clicking inactive segment calls onChange with new value", () => {
     const onChange = vi.fn();
-    render(
-      <ModeToggle value="adrian-decide" onChange={onChange} />,
-    );
-    // Click "Adrián consulta" (currently inactive)
+    render(<ModeToggle value="adrian-decide" onChange={onChange} />);
     fireEvent.click(screen.getByTestId("segment-adrian-consulta"));
     expect(onChange).toHaveBeenCalledTimes(1);
     const expected: SegmentedModeValue = "adrian-consulta";
@@ -76,22 +67,9 @@ describe("ModeToggle — SC-01 3-state aria-radiogroup", () => {
 
   it("test_onchange_dispatches_set_mode: clicking already active segment does NOT call onChange", () => {
     const onChange = vi.fn();
-    render(
-      <ModeToggle value="adrian-decide" onChange={onChange} />,
-    );
-    // Click the active segment
+    render(<ModeToggle value="adrian-decide" onChange={onChange} />);
     fireEvent.click(screen.getByTestId("segment-adrian-decide"));
     expect(onChange).not.toHaveBeenCalled();
-  });
-
-  it("test_onchange_dispatches_set_mode: yo-escribo segment calls onChange correctly", () => {
-    const onChange = vi.fn();
-    render(
-      <ModeToggle value="adrian-decide" onChange={onChange} />,
-    );
-    fireEvent.click(screen.getByTestId("segment-yo-escribo"));
-    const expected: SegmentedModeValue = "yo-escribo";
-    expect(onChange).toHaveBeenCalledWith(expected);
   });
 });
 
@@ -99,11 +77,7 @@ describe("ModeToggle — SC-03 OCC conflict (409 rollback)", () => {
   it("test_optimistic_rollback_on_409: isConflict=true adds conflict indicator", () => {
     const onChange = vi.fn();
     render(
-      <ModeToggle
-        value="adrian-decide"
-        onChange={onChange}
-        isConflict={true}
-      />,
+      <ModeToggle value="adrian-decide" onChange={onChange} isConflict={true} />,
     );
     const group = screen.getByTestId("segmented-control-3-modes");
     expect(group.getAttribute("data-conflict")).toBe("true");
@@ -125,11 +99,7 @@ describe("ModeToggle — SC-03 OCC conflict (409 rollback)", () => {
   it("test_optimistic_rollback_on_409: isPending=true disables all buttons", () => {
     const onChange = vi.fn();
     render(
-      <ModeToggle
-        value="adrian-decide"
-        onChange={onChange}
-        isPending={true}
-      />,
+      <ModeToggle value="adrian-decide" onChange={onChange} isPending={true} />,
     );
     const radios = screen.getAllByRole("radio");
     radios.forEach((radio) => {
@@ -140,13 +110,8 @@ describe("ModeToggle — SC-03 OCC conflict (409 rollback)", () => {
   it("test_optimistic_rollback_on_409: isPending=true blocks onChange on click", () => {
     const onChange = vi.fn();
     render(
-      <ModeToggle
-        value="adrian-decide"
-        onChange={onChange}
-        isPending={true}
-      />,
+      <ModeToggle value="adrian-decide" onChange={onChange} isPending={true} />,
     );
-    // Button is disabled, click should not fire onChange
     fireEvent.click(screen.getByTestId("segment-adrian-consulta"));
     expect(onChange).not.toHaveBeenCalled();
   });

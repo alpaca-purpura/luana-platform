@@ -163,7 +163,7 @@ describe("useSendMessage", () => {
   it("applies optimistic update before API resolves", async () => {
     // Seed the cache with conversation detail
     queryClient.setQueryData(
-      ["adrian", "inbox", "conversation", CONVERSATION_ID],
+      ["crm", "conversation", CONVERSATION_ID],
       mockConversationDetail,
     );
 
@@ -188,9 +188,7 @@ describe("useSendMessage", () => {
     // Before resolving: cache should have optimistic message appended
     await waitFor(() => {
       const cached = queryClient.getQueryData<ConversationDetail>([
-        "adrian",
-        "inbox",
-        "conversation",
+        "crm", "conversation",
         CONVERSATION_ID,
       ]);
       expect(cached?.messages.length).toBe(2);
@@ -203,7 +201,7 @@ describe("useSendMessage", () => {
 
   it("rolls back optimistic update on error", async () => {
     queryClient.setQueryData(
-      ["adrian", "inbox", "conversation", CONVERSATION_ID],
+      ["crm", "conversation", CONVERSATION_ID],
       mockConversationDetail,
     );
     vi.mocked(fetchClient).mockRejectedValue(new Error("Network error"));
@@ -224,9 +222,7 @@ describe("useSendMessage", () => {
 
     // Cache should be rolled back to original 1 message
     const cached = queryClient.getQueryData<ConversationDetail>([
-      "adrian",
-      "inbox",
-      "conversation",
+      "crm", "conversation",
       CONVERSATION_ID,
     ]);
     expect(cached?.messages.length).toBe(1);

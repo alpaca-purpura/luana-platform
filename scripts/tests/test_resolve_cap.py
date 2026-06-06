@@ -143,3 +143,125 @@ def test_main_null_returns_2(capsys: pytest.CaptureFixture[str]) -> None:
 
 def test_main_bad_usage_returns_1() -> None:
     assert rc.main(["solo-un-arg"]) == 1
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# TWO-WAY canonical resolution (HB-51 · Capa 1)
+# ════════════════════════════════════════════════════════════════════════════
+#
+# Fixture que replica la REALIDAD del incidente inbox: una functional_area
+# (`adrian.inbox`) compartida por 3 caps — 1 LIVE canónica + 1 deprecated +
+# 1 deprecated-superseded — y una colisión cap_id-vs-alias (`brand_studio.lisa-marca`
+# es cap_id de una cap Y `{module}.{fa-dashed}` de otra).
+
+
+def _cap2(slug: str, *, module: str, status: str, fa: str = "", superseded_by: str = "") -> str:
+    body = (
+        f"---\ncapability_id: vitalia.{module}.{slug}\nslug: {slug}\n"
+        f"status: {status}\ntech_module: {module}\nmodule: {module}\n"
+    )
+    if fa:
+        body += f"functional_area: {fa}\n"
+    if superseded_by:
+        body += f"superseded_by: {superseded_by}\n"
+    return body + "\n---\n# body\n"
+
+
+@pytest.fixture()
+def caps2(tmp_path: Path) -> Path:
+    rc.clear_resolver_cache()
+    root = tmp_path / "capabilities"
+    files = {
+        # área adrian.inbox: 1 live canónica + 2 muertas (igual que prod)
+        "inbox/adrian-inbox.yaml": _cap2("adrian-inbox", module="inbox", status="live", fa="adrian.inbox"),
+        "copilot/inbox-tools-extensions.yaml": _cap2(
+            "inbox-tools-extensions", module="copilot", status="deprecated", fa="adrian.inbox"
+        ),
+        "sales_agent/inbox-handler-mode-occ.yaml": _cap2(
+            "inbox-handler-mode-occ",
+            module="sales_agent",
+            status="deprecated",
+            fa="adrian.inbox",
+            superseded_by="inbox.adrian-inbox",
+        ),
+        # mateo-agenda: header `scheduling.mateo-agenda` == {module}.{fa-dashed}
+        "scheduling/valeria-agenda.yaml": _cap2(
+            "valeria-agenda", module="scheduling", status="live", fa="mateo.agenda"
+        ),
+        # lisa-doctores: header `clinics.lisa.doctores` == {module}.{fa-dotted}
+        "clinics/lisa-doctores.yaml": _cap2("lisa-doctores", module="clinics", status="partial", fa="lisa.doctores"),
+        # colisión cap_id-vs-alias: cap_id `brand_studio.lisa-marca` (cap A) ==
+        # {module}.{fa-dashed} de cap B (fa lisa.marca) → tier-priority debe ganar A.
+        "brand_studio/lisa-marca.yaml": _cap2("lisa-marca", module="brand_studio", status="live", fa="lisa.marca"),
+        "brand_studio/medical-sections.yaml": _cap2(
+            "medical-sections", module="brand_studio", status="live", fa="lisa.marca"
+        ),
+    }
+    for rel, content in files.items():
+        p = root / rel
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(content, encoding="utf-8")
+    return root
+
+
+def test_cap_id_form_resolves_canonical(caps2: Path) -> None:
+    assert rc.resolve_cap_ids("vitalia", "inbox.adrian-inbox", root=caps2) == {"inbox.adrian-inbox"}
+
+
+def test_functional_area_alias_resolves_to_area_set(caps2: Path) -> None:
+    # `adrian.inbox` es ÁREA (1:N) → set de las 3 caps (sin filtro)
+    assert rc.resolve_cap_ids("vitalia", "adrian.inbox", root=caps2) == {
+        "inbox.adrian-inbox",
+        "copilot.inbox-tools-extensions",
+        "sales_agent.inbox-handler-mode-occ",
+    }
+
+
+def test_functional_area_alias_live_only_is_single(caps2: Path) -> None:
+    # live_only filtra deprecated + superseded → solo la canónica
+    assert rc.resolve_cap_ids("vitalia", "adrian.inbox", live_only=True, root=caps2) == {"inbox.adrian-inbox"}
+
+
+def test_acceptance_two_forms_same_canonical(caps2: Path) -> None:
+    # ★ ACCEPTANCE del handoff: ambas formas → mismo cap_id canónico
+    assert rc.canonical_cap_id("vitalia", "adrian.inbox", root=caps2) == "inbox.adrian-inbox"
+    assert rc.canonical_cap_id("vitalia", "inbox.adrian-inbox", root=caps2) == "inbox.adrian-inbox"
+    assert rc.canonical_cap_id("vitalia", "adrian.inbox", root=caps2) == rc.canonical_cap_id(
+        "vitalia", "inbox.adrian-inbox", root=caps2
+    )
+
+
+def test_module_fa_dashed_header_resolves(caps2: Path) -> None:
+    # `scheduling.mateo-agenda` (forma {module}.{fa-dashed}) → scheduling.valeria-agenda
+    assert rc.resolve_cap_ids("vitalia", "scheduling.mateo-agenda", root=caps2) == {"scheduling.valeria-agenda"}
+
+
+def test_module_fa_dotted_header_resolves(caps2: Path) -> None:
+    # `clinics.lisa.doctores` (forma {module}.{fa-dotted}) → clinics.lisa-doctores
+    assert rc.resolve_cap_ids("vitalia", "clinics.lisa.doctores", root=caps2) == {"clinics.lisa-doctores"}
+
+
+def test_tier_priority_cap_id_wins_over_alias(caps2: Path) -> None:
+    # `brand_studio.lisa-marca` es cap_id (cap A) Y {module}.{fa-dashed} (cap B).
+    # Identidad gana → SOLO cap A. Sin esto, G1/index asociarían el archivo a 2 caps.
+    assert rc.resolve_cap_ids("vitalia", "brand_studio.lisa-marca", root=caps2) == {"brand_studio.lisa-marca"}
+
+
+def test_orphan_header_resolves_empty(caps2: Path) -> None:
+    # ★ El bug origen: header → cap inexistente = set vacío (G1 lo cazará en ROJO)
+    assert rc.resolve_cap_ids("vitalia", "sales_agent.adrian-override-context", root=caps2) == set()
+    assert rc.canonical_cap_id("vitalia", "sales_agent.adrian-override-context", root=caps2) is None
+
+
+def test_special_markers_resolve_empty(caps2: Path) -> None:
+    for marker in ("__shared__", "__orphan__", "__skip__", "TBD", ""):
+        assert rc.resolve_cap_ids("vitalia", marker, root=caps2) == set()
+
+
+def test_functional_area_of_reverse(caps2: Path) -> None:
+    assert rc.functional_area_of("vitalia", "inbox.adrian-inbox", root=caps2) == "adrian.inbox"
+    assert rc.functional_area_of("vitalia", "no.existe", root=caps2) is None
+
+
+def test_cap_id_of_path(caps2: Path) -> None:
+    assert rc.cap_id_of(caps2 / "inbox/adrian-inbox.yaml", root=caps2) == "inbox.adrian-inbox"

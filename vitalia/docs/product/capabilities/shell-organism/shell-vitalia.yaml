@@ -510,7 +510,7 @@ business_rules:
     rule: "Rol patient nunca accede al shell clínico · roles válidos: doctor, admin_clinic, nurse, receptionist"
     enforcement:
       - ".claude/rules/tenant-isolation.md"
-    code_ref: "vitalia/frontend/src/middleware.ts"
+    code_ref: "vitalia/frontend/src/proxy.ts"
     severity: critical
     audit_trail: false
 

@@ -19,6 +19,7 @@
  * downstream-regression-na: brand-local FE component; no cross-brand consumers
  */
 
+import { Activity } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useActivityStream } from "../../api/use-activity-stream";
 import { useInboxStore } from "../../store/inbox-store";
@@ -148,7 +149,8 @@ export function ActivityStream({
       {/* Header bar — always visible, 32px */}
       <div className="flex items-center justify-between px-3 h-8 shrink-0">
         {/* Title */}
-        <span className="text-xs font-medium vt-text-muted select-none">
+        <span className="inline-flex items-center gap-1.5 text-xs font-medium vt-text-muted select-none">
+          <Activity className="h-3.5 w-3.5 shrink-0" aria-hidden focusable={false} />
           {INBOX_COPY.activityStream.title}
         </span>
 

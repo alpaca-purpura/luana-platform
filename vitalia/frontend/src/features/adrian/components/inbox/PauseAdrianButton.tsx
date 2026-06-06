@@ -17,6 +17,7 @@
  */
 
 import { useState } from "react";
+import { Pause } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { INBOX_COPY } from "../../lib/copy";
 import { PauseAdrianConfirmModal } from "./PauseAdrianConfirmModal";
@@ -52,9 +53,9 @@ export function PauseAdrianButton({
 
   const paused = isPausedNow(pauseUntil);
 
-  const handleConfirm = (reason: string | null) => {
+  const handleConfirm = (durationMinutes: number) => {
     mutate(
-      { conversationId, reason },
+      { conversationId, durationMinutes },
       {
         onSuccess: () => {
           setModalOpen(false);
@@ -86,22 +87,21 @@ export function PauseAdrianButton({
             : INBOX_COPY.pauseAgent.button
         }
         className={cn(
-          "inline-flex items-center justify-center rounded-lg",
-          "p-2 transition-colors",
+          "inline-flex items-center gap-1.5 rounded-lg",
+          "px-3 py-1.5 text-xs font-semibold transition-colors",
           "focus-visible:outline focus-visible:outline-2",
-          "focus-visible:outline-[var(--vitalia-cian)]",
+          "focus-visible:outline-[var(--vitalia-danger)]",
+          // Soft-red, prominent so the operator can grab the conversation fast (Chris UI #4).
           paused
-            ? "vt-text-muted opacity-50 cursor-not-allowed"
-            : "vt-text-foreground hover:vt-bg-muted",
+            ? "vt-text-muted opacity-50 cursor-not-allowed border vt-border"
+            : "cursor-pointer vt-bg-danger-12 vt-text-danger hover:vt-bg-danger-soft",
           isPending && "opacity-50 cursor-wait",
           className,
         )}
         aria-busy={isPending}
       >
-        {/* Pause icon — ⏸ */}
-        <span aria-hidden="true" className="text-sm leading-none">
-          ⏸
-        </span>
+        <Pause className="h-3.5 w-3.5 shrink-0" aria-hidden focusable={false} />
+        <span>{paused ? "Pausado" : "Pausar"}</span>
       </button>
 
       <PauseAdrianConfirmModal

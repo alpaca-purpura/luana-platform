@@ -172,4 +172,51 @@ EOF
   fi
 fi
 
+# ─────────────────────────────────────────────────────────────────
+# 4e. cap-format gates G1-G6 HARD (HB-51 · enforcement determinístico)
+# ─────────────────────────────────────────────────────────────────
+# Bloquea push a main/release/* si un brand MADURO tiene deriva en G1-G6.
+# nicolify/lupulo ADVISORY (mid-rebuild / placeholder). Override: CAP_GATES_PUSH_OVERRIDE=1.
+# SSoT: docs/process/cap-deterministic-enforcement.md (Capa 4 + 7)
+# ─────────────────────────────────────────────────────────────────
+CAP_GATES_HARD_BRANDS="vitalia comunify"
+
+if [ "${CAP_GATES_PUSH_OVERRIDE:-0}" != "1" ]; then
+  CAPG_SCRIPT="${REPO_ROOT}/scripts/validate_code_cap_bidirectional.py"
+  if [ -x "${REPO_ROOT}/.venv/bin/python" ] && [ -f "${CAPG_SCRIPT}" ]; then
+    VENV_CAPG="${REPO_ROOT}/.venv/bin/python"
+    CAPG_FAILED=""
+    for B_CAPG in ${CAP_GATES_HARD_BRANDS}; do
+      [ -d "${REPO_ROOT}/${B_CAPG}/docs/product/capabilities" ] || continue
+      if ! "${VENV_CAPG}" "${CAPG_SCRIPT}" --brand "${B_CAPG}" --cap-gates-hard --strict >/dev/null 2>&1; then
+        CAPG_FAILED="${CAPG_FAILED} ${B_CAPG}"
+      fi
+    done
+    if [ -n "${CAPG_FAILED}" ]; then
+      printf "\033[31m"
+      cat <<EOF
+─────────────────────────────────────────────────────────────
+PRE-PUSH BLOCKED: cap-format gates G1-G6 HARD drift (HB-51 · Section 4e)
+
+Brands con deriva:${CAPG_FAILED}
+
+Diagnóstico de un vistazo:
+  make cap-doctor BRAND=<brand>
+
+Causas: header → cap inexistente (G1) · caja live vacía (G2) · cap sin
+hogar (G3) · path inexistente (G4) · supersesión rota (G5) · cap live
+invisible en el mapa (G6). Cap nueva → 'make new-cap' (NO hand-author).
+
+Override emergencia (audit):
+  CAP_GATES_PUSH_OVERRIDE=1 git push ...
+
+SSoT: docs/process/cap-deterministic-enforcement.md
+─────────────────────────────────────────────────────────────
+EOF
+      printf "\033[0m"
+      exit 1
+    fi
+  fi
+fi
+
 exit 0

@@ -27,7 +27,7 @@ user_facing_description: >
 dev_preview:
   route: "/sign-in"
   how_to_navigate: "Navegar a /sign-in directamente o ser redirigido por el middleware al intentar acceder sin sesión"
-  main_component: "vitalia/frontend/src/app/(auth)/sign-in/page.tsx"
+  main_component: "vitalia/frontend/src/app/(auth)/sign-in/[[...rest]]/page.tsx"
   api_endpoints: []
   e2e_test: "vitalia/frontend/e2e/auth/sign-in-form.spec.ts"
   fixtures_required: []
@@ -37,7 +37,6 @@ dev_preview:
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-auth-base-functional   # v2 cement · mirror of story_introduced
 created_date: 2026-05-18   # v2 cement · mirror of date_introduced
-last_modified: 2026-05-29   # T-3 reconcile 2026-05-29
 parent_cap: null   # v2 cement · mirror of extends_capability
 derives_capabilities: []   # v2 cement · initial empty list
 
@@ -92,7 +91,7 @@ Pages que renderizan los componentes oficiales de Clerk con localización Spanis
 
 ## Surfaces
 
-- **Frontend:** `vitalia/frontend/src/app/(auth)/sign-in/page.tsx`, `vitalia/frontend/src/app/(auth)/sign-up/page.tsx`
+- **Frontend:** `vitalia/frontend/src/app/(auth)/sign-in/[[...rest]]/page.tsx`, `vitalia/frontend/src/app/(auth)/sign-up/page.tsx`
 - **Tests:** `vitalia/frontend/e2e/auth/sign-in-form.spec.ts` (T-6.a)
 
 ## Comportamiento

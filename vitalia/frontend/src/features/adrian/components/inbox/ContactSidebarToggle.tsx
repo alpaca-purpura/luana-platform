@@ -12,6 +12,7 @@
  * downstream-regression-na: brand-local FE component; no cross-brand consumers
  */
 
+import { User } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { INBOX_COPY } from "../../lib/copy";
 
@@ -43,8 +44,8 @@ export function ContactSidebarToggle({
       aria-expanded={isOpen}
       title={label}
       className={cn(
-        "inline-flex items-center justify-center rounded-lg",
-        "p-2 transition-colors",
+        "inline-flex items-center gap-1.5 rounded-lg cursor-pointer",
+        "px-2.5 py-1.5 text-xs font-medium transition-colors",
         "focus-visible:outline focus-visible:outline-2",
         "focus-visible:outline-[var(--vitalia-cian)]",
         isOpen
@@ -53,10 +54,8 @@ export function ContactSidebarToggle({
         className,
       )}
     >
-      {/* Contact icon — 👤 */}
-      <span aria-hidden="true" className="text-sm leading-none">
-        👤
-      </span>
+      <User className="h-3.5 w-3.5 shrink-0" aria-hidden focusable={false} />
+      <span>Perfil</span>
     </button>
   );
 }

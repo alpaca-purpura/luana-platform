@@ -9,15 +9,33 @@ map_zone: agentes
 map_box: adrian
 module: inbox
 cap_target: adrian.inbox
-cap_change_type: new
-po_ux_version: 1
-ratified_by_chris: false
+cap_change_type: fix
+po_ux_version: 2
+ratified_by_chris: true
+amended_2026_06_04: "2-modos (decide/consulta) + composer dock + pausa 60/permanente + RBAC operador + leads visibles — ver § Scope amendment"
 ---
 
 # vitalia-fase2-adrian-inbox — 01-spec (UI standard · MIGRACIÓN + consolidación)
 
 > **Naturaleza:** esta NO es una construcción virgen. El inbox ya está **shipped y probado** (slice-1-inbox, done) pero quedó **huérfano** (sin ruta) tras la reorg del shell. Esta story lo **re-hogar + consolida + re-temiza + cablea** dentro del espacio shell-organism de Adrián, alineado al paradigma conversation-first del embudo. ~90% reuse.
 > **Encuadre que pidió Chris:** el § Componentes distingue explícito **lo que HAY · lo que MIGRO · lo que CREO · lo que MODIFICO · lo que BORRO.**
+
+## § Scope amendment 2026-06-04 (★ del modelo 3-modos al modelo 2-modos · construido + live-verified + firmado por Chris)
+
+> Durante el build (rondas r6–r8 de UI + 2 bombas de wiring FE↔BE que **nunca se habían ejercido**), el paradigma de atención **cambió de 3 modos a 2 modos**. Chris lo probó live en `dev-app.vitalialat.com` y firmó `demo_signoff: APPROVED_WITH_NOTES` (checkpoint). Esta sección es la **autoridad** sobre las partes de abajo que describen el modelo viejo. Lo que **cambió** (intencional, NO revertir):
+
+| # | Eje | Antes (3-modos) | Ahora (2-modos · construido) | AC afectada |
+|---|---|---|---|---|
+| 1 | **Modos** | `decide` / `consulta` / **`manual` ("Yo escribo")** | **2 modos**: `Adrián decide` · `Adrián consulta`. "Yo escribo" **eliminado** como modo; escribir manual = **Pausar Adrián**. Toggle `role=radiogroup` 2 segmentos; activo = **verde** (`vt-bg-success`). | **AC-4 MODIFICADA** |
+| 2 | **Composer** | montaje condicionado por modo (ComposerArea existía pero `InboxThread` no lo renderizaba → "no salía nada") | **siempre montado** en un *dock* al pie del thread (`thread-composer-dock`); el operador escribe como humano (`handler_mode='human'`), texto enviable. | **AC-5 MODIFICADA** |
+| 3 | **Pausa** | popup con campo *reason* + 1 botón "60 min" (path roto `/pause-adrian` 404 — nunca funcionó) | modal con **2 botones** `[Pausar 60 minutos][Pausar permanente]` (rojo), **sin reason**; barra de estado en el dock; permanente = far-future (~100 años). | nueva (parte de AC-5) |
+| 4 | **RBAC del inbox** | mutaciones gateadas a `_PHI_ROLES` {doctor,nurse,admin_clinic} → **owner 403** | `_INBOX_OPERATOR_ROLES = _PHI_ROLES ∪ {owner, receptionist}` (el inbox es la **herramienta del operador**; `dr.demo` = owner). marketing/sales/patient siguen denegados. | RN-15 (nueva) |
+| 5 | **Privacidad del lead** | identidad **enmascarada** por defecto (`***`) | **leads visibles por defecto** (interim ratificado Chris); `PiiMaskedSpan` ganó prop `masked` (default `true` → resto de la app intacto); `ContactSidebar` pasa `masked={false}`. Wrapper + `data-phi` conservados (audit + arch test FE-A6 siguen viéndolo wrapeado). | **AC-10 MODIFICADA** + RN-16 |
+| 6 | **Query-keys** | mutaciones invalidaban `['adrian','inbox',…]` pero el thread lee `['crm','conversation',id]` → el 200 nunca reflejaba | mode/pause/send migrados a keys **crm-shared** (`['crm','conversation',id]` / `['crm','conversations']`). | nota arch |
+| 7 | **BE** | `ConversationRepository` sin `set_pause_until`; `_NoOpRedisClient` sin `setex` → pausa 500 | ambos agregados (pause persiste en DB; Redis es solo fast-path). | nota arch |
+| 8 | **UI varios** | — | wallpaper crema **fijo** (no scrollea), dot verde intermitente, "Pausar" rojo tenue, `cursor-pointer` global, ícono 🛠 herramientas **fuera** del header (la actividad vive en el `ActivityStream` inferior), campo "Estado" duplicado **eliminado** (queda "Etapa de la venta"), "Servicio de interés" **siempre visible** ("Aún no detectado" si vacío). | AC menores |
+
+**Ubicación del full-canvas + responsive:** el squeeze del thread cuando coexisten Valeria-chat + ContactSidebar (RN-11/RN-12/AC-7 + AC-12) se **splitó** a la bugfix-story de shell `vitalia-bugfix-shell-nav-scroll-errors` (**`done`**). `ConversationModeButton` sigue presente. Estos no bloquean el `done` de esta story (verificación cubierta por la story de shell).
 
 ## § Context
 
@@ -54,9 +72,9 @@ ratified_by_chris: false
 1. La recepcionista entra a **Adrián → Inbox**. Ve la lista de conversaciones cross-canal (WhatsApp · IG · Email · Web), ordenadas por actividad reciente; cada una muestra quién la opera ahora (🤖 Adrián decide · 🤝 consulta · 👤 humano) y un punto de no-leído.
 2. Hace clic en la conversación de **P. H.** (paciente, nombre enmascarado). El thread central carga el historial; la URL pasa a `?conv={id}` (deep-link). El panel de Valeria a la izquierda **reacciona**: "Estás viendo a P. H., preguntó por blanqueamiento, Adrián ya le pasó disponibilidad. ¿Querés que le ofrezca la promo?".
 3. La conversación está en **🤖 Adrián decide**: el thread muestra, inline y explicable, lo que Adrián hizo — un mensaje del paciente, una **tool-call colapsable** ("Adrián verificó disponibilidad → 3 turnos"), y su respuesta. El **Activity stream** abajo registra todo cronológico (glass-box).
-4. La recepcionista quiere intervenir: pulsa **"Tomar control"** (o cambia el toggle a **👤 Yo escribo**). El composer se habilita; escribe y envía firmando como humana. Adrián queda en pausa para esa conversación.
-5. Necesita foco total: pulsa **"Modo conversación" (full)** → Valeria se **colapsa**, el inbox ocupa el **100%** del lienzo. Pulsa de nuevo → Valeria vuelve a su estado previo.
-6. Termina, vuelve la conversación a **🤖 Adrián decide** (reanudar). Adrián retoma. El cambio de modo queda en el **audit log**.
+4. La recepcionista quiere intervenir: pulsa **"Pausar"** en el dock → modal con **[Pausar 60 minutos] / [Pausar permanente]** (sin reason). Elige 60 min. El composer (siempre montado al pie) la deja escribir y enviar firmando como humana; Adrián queda en pausa para esa conversación (`POST …/pause` 200, `pause_until` persiste).
+5. Si quiere que Adrián redacte y ella apruebe, cambia el toggle a **🤝 Adrián consulta** (`PATCH …/mode` 200; el segmento activo se pone verde). Vuelve a **🤖 Adrián decide** cuando quiera autonomía. Cada cambio de modo queda en el **audit log**.
+6. (Foco total — full-canvas que colapsa a Valeria — vive en la story de shell `vitalia-bugfix-shell-nav-scroll-errors`, `done`.)
 
 ### Bifurcaciones (árbol)
 
@@ -74,20 +92,19 @@ Entrar a Adrián → Inbox
 │               │   └── Paciente pide resultados clínicos por WhatsApp → ComplianceService BLOQUEA + deriva a portal [SC-adversarial]
 │               ├── Modo 🤝 Adrián consulta
 │               │   └── Adrián prepara borrador → humano aprueba / edita / descarta → recién ahí se envía [SC-2]
-│               ├── Modo 👤 Yo escribo (o "Tomar control")
-│               │   └── Composer humano habilitado · Adrián pausado para esa conv · audit log [SC-3]
+│               ├── Pausar Adrián (dock) → modal [60 min]/[permanente] → POST /pause + composer humano + audit [SC-4]
+│               ├── Composer (siempre montado) → operador escribe + envía → POST /messages → aparece en el thread [SC-composer]
 │               ├── Acción nudge (empujón) → Adrián manda re-enganche 1:1 a conv activa estancada [SC-nudge]
-│               ├── Botón "Modo conversación" (full) → Valeria colapsa → inbox 100% → toggle restaura [SC-full]
-│               └── Cambio de modo → POST mode + audit log row [SC-mode]
+│               └── Cambio de modo (toggle 2-modos) → PATCH /mode (OCC) + audit log row → segmento activo verde [SC-mode]
 ```
 
 ### Reglas de negocio
 
-- **RN-1 · Modo por conversación.** Cada conversación tiene un `agent_mode ∈ {decide, consulta, manual}`. El modo es por-conversación, no global.
+- **RN-1 · Modo por conversación (2-modos · ★ amendment).** Cada conversación tiene un modo derivado de `handler_mode` + `proposal_required`: **`Adrián decide`** (`handler_mode=ai`, `proposal_required=false`) o **`Adrián consulta`** (`handler_mode=ai`, `proposal_required=true`). El modo es por-conversación, no global. "Manual / Yo escribo" **ya no es un modo** — escribir como humano se logra **pausando a Adrián** (RN-17). El cambio de modo es `PATCH …/conversations/{id}/mode` con OCC (`expected_updated_at` en el body); 409 → rollback optimista.
 - **RN-2 · Audit de modo.** Todo cambio de `agent_mode` y todo "Tomar control"/"Pausar"/"Reanudar" crea fila de audit log (quién/cuándo/de→a). Sync write antes de la respuesta.
 - **RN-3 · Decide autónomo + escala.** En `decide`, Adrián responde solo; escala a humano (banner + auto-switch a `manual`) sólo si una tool falla, hay prompt-injection detectado, o el paciente pide humano explícito.
 - **RN-4 · Consulta = humano firma.** En `consulta`, ningún mensaje sale sin aprobación humana; el humano puede editar el borrador antes de enviar; el envío queda firmado por el humano.
-- **RN-5 · Manual silencia a Adrián.** En `manual`/"Yo escribo", Adrián no envía ni sugiere para esa conversación.
+- **RN-5 · Pausar silencia a Adrián (★ amendment, reemplaza el viejo "Manual").** Pausar Adrián (60 min o permanente) detiene sus auto-respuestas en esa conversación; mientras está pausado, el operador escribe por el composer (siempre montado). No hay modo "manual" separado.
 - **RN-6 · Glass-box.** Toda acción de Adrián (tool-call + resultado + mensaje) es visible inline en el thread (colapsable) y en el Activity stream cronológico.
 - **RN-7 · PHI firewall (HIPAA-lite).** Adrián opera datos comerciales (interés, canal, oferta); NUNCA discute diagnóstico/resultados por canal no-encriptado. ComplianceService valida cada outbound; si es PHI inapropiada → bloquea + deriva a portal seguro.
 - **RN-8 · ContactSidebar enmascarado.** Identidad del contacto va con `PiiMaskedSpan` + `RequireRole` (`doctor`/`nurse`/`admin_clinic`). Reveal audita.
@@ -97,19 +114,22 @@ Entrar a Adrián → Inbox
 - **RN-12 · Modo conversación reversible.** "Full" colapsa Valeria (`valeriaState='collapsed'`) y recuerda el estado previo (`rail`/`full`) para restaurarlo al salir. Nunca pierde el estado de Valeria.
 - **RN-13 · Nudge sólo sobre conv viva.** El nudge (empujón) aplica a una conversación activa estancada; no crea conversaciones nuevas ni reactiva leads fríos (eso es Camila).
 - **RN-14 · Deep-link estable.** `?conv={id}` (o ruta equivalente) reabre la conversación correcta en refresh/deep-link. PHI nunca en la URL (sólo el id de conversación, no datos).
+- **RN-15 · RBAC operador del inbox (★ amendment).** Las mutaciones del inbox (mode/pause/send/nudge) están gateadas a `_INBOX_OPERATOR_ROLES = _PHI_ROLES ∪ {owner, receptionist}`. El inbox es la herramienta operativa del dueño/recepción; `marketing`/`sales`/`patient` siguen denegados (403). Cross-tenant sigue 404 (RN-9).
+- **RN-16 · Leads visibles por defecto (interim · ★ amendment).** La ficha de contacto muestra nombre/teléfono/correo del **lead** sin enmascarar (decisión interim ratificada por Chris). `PiiMaskedSpan` conserva el wrapper + `data-phi` (audit + arch test FE-A6 intactos) vía la prop `masked` (default `true`; `ContactSidebar` pasa `masked={false}`). El enmascaramiento por configuración ("Máxima seguridad") es follow-up (story aparte, PHI → `/architect`). PHI **clínica** (diagnóstico/resultados) sigue fuera del alcance de Adrián (RN-7).
+- **RN-17 · Composer dock siempre montado (★ amendment).** El composer vive en un dock al pie del thread (`thread-composer-dock`) con barra de estado (verde "Adrián está atendiendo esta conversación" / pausado) + botón **Pausar** (rojo). El operador escribe como humano; el envío es `POST …/conversations/{id}/messages` (idempotency key). La caja siempre está usable; que Adrián además auto-responda lo gobierna el estado de pausa.
 
 ### Criterios de aceptación
 
 - **AC-1** · La ruta `adrian/inbox` renderiza el inbox real (no el placeholder), ocupando el 100% del panel.
 - **AC-2** · Lista cross-canal con filtros + búsqueda + badges de canal + badge de modo + no-leído.
 - **AC-3** · Clic en conversación carga thread + persiste `?conv={id}` + Valeria reacciona (básica).
-- **AC-4** · Toggle de 3-modos cambia `agent_mode` + crea audit log; banner de autonomía + "Tomar control" presentes en `decide`.
-- **AC-5** · Composer respeta el modo (envía en manual; borrador-aprobable en consulta; silenciado-salvo-override en decide).
+- **AC-4** · *(MODIFICADA 2-modos)* Toggle de **2 modos** (`Adrián decide` / `Adrián consulta`) cambia el modo vía `PATCH …/mode` (OCC) + crea audit log; el segmento activo se pinta **verde**; `aria-checked` refleja el modo activo.
+- **AC-5** · *(MODIFICADA: composer dock + pausa)* El composer está **siempre montado** en el dock; el operador escribe y envía (`POST …/messages`, aparece en el thread). **Pausar Adrián** (60 min / permanente, sin reason) detiene las auto-respuestas (`POST …/pause` 200). En `consulta`, el banner de propuesta permite aprobar/editar antes de enviar.
 - **AC-6** · Tool-calls de Adrián aparecen inline (colapsables) + Activity stream cronológico.
 - **AC-7** · Botón "Modo conversación" colapsa Valeria → inbox 100% → restaura estado previo.
 - **AC-8** · Nudge envía re-enganche 1:1 a conv activa + queda en Activity stream + audit.
 - **AC-9** · ComplianceService bloquea PHI por canal no-encriptado y deriva a portal.
-- **AC-10** · ContactSidebar muestra identidad enmascarada + RBAC; tabs funcionan.
+- **AC-10** · *(MODIFICADA: leads visibles interim)* ContactSidebar muestra la identidad del **lead visible** por defecto (nombre/teléfono/correo, `masked={false}`) conservando el wrapper `PiiMaskedSpan` + `data-phi` (audit + FE-A6 intactos); "Servicio de interés" siempre visible; "Etapa de la venta" única (sin "Estado"). RBAC + enmascaramiento configurable = follow-up.
 - **AC-11** · Cross-tenant bloqueado (dual filter); a11y axe pass; Spanish neutro.
 - **AC-12** · Mobile: 3-pane colapsa a tabs (Conv · Thread · Detalles); Valeria a drawer.
 - **AC-13** · `features/inbox/` huérfano consolidado en `features/adrian/` + eliminado; `adrian.inbox` registrado en shell-routes.
@@ -149,24 +169,55 @@ And audit log: compliance_block_outbound_phi
 ```
 `playwright_required: true` · Covers: [Bif "pide resultados", RN-7, AC-9] · graders: e2e + BE `test_phi_voice_redirect.py`
 
-### SC-4 — edge: cambio de modo concurrente (humano + bot)
+### SC-4 — pausa: el operador pausa a Adrián y escribe (★ amendment, reemplaza "takeover")
 ```gherkin
-Given una conversación en modo "Adrián decide" mientras Adrián está generando una respuesta
-When la recepcionista pulsa "Tomar control" en ese instante
-Then la conversación pasa a "Yo escribo" de forma transaccional (lock por conv_id)
-And la respuesta en vuelo de Adrián NO se envía (queda descartada o marcada)
-And el optimistic update se revierte si el backend devuelve 409
+Given una conversación en modo "Adrián decide" (owner/recepción operando el inbox)
+When la recepcionista pulsa "Pausar" en el dock
+Then se abre el modal de pausa con exactamente 2 botones [Pausar 60 minutos] [Pausar permanente] y NINGÚN campo de razón
+When elige "Pausar 60 minutos"
+Then el backend responde POST …/pause 200, persiste pause_until, y la barra de estado del dock indica "Adrián pausado · escribes tú"
+And se escribe fila de audit log (RN-2)
+And el composer del dock queda disponible para que el operador escriba como humano
 ```
-`playwright_required: true` (race_condition) · Covers: [Bif "Tomar control", RN-2, RN-5] · graders: e2e + state_check
+`playwright_required: true` · Covers: [Bif "Pausar", RN-2, RN-5, RN-17, AC-5] · graders: e2e(live · POST /pause 200) + state_check(audit_log)
 
-### SC-5 — full: modo conversación colapsa Valeria a 100%
+### SC-mode — modo: el toggle de 2 modos escribe el cambio (★ amendment)
+```gherkin
+Given una conversación abierta en "Adrián decide" (segmento activo verde)
+When la recepcionista pulsa el segmento "Adrián consulta"
+Then el backend responde PATCH …/mode 200 (OCC con expected_updated_at)
+And aria-checked pasa a "Adrián consulta" (segmento verde) y se escribe audit log (RN-2)
+When vuelve a pulsar "Adrián decide"
+Then PATCH …/mode 200 y aria-checked refleja "Adrián decide"
+```
+`playwright_required: true` · Covers: [Bif "Cambio de modo", RN-1, RN-2, AC-4] · graders: e2e(live · PATCH /mode 200 ×2 + aria) + state_check
+
+### SC-composer — composer: el dock está montado y el envío aparece en el thread (★ amendment)
+```gherkin
+Given una conversación abierta
+Then el dock del composer (thread-composer-dock) está montado al pie con el textarea habilitado
+When el operador escribe un mensaje y pulsa Enviar
+Then el backend responde POST …/messages y el mensaje aparece en el thread
+```
+`playwright_required: true` · Covers: [Bif "Composer", RN-17, AC-5] · graders: e2e(live)
+
+### SC-privacy — leads visibles por defecto (interim · ★ amendment)
+```gherkin
+Given una conversación abierta con su ficha de contacto
+Then la ficha muestra nombre/teléfono/correo del lead SIN máscara (sin "***")
+And el wrapper PiiMaskedSpan + data-phi se conserva (audit + FE-A6 intactos)
+And "Servicio de interés" está siempre visible ("Aún no detectado" si vacío) y NO hay campo "Estado" duplicado
+```
+`playwright_required: true` · Covers: [RN-16, AC-10] · graders: e2e(live)
+
+### SC-5 — full: modo conversación colapsa Valeria a 100% (★ SPLITeado a la story de shell)
 ```gherkin
 Given el inbox abierto con Valeria en estado "rail"
 When la recepcionista pulsa "Modo conversación" (full)
 Then Valeria pasa a "collapsed" y el inbox ocupa el 100% del lienzo
 And al pulsar de nuevo, Valeria vuelve a "rail" (estado previo recordado)
 ```
-`playwright_required: true` · Covers: [Bif "full", RN-11, RN-12, AC-7] · graders: e2e + visual_golden(full vs split)
+`playwright_required: true` · Covers: [Bif "full", RN-11, RN-12, AC-7] · **verificación SPLITeada** a `vitalia-bugfix-shell-nav-scroll-errors` (`done`) — el squeeze del thread con Valeria+ContactSidebar abiertos es un defecto de layout del shell, no del inbox-feature. `ConversationModeButton` presente. NO bloquea el `done` de esta story.
 
 ### SC-6 — nudge: empujón a conversación activa estancada
 ```gherkin
@@ -220,23 +271,28 @@ And toda la UI renderiza en Spanish neutro LatAm (sin voseo) + moneda del tenant
 
 ## § Matriz de cobertura
 
-| Ítem (Mapa funcional) | Tipo | Cubierto por | Verificación REAL (acción + efecto) |
-|---|---|---|---|
-| Bif "Decide→procesa" / RN-1 / RN-6 | branch+rule | SC-1 | enviar mensaje real → polling trae tool-call + msg + fila audit_log + Valeria reacciona |
-| Bif "Consulta" / RN-4 | branch+rule | SC-2 | editar borrador + Enviar → outbound con texto editado, 0 mensajes pre-aprobación |
-| Bif "pide resultados" / RN-7 | branch+rule | SC-3 | enviar pregunta PHI → ComplianceService bloquea + redirect + audit row |
-| Bif "Tomar control" / RN-2 / RN-5 | branch+rule | SC-4 | "Tomar control" concurrente → modo=manual transaccional, respuesta bot no enviada |
-| Bif "full" / RN-11 / RN-12 | branch+rule | SC-5 | pulsar full → valeriaState='collapsed' + inbox 100% + restaura previo |
-| Bif "nudge" / RN-13 | branch+rule | SC-6 | nudge → outbound re-enganche + audit + sin conv nueva |
-| Bif "¿hay conversaciones?" | branch | SC-7 | 0 convs / filtro vacío → empty state correcto |
-| estado error | branch | SC-8 | 5xx thread → banner + retry, lista usable |
-| RN-8 | rule | SC-9/SC-10 | ContactSidebar enmascarado + RBAC reveal audita |
-| RN-9 / RN-14 | rule | SC-10 | conv_id cross-tenant → 404 sin leak; deep-link reabre correcto |
-| RN-10 | rule | SC-1/SC-3 | activity stream servido vía sanitize_payload (sin PHI cruda) |
-| RN-3 | rule | SC-4 (escala) | tool falla → banner "Adrián pide ayuda" + auto-switch manual |
-| AC-1..AC-13 | accept | SC-1..SC-10 + migración | inbox real al 100% + consolidación + shell-route registrada |
+> **Fuente de verificación (★ amendment):** `e2e-live` = Playwright contra `dev-app.vitalialat.com` (backend real, 0 mocks del surface, fixture `base.ts` anti-burbuja); `be-test` = pytest del módulo inbox; `shell-story` = verificado en `vitalia-bugfix-shell-nav-scroll-errors` (`done`); `regression` = suite slice-1 reusada sin reescribir.
 
-**Huecos detectados:** ninguno. **SC huérfanos:** ninguno.
+| Ítem (Mapa funcional) | Tipo | Cubierto por | Fuente | Verificación REAL (acción + efecto) |
+|---|---|---|---|---|
+| Cambio de modo (2-modos) / RN-1 / RN-2 / AC-4 | branch+rule | SC-mode | **e2e-live** | toggle "consulta"/"decide" → `PATCH …/mode` 200 ×2 + `aria-checked` refleja + audit log |
+| Bif "Decide→procesa" / RN-6 (glass-box) | branch+rule | SC-1 | e2e-live | thread + activity stream montado (cronológico) al abrir conv |
+| Bif "Consulta" / RN-4 | branch+rule | SC-2 | be-test + e2e-live | propuesta → aprobar/editar antes de enviar; 0 mensajes pre-aprobación |
+| Bif "Pausar" / RN-2 / RN-5 / RN-17 / AC-5 | branch+rule | SC-4 | **e2e-live** | "Pausar" → modal 2 botones sin reason → 60 min → `POST …/pause` 200 + estado pausado + audit |
+| Composer / RN-17 / AC-5 | branch+rule | SC-composer | **e2e-live** | dock montado + textarea habilitado + envío → `POST …/messages` → aparece en thread |
+| Privacidad lead / RN-16 / AC-10 | rule | SC-privacy | **e2e-live** | ficha muestra nombre/teléfono/correo sin `***`; servicio-interés siempre; sin "Estado" |
+| Bif "pide resultados" / RN-7 / AC-9 | branch+rule | SC-3 | **be-test** | `ComplianceService` bloquea PHI por canal + redirect a portal + audit (`test_phi_voice_redirect.py`) |
+| Bif "full" / RN-11 / RN-12 / AC-7 | branch+rule | SC-5 | **shell-story** | full-canvas colapsa Valeria — verificado en `vitalia-bugfix-shell-nav-scroll-errors` (`done`) |
+| Bif "nudge" / RN-13 / AC-8 | branch+rule | SC-6 | be-test + e2e-live | nudge → outbound re-enganche + audit + sin conv nueva (`test_nudge_service.py` + botón presente) |
+| Bif "¿hay conversaciones?" | branch | SC-7 | e2e-live + regression | empty state correcto / lista renderiza |
+| estado error | branch | SC-8 | e2e-live | thread 404/5xx → estado de error (`conversation-thread-error`) + lista usable |
+| RN-8 (RBAC) / RN-15 | rule | SC-9 + SC-4 | be-test + e2e-live | `_INBOX_OPERATOR_ROLES` (owner 200; marketing/sales 403) — `test_router_mode.py` |
+| RN-9 / RN-14 | rule | SC-10 | be-test + e2e-live | conv_id cross-tenant → 404 sin leak; deep-link `?conv=` reabre + sin PHI en URL |
+| RN-10 | rule | SC-1 | be-test | activity stream servido vía `sanitize_payload` (sin PHI cruda) |
+| RN-3 (escala) | rule | SC-3/SC-4 | be-test | tool falla / paciente pide humano → escala (cubierto por sales_agent runtime, consume-only) |
+| AC-1..AC-13 | accept | SC-* + migración | e2e-live + arch | inbox real + consolidación (`features/inbox/` borrado) + shell-route registrada |
+
+**Huecos detectados:** ninguno (full-canvas/responsive AC-7/AC-12 = `shell-story`; PHI/cross-tenant = `be-test`). **SC huérfanos:** ninguno.
 
 ## § Wireframes inline (ASCII — dentro del wrapper shell, 100% width)
 
@@ -355,8 +411,8 @@ And toda la UI renderiza en Spanish neutro LatAm (sin voseo) + moneda del tenant
 ## § Data flow (conceptual)
 
 - **Server:** `getInitialInboxState({tenantId, convId, filter})` SSR → hidrata `AdrianInboxView`.
-- **Endpoints:** `GET /api/v1/vitalia/crm/conversations` (lista) · `GET …/conversations/{id}` (detalle) · `POST …/inbox/conversations/{id}/messages` · `POST …/inbox/conversations/{id}/mode` · `POST …/inbox/conversations/{id}/pause-adrian` · `GET …/inbox/conversations/{id}/activity-stream` · `POST …/inbox/conversations/{id}/nudge` (consume `send_proactive_reengagement`).
-- **React Query keys:** `['adrian','inbox','conversations',filters]` · `['adrian','inbox','conversation',convId]` · `['adrian','inbox','activity-stream',convId]` (poll 5s cuando expandido). Optimistic en `setMode` + `pauseAdrian` (rollback 409).
+- **Endpoints (★ amendment · paths reales):** `GET /api/v1/vitalia/crm/conversations` (lista) · `GET …/crm/conversations/{id}` (detalle compound) · `POST …/inbox/conversations/{id}/messages` · **`PATCH …/inbox/conversations/{id}/mode`** (OCC `expected_updated_at` en body) · **`POST …/inbox/conversations/{id}/pause`** (body `{duration_minutes}`) · `GET …/inbox/conversations/{id}/activity-stream` · `POST …/inbox/conversations/{id}/nudge` (consume `send_proactive_reengagement`).
+- **React Query keys (★ amendment · crm-shared):** el thread/lista leen `['crm','conversation',convId]` / `['crm','conversations']`; las mutaciones `setMode`/`pause`/`send` invalidan **esas** keys (el bug era que invalidaban las legacy `['adrian','inbox',…]` que nadie renderiza). Optimistic en `setMode` + `send` (rollback 409/error).
 - **Polling 10s** para nuevos events (MVP; WebSocket post-MVP).
 - **Estado global:** `useShellStore` (valeriaState para modo conversación) + `inbox-store` (UI inbox). Server data SIEMPRE React Query.
 
@@ -367,10 +423,10 @@ And toda la UI renderiza en Spanish neutro LatAm (sin voseo) + moneda del tenant
 | Sub-tab | "Inbox" |
 | Empty (sin convs) | "Aún no hay conversaciones" / "Cuando lleguen mensajes por WhatsApp, Instagram, email o el chat web, los verás acá." |
 | Empty (filtro) | "Sin resultados" / "Limpiar filtros" |
-| Modo decide | "Adrián decide" · banner "Adrián está atendiendo esta conversación" · "Tomar control" |
-| Modo consulta | "Adrián consulta" · "✨ Adrián sugiere esta respuesta" · [Aprobar y enviar] [Editar] [Descartar] |
-| Modo manual | "Yo escribo" |
-| Botón full | "Modo conversación" (tooltip "Ocultar a Valeria para ganar espacio") |
+| Modo decide | "Adrián decide" · dock "Adrián está atendiendo esta conversación" (dot verde intermitente) |
+| Modo consulta | "Adrián consulta" · "Adrián tiene una propuesta lista" · [Aprobar y enviar] [Editar propuesta] |
+| Pausar (reemplaza "Yo escribo") | "Pausar" (rojo) · modal "Pausar a Adrián" · [Pausar 60 minutos] [Pausar permanente] · estado "Adrián pausado · escribes tú" |
+| Botón full (story de shell) | "Modo conversación" (tooltip "Ocultar a Valeria para ganar espacio") |
 | Nudge | "Dar empujón" · toast "Empujón enviado" |
 | Escala | "🔴 Adrián necesita ayuda · {razón}" |
 | PHI redirect | "Por seguridad, tus resultados están en tu portal: {link}" |
@@ -412,11 +468,11 @@ El chrome del inbox = Spanish neutro estándar. El OUTPUT de Adrián (mensajes a
 3. **Valeria reacciona** = versión básica incluida. ✓
 4. **100% del lienzo** + **botón "Modo conversación"** que colapsa Valeria (estado previo recordado). ✓ (RN-11/RN-12)
 
-## § Gates pendientes pre-`refined`
+## § Gates (cerrados)
 
-- [ ] **ADR-vitalia-003** — mockups HTML por componente NEW (`AdrianInboxView` 3-pane dentro del wrapper · `ConversationModeButton` full/split · `ToolCallCard` · `ChannelBadge` · `NudgeButton` · Valeria-reacciona) dentro del wrapper-shell portado verbatim, ratificados por Chris.
-- [ ] **Sub-categorías Gherkin** restantes confirmadas (race/concurrent/network/empty/large/a11y/i18n) — cubiertas arriba; `large_dataset`+`concurrent_users` vía regression_guard de slice-1.
-- [ ] **Ratificación Chris** del spec (este doc).
+- [x] **ADR-vitalia-003** — mockup-per-component **WAIVED** por Chris (2026-06-03, story de migración: componentes ya shipped + ratificados en slice-1 + wrapper shell fase 1). Ratificación visual real diferida a live-verify dev-app (DoD #37, más fuerte que mockup). Ver `checkpoint.md::ratified_visual_waiver`.
+- [x] **Sub-categorías Gherkin** confirmadas (mode/pause/composer/privacy/empty/error/a11y/i18n) — `large_dataset`+`concurrent_users` vía `regression_guard` de slice-1.
+- [x] **Ratificación Chris** del spec + del inbox live (`demo_signoff: APPROVED_WITH_NOTES`, 2026-06-04).
 
 ## § Referencias
 

@@ -66,6 +66,8 @@ interface InboxActions {
   toggleActivityStream: () => void;
   /** Toggle the ContactSidebar visibility */
   toggleContactSidebar: () => void;
+  /** Set the ContactSidebar visibility explicitly (used by the narrow-width auto-collapse) */
+  setContactSidebarOpen: (open: boolean) => void;
   /** Add files to the attach queue */
   enqueueAttach: (files: File[]) => void;
   /** Remove a specific file from the attach queue by index */
@@ -124,6 +126,8 @@ export const useInboxStore = create<InboxState & InboxActions>()((set) => ({
 
   toggleContactSidebar: () =>
     set((s) => ({ contactSidebarOpen: !s.contactSidebarOpen })),
+
+  setContactSidebarOpen: (open) => set({ contactSidebarOpen: open }),
 
   enqueueAttach: (files) =>
     set((s) => ({ attachQueue: [...s.attachQueue, ...files] })),

@@ -31,7 +31,10 @@ verification:
     opt_in:                     # activar SOLO por naturaleza de la capability (NO en toda story)
       schemathesis: false       # true → endpoint nuevo (contrato FE↔BE antes del runtime de Next)
       hypothesis: false         # true → domain logic con invariantes (pricing/PHI/scheduling/validaciones)
-      mutmut: false             # true → módulo crítico, pre-merge ("tests pasan pero no matan mutantes")
+    mutation:                   # ★ proceso v5 §5.6 (HB-54) · gate DIFF-SCOPED via scripts/mutation_gate.py
+      enabled: false            # true SOLO en superficies mutation-críticas que /architect marca por verification_nature
+      mode: advisory            # hard = crítica (commit/persistencia HB-50 · dinero/pricing · gates PHI · state-machines · transforms-contrato HB-42/44); advisory = resto (anti-costo)
+      surfaces: []              # paths/módulos críticos. Umbral hard: 100% mutantes muertos sobre líneas NUEVAS + escape equivalente documentado (ratchet). Survivor líneas-nuevas → CHANGES_REQUESTED; survivor HEREDADO → CIL L4 (no bloquea). DEGRADA advisory si mutmut/Stryker ausente
   runtime_error_gate: required  # FE: {brand}/frontend/e2e/fixtures/base.ts (pageerror/console/hydration/api-4xx5xx/Next-dialog) + scripts/verify-no-backend-errors.sh
   business_rules:               # functional: cada regla de negocio del spec → tag → scenario (happy + ≥1 negative/edge)
     - rule: "<RN-1 descripción>"

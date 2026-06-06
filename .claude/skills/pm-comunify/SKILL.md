@@ -115,8 +115,9 @@ Idéntico paradigm v4 de Luana core. Detalle: `docs/process/pm-redesign-2026-05.
 | "spec ratificada" / "diseño ratificado" | Update state refining→refined. Hand off `/architect` |
 | "ready" | Update state refined→ready (verificar 4 archivos: 03-arch, 04-validators, 05-guidelines, 06-tickets) |
 | "build" / "arranca dev" | Hand off `/dev-team`. Update state ready→developing |
-| "validators GREEN" | Update state developing→developed |
-| "audita" / "QA" | Hand off `/auditor`. Update state developed→reviewing |
+| "validators GREEN" | Update state developing→developed (default: dev-team pausa en **G** `phase: AWAIT_CHRIS_VERIFY`) |
+| "reconcile {story}" / "Chris satisfecho" ★ proceso v5 | Verificar `chris_verify.signoff` → **R · reconcile** spec/arch/validators/cap ⟵ realidad + `chris_verify.rounds`; congelar ledger `deferred`; escribir `reconciled: true` → Hand off `/auditor` (story-closure-gate Fase R) |
+| "audita" / "QA" | Hand off `/auditor`. Update state developed→reviewing. Precondición: `reconciled: true` o `autonomous_mode: true` |
 | "{story-id} merge" | Verificar APPROVED + CHECKPOINTS C1-C5 → escribir 07-merge.md → migrar capability → archive story → update state reviewing→done |
 | "learning {tema}" | Crear `comunify/docs/learnings/{date}-{slug}.md` con frontmatter promotable: yes/candidate/no |
 | "promotable {tema}" | Append learning con `promotable: candidate` + ping `/pm-luana` para evaluación |

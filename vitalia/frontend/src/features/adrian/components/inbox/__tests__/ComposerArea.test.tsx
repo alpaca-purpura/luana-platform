@@ -102,26 +102,18 @@ describe("ComposerArea", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders SendButton with AI label for handler_mode=ai", () => {
+  it("always renders the human send label — operator writes as human (Chris UI #2/#3)", () => {
+    // Even when Adrián is in an AI mode, the textarea is the operator's own voice.
     render(
       <ComposerArea conversation={makeConversation({ handler_mode: "ai" })} />,
       { wrapper },
     );
     expect(
-      screen.getByRole("button", { name: INBOX_COPY.composer.sendButtonAi }),
-    ).toBeInTheDocument();
-  });
-
-  it("renders SendButton with human label for handler_mode=human", () => {
-    render(
-      <ComposerArea
-        conversation={makeConversation({ handler_mode: "human" })}
-      />,
-      { wrapper },
-    );
-    expect(
       screen.getByRole("button", { name: INBOX_COPY.composer.sendButtonHuman }),
     ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: INBOX_COPY.composer.sendButtonAi }),
+    ).toBeNull();
   });
 
   it("shows ProposalCardBanner when pendingProposalText is provided", () => {
@@ -145,7 +137,7 @@ describe("ComposerArea", () => {
   it("send button is disabled when text is empty", () => {
     render(<ComposerArea conversation={makeConversation()} />, { wrapper });
     const sendBtn = screen.getByRole("button", {
-      name: INBOX_COPY.composer.sendButtonAi,
+      name: INBOX_COPY.composer.sendButtonHuman,
     });
     expect(sendBtn).toBeDisabled();
   });
@@ -155,7 +147,7 @@ describe("ComposerArea", () => {
     const textarea = screen.getByRole("textbox");
     fireEvent.change(textarea, { target: { value: "Hola" } });
     const sendBtn = screen.getByRole("button", {
-      name: INBOX_COPY.composer.sendButtonAi,
+      name: INBOX_COPY.composer.sendButtonHuman,
     });
     expect(sendBtn).not.toBeDisabled();
   });

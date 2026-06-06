@@ -98,7 +98,7 @@ describe("TopBarGlobal — structure (AC-10, AC-11, AC-12)", () => {
 
   it("contains logo mark links to / (AC-12) — 2 instances for CSS responsive", () => {
     const { getAllByTestId } = render(<TopBarGlobal />);
-    // TopBarGlobal renders 2 LogoMark instances: full (hidden md:inline-flex) + mark (inline-flex md:hidden)
+    // TopBarGlobal renders 2 LogoMark instances: full (hidden lg:inline-flex) + mark (inline-flex lg:hidden)
     const marks = getAllByTestId("logo-mark");
     expect(marks.length).toBe(2);
     marks.forEach((mark) => expect(mark).toHaveAttribute("href", "/"));
@@ -120,10 +120,11 @@ describe("TopBarGlobal — hamburger button mobile (T-6, D7)", () => {
     mockSetMobileDrawerOpen.mockClear();
   });
 
-  it("[T-6] hamburger button rendered with md:hidden class", () => {
+  it("[T-6] hamburger button rendered with lg:hidden class (drawer zone < lg, Point 3)", () => {
     const { getByTestId } = render(<TopBarGlobal />);
     const burger = getByTestId("topbar-hamburger");
-    expect(burger.className).toContain("md:hidden");
+    // Point 3 (2026-06-04): burger now shows < lg (tablet + mobile = drawer zone)
+    expect(burger.className).toContain("lg:hidden");
   });
 
   it("[T-6] hamburger aria-label is 'Abrir panel Valeria' (Spanish neutro, D7)", () => {

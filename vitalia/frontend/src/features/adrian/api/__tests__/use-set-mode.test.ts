@@ -121,7 +121,7 @@ describe("useSetMode — SC-03 OCC conflict", () => {
   it("SC-03: rolls back optimistic update on 409 conflict and invalidates detail", async () => {
     const detail = buildDetail("ai");
     queryClient.setQueryData(
-      ["adrian", "inbox", "conversation", CONVERSATION_ID],
+      ["crm", "conversation", CONVERSATION_ID],
       detail,
     );
 
@@ -149,9 +149,7 @@ describe("useSetMode — SC-03 OCC conflict", () => {
 
     // Rollback: handler_mode should be back to "ai"
     const cached = queryClient.getQueryData<ConversationDetail>([
-      "adrian",
-      "inbox",
-      "conversation",
+      "crm", "conversation",
       CONVERSATION_ID,
     ]);
     expect(cached?.conversation.handler_mode).toBe("ai");
@@ -159,7 +157,7 @@ describe("useSetMode — SC-03 OCC conflict", () => {
     // Re-fetch triggered
     expect(invalidateSpy).toHaveBeenCalledWith(
       expect.objectContaining({
-        queryKey: ["adrian", "inbox", "conversation", CONVERSATION_ID],
+        queryKey: ["crm", "conversation", CONVERSATION_ID],
       }),
     );
   });
@@ -167,7 +165,7 @@ describe("useSetMode — SC-03 OCC conflict", () => {
   it("applies optimistic update immediately on mutate", async () => {
     const detail = buildDetail("ai");
     queryClient.setQueryData(
-      ["adrian", "inbox", "conversation", CONVERSATION_ID],
+      ["crm", "conversation", CONVERSATION_ID],
       detail,
     );
 
@@ -190,9 +188,7 @@ describe("useSetMode — SC-03 OCC conflict", () => {
 
     await waitFor(() => {
       const cached = queryClient.getQueryData<ConversationDetail>([
-        "adrian",
-        "inbox",
-        "conversation",
+        "crm", "conversation",
         CONVERSATION_ID,
       ]);
       // Optimistic: switched to "human"
@@ -206,7 +202,7 @@ describe("useSetMode — SC-03 OCC conflict", () => {
   it("sets proposalRequired=true for adrian-consulta equivalent input", async () => {
     const detail = buildDetail("ai");
     queryClient.setQueryData(
-      ["adrian", "inbox", "conversation", CONVERSATION_ID],
+      ["crm", "conversation", CONVERSATION_ID],
       detail,
     );
 
@@ -231,7 +227,12 @@ describe("useSetMode — SC-03 OCC conflict", () => {
     expect(fetchClient).toHaveBeenCalledWith(
       expect.stringContaining("/mode"),
       expect.objectContaining({
-        body: JSON.stringify({ mode: "ai", proposal_required: true }),
+        method: "PATCH",
+        body: JSON.stringify({
+          mode: "ai",
+          proposal_required: true,
+          expected_updated_at: "2026-01-01T11:00:00Z",
+        }),
       }),
     );
   });

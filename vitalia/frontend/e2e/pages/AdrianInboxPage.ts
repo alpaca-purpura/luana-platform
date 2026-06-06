@@ -68,6 +68,21 @@ export class AdrianInboxPage {
   readonly composerInput: Locator;
   readonly sendButton: Locator;
 
+  // ── 2-modos amendment (★ 2026-06-04): composer dock + pause modal + sidebar ──
+  /** Dock al pie del thread (estado pausa + botón Pausar + composer). */
+  readonly composerDock: Locator;
+  /** Textarea real dentro del dock (MessageInput no tiene data-testid). */
+  readonly dockTextarea: Locator;
+  readonly pauseAdrianButton: Locator;
+  readonly pauseModal: Locator;
+  readonly pauseModal60: Locator;
+  readonly pauseModalPermanent: Locator;
+  readonly pauseModalCancel: Locator;
+  /** ContactSidebar — leads visibles + servicio de interés + cerrar. */
+  readonly contactServiceInterest: Locator;
+  readonly contactSidebarClose: Locator;
+  readonly threadHeaderPatientName: Locator;
+
   // ── Nudge (RN-13) ─────────────────────────────────────────────────────────
   readonly nudgeButton: Locator;
   readonly nudgeConfirmButton: Locator;
@@ -154,6 +169,18 @@ export class AdrianInboxPage {
       '[data-testid="nudge-confirm"], button[aria-label*="Confirmar empujón"]',
     ).first();
     this.nudgeToast = page.locator('[role="status"]').filter({ hasText: /Empujón enviado/ }).first();
+
+    // 2-modos amendment: composer dock + pause modal + sidebar (real DOM testids)
+    this.composerDock = page.locator('[data-testid="thread-composer-dock"]').first();
+    this.dockTextarea = this.composerDock.locator("textarea").first();
+    this.pauseAdrianButton = page.locator('[data-testid="pause-adrian-button"]').first();
+    this.pauseModal = page.locator('[data-testid="pause-adrian-modal"]');
+    this.pauseModal60 = page.locator('[data-testid="pause-modal-60"]');
+    this.pauseModalPermanent = page.locator('[data-testid="pause-modal-permanent"]');
+    this.pauseModalCancel = page.locator('[data-testid="pause-modal-cancel"]');
+    this.contactServiceInterest = page.locator('[data-testid="contact-service-interest"]').first();
+    this.contactSidebarClose = page.locator('[data-testid="contact-sidebar-close"]').first();
+    this.threadHeaderPatientName = page.locator('[data-testid="thread-header-patient-name"]').first();
 
     // Tool-calls (RN-6)
     this.toolCallCards = page.locator('[data-testid^="tool-call-card"]');
@@ -323,16 +350,43 @@ export class AdrianInboxPage {
 
   // ── State assertions ───────────────────────────────────────────────────────
 
+  // ★ 2-modos: ModeToggle es role="radiogroup"/role="radio" → aria-CHECKED (no -selected).
   async expectDecideMode(): Promise<void> {
-    await expect(this.modeDecideOption).toHaveAttribute("aria-selected", "true");
+    await expect(this.modeDecideOption).toHaveAttribute("aria-checked", "true");
   }
 
   async expectConsultaMode(): Promise<void> {
-    await expect(this.modeConsultaOption).toHaveAttribute("aria-selected", "true");
+    await expect(this.modeConsultaOption).toHaveAttribute("aria-checked", "true");
   }
 
+  /** @deprecated 2-modos: "manual" ya no es un modo (es Pausar). Locator no matchea. */
   async expectManualMode(): Promise<void> {
-    await expect(this.modeManualOption).toHaveAttribute("aria-selected", "true");
+    await expect(this.modeManualOption).toHaveAttribute("aria-checked", "true");
+  }
+
+  // ── Pausa (2-modos amendment) ──────────────────────────────────────────────
+
+  /** Abre el modal de pausa (2 botones, sin reason). */
+  async openPauseModal(): Promise<void> {
+    await this.pauseAdrianButton.click();
+    await this.pauseModal.waitFor({ state: "visible" });
+  }
+
+  /** Elige "Pausar 60 minutos" en el modal. */
+  async choosePause60(): Promise<void> {
+    await this.pauseModal60.click();
+  }
+
+  /** Elige "Pausar permanente" en el modal. */
+  async choosePausePermanent(): Promise<void> {
+    await this.pauseModalPermanent.click();
+  }
+
+  // ── Modo (2-modos amendment) ───────────────────────────────────────────────
+
+  /** Selecciona un segmento de los 2 modos (decide/consulta) por su data-testid real. */
+  async setMode(value: "adrian-decide" | "adrian-consulta"): Promise<void> {
+    await this.page.locator(`[data-testid="segment-${value}"]`).first().click();
   }
 
   async expectEmptyState(): Promise<void> {

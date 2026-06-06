@@ -9,7 +9,7 @@ model: opus
 
 # /dev-team — Developer Team Router (Conv 2 autonomous build)
 
-> Owner: `T-{n}-impl-log.md` + `T-{n}-result.md` en `{brand}/docs/product/stories/{story-id}/`. Toma 1 ticket → ejecuta TDD + iteración contra `04-validators.yaml` → push. On pickup: state=ready→developing. On GREEN all tickets → state=developing→developed + **AUTO-HANDOFF a `/auditor`** (default post 2026-05-18 — story-closure-gate). Escape valve explícita: `checkpoint.md::defer_audit: true` con razón documentada + ratificación Chris. **REFUSE pickup si otra story DEL MISMO MÓDULO está en state ∈ {developing, developed, reviewing} sin `defer_audit: true`** (defense-in-depth Layer 2 del story-closure-gate, ★ v2 module-scoped post ADR-009: stories de OTROS módulos developing en paralelo sobre el mismo hub = OK). Build-claim: Step 0 hace `session-lock.sh acquire code:{module}` → cockpit pinta 🔨 lane.
+> Owner: `T-{n}-impl-log.md` + `T-{n}-result.md` en `{brand}/docs/product/stories/{story-id}/`. Toma 1 ticket → ejecuta TDD + iteración contra `04-validators.yaml` → push. On pickup: state=ready→developing. On GREEN all tickets → state=developing→developed. **★ proceso v5:** default = **PAUSA en G (Chris-verify)** `phase: AWAIT_CHRIS_VERIFY` (NO auto-handoff); `autonomous_mode: true` → corre a `/auditor` sin pausa (story-closure-gate Fase G). Escape valve: `checkpoint.md::defer_audit: true` (razón + Chris). **REFUSE pickup si otra story DEL MISMO MÓDULO está en state ∈ {developing, developed, reviewing} sin `defer_audit: true` NI `phase: AWAIT_CHRIS_VERIFY`** (story en G no bloquea — exención WIP-cap; defense-in-depth Layer 2, ★ v2 module-scoped post ADR-009: stories de OTROS módulos developing en paralelo = OK). Build-claim: Step 0 hace `session-lock.sh acquire code:{module}` → cockpit pinta 🔨 lane.
 
 ## REQUIRED first input: `<brand>`
 
@@ -62,13 +62,17 @@ MODULE=${MODULE:-_nomodule}
 
 # (b) Gate module-scoped: bloquea SOLO si otra story del MISMO módulo está abierta
 #     sin defer_audit (cross-módulo concurrente = permitido bajo hub único).
+#     ★ proceso v5: phase AWAIT_CHRIS_VERIFY (story en G esperando a Chris) NO bloquea
+#     — si no, una story en verify deadlockea otra del mismo módulo (story-closure-gate).
 for cp in ${WS}/${BRAND}/docs/product/stories/*/checkpoint.md; do
   OTHER_ID=$(basename $(dirname $cp))
   [[ "$OTHER_ID" == "{story-id}" ]] && continue
   OTHER_MOD=$(grep -E "^module:" $cp | head -1 | awk '{print $2}')
   STATE=$(grep -E "^state:" $cp | head -1 | awk '{print $2}')
   DEFER=$(grep -E "^defer_audit:" $cp 2>/dev/null | awk '{print $2}')
-  if [[ "$OTHER_MOD" == "$MODULE" ]] && [[ "$STATE" =~ ^(developing|developed|reviewing)$ ]] && [[ "$DEFER" != "true" ]]; then
+  PHASE=$(grep -E "^phase:" $cp 2>/dev/null | head -1 | awk '{print $2}')
+  if [[ "$OTHER_MOD" == "$MODULE" ]] && [[ "$STATE" =~ ^(developing|developed|reviewing)$ ]] \
+     && [[ "$DEFER" != "true" ]] && [[ "$PHASE" != "AWAIT_CHRIS_VERIFY" ]]; then
     echo "BLOCK: story $OTHER_ID (módulo $MODULE) en state=$STATE sin defer_audit"
   fi
 done
@@ -484,6 +488,14 @@ Si Phase D local detecta gap → `/dev-team` REFUSE auto-handoff. Update `T-{n}-
 
 **Justificación:** auditor Phase D antes detectaba gaps post-handoff → CHANGES_REQUESTED round-trip. Pre-check local en dev-team cierra el loop sin desperdiciar audit cycle Opus.
 
+### ★ Step 4.5b — Ledger de cobertura vivo: PRODUCTOR (proceso v5 §5.2)
+
+`/dev-team` es el **productor** que mantiene VIVA la columna `estado` de la `§ Matriz de cobertura` (`01-spec.md`). Cada vez que un ticket construye el comportamiento de un `Bif-N`/`RN-N`/`AC-N`, dev-team marca ese ítem `✅ construido` (con su test/ruta) en la matriz. Sin este paso el ledger nace en `refined` y llega STALE a G (Chris leería una foto vieja).
+
+- Ítem construido → `✅ construido` + test/ruta en la celda.
+- Ítem que NO se construirá en esta story → se deja `⬜ pendiente` (en G se decide `⏳ ahora` o `→ historia {id}`).
+- **PISO HARD:** si `cap_change_type: new`, los ítems del **happy path** DEBEN quedar `✅` antes de cerrar `developed` — el core no se difiere (REFUSE si un happy-path queda `⬜`/`→historia`).
+
 ## Step 4.6 — Gate live-verify (Critical Rule #37) — BLOQUEANTE antes de developed
 
 > Mismo rango imperativo que el Phase D local de gherkin. Si falla → NO se escribe `state: developed` y NO se emite el auto-handoff a `/auditor`.
@@ -543,49 +555,74 @@ transitions:
 
 Si quedan tickets `ready` → continuar Step 1 con next ticket.
 
-Si TODOS tickets pushed → (1) verificar Phase D local (Step 4.5) + (2) verificar gate live-verify (Step 4.6) → recién entonces transition story a developed + AUTO-HANDOFF /auditor (Conv 3 default post 2026-05-18):
+Si TODOS tickets pushed → (1) verificar Phase D local (Step 4.5) + (2) verificar gate live-verify (Step 4.6) → transition story a `developed`. **Recién entonces RAMA según `autonomous_mode` (★ proceso v5 · story-closure-gate Fase G — re-secuencia: el auto-handoff ya NO es incondicional):**
+
+```bash
+AUTONOMOUS=$(grep -E "^autonomous_mode:" ${STORY_DIR}/checkpoint.md 2>/dev/null | awk '{print $2}')
+DEFER=$(grep -E "^defer_audit:" ${STORY_DIR}/checkpoint.md 2>/dev/null | awk '{print $2}')
+```
+
+### Caso default — G · Chris-verify (pausa-y-ofrece) ★ proceso v5
+
+Si `autonomous_mode` NO es `true` y la story es funcional (`demo_required: true` / `verification_nature ∈ {funcional, ambas}`) → **NO auto-handoff a `/auditor`**. Pausá en **G**: Chris ejerce el kit ANTES del auditor. Sin estado nuevo (`state: developed` + `phase: AWAIT_CHRIS_VERIFY`).
 
 ```yaml
 # {brand}/docs/product/stories/{story-id}/checkpoint.md
 brand: {brand}     # ★ REQUIRED — multibrand scope
 state: developed   # ★ TRANSITION developing → developed ★
-phase: HANDOFF_TO_AUDITOR
+phase: AWAIT_CHRIS_VERIFY        # ★ G · NO HANDOFF_TO_AUDITOR todavía
+chris_verify: { required: true, signoff: null, rounds: [] }
 last_artifact: T-{N}-result.md (last ticket)
-next_action: "/auditor <brand>: {brand} toma story {id} para Conv 3 review+merge (AUTO-HANDOFF default)"
+next_action: "Chris ejerce el kit live → firma chris_verify.signoff → /pm-{brand} reconcile (R) → /auditor"
 ```
 
-**Verificar `defer_audit: true` en checkpoint:**
-
-```bash
-DEFER=$(grep -E "^defer_audit:" ${STORY_DIR}/checkpoint.md 2>/dev/null | awk '{print $2}')
-```
-
-### Caso default — auto-handoff a `/auditor`
-
-Si `defer_audit` no está set o es `false` → EMITIR handoff verbatim, NO arrancar nueva story:
+Liberá el build-claim + EMITIR el KIT verbatim (el kit ya lo produjo el developed-boundary, #37 Layer 10):
 
 ```
-✅ Story {brand}/{story-id} all tickets pushed.
-- T-1 (commit abc1234) ✅
-- T-2 (commit def5678) ✅
-- T-3 (commit 9876abc) ✅
-
-Quality gates: validators all GREEN.
-Story state: developing → developed.
-WIP cap check (module-scoped · ADR-009): bucket code:{module} liberado; otras stories
-de OTROS módulos pueden seguir developing en paralelo en el hub.
+✅ Story {brand}/{story-id} all tickets pushed · validators GREEN · live-verify OK.
+Story state: developing → developed · phase: AWAIT_CHRIS_VERIFY (G · Chris-verify).
 
 → Release build-claim: bash ${WS}/scripts/git/session-lock.sh release code:{module}
-  (libera el módulo + saca el badge 🔨 del cockpit)
+  (libera el módulo + saca el badge 🔨 del cockpit. WIP cap: phase AWAIT_CHRIS_VERIFY
+   NO cuenta contra developed≤1 → otra story del módulo puede avanzar mientras verificás.)
 
-→ AUTO-HANDOFF /auditor <brand>: {brand} story={story-id}
+🧪 KIT para que ejerzas vos (antes del auditor):
+- demo-script.md: {path}
+- dev-app live: make dev-app-{brand} → dev-app.{brand}lat.com (Chrome DevTools MCP)
+- dod_evidence: {N} writes ejercidos
+- 📊 LEDGER de cobertura: {X ✅ construido · Y → historia · Z ⏳ ahora}
 
-  (Conv 3 default post 2026-05-18 story-closure-gate.
-   Lee T-{n}-result.md + Phase D gherkin verification + CHECKPOINTS.md C1-C5.
-   No arrancar nueva story hasta state=done de esta.)
+→ Ejercé live → anotá correcciones/observaciones. Scope dinámico: fuera-de-scope →
+  implementar-ahora (corto+necesario) o spawneamos historia(s) visibles. PISO HARD:
+  funcionalidad nueva → core/happy-path construido sí o sí. Cada corrección entra a
+  chris_verify.rounds. Cuando estés satisfecho → firmás chris_verify.signoff.
+
+⏸  PAUSA en G. NO auto-handoff a /auditor hasta tu signoff + /pm-{brand} reconcile (R).
 ```
 
-STOP la sesión `/dev-team` aquí. Chris (o auto-handoff harness) invoca `/auditor` siguiente.
+STOP la sesión `/dev-team` aquí (G). Tras `chris_verify.signoff` → `/pm-{brand}` reconcile (R) → `/auditor`.
+
+### Caso autonomous_mode: true — corre a `/auditor` (G se salta)
+
+Si `autonomous_mode: true` ratificado por Chris → **G se salta** (corre a done sin pausa-verify · NO requiere reconcile: el auditor procede por la rama autonomous):
+
+```yaml
+state: developed
+phase: HANDOFF_TO_AUDITOR
+next_action: "/auditor <brand>: {brand} toma story {id} para Conv 3 (AUTONOMOUS · G saltada)"
+```
+
+```
+✅ Story {brand}/{story-id} all tickets pushed · validators GREEN.
+Story state: developing → developed · AUTONOMOUS (G saltada por opt-in Chris).
+
+→ Release build-claim: bash ${WS}/scripts/git/session-lock.sh release code:{module}
+→ AUTO-HANDOFF /auditor <brand>: {brand} story={story-id}
+  (el auditor procede por la rama autonomous: reconciled=false PERO autonomous_mode=true.
+   Lee T-{n}-result.md + Phase D gherkin + CHECKPOINTS.md C1-C5.)
+```
+
+STOP la sesión `/dev-team` aquí. (`defer_audit: true` → ver caso abajo.)
 
 ### Caso defer_audit:true — STOP + ping bootstrap
 

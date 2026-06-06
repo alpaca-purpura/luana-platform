@@ -332,7 +332,7 @@ agents:
       - id: inbox
         name: "Inbox de conversaciones"
         status: live
-        description: "Inbox unified WhatsApp/IG/email con handler-mode (agente · humano · pausado) + OCC. Acción de cada turn produce ActionReceipt 5min undo lifecycle."
+        description: "Inbox unified WhatsApp/IG/email shell-organism con 2-modos (Adrián decide · Adrián consulta) + Pausar (60 min/permanente) + composer dock siempre montado + glass-box (ActivityStream) + firewall PHI. RBAC operador (owner/recepción/clínicos). cap canónica: inbox.adrian-inbox (reconstruye slice-1)."
       - id: crm
         name: "CRM pacientes y leads"
         status: live

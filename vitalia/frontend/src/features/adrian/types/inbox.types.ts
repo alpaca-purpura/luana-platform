@@ -126,6 +126,12 @@ export interface Message {
   sent_at: string;
   /** ISO 8601 expiry for undo action receipt chip (null = no undo available) */
   action_receipt_expires_at: string | null;
+  /**
+   * Delivery state for OUTGOING messages — drives WhatsApp-style ✓ / ✓✓ receipts.
+   * TODO(BE): not populated yet; the FE defaults to "sent" (single ✓) so the wiring
+   * is ready the moment the channel adapters report delivery/read (UI-AUDIT-3).
+   */
+  delivery_status?: "sent" | "delivered" | "read" | null;
 }
 
 // ── Activity event types ──────────────────────────────────────────────────────
@@ -264,13 +270,10 @@ export interface ConversationDetail {
   tools_state: ToolsState | null;
 }
 
-// ── 3-Modos backend mapping ───────────────────────────────────────────────────
+// ── 2-Modos backend mapping (Chris UI #3 — manual typing is now "Pausar") ──────
 
-/** The 3 UI modes as presented in the segmented control */
-export type SegmentedModeValue =
-  | "adrian-decide"
-  | "adrian-consulta"
-  | "yo-escribo";
+/** The 2 UI modes presented in the segmented control */
+export type SegmentedModeValue = "adrian-decide" | "adrian-consulta";
 
 /** Maps UI segment value → API mode input */
 export const SEGMENT_TO_API: Record<
@@ -279,5 +282,4 @@ export const SEGMENT_TO_API: Record<
 > = {
   "adrian-decide": { newMode: "ai", proposalRequired: false },
   "adrian-consulta": { newMode: "ai", proposalRequired: true },
-  "yo-escribo": { newMode: "human", proposalRequired: false },
 };

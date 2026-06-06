@@ -5,12 +5,17 @@
  * T-FE-3 vitalia-fase2-adrian-embudo
  *
  * Three blocks (spec D.8):
- *   1. Datos del lead (contacto masked · origen · interés · valor · doctor · etiquetas · etapa)
+ *   1. Datos del lead (nombre · teléfono · correo · canal · interés · valor · doctor · etapa)
  *   2. Estado del agente / autonomía (🤖 Adrián la atiende · Tomar control · instrucción oculta · Nudge · Mover de etapa)
  *   3. Score glass-box (score + temperatura + barra + breakdown)
  *
  * "Empty-states honestos" — missing data shown as placeholder, not hidden.
  * RN-2 firewall: NO clinical data rendered here.
+ *
+ * U1/U2 fix (2026-06-04): Nombre shown as plain text (non_phi marketing lead,
+ * vendor needs to distinguish the lead). Phone + email added (non_phi marketing;
+ * PHI masking applies only when lead converts to patient — different surface).
+ * LeadDetailResponse.lead now typed as LeadDetailLeadDTO (mirrors LeadResponse).
  *
  * spec_anchor: 01-spec.md § V3 Vista Resumen + 03-arch-fe.md § ResumenView
  * downstream-regression-na: brand-local vitalia FE
@@ -20,7 +25,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PiiMaskedSpan } from "@/components/shared/phi/PiiMaskedSpan";
 import { ChannelBadge } from "@/components/shared/shell-organism/ChannelBadge";
 import { useLeadDetail } from "../../../api/lead";
 import { ScoreBreakdown } from "./ScoreBreakdown";
@@ -39,7 +43,7 @@ function ResumenSkeleton() {
   return (
     <div className="flex flex-col gap-4 p-4" aria-busy="true">
       <Skeleton className="h-5 w-32" />
-      {[1, 2, 3, 4].map((i) => (
+      {[1, 2, 3, 4, 5, 6].map((i) => (
         <div key={i} className="flex items-center gap-3">
           <Skeleton className="h-4 w-24 shrink-0" />
           <Skeleton className="h-4 flex-1" />
@@ -88,6 +92,32 @@ export function ResumenView({ leadId, tenantId: _tenantId }: ResumenViewProps) {
           Datos del lead
         </h2>
         <dl className="flex flex-col gap-2 text-sm">
+          {/* Nombre — plain text, non_phi marketing lead */}
+          <div className="flex items-center gap-2">
+            <dt className="w-32 shrink-0 text-muted-foreground">Nombre</dt>
+            <dd data-testid="lead-name">{lead.name}</dd>
+          </div>
+
+          {/* Teléfono — plain text, non_phi marketing */}
+          <div className="flex items-center gap-2">
+            <dt className="w-32 shrink-0 text-muted-foreground">Teléfono</dt>
+            <dd data-testid="lead-phone">
+              {lead.phone ?? (
+                <span className="text-muted-foreground/60 italic text-xs">Sin teléfono registrado</span>
+              )}
+            </dd>
+          </div>
+
+          {/* Correo — plain text, non_phi marketing */}
+          <div className="flex items-center gap-2">
+            <dt className="w-32 shrink-0 text-muted-foreground">Correo</dt>
+            <dd data-testid="lead-email">
+              {lead.email ?? (
+                <span className="text-muted-foreground/60 italic text-xs">Sin correo registrado</span>
+              )}
+            </dd>
+          </div>
+
           {/* Canal origen */}
           <div className="flex items-center gap-2">
             <dt className="w-32 shrink-0 text-muted-foreground">Canal origen</dt>
@@ -143,14 +173,6 @@ export function ResumenView({ leadId, tenantId: _tenantId }: ResumenViewProps) {
               ) : (
                 <span className="text-muted-foreground/60 italic text-xs">Aún sin doctor asignado</span>
               )}
-            </dd>
-          </div>
-
-          {/* Contacto masked (PHI — PiiMaskedSpan) */}
-          <div className="flex items-center gap-2">
-            <dt className="w-32 shrink-0 text-muted-foreground">Contacto</dt>
-            <dd>
-              <PiiMaskedSpan value={lead.name} fieldType="name" />
             </dd>
           </div>
         </dl>

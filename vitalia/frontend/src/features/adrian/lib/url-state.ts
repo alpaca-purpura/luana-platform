@@ -21,7 +21,13 @@ import {
 } from "nuqs";
 
 /** Supported conversation channel filter values */
-export type InboxChannelFilter = "whatsapp" | "instagram" | "email";
+export type InboxChannelFilter =
+  | "whatsapp"
+  | "instagram"
+  | "telegram"
+  | "tiktok"
+  | "facebook"
+  | "email";
 
 /** Conversation status filter values */
 export type InboxStatusFilter =
@@ -57,6 +63,9 @@ export const INBOX_URL_SCHEMA = {
   channel: parseAsStringEnum<InboxChannelFilter>([
     "whatsapp",
     "instagram",
+    "telegram",
+    "tiktok",
+    "facebook",
     "email",
   ]),
   /** Conversation status filter */

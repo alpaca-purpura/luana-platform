@@ -22,8 +22,9 @@
  * - _hasHydrated → NOT persisted (transient hydration flag)
  * - setters → NOT persisted (recreated on hydration)
  *
- * Default values (03-arch.md § 2.5, Design Contract §6.1 override):
- * - valeriaState: 'full'  ← architect override DC §6.1 'rail' (mockup ratificado Chris shows full)
+ * Default values (03-arch.md § 2.5, Design Contract §6.1 + bugfix-shell-valeria-responsive):
+ * - valeriaState: 'rail'  ← Chris 2026-06-04 (Point 1: historial collapsed by default; reverts
+ *                            the architect 'full' override). Frees width for the agent panel.
  * - shellMode: 'agentic'  ← default mode for Vitalia MVP
  * - mobileDrawerOpen: false ← default closed (mobile drawer starts closed; remembers via SC-5b)
  *
@@ -89,9 +90,13 @@ export const useShellStore = createSsrSafePersistedStore<ShellStore>(
     setHasHydrated: (v: boolean) => set({ _hasHydrated: v }),
 
     // ── Desktop State ────────────────────────────────────────────────────────
-    // Default valeriaState: 'full' (architect override DC §6.1 'rail')
-    // Justification: mockup ratificado Chris shows Valeria with history visible (full state)
-    valeriaState: "full",
+    // Default valeriaState: 'rail' (vitalia-bugfix-shell-valeria-responsive, Chris 2026-06-04).
+    // Point 1: el rail del historial arranca COLLAPSED por default → 'rail' (icon rail + chat,
+    // sin el panel ValeriaHistory de 280px). Esto baja el min de Valeria (580→360) y, junto al
+    // default 30/70 (defaultValeriaPct, ShellOrganismLayoutClient), evita que Valeria exprima el
+    // contenido del agente. Revierte el override del architect ('full') del mockup F1-S5.
+    // Solo aplica a fresh load — la preferencia persistida del usuario se respeta (ADR-vitalia-006).
+    valeriaState: "rail",
     shellMode: "agentic",
 
     // ── Mobile State (independent slice) ────────────────────────────────────

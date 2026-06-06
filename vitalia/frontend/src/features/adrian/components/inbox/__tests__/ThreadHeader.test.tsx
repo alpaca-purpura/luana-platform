@@ -149,19 +149,19 @@ describe("ThreadHeader", () => {
     expect(screen.getByTestId("segmented-control-3-modes")).toBeDefined();
   });
 
-  it("renders VoiceStyleChip component", () => {
+  it("does NOT render VoiceStyleChip (removed · Chris UI #3)", () => {
     render(<ThreadHeader detail={makeDetail()} />);
-    expect(screen.getByTestId("voice-style-chip")).toBeDefined();
+    expect(screen.queryByTestId("voice-style-chip")).toBeNull();
   });
 
-  it("renders PauseAdrianButton component", () => {
+  it("does NOT render PauseAdrianButton (moved to composer dock · Chris UI #3)", () => {
     render(<ThreadHeader detail={makeDetail()} />);
-    expect(screen.getByTestId("pause-adrian-button")).toBeDefined();
+    expect(screen.queryByTestId("pause-adrian-button")).toBeNull();
   });
 
-  it("renders ToolsSheetTrigger component", () => {
+  it("does NOT render ToolsSheetTrigger (removed · Chris UI #2 — bottom activity stream is enough)", () => {
     render(<ThreadHeader detail={makeDetail()} />);
-    expect(screen.getByTestId("tools-sheet-trigger")).toBeDefined();
+    expect(screen.queryByTestId("tools-sheet-trigger")).toBeNull();
   });
 
   it("renders ContactSidebarToggle component", () => {
@@ -176,14 +176,15 @@ describe("ThreadHeader", () => {
     expect(adrianDecide.getAttribute("aria-checked")).toBe("true");
   });
 
-  it("SegmentedControl3Modes shows yo-escribo when handler_mode=human", () => {
+  it("legacy handler_mode=human falls back to adrian-decide (manual is now Pausar)", () => {
     const detail = makeDetail({
       handler_mode: "human",
       proposal_required: false,
     });
     render(<ThreadHeader detail={detail} />);
-    const yoEscribo = screen.getByTestId("segment-yo-escribo");
-    expect(yoEscribo.getAttribute("aria-checked")).toBe("true");
+    expect(screen.queryByTestId("segment-yo-escribo")).toBeNull();
+    const adrianDecide = screen.getByTestId("segment-adrian-decide");
+    expect(adrianDecide.getAttribute("aria-checked")).toBe("true");
   });
 
   it("SegmentedControl3Modes shows adrian-consulta when handler_mode=ai + proposal_required=true", () => {

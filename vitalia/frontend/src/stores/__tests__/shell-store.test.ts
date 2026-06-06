@@ -22,9 +22,10 @@ import { useShellStore, SHELL_STORAGE_KEY } from "../shell-store";
 
 describe("useShellStore", () => {
   beforeEach(() => {
-    // Reset store to initial state before each test
+    // Reset store to the factory default before each test.
+    // Default valeriaState is 'rail' (bugfix-shell-valeria-responsive Point 1, 2026-06-04).
     useShellStore.setState({
-      valeriaState: "full",
+      valeriaState: "rail",
       shellMode: "agentic",
     });
   });
@@ -32,9 +33,9 @@ describe("useShellStore", () => {
   // ── SC-1 happy: initial state ────────────────────────────────────────────
 
   describe("initial state", () => {
-    it("initial state agentic + full", () => {
+    it("initial state agentic + rail (history collapsed by default)", () => {
       const state = useShellStore.getState();
-      expect(state.valeriaState).toBe("full");
+      expect(state.valeriaState).toBe("rail");
       expect(state.shellMode).toBe("agentic");
     });
   });
@@ -70,17 +71,17 @@ describe("useShellStore", () => {
   // ── SC-3 edge: cycleValeriaState ──────────────────────────────────────────
 
   describe("cycleValeriaState", () => {
-    it("cycleValeriaState toggles full<->rail", () => {
-      // Start at full (initial)
-      expect(useShellStore.getState().valeriaState).toBe("full");
-
-      // Cycle: full → rail
-      useShellStore.getState().cycleValeriaState();
+    it("cycleValeriaState toggles rail<->full", () => {
+      // Start at rail (factory default via beforeEach)
       expect(useShellStore.getState().valeriaState).toBe("rail");
 
       // Cycle: rail → full
       useShellStore.getState().cycleValeriaState();
       expect(useShellStore.getState().valeriaState).toBe("full");
+
+      // Cycle: full → rail
+      useShellStore.getState().cycleValeriaState();
+      expect(useShellStore.getState().valeriaState).toBe("rail");
     });
 
     it("cycleValeriaState from rail toggles to full", () => {

@@ -55,7 +55,8 @@ describe("INBOX_URL_SCHEMA", () => {
   });
 
   it("channel parser returns null for invalid channel", () => {
-    const result = INBOX_URL_SCHEMA.channel.parseServerSide("tiktok");
+    // tiktok/telegram/facebook are valid channels now; use a non-channel value.
+    const result = INBOX_URL_SCHEMA.channel.parseServerSide("snapchat");
     expect(result).toBeNull();
   });
 

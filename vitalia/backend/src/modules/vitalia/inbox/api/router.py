@@ -40,7 +40,7 @@ from luana_core_compliance.application.compliance_service import ComplianceServi
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.db import get_async_session
+from src.db import get_async_session, get_async_session_committing
 from src.modules.vitalia._shared.auth.rbac import PHIAccessDeniedError
 from src.modules.vitalia.audit.audit_writer import AsyncAuditWriter
 from src.modules.vitalia.connections.whisper.adapter import WhisperAdapter
@@ -137,6 +137,15 @@ logger = structlog.get_logger()
 # PHI roles (hipaa-lite.md § Access control)
 _PHI_ROLES = frozenset({"doctor", "nurse", "admin_clinic"})
 
+# Inbox operator roles: the inbox is the operator's tool (front desk + owner), not
+# strict clinical PHI. Mirrors crm.router._INBOX_OPERATOR_ROLES (ratified by Chris
+# for list/detail) so the front desk can also ACT on a conversation (set mode,
+# pause Adrián, send, nudge). Owner + receptionist were getting 403 on every inbox
+# mutation because these endpoints used the strict _PHI_ROLES gate.
+# TODO(consolidate): lift _INBOX_OPERATOR_ROLES to a shared vitalia constant
+# (currently mirrored in crm + inbox routers).
+_INBOX_OPERATOR_ROLES = _PHI_ROLES | frozenset({"owner", "receptionist"})
+
 router = APIRouter(tags=["inbox"])
 
 # Header type aliases
@@ -178,6 +187,14 @@ class _NoOpRedisClient:
     async def set(self, *args: object, **kwargs: object) -> None:
         """No-op: skip Redis SET in Slice 1."""
 
+    async def setex(self, *args: object, **kwargs: object) -> None:
+        """No-op: skip Redis SETEX (pause TTL) when no real Redis (dev).
+
+        PauseAdrianService persists pause_until in the DB regardless; the Redis
+        TTL is only a fast-path pre-check. Without this method pausing 500'd in
+        dev because the no-op client was missing setex.
+        """
+
     async def get(self, *args: object, **kwargs: object) -> None:
         """No-op: return None (no pause active) in Slice 1."""
         return None
@@ -207,7 +224,9 @@ def _build_compliance_service() -> ComplianceService:
 
 
 async def _get_send_service(
-    session: Annotated[AsyncSession, Depends(get_async_session)],
+    # Mutation endpoint → committing session (the service does NOT commit on its own;
+    # get_async_session never commits → writes were silently dropped). See get_async_session_committing.
+    session: Annotated[AsyncSession, Depends(get_async_session_committing)],
 ) -> SendMessageService:
     """Create SendMessageService with real repo instances and async DI.
 
@@ -227,7 +246,11 @@ async def _get_send_service(
 
 
 async def _get_retract_service(
-    session: Annotated[AsyncSession, Depends(get_async_session)],
+    # Mutation endpoint → committing session: retract() writes (mark_retracted +
+    # update_handler_mode + audit_writer.write) and no service commits on its own;
+    # get_async_session never commits → the revert was silently dropped (same
+    # HB-50 root cause as the other 5 mutation factories). See get_async_session_committing.
+    session: Annotated[AsyncSession, Depends(get_async_session_committing)],
 ) -> RetractMessageService:
     """Create RetractMessageService with real repo instances and async DI."""
     return RetractMessageService(
@@ -242,7 +265,8 @@ async def _get_retract_service(
 
 
 async def _get_set_mode_service(
-    session: Annotated[AsyncSession, Depends(get_async_session)],
+    # Mutation endpoint → committing session (PATCH /mode persisted nothing otherwise).
+    session: Annotated[AsyncSession, Depends(get_async_session_committing)],
 ) -> SetModeService:
     """Create SetModeService with real repo instances and async DI."""
     return SetModeService(
@@ -254,7 +278,8 @@ async def _get_set_mode_service(
 
 
 async def _get_pause_service(
-    session: Annotated[AsyncSession, Depends(get_async_session)],
+    # Mutation endpoint → committing session (POST /pause persisted nothing otherwise).
+    session: Annotated[AsyncSession, Depends(get_async_session_committing)],
 ) -> PauseAdrianService:
     """Create PauseAdrianService with real repos + Slice 1 Redis stub."""
     return PauseAdrianService(
@@ -267,7 +292,8 @@ async def _get_pause_service(
 
 
 async def _get_proactive_service(
-    session: Annotated[AsyncSession, Depends(get_async_session)],
+    # Mutation endpoint → committing session (proactive outbound persisted nothing otherwise).
+    session: Annotated[AsyncSession, Depends(get_async_session_committing)],
 ) -> ProactiveOutboundService:
     """Create ProactiveOutboundService with real repos + Slice 1 stubs."""
     return ProactiveOutboundService(
@@ -307,7 +333,8 @@ async def _get_activity_service(
 
 
 async def _get_nudge_service(
-    session: Annotated[AsyncSession, Depends(get_async_session)],
+    # Mutation endpoint → committing session (POST /nudge persisted nothing otherwise).
+    session: Annotated[AsyncSession, Depends(get_async_session_committing)],
 ) -> NudgeService:
     """Create NudgeService with real repos + proactive_resolver (T-2 Slice 2).
 
@@ -432,15 +459,20 @@ async def _resolve_context(
 
 
 def _assert_phi_access(user_role: str) -> None:
-    """Raise PHIAccessDeniedError if role is not in PHI-allowed set.
+    """Raise PHIAccessDeniedError if role may not operate the inbox.
+
+    The inbox is the operator's tool: clinical roles (doctor/nurse/admin_clinic)
+    PLUS front-desk operators (owner/receptionist) may act on a conversation.
+    Mirrors crm._INBOX_OPERATOR_ROLES (ratified). Non-operators (e.g. marketing,
+    sales, patient) are still denied.
 
     Raises:
-        PHIAccessDeniedError: When role is not doctor/nurse/admin_clinic.
+        PHIAccessDeniedError: When role is not in _INBOX_OPERATOR_ROLES.
     """
-    if user_role not in _PHI_ROLES:
+    if user_role not in _INBOX_OPERATOR_ROLES:
         raise PHIAccessDeniedError(
             user_role=user_role,
-            required_roles=list(_PHI_ROLES),
+            required_roles=list(_INBOX_OPERATOR_ROLES),
             resource_type="inbox.conversation",
         )
 

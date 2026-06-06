@@ -122,6 +122,7 @@ def _lead_to_response(lead: Lead) -> LeadResponse:
         estimated_value=lead.estimated_value,
         currency=lead.currency,
         service_interest=lead.service_interest,
+        assigned_doctor_id=lead.assigned_doctor_id,
         buying_signals=list(lead.buying_signals),
         stage_entered_at=lead.stage_entered_at,
         is_frozen=lead.is_frozen,
@@ -523,8 +524,14 @@ class FunnelService:
             needs_ok=_AGENT_NEEDS_OK,
         )
 
+        # B2: override stored score with the freshly computed value so the detail
+        # panel shows the glass-box score even for leads that have never transitioned
+        # (stored score = 0 until first transition writes it back).
+        lead_response = _lead_to_response(lead)
+        lead_response = lead_response.model_copy(update={"score": score})
+
         return LeadDetailResponse(
-            lead=_lead_to_response(lead),
+            lead=lead_response,
             score_breakdown=score_breakdown,
             autonomy=autonomy,
         )
