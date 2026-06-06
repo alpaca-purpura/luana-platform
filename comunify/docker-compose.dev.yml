@@ -71,6 +71,8 @@ services:
         required: false
     environment:
       PORT: "3003"
+      # Cap heap V8 de `next dev` (fuga en sesiones largas). 768MB deja headroom bajo el límite 1G.
+      NODE_OPTIONS: "--max-old-space-size=768"
       # NEXT_PUBLIC_API_URL removed (2026-05-20) — let env_file (comunify/.env.dev) win:
       #   - tunnel mode: https://dev-app.comunifyagents.com (browser hits tunnel which routes /api/* to backend)
       #   - local mode:  http://127.0.0.1:8003 (set en .env.dev cuando no se usa tunnel)
