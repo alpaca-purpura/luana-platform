@@ -6,6 +6,7 @@ slug: "shell-nicolify"
 title: "Shell-organism agéntico Nicolify (contenedor navegable + Ribbon 5 agentes + Luana orquestador)"
 status: live
 user_visible: false                      # infra/technical container — el shell ES el mapa, no una caja de negocio
+functional_area: plataforma-tecnica.shell   # G6 — resuelve a la caja Infraestructura→plataforma-tecnica (sufijo libre)
 
 # ── Zone/box (paradigma 3 zonas · SYSTEM-MAP.yaml::zones) ──
 zone: "infraestructura"
