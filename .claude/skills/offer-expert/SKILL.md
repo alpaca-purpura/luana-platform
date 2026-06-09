@@ -347,12 +347,10 @@ Antes de codear, si:
 
 ## Docs anchor
 
-- `docs/domains/offer/INDEX.md` (todos los docs offer)
 - `docs/domains/offer/catalogs-consolidation.md` (5 axes base)
 - `docs/domains/offer/offer-type-preset-catalog.md` (preset layer)
 - `docs/domains/offer/variant-structure-catalog.md` (variants)
-- `docs/_archive/pre-sdd-2026-05-04/refactors/field-contract-platform/DESIGN.md` (FieldContract platform — Fase 04-09)
-- `docs/_archive/pre-sdd-2026-05-04/refactors/field-contract-platform/LEARNINGS.md` (descubrimientos cross-fase)
+- ⚠️ `docs/domains/offer/INDEX.md` + `docs/_archive/pre-sdd-2026-05-04/refactors/field-contract-platform/{DESIGN,LEARNINGS}.md` PURGADOS (SDD reorg) — no existen. Catálogos engine viven en `core/luana-core-offer-studio/` (esta skill es pre-reorg, ver HB-65 topology-alignment)
 - `.claude/rules/offer-catalogs.md` (DAG rules)
 - `.claude/rules/spanish-text.md` (neutro LATAM sin voseo)
 - `.claude/rules/tdd-mandatory.md` (test antes impl)

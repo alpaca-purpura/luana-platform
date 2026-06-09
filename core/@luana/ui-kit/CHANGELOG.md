@@ -1,3 +1,12 @@
+## 0.3.0 — 2026-06-08 (core-ds-foundation)
+### Added
+- Layout-primitives: PageContainer · PageContentStack · PageHeader · PageSection · Toolbar · FilterBar · EmptyState · ErrorState · ListPageSkeleton · FormPageSkeleton · Pagination · DetailLayout · FormLayout.
+- Entity components: EntityWorkspaceLayout + EntitySubNavBar (lift nicolify, full-bleed N3 ribbon, store-free skeleton) · EntityInfoCard + Skeleton + Empty (lift vitalia StaffCard) · EntityPicker (net-new: searchFn-prop, debounced + cursor-paginated + @tanstack/react-virtual windowed).
+- Autosave/Group: FloatingAutosaveIndicator + Group/GroupHeader (lifts).
+- Page archetypes: ListPageScaffold · DetailPageScaffold · FormPageScaffold · DashboardPageScaffold.
+### Changed
+- Atoms dialog/sheet/alert-dialog/detail-panel no longer hard-couple to a consuming app's copilot store (via @luana/hooks use-copilot-offset decouple) → ui-kit now consumable cross-brand.
+
 # @luana/ui-kit Changelog
 
 ## [0.2.0] — 2026-05-30

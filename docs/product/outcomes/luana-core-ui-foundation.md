@@ -46,6 +46,43 @@ related_rules:
 
 # Luana Core UI Foundation — platform outcome
 
+## ★ Status update 2026-06-06 (ratificación Chris + reconciliación)
+
+**Contexto nuevo:** este outcome ahora es el vehículo de la **convergencia FE/shell vitalia ↔ nicolify**. Desde 2026-05-21, vitalia construyó el shell-organism completo y **nicolify lo portó verbatim re-temizado** → mirror cross-brand CONCRETO (ya no preventive). Es el caso canónico de `anti-duplication.md`: dos brands replican → lift a core.
+
+**Ratificado por Chris 2026-06-06:**
+- `2026-05-21-luana-core-ui-extraction` (umbrella) → **`state: accepted`**
+- `2026-06-01-lift-shell-organism-to-core` (child) → **`state: accepted`**
+
+**Reconciliaciones importantes (verify-first 2026-06-06):**
+- ⚠️ **Target package: `core/luana-core-ui` NO existe.** El package UI real es **`core/@luana/ui-kit`** (+ `@luana/design-tokens`, `@luana/hooks`, `@luana/schemas`). El lift **EXTIENDE** ese package (le agrega la capa `organism/shell/`), NO crea uno nuevo. Toda referencia a `luana-core-ui` en este doc debe leerse como `@luana/ui-kit`.
+- ✅ **El "PATTERN PENDING REVIEW" del shell/organism (capa 3) YA está resuelto** — cementado en `PARADIGM.md` + `ADR-010` (2026-05-30). El shell-organism es construible.
+
+**Ejecución GATED (no arranca hoy):** el lift es 1-2 semanas de `/dev-team` con arch-test downstream obligatorio en vitalia + nicolify (ambos tienen shell shipped). NO se arranca encima de las **4 stories abiertas** (vitalia: bugfix-shell-valeria-responsive, adrian-embudo, lisa-doctores · nicolify: r1-abel-icp-buyer). Se agenda cuando esas cierren. Handoff: `/pm-vitalia` + `/pm-nicolify` para cerrar stories → luego `/dev-team` para el lift.
+
+> Lo de abajo (escrito 2026-05-21) tiene detalle aún válido del diseño del package, pero léelo con las 2 reconciliaciones de arriba (`@luana/ui-kit` + shell-pattern ya cementado).
+
+## ★ Status update 2026-06-07 (homologación UI — ADR-014 ratificada · 3 piezas que faltaban)
+
+Chris reportó (2026-06-07) que el dev-team genera cada interfaz "a su forma" → cada hoja se siente otra app, y pidió **homologar la UI por completo de una vez**. Diagnóstico grounded: **vitalia 368 arbitrary-values** en features · **0 layout-primitives sistémicas** · `@luana/design-tokens` solo z-index · `@luana/ui-kit` solo átomos+detail-panel. Verdad incómoda: vitalia YA tiene tokens+skill+rule D1 y aun así driftea → **el criterio no sostiene, solo el enforcement MECÁNICO**.
+
+**Este outcome ABSORBE 3 piezas nuevas** (ratificadas Chris 2026-06-07 · doctrina = `ADR-014-design-system-homologation` accepted · plan = `proposals/2026-06-07-design-system-homologation.md` **accepted**):
+
+1. **Capa 3 — layout-primitives de CONTENIDO** (el hueco real del "se siente otra app"): `Page · PageHeader · Section · Toolbar · FilterBar · EmptyState · ErrorState · DetailLayout · FormLayout · EntityWorkspaceLayout` + page-archetypes (list/detail/form/dashboard) en `@luana/ui-kit`. (Antes "PENDING REVIEW"; ahora cementada — el shell-pattern resuelto la habilita.) `EntityWorkspaceLayout` (nicolify) = primera primitiva — `vitalia/docs/learnings/2026-06-06-n3-entity-workspace-layout-from-nicolify.md`.
+2. **Enforcement MECÁNICO** (antes solo drift-detection de átomos): escala spacing tokenizada en `@luana/design-tokens` + **eslint `no-arbitrary-value` / tailwind lock** + arch-test layout (prohíbe maquetar a mano donde hay primitiva + hex/px) + `frontend-visual-fidelity` D1 mecánico.
+3. **Adopción COMPREHENSIVA (req Chris HARD):** cada marca migra **TODAS sus hojas sin excepción** (vitalia primero — los 368), NO slice-by-slice. *"Empezar homologado, sino seguiré creciendo con distintas formas UI."* Reemplaza la estrategia vertical-slice opportunista de 2026-05-21 para la HOMOLOGACIÓN de lo existente (los slices agénticos siguen para feature nueva).
+
+**Stories nuevas que cuelgan (además de las de 2026-05-21):**
+- ★ **`core-ds-foundation`** (CONSOLIDADA 2026-06-08 · Fase 0+1+2 en una: tokens+lock eslint + layout-primitives + Entity*/EntityPicker + archetypes + /showcase route + arch-test). Contrato + ejemplos de código = `docs/architecture/luana-platform/design-system-canon.md`. Bindings skills/rule YA hechos. (ex `S-CORE-DS-TOKENS-LOCK` + `S-CORE-DS-LAYOUT-PRIMITIVES` + enforcement — fusionadas, Chris "no agrandar").
+- `{brand}-ds-adoption` × vitalia/nicolify/comunify (Fase 3 comprehensiva, todas las hojas — aparte, por marca).
+
+**Secuencia vs shell-lift + stories abiertas (resuelve el b1/b2 de shell-valeria-responsive):** este outcome YA gatea "no arrancar encima de las 4 stories abiertas" → alineado con **b1**: cerrar abiertas → liftear shell → homologación. Excepción: el eje tokens-lock de `core-ds-foundation` (Fase 0) puede arrancar antes (solo config + tokens, no código de feature) para servir el req#2 desde ya.
+
+**Arranque limpio (nueva conversación):** `docs/architecture/luana-platform/design-system-homologation-HANDOFF.md`.
+
+---
+
+
 > Outcome owned por `/pm-luana` (modo Core Engineering). Crea engine TS package
 > `@luana/ui` con shadcn primitives genéricos. Vitalia es primer consumer
 > (urgent), 9 brands futuras heredan. Brands consumen via `npx @luana/ui add X` CLI

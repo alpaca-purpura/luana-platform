@@ -21,10 +21,13 @@ JWKS_URL = f"{CLERK_ISSUER}/.well-known/jwks.json"
 
 security = HTTPBearer()
 
-# Cachear las llaves públicas para no pedirlas en cada request
+# Cachear las llaves públicas para no pedirlas en cada request.
+# PyJWKClientError: pyjwt ≥2.13 valida el scheme del URI en __init__ (JWKS_URL vacío
+# cuando CLERK_ISSUER no está seteado → raise). Antes era lazy. Mantener defensivo:
+# jwks_client=None si no se puede construir; verify_token_payload ya falla 500 si falta.
 try:
     jwks_client = jwt.PyJWKClient(JWKS_URL)
-except (ValueError, RuntimeError, OSError) as e:
+except (ValueError, RuntimeError, OSError, jwt.exceptions.PyJWKClientError) as e:
     logger.warning("Could not initialize JWKS client: %s", e)
     jwks_client = None
 

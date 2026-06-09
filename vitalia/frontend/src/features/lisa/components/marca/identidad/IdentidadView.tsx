@@ -45,7 +45,7 @@ import type { IdentityFormValues } from "../../../types/marca/identity-schema";
 import type { ClinicVisualsFormValues } from "../../../types/marca/visuals-schema";
 import { useIdentityAutosave } from "../../../hooks/useIdentityAutosave";
 import { useVisualsAutosave } from "../../../hooks/useVisualsAutosave";
-import { AutosaveBadge } from "@/components/marca/shared/AutosaveBadge";
+import { FloatingAutosaveIndicator } from "@/components/shared/FloatingAutosaveIndicator";
 import { aggregateAutosaveStatus } from "../../../utils/marca/aggregateAutosave";
 import { useMarcaIdentidadStore } from "../../../store/marca-identidad-store";
 import { IdentityCard } from "./IdentityCard";
@@ -244,19 +244,10 @@ export function IdentidadView({
       {/* Bug #3 fix (vitalia-bugfix-shell-nav-scroll-errors T-6): se removió el
           h2 "Identidad" (eco del SubSubTab activo). Se conserva la descripción
           contextual (helper text, no es eco de la nav). */}
-      <div className="flex items-start justify-between gap-3">
-        <p className="text-sm text-muted-foreground">
-          Define la identidad visual y descriptiva de tu clínica — nombre,
-          tagline, colores, tipografía y equipo.
-        </p>
-        {/* Indicador de guardado a nivel PÁGINA: refleja todas las secciones
-            (identidad + colores + tipografía), no solo una. */}
-        <AutosaveBadge
-          status={pageAutosave.status}
-          savedAt={pageAutosave.savedAt}
-          className="shrink-0 pt-0.5"
-        />
-      </div>
+      <p className="text-sm text-muted-foreground">
+        Define la identidad visual y descriptiva de tu clínica — nombre,
+        tagline, colores, tipografía y equipo.
+      </p>
 
       {/* ── Cards grid ──────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -339,6 +330,13 @@ export function IdentidadView({
           className="sm:col-span-2"
         />
       </div>
+
+      {/* Indicador de guardado a nivel PÁGINA (estándar flotante): refleja todas
+          las secciones (identidad + colores + tipografía), siempre visible. */}
+      <FloatingAutosaveIndicator
+        status={pageAutosave.status}
+        savedAt={pageAutosave.savedAt}
+      />
     </div>
   );
 }

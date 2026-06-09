@@ -19,16 +19,25 @@ dinero/pricing, gates PHI, state machines, transforms de contrato (HB-42/44).
 
 Uso:
   python3 scripts/mutation_gate.py --base <ref> --mode <hard|advisory> [--paths a,b]
+  python3 scripts/mutation_gate.py --cap <cap_id> --base <ref> [--mode hard]   # F2b: surface del cap
 Exit: 0 = ok o advisory/degrade · 1 = survivor en líneas nuevas con mode=hard.
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import shutil
 import subprocess
 import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from harness_config import get as _cfg  # noqa: E402 — own script dir put on sys.path above
+
+# Active brands — from the harness seam project.config.yaml (W5b · brands.active). No
+# hardcoded enum (charter §3 DIP); a new brand is picked up from the seam.
+_BRANDS = tuple(_cfg("brands.active", pluck="slug"))
 
 WS = Path(
     subprocess.run(
@@ -51,6 +60,27 @@ def changed_files(base: str) -> list[str]:
     return [f for f in out.splitlines() if f.endswith((".py", ".ts", ".tsx"))]
 
 
+def files_for_cap(cap_id: str) -> list[str]:
+    """Surface de código de una cap = sus archivos `# cap:`/`// cap:` (reverse-index).
+
+    Lee `{brand}/docs/product/capabilities/_code-index.json::cap_to_files` (el mismo
+    índice que usa `validate_code_cap_bidirectional`). Esto es "el surface del cap"
+    de F2b: mutar SOLO lo que el cap declara como suyo, no el repo entero.
+    """
+    for brand in _BRANDS:
+        idx = WS / brand / "docs" / "product" / "capabilities" / "_code-index.json"
+        if not idx.exists():
+            continue
+        try:
+            data = json.loads(idx.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        cap_to_files = data.get("cap_to_files", {})
+        if cap_id in cap_to_files:
+            return [f for f in cap_to_files[cap_id] if f.endswith((".py", ".ts", ".tsx"))]
+    return []
+
+
 def tool_for(files: list[str]) -> tuple[str, str | None]:
     """(surface, tool_path|None). BE→mutmut, FE→stryker. None si ausente (degrade)."""
     has_py = any(f.endswith(".py") for f in files)
@@ -69,10 +99,39 @@ def main() -> int:
     ap.add_argument("--base", default="HEAD~1", help="ref base del diff de la story")
     ap.add_argument("--mode", choices=["hard", "advisory"], default="advisory")
     ap.add_argument("--paths", default="", help="csv override de paths a mutar")
+    ap.add_argument(
+        "--cap",
+        default="",
+        help="cap_id (ej. brand_studio.lisa-marca): muta SOLO el surface del cap "
+        "(sus archivos `# cap:`). Con --base, lo INTERSECTA con el diff (diff-scoped al cap).",
+    )
     args = ap.parse_args()
     tag = HARD if args.mode == "hard" else ADVISORY
 
-    files = [p for p in args.paths.split(",") if p] or changed_files(args.base)
+    if args.cap:
+        cap_files = files_for_cap(args.cap)
+        if not cap_files:
+            print(
+                f"{tag} cap '{args.cap}' sin archivos en el _code-index (¿cap_id mal escrito "
+                "o índice desactualizado? regen: scripts/generate_code_index.py). Nada que mutar."
+            )
+            return 0
+        # Diff-scoped al surface del cap: intersección cap ∩ diff (lo NUEVO/MODIFICADO del cap).
+        # Sin diff real (--base inválido o sin cambios) → surface completo del cap (full sweep).
+        diff = set(changed_files(args.base))
+        scoped = [f for f in cap_files if f in diff]
+        if scoped:
+            print(f"{tag} cap '{args.cap}': {len(scoped)}/{len(cap_files)} archivo(s) del surface en el diff.")
+            files = scoped
+        else:
+            print(
+                f"{tag} cap '{args.cap}': 0 archivos del surface en el diff (full-sweep del surface "
+                f"completo · {len(cap_files)} archivos · costoso)."
+            )
+            files = cap_files
+    else:
+        files = [p for p in args.paths.split(",") if p] or changed_files(args.base)
+
     if not files:
         print(f"{tag} sin archivos py/ts en el diff — nada que mutar. OK.")
         return 0

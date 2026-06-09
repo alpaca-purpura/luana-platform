@@ -15,7 +15,7 @@ cap_change_type: extend                           # new | fix | extend | derive 
 parent_story: null                                # opcional · si story spawned desde otra done (parent.id)
 
 state: refining                                   # 10 estados v4 — ver tabla abajo
-phase_workflow: PO_SPEC                           # ver tabla phase workflow abajo (informational · paso interno del pipeline SDD, NO un eje del modelo)
+phase_workflow: null                              # ⚠️ DEPRECADO (X6 · proceso v5) — plegado en 'phase' + las fases nombradas {G,R,C,D}. Histórico/interno, NO operator-facing. Vocabulario viva = 10 estados + {G,R,C,D}.
 phase: null                                       # runtime phase (ej AWAIT_CHRIS_VERIFY en G · HANDOFF_TO_AUDITOR). distinto de phase_workflow
 autonomous_mode: false                            # Chris opt-in explícito: true → G (Chris-verify) se SALTA, corre a /auditor sin pausa (story-closure-gate · proceso v5)
 last_artifact: 01-spec.md                         # último archivo escrito
@@ -75,7 +75,9 @@ reconciled: false                                 # /pm-{brand} → true en R (r
 | 9 | `parked` | De-prioritized, NO abandonado | Chris | ∞ |
 | 10 | `dropped` | Won't do (terminal) | Chris | ∞ |
 
-## Phases (story-level — informational, no enforcement)
+## Phases — HISTÓRICO (X6-retired · proceso v5 · NO operator-facing)
+
+> ⚠️ Las etiquetas de letra/`PHASE` (PM_DRAFT/PO_SPEC/UX_UI/…/AUDIT_T{n}/MERGE) quedaron **retiradas como operator-facing** (X6). La **vocabulario viva = 10 estados + las 4 fases nombradas {G,R,C,D}** (viven en el campo `phase`, NO en `phase_workflow`). Esta tabla queda como referencia interna del pipeline SDD — no la uses para razonar el estado de una story.
 
 | Phase | Owner | Inputs | Output | Next |
 |---|---|---|---|---|

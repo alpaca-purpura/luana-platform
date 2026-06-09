@@ -20,7 +20,7 @@ defer_audit_resolution: >-
   + i18n, (6) visual goldens → project=visual (requiere ratify Chris), (7) live-verify
   real → cap lisa.doctores + auditor. Work order detallado en chris-input.md.
 architecture_pattern: ADR-vitalia-004
-last_modified: '2026-06-01T23:59:00Z'
+last_modified: '2026-06-07T02:53:00Z'
 ready_package_by: /architect (Opus 4.8)
 ready_package_at: '2026-05-31'
 autonomous_mode: true
@@ -55,7 +55,139 @@ reuse_map_summary: >-
   [doctor-id] · NEW personal-branding bio + horarios + KPIs · doctors-as-faces
   preview
 spawned_at: 2026-05-22T00:00:00.000Z
-next_action: "⚠️ PENDIENTE Chris ratificación V-VIS-1..4 (7 PNGs ADR-vitalia-003) → luego /auditor → merge. Remaining honest-RED: SC-11 AR/MX/CL (credential i18n modal default), SC-1/SC-1b/SC-1c/SC-1d workspace calendar deep flows, SC-9 large-dataset pagination, SC-3/SC-3b. Clerk fix resuelto (force_organization_selection=false)."
+next_action: "🔴 KEYSTONE REGRESIÓN (botando error · descubierto 2026-06-06): /lisa/staff tira 'Maximum update depth exceeded' (Next error bubble) — NuevoIntegranteModal.tsx:109-114 useEffect con createDoctor (react-query mutation, ref nueva cada render) en deps → loop infinito. Modal monta cerrado en el directorio → la página entera crashea. Handoff /dev-team (TDD RED-first) + live-verify FULL surface (#37, 5-day shell drift) + resolver 12 honest-RED con doctrina real-backend (no mock) + dod_evidence + demo-script. Luego G (Chris self-test dev-app + ratificar golden PNGs V-VIS-1..4 ADR-003) → R (reconcile /pm-vitalia) → /auditor → merge. Proceso v5: autonomous_mode efectivo=false (G pausa para Chris)."
+regression_2026-06-06:
+  id: nuevo-integrante-modal-infinite-loop
+  severity: critical
+  surface: /{tenantId}/lisa/staff (directorio)
+  symptom: "Maximum update depth exceeded — Next.js error bubble (botando error)"
+  root_cause: >-
+    NuevoIntegranteModal.tsx:109-114 useEffect deps [open, form, createDoctor].
+    createDoctor = useCreateDoctor() (react-query useMutation) devuelve ref nueva
+    cada render → effect re-dispara → form.reset()+createDoctor.reset() → re-render → loop.
+    Probablemente latente desde build; expuesto/agravado por drift del shell (lift @luana/ui-kit
+    256517a3 + squash-merges embudo/proceso-v5/shell-valeria en últimos 5 días).
+  fix_owner: /dev-team (TDD RED-first)
+  status: "✅ FIXED + live-verified dev-app (no max-depth, page renders, 3/3 unit)"
+  also_check: ["WebsiteCard.tsx:103 (RHF form stable — OK)", "BloquePopover.tsx:201 (RHF reset stable — OK)"]
+regression_2026-06-06_bug2:
+  id: staff-client-absolute-base-cors
+  severity: critical
+  surface: /{tenantId}/lisa/staff (directorio + workspace · TODO client fetch)
+  symptom: "StaffErrorBanner ('No pudimos cargar el equipo') pese a BE GET 200"
+  root_cause: >-
+    staff.ts + StaffWorkspaceShell.tsx (ambos "use client") usaban base ABSOLUTA
+    http://localhost:8002 → browser cross-origina → CORS block (No Access-Control-Allow-Origin).
+    El /api/*→BE lo routea el tunnel Cloudflare (deploy/cloudflared/dev-config.yml ^/api/.*),
+    NO next.config (sin rewrites). Convención app (adrian/fidelizacion/crm) = base RELATIVA
+    same-origin. Masked por SSR initialData (server-to-server, absoluto OK) que pintaba el 1er render.
+  fix: "API_BASE = '' (relativo) en staff.ts + StaffWorkspaceShell.tsx (client). staff-server.ts SSR mantiene absoluto."
+  status: "✅ FIXED + live-verified dev-app (GET 200 {items:[...]}, console errors=[], directorio renderiza)"
+regression_2026-06-06_bug3:
+  id: staff-mutations-403-no-user-role-header
+  severity: high
+  surface: POST/PATCH/DELETE /clinics/doctors* (crear/editar/desactivar/bio/bloques)
+  symptom: "POST /clinics/doctors → 403 Forbidden (no 201) · modal no redirige"
+  root_cause_3a: >-
+    staff.ts/StaffWorkspaceShell NO mandan X-User-Role (ni X-User-ID). require_brand_owner_access
+    lee el rol del header → ausente → 403 en toda mutación. marca.ts SÍ lo manda (buildMutationHeaders).
+    El create por el modal real NUNCA funcionó (los 3 doctores 06-01 vía path que inyectaba header).
+  decision_3b: >-
+    DECISIÓN CHRIS PENDIENTE. doctores exige _ADMIN_CLINIC_ROLES={admin_clinic} ÚNICAMENTE
+    (AC-12 + hipaa-lite: owner NO es PHI-role). dr.demo es rol owner (verificado Clerk) → 403 by design.
+    marca permite {owner,admin_clinic}; doctores no. ¿Ensanchar doctores a {owner,admin_clinic} (owner
+    gestiona staff) o admin_clinic-only (necesita user admin_clinic de prueba + bootstrap del 1er admin)?
+  fix_3a: "✅ DONE — staff.ts buildStaffMutationHeaders → 8 mutations send X-User-Role+X-User-ID (mirror marca)"
+  decision_3b_resolved: "Chris 2026-06-06: WIDEN a {owner, admin_clinic}. BE _STAFF_MUTATION_ROLES widened + test_doctor_mutation_rbac.py 10/10. ✅ DONE"
+  status: "✅ #3a+#3b DONE (gated green) · write live-verify BLOCKED by bug #4"
+regression_2026-06-06_bug4:
+  id: usecurrentuser-global-role-not-per-tenant
+  severity: high
+  scope: SYSTEMIC (shared hook src/hooks/useCurrentUser.ts · 8 consumers)
+  surface: all tenant-scoped RBAC + PHI gating via useCurrentUser
+  symptom: "write POST 403 con X-User-Role:'doctor' pese a dr.demo=owner en el tenant"
+  root_cause: >-
+    DB: users.role (GLOBAL) = doctor · user_tenants.role (per-tenant Sanaré) = owner.
+    GET /api/v1/iam/users/me (engine core/luana-core-iam) devuelve el perfil GLOBAL
+    (role: doctor, no toma X-Tenant-ID). El engine está bien (existe /me/tenants con rol
+    por-tenant). El bug es de marca: useCurrentUser lee el rol de /me (global) para RBAC
+    tenant-scoped; su docstring afirma per-tenant pero NO lo es. dr.demo es doctor de
+    profesión + owner de la clínica → 1-rol-por-tenant pierde esa dualidad.
+  phi_implication: >-
+    useCurrentUser.hasPhiAccess = role ∈ {doctor,nurse,admin_clinic}. Cambiar a per-tenant
+    flipea dr.demo hasPhiAccess true→false (owner∉PHI) → puede romper UI PHI-gated en 8
+    consumers (fidelizacion×3, inbox, usePiiRoleGate, staff). Decisión de modelo de roles + PHI.
+  decision_resolved: "Chris 2026-06-06: opción B (targeted staff.ts). ✅ DONE"
+  fix_applied: >-
+    staff.ts useStaffMutationHeaders: rol = per-tenant (tenant-store activeTenant/availableTenants
+    role) NO el global; X-User-ID = DB user UUID (meData.id del /me cache, NO Clerk id —
+    los endpoints doctors tipan X-User-ID:UUID + lo usan como actor de audit). useCurrentUser
+    compartido NO tocado (hasPhiAccess intacto). systemic useCurrentUser per-tenant → carril aparte.
+  status: "✅ FIXED + live-verified (write 201)"
+write_live_verified_2026-06-06:
+  action: "crear doctor vía modal real (autenticado dr.demo owner) en dev-app.vitalialat.com"
+  post_status: 201
+  x_user_role_sent: owner   # per-tenant (no global doctor)
+  x_user_id_sent: "527050c3 (DB UUID, no Clerk id)"
+  db_effect: "vitalia_doctors id=88c931f3 (PHI cifrada pgcrypto, active=t)"
+  audit_effect: "vitalia_audit_log action=doctor.created actor=527050c3 (DB user id correcto)"
+  telemetry: "growth_studio_event lisa_staff_doctor_created"
+  redirect: "/lisa/staff/88c931f3.../perfil (modal router.push OK)"
+dod_live_verified: true
+dod_env: "make dev-app-vitalia → dev-app.vitalialat.com (Playwright autenticado live, dr.demo owner)"
+dod_evidence:
+  - action: "GET /clinics/doctors (directorio) autenticado"
+    observed: "200 {items:[Ana Garcia Mendoza...]}, directorio renderiza, console errors=[], cero max-depth, sin error banner"
+    backend_log: "GET /clinics/doctors 200 OK"
+  - action: "POST /clinics/doctors (crear doctor vía modal real, owner)"
+    observed: "201 + redirect a /lisa/staff/{id}/perfil"
+    backend_log: "doctor_created + POST 201 · DB vitalia_doctors fila cifrada + vitalia_audit_log doctor.created actor=DB-UUID + telemetry lisa_staff_doctor_created"
+  - action: "abrir perfil de un doctor (GET /clinics/doctors/{id} detail)"
+    observed: "200 (X-User-ID=DB-UUID) · doctor-perfil-view renderiza · SIN 'No se pudo cargar el perfil' · sin overlay error Next"
+    backend_log: "GET /clinics/doctors/{id} 200 OK"
+  - action: "workspace tabs horarios + servicios"
+    observed: "ambas cargan sin error · horarios calendar renderiza (sin 'filter is not a function') · sin overlay error Next · sin loop"
+    backend_log: "GET /availability-blocks 200 · GET detail 200"
+regression_2026-06-06_bug5:
+  id: doctor-perfil-422-no-x-user-id
+  severity: high
+  surface: /lisa/staff/{id}/perfil (+ workspace shell)
+  symptom: "'No se pudo cargar el perfil. Vuelve a intentarlo.' (Chris lo reportó)"
+  root_cause: >-
+    GET /{doctor_id} (detail) exige X-User-ID:UUID (audit-on-PHI-read; la LIST no).
+    useDoctor + StaffWorkspaceShell (mismo query key) NO mandaban X-User-ID → 422.
+    Yo había agregado headers SOLO a mutaciones, no a los reads de detail. (La live-verify
+    del write asertó el redirect URL pero NO que el perfil renderizara → el miss.)
+  fix: "useDoctor + StaffWorkspaceShell mandan actor headers (useStaffActorHeaders) + enabled gate hasta X-User-ID listo (mata race 422-then-200)"
+  status: "✅ FIXED + live-verified (GET 200, perfil renderiza)"
+regression_2026-06-06_bug6:
+  id: availability-blocks-envelope-mismatch
+  severity: high
+  surface: /lisa/staff/{id}/horarios (AvailabilityCalendar)
+  symptom: "'(blocks ?? []).filter is not a function' → overlay error Next en horarios"
+  root_cause: >-
+    BE devuelve AvailabilityBlocksResponse {blocks:[...]} (envelope) pero useAvailabilityBlocks
+    fetchaba como AvailabilityBlock[] (array pelado) → blocks era objeto → .filter crash.
+    Misma clase que el {items} del directorio. Masked: horarios e2e era mock.
+  fix: "useAvailabilityBlocks desempaqueta res.blocks ?? []"
+  status: "✅ FIXED + live-verified (horarios renderiza)"
+verified_at: 2026-06-06
+phase: AWAIT_CHRIS_VERIFY
+remaining_for_developed:
+  - "demo-script.md (story funcional)"
+  - "honest-RED secundarios: SC-1b/c/d calendar recurrence, SC-9 pagination, SC-11 i18n credencial país (mock→real o scope per #37)"
+  - "visual goldens V-VIS-1..4 → ratificación Chris (ADR-003, NO autonomous)"
+  - "G: Chris self-test live en dev-app (core read+write ya verde) → R reconcile → /auditor"
+flagged_carriles:
+  - "L3 tech-debt: test_doctor_cross_tenant.py usa asyncio.get_event_loop() (roto Py3.12, pre-existente)"
+  - "L2/L3 systemic: useCurrentUser devuelve rol GLOBAL no per-tenant + expone Clerk id no DB id (8 consumers) — carril aparte"
+  - "L2 contract: X-User-ID inconsistente BE (marca=str+resuelve Clerk · doctors=UUID directo) — homologar"
+session_2026-06-06_summary: >-
+  Retomada tras 5d. Diagnosticada la 'botando error' (loop) + descubiertos 2 bugs más de
+  integración real (CORS read, RBAC write) que el '6/8 done' enmascaró. Bugs #1 (loop) y #2 (CORS)
+  FIXED + live-verified en dev-app (read path 100% verde). Bug #3 write path: #3a (X-User-Role
+  header faltante, fix mecánico mirror marca) + #3b (RBAC owner vs admin_clinic, DECISIÓN Chris).
+  Story sigue developing; write path pausado en decisión #3b. NO developed aún.
 blocker_2026-06-01:
   id: clerk-choose-organization-task
   kind: clerk-instance-config (no-código)

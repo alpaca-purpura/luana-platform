@@ -11,7 +11,7 @@
 - value: false                      # default. Chris opt-in explícito al ratificar ready
 - chain_if_true: [/dev-team → /auditor → /pm-{brand} merge]
 - caps: { max_iterations_per_ticket: 10, self_fix_iter: 5, audit_iterations: 4, max_total_cost_usd: 5.00, max_wall_clock_minutes: 90, on_cap_exceeded: "state=blocked + escalate Chris" }
-  # self_fix_iter<=5 (Carril A), audit_iterations<=4 total — v4.2 (`.claude/rules/auditor-self-fix-policy.md`)
+  # self_fix_iter (Carril R · default fix-and-own ≤6 en v5), audit_iterations<=4 total — Auditor Responsable v5 (`.claude/rules/auditor-self-fix-policy.md`)
 
 > Reglas HARD para `autonomous_mode: true` (ver architect-autonomous-mode.md):
 > NUNCA true si — algún ticket AGENTIC `production_code: true` · toca `core/luana-core-*` · toca cross-brand · validators con `pass_k` < 0.66 · hot-fix `repro_verified: false` · `defer_audit: true`.
@@ -42,9 +42,9 @@ T-1 → T-2 → T-3   (citar el grafo real de `06-tickets.yaml` blocks/blocked_b
   - `/dev-team` ejerce la acción real en `dev-app.{brand}lat.com` (o localhost:{port} fallback) via Chrome DevTools MCP antes de cerrar `developed`.
   - Registra `dod_live_verified: true` + `dod_evidence` (writes ejercidos + efecto observado + backend logs sin traceback) en `checkpoint.md`.
   - Gate anti-burbuja: specs importan `base.ts` (no `@playwright/test` directo); `pageerror`/`console[error]`/`response>=400` colectados en teardown.
-  - Demo manual (`demo-script.md` 4 secciones) + `demo_signoff` de Chris requerido si `demo_required: true`.
+  - Demo manual (`demo-script.md` 4 secciones) + el signoff de Chris en `checkpoint.md::chris_verify.signoff` (fase G · proceso v5) requerido si `demo_required: true`.
 - Para stories **técnicas puras** (config/docs/migration-only/tooling sin endpoint ejecutable): `demo_required: false` + `demo_skip_reason` en checkpoint.
-- `/pm-{brand}` REFUSE merge→done si falta `dod_live_verified: true` o `dod_evidence`, o si gherkin-matrix tiene `MISSING`, o si `demo_required: true` sin `demo_signoff.result ∈ {APPROVED, APPROVED_WITH_NOTES}`.
+- `/pm-{brand}` REFUSE merge→done si falta `dod_live_verified: true` o `dod_evidence`, o si gherkin-matrix tiene `MISSING`, o si `demo_required: true` sin `chris_verify.signoff.result ∈ {SATISFIED, SATISFIED_WITH_FOLLOWUPS}`.
 
 ## Nota para stories tipo `bugfix`
 

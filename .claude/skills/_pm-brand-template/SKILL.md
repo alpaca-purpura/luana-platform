@@ -83,8 +83,27 @@ model: opus
 con placeholders reemplazados...)
 
 ★ MANDATORIO: Bootstrap protocol DEBE incluir "Step 0 — Story closure gate scan"
-per `.claude/rules/story-closure-gate.md` (Layer 1) Y "Auto-chain rule" per
-caso F1-S4 vitalia 2026-05-23 (handoff programático, no textual). Plantilla:
+per `.claude/rules/story-closure-gate.md` (Layer 1), "Auto-chain rule" per
+caso F1-S4 vitalia 2026-05-23 (handoff programático, no textual), Y el
+"★ Intake-handshake" (W0.5-bis · la historia NACE de la conversación: diseñador
+del sistema → zona/caja + extiende-o-nuevo + qué ya existe + empujás → recién ahí
+se crean checkpoint.md + chris-input.md). SSoT: `REQ-TAKING-DETAIL.md §2`. Bloque
+verbatim a copiar (idéntico al de los 4 pm-{brand} activos, antes de `## Vocabulary`):
+
+\`\`\`markdown
+## ★ Intake-handshake — la historia NACE de la conversación (W0.5-bis)
+
+> SSoT: `docs/process/harness-refactor-w0.5/REQ-TAKING-DETAIL.md §2`. Intake **conversacional en Claude Code** (NO cockpit-first).
+
+Cuando Chris trae una idea ("idea {x}"), NO crees archivos mecánicamente. Actuás como **diseñador del sistema**:
+1. **Dónde va** — zona/caja (árbol `paradigm-arquitectura.md`) + **extiende-o-nuevo**.
+2. **Qué ya existe** — prior-art / ubicación **acá**, antes de que la story exista.
+3. **Empujás** — proponés, contradecís si se aleja de la visión / no aporta valor.
+4. **La story se crea de esa conversación** — recién ahí nacen `checkpoint.md` + `chris-input.md` (R4).
+5. **Todo lo pedido → `chris-input.md`** (libro mayor, trazabilidad end-to-end).
+\`\`\`
+
+Plantilla (Step 0 + Auto-chain):
 
 ### Step 0 — Story closure gate scan (MANDATORY post 2026-05-18)
 
@@ -237,39 +256,11 @@ inspeccionando código + rules + archive. Toda regen futura del portfolio + audi
 
 Ver también: `vitalia/docs/learnings/2026-05-16-capabilities-inventory-gap.md`.
 
-## Output protocol · chris-input.md append (v2 cement 2026-05-27)
+## Output protocol · chris-input.md append
 
-Al cierre de cada turn de esta skill, MUST appendear una entry a la sección 💬 Conversación del `chris-input.md` de la story activa.
+Al cierre de cada turn, MUST appendear una entry a la sección 💬 Conversación del `chris-input.md` de la story activa, con verdict **✓ APLICADO · ⚠️ DUDA · ❌ REFUTADO · 💡 PROPONE**. Nunca terminar turn sin appendear (aunque sea `✓ APLICADO · sin cambios sustantivos`). Path: state ∈ {idea..reviewing} → `{brand}/docs/product/stories/{id}/chris-input.md`; `done` → `{brand}/docs/archive/{year}/stories/{id}/chris-input.md`.
 
-**Path target:**
-- Story state ∈ {idea, refining, refined, ready, developing, developed, reviewing}: `{{SLUG}}/docs/product/stories/{story_id}/chris-input.md`
-- Story state = done: `{{SLUG}}/docs/archive/{year}/stories/{story_id}/chris-input.md` (read-only post-merge)
-
-**Formato verbatim del block markdown a appendear:**
-
-```markdown
-### YYYY-MM-DDTHH:MM · 🤖 claude · `/_pm-brand-template` · {emoji} {VERDICT-LABEL}
-{texto 2-30 líneas · descripción de qué hizo + decisiones tomadas + qué necesita Chris responder}
-```
-
-**Verdict labels (4 valores):**
-
-| Emoji | Label | Cuándo usar |
-|---|---|---|
-| ✓ | APLICADO | Cambios concretos aplicados al spec/design/arch/test (citar paths) |
-| ⚠️ | DUDA | Pregunta a Chris antes de seguir. State queda esperando respuesta |
-| ❌ | REFUTADO | Razón por la que NO se aplica algo que Chris pidió (con justificación) |
-| 💡 | PROPONE | Opción nueva sugerida por Claude · Chris ratifica o descarta |
-
-**Anti-patterns prohibidos:**
-
-- ❌ Skill termina turn sin appendear (silent escape) — siempre appendear, aunque sea `✓ APLICADO · sin cambios sustantivos`
-- ❌ Verdict sin texto sustantivo (1 palabra no informa)
-- ❌ Path hardcoded con brand fija — debe ser `{brand}` dinámico (de checkpoint.md o args del invoke)
-- ❌ Múltiples verdicts en un solo entry — si hay 2 cosas, son 2 entries consecutivas
-- ❌ Entry sin emoji + label de verdict (parser falla)
-
-Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
+**Schema verbatim (formato del entry + labels + anti-patterns): `docs/process/chris-input-protocol.md § Sección 5` (SSoT — no se duplica acá).**
 
 ## Referencias
 

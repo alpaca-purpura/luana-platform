@@ -123,12 +123,19 @@
 /* These are NOT removed in F1-S0. Progressive deprecation in vitalia-fase2-vt-deprecation-final */
 
 :root {
-  /* ─── Brand core (4+1 colores oficiales brandbook 2026-05-17) ─────────────── */
-  --vitalia-cian: 198 99% 49%; /* #01B2F8 — hero, links, primary CTA, info, badges */
-  --vitalia-purpura: 287 53% 37%; /* #7B2D91 — acento secundario, hover, agent gradient stop */
-  --vitalia-amarillo: 53 99% 51%; /* #FEE209 — highlight, badge premium, warning soft, CTA promo */
-  --vitalia-azul-marino: 244 84% 32%; /* #180D95 — texto cuerpo + títulos, primary button, app shell */
-  --vitalia-verde-lima: 70 73% 51%; /* #B8DC2A — acento natural, success soft, agent Lucas avatar */
+  /* ─── Brand core — ALIASED to Shadcn tokens (R-1SRC · core-ds-foundation) ──────
+   * Single token source of truth: the legacy brand-core hues now POINT at the
+   * Shadcn SSoT tokens (identical light values) instead of duplicating the channels.
+   * The ~85 `var(--vitalia-*)` / `.vt-*` consumers keep rendering unchanged; the
+   * tokens inherit the Shadcn dark scale for free (azul-marino → agent-camila gets
+   * a proper dark value). Deleting these vars (not aliasing) is Fase 3. RN-5: NAMES
+   * shared, VALUES per-brand — here vitalia binds its brand names to its own Shadcn
+   * token values. verde-lima has no Shadcn equivalent → keeps its literal channels. */
+  --vitalia-cian: var(--primary); /* #01B2F8 — hero, links, primary CTA, info, badges */
+  --vitalia-purpura: var(--accent); /* #7B2D91 — acento secundario, hover, agent gradient stop */
+  --vitalia-amarillo: var(--agent-mateo); /* #FEE209 — highlight, badge premium, warning soft, CTA promo */
+  --vitalia-azul-marino: var(--agent-camila); /* #180D95 — texto cuerpo + títulos, primary button, app shell */
+  --vitalia-verde-lima: 70 73% 51%; /* #B8DC2A — acento natural, success soft, agent Lucas avatar (no Shadcn equiv) */
 
   /* ─── Neutrales (app shell) ───────────────────────────────────────────────── */
   --vitalia-bg: 220 28% 98%; /* #F7F9FC — fondo principal app */
@@ -148,7 +155,8 @@
   --vitalia-info: 199 89% 48%; /* #0EA5E9 — info neutra (cian con menos saturación) */
 
   /* ─── Shape (border radius) ───────────────────────────────────────────────── */
-  --radius: 0.5rem; /* 8px — botones, inputs, cards estándar */
+  /* --radius base lives ONCE in the Shadcn block above (0.625rem). R-1SRC deleted
+   * the legacy 0.5rem clash here — single token source of truth (core-ds-foundation). */
   --radius-lg: 0.875rem; /* 14px — cards grandes, modals */
   --radius-bubble: 1.125rem; /* 18px — chat message bubbles */
   --radius-pill: 999px; /* badges, chips */

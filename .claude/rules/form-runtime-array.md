@@ -1,16 +1,7 @@
----
-globs: "{**/frontend/src/lib/form-runtime/**,**/frontend/src/features/{brand,offer}-studio/schemas/**}"
-description: Stub — invoca brand-expert / offer-expert
----
-
 # Form-runtime Array Field
 
-Default automático por `itemSchema.fields.length`:
-- ≤3 sub-fields → `cards` (Enhanced Cards, expand/collapse inline)
-- ≥4 sub-fields → `split` (Master-Detail, lista izquierda + editor derecha)
+> **Slim pointer (W1-Phase2 eviction 2026-06-09 · tier: project).** Cuerpo operativo + ex-always-on body en `brand-expert` skill → `references/form-runtime-array.md` (copia en `offer-expert` — ver nota mirror en harness-backlog).
 
-Autosave on-change preservado en ambos modos. Override `renderAs: "accordion"` solo justificado (lista ≥15 items con búsqueda/import batch).
+Trigger: array fields en form-runtime (brand-studio / offer-studio).
 
-Detalle (invariantes comunes, tabla cobertura por array, agregar nuevo, mockup ref) en `brand-expert` / `offer-expert` skills → `references/form-runtime-array.md`.
-
-**Prohibido:** items sin contenedor visual, inputs sin borde, botón "Guardar" (rompe autosave), modal edición de item, textarea multi-línea como array simulado, hardcodear `renderAs` sin chequear fields count.
+No-skip 1-liner: render default por `itemSchema.fields.length` (≤3 `cards` · ≥4 `split`) con autosave on-change — NUNCA botón "Guardar", modal de edición ni `renderAs` hardcodeado sin chequear count.

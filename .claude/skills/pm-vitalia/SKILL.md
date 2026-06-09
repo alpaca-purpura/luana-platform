@@ -138,6 +138,20 @@ cat vitalia/docs/product/BACKLOG.md         # vista 10 estados
 
 Pregunta a Chris: **"¿qué hacemos en Vitalia? (a) idea/story nueva / (b) continúa story X / (c) capability / (d) learning / (e) drill-down a {drill-target}"**
 
+## ★ Intake-handshake — la historia NACE de la conversación (W0.5-bis, ratificado Chris 2026-06-08)
+
+> SSoT: `docs/process/harness-refactor-w0.5/REQ-TAKING-DETAIL.md §2`. El intake es **conversacional en Claude Code** (NO cockpit-first — Chris entra y te habla; el cockpit lo ve DESPUÉS).
+
+Cuando Chris trae una idea ("idea {x}"), NO crees archivos mecánicamente y listo. Actuás como **diseñador del sistema**:
+
+1. **Acordás dónde va** — zona/caja del mapa (árbol `.claude/rules/paradigm-arquitectura.md`) + **extiende-o-nuevo**: ¿extiende una capability/vista existente o es net-new?
+2. **Decís qué ya existe** — no aceptás y ya: contás si "ya avanzamos en eso", si hay algo construido. La conversación de **prior-art / ubicación pasa ACÁ**, antes de que la story exista (primera conversación de diseño, no un checkbox de `refining` posterior; el scan formal de `§ Anti-duplication refining` se re-valida después).
+3. **Empujás** — proponés, contradecís si el pedido se aleja de la visión o no aporta valor (Chris explica el porqué → enriquece tu contexto, queda en `chris-input.md`).
+4. **La story se crea de esa conversación** — recién ahí nacen `checkpoint.md` + `chris-input.md` (juntos, R4).
+5. **Todo lo que Chris pide** — desde esta conversación de creación y en cada nota posterior — **va a `chris-input.md`** (libro mayor de "lo que pedí", trazabilidad end-to-end).
+
+El intake-handshake + prior-art-en-el-intake es **CORE**; el cockpit + el render de `chris-input.md` son **PROJECT**.
+
 ## Vocabulary — 10 estados macro (heredado Luana core)
 
 Idéntico paradigm v4 de Luana core. Detalle: `docs/process/pm-redesign-2026-05.md` § Punto 4.
@@ -162,7 +176,7 @@ Idéntico paradigm v4 de Luana core. Detalle: `docs/process/pm-redesign-2026-05.
 | Chris dice | Acción |
 |---|---|
 | "estado vitalia" / "qué tenemos vitalia" | Render `vitalia/docs/product/BACKLOG.md` agrupado por 10 estados con emojis (NO tabla cruda) |
-| "idea {x}" | Crear story dir `state=idea` con **2 archivos juntos**: `vitalia/docs/product/stories/{slug}/checkpoint.md` + `chris-input.md` (este último desde `docs/specs/templates/00-chris-input-template.md` — nace con la idea como buzón donde Chris vuelca lo que desea/necesita; Claude lo puede rebatir durante el ciclo de vida) |
+| "idea {x}" | **Primero corré el intake-handshake (§ arriba)** — conversación de diseñador del sistema (zona/caja + extiende-o-nuevo + qué ya existe + empujás). RECIÉN de esa conversación creás el story dir `state=idea` con **2 archivos juntos**: `vitalia/docs/product/stories/{slug}/checkpoint.md` + `chris-input.md` (desde `docs/specs/templates/00-chris-input-template.md` — libro mayor donde TODO lo que Chris pidió en la conversación de creación queda registrado; Claude lo puede rebatir durante el ciclo de vida) |
 | "refinemos {story}" | (1) Update checkpoint state=refining. (2) Si épica → decompose. (3) **Invocá `Skill(po-ux)`** (UI std) o **`Skill(po)`** (service) o **`Skill(po)` luego `Skill(ux-agentico)`** (agentic) con args `"{brand} {story-id}"`. NO devolver handoff textual. |
 | "spec ratificada" / "diseño ratificado" | Update state refining→refined. **Invocá `Skill(architect)`** con args `"vitalia {story-id}"` |
 | "ready" | Update state refined→ready (verificar 4 archivos: 03-arch, 04-validators, 05-guidelines, 06-tickets) |
@@ -334,39 +348,11 @@ Si dos sesiones tocan misma story Vitalia → coordinar via `parallel_safe: fals
 
 NUNCA dumps largos. Pointer-first. Si necesitás más detalle escribilo a archivo y citá path.
 
-## Output protocol · chris-input.md append (v2 cement 2026-05-27)
+## Output protocol · chris-input.md append
 
-Al cierre de cada turn de esta skill, MUST appendear una entry a la sección 💬 Conversación del `chris-input.md` de la story activa.
+Al cierre de cada turn, MUST appendear una entry a la sección 💬 Conversación del `chris-input.md` de la story activa, con verdict **✓ APLICADO · ⚠️ DUDA · ❌ REFUTADO · 💡 PROPONE**. Nunca terminar turn sin appendear (aunque sea `✓ APLICADO · sin cambios sustantivos`). Path: state ∈ {idea..reviewing} → `{brand}/docs/product/stories/{id}/chris-input.md`; `done` → `{brand}/docs/archive/{year}/stories/{id}/chris-input.md`.
 
-**Path target:**
-- Story state ∈ {idea, refining, refined, ready, developing, developed, reviewing}: `vitalia/docs/product/stories/{story_id}/chris-input.md`
-- Story state = done: `vitalia/docs/archive/{year}/stories/{story_id}/chris-input.md` (read-only post-merge)
-
-**Formato verbatim del block markdown a appendear:**
-
-```markdown
-### YYYY-MM-DDTHH:MM · 🤖 claude · `/pm-vitalia` · {emoji} {VERDICT-LABEL}
-{texto 2-30 líneas · descripción de qué hizo + decisiones tomadas + qué necesita Chris responder}
-```
-
-**Verdict labels (4 valores):**
-
-| Emoji | Label | Cuándo usar |
-|---|---|---|
-| ✓ | APLICADO | Cambios concretos aplicados al spec/design/arch/test (citar paths) |
-| ⚠️ | DUDA | Pregunta a Chris antes de seguir. State queda esperando respuesta |
-| ❌ | REFUTADO | Razón por la que NO se aplica algo que Chris pidió (con justificación) |
-| 💡 | PROPONE | Opción nueva sugerida por Claude · Chris ratifica o descarta |
-
-**Anti-patterns prohibidos:**
-
-- ❌ Skill termina turn sin appendear (silent escape) — siempre appendear, aunque sea `✓ APLICADO · sin cambios sustantivos`
-- ❌ Verdict sin texto sustantivo (1 palabra no informa)
-- ❌ Path hardcoded con brand fija — debe ser `{brand}` dinámico (de checkpoint.md o args del invoke)
-- ❌ Múltiples verdicts en un solo entry — si hay 2 cosas, son 2 entries consecutivas
-- ❌ Entry sin emoji + label de verdict (parser falla)
-
-Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
+**Schema verbatim (formato del entry + labels + anti-patterns): `docs/process/chris-input-protocol.md § Sección 5` (SSoT — no se duplica acá).**
 
 ## Referencias
 

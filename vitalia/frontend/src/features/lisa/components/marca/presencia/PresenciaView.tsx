@@ -40,7 +40,7 @@ import { useAuth } from "@clerk/nextjs";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AutosaveBadge } from "@/components/marca/shared/AutosaveBadge";
+import { FloatingAutosaveIndicator } from "@/components/shared/FloatingAutosaveIndicator";
 import { marcaKeys } from "../../../api/marca";
 import { getContact } from "../../../api/marca-presence-api";
 import { useContactAutosave } from "../../../hooks/useContactAutosave";
@@ -123,13 +123,6 @@ export function PresenciaView({ tenantId, clinicId, className }: PresenciaViewPr
   // ── Render ───────────────────────────────────────────────────────────────
   return (
     <div data-testid="presencia-view" className={cn("flex flex-col gap-6 p-6", className)}>
-      {/* Section header — Bug #3 fix (vitalia-bugfix-shell-nav-scroll-errors T-6):
-          se removió el h2 "Presencia" (eco del SubSubTab activo). Se conserva el
-          AutosaveBadge, re-alineado a la derecha. */}
-      <div className="flex items-center justify-end">
-        <AutosaveBadge status={autosaveStatus} savedAt={savedAt} />
-      </div>
-
       {/* Loading state */}
       {isContactLoading && <PresenciaLoadingSkeleton />}
 
@@ -174,6 +167,8 @@ export function PresenciaView({ tenantId, clinicId, className }: PresenciaViewPr
           />
         </div>
       )}
+
+      <FloatingAutosaveIndicator status={autosaveStatus} savedAt={savedAt} />
     </div>
   );
 }

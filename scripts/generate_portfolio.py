@@ -30,98 +30,71 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 DOCS_PORTFOLIO = REPO_ROOT / "docs" / "portfolio"
 DOCS_PROMOTION_PROPOSALS = REPO_ROOT / "docs" / "promotion-protocol" / "proposals"
 
-# Catálogo 11 universos (1 luana + 10 brands).
-# Ratificado per docs/architecture/luana-platform/01-core-audit.md.
-UNIVERSES: list[dict[str, Any]] = [
-    {
-        "slug": "luana",
-        "kind": "core",
-        "vertical": "Engine compartido (no consumidor)",
-        "cliente": "—",
-        "diferenciacion": "26 paquetes luana-core-* + Extension SDK EP-1..EP-18 + cross-cutting concerns",
-        "status_default": "active",
-    },
-    {
-        "slug": "nicolify",
-        "kind": "brand",
-        "vertical": "Agencias + Servicios B2B",
-        "cliente": "Agencias marketing, software boutique, consultoras",
-        "diferenciacion": "CRM ciclo largo · portal cliente · propuestas/contratos · horas facturables",
-        "status_default": "shipped",
-    },
-    {
-        "slug": "vitalia",
-        "kind": "brand",
-        "vertical": "Salud + Bienestar",
-        "cliente": "Clínicas médicas, dentales, estéticas",
-        "diferenciacion": "Reservas prepagadas · historial médico · HIPAA-lite · seguimiento post-tratamiento",
-        "status_default": "shipped",
-    },
-    {
-        "slug": "comunify",
-        "kind": "brand",
-        "vertical": "Creator Economy + Educación",
-        "cliente": "Coaches, creadores contenido, infoproductores",
-        "diferenciacion": "Escalera valor · bóveda autoridad · motor comunidad · embudos venta",
-        "status_default": "shipped",
-    },
-    {
-        "slug": "lupulo",
-        "kind": "brand",
-        "vertical": "Gastronomía",
-        "cliente": "Restaurantes, bares, cafeterías",
-        "diferenciacion": "Reservas mesa · pedidos digitales · integración KDS via agentes IA",
-        "status_default": "placeholder",
-    },
-    {
-        "slug": "saasora",
-        "kind": "brand",
-        "vertical": "SaaS + Productos Digitales",
-        "cliente": "Startups tech, micro-SaaS, software",
-        "diferenciacion": "Onboarding automatizado · subscripciones Stripe · dashboards Churn/MRR · changelogs",
-        "status_default": "pending-bootstrap",
-    },
-    {
-        "slug": "inmoflow",
-        "kind": "brand",
-        "vertical": "Real Estate",
-        "cliente": "Brokers, agencias inmobiliarias",
-        "diferenciacion": "Integración portales · mapas interactivos · lead routing por zona · calculadoras financieras",
-        "status_default": "pending-bootstrap",
-    },
-    {
-        "slug": "retailly",
-        "kind": "brand",
-        "vertical": "E-commerce / D2C",
-        "cliente": "Tiendas online, marcas físicas",
-        "diferenciacion": "Catálogos dinámicos · cart recovery · integración logística · cross-selling checkout",
-        "status_default": "pending-bootstrap",
-    },
-    {
-        "slug": "fixia",
-        "kind": "brand",
-        "vertical": "Servicios Hogar + Oficios",
-        "cliente": "Plomeros, electricistas, HVAC, contractors",
-        "diferenciacion": "Técnicos en campo · cotización on-site · reseñas locales SEO automatizadas",
-        "status_default": "pending-bootstrap",
-    },
-    {
-        "slug": "guestly",
-        "kind": "brand",
-        "vertical": "Turismo + Hotelería",
-        "cliente": "Hoteles boutique, rentas vacacionales, tours",
-        "diferenciacion": "Motor reservas estacional · sync OTAs (Airbnb/Booking) · guest experience",
-        "status_default": "pending-bootstrap",
-    },
-    {
-        "slug": "fitflow",
-        "kind": "brand",
-        "vertical": "Fitness + Deporte",
-        "cliente": "Gimnasios, estudios yoga, boxes",
-        "diferenciacion": "Facturación recurrente · control aforo · calendario clases · waivers",
-        "status_default": "pending-bootstrap",
-    },
-]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import harness_config as _hc  # noqa: E402 — own script dir put on sys.path above
+
+# Catálogo de universos (1 engine + N brands). STRUCTURAL fields (slug/vertical/status/kind)
+# se DERIVAN del seam project.config.yaml (brands[]) — el brand-enum tiene UN solo hogar (W5b ·
+# charter §3 DRY): agregar una brand = config en el seam, no editar este script. La NARRATIVA de
+# portfolio (cliente/diferenciacion) es contenido single-consumer cohesivo con el renderer (NO
+# vive en el seam compartido, que solo aloja slots CORE-consumidos). Agregar una brand nueva =
+# (1) entrada en project.config.yaml brands[] + (2) su positioning acá.
+_PORTFOLIO_NARRATIVE: dict[str, dict[str, str]] = {
+    "luana": {"cliente": "—", "diferenciacion": "27 paquetes luana-core-* + Extension SDK EP-1..EP-18 + cross-cutting concerns"},
+    "nicolify": {"cliente": "Agencias marketing, software boutique, consultoras", "diferenciacion": "CRM ciclo largo · portal cliente · propuestas/contratos · horas facturables"},
+    "vitalia": {"cliente": "Clínicas médicas, dentales, estéticas", "diferenciacion": "Reservas prepagadas · historial médico · HIPAA-lite · seguimiento post-tratamiento"},
+    "comunify": {"cliente": "Coaches, creadores contenido, infoproductores", "diferenciacion": "Escalera valor · bóveda autoridad · motor comunidad · embudos venta"},
+    "lupulo": {"cliente": "Restaurantes, bares, cafeterías", "diferenciacion": "Reservas mesa · pedidos digitales · integración KDS via agentes IA"},
+    "saasora": {"cliente": "Startups tech, micro-SaaS, software", "diferenciacion": "Onboarding automatizado · subscripciones Stripe · dashboards Churn/MRR · changelogs"},
+    "inmoflow": {"cliente": "Brokers, agencias inmobiliarias", "diferenciacion": "Integración portales · mapas interactivos · lead routing por zona · calculadoras financieras"},
+    "retailly": {"cliente": "Tiendas online, marcas físicas", "diferenciacion": "Catálogos dinámicos · cart recovery · integración logística · cross-selling checkout"},
+    "fixia": {"cliente": "Plomeros, electricistas, HVAC, contractors", "diferenciacion": "Técnicos en campo · cotización on-site · reseñas locales SEO automatizadas"},
+    "guestly": {"cliente": "Hoteles boutique, rentas vacacionales, tours", "diferenciacion": "Motor reservas estacional · sync OTAs (Airbnb/Booking) · guest experience"},
+    "fitflow": {"cliente": "Gimnasios, estudios yoga, boxes", "diferenciacion": "Facturación recurrente · control aforo · calendario clases · waivers"},
+}
+_NARRATIVE_FALLBACK = {"cliente": "—", "diferenciacion": "—"}
+
+
+def _build_universes() -> list[dict[str, Any]]:
+    """Build the universe catalog: the engine (luana) + every brand from the seam.
+
+    slug/vertical/status/kind come from project.config.yaml brands[] (ONE home for the enum);
+    cliente/diferenciacion from the local narrative map (cohesive presentation content).
+    """
+    brands = _hc.get("brands")
+    rows: list[dict[str, Any]] = [
+        {
+            "slug": "luana",
+            "kind": "core",
+            "vertical": "Engine compartido (no consumidor)",
+            "status_default": "active",
+            **_PORTFOLIO_NARRATIVE["luana"],
+        }
+    ]
+    for b in brands.get("active", []):
+        rows.append(
+            {
+                "slug": b["slug"],
+                "kind": "brand",
+                "vertical": b["vertical"],
+                "status_default": b["status"],
+                **_PORTFOLIO_NARRATIVE.get(b["slug"], _NARRATIVE_FALLBACK),
+            }
+        )
+    for b in brands.get("pending_bootstrap", []):
+        rows.append(
+            {
+                "slug": b["slug"],
+                "kind": "brand",
+                "vertical": b["vertical"],
+                "status_default": "pending-bootstrap",
+                **_PORTFOLIO_NARRATIVE.get(b["slug"], _NARRATIVE_FALLBACK),
+            }
+        )
+    return rows
+
+
+UNIVERSES: list[dict[str, Any]] = _build_universes()
 
 STATUS_EMOJI = {
     "active": "🟢",
@@ -260,7 +233,7 @@ def render_portfolio_md(today: str) -> str:
         "",
         "## Promotion proposals",
         "",
-        f"> Patrones brand candidatos a lift a luana-core. Lifecycle: proposed → under_review → accepted/rejected → migrated.",
+        "> Patrones brand candidatos a lift a luana-core. Lifecycle: proposed → under_review → accepted/rejected → migrated.",
         "",
         f"- **Open:** {total_open} (proposed: {proposals['proposed']}, under_review: {proposals['under_review']}, accepted: {proposals['accepted']})",
         f"- **Migrated:** {proposals['migrated']}",
@@ -324,7 +297,7 @@ owner: /pm-{slug}
 | Tipo | Path |
 |---|---|
 | Backlog | [{slug}/docs/product/BACKLOG.md](../../{slug}/docs/product/BACKLOG.md) |
-| Outcomes | [{slug}/docs/product/outcomes/](../../{slug}/docs/product/outcomes/) |
+| Releases | [{slug}/docs/product/releases/](../../{slug}/docs/product/releases/) |
 | Stories | [{slug}/docs/product/stories/](../../{slug}/docs/product/stories/) |
 | Capabilities | [{slug}/docs/product/capabilities/](../../{slug}/docs/product/capabilities/) |
 | Modules | [{slug}/docs/product/modules/](../../{slug}/docs/product/modules/) |
@@ -337,7 +310,7 @@ owner: /pm-{slug}
 
 ## Ownership
 
-- `/pm-{slug}` (skill) — owner backlog, outcomes, stories
+- `/pm-{slug}` (skill) — owner backlog, releases, stories
 - `/pm` (master) — visibility cross-portfolio
 
 ## Drill-down

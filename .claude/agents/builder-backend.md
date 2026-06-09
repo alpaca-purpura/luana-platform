@@ -41,6 +41,7 @@ Two core responsibilities:
 - ❌ NEVER touch `{brand}/frontend/` — that's `builder-frontend`
 - ❌ NEVER touch `{other_brand}/...` when working on `<brand>` — cross-brand pollution banned
 - ❌ NEVER write to root legacy paths (`backend/src/`, `frontend/src/`) — those DO NOT EXIST post multibrand reorg 2026-05-15
+- ❌ NEVER create a git worktree or branch from `main` (HB-32). You work **IN-PLACE** on the caller's cwd — the brand hub `~/Proyectos/luana-{brand}` on `wip/{brand}` — using the absolute `<pr_folder>` paths. A worktree spun from stale `main` strands your output where the orchestrator can't find it AND breaks the ticket dep-chain (it won't see the previous ticket committed on `wip/{brand}`). This is `parallel-safety.md` M9 (sub-agents in-place, NO worktrees).
 - ✅ READ from copilot/sales_agent for cross-module integration (read-only)
 - ✅ READ from `core/luana-core-*/src/` to understand engine contracts (read-only)
 - ✅ IMPORT from core engine packages: `from luana_core_platform import ...`, `from luana_core_iam import ...`, etc. (consumer pattern)
@@ -357,11 +358,14 @@ Read `REVIEW.md`. If verdict ≠ PASS → fix WARN/FAIL within scope → re-run 
 | 8 | Verify-marker (data reliability L1/L2) | All pass (SKIP if Postgres down) |
 | 9 | Integration-marker | All pass (SKIP if Postgres down) |
 | 10 | Migration idempotency clone | Re-upgrade no-op (SKIP if Postgres down) |
-| 11 | jscpd duplication | <5% (current ~2.94%) |
-| 12 | interrogate docstrings | ≥85% (current ~92.6%) |
-| 13 | pip-audit | No new CVE outside allowlist |
+| 11 | jscpd duplication | <5% (vitalia ~2.85%) — **cableado vía `code-health-{brand} be`** (HB-61) |
+| 12 | interrogate docstrings | ≥80% floor (vitalia ~90.9%) — **cableado vía `code-health-{brand} be`** |
+| 13 | pip-audit | No new CVE outside `scripts/quality/baselines/pip-audit-ignore.txt` — **cableado vía `code-health`** |
+| 14 | vulture dead-code | baseline-ratchet (findings NUEVOS vs `{brand}-be-vulture.count` = FAIL) — **`code-health-{brand} be`** (HB-61, antes inexistente: ruff solo cazaba unused imports/vars, no funcs/clases) |
 
-**Do NOT report "done" until `gate-output.json` shows `overall.any_fail = false`** AND `REVIEW.md` verdict = PASS (gates 8/9/10 may legitimately SKIP if Postgres down — document in handoff).
+> **Realidad 2026-06-08 (HB-61):** el shortcut `test-{brand}` corre gates 3-10 (pytest/ruff/format/mypy/arch). Gates 11-14 (dup/docstrings/vuln/dead-code) AHORA se corren vía el shortcut separado **`code-health-{brand}`** (`scripts/quality/code-health.sh`, baseline-ratchet). Antes 11-13 se declaraban pero NUNCA se invocaban (false-green). NO reportes "13/13" sin haber corrido AMBOS (`test-{brand}` + `code-health-{brand}`).
+
+**Do NOT report "done" until `gate-output.json` shows `overall.any_fail = false`**, `code-health-{brand}` reports `code-health: PASS`, AND `REVIEW.md` verdict = PASS (gates 8/9/10 may legitimately SKIP if Postgres down — document in handoff).
 
 **If pushing to `main`** (= prod auto-deploy): also `make ci-parity` per `CLAUDE.md`. `/pase-produccion` enforces it.
 </step>

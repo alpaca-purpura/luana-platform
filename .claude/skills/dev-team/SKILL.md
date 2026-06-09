@@ -28,6 +28,21 @@ Si invocado vía `/pm-{brand}` o `/architect` handoff, el brand viene en el hand
 7. Ticket específico que tomas (`T-{n}` con `state: ready`)
 8. `{brand}/docs/product/stories/{story-id}/checkpoint.md` — state=ready requerido
 
+## ★ Design System Canon — HARD GATE para todo ticket FE (cement 2026-06-08, ratificado Chris)
+
+> **SSoT:** `docs/architecture/luana-platform/design-system-canon.md` (contratos + **ejemplos de código** que copiás como base). Doctrina: `ADR-014`. Auto-reforzado por `.claude/rules/frontend-visual-fidelity.md § Design System Canon` (que `builder-frontend` carga).
+
+Todo ticket que toca `{brand}/frontend/src/**` (TODAS las marcas) **construye DESDE el canon** — `@luana/ui-kit` es el único lego. **El build debe igualar el mockup ratificado** ("lo que ves = lo que se programa"). Reglas HARD:
+
+- **List/detail → `EntityWorkspaceLayout`** (1-panel: master grilla de `EntityInfoCard` + Toolbar; detalle = `EntitySubNavBar` **full-bleed tercer-ribbon** sticky + leaf). Root-pill `‹ {RootLabel}` vuelve; identidad = `EntityPicker`. **❌ cablear list/detail a mano** por superficie · **❌ franja N3 en card con borde redondeado**.
+- **Contenedor HOJA:** 100% ancho full-responsive · franjas full-bleed · contenido en `PageContainer` + `PageContentStack`. **❌ `<div>` de layout sueltos** donde hay page-primitive.
+- **`EntityPicker`:** buscar server-side debounced + fetch paginado (cursor) + render windowed + lazy. **❌ cargar toda la colección al cliente.**
+- **`Select` canónico** (Shadcn). **❌ `<select>` nativo** en producto.
+- **`EntityInfoCard` Opción B** (+ Skeleton + Empty) · **autosave** 600ms+coalesce + 1 `FloatingAutosaveIndicator` por página + barrita de agente.
+- **Tokens, no arbitrary** (spacing/radius/font-size/color-hex de la escala — canon §0).
+
+**Lo que YA existe se MODIFICA al canon** (punto de partida nuevo 2026-06-08), no se deja como estaba. Si una primitiva del canon aún no está en `@luana/ui-kit` (programa en build), implementala según el ejemplo del canon §6 (NO una versión a mano divergente). `builder-frontend` carga el canon vía la rule antes de tocar FE. `auditor-frontend` rechaza el build que no compone del canon.
+
 ## Step 0 — Bootstrap + state transition
 
 ```bash
@@ -841,39 +856,11 @@ Cada update al user/PM:
 - Próximo paso
 - NO dump de diff o tests output (cita paths)
 
-## Output protocol · chris-input.md append (v2 cement 2026-05-27)
+## Output protocol · chris-input.md append
 
-Al cierre de cada turn de esta skill, MUST appendear una entry a la sección 💬 Conversación del `chris-input.md` de la story activa.
+Al cierre de cada turn, MUST appendear una entry a la sección 💬 Conversación del `chris-input.md` de la story activa, con verdict **✓ APLICADO · ⚠️ DUDA · ❌ REFUTADO · 💡 PROPONE**. Nunca terminar turn sin appendear (aunque sea `✓ APLICADO · sin cambios sustantivos`). Path: state ∈ {idea..reviewing} → `{brand}/docs/product/stories/{id}/chris-input.md`; `done` → `{brand}/docs/archive/{year}/stories/{id}/chris-input.md`.
 
-**Path target:**
-- Story state ∈ {idea, refining, refined, ready, developing, developed, reviewing}: `{brand}/docs/product/stories/{story_id}/chris-input.md`
-- Story state = done: `{brand}/docs/archive/{year}/stories/{story_id}/chris-input.md` (read-only post-merge)
-
-**Formato verbatim del block markdown a appendear:**
-
-```markdown
-### YYYY-MM-DDTHH:MM · 🤖 claude · `/dev-team` · {emoji} {VERDICT-LABEL}
-{texto 2-30 líneas · descripción de qué hizo + decisiones tomadas + qué necesita Chris responder}
-```
-
-**Verdict labels (4 valores):**
-
-| Emoji | Label | Cuándo usar |
-|---|---|---|
-| ✓ | APLICADO | Cambios concretos aplicados al spec/design/arch/test (citar paths) |
-| ⚠️ | DUDA | Pregunta a Chris antes de seguir. State queda esperando respuesta |
-| ❌ | REFUTADO | Razón por la que NO se aplica algo que Chris pidió (con justificación) |
-| 💡 | PROPONE | Opción nueva sugerida por Claude · Chris ratifica o descarta |
-
-**Anti-patterns prohibidos:**
-
-- ❌ Skill termina turn sin appendear (silent escape) — siempre appendear, aunque sea `✓ APLICADO · sin cambios sustantivos`
-- ❌ Verdict sin texto sustantivo (1 palabra no informa)
-- ❌ Path hardcoded con brand fija — debe ser `{brand}` dinámico (de checkpoint.md o args del invoke)
-- ❌ Múltiples verdicts en un solo entry — si hay 2 cosas, son 2 entries consecutivas
-- ❌ Entry sin emoji + label de verdict (parser falla)
-
-Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
+**Schema verbatim (formato del entry + labels + anti-patterns): `docs/process/chris-input-protocol.md § Sección 5` (SSoT — no se duplica acá).**
 
 ## Referencias
 

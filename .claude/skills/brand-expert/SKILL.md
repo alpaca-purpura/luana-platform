@@ -393,9 +393,7 @@ Antes codear, si:
 
 ## Docs anchor
 
-- `docs/domains/brand/INDEX.md` (todos los docs brand)
-- `docs/refactors/field-contract-platform/DESIGN.md` (FieldContract platform — Fase 04-09)
-- `docs/refactors/field-contract-platform/LEARNINGS.md` (descubrimientos Fase 06 brand + Fase 07 buyer)
+- ⚠️ `docs/domains/brand/INDEX.md` + `docs/refactors/field-contract-platform/{DESIGN,LEARNINGS}.md` PURGADOS en el SDD reorg (pre-2026-05-04) — no existen. La arq Brand Studio vive hoy en `core/luana-core-brand-studio/` + `.claude/rules/brand-*` (esta skill es pre-reorg, ver HB-65 topology-alignment)
 - `~/.claude/projects/.../memory/feedback_personality_3_pillars.md` (PersonalityProfile arq)
 - `~/.claude/projects/.../memory/feedback_form_runtime_autosave.md` (form-runtime no-negociable)
 - `.claude/rules/spanish-text.md` (neutro LATAM)

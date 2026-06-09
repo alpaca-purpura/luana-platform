@@ -51,8 +51,8 @@ ATOMICS_TOKEN = re.compile(r"atomics?_added|atomics?_modified|`atomics\[\]`|# at
 # Paths pre-multibrand (reorg 2026-05-15) que NO deben aparecer como greps ejecutables en skills.
 PREMULTIBRAND_PATHS = re.compile(r"(?<![\w/])backend/src/(shared|core)/")
 PREMULTIBRAND_SCAN_FILES = [
-    ".claude/skills/architect-be/SKILL.md",
-    ".claude/skills/architect-agentic/SKILL.md",
+    ".claude/skills/architect/references/be.md",
+    ".claude/skills/architect/references/agentic.md",
 ]
 
 # Rules nuevas que deben existir + estar registradas en CLAUDE.md tabla Critical Rules.
@@ -88,6 +88,7 @@ CAP_LOCATOR_WIRED_FILES = [
 ]
 
 failures: list[str] = []
+warnings: list[str] = []
 checks_run = 0
 
 
@@ -99,6 +100,18 @@ def check(name: str, ok: bool, detail: str) -> None:
     else:
         print(f"  ✗ {name}\n      {detail}")
         failures.append(f"{name}: {detail}")
+
+
+def warn(name: str, ok: bool, detail: str) -> None:
+    """ADVISORY check: reporta pero NO bloquea (no afecta exit code). Para gates de
+    rot/ratchet que NO deben friccionar commits legítimos (decisión Chris HB · 2026-06-08)."""
+    global checks_run
+    checks_run += 1
+    if ok:
+        print(f"  ✓ {name}")
+    else:
+        print(f"  ⚠ {name}\n      {detail}")
+        warnings.append(f"{name}: {detail}")
 
 
 # ── CHECK 1 — atomics muerto en rules auto-load ──────────────────────────────
@@ -176,10 +189,7 @@ def check_rules_registered() -> None:
 # NO escanea skills PM brand-domain (referencian rules brand planeadas, p.ej. hipaa-lite.md —
 # eso es deuda PM separada, no de la maquinaria; ver plan de hardening).
 MACHINERY_SKILL_DIRS = [
-    ".claude/skills/architect",
-    ".claude/skills/architect-be",
-    ".claude/skills/architect-fe",
-    ".claude/skills/architect-agentic",
+    ".claude/skills/architect",  # incluye references/{be,fe,agentic}.md (rehomed W9-tail 2026-06-09)
     ".claude/skills/dev-team",
     ".claude/skills/auditor",
 ]
@@ -227,12 +237,29 @@ def check_auditors_have_edit() -> None:
     )
 
 
+# ── pre-commit hook = dispatcher + sourced checks/ (god-file decomposition 2026-06-08)
+def _precommit_hook_text() -> str:
+    """Texto del HOOK SYSTEM completo: el dispatcher pre-commit + cada checks/NN-*.sh
+    que sourcea. Tras la decomposición (HB-33/34), el cableado de cada gate vive en
+    su check file, no en el monolito. Cualquier assertion de 'el pre-commit wirea X'
+    debe mirar el sistema entero, no solo el dispatcher."""
+    parts = []
+    pc = WS / "scripts/git-hooks/pre-commit"
+    if pc.exists():
+        parts.append(pc.read_text(encoding="utf-8"))
+    checks_dir = WS / "scripts/git-hooks/checks"
+    if checks_dir.is_dir():
+        for f in sorted(checks_dir.glob("*.sh")):
+            parts.append(f.read_text(encoding="utf-8"))
+    return "\n".join(parts)
+
+
 # ── CHECK 8 — este validador está cableado en el pre-commit hook ─────────────
 def check_self_wired_in_precommit() -> None:
-    p = WS / "scripts/git-hooks/pre-commit"
-    wired = p.exists() and "validate_machinery_consistency" in p.read_text(encoding="utf-8")
+    # Busca en el hook system (dispatcher + checks/) — el invoke vive en checks/18-machinery.sh
+    wired = "validate_machinery_consistency" in _precommit_hook_text()
     check(
-        "CHECK 8 · machinery-check cableado en scripts/git-hooks/pre-commit",
+        "CHECK 8 · machinery-check cableado en el pre-commit hook (dispatcher + checks/)",
         wired,
         "el pre-commit no invoca validate_machinery_consistency.py (enforcement no activa). "
         "Nota: en worktrees el hook activo resuelve al checkout de main — activa al mergear.",
@@ -298,25 +325,36 @@ def check_cap_format_enforcement_wired() -> None:
     test_bidir = WS / "scripts/tests/test_validate_code_cap_bidirectional.py"
     test_src = test_bidir.read_text(encoding="utf-8") if test_bidir.exists() else ""
 
-    # 11a · los 6 gates + el dispatcher existen en el validador
-    for gid in ("g1", "g2", "g3", "g4", "g5", "g6", "g7"):
-        check(
-            f"CHECK 11 · gate {gid.upper()} definido en validate_code_cap_bidirectional.py",
-            f"def gate_{gid}_" in bidir_src,
-            f"falta la función gate_{gid}_* — un gate determinístico se desconectó (HB-51 Capa 4).",
-        )
+    # 11a · gate registry DERIVADO del validador (OCP · W6 Decisión-3a 2026-06-09) — NO un literal
+    # congelado: deriva los gates de `def gate_gN_*` y los dispatchados de `run_cap_gates`, así un
+    # G10 futuro queda AUTO-cubierto (agregar gate + dispatch + negative test = cubierto, sin tocar
+    # este CHECK). El PISO atrapa el borrado por debajo de G1-G9 (HB-51 G1-G7 + F2 cap-levels G8/G9).
+    EXPECTED_MIN_CAP_GATES = 9  # G1-G9. Bajar SOLO al remover un gate a propósito.
+    defined_gates = sorted(set(re.findall(r"def gate_(g\d+)_", bidir_src)), key=lambda g: int(g[1:]))
+    dispatch_body = bidir_src.split("def run_cap_gates", 1)[-1] if "def run_cap_gates" in bidir_src else ""
+    dispatched_gates = {m.upper() for m in re.findall(r'"(G\d+)":\s*gate_', dispatch_body)}
     check(
-        "CHECK 11 · dispatcher run_cap_gates presente",
+        "CHECK 11 · registry de gates ≥ piso (deriva G1-G9 · OCP auto-cubre G10+)",
+        len(defined_gates) >= EXPECTED_MIN_CAP_GATES,
+        f"el registry derivó {[g.upper() for g in defined_gates]} (<{EXPECTED_MIN_CAP_GATES}) — "
+        "un gate determinístico se borró (HB-51 Capa 4).",
+    )
+    check(
+        "CHECK 11 · dispatcher run_cap_gates presente + --cap-gates-hard",
         "def run_cap_gates" in bidir_src and "--cap-gates-hard" in bidir_src,
         "falta run_cap_gates / flag --cap-gates-hard.",
     )
 
-    # 11b · cada gate tiene su negative test EN ROJO + el repro del incidente origen
-    for gid in ("g1", "g2", "g3", "g4", "g5", "g6", "g7"):
+    # 11b · cada gate DEFINIDO está dispatchado + tiene su negative test EN ROJO (derivado del
+    # registry → un G10 nuevo sin dispatch o sin test_g10_red falla acá AUTOMÁTICAMENTE).
+    for gid in defined_gates:
+        gid_u = gid.upper()
+        has_test = f"def test_{gid}_red" in test_src
         check(
-            f"CHECK 11 · negative test del gate {gid.upper()} (con dientes)",
-            f"def test_{gid}_red" in test_src,
-            f"falta test_{gid}_red_* — un gate sin negative test es decorativo (handoff §0.3).",
+            f"CHECK 11 · gate {gid_u} dispatchado + negative test (con dientes)",
+            gid_u in dispatched_gates and has_test,
+            f"gate {gid_u}: dispatch={gid_u in dispatched_gates} test_{gid}_red={has_test} — "
+            "un gate sin dispatch o sin negative test es decorativo (handoff §0.3).",
         )
     check(
         "CHECK 11 · test de reproducción del incidente (borrar cap inbox → G1+G2 RED)",
@@ -350,11 +388,11 @@ def check_cap_format_enforcement_wired() -> None:
         "resolve_cap" in idx_src and "resolved_cap_to_files" in idx_src,
         "generate_code_to_cap_index.py NO unifica vía resolver (las 2 convenciones divergen).",
     )
-    pc = WS / "scripts/git-hooks/pre-commit"
     pp = WS / "scripts/git-hooks/pre-push"
+    # pre-commit: el 5e cap-gates-hard vive en checks/05e-cap-gates.sh (decomposición HB-33/34)
     check(
-        "CHECK 11 · gates HARD cableados en pre-commit (5e) + pre-push (4e)",
-        (pc.exists() and "cap-gates-hard" in pc.read_text(encoding="utf-8"))
+        "CHECK 11 · gates HARD cableados en pre-commit (checks/05e) + pre-push (4e)",
+        ("cap-gates-hard" in _precommit_hook_text())
         and (pp.exists() and "cap-gates-hard" in pp.read_text(encoding="utf-8")),
         "los gates G1-G6 no están cableados HARD en los hooks (advisory≠enforcement).",
     )
@@ -438,7 +476,7 @@ def check_await_verify_wip_exempt() -> None:
     # ★ guard del deadlock: la story en G no debe contar contra developed≤1.
     dev = _read(DEVTEAM_SKILL)
     closure = _read(CLOSURE_RULE)
-    dev_ok = "AWAIT_CHRIS_VERIFY" in dev and 'PHASE' in dev and 'AWAIT_CHRIS_VERIFY"' in dev
+    dev_ok = "AWAIT_CHRIS_VERIFY" in dev and "PHASE" in dev and 'AWAIT_CHRIS_VERIFY"' in dev
     check(
         "CHECK 15 · WIP-cap exime AWAIT_CHRIS_VERIFY en dev-team REFUSE-gate (anti-deadlock)",
         dev_ok,
@@ -631,11 +669,111 @@ def check_ledger_happy_floor() -> None:
     closure = _read(CLOSURE_RULE)
     check(
         "CHECK 27 · piso HARD happy-path (cap_change_type: new → core ✅, no se difiere)",
-        ("PISO HARD" in spec and "cap_change_type" in spec)
-        and "PISO HARD" in dev
-        and "happy-path" in closure.lower(),
+        ("PISO HARD" in spec and "cap_change_type" in spec) and "PISO HARD" in dev and "happy-path" in closure.lower(),
         "el piso HARD happy-path no está documentado en spec-template + dev-team + story-closure-gate. "
         "Funcionalidad nueva NO puede llegar a done con el core diferido (proceso v5 §5.2/principio 3).",
+    )
+
+
+# ── CHECK 28 — anti-rot de punteros del harness (ADVISORY · baseline-ratchet) ──
+def check_harness_pointers() -> None:
+    """Punteros workspace-rooted ROTOS en skills/agents/rules vs baseline. ADVISORY
+    (no bloquea): solo reporta rot FRESCO (refs no baselined). Drená el baseline
+    arreglando el puntero + corriendo scan_harness_pointers.py --update-baseline.
+    SSoT del scan: scripts/scan_harness_pointers.py (HB · 2026-06-08)."""
+    try:
+        sys.path.insert(0, str(WS / "scripts"))
+        from scan_harness_pointers import find_broken_pointers, load_baseline
+    except Exception as e:  # noqa: BLE001 — scanner ausente/roto = advisory, no rompe machinery
+        warn("CHECK 28 · harness pointers (advisory)", True, f"scanner no disponible ({e}) — skip")
+        return
+    broken = find_broken_pointers()
+    baseline = load_baseline()
+    new = broken - baseline
+    fixed = baseline - broken
+    detail = ""
+    if new:
+        detail += f"{len(new)} ref(s) workspace-rooted ROTOS NUEVOS (rot fresco):\n      " + "\n      ".join(
+            f"✗ {b}" for b in sorted(new)
+        )
+        detail += "\n      → arreglá el puntero, o si es deliberado: scripts/scan_harness_pointers.py --update-baseline"
+    if fixed:
+        detail += (
+            f"\n      ({len(fixed)} ref(s) del baseline YA arreglados — drenalos con --update-baseline)"
+            if detail
+            else f"{len(fixed)} ref(s) del baseline YA arreglados — drenalos con --update-baseline (shrink-only)"
+        )
+    warn(
+        f"CHECK 28 · harness pointers sin rot nuevo (advisory · {len(broken)} baselined)",
+        not new,
+        detail or "ok",
+    )
+
+
+
+# ── CHECK 29 — core-harness/ proxy-clean (W10 anti-rot · el "cheap W8" automatizado) ──
+# El kit extraíble NUNCA nombra tech/brand del producto-fuente (charter §0.5/§4 DoD).
+# Patrón verbatim del charter; única excepción blessed: grep-bot skip-dirs genéricos (W3).
+CORE_HARNESS_PROXY_TOKENS = re.compile(
+    r"vitalia|nicolify|comunify|lupulo|ruff|pytest|mypy|alembic|clerk|next\.js|"
+    r"tailwind|fastapi|sqlalchemy|core/luana-core|\.venv|dev-app|hipaa|phi"
+)
+CORE_HARNESS_PROXY_ALLOWED = {"agents/grep-bot.md"}  # build-artifact skip-dirs (.venv) — funcional, no smear
+
+
+def check_core_harness_proxy_clean() -> None:
+    root = WS / "core-harness"
+    bad: list[str] = []
+    if root.exists():
+        for f in sorted(root.rglob("*")):
+            if not f.is_file() or f.is_symlink():
+                continue
+            rel = str(f.relative_to(root))
+            if rel in CORE_HARNESS_PROXY_ALLOWED:
+                continue
+            try:
+                text = f.read_text(encoding="utf-8")
+            except (UnicodeDecodeError, OSError):
+                continue
+            for i, line in enumerate(text.splitlines(), 1):
+                if CORE_HARNESS_PROXY_TOKENS.search(line):
+                    bad.append(f"core-harness/{rel}:{i}: {line.strip()[:80]}")
+    check(
+        "CHECK 29 · core-harness/ proxy-clean (0 tech/brand tokens fuera de grep-bot)",
+        not bad,
+        "el kit dejó de ser extraíble — token de proyecto en CORE:\n      " + "\n      ".join(bad[:10]),
+    )
+
+
+# ── CHECK 30 — LSP sync template↔instancias PM (W10 anti-rot) ────────────────
+# Conceptos que _pm-brand-template cementa y CADA pm-{brand} activa debe llevar
+# (drift real cazado 2026-06-09: pm-comunify/pm-lupulo sin § Auto-chain rule).
+# Concept-based (substring) como CHECK 9. Agregá un concepto al cementarlo en el template.
+PM_TEMPLATE_CONCEPTS = ["Auto-chain rule", "story-closure-gate", "chris-input", "Step 0"]
+PM_SKILL_FILES = [
+    ".claude/skills/_pm-brand-template/SKILL.md",
+    ".claude/skills/pm-vitalia/SKILL.md",
+    ".claude/skills/pm-nicolify/SKILL.md",
+    ".claude/skills/pm-comunify/SKILL.md",
+    ".claude/skills/pm-lupulo/SKILL.md",
+]
+
+
+def check_pm_template_instance_sync() -> None:
+    missing: list[str] = []
+    for rel in PM_SKILL_FILES:
+        f = WS / rel
+        if not f.exists():
+            missing.append(f"{rel} (archivo ausente)")
+            continue
+        body = f.read_text(encoding="utf-8")
+        for concept in PM_TEMPLATE_CONCEPTS:
+            if concept not in body:
+                missing.append(f"{rel}: falta concepto '{concept}'")
+    check(
+        "CHECK 30 · PM template↔instancias sync (conceptos cementados presentes en c/skill)",
+        not missing,
+        "LSP drift template↔instancia:\n      " + "\n      ".join(missing),
     )
 
 
@@ -668,7 +806,14 @@ def main() -> int:
     check_ledger_estado_column()
     check_ledger_producer_step()
     check_ledger_happy_floor()
-    print(f"\n{checks_run} checks · {len(failures)} fallos")
+    check_core_harness_proxy_clean()
+    check_pm_template_instance_sync()
+    check_harness_pointers()  # CHECK 28 — advisory (no afecta exit)
+    print(f"\n{checks_run} checks · {len(failures)} fallos · {len(warnings)} advisory")
+    if warnings:
+        print("\nADVISORY (no bloquea — atender en /harnesses-improvement):")
+        for w in warnings:
+            print(f"  ⚠ {w.splitlines()[0]}")
     if failures:
         print("\nFALLOS (drift detectado):")
         for f in failures:

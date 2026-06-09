@@ -77,7 +77,7 @@ export function StaffDirectoryHeader({
           onClick={onAddNew}
           size="sm"
           data-testid="btn-nuevo-integrante"
-          className="shrink-0 gap-1.5 bg-[color:var(--agent-lisa)] hover:bg-[color:var(--agent-lisa)] text-white"
+          className="shrink-0 gap-1.5 bg-agent-lisa text-foreground hover:opacity-90"
         >
           <Plus className="h-4 w-4" aria-hidden="true" />
           <span className="hidden sm:inline">Nuevo integrante</span>

@@ -41,6 +41,9 @@ const isPublicRoute = createRouteMatcher([
   // Used by Playwright @project=visual for goldens generation.
   // No expone datos sensibles — solo renderiza Shadcn primitives + agent tokens swatches.
   "/test-stack(.*)",
+  // core-ds-foundation T-9: catalogo publico del design-system @luana/ui-kit.
+  // Sin tenant, sin PHI — solo renderiza componentes con datos de ejemplo.
+  "/showcase(.*)",
 ]);
 
 export const proxy = clerkMiddleware(async (auth, request) => {

@@ -26,6 +26,30 @@ Si invocado vía `/pm-{brand}` o vía `/po-ux`/`/po`/`/ux-agentico` handoff, el 
 | Engine core packages | `core/luana-core-*/src/luana_core_*/` | ⛔ requiere lift via `/pm-luana` (promotion gate) — NO se edita en story brand-específica |
 | Brand-extension agentic | `{brand}/backend/src/modules/{brand}/{copilot,sales_agent}/{tools,extractors,workflows,personas,goldens,kb}/` | ✅ libre per-brand |
 
+## ★ Technical-story lane (WT5) — `/architect` ES el refiner, sombrero CTO-al-CEO (W0.5-bis · ratificado Chris 2026-06-08)
+
+> SSoT: `PROCESS-MODEL.md §3 · WT5` + `REQ-TAKING-DETAIL.md §8 (Technical/infra)`. **Sólo cuando `story_type: technical-story`** (infra / observabilidad / seguridad / performance · `user_visible: false` · zona Infraestructura).
+
+Para technical-story, el `/architect` **no consume** una `01-spec.md` Gherkin de `/po`/`/po-ux`/`/ux-agentico` — **los saltea** y actúa él mismo como **refiner**, porque el spec análogo es un **contract-spec**, no un spec de comportamiento Gherkin.
+
+**El sombrero es CTO recomendando a su CEO:** investigás **SOTA en internet** (date-aware) + proponés **opciones con una recomendación**; **Chris toma las decisiones grandes**. 1 pregunta a la vez, reflejo-primero, sin cave (mismo protocolo que `/po`). Firma = **una sola, sobre el approach propuesto en lenguaje humano** (Chris decide). El **GO en vivo (G)** es aparte.
+
+**Quién abre la story:** brand-infra → `/pm-{brand}` · **core-infra → `/pm-luana`**.
+
+**Contract-spec (el análogo del spec, NO Gherkin)** — 4 piezas:
+- **Contrato / interface / extension-point** que se provee (la superficie nueva).
+- **Consumers** — quién lo usa (≥1 real, anti-isla CONN).
+- **Invariante** que enforcea (lo que NUNCA puede romperse).
+- **Verificación-por-efecto** — el efecto runtime observable que prueba que funciona (NO demo, NO "GET 200").
+
+**Verificación = `técnica`** (gates + evidencia runtime por efecto). Bar por sub-dominio: cifrado → round-trip decrypt · idempotencia → replay dedup · observabilidad → fila de traza · durable-flow → persist+resume · audit → fila de audit + access-denied. **Spec-first** (contract-spec RED-first) **excepto `nature: scaffold`** (exento).
+
+**Net-new core infra** = `technical-story` con `cap_change_type: new` apuntando a `core/` (la story ES la justificación del use-case; la regla "no research en core" de promotion aplica sólo a los **lifts** WT6, no a builds nuevos). **Worktree:** core-targeting → worktree core efímero (`wip/core-{slug}`); brand-infra → hub de la marca. **WT5 construye / WT6 liftea** (no confundir: el lift brand→core es off-spine, `/pm-luana`).
+
+**Artefactos:** contract-spec (`new_cap.py` en modo infra) + ready-package **reducido** (`06-tickets` + `04-validators` siempre; `03-arch`/`05`/`dispatch` según haya decisión de arquitectura). **Cockpit:** slot `tech` + zona Infraestructura.
+
+**Tier:** el carril technical-cap + verificación-por-efecto + sombrero CTO = **CORE**; el inventario de infra (durable-flows/LiteLLM/outbox/observability/`core/luana-core-*`) = **PROJECT**; PHI/HIPAA = **BRAND**.
+
 ## Inputs obligatorios
 
 1. `<brand>` (REQUIRED, ver sección arriba)
@@ -82,9 +106,9 @@ Tabla decisión:
 
 ### Step 2 — Spawn architect-orchestrator (single-shot full-stack)
 
-> **Canonical pattern (formalized 2026-05-08 después del 2do uso exitoso):** spawn UN solo agent `architect-orchestrator` que cubre BE+FE+AGENTIC en una sola pasada. Las skills `architect-be`, `architect-fe`, `architect-agentic` son **instruction docs** (no agent types registrados) que el orchestrator carga contextualmente según las surfaces que el ticket toca. Esto produce coherent design + cross-cutting decisions consistent — valor demostrado en Story B (eval-foundation-simulator) + Story C (personas-instrumented-runtime) + Story D (goldens-3-tenants-dataset).
+> **Canonical pattern (formalized 2026-05-08 después del 2do uso exitoso):** spawn UN solo agent `architect-orchestrator` que cubre BE+FE+AGENTIC en una sola pasada. Los **instruction docs por surface** viven en `.claude/skills/architect/references/{be,fe,agentic}.md` (rehomed 2026-06-09 — ex pseudo-skills `architect-{be,fe,agentic}`) y el orchestrator los carga contextualmente según las surfaces que el ticket toca. Esto produce coherent design + cross-cutting decisions consistent — valor demostrado en Story B (eval-foundation-simulator) + Story C (personas-instrumented-runtime) + Story D (goldens-3-tenants-dataset).
 >
-> **Histórico:** intentos previos de spawnar `architect-be` / `architect-fe` / `architect-agentic` como agent types separados fallaron — esos types nunca se registraron en `.claude/agents/`. Solo existe `architect-orchestrator.md`.
+> **Histórico:** intentos previos de spawnar `architect-be` / `architect-fe` / `architect-agentic` como agent types separados fallaron — esos types nunca se registraron en `.claude/agents/`. Solo existe `architect-orchestrator.md`. Sus instruction docs viven hoy en `architect/references/{be,fe,agentic}.md`.
 
 Spawn (REQUIRED: pasá `<brand>: {brand}` como input al sub-agent):
 
@@ -166,6 +190,7 @@ Lee el `03-arch.md` que el orchestrator escribió. Verificar:
 - Secciones por surface presente (BE / FE / AGENTIC según tickets toca)
 - Cross-cutting decisions section (tenant isolation, currency, PII)
 - **`## Integration design (CONN)` presente** (`.claude/rules/anti-orphan-integration.md` + `paradigm-arquitectura.md`): reachability path concreto + consumers + registration points + home (cap). Cada surface declara su **hogar zona→caja** del mapa (derivado de `SYSTEM-MAP.yaml`) y, si es agéntico, que el trabajador **invoca la acción única (Plano 2), no la reimplementa** (un solo engine). SIN esto, lo construido será una isla → NO cerrar `ready`. Doctrina: `docs/architecture/luana-platform/PARADIGM.md`.
+- **★ Design System Canon (HARD para surfaces FE · cement 2026-06-08):** todo surface `{brand}/frontend/**` referencia los contratos de `docs/architecture/luana-platform/design-system-canon.md` — list/detail = `EntityWorkspaceLayout` (no a mano), franja N3 = tercer-ribbon full-bleed (no card), `Select` canónico (no `<select>` nativo), page-primitives (no `<div>` de layout), `EntityInfoCard` B, autosave 1-píldora, tokens (no arbitrary). `04-validators.yaml` declara los gates mecánicos (eslint no-arbitrary + arch-test no-div-layout) y `05-guidelines.md::must_load_skills` lista `design-system-canon.md` + `frontend-visual-fidelity`. Surface FE que no cita el canon → NO cerrar `ready`. Doctrina: `ADR-014`.
 - Per-surface detail puede vivir inline en 03-arch.md O en archivos separados `03-arch-{be,fe,agentic}.md` (orchestrator decide según complejidad)
 
 Template estructura mínima:
@@ -857,7 +882,7 @@ Próximo: Conv 2 (autonomous build). /dev-team <brand>: {brand} toma T-1 (state:
 - ❌ Tickets sin DAG (cycle dependencies)
 - ❌ Tickets >8h sin split
 - ❌ Tickets cross-stack sin `notes_for_downstream`
-- ❌ **Intentar spawnar `architect-be` / `architect-fe` / `architect-agentic` como agent types** — NO existen en `.claude/agents/`. Solo `architect-orchestrator` existe. Las skills `architect-{be,fe,agentic}/SKILL.md` son instruction docs (cargadas contextualmente por orchestrator), no agent types spawnable.
+- ❌ **Intentar spawnar `architect-be` / `architect-fe` / `architect-agentic` como agent types** — NO existen en `.claude/agents/`. Solo `architect-orchestrator` existe. Los instruction docs por surface viven en `.claude/skills/architect/references/{be,fe,agentic}.md` (cargados contextualmente por orchestrator), no son agent types spawnables ni skills.
 - ❌ Aprobar tu propio ready package sin verificar 03-arch.md coherencia cross-surface
 - ❌ Asignar Opus a tickets BE/FE non-agentic (cost waste)
 - ❌ Editar paths legacy `docs/archive/2026/legacy-pis/PI-N/...` o `docs/archive/2026/snapshot-pre-multibrand-pm-redesign/` (snapshot inmutable)
@@ -877,39 +902,11 @@ Próximo: Conv 2 (autonomous build). /dev-team <brand>: {brand} toma T-1 (state:
 
 Resumen de tickets en lista. Dependencias en flecha. NUNCA reproducir 06-tickets.yaml entero en chat (cita path).
 
-## Output protocol · chris-input.md append (v2 cement 2026-05-27)
+## Output protocol · chris-input.md append
 
-Al cierre de cada turn de esta skill, MUST appendear una entry a la sección 💬 Conversación del `chris-input.md` de la story activa.
+Al cierre de cada turn, MUST appendear una entry a la sección 💬 Conversación del `chris-input.md` de la story activa, con verdict **✓ APLICADO · ⚠️ DUDA · ❌ REFUTADO · 💡 PROPONE**. Nunca terminar turn sin appendear (aunque sea `✓ APLICADO · sin cambios sustantivos`). Path: state ∈ {idea..reviewing} → `{brand}/docs/product/stories/{id}/chris-input.md`; `done` → `{brand}/docs/archive/{year}/stories/{id}/chris-input.md`.
 
-**Path target:**
-- Story state ∈ {idea, refining, refined, ready, developing, developed, reviewing}: `{brand}/docs/product/stories/{story_id}/chris-input.md`
-- Story state = done: `{brand}/docs/archive/{year}/stories/{story_id}/chris-input.md` (read-only post-merge)
-
-**Formato verbatim del block markdown a appendear:**
-
-```markdown
-### YYYY-MM-DDTHH:MM · 🤖 claude · `/architect` · {emoji} {VERDICT-LABEL}
-{texto 2-30 líneas · descripción de qué hizo + decisiones tomadas + qué necesita Chris responder}
-```
-
-**Verdict labels (4 valores):**
-
-| Emoji | Label | Cuándo usar |
-|---|---|---|
-| ✓ | APLICADO | Cambios concretos aplicados al spec/design/arch/test (citar paths) |
-| ⚠️ | DUDA | Pregunta a Chris antes de seguir. State queda esperando respuesta |
-| ❌ | REFUTADO | Razón por la que NO se aplica algo que Chris pidió (con justificación) |
-| 💡 | PROPONE | Opción nueva sugerida por Claude · Chris ratifica o descarta |
-
-**Anti-patterns prohibidos:**
-
-- ❌ Skill termina turn sin appendear (silent escape) — siempre appendear, aunque sea `✓ APLICADO · sin cambios sustantivos`
-- ❌ Verdict sin texto sustantivo (1 palabra no informa)
-- ❌ Path hardcoded con brand fija — debe ser `{brand}` dinámico (de checkpoint.md o args del invoke)
-- ❌ Múltiples verdicts en un solo entry — si hay 2 cosas, son 2 entries consecutivas
-- ❌ Entry sin emoji + label de verdict (parser falla)
-
-Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
+**Schema verbatim (formato del entry + labels + anti-patterns): `docs/process/chris-input-protocol.md § Sección 5` (SSoT — no se duplica acá).**
 
 ## Referencias
 

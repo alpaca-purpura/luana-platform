@@ -105,13 +105,20 @@ export function NuevoIntegranteModal({
   const credentialCountry = form.watch("credentialCountry");
   const createDoctor = useCreateDoctor();
 
-  // Reset form when modal closes
+  // Reset form when modal closes.
+  // Depend ONLY on the stable method references (RHF `reset` + react-query `reset`
+  // are referentially stable), NOT the whole `form`/`createDoctor` objects.
+  // The react-query mutation result is a fresh object every render, so depending on
+  // it re-fired this effect on every render → reset() → re-render → infinite loop
+  // ("Maximum update depth exceeded", regression 2026-06-06). See T-FIX-3 test.
+  const { reset: resetForm } = form;
+  const { reset: resetMutation } = createDoctor;
   useEffect(() => {
     if (!open) {
-      form.reset();
-      createDoctor.reset();
+      resetForm();
+      resetMutation();
     }
-  }, [open, form, createDoctor]);
+  }, [open, resetForm, resetMutation]);
 
   async function onSubmit(values: DoctorCreateFormValues) {
     try {
@@ -375,11 +382,12 @@ export function NuevoIntegranteModal({
               >
                 Cancelar
               </Button>
-              {/* Navy bg: #180D95 on white = 13:1 contrast (WCAG AA/AAA pass). */}
+              {/* Brand app-CTA gradient (cian→indigo #180D95). White text reads on the
+                  indigo end; vivid brand treatment vs the flat navy. */}
               <Button
                 type="submit"
                 disabled={createDoctor.isPending}
-                className="bg-[color:var(--vitalia-azul-marino-color)] text-white hover:opacity-90 dark:bg-[color:var(--vitalia-azul-marino-color)] dark:text-white"
+                className="vt-bg-gradient-app-cta text-white hover:opacity-90 dark:text-white"
                 data-testid="btn-crear-integrante"
               >
                 {createDoctor.isPending ? "Creando…" : "Crear integrante"}

@@ -25,15 +25,11 @@
 
 ---
 
-## Resultado (lo firma Chris)
+## Resultado (lo firma Chris en G)
 
-```yaml
-demo_signoff:
-  signed_by: Chris
-  date: <YYYY-MM-DD>
-  result: APPROVED | APPROVED_WITH_NOTES | REJECTED
-  notes: "..."
-  open_items: []
-```
+> El signoff de la demo **NO vive acá** — vive en `checkpoint.md::chris_verify.signoff` (proceso v5:
+> UN solo signoff, en la fase **G** `AWAIT_CHRIS_VERIFY`, ANTES del auditor; `demo_signoff` quedó
+> retirado/consolidado). Chris ejerce este script en vivo (dev-app) y registra el resultado allí:
+> `result ∈ {SATISFIED | SATISFIED_WITH_FOLLOWUPS | REJECTED}` + `notes` + `open_items`.
 
 <!-- voseo-allowed: template de proceso interno, no user-facing -->

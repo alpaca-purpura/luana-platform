@@ -27,6 +27,10 @@ TENANT_A = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
 TENANT_B = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"
 HEADERS_A = {"X-Tenant-ID": TENANT_A}
 HEADERS_B = {"X-Tenant-ID": TENANT_B}
+# Audit log de compliance es admin-only (RBAC require_brand_owner_access) — el admin
+# autorizado verificando el tenant-scope de SU clínica. La denegación por rol se cubre
+# aparte en tests/modules/vitalia/compliance/test_compliance_endpoints_rbac.py.
+HEADERS_A_ADMIN = {**HEADERS_A, "X-User-Role": "admin_clinic"}
 
 
 @pytest.fixture
@@ -160,7 +164,7 @@ class TestCrossTenantIsolation:
         """GET /medical-compliance/events returns empty list for Tenant-A (no cross-tenant data)."""
         response = await client.get(
             "/api/v1/vitalia/medical-compliance/events",
-            headers=HEADERS_A,
+            headers=HEADERS_A_ADMIN,
         )
         assert response.status_code == 200
         body = response.json()
@@ -173,7 +177,7 @@ class TestCrossTenantIsolation:
         """GET /medical-compliance/export-csv returns 200 (empty CSV — tenant-scoped)."""
         response = await client.get(
             "/api/v1/vitalia/medical-compliance/export-csv",
-            headers=HEADERS_A,
+            headers=HEADERS_A_ADMIN,
         )
         assert response.status_code == 200
         assert "text/csv" in response.headers.get("content-type", "")
@@ -226,8 +230,10 @@ class TestCrossTenantIsolation:
             "/api/v1/vitalia/onboarding/plans",
             "/api/v1/vitalia/onboarding/status",
         ]
+        # HEADERS_A_ADMIN: /medical-compliance/events es admin-only (RBAC); el resto
+        # de endpoints ignora X-User-Role → enviarlo es inocuo para todos.
         for endpoint in list_endpoints:
-            response = await client.get(endpoint, headers=HEADERS_A)
+            response = await client.get(endpoint, headers=HEADERS_A_ADMIN)
             assert response.status_code == 200, (
                 f"Expected 200 for {endpoint}, got {response.status_code}: {response.text}"
             )

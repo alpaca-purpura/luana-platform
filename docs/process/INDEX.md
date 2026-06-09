@@ -19,6 +19,11 @@
 | `chris-input-protocol.md` | todos | Protocolo chris-input.md por story (Critical Rule #30) |
 | `cockpit-permissions.md` | Chris + `/pm` | Whitelist transiciones Chris vs Claude en el cockpit (Critical Rule #31) |
 | `spec-mapa-funcional.md` | `/po-ux` + `/po` | Mapa funcional happy-path + bifurcaciones encima del Gherkin |
+| `cap-deterministic-enforcement.md` | `/architect` + `/pm` | Enforcement determinístico del formato/estado de la cap (8 capas · 9 gates G1-G9 · HB-51) |
+| `code-health-gate.md` | `/dev-team` + `/auditor` | Gate de salud del código (ruff/jscpd/vulture/pip-audit · HB-61) |
+| `continuous-improvement.md` | `/pm-luana` | Router CIL 4 carriles (L1 backlog · L2 learnings · L3 tech-debt · L4 cap-desfasada) — NO un 5º store |
+| `tech-debt.md` | `/pm` + `/auditor` | Carril L3 del CIL — deuda técnica/infra (apunta a learning-capture / harness-backlog) |
+| `contributing.md` | todos | Convenciones de contribución (stack / quality / Spanish-neutro) |
 
 ## Reglas globales
 

@@ -604,7 +604,38 @@ Para cada `cap.access.entry_points[*].requires_role: [...]`:
 
 ---
 
-## Sección 14 · Referencias
+## Sección 14 · Niveles de lectura N0-N4 (cap-levels · ratificado Chris 2026-06-06)
+
+Un cap se LEE en **5 altitudes** (Diátaxis-altitud + caso-de-uso-RUP). **No es dato nuevo:**
+cada nivel se PROYECTA de los bloques que el schema ya tiene (Sec 2 + Sec 11). El cockpit
+cap-drawer (`CapLevel`) los muestra colapsables; los gates aseguran que no queden viejos.
+
+| Nivel | Pregunta humana | Sale de (campo existente) | Gate de frescura |
+|---|---|---|---|
+| **N0 · Qué es** | "¿qué tengo, en una frase?" | `user_facing_name` + `user_facing_description` | **G8** (live+visible ⇒ description) |
+| **N1 · Qué puedo hacer** | "¿qué casos de uso resuelve?" | `scenarios[]` (actor + given/when/then + edge_cases) | **G9** (live+visible ⇒ ≥1 scenario) + `cross_check_3` (e2e existe) + **mutation_gate `--cap`** (accuracy de código) |
+| **N2 · Bajo qué reglas** | "¿qué reglas aplica y dónde?" | `business_rules[]` (rule + enforcement + `code_ref`) | badge 🔴 si `code_ref` ausente (regla de papel) |
+| **N3 · Quién y por dónde** | "¿quién entra, en qué ruta?" | `access.entry_points` (path + roles) | `cross_check_4` (role ↔ decorator) |
+| **N4 · Dónde vive / conecta** | "¿qué código, qué deps?" | `dev_preview` + `related_capabilities` + headers `# cap:` | `cap_doctor` G1-G7 + `BidirectionalSection` |
+
+**Badge de verdad por caso de uso (N1):** el cockpit deriva el estado de verificación del DATO REAL
+(no de un campo decorativo) — ✅ `verified_real` presente (evidencia de live-verify · DoD #37) ·
+🟠 `e2e_test` declarado sin `verified_real` · ⚪ ninguno → deuda. Lógica pura: `lib/cap-badges.ts`.
+
+**`verified_real`** (HB-58) está CABLEADO (opción a): lo leen el badge N1 + `cap_doctor --accuracy`
+(mide la deuda de scenarios live sin evidencia → carril L4 del CIL). Se setea SOLO cuando la
+live-verify de ese scenario quedó registrada (`{at, how}` derivado de `dod_evidence`/`dev_app_verified`).
+
+**DoD (parte de la Definition of Done de toda story user-visible · rule #37):** la cap entrega
+**N0-N4 completos** — N0 descripción (G8) · N1 ≥1 scenario que ejerza cada `business_rule` (G9 +
+gherkin-matrix Phase D) · N2 reglas con `enforcement`/`code_ref` · N3 `access` si user-reachable ·
+N4 `dev_preview` + código cableado. El auditor Phase D lo verifica explícito (no es favor de sesión).
+
+SSoT vivo de la propuesta + fases F0-F3: `docs/process/cockpit-capability-levels-proposal.md`.
+
+---
+
+## Sección 15 · Referencias
 
 - `docs/process/lifecycle.md` — SSoT del modelo 4-ejes (Release → Story → Capability → Scenario) · atomics/outcome/phase muertos
 - `vitalia/docs/architecture/ADR-vitalia-005-capability-model-4-dimensions.md` — ADR brand-local que cementa Sec 7-9 v3

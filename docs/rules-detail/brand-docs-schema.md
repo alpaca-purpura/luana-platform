@@ -1,4 +1,6 @@
-# Brand Docs Schema — R1+R2+R3 consolidated
+# Brand Docs Schema — R1+R2+R3+R4 consolidated
+
+> **W0.5 conformance (2026-06-08):** `outcomes/` purgado (D-X2 — la entidad *outcome* murió en la consolidación SDD 4-ejes: Release→Story→Capability→Scenario). `02-design-ui.md` DEAD (UI usa § Wireframes del 01-spec compuestos del design-system-canon); `02-design-agentic.md` sigue vivo (solo agentic-story). **tier: project** (layout de docs por marca).
 
 **Origen:** Sesión 2026-05-19 — purga docs/ Fase C reveló 3 reglas implícitas no codificadas. Auditor del caos doc detectó que el schema canónico (post pm-redesign 2026-05-15) no estaba enforced contra drift orgánico.
 
@@ -11,10 +13,10 @@
 ```
 {brand}/docs/
 ├── product/
-│   ├── outcomes/{slug}.md                    # épicas brand-local
+│   ├── releases/{F0..FN}.yaml                # Release entity (4-ejes · reemplaza outcome)
 │   ├── stories/{story-id}/                   # stories ACTIVAS (state ∉ {done})
 │   │   ├── 01-spec.md
-│   │   ├── 02-design-{ui|agentic}.md         # opcional
+│   │   ├── 02-design-agentic.md             # opcional · SOLO agentic-story (02-design-ui DEAD → § Wireframes del 01-spec)
 │   │   ├── 03-arch.md (+ 03-arch-{be,fe,agentic}.md opcionales)
 │   │   ├── 04-validators.yaml
 │   │   ├── 05-guidelines.md
@@ -58,7 +60,7 @@
 | Decisión arquitectónica | `{brand}/docs/architecture/ADR-{brand}-{NNN}-{slug}.md` |
 | Procedimiento operacional brand-local | `{brand}/docs/domains/{component}.md` |
 | Spec/diseño de feature | dentro de `{brand}/docs/product/stories/{story-id}/` |
-| Outcome (épica) | `{brand}/docs/product/outcomes/{slug}.md` |
+| Release (épica · 4-ejes) | `{brand}/docs/product/releases/{FN}.yaml` |
 | Learning histórico | `{brand}/docs/learnings/{date}-{slug}.md` |
 | Roadmap/backlog | `{brand}/docs/product/BACKLOG.md` (auto-gen) |
 | Handoff cross-session | dentro de la story relevante (`HANDOFF-next-session.md` adjunto a `checkpoint.md`) |
@@ -104,7 +106,7 @@ Esto está mencionado en cada `pm-{brand}/SKILL.md` § "Capability promotion (al
 | `docs/etl/extraction-contract.md` (cuando exista) | `make extraction-contract` | post analytics provider change | TBD |
 | `**/__generated__/*` (frontend, ej. offer-field-paths.ts) | `nicolify/backend/scripts/generate_offer_field_paths.py` | post field-paths change | ❌ gitignored |
 
-**Why gitignored (2026-05-20 cement):** durante semanas múltiples sesiones paralelas regeneraban con timestamps + ordenamientos distintos → merge conflicts crónicos (top 14 días: BACKLOG/PORTFOLIO con 9-11 modifs cada uno). Chris ratificó "gitignore total": SSoT vive en sources (`outcomes/`, `stories/`, `capabilities/`, `brand.yaml`); estos files son **vistas derivadas regenerables**, no fuente. Trade-off aceptado: GitHub UI no muestra la vista master sin clonar+regen, pero el costo de mantenerlos sincronizados era mayor.
+**Why gitignored (2026-05-20 cement):** durante semanas múltiples sesiones paralelas regeneraban con timestamps + ordenamientos distintos → merge conflicts crónicos (top 14 días: BACKLOG/PORTFOLIO con 9-11 modifs cada uno). Chris ratificó "gitignore total": SSoT vive en sources (`stories/`, `capabilities/`, `releases/`, `brand.yaml`); estos files son **vistas derivadas regenerables**, no fuente. Trade-off aceptado: GitHub UI no muestra la vista master sin clonar+regen, pero el costo de mantenerlos sincronizados era mayor.
 
 **How to apply:**
 
@@ -115,7 +117,7 @@ Esto está mencionado en cada `pm-{brand}/SKILL.md` § "Capability promotion (al
    o equivalente en frontmatter YAML.
 
 2. **Workflow correcto cuando contenido necesita cambio:** modificar la SOURCE (no el output). Sources:
-   - BACKLOG → source es `{brand}/docs/product/{outcomes,stories,capabilities}/`
+   - BACKLOG → source es `{brand}/docs/product/{stories,capabilities,releases}/`
    - PORTFOLIO → source es `{brand}/docs/portfolio/...` + brand 1-pagers + `{brand}/config/brand.yaml`
    - INFRA-MATRIX → source es `{brand}/config/brand.yaml::infra`
    - scan-promotables → source es `{brand}/docs/learnings/*.md` con `promotable: candidate|yes`
@@ -138,7 +140,7 @@ Esto está mencionado en cada `pm-{brand}/SKILL.md` § "Capability promotion (al
 
 **Pre-commit hook behavior (Section 6 + 10):** sigue regenerando archivos auto-gen localmente cuando cambian sources (para mantener vista local fresh), pero ya NO ejecuta `git add` sobre ellos (son gitignored). Mensajes hook clarifican "regenerated localmente (gitignored, no incluido en commit)".
 
-**Anti-pattern:** editar `BACKLOG.md` para "agregar TODO list" o cambiar prioridades manualmente — esos cambios viven en `checkpoint.md` o en outcomes/stories, no en el output consolidado. Ahora además los cambios manuales se pierden silenciosamente porque ni siquiera se commitean.
+**Anti-pattern:** editar `BACKLOG.md` para "agregar TODO list" o cambiar prioridades manualmente — esos cambios viven en `checkpoint.md` o en stories/capabilities, no en el output consolidado. Ahora además los cambios manuales se pierden silenciosamente porque ni siquiera se commitean.
 
 ## R4 — chris-input.md nace con la idea (state=idea) — v3 cement 2026-05-28
 
@@ -167,7 +169,7 @@ Doc canónico: `docs/process/chris-input-protocol.md`.
 
 - ❌ Crear `{brand}/docs/ROADMAP.md`, `{brand}/docs/STATUS.md`, `{brand}/docs/NOTES.md` (R1)
 - ❌ Mergear story state=done sin `git mv` a archive en mismo commit (R2)
-- ❌ Editar `{brand}/docs/product/BACKLOG.md` para "agregar prioridad" (R3 — modificá la source: checkpoint o outcome)
+- ❌ Editar `{brand}/docs/product/BACKLOG.md` para "agregar prioridad" (R3 — modificá la source: checkpoint o story)
 - ❌ Editar `docs/portfolio/PORTFOLIO.md` directo (R3 — `make portfolio` desde sources)
 - ❌ Mantener story state=done en active stories "porque la podemos consultar" — el move a archive NO la pierde, sigue accesible via path archive
 

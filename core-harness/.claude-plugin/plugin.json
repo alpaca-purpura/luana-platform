@@ -1,0 +1,5 @@
+{
+  "name": "harness",
+  "description": "Extractable software-development PROCESS kit (idea→done lifecycle, gates, roles, DoD, safety, learning-capture). Tech/brand-agnostic; reads project.config.yaml (the seam). Components below are populated by the W7 physical move — SCAFFOLD as of 2026-06-09. Always-on rules ship via the SessionStart hook (slim core ≤10k) + the /harness:bootstrap skill (full corpus copy), since plugins have no always-on-rules channel.",
+  "author": { "name": "Chris" }
+}

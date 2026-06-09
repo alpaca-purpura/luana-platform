@@ -168,8 +168,11 @@ export function EntitySubNavBar({
       </Link>
 
       {/* Entity identity */}
+      {/* No `flex-1` here: it would grow and push the leaf tabs to the far right.
+          Tabs must sit left-aligned right after the entity (Chris 2026-06-06). The name
+          span carries its own max-width + truncate so long names don't shove the tabs. */}
       <div
-        className="flex items-center gap-2 min-w-0 flex-1 mr-3"
+        className="flex items-center gap-2 min-w-0 mr-3"
         aria-label={entity ? `Editando: ${entity.name}` : "Selecciona un integrante del directorio"}
       >
         {entity ? (
@@ -190,7 +193,7 @@ export function EntitySubNavBar({
                 {entity.name.charAt(0).toUpperCase()}
               </span>
             )}
-            <span className="text-sm font-medium truncate">{entity.name}</span>
+            <span className="text-sm font-medium truncate max-w-[14rem]">{entity.name}</span>
           </>
         ) : (
           <span className="text-sm text-muted-foreground/60">—</span>

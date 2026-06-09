@@ -14,7 +14,7 @@ description: SSoT cargable del sistema de diseño + shell-organism de Vitalia (�
 ## 0 · Cuándo cargarme (obligatorio)
 
 - Cualquier ticket que toque `vitalia/frontend/src/{app,components,features}/**` con UI.
-- `/architect` (architect-fe) DEBE listarme en `assignment.must_load_skills` de todo ticket FE de vitalia.
+- `/architect` (surface FE · references/fe.md) DEBE listarme en `assignment.must_load_skills` de todo ticket FE de vitalia.
 - `builder-frontend` me carga y reporta "Skills consulted" en `T-{n}-result.md`.
 - `auditor-frontend` me carga antes de scorear categorías 9 (Visual fidelity) y 13 (Anti-duplication).
 

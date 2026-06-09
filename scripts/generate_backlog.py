@@ -81,17 +81,19 @@ LEGACY_STATE_MAP = {
     "review": "reviewing",  # rename
 }
 
+# CAPS — read from the harness seam project.config.yaml (D1 · W5b 2026-06-09). ONE store:
+# scripts/validate_session_close.py reads the SAME `wip_caps` slot (the byte-identical dup is
+# gone · charter §3 DRY). Downstream key names (refining_max … done_rolling_days) preserved.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import harness_config as _hc  # noqa: E402 — own script dir put on sys.path above
+
+_WIP = _hc.get("wip_caps")
 CAPS = {
-    "refining_max": 3,
-    "refined_max": 5,
-    "ready_max": 5,
-    "developing_max": 3,
-    "developed_max": 10,
-    "reviewing_max": 2,
-    "idea_stale_days": 90,
-    "refining_stale_days": 60,  # active refinement should not stagnate
-    "refined_stale_days": 30,  # awaiting architect — pull through fast
-    "done_rolling_days": 90,
+    **_WIP["coarse_session_net"],  # refining_max … reviewing_max
+    "idea_stale_days": _WIP["staleness_days"]["idea_stale"],
+    "refining_stale_days": _WIP["staleness_days"]["refining_stale"],
+    "refined_stale_days": _WIP["staleness_days"]["refined_stale"],
+    "done_rolling_days": _WIP["staleness_days"]["done_rolling"],
 }
 
 

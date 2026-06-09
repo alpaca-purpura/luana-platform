@@ -2,12 +2,12 @@
 
 > Owner: `/auditor` (Opus 4.8). Verdict por ticket.
 > Auditor lee `T-{n}-handoff.md` + `T-{n}-result.md` + corre tests él mismo (no se fía).
-> Self-fix v4.2 — 3 carriles por NATURALEZA: **A** self-fix gate-verified (mecánico, self_fix_iter<=5) · **B** spawn dev-team TDD si requiere test nuevo · **C** escalate Chris si stake-asimétrico (security/tenant/PII/migration/engine). audit_iterations<=4 total, wall-clock<=30 min.
+> Self-fix v5 (Auditor Responsable · `.claude/rules/auditor-self-fix-policy.md`): **Carril R** = default fix-and-own (TDD: regression RED→fix GREEN + re-corre gate-runner + live-verify ≥1 write real; PUEDE escribir tests) · **Carril C/C'** escalate Chris si stake-asimétrico (security/tenant/PII/migration/prompt-slot/eval-goldens/engine-core/cross-brand) o feature-entera nunca diseñada. Carril A (mecánico) = sub-caso de R. responsible_fix_iter<=6, audit_iterations<=4 total, wall-clock<=40 min. **Caveat AGENTIC:** Carril R sólo mecánico; cambio de comportamiento del agente → Carril C.
 
 ---
 ticket_id: T-1
 story_id: STORY_ID
-auditor_run: 1                                   # 1..4 (audit_iterations<=4 total · self_fix_iter<=5 por Carril A)
+auditor_run: 1                                   # 1..4 (audit_iterations<=4 total · responsible_fix_iter<=6 Carril R · Auditor Responsable v5)
 audited_at: 2026-05-04T17:30Z
 auditor_model: claude-opus-4-8
 verdict: APPROVED                                # APPROVED | CHANGES_REQUESTED | ESCALATED

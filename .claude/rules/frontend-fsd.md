@@ -1,9 +1,14 @@
 ---
-globs: "**/frontend/src/**/*.{ts,tsx}"
+paths:
+  - "**/frontend/src/**"
+  - "**/frontend/next.config.ts"
+  - "**/frontend/tsconfig.json"
 description: Frontend FSD-Lite (per-brand)
 ---
 
 # Frontend FSD
+
+> **Tier-2 `paths:` (W1-Phase2 2026-06-09 · tier: project).** Esta rule NO carga always-on — inyecta al leer un archivo que matchea `paths:` (test empírico #16299 OK — `harness-refactor-w1/W1-phase2-execution.md §3`; el viejo `globs:` era mecanismo MUERTO, CC lo ignora). Caveat #23478: no dispara en write puro de archivo nuevo — el gate mecánico (eslint/tsc/ruff/arch-tests) cubre ese hueco.
 
 Cada brand tiene su propio `{brand}/frontend/` independiente (nicolify, vitalia, comunify, lupulo).
 

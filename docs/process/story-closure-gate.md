@@ -5,9 +5,11 @@
 **Hard rule SSoT:** `.claude/rules/story-closure-gate.md`
 **Decisión arquitectónica:** `docs/architecture/luana-platform/ADR-006-story-closure-gate.md`
 
+> **★ Actualización proceso v5 (2026-06).** La hard rule `.claude/rules/story-closure-gate.md` (machinery CHECK 13-18) insertó las **fases nombradas G (`AWAIT_CHRIS_VERIFY`) + R (reconcile)** entre `developed` y `reviewing`, consolidó el signoff en `chris_verify.signoff` (retiró `demo_signoff`), y la WIP-cap es **module-scoped** (`≤1 por code:{module}`, NO por worktree). Este doc es el **rationale/case-study**; para el modelo de proceso VIVO leé la hard rule + `PROCESS-MODEL.md` §1-2.
+
 ## TL;DR
 
-Una story end-to-end pasa por 6 fases (DEV → AUDIT → FIX-LOOP → GHERKIN → DOCS → MERGE) antes de declararse `done`. `/dev-team` cerrar `developed` dispara AUTO-HANDOFF a `/auditor`. `/auditor` APPROVED dispara AUTO-HANDOFF a `/pm-{brand}` merge. Sin Chris-trigger manual obligatorio. Escape valve explícita via `defer_audit: true` en checkpoint con razón documentada.
+Una story end-to-end pasa por las fases A→F **+ las 2 fases nombradas G/R insertadas en proceso v5**: DEV → **[G `AWAIT_CHRIS_VERIFY`: Chris ejerce el kit live + firma `chris_verify.signoff`, ANTES del auditor]** → **[R reconcile: `/pm-{brand}` alinea spec/arch/cap → `reconciled: true`]** → AUDIT → FIX-LOOP → GHERKIN → DOCS → MERGE, antes de declararse `done`. `/dev-team` cierra `developed` → **G** (salvo `autonomous_mode: true`) → **R** → AUTO-HANDOFF `/auditor`. APPROVED → AUTO-HANDOFF `/pm-{brand}` merge. Escape valve: `defer_audit: true`. **Vocabulario vivo SSoT = la hard rule `.claude/rules/story-closure-gate.md` (v5) + `PROCESS-MODEL.md` §1-2** — este doc es rationale/case-study.
 
 ## Por qué este rule existe
 

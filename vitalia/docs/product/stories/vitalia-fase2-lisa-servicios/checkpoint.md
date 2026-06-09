@@ -4,11 +4,14 @@ type: ui-story
 agent_owner: lisa
 map_zone: agentes
 map_box: lisa
-module: treatments
+module: offer
 capability: lisa.servicios
-state: idea
+state: refining
 architecture_pattern: ADR-vitalia-004
-last_modified: '2026-05-30'
+last_modified: '2026-06-06T22:20:00.000Z'
+agentic_reframe: 2026-06-06
+input_spec_signed: true            # ✍ FIRMA 1 (intención) Chris 2026-06-06
+mockup_final_signed: false
 ratified_by_chris: false
 parallel_safe: true
 priority: high
@@ -20,18 +23,22 @@ dependencies:
   soft:
     - vitalia-fase2-lisa-doctores
     - vitalia-fase2-lisa-marca
+    - vitalia-fase2-marca-especialidad-clinica   # especialidad de la clínica (consumida read-only) — Chris 2026-06-07
 blocks_hard: []
 blocks_soft:
   - vitalia-fase2-adrian-propuestas
   - vitalia-fase2-valeria-agenda
 reuse_map_summary: >-
-  REUSE treatments shipped (vitalia/backend/src/modules/vitalia/treatments/) ·
-  NEW canvas escalera de valor (LadderSlot per offer-expert) · NEW toggle
-  Catálogo|Escalera · NEW N3-dyn detalle tratamiento + ladder slot
+  CONSUME Offer Studio engine (core/luana-core-offer-studio) vía Extension SDK EP-2 preset pack —
+  servicios = Offer (NO Treatment/LadderSlot nuevo; el peldaño = OfferValueLevel del engine) ·
+  EXTEND lisa-marca (voz para descripciones) + lisa-doctores (roster para link servicio↔doctor) ·
+  NEW UI canvas escalera (drag-drop sobre value_level) + N3-dyn detalle servicio + ladder-slot
+  workspace + link servicio↔doctor brand-level · CERO edit engine
 spawned_at: 2026-05-22T00:00:00.000Z
 next_action: >-
-  /po-ux refinar 01-spec.md con wireframes canvas escalera + detalle tratamiento
-  · /architect evaluar LadderSlot domain model
+  /po-ux reescribir 01-spec.md bajo el reframe agéntico de 00-research.md (canvas completo
+  ratificado + servicios=Offer Studio + link servicio↔doctor) · /architect cierra mapeo
+  columnas↔OfferValueLevel + preset pack EP-2 + dónde vive el link servicio↔doctor brand-level
 release: F2
 cap_target: lisa.servicios
 cap_change_type: new
@@ -39,6 +46,38 @@ parent_story: null
 ---
 
 # F2-S9 vitalia-fase2-lisa-servicios — checkpoint
+
+## ⚠️ Re-refinamiento agéntico 2026-06-06 — el "Scope verbatim" de abajo está PARCIALMENTE OBSOLETO
+
+La story se escribió 2026-05-22 bajo visión pre-agéntica. Re-refinada por `/pm-vitalia` 2026-06-06.
+**SSoT del reframe + recomendación + prior-art completo: `00-research.md`.** El "Scope verbatim",
+"Reuse map" y "Deliverables" de abajo se reescriben en `01-spec.md` vía `/po-ux`. Lo que cambia:
+servicios = **Offer Studio offers** (no `Treatment`/`LadderSlot` engine nuevo) · el peldaño =
+`OfferValueLevel` del engine · CERO edit engine (consume EP-2) · `module: treatments → offer`.
+
+## Prior art scan (anti-duplication-refining · 2026-06-06)
+
+| Fuente | Resultado | Decisión |
+|---|---|---|
+| `core/luana-core-offer-studio` (engine) | `OfferValueLevel` + `value_level_catalog` + `Offer`/`ServiceDetails` + `OFFER_LADDER_HINTS` (filas `PROFESIONAL_SALUD`) | **CONSUMIR vía EP-2** — catálogo + escalera YA existen como ontología engine. NUNCA recrear. |
+| `core/luana-core-sales-agent/knowledge_builder.py` | `TenantKnowledgeBuilder.build_identity()` ya lee `offer_repo` + preset | El agente lee el catálogo **sin plomería nueva** (desbloquea canal-inbound RN-16) |
+| `vitalia/treatments/` (propio) | followup de Camila (PHI), NO catálogo | NO reuse como catálogo (premisa original falsa, corregida) |
+| `vitalia/` lisa-marca (done) | brand voice slot 5 | CONSUMIR (descripciones en voz de marca) |
+| `vitalia/` lisa-doctores (developing) | `vitalia_doctors` + specialty | EXTENDER (link servicio↔doctor) |
+| `comunify/` live | offer ladder creator (no clínico) | patrón análogo, confirma ontología transversal |
+
+Detalle: `00-research.md § 2`.
+
+## Decisión Chris 2026-06-06 (ratificada — AskUserQuestion)
+
+1. **Alcance MVP = CANVAS COMPLETO** (drag-drop escalera + ladder-slot workspaces + analítica
+   conversión + tabs Reseñas/Stats). Anti-objetivos que siguen fuera: A/B pricing · imports bulk ·
+   AI suggested-pricing.
+2. **Cableado agéntico:** `lisa-servicios` posee la **DATA** (Offers publicadas + link
+   servicio↔doctor); el tool `match_service_and_specialist` vive en **canal-inbound**.
+3. **Esta story es la KEYSTONE** del catálogo: desbloquea canal-inbound (refined, hard-dep),
+   propuestas (F4) y landing-public (F6). DEBE entregar: (a) Offers publicables con campos
+   agente-facing (§ 00-research) + (b) link servicio↔doctor persistido.
 
 ## Goal
 

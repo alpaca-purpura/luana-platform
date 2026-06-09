@@ -354,7 +354,7 @@ T3:
   decisions_applicable: [D2, A3]                  # ⚠️ R6 — FE decisions (RHF+Zod, Spanish neutro)
   inputs:
     spec: "../01-spec.md"
-    ui_design: "../02-design-ui.md"
+    ui_design: "../01-spec.md § Wireframes"          # 02-design-ui.md DEAD (paradigma v4) → wireframes en 01-spec
     arch_doc: "../03-arch-fe.md"
     story_yaml: "../../../../../product/stories/copilot/brand-audit.yaml"
     rules: [".claude/rules/frontend-fsd.md", ".claude/rules/spanish-text.md"]

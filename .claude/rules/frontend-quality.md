@@ -1,9 +1,14 @@
 ---
-globs: "**/frontend/**/*.{ts,tsx,mjs,mts}"
+paths:
+  - "**/frontend/src/**"
+  - "**/frontend/eslint.config.mjs"
+  - "**/frontend/package.json"
 description: Stub — invoca frontend-expert skill
 ---
 
 # Frontend Quality
+
+> **Tier-2 `paths:` (W1-Phase2 2026-06-09 · tier: project).** Esta rule NO carga always-on — inyecta al leer un archivo que matchea `paths:` (test empírico #16299 OK — `harness-refactor-w1/W1-phase2-execution.md §3`; el viejo `globs:` era mecanismo MUERTO, CC lo ignora). Caveat #23478: no dispara en write puro de archivo nuevo — el gate mecánico (eslint/tsc/ruff/arch-tests) cubre ese hueco.
 
 - ESLint 0 errors. Config `{brand}/frontend/eslint.config.mjs`. 60+ rules. Plugins: sonarjs, boundaries, react-perf, prettier.
 - TypeScript strict, 0 errors.

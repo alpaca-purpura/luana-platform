@@ -30,9 +30,14 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parent.parent
 PROMOTION_DIR = REPO_ROOT / "docs" / "promotion-protocol"
 
-# Brands existentes con docs/learnings/ scan
-BRAND_SLUGS = ["nicolify", "vitalia", "comunify", "lupulo"]
-# Futuros: saasora, inmoflow, retailly, fixia, guestly, fitflow
+# Active brands (have docs/learnings/) — read from the harness seam project.config.yaml
+# (W5b 2026-06-09 · brands.active). No hardcoded enum: a new product/brand is picked up
+# from the seam, never by editing this script (charter §3 DIP · pending-bootstrap brands
+# live under brands.pending_bootstrap until they have a docs surface).
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from harness_config import get as _cfg  # noqa: E402 — own script dir put on sys.path above
+
+BRAND_SLUGS = _cfg("brands.active", pluck="slug")
 
 
 def parse_frontmatter(content: str) -> dict[str, Any]:

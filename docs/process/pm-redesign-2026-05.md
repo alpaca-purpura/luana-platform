@@ -5,6 +5,8 @@
 > **Ratifica:** Chris.
 > **Origen:** sesión 2026-05-05. Disparado por friction percibido en pipeline `/pm` actual + bloat skills + falta backlog visible + complejidad PI/Sprint para founder solo.
 > **Anti-context-rot:** captura decisiones cardinales por punto. Cada punto cerrado se ratifica acá antes de avanzar al siguiente.
+>
+> **★ SUPERSEDED-vocab (W6 2026-06-09).** Working-doc HISTÓRICO del rediseño 2026-05 (DRAFT, Punto 1 superseded). Vocabulario VIVO: `lifecycle.md` (4-ejes) + `harness-refactor-w0.5/PROCESS-MODEL.md` (10 estados + {G,R,C,D} + 5 story-types) + `brand-docs-schema.md` (layout). En este doc específicamente: **`02-design-ui.md` está DEAD** (paradigma v4 → wireframes viven en `01-spec § Wireframes`) y **`outcomes/` fue purgado a nivel marca** (eje Release). Las ~12 skills que lo citan lo usan como **ancla histórica del paradigma**, NO como SSoT del artifact-template ni del layout. (Repoint de los 12 citers → `lifecycle.md`/`PROCESS-MODEL.md` = decisión de proceso pendiente · flagged a Chris.)
 
 ---
 

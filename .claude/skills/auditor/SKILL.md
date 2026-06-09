@@ -245,6 +245,7 @@ Además de ejercer scenarios críticos live:
 - Verificar que existe `demo-script.md` si `demo_required: true`.
 - ★ **Mutation gate** (proceso v5 §5.6): si `04-validators technical_gates.mutation.enabled: true` (superficie crítica marcada por architect), verificar que corrió `scripts/mutation_gate.py` sobre el diff. Survivor en líneas-nuevas (mode hard) → CHANGES_REQUESTED al fix-loop (dev escribe el test RED). Survivor HEREDADO → rutear a CIL carril L4 (no bloquea). Tool ausente → advisory (no bloquea).
 - ★ **Ledger de cobertura** (proceso v5 §5.2): leer la columna `estado` de la `§ Matriz de cobertura` (`01-spec.md`) y **congelarla** — cada ítem `✅ construido` debe tener su test/ruta real; lo `→ historia {id}` debe linkear una story spawneada (no un gap mudo). **PISO HARD:** si `cap_change_type: new` y un ítem del happy-path NO está `✅` → CHANGES_REQUESTED (el core no se difiere).
+- ★ **Cap N0-N4 completo** (cap-levels · `capability-protocol.md` §14): para una story user-visible, la cap target debe entregar las 5 altitudes — **N0** `user_facing_description` (G8) · **N1** ≥1 `scenario` que ejerza cada `business_rule` (G9 + la gherkin-matrix de arriba) · **N2** `business_rules` con `enforcement`/`code_ref` (regla sin `code_ref` = 🔴 papel, flag) · **N3** `access` si user-reachable · **N4** `dev_preview` + código cableado (`cap_doctor` G1-G7). El badge de verdad N1 (`verified_real`/`e2e_test`) debe reflejar la realidad de live-verify, no decoración. Cap incompleta en una altitud que la story tocó → CHANGES_REQUESTED. (`cap_doctor --accuracy` mide la deuda de scenarios sin evidencia → carril L4; no bloquea por sí mismo.)
 
 Sin evidencia live / con MISSING / sin base.ts importado / con regression_guard roto → CHANGES_REQUESTED.
 Ref: `.claude/rules/definition-of-done-live-verify.md`.
@@ -784,39 +785,11 @@ Cada paso:
 
 NUNCA dump de findings (cita path).
 
-## Output protocol · chris-input.md append (v2 cement 2026-05-27)
+## Output protocol · chris-input.md append
 
-Al cierre de cada turn de esta skill, MUST appendear una entry a la sección 💬 Conversación del `chris-input.md` de la story activa.
+Al cierre de cada turn, MUST appendear una entry a la sección 💬 Conversación del `chris-input.md` de la story activa, con verdict **✓ APLICADO · ⚠️ DUDA · ❌ REFUTADO · 💡 PROPONE**. Nunca terminar turn sin appendear (aunque sea `✓ APLICADO · sin cambios sustantivos`). Path: state ∈ {idea..reviewing} → `{brand}/docs/product/stories/{id}/chris-input.md`; `done` → `{brand}/docs/archive/{year}/stories/{id}/chris-input.md`.
 
-**Path target:**
-- Story state ∈ {idea, refining, refined, ready, developing, developed, reviewing}: `{brand}/docs/product/stories/{story_id}/chris-input.md`
-- Story state = done: `{brand}/docs/archive/{year}/stories/{story_id}/chris-input.md` (read-only post-merge)
-
-**Formato verbatim del block markdown a appendear:**
-
-```markdown
-### YYYY-MM-DDTHH:MM · 🤖 claude · `/auditor` · {emoji} {VERDICT-LABEL}
-{texto 2-30 líneas · descripción de qué hizo + decisiones tomadas + qué necesita Chris responder}
-```
-
-**Verdict labels (4 valores):**
-
-| Emoji | Label | Cuándo usar |
-|---|---|---|
-| ✓ | APLICADO | Cambios concretos aplicados al spec/design/arch/test (citar paths) |
-| ⚠️ | DUDA | Pregunta a Chris antes de seguir. State queda esperando respuesta |
-| ❌ | REFUTADO | Razón por la que NO se aplica algo que Chris pidió (con justificación) |
-| 💡 | PROPONE | Opción nueva sugerida por Claude · Chris ratifica o descarta |
-
-**Anti-patterns prohibidos:**
-
-- ❌ Skill termina turn sin appendear (silent escape) — siempre appendear, aunque sea `✓ APLICADO · sin cambios sustantivos`
-- ❌ Verdict sin texto sustantivo (1 palabra no informa)
-- ❌ Path hardcoded con brand fija — debe ser `{brand}` dinámico (de checkpoint.md o args del invoke)
-- ❌ Múltiples verdicts en un solo entry — si hay 2 cosas, son 2 entries consecutivas
-- ❌ Entry sin emoji + label de verdict (parser falla)
-
-Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
+**Schema verbatim (formato del entry + labels + anti-patterns): `docs/process/chris-input-protocol.md § Sección 5` (SSoT — no se duplica acá).**
 
 ## Referencias
 

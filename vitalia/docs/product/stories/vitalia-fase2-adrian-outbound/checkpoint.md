@@ -354,6 +354,10 @@ Attribution data alimenta F2-S18 lucas-resultados (bowtie funnel) — read-only 
 - F2-S18 lucas-resultados consume attribution outbound
 - Story futura: bulk template-submission para escalar HSM library
 
+## Nota compliance (cross-link reframe lisa-compliance 2026-06-07)
+
+El **gate opt-out/consent en el path de envío** (§ 7 + AC-6 + `opt_out_service.py`) es un **requisito HARD de compliance** (consentimiento antes de marketing — anti-pattern de marca "recordatorios sin opt-in"). El explore 2026-06-07 confirmó que hoy **solo re-engagement** lo chequea; el outbound proactivo de Adrián DEBE gatear opt-out/consent ANTES de encolar el send (audience filter + worker check + audit, las 3 capas). Esta story es el hogar correcto de ese guardrail (NO se spawnea story aparte). La vista **Lisa→Confianza y cumplimiento** (lisa-compliance, dirección A) **lee** el conteo de bloqueos/opt-outs que este servicio produce. Ref: `vitalia-fase2-lisa-compliance/00-pm-recommendation.md`.
+
 ## Referencias
 
 - **Design Contract:** `vitalia/docs/architecture/SHELL-DESIGN-CONTRACT.md`
