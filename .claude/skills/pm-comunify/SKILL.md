@@ -88,6 +88,20 @@ cat comunify/docs/product/BACKLOG.md         # vista 10 estados
 
 Pregunta a Chris: **"¿qué hacemos en Comunify? (a) idea/story nueva / (b) continúa story X / (c) capability / (d) learning / (e) drill-down a {drill-target}"**
 
+## ★ Intake-handshake — la historia NACE de la conversación (W0.5-bis, ratificado Chris 2026-06-08)
+
+> SSoT: `docs/process/harness-refactor-w0.5/REQ-TAKING-DETAIL.md §2`. El intake es **conversacional en Claude Code** (NO cockpit-first — Chris entra y te habla; el cockpit lo ve DESPUÉS).
+
+Cuando Chris trae una idea ("idea {x}"), NO crees archivos mecánicamente y listo. Actuás como **diseñador del sistema**:
+
+1. **Acordás dónde va** — zona/caja del mapa (árbol `.claude/rules/paradigm-arquitectura.md`) + **extiende-o-nuevo**: ¿extiende una capability/vista existente o es net-new?
+2. **Decís qué ya existe** — no aceptás y ya: contás si "ya avanzamos en eso", si hay algo construido. La conversación de **prior-art / ubicación pasa ACÁ**, antes de que la story exista (primera conversación de diseño, no un checkbox de `refining` posterior).
+3. **Empujás** — proponés, contradecís si el pedido se aleja de la visión o no aporta valor (Chris explica el porqué → enriquece tu contexto, queda en `chris-input.md`).
+4. **La story se crea de esa conversación** — recién ahí nacen `checkpoint.md` + `chris-input.md` (juntos, R4).
+5. **Todo lo que Chris pide** — desde esta conversación de creación y en cada nota posterior — **va a `chris-input.md`** (libro mayor de "lo que pedí", trazabilidad end-to-end).
+
+El intake-handshake + prior-art-en-el-intake es **CORE**; el cockpit + el render de `chris-input.md` son **PROJECT**.
+
 ## Vocabulary — 10 estados macro (heredado Luana core)
 
 Idéntico paradigm v4 de Luana core. Detalle: `docs/process/pm-redesign-2026-05.md` § Punto 4.
@@ -110,7 +124,7 @@ Idéntico paradigm v4 de Luana core. Detalle: `docs/process/pm-redesign-2026-05.
 | Chris dice | Acción |
 |---|---|
 | "estado comunify" / "qué tenemos comunify" | Render `comunify/docs/product/BACKLOG.md` agrupado por 10 estados con emojis (NO tabla cruda) |
-| "idea {x}" | Crear story dir `state=idea` con **2 archivos juntos**: `comunify/docs/product/stories/{slug}/checkpoint.md` + `chris-input.md` (este último desde `docs/specs/templates/00-chris-input-template.md` — nace con la idea como buzón donde Chris vuelca lo que desea/necesita; Claude lo puede rebatir durante el ciclo de vida) |
+| "idea {x}" | **Primero corré el intake-handshake (§ arriba)** — conversación de diseñador del sistema (zona/caja + extiende-o-nuevo + qué ya existe + empujás). RECIÉN de esa conversación creás el story dir `state=idea` con **2 archivos juntos**: `comunify/docs/product/stories/{slug}/checkpoint.md` + `chris-input.md` (desde `docs/specs/templates/00-chris-input-template.md` — libro mayor donde TODO lo que Chris pidió en la conversación de creación queda registrado; Claude lo puede rebatir durante el ciclo de vida) |
 | "refinemos {story}" | (1) Update checkpoint state=refining. (2) Si épica → decompose. (3) Hand off `/po-ux` (UI std), `/po` (service), o `/po + /ux-agentico` (agentic) |
 | "spec ratificada" / "diseño ratificado" | Update state refining→refined. Hand off `/architect` |
 | "ready" | Update state refined→ready (verificar 4 archivos: 03-arch, 04-validators, 05-guidelines, 06-tickets) |
@@ -123,6 +137,40 @@ Idéntico paradigm v4 de Luana core. Detalle: `docs/process/pm-redesign-2026-05.
 | "promotable {tema}" | Append learning con `promotable: candidate` + ping `/pm-luana` para evaluación |
 | "ADR" / "decision arquitectónica" | Crear `comunify/docs/architecture/ADR-comunify-NNN-{slug}.md` |
 | "regen backlog" / "regen portfolio" | `make portfolio` (auto-gen `scripts/generate_portfolio.py`) |
+
+## Auto-chain rule (cementada 2026-05-23 — origen estancamiento F1-S4)
+
+**Regla cardinal:** si Chris nombra explícitamente una skill secundaria (`/po-ux`, `/po`, `/ux-agentico`, `/architect`, `/dev-team`, `/auditor`) dentro de los args del `/pm-comunify` (o cualquier `/pm-{brand}`), o el contexto del turno determina que el siguiente paso obvio es una de esas skills, **invocá `Skill` tool inline en el mismo turn post-Step 0**. NO devuelvas handoff textual.
+
+### Cuándo aplicar (trigger condiciones)
+
+1. Chris escribió literalmente `/po-ux` (o `/po`, `/architect`, `/dev-team`, `/auditor`, `/ux-agentico`) en los args.
+2. Chris escribió "invocá" + nombre skill (ej. "invocá /po-ux", "spawnea /architect").
+3. Chris escribió "continúa con /skill-X" o "arranca /skill-X".
+4. Step 0 GREEN + acción única determinada por estado actual (ej. story `refined` → único próximo skill es `/architect`).
+
+### Cuándo NO encadenar (excepciones)
+
+- WIP cap del estado destino está agotado (refinar respuesta + escalate Chris)
+- Faltan deps hard (citar deps faltantes + opciones)
+- Step 0 detecta stories OPEN sin defer_audit (REUSE THAT FIRST per story-closure-gate.md)
+- Story state actual no permite la transición (ej. Chris pide `/auditor` pero state=refining)
+- Scope gate (`.claude/rules/parallel-safety.md` M13) bloquea — el skill destino tocaría paths fuera del worktree actual
+
+### Cómo encadenar (verbatim)
+
+```text
+1. Step 0 GREEN check (story closure gate)
+2. Step 1 carga checkpoint brand + story
+3. Validar WIP caps + deps + state-machine de la transición
+4. Resumir contexto en 2-4 bullets compactos (qué es la story, cuál es el next_action del checkpoint)
+5. Llamar Skill tool: { skill: "<name>", args: "<brand> <story-id>" }
+6. NO escribir "Chris, invocá /po-ux..." — eso rompe la chain
+```
+
+### Anti-pattern
+
+❌ Caso real 2026-05-23 F1-S4 (vitalia): post-Step 0 GREEN el PM devolvió "Chris, invocá /po-ux ..." esperando re-tipeo → estancamiento. ✅ Fix: invocar `Skill(skill: "po-ux", args: "comunify {story-id}")` directamente. Ver `.claude/rules/pm-skill-chaining.md`.
 
 ## Capability promotion (al merge)
 

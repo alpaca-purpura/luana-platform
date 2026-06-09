@@ -2,6 +2,10 @@
 # Pre-push hook — block ``git push origin main`` unless ``make ci-parity``
 # has succeeded against HEAD.
 #
+# tier: hybrid · core = push-to-main gate machinery (ci-parity marker ·
+#       bidirectional/cap-gate sourcing) · project = brand enums +
+#       CAP_GATES_HARD_BRANDS + PHI + .venv → seam brands[]/toolchain (W5)
+#
 # Why
 # ===
 # /pase-produccion enforces ci-parity in Phase 3b but is run by Claude
@@ -121,10 +125,11 @@ if [ "${BIDIRECTIONAL_PUSH_OVERRIDE:-0}" != "1" ]; then
   BIDIR_SCRIPT="${REPO_ROOT}/scripts/validate_code_cap_bidirectional.py"
   if [ -x "${REPO_ROOT}/.venv/bin/python" ] && [ -f "${BIDIR_SCRIPT}" ]; then
     VENV_BIDIR="${REPO_ROOT}/.venv/bin/python"
-    # Brands activas con capabilities reales. Las 6 futuras tienen dir capabilities/ vacío
-    # (placeholders) → discovery dinámica las incluiría sin beneficio; hardcoded = correcto.
-    # Al bootstrapear una marca nueva, agregarla acá (cambio deliberado de 1 línea).
-    BRANDS_ALL="vitalia nicolify comunify lupulo"
+    # Active brands (with real capabilities) from the seam (project.config.yaml · brands.active)
+    # — no hardcoded list (charter §3 DIP · W5b). The 6 pending-bootstrap brands live under
+    # brands.pending_bootstrap (empty capabilities/ — the per-B `-d` guard below skips any
+    # without a capabilities dir anyway). venv is guaranteed here (the enclosing `if`).
+    BRANDS_ALL="$("${VENV_BIDIR}" "${REPO_ROOT}/scripts/harness_config.py" brands.active slug 2>/dev/null | tr '\n' ' ')"
     HARD_DRIFT_TOTAL=0
     HARD_DRIFT_BRANDS=""
 
@@ -179,7 +184,11 @@ fi
 # nicolify/lupulo ADVISORY (mid-rebuild / placeholder). Override: CAP_GATES_PUSH_OVERRIDE=1.
 # SSoT: docs/process/cap-deterministic-enforcement.md (Capa 4 + 7)
 # ─────────────────────────────────────────────────────────────────
-CAP_GATES_HARD_BRANDS="vitalia comunify"
+# HARD-cap-gate brands from the seam (project.config.yaml · brands.active where cap_gate=hard)
+# — no hardcoded enum (charter §3 DIP · W5b). Empty (unreadable) → the per-brand `-d` guard
+# below skips all; loud-warn keeps it non-silent.
+CAP_GATES_HARD_BRANDS="$("${REPO_ROOT}/.venv/bin/python" "${REPO_ROOT}/scripts/harness_config.py" brands.active slug --where cap_gate=hard 2>/dev/null | tr '\n' ' ')"
+[ -z "${CAP_GATES_HARD_BRANDS}" ] && echo "::warning::project.config.yaml HARD cap-gate brands unreadable — cap-gate push enforcement skipped" >&2
 
 if [ "${CAP_GATES_PUSH_OVERRIDE:-0}" != "1" ]; then
   CAPG_SCRIPT="${REPO_ROOT}/scripts/validate_code_cap_bidirectional.py"

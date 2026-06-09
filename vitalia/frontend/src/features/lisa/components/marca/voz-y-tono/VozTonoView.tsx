@@ -38,7 +38,7 @@ import { marcaKeys } from "../../../api/marca";
 import { getPersonality, getProhibitedPhrases } from "../../../api/marca-voice-api";
 import { usePersonalityAutosave } from "../../../hooks/usePersonalityAutosave";
 import { hashVoiceBlocks } from "../../../utils/marca/prohibitedPhraseDetector";
-import { AutosaveBadge } from "@/components/marca/shared/AutosaveBadge";
+import { FloatingAutosaveIndicator } from "@/components/shared/FloatingAutosaveIndicator";
 import { ArchetypeSelector } from "./ArchetypeSelector";
 import { VoiceCompilerBlocks } from "./VoiceCompilerBlocks";
 import { TreatmentLanguageCard } from "./TreatmentLanguageCard";
@@ -192,13 +192,6 @@ export function VozTonoView({ tenantId, clinicId, className }: VozTonoViewProps)
       data-testid="voz-tono-section-root"
       className={cn("flex flex-col gap-6 p-6", className)}
     >
-      {/* Header — Bug #3 fix (vitalia-bugfix-shell-nav-scroll-errors T-6): se
-          removió el h2 "Voz y tono" (eco del SubSubTab activo). Se conserva el
-          AutosaveBadge, re-alineado a la derecha. */}
-      <div className="flex items-center justify-end">
-        <AutosaveBadge status={autosaveStatus} savedAt={savedAt} />
-      </div>
-
       {/* 1. ArchetypeSelector — shows per-section skeleton while loading */}
       {isPersonalityError ? (
         <div role="alert">
@@ -235,6 +228,8 @@ export function VozTonoView({ tenantId, clinicId, className }: VozTonoViewProps)
         debounceHash={debounceHash}
         isLoading={autosaveStatus === "saving"}
       />
+
+      <FloatingAutosaveIndicator status={autosaveStatus} savedAt={savedAt} />
     </div>
   );
 }

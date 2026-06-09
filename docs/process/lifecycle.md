@@ -47,7 +47,7 @@ Release  (¿cuándo shippeó?)        — contenedor temporal, agrupa stories
 
 ## 3. Ciclo de vida — Story (10 estados macro)
 
-Heredado de paradigm v4. WIP caps **≤1** por worktree para developing/developed/reviewing (gana la hard rule de `story-closure-gate.md`; cualquier doc que diga ≤2/≤3 está obsoleto).
+Heredado de paradigm v4. WIP cap **≤1 por `code:{module}` bucket** para developing/developed/reviewing (NO "por worktree" — X6/D-X2; gana la hard rule de `story-closure-gate.md`; exime `AWAIT_CHRIS_VERIFY` + `defer_audit: true`; cualquier doc que diga ≤2/≤3 o "por worktree" está obsoleto). Las 4 fases nombradas {G,R,C,D} viven en `story-closure-gate.md` + el campo `checkpoint.phase`.
 
 | # | Estado | Significado | Owner | WIP cap |
 |---|---|---|---|---|

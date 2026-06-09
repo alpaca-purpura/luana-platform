@@ -53,6 +53,18 @@ export interface UseAutosaveOptions<TValues> {
    * @default 2000
    */
   debounceMs?: number;
+  /**
+   * Si `true`, las llamadas sucesivas a scheduleSave MEZCLAN sus payloads
+   * (shallow merge sobre objetos) en lugar de descartar el anterior (last-wins).
+   * Útil cuando cada edición envía un patch parcial distinto y todos deben
+   * llegar al backend en un único guardado.
+   *
+   * Requiere que TValues sea un objeto plano para que el merge tenga sentido;
+   * con primitivos el merge degrada a last-wins (el último valor gana).
+   *
+   * @default false
+   */
+  coalesce?: boolean;
   /** Telemetría opt-in. */
   telemetry?: (event: { type: "saved" | "error"; durationMs: number }) => void;
   /**
@@ -72,6 +84,13 @@ export interface UseAutosaveReturn<TValues> {
   scheduleSave: (values: TValues) => void;
   cancel: () => void;
   retry: () => void;
+  /**
+   * Cancela el debounce pendiente y guarda inmediatamente los valores
+   * acumulados (el merge si coalesce, o el último si last-wins).
+   * No-op si no hay nada pendiente.
+   * @returns Promesa que resuelve cuando el guardado termina.
+   */
+  flush: () => Promise<void>;
 }
 
 // ── Constantes ────────────────────────────────────────────────────────────────
@@ -103,6 +122,7 @@ export function useAutosave<TValues>(
     onSaved,
     onError,
     debounceMs = DEFAULT_DEBOUNCE_MS,
+    coalesce = false,
     telemetry,
     authReadyAttempts = DEFAULT_AUTH_READY_ATTEMPTS,
   } = options;
@@ -110,8 +130,13 @@ export function useAutosave<TValues>(
   // ── Refs ────────────────────────────────────────────────────────────────────
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isMountedRef = useRef(true);
+  // lastValuesRef: snapshot que se va a guardar cuando dispara el debounce.
+  //   - coalesce=false → último valor (last-wins, comportamiento histórico).
+  //   - coalesce=true  → merge acumulado de todos los scheduleSave pendientes.
   const lastValuesRef = useRef<TValues | null>(null);
   const isSavingRef = useRef(false);
+  const coalesceRef = useRef(coalesce);
+  coalesceRef.current = coalesce;
 
   // Stable refs for callbacks to avoid stale-closure issues in the debounced fn
   const saveRef = useRef(save);
@@ -212,8 +237,23 @@ export function useAutosave<TValues>(
   // ── scheduleSave ─────────────────────────────────────────────────────────
   const scheduleSave = useCallback(
     (values: TValues): void => {
-      lastValuesRef.current = values;
-      cancel(); // cancel prior timer (last-wins)
+      const prev = lastValuesRef.current;
+      if (
+        coalesceRef.current &&
+        prev !== null &&
+        isPlainObject(prev) &&
+        isPlainObject(values)
+      ) {
+        // Merge: las claves nuevas pisan, las anteriores no-pisadas sobreviven.
+        lastValuesRef.current = {
+          ...(prev as Record<string, unknown>),
+          ...(values as Record<string, unknown>),
+        } as TValues;
+      } else {
+        // last-wins (default histórico, o coalesce con primitivos/null).
+        lastValuesRef.current = values;
+      }
+      cancel(); // cancel prior timer — el merge ya vive en lastValuesRef
 
       if (isMountedRef.current) {
         setStatus("dirty");
@@ -236,6 +276,17 @@ export function useAutosave<TValues>(
     }
   }, [executeSave]);
 
+  // ── flush ─────────────────────────────────────────────────────────────────
+  // Cancela el debounce y guarda ya los valores acumulados (merge o último).
+  // Mantiene lastValuesRef poblado: si el guardado falla, retry() lo reusa;
+  // si llega un scheduleSave posterior con coalesce, mergea sobre este lote
+  // (las mismas claves se sobrescriben, así que re-guardar es idempotente).
+  const flush = useCallback(async (): Promise<void> => {
+    cancel();
+    if (lastValuesRef.current === null) return;
+    await executeSave(lastValuesRef.current);
+  }, [cancel, executeSave]);
+
   // ── Cleanup on unmount ────────────────────────────────────────────────────
   useEffect(() => {
     return () => {
@@ -243,5 +294,19 @@ export function useAutosave<TValues>(
     };
   }, [cancel]);
 
-  return { status, savedAt, scheduleSave, cancel, retry };
+  return { status, savedAt, scheduleSave, cancel, retry, flush };
+}
+
+// ── helpers ────────────────────────────────────────────────────────────────
+
+/**
+ * True si el valor es un objeto plano mergeable (no null, no array, no Date,
+ * no instancia de clase con prototipo no-Object). Conservador: solo objetos
+ * literales / Record planos entran al merge de coalesce.
+ */
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  if (typeof value !== "object" || value === null) return false;
+  if (Array.isArray(value)) return false;
+  const proto = Object.getPrototypeOf(value) as object | null;
+  return proto === Object.prototype || proto === null;
 }

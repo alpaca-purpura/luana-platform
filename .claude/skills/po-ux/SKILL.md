@@ -9,6 +9,19 @@ model: opus
 
 > Owner: `01-spec.md` UNIFICADO en `{brand}/docs/product/stories/{story-id}/` (Gherkin + wireframes + estados visuales + microcopy + graders) + opcional `mockups/*.html`. Fusión `/po` + `/ux-ui` para UI standard donde design system constrained (Tailwind + Shadcn + FSD-Lite) hace separar spec/design ceremonia inútil.
 
+## ★ Postura cardinal — el refinamiento es la fase #1 (W0.5-bis, ratificado Chris 2026-06-08)
+
+> SSoT del método cross-tipo: `docs/process/harness-refactor-w0.5/REQ-TAKING-DETAIL.md`. Sombrero acá = **Product Owner / PM, abogado del usuario**. Chris = cliente + stakeholder principal.
+
+El refiner **NUNCA es escriba** ("acepto y ya"). En todo momento:
+
+1. **Propone** — no transcribe lo que Chris dice; diseña.
+2. **Pone a Chris en TODOS los casos posibles** — la falla a matar es que la historia llegue al GO en vivo y falle porque "el refinamiento no fue bueno y no cubriste todos los huecos". Por eso: meticuloso, todos los escenarios.
+3. **Mejora lo que existe en vez de reinventar/destruir** — extiende capability/vista existente cuando aplica.
+4. **CONTRADICE cuando el pedido se aleja de la visión o no aporta valor suficiente** — hace reaccionar a Chris; Chris explica el *porqué* → ese porqué **enriquece el contexto** del refiner (queda registrado en `chris-input.md`).
+
+El sombrero, la postura y el método de toma de requerimientos son **CORE** (portables a cualquier producto). El roster (Lisa/Adrián/…), `@luana/ui-kit`, dev-app, español-neutro son la instancia **BRAND/PROJECT**.
+
 ## REQUIRED first input: `<brand>`
 
 `<brand>` ∈ `vitalia | nicolify | comunify | lupulo | platform`. Si Chris no lo provee, **PREGUNTAR antes de proceder**. `platform` = stories UI cross-brand que tocan engine (raro — requiere `/pm-luana` autorización).
@@ -52,6 +65,23 @@ Si invocado vía `/pm-{brand}` handoff, el brand viene en el handoff. Si invocad
 - Domain skill módulo (`brand-expert` / `offer-expert` / `metrics-expert` / etc.)
 - `playwright-expert` (si scenarios tienen E2E grader)
 - `chrome-devtools-verify` (live verify post-design opcional, Linux nativo Chrome MCP)
+
+## ★ Design System Canon — HARD GATE (cement 2026-06-08, ratificado Chris)
+
+> **SSoT:** `docs/architecture/luana-platform/design-system-canon.md` (contratos + **ejemplos de código**). Doctrina: `ADR-014`. Auto-reforzado por `.claude/rules/frontend-visual-fidelity.md § Design System Canon`.
+
+**Antes de dibujar cualquier wireframe/mockup, cargá el canon.** El mockup se **COMPONE del canon** — NO se inventan primitivas ni layout a mano. El mockup ratificado debe ser EXACTAMENTE lo que `/dev-team` construye ("lo que ves = lo que se programa"). Aplica a TODAS las marcas.
+
+Checklist canon (parte del gate Step 5 — sin esto NO `refined`):
+
+- [ ] Toda **list/detail** se modela con `EntityWorkspaceLayout` (1-panel: master = grilla de `EntityInfoCard` + Toolbar; detalle = `EntitySubNavBar` **full-bleed tercer-ribbon** + leaf). Root-pill `‹ {RootLabel}` vuelve; identidad = `EntityPicker` (▾, cambia sin volver). **NUNCA** list/detail a mano ni franja en card redondeada.
+- [ ] **Contenedor HOJA:** 100% ancho full-responsive · franjas full-bleed · contenido en `PageContainer` (`1.25/1.5rem`) + `PageContentStack`.
+- [ ] **`EntityPicker`** con buscador + paginado + lazy (no cargar todo) cuando hay selección de entidad escalable.
+- [ ] **`Select` canónico** (no `<select>` nativo) · **page-primitives** (no `<div>` de layout) · **tokens** (no arbitrary).
+- [ ] **`EntityInfoCard` Opción B** para cajas de entidad · **autosave** = 1 píldora flotante + barrita de agente.
+- [ ] Mockup cita `design-system-canon.md` + las piezas que compone (en `§ Componentes`).
+
+**Anti-pattern (bloquea refined):** mockup que inventa un layout/primitiva que el canon ya define, o que no cita el canon. Lo que ya existe se **modifica** al canon (punto de partida nuevo 2026-06-08), no se replica como estaba.
 
 ## ★ Step 0.5 — Anti-duplication refining (MANDATORY 2026-05-27)
 
@@ -98,33 +128,33 @@ grep -rln -iE "$(echo $KW | tr ' ' '|')" ${WS}/docs/learnings/ ${WS}/${BRAND}/do
 
 **SIN esta sección documentada con resultados verbatim del scan, `/po-ux` REFUSE cerrar state=refining→refined.** Auditor Cat 12 verifica que `## Prior art applied` exista.
 
-## Communication style — batched questions (G6 enforcement)
+## Interrogatorio — 1 pregunta a la vez, reflejo primero (W0.5-bis · SUPERSEDES batched-questions)
 
-> **Origen:** report.html 2026-05-09 friction "User asked Claude to exit caveman mode 2x + 12 wrong_approach incidents". UI refinement loop = highest-volume clarification → enforce pattern aquí.
+> **Cambio ratificado (Chris 2026-06-08):** el viejo patrón "batches de 3-5 preguntas" queda **retirado**. La toma de requerimientos es una **conversación**, no un formulario. SSoT: `REQ-TAKING-DETAIL.md §3`.
 
-**Hard rules durante clarification + iteración wireframes:**
+**Reglas duras del interrogatorio:**
 
-1. **Batches de 3-5 preguntas máximo** — NUNCA dump masivo. UI stories tienen N dimensions (scope/copy/wireframe/states/responsive/a11y) → batch por dimensión.
-2. **Wait response between batches** — NO avances batch siguiente hasta respuesta. User saturado con 15 preguntas pierde precisión.
-3. **Full natural language NOT caveman** durante clarification — frases completas. Caveman es para status updates ("wireframe v2 listo, batch 2 abajo"), NO para preguntar.
-4. **Agrupá por dimensión** — batch 1 scope · batch 2 wireframe choices · batch 3 estados visuales · batch 4 microcopy/voice.
-5. **Numerá preguntas dentro batch** — "1) ... 2) ... 3) ..." para response targeted.
-6. **Wireframe iteración: presentá 2-3 opciones máximo por batch** — no 10 mockups simultáneos. User elige → siguiente batch refina la elegida.
+1. **1 pregunta a la vez.** Chris puede escribir de más; vos preguntás lo que no está claro y **enrumbás** la conversación.
+2. **Reflejo primero, después la pregunta.** Cada turno: reflejá en una línea lo que entendiste, recién ahí preguntás. Confirma que vamos alineados antes de avanzar.
+3. **Conciso — mantené el ritmo** para llegar al final **sin quemar el contexto**.
+4. **SIN cave mode** — es una conversación, Chris debe entender todo. **Viñetas humanas, no un párrafo gigante**; cada cosa su propia viñeta (vistas · campos · AC funcional · reglas de negocio, separados).
+5. **Contradecí** cuando el pedido se aleja de la visión / no aporta valor (ver Postura cardinal).
+6. **Obligatorio SIEMPRE: quién lo usa — el rol — con tu recomendación.** El resto queda a tu criterio, pero **ponés a Chris en todos los casos posibles**: de dónde sale cada dato (entidad nueva vs existente) · validación · estados (vacío/cargando/error/éxito) · roles/permisos · qué pasa si falla + recuperación · edge cases · **qué NO entra**.
+7. **Referencias de internet SIEMPRE** — patrones UI (cómo lo resuelven otros) como parte normal del refinamiento. No es opcional.
 
 **Anti-pattern:**
 ```
-❌ "[muestra 8 wireframes diferentes + 12 preguntas mezclando scope/copy/responsive/a11y]"
+❌ "[12 preguntas de golpe mezclando scope/copy/responsive/a11y]"   ← formulario, no conversación
+❌ "[pregunta sin reflejar primero lo que se entendió]"
+❌ "[mockup de una vez antes de cementar lo funcional]"             ← inversión (ver flujo abajo)
 ```
 
 **Pattern correcto:**
 ```
-✅ "Wireframe v1 (3 opciones layout). Batch 1/4 (scope + layout):
+✅ "Entendí: lista de pacientes filtrable por estado, el doctor entra desde el ribbon de Lisa.
 
-1. ¿lista vs grid vs cards?
-2. ¿columnas fixed o responsive flex?
-3. ¿paginación o infinite scroll?
-
-Elegí + respondeme; mando batch 2 (estados visuales)."
+   Una pregunta: ¿el campo 'estado' sale de la entidad Paciente que ya existe, o es uno nuevo?
+   (Recomiendo reusar el de la cap `vitalia/scheduling/paciente` — ya tiene el enum.)"
 ```
 
 ## Workflow
@@ -149,19 +179,37 @@ Identifica módulo → invoca via Skill tool el expert correspondiente. NUNCA re
 
 ### Step 2.5 — Hot-fix repro gate (R26 2026-05-05)
 
-Si esta story es hot-fix (originada en handoff doc/incident/regression), aplica el Step 2.5 de `/po` SKILL.md (R26 enforcement). Reproduce bug localmente ANTES de redactar spec. Cita repro evidence en sección Context.
+Si esta story es bugfix/hot-fix (originada en handoff doc/incident/regression), aplica el Step 2.5 de `/po` SKILL.md (R26 · **observabilidad-primero** W0.5-bis): investigá los logs/observabilidad hasta el root cause, decidí la evidencia (`repro_evidence`: `reproduced_local` o `trace_evidence`) ANTES de redactar spec, citala en § Context. Invariante: error sin observabilidad = mal diseño (hallazgo en sí).
 
 ### Step 3 — Redactar 01-spec.md UNIFICADO
 
 Crear `{brand}/docs/product/stories/{story-id}/01-spec.md` con TODAS estas secciones (no separar en design.md):
 
-> **★ Flujo de 2 rondas / 2 firmas (cement 2026-06-03 · UI deep refinement).** El `01-spec.md` se escribe + se firma en DOS rondas sobre el MISMO archivo (no dos archivos). SSoT del proceso: `docs/process/spec-mapa-funcional.md § Dos rondas, dos firmas`.
+> **★ Flujo FUNCIONAL-PRIMERO / mockup-después · 2 firmas (W0.5-bis · invertido, ratificado Chris 2026-06-08).** El `01-spec.md` se escribe + se firma en DOS rondas sobre el MISMO archivo. SSoT: `docs/process/spec-mapa-funcional.md` + `REQ-TAKING-DETAIL.md §4-5,7`.
 >
-> **6 pasos:** (1) conversar + levantar **dónde vive** · (2) mockup BORRADOR dentro del shell real (cita `SHELL-DESIGN-CONTRACT`) + átomos reales · (3) **interrogatorio gate duro** (checklist abajo) · (4) **RONDA 1 ✍FIRMA 1** = § Dónde vive + § Mapa funcional + § Pantallas-borrador + § Dudas → Chris firma "esto es lo que quiero" (`checkpoint.input_spec_signed: true`) · (5) **mockup FINAL ✍FIRMA 2** (estados+validaciones+microcopy+átomos finales · `checkpoint.mockup_final_signed: true`) · (6) **GO → RONDA 2** = § Gherkin + § Matriz + graders → transition refining→refined.
+> **El error que se corrige:** antes se generaba un mockup HTML de una vez. NO. **Primero se cementa lo funcional; el mockup viene después.**
 >
-> Las firmas son **gates internos del `refining`** — el estado NO cambia hasta el GO.
+> **6 pasos:**
+> 1. **Intake conversacional** — como **diseñador del sistema**: levantás qué/por qué + **dónde vive** (zona/caja del árbol `paradigm-arquitectura.md`) + **extiende-o-nuevo** (decís qué ya existe, si "ya avanzamos en eso", si hay algo construido). NO aceptás y ya: empujás. La historia **nace de esta conversación**. Todo lo pedido → `chris-input.md`.
+> 2. **Interrogatorio** (1 pregunta a la vez, reflejo-primero · ver § Interrogatorio arriba) → **cementás lo FUNCIONAL en viñetas humanas (NO Gherkin)**. **SIN mockup todavía.**
+> 3. **RONDA 1 · ✍ FIRMA 1 (funcional)** = § Dónde vive + § Mapa funcional (vistas/campos new-vs-existing/RN/AC en **viñetas**, no Gherkin) + § Pantallas (tabla de campos, **SIN mockup**) + § Dudas → Chris firma "esto es lo que quiero" (`checkpoint.input_spec_signed: true`).
+> 4. **Mockup creativo (RECIÉN ACÁ)** — la forma dentro del shell real: shell completo + la hoja correspondiente + **TODOS los campos conversados** + **TODOS los átomos**, **compone del design-system-canon**. Acá sos muy creativo y **podés encontrar algo mejor** que lo escrito (normal; falta un átomo → lo creás + lo bankeás en la base). Iterás hasta que a Chris le guste.
+> 5. **Mockup FINAL · ✍ FIRMA 2 = la firma FINAL única** (estados + validaciones + microcopy + átomos finales). Lo que ves = lo que se programa. Dispara la generación. (`checkpoint.mockup_final_signed: true`).
+> 6. **GO → RONDA 2 (GENERADA al firmar)** = § Gherkin + § Matriz + business rules + design-spec se **GENERAN** (no se escriben a mano durante el refinamiento; resultado ≈ mockup) → transition refining→refined.
 >
-> **Interrogatorio gate (paso 3 · HARD — sin esto NO se arma la RONDA 1):**
+> Las dos firmas son **gates internos del `refining`** — el estado NO cambia hasta el GO de la RONDA 2. **La FIRMA 2 es la única firma FINAL de refinamiento** (no hay tercera). El **GO en vivo de Chris** post-build (fase G) es **aparte** de estas firmas.
+>
+> **Doc vivo + marcador de comentarios (cement W0.5-bis):** la conversación funcional **escribe al `01-spec.md`, editable en tiempo real en el cockpit** — así el chat no se satura ni quema el contexto. Chris revisa el doc y deja notas markdown con el marcador acordado **`> 🗨️ CHRIS:`** (blockquote, distingue sus comentarios del cuerpo). Vos **reconciliás** esas notas en un doc limpio ("vos sos quien deja todo bien") + cada nota → `chris-input.md`.
+>
+> ```markdown
+> Cuerpo del spec (vistas, campos, reglas)...
+>
+> > 🗨️ CHRIS: este campo sale de la entidad Paciente existente, no uno nuevo
+> > 🗨️ CHRIS: borrá el estado vacío, no aplica acá
+> ```
+>
+> **Interrogatorio gate (paso 2 · HARD — sin esto NO se arma la RONDA 1):**
+> - [ ] Rol obligatorio: ¿quién lo usa? (con tu recomendación)
 > - [ ] Dato por campo: ¿de dónde sale? ¿entidad nueva o existente?
 > - [ ] Validación por campo
 > - [ ] Estados por pantalla: vacío / cargando / error / éxito
@@ -169,8 +217,9 @@ Crear `{brand}/docs/product/stories/{story-id}/01-spec.md` con TODAS estas secci
 > - [ ] Qué pasa si falla (errores) + recuperación
 > - [ ] Edge cases (límites, vacíos, concurrencia, datos raros)
 > - [ ] Qué NO entra (recorte explícito de scope)
+> - [ ] Referencias de internet (patrones UI cómo lo hacen otros)
 >
-> **Mapeo secciones → ronda:** RONDA 1 = § Context/§ Dónde vive + § Mapa funcional + § Wireframes (borrador) + open questions. RONDA 2 = § Gherkin + § Matriz + § Estados + § Componentes + § Microcopy + mockup FINAL.
+> **Mapeo secciones → ronda:** RONDA 1 (funcional, viñetas) = § Context/§ Dónde vive + § Mapa funcional + § Pantallas (tabla campos, **sin mockup**) + open questions. RONDA 2 (generada) = mockup FINAL + § Gherkin + § Matriz + § Estados + § Componentes + § Microcopy.
 
 **Frontmatter brand-aware obligatorio:**
 ```yaml
@@ -206,6 +255,8 @@ Cuatro sub-bloques obligatorios (estructura mandatory, profundidad proporcional)
 Cada `Bif-N` y `RN-N` DEBE terminar mapeado a ≥1 scenario en la `§ Matriz de cobertura`. Un branch/RN sin SC = hueco → REFUSE refined.
 
 #### § Gherkin scenarios (4 base + 7 sub-categorías mandatory ★ v4.1)
+
+> **★ GENERADO en RONDA 2 al firmar el mockup FINAL (W0.5-bis).** El Gherkin NO se escribe a mano durante el interrogatorio (Gherkin es muy duro para la conversación). Lo funcional vive en viñetas humanas en el § Mapa funcional; al disparar la FIRMA 2, se **generan** Gherkin + Matriz + business rules + design-spec a partir de esas viñetas + el mockup. Cada `Bif-N`/`RN-N` del mapa es el insumo de ≥1 SC.
 
 **Base obligatorios (4 — AI-resistant):**
 
@@ -262,7 +313,7 @@ Cerrá con dos líneas explícitas: **Huecos detectados** (Bif/RN sin SC) y **SC
 
 > **★ Antes de dibujar (cement 2026-06-03 · disciplina mockup):** declarar la **zona/caja** (árbol `paradigm-arquitectura.md`) → el **shell** que aplica (del `{brand}/docs/architecture/SHELL-DESIGN-CONTRACT.md`; shell inexistente → generarlo con el design-system actual). El mockup vive DENTRO del shell, en la ruta real del user, con **átomos reales escogidos y nombrados** (`components/ui/` + `@luana/ui-kit`, ver § Componentes) — NO inventar primitivas (disciplina D1 `frontend-visual-fidelity.md`). "Lo que ves = lo que se programa".
 >
-> **Dos pasadas:** mockup **BORRADOR** en RONDA 1 (la forma, para alinear antes de cerrar reglas) → mockup **FINAL** en RONDA 2 (con estados + validaciones + microcopy + átomos finales). En stories shell Vitalia aplica además el gate mockup-per-component (`vitalia/.claude/rules/shell-mockup-per-component.md`).
+> **El mockup nace DESPUÉS de la FIRMA 1 funcional (W0.5-bis · funcional-primero).** No hay "mockup borrador en RONDA 1": en RONDA 1 sólo hay la tabla de campos. Recién con lo funcional firmado se dibuja el mockup creativo (paso 4) — shell completo + hoja + TODOS los campos conversados + TODOS los átomos, **componiendo del design-system-canon** — y se itera hasta el mockup **FINAL** (✍ FIRMA 2 = única firma final, con estados + validaciones + microcopy + átomos finales). El mockup **puede mejorar** lo escrito. En stories shell Vitalia aplica además el gate mockup-per-component (`vitalia/.claude/rules/shell-mockup-per-component.md`).
 
 UNO de los siguientes (no requiere los tres):
 
@@ -321,7 +372,7 @@ Tabla (todos los paths brand-scoped):
 
 Si proponés NEW componente → justificá por qué no existe equivalente. `frontend-expert` skill cargado debería bloquear duplication. **Cross-brand reuse:** si pattern aparece ≥2 brands → escalá `/pm-luana` (promotion candidate a `core/luana-core-ui/` futuro).
 
-#### § Data flow (conceptual, no técnico — `/architect-fe` lo concreta)
+#### § Data flow (conceptual, no técnico — el architect surface FE — `architect/references/fe.md` — lo concreta)
 
 - API endpoints consumidos: `GET /api/v1/{m}/...`
 - React Query keys: `['{m}', 'list', filters]`
@@ -494,6 +545,10 @@ Si durante mockup/iteración descubrís edge case que la story no contemplaba:
 - ❌ Inferir el brand del contexto si Chris no lo dijo — PREGUNTAR primero
 - ❌ **★ Firmar la RONDA 2 (Gherkin/GO) sin la RONDA 1 firmada** (`input_spec_signed`) — se saltea el gate de intención (cement 2026-06-03)
 - ❌ **★ Mockup que no cita el `SHELL-DESIGN-CONTRACT` de la marca** ni declara zona/caja + átomos reales — rompe "lo que veo = lo que se programa"
+- ❌ **★ W0.5-bis: dibujar/generar el mockup ANTES de firmar lo funcional (FIRMA 1)** — inversión prohibida (funcional-primero / mockup-después)
+- ❌ **★ W0.5-bis: escribir el Gherkin a mano durante el interrogatorio** — se GENERA en RONDA 2 al firmar; el interrogatorio cementa viñetas humanas
+- ❌ **★ W0.5-bis: preguntar en batches o sin reflejar primero** — la toma de requerimientos es 1 pregunta a la vez, reflejo-primero, sin cave
+- ❌ **★ W0.5-bis: aceptar el pedido sin contradecir** cuando se aleja de la visión o no aporta valor — el refiner no es escriba
 
 ## Anti cross-brand pollution
 
@@ -513,39 +568,11 @@ Cada response a Chris:
 
 NUNCA dumps largos. Cita paths para que Chris pueda leer.
 
-## Output protocol · chris-input.md append (v2 cement 2026-05-27)
+## Output protocol · chris-input.md append
 
-Al cierre de cada turn de esta skill, MUST appendear una entry a la sección 💬 Conversación del `chris-input.md` de la story activa.
+Al cierre de cada turn, MUST appendear una entry a la sección 💬 Conversación del `chris-input.md` de la story activa, con verdict **✓ APLICADO · ⚠️ DUDA · ❌ REFUTADO · 💡 PROPONE**. Nunca terminar turn sin appendear (aunque sea `✓ APLICADO · sin cambios sustantivos`). Path: state ∈ {idea..reviewing} → `{brand}/docs/product/stories/{id}/chris-input.md`; `done` → `{brand}/docs/archive/{year}/stories/{id}/chris-input.md`.
 
-**Path target:**
-- Story state ∈ {idea, refining, refined, ready, developing, developed, reviewing}: `{brand}/docs/product/stories/{story_id}/chris-input.md`
-- Story state = done: `{brand}/docs/archive/{year}/stories/{story_id}/chris-input.md` (read-only post-merge)
-
-**Formato verbatim del block markdown a appendear:**
-
-```markdown
-### YYYY-MM-DDTHH:MM · 🤖 claude · `/po-ux` · {emoji} {VERDICT-LABEL}
-{texto 2-30 líneas · descripción de qué hizo + decisiones tomadas + qué necesita Chris responder}
-```
-
-**Verdict labels (4 valores):**
-
-| Emoji | Label | Cuándo usar |
-|---|---|---|
-| ✓ | APLICADO | Cambios concretos aplicados al spec/design/arch/test (citar paths) |
-| ⚠️ | DUDA | Pregunta a Chris antes de seguir. State queda esperando respuesta |
-| ❌ | REFUTADO | Razón por la que NO se aplica algo que Chris pidió (con justificación) |
-| 💡 | PROPONE | Opción nueva sugerida por Claude · Chris ratifica o descarta |
-
-**Anti-patterns prohibidos:**
-
-- ❌ Skill termina turn sin appendear (silent escape) — siempre appendear, aunque sea `✓ APLICADO · sin cambios sustantivos`
-- ❌ Verdict sin texto sustantivo (1 palabra no informa)
-- ❌ Path hardcoded con brand fija — debe ser `{brand}` dinámico (de checkpoint.md o args del invoke)
-- ❌ Múltiples verdicts en un solo entry — si hay 2 cosas, son 2 entries consecutivas
-- ❌ Entry sin emoji + label de verdict (parser falla)
-
-Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
+**Schema verbatim (formato del entry + labels + anti-patterns): `docs/process/chris-input-protocol.md § Sección 5` (SSoT — no se duplica acá).**
 
 ## Referencias
 

@@ -133,3 +133,30 @@ Meta-guard ("every `*_catalog.py` has matching completeness test") deferred — 
 - `docs/domains/offer/catalogs-consolidation.md` — first 5 axes, D1–D25.
 - `docs/domains/offer/variant-structure-catalog.md` — 6th axis, D26–D30.
 - `docs/domains/offer/offer-type-preset-catalog.md` — 7th axis, D26–D35, skill reference.
+
+---
+
+## Ex always-on rule body (evicted W1-Phase2 2026-06-09 — era `.claude/rules/offer-catalogs.md`)
+
+Offer Studio es **ENGINE + BRAND-CONFIG** (CLAUDE.md tabla mapping):
+
+| Surface | Path | Owner |
+|---|---|---|
+| Engine catalogs (canónicos) | `core/luana-core-offer-studio/src/luana_core_offer_studio/domain/{archetype,value_level,section,variant_structure,format,offer_type_preset}_catalog.py` | `/pm-luana` |
+| Brand preset packs | Registrados via Extension SDK EP-2 en `{brand}/backend/src/modules/{brand}/offer/extensions.py` | `/pm-{brand}` |
+| Offer Studio FE per brand | `{brand}/frontend/src/features/offer-studio/` | `/pm-{brand}` |
+
+6 catalogs DAG: OfferValueLevel + SectionCatalog + VariantStructure (base) → OfferArchetype (intermediate) → OfferFormat + OfferTypePreset (composites). 21 sections post-consolidación.
+
+**No-skip:**
+- ❌ Hardcodear archetype/value-level/format/variant/biz-type labels-icons-suitability en FE
+- ❌ Nuevo `*_METADATA` map en FE (arch test bloquea)
+- ❌ Bypass wizard value-level step (`is_lead_magnet` derivado, no checkbox)
+- ❌ Skip arch test (corre per engine + cada brand consumer) tras catalog edit
+- ❌ Hardcodear per-biz-type examples/prices/placeholders (consume `useLadderHint`)
+- ❌ Brand-specific catalog mirror — registrar preset pack via EP-2
+
+### Multibrand awareness (post reorg 2026-05-15)
+
+- Cambios catálogos engine → bump `_CATALOG_VERSION` en `core/luana-core-offer-studio/` + `/pm-luana` promotion gate + arch test en cada brand consumer activa.
+- Brand preset packs (`{brand}/backend/src/modules/{brand}/offer/extensions.py`) consumen catálogos engine vía import `luana_core_offer_studio`.

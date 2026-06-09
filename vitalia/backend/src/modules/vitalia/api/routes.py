@@ -30,9 +30,10 @@ from datetime import datetime, timezone
 from typing import Annotated
 
 import structlog
-from fastapi import APIRouter, Header, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from fastapi.responses import StreamingResponse
 
+from src.modules.vitalia._shared.auth.rbac import require_brand_owner_access
 from src.modules.vitalia.api.dtos.booking_dtos import (
     AvailableSlotsResponse,
     BookingListResponse,
@@ -86,6 +87,12 @@ ClerkUserIdHeader = Annotated[
     str | None,
     Header(alias="X-Clerk-User-ID", description="Clerk JWT sub claim (optional for anonymous booking)"),
 ]
+
+# RBAC del audit log HIPAA-lite (compliance). Roles == cap
+# `compliance.hipaa-lite-defensive-stack` (`requires_role`); excluye los
+# `forbidden_roles` (patient/marketing/nurse/receptionist). hipaa-lite.md:
+# el audit log es admin-only — NO basta la auth Clerk JWT, requiere RBAC.
+_COMPLIANCE_AUDIT_ROLES: frozenset[str] = frozenset(["admin_clinic", "staff_vitalia"])
 
 
 # ── Router ────────────────────────────────────────────────────────────────────
@@ -846,6 +853,7 @@ async def upload_medical_pdf(
 )
 async def list_compliance_events(
     x_tenant_id: TenantIdHeader,
+    _role: Annotated[str, Depends(require_brand_owner_access(_COMPLIANCE_AUDIT_ROLES))],
     event_type: Annotated[str | None, Query(description="Filter by event_type")] = None,
     severity: Annotated[str | None, Query(description="info | medium | high")] = None,
     date_from: Annotated[datetime | None, Query(description="Filter from date (UTC)")] = None,
@@ -856,7 +864,9 @@ async def list_compliance_events(
     """List HIPAA-lite compliance/audit events.
 
     payload_redacted: pre-sanitized by ComplianceEventService (no raw PII).
-    Requires admin role (clinic_owner) — auth enforced by Clerk JWT middleware.
+    RBAC: solo `admin_clinic`/`staff_vitalia` (X-User-Role) — el resto recibe 403
+    (require_brand_owner_access). El audit log es admin-only (hipaa-lite.md): la
+    auth Clerk JWT NO basta, requiere autorización por rol.
     """
     tenant_id = _parse_tenant_id(x_tenant_id)
 
@@ -878,6 +888,7 @@ async def list_compliance_events(
 )
 async def export_compliance_csv(
     x_tenant_id: TenantIdHeader,
+    _role: Annotated[str, Depends(require_brand_owner_access(_COMPLIANCE_AUDIT_ROLES))],
     event_type: Annotated[str | None, Query(description="Filter by event_type")] = None,
     severity: Annotated[str | None, Query(description="info | medium | high")] = None,
     date_from: Annotated[datetime | None, Query(description="Filter from date (UTC)")] = None,
@@ -886,7 +897,8 @@ async def export_compliance_csv(
     """Export compliance audit log as CSV for legal record.
 
     text/csv stream. payload_redacted column contains sanitized JSON.
-    Requires admin role (clinic_owner) — auth enforced by Clerk JWT middleware.
+    RBAC: solo `admin_clinic`/`staff_vitalia` (X-User-Role) → 403 al resto
+    (require_brand_owner_access). El export del audit log es admin-only.
 
     NOTE: This endpoint intentionally has no response_model= because it returns
     a StreamingResponse (binary/text stream). The PII guard is enforced by

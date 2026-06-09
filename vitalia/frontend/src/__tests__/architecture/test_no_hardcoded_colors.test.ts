@@ -34,30 +34,14 @@ const EXEMPT_FILES = new Set(["src/app/globals.css"]);
 // Ratchet baseline — known violations at time of T-infra-4 creation (shrink-only).
 // Format: "src/relative/path/to/file.tsx"
 const KNOWN_COLOR_VIOLATIONS: ReadonlySet<string> = new Set<string>([
-  // T-11 fidelizacion build (concurrent T-inbox-fe-1): fidelizacion components were
-  // implemented using hsl() literals directly. These are pre-existing violations from
-  // the T-11 build agent and must be refactored to use CSS custom properties in a
-  // follow-up task. Ratchet baseline added per T-inbox-fe-1 arch gate fix.
-  "src/features/fidelizacion/components/ConfirmTemplateModal.tsx",
-  "src/features/fidelizacion/components/FidelizacionActivityFooter.tsx",
-  "src/features/fidelizacion/components/FidelizacionKPIsHero.tsx",
-  "src/features/fidelizacion/components/FidelizacionLayout.tsx",
-  "src/features/fidelizacion/components/FidelizacionTabsBar.tsx",
-  "src/features/fidelizacion/components/ManualCallLoggedModal.tsx",
-  "src/features/fidelizacion/components/NPSRowCompact.tsx",
-  "src/features/fidelizacion/components/PausePatientModal.tsx",
-  "src/features/fidelizacion/components/ReEngagementCard.tsx",
-  "src/features/fidelizacion/components/SuggestSlotsModal.tsx",
-  "src/features/fidelizacion/components/tabs/AbsenceTab.tsx",
-  "src/features/fidelizacion/components/tabs/FollowUpTab.tsx",
-  "src/features/fidelizacion/components/tabs/MaintenanceTab.tsx",
-  "src/features/fidelizacion/components/tabs/MultiSessionTab.tsx",
-  "src/features/fidelizacion/components/tabs/NPSResumenTab.tsx",
-  // T-inbox-fe-5 build: MessageInput + VoiceMessagePlayer use hsl(var(--vitalia-*))
-  // in Tailwind arbitrary values — not raw color literals, but detected by pattern scanner.
-  // Must be refactored to vt-* utility classes in a follow-up task.
-  "src/features/inbox/components/MessageInput.tsx",
-  "src/features/inbox/components/VoiceMessagePlayer.tsx",
+  // core-ds-foundation T-2 SHRINK (parity-with-lock-scope):
+  //   The 15 fidelizacion components + test-stack/agent-tokens/page.tsx + MessageInput +
+  //   VoiceMessagePlayer were previously listed here. After the tokenized-color stripper
+  //   was added (see TOKENIZED_COLOR_FN below — parity with @luana/eslint-config
+  //   no-arbitrary-value, which treats `hsl(var(--x))` / `text-[hsl(var(--agent-lisa))]` as
+  //   tokenized, NOT a raw literal), those files scan CLEAN. Per the shrink-only ratchet
+  //   they are REMOVED (allowlist may only decrease). MessageInput/VoiceMessagePlayer were
+  //   also deleted in the inbox rename refactor. Verified clean 2026-06-08.
   // F1-S0 vitalia-fase1-stack-stability (2026-05-23): legitimate exceptions for
   // agent identity metadata SSoT + dev preview page documentation.
   // - src/lib/agents.ts: 6 hex strings are Chris-ratified agent brand colors used
@@ -66,7 +50,7 @@ const KNOWN_COLOR_VIOLATIONS: ReadonlySet<string> = new Set<string>([
   //   (--agent-{slug} HSL definitions in globals.css) — these are documentation/SSoT
   //   strings, not styling literals. Refactor to var-only would require removing the
   //   inline style escape used to bypass Tailwind v4 dynamic-class limitation.
-  // - src/app/test-stack/agent-tokens/page.tsx: hsl(var(--agent-*)) appears INSIDE
+  // - src/app/test-stack/agent-tokens/page.tsx: hsl(var(--agent-lisa)) appears INSIDE
   //   a <code> tag rendered to user as documentation showing how to consume tokens.
   //   It's a string literal displayed as content, not CSS styling.
   "src/lib/agents.ts",
@@ -83,6 +67,19 @@ const KNOWN_COLOR_VIOLATIONS: ReadonlySet<string> = new Set<string>([
 // Captures: #RGB, #RRGGBB, #RRGGBBAA, rgb(...), rgba(...), hsl(...), hsla(...).
 const COLOR_LITERAL_PATTERN =
   /#[0-9a-fA-F]{3,8}\b|rgb\s*\(|rgba\s*\(|hsl\s*\(|hsla\s*\(/g;
+
+// core-ds-foundation T-2 — parity with the @luana/eslint-config no-arbitrary-value
+// lock scope: a color expressed THROUGH a design token — `hsl(var(--x))`, `var(--x)`,
+// `theme(...)`, `color-mix(...)` — is TOKENIZED, NOT a hardcoded literal. The eslint
+// rule treats those as allowed; this scanner must agree (otherwise tokenized utilities
+// like `text-[hsl(var(--agent-adrian))]` register false positives). We neutralize the
+// inner CSS-var/function so only RAW literals (`hsl(210 40% 96%)`, `#635BFF`) remain.
+const TOKENIZED_COLOR_FN =
+  /\b(?:hsl|hsla|rgb|rgba|oklch|color-mix)\s*\(\s*(?:var\(|theme\(|color-mix\()[^)]*\)[^)]*\)/g;
+
+function stripTokenizedColors(source: string): string {
+  return source.replace(TOKENIZED_COLOR_FN, (m) => " ".repeat(m.length));
+}
 
 // Patterns for comment regions — we strip comments before scanning.
 // Single-line comments: // ...
@@ -143,7 +140,7 @@ describe("Vitalia FE — no hardcoded color literals outside globals.css (FE-A1)
       if (EXEMPT_FILES.has(relPath)) continue;
 
       const source = readFileSync(absPath, "utf-8");
-      const stripped = stripComments(source);
+      const stripped = stripTokenizedColors(stripComments(source));
 
       const matches = stripped.match(COLOR_LITERAL_PATTERN);
       if (matches && matches.length > 0) {

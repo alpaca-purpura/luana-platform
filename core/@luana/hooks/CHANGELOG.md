@@ -1,3 +1,9 @@
+## 0.4.0 — 2026-06-08 (core-ds-foundation)
+### Added
+- useAutosave: `coalesce` option (merge rapid edits into one payload) + `flush()`. Back-compat preserved (defaults coalesce:false, debounceMs:2000).
+### Changed
+- use-copilot-offset: decoupled from `@/features/copilot/*` (app-coupled) → reads optional `--copilot-offset` CSS var (default 0). Removed from the barrel (subpath-only). Makes @luana/ui-kit consumable in any brand. Zero regression (no current barrel consumer).
+
 # @luana/hooks — CHANGELOG
 
 ## 0.3.0 — 2026-05-30

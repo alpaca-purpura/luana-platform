@@ -4,7 +4,7 @@
 Routes (all under prefix /api/v1/vitalia/clinics/doctors):
   GET  /                         — list doctors (masked, paginated)
   POST /                         — create doctor (validate credential, 409 if DNI dup)
-  GET  /{id}                     — get doctor detail (admin_clinic only)
+  GET  /{id}                     — get doctor detail (owner / admin_clinic)
   PATCH /{id}                    — patch doctor (bio/active/visible/avatar_key)
 
 Architecture rules (03-arch-be.md § 4 + ADR-vitalia-004):
@@ -14,7 +14,8 @@ Architecture rules (03-arch-be.md § 4 + ADR-vitalia-004):
   - Map domain exceptions: DniConflictError → 409, CredentialValidationError → 422
   - PHI never in URL params (hipaa-lite.md § Anti-patterns)
   - redirect_slashes=False enforced at app level in main.py
-  - RBAC: admin_clinic role required for mutations (require_brand_owner_access)
+  - RBAC: staff mutations require {owner, admin_clinic} (_STAFF_MUTATION_ROLES via
+    require_brand_owner_access) — owner manages the staff roster (Chris #3b 2026-06-06)
 """
 
 from __future__ import annotations
@@ -64,8 +65,13 @@ logger = structlog.get_logger()
 
 router = APIRouter(tags=["staff"])
 
-# Allowed roles for mutations (admin_clinic only — see hipaa-lite.md § RBAC)
-_ADMIN_CLINIC_ROLES: frozenset[str] = frozenset(["admin_clinic"])
+# Allowed roles for staff (doctor) mutations: owner + admin_clinic.
+# Decision Chris 2026-06-06 (#3b, story vitalia-fase2-lisa-doctores): the clinic
+# OWNER manages the staff roster (business-roster data, not patient PHI), mirroring
+# the marca/brand-config module ({owner, admin_clinic}). Widened from the previous
+# admin_clinic-only set, which left the clinic owner unable to add staff + created a
+# bootstrap chicken-egg (who creates the first admin_clinic?). See hipaa-lite.md § RBAC.
+_STAFF_MUTATION_ROLES: frozenset[str] = frozenset(["owner", "admin_clinic"])
 
 
 async def _get_db() -> AsyncSession:
@@ -159,6 +165,7 @@ def _to_list_item(doctor: Doctor) -> DoctorListItemDTO:
 async def list_doctors(
     tenant_id: UUID = Header(alias="X-Tenant-ID"),
     clinic_id: UUID = Header(alias="X-Clinic-ID"),
+    q: str | None = Query(default=None),
     specialty: str | None = Query(default=None),
     active: bool | None = Query(default=None),
     page: int = Query(default=1, ge=1),
@@ -169,12 +176,14 @@ async def list_doctors(
 
     SC-6: list scoped to tenant+clinic (dual filter).
     SC-9: large dataset — server-side pagination.
+    `q`: free-text search over name + specialty (directory search box).
     Headers typed as UUID — FastAPI validates and returns 422 for invalid values.
     """
     service = _build_service(db)
     doctors, total = await service.list_doctors(
         tenant_id=tenant_id,
         clinic_id=clinic_id,
+        q=q,
         specialty=specialty,
         active=active,
         page=page,
@@ -190,14 +199,14 @@ async def list_doctors(
     response_model_by_alias=True,
     status_code=status.HTTP_201_CREATED,
     include_in_schema=False,
-    dependencies=[Depends(require_brand_owner_access(roles=_ADMIN_CLINIC_ROLES))],
+    dependencies=[Depends(require_brand_owner_access(roles=_STAFF_MUTATION_ROLES))],
 )
 @router.post(
     "/",
     response_model=DoctorDetailDTO,
     response_model_by_alias=True,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(require_brand_owner_access(roles=_ADMIN_CLINIC_ROLES))],
+    dependencies=[Depends(require_brand_owner_access(roles=_STAFF_MUTATION_ROLES))],
 )
 async def create_doctor(
     request: DoctorCreateRequest,
@@ -299,7 +308,7 @@ def _to_block_dto(block: AvailabilityBlock) -> AvailabilityBlockDTO:
     "/{doctor_id}",
     response_model=DoctorDetailDTO,
     response_model_by_alias=True,
-    dependencies=[Depends(require_brand_owner_access(roles=_ADMIN_CLINIC_ROLES))],
+    dependencies=[Depends(require_brand_owner_access(roles=_STAFF_MUTATION_ROLES))],
 )
 async def patch_doctor(
     doctor_id: UUID,
@@ -356,7 +365,7 @@ async def patch_doctor(
 @router.post(
     "/{doctor_id}/generate-bio",
     response_model=GenerateBioResponse,
-    dependencies=[Depends(require_brand_owner_access(roles=_ADMIN_CLINIC_ROLES))],
+    dependencies=[Depends(require_brand_owner_access(roles=_STAFF_MUTATION_ROLES))],
 )
 async def generate_doctor_bio(
     doctor_id: UUID,
@@ -455,7 +464,7 @@ async def list_availability_blocks(
     response_model=AvailabilityBlockDTO,
     response_model_by_alias=True,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(require_brand_owner_access(roles=_ADMIN_CLINIC_ROLES))],
+    dependencies=[Depends(require_brand_owner_access(roles=_STAFF_MUTATION_ROLES))],
 )
 async def create_availability_block(
     doctor_id: UUID,
@@ -508,7 +517,7 @@ async def create_availability_block(
     "/{doctor_id}/availability-blocks/{block_id}",
     response_model=AvailabilityBlockDTO,
     response_model_by_alias=True,
-    dependencies=[Depends(require_brand_owner_access(roles=_ADMIN_CLINIC_ROLES))],
+    dependencies=[Depends(require_brand_owner_access(roles=_STAFF_MUTATION_ROLES))],
 )
 async def patch_availability_block(
     doctor_id: UUID,
@@ -564,7 +573,7 @@ async def patch_availability_block(
 @router.delete(
     "/{doctor_id}/availability-blocks/{block_id}",
     response_model=DeleteBlockResponse,
-    dependencies=[Depends(require_brand_owner_access(roles=_ADMIN_CLINIC_ROLES))],
+    dependencies=[Depends(require_brand_owner_access(roles=_STAFF_MUTATION_ROLES))],
 )
 async def delete_availability_block(
     doctor_id: UUID,

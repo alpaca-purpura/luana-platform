@@ -16,7 +16,7 @@ description: SSoT cargable del sistema de diseño + shell-organism de Nicolify (
 ## 0 · Cuándo cargarme (obligatorio)
 
 - Cualquier ticket que toque `nicolify/frontend/src/{app,components,features}/**` con UI.
-- `/architect` (architect-fe) DEBE listarme en `assignment.must_load_skills` de todo ticket FE de nicolify.
+- `/architect` (surface FE · references/fe.md) DEBE listarme en `assignment.must_load_skills` de todo ticket FE de nicolify.
 - `builder-frontend` me carga y reporta "Skills consulted" en `T-{n}-result.md`.
 - `auditor-frontend` me carga antes de scorear categorías Visual fidelity + Anti-duplication.
 

@@ -96,7 +96,7 @@ Variables disponibles:
 | `EDITOR_BIN` | fallback chain: `xdg-open,code,xed,gnome-text-editor,nano` | Default: prueba `xdg-open` (delega al editor configurado del desktop), luego `code`, luego `xed`, etc. Override con un solo editor (`EDITOR_BIN=code`) o cadena propia (`EDITOR_BIN=cursor,code,xdg-open`). El editor inline del cockpit cubre 90% de casos · este botón es escape hatch. |
 | `PORT` | `4000` | Si el puerto está ocupado · ej. `PORT=4001 pnpm dev` |
 
-## Las 6 vistas
+## Las 7 vistas
 
 | Ruta | Vista | Funcionalidad clave |
 |---|---|---|
@@ -104,10 +104,22 @@ Variables disponibles:
 | `/board` | Backlog kanban | 10 columnas estados macro v4 · drag CHRIS_ALLOWED only (idea↔refining + parked/dropped) · WIP badges + filtros · **badge 🔨 {lane}** sobre stories en construcción (ADR-009 single-hub, ver abajo) |
 | `/map` | Mapa Implementado | Banner **Salud de Producto** (distribución de caps por status del JSON live) + grid 5 agentes (Lisa/Valeria/Adrián/Lucas/Camila) + zona **Configurar** (tab de plataforma, no agente) + sección Infra full-width · click cap → **Cap Drawer** |
 | `/arquitectura` | SYSTEM-MAP global | 7 agentes × functional_areas + flows cross-agent + data ownership |
-| `/drift` | Caps no verified-live | Lista priorizada por severidad (stub/wip/partial/drift) para saber qué arreglar |
-| `/learnings` | Timeline learnings | Cronológico desc · search + tags pills + xed open |
+| `/drift` | Caps no verified-live | Lista priorizada por severidad (stub/wip/partial/drift) para saber qué arreglar — **es el carril L4 del CIL** (capabilities desfasadas) |
+| `/learnings` | Timeline learnings | Cronológico desc · search + tags pills + xed open — **es el carril L2 del CIL** |
+| `/harness` | **Harness · CIL** (transversal · no brand-scoped) | Monitor único del **Continuous Improvement Loop**: franja 4-carriles + board **L1** (harness-backlog.md) + sección **L3** (tech-debt.md), con links a **L2** (`/learnings`) y **L4** (`/drift`). Read-only; el SSoT son los `.md`. Badge de pendientes (L1+L3 abiertos) en el nav. El stop semanal `/harnesses-improvement` lo remedia |
+
+> Las 6 primeras son **brand-scoped** (dependen del selector de marca). `/harness` es **transversal** (vive en la sección «Transversal · core» del Sidebar, mismo board en cualquier worktree).
 
 > No existe un tab `/functionality`. La trazabilidad de una capability (scenarios → code files → access → business rules → changelog) se ve en el **Cap Drawer**, que se abre clickeando un cap en `/map`.
+
+## Pseudo-marca «⬡ Platform · core» (stories transversales)
+
+El selector de marca (arriba a la derecha) lista, además de las marcas reales, **⬡ Platform · core** cuando existe `docs/product/` en la raíz del workspace. Es un contexto **solo-trazabilidad** (HB-27 · `lib/platform-context.ts`) que apunta al `docs/` RAÍZ — donde viven las **stories platform-level** (owner `/pm-luana`, ej. `core-ds-tokens-lock`, `empleados-ia-auto-extension`) + los `docs/learnings/` transversales.
+
+- **Cómo ver las platform stories:** selector de marca → **⬡ Platform · core** → tab **Backlog Board** (`/board`). Learnings transversales → tab **Learnings**.
+- Solo aplican `board` + `learnings` (no tiene releases/SYSTEM-MAP/capabilities → roadmap/map/arquitectura/drift se atenúan).
+- **Read-only:** las platform stories siguen el SDD de 10 estados y se transicionan vía `/pm-luana`; el cockpit solo las HACE VISIBLES.
+- Caveat per-worktree: una platform story creada en el worktree de una marca recién aparece en el cockpit de otro worktree tras squash-merge a main + sync (mismo tradeoff filesystem-as-DB del resto).
 
 ## Session mapping (single-hub · ADR-009)
 

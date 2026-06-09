@@ -144,3 +144,18 @@ Sin esto, drift al cambiar modelo (DeepSeek V3→V4, Kimi K2.5→K2.6) invisible
 - Anthropic context engineering 2025 — static-first / dynamic-last
 - OpenAI Cookbook prompt_caching_201 — `prompt_cache_key`, prefix stability
 - Production patterns 2026: Jasper IQ Voice, Writer Palmyra Knowledge Graph, HubSpot Breeze, Salesforce Agentforce 3, 11x AI SDR (ZenML LLMOps DB)
+
+---
+
+## Ex always-on rule body (evicted W1-Phase2 2026-06-09 — era `.claude/rules/sales-agent-brand-voice.md`)
+
+SSoT voz sales_agent = `personality_profiles.system_instruction`. Compiler v2 (6 bloques, "ASÍ HABLAS / ASÍ NO"). Slot 5 `BRAND_VOICE` cache prefix. Brand Studio `/brand-studio/estilo` punto único config tenant.
+
+**No-skip creep guard:**
+- ❌ NO crear tabla `brand_voice_summary` ni mirror LLM-distilled
+- ❌ NO fine-tuning per tenant
+- ❌ NO voice-rewriter LLM pass post-generación
+- ❌ NO hardcodear voz en `agent_identity.j2` o specialists
+- ❌ NO inyectar `{tenant_name}` mid-block cache prefix
+
+Voseo: `spanish-text.md` NO aplica al output sales_agent (respeta voz tenant).

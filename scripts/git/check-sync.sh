@@ -53,7 +53,11 @@ BASENAME="$(basename "${CWD}")"
 WORKTREE_TYPE=""
 WORKTREE_BRAND=""
 WORKTREE_SLUG=""
-KNOWN_BRANDS="vitalia nicolify comunify lupulo saasora inmoflow retailly fixia guestly fitflow"
+# Brand enum from the seam (project.config.yaml · harness_config.py) — no hardcoded list
+# (charter §3 DIP · W5b 2026-06-09). Loud-degrade to empty if unreadable (the config ships
+# with the kit; empty degrades brand-detection rather than asserting a stale enum).
+KNOWN_BRANDS="$("${CWD}/.venv/bin/python" "${CWD}/scripts/harness_config.py" brands.loop_order 2>/dev/null | tr '\n' ' ')"
+[ -z "${KNOWN_BRANDS}" ] && echo "WARN: project.config.yaml brands.loop_order unreadable — brand detection degraded" >&2
 
 if [[ "${BASENAME}" = "luana-platform" ]]; then
   WORKTREE_TYPE="PRINCIPAL"

@@ -836,8 +836,83 @@ def gate_g7_cockpit_readable(brand: str, workspace_root: Path) -> dict[str, Any]
     return {"total": total, "pass": passing, "drift": drift, "details": results}
 
 
+def gate_g8_user_visible_has_description(
+    brand: str, workspace_root: Path, caps: dict[str, dict]
+) -> dict[str, Any]:
+    """G8 — toda cap status:live/beta + user_visible:true DEBE tener `user_facing_description`
+    (non-placeholder).
+
+    Sin ella el cockpit «✨ Qué puedo hacer» no tiene QUÉ decir y cae a un fallback vacío
+    (HB-52/HB-56 · F2 cap-levels). Gate de PRESENCIA forward-looking: 0 violaciones hoy
+    (vitalia/comunify/nicolify limpias) → bloquea SOLO futuras regresiones (una cap nueva no
+    puede ir live+visible sin describir qué hace para el usuario)."""
+    results: list[dict] = []
+    total = passing = drift = 0
+    for cap_id, cap_data in caps.items():
+        status = (cap_data.get("status") or "").lower()
+        if status not in ("live", "beta") or cap_data.get("superseded_by"):
+            continue
+        if cap_data.get("user_visible") is not True:
+            continue
+        total += 1
+        ufd = cap_data.get("user_facing_description")
+        ok = bool(ufd) and not (isinstance(ufd, str) and ("{" in ufd or not ufd.strip()))
+        if ok:
+            passing += 1
+        else:
+            drift += 1
+            results.append(
+                {
+                    "cap_id": cap_id,
+                    "status": "user_visible_no_description",
+                    "drift_reason": (
+                        f"cap live user_visible '{cap_id}' sin user_facing_description "
+                        "(el cockpit no puede decir qué hace · «✨ Qué puedo hacer» vacío)"
+                    ),
+                }
+            )
+    return {"total": total, "pass": passing, "drift": drift, "details": results}
+
+
+def gate_g9_user_visible_has_scenario(
+    brand: str, workspace_root: Path, caps: dict[str, dict]
+) -> dict[str, Any]:
+    """G9 — toda cap status:live/beta + user_visible:true DEBE tener ≥1 `scenario` (caso de uso).
+
+    Una cap de valor sin scenarios es una caja sin contenido funcional verificable: «✨ Qué
+    puedo hacer» no lista casos de uso y no hay nada que el `cross_check_3` pueda atar a un
+    e2e_test (HB-56 · F2 cap-levels). Gate de PRESENCIA forward-looking: 0 violaciones hoy
+    (los stubs sin scenarios son deprecated/planned/infra user_visible:false, NO caps de valor
+    live). El «≥1 scenario al merge» de new_cap.py deja de ser paper-rule y pasa a mecánico."""
+    results: list[dict] = []
+    total = passing = drift = 0
+    for cap_id, cap_data in caps.items():
+        status = (cap_data.get("status") or "").lower()
+        if status not in ("live", "beta") or cap_data.get("superseded_by"):
+            continue
+        if cap_data.get("user_visible") is not True:
+            continue
+        total += 1
+        scenarios = cap_data.get("scenarios")
+        if isinstance(scenarios, list) and len(scenarios) >= 1:
+            passing += 1
+        else:
+            drift += 1
+            results.append(
+                {
+                    "cap_id": cap_id,
+                    "status": "user_visible_no_scenario",
+                    "drift_reason": (
+                        f"cap live user_visible '{cap_id}' sin scenarios "
+                        "(≥1 caso de uso requerido para una cap de valor · sin él «✨ Qué puedo hacer» queda mudo)"
+                    ),
+                }
+            )
+    return {"total": total, "pass": passing, "drift": drift, "details": results}
+
+
 def run_cap_gates(brand: str, workspace_root: Path, caps: dict[str, dict]) -> dict[str, dict[str, Any]]:
-    """Dispatcher de los gates G1-G7 (HB-51). Devuelve {gate_id: result}."""
+    """Dispatcher de los gates G1-G9 (HB-51 + F2 cap-levels G8/G9). Devuelve {gate_id: result}."""
     return {
         "G1": gate_g1_header_resolves(brand, workspace_root),
         "G2": gate_g2_live_area_has_cap(brand, workspace_root, caps),
@@ -846,6 +921,8 @@ def run_cap_gates(brand: str, workspace_root: Path, caps: dict[str, dict]) -> di
         "G5": gate_g5_superseded_valid(brand, workspace_root, caps),
         "G6": gate_g6_map_coverage(brand, workspace_root, caps),
         "G7": gate_g7_cockpit_readable(brand, workspace_root),
+        "G8": gate_g8_user_visible_has_description(brand, workspace_root, caps),
+        "G9": gate_g9_user_visible_has_scenario(brand, workspace_root, caps),
     }
 
 
@@ -920,7 +997,7 @@ def main() -> None:
     # ── HB-51 · cap-format gates G1-G6 (resolver-backed) ────────────────────
     # Limpia el cache del resolver para reflejar caps recién staged/modificadas.
     resolve_cap.clear_resolver_cache()
-    print("Running cap-format gates G1-G6 (HB-51)...")
+    print("Running cap-format gates G1-G9 (HB-51 + F2 cap-levels)...")
     cap_gates = run_cap_gates(args.brand, workspace_root, caps)
     for gid in sorted(cap_gates):
         g = cap_gates[gid]

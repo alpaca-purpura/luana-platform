@@ -56,8 +56,8 @@ WS=$(git rev-parse --show-toplevel)
 
 # Dev stack vitalia
 make dev-vitalia                                      # docker compose vitalia (BE :8002 + FE :3002)
-docker logs luana-vitalia-backend-dev --tail 100
-docker logs luana-vitalia-frontend-dev --tail 100
+docker logs luana-dev-vitalia_backend_dev-1 --tail 100
+docker logs luana-dev-vitalia_frontend_dev-1 --tail 100
 
 # BE tests
 cd ${WS}/vitalia/backend && ${WS}/.venv/bin/pytest tests/modules/vitalia/{module}/ -v
@@ -68,9 +68,9 @@ cd ${WS}/vitalia/frontend && npx tsc --noEmit
 cd ${WS}/vitalia/frontend && npx vitest run src/features/{module}/
 cd ${WS}/vitalia/frontend && E2E_BASE_URL=http://localhost:3002 npx playwright test --project=smoke
 
-# Alembic
-docker exec luana-vitalia-backend-dev alembic current
-docker exec luana-vitalia-backend-dev alembic upgrade head
+# Alembic (workdir /workspace/vitalia/backend + venv /workspace/.venv — HB-37 ground-truth)
+docker exec luana-dev-vitalia_backend_dev-1 bash -c "cd /workspace/vitalia/backend && /workspace/.venv/bin/alembic current"
+docker exec luana-dev-vitalia_backend_dev-1 bash -c "cd /workspace/vitalia/backend && /workspace/.venv/bin/alembic upgrade head"
 
 # Health
 curl http://127.0.0.1:8002/health
@@ -151,7 +151,7 @@ WS=$(git rev-parse --show-toplevel)
 cd ${WS}
 cp vitalia/.env.dev.template vitalia/.env.dev
 make dev-vitalia
-docker exec luana-vitalia-backend-dev alembic upgrade head
+docker exec luana-dev-vitalia_backend_dev-1 bash -c "cd /workspace/vitalia/backend && /workspace/.venv/bin/alembic upgrade head"
 curl http://127.0.0.1:8002/health
 ```
 

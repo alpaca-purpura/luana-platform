@@ -77,7 +77,7 @@ step() {
   blue "── [$BRAND] $* ──"
 }
 
-# Single shared env block — mirrors deploy-prod.yml ``env`` keys plus
+# Single shared env block — mirrors ci.yml ``env`` keys plus
 # the heap bump that unblocks tsc/vitest in container-constrained RAM.
 DOCKER_RUN_ENV=(
   -e TZ=UTC
@@ -88,9 +88,9 @@ BE_DIR="$BRAND/backend"
 FE_DIR="$BRAND/frontend"
 
 # Mirror validator — fail fast if the script has drifted from
-# deploy-prod.yml. Skip silently if the BE venv is unavailable.
+# ci.yml. Skip silently if the BE venv is unavailable.
 if [ -x "$BE_DIR/.venv/bin/python" ] && [ -f scripts/validate_ci_parity_mirror.py ]; then
-  step "Validating ci-parity.sh mirrors deploy-prod.yml"
+  step "Validating ci-parity.sh mirrors ci.yml"
   "$BE_DIR/.venv/bin/python" scripts/validate_ci_parity_mirror.py || \
     yellow "  (advisory: validator not yet adapted to cross-brand layout — review Story 10 T-12 closure notes)"
 fi
@@ -114,7 +114,7 @@ if [ "$SKIP_BE" -eq 0 ]; then
     pytest --cov=src/modules --cov=src/shared --cov-report=term -q \
     --ignore=tests/modules/analytics/test_meta_provider.py
 
-  step "BE: pip-audit (security, advisory — matches deploy-prod.yml continue-on-error)"
+  step "BE: pip-audit (security, advisory — matches ci.yml continue-on-error)"
   docker run --rm "${DOCKER_RUN_ENV[@]}" "local-be-ci-$BRAND" pip-audit --strict --desc || \
     yellow "  (advisory: pip-audit reported issues; CI has continue-on-error: true on this step)"
 fi
@@ -137,7 +137,7 @@ if [ "$SKIP_FE" -eq 0 ]; then
   docker run --rm "${DOCKER_RUN_ENV[@]}" "local-fe-ci-$BRAND" \
     npx vitest run --coverage
 
-  step "FE: npm audit (security, advisory — matches deploy-prod.yml continue-on-error)"
+  step "FE: npm audit (security, advisory — matches ci.yml continue-on-error)"
   docker run --rm "${DOCKER_RUN_ENV[@]}" "local-fe-ci-$BRAND" npm audit --audit-level=high || \
     yellow "  (advisory: npm audit reported issues; CI has continue-on-error: true on this step)"
 fi

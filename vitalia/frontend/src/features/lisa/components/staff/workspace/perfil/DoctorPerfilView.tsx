@@ -37,6 +37,7 @@ import { GeneratedBioSections } from "./GeneratedBioSections";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { FloatingAutosaveIndicator } from "@/components/shared/FloatingAutosaveIndicator";
 import { cn } from "@/lib/utils";
 import { doctorPerfilSchema, type DoctorPerfilFormValues } from "../../../../types/staff-schema";
 import type { DoctorDetail } from "../../../../types/staff.types";
@@ -138,34 +139,20 @@ export function DoctorPerfilView({ doctorId }: DoctorPerfilViewProps) {
   }
 
   return (
-    <div className="space-y-6 max-w-2xl" data-testid="doctor-perfil-view">
-      {/* Autosave hint */}
-      <div
-        className={cn(
-          "text-xs text-muted-foreground flex items-center gap-1.5 transition-opacity",
-          autosaveStatus === "idle" && "opacity-60",
-          autosaveStatus === "saving" && "opacity-100",
-          autosaveStatus === "saved" && "opacity-100 text-green-600",
-          autosaveStatus === "error" && "opacity-100 text-destructive",
-        )}
-        aria-live="polite"
-        aria-atomic="true"
-      >
-        <span aria-hidden="true">
-          {autosaveStatus === "saving" && "⏳"}
-          {autosaveStatus === "saved" && "✓"}
-          {autosaveStatus === "error" && "⚠️"}
-          {autosaveStatus === "idle" && "💾"}
-        </span>
-        {autosaveStatus === "saving" && "Guardando..."}
-        {autosaveStatus === "saved" && "Guardado"}
-        {autosaveStatus === "error" && "Error al guardar. Vuelve a intentarlo."}
-        {autosaveStatus === "idle" && "Los cambios se guardan automáticamente"}
-      </div>
-
+    <div className="flex flex-col gap-6 p-6" data-testid="doctor-perfil-view">
+      {/* Cards grid — 2-col responsive (homologado con marca/identidad);
+          colapsa a 1 col en espacio reducido. Secciones densas span full-width. */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       {/* Avatar + identity (read-only fields from create) */}
-      <section aria-labelledby="identity-heading">
-        <h2 id="identity-heading" className="text-sm font-semibold mb-3">
+      <section
+        aria-labelledby="identity-heading"
+        className="rounded-xl border border-border bg-card p-4 sm:p-5"
+      >
+        <h2
+          id="identity-heading"
+          className="mb-3 flex items-center gap-2 text-sm font-semibold"
+        >
+          <span aria-hidden="true" className="h-4 w-1 rounded-full bg-agent-lisa" />
           Identidad
         </h2>
         <div className="flex items-start gap-4">
@@ -193,8 +180,15 @@ export function DoctorPerfilView({ doctorId }: DoctorPerfilViewProps) {
       </section>
 
       {/* Contact */}
-      <section aria-labelledby="contact-heading">
-        <h2 id="contact-heading" className="text-sm font-semibold mb-3">
+      <section
+        aria-labelledby="contact-heading"
+        className="rounded-xl border border-border bg-card p-4 sm:p-5"
+      >
+        <h2
+          id="contact-heading"
+          className="mb-3 flex items-center gap-2 text-sm font-semibold"
+        >
+          <span aria-hidden="true" className="h-4 w-1 rounded-full bg-agent-lisa" />
           Contacto
         </h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -240,8 +234,15 @@ export function DoctorPerfilView({ doctorId }: DoctorPerfilViewProps) {
       </section>
 
       {/* Professional */}
-      <section aria-labelledby="professional-heading">
-        <h2 id="professional-heading" className="text-sm font-semibold mb-3">
+      <section
+        aria-labelledby="professional-heading"
+        className="rounded-xl border border-border bg-card p-4 sm:p-5 sm:col-span-2"
+      >
+        <h2
+          id="professional-heading"
+          className="mb-3 flex items-center gap-2 text-sm font-semibold"
+        >
+          <span aria-hidden="true" className="h-4 w-1 rounded-full bg-agent-lisa" />
           Datos profesionales
         </h2>
         <div className="space-y-3">
@@ -339,7 +340,7 @@ export function DoctorPerfilView({ doctorId }: DoctorPerfilViewProps) {
                   <div
                     className={cn(
                       "w-10 h-6 rounded-full transition-colors",
-                      field.value ? "bg-[var(--agent-lisa)]" : "bg-muted",
+                      field.value ? "bg-agent-lisa" : "bg-muted",
                     )}
                   >
                     <div
@@ -356,9 +357,16 @@ export function DoctorPerfilView({ doctorId }: DoctorPerfilViewProps) {
         </div>
       </section>
 
-      {/* Bio repo + generated bio */}
-      <BioRepoInputs doctorId={doctorId} initialDoctor={doctor} />
-      <GeneratedBioSections doctorId={doctorId} initialDoctor={doctor} />
+      {/* Bio repo + generated bio (full-width) */}
+      <div className="sm:col-span-2">
+        <BioRepoInputs doctorId={doctorId} initialDoctor={doctor} />
+      </div>
+      <div className="sm:col-span-2">
+        <GeneratedBioSections doctorId={doctorId} initialDoctor={doctor} />
+      </div>
+      </div>
+
+      <FloatingAutosaveIndicator status={autosaveStatus} />
     </div>
   );
 }

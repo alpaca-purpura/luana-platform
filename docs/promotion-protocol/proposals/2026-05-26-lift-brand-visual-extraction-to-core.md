@@ -5,13 +5,23 @@
 | Campo | Valor |
 |---|---|
 | **Proposal ID** | 2026-05-26-lift-brand-visual-extraction-to-core |
-| **State** | `proposed` (awaiting `/pm-luana` review) |
+| **State** | `accepted` (/pm-luana 2026-06-06 · ratificado Chris · prioridad menor, detrás del shell · EP TBD + verificar source backup antes del lift) |
 | **Spawned from** | `/po-ux` session refining `vitalia-fase2-lisa-marca` (2026-05-26) |
 | **Initiator** | Chris (ratificó escalation 2026-05-26 D2=A) |
 | **Target package** | `core/luana-core-brand-studio` |
 | **Target extension point** | EP-1 (FieldOverride) o NEW EP-N tooling (TBD `/pm-luana`) |
 | **Source evidence** | `/home/chalreme/Documentos/ap_sales_agent/.planning/quick/260319-g7y-fix-brand-studio-visual-identity-extract/` |
 | **Beneficiarios** | vitalia (lisa-marca Identidad), nicolify (brand-studio existing), comunify (creator brand setup), lupulo (futuro), 6 brands bootstrap pendientes |
+
+---
+
+## /pm-luana review (under_review · 2026-06-06)
+
+**Recomendación: ACCEPT en principio, PRIORIDAD MENOR** — es un lift de FEATURE (pipeline extracción visual de marca → `core-brand-studio`), separado de la convergencia de shell/FE. Beneficio multi-brand claro.
+
+**Abierto antes de APPROVED:** (1) decisión EP — EP-1 (FieldOverride) vs nuevo EP-N tooling (TBD); (2) `Source evidence` apunta a un backup externo (`~/Documentos/ap_sales_agent/...`) — verificar que sigue válido/accesible antes de planear el lift; (3) secuenciar DETRÁS del shell-organism (mayor impacto de convergencia).
+
+**Para ratificar (Chris):** ¿confirmás la dirección + lo dejamos en cola detrás del shell?
 
 ---
 

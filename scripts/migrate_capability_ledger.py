@@ -12,7 +12,7 @@ Migrates {brand}/docs/product/capabilities/{module}/{cap}.yaml to schema v2:
   - Idempotent: presence of `change_log:` field marks file as already migrated.
 
 Refs:
-  - .claude/plans/ok-lo-apruebo-realiza-cheeky-harbor.md § Phase 3.4
+  - docs/process/capability-protocol.md § cap schema (the ledger v2 model this migrates to)
 
 Usage:
   python3 scripts/migrate_capability_ledger.py vitalia [--dry-run]
@@ -32,7 +32,6 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-
 
 # ---------------------------------------------------------------------------
 # YAML frontmatter / pure-yaml helpers

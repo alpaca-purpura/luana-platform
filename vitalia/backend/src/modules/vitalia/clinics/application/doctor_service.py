@@ -263,7 +263,7 @@ class DoctorService:
         Args:
             tenant_id: Tenant UUID.
             clinic_id: Clinic UUID.
-            q: Optional free-text search (not used in current impl — reserved).
+            q: Optional free-text search over first/last name + specialty.
             specialty: Filter by specialty.
             active: Filter by active status.
             page: Page number (1-indexed).
@@ -284,6 +284,7 @@ class DoctorService:
         total = await self._repo.count_by_filter(
             tenant_id=tenant_id,
             clinic_id=clinic_id,
+            q=q,
             active=active,
             specialty=specialty,
         )

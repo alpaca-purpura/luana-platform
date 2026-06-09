@@ -36,20 +36,36 @@ export function StaffCard({ doctor, tenantId }: StaffCardProps) {
   // (stats fields patientsCount/npsScore/avatarUrl are already null-guarded below with "—")
   const displayName = [doctor.firstName, doctor.lastName].filter(Boolean).join(" ") || "—";
   const profileHref = `/${tenantId}/lisa/staff/${doctor.id}/perfil`;
+  const initials =
+    [doctor.firstName, doctor.lastName]
+      .filter(Boolean)
+      .map((s) => s?.[0]?.toUpperCase() ?? "")
+      .join("")
+      .slice(0, 2) || "·";
+  const hasStats =
+    doctor.yearsExperience != null ||
+    doctor.patientsCount != null ||
+    doctor.npsScore != null;
 
   return (
     <article
       className={cn(
-        "rounded-xl border border-border bg-card p-4 flex flex-col gap-3",
-        "hover:border-[color:var(--agent-lisa)] hover:shadow-sm transition-all",
+        "group relative overflow-hidden rounded-xl border border-border bg-card p-4 pt-5 flex flex-col gap-3",
+        "hover:border-agent-lisa hover:shadow-md transition-all",
         !doctor.active && "opacity-60",
       )}
       data-testid={`staff-card-${doctor.id}`}
       aria-label={`Perfil de ${displayName}`}
     >
+      {/* Lisa accent bar — ties the card to the agent module */}
+      <span
+        aria-hidden="true"
+        className="absolute inset-x-0 top-0 h-1 bg-agent-lisa"
+      />
+
       {/* Avatar + name */}
       <div className="flex items-start gap-3">
-        <div className="relative h-14 w-14 shrink-0 rounded-full overflow-hidden bg-muted">
+        <div className="relative h-14 w-14 shrink-0 rounded-full overflow-hidden ring-1 ring-agent-lisa">
           {doctor.avatarUrl ? (
             <Image
               src={doctor.avatarUrl}
@@ -60,10 +76,10 @@ export function StaffCard({ doctor, tenantId }: StaffCardProps) {
             />
           ) : (
             <div
-              className="flex h-full w-full items-center justify-center text-2xl"
+              className="flex h-full w-full items-center justify-center bg-agent-lisa-soft text-base font-bold text-foreground"
               aria-hidden="true"
             >
-              👤
+              {initials}
             </div>
           )}
         </div>
@@ -75,7 +91,7 @@ export function StaffCard({ doctor, tenantId }: StaffCardProps) {
           {doctor.specialty && (
             <Badge
               variant="secondary"
-              className="mt-1 text-xs"
+              className="mt-1 text-xs bg-agent-lisa-soft text-foreground border-transparent"
               data-testid={`specialty-badge-${doctor.id}`}
             >
               {doctor.specialty}
@@ -89,34 +105,40 @@ export function StaffCard({ doctor, tenantId }: StaffCardProps) {
         </div>
       </div>
 
-      {/* Tiny stats */}
-      <dl className="grid grid-cols-3 gap-1 text-center">
-        <div className="space-y-0.5">
-          <dt className="text-[10px] text-muted-foreground">Años exp.</dt>
-          <dd className="text-xs font-medium">
-            {doctor.yearsExperience != null ? `${doctor.yearsExperience}a` : "—"}
-          </dd>
-        </div>
-        <div className="space-y-0.5">
-          <dt className="text-[10px] text-muted-foreground">Pacientes</dt>
-          <dd className="text-xs font-medium">
-            {doctor.patientsCount != null ? String(doctor.patientsCount) : "—"}
-          </dd>
-        </div>
-        <div className="space-y-0.5">
-          <dt className="text-[10px] text-muted-foreground">NPS</dt>
-          <dd className="text-xs font-medium">
-            {doctor.npsScore != null ? String(doctor.npsScore) : "—"}
-          </dd>
-        </div>
-      </dl>
+      {/* Tiny stats — only when there is real data (avoid sad bare dashes) */}
+      {hasStats ? (
+        <dl className="grid grid-cols-3 gap-1 text-center">
+          <div className="space-y-0.5">
+            <dt className="text-[10px] text-muted-foreground">Años exp.</dt>
+            <dd className="text-xs font-semibold">
+              {doctor.yearsExperience != null ? `${doctor.yearsExperience}a` : "—"}
+            </dd>
+          </div>
+          <div className="space-y-0.5">
+            <dt className="text-[10px] text-muted-foreground">Pacientes</dt>
+            <dd className="text-xs font-semibold">
+              {doctor.patientsCount != null ? String(doctor.patientsCount) : "—"}
+            </dd>
+          </div>
+          <div className="space-y-0.5">
+            <dt className="text-[10px] text-muted-foreground">NPS</dt>
+            <dd className="text-xs font-semibold">
+              {doctor.npsScore != null ? String(doctor.npsScore) : "—"}
+            </dd>
+          </div>
+        </dl>
+      ) : (
+        <p className="text-xs italic text-muted-foreground/70">
+          Sin métricas aún
+        </p>
+      )}
 
       {/* CTA */}
       <Button
         asChild
         variant="outline"
         size="sm"
-        className="w-full mt-auto text-xs hover:border-[color:var(--agent-lisa)]"
+        className="w-full mt-auto text-xs border-agent-lisa text-foreground hover:bg-agent-lisa-soft hover:text-foreground"
       >
         <Link href={profileHref} aria-label={`Ver perfil de ${displayName}`}>
           Ver perfil

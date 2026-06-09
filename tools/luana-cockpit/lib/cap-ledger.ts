@@ -61,6 +61,13 @@ export async function readCapability(absPath: string): Promise<Capability> {
     nature: cap.nature ?? null,
     user_facing_name: cap.user_facing_name ?? null,
     user_facing_description: cap.user_facing_description ?? null,
+    // v3.2 cap blocks (F0 cap-levels): el cap-drawer del cockpit los lee para
+    // mostrar casos de uso (scenarios) + reglas de negocio + acceso + dependencias.
+    // Sin este passthrough el drawer mostraba 0 aunque el YAML los tuviera.
+    access: cap.access ?? null,
+    scenarios: cap.scenarios ?? null,
+    business_rules: cap.business_rules ?? null,
+    related_capabilities: cap.related_capabilities ?? null,
     dev_preview: cap.dev_preview ?? null,
     superseded_by: cap.superseded_by ?? null,
     body: parsed.content || '',

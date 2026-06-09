@@ -61,3 +61,15 @@ Frontend: useTenantLocale() hook (features/tenant/context/)
 - `toLocaleDateString()` / `toLocaleTimeString()` para data display
 - `currency || 'USD'` en FE
 - Hardcoded `"America/Bogota"` / timezone en services
+
+---
+
+## Ex always-on rule body (evicted W1-Phase2 2026-06-09 — era `.claude/rules/master-data.md`)
+
+Cada módulo usa tenant locale prefs. Sin hardcoded.
+- BE store UTC siempre (`utc_now()`, `DateTime(timezone=True)`).
+- BE: `TenantLocale` VO (shared/domain/locale.py), DI `get_tenant_locale()`.
+- FE: `useTenantLocale()` → `{ currency, timezone }`. Display: `formatTenantDate*()`, `formatMoneyDual()`.
+- Currency: ETL keeps source currency. No convert on write. FE fallback `data.currency ?? useTenantLocale().currency`.
+
+**Prohibido:** `datetime.utcnow()`, `DateTime()` sin `timezone=True`, `= "USD"` Pydantic default (fuera allowed files), `toLocaleDateString()`, `currency || 'USD'` FE, hardcoded timezone.

@@ -1,6 +1,6 @@
 # AGENTS.md
 
-**Luana platform** (multimarca, post reorg 2026-05-15) — Engine compartido `core/luana-core-*` (26 paquetes) + 10 brand verticals. FastAPI async + Next.js 16 FSD + Clerk + Postgres/Qdrant. Modular Monolith DDD + Docker-First.
+**Luana platform** (multimarca, post reorg 2026-05-15) — Engine compartido `core/luana-core-*` (27 paquetes) + 10 brand verticals. FastAPI async + Next.js 16 FSD + Clerk + Postgres/Qdrant. Modular Monolith DDD + Docker-First.
 
 Overlay project-specific: ver `CLAUDE.md`. Detalle histórico completo: `docs/rules-detail/_AGENTS-original-backup.md` (load con Read on-demand).
 
@@ -13,7 +13,7 @@ Overlay project-specific: ver `CLAUDE.md`. Detalle histórico completo: `docs/ru
 | FE full suite per brand | `cd {brand}/frontend && npx tsc --noEmit && npx eslint src/ --cache && npx vitest run --coverage` |
 | Full CI gate | `make ci-parity` (mandatory pre-push-to-main) |
 | BE single module | `cd {brand}/backend && ${WS}/.venv/bin/pytest tests/modules/{brand}/{name}/ -v` |
-| Alembic per brand | `docker exec luana-{brand}-backend-dev alembic upgrade head` |
+| Alembic per brand | `docker exec luana-dev-{brand}_backend_dev-1 bash -c "cd /workspace/{brand}/backend && /workspace/.venv/bin/alembic upgrade head"` (HB-37 ground-truth) |
 | E2E smoke per brand | `cd {brand}/frontend && E2E_BASE_URL=http://localhost:300X npx playwright test --project=smoke` |
 | ETL contract regen | `make extraction-contract` |
 

@@ -993,6 +993,121 @@ def test_g7_pass_clean_cap(tmp_path: Path):
     assert g7["total"] == 1 and g7["drift"] == 0
 
 
+# ── G8 · cap live+visible DEBE tener user_facing_description (F2 cap-levels) ──
+
+
+def test_g8_red_user_visible_no_description(tmp_path: Path):
+    """Una cap live + user_visible:true SIN user_facing_description → el cockpit «✨ Qué
+    puedo hacer» queda mudo. G8 debe cazarla en ROJO."""
+    mod = _load_module()
+    caps_root, _, _, _ = _setup(tmp_path)
+    _write_cap(
+        caps_root,
+        "inbox",
+        "adrian-inbox",
+        {"slug": "adrian-inbox", "status": "live", "user_visible": True, "functional_area": "adrian.inbox"},
+    )  # sin user_facing_description
+    caps = mod.load_capabilities("vitalia", tmp_path)
+    g8 = mod.gate_g8_user_visible_has_description("vitalia", tmp_path, caps)
+    assert g8["drift"] == 1
+    assert g8["details"][0]["status"] == "user_visible_no_description"
+
+
+def test_g8_pass_user_visible_with_description(tmp_path: Path):
+    mod = _load_module()
+    caps_root, _, _, _ = _setup(tmp_path)
+    _write_cap(
+        caps_root,
+        "inbox",
+        "adrian-inbox",
+        {
+            "slug": "adrian-inbox",
+            "status": "live",
+            "user_visible": True,
+            "user_facing_description": "Inbox unificado cross-canal para responder pacientes.",
+        },
+    )
+    caps = mod.load_capabilities("vitalia", tmp_path)
+    g8 = mod.gate_g8_user_visible_has_description("vitalia", tmp_path, caps)
+    assert g8["total"] == 1 and g8["drift"] == 0
+
+
+def test_g8_ignores_infra_and_non_live(tmp_path: Path):
+    """G8 NO aplica a infra (user_visible:false) ni a planned/deprecated."""
+    mod = _load_module()
+    caps_root, _, _, _ = _setup(tmp_path)
+    _write_cap(caps_root, "platform", "infra", {"slug": "infra", "status": "live", "user_visible": False})
+    _write_cap(caps_root, "inbox", "planned", {"slug": "planned", "status": "planned", "user_visible": True})
+    caps = mod.load_capabilities("vitalia", tmp_path)
+    g8 = mod.gate_g8_user_visible_has_description("vitalia", tmp_path, caps)
+    assert g8["total"] == 0 and g8["drift"] == 0
+
+
+# ── G9 · cap live+visible DEBE tener ≥1 scenario (F2 cap-levels) ──────────────
+
+
+def test_g9_red_user_visible_no_scenario(tmp_path: Path):
+    """Una cap live + user_visible:true SIN scenarios → caja de valor sin casos de uso.
+    G9 debe cazarla en ROJO (deja de ser paper-rule el «≥1 scenario al merge»)."""
+    mod = _load_module()
+    caps_root, _, _, _ = _setup(tmp_path)
+    _write_cap(
+        caps_root,
+        "inbox",
+        "adrian-inbox",
+        {
+            "slug": "adrian-inbox",
+            "status": "live",
+            "user_visible": True,
+            "user_facing_description": "Inbox unificado.",
+        },
+    )  # sin scenarios
+    caps = mod.load_capabilities("vitalia", tmp_path)
+    g9 = mod.gate_g9_user_visible_has_scenario("vitalia", tmp_path, caps)
+    assert g9["drift"] == 1
+    assert g9["details"][0]["status"] == "user_visible_no_scenario"
+
+
+def test_g9_pass_user_visible_with_scenario(tmp_path: Path):
+    mod = _load_module()
+    caps_root, _, _, _ = _setup(tmp_path)
+    _write_cap(
+        caps_root,
+        "inbox",
+        "adrian-inbox",
+        {
+            "slug": "adrian-inbox",
+            "status": "live",
+            "user_visible": True,
+            "user_facing_description": "Inbox unificado.",
+            "scenarios": [
+                {
+                    "id": "operador-pausa",
+                    "name": "El operador pausa una conversación",
+                    "actor": "receptionist",
+                    "given": "Conversación activa",
+                    "when": "Clic en Pausar",
+                    "then": "handler_mode = paused",
+                }
+            ],
+        },
+    )
+    caps = mod.load_capabilities("vitalia", tmp_path)
+    g9 = mod.gate_g9_user_visible_has_scenario("vitalia", tmp_path, caps)
+    assert g9["total"] == 1 and g9["drift"] == 0
+
+
+def test_g9_ignores_infra_and_non_live(tmp_path: Path):
+    """G9 NO aplica a infra (user_visible:false) ni a deprecated/planned (los 39 stubs)."""
+    mod = _load_module()
+    caps_root, _, _, _ = _setup(tmp_path)
+    _write_cap(caps_root, "platform", "infra", {"slug": "infra", "status": "live", "user_visible": False})
+    _write_cap(caps_root, "old", "dep", {"slug": "dep", "status": "deprecated", "user_visible": True})
+    caps = mod.load_capabilities("vitalia", tmp_path)
+    g9 = mod.gate_g9_user_visible_has_scenario("vitalia", tmp_path, caps)
+    assert g9["total"] == 0 and g9["drift"] == 0
+
+
 # ── ★ REPRODUCCIÓN DEL INCIDENTE ORIGEN (borrar la cap inbox → G1+G2 RED) ─────
 
 

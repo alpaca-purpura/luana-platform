@@ -1,10 +1,10 @@
 ---
 proposal_id: 2026-06-01-lift-shell-organism-to-core
-state: proposed                # proposed | under_review | accepted | rejected | migrated
+state: accepted                # proposed | under_review | accepted | rejected | migrated
 opened_date: 2026-06-01
 opened_by: /pm-luana
-ratified_by: null              # Chris ratificó la DIRECCIÓN (lift + ajustar test) 2026-06-01; lift execution pendiente APPROVED formal
-ratified_date: null
+ratified_by: Chris             # dirección 2026-06-01 + APPROVED formal del lift 2026-06-06 (target reconciliado → @luana/ui-kit). Ejecución gated tras 4 stories abiertas
+ratified_date: 2026-06-06
 
 # Origen — mirror cross-brand CONCRETO (ya no preventive)
 origin_learnings:
@@ -12,7 +12,7 @@ origin_learnings:
 origin_brands: [vitalia, nicolify]   # vitalia construyó el shell-organism; nicolify lo portó verbatim re-temizado
 
 # Target
-target_package: core/luana-core-ui          # umbrella: 2026-05-21-luana-core-ui-extraction (organism layer estaba DEFERRED)
+target_package: core/@luana/ui-kit          # reconciliado 2026-06-06: luana-core-ui NO existe; el package UI real es @luana/ui-kit (sin organism layer aún). umbrella: 2026-05-21-luana-core-ui-extraction
 target_module: src/components/organism/shell/   # ShellOrganismLayout + Ribbon + SubTabsBar + SubSubTabsBar + ValeriaSidebar/Rail + AppPanelSlot + shell-routes helpers
 target_ep: null              # TS UI (copy-paste shadcn-style), no Python EP
 
@@ -32,6 +32,18 @@ migration_notes_required: true        # ambos brands deben re-wire a core (no es
 parent_proposal: 2026-05-21-luana-core-ui-extraction   # umbrella UI; organism/shell estaba DEFERRED "pending Chris agentic idea"
 unblocked_by: docs/architecture/luana-platform/PARADIGM.md   # 2026-05-30 cementó el modelo agéntico (la "idea pending" del parent)
 related_adr: docs/architecture/luana-platform/ADR-008-luana-core-ui-shadcn-cli-pattern.md
+---
+
+## /pm-luana review (under_review · 2026-06-06)
+
+**Recomendación: ACCEPT** — mirror cross-brand CONCRETO confirmado (vitalia + nicolify ambos shippearon el shell; nicolify es copia independiente verbatim re-temizada). Dirección ya ratificada por Chris 2026-06-01. Caso canónico de `anti-duplication.md`.
+
+⚠️ **Corrección de target (verify 2026-06-06):** `core/luana-core-ui` **NO existe**. El package UI real es **`core/@luana/ui-kit`** (TS namespace) y aún SIN capa `organism/`. El lift debe apuntar a `core/@luana/ui-kit/src/components/organism/shell/`, no a `luana-core-ui`. Mismo drift en el parent (ui-extraction).
+
+**Secuencia:** depende del parent `2026-05-21-luana-core-ui-extraction` (umbrella). Ratificar ambos juntos; el shell se ejecuta DESPUÉS de que el umbrella consolide el organism layer en `@luana/ui-kit`.
+
+**Para ratificar (Chris):** APPROVED formal del lift execution (1-2 sem `/dev-team`, arch-test downstream vitalia+nicolify obligatorio, migration notes). Al APPROVED → `accepted` + outcome platform + stories consumer.
+
 ---
 
 ## 1. Patrón a promover

@@ -1,16 +1,7 @@
----
-globs: "{core/luana-core-platform/src/**/domain/locale*,core/luana-core-platform/src/**/domain/currency*,**/frontend/src/features/tenant/**/*.{ts,tsx},**/frontend/src/hooks/useTenantLocale*,**/frontend/src/lib/format/**}"
-description: Stub — invoca backend-expert skill
----
-
 # Master Data: Currency + Timezone
 
-Cada módulo usa tenant locale prefs. Sin hardcoded.
-- BE store UTC siempre (`utc_now()`, `DateTime(timezone=True)`).
-- BE: `TenantLocale` VO (shared/domain/locale.py), DI `get_tenant_locale()`.
-- FE: `useTenantLocale()` → `{ currency, timezone }`. Display: `formatTenantDate*()`, `formatMoneyDual()`.
-- Currency: ETL keeps source currency. No convert on write. FE fallback `data.currency ?? useTenantLocale().currency`.
+> **Slim pointer (W1-Phase2 eviction 2026-06-09 · tier: project).** Cuerpo operativo + ex-always-on body en `backend-expert` skill → `references/master-data.md` (+ `references/currency-handling.md`).
 
-Detalle (build_money_display, convert_currency, agregar monetary field/date) en `backend-expert` skill → `references/master-data.md`.
+Trigger: tocás fechas/moneda/locale en BE o FE.
 
-**Prohibido:** `datetime.utcnow()`, `DateTime()` sin `timezone=True`, `= "USD"` Pydantic default (fuera allowed files), `toLocaleDateString()`, `currency || 'USD'` FE, hardcoded timezone.
+No-skip 1-liner: BE store UTC siempre (`utc_now()` + `DateTime(timezone=True)`) · `TenantLocale` VO / `useTenantLocale()` — NUNCA `datetime.utcnow()`, hardcoded timezone ni `= "USD"` default.

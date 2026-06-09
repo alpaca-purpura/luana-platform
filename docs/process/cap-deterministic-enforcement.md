@@ -45,7 +45,7 @@
 ### Capa 3 — Schema validation (pydantic / JSON-Schema)
 - **`scripts/validate_caps_schema.py`**: modelo formal de la cap. Valida CADA cap: campos required, tipos, `status ∈ {live,beta,planned,deprecated,sunset,partial,wip}`, `module` válido, `functional_area` formato `{box}.{area}`, `change_log[].type` válido. **★ Parseo ESTRICTO** (`strict_parse_error`): rechaza claves duplicadas — PyYAML las tolera (last-wins) pero el cockpit (gray-matter/js-yaml) las RECHAZA → la cap queda invisible en el mapa. El validador es tan estricto como el consumidor real. Corre en **pre-commit**.
 
-### Capa 4 — 7 gates HARD bidireccionales (pre-commit + pre-push)
+### Capa 4 — 9 gates HARD bidireccionales (pre-commit + pre-push)
 Extender `validate_code_cap_bidirectional.py` (ya corre en pre-commit) con checks **HARD** (hoy solo cross_check_3 es HARD):
 
 | Gate | Qué verifica | Qué hubiera cazado |
@@ -57,6 +57,10 @@ Extender `validate_code_cap_bidirectional.py` (ya corre en pre-commit) con check
 | **G5 · superseded-válido** | `superseded_by` → cap real (live) = **FAIL** | cadena de supersesión rota |
 | **G6 · map-coverage** | Toda cap `live` aparece en el mapa (su `functional_area` está cubierta por un box) = **FAIL** | cap huérfana invisible en el mapa |
 | **G7 · cockpit-readable** | Toda cap parsea bajo YAML ESTRICTO (= gray-matter/js-yaml del cockpit · sin claves duplicadas) = **FAIL** | **15 caps vitalia con `map_box`/`last_modified` duplicado → ILEGIBLES por el cockpit → cajas vacías (incl. Inbox)** |
+| **G8 · visible-tiene-descripción** | Toda cap `status: live/beta` + `user_visible: true` tiene `user_facing_description` non-placeholder = **FAIL** | cap de valor live sin QUÉ decir → «✨ Qué puedo hacer» cae a fallback vacío (HB-52/56) |
+| **G9 · visible-tiene-scenario** | Toda cap `status: live/beta` + `user_visible: true` tiene ≥1 `scenario` = **FAIL** | cap de valor sin caso de uso verificable que el `cross_check_3` ate a un e2e (HB-56) |
+
+> **G8/G9 (agregados 2026-06-05 · F2 cap-levels):** gates de **PRESENCIA forward-looking** — 0 violaciones hoy (vitalia/comunify/nicolify limpias) → bloquean SOLO regresiones futuras (una cap nueva no puede ir `live`+`user_visible` sin describir qué hace ni listar ≥1 caso de uso). El «≥1 scenario al merge» de `new_cap.py` deja de ser paper-rule y pasa a mecánico.
 
 > **★ Lección 2026-06-05 (verify-the-real-consumer):** los gates Python pasaban (PyYAML tolera claves duplicadas) pero **el cockpit no mostraba la cap** (gray-matter/js-yaml las rechaza → la cap se dropea silenciosa). Un gate verde con el consumidor roto = el gate miente. G7 hace al validador tan estricto como el consumidor REAL. Misma clase que [[verification-real-not-200]]: verificar el path real, no el proxy.
 
@@ -75,7 +79,7 @@ Extender `validate_code_cap_bidirectional.py` (ya corre en pre-commit) con check
 
 ## Acceptance criteria (con dientes — sin esto, no cuenta)
 
-- **Negative test por gate:** cada gate (G1-G6) probado con un caso que DEBE fallar (header a cap inexistente → G1 RED; área live sin cap → G2 RED; path inventado → G4 RED; …). Un gate sin negative test que lo prueba en rojo **no cuenta**.
+- **Negative test por gate:** cada gate (G1-G9) probado con un caso que DEBE fallar (header a cap inexistente → G1 RED; área live sin cap → G2 RED; path inventado → G4 RED; …). Un gate sin negative test que lo prueba en rojo **no cuenta**.
 - **Reproducir el caso origen:** si se borra `capabilities/inbox/adrian-inbox.yaml`, el pre-commit DEBE fallar en **G1 + G2** (hoy pasa silencioso). Test de regresión del incidente.
 - **`make new-cap`** produce un YAML que pasa schema + los 6 gates **sin edición manual**.
 - **`resolve_cap.py`** two-way: `resolve("adrian.inbox").cap_id == "inbox.adrian-inbox"` y viceversa.
@@ -104,13 +108,13 @@ Las 8 capas construidas verify-first. SSoT ejecutable:
 | 1 · resolver two-way | `scripts/resolve_cap.py` (`resolve_cap_ids`/`canonical_cap_id`/`functional_area_of`/`cap_id_of`) | ✅ + 23 tests |
 | 2 · generator | `scripts/new_cap.py` · `make new-cap` (REFUSE si existe · scaffold schema-válido) | ✅ + tests |
 | 3 · schema | `scripts/validate_caps_schema.py` (pydantic + `strict_parse_error` dup-key) · `make caps-schema-check` | ✅ + 13 tests |
-| 4 · 7 gates G1-G7 | `validate_code_cap_bidirectional.py::run_cap_gates` (`--cap-gates-hard`) — **G7 cockpit-readable agregado 2026-06-05** | ✅ + negative test c/u + **test repro origen** (borrar cap inbox → G1+G2 RED) |
+| 4 · 9 gates G1-G9 | `validate_code_cap_bidirectional.py::run_cap_gates` (`--cap-gates-hard`) — **G7 cockpit-readable + G8/G9 cap-levels-PRESENCIA agregados 2026-06-05** | ✅ + negative test c/u + **test repro origen** (borrar cap inbox → G1+G2 RED) |
 | 5 · resolver único | `generate_code_to_cap_index.py` → `resolved_cap_to_files` (unifica `adrian.inbox`+`inbox.adrian-inbox`) | ✅ |
 | 6 · skill=puntero | `capability-protocol.md` + `pm-vitalia` F.3 + `vitalia/CLAUDE.md` → `make new-cap` | ✅ |
 | 7 · backstop | pre-commit §5e + pre-push §4e (HARD vitalia/comunify · override `CAP_GATES_SKIP`/`CAP_GATES_PUSH_OVERRIDE`) | ✅ |
 | 8 · cap-doctor | `scripts/cap_doctor.py` · `make cap-doctor` + cockpit `GET /api/capabilities/doctor` | ✅ (panel UI = follow-up) |
 
-**Anti-rot:** `validate_machinery_consistency.py` CHECK 11 (borrar un gate/negative-test/script → CHECK RED).
+**Anti-rot:** `validate_machinery_consistency.py` CHECK 11 (borrar un gate/negative-test/script → CHECK RED). **OCP (W6 2026-06-09):** CHECK 11 **deriva** el set de gates de `def gate_gN_*` + del dispatcher `run_cap_gates` (no un literal congelado) con un piso G1-G9 → un **G10** futuro queda auto-cubierto (agregalo + dispatchalo + `test_g10_red` y CHECK 11 lo exige solo).
 
 **Backfill realizado (vitalia → 0 deriva):** 1 header huérfano re-apuntado (`sales_agent.adrian-override-context` → `crm.adrian-embudo`, el wire servía al embudo) + 6 paths de cap corregidos (`middleware.ts`→`proxy.ts` ×3 · `features/valeria/…`→`features/mateo/…` · `brand_studio/_shared/auth/rbac.py`→`_shared/auth/rbac.py` · `sign-in/page.tsx`→`sign-in/[[...rest]]/page.tsx`) + **15 caps con clave duplicada deduplicadas** (`last_modified` ×14 + `map_box` ×1 inbox) — eran ILEGIBLES por el cockpit (cajas vacías, incl. Inbox). El síntoma que reportó Chris ("no veo la cap en Mapa/Adrián/Inbox") era esto: el gate Python verde, el cockpit roto → G7 cierra el agujero.
 

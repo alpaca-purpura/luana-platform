@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # auto-chain-detect — UserPromptSubmit hook
 #
+# tier: hybrid · core = prompt-intent → additionalContext chaining mechanism ·
+#       project = brand enum + secondary-skill names → seam brands[] (W5)
+#
 # Detecta el pattern "user invoca PM skill + pide encadenar skill secundaria"
 # (ej. /pm-vitalia con args que nombran /po-ux Y expresan intención) y emite
 # additionalContext que autoriza al modelo a encadenar via Skill tool inline.

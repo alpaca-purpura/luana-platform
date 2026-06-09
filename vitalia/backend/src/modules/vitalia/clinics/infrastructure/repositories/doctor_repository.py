@@ -204,6 +204,16 @@ class DoctorRepository(CompoundScopeRepositoryBase[VitaliaDoctorModel, UUID]):
             where_clauses.append("specialty ILIKE :specialty")
             params["specialty"] = f"%{specialty}%"
 
+        if q and q.strip():
+            # Free-text directory search: first/last name, full name, specialty.
+            # These columns are plaintext (not PHI-encrypted) — safe to ILIKE.
+            where_clauses.append(
+                "(first_name ILIKE :q OR last_name ILIKE :q "
+                "OR (first_name || ' ' || last_name) ILIKE :q "
+                "OR specialty ILIKE :q)"
+            )
+            params["q"] = f"%{q.strip()}%"
+
         where_sql = " AND ".join(where_clauses)
         offset = (page - 1) * page_size
 
@@ -239,6 +249,7 @@ class DoctorRepository(CompoundScopeRepositoryBase[VitaliaDoctorModel, UUID]):
         *,
         tenant_id: UUID,
         clinic_id: UUID,
+        q: str | None = None,
         active: bool | None = None,
         specialty: str | None = None,
     ) -> int:
@@ -262,6 +273,14 @@ class DoctorRepository(CompoundScopeRepositoryBase[VitaliaDoctorModel, UUID]):
         if specialty:
             where_clauses.append("specialty ILIKE :specialty")
             params["specialty"] = f"%{specialty}%"
+
+        if q and q.strip():
+            where_clauses.append(
+                "(first_name ILIKE :q OR last_name ILIKE :q "
+                "OR (first_name || ' ' || last_name) ILIKE :q "
+                "OR specialty ILIKE :q)"
+            )
+            params["q"] = f"%{q.strip()}%"
 
         where_sql = " AND ".join(where_clauses)
         stmt = text(f"SELECT COUNT(*) FROM vitalia_doctors WHERE {where_sql}")

@@ -98,3 +98,15 @@ Schema puede override explícito:
 ## Test arch (propuesto, no bloqueante aún)
 
 Ratchet test FE que falla si schema hardcodea `renderAs` diferente al default sin comentario justificativo adyacente. Agregar cuando >2 overrides legítimos aparezcan.
+
+---
+
+## Ex always-on rule body (evicted W1-Phase2 2026-06-09 — era `.claude/rules/form-runtime-array.md`)
+
+Default automático por `itemSchema.fields.length`:
+- ≤3 sub-fields → `cards` (Enhanced Cards, expand/collapse inline)
+- ≥4 sub-fields → `split` (Master-Detail, lista izquierda + editor derecha)
+
+Autosave on-change preservado en ambos modos. Override `renderAs: "accordion"` solo justificado (lista ≥15 items con búsqueda/import batch).
+
+**Prohibido:** items sin contenedor visual, inputs sin borde, botón "Guardar" (rompe autosave), modal edición de item, textarea multi-línea como array simulado, hardcodear `renderAs` sin chequear fields count.

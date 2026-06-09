@@ -166,7 +166,7 @@ Append every subsequent action (greps run, files read, web fetches, decisions) t
 <step name="step_1_read_pr_folder">
 **Single message, parallel Read calls** for every existing file in `<pr_folder>`:
 - `01-spec.md` (always — story-folders)
-- `02-design-ui.md` / `02-design-agentic.md` (if exists)
+- `02-design-agentic.md` (if exists — agentic stories only; `02-design-ui.md` is RETIRED, UI design lives inline in `01-spec.md § Wireframes` + `mockups/`)
 - `03-arch.md` (consolidado) + `03-arch-be.md` / `03-arch-fe.md` / `03-arch-agentic.md` (if exists)
 - `04-validators.yaml` (story-folders, ready package)
 - `05-guidelines.md` (story-folders, ready package)

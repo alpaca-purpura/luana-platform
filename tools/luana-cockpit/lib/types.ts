@@ -153,8 +153,53 @@ export interface DevPreview {
   loom_demo: string | null;
 }
 
-export type StoryType = 'ui' | 'service' | 'agentic' | 'tech' | 'func';
+// Story types (PROCESS-MODEL §3 · 5 canonical: ui-story · service-story ·
+// agentic-story · bugfix · technical-story). Cockpit slugs: 'tech' = technical-story,
+// 'bugfix' = WT4. 'func' = legacy alias (pre-W0.5; coexiste durante migración).
+export type StoryType = 'ui' | 'service' | 'agentic' | 'bugfix' | 'tech' | 'func';
 export type Surface = 'BE' | 'FE' | 'AGENTIC';
+
+// ────────────────────────────────────────────────────────────────────────────
+// v5 spine gate fields (PROCESS-MODEL §1,§7 D6① · SSoT story-closure-gate.md +
+// definition-of-done-live-verify.md). El read-schema DEBE declararlos: el parser
+// (app/api/stories/route.ts) ya los pasa via `...(fm as Story)`, pero sin estos
+// tipos los consumidores no los ven type-safe. Producidos por /dev-team + Chris (G).
+// ────────────────────────────────────────────────────────────────────────────
+
+/** Resultado de la verificación live de Chris en la fase G (AWAIT_CHRIS_VERIFY). */
+export interface ChrisSignoff {
+  by?: string;
+  date?: string | null;
+  /** SATISFIED | SATISFIED_WITH_FOLLOWUPS | REJECTED */
+  result?: 'SATISFIED' | 'SATISFIED_WITH_FOLLOWUPS' | 'REJECTED' | null;
+  notes?: string | null;
+  open_items?: string[] | null;
+}
+
+export interface ChrisVerify {
+  required?: boolean;
+  signoff?: ChrisSignoff | null;
+  /** allowlist de scope ratificado: cada corrección anotada + cómo se resolvió. */
+  rounds?: unknown[];
+}
+
+/** Una acción ejercida live contra el stack dev real + su efecto observado (DoD #37). */
+export interface DodEvidenceItem {
+  action?: string;
+  observed?: string | null;
+  backend_log?: string | null;
+}
+
+/** Evidencia de reproducción de bug (WT4 · canonical key · repro=local OR trace, D4). */
+export interface ReproEvidence {
+  repro_verified?: boolean;
+  reproduced_local?: boolean;
+  trace_evidence?: {
+    /** docker-logs | sentry | copilot_trace_event | conversation-log */
+    source?: string;
+    ref?: string;
+  } | null;
+}
 
 // ────────────────────────────────────────────────────────────────────────────
 // Story (checkpoint.md frontmatter)
@@ -168,8 +213,13 @@ export interface Story {
 
   // Release entity v2
   release: string | null;
-  // Legacy outcome/phase (DEPRECATED · coexisten durante migración)
+  // Legacy outcome (DEPRECATED · 4-ejes purgó outcomes; coexiste durante migración)
   outcome?: string | null;
+  /**
+   * v5 named-phase (NO legacy) — vive bajo `developed` como `checkpoint.md::phase`,
+   * NO es un estado nuevo. Valores: AWAIT_CHRIS_VERIFY (G) · AUTONOMOUS · R · C · D.
+   * SSoT: story-closure-gate.md. (Las letras A-F + phase_workflow están RETIRADAS, X6.)
+   */
   phase?: string | null;
 
   // Capability lineage v2
@@ -179,6 +229,7 @@ export interface Story {
 
   // State
   state: StoryState;
+  /** @deprecated RETIRED por X6 (W0.5) — plegado en `phase` named-phases. Solo legacy. */
   phase_workflow?: string | null;
   last_artifact?: string | null;
   last_modified?: string | null;
@@ -193,6 +244,21 @@ export interface Story {
   defer_audit_reason?: string | null;
   parked_reason?: string | null;
   dropped_reason?: string | null;
+
+  // v5 spine gate fields (PROCESS-MODEL §1,§7 D6① — fluyen via spread, ver ChrisVerify arriba)
+  /** salta la fase G (pausa-y-ofrece) y corre directo a /auditor. */
+  autonomous_mode?: boolean;
+  /** fase G — verificación live de Chris ANTES del auditor (chris_verify.signoff). */
+  chris_verify?: ChrisVerify | null;
+  /** fase R — /pm-{brand} alineó spec/arch/validators/cap a la realidad construida. */
+  reconciled?: boolean;
+  /** DoD #37 — Claude ejerció la acción real contra el stack dev + leyó logs + confirmó efecto. */
+  dod_live_verified?: boolean;
+  dod_env?: string | null;
+  dod_evidence?: DodEvidenceItem[] | null;
+  verified_at?: string | null;
+  /** WT4 bugfix — canonical key (reemplaza hotfix_metadata; repro=local OR trace, D4). */
+  repro_evidence?: ReproEvidence | null;
 
   /**
    * Si el frontmatter del checkpoint.md NO parsea (ej. key duplicada → YAML
@@ -594,6 +660,18 @@ export interface CapAccess {
   authentication?: 'required' | 'optional' | 'none';
 }
 
+/**
+ * Evidencia de live-verify de un scenario (HB-58 · DoD #37). Se setea SOLO cuando
+ * la verificación live de ese caso de uso quedó registrada (`at` = cuándo, `how` =
+ * qué se ejerció + qué se observó · derivado de `dod_evidence`/`dev_app_verified`).
+ * Lo leen: `cap_doctor.py --accuracy` (mide la deuda) + el badge de verdad del
+ * cap-drawer (N1). Booleano admitido por compat legacy (`verified_real: true`).
+ */
+export interface CapScenarioVerifiedReal {
+  at: string;
+  how: string;
+}
+
 export interface CapScenario {
   id: string;
   name: string;
@@ -603,6 +681,8 @@ export interface CapScenario {
   when: string;
   then: string;
   e2e_test?: string | null;
+  /** HB-58: evidencia de live-verify (no decorativo · leído por badge N1 + cap_doctor --accuracy). */
+  verified_real?: CapScenarioVerifiedReal | boolean | null;
   story_spec_ref?: string | null;
   atomic_ref?: string | null;
   edge_cases?: string[];

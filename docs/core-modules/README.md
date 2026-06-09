@@ -1,6 +1,6 @@
 # Luana core-modules — public contracts
 
-> SSoT pública de los 26 paquetes `luana-core-*`. Una entrada por package con: contract, EPs expuestas, brands consumidoras, status.
+> SSoT pública de los 27 paquetes `luana-core-*`. Una entrada por package con: contract, EPs expuestas, brands consumidoras, status.
 >
 > **Pointer-first:** este dir documenta el _contract_, no la implementación. Código vive en `core/luana-core-*`. Tests + ADRs locales viven en cada package.
 

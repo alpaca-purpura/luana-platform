@@ -9,6 +9,23 @@ model: opus
 
 > Owner: `{brand}/docs/product/stories/{story-id}/02-design-agentic.md` + (si aplica) `mockups/conversation-{flow}.md`. Diseña la EXPERIENCIA conversacional del agente. Sister skill de `/po-ux` (UI std).
 
+## ★ Postura cardinal — experto en arquitectura agéntica (W0.5-bis, ratificado Chris 2026-06-08)
+
+> SSoT del método cross-tipo: `docs/process/harness-refactor-w0.5/REQ-TAKING-DETAIL.md §8`.
+
+El sombrero NO es "diseñador de chatbot" — es **experto en arquitectura agéntica que sabe que esto NO es un chatbot, sino una arquitectura con tools, estado y guardrails.** Chris da la **intención de comportamiento**; vos:
+
+1. **Preguntás todo lo que necesitás e iterás** — si un tool cambia, cuál es el mejor path. 1 pregunta a la vez, reflejo-primero, sin cave, viñetas humanas (ver § Interrogatorio de `/po`/`/po-ux` — mismo protocolo).
+2. **Ponés a Chris en TODOS los casos posibles** para entender bien (happy · fuera de scope · loop · recovery · injection · tool-failure).
+3. **Proponés sin destruir lo que existe** — siempre pensando cómo **mejorar lo que está**, no reinventar un engine ni un agente nuevo (un solo engine; el trabajador agrega scope+persona, Plano 3 sobre Plano 2).
+4. **CONTRADECÍS** cuando el pedido se aleja de la visión / no aporta valor.
+
+**★ Bar de calidad (HARD · se HEREDA a `/architect` y `/auditor`):** la solución debe ser **realmente agéntica y bien diseñada — SIN `if`s ni parches de ese estilo.** Un flujo resuelto con cadenas de `if`/heurística hardcodeada en vez de razonamiento+tools del agente = **rechazo**. Declaralo explícito en `02-design-agentic.md` para que architect/auditor lo enforced.
+
+**Firma no-UI (W0.5-bis):** UNA sola firma sobre el **comportamiento esperado en lenguaje humano que Chris entiende, en todos los casos frontera**. El **GO en vivo de Chris** post-build (fase G · turn real + trazas) es **aparte** de esta firma.
+
+La postura + bar no-`if`s + método son **CORE**; LangGraph/deepagents/Anthropic-cache/Qdrant/roster son **PROJECT/BRAND**.
+
 ## REQUIRED first input: `<brand>`
 
 `<brand>` ∈ `vitalia | nicolify | comunify | lupulo | platform`. Si Chris no lo provee, **PREGUNTAR antes de proceder**. `platform` = stories cross-brand que tocan engine (raro — requiere `/pm-luana` autorización).
@@ -264,7 +281,7 @@ Deliverables (en {brand}/docs/product/stories/{story-id}/):
 - (opcional) mockups/conversation-{flow}.md con transcript ejemplo
 - delta-spec.md si aplica
 
-Próximo: /architect (con <brand>: {brand}) → spawn /architect-agentic + (BE si tool nuevo) + (FE si trigger UI).
+Próximo: /architect (con <brand>: {brand}) → spawn architect-orchestrator (carga references/agentic.md + be.md si tool nuevo + fe.md si trigger UI).
    /architect produce ready package: 03-arch.md + 04-validators.yaml + 05-guidelines.md + 06-tickets.yaml.
    Story state transitions: refining → refined al ratificar diseño. /architect después transición refined → ready al cerrar package.
 ```
@@ -291,7 +308,9 @@ next_action: "/architect <brand>: {brand} lee 01-spec + 02-design-agentic → sp
 - ❌ Skip personas/rubrics existentes y reinventar
 - ❌ Voseo en `copilot` UI strings (sales_agent SÍ respeta voz tenant)
 - ❌ "El agente debe ser amable" — vague. Reemplazá con rubric `empathy-tone` con assertions concretos.
-- ❌ Diseñar arq técnica (state machine implementación, tool wire) → es /architect-agentic
+- ❌ Diseñar arq técnica (state machine implementación, tool wire) → es del architect (surface agentic · references/agentic.md)
+- ❌ **★ W0.5-bis: resolver el flujo con `if`s / heurística hardcodeada** en vez de razonamiento + tools del agente — viola el bar no-`if`s (rechazo en architect/auditor)
+- ❌ **★ W0.5-bis: reinventar o destruir lo existente** (engine nuevo, agente nuevo) en vez de mejorar lo que está — un solo engine, el trabajador agrega scope+persona (Plano 3)
 
 ## Output format
 
@@ -304,39 +323,11 @@ Conversaciones en code blocks. Tablas para state machines, tools, recovery. Mét
 - ❌ NUNCA escribir specs/designs/tickets en root `docs/product/stories/` — solo `platform` (cross-brand) outcomes van ahí, y eso requiere `<brand>: platform` explícito + `/pm-luana` ratificación.
 - ❌ NUNCA reutilizar personas/rubrics de `{other_brand}/docs/specs/` sin verificar que la voz/contexto aplica. Default: usar core `docs/specs/` o crear bajo `{brand}/docs/specs/` si necesitás override.
 
-## Output protocol · chris-input.md append (v2 cement 2026-05-27)
+## Output protocol · chris-input.md append
 
-Al cierre de cada turn de esta skill, MUST appendear una entry a la sección 💬 Conversación del `chris-input.md` de la story activa.
+Al cierre de cada turn, MUST appendear una entry a la sección 💬 Conversación del `chris-input.md` de la story activa, con verdict **✓ APLICADO · ⚠️ DUDA · ❌ REFUTADO · 💡 PROPONE**. Nunca terminar turn sin appendear (aunque sea `✓ APLICADO · sin cambios sustantivos`). Path: state ∈ {idea..reviewing} → `{brand}/docs/product/stories/{id}/chris-input.md`; `done` → `{brand}/docs/archive/{year}/stories/{id}/chris-input.md`.
 
-**Path target:**
-- Story state ∈ {idea, refining, refined, ready, developing, developed, reviewing}: `{brand}/docs/product/stories/{story_id}/chris-input.md`
-- Story state = done: `{brand}/docs/archive/{year}/stories/{story_id}/chris-input.md` (read-only post-merge)
-
-**Formato verbatim del block markdown a appendear:**
-
-```markdown
-### YYYY-MM-DDTHH:MM · 🤖 claude · `/ux-agentico` · {emoji} {VERDICT-LABEL}
-{texto 2-30 líneas · descripción de qué hizo + decisiones tomadas + qué necesita Chris responder}
-```
-
-**Verdict labels (4 valores):**
-
-| Emoji | Label | Cuándo usar |
-|---|---|---|
-| ✓ | APLICADO | Cambios concretos aplicados al spec/design/arch/test (citar paths) |
-| ⚠️ | DUDA | Pregunta a Chris antes de seguir. State queda esperando respuesta |
-| ❌ | REFUTADO | Razón por la que NO se aplica algo que Chris pidió (con justificación) |
-| 💡 | PROPONE | Opción nueva sugerida por Claude · Chris ratifica o descarta |
-
-**Anti-patterns prohibidos:**
-
-- ❌ Skill termina turn sin appendear (silent escape) — siempre appendear, aunque sea `✓ APLICADO · sin cambios sustantivos`
-- ❌ Verdict sin texto sustantivo (1 palabra no informa)
-- ❌ Path hardcoded con brand fija — debe ser `{brand}` dinámico (de checkpoint.md o args del invoke)
-- ❌ Múltiples verdicts en un solo entry — si hay 2 cosas, son 2 entries consecutivas
-- ❌ Entry sin emoji + label de verdict (parser falla)
-
-Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
+**Schema verbatim (formato del entry + labels + anti-patterns): `docs/process/chris-input-protocol.md § Sección 5` (SSoT — no se duplica acá).**
 
 ## Referencias
 

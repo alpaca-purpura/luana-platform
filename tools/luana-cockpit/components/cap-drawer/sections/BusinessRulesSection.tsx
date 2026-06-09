@@ -58,6 +58,19 @@ export function BusinessRulesSection({
                   <Pill className="bg-[#1e3a5f] text-[#93c5fd] text-[9px] py-0">audit</Pill>
                 </Tooltip>
               )}
+              {/* Badge de verdad N2: ¿la regla está implementada (code_ref) o es papel? */}
+              {r.code_ref ? (
+                <Tooltip content={`Implementada en: ${r.code_ref}`} variant="badge">
+                  <Pill className="bg-[#064e3b] text-[#6ee7b7] text-[9px] py-0">🟢 enforced</Pill>
+                </Tooltip>
+              ) : (
+                <Tooltip
+                  content="Regla declarada SIN code_ref → no se ve dónde está implementada (posible regla de papel)."
+                  variant="badge"
+                >
+                  <Pill className="bg-[#450a0a] text-[#fca5a5] text-[9px] py-0">🔴 sin enforcement</Pill>
+                </Tooltip>
+              )}
             </div>
             {r.enforcement && r.enforcement.length > 0 && (
               <div className="text-[9px] text-[var(--color-muted)] mt-0.5 font-mono">
