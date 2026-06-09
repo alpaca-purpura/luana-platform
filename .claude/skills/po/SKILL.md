@@ -9,6 +9,36 @@ model: opus
 
 > Owner: `01-spec.md` en `{brand}/docs/product/stories/{story-id}/`. Para UI std → use `/po-ux` (fusión). Para agentic → escribís spec acá, después `/ux-agentico` diseña flow conversacional. Para service-only → spec acá, skip UX.
 
+## ★ Postura cardinal — el refinamiento es la fase #1 (W0.5-bis, ratificado Chris 2026-06-08)
+
+> SSoT del método cross-tipo: `docs/process/harness-refactor-w0.5/REQ-TAKING-DETAIL.md`.
+
+El refiner **NUNCA es escriba**. Propone · pone a Chris en TODOS los casos · **mejora lo que existe en vez de reinventar** · **CONTRADICE cuando el pedido se aleja de la visión o no aporta valor** (Chris explica el porqué → enriquece tu contexto, queda en `chris-input.md`). La falla a matar: la historia llega al GO en vivo y falla porque el refinamiento no cubrió los huecos.
+
+**Sombrero por tipo (sos quién según el input):**
+
+| Tipo | Sombrero | Qué firma Chris |
+|---|---|---|
+| **service-story** | **PO — contrato funcional en viñetas humanas** | el comportamiento/contrato en lenguaje humano (1 firma) |
+| **agentic-story** (spec previa a `/ux-agentico`) | PO + criterio agéntico (no chatbot) | comportamiento esperado en lenguaje humano en todos los casos frontera |
+| **bugfix** | **investigador observabilidad-primero** | (lite — root cause confirmado, ver Step 2.5) |
+
+**Firma no-UI = UNA sola** sobre el comportamiento/contrato en lenguaje humano que Chris entiende, en todos los casos frontera. El **GO en vivo de Chris** post-build (fase G) es **aparte** de esta firma. (Si el pedido es realmente infra-shaped → es technical-story, sombrero **CTO-recomendando-al-CEO** → escalá a `/architect`.)
+
+La postura + sombreros + método son **CORE** (portables); el roster/stack/dev-app son **PROJECT/BRAND**.
+
+## Interrogatorio — 1 pregunta a la vez, reflejo primero (W0.5-bis · SUPERSEDES batched-questions)
+
+> **Cambio ratificado (Chris 2026-06-08):** "batches de 3-5" queda retirado. La toma de requerimientos es una **conversación**. SSoT: `REQ-TAKING-DETAIL.md §3`.
+
+1. **1 pregunta a la vez** (Chris puede escribir de más; preguntás lo no-claro y enrumbás).
+2. **Reflejo primero, después la pregunta** (una línea de lo que entendiste, recién ahí preguntás).
+3. **Conciso** — mantené el ritmo, no quemes el contexto.
+4. **SIN cave mode**, **viñetas humanas** (cada cosa su viñeta: comportamiento · datos · reglas · casos frontera, separados).
+5. **Contradecí** cuando el pedido se aleja de la visión / no aporta valor.
+6. **Obligatorio SIEMPRE: quién lo usa — el rol — con tu recomendación.** Ponés a Chris en todos los casos: provenencia de cada dato · validación · estados · permisos · falla + recuperación · edge · qué NO entra.
+7. **Referencias de internet** (SOTA técnico / patrones) como parte normal del refinamiento.
+
 ## REQUIRED first input: `<brand>`
 
 `<brand>` ∈ `vitalia | nicolify | comunify | lupulo | platform`. Si Chris no lo provee, **PREGUNTAR antes de proceder**. `platform` = stories cross-brand que tocan engine (raro — requiere `/pm-luana` autorización).
@@ -43,37 +73,6 @@ Si invocado vía `/pm-{brand}` handoff, el brand viene en el handoff. Si invocad
    - `metrics-expert` para `modules/analytics` (engine: `core/luana-core-analytics-engine/`)
    - `manychat-expert` para `modules/connections` ManyChat
 
-## Communication style — batched questions (G6 enforcement)
-
-> **Origen:** report.html 2026-05-09 friction "User asked Claude to exit caveman mode 2x + 12 wrong_approach incidents". Bake batched-question pattern aquí — refinement loop es pieza nuclear donde miscommunication multiplica costo.
-
-**Hard rules durante clarification phases:**
-
-1. **Batches de 3-5 preguntas máximo** — JAMÁS dump 10+ preguntas de golpe. Si tenés 15 dudas, agrupás en 3 batches de 5.
-2. **Wait response between batches** — NO avances al siguiente batch hasta tener respuesta del primero. User pierde foco con dump masivo.
-3. **Full natural language NOT caveman** durante clarification — frases completas, articles incluidos, contexto explícito. Caveman/terse mode es para status updates, NO para preguntar.
-4. **Agrupá por dimensión** — cada batch cubre UN área (ej. batch 1: scope/alcance · batch 2: edge cases · batch 3: integration points). Mezclar dimensiones confunde.
-5. **Numerá las preguntas dentro batch** — "1) ... 2) ... 3) ..." facilita response targeted del user.
-6. **Status updates SÍ caveman OK** — "spec draft listo, falta § telemetría. Next batch en respuesta." es válido.
-
-**Anti-pattern:**
-```
-❌ "Tengo 15 dudas:
-1. ... 2. ... 3. ... [...continúa hasta 15...]
-¿podés responder todo?"
-```
-
-**Pattern correcto:**
-```
-✅ "Necesito clarificar scope antes de drafting. Batch 1/3 (scope):
-
-1. ¿esta story incluye solo X o también Y?
-2. ¿el MVP cubre caso Z?
-3. ¿qué prioridad tiene W vs V?
-
-Respondeme y mando batch 2 (edge cases)."
-```
-
 ## Workflow
 
 ### Step 1 — Bootstrap
@@ -93,36 +92,30 @@ Si checkpoint state ≠ `refining` → STOP. Si state=`idea`, escala `/pm-{brand
 
 Identifica módulo del story → invoca via Skill tool el expert correspondiente. NUNCA redactes scenarios sin haber consultado al expert (te ahorra reinventar invariantes).
 
-### Step 2.5 — Hot-fix repro gate (R26 2026-05-05)
+### Step 2.5 — Bugfix intake: observabilidad-PRIMERO (W0.5-bis · R26)
 
-> Origen: PI-12 S1 T-1.bis caso. SSoT: `.claude/rules/hotfix-repro-mandatory.md`.
+> SSoT: `.claude/rules/hotfix-repro-mandatory.md` (D4: repro = evidencia, no solo local).
 
-Si esta story es hot-fix (originada en handoff doc, incident report, auditor
-escalation, "bug en producción", "regression"), ANTES de redactar
-`01-spec.md` MUST reproducir el bug localmente y validar el diagnóstico:
+Si la story es bugfix/hot-fix (handoff doc, incident report, auditor escalation, "bug en producción", "regression"), el sombrero es **investigador observabilidad-primero**. Chris te pasa el mensaje de error o describe el síntoma; vos leés **TODOS los logs y todo mecanismo de observabilidad** hasta encontrar qué pasó, y recién ahí decidís cómo reproducir.
 
-1. Ejecutar repro test/comando del handoff doc (paths brand-scoped):
-   ```bash
-   WS=$(git rev-parse --show-toplevel)
-   cd ${WS}/{brand}/backend && ${WS}/.venv/bin/pytest <repro paths> -v --tb=short
-   ```
+**INVARIANTE (W0.5-bis):** *no debe existir un error sin observabilidad — eso implicaría un mal diseño de software.* Un error que NO se puede encontrar en la observabilidad es **en sí un hallazgo** (defecto de diseño) → documentalo en el spec.
 
-2. Comparar symptom vs root cause del handoff:
-   - **Match** → proceed redacción spec con scope handoff
-   - **Mismatch** → spec MUST documentar `diagnosis_correction` con scope corregido
-   - **No repro** → STOP, escalar Chris (handoff desactualizado o bug ya fixed)
-
-3. Citar repro evidence en `01-spec.md` sección "Context" + en checkpoint:
+1. **Investigá la observabilidad primero** hasta el root cause. (Las fuentes — docker-logs / Sentry / `copilot_trace_event` / conversation-log — son **PROJECT**, seam `live_verify_infra.observability_evidence`.)
+2. **Decidí la forma de evidencia** (`repro_evidence`, D4 — dos formas válidas):
+   - forma A — `reproduced_local: true` (lo reprodujiste en el stack dev real · preferida); o
+   - forma B — `trace_evidence: {source, ref}` (incident prod-only / no reproducible local; el diagnóstico queda anclado a la traza, **NO al texto del handoff**).
+3. **Validá symptom vs root cause del handoff:** match → scope handoff · mismatch → `diagnosis_correction` · sin-evidencia → STOP, escalá Chris.
+4. **Citá la evidencia** en `01-spec.md § Context` + en checkpoint:
    ```yaml
-   hotfix_metadata:
+   repro_evidence:
      repro_verified: true
-     repro_command: "cd ${WS}/{brand}/backend && ${WS}/.venv/bin/pytest ..."
+     reproduced_local: true            # forma A
+     # —o— trace_evidence: { source: docker-logs|sentry|copilot_trace_event|conversation-log, ref: "<id/url/snippet>" }
      diagnosis_validates_handoff: <true|false>
      diagnosis_correction: "<if false: real root cause>"
    ```
 
-Sin Step 2.5 para hot-fix → `/architect` refuses generar `06-tickets.yaml`
-sin repro_verified field. `/dev-team` refuses build. Defense in depth.
+Sin Step 2.5 → `/architect` refuses `06-tickets.yaml` sin `repro_evidence`; `/dev-team` refuses build. Defense in depth. El bug fix lleva **regression test RED que reproduce el bug PRIMERO** (`tdd-mandatory.md`).
 
 ### Step 3 — Redactar spec — primer draft
 
@@ -300,39 +293,11 @@ Cada response:
 
 NUNCA dumps. Cita paths para que Chris pueda leer.
 
-## Output protocol · chris-input.md append (v2 cement 2026-05-27)
+## Output protocol · chris-input.md append
 
-Al cierre de cada turn de esta skill, MUST appendear una entry a la sección 💬 Conversación del `chris-input.md` de la story activa.
+Al cierre de cada turn, MUST appendear una entry a la sección 💬 Conversación del `chris-input.md` de la story activa, con verdict **✓ APLICADO · ⚠️ DUDA · ❌ REFUTADO · 💡 PROPONE**. Nunca terminar turn sin appendear (aunque sea `✓ APLICADO · sin cambios sustantivos`). Path: state ∈ {idea..reviewing} → `{brand}/docs/product/stories/{id}/chris-input.md`; `done` → `{brand}/docs/archive/{year}/stories/{id}/chris-input.md`.
 
-**Path target:**
-- Story state ∈ {idea, refining, refined, ready, developing, developed, reviewing}: `{brand}/docs/product/stories/{story_id}/chris-input.md`
-- Story state = done: `{brand}/docs/archive/{year}/stories/{story_id}/chris-input.md` (read-only post-merge)
-
-**Formato verbatim del block markdown a appendear:**
-
-```markdown
-### YYYY-MM-DDTHH:MM · 🤖 claude · `/po` · {emoji} {VERDICT-LABEL}
-{texto 2-30 líneas · descripción de qué hizo + decisiones tomadas + qué necesita Chris responder}
-```
-
-**Verdict labels (4 valores):**
-
-| Emoji | Label | Cuándo usar |
-|---|---|---|
-| ✓ | APLICADO | Cambios concretos aplicados al spec/design/arch/test (citar paths) |
-| ⚠️ | DUDA | Pregunta a Chris antes de seguir. State queda esperando respuesta |
-| ❌ | REFUTADO | Razón por la que NO se aplica algo que Chris pidió (con justificación) |
-| 💡 | PROPONE | Opción nueva sugerida por Claude · Chris ratifica o descarta |
-
-**Anti-patterns prohibidos:**
-
-- ❌ Skill termina turn sin appendear (silent escape) — siempre appendear, aunque sea `✓ APLICADO · sin cambios sustantivos`
-- ❌ Verdict sin texto sustantivo (1 palabra no informa)
-- ❌ Path hardcoded con brand fija — debe ser `{brand}` dinámico (de checkpoint.md o args del invoke)
-- ❌ Múltiples verdicts en un solo entry — si hay 2 cosas, son 2 entries consecutivas
-- ❌ Entry sin emoji + label de verdict (parser falla)
-
-Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
+**Schema verbatim (formato del entry + labels + anti-patterns): `docs/process/chris-input-protocol.md § Sección 5` (SSoT — no se duplica acá).**
 
 ## Referencias
 

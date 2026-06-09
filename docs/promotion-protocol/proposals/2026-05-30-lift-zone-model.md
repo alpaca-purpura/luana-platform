@@ -1,7 +1,7 @@
 # Promotion Proposal: Modelo de 3 zonas (map_zone/map_box + SYSTEM-MAP registry)
 
 ---
-state: proposed                    # proposed | under_review | accepted | rejected | migrated
+state: accepted                    # proposed | under_review | accepted | rejected | migrated
 proposed_date: 2026-05-30
 target_package: docs/process/capability-protocol.md  # protocol/process lift (NO es code package)
 origin_brand: vitalia
@@ -10,7 +10,17 @@ origin_learnings:
 category: data-model              # dimensión de capability + registro SSoT (process-level)
 semver_impact: minor              # campo nuevo opcional por cap; brands opt-in con su propio SYSTEM-MAP
 consumers_viable: [nicolify, comunify, lupulo, + 6 brands futuras]
-recommendation: ACCEPT            # awaiting ratificación explícita de Chris (anti-creep /pm-luana)
+recommendation: ACCEPT            # RATIFICADO Chris 2026-06-06 → accepted
+ratified_by: Chris
+ratified_date: 2026-06-06
+---
+
+## /pm-luana review (under_review · 2026-06-06)
+
+**Recomendación: ACCEPT** — lift barato (process-level, a `capability-protocol.md`), self-recommended ACCEPT, doctrina ya platform-wide (`PARADIGM.md`/ADR-010). Consumers: nicolify/comunify/lupulo + 6 futuras. Sin riesgo de regresión de código (es mecánica de capability + scaffold `SYSTEM-MAP.yaml` per-brand). NO es esfuerzo de semanas como el shell.
+
+**Para ratificar (Chris):** APPROVED para promover la mecánica `map_box`/`map_zone` (derivada de registro) al protocolo compartido + agregar scaffold `SYSTEM-MAP.yaml` a `_pm-brand-template`.
+
 ---
 
 ## Pattern Summary

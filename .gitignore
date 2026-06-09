@@ -209,6 +209,8 @@ tools/luana-cockpit/.next/
 tools/luana-cockpit/node_modules/
 tools/luana-cockpit/.env.local
 tools/luana-cockpit/migrate-report-*.json
+tools/luana-cockpit/.cockpit-*.pid
+tools/luana-cockpit/.cockpit-*.log
 
 # Cap verification outputs (auto-gen R3 v2)
 **/docs/product/capabilities/_status-computed.json

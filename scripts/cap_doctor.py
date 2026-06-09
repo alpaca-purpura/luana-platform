@@ -53,8 +53,10 @@ GATE_LABEL = {
     "G5": "supersesiones rotas",
     "G6": "caps live invisibles en el mapa",
     "G7": "caps ILEGIBLES por el cockpit (YAML dup-key → caja vacía)",
+    "G8": "caps live+visible SIN user_facing_description (cockpit no dice qué hace)",
+    "G9": "caps live+visible SIN scenarios (sin casos de uso · «✨ Qué puedo hacer» mudo)",
 }
-GATE_IDS = ("G1", "G2", "G3", "G4", "G5", "G6", "G7")
+GATE_IDS = ("G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9")
 
 
 def diagnose(brand: str) -> dict:
@@ -76,6 +78,44 @@ def diagnose(brand: str) -> dict:
         "total_drift": total_drift,
         "healthy": total_drift == 0,
     }
+
+
+def accuracy_debt(brand: str) -> dict:
+    """ADVISORY (NO afecta exit): scenarios `status:live` cuya VERDAD no está gateada.
+
+    HB-57/HB-58: un scenario `live` sin `e2e_test` = claim sin test; sin `verified_real`
+    = sin evidencia de live-verify. NO es HARD — el dato está backfill-blocked (en vitalia
+    hoy 135/139 live sin verified_real, 33/139 sin e2e). Esto lo MIDE para el carril L4 del
+    CIL (backfill incremental); el accuracy de CÓDIGO lo cubre `mutation_gate.py --cap`.
+    """
+    caps = bidir.load_capabilities(brand, WS)
+    live = 0
+    no_e2e: list[str] = []
+    no_vr: list[str] = []
+    for cid, c in caps.items():
+        for s in c.get("scenarios") or []:
+            if not isinstance(s, dict) or s.get("status") != "live":
+                continue
+            live += 1
+            sid = f"{cid}::{s.get('id', '?')}"
+            if not s.get("e2e_test"):
+                no_e2e.append(sid)
+            if not s.get("verified_real"):
+                no_vr.append(sid)
+    return {"brand": brand, "live": live, "no_e2e": no_e2e, "no_verified_real": no_vr}
+
+
+def print_accuracy(acc: dict) -> None:
+    print(f"\n┌─ accuracy-debt (advisory · HB-57/58 · NO bloquea) · {acc['brand']}")
+    print(
+        f"│  scenarios live: {acc['live']}  ·  sin e2e_test: {len(acc['no_e2e'])}"
+        f"  ·  sin verified_real: {len(acc['no_verified_real'])}"
+    )
+    for s in acc["no_e2e"][:10]:
+        print(f"│   ⚪ live sin e2e_test: {s}")
+    if len(acc["no_e2e"]) > 10:
+        print(f"│   … +{len(acc['no_e2e']) - 10} más")
+    print("└─ backfill → CIL carril L4 · accuracy de código → `mutation_gate.py --cap <id>`")
 
 
 def print_report(diag: dict) -> None:
@@ -107,6 +147,11 @@ def main() -> int:
     parser.add_argument("--all-brands", action="store_true")
     parser.add_argument("--json", action="store_true", help="salida JSON (panel cockpit)")
     parser.add_argument("--strict", action="store_true", help="exit 1 si hay deriva")
+    parser.add_argument(
+        "--accuracy",
+        action="store_true",
+        help="advisory: mide scenarios live sin e2e/verified_real (HB-57/58 · NO afecta exit)",
+    )
     args = parser.parse_args()
 
     if not args.brand and not args.all_brands:
@@ -131,6 +176,9 @@ def main() -> int:
             print_report(d)
         total = sum(d["total_drift"] for d in diags)
         print(f"\n{'✅ TODO SANO' if total == 0 else f'❌ {total} deriva total'} · brands: {', '.join(brands)}")
+        if args.accuracy:
+            for b in brands:
+                print_accuracy(accuracy_debt(b))
 
     any_drift = any(d["total_drift"] > 0 for d in diags)
     return 1 if (args.strict and any_drift) else 0

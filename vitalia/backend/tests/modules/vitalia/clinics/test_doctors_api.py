@@ -38,6 +38,21 @@ def test_doctors_router_list_has_response_model() -> None:
     assert route.response_model is not None, "response_model= must not be None"
 
 
+def test_doctors_router_list_accepts_q_search_param() -> None:
+    """GET / list must accept a `q` free-text search param.
+
+    Regression (bug 2026-06-07 · comentario diseño #2 Chris "el buscador no funciona"):
+    the FE search box sends ?q=<text> but the router declared no `q` param → FastAPI
+    silently dropped it → the directory search filtered nothing.
+    """
+    import inspect
+
+    from src.modules.vitalia.clinics.api.doctors_router import list_doctors
+
+    params = inspect.signature(list_doctors).parameters
+    assert "q" in params, "list_doctors must accept a `q` free-text search query param"
+
+
 def test_doctors_router_post_has_response_model() -> None:
     """POST / endpoint must declare response_model= (arch gate)."""
     from src.modules.vitalia.clinics.api.doctors_router import router

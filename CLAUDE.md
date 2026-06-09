@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-**luana-platform** — Multi-brand multitenant SaaS. Modular Monolith DDD + uv/pnpm workspace + Docker-First. **10 brand verticals** consumen engine compartido `core/` (Luana, 26 paquetes `luana-core-*`).
+**luana-platform** — Multi-brand multitenant SaaS. Modular Monolith DDD + uv/pnpm workspace + Docker-First. **10 brand verticals** consumen engine compartido `core/` (Luana, 27 paquetes `luana-core-*`).
 
 **Objetivo agentic dev:** Chris orquesta /pm-{brand} → /po-ux|/po → /architect → /dev-team → /auditor. Paradigm v4 con auto-handoffs. Cross-brand learning automático. Cost-routing optimizado (Haiku para mecánico, Sonnet para BE/FE no-agentic, Opus para agentic prod + estratégico).
 
@@ -28,7 +28,7 @@ Luana = **equipo de trabajadores digitales** que operan un sistema de Go-To-Mark
 
 ```
 luana-platform/
-├── core/luana-core-{26 paquetes}/   ← engine SSoT
+├── core/luana-core-{27 paquetes}/   ← engine SSoT
 ├── {vitalia,nicolify,comunify,lupulo}/{backend,frontend,config}/   ← 4 brands activas
 ├── {saasora,inmoflow,retailly,fixia,guestly,fitflow}/   ← 6 brands pendientes bootstrap (template _pm-brand-template)
 ├── docs/   ← transversales Luana (portfolio + promotion-protocol + core-modules + process + specs + architecture)

@@ -167,5 +167,5 @@ Próxima session: leé el handoff doc PRIMERO, luego paste el bootstrap prompt.
 ## Referencias
 
 - `.claude/rules/git-haiku-delegation.md` — Haiku delegation pattern
-- `.claude/skills/cierra-limpio/SKILL.md` — clean close sin handoff (commit pendientes only)
+- `.claude/commands/cierra-limpio.md` — clean close sin handoff (commit pendientes only)
 - `docs/process/parallel-sessions-protocol.md` — multi-session WIP rules

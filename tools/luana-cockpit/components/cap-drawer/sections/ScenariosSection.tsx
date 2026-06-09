@@ -5,6 +5,7 @@
 
 import { Pill } from '@/components/ui/Badge';
 import { Tooltip } from '@/components/ui/Tooltip';
+import { scenarioTruth } from '@/lib/cap-badges';
 import { TOOLTIPS } from '@/lib/tooltips';
 import type { CapScenario, DevPreview } from '@/lib/types';
 
@@ -76,6 +77,17 @@ function ScenarioRow({ scenario: s }: { scenario: CapScenario }) {
         {s.status !== 'live' && (
           <Pill className="bg-[#27272a] text-[#a1a1aa] text-[9px]">{s.status}</Pill>
         )}
+        {s.status === 'live' &&
+          (() => {
+            const t = scenarioTruth(s);
+            return (
+              <Tooltip content={t.tip} variant="badge">
+                <Pill className={`${t.cls} text-[9px] py-0`}>
+                  {t.icon} {t.label}
+                </Pill>
+              </Tooltip>
+            );
+          })()}
       </div>
       <div className="mt-1 text-[10px] space-y-0.5">
         <div>

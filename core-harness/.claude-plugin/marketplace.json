@@ -1,0 +1,14 @@
+{
+  "name": "luana-harness",
+  "owner": { "name": "Chris" },
+  "metadata": {
+    "description": "Marketplace for the extractable software-development PROCESS kit (idea→done lifecycle, gates, roles, DoD, safety). SCAFFOLD (W7 2026-06-09) — the plugin component dirs (skills/agents/hooks/commands) are populated by the W7 physical move. Inert until added via `/plugin marketplace add ./core-harness`."
+  },
+  "plugins": [
+    {
+      "name": "harness",
+      "source": "./",
+      "description": "Tech/brand-agnostic dev-process: 10-state spine + {G,R,C,D} phases, refinement/architect/dev/auditor roles, TDD/DoD live-verify, learning-capture, git/parallel safety. Reads the seam (project.config.yaml) instead of naming a stack. Multibrand = brands.active with one entry."
+    }
+  ]
+}

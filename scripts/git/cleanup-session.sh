@@ -106,7 +106,12 @@ fi
 # Toggle override: CLEANUP_SKIP_STORY_GATE=1 (solo emergencias documentadas)
 if [[ "${CLEANUP_SKIP_STORY_GATE:-0}" != "1" ]]; then
   OPEN_STORIES=""
-  for B in vitalia nicolify comunify lupulo saasora inmoflow retailly fixia guestly fitflow; do
+  # Brand enum from the seam (project.config.yaml · harness_config.py) — no hardcoded list
+  # (charter §3 DIP · W5b). Loud-degrade to empty (config ships with the kit).
+  _HC_WS="$(git rev-parse --show-toplevel 2>/dev/null)"
+  CLEANUP_BRANDS="$("${_HC_WS}/.venv/bin/python" "${_HC_WS}/scripts/harness_config.py" brands.loop_order 2>/dev/null | tr '\n' ' ')"
+  [ -z "${CLEANUP_BRANDS}" ] && echo "WARN: project.config.yaml brands.loop_order unreadable — story-gate brand sweep degraded" >&2
+  for B in ${CLEANUP_BRANDS}; do
     [ -d "${WORKTREE_DIR}/${B}/docs/product/stories" ] || continue
     for cp in "${WORKTREE_DIR}/${B}/docs/product/stories/"*/checkpoint.md; do
       [ -f "$cp" ] || continue

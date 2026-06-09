@@ -1,59 +1,71 @@
 <!-- voseo-allowed: prompt interno de handoff para la próxima sesión (voz de Chris / instrucción a Claude), NO es string user-facing -->
 
-# Handoff — próxima sesión de cierre Vitalia (continúa 2026-06-01)
+# Handoff — vitalia-fase2-lisa-doctores · UI design polish (continúa 2026-06-07)
 
-> Pegá el bloque de abajo (entre las líneas `═══`) como prompt de la próxima sesión.
+> Sesión 2026-06-06/07: rescate funcional del story (7 bugs, todos live-verde).
+> Próxima sesión = **comentarios de diseño UI de Chris** (él tiene varios) + cierre.
+> Pegá el bloque entre `═══` como prompt de la nueva conversación.
+
+## Estado git EXACTO (verificá primero)
+- `wip/vitalia` @ `148a7f89` (pusheado). 5 commits de este story: `1a37c8c9` → `a1c4c7fb` → `b33a5839` → `f41ccadb` → `148a7f89`.
+- `origin/main` @ `e98e09a8` (INTACTO — no se pusheó squash).
+- Story `vitalia-fase2-lisa-doctores`: `state: developing` · `phase: AWAIT_CHRIS_VERIFY`. NO está done.
+- ⚠️ Hay cambios uncommitted de OTRAS sesiones (compliance, servicios, etc.) — NO son de este story, no los toques.
+
+## Lo que se arregló esta sesión (rescate funcional — TODO live-verde en dev-app)
+La historia estaba "6/8 done" pero **NUNCA funcionó end-to-end por browser** (SSR initialData + e2e mockeado enmascaraban todo). 7 bugs reales:
+1. **Loop infinito** `/lisa/staff` ("botando error") — `NuevoIntegranteModal` useEffect con `createDoctor` (RQ mutation, ref nueva/render) en deps → fix: deps estables. Unit RED(OOM)→GREEN.
+2. **CORS** — `staff.ts`+`StaffWorkspaceShell` (client) base absoluta `localhost:8002` → CORS-block. Fix: base relativa (tunnel routea `/api/*`).
+3a. **X-User-Role faltante** en mutaciones → 403. Fix: `useStaffActorHeaders` (espejo marca).
+3b. **RBAC** doctores `admin_clinic`-only → **widen `{owner, admin_clinic}`** (decisión Chris). `_STAFF_MUTATION_ROLES` + test 10/10.
+4. **Rol GLOBAL vs per-tenant + Clerk-id vs DB-UUID** — `useCurrentUser` da rol global (`doctor`) y Clerk id; los endpoints quieren rol per-tenant (`owner`) + `X-User-ID:UUID`. Fix (opción B Chris, targeted en `staff.ts`): rol per-tenant del tenant-store + DB UUID del `/me` cache.
+5. **Perfil 422** ("No se pudo cargar el perfil" — Chris lo reportó) — `GET /{id}` detail exige `X-User-ID`; `useDoctor`+`StaffWorkspaceShell` no lo mandaban. Fix: actor headers + `enabled` gate hasta X-User-ID listo.
+6. **Horarios crash** `(blocks).filter is not a function` — BE devuelve `{blocks:[...]}` envelope, FE esperaba array pelado. Fix: desempaquetar `res.blocks`.
+7. **Tabs Perfil/Horarios/Servicios** empujados a la derecha (entity `flex-1`) → **left-aligned** (`EntitySubNavBar`, COMPARTIDO con embudo).
+
+**dod_evidence live** (dr.demo owner, dev-app): directorio GET 200 · crear POST 201 (+DB+audit+telemetry+redirect) · perfil GET 200 renderiza · horarios+servicios cargan · tabs izquierda. Ver `checkpoint.md` § dod_evidence + regression_2026-06-06_bug{2..6}.
+
+## ★ LO APRENDIDO (que sirva para mejorar)
+1. **"6/8 done" mentía porque el e2e mockeaba el backend + SSR initialData pintaba el primer render.** Cada bug estaba enmascarado. Refuerza [[verification-real-not-200]] + [[embudo-imagined-contract-never-integrated]]. **Mejora:** ninguna story funcional a `developed` sin live-verify REAL contra dev-app de CADA flujo user-reachable (no solo el happy sembrado).
+2. **Verificar el redirect URL ≠ verificar que la página destino RENDERIZA.** Mi write-recon asertó `…/perfil` (URL) y di "funciona" — pero el perfil 422eaba. Chris lo cazó. **Mejora (regla fina):** las recon/e2e asertan CONTENIDO (testid del view + status real del GET) no la URL. Candidato a learning `verify-content-not-redirect-url`.
+3. **Mismatch de contrato FE↔BE recurrente** (mismo patrón ×3): list `{items}`, blocks `{blocks}` (envelopes vs array pelado) + `X-User-ID` UUID-vs-Clerk + rol per-tenant vs global. **Mejora:** contract-test FE↔BE (HB-42 ya flaggeado) — el FE asume shapes que el BE no manda. Cada hook nuevo debe verificar el shape real del response.
+4. **Headers de endpoint inconsistentes en el MISMO módulo:** la LIST no pide `X-User-ID`, el DETAIL sí (audit-on-PHI-read); marca tipa `X-User-ID:str`+resuelve, doctores `:UUID`. **Mejora:** homologar el contrato de auth-headers cross-endpoint (carril aparte).
+5. **Race en queries auto-firing que dependen de headers async** (X-User-ID viene de `/me`): el query disparó con header vacío → 422→200 flake. **Mejora:** `enabled` gate hasta que el header esté listo (patrón aplicado; documentar como convención).
+6. **Fricción de harness (3× cada commit):** `CAP_ADVISORY_SKIP` (cap existe pero el hook lo re-pide en commits in-progress de developing) + `STORY_CLOSURE_GATE_SKIP` (el commit-hook NO es module-scoped per ADR-009 → bloquea commit a `clinics` porque embudo `crm` está open). **Mejora:** `/harness-issue` para ambos (commit-hook module-scoped + cap-gate no-refire en developing).
+
+## Carriles aparte flaggeados (NO de este story — para /pm-luana o stories dedicadas)
+- **Sistémico FE:** `useCurrentUser` (hook compartido, 8 consumers) devuelve rol GLOBAL no per-tenant + expone Clerk id no DB id. El fix de doctores lo sortea targeted; el sistémico merece story propia (como la de no-clerk-org).
+- **Contrato BE:** `X-User-ID` inconsistente (marca str+resuelve · doctores UUID directo) — homologar.
+- **Tech-debt:** `test_doctor_cross_tenant.py` usa `asyncio.get_event_loop()` (roto Py3.12, pre-existente).
+
+## Falta para `developed → done`
+1. **★ Comentarios de diseño UI de Chris** (el foco de la próxima sesión — él los tiene).
+2. `demo-script.md` (story funcional).
+3. Honest-RED secundarios: SC-1b/c/d calendar recurrence · SC-9 paginación · SC-11 i18n credencial por país (mock→real o scope per #37).
+4. Visual goldens V-VIS-1..4 → ratificación Chris (ADR-vitalia-003, NO autonomous).
+5. G (Chris self-test live) → R reconcile (/pm-vitalia: spec AC-12 widen RBAC + cap) → /auditor → merge.
+
+## Archivos clave tocados (para contexto FE)
+- `vitalia/frontend/src/features/lisa/api/staff.ts` (useStaffActorHeaders + per-tenant role + DB-UUID + enabled gates + blocks unwrap)
+- `vitalia/frontend/src/features/lisa/components/staff/workspace/StaffWorkspaceShell.tsx`
+- `vitalia/frontend/src/features/lisa/components/staff/NuevoIntegranteModal.tsx`
+- `vitalia/frontend/src/components/shared/shell-organism/EntitySubNavBar.tsx` (COMPARTIDO — afecta embudo)
+- `vitalia/backend/src/modules/vitalia/clinics/api/doctors_router.py` (_STAFF_MUTATION_ROLES)
+- design system SSoT: skill `vitalia-design-system` + `vitalia/docs/architecture/{design-system.md, SHELL-DESIGN-CONTRACT.md}` + `globals.css` + `tailwind.config.ts`
 
 ═══════════════════════════════════════════════════════════════════════════════
 
-/pm-vitalia Continúo la sesión de cierre de Vitalia (handoff 2026-06-01, parte 2). Objetivo: CERRAR LO QUE QUEDA SIN PERDER NADA. Sos /pm-vitalia + /pm-luana según corresponda. Worktree ~/Proyectos/luana-vitalia (branch wip/vitalia, CANÓNICO vitalia, single operator = yo en otra terminal).
+/pm-vitalia Continúo `vitalia-fase2-lisa-doctores` (handoff 2026-06-07). El rescate FUNCIONAL ya está hecho + live-verde en dev-app (7 bugs: loop · CORS · X-User-Role · RBAC widen · rol per-tenant/DB-id · perfil 422 · horarios envelope · tabs left-align). State `developing` · `phase: AWAIT_CHRIS_VERIFY`. wip/vitalia @ 148a7f89 pusheado, origin/main @ e98e09a8 intacto.
 
-═══ ESTADO GIT EXACTO (verificalo primero) ═══
-- wip/vitalia @ 14af22b2 (pusheado). Incluye TODO lo de la sesión 1: dual-mount fix (done) + remediación sistémica tenant-resolution no-clerk-org (done) + keystone doctores BE/FE.
-- origin/main @ 75b43824 (INTACTO — nunca se pusheó squash).
-- ★ ~/Proyectos/luana-platform (main local) tiene un squash STALE @ 63b3adf1 (de ANTES de todo). NO lo pushees. Para Pendiente C: `git -C ~/Proyectos/luana-platform reset --hard origin/main` → re-squashear FRESCO desde wip actual → full gate → push.
+AHORA quiero trabajar **comentarios de diseño UI** que tengo sobre el módulo de doctores (Lisa → Staff: directorio + crear + perfil + horarios + servicios). Te los voy a ir pasando uno por uno.
 
-═══ YA CERRADO EN SESIÓN 1 (no rehacer) ═══
-- ✅ vitalia-shell-dual-mount-a11y-fix → DONE + archivado (merge c9d2bd31). single-main+single-slot, live-verified.
-- ✅ vitalia-fe-tenant-resolution-no-clerk-org → DONE + archivado (merge 14af22b2). EMERGENTE: el FE resolvía tenant_id desde useAuth().orgId (Clerk Org, org_ no-UUID) en 35 archivos → 500 en todo PHI; oculto por e2e mockeado. Fix: useTenantId() + 33 archivos + AuditedSection(audit PHI)+useTenantLocale + arch-test endurecido + BORRÉ la Clerk org drift. Live-verified (X-Tenant-ID=UUID, API_5XX=[], doctors 500→200). Restauró [[no-clerk-organizations]].
+Antes de tocar nada UI:
+1. Step 0 worktree + leé `vitalia/docs/product/stories/vitalia-fase2-lisa-doctores/{checkpoint.md, HANDOFF-next-session.md, chris-input.md}`.
+2. Cargá la skill `vitalia-design-system` (SSoT shell + átomos/moléculas + tokens + agentes) — obligatoria ANTES de tocar `vitalia/frontend/src/**`. NO inventes tokens/átomos; reusá los existentes (D1 frontend-visual-fidelity).
+3. Confirmá dev-app: `make dev-app-vitalia` → dev-app.vitalialat.com (dr.demo@vitalialat.com, owner). Stack ya corre; footgun cross-worktree: re-`up` desde ESTE worktree si dudás.
+4. Para cada comentario UI: cambio scoped (D3 — solo lo que pido) + reusá átomos Shadcn/`@luana/ui-kit` + tokens `globals.css` + **live-verify CONTENIDO en dev-app con screenshot** (no solo la URL — lección de esta sesión) + commit por pathspec (CAP_ADVISORY_SKIP=1 STORY_CLOSURE_GATE_SKIP=1 documentado: wip developing, embudo crm open module-scoped).
+5. ⚠️ `EntitySubNavBar` es COMPARTIDO con adrian/embudo — si un cambio UI lo toca, avisame el impacto cross-workspace o scopealo con prop.
 
-═══ GUARDRAILS (duros) ═══
-- NUNCA git pull / push --force / git add . / commit --no-verify. Commit por pathspec (índice compartido).
-- Gates HARD se ARREGLAN, no se bypassean. SCOPE_GATE_SKIP=1 / CAP_ADVISORY_SKIP=1 SOLO en sync wip↔main documentado.
-- ★ Verificación REAL ≠ "HTTP 200": ejercer la acción real (writes) + leer logs/DOM + confirmar efecto. e2e que mockea ≠ verde real. (Lección reforzada en sesión 1: el mock FE-wide ocultó un 500 sistémico.)
-- ★ NO Clerk Organizations: tenants/clinics son NUESTROS (luana-core-iam). NUNCA useAuth().orgId / useOrganization para tenant. Usar useTenantId()/useClinicId() (leen public_metadata). Borré la Clerk org; onboarding aún la LEE (follow-up menor, no recrea).
-- ★ DoD live (ADR-vitalia-008): ninguna story user-reachable a `done` sin dev_app_verified.evidence (acción real + efecto). Chrome MCP no estaba conectado en sesión 1 → fallback Playwright-autenticado-live (válido). Stack vitalia YA está up (FE:3002, BE:8002, dr.demo@vitalialat.com, CLERK_TESTING_TOKEN_VITALIA + E2E_CLERK_USER_* en vitalia/.env.dev, E2E_TENANT_ID=e69a691d-070e-5caf-a053-6e74642ec100). Footgun: el frontend container bind-montea ESTE worktree (verificado) — re-`make dev-vitalia` desde acá si dudás.
-- Si un full-gate frena por deuda nueva → REPORTÁ, no fuerces.
-
-═══ PENDIENTE B — cerrar doctores (state=developing, ya DESBLOQUEADA) ═══
-Story vitalia-fase2-lisa-doctores. Su resolución tenant+clinic ya está fixed (sesión 1: staff.ts+useClinicId). Leé su checkpoint.md + T-HARNESS-result.md + chris-input.md. Pasos:
-  (a) Re-verificar live: navegar autenticado a /{tenant}/lisa/staff → ¿carga? DB real tiene **0 doctores seedeados** (los "3 seed" del T-HARNESS eran del harness MOCKEADO). Decidir con Chris: seedear 2-3 doctores reales en vitalia_doctors (tenant e69a691d, clinic_id=f035be5b-0ac4-5210-8fc3-395650ca2b83) Y/O verificar empty-state + ejercer el WRITE real (crear doctor → 201 + fila DB + audit). El write real es la evidencia DoD más fuerte.
-  (b) Quitar workaround `.filter({visible:true})` de POMs: DoctorWorkspacePage.ts + AvailabilityCalendarPage.ts + ShellLayoutPage.ts (StaffDirectoryPage ya). El dual-mount fixed → el slot resuelve a 1.
-  (c) ⚠️ Reubicar visual goldens V-VIS-1..4 (de staff-large-dataset.spec.ts) a project=visual — REQUIERE RATIFICACIÓN CHRIS (ADR-vitalia-003). NO autonomous.
-  (d) Fix medición perf: POM searchFor tiene waitForTimeout(500) debounce → assert <500ms imposible por diseño (arreglar la medición, no el threshold).
-  (e) Flujos profundos workspace/calendar (SC-1/1b/1c/1d/3/3b) + i18n credencial AR/MX/CL (label-por-país).
-  (f) GREEN-real → llenar dev_app_verified.evidence + flip cap clinics/lisa-doctores.yaml de status:partial→live (setear date_introduced/created_date + anclar e2e_test reales en scenarios) + /auditor re-verifica → merge reviewing→done (quitar defer_audit que ya está false; archivar).
-Encadená /dev-team (b,d,e) → ratificar (c) con Chris → /auditor → /pm-vitalia merge.
-
-═══ PENDIENTE C — push squash a main (cuando B y/o quieras integrar) ═══
-1. git -C ~/Proyectos/luana-platform reset --hard origin/main (descartar squash stale 63b3adf1).
-2. Arreglar 2 findings que frenan full-gate (NO bypassear):
-   - ci-parity ROTO: vitalia/backend/Dockerfile + nicolify/backend/Dockerfile sin stage `test` → ci-parity.sh falla "target stage test could not be found". Agregar stage test o arreglar script.
-   - Deuda HIPAA pre-existente: vitalia/backend/.../migrations/021_slice1_re_engagement_events.py:46 `notes TEXT` debe ser BYTEA + encryption trigger. Arch test test_pgcrypto_phi_columns falla. Pre-existente en main (slice re-engagement).
-3. git -C ~/Proyectos/luana-platform merge --squash wip/vitalia → commit pathspec (pre-commit FULL) → make ci-parity → si VERDE git push origin main → sync back a wip.
-
-═══ PENDIENTE D — findings cross-brand (/pm-luana, no bloqueante) ═══
-- nicolify portó símbolos del shell de vitalia (SubTabMeta, extractSubtabFromPath) sin renombrar → arch test vitalia test-no-cross-brand-shell-mirror falla (4 matches en nicolify, pre-existente en origin/main, ~23 vitest fails relacionados). Decidir: renombrar en nicolify, o aceptar el port + ajustar el arch test.
-- Deuda nicolify-r0: 6 stories sin chris-input.md + archivos sin header # cap: (propiedad /pm-nicolify).
-
-═══ FOLLOW-UP MENOR (documentado, no bloqueante) ═══
-- features/onboarding/* (wizard, use-wizard-onboarding-state.ts) + useSignOutCleanup.ts aún LEEN Clerk org (READ, degrada a null; NO crean orgs → mi deleción holds). Migrar a tenant-resolution nuestra cierra no-clerk-orgs al 100%. Están en allowlist shrink-only del arch test. Owner: story onboarding o /pm-luana. Doc: vitalia/docs/observed-bugs/2026-06-01-fe-tenant-id-from-clerk-org-systemic.md.
-
-═══ ORDEN SUGERIDO ═══
-1º Pendiente B (doctores → done) — incluye decisión seed vs empty+write + ratificación visual goldens.
-2º Pendiente C (push squash a main, tras arreglar los 2 findings).
-3º Pendiente D (cleanup cross-brand /pm-luana).
-
-Leé al arrancar: memorias no-clerk-organizations, dod-live-verify, verification-real-not-200 + vitalia/docs/product/stories/vitalia-fase2-lisa-doctores/{checkpoint.md, T-HARNESS-result.md, chris-input.md} + vitalia/docs/observed-bugs/2026-06-01-*.md + vitalia/docs/learnings/2026-06-01-fe-tenant-from-clerk-org-systemic.md.
+Empezá confirmando que leíste el handoff + dev-app levantado, y pedime el primer comentario de diseño. Después seguimos uno por uno. Cuando terminemos el polish UI: demo-script + honest-RED secundarios + ratificación goldens + G/R/auditor.
 
 ═══════════════════════════════════════════════════════════════════════════════

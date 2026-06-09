@@ -1,0 +1,184 @@
+# 04-validators — core-ds-foundation
+# Surface: FE only (TS packages @luana/{design-tokens,ui-kit} + @luana/eslint-config + vitalia pilot).
+# verification_nature: MOSTLY tecnica (component library + lint/arch-test gates).
+#   The /showcase route (T-9) is FUNCTIONAL → live-verify on localhost:3002.
+# demo_required overall: false (core component build, checkpoint chris_verify.required:false)
+#   EXCEPT T-9 carries a live-verify exit criterion (NOT a manual demo — automated + Chrome MCP read).
+
+story_id: core-ds-foundation
+brand: platform
+surface: frontend
+verification_nature: ambas   # tecnica (T-1..T-8) + funcional (T-9 /showcase)
+demo_required: false
+demo_skip_reason: "Core design-system component build + lint/arch-test (tecnica). The /showcase route is live-verified automatically (Chrome MCP + Playwright), not a manual product demo. No brand user-reachable feature."
+
+# ── Per-ticket verification nature (architect declares) ───────────────────────
+per_ticket_verification:
+  T-1: { nature: tecnica, gates: [tsc, vitest, css-single-radius-test] }
+  T-2: { nature: tecnica, gates: [eslint-rule-unit, arch-ratchet, eslint-runs-on-vitalia] }
+  T-3: { nature: tecnica, gates: [vitest-component, a11y-roles] }
+  T-4: { nature: tecnica, gates: [vitest-component, ssr-safe-store-free] }
+  T-5: { nature: tecnica, gates: [vitest-component, skeleton-empty-variants] }
+  T-6: { nature: tecnica, gates: [vitest-component, debounce-searchfn, windowed] }
+  T-7: { nature: tecnica, gates: [vitest-hook-coalesce, one-indicator-per-page, back-compat] }
+  T-8: { nature: tecnica, gates: [vitest-archetype-slots] }
+  T-9: { nature: funcional, gates: [showcase-live-verify, runtime-error-gate, visual-responsive] }
+
+# ── Categories ────────────────────────────────────────────────────────────────
+categories:
+
+  non_functional:
+    - id: NF-1
+      desc: "tsc --noEmit strict GREEN across @luana/{design-tokens,ui-kit} + vitalia/frontend"
+      cmd: "cd core/@luana/design-tokens && npm run typecheck; cd core/@luana/ui-kit && npm run typecheck; cd vitalia/frontend && npx tsc --noEmit"
+    - id: NF-2
+      desc: "eslint GREEN on vitalia/frontend (lock active, no NEW locked-axis arbitrary)"
+      cmd: "cd vitalia/frontend && npx eslint src/ --cache"
+    - id: NF-3
+      desc: "ruff — N/A (no Python)"
+      na: true
+
+  functional:   # Vitest per component + showcase live-verify
+    - id: F-1
+      ticket: T-1
+      desc: "design-tokens exports spacing/radius/typography/color-name (shared NAMES, frozen); index resolves"
+      validator: "core/@luana/design-tokens/src/__tests__/scale.test.ts"
+      maps: [AC-1, RN-4, RN-5, D1]
+    - id: F-2
+      ticket: T-1
+      desc: "globals.css has a SINGLE --radius declaration (R-1SRC resolved); --vitalia-* are aliases of Shadcn tokens (85 consumers unbroken)"
+      validator: "vitalia/frontend/src/__tests__/architecture/test-ds-single-token-source.test.ts"
+      maps: [R-1SRC]
+    - id: F-3
+      ticket: T-2
+      desc: "eslint no-arbitrary rule: text-[13px]/rounded-[7px]/text-[#635BFF]/p-[18px] → error + token suggestion; w-[200px]/max-w-[640px] → no error; // ds-lock-allow: → allowed"
+      validator: "core/@luana/eslint-config/src/__tests__/no-arbitrary-value.test.js (RuleTester)"
+      maps: [SC-1, SC-2, SC-4, AC-2, AC-3, RN-1, RN-6]
+    - id: F-4
+      ticket: T-2
+      desc: "ratchet shrink-only: +1 locked-axis arbitrary FAILS; -5 PASSES; baseline file reflects count"
+      validator: "vitalia/frontend/src/__tests__/architecture/test-ds-tokens-lock-ratchet.test.ts"
+      maps: [SC-3, AC-4, AC-6, RN-2]
+    - id: F-5
+      ticket: T-2
+      desc: "nicolify + comunify lint UNCHANGED (rule not loaded — opt-in)"
+      validator: "manual/CI check: nicolify+comunify eslint config does not import @luana/eslint-config no-arbitrary"
+      maps: [SC-2-check, AC-5, RN-3]
+    - id: F-6
+      ticket: T-3
+      desc: "layout-primitives render + a11y: ErrorState role=alert + retry; EmptyState icon/title/desc/CTA; PageHeader flex-between; skeletons N rows/sections"
+      validator: "core/@luana/ui-kit/src/__tests__/layout-primitives.test.tsx"
+      maps: [canon-§2.7, §1]
+    - id: F-7
+      ticket: T-4
+      desc: "EntityWorkspaceLayout: master mode (entity=null → grid) vs detail mode; SSR-safe + skeleton store-free (G2); activeLeaf URL-derived. EntitySubNavBar: root-pill nav, roving tabindex (←→/Home/End), full-bleed strip"
+      validator: "core/@luana/ui-kit/src/__tests__/EntityWorkspaceLayout.test.tsx + EntitySubNavBar.test.tsx"
+      maps: [canon-§2.1, §2.2, D4, D5, D7]
+    - id: F-8
+      ticket: T-5
+      desc: "EntityInfoCard: whole-card clickable, kebab ⋮ stopPropagation, agent-color top border, metrics row + EntityInfoCardSkeleton + EntityInfoCardEmpty present"
+      validator: "core/@luana/ui-kit/src/__tests__/EntityInfoCard.test.tsx"
+      maps: [canon-§2.3, D8]
+    - id: F-9
+      ticket: T-6
+      desc: "EntityPicker: typing calls searchFn debounced (NOT on every keystroke); paginated (cursor); windowed render; empty state; count footer; combobox a11y (role=listbox/option, ↑↓/Enter/Esc); NEVER loads whole collection"
+      validator: "core/@luana/ui-kit/src/__tests__/EntityPicker.test.tsx"
+      maps: [canon-§2.4, D6]
+    - id: F-10
+      ticket: T-7
+      desc: "useAutosave coalesce: two rapid edits (field A then B within window) → ONE merged payload; flush() immediate; back-compat (existing 2000ms last-wins path unchanged). FloatingAutosaveIndicator: ONE per page, role=status. Group: semantic error (red border + missing fields inline)"
+      validator: "core/@luana/hooks/src/__tests__/useAutosave-coalesce.test.ts + core/@luana/ui-kit/src/__tests__/FloatingAutosaveIndicator.test.tsx + Group.test.tsx"
+      maps: [canon-§2.6, D9]
+    - id: F-11
+      ticket: T-8
+      desc: "page archetypes compose primitives (slot fill): ListPageScaffold (header+toolbar+grid+empty), Detail/Form/Dashboard scaffolds render slots"
+      validator: "core/@luana/ui-kit/src/__tests__/archetypes.test.tsx"
+      maps: [canon-§6.2]
+    - id: F-12
+      ticket: T-9
+      desc: "/showcase route renders REAL @luana/ui-kit components (atoms + layout-primitives + entity components + archetypes) — LIVE on localhost:3002, console 0 errors. NOT GET 200."
+      validator: "live-verify (Chrome DevTools MCP) + vitalia/frontend/e2e/specs/smoke/showcase.smoke.spec.ts"
+      maps: [R-FID, D11, canon-§5]
+      live_verify: true
+
+  visual:
+    - id: V-1
+      ticket: T-9
+      desc: "/showcase responsive: grids reflow (auto-fill minmax), N3 strip full-bleed sticky, no horizontal scroll at narrow viewport"
+      validator: "playwright responsive snapshot of /showcase sections (scoped)"
+
+  architectural_validation:
+    - id: A-1
+      desc: "no-native-select: <select> nativo prohibited in product surfaces (ratchet shrink-only, seeded baseline)"
+      validator: "vitalia/frontend/src/__tests__/architecture/test-no-native-select.test.ts"
+      maps: [canon-§2.5]
+    - id: A-2
+      desc: "no-div-layout: raw <div> of layout where a primitive exists, prohibited in NEW code (ratchet shrink-only; LARGE seeded baseline ~208 — do NOT migrate, Fase 3)"
+      validator: "vitalia/frontend/src/__tests__/architecture/test-no-div-layout.test.ts"
+      maps: [canon-§2.7]
+    - id: A-3
+      desc: "no-hardcoded-hex: EXTEND existing test_no_hardcoded_colors.test.ts (verify parity with lock scope; keep ratchet; do NOT fork)"
+      validator: "vitalia/frontend/src/__tests__/architecture/test_no_hardcoded_colors.test.ts"
+      maps: [canon-§0]
+    - id: A-4
+      desc: "FSD boundaries stay GREEN; /showcase route imports @luana/ui-kit (allowed engine package); ui-kit index.ts exports all new components"
+      validator: "vitalia/frontend/src/__tests__/architecture/test_fsd_boundaries.test.ts + ui-kit index export check"
+    - id: A-5
+      desc: "existing ratchets unbroken: test_page_padding, test-no-vt-classes-in-new-features (R-1SRC reinforces)"
+      validator: "vitalia/frontend/src/__tests__/architecture/{test_page_padding,test-no-vt-classes-in-new-features}.test.ts"
+
+# ── Technical gates (baseline always + opt-in by nature) ──────────────────────
+technical_gates:
+  baseline:                # bloqueante, every ticket
+    - "tsc --noEmit (strict) — @luana/* + vitalia/frontend"
+    - "eslint --max-warnings 0 — vitalia/frontend"
+    - "vitest run — @luana/ui-kit + @luana/hooks + @luana/design-tokens + vitalia arch-tests"
+  opt_in: []               # no Schemathesis (no API), no Hypothesis (no domain invariants beyond ratchet monotonicity)
+  mutation:
+    enabled: false
+    note: "DEGRADE advisory — Stryker not wired for @luana/* yet; component-library mutation gate deferred (HB L4). Not mutation-critical (no money/PHI/state-machine/commit-persistence)."
+
+# ── Business rules matrix (rule → @tag → scenario) ────────────────────────────
+business_rules:
+  - { rule: RN-1, tag: "@rule-RN-1", scenario: "SC-2 (sizing allowlisted)", test: F-3 }
+  - { rule: RN-2, tag: "@rule-RN-2", scenario: "SC-3 (ratchet shrink-only)", test: F-4 }
+  - { rule: RN-3, tag: "@rule-RN-3", scenario: "SC-2-check (opt-in per brand)", test: F-5 }
+  - { rule: RN-4, tag: "@rule-RN-4", scenario: "SC-1 (4px-base as-is)", test: F-1 }
+  - { rule: RN-5, tag: "@rule-RN-5", scenario: "names shared, values per-brand", test: F-1 }
+  - { rule: RN-6, tag: "@rule-RN-6", scenario: "SC-4 (named escape auditable)", test: F-3 }
+
+# ── Scenario coverage (tokens-lock SC-1..SC-4 + new component scenarios) ───────
+scenario_coverage:
+  SC-1: { covers: [Bif-1, RN-1, RN-4, AC-2], test: F-3, status: planned }   # arbitrary nuevo locked → eslint error + suggestion
+  SC-2: { covers: [Bif-2, RN-1, AC-3, AC-5, RN-3], test: [F-3, F-5], status: planned }  # sizing allowed + opt-in
+  SC-3: { covers: [Bif-3, Bif-4, RN-2, AC-4, AC-6], test: F-4, status: planned }  # ratchet +1 fails / -5 passes
+  SC-4: { covers: [Bif-5, RN-6], test: F-3, status: planned }   # named escape vs silent disable
+  SC-NEW-entity-workspace: { covers: [canon-§2.1,§2.2], test: F-7, status: planned }
+  SC-NEW-entity-picker:    { covers: [canon-§2.4], test: F-9, status: planned }   # debounced + windowed + never-load-all
+  SC-NEW-autosave-coalesce:{ covers: [canon-§2.6], test: F-10, status: planned }
+  SC-NEW-showcase-live:    { covers: [R-FID, canon-§5], test: F-12, status: planned, live: true }
+
+# ── Regression guard (this story is mostly net-new + lifts; no behavior rewrite) ─
+regression_guard:
+  - "Existing @luana/hooks::useAutosave callers (autosave-primitive consumers) keep working: coalesce defaults false, debounceMs default stays 2000. Back-compat test asserts unchanged last-wins path."
+  - "vitalia 85 --vitalia-* consumers keep rendering (aliases). R-1SRC is additive."
+  - "nicolify/comunify lint + tests untouched (no @luana/eslint-config import there)."
+  - "Existing arch-tests (test_no_hardcoded_colors, test_page_padding, test-no-vt-classes) stay GREEN — extend/align, never fork."
+
+# ── Runtime error gate (T-9 /showcase only) ───────────────────────────────────
+runtime_error_gate:
+  required: true
+  scope: "/showcase route"
+  mechanism: "vitalia/frontend/e2e/fixtures/base.ts (pageerror/console-error/response>=400/Next overlay absent) + Chrome DevTools MCP reads Console (0 red errors) on localhost:3002/showcase"
+
+# ── Playwright visual scope (D3 discipline) ───────────────────────────────────
+playwright_visual_scope:
+  story_scope_routes: ["/showcase"]
+  story_scope_components:
+    - "@luana/ui-kit: layout-primitives, EntityWorkspaceLayout, EntitySubNavBar, EntityPicker, EntityInfoCard(+Skeleton+Empty), Group, FloatingAutosaveIndicator, archetypes"
+  out_of_mockup_scope:
+    - "Migrating existing vitalia screens to the primitives (Fase 3 {brand}-ds-adoption)"
+    - "nicolify/comunify lint enablement"
+    - "Emptying the lock ratchet baselines to zero (Fase 3)"
+  forbidden:
+    - "toHaveScreenshot() of full app pages — only /showcase sections, scoped"

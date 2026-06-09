@@ -127,9 +127,9 @@ export function AgentTokensSwatch(): React.ReactElement {
       <p className="text-sm text-muted-foreground max-w-xl">
         7 tokens de agente + variantes soft. Cada swatch consume{" "}
         <code className="font-mono text-xs bg-muted px-1 rounded">
-          hsl(var(--agent-*))
+          hsl(var(--agent-lisa))
         </code>{" "}
-        via Tailwind classes. Verificación empírica de que CSS vars están
+        (un token por agente) via Tailwind classes. Verificación empírica de que CSS vars están
         correctamente definidos y consumidos.
       </p>
 

@@ -1,5 +1,18 @@
 #!/usr/bin/env node
 
+// tier: hybrid · core kernel = the PostToolUse SSoT-guard DISPATCH (regex-match an edited
+//       path → emit a terse regen/test reminder) · project half = the RULES array below
+//       (engine/brand paths + regen commands + messages).
+//
+// W5b decision (2026-06-09 · charter §3): the RULES are NOT seamed to project.config.yaml.
+// Rationale (maintainability > forced DIP): node has no built-in YAML parser, so reading the
+// seam here would mean execSync→python on EVERY Write/Edit (latency + a hard python dep on a
+// JS hook) OR a second store; and the RULES' shape (per-rule regex + multi-line message) is
+// richer than the ratified `domain_modules.contract_guard_watch` ({name,regen}) slot. The
+// RULES are PROJECT config that lives in this PROJECT hook — a new product ships its own
+// contract-guard.js RULES (the portable IP is the dispatch loop, not luana's catalog paths).
+// (Lift the dispatch kernel to core only when a 2nd product needs it — YAGNI now.)
+//
 // PostToolUse hook. Reminds Claude when editing SSoT files (contracts,
 // catalogs, registries) what regen/test command to run. Output is
 // intentionally terse (≤2 lines per match) to minimize token cost.

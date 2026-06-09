@@ -688,3 +688,139 @@ Auth GREEN (setup 2 passed / 3.8s). Items ejecutados:
 12 e2e RED honestos: mayoría mock-context (SC-1/SC-9/calendar SC-1b/c/d/3/3b — el comportamiento real está verificado live, el calendario renderiza), + 1 gap real menor SC-11 (modal no auto-detecta credencial por país AR/MX/CL).
 
 **Chris va a entrar a dev-app.vitalialat.com (dr.demo@vitalialat.com) y probar doctores/crear/calendario él mismo.** Pausa hasta su feedback: qué ve roto/faltante desde su perspectiva real → luego decidimos qué cerrar → /auditor → merge. Estado salvado en checkpoint (blocker RESUELTO, t_fix_2_progress, next_action).
+
+### 2026-06-07T02:53 · 🤖 claude · `/pm-vitalia` · ✓ APLICADO
+**Retomo doctores tras 5 días (último toque 2026-06-01). Diagnosticada la "botando error" + re-contextualizado al proceso v5.**
+
+**El error (root cause confirmada en logs del FE container live + lectura de código):** `/lisa/staff` tira **"Maximum update depth exceeded"** (la burbuja de error de Next). Origen: `NuevoIntegranteModal.tsx:109-114` —
+```tsx
+useEffect(() => { if (!open) { form.reset(); createDoctor.reset(); } }, [open, form, createDoctor]);
+```
+`createDoctor = useCreateDoctor()` (react-query `useMutation`) devuelve **referencia nueva cada render** → el effect se re-dispara en cada render → `form.reset()` + `createDoctor.reset()` → re-render → **loop infinito**. El modal monta cerrado dentro del directorio → la página entera crashea. Es una regresión real de producción (probablemente latente desde el build, expuesta/agravada por el drift del shell: lift a `@luana/ui-kit` `256517a3` + squash-merges de embudo/proceso-v5/shell-valeria en los últimos 5 días). Otros 2 effects (`WebsiteCard.tsx:103`, `BloquePopover.tsx:201`) usan refs RHF estables → bajo riesgo, dev-team los re-chequea.
+
+**Contexto de proceso (cambió desde que se creó la historia):** hoy el spine v5 es `developing → developed → G (Chris-verify) → R (reconcile /pm) → reviewing (/auditor) → done`, con DoD live-verify #37 cableada (nada `done` sin ejercer la acción real + leer logs). Esta historia NO puede ir directo a `/auditor`: tiene (1) bug runtime vivo, (2) 12 e2e honest-RED (mezcla gaps reales como SC-11 + artifacts de mock — la doctrina #37 prohíbe e2e mockeado como verde), (3) golden PNGs V-VIS-1..4 esperando tu ratificación (ADR-003), (4) `dod_evidence` + `demo-script.md` incompletos.
+
+**Decisión + handoff:** encadeno **`/dev-team`** con work order: (a) fix del loop TDD RED-first, (b) live-verify FULL del surface doctores (directorio/perfil/horarios/servicios/workspace) por si el drift rompió algo más, (c) resolver los 12 honest-RED con doctrina real-backend (convertir mock→real o quitar; fixear SC-11 si está acotado, si no flaggear), (d) `dod_evidence` (writes reales + efecto) + `demo-script.md`, (e) regenerar golden PNGs y dejarlos listos para tu ratificación. Tras dev → **G** (vos probás en dev-app + ratificás goldens) → **R** (yo reconcilio spec/arch/cap a la realidad) → **/auditor** → merge. `autonomous_mode` efectivo = **false** (G pausa para vos — goldens + tu self-test lo exigen).
+
+### 2026-06-07T03:30 · 🤖 claude · `/dev-team` · ✓ APLICADO
+**2 bugs reales fixeados + live-verificados en dev-app. La historia NUNCA funcionó end-to-end por el browser; el "6/8 done" lo enmascaró (SSR initialData + e2e mockeado).**
+
+**Bug #1 — loop infinito (la "botando error"):** `NuevoIntegranteModal.tsx` — `useEffect(..., [open, form, createDoctor])`. `createDoctor` (react-query mutation) = ref nueva cada render → loop → "Maximum update depth exceeded" → la página `/lisa/staff` crasheaba (el modal monta cerrado en el directorio). **Fix:** depender solo de los métodos estables (`form.reset`/`createDoctor.reset` destructurados). TDD: test RED reproduce (OOM del worker vitest, 48s) → GREEN (3/3, 914ms). `NuevoIntegranteModal.test.tsx` nuevo (el `staff.test.tsx` viejo NUNCA renderizaba el modal → por eso vitest no lo cazó).
+
+**Bug #2 — CORS (directorio roto pese a BE 200):** `staff.ts` + `StaffWorkspaceShell.tsx` (ambos `"use client"`) usaban base ABSOLUTA `http://localhost:8002` → el browser cross-origina → CORS-block en TODA llamada client (`No 'Access-Control-Allow-Origin'`). El `/api/*`→BE lo routea el tunnel Cloudflare (dev-config.yml `^/api/.*`), NO next.config. Convención del resto de la app (adrian/fidelizacion/crm) = base RELATIVA same-origin. **Fix:** `API_BASE = ""` (relativo) en ambos clients. Masked: el SSR initialData (server-to-server, absoluto funciona) pintaba el 1er render; todo refetch/search/create/workspace client fallaba silencioso.
+
+**Live-verify REAL en dev-app.vitalialat.com (autenticado, path de usuario real):** `GET /clinics/doctors` → 200 con `{items:[Ana Garcia Mendoza...]}` (3 doctores reales, PHI cifrada `maskedDni:"12.***"`), directorio renderiza, **CONSOLE_ERRORS=[], PAGE_ERRORS=[], cero "Maximum update depth", sin error banner**. El READ path está 100% verde live. (Contra localhost:3002 directo NO funciona el client API — no hay proxy `/api`; el path soportado es el tunnel dev-app, consistente con #37.)
+
+Commit: loop fix + CORS fix (×2) + unit RED-test.
+
+### 2026-06-07T03:31 · 🤖 claude · `/dev-team` · ⚠️ DUDA
+**El WRITE path (crear doctor) destapó 2 cosas más — una clara, una que es DECISIÓN TUYA. Pauso acá (G) para que decidas.**
+
+Al ejercer el create real (modal → submit) en dev-app: **POST `/clinics/doctors` → 403 Forbidden** (no 201). Dos causas:
+
+- **#3a (bug claro, fix mecánico):** `staff.ts`/`StaffWorkspaceShell` **NO mandan el header `X-User-Role`** (ni `X-User-ID`). El BE (`require_brand_owner_access`) lee el rol de ese header → ausente → 403 en TODA mutación (crear/editar/desactivar/generar-bio/bloques). La marca shipped (`marca.ts`) SÍ lo manda (`buildMutationHeaders` → `X-User-Role`+`X-User-ID`). staff.ts quedó sin esa pieza → el create por el modal real NUNCA funcionó (los "3 doctores 201" del 06-01 se crearon por un path que inyectaba el header, no por el modal). Lo fixeo mirroreando marca.
+
+- **#3b (DECISIÓN TUYA · spec vs realidad):** aun mandando el header, el endpoint de doctores exige rol **`admin_clinic` ÚNICAMENTE** (`_ADMIN_CLINIC_ROLES`; comentario cita AC-12 "solo admin_clinic" + hipaa-lite "PHI roles = doctor/nurse/admin_clinic", `owner` NO es PHI-role). Pero el usuario de prueba **`dr.demo` es rol `owner`** (verificado en Clerk: `{role:"owner", clinicId, tenant_id}`) → 403 por diseño. La marca permite `{owner, admin_clinic}`; doctores NO. **Pregunta:** ¿el dueño de clínica (`owner`) debe poder gestionar staff (ensancho RBAC doctores a `{owner, admin_clinic}` como marca), o se mantiene `admin_clinic`-only (y entonces necesito un usuario de prueba `admin_clinic` para verificar el write live + hay un tema de bootstrap: quién crea al primer admin_clinic)? Es spec + HIPAA-lite — no lo flipeo unilateral.
+
+**Estado:** loop + CORS = fixeados + live-verde. Write path = pausado en tu decisión #3b. En cuanto decidas: aplico #3a + (según #3b) ensancho RBAC o uso/creo un user admin_clinic → ejerzo el create live (201 + fila DB + audit) = `dod_evidence` completo → demo-script → developed → G (tu self-test + ratificás goldens) → R → /auditor.
+
+### 2026-06-07T04:30 · 🤖 claude · `/dev-team` · ✓ APLICADO
+**Decidiste #3b = ensanchar a {owner, admin_clinic}. Apliqué #3a + #3b. Al live-verificar el write destapé un 4º bug (más profundo, sistémico). Detalle en la entrada siguiente.**
+
+- **#3b (BE):** `doctors_router._ADMIN_CLINIC_ROLES` → `_STAFF_MUTATION_ROLES = {owner, admin_clinic}` (8 endpoints de mutación). Comentarios + docstring actualizados. TDD: `test_doctor_mutation_rbac.py` nuevo (10/10: owner+admin_clinic allowed, marketing/sales/patient/doctor/nurse/'' denied). Suite clinics 201/201 (la única falla, `test_doctor_cross_tenant.py`, es deuda pre-existente Py3.12 `asyncio.get_event_loop` — NO mía, flagged).
+- **#3a (FE):** `staff.ts` — helper `buildStaffMutationHeaders(currentUser)` (espejo de marca.ts) cableado a las 8 mutaciones (create/patch/bio/avatar×2/blocks×3) → ahora manda `X-User-ID` + `X-User-Role`. tsc + eslint + vitest staff 76/76 verde.
+
+### 2026-06-07T04:31 · 🤖 claude · `/dev-team` · ⚠️ DUDA
+**Bug #4 (root cause real del write 403, SISTÉMICO): `useCurrentUser` devuelve el rol GLOBAL, no el rol POR-TENANT. Tiene implicancias de modelo de roles + acceso PHI → es tu decisión, no la flipeo solo.**
+
+Live-verify del write (autenticado dr.demo): POST → **403 con `X-User-Role: "doctor"`**. O sea #3a funciona (manda el header) pero manda **"doctor"**, y doctor ∉ {owner, admin_clinic}. Por qué "doctor":
+
+- En la DB: `users.role` (GLOBAL) = **doctor** · `user_tenants.role` (POR-TENANT, Sanaré) = **owner**. dr.demo ES doctor de profesión Y dueño de la clínica.
+- `GET /api/v1/iam/users/me` (engine `core/luana-core-iam`) devuelve el **perfil global** → `role: "doctor"` (NO toma X-Tenant-ID). El engine está bien: existe `GET /me/tenants` que SÍ devuelve el rol por-tenant (`role: "owner"`).
+- El bug es de marca: `useCurrentUser` (hook compartido `src/hooks/`) lee el rol del `/me` global y lo usa para RBAC tenant-scoped. Su docstring AFIRMA "role resuelto desde user_tenants por X-Tenant-ID" pero NO es así. → manda "doctor".
+
+**Por qué NO lo fixeo unilateral (implicancia PHI):** `useCurrentUser.hasPhiAccess = role ∈ {doctor,nurse,admin_clinic}`. Si cambio a rol por-tenant, dr.demo pasa de `hasPhiAccess: true` (global=doctor) → `false` (per-tenant=owner). Eso puede ROMPER UI PHI-gated de dr.demo en **8 consumidores** (fidelizacion×3, inbox, usePiiRoleGate, staff). Es la tensión "una persona = doctor (ve PHI) + dueña (admin)": el modelo de 1-rol-por-tenant pierde esa info. Es decisión de modelo de roles + semántica PHI — tuya (y quizás /pm-luana si toca el modelo).
+
+**Opciones (te las presento en la pregunta):** A) story sistémica dedicada (como la de no-clerk-org) que arregle `useCurrentUser` per-tenant + resuelva la semántica PHI (multi-rol owner+doctor) — doctores write espera. B) fix acotado AHORA: que SOLO `staff.ts` resuelva el rol por-tenant (vía `useTenants`/tenant-store, ya trae `role:owner`) sin tocar el `useCurrentUser` compartido ni el PHI gating → desbloquea doctores write sin blast-radius; el fix sistémico de `useCurrentUser` queda flagged. C) band-aid de data (set `users.role=owner` a dr.demo) — NO recomendado (no arregla el modelo + le saca el "doctor").
+
+**Recomiendo B** (acotado, desbloquea doctores sin riesgo PHI; sistémico #4 → carril aparte). Commit con #3a+#3b+test pusheado; write live-verify pausado en tu decisión.
+
+### 2026-06-07T05:10 · 🤖 claude · `/dev-team` · ✓ APLICADO
+**Elegiste B. Apliqué #4 targeted + el WRITE quedó LIVE-VERDE end-to-end. Los 4 bugs fixeados + verificados en dev-app. El core de doctores (directorio + crear) funciona de verdad.**
+
+**#4 (targeted, opción B):** `staff.ts useStaffMutationHeaders` ahora resuelve (1) el **rol per-tenant** del tenant-store (`owner`, no el global `doctor`) y (2) el **X-User-ID = DB user UUID** (de `/me` cache, no el Clerk id — los endpoints doctors tipan `X-User-ID:UUID` y lo usan como actor de audit; el Clerk id daba 422). `useCurrentUser` compartido + `hasPhiAccess` NO tocados (sin blast-radius PHI). eslint+tsc+vitest staff 76/76 verde.
+
+**Live-verify del WRITE (dev-app, autenticado dr.demo owner) — evidencia #37 completa:**
+- POST `/clinics/doctors` → **201** · `X-User-Role: owner` (per-tenant) · `X-User-ID: 527050c3` (DB UUID).
+- Efecto: fila `vitalia_doctors` id=`88c931f3` (PHI cifrada pgcrypto) + `vitalia_audit_log` `doctor.created` actor=`527050c3` (DB id correcto) + telemetry `lisa_staff_doctor_created` + redirect a `/lisa/staff/{id}/perfil`.
+- READ (directorio) ya verde antes: GET 200 `{items:[...]}`, sin error banner, console errors=[].
+
+**Resumen del rescate (la historia NUNCA funcionó end-to-end; el "6/8 done" lo enmascaró con SSR initialData + e2e mockeado):**
+| # | bug | fix | verificado |
+|---|---|---|---|
+| 1 | loop infinito → crash /lisa/staff (la "botando error") | deps estables del useEffect | unit RED→GREEN + live |
+| 2 | CORS (base absoluta client) → directorio roto pese a BE 200 | base relativa same-origin | live GET 200 |
+| 3a | staff.ts no mandaba X-User-Role → 403 | helper mutation headers | live |
+| 3b | RBAC admin_clinic-only (vos: widen) | {owner,admin_clinic} + test 10/10 | live |
+| 4 | rol GLOBAL no per-tenant + Clerk-id no DB-UUID → 403/422 | resolver per-tenant + DB id en staff | live POST 201 |
+
+**Falta para `developed`→`done` (lo dejo claro, NO lo cierro solo):** (a) `demo-script.md`, (b) honest-RED secundarios (SC-1b/c/d calendar recurrence, SC-9 pagination, SC-11 i18n credencial país — mock→real o scope per #37), (c) tu ratificación de los golden PNGs V-VIS-1..4 (ADR-003, no autonomous), (d) **G: tu self-test live en dev-app** (el core read+write ya está verde — entrá a dev-app.vitalialat.com y probá crear/ver doctores) → R reconcile → /auditor.
+
+**Carriles aparte flaggeados (no de esta story):** L3 `test_doctor_cross_tenant.py` roto (asyncio Py3.12, pre-existente) · L2/L3 sistémico `useCurrentUser` (rol global + Clerk id, 8 consumers) · L2 contrato `X-User-ID` inconsistente BE (marca str+resuelve vs doctors UUID directo) — homologar.
+
+State: `developing` · `phase: AWAIT_CHRIS_VERIFY`. Commit #4 + dod_evidence pusheado. Te paso a vos para el G (self-test + goldens).
+
+### 2026-06-07T06:00 · 🤖 claude · `/dev-team` · ✓ APLICADO
+**Tenías razón — el perfil tiraba "No se pudo cargar el perfil". Mi miss: la live-verify del write asertó el redirect URL pero NO que el perfil RENDERIZARA. Lo arreglé + ahora verifico CONTENIDO, no URL. Y al revisar bien destapé otro (horarios).**
+
+- **Bug #5 (el que reportaste):** `GET /clinics/doctors/{id}` (detail) exige `X-User-ID:UUID` (audit-on-PHI-read; la LIST no). `useDoctor` + `StaffWorkspaceShell` (mismo query key) NO lo mandaban → **422** → "No se pudo cargar el perfil". Yo había puesto los headers SOLO en las mutaciones, no en los reads de detail. Fix: ambos mandan `useStaffActorHeaders` + `enabled` gate hasta que `X-User-ID` esté listo (mataba un race 422→200). **Live-verde:** GET detail 200, `doctor-perfil-view` renderiza, sin error banner.
+- **Bug #6 (destapado revisando los tabs del workspace):** `horarios` crasheaba con `(blocks ?? []).filter is not a function` (overlay error Next). El BE devuelve `{blocks:[...]}` (envelope `AvailabilityBlocksResponse`) pero `useAvailabilityBlocks` lo trataba como array pelado → objeto → `.filter` revienta. Misma clase que el `{items}` del directorio; enmascarado porque el e2e de horarios era mock. Fix: desempaquetar `res.blocks`. **Live-verde:** horarios + servicios cargan sin error.
+
+**Live-verify (dev-app, autenticado) — los 3 tabs del workspace:** perfil GET 200 + renderiza · horarios calendar renderiza (sin crash) · servicios carga · sin overlay error Next · sin loop. eslint+tsc+vitest 44/44 verde.
+
+**Lección (la cemento si querés):** "verificar el redirect ≠ verificar que la página destino renderiza". Mi write-recon asertó la URL `/perfil`, no el contenido — por eso se me escapó el 422 del detail. Ahora las recon asertan CONTENIDO + status real de cada GET. Es la misma trampa de [[verification-real-not-200]] un nivel más fino.
+
+**Estado:** los 6 bugs del rescate fixeados + live-verde (directorio + crear + ver perfil + horarios + servicios). Falta lo mismo de antes para `developed→done`: demo-script + honest-RED secundarios (SC-1b/c/d/9/11) + tu ratificación goldens + tu self-test G. Commit #5+#6 pusheado. **Volvé a entrar a dev-app y probá abrir un doctor — debería cargar el perfil + horarios ahora.**
+
+### 2026-06-07T06:30 · 🤖 claude · `/dev-team` · ✓ APLICADO
+**Tabs Perfil/Horarios/Servicios → pegados a la izquierda.** En `EntitySubNavBar` la div de la entidad tenía `flex-1` → crecía y empujaba los tabs al borde DERECHO. Saqué el `flex-1` (+ `max-w-[14rem]` + truncate en el nombre para que un nombre largo no vuelva a empujarlos) → los tabs quedan agrupados a la izquierda, justo después del breadcrumb. **Live-verde dev-app:** `‹ Staff │ Perfil Horarios Servicios` (Perfil x≈543, Servicios termina ≈768, antes ~1400 al borde). Screenshot en `test-results/subnav-left-align.png`. eslint+tsc+vitest 11/11.
+
+⚠️ **`EntitySubNavBar` es COMPARTIDO** (`components/shared/shell-organism/`) — también lo usa adrian/embudo (LeadWorkspace + tabs resumen/historial). El cambio left-aligna esos tabs también (consistente). Si querés que embudo mantenga el push-derecha, lo scopeo con un prop; si no, queda left-align universal. Tu pedido lo ratifica para doctores.
+
+### 2026-06-07T06:50 · 🤖 claude · `/dev-team` · ✓ APLICADO
+**Cierre de sesión + handoff a nueva conversación (pedido Chris — tiene comentarios de diseño UI para trabajar fresh).** Rescate funcional completo + live-verde (7 bugs). Escribí `HANDOFF-next-session.md` con: estado git (wip/vitalia @ 148a7f89), los 7 fixes, **6 learnings para mejorar** (e2e-mockeado-enmascara · verify-contenido-no-URL · mismatch-contrato-FE↔BE ×3 · headers-endpoint-inconsistentes · race-query-header-async · fricción-harness CAP/STORY-gate) + carriles aparte (useCurrentUser sistémico · X-User-ID contract · asyncio test) + falta-para-done + el prompt de continuación. State `developing` · `phase: AWAIT_CHRIS_VERIFY`. Próxima sesión: comentarios UI uno por uno → demo-script → goldens → G/R/auditor.
+
+### 2026-06-07T05:22 · 🤖 claude · `/pm-vitalia` · ✓ APLICADO
+**Sesión nueva abierta para los comentarios de diseño UI (sin cambios sustantivos aún — setup).** Step 0 GREEN (CANÓNICO vitalia, wip/vitalia limpio @ a58e6689, manifest coherente). Leí checkpoint + HANDOFF + chris-input. Cargué la skill `vitalia-design-system` (tokens SSoT = `globals.css`/`tailwind.config.ts`, 19 átomos Shadcn, organism shell N1→N2→N3→hoja, doctores vive bajo Lisa `--agent-lisa #00D084`). dev-app confirmado UP + **sirve ESTE worktree** (bind `/app/vitalia/frontend` ← `luana-vitalia/vitalia/frontend`, cloudflared cred local) — sin footgun cross-worktree. Disciplina para cada comentario: D1 reusar átomos/tokens · D3 scoped a lo pedido · live-verify CONTENIDO con screenshot · commit pathspec (CAP_ADVISORY_SKIP=1 STORY_CLOSURE_GATE_SKIP=1). ⚠️ `EntitySubNavBar` compartido con adrian/embudo — flaggeo impacto o scopeo con prop. Esperando comentario #1.
+
+### 2026-06-07T05:34 · 🤖 claude · `/pm-vitalia` · 💡 PROPONE
+**Comentario #1 de Chris: "todo se ve muy blanco y negro" → audité yo mismo las 5 superficies de Lisa→Staff con Playwright (dev-app, dr.demo owner, real data GET 200) + medí la paleta real.** Diagnóstico CUANTIFICADO (no opinión): el área de contenido del módulo Staff es ~95% monocromo. Directorio paleta = `rgb(9,9,11)×298` (casi-negro) + `rgb(113,113,122)×141` (gris) + `blanco×40`; color de marca casi ausente (lisa-green `#00D084`×6, accent purple×4, **cian primary `#01B2F8` = 0 apariciones en el directorio**). El color VIVE solo en el chrome del shell (chat Valeria púrpura, ribbon agentes), NO en la hoja de contenido. Tokens de marca existen todos en `globals.css` (`--primary` cian · `--accent` purple · `--agent-lisa` verde + `-soft` · gradients mariposa/agent/app-cta) pero el módulo Lisa **ignora su propio agent-color**. Le pasé 9 recomendaciones priorizadas (P0 calendario horarios eventos invisibles · P1 cards directorio flat + avatares genéricos + stats "—" + pills grises · P1 form perfil sin agrupar · P2 CTA modal navy en vez de cian · cross-cutting: adoptar lisa-green como acento del módulo, tints `agent-lisa-soft`, avatares con iniciales de color, formato hora sin segundos). Todas D1-compliant (reusan tokens existentes, cero inventar). La mayoría son scoped a `features/lisa/` (cards/form/calendar/modal) — bajo impacto cross-workspace; `EntitySubNavBar` compartido NO se toca. Spec diagnóstica throwaway en `e2e/.../ui-design-audit.spec.ts` (NO commit). **Esperando que Chris apruebe / modifique / descarte cada recomendación antes de tocar código.**
+
+### 2026-06-07T05:50 · 🤖 claude · `/pm-vitalia` · ✓ APLICADO
+**Chris aprobó los 9 → aplicados + live-verificados en dev-app con data real (todos GET 200, sin overlay de error Next en ninguna superficie).** Causa raíz descubierta al implementar: varios componentes usaban `var(--agent-lisa)` crudo (= HSL-channels `156 100% 41%`, color inválido) → el verde **nunca renderizaba** (bloques de calendario, borde hover de card, toggle "Visible en landing"). Fix = clases Tailwind reales `agent-lisa`/`agent-lisa-soft` (config envuelve `hsl(var())`). 4 archivos, todo en `features/lisa/` (cero cross-workspace, `EntitySubNavBar` NO tocado):
+- **#1 `AvailabilityCalendar`** — bloques ahora evento relleno verde-soft + barra izq verde + hora limpia `10:00–15:00` (sin segundos) + etiqueta "Semanal"/"Quincenal". (Antes: caja blanca invisible con `10:00:00`.) Arreglado tb drag-target + drag-overlay.
+- **#2-6 `StaffCard`** — avatar con iniciales (AG/CL/LQ/VR) sobre verde-soft + ring verde · pill especialidad verde-soft · "Sin métricas aún" en vez de tres "—" tristes · "Ver perfil" outline verde · barra de acento verde arriba + hover borde verde.
+- **#7 `DoctorPerfilView`** — secciones (Identidad/Contacto/Datos pro) ahora cards con borde + acento verde en cada header · arreglado el toggle "Visible en landing" (ON ahora SÍ es verde). (Avatar del perfil sigue siendo el widget `AvatarUploader` — componente aparte, no tocado.)
+- **#8 `NuevoIntegranteModal`** — CTA "Crear integrante" ahora gradiente de marca cian→índigo (`vt-bg-gradient-app-cta`) en vez del navy plano (mantiene contraste del texto blanco). Nota: el navy `#180D95` ERA color de marca (`azul-marino` = "primary button"), no off-brand; el gradiente es más vivo.
+- **#9** acento lisa+cian adoptado transversal (todo con tokens existentes, cero hex nuevo · D1).
+
+Paleta directorio: lisa-green ×6→**×14**, lisa-soft 0→**×10**. Gates: eslint 0 · tsc 0 · vitest **49/49**. Screenshots AFTER en `test-results/ui-audit/0{1,3,4,2}.png`. **Mirá los screenshots — decime si ajusto algo (densidad de verde, otro color por especialidad, etc.) o pasamos al siguiente comentario.** Commit por pathspec (CAP_ADVISORY_SKIP + STORY_CLOSURE_GATE_SKIP: wip developing, embudo crm open module-scoped).
+
+### 2026-06-07T06:16 · 🤖 claude · `/pm-vitalia` · ✓ APLICADO
+**Comentario #2 de Chris: "el buscador del staff no funciona" → eran DOS bugs (mismo patrón de contrato FE↔BE roto que ya nos mordió antes), fixeados + live-verificados en dev-app.**
+- **Bug A (FE):** `useStaffList` pasaba `initialData` SIEMPRE + `staleTime: 30s`. Al tipear, la query-key cambia (`q`), React Query sembraba la key nueva con el initialData (lista completa) y la marcaba **fresca** → NUNCA fetchaba el resultado filtrado → el buscador no hacía nada. (Rompía además los filtros Especialidad/Estado, misma causa.) Fix: `initialData` solo para el filter-set por defecto (page 1, sin q/specialty/active) → cualquier filtro ahora es key fresca que SÍ pega al BE.
+- **Bug B (BE):** el endpoint `GET /clinics/doctors` **no tenía param `q`** — el FE mandaba `?q=` y FastAPI lo descartaba en silencio. El service ya aceptaba `q` pero el repo lo ignoraba (sin WHERE) y `count_by_filter` ni lo recibía. Fix: router declara `q`; repo `list_by_filter` + `count_by_filter` filtran `(first_name OR last_name OR nombre-completo OR specialty) ILIKE :q` (columnas plaintext, no PHI); service pasa `q` al count (total correcto). TDD: test RED `test_doctors_router_list_accepts_q_search_param` → GREEN.
+- **Bonus** (mismo root del comentario #1): el botón "+ Nuevo integrante" del header tenía el `bg-[color:var(--agent-lisa)]` roto → **invisible** (blanco sobre blanco · por eso no se veía en los screenshots). Fix → `bg-agent-lisa text-foreground` (verde visible).
+
+**Live-verify dev-app (autenticado):** directorio 4 cards → tipeo "Ana" → **1 card** (Ana Garcia Mendoza), `GET /clinics/doctors?q=Ana` → 200 filtrado · "zzqx..." → **0 cards** (empty state). Screenshots `test-results/ui-audit/06-search-ana.png` + `07-search-nomatch.png`. Gates: BE ruff 0 + clinics pytest 202/202 (menos `test_doctor_cross_tenant.py` que ya estaba roto pre-existente — asyncio.get_event_loop Py3.12, carril L3) · FE eslint 0 + tsc 0 + vitest 49/49.
+
+**Learning (refuerza el patrón ya conocido):** 3ra vez que el FE asume un contrato que el BE no implementa (antes: `{items}`/`{blocks}` envelopes, X-User-ID UUID; ahora: param `q`). El contract-test FE↔BE (HB-42 ya flaggeado) sigue siendo la red que falta. Commit por pathspec (mismos skip flags).
+
+### 2026-06-07T06:44 · 🤖 claude · `/pm-vitalia` · ✓ APLICADO
+**Comentario #3 de Chris (2 partes) — aplicado + live-verificado en dev-app. Decisiones de Chris: autoguardado = pill flotante bottom-center · alcance = retrofitear TODO ahora.**
+
+**Parte A — homologar layout de Perfil con marca/identidad.** El Perfil estaba en 1 columna apilada; marca usa `grid grid-cols-1 gap-4 sm:grid-cols-2` (2 cols responsive → 1 en angosto, celdas densas `sm:col-span-2`). Homologué `DoctorPerfilView`: Identidad (col1) + Contacto (col2) lado a lado, Datos profesionales + Bio + Generated full-width. Contenedor `flex flex-col gap-6 p-6` idéntico a marca. **Live-verde:** Perfil ahora 2-col (screenshot `03-perfil.png`).
+
+**Parte B — autoguardado flotante como ESTÁNDAR de todo bloque con autosave.** Chris prefirió mi estilo de autosave + pidió que flote/se vea siempre + sea estándar. Construí `src/components/shared/FloatingAutosaveIndicator.tsx`: pill **flotante bottom-center** (`sticky bottom-4`, centrado — medido pillCenter=986 = centro del panel 985), **siempre visible** (idle = "Los cambios se guardan automáticamente"), estados idle/dirty/saving/saved/error + tiempo relativo en saved. **Retrofiteado en los 4 bloques** (decisión "TODO ahora"): Perfil + marca Identidad + Voz y tono + Presencia (reemplaza el `AutosaveBadge` de header por el flotante). Cementé el estándar en `design-system.md § Autoguardado` (toda vista nueva con autosave DEBE usarlo; anti-pattern: hint inline/badge en header). Unit test 6 casos. **Live-verde:** Perfil idle → editar "Años exp" → **saved** (PATCH real, el pill reaccionó) · marca/identidad pill presente (screenshots `08/09/10`).
+
+**Gates:** eslint 0 · tsc 0 · vitest 150/150 (marca + staff + nuevo componente). **Flags 2 cosas (no mías, no bloquean):** (1) `AutosaveBadge` queda como legacy — su componente ya no se usa pero su TYPE `AutosaveStatus` lo siguen importando los hooks de marca; lo dejé para no romper (limpieza = carril aparte). (2) `audited-section.test.tsx` falla determinista en aislamiento (`response.json is not a function` — mock roto del propio test, PHI/AuditedSection, NO toqué eso) → tech-debt L3 pre-existente (junto al `asyncio.get_event_loop` ya flaggeado). **Propuesta para ratificar:** cementar el estándar flotante a nivel rule/auditor (enforce) como follow-up del harness (HLP: no editar harness mid-feature). Commit por pathspec (skip flags). ¿Siguiente comentario?

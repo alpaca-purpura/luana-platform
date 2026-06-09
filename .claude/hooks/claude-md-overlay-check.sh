@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # claude-md-overlay-check — SessionStart hook
 #
+# tier: hybrid · core = overlay-walk advisory mechanism ·
+#       project = brand enum + 165-line cap + luana worktree paths → seam brands[] (W5)
+#
 # Advisory hook que verifica:
 #  - Si cwd cae dentro `{brand}/` o `~/Proyectos/luana-{brand}*/` PERO
 #    `{brand}/CLAUDE.md` overlay no existe → emite advisory.
@@ -36,7 +39,14 @@ fi
 # Pattern 1: cwd dentro de un worktree luana-{brand}*  (ej: ~/Proyectos/luana-vitalia)
 # Pattern 2: cwd dentro de una brand dir en root (ej: /path/to/luana-platform/vitalia/...)
 BRAND=""
-for B in vitalia nicolify comunify lupulo saasora inmoflow retailly fixia guestly fitflow; do
+# Brand enum from the seam (project.config.yaml · harness_config.py) — no hardcoded list
+# (charter §3 DIP · W5b). Repo root resolved from this hook's own location (robust to the
+# analyzed cwd). Loud-degrade to empty: no brand matched → exit 0 (no overlay), the same safe
+# outcome a PRINCIPAL/protocol cwd already produces.
+_OV_REPO="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")/../.." && pwd)"
+OV_BRANDS="$("${_OV_REPO}/.venv/bin/python" "${_OV_REPO}/scripts/harness_config.py" brands.loop_order 2>/dev/null | tr '\n' ' ')"
+[ -z "${OV_BRANDS}" ] && echo "WARN: project.config.yaml brands.loop_order unreadable — overlay brand detection degraded" >&2
+for B in ${OV_BRANDS}; do
   if echo "${CWD}" | grep -qE "(luana-${B}([-/]|$)|/${B}([-/]|$))"; then
     BRAND="${B}"
     break

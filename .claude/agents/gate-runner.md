@@ -57,6 +57,7 @@ If `<command>` is a shortcut, expand to the canonical native-Linux command. `${W
 | `arch-test-nicolify` | `cd ${WS}/nicolify/backend && ${WS}/.venv/bin/pytest tests/architecture/ -x -q --tb=short` |
 | `arch-test-comunify` | `cd ${WS}/comunify/backend && ${WS}/.venv/bin/pytest tests/architecture/ -x -q --tb=short` |
 | `arch-test-lupulo` | `cd ${WS}/lupulo/backend && ${WS}/.venv/bin/pytest tests/architecture/ -x -q --tb=short` |
+| `code-health-<brand>` | `bash ${WS}/scripts/quality/code-health.sh <brand> all` (mantenibilidad BE+FE: jscpd dup + vulture/fallow dead-code + interrogate docstrings + pip-audit vuln · baseline-ratchet · HB-61). `…-<brand> be`/`fe` para scope. Parser: línea final `code-health: PASS\|FAIL`. **lupulo NO enforced** (placeholder, docstrings <80%). Tool faltante (npx offline) → DEGRADA advisory, no rompe. |
 
 **Core-scoped shortcuts (requiere `<brand>: core` + specify `<pkg>`):**
 
@@ -191,8 +192,19 @@ For each known gate type, identify pass/fail by exact patterns:
 | pip-audit | `No known vulnerabilities` | `Found N vulnerabilit` | `Found (\d+) vulnerabilit` |
 | madge | `No circular dependencies` | `Circular dependency found` | count occurrences |
 | npm audit | `found 0 vulnerabilities` | `found N vulnerabilities` | `found (\d+) vulnerabilit` |
+| code-health | final line `code-health: PASS` | final line `code-health: FAIL` | count `✗ ` lines |
+| playwright | `\d+ passed` AND ≥1 test ran | `\d+ failed` OR exit ≠ 0 OR **`0 passed`/`No tests found`/`Error: No tests found`** | `(\d+) failed` |
 
 For unknown gates, fall back to: pass if exit 0 AND no `error|fail|exception` (case-insensitive) in last 200 lines.
+
+**★ HB-45 — ZERO-TESTS IS FAIL (fail-closed principle, mata el falso-verde).** For ANY test gate
+(pytest, vitest, playwright), if the runner reported it ran **0 tests** — markers:
+`no tests ran`, `No tests found`, `0 passed` with 0 total, Playwright `Error: No tests found`,
+pytest `collected 0 items`, vitest `No test files found` — the gate is **FAIL**, NEVER PASS,
+even if exit code is 0. A `--project` that doesn't match the spec dir, an empty testMatch, or a
+typo'd path all surface here. Set `status: FAIL`, `errors_count: 0`, and
+`first_5_errors: ["ZERO_TESTS: runner matched 0 tests — false-green guard (HB-45)"]`.
+If the validator entry declares `expect_min_tests: N`, a run with < N tests = FAIL.
 </step>
 
 <step name="extract_first_5_errors">
@@ -294,6 +306,7 @@ ERROR explicitly — do NOT pretend success.**
 10. **Skeleton-first MANDATORY (R29).** Step 0 ALWAYS writes a valid `gate-output.json` skeleton BEFORE executing any command. Truncation mid-execution = partial-but-valid JSON (auditor sees explicit `overall.summary: "PENDING"` rather than stale data from prior ticket).
 11. **Cross-ticket archive (R29).** If existing `gate-output.json` belongs to a different `<ticket>`, archive as `gate-output.<previous_ticket>.json` BEFORE skeleton write. Never let ticket-N output be polluted by ticket-N-1 stale data.
 12. **Incremental Edit pattern.** Each gate completion = ONE `Edit` call updating the `gates: []` array entry for that gate. Final step updates `overall.summary` from "PENDING" → final string. Avoids monolithic Write at end (the failure mode in R29 origen case).
+13. **Fail-closed on zero tests (HB-45).** A test gate that ran 0 tests = FAIL, never PASS — regardless of exit code. Exit 0 + "matched nothing" is the canonical false-green; treat it as a failure so the auditor catches the `--project`/path mismatch instead of shipping a hollow green.
 </rules>
 
 <forbidden>

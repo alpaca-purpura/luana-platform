@@ -31,7 +31,7 @@ BRANDS := nicolify vitalia comunify lupulo
 .PHONY: dev-clean-nicolify dev-clean-vitalia dev-clean-comunify dev-clean-lupulo dev-clean-all
 .PHONY: infra-matrix portfolio portfolio-check scan-promotables
 .PHONY: ci-parity $(BRANDS:%=ci-parity-%) ci-parity-be ci-parity-fe
-.PHONY: releases-vitalia capability-ledger-check migrate-vitalia-schema cockpit-up
+.PHONY: releases-vitalia capability-ledger-check migrate-vitalia-schema cockpit-up cockpit-down cockpit-status cockpit-restart
 .PHONY: install-hooks help
 
 COMPOSE_BASE := docker compose -f docker-compose.dev.yml
@@ -173,6 +173,23 @@ scan-promotables:
 machinery-check:
 	python3 scripts/validate_machinery_consistency.py
 
+# anti-rot de punteros del harness (HB · 2026-06-08) — refs workspace-rooted rotos en skills/agents/rules.
+# Advisory + baseline-ratchet shrink-only. Surfaceado por machinery CHECK 28 + /harnesses-improvement.
+.PHONY: harness-pointers harness-pointers-baseline
+harness-pointers:                ## Reporta punteros rotos NUEVOS vs baseline (--all para ver todos)
+	python3 scripts/scan_harness_pointers.py --all
+harness-pointers-baseline:       ## Congela el scan actual como baseline (tras drenar/arreglar refs)
+	python3 scripts/scan_harness_pointers.py --update-baseline
+
+# code-health gate (HB-61 · 2026-06-08) — mantenibilidad BE+FE: dead-code + dup + docstrings + vuln, baseline-ratchet.
+# Uso: make code-health BRAND=vitalia [SURFACE=be|fe|all]  ·  --update-baseline: make code-health-baseline BRAND=x
+.PHONY: code-health code-health-baseline
+code-health:
+	bash scripts/quality/code-health.sh $(or $(BRAND),vitalia) $(or $(SURFACE),all)
+
+code-health-baseline:
+	bash scripts/quality/code-health.sh $(or $(BRAND),vitalia) $(or $(SURFACE),all) --update-baseline
+
 # v3 cement 2026-05-27 · ADR-vitalia-005 · capability index user-facing
 capability-index:
 	python3 scripts/generate_capability_index.py --brand vitalia
@@ -257,17 +274,32 @@ migrate-vitalia-schema:  ## One-shot · migrate vitalia to schema v2 (releases +
 # ════════════════════════════════════════════════════════════════
 # Tools operativas (cross-brand · cockpit SDD visualizer)
 # ════════════════════════════════════════════════════════════════
-cockpit-up:  ## Levantar luana-cockpit Next.js en localhost:4000 (auto-install + port check)
-	@bash scripts/cockpit-up.sh
+cockpit-up:  ## Levantar luana-cockpit (daemon · TRUE detach · sobrevive cierre de terminal · idempotente)
+	@bash scripts/cockpit-daemon.sh start
+
+cockpit-down:  ## Detener el cockpit daemon de este worktree
+	@bash scripts/cockpit-daemon.sh stop
+
+cockpit-status:  ## Estado del cockpit (proceso + listener + health HTTP)
+	@bash scripts/cockpit-daemon.sh status
+
+cockpit-restart:  ## Reiniciar el cockpit daemon (tras pull/edits del cockpit)
+	@bash scripts/cockpit-daemon.sh restart
 
 # ── hooks ────────────────────────────────────────────────────────────────────
+# D2 (W7, 2026-06-09): source-DETERMINISTIC. The shared .git/hooks/ (common-git-dir) must
+# resolve from a STABLE canonical worktree, NOT $TOP (the invoking worktree → last-writer-wins
+# across worktrees). Canonical = the MAIN worktree (parent of --git-common-dir). DIP: a shared
+# resource depends on a stable source. Cadence: hook edits land on wip/* → merge to main →
+# main IS the canonical running gate ("main lags" is a merge step, not a coupling to dodge).
 install-hooks:
 	@HOOKS_DIR="$$(git rev-parse --git-path hooks)"; \
-	 TOP="$$(git rev-parse --show-toplevel)"; \
+	 GIT_COMMON="$$(cd "$$(git rev-parse --git-common-dir)" && pwd)"; \
+	 CANONICAL="$$(dirname "$$GIT_COMMON")"; \
 	 mkdir -p "$$HOOKS_DIR"; \
-	 ln -sf "$$TOP/scripts/git-hooks/pre-commit" "$$HOOKS_DIR/pre-commit"; \
-	 [ -f "$$TOP/scripts/git-hooks/pre-push" ] && ln -sf "$$TOP/scripts/git-hooks/pre-push" "$$HOOKS_DIR/pre-push" || true; \
-	 echo "git hooks installed to $$HOOKS_DIR (pre-commit + pre-push)"
+	 ln -sf "$$CANONICAL/scripts/git-hooks/pre-commit" "$$HOOKS_DIR/pre-commit"; \
+	 [ -f "$$CANONICAL/scripts/git-hooks/pre-push" ] && ln -sf "$$CANONICAL/scripts/git-hooks/pre-push" "$$HOOKS_DIR/pre-push" || true; \
+	 echo "git hooks installed to $$HOOKS_DIR from canonical worktree $$CANONICAL (deterministic · D2)"
 
 # ── help ─────────────────────────────────────────────────────────────────────
 help:

@@ -68,6 +68,7 @@ Three core responsibilities:
 - ❌ NEVER touch `{other_brand}/...` when working on `<brand>`. Cross-brand pollution banned.
 - ❌ NEVER touch `{brand}/frontend/`. That's `builder-frontend`.
 - ❌ NEVER touch root legacy paths (`backend/src/`, `frontend/src/`) — those DO NOT EXIST post multibrand reorg 2026-05-15.
+- ❌ NEVER create a git worktree or branch from `main` (HB-32). You work **IN-PLACE** on the caller's cwd — the brand hub `~/Proyectos/luana-{brand}` on `wip/{brand}` — using the absolute `<pr_folder>` paths. A worktree spun from stale `main` strands your output AND breaks the ticket dep-chain. This is `parallel-safety.md` M9 (sub-agents in-place, NO worktrees).
 - ✅ READ from `core/luana-core-*/` for cross-module integration awareness (read-only). Read from other brands ONLY for parity checking, never write.
 
 If ticket touches business modules in same brand, escalate: `<!-- @pm: ticket cross-scope (agentic + business). Spawn builder-backend in parallel for {brand}; coordinate via filesystem -->`. Do NOT implement business module changes yourself.
@@ -384,7 +385,7 @@ Ver `.claude/rules/anti-default-flip-audit.md` (rule cardinal + 6 flags inventar
 Per `parallel-safety.md`:
 ```bash
 cd ${WS} && git status --short && git branch --show-current
-# Expected branch: wip/{story-id}-{ticket} (your worktree branch). NO git pull — parallel-safety.md prohibits pull.
+# Expected branch: wip/{brand} (the brand hub — you work IN-PLACE, NOT a per-ticket worktree; HB-32/M9). NO git pull — parallel-safety.md prohibits pull.
 ```
 Tree dirty with someone else's WIP → STOP, report, do NOT touch ajenos. M8 rule applies if you must extend an ajeno file (read it, append/extend, never replace).
 </step>
@@ -734,7 +735,7 @@ feat({brand}/copilot): add planner subagent extension via EP-N
 Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
 EOF
 )"
-git push origin wip/{story-id}-{ticket}    # NEVER push to main directly — squash-merge gate via /pm
+git push origin wip/{brand}    # the brand hub (in-place, HB-32/M9). NEVER push to main directly — squash-merge gate via /pm
 ```
 
 **Push targets (triple-branch policy):** `wip/{slug}` (autosave normal) | `main` (only via squash-merge by /pm) | `release/{brand}-vX.Y.Z` (production). NEVER `origin development` — that branch does NOT exist.
@@ -812,6 +813,7 @@ NEVER `print()`, NEVER stdlib `logging`.
 - LLM calls without `copilot_llm_call` observability wrapper (naked call = audit FAIL)
 - LangGraph nodes that mutate state in place (always return partial dict)
 - Infinite-loop graphs (always max-iter or `task_complete` exit)
+- Fake `if`s — hardcoded keyword branches (`if "precio" in msg: ...`) faking agent reasoning instead of real tool/LLM routing or state-machine edges (**no-fake-`if`s bar**, inherited from the `ux-agentico` WT3 design: the agent's branching = tools + state, never keyword hacks)
 - `MemorySaver` checkpointer in production code (use `AsyncPostgresSaver`)
 - `cache_control` marker on non-final cacheable block (cache won't form)
 - Timestamps/conversation_id/random IDs inside cache prefix (silent invalidator)

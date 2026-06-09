@@ -421,6 +421,22 @@ Estos componentes se forkean de `nicolify/frontend/src/features/copilot/` y se a
 
 Referencia visual completa: `/tmp/vitalia-mockups.html` tab D.4 (mockup exploratorio, no diseño final ratificado).
 
+### Autoguardado — indicador flotante (ESTÁNDAR · ratificado Chris 2026-06-07)
+
+Todo bloque funcional con autoguardado usa el **único** componente compartido
+`src/components/shared/FloatingAutosaveIndicator.tsx` — NO un hint inline ni un badge
+por-sección en el header. Es un pill **flotante anclado bottom-center** del panel de
+contenido (`sticky bottom-4`), **siempre visible** (incluso en idle muestra "Los cambios
+se guardan automáticamente"), que sigue visible al hacer scroll.
+
+- Se renderiza como **último hijo** del contenedor scrolleable de la vista
+  (`<div className="flex flex-col gap-6 p-6"> … <FloatingAutosaveIndicator status savedAt/> </div>`).
+- Estados: `idle | dirty | saving | saved | error` (perfil omite `dirty`). `saved` muestra
+  tiempo relativo si se pasa `savedAt`.
+- Reemplaza al viejo `AutosaveBadge` de header. Consumidores actuales: Perfil de doctor +
+  marca (Identidad · Voz y tono · Presencia). Toda vista nueva con autosave DEBE usarlo.
+- Anti-pattern: hint de autoguardado inline propio, badge en el header, o no mostrar estado.
+
 ## 7. Agentes en la UI
 
 Vitalia tiene 5 worker agents IA con nombres + roles. **Las páginas dedicadas a cada agente viven en la web promo (`vitalialat.com/equipo/{nombre}`).** En el app interna los agentes aparecen como atribución funcional, NO como producto separado.

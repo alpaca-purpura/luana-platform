@@ -1,17 +1,17 @@
 # 03-arch-{be|fe|agentic}.md — Template
 
-> Owner: `/architect-{be|fe|agentic}`. Documento técnico de UNA capa.
-> Lo escribe el sub-architect correspondiente. El orchestrator `/architect` los reúne en `06-tickets.yaml`.
+> Owner: `architect-orchestrator` (surface {be|fe|agentic} — instruction doc `.claude/skills/architect/references/{be,fe,agentic}.md`). Documento técnico de UNA capa.
+> Lo escribe el orchestrator cargando el instruction doc de la surface. `/architect` los reúne en `06-tickets.yaml`.
 
 ---
 story_id: STORY_ID
 surface: BE                                       # BE | FE | AGENTIC
-sub_architect: /architect-be
+sub_architect: architect-orchestrator (surface BE · references/be.md)
 arch_version: 1
 last_modified: 2026-05-04T15:30Z
 links:
   spec: "01-spec.md"
-  ui_design: "02-design-ui.md"                    # solo si surface=FE
+  ui_design: "01-spec.md § Wireframes"            # solo si surface=FE · 02-design-ui.md DEAD (paradigma v4) → wireframes viven en 01-spec
   agentic_design: "02-design-agentic.md"          # solo si surface=AGENTIC
   story_yaml: "../../../../../product/stories/{module}/{story-id}.yaml"
   domain_doc: "../../../../../domains/module_{module}.md"

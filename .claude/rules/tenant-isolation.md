@@ -1,8 +1,3 @@
----
-globs: "**/*.{py,ts,tsx}"
-description: Multitenant data isolation
----
-
 # Tenant Isolation
 
 Every data op tenant-scoped. Sin excepciones.

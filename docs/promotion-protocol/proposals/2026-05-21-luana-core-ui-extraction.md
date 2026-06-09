@@ -1,10 +1,10 @@
 ---
 proposal_id: 2026-05-21-luana-core-ui-extraction
-state: proposed
+state: accepted
 opened_date: 2026-05-21
 opened_by: /pm-luana
-ratified_by: null
-ratified_date: null
+ratified_by: Chris             # APPROVED 2026-06-06 (umbrella; target reconciliado → core/@luana/ui-kit existente, NO package nuevo)
+ratified_date: 2026-06-06
 
 # Origen
 origin_learnings:
@@ -15,7 +15,7 @@ origin_learnings:
 origin_brands: [vitalia]   # urgente. nicolify retroactivo eventual.
 
 # Target
-target_package: core/luana-core-ui          # NUEVO package, no existe aún
+target_package: core/@luana/ui-kit          # reconciliado 2026-06-06: NO crear luana-core-ui nuevo; EXTENDER el @luana/ui-kit existente (+ @luana/design-tokens/hooks/schemas)
 target_module: src/components/ + cli/ + stories/
 target_ep: null            # no introduce extension point (es TS UI, no Python plugin)
 
@@ -35,6 +35,16 @@ migration_notes_required: false             # no breaking, brands opt-in
 pattern_chosen: shadcn-copy-paste-with-cli   # ver ADR-008
 related_adr: docs/architecture/luana-platform/ADR-008-luana-core-ui-shadcn-cli-pattern.md
 related_outcome: docs/product/outcomes/luana-core-ui-foundation.md
+---
+
+## /pm-luana review (under_review · 2026-06-06)
+
+**Recomendación: ACCEPT (umbrella)** — 10/10 brands consumer potencial; es la fundación que desbloquea el shell-organism (`2026-06-01-lift-shell-organism-to-core`).
+
+⚠️ **El package YA existe parcialmente con OTRO nombre (verify 2026-06-06):** la proposal dice "`core/luana-core-ui` NUEVO, no existe" — pero hoy existe **`core/@luana/ui-kit`** (+ `@luana/design-tokens`, `@luana/hooks`, `@luana/schemas`, etc.). El target real es `@luana/ui-kit` y le falta la capa `organism/`. Reconciliar el target name antes de ejecutar (extender el existente, NO crear un segundo package paralelo).
+
+**Para ratificar (Chris):** (1) ¿reconciliamos target → `core/@luana/ui-kit` (extender) en vez de `luana-core-ui` nuevo? (2) APPROVED del scope atoms+organism foundation. Co-ratificar con el shell-organism child.
+
 ---
 
 ## 1. Patrón a promover

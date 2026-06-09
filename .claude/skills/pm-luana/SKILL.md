@@ -1,6 +1,6 @@
 ---
 name: pm-luana
-description: "PM Luana unificado — owner del engine compartido (26 paquetes luana-core-*) + extension SDK (EP-1..EP-18) + promotion gate brand→core + vista master portfolio cross-brand. Pointer-first: carga docs/portfolio/PORTFOLIO.md + docs/promotion-protocol/README.md + docs/core-modules/README.md en bootstrap (~5k tokens). Owner: docs/portfolio/, docs/promotion-protocol/proposals/, docs/core-modules/, docs/product/outcomes/ (platform), docs/architecture/luana-platform/. Alias /pm activa lo mismo. Activa: '/pm', '/pm-luana', 'estado portfolio', 'panorama', 'cross-brand', 'priorizar entre brands', 'qué brand toca', 'core', 'luana-core', 'promotion', 'lift to core', 'breaking change core', 'semver core', 'EP-N nuevo', 'extension point', 'qué hay en core', 'cross-brand pattern'."
+description: "PM Luana unificado — owner del engine compartido (27 paquetes luana-core-*) + extension SDK (EP-1..EP-18) + promotion gate brand→core + vista master portfolio cross-brand. Pointer-first: carga docs/portfolio/PORTFOLIO.md + docs/promotion-protocol/README.md + docs/core-modules/README.md en bootstrap (~5k tokens). Owner: docs/portfolio/, docs/promotion-protocol/proposals/, docs/core-modules/, docs/product/outcomes/ (platform), docs/architecture/luana-platform/. Alias /pm activa lo mismo. Activa: '/pm', '/pm-luana', 'estado portfolio', 'panorama', 'cross-brand', 'priorizar entre brands', 'qué brand toca', 'core', 'luana-core', 'promotion', 'lift to core', 'breaking change core', 'semver core', 'EP-N nuevo', 'extension point', 'qué hay en core', 'cross-brand pattern'."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
 model: opus
 ---
@@ -26,34 +26,45 @@ Bootstrap carga ~5k tokens (índice portfolio + promotion-protocol README + core
 
 ## Bootstrap protocol
 
-### Step 0 — Story closure gate scan cross-brand (MANDATORY post 2026-05-18)
+### Step 0 — Story closure gate scan cross-brand + platform (MANDATORY post 2026-05-18 · platform 2026-06-07)
 
-ANTES del menú habitual, scanear stories abiertas en cualquier brand activa (panorámico):
+ANTES del menú habitual, scanear stories abiertas en cualquier brand activa **+ las platform-level que owna `/pm-luana`** (`docs/product/stories/` raíz). El scan incluye platform porque una platform story trabada en `developing/developed/reviewing` debe caer en el panorama igual que una de marca — antes era ciega (loop solo 4 marcas):
 
 ```bash
 WS=$(git rev-parse --show-toplevel)
 
-echo "=== Story closure gate scan (post 2026-05-18) ==="
-for B in vitalia nicolify comunify lupulo; do
-  for cp in ${WS}/${B}/docs/product/stories/*/checkpoint.md; do
+scan_checkpoint() {  # $1=label (ej. vitalia o platform), $2=glob de checkpoints
+  for cp in $2; do
     [ -f "$cp" ] || continue
     STORY_ID=$(basename $(dirname $cp))
     STATE=$(grep -E "^state:" $cp | head -1 | awk '{print $2}')
     DEFER=$(grep -E "^defer_audit:" $cp 2>/dev/null | awk '{print $2}')
     if [[ "$STATE" =~ ^(developing|developed|reviewing)$ ]]; then
       if [[ "$DEFER" == "true" ]]; then
-        echo "⏸  $B/$STORY_ID (state=$STATE, DEFERRED)"
+        echo "⏸  $1/$STORY_ID (state=$STATE, DEFERRED)"
       else
-        echo "🔴 $B/$STORY_ID (state=$STATE) — REQUIRES RESUME en brand session"
+        echo "🔴 $1/$STORY_ID (state=$STATE) — REQUIRES RESUME"
       fi
     fi
   done
+}
+
+echo "=== Story closure gate scan (brands + platform) ==="
+for B in vitalia nicolify comunify lupulo; do
+  scan_checkpoint "$B" "${WS}/${B}/docs/product/stories/*/checkpoint.md"
 done
+# Platform-level (owner /pm-luana · docs/ raíz, sin segmento de marca)
+scan_checkpoint "platform" "${WS}/docs/product/stories/*/checkpoint.md"
 ```
 
-`/pm-luana` NO resuelve stories brand directamente (jurisdicción anti-creep). Si hay
-stories OPEN cross-brand → render lista + sugerir handoff `/pm-{brand}` para cada brand
-con deuda. Layer 1 enforcement del story-closure-gate.
+`/pm-luana` NO resuelve stories brand directamente (jurisdicción anti-creep) — handoff `/pm-{brand}`.
+Las **platform stories SÍ** las resuelve `/pm-luana` (es su owner): si una sale 🔴 acá, retomarla
+es trabajo propio (Modo Core), no handoff. Layer 1 enforcement del story-closure-gate.
+
+> **Monitor canónico en el cockpit:** el panorama vive en el cockpit (`make cockpit-up`):
+> platform stories → selector **⬡ Platform · core** → `/board`; deuda del harness/CIL → **`/harness`**
+> (4 carriles: L1 harness-backlog · L2 learnings · L3 tech-debt · L4 drift). Este scan es el gate
+> textual de cada bootstrap; el cockpit es la vista continua. Ambos leen los mismos `.md` (SSoT).
 
 Detalle SSoT: `.claude/rules/story-closure-gate.md`.
 
@@ -236,7 +247,7 @@ Cuando Chris pide trabajo cross-brand (ej. "voice cloning para todas las brands"
 | "EP-N nuevo {nombre}" | Crear extension point spec en `core/luana-core-extension-sdk/` + actualizar `docs/architecture/luana-platform/extension-points.md` |
 | "breaking change EP-N" | ADR en `docs/architecture/luana-platform/` + bump major en packages afectados + migration notes |
 | "qué hay en core {package}" | `cat docs/core-modules/{package}.md` |
-| "regen core-modules" | `make core-modules` (auto-gen via `scripts/generate_core_modules.py`) |
+| "regen core-modules" | ⏳ auto-gen NO implementado aún (`make core-modules` + `scripts/generate_core_modules.py` pendientes — ver tabla § metadata-en-su-lugar L288). Hoy `docs/core-modules/{package}.md` se mantiene a mano |
 
 ### Semver per-package
 
@@ -341,41 +352,11 @@ Si Chris pide algo que cae en alguna ❌ → handoff explícito al skill correct
 
 Este skill es **stateless cross-session**. No bloquea otros `/pm-{brand}` corriendo en paralelo. Convención: cada brand session corre su `/pm-{brand}` directo, sin pasar por acá salvo que necesite contexto cross.
 
-## Output protocol · chris-input.md append (v2 cement 2026-05-27)
+## Output protocol · chris-input.md append
 
-Al cierre de cada turn de esta skill, MUST appendear una entry a la sección 💬 Conversación del `chris-input.md` de la story activa.
+Al cierre de cada turn, MUST appendear una entry a la sección 💬 Conversación del `chris-input.md` de la story activa, con verdict **✓ APLICADO · ⚠️ DUDA · ❌ REFUTADO · 💡 PROPONE**. Nunca terminar turn sin appendear (aunque sea `✓ APLICADO · sin cambios sustantivos`). Path: state ∈ {idea..reviewing} → `{brand}/docs/product/stories/{id}/chris-input.md`; `done` → `{brand}/docs/archive/{year}/stories/{id}/chris-input.md`.
 
-**Path target:**
-- Story state ∈ {idea, refining, refined, ready, developing, developed, reviewing}: `{brand}/docs/product/stories/{story_id}/chris-input.md`
-- Story state = done: `{brand}/docs/archive/{year}/stories/{story_id}/chris-input.md` (read-only post-merge)
-
-Nota: en Modo Portfolio (cross-brand panorama) sin story specific en el turn, este protocol es opcional — el contexto puede ser puramente exploratorio sin story scope. En Modo Core (engine work / promotion gate) con story platform → appendear en `docs/product/stories/{story_id}/chris-input.md`.
-
-**Formato verbatim del block markdown a appendear:**
-
-```markdown
-### YYYY-MM-DDTHH:MM · 🤖 claude · `/pm-luana` · {emoji} {VERDICT-LABEL}
-{texto 2-30 líneas · descripción de qué hizo + decisiones tomadas + qué necesita Chris responder}
-```
-
-**Verdict labels (4 valores):**
-
-| Emoji | Label | Cuándo usar |
-|---|---|---|
-| ✓ | APLICADO | Cambios concretos aplicados al spec/design/arch/test (citar paths) |
-| ⚠️ | DUDA | Pregunta a Chris antes de seguir. State queda esperando respuesta |
-| ❌ | REFUTADO | Razón por la que NO se aplica algo que Chris pidió (con justificación) |
-| 💡 | PROPONE | Opción nueva sugerida por Claude · Chris ratifica o descarta |
-
-**Anti-patterns prohibidos:**
-
-- ❌ Skill termina turn sin appendear (silent escape) — siempre appendear, aunque sea `✓ APLICADO · sin cambios sustantivos`
-- ❌ Verdict sin texto sustantivo (1 palabra no informa)
-- ❌ Path hardcoded con brand fija — debe ser `{brand}` dinámico (de checkpoint.md o args del invoke)
-- ❌ Múltiples verdicts en un solo entry — si hay 2 cosas, son 2 entries consecutivas
-- ❌ Entry sin emoji + label de verdict (parser falla)
-
-Doc canónico: `docs/process/chris-input-protocol.md` § Sección 5.
+**Schema verbatim (formato del entry + labels + anti-patterns): `docs/process/chris-input-protocol.md § Sección 5` (SSoT — no se duplica acá).**
 
 ## Referencias
 

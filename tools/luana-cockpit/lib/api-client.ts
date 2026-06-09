@@ -277,6 +277,23 @@ export async function listHarnessItems(): Promise<{
 }
 
 // ────────────────────────────────────────────────────────────────────────────
+// CIL board (read-only · transversal · 4 carriles del Continuous Improvement Loop)
+// ────────────────────────────────────────────────────────────────────────────
+
+import type { TechDebtItem } from '@/lib/tech-debt';
+
+export interface CilBoard {
+  l1: { items: HarnessItem[]; counts: Record<string, number>; open: number; source: string };
+  l3: { items: TechDebtItem[]; counts: Record<string, number>; open: number; source: string };
+  l2: { count: number; source: string; link: string };
+  l4: { source: string; link: string; note: string };
+}
+
+export async function listCilBoard(): Promise<CilBoard> {
+  return await request<CilBoard>('/api/cil');
+}
+
+// ────────────────────────────────────────────────────────────────────────────
 // Transition
 // ────────────────────────────────────────────────────────────────────────────
 

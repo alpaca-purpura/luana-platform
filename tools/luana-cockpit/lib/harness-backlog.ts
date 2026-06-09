@@ -1,41 +1,33 @@
 /**
- * Parser del Harness Backlog · docs/process/harness-backlog.md
+ * Parser del Harness Backlog · docs/process/harness-backlog.md (carril L1 del CIL)
  * ────────────────────────────────────────────────────────────────────────────
  * El harness-backlog es el issue-tracker liviano del harness (skills/rules/hooks/
  * agents/cockpit/templates). Vive como una tabla markdown — este parser la
  * convierte a HarnessItem[] para que el cockpit la visualice como board read-only.
  *
  * El `.md` SIGUE SIENDO el SSoT (captura sin fricción vía /harness-issue). El
- * cockpit NO escribe acá — solo lee. Por eso el parser es PURO (string → items),
- * sin tocar el filesystem (eso lo hace app/api/harness/route.ts con getWorkspaceRoot).
+ * cockpit NO escribe acá — solo lee. La mecánica de parseo de tabla vive en
+ * `md-lifecycle-table.ts` (compartida con tech-debt L3); acá queda solo el mapeo
+ * específico de HB (severidad 4-emoji + carril CIL).
  *
  * Formato de fila esperado:
  *   | HB-1 | 2026-06-01 | 🔴 | item texto (markdown) | **verified** | 17bf3c62 |
- *
- * Tolerante: solo parsea filas cuyo primer campo matchea `HB-<n>` → header,
- * separador `---` y prosa quedan fuera. Pipes accidentales dentro del `item`
- * se reabsorben (id/fecha/sev al frente, estado/ref al final, item = el medio).
  */
 
-/** Estados del lifecycle HLP + `deferred` (estado lateral). `otro` = no reconocido. */
-export type HarnessEstado =
-  | 'reported'
-  | 'triaged'
-  | 'ratified'
-  | 'applied'
-  | 'verified'
-  | 'deferred'
-  | 'otro';
+import {
+  LIFECYCLE_ORDER,
+  countByEstadoGeneric,
+  normalizeEstado,
+  stripEmphasis,
+  tableRows,
+  type LifecycleEstado,
+} from './md-lifecycle-table';
+
+/** Estados del lifecycle HLP + `deferred`. Alias del lifecycle compartido. */
+export type HarnessEstado = LifecycleEstado;
 
 /** Orden canónico de columnas en el board (lifecycle + deferred al final). */
-export const ESTADO_ORDER: Exclude<HarnessEstado, 'otro'>[] = [
-  'reported',
-  'triaged',
-  'ratified',
-  'applied',
-  'verified',
-  'deferred',
-];
+export const ESTADO_ORDER: Exclude<HarnessEstado, 'otro'>[] = LIFECYCLE_ORDER;
 
 export type HarnessSeveridad = 'silent-killer' | 'quick-win' | 'decision' | 'wave' | 'otro';
 
@@ -86,8 +78,6 @@ const SEV_MAP: Record<string, HarnessSeveridad> = {
   '🟣': 'wave',
 };
 
-const VALID_ESTADOS = new Set<HarnessEstado>(ESTADO_ORDER);
-
 /** Detecta un tag `[L2]`/`[L3]`/`[L4]` en el texto del item. Default L1 (backlog = carril L1). */
 const CARRIL_RE = /\[(L[234])\]/i;
 
@@ -96,51 +86,19 @@ function deriveCarril(item: string): HarnessCarril {
   return (m?.[1]?.toUpperCase() as HarnessCarril) ?? 'L1';
 }
 
-/** Quita marcadores markdown de énfasis (`**`, `__`, `*`, `` ` ``) de un texto. */
-function stripEmphasis(s: string): string {
-  return s.replace(/\*\*|__|\*|`/g, '').trim();
-}
-
-/**
- * Deriva el estado canónico del campo "estado".
- * Ej: "**applied** (cont. 4)" → "applied" · "reported" → "reported".
- * Desconocido → "otro".
- */
-function normalizeEstado(raw: string): HarnessEstado {
-  const firstWord = stripEmphasis(raw).toLowerCase().match(/[a-záéíóúñ]+/)?.[0] ?? '';
-  return VALID_ESTADOS.has(firstWord as HarnessEstado)
-    ? (firstWord as HarnessEstado)
-    : 'otro';
-}
-
 /**
  * Parsea el contenido markdown del harness-backlog a HarnessItem[].
  * Puro · sin I/O. Filas no-HB (header, separador, prosa) se ignoran.
  */
 export function parseHarnessBacklog(md: string): HarnessItem[] {
-  const items: HarnessItem[] = [];
-  if (!md) return items;
-
-  for (const line of md.split('\n')) {
-    const trimmed = line.trim();
-    if (!trimmed.startsWith('|')) continue;
-
-    // Partir por pipes y descartar los extremos vacíos del borde de tabla.
-    const cells = trimmed.split('|').map((c) => c.trim());
-    if (cells.length >= 2 && cells[0] === '') cells.shift();
-    if (cells.length >= 1 && cells[cells.length - 1] === '') cells.pop();
-
-    // Necesitamos al menos: id, fecha, sev, item, estado, ref (6).
-    if (cells.length < 6) continue;
-    if (!/^HB-\d+$/.test(cells[0])) continue; // skip header/separador/prosa
-
+  return tableRows(md, /^HB-\d+$/).map((cells) => {
     const [id, fecha, sevEmoji] = cells;
     const ref = cells[cells.length - 1];
     const estadoRaw = cells[cells.length - 2];
     // El item es todo lo que quede en el medio (reabsorbe pipes accidentales).
     const item = cells.slice(3, cells.length - 2).join(' | ').trim();
 
-    items.push({
+    return {
       id,
       num: Number.parseInt(id.replace('HB-', ''), 10),
       fecha,
@@ -152,19 +110,13 @@ export function parseHarnessBacklog(md: string): HarnessItem[] {
       estado: normalizeEstado(estadoRaw),
       estadoRaw,
       ref,
-    });
-  }
-
-  return items;
+    };
+  });
 }
 
 /** Cuenta items por estado canónico (incluye `otro` si aparece). */
 export function countByEstado(items: HarnessItem[]): Record<string, number> {
-  const counts: Record<string, number> = {};
-  for (const it of items) {
-    counts[it.estado] = (counts[it.estado] ?? 0) + 1;
-  }
-  return counts;
+  return countByEstadoGeneric(items);
 }
 
 /** Cuenta items por carril del CIL (L1-L4) · para el board 4-lanes del stop semanal. */

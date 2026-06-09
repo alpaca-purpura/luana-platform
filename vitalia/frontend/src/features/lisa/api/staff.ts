@@ -27,6 +27,8 @@ import { useAuth } from "@clerk/nextjs";
 import { useTenantId } from "@/hooks/useTenantId";
 import { fetchClient } from "@/lib/api/fetchClient";
 import { useClinicId } from "@/hooks/useClinicId";
+import { ME_QUERY_KEY } from "@/hooks/useCurrentUser";
+import { useTenantStore } from "@/stores/tenant-store";
 import type {
   DoctorListItem,
   DoctorDetail,
@@ -35,7 +37,67 @@ import type {
 } from "../types/staff.types";
 import type { DoctorCreateFormValues } from "../types/staff-schema";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8002";
+// Client-side calls go SAME-ORIGIN relative (`/api/v1/vitalia/...`). The dev-app
+// Cloudflare tunnel (deploy/cloudflared/dev-config.yml) routes `^/api/.*` to the
+// backend; in prod the same-origin reverse-proxy does. Using the absolute
+// `http://localhost:8002` here cross-origins the browser → CORS block on every
+// client fetch (regression 2026-06-06: staff directory error-banner despite BE 200;
+// only SSR initialData masked it). Server-side fetches live in staff-server.ts and
+// keep the absolute NEXT_PUBLIC_API_URL (server-to-server, no CORS). Convention
+// matches features/adrian + features/fidelizacion (relative client base).
+const API_BASE = "";
+
+/**
+ * useStaffActorHeaders — headers for the BE RBAC + audit guard on staff mutations:
+ *   - X-User-Role → require_brand_owner_access (staff mutations allow {owner, admin_clinic})
+ *   - X-User-ID   → audit actor; the doctors endpoints type it as UUID (users.id)
+ *
+ * ★ Bug #4 (Chris decision 2026-06-06, option B — targeted, no shared-hook change):
+ *
+ * 1) ROLE = PER-TENANT role from the tenant store (active clinic's role), NOT the GLOBAL
+ *    role from `GET /me`. A user can be `doctor` globally (users.role) yet `owner` of a
+ *    specific clinic (user_tenants.role); tenant-scoped RBAC needs the per-tenant role.
+ *    The global role sent "doctor" → 403. `/me/tenants` (→ useTenants → tenant-store)
+ *    carries the per-tenant role.
+ *
+ * 2) X-User-ID = the DB user UUID (users.id), NOT the Clerk id. The doctors endpoints
+ *    declare `user_id: UUID = Header("X-User-ID")` and use it as the audit actor, so a
+ *    Clerk id (`user_…`) 422s ("Input should be a valid UUID"). `GET /me` returns the DB
+ *    id (meData.id); useCurrentUser exposes the Clerk id instead, so we read the DB id
+ *    from the /me query cache here (same ME_QUERY_KEY → react-query dedupes, no extra call).
+ *
+ * Both are resolved HERE, scoped to staff mutations, WITHOUT touching the shared
+ * useCurrentUser / hasPhiAccess gating. The systemic useCurrentUser per-tenant fix is
+ * tracked in a separate carril.
+ */
+export function useStaffActorHeaders(): Record<string, string> {
+  const { getToken, isLoaded, isSignedIn } = useAuth();
+  const tenantId = useTenantId();
+  const tenantRole = useTenantStore(
+    (s) =>
+      s.availableTenants.find((t) => t.id === tenantId)?.role ??
+      s.activeTenant?.role ??
+      null,
+  );
+  // Reuse the /me query cache (same key as useCurrentUser) to read the DB user UUID.
+  const meQuery = useQuery<{ id: string }>({
+    queryKey: [...ME_QUERY_KEY, tenantId],
+    queryFn: async () => {
+      const token = await getToken();
+      if (!token || !tenantId) throw new Error("Sin autenticación");
+      return fetchClient<{ id: string }>("/api/v1/iam/users/me", {
+        token,
+        tenantId,
+      });
+    },
+    enabled: isLoaded && isSignedIn === true && Boolean(tenantId),
+    staleTime: 5 * 60 * 1000,
+  });
+  return {
+    "X-User-ID": meQuery.data?.id ?? "",
+    "X-User-Role": tenantRole ?? "owner",
+  };
+}
 
 // ── Query key factory ──────────────────────────────────────────────────────────
 
@@ -64,6 +126,17 @@ export function useStaffList({ filters, initialData }: UseStaffListOptions) {
   const tenantId = useTenantId();
   const clinicId = useClinicId();
 
+  // SSR initialData seeds ONLY the default (unfiltered, page-1) view. Passing it for
+  // every key meant a search/filter key was seeded with the full list AND marked fresh
+  // (staleTime 30s) → React Query never fetched the filtered result → the search box
+  // did nothing (bug 2026-06-07). Scope initialData to the default filter set so any
+  // q/specialty/active/page change is a fresh key that actually hits the BE.
+  const isDefaultFilters =
+    !filters.q &&
+    !filters.specialty &&
+    !filters.active &&
+    (filters.page ?? 1) === 1;
+
   return useQuery({
     queryKey: staffKeys.list(filters),
     queryFn: async () => {
@@ -89,7 +162,7 @@ export function useStaffList({ filters, initialData }: UseStaffListOptions) {
       );
     },
     enabled: isLoaded && !!isSignedIn,
-    initialData,
+    initialData: isDefaultFilters ? initialData : undefined,
     staleTime: 30_000,
     retry: (failureCount, error) => {
       // SC-7: network failure — retry up to 2 times, surface error after
@@ -142,6 +215,7 @@ export function useCreateDoctor() {
   const { getToken } = useAuth();
   const tenantId = useTenantId();
   const clinicId = useClinicId();
+  const mutationHeaders = useStaffActorHeaders();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -156,6 +230,7 @@ export function useCreateDoctor() {
           token,
           tenantId,
           clinicId,
+          headers: mutationHeaders,
           body: JSON.stringify(payload),
         },
       );
@@ -180,6 +255,10 @@ export function useDoctor(
   const { getToken, isLoaded, isSignedIn } = useAuth();
   const tenantId = useTenantId();
   const clinicId = useClinicId();
+  // GET /{id} (detail) REQUIRES X-User-ID (UUID) — audit-on-PHI-read. Without it the
+  // BE 422s ("No se pudo cargar el perfil", regression 2026-06-06 bug #5). The list GET
+  // does not require it (masked). Reuse the actor headers (X-User-ID DB-UUID + role).
+  const actorHeaders = useStaffActorHeaders();
 
   return useQuery({
     queryKey: staffKeys.detail(doctorId),
@@ -188,10 +267,12 @@ export function useDoctor(
       if (!token || !tenantId) throw new Error("Sin autenticación");
       return fetchClient<DoctorDetail>(
         `${API_BASE}/api/v1/vitalia/clinics/doctors/${doctorId}`,
-        { token, tenantId, clinicId },
+        { token, tenantId, clinicId, headers: actorHeaders },
       );
     },
-    enabled: isLoaded && !!isSignedIn,
+    // Gate until X-User-ID (from /me) is ready — firing the detail GET before it
+    // resolves sends X-User-ID:"" → 422 race ("No se pudo cargar el perfil", bug #5).
+    enabled: isLoaded && !!isSignedIn && !!actorHeaders["X-User-ID"],
     initialData,
     staleTime: 30_000,
   });
@@ -223,6 +304,7 @@ export function usePatchDoctor(doctorId: string) {
   const { getToken } = useAuth();
   const tenantId = useTenantId();
   const clinicId = useClinicId();
+  const mutationHeaders = useStaffActorHeaders();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -236,6 +318,7 @@ export function usePatchDoctor(doctorId: string) {
           token,
           tenantId,
           clinicId,
+          headers: mutationHeaders,
           body: JSON.stringify(payload),
         },
       );
@@ -264,6 +347,7 @@ export function useGenerateBio(doctorId: string) {
   const { getToken } = useAuth();
   const tenantId = useTenantId();
   const clinicId = useClinicId();
+  const mutationHeaders = useStaffActorHeaders();
 
   return useMutation({
     mutationFn: async () => {
@@ -276,6 +360,7 @@ export function useGenerateBio(doctorId: string) {
           token,
           tenantId,
           clinicId,
+          headers: mutationHeaders,
           body: JSON.stringify({}),
         },
       );
@@ -294,6 +379,7 @@ export function useAvatarUpload(doctorId: string) {
   const { getToken } = useAuth();
   const tenantId = useTenantId();
   const clinicId = useClinicId();
+  const mutationHeaders = useStaffActorHeaders();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -318,6 +404,7 @@ export function useAvatarUpload(doctorId: string) {
             Authorization: `Bearer ${token}`,
             "X-Tenant-ID": tenantId,
             ...(clinicId ? { "X-Clinic-ID": clinicId } : {}),
+            ...mutationHeaders,
           },
           body: formData,
           signal: controller.signal,
@@ -343,6 +430,7 @@ export function useAvatarUpload(doctorId: string) {
           token,
           tenantId,
           clinicId,
+          headers: mutationHeaders,
           body: JSON.stringify({ avatar_key: key }),
         },
       );
@@ -372,13 +460,20 @@ export function useAvailabilityBlocks(doctorId: string) {
 
   return useQuery({
     queryKey: staffKeys.blocks(doctorId),
-    queryFn: async () => {
+    queryFn: async (): Promise<import("../types/staff.types").AvailabilityBlock[]> => {
       const token = await getToken();
       if (!token || !tenantId) throw new Error("Sin autenticación");
-      return fetchClient<import("../types/staff.types").AvailabilityBlock[]>(
+      // BE returns the envelope { blocks: [...] } (AvailabilityBlocksResponse), NOT a
+      // bare array — returning it raw made AvailabilityCalendar do `(blocks).filter` on
+      // an object → "filter is not a function" crash on the horarios tab (bug #6,
+      // 2026-06-06). Unwrap `.blocks`.
+      const res = await fetchClient<{
+        blocks: import("../types/staff.types").AvailabilityBlock[];
+      }>(
         `${API_BASE}/api/v1/vitalia/clinics/doctors/${doctorId}/availability-blocks`,
         { token, tenantId, clinicId },
       );
+      return res.blocks ?? [];
     },
     enabled: isLoaded && !!isSignedIn && !!doctorId,
     staleTime: 30_000,
@@ -409,6 +504,7 @@ export function useCreateBlock(doctorId: string) {
   const { getToken } = useAuth();
   const tenantId = useTenantId();
   const clinicId = useClinicId();
+  const mutationHeaders = useStaffActorHeaders();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -422,6 +518,7 @@ export function useCreateBlock(doctorId: string) {
           token,
           tenantId,
           clinicId,
+          headers: mutationHeaders,
           body: JSON.stringify(payload),
         },
       );
@@ -453,6 +550,7 @@ export function useUpdateBlock(doctorId: string) {
   const { getToken } = useAuth();
   const tenantId = useTenantId();
   const clinicId = useClinicId();
+  const mutationHeaders = useStaffActorHeaders();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -472,6 +570,7 @@ export function useUpdateBlock(doctorId: string) {
           token,
           tenantId,
           clinicId,
+          headers: mutationHeaders,
           body: JSON.stringify(payload),
         },
       );
@@ -501,6 +600,7 @@ export function useDeleteBlock(doctorId: string) {
   const { getToken } = useAuth();
   const tenantId = useTenantId();
   const clinicId = useClinicId();
+  const mutationHeaders = useStaffActorHeaders();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -514,6 +614,7 @@ export function useDeleteBlock(doctorId: string) {
           token,
           tenantId,
           clinicId,
+          headers: mutationHeaders,
         },
       );
     },

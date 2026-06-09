@@ -1,5 +1,15 @@
 #!/usr/bin/env python3
-"""Validate that ``scripts/ci-parity.sh`` mirrors ``deploy-prod.yml``.
+"""Validate that ``scripts/ci-parity.sh`` mirrors the CI quality-gates job.
+
+DEFERRED (flagged W4b 2026-06-09): the canonical workflow was ``deploy-prod.yml``
+with a single ``quality-gates`` job; CI has since been restructured (``ci.yml`` /
+``cd-prod.yml``, gates split across ``python-lint`` / ``python-test`` /
+``arch-fitness`` / ``ts-lint`` / ``ts-test``) AND GitHub Actions is deferred
+(``docs/rules-detail/github-actions-deferred.md``). While the target workflow is
+absent this validator degrades to a LOUD advisory (exit 0) instead of a silent
+``exit 2`` that its caller (``ci-parity.sh``) masks — a dead gate is worse than no
+gate. Repoint ``WORKFLOW`` + re-derive the ``quality-gates``-equivalent step set
+from ``ci.yml`` when CI is reactivated.
 
 Why
 ===
@@ -123,8 +133,18 @@ def signature(cmd: str) -> str | None:
 
 def main() -> int:
     if not WORKFLOW.exists():
-        print(f"ERROR: workflow not found at {WORKFLOW}", file=sys.stderr)
-        return 2
+        # CI restructured (deploy-prod.yml → ci.yml/cd-prod.yml) + GitHub Actions
+        # deferred. Do NOT silently exit 2 (a dead gate masked by the advisory
+        # caller); surface it loudly + pass advisory until CI is reactivated and
+        # WORKFLOW + the quality-gates job mapping are repointed.
+        print(
+            f"ADVISORY · ci-parity mirror check INACTIVE: target workflow {WORKFLOW.name} "
+            "no longer exists (CI restructured to ci.yml/cd-prod.yml; GitHub Actions "
+            "deferred — docs/rules-detail/github-actions-deferred.md). Repoint WORKFLOW + "
+            "the quality-gates job mapping when CI is reactivated.",
+            file=sys.stderr,
+        )
+        return 0
     if not SCRIPT.exists():
         print(f"ERROR: script not found at {SCRIPT}", file=sys.stderr)
         return 2

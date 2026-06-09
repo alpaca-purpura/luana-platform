@@ -1,18 +1,7 @@
----
-globs: "{**/backend/src/modules/*/analytics/**/*.py,core/@luana/format/src/format-money*,**/frontend/src/lib/format/**}"
-description: Stub — invoca backend-expert skill
----
-
 # Currency Handling
 
-Monetary value en UI usa data source currency, nunca hardcoded.
+> **Slim pointer (W1-Phase2 eviction 2026-06-09 · tier: project).** Cuerpo operativo + ex-always-on body (flow provider→DTO→FE) en `backend-expert` skill → `references/currency-handling.md`.
 
-Flow: provider → `official_metrics.currency` → service detecta → DTO `currency: str | None` → FE `formatMoney(amount, currency)`.
+Trigger: monetary fields en DTOs/KPIs/FE display.
 
-- BE: cada DTO con monetary fields incluye `currency: str | None = None`. Service queries currency de `official_metrics` for tenant+channel.
-- FE: nunca hardcode 'USD'. Fallback `response.currency ?? parentData.currency ?? 'USD'`.
-- KPI `unit == "currency"` MUST include `currency` from channel.
-
-Detalle + tabla currencies LatAm (PEN/USD/MXN/COP) en `backend-expert` skill → `references/currency-handling.md`.
-
-**Prohibido:** `formatMoney(value, 'USD')` sin verify. DTOs monetary sin `currency`. Skip currency detection.
+No-skip 1-liner: currency viene del data source (`official_metrics.currency`) — DTO monetary SIEMPRE con `currency: str | None` · FE fallback `response.currency ?? parentData.currency ?? 'USD'` — NUNCA `formatMoney(value, 'USD')` sin verify.

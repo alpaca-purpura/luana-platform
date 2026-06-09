@@ -65,7 +65,7 @@ echo "WS=$WS BRAND=$BRAND"
 
 1. `${WS}/CLAUDE.md` + `${WS}/AGENTS.md` — project constraints (multibrand reorg)
 2. `<pr_folder>/03-arch.md` (or `03-arch-fe.md`) — TypeScript types + API routes (verify FE types match)
-3. `<pr_folder>/01-spec.md` (wireframes inline) or `02-design-ui.md` — component hierarchy / data flow (verify implementation matches)
+3. `<pr_folder>/01-spec.md § Wireframes` (inline) + `<pr_folder>/mockups/` — component hierarchy / data flow (verify implementation matches; `02-design-ui.md` RETIRED)
 4. `${WS}/{brand}/docs/product/modules/{module}.md` — what the module exposes today; flag drift
 5. `${WS}/{brand}/config/brand.yaml` — brand-specific feature flags + domain config
 6. `.claude/skills/frontend-expert/references/` — fsd-cheatsheet, frontend-quality, eslint-patterns, frontend-patterns, component-rules, styling-rules, testing-patterns, e2e-testing, code-audit, studio-section-pages
@@ -434,7 +434,7 @@ Referencias:
 > SSoT: `.claude/rules/frontend-visual-fidelity.md`. Carril A self-fix aplica (swap a átomo/token/estado cubierto por test existente).
 
 - [ ] **Design-system-first:** reutiliza átomos `components/ui/` + moléculas `components/shared/` + tokens (SSoT `{brand}/frontend/src/app/globals.css` + `tailwind.config.ts` — NO `@luana/design-tokens`, que solo exporta z-index). Si existe `{brand}-design-system` (ej. `vitalia-design-system`), ése es el inventario autoritativo a contrastar. NINGUNA primitiva reinventada, NINGÚN hex/px hardcodeado que ya es token. (Reinventar átomo → FAIL, también cae en Cat 13 mirror.)
-- [ ] **Mockup adherence:** elementos clave del mockup (`02-design-ui.md`/`mockups/`) presentes + estados (empty/loading/error/success) renderizados. Verificación: Playwright visual scoped (`04-validators § visual`) o `chrome-devtools-verify`.
+- [ ] **Mockup adherence:** elementos clave del mockup (`01-spec § Wireframes` + `mockups/`) presentes + estados (empty/loading/error/success) renderizados. Verificación: Playwright visual scoped (`04-validators § visual`) o `chrome-devtools-verify`.
 - [ ] **Scope discipline:** NO se construyó fuera de lo que scopean los scenarios de `01-spec.md` (el mockup puede mostrar de más; exceso = scope creep + posible isla).
 
 **FAIL** if:

@@ -9,26 +9,26 @@ context loss / no orphan state across sessions.
 
 Checks (each block-or-warn classified):
 
-  1. WIP cap enforcement (BLOCK if exceeded — v4 paradigma 10 estados):
-     - refining stories ≤ 3 (drafts en curso)
-     - refined stories ≤ 5 (awaiting architect)
-     - ready stories ≤ 5 (architect package complete)
-     - developing stories ≤ 3 (autonomous build active)
-     - developed stories ≤ 2 (validators GREEN, awaiting QA)
-     - reviewing stories ≤ 2 (auditor en curso)
-     - ready stories ≤ 5
-     (legacy_exempt: stories tagged legacy:* exempt — forward-only enforcement)
+  1. WIP cap enforcement (BLOCK if exceeded) — COARSE per-brand session-close net:
+     counts cap-eligible stories per macro-state in EVERY
+     {brand}/docs/product/BACKLOG.yaml against CAPS (below). Brands are
+     auto-discovered by layout (glob — no hardcoded enum; future brands picked up).
+     (legacy_exempt: stories tagged legacy:* exempt — forward-only enforcement.)
+     NOTE: the CANONICAL WIP cap is module-scoped (developed≤1 per code:{module}),
+     enforced by the pre-commit story-closure gate (story-closure-gate.md WIP-cap v2);
+     this Stop hook is the coarse net, NOT that gate.
 
   2. BACKLOG freshness (WARN if stale):
      - generate_backlog.py --check passes
      - reconcile_capabilities.py --check passes
+     (run under the workspace-root .venv)
 
   3. WIP not committed (WARN, suggest commit/stash):
      - git status reports modified/untracked files
 
   4. Story checkpoint freshness (WARN):
-     - Stories with state in {refining,refined,ready,developing,developed,reviewing} but checkpoint.md
-       last_modified > 7d → flag stale
+     - Stories (in any {brand}/docs/product/stories) with state in ACTIVE_STATES
+       but checkpoint.md last_modified > 7d → flag stale
 
 Exit codes (Claude Code Stop hook protocol):
   0 — session may close. Either fully clean OR warnings only (non-blocking).
@@ -50,7 +50,7 @@ Settings.json hook integration:
         "matcher": "",
         "hooks": [{
           "type": "command",
-          "command": "${CLAUDE_PROJECT_DIR}/backend/.venv/bin/python "
+          "command": "${CLAUDE_PROJECT_DIR}/.venv/bin/python "
                      "${CLAUDE_PROJECT_DIR}/scripts/validate_session_close.py"
         }]
       }]
@@ -68,70 +68,80 @@ from pathlib import Path
 
 import yaml
 
-# ─── Constants (must match scripts/generate_backlog.py CAPS) ───────────
+# ─── Constants — read from the harness seam project.config.yaml (D1 · W5b 2026-06-09) ───
+# COARSE per-brand session-close net. ONE store: scripts/generate_backlog.py reads the SAME
+# `wip_caps` slot, so the byte-identical CAPS dup is gone (charter §3 DRY). The module-scoped
+# ≤1 rule is a DIFFERENT concern (story-closure-gate.md + pre-commit 12-story-closure gate),
+# NOT duplicated here (D1 ratified).
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import harness_config as _hc  # noqa: E402 — own script dir put on sys.path above
 
-CAPS = {
-    "refining_max": 3,
-    "refined_max": 5,
-    "ready_max": 5,
-    "developing_max": 3,
-    "developed_max": 10,
-    "reviewing_max": 2,
-}
-CHECKPOINT_STALE_DAYS = 7
-ACTIVE_STATES = {"refining", "refined", "ready", "developing", "developed", "reviewing"}
-
-
-def _read_backlog_yaml(repo: Path) -> dict | None:
-    """Read BACKLOG.yaml if exists; return parsed dict or None."""
-    path = repo / "docs" / "product" / "BACKLOG.yaml"
-    if not path.exists():
-        return None
-    try:
-        return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
-    except yaml.YAMLError:
-        return None
+_WIP = _hc.get("wip_caps")
+CAPS = dict(_WIP["coarse_session_net"])  # refining_max … reviewing_max
+CHECKPOINT_STALE_DAYS = _WIP["staleness_days"]["checkpoint_stale"]
+ACTIVE_STATES = set(_WIP["active_states"])
 
 
-def check_wip_caps(backlog: dict) -> list[str]:
-    """Return list of cap violations (BLOCK).
+def _iter_brand_backlogs(repo: Path):
+    """Yield (brand, backlog_dict) for every {brand}/docs/product/BACKLOG.yaml.
 
-    v4 paradigma: only kind=story counted (outcomes are epics, exempt).
-    Legacy stories tagged `legacy:*` exempt (forward-only enforcement).
+    Multibrand: the cap-eligible story buckets live PER-BRAND (the root
+    docs/product/BACKLOG.yaml is the platform/cross-brand backlog — outcomes,
+    no story buckets). Brands are auto-discovered by layout (glob, no hardcoded
+    enum) so future brands are picked up automatically (OCP).
+    """
+    for path in sorted(repo.glob("*/docs/product/BACKLOG.yaml")):
+        brand = path.relative_to(repo).parts[0]
+        try:
+            data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+        except yaml.YAMLError:
+            continue
+        yield brand, data
+
+
+def check_wip_caps(repo: Path) -> list[str]:
+    """Return list of cap violations (BLOCK) — coarse per-brand net.
+
+    Counts cap-eligible stories (kind=story, no `legacy:*` tag — forward-only)
+    per macro-state in EACH brand's BACKLOG.yaml, comparing to CAPS per brand.
+    NOT the canonical module-scoped gate (that is the pre-commit story-closure
+    gate, story-closure-gate.md WIP-cap v2) — this is a coarse session-close net.
     """
     violations: list[str] = []
-    buckets = backlog.get("buckets", {})
-    for state, cap_key in [
-        ("refining", "refining_max"),
-        ("refined", "refined_max"),
-        ("ready", "ready_max"),
-        ("developing", "developing_max"),
-        ("developed", "developed_max"),
-        ("reviewing", "reviewing_max"),
-    ]:
-        items = buckets.get(state, [])
-        # Filter cap-eligible: kind=story AND no legacy:* tag
-        eligible = [
-            it
-            for it in items
-            if it.get("kind") == "story"
-            and not any(t.startswith("legacy:") for t in it.get("tags", []))
-        ]
-        n = len(eligible)
-        cap = CAPS[cap_key]
-        if n > cap:
-            violations.append(
-                f"{state}: {n} cap-eligible stories > cap {cap} ({n - cap} over). Park or finish before adding more."
-            )
+    for brand, backlog in _iter_brand_backlogs(repo):
+        buckets = backlog.get("buckets", {})
+        for state, cap_key in [
+            ("refining", "refining_max"),
+            ("refined", "refined_max"),
+            ("ready", "ready_max"),
+            ("developing", "developing_max"),
+            ("developed", "developed_max"),
+            ("reviewing", "reviewing_max"),
+        ]:
+            items = buckets.get(state, [])
+            # Filter cap-eligible: kind=story AND no legacy:* tag
+            eligible = [
+                it
+                for it in items
+                if isinstance(it, dict)
+                and it.get("kind") == "story"
+                and not any(str(t).startswith("legacy:") for t in it.get("tags", []))
+            ]
+            n = len(eligible)
+            cap = CAPS[cap_key]
+            if n > cap:
+                violations.append(
+                    f"[{brand}] {state}: {n} cap-eligible stories > cap {cap} ({n - cap} over). Park or finish before adding more."
+                )
     return violations
 
 
 def check_backlog_freshness(repo: Path) -> list[str]:
     """Run generate_backlog.py --check + reconcile_capabilities.py --check. Return warnings."""
     warns: list[str] = []
-    venv_py = repo / "backend" / ".venv" / "bin" / "python"
+    venv_py = repo / ".venv" / "bin" / "python"
     if not venv_py.exists():
-        return ["backend/.venv/bin/python missing — skipping freshness checks"]
+        return [".venv/bin/python missing — skipping freshness checks"]
 
     for script_name, label in [
         ("generate_backlog.py", "BACKLOG drift"),
@@ -173,36 +183,35 @@ def check_uncommitted_wip(repo: Path) -> list[str]:
 
 
 def check_checkpoint_staleness(repo: Path) -> list[str]:
-    """Stories in {ready,building,review} with checkpoint.md older than 7d."""
+    """Stories (any {brand}/docs/product/stories) in ACTIVE_STATES, checkpoint.md >7d."""
     warns: list[str] = []
-    stories_dir = repo / "docs" / "product" / "stories"
-    if not stories_dir.exists():
-        return warns
     cutoff = datetime.now(timezone.utc).timestamp() - CHECKPOINT_STALE_DAYS * 86400
-    for d in sorted(stories_dir.iterdir()):
-        if not d.is_dir() or d.name.startswith("."):
-            continue
-        cp = d / "checkpoint.md"
-        if not cp.exists():
-            continue
-        try:
-            text = cp.read_text(encoding="utf-8")
-        except OSError:
-            continue
-        # Quick state extraction
-        state = None
-        for line in text.split("\n", 50):
-            if line.startswith("state:"):
-                state = line.split(":", 1)[1].strip()
-                break
-        if state not in ACTIVE_STATES:
-            continue
-        mtime = cp.stat().st_mtime
-        if mtime < cutoff:
-            age_days = int((datetime.now(timezone.utc).timestamp() - mtime) / 86400)
-            warns.append(
-                f"{d.name}: state={state}, checkpoint.md {age_days}d stale (>7d)"
-            )
+    for stories_dir in sorted(repo.glob("*/docs/product/stories")):
+        brand = stories_dir.relative_to(repo).parts[0]
+        for d in sorted(stories_dir.iterdir()):
+            if not d.is_dir() or d.name.startswith("."):
+                continue
+            cp = d / "checkpoint.md"
+            if not cp.exists():
+                continue
+            try:
+                text = cp.read_text(encoding="utf-8")
+            except OSError:
+                continue
+            # Quick state extraction
+            state = None
+            for line in text.split("\n", 50):
+                if line.startswith("state:"):
+                    state = line.split(":", 1)[1].strip()
+                    break
+            if state not in ACTIVE_STATES:
+                continue
+            mtime = cp.stat().st_mtime
+            if mtime < cutoff:
+                age_days = int((datetime.now(timezone.utc).timestamp() - mtime) / 86400)
+                warns.append(
+                    f"[{brand}] {d.name}: state={state}, checkpoint.md {age_days}d stale (>7d)"
+                )
     return warns
 
 
@@ -220,14 +229,14 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    backlog = _read_backlog_yaml(args.repo)
     block_violations: list[str] = []
     warns: list[str] = []
 
-    if backlog is None:
-        warns.append("BACKLOG.yaml missing — run scripts/generate_backlog.py first.")
-    else:
-        block_violations.extend(check_wip_caps(backlog))
+    if not any(True for _ in _iter_brand_backlogs(args.repo)):
+        warns.append(
+            "no {brand}/docs/product/BACKLOG.yaml found — run scripts/generate_backlog.py first."
+        )
+    block_violations.extend(check_wip_caps(args.repo))
 
     warns.extend(check_backlog_freshness(args.repo))
     warns.extend(check_uncommitted_wip(args.repo))

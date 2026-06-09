@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -13,7 +14,8 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/cn';
-import { viewAppliesTo, type CockpitView } from '@/lib/platform-context';
+import { viewAppliesTo, isPlatform, PLATFORM_LABEL, type CockpitView } from '@/lib/platform-context';
+import { listCilBoard } from '@/lib/api-client';
 
 interface NavItem {
   href: string;
@@ -33,12 +35,22 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/learnings', label: 'Learnings', Icon: BookOpen, view: 'learnings' },
 ];
 
-// Vistas transversales (no dependen de la marca · core/harness).
+// Vistas transversales (no dependen de la marca · core/harness/CIL).
 const CORE_NAV_ITEMS: NavItem[] = [
-  { href: '/harness', label: 'Harness Backlog', Icon: Wrench },
+  { href: '/harness', label: 'Harness · CIL', Icon: Wrench },
 ];
 
-function NavLink({ item, active, dimmed }: { item: NavItem; active: boolean; dimmed?: boolean }) {
+function NavLink({
+  item,
+  active,
+  dimmed,
+  badge,
+}: {
+  item: NavItem;
+  active: boolean;
+  dimmed?: boolean;
+  badge?: number;
+}) {
   const { href, label, Icon } = item;
   return (
     <Link
@@ -54,12 +66,32 @@ function NavLink({ item, active, dimmed }: { item: NavItem; active: boolean; dim
     >
       <Icon className="w-4 h-4" />
       <span>{label}</span>
+      {badge != null && badge > 0 && (
+        <span
+          className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-amber-900/40 text-amber-300 border border-amber-700/50"
+          title={`${badge} items abiertos en el CIL (L1 harness + L3 deuda)`}
+        >
+          {badge}
+        </span>
+      )}
     </Link>
   );
 }
 
 export function Sidebar({ brand }: { brand: string }) {
   const pathname = usePathname();
+  // Badge en vivo del nav /harness = items abiertos del CIL (L1 + L3). Best-effort:
+  // si el fetch falla (worktree sin archivos), el badge simplemente no aparece.
+  const [cilOpen, setCilOpen] = useState<number | null>(null);
+  useEffect(() => {
+    let alive = true;
+    listCilBoard()
+      .then((b) => alive && setCilOpen(b.l1.open + b.l3.open))
+      .catch(() => alive && setCilOpen(null));
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   return (
     <aside className="bg-[var(--color-panel)] border-r border-[var(--color-border)] w-56 flex flex-col shrink-0">
@@ -84,11 +116,31 @@ export function Sidebar({ brand }: { brand: string }) {
           Transversal · core
         </div>
         {CORE_NAV_ITEMS.map((item) => (
-          <NavLink key={item.href} item={item} active={pathname === item.href} />
+          <NavLink
+            key={item.href}
+            item={item}
+            active={pathname === item.href}
+            badge={item.href === '/harness' ? cilOpen ?? undefined : undefined}
+          />
         ))}
       </nav>
       <div className="px-4 py-3 border-t border-[var(--color-border)] text-[11px] text-[var(--color-muted)]">
-        Brand activa: <span className="text-[var(--color-text)] font-medium">{brand}</span>
+        {isPlatform(brand) ? (
+          <span>
+            Contexto:{' '}
+            <span className="text-[var(--color-text)] font-medium">⬡ {PLATFORM_LABEL}</span>
+            <span className="block text-[10px] mt-0.5 italic">
+              stories transversales (owner /pm-luana) — Board + Learnings
+            </span>
+          </span>
+        ) : (
+          <span>
+            Brand activa: <span className="text-[var(--color-text)] font-medium">{brand}</span>
+            <span className="block text-[10px] mt-0.5 italic">
+              ⬡ stories platform/core → elegí «Platform · core» en el selector
+            </span>
+          </span>
+        )}
       </div>
     </aside>
   );

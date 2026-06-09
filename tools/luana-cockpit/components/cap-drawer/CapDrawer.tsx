@@ -18,6 +18,7 @@ import {
   getBidirectionalValidation,
 } from '@/lib/api-client';
 import { ExtendCapModal } from './ExtendCapModal';
+import { CapLevel } from './CapLevel';
 import { AccessSection } from './sections/AccessSection';
 import { ScenariosSection } from './sections/ScenariosSection';
 import { BusinessRulesSection } from './sections/BusinessRulesSection';
@@ -349,39 +350,54 @@ export function CapDrawer() {
             </Card>
           )}
 
-          {/* ✨ Scenarios — qué hace; sin scenarios cae al texto funcional (HB-52) */}
-          <ScenariosSection
-            scenarios={cap.scenarios ?? []}
-            userFacingDescription={cap.user_facing_description}
-            devPreview={cap.dev_preview}
-          />
+          {/* ═══ Niveles N1-N4 (cap-levels-proposal · N0 = «Cómo verlo» card arriba) ═══ */}
 
-          {/* 📁 Archivos código asociados · v3.2 cross-check — dónde vive */}
-          <CodeFilesSection
-            capId={`${cap.module}.${cap.slug}`}
-            codeIndex={codeIndex}
-            hint={codeIndexHint}
-          />
+          {/* N1 · Qué puedo hacer — casos de uso + badge de verdad (✅/🟠/⚪) */}
+          <CapLevel level="N1" title="¿Qué puedo hacer?" hint="casos de uso" defaultOpen>
+            <ScenariosSection
+              scenarios={cap.scenarios ?? []}
+              userFacingDescription={cap.user_facing_description}
+              devPreview={cap.dev_preview}
+            />
+          </CapLevel>
 
-          {/* 🔑 Acceso · v3.2 — quién entra y por dónde */}
-          {cap.access && <AccessSection access={cap.access} />}
-
-          {/* 📋 Reglas de negocio · v3.2 */}
+          {/* N2 · Bajo qué reglas — reglas de negocio + badge enforcement (🟢/🔴) */}
           {cap.business_rules && cap.business_rules.length > 0 && (
-            <BusinessRulesSection rules={cap.business_rules} />
+            <CapLevel level="N2" title="¿Bajo qué reglas?" hint="reglas de negocio" defaultOpen>
+              <BusinessRulesSection rules={cap.business_rules} />
+            </CapLevel>
           )}
 
-          {/* 🔗 Capabilities relacionadas · v3.2 */}
-          {cap.related_capabilities && (
-            <RelatedCapsSection related={cap.related_capabilities} />
+          {/* N3 · Quién y por dónde — acceso / entry_points / roles */}
+          {cap.access && (
+            <CapLevel level="N3" title="¿Quién entra y por dónde?" hint="acceso" defaultOpen={false}>
+              <AccessSection access={cap.access} />
+            </CapLevel>
           )}
 
-          {/* 🔍 Validación bidireccional · v3.2 cross-check */}
-          <BidirectionalSection
-            capId={`${cap.module}.${cap.slug}`}
-            report={bidirReport}
-            hint={bidirHint}
-          />
+          {/* N4 · Dónde vive / cómo se conecta — código + deps + validación bidireccional */}
+          <CapLevel
+            level="N4"
+            title="¿Dónde vive y cómo se conecta?"
+            hint="código · deps · validación"
+            defaultOpen={false}
+          >
+            <div className="space-y-4">
+              <CodeFilesSection
+                capId={`${cap.module}.${cap.slug}`}
+                codeIndex={codeIndex}
+                hint={codeIndexHint}
+              />
+              {cap.related_capabilities && (
+                <RelatedCapsSection related={cap.related_capabilities} />
+              )}
+              <BidirectionalSection
+                capId={`${cap.module}.${cap.slug}`}
+                report={bidirReport}
+                hint={bidirHint}
+              />
+            </div>
+          </CapLevel>
 
           {/* Changelog */}
           <section>

@@ -56,3 +56,17 @@ MetricKpiDTO(
 - `formatMoney(value, 'USD')` sin check si data es USD
 - DTOs con monetary fields sin `currency`
 - Services que skip currency detection para monetary responses
+
+---
+
+## Ex always-on rule body (evicted W1-Phase2 2026-06-09 — era `.claude/rules/currency-handling.md`)
+
+Monetary value en UI usa data source currency, nunca hardcoded.
+
+Flow: provider → `official_metrics.currency` → service detecta → DTO `currency: str | None` → FE `formatMoney(amount, currency)`.
+
+- BE: cada DTO con monetary fields incluye `currency: str | None = None`. Service queries currency de `official_metrics` for tenant+channel.
+- FE: nunca hardcode 'USD'. Fallback `response.currency ?? parentData.currency ?? 'USD'`.
+- KPI `unit == "currency"` MUST include `currency` from channel.
+
+**Prohibido:** `formatMoney(value, 'USD')` sin verify. DTOs monetary sin `currency`. Skip currency detection.

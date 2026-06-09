@@ -79,7 +79,7 @@ await expect(page.getByText('Aún no hay reservas')).toBeVisible();
 
 | Layer | Mecanismo | Status |
 |---|---|---|
-| 1 | `/architect` FE: `02-design-ui.md` elementos clave + `04-validators § playwright_visual_scope` (story_scope vs out_of_mockup_scope) | ⏳ architect-fe SKILL update |
+| 1 | `/architect` FE: `02-design-ui.md` elementos clave + `04-validators § playwright_visual_scope` (story_scope vs out_of_mockup_scope) | ⏳ architect references/fe.md update |
 | 2 | `builder-frontend` step: design-system-first gate + mockup adherence + scope discipline | ⏳ builder-frontend update |
 | 3 | `auditor-frontend` categoría Visual fidelity | ⏳ auditor-frontend update |
 | 4 | Playwright visual assertions scoped (`04-validators § visual`) | ✅ schema existe (reforzar scoping) |

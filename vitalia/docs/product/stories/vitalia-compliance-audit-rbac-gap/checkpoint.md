@@ -6,16 +6,25 @@ module: compliance
 capability: compliance.hipaa-lite-defensive-stack
 cap_target: hipaa-lite-defensive-stack
 cap_change_type: fix
-state: idea
+state: dropped
 release: F2
 architecture_pattern: ADR-vitalia-004
 priority: critical
 ratified_by_chris: false
 parallel_safe: true
-last_modified: 2026-05-28
+last_modified: 2026-06-07
 security_finding: true
 repro_verified: false
+dropped_date: 2026-06-07
+dropped_reason: >-
+  Ya fixeado por hotfix `18e10822` (RBAC en GET /medical-compliance/{events,export-csv} +
+  test_compliance_endpoints_rbac.py). El gap que motivaba esta story está cerrado.
+  Detectado durante el reencuadre de vitalia-fase2-lisa-compliance (2026-06-07).
+  Residual SOFT: cross_check_4 estructural (router compliance vive en routes.py
+  `# cap: __shared__`) → follow-up HB-59, no es esta story.
 ---
+
+> ⛔ **DROPPED 2026-06-07** — el fix RBAC ya landed en hotfix `18e10822`. Ver frontmatter `dropped_reason`. Lo de abajo es el hallazgo histórico (ya resuelto).
 
 # Gap de seguridad RBAC · endpoint del log de auditoría HIPAA-lite
 

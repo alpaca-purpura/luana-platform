@@ -175,10 +175,14 @@ validators:
   - id: integration_e2e
     category: functional
     type: playwright
-    cmd: "cd {brand}/frontend && E2E_BASE_URL=http://localhost:{brand_port} npx playwright test --project=smoke e2e/regression/{m}-{story}.spec.ts"
+    # ★ HB-45 — el `--project` DEBE coincidir con el directorio del spec, o Playwright matchea
+    #   0 tests y sale 0 (FALSO VERDE). Regla: spec en e2e/regression/ → --project=regression;
+    #   spec en e2e/smoke/ → --project=smoke. gate-runner trata "0 tests matched" como FAIL.
+    cmd: "cd {brand}/frontend && E2E_BASE_URL=http://localhost:{brand_port} npx playwright test --project=regression e2e/regression/{m}-{story}.spec.ts"
     must_pass: true
+    expect_min_tests: 1                              # ★ HB-45 — gate FALLA si Playwright corre <1 test (anti falso-verde)
     timeout_sec: 240
-    description: "Smoke E2E, Clerk auth, full flow. {brand_port}: nicolify=3001 vitalia=3002 comunify=3003 lupulo=3004"
+    description: "Regression E2E, Clerk auth, full flow. {brand_port}: nicolify=3001 vitalia=3002 comunify=3003 lupulo=3004. El --project SIEMPRE coincide con el dir del spec (regression/smoke)."
 
   - id: live_verify
     category: functional
@@ -228,12 +232,15 @@ validators:
   # ═══════════════════════════════════════════════════════════════
   # AGENTIC EVAL — pass^k + rubrics + trajectory + cost/latency
   # Apply: SOLO si story toca modules/copilot o modules/sales_agent runtime
+  # ★ SSoT del plan de eval: 02-design-agentic.md (owner /ux-agentico · MF-22) + agentic-eval-policy.md.
+  #   Mecanismo REAL = `pytest tests/agentic_evals/{m}/` (NO scripts/run_*.py — eran phantom · D-X3).
+  #   Goldens/rubrics/personas viven en el design-agentic; estas entradas seleccionan la dimensión vía `-k`.
   # ═══════════════════════════════════════════════════════════════
 
   - id: agentic_pass_k
     category: agentic_eval
-    type: shell
-    cmd: "cd {brand}/backend && ${WS}/.venv/bin/python scripts/run_agent_evals.py --story={story-id} --personas=A,B,C"  # MISSING — create before use
+    type: pytest
+    cmd: "cd {brand}/backend && ${WS}/.venv/bin/pytest tests/agentic_evals/{m}/{story-id}.py -k pass_k --trials=3"
     rubrics: [voice-fidelity, goal-completion, tool-call-accuracy]
     pass_k:
       trials: 3
@@ -245,16 +252,16 @@ validators:
 
   - id: agentic_trajectory
     category: agentic_eval
-    type: shell
-    cmd: "cd {brand}/backend && ${WS}/.venv/bin/python scripts/run_trajectory_eval.py --expected=docs/specs/trajectories/{story-id}.yaml"  # MISSING — create before use
+    type: pytest
+    cmd: "cd {brand}/backend && ${WS}/.venv/bin/pytest tests/agentic_evals/{m}/{story-id}.py -k trajectory"
     must_pass: true
     timeout_sec: 300
     description: "Tool call sequence + LangGraph state transitions vs expected trajectory (agentevals lib)"
 
   - id: agentic_cost_budget
     category: agentic_eval
-    type: shell
-    cmd: "cd {brand}/backend && ${WS}/.venv/bin/python scripts/check_cost_budget.py --story={story-id}"  # MISSING — create before use
+    type: pytest
+    cmd: "cd {brand}/backend && ${WS}/.venv/bin/pytest tests/agentic_evals/{m}/{story-id}.py -k cost_budget"
     threshold:
       cost_usd_max: 0.50
       tokens_max: 6000
@@ -265,8 +272,8 @@ validators:
 
   - id: agentic_voice_fidelity
     category: agentic_eval
-    type: shell
-    cmd: "cd {brand}/backend && ${WS}/.venv/bin/python scripts/check_voice_fidelity.py --story={story-id} --tenant-fixtures=A,B,C"  # MISSING — create before use
+    type: pytest
+    cmd: "cd {brand}/backend && ${WS}/.venv/bin/pytest tests/agentic_evals/{m}/{story-id}.py -k voice_fidelity"
     rubric: docs/specs/rubrics/voice-fidelity.md
     threshold: 0.80
     must_pass: true
@@ -283,8 +290,8 @@ validators:
 
   - id: agentic_adversarial
     category: agentic_eval
-    type: shell
-    cmd: "cd {brand}/backend && ${WS}/.venv/bin/python scripts/run_adversarial_suite.py --story={story-id}"  # MISSING — create before use
+    type: pytest
+    cmd: "cd {brand}/backend && ${WS}/.venv/bin/pytest tests/agentic_evals/{m}/{story-id}.py -k adversarial"
     must_pass: true
     timeout_sec: 600
     description: "Prompt injection + jailbreak + PII leak + scope creep tests"
@@ -314,10 +321,12 @@ validators:
   - id: arch_anti_duplication_scan
     category: architectural_validation
     type: shell
-    cmd: "scripts/scan_cross_brand_mirror.sh {brand} {m}"  # MISSING — create before use
+    # Mirror scan REAL (anti-duplication.md Step-0 grep) — basename del módulo colisionando cross-brand.
+    # NO hay scripts/scan_cross_brand_mirror.sh (era phantom · D-X3); el enforce vivo = auditor Cat 12 + architect pre-builder.
+    cmd: "! for B in nicolify vitalia comunify lupulo; do [ \"$B\" = {brand} ] && continue; comm -12 <(find {brand}/backend/src/modules/{brand}/{m} -name '*.py' -printf '%f\\n' 2>/dev/null | sort -u) <(find $B/backend/src -name '*.py' -printf '%f\\n' 2>/dev/null | sort -u); done | grep ."
     must_pass: true
     timeout_sec: 30
-    description: "Detecta mirrors cross-brand del módulo. Match → spawn promotion proposal."
+    description: "Detecta mirrors cross-brand del módulo (basename collision · anti-duplication.md). Match → auditor Cat 12 + spawn promotion proposal."
 
   - id: arch_fsd_boundaries
     category: architectural_validation

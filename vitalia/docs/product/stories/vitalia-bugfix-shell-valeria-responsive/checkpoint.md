@@ -1,6 +1,7 @@
 ---
 story_id: vitalia-bugfix-shell-valeria-responsive
-type: bugfix
+type: ui-story                       # ★ reclasificado bugfix→ui-story (Chris confirmó duda 4, 2026-06-06): scope creció a rediseño de máquina de estados + contrato N3 + refactor cross-módulo. Ya no es bugfix lite.
+architecture_pattern: ADR-vitalia-004   # punto 7 (N3 list/detail) lo invoca; wrapper cambios citan ADR-vitalia-006 (shell-state)
 
 # Release entity (contenedor temporal · lifecycle.md § 5)
 release: F3
@@ -10,11 +11,24 @@ cap_target: null                    # higiene UX cross-cap del shell-organism (c
 cap_change_type: fix                # corrige el squeeze (BUG #1) + ajusta defaults responsive del shell
 parent_story: null
 
-state: developing                   # idea → developing directo (bugfix lite, Chris-directed "seguí con Track B"; sin /po-ux+/architect formal — 3 puntos ya especificados por Chris + tablet ratificado)
-module: shell
+state: refined                      # ★ 2026-06-06 /po-ux cerró refined: spec v3 RONDA 1+2 + ambas firmas (input_spec_signed + mockup_final_signed) + mapa funcional + matriz sin huecos. Build previo (614bfbd5 + 29451ef6) = BASELINE (puntos 3+5), NO se descarta.
+phase: SPEC_RATIFIED
+module: shell                       # ⚠️ scope real cross-módulo [shell, clinics, crm] por bundle 1-7 (punto 7) — ver 01-spec § Coordinación
+cross_module_scope: [shell, clinics, crm]
 agent_owner: null                   # shell-organism transversal (no es de un agente)
 map_zone: infraestructura           # superficie no-funcional del shell (wrapper), no una caja de agente
-last_modified: 2026-06-04T14:45:00-05:00
+last_modified: 2026-06-06T20:55:00-05:00
+
+# Ratificación spec (proceso v5 · 2 firmas) + visual (ADR-vitalia-003)
+input_spec_signed: true             # RONDA 1 intent (7 decisiones + 4 dudas + secuencia)
+mockup_final_signed: true           # firma 2 mockup FINAL (Chris "confirmo" + caveat design-system)
+ratified_by_chris: true
+ratified_visual_by_chris: true
+ratified_visual_at: 2026-06-06T20:50:00-05:00
+ratified_visual_mockups:
+  - vitalia/docs/product/stories/vitalia-bugfix-shell-valeria-responsive/mockups/shell-valeria-states.html
+spec_open_ratify:
+  - "race_condition/concurrent_users → not_applicable_reason (UI-local per-usuario); Chris puede pedir escenario multi-tab explícito"
 
 # Naturaleza de verificación (DoD #37 / definition-of-done-live-verify)
 verification_nature: funcional      # user-reachable (layout visible) → demo manual + anti-burbuja + live-verify
@@ -25,7 +39,8 @@ tablet_decision: drawer-en-tablet-split-1024
 
 repro_evidence: vitalia/docs/observed-bugs/2026-06-04-shell-valeria-squeeze-plus-darkmode.md   # BUG #1 (responsive squeeze)
 
-# DoD #37 live-verify (Playwright vs dev-app.vitalialat.com — Chrome MCP crasheó; fallback)
+# DoD #37 live-verify — ⚠️ cubre SOLO el baseline (puntos 3+5+tablet de la v1). Scope expandido 2026-06-06
+# (puntos 1/2/4/6/7) NO está verificado → re-verificar live tras el re-build. NO mergeable con esta evidencia sola.
 dod_live_verified: true
 dod_env: "dev-app.vitalialat.com — Playwright (smoke storageState, --no-deps), clear shell-state para probar fresh defaults"
 dod_evidence:
@@ -41,11 +56,13 @@ commits:
   - "614bfbd5 — Track B: rail default + 30/70 + tablet drawer (8 files, 146 shell unit tests green)"
 
 next_action: >-
-  Code-complete + live-verified (3 puntos). **PARÁ — Chris prueba en dev-app + demo sign-off ANTES
-  de /auditor** (regla dura DoD #37). Falta: (a) Chris demo (hard-refresh dev-app, probar 1280/1024/800),
-  (b) /auditor (cross-tab shell + regression-guard de las stories shell ya done), (c) merge /pm-vitalia
-  → done + actualizar SYSTEM-MAP. NOTA: este story desbloquea AC-4/5/7 + AC-12 del inbox (thread usable)
-  → re-verificar esos AC del inbox tras el merge. Lock `code:shell` adquirido (liberar al cerrar).
+  ★ 2026-06-06 REFINED (spec v3, ambas firmas). HANDOFF → `/architect vitalia vitalia-bugfix-shell-valeria-responsive`
+  (lee 01-spec.md → ready package; aplica ADR-vitalia-004 para el N3 list/detail punto 7 + porta EntityWorkspaceLayout
+  de nicolify). ⚠️ PRECONDITIONS que `/pm-vitalia` ejecuta ANTES del BUILD (no bloquean architect, ver 01-spec
+  § Coordinación punto 7): pausar `vitalia-fase2-lisa-doctores` (developing, clinics) · plegar `vitalia-fase2-adrian-embudo`
+  (developed, crm) · adquirir bucket locks `code:{shell,clinics,crm}`. FLAG: ruta crítica del lift FE/shell→@luana/ui-kit
+  (256517a3); el sequencing rework-vs-lift se decide en `ready`. Aprendizaje capturado:
+  vitalia/docs/learnings/2026-06-06-n3-entity-workspace-layout-from-nicolify.md (promotable: candidate).
 ---
 
 # vitalia-bugfix-shell-valeria-responsive — checkpoint
@@ -57,6 +74,26 @@ Mejorar el responsive del shell-organism para que **Valeria deje de exprimir el 
 1. **Rail del historial collapsed por default.** El rail de historial de Valeria arranca colapsado (hoy arranca abierto/rail visible).
 2. **Default 30/70 en vez de 50/50.** El estado 'full' de Valeria (hoy ~50/50) pasa a **Valeria 30% / agente 70%** por default — **conservando que sigue siendo resizable** por el usuario (el splitter no desaparece; solo cambia el default).
 3. **Tablet.** Revisar + **proponer** cómo se comporta el shell en tamaños tablet (≈768–1024px): ¿Valeria rail forzado? ¿drawer? ¿overlay? Entregar propuesta antes de implementar.
+
+## ★ Re-planning 2026-06-06 (scope expandido · Chris-directed regresión a refining)
+
+Chris pidió **regresar al plan antes de desarrollar** para re-armar la story con la **forma de trabajo nueva (proceso v5 · /po-ux 2 rondas)** + 7 solicitudes. La v1 (3 puntos) ya está construida (BASELINE); los 7 puntos abajo son el scope nuevo que `/po-ux` refina. Input verbatim → `chris-input.md § 💬 Conversación` (entry 2026-06-06).
+
+| # | Punto (Chris verbatim resumido) | Naturaleza | Estado |
+|---|---|---|---|
+| 1 | El botón "agéntico" que cambia vista web/agéntico (topbar) **ya no es necesario** → quitarlo | 🆕 NUEVO | refinar |
+| 2 | El botón+dropdown de cambio de tenant debe estar **pegado a la derecha** (⚠️ typo en input: "a la derecha, no a la derecha" — DUDA para /po-ux R1: ¿pegado al borde derecho vs al centro/separado?) | 🆕 NUEVO | refinar + aclarar |
+| 3 | Valeria 50/50 → **~30/70** por default | ✅ = AC-2 (build previo) | hecho · ratificar |
+| 4 | El **tamaño mínimo de Valeria "rompe" el responsive** → arreglar | 🔧 refina responsive (useViewportGuard / min-width) | refinar |
+| 5 | Rail del historial **collapsed por default** | ✅ = AC-1 (build previo) | hecho · ratificar |
+| 6 | Valeria con **su propio botón de colapsar** (el de abajo del rail no es visible ni útil). Colapsar Valeria colapsa también el historial si estuviera abierto. Todo colapsado → "abrir" abre **solo Valeria**; abrir historial **empuja** a Valeria (= comportamiento legacy) | 🆕 NUEVO (interacción · redefine collapse/push) | refinar |
+| 7 | Agregar **por diseño** el comportamiento del **3er tab (N3) para casos lista/detalle**, como **staff en Valeria** o **icp en Nicolify** | 🆕 NUEVO (patrón de diseño N3 list/detail) | refinar |
+
+**Notas de refinamiento (para /po-ux):**
+- Puntos 1, 2, 6 = cambios al **wrapper del shell** (topbar + ValeriaSidebar/chat collapse). Mockup-per-component (ADR-vitalia-003) + wrapper fidelity aplican.
+- Punto 6 = la pieza más compleja: redefine la máquina de estados `valeriaState {collapsed, rail, full}` + relación con el historial. Prior-art legacy obligatorio (cómo "empujaba" antes).
+- Punto 7 = patrón N3-static list/detail (ADR-vitalia-004 § 3.1.1 `SubSubTabsBar`). Prior-art LIVE: `staff` en Valeria (vitalia) + `icp` en Nicolify. Esto puede gradear a un **patrón de diseño reutilizable del shell** (candidato cross-tab) más que a la story.
+- BASELINE (no descartar): `valeriaState` rail-default + 30/70 + tablet-drawer ya en `shell-store.ts` / `useViewportGuard.ts` / `ShellOrganismLayout.tsx`.
 
 ## Anti-objetivos
 

@@ -29,8 +29,10 @@ CWD="$(git rev-parse --show-toplevel)"
 BASENAME="$(basename "${CWD}")"
 BRANCH="$(git branch --show-current)"
 
-# Infer brand + slug + type
-KNOWN_BRANDS="vitalia nicolify comunify lupulo saasora inmoflow retailly fixia guestly fitflow"
+# Infer brand + slug + type. Brand enum from the seam (project.config.yaml · harness_config.py)
+# — no hardcoded list (charter §3 DIP · W5b 2026-06-09). Loud-degrade to empty if unreadable.
+KNOWN_BRANDS="$("${CWD}/.venv/bin/python" "${CWD}/scripts/harness_config.py" brands.loop_order 2>/dev/null | tr '\n' ' ')"
+[ -z "${KNOWN_BRANDS}" ] && echo "::warning::project.config.yaml brands.loop_order unreadable — brand inference degraded" >&2
 
 if [[ "${BASENAME}" = "luana-platform" ]]; then
   echo "::error::PRINCIPAL worktree no requiere manifest. Aborting."

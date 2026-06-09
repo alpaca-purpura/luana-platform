@@ -149,6 +149,13 @@ function timeToHours(time: string): number {
   return (h ?? 0) + (m ?? 0) / 60;
 }
 
+/**
+ * Display a time as "HH:mm" — strips seconds the BE may include ("10:00:00" → "10:00").
+ */
+function fmtHHmm(time: string): string {
+  return time.length >= 5 ? time.slice(0, 5) : time;
+}
+
 // ── CalendarBlock component ────────────────────────────────────────────────────
 
 interface CalendarBlockProps {
@@ -174,19 +181,24 @@ function CalendarBlock({
     <button
       data-testid={`block-${block.id}`}
       className={cn(
-        "absolute left-0.5 right-0.5 rounded cursor-pointer text-xs font-medium",
-        "bg-[--agent-lisa]/20 border border-[--agent-lisa] text-[--agent-lisa]",
-        "hover:bg-[--agent-lisa]/30 transition-colors",
-        "flex items-start justify-start p-1 overflow-hidden",
-        "focus:outline-none focus:ring-2 focus:ring-[--agent-lisa]",
+        "absolute left-0.5 right-0.5 rounded-md cursor-pointer text-xs font-semibold",
+        "bg-agent-lisa-soft border-l-[3px] border-agent-lisa text-foreground shadow-sm",
+        "hover:opacity-90 hover:shadow transition-all",
+        "flex flex-col items-start justify-start gap-0.5 px-1.5 py-1 overflow-hidden",
+        "focus:outline-none focus:ring-2 focus:ring-agent-lisa",
       )}
       style={{ top: `${top}px`, height: `${Math.max(height, 20)}px` }}
       onClick={(e) => onBlockClick(block, e)}
-      aria-label={`Bloque ${block.startTime}–${block.endTime}${block.kind === "recurrent" ? ` (${block.freq === "weekly" ? "semanal" : "quincenal"})` : " (único)"}`}
+      aria-label={`Bloque ${fmtHHmm(block.startTime)}–${fmtHHmm(block.endTime)}${block.kind === "recurrent" ? ` (${block.freq === "weekly" ? "semanal" : "quincenal"})` : " (único)"}`}
     >
-      <span className="truncate">
-        {block.startTime}–{block.endTime}
+      <span className="truncate leading-tight">
+        {fmtHHmm(block.startTime)}–{fmtHHmm(block.endTime)}
       </span>
+      {block.kind === "recurrent" && (
+        <span className="truncate text-[10px] font-medium text-agent-lisa leading-none">
+          {block.freq === "weekly" ? "Semanal" : "Quincenal"}
+        </span>
+      )}
     </button>
   );
 }
@@ -512,7 +524,7 @@ export function AvailabilityCalendar({ doctorId }: AvailabilityCalendarProps) {
                       key={h}
                       className={cn(
                         "absolute left-0 right-0 border-b border-border/20",
-                        isDragTarget && "bg-[--agent-lisa]/10",
+                        isDragTarget && "bg-agent-lisa-soft",
                       )}
                       style={{
                         top: `${hourIndex * HOUR_HEIGHT}px`,
@@ -560,7 +572,7 @@ export function AvailabilityCalendar({ doctorId }: AvailabilityCalendarProps) {
                 {/* Drag overlay visual */}
                 {dragOverlay && dragOverlay.day === dayIndex && (
                   <div
-                    className="absolute left-0.5 right-0.5 bg-[--agent-lisa]/20 border border-[--agent-lisa]/60 rounded pointer-events-none z-10"
+                    className="absolute left-0.5 right-0.5 bg-agent-lisa-soft border border-agent-lisa rounded pointer-events-none z-10"
                     style={{
                       top: `${(dragOverlay.startH - startHour) * HOUR_HEIGHT}px`,
                       height: `${(dragOverlay.endH - dragOverlay.startH) * HOUR_HEIGHT}px`,

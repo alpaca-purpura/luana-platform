@@ -23,13 +23,16 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
 import { EntitySubNavBar } from "@/components/shared/shell-organism/EntitySubNavBar";
 import type { EntitySubNavLeaf } from "@/components/shared/shell-organism/EntitySubNavBar";
-import { staffKeys } from "../../../api/staff";
+import { staffKeys, useStaffActorHeaders } from "../../../api/staff";
 import { fetchClient } from "@/lib/api/fetchClient";
 import { useClinicId } from "@/hooks/useClinicId";
 import { useTenantId } from "@/hooks/useTenantId";
 import type { DoctorDetail } from "../../../types/staff.types";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8002";
+// Client component: SAME-ORIGIN relative base (tunnel/reverse-proxy routes /api/* → BE).
+// Absolute http://localhost:8002 cross-origins the browser → CORS block. See staff.ts note
+// + regression 2026-06-06 (staff workspace refetch CORS-broken; masked by SSR initialData).
+const API_BASE = "";
 
 interface StaffWorkspaceShellProps {
   tenantId: string;
@@ -67,6 +70,9 @@ export function StaffWorkspaceShell({
   // tenantId from useTenantId() for API calls (UUID from publicMetadata.tenant_id).
   // The prop tenantId is used for URL routing only — may differ from the API tenant UUID.
   const apiTenantId = useTenantId();
+  // GET /{id} (detail) requires X-User-ID (UUID) — audit-on-PHI-read. Without it → 422
+  // ("No se pudo cargar el perfil", bug #5). Same key as useDoctor → keep headers consistent.
+  const actorHeaders = useStaffActorHeaders();
 
   // Build leaf hrefs
   const leaves: EntitySubNavLeaf[] = LEAF_DEFS.map((def) => ({
@@ -85,10 +91,11 @@ export function StaffWorkspaceShell({
       if (!token || !apiTenantId) throw new Error("Sin autenticación");
       return fetchClient<DoctorDetail>(
         `${API_BASE}/api/v1/vitalia/clinics/doctors/${doctorId}`,
-        { token, tenantId: apiTenantId, clinicId },
+        { token, tenantId: apiTenantId, clinicId, headers: actorHeaders },
       );
     },
-    enabled: isLoaded && !!isSignedIn,
+    // Gate until X-User-ID (from /me) is ready — see useDoctor (bug #5 race).
+    enabled: isLoaded && !!isSignedIn && !!actorHeaders["X-User-ID"],
     initialData: initialDoctor,
     staleTime: 30_000,
   });

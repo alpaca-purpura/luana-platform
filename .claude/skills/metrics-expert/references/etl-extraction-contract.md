@@ -151,3 +151,26 @@ docker exec luana-dev-{BRAND}_postgres_dev-1 psql -U postgres -d luana_dev --pse
 ## Anchor
 
 Future Claude: ETL question → **first action** read `docs/etl/extraction-contract.md`. Before writing en `core/luana-core-analytics-engine/src/luana_core_analytics_engine/` (or brand opt-in `{brand}/backend/src/modules/{brand}/analytics/`) → **first action** read this + contract. After modifying → **last action** `make extraction-contract && pytest tests/architecture/test_extraction_contract.py`. Sin excepciones.
+
+---
+
+## Ex always-on rule body (evicted W1-Phase2 2026-06-09 — era `.claude/rules/etl-extraction-contract.md`)
+
+Analytics es **ENGINE + BRAND-CONFIG** (ver CLAUDE.md tabla mapping):
+
+| Surface | Path | Owner |
+|---|---|---|
+| Engine ETL contract + catalog | `core/luana-core-analytics-engine/src/luana_core_analytics_engine/domain/{extraction_contract,metric_catalog}.py` | `/pm-luana` |
+| Brand opt-in (enabled_metrics, channel_groups) | `{brand}/config/brand.yaml` + `{brand}/backend/src/modules/{brand}/analytics/extensions.py` | `/pm-{brand}` |
+| Auto-gen MD | `docs/etl/extraction-contract.md` (NUNCA edit manual) | generator |
+
+**Antes ETL question:** leer `docs/etl/extraction-contract.md` PRIMERO.
+
+**Después modificar** providers/pipeline/etl_service/scheduler/workers/catalog en engine: 5-step → implement → update contract → re-check catalog → `make extraction-contract` → arch test (corre en engine + cada brand consumer).
+
+**No-skip:** todo cambio analytics dispara los 5 pasos. Sin excepciones.
+
+### Multibrand awareness (post reorg 2026-05-15)
+
+- Engine cambios → requieren `/pm-luana` promotion gate + revalidación en cada brand consumer activa.
+- Brand-specific provider adapters viven en `{brand}/backend/src/modules/{brand}/analytics/providers/` (registrados via Extension SDK).

@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # learning-detect — UserPromptSubmit hook
 #
+# tier: hybrid · core = learning-capture trigger → additionalContext mechanism + doctrine ·
+#       project = Spanish trigger phrases → seam locale (W5)
+#
 # Detecta el pattern de Chris pidiendo capturar aprendizaje + emite
 # system-reminder al modelo autorizando ejecución del flow learning-capture
 # (vs devolver handoff textual o ignorar).

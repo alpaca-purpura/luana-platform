@@ -161,4 +161,4 @@ SYSTEM PROMPT (cacheado, slot 1, TTL 1h)
 
 ## Próximo paso
 
-`→ /architect lee 01+02 → spawn /architect-agentic + (BE si tool nuevo, FE si trigger UI) en paralelo → produce 03-arch-* y 06-tickets.yaml`
+`→ /architect lee 01+02 → spawn architect-orchestrator (carga references/agentic.md + be.md si tool nuevo, fe.md si trigger UI) → produce 03-arch-* y 06-tickets.yaml`
