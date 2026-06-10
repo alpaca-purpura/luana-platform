@@ -8,13 +8,9 @@
 .claude/agents/builder-agentic.md :: core/luana-core-platform/src/luana_core_platform/config.py
 .claude/agents/builder-backend.md :: core/luana-core-platform/src/luana_core_platform/config.py
 .claude/rules/backend-migrations.md :: docs/domains/migrations.md
-.claude/rules/etl-extraction-contract.md :: docs/etl/extraction-contract.md
 .claude/skills/backend-expert/SKILL.md :: docs/etl/extraction-contract.md
 .claude/skills/brand-expert/SKILL.md :: docs/domains/brand/INDEX.md
-.claude/skills/copilot-expert/SKILL.md :: docs/archive/2026/legacy-pis/PI-1-campaigns-module/sprints/S0-foundation/prs/PR-2-billing-and-compliance/CONTRACT.md
-.claude/skills/copilot-expert/SKILL.md :: docs/mejoras-proceso/to-do.md
 .claude/skills/data-storyteller/SKILL.md :: references/data-viz-conventions.md
-.claude/skills/metrics-expert/SKILL.md :: docs/etl/extraction-contract.md
 .claude/skills/nicolify-design-system/SKILL.md :: nicolify/docs/architecture/design-system.md
 .claude/skills/nicolify-design-system/SKILL.md :: nicolify/frontend/src/lib/shell-routes.ts
 .claude/skills/nicolify-design-system/SKILL.md :: nicolify/frontend/tailwind.config.ts
@@ -26,4 +22,3 @@
 .claude/skills/po-ux/SKILL.md :: docs/learnings/2026-04-15-tanstack-query-cache-invalidation.md
 .claude/skills/po-ux/SKILL.md :: nicolify/docs/learnings/2026-03-22-agenda-overbooking-edge-case.md
 .claude/skills/po-ux/SKILL.md :: nicolify/frontend/src/features/scheduling/components/SlotPicker.tsx
-.claude/skills/sales-agent-expert/SKILL.md :: docs/archive/2026/legacy-pis/PI-1-campaigns-module/sprints/S0-foundation/prs/PR-2-billing-and-compliance/CONTRACT.md

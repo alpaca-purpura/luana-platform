@@ -22,7 +22,8 @@ user-invocable: true
 
 1. **Step 0** — worktree detection (`@.claude/rules/step-0-worktree.md`) · este ritual corre donde estés (homologa en merge→main→sync · sin worktree especial).
 2. **Leer los 4 carriles** (tabla arriba). El cockpit `/harness` board (HB-26, extendido con badge de carril) es la pantalla del stop.
-3. **Presentar** a Chris: OPEN por carril + severidad, candidatos a refuerzo, caps stale (L4).
+2b. **Docs-graph (DOCS-SWEEP gate · 2026-06-10):** correr `make docs-graph` — reporta huérfanos nuevos bajo root `docs/` (reporte docs/process/DOCS-GRAPH.md — gitignored, lo genera el comando) + regenera `docs/process/HARNESS-DOCS.manifest`. Huérfano nuevo → mover a `legacy/` o citarlo desde su consumidor. Cuarentena borrable: `legacy/2026-06-10-docs-sweep/INVENTORY.md`.
+3. **Presentar** a Chris: OPEN por carril + severidad, candidatos a refuerzo, caps stale (L4), huérfanos docs-graph (2b).
 4. **Remediar en lote** con el **apply-pipeline (HLP §6)**: verify-first → editar disjunto → verificación del diff → `make machinery-check` 0 regresiones → Chris ratifica → commit por pathspec (Haiku).
 5. **Marcar** `applied`/`verified` en el hogar de cada ítem.
 
