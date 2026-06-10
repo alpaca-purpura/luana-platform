@@ -1,5 +1,5 @@
 ---
-globs: "backend/src/modules/copilot/**/*.py"
+globs: "backend/core/luana-core-copilot/src/luana_core_copilot/**/*.py"
 description: Copilot module resilience rules
 ---
 
@@ -134,9 +134,9 @@ LangGraph `astream_events(version="v2")` bubble-uppea events de subgraphs anidad
 
 ### Tests obligatorios
 
-- `tests/modules/copilot/test_stream_provenance.py` — clasificador con fixtures de los 3 orígenes + matriz exhaustiva.
-- `tests/modules/copilot/test_subagent_stream_isolation.py` — 1 test por subagente registrado + replay end-to-end de turn con `task`.
-- `tests/architecture/test_subagent_isolation_invariants.py` — ratchet: cada subagente nuevo debe estar en `REGISTERED_SUBAGENTS_RATCHET` y tener cobertura.
+- `core/luana-core-copilot/tests/test_stream_provenance.py` — clasificador con fixtures de los 3 orígenes + matriz exhaustiva.
+- `core/luana-core-copilot/tests/test_subagent_stream_isolation.py` — 1 test por subagente registrado + replay end-to-end de turn con `task`.
+- Ratchet de subagentes: el arch test dedicado `test_subagent_isolation_invariants.py` fue retirado en la reorg — el invariante (cada subagente con `tools=[]` explícito + cobertura) se verifica en la suite engine (`core/luana-core-copilot/tests/`, ej. `test_subagent_stream_isolation.py`); grep `REGISTERED_SUBAGENTS_RATCHET` si reaparece.
 
 ---
 

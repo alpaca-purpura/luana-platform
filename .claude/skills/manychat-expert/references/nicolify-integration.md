@@ -6,19 +6,19 @@
 
 | File | Purpose |
 |---|---|
-| `backend/src/modules/connections/infrastructure/marketing_connectors/manychat.py` | `ManyChatConnector` — inherits `BaseConnector`, implements `verify_connection(api_key)` via `/fb/page/getInfo`. Does NOT yet implement `sync_contacts()` or `sync_events()`. |
-| `backend/src/modules/connections/infrastructure/marketing_connectors/base.py` | `BaseConnector` ABC — defines `sync_contacts(tenant_id)` and `sync_events(tenant_id)` interface. |
-| `backend/src/modules/connections/api/manychat.py` | FastAPI router with 4 endpoints: `GET /status`, `POST /connect`, `POST /disconnect`, `POST /test`. Inline DTOs (`ManyChatConnectRequest`, `ManyChatStatusResponse`, `ConnectionResponse`). |
-| `backend/src/modules/connections/domain/enums.py` | `ChannelType.MANYCHAT = "manychat"` enum value. |
-| `backend/src/modules/connections/infrastructure/repositories/channel_connection_repository.py` | `ChannelConnectionRepository` — shared repo for all channel connections. Key methods: `get_active(tenant_id, channel_type)`, `upsert(tenant_id, channel_type, credentials, config)`, `get_by_tenant_and_type()`, `deactivate()`, `update_config()`. |
+| `core/luana-core-connections/src/luana_core_connections/infrastructure/marketing_connectors/manychat.py` | `ManyChatConnector` — inherits `BaseConnector`, implements `verify_connection(api_key)` via `/fb/page/getInfo`. Does NOT yet implement `sync_contacts()` or `sync_events()`. |
+| `core/luana-core-connections/src/luana_core_connections/infrastructure/marketing_connectors/base.py` | `BaseConnector` ABC — defines `sync_contacts(tenant_id)` and `sync_events(tenant_id)` interface. |
+| `core/luana-core-connections/src/luana_core_connections/api/manychat.py` | FastAPI router with 4 endpoints: `GET /status`, `POST /connect`, `POST /disconnect`, `POST /test`. Inline DTOs (`ManyChatConnectRequest`, `ManyChatStatusResponse`, `ConnectionResponse`). |
+| `core/luana-core-connections/src/luana_core_connections/domain/enums.py` | `ChannelType.MANYCHAT = "manychat"` enum value. |
+| `core/luana-core-connections/src/luana_core_connections/infrastructure/repositories/channel_connection_repository.py` | `ChannelConnectionRepository` — shared repo for all channel connections. Key methods: `get_active(tenant_id, channel_type)`, `upsert(tenant_id, channel_type, credentials, config)`, `get_by_tenant_and_type()`, `deactivate()`, `update_config()`. |
 | `backend/src/main.py:199` | Router registration: `app.include_router(conn_manychat.router, prefix="/api/v1/connections/manychat", tags=["Connections - ManyChat"], dependencies=[Depends(get_tenant_context)])` |
 
 ### Frontend
 
 | File | Purpose |
 |---|---|
-| `frontend/src/features/connections/components/manychat-view.tsx` | `ManyChatView` component — two states: disconnected (API key input form) and connected (account info, test connection, disconnect). Uses Clerk auth, Shadcn UI, sonner toasts. |
-| `frontend/src/lib/api/connections.ts` | API client functions: `connectionsApi.getManyChatStatus()`, `.connectManyChat()`, `.testManyChat()`, `.disconnectManyChat()`. Uses `fetchClient` with bearer token. |
+| `{brand}/frontend/src/features/connections/` (⚠️ la vista manychat-view.tsx pre-reset de nicolify NO existe hoy — rebuild pendiente per brand) | `ManyChatView` component — two states: disconnected (API key input form) and connected (account info, test connection, disconnect). Uses Clerk auth, Shadcn UI, sonner toasts. |
+| `{brand}/frontend/src/lib/api/connections.ts` (⚠️ FE pre-reset, no existe hoy) | API client functions: `connectionsApi.getManyChatStatus()`, `.connectManyChat()`, `.testManyChat()`, `.disconnectManyChat()`. Uses `fetchClient` with bearer token. |
 
 ### Types / DTOs
 
@@ -126,18 +126,18 @@ newManyChatMethod: async (data: NewRequest, token: string): Promise<NewResponse>
 
 1. **Add connector method(s)** to `ManyChatConnector`:
    ```
-   backend/src/modules/connections/infrastructure/marketing_connectors/manychat.py
+   core/luana-core-connections/src/luana_core_connections/infrastructure/marketing_connectors/manychat.py
    ```
 
 2. **Create DTOs** (if needed) in a new file:
    ```
-   backend/src/modules/connections/api/dto/manychat_dto.py
+   core/luana-core-connections/src/luana_core_connections/api/dto/manychat_dto.py
    ```
    Or add inline in `api/manychat.py` for simple cases (following existing pattern).
 
 3. **Add API route(s)** to existing router in:
    ```
-   backend/src/modules/connections/api/manychat.py
+   core/luana-core-connections/src/luana_core_connections/api/manychat.py
    ```
    No need to update `main.py` — routes on the existing `router` object are auto-included.
 

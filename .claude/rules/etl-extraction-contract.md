@@ -4,4 +4,4 @@
 
 Trigger: providers/pipeline/etl_service/scheduler/workers/catalog en `core/luana-core-analytics-engine/**` o `{brand}/.../analytics/providers/**`. El hook `contract-guard.js` recuerda los comandos al tocar estas surfaces.
 
-No-skip 1-liner: antes de cualquier ETL question leer `docs/etl/extraction-contract.md` PRIMERO (auto-gen, NUNCA edit manual) · todo cambio dispara los 5 pasos (implement → contract → catalog → `make extraction-contract` → arch test engine + brands). Sin excepciones.
+No-skip 1-liner: antes de cualquier ETL question leer `core/luana-core-analytics-engine/docs/extraction-contract.md` PRIMERO (auto-gen, NUNCA edit manual) · todo cambio dispara los 5 pasos (implement → contract → catalog → `make extraction-contract` → suite engine + brands). Sin excepciones.

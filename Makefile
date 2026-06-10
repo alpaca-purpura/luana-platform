@@ -169,6 +169,9 @@ portfolio-check:
 scan-promotables:
 	python3 scripts/scan_promotables.py
 
+extraction-contract:  ## Regenera core/luana-core-analytics-engine/docs/extraction-contract.md (ETL SSoT · target restaurado 2026-06-09, lo citan AGENTS.md + etl rule + metrics-expert)
+	$(PYTHON) core/luana-core-analytics-engine/scripts/generate_extraction_contract_doc.py
+
 # machinery hardening anti-drift (auditoría 2026-05-28) — doctrina↔templates↔agentes consistentes
 machinery-check:
 	python3 scripts/validate_machinery_consistency.py
