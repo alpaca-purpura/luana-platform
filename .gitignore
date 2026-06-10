@@ -223,3 +223,7 @@ tools/luana-cockpit/.cockpit-*.log
 # vitalia-cockpit-live-reconciliation T-2
 vitalia/frontend/e2e/regression/live-reconciliation/.evidence/
 vitalia/frontend/e2e/regression/live-reconciliation/.sweep-findings.json
+
+# DOCS-SWEEP graph outputs (auto-gen R3 — regen: scripts/scan_docs_graph.py)
+docs/process/DOCS-GRAPH.md
+docs/process/_docs-graph.json
