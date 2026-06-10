@@ -15,8 +15,8 @@ cap_target: null                        # higiene + hardening cross-cap del shel
 cap_change_type: fix                    # consolida FIXES del chrome (precedente: shell-valeria-responsive + shell-nav-scroll-errors, ambos fix+null). El lift a @luana/ui-kit es cap-work de /pm-luana (core), no una cap vitalia — gate HB-34 no exige YAML para fix.
 parent_story: null
 
-state: refined                          # ★ 2026-06-10 firma única de reconciliación Chris ("Confirmo todo") — /po-ux cerró refined
-phase: SPEC_RATIFIED
+state: ready                            # ★ 2026-06-10 /architect cerró ready package (03-arch+fe + 04-validators + 05-guidelines + 06-tickets + dispatch-plan)
+phase: READY_PACKAGE_CLOSED
 dark_mode_in_scope: true                # ★ ratificado Chris 2026-06-10 ("Si, mételo") — supersede el out-of-scope del backbone
 input_spec_signed: true                 # firma reconciliación 2026-06-10 (deltas dark/B1/race + herencia FIRMA 1 backbone)
 mockup_final_signed: true               # herencia mockup firmado backbone ratificada + caveat behavior-fi re-confirmado
@@ -24,18 +24,40 @@ ratified_by_chris: true
 ratified_visual_by_chris: true          # vía herencia (mockup backbone firmado 2026-06-06 + ratificación herencia 2026-06-10)
 ratified_visual_mockups:
   - vitalia/docs/product/stories/vitalia-bugfix-shell-valeria-responsive/mockups/shell-valeria-states.html
-last_artifact: 01-spec.md
+last_artifact: 06-tickets.yaml
 module: shell
 cross_module_scope: [shell, clinics, crm]   # heredado del responsive (punto 7 N3 toca clinics+crm)
 agent_owner: null                       # shell-organism transversal (no es de un agente)
 map_zone: infraestructura               # superficie no-funcional del shell (wrapper)
-last_modified: 2026-06-10T00:00:00-05:00
+last_modified: 2026-06-10T12:00:00-05:00
+
+# ── Ready package (architect-autonomous-mode.md) ──
+autonomous_mode_chain: [dev-team, auditor, pm-merge]
+autonomous_mode_ratified_by: chris        # 2026-06-10 verbatim "arranca /architect y continúa hasta el done"
+autonomous_mode_ratified_at: 2026-06-10T12:00:00-05:00
+autonomous_mode_caps:
+  max_iterations_per_ticket: 10
+  max_audit_iterations: 3
+  max_wall_clock_minutes: 120
+  max_total_cost_usd: 6.00
+  on_cap_exceeded: "state=blocked + escalate Chris"
+# autonomous_mode HARD-false check: el único trigger (engine touch core/@luana/ui-kit) está MITIGADO
+# (proposals accepted 256517a3 + 2026-06-01-lift-shell-organism + ratificación explícita Chris). Edits
+# ui-kit acotados a additivo-mínimo (default = consumir N3 ya shipped v0.3.0). Pause-points en dispatch-plan.md.
+ready_package:
+  - 03-arch.md
+  - 03-arch-fe.md
+  - 04-validators.yaml
+  - 05-guidelines.md
+  - 06-tickets.yaml
+  - dispatch-plan.md
 # (ratified_by_chris arriba — forma + lift-timing + firma reconciliación, todo 2026-06-10)
 parallel_safe: false                    # toca el shell mismo → colisión file-level con cualquier story del shell
 
 # Naturaleza de verificación (DoD #37)
 verification_nature: funcional          # chrome user-reachable → demo manual + anti-burbuja + live-verify
 demo_required: true
+autonomous_mode: true                   # ★ RATIFICADO Chris 2026-06-10 verbatim: "arranca /architect y continúa hasta el done" — corre architect→build→auditor→merge sin pausa G. El architect valida criterios HARD-false en dispatch-plan; si detecta uno, ESCALA a Chris en vez de proceder. Live-verify #37 + dod_evidence siguen obligatorios (autonomous no relaja el DoD).
 
 # ─────────────────────────────────────────────────────────────
 # Consolidación — qué absorbe esta umbrella (ratificado Chris 2026-06-10)
@@ -108,13 +130,17 @@ build_preconditions:    # ★ GATE EJECUTADO 2026-06-10 (ratificado Chris, opci�
   - "⏳ Adquirir bucket locks code:{shell,clinics,crm} al arrancar el BUILD (no antes)."
 
 next_action: >-
-  ★ 2026-06-10 REFINED (firma única de reconciliación Chris: deltas dark/B1/race + herencia backbone +
-  multi-tab not_applicable + barrido dark shipped-only + caveat behavior-fi re-confirmado).
-  PRÓXIMO: /architect vitalia vitalia-shell-core-hardening — produce ready package apuntando a
-  @luana/ui-kit (lift-durante, proposals accepted 256517a3) + cierra sequencing rework-vs-lift + decide
-  mecanismo soft-nav (RN-14). Luego build (locks code:{shell,clinics,crm}) → 1 auditoría → demo Chris (G)
-  → merge → handoff proposal /pm-luana para formalizar el lift. NO arrancar build con otra story del
-  shell en developing (parallel_safe=false).
+  ★ 2026-06-10 READY (/architect cerró ready package — 6 artefactos). Decisiones cerradas:
+  A soft-nav = edge-redirect proxy.ts 307 + revertir band-aid hard-nav→next/link (ssr:false se conserva,
+  root cause react-resizable-panels v4); B lift = el N3 YA está shipped en @luana/ui-kit v0.3.0 (core-ds-foundation)
+  → CONSUMIR + migrar staff/embudo + retirar EntitySubNavBar brand-local (mata mirror); el chrome del shell NO se liftea
+  acá (es el outcome platform 1-2 sem de 2026-06-01-lift-shell-organism → handoff /pm-luana); C dark = hardcoded→token
+  (los --vitalia-* core YA tienen dark; reduce deuda, no wholesale). 8 tickets FE (builder-frontend/sonnet), autonomous_mode: true.
+  PRÓXIMO: /dev-team vitalia vitalia-shell-core-hardening — adquirir locks code:{shell,clinics,crm} al arrancar
+  build → T-1..T-8 → /auditor → G demo Chris (chris_verify.signoff HARD, gate #37 dod_evidence) → /pm-vitalia merge
+  → handoff proposal /pm-luana (chrome listo para lift) → /auditor embudo (defer_audit) post-hardening.
+  Pause-points (dispatch-plan.md): edit ui-kit no-additivo → STOP /pm-luana; bump Next → escalate Chris.
+  NO arrancar build con otra story del shell en developing (parallel_safe=false).
 ---
 
 # vitalia-shell-core-hardening — checkpoint
