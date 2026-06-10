@@ -169,6 +169,9 @@ portfolio-check:
 scan-promotables:
 	python3 scripts/scan_promotables.py
 
+docs-graph:  ## Grafo de consumo root docs/ + manifest vivos (DOCS-SWEEP 2026-06-10 · reporte gitignored docs/process/DOCS-GRAPH.md)
+	python3 scripts/scan_docs_graph.py --manifest
+
 extraction-contract:  ## Regenera core/luana-core-analytics-engine/docs/extraction-contract.md (ETL SSoT · target restaurado 2026-06-09, lo citan AGENTS.md + etl rule + metrics-expert)
 	$(PYTHON) core/luana-core-analytics-engine/scripts/generate_extraction_contract_doc.py
 
