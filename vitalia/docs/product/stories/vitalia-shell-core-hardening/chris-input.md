@@ -53,3 +53,26 @@ Story creada en `state=idea`, `phase=CONSOLIDATION_INTAKE`. Folded: responsive (
 Gate ejecutado: **embudo** → `defer_audit: true` (developed + dod_live_verified preservados; auditar post-hardening evita re-audit por rebase del chrome crm) · **doctores** → `parked` (⚠️ keystone regresión `/lisa/staff` queda VIVA — bug de feature Lisa, no chrome; primer trabajo post-hardening) · **lisa-servicios** → `parked` (su N3 depende del contrato `EntityWorkspaceLayout` que el hardening cambia; firma 1 preservada — al reanudar retoma RONDA 2 contra contrato nuevo). Config-cuenta queda refining (no acoplada al N3). Slot refining libre para la umbrella.
 
 Commit por pathspec (delegado Haiku). **Siguiente:** `/po-ux vitalia vitalia-shell-core-hardening` — reconciliar spec único del chrome.
+
+### 2026-06-10 · 🤖 claude · `/po-ux` · 💡 PROPONE
+Backbone leído (01-spec v3 responsive, 19 SCs, matriz sin huecos, 2 firmas). Reconciliación acotada: race-fix se generaliza en la máquina de estados nueva (el min-width 620 muere → el caso SC-3 original se reformula como "drag inmediato seguro") · U3 ya resuelto por el default 30/70 resizable (solo trazado) · B1 entra como invariante nuevo (soft-nav confiable + revertir band-aid hard-nav). ÚNICA decisión abierta presentada a Chris: ¿dark-mode (BUG #2, out-of-scope firmado del backbone) entra al hardening? Recomendación: SÍ (evita segunda review de las mismas superficies + no liftar deuda dark al core + work-package acotado).
+
+### 2026-06-10 · 👤 Chris · decisión dark-mode
+> Si, mételo
+
+### 2026-06-10 · 🤖 claude · `/po-ux` · ✓ APLICADO
+**01-spec.md v1 unificado escrito** (`vitalia/docs/product/stories/vitalia-shell-core-hardening/01-spec.md`): backbone v3 integrado (SC-1..19 + RN-1..13 + AC-1..11 heredados verbatim, firmas heredadas) + deltas ★ UMBRELLA: **RN-14** soft-nav confiable + band-aid revertido (B1) · **RN-15** variantes dark completas (BUG #2) · **RN-16** drag inmediato seguro (ex race-fix) · **AC-12/13/14** · **SC-20/21/22** · enmienda SC-19 (dark ya no es "no tocar") · U3 trazado a SC-1/SC-4. Sin mockup nuevo (deltas = comportamiento; el dark del mockup firmado es la referencia). Matriz sin huecos.
+
+**Pendiente Chris — firma única de reconciliación** (cubre input_spec_signed + ratifica herencia del mockup) + 2 open questions: (1) multi-tab not_applicable ¿confirmas? (2) barrido dark = sub-tabs SHIPPED + wrapper (placeholders quedan fuera) ¿confirmas?
+
+### 2026-06-10 · 👤 Chris · pregunta fidelidad del mockup
+> Quiero saber si el mockup es solo mockup o lo tomarás de forma literal y será igual? […] el comportamiento si es el que quiero pero a nivel UI me gusta como está actualmente y no quiero que retrocedamos en ese aspecto.
+
+### 2026-06-10 · 🤖 claude · `/po-ux` · ✓ APLICADO
+Confirmado: mockup = **behavior-fi, NO pixel-fi** (caveat HARD ya firmado en backbone 2026-06-06, heredado al spec § Design system constraint). Del mockup se toma SOLO comportamiento (estados A/B/C, push, tira-avatar, "+", drawer, N3); el estilo sale del design system vigente (tokens globals.css, átomos components/ui/, avatar real del catálogo, logo gradient, agent-colors — se CONSERVAN). Doble candado anti-retroceso: AC-10 + SC-19 (regresión cero ambos temas) + frontend-visual-fidelity D1 (auditor). Sin cambios al spec — la pregunta ES el caveat escrito.
+
+### 2026-06-10 · 👤 Chris · ✍ FIRMA ÚNICA DE RECONCILIACIÓN
+> Confirmo todo, firma la reconciliación
+
+### 2026-06-10 · 🤖 claude · `/po-ux` · ✓ APLICADO — REFINED
+Firma aplicada: `input_spec_signed: true` + `mockup_final_signed: true` (herencia ratificada) + `ratified_by_chris: true` → **state: refined**. Open questions resueltas: (1) multi-tab `not_applicable` ratificado · (2) barrido dark = shipped + wrapper · (3) caveat behavior-fi re-confirmado en § Open questions. Dedupe de `ratified_by_chris` duplicado en checkpoint (mismo bug de caps-last-modified — evitado acá). **Siguiente:** `/architect vitalia vitalia-shell-core-hardening` → ready package (lift-durante a @luana/ui-kit + mecanismo soft-nav RN-14 + sequencing).

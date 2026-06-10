@@ -15,14 +15,22 @@ cap_target: null                        # higiene + hardening cross-cap del shel
 cap_change_type: fix                    # consolida FIXES del chrome (precedente: shell-valeria-responsive + shell-nav-scroll-errors, ambos fix+null). El lift a @luana/ui-kit es cap-work de /pm-luana (core), no una cap vitalia — gate HB-34 no exige YAML para fix.
 parent_story: null
 
-state: idea                             # ★ 2026-06-10 nace de la conversación /pm-vitalia (consolidación ratificada Chris)
-phase: CONSOLIDATION_INTAKE
+state: refined                          # ★ 2026-06-10 firma única de reconciliación Chris ("Confirmo todo") — /po-ux cerró refined
+phase: SPEC_RATIFIED
+dark_mode_in_scope: true                # ★ ratificado Chris 2026-06-10 ("Si, mételo") — supersede el out-of-scope del backbone
+input_spec_signed: true                 # firma reconciliación 2026-06-10 (deltas dark/B1/race + herencia FIRMA 1 backbone)
+mockup_final_signed: true               # herencia mockup firmado backbone ratificada + caveat behavior-fi re-confirmado
+ratified_by_chris: true
+ratified_visual_by_chris: true          # vía herencia (mockup backbone firmado 2026-06-06 + ratificación herencia 2026-06-10)
+ratified_visual_mockups:
+  - vitalia/docs/product/stories/vitalia-bugfix-shell-valeria-responsive/mockups/shell-valeria-states.html
+last_artifact: 01-spec.md
 module: shell
 cross_module_scope: [shell, clinics, crm]   # heredado del responsive (punto 7 N3 toca clinics+crm)
 agent_owner: null                       # shell-organism transversal (no es de un agente)
 map_zone: infraestructura               # superficie no-funcional del shell (wrapper)
 last_modified: 2026-06-10T00:00:00-05:00
-ratified_by_chris: true                 # forma + lift-timing ratificados 2026-06-10 (AskUserQuestion)
+# (ratified_by_chris arriba — forma + lift-timing + firma reconciliación, todo 2026-06-10)
 parallel_safe: false                    # toca el shell mismo → colisión file-level con cualquier story del shell
 
 # Naturaleza de verificación (DoD #37)
@@ -100,12 +108,13 @@ build_preconditions:    # ★ GATE EJECUTADO 2026-06-10 (ratificado Chris, opci�
   - "⏳ Adquirir bucket locks code:{shell,clinics,crm} al arrancar el BUILD (no antes)."
 
 next_action: >-
-  ★ 2026-06-10 GATE CERRADO (embudo deferred + doctores parked + lisa-servicios parked → slot refining libre).
-  PRÓXIMO: /po-ux reconcilia el spec único del chrome (merge del 01-spec refined del responsive [carry-forward,
-  2 firmas] + race-fix SC-3 + U3 + B1 + token-audit BUG#2) → state idea→refining→refined. Luego /architect
-  produce ready package apuntando a @luana/ui-kit (lift-durante) + cierra sequencing rework-vs-lift. Luego
-  build (locks code:{shell,clinics,crm}) → 1 auditoría → demo Chris (G) → merge → handoff proposal /pm-luana
-  para formalizar el lift. NO arrancar build con otra story del shell en developing (parallel_safe=false).
+  ★ 2026-06-10 REFINED (firma única de reconciliación Chris: deltas dark/B1/race + herencia backbone +
+  multi-tab not_applicable + barrido dark shipped-only + caveat behavior-fi re-confirmado).
+  PRÓXIMO: /architect vitalia vitalia-shell-core-hardening — produce ready package apuntando a
+  @luana/ui-kit (lift-durante, proposals accepted 256517a3) + cierra sequencing rework-vs-lift + decide
+  mecanismo soft-nav (RN-14). Luego build (locks code:{shell,clinics,crm}) → 1 auditoría → demo Chris (G)
+  → merge → handoff proposal /pm-luana para formalizar el lift. NO arrancar build con otra story del
+  shell en developing (parallel_safe=false).
 ---
 
 # vitalia-shell-core-hardening — checkpoint
