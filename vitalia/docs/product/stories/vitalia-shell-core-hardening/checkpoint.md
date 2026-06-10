@@ -1,0 +1,155 @@
+---
+story_id: vitalia-shell-core-hardening
+type: ui-story                          # umbrella de hardening del shell-chrome (cross-módulo, no bugfix lite)
+title: Shell-core hardening — consolidación del chrome del shell-organism + lift a @luana/ui-kit
+
+# Release entity (contenedor temporal · lifecycle.md § 5)
+release: F3
+
+# Programa cross-brand (no lo OWNea /pm-vitalia — lo referencia · owner /pm-luana)
+program: design-system-homologation     # ADR-014 + design-system-inventory-best-of-best.md
+program_adr: docs/architecture/luana-platform/ADR-014-design-system-homologation.md
+
+# Capability lineage
+cap_target: null                        # higiene + hardening cross-cap del shell-organism (chrome transversal)
+cap_change_type: fix                    # consolida FIXES del chrome (precedente: shell-valeria-responsive + shell-nav-scroll-errors, ambos fix+null). El lift a @luana/ui-kit es cap-work de /pm-luana (core), no una cap vitalia — gate HB-34 no exige YAML para fix.
+parent_story: null
+
+state: idea                             # ★ 2026-06-10 nace de la conversación /pm-vitalia (consolidación ratificada Chris)
+phase: CONSOLIDATION_INTAKE
+module: shell
+cross_module_scope: [shell, clinics, crm]   # heredado del responsive (punto 7 N3 toca clinics+crm)
+agent_owner: null                       # shell-organism transversal (no es de un agente)
+map_zone: infraestructura               # superficie no-funcional del shell (wrapper)
+last_modified: 2026-06-10T00:00:00-05:00
+ratified_by_chris: true                 # forma + lift-timing ratificados 2026-06-10 (AskUserQuestion)
+parallel_safe: false                    # toca el shell mismo → colisión file-level con cualquier story del shell
+
+# Naturaleza de verificación (DoD #37)
+verification_nature: funcional          # chrome user-reachable → demo manual + anti-burbuja + live-verify
+demo_required: true
+
+# ─────────────────────────────────────────────────────────────
+# Consolidación — qué absorbe esta umbrella (ratificado Chris 2026-06-10)
+# ─────────────────────────────────────────────────────────────
+consolidates:
+  - story: vitalia-bugfix-shell-valeria-responsive
+    prior_state: refined
+    action: folded                      # parked + folded_into esta story
+    carry_forward:                      # artefactos refined que NO se descartan — son el backbone del spec
+      - vitalia/docs/product/stories/vitalia-bugfix-shell-valeria-responsive/01-spec.md   # spec v3, 2 firmas, mapa funcional + matriz
+      - vitalia/docs/product/stories/vitalia-bugfix-shell-valeria-responsive/mockups/shell-valeria-states.html  # mockup FINAL firmado
+    baseline_build:                     # v1 ya construida + live-verified — NO se re-hace
+      - "614bfbd5 — rail default + 30/70 + tablet drawer (8 files, 146 shell unit tests green)"
+      - "29451ef6 — mount Sonner Toaster (orphan shell fix)"
+    scope_7_puntos: "responsive (rail collapsed default · 30/70 · tablet drawer≥1024) + quitar botón web/agéntico (P1) + tenant-dropdown pegado a la derecha (P2) + N3 EntityWorkspaceLayout port de nicolify (P7)"
+  - story: vitalia-fase1-shell-layout-5050-race-fix
+    prior_state: parked
+    action: folded
+    scope: "race hydration next/dynamic({ssr:false}) + useDefaultLayout restore + ResizeObserver minSize (SC-3 snap-up). 0.5-1d."
+  - latent_bug: U3-splitter-board-squeeze
+    source: vitalia-fase2-adrian-embudo (checkpoint ux_product_decision U3, OPEN_SEPARATE_STORY)
+    scope: "Splitter chat 55% fijo castiga el board. Shell-level cross-cutting (mismo root que B1)."
+  - latent_bug: B1-shell-ssr-false-softnav-hang
+    source: vitalia-fase2-adrian-embudo (B1 root cause) + learning 2026-06-03-next16-softnav-redirect-rendered-more-hooks
+    scope: "shell dynamic({ssr:false}) cuelga en soft-nav ('Rendered more hooks' Next 16.2.3). Band-aid hard-nav en recuperar; root cause latente en otros soft-navs. Fix durable: edge-redirect (middleware) o resolver el ssr:false del shell."
+  - candidate: BUG2-dark-mode-half-applied
+    source: vitalia/docs/observed-bugs/2026-06-04-shell-valeria-squeeze-plus-darkmode.md (BUG #2)
+    scope: "inbox vt-* sin variante [data-theme=dark]. Token-audit. Conecta con ds-showcase R-1SRC (consolidar tokens globals.css) + drift --agent-mateo. Candidato a entrar como parte de la limpieza de tokens previa al lift."
+
+linked_not_folded:
+  - story: vitalia-ds-showcase
+    relation: demonstrator-R-FID        # alimenta esta story (HTML fiel por construcción), NO se fusiona
+    note: "Demuestra el mecanismo de fidelidad + define el best-of-best que el chrome debe cumplir post-lift."
+
+excluded:                               # NO son shell-chrome — fuera del scope, documentado
+  - vitalia-bugfix-caps-last-modified-duplicado  # higiene YAML de caps, no UI del shell
+  - vitalia-fase2-lisa-doctores keystone regression  # bug de feature Lisa (NuevoIntegranteModal), crashea EN el shell pero no es chrome
+  - "todas las stories agent-feature (adrian-*/camila-*/lucas-*/lisa-*/mateo-*/config-*)"  # VIVEN en (shell-organism) pero CONSUMEN el chrome, no lo construyen
+
+# ─────────────────────────────────────────────────────────────
+# Lift a core — lift-DURANTE (ratificado Chris 2026-06-10)
+# ─────────────────────────────────────────────────────────────
+core_lift:
+  target: core/@luana/ui-kit            # v0.3.0 — YA existe (lift parcial: layout/ archetypes/)
+  proposals_status: accepted            # promotion proposals del lift FE/shell aceptados 2026-06-06 (commit 256517a3)
+  timing: lift-durante                  # /architect buildea el hardening apuntando a @luana/ui-kit; brands consumen
+  rationale: "Evita rework-en-vitalia-y-después-lift (doble trabajo). nicolify ya espejea el shell → mirror cross-brand que anti-duplication manda lift a core."
+  cross_brand_consumers: [vitalia, nicolify]
+  governance: "El gate brand→core es de /pm-luana (promotion-protocol). /pm-vitalia entrega el hardening brand 'excelente' (funcional + técnico) + handoff proposal a /pm-luana. El sequencing final rework-vs-lift lo cierra /architect en `ready`."
+
+# ─────────────────────────────────────────────────────────────
+# Prior-art scan (anti-duplication-refining · Step prior-art-scan)
+# ─────────────────────────────────────────────────────────────
+prior_art_scan:
+  engine: "core/@luana/ui-kit v0.3.0 EXISTE (src/layout, src/archetypes) — CONSUMIR/EXTENDER, no recrear. Es el target del lift."
+  brands_live: "nicolify/.../(shell-organism) + nicolify/components/shared/shell-organism = port re-skinneado del shell de vitalia (mirror cross-brand)."
+  learnings:
+    - vitalia/docs/learnings/2026-06-06-n3-entity-workspace-layout-from-nicolify.md   # nicolify factorizó EntityWorkspaceLayout MEJOR que vitalia → adoptar al lift
+    - docs/learnings/2026-06-03-next16-softnav-redirect-rendered-more-hooks.md         # root cause B1 (cross-brand)
+    - vitalia/docs/learnings/2026-05-23-shell-layout-race-condition-defer.md           # race-fix
+  decision: "EXTEND-ENGINE + LIFT. El chrome se endurece apuntando a @luana/ui-kit; se adopta la mejor factorización (EntityWorkspaceLayout de nicolify); se mata el mirror cross-brand."
+
+# ─────────────────────────────────────────────────────────────
+# Preconditions HARD antes del BUILD (Step 0 / story-closure-gate)
+# ─────────────────────────────────────────────────────────────
+build_preconditions:    # ★ GATE EJECUTADO 2026-06-10 (ratificado Chris, opción a)
+  - "✅ vitalia-fase2-adrian-embudo → defer_audit: true (developed + dod_live_verified preservados; /auditor post-hardening evita re-audit por rebase del chrome crm)."
+  - "✅ vitalia-fase2-lisa-doctores → parked (⚠️ keystone regresión /lisa/staff queda VIVA — bug de feature Lisa, NO chrome; primer trabajo post-hardening)."
+  - "✅ Slot refining liberado: vitalia-fase2-lisa-servicios → parked (su N3 depende del contrato EntityWorkspaceLayout que este hardening cambia; firma 1 preservada). Refining queda {ds-showcase, config-cuenta} + slot libre para esta umbrella."
+  - "⏳ Adquirir bucket locks code:{shell,clinics,crm} al arrancar el BUILD (no antes)."
+
+next_action: >-
+  ★ 2026-06-10 GATE CERRADO (embudo deferred + doctores parked + lisa-servicios parked → slot refining libre).
+  PRÓXIMO: /po-ux reconcilia el spec único del chrome (merge del 01-spec refined del responsive [carry-forward,
+  2 firmas] + race-fix SC-3 + U3 + B1 + token-audit BUG#2) → state idea→refining→refined. Luego /architect
+  produce ready package apuntando a @luana/ui-kit (lift-durante) + cierra sequencing rework-vs-lift. Luego
+  build (locks code:{shell,clinics,crm}) → 1 auditoría → demo Chris (G) → merge → handoff proposal /pm-luana
+  para formalizar el lift. NO arrancar build con otra story del shell en developing (parallel_safe=false).
+---
+
+# vitalia-shell-core-hardening — checkpoint
+
+## Goal
+
+Consolidar **todo el trabajo abierto del chrome del shell-organism** (responsive + race-fix + bugs latentes) en **un solo vehículo** para hacer **una sola revisión** de un shell **excelente — funcional y técnicamente (arquitectura + estructura de archivos limpias)** — y, durante ese hardening, **lift el chrome a `core/@luana/ui-kit`** para que vitalia + nicolify lo consuman (matar el mirror cross-brand).
+
+Nace de la conversación con Chris (2026-06-10, `/pm-vitalia`): "agrupar todas las historias del shell en una sola para una revisión, y cuando esté excelente, promover al core". Forma ratificada: **hardening story + programa** (no mega-story SDD). Lift ratificado: **lift-durante**.
+
+## Por qué umbrella y no mega-story SDD
+
+Fundir responsive (refined, cross-módulo) + race-fix (parked) + ds-showcase (refining, otro programa) + 2 bugs en UNA story SDD cruzaría `[shell,clinics,crm]`, violaría el WIP cap y mezclaría madureces. En cambio esta umbrella:
+- **Absorbe** el chrome puro (responsive + race-fix + U3 + B1 + token-audit) — ver `consolidates`.
+- **Enchufa** al programa cross-brand `design-system-homologation` (ADR-014) que ya existe — no abre track paralelo.
+- **Vincula** ds-showcase como demostrador R-FID (no lo funde).
+- **Deja afuera** explícitamente lo que no es chrome (ver `excluded`).
+
+## Contexto del lift (ya sancionado)
+
+Los promotion proposals del lift FE/shell → `@luana/ui-kit` están **`accepted` desde 2026-06-06** (commit 256517a3). Chris ya pidió "cerrar las stories abiertas ANTES del lift (árbol limpio)". Esta umbrella **es el vehículo de ejecución de ese lift** — el responsive era su ruta crítica (única colisión file-level = el shell mismo). `@luana/ui-kit` ya está en v0.3.0 con lift parcial (layout/ archetypes/).
+
+El gate brand→core es de **`/pm-luana`** (promotion-protocol). `/pm-vitalia` entrega el hardening brand "excelente" + handoff de proposal final. La decisión de sequencing rework-vs-lift la cierra `/architect` en `ready`.
+
+## Estado de las stories absorbidas
+
+| Story | Antes | Ahora | Artefactos preservados |
+|---|---|---|---|
+| `vitalia-bugfix-shell-valeria-responsive` | refined | **parked + folded_into** | 01-spec v3 (2 firmas) + mockup FINAL + baseline build (614bfbd5, 29451ef6) — backbone del spec |
+| `vitalia-fase1-shell-layout-5050-race-fix` | parked | **folded_into** | approaches TBD + learning race-condition |
+| U3 splitter / B1 ssr:false soft-nav | sin story | **capturados acá** | observed-bugs + learning Next16 |
+| `vitalia-ds-showcase` | refining | **linked (demostrador)** | NO se funde — alimenta el best-of-best |
+
+## Anti-objetivos
+
+- NO descartar el baseline ya construido + live-verified del responsive (v1 puntos 3/5/tablet).
+- NO recrear lo que ya vive en `@luana/ui-kit` — extender/consumir.
+- NO arrastrar a la umbrella las stories agent-feature (consumen el chrome, no lo construyen).
+- NO mergear sin demo Chris (G · chris_verify.signoff) + auditoría + dod_evidence live (#37).
+- NO formalizar el lift sin handoff a `/pm-luana`.
+
+## Referencias
+
+- `vitalia/docs/architecture/SHELL-DESIGN-CONTRACT.md` · `ADR-vitalia-004` (shell-feature) · `ADR-vitalia-006` (SSR-safe store) · `ADR-vitalia-003` (visual)
+- `docs/architecture/luana-platform/ADR-014-design-system-homologation.md` + `design-system-inventory-best-of-best.md`
+- `core/@luana/ui-kit` (v0.3.0 — target lift)
+- promotion proposals lift FE/shell (accepted 2026-06-06, commit 256517a3)

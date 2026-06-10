@@ -6,7 +6,10 @@ map_zone: agentes
 map_box: lisa
 module: clinics
 capability: lisa.doctores
-state: developing
+state: parked                          # ★ 2026-06-10 PAUSADA ratificado Chris (gate shell-core-hardening, opción a)
+prior_state_before_park: developing
+parked_at: 2026-06-10T00:00:00-05:00
+parked_reason: "Pausa ratificada Chris 2026-06-10 para liberar bucket clinics al build de vitalia-shell-core-hardening (consolidación chrome + lift @luana/ui-kit). ⚠️ KEYSTONE REGRESIÓN QUEDA VIVA en dev: /lisa/staff crashea (Maximum update depth — NuevoIntegranteModal.tsx:109-114 useEffect loop). NO es chrome (bug de feature Lisa) → NO lo cubre el hardening. Reanudar = primer trabajo post-hardening: fix modal TDD RED-first + live-verify FULL surface (5-day shell drift se vuelve mayor post-hardening → re-verify obligatorio contra el chrome nuevo)."
 defer_audit: false
 defer_audit_resolved_at: '2026-06-01'
 defer_audit_resolution: >-

@@ -11,8 +11,12 @@ cap_target: null                    # higiene UX cross-cap del shell-organism (c
 cap_change_type: fix                # corrige el squeeze (BUG #1) + ajusta defaults responsive del shell
 parent_story: null
 
-state: refined                      # ★ 2026-06-06 /po-ux cerró refined: spec v3 RONDA 1+2 + ambas firmas (input_spec_signed + mockup_final_signed) + mapa funcional + matriz sin huecos. Build previo (614bfbd5 + 29451ef6) = BASELINE (puntos 3+5), NO se descarta.
-phase: SPEC_RATIFIED
+state: parked                       # ★ 2026-06-10 FOLDED into vitalia-shell-core-hardening (consolidación ratificada Chris). NO se descarta: su 01-spec v3 (2 firmas) + mockup FINAL + baseline build (614bfbd5+29451ef6) son el BACKBONE del spec de la umbrella.
+phase: FOLDED
+folded_into: vitalia-shell-core-hardening
+parked_at: 2026-06-10T00:00:00-05:00
+parked_reason: "Folded en la umbrella vitalia-shell-core-hardening (un solo review del chrome + lift a @luana/ui-kit). Artefactos refined carry-forward por referencia (01-spec v3 + mockup FINAL firmado + baseline build). Reabrir solo si Chris revierte la consolidación."
+prior_state_before_fold: refined    # ★ 2026-06-06 /po-ux cerró refined: spec v3 RONDA 1+2 + ambas firmas (input_spec_signed + mockup_final_signed) + mapa funcional + matriz sin huecos. Build previo (614bfbd5 + 29451ef6) = BASELINE (puntos 3+5), NO se descarta.
 module: shell                       # ⚠️ scope real cross-módulo [shell, clinics, crm] por bundle 1-7 (punto 7) — ver 01-spec § Coordinación
 cross_module_scope: [shell, clinics, crm]
 agent_owner: null                   # shell-organism transversal (no es de un agente)

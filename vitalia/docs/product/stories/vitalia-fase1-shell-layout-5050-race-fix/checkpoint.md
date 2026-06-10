@@ -5,10 +5,11 @@ agent_owner: shell
 module: shell-organism
 capability_extends: shell.layout-5050
 state: parked
+folded_into: vitalia-shell-core-hardening    # ★ 2026-06-10 absorbido por la umbrella de hardening del shell (consolidación ratificada Chris). El race SC-3 se resuelve dentro del hardening.
 architecture_pattern: ADR-vitalia-004
-last_modified: 2026-05-23T18:30:00-05:00
+last_modified: 2026-06-10T00:00:00-05:00
 parked_at: 2026-05-23T18:30:00-05:00
-parked_reason: "F1-S4 audit ESCALATED Caso D — race condition transition+drag-immediate edge case. Ratified Chris accept-with-defer. Pickup post F1-S5/S6 cuando refactor conversational shell tocará el área natural."
+parked_reason: "F1-S4 audit ESCALATED Caso D — race condition transition+drag-immediate edge case. Ratified Chris accept-with-defer. ★ 2026-06-10 FOLDED into vitalia-shell-core-hardening (el refactor del conversational shell lifecycle ahora vive en el hardening umbrella)."
 parent_story: vitalia-fase1-shell-layout-5050
 parent_commit_partial_fix: 46fc8700
 parallel_safe: true
